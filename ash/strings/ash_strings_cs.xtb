@@ -26,12 +26,14 @@
 <translation id="8206859287963243715">Mobil</translation>
 <translation id="6596816719288285829">Adresa IP</translation>
 <translation id="4508265954913339219">Aktivace se nezdařila</translation>
+<translation id="3621712662352432595">Nastavení zvuku</translation>
 <translation id="1812696562331527143">Metoda zadávání se změnila na metodu <ph name="INPUT_METHOD_ID"/>* <ph name="BEGIN_LINK"/>třetí strany<ph name="END_LINK"/>. Přepnout ji můžete stisknutím klávesové zkratky Shift + Alt.</translation>
 <translation id="3846575436967432996">Informace o síti nejsou k dispozici</translation>
 <translation id="3026237328237090306">Nastavení mobilního datového připojení</translation>
 <translation id="785750925697875037">Zobrazit mobilní účet</translation>
 <translation id="153454903766751181">Inicializace mobilního modemu...</translation>
 <translation id="7864539943188674973">Vypnout Bluetooth</translation>
+<translation id="939252827960237676">Uložení snímku obrazovky se nezdařilo</translation>
 <translation id="3126069444801937830">Restartovat a aktualizovat</translation>
 <translation id="735745346212279324">Síť VPN je odpojena</translation>
 <translation id="7320906967354320621">Nečinnost</translation>
@@ -39,6 +41,7 @@
 <translation id="2778346081696727092">Ověření prostřednictvím uvedeného uživatelského jména nebo hesla se nepodařilo.</translation>
 <translation id="3294437725009624529">Host</translation>
 <translation id="8190698733819146287">Personalizovat jazyky a zadávání...</translation>
+<translation id="2903907270192926896">VSTUP</translation>
 <translation id="7170041865419449892">Mimo dosah</translation>
 <translation id="4804818685124855865">Odpojit</translation>
 <translation id="5222676887888702881">Odhlásit se</translation>
@@ -53,12 +56,15 @@
 <translation id="3368922792935385530">Připojeno</translation>
 <translation id="8340999562596018839">Hlasová odezva</translation>
 <translation id="8654520615680304441">Zapnout Wi-Fi...</translation>
+<translation id="4632619405246189264">Nabíjení není spolehlivé</translation>
 <translation id="5825747213122829519">Metoda zadávání se změnila na metodu <ph name="INPUT_METHOD_ID"/>. Přepnout ji můžete stisknutím klávesové zkratky Shift + Alt.</translation>
 <translation id="2562916301614567480">Soukromá síť</translation>
 <translation id="6549021752953852991">Není k dispozici žádná mobilní síť.</translation>
 <translation id="4379753398862151997">Drahý monitore, nějak to mezi námi nefunguje. (Monitor není podporován.)</translation>
+<translation id="8448732935696070385">Zařízení je připojeno k nestandardnímu zdroji napájení. Nabíjení baterie nemusí být spolehlivé.</translation>
 <translation id="6426039856985689743">Zakázat  mobilní datové připojení</translation>
 <translation id="3087734570205094154">Až dolů</translation>
+<translation id="3742055079367172538">Byl vytvořen snímek obrazovky</translation>
 <translation id="5271016907025319479">Síť VPN není nakonfigurována.</translation>
 <translation id="6803622936009808957">Zobrazení nelze zrcadlit, protože nebyla nalezena podporovaná rozlišení. Místo toho se spustil režim rozšířené pracovní plochy.</translation>
 <translation id="1480041086352807611">Režim ukázky</translation>
@@ -86,7 +92,6 @@
 <translation id="2372145515558759244">Synchronizace aplikací...</translation>
 <translation id="7256405249507348194">Neznámá chyba: <ph name="DESC"/></translation>
 <translation id="7925247922861151263">Selhala bezpečnostní kontrola AAA</translation>
-<translation id="3227723743333276085"><ph name="BLUETOOTH"/>: Odpojování...</translation>
 <translation id="8456362689280298700"><ph name="HOUR"/>:<ph name="MINUTE"/> do úplného nabití</translation>
 <translation id="5787281376604286451">Hlasová odezva je aktivní
 Stiskem kláves Ctrl+Alt+Z ji deaktivujete.</translation>
@@ -114,6 +119,7 @@ Stiskem kláves Ctrl+Alt+Z ji deaktivujete.</translation>
 <translation id="3019353588588144572">Čas zbývající do úplného nabití baterie: <ph name="TIME_REMAINING"/></translation>
 <translation id="3473479545200714844">Lupa obrazovky</translation>
 <translation id="7005812687360380971">Selhání</translation>
+<translation id="882279321799040148">Kliknutím jej zobrazíte</translation>
 <translation id="1602076796624386989">Povolit mobilní datové připojení</translation>
 <translation id="6981982820502123353">Usnadnění</translation>
 <translation id="3157931365184549694">Obnovit</translation>
@@ -122,6 +128,7 @@ Stiskem kláves Ctrl+Alt+Z ji deaktivujete.</translation>
 <translation id="225680501294068881">Vyhledávání zařízení…</translation>
 <translation id="5597451508971090205"><ph name="SHORT_WEEKDAY"/>, <ph name="DATE"/></translation>
 <translation id="4448844063988177157">Vyhledávání sítí Wi-Fi...</translation>
+<translation id="2475982808118771221">Došlo k chybě</translation>
 <translation id="7229570126336867161">Je zapotřebí technologie EVDO.</translation>
 <translation id="2999742336789313416"><ph name="DISPLAY_NAME"/> je veřejná relace spravovaná doménou <ph name="DOMAIN"/>.</translation>
 <translation id="7029814467594812963">Ukončit relaci</translation>
@@ -132,9 +139,11 @@ Stiskem kláves Ctrl+Alt+Z ji deaktivujete.</translation>
 <translation id="8300849813060516376">Selhání OTASP</translation>
 <translation id="2792498699870441125">Alt + Vyhledávání</translation>
 <translation id="8660803626959853127">Synchronizace souborů (<ph name="COUNT"/>)</translation>
+<translation id="3709443003275901162">&gt;9</translation>
 <translation id="639644700271529076">CAPS LOCK je vypnutý</translation>
 <translation id="6267036997247669271"><ph name="NAME"/>: Probíhá aktivace...</translation>
 <translation id="1391854757121130358">Pravděpodobně jste vyčerpali povolený objem mobilních datových přenosů.</translation>
+<translation id="5413208160176941586">Místně spravovaný uživatel</translation>
 <translation id="4864165860509564259">Pozice spouštěče</translation>
 <translation id="7593891976182323525">Vyhledávání nebo Shift</translation>
 <translation id="7649070708921625228">Nápověda</translation>
@@ -143,6 +152,7 @@ Stiskem kláves Ctrl+Alt+Z ji deaktivujete.</translation>
 <translation id="158849752021629804">Je potřeba domácí síť</translation>
 <translation id="6857811139397017780">Aktivovat: <ph name="NETWORKSERVICE"/></translation>
 <translation id="5864471791310927901">Vyhledávání serveru DHCP selhalo.</translation>
+<translation id="5812035014844949013">VÝSTUP</translation>
 <translation id="6692173217867674490">Chybné přístupové heslo</translation>
 <translation id="6165508094623778733">Další informace</translation>
 <translation id="9046895021617826162">Připojení selhalo</translation>
@@ -155,6 +165,7 @@ Stiskem kláves Ctrl+Alt+Z ji deaktivujete.</translation>
 <translation id="7209101170223508707">CAPS LOCK je zapnutý. 
 Vypnete jej stisknutím kombinace kláves Alt + Vyhledávání nebo Shift.</translation>
 <translation id="8061464966246066292">Vysoký kontrast</translation>
+<translation id="8940956008527784070">Slabá baterie (<ph name="PERCENTAGE"/> %)</translation>
 <translation id="5102001756192215136">Zbývá: <ph name="HOUR"/>:<ph name="MINUTE"/></translation>
 <translation id="8000066093800657092">Žádná síť</translation>
 <translation id="5941711191222866238">Minimalizovat</translation>

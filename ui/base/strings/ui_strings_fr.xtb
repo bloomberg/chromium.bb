@@ -16,7 +16,6 @@
 <translation id="1761785978543082658"><ph name="QUANTITY"/> o</translation>
 <translation id="1809410197924942083"><ph name="QUANTITY"/> Mo/s</translation>
 <translation id="3990502903496589789">Côté droit</translation>
-<translation id="5182671122927417841">Désactiver l'extension</translation>
 <translation id="932327136139879170">Début</translation>
 <translation id="3909791450649380159">Cou&amp;per</translation>
 <translation id="688711909580084195">Page Web sans titre</translation>
@@ -31,17 +30,19 @@
 <translation id="8210608804940886430">Page suivante</translation>
 <translation id="5329858601952122676">&amp;Supprimer</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY"/> Ko</translation>
-<translation id="6489863328574614542">Définir les autorisations de notification des applications et des extensions</translation>
 <translation id="6659594942844771486">Onglet</translation>
 <translation id="3049748772180311791"><ph name="QUANTITY"/> Mo</translation>
 <translation id="8428213095426709021">Paramètres</translation>
 <translation id="2497284189126895209">Tous les fichiers</translation>
 <translation id="7814458197256864873">&amp;Copier</translation>
 <translation id="3889424535448813030">Droite</translation>
+<translation id="7135556860107312402">Autoriser les notifications des éléments suivants :</translation>
 <translation id="1398853756734560583">Agrandir</translation>
+<translation id="4250229828105606438">Capture d'écran</translation>
 <translation id="3757388668994797779"><ph name="QUANTITY"/> Go</translation>
 <translation id="1901303067676059328">&amp;Tout sélectionner</translation>
 <translation id="2168039046890040389">Page précédente</translation>
+<translation id="4927753642311223124">Aucune notification</translation>
 <translation id="2482878487686419369">Notifications</translation>
 <translation id="3183922693828471536">Défilement jusqu'ici</translation>
 <translation id="4552416320897244156">PgSuiv</translation>
@@ -52,6 +53,7 @@
 <translation id="4588090240171750605">Défilement vers la droite</translation>
 <translation id="2666092431469916601">En haut</translation>
 <translation id="8331626408530291785">Défilement vers le haut</translation>
+<translation id="4773379706300191099">Désactiver les notifications de l'extension &quot;<ph name="EXTENSION_NAME"/>&quot;</translation>
 <translation id="7907591526440419938">Ouvrir le fichier</translation>
 <translation id="1293699935367580298">Échap</translation>
 <translation id="815598010540052116">Défilement vers le bas</translation>
@@ -68,7 +70,6 @@
 <translation id="2297836609126180313"><ph name="QUANTITY"/> To/s</translation>
 <translation id="6040143037577758943">Fermer</translation>
 <translation id="6142413573757616983"><ph name="QUANTITY"/> o/s</translation>
-<translation id="477782898153505579">Vous n'avez reçu aucune notification.</translation>
 <translation id="7457942297256758195">Tout effacer</translation>
 <translation id="7509316384504965641"><ph name="PRODUCT"/> – Notifications</translation>
 <translation id="8400147561352026160">Maj+<ph name="KEY_COMBO_NAME"/></translation>

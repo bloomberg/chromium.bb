@@ -10,6 +10,7 @@
 <translation id="2801119484858626560">Wykryto niezgodną wersję Pulpitu zdalnego Chrome. Upewnij się, że masz najnowszą wersję Chrome oraz Pulpitu zdalnego Chrome na obu komputerach i spróbuj ponownie.</translation>
 <translation id="6998989275928107238">Do</translation>
 <translation id="3258789396564295715">Możesz bezpiecznie korzystać z tego komputera przez Pulpit zdalny Chrome.</translation>
+<translation id="5070121137485264635">Host zdalny wymaga uwierzytelnienia w witrynie innej firmy. Aby kontynuować, musisz udzielić Pulpitowi zdalnemu Chrome dodatkowych uprawnień dostępu do tego adresu:</translation>
 <translation id="4808503597364150972">Wpisz PIN dla: <ph name="HOSTNAME"/>.</translation>
 <translation id="7672203038394118626">Połączenia zdalne z tym komputerem zostały wyłączone.</translation>
 <translation id="8244400547700556338">Dowiedz się jak.</translation>
@@ -97,6 +98,7 @@
 <translation id="1643640058022401035">Jeśli opuścisz tę stronę, sesja Chromoting zostanie zakończona.</translation>
 <translation id="2235518894410572517">Udostępnij ten komputer innemu użytkownikowi, by mógł go widzieć i kontrolować.</translation>
 <translation id="1023096696228309145">Poproś użytkownika komputera, do którego chcesz uzyskać dostęp, by kliknął „Udostępnij teraz” i przekazał Ci kod dostępu.</translation>
+<translation id="80739703311984697">Host zdalny wymaga uwierzytelnienia w witrynie innej firmy. Aby kontynuować, musisz udzielić funkcji Chromoting dodatkowych uprawnień dostępu do tego adresu:</translation>
 <translation id="4006787130661126000">Jeśli chcesz korzystać z tego komputera przez Pulpit zdalny Chrome, musisz włączyć połączenia zdalne.</translation>
 <translation id="6930242544192836755">Czas trwania</translation>
 <translation id="6527303717912515753">Udostępnij</translation>

@@ -10,6 +10,7 @@
 <translation id="2801119484858626560">Eine inkompatible Version von Chrome Remote Desktop wurde erkannt. Überprüfen Sie, ob die neueste Version von Chrome und Chrome Remote Desktop auf beiden Computern installiert ist, und versuchen Sie es erneut.</translation>
 <translation id="6998989275928107238">Zu</translation>
 <translation id="3258789396564295715">Mit Chrome Remote Desktop erhalten Sie sicheren Zugriff auf diesen Computer.</translation>
+<translation id="5070121137485264635">Der Remote-Host verlangt, dass Sie sich über eine Drittanbieter-Website authentifizieren. Um fortfahren zu können, geben Sie Chrome Remote Desktop zusätzliche Berechtigungen für den Zugriff auf die folgende Adresse:</translation>
 <translation id="4808503597364150972">Bitte geben Sie Ihre PIN für <ph name="HOSTNAME"/> ein.</translation>
 <translation id="7672203038394118626">Die Remote-Verbindungen für diesen Computer wurden deaktiviert.</translation>
 <translation id="8244400547700556338">Weitere Informationen</translation>
@@ -97,6 +98,7 @@
 <translation id="1643640058022401035">Wenn Sie diese Seite verlassen, wird Ihre Chromoting-Sitzung beendet.</translation>
 <translation id="2235518894410572517">Diesen Computer für einen anderen Nutzer zur Ansicht und Steuerung freigeben</translation>
 <translation id="1023096696228309145">Bitten Sie den Nutzer, auf dessen Computer Sie zugreifen möchten, auf &quot;Jetzt freigeben&quot; zu klicken und Ihnen den Zugriffscode mitzuteilen.</translation>
+<translation id="80739703311984697">Der Remote-Host verlangt, dass Sie sich über eine Drittanbieter-Website authentifizieren. Um fortfahren zu können, geben Sie Chromoting zusätzliche Berechtigungen für den Zugriff auf die folgende Adresse:</translation>
 <translation id="4006787130661126000">Aktivieren Sie die Remote-Verbindungen, wenn Sie mit Chrome Remote Desktop auf diesen Computer zugreifen möchten.</translation>
 <translation id="6930242544192836755">Dauer</translation>
 <translation id="6527303717912515753">Teilen</translation>

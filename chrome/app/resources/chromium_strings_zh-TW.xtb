@@ -11,7 +11,6 @@
 <translation id="6613594504749178791">您的變更將於下次重新啟動 Chromium 時生效。</translation>
 <translation id="3748537968684000502">您正在瀏覽安全型 Chromium 網頁。</translation>
 <translation id="8971920611044657379">Chromium 頁框</translation>
-<translation id="6705571474735842144">您必須將 Chromium 切換至桌面模式才能使用應用程式啟動器。</translation>
 <translation id="2077129598763517140">在可用時使用硬體加速</translation>
 <translation id="1065672644894730302">系統無法讀取您的偏好設定。部分功能可能無法使用，且系統也不會儲存任何偏好設定的變更。</translation>
 <translation id="4222661289444749267">Chromium 頁框更新。</translation>
@@ -29,14 +28,24 @@
 <translation id="2589479092236095792">Chromium 自動填入設定</translation>
 <translation id="3555616473548901994">解除安裝已完成。</translation>
 <translation id="2886012850691518054">選用：將使用統計資料及當機報告自動傳送給 Google，助我們一臂之力，讓 Chromium 更臻完美。</translation>
+<translation id="580822234363523061">前往
+          Chromium 選單 &gt;
+          [<ph name="SETTINGS_TITLE"/>]
+          &gt;
+          [<ph name="ADVANCED_TITLE"/>]
+          &gt;
+          [<ph name="PROXIES_TITLE"/>]
+          並確認您的設定為 [不使用 Proxy] 或 [直接連線]。</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE"/> - Chromium</translation>
 <translation id="1989424089625731201">您嘗試前往 &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;，但是伺服器提供的憑證含有錯誤資訊。Chromium 無法使用含有錯誤資訊的憑證，也無法驗證您要連結的網站的身分。</translation>
 <translation id="3103660991484857065">安裝程式無法解壓縮封存檔案，請重新下載 Chromium。</translation>
 <translation id="872034308864968620">讓 Chromium 在背景執行</translation>
+<translation id="459535195905078186">Chromium 應用程式</translation>
 <translation id="5109068449432240255">是，結束 Chromium</translation>
 <translation id="1480489203462860648">安裝完畢，馬上試試吧！</translation>
 <translation id="3032787606318309379">正在新增至 Chromium...</translation>
 <translation id="4831257561365056138">解除安裝 Chromium 應用程式啟動器</translation>
+<translation id="4222580632002216401">您現在已登入 Chromium！但管理員已關閉同步功能。</translation>
 <translation id="4207043877577553402"><ph name="BEGIN_BOLD"/>警告：<ph name="END_BOLD"/>Chromium 無法阻止擴充功能記錄您的瀏覽活動，如要在無痕模式中停用這個擴充功能，請取消選取這個選項。 </translation>
 <translation id="985602178874221306">The Chromium Authors</translation>
 <translation id="8628626585870903697">Chromium 不含 PDF 檢視器，因此無法執行預覽列印功能。</translation>
@@ -45,31 +54,21 @@
 <translation id="4179848566211676653">結束 Chromium</translation>
 <translation id="3849925841547750267">抱歉，我們無法在 Mozilla Firefox 執行時取得瀏覽器設定。如要將這些設定匯入 Chromium，請儲存您的工作並關閉所有 Firefox 視窗，然後按一下 [繼續]。</translation>
 <translation id="7771626876550251690">在這種情況中，憑證所列的網址與瀏覽器嘗試前往的網址不符。憑證不符的其中一個可能原因是，攻擊者攔截了您的通訊，並且出示另一個網站的憑證。另一個可能的原因是，伺服器已設定為不同的網站傳回相同的憑證 (其中包括您嘗試造訪的網站)，即便該憑證並不適用於某些網站。Chromium 可以確定您已經到達 &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;，但是無法驗證這與您嘗試前往的 &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; 是不是同一個網站。如果您繼續，Chromium 將不再檢查任何名稱不符的情況。</translation>
-<translation id="2401271577450445716">前往
-          <ph name="BEGIN_BOLD"/>
-          Chromium 選單 &gt;
-          [<ph name="SETTINGS_TITLE"/>]
-          &gt;
-          [<ph name="ADVANCED_TITLE"/>]
-          &gt;
-          [<ph name="PROXIES_TITLE"/>]
-          &gt;
-          [區域網路設定]
-          <ph name="END_BOLD"/>
-          ，然後取消勾選 [在您的區域網路使用 Proxy 伺服器] 核取方塊。</translation>
 <translation id="4330585738697551178">已知這個模組與 Chromium 衝突。</translation>
 <translation id="3190315855212034486">Chromium 當機了，要立即重新啟動嗎？</translation>
-<translation id="6034408899846040667">您必須將 Chromium 切換至桌面模式才能使用應用程式。</translation>
 <translation id="6714487516757221107">找不到任何要安裝/更新的 Chromium 或 Chromium 頁框。</translation>
 <translation id="3197823471738295152">您的裝置已更新。</translation>
 <translation id="8551886023433311834">即將完成！請重新啟動裝置以完成更新。</translation>
 <translation id="8353224596138547809">您要讓 Chromium 儲存您在這個網站的密碼嗎？</translation>
 <translation id="7339898014177206373">新視窗</translation>
-<translation id="3026202950002788510">請依序前往
-          
-          [應用程式] &gt; [系統偏好設定] &gt; [網路] &gt; [進階] &gt; [Proxy]，
-          
-          並取勾選取所有已選取的 Proxy。<ph name="BEGIN_BOLD"/><ph name="END_BOLD"/></translation>
+<translation id="3733625138702910745">前往
+        Chromium 選單 &gt;
+        [<ph name="SETTINGS_TITLE"/>]
+        &gt;
+        [<ph name="ADVANCED_TITLE"/>]
+        然後取消勾選 [<ph name="NO_PREFETCH_DESCRIPTION"/>]。
+        如果仍然無法解決問題，建議您重新勾選這個選項
+        以提升執行效能。</translation>
 <translation id="4124681358536363708">目前 Chromium 安裝目錄正在使用中，請重新啟動電腦，然後再試一次。</translation>
 <translation id="8770560772173120024">目前 Chromium 正在匯入我的最愛/書籤。</translation>
 <translation id="225614027745146050">歡迎使用</translation>
@@ -81,6 +80,7 @@
 <translation id="7915138385500177190">您的電腦缺少部分重要的 Windows 系統檔案，因此 Chromium 將無法正常執行。</translation>
 <translation id="3296368748942286671">在 Chromium 關閉時繼續執行背景應用程式</translation>
 <translation id="473775607612524610">更新</translation>
+<translation id="5714819759736651024">如要使用 Chrome 應用程式，請在桌面重新啟動 Chromium。</translation>
 <translation id="6055895534982063517">新版 Chromium 現已推出，速度更勝以往。</translation>
 <translation id="2407806170074302369">關於 Chromium 頁框...</translation>
 <translation id="5405650547142096840">從 Chromium 中移除</translation>
@@ -93,7 +93,6 @@
 <translation id="6970811910055250180">正在更新裝置...</translation>
 <translation id="2485422356828889247">解除安裝</translation>
 <translation id="85843667276690461">前往 Chromium 說明頁面</translation>
-<translation id="3354334135076267965">在 Windows 工作列中顯示 Chromium 應用程式啟動器的捷徑。</translation>
 <translation id="263863604136125912">啟用 Chromium</translation>
 <translation id="9036189287518468038">Chromium 應用程式啟動器</translation>
 <translation id="2881203820889150661">由於 Chromium 無法判斷目前的桌面環境，因此無法建立應用程式捷徑。</translation>
@@ -112,17 +111,6 @@
 <translation id="3069161343438701711">Chromium Worker</translation>
 <translation id="5820394555380036790">Chromium 作業系統</translation>
 <translation id="6757767188268205357">不要再問我</translation>
-<translation id="7294284502435423183">請試著按照下列步驟停用網路預測功能：
-        前往
-        <ph name="BEGIN_BOLD"/>
-        Chromium 選單 &gt;
-        [<ph name="SETTINGS_TITLE"/>]
-        &gt;
-        [<ph name="ADVANCED_TITLE"/>]
-        <ph name="END_BOLD"/>
-        ，然後取消勾選 [<ph name="NO_PREFETCH_DESCRIPTION"/>]。
-        如果仍然無法解決問題， 建議您重新勾選這個選項，
-        以增進效能。</translation>
 <translation id="275588974610408078">Chromium 不支援當機回報功能。</translation>
 <translation id="5909170354645388250">Chromium 不適用本規範。請加入預留位置，確保資源同步對應。預期的引數為：$1。</translation>
 <translation id="7937630085815544518">您使用了 <ph name="USER_EMAIL_ADDRESS"/> 的身分登入 Chromium，請使用相同帳戶重新登入。</translation>
@@ -135,7 +123,16 @@
 <translation id="5398878173008909840">新版 Chromium 現已推出。</translation>
 <translation id="2648074677641340862">安裝期間發生作業系統錯誤，請重新下載 Chromium。</translation>
 <translation id="5942520288919337908">已將「<ph name="EXTENSION_NAME"/>」加到 Chromium。</translation>
-<translation id="8678787945719392857">使用這個 Google 帳戶同步處理所有 Chromium 內容？</translation>
+<translation id="4559775032954821361">前往
+          Chromium 選單 &gt;
+          [<ph name="SETTINGS_TITLE"/>]
+          &gt;
+          [<ph name="ADVANCED_TITLE"/>]
+          &gt;
+          [<ph name="PROXIES_TITLE"/>]
+          &gt;
+          [區域網路設定]
+          然後取消勾選 [在您的區域網路使用 Proxy 伺服器] 核取方塊。</translation>
 <translation id="8621669128220841554">不明錯誤導致安裝失敗，請重新下載 Chromium。</translation>
 <translation id="6717134281241384636">由於您的設定檔是來自較新版本的 Chromium，所以系統無法使用該檔案。
 
@@ -146,54 +143,32 @@
 <translation id="6212496753309875659">這台電腦已安裝較新的 Chromium 版本。如果軟體無法順利運作，請解除安裝 Chromium，然後再試一次。</translation>
 <translation id="3014684866565908571">Chromium Utility</translation>
 <translation id="1298199220304005244">前往 Chromium 作業系統說明頁面</translation>
+<translation id="8187289872471304532">前往
+          [應用程式] &gt; [系統偏好設定] &gt; [網路] &gt; [進階] &gt; [Proxy]
+          然後取消勾選所有已選取的 Proxy。</translation>
 <translation id="1691304614444223855">Chromium 頁框已更新，請重新啟動瀏覽器。Chromium 版本：<ph name="TODO_0001"/>，Chromium 頁框版本：<ph name="TODO_0002"/></translation>
 <translation id="130631256467250065">您的變更會在下次重新啟動裝置時生效。</translation>
 <translation id="1105130903706696483">Chromium 上次執行時並未正確關閉。如果要重新開啟您之前瀏覽的網頁，請按一下 [還原]。</translation>
 <translation id="1531452407274881270">您已使用 <ph name="USER_EMAIL_ADDRESS"/> 帳戶登入 Chromium，這表示您可以在所有登入的裝置上使用您的書籤、瀏覽紀錄和其他設定。</translation>
 <translation id="1929939181775079593">Chromium 沒有回應，要立即重新啟動嗎？</translation>
 <translation id="1414495520565016063">您已登入 Chromium！</translation>
-<translation id="6089587093203430357">互動智慧搜尋</translation>
+<translation id="3155163173539279776">重新啟動 Chromium</translation>
 <translation id="8520216698644798023">系統偵測到 Windows 錯誤</translation>
 <translation id="2966088006374919794">Chromium 需要啟用外部應用程式才能處理 <ph name="SCHEME"/> 連結。所要求的連結為 <ph name="PROTOLINK"/>。</translation>
 <translation id="6287463253129672858">無法安裝這個版本的 Chromium 頁框，因為目前正在執行相同版本。請關閉 Chromium 頁框，然後再試一次。</translation>
 <translation id="2558235863893655150">您希望 Chromium 儲存密碼嗎？</translation>
-<translation id="3398522627033804247">前往
-          <ph name="BEGIN_BOLD"/>
-          Chromium 選單 &gt;
-          [<ph name="SETTINGS_TITLE"/>]
-          &gt;
-          [<ph name="INTERNET_TITLE"/>]
-          &gt;
-          [<ph name="OPTIONS_BUTTON"/>]
-          <ph name="END_BOLD"/>
-          (針對目前的網路)。如果
-          <ph name="BEGIN_BOLD"/>
-          [<ph name="NETWORK_TAB"/>]
-          <ph name="END_BOLD"/>標籤中顯示
-          <ph name="BEGIN_BOLD"/>
-          [<ph name="PROXY_BUTTON"/>]
-          <ph name="END_BOLD"/>
-          按鈕，請按一下該按鈕，將您的設定
-          調整為 [直接]。</translation>
 <translation id="1231416733874080281">顯示 Chromium 選單</translation>
+<translation id="5772805321386874569">(必須<ph name="BEGIN_BUTTON"/>重新啟動<ph name="END_BUTTON"/> Chromium)</translation>
 <translation id="1688750314291223739">設定同步處理功能，即可在網路上儲存您的個人化瀏覽器功能，並且透過任何電腦從 Chromium 使用這些功能。</translation>
 <translation id="9171640504251796339">http://www.google.com/support/chrome/bin/answer.py?hl=<ph name="GRITLANGCODE_1"/>&amp;answer=161796</translation>
 <translation id="8865765905101981392">網際網路瀏覽器</translation>
+<translation id="8610831143142469229">允許 Chromium 存取受到防火牆或防毒軟體設定所阻擋的
+        網路。</translation>
 <translation id="6424492062988593837">Chromium 現在變得更進步了！歡迎您升級使用新版本。</translation>
 <translation id="6601972021154586963">您必須登入 Chromium 才能使用應用程式。在登入狀態下，Chromium 可同步處理您在多個裝置上的應用程式、書籤、紀錄、密碼和其他設定。</translation>
 <translation id="2910007522516064972">關於 Chromium(&amp;C)</translation>
 <translation id="8453117565092476964">安裝程式封存檔案已毀損或無效，請重新下載 Chromium。</translation>
-<translation id="950712238285296105">(必須<ph name="BEGIN_BUTTON"/>重新啟動<ph name="END_BUTTON"/> Chromium)</translation>
-<translation id="2162026298602630383">前往
-          <ph name="BEGIN_BOLD"/>
-          Chromium 選單 &gt;
-          [<ph name="SETTINGS_TITLE"/>]
-          &gt;
-          [<ph name="ADVANCED_TITLE"/>]
-          &gt;
-          [<ph name="PROXIES_TITLE"/>]
-          <ph name="END_BOLD"/>
-          ，並確認您的設定為 [不使用 Proxy] 或 [直接連線]。</translation>
+<translation id="6763060723530774166">如要使用應用程式啟動器，請在桌面重新啟動 Chromium。</translation>
 <translation id="3249425904492147663">您嘗試前往 &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;，但伺服器提供了逾期的憑證。在憑證逾期的情況下，我們沒有足夠資訊判斷憑證是否可靠，因此 Chromium 無法保證您的連線對象是 &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;，而非攻擊者。目前您的電腦時鐘設為 <ph name="CURRENT_TIME"/>，時間正確嗎？如果不正確，請修正錯誤並重新整理網頁。</translation>
 <translation id="7196020411877309443">為何出現這個對話框？</translation>
 <translation id="457845228957001925">Chromium 資料的相關重要資訊</translation>
@@ -207,7 +182,6 @@
 <translation id="8724049448828509830">目前正在進行下載，您要結束 Chromium 並取消下載嗎？</translation>
 <translation id="3360567213983886831">Chromium Binaries</translation>
 <translation id="7503101070699687603">Chromium Plug-In Host</translation>
-<translation id="2128780683974727821">顯示 Chromium 應用程式啟動器。</translation>
 <translation id="8985587603644336029">先前已有其他使用者使用 <ph name="ACCOUNT_EMAIL_LAST"/> 在這台電腦上登入 Chromium。如果這不是您的帳戶，請建立新的 Chromium 使用者以便個別保存您的資訊。
 
 如果您仍要繼續登入帳戶，各項 Chromium 資訊 (例如書籤、紀錄和其他設定) 則會合併至 <ph name="ACCOUNT_EMAIL_NEW"/>。</translation>

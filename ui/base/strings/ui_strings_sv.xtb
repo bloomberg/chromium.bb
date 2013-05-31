@@ -16,7 +16,6 @@
 <translation id="1761785978543082658"><ph name="QUANTITY"/> B</translation>
 <translation id="1809410197924942083"><ph name="QUANTITY"/> MB/sek</translation>
 <translation id="3990502903496589789">Högerkant</translation>
-<translation id="5182671122927417841">Inaktivera tillägg</translation>
 <translation id="932327136139879170">Startsida</translation>
 <translation id="3909791450649380159">&amp;Klipp ut</translation>
 <translation id="688711909580084195">Namnlös webbsida</translation>
@@ -31,17 +30,19 @@
 <translation id="8210608804940886430">Page Down</translation>
 <translation id="5329858601952122676">&amp;Ta bort</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY"/> kB</translation>
-<translation id="6489863328574614542">Ange meddelandebehörighet för appar och tillägg</translation>
 <translation id="6659594942844771486">Flik</translation>
 <translation id="3049748772180311791"><ph name="QUANTITY"/> MB</translation>
 <translation id="8428213095426709021">Inställningar</translation>
 <translation id="2497284189126895209">Alla filer</translation>
 <translation id="7814458197256864873">&amp;Kopiera</translation>
 <translation id="3889424535448813030">Högerpil</translation>
+<translation id="7135556860107312402">Tillåt meddelanden från följande:</translation>
 <translation id="1398853756734560583">Maximera</translation>
+<translation id="4250229828105606438">Skärmdump</translation>
 <translation id="3757388668994797779"><ph name="QUANTITY"/> GB</translation>
 <translation id="1901303067676059328">Välj &amp;alla</translation>
 <translation id="2168039046890040389">Page Up</translation>
+<translation id="4927753642311223124">Här finns inget att se, fortsätt.</translation>
 <translation id="2482878487686419369">Aviseringar</translation>
 <translation id="3183922693828471536">Rulla hit</translation>
 <translation id="4552416320897244156">Page Down</translation>
@@ -52,6 +53,7 @@
 <translation id="4588090240171750605">Rulla åt höger</translation>
 <translation id="2666092431469916601">Överst</translation>
 <translation id="8331626408530291785">Rulla uppåt</translation>
+<translation id="4773379706300191099">Inaktivera meddelanden från <ph name="EXTENSION_NAME"/></translation>
 <translation id="7907591526440419938">Öppna fil</translation>
 <translation id="1293699935367580298">Esc</translation>
 <translation id="815598010540052116">Rulla nedåt</translation>
@@ -68,7 +70,6 @@
 <translation id="2297836609126180313"><ph name="QUANTITY"/> TB/sek</translation>
 <translation id="6040143037577758943">Stäng</translation>
 <translation id="6142413573757616983"><ph name="QUANTITY"/> B/sek</translation>
-<translation id="477782898153505579">Ta det lugnt! Du har inga meddelanden.</translation>
 <translation id="7457942297256758195">Ta bort alla</translation>
 <translation id="7509316384504965641"><ph name="PRODUCT"/> – meddelanden</translation>
 <translation id="8400147561352026160">Skift+<ph name="KEY_COMBO_NAME"/></translation>

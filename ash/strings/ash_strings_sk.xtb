@@ -26,6 +26,7 @@
 <translation id="8206859287963243715">Mobilné</translation>
 <translation id="6596816719288285829">Adresa IP</translation>
 <translation id="4508265954913339219">Aktivácia zlyhala</translation>
+<translation id="3621712662352432595">Nastavenia zvuku</translation>
 <translation id="1812696562331527143">Metóda vstupu sa zmenila na <ph name="INPUT_METHOD_ID"/>*(<ph name="BEGIN_LINK"/>tretia strana<ph name="END_LINK"/>).
         Prepnete ju stlačením klávesov Shift + Alt.</translation>
 <translation id="3846575436967432996">Informácie o sieti nie sú k dispozícii</translation>
@@ -33,6 +34,7 @@
 <translation id="785750925697875037">Zobraziť mobilný účet</translation>
 <translation id="153454903766751181">Inicializácia mobilného modemu...</translation>
 <translation id="7864539943188674973">Zakázať rozhranie Bluetooth</translation>
+<translation id="939252827960237676">Uloženie snímky obrazovky zlyhalo.</translation>
 <translation id="3126069444801937830">Reštartovaním vykonáte aktualizáciu</translation>
 <translation id="735745346212279324">Sieť VPN je odpojená</translation>
 <translation id="7320906967354320621">Nečinná</translation>
@@ -40,6 +42,7 @@
 <translation id="2778346081696727092">Overenie totožnosti pomocou zadaného používateľského mena a hesla zlyhalo</translation>
 <translation id="3294437725009624529">Hosť</translation>
 <translation id="8190698733819146287">Prebieha prispôsobenie jazykov a vstupu...</translation>
+<translation id="2903907270192926896">VSTUP</translation>
 <translation id="7170041865419449892">Mimo rozsah</translation>
 <translation id="4804818685124855865">Odpojiť</translation>
 <translation id="5222676887888702881">Odhlásiť sa</translation>
@@ -54,13 +57,16 @@
 <translation id="3368922792935385530">Pripojené</translation>
 <translation id="8340999562596018839">Hlasová odozva</translation>
 <translation id="8654520615680304441">Zapnúť sieť Wi-Fi...</translation>
+<translation id="4632619405246189264">Nabíjanie nie je spoľahlivé</translation>
 <translation id="5825747213122829519">Metóda vstupu sa zmenila na <ph name="INPUT_METHOD_ID"/>.
         Prepnete ju stlačením klávesov Shift + Alt.</translation>
 <translation id="2562916301614567480">Súkromná sieť</translation>
 <translation id="6549021752953852991">K dispozícii nie je žiadna mobilná sieť</translation>
 <translation id="4379753398862151997">Milý monitor, medzi nami to nefunguje. (Tento monitor sa nepodporuje)</translation>
+<translation id="8448732935696070385">Batéria je zapojená do neštandardného napájacieho zdroja. Nabíjanie batérie nemusí byť spoľahlivé.</translation>
 <translation id="6426039856985689743">Zakázať mobilné dátové pripojenie</translation>
 <translation id="3087734570205094154">Spodok</translation>
+<translation id="3742055079367172538">Vytvorila sa snímka obrazovky</translation>
 <translation id="5271016907025319479">Sieť VPN nie je nakonfigurovaná.</translation>
 <translation id="6803622936009808957">Obraz na monitoroch sa nedá zrkadliť, pretože sa nenašli podporované rozlíšenia. Namiesto toho sa spustil režim rozšírenej pracovnej plochy.</translation>
 <translation id="1480041086352807611">Režim ukážky</translation>
@@ -88,7 +94,6 @@
 <translation id="2372145515558759244">Prebieha synchronizácia aplikácií...</translation>
 <translation id="7256405249507348194">Nerozpoznaná chyba: <ph name="DESC"/></translation>
 <translation id="7925247922861151263">Kontrola AAA zlyhala</translation>
-<translation id="3227723743333276085"><ph name="BLUETOOTH"/>: odpája sa...</translation>
 <translation id="8456362689280298700">Čas do úplného nabitia: <ph name="HOUR"/>:<ph name="MINUTE"/></translation>
 <translation id="5787281376604286451">Hlasová odozva je povolená.
 Zakážete ju stlačením klávesov Ctrl+Alt+Z.</translation>
@@ -116,6 +121,7 @@ Zakážete ju stlačením klávesov Ctrl+Alt+Z.</translation>
 <translation id="3019353588588144572">Čas zostávajúci do úplného nabitia batérie: <ph name="TIME_REMAINING"/></translation>
 <translation id="3473479545200714844">Lupa</translation>
 <translation id="7005812687360380971">Zlyhanie</translation>
+<translation id="882279321799040148">Zobrazíte ju kliknutím tu</translation>
 <translation id="1602076796624386989">Povoliť mobilné dátové pripojenie</translation>
 <translation id="6981982820502123353">Dostupnosť</translation>
 <translation id="3157931365184549694">Obnoviť</translation>
@@ -124,6 +130,7 @@ Zakážete ju stlačením klávesov Ctrl+Alt+Z.</translation>
 <translation id="225680501294068881">Hľadajú sa zariadenia...</translation>
 <translation id="5597451508971090205"><ph name="SHORT_WEEKDAY"/>, <ph name="DATE"/></translation>
 <translation id="4448844063988177157">Prebieha vyhľadávanie sietí Wi-Fi...</translation>
+<translation id="2475982808118771221">Vyskytla sa chyba</translation>
 <translation id="7229570126336867161">Je potrebné pripojenie EVDO</translation>
 <translation id="2999742336789313416"><ph name="DISPLAY_NAME"/> je verejná relácia spravovaná stránkami <ph name="DOMAIN"/></translation>
 <translation id="7029814467594812963">Ukončiť reláciu</translation>
@@ -134,9 +141,11 @@ Zakážete ju stlačením klávesov Ctrl+Alt+Z.</translation>
 <translation id="8300849813060516376">Zlyhanie služby OTASP</translation>
 <translation id="2792498699870441125">Alt + Hľadať</translation>
 <translation id="8660803626959853127">Synchronizácia súborov (<ph name="COUNT"/>)</translation>
+<translation id="3709443003275901162">viac ako 9</translation>
 <translation id="639644700271529076">CAPS LOCK je vypnutý</translation>
 <translation id="6267036997247669271"><ph name="NAME"/>: Aktivuje sa...</translation>
 <translation id="1391854757121130358">Možno ste dosiahli limit povolených mobilných dát.</translation>
+<translation id="5413208160176941586">Miestne spravovaný používateľ</translation>
 <translation id="4864165860509564259">Pozícia spúťača</translation>
 <translation id="7593891976182323525">Hľadať alebo Shift</translation>
 <translation id="7649070708921625228">Pomocník</translation>
@@ -146,6 +155,7 @@ Ak ho chcete zrušiť, stlačte klávesy Hľadať alebo Shift.</translation>
 <translation id="158849752021629804">Je potrebná domáca sieť</translation>
 <translation id="6857811139397017780">Aktivovať zariadenie <ph name="NETWORKSERVICE"/></translation>
 <translation id="5864471791310927901">Vyhľadanie servera DHCP zlyhalo</translation>
+<translation id="5812035014844949013">VÝSTUP</translation>
 <translation id="6692173217867674490">Zlá prístupová fráza</translation>
 <translation id="6165508094623778733">Viac informácií</translation>
 <translation id="9046895021617826162">Zlyhanie pripojenia</translation>
@@ -158,6 +168,7 @@ Ak ho chcete zrušiť, stlačte klávesy Hľadať alebo Shift.</translation>
 <translation id="7209101170223508707">Kláves CAPS LOCK je zapnutý.
 Ak ho chcete zrušiť, stlačte klávesy Alt + Hľadať alebo Shift.</translation>
 <translation id="8061464966246066292">Vysoký kontrast</translation>
+<translation id="8940956008527784070">Kapacita batérie je nízka (<ph name="PERCENTAGE"/> %)</translation>
 <translation id="5102001756192215136">zostáva <ph name="HOUR"/>:<ph name="MINUTE"/></translation>
 <translation id="8000066093800657092">Žiadna sieť</translation>
 <translation id="5941711191222866238">Minimalizovať</translation>

@@ -5,6 +5,9 @@
 <translation id="1503959756075098984">Tilläggs-ID:n och uppdateringsadresser ska installeras obemärkt</translation>
 <translation id="2463365186486772703">Appens språkversion</translation>
 <translation id="1397855852561539316">Standardsökleverantörens förslagsadress</translation>
+<translation id="3347897589415241400">Standardinställningen för webbplatser som inte har något innehållspaket.
+
+          Denna policy gäller endast internt i Chrome.</translation>
 <translation id="7040229947030068419">Exempelvärde:</translation>
 <translation id="1213523811751486361">Policyn anger webbadressen till sökmotorn som används för att visa sökförslag. Webbadressen ska innehålla strängen <ph name="SEARCH_TERM_MARKER"/>, som ersätts när frågan körs av den text som användaren har skrivit dittills.
 
@@ -29,7 +32,6 @@
           Värdet för policyn ska anges i millisekunder. Värdena måste vara lägre än eller desamma som inaktivitetstiden.</translation>
 <translation id="7614663184588396421">Lista över inaktiverade protokollscheman</translation>
 <translation id="2309390639296060546">Standardinställning för geografisk plats</translation>
-<translation id="7261507082507286116">Inaktiverar Google Drive via mobilanslutningar</translation>
 <translation id="7443616896860707393">Frågor vid korsursprungs-HTTP med basauktorisering</translation>
 <translation id="2337466621458842053">Policyn gör att du kan ställa in en lista med adressmönster som anger webbplatser som får visa bilder.
 
@@ -42,6 +44,7 @@
           Som standard är alla tillägg vitlistade, men om alla tillägg har svartlistats av en policy kan vitlistan användas för att åsidosätta den policyn.</translation>
 <translation id="3185009703220253572">sedan version <ph name="SINCE_VERSION"/></translation>
 <translation id="2204753382813641270">Kontrollera hur hyllan döljs automatiskt</translation>
+<translation id="3816312845600780067">Aktivera kortkommandot för räddning vid automatisk inloggning</translation>
 <translation id="3214164532079860003">Om den här policyn är aktiverad tvingar den startsidan att importeras från den nuvarande standardwebbläsaren.
 
       Om policyn inte är aktiverad importeras inte startsidan.
@@ -139,6 +142,9 @@
           Om du svartlistar värdet * svartlistas alla tillägg som du inte uttryckligen tillåter på vitlistan.
 
           Om policyn inte ställs in kan användaren installera alla tillägg i <ph name="PRODUCT_NAME"/>.</translation>
+<translation id="3067188277482006117">Om den är inställd på sant kan användaren, genom att använda maskinvaran i Chrome-enheten, fjärrattestera sin identitet i sekretessinställningarna CA via API:et Enterprise Platform Keys – chrome.enterprise.platformKeysPrivate.challengeUserKey().
+
+          Om den är inställd på falskt, eller om den saknar inställning, fungerar inte anslutningen till API:et och en felkod att visas.</translation>
 <translation id="5809728392451418079">Ange visningsnamnet för lokala konton på enheten</translation>
 <translation id="1427655258943162134">Proxyserverns adress eller webbadress</translation>
 <translation id="1827523283178827583">Använd fasta proxyservrar</translation>
@@ -183,6 +189,7 @@
       Om du aktiverar inställningen kan användarna inte ändra eller åsidosätta inställningen i <ph name="PRODUCT_NAME"/>.
 
       Om den här policyn inte ställs in kan användaren själv välja om Google Synk ska användas eller inte.</translation>
+<translation id="7953256619080733119">Värdar för hanterade användares manuella undantag</translation>
 <translation id="7412982067535265896">Innebär att du kan ange en lista med webbadressmönster som anger webbplatser som får ange sessionscookies.
 
           Om den här policyn inte anges används det globala standardvärdet för alla webbplatser. Standardvärdet hämtas från policyn DefaultCookiesSetting om den används, eller användarens personliga konfiguration om den inte används.
@@ -198,9 +205,6 @@
       Om du anger den här policyn kan du konfigurera om en användare ska ha tillåtelse att logga in i <ph name="PRODUCT_NAME"/> eller inte.</translation>
 <translation id="5564962323737505851">Konfigurerar lösenordshanteraren. Om lösenordshanteraren är aktiverad kan du välja att aktivera eller inaktivera huruvida användare får visa sparade lösenord med vanlig text.</translation>
 <translation id="4668325077104657568">Standardinställning för bilder</translation>
-<translation id="7978961945071764766">Inaktiverar synkronisering med Google Drive via en mobilanslutning om inställningen är True. I så fall synkroniseras data bara till Google Drive via WiFi- eller Ethernet-anslutningar.
-
-          Om policyn inte är inställd eller om den är inställd på False kan användarna överföra filer till Google Drive via mobilanslutningar.</translation>
 <translation id="4492287494009043413">Inaktivera tagning av skärmdumpar</translation>
 <translation id="6368403635025849609">Tillåt JavaScript på dessa webbplatser</translation>
 <translation id="6074963268421707432">Tillåt inte att någon webbplats visar aviseringar på skrivbordet</translation>
@@ -252,6 +256,9 @@
 
       Om inställningen är inaktiverad kan webb- och hämtningshistoriken inte tas bort.</translation>
 <translation id="2884728160143956392">Tillåt sessionscookies på dessa webbplatser</translation>
+<translation id="3021272743506189340">Inaktiverar Google Drive-synkronisering i appen Filer i Chrome OS när du använder en mobilanslutning som är inställd på sant. I dessa fall är datan bara synkroniserad med Google Drive när du är ansluten via Wi-Fi eller Ethernet.
+
+          Om det inte finns någon inställning eller om den är inställd på falskt kommer användaren att kunna överföra filer till Google Drive via mobilanslutningen.</translation>
 <translation id="4655130238810647237">Policyn aktiverar eller inaktiverar bokmärkesredigering i <ph name="PRODUCT_NAME"/>.
 
       Om du aktiverar den här inställningen kan bokmärken läggas till, tas bort eller ändras. Det är standardinställningen.
@@ -383,9 +390,6 @@
 <translation id="4962195944157514011">Policyn anger webbadressen till sökmotorn som används för standardsökning. Webbadressen ska innehålla strängen <ph name="SEARCH_TERM_MARKER"/>, som ersätts av användarens sökord när sökningen utförs.
 
           Alternativet måste anges om policyn DefaultSearchProviderEnabled är aktiverad och används bara om så är fallet.</translation>
-<translation id="3343454696188645600">Inaktiverar synkronisering med Google Drive när inställningen är True. I så fall överförs inga data till Google Drive.
-
-          Om policyn inte anges eller om inställningen är False kan användarna överföra filer till Google Drive.</translation>
 <translation id="6009903244351574348">Policyn tillåter att <ph name="PRODUCT_FRAME_NAME"/> hanterar de innehållstyper som anges.
 
           Om den här policyn inte ställs in används standardrenderaren för alla webbplatser enligt specifikationen i policyn ChromeFrameRendererSettings.</translation>
@@ -594,7 +598,6 @@
 <translation id="2646290749315461919">Policyn gör att du kan ställa in om webbplatser får spåra användarnas fysiska plats. Att spåra användarnas fysiska plats kan vara tillåtet som standard, inte tillåtet som standard eller användaren kan bli tillfrågad varje gång en webbplats efterfrågar den fysiska platsen.
 
           Om policyn inte har angetts används AskGeolocation och användaren kan ändra inställningen.</translation>
-<translation id="3309789488678647282">Inaktiverar Drive</translation>
 <translation id="5770738360657678870">Kanal för utvecklare (kan vara instabil)</translation>
 <translation id="2959898425599642200">Regler för proxybypass</translation>
 <translation id="228659285074633994">Anger hur lång tid det tar innan ett varningsmeddelande visas när en användare inte gjort någon åtgärd när enheten är ansluten till elnätet.
@@ -634,14 +637,6 @@
       &quot;1412.24.34&quot;: uppdatera bara till denna specifika version.</translation>
 <translation id="8102913158860568230">Standardinställning för medieuppspelning</translation>
 <translation id="6641981670621198190">Inaktivera stöd för programmeringsgränssnitt för 3D-grafik</translation>
-<translation id="2741921267428646309">Det här är listan med policyer som följs av <ph name="PRODUCT_NAME"/>.
-
-      Du behöver inte ändra dem för hand. Du kan hämta lättanvända mallar från
-      <ph name="POLICY_TEMPLATE_DOWNLOAD_URL"/>.
-
-      Listan med policyer som stöds är samma för Chromium och Google Chrome, men deras registerplatser i Windows är olika.
-
-      Den börjar med <ph name="CHROMIUM_KEY"/> för Chromiums policyer och med <ph name="GOOGLE_CHROME_KEY"/> för Google Chromes policyer.</translation>
 <translation id="7929480864713075819">Aktivera minnesrapportering (heap-storlek för JavaScript) på sidan</translation>
 <translation id="7003746348783715221">Inställningar för <ph name="PRODUCT_NAME"/></translation>
 <translation id="4723829699367336876">Aktivera brandväggspassage från fjärråtkomstklient</translation>
@@ -704,6 +699,16 @@
 
           Om policyn är inställd på falskt förhindrar inte videoaktivitet att användaren räknas som inaktiv.</translation>
 <translation id="3965339130942650562">Tidsgräns för utloggning av inaktiv användare</translation>
+<translation id="5857910801734294133">Här är en lista över policyer som <ph name="PRODUCT_NAME"/> följer.
+
+      Du behöver inte ändra dessa inställningar manuellt. Du kan hämta lättanvända mallar från
+      <ph name="POLICY_TEMPLATE_DOWNLOAD_URL"/>.
+
+      Listan över policyer som stöds är samma för både Chromium och Google Chrome, men platserna för deras respektive Windows-register skiljer sig åt.
+
+      Den börjar med <ph name="CHROMIUM_KEY"/> för Chromiums policy och med <ph name="GOOGLE_CHROME_KEY"/> för Google Chromes policy.
+
+      Policyerna är avsedda att användas för att konfigurera delar av Chrome internt inom din organisation. Att använda dessa policyer utanför sin organisation (till exempel i ett offentligt distribuerat program) anses vara skadligt och de kommer i så fall troligen att betraktas som skadlig programvara av Google och antivirusleverantören.</translation>
 <translation id="9084985621503260744">Ange om videoaktivitet påverkar energihanteringen</translation>
 <translation id="7091198954851103976">Kör alltid pluginprogram som kräver auktorisering</translation>
 <translation id="2704032342102549239">Begränsa enhetens upptid genom att schemalägga automatiska omstarter.
@@ -743,11 +748,15 @@
       Om policyn inte anges är inställningen aktiverad men kan ändras av användarna.</translation>
 <translation id="2236488539271255289">Tillåt inte att någon webbplats ställer in lokala data</translation>
 <translation id="4467952432486360968">Blockera cookies från tredje part</translation>
+<translation id="2041396837791669429">Blockera åtkomst till webbplatser utanför innehållspaketet.</translation>
 <translation id="7754863709994542614">Policyn inaktiverar protokollscheman i listan i <ph name="PRODUCT_NAME"/>.
 
       Webbadresser som använder ett schema som finns i listan kan inte läsas in eller navigeras till.
 
       Om policyn inte anges eller om listan är tom kan alla scheman användas i <ph name="PRODUCT_NAME"/>.</translation>
+<translation id="1305864769064309495">En ordlista som kartlägger webbadresser till en boolesk flagga som anger om åtkomst till värden ska tillåtas (sant) eller blockeras (falskt).
+
+          Denna policy är endast för intern användning i Chrome.</translation>
 <translation id="5586942249556966598">Gör ingenting</translation>
 <translation id="131353325527891113">Visa användarnamn på inloggningsskärmen</translation>
 <translation id="5317965872570843334">Policyn gör att STUN och reläservrar kan användas när fjärrklienter försöker upprätta en anslutning till den här datorn.
@@ -776,6 +785,11 @@
 <translation id="6923366716660828830">Policyn anger namnet på standardsökleverantören. Om värdet lämnas tomt eller inte anges används det värdnamn som angavs av sökadressen.
 
           Policyn används bara om policyn DefaultSearchProviderEnabled är aktiverad.</translation>
+<translation id="4869787217450099946">Anger om skärmaktiveringslåset är tillåtet. Skärmaktiveringslåset kan krävas av vissa tillägg via API:et för näthanteringstillägget.
+
+          Om denna policy har inställningen sant, eller inte har ställts in, kommer skärmaktiveringslåsen att användas för näthantering.
+
+          Om policyn har inställningen falskt kommer skärmaktiveringslåset att ignoreras.</translation>
 <translation id="467236746355332046">Funktioner som stöds:</translation>
 <translation id="7632724434767231364">GSSAPI-biblioteksnamn</translation>
 <translation id="3038323923255997294">Fortsätt köra bakgrundsappar när <ph name="PRODUCT_NAME"/> avslutas</translation>
@@ -794,10 +808,12 @@
 <translation id="6244210204546589761">Webbadresser att öppna vid start</translation>
 <translation id="7468416082528382842">Windows-registerplats:</translation>
 <translation id="1808715480127969042">Blockera cookies på dessa webbplatser</translation>
+<translation id="1908884158811109790">Inaktiverar Google Drive över mobilanslutningar i appen Filer i Chrome OS</translation>
 <translation id="7340034977315324840">Rapportera aktivitetstider för enhet</translation>
 <translation id="4928632305180102854">Avgör om det går att skapa nya användarkonton i <ph name="PRODUCT_OS_NAME"/>. Om policyn är inställd på falskt kan inte användare som inte har något konto logga in.
 
       Om policyn är inställd på sant eller inte är konfigurerad kan nya användarkonton skapas under förutsättning att <ph name="DEVICEUSERWHITELISTPROTO_POLICY_NAME"/> inte förhindrar att användaren loggar in.</translation>
+<translation id="4389091865841123886">Konfigurera fjärrattesteringen med TPM-mekanism.</translation>
 <translation id="8256688113167012935">Kontrollerar hur kontonamnet <ph name="PRODUCT_OS_NAME"/> visas på inloggningssidan för motsvarande lokala konto på enheten.
 
       Om policyn tillämpas används den angivna strängen på inloggningsskärmen i den bildbaserade inloggningsväljaren för motsvarande lokala konto på enheten.
@@ -810,7 +826,11 @@
           Policyn är valfri. Om den inte anges används standarden UTF-8.
 
           Policyn används bara om policyn DefaultSearchProviderEnabled är aktiverad.</translation>
+<translation id="1349276916170108723">Inaktiverar Google Drive-synkronisering i appen Filer i Chrome OS när du använder inställningen sant. I dessa fall överförs ingen data till Google Drive.
+
+          Om det inte finns någon inställning eller om den är inställd på falskt kommer användaren att kunna överföra filer till Google Drive.</translation>
 <translation id="1964634611280150550">Inkognitoläget är inaktiverat</translation>
+<translation id="5971128524642832825">Inaktiverar Drive i appen Filer i Chrome OS</translation>
 <translation id="1454846751303307294">Policyn gör att du kan ställa in en lista med webbadressmönster som anger webbplatser som inte får köra JavaScript.
 
           Om policyn inte anges används det globala standardvärdet för alla webbplatser. Standardvärdet hämtas från policyn DefaultJavaScriptSetting om den har ställts in. Annars används användarens personliga konfiguration.</translation>
@@ -862,6 +882,7 @@
       När policyn är inställd på sant döljs ikonerna.
 
       När policyn är inställd på sant eller inte har konfigurerats visas ikonerna.</translation>
+<translation id="8401282319420373133">Tilläggen får använda API:et för fjärrattestering.</translation>
 <translation id="5085647276663819155">Inaktivera förhandsgranskning av utskrift</translation>
 <translation id="8672321184841719703">Målversion för automatisk uppdatering</translation>
 <translation id="1689963000958717134">Tillåter att en pushad nätverkskonfiguration används för alla användare på en <ph name="PRODUCT_OS_NAME"/>-enhet. Nätverkskonfigurationen är en JSON-formaterad sträng som definieras av formatet för öppen nätverkskonfiguration som beskrivs på <ph name="ONC_SPEC_URL"/></translation>
@@ -918,6 +939,7 @@
 <translation id="5378985487213287085">Policyn gör att du kan ange om webbplatser får visa meddelanden på skrivbordet. Meddelanden på skrivbordet kan vara tillåtet som standard, otillåtet som standard eller så kan användaren tillfrågas varje gång en webbplats försöker visa meddelanden på skrivbordet.
 
           Om policyn inte anges används AskNotifications och användaren kan ändra inställningen.</translation>
+<translation id="2386362615870139244">Tillåt skärmaktiveringslås</translation>
 <translation id="6908640907898649429">Konfigurerar standardsökleverantör. Du kan ange vilken standardsökleverantör som ska användas eller inaktivera standardsökning.</translation>
 <translation id="6544897973797372144">Om policyn angetts som sann och policyn ChromeOsReleaseChannel inte är angiven kommer användare på den registrerade domänen att kunna ändra lanseringskanal för enheten. Om policyn angetts som falsk kommer enheten att låsas till den kanal som senast angetts.
 
@@ -949,6 +971,9 @@
 
           Om den här policyn inte anges används det globala standardvärdet för alla webbplatser. Standardvärdet hämtas från policyn DefaultPopupsSetting om den har angetts och från användarens personliga konfiguration om den inte har det.</translation>
 <translation id="1530812829012954197">Rendera alltid följande webbadressmönster i värdwebbläsaren</translation>
+<translation id="9026000212339701596">En ordlista som kartlägger värdnamn till en boolesk flagga som anger om åtkomst till värden ska tillåtas (sant) eller blockeras (falskt).
+
+          Denna policy är endast för intern användning i Chrome.</translation>
 <translation id="913195841488580904">Blockera åtkomst till en lista med webbadresser</translation>
 <translation id="3292147213643666827">Gör att <ph name="PRODUCT_NAME"/> kan fungera som proxy mellan <ph name="CLOUD_PRINT_NAME"/> och gamla skrivare som är anslutna till datorn.
 
@@ -999,6 +1024,7 @@
 
       Policyn avgör om webbadresser ska läsas in när demosessionen startas. Policyn ersätter andra funktioner som anger startadresser och kan därför bara användas i sessioner som inte är kopplade till någon enskild användare.</translation>
 <translation id="5868414965372171132">Nätverkskonfiguration på användarnivå</translation>
+<translation id="8519264904050090490">Webbadresser för hanterade användares manuella undantag</translation>
 <translation id="4480694116501920047">Tvinga fram användning av SafeSearch</translation>
 <translation id="1221359380862872747">Läs in angivna webbadresser vid demoinloggning</translation>
 <translation id="2431811512983100641">Policyn anger om TLS-domänbundna certifikattillägg ska aktiveras.
@@ -1013,6 +1039,7 @@
 <translation id="4650759511838826572">Inaktivera protokollscheman för webbadresser</translation>
 <translation id="8099880303030573137">Inaktivitetstid när enheten drivs av batteriet</translation>
 <translation id="2761483219396643566">Inaktivitetstid när enheten drivs av batteriet</translation>
+<translation id="8580857153747395000">Varna när du besöker webbplatser utanför innehållspaketet.</translation>
 <translation id="602728333950205286">Dynamisk webbadress för standardsökleverantör</translation>
 <translation id="3030000825273123558">Aktivera statistikrapportering</translation>
 <translation id="6559057113164934677">Tillåt inte att webbplatser kommer åt min kamera och mikrofon</translation>
@@ -1027,6 +1054,7 @@
       Om du aktiverar eller inaktiverar inställningen kan den inte ändras eller åsidosättas av användare i <ph name="PRODUCT_NAME"/>.
 
       Om du inte anger policyn kan användaren välja om knappen Startsida ska visas.</translation>
+<translation id="6897718480289510689">Tillåt åtkomst till webbplatser utanför innehållspaketet.</translation>
 <translation id="2518231489509538392">Tillåta uppspelning av ljud</translation>
 <translation id="7301543427086558500">Anger en lista med alternativa webbadresser som kan användas för att extrahera sökord från sökmotorn. Webbadresserna ska innehålla strängen <ph name="SEARCH_TERM_MARKER"/>, som används för att extrahera sökorden.
 
@@ -1050,8 +1078,14 @@
 <translation id="5469484020713359236">Policyn gör att du kan ange en lista med webbadressmönster som anger webbplatser som får spara cookies.
 
           Om policyn inte anges används det globala standardvärdet för alla webbplatser. Standardvärdet hämtas från policyn DefaultCookiesSetting om den har angetts eller användarens personliga konfiguration om den inte har det.</translation>
+<translation id="1504431521196476721">Fjärrattestering</translation>
 <translation id="1881299719020653447">Dölj webbutiken från den nya fliksidan och startprogrammet</translation>
 <translation id="930930237275114205">Ange katalog för användardata i <ph name="PRODUCT_FRAME_NAME"/></translation>
+<translation id="244317009688098048">Aktivera kortkommandot för bailout vid automatisk inloggning.
+
+      Om den här policyn har inställningen sant eller saknar inställning, och det lokala kontot på enheten konfigureras för automatisk inloggning utan fördröjning kommer <ph name="PRODUCT_OS_NAME"/> att använda kortkommandot Ctrl+Alt+S för att passera skärmen för automatisk inloggning och i stället visa inloggningsskärmen.
+
+      Om policyn har inställningen falskt kan den automatiska inloggningen utan fördröjning (om en sådan har konfigurerats) inte passeras.</translation>
 <translation id="5208240613060747912">Policyn gör att du kan ange en lista med webbadressmönster som inte får visa meddelanden.
 
           Om policyn inte anges används det globala standardvärdet för alla webbplatser. Standardvärdet hämtas från policyn DefaultNotificationsSetting om den har angetts eller användarens personliga konfiguration om den inte har det.</translation>
@@ -1194,6 +1228,7 @@
 <translation id="7194407337890404814">Standardsökleverantörens namn</translation>
 <translation id="1843117931376765605">Uppdateringsfrekvens för användarpolicy</translation>
 <translation id="5535973522252703021">Vitlista  för Kerberos-delegeringsserver</translation>
+<translation id="4578030379102330182">Aktivera fjärrattestering för användaren.</translation>
 <translation id="9187743794267626640">Inaktivera montering av extern lagring</translation>
 <translation id="5307432759655324440">Tillgänglighet för inkognitoläge</translation>
 <translation id="4056910949759281379">Inaktivera SPDY-protokoll</translation>
@@ -1209,6 +1244,7 @@
       Om policyn har angetts kommer den angivna sessionen automatiskt att loggas in efter att en viss tid har förflutit på inloggningsskärmen utan åtgärder från användaren. Den offentliga sessionen måste redan vara konfigurerad (se |DeviceLocalAccounts|).
 
       Om policyn inte har angetts sker ingen automatisk inloggning.</translation>
+<translation id="5983708779415553259">Standardbeteende för webbplatser som inte ingår i ett innehållspaket</translation>
 <translation id="3866530186104388232">Om den här policyn är inställd på sant eller inte är konfigurerad visas befintliga användare på inloggningsskärmen i <ph name="PRODUCT_OS_NAME"/> och det går att välja en. Om policyn är inställd på falskt används inloggningsfönstret för användarnamn och lösenord i <ph name="PRODUCT_OS_NAME"/>.</translation>
 <translation id="2098658257603918882">Aktivera rapportering av användning och kraschrelaterade data</translation>
 <translation id="2324547593752594014">Tillåter inloggning i Chrome</translation>
@@ -1300,6 +1336,7 @@
           Detaljerade exempel finns på:
           <ph name="PROXY_HELP_URL"/></translation>
 <translation id="3406810703404235731">Webbadress för företagets webbutik</translation>
+<translation id="5464816904705580310">Konfigurera inställningar för hanterade användare.</translation>
 <translation id="3219421230122020860">Inkognitoläget är tillgängligt</translation>
 <translation id="7690740696284155549">Konfigurerar vilken katalog som ska användas av <ph name="PRODUCT_NAME"/> för att hämta filer.
 
@@ -1405,6 +1442,7 @@
 <translation id="4043912146394966243"> De typer av anslutningar som är tillåtna att använda uppdateringar av operativsystem. Uppdateringar av operativsystem belastar anslutningen hårt på grund av dess storlek och kan medföra extra kostnader. Därför är de inte aktiverade som standard för anslutningstyper som anses vara dyra. Det gäller bland annat WiMax, Bluetooth och Cellular.
 
       Identifierarna för giltiga anslutningstyper är &quot;ethernet&quot;, &quot;wifi&quot;, &quot;wimax&quot;, &quot;bluetooth&quot; och &quot;cellular&quot;.</translation>
+<translation id="6652197835259177259">Inställningar för lokalt hanterade användare</translation>
 <translation id="3243309373265599239">Anger efter hur lång tid utan åtgärd från användaren som skärmen ska dämpas när enheten är ansluten till elnätet.
 
           Om den här policyn är inställd på ett värde som är större än noll anger den efter hur lång tids inaktivitet som <ph name="PRODUCT_OS_NAME"/> dämpar skärmen.
@@ -1414,12 +1452,20 @@
           Om den här policyn inte ställs in används en standardtid.
 
           Policyns värde anges i millisekunder. Värdena måste vara mindre än eller lika med skärmavstängningstiden (om den har ställts in) och inaktivitetstiden.</translation>
+<translation id="3859780406608282662">Lägg till en parameter för att hämta ett slumpfrö i <ph name="PRODUCT_OS_NAME"/>.
+
+      Om den har specificerats kommer en frågeparameter som kallas begränsad att läggas till webbadressen som används för att hämta ett slumpfrö. Parametervärdet kommer att vara det värde som specificerats i denna policy.
+
+      Om den inte har specificerats kommer webbadressen till slumpfröet inte att ändras.</translation>
 <translation id="7049373494483449255">Policyn gör att <ph name="PRODUCT_NAME"/> kan skicka dokument till <ph name="CLOUD_PRINT_NAME"/> för utskrift. Obs! Detta påverkar bara stöd för <ph name="CLOUD_PRINT_NAME"/> i <ph name="PRODUCT_NAME"/>. Det förhindrar inte att användarna skickar utskriftsjobb på webbplatser.
 
       Om inställningen är aktiverad eller inte konfigurerad kan användarna skriva ut till <ph name="CLOUD_PRINT_NAME"/> från dialogrutan Skriv ut i <ph name="PRODUCT_NAME"/>.
 
       Om inställningen är inaktiverad kan användarna inte skriva ut till <ph name="CLOUD_PRINT_NAME"/> från dialogrutan Skriv ut i <ph name="PRODUCT_NAME"/>.</translation>
 <translation id="4088589230932595924">Tvingat inkognitoläge</translation>
+<translation id="8197918588508433925">Policyn specificerar vilka tillägg som får använda API:et för Enterprise Platform Keys – chrome.enterprise.platformKeysPrivate.challengeUserKey() – för fjärrattestering. Tillägg måste anges på den här listan om de ska kunna använda API:et.
+
+          Om ett tillägg inte finns med på listan, eller om listan inte har fastställts, kommer anslutningen till API:et att misslyckas och en felkod att visas.</translation>
 <translation id="7649638372654023172">Konfigurerar webbadressen som är standard för startsidan i <ph name="PRODUCT_NAME"/> och förhindrar att användare ändrar den.
 
           Startsidan är sidan som du öppnar med knappen Startsida. Sidorna som öppnas styrs av policyn RestoreOnStartup.

@@ -26,6 +26,7 @@
 <translation id="8206859287963243715">Mobil</translation>
 <translation id="6596816719288285829">IP-adresse</translation>
 <translation id="4508265954913339219">Aktiveringen mislykkedes</translation>
+<translation id="3621712662352432595">Lydindstillinger</translation>
 <translation id="1812696562331527143">Din inputmetode er ændret til <ph name="INPUT_METHOD_ID"/>*(<ph name="BEGIN_LINK"/>tredjepart<ph name="END_LINK"/>).
 Tryk på Shift+Alt for at ændre den.</translation>
 <translation id="3846575436967432996">Der er ingen tilgængelige netværksoplysninger</translation>
@@ -33,6 +34,7 @@ Tryk på Shift+Alt for at ændre den.</translation>
 <translation id="785750925697875037">Vis mobilkonto</translation>
 <translation id="153454903766751181">Initialiserer mobilmodem...</translation>
 <translation id="7864539943188674973">Deaktiver Bluetooth</translation>
+<translation id="939252827960237676">Skærmbilledet kunne ikke gemmes</translation>
 <translation id="3126069444801937830">Genstart for at opdatere</translation>
 <translation id="735745346212279324">VPN afbrudt</translation>
 <translation id="7320906967354320621">Ikke aktiv</translation>
@@ -40,6 +42,7 @@ Tryk på Shift+Alt for at ændre den.</translation>
 <translation id="2778346081696727092">Der kunne ikke godkendes med det angivne brugernavn eller adgangskoden</translation>
 <translation id="3294437725009624529">Gæst</translation>
 <translation id="8190698733819146287">Tilpas sprog og indtastning...</translation>
+<translation id="2903907270192926896">INPUT</translation>
 <translation id="7170041865419449892">Intet signal</translation>
 <translation id="4804818685124855865">Afbryd</translation>
 <translation id="5222676887888702881">Log ud</translation>
@@ -54,13 +57,16 @@ Tryk på Shift+Alt for at ændre den.</translation>
 <translation id="3368922792935385530">Tilsluttet</translation>
 <translation id="8340999562596018839">Talefeedback</translation>
 <translation id="8654520615680304441">Slå Wi-Fi til...</translation>
+<translation id="4632619405246189264">Opladning er ikke pålidelig</translation>
 <translation id="5825747213122829519">Din inputmetode er ændret til <ph name="INPUT_METHOD_ID"/>.
 Tryk på Shift+Alt for at ændre den.</translation>
 <translation id="2562916301614567480">Privat netværk</translation>
 <translation id="6549021752953852991">Der er ingen tilgængelige mobilnetværk</translation>
 <translation id="4379753398862151997">Kære Skærm. Det fungerer ikke mellem os. (Denne skærm understøttes ikke)</translation>
+<translation id="8448732935696070385">Tilsluttet en strømforsyning, der ikke er standardstrømforsyningen. Batteriopladning er muligvis ikke pålidelig.</translation>
 <translation id="6426039856985689743">Deaktiver mobildata</translation>
 <translation id="3087734570205094154">Bund</translation>
+<translation id="3742055079367172538">Skærmbilledet blev taget</translation>
 <translation id="5271016907025319479">VPN er ikke konfigureret.</translation>
 <translation id="6803622936009808957">Skærmene kunne ikke spejles, da der ikke fandtes en understøttet opløsning. I stedet anvendes Udvidet skrivebord.</translation>
 <translation id="1480041086352807611">Demotilstand</translation>
@@ -88,7 +94,6 @@ Tryk på Shift+Alt for at ændre den.</translation>
 <translation id="2372145515558759244">Synkroniserer apps...</translation>
 <translation id="7256405249507348194">Ukendt fejl: <ph name="DESC"/></translation>
 <translation id="7925247922861151263">AAA-kontrol mislykkedes</translation>
-<translation id="3227723743333276085"><ph name="BLUETOOTH"/>: Afbryder forbindelsen...</translation>
 <translation id="8456362689280298700"><ph name="HOUR"/>:<ph name="MINUTE"/> indtil fuldt opladet</translation>
 <translation id="5787281376604286451">Talefeedback er aktiveret.
 Tryk på Ctrl+Alt+Z for at deaktivere dette.</translation>
@@ -116,6 +121,7 @@ Tryk på Ctrl+Alt+Z for at deaktivere dette.</translation>
 <translation id="3019353588588144572">Resterende tid, indtil batteriet er fuldt opladet, <ph name="TIME_REMAINING"/></translation>
 <translation id="3473479545200714844">Skærmforstørrer</translation>
 <translation id="7005812687360380971">Fejl:</translation>
+<translation id="882279321799040148">Klik for at se det</translation>
 <translation id="1602076796624386989">Aktivér mobildata</translation>
 <translation id="6981982820502123353">Tilgængelighed</translation>
 <translation id="3157931365184549694">Gendan</translation>
@@ -124,6 +130,7 @@ Tryk på Ctrl+Alt+Z for at deaktivere dette.</translation>
 <translation id="225680501294068881">Scanner efter enheder...</translation>
 <translation id="5597451508971090205"><ph name="SHORT_WEEKDAY"/> d. <ph name="DATE"/></translation>
 <translation id="4448844063988177157">Søger efter Wi-Fi-netværk...</translation>
+<translation id="2475982808118771221">Der opstod en fejl</translation>
 <translation id="7229570126336867161">EVDO mangler</translation>
 <translation id="2999742336789313416"><ph name="DISPLAY_NAME"/> er en offentlig session administreret af <ph name="DOMAIN"/></translation>
 <translation id="7029814467594812963">Afslut session</translation>
@@ -134,9 +141,11 @@ Tryk på Ctrl+Alt+Z for at deaktivere dette.</translation>
 <translation id="8300849813060516376">OTASP mislykkedes</translation>
 <translation id="2792498699870441125">Alt+Søg</translation>
 <translation id="8660803626959853127">Synkroniserer <ph name="COUNT"/> fil(er)</translation>
+<translation id="3709443003275901162">9 eller flere</translation>
 <translation id="639644700271529076">CAPS LOCK er deaktiveret</translation>
 <translation id="6267036997247669271"><ph name="NAME"/>: Aktiverer...</translation>
 <translation id="1391854757121130358">Du har muligvis nået din mobildatagrænse.</translation>
+<translation id="5413208160176941586">Lokalt administreret bruger</translation>
 <translation id="4864165860509564259">Applikationslistens placering</translation>
 <translation id="7593891976182323525">Søg eller skift</translation>
 <translation id="7649070708921625228">Hjælp</translation>
@@ -146,6 +155,7 @@ Tryk på Søg eller Skift for at annullere.</translation>
 <translation id="158849752021629804">Hjemmenetværk mangler</translation>
 <translation id="6857811139397017780">Aktiver <ph name="NETWORKSERVICE"/></translation>
 <translation id="5864471791310927901">DHCP-opslag mislykkedes</translation>
+<translation id="5812035014844949013">OUTPUT</translation>
 <translation id="6692173217867674490">Ugyldig adgangssætning</translation>
 <translation id="6165508094623778733">Flere oplysninger</translation>
 <translation id="9046895021617826162">Forbindelsen mislykkedes</translation>
@@ -158,6 +168,7 @@ Tryk på Søg eller Skift for at annullere.</translation>
 <translation id="7209101170223508707">CAPS LOCK er slået til.
 Tryk på Alt+Søg eller Skift for at annullere.</translation>
 <translation id="8061464966246066292">Høj kontrast</translation>
+<translation id="8940956008527784070">Batteriniveauet er lavt (<ph name="PERCENTAGE"/> %)</translation>
 <translation id="5102001756192215136"><ph name="HOUR"/>:<ph name="MINUTE"/> tilbage</translation>
 <translation id="8000066093800657092">Intet netværk</translation>
 <translation id="5941711191222866238">Minimer</translation>

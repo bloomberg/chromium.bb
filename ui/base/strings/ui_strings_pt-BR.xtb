@@ -16,7 +16,6 @@
 <translation id="1761785978543082658"><ph name="QUANTITY"/> bytes</translation>
 <translation id="1809410197924942083"><ph name="QUANTITY"/> MB/s</translation>
 <translation id="3990502903496589789">Borda direita</translation>
-<translation id="5182671122927417841">Desativar extensão</translation>
 <translation id="932327136139879170">Página inicial</translation>
 <translation id="3909791450649380159">&amp;Recortar</translation>
 <translation id="688711909580084195">Página da web sem título</translation>
@@ -31,17 +30,19 @@
 <translation id="8210608804940886430">Página para baixo</translation>
 <translation id="5329858601952122676">&amp;Excluir</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY"/> KB</translation>
-<translation id="6489863328574614542">Definir permissões de notificação para aplicativos e extensões</translation>
 <translation id="6659594942844771486">Guia</translation>
 <translation id="3049748772180311791"><ph name="QUANTITY"/> MB</translation>
 <translation id="8428213095426709021">Configurações</translation>
 <translation id="2497284189126895209">Todos os arquivos</translation>
 <translation id="7814458197256864873">Co&amp;piar</translation>
 <translation id="3889424535448813030">Seta para a direita</translation>
+<translation id="7135556860107312402">Permitir as seguintes notificações:</translation>
 <translation id="1398853756734560583">Maximizar</translation>
+<translation id="4250229828105606438">Captura de tela</translation>
 <translation id="3757388668994797779"><ph name="QUANTITY"/> GB</translation>
 <translation id="1901303067676059328">Selecionar &amp;tudo</translation>
 <translation id="2168039046890040389">Página para cima</translation>
+<translation id="4927753642311223124">Nada para ver aqui, siga em frente.</translation>
 <translation id="2482878487686419369">Notificações</translation>
 <translation id="3183922693828471536">Percorrer até aqui</translation>
 <translation id="4552416320897244156">PgDwn</translation>
@@ -52,6 +53,7 @@
 <translation id="4588090240171750605">Percorrer à direita</translation>
 <translation id="2666092431469916601">Parte superior</translation>
 <translation id="8331626408530291785">Percorrer para cima</translation>
+<translation id="4773379706300191099">Desativar notificações de <ph name="EXTENSION_NAME"/></translation>
 <translation id="7907591526440419938">Abrir arquivo</translation>
 <translation id="1293699935367580298">Esc</translation>
 <translation id="815598010540052116">Percorrer para baixo</translation>
@@ -68,7 +70,6 @@
 <translation id="2297836609126180313"><ph name="QUANTITY"/> TB/s</translation>
 <translation id="6040143037577758943">Fechar</translation>
 <translation id="6142413573757616983"><ph name="QUANTITY"/> B/s</translation>
-<translation id="477782898153505579">Você não tem notificações. Relaxe!</translation>
 <translation id="7457942297256758195">Limpar tudo</translation>
 <translation id="7509316384504965641">Notificações do <ph name="PRODUCT"/></translation>
 <translation id="8400147561352026160">Shift+<ph name="KEY_COMBO_NAME"/></translation>

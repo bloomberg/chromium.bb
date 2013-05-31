@@ -26,6 +26,7 @@
 <translation id="8206859287963243715">Мобилни уређај</translation>
 <translation id="6596816719288285829">IP адреса</translation>
 <translation id="4508265954913339219">Активација није успела</translation>
+<translation id="3621712662352432595">Подешавања звука</translation>
 <translation id="1812696562331527143">Метод уноса је промењен у <ph name="INPUT_METHOD_ID"/>*(<ph name="BEGIN_LINK"/>трећа страна<ph name="END_LINK"/>).
 Притисните Shift + Alt да бисте пребацили.</translation>
 <translation id="3846575436967432996">Нису доступне информације о мрежи</translation>
@@ -33,6 +34,7 @@
 <translation id="785750925697875037">Прикажи налог за мобилне уређаје</translation>
 <translation id="153454903766751181">Покретање модема за мобилну мрежу...</translation>
 <translation id="7864539943188674973">Онемогући Bluetooth</translation>
+<translation id="939252827960237676">Чување снимка екрана није успело</translation>
 <translation id="3126069444801937830">Покрените поново да бисте ажурирали</translation>
 <translation id="735745346212279324">Веза са VPN-ом је прекинута</translation>
 <translation id="7320906967354320621">Неактивно</translation>
@@ -40,6 +42,7 @@
 <translation id="2778346081696727092">Потврда аутентичности помоћу наведеног корисничког имена или лозинке није успела</translation>
 <translation id="3294437725009624529">Гост</translation>
 <translation id="8190698733819146287">Прилагоди језике и унос...</translation>
+<translation id="2903907270192926896">УЛАЗ</translation>
 <translation id="7170041865419449892">Изван опсега</translation>
 <translation id="4804818685124855865">Прекини везу</translation>
 <translation id="5222676887888702881">Одјави ме</translation>
@@ -54,13 +57,16 @@
 <translation id="3368922792935385530">Повезан</translation>
 <translation id="8340999562596018839">Говорне повратне информације</translation>
 <translation id="8654520615680304441">Укључи Wi-Fi...</translation>
+<translation id="4632619405246189264">Пуњење није поуздано</translation>
 <translation id="5825747213122829519">Метод уноса је промењен у <ph name="INPUT_METHOD_ID"/>.
 Притисните Shift + Alt да бисте пребацили.</translation>
 <translation id="2562916301614567480">Приватна мрежа</translation>
 <translation id="6549021752953852991">Није доступна ниједна мобилна мрежа</translation>
 <translation id="4379753398862151997">Драги мониторе, не иде нам. (Тај монитор није подржан)</translation>
+<translation id="8448732935696070385">Уређај је укључен у нестандардну утичницу. Пуњење батерије можда неће бити поуздано.</translation>
 <translation id="6426039856985689743">Онемогући податке за мобилне уређаје</translation>
 <translation id="3087734570205094154">Дно</translation>
+<translation id="3742055079367172538">Снимак екрана је направљен</translation>
 <translation id="5271016907025319479">VPN није конфигурисан.</translation>
 <translation id="6803622936009808957">Није могуће пресликати екране зато што није пронађена ниједна подржана резолуција. Уместо тога, приказује се проширена радна површина.</translation>
 <translation id="1480041086352807611">Режим демонстрације</translation>
@@ -88,7 +94,6 @@
 <translation id="2372145515558759244">Синхронизовање апликација...</translation>
 <translation id="7256405249507348194">Непозната грешка: <ph name="DESC"/></translation>
 <translation id="7925247922861151263">Провера потврде идентитета, овлашћења и приступа није успела</translation>
-<translation id="3227723743333276085"><ph name="BLUETOOTH"/>: Прекидање везе...</translation>
 <translation id="8456362689280298700">Још <ph name="HOUR"/>:<ph name="MINUTE"/> док се не напуни</translation>
 <translation id="5787281376604286451">Говорне повратне информације су омогућене.
 Притисните Ctrl+Alt+Z да бисте их онемогућили.</translation>
@@ -116,6 +121,7 @@
 <translation id="3019353588588144572">Време које је преостало док се батерија у потпуности не напуни, <ph name="TIME_REMAINING"/></translation>
 <translation id="3473479545200714844">Лупа екрана</translation>
 <translation id="7005812687360380971">Није успело</translation>
+<translation id="882279321799040148">Кликните за приказ</translation>
 <translation id="1602076796624386989">Омогући податке за мобилне уређаје</translation>
 <translation id="6981982820502123353">Приступачност</translation>
 <translation id="3157931365184549694">Поново отвори</translation>
@@ -124,6 +130,7 @@
 <translation id="225680501294068881">Скенирање уређаја...</translation>
 <translation id="5597451508971090205"><ph name="SHORT_WEEKDAY"/> <ph name="DATE"/></translation>
 <translation id="4448844063988177157">Тражење Wi-Fi мрежа...</translation>
+<translation id="2475982808118771221">Дошло је до грешке</translation>
 <translation id="7229570126336867161">Потребан је EVDO</translation>
 <translation id="2999742336789313416"><ph name="DISPLAY_NAME"/> је јавна сесија којом управља <ph name="DOMAIN"/></translation>
 <translation id="7029814467594812963">Изађи из сесије</translation>
@@ -134,9 +141,11 @@
 <translation id="8300849813060516376">OTASP није успео</translation>
 <translation id="2792498699870441125">Alt + тастер за претрагу</translation>
 <translation id="8660803626959853127">Синхронизовање <ph name="COUNT"/> датотеке(а)</translation>
+<translation id="3709443003275901162">9+</translation>
 <translation id="639644700271529076">CAPS LOCK је искључен</translation>
 <translation id="6267036997247669271"><ph name="NAME"/>: Активирање...</translation>
 <translation id="1391854757121130358">Можда сте искористили додељени пакет података за мобилне уређаје.</translation>
+<translation id="5413208160176941586">Корисник којим се локално управља</translation>
 <translation id="4864165860509564259">Положај покретача</translation>
 <translation id="7593891976182323525">Тастер за претрагу или Shift</translation>
 <translation id="7649070708921625228">Помоћ</translation>
@@ -146,6 +155,7 @@
 <translation id="158849752021629804">Потребна је матична мрежа</translation>
 <translation id="6857811139397017780">Активирај <ph name="NETWORKSERVICE"/></translation>
 <translation id="5864471791310927901">Проналажење DHCP-а није успело</translation>
+<translation id="5812035014844949013">ИЗЛАЗ</translation>
 <translation id="6692173217867674490">Неисправна приступна фраза</translation>
 <translation id="6165508094623778733">Сазнајте више</translation>
 <translation id="9046895021617826162">Повезивање није успело</translation>
@@ -158,6 +168,7 @@
 <translation id="7209101170223508707">CAPS LOCK је укључен.
 Притисните Alt + тастер за претрагу или Shift да бисте га отказали.</translation>
 <translation id="8061464966246066292">Високи контраст</translation>
+<translation id="8940956008527784070">Батерија је скоро празна (<ph name="PERCENTAGE"/>%)</translation>
 <translation id="5102001756192215136">Преостало је <ph name="HOUR"/>:<ph name="MINUTE"/></translation>
 <translation id="8000066093800657092">Нема мреже</translation>
 <translation id="5941711191222866238">Смањи</translation>

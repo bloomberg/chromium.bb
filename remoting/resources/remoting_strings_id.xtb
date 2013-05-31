@@ -10,6 +10,7 @@
 <translation id="2801119484858626560">Versi Chrome Desktop Jarak Jauh yang tidak kompatibel terdeteksi. Pastikan bahwa Anda memiliki Chrome dan Chrome Desktop Jarak Jauh versi teranyar di kedua komputer, lalu coba lagi.</translation>
 <translation id="6998989275928107238">Ke</translation>
 <translation id="3258789396564295715">Mungkin Anda dapat mengakses komputer ini dengan aman menggunakan Chrome Desktop Jarak Jauh.</translation>
+<translation id="5070121137485264635">Hosting jarak jauh mewajibkan Anda mengautentikasi ke situs web pihak ketiga. Untuk melanjutkan, Anda harus memberikan izin tambahan ke Chrome Desktop Jarak Jauh untuk mengakses alamat ini:</translation>
 <translation id="4808503597364150972">Masukkan PIN Anda untuk <ph name="HOSTNAME"/>.</translation>
 <translation id="7672203038394118626">Sambungan jarak jauh untuk komputer ini telah dinonaktifkan.</translation>
 <translation id="8244400547700556338">Pelajari caranya.</translation>
@@ -97,6 +98,7 @@
 <translation id="1643640058022401035">Dengan meninggalkan laman ini, Anda akan mengakhiri sesi Chromoting.</translation>
 <translation id="2235518894410572517">Membagi komputer ini agar pengguna lain dapat melihat dan mengontrol.</translation>
 <translation id="1023096696228309145">Mintalah kepada pengguna yang ingin Anda akses komputernya agar mengeklik 'Bagikan Sekarang' dan memberikan kode aksesnya kepada Anda.</translation>
+<translation id="80739703311984697">Hosting jarak jauh mewajibkan Anda mengautentikasi ke situs web pihak ketiga. Untuk melanjutkan, Anda harus memberikan izin tambahan ke Chromoting untuk mengakses alamat ini:</translation>
 <translation id="4006787130661126000">Anda harus mengaktifkan sambungan jarak jauh jika ingin menggunakan Chrome Desktop Jarak Jauh untuk mengakses komputer ini.</translation>
 <translation id="6930242544192836755">Durasi</translation>
 <translation id="6527303717912515753">Bagikan</translation>

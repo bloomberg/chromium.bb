@@ -11,7 +11,6 @@
 <translation id="6613594504749178791">Değişiklikleriniz, Chromium tekrar başlatıldığında geçerli olacak.</translation>
 <translation id="3748537968684000502">Güvenli bir Chromium sayfasını görüntülüyorsunuz.</translation>
 <translation id="8971920611044657379">Chromium Frame</translation>
-<translation id="6705571474735842144">Uygulama Başlatıcı'yı kullanmak için Chromium'u masaüstü moduna geçirmeniz gerekir.</translation>
 <translation id="2077129598763517140">Kullanılabilir olduğunda donanım ivmesini kullan</translation>
 <translation id="1065672644894730302">Tercihleriniz okunamıyor. Bazı özellikler kullanılamayabilir. Tercihlerde yapılan değişiklikler kaydedilmeyecektir.</translation>
 <translation id="4222661289444749267">Chromium Frame Güncellemesi.</translation>
@@ -29,14 +28,23 @@
 <translation id="2589479092236095792">Chromium Otomatik Doldurma ayarları</translation>
 <translation id="3555616473548901994">Kaldırma işlemi tamamlandı.</translation>
 <translation id="2886012850691518054">İsteğe Bağlı: Kullanıcı istatistiklerini ve kilitlenme raporlarını Google'a otomatik olarak göndererek Chromium'u iyileştirmemize yardımcı olun.</translation>
+<translation id="580822234363523061">Chromium menüsü &gt;
+          <ph name="SETTINGS_TITLE"/>
+          &gt;
+          <ph name="ADVANCED_TITLE"/>
+          &gt;
+          <ph name="PROXIES_TITLE"/>
+           öğesine gidin ve yapılandırmanızın &quot;proxy yok&quot; veya &quot;doğrudan&quot; olarak ayarlandığından emin olun.</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE"/> - Chromium</translation>
 <translation id="1989424089625731201">&lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; alanına ulaşmayı denediniz, ancak sunucunun sunduğu sertifikada hatalar var. Chromium hata içeren bir sertifikayı kullanamaz ve bağlanmak istediğiniz sitenin kimliğini doğrulayamaz.</translation>
 <translation id="3103660991484857065">Yükleyici sıkıştırılmış arşivi açamadı. Lütfen Chromium'u yeniden indirin.</translation>
 <translation id="872034308864968620">Chromium'un Arka Planda Çalışmasına İzin Ver</translation>
+<translation id="459535195905078186">Chromium Uygulamaları</translation>
 <translation id="5109068449432240255">Evet, Chromium'dan çık</translation>
 <translation id="1480489203462860648">Deneyin, zaten yüklü!</translation>
 <translation id="3032787606318309379">Chromium'a ekleniyor ...</translation>
 <translation id="4831257561365056138">Chromium Uygulama Başlatıcı'nın yüklemesini kaldır</translation>
+<translation id="4222580632002216401">Chromium'da oturum açtınız! Senkronizasyon, yöneticiniz tarafından devre dışı bırakıldı.</translation>
 <translation id="4207043877577553402"><ph name="BEGIN_BOLD"/>Uyarı:<ph name="END_BOLD"/>, Chromium uzantıların göz atma geçmişinizi kaydetmesini engelleyemez. Gizli modda bu uzantıyı devre dışı bırakmak için, bu seçeneğin onay işaretini kaldırın.</translation>
 <translation id="985602178874221306">The Chromium Authors</translation>
 <translation id="8628626585870903697">Chromium, Baskı Önizleme için gerekli olan PDF görüntüleyiciyi içermez.</translation>
@@ -45,30 +53,20 @@
 <translation id="4179848566211676653">Chromium'dan Çık</translation>
 <translation id="3849925841547750267">Maalesef bu tarayıcı çalışırken Mozilla Firefox ayarlarınız kullanılamaz. Bu ayarları Chromium'a içe aktarmak için çalışmanızı kaydedin ve tüm Firefox pencerelerini kapatın. Sonra Devam'ı tıklatın.</translation>
 <translation id="7771626876550251690">Bu durumda, sertifikada listelenen adres tarayıcınızın gitmeye çalıştığı web sitesinin adresiyle eşleşmiyor. Bunun muhtemel bir nedeni bir saldırganın uyumsuzluğa neden olan farklı bir web sitesi sertifikasını göstererek iletişiminizin arasına girmesi olabilir. Başka bir neden de, sunucunun aynı sertifikayı birden fazla web sitesi (ziyaret etmek istediğiniz site de dahil) için, o sertifika tümü için geçerli olmasa dahi sağlamaya ayarlanmış olmasıdır. Chromium, &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; alanına eriştiğinizi söyleyebilir, ancak bunun ulaşmak istediğiniz &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; ile aynı site olduğunu doğrulayamaz. Devam ederseniz, Chromium başka ad uyumsuzluklarını kontrol etmeyecektir.</translation>
-<translation id="2401271577450445716">Şu seçeneğe gidin:
-          <ph name="BEGIN_BOLD"/>
-          Chromium menüsü &gt;
-          <ph name="SETTINGS_TITLE"/>
-          &gt;
-          <ph name="ADVANCED_TITLE"/>
-          &gt;
-          <ph name="PROXIES_TITLE"/>
-          &gt;
-          LAN Ayarları
-          <ph name="END_BOLD"/>
-          ve &quot;LAN için proxy sunucusu kullan&quot; onay kutusunun seçimini kaldırın.</translation>
 <translation id="4330585738697551178">Bu modülün Chromium'la çakıştığı biliniyor.</translation>
 <translation id="3190315855212034486">Hata! Chromium kilitlendi. Yeniden başlatılsın mı?</translation>
-<translation id="6034408899846040667">Uygulamalar'ı kullanmak için Chromium'u masaüstü moduna geçirmeniz gerekir.</translation>
 <translation id="6714487516757221107">Chromium veya Chromium Frame'in güncellenecek yüklemesi bulunamadı.</translation>
 <translation id="3197823471738295152">Cihazınız güncel.</translation>
 <translation id="8551886023433311834">Güncelleme neredeyse tamamlandı! Güncellemenin tamamlanması için cihazınızı yeniden başlatın.</translation>
 <translation id="8353224596138547809">Chromium'un bu site için şifrenizi kaydetmesini ister misiniz?</translation>
 <translation id="7339898014177206373">Yeni pencere</translation>
-<translation id="3026202950002788510"><ph name="BEGIN_BOLD"/>
-          Uygulamalar &gt; Sistem Tercihleri &gt; Ağ &gt; Gelişmiş &gt; Proxy'ler
-          <ph name="END_BOLD"/>
-          seçeneğine gidin ve seçili tüm proxy'lerin işaretlerini kaldırın.</translation>
+<translation id="3733625138702910745">Chromium menüsü &gt;
+        <ph name="SETTINGS_TITLE"/>
+        &gt;
+        <ph name="ADVANCED_TITLE"/>
+        öğesine giderek &quot;<ph name="NO_PREFETCH_DESCRIPTION"/>&quot; seçeneğinin işaretini kaldırın.
+        Bu işlem sorunu çözmüyorsa, performansın iyileşmesi için bu seçeneği
+        tekrar işaretlemenizi öneririz.</translation>
 <translation id="4124681358536363708">Chromium kurulum dizininin kullanımda olduğu görülüyor. Lütfen bilgisayarınızı yeniden başlatın ve tekrar deneyin.</translation>
 <translation id="8770560772173120024">Chromium şu anda Sık Kullanılanları/Yer İmlerini içe aktarıyor.</translation>
 <translation id="225614027745146050">Hoş Geldiniz</translation>
@@ -80,6 +78,7 @@
 <translation id="7915138385500177190">Bilgisayarınızda bazı önemli Windows sistem dosyaları eksik, bu nedenle Chromium düzgün çalışmayacaktır.</translation>
 <translation id="3296368748942286671">Chromium kapandığında arka plan uygulamaları çalıştırmaya devam et</translation>
 <translation id="473775607612524610">Güncelle</translation>
+<translation id="5714819759736651024">Chrome uygulamalarını kullanmak için Chromium'u masaüstünde yeniden başlatmalısınız.</translation>
 <translation id="6055895534982063517">Kullanabileceğiniz yeni bir Chromium sürümü var ve bu sürüm her zamankinden daha hızlı.</translation>
 <translation id="2407806170074302369">Chromium Frame hakkında...</translation>
 <translation id="5405650547142096840">Chromium'dan kaldır</translation>
@@ -90,7 +89,6 @@
 <translation id="6970811910055250180">Cihazınız güncelleniyor...</translation>
 <translation id="2485422356828889247">Yüklemeyi Kaldır</translation>
 <translation id="85843667276690461">Chromium'u kullanma konusunda yardım alın</translation>
-<translation id="3354334135076267965">Windows Görev Çubuğu'nda Chromium Uygulama Başlatıcı'nın kısayolunu gösterin.</translation>
 <translation id="263863604136125912">Chromium'u Başlat</translation>
 <translation id="9036189287518468038">Chromium Uygulama Başlatıcı</translation>
 <translation id="2881203820889150661">Chromium geçerli masaüstü ortamını belirleyemediğinden bir uygulama kısayolu oluşturamıyor.</translation>
@@ -109,17 +107,6 @@
 <translation id="3069161343438701711">Chromium İşçisi</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
 <translation id="6757767188268205357">Beni rahatsız etmeyin</translation>
-<translation id="7294284502435423183">Aşağıdaki adımları uygulayarak ağ tahminini devre dışı bırakmayı deneyin:
-        Şu seçeneğe gidin:
-        <ph name="BEGIN_BOLD"/>
-        Chromium menüsü &gt;
-        <ph name="SETTINGS_TITLE"/>
-        &gt;
-        <ph name="ADVANCED_TITLE"/>
-        <ph name="END_BOLD"/>
-        ve &quot;<ph name="NO_PREFETCH_DESCRIPTION"/>&quot; ile ilgili seçimi kaldırın.
-        Bu işlem sorunu çözmezse, daha iyi performans için 
-        bu seçeneğin yeniden işaretlenmesini öneriyoruz.</translation>
 <translation id="275588974610408078">Chromium'da kilitlenmeyi raporlama özelliği yoktur.</translation>
 <translation id="5909170354645388250">Chromium'da kullanılmaz. Kaynak haritaları senkronize halde tutmak için yer tutucu. Bir bağımsız değişkenini beklemektedir: $ 1.</translation>
 <translation id="7937630085815544518">Chromium'da <ph name="USER_EMAIL_ADDRESS"/> olarak oturum açtınız. Tekrar oturum açmak için lütfen aynı hesabı kullanın.</translation>
@@ -132,7 +119,15 @@
 <translation id="5398878173008909840">Chromium'un yeni bir sürümü çıktı.</translation>
 <translation id="2648074677641340862">Yükleme sırasında bir işletim sistemi hatası oluştu. Lütfen Chromium'u yeniden indirin.</translation>
 <translation id="5942520288919337908"><ph name="EXTENSION_NAME"/> Chromium'a eklendi.</translation>
-<translation id="8678787945719392857">Tüm Chromium öğelerinizi senkronize etmek için bu Google Hesabı kullanılsın mı?</translation>
+<translation id="4559775032954821361">Chromium menüsü &gt;
+          <ph name="SETTINGS_TITLE"/>
+          &gt;
+          <ph name="ADVANCED_TITLE"/>
+          &gt;
+          <ph name="PROXIES_TITLE"/>
+          &gt;
+          LAN Ayarları
+          öğesine gidin ve &quot;LAN için proxy sunucusu kullan&quot; onay kutusunun seçimini kaldırın.</translation>
 <translation id="8621669128220841554">Yükleme belirtilmeyen bir hata nedeniyle başarısız oldu. Lütfen Chromium'u tekrar indirin.</translation>
 <translation id="6717134281241384636">Profiliniz daha yeni bir Chromium sürümünden olduğundan kullanılamıyor.
 
@@ -143,54 +138,31 @@ Bazı özellikler kullanılamayabilir. Lütfen farklı bir profil dizini belirti
 <translation id="6212496753309875659">Bu bilgisayarda Chromium'un daha yeni bir sürümü de var. Yazılım çalışmıyorsa, Chromium'u kaldırın ve tekrar deneyin.</translation>
 <translation id="3014684866565908571">Chromium Yardımcı Programı</translation>
 <translation id="1298199220304005244">Chromium OS'u kullanma konusunda yardım alın</translation>
+<translation id="8187289872471304532">Uygulamalar &gt; Sistem Tercihleri &gt; Ağ &gt; Gelişmiş &gt; Proxy'ler
+          öğesine gidin ve seçilmiş olabilecek proxy'lerin seçimini kaldırın.</translation>
 <translation id="1691304614444223855">Chromium Frame güncellendi. Lütfen tarayıcınızı yeniden başlatın. Chromium sürümü: <ph name="TODO_0001"/>, Chromium Frame sürümü: <ph name="TODO_0002"/></translation>
 <translation id="130631256467250065">Yaptığınız değişiklikler cihazı yeniden başlattığınızda etkinleşecektir.</translation>
 <translation id="1105130903706696483">Chromium düzgün şekilde kapatılmadı. Daha önce açık olan sayfaların tekrar açılması için Geri Yükle'yi tıklatın.</translation>
 <translation id="1531452407274881270"><ph name="USER_EMAIL_ADDRESS"/> hesabınızı kullanarak Chromium'da oturum açıyorsunuz. Oturum açtığınız tüm cihazlardan yer işaretlerinize, geçmişinize ve diğer ayarlarınıza erişebileceksiniz.</translation>
 <translation id="1929939181775079593">Chromium yanıt vermiyor. Şimdi yeniden başlatılsın mı?</translation>
 <translation id="1414495520565016063">Chromium'da oturum açtınız!</translation>
-<translation id="6089587093203430357">Anlık</translation>
+<translation id="3155163173539279776">Chromium'u Yeniden Başlat</translation>
 <translation id="8520216698644798023">Windows hatası algılandı</translation>
 <translation id="2966088006374919794">Chromium'un, <ph name="SCHEME"/> bağlantılarını kullanabilmek için harici bir uygulamayı başlatması gerekiyor. İstenen bağlantı: <ph name="PROTOLINK"/>.</translation>
 <translation id="6287463253129672858">Şu anda çalışan aynı Chromium Frame sürümünü yükleyemezsiniz. Lütfen Chromium Frame'i kapatın ve yeniden deneyin.</translation>
 <translation id="2558235863893655150">Chromium'un şifrenizi kaydetmesini istiyor musunuz?</translation>
-<translation id="3398522627033804247">Şu seçeneğe gidin:
-          <ph name="BEGIN_BOLD"/>
-          Chromium menüsü &gt;
-          <ph name="SETTINGS_TITLE"/>
-          &gt;
-          <ph name="INTERNET_TITLE"/>
-          &gt;
-          &quot;<ph name="OPTIONS_BUTTON"/>&quot;
-          <ph name="END_BOLD"/>
-          (mevcut ağ için).
-          <ph name="BEGIN_BOLD"/>
-          &quot;<ph name="PROXY_BUTTON"/>&quot;
-          <ph name="END_BOLD"/>düğmesi (
-          <ph name="BEGIN_BOLD"/>
-          <ph name="NETWORK_TAB"/>
-          <ph name="END_BOLD"/>
-          sekmesinde) mevcutsa, bu düğmeyi tıklayın ve yapılandırmanızın
-          &quot;Doğrudan&quot; olarak ayarlandığından emin olun.</translation>
 <translation id="1231416733874080281">Chromium menüsünü göster</translation>
+<translation id="5772805321386874569">(Chromium'un <ph name="BEGIN_BUTTON"/>yeniden başlatılmasını<ph name="END_BUTTON"/> gerektirir)</translation>
 <translation id="1688750314291223739">Kişiselleştirilmiş tarayıcı özelliklerinizi Web'e kaydetmek ve herhangi bir bilgisayardan Chromium ile bu özelliklere erişmek için senkronizasyonu ayarlayın.</translation>
 <translation id="9171640504251796339">http://www.google.com/support/chrome/bin/answer.py?hl=<ph name="GRITLANGCODE_1"/>&amp;answer=161796</translation>
 <translation id="8865765905101981392">İnternet Tarayıcı</translation>
+<translation id="8610831143142469229">Güvenlik duvarınızın veya virüsten korunma programınızın ayarlarından, Chromium'un
+        ağa erişmesine izin verin.</translation>
 <translation id="6424492062988593837">Chromium daha da iyi hale geldi! Yeni bir sürüm var.</translation>
 <translation id="6601972021154586963">Uygulamaları kullanmak için Chromium'da oturum açmanız gerekir. Oturum açmak, Chromium'un uygulamalarınızı, yer işaretlerinizi, geçmişinizi, şifrelerinizi ve diğer ayarlarınızı tüm cihazlarda senkronize etmesine olanak verir.</translation>
 <translation id="2910007522516064972">&amp;Chromium hakkında</translation>
 <translation id="8453117565092476964">Yükleyici arşivi bozuk veya geçersiz. Lütfen Chromium'u yeniden indirin.</translation>
-<translation id="950712238285296105">(Chromium'un <ph name="BEGIN_BUTTON"/>yeniden başlatılmasını<ph name="END_BUTTON"/> gerektirir)</translation>
-<translation id="2162026298602630383">Şu seçeneğe gidin:
-          <ph name="BEGIN_BOLD"/>
-          Chromium menüsü &gt;
-          <ph name="SETTINGS_TITLE"/>
-          &gt;
-          <ph name="ADVANCED_TITLE"/>
-          &gt;
-          <ph name="PROXIES_TITLE"/>
-          <ph name="END_BOLD"/>
-          ve yapılandırmanızın &quot;proxy yok&quot; veya &quot;doğrudan&quot; olarak ayarlandığından emin olun.</translation>
+<translation id="6763060723530774166">Uygulama başlatıcıyı kullanmak için Chromium'u masaüstünde yeniden başlatmalısınız.</translation>
 <translation id="3249425904492147663">&lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; alanına ulaşmaya çalıştınız, ancak sunucu süresi bitmiş bir sertifika sundu. Sertifikanın süresi bittiğinden bu yana güvenliğinin olup olmadığı konusunda hiçbir bilgi yok. Yani Chromium bir saldırganla değil, &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; ile iletişim kurduğunuzu garanti edemiyor. Bilgisayarınızın saati <ph name="CURRENT_TIME"/> olarak ayarlandı. Bu doğru mu? Değilse, hatayı düzeltip bu sayfayı yenileyin.</translation>
 <translation id="7196020411877309443">Neden bunu görüyorum?</translation>
 <translation id="457845228957001925">Chromium verilerinizle ilgili önemli bilgiler</translation>
@@ -204,7 +176,6 @@ Bazı özellikler kullanılamayabilir. Lütfen farklı bir profil dizini belirti
 <translation id="8724049448828509830">Şu anda devam eden bir indirme işlemi var. Chromium'dan çıkmak ve indirme işlemini iptal etmek istiyor musunuz?</translation>
 <translation id="3360567213983886831">Chromium Binaries</translation>
 <translation id="7503101070699687603">Chromium Eklentisi Ana Makinesi</translation>
-<translation id="2128780683974727821">Chromium Uygulama Başlatıcı'yı göster.</translation>
 <translation id="8985587603644336029">Bu bilgisayarda daha önce birisi <ph name="ACCOUNT_EMAIL_LAST"/> olarak Chromium'da oturum açmış. Bu sizin hesabınız değilse, bilgilerinizi ayrı tutmak için yeni bir Chromium kullanıcısı oluşturun.
 
 Yine de oturum açarsanız, yer işaretleriniz, geçmişiniz ve diğer ayarlarınız gibi Chromium bilgileriniz <ph name="ACCOUNT_EMAIL_NEW"/> ile birleştirilecektir.</translation>

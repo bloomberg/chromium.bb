@@ -10,6 +10,7 @@
 <translation id="2801119484858626560">Chrome Uzaktan Masaüstü uygulamasının uyumsuz bir sürümü algılandı. Lütfen, her iki bilgisayarda Google Chrome ve Chrome Uzaktan Masaüstü uygulamalarının son sürümlerinin bulunduğundan emin olun ve tekrar deneyin.</translation>
 <translation id="6998989275928107238">Kime</translation>
 <translation id="3258789396564295715">Chrome Uzaktan Masaüstü uygulamasını kullanarak bu bilgisayara güvenli bir şekilde erişebilirsiniz.</translation>
+<translation id="5070121137485264635">Uzak ana makine üçüncü taraf bir web sitesine kimlik doğrulama işlemi yapmanızı gerektiriyor. Devam etmek üzere şu adrese erişim için Chrome Uzaktan Masaüstü'ne ek izinler vermelisiniz:</translation>
 <translation id="4808503597364150972">Lütfen <ph name="HOSTNAME"/> için PIN'inizi girin.</translation>
 <translation id="7672203038394118626">Bu bilgisayara uzaktan bağlantılar devre dışı bırakıldı.</translation>
 <translation id="8244400547700556338">Nasıl yapıldığını öğrenin.</translation>
@@ -97,6 +98,7 @@
 <translation id="1643640058022401035">Bu sayfadan ayrılırsanız Chromoting oturumunuz sonlandırılır.</translation>
 <translation id="2235518894410572517">Bu bilgisayarı başka bir kullanıcının görmesi ve kontrol etmesi için paylaşın.</translation>
 <translation id="1023096696228309145">Bilgisayarına erişmek istediğiniz kullanıcıdan, 'Şimdi Paylaş' seçeneğini tıklamasını ve size erişim kodunu vermesini isteyin.</translation>
+<translation id="80739703311984697">Uzak ana makine üçüncü taraf bir web sitesine kimlik doğrulama işlemi yapmanızı gerektiriyor. Devam etmek üzere şu adrese erişim için Chromoting'e ek izinler vermelisiniz:</translation>
 <translation id="4006787130661126000">Bu bilgisayara erişmek için Chrome Uzaktan Masaüstü uygulamasını kullanmak istiyorsanız uzaktan bağlantıları etkinleştirmelisiniz.</translation>
 <translation id="6930242544192836755">Süre</translation>
 <translation id="6527303717912515753">Paylaş</translation>

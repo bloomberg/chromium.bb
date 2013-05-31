@@ -26,6 +26,7 @@
 <translation id="8206859287963243715">โทรศัพท์มือถือ</translation>
 <translation id="6596816719288285829">ที่อยู่ IP</translation>
 <translation id="4508265954913339219">การเปิดใช้งานล้มเหลว</translation>
+<translation id="3621712662352432595">การตั้งค่าเสียง</translation>
 <translation id="1812696562331527143">วิธีการป้อนข้อมูลของคุณเปลี่ยนแปลงเป็น <ph name="INPUT_METHOD_ID"/>* (<ph name="BEGIN_LINK"/>บุคคลที่สาม<ph name="END_LINK"/>)
 กด Shift + Alt เพื่อสลับ</translation>
 <translation id="3846575436967432996">ไม่มีข้อมูลเครือข่ายที่สามารถใช้งานได้</translation>
@@ -33,6 +34,7 @@
 <translation id="785750925697875037">ดูบัญชีมือถือ</translation>
 <translation id="153454903766751181">กำลังเริ่มต้นโมเด็มมือถือ...</translation>
 <translation id="7864539943188674973">ปิดใช้งานบลูทูธ</translation>
+<translation id="939252827960237676">ไม่สามารถบันทึกภาพหน้าจอ</translation>
 <translation id="3126069444801937830">รีสตาร์ทเพื่ออัปเดต</translation>
 <translation id="735745346212279324">ยกเลิกการเชื่อมต่อ VPN แล้ว</translation>
 <translation id="7320906967354320621">ไม่ทำงาน</translation>
@@ -40,6 +42,7 @@
 <translation id="2778346081696727092">ไม่สามารถตรวจสอบสิทธิ์ชื่อผู้ใช้หรือรหัสผ่านที่ให้มาได้</translation>
 <translation id="3294437725009624529">ผู้มาเยือน</translation>
 <translation id="8190698733819146287">กำหนดค่าภาษาและการป้อนข้อมูล... </translation>
+<translation id="2903907270192926896">อินพุต</translation>
 <translation id="7170041865419449892">อยู่นอกระยะสัญญาณ</translation>
 <translation id="4804818685124855865">ตัดการเชื่อมต่อ</translation>
 <translation id="5222676887888702881">ออกจากระบบ</translation>
@@ -54,13 +57,16 @@
 <translation id="3368922792935385530">เชื่อมต่อแล้ว</translation>
 <translation id="8340999562596018839">การตอบสนองด้วยเสียง</translation>
 <translation id="8654520615680304441">เปิด WiFi...</translation>
+<translation id="4632619405246189264">การชาร์จไม่น่าเชื่อถือ</translation>
 <translation id="5825747213122829519">วิธีการป้อนข้อมูลของคุณเปลี่ยนแปลงเป็น <ph name="INPUT_METHOD_ID"/> แล้ว
 กด Shift + Alt เพื่อสลับ</translation>
 <translation id="2562916301614567480">เครือข่ายส่วนบุคคล</translation>
 <translation id="6549021752953852991">ไม่มีเครือข่ายมือถือที่ใช้งานได้</translation>
 <translation id="4379753398862151997">จอภาพเอ๋ย เราร่วมงานกันไม่ได้ (จอภาพนั้นไม่ได้รับการสนับสนุน)</translation>
+<translation id="8448732935696070385">เสียบอยู่ในแหล่งจ่ายไฟที่ไม่ได้มาตรฐาน การชาร์จแบตเตอรี่อาจไม่น่าเชื่อถือ</translation>
 <translation id="6426039856985689743">ปิดการใช้งานข้อมูลมือถือ</translation>
 <translation id="3087734570205094154">ด้านล่าง</translation>
+<translation id="3742055079367172538">ภาพหน้าจอที่บันทึก</translation>
 <translation id="5271016907025319479">ไม่ได้กำหนดค่า VPN</translation>
 <translation id="6803622936009808957">ไม่สามารถแสดงผลคู่ขนานได้เนื่องจากไม่พบความละเอียดที่สนับสนุน เข้าสู่เดสก์ท็อปแบบขยายแทน</translation>
 <translation id="1480041086352807611">โหมดสาธิต</translation>
@@ -88,7 +94,6 @@
 <translation id="2372145515558759244">กำลังซิงค์แอปพลิเคชัน...</translation>
 <translation id="7256405249507348194">ข้อผิดพลาดที่ไม่รู้จัก: <ph name="DESC"/></translation>
 <translation id="7925247922861151263">การตรวจสอบ AAA ล้มเหลว</translation>
-<translation id="3227723743333276085"><ph name="BLUETOOTH"/>: กำลังยกเลิกการเชื่อมต่อ...</translation>
 <translation id="8456362689280298700">อีก <ph name="HOUR"/>:<ph name="MINUTE"/> จึงจะเต็ม</translation>
 <translation id="5787281376604286451">เปิดใช้งานการตอบสนองด้วยเสียงอยู่
 กด Ctrl+Alt+Z เพื่อปิดใช้งาน</translation>
@@ -116,6 +121,7 @@
 <translation id="3019353588588144572">เวลาที่เหลือกว่าจะชาร์จแบตเตอรี่เต็ม, <ph name="TIME_REMAINING"/></translation>
 <translation id="3473479545200714844">แว่นขยายหน้าจอ</translation>
 <translation id="7005812687360380971">ล้มเหลว</translation>
+<translation id="882279321799040148">คลิกเพื่อดู</translation>
 <translation id="1602076796624386989">เปิดใช้งานข้อมูลมือถือ</translation>
 <translation id="6981982820502123353">การเข้าถึง</translation>
 <translation id="3157931365184549694">คืนสภาพ</translation>
@@ -124,6 +130,7 @@
 <translation id="225680501294068881">กำลังสแกนหาอุปกรณ์...</translation>
 <translation id="5597451508971090205"><ph name="SHORT_WEEKDAY"/>, <ph name="DATE"/></translation>
 <translation id="4448844063988177157">กำลังค้นหาเครือข่าย Wi-Fi...</translation>
+<translation id="2475982808118771221">มีข้อผิดพลาดเกิดขึ้น</translation>
 <translation id="7229570126336867161">ต้องใช้ EVDO</translation>
 <translation id="2999742336789313416"><ph name="DISPLAY_NAME"/> เป็นเซสชันสาธารณะซึ่งจัดการโดย <ph name="DOMAIN"/></translation>
 <translation id="7029814467594812963">ออกจากเซสชัน</translation>
@@ -134,9 +141,11 @@
 <translation id="8300849813060516376">OTASP ล้มเหลว</translation>
 <translation id="2792498699870441125">Alt+ค้นหา</translation>
 <translation id="8660803626959853127">กำลังซิงค์ <ph name="COUNT"/> ไฟล์</translation>
+<translation id="3709443003275901162">9+</translation>
 <translation id="639644700271529076">CAPS LOCK ปิดอยู่</translation>
 <translation id="6267036997247669271"><ph name="NAME"/> กำลังเปิดใช้งาน...</translation>
 <translation id="1391854757121130358">คุณอาจใช้ข้อมูลมือถือถึงขีดจำกัดแล้ว</translation>
+<translation id="5413208160176941586">ผู้ใช้ที่ได้รับการจัดการในเครื่อง</translation>
 <translation id="4864165860509564259">ตำแหน่งของตัวเรียกใช้งาน</translation>
 <translation id="7593891976182323525">ค้นหาหรือ Shift</translation>
 <translation id="7649070708921625228">ช่วยเหลือ</translation>
@@ -146,6 +155,7 @@
 <translation id="158849752021629804">ต้องใช้เครือข่ายในประเทศ</translation>
 <translation id="6857811139397017780">เปิดใช้งาน <ph name="NETWORKSERVICE"/></translation>
 <translation id="5864471791310927901">การค้นหา DHCP ล้มเหลว</translation>
+<translation id="5812035014844949013">เอาต์พุต</translation>
 <translation id="6692173217867674490">ข้อความรหัสผ่านไม่ถูกต้อง</translation>
 <translation id="6165508094623778733">เรียนรู้เพิ่มเติม</translation>
 <translation id="9046895021617826162">การเชื่อมต่อล้มเหลว</translation>
@@ -158,6 +168,7 @@
 <translation id="7209101170223508707">CAPS LOCK เปิดอยู่
 กด Alt+ค้นหา หรือ Shift เพื่อยกเลิก</translation>
 <translation id="8061464966246066292">ความคมชัดสูง</translation>
+<translation id="8940956008527784070">แบตเตอรี่ต่ำ (<ph name="PERCENTAGE"/>%)</translation>
 <translation id="5102001756192215136">เหลืออีก <ph name="HOUR"/>:<ph name="MINUTE"/></translation>
 <translation id="8000066093800657092">ไม่มีเครือข่าย</translation>
 <translation id="5941711191222866238">ย่อ</translation>

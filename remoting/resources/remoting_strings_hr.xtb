@@ -10,6 +10,7 @@
 <translation id="2801119484858626560">Otkrivena je nekompatibilna verzija aplikacije Udaljena radna površina Chrome. Provjerite imate li na oba računala najnoviju verziju sustava Chrome i aplikacije Udaljena radna površina Chrome, a zatim pokušajte ponovo.</translation>
 <translation id="6998989275928107238">Prima</translation>
 <translation id="3258789396564295715">Ovom računalu možete sigurno pristupiti pomoću Udaljene radne površine Chrome.</translation>
+<translation id="5070121137485264635">Udaljeni host zahtijeva autentifikaciju web-lokacije treće strane. Da biste nastavili, morate dati Udaljenoj radnoj površini Chrome dodatne dozvole za pristup ovoj adresi:</translation>
 <translation id="4808503597364150972">Unesite svoj PIN za host <ph name="HOSTNAME"/>.</translation>
 <translation id="7672203038394118626">Na ovom su računalu onemogućene daljinske veze.</translation>
 <translation id="8244400547700556338">Saznajte kako.</translation>
@@ -97,6 +98,7 @@
 <translation id="1643640058022401035">Napuštanjem ove stranice završit ćete svoju sesiju aplikacije Chromoting.</translation>
 <translation id="2235518894410572517">Dijelite ovo računalo kako bi ga drugi korisnik mogao vidjeti i upravljati njime.</translation>
 <translation id="1023096696228309145">Korisnika čijem računalu želite pristupiti zamolite da klikne &quot;Dijeli sada&quot; i da vam dodijeli pristupni kôd.</translation>
+<translation id="80739703311984697">Udaljeni host zahtijeva autentifikaciju web-lokacije treće strane. Da biste nastavili, morate dati Chromotingu dodatne dozvole za pristup ovoj adresi:</translation>
 <translation id="4006787130661126000">Morate omogućiti daljinske veze ako želite pristupati računalu pomoću Udaljene radne površine Chrome.</translation>
 <translation id="6930242544192836755">Trajanje</translation>
 <translation id="6527303717912515753">Podijeli</translation>

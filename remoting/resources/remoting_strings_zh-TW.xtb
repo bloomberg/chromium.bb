@@ -10,6 +10,7 @@
 <translation id="2801119484858626560">偵測到不相容的 Chrome 遠端桌面版本。請確認您與共用對象的電腦使用的都是最新版本的 Chrome 和 Chrome 遠端桌面，然後再試一次。</translation>
 <translation id="6998989275928107238">目標電腦</translation>
 <translation id="3258789396564295715">您可以透過 Chrome 遠端桌面安全地存取這台電腦。</translation>
+<translation id="5070121137485264635">遠端主機要求您向第三方網站進行驗證。如要繼續，您必須授予額外權限，讓 Chrome 遠端桌面能夠存取這個位址：</translation>
 <translation id="4808503597364150972">請輸入 <ph name="HOSTNAME"/> 的 PIN。</translation>
 <translation id="7672203038394118626">這台電腦的遠端連線已停用。</translation>
 <translation id="8244400547700556338">瞭解詳情</translation>
@@ -97,6 +98,7 @@
 <translation id="1643640058022401035">如果離開這個頁面，您的 Chromoting 工作階段也會結束。</translation>
 <translation id="2235518894410572517">共用這台電腦，開放給其他使用者瀏覽及操作。</translation>
 <translation id="1023096696228309145">請與您要連線的電腦所屬使用者聯絡，要求對方按一下 [立即共用]，並告知您存取碼。</translation>
+<translation id="80739703311984697">遠端主機要求您向第三方網站進行驗證。如要繼續，您必須授予額外權限，讓 Chromoting 能夠存取這個位址：</translation>
 <translation id="4006787130661126000">您必須啟用遠端連線，才能透過 Chrome 遠端桌面存取這台電腦。</translation>
 <translation id="6930242544192836755">持續時間</translation>
 <translation id="6527303717912515753">分享</translation>

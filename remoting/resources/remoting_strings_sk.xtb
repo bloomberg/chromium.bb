@@ -10,6 +10,7 @@
 <translation id="2801119484858626560">Bola zistená nekompatibilná verzia Vzdialenej plochy Chrome. Uistite sa, že máte najnovšiu verziu prehliadača Chrome a Vzdialenej plochy Chrome na oboch počítačoch a skúste to znova.</translation>
 <translation id="6998989275928107238">Komu</translation>
 <translation id="3258789396564295715">K tomuto počítaču môžete bezpečne pristupovať pomocou Vzdialenej plochy Chrome.</translation>
+<translation id="5070121137485264635">Vzdialený hostiteľ od vás vyžaduje overenie na webových stránkach tretej strany. Ak chcete pokračovať, musíte vzdialenej ploche Chrome udeliť dodatočné oprávnenie na prístup k tejto adrese:</translation>
 <translation id="4808503597364150972">Zadajte kód PIN pre počítač <ph name="HOSTNAME"/>.</translation>
 <translation id="7672203038394118626">Vzdialené pripojenia k tomuto počítaču boli zakázané.</translation>
 <translation id="8244400547700556338">Ďalšie informácie.</translation>
@@ -97,6 +98,7 @@
 <translation id="1643640058022401035">Ak opustíte túto stránku, relácia aplikácie Chromoting sa ukončí.</translation>
 <translation id="2235518894410572517">Zdieľať tento počítač, aby ho mohol iný používateľ zobraziť a ovládať.</translation>
 <translation id="1023096696228309145">Požiadajte používateľa, ku ktorého počítaču chcete pristupovať, aby klikol na možnosť Zdieľať tento počítač a poskytol vám prístupový kód.</translation>
+<translation id="80739703311984697">Vzdialený hostiteľ od vás vyžaduje overenie na webových stránkach tretej strany. Ak chcete pokračovať, musíte funkcii Chromoting udeliť dodatočné oprávnenie na prístup k tejto adrese:</translation>
 <translation id="4006787130661126000">Ak chcete na prístup k tomuto počítaču použiť Vzdialenú plochu Chrome, musíte povoliť vzdialené pripojenia.</translation>
 <translation id="6930242544192836755">Trvanie</translation>
 <translation id="6527303717912515753">Zdieľať</translation>

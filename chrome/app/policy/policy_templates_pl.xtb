@@ -5,6 +5,9 @@
 <translation id="1503959756075098984">Identyfikatory rozszerzeń i adresy URL aktualizacji, które mają być instalowane dyskretnie</translation>
 <translation id="2463365186486772703">Język aplikacji</translation>
 <translation id="1397855852561539316">Adres URL usługi propozycji od domyślnego dostawcy wyszukiwania</translation>
+<translation id="3347897589415241400">Domyślne zachowanie dla witryn nie jest zawarte w żadnym pakiecie treści.
+
+          Ta zasada jest przeznaczona do użytku wewnętrznego w Chrome.</translation>
 <translation id="7040229947030068419">Przykładowa wartość:</translation>
 <translation id="1213523811751486361">Określa URL wyszukiwarki dostarczającej sugestie wyszukiwania. URL powinien zawierać ciąg „<ph name="SEARCH_TERM_MARKER"/>”, który w trakcie przesyłania zapytania zostanie zastąpiony tekstem dotychczas wpisanym przez użytkownika. Ta zasada jest opcjonalna. Jeśli nie zostanie ustawiona, URL sugestii nie będzie używany. Ta zasada jest stosowana tylko wówczas, gdy jest włączona zasada „DefaultSearchProviderEnabled”.</translation>
 <translation id="6106630674659980926">Włącz menedżera haseł</translation>
@@ -18,13 +21,13 @@
           Wartość dla zasady należy podać w milisekundach. Wartości są ograniczane, tak aby nie przekraczały wartości opóźnienia nieaktywności.</translation>
 <translation id="7614663184588396421">Lista wyłączonych schematów protokołów</translation>
 <translation id="2309390639296060546">Domyślne ustawienie geolokalizacji</translation>
-<translation id="7261507082507286116">Wyłącza dostęp do Dysku Google przez połączenia komórkowe</translation>
 <translation id="7443616896860707393">Monity o podstawowe uwierzytelnienie HTTP pochodzące z innych witryn</translation>
 <translation id="2337466621458842053">Umożliwia skonfigurowanie listy wzorcowych URL-i określających witryny, w których mogą być wyświetlane obrazy. Jeśli ta zasada nie zostanie skonfigurowana, dla wszystkich witryn będzie używana globalna wartość domyślna pochodząca z zasady „DefaultImagesSettings” (jeśli została skonfigurowana) lub z osobistej konfiguracji użytkownika.</translation>
 <translation id="4680961954980851756">Włącz autouzupełnianie</translation>
 <translation id="5183383917553127163">Umożliwia określenie rozszerzeń, których nie obejmuje czarna lista. Wartość * na czarnej liście oznacza dodanie do niej wszystkich rozszerzeń i zezwolenie użytkownikom na instalowanie wyłącznie rozszerzeń wymienionych na białej liście. Domyślnie wszystkie rozszerzenia znajdują się na białej liście, jeśli jednak za pomocą zasady wszystkie rozszerzenia dodano do czarnej listy, białej listy można użyć do zmodyfikowania tej zasady.</translation>
 <translation id="3185009703220253572">od wersji <ph name="SINCE_VERSION"/></translation>
 <translation id="2204753382813641270">Steruj autoukrywaniem półki</translation>
+<translation id="3816312845600780067">Włącz automatyczne logowanie skrótem klawiszowym</translation>
 <translation id="3214164532079860003">W przypadku włączenia ta zasada wymusza zaimportowanie strony startowej z bieżącej przeglądarki domyślnej. Jeśli zasada będzie wyłączona, strona startowa nie zostanie zaimportowana. Jeśli ta zasada nie zostanie ustawiona, użytkownik może zobaczyć pytanie, czy zaimportować stronę, lub importowanie może odbyć się automatycznie.</translation>
 <translation id="5330684698007383292">Zezwalaj <ph name="PRODUCT_FRAME_NAME"/> na obsługę tych typów treści</translation>
 <translation id="5469825884154817306">Blokuj grafiki w tych witrynach</translation>
@@ -98,6 +101,9 @@
 <translation id="1617235075406854669">Włącz usuwanie historii przeglądarki i pobierania</translation>
 <translation id="5290940294294002042">Określ listę wtyczek, które użytkownik może włączyć lub wyłączyć</translation>
 <translation id="3153348162326497318">Pozwala określić rozszerzenia, których użytkownicy NIE mogą instalować. Zainstalowane rozszerzenia zostaną usunięte w przypadku umieszczenia ich na tej liście. Wartość „*” na liście blokad oznacza, że zablokowane są wszystkie rozszerzenia, które nie znajdują się na liście dozwolonych rozszerzeń. Jeśli zasada ta nie zostanie skonfigurowana, użytkownicy mogą instalować dowolne rozszerzenia w <ph name="PRODUCT_NAME"/>.</translation>
+<translation id="3067188277482006117">Jeśli ustawiono wartość Prawda, użytkownik może używać modułu sprzętowego w urządzeniach z Chrome do zdalnego poświadczania tożsamości przez wywołanie funkcji chrome.enterprise.platformKeysPrivate.challengeUserKey() interfejsu API Enterprise Platform Keys.
+
+          Jeśli wartość ustawiono na Fałsz lub nie jest ona określona, wywołania kierowane do interfejsu API zakończą się błędem.</translation>
 <translation id="5809728392451418079">Ustaw nazwę wyświetlaną dla lokalnych kont na urządzeniu</translation>
 <translation id="1427655258943162134">Adres URL serwera proxy</translation>
 <translation id="1827523283178827583">Używaj stałych serwerów proxy</translation>
@@ -117,6 +123,7 @@
           Ta zasada jest uwzględniania tylko wtedy, gdy włączona jest zasada „DefaultSearchProviderEnabled”.</translation>
 <translation id="5912364507361265851">Zezwalaj użytkownikom na pokazywanie haseł w menedżerze haseł</translation>
 <translation id="510186355068252378">Wyłącza synchronizację danych w <ph name="PRODUCT_NAME"/> korzystającą z usług synchronizacji udostępnianych przez Google i uniemożliwia użytkownikom zmianę tego ustawienia. W przypadku włączenia tego ustawienia użytkownicy nie mogą go zmieniać ani zastępować w <ph name="PRODUCT_NAME"/>. Jeśli ta zasada nie zostanie skonfigurowana, użytkownik będzie mógł wybrać, czy chce korzystać z Google Sync.</translation>
+<translation id="7953256619080733119">Zarządzane hosty umieszczone przez użytkownika na liście wyjątków</translation>
 <translation id="7412982067535265896">Pozwala utworzyć listę wzorców URL-i określających witryny, które mogą ustawiać pliki ważne tylko na czas sesji.
 
           Jeśli ta zasada nie zostanie skonfigurowana, będzie używana wartość domyślna pobrana z zasady „DefaultCookiesSetting” (jeśli jest określona) lub z osobistej konfiguracji użytkownika.
@@ -130,9 +137,6 @@
       W przypadku ustawienia tej zasady możesz określić, czy zezwalasz użytkownikowi na logowanie się do <ph name="PRODUCT_NAME"/>.</translation>
 <translation id="5564962323737505851">Pozwala skonfigurować menedżera haseł. Po włączeniu menedżera haseł możesz włączyć lub wyłączyć opcję umożliwiającą użytkownikowi wyświetlenie tekstu zapisanych haseł.</translation>
 <translation id="4668325077104657568">Domyślne ustawienie grafik</translation>
-<translation id="7978961945071764766">Jeśli zostanie włączona, wyłącza synchronizację Dysku Google w przypadku korzystania z połączenia komórkowego. W takim przypadku dane są synchronizowane z Dyskiem Google tylko podczas połączenia z Wi-Fi lub Ethernetem.
-
-          W przypadku nieustawienia lub wyłączenia użytkownicy będą mogli przesyłać pliki na Dysk Google przez połączenia komórkowe.</translation>
 <translation id="4492287494009043413">Wyłącza tworzenie zrzutów ekranu</translation>
 <translation id="6368403635025849609">Zezwalaj na wykonywanie kodu JavaScript w tych witrynach</translation>
 <translation id="6074963268421707432">Nie zezwalaj żadnej witrynie na pokazywanie powiadomień na pulpicie</translation>
@@ -184,6 +188,9 @@
 
       Jeśli to ustawienie jest wyłączone, nie można usuwać historii przeglądania ani pobierania.</translation>
 <translation id="2884728160143956392">Zezwalaj na pliki cookie w tych witrynach tylko na czas sesji</translation>
+<translation id="3021272743506189340">Wyłącza synchronizację Dysku Google dla aplikacji Pliki w systemie operacyjnym Chrome, gdy używane jest połączenie komórkowe przy ustawieniu Prawda. W takim przypadku dane są synchronizowane z Dyskiem Google tylko przy połączeniu z siecią Wi-Fi lub Ethernet.
+
+          Jeśli ustawienie nie jest skonfigurowane lub ma wartość Fałsz, użytkownicy mogą przesyłać dane na Dysk Google przez sieć komórkową.</translation>
 <translation id="4655130238810647237">Włącza lub wyłącza funkcję edytowania zakładek w przeglądarce <ph name="PRODUCT_NAME"/>. Po włączeniu tego ustawienia zakładki można dodawać, usuwać i modyfikować. Jest to wartość domyślna. Jeśli wyłączysz ustawienie, zakładek nie będzie można dodawać, usuwać ani modyfikować. Istniejące zakładki nadal będą dostępne.</translation>
 <translation id="3496296378755072552">Menedżer haseł</translation>
 <translation id="2565967352111237512">Włącza funkcję anonimowego przesyłania do Google raportów o użytkowaniu i danych dotyczących awarii <ph name="PRODUCT_NAME"/> oraz uniemożliwia użytkownikom zmianę tego ustawienia. Jeśli włączysz ustawienie, raporty o użytkowaniu i dane dotyczące awarii będą anonimowo przesyłane do Google. W przypadku jego wyłączenia raporty i dane nigdy nie są przesyłane do Google. Jeśli ustawienie jest włączone lub wyłączone, użytkownicy nie mogą go zmienić ani zastąpić w <ph name="PRODUCT_NAME"/>. W przypadku nieskonfigurowania tej zasady stosowane będzie ustawienie wybrane przez użytkownika podczas instalacji/przy pierwszym uruchomieniu.</translation>
@@ -270,9 +277,6 @@
           Jeśli to ustawienie będzie wyłączone lub nieustawione, zarówno zdalni, jak i lokalni użytkownicy będą mogli korzystać z udostępnianego hosta.</translation>
 <translation id="1426410128494586442">Tak</translation>
 <translation id="4962195944157514011">Określa URL wyszukiwarki używanej podczas wyszukiwania domyślnego. URL powinien zawierać ciąg „<ph name="SEARCH_TERM_MARKER"/>”, który podczas zapytania zostanie zastąpiony hasłami wyszukiwanymi przez użytkownika. Ta opcja musi być ustawiona w przypadku włączenia zasady „DefaultSearchProviderEnabled” i tylko wtedy będzie uwzględniana.</translation>
-<translation id="3343454696188645600">Jeśli zostanie włączona, wyłącza synchronizację Dysku Google. W takim przypadku żadne dane nie będą przesyłane na Dysk Google.
-
-          Jeśli nie zostanie ustawiona lub będzie wyłączona, użytkownicy będą mogli przesyłać pliki na Dysk Google.</translation>
 <translation id="6009903244351574348">Pozwól <ph name="PRODUCT_FRAME_NAME"/> obsługiwać wymienione typy treści. Jeśli ta zasada nie zostanie skonfigurowana, dla wszystkich witryn będzie używany domyślny mechanizm renderujący określony przez zasadę „ChromeFrameRendererSettings”.</translation>
 <translation id="3381968327636295719">Używaj domyślnie przeglądarki hosta</translation>
 <translation id="3627678165642179114">Włącz lub wyłącz internetową usługę sprawdzania pisowni</translation>
@@ -435,7 +439,6 @@
 
           Jeśli ta zasada nie jest ustawiona, używany jest domyślny wiersz polecenia.</translation>
 <translation id="2646290749315461919">Umożliwia określenie, czy witryny mogą śledzić fizyczną lokalizację użytkownika. Śledzenie fizycznej lokalizacji użytkownika może być domyślnie dozwolone lub zabronione bądź użytkownik może być o to pytany za każdym razem, gdy witryna żąda informacji o lokalizacji. W przypadku nieskonfigurowania tej zasady używane będzie ustawienie „AskGeolocation”, a użytkownik będzie mógł je zmienić.</translation>
-<translation id="3309789488678647282">Wyłącza Dysk</translation>
 <translation id="5770738360657678870">Wersja deweloperska (może być niestabilna)</translation>
 <translation id="2959898425599642200">Reguły omijania serwera proxy</translation>
 <translation id="228659285074633994">Określa czas bez wprowadzenia danych przez użytkownika, po którym wyświetlane jest okno dialogowe ostrzeżenia przy zasilaniu sieciowym.
@@ -475,7 +478,6 @@
       &quot;1412.24.34&quot;: aktualizacja tylko do tej konkretnej wersji</translation>
 <translation id="8102913158860568230">Domyślne ustawienia strumienia multimediów</translation>
 <translation id="6641981670621198190">Wyłącz obsługę interfejsów API grafiki 3D</translation>
-<translation id="2741921267428646309">Jest to lista zasad przestrzeganych w przeglądarce <ph name="PRODUCT_NAME"/>. Nie musisz ich zmieniać ręcznie. Możesz pobrać łatwe w obsłudze szablony ze strony <ph name="POLICY_TEMPLATE_DOWNLOAD_URL"/>. Listy obsługiwanych zasad w oprogramowaniu Chromium i przeglądarce Google Chrome są jednakowe, jednak ich lokalizacje w rejestrze systemu Windows są różne. Lokalizacja zasad oprogramowania Chromium rozpoczyna się ciągiem <ph name="CHROMIUM_KEY"/>, natomiast zasad przeglądarki Google Chrome – ciągiem <ph name="GOOGLE_CHROME_KEY"/>.</translation>
 <translation id="7929480864713075819">Włącz raportowanie informacji o pamięci (rozmiar stosu pamięci JS) do strony.</translation>
 <translation id="7003746348783715221">Ustawienia przeglądarki <ph name="PRODUCT_NAME"/></translation>
 <translation id="4723829699367336876">Włącz omijanie zapory sieciowej przez klienta dostępu zdalnego</translation>
@@ -526,6 +528,16 @@
 
           Jeśli wartość tej zasady to Fałsz, aktywność związana z filmem nie wyklucza postrzegania użytkownika jako bezczynnego.</translation>
 <translation id="3965339130942650562">Limit czasu bezczynności, po którym następuje wylogowanie</translation>
+<translation id="5857910801734294133">Oto lista zasad, które są przestrzegane przez <ph name="PRODUCT_NAME"/>.
+
+      Nie musisz zmieniać tych ustawień ręcznie. Możesz pobrać łatwe w użyciu szablony
+      z <ph name="POLICY_TEMPLATE_DOWNLOAD_URL"/>.
+
+      Lista obsługiwanych zasad jest taka sama dla Chromium i Google Chrome, ale ich lokalizacja w rejestrze Windows jest różna.
+
+      Wpis zasad dla Chromium zaczyna się od <ph name="CHROMIUM_KEY"/>, a dla Google Chrome od <ph name="GOOGLE_CHROME_KEY"/>.
+
+      Te zasady są przeznaczone do skonfigurowania Chrome na wewnętrzny użytek Twojej organizacji. Użycie ich poza nią (np. w programie rozpowszechnianym publicznie) spowoduje uznanie oprogramowania za złośliwe i najprawdopodobniej tak też zostanie ono potraktowane przez Google i oprogramowanie antywirusowe.</translation>
 <translation id="9084985621503260744">Określ, czy aktywność związana z filmami wpływa na zarządzanie energią</translation>
 <translation id="7091198954851103976">Zawsze uruchamiaj wtyczki wymagające autoryzacji</translation>
 <translation id="2704032342102549239">Ogranicz czas ciągłej pracy urządzenia przez zaplanowanie automatycznych operacji ponownego uruchamiania.
@@ -549,7 +561,11 @@
 <translation id="5192837635164433517">Włącza alternatywne strony błędów wbudowane w przeglądarkę <ph name="PRODUCT_NAME"/> (np. dotyczące nieznalezienia strony) i uniemożliwia użytkownikom zmianę tego ustawienia. Jeśli włączysz ustawienie, alternatywne strony błędów będą używane. W przypadku wyłączenia ustawienia alternatywne strony błędów nigdy nie są używane. Jeśli ustawienie jest włączone lub wyłączone, użytkownicy nie mogą go zmienić ani zastąpić w przeglądarce <ph name="PRODUCT_NAME"/>. W przypadku nieskonfigurowania zasady ustawienie zostanie włączone, ale użytkownik będzie mógł je zmienić.</translation>
 <translation id="2236488539271255289">Nie zezwalaj żadnej witrynie na tworzenie danych lokalnych</translation>
 <translation id="4467952432486360968">Blokuj pliki cookie innych firm</translation>
+<translation id="2041396837791669429">Blokuj dostęp do witryn spoza pakietów treści.</translation>
 <translation id="7754863709994542614">Wyłącza wymienione schematy protokołów w <ph name="PRODUCT_NAME"/>. URL-i, pod którymi używane są schematy z tej listy, nie będzie można otwierać ani wczytywać. Jeśli ta zasada nie zostanie skonfigurowana lub lista będzie pusta, w <ph name="PRODUCT_NAME"/> będą dostępne wszystkie schematy.</translation>
+<translation id="1305864769064309495">URL-e mapujące słowniki do flagi wartości logicznej, określającej pozwolenie na dostęp do hosta (prawda lub fałsz).
+
+          Ta zasada przeznaczona jest do użytku wewnętrznego przez Chrome.</translation>
 <translation id="5586942249556966598">Nic nie rób</translation>
 <translation id="131353325527891113">Pokaż nazwy użytkowników na ekranie logowania</translation>
 <translation id="5317965872570843334">Umożliwia stosowanie protokołu STUN i serwerów przekazywania, gdy klienci zdalni próbują nawiązać połączenie z tym komputerem. Jeśli ustawienie jest włączone, klienci zdalni mogą wykrywać komputer i łączyć się z nim nawet wówczas, gdy są oddzieleni zaporą sieciową. Jeśli ustawienie jest wyłączone, a wychodzące połączenia UDP są filtrowane przez zaporę sieciową, z komputerem mogą łączyć się tylko klienci w sieci lokalnej. W przypadku nieskonfigurowania zasady ustawienie zostanie włączone.</translation>
@@ -560,6 +576,11 @@
 <translation id="8731693562790917685">Ustawienia treści umożliwiają określenie sposobu obsługi treści danego typu (na przykład plików cookie, grafik czy kodu JavaScript).</translation>
 <translation id="2411919772666155530">Blokuj powiadomienia w tych witrynach.</translation>
 <translation id="6923366716660828830">Określa nazwę domyślnego dostawcy wyszukiwania. Jeśli ta zasada pozostanie pusta lub nieskonfigurowana, będzie używana nazwa hosta określona w URL-u wyszukiwarki. Ta zasada jest uwzględniana tylko przy włączonej zasadzie „DefaultSearchProviderEnabled”.</translation>
+<translation id="4869787217450099946">Określa, czy jest dozwolona blokada wybudzania ekranu. Blokady takie mogą być żądane przez rozszerzenia poprzez interfejs API zarządzania energią.
+
+          Jeśli ta zasada ma ustawienie Prawda lub nie jest ustawiona, blokada wybudzania ekranu będzie respektowana w celu zarządzania energią.
+
+          Jeśli ma ona ustawienie Fałsz, blokada wybudzania ekranu będzie ignorowana.</translation>
 <translation id="467236746355332046">Obsługiwane funkcje:</translation>
 <translation id="7632724434767231364">Nazwa biblioteki GSSAPI</translation>
 <translation id="3038323923255997294">Kontynuuj działanie aplikacji w tle po zamknięciu <ph name="PRODUCT_NAME"/></translation>
@@ -578,10 +599,12 @@
 <translation id="6244210204546589761">Adresy URL otwierane po uruchomieniu</translation>
 <translation id="7468416082528382842">Lokalizacja w rejestrze systemu Windows:</translation>
 <translation id="1808715480127969042">Blokuj pliki cookie w tych witrynach</translation>
+<translation id="1908884158811109790">Wyłącza Dysk Google przy połączeniu komórkowym w aplikacji Pliki systemu operacyjnego Chrome</translation>
 <translation id="7340034977315324840">Zgłoś godziny aktywności urządzenia</translation>
 <translation id="4928632305180102854">Określa, czy <ph name="PRODUCT_OS_NAME"/> pozwala na tworzenie nowych kont użytkowników. Jeśli będzie mieć wartość false, użytkownicy, którzy nie mają jeszcze konta, nie będą mogli się zalogować.
 
       Jeśli ta zasada będzie mieć wartość true lub nie zostanie skonfigurowana, tworzenie nowych kont użytkowników będzie dozwolone pod warunkiem, że zasada <ph name="DEVICEUSERWHITELISTPROTO_POLICY_NAME"/> nie będzie zakazywać użytkownikom logowania się.</translation>
+<translation id="4389091865841123886">Konfiguruje zdalne poświadczanie przy użyciu mechanizmu TPM</translation>
 <translation id="8256688113167012935">Określa nazwę konta, którą <ph name="PRODUCT_OS_NAME"/> pokazuje na ekranie logowania dla danego lokalnego konta na urządzeniu.
 
       W przypadku ustawienia tej opcji na ekranie logowania w graficznym module wybierania loginu dla odpowiedniego lokalnego konta na urządzeniu będzie używany podany łańcuch.
@@ -590,7 +613,11 @@
 
       Ta zasada jest ignorowana w przypadku zwykłych kont użytkownika.</translation>
 <translation id="267596348720209223">Pozwala określić kodowania znaków obsługiwane przez dostawcę wyszukiwania. Kodowania są określane za pomocą nazw stron kodowych, np. UTF-8, GB2312 czy ISO-8859-1. Są stosowane w podanej kolejności. Ta zasada jest opcjonalna. Jeśli nie zostanie skonfigurowana, będzie używana wartość domyślna, czyli UTF-8. Zasada ta jest stosowana tylko przy włączonej zasadzie „DefaultSearchProviderEnabled”.</translation>
+<translation id="1349276916170108723">Wyłącza synchronizowanie Dysku Google dla aplikacji Pliki w systemie operacyjnym Chrome, gdy wartość zasady to Prawda. W takim przypadku na Dysk Google nie są przesyłane żadne dane.
+
+          Jeśli wartość jest ustawiona na Fałsz, użytkownicy mogą przesyłać pliki na Dysk Google.</translation>
 <translation id="1964634611280150550">Tryb incognito wyłączony</translation>
+<translation id="5971128524642832825">Wyłącza Dysk w aplikacji Pliki systemu operacyjnego Chrome</translation>
 <translation id="1454846751303307294">Umożliwia skonfigurowanie listy wzorcowych URL-i określających witryny, w których nie może być wykonywany kod JavaScript. W przypadku nieskonfigurowania tej zasady dla wszystkich witryn będzie używana globalna wartość domyślna pobierana z zasady „DefaultJavaScriptSetting” (jeśli została skonfigurowana) lub z osobistej konfiguracji użytkownika.</translation>
 <translation id="538108065117008131">Zezwalaj wtyczce <ph name="PRODUCT_FRAME_NAME"/> na obsługę następujących typów treści</translation>
 <translation id="2312134445771258233">Umożliwia skonfigurowanie stron wczytywanych po uruchomieniu. Zawartość listy „Adresy URL otwierane po uruchomieniu” jest ignorowana, chyba że wybierzesz opcję „Otwórz adresy URL z listy” w ustawieniu „Działanie po uruchomieniu”.</translation>
@@ -632,6 +659,7 @@
       Jeśli wartość tej zasady to Prawda, ikony są ukryte.
 
       Gdy zasada ma wartość Fałsz lub nie została skonfigurowana, ikony są widoczne.</translation>
+<translation id="8401282319420373133">Rozszerzenia mają pozwolenie na używanie interfejsu API zdalnego poświadczania.</translation>
 <translation id="5085647276663819155">Wyłącz podgląd wydruku</translation>
 <translation id="8672321184841719703">Wersja docelowa automatycznych aktualizacji</translation>
 <translation id="1689963000958717134">Pozwala na przesyłanie konfiguracji sieciowej w trybie push do urządzeń z <ph name="PRODUCT_OS_NAME"/> dla wszystkich użytkowników. Konfiguracja sieci to łańcuch w formacie JSON zgodny z formatem Open Network Configuration opisanym na <ph name="ONC_SPEC_URL"/></translation>
@@ -673,6 +701,7 @@ W przypadku wyłączenia lub nieskonfigurowania tej zasady tworzenie zrzutów ek
 <translation id="13356285923490863">Nazwa zasady</translation>
 <translation id="557658534286111200">Włącz lub wyłącz edytowanie zakładek</translation>
 <translation id="5378985487213287085">Umożliwia określenie, czy witryny mogą wyświetlać powiadomienia na pulpicie. Wyświetlanie powiadomień na pulpicie może być domyślnie dozwolone lub zabronione bądź użytkownikowi może być wyświetlany monit za każdym razem, gdy witryna chce wyświetlić takie powiadomienie. W przypadku nieskonfigurowania tej zasady będzie używana zasada „AskNotifications”, a użytkownik będzie mógł zmienić to ustawienie.</translation>
+<translation id="2386362615870139244">Zezwalaj na blokowanie wybudzania ekranu</translation>
 <translation id="6908640907898649429">Pozwala skonfigurować domyślnego dostawcę wyszukiwania. Możesz określić domyślnego dostawcę wyszukiwania, z którego usług będzie korzystał ​​użytkownik, lub wyłączyć funkcję wyszukiwarki domyślnej.</translation>
 <translation id="6544897973797372144">Jeśli ta zasada zostanie włączona, a zasada ChromeOsReleaseChannel nie będzie określona, użytkownicy domeny rejestrującej będą mogli zmienić kanał wersji urządzenia. Jeśli ta zasada będzie wyłączona, na urządzeniu zostanie zablokowany ostatnio ustawiony kanał.
 
@@ -685,6 +714,9 @@ W przypadku wyłączenia lub nieskonfigurowania tej zasady tworzenie zrzutów ek
 <translation id="3793095274466276777">Pozwala skonfigurować w przeglądarce <ph name="PRODUCT_NAME"/> sprawdzanie przeglądarki domyślnej i uniemożliwia użytkownikom jej zmianę. Jeśli włączysz to ustawienie, <ph name="PRODUCT_NAME"/> zawsze po uruchomieniu będzie sprawdzać, czy jest przeglądarką domyślną, oraz w miarę możliwości automatycznie przypisywać sobie tę rolę. W przypadku wyłączenia ustawienia <ph name="PRODUCT_NAME"/> nigdy nie sprawdza, czy jest przeglądarką domyślną, a opcje umożliwiające użytkownikowi zmianę ustawienia są nieaktywne. Jeśli ustawienie jest nieskonfigurowane, użytkownik może kontrolować funkcję sprawdzania, czy <ph name="PRODUCT_NAME"/> jest przeglądarką domyślną, oraz wyświetlanie odpowiednich powiadomień.</translation>
 <translation id="7529100000224450960">Umożliwia skonfigurowanie listy wzorcowych URL-i określających witryny, w których mogą być otwierane wyskakujące okienka. Jeśli ta zasada nie zostanie skonfigurowana, dla wszystkich witryn będzie używana globalna wartość domyślna pochodząca z zasady „DefaultPopupsSetting” (jeśli została skonfigurowana) lub z osobistej konfiguracji użytkownika.</translation>
 <translation id="1530812829012954197">Zawsze renderuj strony w przeglądarce hosta według następujących wzorców adresów URL</translation>
+<translation id="9026000212339701596">Nazwy hostów mapujące słowniki do flagi wartości logicznej, określającej pozwolenie na dostęp do hosta (prawda lub fałsz).
+
+          Ta zasada jest przeznaczona do użytku wewnętrznego w Chrome.</translation>
 <translation id="913195841488580904">Blokuj dostęp do listy adresów URL</translation>
 <translation id="3292147213643666827">Umożliwia działanie <ph name="PRODUCT_NAME"/> jako serwera proxy między <ph name="CLOUD_PRINT_NAME"/> a starszymi drukarkami podłączonymi do komputera.
 
@@ -727,6 +759,7 @@ W przypadku wyłączenia lub nieskonfigurowania tej zasady tworzenie zrzutów ek
 
       Określa zestaw URL-i do załadowania po uruchomieniu sesji demonstracyjnej. Ta zasada zastępuje pozostałe mechanizmy ustawiania początkowego URL-a i dlatego można ją zastosować tylko do sesji niepowiązanej z konkretnym użytkownikiem.</translation>
 <translation id="5868414965372171132">Konfiguracja sieci na poziomie użytkownika</translation>
+<translation id="8519264904050090490">Zarządzane adresy URL dodane przez użytkownika na listę wyjątków</translation>
 <translation id="4480694116501920047">Wymuś stosowanie filtru SafeSearch</translation>
 <translation id="1221359380862872747">Załaduj podane URL-e przy logowaniu demonstracyjnym</translation>
 <translation id="2431811512983100641">Określa, czy ma być włączone rozszerzenie certyfikatów TLS powiązanych z domeną.
@@ -737,12 +770,14 @@ W przypadku wyłączenia lub nieskonfigurowania tej zasady tworzenie zrzutów ek
 <translation id="4650759511838826572">Wyłącz schematy protokołów adresów URL</translation>
 <translation id="8099880303030573137">Opóźnienie bezczynności przy zasilaniu z baterii</translation>
 <translation id="2761483219396643566">Opóźnienie ostrzeżenia o bezczynności przy zasilaniu z baterii</translation>
+<translation id="8580857153747395000">Ostrzegaj przy odwiedzaniu witryn spoza pakietów treści.</translation>
 <translation id="602728333950205286">Adres URL wyszukiwania dynamicznego od domyślnego dostawcy wyszukiwania</translation>
 <translation id="3030000825273123558">Włącz raportowanie statystyk</translation>
 <translation id="6559057113164934677">Nie pozwalaj żadnym stronom na dostęp do kamery i mikrofonu</translation>
 <translation id="1675002386741412210">Obsługiwana przez:</translation>
 <translation id="3547954654003013442">Ustawienia serwera proxy</translation>
 <translation id="4482640907922304445">Powoduje pokazanie przycisku strony startowej na pasku narzędzi <ph name="PRODUCT_NAME"/>. Jeśli włączysz to ustawienie, przycisk strony startowej będzie zawsze widoczny. W przypadku wyłączenia ustawienia przycisk nigdy nie jest widoczny. Jeśli ustawienie jest włączone lub wyłączone, użytkownicy nie mogą go zmienić ani zastąpić w <ph name="PRODUCT_NAME"/>. W przypadku nieskonfigurowania tej zasady użytkownik będzie mógł wybrać, czy chce, aby przycisk strony startowej był pokazywany.</translation>
+<translation id="6897718480289510689">Zezwól na dostęp do witryn spoza pakietów treści.</translation>
 <translation id="2518231489509538392">Zezwalaj na odtwarzanie dźwięku</translation>
 <translation id="7301543427086558500">Określa listę alternatywnych URL-i, które umożliwiają uzyskanie wyników haseł z wyszukiwarki. Adresy URL powinny zawierać łańcuch <ph name="SEARCH_TERM_MARKER"/> używany do wskazania haseł do wyszukania.
 
@@ -756,8 +791,14 @@ W przypadku wyłączenia lub nieskonfigurowania tej zasady tworzenie zrzutów ek
 
       Jeśli ta zasada nie zostanie ustawiona lub będzie wyłączona, Chrome w wersji 19 lub nowszej nie będzie sprawdzał unieważnień online.</translation>
 <translation id="5469484020713359236">Umożliwia skonfigurowanie listy wzorcowych URL-i określających witryny, którym wolno tworzyć pliki cookie. Jeśli ta zasada nie zostanie skonfigurowana, dla wszystkich witryn będzie używana globalna wartość domyślna pochodząca z zasady „DefaultCookiesSetting” (jeśli została skonfigurowana) lub z osobistej konfiguracji użytkownika.</translation>
+<translation id="1504431521196476721">Zdalne poświadczanie</translation>
 <translation id="1881299719020653447">Ukryj sklep Chrome Web Store na nowych kartach i w programie uruchamiającym aplikacje.</translation>
 <translation id="930930237275114205">Ustaw katalog danych użytkownika <ph name="PRODUCT_FRAME_NAME"/></translation>
+<translation id="244317009688098048">Włącz automatyczne logowanie skrótem klawiszowym.
+
+      Jeśli ta zasada nie jest skonfigurowana lub ma wartość Prawda, a lokalne konto na urządzeniu jest ustawione do logowania z zerowym opóźnieniem, <ph name="PRODUCT_OS_NAME"/> będzie uznawać skrót klawiszowy Ctrl+Alt+S.
+
+      Jeśli wartość to Fałsz, nie można ominąć zerowego opóźnienia logowania (o ile jest skonfigurowane).</translation>
 <translation id="5208240613060747912">Umożliwia skonfigurowanie listy wzorcowych URL-i określających witryny, w których nie mogą być wyświetlane powiadomienia. Jeśli ta zasada nie zostanie skonfigurowana, dla wszystkich witryn będzie używana globalna wartość domyślna pochodząca z zasady „DefaultNotificationsSetting” (jeśli została skonfigurowana) lub z osobistej konfiguracji użytkownika.</translation>
 <translation id="8592105098257899882">Konfiguruje rozmiar pamięci podręcznej używanej przez <ph name="PRODUCT_NAME"/> do przechowywania plików buforowanych na dysku. W przypadku ustawienia tej zasady <ph name="PRODUCT_NAME"/> będzie używać określonego rozmiaru pamięci podręcznej, niezależnie od tego, czy użytkownik poda parametr „--disk-cache-size”. Jeśli dla tej zasady zostanie ustawiona wartość 0, będzie używany domyślny rozmiar pamięci podręcznej, ale użytkownik nie będzie mógł go zmienić. W przypadku nieskonfigurowania zasady będzie używany rozmiar domyślny, ale użytkownik będzie mógł go zmienić za pomocą parametru --disk-cache-size.</translation>
 <translation id="1527937796509599149">Nazwa firmowego sklepu Chrome Web Store, która będzie wyświetlana pod ikoną aplikacji na nowej karcie. To ustawienie nie działa, jeśli parametr EnterpriseWebStoreURL nie jest ustawiony.
@@ -862,6 +903,7 @@ W przypadku wyłączenia lub nieskonfigurowania tej zasady tworzenie zrzutów ek
 <translation id="7194407337890404814">Nazwa domyślnego dostawcy wyszukiwania</translation>
 <translation id="1843117931376765605">Częstotliwość odświeżania zasad użytkownika</translation>
 <translation id="5535973522252703021">Biała lista serwerów przekazywania poświadczeń w protokole Kerberos</translation>
+<translation id="4578030379102330182">Włącz zdalne poświadczanie dla użytkownika.</translation>
 <translation id="9187743794267626640">Wyłącz podłączanie pamięci zewnętrznych</translation>
 <translation id="5307432759655324440">Dostępność trybu incognito</translation>
 <translation id="4056910949759281379">Wyłącz protokół SPDY</translation>
@@ -875,6 +917,7 @@ W przypadku wyłączenia lub nieskonfigurowania tej zasady tworzenie zrzutów ek
       Jeśli ta zasada jest ustawiona, użytkownik zostanie automatycznie zalogowany do określonej sesji po upływie określonego czasu nieaktywności na ekranie logowania. Sesja publiczna musi zostać wcześniej skonfigurowana (zobacz zasadę |DeviceLocalAccounts|).
 
       Jeśli ta zasada jest nieustawiona, automatyczne logowanie nie działa.</translation>
+<translation id="5983708779415553259">Domyślne zachowanie dla witryn nie jest zawarte w żadnym pakiecie treści</translation>
 <translation id="3866530186104388232">Jeśli ta zasada jest włączona lub nieskonfigurowana, <ph name="PRODUCT_OS_NAME"/> będzie umożliwiał wybranie nazwy użytkownika spośród zarejestrowanych nazw wyświetlanych na ekranie logowania. W przypadku wyłączenia tej zasady <ph name="PRODUCT_OS_NAME"/> będzie prosił o podanie nazwy użytkownika i hasła.</translation>
 <translation id="2098658257603918882">Włącz przesyłanie raportów o użytkowaniu i danych dotyczących awarii</translation>
 <translation id="2324547593752594014">Zezwalaj na logowanie się w Chrome</translation>
@@ -942,6 +985,7 @@ W przypadku wyłączenia lub nieskonfigurowania tej zasady tworzenie zrzutów ek
 <translation id="2629448496147630947">Skonfiguruj opcje dostępu zdalnego w <ph name="PRODUCT_NAME"/>. Funkcje te są uwzględniane dopiero po zainstalowaniu aplikacji internetowej dostępu zdalnego.</translation>
 <translation id="1310699457130669094">W tym miejscu możesz podać URL pliku PAC serwera proxy. Ta zasada obowiązuje tylko po wybraniu ręcznego konfigurowania ustawień proxy za pomocą opcji „Wybierz sposób określenia ustawień serwera proxy”. Szczegółowe przykłady można znaleźć na  <ph name="PROXY_HELP_URL"/></translation>
 <translation id="3406810703404235731">URL firmowego sklepu Chrome Web Store</translation>
+<translation id="5464816904705580310">Konfiguruj ustawienia dla zarządzanych użytkowników.</translation>
 <translation id="3219421230122020860">Tryb incognito dostępny</translation>
 <translation id="7690740696284155549">Określa katalog, w którym <ph name="PRODUCT_NAME"/> będzie zapisywać pobrane pliki.
 
@@ -1002,6 +1046,7 @@ W przypadku wyłączenia lub nieskonfigurowania tej zasady tworzenie zrzutów ek
 <translation id="4043912146394966243"> Typy połączeń, które mogą być używane do aktualizowania systemu operacyjnego. Z powodu swojego rozmiaru aktualizacje te silnie wykorzystują połączenie, co może skutkować dodatkowymi kosztami. Dlatego domyślnie są wyłączone w przypadku połączeń uznanych za „kosztowne”, czyli aktualnie dla WiMax, Bluetooth i komórek.
 
       Rozpoznawane identyfikatory typów połączeń to  „ethernet”, „wifi”, „wimax”, „bluetooth” i „cellular”.</translation>
+<translation id="6652197835259177259">Ustawienia użytkowników zarządzanych lokalnie</translation>
 <translation id="3243309373265599239">Określa, po jakim czasie nieaktywności użytkownika przyciemniany jest ekran przy zasilaniu z sieci.
 
           Jeśli ta zasada ma wartość większą niż zero, określa czas, przez który użytkownik musi pozostać bezczynny, zanim <ph name="PRODUCT_OS_NAME"/> przyciemni ekran.
@@ -1011,8 +1056,16 @@ W przypadku wyłączenia lub nieskonfigurowania tej zasady tworzenie zrzutów ek
           Jeśli ta zasada nie jest ustawiona, używana jest domyślna wartość długości czasu.
 
           Wartość tej zasady powinna być określona w milisekundach. Wartości nie mogą być większe niż opóźnienie wyłączenia ekranu (jeśli jest ustawione) i opóźnienie bezczynności.</translation>
+<translation id="3859780406608282662">Dodaj parametr do pobierania odmian referencyjnych w <ph name="PRODUCT_OS_NAME"/>.
+
+      Jeśli ta zasada jest ustalona, zostanie dodany parametr zapytania „z ograniczeniem” do adresu URL używanego do pobierania odmian referencyjnych. Wartością parametru będzie wartość tej zasady.
+
+      Jeśli zasada nie jest określona, adres URL nie zostanie zmieniony.</translation>
 <translation id="7049373494483449255">Pozwala <ph name="PRODUCT_NAME"/> przesyłać dokumenty do <ph name="CLOUD_PRINT_NAME"/> w celu wydrukowania. UWAGA: to ustawienie wpływa tylko na obsługę <ph name="CLOUD_PRINT_NAME"/> w <ph name="PRODUCT_NAME"/>. Nie uniemożliwia użytkownikom drukowania za pośrednictwem innych witryn. W przypadku włączenia lub nieskonfigurowania tego ustawienia, użytkownicy będą mogli drukować w <ph name="CLOUD_PRINT_NAME"/> z okna drukowania w <ph name="PRODUCT_NAME"/>. Jeśli to ustawienie zostanie wyłączone, użytkownicy nie będą mogli drukować za pomocą <ph name="CLOUD_PRINT_NAME"/> w oknie drukowania przeglądarki <ph name="PRODUCT_NAME"/>.</translation>
 <translation id="4088589230932595924">Tryb incognito wymuszany</translation>
+<translation id="8197918588508433925">Ta zasada określa dozwolone rozszerzenia do użycia z funkcją  chrome.enterprise.platformKeysPrivate.challengeUserKey() interfejsu API Enterprise Platform Keys do zdalnego poświadczania. Rozszerzenia muszą zostać dodane do tej listy, by były używane z interfejsem API.
+
+          Jeśli rozszerzenie nie znajduje się na liście, lub lista nie jest ustawiona, wywołanie interfejsu API zakończy się błędem.</translation>
 <translation id="7649638372654023172">Pozwala skonfigurować URL domyślnej strony startowej w urządzeniu <ph name="PRODUCT_NAME"/> i uniemożliwia użytkownikom jego zmianę.
 
           Strona startowa jest otwierana przyciskiem strony startowej. Strony otwierane przy uruchomieniu są kontrolowane przez zasady RestoreOnStartup.

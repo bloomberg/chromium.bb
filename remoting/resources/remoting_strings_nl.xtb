@@ -10,6 +10,7 @@
 <translation id="2801119484858626560">Er is een incompatibele versie van Chrome Remote Desktop gedetecteerd. Controleer of beide computers beschikken over de nieuwste versie van Chrome en Chrome Remote Desktop en probeer het opnieuw.</translation>
 <translation id="6998989275928107238">Aan</translation>
 <translation id="3258789396564295715">U kunt veilig toegang krijgen tot deze computer via Chrome Remote Desktop.</translation>
+<translation id="5070121137485264635">De externe host vereist dat u op een website van derden wordt geverifieerd. Als u wilt doorgaan, moet u Chrome Remote Desktop aanvullende machtigingen geven om toegang tot dit adres te krijgen:</translation>
 <translation id="4808503597364150972">Geef uw pincode voor <ph name="HOSTNAME"/> op.</translation>
 <translation id="7672203038394118626">Externe verbindingen voor deze computer zijn uitgeschakeld.</translation>
 <translation id="8244400547700556338">Meer informatie.</translation>
@@ -97,6 +98,7 @@
 <translation id="1643640058022401035">Als u deze pagina verlaat, wordt uw Chromoting-sessie beëindigd.</translation>
 <translation id="2235518894410572517">De computer delen zodat een andere gebruiker deze kan bekijken en beheren.</translation>
 <translation id="1023096696228309145">Vraag de gebruiker tot wiens computer u toegang wilt hebben, op 'Nu delen' te klikken en u de toegangscode te geven.</translation>
+<translation id="80739703311984697">De externe host vereist dat u op een website van derden wordt geverifieerd. Als u wilt doorgaan, moet u Chromoting aanvullende machtigingen geven om toegang tot dit adres te krijgen:</translation>
 <translation id="4006787130661126000">U moet externe verbindingen inschakelen als u Chrome Remote Desktop wilt gebruiken voor toegang tot deze computer.</translation>
 <translation id="6930242544192836755">Duur</translation>
 <translation id="6527303717912515753">Delen</translation>

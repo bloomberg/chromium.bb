@@ -11,7 +11,6 @@
 <translation id="6613594504749178791">Perubahan Anda akan berlaku saat berikutnya Anda membuka Chromium.</translation>
 <translation id="3748537968684000502">Anda sedang melihat laman Chromium yang aman.</translation>
 <translation id="8971920611044657379">Chromium Frame</translation>
-<translation id="6705571474735842144">Anda perlu mengalihkan Chromium ke mode desktop untuk menggunakan Peluncur Aplikasi.</translation>
 <translation id="2077129598763517140">Gunakan percepatan perangkat keras saat tersedia</translation>
 <translation id="1065672644894730302">Preferensi Anda tidak dapat dibaca. Beberapa fitur mungkin tidak tersedia dan perubahan pada preferensi tidak akan disimpan.</translation>
 <translation id="4222661289444749267">Pembaruan Chromium Frame.</translation>
@@ -29,14 +28,24 @@
 <translation id="2589479092236095792">Setelan IsiOtomatis Chromium</translation>
 <translation id="3555616473548901994">Pencopotan pemasangan selesai.</translation>
 <translation id="2886012850691518054">Opsional: Bantu menjadikan Chrome lebih baik dengan mengirim statistik penggunaan dan laporan kerusakan secara otomatis ke Google.</translation>
+<translation id="580822234363523061">Buka
+          menu Chromium &gt;
+          <ph name="SETTINGS_TITLE"/>
+          &gt;
+          <ph name="ADVANCED_TITLE"/>
+          &gt;
+          <ph name="PROXIES_TITLE"/>
+          dan pastikan konfigurasi Anda disetel ke &quot;tanpa proxy&quot; atau &quot;langsung&quot;.</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE"/> - Chromium</translation>
 <translation id="1989424089625731201">Anda mencoba membuka &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, namun sertifikat yang ditunjukkan server berisi kesalahan. Chromium tidak dapat menggunakan sertifikat berisi kesalahan dan tidak dapat memvalidasi identitas situs yang coba Anda sambungkan.</translation>
 <translation id="3103660991484857065">Pemasang gagal membatalkan kompresi arsip. Unduh Chromium lagi.</translation>
 <translation id="872034308864968620">Jalankan Chromium di Latar Belakang</translation>
+<translation id="459535195905078186">Aplikasi Chromium</translation>
 <translation id="5109068449432240255">Ya, keluar dari Chromium</translation>
 <translation id="1480489203462860648">Cobalah, ini sudah dipasang</translation>
 <translation id="3032787606318309379">Menambahkan Chromium...</translation>
 <translation id="4831257561365056138">Copot pemasangan Peluncur Aplikasi Chromium</translation>
+<translation id="4222580632002216401">Sekarang Anda telah masuk ke Chromium! Sinkronisasi dinonaktifkan oleh administrator Anda.</translation>
 <translation id="4207043877577553402"><ph name="BEGIN_BOLD"/>Peringatan:<ph name="END_BOLD"/> Chromium tidak dapat mencegah ekstensi merekam riwayat penjelajahan Anda. Untuk menonaktifkan ekstensi ini dalam mode penyamaran, jangan pilih opsi ini.</translation>
 <translation id="985602178874221306">Penulis Chromium</translation>
 <translation id="8628626585870903697">Chromium tidak menyertakan penampil PDF yang dibutuhkan agar Pratinjau Cetak berfungsi.</translation>
@@ -45,31 +54,21 @@
 <translation id="4179848566211676653">Keluar dari Chromium</translation>
 <translation id="3849925841547750267">Sayangnya, setelan Mozilla Firefox Anda tidak tersedia sewaktu browser berjalan. Untuk mengimpor setelan ke Chromium, simpan pekerjaan dan tutup semua jendela Firefox. Kemudian klik Lanjutkan.</translation>
 <translation id="7771626876550251690">Dalam hal ini, alamat yang tercantum di sertifikat tidak cocok dengan alamat situs web yang dicoba dibuka di browser Anda. Satu alasan yang mungkin untuk hal ini adalah bahwa komunikasi Anda dihentikan oleh penyerang yang memberikan sertifikat untuk situs web yang lain, sehingga dapat mengakibatkan ketidakcocokan. Kemungkinan alasan lainnya adalah server disiapkan untuk menampilkan sertifikat yang sama untuk beberapa situs web, termasuk salah satu yang coba Anda kunjungi, meskipun sertifikat tidak valid untuk semua situs web tersebut. Chromium dapat menyimpulkan dengan pasti bahwa Anda menjangkau &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, namun tidak dapat memverifikasi bahwa itu adalah situs yang sama seperti &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; yang ingin Anda buka. Jika Anda melanjutkan, Chromium tidak akan memeriksa setiap ketidakcocokan nama lebih lanjut.</translation>
-<translation id="2401271577450445716">Buka
-          <ph name="BEGIN_BOLD"/>
-          menu Chromium &gt;
-          <ph name="SETTINGS_TITLE"/>
-          &gt;
-          <ph name="ADVANCED_TITLE"/>
-          &gt;
-          <ph name="PROXIES_TITLE"/>
-          &gt;
-          Setelan LAN
-          <ph name="END_BOLD"/>
-          lalu hapus pilihan pada kotak centang &quot;Gunakan server proxy untuk LAN&quot;.</translation>
 <translation id="4330585738697551178">Modul ini biasanya konflik dengan Chromium.</translation>
 <translation id="3190315855212034486">Aduh! Chromium ngadat. Luncurkan ulang sekarang?</translation>
-<translation id="6034408899846040667">Anda perlu mengalihkan Chromium ke mode desktop untuk menggunakan Aplikasi.</translation>
 <translation id="6714487516757221107">Tidak ditemukan pemasangan Chromium atau Chromium Frame untuk diperbarui.</translation>
 <translation id="3197823471738295152">Perangkat Anda sudah diperbarui.</translation>
 <translation id="8551886023433311834">Hampir selesai diperbarui! Nyalakan ulang perangkat untuk menyelesaikan pembaruan.</translation>
 <translation id="8353224596138547809">Ingin Chromium menyimpan sandi untuk situs ini?</translation>
 <translation id="7339898014177206373">Jendela baru</translation>
-<translation id="3026202950002788510">Buka
-          <ph name="BEGIN_BOLD"/>
-          Aplikasi &gt; Preferensi Sistem &gt; Jaringan &gt; Lanjutan &gt; Proxy
-          <ph name="END_BOLD"/>
-          dan hapus centang semua proxy yang telah dipilih.</translation>
+<translation id="3733625138702910745">Buka
+        menu Chromium &gt;
+        <ph name="SETTINGS_TITLE"/>
+        &gt;
+        <ph name="ADVANCED_TITLE"/>
+        dan batalkan pilihan &quot;<ph name="NO_PREFETCH_DESCRIPTION"/>&quot;.
+        Jika hal ini tidak menyelesaikan masalah, sebaiknya pilih lagi opsi
+        ini untuk meningkatkan kinerja.</translation>
 <translation id="4124681358536363708">Direktori pemasangan Chromium kelihatannya sedang digunakan. Nyalakan ulang komputer dan coba lagi.</translation>
 <translation id="8770560772173120024">Chromium sedang mengimpor Favorit/Bookmark sekarang.</translation>
 <translation id="225614027745146050">Selamat Datang</translation>
@@ -81,6 +80,7 @@
 <translation id="7915138385500177190">Komputer Anda kehilangan beberapa file sistem Windows yang penting sehingga Chromium tidak akan dapat berfungsi dengan benar.</translation>
 <translation id="3296368748942286671">Lanjutkan aplikasi yang berjalan di latar belakang jika Chromium ditutup</translation>
 <translation id="473775607612524610">Mutakhirkan</translation>
+<translation id="5714819759736651024">Untuk menggunakan aplikasi Chrome, Anda harus meluncurkan ulang Chromium di desktop.</translation>
 <translation id="6055895534982063517">Tersedia Chromium versi baru, dan versi ini lebih cepat dari sebelumnya.</translation>
 <translation id="2407806170074302369">Tentang Chromium Frame...</translation>
 <translation id="5405650547142096840">Hapus dari Chromium</translation>
@@ -93,7 +93,6 @@
 <translation id="6970811910055250180">Memperbarui perangkat Anda...</translation>
 <translation id="2485422356828889247">Copot instalasi</translation>
 <translation id="85843667276690461">Dapatkan bantuan tentang penggunaan Chromium</translation>
-<translation id="3354334135076267965">Tampilkan pintasan ke Peluncur Aplikasi Chromium di Bilah Tugas Windows.</translation>
 <translation id="263863604136125912">Mulai Chromium</translation>
 <translation id="9036189287518468038">Peluncur Aplikasi Chromium</translation>
 <translation id="2881203820889150661">Chromium tidak dapat membuat pintasan aplikasi karena tidak dapat menentukan lingkungan desktop saat ini.</translation>
@@ -112,17 +111,6 @@
 <translation id="3069161343438701711">Pekerja Chromium</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
 <translation id="6757767188268205357">Jangan ganggu saya</translation>
-<translation id="7294284502435423183">Coba nonaktifkan prediksi jaringan dengan mengikuti langkah berikut:
-        Buka
-        <ph name="BEGIN_BOLD"/>
-        menu Chromium &gt;
-        <ph name="SETTINGS_TITLE"/>
-        &gt;
-        <ph name="ADVANCED_TITLE"/>
-        <ph name="END_BOLD"/>
-        dan batalkan pilihan &quot;<ph name="NO_PREFETCH_DESCRIPTION"/>.&quot;
-        Jika hal ini tidak menyelesaikan masalah, sebaiknya pilih opsi ini
-        lagi untuk kinerja yang ditingkatkan.</translation>
 <translation id="275588974610408078">Pelaporan kerusakan tidak tersedia di Chromium.</translation>
 <translation id="5909170354645388250">Tidak digunakan dalam Chromium. Placeholder digunakan untuk menjaga peta sumber daya tetap sinkron. Menunggu satu argumen: $1.</translation>
 <translation id="7937630085815544518">Anda telah masuk ke Chromium sebagai <ph name="USER_EMAIL_ADDRESS"/>. Gunakan akun yang sama untuk masuk kembali.</translation>
@@ -135,7 +123,16 @@
 <translation id="5398878173008909840">Tersedia Chromium versi baru.</translation>
 <translation id="2648074677641340862">Terjadi kesalahan pada sistem operasi saat pemasangan berlangsung. Unduh Chromium lagi.</translation>
 <translation id="5942520288919337908"><ph name="EXTENSION_NAME"/> telah ditambahkan ke Chromium.</translation>
-<translation id="8678787945719392857">Gunakan Akun Google ini untuk menyinkronkan semua barang Chromium Anda?</translation>
+<translation id="4559775032954821361">Buka
+          menu Chromium &gt;
+          <ph name="SETTINGS_TITLE"/>
+          &gt;
+          <ph name="ADVANCED_TITLE"/>
+          &gt;
+          <ph name="PROXIES_TITLE"/>
+          &gt;
+          Setelan LAN
+          dan hapus pilihan pada kotak centang &quot;Gunakan server proxy untuk LAN&quot;.</translation>
 <translation id="8621669128220841554">Pemasangan gagal karena kesalahan yang tidak ditentukan. Unduh Chromium lagi.</translation>
 <translation id="6717134281241384636">Profil Anda tidak dapat digunakan karena berasal dari Chromium versi yang lebih baru.
 
@@ -146,54 +143,32 @@ Sebagian fitur mungkin tidak tersedia. Tentukan direktori profil yang berbeda at
 <translation id="6212496753309875659">Komputer ini sudah memiliki Chromium versi yang lebih anyar. Jika perangkat lunak tidak bekerja, copot Chromium dan coba lagi.</translation>
 <translation id="3014684866565908571">Utilitas Chromium</translation>
 <translation id="1298199220304005244">Dapatkan bantuan tentang penggunaan Chromium OS</translation>
+<translation id="8187289872471304532">Buka
+          Aplikasi &gt; Preferensi Sistem &gt; Jaringan &gt; Lanjutan &gt; Proxy
+          dan hapus centang proxy apa pun yang telah dipilih.</translation>
 <translation id="1691304614444223855">Chromium Frame telah diperbarui. Luncurkan lagi browser Anda. Versi Chromium: <ph name="TODO_0001"/>, Versi Chromium Frame: <ph name="TODO_0002"/></translation>
 <translation id="130631256467250065">Perubahan Anda akan diterapkan pada saat Anda nanti menyalakan ulang perangkat.</translation>
 <translation id="1105130903706696483">Chromium tidak dimatikan dengan benar. Untuk membuka lagi laman yang sebelumnya Anda buka, klik Pulihkan.</translation>
 <translation id="1531452407274881270">Anda masuk ke Chromium menggunakan akun <ph name="USER_EMAIL_ADDRESS"/> Anda. Anda akan dapat mengakses bookmark, riwayat, dan setelan lain di semua perangkat Anda yang sudah masuk.</translation>
 <translation id="1929939181775079593">Chromium tidak merespons. Luncurkan ulang sekarang?</translation>
 <translation id="1414495520565016063">Anda sudah masuk ke Chromium!</translation>
-<translation id="6089587093203430357">Instan</translation>
+<translation id="3155163173539279776">Luncurkan ulang Chromium</translation>
 <translation id="8520216698644798023">Kesalahan Windows terdeteksi</translation>
 <translation id="2966088006374919794">Chromium harus meluncurkan aplikasi eksternal untuk menangani tautan <ph name="SCHEME"/>. Tautan yang diminta adalah <ph name="PROTOLINK"/>.</translation>
 <translation id="6287463253129672858">Tidak dapat memasang Chromium Frame versi yang sama dengan yang sedang Anda jalankan. Tutup Chromium Frame dan coba lagi.</translation>
 <translation id="2558235863893655150">Apakah Anda ingin Chromium menyimpan sandi Anda?</translation>
-<translation id="3398522627033804247">Buka
-          <ph name="BEGIN_BOLD"/>
-          menu Chromium &gt;
-          <ph name="SETTINGS_TITLE"/>
-          &gt;
-          <ph name="INTERNET_TITLE"/>
-          &gt;
-          &quot;<ph name="OPTIONS_BUTTON"/>&quot;
-          <ph name="END_BOLD"/>
-          (untuk Jaringan saat ini). Jika
-          <ph name="BEGIN_BOLD"/>
-          tombol &quot;<ph name="PROXY_BUTTON"/>&quot;
-          <ph name="END_BOLD"/> (di
-          <ph name="BEGIN_BOLD"/>
-          <ph name="NETWORK_TAB"/>
-          <ph name="END_BOLD"/>
-          tab) ada, klik tombol tersebut dan pastikan konfigurasi Anda
-          disetel ke &quot;Langsung&quot;.</translation>
 <translation id="1231416733874080281">Tampilkan menu Chromium</translation>
+<translation id="5772805321386874569">(Chromium perlu <ph name="BEGIN_BUTTON"/>dimulai ulang<ph name="END_BUTTON"/>)</translation>
 <translation id="1688750314291223739">Siapkan Sinkronisasi untuk menyimpan fitur browser hasil personalisasi Anda ke web dan mengaksesnya dari Chromium di komputer mana saja.</translation>
 <translation id="9171640504251796339">http://www.google.com/support/chrome/bin/answer.py?hl=<ph name="GRITLANGCODE_1"/>&amp;answer=161796</translation>
 <translation id="8865765905101981392">Browser Internet</translation>
+<translation id="8610831143142469229">Izinkan Chromium untuk mengakses jaringan di setelan firewall atau antivirus
+        Anda.</translation>
 <translation id="6424492062988593837">Chromium jadi semakin baik! Versi baru telah tersedia.</translation>
 <translation id="6601972021154586963">Anda harus masuk ke Chromium untuk menggunakan aplikasi. Hal ini memungkinkan Chromium menyinkronkan aplikasi, bookmark, riwayat, sandi, dan setelan lainnya antar perangkat.</translation>
 <translation id="2910007522516064972">Tentang &amp;Chromium</translation>
 <translation id="8453117565092476964">Arsip pemasang rusak atau tidak valid. Unduh Chromium lagi.</translation>
-<translation id="950712238285296105">( Chromium perlu <ph name="BEGIN_BUTTON"/>dimulai ulang<ph name="END_BUTTON"/>)</translation>
-<translation id="2162026298602630383">Buka
-          <ph name="BEGIN_BOLD"/>
-          menu Chromium &gt;
-          <ph name="SETTINGS_TITLE"/>
-          &gt;
-          <ph name="ADVANCED_TITLE"/>
-          &gt;
-          <ph name="PROXIES_TITLE"/>
-          <ph name="END_BOLD"/>
-          dan pastikan konfigurasi Anda disetel ke &quot;tanpa proxy&quot; atau &quot;langsung&quot;.</translation>
+<translation id="6763060723530774166">Untuk menggunakan peluncur aplikasi, Anda harus meluncurkan ulang Chromium di desktop.</translation>
 <translation id="3249425904492147663">Anda mencoba menjangkau &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, namun server menampilkan sertifikat yang kedaluwarsa. Tidak tersedia informasi yang menunjukkan bahwa sertifikat tersebut telah disusupi sejak masa kedaluwarsa. Hal ini mengindikasikan bahwa Chromium tidak dapat menjamin bahwa Anda berkomunikasi dengan &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; dan bukan penyerang. Jam komputer Anda saat ini disetel ke <ph name="CURRENT_TIME"/>. Apakah sudah benar? Jika tidak, Anda perlu mengoreksi kesalahan ini dan menyegarkan laman.</translation>
 <translation id="7196020411877309443">Mengapa saya melihat ini?</translation>
 <translation id="457845228957001925">Informasi penting terkait data Chromium Anda</translation>
@@ -207,7 +182,6 @@ Sebagian fitur mungkin tidak tersedia. Tentukan direktori profil yang berbeda at
 <translation id="8724049448828509830">Unduhan saat ini sedang berlangsung. Anda ingin keluar dari Chromium dan membatalkan unduhan?</translation>
 <translation id="3360567213983886831">Biner Chromium</translation>
 <translation id="7503101070699687603">Host Plugin Chromium</translation>
-<translation id="2128780683974727821">Tampilkan Peluncur Aplikasi Chromium.</translation>
 <translation id="8985587603644336029">Sebelumnya ada seseorang yang masuk ke Chromium di komputer ini sebagai <ph name="ACCOUNT_EMAIL_LAST"/>. Jika itu bukan akun Anda, buatlah pengguna Chromium baru untuk menjaga informasi Anda tetap terpisah.
 
 Tetap masuk akan menggabungkan informasi Chromium seperti bookmark, riwayat, dan setelan lain ke <ph name="ACCOUNT_EMAIL_NEW"/>.</translation>

@@ -1,11 +1,13 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ro">
+<translation id="8914504000324227558">Relansați Chrome</translation>
 <translation id="8000275528373650868">Google Chrome necesită Windows Vista sau Windows XP cu SP2 sau o versiune ulterioară.</translation>
 <translation id="8124352762008487242">Copyright 2013 Google Inc. Toate drepturile rezervate.</translation>
 <translation id="8485767968786176057">În acest caz, adresa afișată în certificat nu se potrivește cu adresa site-ului web pe care a încercat să o acceseze browserul dvs. Un motiv posibil pentru acest fapt este interceptarea comunicațiilor dvs. de către un atacator, care furnizează un certificat pentru un alt site web, ceea ce ar provoca o nepotrivire. Un alt motiv posibil este că serverul este setat să afișeze același certificat pentru mai multe site-uri web, inclusiv cel pe care încercați să-l accesați, chiar dacă acel certificat nu este valabil pentru toate site-urile respective. Google Chrome poate confirma că ați accesat &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, dar nu poate confirma că este același site ca &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, pe care ați intenționat să-l accesați. Dacă veți continua, Chrome nu va mai căuta nicio altă nepotrivire de nume.</translation>
 <translation id="5430073640787465221">Fișierul dvs. de preferințe este fie deteriorat, fie nevalid. Google Chrome nu poate recupera setările dvs.</translation>
 <translation id="6676384891291319759">Accesați Internetul</translation>
+<translation id="7115445779188493842">Pentru a utiliza lansatorul de aplicații, trebuie să reporniți Google Chrome pe desktop.</translation>
 <translation id="6236285698028833233">Google Chrome nu se mai actualizează și nu mai acceptă această versiune a sistemului dvs. de operare.</translation>
 <translation id="5453904507266736060">Permiteți Google Chrome să ruleze în fundal</translation>
 <translation id="2383457833405848421">Despre Google Chrome Frame...</translation>
@@ -18,35 +20,26 @@
 <translation id="7781002470561365167">Este disponibilă o nouă versiune a browserului Google Chrome.</translation>
 <translation id="7101265395643981223">Porniți Google Chrome</translation>
 <translation id="4891791193823137474">Permiteți Google Chrome să ruleze în fundal</translation>
-<translation id="2879385160622431163">Google Chrome Instant</translation>
 <translation id="2896252579017640304">Lansați aplicații Chrome</translation>
 <translation id="2370289711218562573">Google Chrome importă acum Preferințele/Marcajele.</translation>
 <translation id="8762286861469007470">Detectorul Chrome de portaluri captive</translation>
 <translation id="1761870329818521071">Nu se poate instala aceeași versiune Google Chrome Frame care rulează în prezent. Închideți Google Chrome Frame și încercați din nou.</translation>
 <translation id="2040709530900803995">Google Chrome Renderer</translation>
-<translation id="6541116830060437475">Încercați să dezactivați anticiparea rețelei urmând acești pași.
-        Accesați
-        <ph name="BEGIN_BOLD"/>
-        meniul Chrome &gt;
-        <ph name="SETTINGS_TITLE"/>
-        &gt;
-        <ph name="ADVANCED_TITLE"/>
-        <ph name="END_BOLD"/>
-        și deselectați „<ph name="NO_PREFETCH_DESCRIPTION"/>”.
-        Dacă problema nu se rezolvă în acest fel, vă recomandăm să selectați din nou această opțiune pentru performanță îmbunătățită.</translation>
+<translation id="6014844626092547096">Sunteți conectat(ă) la Chrome! Sincronizarea este dezactivată de administrator.</translation>
 <translation id="3140883423282498090">Modificările se vor aplica următoarea dată când relansați Google Chrome.</translation>
 <translation id="1773601347087397504">Obțineți ajutor în legătură cu utilizarea sistemului de operare Chrome</translation>
 <translation id="6982337800632491844"><ph name="DOMAIN"/> necesită să citiți și să acceptați Termenii și condițiile următoare înainte de a utiliza acest dispozitiv. Acești termeni nu extind, nu modifică și nu limitează Termenii pentru sistemul de operare Google Chrome.</translation>
+<translation id="4309555186815777032">(necesită <ph name="BEGIN_BUTTON"/>repornirea<ph name="END_BUTTON"/> Chrome)</translation>
 <translation id="5339639696978861456">Chrome Frame s-a actualizat. Reporniți browserul. Versiune Google Chrome: <ph name="TODO_0001"/>. Versiune Chrome Frame: <ph name="TODO_0002"/></translation>
 <translation id="8471072774411320686">Trebuie să fiți conectat(ă) la Chrome pentru a utiliza aplicațiile. Astfel, Chrome vă poate sincroniza aplicațiile, marcajele, istoricul, parolele și alte setări pe toate dispozitivele.</translation>
 <translation id="5775197990071433230">Acest computer are deja o versiune mai recentă a componentelor Google Chrome. Vă rugăm să folosiți un program de instalare mai recent.</translation>
-<translation id="8398145039500709259">Utilizați acest Cont Google pentru a sincroniza toate elementele din Chrome?</translation>
 <translation id="1779550429052479749">A fost găsită o instalare conflictuală a Google Chrome sau Google Chrome Frame în sistem. Dezinstalați-o și încercați din nou.</translation>
 <translation id="3555616473548901994">Dezinstalare finalizată.</translation>
 <translation id="4987308747895123092">Închideți toate ferestrele Google Chrome (inclusiv pe cele în modul Windows 8) și încercați din nou.</translation>
 <translation id="568643307450491754">Găsiți marcajele în meniul Chrome sau în bara de marcaje.</translation>
 <translation id="8556340503434111824">Este disponibilă o nouă versiune de Google Chrome, iar aceasta este mai rapidă ca oricând.</translation>
 <translation id="4728575227883772061">Instalarea a eșuat din cauza unei erori necunoscute. Dacă Google Chrome rulează în acest moment, închideți-l și încercați din nou.</translation>
+<translation id="2082230140685103752">Pentru a utiliza aplicațiile Chrome, trebuie să reporniți Google Chrome pe desktop.</translation>
 <translation id="3080151273017101988">Rulați în continuare aplicații de fundal când Google Chrome este închis</translation>
 <translation id="4149882025268051530">Programul de instalare nu a putut decomprima arhiva. Descărcați din nou Google Chrome.</translation>
 <translation id="6989339256997917931">Google Chrome a fost actualizat, dar nu l-ați utilizat de cel puțin 30 de zile.</translation>
@@ -64,25 +57,11 @@
 <translation id="4053720452172726777">Personalizați și controlați Google Chrome</translation>
 <translation id="6423071462708908582">Ați încercat să accesați &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, dar serverul a furnizat un certificat expirat. Nu sunt disponibile informații care să indice dacă certificatul respectiv a fost compromis, din cauza faptului că este expirat. Acest lucru înseamnă că Google Chrome nu vă poate garanta că dvs. comunicați cu &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; și nu cu un atacator. Ora computerului dvs. este setată la <ph name="CURRENT_TIME"/>. Credeți că această setare este corectă? În caz contrar, trebuie să corectați eroarea și să actualizați această pagină.</translation>
 <translation id="3197823471738295152">Dispozitivul dvs. este actualizat.</translation>
-<translation id="2336460313445286758">Accesați
-          <ph name="BEGIN_BOLD"/>
-          meniul Chrome &gt;
-          <ph name="SETTINGS_TITLE"/>
-          &gt;
-          <ph name="ADVANCED_TITLE"/>
-          &gt;
-          <ph name="PROXIES_TITLE"/>
-          <ph name="END_BOLD"/>
-          și asigurați-vă că aveți configurația setată la „fără proxy” sau „direct”.</translation>
 <translation id="3889417619312448367">Dezinstalați Google Chrome</translation>
+<translation id="1434626383986940139">Aplicații Chrome Canary</translation>
 <translation id="8551886023433311834">Actualizare aproape efectuată! Reporniți dispozitivul pentru a finaliza actualizarea.</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE"/> - Google Chrome</translation>
 <translation id="7339898014177206373">Fereastră nouă</translation>
-<translation id="3026202950002788510">Accesați
-          <ph name="BEGIN_BOLD"/>
-          Applications (Aplicații) &gt; System Preferences (Preferințe de sistem) &gt; Network (Rețea) &gt; Advanced (Avansat) &gt; Proxies (Servere proxy)
-          <ph name="END_BOLD"/>
-          și debifați toate serverele proxy selectate.</translation>
 <translation id="3282568296779691940">Conectați-vă la Chrome</translation>
 <translation id="3089968997497233615">Google Chrome este disponibil într-o versiune nouă și mai sigură.</translation>
 <translation id="5037239767309817516">Pentru ca această modificare să aibă efect, închideți toate ferestrele Google Chrome și reporniți-l.</translation>
@@ -91,6 +70,7 @@
 <translation id="7451721381978275812">Argumentele nu sunt valide. Google Chrome Frame nu poate fi instalat în modul Pregătit fără a instala și Google Chrome.</translation>
 <translation id="8684521613357479262">Ați încercat să accesați &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, dar serverul a furnizat un certificat care încă nu este valabil. Nu sunt disponibile informații care să indice dacă certificatul respectiv este de încredere. Google Chrome nu vă poate garanta în mod sigur că dvs. comunicați cu &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, și nu cu un atacator. Ora computerului dvs. este setată la <ph name="CURRENT_TIME"/>. Credeți că această setare este corectă? În caz contrar, trebuie să corectați eroarea și să actualizați această pagină.</translation>
 <translation id="4585888816441913908">Acest computer are deja o versiune mai recentă de Google Chrome și Google Chrome Frame. Dacă software-ul nu funcționează, dezinstalați atât Google Chrome, cât și Google Chrome Frame și încercați din nou.</translation>
+<translation id="3149510190863420837">Aplicații Chrome</translation>
 <translation id="6368958679917195344"><ph name="BEGIN_LINK_CROS_OSS"/>Software-ul open source<ph name="END_LINK_CROS_OSS"/> suplimentar a contribuit la Sistemul de operare Chrome.</translation>
 <translation id="7459554271817304652">Configurați sincronizarea pentru a salva funcțiile personalizate ale browserului pe web și accesați-le din Google Chrome de pe orice computer.</translation>
 <translation id="4331809312908958774">SO Chrome</translation>
@@ -99,21 +79,17 @@
 <translation id="2576431527583832481">Chrome a devenit și mai bun! Este disponibilă o nouă versiune.</translation>
 <translation id="2580411288591421699">Nu se poate instala aceeași versiune Google Chrome care se execută în prezent. Închideți Google Chrome și încercați din nou.</translation>
 <translation id="1457721931618994305">Se actualizează Google Chrome...</translation>
-<translation id="4351362253593301573">Accesați
-          <ph name="BEGIN_BOLD"/>
+<translation id="7747138024166251722">Programul de instalare nu a putut crea un director temporar. Verificați dacă există suficient spațiu liber și dacă aveți drepturile necesare pentru a instala software-ul.</translation>
+<translation id="6557998774620459028">Ați încercat să accesați &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, dar serverul a furnizat un certificat emis de către o entitate care nu este de încredere pentru sistemul de operare al computerului dvs. Acest lucru poate însemna că serverul a generat propriile sale acreditări de securitate, pe care Google Chrome nu se poate baza pentru informații de identitate sau este posibil ca un atacator să încerce să intercepteze comunicațiile dvs.</translation>
+<translation id="5170938038195470297">Profilul dvs. nu poate fi utilizat, deoarece provine de la o versiune Google Chrome mai recentă. Este posibil ca unele funcții să nu fie disponibile. Specificați un director de profil diferit sau utilizați o versiune Chrome mai nouă.</translation>
+<translation id="6011049234605203654">Accesați
           meniul Chrome &gt;
           <ph name="SETTINGS_TITLE"/>
           &gt;
           <ph name="ADVANCED_TITLE"/>
           &gt;
           <ph name="PROXIES_TITLE"/>
-          &gt;
-          Setări LAN
-          <ph name="END_BOLD"/>
-          și debifați caseta de selectare „Utilizați un server proxy pentru LAN”.</translation>
-<translation id="7747138024166251722">Programul de instalare nu a putut crea un director temporar. Verificați dacă există suficient spațiu liber și dacă aveți drepturile necesare pentru a instala software-ul.</translation>
-<translation id="6557998774620459028">Ați încercat să accesați &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, dar serverul a furnizat un certificat emis de către o entitate care nu este de încredere pentru sistemul de operare al computerului dvs. Acest lucru poate însemna că serverul a generat propriile sale acreditări de securitate, pe care Google Chrome nu se poate baza pentru informații de identitate sau este posibil ca un atacator să încerce să intercepteze comunicațiile dvs.</translation>
-<translation id="5170938038195470297">Profilul dvs. nu poate fi utilizat, deoarece provine de la o versiune Google Chrome mai recentă. Este posibil ca unele funcții să nu fie disponibile. Specificați un director de profil diferit sau utilizați o versiune Chrome mai nouă.</translation>
+          și asigurați-vă că aveți configurația setată la „fără proxy” sau „direct”.</translation>
 <translation id="8738921060445980047">Versiune necunoscută.</translation>
 <translation id="6970811910055250180">Se actualizează dispozitivul...</translation>
 <translation id="2485422356828889247">Dezinstalați</translation>
@@ -128,10 +104,8 @@ Dacă totuși vă conectați, informațiile Chrome cum ar fi marcajele, istoricu
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="4794050651896644714">Salvați detaliile în Chrome</translation>
 <translation id="911206726377975832">Ștergeți și datele de navigare?</translation>
-<translation id="3872765354315765470">Afișați Lansatorul de aplicații Chrome.</translation>
 <translation id="2044287590254833138">Bara de instrumente Google Chrome</translation>
 <translation id="5074344184765391290">Chrome Plug-In Host</translation>
-<translation id="742982227155662553">(necesită <ph name="BEGIN_BUTTON"/>repornirea<ph name="END_BUTTON"/> Chrome)</translation>
 <translation id="8862326446509486874">Nu aveți drepturile adecvate pentru instalarea la nivel de sistem. Încercați să rulați din nou programul de instalare ca Administrator.</translation>
 <translation id="2874156562296220396">Google Chrome există ca urmare a proiectului open source <ph name="BEGIN_LINK_CHROMIUM"/>Chromium<ph name="END_LINK_CHROMIUM"/> și a altor <ph name="BEGIN_LINK_OSS"/>produse software open source<ph name="END_LINK_OSS"/>.</translation>
 <translation id="3847841918622877581">Google Chrome poate utiliza servicii web pentru îmbunătățirea experienței de navigare.</translation>
@@ -149,33 +123,27 @@ Dacă totuși vă conectați, informațiile Chrome cum ar fi marcajele, istoricu
 <translation id="1469002951682717133">Lansatorul de aplicații Chrome</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="4561051373932531560">Google Chrome vă permite să faceți clic pe un număr de telefon de pe web pentru a-l apela cu Skype!</translation>
-<translation id="4270804660370715583">Accesați
-          <ph name="BEGIN_BOLD"/>
-          meniul Chrome &gt;
-          <ph name="SETTINGS_TITLE"/>
-          &gt;
-          <ph name="INTERNET_TITLE"/>
-          &gt;
-          „<ph name="OPTIONS_BUTTON"/>”
-          <ph name="END_BOLD"/>
-          (pentru rețeaua din momentul respectiv). Dacă apare butonul
-          <ph name="BEGIN_BOLD"/>
-          „<ph name="PROXY_BUTTON"/>”
-          <ph name="END_BOLD"/> (de pe fila
-          <ph name="BEGIN_BOLD"/>
-          <ph name="NETWORK_TAB"/>
-          <ph name="END_BOLD"/>
-          ), dați clic pe acesta și asigurați-vă că aveți configurația setată la „Direct”.</translation>
 <translation id="5788838254726722945">Dezinstalați Lansatorul de aplicații Google Chrome</translation>
 <translation id="3612333635265770873">Un modul cu același nume este cunoscut ca având conflicte cu Google Chrome.</translation>
+<translation id="5875635642195358109">Accesați
+        meniul Chrome &gt;
+        <ph name="SETTINGS_TITLE"/>
+        &gt;
+        <ph name="ADVANCED_TITLE"/>
+        și deselectați „<ph name="NO_PREFETCH_DESCRIPTION"/>”.
+        Dacă problema persistă, vă recomandăm să selectați
+        din nou această opțiune pentru performanță îmbunătățită.</translation>
 <translation id="8333216950301932607">Vă conectați la Chrome cu <ph name="USER_EMAIL_ADDRESS"/>?</translation>
 <translation id="61852838583753520">Actualizați sistemul de operare &amp;Chrome</translation>
+<translation id="8547799825197623713">Lansatorul de aplicații Chrome Canary</translation>
 <translation id="5577648424992741236">Acest computer are deja o versiune mai recentă de Google Chrome Frame. Dacă software-ul nu funcționează, dezinstalați Google Chrome Frame și încercați din nou.</translation>
 <translation id="6326175484149238433">Eliminați din Chrome</translation>
 <translation id="2871893339301912279">V-ați conectat la Chrome!</translation>
 <translation id="7161904924553537242">Bun venit la Google Chrome</translation>
 <translation id="1686446242839005801">Vă conectați la Chrome utilizând contul <ph name="USER_EMAIL_ADDRESS"/>. Vă veți putea accesa marcajele, istoricul și alte setări pe toate dispozitivele de pe care v-ați conectat.</translation>
-<translation id="4846114739649431522">Pentru a utiliza aplicațiile, este nevoie să comutați Chrome la modul desktop.</translation>
+<translation id="8187289872471304532">Accesați
+          Applications (Aplicații) &gt; System Preferences (Preferințe de sistem) &gt; Network (Rețea) &gt; Advanced (Avansat) &gt; Proxies (Servere proxy)
+          și debifați toate serverele proxy selectate.</translation>
 <translation id="8669527147644353129">Google Chrome Helper</translation>
 <translation id="870251953148363156">Actualizați &amp;Google Chrome</translation>
 <translation id="130631256467250065">Modificările dvs. se vor aplica următoarea dată când reporniți dispozitivul.</translation>
@@ -196,16 +164,26 @@ Dacă totuși vă conectați, informațiile Chrome cum ar fi marcajele, istoricu
 <translation id="8865765905101981392">Browser de Internet</translation>
 <translation id="5244325494201350962">Anterior, v-ați conectat cu un alt cont de utilizator. Dacă vă conectați, datele vor fi îmbinate. Vă recomandăm să creați un alt utilizator Chrome de pe <ph name="BEGIN_LINK"/>pagina de setări<ph name="END_LINK"/> pentru conținuturile Chrome.</translation>
 <translation id="2189123953385179981">Google ChromeOS nu acceptă lansarea unei aplicații externe pentru a gestiona linkurile <ph name="SCHEME"/>. Linkul solicitat este <ph name="PROTOLINK"/>.</translation>
+<translation id="7396375882099008034">Permiteți browserului Chrome să acceseze rețeaua din setările pentru firewall sau
+        antivirus.</translation>
 <translation id="8205111949707227942">Opțional: ajutați la îmbunătățirea SO Chrome prin trimiterea automată de statistici privind utilizarea și rapoarte de avarie la Google.</translation>
 <translation id="7253415505590551024">Mai multe descărcări sunt în desfășurare. Doriți să ieșiți din Google Chrome și să anulați descărcările?</translation>
 <translation id="7196020411877309443">De ce primesc această notificare?</translation>
 <translation id="2769762047821873045">Google Chrome nu este browserul dvs. prestabilit.</translation>
+<translation id="6855094794438142393">Accesați
+          meniul Chrome &gt;
+          <ph name="SETTINGS_TITLE"/>
+          &gt;
+          <ph name="ADVANCED_TITLE"/>
+          &gt;
+          <ph name="PROXIES_TITLE"/>
+          &gt;
+          Setări LAN
+          și debifați caseta de selectare „Utilizați un server proxy pentru LAN”.</translation>
 <translation id="7825851276765848807">Instalarea nu a reușit din cauza unei erori neprecizate. Descărcați Google Chrome din nou.</translation>
-<translation id="5747377399547108410">Pentru a utiliza lansatorul de aplicații, este nevoie să comutați Chrome la modul desktop.</translation>
 <translation id="1061257178446858647">Acum sunteți conectat(ă) la Chrome! Marcajele, istoricul și alte setări vor fi sincronizate cu Contul dvs. Google.</translation>
 <translation id="3335672657969596251">Google Chrome nu acceptă <ph name="OS_NAME"/>.</translation>
 <translation id="4458285410772214805">Pentru ca modificarea să fie aplicată, deconectați-vă și conectați-vă din nou.</translation>
-<translation id="7311208098963907218">Afișați o comandă rapidă către Lansatorul de aplicații Chrome în TaskBar (Bara de activități) Windows.</translation>
 <translation id="5334545119300433702">Acest modul este cunoscut că intră în conflict cu Google Chrome.</translation>
 <translation id="4407807842708586359">Google Chrome OS</translation>
 <translation id="6634887557811630702">Google Chrome este actualizat.</translation>

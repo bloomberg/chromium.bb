@@ -26,6 +26,7 @@
 <translation id="8206859287963243715">蜂窝网络设备</translation>
 <translation id="6596816719288285829">IP 地址</translation>
 <translation id="4508265954913339219">激活失败</translation>
+<translation id="3621712662352432595">音频设置</translation>
 <translation id="1812696562331527143">您的输入法已更改为“<ph name="INPUT_METHOD_ID"/>”*（<ph name="BEGIN_LINK"/>第三方<ph name="END_LINK"/>）。
 按 Shift + Alt 键可切换。</translation>
 <translation id="3846575436967432996">没有可用的网络信息</translation>
@@ -33,6 +34,7 @@
 <translation id="785750925697875037">查看移动帐户</translation>
 <translation id="153454903766751181">正在初始化蜂窝调制解调器...</translation>
 <translation id="7864539943188674973">停用蓝牙</translation>
+<translation id="939252827960237676">无法保存屏幕截图</translation>
 <translation id="3126069444801937830">重新启动以进行更新</translation>
 <translation id="735745346212279324">VPN 连接已断开</translation>
 <translation id="7320906967354320621">空闲</translation>
@@ -40,6 +42,7 @@
 <translation id="2778346081696727092">无法使用提供的用户名或密码进行身份验证</translation>
 <translation id="3294437725009624529">访客</translation>
 <translation id="8190698733819146287">自定义语言和输入法...</translation>
+<translation id="2903907270192926896">输入</translation>
 <translation id="7170041865419449892">超出范围</translation>
 <translation id="4804818685124855865">断开连接</translation>
 <translation id="5222676887888702881">退出</translation>
@@ -54,13 +57,16 @@
 <translation id="3368922792935385530">已连接</translation>
 <translation id="8340999562596018839">语音反馈</translation>
 <translation id="8654520615680304441">启用 Wi-Fi...</translation>
+<translation id="4632619405246189264">无法保证充电成功</translation>
 <translation id="5825747213122829519">您的输入法已更改为“<ph name="INPUT_METHOD_ID"/>”。
 按 Shift + Alt 键可进行切换。</translation>
 <translation id="2562916301614567480">专用网</translation>
 <translation id="6549021752953852991">没有可用的蜂窝网络</translation>
 <translation id="4379753398862151997">嗨！显示器，咱们合不来。（系统不支持该显示器）</translation>
+<translation id="8448732935696070385">所插电源不是标准电源，因此无法保证充电成功。</translation>
 <translation id="6426039856985689743">停用移动数据</translation>
 <translation id="3087734570205094154">底部</translation>
+<translation id="3742055079367172538">已完成屏幕截图</translation>
 <translation id="5271016907025319479">未配置 VPN。</translation>
 <translation id="6803622936009808957">找不到系统支持的分辨率，因此无法镜像显示屏。已改为进入扩展桌面。</translation>
 <translation id="1480041086352807611">演示模式</translation>
@@ -88,7 +94,6 @@
 <translation id="2372145515558759244">正在同步应用...</translation>
 <translation id="7256405249507348194">无法识别的错误：<ph name="DESC"/></translation>
 <translation id="7925247922861151263">AAA 检查失败</translation>
-<translation id="3227723743333276085"><ph name="BLUETOOTH"/>：正在断开连接...</translation>
 <translation id="8456362689280298700">还需 <ph name="HOUR"/>:<ph name="MINUTE"/> 才能充满电</translation>
 <translation id="5787281376604286451">已启用语音反馈。
 按 Ctrl+Alt+Z 停用。</translation>
@@ -116,6 +121,7 @@
 <translation id="3019353588588144572">电池电量将在 <ph name="TIME_REMAINING"/>后充满</translation>
 <translation id="3473479545200714844">屏幕放大镜</translation>
 <translation id="7005812687360380971">失败</translation>
+<translation id="882279321799040148">点击即可查看</translation>
 <translation id="1602076796624386989">启用移动数据</translation>
 <translation id="6981982820502123353">辅助功能</translation>
 <translation id="3157931365184549694">恢复</translation>
@@ -124,6 +130,7 @@
 <translation id="225680501294068881">正在查找设备...</translation>
 <translation id="5597451508971090205"><ph name="DATE"/><ph name="SHORT_WEEKDAY"/></translation>
 <translation id="4448844063988177157">正在搜索 Wi-Fi 网络...</translation>
+<translation id="2475982808118771221">出现错误</translation>
 <translation id="7229570126336867161">需要 EVDO</translation>
 <translation id="2999742336789313416">“<ph name="DISPLAY_NAME"/>”是由 <ph name="DOMAIN"/> 管理的公开会话</translation>
 <translation id="7029814467594812963">退出会话</translation>
@@ -134,9 +141,11 @@
 <translation id="8300849813060516376">OTASP 失败</translation>
 <translation id="2792498699870441125">Alt + 搜索键</translation>
 <translation id="8660803626959853127">正在同步 <ph name="COUNT"/> 个文件</translation>
+<translation id="3709443003275901162">9+</translation>
 <translation id="639644700271529076">CAPS LOCK 已关闭</translation>
 <translation id="6267036997247669271"><ph name="NAME"/>：正在激活…</translation>
 <translation id="1391854757121130358">您可能已用尽移动数据配额。</translation>
+<translation id="5413208160176941586">本地托管用户</translation>
 <translation id="4864165860509564259">启动器位置</translation>
 <translation id="7593891976182323525">搜索键或 Shift</translation>
 <translation id="7649070708921625228">帮助</translation>
@@ -146,6 +155,7 @@
 <translation id="158849752021629804">需要家庭网络</translation>
 <translation id="6857811139397017780">激活 <ph name="NETWORKSERVICE"/></translation>
 <translation id="5864471791310927901">DHCP 查找失败</translation>
+<translation id="5812035014844949013">输出</translation>
 <translation id="6692173217867674490">密码错误</translation>
 <translation id="6165508094623778733">了解详情</translation>
 <translation id="9046895021617826162">连接失败</translation>
@@ -158,6 +168,7 @@
 <translation id="7209101170223508707">Caps Lock 已开启。
 按 Alt + 搜索键或 Shift 可取消。</translation>
 <translation id="8061464966246066292">高对比度</translation>
+<translation id="8940956008527784070">电池电量不足 (<ph name="PERCENTAGE"/>%)</translation>
 <translation id="5102001756192215136">可用时长：<ph name="HOUR"/>:<ph name="MINUTE"/></translation>
 <translation id="8000066093800657092">未连接任何网络</translation>
 <translation id="5941711191222866238">最小化</translation>

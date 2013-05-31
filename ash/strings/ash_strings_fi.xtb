@@ -26,6 +26,7 @@
 <translation id="8206859287963243715">Matkapuhelin</translation>
 <translation id="6596816719288285829">IP-osoite</translation>
 <translation id="4508265954913339219">Aktivointi epäonnistui</translation>
+<translation id="3621712662352432595">Ääniasetukset</translation>
 <translation id="1812696562331527143">Syöttötapa on vaihtunut. Uusi syöttötapa on <ph name="INPUT_METHOD_ID"/>*(<ph name="BEGIN_LINK"/>kolmas osapuoli<ph name="END_LINK"/>).
 Vaihda syöttötapaa painamalla Shift + Alt.</translation>
 <translation id="3846575436967432996">Verkon tietoja ei saatavilla</translation>
@@ -33,6 +34,7 @@ Vaihda syöttötapaa painamalla Shift + Alt.</translation>
 <translation id="785750925697875037">Näytä mobiilitili</translation>
 <translation id="153454903766751181">Alustetaan matkapuhelinmodeemia…</translation>
 <translation id="7864539943188674973">Poista Bluetooth käytöstä</translation>
+<translation id="939252827960237676">Kuvakaappauksen tallentaminen epäonnistui</translation>
 <translation id="3126069444801937830">Päivitä käynnistämällä uudelleen</translation>
 <translation id="735745346212279324">VPN-yhteys katkaistu</translation>
 <translation id="7320906967354320621">Ei käytössä</translation>
@@ -40,6 +42,7 @@ Vaihda syöttötapaa painamalla Shift + Alt.</translation>
 <translation id="2778346081696727092">Todennus annetulla käyttäjänimellä ja salasanalla epäonnistui.</translation>
 <translation id="3294437725009624529">Vieras</translation>
 <translation id="8190698733819146287">Muokkaa kieliä ja syötettä...</translation>
+<translation id="2903907270192926896">ÄÄNITULO</translation>
 <translation id="7170041865419449892">Katvealueella</translation>
 <translation id="4804818685124855865">Katkaise yhteys</translation>
 <translation id="5222676887888702881">Kirjaudu ulos</translation>
@@ -54,13 +57,16 @@ Vaihda syöttötapaa painamalla Shift + Alt.</translation>
 <translation id="3368922792935385530">Yhdistetty</translation>
 <translation id="8340999562596018839">Äänipalaute</translation>
 <translation id="8654520615680304441">Ota wifi käyttöön…</translation>
+<translation id="4632619405246189264">Akku ei lataudu luotettavasti</translation>
 <translation id="5825747213122829519">Syöttötapa on vaihtunut. Uusi syöttötapa on <ph name="INPUT_METHOD_ID"/>.
 Vaihda syöttötapaa painamalla Shift + Alt.</translation>
 <translation id="2562916301614567480">Yksityinen verkko</translation>
 <translation id="6549021752953852991">Matkapuhelinverkkoja ei ole käytettävissä</translation>
 <translation id="4379753398862151997">Arvoisa näyttö, suhteemme ei toimi. (Näyttöä ei tueta)</translation>
+<translation id="8448732935696070385">Epästandardi virtalähde kytketty. Akku ei ehkä lataudu luotettavasti.</translation>
 <translation id="6426039856985689743">Poista mobiilitiedonsiirto käytöstä</translation>
 <translation id="3087734570205094154">Alaosa</translation>
+<translation id="3742055079367172538">Kuvakaappaus otettu</translation>
 <translation id="5271016907025319479">VPN-verkon asetuksia ei ole määritetty.</translation>
 <translation id="6803622936009808957">Näyttöjen peilaaminen ei onnistunut, sillä tuettua resoluutiota ei löytynyt. Sen sijaan valittiin työpöydän laajennus.</translation>
 <translation id="1480041086352807611">Esittelytila</translation>
@@ -88,7 +94,6 @@ Vaihda syöttötapaa painamalla Shift + Alt.</translation>
 <translation id="2372145515558759244">Synkronoidaan sovelluksia...</translation>
 <translation id="7256405249507348194">Tunnistamaton virhe: <ph name="DESC"/></translation>
 <translation id="7925247922861151263">AAA-testi epäonnistui</translation>
-<translation id="3227723743333276085"><ph name="BLUETOOTH"/>: Katkaistaan yhteyttä…</translation>
 <translation id="8456362689280298700"><ph name="HOUR"/>:<ph name="MINUTE"/> kunnes akku on ladattu</translation>
 <translation id="5787281376604286451">Äänipalaute on käytössä.
 Poista se käytöstä painamalla Ctrl+Alt+Z.</translation>
@@ -116,6 +121,7 @@ Poista se käytöstä painamalla Ctrl+Alt+Z.</translation>
 <translation id="3019353588588144572">Akku on ladattu <ph name="TIME_REMAINING"/> kuluttua</translation>
 <translation id="3473479545200714844">Ruudun suurentaminen</translation>
 <translation id="7005812687360380971">Virhe</translation>
+<translation id="882279321799040148">Näytä klikkaamalla</translation>
 <translation id="1602076796624386989">Ota mobiilitiedonsiirto käyttöön</translation>
 <translation id="6981982820502123353">Esteettömyys</translation>
 <translation id="3157931365184549694">Palauta</translation>
@@ -124,6 +130,7 @@ Poista se käytöstä painamalla Ctrl+Alt+Z.</translation>
 <translation id="225680501294068881">Etsitään laitteita...</translation>
 <translation id="5597451508971090205"><ph name="SHORT_WEEKDAY"/>, <ph name="DATE"/></translation>
 <translation id="4448844063988177157">Haetaan wifi-verkkoja...</translation>
+<translation id="2475982808118771221">Tapahtui virhe</translation>
 <translation id="7229570126336867161">EVDO tarvitaan</translation>
 <translation id="2999742336789313416"><ph name="DISPLAY_NAME"/> on julkinen käyttökerta, jota hallinnoi <ph name="DOMAIN"/></translation>
 <translation id="7029814467594812963">Sulje käyttökerta</translation>
@@ -134,9 +141,11 @@ Poista se käytöstä painamalla Ctrl+Alt+Z.</translation>
 <translation id="8300849813060516376">OTASP epäonnistui</translation>
 <translation id="2792498699870441125">Alt + haku</translation>
 <translation id="8660803626959853127">Synkronoidaan <ph name="COUNT"/> tiedosto(a)</translation>
+<translation id="3709443003275901162">Yli 9</translation>
 <translation id="639644700271529076">CAPS LOCK on pois päältä</translation>
 <translation id="6267036997247669271"><ph name="NAME"/>: aktivoidaan…</translation>
 <translation id="1391854757121130358">Olet ehkä käyttänyt mobiilitiedonsiirron kiintiösi.</translation>
+<translation id="5413208160176941586">Paikallisesti hallinnoitu käyttäjä</translation>
 <translation id="4864165860509564259">Käynnistyspalkin sijainti</translation>
 <translation id="7593891976182323525">Haku tai Shift</translation>
 <translation id="7649070708921625228">Ohje</translation>
@@ -145,6 +154,7 @@ Poista se käytöstä painamalla Ctrl+Alt+Z.</translation>
 <translation id="158849752021629804">Kotiverkko tarvitaan</translation>
 <translation id="6857811139397017780">Aktivoi <ph name="NETWORKSERVICE"/></translation>
 <translation id="5864471791310927901">DHCP-haku epäonnistui</translation>
+<translation id="5812035014844949013">ÄÄNENTOISTO</translation>
 <translation id="6692173217867674490">Väärä tunnuslause</translation>
 <translation id="6165508094623778733">Lisätietoja</translation>
 <translation id="9046895021617826162">Yhdistäminen epäonnistui</translation>
@@ -156,6 +166,7 @@ Poista se käytöstä painamalla Ctrl+Alt+Z.</translation>
 <translation id="5045002648206642691">Google Driven asetukset...</translation>
 <translation id="7209101170223508707">CAPS LOCK on päällä. Peruuta painamalla Alt + hakupainike tai Shift.</translation>
 <translation id="8061464966246066292">Suuri kontrasti</translation>
+<translation id="8940956008527784070">Akku vähissä (<ph name="PERCENTAGE"/> %)</translation>
 <translation id="5102001756192215136"><ph name="HOUR"/>.<ph name="MINUTE"/> jäljellä</translation>
 <translation id="8000066093800657092">Ei verkkoa</translation>
 <translation id="5941711191222866238">Pienennä</translation>

@@ -1,11 +1,13 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ru">
+<translation id="8914504000324227558">Перезапустить Chrome</translation>
 <translation id="8000275528373650868">Для работы браузера Google Chrome требуется наличие ОС Windows Vista или Windows XP с пакетом обновления 2 (SP1) либо более поздней версии.</translation>
 <translation id="8124352762008487242">© Google Inc., 2013. Все права защищены.</translation>
 <translation id="8485767968786176057">В данном случае указанный в сертификате адрес не совпадает с адресом веб-сайта, к которому обращался ваш браузер. Одна из возможных причин – вмешательство злоумышленника, представившего сертификат другого веб-сайта, что могло привести к несоответствию. Вторая возможная причина заключается в том, что сервер предоставляет один и тот же сертификат для разных веб-сайтов, включая тот, который вы хотели посетить, даже если сертификат недействителен ни для одного из них. Google Chrome может точно определить, что вы перешли на &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, но не может подтвердить, что этот сайт аналогичен &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, который вы хотели посетить. Если вы продолжите работу, дальнейшие несоответствия проверяться не будут.</translation>
 <translation id="5430073640787465221">Файл настроек поврежден или недействителен. Google Chrome не может восстановить ваши параметры.</translation>
 <translation id="6676384891291319759">Доступ в Интернет</translation>
+<translation id="7115445779188493842">Чтобы включить панель запуска, перезапустите Google Chrome в режиме рабочего стола.</translation>
 <translation id="6236285698028833233">Google Chrome больше не обновляется и не поддерживается для этой версии операционной системы.</translation>
 <translation id="5453904507266736060">Разрешить работу Google Chrome в фоновом режиме</translation>
 <translation id="2383457833405848421">О Chrome Frame</translation>
@@ -18,35 +20,26 @@
 <translation id="7781002470561365167">Доступна новая версия Google Chrome.</translation>
 <translation id="7101265395643981223">Запустить Google Chrome</translation>
 <translation id="4891791193823137474">Разрешить работу Google Chrome в фоновом режиме</translation>
-<translation id="2879385160622431163">Живой поиск Google Chrome</translation>
 <translation id="2896252579017640304">Запуск приложений Chrome</translation>
 <translation id="2370289711218562573">Google Chrome выполняет импорт элементов &quot;Избранное/Закладки&quot;.</translation>
 <translation id="8762286861469007470">Детектор стартовых страниц доступа Chrome</translation>
 <translation id="1761870329818521071">Невозможно установить ту же самую версию Google Chrome Frame, которая сейчас выполняется. Закройте Google Chrome Frame и повторите попытку.</translation>
 <translation id="2040709530900803995">Google Chrome Renderer</translation>
-<translation id="6541116830060437475">Попробуйте отключить предварительное определение сети, выполнив указанные ниже действия.
-        Выберите
-        <ph name="BEGIN_BOLD"/>
-        меню Chrome &gt;
-        <ph name="SETTINGS_TITLE"/>
-        &gt;
-        <ph name="ADVANCED_TITLE"/>
-        <ph name="END_BOLD"/>
-        и снимите флажок &quot;<ph name="NO_PREFETCH_DESCRIPTION"/>&quot;.
-        Если это не устранит проблему, рекомендуем снова включить этот параметр, чтобы повысить быстродействие.</translation>
+<translation id="6014844626092547096">Добро пожаловать в Chrome! Синхронизация отключена администратором.</translation>
 <translation id="3140883423282498090">Внесенные изменения станут активны после перезапуска Google Chrome.</translation>
 <translation id="1773601347087397504">Помощь по использованию Chrome OS</translation>
 <translation id="6982337800632491844">До начала работы с устройством необходимо ознакомиться с Условиями использования на веб-сайте <ph name="DOMAIN"/> и принять их. Эти условия не дополняют, не заменяют и не ограничивают Условий использования Chrome OS.</translation>
+<translation id="4309555186815777032">(необходимо <ph name="BEGIN_BUTTON"/>перезапустить<ph name="END_BUTTON"/> Chrome)</translation>
 <translation id="5339639696978861456">Установлено обновление для Chrome Frame. Перезапустите браузер. Версия Chrome: <ph name="TODO_0001"/>; версия Chrome Frame: <ph name="TODO_0002"/>.</translation>
 <translation id="8471072774411320686">Для работы с приложениями необходимо выполнить вход в Chrome. Это обеспечит синхронизацию приложений, закладок, истории, паролей и настроек, сохраненных на всех ваших устройствах.</translation>
 <translation id="5775197990071433230">На компьютере уже есть более новые компоненты Google Chrome. Используйте более новую версию установщика.</translation>
-<translation id="8398145039500709259">Использовать этот аккаунт Google для синхронизации данных из Chrome?</translation>
 <translation id="1779550429052479749">В системе установлена конфликтующая версия Google Chrome или Google Chrome Frame. Удалите ее и повторите попытку.</translation>
 <translation id="3555616473548901994">Удаление завершено.</translation>
 <translation id="4987308747895123092">Закройте все окна Google Chrome (включая открытые в режиме Windows 8) и повторите попытку.</translation>
 <translation id="568643307450491754">Закладки можно найти в меню Chrome или на панели закладок.</translation>
 <translation id="8556340503434111824">Доступна новая версия Google Chrome, которая стала еще быстрее.</translation>
 <translation id="4728575227883772061">Установка не удалась из-за неизвестной ошибки. Закройте все окна Google Chrome и повторите попытку снова.</translation>
+<translation id="2082230140685103752">Чтобы использовать приложения Chrome, перезапустите Google Chrome в режиме рабочего стола.</translation>
 <translation id="3080151273017101988">Продолжать работу приложений в фоновом режиме после закрытия Google Chrome</translation>
 <translation id="4149882025268051530">Программе установки не удалось выполнить извлечение файлов из архива. Загрузите Google Chrome снова.</translation>
 <translation id="6989339256997917931">Google Chrome был обновлен, однако вы не использовали его в течение последних 30 дней.</translation>
@@ -64,25 +57,11 @@
 <translation id="4053720452172726777">Настройка и управление Google Chrome</translation>
 <translation id="6423071462708908582">Вы пытаетесь войти в &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, однако сервер представил просроченный сертификат безопасности. Неизвестно, был ли этот сертификат признан небезопасным с момента истечения срока действия. Это значит, что Chromium не может гарантировать, что вы обмениваетесь данными с &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, а не с сайтом злоумышленников. Часы вашего компьютера показывают <ph name="CURRENT_TIME"/>. Проверьте точность времени. Если оно неверно, исправьте его и обновите страницу.</translation>
 <translation id="3197823471738295152">Операционная система обновлена.</translation>
-<translation id="2336460313445286758">Выберите
-          <ph name="BEGIN_BOLD"/>
-          меню Chrome &gt;
-          <ph name="SETTINGS_TITLE"/>
-          &gt;
-          <ph name="ADVANCED_TITLE"/>
-          &gt;
-          <ph name="PROXIES_TITLE"/>
-          <ph name="END_BOLD"/>
-          и убедитесь, что в конфигурации отключено использование прокси-сервера или выбрано непосредственное подключение.</translation>
 <translation id="3889417619312448367">Удалить Google Chrome</translation>
+<translation id="1434626383986940139">Приложения Chrome Canary</translation>
 <translation id="8551886023433311834">Обновление почти завершено. Перезагрузите устройство.</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE"/> - Google Chrome</translation>
 <translation id="7339898014177206373">Новое окно</translation>
-<translation id="3026202950002788510">Выберите
-          <ph name="BEGIN_BOLD"/>
-          Программы &gt; Системные настройки &gt; Сеть &gt; Дополнительно &gt; Прокси
-          <ph name="END_BOLD"/>
-          и снимите флажки тех прокси-серверов, которые были выбраны.</translation>
 <translation id="3282568296779691940">Вход в Chrome</translation>
 <translation id="3089968997497233615">Доступна новая, более безопасная версия Google Chrome.</translation>
 <translation id="5037239767309817516">Чтобы изменения вступили в силу, закройте все окна Google Chrome и перезапустите браузер.</translation>
@@ -91,6 +70,7 @@
 <translation id="7451721381978275812">Недопустимые аргументы. Чтобы установить в режиме готовности Google Chrome Frame, необходимо также установить Google Chrome.</translation>
 <translation id="8684521613357479262">Вы пытаетесь войти в &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, однако сервер предоставил сертификат, который ещё не действителен. Получить информацию о безопасности этого сертификата невозможно. Chromium не может гарантировать, что вы будете обмениваться данными именно с &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, а не с сайтом злоумышленников. На вашем компьютере установлены следующие дата и время: <ph name="CURRENT_TIME"/>. Если эти данные неверны, укажите правильные и обновите страницу.</translation>
 <translation id="4585888816441913908">На компьютере уже установлены последние версии Google Chrome и Google Chrome Frame. Если они не работают, удалите их и установите снова.</translation>
+<translation id="3149510190863420837">Приложения Chrome</translation>
 <translation id="6368958679917195344">Своим появлением Chrome OS обязана дополнительному <ph name="BEGIN_LINK_CROS_OSS"/>программному обеспечению с открытым исходным кодом<ph name="END_LINK_CROS_OSS"/>.</translation>
 <translation id="7459554271817304652">Чтобы сохранить персонализированные функции для работы в Интернете и получить доступ к ним из Google Chrome на любом компьютере, необходимо настроить синхронизацию.</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
@@ -99,21 +79,17 @@
 <translation id="2576431527583832481">Chrome становится лучше! Доступна новая версия.</translation>
 <translation id="2580411288591421699">Не удается установить версию Google Chrome, аналогичную уже выполняемой. Закройте Google Chrome и повторите попытку.</translation>
 <translation id="1457721931618994305">Выполняется обновление Google Chrome...</translation>
-<translation id="4351362253593301573">Выберите
-          <ph name="BEGIN_BOLD"/>
-          меню Chrome &gt;
+<translation id="7747138024166251722">Программе установки не удалось создать временный каталог. Возможно, у вас нет прав на установку приложений или недостаточно места на диске.</translation>
+<translation id="6557998774620459028">Вы попытались перейти на сайт &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, но сервер предоставил сертификат, выданный организацией, которую операционная система компьютера не считает надежной. Это может означать, что сервер создал свой собственный сертификат, которому Google Chrome не может доверять, или что вмешался злоумышленник.</translation>
+<translation id="5170938038195470297">Использовать этот профиль невозможно, так как он был создан в более новой версии Google Chrome. Некоторые функции могут быть недоступны. Укажите другой каталог профиля или установите более новую версию Chrome.</translation>
+<translation id="6011049234605203654">Выберите
+          меню Chrome &gt;
           <ph name="SETTINGS_TITLE"/>
           &gt;
           <ph name="ADVANCED_TITLE"/>
           &gt;
           <ph name="PROXIES_TITLE"/>
-          &gt;
-          Настройки LAN
-          <ph name="END_BOLD"/>
-          и снимите флажок &quot;Использовать прокси-сервер для локальных подключений&quot;.</translation>
-<translation id="7747138024166251722">Программе установки не удалось создать временный каталог. Возможно, у вас нет прав на установку приложений или недостаточно места на диске.</translation>
-<translation id="6557998774620459028">Вы попытались перейти на сайт &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, но сервер предоставил сертификат, выданный организацией, которую операционная система компьютера не считает надежной. Это может означать, что сервер создал свой собственный сертификат, которому Google Chrome не может доверять, или что вмешался злоумышленник.</translation>
-<translation id="5170938038195470297">Использовать этот профиль невозможно, так как он был создан в более новой версии Google Chrome. Некоторые функции могут быть недоступны. Укажите другой каталог профиля или установите более новую версию Chrome.</translation>
+          и убедитесь, что в конфигурации отключено использование прокси-сервера или выбрано непосредственное подключение.</translation>
 <translation id="8738921060445980047">Неизвестная версия</translation>
 <translation id="6970811910055250180">Обновление операционной системы…</translation>
 <translation id="2485422356828889247">Удалить</translation>
@@ -128,10 +104,8 @@
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="4794050651896644714">Сохранять данные в Chrome</translation>
 <translation id="911206726377975832">Также удалить данные о работе в браузере?</translation>
-<translation id="3872765354315765470">Отображать панель запуска приложений Chrome</translation>
 <translation id="2044287590254833138">Панель инструментов Google Chrome</translation>
 <translation id="5074344184765391290">Chrome Plug-In Host</translation>
-<translation id="742982227155662553">Необходимо <ph name="BEGIN_BUTTON"/>перезапустить<ph name="END_BUTTON"/> Chrome.</translation>
 <translation id="8862326446509486874">У вас нет прав, необходимых для установки на системном уровне. Запустите программу установки еще раз в качестве администратора.</translation>
 <translation id="2874156562296220396">Браузер Google Chrome создан на основе проекта <ph name="BEGIN_LINK_CHROMIUM"/>Chromium<ph name="END_LINK_CHROMIUM"/> и другого <ph name="BEGIN_LINK_OSS"/>программного обеспечения с открытым исходным кодом<ph name="END_LINK_OSS"/>.</translation>
 <translation id="3847841918622877581">Браузер Google Chrome может использовать различные веб-службы, которые делают работу в Интернете более удобной и приятной.</translation>
@@ -149,33 +123,27 @@
 <translation id="1469002951682717133">Панель запуска приложений Chrome</translation>
 <translation id="4990567037958725628">Google Chrome – Канарейка</translation>
 <translation id="4561051373932531560">В Google Chrome вы можете нажать на любой номер телефона и позвонить на него через Skype!</translation>
-<translation id="4270804660370715583">Выберите
-          <ph name="BEGIN_BOLD"/>
-          меню Chrome &gt;
-          <ph name="SETTINGS_TITLE"/>
-          &gt;
-          <ph name="INTERNET_TITLE"/>
-          &gt;
-          &quot;<ph name="OPTIONS_BUTTON"/>&quot;
-          <ph name="END_BOLD"/>
-          (для текущей сети). Если кнопка
-          <ph name="BEGIN_BOLD"/>
-          <ph name="PROXY_BUTTON"/>
-          <ph name="END_BOLD"/> на вкладке
-          <ph name="BEGIN_BOLD"/>
-          <ph name="NETWORK_TAB"/>
-          <ph name="END_BOLD"/>
-          присутствует, нажмите на нее и убедитесь, что в конфигурации выбрано непосредственное подключение.</translation>
 <translation id="5788838254726722945">Удалить Панель запуска Google Chrome</translation>
 <translation id="3612333635265770873">Известно, что модуль с таким названием конфликтует с Google Chrome.</translation>
+<translation id="5875635642195358109">Выберите
+        меню Chrome &gt;
+        <ph name="SETTINGS_TITLE"/>
+        &gt;
+        <ph name="ADVANCED_TITLE"/>
+        и снимите флажок &quot;<ph name="NO_PREFETCH_DESCRIPTION"/>&quot;.
+        Если не удалось устранить проблему, снова установите флажок
+        для быстрой загрузки страниц.</translation>
 <translation id="8333216950301932607">Использовать аккаунт <ph name="USER_EMAIL_ADDRESS"/> для входа в Chrome?</translation>
 <translation id="61852838583753520">Обновить &amp;Chrome OS</translation>
+<translation id="8547799825197623713">Панель запуска Chrome Canary</translation>
 <translation id="5577648424992741236">На компьютере уже установлена последняя версия Google Chrome Frame. Если она не работает, удалите ее и установите снова.</translation>
 <translation id="6326175484149238433">Удалить</translation>
 <translation id="2871893339301912279">Добро пожаловать в Chrome!</translation>
 <translation id="7161904924553537242">Добро пожаловать в Google Chrome</translation>
 <translation id="1686446242839005801">Для входа в Chrome используется аккаунт <ph name="USER_EMAIL_ADDRESS"/>. Ваши закладки, история и другие настройки будут доступны на всех устройствах, где вы используете этот аккаунт.</translation>
-<translation id="4846114739649431522">Чтобы использовать Google Apps, включите режим рабочего стола в Chrome.</translation>
+<translation id="8187289872471304532">Выберите
+          Программы &gt; Системные настройки &gt; Сеть &gt; Дополнительно &gt; Прокси
+          и снимите флажки напротив всех прокси-серверов.</translation>
 <translation id="8669527147644353129">Google Chrome Helper</translation>
 <translation id="870251953148363156">Обновить &amp;Google Chrome</translation>
 <translation id="130631256467250065">Изменения вступят в силу после перезагрузки устройства.</translation>
@@ -196,16 +164,25 @@
 <translation id="8865765905101981392">Веб-браузер</translation>
 <translation id="5244325494201350962">Так как ранее был выполнен вход под другим аккаунтом, вход под этим аккаунтом сейчас приведет к объединению данных. Рекомендуем создать для работы с Chrome новый аккаунт пользователя на <ph name="BEGIN_LINK"/>странице настроек<ph name="END_LINK"/>.</translation>
 <translation id="2189123953385179981">Google Chrome OS не поддерживает запуск внешних приложений для обработки ссылок типа <ph name="SCHEME"/>. Запрошенная ссылка: <ph name="PROTOLINK"/>.</translation>
+<translation id="7396375882099008034">Разрешите доступ к сети для Chrome в настройках брандмауэра и антивирусного ПО.</translation>
 <translation id="8205111949707227942">(Необязательно) Помогите улучшить Chrome OS, разрешив автоматическую отправку статистики использования и отчетов о сбоях в Google.</translation>
 <translation id="7253415505590551024">Идет загрузка. Отменить ее и закрыть Google Chrome?</translation>
 <translation id="7196020411877309443">Что это?</translation>
 <translation id="2769762047821873045">Google Chrome не является браузером по умолчанию.</translation>
+<translation id="6855094794438142393">Выберите
+          меню Chrome &gt;
+          <ph name="SETTINGS_TITLE"/>
+          &gt;
+          <ph name="ADVANCED_TITLE"/>
+          &gt;
+          <ph name="PROXIES_TITLE"/>
+          &gt;
+          Настройка сети
+          и снимите флажок &quot;Использовать прокси-сервер для локальных подключений&quot;.</translation>
 <translation id="7825851276765848807">Не удалось выполнить установку из-за неизвестной ошибки. Загрузите Google Chrome еще раз.</translation>
-<translation id="5747377399547108410">Чтобы использовать панель запуска приложений, включите режим рабочего стола в Chrome.</translation>
 <translation id="1061257178446858647">Вы вошли в Chrome. Ваши закладки, история и другие настройки синхронизируются с аккаунтом Google.</translation>
 <translation id="3335672657969596251">Google Chrome не поддерживает <ph name="OS_NAME"/>.</translation>
 <translation id="4458285410772214805">Чтобы изменения вступили в силу, выполните вход еще раз.</translation>
-<translation id="7311208098963907218">Показывать на панели задач Windows ярлык Панели запуска приложений Chrome.</translation>
 <translation id="5334545119300433702">Этот модуль конфликтует с Google Chrome.</translation>
 <translation id="4407807842708586359">Google Chrome OS</translation>
 <translation id="6634887557811630702">Последняя версия Google Chrome уже установлена.</translation>

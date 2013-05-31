@@ -16,7 +16,6 @@
 <translation id="1761785978543082658"><ph name="QUANTITY"/> B</translation>
 <translation id="1809410197924942083"><ph name="QUANTITY"/> MB/s</translation>
 <translation id="3990502903496589789">Pravý okraj</translation>
-<translation id="5182671122927417841">Zakázať rozšírenie</translation>
 <translation id="932327136139879170">Home</translation>
 <translation id="3909791450649380159">&amp;Vystrihnúť</translation>
 <translation id="688711909580084195">Nepomenovaná webová stránka</translation>
@@ -31,17 +30,19 @@
 <translation id="8210608804940886430">Stránkovať nadol</translation>
 <translation id="5329858601952122676">&amp;Odstrániť</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY"/> kB</translation>
-<translation id="6489863328574614542">Nastaviť povolenia upozornení pre aplikácie a rozšírenia</translation>
 <translation id="6659594942844771486">Tab</translation>
 <translation id="3049748772180311791"><ph name="QUANTITY"/> MB</translation>
 <translation id="8428213095426709021">Nastavenia</translation>
 <translation id="2497284189126895209">Všetky súbory</translation>
 <translation id="7814458197256864873">&amp;Kopírovať</translation>
 <translation id="3889424535448813030">Šípka doprava</translation>
+<translation id="7135556860107312402">Povoliť prijímanie upozornení od:</translation>
 <translation id="1398853756734560583">Maximalizovať</translation>
+<translation id="4250229828105606438">Snímka obrazovky</translation>
 <translation id="3757388668994797779"><ph name="QUANTITY"/> GB</translation>
 <translation id="1901303067676059328">Vybrať &amp;všetko</translation>
 <translation id="2168039046890040389">Page Up</translation>
+<translation id="4927753642311223124">Tu sa nič nenachádza, pokračujte ďalej.</translation>
 <translation id="2482878487686419369">Upozornenia</translation>
 <translation id="3183922693828471536">Rolovať na toto miesto</translation>
 <translation id="4552416320897244156">PgDwn</translation>
@@ -52,6 +53,7 @@
 <translation id="4588090240171750605">Rolovať doprava</translation>
 <translation id="2666092431469916601">Vrch</translation>
 <translation id="8331626408530291785">Rolovať nahor</translation>
+<translation id="4773379706300191099">Vypnúť prijímanie upozornení od rozšírenia <ph name="EXTENSION_NAME"/></translation>
 <translation id="7907591526440419938">Otvoriť súbor</translation>
 <translation id="1293699935367580298">Esc</translation>
 <translation id="815598010540052116">Rolovať nadol</translation>
@@ -68,7 +70,6 @@
 <translation id="2297836609126180313"><ph name="QUANTITY"/> TB/s</translation>
 <translation id="6040143037577758943">Zatvoriť</translation>
 <translation id="6142413573757616983"><ph name="QUANTITY"/> B/s</translation>
-<translation id="477782898153505579">V pohode, nemáte žiadne upozornenia.</translation>
 <translation id="7457942297256758195">Vymazať všetky</translation>
 <translation id="7509316384504965641"><ph name="PRODUCT"/> – upozornenia</translation>
 <translation id="8400147561352026160">Shift+<ph name="KEY_COMBO_NAME"/></translation>

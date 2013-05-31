@@ -1,11 +1,13 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ja">
+<translation id="8914504000324227558">Chrome の再起動</translation>
 <translation id="8000275528373650868">Google Chrome のご利用には Windows Vista または Windows XP SP2 以降が必要です。</translation>
 <translation id="8124352762008487242">Copyright 2013 Google Inc. All rights reserved.</translation>
 <translation id="8485767968786176057">証明書に記載されているアドレスが、ブラウザがアクセスしようとしたウェブサイトのアドレスと一致しません。理由の 1 つとして、通信が悪意のあるユーザーによって傍受され、そのユーザーから別のウェブサイトの証明書が提示されているために、アドレスが一致しないことが考えられます。あるいは、アクセスしようとしているウェブサイトを含む複数のウェブサイトについて同じ証明書を返すようにサーバーが設定されているが、その証明書がすべてのサイトについて有効とは限らないことが考えられます。Google Chrome では、アクセスしているサイトが確かに &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; であることは保証できますが、アクセスしようとした &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; と同じサイトであるかどうかは検証できません。次に進むと、以降 Chrome ではアドレスの不一致がチェックされなくなります。</translation>
 <translation id="5430073640787465221">ユーザー設定ファイルが壊れているか無効です。設定を復元できません。</translation>
 <translation id="6676384891291319759">インターネットにアクセス</translation>
+<translation id="7115445779188493842">アプリ ランチャーを使用するには、Google Chrome をデスクトップ モードで再起動する必要があります。</translation>
 <translation id="6236285698028833233">Google Chrome はアップデートの提供を中止しています。お使いのバージョンのオペレーティング システムには対応していません。</translation>
 <translation id="5453904507266736060">Google Chrome のバックグラウンドでの実行を許可する</translation>
 <translation id="2383457833405848421">Chrome フレームについて...</translation>
@@ -18,35 +20,26 @@
 <translation id="7781002470561365167">Google クロームブラウザの最新バージョンを是非お試しください。</translation>
 <translation id="7101265395643981223">Google Chrome を起動</translation>
 <translation id="4891791193823137474">Google Chrome のバックグラウンドでの実行を許可する</translation>
-<translation id="2879385160622431163">Google Chrome インスタント検索</translation>
 <translation id="2896252579017640304">Chrome アプリを起動</translation>
 <translation id="2370289711218562573">Google Chrome にお気に入り/ブックマークをインポートしています。</translation>
 <translation id="8762286861469007470">Chrome キャプティブ ポータル検出機能</translation>
 <translation id="1761870329818521071">実行中の Google Chrome Frame と同じバージョンをインストールすることはできません。Google Chrome Frame を閉じてからもう一度お試しください。</translation>
 <translation id="2040709530900803995">Google Chrome Renderer</translation>
-<translation id="6541116830060437475">ネットワーク予測を無効にする手順は次のとおりです:
-        <ph name="BEGIN_BOLD"/>
-        Chrome メニュー &gt;
-        [<ph name="SETTINGS_TITLE"/>] 
-        &gt;
-        [<ph name="ADVANCED_TITLE"/>] 
-        <ph name="END_BOLD"/>
-        を順にクリックして、[<ph name="NO_PREFETCH_DESCRIPTION"/>] チェックボックスをオフにします。
-        このオプションを無効にしても問題が解決しない場合は、
-        再度有効にしてページの表示速度を向上させてください。</translation>
+<translation id="6014844626092547096">Chrome にログインしています。同期は管理者によって無効にされています。</translation>
 <translation id="3140883423282498090">変更内容は次に Google Chrome を再起動したときに有効になります。</translation>
 <translation id="1773601347087397504">Chrome OS の使用に関するアドバイス</translation>
 <translation id="6982337800632491844"><ph name="DOMAIN"/> では、このデバイスを使用する前に下記の利用規約を確認しこれに同意していただく必要があります。これらの規約は Google Chrome OS 利用規約を拡張、変更、制限するものではありません。</translation>
+<translation id="4309555186815777032">（Chrome を<ph name="BEGIN_BUTTON"/>再起動<ph name="END_BUTTON"/>する必要があります）</translation>
 <translation id="5339639696978861456">Chrome Frame が更新されました。ブラウザを再起動してください。Chrome のバージョン: <ph name="TODO_0001"/>、Chrome Frame のバージョン: <ph name="TODO_0002"/></translation>
 <translation id="8471072774411320686">アプリを使用するには Chrome にログインする必要があります。ログインすると、Chrome ではアプリ、ブックマーク、履歴、パスワード、その他の設定をデバイス間で同期できます。</translation>
 <translation id="5775197990071433230">新しいバージョンの Google Chrome コンポーネントが既にインストールされています。最新のインストーラを使用してください。</translation>
-<translation id="8398145039500709259">この Google アカウントを使用してすべての Chrome 設定を同期しますか？</translation>
 <translation id="1779550429052479749">システム上に競合している Google Chrome または Google Chrome Frame が見つかりました。こちらをアンインストールしてからもう一度お試しください。</translation>
 <translation id="3555616473548901994">アンインストールが完了しました。</translation>
 <translation id="4987308747895123092">Google Chrome のウィンドウ（Windows 8 モードのウィンドウを含む）をすべて閉じてからもう一度お試しください。</translation>
 <translation id="568643307450491754">ブックマークは Chrome メニューやブックマーク バーに表示されます。</translation>
 <translation id="8556340503434111824">Google クロームブラウザがバージョンアップ！是非お試しください。</translation>
 <translation id="4728575227883772061">原因不明のエラーによりインストールが失敗しました。実行中の Google Chrome を終了してからやり直してください。</translation>
+<translation id="2082230140685103752">Chrome アプリを使用するには、Google Chrome をデスクトップ モードで再起動する必要があります。</translation>
 <translation id="3080151273017101988">Google Chrome を閉じた際にバックグラウンド アプリの処理を続行する</translation>
 <translation id="4149882025268051530">インストーラー アーカイブを解凍できませんでした。Google Chrome をダウンロードし直してください。</translation>
 <translation id="6989339256997917931">Google Chrome が更新されましたが、30 日間以上使用されていません。</translation>
@@ -64,24 +57,11 @@
 <translation id="4053720452172726777">Google Chrome の設定</translation>
 <translation id="6423071462708908582">&lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; にアクセスしようとしましたが、サーバーから提示された証明書は有効期限が切れています。この証明書の有効期限が切れた後に証明書がセキュリティ侵害を受けたのかどうかについて確認できる情報はありません。つまり Google Chrome では、悪意のあるユーザーでなく &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; と確かに通信していることを保証することはできません。お使いのパソコンの時刻は現在 <ph name="CURRENT_TIME"/> に設定されています。時刻が正しくない場合は、エラーを修正してからこのページを更新してください。</translation>
 <translation id="3197823471738295152">お使いの端末は最新の状態です。</translation>
-<translation id="2336460313445286758"><ph name="BEGIN_BOLD"/>
-          Chrome メニュー &gt;
-          [<ph name="SETTINGS_TITLE"/>] 
-          &gt;
-          [<ph name="ADVANCED_TITLE"/>] 
-          &gt;
-          [<ph name="PROXIES_TITLE"/>] 
-          <ph name="END_BOLD"/>
-          を順にクリックして、設定が [プロキシなし] または [直接] になっていることを確認します。</translation>
 <translation id="3889417619312448367">Google Chrome をアンインストール</translation>
+<translation id="1434626383986940139">Chrome Canary アプリ</translation>
 <translation id="8551886023433311834">更新を完了するには、端末を再起動してください。</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE"/> - Google Chrome</translation>
 <translation id="7339898014177206373">新しいウィンドウ</translation>
-<translation id="3026202950002788510">以下の順にアクセスします:
-          <ph name="BEGIN_BOLD"/>
-          [アプリケーション] &gt; [システム環境設定] &gt; [ネットワーク] &gt; [詳細] &gt; [プロキシ]
-          <ph name="END_BOLD"/>
-          選択されているすべてのプロキシのチェックボックスをオフにします。</translation>
 <translation id="3282568296779691940">Chrome にログイン</translation>
 <translation id="3089968997497233615">Google クロームブラウザがより速く、さらに便利に。いますぐトライ！</translation>
 <translation id="5037239767309817516">この変更を反映するには、すべての Google Chrome ウィンドウを閉じてからもう一度起動してください。</translation>
@@ -90,6 +70,7 @@
 <translation id="7451721381978275812">引数が無効です。Google Chrome Frame を準備完了モードでインストールするには、一緒に Google Chrome をインストールする必要があります。</translation>
 <translation id="8684521613357479262">&lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; にアクセスしようとしましたが、サーバーから提示された証明書はまだ有効になっていません。この証明書が信頼できるかどうかについて確認できる情報はありません。Google Chrome では、悪意のあるユーザーでなく &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; と確かに通信していることを保証することはできません。お使いのパソコンの時刻は現在、<ph name="CURRENT_TIME"/> に設定されています。時刻が正しくない場合は、システムの時刻を修正してからこのページを更新してください。</translation>
 <translation id="4585888816441913908">新しいバージョンの Google Chrome と Google Chrome Frame が既にインストールされています。ソフトウェアが動作しない場合は、Google Chrome と Google Chrome Frame の両方をアンインストールしてからもう一度お試しください。</translation>
+<translation id="3149510190863420837">Chrome アプリ</translation>
 <translation id="6368958679917195344">Chrome OS は、<ph name="BEGIN_LINK_CROS_OSS"/>オープンソース ソフトウェア<ph name="END_LINK_CROS_OSS"/>が追加されて実現しました。</translation>
 <translation id="7459554271817304652">同期を設定すると、パーソナライズされたブラウザ機能をウェブ上に保存して、どのパソコンの Google Chrome からでも使用できるようになります。</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
@@ -98,20 +79,17 @@
 <translation id="2576431527583832481">Chrome のアップデートが見つかりました。新しいバージョンが利用可能です。</translation>
 <translation id="2580411288591421699">実行中の Google Chrome と同じバージョンをインストールすることはできません。Google Chrome を閉じてからもう一度お試しください。</translation>
 <translation id="1457721931618994305">Google Chrome を更新しています...</translation>
-<translation id="4351362253593301573"><ph name="BEGIN_BOLD"/>
-          Chrome メニュー &gt;
-          [<ph name="SETTINGS_TITLE"/>] 
-          &gt;
-          [<ph name="ADVANCED_TITLE"/>] 
-          &gt;
-          [<ph name="PROXIES_TITLE"/>] 
-          &gt;
-          [LAN の設定] 
-          <ph name="END_BOLD"/>
-          を順にクリックして、[LAN にプロキシ サーバーを使用する] チェックボックスをオフにします。</translation>
 <translation id="7747138024166251722">インストーラーの一時ディレクトリを作成できませんでした。ディスクの空き領域とソフトウェアのインストール許可があることを確認してください。</translation>
 <translation id="6557998774620459028">&lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; にアクセスしようとしましたが、サーバーから提示された証明書の発行元は、お使いのパソコンのオペレーティング システムで信頼されていない発行元です。サーバーで独自に生成されたセキュリティ認証情報が、Chrome で認証情報として使用できないものであるか、悪意のあるユーザーが通信を傍受しようとしている可能性があります。</translation>
 <translation id="5170938038195470297">バージョンが新しい Google Chrome のプロフィールは使用できません。一部の機能が利用できない可能性があります。別の場所のプロフィールを指定するか、新しいバージョンの Chrome をご使用ください。</translation>
+<translation id="6011049234605203654">このオプションを無効にするには:
+          Chrome メニュー &gt;
+          <ph name="SETTINGS_TITLE"/>
+          &gt;
+          <ph name="ADVANCED_TITLE"/>
+          &gt;
+          <ph name="PROXIES_TITLE"/>
+          の順に移動して、設定が [プロキシなし] または [直接] になっていることを確認します。</translation>
 <translation id="8738921060445980047">バージョンが不明です。</translation>
 <translation id="6970811910055250180">お使いの端末を更新しています...</translation>
 <translation id="2485422356828889247">アンインストール</translation>
@@ -126,10 +104,8 @@
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="4794050651896644714">Chrome で詳細を保存する</translation>
 <translation id="911206726377975832">閲覧データも削除しますか？</translation>
-<translation id="3872765354315765470">Chrome アプリ ランチャーを表示する。</translation>
 <translation id="2044287590254833138">Google Chrome ツールバー</translation>
 <translation id="5074344184765391290">Chrome Plug-In Host</translation>
-<translation id="742982227155662553">（Chrome を <ph name="BEGIN_BUTTON"/>再起動<ph name="END_BUTTON"/> する必要があります）</translation>
 <translation id="8862326446509486874">権限が不十分なためシステムレベルのインストールができません。管理者権限でインストールしてください。</translation>
 <translation id="2874156562296220396">Google Chrome はオープンソース プロジェクト <ph name="BEGIN_LINK_CHROMIUM"/>Chromium<ph name="END_LINK_CHROMIUM"/> やその他の<ph name="BEGIN_LINK_OSS"/>オープンソース ソフトウェア<ph name="END_LINK_OSS"/>によって実現しました。</translation>
 <translation id="3847841918622877581">Google Chrome は、より快適なブラウジングを提供する目的でウェブサービスを使用することがあります。</translation>
@@ -147,33 +123,27 @@
 <translation id="1469002951682717133">Chrome アプリ ランチャー</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="4561051373932531560">Google Chrome では、ウェブサイト上の電話番号をクリックするだけで Skype で通話を発信できます。</translation>
-<translation id="4270804660370715583"><ph name="BEGIN_BOLD"/>
-          Chrome メニュー &gt;
-          [<ph name="SETTINGS_TITLE"/>] 
-          &gt;
-          [<ph name="INTERNET_TITLE"/>] 
-          &gt;
-          [<ph name="OPTIONS_BUTTON"/>]
-          <ph name="END_BOLD"/>
-          （現在のネットワーク）を順にクリックします。
-          [<ph name="BEGIN_BOLD"/>
-          <ph name="PROXY_BUTTON"/>
-          <ph name="END_BOLD"/>] ボタン（
-          [<ph name="BEGIN_BOLD"/>
-          <ph name="NETWORK_TAB"/>
-          <ph name="END_BOLD"/>] 
-          タブ）がある場合は、そのボタンをクリックして、設定
-          が [直接] になっていることを確認します。</translation>
 <translation id="5788838254726722945">Google Chrome アプリ ランチャーをアンインストール</translation>
 <translation id="3612333635265770873">同じ名前のモジュールは Google Chrome と競合することがわかっています。</translation>
+<translation id="5875635642195358109">このオプションを無効にするには:
+        Chrome メニュー &gt;
+        <ph name="SETTINGS_TITLE"/>
+        &gt;
+        <ph name="ADVANCED_TITLE"/>
+        の順に移動して、[<ph name="NO_PREFETCH_DESCRIPTION"/>] チェックボックスをオフにします。
+        このオプションを無効にしても問題が解決しない場合は、ページの表示速度を
+        向上させるために再度有効にすることをおすすめします。</translation>
 <translation id="8333216950301932607"><ph name="USER_EMAIL_ADDRESS"/> で Chrome にログインしますか？</translation>
 <translation id="61852838583753520">Chrome OS を更新(&amp;C)</translation>
+<translation id="8547799825197623713">Chrome アプリ ランチャー（Canary 向け）</translation>
 <translation id="5577648424992741236">新しいバージョンの Google Chrome Frame が既にインストールされています。ソフトウェアが動作しない場合は、Google Chrome Frame をアンインストールしてからもう一度お試しください。</translation>
 <translation id="6326175484149238433">Chrome から削除</translation>
 <translation id="2871893339301912279">Chrome にログインしました</translation>
 <translation id="7161904924553537242">Google Chrome へようこそ</translation>
 <translation id="1686446242839005801"><ph name="USER_EMAIL_ADDRESS"/> アカウントを使用して Chrome にログインしています。ログインしているすべてのデバイスで、ブックマーク、履歴、その他の設定にアクセスできます。</translation>
-<translation id="4846114739649431522">アプリを使用するには、Chrome をデスクトップ モードに切り替える必要があります。</translation>
+<translation id="8187289872471304532">このオプションを無効にするには:
+          [アプリケーション] &gt; [システム環境設定] &gt; [ネットワーク] &gt; [詳細] &gt; [プロキシ] の順に移動して、
+          選択されているプロキシの選択を解除します。</translation>
 <translation id="8669527147644353129">Google Chrome Helper</translation>
 <translation id="870251953148363156">Google Chrome を更新(&amp;G)</translation>
 <translation id="130631256467250065">変更内容は、次回の端末の起動時に反映されます。</translation>
@@ -194,16 +164,26 @@
 <translation id="8865765905101981392">インターネット ブラウザ</translation>
 <translation id="5244325494201350962">前回、別のアカウントでログインしていたため、今回ログインするとデータが統合されます。Chrome データの<ph name="BEGIN_LINK"/>設定ページ<ph name="END_LINK"/> で新しい Chrome ユーザーを作成することをおすすめします。</translation>
 <translation id="2189123953385179981">Google Chrome OS では、<ph name="SCHEME"/> リンクの処理に必要な外部アプリケーションの起動がサポートされていません。リクエストされたリンクは <ph name="PROTOLINK"/> です。</translation>
+<translation id="7396375882099008034">ファイアウォールやウイルス対策の設定で、Chrome からネットワークへのアクセスを
+        許可します。</translation>
 <translation id="8205111949707227942">オプション: 使用状況データと障害レポートを Google に自動送信して Chrome OS の機能向上に役立てる。</translation>
 <translation id="7253415505590551024">現在ダウンロードを実行中です。ダウンロードがキャンセルされますが、Google Chrome を終了してもよろしいですか？</translation>
 <translation id="7196020411877309443">このウィンドウが表示される理由</translation>
 <translation id="2769762047821873045">Google Chromeはデフォルトのブラウザとして設定されていません。</translation>
+<translation id="6855094794438142393">このオプションを無効にするには:
+          Chrome メニュー &gt;
+          <ph name="SETTINGS_TITLE"/>
+          &gt;
+          <ph name="ADVANCED_TITLE"/>
+          &gt;
+          <ph name="PROXIES_TITLE"/>
+          &gt;
+          [LAN の設定]
+          の順に移動して、[LAN にプロキシ サーバーを使用する] チェックボックスをオフにします。</translation>
 <translation id="7825851276765848807">原因不明のエラーによりインストールに失敗しました。Google Chrome をもう一度ダウンロードしてください。</translation>
-<translation id="5747377399547108410">アプリ ランチャーを使用するには、Chrome をデスクトップ モードに切り替える必要があります。</translation>
 <translation id="1061257178446858647">Chrome にログインしています。ブックマーク、履歴、その他の設定は Google アカウントに同期されます。</translation>
 <translation id="3335672657969596251">Google Chrome は <ph name="OS_NAME"/> に対応していません。</translation>
 <translation id="4458285410772214805">変更内容を反映するには、一度ログアウトして、もう一度ログインしてください。</translation>
-<translation id="7311208098963907218">Windows タスクバーに Chrome アプリ ランチャーへのショートカットを表示します。</translation>
 <translation id="5334545119300433702">このモジュールは Google Chrome と競合することがわかっています。</translation>
 <translation id="4407807842708586359">Google Chrome OS</translation>
 <translation id="6634887557811630702">Google Chrome は最新版です。</translation>

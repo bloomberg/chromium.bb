@@ -10,6 +10,7 @@
 <translation id="2801119484858626560">系统检测到不兼容的 Chrome 远程桌面版本。请确保两台计算机上使用的 Chrome 和 Chrome 远程桌面都是最新版本，然后重试。</translation>
 <translation id="6998989275928107238">指向</translation>
 <translation id="3258789396564295715">您可使用 Chrome 远程桌面安全地访问此计算机。</translation>
+<translation id="5070121137485264635">远程主机要求您对第三方网站进行身份验证。要继续操作，您必须向 Chrome 远程桌面授予访问以下地址的额外权限：</translation>
 <translation id="4808503597364150972">请输入您用于“<ph name="HOSTNAME"/>”的 PIN。</translation>
 <translation id="7672203038394118626">此计算机的远程连接已停用。</translation>
 <translation id="8244400547700556338">了解详情。</translation>
@@ -97,6 +98,7 @@
 <translation id="1643640058022401035">如果您离开此页，那么您的 Chrome 远程访问会话就会结束。</translation>
 <translation id="2235518894410572517">共享此计算机以供其他用户查看和控制。</translation>
 <translation id="1023096696228309145">如果您想要访问某台计算机，请让该计算机的用户点击“立即共享”，然后告诉您访问代码。</translation>
+<translation id="80739703311984697">远程主机要求您对第三方网站进行身份验证。要继续操作，您必须向 Chrome 远程桌面授予访问以下地址的额外权限：</translation>
 <translation id="4006787130661126000">如果您想使用 Chrome 远程桌面来访问此计算机，就必须启用远程连接。</translation>
 <translation id="6930242544192836755">持续时间</translation>
 <translation id="6527303717912515753">分享</translation>

@@ -26,6 +26,7 @@
 <translation id="8206859287963243715">Мобільний</translation>
 <translation id="6596816719288285829">ІР-адреса</translation>
 <translation id="4508265954913339219">Помилка активації</translation>
+<translation id="3621712662352432595">Налаштування звуку</translation>
 <translation id="1812696562331527143">Метод введення змінено на <ph name="INPUT_METHOD_ID"/>* (<ph name="BEGIN_LINK"/>третя сторона<ph name="END_LINK"/>).
 Щоб переключитися, натисніть Shift + Alt.</translation>
 <translation id="3846575436967432996">Інформація про мережу не доступна</translation>
@@ -33,6 +34,7 @@
 <translation id="785750925697875037">Переглянути обліковий запис для мобільних пристроїв</translation>
 <translation id="153454903766751181">Ініціалізація мобільного модема…</translation>
 <translation id="7864539943188674973">Вимкнути Bluetooth</translation>
+<translation id="939252827960237676">Не вдалося зберегти знімок екрана</translation>
 <translation id="3126069444801937830">Перезапустіть, щоб оновити</translation>
 <translation id="735745346212279324">VPN від’єднано</translation>
 <translation id="7320906967354320621">Простій</translation>
@@ -40,6 +42,7 @@
 <translation id="2778346081696727092">Помилка автентифікації за допомогою введеного імені користувача чи пароля</translation>
 <translation id="3294437725009624529">Гість</translation>
 <translation id="8190698733819146287">Налаштувати мови та введення тексту...</translation>
+<translation id="2903907270192926896">ВХІД</translation>
 <translation id="7170041865419449892">За межами досяжності</translation>
 <translation id="4804818685124855865">Від'єднатися</translation>
 <translation id="5222676887888702881">Вийти</translation>
@@ -54,13 +57,16 @@
 <translation id="3368922792935385530">Підключено</translation>
 <translation id="8340999562596018839">Голосові підказки</translation>
 <translation id="8654520615680304441">Увімкнення Wi-Fi…</translation>
+<translation id="4632619405246189264">Заряджання ненадійне</translation>
 <translation id="5825747213122829519">Метод введення змінено на <ph name="INPUT_METHOD_ID"/>.
 Щоб переключитися, натисніть Shift + Alt.</translation>
 <translation id="2562916301614567480">Приватна мережа</translation>
 <translation id="6549021752953852991">Мобільна мережа недоступна</translation>
 <translation id="4379753398862151997">Прикро, але контакту з монітором немає. (Цей монітор не підтримується)</translation>
+<translation id="8448732935696070385">Підключено до нестандартного джерела живлення. Заряджання акумулятора може бути ненадійне.</translation>
 <translation id="6426039856985689743">Вимкнути передавання мобільних даних</translation>
 <translation id="3087734570205094154">Низ</translation>
+<translation id="3742055079367172538">Знімок екрана зроблено</translation>
 <translation id="5271016907025319479">VPN не налаштовано.</translation>
 <translation id="6803622936009808957">Не вдалося дублювати зображення екранів, оскільки не знайдено підтримувані значення роздільної здатності. Натомість запущено режим розширеного робочого столу.</translation>
 <translation id="1480041086352807611">Демонстраційний режим</translation>
@@ -88,7 +94,6 @@
 <translation id="2372145515558759244">Синхронізація програм...</translation>
 <translation id="7256405249507348194">Нерозпізнана помилка: <ph name="DESC"/></translation>
 <translation id="7925247922861151263">Помилка перевірки AAA</translation>
-<translation id="3227723743333276085"><ph name="BLUETOOTH"/>: Від’єднання…</translation>
 <translation id="8456362689280298700"><ph name="HOUR"/>:<ph name="MINUTE"/> до повного зарядження</translation>
 <translation id="5787281376604286451">Голосові підказки ввімкнено.
 Натисніть Ctrl+Alt+Z, щоб вимкнути.</translation>
@@ -116,6 +121,7 @@
 <translation id="3019353588588144572">До повного зарядження акумулятора залишилося <ph name="TIME_REMAINING"/></translation>
 <translation id="3473479545200714844">Лупа</translation>
 <translation id="7005812687360380971">Помилка</translation>
+<translation id="882279321799040148">Натисніть, щоб переглянути</translation>
 <translation id="1602076796624386989">Увімкнути передавання мобільних даних</translation>
 <translation id="6981982820502123353">Доступність</translation>
 <translation id="3157931365184549694">Відновити</translation>
@@ -124,6 +130,7 @@
 <translation id="225680501294068881">Пошук пристроїв...</translation>
 <translation id="5597451508971090205"><ph name="SHORT_WEEKDAY"/>, <ph name="DATE"/></translation>
 <translation id="4448844063988177157">Пошук Wi-Fi мереж...</translation>
+<translation id="2475982808118771221">Сталася помилка</translation>
 <translation id="7229570126336867161">Потрібна мережа EVDO</translation>
 <translation id="2999742336789313416"><ph name="DISPLAY_NAME"/> – загальнодоступний сеанс, керований доменом <ph name="DOMAIN"/></translation>
 <translation id="7029814467594812963">Завершити сеанс</translation>
@@ -134,9 +141,11 @@
 <translation id="8300849813060516376">Помилка OTASP</translation>
 <translation id="2792498699870441125">Alt+клавіша пошуку</translation>
 <translation id="8660803626959853127">Синхронізація файлів (<ph name="COUNT"/>)</translation>
+<translation id="3709443003275901162">9+</translation>
 <translation id="639644700271529076">Режим CAPS LOCK вимкнено</translation>
 <translation id="6267036997247669271"><ph name="NAME"/>: активація…</translation>
 <translation id="1391854757121130358">Можливо, ви використали свій ліміт мобільного передавання даних.</translation>
+<translation id="5413208160176941586">Локально керований користувач</translation>
 <translation id="4864165860509564259">Положення панелі запуску</translation>
 <translation id="7593891976182323525">Клавіша пошуку або Shift</translation>
 <translation id="7649070708921625228">Довідка</translation>
@@ -146,6 +155,7 @@
 <translation id="158849752021629804">Потрібна домашня мережа</translation>
 <translation id="6857811139397017780">Активувати <ph name="NETWORKSERVICE"/></translation>
 <translation id="5864471791310927901">Помилка пошуку DHCP</translation>
+<translation id="5812035014844949013">ВИХІД</translation>
 <translation id="6692173217867674490">Погана парольна фраза</translation>
 <translation id="6165508094623778733">Докладніше</translation>
 <translation id="9046895021617826162">Помилка з'єднання</translation>
@@ -158,6 +168,7 @@
 <translation id="7209101170223508707">Клавішу CAPS LOCK увімкнено.
 Натисніть Alt+клавішу пошуку або Shift, щоб скасувати.</translation>
 <translation id="8061464966246066292">Високий контраст</translation>
+<translation id="8940956008527784070">Низький заряд акумулятора (<ph name="PERCENTAGE"/>%)</translation>
 <translation id="5102001756192215136">Залишилося <ph name="HOUR"/>:<ph name="MINUTE"/></translation>
 <translation id="8000066093800657092">Немає мережі</translation>
 <translation id="5941711191222866238">Зменшити</translation>

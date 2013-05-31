@@ -10,6 +10,7 @@
 <translation id="2801119484858626560">互換性のないバージョンの Chrome リモート デスクトップが検出されました。最新バージョンの Chrome と Chrome リモート デスクトップが両方のパソコンにインストールされていることを確認して、もう一度お試しください。</translation>
 <translation id="6998989275928107238">接続先</translation>
 <translation id="3258789396564295715">Chrome リモート デスクトップを使用して、このパソコンに安全にアクセスできます。</translation>
+<translation id="5070121137485264635">リモート ホストで、サードパーティ ウェブサイトへの認証が求められています。続行するには、次のアドレスにアクセスできるように Chrome リモート デスクトップに追加の権限を与える必要があります:</translation>
 <translation id="4808503597364150972"><ph name="HOSTNAME"/> の PIN を入力してください。</translation>
 <translation id="7672203038394118626">このパソコンのリモート接続が無効になりました。</translation>
 <translation id="8244400547700556338">詳細を見る。</translation>
@@ -97,6 +98,7 @@
 <translation id="1643640058022401035">このページを閉じると、Chromoting セッションが終了します。</translation>
 <translation id="2235518894410572517">このパソコンが共有され、他のユーザーがこのパソコンの画面を見ながら操作できるようになります。</translation>
 <translation id="1023096696228309145">アクセス先のパソコンのユーザーに、[今すぐ共有] ボタンをクリックしてアクセス コードを提供するよう依頼してください。</translation>
+<translation id="80739703311984697">リモート ホストで、サードパーティ ウェブサイトへの認証が求められています。続行するには、次のアドレスにアクセスできるように Chromoting に追加の権限を与える必要があります:</translation>
 <translation id="4006787130661126000">Chrome リモート デスクトップを使用してこのパソコンにアクセスするには、リモート接続を有効にする必要があります。</translation>
 <translation id="6930242544192836755">接続時間</translation>
 <translation id="6527303717912515753">共有</translation>

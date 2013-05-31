@@ -26,6 +26,7 @@
 <translation id="8206859287963243715">Di động</translation>
 <translation id="6596816719288285829">Địa chỉ IP</translation>
 <translation id="4508265954913339219">Kích hoạt không thành công</translation>
+<translation id="3621712662352432595">Cài đặt âm thanh</translation>
 <translation id="1812696562331527143">Phương thức nhập của bạn đã thay đổi thành <ph name="INPUT_METHOD_ID"/>*(<ph name="BEGIN_LINK"/>bên thứ ba<ph name="END_LINK"/>).
 Nhấn Shift + Alt để chuyển đổi.</translation>
 <translation id="3846575436967432996">Không có thông tin mạng</translation>
@@ -33,6 +34,7 @@ Nhấn Shift + Alt để chuyển đổi.</translation>
 <translation id="785750925697875037">Xem tài khoản di động</translation>
 <translation id="153454903766751181">Đang khởi chạy modem di động...</translation>
 <translation id="7864539943188674973">Tắt bluetooth</translation>
+<translation id="939252827960237676">Không lưu được ảnh chụp màn hình</translation>
 <translation id="3126069444801937830">Khởi động lại để cập nhật</translation>
 <translation id="735745346212279324">Đã ngắt kết nối VPN</translation>
 <translation id="7320906967354320621">Rảnh</translation>
@@ -40,6 +42,7 @@ Nhấn Shift + Alt để chuyển đổi.</translation>
 <translation id="2778346081696727092">Không thể xác thực với tên người dùng và mật khẩu đã cung cấp</translation>
 <translation id="3294437725009624529">Khách</translation>
 <translation id="8190698733819146287">Tùy chỉnh ngôn ngữ và dữ liệu nhập...</translation>
+<translation id="2903907270192926896">ĐẦU VÀO</translation>
 <translation id="7170041865419449892">Ngoài vùng phủ sóng</translation>
 <translation id="4804818685124855865">Ngắt kết nối</translation>
 <translation id="5222676887888702881">Đăng xuất</translation>
@@ -54,13 +57,16 @@ Nhấn Shift + Alt để chuyển đổi.</translation>
 <translation id="3368922792935385530">Đã kết nối</translation>
 <translation id="8340999562596018839">Phản hồi nói</translation>
 <translation id="8654520615680304441">Bật Wi-Fi...</translation>
+<translation id="4632619405246189264">Sạc không đáng tin cậy</translation>
 <translation id="5825747213122829519">Phương thức nhập của bạn đã thay đổi thành <ph name="INPUT_METHOD_ID"/>.
 Nhấn Shift + Alt để chuyển đổi.</translation>
 <translation id="2562916301614567480">Mạng riêng</translation>
 <translation id="6549021752953852991">Không có mạng di động nào</translation>
 <translation id="4379753398862151997">Rất tiếc, hệ thống không hoạt động giữa hai màn hình. (Màn hình đó không được hỗ trợ)</translation>
+<translation id="8448732935696070385">Được cắm vào nguồn điện không chuẩn. Sạc pin có thể không đáng tin cậy.</translation>
 <translation id="6426039856985689743">Tắt dữ liệu di động</translation>
 <translation id="3087734570205094154">Bên dưới</translation>
+<translation id="3742055079367172538">Ảnh màn hình đã chụp</translation>
 <translation id="5271016907025319479">Mạng riêng ảo không được định cấu hình.</translation>
 <translation id="6803622936009808957">Không thể phản chiếu màn hình do không tìm thấy độ phân giải được hỗ trợ. Thay vào đó, đã chuyển sang chế độ màn hình mở rộng.</translation>
 <translation id="1480041086352807611">Chế độ trình diễn</translation>
@@ -88,7 +94,6 @@ Nhấn Shift + Alt để chuyển đổi.</translation>
 <translation id="2372145515558759244">Đang đồng bộ hóa ứng dụng...</translation>
 <translation id="7256405249507348194">Lỗi không xác định: <ph name="DESC"/></translation>
 <translation id="7925247922861151263">Không thể kiểm tra AAA</translation>
-<translation id="3227723743333276085"><ph name="BLUETOOTH"/>: Đang ngắt kết nối...</translation>
 <translation id="8456362689280298700"><ph name="HOUR"/>:<ph name="MINUTE"/> cho tới khi pin được sạc đầy</translation>
 <translation id="5787281376604286451">Phản hồi nói được bật.
 Nhấn Ctrl+Alt+Z để tắt.</translation>
@@ -116,6 +121,7 @@ Nhấn Ctrl+Alt+Z để tắt.</translation>
 <translation id="3019353588588144572">Thời gian còn lại cho đến khi pin được sạc đầy, <ph name="TIME_REMAINING"/></translation>
 <translation id="3473479545200714844">Phóng to màn hình</translation>
 <translation id="7005812687360380971">Lỗi</translation>
+<translation id="882279321799040148">Nhấp để xem</translation>
 <translation id="1602076796624386989">Bật dữ liệu di động</translation>
 <translation id="6981982820502123353">Khả năng truy cập</translation>
 <translation id="3157931365184549694">Khôi phục</translation>
@@ -124,6 +130,7 @@ Nhấn Ctrl+Alt+Z để tắt.</translation>
 <translation id="225680501294068881">Đang quét tìm thiết bị...</translation>
 <translation id="5597451508971090205"><ph name="SHORT_WEEKDAY"/>, <ph name="DATE"/></translation>
 <translation id="4448844063988177157">Đang tìm kiếm mạng Wi-Fi...</translation>
+<translation id="2475982808118771221">Đã xảy ra lôi</translation>
 <translation id="7229570126336867161">Cần có EVDO</translation>
 <translation id="2999742336789313416"><ph name="DISPLAY_NAME"/> là phiên công khai được quản lý bởi <ph name="DOMAIN"/></translation>
 <translation id="7029814467594812963">Thoát khỏi phiên</translation>
@@ -134,9 +141,11 @@ Nhấn Ctrl+Alt+Z để tắt.</translation>
 <translation id="8300849813060516376">OTASP không thành công</translation>
 <translation id="2792498699870441125">Alt+Search</translation>
 <translation id="8660803626959853127">Đang đồng bộ hóa <ph name="COUNT"/> tệp</translation>
+<translation id="3709443003275901162">9+</translation>
 <translation id="639644700271529076">CAPS LOCK tắt</translation>
 <translation id="6267036997247669271"><ph name="NAME"/>: Đang kích hoạt...</translation>
 <translation id="1391854757121130358">Có thể bạn đã sử dụng hết dữ liệu di động được phép.</translation>
+<translation id="5413208160176941586">Người dùng được quản lý cục bộ</translation>
 <translation id="4864165860509564259">Vị trí trình khởi chạy</translation>
 <translation id="7593891976182323525">Search hoặc Shift</translation>
 <translation id="7649070708921625228">Trợ giúp</translation>
@@ -146,6 +155,7 @@ Nhấn Search hoặc Shift để hủy.</translation>
 <translation id="158849752021629804">Cần mạng gia đình</translation>
 <translation id="6857811139397017780">Kích hoạt <ph name="NETWORKSERVICE"/></translation>
 <translation id="5864471791310927901">Không thể tra cứu DHCP</translation>
+<translation id="5812035014844949013">ĐẦU RA</translation>
 <translation id="6692173217867674490">Cụm mật khẩu sai</translation>
 <translation id="6165508094623778733">Tìm hiểu thêm</translation>
 <translation id="9046895021617826162">Kết nối không thành công</translation>
@@ -158,6 +168,7 @@ Nhấn Search hoặc Shift để hủy.</translation>
 <translation id="7209101170223508707">CAPS LOCK đang bật.
 Nhấn Alt+Search hoặc Shift để hủy.</translation>
 <translation id="8061464966246066292">Độ tương phản cao</translation>
+<translation id="8940956008527784070">Pin yếu (<ph name="PERCENTAGE"/>%)</translation>
 <translation id="5102001756192215136">Còn lại <ph name="HOUR"/>:<ph name="MINUTE"/></translation>
 <translation id="8000066093800657092">Không có mạng nào</translation>
 <translation id="5941711191222866238">Thu nhỏ</translation>

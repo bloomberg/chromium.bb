@@ -16,7 +16,6 @@
 <translation id="1761785978543082658"><ph name="QUANTITY"/> Б</translation>
 <translation id="1809410197924942083"><ph name="QUANTITY"/> МБ/с</translation>
 <translation id="3990502903496589789">Правый край</translation>
-<translation id="5182671122927417841">Отключить расширение</translation>
 <translation id="932327136139879170">На главную</translation>
 <translation id="3909791450649380159">Выре&amp;зать</translation>
 <translation id="688711909580084195">Страница без названия</translation>
@@ -31,17 +30,19 @@
 <translation id="8210608804940886430">Прокрутка вниз</translation>
 <translation id="5329858601952122676">&amp;Удалить</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY"/> КБ</translation>
-<translation id="6489863328574614542">Настройка оповещений для приложений и расширений</translation>
 <translation id="6659594942844771486">Вкладка</translation>
 <translation id="3049748772180311791"><ph name="QUANTITY"/> МБ</translation>
 <translation id="8428213095426709021">Настройки</translation>
 <translation id="2497284189126895209">Все файлы</translation>
 <translation id="7814458197256864873">&amp;Копировать</translation>
 <translation id="3889424535448813030">Стрелка вправо</translation>
+<translation id="7135556860107312402">Разрешить оповещения от:</translation>
 <translation id="1398853756734560583">Развернуть</translation>
+<translation id="4250229828105606438">Скриншот</translation>
 <translation id="3757388668994797779"><ph name="QUANTITY"/> ГБ</translation>
 <translation id="1901303067676059328">Выделить &amp;все</translation>
 <translation id="2168039046890040389">Вверх</translation>
+<translation id="4927753642311223124">Оповещений нет.</translation>
 <translation id="2482878487686419369">Оповещения</translation>
 <translation id="3183922693828471536">Прокрутить до этого места</translation>
 <translation id="4552416320897244156">PgDwn</translation>
@@ -52,6 +53,7 @@
 <translation id="4588090240171750605">Прокрутка вправо</translation>
 <translation id="2666092431469916601">Наверх</translation>
 <translation id="8331626408530291785">Прокрутка вверх</translation>
+<translation id="4773379706300191099">Отключить оповещения от <ph name="EXTENSION_NAME"/></translation>
 <translation id="7907591526440419938">Открытие файла</translation>
 <translation id="1293699935367580298">Esc</translation>
 <translation id="815598010540052116">Прокрутка вниз</translation>
@@ -68,7 +70,6 @@
 <translation id="2297836609126180313"><ph name="QUANTITY"/> ТБ/с</translation>
 <translation id="6040143037577758943">Закрыть</translation>
 <translation id="6142413573757616983"><ph name="QUANTITY"/> Б/с</translation>
-<translation id="477782898153505579">Новых оповещений нет.</translation>
 <translation id="7457942297256758195">Очистить все</translation>
 <translation id="7509316384504965641"><ph name="PRODUCT"/> – Оповещения</translation>
 <translation id="8400147561352026160">Shift+<ph name="KEY_COMBO_NAME"/></translation>

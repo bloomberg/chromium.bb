@@ -10,6 +10,7 @@
 <translation id="2801119484858626560">Aptikta nesuderinama „Chrome“ nuotolinio kompiuterio valdymo versija. Įsitikinkite, kad naudojate naujausios versijos „Chrome“ ir „Chrome“ nuotolinį kompiuterio valdymą abiejuose kompiuteriuose, ir bandykite dar kartą.</translation>
 <translation id="6998989275928107238">Ryšys užmezgamas su</translation>
 <translation id="3258789396564295715">Galite saugiai pasiekti kompiuterį naudodami „Chrome“ nuotolinį kompiuterio valdymą.</translation>
+<translation id="5070121137485264635">Nuotolinė priegloba reikalauja autentifikuoti trečiosios šalies svetainę. Jei norite tęsti, turite suteikti „Chrome“ nuotolinio kompiuterio valdymo programai papildomas teises pasiekti šį adresą</translation>
 <translation id="4808503597364150972">Įveskite „<ph name="HOSTNAME"/>“ PIN kodą.</translation>
 <translation id="7672203038394118626">Nuotolinis ryšys šiame kompiuteryje neleidžiamas.</translation>
 <translation id="8244400547700556338">Sužinokite, kaip tai padaryti.</translation>
@@ -97,6 +98,7 @@
 <translation id="1643640058022401035">Išėjus iš šio puslapio, baigsis „Chrome“ nuotolinio ryšio sesija.</translation>
 <translation id="2235518894410572517">Bendrinkite šį kompiuterį, kad kitas naudotojas galėtų jį matyti ir valdyti.</translation>
 <translation id="1023096696228309145">Paprašykite, kad naudotojas, kurio kompiuterį norite pasiekti, spustelėtų „Bendrinti dabar“ ir suteiktų jums prieigos kodą.</translation>
+<translation id="80739703311984697">Nuotolinė priegloba reikalauja autentifikuoti trečiosios šalies svetainę. Jei norite tęsti, turite suteikti „Chrome“ nuotolinio ryšio programai papildomas teises pasiekti šį adresą</translation>
 <translation id="4006787130661126000">Jei norite naudoti „Chrome“ nuotolinį kompiuterio valdymą šiam kompiuteriui pasiekti, turite įgalinti nuotolinį ryšį.</translation>
 <translation id="6930242544192836755">Trukmė</translation>
 <translation id="6527303717912515753">Bendrinti</translation>

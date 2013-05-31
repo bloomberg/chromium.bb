@@ -10,6 +10,7 @@
 <translation id="2801119484858626560">Der er registreret en inkompatibel version af Chrome Fjernskrivebord. Kontrollér, at du har den nyeste version af Chrome og Chrome Fjernskrivebord på begge computere, og prøv igen.</translation>
 <translation id="6998989275928107238">Til</translation>
 <translation id="3258789396564295715">Du kan få sikker adgang til denne computer via Chrome Fjernskrivebord.</translation>
+<translation id="5070121137485264635">Fjernværten kræver, at du bekræftes over for et tredjepartswebsite. Du skal give Chrome Fjernskrivebord yderligere tilladelser til at få adgang til denne adresse, før du kan fortsætte:</translation>
 <translation id="4808503597364150972">Indtast din pinkode til <ph name="HOSTNAME"/>.</translation>
 <translation id="7672203038394118626">Fjernforbindelserne til denne computer er blevet deaktiveret.</translation>
 <translation id="8244400547700556338">Få flere oplysninger.</translation>
@@ -97,6 +98,7 @@
 <translation id="1643640058022401035">Hvis du forlader denne side, afsluttes din session med Chromoting.</translation>
 <translation id="2235518894410572517">Del denne computer, så en anden bruger kan se og kontrollere den.</translation>
 <translation id="1023096696228309145">Bed den bruger, hvis computer, du ønsker adgang til, om at klikke på &quot;Del nu&quot; og give dig adgangskoden.</translation>
+<translation id="80739703311984697">Fjernværten kræver, at du bekræftes over for et tredjepartswebsite. Du skal give Chromoting yderligere tilladelser til at få adgang til denne adresse, før du kan fortsætte:</translation>
 <translation id="4006787130661126000">Du skal aktivere fjernforbindelserne, hvis du vil bruge Chrome Fjernskrivebord til at få adgang til denne computer.</translation>
 <translation id="6930242544192836755">Varighed</translation>
 <translation id="6527303717912515753">Del</translation>

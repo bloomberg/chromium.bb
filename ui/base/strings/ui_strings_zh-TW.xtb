@@ -16,7 +16,6 @@
 <translation id="1761785978543082658"><ph name="QUANTITY"/> B</translation>
 <translation id="1809410197924942083"><ph name="QUANTITY"/> MB/秒</translation>
 <translation id="3990502903496589789">右邊緣</translation>
-<translation id="5182671122927417841">停用擴充功能</translation>
 <translation id="932327136139879170">首頁</translation>
 <translation id="3909791450649380159">剪下(&amp;T)</translation>
 <translation id="688711909580084195">無標題網頁</translation>
@@ -31,17 +30,19 @@
 <translation id="8210608804940886430">向下翻頁</translation>
 <translation id="5329858601952122676">刪除(&amp;D)</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY"/> KB</translation>
-<translation id="6489863328574614542">設定應用程式和擴充功能的通知權限</translation>
 <translation id="6659594942844771486">Tab</translation>
 <translation id="3049748772180311791"><ph name="QUANTITY"/> MB</translation>
 <translation id="8428213095426709021">設定</translation>
 <translation id="2497284189126895209">所有檔案</translation>
 <translation id="7814458197256864873">複製(&amp;C)</translation>
 <translation id="3889424535448813030">向右鍵</translation>
+<translation id="7135556860107312402">允許接收下列來源發出的通知：</translation>
 <translation id="1398853756734560583">放到最大</translation>
+<translation id="4250229828105606438">螢幕擷取畫面</translation>
 <translation id="3757388668994797779"><ph name="QUANTITY"/> GB</translation>
 <translation id="1901303067676059328">選取全部(&amp;A)</translation>
 <translation id="2168039046890040389">向上翻頁</translation>
+<translation id="4927753642311223124">這裡沒有任何通知訊息，以後再來看看吧！</translation>
 <translation id="2482878487686419369">通知</translation>
 <translation id="3183922693828471536">捲動至此</translation>
 <translation id="4552416320897244156">PgDwn</translation>
@@ -52,6 +53,7 @@
 <translation id="4588090240171750605">向右捲動</translation>
 <translation id="2666092431469916601">置頂</translation>
 <translation id="8331626408530291785">向上捲動</translation>
+<translation id="4773379706300191099">停用 <ph name="EXTENSION_NAME"/> 的通知</translation>
 <translation id="7907591526440419938">開啟檔案</translation>
 <translation id="1293699935367580298">Esc</translation>
 <translation id="815598010540052116">向下捲動</translation>
@@ -68,7 +70,6 @@
 <translation id="2297836609126180313"><ph name="QUANTITY"/> TB/秒</translation>
 <translation id="6040143037577758943">關閉</translation>
 <translation id="6142413573757616983"><ph name="QUANTITY"/> B/秒</translation>
-<translation id="477782898153505579">您沒有任何通知，放輕鬆！</translation>
 <translation id="7457942297256758195">全部清除</translation>
 <translation id="7509316384504965641"><ph name="PRODUCT"/> - 通知</translation>
 <translation id="8400147561352026160">Shift+<ph name="KEY_COMBO_NAME"/></translation>

@@ -16,7 +16,6 @@
 <translation id="1761785978543082658"><ph name="QUANTITY"/> B</translation>
 <translation id="1809410197924942083"><ph name="QUANTITY"/> MB/s</translation>
 <translation id="3990502903496589789">ডান প্রান্ত</translation>
-<translation id="5182671122927417841">এক্সটেনশান অক্ষম করুন</translation>
 <translation id="932327136139879170">হোম</translation>
 <translation id="3909791450649380159">ছেদ&amp;ন</translation>
 <translation id="688711909580084195">শিরোনামহীন ওয়েবপৃষ্ঠা</translation>
@@ -31,17 +30,19 @@
 <translation id="8210608804940886430">পৃষ্ঠা উপরে</translation>
 <translation id="5329858601952122676">&amp;মুছুন</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY"/> KB</translation>
-<translation id="6489863328574614542">অ্যাপ্লিকেশান এবং এক্সটেনশানগুলির জন্য বিজ্ঞপ্তির অনুমতিগুলি সেট করুন</translation>
 <translation id="6659594942844771486">ট্যাব</translation>
 <translation id="3049748772180311791"><ph name="QUANTITY"/> MB</translation>
 <translation id="8428213095426709021">সেটিংস</translation>
 <translation id="2497284189126895209">সকল ফাইল</translation>
 <translation id="7814458197256864873">&amp;copy</translation>
 <translation id="3889424535448813030">Right Arrow</translation>
+<translation id="7135556860107312402">নিম্নলিখিত থেকে বিজ্ঞপ্তিগুলি মঞ্জুরি করুন:</translation>
 <translation id="1398853756734560583">বড় করুন</translation>
+<translation id="4250229828105606438">স্ক্রীনশট</translation>
 <translation id="3757388668994797779"><ph name="QUANTITY"/> GB</translation>
 <translation id="1901303067676059328">&amp;সকল নির্বাচন করুন</translation>
 <translation id="2168039046890040389">পৃষ্ঠা নীচে</translation>
+<translation id="4927753642311223124">এখানে দেখার কিছু নেই , এগিয়ে যান৷</translation>
 <translation id="2482878487686419369">বিজ্ঞপ্তিগুলি</translation>
 <translation id="3183922693828471536">এখান পর্যন্ত স্ক্রোল করুন</translation>
 <translation id="4552416320897244156">PgDwn</translation>
@@ -52,6 +53,7 @@
 <translation id="4588090240171750605">ডান দিকে স্ক্রোল করুন</translation>
 <translation id="2666092431469916601">শীর্ষ</translation>
 <translation id="8331626408530291785">উপরে স্ক্রোল করুন</translation>
+<translation id="4773379706300191099"><ph name="EXTENSION_NAME"/> থেকে বিজ্ঞপ্তিগুলি অক্ষম করুন</translation>
 <translation id="7907591526440419938">খোলা ফাইল</translation>
 <translation id="1293699935367580298">Esc</translation>
 <translation id="815598010540052116">নীচে স্ক্রোল করুন</translation>
@@ -68,7 +70,6 @@
 <translation id="2297836609126180313"><ph name="QUANTITY"/> TB/s</translation>
 <translation id="6040143037577758943">বন্ধ</translation>
 <translation id="6142413573757616983"><ph name="QUANTITY"/> B/s</translation>
-<translation id="477782898153505579">আপনার কাছে কোনো বিজ্ঞপ্তি নেই৷ আরাম করুন!</translation>
 <translation id="7457942297256758195">সমস্ত সাফ করুন</translation>
 <translation id="7509316384504965641"><ph name="PRODUCT"/> - বিজ্ঞপ্তিগুলি</translation>
 <translation id="8400147561352026160">Shift+<ph name="KEY_COMBO_NAME"/></translation>

@@ -16,7 +16,6 @@
 <translation id="1761785978543082658"><ph name="QUANTITY"/> B</translation>
 <translation id="1809410197924942083"><ph name="QUANTITY"/> MB/s</translation>
 <translation id="3990502903496589789">Extrem dret</translation>
-<translation id="5182671122927417841">Desactiva l'extensió</translation>
 <translation id="932327136139879170">Inici</translation>
 <translation id="3909791450649380159">Re&amp;talla</translation>
 <translation id="688711909580084195">Pàgina web sense títol</translation>
@@ -31,17 +30,19 @@
 <translation id="8210608804940886430">Av Pàg</translation>
 <translation id="5329858601952122676">&amp;Suprimeix</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY"/> KB</translation>
-<translation id="6489863328574614542">Defineix els permisos de notificacions per a aplicacions i extensions</translation>
 <translation id="6659594942844771486">Pestanya</translation>
 <translation id="3049748772180311791"><ph name="QUANTITY"/> MB</translation>
 <translation id="8428213095426709021">Configuració</translation>
 <translation id="2497284189126895209">Tots els fitxers</translation>
 <translation id="7814458197256864873">&amp;Copia</translation>
 <translation id="3889424535448813030">Fletxa dreta</translation>
+<translation id="7135556860107312402">Permet notificacions de les fonts següents:</translation>
 <translation id="1398853756734560583">Maximitza</translation>
+<translation id="4250229828105606438">Captura de pantalla</translation>
 <translation id="3757388668994797779"><ph name="QUANTITY"/> GB</translation>
 <translation id="1901303067676059328">Selecciona-ho &amp;tot</translation>
 <translation id="2168039046890040389">Re Pàg</translation>
+<translation id="4927753642311223124">No hi ha cap notificació, podeu continuar.</translation>
 <translation id="2482878487686419369">Notificacions</translation>
 <translation id="3183922693828471536">Desplaçament fins aquí</translation>
 <translation id="4552416320897244156">Av Pàg</translation>
@@ -52,6 +53,7 @@
 <translation id="4588090240171750605">Desplaçament a la dreta</translation>
 <translation id="2666092431469916601">Superior</translation>
 <translation id="8331626408530291785">Desplaçament amunt</translation>
+<translation id="4773379706300191099">Desactiva les notificacions de <ph name="EXTENSION_NAME"/></translation>
 <translation id="7907591526440419938">Obre un fitxer</translation>
 <translation id="1293699935367580298">Esc</translation>
 <translation id="815598010540052116">Desplaçament avall</translation>
@@ -68,7 +70,6 @@
 <translation id="2297836609126180313"><ph name="QUANTITY"/> TB/s</translation>
 <translation id="6040143037577758943">Tanca</translation>
 <translation id="6142413573757616983"><ph name="QUANTITY"/> B/s</translation>
-<translation id="477782898153505579">No teniu cap notificació. Podeu estar tranquil.</translation>
 <translation id="7457942297256758195">Esborra-ho tot</translation>
 <translation id="7509316384504965641"><ph name="PRODUCT"/>: notificacions</translation>
 <translation id="8400147561352026160">Maj+<ph name="KEY_COMBO_NAME"/></translation>

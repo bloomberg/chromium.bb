@@ -5,6 +5,9 @@
 <translation id="1503959756075098984">Extension IDs and update URLs to be silently installed</translation>
 <translation id="2463365186486772703">Application locale</translation>
 <translation id="1397855852561539316">Default search provider suggest URL</translation>
+<translation id="3347897589415241400">The default behaviour for sites not in any content pack.
+
+          This policy is for internal use by Chrome itself.</translation>
 <translation id="7040229947030068419">Sample value</translation>
 <translation id="1213523811751486361">Specifies the URL of the search engine used to provide search suggestions. The URL should contain the string '<ph name="SEARCH_TERM_MARKER"/>', which will be replaced at query time by the text that the user has entered so far.
 
@@ -29,7 +32,6 @@
           The policy value should be specified in milliseconds. Values are clamped to be less than or equal the idle delay.</translation>
 <translation id="7614663184588396421">List of disabled protocol schemes</translation>
 <translation id="2309390639296060546">Default geolocation setting</translation>
-<translation id="7261507082507286116">Disables Google Drive over Cellular connections</translation>
 <translation id="7443616896860707393">Cross-origin HTTP Basic Auth prompts</translation>
 <translation id="2337466621458842053">Allows you to set a list of url patterns that specify sites which are allowed to display images.
 
@@ -42,6 +44,7 @@
           By default, all extensions are whitelisted, but if all extensions have been blacklisted by policy, the whitelist can be used to override that policy.</translation>
 <translation id="3185009703220253572">since version <ph name="SINCE_VERSION"/></translation>
 <translation id="2204753382813641270">Control shelf auto-hiding</translation>
+<translation id="3816312845600780067">Enable bailout keyboard shortcut for auto-login</translation>
 <translation id="3214164532079860003">This policy forces the home page to be imported from the current default browser if enabled.
 
       If disabled, the home page is not imported.
@@ -139,6 +142,9 @@
           A blacklist value of '*' means all extensions are blacklisted unless they are explicitly listed in the whitelist.
 
           If this policy is left unset, the user can install any extension in <ph name="PRODUCT_NAME"/>.</translation>
+<translation id="3067188277482006117">If true, the user can use the hardware on Chrome devices to remote attest its identity to the privacy CA via the Enterprise Platform Keys API chrome.enterprise.platformKeysPrivate.challengeUserKey().
+
+          If it is set to false, or if it is not set, calls to the API will fail with an error code.</translation>
 <translation id="5809728392451418079">Set the display name for device-local accounts</translation>
 <translation id="1427655258943162134">Address or URL of proxy server</translation>
 <translation id="1827523283178827583">Use fixed proxy servers</translation>
@@ -183,6 +189,7 @@
       If you enable this setting, users cannot change or override this setting in <ph name="PRODUCT_NAME"/>.
 
       If this policy is left unset, Google Sync will be available for the user to choose whether to use it or not.</translation>
+<translation id="7953256619080733119">Managed user manual exception hosts</translation>
 <translation id="7412982067535265896">Allows you to set a list of url patterns that specify sites which are allowed to set session-only cookies.
 
           If this policy is left not set, the global default value will be used for all sites, either from the 'DefaultCookiesSetting' policy if it is set, or the user's personal configuration otherwise.
@@ -198,9 +205,6 @@
       If you set this policy, you can configure if a user is allowed to sign in to <ph name="PRODUCT_NAME"/> or not.</translation>
 <translation id="5564962323737505851">Configures the password manager. If the password manager is enabled, then you can choose to enable or disable whether the user may show stored passwords in clear text.</translation>
 <translation id="4668325077104657568">Default images setting</translation>
-<translation id="7978961945071764766">Disables Google Drive syncing when using a cellular connection when set to True. In that case, data is only synced to Google Drive when connected via Wi-Fi or Ethernet.
-
-If not set or set to False, users will be able to transfer files to Google Drive via cellular connections.</translation>
 <translation id="4492287494009043413">Disable taking screenshots</translation>
 <translation id="6368403635025849609">Allow JavaScript on these sites</translation>
 <translation id="6074963268421707432">Do not allow any site to show desktop notifications</translation>
@@ -252,6 +256,9 @@ If not set or set to False, users will be able to transfer files to Google Drive
 
       If this setting is disabled, browsing and download history cannot be deleted.</translation>
 <translation id="2884728160143956392">Allow session only cookies on these sites</translation>
+<translation id="3021272743506189340">Disables Google Drive syncing in the Chrome OS Files app when using a cellular connection when set to True. In that case, data is only synced to Google Drive when connected via WiFi or Ethernet.
+
+          If not set or set to False, then users will be able to transfer files to Google Drive via cellular connections.</translation>
 <translation id="4655130238810647237">Enables or disables editing bookmarks in <ph name="PRODUCT_NAME"/>.
 
       If you enable this setting, bookmarks can be added, removed or modified. This is the default also when this policy is not set.
@@ -383,9 +390,6 @@ If not set or set to False, users will be able to transfer files to Google Drive
 <translation id="4962195944157514011">Specifies the URL of the search engine used when doing a default search. The URL should contain the string '<ph name="SEARCH_TERM_MARKER"/>', which will be replaced at query time by the terms the user is searching for.
 
           This option must be set when the 'DefaultSearchProviderEnabled' policy is enabled and will only be respected if this is the case.</translation>
-<translation id="3343454696188645600">Disables Google Drive syncing when set to True. In that case, no data is uploaded to Google Drive.
-
-          If not set or set to False, then users will be able to transfer files to Google Drive.</translation>
 <translation id="6009903244351574348">Allow <ph name="PRODUCT_FRAME_NAME"/> to handle the listed content types.
 
           If this policy is not set the default renderer will be used for all sites as specified by the 'ChromeFrameRendererSettings' policy.</translation>
@@ -596,7 +600,6 @@ If not set or set to False, users will be able to transfer files to Google Drive
 <translation id="2646290749315461919">Allows you to set whether websites are allowed to track the users' physical location. Tracking the users' physical location can be allowed by default, denied by default or the user can be asked every time a website requests the physical location.
 
           If this policy is left not set, 'AskGeolocation' will be used and the user will be able to change it.</translation>
-<translation id="3309789488678647282">Disables Drive</translation>
 <translation id="5770738360657678870">Dev channel (may be unstable)</translation>
 <translation id="2959898425599642200">Proxy bypass rules</translation>
 <translation id="228659285074633994">Specifies the length of time without user input after which a warning dialogue is shown when running on AC power.
@@ -638,14 +641,6 @@ If not set or set to False, users will be able to transfer files to Google Drive
       &quot;1412.24.34&quot;: update to this specific version only</translation>
 <translation id="8102913158860568230">Default mediastream setting</translation>
 <translation id="6641981670621198190">Disable support for 3D graphics APIs</translation>
-<translation id="2741921267428646309">This is the list of policies that <ph name="PRODUCT_NAME"/> respects.
-
-      You don't need to change these settings by hand!  You can download easy-to-use templates from
-      <ph name="POLICY_TEMPLATE_DOWNLOAD_URL"/>.
-
-      The list of supported policies is the same for Chromium and Google Chrome, but their Windows registry locations differ.
-
-      It starts with <ph name="CHROMIUM_KEY"/> for Chromium policies and with <ph name="GOOGLE_CHROME_KEY"/> for Google Chrome policies.</translation>
 <translation id="7929480864713075819">Enable reporting memory info (JS heap size) to page</translation>
 <translation id="7003746348783715221"><ph name="PRODUCT_NAME"/> preferences</translation>
 <translation id="4723829699367336876">Enable firewall traversal from remote access client</translation>
@@ -704,6 +699,16 @@ If not set or set to False, users will be able to transfer files to Google Drive
 
           If this policy is set to False, video activity does not prevent the user from being considered idle.</translation>
 <translation id="3965339130942650562">Timeout until idle user log-out is executed</translation>
+<translation id="5857910801734294133">This is the list of policies that <ph name="PRODUCT_NAME"/> respects.
+
+      You don't need to change these settings by hand! You can download easy-to-use templates from
+      <ph name="POLICY_TEMPLATE_DOWNLOAD_URL"/>.
+
+      The list of supported policies is the same for Chromium and Google Chrome, but their Windows registry locations differ.
+
+      It starts with <ph name="CHROMIUM_KEY"/> for Chromium policies and with <ph name="GOOGLE_CHROME_KEY"/> for Google Chrome policies.
+
+      These policies are strictly intended to be used to configure instances of Chrome internal to your organisation. Use of these policies outside of your organisation (for example, in a publicly distributed program) is considered malware and will likely be labelled as malware by Google and anti-virus vendors.</translation>
 <translation id="9084985621503260744">Specify whether video activity affects power management</translation>
 <translation id="7091198954851103976">Always runs plug-ins that require authorisation</translation>
 <translation id="2704032342102549239">Limit the device uptime by scheduling automatic reboots.
@@ -743,11 +748,15 @@ If not set or set to False, users will be able to transfer files to Google Drive
       If this policy is left unset, this will be enabled but the user will be able to change it.</translation>
 <translation id="2236488539271255289">Do not allow any site to set local data</translation>
 <translation id="4467952432486360968">Block third-party cookies</translation>
+<translation id="2041396837791669429">Block access to sites outside of content packs.</translation>
 <translation id="7754863709994542614">Disables the listed protocol schemes in <ph name="PRODUCT_NAME"/>.
 
       URLs using a scheme from this list will not load and cannot be navigated to.
 
       If this policy is left unset or the list is empty all schemes will be accessible in <ph name="PRODUCT_NAME"/>.</translation>
+<translation id="1305864769064309495">A dictionary mapping URLs to a boolean flag specifying whether access to the host should be allowed (true) or blocked (false).
+
+          This policy is for internal use by Chrome itself.</translation>
 <translation id="5586942249556966598">Do nothing</translation>
 <translation id="131353325527891113">Show usernames on login screen</translation>
 <translation id="5317965872570843334">Enables usage of STUN and relay servers when remote clients are trying to establish a connection to this machine.
@@ -776,6 +785,11 @@ If not set or set to False, users will be able to transfer files to Google Drive
 <translation id="6923366716660828830">Specifies the name of the default search provider. If left empty or not set, the host name specified by the search URL will be used.
 
           This policy is only considered if the 'DefaultSearchProviderEnabled' policy is enabled.</translation>
+<translation id="4869787217450099946">Specifies whether screen wake locks are allowed. Screen wake locks can be requested by extensions via the power management extension API.
+
+          If this policy is set to true or left not set, screen wake locks will be honoured for power management.
+
+          If this policy is set to false, screen wake lock requests will be ignored.</translation>
 <translation id="467236746355332046">Supported features:</translation>
 <translation id="7632724434767231364">GSSAPI library name</translation>
 <translation id="3038323923255997294">Continue running background apps when <ph name="PRODUCT_NAME"/> is closed</translation>
@@ -794,10 +808,12 @@ If not set or set to False, users will be able to transfer files to Google Drive
 <translation id="6244210204546589761">URLs to open on start-up</translation>
 <translation id="7468416082528382842">Windows registry location:</translation>
 <translation id="1808715480127969042">Block cookies on these sites</translation>
+<translation id="1908884158811109790">Disables Google Drive over Cellular connections in the Chrome OS Files app</translation>
 <translation id="7340034977315324840">Report device activity times</translation>
 <translation id="4928632305180102854">Controls whether <ph name="PRODUCT_OS_NAME"/> allows new user accounts to be created. If this policy is set to false, users that do not have an account already will not be able to login.
 
       If this policy is set to true or not configured, new user accounts are allowed to be created, provided that <ph name="DEVICEUSERWHITELISTPROTO_POLICY_NAME"/> does not prevent the user from logging in.</translation>
+<translation id="4389091865841123886">Configure the remote attestation with TPM mechanism.</translation>
 <translation id="8256688113167012935">Controls the account name <ph name="PRODUCT_OS_NAME"/> shows on the login screen for the corresponding device-local account.
 
       If this policy is set, the login screen will use the specified string in the picture-based login chooser for the corresponding device-local account.
@@ -810,7 +826,11 @@ If not set or set to False, users will be able to transfer files to Google Drive
           This policy is optional. If not set, the default will be used which is UTF-8.
 
           This policy is only respected if the 'DefaultSearchProviderEnabled' policy is enabled.</translation>
+<translation id="1349276916170108723">Disables Google Drive syncing in the Chrome OS Files app when set to True. In that case, no data is uploaded to Google Drive.
+
+          If not set or set to False, then users will be able to transfer files to Google Drive.</translation>
 <translation id="1964634611280150550">Incognito mode disabled.</translation>
+<translation id="5971128524642832825">Disables Drive in the Chrome OS Files app</translation>
 <translation id="1454846751303307294">Allows you to set a list of url patterns that specify sites which are not allowed to run JavaScript.
 
           If this policy is left not set the global default value will be used for all sites either from the 'DefaultJavaScriptSetting' policy, if it is set, or the user's personal configuration otherwise.</translation>
@@ -864,6 +884,7 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
       When this policy is set to true, the icons are hidden.
 
       When this policy is set to false or is not configured, the icons are visible.</translation>
+<translation id="8401282319420373133">Extensions allowed to to use the remote attestation API.</translation>
 <translation id="5085647276663819155">Disable Print Preview</translation>
 <translation id="8672321184841719703">Target Auto-Update Version</translation>
 <translation id="1689963000958717134">Allows pushing network configuration to be applied for all users of a <ph name="PRODUCT_OS_NAME"/> device. The network configuration is a JSON-formatted string as defined by the Open Network Configuration format described at <ph name="ONC_SPEC_URL"/></translation>
@@ -920,6 +941,7 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 <translation id="5378985487213287085">Allows you to set whether websites are allowed to display desktop notifications. Displaying desktop notifications can be allowed by default, denied by default or the user can be asked every time a website wants to show desktop notifications.
 
           If this policy is left not set, 'AskNotifications' will be used and the user will be able to change it.</translation>
+<translation id="2386362615870139244">Allow screen wake locks</translation>
 <translation id="6908640907898649429">Configures the default search provider. You can specify the default search provider that the user will use or choose to disable default search.</translation>
 <translation id="6544897973797372144">If this policy is set to True and the ChromeOsReleaseChannel policy is not specified then users of the enrolling domain will be allowed to change the release channel of the device. If this policy is set to false the device will be locked in whatever channel it was last set.
 
@@ -951,6 +973,9 @@ If this setting is not set, <ph name="PRODUCT_NAME"/> will allow the user to con
 
           If this policy is left unset the global default value will be used for all sites either from the 'DefaultPop-upsSetting' policy, if it is set, or the user's personal configuration otherwise.</translation>
 <translation id="1530812829012954197">Always render the following URL patterns in the host browser</translation>
+<translation id="9026000212339701596">A dictionary mapping hostnames to a boolean flag specifying whether access to the host should be allowed (true) or blocked (false).
+
+          This policy is for internal use by Chrome itself.</translation>
 <translation id="913195841488580904">Block access to a list of URLs</translation>
 <translation id="3292147213643666827">Enables <ph name="PRODUCT_NAME"/> to act as a proxy between <ph name="CLOUD_PRINT_NAME"/> and legacy printers connected to the machine.
 
@@ -1001,6 +1026,7 @@ If this setting is not set, <ph name="PRODUCT_NAME"/> will allow the user to con
 
       Determines the set of URLs to be loaded when the demo session is started. This policy will override any other mechanisms for setting the initial URL and thus can only be applied to a session not associated with a particular user.</translation>
 <translation id="5868414965372171132">User-level network configuration</translation>
+<translation id="8519264904050090490">Managed user manual exception URLs</translation>
 <translation id="4480694116501920047">Force SafeSearch</translation>
 <translation id="1221359380862872747">Load specified URLs on demo login</translation>
 <translation id="2431811512983100641">Specifies whether the TLS domain-bound certificates extension should be enabled.
@@ -1015,6 +1041,7 @@ If this setting is not set, <ph name="PRODUCT_NAME"/> will allow the user to con
 <translation id="4650759511838826572">Disable URL protocol schemes</translation>
 <translation id="8099880303030573137">Idle delay when running on battery power</translation>
 <translation id="2761483219396643566">Idle warning delay when running on battery power</translation>
+<translation id="8580857153747395000">Warn when visiting sites outside of content packs.</translation>
 <translation id="602728333950205286">Default search provider instant URL</translation>
 <translation id="3030000825273123558">Enable metrics reporting</translation>
 <translation id="6559057113164934677">Do not allow any site to access the camera and microphone</translation>
@@ -1029,6 +1056,7 @@ If this setting is not set, <ph name="PRODUCT_NAME"/> will allow the user to con
       If you enable or disable this setting, users cannot change or override this setting in <ph name="PRODUCT_NAME"/>.
 
       Leaving this policy unset will allow the user to choose whether to show the home button.</translation>
+<translation id="6897718480289510689">Allow access to sites outside of content packs.</translation>
 <translation id="2518231489509538392">Allow playing audio</translation>
 <translation id="7301543427086558500">Specifies a list of alternative URLs that can be used to extract search terms from the search engine. The URLs should contain the string <ph name="SEARCH_TERM_MARKER"/>, which will be used to extract the search terms.
 
@@ -1052,8 +1080,14 @@ If this setting is not set, <ph name="PRODUCT_NAME"/> will allow the user to con
 <translation id="5469484020713359236">Allows you to set a list of url patterns that specify sites which are allowed to set cookies.
 
           If this policy is left not set the global default value will be used for all sites either from the 'DefaultCookiesSetting' policy, if it is set, or the user's personal configuration otherwise.</translation>
+<translation id="1504431521196476721">Remote Attestation</translation>
 <translation id="1881299719020653447">Hide the web store from the new tab page and app launcher</translation>
 <translation id="930930237275114205">Set <ph name="PRODUCT_FRAME_NAME"/> user data directory</translation>
+<translation id="244317009688098048">Enable bailout keyboard shortcut for auto-login.
+
+      If this policy is unset or set to True and a device-local account is configured for zero-delay auto-login, <ph name="PRODUCT_OS_NAME"/> will honour the keyboard shortcut Ctrl+Alt+S for bypassing auto-login and showing the login screen.
+
+      If this policy is set to False, zero-delay auto-login (if configured) cannot be bypassed.</translation>
 <translation id="5208240613060747912">Allows you to set a list of url patterns that specify sites which are not allowed to display notifications.
 
           If this policy is left unset the global default value will be used for all sites either from the 'DefaultNotificationsSetting' policy, if it is set, or the user's personal configuration otherwise.</translation>
@@ -1196,6 +1230,7 @@ If this setting is not set, <ph name="PRODUCT_NAME"/> will allow the user to con
 <translation id="7194407337890404814">Default search provider name</translation>
 <translation id="1843117931376765605">Refresh rate for user policy</translation>
 <translation id="5535973522252703021">Kerberos delegation server whitelist</translation>
+<translation id="4578030379102330182">Enable remote attestation for the user.</translation>
 <translation id="9187743794267626640">Disable mounting of external storage</translation>
 <translation id="5307432759655324440">Incognito mode availability</translation>
 <translation id="4056910949759281379">Disable SPDY protocol</translation>
@@ -1211,6 +1246,7 @@ If this setting is not set, <ph name="PRODUCT_NAME"/> will allow the user to con
       If this policy is set, the specified session will be automatically logged in after a period of time has elapsed at the login screen without user interaction. The public session must already be configured (see |DeviceLocalAccounts|).
 
       If this policy is unset, there will be no auto-login.</translation>
+<translation id="5983708779415553259">Default behaviour for sites not in any content pack</translation>
 <translation id="3866530186104388232">If this policy is set to true or not configured, <ph name="PRODUCT_OS_NAME"/> will show existing users on the login screen and allow the user to pick one. If this policy is set to false, <ph name="PRODUCT_OS_NAME"/> will use the username/password prompt for login.</translation>
 <translation id="2098658257603918882">Enable reporting of usage and crash-related data</translation>
 <translation id="2324547593752594014">Allows sign in to Chrome</translation>
@@ -1298,6 +1334,7 @@ If this setting is not set, <ph name="PRODUCT_NAME"/> will allow the user to con
           For detailed examples, visit:
           <ph name="PROXY_HELP_URL"/></translation>
 <translation id="3406810703404235731">Enterprise web store URL</translation>
+<translation id="5464816904705580310">Configure settings for managed users.</translation>
 <translation id="3219421230122020860">Incognito mode available.</translation>
 <translation id="7690740696284155549">Configures the directory that <ph name="PRODUCT_NAME"/> will use for downloading files.
 
@@ -1404,6 +1441,7 @@ If this setting is not set, <ph name="PRODUCT_NAME"/> will allow the user to con
 <translation id="4043912146394966243"> The types of connections that are allowed to use for OS updates. OS updates potentially put heavy strain on the connection due to their size and may incur additional cost. Therefore, they are by default not enabled for connection types that are considered expensive, which include WiMax, Bluetooth and Cellular at the moment.
 
       The recognised connection type identifiers are &quot;ethernet&quot;, &quot;wifi&quot;, &quot;wimax&quot;, &quot;bluetooth&quot; and &quot;cellular&quot;.</translation>
+<translation id="6652197835259177259">Locally managed users settings</translation>
 <translation id="3243309373265599239">Specifies the length of time without user input after which the screen is dimmed when running on AC power.
 
           When this policy is set to a value greater than zero, it specifies the length of time that the user must remain idle before <ph name="PRODUCT_OS_NAME"/> dims the screen.
@@ -1413,12 +1451,20 @@ If this setting is not set, <ph name="PRODUCT_NAME"/> will allow the user to con
           When this policy is unset, a default length of time is used.
 
           The policy value should be specified in milliseconds. Values are clamped to be less than or equal to the screen off delay (if set) and the idle delay.</translation>
+<translation id="3859780406608282662">Add a parameter to the fetching of the Variations seed in <ph name="PRODUCT_OS_NAME"/>.
+
+      If specified, will add a query parameter called 'restrict' to the URL used to fetch the Variations seed. The value of the parameter will be the value specified in this policy.
+
+      If not specified, will not modify the Variations seed URL.</translation>
 <translation id="7049373494483449255">Enables <ph name="PRODUCT_NAME"/> to submit documents to <ph name="CLOUD_PRINT_NAME"/> for printing.  NOTE: This only affects <ph name="CLOUD_PRINT_NAME"/> support in <ph name="PRODUCT_NAME"/>.  It does not prevent users from submitting print jobs on websites.
 
       If this setting is enabled or not configured, users can print to <ph name="CLOUD_PRINT_NAME"/> from the <ph name="PRODUCT_NAME"/> print dialogue.
 
       If this setting is disabled, users cannot print to <ph name="CLOUD_PRINT_NAME"/> from the <ph name="PRODUCT_NAME"/> print dialogue</translation>
 <translation id="4088589230932595924">Incognito mode forced.</translation>
+<translation id="8197918588508433925">This policy specifies the allowed extensions to use Enterprise Platform Keys API chrome.enterprise.platformKeysPrivate.challengeUserKey() for remote attestation. Extensions must be added to this list to use the API.
+
+          If an extension is not in the list, or the list is not set, the call to the API will fail with an error code.</translation>
 <translation id="7649638372654023172">Configures the default home page URL in <ph name="PRODUCT_NAME"/> and prevents users from changing it.
 
           The home page is the page opened by the Home button. The pages that open on startup are controlled by the RestoreOnStartup policies.

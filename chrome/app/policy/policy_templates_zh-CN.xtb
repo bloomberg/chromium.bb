@@ -5,6 +5,9 @@
 <translation id="1503959756075098984">要静默安装的扩展程序的 ID 和更新网址</translation>
 <translation id="2463365186486772703">应用语言区域</translation>
 <translation id="1397855852561539316">默认搜索服务提供商建议网址</translation>
+<translation id="3347897589415241400">不在任何内容包内的网站的默认行为。
+
+          此政策仅供 Chrome 内部使用。</translation>
 <translation id="7040229947030068419">值示例：</translation>
 <translation id="1213523811751486361">指定用于提供搜索建议的搜索引擎的网址，其中应包含字符串“<ph name="SEARCH_TERM_MARKER"/>”，系统会在查询时将该字符串替换为用户输入的文字。此政策是可选的，如果未设置，就不会使用任何建议网址。要实施此政策，必须先启用“DefaultSearchProviderEnabled”政策。</translation>
 <translation id="6106630674659980926">启用密码管理器</translation>
@@ -18,13 +21,13 @@
           指定的政策值应以毫秒为单位，并且不得大于闲置延迟时间。</translation>
 <translation id="7614663184588396421">已停用协议方案的列表</translation>
 <translation id="2309390639296060546">默认地理位置设置</translation>
-<translation id="7261507082507286116">停用通过蜂窝连接 Google 云端硬盘</translation>
 <translation id="7443616896860707393">跨域 HTTP 基本身份验证提示</translation>
 <translation id="2337466621458842053">可让您设置网址格式的列表，这些网址格式用于指定允许显示图片的网站。在未设置此政策的情况下，如果设置了“DefaultImagesSetting”政策，那么将对该政策中的所有网站使用全局默认值，否则将对用户个人配置中的所有网站使用全局默认值。</translation>
 <translation id="4680961954980851756">启用自动填充</translation>
 <translation id="5183383917553127163">可让您指定不受黑名单影响的扩展程序。黑名单值“*”表示所有扩展程序均已列入黑名单，用户只能安装白名单中列出的扩展程序。默认情况下，所有扩展程序都列在白名单中，但如果所有扩展程序均已根据某个政策列入黑名单，则白名单可用于覆盖相关政策。</translation>
 <translation id="3185009703220253572">从版本 <ph name="SINCE_VERSION"/> 开始</translation>
 <translation id="2204753382813641270">控制文件架自动隐藏</translation>
+<translation id="3816312845600780067">启用停止自动登录的键盘快捷键</translation>
 <translation id="3214164532079860003">如果启用此政策，就会强制从当前默认浏览器导入主页。如果停用此政策，就不会导入主页。如果未设置此政策，系统就会询问用户是否导入主页，或者系统自动进行导入。</translation>
 <translation id="5330684698007383292">允许 <ph name="PRODUCT_FRAME_NAME"/>处理以下内容类型</translation>
 <translation id="5469825884154817306">在这些网站上阻止图片</translation>
@@ -104,6 +107,9 @@
 <translation id="1617235075406854669">允许删除浏览器历史记录和下载记录</translation>
 <translation id="5290940294294002042">指定该用户可启用或停用的插件的列表</translation>
 <translation id="3153348162326497318">可让您指定哪些扩展程序是用户无法安装的。已安装的扩展程序如果列入黑名单，就会遭到删除。黑名单中的“*”值表示：除了在白名单中明确列出的扩展程序，其他所有扩展程序均列入黑名单。如果未设置此政策，用户就可以在 <ph name="PRODUCT_NAME"/>中安装任何扩展程序。</translation>
+<translation id="3067188277482006117">如果将此政策设为 true，那么用户可以使用 Chrome 设备上的硬件，通过 Enterprise Platform Keys API chrome.enterprise.platformKeysPrivate.challengeUserKey() 远程向隐私认证中心 (Privacy CA) 认证自己的身份。
+
+          如果将此政策设为 false 或未进行设置，则会导致无法调用 API，并返回错误代码。</translation>
 <translation id="5809728392451418079">设置设备本地帐户的显示名称</translation>
 <translation id="1427655258943162134">代理服务器的地址或网址</translation>
 <translation id="1827523283178827583">使用固定的代理服务器</translation>
@@ -123,6 +129,7 @@
           此政策只在启用了“DefaultSearchProviderEnabled”政策的前提下才会生效。</translation>
 <translation id="5912364507361265851">允许用户在“密码管理器”中显示密码</translation>
 <translation id="510186355068252378">使用 Google 托管的同步服务在 <ph name="PRODUCT_NAME"/>中停用数据同步功能，并禁止用户更改此设置。如果您启用了此设置，用户就无法在 <ph name="PRODUCT_NAME"/>中更改或替换此设置。如果未设置此政策，用户就可以选择是否使用 Google Sync。</translation>
+<translation id="7953256619080733119">托管用户手动管理的例外主机</translation>
 <translation id="7412982067535265896">可让您设置某些网址格式的列表，此类网址格式用于指定允许设置仅在会话期间有效的 Cookie 的网站。
 
           在未设置此政策的情况下，如果设置了“DefaultCookiesSetting”政策，那么将对该政策中的所有网站使用全局默认值，否则将对用户个人配置中的所有网站使用全局默认值。
@@ -136,9 +143,6 @@
       如果您设置了此政策，则您可以配置是否允许用户登录到 <ph name="PRODUCT_NAME"/>。</translation>
 <translation id="5564962323737505851">配置密码管理器。如果密码管理器已启用，您可以选择是否允许用户以明文形式显示存储的密码。</translation>
 <translation id="4668325077104657568">默认图片设置</translation>
-<translation id="7978961945071764766">将此策略设置为 True 时，在使用蜂窝连接的情况下，会停用 Google 云端硬盘同步功能。在这种情况下，只能通过 WiFi 或以太网连接将数据同步到 Google 云端硬盘。
-
-          如果未设置此策略或将其设置为 False，那么用户就可以通过蜂窝连接向 Google 云端硬盘传输文件。</translation>
 <translation id="4492287494009043413">停用截取屏幕截图功能</translation>
 <translation id="6368403635025849609">在这些网站上允许 JavaScript</translation>
 <translation id="6074963268421707432">不允许任何网站显示桌面通知</translation>
@@ -189,6 +193,9 @@
 
       如果停用了此设置，则不能删除浏览和下载记录。</translation>
 <translation id="2884728160143956392">在这些网站上允许仅限会话的 Cookie</translation>
+<translation id="3021272743506189340">如果将此政策设为 True，在使用蜂窝连接的情况下，系统会在 Chrome 操作系统的“文件”应用中停用 Google 云端硬盘同步功能。在这种情况下，系统只有在连上 WiFi 或以太网连接时才会将数据同步到 Google 云端硬盘。
+
+          如果未设置此政策或将其设为 False，那么用户就可以通过蜂窝连接将文件传输到 Google 云端硬盘。</translation>
 <translation id="4655130238810647237">在 <ph name="PRODUCT_NAME"/>中启用或停用修改书签的功能。如果您启用了此设置，可添加、删除或修改书签（默认情况下以及未设置此政策的情况下都是启用的）。如果您停用了此设置，则无法添加、删除或修改书签，但仍可以访问现有的书签。</translation>
 <translation id="3496296378755072552">密码管理器</translation>
 <translation id="2565967352111237512">允许向 Google 匿名报告有关 <ph name="PRODUCT_NAME"/>的使用情况和崩溃相关的数据，并禁止用户更改此设置。如果您启用了此设置，系统就会将使用情况和崩溃相关的数据匿名报告给 Google。如果您启用或停用了此设置，用户就无法在 <ph name="PRODUCT_NAME"/>中更改或替换此设置。如果未设置此政策，该设置将由用户在安装或首次运行时选择。</translation>
@@ -283,9 +290,6 @@
           如果停用或未设定此设置，那么当主机处于共享状态时，本地和远程用户都可以与主机互动。</translation>
 <translation id="1426410128494586442">是</translation>
 <translation id="4962195944157514011">指定要在执行默认搜索时使用的搜索引擎的网址，其中应包含字符串“<ph name="SEARCH_TERM_MARKER"/>”，系统会在查询时将该字符串替换为用户搜索的字词。在启用了“DefaultSearchProviderEnabled”政策的情况下，此选项是必须设置的，而且只有在这种情况下才应遵循。</translation>
-<translation id="3343454696188645600">将此策略设置为 True 时可停用 Google 云端硬盘同步功能。在这种情况下，不会将任何数据上传到 Google 云端硬盘。
-
-          如果未设置此策略或将其设置为 False，那么用户可以向 Google 云端硬盘传输文件。</translation>
 <translation id="6009903244351574348">允许 <ph name="PRODUCT_FRAME_NAME"/>处理列出的内容类型。如果未设置此政策，系统将按照“ChromeFrameRendererSettings”政策的规定，对所有网站使用默认呈现器。</translation>
 <translation id="3381968327636295719">默认情况下托管主机浏览器</translation>
 <translation id="3627678165642179114">启用或停用拼写检查网络服务</translation>
@@ -452,7 +456,6 @@
 
           如果未设置此政策，系统将会使用默认命令行。</translation>
 <translation id="2646290749315461919">可让您设置是否允许网站跟踪用户的地理位置。默认情况下，可以允许或拒绝跟踪用户的地理位置，也可以在每次网站请求地理位置时询问用户。如果未设置此政策，系统将使用“AskGeolocation”并允许用户更改此设置。</translation>
-<translation id="3309789488678647282">停用云端硬盘</translation>
 <translation id="5770738360657678870">开发者版（可能不稳定）</translation>
 <translation id="2959898425599642200">代理绕过规则</translation>
 <translation id="228659285074633994">指定在使用交流电源供电时用户停止输入后隔多久系统才会显示警告对话框。
@@ -494,7 +497,6 @@
       “1412.24.34”：仅更新到此指定版本</translation>
 <translation id="8102913158860568230">默认 mediastream 设置</translation>
 <translation id="6641981670621198190">停用对 3D 图形 API 的支持</translation>
-<translation id="2741921267428646309">这是“<ph name="PRODUCT_NAME"/>”所遵循的政策的列表。您无需手动更改这些设置！您可以访问 <ph name="POLICY_TEMPLATE_DOWNLOAD_URL"/>，下载易于使用的模板。Chromium 和 Google Chrome 浏览器的支持政策的列表相同，但它们的 Windows 注册表位置不同。Chromium 政策和 Google Chrome 政策的注册表路径开头分别为 <ph name="CHROMIUM_KEY"/> 和 <ph name="GOOGLE_CHROME_KEY"/>。</translation>
 <translation id="7929480864713075819">启用向网页报告内存信息（JS 堆大小）的功能</translation>
 <translation id="7003746348783715221">“<ph name="PRODUCT_NAME"/>”偏好设置</translation>
 <translation id="4723829699367336876">支持通过远程访问客户端穿越防火墙</translation>
@@ -545,6 +547,16 @@
 
           如果此政策的值设置为 False，则视频活动不会影响系统将机器视为闲置状态。</translation>
 <translation id="3965339130942650562">对待机用户执行退出操作前的超时时间</translation>
+<translation id="5857910801734294133">这是 <ph name="PRODUCT_NAME"/> 遵循的政策列表。
+
+      您无需手动更改这些设置！您可以通过以下网址下载简单易用的模板：
+      <ph name="POLICY_TEMPLATE_DOWNLOAD_URL"/>。
+
+      Chromium 和 Google Chrome 的受支持政策列表是相同的，但其 Windows 注册表位置有所不同。
+
+      Chromium 政策的注册表位置以 <ph name="CHROMIUM_KEY"/> 开头，而 Google Chrome 政策的注册表位置则以 <ph name="GOOGLE_CHROME_KEY"/> 开头。
+
+      这些政策仅用于配置您单位内部所用的 Chrome 实例。在您单位外部使用这些政策的软件（例如在公开发布的程序中）将被视为恶意软件，并且很可能会被 Google 和防病毒软件供应商标记为恶意软件。</translation>
 <translation id="9084985621503260744">指定视频活动是否影响电源管理</translation>
 <translation id="7091198954851103976">始终运行需要授权的插件</translation>
 <translation id="2704032342102549239">通过安排自动重启限制设备的正常运行时间。
@@ -568,7 +580,11 @@
 <translation id="5192837635164433517">允许使用 <ph name="PRODUCT_NAME"/>中内置的备用错误网页（例如“找不到网页”），并禁止用户更改此设置。如果您启用了此设置，系统就会使用备用错误网页。如果您停用了此设置，系统就不会使用备用错误网页。如果您启用或停用了此设置，用户就无法在 <ph name="PRODUCT_NAME"/>中更改或替换此设置。如果未设置此政策，就会启用此设置，不过用户也可以更改此设置。</translation>
 <translation id="2236488539271255289">不允许任何网站设置本地数据</translation>
 <translation id="4467952432486360968">阻止第三方 Cookie</translation>
+<translation id="2041396837791669429">禁止访问非内容包内的网站。</translation>
 <translation id="7754863709994542614">在 <ph name="PRODUCT_NAME"/>中停用列出的协议方案。对于使用了此列表中方案的网址，系统不会加载，也无法导航。如果未设置此政策或者该列表为空，则可在 <ph name="PRODUCT_NAME"/>中访问所有方案。</translation>
+<translation id="1305864769064309495">将网址映射到布尔值标记的字典，以指定 Chrome 是否能访问主机；允许值为 true，阻止值为 false。
+
+          此政策仅供 Chrome 内部使用。</translation>
 <translation id="5586942249556966598">不执行任何操作</translation>
 <translation id="131353325527891113">在登录屏幕上显示用户名</translation>
 <translation id="5317965872570843334">当远程客户端尝试与此计算机建立连接时，允许使用 STUN 和中继服务器。如果启用此设置，那么即使远程客户端受到防火墙隔离，也仍然可以检测到并连接到此计算机。如果停用此设置，并且防火墙过滤了外发 UDP 连接，那么此计算机将只能与本地网络内的客户端计算机建立连接。如果未设置此政策，就会启用此设置。</translation>
@@ -579,6 +595,11 @@
 <translation id="8731693562790917685">“内容设置”可让您指定特定类型的内容（例如 Cookie、图片或 JavaScript）的处理方式。</translation>
 <translation id="2411919772666155530">阻止在这些网站上显示通知</translation>
 <translation id="6923366716660828830">指定默认搜索服务提供商的名称。如果留空或未设置，系统就会使用由搜索网址指定的主机名。要考虑此政策，必须先启用“DefaultSearchProviderEnabled”政策。</translation>
+<translation id="4869787217450099946">指定是否允许使用屏幕唤醒锁定。扩展程序可通过 Power Management Extension API 请求使用屏幕唤醒锁定。
+
+          如果将此政策设为 true 或未进行设置，系统就会允许使用屏幕唤醒锁定，以便进行电源管理。
+
+          如果将此政策设为 false，系统就会忽略屏幕唤醒锁定请求。</translation>
 <translation id="467236746355332046">支持的功能：</translation>
 <translation id="7632724434767231364">GSSAPI 库名称</translation>
 <translation id="3038323923255997294">在<ph name="PRODUCT_NAME"/>关闭后继续运行后台应用</translation>
@@ -597,10 +618,12 @@
 <translation id="6244210204546589761">启动时打开的网址</translation>
 <translation id="7468416082528382842">Windows 注册表位置：</translation>
 <translation id="1808715480127969042">在这些网站上阻止 Cookie</translation>
+<translation id="1908884158811109790">在使用蜂窝连接的情况下，在 Chrome 操作系统的“文件”应用中停用 Google 云端硬盘同步功能</translation>
 <translation id="7340034977315324840">报告设备活动时间</translation>
 <translation id="4928632305180102854">控制 <ph name="PRODUCT_OS_NAME"/>是否允许创建新的用户帐户。如果将此政策设置为 false，没有帐户的用户将无法登录。
 
       如果未配置此政策或将其设置为 true，那么只要 <ph name="DEVICEUSERWHITELISTPROTO_POLICY_NAME"/> 未阻止登录，用户就可以创建新的用户帐户。</translation>
+<translation id="4389091865841123886">通过 TPM 机制配置远程认证。</translation>
 <translation id="8256688113167012935">控制 <ph name="PRODUCT_OS_NAME"/>在登录屏幕上为相应的设备本地帐户显示的帐户名。
 
       如果设置了此策略，登录屏幕将为相应的设备本地帐户使用图片式登录选择器中指定的字符串。
@@ -609,7 +632,11 @@
 
       普通用户帐户忽略此策略。</translation>
 <translation id="267596348720209223">指定搜索服务提供商支持的字符编码。编码是指类似于 UTF-8、GB2312 和 ISO-8859-1 的代码页名称，并按此顺序进行尝试。此政策是可选的，如果未设置，将使用默认值 UTF-8。要实施此政策，必须先启用“DefaultSearchProviderEnabled”政策。</translation>
+<translation id="1349276916170108723">如果将此政策设为 True，系统会在 Chrome 操作系统的“文件”应用中停用 Google 云端硬盘同步功能。在这种情况下，系统无法将数据上传到 Google 云端硬盘。
+
+          如果未设置此政策或将其设为 False，那么用户就可以将文件传输到 Google 云端硬盘。</translation>
 <translation id="1964634611280150550">隐身模式已停用</translation>
+<translation id="5971128524642832825">在 Chrome 操作系统的“文件”应用中停用云端硬盘同步功能</translation>
 <translation id="1454846751303307294">可让您设置网址格式的列表，这些网址格式用于指定不允许运行 JavaScript 的网站。在未设置此政策的情况下，如果设置了“DefaultJavaScriptSetting”政策，那么将对该政策中的所有网站使用全局默认值，否则将对用户个人配置中的所有网站使用全局默认值。</translation>
 <translation id="538108065117008131">允许“<ph name="PRODUCT_FRAME_NAME"/>”处理以下内容类型。</translation>
 <translation id="2312134445771258233">允许您配置在启动时加载的页面。除非您在“启动时的操作”中选择“打开网址列表”，否则系统会忽略“启动时打开的网址”列表中的内容。</translation>
@@ -653,6 +680,7 @@
       当此政策的值设置为 True 时，图标会隐藏。
 
       当此政策的值设置为 False 或未配置时，图标会显示出来。</translation>
+<translation id="8401282319420373133">能够使用 Remote Attestation API 的扩展程序。</translation>
 <translation id="5085647276663819155">停用打印预览</translation>
 <translation id="8672321184841719703">目标自动更新版本</translation>
 <translation id="1689963000958717134">允许将推送网络配置应用于安装了 <ph name="PRODUCT_OS_NAME"/>的设备的所有用户。网络配置为 JSON 格式的字符串，具体定义如 <ph name="ONC_SPEC_URL"/> 中的开放网络配置格式所述。</translation>
@@ -694,6 +722,7 @@
 <translation id="13356285923490863">政策名称</translation>
 <translation id="557658534286111200">启用或停用书签修改功能</translation>
 <translation id="5378985487213287085">可让您设置是否允许网站显示桌面通知。默认情况下，可以允许或拒绝显示桌面通知，也可以在每次网站要显示桌面通知时询问用户。如果未设置此政策，系统将使用“AskNotifications”并允许用户更改此设置。</translation>
+<translation id="2386362615870139244">允许使用屏幕唤醒锁定</translation>
 <translation id="6908640907898649429">配置默认搜索服务提供商。您可以指定用户会使用的默认搜索服务提供商，或选择停用默认搜索。</translation>
 <translation id="6544897973797372144">如果该策略设置为 True，且未指定 ChromeOsReleaseChannel 策略，那么注册域的用户将可以更改设备的发布版。如果该策略设置为 False，那么设备就会锁定最后设置的任何版本。
 
@@ -706,6 +735,9 @@
 <translation id="3793095274466276777">在“<ph name="PRODUCT_NAME"/>”中配置默认浏览器检查，并禁止用户更改此设置。如果您启用了此设置，则“<ph name="PRODUCT_NAME"/>”在启动时总是会检查自己是否为默认浏览器，并会自动注册（如果可以）。如果此设置已停用，则“<ph name="PRODUCT_NAME"/>”永远不会检查自己是否为默认浏览器，并会禁止用户设置此选项。如果此设置未配置，则“<ph name="PRODUCT_NAME"/>”会让用户控制是否将它设为默认浏览器，并控制是否在它不是默认浏览器的情况下显示用户通知。</translation>
 <translation id="7529100000224450960">可让您设置网址格式的列表，这些网址格式用于指定允许打开弹出式窗口的网站。在未设置此政策的情况下，如果设置了“DefaultPopupsSetting”政策，那么将对该政策中的所有网站使用全局默认值，否则将对用户个人配置中的所有网站使用全局默认值。</translation>
 <translation id="1530812829012954197">总是通过托管浏览器呈现以下网址格式</translation>
+<translation id="9026000212339701596">将主机名映射到布尔值标记的字典，以指定 Chrome 是否能访问主机；允许值为 true，阻止值为 false。
+
+          此政策仅供 Chrome 内部使用。</translation>
 <translation id="913195841488580904">阻止访问网址列表</translation>
 <translation id="3292147213643666827">允许 <ph name="PRODUCT_NAME"/> 作为 <ph name="CLOUD_PRINT_NAME"/>与连接到该计算机的传统打印机之间的代理。
 
@@ -750,6 +782,7 @@
 
       确定在演示会话启动时要加载的网址集。此政策将替换其他任何用于设置初始网址的机制，因此仅适用于与特定用户无关的会话。</translation>
 <translation id="5868414965372171132">用户级网络配置</translation>
+<translation id="8519264904050090490">托管用户手动管理的例外网址</translation>
 <translation id="4480694116501920047">强制使用安全搜索</translation>
 <translation id="1221359380862872747">在演示登录时加载指定网址</translation>
 <translation id="2431811512983100641">指定是否应启用 TLS 域绑定证书扩展程序。
@@ -760,12 +793,14 @@
 <translation id="4650759511838826572">停用网址协议方案</translation>
 <translation id="8099880303030573137">使用电池供电时的闲置延迟时间</translation>
 <translation id="2761483219396643566">使用电池供电时的闲置警告延迟时间</translation>
+<translation id="8580857153747395000">在访问非内容包内的网站时发出警告。</translation>
 <translation id="602728333950205286">默认搜索服务提供商的即搜即得网址</translation>
 <translation id="3030000825273123558">启用指标报告</translation>
 <translation id="6559057113164934677">不允许任何网站使用摄像头和麦克风</translation>
 <translation id="1675002386741412210">支持的环境：</translation>
 <translation id="3547954654003013442">代理设置</translation>
 <translation id="4482640907922304445">在 <ph name="PRODUCT_NAME"/>的工具栏上显示“主页”按钮。如果您启用了此设置，则会始终显示“主页”按钮。如果您停用了此设置，则从不显示“主页”按钮。如果您启用或停用了此设置，用户就无法在 <ph name="PRODUCT_NAME"/>中更改或替换此设置。如果未设置此政策，用户就可以选择是否显示“主页”按钮。</translation>
+<translation id="6897718480289510689">允许访问非内容包内的网站。</translation>
 <translation id="2518231489509538392">允许播放视频</translation>
 <translation id="7301543427086558500">指定可用于从搜索引擎提取搜索字词的备选网址列表。网址应当包含字符串“<ph name="SEARCH_TERM_MARKER"/>”，以便提取搜索字词。
 
@@ -779,8 +814,14 @@
 
       如果未设置此政策或将其设置为 false，Chrome 浏览器 19 及更高版本就不会执行在线撤消检查。</translation>
 <translation id="5469484020713359236">可让您设置网址格式的列表，这些网址格式用于指定允许设置 Cookie 的网站。在未设置此政策的情况下，如果设置了“DefaultCookiesSetting”政策，那么将对该政策中的所有网站使用全局默认值，否则将对用户个人配置中的所有网站使用全局默认值。</translation>
+<translation id="1504431521196476721">远程认证</translation>
 <translation id="1881299719020653447">在新标签页和应用启动器上不显示网上应用店</translation>
 <translation id="930930237275114205">设置 <ph name="PRODUCT_FRAME_NAME"/>用户数据目录</translation>
+<translation id="244317009688098048">启用停止自动登录的键盘快捷键。
+
+      如果未设置此政策或将其设为 True，并且将设备的本地帐户配置为零延时自动登录，那么 <ph name="PRODUCT_OS_NAME"/>将允许通过键盘快捷键 Ctrl+Alt+S 绕过自动登录过程并显示登录屏幕。
+
+      如果将此政策设为 False，则无法绕过零延时自动登录过程（如果已配置）。</translation>
 <translation id="5208240613060747912">可让您设置网址格式的列表，这些网址格式用于指定不允许显示通知的网站。在未设置此政策的情况下，如果设置了“DefaultNotificationsSetting”政策，那么将对该政策中的所有网站使用全局默认值，否则将对用户个人配置中的所有网站使用全局默认值。</translation>
 <translation id="8592105098257899882">配置 <ph name="PRODUCT_NAME"/>用于在磁盘上存储缓存文件的缓存大小。如果您设置了此政策，那么无论用户是否指定“--disk-cache-size”标记，<ph name="PRODUCT_NAME"/>都会使用提供的缓存大小。如果此政策的值为 0，系统将使用默认缓存大小，但不允许用户更改大小。如果未设置此政策，系统将使用默认缓存大小，并允许用户通过“--disk-cache-size”标记替换该值。</translation>
 <translation id="1527937796509599149">企业网上应用店的名称将会显示在新标签页上的相应应用图标下方。如果未设置 EnterpriseWebStoreURL，则此设置不会生效。
@@ -885,6 +926,7 @@
 <translation id="7194407337890404814">默认搜索服务提供商名称</translation>
 <translation id="1843117931376765605">用户策略的更新频率</translation>
 <translation id="5535973522252703021">Kerberos 授权服务器白名单</translation>
+<translation id="4578030379102330182">为用户启用远程认证。</translation>
 <translation id="9187743794267626640">禁止装载外部存储设备</translation>
 <translation id="5307432759655324440">隐身模式的可用性</translation>
 <translation id="4056910949759281379">停用 SPDY 协议</translation>
@@ -898,6 +940,7 @@
       如果设置了此政策，则用户未与登录屏幕互动的时间达到指定的时长后，将会自动登录指定的会话。此公开会话必须已配置（参阅 |DeviceLocalAccounts|）。
 
       如果未设置此政策，则不会自动登录。</translation>
+<translation id="5983708779415553259">非任何内容包内的网站的默认行为</translation>
 <translation id="3866530186104388232">如果未配置此政策或将其设置为 true，<ph name="PRODUCT_OS_NAME"/>将在登录屏幕上显示现有用户，并允许用户选择。如果将此政策设置为 false，<ph name="PRODUCT_OS_NAME"/>就会显示用户名/密码登录提示。</translation>
 <translation id="2098658257603918882">启用关于使用情况和崩溃相关数据的报告</translation>
 <translation id="2324547593752594014">允许登录 Chrome</translation>
@@ -965,6 +1008,7 @@
 <translation id="2629448496147630947">在<ph name="PRODUCT_NAME"/>中配置远程访问选项。除非安装了远程访问网络应用，否则这些功能将被忽略。</translation>
 <translation id="1310699457130669094">您可以在此指定代理 .pac 文件的网址。只有当您在“选择如何指定代理服务器设置”中选择了手动代理设置后，此政策才会生效。如果您选择了其他任何模式来设置代理政策，就不应设置此政策。要查看详细示例，请访问：<ph name="PROXY_HELP_URL"/></translation>
 <translation id="3406810703404235731">企业的网上应用店网址</translation>
+<translation id="5464816904705580310">为托管用户配置设置。</translation>
 <translation id="3219421230122020860">隐身模式已启用</translation>
 <translation id="7690740696284155549">配置 <ph name="PRODUCT_NAME"/>将用于下载文件的目录。
 
@@ -1031,6 +1075,7 @@
 <translation id="4043912146394966243"> 可用于操作系统更新的连接类型。由于操作系统更新较大，因此可能会增加连接的负荷，还可能会产生额外费用。因此在默认情况下，系统不会针对公认的昂贵连接类型（目前包括 WiMax、蓝牙和蜂窝网络）启用操作系统更新。
 
       已识别的连接类型标识符包括“以太网”、“Wi-Fi”、“WiMax”、“蓝牙”和“蜂窝”网络。</translation>
+<translation id="6652197835259177259">本地托管用户设置</translation>
 <translation id="3243309373265599239">指定在使用交流电源供电时用户停止输入后隔多久屏幕才变暗。
 
           当此政策的值设置为大于 0 时，只要机器闲置的时间达到了此处指定的时长，<ph name="PRODUCT_OS_NAME"/>就会降低屏幕亮度。
@@ -1040,8 +1085,16 @@
           如果未设置此政策，系统将使用默认的时间长度。
 
           指定的政策值应以毫秒为单位，并且不得大于屏幕关闭延迟时间（如果设置了的话）和闲置延迟时间。</translation>
+<translation id="3859780406608282662">在提取 <ph name="PRODUCT_OS_NAME"/> 中的变体种子的方法中添加参数。
+
+      指定后，系统将会向用来提取变体种子的网址中添加一个名为“restrict”的查询参数。此参数的值就是此政策中指定的值。
+
+      如果未指定，则不会修改变体种子网址。</translation>
 <translation id="7049373494483449255">允许 <ph name="PRODUCT_NAME"/>将文档提交到 <ph name="CLOUD_PRINT_NAME"/>进行打印。请注意：这只会影响 <ph name="PRODUCT_NAME"/>中的 <ph name="CLOUD_PRINT_NAME"/>支持，并不会禁止用户在网站上提交打印作业。如果启用或未配置此设置，用户就可以通过 <ph name="PRODUCT_NAME"/>的打印对话框使用 <ph name="CLOUD_PRINT_NAME"/>进行打印。如果停用此设置，用户就无法通过 <ph name="PRODUCT_NAME"/>的打印对话框使用 <ph name="CLOUD_PRINT_NAME"/>进行打印。</translation>
 <translation id="4088589230932595924">强制使用隐身模式</translation>
+<translation id="8197918588508433925">此政策指定了允许使用 Enterprise Platform Keys API chrome.enterprise.platformKeysPrivate.challengeUserKey() 进行远程认证的扩展程序。只有添加到此列表中的扩展程序才能使用该 API。
+
+          如果扩展程序不在此列表中，或者未设置此列表，则会导致无法调用 API，并返回错误代码。</translation>
 <translation id="7649638372654023172">配置 <ph name="PRODUCT_NAME"/> 中的默认主页网址，并禁止用户更改此配置。
 
           主页是指用户点击“主页”按钮打开的网页。启动时打开的页面由 RestoreOnStartup 政策控制。

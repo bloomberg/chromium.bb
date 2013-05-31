@@ -10,6 +10,7 @@
 <translation id="2801119484858626560">Havaittiin yhteensopimaton Chrome-etäkäyttöversio. Varmista, että molemmissa tietokoneissa on uusimmat Chrome- ja Chrome-etäkäyttöversiot, ja yritä uudelleen.</translation>
 <translation id="6998989275928107238">Kohde</translation>
 <translation id="3258789396564295715">Tähän tietokoneeseen voi muodostaa suojatun yhteyden Chrome-etäkäytön avulla.</translation>
+<translation id="5070121137485264635">Etäisäntä edellyttää todennusta kolmannen osapuolen sivustossa. Jos haluat jatkaa, anna Chrome-etäkäytölle lisäkäyttölupia tämän osoitteen avaamiseksi:</translation>
 <translation id="4808503597364150972">Anna kohteen <ph name="HOSTNAME"/> PIN-koodi.</translation>
 <translation id="7672203038394118626">Tietokoneen etäyhteydet on poistettu käytöstä.</translation>
 <translation id="8244400547700556338">Lisätietoja.</translation>
@@ -97,6 +98,7 @@
 <translation id="1643640058022401035">Vaihtamalla sivua päätät Chromoting-käyttökerran.</translation>
 <translation id="2235518894410572517">Jaa tämä tietokone toisen käyttäjän nähtäväksi ja hallinnoitavaksi.</translation>
 <translation id="1023096696228309145">Pyydä käyttäjää, jonka tietokonetta haluat käyttää, valitsemaan Jaa nyt ja antamaan sinulle käyttökoodi.</translation>
+<translation id="80739703311984697">Etäisäntä edellyttää todennusta kolmannen osapuolen sivustossa. Jos haluat jatkaa, anna Chromotingille lisäkäyttölupia tämän osoitteen avaamiseksi:</translation>
 <translation id="4006787130661126000">Etäyhteydet on otettava käyttöön, jotta tietokonetta voidaan käyttää Chrome-etäkäytön avulla.</translation>
 <translation id="6930242544192836755">Kesto</translation>
 <translation id="6527303717912515753">Jaa</translation>

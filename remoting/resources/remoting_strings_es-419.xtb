@@ -10,6 +10,7 @@
 <translation id="2801119484858626560">Se detectó una versión incompatible del Escritorio remoto de Chrome. Asegúrate de que se hayan instalado la última versión de Chrome y del Escritorio remoto de Chrome en ambas computadoras y vuelve a intentarlo.</translation>
 <translation id="6998989275928107238">Para</translation>
 <translation id="3258789396564295715">Puedes acceder a esta computadora sin correr riesgos a través del Escritorio remoto de Chrome.</translation>
+<translation id="5070121137485264635">El host remoto requiere la autenticación de un sitio web de terceros. Para continuar, debes otorgar permisos adicionales al Escritorio remoto de Chrome para acceder a la siguiente dirección:</translation>
 <translation id="4808503597364150972">Ingresa tu PIN de <ph name="HOSTNAME"/>.</translation>
 <translation id="7672203038394118626">Se inhabilitaron las conexiones remotas con esta computadora.</translation>
 <translation id="8244400547700556338">Más información</translation>
@@ -97,6 +98,7 @@
 <translation id="1643640058022401035">Al abandonar esta página, se cerrará tu sesión en Chromoting.</translation>
 <translation id="2235518894410572517">Comparte esta computadora con otro usuario para que este pueda verla y controlarla.</translation>
 <translation id="1023096696228309145">Solicita que el usuario de la computadora a la que deseas acceder haga clic en &quot;Compartir ahora&quot; y te proporcione el código de acceso.</translation>
+<translation id="80739703311984697">El host remoto requiere la autenticación de un sitio web de terceros. Para continuar, debes otorgar permisos adicionales a Chromoting para acceder a la siguiente dirección:</translation>
 <translation id="4006787130661126000">Debes habilitar las conexiones remotas si deseas usar Escritorio remoto de Chrome para acceder a esta computadora.</translation>
 <translation id="6930242544192836755">Duración</translation>
 <translation id="6527303717912515753">Compartir</translation>

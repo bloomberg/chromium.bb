@@ -26,6 +26,7 @@
 <translation id="8206859287963243715">Mobiel</translation>
 <translation id="6596816719288285829">IP-adres</translation>
 <translation id="4508265954913339219">Activering mislukt</translation>
+<translation id="3621712662352432595">Audio-instellingen</translation>
 <translation id="1812696562331527143">Uw invoermethode is gewijzigd in <ph name="INPUT_METHOD_ID"/>*(<ph name="BEGIN_LINK"/>derden<ph name="END_LINK"/>).
 Druk op Shift + Alt om te schakelen.j</translation>
 <translation id="3846575436967432996">Geen netwerkinformatie beschikbaar</translation>
@@ -33,6 +34,7 @@ Druk op Shift + Alt om te schakelen.j</translation>
 <translation id="785750925697875037">Mobiel account weergeven</translation>
 <translation id="153454903766751181">Mobiele modem initialiseren...</translation>
 <translation id="7864539943188674973">Bluetooth uitschakelen</translation>
+<translation id="939252827960237676">Kan schermafbeelding niet opslaan</translation>
 <translation id="3126069444801937830">Opnieuw starten voor bijwerken</translation>
 <translation id="735745346212279324">Verbinding met VPN verbroken</translation>
 <translation id="7320906967354320621">Inactief</translation>
@@ -40,6 +42,7 @@ Druk op Shift + Alt om te schakelen.j</translation>
 <translation id="2778346081696727092">Kan niet verifiëren met deze gebruikersnaam of dit wachtwoord</translation>
 <translation id="3294437725009624529">Gast</translation>
 <translation id="8190698733819146287">Talen en invoer aanpassen...</translation>
+<translation id="2903907270192926896">INVOER</translation>
 <translation id="7170041865419449892">Geen bereik</translation>
 <translation id="4804818685124855865">Verbinding verbreken</translation>
 <translation id="5222676887888702881">Uitloggen</translation>
@@ -54,13 +57,16 @@ Druk op Shift + Alt om te schakelen.j</translation>
 <translation id="3368922792935385530">Verbonden</translation>
 <translation id="8340999562596018839">Gesproken feedback</translation>
 <translation id="8654520615680304441">Wifi inschakelen...</translation>
+<translation id="4632619405246189264">Opladen niet betrouwbaar</translation>
 <translation id="5825747213122829519">Uw invoermethode is gewijzigd in <ph name="INPUT_METHOD_ID"/>.
 Druk op Shift + Alt om te schakelen.</translation>
 <translation id="2562916301614567480">Privénetwerk</translation>
 <translation id="6549021752953852991">Geen mobiel netwerk beschikbaar</translation>
 <translation id="4379753398862151997">Het lijkt erop dat dit niet werkt. Het beeldscherm wordt niet ondersteund.</translation>
+<translation id="8448732935696070385">Aangesloten op een niet-standaard voedingsbron. Opladen is mogelijk niet betrouwbaar.</translation>
 <translation id="6426039856985689743">Mobiele gegevens uitschakelen</translation>
 <translation id="3087734570205094154">Onderaan</translation>
+<translation id="3742055079367172538">Schermafbeelding gemaakt</translation>
 <translation id="5271016907025319479">VPN is niet geconfigureerd.</translation>
 <translation id="6803622936009808957">Kan schermen niet spiegelen, omdat er geen ondersteunde resoluties zijn gevonden. Het uitgebreide bureaublad is geactiveerd.</translation>
 <translation id="1480041086352807611">Demomodus</translation>
@@ -88,7 +94,6 @@ Druk op Shift + Alt om te schakelen.</translation>
 <translation id="2372145515558759244">Apps synchroniseren...</translation>
 <translation id="7256405249507348194">Onbekende fout: <ph name="DESC"/></translation>
 <translation id="7925247922861151263">AAA-controle mislukt</translation>
-<translation id="3227723743333276085"><ph name="BLUETOOTH"/>: verbinding verbreken...</translation>
 <translation id="8456362689280298700"><ph name="HOUR"/>:<ph name="MINUTE"/> tot vol</translation>
 <translation id="5787281376604286451">Gesproken feedback is ingeschakeld.
 Druk op Ctrl+Alt+Z om uit te schakelen.</translation>
@@ -97,7 +102,7 @@ Druk op Ctrl+Alt+Z om uit te schakelen.</translation>
 <translation id="1467432559032391204">Links</translation>
 <translation id="5543001071567407895">SMS</translation>
 <translation id="2354174487190027830"><ph name="NAME"/> activeren</translation>
-<translation id="8814190375133053267">Wi-Fi</translation>
+<translation id="8814190375133053267">Wifi</translation>
 <translation id="1398853756734560583">Maximaliseren</translation>
 <translation id="2692809339924654275"><ph name="BLUETOOTH"/>: verbinden...</translation>
 <translation id="8639033665604704195">Kan niet verifiëren met deze van tevoren gedeelde sleutel</translation>
@@ -116,6 +121,7 @@ Druk op Ctrl+Alt+Z om uit te schakelen.</translation>
 <translation id="3019353588588144572">Resterende tijd totdat de accu volledig is opgeladen: <ph name="TIME_REMAINING"/></translation>
 <translation id="3473479545200714844">Vergrootglas</translation>
 <translation id="7005812687360380971">Mislukt</translation>
+<translation id="882279321799040148">Klik om te bekijken</translation>
 <translation id="1602076796624386989">Mobiele gegevens inschakelen</translation>
 <translation id="6981982820502123353">Toegankelijkheid</translation>
 <translation id="3157931365184549694">Herstellen</translation>
@@ -123,7 +129,8 @@ Druk op Ctrl+Alt+Z om uit te schakelen.</translation>
 <translation id="4032485810211612751"><ph name="HOURS"/>:<ph name="MINUTES"/>:<ph name="SECONDS"/></translation>
 <translation id="225680501294068881">Scannen naar apparaten...</translation>
 <translation id="5597451508971090205"><ph name="SHORT_WEEKDAY"/>, <ph name="DATE"/></translation>
-<translation id="4448844063988177157">Zoeken naar Wi-Fi-netwerken...</translation>
+<translation id="4448844063988177157">Zoeken naar wifi-netwerken...</translation>
+<translation id="2475982808118771221">Er is een fout opgetreden</translation>
 <translation id="7229570126336867161">EVDO vereist</translation>
 <translation id="2999742336789313416"><ph name="DISPLAY_NAME"/> is een openbare sessie die wordt beheerd door <ph name="DOMAIN"/></translation>
 <translation id="7029814467594812963">Sessie sluiten</translation>
@@ -134,9 +141,11 @@ Druk op Ctrl+Alt+Z om uit te schakelen.</translation>
 <translation id="8300849813060516376">OTASP mislukt</translation>
 <translation id="2792498699870441125">Alt+Zoeken</translation>
 <translation id="8660803626959853127"><ph name="COUNT"/> bestand(en) synchroniseren</translation>
+<translation id="3709443003275901162">9+</translation>
 <translation id="639644700271529076">CAPS LOCK is uitgeschakeld</translation>
 <translation id="6267036997247669271"><ph name="NAME"/>: activeren...</translation>
 <translation id="1391854757121130358">U heeft mogelijk uw quotum voor mobiele gegevens verbruikt.</translation>
+<translation id="5413208160176941586">Lokaal beheerde gebruiker</translation>
 <translation id="4864165860509564259">Positie van launcher</translation>
 <translation id="7593891976182323525">Zoeken of Shift</translation>
 <translation id="7649070708921625228">Help</translation>
@@ -146,6 +155,7 @@ Druk op Zoeken of Shift om te annuleren.</translation>
 <translation id="158849752021629804">Thuisnetwerk vereist</translation>
 <translation id="6857811139397017780"><ph name="NETWORKSERVICE"/> activeren</translation>
 <translation id="5864471791310927901">Opzoeken van DHCP mislukt</translation>
+<translation id="5812035014844949013">UITVOER</translation>
 <translation id="6692173217867674490">Slechte wachtwoordzin</translation>
 <translation id="6165508094623778733">Meer informatie</translation>
 <translation id="9046895021617826162">Verbinding mislukt</translation>
@@ -158,6 +168,7 @@ Druk op Zoeken of Shift om te annuleren.</translation>
 <translation id="7209101170223508707">CAPS LOCK is ingeschakeld.
 Druk op Alt+Zoeken of Shift om te annuleren.</translation>
 <translation id="8061464966246066292">Hoog contrast</translation>
+<translation id="8940956008527784070">Accu is bijna leeg (<ph name="PERCENTAGE"/>%)</translation>
 <translation id="5102001756192215136"><ph name="HOUR"/>:<ph name="MINUTE"/> resterend</translation>
 <translation id="8000066093800657092">Geen netwerk</translation>
 <translation id="5941711191222866238">Minimaliseren</translation>

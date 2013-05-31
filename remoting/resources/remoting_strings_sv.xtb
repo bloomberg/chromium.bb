@@ -10,6 +10,7 @@
 <translation id="2801119484858626560">Du använder en inkompatibel version av Chrome Remote Desktop. Se till att den senaste versionen av Chrome och Chrome Remote Desktop har installerats på båda datorerna och försök igen.</translation>
 <translation id="6998989275928107238">Till</translation>
 <translation id="3258789396564295715">Du kan få säker åtkomst till den här datorn med Chrome Remote Desktop.</translation>
+<translation id="5070121137485264635">Fjärrvärden kräver att du autentiserar via en tredje parts webbplats. Om du vill fortsätta måste du ge Chrome Remote Desktop ytterligare behörigheter att komma åt den här adressen:</translation>
 <translation id="4808503597364150972">Ange din PIN-kod för <ph name="HOSTNAME"/>.</translation>
 <translation id="7672203038394118626">Fjärranslutningar har inaktiverats för den här datorn.</translation>
 <translation id="8244400547700556338">Läs mer.</translation>
@@ -97,6 +98,7 @@
 <translation id="1643640058022401035">Om du lämnar sidan avslutas sessionen i Chromoting.</translation>
 <translation id="2235518894410572517">Dela den här datorn så att en annan användare kan visa och styra den.</translation>
 <translation id="1023096696228309145">Be användaren vars dator du vill få tillgång till att klicka på länken Dela nu och ge dig åtkomstkoden.</translation>
+<translation id="80739703311984697">Fjärrvärden kräver att du autentiserar via en tredje parts webbplats. Om du vill fortsätta måste du ge Chromoting ytterligare behörigheter att komma åt den här adressen:</translation>
 <translation id="4006787130661126000">Du måste aktivera fjärranslutningar om du vill använda Chrome Remote Desktop för att få åtkomst till den här datorn.</translation>
 <translation id="6930242544192836755">Varaktighet</translation>
 <translation id="6527303717912515753">Dela</translation>

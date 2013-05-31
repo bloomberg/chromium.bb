@@ -26,6 +26,7 @@
 <translation id="8206859287963243715">携帯電話</translation>
 <translation id="6596816719288285829">IP アドレス</translation>
 <translation id="4508265954913339219">起動に失敗しました</translation>
+<translation id="3621712662352432595">オーディオ設定</translation>
 <translation id="1812696562331527143">入力方法を <ph name="INPUT_METHOD_ID"/>*（<ph name="BEGIN_LINK"/>サードパーティ<ph name="END_LINK"/>）に変更しました。
 切り替えるには Shift+Alt キーを押します。</translation>
 <translation id="3846575436967432996">利用可能なネットワーク情報がありません</translation>
@@ -33,6 +34,7 @@
 <translation id="785750925697875037">モバイル アカウントを表示</translation>
 <translation id="153454903766751181">セルラー モデムを初期化しています...</translation>
 <translation id="7864539943188674973">Bluetooth を無効にする</translation>
+<translation id="939252827960237676">スクリーンショットを保存できませんでした</translation>
 <translation id="3126069444801937830">再起動して更新</translation>
 <translation id="735745346212279324">VPN が切断されました</translation>
 <translation id="7320906967354320621">待機中</translation>
@@ -40,6 +42,7 @@
 <translation id="2778346081696727092">入力されたユーザー名またはパスワードで認証できませんでした</translation>
 <translation id="3294437725009624529">ゲスト</translation>
 <translation id="8190698733819146287">言語と入力方法をカスタマイズ...</translation>
+<translation id="2903907270192926896">入力</translation>
 <translation id="7170041865419449892">圏外</translation>
 <translation id="4804818685124855865">切断</translation>
 <translation id="5222676887888702881">ログアウト</translation>
@@ -54,13 +57,16 @@
 <translation id="3368922792935385530">接続済み</translation>
 <translation id="8340999562596018839">音声フィードバック</translation>
 <translation id="8654520615680304441">Wi-Fi をオンにしています...</translation>
+<translation id="4632619405246189264">充電に問題があります</translation>
 <translation id="5825747213122829519">入力方法を <ph name="INPUT_METHOD_ID"/> に変更しました。
 切り替えるには Shift+Alt キーを押します。</translation>
 <translation id="2562916301614567480">プライベート ネットワーク</translation>
 <translation id="6549021752953852991">利用可能なセルラー ネットワークがありません</translation>
 <translation id="4379753398862151997">Dear Monitor, it's not working out between us.（このモニターはサポートされていません）</translation>
+<translation id="8448732935696070385">標準以外の電源に接続しています。バッテリーが充電されない可能性があります。</translation>
 <translation id="6426039856985689743">モバイル データを無効にする</translation>
 <translation id="3087734570205094154">一番下</translation>
+<translation id="3742055079367172538">スクリーンショット撮影完了</translation>
 <translation id="5271016907025319479">VPN が設定されていません。</translation>
 <translation id="6803622936009808957">サポートされている解像度が見つからなかったため、ディスプレイをミラーリングできませんでした。代わりに拡張デスクトップ モードに切り替えました。</translation>
 <translation id="1480041086352807611">デモ モード</translation>
@@ -88,7 +94,6 @@
 <translation id="2372145515558759244">アプリの同期...</translation>
 <translation id="7256405249507348194">不明なエラー: <ph name="DESC"/></translation>
 <translation id="7925247922861151263">AAA を確認できませんでした</translation>
-<translation id="3227723743333276085"><ph name="BLUETOOTH"/>: 切断しています...</translation>
 <translation id="8456362689280298700">フル充電まで <ph name="HOUR"/> 時間 <ph name="MINUTE"/> 分</translation>
 <translation id="5787281376604286451">音声フィードバックが有効です。
 無効にするには Ctrl+Alt+Z を押してください。</translation>
@@ -116,6 +121,7 @@
 <translation id="3019353588588144572">バッテリーがフル充電されるまであと: <ph name="TIME_REMAINING"/></translation>
 <translation id="3473479545200714844">画面拡大鏡</translation>
 <translation id="7005812687360380971">失敗</translation>
+<translation id="882279321799040148">クリックして表示</translation>
 <translation id="1602076796624386989">モバイル データを有効にする</translation>
 <translation id="6981982820502123353">アクセシビリティ</translation>
 <translation id="3157931365184549694">復元</translation>
@@ -124,6 +130,7 @@
 <translation id="225680501294068881">デバイスをスキャンしています...</translation>
 <translation id="5597451508971090205"><ph name="DATE"/> (<ph name="SHORT_WEEKDAY"/>)</translation>
 <translation id="4448844063988177157">Wi-Fi ネットワークを検出しています...</translation>
+<translation id="2475982808118771221">エラーが発生しました</translation>
 <translation id="7229570126336867161">EVDO が必要です</translation>
 <translation id="2999742336789313416"><ph name="DISPLAY_NAME"/> は <ph name="DOMAIN"/> が管理する公開セッションです</translation>
 <translation id="7029814467594812963">セッションを終了</translation>
@@ -134,9 +141,11 @@
 <translation id="8300849813060516376">OTASP に失敗しました</translation>
 <translation id="2792498699870441125">Alt+ 検索</translation>
 <translation id="8660803626959853127"><ph name="COUNT"/> 個のファイルを同期中</translation>
+<translation id="3709443003275901162">9+</translation>
 <translation id="639644700271529076">CapsLock 機能はオフになっています</translation>
 <translation id="6267036997247669271"><ph name="NAME"/>: 有効にしています...</translation>
 <translation id="1391854757121130358">モバイル データの使用量上限に達した可能性があります。</translation>
+<translation id="5413208160176941586">ローカルの管理対象ユーザー</translation>
 <translation id="4864165860509564259">ランチャーの位置</translation>
 <translation id="7593891976182323525">検索/Shift</translation>
 <translation id="7649070708921625228">ヘルプ</translation>
@@ -146,6 +155,7 @@
 <translation id="158849752021629804">ホーム ネットワークが必要です</translation>
 <translation id="6857811139397017780"><ph name="NETWORKSERVICE"/> を有効にする</translation>
 <translation id="5864471791310927901">DHCP を検索できませんでした</translation>
+<translation id="5812035014844949013">出力</translation>
 <translation id="6692173217867674490">パスフレーズが正しくありません</translation>
 <translation id="6165508094623778733">詳しく見る</translation>
 <translation id="9046895021617826162">接続に失敗しました</translation>
@@ -158,6 +168,7 @@
 <translation id="7209101170223508707">CapsLock がオンになっています。
 Alt+ 検索/Shift キーを押すと解除されます。</translation>
 <translation id="8061464966246066292">ハイコントラスト</translation>
+<translation id="8940956008527784070">バッテリー残量: 少（<ph name="PERCENTAGE"/>%）</translation>
 <translation id="5102001756192215136">残り時間: <ph name="HOUR"/>:<ph name="MINUTE"/></translation>
 <translation id="8000066093800657092">ネットワーク接続なし</translation>
 <translation id="5941711191222866238">最小化</translation>

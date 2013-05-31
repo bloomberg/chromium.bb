@@ -10,6 +10,7 @@
 <translation id="2801119484858626560">Uma versão incompatível da Área de trabalho remota do Google Chrome foi detectada. Certifique-se de que você possui a versão mais recente do Google Chrome e da Área de trabalho remota do Google Chrome em ambos os computadores e tente novamente.</translation>
 <translation id="6998989275928107238">Para</translation>
 <translation id="3258789396564295715">Você pode acessar este computador com segurança, usando a Área de trabalho remota do Google Chrome.</translation>
+<translation id="5070121137485264635">O host remoto requer a autenticação em um website de terceiros. Para continuar, você deve conceder à Área de trabalho remota do Google Chrome acesso a permissões adicionais para acessar este endereço:</translation>
 <translation id="4808503597364150972">Digite seu PIN para <ph name="HOSTNAME"/>.</translation>
 <translation id="7672203038394118626">As conexões remotas deste computador foram desativadas.</translation>
 <translation id="8244400547700556338">Saiba como.</translation>
@@ -97,6 +98,7 @@
 <translation id="1643640058022401035">Abandonar esta página encerrará sua sessão de Chromoting.</translation>
 <translation id="2235518894410572517">Compartilhe este computador para que outro usuário possa visualizá-lo e controlá-lo.</translation>
 <translation id="1023096696228309145">Solicite ao usuário cujo computador você deseja acessar que clique em &quot;Compartilhar agora&quot; e que forneça a você o código de acesso.</translation>
+<translation id="80739703311984697">O host remoto requer a autenticação em um website de terceiros. Para continuar, é preciso conceder ao Chromoting acesso a permissões adicionais para acessar este endereço:</translation>
 <translation id="4006787130661126000">Ative conexões remotas se desejar usar a Área de trabalho remota do Google Chrome para acessar este computador.</translation>
 <translation id="6930242544192836755">Duração</translation>
 <translation id="6527303717912515753">Compartilhar</translation>

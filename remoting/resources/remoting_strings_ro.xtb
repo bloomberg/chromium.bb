@@ -10,6 +10,7 @@
 <translation id="2801119484858626560">A fost detectată o versiune incompatibilă a aplicației Desktop la distanță Chrome. Asigurați-vă că aveți cea mai recentă versiune Chrome și Desktop la distanță Chrome pe ambele computere și încercați din nou.</translation>
 <translation id="6998989275928107238">Către</translation>
 <translation id="3258789396564295715">Puteți accesa acest computer în siguranță utilizând Desktop la distanță Chrome.</translation>
+<translation id="5070121137485264635">Gazda la distanță solicită să vă autentificați pe un site terță parte. Pentru a continua, trebuie să acordați permisiuni suplimentare aplicației Desktop la distanță Chrome pentru a accesa această adresă:</translation>
 <translation id="4808503597364150972">Introduceți codul PIN pentru <ph name="HOSTNAME"/>.</translation>
 <translation id="7672203038394118626">Conexiunile la distanță pentru acest computer au fost dezactivate.</translation>
 <translation id="8244400547700556338">Aflați cum.</translation>
@@ -97,6 +98,7 @@
 <translation id="1643640058022401035">Părăsind această pagină, veți încheia sesiunea Chromoting.</translation>
 <translation id="2235518894410572517">Permiteți accesul la acest computer altui utilizator, pentru ca acesta să îl poată vedea și controla.</translation>
 <translation id="1023096696228309145">Cereți-i utilizatorului al cărui computer doriți să îl accesați să dea clic pe „Permiteți accesul acum” și să vă transmită codul de acces.</translation>
+<translation id="80739703311984697">Gazda la distanță solicită să vă autentificați pe un site terță parte. Pentru a continua, trebuie să acordați permisiuni suplimentare serviciului Chromoting pentru a accesa această adresă:</translation>
 <translation id="4006787130661126000">Trebuie să activați conexiunile la distanță dacă doriți să utilizați Desktop la distanță Chrome pentru a accesa acest computer.</translation>
 <translation id="6930242544192836755">Durată</translation>
 <translation id="6527303717912515753">Distribuiți</translation>

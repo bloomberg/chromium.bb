@@ -11,7 +11,6 @@
 <translation id="6613594504749178791">ನೀವು ಮುಂದಿನ ಬಾರಿ Chromium ಅನ್ನು ಮರುಪ್ರಾರಂಭಿಸಿದಾಗ ನಿಮ್ಮ ಬದಲಾವಣೆಗಳು ಕಾರ್ಯಗತಗೊಳ್ಳುತ್ತವೆ.</translation>
 <translation id="3748537968684000502">ನೀವು ಸುರಕ್ಷಿತ Chromium ಪುಟವನ್ನು ವೀಕ್ಷಿಸುತ್ತಿರುವಿರಿ.</translation>
 <translation id="8971920611044657379">Chromium Frame</translation>
-<translation id="6705571474735842144">ಅಪ್ಲಿಕೇಶನ್ ಲಾಂಚರ್ ಅನ್ನು ಬಳಸಲು ನೀವು Chromium ನಿಂದ ಡೆಸ್ಕ್‌ಟಾಪ್ ಮೋಡ್‌ಗೆ ಬದಲಾಯಿಸುವ ಅಗತ್ಯವಿದೆ.</translation>
 <translation id="2077129598763517140">ಲಭ್ಯವಿರುವಾಗ ಹಾರ್ಡ್‌ವೇರ್ ಆಕ್ಸಲರೇಶನ್ ಬಳಸಿ</translation>
 <translation id="1065672644894730302">ನಿಮ್ಮ ಪ್ರಾಶಸ್ತ್ಯಗಳನ್ನು ಓದಲಾಗುವುದಿಲ್ಲ. ಕೆಲವು ವೈಶಿಷ್ಟ್ಯಗಳು ಲಭ್ಯವಿಲ್ಲದಿರಬಹುದು ಮತ್ತು ಆದ್ಯತೆಗಳ ಬದಲಾವಣೆಗಳನ್ನು ಉಳಿಸಲಾಗುವುದಿಲ್ಲ.</translation>
 <translation id="4222661289444749267">Chromium Frame ನವೀಕರಣ.</translation>
@@ -29,14 +28,24 @@
 <translation id="2589479092236095792">Chromium ಸ್ವಯಂತುಂಬುವಿಕೆ ಸೆಟ್ಟಿಂಗ್‌ಗಳು</translation>
 <translation id="3555616473548901994">ಅಸ್ಥಾಪನೆ ಪೂರ್ಣಗೊಂಡಿದೆ.</translation>
 <translation id="2886012850691518054">ಐಚ್ಚಿಕ: Google ಗೆ ಬಳಕೆಯ ಅಂಕಿಅಂಶಗಳು ಮತ್ತು ಕ್ರ್ಯಾಷ್ ವರದಿ ಸ್ವಯಂಚಾಲಿತವಾಗಿ ಕಳುಹಿಸುವುದರಿಂದ Chromium ಅನ್ನು ಉತ್ತಮಗೊಳಿಸಲು ಸಹಾಯ ಮಾಡಿ.</translation>
+<translation id="580822234363523061">ಇದಕ್ಕೆ ಹೋಗಿ
+          Chromium ಮೆನು &gt;
+          <ph name="SETTINGS_TITLE"/>
+          &gt;
+          <ph name="ADVANCED_TITLE"/>
+          &gt;
+          <ph name="PROXIES_TITLE"/>
+          ಮತ್ತು ನಿಮ್ಮ ಕಾನ್ಫಿಗರೇಶನ್ ಅನ್ನು &quot;ಯಾವುದೇ ಪ್ರಾಕ್ಸಿ ಇಲ್ಲ&quot; ಅಥವಾ &quot;ನೇರವಾಗಿ&quot; ಗೆ ಹೊಂದಿಸಲಾಗಿದೆಯೇ ಎಂಬುದನ್ನು ಖಚಿತಪಡಿಸಿಕೊಳ್ಳಿ.</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE"/> - Chromium</translation>
 <translation id="1989424089625731201">ನೀವು &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; ಅನ್ನು ತಲುಪಲು ಪ್ರಯತ್ನಿಸಿದ್ದೀರಿ, ಆದರೆ ಸರ್ವರ್ ಒದಗಿಸಿದ ಪ್ರಮಾಣಪತ್ರವು ದೋಷಗಳಿಂದ ಕೂಡಿದೆ. Chromium ದೋಷಗಳೊಂದಿಗೆ ಪ್ರಮಾಣಪತ್ರವನ್ನು ಬಳಸುವುದಿಲ್ಲ ಮತ್ತು ಇದಕ್ಕೆ ಸಂಪರ್ಕಿಸಲು ನೀವು ಪ್ರಯತ್ನಿಸುತ್ತಿರುವ ಸೈಟ್‌ನ ಗುರುತಿಸುವಿಕೆಯನ್ನು ಮೌಲ್ಯೀಕರಿಸುವುದಿಲ್ಲ.</translation>
 <translation id="3103660991484857065">ಆರ್ಕೈವ್ ಅನ್ನು ಸಂಕ್ಷೇಪ ಮಾಡದಿರಲು ಸ್ಥಾಪಕ ವಿಫಲಗೊಂಡಿದೆ. ದಯವಿಟ್ಟು Chromium ಅನ್ನು ಪುನಃ ಡೌನ್‌ಲೋಡ್ ಮಾಡಿ.</translation>
 <translation id="872034308864968620">Chromium ಹಿನ್ನೆಲೆಯಲ್ಲಿ ಚಾಲನೆಗೊಳ್ಳಲು ಅನುಮತಿಸಿ</translation>
+<translation id="459535195905078186">Chromium ಅಪ್ಲಿಕೇಶನ್‌ಗಳು</translation>
 <translation id="5109068449432240255">ಹೌದು, Chromium ನಿರ್ಗಮಿಸಿ</translation>
 <translation id="1480489203462860648">ಇದನ್ನೊಮ್ಮೆ ಪ್ರಯತ್ನಿಸಿ, ಇದನ್ನು ಈಗಾಗಲೇ ಸ್ಥಾಪಿಸಲಾಗಿದೆ</translation>
 <translation id="3032787606318309379">Chromium ಗೆ ಸೇರಿಸಲಾಗುತ್ತಿದೆ...</translation>
 <translation id="4831257561365056138">Chromium ಅಪ್ಲಿಕೇಶನ್‌ ಲಾಂಚರ್ ಅನ್ನು ಅಸ್ಥಾಪಿಸಿ</translation>
+<translation id="4222580632002216401">ಇದೀಗ ನೀವು Chromium ಗೆ ಸೈನ್ ಇನ್ ಆಗಿರುವಿರಿ! ನಿಮ್ಮ ನಿರ್ವಾಹಕರಿಂದ ಸಿಂಕ್ ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಲಾಗಿದೆ.</translation>
 <translation id="4207043877577553402"><ph name="BEGIN_BOLD"/>ಎಚ್ಚರಿಕೆ:<ph name="END_BOLD"/> Chromium ನಿಮ್ಮ ಬ್ರೌಸಿಂಗ್ ಇತಿಹಾಸದಲ್ಲಿ ರೆಕಾರ್ಡಿಂಗ್‌ನಿಂದ ವಿಸ್ತರಣೆಗಳನ್ನು ತಡೆಯುವುದಿಲ್ಲ. ಅಜ್ಞಾತ ಮೋಡ್‌ನಲ್ಲಿ ಈ ವಿಸ್ತರಣೆಯನ್ನು ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಲು ಈ ಆಯ್ಕೆಯನ್ನು ಆರಿಸಬೇಡಿ.</translation>
 <translation id="985602178874221306">Chromium ಲೇಖಕರು</translation>
 <translation id="8628626585870903697">ಕಾರ್ಯಾಚರಣೆ ನಡೆಸಲು ಮುದ್ರಣ ಪೂರ್ವವೀಕ್ಷಣೆಗೆ ಅಗತ್ಯವಿರುವಂತಹ PDF ವೀಕ್ಷಕರನ್ನು Chromium ಒಳಗೊಂಡಿಲ್ಲ.</translation>
@@ -45,28 +54,21 @@
 <translation id="4179848566211676653">Chromium ನಿಂದ ನಿರ್ಗಮಿಸಿ</translation>
 <translation id="3849925841547750267">ದುಃಖಕರವಾಗಿ, ಆ ಬ್ರೌಸರ್ ಚಾಲನೆಯಲ್ಲಿರುವಾಗ ನಿಮ್ಮ Mozilla Firefox ಸೆಟ್ಟಿಂಗ್‌ಗಳು ಲಭ್ಯವಿಲ್ಲ. Chromium ಗೆ ಆ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ಆಮದು ಮಾಡಿಕೊಳ್ಳಲು, ನಿಮ್ಮ ಕಾರ್ಯವನ್ನು ಉಳಿಸಿ ಮತ್ತು ಎಲ್ಲಾ Firefox ವಿಂಡೋಗಳನ್ನು ಮುಚ್ಚಿರಿ. ನಂತರ ಮುಂದುವರಿಸಿ ಅನ್ನು ಕ್ಲಿಕ್ ಮಾಡಿ.</translation>
 <translation id="7771626876550251690">ಈ ಸಂದರ್ಭದಲ್ಲಿ, ನಿಮ್ಮ ಬ್ರೌಸರ್ ಹೋಗಲು ಪ್ರಯತ್ನಿಸಿದ ವೆಬ್‌ಸೈಟ್‌ನ ವಿಳಾಸಕ್ಕೆ ಪ್ರಮಾಣಪತ್ರದಲ್ಲಿ ಪಟ್ಟಿ ಮಾಡಲಾದ ವಿಳಾಸವು ಹೊಂದಾಣಿಕೆಯಾಗುವುದಿಲ್ಲ. ಇದಕ್ಕಾಗಿ ಒಂದು ಸಂಭವನೀಯ ಕಾರಣವೆಂದರೆ ನಿಮ್ಮ ಸಂವಹನಗಳನ್ನು ದಾಳಿಕೋರರಿಂದ ತಡೆಯುಂಟು ಮಾಡಲಾಗುತ್ತಿದೆ, ಇವರು ಬೇರೆಯ ವೆಬ್‌ಸೈಟ್‌ಗೆ ಪ್ರಮಾಣಪತ್ರವನ್ನು ಪ್ರದರ್ಶಿಸುತ್ತಿದ್ದಾರೆ, ಇದರಿಂದಾಗಿ ವ್ಯತ್ಯಾಸಕ್ಕೆ ಕಾರಣವಾಗಿದೆ. ಮತ್ತೊಂದು ಸಂಭವನೀಯ ಕಾರಣವೆಂದರೆ ನೀವು ಭೇಟಿ ಮಾಡಲು ಪ್ರಯತ್ನಿಸುತ್ತಿರುವುದು ಸೇರಿದಂತೆ, ಆ ಎಲ್ಲ ವೆಬ್‌ಸೈಟ್‌ಗಳಿಗೂ ಪ್ರಮಾಣಪತ್ರವು ಮಾನ್ಯವಾಗಿಲ್ಲದಿದ್ದರೂ ಸಹ ಸರ್ವರ್ ಅನ್ನು ಬಹು ವೆಬ್‌ಸೈಟ್‌ಗಳಿಗಾಗಿ ಹೊಂದಿಸಲಾಗಿದೆ. ನೀವು &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; ಅನ್ನು ತಲುಪಿರುವಿರಿ ಎಂದು Chromium ಖಚಿತವಾಗಿ ಹೇಳಬಹುದಾಗಿದೆ, ಆದರೆ ಇದು ತಲುಪಬೇಕೆಂದಿರುವ &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; ಸೈಟ್‌ನಂತಿದೆಯೇ ಎಂದು ಪರಿಶೀಲಿಸಲಾಗುತ್ತಿಲ್ಲ. ನೀವು ಮುಂದುವರಿದಲ್ಲಿ, Chromium ಯಾವುದೇ ಇನ್ನಷ್ಟು ಹೆಸರು ಹೊಂದಾಣಿಕೆಯಾಗದಿರುವುದಕ್ಕೆ ಪರಿಶೀಲಿಸುವುದಿಲ್ಲ.</translation>
-<translation id="2401271577450445716"><ph name="BEGIN_BOLD"/>
-          Chromium ಮೆನು &gt;
-          <ph name="SETTINGS_TITLE"/>
-          &gt; ಗೆ ಹೋಗಿ
-          <ph name="ADVANCED_TITLE"/>
-          &gt;
-          <ph name="PROXIES_TITLE"/>
-          &gt;
-          LAN ಸೆಟ್ಟಿಂಗ್‌ಗಳು
-          <ph name="END_BOLD"/>
-          ಮತ್ತು &quot;ನಿಮ್ಮ LAN ಗಾಗಿ ಪ್ರಾಕ್ಸಿ ಸರ್ವರ್ ಬಳಸಿ&quot; ಚೆಕ್‌ಬಾಕ್ಸ್ ಆಯ್ಕೆ ರದ್ದುಪಡಿಸಿ.</translation>
 <translation id="4330585738697551178">Chromium ನೊಂದಿಗಿನ ಈ ಮಾಡ್ಯೂಲ್‌‌ನ ಘರ್ಷಣೆ ಎಲ್ಲರಿಗೂ ತಿಳಿದಿರುವಂಥದ್ದು.</translation>
 <translation id="3190315855212034486">ಓಹ್! Chromium ಕ್ರ್ಯಾಶ್ ಆಗಿದೆ. ಮತ್ತೊಮ್ಮೆ ಪ್ರಾರಂಭಿಸುವುದೇ?</translation>
-<translation id="6034408899846040667">ಅಪ್ಲಿಕೇಶನ್‌ಗಳನ್ನು ಬಳಸಲು ನೀವು Chromium ನಿಂದ ಡೆಸ್ಕ್‌ಟಾಪ್ ಮೋಡ್‌ಗೆ ಬದಲಾಯಿಸುವ ಅಗತ್ಯವಿದೆ.</translation>
 <translation id="6714487516757221107">ನವೀಕರಿಸಲು Chromium ಅಥವಾ Chromium Frame ನ ಯಾವುದೇ ಸ್ಥಾಪನೆಯು ಕಂಡುಬಂದಿಲ್ಲ.</translation>
 <translation id="3197823471738295152">ನಿಮ್ಮ ಸಾಧನವನ್ನು ನವೀಕರಿಸಲಾಗಿದೆ.</translation>
 <translation id="8551886023433311834">ಸುಮಾರು ನವೀಕರಿಸಿದೆ! ನವೀಕರಿಸುವುದನ್ನು ಮುಗಿಸಲು ನಿಮ್ಮ ಸಾಧನವನ್ನು ಮರುಪ್ರಾರಂಭಿಸಿ.</translation>
 <translation id="8353224596138547809">ಈ ಸೈಟ್‌ಗಾಗಿ Chromium ನಿಮ್ಮ ಪಾಸ್‌ವರ್ಡ್ ಅನ್ನು ಉಳಿಸಬೇಕೆಂದು ಬಯಸುತ್ತೀರಾ?</translation>
 <translation id="7339898014177206373">ಹೊಸ ವಿಂಡೊ</translation>
-<translation id="3026202950002788510"><ph name="BEGIN_BOLD"/> ಅಪ್ಲಿಕೇಶನ್‌ಗಳು &gt; ಸಿಸ್ಟಂ ಆದ್ಯತೆಗಳು &gt; ನೆಟ್‌ವರ್ಕ್ &gt; ಸುಧಾರಿತ &gt; ಪ್ರಾಕ್ಸಿಗಳು
-          <ph name="END_BOLD"/> ಗೆ ಹೋಗಿ
-          ಮತ್ತು  ಆಯ್ಕೆ ಮಾಡಿದ ಯಾವುದೇ ಪ್ರಾಕ್ಸಿಗಳ ಆಯ್ಕೆಯನ್ನು ರದ್ದುಮಾಡಿ.</translation>
+<translation id="3733625138702910745">ಇದಕ್ಕೆ ಹೋಗಿ
+        Chromium ಮೆನು &gt;
+        <ph name="SETTINGS_TITLE"/>
+        &gt;
+        <ph name="ADVANCED_TITLE"/>
+        ಮತ್ತು &quot;<ph name="NO_PREFETCH_DESCRIPTION"/>&quot; ಆಯ್ಕೆ ರದ್ದುಮಾಡಿ.
+        ಒಂದು ವೇಳೆ ಇದು ಈ ಸಮಸ್ಯೆಯನ್ನು ಪರಿಹರಿಸದಿದ್ದರೆ, ಸುಧಾರಿತ ಕಾರ್ಯಾಚರಣೆಗಾಗಿ ಮತ್ತೊಮ್ಮೆ
+        ಈ ಆಯ್ಕೆಯನ್ನು ಆಯ್ಕೆ ಮಾಡುವಂತೆ ನಾವು ಶಿಫಾರಸು ಮಾಡುತ್ತೇವೆ.</translation>
 <translation id="4124681358536363708">Chromium ಸ್ಥಾಪನೆ ಡೈರಕ್ಟರಿಯು ಬಳಕೆಯಲ್ಲಿರುವಂತೆ ಕಾಣುತ್ತಿದೆ. ದಯವಿಟ್ಟು ನಿಮ್ಮ ಕಂಪ್ಯೂಟರ್ ಅನ್ನು ರಿಬೂಟ್ ಮಾಡಿ ಮತ್ತು ಪುನಃ ಪ್ರಯತ್ನಿಸಿ.</translation>
 <translation id="8770560772173120024">Chromium ಇದೀಗ ಮೆಚ್ಚಿನವುಗಳು/ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳನ್ನು ಆಮದುಮಾಡುತ್ತಿದೆ.</translation>
 <translation id="225614027745146050">ಸ್ವಾಗತ</translation>
@@ -78,6 +80,7 @@
 <translation id="7915138385500177190">ನಿಮ್ಮ ಕಂಪ್ಯೂಟರ್ ಕೆಲವೊಂದು ಪ್ರಮುಖ Windows ಸಿಸ್ಟಮ್ ಫೈಲ್‌ಗಳನ್ನು ಕಳೆದುಕೊಳ್ಳುತ್ತಿದೆ, ಇದರಿಂದಾಗಿ Chromium ಗೆ ಸರಿಯಾಗಿ ಕಾರ್ಯನಿರ್ವಹಿಸಲು ಸಾಧ್ಯವಾಗುವುದಿಲ್ಲ.</translation>
 <translation id="3296368748942286671">Chromium ಮುಚ್ಚಿದಾಗ ಚಾಲನೆಯಲ್ಲಿರುವ ಹಿನ್ನೆಲೆ ಅಪ್ಲಿಕೇಶನ್‌ಗಳನ್ನು ಮುಂದುವರಿಸಿ</translation>
 <translation id="473775607612524610">ನವೀಕರಣ</translation>
+<translation id="5714819759736651024">Chrome ಅಪ್ಲಿಕೇಶನ್‌ಗಳನ್ನು ಬಳಸಲು, ನೀವು ಡೆಸ್ಕ್‌ಟಾಪ್‌ನಲ್ಲಿ Chromium ಅನ್ನು ಮರುಪ್ರಾರಂಭಿಸಬೇಕು.</translation>
 <translation id="6055895534982063517">Chromium ನ ಹೊಸ ಆವೃತ್ತಿ ಲಭ್ಯವಿದೆ, ಮತ್ತು ಇದು ಎಂದಿಗಿಂತಲೂ ವೇಗವಾಗಿದೆ.</translation>
 <translation id="2407806170074302369">Chromium Frame ಕುರಿತು...</translation>
 <translation id="5405650547142096840">Chromium ನಿಂದ ತೆಗೆದುಹಾಕಿ</translation>
@@ -88,7 +91,6 @@
 <translation id="6970811910055250180">ನಿಮ್ಮ ಸಾಧನವನ್ನು ನವೀಕರಿಸಲಾಗುತ್ತಿದೆ...</translation>
 <translation id="2485422356828889247">ಅಸ್ಥಾಪಿಸು</translation>
 <translation id="85843667276690461">Chromium ಅನ್ನು ಬಳಸುತ್ತಿರುವುದರ ಜೊತೆಗೆ ಸಹಾಯವನ್ನು ಪಡೆಯಿರಿ</translation>
-<translation id="3354334135076267965">Windows ಟಾಸ್ಕ್‌ಬಾರ್‌ನಲ್ಲಿ Chromium ಅಪ್ಲಿಕೇಶನ್‌‌ ಲಾಂಚರ್‌ಗಾಗಿ ಶಾರ್ಟ್‌ಕಟ್ ತೋರಿಸಿ.</translation>
 <translation id="263863604136125912">Chromium ಪ್ರಾರಂಭಿಸಿ</translation>
 <translation id="9036189287518468038">Chromium ಅಪ್ಲಿಕೇಶನ್‌ ಲಾಂಚರ್‌</translation>
 <translation id="2881203820889150661">ಪ್ರಸ್ತುತ ಡೆಸ್ಕ್‌ಟಾಪ್ ಪರಿಸರವನ್ನು ಕಂಡುಹಿಡಿಯಲು ಸಾಧ್ಯವಿಲ್ಲದ ಕಾರಣ Chromium ಗೆ ಅಪ್ಲಿಕೇಶನ್ ಶಾರ್ಟ್‌ಕಟ್ ಅನ್ನು ರಚಿಸಲಾಗುವುದಿಲ್ಲ.</translation>
@@ -107,16 +109,6 @@
 <translation id="3069161343438701711">Chromium ವರ್ಕರ್</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
 <translation id="6757767188268205357">ನನ್ನನ್ನು ಬಗ್ ಮಾಡಬೇಡ</translation>
-<translation id="7294284502435423183">ಈ ಹಂತಗಳನ್ನು ಅನುಸರಿಸುವುದರ ಮೂಲಕ ನೆಟ್‌ವರ್ಕ್ ಪೂರ್ವಸೂಚನೆಯನ್ನು ನಿಷ್ಕ್ರಿಯಗೊಳಿಸುವುದನ್ನು ಪ್ರಯತ್ನಿಸಿ:
-        
-        <ph name="BEGIN_BOLD"/>
-       Chromium ಮೆನು &gt;
-        <ph name="SETTINGS_TITLE"/>
-        &gt; ಗೆ ಹೋಗಿ
-        <ph name="ADVANCED_TITLE"/>
-        <ph name="END_BOLD"/>
-        ಮತ್ತು  &quot;<ph name="NO_PREFETCH_DESCRIPTION"/>&quot; ಆಯ್ಕೆ ರದ್ದುಪಡಿಸಿ.
-        ಸಮಸ್ಯೆಯನ್ನು ಇದು ಪರಿಹರಿಸದಿದ್ದರೆ, ನಾವು ಸುಧಾರಿತ ಕಾರ್ಯಚರಣೆಗಾಗಿ ಮತ್ತೊಮ್ಮೆ ಈ ಆಯ್ಕೆಯನ್ನು ಶಿಫಾರಸು ಮಾಡುತ್ತೇವೆ.</translation>
 <translation id="275588974610408078">Chromium ನಲ್ಲಿ ಕ್ರ್ಯಾಶ್ ವರದಿ ಮಾಡುವಿಕೆ ಲಭ್ಯವಿಲ್ಲ.</translation>
 <translation id="5909170354645388250">Chromium ನಲ್ಲಿ ಬಳಸಿಲ್ಲ. ಸಿಂಕ್‌ನಲ್ಲಿ ಸಂಪನ್ಮೂಲ ನಕ್ಷೆಗಳನ್ನು ಇರಿಸಲು Placeholder. ಇದು ಒಂದು ವಾದದವನ್ನು ಅಪೇಕ್ಷಿಸುತ್ತದೆ: $1.</translation>
 <translation id="7937630085815544518"><ph name="USER_EMAIL_ADDRESS"/> ನಂತೆ Chromium ಅನ್ನು ನೀವು ಸೈನ್ ಇನ್ ಮಾಡಿರುವಿರಿ. ದಯವಿಟ್ಟು ಮತ್ತೆ ಸೈನ್ ಇನ್ ಮಾಡಲು ಅದೇ ಖಾತೆಯನ್ನು ಬಳಸಿ.</translation>
@@ -129,7 +121,16 @@
 <translation id="5398878173008909840">Chromium ನ ಹೊಸ ಆವೃತ್ತಿ ಲಭ್ಯವಿದೆ.</translation>
 <translation id="2648074677641340862">ಸ್ಥಾಪಿಸುತ್ತಿರುವಾಗ ಆಪರೇಟಿಂಗ್ ಸಿಸ್ಟಮ್ ದೋಷ ಸಂಭವಿಸಿದೆ. ದಯವಿಟ್ಟು Chromium ಅನ್ನು ಪುನಃ ಡೌನ್‌ಲೋಡ್ ಮಾಡಿ.</translation>
 <translation id="5942520288919337908">Chromium ಗೆ <ph name="EXTENSION_NAME"/> ಅನ್ನು ಸೇರಿಸಲಾಗಿದೆ.</translation>
-<translation id="8678787945719392857">ನಿಮ್ಮೆಲ್ಲಾ Chromium ಸಂಗತಿಯನ್ನು ಸಿಂಕ್ ಮಾಡಲು ಈ Google ಖಾತೆಯನ್ನು ಬಳಸುವುದೇ?</translation>
+<translation id="4559775032954821361">ಇದಕ್ಕೆ ಹೋಗಿ
+          Chromium ಮೆನು &gt;
+          <ph name="SETTINGS_TITLE"/>
+          &gt;
+          <ph name="ADVANCED_TITLE"/>
+          &gt;
+          <ph name="PROXIES_TITLE"/>
+          &gt;
+          LAN ಸೆಟ್ಟಿಂಗ್‌ಗಳು
+          ಮತ್ತು &quot;ನಿಮ್ಮ LAN ಗಾಗಿ ಪ್ರಾಕ್ಸಿ ಸರ್ವರ್ ಬಳಸಿ&quot; ಚೆಕ್‌ಬಾಕ್ಸ್ ಆಯ್ಕೆ ರದ್ದುಮಾಡಿ.</translation>
 <translation id="8621669128220841554">ಅನಿರ್ದಿಷ್ಟ ದೋಷದಿಂದಾಗಿ ಸ್ಥಾಪನೆ ವಿಫಲವಾಗಿದೆ. ದಯವಿಟ್ಟು ಮತ್ತೊಮ್ಮೆ Chromium ಅನ್ನು ಡೌನ್‌ಲೋಡ್ ಮಾಡಿ.</translation>
 <translation id="6717134281241384636">Chromium ನ ಹೊಸ ಆವೃತ್ತಿಯಾಗಿರುವುದರಿಂದ ನಿಮ್ಮ ಪ್ರೊಫೈಲ್ ಅನ್ನು ಬಳಸಲಾಗುವುದಿಲ್ಲ. ಕೆಲವೊಂದು ವೈಶಿಷ್ಟ್ಯಗಳು ಲಭ್ಯವಿಲ್ಲದಿರಬಹುದು. ದಯವಿಟ್ಟು ಬೇರೆ ಒಂದು ಪೊಫೈಲ್ ಡೈರೆಕ್ಟರಿ ಅನ್ನು ನಿರ್ದಿಷ್ಟಪಡಿಸಿ ಅಥವಾ Chromium ನ ಹೊಸ ಆವೃತ್ತಿಯನ್ನು ಬಳಸಿ.</translation>
 <translation id="4881709374218686648">ನೀವು ಬೇರೆ ಖಾತೆಯೊಂದಿಗೆ ಈ ಮೊದಲು ಸೈನ್ ಇನ್ ಆಗಿರುವಿರಿ, ನಿಮ್ಮ ಡೇಟಾವನ್ನು ಸೈನ್ ಇನ್ ವಿಲೀನಗೊಳಿಸುತ್ತದೆ. ನಿಮ್ಮ Chromium ವಿಷಯಕ್ಕಾಗಿ <ph name="BEGIN_LINK"/>ಸೆಟ್ಟಿಂಗ್‌ಗಳ ಪುಟ<ph name="END_LINK"/> ಮೂಲಕ ಹೊಸ Chromium ಬಳಕೆದಾರರನ್ನು ರಚಿಸುವುದು ಒಳ್ಳೆಯದು.</translation>
@@ -138,51 +139,32 @@
 <translation id="6212496753309875659">ಈ ಕಂಪ್ಯೂಟರ್ Chromium ನ ಇತ್ತೀಚಿನ ಹೆಚ್ಚಿನ ಆವೃತ್ತಿಯನ್ನು ಹೊಂದಿದೆ. ಸಾಫ್ಟ್‌ವೇರ್ ಕಾರ್ಯನಿರ್ವಹಿಸದಿದ್ದರೆ, ದಯವಿಟ್ಟು Chromium ಅನ್ನು ಅಸ್ಥಾಪಿಸಿ ಮತ್ತು ಪುನಃ ಪ್ರಯತ್ನಿಸಿ.</translation>
 <translation id="3014684866565908571">Chromium ಉಪಯುಕ್ತತೆ</translation>
 <translation id="1298199220304005244">Chromium OS ಅನ್ನು ಬಳಸುತ್ತಿರುವುದರ ಜೊತೆಗೆ ಸಹಾಯವನ್ನು ಪಡೆಯಿರಿ</translation>
+<translation id="8187289872471304532">ಇದಕ್ಕೆ ಹೋಗಿ
+          ಅಪ್ಲಿಕೇಶನ್‌ಗಳು &gt; ಸಿಸ್ಟಂ ಪ್ರಾಶಸ್ತ್ಯಗಳು &gt; ನೆಟ್‌ವರ್ಕ್ &gt; ಸುಧಾರಿತ &gt; ಪ್ರಾಕ್ಸಿಗಳು
+          ಮತ್ತು ಆಯ್ಕೆ ಮಾಡಿದ ಯಾವುದೇ ಪ್ರಾಕ್ಸಿಗಳ ಆಯ್ಕೆಯನ್ನು ರದ್ದುಮಾಡಿ.</translation>
 <translation id="1691304614444223855">Chromium Frame ಅನ್ನು ನವೀಕರಿಸಲಾಗಿದೆ. ದಯವಿಟ್ಟು ನಿಮ್ಮ ಬ್ರೌಸರ್ ಅನ್ನು ಮರುಸ್ಥಾಪಿಸಿ. Chromium ಆವೃತ್ತಿ: <ph name="TODO_0001"/>, Chromium Frame ಆವೃತ್ತಿ: <ph name="TODO_0002"/></translation>
 <translation id="130631256467250065">ನಿಮ್ಮ ಸಾಧನವನ್ನು ನೀವು ಮುಂದಿನ ಬಾರಿ ಮರುಪ್ರಾರಂಭಿಸಿದಾಗ ನಿಮ್ಮ ಬದಲಾವಣೆಗಳು ಕಾರ್ಯಗತಗೊಳ್ಳುತ್ತವೆ.</translation>
 <translation id="1105130903706696483">Chromium ಸರಿಯಾಗಿ ಶಟ್‌ಡೌನ್ ಮಾಡಲಿಲ್ಲ. ನೀವು ತೆರೆದಿರುವಂತಹ ಪುಟಗಳನ್ನು ಪುನಃ ತೆರೆಯಲು, ಮರುಸ್ಥಾಪನೆಯನ್ನು ಕ್ಲಿಕ್ ಮಾಡಿ.</translation>
 <translation id="1531452407274881270">ನಿಮ್ಮ <ph name="USER_EMAIL_ADDRESS"/> ಖಾತೆಯನ್ನು ಬಳಸಿಕೊಂಡು ನೀವು Chromium ಗೆ ಸೈನ್ ಇನ್ ಮಾಡುತ್ತಿರುವಿರಿ. ನಿಮ್ಮ ಸೈನ್ ಇನ್ ಮಾಡಿದ ಎಲ್ಲ ಸಾಧನಗಳಲ್ಲಿ ನಿಮ್ಮ ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳು, ಇತಿಹಾಸ, ಮತ್ತು ಇತರ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ಪ್ರವೇಶಿಸಲು ನಿಮಗೆ ಸಾಧ್ಯವಾಗಬಹುದು.</translation>
 <translation id="1929939181775079593">Chromium ಸ್ಪಂದಿಸುತ್ತಿಲ್ಲ. ಇದೀಗ ಮರುಪ್ರಾರಂಭಿಸುವುದೇ?</translation>
 <translation id="1414495520565016063">ನೀವು Chromium ಗೆ ಸೈನ್ ಇನ್ ಮಾಡಿರುವಿರಿ!</translation>
-<translation id="6089587093203430357">ತತ್‌ಕ್ಷಣ</translation>
+<translation id="3155163173539279776">Chromium ಮರುಪ್ರಾರಂಭಿಸಿ</translation>
 <translation id="8520216698644798023">Windows ದೋಷವನ್ನು ಪತ್ತೆಹಚ್ಚಲಾಗಿದೆ</translation>
 <translation id="2966088006374919794"><ph name="SCHEME"/> ಲಿಂಕ್‌ಗಳನ್ನು ನಿರ್ವಹಿಸಲು ಹೆಚ್ಚುವರಿ ಅಪ್ಲಿಕೇಶನ್ ಅನ್ನು ಸ್ಥಾಪಿಸುವ ಅಗತ್ಯ Chromium ಗಿದೆ. <ph name="PROTOLINK"/> ಲಿಂಕ್‌ನ ವಿನಂತಿಯಾಗಿದೆ.</translation>
 <translation id="6287463253129672858">ಪ್ರಸ್ತುತ ಚಾಲನೆಯಲ್ಲಿರುವ Chromium ನ ಅದೇ ಆವೃತ್ತಿಯನ್ನು ಸ್ಥಾಪಿಸಲು ಸಾಧ್ಯವಿಲ್ಲ. ದಯವಿಟ್ಟು Chromium Frame ಅನ್ನು ಮುಚ್ಚಿರಿ ಮತ್ತು ಪುನಃ ಪ್ರಯತ್ನಿಸಿ.</translation>
 <translation id="2558235863893655150">Chromium ನಿಮ್ಮ ಪಾಸ್‌ವರ್ಡ್ ಅನ್ನು ಉಳಿಸಬೇಕು ಎಂದು ಬಯಸುತ್ತೀರಾ?</translation>
-<translation id="3398522627033804247"><ph name="BEGIN_BOLD"/>
-          Chromium ಮೆನು &gt;
-          <ph name="SETTINGS_TITLE"/>
-          &gt; ಗೆ ಹೋಗಿ
-          <ph name="INTERNET_TITLE"/>
-          &gt;
-          &quot;<ph name="OPTIONS_BUTTON"/>&quot;
-          <ph name="END_BOLD"/>
-          (ಪ್ರಸ್ತುತ ನೆಟ್‌ವರ್ಕ್ ಗಾಗಿ). 
-          <ph name="BEGIN_BOLD"/>
-          &quot;<ph name="PROXY_BUTTON"/>&quot;
-          <ph name="END_BOLD"/>ಬಟನ್ (ಟ್ಯಾಬ್
-          <ph name="BEGIN_BOLD"/>
-          <ph name="NETWORK_TAB"/>
-          <ph name="END_BOLD"/>
-          ನಲ್ಲಿ) ಅಸ್ತಿತ್ವದಲ್ಲಿದ್ದರೆ, ಅದನ್ನು ಕ್ಲಿಕ್ ಮಾಡಿ ಮತ್ತು ನಿಮ್ಮ ಕಾನ್ಫಿಗರೇಶನ್ &quot;ನೇರವಾಗಿ&quot; ಗೆ ಹೊಂದಿಸಲಾಗಿದೆಯೇ ಎಂಬುದನ್ನು ಖಾತ್ರಿ ಪಡಿಸಿಕೊಳ್ಳಿ.</translation>
 <translation id="1231416733874080281">Chromium ಮೆನು ತೋರಿಸಿ</translation>
+<translation id="5772805321386874569">(Chromium <ph name="BEGIN_BUTTON"/>ಮರುಪ್ರಾರಂಭ<ph name="END_BUTTON"/> ಅಗತ್ಯವಿದೆ)</translation>
 <translation id="1688750314291223739">ವೆಬ್‌ಗೆ ನಿಮ್ಮ ವೈಯಕ್ತಿಕಗೊಳಿಸಿದ ಬ್ರೌಸರ್ ವೈಶಿಷ್ಟ್ಯಗಳನ್ನು ಉಳಿಸಲು ಸಿಂಕ್ ಅನ್ನು ಹೊಂದಿಸಿ ಮತ್ತು ಯಾವುದೇ ಕಂಪ್ಯೂಟರ್‌ನಲ್ಲಿ Chromium ನಿಂದ ಅವುಗಳನ್ನು ಪ್ರವೇಶಿಸಿ.</translation>
 <translation id="9171640504251796339">http://www.google.com/support/chrome/bin/answer.py?hl=<ph name="GRITLANGCODE_1"/>&amp;answer=161796</translation>
 <translation id="8865765905101981392">ಇಂಟರ್ನೆಟ್ ಬ್ರೌಸರ್</translation>
+<translation id="8610831143142469229">ನಿಮ್ಮ ಫೈರ್‌ವಾಲ್ ಮತ್ತು ಆಂಟಿವೈರಸ್ ಸೆಟ್ಟಿಂಗ್‌ಗಳಲ್ಲಿ ನೆಟ್‌ವರ್ಕ್ ಪ್ರವೇಶಿಸಲು
+        Chromium ಗೆ ಅನುಮತಿಸಿ.</translation>
 <translation id="6424492062988593837">Chrome ಈಗ ತಾನೇ ಉತ್ತಮಗೊಂಡಿದೆ! ಹೊಸ ಆವೃತ್ತಿ ಲಭ್ಯವಿದೆ.</translation>
 <translation id="6601972021154586963">ಅಪ್ಲಿಕೇಶನ್‌ಗಳನ್ನು ಬಳಸುವುದಕ್ಕೆ ನೀವು Chromium ಗೆ ಸೈನ್ ಇನ್ ಮಾಡುವ ಅವಶ್ಯಕತೆ ಇದೆ. ಸಾಧನಗಳಾದ್ಯಂತ ನಿಮ್ಮ ಅಪ್ಲಿಕೇಶನ್‌ಗಳು, ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳು, ಇತಿಹಾಸ, ಪಾಸ್‌ವರ್ಡ್‌ಗಳು, ಹಾಗೂ ಇತರ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ಸಿಂಕ್ ಮಾಡಲು Chromium ಅನ್ನು ಇದು ಅನುಮತಿಸುತ್ತದೆ.</translation>
 <translation id="2910007522516064972">&amp;Chromium ಕುರಿತು</translation>
 <translation id="8453117565092476964">ಸ್ಥಾಪಕ ಆರ್ಕೈವ್ ದೋಷಪೂರಿತವಾಗಿದೆ ಅಥವಾ ಅಮಾನ್ಯವಾಗಿದೆ. ದಯವಿಟ್ಟು Chromium ಅನ್ನು ಪುನಃ ಡೌನ್‌ಲೋಡ್ ಮಾಡಿ.</translation>
-<translation id="950712238285296105">( Chromium ನ <ph name="BEGIN_BUTTON"/>ಮರುಪ್ರಾರಂಭ<ph name="END_BUTTON"/> ಅಗತ್ಯವಿದೆ)</translation>
-<translation id="2162026298602630383"><ph name="BEGIN_BOLD"/>
-         Chromium ಮೆನು &gt;
-          <ph name="SETTINGS_TITLE"/>
-          &gt; ಗೆ ಹೋಗಿ
-          <ph name="ADVANCED_TITLE"/>
-          &gt;
-          <ph name="PROXIES_TITLE"/>
-          <ph name="END_BOLD"/>
-          ಮತ್ತು  ನಿಮ್ಮ ಕಾನ್ಫಿಗರೇಶನ್ ಅನ್ನು &quot;ಯಾವುದೇ ಪ್ರಾಕ್ಸಿ ಇಲ್ಲ&quot; ಅಥವಾ &quot;ನೇರವಾಗಿ&quot; ಹೊಂದಿಸಲಾಗಿದೆಯೆ ಎಂದು ಖಚಿತಪಡಿಸಿಕೊಳ್ಳಿ.</translation>
+<translation id="6763060723530774166">ಅಪ್ಲಿಕೇಶನ್ ಲಾಂಚರ್ ಬಳಸಲು, ನೀವು ಡೆಸ್ಕ್‌ಟಾಪ್‌ನಲ್ಲಿ Chromium ಅನ್ನು ಮರುಪ್ರಾರಂಭಿಸಬೇಕು.</translation>
 <translation id="3249425904492147663">ನೀವು &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; ಅನ್ನು ತಲುಪಲು ಪ್ರಯತ್ನಿಸಿರುವಿರಿ, ಆದರೆ ಸರ್ವರ್ ಅವಧಿ ಮುಗಿದ ಪ್ರಮಾಣಪತ್ರವನ್ನು ಸಲ್ಲಿಸಿದೆ. ತನ್ನ ವಾಯಿದೆ ಮುಗಿದಲ್ಲಿಂದ ಆ ಪ್ರಮಾಣಪತ್ರಕ್ಕೆ ಧಕ್ಕೆಯುಂಟಾಗಿದೆಯೇ ಎಂಬುದನ್ನು ಸೂಚಿಸುವ ಮಾಹಿತಿ ಲಭ್ಯವಿಲ್ಲ. ಇದರರ್ಥವೇನೆಂದರೆ ನೀವು &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; ನೊಂದಿಗೆ ಸಂವಹಿಸುತ್ತಿರುವಿರಿ ಮತ್ತು ಆಕ್ರಮಣಕಾರನಲ್ಲ ಎಂಬುದಕ್ಕೆ Chromium ಭರವಸೆ ನೀಡುವುದಿಲ್ಲ. ನಿಮ್ಮ ಕಂಪ್ಯೂಟರ್‌ನ ಗಡಿಯಾರವನ್ನು ಪ್ರಸ್ತುತ <ph name="CURRENT_TIME"/> ಗೆ ಹೊಂದಿಸಿದೆ. ಇದು ಸರಿ ಎಂದು ತೋರುತ್ತಿದೆಯೇ? ಸರಿಯಲ್ಲದಿದ್ದರೆ, ನೀವು ದೋಷವನ್ನು ಸರಿಪಡಿಸಬೇಕು ಮತ್ತು ಈ ಪುಟವನ್ನು ರಿಫ್ರೆಶ್‌ ಮಾಡಿ.</translation>
 <translation id="7196020411877309443">ನಾನು ಇದನ್ನೇಕೆ ನೋಡುತ್ತಿದ್ದೇನೆ?</translation>
 <translation id="457845228957001925">ನಿಮ್ಮ Chromium ಡೇಟಾಗೆ ಸಂಬಂಧಿಸಿದ ಪ್ರಮುಖ ಮಾಹಿತಿ</translation>
@@ -196,7 +178,6 @@
 <translation id="8724049448828509830">ಡೌನ್‌ಲೋಡ್ ಪ್ರಸ್ತುತ ಪ್ರಗತಿಯಲ್ಲಿದೆ. Chromium ನಿಂದ ನಿರ್ಗಮಿಸಲು ಮತ್ತು ಡೌನ್‌ಲೋಡ್ ಅನ್ನು ರದ್ದುಗೊಳಿಸಲು ನೀವು ಬಯಸಿರುವಿರಾ?</translation>
 <translation id="3360567213983886831">Chromium Binaries</translation>
 <translation id="7503101070699687603">Chromium ಪ್ಲಗ್ ಇನ್ ಹೋಸ್ಟ್</translation>
-<translation id="2128780683974727821">Chromium ಅಪ್ಲಿಕೇಶನ್‌‌ ಲಾಂಚರ್ ತೋರಿಸಿ.</translation>
 <translation id="8985587603644336029"><ph name="ACCOUNT_EMAIL_LAST"/> ನಂತೆ ಈ ಕಂಪ್ಯೂಟರ್‌ನಲ್ಲಿ Chromium ಯಾರೋ ಈ ಹಿಂದೆಯೇ ಸೈನ್ ಇನ್ ಮಾಡಿದ್ದಾರೆ. ಅದು ನಿಮ್ಮ ಖಾತೆಯಾಗಿಲ್ಲದಿದ್ದರೆ, ನಿಮ್ಮ ಮಾಹಿತಿಯನ್ನು ಪ್ರತ್ಯೇಕವಾಗಿ ಇರಿಸಿಕೊಳ್ಳಲು ಹೊಸ Chromium ಬಳಕೆದಾರರನ್ನು ರಚಿಸಿ.
 
 ಸೈನ್ ಇನ್ ಮಾಡುವುದು ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳು, ಇತಿಹಾಸ, ಹಾಗೂ ಇತರ ಸೆಟ್ಟಿಂಗ್‌ಗಳಂತಹ Chromium ಮಾಹಿತಿಯನ್ನು <ph name="ACCOUNT_EMAIL_NEW"/> ಗೆ ಹೇಗಾದರೂ ವಿಲೀನಗೊಳಿಸುತ್ತದೆ.</translation>

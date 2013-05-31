@@ -1,11 +1,13 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="hu">
+<translation id="8914504000324227558">A Chrome újraindítása</translation>
 <translation id="8000275528373650868">A Google Chrome futtatásához Windows Vista, illetve Windows XP SP2 vagy újabb verzió szükséges.</translation>
 <translation id="8124352762008487242">Copyright 2013 Google Inc. Minden jog fenntartva.</translation>
 <translation id="8485767968786176057">Ezt a figyelmeztetést azért látja, mert a tanúsítvány nem arra a címre van kiállítva, amelyhez kapcsolódni szeretne. Lehetséges, hogy egy támadó eltérítette a kapcsolatát és egy hasonló névre kiállított tanúsítvánnyal próbálja megtéveszteni. Egy másik lehetséges magyarázat, hogy a szerver több címet is kiszolgál, de egy hibás beállítás folytán ugyanazt a tanúsítványt mutatja minden címen, köztük az Ön által felkeresetten is, noha a tanúsítvány nem érvényes ezek mindegyikén. A Google Chrome annyit biztosan állíthat, hogy Ön elérte a(z) &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; webhelyet, de azt nem, hogy az megegyezik-e az elérni próbált &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; webhellyel. Ha tovább lép, a Chrome a továbbiakban nem fogja ellenőrizni a nevek eltérését.</translation>
 <translation id="5430073640787465221">A beállításait tartalmazó fájl hibás vagy érvénytelen. A Google Chrome nem tudja helyreállítani a beállításait.</translation>
 <translation id="6676384891291319759">Internetelérés</translation>
+<translation id="7115445779188493842">Az alkalmazásindító használatához újra kell indítania a Google Chrome-ot az asztalon.</translation>
 <translation id="6236285698028833233">A Google Chrome a továbbiakban nem frissül, és már nem támogatja az Ön operációs rendszerének ezen verzióját.</translation>
 <translation id="5453904507266736060">A Google Chrome futhat a háttérben</translation>
 <translation id="2383457833405848421">A Chrome Frame névjegye...</translation>
@@ -18,36 +20,26 @@
 <translation id="7781002470561365167">Elérhető a Google Chrome új verziója</translation>
 <translation id="7101265395643981223">A Google Chrome elindítása</translation>
 <translation id="4891791193823137474">A Google Chrome futhat a háttérben</translation>
-<translation id="2879385160622431163">Google Chrome Instant</translation>
 <translation id="2896252579017640304">Chrome alkalmazások indítása</translation>
 <translation id="2370289711218562573">A kedvencek és könyvjelzők importálása folyamatban van.</translation>
 <translation id="8762286861469007470">Chrome előzetes hitelesítést igénylő oldal érzékelője</translation>
 <translation id="1761870329818521071">Nem lehet ugyanazt a Google Chrome Frame verziót telepíteni, amely jelenleg is fut. Zárja be a Google Chrome Frame-et, és próbálja újra.</translation>
 <translation id="2040709530900803995">Google Chrome renderelő</translation>
-<translation id="6541116830060437475">Próbálja letiltani a hálózati előrejelzést az alábbi lépésekkel:
-        Menjen ide:
-        <ph name="BEGIN_BOLD"/>
-        Chrome menü &gt;
-        <ph name="SETTINGS_TITLE"/>
-        &gt;
-        <ph name="ADVANCED_TITLE"/>
-        <ph name="END_BOLD"/>
-        és törölje a jelet a(z) „<ph name="NO_PREFETCH_DESCRIPTION"/>” jelölőnégyzetből.
-        Ha ettől nem szűnik meg a probléma, akkor javasoljuk, hogy válassza ki ismét ezt a lehetőséget
-        a jobb teljesítmény érdekében.</translation>
+<translation id="6014844626092547096">Bejelentkezett a Chrome-ba! A szinkronizálást a rendszergazdája letiltotta.</translation>
 <translation id="3140883423282498090">A módosítások a következő alkalommal lépnek életbe, amikor újraindítja a Google Chrome-ot.</translation>
 <translation id="1773601347087397504">A Chrome OS használatával kapcsolatos súgó</translation>
 <translation id="6982337800632491844">A(z) <ph name="DOMAIN"/> megköveteli, hogy olvassa el, majd fogadja el a következő Általános Szerződési Feltételeket, mielőtt használná ezt az eszközt. Ezek a feltételek nem bővítik, módosítják vagy korlátozzák a Google Chrome OS feltételeit.</translation>
+<translation id="4309555186815777032">(a Chrome <ph name="BEGIN_BUTTON"/>újraindítását<ph name="END_BUTTON"/> igényli)</translation>
 <translation id="5339639696978861456">A Chrome Frame frissült. Kérjük, indítsa újra a böngészőt. Chrome verzió: <ph name="TODO_0001"/>, Chrome Frame verzió: <ph name="TODO_0002"/></translation>
 <translation id="8471072774411320686">Be kell jelentkeznie a Chrome-ba az alkalmazások használatához. Ez lehetővé teszi a Chrome számára, hogy szinkronizálja az Ön alkalmazásait, könyvjelzőit, előzményeit, jelszavait és egyéb beállításait a különböző eszközök között.</translation>
 <translation id="5775197990071433230">Ez a számítógép már rendelkezik a Google Chrome komponensek egy újabb változatával. Kérjük, használjon újabb telepítőt.</translation>
-<translation id="8398145039500709259">Ezzel a Google Fiókkal szeretné szinkronizálni minden Chrome-os anyagát?</translation>
 <translation id="1779550429052479749">Már telepítve van a Google Chrome vagy a Google Chrome Frame a rendszeren, és ez ütközést okoz. Kérjük, távolítsa el, majd próbálkozzon újra.</translation>
 <translation id="3555616473548901994">Az eltávolítás befejeződött.</translation>
 <translation id="4987308747895123092">Kérjük, zárja be az összes Google Chrome-ablakot (köztük a Windows 8-módban lévőket is), majd próbálja újra.</translation>
 <translation id="568643307450491754">Könyvjelzőit megtalálhatja a Chrome menüben vagy a könyvjelzősávban.</translation>
 <translation id="8556340503434111824">Elérhető a Google Chrome új verziója, amely gyorsabb, mint ezelőtt bármikor.</translation>
 <translation id="4728575227883772061">A telepítés váratlan hiba miatt nem sikerült. Ha a Google Chrome jelenleg fut, zárja be, majd próbálkozzon újra.</translation>
+<translation id="2082230140685103752">A Chrome-alkalmazások használatához újra kell indítania a Google Chrome-ot az asztalon.</translation>
 <translation id="3080151273017101988">A háttéralkalmazások továbbfuttatása, ha a Google Chrome-ot bezárják</translation>
 <translation id="4149882025268051530">Nem sikerült a telepítőnek kibontani a tömörített állományt. Kérjük, töltse le újra a Google Chrome böngészőt.</translation>
 <translation id="6989339256997917931">A Google Chrome frissítése megtörtént, de nem használta a böngészőt legalább 30 napja.</translation>
@@ -65,25 +57,11 @@
 <translation id="4053720452172726777">A Google Chrome személyre szabása és beállításai</translation>
 <translation id="6423071462708908582">Megpróbálta elérni a(z) &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; webhelyet, de a szerver tanúsítványa lejárt. Nem áll rendelkezésre információ azzal kapcsolatban, hogy a tanúsítványt esetleg meghamisították-e a lejárat óta. Ez azt jelenti, hogy Google Chrome nem tudja garantálni, hogy a(z) &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; webhellyel kommunikál, nem pedig egy támadóval. Számítógépe órájának beállítása jelenleg <ph name="CURRENT_TIME"/>. Ez megfelelőnek tűnik? Ha nem, javítsa ki a hibát, és töltse újra az oldalt.</translation>
 <translation id="3197823471738295152">Eszköze naprakész.</translation>
-<translation id="2336460313445286758">Menjen ide:
-          <ph name="BEGIN_BOLD"/>
-          Chrome menü &gt;
-          <ph name="SETTINGS_TITLE"/>
-          &gt;
-          <ph name="ADVANCED_TITLE"/>
-          &gt;
-          <ph name="PROXIES_TITLE"/>
-          <ph name="END_BOLD"/>
-          és gondoskodjon róla, hogy a konfiguráció beállítása „nincs proxy” vagy „közvetlen” legyen.</translation>
 <translation id="3889417619312448367">A Google Chrome eltávolítása</translation>
+<translation id="1434626383986940139">Chrome Canary-alkalmazások</translation>
 <translation id="8551886023433311834">Majdnem naprakész! Indítsa újra a készüléket a frissítés befejezéséhez.</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE"/> - Google Chrome</translation>
 <translation id="7339898014177206373">Új ablak</translation>
-<translation id="3026202950002788510">Az
-          <ph name="BEGIN_BOLD"/>
-          Applications &gt; System Preferences &gt; Network &gt; Advanced &gt; Proxies
-          <ph name="END_BOLD"/> (Alkalmazások &gt; Rendszerbeállítások &gt; Hálózat &gt; Speciális &gt; Proxyk)
-          menüpont alatt törölje a jelet minden kijelölt proxy mellől.</translation>
 <translation id="3282568296779691940">Bejelentkezés a Chrome-ba</translation>
 <translation id="3089968997497233615">Elérhető a Google Chrome új, biztonságosabb verziója.</translation>
 <translation id="5037239767309817516">Ahhoz, hogy a módosítás hatályba lépjen, zárja be az összes Google Chrome ablakot, és indítsa újra az alkalmazást.</translation>
@@ -92,6 +70,7 @@
 <translation id="7451721381978275812">Érvénytelen argumentumok. A Google Chrome Frame nem telepíthető készenléti üzemmódban anélkül, hogy a Google Chrome is telepítve lenne.</translation>
 <translation id="8684521613357479262">Megpróbálta elérni a(z) &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; webhelyet, de a szerver által bemutatott tanúsítvány még nem érvényes. Nem áll rendelkezésre információ azzal kapcsolatban, hogy a tanúsítvány megbízható-e. A Google Chrome nem tudja garantálni, hogy a(z) &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; webhellyel kommunikál, nem pedig egy támadóval. Számítógépe órájának beállítása jelenleg <ph name="CURRENT_TIME"/> Ez megfelelőnek tűnik? Ha nem, állítsa át a rendszer óráját, és töltse be újra az oldalt.</translation>
 <translation id="4585888816441913908">A számítógépen már megtalálható a Google Chrome és a Google Chrome Frame újabb verziója. Ha a szoftver nem működik, kérjük, távolítsa el a Google Chrome-ot és a Google Chrome Frame-et, majd próbálkozzon ismét.</translation>
+<translation id="3149510190863420837">Chrome-alkalmazások</translation>
 <translation id="6368958679917195344">A Chrome OS-hez egyéb <ph name="BEGIN_LINK_CROS_OSS"/>nyílt forráskódú szoftver<ph name="END_LINK_CROS_OSS"/> is hozzájárult.</translation>
 <translation id="7459554271817304652">A szinkronizálás beállításával személyre szabott beállításait az interneten tárolhatja, így azok bármelyik számítógépen elérhetők a Google Chrome böngészőből.</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
@@ -100,21 +79,17 @@
 <translation id="2576431527583832481">A Chrome most még jobb lett! Új verzió áll rendelkezésre.</translation>
 <translation id="2580411288591421699">Nem lehet ugyanazt a Google Chrome verziót telepíteni, amely jelenleg is fut. Zárja be a Google Chrome-ot, és próbálja újra.</translation>
 <translation id="1457721931618994305">A Google Chrome frissítése...</translation>
-<translation id="4351362253593301573">Menjen ide:
-          <ph name="BEGIN_BOLD"/>
+<translation id="7747138024166251722">A telepítőnek nem sikerült létrehoznia az ideiglenes könyvtárat. Kérjük ellenőrizze, hogy van-e elegendő hely a lemezen, és rendelkezik-e engedéllyel a szoftvertelepítésre.</translation>
+<translation id="6557998774620459028">Megpróbálta elérni a(z) &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; webhelyet, de a szerver által bemutatott tanúsítványt egy olyan entitás állította ki, amely számítógépének operációs rendszere szerint nem megbízható. Ez jelentheti azt, hogy a szerver hozta létre saját biztonsági hitelesítőadatait, amelyekre a Chrome nem támaszkodhat azonosítás céljából, illetve azt is, hogy egy támadó próbálja meg elfogni az Ön kommunikációját.</translation>
+<translation id="5170938038195470297">A profilja nem használható, mivel a Google Chrome egy újabb verziójából származik. Előfordulhat, hogy egyes funkciók nem érhetők el. Kérjük, adjon meg egy másik profilmappát, vagy használja a Google Chrome újabb verzióját.</translation>
+<translation id="6011049234605203654">Lépjen ide:
           Chrome menü &gt;
           <ph name="SETTINGS_TITLE"/>
           &gt;
           <ph name="ADVANCED_TITLE"/>
           &gt;
-          <ph name="PROXIES_TITLE"/>
-          &gt;
-          A helyi hálózat (LAN) beállításai
-          <ph name="END_BOLD"/>
-          és törölje a jelet a „Proxykiszolgáló használata a helyi hálózaton” jelölőnégyzetből.</translation>
-<translation id="7747138024166251722">A telepítőnek nem sikerült létrehoznia az ideiglenes könyvtárat. Kérjük ellenőrizze, hogy van-e elegendő hely a lemezen, és rendelkezik-e engedéllyel a szoftvertelepítésre.</translation>
-<translation id="6557998774620459028">Megpróbálta elérni a(z) &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; webhelyet, de a szerver által bemutatott tanúsítványt egy olyan entitás állította ki, amely számítógépének operációs rendszere szerint nem megbízható. Ez jelentheti azt, hogy a szerver hozta létre saját biztonsági hitelesítőadatait, amelyekre a Chrome nem támaszkodhat azonosítás céljából, illetve azt is, hogy egy támadó próbálja meg elfogni az Ön kommunikációját.</translation>
-<translation id="5170938038195470297">A profilja nem használható, mivel a Google Chrome egy újabb verziójából származik. Előfordulhat, hogy egyes funkciók nem érhetők el. Kérjük, adjon meg egy másik profilmappát, vagy használja a Google Chrome újabb verzióját.</translation>
+          <ph name="PROXIES_TITLE"/>,
+          és gondoskodjon róla, hogy a konfiguráció beállítása „nincs proxy” vagy „közvetlen” legyen.</translation>
 <translation id="8738921060445980047">Ismeretlen verzió.</translation>
 <translation id="6970811910055250180">Az eszköz frissítése folyamatban van...</translation>
 <translation id="2485422356828889247">Eltávolítás</translation>
@@ -129,10 +104,8 @@ Ha mindenképp bejelentkezik, akkor egyesíti a(z) <ph name="ACCOUNT_EMAIL_NEW"/
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="4794050651896644714">Részletek mentése a Chrome-ban</translation>
 <translation id="911206726377975832">Törli a böngészési adatait is?</translation>
-<translation id="3872765354315765470">Chrome Alkalmazásindító megjelenítése.</translation>
 <translation id="2044287590254833138">Google Chrome Eszköztár</translation>
 <translation id="5074344184765391290">Chrome plug-in tárhely</translation>
-<translation id="742982227155662553">(A Chrome <ph name="BEGIN_BUTTON"/>újraindítását<ph name="END_BUTTON"/> igényli)</translation>
 <translation id="8862326446509486874">Nincsenek meg a megfelelő jogai a rendszerszintű telepítéshez. Indítsa újra a telepítőt rendszergazdaként.</translation>
 <translation id="2874156562296220396">A Google Chrome a <ph name="BEGIN_LINK_CHROMIUM"/>Chromium<ph name="END_LINK_CHROMIUM"/> nyílt forráskódú projektnek és további <ph name="BEGIN_LINK_OSS"/>nyílt forráskódú szoftvereknek<ph name="END_LINK_OSS"/> köszönhetően jött létre.</translation>
 <translation id="3847841918622877581">A Google Chrome internetes szolgáltatások használatával javíthatja a böngészési élményt.</translation>
@@ -150,34 +123,25 @@ Ha mindenképp bejelentkezik, akkor egyesíti a(z) <ph name="ACCOUNT_EMAIL_NEW"/
 <translation id="1469002951682717133">Chrome Alkalmazásindító</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="4561051373932531560">A Google Chrome egyetlen kattintással lehetővé teszi a weboldalakon található telefonszámok felhívását Skype-pal!</translation>
-<translation id="4270804660370715583">Menjen ide:
-          <ph name="BEGIN_BOLD"/>
-          Chrome menü &gt;
-          <ph name="SETTINGS_TITLE"/>
-          &gt;
-          <ph name="INTERNET_TITLE"/>
-          &gt;
-          „<ph name="OPTIONS_BUTTON"/>”
-          <ph name="END_BOLD"/>
-          (a jelenlegi hálózatnál). Ha a(z)
-          <ph name="BEGIN_BOLD"/>
-          „<ph name="PROXY_BUTTON"/>”
-          <ph name="END_BOLD"/>gomb (a(z)
-          <ph name="BEGIN_BOLD"/>
-          <ph name="NETWORK_TAB"/>
-          <ph name="END_BOLD"/>
-          lapon) megtalálható, akkor kattintson rá, és ellenőrizze, hogy a konfiguráció
-          beállítása „Közvetlen”-e.</translation>
 <translation id="5788838254726722945">Google Chrome alkalmazásindító eltávolítása</translation>
 <translation id="3612333635265770873">Egy ugyanilyen nevű modul ismereteink szerint ütközik a Google Chrome-mal.</translation>
+<translation id="5875635642195358109">Lépjen ide:
+        Chrome menü &gt;
+        <ph name="SETTINGS_TITLE"/>
+        &gt;
+        <ph name="ADVANCED_TITLE"/>,
+        és törölje a jelet a(z) „<ph name="NO_PREFETCH_DESCRIPTION"/>” jelölőnégyzetből.
+        Ha ettől nem szűnik meg a probléma, javasoljuk, hogy jelölje be ismét
+        ezt a lehetőséget a jobb teljesítmény érdekében.</translation>
 <translation id="8333216950301932607">Bejelentkezik a Chrome-ba a következő címmel: <ph name="USER_EMAIL_ADDRESS"/>?</translation>
 <translation id="61852838583753520">A &amp;Chrome OS frissítése</translation>
+<translation id="8547799825197623713">Chrome Alkalmazásindító Canary</translation>
 <translation id="5577648424992741236">A számítógépen már megtalálható a Google Chrome Frame újabb verziója. Ha a szoftver nem működik, kérjük, távolítsa el a Google Chrome Frame alkalmazást, majd próbálkozzon ismét.</translation>
 <translation id="6326175484149238433">Eltávolítás a Chrome-ból</translation>
 <translation id="2871893339301912279">Bejelentkezett a Chrome-ba.</translation>
 <translation id="7161904924553537242">Üdvözli Önt a Google Chrome!</translation>
 <translation id="1686446242839005801"><ph name="USER_EMAIL_ADDRESS"/> fiók használatával jelentkezik be a Chrome-ba. Könyvjelzőit, előzményeit és más beállításait minden olyan eszközön elérheti majd, amelyen bejelentkezett.</translation>
-<translation id="4846114739649431522">A Chrome-ot asztali módba kell váltania az alkalmazások használatához.</translation>
+<translation id="8187289872471304532">Az Applications &gt; System Preferences &gt; Network &gt; Advanced &gt; Proxies (Alkalmazások &gt; Rendszerbeállítások &gt; Hálózat &gt; Speciális &gt; Proxyk) menüpont alatt törölje a jelet minden kijelölt proxy mellől.</translation>
 <translation id="8669527147644353129">Google Chrome segéd</translation>
 <translation id="870251953148363156">A &amp;Google Chrome frissítése</translation>
 <translation id="130631256467250065">A módosítások az eszköz következő újraindításakor lépnek életbe.</translation>
@@ -198,16 +162,26 @@ Ha mindenképp bejelentkezik, akkor egyesíti a(z) <ph name="ACCOUNT_EMAIL_NEW"/
 <translation id="8865765905101981392">Internetböngésző</translation>
 <translation id="5244325494201350962">Korábban egy másik fiókkal jelentkezett be. A bejelentkezéssel egyesíti az adatokat. Fontolja meg egy új Chromium-felhasználó létrehozását a <ph name="BEGIN_LINK"/>beállítások oldalon<ph name="END_LINK"/> a Chrome-ban lévő dolgai számára.</translation>
 <translation id="2189123953385179981">A Google ChromeOS nem támogatja külső alkalmazás indítását a(z) <ph name="SCHEME"/> linkek kezelésére. A kért link: <ph name="PROTOLINK"/>.</translation>
+<translation id="7396375882099008034">A hálózat elérésének engedélyezése a Chrome számára a tűzfal- vagy vírusirtó-
+        beállításokban.</translation>
 <translation id="8205111949707227942">Opcionális: Segítse a Chrome OS fejlesztését azzal, hogy automatikusan elküldi a használati statisztikákat és hibajelentéseket a Google részére</translation>
 <translation id="7253415505590551024">Folyamatban van több letöltés. Szeretne kilépni a Google Chrome-ból, és megszakítja a letöltéseket?</translation>
 <translation id="7196020411877309443">Miért jelenik meg ez az üzenet?</translation>
 <translation id="2769762047821873045">Nem a Google Chrome az alapértelmezett böngésző.</translation>
+<translation id="6855094794438142393">Lépjen ide:
+          Chrome menü &gt;
+          <ph name="SETTINGS_TITLE"/>
+          &gt;
+          <ph name="ADVANCED_TITLE"/>
+          &gt;
+          <ph name="PROXIES_TITLE"/>
+          &gt;
+          A helyi hálózat (LAN) beállításai,
+          és törölje a jelet innen: „Proxykiszolgáló használata a helyi hálózaton”.</translation>
 <translation id="7825851276765848807">A telepítés egy meg nem határozott hiba miatt nem sikerült. Kérjük, töltse le újra a Google Chrome-ot.</translation>
-<translation id="5747377399547108410">A Chrome-ot asztali módba kell váltania az Alkalmazásindító használatához.</translation>
 <translation id="1061257178446858647">Bejelentkezett a Chrome-ba! Könyvjelzői, előzményei és egyéb beállításai szinkronizálva lesznek Google Fiókjával.</translation>
 <translation id="3335672657969596251">A Google Chrome nem támogatja ezt az operációs rendszert: <ph name="OS_NAME"/>.</translation>
 <translation id="4458285410772214805">Kérjük, jelentkezzen ki, majd jelentkezzen be újra a módosítás aktiválásához.</translation>
-<translation id="7311208098963907218">A Chrome Alkalmazásindító parancsikonjának megjelenítése a Windows tálcáján.</translation>
 <translation id="5334545119300433702">Ismereteink szerint ez a modul ütközik a Google Chrome-mal.</translation>
 <translation id="4407807842708586359">Google Chrome OS</translation>
 <translation id="6634887557811630702">A Google Chrome naprakész.</translation>

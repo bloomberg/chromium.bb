@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="es">
+<translation id="8914504000324227558">Volver a iniciar Chrome</translation>
 <translation id="8000275528373650868">Google Chrome está disponible para Windows Vista o Windows XP con SP2 o superior.</translation>
 <translation id="8124352762008487242">Copyright 2013 Google Inc. Todos los derechos reservados</translation>
 <translation id="8485767968786176057">En este caso, la dirección que aparece en el certificado no coincide con la dirección del sitio web a la que ha intentado acceder el navegador. Una posible causa de este problema es que alguna persona esté interceptando tus comunicaciones y presentando un certificado de un sitio web diferente. Otra posible causa es que el servidor esté configurado para mostrar el mismo certificado para varios sitios web, incluido el que intentas visitar, aunque el certificado no sea válido para todos esos sitios. Google Chrome puede confirmarte que has accedido a &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, pero no puede garantizar que ese dominio corresponda al mismo sitio que el dominio &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; al que querías acceder. Si continúas, Chrome no comprobará otros errores de falta de coincidencia de nombres.</translation>
@@ -8,6 +9,7 @@
 
 Google Chrome no puede recuperar tu configuración.</translation>
 <translation id="6676384891291319759">Accede a Internet.</translation>
+<translation id="7115445779188493842">Para utilizar la barra de aplicaciones, debes reiniciar Google Chrome en el escritorio.</translation>
 <translation id="6236285698028833233">Google Chrome ha dejado de actualizarse y ya no admite la versión de tu sistema operativo.</translation>
 <translation id="5453904507266736060">Permitir que Google Chrome se ejecute en segundo plano</translation>
 <translation id="2383457833405848421">Información de Google Chrome Frame...</translation>
@@ -22,37 +24,26 @@ Es posible que algunas funciones no estén disponibles y que no se guarden los c
 <translation id="7781002470561365167">Hay una nueva versión de Google Chrome disponible.</translation>
 <translation id="7101265395643981223">Iniciar Google Chrome</translation>
 <translation id="4891791193823137474">Permitir que Google Chrome se ejecute en segundo plano</translation>
-<translation id="2879385160622431163">Google Chrome Instant</translation>
 <translation id="2896252579017640304">Iniciar aplicaciones de Chrome</translation>
 <translation id="2370289711218562573">Google Chrome está importando Favoritos/Marcadores.</translation>
 <translation id="8762286861469007470">Detector de portales cautivos de Chrome</translation>
 <translation id="1761870329818521071">No se puede instalar la misma versión de Google Chrome Frame que se está ejecutando en este momento. Cierra Google Chrome Frame y vuelve a intentarlo.</translation>
 <translation id="2040709530900803995">Motor de renderización de Google Chrome</translation>
-<translation id="6541116830060437475">Prueba a desactivar la predicción de red siguiendo estos pasos:
-        Accede al
-        <ph name="BEGIN_BOLD"/>
-        menú de Chrome, haz clic en
-        <ph name="SETTINGS_TITLE"/>
-        &gt;
-        <ph name="ADVANCED_TITLE"/>
-        <ph name="END_BOLD"/>
-        y desactiva la opción <ph name="NO_PREFETCH_DESCRIPTION"/>.
-        Si no se resuelve el problema, te recomendamos 
-        que vuelvas a seleccionar esa opción
-        para conseguir un mejor rendimiento.</translation>
+<translation id="6014844626092547096">Has iniciado sesión en Chrome. El administrador ha inhabilitado la sincronización.</translation>
 <translation id="3140883423282498090">Los cambios se aplicarán la próxima vez que reinicies Google Chrome.</translation>
 <translation id="1773601347087397504">Obtener ayuda para utilizar Chrome OS</translation>
 <translation id="6982337800632491844"><ph name="DOMAIN"/> requiere que leas y aceptes las siguientes Condiciones de servicio antes de utilizar este dispositivo. Estas condiciones no amplían, modifican ni limitan los términos de Google Chrome OS.</translation>
+<translation id="4309555186815777032">(se debe <ph name="BEGIN_BUTTON"/>reiniciar<ph name="END_BUTTON"/> Chrome)</translation>
 <translation id="5339639696978861456">Chrome Frame se ha actualizado. Reinicia el navegador. Versión de Chrome: <ph name="TODO_0001"/>, versión de Chrome Frame: <ph name="TODO_0002"/></translation>
 <translation id="8471072774411320686">Para usar las aplicaciones debes iniciar sesión en Chrome. De esta forma, Chrome podrá sincronizar tus aplicaciones, marcadores, historial, contraseñas y otras opciones en distintos dispositivos.</translation>
 <translation id="5775197990071433230">Este ordenador ya cuenta con una versión más reciente de los componentes de Google Chrome. Utiliza un archivo de instalación más reciente.</translation>
-<translation id="8398145039500709259">¿Quieres utilizar esta cuenta de Google para sincronizar todos los elementos de Chrome?</translation>
 <translation id="1779550429052479749">Se ha detectado una instalación conflictiva de Google Chrome o de Google Chrome Frame en el sistema. Desinstálala y vuelve a intentarlo.</translation>
 <translation id="3555616473548901994">Desinstalación completada</translation>
 <translation id="4987308747895123092">Cierra todas las ventanas de Google Chrome (incluidas las ventanas en modo Windows 8) y vuelve a intentarlo.</translation>
 <translation id="568643307450491754">Busca tus marcadores en el menú de Chrome o en la barra de marcadores.</translation>
 <translation id="8556340503434111824">Hay una nueva versión de Google Chrome disponible que funciona a una velocidad sin precedentes.</translation>
 <translation id="4728575227883772061">Debido a un error desconocido, la instalación no se ha llevado a cabo. Si Google Chrome se está ejecutando, ciérralo y vuelve a intentarlo.</translation>
+<translation id="2082230140685103752">Para utilizar las aplicaciones de Chrome, debes reiniciar Google Chrome en el escritorio.</translation>
 <translation id="3080151273017101988">Seguir ejecutando aplicaciones en segundo plano al cerrar Google Chrome</translation>
 <translation id="4149882025268051530">El programa de instalación no ha podido descomprimir el archivo. Vuelve a descargar Google Chrome.</translation>
 <translation id="6989339256997917931">Google Chrome se ha actualizado, pero llevas al menos 30 días sin utilizarlo.</translation>
@@ -72,25 +63,11 @@ Es posible que algunas funciones no estén disponibles y que no se guarden los c
 <translation id="4053720452172726777">Personaliza y controla Google Chrome</translation>
 <translation id="6423071462708908582">Has intentado acceder a &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, pero el servidor ha presentado un certificado caducado. No disponemos de información que indique si el certificado se ha visto vulnerado desde que caducó. Esto significa que Google Chrome no puede garantizar que estés estableciendo una comunicación con &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; y no con un hacker. Actualmente, el reloj de tu ordenador marca las <ph name="CURRENT_TIME"/>. ¿Esta información es correcta? Si no lo es, debes corregir el error y actualizar la página.</translation>
 <translation id="3197823471738295152">El dispositivo está actualizado.</translation>
-<translation id="2336460313445286758">Accede al
-          <ph name="BEGIN_BOLD"/>
-          menú de Chrome, haz clic en
-          <ph name="SETTINGS_TITLE"/>
-          &gt;
-          <ph name="ADVANCED_TITLE"/>
-          &gt;
-          <ph name="PROXIES_TITLE"/>
-          <ph name="END_BOLD"/>
-          y asegúrate de tener establecida la opción de configuración directa o sin proxy.</translation>
 <translation id="3889417619312448367">Desinstalar Google Chrome</translation>
+<translation id="1434626383986940139">Aplicaciones de Chrome Canary</translation>
 <translation id="8551886023433311834">El dispositivo está casi actualizado. Reinícialo para completar la actualización.</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE"/> - Google Chrome</translation>
 <translation id="7339898014177206373">Nueva ventana</translation>
-<translation id="3026202950002788510">Accede a
-          <ph name="BEGIN_BOLD"/>
-          Aplicaciones &gt; Preferencias del Sistema &gt; Red &gt; Avanzado &gt; Proxies
-          <ph name="END_BOLD"/>
-          y desactiva las casillas de verificación de los proxies que se hayan seleccionado.</translation>
 <translation id="3282568296779691940">Iniciar sesión en Chrome</translation>
 <translation id="3089968997497233615">Hay una nueva versión más segura de Google Chrome disponible.</translation>
 <translation id="5037239767309817516">Cierra todas las ventanas de Google Chrome y reinicia el navegador para que se aplique el cambio.</translation>
@@ -99,6 +76,7 @@ Es posible que algunas funciones no estén disponibles y que no se guarden los c
 <translation id="7451721381978275812">Los argumentos no son válidos. Google Chrome Frame no se puede instalar en el modo listo sin instalar también Google Chrome.</translation>
 <translation id="8684521613357479262">Has intentado acceder a &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, pero el servidor ha presentado un certificado que aún no es válido, ya que no disponemos de información que indique si el certificado es fiable. Google Chrome no puede garantizar de manera fiable que estés estableciendo comunicación con &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; y no con un hacker. Actualmente, el reloj de tu ordenador marca la(s) <ph name="CURRENT_TIME"/>. ¿Esta información es correcta? En caso contrario, debes corregir el reloj de tu sistema y, a continuación, actualizar la página.</translation>
 <translation id="4585888816441913908">Este ordenador tiene instalada una versión más reciente de Google Chrome y Google Chrome Frame. Si el software no funciona, desinstala Google Chrome y Google Chrome Frame y vuelve a intentarlo.</translation>
+<translation id="3149510190863420837">Aplicaciones de Chrome</translation>
 <translation id="6368958679917195344">Chrome OS está creado con <ph name="BEGIN_LINK_CROS_OSS"/>software libre<ph name="END_LINK_CROS_OSS"/> adicional.</translation>
 <translation id="7459554271817304652">Configura la sincronización para guardar las funciones personalizadas de tu navegador en la Web y acceder a ellas desde Google Chrome en cualquier ordenador.</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
@@ -107,23 +85,19 @@ Es posible que algunas funciones no estén disponibles y que no se guarden los c
 <translation id="2576431527583832481">Chrome sigue mejorando. Hay una nueva versión disponible.</translation>
 <translation id="2580411288591421699">No se puede instalar la misma versión de Google Chrome que se está ejecutando. Cierra el navegador y vuelve a intentarlo.</translation>
 <translation id="1457721931618994305">Actualizando Google Chrome...</translation>
-<translation id="4351362253593301573">Accede al
-          <ph name="BEGIN_BOLD"/>
+<translation id="7747138024166251722">El programa de instalación no ha podido crear un directorio temporal. Comprueba si hay espacio libre en el disco y si tienes autorización para instalar el software.</translation>
+<translation id="6557998774620459028">Has intentado acceder a &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, pero el servidor ha presentado un certificado emitido por una entidad que el sistema operativo del ordenador no tiene registrada como entidad de confianza. Este problema se puede deber a que el servidor haya generado sus propias credenciales de seguridad (en las que Chrome no puede confiar para confirmar la autenticidad del sitio) o a que alguien esté intentando interceptar tus comunicaciones.</translation>
+<translation id="5170938038195470297">No se puede usar tu perfil porque se corresponde con una versión más reciente de Google Chrome.
+
+Puede que algunas funciones no estén disponibles. Especifica otro directorio de perfil o usa una versión más reciente de Chrome.</translation>
+<translation id="6011049234605203654">Accede al
           menú de Chrome, haz clic en
           <ph name="SETTINGS_TITLE"/>
           &gt;
           <ph name="ADVANCED_TITLE"/>
           &gt;
           <ph name="PROXIES_TITLE"/>
-          &gt;
-          Configuración de LAN
-          <ph name="END_BOLD"/>
-          y desactiva la casilla de verificación de uso de un servidor proxy para la red LAN.</translation>
-<translation id="7747138024166251722">El programa de instalación no ha podido crear un directorio temporal. Comprueba si hay espacio libre en el disco y si tienes autorización para instalar el software.</translation>
-<translation id="6557998774620459028">Has intentado acceder a &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, pero el servidor ha presentado un certificado emitido por una entidad que el sistema operativo del ordenador no tiene registrada como entidad de confianza. Este problema se puede deber a que el servidor haya generado sus propias credenciales de seguridad (en las que Chrome no puede confiar para confirmar la autenticidad del sitio) o a que alguien esté intentando interceptar tus comunicaciones.</translation>
-<translation id="5170938038195470297">No se puede usar tu perfil porque se corresponde con una versión más reciente de Google Chrome.
-
-Puede que algunas funciones no estén disponibles. Especifica otro directorio de perfil o usa una versión más reciente de Chrome.</translation>
+          y asegúrate de que esté seleccionada la opción de configuración sin proxy o directa.</translation>
 <translation id="8738921060445980047">Versión desconocida</translation>
 <translation id="6970811910055250180">Actualizando el dispositivo...</translation>
 <translation id="2485422356828889247">Desinstalar</translation>
@@ -138,10 +112,8 @@ Si decides iniciar sesión de todas formas, se fusionará la información de Chr
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="4794050651896644714">Guardar detalles en Chrome</translation>
 <translation id="911206726377975832">¿Quieres borrar también los datos de navegación?</translation>
-<translation id="3872765354315765470">Mostrar el menú de aplicaciones de Chrome</translation>
 <translation id="2044287590254833138">Barra de Google Chrome</translation>
 <translation id="5074344184765391290">Host del complemento de Chrome</translation>
-<translation id="742982227155662553">(requiere <ph name="BEGIN_BUTTON"/>reiniciar<ph name="END_BUTTON"/> Chrome)</translation>
 <translation id="8862326446509486874">No dispones de los derechos necesarios para la instalación en el sistema. Intenta ejecutar de nuevo el programa de instalación como administrador.</translation>
 <translation id="2874156562296220396">Google Chrome es una realidad gracias al proyecto de software libre <ph name="BEGIN_LINK_CHROMIUM"/>Chromium<ph name="END_LINK_CHROMIUM"/> y a otros <ph name="BEGIN_LINK_OSS"/>programas de código abierto<ph name="END_LINK_OSS"/>.</translation>
 <translation id="3847841918622877581">Google Chrome puede utilizar servicios web para mejorar la experiencia de navegación de los usuarios.</translation>
@@ -159,34 +131,27 @@ Si decides iniciar sesión de todas formas, se fusionará la información de Chr
 <translation id="1469002951682717133">Menú de aplicaciones de Chrome</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="4561051373932531560">Google Chrome te permite hacer clic en un número de teléfono en la Web y llamar mediante Skype.</translation>
-<translation id="4270804660370715583">Accede al
-          <ph name="BEGIN_BOLD"/>
-          menú de Chrome, haz clic en
-          <ph name="SETTINGS_TITLE"/>
-          &gt;
-          <ph name="INTERNET_TITLE"/>
-          &gt;
-          <ph name="OPTIONS_BUTTON"/>
-          <ph name="END_BOLD"/>
-          (de la red actual). Si aparece el botón
-          <ph name="BEGIN_BOLD"/>
-          <ph name="PROXY_BUTTON"/>
-          <ph name="END_BOLD"/> (en la pestaña
-          <ph name="BEGIN_BOLD"/>
-          <ph name="NETWORK_TAB"/>
-          <ph name="END_BOLD"/>
-          ), haz clic en él y asegúrate de tener 
-          establecida la opción de conexión directa.</translation>
 <translation id="5788838254726722945">Desinstalar menú de aplicaciones de Google Chrome</translation>
 <translation id="3612333635265770873">Se ha detectado que un módulo con el mismo nombre provoca un conflicto con Google Chrome.</translation>
+<translation id="5875635642195358109">Accede al
+        menú de Chrome, haz clic en
+        <ph name="SETTINGS_TITLE"/>
+        &gt;
+        <ph name="ADVANCED_TITLE"/>
+        y desactiva la opción <ph name="NO_PREFETCH_DESCRIPTION"/>.
+        Si el problema persiste, te recomendamos que vuelvas a seleccionar esta
+        opción para conseguir un mejor rendimiento.</translation>
 <translation id="8333216950301932607">¿Quieres iniciar sesión en Chrome con la cuenta <ph name="USER_EMAIL_ADDRESS"/>?</translation>
 <translation id="61852838583753520">Información de &amp;Chrome OS</translation>
+<translation id="8547799825197623713">Barra de aplicaciones de Google Chrome Canary</translation>
 <translation id="5577648424992741236">Este ordenador tiene instalada una versión más reciente de Google Chrome Frame. Si no funciona el software, desinstala Google Chrome Frame y vuelve a intentarlo.</translation>
 <translation id="6326175484149238433">Eliminar de Chrome</translation>
-<translation id="2871893339301912279">Has iniciado sesión en Chrome.</translation>
+<translation id="2871893339301912279">Has iniciado sesión en Chrome</translation>
 <translation id="7161904924553537242">Bienvenido a Google Chrome</translation>
 <translation id="1686446242839005801">Vas a iniciar sesión en Chrome con tu cuenta <ph name="USER_EMAIL_ADDRESS"/>, lo que te permitirá acceder a tus marcadores, a tu historial y a otras opciones de configuración en todos los dispositivos en los que hayas iniciado sesión.</translation>
-<translation id="4846114739649431522">Para utilizar las aplicaciones, debes cambiar al modo de escritorio en Chrome.</translation>
+<translation id="8187289872471304532">Accede a
+          Aplicaciones &gt; Preferencias del Sistema &gt; Red &gt; Avanzado &gt; Proxies
+          y desactiva las casillas de verificación de los proxies seleccionados.</translation>
 <translation id="8669527147644353129">Ayudante de Google Chrome</translation>
 <translation id="870251953148363156">Actualizar &amp;Google Chrome</translation>
 <translation id="130631256467250065">Los cambios se aplicarán la próxima vez que reinicies el dispositivo.</translation>
@@ -207,16 +172,26 @@ Si decides iniciar sesión de todas formas, se fusionará la información de Chr
 <translation id="8865765905101981392">Navegador de Internet</translation>
 <translation id="5244325494201350962">Habías iniciado sesión con otra cuenta, por lo que si inicias sesión se fusionarán tus datos. Considera la posibilidad de crear un nuevo usuario de Chrome a través de la <ph name="BEGIN_LINK"/>página de configuración<ph name="END_LINK"/> para tus datos de Chrome.</translation>
 <translation id="2189123953385179981">Google Chrome OS no puede iniciar una aplicación externa que administre enlaces <ph name="SCHEME"/>. El enlace solicitado es <ph name="PROTOLINK"/>.</translation>
+<translation id="7396375882099008034">Configura tu cortafuegos o tu antivirus para permitir el acceso de
+        Chrome a la red.</translation>
 <translation id="8205111949707227942">Opcional: Ayúdanos a mejorar Google Chrome OS enviando estadísticas de uso e informes sobre fallos.</translation>
 <translation id="7253415505590551024">Actualmente hay descargas en curso. ¿Quieres salir de Google Chrome y cancelarlas?</translation>
 <translation id="7196020411877309443">¿Por qué aparece este mensaje?</translation>
 <translation id="2769762047821873045">Google Chrome no es tu navegador predeterminado.</translation>
+<translation id="6855094794438142393">Accede al
+          menú de Chrome, haz clic en
+          <ph name="SETTINGS_TITLE"/>
+          &gt;
+          <ph name="ADVANCED_TITLE"/>
+          &gt;
+          <ph name="PROXIES_TITLE"/>
+          &gt;
+          Configuración de LAN
+          y desactiva la opción Usar un servidor proxy para la LAN.</translation>
 <translation id="7825851276765848807">La instalación no se ha podido realizar a causa de un error no especificado. Vuelve a descargar Google Chrome.</translation>
-<translation id="5747377399547108410">Para utilizar el menú de aplicaciones, debes cambiar al modo de escritorio en Chrome.</translation>
 <translation id="1061257178446858647">Has iniciado sesión en Chrome. Tus marcadores, tu historial y otras opciones de configuración se sincronizarán con tu cuenta de Google.</translation>
 <translation id="3335672657969596251">Google Chrome no es compatible con <ph name="OS_NAME"/>.</translation>
 <translation id="4458285410772214805">Cierra la sesión y vuelve a iniciarla para que se aplique el cambio.</translation>
-<translation id="7311208098963907218">Mostrar un acceso directo al menú de aplicaciones de Chrome en la barra de tareas de Windows</translation>
 <translation id="5334545119300433702">Se ha detectado que este módulo provoca un conflicto con Google Chrome.</translation>
 <translation id="4407807842708586359">Google Chrome OS</translation>
 <translation id="6634887557811630702">Google Chrome está actualizado.</translation>

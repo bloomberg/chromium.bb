@@ -10,6 +10,7 @@
 <translation id="2801119484858626560">È stata rilevata una versione incompatibile di Chrome Remote Desktop. Verifica che la versione più recente di Chrome e di Chrome Remote Desktop sia installata su entrambi i computer e riprova.</translation>
 <translation id="6998989275928107238">A</translation>
 <translation id="3258789396564295715">Puoi accedere a questo computer in sicurezza utilizzando Chrome Remote Desktop.</translation>
+<translation id="5070121137485264635">L'host remoto richiede l'autenticazione su un sito web di terze parti. Per continuare, devi concedere a Chrome Remote Desktop ulteriori autorizzazioni per accedere a questo indirizzo:</translation>
 <translation id="4808503597364150972">Inserisci il PIN di <ph name="HOSTNAME"/>.</translation>
 <translation id="7672203038394118626">Le connessioni remote per questo computer sono state disattivate.</translation>
 <translation id="8244400547700556338">Scopri come.</translation>
@@ -97,6 +98,7 @@
 <translation id="1643640058022401035">Se esci da questa pagina, la sessione Chromoting verrà terminata.</translation>
 <translation id="2235518894410572517">Condividi questo computer per consentire la visione e il controllo a un altro utente.</translation>
 <translation id="1023096696228309145">Chiedi all'utente del computer a cui desideri accedere di fare clic su &quot;Condividi ora&quot; e di fornirti il codice di accesso.</translation>
+<translation id="80739703311984697">L'host remoto richiede l'autenticazione su un sito web di terze parti. Per continuare, devi concedere a Chromoting ulteriori autorizzazioni per accedere a questo indirizzo:</translation>
 <translation id="4006787130661126000">Per accedere a questo computer utilizzando Chrome Remote Desktop devi attivare le connessioni remote.</translation>
 <translation id="6930242544192836755">Durata</translation>
 <translation id="6527303717912515753">Condividi</translation>

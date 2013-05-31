@@ -16,7 +16,6 @@
 <translation id="1761785978543082658"><ph name="QUANTITY"/> B</translation>
 <translation id="1809410197924942083"><ph name="QUANTITY"/> MB/sn</translation>
 <translation id="3990502903496589789">Sağ Kenar</translation>
-<translation id="5182671122927417841">Uzantıyı devre dışı bırak</translation>
 <translation id="932327136139879170">Ana Sayfa</translation>
 <translation id="3909791450649380159">&amp;Kes</translation>
 <translation id="688711909580084195">Başlıksız Web Sayfası</translation>
@@ -31,17 +30,19 @@
 <translation id="8210608804940886430">Page Down</translation>
 <translation id="5329858601952122676">&amp;Sil</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY"/> KB</translation>
-<translation id="6489863328574614542">Uygulamaların ve uzantıların bildirim izinlerini ayarlayın</translation>
 <translation id="6659594942844771486">Sekme</translation>
 <translation id="3049748772180311791"><ph name="QUANTITY"/> MB</translation>
 <translation id="8428213095426709021">Ayarlar</translation>
 <translation id="2497284189126895209">Tüm Dosyalar</translation>
 <translation id="7814458197256864873">K&amp;opyala</translation>
 <translation id="3889424535448813030">Sağ Ok</translation>
+<translation id="7135556860107312402">Şunlardan gelen bildirimlere izin ver:</translation>
 <translation id="1398853756734560583">Büyüt</translation>
+<translation id="4250229828105606438">Ekran görüntüsü</translation>
 <translation id="3757388668994797779"><ph name="QUANTITY"/> GB</translation>
 <translation id="1901303067676059328">Tümünü &amp;seç</translation>
 <translation id="2168039046890040389">Page Up</translation>
+<translation id="4927753642311223124">Burada görülecek bir şey yok, devam edin.</translation>
 <translation id="2482878487686419369">Bildirimler</translation>
 <translation id="3183922693828471536">Buraya Kaydır</translation>
 <translation id="4552416320897244156">PgDwn</translation>
@@ -52,6 +53,7 @@
 <translation id="4588090240171750605">Sağa Kaydır</translation>
 <translation id="2666092431469916601">Üst</translation>
 <translation id="8331626408530291785">Yukarı Kaydır</translation>
+<translation id="4773379706300191099"><ph name="EXTENSION_NAME"/> bildirimlerini devre dışı bırak</translation>
 <translation id="7907591526440419938">Dosya Aç</translation>
 <translation id="1293699935367580298">Esc</translation>
 <translation id="815598010540052116">Aşağı Kaydır</translation>
@@ -68,7 +70,6 @@
 <translation id="2297836609126180313"><ph name="QUANTITY"/> TB/sn</translation>
 <translation id="6040143037577758943">Kapat</translation>
 <translation id="6142413573757616983"><ph name="QUANTITY"/> B/sn</translation>
-<translation id="477782898153505579">Bildiriminiz yok. Rahat olun!</translation>
 <translation id="7457942297256758195">Tümünü Temizle</translation>
 <translation id="7509316384504965641"><ph name="PRODUCT"/> - Bildirimler</translation>
 <translation id="8400147561352026160">ÜstKrkt+<ph name="KEY_COMBO_NAME"/></translation>

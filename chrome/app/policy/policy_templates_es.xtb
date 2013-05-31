@@ -5,6 +5,9 @@
 <translation id="1503959756075098984">ID de extensiones y URL de actualización que se instalan automáticamente</translation>
 <translation id="2463365186486772703">Configuración regional de la aplicación</translation>
 <translation id="1397855852561539316">URL de sugerencia del proveedor de búsquedas predeterminadas</translation>
+<translation id="3347897589415241400">Es el comportamiento predeterminado para los sitios no incluidos en paquetes de contenido.
+
+          Esta política solo está destinada a uso interno de Chrome.</translation>
 <translation id="7040229947030068419">Valor de ejemplo:</translation>
 <translation id="1213523811751486361">Permite especificar la URL del motor de búsqueda que se usa para obtener sugerencias de búsqueda. La URL debe contener la cadena &quot;<ph name="SEARCH_TERM_MARKER"/>&quot;, que se sustituirá por el texto que el usuario haya introducido al hacer la consulta.
 
@@ -29,7 +32,6 @@
           El valor de la política se debe especificar en milisegundos. Los valores deben ser inferiores o iguales al tiempo de espera de inactividad.</translation>
 <translation id="7614663184588396421">Lista de esquemas de protocolo inhabilitados</translation>
 <translation id="2309390639296060546">Configuración de ubicación geográfica predeterminada</translation>
-<translation id="7261507082507286116">Permite inhabilitar Google Drive en conexiones móviles.</translation>
 <translation id="7443616896860707393">Mensajes de autenticación básica de HTTP de origen cruzado</translation>
 <translation id="2337466621458842053">Permite que definas una lista de patrones de URL para especificar los sitios que pueden mostrar imágenes.
 
@@ -42,6 +44,7 @@
           De forma predeterminada, se admiten todas las extensiones, pero si se ha establecido una política que indique que todas las extensiones se deben incluir en la lista negra, se puede utilizar una lista de admisión para anularla.</translation>
 <translation id="3185009703220253572">desde la versión <ph name="SINCE_VERSION"/></translation>
 <translation id="2204753382813641270">Controlar opción para ocultar archivos automáticamente</translation>
+<translation id="3816312845600780067">Habilitar combinación de teclas de rescate para inicio de sesión automático</translation>
 <translation id="3214164532079860003">Si se habilita, esta política fuerza la importación de la página de inicio desde el navegador predeterminado actual.
 
       Si no está habilitada esta opción, no se importará la página de inicio.
@@ -139,6 +142,9 @@
           El valor de asterisco &quot;*&quot; indica que todas las extensiones están incluidas en la lista negra, salvo las que se incluyan explícitamente en la lista de admisión.
 
           Si no se establece esta política, el usuario podrá instalar cualquier extensión en <ph name="PRODUCT_NAME"/>.</translation>
+<translation id="3067188277482006117">Si se utiliza el valor True para esta política, el usuario podrá utilizar el hardware en dispositivos Chrome para confirmar su identidad de forma remota ante la entidad emisora de certificados de privacidad a través de la API de claves de plataforma de empresa chrome.enterprise.platformKeysPrivate.challengeUserKey().
+
+          Si se utiliza el valor False o no se establece la política, las llamadas a la API fallarán y aparecerá un código de error.</translation>
 <translation id="5809728392451418079">Establecer el nombre visible de cuentas locales del dispositivo</translation>
 <translation id="1427655258943162134">Dirección o URL de servidor proxy</translation>
 <translation id="1827523283178827583">Utilizar servidores proxy fijos</translation>
@@ -183,6 +189,7 @@
       Si inhabilitas esta opción, los usuarios no podrán modificarla ni anularla en <ph name="PRODUCT_NAME"/>.
 
       Si no se establece esta política, el usuario podrá elegir si quiere usar Google Sync o no.</translation>
+<translation id="7953256619080733119">Hosts de excepción manual de usuario administrado</translation>
 <translation id="7412982067535265896">Te permite establecer una lista de patrones de URL para especificar los sitios que pueden establecer cookies de sesión.
 
           Si no se establece esta política, se usará para todos los sitios el valor general predeterminado que se indique en la política DefaultCookiesSetting (si se ha establecido) o la configuración personal que haya definido el usuario (en caso contrario).
@@ -198,9 +205,6 @@
       Si se establece esta política, se puede indicar si un usuario puede o no iniciar sesión en <ph name="PRODUCT_NAME"/>.</translation>
 <translation id="5564962323737505851">Permite configurar el Administrador de contraseñas. Si el Administrador de contraseñas está habilitado, tienes la posibilidad de habilitar o inhabilitar la opción de visualización de contraseñas almacenadas de los usuarios sin encriptar.</translation>
 <translation id="4668325077104657568">Configuración de imágenes predeterminada</translation>
-<translation id="7978961945071764766">Permite inhabilitar la sincronización de Google Drive al utilizar una conexión móvil cuando esta opción está activada. En ese caso, solo se sincronizan los datos con Google Drive cuando el usuario está conectado a una red Wi-Fi o Ethernet.
-
-          Si no se establece o está desactivada, los usuarios podrán transferir archivos a Google Drive a través de conexiones móviles.</translation>
 <translation id="4492287494009043413">Inhabilitar la realización de capturas de pantalla</translation>
 <translation id="6368403635025849609">Permitir JavaScript en estos sitios</translation>
 <translation id="6074963268421707432">No permitir que ningún sitio muestre notificaciones de escritorio</translation>
@@ -252,6 +256,9 @@
 
       Si se inhabilita esta opción, no se podrán eliminar los historiales de navegación y de descargas.</translation>
 <translation id="2884728160143956392">Permitir las cookies de sesión de estos sitios</translation>
+<translation id="3021272743506189340">Si se utiliza el valor True para esta política, se inhabilita la sincronización de Google Drive en la aplicación Archivos de Chrome OS cuando se utiliza una conexión móvil, en cuyo caso, los datos solo se sincronizan con Google Drive cuando se establece una conexión Wi-Fi o Ethernet.
+
+          Si se utiliza el valor False o no se establece la política, los usuarios podrán transferir archivos a Google Drive a través de conexiones móviles.</translation>
 <translation id="4655130238810647237">Permite habilitar o inhabilitar la edición de marcadores en <ph name="PRODUCT_NAME"/>.
 
       Si habilitas esta opción, los usuarios podrán añadir, eliminar o modificar marcadores. Esta es la opción predeterminada si no se establece la política.
@@ -383,9 +390,6 @@
 <translation id="4962195944157514011">Permite especificar la URL del motor de búsqueda que se debe usar al hacer búsquedas predeterminadas. La URL debe incluir la cadena &quot;<ph name="SEARCH_TERM_MARKER"/>&quot;, que se sustituirá automáticamente por los términos de búsqueda del usuario.
 
           Esta opción se debe seleccionar si la política DefaultSearchProviderEnabled está habilitada y solo se respetará en este caso.</translation>
-<translation id="3343454696188645600">Permite inhabilitar la sincronización de Google Drive cuando está activada. En ese caso, no se sube ningún dato a Google Drive.
-
-          Si no se establece o está desactivada, los usuarios podrán transferir archivos a Google Drive.</translation>
 <translation id="6009903244351574348">Permite que <ph name="PRODUCT_FRAME_NAME"/> gestione los tipos de contenido especificados.
 
           Si no se establece esta política, se usará el procesador predeterminado para todos los sitios, según se especifica en la política ChromeFrameRendererSettings.</translation>
@@ -601,7 +605,6 @@ e inhabilitar complementos que no coincidan con ningún patrón de DisabledPlugi
 <translation id="2646290749315461919">Permite establecer si los sitios web pueden hacer un seguimiento de la ubicación de los usuarios. El seguimiento de la ubicación de los usuarios se puede permitir o denegar de forma predeterminada o se puede establecer que un sitio web pida permiso al usuario siempre que quiera conocer la ubicación.
 
           Si no se establece esta política, se usará la política AskGeolocation y el usuario podrá modificarla.</translation>
-<translation id="3309789488678647282">Permite inhabilitar Google Drive.</translation>
 <translation id="5770738360657678870">Canal de desarrolladores (puede ser inestable)</translation>
 <translation id="2959898425599642200">Reglas de omisión de proxy</translation>
 <translation id="228659285074633994">Permite especificar el tiempo que debe transcurrir sin que el usuario realice ninguna acción para que aparezca un cuadro de diálogo de advertencia cuando el dispositivo esté conectado a la red.
@@ -643,13 +646,6 @@ e inhabilitar complementos que no coincidan con ningún patrón de DisabledPlugi
       &quot;1412.24.34&quot;: actualización únicamente a esta versión específica</translation>
 <translation id="8102913158860568230">Opción predeterminada de MediaStream</translation>
 <translation id="6641981670621198190">Inhabilitar compatibilidad con API de gráficos 3D</translation>
-<translation id="2741921267428646309">Esta es la lista de políticas que debe cumplir <ph name="PRODUCT_NAME"/>.
-
-      No es necesario que modifiques esta configuración manualmente. Puedes descargar unas plantillas de fácil uso a través de la página <ph name="POLICY_TEMPLATE_DOWNLOAD_URL"/>.
-
-      Chromium y Google Chrome tienen la misma lista de políticas admitidas, pero no utilizan la misma ubicación para el registro de Windows.
-
-      El de las políticas de Chromium empieza por <ph name="CHROMIUM_KEY"/> y el de las de Google Chrome empieza por <ph name="GOOGLE_CHROME_KEY"/>.</translation>
 <translation id="7929480864713075819">Habilitar notificación de información sobre memoria (tamaño de conjunto de archivos JavaScript) a la página</translation>
 <translation id="7003746348783715221">Preferencias de <ph name="PRODUCT_NAME"/></translation>
 <translation id="4723829699367336876">Habilita que se pueda pasar a través de un cortafuegos desde un host de acceso remoto.</translation>
@@ -712,6 +708,16 @@ e inhabilitar complementos que no coincidan con ningún patrón de DisabledPlugi
 
           Si esta política se establece en False, la actividad del vídeo no evitará que se considere al usuario como inactivo.</translation>
 <translation id="3965339130942650562">Tiempo de espera para cerrar sesión cuando el usuario se encuentre inactivo</translation>
+<translation id="5857910801734294133">Esta es la lista de políticas que cumple <ph name="PRODUCT_NAME"/>.
+
+      No es necesario cambiar esta configuración manualmente. Se pueden descargar plantillas fáciles de usar en
+      <ph name="POLICY_TEMPLATE_DOWNLOAD_URL"/>.
+
+      La lista de políticas compatibles es la misma para Chromium y Google Chrome, pero la ubicación del registro de Windows es diferente.
+
+      Comienza con <ph name="CHROMIUM_KEY"/> para las políticas de Chromium y con <ph name="GOOGLE_CHROME_KEY"/> para las políticas de Google Chrome.
+
+      Estas políticas están destinadas exclusivamente a la configuración de instancias de Chrome internas de la organización. El uso de estas políticas fuera de la organización (por ejemplo, en un programa distribuido públicamente) se considera software malicioso y es posible que Google y los proveedores de antivirus lo designen como tal.</translation>
 <translation id="9084985621503260744">Especificar si la actividad de vídeo afecta a la administración de energía</translation>
 <translation id="7091198954851103976">Ejecuta siempre complementos que requieran autorización.</translation>
 <translation id="2704032342102549239">Limita el tiempo de actividad del dispositivo mediante la programación de reinicios automáticos.
@@ -751,11 +757,15 @@ e inhabilitar complementos que no coincidan con ningún patrón de DisabledPlugi
       Si no se establece esta política, esta opción estará habilitada, pero el usuario podrá modificarla.</translation>
 <translation id="2236488539271255289">No permitir que ningún sitio establezca datos locales</translation>
 <translation id="4467952432486360968">Bloquear cookies de terceros</translation>
+<translation id="2041396837791669429">Bloquear acceso a sitios no incluidos en paquetes de contenido.</translation>
 <translation id="7754863709994542614">Permite inhabilitar los esquemas de protocolo especificados en <ph name="PRODUCT_NAME"/>.
 
       Las URL que usen un esquema incluido en la lista no se cargarán y los usuarios no podrán visitarlas.
 
       Si no se establece esta política o si la lista no contiene ningún elemento, los usuarios podrán acceder a todos los esquemas en <ph name="PRODUCT_NAME"/>.</translation>
+<translation id="1305864769064309495">Diccionario que asigna URLs a un indicador booleano que especifica si se debe permitir (true) o bloquear (false) el acceso del host.
+
+          Esta política solo está destinada a uso interno de Chrome.</translation>
 <translation id="5586942249556966598">No hacer nada</translation>
 <translation id="131353325527891113">Mostrar los nombres de usuario en la pantalla de inicio de sesión</translation>
 <translation id="5317965872570843334">Habilita el uso de servidores de retransmisión y STUN cuando los clientes remotos intentan establecer conexión con este ordenador.
@@ -784,6 +794,11 @@ e inhabilitar complementos que no coincidan con ningún patrón de DisabledPlugi
 <translation id="6923366716660828830">Permite especificar el nombre del proveedor de búsquedas predeterminado. Si se deja en blanco, se utilizará el nombre del host especificado por la URL de búsqueda.
 
           Para que se aplique esta política, se debe habilitar la política DefaultSearchProviderEnabled.</translation>
+<translation id="4869787217450099946">Especifica si se permiten los bloqueos de activación de pantalla. Los bloqueos de activación de pantalla pueden solicitarlos las extensiones a través de la API de extensión de administración de energía.
+
+          Si se utiliza el valor True para esta política o no se establece la política, los bloqueos de activación de pantalla serán válidos para la administración de energía.
+
+          Si se utiliza el valor False, se ignorarán las solicitudes de bloqueo de activación de pantalla.</translation>
 <translation id="467236746355332046">Funciones admitidas:</translation>
 <translation id="7632724434767231364">Nombre de biblioteca GSSAPI</translation>
 <translation id="3038323923255997294">Continuar ejecutando aplicaciones en segundo plano cuando <ph name="PRODUCT_NAME"/> esté cerrado</translation>
@@ -802,10 +817,12 @@ e inhabilitar complementos que no coincidan con ningún patrón de DisabledPlugi
 <translation id="6244210204546589761">URL que se deben abrir al inicio</translation>
 <translation id="7468416082528382842">Ubicación del registro de Windows:</translation>
 <translation id="1808715480127969042">Bloquear cookies en estos sitios</translation>
+<translation id="1908884158811109790">Inhabilitar Google Drive a través de conexiones móviles en la aplicación Archivos de Chrome OS</translation>
 <translation id="7340034977315324840">Notificar tiempo de actividad del dispositivo</translation>
 <translation id="4928632305180102854">Permite controlar la creación de nuevas cuentas de usuario en <ph name="PRODUCT_OS_NAME"/>. Si el valor correspondiente a esta política se establece en &quot;false&quot;, los usuarios que no dispongan de una cuenta previamente no podrán iniciar sesión.
 
       Si el valor correspondiente a esta política se establece en &quot;true&quot; o esta no se configura, se permitirá crear nuevas cuentas de usuario, siempre que <ph name="DEVICEUSERWHITELISTPROTO_POLICY_NAME"/> no evite que el usuario inicie sesión.</translation>
+<translation id="4389091865841123886">Permite configurar la confirmación remota con el mecanismo de TPM.</translation>
 <translation id="8256688113167012935">Permite controlar el nombre de la cuenta que <ph name="PRODUCT_OS_NAME"/> muestra en la pantalla de inicio de sesión para la cuenta local del dispositivo correspondiente.
 
       Si esta política se establece, la pantalla de inicio de sesión utilizará la cadena especificada en el selector de inicio de sesión basado en imágenes para la cuenta local del dispositivo correspondiente.
@@ -818,7 +835,11 @@ e inhabilitar complementos que no coincidan con ningún patrón de DisabledPlugi
           Esta política es opcional. Si no se establece se usará el valor predeterminado, es decir, UTF-8.
 
           Para que se aplique esta política, se debe habilitar la política DefaultSearchProviderEnabled.</translation>
+<translation id="1349276916170108723">Si se utiliza el valor True para esta política, se inhabilita la sincronización de Google Drive en la aplicación Archivos de Chrome OS, en cuyo caso, no se suben datos a Google Drive.
+
+          Si se utiliza el valor False o no se establece la política, los usuarios podrán transferir archivos a Google Drive.</translation>
 <translation id="1964634611280150550">Modo de incógnito inhabilitado</translation>
+<translation id="5971128524642832825">Inhabilitar Drive en aplicación Archivos de Chrome OS</translation>
 <translation id="1454846751303307294">Permite definir una lista de patrones de URL para especificar los sitios que no pueden ejecutar JavaScript.
 
           Si no se establece esta política, se usará para todos los sitios el valor general predeterminado que se indique en la política DefaultJavaScriptSetting (si se ha establecido) o el valor personalizado que haya definido el usuario (en caso contrario).</translation>
@@ -872,6 +893,7 @@ e inhabilitar complementos que no coincidan con ningún patrón de DisabledPlugi
       Cuando se establece el valor True en esta política, se ocultan los iconos.
 
       Cuando se establece el valor False o no se configura la política, aparecen los iconos.</translation>
+<translation id="8401282319420373133">Extensiones con permiso para utilizar la API de confirmación remota.</translation>
 <translation id="5085647276663819155">Inhabilitar vista previa de impresión</translation>
 <translation id="8672321184841719703">Versión de destino de actualizaciones automáticas</translation>
 <translation id="1689963000958717134">Permite aplicar la configuración de red para todos los usuarios de un dispositivo <ph name="PRODUCT_OS_NAME"/>. La configuración de red es una cadena en formato JSON, tal y como se define en la página sobre el formato Open Network Configuration (<ph name="ONC_SPEC_URL"/>).</translation>
@@ -928,6 +950,7 @@ e inhabilitar complementos que no coincidan con ningún patrón de DisabledPlugi
 <translation id="5378985487213287085">Permite establecer si los sitios web pueden mostrar notificaciones de escritorio. Se puede permitir o denegar que se muestren notificaciones de escritorio de forma predeterminada o se puede establecer que los sitios web pidan permiso al usuario cada vez que quieran mostrar notificaciones de escritorio.
 
           Si no se establece esta política, se usará la política AskNotifications y el usuario podrá modificarla.</translation>
+<translation id="2386362615870139244">Permitir bloqueos de activación de pantalla</translation>
 <translation id="6908640907898649429">Permite configurar el proveedor de búsquedas predeterminadas. Puedes especificar el proveedor de búsquedas predeterminadas que utilizarán los usuarios o inhabilitar las búsquedas predeterminadas.</translation>
 <translation id="6544897973797372144">Si el valor correspondiente a esta política se establece en True y no se especifica la política ChromeOsReleaseChannel, los usuarios del dominio pertinente podrán cambiar el canal de versiones del dispositivo. Si el valor de esta política se establece en False, el dispositivo se bloqueará en el último canal configurado.
 
@@ -959,6 +982,9 @@ e inhabilitar complementos que no coincidan con ningún patrón de DisabledPlugi
 
           Si no se establece esta política, se usará para todos los sitios el valor general predeterminado que se indique en la política DefaultPopupsSetting (si se ha establecido) o el valor personalizado que haya definido el usuario (en caso contrario).</translation>
 <translation id="1530812829012954197">Mostrar siempre los patrones de URL que se indican a continuación en el navegador del host</translation>
+<translation id="9026000212339701596">Diccionario que asigna URLs a un indicador booleano que especifica si se debe permitir (true) o bloquear (false) el acceso del host.
+
+          Esta política solo está destinada a uso interno de Chrome.</translation>
 <translation id="913195841488580904">Bloquear el acceso a una lista de URL</translation>
 <translation id="3292147213643666827">Permite que <ph name="PRODUCT_NAME"/> actúe como proxy entre <ph name="CLOUD_PRINT_NAME"/> y las impresoras anteriores conectadas al ordenador.
 
@@ -1009,6 +1035,7 @@ e inhabilitar complementos que no coincidan con ningún patrón de DisabledPlugi
 
       Permite determinar el conjunto de URL que se cargarán cuando se inicie la sesión de demostración. Esta política anulará cualquier otro mecanismo para establecer la URL inicial y, por tanto, solo se puede aplicar a una sesión que no esté asociada a un usuario concreto.</translation>
 <translation id="5868414965372171132">Configuración de red de usuarios</translation>
+<translation id="8519264904050090490">URLs de excepción manual de usuario administrado</translation>
 <translation id="4480694116501920047">Forzar SafeSearch</translation>
 <translation id="1221359380862872747">Cargar URL especificadas en el inicio de sesión de demostración</translation>
 <translation id="2431811512983100641">Permite especificar si se debe habilitar la extensión TLS de certificados vinculados al dominio.
@@ -1023,6 +1050,7 @@ e inhabilitar complementos que no coincidan con ningún patrón de DisabledPlugi
 <translation id="4650759511838826572">Inhabilitar esquemas de protocolo de URL</translation>
 <translation id="8099880303030573137">Retraso de inactividad cuando el dispositivo funciona con la batería</translation>
 <translation id="2761483219396643566">Tiempo de espera de advertencia de inactividad cuando el dispositivo funciona con batería</translation>
+<translation id="8580857153747395000">Advertir cuando se visitan sitios no incluidos en paquetes de contenido.</translation>
 <translation id="602728333950205286">URL de función Instant del proveedor de búsquedas predeterminadas</translation>
 <translation id="3030000825273123558">Habilitar los informes estadísticos</translation>
 <translation id="6559057113164934677">No permitir que ningún sitio acceda a la cámara y al micrófono</translation>
@@ -1037,6 +1065,7 @@ e inhabilitar complementos que no coincidan con ningún patrón de DisabledPlugi
       Independientemente de que habilites o inhabilites esta opción, los usuarios no podrán cambiarla ni anularla en <ph name="PRODUCT_NAME"/>.
 
       Si no se establece esta política, el usuario podrá decidir si quiere que el botón se muestre o no.</translation>
+<translation id="6897718480289510689">Permitir acceso a sitios no incluidos en paquetes de contenido.</translation>
 <translation id="2518231489509538392">Permitir reproducción de audio</translation>
 <translation id="7301543427086558500">Permite especificar una lista de URL alternativas que se pueden utilizar para extraer términos de búsqueda del motor de búsqueda. Las URL deben incluir la cadena <ph name="SEARCH_TERM_MARKER"/>, que se utilizará para extraer los términos de búsqueda.
 
@@ -1060,8 +1089,14 @@ e inhabilitar complementos que no coincidan con ningún patrón de DisabledPlugi
 <translation id="5469484020713359236">Permite definir una lista de patrones de URL para especificar los sitios que pueden establecer cookies.
 
           Si no se establece esta política, se usará para todos los sitios el valor general predeterminado que se indique en la política DefaultCookiesSetting (si se ha establecido) o el valor personalizado que haya definido el usuario (en caso contrario).</translation>
+<translation id="1504431521196476721">Confirmación remota</translation>
 <translation id="1881299719020653447">Ocultar tienda web en página Nueva pestaña y en menú de aplicaciones</translation>
 <translation id="930930237275114205">Configurar directorio de datos de usuario de <ph name="PRODUCT_FRAME_NAME"/></translation>
+<translation id="244317009688098048">Permite habilitar la combinación de teclas de rescate para el inicio de sesión automático.
+
+      Si se utiliza el valor True para esta política o no se establece la política y se ha configurado una cuenta local de dispositivo para el inicio de sesión automático sin tiempo de espera, <ph name="PRODUCT_OS_NAME"/> omitirá el inicio de sesión automático y mostrará la pantalla de inicio de sesión al utilizar la combinación de teclas Ctrl+Alt+S.
+
+      Si se utiliza el valor False, no se podrá omitir el inicio de sesión automático sin tiempo de espera (si se ha configurado).</translation>
 <translation id="5208240613060747912">Permite establecer una lista de patrones de URL para especificar los sitios que no pueden mostrar notificaciones.
 
           Si no se establece esta política, se usará para todos los sitios el valor general predeterminado que se indique en la política DefaultNotificationsSetting (si se ha establecido) o el valor personalizado que haya definido el usuario (en caso contrario).</translation>
@@ -1204,6 +1239,7 @@ e inhabilitar complementos que no coincidan con ningún patrón de DisabledPlugi
 <translation id="7194407337890404814">Nombre del proveedor de búsquedas predeterminadas</translation>
 <translation id="1843117931376765605">Frecuencia con la que se actualiza la política de usuario</translation>
 <translation id="5535973522252703021">Lista de admisión de servidores de delegación Kerberos</translation>
+<translation id="4578030379102330182">Habilitar confirmación remota para el usuario.</translation>
 <translation id="9187743794267626640">Inhabilitar la activación del almacenamiento externo</translation>
 <translation id="5307432759655324440">Disponibilidad del modo de incógnito</translation>
 <translation id="4056910949759281379">Inhabilitar protocolo SPDY</translation>
@@ -1219,6 +1255,7 @@ e inhabilitar complementos que no coincidan con ningún patrón de DisabledPlugi
       Si se establece esta política, se iniciará automáticamente la sesión especificada una vez que haya transcurrido un tiempo sin que el usuario haya realizado ninguna acción en la pantalla de inicio de sesión. La sesión pública tendrá que estar configurada previamente (ver | DeviceLocalAccounts|).
 
       Si no se establece esta política, no se realiza el inicio de sesión automático.</translation>
+<translation id="5983708779415553259">Comportamiento predeterminado de sitios no incluidos en un paquete de contenido</translation>
 <translation id="3866530186104388232">Si esta política no se configura o el valor correspondiente se establece en &quot;true&quot;, <ph name="PRODUCT_OS_NAME"/> mostrará usuarios existentes en la pantalla de inicio de sesión y permitirá seleccionar uno de ellos. Si el valor correspondiente a esta política se establece en &quot;false&quot;, <ph name="PRODUCT_OS_NAME"/> solicitará el nombre de usuario y la contraseña para iniciar sesión.</translation>
 <translation id="2098658257603918882">Habilitar informes de uso y de datos sobre fallos</translation>
 <translation id="2324547593752594014">Permitir inicio de sesión en Chrome</translation>
@@ -1312,6 +1349,7 @@ e inhabilitar complementos que no coincidan con ningún patrón de DisabledPlugi
           Puedes consultar ejemplos detallados en la siguiente página:
           <ph name="PROXY_HELP_URL"/></translation>
 <translation id="3406810703404235731">URL de la tienda online de la empresa</translation>
+<translation id="5464816904705580310">Permite establecer opciones de configuración de usuarios administrados.</translation>
 <translation id="3219421230122020860">Modo de incógnito disponible</translation>
 <translation id="7690740696284155549">Permite configurar el directorio que <ph name="PRODUCT_NAME"/> utilizará para descargar archivos.
 
@@ -1418,6 +1456,7 @@ e inhabilitar complementos que no coincidan con ningún patrón de DisabledPlugi
 <translation id="4043912146394966243"> Permite indicar los tipos de conexiones que se pueden utilizar para actualizar el sistema operativo. Estas actualizaciones pueden constituir un lastre para la conexión por su tamaño y pueden suponer costes adicionales. Por tanto, están inhabilitadas de forma predeterminada en los tipos de conexiones que se consideran más costosos, entre los que se incluyen WiMAX, Bluetooth y redes móviles.
 
       Los identificadores de tipos de conexiones reconocidos son Ethernet, Wi-Fi, WiMAX, Bluetooth y redes móviles.</translation>
+<translation id="6652197835259177259">Configuración de usuarios administrados de forma local</translation>
 <translation id="3243309373265599239">Permite especificar el tiempo transcurrido hasta la atenuación de la pantalla (sin que el usuario realice ninguna acción) cuando el dispositivo está conectado a la red.
 
           Cuando esta política se establece en un valor superior a cero, especifica el tiempo en que el usuario debe permanecer inactivo antes de que <ph name="PRODUCT_OS_NAME"/> atenúe la pantalla.
@@ -1427,12 +1466,20 @@ e inhabilitar complementos que no coincidan con ningún patrón de DisabledPlugi
           Cuando no se establece esta política, se utilizará un valor de tiempo predeterminado.
 
           El valor de la política se debe especificar en milisegundos. Los valores están establecidos para ser inferiores o iguales al retraso de desconexión de pantalla (si está establecido) y al retraso de inactividad.</translation>
+<translation id="3859780406608282662">Permite añadir un parámetro para la obtención de la base de las variaciones en <ph name="PRODUCT_OS_NAME"/>.
+
+      Si se especifica, se añadirá un parámetro de consulta &quot;restrict&quot; a la URL utilizada para la obtención de la base de las variaciones. El valor del parámetro será el valor especificado en esta política.
+
+      Si no se especifica, no se modificará la URL de la base de las variaciones.</translation>
 <translation id="7049373494483449255">Permite que <ph name="PRODUCT_NAME"/> envíe documentos a <ph name="CLOUD_PRINT_NAME"/> para imprimirlos. NOTA: Esto solo afecta a la asistencia de <ph name="CLOUD_PRINT_NAME"/> en <ph name="PRODUCT_NAME"/>. No evita que otros usuarios envíen trabajos de impresión a través sitios web.
 
       Si esta opción está habilitada o no se ha configurado, los usuarios pueden imprimir en <ph name="CLOUD_PRINT_NAME"/> desde el cuadro de diálogo de impresión de <ph name="PRODUCT_NAME"/>.
 
       Si esta opción no está habilitada, los usuarios no pueden imprimir en <ph name="CLOUD_PRINT_NAME"/> desde el cuadro de diálogo de impresión de <ph name="PRODUCT_NAME"/>.</translation>
 <translation id="4088589230932595924">Modo de incógnito forzado</translation>
+<translation id="8197918588508433925">Esta política especifica cuáles son las extensiones que tienen permiso para utilizar la API de claves de plataforma de empresa chrome.enterprise.platformKeysPrivate.challengeUserKey() para la confirmación remota. Las extensiones se deben añadir a esta lista para poder utilizar la API.
+
+          Si no se ha creado la lista o una extensión no incluida en la lista intenta utilizar la API, se mostrará un código de error al intentar hacer la llamada a la API.</translation>
 <translation id="7649638372654023172">Permite configurar la URL de página de inicio predeterminada en <ph name="PRODUCT_NAME"/> y evita que los usuarios la modifiquen.
 
           La página de inicio es la página que se abre cuando se pulsa el botón de inicio. La página que se abre durante el arranque se controla mediante las políticas de RestoreOnStartup.

@@ -10,6 +10,7 @@
 <translation id="2801119484858626560">Zaznana je bila nezdružljiva različica Oddaljenega namizja za Chrome. Preverite, ali imate v obeh računalnikih najnovejši različici Google Chroma in Oddaljenega namizja za Chrome, ter poskusite znova.</translation>
 <translation id="6998989275928107238">Za</translation>
 <translation id="3258789396564295715">Oddaljeno namizje za Chrome omogoča varen dostop do tega računalnika.</translation>
+<translation id="5070121137485264635">Oddaljeni gostitelj zahteva, da previte pristnost na spletnem mestu tretje osebe. Če želite nadaljevati, morate Oddaljenemu namizju za Chrome dodeliti dodatna dovoljenja za dostop do tega naslova:</translation>
 <translation id="4808503597364150972">Vnesite kodo PIN za gostitelja <ph name="HOSTNAME"/>.</translation>
 <translation id="7672203038394118626">Oddaljene povezave za ta računalnik so onemogočene.</translation>
 <translation id="8244400547700556338">Več o tem.</translation>
@@ -97,6 +98,7 @@
 <translation id="1643640058022401035">Če zapustite to stran, se bo seja Oddaljenega povezovanja s Chromom končala.</translation>
 <translation id="2235518894410572517">Dajte ta računalnik v skupno rabo, da ga lahko drug uporabnik vidi in nadzira.</translation>
 <translation id="1023096696228309145">Uporabnika računalnika, do katerega želite dostop, prosite, da klikne »Daj v skupno rabo« in vam nato pošlje kodo za dostop.</translation>
+<translation id="80739703311984697">Oddaljeni gostitelj zahteva, da previte pristnost na spletnem mestu tretje osebe. Če želite nadaljevati, morate Oddaljenemu povezovanju s Chromom dodeliti dodatna dovoljenja za dostop do tega naslova:</translation>
 <translation id="4006787130661126000">Če želite do računalnika dostopati z Oddaljenim namizjem za Chrome, omogočite oddaljene povezave.</translation>
 <translation id="6930242544192836755">Trajanje</translation>
 <translation id="6527303717912515753">Skupna raba</translation>

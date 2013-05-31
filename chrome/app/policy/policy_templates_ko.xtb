@@ -5,6 +5,9 @@
 <translation id="1503959756075098984">자동으로 설치되는 확장 프로그램 ID와 업데이트 URL</translation>
 <translation id="2463365186486772703">애플리케이션 언어</translation>
 <translation id="1397855852561539316">기본 검색 공급자 추천 URL</translation>
+<translation id="3347897589415241400">사이트에 대한 기본 동작이 콘텐츠 팩에 없습니다.
+
+          이 정책은 Chrome 내부 용도로만 사용합니다.</translation>
 <translation id="7040229947030068419">예시:</translation>
 <translation id="1213523811751486361">추천 검색어를 제공하는 데 사용되는 검색엔진의 URL을 지정합니다. URL에 '<ph name="SEARCH_TERM_MARKER"/>' 문자열이 포함되어야 하며, 이 문자열은 검색 시 사용자가 지금까지 입력한 텍스트로 교체됩니다.
 
@@ -29,7 +32,6 @@
           정책 값은 밀리초 단위로 지정해야 하며, 유휴 지연 시간보다 작거나 같도록 값이 잘립니다.</translation>
 <translation id="7614663184588396421">사용할 수 없는 프로토콜 스키마 목록</translation>
 <translation id="2309390639296060546">기본 위치정보 설정</translation>
-<translation id="7261507082507286116">휴대전화 연결 시 Google 드라이브 사용 중지</translation>
 <translation id="7443616896860707393">교차 도메인 HTTP 기본 인증 프롬프트</translation>
 <translation id="2337466621458842053">이미지 표시가 허용되는 사이트를 지정하는 URL 패턴 목록을 설정할 수 있습니다.
 
@@ -38,6 +40,7 @@
 <translation id="5183383917553127163">차단목록에 적용되지 않는 확장 프로그램을 지정할 수 있습니다. 차단목록 값 *은 모든 확장 프로그램이 차단되며 사용자가 허용목록에 나열된 확장 프로그램만 설치할 수 있음을 의미합니다. 기본적으로 모든 확장 프로그램은 허용목록에 포함되지만, 모든 확장 프로그램이 정책에 의해 차단목록에 포함된 경우 허용목록을 사용하여 해당 정책을 무시할 수 있습니다.</translation>
 <translation id="3185009703220253572">버전 <ph name="SINCE_VERSION"/> 이상</translation>
 <translation id="2204753382813641270">서가 자동 숨김 제어</translation>
+<translation id="3816312845600780067">자동 로그인 시 긴급용 단축키 사용</translation>
 <translation id="3214164532079860003">이 정책을 사용하도록 설정하면 현재 기본 브라우저에서 홈페이지를 강제로 가져옵니다.
 
       사용하지 않으면 홈페이지를 가져오지 않습니다.
@@ -135,6 +138,9 @@
           차단목록 값 '*'는 허용목록에 명시적으로 나열되지 않은 경우 모든 확장 프로그램이 차단됨을 의미합니다.
 
           이 정책을 설정하지 않은 경우 사용자가 <ph name="PRODUCT_NAME"/>에 모든 확장 프로그램을 설치할 수 있습니다.</translation>
+<translation id="3067188277482006117">True일 경우, 사용자는 Chrome 기기의 하드웨어를 사용하여 엔터프라이즈 플랫폼 키 API chrome.enterprise.platformKeysPrivate.challengeUserKey()를 통해 개인정보 보호 설정 CA에 대한 인증서를 원격으로 증명할 수 있습니다..
+
+          False로 설정되어 있거나 설정되지 않은 경우, API 호출시 오류 메시지가 표시되며 호출에 실패합니다.</translation>
 <translation id="5809728392451418079">기기 로컬 계정용 표시 이름 설정</translation>
 <translation id="1427655258943162134">프록시 서버의 주소 또는 URL</translation>
 <translation id="1827523283178827583">고정 프록시 서버 사용</translation>
@@ -179,6 +185,7 @@
       이 설정을 사용하면 사용자가 <ph name="PRODUCT_NAME"/>에서 이 설정을 변경하거나 무시할 수 없습니다.
 
       이 정책을 설정하지 않은 경우 Google 동기화에서 사용자가 설정을 사용할지 선택할 수 있습니다.</translation>
+<translation id="7953256619080733119">관리 사용자 직접 예외 호스트</translation>
 <translation id="7412982067535265896">세션 전용 쿠키 설정이 허용되는 사이트를 지정하는 URL 패턴 목록을 설정할 수 있습니다.
 
           이 정책이 설정되지 않으면, 'DefaultCookiesSetting' 또는 사용자의 개인 설정이 전체 기본값으로 모든 사이트에 사용됩니다.
@@ -192,9 +199,6 @@
       이 정책을 설정하면 <ph name="PRODUCT_NAME"/>에 대한 사용자 로그인 허용 여부를 설정할 수 있습니다.</translation>
 <translation id="5564962323737505851">비밀번호 관리자를 설정합니다. 비밀번호 관리자를 사용하면 사용자가 저장된 비밀번호를 일반 텍스트로 볼 수 있는지를 선택할 수 있습니다.</translation>
 <translation id="4668325077104657568">기본 이미지 설정</translation>
-<translation id="7978961945071764766">True로 설정하면 휴대전화 연결을 사용할 때 Google 드라이브 동기화가 사용 중지됩니다. 이러한 경우 데이터는 Wi-Fi나 이더넷을 통해 연결될 때만 Google 드라이브에 동기화됩니다.
-
-          설정하지 않거나 False로 설정하면 사용자가 휴대전화 연결을 통해 Google 드라이브에 파일을 전송할 수 있습니다.</translation>
 <translation id="4492287494009043413">화면 캡쳐 사용 중지</translation>
 <translation id="6368403635025849609">이 사이트에서 자바스크립트 허용</translation>
 <translation id="6074963268421707432">모든 사이트에서 데스크톱 알림 표시 허용 안함</translation>
@@ -246,6 +250,9 @@
 
       이 설정을 사용중지하는 경우 인터넷 사용기록 및 다운로드 기록을 삭제할 수 없습니다..</translation>
 <translation id="2884728160143956392">이 사이트에서 세션 전용 쿠키 허용</translation>
+<translation id="3021272743506189340">True로 설정하면 휴대전화 연결을 사용할 때 Chrome OS 파일 앱에서 Google 드라이브 동기화를 사용 중지합니다. 이런 경우 Wi-Fi나 이더넷을 통해 연결할 때만 데이터가 Google 드라이브에 동기화됩니다.
+
+          설정되지 않았거나 False로 설정된 경우, 사용자는 휴대전화 연결을 통해 Google 드라이브에 파일을 전송할 수 있습니다.</translation>
 <translation id="4655130238810647237"><ph name="PRODUCT_NAME"/>에서 북마크 수정을 사용 또는 사용 중지합니다.
 
       이 설정을 사용하면 북마크를 추가, 삭제 또는 수정할 수 있습니다. 이 정책을 설정하지 않아도 기본적으로 사용하도록 설정됩니다.
@@ -377,9 +384,6 @@
 <translation id="4962195944157514011">기본 검색을 수행할 때 사용되는 검색엔진의 URL을 지정합니다. URL은 '<ph name="SEARCH_TERM_MARKER"/>' 문자열을 포함해야 하며 이 문자열은 검색 시 사용자의 검색어로 대체됩니다.
 
           'DefaultSearchProviderEnabled' 정책을 사용하도록 설정한 경우 이 옵션을 설정해야 하며 이 경우에만 적용됩니다.</translation>
-<translation id="3343454696188645600">True로 설정하면 Google 드라이브 동기화가 사용 중지됩니다. 이런 경우 Google 드라이브에 데이터가 업로드되지 않습니다.
-
-          설정하지 않거나 False로 설정하는 경우 사용자는 파일을 Google 드라이브로 전송할 수 있습니다.</translation>
 <translation id="6009903244351574348"><ph name="PRODUCT_FRAME_NAME"/>이(가) 목록에 있는 콘텐츠 유형을 처리할 수 있도록 허용합니다.
 
           이 정책을 설정하지 않은 경우 'ChromeFrameRendererSettings' 정책에 지정된 대로 모든 사이트에서 기본 렌더러가 사용됩니다.</translation>
@@ -594,7 +598,6 @@
 <translation id="2646290749315461919">웹사이트에서 사용자의 실제 위치를 추적하도록 허용할지 여부를 설정할 수 있습니다. 사용자의 실제 위치 추적은 기본적으로 허용 또는 거부하거나 웹사이트에서 실제 위치를 요청할 때마다 사용자에게 확인하도록 할 수 있습니다.
 
           이 정책을 설정하지 않은 경우 'AskGeolocation'이 사용되며 사용자가 설정을 변경할 수 있습니다.</translation>
-<translation id="3309789488678647282">드라이브 사용 중지</translation>
 <translation id="5770738360657678870">개발자 채널(불안정할 수 있음)</translation>
 <translation id="2959898425599642200">프록시 우회 규칙</translation>
 <translation id="228659285074633994">AC 전원으로 실행할 때 사용자 입력이 없어서 경고 대화상자가 표시될 때까지 걸리는 시간을 지정합니다.
@@ -636,7 +639,6 @@
       '1412.24.34': 지정한 버전으로만 업데이트</translation>
 <translation id="8102913158860568230">기본 mediastream 설정</translation>
 <translation id="6641981670621198190">3D 그래픽 API 지원 사용 중지</translation>
-<translation id="2741921267428646309"><ph name="PRODUCT_NAME"/>PRODUCT_NAME이(가) 준수하는 정책 목록입니다. 이 설정들은 직접 변경할 필요가 없습니다. 손쉽게 사용할 수 있는 템플릿을 POLICY_TEMPLATE_DOWNLOAD_URL에서 다운로드하시면 편리합니다. Chromium 및 Chrome에 대한 지원 정책 목록은 동일하지만 Windows 레지스트리 위치는 다릅니다. Chromium 정책의 경우 (으)로, Chrome 정책의 경우 (으)로 시작합니다.<ph name="POLICY_TEMPLATE_DOWNLOAD_URL"/><ph name="CHROMIUM_KEY"/><ph name="GOOGLE_CHROME_KEY"/></translation>
 <translation id="7929480864713075819">메모리 정보(JS 더미 크기)를 페이지로 보고하기 사용</translation>
 <translation id="7003746348783715221"><ph name="PRODUCT_NAME"/> 환경설정</translation>
 <translation id="4723829699367336876">원격 액세스 클라이언트의 방화벽 통과 허용</translation>
@@ -695,6 +697,16 @@
 
           이 정책이 False로 설정되어 있으면 동영상 활동이 있어도 사용자가 유휴 상태인 것으로 간주됩니다.</translation>
 <translation id="3965339130942650562">유휴 상태인 사용자의 로그아웃이 실행되기까지 시간 제한</translation>
+<translation id="5857910801734294133"><ph name="PRODUCT_NAME"/>에서 준수하는 정책 목록입니다.
+
+      이러한 설정을 직접 변경할 필요가 없습니다!  손쉽게 사용할 수 있는 템플릿을
+      <ph name="POLICY_TEMPLATE_DOWNLOAD_URL"/>에서 다운로드하세요.
+
+      Chromium과 Chrome에서 지원되는 정책 목록이 동일하지만 Windows 레지스트리 위치는 서로 다릅니다.
+
+      Chromium 정책은 <ph name="CHROMIUM_KEY"/>, Chrome 정책은 <ph name="GOOGLE_CHROME_KEY"/>(으)로 시작합니다.
+
+      이러한 정책은 조직에 대한 Chrome 내부 인스턴스를 구성할 때 사용하기 위한 것입니다.  조직 외부(예: 공개 배포 프로그램)에서 해당 정책을 사용하면 악성코드로 간주되어 Google 및 바이러스 백신 공급업체에서 악성코드로 지정될 수 있습니다.</translation>
 <translation id="9084985621503260744">동영상 활동이 전원 관리에 영향을 미치는지 여부 지정</translation>
 <translation id="7091198954851103976">승인이 필요한 플러그인 항상 실행</translation>
 <translation id="2704032342102549239">자동 재부팅을 예약하여 기기 가동 시간을 제한합니다.
@@ -734,11 +746,15 @@
       이 정책을 설정하지 않은 경우 사용하도록 설정되지만 사용자가 설정을 변경할 수 있습니다.</translation>
 <translation id="2236488539271255289">모든 사이트에서 로컬 데이터 설정 허용 안함</translation>
 <translation id="4467952432486360968">제3자 쿠키 차단</translation>
+<translation id="2041396837791669429">콘텐츠 팩 외부 사이트에 대한 액세스를 차단합니다.</translation>
 <translation id="7754863709994542614"><ph name="PRODUCT_NAME"/>에서 목록에 있는 프로토콜 스키마의 사용을 중지합니다.
 
       이 목록의 스키마를 사용하는 URL은 로드되지 않으며 해당 URL로 이동할 수 없습니다.
 
       이 정책이 설정되지 않거나 목록이 비어 있는 경우 <ph name="PRODUCT_NAME"/>에서 모든 스키마에 액세스할 수 있습니다.</translation>
+<translation id="1305864769064309495">호스트에 액세스 여부를 지정하는 부울 플래그에 대한 사전 매핑 URL을 허용(true) 또는 차단(false)해야 합니다.
+
+          이 정책은 Chrome 내부 용도로만 사용합니다.</translation>
 <translation id="5586942249556966598">취소</translation>
 <translation id="131353325527891113">로그인 화면에 사용자 이름 표시</translation>
 <translation id="5317965872570843334">원격 클라이언트가 이 컴퓨터에 연결하려고 할 때 STUN 및 릴레이 서버를 사용하도록 설정합니다.
@@ -767,6 +783,11 @@
 <translation id="6923366716660828830">기본 검색 공급자 이름을 지정합니다. 비워 두었거나 설정하지 않은 경우 검색 URL에서 지정한 호스트 이름이 사용됩니다.
 
           이 정책은 'DefaultSearchProviderEnabled' 정책을 사용하도록 설정한 경우에만 적용됩니다.</translation>
+<translation id="4869787217450099946">화면 잠금의 허용 여부를 지정합니다. 화면 잠금은 전원 관리 확장 API를 통한 확장 프로그램에서 요청할 수 있습니다.
+
+          정책이 True로 설정되거나 설정되지 않은 경우, 화면 잠금이 전원 관리에 적용됩니다.
+
+          정책이 False로 설정된 경우, 잠금 요청이 무시됩니다.</translation>
 <translation id="467236746355332046">지원되는 기능:</translation>
 <translation id="7632724434767231364">GSSAPI 라이브러리 이름</translation>
 <translation id="3038323923255997294"><ph name="PRODUCT_NAME"/> 종료 후에도 백그라운드 앱을 계속 실행</translation>
@@ -785,10 +806,12 @@
 <translation id="6244210204546589761">시작 시 열리는 URL</translation>
 <translation id="7468416082528382842">Windows 레지스트리 위치:</translation>
 <translation id="1808715480127969042">이 사이트에서 쿠키 차단</translation>
+<translation id="1908884158811109790">Chrome OS 파일 앱에서 휴대전화 연결을 통한 Google 드라이브 사용 안함</translation>
 <translation id="7340034977315324840">기기 활동 시간 보고</translation>
 <translation id="4928632305180102854"><ph name="PRODUCT_OS_NAME"/>이(가) 새 사용자 계정을 생성할 수 있는지 여부를 조정합니다. 이 정책을 false로 설정하면 계정이 없는 사용자는 로그인할 수 없습니다.
 
       이 정책을 true로 설정하거나 구성하지 않으면 <ph name="DEVICEUSERWHITELISTPROTO_POLICY_NAME"/>이(가) 사용자 로그인을 차단하지 않을 경우 새 사용자 계정이 생성될 수 있습니다.</translation>
+<translation id="4389091865841123886">TPM 메커니즘으로 원격 인증을 구성합니다.</translation>
 <translation id="8256688113167012935">계정 이름 <ph name="PRODUCT_OS_NAME"/>을(를) 해당 기기 로컬 계정의 로그인 화면에 표시할 것인지 제어합니다.
 
       이 정책을 설정하면 로그인 화면은 해당 기기 로컬 계정에 사진 기반 로그인 선택기의 특정 문자열을 사용합니다.
@@ -801,7 +824,11 @@
           이 정책은 선택사항입니다. 설정하지 않으면 기본값인 UTF-8이 사용됩니다.
 
           이 정책은 'DefaultSearchProviderEnabled' 정책을 사용하도록 설정한 경우에만 적용됩니다.</translation>
+<translation id="1349276916170108723">True로 설정하면 Chrome OS 파일 앱에서 Google 드라이브 동기화를 사용 중지합니다. 이런 경우 Google 드라이브에 데이터가 업로드되지 않습니다.
+
+          설정되지 않거나 False로 설정된 경우, 파일을 Google 드라이브에 전송할 수 있습니다.</translation>
 <translation id="1964634611280150550">시크릿 모드 사용이 중지됨</translation>
+<translation id="5971128524642832825">Chrome OS 파일 앱에서 Google 드라이브 사용 안함</translation>
 <translation id="1454846751303307294">자바스크립트 실행이 허용되지 않는 사이트를 지정하는 URL 패턴 목록을 설정할 수 있습니다.
 
           이 정책을 설정하지 않은 경우 'DefaultJavaScriptSetting' 정책이 설정되면 해당 정책의, 그렇지 않으면 사용자 개인 설정의 전체 기본값이 모든 사이트에서 사용됩니다.</translation>
@@ -853,6 +880,7 @@
       이 정책이 true로 설정된 경우 아이콘이 숨겨집니다.
 
       이 정책이 false로 설정되거나 정책이 설정되지 않은 경우 아이콘이 표시됩니다.</translation>
+<translation id="8401282319420373133">원격 인증 API를 사용하도록 허용된 확장 프로그램입니다.</translation>
 <translation id="5085647276663819155">인쇄 미리보기 사용 안함</translation>
 <translation id="8672321184841719703">자동 업데이트 버전 타겟팅</translation>
 <translation id="1689963000958717134"><ph name="PRODUCT_OS_NAME"/> 기기에 모든 사용자에게 적용되는 네트워크 구성을 사용하도록 허용합니다. 네트워크 구성은 <ph name="ONC_SPEC_URL"/>에서 설명한 개방형 네트워크 구성에서 정의한 대로 JSON 형식의 문자열입니다.</translation>
@@ -909,6 +937,7 @@
 <translation id="5378985487213287085">웹사이트에서 데스크톱 알림을 표시하도록 허용할지 여부를 설정할 수 있습니다. 데스크톱 알림 표시는 기본적으로 허용 또는 거부하거나 웹사이트에서 데스크톱 알림을 표시할 때마다 사용자에게 확인하도록 할 수 있습니다.
 
           이 정책을 설정하지 않은 경우 'AskNotifications' 정책이 사용되며 사용자가 설정을 변경할 수 있습니다.</translation>
+<translation id="2386362615870139244">화면 잠금 허용</translation>
 <translation id="6908640907898649429">기본 검색 공급자를 설정합니다. 사용자가 사용할 기본 검색 공급자를 지정하거나 기본 검색을 사용 중지하도록 선택할 수 있습니다.</translation>
 <translation id="6544897973797372144">정책이 True로 설정되어 있고 ChromeOsReleaseChannel 정책이 지정되지 않은 경우 등록된 도메인의 사용자가 기기의 배포 채널을 변경할 수 있도록 허용됩니다. 정책이 false로 설정되어 있으면 마지막에 설정한 채널을 기기가 사용합니다.
 
@@ -934,6 +963,9 @@
 
           이 정책을 설정하지 않은 경우, 'DefaultPopupsSetting' 정책이 설정된 경우엔 해당 정책의, 그렇지 않으면 사용자 개인 설정의 전체 기본값이 모든 사이트에서 사용됩니다.</translation>
 <translation id="1530812829012954197">호스트 브라우저에서 다음 URL 패턴을 항상 렌더링</translation>
+<translation id="9026000212339701596">호스트에 액세스 여부를 지정하는 부울 플래그에 대한 사전 매핑 호스트 이름을 허용(true) 또는 차단(false)해야 합니다.
+
+          이 정책은 Chrome 내부 용도로만 사용합니다.</translation>
 <translation id="913195841488580904">URL 목록에 대한 액세스 차단</translation>
 <translation id="3292147213643666827"><ph name="CLOUD_PRINT_NAME"/>와(과) 컴퓨터에 연결된 기존 프린터 사이의 프록시로 작동하도록 <ph name="PRODUCT_NAME"/>을(를) 설정합니다.
 
@@ -984,6 +1016,7 @@
 
       데모 세션을 시작할 때 URL 세트가 로드되는지 결정합니다. 이 정책은 초기 URL 설정에 필요한 다른 모든 메커니즘을 무시하기 때문에 특정 사용자와 관련되지 않은 세션에만 적용할 수 있습니다.</translation>
 <translation id="5868414965372171132">사용자 수준 네트워크 설정</translation>
+<translation id="8519264904050090490">관리 사용자 직접 예외 URL</translation>
 <translation id="4480694116501920047">세이프서치 강제 사용</translation>
 <translation id="1221359380862872747">데모 로그인 시 지정된 URL 로드</translation>
 <translation id="2431811512983100641">TLS 도메인 바인딩 인증서 확장을 사용하도록 설정해야 하는지 여부를 지정합니다.
@@ -998,6 +1031,7 @@
 <translation id="4650759511838826572">URL 프로토콜 스키마 사용 중지</translation>
 <translation id="8099880303030573137">배터리 전원으로 실행할 때 유휴 지연</translation>
 <translation id="2761483219396643566">배터리 전원으로 실행할 때 유휴 경고 지연</translation>
+<translation id="8580857153747395000">콘텐츠 팩 외부 사이트를 방문할 때 표시되는 경고입니다.</translation>
 <translation id="602728333950205286">기본 검색 공급자 순간 검색 URL</translation>
 <translation id="3030000825273123558">통계 보고 사용</translation>
 <translation id="6559057113164934677">카메라 및 마이크에 대한 모든 사이트의 액세스 허용 안함</translation>
@@ -1012,6 +1046,7 @@
       이 설정을 사용하거나 사용 중지하면 사용자가 <ph name="PRODUCT_NAME"/>에서 이 설정을 변경하거나 무시할 수 없습니다.
 
       이 정책을 설정하지 않으면 사용자가 홈 버튼을 표시할지 여부를 선택할 수 있습니다.</translation>
+<translation id="6897718480289510689">콘텐츠 팩 외부 사이트에 대한 액세스를 허용합니다.</translation>
 <translation id="2518231489509538392">오디오 재생 허용</translation>
 <translation id="7301543427086558500">검색 엔진에서 검색어를 추출하는 데 사용할 수 있는 대체 URL 목록을 지정합니다. URL은 검색어 추출에 사용되는 <ph name="SEARCH_TERM_MARKER"/> 문자열을 포함해야 합니다.
 
@@ -1035,8 +1070,14 @@
 <translation id="5469484020713359236">쿠키 설정이 허용되는 사이트를 지정하는 URL 패턴 목록을 설정할 수 있습니다.
 
           이 정책을 설정하지 않은 경우 'DefaultCookiesSetting' 정책이 설정되면 해당 정책의, 그렇지 않으면 사용자 개인 설정의 전체 기본값이 모든 사이트에서 사용됩니다.</translation>
+<translation id="1504431521196476721">원격 인증</translation>
 <translation id="1881299719020653447">새 탭 페이지 및 앱 실행기에서 웹 스토어 숨기기</translation>
 <translation id="930930237275114205"><ph name="PRODUCT_FRAME_NAME"/> 사용자 데이터 디렉토리 설정</translation>
+<translation id="244317009688098048">자동 로그인 시 긴급용 단축키를 사용합니다.
+
+      이 정책이 설정되지 않거나 True로 설정되고, 기기 로컬 계정이 zero-delay 자동 로그인인 경우, <ph name="PRODUCT_OS_NAME"/>에서 자동 로그인을 우회하고 로그인 화면을 표시할 수 있도록 단축키 Ctrl+Alt+S를 적용합니다.
+
+      정책이 False로 설정된 경우, zero-delay 자동 로그인(구성 시)을 우회할 수 없습니다.</translation>
 <translation id="5208240613060747912">알림 표시가 허용되지 않는 사이트를 지정하는 URL 패턴 목록을 설정할 수 있습니다.
 
           이 정책을 설정하지 않은 경우 'DefaultNotificationsSetting' 정책이 설정되면 해당 정책의, 그렇지 않으면 사용자 개인 설정의 전체 기본값이 모든 사이트에서 사용됩니다.</translation>
@@ -1179,6 +1220,7 @@
 <translation id="7194407337890404814">기본 검색 공급자 이름</translation>
 <translation id="1843117931376765605">사용자 정책에 대한 새로고침 빈도</translation>
 <translation id="5535973522252703021">Kerberos 위임 서버 허용목록</translation>
+<translation id="4578030379102330182">사용자에 대한 원격 인증을 사용합니다.</translation>
 <translation id="9187743794267626640">외부 저장소 마운트 사용 중지</translation>
 <translation id="5307432759655324440">시크릿 모드 사용 가능 여부</translation>
 <translation id="4056910949759281379">SPDY 프로토콜 사용 중지</translation>
@@ -1194,6 +1236,7 @@
       이 정책이 설정되어 있으면, 로그인 화면에서 사용자 활동 없이 일정 시간이 경과한 뒤에 지정된 세션이 자동으로 로그인됩니다. 공개 세션은 이미 구성되어 있어야 합니다(|DeviceLocalAccounts| 참조).
 
       이 정책이 설정되어 있지 않으면 자동 로그인할 수 없습니다.</translation>
+<translation id="5983708779415553259">사이트에 대한 기본 동작이 콘텐츠 팩에 없음</translation>
 <translation id="3866530186104388232">이 정책을 true로 설정하거나 구성하지 않으면, <ph name="PRODUCT_OS_NAME"/>은(는) 기존의 사용자 이름을 로그인 화면에 표시하여 선택할 수 있도록 합니다. 이 정책을 false로 설정하면 <ph name="PRODUCT_OS_NAME"/>은(는) 사용자 이름/비밀번호 안내 메시지를 사용합니다.</translation>
 <translation id="2098658257603918882">사용 및 충돌 관련 데이터 보고 사용</translation>
 <translation id="2324547593752594014">Chrome에 로그인 허용</translation>
@@ -1277,6 +1320,7 @@
           자세한 예를 보려면 다음 페이지를 참조하세요.
           <ph name="PROXY_HELP_URL"/></translation>
 <translation id="3406810703404235731">엔터프라이즈 웹 스토어 URL</translation>
+<translation id="5464816904705580310">관리 사용자에 대한 설정 구성</translation>
 <translation id="3219421230122020860">시크릿 모드 사용 가능</translation>
 <translation id="7690740696284155549"><ph name="PRODUCT_NAME"/>이(가) 파일 다운로드에 사용할 디렉토리를 구성합니다.
 
@@ -1383,6 +1427,7 @@
 <translation id="4043912146394966243"> OS 업데이트에 사용할 수 있는 연결 유형입니다. OS 업데이트는 용량이 크고 부가 비용이 발생할 수 있기 때문에 잠재적으로 연결 네트워크에 부담이 됩니다. 따라서 비용이 부담스러운 연결 유형(예: WiMax, Bluetooth 및 Cellular)은 현재 기본적으로 사용하지 않도록 설정합니다.
 
       인식할 수 있는 연결 유형 식별자는 'ethernet', 'wifi', 'wimax', 'bluetooth' 및 'cellular'입니다.</translation>
+<translation id="6652197835259177259">로컬 관리 사용자 설정</translation>
 <translation id="3243309373265599239">AC 전원으로 실행할 때 사용자 입력이 없어서 화면이 어둡게 되기까지 걸리는 시간을 지정합니다.
 
           이 정책이 0보다 큰 값으로 설정되어 있으면 이는 <ph name="PRODUCT_OS_NAME"/>에서 화면을 어둡게 하기 전에 사용자가 유휴 상태여야 하는 시간을 의미합니다.
@@ -1392,12 +1437,20 @@
           이 정책이 설정되어 있지 않으면 기본 설정된 시간이 적용됩니다.
 
           정책 값은 밀리초 단위로 지정해야 하며, 화면 꺼짐 지연 시간(설정된 경우) 및 유휴 지연 시간보다 작거나 같도록 값이 잘립니다.</translation>
+<translation id="3859780406608282662"><ph name="PRODUCT_OS_NAME"/>에서 버전 시드 가져오기에 대한 매개변수를 추가합니다.
+
+      지정하는 경우 버전 시드를 가져올 때 사용하는 URL에 'restrict'라는 검색어 매개변수가 추가됩니다. 매개변수 값은 이 정책에서 지정한 값입니다.
+
+      지정하지 않으면 버전 시드 URL을 수정할 수 없습니다.</translation>
 <translation id="7049373494483449255">문서를 <ph name="CLOUD_PRINT_NAME"/>에 제출하여 인쇄하기 위해 <ph name="PRODUCT_NAME"/>을(를) 사용하도록 설정합니다. 참고: 이 설정은 <ph name="PRODUCT_NAME"/>의 <ph name="CLOUD_PRINT_NAME"/> 지원에만 영향을 미치며, 사용자는 웹사이트에서 인쇄 작업을 제출할 수 있습니다.
 
       이 설정을 사용하거나 설정하지 않으면 사용자는 <ph name="PRODUCT_NAME"/> 인쇄 대화상자에서  <ph name="CLOUD_PRINT_NAME"/>(으)로 인쇄할 수 있습니다.
 
       이 설정을 사용 중지하면 사용자는 <ph name="PRODUCT_NAME"/> 인쇄 대화상자에서 <ph name="CLOUD_PRINT_NAME"/>(으)로 인쇄할 수 없습니다.</translation>
 <translation id="4088589230932595924">시크릿 모드를 강제로 사용함</translation>
+<translation id="8197918588508433925">이 정책은 원격 인증에 엔터프라이즈 플랫폼 키 API chrome.enterprise.platformKeysPrivate.challengeUserKey()를 사용하도록 허용된 확장 프로그램을 지정합니다. API를 사용하려면 확장 프로그램을 이 목록에 추가해야 합니다.
+
+          확장 프로그램이 목록에 없거나 목록이 설정되지 않은 경우, API에 대한 호출 시 오류 코드가 표시되며 호출에 실패합니다.</translation>
 <translation id="7649638372654023172"><ph name="PRODUCT_NAME"/>에서 기본 홈페이지 URL을 설정하여 사용자가 변경하지 못하도록 합니다.
 
           홈페이지는 홈 버튼을 누르면 열리는 페이지입니다. 시작 시 열리는 페이지는 RestoreOnStartup 정책에 따라 제어됩니다.

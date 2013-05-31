@@ -10,6 +10,7 @@
 <translation id="2801119484858626560">Une version incompatible du bureau à distance Google Chrome a été détectée. Veuillez vous assurer que vous utilisez la dernière version de Google Chrome et du bureau à distance sur les deux ordinateurs, puis réessayer.</translation>
 <translation id="6998989275928107238">À</translation>
 <translation id="3258789396564295715">Vous pouvez accéder à cet ordinateur en toute sécurité via le bureau à distance Google Chrome.</translation>
+<translation id="5070121137485264635">L'hôte distant nécessite votre authentification auprès d'un site Web tiers. Pour continuer, vous devez accorder au Bureau à distance Chrome des autorisations supplémentaires afin d'accéder à l'adresse suivante :</translation>
 <translation id="4808503597364150972">Veuillez saisir le code d'accès pour <ph name="HOSTNAME"/>.</translation>
 <translation id="7672203038394118626">Les connexions à distance ont été désactivées pour cet ordinateur.</translation>
 <translation id="8244400547700556338">En savoir plus</translation>
@@ -97,6 +98,7 @@
 <translation id="1643640058022401035">En quittant cette page, vous mettrez fin à la session Google Chromoting.</translation>
 <translation id="2235518894410572517">Partager cet ordinateur et permettre à un utilisateur de le voir et de le contrôler</translation>
 <translation id="1023096696228309145">Demandez à l'utilisateur possédant l'ordinateur auquel vous souhaitez accéder de cliquer sur &quot;Partager&quot;, puis de vous communiquer le code d'accès.</translation>
+<translation id="80739703311984697">L'hôte distant nécessite votre authentification auprès d'un site Web tiers. Pour continuer, vous devez accorder à Google Chromoting des autorisations supplémentaires afin d'accéder à l'adresse suivante :</translation>
 <translation id="4006787130661126000">Si vous souhaitez utiliser le bureau à distance Google Chrome pour accéder à cet ordinateur, vous devez activer les connexions à distance.</translation>
 <translation id="6930242544192836755">Durée</translation>
 <translation id="6527303717912515753">Partager</translation>

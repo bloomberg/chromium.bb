@@ -26,6 +26,7 @@
 <translation id="8206859287963243715">Cellulare</translation>
 <translation id="6596816719288285829">Indirizzo IP</translation>
 <translation id="4508265954913339219">Attivazione non riuscita</translation>
+<translation id="3621712662352432595">Impostazioni audio</translation>
 <translation id="1812696562331527143">Il metodo di immissione è stato cambiato in <ph name="INPUT_METHOD_ID"/>*(<ph name="BEGIN_LINK"/>3a parte<ph name="END_LINK"/>).
 Premi Maiusc+Alt per cambiare metodo.</translation>
 <translation id="3846575436967432996">Nessuna informazione di rete disponibile</translation>
@@ -33,6 +34,7 @@ Premi Maiusc+Alt per cambiare metodo.</translation>
 <translation id="785750925697875037">Visualizza account per cellulari</translation>
 <translation id="153454903766751181">Inizializzazione del modem per cellulari...</translation>
 <translation id="7864539943188674973">Disattiva Bluetooth</translation>
+<translation id="939252827960237676">Salvataggio dello screenshot non riuscito</translation>
 <translation id="3126069444801937830">Riavvia per aggiornare</translation>
 <translation id="735745346212279324">VPN scollegata</translation>
 <translation id="7320906967354320621">In pausa</translation>
@@ -40,6 +42,7 @@ Premi Maiusc+Alt per cambiare metodo.</translation>
 <translation id="2778346081696727092">Autenticazione non riuscita con il nome utente o la password forniti</translation>
 <translation id="3294437725009624529">Ospite</translation>
 <translation id="8190698733819146287">Personalizza lingue e immissione...</translation>
+<translation id="2903907270192926896">INGRESSO</translation>
 <translation id="7170041865419449892">Fuori dal raggio d'azione</translation>
 <translation id="4804818685124855865">Disconnetti</translation>
 <translation id="5222676887888702881">Esci</translation>
@@ -54,13 +57,16 @@ Premi Maiusc+Alt per cambiare metodo.</translation>
 <translation id="3368922792935385530">Connessa</translation>
 <translation id="8340999562596018839">Feedback vocale</translation>
 <translation id="8654520615680304441">Attiva Wi-Fi...</translation>
+<translation id="4632619405246189264">Carica non affidabile</translation>
 <translation id="5825747213122829519">Il metodo di immissione è stato cambiato in <ph name="INPUT_METHOD_ID"/>.
 Premi Maiusc+Alt per cambiare metodo.</translation>
 <translation id="2562916301614567480">Rete privata</translation>
 <translation id="6549021752953852991">Nessuna rete cellulare disponibile</translation>
 <translation id="4379753398862151997">Caro monitor, non funziona tra di noi (il monitor non è supportato).</translation>
+<translation id="8448732935696070385">Collegamento a un alimentatore non standard. La carica della batteria potrebbe non essere affidabile.</translation>
 <translation id="6426039856985689743">Disattiva dati mobili</translation>
 <translation id="3087734570205094154">In basso</translation>
+<translation id="3742055079367172538">Screenshot acquisito</translation>
 <translation id="5271016907025319479">VPN non configurata.</translation>
 <translation id="6803622936009808957">Impossibile duplicare i display perché non sono state trovate risoluzioni supportate. È stato attivato il desktop esteso.</translation>
 <translation id="1480041086352807611">Modalità Demo</translation>
@@ -88,7 +94,6 @@ Premi Maiusc+Alt per cambiare metodo.</translation>
 <translation id="2372145515558759244">Sincronizzazione applicazioni...</translation>
 <translation id="7256405249507348194">Errore non riconosciuto: <ph name="DESC"/></translation>
 <translation id="7925247922861151263">Controllo AAA non riuscito</translation>
-<translation id="3227723743333276085"><ph name="BLUETOOTH"/>: disconnessione...</translation>
 <translation id="8456362689280298700"><ph name="HOUR"/>:<ph name="MINUTE"/> rimanenti al completamento della ricarica</translation>
 <translation id="5787281376604286451">Feedback vocale attivato.
 Premi Ctrl+Alt+Z per disattivarlo.</translation>
@@ -116,6 +121,7 @@ Premi Ctrl+Alt+Z per disattivarlo.</translation>
 <translation id="3019353588588144572">Tempo rimanente al caricamento completo della batteria: <ph name="TIME_REMAINING"/></translation>
 <translation id="3473479545200714844">Ingrandimento dello schermo</translation>
 <translation id="7005812687360380971">Errore</translation>
+<translation id="882279321799040148">Fai clic per visualizzare</translation>
 <translation id="1602076796624386989">Attiva dati mobili</translation>
 <translation id="6981982820502123353">Accessibilità</translation>
 <translation id="3157931365184549694">Ripristina</translation>
@@ -124,6 +130,7 @@ Premi Ctrl+Alt+Z per disattivarlo.</translation>
 <translation id="225680501294068881">Ricerca dispositivi in corso...</translation>
 <translation id="5597451508971090205"><ph name="SHORT_WEEKDAY"/>, <ph name="DATE"/></translation>
 <translation id="4448844063988177157">Ricerca di reti Wi-Fi in corso...</translation>
+<translation id="2475982808118771221">Si è verificato un errore</translation>
 <translation id="7229570126336867161">Occorre EVDO</translation>
 <translation id="2999742336789313416"><ph name="DISPLAY_NAME"/> è una sessione pubblica gestita da <ph name="DOMAIN"/></translation>
 <translation id="7029814467594812963">Esci da sessione</translation>
@@ -134,9 +141,11 @@ Premi Ctrl+Alt+Z per disattivarlo.</translation>
 <translation id="8300849813060516376">OTASP non riuscito</translation>
 <translation id="2792498699870441125">Alt+tasto per la ricerca</translation>
 <translation id="8660803626959853127">Sincronizzazione di <ph name="COUNT"/> file in corso</translation>
+<translation id="3709443003275901162">Più di 9</translation>
 <translation id="639644700271529076">Funzione BLOC MAIUSC non attiva</translation>
 <translation id="6267036997247669271"><ph name="NAME"/>: attivazione in corso...</translation>
 <translation id="1391854757121130358">Potresti avere esaurito la tua quota di dati mobili.</translation>
+<translation id="5413208160176941586">Utente gestito localmente</translation>
 <translation id="4864165860509564259">Posizione Avvio applicazioni</translation>
 <translation id="7593891976182323525">Tasto per la ricerca o Maiusc</translation>
 <translation id="7649070708921625228">Guida</translation>
@@ -146,6 +155,7 @@ Premi il tasto per la ricerca o Maiusc per annullare.</translation>
 <translation id="158849752021629804">Occorre una rete domestica</translation>
 <translation id="6857811139397017780">Attiva <ph name="NETWORKSERVICE"/></translation>
 <translation id="5864471791310927901">Ricerca DHCP non riuscita</translation>
+<translation id="5812035014844949013">USCITA</translation>
 <translation id="6692173217867674490">Passphrase non valida</translation>
 <translation id="6165508094623778733">Ulteriori informazioni</translation>
 <translation id="9046895021617826162">Connessione non riuscita</translation>
@@ -158,6 +168,7 @@ Premi il tasto per la ricerca o Maiusc per annullare.</translation>
 <translation id="7209101170223508707">La funzione BLOC MAIUSC è attiva.
 Premi Alt+tasto per la ricerca o Maiusc per annullare.</translation>
 <translation id="8061464966246066292">Contrasto elevato</translation>
+<translation id="8940956008527784070">Batteria in esaurimento (<ph name="PERCENTAGE"/>%)</translation>
 <translation id="5102001756192215136"><ph name="HOUR"/>:<ph name="MINUTE"/> rimanenti</translation>
 <translation id="8000066093800657092">Nessuna rete</translation>
 <translation id="5941711191222866238">Riduci a icona</translation>

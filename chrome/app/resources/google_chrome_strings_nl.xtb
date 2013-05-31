@@ -1,11 +1,13 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="nl">
+<translation id="8914504000324227558">Chrome opnieuw starten</translation>
 <translation id="8000275528373650868">Voor Google Chrome is Windows Vista of Windows XP met SP2 of hoger vereist.</translation>
 <translation id="8124352762008487242">Copyright 2013 Google Inc. Alle rechten voorbehouden.</translation>
 <translation id="8485767968786176057">In dit geval komt het adres in het certificaat niet overeen met het adres van de website dat uw browser probeerde te bezoeken. Dit kan komen doordat uw communicatie wordt onderschept door een hacker die een certificaat voor een andere website retourneert, waardoor de adressen niet overeenkomen. Hoewel het  certificaat niet geldig is voor al deze websites, kan het zijn dat de server is ingesteld op het retourneren van hetzelfde certificaat voor meerdere websites, inclusief de site die u probeert te bezoeken. Google Chrome kan garanderen dat u &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; heeft bereikt, maar kan niet verifiëren of dat dezelfde site is als &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, die u wilde bezoeken. Als u doorgaat, controleert Google Chrome niet verder op verschillen tussen namen.</translation>
 <translation id="5430073640787465221">Uw bestand met voorkeuren is beschadigd of ongeldig. Google Chrome kan uw instellingen niet herstellen.</translation>
 <translation id="6676384891291319759">Verbinding maken met internet</translation>
+<translation id="7115445779188493842">Als u het opstartprogramma voor apps wilt gebruiken, moet u Google Chrome opnieuw starten vanaf het bureaublad.</translation>
 <translation id="6236285698028833233">Google Chrome is gestopt met bijwerken en ondersteunt deze versie van uw besturingssysteem niet meer.</translation>
 <translation id="5453904507266736060">Google Chrome op de achtergrond laten uitvoeren</translation>
 <translation id="2383457833405848421">Over Chrome Frame...</translation>
@@ -20,36 +22,26 @@ Sommige functies zijn wellicht niet beschikbaar en wijzigingen in voorkeuren wor
 <translation id="7781002470561365167">Er is een nieuwe versie van Google Chrome beschikbaar.</translation>
 <translation id="7101265395643981223">Start Google Chrome</translation>
 <translation id="4891791193823137474">Google Chrome op de achtergrond laten uitvoeren</translation>
-<translation id="2879385160622431163">Google Chrome Instant</translation>
 <translation id="2896252579017640304">Chrome-apps starten</translation>
 <translation id="2370289711218562573">Google Chrome importeert momenteel favorieten/bladwijzers.</translation>
 <translation id="8762286861469007470">Chrome-detector van captive portals</translation>
 <translation id="1761870329818521071">Kan dezelfde Google Chrome Frame-versie die momenteel actief is, niet installeren. Sluit Google Chrome Frame en probeer het opnieuw.</translation>
 <translation id="2040709530900803995">Google Chrome Renderer</translation>
-<translation id="6541116830060437475">Probeer netwerkvoorspelling uit te schakelen door deze stappen te volgen:
-        Ga naar
-        <ph name="BEGIN_BOLD"/>
-        het menu 'Chrome' &gt;
-        <ph name="SETTINGS_TITLE"/>
-        &gt;
-        <ph name="ADVANCED_TITLE"/>
-        <ph name="END_BOLD"/>
-        en verwijder het vinkje bij '<ph name="NO_PREFETCH_DESCRIPTION"/>'.
-        Als dit het probleem niet oplost, raden we aan deze optie opnieuw
-        aan te vinken voor verbeterde prestaties.</translation>
+<translation id="6014844626092547096">U bent nu ingelogd bij Chrome! Synchronisatie is uitgeschakeld door uw beheerder.</translation>
 <translation id="3140883423282498090">Uw wijzigingen worden toegepast als u Google Chrome opnieuw start.</translation>
 <translation id="1773601347087397504">Hulp bij het gebruik van Chrome OS</translation>
 <translation id="6982337800632491844"><ph name="DOMAIN"/> vereist dat u de volgende Servicevoorwaarden leest en accepteert voordat u dit apparaat gebruikt. Met deze voorwaarden worden de Voorwaarden van Google Chrome OS niet uitgebreid, aangepast of beperkt.</translation>
+<translation id="4309555186815777032">(u moet Chrome <ph name="BEGIN_BUTTON"/>opnieuw starten<ph name="END_BUTTON"/>)</translation>
 <translation id="5339639696978861456">Chrome Frame is bijgewerkt. Start uw browser opnieuw. Chrome-versie: <ph name="TODO_0001"/>, Chrome Frame-versie: <ph name="TODO_0002"/></translation>
 <translation id="8471072774411320686">U moet zijn ingelogd bij Chrome om apps te gebruiken. Zo kan Chrome uw apps, bladwijzers, geschiedenis, wachtwoorden en andere instellingen synchroniseren op al uw apparaten.</translation>
 <translation id="5775197990071433230">Deze computer beschikt al over een recentere versie van de Google Chrome-componenten. Gebruik een recenter installatieprogramma.</translation>
-<translation id="8398145039500709259">Wilt u dit Google-account gebruiken voor het synchroniseren van al uw Chrome-gegevens?</translation>
 <translation id="1779550429052479749">Er is een conflicterende installatie van Google Chrome of Google Chrome Frame op het systeem gevonden. Verwijder deze en probeer het opnieuw.</translation>
 <translation id="3555616473548901994">Verwijdering voltooid.</translation>
 <translation id="4987308747895123092">Sluit alle Google Chrome-vensters (inclusief de vensters in Windows 8-modus) en probeer het opnieuw.</translation>
 <translation id="568643307450491754">U vindt uw bladwijzers in het menu 'Chrome' of in de bladwijzerbalk.</translation>
 <translation id="8556340503434111824">Er is een nieuwe versie van Google Chrome en deze is sneller dan ooit.</translation>
 <translation id="4728575227883772061">De installatie is mislukt wegens een onbekende fout. Als Google Chrome momenteel actief is, sluit u het programma af en probeert u het opnieuw.</translation>
+<translation id="2082230140685103752">Als u apps van Chrome wilt gebruiken, moet u Google Chrome opnieuw starten vanaf het bureaublad.</translation>
 <translation id="3080151273017101988">Achtergrondapps blijven uitvoeren wanneer Google Chrome is gesloten</translation>
 <translation id="4149882025268051530">Het installatieprogramma kan het archief niet uitpakken. Download Google Chrome opnieuw.</translation>
 <translation id="6989339256997917931">Google Chrome is bijgewerkt, maar u heeft het programma minstens 30 dagen niet gebruikt.</translation>
@@ -69,25 +61,11 @@ Sommige functies zijn wellicht niet beschikbaar en wijzigingen in voorkeuren wor
 <translation id="4053720452172726777">Google Chrome aanpassen en beheren</translation>
 <translation id="6423071462708908582">U probeert &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; te bereiken, maar de server heeft een verlopen certificaat gepresenteerd. Er is geen informatie beschikbaar om te bepalen of er inbreuk is gemaakt op dit certificaat sinds het is verlopen. Dit betekent dat Google Chrome niet kan garanderen dat u communiceert met &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; en niet met een aanvaller. De klok van uw computer staat momenteel ingesteld op <ph name="CURRENT_TIME"/>. Is dit de correcte tijd? Als dit niet zo is, moet u de fout herstellen en deze pagina vernieuwen.</translation>
 <translation id="3197823471738295152">Het apparaat is bijgewerkt.</translation>
-<translation id="2336460313445286758">Ga naar
-          <ph name="BEGIN_BOLD"/>
-          het menu 'Chrome' &gt;
-          <ph name="SETTINGS_TITLE"/>
-          &gt;
-          <ph name="ADVANCED_TITLE"/>
-          &gt;
-          <ph name="PROXIES_TITLE"/>
-          <ph name="END_BOLD"/>
-          en zorg ervoor dat de configuratie is ingesteld op 'geen proxy' of 'direct'.</translation>
 <translation id="3889417619312448367">Google Chrome verwijderen</translation>
+<translation id="1434626383986940139">Chrome Canary-apps</translation>
 <translation id="8551886023433311834">Bijna bijgewerkt! Start uw apparaat opnieuw op om de update te voltooien.</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE"/> - Google Chrome</translation>
 <translation id="7339898014177206373">Nieuw venster</translation>
-<translation id="3026202950002788510">Ga naar
-          <ph name="BEGIN_BOLD"/>
-          Applicaties &gt; Systeemvoorkeuren &gt; Netwerk &gt; Geavanceerd &gt; Proxy's
-          <ph name="END_BOLD"/>
-          en verwijder de vinkjes bij proxyservers die zijn aangevinkt.</translation>
 <translation id="3282568296779691940">Inloggen bij Chrome</translation>
 <translation id="3089968997497233615">Er is een nieuwere, veiligere versie van Google Chrome beschikbaar.</translation>
 <translation id="5037239767309817516">Sluit alle Google Chrome-vensters en start Google Chrome opnieuw om deze wijziging door te voeren.</translation>
@@ -96,6 +74,7 @@ Sommige functies zijn wellicht niet beschikbaar en wijzigingen in voorkeuren wor
 <translation id="7451721381978275812">Ongeldige argumenten. Google Chrome Frame kan niet in de ready-modus worden geïnstalleerd zonder dat Google Chrome wordt geïnstalleerd.</translation>
 <translation id="8684521613357479262">U probeert &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; te bereiken, maar de server heeft een certificaat gepresenteerd dat nog niet geldig is. Er is geen informatie beschikbaar om te bepalen of dat certificaat kan worden vertrouwd. Google Chrome kan niet volledig garanderen dat u communiceert met &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; en niet met een aanvaller. De klok van uw computer is momenteel ingesteld op <ph name="CURRENT_TIME"/>. Is dit de correcte tijd? Als dit niet zo is, moet u de klok van het systeem aanpassen en deze pagina vernieuwen.</translation>
 <translation id="4585888816441913908">Deze computer beschikt al over een nieuwere versie van Google Chrome en Google Chrome Frame. Als de software niet werkt, verwijdert u Google Chrome en Google Chrome Frame en probeert u het opnieuw.</translation>
+<translation id="3149510190863420837">Chrome-apps</translation>
 <translation id="6368958679917195344">Chrome OS wordt mogelijk gemaakt door aanvullende <ph name="BEGIN_LINK_CROS_OSS"/>open source-software<ph name="END_LINK_CROS_OSS"/>.</translation>
 <translation id="7459554271817304652">Stel synchronisatie in om uw persoonlijke browserfuncties online op te slaan en toegang te krijgen tot deze functies via Google Chrome, vanaf elke computer.</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
@@ -104,23 +83,19 @@ Sommige functies zijn wellicht niet beschikbaar en wijzigingen in voorkeuren wor
 <translation id="2576431527583832481">Chrome is nu nog beter! Er is een nieuwe versie beschikbaar.</translation>
 <translation id="2580411288591421699">Kan dezelfde Google Chrome-versie die momenteel actief is, niet installeren. Sluit Google Chrome en probeer het opnieuw.</translation>
 <translation id="1457721931618994305">Google Chrome bijwerken...</translation>
-<translation id="4351362253593301573">Ga naar
-          <ph name="BEGIN_BOLD"/>
+<translation id="7747138024166251722">Het installatieprogramma kan geen tijdelijke directory maken. Controleer of u nog schijfruimte heeft en of u toestemming heeft om software te installeren.</translation>
+<translation id="6557998774620459028">U probeert &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; te bereiken, maar het certificaat dat de server retourneerde, is uitgegeven door een instantie die niet wordt vertrouwd door het besturingssysteem van uw computer. Dit kan betekenen dat de server zelf beveiligingsgegevens heeft gegenereerd waarop Chrome niet kan vertrouwen voor veiligheidsinformatie, of dat een hacker probeert uw communicatie te onderscheppen.</translation>
+<translation id="5170938038195470297">Uw profiel kan niet worden gebruikt omdat dit afkomstig is van een nieuwere versie van Google Chrome.
+
+Sommige functies zijn wellicht niet beschikbaar. Geef een andere profieldirectory op of gebruik een nieuwere versie van Chrome.</translation>
+<translation id="6011049234605203654">Ga naar
           het menu 'Chrome' &gt;
           <ph name="SETTINGS_TITLE"/>
           &gt;
           <ph name="ADVANCED_TITLE"/>
           &gt;
           <ph name="PROXIES_TITLE"/>
-          &gt;
-          LAN-instellingen
-          <ph name="END_BOLD"/>
-          en verwijder het vinkje uit het selectievakje bij 'Een proxyserver voor het LAN-netwerk gebruiken'.</translation>
-<translation id="7747138024166251722">Het installatieprogramma kan geen tijdelijke directory maken. Controleer of u nog schijfruimte heeft en of u toestemming heeft om software te installeren.</translation>
-<translation id="6557998774620459028">U probeert &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; te bereiken, maar het certificaat dat de server retourneerde, is uitgegeven door een instantie die niet wordt vertrouwd door het besturingssysteem van uw computer. Dit kan betekenen dat de server zelf beveiligingsgegevens heeft gegenereerd waarop Chrome niet kan vertrouwen voor veiligheidsinformatie, of dat een hacker probeert uw communicatie te onderscheppen.</translation>
-<translation id="5170938038195470297">Uw profiel kan niet worden gebruikt omdat dit afkomstig is van een nieuwere versie van Google Chrome.
-
-Sommige functies zijn wellicht niet beschikbaar. Geef een andere profieldirectory op of gebruik een nieuwere versie van Chrome.</translation>
+          en zorg ervoor dat de configuratie is ingesteld op 'geen proxy' of 'direct'.</translation>
 <translation id="8738921060445980047">Onbekende versie.</translation>
 <translation id="6970811910055250180">Uw apparaat bijwerken...</translation>
 <translation id="2485422356828889247">Installatie ongedaan maken</translation>
@@ -135,10 +110,8 @@ Als u inlogt, worden Chrome-gegevens zoals bladwijzers, geschiedenis en andere i
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="4794050651896644714">Details opslaan in Chrome</translation>
 <translation id="911206726377975832">Ook browsegegevens wissen?</translation>
-<translation id="3872765354315765470">App-opstartprogramma van Chrome weergeven.</translation>
 <translation id="2044287590254833138">Google Chrome Toolbar</translation>
 <translation id="5074344184765391290">Invoegtoepassingshost van Chrome</translation>
-<translation id="742982227155662553">(Chrome moet <ph name="BEGIN_BUTTON"/>opnieuw worden gestart<ph name="END_BUTTON"/>)</translation>
 <translation id="8862326446509486874">U heeft geen rechten om op systeemniveau te installeren. Meld u aan als beheerder en voer het installatieprogramma opnieuw uit.</translation>
 <translation id="2874156562296220396">Google Chrome wordt mogelijk gemaakt door het open-source project <ph name="BEGIN_LINK_CHROMIUM"/>Chromium<ph name="END_LINK_CHROMIUM"/> en andere <ph name="BEGIN_LINK_OSS"/>open-source software<ph name="END_LINK_OSS"/>.</translation>
 <translation id="3847841918622877581">Google Chrome kan webservices gebruiken om uw internetervaring te verbeteren.</translation>
@@ -156,34 +129,25 @@ Als u inlogt, worden Chrome-gegevens zoals bladwijzers, geschiedenis en andere i
 <translation id="1469002951682717133">App-opstartprogramma van Chrome</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="4561051373932531560">Met Google Chrome kunt u klikken op een telefoonnummer op internet om dit via Skype te bellen!</translation>
-<translation id="4270804660370715583">Ga naar
-          <ph name="BEGIN_BOLD"/>
-          het menu 'Chrome' &gt;
-          <ph name="SETTINGS_TITLE"/>
-          &gt;
-          <ph name="INTERNET_TITLE"/>
-          &gt;
-          '<ph name="OPTIONS_BUTTON"/>'
-          <ph name="END_BOLD"/>
-          (voor het huidige netwerk). Als de knop
-          <ph name="BEGIN_BOLD"/>
-          '<ph name="PROXY_BUTTON"/>'
-          <ph name="END_BOLD"/> (in het
-          <ph name="BEGIN_BOLD"/>
-          <ph name="NETWORK_TAB"/>
-          <ph name="END_BOLD"/>
-          tabblad) staat, klikt u erop en zorgt u ervoor dat uw configuratie
-          is ingesteld op 'Direct'.</translation>
 <translation id="5788838254726722945">Google Chrome App Launcher verwijderen</translation>
 <translation id="3612333635265770873">Van een module met dezelfde naam is bekend dat deze conflicteert met Google Chrome.</translation>
+<translation id="5875635642195358109">Ga naar
+        het menu 'Chrome' &gt;
+        <ph name="SETTINGS_TITLE"/>
+        &gt;
+        <ph name="ADVANCED_TITLE"/>
+        en verwijder het vinkje bij '<ph name="NO_PREFETCH_DESCRIPTION"/>'.
+        Als dit het probleem niet oplost, raden we aan deze optie opnieuw
+        aan te vinken voor verbeterde prestaties.</translation>
 <translation id="8333216950301932607">Inloggen bij Chrome met <ph name="USER_EMAIL_ADDRESS"/>?</translation>
 <translation id="61852838583753520">&amp;Chrome OS bijwerken</translation>
+<translation id="8547799825197623713">Chrome App Launcher Canary</translation>
 <translation id="5577648424992741236">Deze computer beschikt al over een nieuwere versie van Google Chrome Frame. Als de software niet werkt, verwijdert u Google Chrome Frame en probeert u het opnieuw.</translation>
 <translation id="6326175484149238433">Verwijderen uit Chrome</translation>
 <translation id="2871893339301912279">U bent ingelogd bij Chrome.</translation>
 <translation id="7161904924553537242">Welkom bij Google Chrome</translation>
 <translation id="1686446242839005801">U logt in bij Chrome met uw account <ph name="USER_EMAIL_ADDRESS"/>. U kunt toegang krijgen tot uw bladwijzers, geschiedenis en andere instellingen op al uw ingelogde apparaten.</translation>
-<translation id="4846114739649431522">U moet Chrome overschakelen naar de bureaubladmodus om apps te gebruiken.</translation>
+<translation id="8187289872471304532">Ga naar 'Applicaties &gt; Systeemvoorkeuren &gt; Netwerk &gt; Geavanceerd &gt; Proxy's' en verwijder de vinkjes bij proxyservers die zijn aangevinkt.</translation>
 <translation id="8669527147644353129">Google Chrome Helper</translation>
 <translation id="870251953148363156">&amp;Google Chrome bijwerken</translation>
 <translation id="130631256467250065">Uw wijzigingen worden doorgevoerd wanneer u het apparaat opnieuw opstart.</translation>
@@ -204,16 +168,25 @@ Als u inlogt, worden Chrome-gegevens zoals bladwijzers, geschiedenis en andere i
 <translation id="8865765905101981392">Internetbrowser</translation>
 <translation id="5244325494201350962">U heeft eerder ingelogd met een ander account. Als u inlogt, worden uw gegevens samengevoegd. U kunt voor uw Chrome-items een nieuwe Chrome-gebruiker maken via de <ph name="BEGIN_LINK"/>pagina 'Instellingen'<ph name="END_LINK"/>.</translation>
 <translation id="2189123953385179981">Google Chrome OS biedt geen ondersteuning voor het starten van een externe applicatie om links van <ph name="SCHEME"/> te verwerken. De opgevraagde link is <ph name="PROTOLINK"/>.</translation>
+<translation id="7396375882099008034">Sta Chrome via uw firewall- of antivirusinstellingen toe het netwerk te gebruiken.</translation>
 <translation id="8205111949707227942">Optioneel: help Chrome OS beter te maken door Google automatisch gebruiksstatistieken en crashmeldingen te sturen.</translation>
 <translation id="7253415505590551024">Er worden momenteel downloads uitgevoerd. Wilt u Google Chrome afsluiten en de downloads annuleren?</translation>
 <translation id="7196020411877309443">Waarom zie ik dit venster?</translation>
 <translation id="2769762047821873045">Google Chrome is niet uw standaardbrowser.</translation>
+<translation id="6855094794438142393">Ga naar
+          het menu 'Chrome' &gt;
+          <ph name="SETTINGS_TITLE"/>
+          &gt;
+          <ph name="ADVANCED_TITLE"/>
+          &gt;
+          <ph name="PROXIES_TITLE"/>
+          &gt;
+          LAN-instellingen
+          en verwijder het vinkje naast 'Een proxyserver voor het LAN-netwerk gebruiken'.</translation>
 <translation id="7825851276765848807">De installatie is mislukt vanwege een onbekende fout. Download Google Chrome opnieuw.</translation>
-<translation id="5747377399547108410">U moet Chrome overschakelen naar de bureaubladmodus om het app-opstartprogramma te gebruiken.</translation>
 <translation id="1061257178446858647">U bent nu ingelogd bij Chrome! Uw bladwijzers, geschiedenis en andere instellingen worden gesynchroniseerd met uw Google-account.</translation>
 <translation id="3335672657969596251">Google Chrome ondersteunt <ph name="OS_NAME"/> niet.</translation>
 <translation id="4458285410772214805">Log uit en log weer in om deze wijziging door te voeren.</translation>
-<translation id="7311208098963907218">Een snelkoppeling voor het app-opstartprogramma van Chrome weergeven in de Windows-taakbalk.</translation>
 <translation id="5334545119300433702">Van deze module is bekend dat deze conflicteert met Google Chrome.</translation>
 <translation id="4407807842708586359">Google Chrome OS</translation>
 <translation id="6634887557811630702">Google Chrome is bijgewerkt.</translation>

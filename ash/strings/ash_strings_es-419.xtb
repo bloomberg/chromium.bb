@@ -26,6 +26,7 @@
 <translation id="8206859287963243715">Celular</translation>
 <translation id="6596816719288285829">Dirección IP</translation>
 <translation id="4508265954913339219">Falló la activación</translation>
+<translation id="3621712662352432595">Configuración de audio</translation>
 <translation id="1812696562331527143">Tu método de introducción cambió a <ph name="INPUT_METHOD_ID"/>*(<ph name="BEGIN_LINK"/>tercero<ph name="END_LINK"/>).
 Para cambiarlo, presiona Shift + Alt.</translation>
 <translation id="3846575436967432996">No hay información de red disponible.</translation>
@@ -33,6 +34,7 @@ Para cambiarlo, presiona Shift + Alt.</translation>
 <translation id="785750925697875037">Ver cuenta móvil</translation>
 <translation id="153454903766751181">Iniciando módem celular...</translation>
 <translation id="7864539943188674973">Desactivar Bluetooth</translation>
+<translation id="939252827960237676">No se pudo guardar la captura de pantalla.</translation>
 <translation id="3126069444801937830">Reinicia para actualizar.</translation>
 <translation id="735745346212279324">VPN desconectada</translation>
 <translation id="7320906967354320621">Inactivo</translation>
@@ -40,6 +42,7 @@ Para cambiarlo, presiona Shift + Alt.</translation>
 <translation id="2778346081696727092">Error al autenticar con el nombre de usuario o la contraseña proporcionados.</translation>
 <translation id="3294437725009624529">Invitado</translation>
 <translation id="8190698733819146287">Personalizar idiomas y la entrada de datos</translation>
+<translation id="2903907270192926896">ENTRADA</translation>
 <translation id="7170041865419449892">Fuera de alcance</translation>
 <translation id="4804818685124855865">Desconectar</translation>
 <translation id="5222676887888702881">Salir</translation>
@@ -54,13 +57,16 @@ Para cambiarlo, presiona Shift + Alt.</translation>
 <translation id="3368922792935385530">Conectado</translation>
 <translation id="8340999562596018839">Comentarios por voz</translation>
 <translation id="8654520615680304441">Encender Wi-Fi...</translation>
+<translation id="4632619405246189264">La carga no es confiable.</translation>
 <translation id="5825747213122829519">Tu método de introducción cambió a <ph name="INPUT_METHOD_ID"/>.
 Para cambiarlo, presiona Shift + Alt.</translation>
 <translation id="2562916301614567480">Red privada</translation>
 <translation id="6549021752953852991">No hay redes celulares disponibles.</translation>
 <translation id="4379753398862151997">Querido Monitor, lo nuestro no funciona. (Este monitor no es compatible).</translation>
+<translation id="8448732935696070385">La fuente de alimentación no es estándar. Es posible que la carga de la batería no sea confiable.</translation>
 <translation id="6426039856985689743">Inhabilitar datos de dispositivos móviles</translation>
 <translation id="3087734570205094154">Inferior</translation>
+<translation id="3742055079367172538">Captura de pantalla tomada</translation>
 <translation id="5271016907025319479">La VPN no está configurada.</translation>
 <translation id="6803622936009808957">No se pudieron reflejar las pantallas porque no se encontraron resoluciones compatibles. En su lugar, se activó el escritorio extendido.</translation>
 <translation id="1480041086352807611">Modo demo</translation>
@@ -88,7 +94,6 @@ Para cambiarlo, presiona Shift + Alt.</translation>
 <translation id="2372145515558759244">Sincronizando aplicaciones...</translation>
 <translation id="7256405249507348194">Error desconocido: <ph name="DESC"/></translation>
 <translation id="7925247922861151263">Falló la verificación de AAA</translation>
-<translation id="3227723743333276085"><ph name="BLUETOOTH"/>: Desconectando...</translation>
 <translation id="8456362689280298700"><ph name="HOUR"/>:<ph name="MINUTE"/> hasta completarse</translation>
 <translation id="5787281376604286451">Los comentarios de voz están habilitados.
 Para inhabilitar esta opción, presiona Ctrl+Alt+Z.</translation>
@@ -116,6 +121,7 @@ Para inhabilitar esta opción, presiona Ctrl+Alt+Z.</translation>
 <translation id="3019353588588144572">Tiempo restante hasta que la batería esté completamente cargada: <ph name="TIME_REMAINING"/></translation>
 <translation id="3473479545200714844">Lupa</translation>
 <translation id="7005812687360380971">Fallo</translation>
+<translation id="882279321799040148">Haz clic para verla.</translation>
 <translation id="1602076796624386989">Habilitar datos de dispositivos móviles</translation>
 <translation id="6981982820502123353">Accesibilidad</translation>
 <translation id="3157931365184549694">Restaurar</translation>
@@ -124,6 +130,7 @@ Para inhabilitar esta opción, presiona Ctrl+Alt+Z.</translation>
 <translation id="225680501294068881">Buscando dispositivos...</translation>
 <translation id="5597451508971090205"><ph name="SHORT_WEEKDAY"/>, <ph name="DATE"/></translation>
 <translation id="4448844063988177157">Buscando redes Wi-Fi...</translation>
+<translation id="2475982808118771221">Se ha producido un error</translation>
 <translation id="7229570126336867161">Se necesita EVDO</translation>
 <translation id="2999742336789313416"><ph name="DISPLAY_NAME"/> es una sesión pública administrada por <ph name="DOMAIN"/>.</translation>
 <translation id="7029814467594812963">Salir de la sesión</translation>
@@ -134,9 +141,11 @@ Para inhabilitar esta opción, presiona Ctrl+Alt+Z.</translation>
 <translation id="8300849813060516376">OTASP falló</translation>
 <translation id="2792498699870441125">Alt+tecla de búsqueda</translation>
 <translation id="8660803626959853127">Sincronizando <ph name="COUNT"/> archivo(s)</translation>
+<translation id="3709443003275901162">Más de 9</translation>
 <translation id="639644700271529076">El bloqueo de mayúsculas está desactivado.</translation>
 <translation id="6267036997247669271"><ph name="NAME"/>: Activando...</translation>
 <translation id="1391854757121130358">Es posible que hayas agotado tu cuota de datos móviles.</translation>
+<translation id="5413208160176941586">Usuario administrado de forma local</translation>
 <translation id="4864165860509564259">Posición del selector</translation>
 <translation id="7593891976182323525">Tecla de búsqueda o Mayús</translation>
 <translation id="7649070708921625228">Ayuda</translation>
@@ -146,6 +155,7 @@ Presiona Mayús o la tecla de búsqueda para cancelar la operación.</translatio
 <translation id="158849752021629804">Se necesita red local</translation>
 <translation id="6857811139397017780">Activar <ph name="NETWORKSERVICE"/></translation>
 <translation id="5864471791310927901">Falló la búsqueda de DHCP</translation>
+<translation id="5812035014844949013">SALIDA</translation>
 <translation id="6692173217867674490">Frase de contraseña no válida</translation>
 <translation id="6165508094623778733">Más información</translation>
 <translation id="9046895021617826162">No se pudo conectar</translation>
@@ -158,6 +168,7 @@ Presiona Mayús o la tecla de búsqueda para cancelar la operación.</translatio
 <translation id="7209101170223508707">El BLOQUEO DE MAYÚSCULAS está activado.
 Presiona Alt y la tecla de búsqueda o Mayús para cancelar la operación.</translation>
 <translation id="8061464966246066292">Contraste alto</translation>
+<translation id="8940956008527784070">Batería baja (<ph name="PERCENTAGE"/>%)</translation>
 <translation id="5102001756192215136">Queda <ph name="HOUR"/>:<ph name="MINUTE"/></translation>
 <translation id="8000066093800657092">Sin red</translation>
 <translation id="5941711191222866238">Minimizar</translation>

@@ -10,6 +10,7 @@
 <translation id="2801119484858626560">Nakakita ng hindi tugmang bersyon ng Remote na Desktop ng Chrome. Mangyaring tiyaking na mayroon ka ng pinakabagong bersyon ng Chrome at Remote na Desktop ng Chrome sa parehong computer at subukang muli.</translation>
 <translation id="6998989275928107238">Para kay</translation>
 <translation id="3258789396564295715">Maaari mong ligtas na ma-access ang computer na ito gamit ang Remote na Desktop ng Chrome.</translation>
+<translation id="5070121137485264635">Hinihiling sa iyo ng remote host na magpatunay sa isang website ng third-party. Upang makapagpatuloy, dapat mong bigyan ng mga karagdagang pahintulot ang Remote na Desktop ng Chrome upang ma-access ang address na ito:</translation>
 <translation id="4808503597364150972">Pakilagay ang iyong PIN para sa <ph name="HOSTNAME"/>.</translation>
 <translation id="7672203038394118626">Hindi pinagana ang mga malayuang koneksyon para sa computer na ito.</translation>
 <translation id="8244400547700556338">Matutunan kung paano.</translation>
@@ -97,6 +98,7 @@
 <translation id="1643640058022401035">Tatapusin ng pag-alis sa pahinang ito ang iyong session ng Chromoting.</translation>
 <translation id="2235518894410572517">Ibahagi ang computer na ito upang makita at makontrol ng isa pang user.</translation>
 <translation id="1023096696228309145">Hilingin sa user na nagmamay-ari ng computer na nais mong i-access na i-click ang ‘Ibahagi Ngayon’ at ibigay sa iyo ang access code.</translation>
+<translation id="80739703311984697">Hinihiling sa iyo ng remote host na magpatunay sa isang website ng third-party. Upang makapagpatuloy, dapat mong bigyan ng mga karagdagang pahintulot ang Chromoting upang ma-access ang address na ito:</translation>
 <translation id="4006787130661126000">Dapat mong paganahin ang mga malayuang koneksyon kung nais mong gamitin ang Remote na Desktop ng Chrome upang i-access ang computer na ito.</translation>
 <translation id="6930242544192836755">Tagal</translation>
 <translation id="6527303717912515753">Ibahagi</translation>
