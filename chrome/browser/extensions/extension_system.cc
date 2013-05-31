@@ -187,8 +187,9 @@ void ExtensionSystemImpl::Shared::Init(bool extensions_enabled) {
           CommandLine::StringType::const_iterator> t(path_list,
                                                      FILE_PATH_LITERAL(","));
       while (t.GetNext()) {
+        std::string extension_id;
         UnpackedInstaller::Create(extension_service_.get())->
-            LoadFromCommandLine(base::FilePath(t.token()), false);
+            LoadFromCommandLine(base::FilePath(t.token()), &extension_id);
       }
     }
   }

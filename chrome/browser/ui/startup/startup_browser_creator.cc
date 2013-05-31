@@ -7,6 +7,8 @@
 #include <algorithm>   // For max().
 #include <set>
 
+#include "apps/app_load_service.h"
+#include "apps/switches.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
@@ -615,14 +617,22 @@ bool StartupBrowserCreator::ProcessCmdLineImpl(
     return true;
 
   // Check for --load-and-launch-app.
-  if (command_line.HasSwitch(switches::kLoadAndLaunchApp) &&
+  if (command_line.HasSwitch(apps::kLoadAndLaunchApp) &&
       !IncognitoModePrefs::ShouldLaunchIncognito(
           command_line, last_used_profile->GetPrefs())) {
     CommandLine::StringType path = command_line.GetSwitchValueNative(
-        switches::kLoadAndLaunchApp);
-    extensions::UnpackedInstaller::Create(
-        last_used_profile->GetExtensionService())->
-            LoadFromCommandLine(base::FilePath(path), true);
+        apps::kLoadAndLaunchApp);
+    std::string extension_id;
+    if (!extensions::UnpackedInstaller::Create(
+            last_used_profile->GetExtensionService())->
+                LoadFromCommandLine(base::FilePath(path), &extension_id)) {
+      return false;
+    }
+
+    // Schedule the app to be launched once loaded.
+    apps::AppLoadService::Get(last_used_profile)->ScheduleLaunchOnLoad(
+        extension_id);
+
     // Return early here since we don't want to open a browser window.
     // The exception is when there are no browser windows, since we don't want
     // chrome to shut down.

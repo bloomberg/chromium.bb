@@ -235,7 +235,6 @@ extern const char kKeepAliveForTest[];
 extern const char kKioskMode[];
 extern const char kKioskModePrinting[];
 extern const char kLimitedInstallFromWebstore[];
-extern const char kLoadAndLaunchApp[];
 extern const char kLoadComponentExtension[];
 extern const char kLoadExtension[];
 extern const char kLogNetLog[];

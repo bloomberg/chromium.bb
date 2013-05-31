@@ -339,8 +339,8 @@ WebContents* OpenApplication(const AppLaunchParams& params) {
   UMA_HISTOGRAM_ENUMERATION("Extensions.AppLaunchContainer", container, 100);
 
   if (extension->is_platform_app()) {
-    extensions::LaunchPlatformApp(profile, extension, params.command_line,
-                                  params.current_directory);
+    extensions::LaunchPlatformAppWithCommandLine(
+        profile, extension, params.command_line, params.current_directory);
     return NULL;
   }
 

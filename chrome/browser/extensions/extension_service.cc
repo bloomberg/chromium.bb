@@ -672,17 +672,6 @@ bool ExtensionService::UpdateExtension(const std::string& id,
 }
 
 void ExtensionService::ReloadExtension(const std::string& extension_id) {
-  int events = HasShellWindows(extension_id) ? EVENT_LAUNCHED : EVENT_NONE;
-  ReloadExtensionWithEvents(extension_id, events);
-}
-
-void ExtensionService::RestartExtension(const std::string& extension_id) {
-  ReloadExtensionWithEvents(extension_id, EVENT_RESTARTED);
-}
-
-void ExtensionService::ReloadExtensionWithEvents(
-    const std::string& extension_id,
-    int events) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // If the extension is already reloading, don't reload again.
@@ -717,8 +706,6 @@ void ExtensionService::ReloadExtensionWithEvents(
   } else {
     path = unloaded_extension_paths_[extension_id];
   }
-
-  on_load_events_[extension_id] = events;
 
   if (delayed_updates_for_idle_.Contains(extension_id)) {
     FinishDelayedInstallation(extension_id);
@@ -2013,7 +2000,6 @@ void ExtensionService::AddExtension(const Extension* extension) {
     // Replace the old extension with the new version.
     CHECK(!disabled_extensions_.Insert(extension));
     EnableExtension(extension->id());
-    DoPostLoadTasks(extension);
   } else {
     // All apps that are displayed in the launcher are ordered by their ordinals
     // so we must ensure they have valid ordinals.
@@ -2029,7 +2015,6 @@ void ExtensionService::AddExtension(const Extension* extension) {
     extensions_.Insert(extension);
     SyncExtensionChangeIfNeeded(*extension);
     NotifyExtensionLoaded(extension);
-    DoPostLoadTasks(extension);
   }
   SetBeingUpgraded(extension, false);
 }
@@ -2193,10 +2178,6 @@ void ExtensionService::UpdateActiveExtensionsInCrashReporter() {
   }
 
   child_process_logging::SetActiveExtensions(extension_ids);
-}
-
-void ExtensionService::ScheduleLaunchOnLoad(const std::string& extension_id) {
-  on_load_events_[extension_id] = EVENT_LAUNCHED;
 }
 
 void ExtensionService::OnExtensionInstalled(
@@ -2741,60 +2722,6 @@ bool ExtensionService::HasUsedWebRequest(const Extension* extension) const {
 void ExtensionService::SetHasUsedWebRequest(const Extension* extension,
                                             bool value) {
   extension_runtime_data_[extension->id()].has_used_webrequest = value;
-}
-
-void ExtensionService::DoPostLoadTasks(const Extension* extension) {
-  std::map<std::string, int>::iterator it =
-      on_load_events_.find(extension->id());
-  if (it == on_load_events_.end())
-    return;
-
-  int events_to_fire = it->second;
-  extensions::LazyBackgroundTaskQueue* queue =
-      system_->lazy_background_task_queue();
-  if (queue->ShouldEnqueueTask(profile(), extension)) {
-    if (events_to_fire & EVENT_LAUNCHED)
-      queue->AddPendingTask(profile(), extension->id(),
-                            base::Bind(&ExtensionService::LaunchApplication));
-    if (events_to_fire & EVENT_RESTARTED) {
-      queue->AddPendingTask(profile(), extension->id(),
-                            base::Bind(&ExtensionService::RestartApplication));
-    }
-  }
-
-  on_load_events_.erase(it);
-}
-
-// static
-void ExtensionService::LaunchApplication(
-    extensions::ExtensionHost* extension_host) {
-  if (!extension_host)
-    return;
-
-#if !defined(OS_ANDROID)
-  extensions::LaunchPlatformApp(extension_host->profile(),
-                                extension_host->extension(),
-                                NULL, base::FilePath());
-#endif
-}
-
-// static
-void ExtensionService::RestartApplication(
-    extensions::ExtensionHost* extension_host) {
-  if (!extension_host)
-    return;
-
-#if !defined(OS_ANDROID)
-  extensions::RestartPlatformApp(
-      extension_host->profile(), extension_host->extension());
-#endif
-}
-
-bool ExtensionService::HasShellWindows(const std::string& extension_id) {
-  const Extension* current_extension = GetExtensionById(extension_id, false);
-  return current_extension && current_extension->is_platform_app() &&
-      !extensions::ShellWindowRegistry::Get(profile_)->
-          GetShellWindowsForApp(extension_id).empty();
 }
 
 void ExtensionService::InspectExtensionHost(

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/webui/extensions/extension_settings_handler.h"
 
+#include "apps/app_load_service.h"
 #include "base/auto_reset.h"
 #include "base/base64.h"
 #include "base/bind.h"
@@ -670,7 +671,8 @@ void ExtensionSettingsHandler::HandleRestartMessage(const ListValue* args) {
   CHECK_EQ(1U, args->GetSize());
   std::string extension_id;
   CHECK(args->GetString(0, &extension_id));
-  extension_service_->RestartExtension(extension_id);
+  apps::AppLoadService::Get(extension_service_->profile())->RestartApplication(
+      extension_id);
 }
 
 void ExtensionSettingsHandler::HandleReloadMessage(const ListValue* args) {

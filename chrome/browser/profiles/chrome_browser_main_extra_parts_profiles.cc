@@ -4,6 +4,7 @@
 
 #include "chrome/browser/profiles/chrome_browser_main_extra_parts_profiles.h"
 
+#include "apps/app_load_service_factory.h"
 #include "apps/app_restore_service_factory.h"
 #include "apps/shell_window_geometry_cache.h"
 #include "apps/shortcut_manager_factory.h"
@@ -176,6 +177,7 @@ EnsureBrowserContextKeyedServiceFactoriesBuilt() {
 #endif
   DownloadServiceFactory::GetInstance();
 #if defined(ENABLE_EXTENSIONS)
+  apps::AppLoadServiceFactory::GetInstance();
   apps::AppRestoreServiceFactory::GetInstance();
   apps::ShellWindowGeometryCache::Factory::GetInstance();
   apps::ShortcutManagerFactory::GetInstance();

@@ -280,10 +280,10 @@ class PlatformAppPathLauncher
 
 }  // namespace
 
-void LaunchPlatformApp(Profile* profile,
-                       const Extension* extension,
-                       const CommandLine* command_line,
-                       const base::FilePath& current_directory) {
+void LaunchPlatformAppWithCommandLine(Profile* profile,
+                                      const Extension* extension,
+                                      const CommandLine* command_line,
+                                      const base::FilePath& current_directory) {
 #if defined(OS_WIN)
   // On Windows 8's single window Metro mode we can not launch platform apps.
   // Offer to switch Chrome to desktop mode.
@@ -315,6 +315,10 @@ void LaunchPlatformAppWithPath(Profile* profile,
   scoped_refptr<PlatformAppPathLauncher> launcher =
       new PlatformAppPathLauncher(profile, extension, file_path);
   launcher->Launch();
+}
+
+void LaunchPlatformApp(Profile* profile, const Extension* extension) {
+  LaunchPlatformAppWithCommandLine(profile, extension, NULL, base::FilePath());
 }
 
 void LaunchPlatformAppWithFileHandler(Profile* profile,

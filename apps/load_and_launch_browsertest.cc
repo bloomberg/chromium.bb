@@ -6,6 +6,7 @@
 // The two cases are when chrome is running and another process uses the switch
 // and when chrome is started from scratch.
 
+#include "apps/switches.h"
 #include "base/test/test_timeouts.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_test_message_listener.h"
@@ -14,7 +15,9 @@
 #include "chrome/common/chrome_switches.h"
 #include "content/public/test/test_launcher.h"
 
-namespace extensions {
+using extensions::PlatformAppBrowserTest;
+
+namespace apps {
 
 // TODO(jackhou): Enable this test once it works on OSX. It currently does not
 // work for the same reason --app-id doesn't. See http://crbug.com/148465
@@ -42,7 +45,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest,
       .AppendASCII("platform_apps")
       .AppendASCII("minimal");
 
-  new_cmdline.AppendSwitchNative(switches::kLoadAndLaunchApp,
+  new_cmdline.AppendSwitchNative(apps::kLoadAndLaunchApp,
                                  app_path.value());
 
   new_cmdline.AppendSwitch(content::kLaunchAsBrowser);
@@ -67,7 +70,7 @@ class PlatformAppLoadAndLaunchBrowserTest : public PlatformAppBrowserTest {
     app_path_ = test_data_dir_
         .AppendASCII("platform_apps")
         .AppendASCII("minimal");
-    command_line->AppendSwitchNative(switches::kLoadAndLaunchApp,
+    command_line->AppendSwitchNative(apps::kLoadAndLaunchApp,
                                      app_path_.value());
   }
 
@@ -104,4 +107,4 @@ IN_PROC_BROWSER_TEST_F(PlatformAppLoadAndLaunchBrowserTest,
   LoadAndLaunchApp();
 }
 
-}  // namespace extensions
+}  // namespace apps

@@ -8,6 +8,7 @@
 #include <set>
 #include <utility>
 
+#include "apps/app_load_service.h"
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
@@ -1697,8 +1698,8 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
       DCHECK(platform_app);
       DCHECK(platform_app->is_platform_app());
 
-      extensions::ExtensionSystem::Get(profile_)->extension_service()->
-          RestartExtension(platform_app->id());
+      apps::AppLoadService::Get(profile_)->RestartApplication(
+          platform_app->id());
       break;
     }
 

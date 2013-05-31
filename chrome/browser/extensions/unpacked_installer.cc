@@ -95,7 +95,6 @@ UnpackedInstaller::UnpackedInstaller(ExtensionService* extension_service)
     : service_weak_(extension_service->AsWeakPtr()),
       prompt_for_plugins_(true),
       require_modern_manifest_version_(true),
-      launch_on_load_(false),
       installer_(extension_service->profile()) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
@@ -114,13 +113,13 @@ void UnpackedInstaller::Load(const base::FilePath& path_in) {
       base::Bind(&UnpackedInstaller::GetAbsolutePath, this));
 }
 
-void UnpackedInstaller::LoadFromCommandLine(const base::FilePath& path_in,
-                                            bool launch_on_load) {
+bool UnpackedInstaller::LoadFromCommandLine(const base::FilePath& path_in,
+                                            std::string* extension_id) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(extension_path_.empty());
 
   if (!service_weak_)
-    return;
+    return false;
   // Load extensions from the command line synchronously to avoid a race
   // between extension loading and loading an URL from the command line.
   base::ThreadRestrictions::ScopedAllowIO allow_io;
@@ -129,7 +128,7 @@ void UnpackedInstaller::LoadFromCommandLine(const base::FilePath& path_in,
 
   if (!IsLoadingUnpackedAllowed()) {
     ReportExtensionLoadError(kUnpackedExtensionsBlacklistedError);
-    return;
+    return false;
   }
 
   std::string error;
@@ -141,12 +140,13 @@ void UnpackedInstaller::LoadFromCommandLine(const base::FilePath& path_in,
 
   if (!installer_.extension()) {
     ReportExtensionLoadError(error);
-    return;
+    return false;
   }
 
-  launch_on_load_ = launch_on_load;
-
   ShowInstallPrompt();
+
+  *extension_id = installer_.extension()->id();
+  return true;
 }
 
 void UnpackedInstaller::ShowInstallPrompt() {
@@ -280,9 +280,6 @@ void UnpackedInstaller::ConfirmInstall() {
 
   PermissionsUpdater perms_updater(service_weak_->profile());
   perms_updater.GrantActivePermissions(installer_.extension());
-
-  if (launch_on_load_)
-    service_weak_->ScheduleLaunchOnLoad(installer_.extension()->id());
 
   service_weak_->OnExtensionInstalled(
       installer_.extension(),

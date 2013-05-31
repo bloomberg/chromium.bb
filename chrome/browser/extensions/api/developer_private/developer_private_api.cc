@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/api/developer_private/developer_private_api.h"
 
+#include "apps/app_load_service.h"
 #include "base/base64.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
@@ -549,9 +550,9 @@ bool DeveloperPrivateRestartFunction::RunImpl() {
   scoped_ptr<Restart::Params> params(Restart::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
-  ExtensionService* service = profile()->GetExtensionService();
+  apps::AppLoadService* service = apps::AppLoadService::Get(profile());
   EXTENSION_FUNCTION_VALIDATE(!params->item_id.empty());
-  service->RestartExtension(params->item_id);
+  service->RestartApplication(params->item_id);
   return true;
 }
 

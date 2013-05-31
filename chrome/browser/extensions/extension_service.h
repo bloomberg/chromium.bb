@@ -327,9 +327,6 @@ class ExtensionService
   // currently has any window showing.
   void ReloadExtension(const std::string& extension_id);
 
-  // Reloads an extension and sends it the onRestarted() event.
-  void RestartExtension(const std::string& extension_id);
-
   // Uninstalls the specified extension. Callers should only call this method
   // with extensions that exist. |external_uninstall| is a magical parameter
   // that is only used to send information to ExtensionPrefs, which external
@@ -417,9 +414,6 @@ class ExtensionService
   // checking) before calling AddExtension.
   virtual void AddComponentExtension(const extensions::Extension* extension)
       OVERRIDE;
-
-  // Launch an extension the next time it is loaded.
-  void ScheduleLaunchOnLoad(const std::string& extension_id);
 
   // Informs the service that an extension's files are in place for loading.
   //
@@ -709,13 +703,6 @@ class ExtensionService
       const extensions::ExtensionSyncData& extension_sync_data,
       syncer::ModelType type);
 
-  // Events to be fired after an extension is reloaded.
-  enum PostReloadEvents {
-    EVENT_NONE = 0,
-    EVENT_LAUNCHED = 1 << 0,
-    EVENT_RESTARTED = 1 << 1,
-  };
-
   // Adds the given extension to the list of terminated extensions if
   // it is not already there and unloads it.
   void TrackTerminatedExtension(const extensions::Extension* extension);
@@ -742,11 +729,6 @@ class ExtensionService
   // Common helper to finish installing the given extension.
   void FinishInstallation(const extensions::Extension* extension);
 
-  // Reloads |extension_id| and then dispatches to it the PostReloadEvents
-  // indicated by |events|.
-  void ReloadExtensionWithEvents(const std::string& extension_id,
-                                int events);
-
   // Updates the |extension|'s active permission set to include only permissions
   // currently requested by the extension and all the permissions required by
   // the extension.
@@ -757,21 +739,8 @@ class ExtensionService
   void CheckPermissionsIncrease(const extensions::Extension* extension,
                                 bool is_upgrade);
 
-  // Returns true if the app with id |extension_id| has any shell windows open.
-  bool HasShellWindows(const std::string& extension_id);
-
   // Helper that updates the active extension list used for crash reporting.
   void UpdateActiveExtensionsInCrashReporter();
-
-  // Performs tasks requested to occur after |extension| loads.
-  void DoPostLoadTasks(const extensions::Extension* extension);
-
-  // Launches the platform app associated with |extension_host|.
-  static void LaunchApplication(extensions::ExtensionHost* extension_host);
-
-  // Dispatches a restart event to the platform app associated with
-  // |extension_host|.
-  static void RestartApplication(extensions::ExtensionHost* extension_host);
 
   // Helper to inspect an ExtensionHost after it has been loaded.
   void InspectExtensionHost(extensions::ExtensionHost* host);
@@ -890,10 +859,6 @@ class ExtensionService
   // reloaded.
   typedef std::map<std::string, std::string> OrphanedDevTools;
   OrphanedDevTools orphaned_dev_tools_;
-
-  // Maps extension ids to a bitmask that indicates which events should be
-  // dispatched to the extension when it is loaded.
-  std::map<std::string, int> on_load_events_;
 
   content::NotificationRegistrar registrar_;
   PrefChangeRegistrar pref_change_registrar_;

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/background/background_contents_service.h"
 
+#include "apps/app_load_service.h"
 #include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -92,8 +93,7 @@ class CrashNotificationDelegate : public NotificationDelegate {
       if (!service->GetAppBackgroundContents(ASCIIToUTF16(extension_id_)))
         service->LoadBackgroundContentsForExtension(profile_, extension_id_);
     } else if (is_platform_app_) {
-      extensions::ExtensionSystem::Get(profile_)->extension_service()->
-          RestartExtension(extension_id_);
+      apps::AppLoadService::Get(profile_)->RestartApplication(extension_id_);
     } else {
       extensions::ExtensionSystem::Get(profile_)->extension_service()->
           ReloadExtension(extension_id_);
