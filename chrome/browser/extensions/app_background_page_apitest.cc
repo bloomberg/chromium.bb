@@ -12,6 +12,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
@@ -19,6 +20,10 @@
 #include "content/public/test/test_notification_tracker.h"
 #include "content/public/test/test_utils.h"
 #include "net/dns/mock_host_resolver.h"
+
+#if defined(OS_MACOSX)
+#include "base/mac/scoped_nsautorelease_pool.h"
+#endif
 
 using extensions::Extension;
 
@@ -74,6 +79,26 @@ class AppBackgroundPageApiTest : public ExtensionApiTest {
     watcher.Wait();
     return manager->IsBackgroundModeActiveForTest() == expected_background_mode;
 #endif
+  }
+
+  void CloseBrowser(Browser* browser) {
+    content::WindowedNotificationObserver observer(
+        chrome::NOTIFICATION_BROWSER_CLOSED,
+        content::NotificationService::AllSources());
+    browser->window()->Close();
+#if defined(OS_MACOSX)
+    // BrowserWindowController depends on the auto release pool being recycled
+    // in the message loop to delete itself, which frees the Browser object
+    // which fires this event.
+    AutoreleasePool()->Recycle();
+#endif
+    observer.Wait();
+  }
+
+  void UnloadExtensionViaTask(const std::string& id) {
+    MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(&AppBackgroundPageApiTest::UnloadExtension, this, id));
   }
 
  private:
@@ -418,4 +443,54 @@ IN_PROC_BROWSER_TEST_F(AppBackgroundPageApiTest, DISABLED_OpenThenClose) {
   ASSERT_FALSE(
       BackgroundContentsServiceFactory::GetForProfile(browser()->profile())->
           GetAppBackgroundContents(ASCIIToUTF16(extension->id())));
+}
+
+IN_PROC_BROWSER_TEST_F(AppBackgroundPageApiTest, UnloadExtensionWhileHidden) {
+  host_resolver()->AddRule("a.com", "127.0.0.1");
+  ASSERT_TRUE(StartTestServer());
+
+  std::string app_manifest = base::StringPrintf(
+      "{"
+      "  \"name\": \"App\","
+      "  \"version\": \"0.1\","
+      "  \"manifest_version\": 2,"
+      "  \"app\": {"
+      "    \"urls\": ["
+      "      \"http://a.com/\""
+      "    ],"
+      "    \"launch\": {"
+      "      \"web_url\": \"http://a.com:%d/\""
+      "    }"
+      "  },"
+      "  \"permissions\": [\"background\"],"
+      "  \"background\": {"
+      "    \"page\": \"http://a.com:%d/test.html\""
+      "  }"
+      "}",
+      test_server()->host_port_pair().port(),
+      test_server()->host_port_pair().port());
+
+  base::FilePath app_dir;
+  ASSERT_TRUE(CreateApp(app_manifest, &app_dir));
+  // Background mode should not be active now because no background app was
+  // loaded.
+  ASSERT_TRUE(LoadExtension(app_dir));
+  // Background mode be active now because a background page was created when
+  // the app was loaded.
+  ASSERT_TRUE(WaitForBackgroundMode(true));
+
+  const Extension* extension = GetSingleLoadedExtension();
+  ASSERT_TRUE(
+      BackgroundContentsServiceFactory::GetForProfile(browser()->profile())->
+          GetAppBackgroundContents(ASCIIToUTF16(extension->id())));
+
+  // Close all browsers - app should continue running.
+  SetExitWhenLastBrowserCloses(false);
+  CloseBrowser(browser());
+
+  // Post a task to unload the extension - this should cause Chrome to exit
+  // cleanly (not crash).
+  UnloadExtensionViaTask(extension->id());
+  content::RunAllPendingInMessageLoop();
+  ASSERT_TRUE(WaitForBackgroundMode(false));
 }

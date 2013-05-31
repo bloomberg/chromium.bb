@@ -57,15 +57,16 @@ BackgroundContents::BackgroundContents()
 BackgroundContents::~BackgroundContents() {
   if (!web_contents_.get())   // Will be null for unit tests.
     return;
+
+  // Unregister for any notifications before notifying observers that we are
+  // going away - this prevents any re-entrancy due to chained notifications
+  // (http://crbug.com/237781).
+  registrar_.RemoveAll();
+
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_BACKGROUND_CONTENTS_DELETED,
       content::Source<Profile>(profile_),
       content::Details<BackgroundContents>(this));
-  // Manually clear web_contents_ to try to track down http://crbug.com/164617.
-  // Freeing the WebContents can cause the RenderViewHost to be destroyed, so
-  // we need to do this after sending out BACKGROUND_CONTENTS_DELETED to give
-  // things like the TaskManager a chance to clean up their references first.
-  web_contents_.reset();
 }
 
 const GURL& BackgroundContents::GetURL() const {
