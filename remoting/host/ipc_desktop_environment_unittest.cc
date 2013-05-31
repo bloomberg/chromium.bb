@@ -59,6 +59,7 @@ class FakeDaemonSender : public IPC::Sender {
 
   MOCK_METHOD3(ConnectTerminal, void(int, const ScreenResolution&, bool));
   MOCK_METHOD1(DisconnectTerminal, void(int));
+  MOCK_METHOD2(SetScreenResolution, void(int, const ScreenResolution&));
 
  private:
   void OnMessageReceived(const IPC::Message& message);
@@ -95,6 +96,8 @@ void FakeDaemonSender::OnMessageReceived(const IPC::Message& message) {
                         ConnectTerminal)
     IPC_MESSAGE_HANDLER(ChromotingNetworkHostMsg_DisconnectTerminal,
                         DisconnectTerminal)
+    IPC_MESSAGE_HANDLER(ChromotingNetworkDaemonMsg_SetScreenResolution,
+                        SetScreenResolution)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -191,6 +194,9 @@ class IpcDesktopEnvironmentTest : public testing::Test {
   // The IPC input injector.
   scoped_ptr<InputInjector> input_injector_;
 
+  // The IPC screen controls.
+  scoped_ptr<ScreenControls> screen_controls_;
+
   // The IPC screen capturer.
   scoped_ptr<media::ScreenCapturer> video_capturer_;
 
@@ -276,6 +282,8 @@ void IpcDesktopEnvironmentTest::SetUp() {
   desktop_environment_ = desktop_environment_factory_->Create(
       client_session_control_factory_.GetWeakPtr());
 
+  screen_controls_ = desktop_environment_->CreateScreenControls();
+
   // Create the input injector.
   input_injector_ = desktop_environment_->CreateInputInjector();
 
@@ -343,6 +351,7 @@ media::ScreenCapturer* IpcDesktopEnvironmentTest::CreateVideoCapturer() {
 
 void IpcDesktopEnvironmentTest::DeleteDesktopEnvironment() {
   input_injector_.reset();
+  screen_controls_.reset();
   video_capturer_.reset();
 
   // Trigger DisconnectTerminal().
@@ -612,6 +621,35 @@ TEST_F(IpcDesktopEnvironmentTest, InjectMouseEvent) {
   event.set_x(0);
   event.set_y(0);
   input_injector_->InjectMouseEvent(event);
+
+  task_runner_ = NULL;
+  io_task_runner_ = NULL;
+  main_run_loop_.Run();
+}
+
+// Tests that setting the desktop resolution works.
+TEST_F(IpcDesktopEnvironmentTest, SetScreenResolution) {
+  scoped_ptr<protocol::MockClipboardStub> clipboard_stub(
+      new protocol::MockClipboardStub());
+  EXPECT_CALL(*clipboard_stub, InjectClipboardEvent(_))
+      .Times(0);
+
+  // Start the input injector and screen capturer.
+  input_injector_->Start(clipboard_stub.PassAs<protocol::ClipboardStub>());
+  video_capturer_->Start(&screen_capturer_callback_);
+
+  // Run the message loop until the desktop is attached.
+  setup_run_loop_->Run();
+
+  EXPECT_CALL(daemon_channel_, SetScreenResolution(_, _))
+      .Times(1)
+      .WillOnce(InvokeWithoutArgs(
+          this, &IpcDesktopEnvironmentTest::DeleteDesktopEnvironment));
+
+  // Change the desktop resolution.
+  screen_controls_->SetScreenResolution(ScreenResolution(
+      webrtc::DesktopSize(100, 100),
+      webrtc::DesktopVector(96, 96)));
 
   task_runner_ = NULL;
   io_task_runner_ = NULL;
