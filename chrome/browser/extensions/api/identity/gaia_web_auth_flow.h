@@ -42,12 +42,14 @@ class GaiaWebAuthFlow : public UbertokenConsumer, public WebAuthFlow::Delegate {
     WINDOW_CLOSED,  // Window closed by user.
     INVALID_REDIRECT,  // Redirect parse error.
     SERVICE_AUTH_ERROR,  // Non-OAuth related authentication error
-    OAUTH_ERROR  // Flow reached final redirect, which contained an error.
+    OAUTH_ERROR,  // Flow reached final redirect, which contained an error.
+    LOAD_FAILED  // An auth flow page failed to load.
   };
 
   class Delegate {
    public:
     // Called when the flow fails prior to the final OAuth redirect,
+    // TODO(courage): LOAD_FAILURE descriptions?
     virtual void OnGaiaFlowFailure(Failure failure,
                                    GoogleServiceAuthError service_error,
                                    const std::string& oauth_error) = 0;
@@ -58,7 +60,6 @@ class GaiaWebAuthFlow : public UbertokenConsumer, public WebAuthFlow::Delegate {
 
   GaiaWebAuthFlow(Delegate* delegate,
                   Profile* profile,
-                  chrome::HostDesktopType host_desktop_type,
                   const std::string& extension_id,
                   const OAuth2Info& oauth2_info);
   virtual ~GaiaWebAuthFlow();

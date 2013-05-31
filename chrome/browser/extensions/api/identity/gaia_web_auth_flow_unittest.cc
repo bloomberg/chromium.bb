@@ -20,9 +20,7 @@ class FakeWebAuthFlow : public WebAuthFlow {
       : WebAuthFlow(delegate,
                     NULL,
                     GURL(),
-                    WebAuthFlow::INTERACTIVE,
-                    gfx::Rect(),
-                    chrome::GetActiveDesktop()) {}
+                    WebAuthFlow::INTERACTIVE) {}
 
   virtual void Start() OVERRIDE {}
 };
@@ -35,7 +33,6 @@ class TestGaiaWebAuthFlow : public GaiaWebAuthFlow {
                       GoogleServiceAuthError::State ubertoken_error_state)
       : GaiaWebAuthFlow(delegate,
                         NULL,
-                        chrome::GetActiveDesktop(),
                         "extension_id",
                         oauth2_info),
         ubertoken_error_(ubertoken_error_state) {}

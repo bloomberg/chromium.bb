@@ -5,7 +5,9 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_IDENTITY_WEB_AUTH_FLOW_H_
 #define CHROME_BROWSER_EXTENSIONS_API_IDENTITY_WEB_AUTH_FLOW_H_
 
-#include "chrome/browser/ui/host_desktop.h"
+#include <string>
+
+#include "chrome/browser/extensions/shell_window_registry.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -24,13 +26,17 @@ class WebContents;
 
 namespace extensions {
 
-// Controller class for web based auth flows. The WebAuthFlow starts
-// by navigating a WebContents to a URL specificed by the caller. Any
-// time the WebContents navigates to a new URL, the flow's delegate is
-// notified. The delegate is expected to delete the flow when
-// navigation reaches a known target URL.
+// Controller class for web based auth flows. The WebAuthFlow creates
+// a dialog window in the scope approval component app by firing an
+// event. A webview embedded in the dialog will navigate to the
+// |provider_url| passed to the WebAuthFlow constructor.
 //
-// The WebContents is not displayed until the first page load
+// The WebAuthFlow monitors the WebContents of the webview, and
+// notifies its delegate interface any time the WebContents navigates
+// to a new URL or changes title. The delegate is expected to delete
+// the flow when navigation reaches a known target location.
+//
+// The window is not displayed until the first page load
 // completes. This allows the flow to complete without flashing a
 // window on screen if the provider immediately redirects to the
 // target URL.
@@ -38,7 +44,8 @@ namespace extensions {
 // A WebAuthFlow can be started in Mode::SILENT, which never displays
 // a window. If a window would be required, the flow fails.
 class WebAuthFlow : public content::NotificationObserver,
-                    public content::WebContentsObserver {
+                    public content::WebContentsObserver,
+                    public ShellWindowRegistry::Observer {
  public:
   enum Mode {
     INTERACTIVE,  // Show UI to the user if necessary.
@@ -47,7 +54,8 @@ class WebAuthFlow : public content::NotificationObserver,
 
   enum Failure {
     WINDOW_CLOSED,  // Window closed by user.
-    INTERACTION_REQUIRED  // Non-redirect page load in silent mode.
+    INTERACTION_REQUIRED,  // Non-redirect page load in silent mode.
+    LOAD_FAILED
   };
 
   class Delegate {
@@ -70,9 +78,7 @@ class WebAuthFlow : public content::NotificationObserver,
   WebAuthFlow(Delegate* delegate,
               Profile* profile,
               const GURL& provider_url,
-              Mode mode,
-              const gfx::Rect& initial_bounds,
-              chrome::HostDesktopType host_desktop_type);
+              Mode mode);
 
   virtual ~WebAuthFlow();
 
@@ -82,13 +88,13 @@ class WebAuthFlow : public content::NotificationObserver,
   // Prevents further calls to the delegate and deletes the flow.
   void DetachDelegateAndDelete();
 
- protected:
-  // Overridable for testing.
-  virtual content::WebContents* CreateWebContents();
-  virtual void ShowAuthFlowPopup();
-
  private:
   friend class ::WebAuthFlowTest;
+
+  // ShellWindowRegistry::Observer implementation.
+  virtual void OnShellWindowAdded(ShellWindow* shell_window) OVERRIDE;
+  virtual void OnShellWindowIconChanged(ShellWindow* shell_window) OVERRIDE {}
+  virtual void OnShellWindowRemoved(ShellWindow* shell_window) OVERRIDE;
 
   // NotificationObserver implementation.
   virtual void Observe(int type,
@@ -96,13 +102,27 @@ class WebAuthFlow : public content::NotificationObserver,
                        const content::NotificationDetails& details) OVERRIDE;
 
   // WebContentsObserver implementation.
-  virtual void ProvisionalChangeToMainFrameUrl(
-      const GURL& url,
+  virtual void DidStopLoading(content::RenderViewHost* render_view_host)
+      OVERRIDE;
+  virtual void DidNavigateMainFrame(
+      const content::LoadCommittedDetails& details,
+      const content::FrameNavigateParams& params) OVERRIDE;
+  virtual void RenderViewGone(base::TerminationStatus status) OVERRIDE;
+  virtual void DidStartProvisionalLoadForFrame(
+      int64 frame_id,
+      int64 parent_frame_id,
+      bool is_main_frame,
+      const GURL& validated_url,
+      bool is_error_page,
+      bool is_iframe_srcdoc,
       content::RenderViewHost* render_view_host) OVERRIDE;
-  virtual void DidStopLoading(
-      content::RenderViewHost* render_view_host) OVERRIDE;
-  virtual void WebContentsDestroyed(
-      content::WebContents* web_contents) OVERRIDE;
+  virtual void DidFailProvisionalLoad(int64 frame_id,
+                                      bool is_main_frame,
+                                      const GURL& validated_url,
+                                      int error_code,
+                                      const string16& error_description,
+                                      content::RenderViewHost* render_view_host)
+      OVERRIDE;
 
   void BeforeUrlLoaded(const GURL& url);
   void AfterUrlLoaded();
@@ -111,11 +131,11 @@ class WebAuthFlow : public content::NotificationObserver,
   Profile* profile_;
   GURL provider_url_;
   Mode mode_;
-  gfx::Rect initial_bounds_;
-  chrome::HostDesktopType host_desktop_type_;
-  bool popup_shown_;
 
-  content::WebContents* contents_;
+  ShellWindow* shell_window_;
+  std::string shell_window_key_;
+  bool embedded_window_created_;
+
   content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(WebAuthFlow);

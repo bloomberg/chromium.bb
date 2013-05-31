@@ -15,24 +15,19 @@
 #include "base/values.h"
 #include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/extensions/extension_function_dispatcher.h"
-#include "chrome/browser/extensions/extension_install_prompt.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/permissions_updater.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/signin/token_service.h"
 #include "chrome/browser/signin/token_service_factory.h"
-#include "chrome/browser/ui/browser.h"
 #include "chrome/common/extensions/api/identity.h"
 #include "chrome/common/extensions/api/identity/oauth2_manifest_handler.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/url_constants.h"
-#include "content/public/common/page_transition_types.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "googleurl/src/gurl.h"
-#include "ui/base/window_open_disposition.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/login/user_manager.h"
@@ -50,6 +45,7 @@ const char kUserNotSignedIn[] = "The user is not signed in.";
 const char kInteractionRequired[] = "User interaction required.";
 const char kInvalidRedirect[] = "Did not redirect to the right URL.";
 const char kOffTheRecord[] = "Identity API is disabled in incognito windows.";
+const char kPageLoadFailure[] = "Authorization page could not be loaded.";
 
 const int kCachedIssueAdviceTTLSeconds = 1;
 }  // namespace identity_constants
@@ -317,6 +313,12 @@ void IdentityGetAuthTokenFunction::OnGaiaFlowFailure(
       error = MapOAuth2ErrorToDescription(oauth_error);
       break;
 
+      // TODO(courage): load failure tests
+
+    case GaiaWebAuthFlow::LOAD_FAILED:
+      error = identity_constants::kPageLoadFailure;
+      break;
+
     default:
       NOTREACHED() << "Unexpected error from gaia web auth flow: " << failure;
       error = identity_constants::kInvalidRedirect;
@@ -356,14 +358,10 @@ void IdentityGetAuthTokenFunction::ShowLoginPopup() {
 
 void IdentityGetAuthTokenFunction::ShowOAuthApprovalDialog(
     const IssueAdviceInfo& issue_advice) {
-  Browser* current_browser = this->GetCurrentBrowser();
-  chrome::HostDesktopType host_desktop_type =
-      current_browser ? current_browser->host_desktop_type()
-                      : chrome::GetActiveDesktop();
   const OAuth2Info& oauth2_info = OAuth2Info::GetOAuth2Info(GetExtension());
 
   gaia_web_auth_flow_.reset(new GaiaWebAuthFlow(
-      this, profile(), host_desktop_type, GetExtension()->id(), oauth2_info));
+      this, profile(), GetExtension()->id(), oauth2_info));
   gaia_web_auth_flow_->Start();
 }
 
@@ -459,16 +457,9 @@ bool IdentityLaunchWebAuthFlowFunction::RunImpl() {
   // scheme for this version of the API.)
   InitFinalRedirectURLPrefix(GetExtension()->id());
 
-  gfx::Rect initial_bounds;
-
   AddRef();  // Balanced in OnAuthFlowSuccess/Failure.
 
-  Browser* current_browser = this->GetCurrentBrowser();
-  chrome::HostDesktopType host_desktop_type = current_browser ?
-      current_browser->host_desktop_type() : chrome::GetActiveDesktop();
-  auth_flow_.reset(new WebAuthFlow(
-      this, profile(), auth_url, mode, initial_bounds,
-      host_desktop_type));
+  auth_flow_.reset(new WebAuthFlow(this, profile(), auth_url, mode));
   auth_flow_->Start();
   return true;
 }
@@ -494,6 +485,9 @@ void IdentityLaunchWebAuthFlowFunction::OnAuthFlowFailure(
       break;
     case WebAuthFlow::INTERACTION_REQUIRED:
       error_ = identity_constants::kInteractionRequired;
+      break;
+    case WebAuthFlow::LOAD_FAILED:
+      error_ = identity_constants::kPageLoadFailure;
       break;
     default:
       NOTREACHED() << "Unexpected error from web auth flow: " << failure;
