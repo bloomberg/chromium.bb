@@ -72,36 +72,6 @@ void AppendToHeaderBlock(const char* const extra_headers[],
                          int extra_header_count,
                          SpdyHeaderBlock* headers);
 
-// Writes |str| of the given |len| to the buffer pointed to by |buffer_handle|.
-// Uses a template so buffer_handle can be a char* or an unsigned char*.
-// Updates the |*buffer_handle| pointer by |len|
-// Returns the number of bytes written into *|buffer_handle|
-template<class T>
-int AppendToBuffer(const char* str,
-                   int len,
-                   T** buffer_handle,
-                   int* buffer_len_remaining) {
-  DCHECK_GT(len, 0);
-  DCHECK(NULL != buffer_handle) << "NULL buffer handle";
-  DCHECK(NULL != *buffer_handle) << "NULL pointer";
-  DCHECK(NULL != buffer_len_remaining)
-      << "NULL buffer remainder length pointer";
-  DCHECK_GE(*buffer_len_remaining, len) << "Insufficient buffer size";
-  memcpy(*buffer_handle, str, len);
-  *buffer_handle += len;
-  *buffer_len_remaining -= len;
-  return len;
-}
-
-// Writes |val| to a location of size |len|, in big-endian format.
-// in the buffer pointed to by |buffer_handle|.
-// Updates the |*buffer_handle| pointer by |len|
-// Returns the number of bytes written
-int AppendToBuffer(int val,
-                   int len,
-                   unsigned char** buffer_handle,
-                   int* buffer_len_remaining);
-
 // Create an async MockWrite from the given SpdyFrame.
 MockWrite CreateMockWrite(const SpdyFrame& req);
 
@@ -320,15 +290,8 @@ class SpdyTestUtil {
       int tail_headers_size,
       SpdyStreamId associated_stream_id) const;
 
-  // Construct an expected SPDY reply string.
-  // |extra_headers| are the extra header-value pairs, which typically
-  // will vary the most between calls.
-  // |buffer| is the buffer we're filling in.
-  // Returns the number of bytes written into |buffer|.
-  int ConstructSpdyReplyString(const char* const extra_headers[],
-                               int extra_header_count,
-                               char* buffer,
-                               int buffer_length) const;
+  // Construct an expected SPDY reply string from the given headers.
+  std::string ConstructSpdyReplyString(const SpdyHeaderBlock& headers) const;
 
   // Construct an expected SPDY SETTINGS frame.
   // |settings| are the settings to set.

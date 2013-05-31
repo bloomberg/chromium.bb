@@ -4100,13 +4100,13 @@ TEST_P(SpdyNetworkTransactionSpdy3Test, SynReplyHeadersVary) {
     }
 
     // Construct the expected header reply string.
-    char reply_buffer[256] = "";
-    spdy_util_.ConstructSpdyReplyString(test_cases[i].extra_headers[1],
-                                        test_cases[i].num_headers[1],
-                                        reply_buffer,
-                                        256);
-
-    EXPECT_EQ(std::string(reply_buffer), lines) << i;
+    SpdyHeaderBlock reply_headers;
+    AppendToHeaderBlock(test_cases[i].extra_headers[1],
+                        test_cases[i].num_headers[1],
+                        &reply_headers);
+    std::string expected_reply =
+        spdy_util_.ConstructSpdyReplyString(reply_headers);
+    EXPECT_EQ(expected_reply, lines) << i;
   }
 }
 

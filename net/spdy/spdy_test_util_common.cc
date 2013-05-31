@@ -9,6 +9,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/string_number_conversions.h"
+#include "base/strings/string_split.h"
 #include "net/cert/mock_cert_verifier.h"
 #include "net/http/http_cache.h"
 #include "net/http/http_network_session.h"
@@ -137,31 +138,6 @@ void AppendToHeaderBlock(const char* const extra_headers[],
     }
     (*headers)[this_header] = new_value;
   }
-}
-
-// Writes |val| to a location of size |len|, in big-endian format.
-// in the buffer pointed to by |buffer_handle|.
-// Updates the |*buffer_handle| pointer by |len|
-// Returns the number of bytes written
-int AppendToBuffer(int val,
-                   int len,
-                   unsigned char** buffer_handle,
-                   int* buffer_len_remaining) {
-  if (len <= 0)
-    return 0;
-  DCHECK((size_t) len <= sizeof(len)) << "Data length too long for data type";
-  DCHECK(NULL != buffer_handle) << "NULL buffer handle";
-  DCHECK(NULL != *buffer_handle) << "NULL pointer";
-  DCHECK(NULL != buffer_len_remaining)
-      << "NULL buffer remainder length pointer";
-  DCHECK_GE(*buffer_len_remaining, len) << "Insufficient buffer size";
-  for (int i = 0; i < len; i++) {
-    int shift = (8 * (len - (i + 1)));
-    unsigned char val_chunk = (val >> shift) & 0x0FF;
-    *(*buffer_handle)++ = val_chunk;
-    *buffer_len_remaining += 1;
-  }
-  return len;
 }
 
 // Create a MockWrite from the given SpdyFrame.
@@ -668,77 +644,24 @@ SpdyFrame* SpdyTestUtil::ConstructSpdyControlFrame(
   return ConstructSpdyFrame(header_info, headers.Pass());
 }
 
-int SpdyTestUtil::ConstructSpdyReplyString(const char* const extra_headers[],
-                                           int extra_header_count,
-                                           char* buffer,
-                                           int buffer_length) const {
-  int frame_size = 0;
-  char* buffer_write = buffer;
-  int buffer_left = buffer_length;
-  SpdyHeaderBlock headers;
-  if (!buffer || !buffer_length)
-    return 0;
-  // Copy in the extra headers.
-  AppendToHeaderBlock(extra_headers, extra_header_count, &headers);
-  // The iterator gets us the list of header/value pairs in sorted order.
-  SpdyHeaderBlock::iterator next = headers.begin();
-  SpdyHeaderBlock::iterator last = headers.end();
-  for ( ; next != last; ++next) {
-    // Write the header.
-    int value_len, current_len, offset;
-    const char* header_string = next->first.c_str();
-    if (!is_spdy2() && header_string && header_string[0] == ':')
-      header_string++;
-    frame_size += AppendToBuffer(header_string,
-                                 strlen(header_string),
-                                 &buffer_write,
-                                 &buffer_left);
-    frame_size += AppendToBuffer(": ",
-                                 strlen(": "),
-                                 &buffer_write,
-                                 &buffer_left);
-    // Write the value(s).
-    const char* value_string = next->second.c_str();
-    // Check if it's split among two or more values.
-    value_len = next->second.length();
-    current_len = strlen(value_string);
-    offset = 0;
-    // Handle the first N-1 values.
-    while (current_len < value_len) {
-      // Finish this line -- write the current value.
-      frame_size += AppendToBuffer(value_string + offset,
-                                   current_len - offset,
-                                   &buffer_write,
-                                   &buffer_left);
-      frame_size += AppendToBuffer("\n",
-                                   strlen("\n"),
-                                   &buffer_write,
-                                   &buffer_left);
-      // Advance to next value.
-      offset = current_len + 1;
-      current_len += 1 + strlen(value_string + offset);
-      // Start another line -- add the header again.
-      frame_size += AppendToBuffer(header_string,
-                                   next->first.length(),
-                                   &buffer_write,
-                                   &buffer_left);
-      frame_size += AppendToBuffer(": ",
-                                   strlen(": "),
-                                   &buffer_write,
-                                   &buffer_left);
+std::string SpdyTestUtil::ConstructSpdyReplyString(
+    const SpdyHeaderBlock& headers) const {
+  std::string reply_string;
+  for (SpdyHeaderBlock::const_iterator it = headers.begin();
+       it != headers.end(); ++it) {
+    std::string key = it->first;
+    // Remove leading colon from "special" headers (for SPDY3 and
+    // above).
+    if (spdy_version() >= SPDY3 && key[0] == ':')
+      key = key.substr(1);
+    std::vector<std::string> values;
+    base::SplitString(it->second, '\0', &values);
+    for (std::vector<std::string>::const_iterator it2 = values.begin();
+         it2 != values.end(); ++it2) {
+      reply_string += key + ": " + *it2 + "\n";
     }
-    EXPECT_EQ(value_len, current_len);
-    // Copy the last (or only) value.
-    frame_size += AppendToBuffer(value_string + offset,
-                                 value_len - offset,
-                                 &buffer_write,
-                                 &buffer_left);
-    frame_size += AppendToBuffer("\n",
-                                 strlen("\n"),
-                                 &buffer_write,
-                                 &buffer_left);
   }
-  return frame_size;
+  return reply_string;
 }
 
 SpdyFrame* SpdyTestUtil::ConstructSpdySettings(
