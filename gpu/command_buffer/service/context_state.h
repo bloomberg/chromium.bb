@@ -160,9 +160,6 @@ struct GPU_EXPORT ContextState {
 
   scoped_refptr<QueryManager::Query> current_query;
 
-  GLenum hint_generate_mipmap;
-  GLenum hint_fragment_shader_derivative;
-
   bool pack_reverse_row_order;
 
   mutable bool fbo_binding_for_scissor_workaround_dirty_;

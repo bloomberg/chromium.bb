@@ -342,8 +342,26 @@ _STATES = {
       },
     ],
   },
+  'Hint': {
+    'type': 'NamedParameter',
+    'func': 'Hint',
+    'states': [
+      {
+        'name': 'hint_generate_mipmap',
+        'type': 'GLenum',
+        'enum': 'GL_GENERATE_MIPMAP_HINT',
+        'default': 'GL_DONT_CARE'
+      },
+      {
+        'name': 'hint_fragment_shader_derivative',
+        'type': 'GLenum',
+        'enum': 'GL_FRAGMENT_SHADER_DERIVATIVE_HINT_OES',
+        'default': 'GL_DONT_CARE',
+        'extension_flag': 'oes_standard_derivatives'
+      }
+    ],
+  },
   # TODO: Consider implemenenting these states
-  # GL_GENERATE_MIPMAP_HINT
   # GL_ACTIVE_TEXTURE,
   # GL_PACK_ALIGNMENT,
   # GL_UNPACK_ALIGNMENT
@@ -1389,7 +1407,10 @@ _FUNCTION_INFO = {
       '1': 'GL_INCR'
     },
   },
-  'Hint': {'decoder_func': 'DoHint'},
+  'Hint': {
+    'type': 'StateSetNamedParameter',
+    'state': 'Hint',
+  },
   'CullFace': {'type': 'StateSet', 'state': 'CullFace'},
   'FrontFace': {'type': 'StateSet', 'state': 'FrontFace'},
   'DepthFunc': {'type': 'StateSet', 'state': 'DepthFunc'},
@@ -3275,6 +3296,36 @@ class StateSetFrontBackHandler(TypeHandler):
     if not func.GetInfo("no_gl"):
       file.Write("    %s(%s);\n" %
                  (func.GetGLFunctionName(), func.MakeOriginalArgString("")))
+    file.Write("  }\n")
+
+
+class StateSetNamedParameter(TypeHandler):
+  """Handler for commands that set a state chosen with an enum parameter."""
+
+  def __init__(self):
+    TypeHandler.__init__(self)
+
+  def WriteHandlerImplementation(self, func, file):
+    """Overridden from TypeHandler."""
+    state_name = func.GetInfo('state')
+    state = _STATES[state_name]
+    states = state['states']
+    args = func.GetOriginalArgs()
+    num_args = len(args)
+    assert num_args == 2
+    file.Write("  switch (%s) {\n" % args[0].name)
+    for state in states:
+      file.Write("    case %s:\n" % state['enum'])
+      file.Write("      if (state_.%s != %s) {\n" %
+                 (state['name'], args[1].name))
+      file.Write("        state_.%s = %s;\n" % (state['name'], args[1].name))
+      if not func.GetInfo("no_gl"):
+        file.Write("        %s(%s);\n" %
+                   (func.GetGLFunctionName(), func.MakeOriginalArgString("")))
+      file.Write("      }\n")
+      file.Write("      break;\n")
+    file.Write("    default:\n")
+    file.Write("      NOTREACHED();\n")
     file.Write("  }\n")
 
 
@@ -6739,6 +6790,7 @@ class GLGenerator(object):
       'StateSetRGBAlpha': StateSetRGBAlphaHandler(),
       'StateSetFrontBack': StateSetFrontBackHandler(),
       'StateSetFrontBackSeparate': StateSetFrontBackSeparateHandler(),
+      'StateSetNamedParameter': StateSetNamedParameter(),
       'STRn': STRnHandler(),
       'Todo': TodoHandler(),
     }
@@ -7058,6 +7110,13 @@ void ContextState::InitState() const {
           file.Write(
               "  gl%s(%s, %s);\n" %
               (state['func'], ('GL_FRONT', 'GL_BACK')[ndx], ", ".join(args)))
+      elif state['type'] == 'NamedParameter':
+        for item in state['states']:
+          if 'extension_flag' in item:
+            file.Write("  if (feature_info_->feature_flags().%s)\n  " %
+                       item['extension_flag'])
+          file.Write("  gl%s(%s, %s);\n" %
+                     (state['func'], item['enum'], item['name']))
       else:
         args = []
         for item in state['states']:
@@ -7223,6 +7282,15 @@ void GLES2DecoderTestBase::SetupInitStateExpectations() {
           file.Write(
               "  EXPECT_CALL(*gl_, %s(%s, %s))\n" %
               (state['func'], ('GL_FRONT', 'GL_BACK')[ndx], ", ".join(args)))
+          file.Write("      .Times(1)\n")
+          file.Write("      .RetiresOnSaturation();\n")
+      elif state['type'] == 'NamedParameter':
+        for item in state['states']:
+          if 'extension_flag' in item:
+            continue
+          file.Write(
+              "  EXPECT_CALL(*gl_, %s(%s, %s))\n" %
+              (state['func'], item['enum'], item['default']))
           file.Write("      .Times(1)\n")
           file.Write("      .RetiresOnSaturation();\n")
       else:
@@ -7638,6 +7706,8 @@ def main(argv):
       _ENUM_LISTS['GLState']['valid'].append(state['enum'])
     else:
       for item in state['states']:
+        if 'extension_flag' in item:
+          continue
         _ENUM_LISTS['GLState']['valid'].append(item['enum'])
   for capability in _CAPABILITY_FLAGS:
     _ENUM_LISTS['GLState']['valid'].append("GL_%s" % capability['name'].upper())

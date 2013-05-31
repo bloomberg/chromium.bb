@@ -1156,7 +1156,6 @@ class GLES2DecoderImpl : public GLES2Decoder {
 
   // Wrappers for various state.
   void DoDepthRangef(GLclampf znear, GLclampf zfar);
-  void DoHint(GLenum target, GLenum mode);
   void DoSampleCoverage(GLclampf value, GLboolean invert);
 
   // Wrapper for glCompileShader.
@@ -4780,20 +4779,6 @@ void GLES2DecoderImpl::DoDepthRangef(GLclampf znear, GLclampf zfar) {
   state_.z_near = std::min(1.0f, std::max(0.0f, znear));
   state_.z_far = std::min(1.0f, std::max(0.0f, zfar));
   glDepthRange(znear, zfar);
-}
-
-void GLES2DecoderImpl::DoHint(GLenum target, GLenum mode) {
-  switch (target) {
-    case GL_GENERATE_MIPMAP_HINT:
-      state_.hint_generate_mipmap = mode;
-      break;
-    case GL_FRAGMENT_SHADER_DERIVATIVE_HINT_OES:
-      state_.hint_fragment_shader_derivative = mode;
-      break;
-    default:
-      NOTREACHED();
-  }
-  glHint(target, mode);
 }
 
 void GLES2DecoderImpl::DoSampleCoverage(GLclampf value, GLboolean invert) {

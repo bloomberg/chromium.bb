@@ -49,6 +49,8 @@ void ContextState::Initialize() {
   z_near = 0.0f;
   z_far = 1.0f;
   front_face = GL_CCW;
+  hint_generate_mipmap = GL_DONT_CARE;
+  hint_fragment_shader_derivative = GL_DONT_CARE;
   line_width = 1.0f;
   polygon_offset_factor = 0.0f;
   polygon_offset_units = 0.0f;
@@ -108,6 +110,10 @@ void ContextState::InitState() const {
   glDepthMask(depth_mask);
   glDepthRange(z_near, z_far);
   glFrontFace(front_face);
+  glHint(GL_GENERATE_MIPMAP_HINT, hint_generate_mipmap);
+  if (feature_info_->feature_flags().oes_standard_derivatives)
+    glHint(
+      GL_FRAGMENT_SHADER_DERIVATIVE_HINT_OES, hint_fragment_shader_derivative);
   glLineWidth(line_width);
   glPolygonOffset(polygon_offset_factor, polygon_offset_units);
   glSampleCoverage(sample_coverage_value, sample_coverage_invert);
@@ -207,6 +213,18 @@ bool ContextState::GetStateAsGLint(
       *num_written = 1;
       if (params) {
         params[0] = static_cast<GLint>(stencil_clear);
+      }
+      return true;
+    case GL_GENERATE_MIPMAP_HINT:
+      *num_written = 1;
+      if (params) {
+        params[0] = static_cast<GLint>(hint_generate_mipmap);
+      }
+      return true;
+    case GL_FRAGMENT_SHADER_DERIVATIVE_HINT_OES:
+      *num_written = 1;
+      if (params) {
+        params[0] = static_cast<GLint>(hint_fragment_shader_derivative);
       }
       return true;
     case GL_COLOR_WRITEMASK:
@@ -507,6 +525,18 @@ bool ContextState::GetStateAsGLfloat(
       *num_written = 1;
       if (params) {
         params[0] = static_cast<GLfloat>(stencil_clear);
+      }
+      return true;
+    case GL_GENERATE_MIPMAP_HINT:
+      *num_written = 1;
+      if (params) {
+        params[0] = static_cast<GLfloat>(hint_generate_mipmap);
+      }
+      return true;
+    case GL_FRAGMENT_SHADER_DERIVATIVE_HINT_OES:
+      *num_written = 1;
+      if (params) {
+        params[0] = static_cast<GLfloat>(hint_fragment_shader_derivative);
       }
       return true;
     case GL_COLOR_WRITEMASK:

@@ -59,6 +59,9 @@ void GLES2DecoderTestBase::SetupInitStateExpectations() {
   EXPECT_CALL(*gl_, FrontFace(GL_CCW))
       .Times(1)
       .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, Hint(GL_GENERATE_MIPMAP_HINT, GL_DONT_CARE))
+      .Times(1)
+      .RetiresOnSaturation();
   EXPECT_CALL(*gl_, LineWidth(1.0f))
       .Times(1)
       .RetiresOnSaturation();

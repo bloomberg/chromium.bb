@@ -49,6 +49,8 @@ GLboolean depth_mask;
 GLclampf z_near;
 GLclampf z_far;
 GLenum front_face;
+GLenum hint_generate_mipmap;
+GLenum hint_fragment_shader_derivative;
 GLfloat line_width;
 GLfloat polygon_offset_factor;
 GLfloat polygon_offset_units;

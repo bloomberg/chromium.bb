@@ -39,8 +39,6 @@ ContextState::ContextState(FeatureInfo* feature_info, Logger* logger)
     : pack_alignment(4),
       unpack_alignment(4),
       active_texture_unit(0),
-      hint_generate_mipmap(GL_DONT_CARE),
-      hint_fragment_shader_derivative(GL_DONT_CARE),
       pack_reverse_row_order(false),
       fbo_binding_for_scissor_workaround_dirty_(false),
       feature_info_(feature_info),
@@ -141,10 +139,6 @@ void ContextState::RestoreGlobalState() const {
 
   glPixelStorei(GL_PACK_ALIGNMENT, pack_alignment);
   glPixelStorei(GL_UNPACK_ALIGNMENT, unpack_alignment);
-
-  glHint(GL_GENERATE_MIPMAP_HINT, hint_generate_mipmap);
-  // TODO: If OES_standard_derivatives is available
-  // restore GL_FRAGMENT_SHADER_DERIVATIVE_HINT_OES
 }
 
 void ContextState::RestoreState() const {
