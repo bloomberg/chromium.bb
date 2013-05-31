@@ -86,6 +86,41 @@ void ActivityLog::RecomputeLoggingIsEnabled() {
   return LogIsEnabled::GetInstance()->ComputeIsEnabled();
 }
 
+// This handles errors from the database.
+class KillActivityDatabaseErrorDelegate : public sql::ErrorDelegate {
+ public:
+  explicit KillActivityDatabaseErrorDelegate(ActivityLog* backend)
+      : backend_(backend),
+        scheduled_death_(false) {}
+
+  virtual int OnError(int error,
+                      sql::Connection* connection,
+                      sql::Statement* stmt) OVERRIDE {
+    if (!scheduled_death_ && sql::IsErrorCatastrophic(error)) {
+      ScheduleDeath();
+    }
+    return error;
+  }
+
+  // Schedules death if an error wasn't already reported.
+  void ScheduleDeath() {
+    if (!scheduled_death_) {
+      scheduled_death_ = true;
+      backend_->KillActivityLogDatabase();
+    }
+  }
+
+  bool scheduled_death() const {
+    return scheduled_death_;
+  }
+
+ private:
+  ActivityLog* backend_;
+  bool scheduled_death_;
+
+  DISALLOW_COPY_AND_ASSIGN(KillActivityDatabaseErrorDelegate);
+};
+
 // ActivityLogFactory
 
 ActivityLogFactory* ActivityLogFactory::GetInstance() {
@@ -139,8 +174,9 @@ ActivityLog::ActivityLog(Profile* profile) : profile_(profile) {
   base::FilePath base_dir = profile->GetPath();
   base::FilePath database_name = base_dir.Append(
       chrome::kExtensionActivityLogFilename);
-  db_->SetErrorCallback(base::Bind(&ActivityLog::DatabaseErrorCallback,
-                                   base::Unretained(this)));
+  KillActivityDatabaseErrorDelegate* error_delegate =
+      new KillActivityDatabaseErrorDelegate(this);
+  db_->SetErrorDelegate(error_delegate);
   ScheduleAndForget(&ActivityDatabase::Init, database_name);
 }
 
@@ -367,9 +403,8 @@ void ActivityLog::OnScriptsExecuted(
   }
 }
 
-void ActivityLog::DatabaseErrorCallback(int error, sql::Statement* stmt) {
-  if (sql::IsErrorCatastrophic(error))
-    ScheduleAndForget(&ActivityDatabase::KillDatabase);
+void ActivityLog::KillActivityLogDatabase() {
+  ScheduleAndForget(&ActivityDatabase::KillDatabase);
 }
 
 }  // namespace extensions

@@ -113,6 +113,10 @@ class ActivityLog : public BrowserContextKeyedService,
                       <void(scoped_ptr<std::vector<scoped_refptr<Action> > >)>&
                       callback);
 
+  // An error has happened; we want to rollback and close the db.
+  // Needs to be public so the error delegate can call it.
+  void KillActivityLogDatabase();
+
   // For unit tests only.
   void SetArgumentLoggingForTesting(bool log_arguments);
 
@@ -121,9 +125,6 @@ class ActivityLog : public BrowserContextKeyedService,
 
   explicit ActivityLog(Profile* profile);
   virtual ~ActivityLog();
-
-  // Reset the database in case of persistent catastrophic errors.
-  void DatabaseErrorCallback(int error, sql::Statement* stmt);
 
   // We log callbacks and API calls very similarly, so we handle them the same
   // way internally.

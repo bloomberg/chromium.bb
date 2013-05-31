@@ -42,9 +42,8 @@ ActivityDatabase::ActivityDatabase()
 
 ActivityDatabase::~ActivityDatabase() {}
 
-void ActivityDatabase::SetErrorCallback(
-    const sql::Connection::ErrorCallback& error_callback) {
-  db_.set_error_callback(error_callback);
+void ActivityDatabase::SetErrorDelegate(sql::ErrorDelegate* error_delegate) {
+  db_.set_error_delegate(error_delegate);
 }
 
 void ActivityDatabase::Init(const base::FilePath& db_name) {
