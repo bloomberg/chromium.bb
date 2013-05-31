@@ -646,9 +646,16 @@ bool RenderTheme::isControlContainer(ControlPart appearance) const
 
 static bool isBackgroundOrBorderStyled(const RenderStyle& style, const BorderData& border, const FillLayer& background, const Color& backgroundColor)
 {
+    // Code below excludes the background-repeat from comparison by resetting it
+    FillLayer backgroundCopy = background;
+    FillLayer backgroundLayersCopy = *style.backgroundLayers();
+    backgroundCopy.setRepeatX(NoRepeatFill);
+    backgroundCopy.setRepeatY(NoRepeatFill);
+    backgroundLayersCopy.setRepeatX(NoRepeatFill);
+    backgroundLayersCopy.setRepeatY(NoRepeatFill);
     // Test the style to see if the UA border and background match.
     return style.border() != border
-        || *style.backgroundLayers() != background
+        || backgroundLayersCopy != backgroundCopy
         || style.visitedDependentColor(CSSPropertyBackgroundColor) != backgroundColor;
 }
 
