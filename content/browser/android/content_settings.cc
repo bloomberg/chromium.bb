@@ -10,7 +10,7 @@
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/public/browser/web_contents.h"
 #include "jni/ContentSettings_jni.h"
-#include "webkit/glue/webpreferences.h"
+#include "webkit/common/webpreferences.h"
 
 namespace content {
 

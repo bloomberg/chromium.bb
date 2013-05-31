@@ -6,7 +6,7 @@
 #define PPAPI_SHARED_IMPL_PPAPI_PREFERENCES_H_
 
 #include "ppapi/shared_impl/ppapi_shared_export.h"
-#include "webkit/glue/webpreferences.h"
+#include "webkit/common/webpreferences.h"
 
 struct WebPreferences;
 

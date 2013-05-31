@@ -10,7 +10,7 @@
 #include "base/utf_string_conversions.h"
 #include "content/shell/common/shell_switches.h"
 #include "third_party/WebKit/Tools/DumpRenderTree/chromium/TestRunner/public/WebPreferences.h"
-#include "webkit/glue/webpreferences.h"
+#include "webkit/common/webpreferences.h"
 
 namespace content {
 

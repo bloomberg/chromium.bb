@@ -61,7 +61,7 @@
 #include "ui/gfx/skbitmap_operations.h"
 #include "ui/gfx/vector2d_conversions.h"
 #include "webkit/common/cursors/webcursor.h"
-#include "webkit/glue/webpreferences.h"
+#include "webkit/common/webpreferences.h"
 #include "webkit/plugins/npapi/webplugin.h"
 #include "webkit/plugins/npapi/webplugin_delegate_impl.h"
 

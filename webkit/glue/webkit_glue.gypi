@@ -88,6 +88,8 @@
         'weburlrequest_extradata_impl.h',
         'weburlresponse_extradata_impl.cc',
         'weburlresponse_extradata_impl.h',
+        '../common/webpreferences.cc',
+        '../common/webpreferences.h',
       ],
 
       'conditions': [
@@ -128,8 +130,10 @@
         'WEBKIT_GLUE_IMPLEMENTATION',
       ],
       'dependencies': [
-        '<(DEPTH)/base/base.gyp:base_i18n',
         '<(DEPTH)/base/base.gyp:base',
+        '<(DEPTH)/base/base.gyp:base_i18n',
+        '<(DEPTH)/build/temp_gyp/googleurl.gyp:googleurl',
+        '<(DEPTH)/third_party/icu/icu.gyp:icuuc',
         '<(DEPTH)/third_party/WebKit/Source/WebKit/chromium/WebKit.gyp:webkit',
         'glue_common',
       ],
@@ -144,6 +148,7 @@
         '../renderer/cpp_bound_class.h',
         '../renderer/cpp_variant.cc',
         '../renderer/cpp_variant.h',
+        '../renderer/webpreferences_renderer.cc',
       ],
     },
 
@@ -241,8 +246,6 @@
         'webmenuitem.h',
         'webmenurunner_mac.h',
         'webmenurunner_mac.mm',
-        'webpreferences.cc',
-        'webpreferences.h',
         'websocketstreamhandle_bridge.h',
         'websocketstreamhandle_delegate.h',
         'websocketstreamhandle_impl.cc',

@@ -20,7 +20,7 @@
 #include "third_party/WebKit/public/platform/WebReferrerPolicy.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
 #include "ui/base/window_open_disposition.h"
-#include "webkit/glue/webpreferences.h"
+#include "webkit/common/webpreferences.h"
 #include "webkit/plugins/webplugininfo.h"
 
 #undef IPC_MESSAGE_EXPORT

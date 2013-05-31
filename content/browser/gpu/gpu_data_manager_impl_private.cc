@@ -32,7 +32,7 @@
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_switches.h"
 #include "ui/gl/gpu_switching_manager.h"
-#include "webkit/glue/webpreferences.h"
+#include "webkit/common/webpreferences.h"
 #include "webkit/plugins/plugin_switches.h"
 
 #if defined(OS_MACOSX)
