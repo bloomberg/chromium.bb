@@ -203,10 +203,7 @@ bool ProfileSyncService::IsSyncTokenAvailable() {
 }
 #if defined(OS_ANDROID)
 bool ProfileSyncService::ShouldEnablePasswordSyncForAndroid() const {
-  const syncer::ModelTypeSet registered_types = GetRegisteredDataTypes();
-  const syncer::ModelTypeSet preferred_types =
-      sync_prefs_.GetPreferredDataTypes(registered_types);
-  if (!preferred_types.Has(syncer::PASSWORDS))
+  if (!GetPreferredDataTypes().Has(syncer::PASSWORDS))
     return false;
   // If backend has not completed initializing we cannot check if the
   // cryptographer is ready.
@@ -263,8 +260,7 @@ void ProfileSyncService::TrySyncDatatypePrefRecovery() {
   PrefService* const pref_service = profile_->GetPrefs();
   if (!pref_service)
     return;
-  const syncer::ModelTypeSet registered_types = GetRegisteredDataTypes();
-  if (sync_prefs_.GetPreferredDataTypes(registered_types).Size() > 1)
+  if (GetPreferredDataTypes().Size() > 1)
     return;
 
   const PrefService::Preference* keep_everything_synced =
@@ -278,6 +274,7 @@ void ProfileSyncService::TrySyncDatatypePrefRecovery() {
   // types now, before we configure.
   UMA_HISTOGRAM_COUNTS("Sync.DatatypePrefRecovery", 1);
   sync_prefs_.SetKeepEverythingSynced(true);
+  syncer::ModelTypeSet registered_types = GetRegisteredDataTypes();
   sync_prefs_.SetPreferredDataTypes(registered_types,
                                     registered_types);
 }
@@ -560,7 +557,7 @@ void ProfileSyncService::OnDataTypeRequestsSyncStartup(
     return;
   }
 
-  if (!GetPreferredDataTypes().Has(type)) {
+  if (!GetActiveDataTypes().Has(type)) {
     // We can get here as datatype SyncableServices are typically wired up
     // to the native datatype even if sync isn't enabled.
     DVLOG(1) << "Dropping sync startup request because type "
@@ -1146,8 +1143,7 @@ void ProfileSyncService::OnPassphraseAccepted() {
 
   // Make sure the data types that depend on the passphrase are started at
   // this time.
-  const syncer::ModelTypeSet types = GetPreferredDataTypes();
-
+  const syncer::ModelTypeSet types = GetActiveDataTypes();
   if (data_type_manager_) {
     // Unblock the data type manager if necessary.
     data_type_manager_->Configure(types,
@@ -1170,7 +1166,7 @@ void ProfileSyncService::OnEncryptedTypesChanged(
 
   // If sessions are encrypted, full history sync is not possible, and
   // delete directives are unnecessary.
-  if (GetPreferredDataTypes().Has(syncer::HISTORY_DELETE_DIRECTIVES) &&
+  if (GetActiveDataTypes().Has(syncer::HISTORY_DELETE_DIRECTIVES) &&
       encrypted_types_.Has(syncer::SESSIONS)) {
     DisableBrokenDatatype(syncer::HISTORY_DELETE_DIRECTIVES,
                           FROM_HERE,
@@ -1437,8 +1433,6 @@ bool ProfileSyncService::IsPassphraseRequired() const {
       syncer::REASON_PASSPHRASE_NOT_REQUIRED;
 }
 
-// TODO(zea): Rename this IsPassphraseNeededFromUI and ensure it's used
-// appropriately (see http://crbug.com/91379).
 bool ProfileSyncService::IsPassphraseRequiredForDecryption() const {
   // If there is an encrypted datatype enabled and we don't have the proper
   // passphrase, we must prompt the user for a passphrase. The only way for the
@@ -1554,13 +1548,18 @@ void ProfileSyncService::ChangePreferredDataTypes(
   ReconfigureDatatypeManager();
 }
 
+syncer::ModelTypeSet ProfileSyncService::GetActiveDataTypes() const {
+  const syncer::ModelTypeSet preferred_types = GetPreferredDataTypes();
+  const syncer::ModelTypeSet failed_types =
+      failed_datatypes_handler_.GetFailedTypes();
+  return Difference(preferred_types, failed_types);
+}
+
 syncer::ModelTypeSet ProfileSyncService::GetPreferredDataTypes() const {
   const syncer::ModelTypeSet registered_types = GetRegisteredDataTypes();
   const syncer::ModelTypeSet preferred_types =
       sync_prefs_.GetPreferredDataTypes(registered_types);
-  const syncer::ModelTypeSet failed_types =
-      failed_datatypes_handler_.GetFailedTypes();
-  return Difference(preferred_types, failed_types);
+  return preferred_types;
 }
 
 syncer::ModelTypeSet ProfileSyncService::GetRegisteredDataTypes() const {
@@ -1643,13 +1642,12 @@ void ProfileSyncService::ConfigureDataTypeManager() {
   // datatypes, but we need to resolve crbug.com/226195 first.
 
 #if defined(OS_ANDROID)
-  if (GetPreferredDataTypes().Has(syncer::PASSWORDS) &&
+  if (GetActiveDataTypes().Has(syncer::PASSWORDS) &&
       !ShouldEnablePasswordSyncForAndroid()) {
     DisableBrokenDatatype(syncer::PASSWORDS, FROM_HERE, "Not supported.");
   }
 #endif
 
-  const syncer::ModelTypeSet types = GetPreferredDataTypes();
   if (IsPassphraseRequiredForDecryption()) {
     // We need a passphrase still. We don't bother to attempt to configure
     // until we receive an OnPassphraseAccepted (which triggers a configure).
@@ -1658,6 +1656,8 @@ void ProfileSyncService::ConfigureDataTypeManager() {
     NotifyObservers();
     return;
   }
+
+  const syncer::ModelTypeSet types = GetActiveDataTypes();
   syncer::ConfigureReason reason = syncer::CONFIGURE_REASON_UNKNOWN;
   if (!HasSyncSetupCompleted()) {
     reason = syncer::CONFIGURE_REASON_NEW_CLIENT;

@@ -31,10 +31,9 @@ class ProfileSyncServiceBase {
   // any model-modifying operations.
   virtual bool ShouldPushChanges() = 0;
 
-  // Get the set of currently enabled data types (as chosen or
-  // configured by the user).  See class comment on ProfileSyncService
-  // for more on what it means for a datatype to be Preferred.
-  virtual syncer::ModelTypeSet GetPreferredDataTypes() const = 0;
+  // Get the set of current active data types (those chosen or configured by
+  // the user which have not also encountered a runtime error).
+  virtual syncer::ModelTypeSet GetActiveDataTypes() const = 0;
 
   // Adds/removes an observer. ProfileSyncServiceBase does not take
   // ownership of the observer.

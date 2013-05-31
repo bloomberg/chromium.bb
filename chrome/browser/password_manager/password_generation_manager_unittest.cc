@@ -164,7 +164,7 @@ TEST_F(PasswordGenerationManagerTest, UpdatePasswordSyncState) {
   preferred_set.Put(syncer::EXTENSIONS);
   preferred_set.Put(syncer::PREFERENCES);
   sync_service->ChangePreferredDataTypes(preferred_set);
-  syncer::ModelTypeSet new_set = sync_service->GetPreferredDataTypes();
+  syncer::ModelTypeSet new_set = sync_service->GetActiveDataTypes();
   UpdateState(false);
   EXPECT_EQ(0u, password_generation_manager_->GetSentStates().size());
 
