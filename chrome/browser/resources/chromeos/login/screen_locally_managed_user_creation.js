@@ -292,6 +292,7 @@ login.createScreen('LocallyManagedUserCreationScreen',
       this.buttonIds.push(buttonId);
       var result = this.ownerDocument.createElement('button');
       result.id = this.name() + '-' + buttonId + '-button';
+      result.classList.add('screen-control-button');
       result.textContent = loadTimeData.
           getString(i18nPrefix + capitalizedId + 'ButtonTitle');
       result.addEventListener('click', function(e) {
@@ -348,7 +349,6 @@ login.createScreen('LocallyManagedUserCreationScreen',
       var status = this.makeFromTemplate('status-container', 'status');
       buttons.push(status);
 
-
       buttons.push(this.makeButton(
           'start',
           'managedUserCreationFlow',
@@ -372,6 +372,12 @@ login.createScreen('LocallyManagedUserCreationScreen',
           'managedUserCreationFlow',
           this.finishButtonPressed_.bind(this),
           ['tutorial']));
+
+      buttons.push(this.makeButton(
+          'handleError',
+          'managedUserCreationFlow',
+          this.handleErrorButtonPressed_.bind(this),
+          ['error']));
 
       return buttons;
     },
@@ -605,6 +611,10 @@ login.createScreen('LocallyManagedUserCreationScreen',
 
     finishButtonPressed_: function() {
       chrome.send('finishLocalManagedUserCreation');
+    },
+
+    handleErrorButtonPressed_: function() {
+      chrome.send('abortLocalManagedUserCreation');
     },
 
     startButtonPressed_: function() {

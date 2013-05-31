@@ -474,6 +474,9 @@ Press any key to continue exploring.
   <message name="IDS_CREATE_LOCALLY_MANAGED_USER_CREATION_SUCCESS_BUTTON_TITLE" desc="Text for button on a screen with successful locally managed user creation text">
     Got it!
   </message>
+  <message name="IDS_CREATE_LOCALLY_MANAGED_USER_CREATE_HANDLE_ERROR_BUTTON_TEXT" desc="Text for button on an error screen that closes locally managed user creation dialog">
+    Okay
+  </message>
   <message name="IDS_CREATE_LOCALLY_MANAGED_USER_PROFILE_CREATED_TEXT" desc="Messsage indicating that profile was created.">
     A profile for <ph name="USER_DISPLAY_NAME">$1<ex>John</ex></ph> has been created.
   </message>

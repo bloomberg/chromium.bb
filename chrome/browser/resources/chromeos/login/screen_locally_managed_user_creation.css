@@ -78,6 +78,14 @@
   width: 645px;
 }
 
+#managed-user-creation-flow-error .error-header {
+  padding-top: 10px;
+}
+
+.screen-control-button {
+  padding-left: 12px;
+}
+
 .manager-pod {
   opacity: 0.8;
   padding-bottom: 10px;
