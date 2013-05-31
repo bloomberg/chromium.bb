@@ -22,7 +22,8 @@ class Feedback {
   ~Feedback();
 
   // Returns the misspelling identified by |hash|. Returns NULL if there's no
-  // misspelling identified by |hash|. Retains the ownership of the result.
+  // misspelling identified by |hash|. Retains the ownership of the result. The
+  // caller should not modify the hash in the returned misspelling.
   Misspelling* GetMisspelling(uint32 hash);
 
   // Finalizes the user actions on misspellings that are removed from the
@@ -67,6 +68,9 @@ class Feedback {
   // Removes all misspellings.
   void Clear();
 
+  // Returns a list of all misspelling identifiers for |misspelled_text|.
+  const std::set<uint32>& FindMisspellings(const string16& misspelled_text);
+
  private:
   // A map of hashes that identify document markers to feedback data to be sent
   // to spelling service.
@@ -76,7 +80,11 @@ class Feedback {
   // A map of renderer process ID to hashes that identify misspellings.
   typedef std::set<uint32> HashCollection;
   typedef std::map<int, HashCollection> RendererHashesMap;
-  RendererHashesMap hashes_;
+  RendererHashesMap renderers_;
+
+  // A map of misspelled text to hashes that identify misspellings.
+  typedef std::map<string16, HashCollection> TextHashesMap;
+  TextHashesMap text_;
 
   DISALLOW_COPY_AND_ASSIGN(Feedback);
 };

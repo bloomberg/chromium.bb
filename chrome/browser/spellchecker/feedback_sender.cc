@@ -142,6 +142,17 @@ void FeedbackSender::AddedToDictionary(uint32 hash) {
     return;
   misspelling->action.type = SpellcheckAction::TYPE_ADD_TO_DICT;
   misspelling->timestamp = base::Time::Now();
+  const std::set<uint32>& misspellings = feedback_.FindMisspellings(
+      misspelling->context.substr(misspelling->location, misspelling->length));
+  for (std::set<uint32>::const_iterator it = misspellings.begin();
+       it != misspellings.end();
+       ++it) {
+    Misspelling* duplicate_misspelling = feedback_.GetMisspelling(*it);
+    if (duplicate_misspelling && !duplicate_misspelling->action.IsFinal()) {
+      duplicate_misspelling->action.type = SpellcheckAction::TYPE_ADD_TO_DICT;
+      duplicate_misspelling->timestamp = misspelling->timestamp;
+    }
+  }
 }
 
 void FeedbackSender::IgnoredSuggestions(uint32 hash) {

@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/spellchecker/feedback.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -97,6 +98,7 @@ TEST_F(FeedbackTest, EraseFinalizedMisspellings) {
   EXPECT_TRUE(feedback_.RendererHasMisspellings(kRendererProcessId));
   feedback_.EraseFinalizedMisspellings(kRendererProcessId);
   EXPECT_FALSE(feedback_.RendererHasMisspellings(kRendererProcessId));
+  EXPECT_TRUE(feedback_.GetMisspellingsInRenderer(kRendererProcessId).empty());
 }
 
 // Should be able to check for misspelling existence.
@@ -171,6 +173,82 @@ TEST_F(FeedbackTest, ClearFeedback) {
   EXPECT_FALSE(feedback_.Empty());
   feedback_.Clear();
   EXPECT_TRUE(feedback_.Empty());
+}
+
+// Should be able to find misspellings by misspelled word.
+TEST_F(FeedbackTest, FindMisspellingsByText) {
+  static const string16 kMisspelledText =
+      ASCIIToUTF16("Helllo world. Helllo world");
+  static const string16 kSuggestion = ASCIIToUTF16("Hello");
+  static const int kMisspellingStart = 0;
+  static const int kMisspellingLength = 6;
+  static const int kSentenceLength = 14;
+  static const int kNumberOfSentences = 2;
+  static const int kNumberOfRenderers = 2;
+  uint32 hash = kMisspellingHash;
+  for (int renderer_process_id = kRendererProcessId;
+       renderer_process_id < kRendererProcessId + kNumberOfRenderers;
+       ++renderer_process_id) {
+    for (int j = 0; j < kNumberOfSentences; ++j) {
+      feedback_.AddMisspelling(
+          renderer_process_id,
+          Misspelling(kMisspelledText,
+                      kMisspellingStart + j * kSentenceLength,
+                      kMisspellingLength,
+                      std::vector<string16>(1, kSuggestion),
+                      ++hash));
+    }
+  }
+
+  static const string16 kOtherMisspelledText = ASCIIToUTF16("Somethign else");
+  static const string16 kOtherSuggestion = ASCIIToUTF16("Something");
+  static const int kOtherMisspellingStart = 0;
+  static const int kOtherMisspellingLength = 9;
+  feedback_.AddMisspelling(
+      kRendererProcessId,
+      Misspelling(kOtherMisspelledText,
+                  kOtherMisspellingStart,
+                  kOtherMisspellingLength,
+                  std::vector<string16>(1, kOtherSuggestion),
+                  hash + 1));
+
+  static const string16 kMisspelledWord = ASCIIToUTF16("Helllo");
+  const std::set<uint32>& misspellings =
+      feedback_.FindMisspellings(kMisspelledWord);
+  EXPECT_EQ(static_cast<size_t>(kNumberOfSentences * kNumberOfRenderers),
+            misspellings.size());
+
+  for (std::set<uint32>::const_iterator it = misspellings.begin();
+       it != misspellings.end();
+      ++it) {
+    Misspelling* misspelling = feedback_.GetMisspelling(*it);
+    EXPECT_NE(static_cast<Misspelling*>(NULL), misspelling);
+    EXPECT_TRUE(misspelling->hash >= kMisspellingHash &&
+                misspelling->hash <= hash);
+    EXPECT_EQ(kMisspelledWord,
+              misspelling->context.substr(misspelling->location,
+                                          misspelling->length));
+  }
+}
+
+// Should not be able to find misspellings by misspelled word after they have
+// been removed.
+TEST_F(FeedbackTest, CannotFindMisspellingsByTextAfterErased) {
+  static const string16 kMisspelledText = ASCIIToUTF16("Helllo world");
+  static const string16 kMisspelledWord = ASCIIToUTF16("Helllo");
+  static const string16 kSuggestion = ASCIIToUTF16("Hello");
+  static const int kMisspellingStart = 0;
+  static const int kMisspellingLength = 6;
+  feedback_.AddMisspelling(
+      kRendererProcessId,
+      Misspelling(kMisspelledText,
+                  kMisspellingStart,
+                  kMisspellingLength,
+                  std::vector<string16>(1, kSuggestion),
+                  kMisspellingHash));
+  feedback_.GetMisspelling(kMisspellingHash)->action.Finalize();
+  feedback_.EraseFinalizedMisspellings(kRendererProcessId);
+  EXPECT_TRUE(feedback_.FindMisspellings(kMisspelledWord).empty());
 }
 
 }  // namespace spellcheck

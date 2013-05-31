@@ -448,4 +448,81 @@ TEST_F(FeedbackSenderTest, MatchDupliateResultsWithExistingMarkers) {
   EXPECT_EQ(hash, results[0].hash);
 }
 
+namespace {
+
+// Returns the number of times that |needle| appears in |haystack| without
+// overlaps. For example, CountOccurences("bananana", "nana") returns 1.
+int CountOccurences(const std::string& haystack, const std::string& needle) {
+  int number_of_occurences = 0;
+  size_t pos = haystack.find(needle);
+  while (pos != std::string::npos) {
+    ++number_of_occurences;
+    pos = haystack.find(needle, pos + needle.length());
+  }
+  return number_of_occurences;
+}
+
+}  // namespace
+
+// Adding a word to dictionary should trigger ADD_TO_DICT feedback for every
+// occurrence of that word.
+TEST_F(FeedbackSenderTest, MultipleAddToDictFeedback) {
+  std::vector<SpellCheckResult> results;
+  static const int kSentenceLength = 14;
+  static const int kNumberOfSentences = 2;
+  static const string16 kTextWithDuplicates =
+      ASCIIToUTF16("Helllo world. Helllo world.");
+  for (int i = 0; i < kNumberOfSentences; ++i) {
+    results.push_back(SpellCheckResult(SpellCheckResult::SPELLING,
+                                       kMisspellingStart + i * kSentenceLength,
+                                       kMisspellingLength,
+                                       ASCIIToUTF16("Hello")));
+  }
+  static const int kNumberOfRenderers = 2;
+  int last_renderer_process_id = -1;
+  for (int i = 0; i < kNumberOfRenderers; ++i) {
+    feedback_.OnSpellcheckResults(&results,
+                                  kRendererProcessId + i,
+                                  kTextWithDuplicates,
+                                  std::vector<SpellCheckMarker>());
+    last_renderer_process_id = kRendererProcessId + i;
+  }
+  std::vector<uint32> remaining_markers;
+  for (size_t i = 0; i < results.size(); ++i)
+    remaining_markers.push_back(results[i].hash);
+  feedback_.OnReceiveDocumentMarkers(last_renderer_process_id,
+                                     remaining_markers);
+  net::TestURLFetcher* fetcher = GetFetcher();
+  EXPECT_EQ(2, CountOccurences(fetcher->upload_data(), "PENDING"))
+      << fetcher->upload_data();
+  EXPECT_EQ(0, CountOccurences(fetcher->upload_data(), "ADD_TO_DICT"))
+      << fetcher->upload_data();
+
+  feedback_.AddedToDictionary(results[0].hash);
+  feedback_.OnReceiveDocumentMarkers(last_renderer_process_id,
+                                     remaining_markers);
+  fetcher = GetFetcher();
+  EXPECT_EQ(0, CountOccurences(fetcher->upload_data(), "PENDING"))
+      << fetcher->upload_data();
+  EXPECT_EQ(2, CountOccurences(fetcher->upload_data(), "ADD_TO_DICT"))
+      << fetcher->upload_data();
+}
+
+// ADD_TO_DICT feedback for multiple occurrences of a word should trigger only
+// for pending feedback.
+TEST_F(FeedbackSenderTest, AddToDictOnlyPending) {
+  AddPendingFeedback();
+  uint32 add_to_dict_hash = AddPendingFeedback();
+  uint32 select_hash = AddPendingFeedback();
+  feedback_.SelectedSuggestion(select_hash, 0);
+  feedback_.AddedToDictionary(add_to_dict_hash);
+  feedback_.OnReceiveDocumentMarkers(kRendererProcessId,
+                                     std::vector<uint32>());
+  net::TestURLFetcher* fetcher = GetFetcher();
+  EXPECT_EQ(1, CountOccurences(fetcher->upload_data(), "SELECT"))
+      << fetcher->upload_data();
+  EXPECT_EQ(2, CountOccurences(fetcher->upload_data(), "ADD_TO_DICT"))
+      << fetcher->upload_data();
+}
+
 }  // namespace spellcheck
