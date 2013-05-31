@@ -24,6 +24,7 @@
 #include "base/stringprintf.h"
 #include "base/strings/string_split.h"
 #include "base/utf_string_conversions.h"
+#include "base/win/metro.h"
 #include "base/win/pe_image.h"
 #include "base/win/registry.h"
 #include "base/win/win_util.h"
@@ -834,6 +835,10 @@ bool ShowRestartDialogIfCrashed(bool* exit_now) {
                                  NULL, 0)) {
     return false;
   }
+
+  // If we are being launched in metro mode don't try to show the dialog.
+  if (base::win::IsMetroProcess())
+    return false;
 
   // Only show this for the browser process. See crbug.com/132119.
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
