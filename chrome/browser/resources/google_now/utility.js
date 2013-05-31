@@ -26,7 +26,7 @@ var NOTIFICATION_CARDS_URL = localStorage['server_url'];
  */
 function verify(condition, message) {
   if (!condition)
-    throw new Error('ASSERT: ' + message);
+    throw new Error('\nASSERT: ' + message);
 }
 
 /**
@@ -181,7 +181,10 @@ function buildTaskManager(areConflicting) {
    * @param {Error} error Error to report.
    */
   function sendErrorReport(error) {
-    var requestParameters = 'stack=' + escape(error.stack);
+    var filteredStack = error.stack.replace(/.*\n/, '');
+    var requestParameters =
+        'name=' + escape(error.name) +
+        '&stack=' + escape(filteredStack);
     var request = buildServerRequest('exception');
     request.onloadend = function(event) {
       console.log('sendErrorReport status: ' + request.status);
