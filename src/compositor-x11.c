@@ -291,7 +291,7 @@ x11_input_create(struct x11_compositor *c, int no_input)
 {
 	struct xkb_keymap *keymap;
 
-	weston_seat_init(&c->core_seat, &c->base);
+	weston_seat_init(&c->core_seat, &c->base, "default");
 
 	if (no_input)
 		return 0;

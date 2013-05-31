@@ -172,7 +172,7 @@ headless_compositor_create(struct wl_display *display,
 	if (weston_compositor_init(&c->base, display, argc, argv, config) < 0)
 		goto err_free;
 
-	weston_seat_init(&c->fake_seat, &c->base);
+	weston_seat_init(&c->fake_seat, &c->base, "default");
 
 	c->base.destroy = headless_destroy;
 	c->base.restore = headless_restore;

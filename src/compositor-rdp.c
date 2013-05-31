@@ -915,6 +915,7 @@ rdp_peer_init(freerdp_peer *client, struct rdp_compositor *c)
 	rdpSettings	*settings;
 	rdpInput *input;
 	RdpPeerContext *peerCtx;
+	char seat_name[32];
 
 	client->context_size = sizeof(RdpPeerContext);
 	client->ContextNew = (psPeerContextNew)rdp_peer_context_new;
@@ -947,7 +948,11 @@ rdp_peer_init(freerdp_peer *client, struct rdp_compositor *c)
 	input->ExtendedMouseEvent = xf_extendedMouseEvent;
 	input->KeyboardEvent = xf_input_keyboard_event;
 	input->UnicodeKeyboardEvent = xf_input_unicode_keyboard_event;
-	weston_seat_init(&peerCtx->item.seat, &c->base);
+
+	if (snprintf(seat_name, 32, "rdp:%d:%s", client->sockfd, client->hostname) >= 32)
+		seat_name[31] = '\0';
+
+	weston_seat_init(&peerCtx->item.seat, &c->base, seat_name);
 
 	client->Initialize(client);
 

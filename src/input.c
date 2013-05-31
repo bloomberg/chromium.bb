@@ -1466,7 +1466,8 @@ weston_seat_init_touch(struct weston_seat *seat)
 }
 
 WL_EXPORT void
-weston_seat_init(struct weston_seat *seat, struct weston_compositor *ec)
+weston_seat_init(struct weston_seat *seat, struct weston_compositor *ec,
+		 const char *seat_name)
 {
 	memset(seat, 0, sizeof *seat);
 
@@ -1482,6 +1483,7 @@ weston_seat_init(struct weston_seat *seat, struct weston_compositor *ec)
 	seat->compositor = ec;
 	seat->modifier_state = 0;
 	seat->num_tp = 0;
+	seat->seat_name = strdup(seat_name);
 
 	wl_list_insert(ec->seat_list.prev, &seat->link);
 
@@ -1506,6 +1508,8 @@ weston_seat_release(struct weston_seat *seat)
 		weston_keyboard_destroy(seat->keyboard);
 	if (seat->touch)
 		weston_touch_destroy(seat->touch);
+
+	free (seat->seat_name);
 
 	wl_signal_emit(&seat->destroy_signal, seat);
 }

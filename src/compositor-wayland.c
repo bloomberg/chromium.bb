@@ -638,7 +638,7 @@ display_add_seat(struct wayland_compositor *c, uint32_t id)
 
 	memset(input, 0, sizeof *input);
 
-	weston_seat_init(&input->base, &c->base);
+	weston_seat_init(&input->base, &c->base, "default");
 	input->compositor = c;
 	input->seat = wl_registry_bind(c->parent.registry, id,
 				       &wl_seat_interface, 1);

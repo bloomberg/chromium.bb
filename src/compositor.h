@@ -447,6 +447,7 @@ struct weston_seat {
 	} xkb_state;
 
 	struct input_method *input_method;
+	char *seat_name;
 };
 
 enum {
@@ -1031,7 +1032,8 @@ void
 weston_output_destroy(struct weston_output *output);
 
 void
-weston_seat_init(struct weston_seat *seat, struct weston_compositor *ec);
+weston_seat_init(struct weston_seat *seat, struct weston_compositor *ec,
+		 const char *seat_name);
 void
 weston_seat_init_pointer(struct weston_seat *seat);
 int

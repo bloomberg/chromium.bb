@@ -271,7 +271,7 @@ udev_seat_create(struct weston_compositor *c, struct udev *udev,
 		return NULL;
 
 	memset(seat, 0, sizeof *seat);
-	weston_seat_init(&seat->base, c);
+	weston_seat_init(&seat->base, c, "default");
 	seat->base.led_update = drm_led_update;
 
 	wl_list_init(&seat->devices_list);
