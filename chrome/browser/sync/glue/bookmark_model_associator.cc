@@ -476,10 +476,13 @@ syncer::SyncError BookmarkModelAssociator::BuildAssociations(
 
     BookmarkNodeFinder node_finder(parent_node);
 
+    std::vector<int64> children;
+    sync_parent.GetChildIds(&children);
     int index = 0;
-    int64 sync_child_id = sync_parent.GetFirstChildId();
-    while (sync_child_id != syncer::kInvalidId) {
-      syncer::WriteNode sync_child_node(&trans);
+    for (std::vector<int64>::const_iterator it = children.begin();
+         it != children.end(); ++it) {
+      int64 sync_child_id = *it;
+      syncer::ReadNode sync_child_node(&trans);
       if (sync_child_node.InitByIdLookup(sync_child_id) !=
               syncer::BaseNode::INIT_OK) {
         return unrecoverable_error_handler_->CreateAndUploadError(
@@ -514,8 +517,6 @@ syncer::SyncError BookmarkModelAssociator::BuildAssociations(
       }
       if (sync_child_node.GetIsFolder())
         dfs_stack.push(sync_child_id);
-
-      sync_child_id = sync_child_node.GetSuccessorId();
       ++index;
     }
 
@@ -525,7 +526,7 @@ syncer::SyncError BookmarkModelAssociator::BuildAssociations(
     // So the children starting from index in the parent bookmark node are the
     // ones that are not present in the parent sync node. So create them.
     for (int i = index; i < parent_node->child_count(); ++i) {
-      sync_child_id = BookmarkChangeProcessor::CreateSyncNode(
+      int64 sync_child_id = BookmarkChangeProcessor::CreateSyncNode(
           parent_node, bookmark_model_, i, &trans, this,
           unrecoverable_error_handler_);
       if (syncer::kInvalidId == sync_child_id) {
