@@ -114,7 +114,7 @@ void SyncClient::OnInitialLoadFinished() {
   StartProcessingBacklog();
 }
 
-void SyncClient::OnFeedFromServerLoaded() {
+void SyncClient::OnLoadFromServerComplete() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   StartCheckingExistingPinnedFiles();

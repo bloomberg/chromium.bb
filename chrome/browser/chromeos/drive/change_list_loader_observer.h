@@ -19,17 +19,16 @@ class ChangeListLoaderObserver {
   // Triggered when a content of a directory has been changed.
   // |directory_path| is a virtual directory path representing the
   // changed directory.
-  virtual void OnDirectoryChanged(const base::FilePath& directory_path) {
-  }
+  virtual void OnDirectoryChanged(const base::FilePath& directory_path) {}
 
-  // Triggered when the feed from the server is loaded.
-  virtual void OnFeedFromServerLoaded() {
-  }
+  // Triggered when loading from the server is complete.
+  virtual void OnLoadFromServerComplete() {}
 
-  // Triggered when the feed is loaded for the first time, either from the
-  // cache or the server.
-  virtual void OnInitialFeedLoaded() {
-  }
+  // Triggered when loading is complete for the first time, either from the
+  // the server or the cache. To be precise, for the latter case, we do not
+  // load anything from the cache. We just check that the resource metadata
+  // is stored locally thus can be used.
+  virtual void OnInitialLoadComplete() {}
 
  protected:
   virtual ~ChangeListLoaderObserver() {}

@@ -120,12 +120,11 @@ bool LoadChangeFeed(const std::string& relative_path,
   about_resource->set_largest_change_id(root_feed_changestamp);
   about_resource->set_root_folder_id(root_resource_id);
 
-  change_list_loader->UpdateFromFeed(
+  change_list_loader->UpdateFromChangeList(
       about_resource.Pass(),
       change_lists.Pass(),
       is_delta_feed,
       base::Bind(&base::DoNothing));
-  // ChangeListLoader::UpdateFromFeed is asynchronous, so wait for it to finish.
   google_apis::test_util::RunBlockingPoolTask();
 
   return true;

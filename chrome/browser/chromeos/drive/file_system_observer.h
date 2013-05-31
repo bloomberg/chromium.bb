@@ -28,8 +28,8 @@ class FileSystemObserver {
   virtual void OnInitialLoadFinished() {
   }
 
-  // Triggered when the feed from the server is loaded.
-  virtual void OnFeedFromServerLoaded() {
+  // Triggered when loading from the server is complete.
+  virtual void OnLoadFromServerComplete() {
   }
 
  protected:

@@ -51,7 +51,7 @@ class SyncClient : public FileSystemObserver, public FileCacheObserver {
 
   // FileSystemInterface::Observer overrides.
   virtual void OnInitialLoadFinished() OVERRIDE;
-  virtual void OnFeedFromServerLoaded() OVERRIDE;
+  virtual void OnLoadFromServerComplete() OVERRIDE;
 
   // FileCache::Observer overrides.
   virtual void OnCachePinned(const std::string& resource_id,

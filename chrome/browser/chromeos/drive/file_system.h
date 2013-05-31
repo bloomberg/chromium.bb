@@ -169,8 +169,8 @@ class FileSystem : public FileSystemInterface,
   // Used to propagate events from ChangeListLoader.
   virtual void OnDirectoryChanged(
       const base::FilePath& directory_path) OVERRIDE;
-  virtual void OnFeedFromServerLoaded() OVERRIDE;
-  virtual void OnInitialFeedLoaded() OVERRIDE;
+  virtual void OnLoadFromServerComplete() OVERRIDE;
+  virtual void OnInitialLoadComplete() OVERRIDE;
 
   // Used in tests to update the file system from |feed_list|.
   // See also the comment at ChangeListLoader::UpdateFromFeed().

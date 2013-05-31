@@ -733,14 +733,14 @@ void FileSystem::OnDirectoryChanged(const base::FilePath& directory_path) {
                     OnDirectoryChanged(directory_path));
 }
 
-void FileSystem::OnFeedFromServerLoaded() {
+void FileSystem::OnLoadFromServerComplete() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   FOR_EACH_OBSERVER(FileSystemObserver, observers_,
-                    OnFeedFromServerLoaded());
+                    OnLoadFromServerComplete());
 }
 
-void FileSystem::OnInitialFeedLoaded() {
+void FileSystem::OnInitialLoadComplete() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   blocking_task_runner_->PostTask(FROM_HERE,
