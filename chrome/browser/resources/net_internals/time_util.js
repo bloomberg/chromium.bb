@@ -49,7 +49,7 @@ var timeutil = (function() {
    * @return {number} Milliseconds since the Unix epoch.
    */
   function getCurrentTime() {
-    return (new Date()).getTime();
+    return Date.now();
   }
 
   /**
