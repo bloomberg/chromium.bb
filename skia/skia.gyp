@@ -175,6 +175,8 @@
         'ext/image_operations.h',
         'ext/lazy_pixel_ref.cc',
         'ext/lazy_pixel_ref.h',
+        'ext/lazy_pixel_ref_utils.cc',
+        'ext/lazy_pixel_ref_utils.h',
         'ext/SkThread_chrome.cc',
         'ext/paint_simplifier.cc',
         'ext/paint_simplifier.h',

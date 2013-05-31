@@ -1804,6 +1804,7 @@
         '../skia/ext/bitmap_platform_device_mac_unittest.cc',
         '../skia/ext/convolver_unittest.cc',
         '../skia/ext/image_operations_unittest.cc',
+        '../skia/ext/lazy_pixel_ref_utils_unittest.cc',
         '../skia/ext/platform_canvas_unittest.cc',
         '../skia/ext/recursive_gaussian_convolution_unittest.cc',
         '../skia/ext/refptr_unittest.cc',
