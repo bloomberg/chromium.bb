@@ -56,6 +56,7 @@
 #include "gpu/command_buffer/service/vertex_attrib_manager.h"
 #include "gpu/command_buffer/service/vertex_array_manager.h"
 #include "gpu/command_buffer/service/async_pixel_transfer_delegate.h"
+#include "gpu/command_buffer/service/async_pixel_transfer_manager.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_image.h"
 #include "ui/gl/gl_implementation.h"
@@ -574,8 +575,11 @@ class GLES2DecoderImpl : public GLES2Decoder {
 
   virtual AsyncPixelTransferDelegate*
       GetAsyncPixelTransferDelegate() OVERRIDE;
-  virtual void SetAsyncPixelTransferDelegate(
+  virtual void SetAsyncPixelTransferDelegateForTest(
       AsyncPixelTransferDelegate* delegate) OVERRIDE;
+  virtual AsyncPixelTransferManager*
+      GetAsyncPixelTransferManager() OVERRIDE;
+  virtual void ResetAsyncPixelTransferManagerForTest() OVERRIDE;
   void ProcessFinishedAsyncTransfers();
 
   virtual bool GetServiceTextureId(uint32 client_texture_id,
@@ -820,7 +824,7 @@ class GLES2DecoderImpl : public GLES2Decoder {
   // Extra validation for async tex(Sub)Image2D.
   bool ValidateAsyncTransfer(
       const char* function_name,
-      Texture* texture,
+      TextureRef* texture_ref,
       GLenum target,
       GLint level,
       const void * data);
@@ -1632,7 +1636,7 @@ class GLES2DecoderImpl : public GLES2Decoder {
   ShaderCacheCallback shader_cache_callback_;
 
   StreamTextureManager* stream_texture_manager_;
-  scoped_ptr<AsyncPixelTransferDelegate> async_pixel_transfer_delegate_;
+  scoped_ptr<AsyncPixelTransferManager> async_pixel_transfer_manager_;
 
   // The format of the back buffer_
   GLenum back_buffer_color_format_;
@@ -2471,9 +2475,8 @@ bool GLES2DecoderImpl::Initialize(
   if (!offscreen)
     context_->SetSafeToForceGpuSwitch();
 
-  // Create a delegate to perform async pixel transfers.
-  async_pixel_transfer_delegate_.reset(
-      AsyncPixelTransferDelegate::Create(context.get()));
+  async_pixel_transfer_manager_.reset(
+      new AsyncPixelTransferManager(texture_manager(), context.get()));
 
   return true;
 }
@@ -2789,7 +2792,7 @@ void GLES2DecoderImpl::ProcessFinishedAsyncTransfers() {
   // from the client, as the client may have recieved an async
   // completion while issuing those commands.
   // "DidFlushStart" would be ideal if we had such a callback.
-  async_pixel_transfer_delegate_->BindCompletedAsyncTransfers();
+  GetAsyncPixelTransferDelegate()->BindCompletedAsyncTransfers();
 }
 
 void GLES2DecoderImpl::ReleaseCurrent() {
@@ -3053,12 +3056,21 @@ void GLES2DecoderImpl::SetStreamTextureManager(StreamTextureManager* manager) {
 
 AsyncPixelTransferDelegate*
     GLES2DecoderImpl::GetAsyncPixelTransferDelegate() {
-  return async_pixel_transfer_delegate_.get();
+  return async_pixel_transfer_manager_->GetAsyncPixelTransferDelegate();
 }
 
-void GLES2DecoderImpl::SetAsyncPixelTransferDelegate(
+void GLES2DecoderImpl::SetAsyncPixelTransferDelegateForTest(
     AsyncPixelTransferDelegate* delegate) {
-  async_pixel_transfer_delegate_ = make_scoped_ptr(delegate);
+  async_pixel_transfer_manager_->SetAsyncPixelTransferDelegateForTest(delegate);
+}
+
+AsyncPixelTransferManager*
+    GLES2DecoderImpl::GetAsyncPixelTransferManager() {
+  return async_pixel_transfer_manager_.get();
+}
+
+void GLES2DecoderImpl::ResetAsyncPixelTransferManagerForTest() {
+  async_pixel_transfer_manager_.reset();
 }
 
 bool GLES2DecoderImpl::GetServiceTextureId(uint32 client_texture_id,
@@ -3073,12 +3085,12 @@ bool GLES2DecoderImpl::GetServiceTextureId(uint32 client_texture_id,
 
 uint32 GLES2DecoderImpl::GetTextureUploadCount() {
   return texture_upload_count_ +
-      async_pixel_transfer_delegate_->GetTextureUploadCount();
+         GetAsyncPixelTransferDelegate()->GetTextureUploadCount();
 }
 
 base::TimeDelta GLES2DecoderImpl::GetTotalTextureUploadTime() {
   return total_texture_upload_time_ +
-      async_pixel_transfer_delegate_->GetTotalTextureUploadTime();
+         GetAsyncPixelTransferDelegate()->GetTotalTextureUploadTime();
 }
 
 base::TimeDelta GLES2DecoderImpl::GetTotalProcessingCommandsTime() {
@@ -3189,6 +3201,10 @@ void GLES2DecoderImpl::Destroy(bool have_context) {
   offscreen_saved_color_texture_.reset();
   offscreen_resolved_frame_buffer_.reset();
   offscreen_resolved_color_texture_.reset();
+
+  // Should destroy the transfer manager before the texture manager held
+  // by the context group.
+  async_pixel_transfer_manager_.reset();
 
   if (group_) {
     group_->Destroy(this, have_context);
@@ -8095,7 +8111,7 @@ void GLES2DecoderImpl::DoCopyTexSubImage2D(
         GL_INVALID_VALUE, "glCopyTexSubImage2D", "bad dimensions.");
     return;
   }
-  if (texture->AsyncTransferIsInProgress()) {
+  if (async_pixel_transfer_manager_->AsyncTransferIsInProgress(texture_ref)) {
     LOCAL_SET_GL_ERROR(
         GL_INVALID_OPERATION,
         "glCopyTexSubImage2D", "async upload pending for texture");
@@ -8231,7 +8247,7 @@ bool GLES2DecoderImpl::ValidateTexSubImage2D(
         function_name, "type does not match type of texture.");
     return false;
   }
-  if (texture->AsyncTransferIsInProgress()) {
+  if (async_pixel_transfer_manager_->AsyncTransferIsInProgress(texture_ref)) {
     LOCAL_SET_GL_ERROR(
         GL_INVALID_OPERATION,
         function_name, "async upload pending for texture");
@@ -9096,13 +9112,13 @@ bool GLES2DecoderImpl::ProcessPendingQueries() {
 }
 
 bool GLES2DecoderImpl::HasMoreIdleWork() {
-  return async_pixel_transfer_delegate_->NeedsProcessMorePendingTransfers();
+  return GetAsyncPixelTransferDelegate()->NeedsProcessMorePendingTransfers();
 }
 
 void GLES2DecoderImpl::PerformIdleWork() {
-  if (!async_pixel_transfer_delegate_->NeedsProcessMorePendingTransfers())
+  if (!GetAsyncPixelTransferDelegate()->NeedsProcessMorePendingTransfers())
     return;
-  async_pixel_transfer_delegate_->ProcessMorePendingTransfers();
+  GetAsyncPixelTransferDelegate()->ProcessMorePendingTransfers();
   ProcessFinishedAsyncTransfers();
 }
 
@@ -10099,7 +10115,7 @@ void GLES2DecoderImpl::DoDrawBuffersEXT(
 
 bool GLES2DecoderImpl::ValidateAsyncTransfer(
     const char* function_name,
-    Texture* texture,
+    TextureRef* texture_ref,
     GLenum target,
     GLint level,
     const void * data) {
@@ -10119,7 +10135,8 @@ bool GLES2DecoderImpl::ValidateAsyncTransfer(
     return false;
   }
   // We only support one async transfer in progress.
-  if (!texture || texture->AsyncTransferIsInProgress()) {
+  if (!texture_ref ||
+      async_pixel_transfer_manager_->AsyncTransferIsInProgress(texture_ref)) {
     LOCAL_SET_GL_ERROR(
         GL_INVALID_OPERATION,
         function_name, "transfer already in progress");
@@ -10170,7 +10187,7 @@ error::Error GLES2DecoderImpl::HandleAsyncTexImage2DCHROMIUM(
   TextureRef* texture_ref = GetTextureInfoForTarget(target);
   Texture* texture = texture_ref->texture();
   if (!ValidateAsyncTransfer(
-      "glAsyncTexImage2DCHROMIUM", texture, target, level, pixels))
+      "glAsyncTexImage2DCHROMIUM", texture_ref, target, level, pixels))
     return error::kNoError;
 
   // Don't allow async redefinition of a textures.
@@ -10205,16 +10222,13 @@ error::Error GLES2DecoderImpl::HandleAsyncTexImage2DCHROMIUM(
   // Set up the async state if needed, and make the texture
   // immutable so the async state stays valid. The level info
   // is set up lazily when the transfer completes.
-  DCHECK(!texture->GetAsyncTransferState());
-  texture_ref->SetAsyncTransferState(
-      make_scoped_ptr(
-          async_pixel_transfer_delegate_->CreatePixelTransferState(
-              texture->service_id(),
-              tex_params)));
+  AsyncPixelTransferState* state =
+      async_pixel_transfer_manager_->CreatePixelTransferState(texture_ref,
+                                                              tex_params);
   texture->SetImmutable(true);
 
-  async_pixel_transfer_delegate_->AsyncTexImage2D(
-      texture->GetAsyncTransferState(),
+  GetAsyncPixelTransferDelegate()->AsyncTexImage2D(
+      state,
       tex_params,
       mem_params,
       base::Bind(&TextureManager::SetLevelInfoFromParams,
@@ -10261,7 +10275,7 @@ error::Error GLES2DecoderImpl::HandleAsyncTexSubImage2DCHROMIUM(
   TextureRef* texture_ref = GetTextureInfoForTarget(target);
   Texture* texture = texture_ref->texture();
   if (!ValidateAsyncTransfer(
-         "glAsyncTexSubImage2DCHROMIUM", texture, target, level, pixels))
+         "glAsyncTexSubImage2DCHROMIUM", texture_ref, target, level, pixels))
     return error::kNoError;
 
   // Guarantee async textures are always 'cleared' as follows:
@@ -10293,7 +10307,8 @@ error::Error GLES2DecoderImpl::HandleAsyncTexSubImage2DCHROMIUM(
                                               width, height, format, type};
   AsyncMemoryParams mem_params = {shared_memory, shm_size,
                                        shm_data_offset, shm_data_size};
-  AsyncPixelTransferState* state = texture->GetAsyncTransferState();
+  AsyncPixelTransferState* state =
+      async_pixel_transfer_manager_->GetPixelTransferState(texture_ref);
   if (!state) {
     // TODO(epenner): We may want to enforce exclusive use
     // of async APIs in which case this should become an error,
@@ -10306,14 +10321,12 @@ error::Error GLES2DecoderImpl::HandleAsyncTexSubImage2DCHROMIUM(
                                          &define_params.internal_format);
     // Set up the async state if needed, and make the texture
     // immutable so the async state stays valid.
-    state = async_pixel_transfer_delegate_->CreatePixelTransferState(
-        texture->service_id(),
-        define_params);
-    texture_ref->SetAsyncTransferState(make_scoped_ptr(state));
+    state = async_pixel_transfer_manager_->CreatePixelTransferState(
+        texture_ref, define_params);
     texture->SetImmutable(true);
   }
 
-  async_pixel_transfer_delegate_->AsyncTexSubImage2D(
+  GetAsyncPixelTransferDelegate()->AsyncTexSubImage2D(
       state, tex_params, mem_params);
   return error::kNoError;
 }
@@ -10336,14 +10349,14 @@ error::Error GLES2DecoderImpl::HandleWaitAsyncTexImage2DCHROMIUM(
     return error::kNoError;
   }
   AsyncPixelTransferState* state =
-      texture_ref->texture()->GetAsyncTransferState();
+      async_pixel_transfer_manager_->GetPixelTransferState(texture_ref);
   if (!state) {
       LOCAL_SET_GL_ERROR(
           GL_INVALID_OPERATION,
           "glWaitAsyncTexImage2DCHROMIUM", "No async transfer started");
     return error::kNoError;
   }
-  async_pixel_transfer_delegate_->WaitForTransferCompletion(state);
+  GetAsyncPixelTransferDelegate()->WaitForTransferCompletion(state);
   ProcessFinishedAsyncTransfers();
   return error::kNoError;
 }

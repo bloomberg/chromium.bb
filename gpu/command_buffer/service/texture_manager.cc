@@ -60,7 +60,15 @@ static size_t FaceIndexToGLTarget(size_t index) {
   }
 }
 
+TextureManager::DestructionObserver::DestructionObserver() {}
+
+TextureManager::DestructionObserver::~DestructionObserver() {}
+
 TextureManager::~TextureManager() {
+  FOR_EACH_OBSERVER(DestructionObserver,
+                    destruction_observers_,
+                    OnTextureManagerDestroying(this));
+
   DCHECK(textures_.empty());
 
   // If this triggers, that means something is keeping a reference to
@@ -430,15 +438,6 @@ void Texture::UpdateCanRenderCondition() {
 void Texture::IncAllFramebufferStateChangeCount() {
   for (RefSet::iterator it = refs_.begin(); it != refs_.end(); ++it)
     (*it)->manager()->IncFramebufferStateChangeCount();
-}
-
-AsyncPixelTransferState* Texture::GetAsyncTransferState() const {
-  for (RefSet::const_iterator it = refs_.begin(); it != refs_.end(); ++it) {
-    AsyncPixelTransferState* state = (*it)->async_transfer_state();
-    if (state)
-      return state;
-  }
-  return NULL;
 }
 
 void Texture::SetLevelInfo(
@@ -1097,6 +1096,10 @@ void TextureManager::StartTracking(TextureRef* ref) {
 }
 
 void TextureManager::StopTracking(TextureRef* ref) {
+  FOR_EACH_OBSERVER(DestructionObserver,
+                    destruction_observers_,
+                    OnTextureRefDestroying(ref));
+
   Texture* texture = ref->texture();
   --texture_count_;
   if (!texture->CanRender(feature_info_)) {

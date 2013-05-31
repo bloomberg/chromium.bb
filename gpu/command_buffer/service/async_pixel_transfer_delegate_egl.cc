@@ -393,7 +393,6 @@ class AsyncTransferStateImpl : public AsyncPixelTransferState {
                                             wait_for_creation,
                                             use_image_preserved)) {
   }
-  virtual ~AsyncTransferStateImpl() {}
 
   virtual bool TransferIsInProgress() OVERRIDE {
       return internal_->TransferIsInProgress();
@@ -404,6 +403,9 @@ class AsyncTransferStateImpl : public AsyncPixelTransferState {
   }
 
   scoped_refptr<TransferStateInternal> internal_;
+
+ private:
+  virtual ~AsyncTransferStateImpl() {}
 };
 
 }  // namespace

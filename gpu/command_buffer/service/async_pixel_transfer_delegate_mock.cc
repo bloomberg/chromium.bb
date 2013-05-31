@@ -10,6 +10,7 @@ MockAsyncPixelTransferState::MockAsyncPixelTransferState() {
 }
 
 MockAsyncPixelTransferState::~MockAsyncPixelTransferState() {
+  Destroy();
 }
 
 MockAsyncPixelTransferDelegate::MockAsyncPixelTransferDelegate() {

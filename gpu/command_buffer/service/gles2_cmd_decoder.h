@@ -26,6 +26,7 @@ class GLSurface;
 namespace gpu {
 
 class AsyncPixelTransferDelegate;
+class AsyncPixelTransferManager;
 class StreamTextureManager;
 
 namespace gles2 {
@@ -179,8 +180,11 @@ class GPU_EXPORT GLES2Decoder : public base::SupportsWeakPtr<GLES2Decoder>,
 
   // Interface to performing async pixel transfers.
   virtual AsyncPixelTransferDelegate* GetAsyncPixelTransferDelegate() = 0;
-  virtual void SetAsyncPixelTransferDelegate(
+  virtual void SetAsyncPixelTransferDelegateForTest(
       AsyncPixelTransferDelegate* delegate) = 0;
+
+  virtual AsyncPixelTransferManager* GetAsyncPixelTransferManager() = 0;
+  virtual void ResetAsyncPixelTransferManagerForTest() = 0;
 
   // Get the service texture ID corresponding to a client texture ID.
   // If no such record is found then return false.

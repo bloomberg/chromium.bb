@@ -39,6 +39,8 @@
     'command_buffer/service/async_pixel_transfer_delegate_sync.cc',
     'command_buffer/service/async_pixel_transfer_delegate_sync.h',
     'command_buffer/service/async_pixel_transfer_delegate_win.cc',
+    'command_buffer/service/async_pixel_transfer_manager.cc',
+    'command_buffer/service/async_pixel_transfer_manager.h',
     'command_buffer/service/buffer_manager.h',
     'command_buffer/service/buffer_manager.cc',
     'command_buffer/service/cmd_buffer_engine.h',

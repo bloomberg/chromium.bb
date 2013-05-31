@@ -11,12 +11,14 @@ namespace {
 class AsyncPixelTransferStateImpl : public AsyncPixelTransferState {
  public:
   AsyncPixelTransferStateImpl() {}
-  virtual ~AsyncPixelTransferStateImpl() {}
 
   // Implement AsyncPixelTransferState:
   virtual bool TransferIsInProgress() OVERRIDE {
     return false;
   }
+
+ private:
+  virtual ~AsyncPixelTransferStateImpl() {}
 };
 
 }  // namespace

@@ -13,6 +13,7 @@
 #include "base/hash_tables.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
+#include "base/observer_list.h"
 #include "gpu/command_buffer/service/async_pixel_transfer_delegate.h"
 #include "gpu/command_buffer/service/gl_utils.h"
 #include "gpu/command_buffer/service/memory_tracking.h"
@@ -142,15 +143,6 @@ class GPU_EXPORT Texture {
 
   bool IsStreamTexture() const {
     return stream_texture_;
-  }
-
-  // Gets the async transfer state for this texture. Note: the transfer state is
-  // owned by a single TextureRef.
-  AsyncPixelTransferState* GetAsyncTransferState() const;
-
-  bool AsyncTransferIsInProgress() {
-    AsyncPixelTransferState* state = GetAsyncTransferState();
-    return state && state->TransferIsInProgress();
   }
 
   void SetImmutable(bool immutable) {
@@ -411,15 +403,6 @@ class GPU_EXPORT TextureRef : public base::RefCounted<TextureRef> {
   GLuint client_id() const { return client_id_; }
   GLuint service_id() const { return texture_->service_id(); }
 
-  // Sets the async transfer state for this texture. Only a single TextureRef
-  // can set this on a given texture at any time.
-  // NOTE: this should be per-context rather than per-texture. crbug.com/240504
-  void SetAsyncTransferState(
-      scoped_ptr<AsyncPixelTransferState> state) {
-    DCHECK(!state || !texture_->GetAsyncTransferState());
-    async_transfer_state_ = state.Pass();
-  }
-
  private:
   friend class base::RefCounted<TextureRef>;
   friend class Texture;
@@ -428,17 +411,11 @@ class GPU_EXPORT TextureRef : public base::RefCounted<TextureRef> {
   ~TextureRef();
   const TextureManager* manager() const { return manager_; }
   TextureManager* manager() { return manager_; }
-  AsyncPixelTransferState* async_transfer_state() const {
-    return async_transfer_state_.get();
-  }
   void reset_client_id() { client_id_ = 0; }
 
   TextureManager* manager_;
   Texture* texture_;
   GLuint client_id_;
-
-  // State to facilitate async transfers on this texture.
-  scoped_ptr<AsyncPixelTransferState> async_transfer_state_;
 
   DISALLOW_COPY_AND_ASSIGN(TextureRef);
 };
@@ -450,6 +427,21 @@ class GPU_EXPORT TextureRef : public base::RefCounted<TextureRef> {
 // shared by multiple GLES2Decoders.
 class GPU_EXPORT TextureManager {
  public:
+  class GPU_EXPORT DestructionObserver {
+   public:
+    DestructionObserver();
+    virtual ~DestructionObserver();
+
+    // Called in ~TextureManager.
+    virtual void OnTextureManagerDestroying(TextureManager* manager) = 0;
+
+    // Called via ~TextureRef.
+    virtual void OnTextureRefDestroying(TextureRef* texture) = 0;
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(DestructionObserver);
+  };
+
   enum DefaultAndBlackTextures {
     kTexture2D,
     kCubeMap,
@@ -654,6 +646,14 @@ class GPU_EXPORT TextureManager {
       GLint level,
       std::string* signature) const;
 
+  void AddObserver(DestructionObserver* observer) {
+    destruction_observers_.AddObserver(observer);
+  }
+
+  void RemoveObserver(DestructionObserver* observer) {
+    destruction_observers_.RemoveObserver(observer);
+  }
+
  private:
   friend class Texture;
   friend class TextureRef;
@@ -706,6 +706,8 @@ class GPU_EXPORT TextureManager {
 
   // The default textures for each target (texture name = 0)
   scoped_refptr<TextureRef> default_textures_[kNumDefaultTextures];
+
+  ObserverList<DestructionObserver> destruction_observers_;
 
   DISALLOW_COPY_AND_ASSIGN(TextureManager);
 };

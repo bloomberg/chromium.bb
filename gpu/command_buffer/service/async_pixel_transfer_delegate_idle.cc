@@ -32,7 +32,6 @@ class AsyncPixelTransferStateImpl : public AsyncPixelTransferState {
         texture_id_(texture_id),
         transfer_in_progress_(false) {
   }
-  virtual ~AsyncPixelTransferStateImpl() {}
 
   // Implement AsyncPixelTransferState:
   virtual bool TransferIsInProgress() OVERRIDE {
@@ -53,6 +52,8 @@ class AsyncPixelTransferStateImpl : public AsyncPixelTransferState {
   }
 
  private:
+  virtual ~AsyncPixelTransferStateImpl() {}
+
   uint64 id_;
   GLuint texture_id_;
   bool transfer_in_progress_;

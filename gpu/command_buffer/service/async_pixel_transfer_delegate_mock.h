@@ -15,6 +15,9 @@ class MockAsyncPixelTransferState : public AsyncPixelTransferState {
  public:
   MockAsyncPixelTransferState();
 
+  // Called in ~MockAsyncPixelTransferState.
+  MOCK_METHOD0(Destroy, void());
+
   // Implement AsyncPixelTransferState.
   MOCK_METHOD0(TransferIsInProgress, bool());
   MOCK_METHOD1(BindTransfer, void(AsyncTexImage2DParams* level_params));

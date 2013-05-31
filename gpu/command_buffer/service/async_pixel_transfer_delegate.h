@@ -7,6 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/callback.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/synchronization/lock.h"
@@ -74,18 +75,20 @@ class AsyncPixelTransferUploadStats
 // AsyncPixelTransferState holds the resources required to do async
 // transfers on one texture. It should stay alive for the lifetime
 // of the texture to allow multiple transfers.
-class GPU_EXPORT AsyncPixelTransferState :
-    public base::SupportsWeakPtr<AsyncPixelTransferState> {
+class GPU_EXPORT AsyncPixelTransferState
+    : public base::RefCounted<AsyncPixelTransferState>,
+      public base::SupportsWeakPtr<AsyncPixelTransferState> {
  public:
-  virtual ~AsyncPixelTransferState();
-
   // Returns true if there is a transfer in progress.
   virtual bool TransferIsInProgress() = 0;
 
  protected:
   AsyncPixelTransferState();
+  virtual ~AsyncPixelTransferState();
 
  private:
+  friend class base::RefCounted<AsyncPixelTransferState>;
+
   DISALLOW_COPY_AND_ASSIGN(AsyncPixelTransferState);
 };
 

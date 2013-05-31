@@ -305,12 +305,6 @@ class AsyncTransferStateImpl : public AsyncPixelTransferState {
                          const AsyncTexImage2DParams& define_params)
       : internal_(new TransferStateInternal(texture_id, define_params)) {}
 
-  virtual ~AsyncTransferStateImpl() {
-    TRACE_EVENT0("gpu", " ~AsyncTransferStateImpl");
-    base::AutoLock locked(*internal_->upload_lock());
-    internal_->cancel_upload_flag()->Set();
-  }
-
   virtual bool TransferIsInProgress() OVERRIDE {
       return internal_->TransferIsInProgress();
   }
@@ -318,6 +312,12 @@ class AsyncTransferStateImpl : public AsyncPixelTransferState {
   TransferStateInternal* internal() { return internal_.get(); }
 
  private:
+  virtual ~AsyncTransferStateImpl() {
+    TRACE_EVENT0("gpu", " ~AsyncTransferStateImpl");
+    base::AutoLock locked(*internal_->upload_lock());
+    internal_->cancel_upload_flag()->Set();
+  }
+
   scoped_refptr<TransferStateInternal> internal_;
 };
 
