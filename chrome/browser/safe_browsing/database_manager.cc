@@ -307,6 +307,14 @@ bool SafeBrowsingDatabaseManager::MatchDownloadWhitelistString(
   return database_->ContainsDownloadWhitelistedString(str);
 }
 
+bool SafeBrowsingDatabaseManager::MalwareKillSwitchOn() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  if (!enabled_ || !MakeDatabaseAvailable()) {
+    return true;
+  }
+  return database_->MalwareIPMatchKillSwitchOn();
+}
+
 bool SafeBrowsingDatabaseManager::CheckBrowseUrl(const GURL& url,
                                                  Client* client) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
