@@ -293,7 +293,7 @@ bool VirtualGLApi::MakeCurrent(GLContext* virtual_context, GLSurface* surface) {
   return true;
 }
 
-void VirtualGLApi::OnDestroyVirtualContext(GLContext* virtual_context) {
+void VirtualGLApi::OnReleaseVirtuallyCurrent(GLContext* virtual_context) {
   if (current_context_ == virtual_context)
     current_context_ = NULL;
 }

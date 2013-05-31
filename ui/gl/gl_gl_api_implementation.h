@@ -76,7 +76,7 @@ class GL_EXPORT VirtualGLApi : public GLApiBase {
   // Sets the current virutal context.
   bool MakeCurrent(GLContext* virtual_context, GLSurface* surface);
 
-  void OnDestroyVirtualContext(GLContext* virtual_context);
+  void OnReleaseVirtuallyCurrent(GLContext* virtual_context);
 
   // Overridden functions from GLApiBase
   virtual const GLubyte* glGetStringFn(GLenum name) OVERRIDE;

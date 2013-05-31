@@ -99,8 +99,8 @@ class GL_EXPORT GLContext : public base::RefCounted<GLContext> {
   bool MakeVirtuallyCurrent(GLContext* virtual_context, GLSurface* surface);
 
   // Notify this context that |virtual_context|, that was using us, is
-  // being destroyed.
-  void OnDestroyVirtualContext(GLContext* virtual_context);
+  // being released or destroyed.
+  void OnReleaseVirtuallyCurrent(GLContext* virtual_context);
 
  protected:
   virtual ~GLContext();

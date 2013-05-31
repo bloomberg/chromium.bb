@@ -48,7 +48,7 @@ bool GLContextVirtual::Initialize(
 }
 
 void GLContextVirtual::Destroy() {
-  shared_context_->OnDestroyVirtualContext(this);
+  shared_context_->OnReleaseVirtuallyCurrent(this);
   shared_context_ = NULL;
   display_ = NULL;
 }
@@ -65,8 +65,10 @@ bool GLContextVirtual::MakeCurrent(gfx::GLSurface* surface) {
 }
 
 void GLContextVirtual::ReleaseCurrent(gfx::GLSurface* surface) {
-  if (IsCurrent(surface))
+  if (IsCurrent(surface)) {
+    shared_context_->OnReleaseVirtuallyCurrent(this);
     shared_context_->ReleaseCurrent(surface);
+  }
 }
 
 bool GLContextVirtual::IsCurrent(gfx::GLSurface* surface) {
