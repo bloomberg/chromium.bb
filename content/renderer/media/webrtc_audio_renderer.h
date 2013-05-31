@@ -97,10 +97,8 @@ class CONTENT_EXPORT WebRtcAudioRenderer
   // AEC.
   int audio_delay_milliseconds_;
 
-  // Lengh of an audio frame in milliseconds.
-  double frame_duration_milliseconds_;
-
-  double fifo_io_ratio_;
+  // Delay due to the FIFO in milliseconds.
+  int fifo_delay_milliseconds_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(WebRtcAudioRenderer);
 };

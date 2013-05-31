@@ -95,8 +95,7 @@ WebRtcAudioRenderer::WebRtcAudioRenderer(int source_render_view_id)
       source_(NULL),
       play_ref_count_(0),
       audio_delay_milliseconds_(0),
-      frame_duration_milliseconds_(0),
-      fifo_io_ratio_(1) {
+      fifo_delay_milliseconds_(0) {
 }
 
 WebRtcAudioRenderer::~WebRtcAudioRenderer() {
@@ -177,6 +176,7 @@ bool WebRtcAudioRenderer::Initialize(WebRtcAudioRendererSource* source) {
   // Create a FIFO if re-buffering is required to match the source input with
   // the sink request. The source acts as provider here and the sink as
   // consumer.
+  fifo_delay_milliseconds_ = 0;
   if (source_params.frames_per_buffer() != sink_params.frames_per_buffer()) {
     DVLOG(1) << "Rebuffering from " << source_params.frames_per_buffer()
              << " to " << sink_params.frames_per_buffer();
@@ -187,14 +187,14 @@ bool WebRtcAudioRenderer::Initialize(WebRtcAudioRendererSource* source) {
             &WebRtcAudioRenderer::SourceCallback,
             base::Unretained(this))));
 
-    // The I/O ratio is used in delay calculations where one scheme is used
-    // for |fifo_io_ratio_| > 1 and another scheme for < 1.0.
-    fifo_io_ratio_ = static_cast<double>(source_params.frames_per_buffer()) /
-        sink_params.frames_per_buffer();
+    if (sink_params.frames_per_buffer() > source_params.frames_per_buffer()) {
+      int frame_duration_milliseconds = base::Time::kMillisecondsPerSecond /
+          static_cast<double>(source_params.sample_rate());
+      fifo_delay_milliseconds_ = (sink_params.frames_per_buffer() -
+        source_params.frames_per_buffer()) * frame_duration_milliseconds;
+    }
   }
 
-  frame_duration_milliseconds_ = base::Time::kMillisecondsPerSecond /
-      static_cast<double>(source_params.sample_rate());
 
   // Allocate local audio buffers based on the parameters above.
   // It is assumed that each audio sample contains 16 bits and each
@@ -299,10 +299,7 @@ int WebRtcAudioRenderer::Render(media::AudioBus* audio_bus,
   DVLOG(2) << "WebRtcAudioRenderer::Render()";
   DVLOG(2) << "audio_delay_milliseconds: " << audio_delay_milliseconds;
 
-  if (fifo_io_ratio_ > 1.0)
-    audio_delay_milliseconds_ += audio_delay_milliseconds;
-  else
-    audio_delay_milliseconds_ = audio_delay_milliseconds;
+  audio_delay_milliseconds_ = audio_delay_milliseconds;
 
   if (audio_fifo_)
     audio_fifo_->Consume(audio_bus, audio_bus->frames());
@@ -325,7 +322,7 @@ void WebRtcAudioRenderer::SourceCallback(
            << audio_bus->frames() << ")";
 
   int output_delay_milliseconds = audio_delay_milliseconds_;
-  output_delay_milliseconds += frame_duration_milliseconds_ * fifo_frame_delay;
+  output_delay_milliseconds += fifo_delay_milliseconds_;
   DVLOG(2) << "output_delay_milliseconds: " << output_delay_milliseconds;
 
   // We need to keep render data for the |source_| regardless of |state_|,
@@ -333,9 +330,6 @@ void WebRtcAudioRenderer::SourceCallback(
   source_->RenderData(reinterpret_cast<uint8*>(buffer_.get()),
                       audio_bus->channels(), audio_bus->frames(),
                       output_delay_milliseconds);
-
-  if (fifo_io_ratio_ > 1.0)
-    audio_delay_milliseconds_ = 0;
 
   // Avoid filling up the audio bus if we are not playing; instead
   // return here and ensure that the returned value in Render() is 0.

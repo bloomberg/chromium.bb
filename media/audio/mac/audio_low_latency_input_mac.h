@@ -143,6 +143,9 @@ class AUAudioInputStream : public AgcAudioStream<AudioInputStream> {
   // Fixed capture hardware latency in frames.
   double hardware_latency_frames_;
 
+  // Delay due to the FIFO in bytes.
+  int fifo_delay_bytes_;
+
   // The number of channels in each frame of audio data, which is used
   // when querying the volume of each channel.
   int number_of_channels_in_frame_;
