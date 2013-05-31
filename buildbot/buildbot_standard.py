@@ -128,7 +128,7 @@ def SummarizeCoverage(context):
 
 
 def ArchiveCoverage(context):
-  gsutil = '../../../../third_party/gsutil/gsutil'
+  gsutil = '/b/build/third_party/gsutil/gsutil'
   gsd_url = 'http://gsdview.appspot.com/nativeclient-coverage2/revs'
   variant_name = ('coverage-' + context['platform'] + '-' +
                   context['default_scons_platform'])
