@@ -115,7 +115,6 @@ void TranslateHelper::PageCaptured(int page_id, const string16& contents) {
 
   language_determined_time_ = base::TimeTicks::Now();
 
-  // TODO(toyoshim): Add |html_lang| to LanguageDetectionDetails.
   GURL url(document.url());
   LanguageDetectionDetails details;
   details.time = base::Time::Now();
@@ -123,6 +122,7 @@ void TranslateHelper::PageCaptured(int page_id, const string16& contents) {
   details.content_language = content_language;
   details.cld_language = cld_language;
   details.is_cld_reliable = is_cld_reliable;
+  details.html_root_language = html_lang;
   details.adopted_language = language;
 
   // TODO(hajimehoshi): If this affects performance, it should be set only if

@@ -61,7 +61,7 @@ tabpanel > div > div {
 }
 
 .detection-logs-time {
-  width: 15%;
+  width: 10%;
 }
 
 .detection-logs-url {
@@ -81,10 +81,14 @@ td.detection-logs-url {
 }
 
 .detection-logs-is-cld-reliable {
+  width: 5%;
+}
+
+.detection-logs-html-root-language {
   width: 10%;
 }
 
-.detection-logs-language {
+.detection-logs-adopted-language {
   width: 10%;
 }
 

@@ -236,8 +236,10 @@
                  'detection-logs-cld-language'),
         createTD(detail['is_cld_reliable'],
                  'detection-logs-is-cld-reliable'),
-        createTD(formatLanguageCode(detail['language']),
-                 'detection-logs-language'),
+        createTD(formatLanguageCode(detail['html_root_language']),
+                 'detection-logs-html-root-language'),
+        createTD(formatLanguageCode(detail['adopted_language']),
+                 'detection-logs-adopted-language'),
         createTD(formatLanguageCode(detail['content']),
                  'detection-logs-content'),
       ].forEach(function(td) {

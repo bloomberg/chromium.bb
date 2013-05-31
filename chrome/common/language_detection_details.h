@@ -16,25 +16,28 @@ struct LanguageDetectionDetails {
   LanguageDetectionDetails();
   ~LanguageDetectionDetails();
 
-  // The time when this was created
+  // The time when this was created.
   base::Time time;
 
-  // The URL
+  // The URL.
   GURL url;
 
-  // The language detected by the content
+  // The language detected by the content (Content-Language).
   std::string content_language;
 
-  // The language detected by CLD
+  // The language detected by CLD.
   std::string cld_language;
 
-  // Whether the CLD detection is reliable or not
+  // Whether the CLD detection is reliable or not.
   bool is_cld_reliable;
 
-  // The adopted language
+  // The language written in the lang attribute of the html element.
+  std::string html_root_language;
+
+  // The adopted language.
   std::string adopted_language;
 
-  // The contents which is used for detection
+  // The contents which is used for detection.
   string16 contents;
 };
 

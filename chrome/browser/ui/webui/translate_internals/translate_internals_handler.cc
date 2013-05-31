@@ -47,7 +47,10 @@ void TranslateInternalsHandler::OnLanguageDetection(
            new base::StringValue(details.cld_language));
   dict.Set("is_cld_reliable",
            new base::FundamentalValue(details.is_cld_reliable));
-  dict.Set("language", new base::StringValue(details.adopted_language));
+  dict.Set("html_root_language",
+           new base::StringValue(details.html_root_language));
+  dict.Set("adopted_language",
+           new base::StringValue(details.adopted_language));
   dict.Set("content", new base::StringValue(details.contents));
   SendMessageToJs("languageDetectionInfoAdded", dict);
 }
