@@ -70,10 +70,6 @@ ScrollBar.prototype.decorate = function() {
                                 this.onButtonPressed_.bind(this));
   window.addEventListener('mouseup', this.onMouseUp_.bind(this));
   window.addEventListener('mousemove', this.onMouseMove_.bind(this));
-
-  // Unfortunately we need to pool, since we can't easily detect resizing
-  // and content changes.
-  setInterval(this.redraw_.bind(this), 50);
 };
 
 /**
@@ -83,7 +79,10 @@ ScrollBar.prototype.decorate = function() {
 ScrollBar.prototype.attachToView = function(view) {
   this.view_ = view;
   this.view_.addEventListener('scroll', this.onScroll_.bind(this));
-  this.redraw_();
+  this.view_.addEventListener('relayout', this.onRelayout_.bind(this));
+  this.domObserver_ = new WebKitMutationObserver(this.onDomChanged_.bind(this));
+  this.domObserver_.observe(this.view_, {subtree: true, attributes: true});
+  this.onRelayout_();
 };
 
 /**
@@ -91,6 +90,19 @@ ScrollBar.prototype.attachToView = function(view) {
  * @private
  */
 ScrollBar.prototype.onScroll_ = function() {
+  this.scrollTop_ = this.view_.scrollTop;
+  this.redraw_();
+};
+
+/**
+ * Relayout handler.
+ * @private
+ */
+ScrollBar.prototype.onRelayout_ = function() {
+  this.scrollHeight_ = this.view_.scrollHeight;
+  this.clientHeight_ = this.view_.clientHeight;
+  this.offsetTop_ = this.view_.offsetTop;
+  this.scrollTop_ = this.view_.scrollTop;
   this.redraw_();
 };
 
@@ -134,16 +146,32 @@ ScrollBar.prototype.onMouseMove_ = function(event) {
     this.onMouseUp_(event);
     return;
   }
-  var clientSize = this.view_.clientHeight;
-  var totalSize = this.view_.scrollHeight;
+  var clientSize = this.clientHeight_;
+  var totalSize = this.scrollHeight_;
   var buttonSize = Math.max(50, clientSize / totalSize * clientSize);
 
   var buttonPosition = this.buttonPressedPosition_ +
       (event.screenY - this.buttonPressedEvent_.screenY);
   var scrollPosition = totalSize * (buttonPosition / clientSize);
 
+  this.scrollTop_ = scrollPosition;
   this.view_.scrollTop = scrollPosition;
   this.redraw_();
+};
+
+/**
+ * Handles changed in Dom by redrawing the scrollbar. Ignores consecutive calls.
+ * @private
+ */
+ScrollBar.prototype.onDomChanged_ = function() {
+  if (this.domChangedTimer_) {
+    clearTimeout(this.domChangedTimer_);
+    this.domChangedTimer_ = null;
+  }
+  this.domChangedTimer_ = setTimeout(function() {
+    this.onRelayout_();
+    this.domChangedTimer_ = null;
+  }.bind(this), 50);
 };
 
 /**
@@ -154,17 +182,29 @@ ScrollBar.prototype.redraw_ = function() {
   if (!this.view_)
     return;
 
-  var clientSize = this.view_.clientHeight;
-  var clientTop = this.view_.offsetTop;
-  var scrollPosition = this.view_.scrollTop;
-  var totalSize = this.view_.scrollHeight;
-
-  this.hidden = totalSize <= clientSize;
+  var clientSize = this.clientHeight_;
+  var clientTop = this.offsetTop_;
+  var scrollPosition = this.scrollTop_;
+  var totalSize = this.scrollHeight_;
+  var hidden = totalSize <= clientSize;
 
   var buttonSize = Math.max(50, clientSize / totalSize * clientSize);
   var buttonPosition = scrollPosition / (totalSize - clientSize) *
       (clientSize - buttonSize);
+  var buttonTop = buttonPosition + clientTop;
 
-  this.button_.style.top = buttonPosition + clientTop + 'px';
-  this.button_.style.height = buttonSize + 'px';
+  var time = Date.now();
+  if (this.hidden != hidden ||
+      this.lastButtonTop_ != buttonTop ||
+      this.lastButtonSize_ != buttonSize) {
+    requestAnimationFrame(function() {
+      this.hidden = hidden;
+      this.button_.style.top = buttonTop + 'px';
+      this.button_.style.height = buttonSize + 'px';
+      console.log(Date.now() - time);
+    }.bind(this));
+  }
+
+  this.lastButtonTop_ = buttonTop;
+  this.lastButtonSize_ = buttonSize;
 };

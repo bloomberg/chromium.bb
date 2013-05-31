@@ -666,6 +666,25 @@ FileTable.prototype.renderIconType_ = function(entry, columnId, table) {
 };
 
 /**
+ * Redraws the UI. Skips multiple consecutive calls.
+ */
+FileTable.prototype.relayout = function() {
+  if (this.resizeTableTimer_) {
+    clearTimeout(this.resizeTableTimer_);
+    this.resizeTableTimer_ = null;
+  }
+  this.resizeTableTimer_ = setTimeout(function() {
+    if (util.platform.newUI()) {
+      if (this.clientWidth > 0)
+        this.normalizeColumns();
+    }
+    this.redraw();
+    cr.dispatchSimpleEvent(this.list, 'relayout');
+    this.resizeTableTimer_ = null;
+  }.bind(this), 100);
+};
+
+/**
  * Decorates (and wire up) a checkbox to be used in either a detail or a
  * thumbnail list item.
  * @param {HTMLInputElement} input Element to decorate.

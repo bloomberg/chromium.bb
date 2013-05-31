@@ -769,3 +769,10 @@ DirectoryTree.prototype.clearTree_ = function(redraw) {
     cr.dispatchSimpleEvent(this, 'content-updated');
   }
 };
+
+/**
+ * Updates the UI after the layout has changed.
+ */
+DirectoryTree.prototype.relayout = function() {
+  cr.dispatchSimpleEvent(this, 'relayout');
+};

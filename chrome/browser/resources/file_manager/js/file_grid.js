@@ -61,6 +61,24 @@ FileGrid.prototype.updateListItemsMetadata = function(type, props) {
 };
 
 /**
+ * Redraws the UI. Skips multiple consecutive calls.
+ */
+FileGrid.prototype.relayout = function() {
+  if (this.resizeGridTimer_) {
+    clearTimeout(this.resizeGridTimer_);
+    this.resizeGridTimer_ = null;
+  }
+  this.resizeGridTimer_ = setTimeout(function() {
+    this.startBatchUpdates();
+    this.columns = 0;
+    this.redraw();
+    cr.dispatchSimpleEvent(this, 'relayout');
+    this.endBatchUpdates();
+    this.resizeGridTimer_ = null;
+  }.bind(this), 100);
+};
+
+/**
  * Decorates thumbnail.
  * @param {HTMLElement} li List item.
  * @param {Entry} entry Entry to render a thumbnail for.
