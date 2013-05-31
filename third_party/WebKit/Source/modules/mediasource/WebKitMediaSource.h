@@ -34,6 +34,7 @@
 #include "bindings/v8/ScriptWrappable.h"
 #include "core/dom/ActiveDOMObject.h"
 #include "core/dom/GenericEventQueue.h"
+#include "core/html/URLRegistry.h"
 #include "core/platform/graphics/MediaSourcePrivate.h"
 #include "modules/mediasource/WebKitSourceBuffer.h"
 #include "modules/mediasource/WebKitSourceBufferList.h"
@@ -41,7 +42,7 @@
 
 namespace WebCore {
 
-class WebKitMediaSource : public RefCounted<WebKitMediaSource>, public ScriptWrappable, public EventTarget, public ActiveDOMObject {
+class WebKitMediaSource : public RefCounted<WebKitMediaSource>, public ScriptWrappable, public URLRegistrable, public EventTarget, public ActiveDOMObject {
 public:
     static const String& openKeyword();
     static const String& closedKeyword();
@@ -71,6 +72,9 @@ public:
     // ActiveDOMObject interface
     virtual bool hasPendingActivity() const OVERRIDE;
     virtual void stop() OVERRIDE;
+
+    // URLRegistrable
+    virtual URLRegistry& registry() const OVERRIDE;
 
     using RefCounted<WebKitMediaSource>::ref;
     using RefCounted<WebKitMediaSource>::deref;

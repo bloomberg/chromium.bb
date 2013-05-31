@@ -36,6 +36,7 @@
 #include "core/platform/ContentType.h"
 #include "core/platform/MIMETypeRegistry.h"
 #include "core/platform/graphics/SourceBufferPrivate.h"
+#include "modules/mediasource/MediaSourceRegistry.h"
 #include "wtf/Uint8Array.h"
 
 namespace WebCore {
@@ -342,6 +343,11 @@ void WebKitMediaSource::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) co
     info.addMember(m_sourceBuffers, "sourceBuffers");
     info.addMember(m_activeSourceBuffers, "activeSourceBuffers");
     info.addMember(m_asyncEventQueue, "asyncEventQueue");
+}
+
+URLRegistry& WebKitMediaSource::registry() const
+{
+    return MediaSourceRegistry::registry();
 }
 
 

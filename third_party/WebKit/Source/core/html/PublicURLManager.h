@@ -26,45 +26,33 @@
 #ifndef PublicURLManager_h
 #define PublicURLManager_h
 
-#include "core/dom/ScriptExecutionContext.h"
-#include "core/fileapi/ThreadableBlobRegistry.h"
-#include <wtf/HashSet.h>
-#include <wtf/text/WTFString.h>
-
-#include "modules/mediastream/MediaStream.h"
-#include "modules/mediastream/MediaStreamRegistry.h"
-#include "modules/mediasource/MediaSourceRegistry.h"
+#include "wtf/HashMap.h"
+#include "wtf/HashSet.h"
+#include "wtf/PassOwnPtr.h"
+#include "wtf/RefCounted.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 
+class KURL;
 class ScriptExecutionContext;
+class SecurityOrigin;
+class URLRegistry;
+class URLRegistrable;
 
 class PublicURLManager {
     WTF_MAKE_FAST_ALLOCATED;
 public:
     static PassOwnPtr<PublicURLManager> create() { return adoptPtr(new PublicURLManager); }
-    void contextDestroyed()
-    {
-        HashSet<String>::iterator blobURLsEnd = m_blobURLs.end();
-        for (HashSet<String>::iterator iter = m_blobURLs.begin(); iter != blobURLsEnd; ++iter)
-            ThreadableBlobRegistry::unregisterBlobURL(KURL(ParsedURLString, *iter));
 
-        HashSet<String>::iterator streamURLsEnd = m_streamURLs.end();
-        for (HashSet<String>::iterator iter = m_streamURLs.begin(); iter != streamURLsEnd; ++iter)
-            MediaStreamRegistry::registry().unregisterMediaStreamURL(KURL(ParsedURLString, *iter));
-        HashSet<String>::iterator sourceURLsEnd = m_sourceURLs.end();
-        for (HashSet<String>::iterator iter = m_sourceURLs.begin(); iter != sourceURLsEnd; ++iter)
-            MediaSourceRegistry::registry().unregisterMediaSourceURL(KURL(ParsedURLString, *iter));
-    }
-
-    HashSet<String>& blobURLs() { return m_blobURLs; }
-    HashSet<String>& streamURLs() { return m_streamURLs; }
-    HashSet<String>& sourceURLs() { return m_sourceURLs; }
+    void registerURL(SecurityOrigin*, const KURL&, URLRegistrable*);
+    void revoke(const KURL&);
+    void contextDestroyed();
 
 private:
-    HashSet<String> m_blobURLs;
-    HashSet<String> m_streamURLs;
-    HashSet<String> m_sourceURLs;
+    typedef HashSet<String> URLSet;
+    typedef HashMap<URLRegistry*, URLSet > RegistryURLMap;
+    RegistryURLMap m_registryToURL;
 };
 
 } // namespace WebCore

@@ -39,6 +39,33 @@
 
 namespace WebCore {
 
+class BlobURLRegistry : public URLRegistry {
+public:
+    virtual void registerURL(SecurityOrigin*, const KURL&, URLRegistrable*) OVERRIDE;
+    virtual void unregisterURL(const KURL&) OVERRIDE;
+
+    static URLRegistry& registry();
+};
+
+
+void BlobURLRegistry::registerURL(SecurityOrigin* origin, const KURL& publicURL, URLRegistrable* blob)
+{
+    ASSERT(&blob->registry() == this);
+    ThreadableBlobRegistry::registerBlobURL(origin, publicURL, static_cast<Blob*>(blob)->url());
+}
+
+void BlobURLRegistry::unregisterURL(const KURL& url)
+{
+    ThreadableBlobRegistry::unregisterBlobURL(url);
+}
+
+URLRegistry& BlobURLRegistry::registry()
+{
+    DEFINE_STATIC_LOCAL(BlobURLRegistry, instance, ());
+    return instance;
+}
+
+
 Blob::Blob()
     : m_size(0)
 {
@@ -124,5 +151,11 @@ PassRefPtr<Blob> Blob::slice(long long start, long long end, const String& conte
 
     return Blob::create(blobData.release(), length);
 }
+
+URLRegistry& Blob::registry() const
+{
+    return BlobURLRegistry::registry();
+}
+
 
 } // namespace WebCore

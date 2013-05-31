@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2011 Google Inc. All rights reserved.
  * Copyright (C) 2012 Motorola Mobility Inc.
+ * Copyright (C) 2013 Google Inc. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -24,39 +24,41 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef DOMURL_h
-#define DOMURL_h
+#include "config.h"
+#include "core/html/PublicURLManager.h"
 
+#include "core/html/URLRegistry.h"
 #include "core/platform/KURL.h"
-#include <wtf/HashSet.h>
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefCounted.h>
-#include <wtf/text/WTFString.h>
+#include "wtf/text/StringHash.h"
 
 namespace WebCore {
 
-class Blob;
-class WebKitMediaSource;
-class MediaStream;
-class ScriptExecutionContext;
-class URLRegistrable;
+void PublicURLManager::registerURL(SecurityOrigin* origin, const KURL& url, URLRegistrable* registrable)
+{
+    RegistryURLMap::iterator found = m_registryToURL.add(&registrable->registry(), URLSet()).iterator;
+    found->key->registerURL(origin, url, registrable);
+    found->value.add(url.string());
+}
 
-class DOMURL : public RefCounted<DOMURL> {
+void PublicURLManager::revoke(const KURL& url)
+{
+    for (RegistryURLMap::iterator i = m_registryToURL.begin(); i != m_registryToURL.end(); ++i) {
+        if (i->value.contains(url.string())) {
+            i->key->unregisterURL(url);
+            i->value.remove(url.string());
+            break;
+        }
+    }
+}
 
-public:
-    static PassRefPtr<DOMURL> create() { return adoptRef(new DOMURL); }
+void PublicURLManager::contextDestroyed()
+{
+    for (RegistryURLMap::iterator i = m_registryToURL.begin(); i != m_registryToURL.end(); ++i) {
+        for (URLSet::iterator j = i->value.begin(); j != i->value.end(); ++j)
+            i->key->unregisterURL(KURL(ParsedURLString, *j));
+    }
 
-    static void contextDestroyed(ScriptExecutionContext*);
+    m_registryToURL.clear();
+}
 
-    static String createObjectURL(ScriptExecutionContext*, Blob*);
-    static void revokeObjectURL(ScriptExecutionContext*, const String&);
-    static String createObjectURL(ScriptExecutionContext*, WebKitMediaSource*);
-    static String createObjectURL(ScriptExecutionContext*, MediaStream*);
-
-private:
-    static String createPublicURL(ScriptExecutionContext*, URLRegistrable*);
-};
-
-} // namespace WebCore
-
-#endif // DOMURL_h
+}

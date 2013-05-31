@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012 Google Inc. All rights reserved.
+ * Copyright (C) 2013 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -28,50 +28,31 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
-#include "modules/mediasource/MediaSourceRegistry.h"
+#ifndef URLRegistry_h
+#define URLRegistry_h
 
-#include "core/platform/KURL.h"
-#include "modules/mediasource/WebKitMediaSource.h"
-#include "wtf/MainThread.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 
-MediaSourceRegistry& MediaSourceRegistry::registry()
-{
-    ASSERT(isMainThread());
-    DEFINE_STATIC_LOCAL(MediaSourceRegistry, instance, ());
-    return instance;
-}
+class KURL;
+class SecurityOrigin;
+class URLRegistry;
 
-void MediaSourceRegistry::registerURL(SecurityOrigin*, const KURL& url, URLRegistrable* registrable)
-{
-    ASSERT(&registrable->registry() == this);
-    ASSERT(isMainThread());
+class URLRegistrable {
+public:
+    virtual ~URLRegistrable() { }
+    virtual URLRegistry& registry() const = 0;
+};
 
-    WebKitMediaSource* source = static_cast<WebKitMediaSource*>(registrable);
-    source->setPendingActivity(source);
-    m_mediaSources.set(url.string(), source);
-}
-
-void MediaSourceRegistry::unregisterURL(const KURL& url)
-{
-    ASSERT(isMainThread());
-    HashMap<String, RefPtr<WebKitMediaSource> >::iterator iter = m_mediaSources.find(url.string());
-    if (iter == m_mediaSources.end())
-        return;
-
-    RefPtr<WebKitMediaSource> source = iter->value;
-    m_mediaSources.remove(iter);
-
-    // Remove the pending activity added in registerMediaSourceURL().
-    source->unsetPendingActivity(source.get());
-}
-
-WebKitMediaSource* MediaSourceRegistry::lookupMediaSource(const String& url)
-{
-    ASSERT(isMainThread());
-    return m_mediaSources.get(url);
-}
+class URLRegistry {
+    WTF_MAKE_FAST_ALLOCATED;
+public:
+    virtual ~URLRegistry() { }
+    virtual void registerURL(SecurityOrigin*, const KURL&, URLRegistrable*) = 0;
+    virtual void unregisterURL(const KURL&) = 0;
+};
 
 } // namespace WebCore
+
+#endif // URLRegistry_h

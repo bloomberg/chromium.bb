@@ -25,6 +25,7 @@
 #ifndef MediaStreamRegistry_h
 #define MediaStreamRegistry_h
 
+#include "core/html/URLRegistry.h"
 #include "wtf/HashMap.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/text/StringHash.h"
@@ -35,14 +36,14 @@ class KURL;
 class MediaStream;
 class MediaStreamDescriptor;
 
-class MediaStreamRegistry {
+class MediaStreamRegistry : public URLRegistry {
 public:
     // Returns a single instance of MediaStreamRegistry.
     static MediaStreamRegistry& registry();
 
     // Registers a blob URL referring to the specified stream data.
-    void registerMediaStreamURL(const KURL&, PassRefPtr<MediaStream>);
-    void unregisterMediaStreamURL(const KURL&);
+    virtual void registerURL(SecurityOrigin*, const KURL&, URLRegistrable*) OVERRIDE;
+    virtual void unregisterURL(const KURL&) OVERRIDE;
 
     MediaStreamDescriptor* lookupMediaStreamDescriptor(const String& url);
 

@@ -30,6 +30,7 @@
 #include "core/dom/ContextDestructionObserver.h"
 #include "core/dom/EventTarget.h"
 #include "core/dom/ExceptionBase.h"
+#include "core/html/URLRegistry.h"
 #include "core/platform/Timer.h"
 #include "core/platform/mediastream/MediaStreamDescriptor.h"
 #include "modules/mediastream/MediaStreamTrack.h"
@@ -38,7 +39,7 @@
 
 namespace WebCore {
 
-class MediaStream : public RefCounted<MediaStream>, public ScriptWrappable, public MediaStreamDescriptorClient, public EventTarget, public ContextDestructionObserver {
+class MediaStream : public RefCounted<MediaStream>, public ScriptWrappable, public URLRegistrable, public MediaStreamDescriptorClient, public EventTarget, public ContextDestructionObserver {
 public:
     static PassRefPtr<MediaStream> create(ScriptExecutionContext*);
     static PassRefPtr<MediaStream> create(ScriptExecutionContext*, PassRefPtr<MediaStream>);
@@ -77,6 +78,9 @@ public:
 
     using RefCounted<MediaStream>::ref;
     using RefCounted<MediaStream>::deref;
+
+    // URLRegistrable
+    virtual URLRegistry& registry() const OVERRIDE;
 
 protected:
     MediaStream(ScriptExecutionContext*, PassRefPtr<MediaStreamDescriptor>);

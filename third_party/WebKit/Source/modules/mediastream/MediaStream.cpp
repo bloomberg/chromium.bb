@@ -30,6 +30,7 @@
 #include "core/dom/ExceptionCode.h"
 #include "core/platform/mediastream/MediaStreamCenter.h"
 #include "core/platform/mediastream/MediaStreamSource.h"
+#include "modules/mediastream/MediaStreamRegistry.h"
 #include "modules/mediastream/MediaStreamTrackEvent.h"
 
 namespace WebCore {
@@ -352,6 +353,11 @@ void MediaStream::scheduledEventTimerFired(Timer<MediaStream>*)
         dispatchEvent((*it).release());
 
     events.clear();
+}
+
+URLRegistry& MediaStream::registry() const
+{
+    return MediaStreamRegistry::registry();
 }
 
 } // namespace WebCore
