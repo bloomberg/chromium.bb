@@ -519,6 +519,9 @@ Press any key to continue exploring.
   <message name="IDS_CREATE_LOCALLY_MANAGED_USER_CREATION_CREATION_PROGRESS_MESSAGE" desc="Text shown next to progress indicator upon managed user creation.">
     Creating profile...
   </message>
+  <message name="IDS_CREATE_LOCALLY_MANAGED_USER_CREATION_CREATION_TIMEOUT_MESSAGE" desc="Text shown at the place of progess indicator if creation takes too long and should be cancelled.">
+    Profile takes too long to create. You may want to cancel process and retry later.
+  </message>
   <message name="IDS_USER_IS_LOCALLY_MANAGED_BY_NOTICE" desc="Text for notifications showing that this user is locally managed">
     This user is managed by <ph name="MANAGER_EMAIL">$1<ex>john.doe@example.com</ex></ph>. Device usage and history may be tracked.
   </message>

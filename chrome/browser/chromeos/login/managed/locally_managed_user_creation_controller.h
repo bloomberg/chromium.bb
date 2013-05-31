@@ -11,6 +11,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/string16.h"
+#include "base/timer.h"
 #include "chrome/browser/chromeos/login/managed/managed_user_authenticator.h"
 #include "chrome/browser/managed_mode/managed_user_registration_service.h"
 
@@ -47,6 +48,7 @@ class LocallyManagedUserCreationController
     virtual ~StatusConsumer();
 
     virtual void OnCreationError(ErrorCode code) = 0;
+    virtual void OnCreationTimeout() = 0;
     virtual void OnCreationSuccess() = 0;
   };
 
@@ -90,6 +92,7 @@ class LocallyManagedUserCreationController
       ManagedUserAuthenticator::AuthState error) OVERRIDE;
   virtual void OnMountSuccess(const std::string& mount_hash) OVERRIDE;
 
+  void CreationTimedOut();
   void RegistrationCallback(const GoogleServiceAuthError& error,
                             const std::string& token);
 
@@ -109,6 +112,9 @@ class LocallyManagedUserCreationController
 
   // Creation context. Not null while creating new LMU.
   scoped_ptr<UserCreationContext> creation_context_;
+
+  // Timer for showing warning if creation process takes too long.
+  base::OneShotTimer<LocallyManagedUserCreationController> timeout_timer_;
 
   // Factory of callbacks.
   base::WeakPtrFactory<LocallyManagedUserCreationController> weak_factory_;

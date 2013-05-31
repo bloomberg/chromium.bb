@@ -202,6 +202,7 @@ login.createScreen('LocallyManagedUserCreationScreen',
       'showManagerPasswordError',
       'showPasswordError',
       'showProgress',
+      'showStatusError',
       'showTutorialPage',
       'showUsernamePage',
     ],
@@ -344,8 +345,8 @@ login.createScreen('LocallyManagedUserCreationScreen',
     get buttons() {
       var buttons = [];
 
-      var progress = this.makeFromTemplate('progress-container', 'progress');
-      buttons.push(progress);
+      var status = this.makeFromTemplate('status-container', 'status');
+      buttons.push(status);
 
 
       buttons.push(this.makeButton(
@@ -574,7 +575,7 @@ login.createScreen('LocallyManagedUserCreationScreen',
                        'username',
                        'error',
                        'tutorial'];
-      this.hideProgress_();
+      this.hideStatus_();
       for (i in pageNames) {
         var pageName = pageNames[i];
         var page = $('managed-user-creation-flow-' + pageName);
@@ -625,14 +626,26 @@ login.createScreen('LocallyManagedUserCreationScreen',
     },
 
     showProgress: function(text) {
-      var progress = this.getScreenElement('progress');
-      progress.querySelector('.id-text').textContent = text;
-      progress.hidden = false;
+      var status = this.getScreenElement('status');
+      var statusText = status.querySelector('.id-text');
+      statusText.textContent = text;
+      statusText.classList.remove('error');
+      status.querySelector('.id-spinner').hidden = false;
+      status.hidden = false;
     },
 
-    hideProgress_: function() {
-      var progress = this.getScreenElement('progress');
-      progress.hidden = true;
+    showStatusError: function(text) {
+      var status = this.getScreenElement('status');
+      var statusText = status.querySelector('.id-text');
+      statusText.textContent = text;
+      statusText.classList.add('error');
+      status.querySelector('.id-spinner').hidden = true;
+      status.hidden = false;
+    },
+
+    hideStatus_: function() {
+      var status = this.getScreenElement('status');
+      status.hidden = true;
     },
 
     /**

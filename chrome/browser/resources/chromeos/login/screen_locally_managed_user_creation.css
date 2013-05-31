@@ -86,11 +86,15 @@
   width: 635px;
 }
 
-#managed-user-creation-flow-progress {
+#managed-user-creation-flow-status {
   margin: 4px 10px;
 }
 
-#managed-user-creation-flow-progress .id-text {
+#managed-user-creation-flow-status .error {
+  color: rgb(207, 93, 70);
+}
+
+#managed-user-creation-flow-status .id-text {
   margin-top: 2px;
 }
 

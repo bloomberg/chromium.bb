@@ -78,6 +78,7 @@ class LocallyManagedUserCreationScreen
   // LocallyManagedUserController::StatusConsumer overrides.
   virtual void OnCreationError(
       LocallyManagedUserCreationController::ErrorCode code) OVERRIDE;
+  virtual void OnCreationTimeout() OVERRIDE;
   virtual void OnCreationSuccess() OVERRIDE;
 
   // NetworkPortalDetector::Observer implementation:

@@ -26,6 +26,8 @@ namespace chromeos {
 
 namespace {
 
+const int kUserCreationTimeoutSeconds = 60; // 60 seconds.
+
 bool StoreManagedUserFiles(const std::string& token,
                            const base::FilePath& base_path) {
   if (!base::chromeos::IsRunningOnChromeOS()) {
@@ -125,6 +127,11 @@ void LocallyManagedUserCreationController::OnMountSuccess(
     const std::string& mount_hash) {
   creation_context_->mount_hash = mount_hash;
 
+  timeout_timer_.Start(
+      FROM_HERE, base::TimeDelta::FromSeconds(kUserCreationTimeoutSeconds),
+      this,
+      &LocallyManagedUserCreationController::CreationTimedOut);
+
   ManagedUserRegistrationService* service =
       ManagedUserRegistrationServiceFactory::GetForProfile(
           creation_context_->manager_profile);
@@ -138,12 +145,18 @@ void LocallyManagedUserCreationController::OnMountSuccess(
 void LocallyManagedUserCreationController::RegistrationCallback(
     const GoogleServiceAuthError& error,
     const std::string& token) {
+  timeout_timer_.Stop();
   if (error.state() == GoogleServiceAuthError::NONE) {
     TokenFetched(token);
   } else {
     if (consumer_)
       consumer_->OnCreationError(CLOUD_SERVER_ERROR);
   }
+}
+
+void LocallyManagedUserCreationController::CreationTimedOut() {
+  if (consumer_)
+    consumer_->OnCreationTimeout();
 }
 
 void LocallyManagedUserCreationController::FinishCreation() {
