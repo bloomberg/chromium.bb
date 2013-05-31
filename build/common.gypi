@@ -45,9 +45,6 @@
           # Disable viewport meta tag by default.
           'enable_viewport%': 0,
 
-          # Enable DoubleResourceLoadTiming support.
-          'enable_double_resource_load_timing%': 1,
-
           # Enable HiDPI support.
           'enable_hidpi%': 0,
 
@@ -104,7 +101,6 @@
         'use_ozone%': '<(use_ozone)',
         'use_openssl%': '<(use_openssl)',
         'enable_viewport%': '<(enable_viewport)',
-        'enable_double_resource_load_timing%': '<(enable_double_resource_load_timing)',
         'enable_hidpi%': '<(enable_hidpi)',
         'enable_touch_ui%': '<(enable_touch_ui)',
         'buildtype%': '<(buildtype)',
@@ -186,7 +182,6 @@
       'use_ozone%': '<(use_ozone)',
       'use_openssl%': '<(use_openssl)',
       'enable_viewport%': '<(enable_viewport)',
-      'enable_double_resource_load_timing%': '<(enable_double_resource_load_timing)',
       'enable_hidpi%': '<(enable_hidpi)',
       'enable_touch_ui%': '<(enable_touch_ui)',
       'android_webview_build%': '<(android_webview_build)',
@@ -751,7 +746,6 @@
     'linux_fpic%': '<(linux_fpic)',
     'chromeos%': '<(chromeos)',
     'enable_viewport%': '<(enable_viewport)',
-    'enable_double_resource_load_timing%': '<(enable_double_resource_load_timing)',
     'enable_hidpi%': '<(enable_hidpi)',
     'enable_touch_ui%': '<(enable_touch_ui)',
     'use_xi2_mt%':'<(use_xi2_mt)',
@@ -1859,9 +1853,6 @@
             '@loader_path/../../..',
           ],
         },
-      }],
-      ['enable_double_resource_load_timing==1', {
-        'defines': ['ENABLE_DOUBLE_RESOURCE_LOAD_TIMING'],
       }],
       ['enable_rlz==1', {
         'defines': ['ENABLE_RLZ'],
