@@ -22,6 +22,7 @@
 #include "chrome/test/base/chrome_test_suite.h"
 #include "content/public/app/content_main.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/test/test_utils.h"
 
 #if defined(OS_MACOSX)
 #include "chrome/browser/chrome_browser_application_mac.h"
@@ -53,6 +54,12 @@ class ChromeTestLauncherDelegate : public content::TestLauncherDelegate {
   }
 
   virtual int RunTestSuite(int argc, char** argv) OVERRIDE {
+    content::AddPreRunMessageLoopHook(base::Bind(
+        &ChromeTestLauncherDelegate::PreRunMessageLoop,
+        base::Unretained(this)));
+    content::AddPostRunMessageLoopHook(base::Bind(
+        &ChromeTestLauncherDelegate::PostRunMessageLoop,
+        base::Unretained(this)));
     return ChromeTestSuite(argc, argv).Run();
   }
 
@@ -78,7 +85,9 @@ class ChromeTestLauncherDelegate : public content::TestLauncherDelegate {
     return true;
   }
 
-  virtual void PreRunMessageLoop(base::RunLoop* run_loop) OVERRIDE {
+  void PreRunMessageLoop(base::RunLoop* run_loop) {
+    // TODO(phajdan.jr): Remove message loop hooks after switch to Aura.
+    // This includes removing content::Add{Pre,Post}RunMessageLoopHook.
 #if !defined(USE_AURA) && defined(TOOLKIT_VIEWS)
     if (content::BrowserThread::CurrentlyOn(content::BrowserThread::UI)) {
       linked_ptr<views::AcceleratorHandler> handler(
@@ -89,7 +98,9 @@ class ChromeTestLauncherDelegate : public content::TestLauncherDelegate {
 #endif
   }
 
-  virtual void PostRunMessageLoop() OVERRIDE {
+  void PostRunMessageLoop(base::RunLoop* run_loop) {
+    // TODO(phajdan.jr): Remove message loop hooks after switch to Aura.
+    // This includes removing content::Add{Pre,Post}RunMessageLoopHook.
 #if !defined(USE_AURA) && defined(TOOLKIT_VIEWS)
     if (content::BrowserThread::CurrentlyOn(content::BrowserThread::UI)) {
       DCHECK_EQ(handlers_.empty(), false);
@@ -97,6 +108,7 @@ class ChromeTestLauncherDelegate : public content::TestLauncherDelegate {
     }
 #endif
   }
+
 
  protected:
   virtual content::ContentMainDelegate* CreateContentMainDelegate() OVERRIDE {
