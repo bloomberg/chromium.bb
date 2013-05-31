@@ -1001,10 +1001,14 @@ class IsolateTest(IsolateBase):
     def test_symlink_input_absolute_path(self):
       # A symlink is outside of the checkout, it should be treated as a normal
       # directory.
+      # .../src
+      # .../src/out -> .../tmp/foo
+      # .../tmp
+      # .../tmp/foo
       src = os.path.join(self.cwd, u'src')
       src_out = os.path.join(src, 'out')
       tmp = os.path.join(self.cwd, 'tmp')
-      tmp_foo = os.path.join(self.cwd, 'foo')
+      tmp_foo = os.path.join(tmp, 'foo')
       os.mkdir(src)
       os.mkdir(tmp)
       os.mkdir(tmp_foo)
