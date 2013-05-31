@@ -28,6 +28,7 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/io_thread.h"
+#include "chrome/browser/managed_mode/managed_user_service.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chromeos/login/error_screen_handler.h"
@@ -1004,9 +1005,7 @@ void SigninScreenHandler::UpdateAuthParams(DictionaryValue* params) {
   // bool single_user = users.size() == 1;
   // chromeos::CrosSettings::Get()->GetString(chromeos::kDeviceOwner, &owner);
 
-  const CommandLine* command_line = CommandLine::ForCurrentProcess();
-  bool managed_users_enabled =
-      command_line->HasSwitch(::switches::kEnableManagedUsers);
+  bool managed_users_enabled = ManagedUserService::AreManagedUsersEnabled();
   bool managed_users_can_create = false;
   if (managed_users_enabled)
     managed_users_can_create = delegate_->GetUsers().size() > 0;
