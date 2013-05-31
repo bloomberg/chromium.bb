@@ -42,8 +42,6 @@
     [RaisesException] void setMediaTypeOverride(DOMString mediaTypeOverride);
     [RaisesException] void setEditingBehavior(DOMString behavior);
 
-    [RaisesException] void setShouldDisplayTrackKind(DOMString kind, boolean enabled);
-    [RaisesException] boolean shouldDisplayTrackKind(DOMString trackKind);
     [RaisesException] void setImagesEnabled(boolean enabled);
     [RaisesException] void setDefaultVideoPosterURL(DOMString poster);
 

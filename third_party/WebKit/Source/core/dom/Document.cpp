@@ -146,7 +146,6 @@
 #include "core/loader/TextResourceDecoder.h"
 #include "core/loader/cache/CachedCSSStyleSheet.h"
 #include "core/loader/cache/CachedResourceLoader.h"
-#include "core/page/CaptionUserPreferences.h"
 #include "core/page/Chrome.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/ContentSecurityPolicy.h"
@@ -3866,26 +3865,6 @@ void Document::documentWillBecomeInactive()
 {
     if (renderer())
         renderView()->setIsInWindow(false);
-}
-
-void Document::registerForCaptionPreferencesChangedCallbacks(Element* e)
-{
-    if (page())
-        page()->group().captionPreferences()->setInterestedInCaptionPreferenceChanges();
-
-    m_captionPreferencesChangedElements.add(e);
-}
-
-void Document::unregisterForCaptionPreferencesChangedCallbacks(Element* e)
-{
-    m_captionPreferencesChangedElements.remove(e);
-}
-
-void Document::captionPreferencesChanged()
-{
-    HashSet<Element*>::iterator end = m_captionPreferencesChangedElements.end();
-    for (HashSet<Element*>::iterator it = m_captionPreferencesChangedElements.begin(); it != end; ++it)
-        (*it)->captionPreferencesChanged();
 }
 
 void Document::setShouldCreateRenderers(bool f)

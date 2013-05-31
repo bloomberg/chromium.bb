@@ -30,11 +30,9 @@
 #include "RuntimeEnabledFeatures.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
-#include "core/page/CaptionUserPreferences.h"
 #include "core/page/Frame.h"
 #include "core/page/FrameView.h"
 #include "core/page/Page.h"
-#include "core/page/PageGroup.h"
 #include "core/page/Settings.h"
 #include "core/platform/Language.h"
 #include "core/platform/Supplementable.h"
@@ -302,43 +300,6 @@ void InternalSettings::setDialogElementEnabled(bool enabled)
 void InternalSettings::setLazyLayoutEnabled(bool enabled)
 {
     RuntimeEnabledFeatures::setLazyLayoutEnabled(enabled);
-}
-
-void InternalSettings::setShouldDisplayTrackKind(const String& kind, bool enabled, ExceptionCode& ec)
-{
-    InternalSettingsGuardForSettings();
-
-    if (!page())
-        return;
-    CaptionUserPreferences* captionPreferences = page()->group().captionPreferences();
-
-    if (equalIgnoringCase(kind, "Subtitles"))
-        captionPreferences->setUserPrefersSubtitles(enabled);
-    else if (equalIgnoringCase(kind, "Captions"))
-        captionPreferences->setUserPrefersCaptions(enabled);
-    else if (equalIgnoringCase(kind, "TextDescriptions"))
-        captionPreferences->setUserPrefersTextDescriptions(enabled);
-    else
-        ec = SYNTAX_ERR;
-}
-
-bool InternalSettings::shouldDisplayTrackKind(const String& kind, ExceptionCode& ec)
-{
-    InternalSettingsGuardForSettingsReturn(false);
-
-    if (!page())
-        return false;
-    CaptionUserPreferences* captionPreferences = page()->group().captionPreferences();
-
-    if (equalIgnoringCase(kind, "Subtitles"))
-        return captionPreferences->userPrefersSubtitles();
-    if (equalIgnoringCase(kind, "Captions"))
-        return captionPreferences->userPrefersCaptions();
-    if (equalIgnoringCase(kind, "TextDescriptions"))
-        return captionPreferences->userPrefersTextDescriptions();
-
-    ec = SYNTAX_ERR;
-    return false;
 }
 
 void InternalSettings::setLangAttributeAwareFormControlUIEnabled(bool enabled)

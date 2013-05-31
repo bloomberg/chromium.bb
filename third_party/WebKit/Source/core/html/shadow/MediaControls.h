@@ -100,7 +100,6 @@ class MediaControls : public HTMLDivElement {
     virtual void showTextTrackDisplay();
     virtual void hideTextTrackDisplay();
     virtual void updateTextTrackDisplay();
-    virtual void textTrackPreferencesChanged();
 
 protected:
     explicit MediaControls(Document*);

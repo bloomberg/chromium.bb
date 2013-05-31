@@ -63,6 +63,7 @@
 #include "core/page/PageGroup.h"
 #include "core/page/Settings.h"
 #include "core/platform/ContentType.h"
+#include "core/platform/Language.h"
 #include "core/platform/Logging.h"
 #include "core/platform/MIMETypeFromURL.h"
 #include "core/platform/NotImplemented.h"
@@ -81,7 +82,6 @@
 #include "core/html/track/InbandTextTrack.h"
 #include "core/html/track/TextTrackCueList.h"
 #include "core/html/track/TextTrackList.h"
-#include "core/page/CaptionUserPreferences.h"
 #include "core/platform/graphics/InbandTextTrackPrivate.h"
 
 #if ENABLE(WEB_AUDIO)
@@ -260,14 +260,12 @@ HTMLMediaElement::HTMLMediaElement(const QualifiedName& tagName, Document* docum
     setHasCustomStyleCallbacks();
     addElementToDocumentMap(this, document);
 
-    document->registerForCaptionPreferencesChangedCallbacks(this);
 }
 
 HTMLMediaElement::~HTMLMediaElement()
 {
     LOG(Media, "HTMLMediaElement::~HTMLMediaElement");
     setShouldDelayLoadEvent(false);
-    document()->unregisterForCaptionPreferencesChangedCallbacks(this);
     if (m_textTracks)
         m_textTracks->clearOwner();
     if (m_textTracks) {
@@ -2652,14 +2650,37 @@ void HTMLMediaElement::didRemoveTrack(HTMLTrackElement* trackElement)
         m_textTracksWhenResourceSelectionBegan.remove(index);
 }
 
-bool HTMLMediaElement::userPrefersCaptions() const
+static int textTrackLanguageSelectionScore(const TextTrack& track)
 {
-    Page* page = document()->page();
-    if (!page)
-        return false;
+    if (track.language().isEmpty())
+        return 0;
 
-    CaptionUserPreferences* captionPreferences = page->group().captionPreferences();
-    return captionPreferences->userHasCaptionPreferences() && captionPreferences->shouldShowCaptions();
+    Vector<String> languages = userPreferredLanguages();
+    size_t languageMatchIndex = indexOfBestMatchingLanguageInList(track.language(), languages);
+    if (languageMatchIndex >= languages.size())
+        return 0;
+
+    // Matching a track language is more important than matching track type, so this multiplier must be
+    // greater than the maximum value returned by textTrackSelectionScore.
+    return (languages.size() - languageMatchIndex) * 10;
+}
+
+static int textTrackSelectionScore(const TextTrack& track, Settings* settings)
+{
+    int trackScore = 0;
+
+    if (!settings)
+        return trackScore;
+
+    if (track.kind() != TextTrack::captionsKeyword() && track.kind() != TextTrack::subtitlesKeyword())
+        return trackScore;
+
+    if (track.kind() == TextTrack::subtitlesKeyword() && settings->shouldDisplaySubtitles())
+        trackScore = 1;
+    else if (track.kind() == TextTrack::captionsKeyword() && settings->shouldDisplayCaptions())
+        trackScore = 1;
+
+    return trackScore + textTrackLanguageSelectionScore(track);
 }
 
 void HTMLMediaElement::configureTextTrackGroup(const TrackGroup& group)
@@ -2669,7 +2690,7 @@ void HTMLMediaElement::configureTextTrackGroup(const TrackGroup& group)
     LOG(Media, "HTMLMediaElement::configureTextTrackGroup(%d)", group.kind);
 
     Page* page = document()->page();
-    CaptionUserPreferences* captionPreferences = page? page->group().captionPreferences() : 0;
+    Settings* settings = page ? page->settings() : 0;
 
     // First, find the track in the group that should be enabled (if any).
     Vector<RefPtr<TextTrack> > currentlyEnabledTracks;
@@ -2683,7 +2704,7 @@ void HTMLMediaElement::configureTextTrackGroup(const TrackGroup& group)
         if (m_processingPreferenceChange && textTrack->mode() == TextTrack::showingKeyword())
             currentlyEnabledTracks.append(textTrack);
 
-        int trackScore = captionPreferences ? captionPreferences->textTrackSelectionScore(textTrack.get(), this) : 0;
+        int trackScore = textTrackSelectionScore(*textTrack, settings);
         if (trackScore) {
             // * If the text track kind is { [subtitles or captions] [descriptions] } and the user has indicated an interest in having a
             // track with this text track kind, text track language, and text track label enabled, and there is no
@@ -3723,17 +3744,6 @@ void HTMLMediaElement::configureTextTrackDisplay()
 
     if (RuntimeEnabledFeatures::videoTrackEnabled())
         updateTextTrackDisplay();
-}
-
-void HTMLMediaElement::captionPreferencesChanged()
-{
-    if (!isVideo())
-        return;
-
-    if (hasMediaControls())
-        mediaControls()->textTrackPreferencesChanged();
-
-    setClosedCaptionsVisible(userPrefersCaptions());
 }
 
 void HTMLMediaElement::markCaptionAndSubtitleTracksAsUnconfigured()

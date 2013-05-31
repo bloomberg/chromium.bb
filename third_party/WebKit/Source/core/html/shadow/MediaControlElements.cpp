@@ -40,7 +40,6 @@
 #include "core/html/shadow/MediaControls.h"
 #include "core/html/track/TextTrack.h"
 #include "core/html/track/TextTrackList.h"
-#include "core/page/CaptionUserPreferences.h"
 #include "core/page/EventHandler.h"
 #include "core/page/Frame.h"
 #include "core/page/Page.h"
@@ -780,11 +779,10 @@ void MediaControlTextTrackContainerElement::updateSizes(bool forceUpdate)
 
     float smallestDimension = std::min(m_videoDisplaySize.size().height(), m_videoDisplaySize.size().width());
 
-    bool important;
-    float fontSize = smallestDimension * (document()->page()->group().captionPreferences()->captionFontSizeScale(important));
+    float fontSize = smallestDimension * 0.05f;
     if (fontSize != m_fontSize) {
         m_fontSize = fontSize;
-        setInlineStyleProperty(CSSPropertyFontSize, String::number(fontSize) + "px", important);
+        setInlineStyleProperty(CSSPropertyFontSize, String::number(fontSize) + "px");
     }
 
     CueList activeCues = mediaElement->currentlyActiveCues();

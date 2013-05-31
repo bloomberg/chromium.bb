@@ -36,7 +36,6 @@
 
 namespace WebCore {
 
-    class CaptionUserPreferences;
     class KURL;
     class GroupSettings;
     class Page;
@@ -71,9 +70,6 @@ namespace WebCore {
 
         GroupSettings* groupSettings() const { return m_groupSettings.get(); }
 
-        void captionPreferencesChanged();
-        CaptionUserPreferences* captionPreferences();
-
     private:
         PageGroup();
 
@@ -83,7 +79,6 @@ namespace WebCore {
         RefPtr<StorageNamespace> m_localStorage;
         UserStyleSheetVector m_userStyleSheets;
         OwnPtr<GroupSettings> m_groupSettings;
-        OwnPtr<CaptionUserPreferences> m_captionPreferences;
     };
 
 } // namespace WebCore

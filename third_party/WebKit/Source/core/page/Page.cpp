@@ -798,12 +798,6 @@ void Page::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
     info.ignoreMember(m_validationMessageClient);
 }
 
-void Page::captionPreferencesChanged()
-{
-    for (Frame* frame = mainFrame(); frame; frame = frame->tree()->traverseNext())
-        frame->document()->captionPreferencesChanged();
-}
-
 void Page::addMultisamplingChangedObserver(MultisamplingChangedObserver* observer)
 {
     m_multisamplingChangedObservers.add(observer);

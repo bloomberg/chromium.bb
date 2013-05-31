@@ -121,9 +121,6 @@
 #include "modules/encryptedmedia/CDM.h"
 #endif
 
-#include "core/page/CaptionUserPreferences.h"
-#include "core/page/PageGroup.h"
-
 #include "core/platform/mock/PlatformSpeechSynthesizerMock.h"
 #include "modules/speech/DOMWindowSpeechSynthesis.h"
 #include "modules/speech/SpeechSynthesis.h"
@@ -202,7 +199,6 @@ void Internals::resetToConsistentState(Page* page)
     delete s_pagePopupDriver;
     s_pagePopupDriver = 0;
     page->chrome().client()->resetPagePopupDriver();
-    page->group().captionPreferences()->setTestingMode(false);
     if (!page->mainFrame()->editor()->isContinuousSpellCheckingEnabled())
         page->mainFrame()->editor()->toggleContinuousSpellChecking();
     if (page->mainFrame()->editor()->isOverwriteModeEnabled())
@@ -213,8 +209,6 @@ Internals::Internals(Document* document)
     : ContextDestructionObserver(document)
     , m_runtimeFlags(InternalRuntimeFlags::create())
 {
-    if (document && document->page())
-        document->page()->group().captionPreferences()->setTestingMode(true);
 }
 
 Document* Internals::contextDocument() const

@@ -227,7 +227,6 @@ public:
     void configureTextTracks();
     void configureTextTrackGroup(const TrackGroup&);
 
-    bool userPrefersCaptions() const;
     bool textTracksAreReady() const;
     void configureTextTrackDisplay();
     void updateTextTrackDisplay();
@@ -420,7 +419,6 @@ private:
     HTMLTrackElement* showingTrackWithSameKind(HTMLTrackElement*) const;
 
     void markCaptionAndSubtitleTracksAsUnconfigured();
-    virtual void captionPreferencesChanged() OVERRIDE;
 
     // These "internal" functions do not check user gesture restrictions.
     void loadInternal();

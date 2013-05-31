@@ -101,9 +101,6 @@ public:
     void setTouchEventEmulationEnabled(bool, ExceptionCode&);
     void setUsesOverlayScrollbars(bool, ExceptionCode&);
 
-    void setShouldDisplayTrackKind(const String& kind, bool, ExceptionCode&);
-    bool shouldDisplayTrackKind(const String& kind, ExceptionCode&);
-
     // FIXME: The following are RuntimeEnabledFeatures and likely
     // cannot be changed after process start. These setters should
     // be removed or moved onto internals.runtimeFlags:

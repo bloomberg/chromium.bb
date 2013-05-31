@@ -911,10 +911,6 @@ public:
 
     void documentWillBecomeInactive();
 
-    void registerForCaptionPreferencesChangedCallbacks(Element*);
-    void unregisterForCaptionPreferencesChangedCallbacks(Element*);
-    void captionPreferencesChanged();
-
     void setShouldCreateRenderers(bool);
     bool shouldCreateRenderers();
 
@@ -1353,8 +1349,6 @@ private:
 
     bool m_createRenderers;
     Vector<IconURL> m_iconURLs;
-
-    HashSet<Element*> m_captionPreferencesChangedElements;
 
     HashMap<StringImpl*, Element*, CaseFoldingHash> m_elementsByAccessKey;
     bool m_accessKeyMapValid;

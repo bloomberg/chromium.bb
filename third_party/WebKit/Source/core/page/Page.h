@@ -246,8 +246,6 @@ public:
 
     void reportMemoryUsage(MemoryObjectInfo*) const;
 
-    void captionPreferencesChanged();
-
     double timerAlignmentInterval() const;
 
     class MultisamplingChangedObserver {

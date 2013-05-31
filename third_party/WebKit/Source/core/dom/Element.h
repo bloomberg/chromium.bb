@@ -490,8 +490,6 @@ public:
     virtual void didBecomeFullscreenElement() { }
     virtual void willStopBeingFullscreenElement() { }
 
-    virtual void captionPreferencesChanged() { }
-
     bool isFinishedParsingChildren() const { return isParsingChildrenFinished(); }
     virtual void finishParsingChildren();
     virtual void beginParsingChildren() OVERRIDE FINAL;
