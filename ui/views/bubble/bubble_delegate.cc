@@ -61,7 +61,6 @@ class BubbleBorderDelegate : public WidgetDelegate,
   }
 
   // WidgetDelegate overrides:
-  virtual bool CanResize() const OVERRIDE { return bubble_->CanResize(); }
   virtual bool CanActivate() const OVERRIDE { return false; }
   virtual void DeleteDelegate() OVERRIDE { delete this; }
   virtual Widget* GetWidget() OVERRIDE { return widget_; }
