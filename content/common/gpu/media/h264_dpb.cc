@@ -24,7 +24,7 @@ void H264DPB::set_max_num_pics(size_t max_num_pics) {
     pics_.resize(max_num_pics_);
 }
 
-void H264DPB::RemoveByPOC(int poc) {
+void H264DPB::DeleteByPOC(int poc) {
   for (Pictures::iterator it = pics_.begin(); it != pics_.end(); ++it) {
     if ((*it)->pic_order_cnt == poc) {
       pics_.erase(it);
@@ -34,7 +34,7 @@ void H264DPB::RemoveByPOC(int poc) {
   NOTREACHED() << "Missing POC: " << poc;
 }
 
-void H264DPB::RemoveUnused() {
+void H264DPB::DeleteUnused() {
   for (Pictures::iterator it = pics_.begin(); it != pics_.end(); ) {
     if ((*it)->outputted && !(*it)->ref)
       it = pics_.erase(it);

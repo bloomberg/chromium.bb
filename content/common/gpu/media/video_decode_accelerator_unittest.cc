@@ -49,6 +49,7 @@
 #include "content/common/gpu/media/exynos_video_decode_accelerator.h"
 #elif defined(ARCH_CPU_X86_FAMILY)
 #include "content/common/gpu/media/vaapi_video_decode_accelerator.h"
+#include "content/common/gpu/media/vaapi_wrapper.h"
 #endif  // ARCH_CPU_ARMEL
 #else
 #error The VideoAccelerator tests are not supported on this platform.
@@ -973,7 +974,7 @@ int main(int argc, char **argv) {
 #if defined(ARCH_CPU_ARMEL)
   content::ExynosVideoDecodeAccelerator::PreSandboxInitialization();
 #elif defined(ARCH_CPU_X86_FAMILY)
-  content::VaapiVideoDecodeAccelerator::PreSandboxInitialization();
+  content::VaapiWrapper::PreSandboxInitialization();
 #endif  // ARCH_CPU_ARMEL
 #endif  // OS_CHROMEOS
 

@@ -71,11 +71,12 @@ class H264DPB {
   void set_max_num_pics(size_t max_num_pics);
   size_t max_num_pics() { return max_num_pics_; }
 
-  // Remove unused (not reference and already outputted) pictures from DPB.
-  void RemoveUnused();
+  // Remove unused (not reference and already outputted) pictures from DPB
+  // and free it.
+  void DeleteUnused();
 
-  // Remove a picture by its pic_order_cnt.
-  void RemoveByPOC(int poc);
+  // Remove a picture by its pic_order_cnt and free it.
+  void DeleteByPOC(int poc);
 
   // Clear DPB.
   void Clear();

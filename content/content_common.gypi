@@ -501,10 +501,13 @@
       'sources': [
         'common/gpu/media/h264_dpb.cc',
         'common/gpu/media/h264_dpb.h',
+        'common/gpu/media/va_surface.h',
         'common/gpu/media/vaapi_h264_decoder.cc',
         'common/gpu/media/vaapi_h264_decoder.h',
         'common/gpu/media/vaapi_video_decode_accelerator.cc',
         'common/gpu/media/vaapi_video_decode_accelerator.h',
+        'common/gpu/media/vaapi_wrapper.cc',
+        'common/gpu/media/vaapi_wrapper.h',
       ],
       'include_dirs': [
         '<(DEPTH)/third_party/libva',

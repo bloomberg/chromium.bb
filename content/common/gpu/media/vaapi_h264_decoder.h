@@ -9,55 +9,52 @@
 #ifndef CONTENT_COMMON_GPU_MEDIA_VAAPI_H264_DECODER_H_
 #define CONTENT_COMMON_GPU_MEDIA_VAAPI_H264_DECODER_H_
 
-#include <GL/glx.h>
-
-#include <queue>
+#include <vector>
 
 #include "base/callback_forward.h"
-#include "base/lazy_instance.h"
 #include "base/memory/linked_ptr.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/common/gpu/media/h264_dpb.h"
 #include "content/common/gpu/media/h264_parser.h"
-#include "media/base/video_decoder_config.h"
+#include "content/common/gpu/media/vaapi_wrapper.h"
 #include "media/base/limits.h"
-#include "third_party/libva/va/va.h"
 
 namespace content {
 
-// An H264 decoder for use for VA-API-specific decoding. Provides features not
-// supported by libva, including stream parsing, reference picture management
-// and other operations not supported by the HW codec.
+// An H264 decoder that utilizes VA-API. Provides features not supported by
+// the VA-API userspace library (libva), including stream parsing, reference
+// picture management and other operations not supported by the HW codec.
 //
 // Provides functionality to allow plugging VAAPI HW acceleration into the
 // VDA framework.
 //
 // Clients of this class are expected to pass H264 Annex-B byte stream and
-// will receive decoded pictures via client-provided |OutputPicCB|.
+// will receive decoded surfaces via client-provided |OutputPicCB|.
 //
-// If used in multi-threaded environment, some of the functions have to be
-// called on the child thread, i.e. the main thread of the GPU process
-// (the one that has the GLX context passed to Initialize() set as current).
-// This is essential so that the GLX calls can work properly.
-// Decoder thread, on the other hand, does not require a GLX context and should
-// be the same as the one on which Decode*() functions are called.
+// This class must be created, called and destroyed on a single thread, and
+// does nothing internally on any other thread.
 class VaapiH264Decoder {
  public:
-  // Callback invoked on the client when a picture is to be displayed.
-  // Arguments: input buffer id, output buffer id (both provided by the client
-  // at the time of Decode() and AssignPictureBuffer() calls).
-  typedef base::Callback<void(int32, int32)> OutputPicCB;
-
-  // Callback invoked on the client to start a GPU job to decode and render
-  // a video frame into a pixmap/texture. Callee has to call SubmitDecode()
-  // for the given picture.
-  // Arguments: output buffer id (provided by the client at the time of
-  // AssignPictureBuffer() call), va buffer and slice buffer queues to be
-  // passed to SubmitDecode().
+  // Callback invoked on the client when a surface is to be displayed.
+  // Arguments: input buffer id provided at the time of Decode()
+  // and VASurface to output.
   typedef base::Callback<
-    void(int32,
-         scoped_ptr<std::queue<VABufferID> >,
-         scoped_ptr<std::queue<VABufferID> >)> SubmitDecodeCB;
+      void(int32, const scoped_refptr<VASurface>&)> OutputPicCB;
+
+  enum VAVDAH264DecoderFailure {
+    FRAME_MBS_ONLY_FLAG_NOT_ONE = 0,
+    GAPS_IN_FRAME_NUM = 1,
+    MID_STREAM_RESOLUTION_CHANGE = 2,
+    INTERLACED_STREAM = 3,
+    VAAPI_ERROR = 4,
+    VAVDA_H264_DECODER_FAILURES_MAX,
+  };
+
+  // Callback to report errors for UMA purposes, not used to return errors
+  // to clients.
+  typedef base::Callback<void(VAVDAH264DecoderFailure error)>
+      ReportErrorToUmaCB;
 
   // Decode result codes.
   enum DecResult {
@@ -67,88 +64,52 @@ class VaapiH264Decoder {
     // to software decoding instead.
     // kStreamError,  // Error in stream.
     kReadyToDecode,  // Successfully initialized.
-    kDecodedFrame,  // Successfully decoded a frame.
     kNeedMoreStreamData,  // Need more stream data to decode the next frame.
     kNoOutputAvailable,  // Waiting for the client to free up output surfaces.
   };
 
-  VaapiH264Decoder();
-  // Should be called on the GLX thread, for the surface cleanup to work
-  // properly.
+  // |vaapi_wrapper| should be initialized.
+  // |output_pic_cb| notifies the client a surface is to be displayed.
+  // |report_error_to_uma_cb| called on errors for UMA purposes, not used
+  // to report errors to clients.
+  VaapiH264Decoder(VaapiWrapper* vaapi_wrapper,
+                   const OutputPicCB& output_pic_cb,
+                   const ReportErrorToUmaCB& report_error_to_uma_cb);
+
   ~VaapiH264Decoder();
 
-  // Initializes and sets up libva connection and GL/X11 resources.
-  // Must be called on the GLX thread with |glx_context| being current and
-  // with decoder thread not yet running.
-  // |output_pic_cb| will be called to notify when a picture can be displayed.
-  bool Initialize(media::VideoCodecProfile profile,
-                  Display* x_display,
-                  GLXContext glx_context,
-                  const base::Callback<bool(void)>& make_context_current,
-                  const OutputPicCB& output_pic_cb,
-                  const SubmitDecodeCB& submit_decode_cb) WARN_UNUSED_RESULT;
-  void Destroy();
-
-  // Notify the decoder that this output buffer has been consumed and
-  // can be reused (overwritten).
-  // Must be run on the decoder thread.
-  void ReusePictureBuffer(int32 picture_buffer_id);
-
-  // Give a new picture buffer (texture) to decoder for use.
-  // Must be run on the GLX thread with decoder thread not yet running.
-  bool AssignPictureBuffer(int32 picture_buffer_id, uint32 texture_id)
-      WARN_UNUSED_RESULT;
-
-  // Decode and put results into texture associated with given
-  // |picture_buffer_id|, using the buffers provided as arguments. Takes
-  // ownership of queues' memory and frees it once done.
-  // Must be run on the GLX thread.
-  bool SubmitDecode(
-      int32 picture_buffer_id,
-      scoped_ptr<std::queue<VABufferID> > va_bufs,
-      scoped_ptr<std::queue<VABufferID> > slice_bufs) WARN_UNUSED_RESULT;
-
   // Have the decoder flush its state and trigger output of all previously
-  // decoded pictures via OutputPicCB.
-  // Returns false if any of the resulting invocations of the callback fail.
+  // decoded surfaces via OutputPicCB. Return false on failure.
   bool Flush() WARN_UNUSED_RESULT;
 
-  // Called while decoding.
-  // Stop decoding, discarding all remaining input/output, but do not flush
-  // state, so the playback of the same stream can be resumed (possibly from
-  // another location).
+  // To be called during decoding.
+  // Stop (pause) decoding, discarding all remaining inputs and outputs,
+  // but do not flush decoder state, so that the playback can be resumed later,
+  // possibly from a different location.
   void Reset();
 
   // Set current stream data pointer to |ptr| and |size|.
-  // Must be run on decoder thread.
   void SetStream(uint8* ptr, size_t size);
 
-  // Start parsing stream to detect picture sizes. Does not produce any
-  // decoded pictures and can be called without providing output textures.
-  // Also to be used after Reset() to find a suitable location in the
-  // stream to resume playback from.
+  // To be called at the start of decode or after reset.
+  // When this call returns kReadyToDecode, the decoder is in a suitable
+  // location in the stream to begin/resume decoding from and subsequent
+  // decode requests should go via DecodeOneFrame.
   DecResult DecodeInitial(int32 input_id) WARN_UNUSED_RESULT;
 
   // Runs until a frame is decoded or end of provided stream data buffer
-  // is reached. Decoded pictures will be returned asynchronously via
-  // OutputPicCB.
+  // is reached. Decoded surfaces will be returned asynchronously via
+  // OutputPicCB. Should be called after DecodeInitial returns kReadyToDecode.
   DecResult DecodeOneFrame(int32 input_id) WARN_UNUSED_RESULT;
 
-  // Return dimensions for output buffer (texture) allocation.
+  // Return dimensions/required number of output surfaces that client should
+  // be ready to provide for the decoder to function properly.
   // Valid only after a successful DecodeInitial().
-  int pic_height() { return pic_height_; }
-  int pic_width() { return pic_width_; }
-
-  // Return the number of output pictures required for decoding.
-  // Valid after a successful DecodeInitial().
+  gfx::Size GetPicSize() { return pic_size_; }
   size_t GetRequiredNumOfPictures();
 
-  // Do any necessary initialization before the sandbox is enabled.
-  static void PreSandboxInitialization();
-
-  // Lazily initialize static data after sandbox is enabled.  Return false on
-  // init failure.
-  static bool PostSandboxInitialization();
+  // To be used by the client to feed decoder with output surfaces.
+  void ReuseSurface(const scoped_refptr<VASurface>& va_surface);
 
  private:
   // We need to keep at most kDPBMaxSize pictures in DPB for
@@ -164,16 +125,10 @@ class VaapiH264Decoder {
 
   // Internal state of the decoder.
   enum State {
-    kUninitialized,  // Initialize() not yet called.
-    kInitialized,  // Initialize() called, pictures requested.
-    kDecoding,  // DecodeInitial() successful, output surfaces allocated.
-    kAfterReset,  // After Reset() during decoding.
-    kError,  // Error in kDecoding state.
+    kIdle,  // After initialization or after Reset(), need a resume point.
+    kDecoding,  // DecodeInitial() successful, ready to decode.
+    kError,  // Error in decode, can't continue.
   };
-
-  // Get usable framebuffer configuration for use in binding textures
-  // or return false on failure.
-  bool InitializeFBConfig();
 
   // Process H264 stream structures.
   bool ProcessSPS(int sps_id);
@@ -224,20 +179,10 @@ class VaapiH264Decoder {
   // This will also output a picture if one is ready for output.
   bool FinishPicture();
 
-  // Convert VideoCodecProfile to VAProfile and set it as active.
-  bool SetProfile(media::VideoCodecProfile profile);
-
-  // Vaapi-related functions.
-
-  // Allocates VASurfaces and creates a VAContext for them.
-  bool CreateVASurfaces();
-
-  // Destroys allocated VASurfaces and related VAContext.
-  void DestroyVASurfaces();
-  // Destroys all buffers in |pending_slice_bufs_| and |pending_va_bufs_|.
-  void DestroyPendingBuffers();
-  // Destroys a list of buffers.
-  void DestroyBuffers(size_t num_va_buffers, const VABufferID* va_buffers);
+  // Clear DPB contents and remove all surfaces in DPB from *in_use_ list.
+  // Cleared pictures will be made available for decode, unless they are
+  // at client waiting to be displayed.
+  void ClearDPB();
 
   // These queue up data for HW decoder to be committed on running HW decode.
   bool SendPPS();
@@ -256,11 +201,26 @@ class VaapiH264Decoder {
   // Notifies client that a picture is ready for output.
   bool OutputPic(H264Picture* pic);
 
-  State state_;
+  // Output all pictures in DPB that have not been outputted yet.
+  bool OutputAllRemainingPics();
 
-  // A frame has been sent to hardware as the result of the last
-  // DecodeOneFrame() call.
-  bool frame_ready_at_hw_;
+  // Represents a frame being decoded. Will always have a VASurface
+  // assigned to it, which will eventually contain decoded picture data.
+  class DecodeSurface;
+
+  // Assign an available surface to the given PicOrderCnt |poc|,
+  // removing it from the available surfaces pool. Return true if a surface
+  // has been found, false otherwise.
+  bool AssignSurfaceToPoC(int32 input_id, int poc);
+
+  // Indicate that a surface is no longer needed by decoder.
+  void UnassignSurfaceFromPoC(int poc);
+
+  // Return DecodeSurface assigned to |poc|.
+  DecodeSurface* DecodeSurfaceByPoC(int poc);
+
+  // Decoder state.
+  State state_;
 
   // Parser in use.
   H264Parser parser_;
@@ -299,74 +259,33 @@ class VaapiH264Decoder {
   int curr_pps_id_;
 
   // Output picture size.
-  int pic_width_;
-  int pic_height_;
+  gfx::Size pic_size_;
 
-  // Data queued up for HW decoder, to be committed on next HW decode.
-  std::queue<VABufferID> pending_slice_bufs_;
-  std::queue<VABufferID> pending_va_bufs_;
+  // Maps H.264 PicOrderCount to currently used DecodeSurfaces;
+  typedef std::map<int, linked_ptr<DecodeSurface> > DecSurfacesInUse;
+  DecSurfacesInUse decode_surfaces_in_use_;
 
-  // Manages binding of a client-provided output buffer (texture) to VASurface.
-  class DecodeSurface;
-
-  // Maps output_buffer_id to a decode surface. Used to look up surfaces
-  // on requests from the client.
-  typedef std::map<int32, linked_ptr<DecodeSurface> > DecodeSurfaces;
-  DecodeSurfaces decode_surfaces_;
-
-  // Number of decode surface currently available for decoding.
-  int num_available_decode_surfaces_;
-
-  // Maps decode surfaces to PicOrderCount, used to look up output buffers
-  // when a decision to output a picture has been made.
-  typedef std::map<int, DecodeSurface*> POCToDecodeSurfaces;
-  POCToDecodeSurfaces poc_to_decode_surfaces_;
-
-  // Find an available surface and assign it to given PicOrderCnt |poc|,
-  // removing it from the available surfaces pool. Return true if a surface
-  // has been found, false otherwise.
-  bool AssignSurfaceToPoC(int poc);
-
-  // Mark a surface as unused for decoding, unassigning it from |poc|. If the
-  // corresponding picture is not at client to be displayed,
-  // release the surface.
-  void UnassignSurfaceFromPoC(int poc);
+  // Unused VA surfaces returned by client, ready to be reused.
+  std::vector<scoped_refptr<VASurface> > available_va_surfaces_;
 
   // The id of current input buffer, which will be associated with an
-  // output picture if a frame is decoded successfully.
+  // output surface when a frame is successfully decoded.
   int32 curr_input_id_;
 
-  // Any method that uses GL/VA routines probably wants to make sure
-  // make_context_current_.Run() is called at the top of the method.
-  // X/GLX handles.
-  Display* x_display_;
-  base::Callback<bool(void)> make_context_current_;
-  GLXFBConfig fb_config_;
+  VaapiWrapper* vaapi_wrapper_;
 
-  // VA handles.
-  VADisplay va_display_;
-  VAConfigID va_config_id_;
-  VAContextID va_context_id_;
-  VAProfile profile_;
-  bool va_context_created_;
-
-  // Allocated VASurfaces.
-  VASurfaceID va_surface_ids_[kMaxNumReqPictures];
-
-  // Called by decoder when a picture should be outputted.
+  // Called by decoder when a surface should be outputted.
   OutputPicCB output_pic_cb_;
 
-  // Called by decoder to post a decode job on the ChildThread.
-  SubmitDecodeCB submit_decode_cb_;
+  // Called to report decoding error to UMA, not used to indicate errors
+  // to clients.
+  ReportErrorToUmaCB report_error_to_uma_cb_;
 
   // PicOrderCount of the previously outputted frame.
   int last_output_poc_;
 
   // Maximum size of DPB required by codec level.
   int max_dpb_size_;
-
-  // Has static initialization of pre-sandbox components completed successfully?
-  static bool pre_sandbox_init_done_;
 
   DISALLOW_COPY_AND_ASSIGN(VaapiH264Decoder);
 };

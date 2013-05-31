@@ -8,12 +8,13 @@
 #ifndef CONTENT_COMMON_GPU_MEDIA_VAAPI_VIDEO_DECODE_ACCELERATOR_H_
 #define CONTENT_COMMON_GPU_MEDIA_VAAPI_VIDEO_DECODE_ACCELERATOR_H_
 
+#include <map>
 #include <queue>
 #include <utility>
 #include <vector>
 
 #include "base/logging.h"
-#include "base/memory/ref_counted.h"
+#include "base/memory/linked_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop.h"
 #include "base/shared_memory.h"
@@ -23,6 +24,7 @@
 #include "base/threading/thread.h"
 #include "content/common/content_export.h"
 #include "content/common/gpu/media/vaapi_h264_decoder.h"
+#include "content/common/gpu/media/vaapi_wrapper.h"
 #include "media/base/bitstream_buffer.h"
 #include "media/video/picture.h"
 #include "media/video/video_decode_accelerator.h"
@@ -57,9 +59,6 @@ class CONTENT_EXPORT VaapiVideoDecodeAccelerator :
   virtual void Reset() OVERRIDE;
   virtual void Destroy() OVERRIDE;
 
-  // Do any necessary initialization before the sandbox is enabled.
-  static void PreSandboxInitialization();
-
 private:
   // Notify the client that |output_id| is ready for displaying.
   void NotifyPictureReady(int32 input_id, int32 output_id);
@@ -82,21 +81,19 @@ private:
   // returned. Will also release the mapping.
   void ReturnCurrInputBuffer_Locked();
 
-  // Get and set up one or more output buffers in the decoder. This will sleep
+  // Pass one or more output buffers to the decoder. This will sleep
   // if no buffers are available. Return true if buffers have been set up or
   // false if an early exit has been requested (due to initiated
   // reset/flush/destroy).
-  bool GetOutputBuffers_Locked();
+  bool FeedDecoderWithOutputSurfaces_Locked();
 
-  // Initial decode task: get the decoder to the point in the stream from which
-  // it can start/continue decoding. Does not require output buffers and does
-  // not produce output frames. Called either when starting with a new stream
-  // or when playback is to be resumed following a seek.
+  // Get the decoder to the point in the stream from which it can start/continue
+  // decoding. Called either when starting to decode a new stream or when
+  // playback is to be resumed following a seek.
   void InitialDecodeTask();
 
-  // Decoding task. Will continue decoding given input buffers and sleep
-  // waiting for input/output as needed. Will exit if a reset/flush/destroy
-  // is requested.
+  // Continue decoding given input buffers and sleep waiting for input/output
+  // as needed. Will exit if a reset/flush/destroy is requested.
   void DecodeTask();
 
   // Scheduled after receiving a flush request and executed after the current
@@ -124,14 +121,38 @@ private:
   // Helper for Destroy(), doing all the actual work except for deleting self.
   void Cleanup();
 
-  // Lazily initialize static data after sandbox is enabled.  Return false on
-  // init failure.
-  static bool PostSandboxInitialization();
+  // Get a usable framebuffer configuration for use in binding textures
+  // or return false on failure.
+  bool InitializeFBConfig();
+
+  // Callback for the decoder to execute when it wants us to output given
+  // |va_surface|.
+  void SurfaceReady(int32 input_id, const scoped_refptr<VASurface>& va_surface);
+
+  // Represents a texture bound to an X Pixmap for output purposes.
+  class TFPPicture;
+
+  // Callback to be executed once we have a |va_surface| to be output and
+  // an available |tfp_picture| to use for output.
+  // Puts contents of |va_surface| into given |tfp_picture|, releases the
+  // surface and passes the resulting picture to client for output.
+  void OutputPicture(const scoped_refptr<VASurface>& va_surface,
+                     int32 input_id,
+                     TFPPicture* tfp_picture);
+
+  // Try to OutputPicture() if we have both a ready surface and picture.
+  void TryOutputSurface();
+
+  // Called when a VASurface is no longer in use by the decoder or is not being
+  // synced/waiting to be synced to a picture. Returns it to available surfaces
+  // pool.
+  void RecycleVASurfaceID(VASurfaceID va_surface_id);
 
   // Client-provided X/GLX state.
   Display* x_display_;
   GLXContext glx_context_;
   base::Callback<bool(void)> make_context_current_;
+  GLXFBConfig fb_config_;
 
   // VAVDA state.
   enum State {
@@ -153,10 +174,9 @@ private:
     kDestroying,
   };
 
-  State state_;
-
-  // Protects input and output buffer queues and state_.
+  // Protects input buffer and surface queues and state_.
   base::Lock lock_;
+  State state_;
 
   // An input buffer awaiting consumption, provided by the client.
   struct InputBuffer {
@@ -177,11 +197,41 @@ private:
   // Current input buffer at decoder.
   linked_ptr<InputBuffer> curr_input_buffer_;
 
-  // Queue for incoming input buffers.
+  // Queue for incoming output buffers (texture ids).
   typedef std::queue<int32> OutputBuffers;
   OutputBuffers output_buffers_;
-  // Signalled when output buffers are queued onto the output_buffers_ queue.
-  base::ConditionVariable output_ready_;
+
+  typedef std::map<int32, linked_ptr<TFPPicture> > TFPPictures;
+  // All allocated TFPPictures, regardless of their current state. TFPPictures
+  // are allocated once and destroyed at the end of decode.
+  TFPPictures tfp_pictures_;
+  std::list<TFPPicture*> available_tfp_pictures_;
+
+  // Return a TFPPicture associated with given client-provided id.
+  TFPPicture* TFPPictureById(int32 picture_buffer_id);
+
+  // Number/resolution of output picture buffers.
+  size_t num_pics_;
+  gfx::Size pic_size_;
+
+  // VA Surfaces no longer in use that can be passed back to the decoder for
+  // reuse, once it requests them.
+  std::list<VASurfaceID> available_va_surfaces_;
+  // Signalled when output surfaces are queued onto the available_va_surfaces_
+  // queue.
+  base::ConditionVariable surfaces_available_;
+
+  // Pending output requests from the decoder. When it indicates that we should
+  // output a surface and we have an available TFPPicture (i.e. texture) ready
+  // to use, we'll execute the callback passing the TFPPicture. The callback
+  // will put the contents of the surface into the picture and return it to
+  // the client, releasing the surface as well.
+  // If we don't have any available TFPPictures at the time when the decoder
+  // requests output, we'll store the request on pending_output_cbs_ queue for
+  // later and run it once the client gives us more textures
+  // via ReusePictureBuffer().
+  typedef base::Callback<void(TFPPicture*)> OutputCB;
+  std::queue<OutputCB> pending_output_cbs_;
 
   // ChildThread's message loop
   base::MessageLoop* message_loop_;
@@ -199,18 +249,15 @@ private:
   base::WeakPtrFactory<Client> client_ptr_factory_;
   base::WeakPtr<Client> client_;
 
+  scoped_ptr<VaapiWrapper> vaapi_wrapper_;
+
+  // Comes after vaapi_wrapper_ to ensure its destructor is executed before
+  // vaapi_wrapper_ is destroyed.
+  scoped_ptr<VaapiH264Decoder> decoder_;
   base::Thread decoder_thread_;
-  VaapiH264Decoder decoder_;
 
   int num_frames_at_client_;
   int num_stream_bufs_at_decoder_;
-
-  // Posted onto ChildThread by the decoder to submit a GPU job to decode
-  // and put the decoded picture into output buffer. Takes ownership of
-  // the queues' memory.
-  void SubmitDecode(int32 output_id,
-                    scoped_ptr<std::queue<VABufferID> > va_bufs,
-                    scoped_ptr<std::queue<VABufferID> > slice_bufs);
 
   DISALLOW_COPY_AND_ASSIGN(VaapiVideoDecodeAccelerator);
 };
