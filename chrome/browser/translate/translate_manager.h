@@ -115,6 +115,10 @@ class TranslateManager : public content::NotificationObserver,
   // Returns true if |language| is supported by the translation server.
   static bool IsSupportedLanguage(const std::string& language);
 
+  // Returns true if |language| is supported by the translation server as a
+  // alpha language.
+  static bool IsAlphaLanguage(const std::string& language);
+
   // The observer class for TranslateManager.
   class Observer {
    public:

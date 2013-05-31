@@ -158,6 +158,14 @@ bool TranslateManager::IsSupportedLanguage(const std::string& language) {
   return false;
 }
 
+// static
+bool TranslateManager::IsAlphaLanguage(const std::string& language) {
+  if (GetInstance()->language_list_.get())
+    return GetInstance()->language_list_->IsAlphaLanguage(language);
+  NOTREACHED();
+  return false;
+}
+
 void TranslateManager::Observe(int type,
                                const content::NotificationSource& source,
                                const content::NotificationDetails& details) {
@@ -737,8 +745,6 @@ void TranslateManager::InitAcceptLanguages(PrefService* prefs) {
 
 void TranslateManager::FetchLanguageListFromTranslateServer(
     PrefService* prefs) {
-  DCHECK(language_list_.get());
-
   // We don't want to do this when translate is disabled.
   DCHECK(prefs != NULL);
   if (CommandLine::ForCurrentProcess()->HasSwitch(
@@ -749,6 +755,8 @@ void TranslateManager::FetchLanguageListFromTranslateServer(
 
   if (language_list_.get())
     language_list_->RequestLanguageList();
+  else
+    NOTREACHED();
 }
 
 void TranslateManager::CleanupPendingUlrFetcher() {

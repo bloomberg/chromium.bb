@@ -28,17 +28,23 @@ class TranslateLanguageList : public net::URLFetcherDelegate {
   virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
 
   // Fills |languages| with the list of languages that the translate server can
-  // translate to and from.
+  // translate to and from. If alpha language support is enabled, it fills
+  // |languages| with the list of all supporting languages including alpha
+  // languages.
   void GetSupportedLanguages(std::vector<std::string>* languages);
 
   // Returns the language code that can be used with the Translate method for a
   // specified |chrome_locale|.
   std::string GetLanguageCode(const std::string& chrome_locale);
 
-  // Returns true if |language| is supported by the translation server.
+  // Returns true if |language| is supported by the translation server. If alpha
+  // language support is enabled, also returns true if |language| is in alpha
+  // language list.
   bool IsSupportedLanguage(const std::string& language);
 
-  // TODO(toyoshim): Add IsSupportedAlphaLanguage() here.
+  // Returns true if |language| is supported by the translation server as a
+  // alpha language.
+  bool IsAlphaLanguage(const std::string& language);
 
   // Fetches the language list from the translate server. It will not retry
   // more than kMaxRetryLanguageListFetch times.
@@ -49,15 +55,26 @@ class TranslateLanguageList : public net::URLFetcherDelegate {
   static const char kTargetLanguagesKey[];
 
  private:
-  // Parses |language_list| and fills |supported_languages_| with the list of
-  // languages that the translate server can translate to and from.
-  void SetSupportedLanguages(const std::string& language_list);
+  // Updates |all_supported_languages_| to contain the union of
+  // |supported_languages_| and |supported_alpha_languages_|.
+  void UpdateSupportedLanguages();
 
   // The languages supported by the translation server.
   std::set<std::string> supported_languages_;
 
+  // The alpha languages supported by the translation server.
+  std::set<std::string> supported_alpha_languages_;
+
+  // All the languages supported by the translation server. It contains the
+  // union of |supported_languages_| and |supported_alpha_languages_|.
+  std::set<std::string> all_supported_languages_;
+
   // An URLFetcher instance to fetch a server providing supported language list.
-  scoped_ptr<net::URLFetcher> url_fetcher_;
+  scoped_ptr<net::URLFetcher> language_list_fetcher_;
+
+  // An URLFetcher instance to fetch a server providing supported alpha language
+  // list.
+  scoped_ptr<net::URLFetcher> alpha_language_list_fetcher_;
 
   DISALLOW_COPY_AND_ASSIGN(TranslateLanguageList);
 };
