@@ -1,0 +1,448 @@
+/*
+* Copyright (C) 2013 Google Inc. All rights reserved.
+*
+* Redistribution and use in source and binary forms, with or without
+* modification, are permitted provided that the following conditions are
+* met:
+*
+*     * Redistributions of source code must retain the above copyright
+* notice, this list of conditions and the following disclaimer.
+*     * Redistributions in binary form must reproduce the above
+* copyright notice, this list of conditions and the following disclaimer
+* in the documentation and/or other materials provided with the
+* distribution.
+*     * Neither the name of Google Inc. nor the names of its
+* contributors may be used to endorse or promote products derived from
+* this software without specific prior written permission.
+*
+* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+* "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+* LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+* A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+* OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+* SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+* LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+* DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+* THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+* (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+* OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+*/
+
+/*
+* CodeGeneratorInstrumentation.py uses this file as a source to generate
+* InspectorInstrumentationInl.h and InspectorInstrumentationImpl.cpp
+*
+* The code below is not a correct IDL but a mix of IDL and C++.
+*
+* The syntax for an instrumentation method is as follows:
+*
+*    [methodAttributes] returnValue methodName([paramAttributes] paramList)
+*
+* Where:
+*   methodAttributes - optional list of method attributes.
+*       Attributes containing "=" are code generation options:
+*           Inline=Custom - do not generate the public inline method.
+*           Inline=FastReturn - return early from the inline method if there are no frontends.
+*           Inline=Forward - generate a simple forwarding inline method that does not
+                             modify the parameter list (implies Inline=FastReturn)
+*       Attributes without "=" are the names of the agents to be invoked.
+*           Examples: DOM, Page, Debugger.
+*
+*   paramAttributes - options list of attributes controlling the parameters handling.
+*       Keep - pass first parameter (used to access the InstrumentingAgents instance) to agents.
+*
+*   returnValue: C++ return value. Only "void" and "InspectorInstrumentationCookie" are supported.
+*
+*   methodName: C++ name for the public instrumentation method and agents methods.
+*
+*   paramList: C++ parameter list with optional names. Names will be deduced from types if omitted but you have to
+*        specify explicit names for multiple parameters of the same type.
+*/
+
+interface InspectorInstrumentation {
+    [Page, Inspector, PageDebugger, PageRuntime]
+    void didClearWindowObjectInWorld([Keep] Frame*, DOMWrapperWorld*);
+
+    [DOMDebugger, Inline=FastReturn]
+    void willInsertDOMNode(Document*, Node* parent);
+
+    [DOM, DOMDebugger, Inline=FastReturn]
+    void didInsertDOMNode(Document*, Node*);
+
+    [DOMDebugger, DOM, Inline=FastReturn]
+    void willRemoveDOMNode(Document* document, Node*);
+
+    [DOMDebugger, DOM, Inline=FastReturn]
+    void willModifyDOMAttr(Document*, Element*, const AtomicString& oldValue, const AtomicString& newValue);
+
+    [DOM, Inline=FastReturn]
+    void didModifyDOMAttr(Document*, Element*, const AtomicString& name, const AtomicString& value);
+
+    [DOM, Inline=FastReturn]
+    void didRemoveDOMAttr(Document*, Element*, const AtomicString& name);
+
+    [DOM, Inline=FastReturn]
+    void characterDataModified(Document*, CharacterData*);
+
+    [DOM, DOMDebugger, Inline=FastReturn]
+    void didInvalidateStyleAttr(Document*, Node*);
+
+    [CSS, Inline=FastReturn]
+    void activeStyleSheetsUpdated([Keep] Document*, const Vector<RefPtr<StyleSheet> >& newSheets);
+
+    [Console]
+    void frameWindowDiscarded(Frame*, DOMWindow* domWindow);
+
+    [CSS, Inline=FastReturn]
+    void mediaQueryResultChanged(Document*);
+
+    [DOM, Inline=FastReturn]
+    void didPushShadowRoot([Keep] Element* host, ShadowRoot*);
+
+    [DOM, Inline=FastReturn]
+    void willPopShadowRoot([Keep] Element* host, ShadowRoot*);
+
+    [CSS, Inline=FastReturn]
+    void didCreateNamedFlow([Keep] Document*, NamedFlow*);
+
+    [CSS, Inline=FastReturn]
+    void willRemoveNamedFlow([Keep] Document*, NamedFlow*);
+
+    [CSS, Inline=FastReturn]
+    void didUpdateRegionLayout([Keep] Document*, NamedFlow*);
+
+    [DOMDebugger, Inline=FastReturn]
+    void willSendXMLHttpRequest(ScriptExecutionContext*, const String& url);
+
+    [Timeline, Inline=FastReturn]
+    void didScheduleResourceRequest([Keep] Document*, const String& url);
+
+    [DOMDebugger, Timeline, Inline=FastReturn]
+    void didInstallTimer([Keep] ScriptExecutionContext*, int timerId, int timeout, bool singleShot);
+
+    [DOMDebugger, Timeline, Inline=FastReturn]
+    void didRemoveTimer([Keep] ScriptExecutionContext*, int timerId);
+
+    [Timeline, Inline=FastReturn]
+    InspectorInstrumentationCookie willCallFunction([Keep] ScriptExecutionContext*, const String& scriptName, int scriptLine);
+
+    [Timeline, Inline=FastReturn]
+    void didCallFunction(const InspectorInstrumentationCookie&);
+
+    [Timeline, Inline=FastReturn]
+    InspectorInstrumentationCookie willDispatchXHRReadyStateChangeEvent([Keep] ScriptExecutionContext*, XMLHttpRequest*);
+
+    [Timeline, Inline=FastReturn]
+    void didDispatchXHRReadyStateChangeEvent(const InspectorInstrumentationCookie&);
+
+    [Timeline, Inline=FastReturn]
+    InspectorInstrumentationCookie willDispatchEvent([Keep] Document*, const Event&, DOMWindow*, Node*, const EventPath&);
+
+    [Timeline, Inline=FastReturn]
+    void didDispatchEvent(const InspectorInstrumentationCookie&);
+
+    [DOMDebugger, Inline=FastReturn]
+    InspectorInstrumentationCookie willHandleEvent(ScriptExecutionContext*, Event*);
+
+    [Debugger, Inline=FastReturn]
+    void didHandleEvent(const InspectorInstrumentationCookie&);
+
+    [Timeline, Inline=FastReturn]
+    InspectorInstrumentationCookie willDispatchEventOnWindow(Frame*, const Event&, DOMWindow*);
+
+    [Timeline, Inline=FastReturn]
+    void didDispatchEventOnWindow(const InspectorInstrumentationCookie&);
+
+    [Timeline, Inline=FastReturn]
+    InspectorInstrumentationCookie willEvaluateScript([Keep] Frame*, const String& url, int lineNumber);
+
+    [Timeline, Inline=FastReturn]
+    void didEvaluateScript(const InspectorInstrumentationCookie&);
+
+    [Page, Inline=FastReturn]
+    void scriptsEnabled(Page*, bool isEnabled);
+
+    [PageRuntime, Inline=FastReturn]
+    void didCreateIsolatedContext([Keep] Frame*, ScriptState*, SecurityOrigin*);
+
+    [DOMDebugger, Timeline, Inline=FastReturn]
+    InspectorInstrumentationCookie willFireTimer([Keep] ScriptExecutionContext*, int timerId);
+
+    [Debugger, Timeline, Inline=FastReturn]
+    void didFireTimer(const InspectorInstrumentationCookie&);
+
+    [Timeline, Inline=FastReturn]
+    void didInvalidateLayout([Keep] Frame*);
+
+    [Timeline, Inline=FastReturn]
+    InspectorInstrumentationCookie willLayout([Keep] Frame*);
+
+    [Timeline, Page, Inline=FastReturn]
+    void didLayout(const InspectorInstrumentationCookie&, RenderObject* root);
+
+    [Page, Inline=FastReturn]
+    void didScroll(Page*);
+
+    [Page, Inline=FastReturn]
+    void didResizeMainFrame(Page*);
+
+    [Timeline, Inline=FastReturn]
+    InspectorInstrumentationCookie willDispatchXHRLoadEvent([Keep] ScriptExecutionContext*, XMLHttpRequest*);
+
+    [Timeline, Inline=FastReturn]
+    void didDispatchXHRLoadEvent(const InspectorInstrumentationCookie&);
+
+    [Timeline, Inline=FastReturn]
+    void willScrollLayer([Keep] Frame*);
+
+    [Timeline, Inline=FastReturn]
+    void didScrollLayer(Frame*);
+
+    [Timeline, Inline=FastReturn]
+    void willPaint([Keep] RenderObject*);
+
+    [Timeline, Page, Inline=FastReturn]
+    void didPaint([Keep] RenderObject*, GraphicsContext*, const LayoutRect&);
+
+    [Resource, Timeline, Inline=FastReturn]
+    InspectorInstrumentationCookie willRecalculateStyle([Keep] Document*);
+
+    [Timeline, Resource, Page, Inline=FastReturn]
+    void didRecalculateStyle(const InspectorInstrumentationCookie&);
+
+    [Timeline, Inline=FastReturn]
+    void didRecalculateStyleForElement(Element*);
+
+    [Timeline, Resource, Inline=FastReturn]
+    void didScheduleStyleRecalculation([Keep] Document*);
+
+    [CSS, Inline=FastReturn]
+    InspectorInstrumentationCookie willMatchRule(Document*, StyleRule*, InspectorCSSOMWrappers&, DocumentStyleSheetCollection*);
+
+    [CSS, Inline=FastReturn]
+    void didMatchRule(const InspectorInstrumentationCookie&, bool matched);
+
+    [CSS, Inline=Custom]
+    InspectorInstrumentationCookie willProcessRule(Document* document, StyleRule* rule, StyleResolver* styleResolver);
+
+    [CSS, Inline=FastReturn]
+    void didProcessRule(const InspectorInstrumentationCookie&);
+
+    [Resource, Inline=FastReturn]
+    void applyUserAgentOverride(Frame*, String* userAgent);
+
+    [Page, Inline=FastReturn]
+    void applyScreenWidthOverride(Frame*, long* width);
+
+    [Page, Inline=FastReturn]
+    void applyScreenHeightOverride(Frame*, long* height);
+
+    [Page, Inline=FastReturn]
+    void applyEmulatedMedia(Frame*, String* media);
+
+    [Timeline, Resource]
+    void willSendRequest(Frame*, unsigned long identifier, DocumentLoader*, ResourceRequest&, const ResourceResponse& redirectResponse);
+
+    void continueAfterPingLoader(Frame*, unsigned long identifier, DocumentLoader*, ResourceRequest&, const ResourceResponse&);
+
+    [Resource]
+    void markResourceAsCached(Page*, unsigned long identifier);
+
+    [Resource]
+    void didLoadResourceFromMemoryCache(Page*, DocumentLoader*, CachedResource*);
+
+    [Timeline, Inline=FastReturn]
+    InspectorInstrumentationCookie willReceiveResourceData([Keep] Frame*, unsigned long identifier, int length);
+
+    [Timeline, Inline=FastReturn]
+    void didReceiveResourceData(const InspectorInstrumentationCookie&);
+
+    [Timeline]
+    InspectorInstrumentationCookie willReceiveResourceResponse([Keep] Frame*, unsigned long identifier, const ResourceResponse&);
+
+    [Timeline, Resource, Console] // Console should come AFTER Resource notification, front-end relies on this.
+    void didReceiveResourceResponse(const InspectorInstrumentationCookie&, unsigned long identifier, DocumentLoader*, const ResourceResponse&, ResourceLoader*);
+
+    [Inline=Forward]
+    void continueAfterXFrameOptionsDenied(Frame* frame, DocumentLoader* loader, unsigned long identifier, const ResourceResponse& r);
+
+    [Inline=Forward]
+    void continueWithPolicyDownload(Frame* frame, DocumentLoader* loader, unsigned long identifier, const ResourceResponse& r);
+
+    [Inline=Forward]
+    void continueWithPolicyIgnore(Frame* frame, DocumentLoader* loader, unsigned long identifier, const ResourceResponse& r);
+
+    [Resource]
+    void didReceiveData(Frame*, unsigned long identifier, const char* data, int dataLength, int encodedDataLength);
+
+    [Timeline, Resource]
+    void didFinishLoading(Frame* frame, unsigned long identifier, DocumentLoader*, double finishTime);
+
+    [Timeline, Resource, Console] // Console should come AFTER Resource notification, front-end relies on this.
+    void didFailLoading(Frame* frame, unsigned long identifier, DocumentLoader*, const ResourceError&);
+
+    [Resource]
+    void documentThreadableLoaderStartedLoadingForClient(ScriptExecutionContext*, unsigned long identifier, ThreadableLoaderClient* client);
+
+    [Resource]
+    void willLoadXHR(ScriptExecutionContext*, ThreadableLoaderClient* client, const String& method, const KURL& url, bool async, PassRefPtr<FormData>, const HTTPHeaderMap& headers, bool includeCredentials);
+
+    [Resource]
+    void didFailXHRLoading(ScriptExecutionContext*, ThreadableLoaderClient* client);
+
+    [Console, Resource]
+    void didFinishXHRLoading(ScriptExecutionContext*, ThreadableLoaderClient* client, unsigned long identifier, const String& sourceString, const String& url, const String& sendURL, unsigned sendLineNumber);
+
+    [Resource]
+    void didReceiveXHRResponse(ScriptExecutionContext*, unsigned long identifier);
+
+    [Resource]
+    void willLoadXHRSynchronously(ScriptExecutionContext*);
+
+    [Resource]
+    void didLoadXHRSynchronously(ScriptExecutionContext*);
+
+    [Resource]
+    void scriptImported(ScriptExecutionContext*, unsigned long identifier, const String& sourceString);
+
+    [Debugger]
+    void scriptExecutionBlockedByCSP(ScriptExecutionContext*, const String& directiveText);
+
+    [Resource]
+    void didReceiveScriptResponse(ScriptExecutionContext*, unsigned long identifier);
+
+    [Timeline, Inspector, DOM, Page]
+    void domContentLoadedEventFired([Keep] Frame*);
+
+    [DOM, Timeline, Page]
+    void loadEventFired([Keep] Frame*);
+
+    [Canvas, Page, CSS]
+    void frameDetachedFromParent([Keep] Frame*);
+
+    [Console, Resource, CSS, Database, DOM, LayerTree, Inspector, Canvas, Page]
+    void didCommitLoad([Keep] Frame*, DocumentLoader*);
+
+    [DOM, Inline=FastReturn]
+    void frameDocumentUpdated([Keep] Frame*);
+
+    [Page]
+    void loaderDetachedFromFrame(Frame*, DocumentLoader*);
+
+    [Page]
+    void frameStartedLoading([Keep] Frame*);
+
+    [Page]
+    void frameStoppedLoading([Keep] Frame*);
+
+    [Page]
+    void frameScheduledNavigation([Keep] Frame*, double delay);
+
+    [Page]
+    void frameClearedScheduledNavigation([Keep] Frame*);
+
+    [Page, Inline=FastReturn]
+    InspectorInstrumentationCookie willRunJavaScriptDialog(Page*, const String& message);
+
+    [Page, Inline=FastReturn]
+    void didRunJavaScriptDialog(const InspectorInstrumentationCookie&);
+
+    [Inline=Forward]
+    void willDestroyCachedResource(CachedResource* cachedResource);
+
+    [Timeline, Inline=FastReturn]
+    InspectorInstrumentationCookie willWriteHTML([Keep] Document*, unsigned startLine);
+
+    [Timeline, Inline=FastReturn]
+    void didWriteHTML(const InspectorInstrumentationCookie&, unsigned endLine);
+
+    [DOMDebugger, Timeline]
+    void didRequestAnimationFrame([Keep] Document*, int callbackId);
+
+    [DOMDebugger, Timeline]
+    void didCancelAnimationFrame([Keep] Document*, int callbackId);
+
+    [DOMDebugger, Timeline]
+    InspectorInstrumentationCookie willFireAnimationFrame([Keep] Document*, int callbackId);
+
+    [Timeline, Inline=FastReturn]
+    void didFireAnimationFrame(const InspectorInstrumentationCookie&);
+
+    [Console, Debugger, Inline=Custom]  // FIXME: Drop this once we no longer generate stacks outside of Inspector.
+    void addMessageToConsole(Page* page, MessageSource source, MessageType type, MessageLevel level, const String& message, PassRefPtr<ScriptCallStack> callStack, unsigned long requestIdentifier = 0);
+
+    [Console, Debugger, Inline=Custom]
+    void addMessageToConsole(Page* page, MessageSource source, MessageType type, MessageLevel level, const String& message, ScriptState* state, PassRefPtr<ScriptArguments> arguments, unsigned long requestIdentifier = 0);
+
+    [Console, Inline=Custom]
+    void addMessageToConsole(Page* page, MessageSource source, MessageType type, MessageLevel level, const String& message, const String& scriptId, unsigned lineNumber, ScriptState* state = 0, unsigned long requestIdentifier = 0);
+
+    [Console, Inline=Custom]
+    void consoleCount(Page* page, ScriptState* state, PassRefPtr<ScriptArguments> arguments);
+
+    [Timeline, Console, Inline=Custom]
+    void startConsoleTiming([Keep] Frame* frame, const String& title);
+
+    [Console, Timeline, Inline=Custom]
+    void stopConsoleTiming([Keep] Frame* frame, const String& title, PassRefPtr<ScriptCallStack> stack);
+
+    [Timeline, Inline=Custom]
+    void consoleTimeStamp([Keep] Frame* frame, PassRefPtr<ScriptArguments> arguments);
+
+    [Profiler, Inline=Custom]
+    void addStartProfilingMessageToConsole(Page* page, const String& title, unsigned lineNumber, const String& sourceURL);
+
+    [Profiler, Inline=Custom]
+    void addProfile(Page* page, PassRefPtr<ScriptProfile> profile, PassRefPtr<ScriptCallStack> callStack);
+
+    [Database, Inline=Custom]
+    void didOpenDatabase(ScriptExecutionContext* context, PassRefPtr<Database> database, const String& domain, const String& name, const String& version);
+
+    [DOMStorage, Inline=FastReturn]
+    void didDispatchDOMStorageEvent(Page* page, const String& key, const String& oldValue, const String& newValue, StorageType storageType, SecurityOrigin* securityOrigin);
+
+    [Worker]
+    void didStartWorkerContext(ScriptExecutionContext*, WorkerContextProxy* proxy, const KURL& url);
+
+    [WorkerRuntime]
+    void willEvaluateWorkerScript([Keep] WorkerContext* context, int workerThreadStartMode);
+
+    [Worker]
+    void workerContextTerminated(ScriptExecutionContext*, WorkerContextProxy* proxy);
+
+    [Resource, Timeline]
+    void didCreateWebSocket([Keep] Document*, unsigned long identifier, const KURL& requestURL, const String& protocol);
+
+    [Resource, Timeline]
+    void willSendWebSocketHandshakeRequest([Keep] Document*, unsigned long identifier, const WebSocketHandshakeRequest& request);
+
+    [Resource, Timeline]
+    void didReceiveWebSocketHandshakeResponse([Keep] Document*, unsigned long identifier, const WebSocketHandshakeResponse& response);
+
+    [Resource, Timeline]
+    void didCloseWebSocket([Keep] Document*, unsigned long identifier);
+
+    [Resource]
+    void didReceiveWebSocketFrame(Document*, unsigned long identifier, const WebSocketFrame& frame);
+
+    [Resource]
+    void didSendWebSocketFrame(Document*, unsigned long identifier, const WebSocketFrame& frame);
+
+    [Resource]
+    void didReceiveWebSocketFrameError(Document*, unsigned long identifier, const String& errorMessage);
+
+    [ApplicationCache, Inline=FastReturn]
+    void networkStateChanged(Page*);
+
+    [ApplicationCache, Inline=FastReturn]
+    void updateApplicationCacheStatus([Keep] Frame*);
+
+    [LayerTree]
+    void layerTreeDidChange(Page*);
+
+    [LayerTree]
+    void renderLayerDestroyed(Page*, const RenderLayer*);
+
+    [LayerTree]
+    void pseudoElementDestroyed(Page*, PseudoElement*);
+}
