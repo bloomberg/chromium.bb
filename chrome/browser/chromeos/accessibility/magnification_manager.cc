@@ -189,7 +189,7 @@ class MagnificationManagerImpl : public MagnificationManager,
       // When entering the login screen or non-guest desktop.
       case chrome::NOTIFICATION_LOGIN_WEBUI_VISIBLE:
       case chrome::NOTIFICATION_SESSION_STARTED: {
-        Profile* profile = ProfileManager::GetDefaultProfileOrOffTheRecord();
+        Profile* profile = ProfileManager::GetDefaultProfile();
         if (!profile->IsGuestSession())
           SetProfile(profile);
         break;
@@ -198,8 +198,16 @@ class MagnificationManagerImpl : public MagnificationManager,
       // fired, so we use NOTIFICATION_PROFILE_CREATED event instead.
       case chrome::NOTIFICATION_PROFILE_CREATED: {
         Profile* profile = content::Source<Profile>(source).ptr();
-        if (profile->IsGuestSession())
+        if (profile->IsGuestSession() && !profile->IsOffTheRecord()) {
           SetProfile(profile);
+
+          // In guest mode, 2 non-OTR profiles are created. We should use the
+          // first one, not second one.
+          registrar_.Remove(this,
+                            chrome::NOTIFICATION_PROFILE_CREATED,
+                            content::NotificationService::AllSources());
+        }
+
         break;
       }
       case chrome::NOTIFICATION_PROFILE_DESTROYED: {
