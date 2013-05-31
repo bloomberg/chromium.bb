@@ -2070,17 +2070,14 @@ ssl3_ServerHandleSigAlgsXtn(sslSocket * ss, PRUint16 ex_type, SECItem *data)
     if (rv != SECSuccess) {
 	return SECFailure;
     }
-    /* Trailing data or odd-length parameters is invalid. */
-    if (data->len != 0 || (algorithms.len & 1) != 0) {
+    /* Trailing data, empty value, or odd-length value is invalid. */
+    if (data->len != 0 || algorithms.len == 0 || (algorithms.len & 1) != 0) {
 	PORT_SetError(SSL_ERROR_RX_MALFORMED_CLIENT_HELLO);
 	return SECFailure;
     }
 
     numAlgorithms = algorithms.len/2;
 
-    if (numAlgorithms == 0) {
-	return SECSuccess;
-    }
     /* We don't care to process excessive numbers of algorithms. */
     if (numAlgorithms > 512) {
 	numAlgorithms = 512;
@@ -2125,21 +2122,6 @@ ssl3_ServerHandleSigAlgsXtn(sslSocket * ss, PRUint16 ex_type, SECItem *data)
 static PRInt32
 ssl3_ClientSendSigAlgsXtn(sslSocket * ss, PRBool append, PRUint32 maxBytes)
 {
-    static const unsigned char signatureAlgorithms[] = {
-	/* This block is the contents of our signature_algorithms extension, in
-	 * wire format. See
-	 * https://tools.ietf.org/html/rfc5246#section-7.4.1.4.1 */
-	tls_hash_sha256, tls_sig_rsa,
-	tls_hash_sha384, tls_sig_rsa,
-	tls_hash_sha1,   tls_sig_rsa,
-#ifdef NSS_ENABLE_ECC
-	tls_hash_sha256, tls_sig_ecdsa,
-	tls_hash_sha384, tls_sig_ecdsa,
-	tls_hash_sha1,   tls_sig_ecdsa,
-#endif
-	tls_hash_sha256, tls_sig_dsa,
-	tls_hash_sha1,   tls_sig_dsa,
-    };
     PRInt32 extension_length;
 
     if (ss->version < SSL_LIBRARY_VERSION_TLS_1_2) {
@@ -2150,7 +2132,7 @@ ssl3_ClientSendSigAlgsXtn(sslSocket * ss, PRBool append, PRUint32 maxBytes)
 	2 /* extension type */ +
 	2 /* extension length */ +
 	2 /* supported_signature_algorithms length */ +
-	sizeof(signatureAlgorithms);
+	ssl3_SizeOfSupportedSignatureAlgorithms();
 
     if (append && maxBytes >= extension_length) {
 	SECStatus rv;
@@ -2160,8 +2142,7 @@ ssl3_ClientSendSigAlgsXtn(sslSocket * ss, PRBool append, PRUint32 maxBytes)
 	rv = ssl3_AppendHandshakeNumber(ss, extension_length - 4, 2);
 	if (rv != SECSuccess)
 	    goto loser;
-	rv = ssl3_AppendHandshakeVariable(ss, signatureAlgorithms,
-					  sizeof(signatureAlgorithms), 2);
+	rv = ssl3_AppendSupportedSignatureAlgorithms(ss);
 	if (rv != SECSuccess)
 	    goto loser;
 	ss->xtnData.advertised[ss->xtnData.numAdvertised++] =

@@ -1,0 +1,235 @@
+Index: net/third_party/nss/ssl/ssl3con.c
+===================================================================
+--- net/third_party/nss/ssl/ssl3con.c	(revision 203164)
++++ net/third_party/nss/ssl/ssl3con.c	(working copy)
+@@ -196,12 +196,27 @@
+ 
+ static const /*SSL3ClientCertificateType */ uint8 certificate_types [] = {
+     ct_RSA_sign,
+-    ct_DSS_sign,
+ #ifdef NSS_ENABLE_ECC
+     ct_ECDSA_sign,
+ #endif /* NSS_ENABLE_ECC */
++    ct_DSS_sign,
+ };
+ 
++/* This block is our supported_signature_algorithms value, in wire format.
++ * See https://tools.ietf.org/html/rfc5246#section-7.4.1.4.1 */
++static const PRUint8 supported_signature_algorithms[] = {
++    tls_hash_sha256, tls_sig_rsa,
++    tls_hash_sha384, tls_sig_rsa,
++    tls_hash_sha1,   tls_sig_rsa,
++#ifdef NSS_ENABLE_ECC
++    tls_hash_sha256, tls_sig_ecdsa,
++    tls_hash_sha384, tls_sig_ecdsa,
++    tls_hash_sha1,   tls_sig_ecdsa,
++#endif
++    tls_hash_sha256, tls_sig_dsa,
++    tls_hash_sha1,   tls_sig_dsa,
++};
++
+ #define EXPORT_RSA_KEY_LENGTH 64	/* bytes */
+ 
+ 
+@@ -3932,6 +3947,23 @@
+     return ssl3_AppendHandshake(ss, serialized, sizeof(serialized));
+ }
+ 
++/* Appends our supported_signature_algorithms value to the current handshake
++ * message. */
++SECStatus
++ssl3_AppendSupportedSignatureAlgorithms(sslSocket *ss)
++{
++    return ssl3_AppendHandshakeVariable(ss, supported_signature_algorithms,
++					sizeof supported_signature_algorithms,
++					2);
++}
++
++/* Returns the size in bytes of our supported_signature_algorithms value. */
++unsigned int
++ssl3_SizeOfSupportedSignatureAlgorithms(void)
++{
++    return sizeof supported_signature_algorithms;
++}
++
+ /**************************************************************************
+  * Consume Handshake functions.
+  *
+@@ -6508,12 +6540,14 @@
+     dnameNode *          node;
+     PRInt32              remaining;
+     PRBool               isTLS       = PR_FALSE;
++    PRBool               isTLS12     = PR_FALSE;
+     int                  i;
+     int                  errCode     = SSL_ERROR_RX_MALFORMED_CERT_REQUEST;
+     int                  nnames      = 0;
+     SECStatus            rv;
+     SSL3AlertDescription desc        = illegal_parameter;
+     SECItem              cert_types  = {siBuffer, NULL, 0};
++    SECItem              algorithms  = {siBuffer, NULL, 0};
+     CERTDistNames        ca_list;
+ #ifdef NSS_PLATFORM_CLIENT_AUTH
+     CERTCertList *       platform_cert_list = NULL;
+@@ -6538,6 +6572,7 @@
+     PORT_Assert(ss->ssl3.platformClientKey == (PlatformKey)NULL);
+ 
+     isTLS = (PRBool)(ss->ssl3.prSpec->version > SSL_LIBRARY_VERSION_3_0);
++    isTLS12 = (PRBool)(ss->ssl3.prSpec->version >= SSL_LIBRARY_VERSION_TLS_1_2);
+     rv = ssl3_ConsumeHandshakeVariable(ss, &cert_types, 1, &b, &length);
+     if (rv != SECSuccess)
+     	goto loser;		/* malformed, alert has been sent */
+@@ -6545,6 +6580,18 @@
+     PORT_Assert(!ss->requestedCertTypes);
+     ss->requestedCertTypes = &cert_types;
+ 
++    if (isTLS12) {
++	rv = ssl3_ConsumeHandshakeVariable(ss, &algorithms, 2, &b, &length);
++	if (rv != SECSuccess)
++	    goto loser;		/* malformed, alert has been sent */
++	/* An empty or odd-length value is invalid.
++	 *    SignatureAndHashAlgorithm
++	 *      supported_signature_algorithms<2..2^16-2>;
++	 */
++	if (algorithms.len == 0 || (algorithms.len & 1) != 0)
++	    goto alert_loser;
++    }
++
+     arena = ca_list.arena = PORT_NewArena(DER_DEFAULT_CHUNKSIZE);
+     if (arena == NULL)
+     	goto no_mem;
+@@ -6607,7 +6654,7 @@
+ 
+ #ifdef NSS_PLATFORM_CLIENT_AUTH
+     if (ss->getPlatformClientAuthData != NULL) {
+-	/* XXX Should pass cert_types in this call!! */
++	/* XXX Should pass cert_types and algorithms in this call!! */
+         rv = (SECStatus)(*ss->getPlatformClientAuthData)(
+                                         ss->getPlatformClientAuthDataArg,
+                                         ss->fd, &ca_list,
+@@ -6618,7 +6665,7 @@
+     } else
+ #endif
+     if (ss->getClientAuthData != NULL) {
+-	/* XXX Should pass cert_types in this call!! */
++	/* XXX Should pass cert_types and algorithms in this call!! */
+ 	rv = (SECStatus)(*ss->getClientAuthData)(ss->getClientAuthDataArg,
+ 						 ss->fd, &ca_list,
+ 						 &ss->ssl3.clientCertificate,
+@@ -8492,6 +8539,7 @@
+ static SECStatus
+ ssl3_SendCertificateRequest(sslSocket *ss)
+ {
++    PRBool         isTLS12;
+     SECItem *      name;
+     CERTDistNames *ca_list;
+     const uint8 *  certTypes;
+@@ -8509,6 +8557,8 @@
+     PORT_Assert( ss->opt.noLocks || ssl_HaveXmitBufLock(ss));
+     PORT_Assert( ss->opt.noLocks || ssl_HaveSSL3HandshakeLock(ss));
+ 
++    isTLS12 = (PRBool)(ss->ssl3.pwSpec->version >= SSL_LIBRARY_VERSION_TLS_1_2);
++
+     /* ssl3.ca_list is initialized to NULL, and never changed. */
+     ca_list = ss->ssl3.ca_list;
+     if (!ca_list) {
+@@ -8528,6 +8578,9 @@
+     certTypesLength = sizeof certificate_types;
+ 
+     length = 1 + certTypesLength + 2 + calen;
++    if (isTLS12) {
++	length += 2 + ssl3_SizeOfSupportedSignatureAlgorithms();
++    }
+ 
+     rv = ssl3_AppendHandshakeHeader(ss, certificate_request, length);
+     if (rv != SECSuccess) {
+@@ -8537,6 +8590,12 @@
+     if (rv != SECSuccess) {
+ 	return rv; 		/* err set by AppendHandshake. */
+     }
++    if (isTLS12) {
++	rv = ssl3_AppendSupportedSignatureAlgorithms(ss);
++	if (rv != SECSuccess) {
++	    return rv; 		/* err set by AppendHandshake. */
++	}
++    }
+     rv = ssl3_AppendHandshakeNumber(ss, calen, 2);
+     if (rv != SECSuccess) {
+ 	return rv; 		/* err set by AppendHandshake. */
+Index: net/third_party/nss/ssl/sslimpl.h
+===================================================================
+--- net/third_party/nss/ssl/sslimpl.h	(revision 203164)
++++ net/third_party/nss/ssl/sslimpl.h	(working copy)
+@@ -1666,6 +1666,8 @@
+ 			const SSL3Opaque *src, PRInt32 bytes, PRInt32 lenSize);
+ extern SECStatus ssl3_AppendSignatureAndHashAlgorithm(sslSocket *ss,
+ 			const SSL3SignatureAndHashAlgorithm* sigAndHash);
++extern SECStatus ssl3_AppendSupportedSignatureAlgorithms(sslSocket *ss);
++extern unsigned int ssl3_SizeOfSupportedSignatureAlgorithms(void);
+ extern SECStatus ssl3_ConsumeHandshake(sslSocket *ss, void *v, PRInt32 bytes, 
+ 			SSL3Opaque **b, PRUint32 *length);
+ extern PRInt32   ssl3_ConsumeHandshakeNumber(sslSocket *ss, PRInt32 bytes, 
+Index: net/third_party/nss/ssl/ssl3ext.c
+===================================================================
+--- net/third_party/nss/ssl/ssl3ext.c	(revision 203164)
++++ net/third_party/nss/ssl/ssl3ext.c	(working copy)
+@@ -2070,17 +2070,14 @@
+     if (rv != SECSuccess) {
+ 	return SECFailure;
+     }
+-    /* Trailing data or odd-length parameters is invalid. */
+-    if (data->len != 0 || (algorithms.len & 1) != 0) {
++    /* Trailing data, empty value, or odd-length value is invalid. */
++    if (data->len != 0 || algorithms.len == 0 || (algorithms.len & 1) != 0) {
+ 	PORT_SetError(SSL_ERROR_RX_MALFORMED_CLIENT_HELLO);
+ 	return SECFailure;
+     }
+ 
+     numAlgorithms = algorithms.len/2;
+ 
+-    if (numAlgorithms == 0) {
+-	return SECSuccess;
+-    }
+     /* We don't care to process excessive numbers of algorithms. */
+     if (numAlgorithms > 512) {
+ 	numAlgorithms = 512;
+@@ -2125,21 +2122,6 @@
+ static PRInt32
+ ssl3_ClientSendSigAlgsXtn(sslSocket * ss, PRBool append, PRUint32 maxBytes)
+ {
+-    static const unsigned char signatureAlgorithms[] = {
+-	/* This block is the contents of our signature_algorithms extension, in
+-	 * wire format. See
+-	 * https://tools.ietf.org/html/rfc5246#section-7.4.1.4.1 */
+-	tls_hash_sha256, tls_sig_rsa,
+-	tls_hash_sha384, tls_sig_rsa,
+-	tls_hash_sha1,   tls_sig_rsa,
+-#ifdef NSS_ENABLE_ECC
+-	tls_hash_sha256, tls_sig_ecdsa,
+-	tls_hash_sha384, tls_sig_ecdsa,
+-	tls_hash_sha1,   tls_sig_ecdsa,
+-#endif
+-	tls_hash_sha256, tls_sig_dsa,
+-	tls_hash_sha1,   tls_sig_dsa,
+-    };
+     PRInt32 extension_length;
+ 
+     if (ss->version < SSL_LIBRARY_VERSION_TLS_1_2) {
+@@ -2150,7 +2132,7 @@
+ 	2 /* extension type */ +
+ 	2 /* extension length */ +
+ 	2 /* supported_signature_algorithms length */ +
+-	sizeof(signatureAlgorithms);
++	ssl3_SizeOfSupportedSignatureAlgorithms();
+ 
+     if (append && maxBytes >= extension_length) {
+ 	SECStatus rv;
+@@ -2160,8 +2142,7 @@
+ 	rv = ssl3_AppendHandshakeNumber(ss, extension_length - 4, 2);
+ 	if (rv != SECSuccess)
+ 	    goto loser;
+-	rv = ssl3_AppendHandshakeVariable(ss, signatureAlgorithms,
+-					  sizeof(signatureAlgorithms), 2);
++	rv = ssl3_AppendSupportedSignatureAlgorithms(ss);
+ 	if (rv != SECSuccess)
+ 	    goto loser;
+ 	ss->xtnData.advertised[ss->xtnData.numAdvertised++] =

@@ -1666,6 +1666,8 @@ extern SECStatus ssl3_AppendHandshakeVariable( sslSocket *ss,
 			const SSL3Opaque *src, PRInt32 bytes, PRInt32 lenSize);
 extern SECStatus ssl3_AppendSignatureAndHashAlgorithm(sslSocket *ss,
 			const SSL3SignatureAndHashAlgorithm* sigAndHash);
+extern SECStatus ssl3_AppendSupportedSignatureAlgorithms(sslSocket *ss);
+extern unsigned int ssl3_SizeOfSupportedSignatureAlgorithms(void);
 extern SECStatus ssl3_ConsumeHandshake(sslSocket *ss, void *v, PRInt32 bytes, 
 			SSL3Opaque **b, PRUint32 *length);
 extern PRInt32   ssl3_ConsumeHandshakeNumber(sslSocket *ss, PRInt32 bytes, 
