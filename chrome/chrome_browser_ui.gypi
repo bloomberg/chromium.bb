@@ -2542,7 +2542,7 @@
             '../ash/ash_strings.gyp:ash_strings',
           ],
         }],
-        ['use_aura==1 and use_ash==0 and OS=="linux"', {
+        ['use_aura==1 and use_ash==0 and use_ozone==0 and OS=="linux"', {
           'dependencies': [
             # gtk2 is the only component that can interact with gtk2 in our new
             # world.

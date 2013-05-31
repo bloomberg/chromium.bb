@@ -310,8 +310,12 @@
         }, {
           # use_x11 == 0
           'sources!': [
+            'ime/xkeyboard.cc',
+            'ime/xkeyboard.h',
             'display/output_configurator.cc',
             'display/output_configurator.h',
+            'display/output_util.cc',
+            'display/output_util.h',
             'display/real_output_configurator_delegate.cc',
             'display/real_output_configurator_delegate.h',
             'ime/xkeyboard.cc',
