@@ -14,6 +14,10 @@
 
 class Profile;
 
+namespace extensions {
+class Extension;
+}
+
 namespace apps {
 
 // This app shim handler that handles events for app shims that correspond to an
@@ -25,7 +29,7 @@ class ExtensionAppShimHandler : public AppShimHandler,
   virtual ~ExtensionAppShimHandler();
 
   // AppShimHandler overrides:
-  virtual bool OnShimLaunch(Host* host) OVERRIDE;
+  virtual bool OnShimLaunch(Host* host, AppShimLaunchType launch_type) OVERRIDE;
   virtual void OnShimClose(Host* host) OVERRIDE;
   virtual void OnShimFocus(Host* host) OVERRIDE;
   virtual void OnShimQuit(Host* host) OVERRIDE;
@@ -39,7 +43,9 @@ class ExtensionAppShimHandler : public AppShimHandler,
   content::NotificationRegistrar& registrar() { return registrar_; }
 
  private:
-  virtual bool LaunchApp(Profile* profile, const std::string& app_id);
+  virtual bool LaunchApp(Profile* profile,
+                         const std::string& app_id,
+                         AppShimLaunchType launch_type);
 
   // Listen to the NOTIFICATION_EXTENSION_HOST_DESTROYED message to detect when
   // an app closes. When that happens, call OnAppClosed on the relevant
@@ -48,6 +54,8 @@ class ExtensionAppShimHandler : public AppShimHandler,
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
+
+  void StartShim(Profile* profile, const extensions::Extension* extension);
 
   void CloseShim(Profile* profile, const std::string& app_id);
 

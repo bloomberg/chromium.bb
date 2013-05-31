@@ -14,11 +14,16 @@
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/extensions/native_app_window.h"
 #include "chrome/browser/ui/extensions/shell_window.h"
+#include "chrome/browser/ui/web_applications/web_app_ui.h"
+#include "chrome/browser/web_applications/web_app_mac.h"
 #include "ui/base/cocoa/focus_window_set.h"
 
 namespace apps {
 
-ExtensionAppShimHandler::ExtensionAppShimHandler() {}
+ExtensionAppShimHandler::ExtensionAppShimHandler() {
+  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_HOST_CREATED,
+                 content::NotificationService::AllBrowserContextsAndSources());
+}
 
 ExtensionAppShimHandler::~ExtensionAppShimHandler() {
   for (HostMap::iterator it = hosts_.begin(); it != hosts_.end(); ) {
@@ -28,7 +33,8 @@ ExtensionAppShimHandler::~ExtensionAppShimHandler() {
   }
 }
 
-bool ExtensionAppShimHandler::OnShimLaunch(Host* host) {
+bool ExtensionAppShimHandler::OnShimLaunch(Host* host,
+                                           AppShimLaunchType launch_type) {
   Profile* profile = host->GetProfile();
   DCHECK(profile);
 
@@ -38,13 +44,15 @@ bool ExtensionAppShimHandler::OnShimLaunch(Host* host) {
     return false;
   }
 
-  if (!LaunchApp(profile, app_id))
+  if (!LaunchApp(profile, app_id, launch_type))
     return false;
 
   // The first host to claim this (profile, app_id) becomes the main host.
-  // For any others, we launch the app but return false.
-  if (!hosts_.insert(make_pair(make_pair(profile, app_id), host)).second)
+  // For any others, we focus the app and return false.
+  if (!hosts_.insert(make_pair(make_pair(profile, app_id), host)).second) {
+    OnShimFocus(host);
     return false;
+  }
 
   if (!registrar_.IsRegistered(
       this, chrome::NOTIFICATION_EXTENSION_HOST_DESTROYED,
@@ -95,7 +103,8 @@ void ExtensionAppShimHandler::OnShimQuit(Host* host) {
 }
 
 bool ExtensionAppShimHandler::LaunchApp(Profile* profile,
-                                        const std::string& app_id) {
+                                        const std::string& app_id,
+                                        AppShimLaunchType launch_type) {
   extensions::ExtensionSystem* extension_system =
       extensions::ExtensionSystem::Get(profile);
   ExtensionServiceInterface* extension_service =
@@ -107,6 +116,10 @@ bool ExtensionAppShimHandler::LaunchApp(Profile* profile,
                << app_id << "'.";
     return false;
   }
+
+  if (launch_type == APP_SHIM_LAUNCH_REGISTER_ONLY)
+    return true;
+
   // TODO(jeremya): Handle the case that launching the app fails. Probably we
   // need to watch for 'app successfully launched' or at least 'background page
   // exists/was created' and time out with failure if we don't see that sign of
@@ -121,17 +134,32 @@ void ExtensionAppShimHandler::Observe(
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   Profile* profile = content::Source<Profile>(source).ptr();
+  extensions::ExtensionHost* extension_host =
+      content::Details<extensions::ExtensionHost>(details).ptr();
   switch (type) {
-    case chrome::NOTIFICATION_EXTENSION_HOST_DESTROYED: {
-      extensions::ExtensionHost* extension_host =
-          content::Details<extensions::ExtensionHost>(details).ptr();
+    case chrome::NOTIFICATION_EXTENSION_HOST_CREATED:
+      StartShim(profile, extension_host->extension());
+      break;
+    case chrome::NOTIFICATION_EXTENSION_HOST_DESTROYED:
       CloseShim(profile, extension_host->extension_id());
       break;
-    }
     default:
       NOTREACHED();  // Unexpected notification.
       break;
   }
+}
+
+void ExtensionAppShimHandler::StartShim(
+    Profile* profile,
+    const extensions::Extension* extension) {
+  if (!extension->is_platform_app())
+    return;
+
+  if (hosts_.count(make_pair(profile, extension->id())))
+    return;
+
+  web_app::MaybeLaunchShortcut(
+      web_app::ShortcutInfoForExtensionAndProfile(extension, profile));
 }
 
 void ExtensionAppShimHandler::CloseShim(Profile* profile,

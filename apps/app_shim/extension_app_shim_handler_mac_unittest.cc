@@ -31,7 +31,9 @@ class TestingExtensionAppShimHandler : public ExtensionAppShimHandler {
   content::NotificationRegistrar& GetRegistrar() { return registrar(); }
 
  protected:
-  virtual bool LaunchApp(Profile* profile, const std::string& app_id) OVERRIDE {
+  virtual bool LaunchApp(Profile* profile,
+                         const std::string& app_id,
+                         AppShimLaunchType launch_type) OVERRIDE {
     return !fails_launch_;
   }
 
@@ -96,20 +98,20 @@ class ExtensionAppShimHandlerTest : public testing::Test {
 TEST_F(ExtensionAppShimHandlerTest, LaunchAndCloseShim) {
   // If launch fails, the host is not added to the map.
   handler_->set_fails_launch(true);
-  EXPECT_EQ(false, handler_->OnShimLaunch(&host_aa_));
+  EXPECT_EQ(false, handler_->OnShimLaunch(&host_aa_, APP_SHIM_LAUNCH_NORMAL));
   EXPECT_FALSE(handler_->FindHost(&profile_a_, kTestAppIdA));
 
   // Normal startup.
   handler_->set_fails_launch(false);
-  EXPECT_EQ(true, handler_->OnShimLaunch(&host_aa_));
+  EXPECT_EQ(true, handler_->OnShimLaunch(&host_aa_, APP_SHIM_LAUNCH_NORMAL));
   EXPECT_EQ(&host_aa_, handler_->FindHost(&profile_a_, kTestAppIdA));
   EXPECT_TRUE(handler_->GetRegistrar().IsRegistered(
       handler_.get(),
       chrome::NOTIFICATION_EXTENSION_HOST_DESTROYED,
       content::Source<Profile>(&profile_a_)));
-  EXPECT_EQ(true, handler_->OnShimLaunch(&host_ab_));
+  EXPECT_EQ(true, handler_->OnShimLaunch(&host_ab_, APP_SHIM_LAUNCH_NORMAL));
   EXPECT_EQ(&host_ab_, handler_->FindHost(&profile_a_, kTestAppIdB));
-  EXPECT_EQ(true, handler_->OnShimLaunch(&host_bb_));
+  EXPECT_EQ(true, handler_->OnShimLaunch(&host_bb_, APP_SHIM_LAUNCH_NORMAL));
   EXPECT_EQ(&host_bb_, handler_->FindHost(&profile_b_, kTestAppIdB));
   EXPECT_TRUE(handler_->GetRegistrar().IsRegistered(
       handler_.get(),
@@ -117,7 +119,8 @@ TEST_F(ExtensionAppShimHandlerTest, LaunchAndCloseShim) {
       content::Source<Profile>(&profile_b_)));
 
   // Starting and closing a second host does nothing.
-  EXPECT_EQ(false, handler_->OnShimLaunch(&host_aa_duplicate_));
+  EXPECT_EQ(false, handler_->OnShimLaunch(&host_aa_duplicate_,
+                                          APP_SHIM_LAUNCH_NORMAL));
   EXPECT_EQ(&host_aa_, handler_->FindHost(&profile_a_, kTestAppIdA));
   handler_->OnShimClose(&host_aa_duplicate_);
   EXPECT_EQ(&host_aa_, handler_->FindHost(&profile_a_, kTestAppIdA));

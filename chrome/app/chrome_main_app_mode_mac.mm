@@ -86,8 +86,7 @@ class AppShimController : public IPC::Listener {
   DISALLOW_COPY_AND_ASSIGN(AppShimController);
 };
 
-AppShimController::AppShimController() : channel_(NULL) {
-}
+AppShimController::AppShimController() : channel_(NULL) {}
 
 void AppShimController::Init() {
   DCHECK(g_io_thread);
@@ -108,7 +107,9 @@ void AppShimController::Init() {
       this, g_io_thread->message_loop_proxy());
 
   channel_->Send(new AppShimHostMsg_LaunchApp(
-      g_info->profile_dir.value(), g_info->app_mode_id));
+      g_info->profile_dir, g_info->app_mode_id,
+      CommandLine::ForCurrentProcess()->HasSwitch(app_mode::kNoLaunchApp) ?
+          apps::APP_SHIM_LAUNCH_REGISTER_ONLY : apps::APP_SHIM_LAUNCH_NORMAL));
 
   nsapp_delegate_.reset([[AppShimDelegate alloc] initWithController:this]);
   DCHECK(![NSApp delegate]);
@@ -130,7 +131,6 @@ bool AppShimController::OnMessageReceived(const IPC::Message& message) {
 }
 
 void AppShimController::OnChannelError() {
-  LOG(ERROR) << "App shim channel error.";
   Close();
 }
 
@@ -139,6 +139,7 @@ void AppShimController::OnLaunchAppDone(bool success) {
     Close();
     return;
   }
+
   [[[NSWorkspace sharedWorkspace] notificationCenter]
       addObserverForName:NSWorkspaceDidActivateApplicationNotification
                   object:nil
@@ -319,6 +320,8 @@ int ChromeAppModeStart(const app_mode::ChromeAppModeInfo* info);
 }  // extern "C"
 
 int ChromeAppModeStart(const app_mode::ChromeAppModeInfo* info) {
+  CommandLine::Init(info->argc, info->argv);
+
   base::mac::ScopedNSAutoreleasePool scoped_pool;
   base::AtExitManager exit_manager;
   chrome::RegisterPathProvider();

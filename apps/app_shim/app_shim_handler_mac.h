@@ -7,6 +7,8 @@
 
 #include <string>
 
+#include "apps/app_shim/app_shim_launch.h"
+
 class Profile;
 
 namespace apps {
@@ -46,8 +48,9 @@ class AppShimHandler {
 
   // Invoked by the shim host when the shim process is launched. The handler
   // must return true if successful, or false to indicate back to the shim
-  // process that it should close.
-  virtual bool OnShimLaunch(Host* host) = 0;
+  // process that it should close. |launch_now| indicates whether to launch the
+  // associated app.
+  virtual bool OnShimLaunch(Host* host, AppShimLaunchType launch_type) = 0;
 
   // Invoked by the shim host when the connection to the shim process is closed.
   virtual void OnShimClose(Host* host) = 0;

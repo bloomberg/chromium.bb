@@ -25,6 +25,9 @@ namespace web_app {
 base::FilePath GetAppInstallPath(
     const ShellIntegration::ShortcutInfo& shortcut_info);
 
+// If necessary, launch the shortcut for an app.
+void MaybeLaunchShortcut(const ShellIntegration::ShortcutInfo& shortcut_info);
+
 // Creates a shortcut for a web application. The shortcut is a stub app
 // that simply loads the browser framework and runs the given app.
 class WebAppShortcutCreator {

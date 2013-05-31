@@ -61,7 +61,8 @@ class AppListServiceMac : public AppListServiceImpl,
   virtual gfx::NativeWindow GetAppListWindow() OVERRIDE;
 
   // AppShimHandler overrides:
-  virtual bool OnShimLaunch(apps::AppShimHandler::Host* host) OVERRIDE;
+  virtual bool OnShimLaunch(apps::AppShimHandler::Host* host,
+                            apps::AppShimLaunchType launch_type) OVERRIDE;
   virtual void OnShimClose(apps::AppShimHandler::Host* host) OVERRIDE;
   virtual void OnShimFocus(apps::AppShimHandler::Host* host) OVERRIDE;
   virtual void OnShimQuit(apps::AppShimHandler::Host* host) OVERRIDE;
@@ -271,7 +272,8 @@ NSWindow* AppListServiceMac::GetAppListWindow() {
   return [window_controller_ window];
 }
 
-bool AppListServiceMac::OnShimLaunch(apps::AppShimHandler::Host* host) {
+bool AppListServiceMac::OnShimLaunch(apps::AppShimHandler::Host* host,
+                                     apps::AppShimLaunchType launch_type) {
   ShowForSavedProfile();
   observers_.AddObserver(host);
   return true;

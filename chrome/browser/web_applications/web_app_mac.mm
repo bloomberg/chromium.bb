@@ -7,16 +7,19 @@
 #import <Carbon/Carbon.h>
 #import <Cocoa/Cocoa.h>
 
+#include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/mac/bundle_locations.h"
 #include "base/mac/foundation_util.h"
+#include "base/mac/launch_services_util.h"
 #include "base/mac/mac_logging.h"
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/memory/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/ui/web_applications/web_app_ui.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/chrome_paths_internal.h"
 #include "chrome/common/mac/app_mode_common.h"
@@ -316,6 +319,18 @@ void WebAppShortcutCreator::RevealGeneratedBundleInFinder(
       inFileViewerRootedAtPath:nil];
 }
 
+void LaunchShimOnFileThread(
+      const ShellIntegration::ShortcutInfo& shortcut_info) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
+  base::FilePath shim_path = web_app::GetAppInstallPath(shortcut_info);
+  if (shim_path.empty())
+    return;
+
+  CommandLine command_line(CommandLine::NO_PROGRAM);
+  command_line.AppendSwitch(app_mode::kNoLaunchApp);
+  base::mac::OpenApplicationWithPath(shim_path, command_line, NULL);
+}
+
 }  // namespace
 
 namespace web_app {
@@ -326,6 +341,12 @@ base::FilePath GetAppInstallPath(
                                          shortcut_info,
                                          string16());
   return shortcut_creator.GetShortcutPath();
+}
+
+void MaybeLaunchShortcut(const ShellIntegration::ShortcutInfo& shortcut_info) {
+  content::BrowserThread::PostTask(
+      content::BrowserThread::FILE, FROM_HERE,
+      base::Bind(&LaunchShimOnFileThread, shortcut_info));
 }
 
 namespace internals {

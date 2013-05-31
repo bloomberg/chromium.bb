@@ -51,6 +51,7 @@
         '<(DEPTH)/webkit/support/webkit_support.gyp:user_agent',
       ],
       'sources': [
+        '../apps/app_shim/app_shim_launch.h',
         '../apps/app_shim/app_shim_messages.h',
         '../extensions/common/constants.cc',
         '../extensions/common/constants.h',

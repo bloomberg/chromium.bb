@@ -29,6 +29,10 @@ extern const char kAppShimSocketName[];
 // Special app mode id used for the App Launcher.
 extern const char kAppListModeId[];
 
+// Instructs the app shim to send LaunchApp with launch_now = false. This
+// associates the shim without launching the app.
+extern const char kNoLaunchApp[];
+
 // The key under which the browser's bundle ID will be stored in the
 // app mode launcher bundle's Info.plist.
 extern NSString* const kBrowserBundleIDKey;

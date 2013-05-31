@@ -6,20 +6,27 @@
 
 #include <string>
 
+#include "apps/app_shim/app_shim_launch.h"
+#include "base/files/file_path.h"
 #include "ipc/ipc_message_macros.h"
+#include "ipc/param_traits_macros.h"
 
 #define IPC_MESSAGE_START AppShimMsgStart
 
+IPC_ENUM_TRAITS(apps::AppShimLaunchType)
+
 // Signals that a previous LaunchApp message has been processed, and lets the
-// app shim process know whether the app launch was successful.
+// app shim process know whether it was registered successfully.
 IPC_MESSAGE_CONTROL1(AppShimMsg_LaunchApp_Done,
                      bool /* succeeded */)
 
-// Tells the main Chrome process to launch a particular app with the given
-// profile name and app id.
-IPC_MESSAGE_CONTROL2(AppShimHostMsg_LaunchApp,
-                     std::string /* profile name */,
-                     std::string /* app id */)
+// Signals to the main Chrome process that a shim has started indicating the
+// profile and app_id that the shim should be associated with and whether to
+// launch the app immediately.
+IPC_MESSAGE_CONTROL3(AppShimHostMsg_LaunchApp,
+                     base::FilePath /* profile dir */,
+                     std::string /* app id */,
+                     apps::AppShimLaunchType /* launch type */)
 
 // Sent when the user has indicated a desire to focus the app, either by
 // clicking on the app's icon in the dock or by selecting it with Cmd+Tab. In

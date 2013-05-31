@@ -25,7 +25,8 @@ class AppListServiceMacBrowserTest : public InProcessBrowserTest,
     DCHECK(!running_);
     // AppList shims should always succced showing the app list.
     EXPECT_TRUE(AppShimHandler::GetForAppMode(
-        app_mode::kAppListModeId)->OnShimLaunch(this));
+        app_mode::kAppListModeId)->OnShimLaunch(this,
+                                                apps::APP_SHIM_LAUNCH_NORMAL));
     running_ = true;
   }
 

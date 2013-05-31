@@ -10,6 +10,8 @@ const char kAppShimSocketName[] = "App Shim Socket";
 
 const char kAppListModeId[] = "app_list";
 
+const char kNoLaunchApp[] = "no-launch-app";
+
 NSString* const kBrowserBundleIDKey = @"CrBundleIdentifier";
 NSString* const kCrAppModeShortcutIDKey = @"CrAppModeShortcutID";
 NSString* const kCrAppModeShortcutNameKey = @"CrAppModeShortcutName";
