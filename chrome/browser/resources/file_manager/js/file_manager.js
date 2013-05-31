@@ -1076,12 +1076,12 @@ DialogType.isModal = function(type) {
     // mouse-clicked.
     autocompleteList.handleEnterKeydown = function(event) {
       this.openAutocompleteSuggestion_();
-      this.lastQuery_ = '';
+      this.lastAutocompleteQuery_ = '';
       this.autocompleteList_.suggestions = [];
     }.bind(this);
     autocompleteList.addEventListener('mousedown', function(event) {
       this.openAutocompleteSuggestion_();
-      this.lastQuery_ = '';
+      this.lastAutocompleteQuery_ = '';
       this.autocompleteList_.suggestions = [];
     }.bind(this));
     autocompleteList.addEventListener('mouseover', function(event) {
@@ -3584,7 +3584,7 @@ DialogType.isModal = function(type) {
     // Remember the most recent query. If there is an other request in progress,
     // then it's result will be discarded and it will call a new request for
     // this query.
-    this.lastQuery_ = query;
+    this.lastAutocompleteQuery_ = query;
     if (this.autocompleteSuggestionsBusy_)
       return;
 
@@ -3619,8 +3619,8 @@ DialogType.isModal = function(type) {
 
         // Discard results for previous requests and fire a new search
         // for the most recent query.
-        if (query != this.lastQuery_) {
-          this.requestAutocompleteSuggestions_(this.lastQuery_);
+        if (query != this.lastAutocompleteQuery_) {
+          this.requestAutocompleteSuggestions_(this.lastAutocompleteQuery_);
           return;
         }
 
