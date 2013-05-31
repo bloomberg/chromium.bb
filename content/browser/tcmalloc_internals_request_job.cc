@@ -74,7 +74,7 @@ void AboutTcmalloc(std::string* data) {
   data->append("<!DOCTYPE html>\n<html>\n<head>\n");
   data->append(
       "<meta http-equiv=\"Content-Security-Policy\" "
-      "content=\"object-src 'none'; script-src 'none' 'unsafe-eval'\">");
+      "content=\"object-src 'none'; script-src 'none'\">");
   data->append("<title>tcmalloc stats</title>");
   data->append("</head><body>");
 
