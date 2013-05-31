@@ -11,7 +11,7 @@
                                          WIDTH + MARGIN * 2,
                                          HEIGHT + MARGIN * 2);
 
-  ctx.fillStyle = '#000';
+  ctx.fillStyle = '#7a7a7a';
   ctx.translate(MARGIN, MARGIN);
 
   ctx.beginPath();
