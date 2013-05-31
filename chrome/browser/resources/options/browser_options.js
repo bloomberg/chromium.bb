@@ -1071,11 +1071,16 @@ cr.define('options', function() {
 
     /**
     * Reports successful profile creation to the "create" overlay.
-    * @param {boolean} isLimited True if the new profile is for a limited user.
+     * @param {Object} profileInfo An object of the form:
+     *     profileInfo = {
+     *       name: "Profile Name",
+     *       filePath: "/path/to/profile/data/on/disk"
+     *       isManaged: (true|false),
+     *     };
     * @private
     */
-    showCreateProfileSuccess_: function(isLimited) {
-      CreateProfileOverlay.onSuccess(isLimited);
+    showCreateProfileSuccess_: function(profileInfo) {
+      CreateProfileOverlay.onSuccess(profileInfo);
     },
 
     /**

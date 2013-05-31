@@ -86,6 +86,7 @@
 <include src="language_list.js"></include>
 <include src="language_options.js"></include>
 <include src="manage_profile_overlay.js"></include>
+<include src="managed_user_create_confirm.js"</include>
 <include src="managed_user_learn_more.js"</include>
 <include src="media_galleries_list.js"></include>
 <include src="media_galleries_manager_overlay.js"></include>

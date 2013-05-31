@@ -1141,19 +1141,27 @@ void BrowserOptionsHandler::OnProfileCreated(
       break;
     }
     case Profile::CREATE_STATUS_INITIALIZED: {
-      base::FundamentalValue is_managed_value(is_managed);
+      DictionaryValue dict;
+      dict.SetString("name",
+                     profile->GetPrefs()->GetString(prefs::kProfileName));
+      dict.Set("filePath", base::CreateFilePathValue(profile->GetPath()));
+      dict.SetBoolean("isManaged", is_managed);
       web_ui()->CallJavascriptFunction(
-          "BrowserOptions.showCreateProfileSuccess",
-          is_managed_value);
+          "BrowserOptions.showCreateProfileSuccess", dict);
 
-      // Opening the new window must be the last action, after all callbacks
-      // have been run, to give them a chance to initialize the profile.
-      ProfileManager::FindOrCreateNewWindowForProfile(
-          profile,
-          chrome::startup::IS_PROCESS_STARTUP,
-          chrome::startup::IS_FIRST_RUN,
-          desktop_type,
-          false);
+      // If the new profile is a managed user, instead of opening a new window
+      // right away, a confirmation overlay will be shown from the creation
+      // dialog.
+      if (!is_managed) {
+        // Opening the new window must be the last action, after all callbacks
+        // have been run, to give them a chance to initialize the profile.
+        ProfileManager::FindOrCreateNewWindowForProfile(
+            profile,
+            chrome::startup::IS_PROCESS_STARTUP,
+            chrome::startup::IS_FIRST_RUN,
+            desktop_type,
+            false);
+      }
       break;
     }
   }

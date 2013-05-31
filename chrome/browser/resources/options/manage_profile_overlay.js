@@ -469,13 +469,20 @@ cr.define('options', function() {
     /**
      * For new limited users, shows a confirmation page after successfully
      * creating a new profile; otherwise, the handler will open a new window.
+     * @param {Object} profileInfo An object of the form:
+     *     profileInfo = {
+     *       name: "Profile Name",
+     *       filePath: "/path/to/profile/data/on/disk"
+     *       isManaged: (true|false),
+     *     };
      * @private
      */
-    onSuccess_: function(isManaged) {
+    onSuccess_: function(profileInfo) {
       OptionsPage.closeOverlay();
       $('create-profile-ok').disabled = false;
-      if (isManaged) {
-        // TODO(pamg): Fill out this stub.
+      if (profileInfo.isManaged) {
+        ManagedUserCreateConfirmOverlay.setProfileInfo(profileInfo);
+        OptionsPage.navigateToPage('managedUserCreateConfirm');
       }
     },
 

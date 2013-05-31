@@ -17,6 +17,7 @@ var CookiesView = options.CookiesView;
 var CreateProfileOverlay = options.CreateProfileOverlay;
 var EditDictionaryOverlay = cr.IsMac ? null : options.EditDictionaryOverlay;
 var FactoryResetOverlay = options.FactoryResetOverlay;
+var ManagedUserCreateConfirmOverlay = options.ManagedUserCreateConfirmOverlay;
 var ManagedUserLearnMoreOverlay = options.ManagedUserLearnMoreOverlay;
 var FontSettings = options.FontSettings;
 var HandlerOptions = options.HandlerOptions;
@@ -135,6 +136,8 @@ function load() {
                               BrowserOptions.getInstance());
   if (loadTimeData.getBoolean('managedUsersEnabled') &&
       !cr.isChromeOS) {
+    OptionsPage.registerOverlay(ManagedUserCreateConfirmOverlay.getInstance(),
+                                BrowserOptions.getInstance());
     OptionsPage.registerOverlay(ManagedUserLearnMoreOverlay.getInstance(),
                                 CreateProfileOverlay.getInstance());
   }
