@@ -9307,6 +9307,22 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Tab.StatusWhenDisplayed" enum="TabStatus">
+  <summary>
+    The status of a tab collected each time the tab is displayed on Android,
+    including user switching to the tab and displays of newly created tabs, such
+    as NTP or tabs opened to handle intents.
+  </summary>
+</histogram>
+
+<histogram name="Tab.StatusWhenSwitchedBackToForeground" enum="TabStatus">
+  <summary>
+    The status of a tab collected each time the user switches to it on Android.
+    That does not include tabs being created at the time the user switches to
+    them, such as NTP or tabs opened to handle intents.
+  </summary>
+</histogram>
+
 <histogram name="Tab.SwitchedToForegroundAge" units="ms">
   <summary>Age (in ms) when the tab was switched to foreground.</summary>
 </histogram>
@@ -14788,6 +14804,13 @@ other types of suffix sets.
   <int value="0" label="Wait for completion"/>
   <int value="1" label="Leave tab (close tab/switch tab/go to tab switcher)"/>
   <int value="2" label="Leave Chrome"/>
+</enum>
+
+<enum name="TabStatus" type="int">
+  <int value="0" label="Memory resident"/>
+  <int value="1" label="Evicted and reloaded"/>
+  <int value="2" label="Reloaded due to cold start"/>
+  <int value="3" label="Partially evicted"/>
 </enum>
 
 <enum name="TabSwitchedToForegroundLaunchedWithURL" type="int">
