@@ -1143,23 +1143,18 @@ body[type='full-page'] .thumbnail-frame > .img-container {
 
 body[type='full-page'] .thumbnail-frame > .img-container,
 body[type='full-page'] .detail-name .detail-icon,
-body[type='full-page'] .filename-label > * {
+body:not([new-ui])[type='full-page'] .filename-label > * {
   cursor: pointer;
 }
 
-body[type='full-page'] grid .filename-label > :hover {
+body:not([new-ui])[type='full-page'] grid .filename-label > :hover {
   text-decoration: underline;
 }
 
-body[type='full-page'] list .filename-label > :hover,
+body:not([new-ui])[type='full-page'] list .filename-label > :hover,
 .breadcrumb-path:not(.breadcrumb-last):hover,
 .breadcrumb-path.accepts {
   color: rgb(17, 85, 204);
-  text-decoration: underline;
-}
-
-body[new-ui][type='full-page'] list .filename-label > :hover {
-  color: inherit;
   text-decoration: underline;
 }
 

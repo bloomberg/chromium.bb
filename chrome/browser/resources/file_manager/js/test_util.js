@@ -455,6 +455,39 @@ test.util.fakeMouseClick = function(
 };
 
 /**
+ * Simulates a fake double click event (left button) to the element specified by
+ * |targetQuery|.
+ *
+ * @param {Window} contentWindow Window to be tested.
+ * @param {string} targetQuery Query to specify the element.
+ * @param {string=} opt_iframeQuery Optional iframe selector.
+ * @return {boolean} True if the event is sent to the target, false otherwise.
+ */
+test.util.fakeMouseDoubleClick = function(
+    contentWindow, targetQuery, opt_iframeQuery) {
+  // Double click is always preceeded with a single click.
+  if (!test.util.fakeMouseClick(contentWindow, targetQuery, opt_iframeQuery))
+    return false;
+
+  // Send the second click event, but with detail equal to 2 (number of clicks)
+  // in a row.
+  var event = new MouseEvent('click', { bubbles: true, detail: 2 });
+  if (!test.util.sendEvent(
+      contentWindow, targetQuery, event, opt_iframeQuery)) {
+    return false;
+  }
+
+  // Send the double click event.
+  var event = new MouseEvent('dblclick', { bubbles: true });
+  if (!test.util.sendEvent(
+      contentWindow, targetQuery, event, opt_iframeQuery)) {
+    return false;
+  }
+
+  return true;
+};
+
+/**
  * Sends a fake mouse down event to the element specified by |targetQuery|.
  *
  * @param {Window} contentWindow Window to be tested.
@@ -583,6 +616,10 @@ test.util.registerRemoteTestUtils = function() {
           return false;
         case 'fakeMouseClick':
           sendResponse(test.util.fakeMouseClick(
+              contentWindow, request.args[0], request.args[1]));
+          return false;
+        case 'fakeMouseDoubleClick':
+          sendResponse(test.util.fakeMouseDoubleClick(
               contentWindow, request.args[0], request.args[1]));
           return false;
         case 'fakeMouseDown':

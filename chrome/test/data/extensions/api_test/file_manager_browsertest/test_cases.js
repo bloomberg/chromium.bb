@@ -225,11 +225,11 @@ testcase.intermediate.galleryOpen = function(path) {
                          ['My Desktop Background.png'],
                          this.next);
     },
-    // Click on the label to enter the photo viewer.
+    // Double click on the label to enter the photo viewer.
     function(result) {
       chrome.test.assertTrue(result);
       callRemoteTestUtil(
-          'fakeMouseClick',
+          'fakeMouseDoubleClick',
           appId,
           ['#file-list li.table-row[selected] .filename-label span'],
           this.next);
@@ -282,11 +282,11 @@ testcase.intermediate.audioOpen = function(path) {
       callRemoteTestUtil(
           'selectFile', appId, ['Beautiful Song.ogg'], this.next);
     },
-    // Click on the label to enter the audio player.
+    // Double click on the label to enter the audio player.
     function(result) {
       chrome.test.assertTrue(result);
       callRemoteTestUtil(
-          'fakeMouseClick',
+          'fakeMouseDoubleClick',
           appId,
           ['#file-list li.table-row[selected] .filename-label span'],
           this.next);
@@ -355,9 +355,9 @@ testcase.intermediate.videoOpen = function(path) {
     },
     function(result) {
       chrome.test.assertTrue(result);
-      // Click on the label to enter the video player.
+      // Double click on the label to enter the video player.
       callRemoteTestUtil(
-          'fakeMouseClick',
+          'fakeMouseDoubleClick',
           appId,
           ['#file-list li.table-row[selected] .filename-label span'],
           steps.shift());

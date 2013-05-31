@@ -2309,9 +2309,9 @@ DialogType.isModal = function(type) {
     }
 
     var clickNumber;
-    if (this.dialogType == DialogType.FULL_PAGE &&
-            (event.target.parentElement.classList.contains('filename-label') ||
-             event.target.classList.contains('detail-icon'))) {
+    if (!util.platform.newUI() && this.dialogType == DialogType.FULL_PAGE &&
+        (event.target.parentElement.classList.contains('filename-label') ||
+         event.target.classList.contains('detail-icon'))) {
       // If full page mode the file name and icon should react on single click.
       clickNumber = 1;
     } else if (this.lastClickedItem_ == listItem) {
