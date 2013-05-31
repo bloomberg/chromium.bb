@@ -40,6 +40,7 @@ class CONTENT_EXPORT BrowserPlugin :
  public:
   RenderViewImpl* render_view() const { return render_view_.get(); }
   int render_view_routing_id() const { return render_view_routing_id_; }
+  int guest_instance_id() const { return guest_instance_id_; }
   int instance_id() const { return instance_id_; }
 
   static BrowserPlugin* FromContainer(WebKit::WebPluginContainer* container);
@@ -102,7 +103,7 @@ class CONTENT_EXPORT BrowserPlugin :
   // Returns whether this BrowserPlugin has requested an instance ID.
   bool HasNavigated() const;
   // Returns whether this BrowserPlugin has allocated an instance ID.
-  bool HasInstanceID() const;
+  bool HasGuestInstanceID() const;
 
   // Attaches the window identified by |window_id| to the the given node
   // encapsulating a BrowserPlugin.
@@ -230,14 +231,16 @@ class CONTENT_EXPORT BrowserPlugin :
 
   // A BrowserPlugin object is a controller that represents an instance of a
   // browser plugin within the embedder renderer process. Each BrowserPlugin
-  // within a process has a unique instance_id that is used to route messages
-  // to it. It takes in a RenderViewImpl that it's associated with along
-  // with the frame within which it lives and the initial attributes assigned
-  // to it on creation.
+  // within a RenderView has a unique instance_id that is used to track per-
+  // BrowserPlugin state in the browser process. Once a BrowserPlugin does
+  // an initial navigation or is attached to a newly created guest, it acquires
+  // a guest_instance_id as well. The guest instance ID uniquely identifies a
+  // guest WebContents that's hosted by this BrowserPlugin.
   BrowserPlugin(
       RenderViewImpl* render_view,
       WebKit::WebFrame* frame,
-      const WebKit::WebPluginParams& params);
+      const WebKit::WebPluginParams& params,
+      int instance_id);
 
   virtual ~BrowserPlugin();
 
@@ -376,6 +379,11 @@ class CONTENT_EXPORT BrowserPlugin :
   void OnUpdateRect(int instance_id,
                     const BrowserPluginMsg_UpdateRect_Params& params);
 
+  // This is the browser-process-allocated instance ID that uniquely identifies
+  // a guest WebContents.
+  int guest_instance_id_;
+  // This is a render-process-allocated instance ID that uniquely identifies a
+  // BrowserPlugin.
   int instance_id_;
   base::WeakPtr<RenderViewImpl> render_view_;
   // We cache the |render_view_|'s routing ID because we need it on destruction.

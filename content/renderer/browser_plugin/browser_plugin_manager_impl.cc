@@ -16,7 +16,7 @@ namespace content {
 BrowserPluginManagerImpl::BrowserPluginManagerImpl(
     RenderViewImpl* render_view)
     : BrowserPluginManager(render_view),
-      request_id_counter_(0) {
+      browser_plugin_instance_id_counter_(0) {
 }
 
 BrowserPluginManagerImpl::~BrowserPluginManagerImpl() {
@@ -26,15 +26,17 @@ BrowserPlugin* BrowserPluginManagerImpl::CreateBrowserPlugin(
     RenderViewImpl* render_view,
     WebKit::WebFrame* frame,
     const WebKit::WebPluginParams& params) {
-  return new BrowserPlugin(render_view, frame, params);
+  return new BrowserPlugin(render_view, frame, params,
+      ++browser_plugin_instance_id_counter_);
 }
 
 void BrowserPluginManagerImpl::AllocateInstanceID(
     BrowserPlugin* browser_plugin) {
-  int request_id = request_id_counter_++;
-  pending_allocate_instance_id_requests_.AddWithID(browser_plugin, request_id);
+  int instance_id = browser_plugin->instance_id();
+  pending_allocate_guest_instance_id_requests_.AddWithID(browser_plugin,
+                                                         instance_id);
   Send(new BrowserPluginHostMsg_AllocateInstanceID(
-      browser_plugin->render_view_routing_id(), request_id));
+      browser_plugin->render_view_routing_id(), instance_id));
 }
 
 bool BrowserPluginManagerImpl::Send(IPC::Message* msg) {
@@ -44,12 +46,13 @@ bool BrowserPluginManagerImpl::Send(IPC::Message* msg) {
 bool BrowserPluginManagerImpl::OnMessageReceived(
     const IPC::Message& message) {
   if (BrowserPlugin::ShouldForwardToBrowserPlugin(message)) {
-    int instance_id = browser_plugin::kInstanceIDNone;
-    // All allowed messages must have instance_id as their first parameter.
+    int guest_instance_id = browser_plugin::kInstanceIDNone;
+    // All allowed messages must have |guest_instance_id| as their first
+    // parameter.
     PickleIterator iter(message);
-    bool success = iter.ReadInt(&instance_id);
+    bool success = iter.ReadInt(&guest_instance_id);
     DCHECK(success);
-    BrowserPlugin* plugin = GetBrowserPlugin(instance_id);
+    BrowserPlugin* plugin = GetBrowserPlugin(guest_instance_id);
     if (plugin && plugin->OnMessageReceived(message))
       return true;
   }
@@ -76,25 +79,30 @@ void BrowserPluginManagerImpl::DidCommitCompositorFrame() {
 }
 
 void BrowserPluginManagerImpl::OnAllocateInstanceIDACK(
-    const IPC::Message& message, int request_id, int instance_id) {
+    const IPC::Message& message,
+    int browser_plugin_instance_id,
+    int guest_instance_id) {
   BrowserPlugin* plugin =
-      pending_allocate_instance_id_requests_.Lookup(request_id);
-  pending_allocate_instance_id_requests_.Remove(request_id);
-  if (plugin)
-    plugin->Attach(instance_id);
+    pending_allocate_guest_instance_id_requests_.Lookup(
+          browser_plugin_instance_id);
+  if (!plugin)
+    return;
+  pending_allocate_guest_instance_id_requests_.Remove(
+      browser_plugin_instance_id);
+  plugin->Attach(guest_instance_id);
 }
 
 void BrowserPluginManagerImpl::OnPluginAtPositionRequest(
     const IPC::Message& message,
     int request_id,
     const gfx::Point& position) {
-  int instance_id = browser_plugin::kInstanceIDNone;
+  int guest_instance_id = browser_plugin::kInstanceIDNone;
   IDMap<BrowserPlugin>::iterator it(&instances_);
   gfx::Point local_position = position;
   while (!it.IsAtEnd()) {
     const BrowserPlugin* plugin = it.GetCurrentValue();
     if (plugin->InBounds(position)) {
-      instance_id = plugin->instance_id();
+      guest_instance_id = plugin->guest_instance_id();
       local_position = plugin->ToLocalCoordinates(position);
       break;
     }
@@ -102,11 +110,11 @@ void BrowserPluginManagerImpl::OnPluginAtPositionRequest(
   }
 
   Send(new BrowserPluginHostMsg_PluginAtPositionResponse(
-       message.routing_id(), instance_id, request_id, local_position));
+       message.routing_id(), guest_instance_id, request_id, local_position));
 }
 
 void BrowserPluginManagerImpl::OnUnhandledSwap(const IPC::Message& message,
-                                               int instance_id,
+                                               int guest_instance_id,
                                                const gfx::Size& size,
                                                std::string mailbox_name,
                                                int gpu_route_id,
@@ -119,7 +127,7 @@ void BrowserPluginManagerImpl::OnUnhandledSwap(const IPC::Message& message,
   // Issue is tracked in crbug.com/170745.
   Send(new BrowserPluginHostMsg_BuffersSwappedACK(
       message.routing_id(),
-      instance_id,
+      guest_instance_id,
       gpu_route_id,
       gpu_host_id,
       mailbox_name,

@@ -14,7 +14,8 @@ namespace content {
 MockBrowserPluginManager::MockBrowserPluginManager(
     RenderViewImpl* render_view)
     : BrowserPluginManager(render_view),
-      browser_plugin_counter_(0) {
+      browser_plugin_instance_id_counter_(0),
+      guest_instance_id_counter_(0) {
 }
 
 MockBrowserPluginManager::~MockBrowserPluginManager() {
@@ -24,24 +25,25 @@ BrowserPlugin* MockBrowserPluginManager::CreateBrowserPlugin(
     RenderViewImpl* render_view,
     WebKit::WebFrame* frame,
     const WebKit::WebPluginParams& params) {
-  return new MockBrowserPlugin(render_view, frame, params);
+  int instance_id = ++browser_plugin_instance_id_counter_;
+  return new MockBrowserPlugin(render_view, frame, params, instance_id);
 }
 
 void MockBrowserPluginManager::AllocateInstanceID(
     BrowserPlugin* browser_plugin) {
-  int instance_id = ++browser_plugin_counter_;
+  int guest_instance_id = ++guest_instance_id_counter_;
   base::MessageLoop::current()->PostTask(
       FROM_HERE,
       base::Bind(&MockBrowserPluginManager::AllocateInstanceIDACK,
                  this,
                  base::Unretained(browser_plugin),
-                 instance_id));
+                 guest_instance_id));
 }
 
 void MockBrowserPluginManager::AllocateInstanceIDACK(
     BrowserPlugin* browser_plugin,
-    int instance_id) {
-  browser_plugin->Attach(instance_id);
+    int guest_instance_id) {
+  browser_plugin->Attach(guest_instance_id);
 }
 
 bool MockBrowserPluginManager::Send(IPC::Message* msg) {

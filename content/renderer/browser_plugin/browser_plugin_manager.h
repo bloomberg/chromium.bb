@@ -50,9 +50,9 @@ class CONTENT_EXPORT BrowserPluginManager
       const WebKit::WebPluginParams& params) = 0;
   virtual void AllocateInstanceID(BrowserPlugin* browser_plugin) = 0;
 
-  void AddBrowserPlugin(int instance_id, BrowserPlugin* browser_plugin);
-  void RemoveBrowserPlugin(int instance_id);
-  BrowserPlugin* GetBrowserPlugin(int instance_id) const;
+  void AddBrowserPlugin(int guest_instance_id, BrowserPlugin* browser_plugin);
+  void RemoveBrowserPlugin(int guest_instance_id);
+  BrowserPlugin* GetBrowserPlugin(int guest_instance_id) const;
   void UpdateDeviceScaleFactor(float device_scale_factor);
   void UpdateFocusState();
   RenderViewImpl* render_view() const { return render_view_; }
@@ -76,6 +76,7 @@ class CONTENT_EXPORT BrowserPluginManager
   static BrowserPluginManagerFactory* factory_;
 
   virtual ~BrowserPluginManager();
+  // This map is keyed by guest instance IDs.
   IDMap<BrowserPlugin> instances_;
   base::WeakPtr<RenderViewImpl> render_view_;
 

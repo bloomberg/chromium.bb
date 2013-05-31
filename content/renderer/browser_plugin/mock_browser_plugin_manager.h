@@ -33,14 +33,15 @@ class MockBrowserPluginManager : public BrowserPluginManager {
  protected:
   virtual ~MockBrowserPluginManager();
   void AllocateInstanceIDACK(BrowserPlugin* browser_plugin,
-                             int instance_id);
+                             int guest_instance_id);
 
   IPC::TestSink sink_;
 
   // The last known good deserializer for sync messages.
   scoped_ptr<IPC::MessageReplyDeserializer> reply_deserializer_;
 
-  int browser_plugin_counter_;
+  int browser_plugin_instance_id_counter_;
+  int guest_instance_id_counter_;
 
   DISALLOW_COPY_AND_ASSIGN(MockBrowserPluginManager);
 };

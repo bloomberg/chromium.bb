@@ -106,8 +106,10 @@ static base::LazyInstance<PluginContainerMap> g_plugin_container_map =
 BrowserPlugin::BrowserPlugin(
     RenderViewImpl* render_view,
     WebKit::WebFrame* frame,
-    const WebPluginParams& params)
-    : instance_id_(browser_plugin::kInstanceIDNone),
+    const WebPluginParams& params,
+    int instance_id)
+    : guest_instance_id_(browser_plugin::kInstanceIDNone),
+      instance_id_(instance_id),
       render_view_(render_view->AsWeakPtr()),
       render_view_routing_id_(render_view->GetRoutingID()),
       container_(NULL),
@@ -137,12 +139,12 @@ BrowserPlugin::~BrowserPlugin() {
   // If the BrowserPlugin has never navigated then the browser process and
   // BrowserPluginManager don't know about it and so there is nothing to do
   // here.
-  if (!HasInstanceID())
+  if (!HasGuestInstanceID())
     return;
-  browser_plugin_manager()->RemoveBrowserPlugin(instance_id_);
+  browser_plugin_manager()->RemoveBrowserPlugin(guest_instance_id_);
   browser_plugin_manager()->Send(
       new BrowserPluginHostMsg_PluginDestroyed(render_view_routing_id_,
-                                               instance_id_));
+                                               guest_instance_id_));
 }
 
 /*static*/
@@ -301,11 +303,11 @@ std::string BrowserPlugin::GetPartitionAttribute() const {
 }
 
 void BrowserPlugin::ParseNameAttribute() {
-  if (!HasInstanceID())
+  if (!HasGuestInstanceID())
     return;
   browser_plugin_manager()->Send(
       new BrowserPluginHostMsg_SetName(render_view_routing_id_,
-                                       instance_id_,
+                                       guest_instance_id_,
                                        GetNameAttribute()));
 }
 
@@ -321,7 +323,7 @@ bool BrowserPlugin::ParseSrcAttribute(std::string* error_message) {
   // If we haven't created the guest yet, do so now. We will navigate it right
   // after creation. If |src| is empty, we can delay the creation until we
   // actually need it.
-  if (!HasInstanceID()) {
+  if (!HasGuestInstanceID()) {
     // On initial navigation, we request an instance ID from the browser
     // process. We essentially ignore all subsequent calls to SetSrcAttribute
     // until we receive an instance ID. |before_first_navigation_|
@@ -340,7 +342,7 @@ bool BrowserPlugin::ParseSrcAttribute(std::string* error_message) {
 
   browser_plugin_manager()->Send(
       new BrowserPluginHostMsg_NavigateGuest(render_view_routing_id_,
-                                             instance_id_,
+                                             guest_instance_id_,
                                              src));
   return true;
 }
@@ -365,7 +367,7 @@ void BrowserPlugin::UpdateGuestAutoSizeState(bool current_auto_size) {
   // If we haven't yet heard back from the guest about the last resize request,
   // then we don't issue another request until we do in
   // BrowserPlugin::UpdateRect.
-  if (!HasInstanceID() || !resize_ack_received_)
+  if (!HasGuestInstanceID() || !resize_ack_received_)
     return;
   BrowserPluginHostMsg_AutoSize_Params auto_size_params;
   BrowserPluginHostMsg_ResizeGuest_Params resize_guest_params;
@@ -377,7 +379,7 @@ void BrowserPlugin::UpdateGuestAutoSizeState(bool current_auto_size) {
   resize_ack_received_ = false;
   browser_plugin_manager()->Send(
       new BrowserPluginHostMsg_SetAutoSize(render_view_routing_id_,
-                                           instance_id_,
+                                           guest_instance_id_,
                                            auto_size_params,
                                            resize_guest_params));
 }
@@ -410,11 +412,11 @@ bool BrowserPlugin::UsesPendingDamageBuffer(
   return damage_buffer_sequence_id_ == params.damage_buffer_sequence_id;
 }
 
-void BrowserPlugin::Attach(int instance_id) {
-  CHECK(instance_id != browser_plugin::kInstanceIDNone);
+void BrowserPlugin::Attach(int guest_instance_id) {
+  CHECK(guest_instance_id != browser_plugin::kInstanceIDNone);
   before_first_navigation_ = false;
-  instance_id_ = instance_id;
-  browser_plugin_manager()->AddBrowserPlugin(instance_id, this);
+  guest_instance_id_ = guest_instance_id;
+  browser_plugin_manager()->AddBrowserPlugin(guest_instance_id, this);
 
   BrowserPluginHostMsg_Attach_Params create_guest_params;
   create_guest_params.focused = ShouldGuestBeFocused();
@@ -428,7 +430,7 @@ void BrowserPlugin::Attach(int instance_id) {
 
   browser_plugin_manager()->Send(
       new BrowserPluginHostMsg_Attach(render_view_routing_id_,
-                                      instance_id_, create_guest_params));
+                                      guest_instance_id_, create_guest_params));
 }
 
 void BrowserPlugin::DidCommitCompositorFrame() {
@@ -437,7 +439,7 @@ void BrowserPlugin::DidCommitCompositorFrame() {
 }
 
 void BrowserPlugin::OnAddMessageToConsole(
-    int instance_id, const base::DictionaryValue& message_info) {
+    int guest_instance_id, const base::DictionaryValue& message_info) {
   std::map<std::string, base::Value*> props;
   // Fill in the info provided by the browser.
   for (DictionaryValue::Iterator iter(message_info); !iter.IsAtEnd();
@@ -447,17 +449,17 @@ void BrowserPlugin::OnAddMessageToConsole(
   TriggerEvent(browser_plugin::kEventConsoleMessage, &props);
 }
 
-void BrowserPlugin::OnAdvanceFocus(int instance_id, bool reverse) {
+void BrowserPlugin::OnAdvanceFocus(int guest_instance_id, bool reverse) {
   DCHECK(render_view_);
   render_view_->GetWebView()->advanceFocus(reverse);
 }
 
 void BrowserPlugin::OnAttachACK(
-    int instance_id,
+    int guest_instance_id,
     const BrowserPluginMsg_Attach_ACK_Params& params) {
   // Update BrowserPlugin attributes to match the state of the guest.
   if (!params.name.empty())
-    OnUpdatedName(instance_id, params.name);
+    OnUpdatedName(guest_instance_id, params.name);
   if (!params.storage_partition_id.empty()) {
     std::string partition_name =
         (params.persist_storage ? browser_plugin::kPersistPrefix : "") +
@@ -466,12 +468,12 @@ void BrowserPlugin::OnAttachACK(
   }
 }
 
-void BrowserPlugin::OnBuffersSwapped(int instance_id,
+void BrowserPlugin::OnBuffersSwapped(int guest_instance_id,
                                      const gfx::Size& size,
                                      std::string mailbox_name,
                                      int gpu_route_id,
                                      int gpu_host_id) {
-  DCHECK(instance_id == instance_id_);
+  DCHECK(guest_instance_id == guest_instance_id_);
   EnableCompositing(true);
 
   compositing_helper_->OnBuffersSwapped(size,
@@ -481,7 +483,7 @@ void BrowserPlugin::OnBuffersSwapped(int instance_id,
                                         GetDeviceScaleFactor());
 }
 
-void BrowserPlugin::OnClose(int instance_id) {
+void BrowserPlugin::OnClose(int guest_instance_id) {
   TriggerEvent(browser_plugin::kEventClose, NULL);
 }
 
@@ -498,13 +500,15 @@ void BrowserPlugin::OnCompositorFrameSwapped(const IPC::Message& message) {
                                                 param.d /* host_id */);
 }
 
-void BrowserPlugin::OnGuestContentWindowReady(int instance_id,
+void BrowserPlugin::OnGuestContentWindowReady(int guest_instance_id,
                                               int content_window_routing_id) {
   DCHECK(content_window_routing_id != MSG_ROUTING_NONE);
   content_window_routing_id_ = content_window_routing_id;
 }
 
-void BrowserPlugin::OnGuestGone(int instance_id, int process_id, int status) {
+void BrowserPlugin::OnGuestGone(int guest_instance_id,
+                                int process_id,
+                                int status) {
   // Set the BrowserPlugin in a crashed state before firing event listeners so
   // that operations on the BrowserPlugin within listeners are aware that
   // BrowserPlugin is in a crashed state.
@@ -535,19 +539,19 @@ void BrowserPlugin::OnGuestGone(int instance_id, int process_id, int status) {
   EnableCompositing(false);
 }
 
-void BrowserPlugin::OnGuestResponsive(int instance_id, int process_id) {
+void BrowserPlugin::OnGuestResponsive(int guest_instance_id, int process_id) {
   std::map<std::string, base::Value*> props;
   props[browser_plugin::kProcessId] = new base::FundamentalValue(process_id);
   TriggerEvent(browser_plugin::kEventResponsive, &props);
 }
 
-void BrowserPlugin::OnGuestUnresponsive(int instance_id, int process_id) {
+void BrowserPlugin::OnGuestUnresponsive(int guest_instance_id, int process_id) {
   std::map<std::string, base::Value*> props;
   props[browser_plugin::kProcessId] = new base::FundamentalValue(process_id);
   TriggerEvent(browser_plugin::kEventUnresponsive, &props);
 }
 
-void BrowserPlugin::OnLoadAbort(int instance_id,
+void BrowserPlugin::OnLoadAbort(int guest_instance_id,
                                 const GURL& url,
                                 bool is_top_level,
                                 const std::string& type) {
@@ -559,7 +563,7 @@ void BrowserPlugin::OnLoadAbort(int instance_id,
 }
 
 void BrowserPlugin::OnLoadCommit(
-    int instance_id,
+    int guest_instance_id,
     const BrowserPluginMsg_LoadCommit_Params& params) {
   // If the guest has just committed a new navigation then it is no longer
   // crashed.
@@ -579,11 +583,11 @@ void BrowserPlugin::OnLoadCommit(
   TriggerEvent(browser_plugin::kEventLoadCommit, &props);
 }
 
-void BrowserPlugin::OnLoadHandlerCalled(int instance_id) {
+void BrowserPlugin::OnLoadHandlerCalled(int guest_instance_id) {
   TriggerEvent(browser_plugin::kEventContentLoad, NULL);
 }
 
-void BrowserPlugin::OnLoadRedirect(int instance_id,
+void BrowserPlugin::OnLoadRedirect(int guest_instance_id,
                                    const GURL& old_url,
                                    const GURL& new_url,
                                    bool is_top_level) {
@@ -594,7 +598,7 @@ void BrowserPlugin::OnLoadRedirect(int instance_id,
   TriggerEvent(browser_plugin::kEventLoadRedirect, &props);
 }
 
-void BrowserPlugin::OnLoadStart(int instance_id,
+void BrowserPlugin::OnLoadStart(int guest_instance_id,
                                 const GURL& url,
                                 bool is_top_level) {
   std::map<std::string, base::Value*> props;
@@ -604,12 +608,12 @@ void BrowserPlugin::OnLoadStart(int instance_id,
   TriggerEvent(browser_plugin::kEventLoadStart, &props);
 }
 
-void BrowserPlugin::OnLoadStop(int instance_id) {
+void BrowserPlugin::OnLoadStop(int guest_instance_id) {
   TriggerEvent(browser_plugin::kEventLoadStop, NULL);
 }
 
 void BrowserPlugin::OnRequestPermission(
-    int instance_id,
+    int guest_instance_id,
     BrowserPluginPermissionType permission_type,
     int request_id,
     const base::DictionaryValue& request_info) {
@@ -637,11 +641,13 @@ void BrowserPlugin::OnRequestPermission(
   TriggerEvent(event_name, &props);
 }
 
-void BrowserPlugin::OnSetCursor(int instance_id, const WebCursor& cursor) {
+void BrowserPlugin::OnSetCursor(int guest_instance_id,
+                                const WebCursor& cursor) {
   cursor_ = cursor;
 }
 
-void BrowserPlugin::OnShouldAcceptTouchEvents(int instance_id, bool accept) {
+void BrowserPlugin::OnShouldAcceptTouchEvents(int guest_instance_id,
+                                              bool accept) {
   if (container()) {
     container()->requestTouchEventType(accept ?
         WebKit::WebPluginContainer::TouchEventRequestTypeRaw :
@@ -649,11 +655,12 @@ void BrowserPlugin::OnShouldAcceptTouchEvents(int instance_id, bool accept) {
   }
 }
 
-void BrowserPlugin::OnUnlockMouse(int instance_id) {
+void BrowserPlugin::OnUnlockMouse(int guest_instance_id) {
   render_view_->mouse_lock_dispatcher()->UnlockMouse(this);
 }
 
-void BrowserPlugin::OnUpdatedName(int instance_id, const std::string& name) {
+void BrowserPlugin::OnUpdatedName(int guest_instance_id,
+                                  const std::string& name) {
   UpdateDOMAttribute(browser_plugin::kAttributeName, name);
 }
 
@@ -664,7 +671,7 @@ void BrowserPlugin::AddPermissionRequestToMap(int request_id,
 }
 
 void BrowserPlugin::OnUpdateRect(
-    int instance_id,
+    int guest_instance_id,
     const BrowserPluginMsg_UpdateRect_Params& params) {
   bool use_new_damage_buffer = !backing_store_;
   BrowserPluginHostMsg_AutoSize_Params auto_size_params;
@@ -718,7 +725,7 @@ void BrowserPlugin::OnUpdateRect(
     }
     browser_plugin_manager()->Send(new BrowserPluginHostMsg_UpdateRect_ACK(
         render_view_routing_id_,
-        instance_id_,
+        guest_instance_id_,
         auto_size_params,
         resize_guest_params));
     return;
@@ -785,7 +792,7 @@ void BrowserPlugin::OnUpdateRect(
     PopulateAutoSizeParameters(&auto_size_params, auto_size);
   browser_plugin_manager()->Send(new BrowserPluginHostMsg_UpdateRect_ACK(
       render_view_routing_id_,
-      instance_id_,
+      guest_instance_id_,
       auto_size_params,
       resize_guest_params));
 }
@@ -867,8 +874,8 @@ bool BrowserPlugin::HasNavigated() const {
   return !before_first_navigation_;
 }
 
-bool BrowserPlugin::HasInstanceID() const {
-  return instance_id_ != browser_plugin::kInstanceIDNone;
+bool BrowserPlugin::HasGuestInstanceID() const {
+  return guest_instance_id_ != browser_plugin::kInstanceIDNone;
 }
 
 bool BrowserPlugin::CanGoBack() const {
@@ -881,7 +888,7 @@ bool BrowserPlugin::CanGoForward() const {
 }
 
 bool BrowserPlugin::ParsePartitionAttribute(std::string* error_message) {
-  if (!before_first_navigation_) {
+  if (HasNavigated()) {
     *error_message = browser_plugin::kErrorAlreadyNavigated;
     return false;
   }
@@ -913,9 +920,9 @@ bool BrowserPlugin::ParsePartitionAttribute(std::string* error_message) {
 }
 
 bool BrowserPlugin::CanRemovePartitionAttribute(std::string* error_message) {
-  if (HasInstanceID())
+  if (HasGuestInstanceID())
     *error_message = browser_plugin::kErrorCannotRemovePartition;
-  return !HasInstanceID();
+  return !HasGuestInstanceID();
 }
 
 void BrowserPlugin::ParseAttributes() {
@@ -942,7 +949,7 @@ void BrowserPlugin::UpdateDeviceScaleFactor(float device_scale_factor) {
   PopulateResizeGuestParameters(&params, plugin_rect());
   browser_plugin_manager()->Send(new BrowserPluginHostMsg_ResizeGuest(
       render_view_routing_id_,
-      instance_id_,
+      guest_instance_id_,
       params));
 }
 
@@ -1042,61 +1049,61 @@ void BrowserPlugin::WeakCallbackForPersistObject(
 }
 
 void BrowserPlugin::Back() {
-  if (!HasInstanceID())
+  if (!HasGuestInstanceID())
     return;
   browser_plugin_manager()->Send(
       new BrowserPluginHostMsg_Go(render_view_routing_id_,
-                                  instance_id_, -1));
+                                  guest_instance_id_, -1));
 }
 
 void BrowserPlugin::Forward() {
-  if (!HasInstanceID())
+  if (!HasGuestInstanceID())
     return;
   browser_plugin_manager()->Send(
       new BrowserPluginHostMsg_Go(render_view_routing_id_,
-                                  instance_id_, 1));
+                                  guest_instance_id_, 1));
 }
 
 void BrowserPlugin::Go(int relative_index) {
-  if (!HasInstanceID())
+  if (!HasGuestInstanceID())
     return;
   browser_plugin_manager()->Send(
       new BrowserPluginHostMsg_Go(render_view_routing_id_,
-                                  instance_id_,
+                                  guest_instance_id_,
                                   relative_index));
 }
 
 void BrowserPlugin::TerminateGuest() {
-  if (!HasInstanceID() || guest_crashed_)
+  if (!HasGuestInstanceID() || guest_crashed_)
     return;
   browser_plugin_manager()->Send(
       new BrowserPluginHostMsg_TerminateGuest(render_view_routing_id_,
-                                              instance_id_));
+                                              guest_instance_id_));
 }
 
 void BrowserPlugin::Stop() {
-  if (!HasInstanceID())
+  if (!HasGuestInstanceID())
     return;
   browser_plugin_manager()->Send(
       new BrowserPluginHostMsg_Stop(render_view_routing_id_,
-                                    instance_id_));
+                                    guest_instance_id_));
 }
 
 void BrowserPlugin::Reload() {
-  if (!HasInstanceID())
+  if (!HasGuestInstanceID())
     return;
   browser_plugin_manager()->Send(
       new BrowserPluginHostMsg_Reload(render_view_routing_id_,
-                                      instance_id_));
+                                      guest_instance_id_));
 }
 
 void BrowserPlugin::UpdateGuestFocusState() {
-  if (!HasInstanceID())
+  if (!HasGuestInstanceID())
     return;
   bool should_be_focused = ShouldGuestBeFocused();
   browser_plugin_manager()->Send(new BrowserPluginHostMsg_SetFocus(
       render_view_routing_id_,
-      instance_id_,
+      guest_instance_id_,
       should_be_focused));
 }
 
@@ -1118,7 +1125,7 @@ void BrowserPlugin::RespondPermission(
   else
     browser_plugin_manager()->Send(
         new BrowserPluginHostMsg_RespondPermission(
-            render_view_->GetRoutingID(), instance_id_, permission_type,
+            render_view_->GetRoutingID(), guest_instance_id_, permission_type,
             request_id, allow));
 }
 
@@ -1178,7 +1185,7 @@ void BrowserPlugin::EnableCompositing(bool enable) {
       compositing_helper_ = new BrowserPluginCompositingHelper(
           container_,
           browser_plugin_manager(),
-          instance_id_,
+          guest_instance_id_,
           render_view_routing_id_);
     }
   } else {
@@ -1192,7 +1199,7 @@ void BrowserPlugin::EnableCompositing(bool enable) {
     resize_ack_received_ = false;
     browser_plugin_manager()->Send(new BrowserPluginHostMsg_ResizeGuest(
         render_view_routing_id_,
-        instance_id_,
+        guest_instance_id_,
         params));
   }
   compositing_helper_->EnableCompositing(enable);
@@ -1267,7 +1274,7 @@ void BrowserPlugin::paint(WebCanvas* canvas, const WebRect& rect) {
   canvas->drawRect(image_data_rect, paint);
   // Stay a solid color if we have never set a non-empty src, or we don't have a
   // backing store.
-  if (!backing_store_.get() || !HasInstanceID())
+  if (!backing_store_.get() || !HasGuestInstanceID())
     return;
   float inverse_scale_factor =  1.0f / backing_store_->GetScaleFactor();
   canvas->scale(inverse_scale_factor, inverse_scale_factor);
@@ -1336,7 +1343,7 @@ void BrowserPlugin::updateGeometry(
   int old_width = width();
   int old_height = height();
   plugin_rect_ = window_rect;
-  if (!HasInstanceID())
+  if (!HasGuestInstanceID())
     return;
 
   // In AutoSize mode, guests don't care when the BrowserPlugin container is
@@ -1350,7 +1357,7 @@ void BrowserPlugin::updateGeometry(
       GetAutoSizeAttribute()) {
     // Let the browser know about the updated view rect.
     browser_plugin_manager()->Send(new BrowserPluginHostMsg_UpdateGeometry(
-        render_view_routing_id_, instance_id_, plugin_rect_));
+        render_view_routing_id_, guest_instance_id_, plugin_rect_));
     return;
   }
 
@@ -1359,7 +1366,7 @@ void BrowserPlugin::updateGeometry(
   resize_ack_received_ = false;
   browser_plugin_manager()->Send(new BrowserPluginHostMsg_ResizeGuest(
       render_view_routing_id_,
-      instance_id_,
+      guest_instance_id_,
       params));
 }
 
@@ -1471,7 +1478,7 @@ void BrowserPlugin::updateVisibility(bool visible) {
     return;
 
   visible_ = visible;
-  if (!HasInstanceID())
+  if (!HasGuestInstanceID())
     return;
 
   if (compositing_helper_)
@@ -1479,7 +1486,7 @@ void BrowserPlugin::updateVisibility(bool visible) {
 
   browser_plugin_manager()->Send(new BrowserPluginHostMsg_SetVisibility(
       render_view_routing_id_,
-      instance_id_,
+      guest_instance_id_,
       visible));
 }
 
@@ -1489,7 +1496,7 @@ bool BrowserPlugin::acceptsInputEvents() {
 
 bool BrowserPlugin::handleInputEvent(const WebKit::WebInputEvent& event,
                                      WebKit::WebCursorInfo& cursor_info) {
-  if (guest_crashed_ || !HasInstanceID() ||
+  if (guest_crashed_ || !HasGuestInstanceID() ||
       event.type == WebKit::WebInputEvent::ContextMenu)
     return false;
 
@@ -1513,7 +1520,7 @@ bool BrowserPlugin::handleInputEvent(const WebKit::WebInputEvent& event,
   }
   browser_plugin_manager()->Send(
       new BrowserPluginHostMsg_HandleInputEvent(render_view_routing_id_,
-                                                instance_id_,
+                                                guest_instance_id_,
                                                 plugin_rect_,
                                                 modified_event));
   webkit_glue::GetWebKitCursorInfo(cursor_, &cursor_info);
@@ -1525,12 +1532,12 @@ bool BrowserPlugin::handleDragStatusUpdate(WebKit::WebDragStatus drag_status,
                                            WebKit::WebDragOperationsMask mask,
                                            const WebKit::WebPoint& position,
                                            const WebKit::WebPoint& screen) {
-  if (guest_crashed_ || !HasInstanceID())
+  if (guest_crashed_ || !HasGuestInstanceID())
     return false;
   browser_plugin_manager()->Send(
       new BrowserPluginHostMsg_DragStatusUpdate(
         render_view_routing_id_,
-        instance_id_,
+        guest_instance_id_,
         drag_status,
         WebDropData(drag_data),
         mask,
@@ -1564,7 +1571,7 @@ void BrowserPlugin::didFailLoadingFrameRequest(
 bool BrowserPlugin::executeEditCommand(const WebKit::WebString& name) {
   browser_plugin_manager()->Send(new BrowserPluginHostMsg_ExecuteEditCommand(
       render_view_routing_id_,
-      instance_id_,
+      guest_instance_id_,
       name.utf8()));
 
   // BrowserPlugin swallows edit commands.
@@ -1574,21 +1581,21 @@ bool BrowserPlugin::executeEditCommand(const WebKit::WebString& name) {
 void BrowserPlugin::OnLockMouseACK(bool succeeded) {
   browser_plugin_manager()->Send(new BrowserPluginHostMsg_LockMouse_ACK(
       render_view_routing_id_,
-      instance_id_,
+      guest_instance_id_,
       succeeded));
 }
 
 void BrowserPlugin::OnMouseLockLost() {
   browser_plugin_manager()->Send(new BrowserPluginHostMsg_UnlockMouse_ACK(
       render_view_routing_id_,
-      instance_id_));
+      guest_instance_id_));
 }
 
 bool BrowserPlugin::HandleMouseLockedInputEvent(
     const WebKit::WebMouseEvent& event) {
   browser_plugin_manager()->Send(
       new BrowserPluginHostMsg_HandleInputEvent(render_view_routing_id_,
-                                                instance_id_,
+                                                guest_instance_id_,
                                                 plugin_rect_,
                                                 &event));
   return true;

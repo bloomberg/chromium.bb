@@ -41,19 +41,19 @@ class BrowserPluginManagerImpl : public BrowserPluginManager {
 
   void OnAllocateInstanceIDACK(const IPC::Message& message,
                                int request_id,
-                               int instance_id);
+                               int guest_instance_id);
   void OnPluginAtPositionRequest(const IPC::Message& message,
                                  int request_id,
                                  const gfx::Point& position);
   void OnUnhandledSwap(const IPC::Message& message,
-                       int instance_id,
+                       int guest_instance_id,
                        const gfx::Size& size,
                        std::string mailbox_name,
                        int gpu_route_id,
                        int gpu_host_id);
 
-  int request_id_counter_;
-  IDMap<BrowserPlugin> pending_allocate_instance_id_requests_;
+  int browser_plugin_instance_id_counter_;
+  IDMap<BrowserPlugin> pending_allocate_guest_instance_id_requests_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserPluginManagerImpl);
 };

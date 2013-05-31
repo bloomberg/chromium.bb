@@ -13,7 +13,8 @@ class MockBrowserPlugin : public BrowserPlugin {
  public:
   MockBrowserPlugin(RenderViewImpl* render_view,
                     WebKit::WebFrame* frame,
-                    const WebKit::WebPluginParams& params);
+                    const WebKit::WebPluginParams& params,
+                    int instance_id);
 
   virtual ~MockBrowserPlugin();
 

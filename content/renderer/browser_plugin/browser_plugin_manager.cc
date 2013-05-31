@@ -32,17 +32,18 @@ BrowserPluginManager::~BrowserPluginManager() {
 }
 
 void BrowserPluginManager::AddBrowserPlugin(
-    int instance_id,
+    int guest_instance_id,
     BrowserPlugin* browser_plugin) {
-  instances_.AddWithID(browser_plugin, instance_id);
+  instances_.AddWithID(browser_plugin, guest_instance_id);
 }
 
-void BrowserPluginManager::RemoveBrowserPlugin(int instance_id) {
-  instances_.Remove(instance_id);
+void BrowserPluginManager::RemoveBrowserPlugin(int guest_instance_id) {
+  instances_.Remove(guest_instance_id);
 }
 
-BrowserPlugin* BrowserPluginManager::GetBrowserPlugin(int instance_id) const {
-  return instances_.Lookup(instance_id);
+BrowserPlugin* BrowserPluginManager::GetBrowserPlugin(
+    int guest_instance_id) const {
+  return instances_.Lookup(guest_instance_id);
 }
 
 void BrowserPluginManager::UpdateDeviceScaleFactor(float device_scale_factor) {
