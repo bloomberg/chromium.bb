@@ -20,7 +20,7 @@ void CheckMapping(uintptr_t addr, size_t size, int protect, int map_type) {
   uint64_t start;
   uint64_t end;
   int64_t inode;
-  char flags[4];
+  char flags[5];
   int prot = 0;
   int type = 0;
   int num;
