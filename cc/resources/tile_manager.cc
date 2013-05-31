@@ -905,7 +905,9 @@ void TileManager::RunAnalyzeTask(
     const RasterTaskMetadata& metadata,
     RenderingStatsInstrumentation* stats_instrumentation,
     PicturePileImpl* picture_pile) {
-  TRACE_EVENT0("cc", "TileManager::RunAnalyzeTask");
+  TRACE_EVENT1(
+      "cc", "TileManager::RunAnalyzeTask",
+      "metadata", TracedValue::FromValue(metadata.AsValue().release()));
 
   DCHECK(picture_pile);
   DCHECK(analysis);
