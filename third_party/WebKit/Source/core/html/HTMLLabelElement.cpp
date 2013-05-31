@@ -161,6 +161,8 @@ void HTMLLabelElement::focus(bool, FocusDirection direction)
     // to match other browsers, always restore previous selection
     if (HTMLElement* element = control())
         element->focus(true, direction);
+    if (isFocusable())
+        HTMLElement::focus(true, direction);
 }
 
 void HTMLLabelElement::accessKeyAction(bool sendMouseEvents)
