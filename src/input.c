@@ -1252,6 +1252,8 @@ bind_seat(struct wl_client *client, void *data, uint32_t version, uint32_t id)
 		caps |= WL_SEAT_CAPABILITY_TOUCH;
 
 	wl_seat_send_capabilities(resource, caps);
+	if (version >= 2)
+		wl_seat_send_name(resource, seat->seat_name);
 }
 
 int
