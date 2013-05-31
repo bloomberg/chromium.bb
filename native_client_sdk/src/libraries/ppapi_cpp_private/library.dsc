@@ -12,6 +12,7 @@
           'file_io_private.cc',
           'host_resolver_private.cc',
           'net_address_private.cc',
+          'pass_file_handle.cc',
           'tcp_socket_private.cc',
           'tcp_server_socket_private.cc',
           'udp_socket_private.cc',

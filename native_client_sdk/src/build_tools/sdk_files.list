@@ -704,6 +704,7 @@ src/ppapi_cpp_private/Makefile
 [win]src/ppapi_cpp_private/make.bat
 src/ppapi_cpp_private/file_io_private.cc
 src/ppapi_cpp_private/net_address_private.cc
+src/ppapi_cpp_private/pass_file_handle.cc
 src/ppapi_cpp_private/tcp_socket_private.cc
 src/ppapi_cpp_private/udp_socket_private.cc
 src/ppapi_cpp_private/ext_crx_file_system_private.cc
