@@ -171,7 +171,7 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
   // Also we want to be notified of |main_loop_| destruction.
   base::MessageLoop::current()->AddDestructionObserver(this);
 
-  if (WebKit::WebRuntimeFeatures::isEncryptedMediaEnabled()) {
+  if (WebKit::WebRuntimeFeatures::isLegacyEncryptedMediaEnabled()) {
     decryptor_.reset(new ProxyDecryptor(
         client,
         frame,

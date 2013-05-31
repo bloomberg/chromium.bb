@@ -36,9 +36,6 @@ const char kForceWaveAudio[] = "force-wave-audio";
 // Set number of threads to use for video decoding.
 const char kVideoThreads[] = "video-threads";
 
-// Disables support for Encrypted Media Extensions.
-const char kDisableEncryptedMedia[] = "disable-encrypted-media";
-
 // Enables Opus playback in media elements.
 const char kEnableOpusPlayback[] = "enable-opus-playback";
 

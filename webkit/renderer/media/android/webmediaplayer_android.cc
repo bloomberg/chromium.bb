@@ -85,7 +85,7 @@ WebMediaPlayerAndroid::WebMediaPlayerAndroid(
   }
 
 #if defined(GOOGLE_TV)
-  if (WebKit::WebRuntimeFeatures::isEncryptedMediaEnabled()) {
+  if (WebKit::WebRuntimeFeatures::isLegacyEncryptedMediaEnabled()) {
     // |decryptor_| is owned, so Unretained() is safe here.
     decryptor_.reset(new ProxyDecryptor(
         client,

@@ -125,6 +125,8 @@ extern const char kEnableWebKitMediaSource[];
 #else
 extern const char kDisableWebKitMediaSource[];
 #endif
+extern const char kEnableEncryptedMedia[];
+extern const char kDisableLegacyEncryptedMedia[];
 CONTENT_EXPORT extern const char kUseFakeDeviceForMediaStream[];
 extern const char kEnableMonitorProfile[];
 extern const char kEnableUserMediaScreenCapturing[];

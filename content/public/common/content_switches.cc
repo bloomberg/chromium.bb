@@ -364,6 +364,12 @@ const char kEnableWebKitMediaSource[]       = "enable-webkit-media-source";
 const char kDisableWebKitMediaSource[]      = "disable-webkit-media-source";
 #endif
 
+// Enables support for Encrypted Media Extensions (e.g. MediaKeys).
+const char kEnableEncryptedMedia[] = "enable-encrypted-media";
+
+// Disables prefixed Encrypted Media API (e.g. webkitGenerateKeyRequest()).
+const char kDisableLegacyEncryptedMedia[] = "disable-legacy-encrypted-media";
+
 // Use fake device for MediaStream to replace actual camera and microphone.
 const char kUseFakeDeviceForMediaStream[] = "use-fake-device-for-media-stream";
 

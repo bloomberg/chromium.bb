@@ -704,11 +704,18 @@ const Experiment kExperiments[] = {
   },
 #endif
   {
-    "disable-encrypted-media",
-    IDS_FLAGS_DISABLE_ENCRYPTED_MEDIA_NAME,
-    IDS_FLAGS_DISABLE_ENCRYPTED_MEDIA_DESCRIPTION,
+    "enable-encrypted-media",
+    IDS_FLAGS_ENABLE_ENCRYPTED_MEDIA_NAME,
+    IDS_FLAGS_ENABLE_ENCRYPTED_MEDIA_DESCRIPTION,
     kOsDesktop,
-    SINGLE_VALUE_TYPE(switches::kDisableEncryptedMedia)
+    SINGLE_VALUE_TYPE(switches::kEnableEncryptedMedia)
+  },
+  {
+    "disable-encrypted-media",
+    IDS_FLAGS_DISABLE_PREFIXED_ENCRYPTED_MEDIA_NAME,
+    IDS_FLAGS_DISABLE_PREFIXED_ENCRYPTED_MEDIA_DESCRIPTION,
+    kOsDesktop,
+    SINGLE_VALUE_TYPE(switches::kDisableLegacyEncryptedMedia)
   },
   {
     "enable-opus-playback",

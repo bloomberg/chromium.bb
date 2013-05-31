@@ -6694,11 +6694,17 @@ Keep your key file in a safe place. You will need it to create new versions of y
           Disable the experimental WebKitMediaSource object. This object allows JavaScript to send media data directly to a video element.
         </message>
       </if>
-      <message name="IDS_FLAGS_DISABLE_ENCRYPTED_MEDIA_NAME" desc="Title for the flag to disable the Encrypted Media Extensions on &lt;video&gt; elements.">
-        Disable Encrypted Media Extensions on <ph name="VIDEO_HTML">&lt;video&gt;<ex>&lt;video&gt;</ex></ph> elements.
+      <message name="IDS_FLAGS_ENABLE_ENCRYPTED_MEDIA_NAME" desc="Title for the flag to enable the (unprefixed) Encrypted Media Extensions APIs (e.g. MediaKeys).">
+        Enable Encrypted Media Extensions.
       </message>
-      <message name="IDS_FLAGS_DISABLE_ENCRYPTED_MEDIA_DESCRIPTION" desc="Description for the flag to disable the Encrypted Media Extensions on &lt;video&gt; elements.">
-        Disable experimental Encrypted Media Extensions on the video elements.
+      <message name="IDS_FLAGS_ENABLE_ENCRYPTED_MEDIA_DESCRIPTION" desc="Description for the flag to enable the (unprefixed) Encrypted Media Extensions APIs (e.g. MediaKeys).">
+        Enable Encrypted Media Extensions on video and audio elements. This enables the latest version of the Encrypted Media Extensions.
+      </message>
+      <message name="IDS_FLAGS_DISABLE_PREFIXED_ENCRYPTED_MEDIA_NAME" desc="Title for the flag to disable the prefixed Encrypted Media Extensions APIs (e.g. webkitGenerateKeyRequest()).">
+        Disable prefixed Encrypted Media Extensions.
+      </message>
+      <message name="IDS_FLAGS_DISABLE_PREFIXED_ENCRYPTED_MEDIA_DESCRIPTION" desc="Description for the flag to disable the prefixed Encrypted Media Extensions APIs (e.g. webkitGenerateKeyRequest()).">
+        Disable the experimental version of Encrypted Media Extensions on video and audio elements.
       </message>
       <message name="IDS_FLAGS_ENABLE_OPUS_PLAYBACK_NAME" desc="Title for the flag to enable Opus playback in &lt;video&gt; elements.">
         Enable Opus playback in &lt;video&gt; elements.

@@ -79,7 +79,6 @@
 #include "ipc/ipc_platform_file.h"
 #include "media/base/audio_hardware_config.h"
 #include "media/base/media.h"
-#include "media/base/media_switches.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
 #include "third_party/WebKit/public/platform/WebString.h"
@@ -644,6 +643,8 @@ void RenderThreadImpl::WidgetRestored() {
 static void AdjustRuntimeFeatureDefaultsForPlatform() {
 #if defined(OS_ANDROID) && !defined(GOOGLE_TV)
   WebRuntimeFeatures::enableWebKitMediaSource(false);
+  WebRuntimeFeatures::enableLegacyEncryptedMedia(false);
+  WebRuntimeFeatures::enableEncryptedMedia(false);
 #endif
 
 #if defined(OS_ANDROID)
@@ -705,8 +706,11 @@ static void AdjustRuntimeFeaturesFromArgs(const CommandLine& command_line) {
   if (command_line.HasSwitch(switches::kDisableFullScreen))
     WebRuntimeFeatures::enableFullscreen(false);
 
-  if (command_line.HasSwitch(switches::kDisableEncryptedMedia))
-    WebRuntimeFeatures::enableEncryptedMedia(false);
+  if (command_line.HasSwitch(switches::kEnableEncryptedMedia))
+    WebRuntimeFeatures::enableEncryptedMedia(true);
+
+  if (command_line.HasSwitch(switches::kDisableLegacyEncryptedMedia))
+    WebRuntimeFeatures::enableLegacyEncryptedMedia(false);
 
   if (command_line.HasSwitch(switches::kEnableWebMIDI))
     WebRuntimeFeatures::enableWebMIDI(true);
