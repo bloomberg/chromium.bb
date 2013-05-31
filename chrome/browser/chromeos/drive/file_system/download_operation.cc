@@ -141,10 +141,18 @@ FileError PrepareForDownloadFile(
   DCHECK(drive_file_path);
   DCHECK(temp_download_file);
 
-  FileError error = metadata->RefreshEntry(
-      ConvertToResourceEntry(*gdata_entry), drive_file_path, entry);
+  *entry = ConvertToResourceEntry(*gdata_entry);
+  FileError error = metadata->RefreshEntry(*entry);
   if (error != FILE_ERROR_OK)
     return error;
+
+  error = metadata->GetResourceEntryById(entry->resource_id(), entry);
+  if (error != FILE_ERROR_OK)
+    return error;
+
+  *drive_file_path = metadata->GetFilePath(entry->resource_id());
+  if (drive_file_path->empty())
+    return FILE_ERROR_NOT_FOUND;
 
   // Ensure enough space in the cache.
   if (!cache->FreeDiskSpaceIfNeededFor(entry->file_info().size()))

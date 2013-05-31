@@ -53,7 +53,7 @@ FileError UpdateFileLocalState(
   if (entry.resource_id().empty())
     return FILE_ERROR_NOT_A_FILE;
 
-  FileError error = metadata->RefreshEntry(entry, NULL, NULL);
+  FileError error = metadata->RefreshEntry(entry);
   if (error != FILE_ERROR_OK)
     return error;
 

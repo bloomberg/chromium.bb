@@ -652,112 +652,6 @@ TEST_F(ResourceMetadataTestOnUIThread, RenameEntry) {
   EXPECT_EQ(base::FilePath(), drive_file_path);
 }
 
-TEST_F(ResourceMetadataTestOnUIThread, RefreshEntry) {
-  FileError error = FILE_ERROR_FAILED;
-  base::FilePath drive_file_path;
-  scoped_ptr<ResourceEntry> entry;
-
-  // Get file9.
-  entry = GetResourceEntryByPathSync(
-      base::FilePath::FromUTF8Unsafe("drive/root/dir1/dir3/file9"));
-  ASSERT_TRUE(entry.get());
-  EXPECT_EQ("file9", entry->base_name());
-  ASSERT_TRUE(!entry->file_info().is_directory());
-  EXPECT_EQ("md5:file9", entry->file_specific_info().file_md5());
-
-  // Rename it.
-  ResourceEntry file_entry(*entry);
-  file_entry.set_title("file100");
-  entry.reset();
-  resource_metadata_->RefreshEntryOnUIThread(
-      file_entry,
-      google_apis::test_util::CreateCopyResultCallback(
-          &error, &drive_file_path, &entry));
-  google_apis::test_util::RunBlockingPoolTask();
-  EXPECT_EQ(FILE_ERROR_OK, error);
-  EXPECT_EQ(base::FilePath::FromUTF8Unsafe("drive/root/dir1/dir3/file100"),
-            drive_file_path);
-  ASSERT_TRUE(entry.get());
-  EXPECT_EQ("file100", entry->base_name());
-  ASSERT_TRUE(!entry->file_info().is_directory());
-  EXPECT_EQ("md5:file9", entry->file_specific_info().file_md5());
-
-  // Update the file md5.
-  const std::string updated_md5("md5:updated");
-  file_entry = *entry;
-  file_entry.mutable_file_specific_info()->set_file_md5(updated_md5);
-  entry.reset();
-  resource_metadata_->RefreshEntryOnUIThread(
-      file_entry,
-      google_apis::test_util::CreateCopyResultCallback(
-          &error, &drive_file_path, &entry));
-  google_apis::test_util::RunBlockingPoolTask();
-  EXPECT_EQ(FILE_ERROR_OK, error);
-  EXPECT_EQ(base::FilePath::FromUTF8Unsafe("drive/root/dir1/dir3/file100"),
-            drive_file_path);
-  ASSERT_TRUE(entry.get());
-  EXPECT_EQ("file100", entry->base_name());
-  ASSERT_TRUE(!entry->file_info().is_directory());
-  EXPECT_EQ(updated_md5, entry->file_specific_info().file_md5());
-
-  // Make sure we get the same thing from GetResourceEntryByPath.
-  entry = GetResourceEntryByPathSync(
-      base::FilePath::FromUTF8Unsafe("drive/root/dir1/dir3/file100"));
-  ASSERT_TRUE(entry.get());
-  EXPECT_EQ("file100", entry->base_name());
-  ASSERT_TRUE(!entry->file_info().is_directory());
-  EXPECT_EQ(updated_md5, entry->file_specific_info().file_md5());
-
-  // Get dir2.
-  entry = GetResourceEntryByPathSync(
-      base::FilePath::FromUTF8Unsafe("drive/root/dir2"));
-  ASSERT_TRUE(entry.get());
-  EXPECT_EQ("dir2", entry->base_name());
-  ASSERT_TRUE(entry->file_info().is_directory());
-
-  // Change the name to dir100 and change the parent to drive/dir1/dir3.
-  ResourceEntry dir_entry(*entry);
-  dir_entry.set_title("dir100");
-  dir_entry.set_parent_resource_id("resource_id:dir3");
-  entry.reset();
-  resource_metadata_->RefreshEntryOnUIThread(
-      dir_entry,
-      google_apis::test_util::CreateCopyResultCallback(
-          &error, &drive_file_path, &entry));
-  google_apis::test_util::RunBlockingPoolTask();
-  EXPECT_EQ(FILE_ERROR_OK, error);
-  EXPECT_EQ(base::FilePath::FromUTF8Unsafe("drive/root/dir1/dir3/dir100"),
-            drive_file_path);
-  ASSERT_TRUE(entry.get());
-  EXPECT_EQ("dir100", entry->base_name());
-  EXPECT_TRUE(entry->file_info().is_directory());
-  EXPECT_EQ("resource_id:dir2", entry->resource_id());
-
-  // Make sure the children have moved over. Test file6.
-  entry = GetResourceEntryByPathSync(
-      base::FilePath::FromUTF8Unsafe("drive/root/dir1/dir3/dir100/file6"));
-  ASSERT_TRUE(entry.get());
-  EXPECT_EQ("file6", entry->base_name());
-
-  // Make sure dir2 no longer exists.
-  entry = GetResourceEntryByPathSync(
-      base::FilePath::FromUTF8Unsafe("drive/root/dir2"));
-  EXPECT_FALSE(entry.get());
-
-  // Cannot refresh root.
-  dir_entry.Clear();
-  dir_entry.set_resource_id(util::kDriveGrandRootSpecialResourceId);
-  dir_entry.set_title("new-root-name");
-  dir_entry.set_parent_resource_id("resource_id:dir1");
-  entry.reset();
-  resource_metadata_->RefreshEntryOnUIThread(
-      dir_entry,
-      google_apis::test_util::CreateCopyResultCallback(
-          &error, &drive_file_path, &entry));
-  google_apis::test_util::RunBlockingPoolTask();
-  EXPECT_EQ(FILE_ERROR_INVALID_OPERATION, error);
-}
-
 TEST_F(ResourceMetadataTestOnUIThread, RefreshDirectory_EmtpyMap) {
   base::FilePath kDirectoryPath(FILE_PATH_LITERAL("drive/root/dir1"));
   const int64 kNewChangestamp = kTestChangestamp + 1;
@@ -1178,6 +1072,99 @@ class ResourceMetadataTest : public testing::Test {
   scoped_ptr<ResourceMetadata, test_util::DestroyHelperForTests>
       resource_metadata_;
 };
+
+TEST_F(ResourceMetadataTest, RefreshEntry) {
+  base::FilePath drive_file_path;
+  ResourceEntry entry;
+
+  // Get file9.
+  EXPECT_EQ(FILE_ERROR_OK, resource_metadata_->GetResourceEntryByPath(
+      base::FilePath::FromUTF8Unsafe("drive/root/dir1/dir3/file9"), &entry));
+  EXPECT_EQ("file9", entry.base_name());
+  EXPECT_TRUE(!entry.file_info().is_directory());
+  EXPECT_EQ("md5:file9", entry.file_specific_info().file_md5());
+
+  // Rename it.
+  ResourceEntry file_entry(entry);
+  file_entry.set_title("file100");
+  EXPECT_EQ(FILE_ERROR_OK, resource_metadata_->RefreshEntry(file_entry));
+
+  EXPECT_EQ(
+      "drive/root/dir1/dir3/file100",
+      resource_metadata_->GetFilePath(file_entry.resource_id()).AsUTF8Unsafe());
+  entry.Clear();
+  EXPECT_EQ(FILE_ERROR_OK, resource_metadata_->GetResourceEntryById(
+      file_entry.resource_id(), &entry));
+  EXPECT_EQ("file100", entry.base_name());
+  EXPECT_TRUE(!entry.file_info().is_directory());
+  EXPECT_EQ("md5:file9", entry.file_specific_info().file_md5());
+
+  // Update the file md5.
+  const std::string updated_md5("md5:updated");
+  file_entry = entry;
+  file_entry.mutable_file_specific_info()->set_file_md5(updated_md5);
+  EXPECT_EQ(FILE_ERROR_OK, resource_metadata_->RefreshEntry(file_entry));
+
+  EXPECT_EQ(
+      "drive/root/dir1/dir3/file100",
+      resource_metadata_->GetFilePath(file_entry.resource_id()).AsUTF8Unsafe());
+  entry.Clear();
+  EXPECT_EQ(FILE_ERROR_OK, resource_metadata_->GetResourceEntryById(
+      file_entry.resource_id(), &entry));
+  EXPECT_EQ("file100", entry.base_name());
+  EXPECT_TRUE(!entry.file_info().is_directory());
+  EXPECT_EQ(updated_md5, entry.file_specific_info().file_md5());
+
+  // Make sure we get the same thing from GetResourceEntryByPath.
+  entry.Clear();
+  EXPECT_EQ(FILE_ERROR_OK, resource_metadata_->GetResourceEntryByPath(
+      base::FilePath::FromUTF8Unsafe("drive/root/dir1/dir3/file100"), &entry));
+  EXPECT_EQ("file100", entry.base_name());
+  ASSERT_TRUE(!entry.file_info().is_directory());
+  EXPECT_EQ(updated_md5, entry.file_specific_info().file_md5());
+
+  // Get dir2.
+  entry.Clear();
+  EXPECT_EQ(FILE_ERROR_OK, resource_metadata_->GetResourceEntryByPath(
+      base::FilePath::FromUTF8Unsafe("drive/root/dir2"), &entry));
+  EXPECT_EQ("dir2", entry.base_name());
+  ASSERT_TRUE(entry.file_info().is_directory());
+
+  // Change the name to dir100 and change the parent to drive/dir1/dir3.
+  ResourceEntry dir_entry(entry);
+  dir_entry.set_title("dir100");
+  dir_entry.set_parent_resource_id("resource_id:dir3");
+  EXPECT_EQ(FILE_ERROR_OK, resource_metadata_->RefreshEntry(dir_entry));
+
+  EXPECT_EQ(
+      "drive/root/dir1/dir3/dir100",
+      resource_metadata_->GetFilePath(dir_entry.resource_id()).AsUTF8Unsafe());
+  entry.Clear();
+  EXPECT_EQ(FILE_ERROR_OK, resource_metadata_->GetResourceEntryById(
+      dir_entry.resource_id(), &entry));
+  EXPECT_EQ("dir100", entry.base_name());
+  EXPECT_TRUE(entry.file_info().is_directory());
+  EXPECT_EQ("resource_id:dir2", entry.resource_id());
+
+  // Make sure the children have moved over. Test file6.
+  entry.Clear();
+  EXPECT_EQ(FILE_ERROR_OK, resource_metadata_->GetResourceEntryByPath(
+      base::FilePath::FromUTF8Unsafe("drive/root/dir1/dir3/dir100/file6"),
+      &entry));
+  EXPECT_EQ("file6", entry.base_name());
+
+  // Make sure dir2 no longer exists.
+  EXPECT_EQ(FILE_ERROR_NOT_FOUND, resource_metadata_->GetResourceEntryByPath(
+      base::FilePath::FromUTF8Unsafe("drive/root/dir2"), &entry));
+
+  // Cannot refresh root.
+  dir_entry.Clear();
+  dir_entry.set_resource_id(util::kDriveGrandRootSpecialResourceId);
+  dir_entry.set_title("new-root-name");
+  dir_entry.set_parent_resource_id("resource_id:dir1");
+  EXPECT_EQ(FILE_ERROR_INVALID_OPERATION,
+            resource_metadata_->RefreshEntry(dir_entry));
+}
 
 TEST_F(ResourceMetadataTest, Iterate) {
   scoped_ptr<ResourceMetadata::Iterator> it = resource_metadata_->GetIterator();

@@ -98,9 +98,7 @@ void TouchOperation::TouchFileAfterServerTimeStampUpdated(
       FROM_HERE,
       base::Bind(&internal::ResourceMetadata::RefreshEntry,
                  base::Unretained(metadata_),
-                 ConvertToResourceEntry(*resource_entry),
-                 static_cast<base::FilePath*>(NULL),
-                 static_cast<ResourceEntry*>(NULL)),
+                 ConvertToResourceEntry(*resource_entry)),
       base::Bind(&TouchOperation::TouchFileAfterRefreshMetadata,
                  weak_ptr_factory_.GetWeakPtr(), file_path, callback));
 }

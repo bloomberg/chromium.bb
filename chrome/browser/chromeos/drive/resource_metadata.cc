@@ -62,20 +62,6 @@ void RunGetResourceEntryCallback(const GetResourceEntryCallback& callback,
 }
 
 // Runs |callback| with arguments.
-void RunGetResourceEntryWithFilePathCallback(
-    const GetResourceEntryWithFilePathCallback& callback,
-    base::FilePath* path,
-    scoped_ptr<ResourceEntry> entry,
-    FileError error) {
-  DCHECK(!callback.is_null());
-  DCHECK(path);
-
-  if (error != FILE_ERROR_OK)
-    entry.reset();
-  callback.Run(error, *path, entry.Pass());
-}
-
-// Runs |callback| with arguments.
 void RunReadDirectoryCallback(const ReadDirectoryCallback& callback,
                               scoped_ptr<ResourceEntryVector> entries,
                               FileError error) {
@@ -476,32 +462,7 @@ void ResourceMetadata::ReadDirectoryByPathOnUIThread(
                  base::Passed(&entries)));
 }
 
-void ResourceMetadata::RefreshEntryOnUIThread(
-    const ResourceEntry& in_entry,
-    const GetResourceEntryWithFilePathCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
-
-  base::FilePath* file_path = new base::FilePath;
-  scoped_ptr<ResourceEntry> entry(new ResourceEntry);
-  ResourceEntry* entry_ptr = entry.get();
-  base::PostTaskAndReplyWithResult(
-      blocking_task_runner_,
-      FROM_HERE,
-      base::Bind(&ResourceMetadata::RefreshEntry,
-                 base::Unretained(this),
-                 in_entry,
-                 file_path,
-                 entry_ptr),
-      base::Bind(&RunGetResourceEntryWithFilePathCallback,
-                 callback,
-                 base::Owned(file_path),
-                 base::Passed(&entry)));
-}
-
-FileError ResourceMetadata::RefreshEntry(const ResourceEntry& entry,
-                                         base::FilePath* out_file_path,
-                                         ResourceEntry* out_entry) {
+FileError ResourceMetadata::RefreshEntry(const ResourceEntry& entry) {
   DCHECK(blocking_task_runner_->RunsTasksOnCurrentThread());
 
   if (!EnoughDiskSpaceIsAvailableForDBOperation(data_directory_path_))
@@ -527,17 +488,6 @@ FileError ResourceMetadata::RefreshEntry(const ResourceEntry& entry,
   // Remove from the old parent and add it to the new parent with the new data.
   if (!PutEntryUnderDirectory(CreateEntryWithProperBaseName(entry)))
     return FILE_ERROR_FAILED;
-
-  if (out_file_path)
-    *out_file_path = GetFilePath(entry.resource_id());
-
-  if (out_entry) {
-    // Note that base_name is not the same for the new entry and entry.
-    scoped_ptr<ResourceEntry> result_entry =
-        storage_->GetEntry(entry.resource_id());
-    DCHECK(result_entry);
-    *out_entry = *result_entry;
-  }
   return FILE_ERROR_OK;
 }
 
@@ -617,6 +567,7 @@ FileError ResourceMetadata::MoveEntryToDirectory(
   DCHECK(blocking_task_runner_->RunsTasksOnCurrentThread());
   DCHECK(!directory_path.empty());
   DCHECK(!file_path.empty());
+  DCHECK(out_file_path);
 
   if (!EnoughDiskSpaceIsAvailableForDBOperation(data_directory_path_))
     return FILE_ERROR_NO_SPACE;
@@ -630,7 +581,10 @@ FileError ResourceMetadata::MoveEntryToDirectory(
 
   entry->set_parent_resource_id(destination->resource_id());
 
-  return RefreshEntry(*entry, out_file_path, NULL);
+  FileError error = RefreshEntry(*entry);
+  if (error == FILE_ERROR_OK)
+    *out_file_path = GetFilePath(entry->resource_id());
+  return error;
 }
 
 FileError ResourceMetadata::RenameEntry(
@@ -640,6 +594,7 @@ FileError ResourceMetadata::RenameEntry(
   DCHECK(blocking_task_runner_->RunsTasksOnCurrentThread());
   DCHECK(!file_path.empty());
   DCHECK(!new_name.empty());
+  DCHECK(out_file_path);
 
   DVLOG(1) << "RenameEntry " << file_path.value() << " to " << new_name;
 
@@ -654,7 +609,11 @@ FileError ResourceMetadata::RenameEntry(
     return FILE_ERROR_EXISTS;
 
   entry->set_title(new_name);
-  return RefreshEntry(*entry, out_file_path, NULL);
+
+  FileError error = RefreshEntry(*entry);
+  if (error == FILE_ERROR_OK)
+    *out_file_path = GetFilePath(entry->resource_id());
+  return error;
 }
 
 scoped_ptr<ResourceEntry> ResourceMetadata::FindEntryByPathSync(

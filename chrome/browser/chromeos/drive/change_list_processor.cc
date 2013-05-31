@@ -228,7 +228,7 @@ void ChangeListProcessor::RefreshEntry(const ResourceEntry& entry) {
   base::FilePath old_file_path =
       resource_metadata_->GetFilePath(entry.resource_id());
 
-  FileError error = resource_metadata_->RefreshEntry(entry, NULL, NULL);
+  FileError error = resource_metadata_->RefreshEntry(entry);
 
   if (error == FILE_ERROR_OK) {
     base::FilePath new_file_path =
@@ -299,7 +299,7 @@ void ChangeListProcessor::UpdateRootEntry(int64 largest_changestamp) {
   // The changestamp should always be updated.
   root.mutable_directory_specific_info()->set_changestamp(largest_changestamp);
 
-  error = resource_metadata_->RefreshEntry(root, NULL, NULL);
+  error = resource_metadata_->RefreshEntry(root);
 
   LOG_IF(WARNING, error != FILE_ERROR_OK) << "Failed to refresh root directory";
 }

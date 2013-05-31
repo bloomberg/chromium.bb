@@ -76,17 +76,6 @@ typedef base::Callback<void(FileError error,
                             scoped_ptr<ResourceEntryVector> entries)>
     ReadDirectoryCallback;
 
-// Used to get a resource entry from the file system, with the Drive file path.
-// If |error| is not FILE_ERROR_OK, |entry| is set to NULL.
-//
-// |drive_file_path| parameter is provided as ResourceEntry does not contain
-// the Drive file path (i.e. only contains the base name without parent
-// directory names).
-typedef base::Callback<void(FileError error,
-                            const base::FilePath& drive_file_path,
-                            scoped_ptr<ResourceEntry> entry)>
-    GetResourceEntryWithFilePathCallback;
-
 // Used to get a set of changed directories for feed processing.
 typedef base::Callback<void(const std::set<base::FilePath>&)>
     GetChildDirectoriesCallback;
@@ -236,18 +225,8 @@ class ResourceMetadata {
       const base::FilePath& second_path,
       const GetResourceEntryPairCallback& callback);
 
-  // Refreshes a drive entry with the same resource id as |entry|.
-  // |callback| is run with the error, file path and the new entry.
-  // |callback| must not be null.
-  // Must be called on the UI thread.
-  void RefreshEntryOnUIThread(
-      const ResourceEntry& entry,
-      const GetResourceEntryWithFilePathCallback& callback);
-
-  // Synchronous version of RefreshEntryOnUIThread().
-  FileError RefreshEntry(const ResourceEntry& entry,
-                         base::FilePath* out_file_path,
-                         ResourceEntry* out_entry);
+  // Replaces an existing entry whose ID is |entry.resource_id()| with |entry|.
+  FileError RefreshEntry(const ResourceEntry& entry);
 
   // Removes all child files of the directory pointed by
   // |directory_fetch_info| and replaces them with

@@ -40,7 +40,7 @@ FileError RefreshEntriesOnBlockingPool(
   for (size_t i = 0; i < entries.size(); ++i) {
     ResourceEntry entry = ConvertToResourceEntry(*entries[i]);
     const std::string id = entry.resource_id();
-    FileError error = resource_metadata->RefreshEntry(entry, NULL, &entry);
+    FileError error = resource_metadata->RefreshEntry(entry);
     if (error == FILE_ERROR_NOT_FOUND) {
       // The result is absent in local resource metadata. This can happen if
       // the metadata is not synced to the latest server state yet. In that
@@ -55,10 +55,11 @@ FileError RefreshEntriesOnBlockingPool(
 
       // FILE_ERROR_EXISTS may happen if we have already added the entry to
       // "drive/other" once before. That's not an error.
-      if (error == FILE_ERROR_OK || error == FILE_ERROR_EXISTS)
-        error = resource_metadata->GetResourceEntryById(id, &entry);
+      if (error == FILE_ERROR_EXISTS)
+        error = FILE_ERROR_OK;
     }
-    // Other errors are fatal. Give up to return the search result.
+    if (error == FILE_ERROR_OK)
+      error = resource_metadata->GetResourceEntryById(id, &entry);
     if (error != FILE_ERROR_OK)
       return error;
     result->push_back(SearchResultInfo(resource_metadata->GetFilePath(id),
