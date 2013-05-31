@@ -48,12 +48,6 @@ vars = {
   # the commit queue can handle CLs rolling openssl
   # and whatever else without interference from each other.
   "openssl_revision": "194187",
-
-  "ios_webkit_trunk": "http://svn.webkit.org/repository/webkit/trunk",
-  # Three lines of non-changing comments so that
-  # the commit queue can handle CLs rolling openssl
-  # and whatever else without interference from each other.
-  "ios_webkit_revision": "147503",
 }
 
 deps = {
@@ -403,18 +397,7 @@ deps_os = {
     "src/testing/iossim/third_party/class-dump":
       "/trunk/deps/third_party/class-dump@199203",
 
-    # Pull only the headers from WebKit.
-    "src/third_party/WebKit/Source/WebKit/chromium/public":
-      Var("ios_webkit_trunk") + "/Source/WebKit/chromium/public@" +
-      Var("ios_webkit_revision"),
-    "src/third_party/WebKit/Source/Platform/chromium/public":
-      Var("ios_webkit_trunk") + "/Source/Platform/chromium/public@" +
-      Var("ios_webkit_revision"),
-    # Pull only the headers from Blink.
-    "src/third_party/WebKit/public":
-      Var("webkit_trunk") + "/public@" + Var("webkit_revision"),
-
-    # Code that's not needed due to not building everything (especially WebKit).
+    # Code that's not needed due to not building everything
     "src/build/util/support": None,
     "src/chrome/test/data/extensions/api_test/permissions/nacl_enabled/bin": None,
     "src/content/test/data/layout_tests/LayoutTests/editing/pasteboard/resources": None,
@@ -468,7 +451,6 @@ deps_os = {
     "src/third_party/webdriver/pylib": None,
     "src/third_party/webpagereplay": None,
     "src/third_party/webrtc": None,
-    "src/third_party/WebKit": None,
     "src/third_party/yasm/source/patched-yasm": None,
     "src/tools/page_cycler/acid3": None,
     "src/v8": None,
