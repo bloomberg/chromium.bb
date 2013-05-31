@@ -8,7 +8,6 @@
 // content scripts only.
 
   require('json_schema');
-  var json = require('json');
   var lastError = require('lastError');
   var miscNatives = requireNative('miscellaneous_bindings');
   var chrome = requireNative('chrome').GetChrome();
@@ -55,10 +54,7 @@
   // Sends a message asynchronously to the context on the other end of this
   // port.
   PortImpl.prototype.postMessage = function(msg) {
-    // json.stringify doesn't support a root object which is undefined.
-    if (msg === undefined)
-      msg = null;
-    PostMessage(this.portId_, json.stringify(msg));
+    PostMessage(this.portId_, msg);
   };
 
   // Disconnects the port from the other end.
@@ -266,12 +262,8 @@
   // Called by native code when a message has been sent to the given port.
   chromeHidden.Port.dispatchOnMessage = function(msg, portId) {
     var port = ports[portId];
-    if (port) {
-      if (msg) {
-        msg = json.parse(msg);
-      }
+    if (port)
       port.onMessage.dispatch(msg, port);
-    }
   };
 
   // Shared implementation used by tabs.sendMessage and runtime.sendMessage.

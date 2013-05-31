@@ -15,13 +15,15 @@
 #include "chrome/browser/extensions/api/messaging/native_process_launcher.h"
 #include "content/public/browser/browser_thread.h"
 
-namespace net {
+namespace base {
+class ListValue;
+}
 
+namespace net {
 class DrainableIOBuffer;
 class FileStream;
 class IOBuffer;
 class IOBufferWithSize;
-
 }  // namespace net
 
 namespace extensions {
@@ -43,8 +45,9 @@ class NativeMessageProcessHost
    public:
     virtual ~Client() {}
     // Called on the UI thread.
-    virtual void PostMessageFromNativeProcess(int port_id,
-                                              const std::string& message) = 0;
+    virtual void PostMessageFromNativeProcess(
+        int port_id,
+        scoped_ptr<base::ListValue> message) = 0;
     virtual void CloseChannel(int port_id,
                               const std::string& error_message) = 0;
   };
