@@ -58,14 +58,23 @@ bool PasswordAutofillManager::WillFillUserNameAndPassword(
     const base::string16& current_username,
     const PasswordFormFillData& fill_data) {
   // Look for any suitable matches to current field text.
-  if (fill_data.basic_data.fields[0].value == current_username) {
+  if (fill_data.basic_data.fields[0].value == current_username)
     return true;
-  } else {
-    // Scan additional logins for a match.
-    PasswordFormFillData::LoginCollection::const_iterator iter;
-    for (iter = fill_data.additional_logins.begin();
-         iter != fill_data.additional_logins.end(); ++iter) {
-      if (iter->first == current_username)
+
+  // Scan additional logins for a match.
+   for (PasswordFormFillData::LoginCollection::const_iterator iter =
+           fill_data.additional_logins.begin();
+       iter != fill_data.additional_logins.end(); ++iter) {
+    if (iter->first == current_username)
+      return true;
+  }
+
+  for (PasswordFormFillData::UsernamesCollection::const_iterator usernames_iter
+           = fill_data.other_possible_usernames.begin();
+       usernames_iter != fill_data.other_possible_usernames.end();
+       ++usernames_iter) {
+    for (size_t i = 0; i < usernames_iter->second.size(); ++i) {
+      if (usernames_iter->second[i] == current_username)
         return true;
     }
   }

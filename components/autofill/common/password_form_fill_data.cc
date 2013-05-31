@@ -9,6 +9,17 @@
 
 namespace autofill {
 
+UsernamesCollectionKey::UsernamesCollectionKey() {}
+
+UsernamesCollectionKey::~UsernamesCollectionKey() {}
+
+bool UsernamesCollectionKey::operator<(
+    const UsernamesCollectionKey& other) const {
+  if (username != other.username)
+    return username < other.username;
+  return password < other.password;
+}
+
 PasswordFormFillData::PasswordFormFillData() : wait_for_username(false) {
 }
 
@@ -20,6 +31,7 @@ void InitPasswordFormFillData(
     const content::PasswordFormMap& matches,
     const content::PasswordForm* const preferred_match,
     bool wait_for_username_before_autofill,
+    bool enable_other_possible_usernames,
     PasswordFormFillData* result) {
   // Note that many of the |FormFieldData| members are not initialized for
   // |username_field| and |password_field| because they are currently not used
@@ -43,6 +55,18 @@ void InitPasswordFormFillData(
   for (iter = matches.begin(); iter != matches.end(); iter++) {
     if (iter->second != preferred_match)
       result->additional_logins[iter->first] = iter->second->password_value;
+    if (enable_other_possible_usernames &&
+        !iter->second->other_possible_usernames.empty()) {
+      // Note that there may be overlap between other_possible_usernames and
+      // other saved usernames or with other other_possible_usernames. For now
+      // we will ignore this overlap as it should be a rare occurence. We may
+      // want to revisit this in the future.
+      UsernamesCollectionKey key;
+      key.username = iter->first;
+      key.password = iter->second->password_value;
+      result->other_possible_usernames[key] =
+          iter->second->other_possible_usernames;
+    }
   }
 }
 

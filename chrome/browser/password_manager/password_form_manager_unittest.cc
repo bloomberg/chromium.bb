@@ -5,14 +5,19 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 #include "base/memory/scoped_ptr.h"
+#include "base/message_loop.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/password_manager/password_form_manager.h"
 #include "chrome/browser/password_manager/password_manager.h"
 #include "chrome/browser/password_manager/password_manager_delegate.h"
+#include "chrome/browser/password_manager/password_store.h"
+#include "chrome/browser/password_manager/password_store_factory.h"
+#include "chrome/browser/password_manager/test_password_store.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/common/password_form.h"
+#include "content/public/test/test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 using content::PasswordForm;
@@ -37,7 +42,7 @@ class TestPasswordManagerDelegate : public PasswordManagerDelegate {
 class TestPasswordManager : public PasswordManager {
  public:
   explicit TestPasswordManager(PasswordManagerDelegate* delegate)
-    : PasswordManager(NULL, delegate) {}
+      : PasswordManager(NULL, delegate) {}
 
   virtual void Autofill(
       const content::PasswordForm& form_for_autofill,
@@ -72,19 +77,21 @@ class PasswordFormManagerTest : public testing::Test {
   PasswordFormManagerTest() {
   }
   virtual void SetUp() {
-    observed_form_.origin = GURL("http://www.google.com/a/LoginAuth");
-    observed_form_.action = GURL("http://www.google.com/a/Login");
+    observed_form_.origin = GURL("http://accounts.google.com/a/LoginAuth");
+    observed_form_.action = GURL("http://accounts.google.com/a/Login");
     observed_form_.username_element = ASCIIToUTF16("Email");
     observed_form_.password_element = ASCIIToUTF16("Passwd");
     observed_form_.submit_element = ASCIIToUTF16("signIn");
-    observed_form_.signon_realm = "http://www.google.com";
+    observed_form_.signon_realm = "http://accounts.google.com";
 
     saved_match_ = observed_form_;
-    saved_match_.origin = GURL("http://www.google.com/a/ServiceLoginAuth");
-    saved_match_.action = GURL("http://www.google.com/a/ServiceLogin");
+    saved_match_.origin = GURL("http://accounts.google.com/a/ServiceLoginAuth");
+    saved_match_.action = GURL("http://accounts.google.com/a/ServiceLogin");
     saved_match_.preferred = true;
     saved_match_.username_value = ASCIIToUTF16("test@gmail.com");
     saved_match_.password_value = ASCIIToUTF16("test1");
+    saved_match_.other_possible_usernames.push_back(
+        ASCIIToUTF16("test2@gmail.com"));
     profile_ = new TestingProfile();
   }
 
@@ -156,7 +163,9 @@ TEST_F(PasswordFormManagerTest, TestNewLogin) {
   credentials.username_value = saved_match()->username_value;
   credentials.password_value = saved_match()->password_value;
   credentials.preferred = true;
-  manager->ProvisionallySave(credentials);
+  manager->ProvisionallySave(
+      credentials,
+      PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
 
   // Successful login. The PasswordManager would instruct PasswordFormManager
   // to save, which should know this is a new login.
@@ -184,7 +193,9 @@ TEST_F(PasswordFormManagerTest, TestNewLogin) {
   string16 new_pass = ASCIIToUTF16("newpass");
   credentials.username_value = new_user;
   credentials.password_value = new_pass;
-  manager->ProvisionallySave(credentials);
+  manager->ProvisionallySave(
+      credentials,
+      PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
 
   // Again, the PasswordFormManager should know this is still a new login.
   EXPECT_TRUE(manager->IsNewLogin());
@@ -219,7 +230,9 @@ TEST_F(PasswordFormManagerTest, TestUpdatePassword) {
   credentials.username_value = saved_match()->username_value;
   credentials.password_value = new_pass;
   credentials.preferred = true;
-  manager->ProvisionallySave(credentials);
+  manager->ProvisionallySave(
+      credentials,
+      PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
 
   // Successful login. The PasswordManager would instruct PasswordFormManager
   // to save, and since this is an update, it should know not to save as a new
@@ -268,7 +281,9 @@ TEST_F(PasswordFormManagerTest, TestEmptyAction) {
   PasswordForm login = *observed_form();
   login.username_value = saved_match()->username_value;
   login.password_value = saved_match()->password_value;
-  manager->ProvisionallySave(login);
+  manager->ProvisionallySave(
+      login,
+      PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
   EXPECT_FALSE(manager->IsNewLogin());
   // We bless our saved PasswordForm entry with the action URL of the
   // observed form.
@@ -286,7 +301,9 @@ TEST_F(PasswordFormManagerTest, TestUpdateAction) {
   login.username_value = saved_match()->username_value;
   login.password_value = saved_match()->password_value;
 
-  manager->ProvisionallySave(login);
+  manager->ProvisionallySave(
+      login,
+      PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
   EXPECT_FALSE(manager->IsNewLogin());
   // The observed action URL is different from the previously saved one, and
   // is the same as the one that would be submitted on successful login.
@@ -305,12 +322,88 @@ TEST_F(PasswordFormManagerTest, TestDynamicAction) {
   GURL new_action = GURL("http://www.google.com/new_action");
   login.action = new_action;
 
-  manager->ProvisionallySave(login);
+  manager->ProvisionallySave(
+      login,
+      PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
   EXPECT_TRUE(manager->IsNewLogin());
   // Check that the provisionally saved action URL is the same as the submitted
   // action URL, not the one observed on page load.
   EXPECT_EQ(new_action,
             GetPendingCredentials(manager.get())->action);
+}
+
+TEST_F(PasswordFormManagerTest, TestAlternateUsername) {
+  // Need a MessageLoop for callbacks.
+  MessageLoop message_loop;
+  PasswordStoreFactory::GetInstance()->SetTestingFactory(
+      profile(), &TestPasswordStore::Create);
+  scoped_refptr<TestPasswordStore> password_store =
+      static_cast<TestPasswordStore*>(
+          PasswordStoreFactory::GetForProfile(profile(),
+                                              Profile::IMPLICIT_ACCESS).get());
+  TestPasswordManagerDelegate delegate(profile());
+  TestPasswordManager password_manager(&delegate);
+  scoped_ptr<TestPasswordFormManager> manager(new TestPasswordFormManager(
+      profile(), &password_manager, *observed_form(), false));
+
+  password_store->AddLogin(*saved_match());
+  manager->FetchMatchingLoginsFromPasswordStore();
+  content::RunAllPendingInMessageLoop();
+
+  // The saved match has the right username already.
+  PasswordForm login(*observed_form());
+  login.username_value = saved_match()->username_value;
+  login.password_value = saved_match()->password_value;
+  login.preferred = true;
+  manager->ProvisionallySave(
+      login,
+      PasswordFormManager::ALLOW_OTHER_POSSIBLE_USERNAMES);
+
+  EXPECT_FALSE(manager->IsNewLogin());
+  manager->Save();
+  content::RunAllPendingInMessageLoop();
+
+  // Should be only one password stored, and should not have
+  // |other_possible_usernames| set anymore.
+  TestPasswordStore::PasswordMap passwords = password_store->stored_passwords();
+  EXPECT_EQ(1U, passwords.size());
+  ASSERT_EQ(1U, passwords[saved_match()->signon_realm].size());
+  EXPECT_EQ(saved_match()->username_value,
+            passwords[saved_match()->signon_realm][0].username_value);
+  EXPECT_EQ(
+      0U,
+      passwords[saved_match()->signon_realm][0].
+      other_possible_usernames.size());
+
+  // This time use an alternate username
+  manager.reset(new TestPasswordFormManager(
+      profile(), &password_manager, *observed_form(), false));
+  password_store->Clear();
+  password_store->AddLogin(*saved_match());
+  manager->FetchMatchingLoginsFromPasswordStore();
+  content::RunAllPendingInMessageLoop();
+
+  string16 new_username = saved_match()->other_possible_usernames[0];
+  login.username_value = new_username;
+  manager->ProvisionallySave(
+      login,
+      PasswordFormManager::ALLOW_OTHER_POSSIBLE_USERNAMES);
+
+  EXPECT_FALSE(manager->IsNewLogin());
+  manager->Save();
+  content::RunAllPendingInMessageLoop();
+
+  // |other_possible_usernames| should also be empty, but username_value should
+  // be changed to match |new_username|
+  passwords = password_store->stored_passwords();
+  EXPECT_EQ(1U, passwords.size());
+  ASSERT_EQ(1U, passwords[saved_match()->signon_realm].size());
+  EXPECT_EQ(new_username,
+            passwords[saved_match()->signon_realm][0].username_value);
+  EXPECT_EQ(
+      0U,
+      passwords[saved_match()->signon_realm][0].
+      other_possible_usernames.size());
 }
 
 TEST_F(PasswordFormManagerTest, TestValidForms) {
@@ -420,9 +513,11 @@ TEST_F(PasswordFormManagerTest, TestSanitizePossibleUsernames) {
   scoped_ptr<PasswordFormManager> manager(new PasswordFormManager(
       profile(), NULL, NULL, *observed_form(), false));
   PasswordForm credentials(*observed_form());
-  credentials.possible_usernames.push_back(ASCIIToUTF16("543-43-1234"));
-  credentials.possible_usernames.push_back(ASCIIToUTF16("378282246310005"));
-  credentials.possible_usernames.push_back(ASCIIToUTF16("other username"));
+  credentials.other_possible_usernames.push_back(ASCIIToUTF16("543-43-1234"));
+  credentials.other_possible_usernames.push_back(
+      ASCIIToUTF16("378282246310005"));
+  credentials.other_possible_usernames.push_back(
+      ASCIIToUTF16("other username"));
   credentials.username_value = ASCIIToUTF16("test@gmail.com");
 
   SanitizePossibleUsernames(manager.get(), &credentials);
@@ -430,21 +525,22 @@ TEST_F(PasswordFormManagerTest, TestSanitizePossibleUsernames) {
   // Possible credit card number and SSN are stripped.
   std::vector<string16> expected;
   expected.push_back(ASCIIToUTF16("other username"));
-  EXPECT_THAT(credentials.possible_usernames, Eq(expected));
+  EXPECT_THAT(credentials.other_possible_usernames, Eq(expected));
 
-  credentials.possible_usernames.clear();
-  credentials.possible_usernames.push_back(ASCIIToUTF16("511-32-9830"));
-  credentials.possible_usernames.push_back(ASCIIToUTF16("duplicate"));
-  credentials.possible_usernames.push_back(ASCIIToUTF16("duplicate"));
-  credentials.possible_usernames.push_back(ASCIIToUTF16("random"));
-  credentials.possible_usernames.push_back(ASCIIToUTF16("test@gmail.com"));
+  credentials.other_possible_usernames.clear();
+  credentials.other_possible_usernames.push_back(ASCIIToUTF16("511-32-9830"));
+  credentials.other_possible_usernames.push_back(ASCIIToUTF16("duplicate"));
+  credentials.other_possible_usernames.push_back(ASCIIToUTF16("duplicate"));
+  credentials.other_possible_usernames.push_back(ASCIIToUTF16("random"));
+  credentials.other_possible_usernames.push_back(
+      ASCIIToUTF16("test@gmail.com"));
 
   SanitizePossibleUsernames(manager.get(), &credentials);
 
-  // SSN, duplicate in |possible_usernames| and duplicate of |username_value|
-  // all removed.
+  // SSN, duplicate in |other_possible_usernames| and duplicate of
+  // |username_value| all removed.
   expected.clear();
   expected.push_back(ASCIIToUTF16("duplicate"));
   expected.push_back(ASCIIToUTF16("random"));
-  EXPECT_THAT(credentials.possible_usernames, Eq(expected));
+  EXPECT_THAT(credentials.other_possible_usernames, Eq(expected));
 }

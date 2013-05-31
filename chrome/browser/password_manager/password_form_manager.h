@@ -44,6 +44,11 @@ class PasswordFormManager : public PasswordStoreConsumer {
     ACTION_MATCH_NOT_REQUIRED
   };
 
+  enum OtherPossibleUsernamesAction {
+    ALLOW_OTHER_POSSIBLE_USERNAMES,
+    IGNORE_OTHER_POSSIBLE_USERNAMES
+  };
+
   // Compare basic data of observed_form_ with argument. Only check the action
   // URL when action match is required.
   bool DoesManage(const content::PasswordForm& form,
@@ -99,8 +104,13 @@ class PasswordFormManager : public PasswordStoreConsumer {
 
   // If the user has submitted observed_form_, provisionally hold on to
   // the submitted credentials until we are told by PasswordManager whether
-  // or not the login was successful.
-  void ProvisionallySave(const content::PasswordForm& credentials);
+  // or not the login was successful. |action| describes how we deal with
+  // possible usernames. If |action| is ALLOW_OTHER_POSSIBLE_USERNAMES we will
+  // treat a possible usernames match as a sign that our original heuristics
+  // were wrong and that the user selected the correct username from the
+  // Autofill UI.
+  void ProvisionallySave(const content::PasswordForm& credentials,
+                         OtherPossibleUsernamesAction action);
 
   // Handles save-as-new or update of the form managed by this manager.
   // Note the basic data of updated_credentials must match that of
@@ -191,6 +201,12 @@ class PasswordFormManager : public PasswordStoreConsumer {
   // |pending_credentials_|.
   void UpdatePreferredLoginState(PasswordStore* password_store);
 
+  // Returns true if |username| is one of the other possible usernames for a
+  // password form in |best_matches_| and sets |pending_credentials_| to the
+  // match which had this username.
+  bool UpdatePendingCredentialsIfOtherPossibleUsername(
+      const string16& username);
+
   // Converts the "ActionsTaken" fields into an int so they can be logged to
   // UMA.
   int GetActionsTaken();
@@ -229,6 +245,10 @@ class PasswordFormManager : public PasswordStoreConsumer {
 
   // Whether this form has an auto generated password.
   bool has_generated_password_;
+
+  // Set if the user has selected one of the other possible usernames in
+  // |pending_credentials_|.
+  string16 selected_username_;
 
   // PasswordManager owning this.
   const PasswordManager* const password_manager_;

@@ -235,7 +235,7 @@ bool LoginDatabase::AddLogin(const PasswordForm& form) {
   s.BindInt(COLUMN_BLACKLISTED_BY_USER, form.blacklisted_by_user);
   s.BindInt(COLUMN_SCHEME, form.scheme);
   s.BindInt(COLUMN_PASSWORD_TYPE, form.type);
-  Pickle pickle = SerializeVector(form.possible_usernames);
+  Pickle pickle = SerializeVector(form.other_possible_usernames);
   s.BindBlob(COLUMN_POSSIBLE_USERNAMES, pickle.data(), pickle.size());
   s.BindInt(COLUMN_TIMES_USED, form.times_used);
 
@@ -265,7 +265,7 @@ bool LoginDatabase::UpdateLogin(const PasswordForm& form, int* items_changed) {
              static_cast<int>(encrypted_password.length()));
   s.BindInt(2, form.ssl_valid);
   s.BindInt(3, form.preferred);
-  Pickle pickle = SerializeVector(form.possible_usernames);
+  Pickle pickle = SerializeVector(form.other_possible_usernames);
   s.BindBlob(4, pickle.data(), pickle.size());
   s.BindInt(5, form.times_used);
   s.BindString(6, form.origin.spec());
@@ -348,7 +348,7 @@ bool LoginDatabase::InitPasswordFormFromStatement(PasswordForm* form,
   Pickle pickle(
       static_cast<const char*>(s.ColumnBlob(COLUMN_POSSIBLE_USERNAMES)),
       s.ColumnByteLength(COLUMN_POSSIBLE_USERNAMES));
-  form->possible_usernames = DeserializeVector(pickle);
+  form->other_possible_usernames = DeserializeVector(pickle);
   form->times_used = s.ColumnInt(COLUMN_TIMES_USED);
   return true;
 }

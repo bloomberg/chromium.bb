@@ -41,6 +41,7 @@ const char* const kBobUsername = "bob";
 const char* const kBobPassword = "secret";
 const char* const kCarolUsername = "Carol";
 const char* const kCarolPassword = "test";
+const char* const kCarolAlternateUsername = "RealCarolUsername";
 
 
 const char* const kFormHTML =
@@ -78,6 +79,7 @@ class PasswordAutofillAgentTest : public ChromeRenderViewTest {
     password2_ = ASCIIToUTF16(kBobPassword);
     username3_ = ASCIIToUTF16(kCarolUsername);
     password3_ = ASCIIToUTF16(kCarolPassword);
+    alternate_username3_ = ASCIIToUTF16(kCarolAlternateUsername);
 
     FormFieldData username_field;
     username_field.name = ASCIIToUTF16(kUsernameName);
@@ -91,6 +93,11 @@ class PasswordAutofillAgentTest : public ChromeRenderViewTest {
 
     fill_data_.additional_logins[username2_] = password2_;
     fill_data_.additional_logins[username3_] = password3_;
+
+    UsernamesCollectionKey key;
+    key.username = username3_;
+    key.password = password3_;
+    fill_data_.other_possible_usernames[key].push_back(alternate_username3_);
 
     // We need to set the origin so it matches the frame URL and the action so
     // it matches the form action, otherwise we won't autocomplete.
@@ -164,6 +171,7 @@ class PasswordAutofillAgentTest : public ChromeRenderViewTest {
   string16 password1_;
   string16 password2_;
   string16 password3_;
+  string16 alternate_username3_;
   PasswordFormFillData fill_data_;
 
   WebInputElement username_element_;
@@ -375,12 +383,17 @@ TEST_F(PasswordAutofillAgentTest, InlineAutocomplete) {
   // The username and password fields should match the 'Carol' entry.
   CheckTextFieldsState(kCarolUsername, true, kCarolPassword, true);
   CheckUsernameSelection(1, 5);
-  // Finally, the user removes all the text and types a lowercase 'c'.  We only
+  // The user removes all the text and types a lowercase 'c'.  We only
   // want case-sensitive autocompletion, so the username and the selected range
   // should be empty.
   SimulateUsernameChange("c", true);
   CheckTextFieldsState("c", false, std::string(), false);
   CheckUsernameSelection(1, 1);
+
+  // Check that we complete other_possible_usernames as well.
+  SimulateUsernameChange("R", true);
+  CheckTextFieldsState(kCarolAlternateUsername, true, kCarolPassword, true);
+  CheckUsernameSelection(1, 17);
 }
 
 // Tests that accepting an item in the suggestion drop-down works.

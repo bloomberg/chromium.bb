@@ -95,7 +95,7 @@ struct CONTENT_EXPORT PasswordForm {
   // determining the username are incorrect. Optional.
   //
   // When parsing an HTML form, this is typically empty.
-  std::vector<string16> possible_usernames;
+  std::vector<string16> other_possible_usernames;
 
   // The name of the password input element, Optional (improves scoring).
   //

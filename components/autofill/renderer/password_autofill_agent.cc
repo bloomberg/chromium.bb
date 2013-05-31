@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
+#include "base/metrics/histogram.h"
 #include "components/autofill/common/autofill_messages.h"
 #include "components/autofill/common/form_field_data.h"
 #include "components/autofill/common/password_form_fill_data.h"
@@ -206,6 +207,7 @@ bool DoUsernamesMatch(const base::string16& username1,
 PasswordAutofillAgent::PasswordAutofillAgent(content::RenderView* render_view)
     : content::RenderViewObserver(render_view),
       disable_popup_(false),
+      usernames_usage_(NOTHING_TO_AUTOFILL),
       web_view_(render_view->GetWebView()),
       weak_ptr_factory_(this) {
 }
@@ -392,6 +394,14 @@ bool PasswordAutofillAgent::OnMessageReceived(const IPC::Message& message) {
   return handled;
 }
 
+void PasswordAutofillAgent::DidStartLoading() {
+  if (usernames_usage_ != NOTHING_TO_AUTOFILL) {
+    UMA_HISTOGRAM_ENUMERATION("PasswordManager.OtherPossibleUsernamesUsage",
+                              usernames_usage_, OTHER_POSSIBLE_USERNAMES_MAX);
+    usernames_usage_ = NOTHING_TO_AUTOFILL;
+  }
+}
+
 void PasswordAutofillAgent::DidFinishDocumentLoad(WebKit::WebFrame* frame) {
   // The |frame| contents have been parsed, but not yet rendered.  Let the
   // PasswordManager know that forms are loaded, even though we can't yet tell
@@ -419,6 +429,12 @@ void PasswordAutofillAgent::OnFillPasswordForm(
     const PasswordFormFillData& form_data,
     bool disable_popup) {
   disable_popup_ = disable_popup;
+  if (usernames_usage_ == NOTHING_TO_AUTOFILL) {
+    if (form_data.other_possible_usernames.size())
+      usernames_usage_ = OTHER_POSSIBLE_USERNAMES_PRESENT;
+    else if (usernames_usage_ == NOTHING_TO_AUTOFILL)
+      usernames_usage_ = OTHER_POSSIBLE_USERNAMES_ABSENT;
+  }
 
   FormElementsList forms;
   // We own the FormElements* in forms.
@@ -474,11 +490,22 @@ void PasswordAutofillAgent::GetSuggestions(
   if (StartsWith(fill_data.basic_data.fields[0].value, input, false))
     suggestions->push_back(fill_data.basic_data.fields[0].value);
 
-  PasswordFormFillData::LoginCollection::const_iterator iter;
-  for (iter = fill_data.additional_logins.begin();
+  for (PasswordFormFillData::LoginCollection::const_iterator iter =
+           fill_data.additional_logins.begin();
        iter != fill_data.additional_logins.end(); ++iter) {
     if (StartsWith(iter->first, input, false))
       suggestions->push_back(iter->first);
+  }
+
+  for (PasswordFormFillData::UsernamesCollection::const_iterator iter =
+           fill_data.other_possible_usernames.begin();
+       iter != fill_data.other_possible_usernames.end(); ++iter) {
+    for (size_t i = 0; i < iter->second.size(); ++i) {
+      if (StartsWith(iter->second[i], input, false)) {
+        usernames_usage_ = OTHER_POSSIBLE_USERNAME_SHOWN;
+        suggestions->push_back(iter->second[i]);
+      }
+    }
   }
 }
 
@@ -558,6 +585,25 @@ bool PasswordAutofillAgent::FillUserNameAndPassword(
         username = iter->first;
         password = iter->second;
         break;
+      }
+    }
+
+    // Check possible usernames.
+    if (username.empty() && password.empty()) {
+      for (PasswordFormFillData::UsernamesCollection::const_iterator iter =
+               fill_data.other_possible_usernames.begin();
+           iter != fill_data.other_possible_usernames.end(); ++iter) {
+        for (size_t i = 0; i < iter->second.size(); ++i) {
+          if (DoUsernamesMatch(iter->second[i], current_username,
+                               exact_username_match)) {
+            usernames_usage_ = OTHER_POSSIBLE_USERNAME_SELECTED;
+            username = iter->second[i];
+            password = iter->first.password;
+            break;
+          }
+        }
+        if (!username.empty() && !password.empty())
+          break;
       }
     }
   }

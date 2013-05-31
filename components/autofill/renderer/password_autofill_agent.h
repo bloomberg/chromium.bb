@@ -54,6 +54,15 @@ class PasswordAutofillAgent : public content::RenderViewObserver {
  private:
   friend class PasswordAutofillAgentTest;
 
+  enum OtherPossibleUsernamesUsage {
+    NOTHING_TO_AUTOFILL,
+    OTHER_POSSIBLE_USERNAMES_ABSENT,
+    OTHER_POSSIBLE_USERNAMES_PRESENT,
+    OTHER_POSSIBLE_USERNAME_SHOWN,
+    OTHER_POSSIBLE_USERNAME_SELECTED,
+    OTHER_POSSIBLE_USERNAMES_MAX
+  };
+
   struct PasswordInfo {
     WebKit::WebInputElement password_field;
     PasswordFormFillData fill_data;
@@ -64,6 +73,7 @@ class PasswordAutofillAgent : public content::RenderViewObserver {
 
   // RenderViewObserver:
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+  virtual void DidStartLoading() OVERRIDE;
   virtual void DidFinishDocumentLoad(WebKit::WebFrame* frame) OVERRIDE;
   virtual void DidFinishLoad(WebKit::WebFrame* frame) OVERRIDE;
   virtual void FrameDetached(WebKit::WebFrame* frame) OVERRIDE;
@@ -112,6 +122,9 @@ class PasswordAutofillAgent : public content::RenderViewObserver {
 
   // Used to disable and hide the popup.
   bool disable_popup_;
+
+  // Used for UMA stats.
+  OtherPossibleUsernamesUsage usernames_usage_;
 
   // Pointer to the WebView. Used to access page scale factor.
   WebKit::WebView* web_view_;
