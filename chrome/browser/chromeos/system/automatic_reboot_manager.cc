@@ -377,6 +377,12 @@ void AutomaticRebootManager::MaybeReboot(bool ignore_session) {
 }
 
 void AutomaticRebootManager::Reboot() {
+  // If a non-kiosk-app session is in progress, do not reboot.
+  if (UserManager::Get()->IsUserLoggedIn() &&
+      !UserManager::Get()->IsLoggedInAsKioskApp()) {
+    return;
+  }
+
   login_screen_idle_timer_.reset();
   grace_start_timer_.reset();
   grace_end_timer_.reset();

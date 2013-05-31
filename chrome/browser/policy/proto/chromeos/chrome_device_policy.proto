@@ -199,12 +199,20 @@ message AutoUpdateSettingsProto {
   // Bluetooth and Cellular at the moment.
   repeated ConnectionType allowed_connection_types = 5;
 
-  // True if the device should reboot automatically when an update has been
-  // applied and a reboot is required to complete the update process.
-  optional bool reboot_after_update = 6;
+  // This has been replaced by |reboot_after_update| below.
+  optional bool OBSOLETE_reboot_after_update = 6 [deprecated = true];
 
   // True if AU payloads can be downloaded via HTTP. False otherwise.
   optional bool http_downloads_enabled = 7 [default = false];
+
+  // True if the device should reboot automatically when an update has been
+  // applied and a reboot is required to complete the update process.
+  //
+  // Note: Currently, automatic reboots are only enabled while the login screen
+  // is being shown or a kiosk app session is in progress. This will change in
+  // the future and the policy will always apply, regardless of whether a
+  // session of any particular type is in progress or not.
+  optional bool reboot_after_update = 8;
 }
 
 message StartUpUrlsProto {
@@ -306,12 +314,20 @@ message StartUpFlagsProto {
 }
 
 message UptimeLimitProto {
+  // This has been replaced by |uptime_limit| below.
+  optional int64 OBSOLETE_uptime_limit = 1 [deprecated = true];
+
   // Sets the length of device uptime after which an automatic reboot is
   // scheduled. An automatic reboot is scheduled at the selected time but may be
   // delayed on the device by up to 24 hours, e.g. if a user is currently using
   // the device or an app/extension has requested reboots to be inhibited
   // temporarily. The policy value should be specified in seconds.
-  optional int64 uptime_limit = 1;
+  //
+  // Note: Currently, automatic reboots are only enabled while the login screen
+  // is being shown or a kiosk app session is in progress. This will change in
+  // the future and the policy will always apply, regardless of whether a
+  // session of any particular type is in progress or not.
+  optional int64 uptime_limit = 2;
 }
 
 message VariationsParameterProto {

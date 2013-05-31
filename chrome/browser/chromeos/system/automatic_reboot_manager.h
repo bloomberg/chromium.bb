@@ -53,6 +53,11 @@ namespace system {
 // a session, the user suspends the device). If reboots remain inhibited for the
 // entire grace period, a reboot is unconditionally performed at its end.
 //
+// Note: Currently, automatic reboots are only enabled while the login screen is
+// being shown or a kiosk app session is in progress. This will change in the
+// future and the policy will always apply, regardless of whether a session of
+// any particular type is in progress or not. http://crbug.com/244972
+//
 // Reboots may be scheduled and canceled at any time. This causes the time at
 // which a reboot should be requested and the grace period that follows it to
 // be recalculated.
