@@ -75,7 +75,8 @@ cr.define('cr.ui', function() {
         if (command.id)
           this.setAttribute('command', '#' + command.id);
 
-        this.label = command.label;
+        if (typeof command.label === 'string')
+          this.label = command.label;
         this.disabled = command.disabled;
         this.hidden = command.hidden;
 
