@@ -371,27 +371,56 @@ void BrowserMainLoop::MainMessageLoopStart() {
 
   InitializeMainThread();
 
-  system_monitor_.reset(new base::SystemMonitor);
-  power_monitor_.reset(new base::PowerMonitor);
-  hi_res_timer_manager_.reset(new HighResolutionTimerManager);
-  network_change_notifier_.reset(net::NetworkChangeNotifier::Create());
+  {
+    TRACE_EVENT0("startup", "BrowserMainLoop::Subsystem:SystemMonitor")
+    system_monitor_.reset(new base::SystemMonitor);
+  }
+  {
+    TRACE_EVENT0("startup", "BrowserMainLoop::Subsystem:PowerMonitor")
+    power_monitor_.reset(new base::PowerMonitor);
+  }
+  {
+    TRACE_EVENT0("startup", "BrowserMainLoop::Subsystem:HighResTimerManager")
+    hi_res_timer_manager_.reset(new HighResolutionTimerManager);
+  }
+  {
+    TRACE_EVENT0("startup", "BrowserMainLoop::Subsystem:NetworkChangeNotifier")
+    network_change_notifier_.reset(net::NetworkChangeNotifier::Create());
+  }
 
-  media::InitializeCPUSpecificMediaFeatures();
-  audio_manager_.reset(media::AudioManager::Create());
+  {
+    TRACE_EVENT0("startup", "BrowserMainLoop::Subsystem:MediaFeatures")
+    media::InitializeCPUSpecificMediaFeatures();
+  }
+  {
+    TRACE_EVENT0("startup", "BrowserMainLoop::Subsystem:AudioMan")
+    audio_manager_.reset(media::AudioManager::Create());
+  }
+
 
 #if !defined(OS_IOS)
-  WebUIControllerFactory::RegisterFactory(
-      ContentWebUIControllerFactory::GetInstance());
+  {
+    TRACE_EVENT0("startup", "BrowserMainLoop::Subsystem:ContentWebUIController")
+    WebUIControllerFactory::RegisterFactory(
+        ContentWebUIControllerFactory::GetInstance());
+  }
 
-  audio_mirroring_manager_.reset(new AudioMirroringManager());
+  {
+    TRACE_EVENT0("startup", "BrowserMainLoop::Subsystem:AudioMirroringManager")
+    audio_mirroring_manager_.reset(new AudioMirroringManager());
+  }
 
   // Start tracing to a file if needed.
   if (base::debug::TraceLog::GetInstance()->IsEnabled()) {
+    TRACE_EVENT0("startup", "BrowserMainLoop::InitStartupTracing")
     TraceControllerImpl::GetInstance()->InitStartupTracing(
         parsed_command_line_);
   }
 
-  online_state_observer_.reset(new BrowserOnlineStateObserver);
+  {
+    TRACE_EVENT0("startup", "BrowserMainLoop::Subsystem:OnlineStateObserver")
+    online_state_observer_.reset(new BrowserOnlineStateObserver);
+  }
 #endif  // !defined(OS_IOS)
 
 #if defined(ENABLE_PLUGINS)
@@ -399,7 +428,10 @@ void BrowserMainLoop::MainMessageLoopStart() {
   // plugin service as it is predominantly used from the io thread,
   // but must be created on the main thread. The service ctor is
   // inexpensive and does not invoke the io_thread() accessor.
-  PluginService::GetInstance()->Init();
+  {
+    TRACE_EVENT0("startup", "BrowserMainLoop::Subsystem:PluginService")
+    PluginService::GetInstance()->Init();
+  }
 #endif
 
 #if defined(OS_WIN)
@@ -421,11 +453,18 @@ void BrowserMainLoop::MainMessageLoopStart() {
     parts_->PostMainMessageLoopStart();
 
 #if defined(OS_ANDROID)
-  SurfaceTexturePeer::InitInstance(new SurfaceTexturePeerBrowserImpl());
-  DataFetcherImplAndroid::Init(base::android::AttachCurrentThread());
+  {
+    TRACE_EVENT0("startup", "BrowserMainLoop::Subsystem:SurfaceTexturePeer")
+    SurfaceTexturePeer::InitInstance(new SurfaceTexturePeerBrowserImpl());
+  }
+  {
+    TRACE_EVENT0("startup", "BrowserMainLoop::Subsystem:DataFetcher")
+    DataFetcherImplAndroid::Init(base::android::AttachCurrentThread());
+  }
 #endif
 
   if (parsed_command_line_.HasSwitch(switches::kMemoryMetrics)) {
+    TRACE_EVENT0("startup", "BrowserMainLoop::Subsystem:MemoryObserver")
     memory_observer_.reset(new MemoryObserver());
     base::MessageLoop::current()->AddTaskObserver(memory_observer_.get());
   }
@@ -719,6 +758,7 @@ void BrowserMainLoop::ShutdownThreadsAndCleanUp() {
 }
 
 void BrowserMainLoop::InitializeMainThread() {
+  TRACE_EVENT0("startup", "BrowserMainLoop::InitializeMainThread")
   const char* kThreadName = "CrBrowserMain";
   base::PlatformThread::SetName(kThreadName);
   if (main_message_loop_)
