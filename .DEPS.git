@@ -227,14 +227,6 @@ deps_os = {
             Var('git_url') + '/chromium/deps/class-dump.git@89bd40883c767584240b4dade8b74e6f57b9bdab',
         'src/third_party/GTM':
             Var('git_url') + '/external/google-toolbox-for-mac.git@1f3578bb9c3cfdf1293f106f07e5b0b3e19ae543',
-        'src/third_party/WebKit':
-            None,
-        'src/third_party/WebKit/Source/Platform/chromium/public':
-            Var('git_url') + '/external/WebKit/Source/Platform/chromium/public.git@43154f7003469696f4e323bdd56536a99eb846fa',
-        'src/third_party/WebKit/Source/WebKit/chromium/public':
-            Var('git_url') + '/external/WebKit/Source/WebKit/chromium/public.git@da64b3cf0ea5fd4ffe707509f598d27459264bcd',
-        'src/third_party/WebKit/public':
-            Var('git_url') + '/chromium/blink-public.git@d5ca90fc9d25c07d71fbb0023baf9db02a6ba60c',
         'src/third_party/angle':
             None,
         'src/third_party/bidichecker':
