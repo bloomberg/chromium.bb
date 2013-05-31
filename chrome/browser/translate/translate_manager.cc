@@ -218,9 +218,11 @@ void TranslateManager::Observe(int type,
     case chrome::NOTIFICATION_TAB_LANGUAGE_DETERMINED: {
       const LanguageDetectionDetails* lang_det_details =
           content::Details<const LanguageDetectionDetails>(details).ptr();
-      NotifyLanguageDetection(*lang_det_details);
 
       WebContents* tab = content::Source<WebContents>(source).ptr();
+      if (!tab->GetBrowserContext()->IsOffTheRecord())
+        NotifyLanguageDetection(*lang_det_details);
+
       // We may get this notifications multiple times.  Make sure to translate
       // only once.
       TranslateTabHelper* translate_tab_helper =
@@ -336,11 +338,13 @@ void TranslateManager::OnURLFetchComplete(const net::URLFetcher* source) {
             request.source_lang,
             request.target_lang);
 
-        TranslateErrorDetails error_details;
-        error_details.time = base::Time::Now();
-        error_details.url = entry->GetURL();
-        error_details.error = TranslateErrors::NETWORK;
-        NotifyTranslateError(error_details);
+        if (!web_contents->GetBrowserContext()->IsOffTheRecord()) {
+          TranslateErrorDetails error_details;
+          error_details.time = base::Time::Now();
+          error_details.url = entry->GetURL();
+          error_details.error = TranslateErrors::NETWORK;
+          NotifyTranslateError(error_details);
+        }
       } else {
         // Translate the page.
         DoTranslatePage(web_contents, translate_script_,
@@ -658,7 +662,8 @@ void TranslateManager::PageTranslated(WebContents* web_contents,
       details->error_type, prefs, ShortcutConfig(), details->source_language,
       details->target_language);
 
-  if (details->error_type != TranslateErrors::NONE) {
+  if (details->error_type != TranslateErrors::NONE &&
+      !web_contents->GetBrowserContext()->IsOffTheRecord()) {
     TranslateErrorDetails error_details;
     error_details.time = base::Time::Now();
     error_details.url = web_contents->GetActiveURL();
