@@ -39,7 +39,8 @@
     'type': 'none',
     'direct_dependent_settings': {
       'include_dirs': [
-        '.'
+        '.',
+        '..',
       ],
       'msvs_disabled_warnings': [
         4138, 4244, 4291, 4305, 4344, 4355, 4521, 4099,

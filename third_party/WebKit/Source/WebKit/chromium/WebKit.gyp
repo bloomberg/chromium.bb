@@ -743,7 +743,7 @@
             ],
             'direct_dependent_settings': {
                 'include_dirs': [
-                    '../../Platform/chromium/',
+                    '../../../',
                 ],
             },
             'target_conditions': [
@@ -769,7 +769,7 @@
                     'include_dirs': [
                         'public',
                         '../../core/testing/v8', # for WebCoreTestSupport.h, needed to link in window.internals code.
-                        '../../Platform/chromium/',
+                        '../../../',
                     ],
                     'sources': [
                         'src/WebTestingSupport.cpp',

@@ -43,6 +43,7 @@
             ],
             'include_dirs': [
                 '../chromium',
+                '../../../',
             ],
             'defines': [
                 'WEBKIT_IMPLEMENTATION=1',
@@ -53,6 +54,7 @@
             'direct_dependent_settings': {
                 'include_dirs': [
                     '../chromium',
+                    '../../../',
                 ],
             },
             'conditions': [
