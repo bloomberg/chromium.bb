@@ -37,9 +37,10 @@ struct udev_input {
 
 int udev_input_enable(struct udev_input *input, struct udev *udev);
 void udev_input_disable(struct udev_input *input);
-struct udev_input *udev_input_create(struct weston_compositor *c,
-				   struct udev *udev,
-				   const char *seat_id);
+int udev_input_init(struct udev_input *input,
+		    struct weston_compositor *c,
+		    struct udev *udev,
+		    const char *seat_id);
 void udev_input_destroy(struct udev_input *input);
 
 #endif

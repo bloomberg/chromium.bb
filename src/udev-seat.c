@@ -260,16 +260,10 @@ drm_led_update(struct weston_seat *seat_base, enum weston_led leds)
 		evdev_led_update(device, leds);
 }
 
-struct udev_input *
-udev_input_create(struct weston_compositor *c, struct udev *udev,
+int
+udev_input_init(struct udev_input *input, struct weston_compositor *c, struct udev *udev,
 		const char *seat_id)
 {
-	struct udev_input *input;
-
-	input = malloc(sizeof *input);
-	if (input == NULL)
-		return NULL;
-
 	memset(input, 0, sizeof *input);
 	weston_seat_init(&input->base, c, "default");
 	input->base.led_update = drm_led_update;
@@ -279,12 +273,11 @@ udev_input_create(struct weston_compositor *c, struct udev *udev,
 	if (udev_input_enable(input, udev) < 0)
 		goto err;
 
-	return input;
+	return 0;
 
  err:
 	free(input->seat_id);
-	free(input);
-	return NULL;
+	return -1;
 }
 
 void
@@ -294,5 +287,4 @@ udev_input_destroy(struct udev_input *input)
 
 	weston_seat_release(&input->base);
 	free(input->seat_id);
-	free(input);
 }

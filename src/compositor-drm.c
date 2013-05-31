@@ -107,6 +107,7 @@ struct drm_compositor {
 	uint32_t prev_state;
 
 	clockid_t clock;
+	struct udev_input input;
 };
 
 struct drm_mode {
@@ -2222,10 +2223,8 @@ static void
 drm_destroy(struct weston_compositor *ec)
 {
 	struct drm_compositor *d = (struct drm_compositor *) ec;
-	struct udev_input *input, *next;
 
-	wl_list_for_each_safe(input, next, &ec->seat_list, base.link)
-		udev_input_destroy(input);
+	udev_input_destroy(&d->input);
 
 	wl_event_source_remove(d->udev_drm_source);
 	wl_event_source_remove(d->drm_source);
@@ -2282,7 +2281,6 @@ static void
 vt_func(struct weston_compositor *compositor, int event)
 {
 	struct drm_compositor *ec = (struct drm_compositor *) compositor;
-	struct udev_input *input;
 	struct drm_sprite *sprite;
 	struct drm_output *output;
 
@@ -2297,13 +2295,11 @@ vt_func(struct weston_compositor *compositor, int event)
 		compositor->state = ec->prev_state;
 		drm_compositor_set_modes(ec);
 		weston_compositor_damage_all(compositor);
-		wl_list_for_each(input, &compositor->seat_list, base.link)
-			udev_input_enable(input, ec->udev);
+		udev_input_enable(&ec->input, ec->udev);
 		break;
 	case TTY_LEAVE_VT:
 		weston_log("leaving VT\n");
-		wl_list_for_each(input, &compositor->seat_list, base.link)
-			udev_input_disable(input);
+		udev_input_disable(&ec->input);
 
 		compositor->focus = 0;
 		ec->prev_state = compositor->state;
@@ -2431,7 +2427,6 @@ drm_compositor_create(struct wl_display *display,
 	struct drm_compositor *ec;
 	struct udev_device *drm_device;
 	struct wl_event_loop *loop;
-	struct udev_input *udev_input, *next;
 	const char *path;
 	uint32_t key;
 
@@ -2520,7 +2515,7 @@ drm_compositor_create(struct wl_display *display,
 
 	path = NULL;
 
-	if (udev_input_create(&ec->base, ec->udev, seat_id) == NULL) {
+	if (udev_input_init(&ec->input, &ec->base, ec->udev, seat_id) < 0) {
 		weston_log("failed to create input devices\n");
 		goto err_sprite;
 	}
@@ -2563,8 +2558,7 @@ err_udev_monitor:
 	udev_monitor_unref(ec->udev_monitor);
 err_drm_source:
 	wl_event_source_remove(ec->drm_source);
-	wl_list_for_each_safe(udev_input, next, &ec->base.seat_list, base.link)
-		udev_input_destroy(udev_input);
+	udev_input_destroy(&ec->input);
 err_sprite:
 	ec->base.renderer->destroy(&ec->base);
 	gbm_device_destroy(ec->gbm);
