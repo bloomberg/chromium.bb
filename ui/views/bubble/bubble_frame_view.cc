@@ -94,14 +94,16 @@ int BubbleFrameView::NonClientHitTest(const gfx::Point& point) {
     return HTNOWHERE;
   if (close_->visible() && close_->GetMirroredBounds().Contains(point))
     return HTCLOSE;
-  if (!GetWidget()->widget_delegate()->CanResize())
-    return GetWidget()->client_view()->NonClientHitTest(point);
-
   const int size = bubble_border_->GetBorderThickness() + 4;
-  const int hit = GetHTComponentForFrame(point, size, size, size, size, true);
-  if (hit == HTNOWHERE && point.y() < title_->bounds().bottom())
+  const int sizes = GetHTComponentForFrame(point, size, size, size, size, true);
+  if (GetWidget()->widget_delegate()->CanResize() && sizes != HTNOWHERE)
+    return sizes;
+  // Allow dialogs with bubble frames to be dragged and show the system menu.
+  const int move = std::max(title_->bounds().bottom(), size + 4);
+  if (GetWidget()->widget_delegate()->AsDialogDelegate() != NULL &&
+      GetHTComponentForFrame(point, move, move, move, move, true) != HTNOWHERE)
     return HTCAPTION;
-  return hit;
+  return GetWidget()->client_view()->NonClientHitTest(point);
 }
 
 void BubbleFrameView::GetWindowMask(const gfx::Size& size,

@@ -22,26 +22,46 @@ const int kBubbleHeight = 200;
 const SkColor kColor = SK_ColorRED;
 const int kMargin = 6;
 
-class SizedBubbleDelegateView : public BubbleDelegateView {
+class TestBubbleDelegateView : public BubbleDelegateView {
  public:
-  SizedBubbleDelegateView(View* anchor_view);
-  virtual ~SizedBubbleDelegateView();
+  explicit TestBubbleDelegateView(View* anchor_view);
+  virtual ~TestBubbleDelegateView();
 
   // View overrides:
   virtual gfx::Size GetPreferredSize() OVERRIDE;
 
+  // BubbleDelegateView overrides:
+  virtual bool CanResize() const OVERRIDE;
+  virtual DialogDelegate* AsDialogDelegate() OVERRIDE;
+
+  void set_can_resize(bool can_resize) { can_resize_ = can_resize; }
+
  private:
-  DISALLOW_COPY_AND_ASSIGN(SizedBubbleDelegateView);
+  bool can_resize_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestBubbleDelegateView);
 };
 
-SizedBubbleDelegateView::SizedBubbleDelegateView(View* anchor_view)
-    : BubbleDelegateView(anchor_view, BubbleBorder::TOP_LEFT) {
+TestBubbleDelegateView::TestBubbleDelegateView(View* anchor_view)
+    : BubbleDelegateView(anchor_view, BubbleBorder::TOP_LEFT),
+      can_resize_(false) {
 }
 
-SizedBubbleDelegateView::~SizedBubbleDelegateView() {}
+TestBubbleDelegateView::~TestBubbleDelegateView() {}
 
-gfx::Size SizedBubbleDelegateView::GetPreferredSize() {
+gfx::Size TestBubbleDelegateView::GetPreferredSize() {
   return gfx::Size(kBubbleWidth, kBubbleHeight);
+}
+
+bool TestBubbleDelegateView::CanResize() const {
+  return can_resize_;
+}
+
+DialogDelegate* TestBubbleDelegateView::AsDialogDelegate() {
+  // This hack lets the bubble frame view be tested as its used with dialogs.
+  // In particular, this is checked while hit-testing for the ability to drag.
+  // The value should never be dereferenced in any of the tests below.
+  return reinterpret_cast<DialogDelegate*>(1);
 }
 
 class TestBubbleFrameView : public BubbleFrameView {
@@ -85,24 +105,38 @@ TEST_F(BubbleFrameViewTest, GetBoundsForClientView) {
 }
 
 TEST_F(BubbleFrameViewTest, NonClientHitTest) {
-  // Create the anchor and parent widgets.
+  // Create the anchor view, its parent widget is needed on Aura.
   Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_WINDOW);
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   scoped_ptr<Widget> anchor_widget(new Widget);
   anchor_widget->Init(params);
   anchor_widget->Show();
 
-  BubbleDelegateView* delegate =
-      new SizedBubbleDelegateView(anchor_widget->GetContentsView());
-  Widget* widget(BubbleDelegateView::CreateBubble(delegate));
-  widget->Show();
-  gfx::Point kPtInBound(100, 100);
-  gfx::Point kPtOutsideBound(1000, 1000);
-  BubbleFrameView* bubble_frame_view = delegate->GetBubbleFrameView();
-  EXPECT_EQ(HTCLIENT, bubble_frame_view->NonClientHitTest(kPtInBound));
-  EXPECT_EQ(HTNOWHERE, bubble_frame_view->NonClientHitTest(kPtOutsideBound));
-  widget->CloseNow();
-  RunPendingMessages();
+  TestBubbleDelegateView bubble(anchor_widget->GetContentsView());
+  BubbleDelegateView::CreateBubble(&bubble);
+  BubbleFrameView* frame = bubble.GetBubbleFrameView();
+  const int border = frame->bubble_border()->GetBorderThickness();
+
+  struct {
+    const int point;
+    const int cannot_resize_hit;
+    const int can_resize_hit;
+  } cases[] = {
+    { border,      HTCAPTION, HTTOPLEFT },
+    { border + 3,  HTCAPTION, HTTOPLEFT },
+    { border + 4,  HTCAPTION, HTCAPTION },
+    { border + 8,  HTCAPTION, HTCAPTION },
+    { border + 50, HTCLIENT,  HTCLIENT  },
+    { 1000,        HTNOWHERE, HTNOWHERE },
+  };
+
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {
+    gfx::Point point(cases[i].point, cases[i].point);
+    bubble.set_can_resize(false);
+    EXPECT_EQ(cases[i].cannot_resize_hit, frame->NonClientHitTest(point));
+    bubble.set_can_resize(true);
+    EXPECT_EQ(cases[i].can_resize_hit, frame->NonClientHitTest(point));
+  }
 }
 
 // Tests that the arrow is mirrored as needed to better fit the screen.
