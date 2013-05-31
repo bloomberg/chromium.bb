@@ -31,9 +31,10 @@
 #include "udev-seat.h"
 
 static const char default_seat[] = "seat0";
+static const char default_seat_name[] = "default";
 
 static struct udev_seat *
-udev_seat_create(struct weston_compositor *c);
+udev_seat_create(struct weston_compositor *c, const char *seat_name);
 static void
 udev_seat_destroy(struct udev_seat *seat);
 
@@ -43,7 +44,7 @@ device_added(struct udev_device *udev_device, struct udev_input *input)
 	struct weston_compositor *c;
 	struct evdev_device *device;
 	const char *devnode;
-	const char *device_seat;
+	const char *device_seat, *seat_name;
 	const char *calibration_values;
 	int fd;
 	struct udev_seat *seat;
@@ -58,14 +59,22 @@ device_added(struct udev_device *udev_device, struct udev_input *input)
 	c = input->compositor;
 	devnode = udev_device_get_devnode(udev_device);
 
-	/* Single default seat for now */
-	if (!input->seat)
-		input->seat = udev_seat_create(c);
+	/* Search for matching logical seat */
+	seat_name = udev_device_get_property_value(udev_device, "WL_SEAT");
+	if (!seat_name)
+		seat_name = default_seat_name;
 
-	if (!input->seat)
+	wl_list_for_each(seat, &c->seat_list, base.link) {
+		if (strcmp(seat->base.seat_name, seat_name) == 0)
+			goto seat_found;
+	}
+
+	seat = udev_seat_create(c, seat_name);
+
+	if (!seat)
 		return -1;
 
-	seat = input->seat;
+seat_found:
 
 	/* Use non-blocking mode so that we can loop on read on
 	 * evdev_device_data() until all events on the fd are
@@ -121,6 +130,8 @@ udev_input_add_devices(struct udev_input *input, struct udev *udev)
 	struct udev_list_entry *entry;
 	struct udev_device *device;
 	const char *path, *sysname;
+	struct udev_seat *seat;
+	int devices_found = 0;
 
 	e = udev_enumerate_new(udev);
 	udev_enumerate_add_match_subsystem(e, "input");
@@ -145,9 +156,14 @@ udev_input_add_devices(struct udev_input *input, struct udev *udev)
 	}
 	udev_enumerate_unref(e);
 
-	evdev_notify_keyboard_focus(&input->seat->base, &input->seat->devices_list);
+	wl_list_for_each(seat, &input->compositor->seat_list, base.link) {
+		evdev_notify_keyboard_focus(&seat->base, &seat->devices_list);
 
-	if (wl_list_empty(&input->seat->devices_list)) {
+		if (!wl_list_empty(&seat->devices_list))
+			devices_found = 1;
+	}
+
+	if (devices_found == 0) {
 		weston_log(
 			"warning: no input devices on entering Weston. "
 			"Possible causes:\n"
@@ -169,6 +185,7 @@ evdev_udev_handler(int fd, uint32_t mask, void *data)
 	struct evdev_device *device, *next;
 	const char *action;
 	const char *devnode;
+	struct udev_seat *seat;
 
 	udev_device = udev_monitor_receive_device(input->udev_monitor);
 	if (!udev_device)
@@ -186,13 +203,15 @@ evdev_udev_handler(int fd, uint32_t mask, void *data)
 	}
 	else if (!strcmp(action, "remove")) {
 		devnode = udev_device_get_devnode(udev_device);
-		wl_list_for_each_safe(device, next, &input->seat->devices_list, link)
-			if (!strcmp(device->devnode, devnode)) {
-				weston_log("input device %s, %s removed\n",
-					   device->devname, device->devnode);
-				evdev_device_destroy(device);
+		wl_list_for_each(seat, &input->compositor->seat_list, base.link) {
+			wl_list_for_each_safe(device, next, &seat->devices_list, link)
+				if (!strcmp(device->devnode, devnode)) {
+					weston_log("input device %s, %s removed\n",
+							device->devname, device->devnode);
+					evdev_device_destroy(device);
 				break;
 			}
+		}
 	}
 
 out:
@@ -243,12 +262,15 @@ static void
 udev_input_remove_devices(struct udev_input *input)
 {
 	struct evdev_device *device, *next;
+	struct udev_seat *seat;
 
-	wl_list_for_each_safe(device, next, &input->seat->devices_list, link)
-		evdev_device_destroy(device);
+	wl_list_for_each(seat, &input->compositor->seat_list, base.link) {
+		wl_list_for_each_safe(device, next, &seat->devices_list, link)
+			evdev_device_destroy(device);
 
-	if (input->seat->base.keyboard)
-		notify_keyboard_focus_out(&input->seat->base);
+		if (seat->base.keyboard)
+			notify_keyboard_focus_out(&seat->base);
+	}
 }
 
 void
@@ -286,8 +308,10 @@ udev_input_init(struct udev_input *input, struct weston_compositor *c, struct ud
 void
 udev_input_destroy(struct udev_input *input)
 {
+	struct udev_seat *seat, *next;
 	udev_input_disable(input);
-	udev_seat_destroy(input->seat);
+	wl_list_for_each_safe(seat, next, &input->compositor->seat_list, base.link)
+		udev_seat_destroy(seat);
 	free(input->seat_id);
 }
 
@@ -302,7 +326,7 @@ drm_led_update(struct weston_seat *seat_base, enum weston_led leds)
 }
 
 static struct udev_seat *
-udev_seat_create(struct weston_compositor *c)
+udev_seat_create(struct weston_compositor *c, const char *seat_name)
 {
 	struct udev_seat *seat;
 
@@ -311,7 +335,7 @@ udev_seat_create(struct weston_compositor *c)
 	if (!seat)
 		return NULL;
 	memset(seat, 0, sizeof *seat);
-	weston_seat_init(&seat->base, c, "default");
+	weston_seat_init(&seat->base, c, seat_name);
 	seat->base.led_update = drm_led_update;
 
 	wl_list_init(&seat->devices_list);
