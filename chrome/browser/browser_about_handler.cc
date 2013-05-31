@@ -133,8 +133,7 @@ bool WillHandleBrowserAboutURL(GURL* url,
   } else if (host == chrome::kChromeUIExtensionsHost) {
     host = chrome::kChromeUIUberHost;
     path = chrome::kChromeUIExtensionsHost + url->path();
-  // Redirect chrome://settings/extensions.
-  // TODO(csilv): Remove this URL after M22 (legacy URL).
+  // Redirect chrome://settings/extensions (legacy URL).
   } else if (host == chrome::kChromeUISettingsHost &&
       url->path() == std::string("/") + chrome::kExtensionsSubPage) {
     host = chrome::kChromeUIUberHost;
