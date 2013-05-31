@@ -11,7 +11,7 @@ vars = {
     'git_url':
          'https://chromium.googlesource.com',
     'webkit_rev':
-         '@f4b70f154184452f01c6a060591c913ea085a4ba'
+         '@4727602ff32037dede84f2acd9534d6256f3e001'
 }
 
 deps = {
@@ -234,7 +234,7 @@ deps_os = {
         'src/third_party/WebKit/Source/WebKit/chromium/public':
             Var('git_url') + '/external/WebKit/Source/WebKit/chromium/public.git@da64b3cf0ea5fd4ffe707509f598d27459264bcd',
         'src/third_party/WebKit/public':
-            Var('git_url') + '/chromium/blink-public.git@b3dcdccae1d062b817c15770b317eb4701284259',
+            Var('git_url') + '/chromium/blink-public.git@d5ca90fc9d25c07d71fbb0023baf9db02a6ba60c',
         'src/third_party/angle':
             None,
         'src/third_party/bidichecker':
