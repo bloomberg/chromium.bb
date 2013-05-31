@@ -187,6 +187,12 @@ _OS_NEGATIVE_FILTER['android'] = [
     # Passes locally but not on bots??
     'TypingTest.*',
 
+    # These tests start multiple sessions, which is not supported on a single
+    # Android device.
+    "AvailableLogsTest.shouldBeAbleToEnableProfilerLog",
+    "GetLogsTest.turningOffLogShouldMeanNoLogMessages",
+    "SessionHandlingTest.callingAnyOperationAfterQuitShouldThrowAnException",
+    "SessionHandlingTest.callingQuitMoreThanOnceOnASessionIsANoOp",
     # Test is written using local files; doesn't work on Android.
     'UploadTest.testFileUploading',
     # Not applicable on Android.
