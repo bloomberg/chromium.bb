@@ -324,9 +324,8 @@ class PatchSeries(object):
         cros_patch.FormatChangeId(
             change.change_id, force_internal=change.internal, strict=False)]
     if query.isdigit() and existing is not None:
-      if ((existing.project == change.project
-          and existing.tracking_branch == change.tracking_branch)
-          or not parent_lookup):
+      if (not parent_lookup or existing.project == change.project and
+          existing.tracking_branch == change.tracking_branch):
         key = cros_patch.FormatGerritNumber(
             str(change.gerrit_number), force_internal=change.internal,
             strict=False)
@@ -370,14 +369,12 @@ class PatchSeries(object):
         continue
 
       dep_change = self._lookup_cache[dep]
-      if parent_lookup and dep_change is not None:
-        if not (parent.project == dep_change.project and
-                parent.tracking_branch == dep_change.tracking_branch):
-          # TODO(build): In this scenario, the cache will get updated
-          # with the new CL pulled from gerrit; this is questionable,
-          # but there isn't a good answer here.  Rare enough it's being
-          # ignored either way.
-          dep_change = None
+
+      if (parent_lookup and dep_change is not None and
+          (parent.project != dep_change.project or
+           parent.tracking_branch != dep_change.tracking_branch)):
+        logging.warn('Found different CL with matching lookup key in cache')
+        dep_change = None
 
       if dep_change is None:
         dep_change = self._GetGerritPatch(parent, dep,
