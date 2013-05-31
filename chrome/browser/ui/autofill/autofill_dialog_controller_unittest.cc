@@ -417,16 +417,8 @@ class AutofillDialogControllerTest : public testing::Test {
 // This test makes sure nothing falls over when fields are being validity-
 // checked.
 TEST_F(AutofillDialogControllerTest, ValidityCheck) {
-  const DialogSection sections[] = {
-    SECTION_EMAIL,
-    SECTION_CC,
-    SECTION_BILLING,
-    SECTION_CC_BILLING,
-    SECTION_SHIPPING
-  };
-
-  for (size_t i = 0; i < arraysize(sections); ++i) {
-    DialogSection section = sections[i];
+  for (size_t i = SECTION_MIN; i <= SECTION_MAX; ++i) {
+    DialogSection section = static_cast<DialogSection>(i);
     const DetailInputs& shipping_inputs =
         controller()->RequestedFieldsForSection(section);
     for (DetailInputs::const_iterator iter = shipping_inputs.begin();

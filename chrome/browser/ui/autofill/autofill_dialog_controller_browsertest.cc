@@ -17,6 +17,7 @@
 #include "components/autofill/browser/autofill_common_test.h"
 #include "components/autofill/browser/autofill_metrics.h"
 #include "components/autofill/browser/test_personal_data_manager.h"
+#include "components/autofill/browser/validation.h"
 #include "components/autofill/browser/wallet/wallet_test_util.h"
 #include "components/autofill/common/form_data.h"
 #include "components/autofill/common/form_field_data.h"
@@ -116,13 +117,17 @@ class TestAutofillDialogController : public AutofillDialogControllerImpl {
   }
 
   // Increase visibility for testing.
-  AutofillDialogView* view() { return AutofillDialogControllerImpl::view(); }
-  const DetailInput* input_showing_popup() const {
-    return AutofillDialogControllerImpl::input_showing_popup();
-  }
+  using AutofillDialogControllerImpl::view;
+  using AutofillDialogControllerImpl::input_showing_popup;
 
   TestPersonalDataManager* GetTestingManager() {
     return &test_manager_;
+  }
+
+  bool IsSectionInEditState(DialogSection section) const {
+    const std::map<DialogSection, bool>& state = section_editing_state();
+    std::map<DialogSection, bool>::const_iterator it = state.find(section);
+    return it != state.end() && it->second;
   }
 
   using AutofillDialogControllerImpl::DisableWallet;
@@ -464,6 +469,38 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, WalletCreditCardDisabled) {
     }
   }
   ASSERT_LT(i, add_inputs.size());
+}
+
+// Ensure that expired cards trigger invalid suggestions.
+IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, ExpiredCard) {
+  InitializeControllerOfType(DIALOG_TYPE_REQUEST_AUTOCOMPLETE);
+  controller()->DisableWallet();
+
+  CreditCard verified_card(test::GetCreditCard());
+  verified_card.set_origin("Chrome settings");
+  ASSERT_TRUE(verified_card.IsVerified());
+  controller()->GetTestingManager()->AddTestingCreditCard(&verified_card);
+
+  CreditCard expired_card(test::GetCreditCard());
+  expired_card.set_origin("Chrome settings");
+  expired_card.SetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR, ASCIIToUTF16("2007"));
+  ASSERT_TRUE(expired_card.IsVerified());
+  ASSERT_FALSE(
+      autofill::IsValidCreditCardExpirationDate(
+          expired_card.GetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR),
+          expired_card.GetRawInfo(CREDIT_CARD_EXP_MONTH),
+          base::Time::Now()));
+  controller()->GetTestingManager()->AddTestingCreditCard(&expired_card);
+
+  ui::MenuModel* model = controller()->MenuModelForSection(SECTION_CC);
+  ASSERT_EQ(4, model->GetItemCount());
+
+  ASSERT_TRUE(model->IsItemCheckedAt(0));
+  EXPECT_FALSE(controller()->IsSectionInEditState(SECTION_CC));
+
+  model->ActivatedAt(1);
+  ASSERT_TRUE(model->IsItemCheckedAt(1));
+  EXPECT_TRUE(controller()->IsSectionInEditState(SECTION_CC));
 }
 #endif  // defined(TOOLKIT_VIEWS)
 
