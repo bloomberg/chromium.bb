@@ -810,7 +810,7 @@ body[new-ui] .dialog-header button:active {
   color: #333;
   display: -webkit-box;
   height: 29px;
-  line-height: 27px;
+  line-height: 25px;
   max-width: 150px;
   transition: max-width 200ms;
   width: 100%;
@@ -1825,9 +1825,9 @@ body[new-ui] #delete-button {
     url('../images/files/ui/new-ui/2x/onbutton_trash.png') 2x);
   background-position: center;
   background-repeat: no-repeat;
-  min-width: 27px;  /* overrride */
+  min-width: 25px;  /* overrride */
   padding: 0;  /* overrride */
-  width: 27px;
+  width: 25px;
 }
 
 body #delete-button[disabled] {
