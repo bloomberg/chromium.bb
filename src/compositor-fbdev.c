@@ -89,15 +89,6 @@ struct fbdev_output {
 	uint8_t depth;
 };
 
-struct fbdev_seat {
-	struct weston_seat base;
-	struct wl_list devices_list;
-
-	struct udev_monitor *udev_monitor;
-	struct wl_event_source *udev_monitor_source;
-	char *seat_id;
-};
-
 struct fbdev_parameters {
 	int tty;
 	char *device;
@@ -109,12 +100,6 @@ static inline struct fbdev_output *
 to_fbdev_output(struct weston_output *base)
 {
 	return container_of(base, struct fbdev_output, base);
-}
-
-static inline struct fbdev_seat *
-to_fbdev_seat(struct weston_seat *base)
-{
-	return container_of(base, struct fbdev_seat, base);
 }
 
 static inline struct fbdev_compositor *
