@@ -11,7 +11,7 @@ vars = {
   "breakpad_rev": "1172",
   "lcov_rev": "149720",
   "python_26_rev": "53573",
-  "tools_rev": "11323",
+  "tools_rev": "11437",
 
   # These are URL prefixes rather than revision numbers, so keep them separate.
   "chromium_trunk": "http://src.chromium.org/svn/trunk",
