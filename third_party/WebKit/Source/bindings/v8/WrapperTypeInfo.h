@@ -138,22 +138,40 @@ namespace WebCore {
         const WrapperTypePrototype wrapperTypePrototype;
     };
 
+    template<typename T, int offset>
+    inline T* getInternalField(const v8::Persistent<v8::Object>& persistent)
+    {
+        // This would be unsafe, but InternalFieldCount and GetAlignedPointerFromInternalField are guaranteed not to allocate
+        const v8::Handle<v8::Object>& object = reinterpret_cast<const v8::Handle<v8::Object>&>(persistent);
+        ASSERT(object->InternalFieldCount() >= offset);
+        return static_cast<T*>(object->GetAlignedPointerFromInternalField(offset));
+    }
+
+    template<typename T, int offset>
+    inline T* getInternalField(v8::Handle<v8::Object> object)
+    {
+        ASSERT(object->InternalFieldCount() >= offset);
+        return static_cast<T*>(object->GetAlignedPointerFromInternalField(offset));
+    }
+
+    inline void* toNative(const v8::Persistent<v8::Object>& object)
+    {
+        return getInternalField<void, v8DOMWrapperObjectIndex>(object);
+    }
+
     inline void* toNative(v8::Handle<v8::Object> object)
     {
-        ASSERT(object->InternalFieldCount() >= v8DOMWrapperObjectIndex);
-        return object->GetAlignedPointerFromInternalField(v8DOMWrapperObjectIndex);
+        return getInternalField<void, v8DOMWrapperObjectIndex>(object);
     }
 
     inline WrapperTypeInfo* toWrapperTypeInfo(const v8::Persistent<v8::Object>& object)
     {
-        ASSERT(object->InternalFieldCount() >= v8DOMWrapperTypeIndex);
-        return static_cast<WrapperTypeInfo*>(object->GetAlignedPointerFromInternalField(v8DOMWrapperTypeIndex));
+        return getInternalField<WrapperTypeInfo, v8DOMWrapperTypeIndex>(object);
     }
 
-    inline WrapperTypeInfo* toWrapperTypeInfo(const v8::Handle<v8::Object>& object)
+    inline WrapperTypeInfo* toWrapperTypeInfo(v8::Handle<v8::Object> object)
     {
-        ASSERT(object->InternalFieldCount() >= v8DOMWrapperTypeIndex);
-        return static_cast<WrapperTypeInfo*>(object->GetAlignedPointerFromInternalField(v8DOMWrapperTypeIndex));
+        return getInternalField<WrapperTypeInfo, v8DOMWrapperTypeIndex>(object);
     }
 
     struct WrapperConfiguration {

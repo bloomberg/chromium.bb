@@ -91,7 +91,7 @@ public:
 
     v8::Handle<v8::Value> v8Null() { return m_v8Null.get(); }
 
-    v8::Persistent<v8::Value> ensureLiveRoot();
+    v8::Persistent<v8::Value>& ensureLiveRoot();
 
     void visitExternalStrings(ExternalStringVisitor*);
     DOMDataList& allStores() { return m_domDataList; }

@@ -85,11 +85,11 @@ void V8PerIsolateData::ensureInitialized(v8::Isolate* isolate)
         create(isolate);
 }
 
-v8::Persistent<v8::Value> V8PerIsolateData::ensureLiveRoot()
+v8::Persistent<v8::Value>& V8PerIsolateData::ensureLiveRoot()
 {
     if (m_liveRoot.isEmpty())
         m_liveRoot.set(m_isolate, v8::Null());
-    return m_liveRoot.get();
+    return m_liveRoot.getUnsafe();
 }
 
 void V8PerIsolateData::dispose(v8::Isolate* isolate)
@@ -210,7 +210,7 @@ v8::Handle<v8::Value> V8PerIsolateData::constructorOfToString(const v8::Argument
     // toString of the DOM constructor itself to change. This is extremely
     // obscure and unlikely to be a problem.
     v8::Handle<v8::Value> value = args.Callee()->Get(v8::String::NewSymbol("toString"));
-    if (!value->IsFunction()) 
+    if (!value->IsFunction())
         return v8::String::Empty(args.GetIsolate());
     return V8ScriptRunner::callInternalFunction(v8::Handle<v8::Function>::Cast(value), v8::Context::GetCurrent(), args.This(), 0, 0, v8::Isolate::GetCurrent());
 }

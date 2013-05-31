@@ -42,7 +42,7 @@ V8MutationCallback::V8MutationCallback(v8::Handle<v8::Function> callback, Script
     , m_world(DOMWrapperWorld::current())
 {
     owner->SetHiddenValue(V8HiddenPropertyName::callback(), callback);
-    m_callback.get().MakeWeak(isolate, this, &makeWeakCallback);
+    m_callback.getUnsafe().MakeWeak(isolate, this, &makeWeakCallback);
 }
 
 void V8MutationCallback::call(const Vector<RefPtr<MutationRecord> >& mutations, MutationObserver* observer)

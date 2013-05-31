@@ -160,11 +160,11 @@ private:
     inline bool containsWrapper() const { return (m_wrapperOrTypeInfo & 1) == 1; }
     inline bool containsTypeInfo() const { return m_wrapperOrTypeInfo && (m_wrapperOrTypeInfo & 1) == 0; }
 
-    inline void disposeWrapper(v8::Persistent<v8::Value> value, v8::Isolate* isolate, const WrapperTypeInfo* info)
+    inline void disposeWrapper(v8::Persistent<v8::Object>* value, const WrapperTypeInfo* info)
     {
         ASSERT(containsWrapper());
-        ASSERT(reinterpret_cast<uintptr_t>(*value) == (m_wrapperOrTypeInfo & ~1));
-        value.Dispose(isolate);
+        ASSERT(*reinterpret_cast<uintptr_t*>(value) == (m_wrapperOrTypeInfo & ~1));
+        value->Dispose();
         setTypeInfo(info);
     }
 
@@ -182,7 +182,7 @@ private:
         WrapperTypeInfo* info = toWrapperTypeInfo(*wrapper);
         ASSERT(info->derefObjectFunction);
 
-        key->disposeWrapper(*wrapper, isolate, info);
+        key->disposeWrapper(wrapper, info);
         // FIXME: I noticed that 50%~ of minor GC cycle times can be consumed
         // inside key->deref(), which causes Node destructions. We should
         // make Node destructions incremental.

@@ -45,7 +45,7 @@ namespace WebCore {
         {
             return adoptRef(new SharedPersistent<T>(value));
         }
-        inline v8::Persistent<T> get()
+        inline v8::Handle<T> get()
         {
             return m_value.get();
         }

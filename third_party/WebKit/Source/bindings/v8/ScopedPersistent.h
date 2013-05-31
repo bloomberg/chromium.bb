@@ -57,7 +57,18 @@ public:
         return v8::Local<T>::New(isolate, m_handle);
     }
 
-    ALWAYS_INLINE v8::Persistent<T> get() const { return m_handle; }
+    // FIXME: This function does an unsafe handle access. Remove it.
+    ALWAYS_INLINE v8::Handle<T> get() const
+    {
+        const v8::Handle<T>* handle = reinterpret_cast<const v8::Handle<T>*>(&m_handle);
+        return *handle;
+    }
+
+    // FIXME: This function does an unsafe handle access. Remove it.
+    ALWAYS_INLINE v8::Persistent<T>&  getUnsafe()
+    {
+        return m_handle;
+    }
 
     bool isEmpty() const { return m_handle.IsEmpty(); }
 
