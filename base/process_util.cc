@@ -6,20 +6,6 @@
 
 namespace base {
 
-#if defined(OS_POSIX)
-ProcessEntry::ProcessEntry() : pid_(0), ppid_(0), gid_(0) {}
-ProcessEntry::~ProcessEntry() {}
-#endif
-
-int GetProcessCount(const FilePath::StringType& executable_name,
-                    const ProcessFilter* filter) {
-  int count = 0;
-  NamedProcessIterator iter(executable_name, filter);
-  while (iter.NextProcessEntry())
-    ++count;
-  return count;
-}
-
 bool KillProcesses(const FilePath::StringType& executable_name, int exit_code,
                    const ProcessFilter* filter) {
   bool result = true;
@@ -32,48 +18,6 @@ bool KillProcesses(const FilePath::StringType& executable_name, int exit_code,
 #endif
   }
   return result;
-}
-
-const ProcessEntry* ProcessIterator::NextProcessEntry() {
-  bool result = false;
-  do {
-    result = CheckForNextProcess();
-  } while (result && !IncludeEntry());
-  if (result)
-    return &entry_;
-  return NULL;
-}
-
-ProcessIterator::ProcessEntries ProcessIterator::Snapshot() {
-  ProcessEntries found;
-  while (const ProcessEntry* process_entry = NextProcessEntry()) {
-    found.push_back(*process_entry);
-  }
-  return found;
-}
-
-bool ProcessIterator::IncludeEntry() {
-  return !filter_ || filter_->Includes(entry_);
-}
-
-NamedProcessIterator::NamedProcessIterator(
-    const FilePath::StringType& executable_name,
-    const ProcessFilter* filter) : ProcessIterator(filter),
-                                   executable_name_(executable_name) {
-#if defined(OS_ANDROID)
-  // On Android, the process name contains only the last 15 characters, which
-  // is in file /proc/<pid>/stat, the string between open parenthesis and close
-  // parenthesis. Please See ProcessIterator::CheckForNextProcess for details.
-  // Now if the length of input process name is greater than 15, only save the
-  // last 15 characters.
-  if (executable_name_.size() > 15) {
-    executable_name_ = FilePath::StringType(executable_name_,
-                                            executable_name_.size() - 15, 15);
-  }
-#endif
-}
-
-NamedProcessIterator::~NamedProcessIterator() {
 }
 
 }  // namespace base
