@@ -329,6 +329,44 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="AsyncDNS.TimeoutErrorHistogram" units="milliseconds">
+  <summary>
+    Difference between RTT and timeout calculated using Histogram algorithm.
+  </summary>
+</histogram>
+
+<histogram name="AsyncDNS.TimeoutErrorHistogramUnder" units="milliseconds">
+  <summary>
+    Difference between timeout calculated using Histogram algorithm and RTT.
+  </summary>
+</histogram>
+
+<histogram name="AsyncDNS.TimeoutErrorJacobson" units="milliseconds">
+  <summary>
+    Difference between RTT and timeout calculated using Jacobson algorithm.
+  </summary>
+</histogram>
+
+<histogram name="AsyncDNS.TimeoutErrorJacobsonUnder" units="milliseconds">
+  <summary>
+    Difference between timeout calculated using Jacobson algorithm and RTT.
+  </summary>
+</histogram>
+
+<histogram name="AsyncDNS.TimeoutSpentHistogram" units="milliseconds">
+  <summary>
+    Duration of time that would be spent waiting for lost request using
+    Histogram algorithm.
+  </summary>
+</histogram>
+
+<histogram name="AsyncDNS.TimeoutSpentJacobson" units="milliseconds">
+  <summary>
+    Duration of time that would be spent waiting for lost request using Jacobson
+    algorithm.
+  </summary>
+</histogram>
+
 <histogram name="AsyncDNS.TotalTime" units="milliseconds">
   <summary>
     Duration of time since a HostResolverImpl::Resolve request to the time a
