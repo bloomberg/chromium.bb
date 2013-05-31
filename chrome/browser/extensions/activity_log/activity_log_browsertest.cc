@@ -31,7 +31,8 @@ class ActivityLogExtensionTest : public ExtensionApiTest {
 
 namespace extensions {
 
-IN_PROC_BROWSER_TEST_F(ActivityLogExtensionTest, ExtensionEndToEnd) {
+// Flakily times out: http://crbug.com/245594.
+IN_PROC_BROWSER_TEST_F(ActivityLogExtensionTest, DISABLED_ExtensionEndToEnd) {
   host_resolver()->AddRule("*", "127.0.0.1");
   StartTestServer();
 
