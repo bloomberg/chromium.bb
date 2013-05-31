@@ -35,6 +35,7 @@ class ResourceMetadata;
 namespace file_system {
 
 class CreateFileOperation;
+class DownloadOperation;
 class MoveOperation;
 class OperationObserver;
 
@@ -48,7 +49,6 @@ class CopyOperation {
                 JobScheduler* scheduler,
                 internal::ResourceMetadata* metadata,
                 internal::FileCache* cache,
-                FileSystemInterface* file_system,
                 google_apis::DriveServiceInterface* drive_service);
   ~CopyOperation();
 
@@ -180,6 +180,8 @@ class CopyOperation {
 
   // Uploading a new file is internally implemented by creating a dirty file.
   scoped_ptr<CreateFileOperation> create_file_operation_;
+  // Copying from remote to local (and to remote in WAPI) involves downloading.
+  scoped_ptr<DownloadOperation> download_operation_;
   // Copying a hosted document is internally implemented by using a move.
   scoped_ptr<MoveOperation> move_operation_;
 
