@@ -127,6 +127,12 @@ void OmniboxView::CloseOmniboxPopup() {
     model_->StopAutocomplete();
 }
 
+bool OmniboxView::IsImeShowingPopup() const {
+  // Since not all the IMEs/platforms support the detection of a IME's popup
+  // window, falls back to IsImeComposing().
+  return IsImeComposing();
+}
+
 OmniboxView::OmniboxView(Profile* profile,
                          OmniboxEditController* controller,
                          ToolbarModel* toolbar_model,

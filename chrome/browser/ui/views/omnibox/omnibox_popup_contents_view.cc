@@ -162,8 +162,10 @@ void OmniboxPopupContentsView::InvalidateLine(size_t line) {
 }
 
 void OmniboxPopupContentsView::UpdatePopupAppearance() {
-  if (model_->result().empty()) {
-    // No matches, close any existing popup.
+  if (model_->result().empty() ||
+      omnibox_view_->IsImeShowingPopup()) {
+    // No matches or the IME is showing a popup window which may overlap
+    // the omnibox popup window.  Close any existing popup.
     if (popup_ != NULL) {
       size_animation_.Stop();
 

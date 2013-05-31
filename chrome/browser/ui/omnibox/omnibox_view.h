@@ -209,6 +209,10 @@ class OmniboxView {
   // Returns true if the user is composing something in an IME.
   virtual bool IsImeComposing() const = 0;
 
+  // Returns true if an IME is showing a popup window, which may overlap
+  // the omnibox's popup window.
+  virtual bool IsImeShowingPopup() const;
+
 #if defined(TOOLKIT_VIEWS)
   virtual int GetMaxEditWidth(int entry_width) const = 0;
 

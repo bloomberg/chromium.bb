@@ -1475,6 +1475,15 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kEnableAppListShim)
   },
 #endif
+#if defined(OS_CHROMEOS) || defined(OS_WIN)
+  {
+    "enable-omnibox-auto-completion-for-ime",
+    IDS_FLAGS_ENABLE_OMNIBOX_AUTO_COMPLETION_FOR_IME_NAME,
+    IDS_FLAGS_ENABLE_OMNIBOX_AUTO_COMPLETION_FOR_IME_DESCRIPTION,
+    kOsCrOS,
+    SINGLE_VALUE_TYPE(switches::kEnableOmniboxAutoCompletionForIme)
+  },
+#endif
 };
 
 const Experiment* experiments = kExperiments;

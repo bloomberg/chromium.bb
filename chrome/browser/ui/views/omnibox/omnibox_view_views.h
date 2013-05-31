@@ -104,6 +104,7 @@ class OmniboxViewViews
   virtual string16 GetInstantSuggestion() const OVERRIDE;
   virtual int TextWidth() const OVERRIDE;
   virtual bool IsImeComposing() const OVERRIDE;
+  virtual bool IsImeShowingPopup() const OVERRIDE;
   virtual int GetMaxEditWidth(int entry_width) const OVERRIDE;
   virtual views::View* AddToView(views::View* parent) OVERRIDE;
   virtual int OnPerformDrop(const ui::DropTargetEvent& event) OVERRIDE;

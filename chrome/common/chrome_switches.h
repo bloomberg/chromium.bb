@@ -175,6 +175,7 @@ extern const char kEnableNaClDebug[];
 extern const char kEnableNetBenchmarking[];
 extern const char kEnableNpn[];
 extern const char kEnableNpnHttpOnly[];
+extern const char kEnableOmniboxAutoCompletionForIme[];
 extern const char kEnablePanels[];
 extern const char kEnablePasswordGeneration[];
 extern const char kEnablePnacl[];

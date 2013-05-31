@@ -192,6 +192,11 @@ class LocationBarView : public LocationBar,
   // appears, not where the icons are shown).
   gfx::Point GetLocationEntryOrigin() const;
 
+  // Shows |text| as an inline autocompletion.  This is useful for IMEs, where
+  // we can't show the autocompletion inside the actual OmniboxView.  See
+  // comments on |ime_inline_autocomplete_view_|.
+  void SetImeInlineAutocompletion(const string16& text);
+
   // Invoked from OmniboxViewWin to show the instant suggestion.
   void SetInstantSuggestion(const string16& text);
 
@@ -428,6 +433,12 @@ class LocationBarView : public LocationBar,
 
   // Location_entry view
   views::View* location_entry_view_;
+
+  // A view to show inline autocompletion when an IME is active.  In this case,
+  // we shouldn't change the text or selection inside the OmniboxView itself,
+  // since this will conflict with the IME's control over the text.  So instead
+  // we show any autocompletion in a separate field after the OmniboxView.
+  views::Label* ime_inline_autocomplete_view_;
 
   // The following views are used to provide hints and remind the user as to
   // what is going in the edit. They are all added a children of the

@@ -615,6 +615,11 @@ const char kEnableNpn[]                     = "enable-npn";
 // HTTP is still used for all requests.
 const char kEnableNpnHttpOnly[]             = "enable-npn-http";
 
+// Enables omnibox auto-completion when IME is active.  The auto-completion for
+// IME is shown in the same style as the normal(non-IME) auto-completion.
+const char kEnableOmniboxAutoCompletionForIme[] =
+    "enable-omnibox-auto-completion-for-ime";
+
 // Enables panels (always on-top docked pop-up windows).
 const char kEnablePanels[]                  = "enable-panels";
 

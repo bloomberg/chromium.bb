@@ -230,7 +230,11 @@ void OmniboxEditModel::SetUserText(const string16& text) {
 void OmniboxEditModel::FinalizeInstantQuery(
     const string16& input_text,
     const InstantSuggestion& suggestion) {
-  if (popup_model()->IsOpen()) {
+  if (!popup_model()->result().empty()) {
+    // When a IME is active and a candidate window is open, we don't show
+    // the omnibox popup, though |result()| may be available.  Thus we check
+    // whether result().empty() or not instead of whether IsOpen() or not.
+    // We need the finalization of instant query when result() is available.
     SearchProvider* search_provider =
         autocomplete_controller()->search_provider();
     // There may be no providers during testing; guard against that.
@@ -1296,12 +1300,13 @@ void OmniboxEditModel::RevertTemporaryText(bool revert_popup) {
 
   InstantController* instant = GetInstantController();
   if (instant && notify_instant) {
-    // Normally, popup_->ResetToDefaultMatch() will cause the view text to be
-    // updated. In Instant Extended mode however, the popup_ is not used, so it
-    // won't do anything. So, update the view ourselves. Even if Instant is not
-    // in extended mode (i.e., it's enabled in non-extended mode, or disabled
-    // altogether), this is okay to do, since the call to
-    // popup_->ResetToDefaultMatch() will just override whatever we do here.
+    // Normally, popup_model()->ResetToDefaultMatch() will cause the view text
+    // to be updated. In Instant Extended mode however, the popup_model() is
+    // not used, so it won't do anything. So, update the view ourselves. Even
+    // if Instant is not in extended mode (i.e., it's enabled in non-extended
+    // mode, or disabled altogether), this is okay to do, since the call to
+    // popup_model()->ResetToDefaultMatch() will just override whatever we do
+    // here.
     //
     // The two "false" arguments make sure that our shenanigans don't cause any
     // previously saved selection to be erased nor OnChanged() to be called.
