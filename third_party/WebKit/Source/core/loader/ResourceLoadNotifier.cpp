@@ -47,49 +47,10 @@ ResourceLoadNotifier::ResourceLoadNotifier(Frame* frame)
 {
 }
 
-void ResourceLoadNotifier::willSendRequest(ResourceLoader* loader, ResourceRequest& clientRequest, const ResourceResponse& redirectResponse)
-{
-    m_frame->loader()->applyUserAgent(clientRequest);
-
-    dispatchWillSendRequest(loader->documentLoader(), loader->identifier(), clientRequest, redirectResponse);
-}
-
-void ResourceLoadNotifier::didReceiveResponse(ResourceLoader* loader, const ResourceResponse& r)
-{
-    if (Page* page = m_frame->page())
-        page->progress()->incrementProgress(loader->identifier(), r);
-
-    dispatchDidReceiveResponse(loader->documentLoader(), loader->identifier(), r, loader);
-}
-
-void ResourceLoadNotifier::didReceiveData(ResourceLoader* loader, const char* data, int dataLength, int encodedDataLength)
-{
-    if (Page* page = m_frame->page())
-        page->progress()->incrementProgress(loader->identifier(), data, dataLength);
-
-    dispatchDidReceiveData(loader->documentLoader(), loader->identifier(), data, dataLength, encodedDataLength);
-}
-
-void ResourceLoadNotifier::didFinishLoad(ResourceLoader* loader, double finishTime)
-{    
-    if (Page* page = m_frame->page())
-        page->progress()->completeProgress(loader->identifier());
-    dispatchDidFinishLoading(loader->documentLoader(), loader->identifier(), finishTime);
-}
-
-void ResourceLoadNotifier::didFailToLoad(ResourceLoader* loader, const ResourceError& error)
-{
-    if (Page* page = m_frame->page())
-        page->progress()->completeProgress(loader->identifier());
-
-    if (!error.isNull())
-        m_frame->loader()->client()->dispatchDidFailLoading(loader->documentLoader(), loader->identifier(), error);
-
-    InspectorInstrumentation::didFailLoading(m_frame, loader->identifier(), loader->documentLoader(), error);
-}
-
 void ResourceLoadNotifier::dispatchWillSendRequest(DocumentLoader* loader, unsigned long identifier, ResourceRequest& request, const ResourceResponse& redirectResponse)
 {
+    m_frame->loader()->applyUserAgent(request);
+
     String oldRequestURL = request.url().string();
     m_frame->loader()->documentLoader()->didTellClientAboutLoad(request.url().string());
 
@@ -110,6 +71,8 @@ void ResourceLoadNotifier::dispatchWillSendRequest(DocumentLoader* loader, unsig
 
 void ResourceLoadNotifier::dispatchDidReceiveResponse(DocumentLoader* loader, unsigned long identifier, const ResourceResponse& r, ResourceLoader* resourceLoader)
 {
+    if (Page* page = m_frame->page())
+        page->progress()->incrementProgress(identifier, r);
     InspectorInstrumentationCookie cookie = InspectorInstrumentation::willReceiveResourceResponse(m_frame, identifier, r);
     m_frame->loader()->client()->dispatchDidReceiveResponse(loader, identifier, r);
     InspectorInstrumentation::didReceiveResourceResponse(cookie, identifier, loader, r, resourceLoader);
@@ -117,14 +80,29 @@ void ResourceLoadNotifier::dispatchDidReceiveResponse(DocumentLoader* loader, un
 
 void ResourceLoadNotifier::dispatchDidReceiveData(DocumentLoader*, unsigned long identifier, const char* data, int dataLength, int encodedDataLength)
 {
+    if (Page* page = m_frame->page())
+        page->progress()->incrementProgress(identifier, data, dataLength);
     InspectorInstrumentation::didReceiveData(m_frame, identifier, data, dataLength, encodedDataLength);
 }
 
 void ResourceLoadNotifier::dispatchDidFinishLoading(DocumentLoader* loader, unsigned long identifier, double finishTime)
 {
+    if (Page* page = m_frame->page())
+        page->progress()->completeProgress(identifier);
     m_frame->loader()->client()->dispatchDidFinishLoading(loader, identifier);
 
     InspectorInstrumentation::didFinishLoading(m_frame, identifier, loader, finishTime);
+}
+
+void ResourceLoadNotifier::dispatchDidFail(DocumentLoader* loader, unsigned long identifier, const ResourceError& error)
+{
+    if (Page* page = m_frame->page())
+        page->progress()->completeProgress(identifier);
+
+    if (!error.isNull())
+        m_frame->loader()->client()->dispatchDidFailLoading(loader, identifier, error);
+
+    InspectorInstrumentation::didFailLoading(m_frame, identifier, loader, error);
 }
 
 void ResourceLoadNotifier::sendRemainingDelegateMessages(DocumentLoader* loader, unsigned long identifier, const ResourceResponse& response, const char* data, int dataLength, int encodedDataLength, const ResourceError& error)
@@ -138,7 +116,7 @@ void ResourceLoadNotifier::sendRemainingDelegateMessages(DocumentLoader* loader,
     if (error.isNull())
         dispatchDidFinishLoading(loader, identifier, 0);
     else
-        m_frame->loader()->client()->dispatchDidFailLoading(loader, identifier, error);
+        dispatchDidFail(loader, identifier, error);
 }
 
 } // namespace WebCore

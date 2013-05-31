@@ -47,16 +47,11 @@ class ResourceLoadNotifier {
 public:
     ResourceLoadNotifier(Frame*);
 
-    void willSendRequest(ResourceLoader*, ResourceRequest&, const ResourceResponse& redirectResponse);
-    void didReceiveResponse(ResourceLoader*, const ResourceResponse&);
-    void didReceiveData(ResourceLoader*, const char*, int dataLength, int encodedDataLength);
-    void didFinishLoad(ResourceLoader*, double finishTime);
-    void didFailToLoad(ResourceLoader*, const ResourceError&);
-
     void dispatchWillSendRequest(DocumentLoader*, unsigned long identifier, ResourceRequest&, const ResourceResponse& redirectResponse);
     void dispatchDidReceiveResponse(DocumentLoader*, unsigned long identifier, const ResourceResponse&, ResourceLoader* = 0);
     void dispatchDidReceiveData(DocumentLoader*, unsigned long identifier, const char* data, int dataLength, int encodedDataLength);
     void dispatchDidFinishLoading(DocumentLoader*, unsigned long identifier, double finishTime);
+    void dispatchDidFail(DocumentLoader*, unsigned long identifier, const ResourceError&);
 
     void sendRemainingDelegateMessages(DocumentLoader*, unsigned long identifier, const ResourceResponse&, const char* data, int dataLength, int encodedDataLength, const ResourceError&);
 

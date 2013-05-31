@@ -198,7 +198,7 @@ void ResourceLoader::didFinishLoadingOnePart(double finishTime)
         return;
     m_notifiedLoadComplete = true;
     if (m_options.sendLoadCallbacks == SendCallbacks)
-        frameLoader()->notifier()->didFinishLoad(this, finishTime);
+        frameLoader()->notifier()->dispatchDidFinishLoading(m_documentLoader.get(), m_identifier, finishTime);
 }
 
 void ResourceLoader::didChangePriority(ResourceLoadPriority loadPriority)
@@ -248,7 +248,7 @@ void ResourceLoader::cancel(const ResourceError& error)
     }
 
     if (m_options.sendLoadCallbacks == SendCallbacks && m_identifier && !m_notifiedLoadComplete)
-        frameLoader()->notifier()->didFailToLoad(this, nonNullError);
+        frameLoader()->notifier()->dispatchDidFail(m_documentLoader.get(), m_identifier, nonNullError);
 
     if (m_state == Finishing)
         m_resource->error(CachedResource::LoadError);
@@ -289,9 +289,9 @@ void ResourceLoader::willSendRequest(ResourceHandle*, ResourceRequest& request, 
         return;
 
     if (m_options.sendLoadCallbacks == SendCallbacks)
-        frameLoader()->notifier()->willSendRequest(this, request, redirectResponse);
+        frameLoader()->notifier()->dispatchWillSendRequest(m_documentLoader.get(), m_identifier, request, redirectResponse);
     else
-        InspectorInstrumentation::willSendRequest(m_frame.get(), m_identifier, m_frame->loader()->documentLoader(), request, redirectResponse);
+        InspectorInstrumentation::willSendRequest(m_frame.get(), m_identifier, m_documentLoader.get(), request, redirectResponse);
 
     m_request = request;
 
@@ -325,7 +325,7 @@ void ResourceLoader::didReceiveResponse(ResourceHandle*, const ResourceResponse&
         return;
 
     if (m_options.sendLoadCallbacks == SendCallbacks)
-        frameLoader()->notifier()->didReceiveResponse(this, response);
+        frameLoader()->notifier()->dispatchDidReceiveResponse(m_documentLoader.get(), m_identifier, response);
 
     // FIXME: Main resources have a different set of rules for multipart than images do.
     // Hopefully we can merge those 2 paths.
@@ -365,7 +365,7 @@ void ResourceLoader::didReceiveData(ResourceHandle*, const char* data, int lengt
     // However, with today's computers and networking speeds, this won't happen in practice.
     // Could be an issue with a giant local file.
     if (m_options.sendLoadCallbacks == SendCallbacks && m_frame)
-        frameLoader()->notifier()->didReceiveData(this, data, length, static_cast<int>(encodedDataLength));
+        frameLoader()->notifier()->dispatchDidReceiveData(m_documentLoader.get(), m_identifier, data, length, static_cast<int>(encodedDataLength));
 
     m_resource->appendData(data, length);
 
@@ -409,7 +409,7 @@ void ResourceLoader::didFail(ResourceHandle*, const ResourceError& error)
     if (!m_notifiedLoadComplete) {
         m_notifiedLoadComplete = true;
         if (m_options.sendLoadCallbacks == SendCallbacks)
-            frameLoader()->notifier()->didFailToLoad(this, error);
+            frameLoader()->notifier()->dispatchDidFail(m_documentLoader.get(), m_identifier, error);
     }
 
     releaseResources();
