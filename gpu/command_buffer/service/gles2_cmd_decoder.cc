@@ -5634,7 +5634,7 @@ bool GLES2DecoderImpl::SetBlackTextureForNonRenderableTextures() {
   if (!texture_manager()->HaveUnrenderableTextures()) {
     return false;
   }
-  LOCAL_PERFORMANCE_WARNING("Some textures are unrenderable.");
+
   bool textures_set = false;
   const Program::SamplerIndices& sampler_indices =
      state_.current_program->sampler_indices();
