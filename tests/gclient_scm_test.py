@@ -102,6 +102,7 @@ class SVNWrapperTestCase(BaseTestCase):
     members = [
         'BinaryExists',
         'FullUrlForRelativeUrl',
+        'GetCheckoutRoot',
         'GetRevisionDate',
         'GetUsableRev',
         'RunCommand',
@@ -789,6 +790,7 @@ class ManagedGitWrapperTestCase(BaseGitWrapperTestCase):
     members = [
         'BinaryExists',
         'FullUrlForRelativeUrl',
+        'GetCheckoutRoot',
         'GetRevisionDate',
         'GetUsableRev',
         'RunCommand',

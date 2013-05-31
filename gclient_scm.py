@@ -173,6 +173,9 @@ class GitWrapper(SCMWrapper):
     except OSError:
       return False
 
+  def GetCheckoutRoot(self):
+    return scm.GIT.GetCheckoutRoot(self.checkout_path)
+
   def GetRevisionDate(self, revision):
     """Returns the given revision's date in ISO-8601 format (which contains the
     time zone)."""
@@ -919,6 +922,9 @@ class SVNWrapper(SCMWrapper):
       return result
     except OSError:
       return False
+
+  def GetCheckoutRoot(self):
+    return scm.SVN.GetCheckoutRoot(self.checkout_path)
 
   def GetRevisionDate(self, revision):
     """Returns the given revision's date in ISO-8601 format (which contains the

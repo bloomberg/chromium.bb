@@ -1134,6 +1134,9 @@ solutions = [
       # Only delete the directory if there are no changes in it, and
       # delete_unversioned_trees is set to true.
       entries = [i.name for i in self.root.subtree(False) if i.url]
+      full_entries = [os.path.join(self.root_dir, e.replace('/', os.path.sep))
+                      for e in entries]
+
       for entry, prev_url in self._ReadEntries().iteritems():
         if not prev_url:
           # entry must have been overridden via .gclient custom_deps
@@ -1152,8 +1155,15 @@ solutions = [
         if (entry not in entries and
             (not any(path.startswith(entry + '/') for path in entries)) and
             os.path.exists(e_dir)):
-          file_list = []
           scm = gclient_scm.CreateSCM(prev_url, self.root_dir, entry_fixed)
+
+          # Check to see if this directory is now part of a higher-up checkout.
+          if scm.GetCheckoutRoot() in full_entries:
+            logging.info('%s is part of a higher level checkout, not '
+                         'removing.', scm.GetCheckoutRoot())
+            continue
+
+          file_list = []
           scm.status(self._options, [], file_list)
           modified_files = file_list != []
           if (not self._options.delete_unversioned_trees or
