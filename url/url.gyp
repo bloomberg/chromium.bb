@@ -8,8 +8,11 @@
   },
   'targets': [
     {
-      'target_name': 'url',
-      'type': 'static_library',
+      # Note, this target_name cannot be 'url', because that will generate
+      # 'url.dll' for a Windows component build, and that will confuse Windows,
+      # which has a system DLL with the same name.
+      'target_name': 'url_lib',
+      'type': '<(component)',
       'dependencies': [
         '../base/base.gyp:base',
         '../third_party/icu/icu.gyp:icudata',
@@ -52,7 +55,7 @@
         ],
       },
       'defines': [
-        'FULL_FILESYSTEM_URL_SUPPORT=1',
+        'URL_IMPLEMENTATION',
       ],
       # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
       'msvs_disabled_warnings': [4267, ],
@@ -65,7 +68,7 @@
         '../base/base.gyp:run_all_unittests',
         '../testing/gtest.gyp:gtest',
         '../third_party/icu/icu.gyp:icuuc',
-        'url',
+        'url_lib',
       ],
       'sources': [
         'gurl_unittest.cc',
@@ -73,9 +76,6 @@
         'url_parse_unittest.cc',
         'url_test_utils.h',
         'url_util_unittest.cc',
-      ],
-      'defines': [
-        'FULL_FILESYSTEM_URL_SUPPORT=1',
       ],
       'conditions': [
         ['os_posix==1 and OS!="mac" and OS!="ios"',
