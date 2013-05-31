@@ -28,7 +28,6 @@
         '../ui/snapshot/snapshot.gyp:*',
         '../ui/ui.gyp:*',
         '../url/url.gyp:*',
-        '../webkit/support/webkit_support.gyp:*',
         'temp_gyp/googleurl.gyp:*',
       ],
       'conditions': [
@@ -64,6 +63,7 @@
             '../third_party/WebKit/public/all.gyp:*',
             '../v8/tools/gyp/v8.gyp:*',
             '../webkit/renderer/compositor_bindings/compositor_bindings_tests.gyp:*',
+            '../webkit/support/webkit_support.gyp:*',
             '../webkit/webkit.gyp:*',
             '<(libjpeg_gyp_path):*',
           ],

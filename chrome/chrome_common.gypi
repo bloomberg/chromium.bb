@@ -48,7 +48,7 @@
         '<(DEPTH)/third_party/sqlite/sqlite.gyp:sqlite',
         '<(DEPTH)/third_party/zlib/zlib.gyp:zip',
         '<(DEPTH)/ui/ui.gyp:ui_resources',
-        '<(DEPTH)/webkit/support/webkit_support.gyp:user_agent',
+        '<(DEPTH)/webkit/common/user_agent/webkit_user_agent.gyp:user_agent',
       ],
       'sources': [
         '../apps/app_shim/app_shim_launch.h',

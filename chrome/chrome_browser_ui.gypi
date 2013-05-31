@@ -52,7 +52,7 @@
         '../ui/snapshot/snapshot.gyp:snapshot',
         '../ui/ui.gyp:ui',
         '../ui/ui.gyp:ui_resources',
-        '../webkit/support/webkit_support.gyp:user_agent',
+        '../webkit/common/user_agent/webkit_user_agent.gyp:user_agent',
       ],
       'include_dirs': [
         '..',

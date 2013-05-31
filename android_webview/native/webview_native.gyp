@@ -18,7 +18,7 @@
         '../../net/net.gyp:net',
         '../../skia/skia.gyp:skia',
         '../../ui/ui.gyp:ui',
-        '../../webkit/support/webkit_support.gyp:user_agent',
+        '../../webkit/common/user_agent/webkit_user_agent.gyp:user_agent',
         '../../webkit/support/webkit_support.gyp:webkit_storage',
         'android_webview_native_jni',
       ],

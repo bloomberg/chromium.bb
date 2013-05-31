@@ -3,9 +3,6 @@
 # found in the LICENSE file.
 
 {
-  'includes': [
-    '../common/user_agent/webkit_user_agent.gypi',
-  ],
   'conditions': [
     # TODO(stuartmorgan): All dependencies from code built on iOS to
     # webkit/ should be removed, at which point this condition can be

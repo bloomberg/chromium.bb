@@ -690,7 +690,7 @@
         '../content/content.gyp:content_common',
         '../net/net.gyp:net',
         '../third_party/libxml/libxml.gyp:libxml',
-        '../webkit/support/webkit_support.gyp:user_agent',
+        '../webkit/common/user_agent/webkit_user_agent.gyp:user_agent',
       ],
       'sources': [
         'bho.cc',
