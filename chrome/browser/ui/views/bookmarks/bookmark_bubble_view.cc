@@ -172,7 +172,6 @@ void BookmarkBubbleView::Init() {
                               IDS_BOOKMARK_BUBBLE_PAGE_BOOKMARK));
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   title_label->SetFont(rb.GetFont(ui::ResourceBundle::MediumFont));
-  title_label->SetEnabledColor(SkColorSetRGB(6, 45, 117));
 
   GridLayout* layout = new GridLayout(this);
   SetLayoutManager(layout);
