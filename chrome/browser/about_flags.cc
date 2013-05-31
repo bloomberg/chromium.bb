@@ -299,15 +299,6 @@ const Experiment kExperiments[] = {
 #endif
     SINGLE_VALUE_TYPE(switches::kEnableCloudPrintProxy)
   },
-#if defined(OS_WIN)
-  {
-    "print-raster",
-    IDS_FLAGS_PRINT_RASTER_NAME,
-    IDS_FLAGS_PRINT_RASTER_DESCRIPTION,
-    kOsWin,
-    SINGLE_VALUE_TYPE(switches::kPrintRaster)
-  },
-#endif  // OS_WIN
   {
     "ignore-gpu-blacklist",
     IDS_FLAGS_IGNORE_GPU_BLACKLIST_NAME,

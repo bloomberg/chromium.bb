@@ -6218,14 +6218,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
           Enables a background service that connects the Google Cloud Print service to any printers installed on this computer. Once this lab is enabled, you can turn the Google Cloud Print Connector on by logging in with your Google account in the Under the Hood section of Settings.
         </message>
       </if>
-      <if expr="is_win">
-        <message name="IDS_FLAGS_PRINT_RASTER_NAME" desc="Name of 'Print raster' flag.">
-          Print raster
-        </message>
-        <message name="IDS_FLAGS_PRINT_RASTER_DESCRIPTION" desc="Description for 'Print raster' flag.">
-          Rasterise page before printing. Slower, but may help to resolve issues with some printers
-        </message>
-      </if>
       <message name="IDS_FLAGS_ENABLE_DEVICE_DISCOVERY_NAME" desc="Title of the enable 'device discovery' flag.">
         Device Discovery
       </message>
