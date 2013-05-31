@@ -1585,7 +1585,8 @@ int32_t NaClSysMmapIntern(struct NaClApp        *nap,
          * code simpler (releasing a created region is more code).
          */
         NaClXMutexLock(&nap->dynamic_load_mutex);
-        ret = NaClDynamicRegionCreate(nap, usraddr, length, 1);
+        ret = NaClDynamicRegionCreate(nap, NaClUserToSys(nap, usraddr), length,
+                                      1);
         NaClXMutexUnlock(&nap->dynamic_load_mutex);
         if (!ret) {
           NaClLog(3, "NaClSysMmap: PROT_EXEC region"
