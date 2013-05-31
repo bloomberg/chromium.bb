@@ -132,7 +132,7 @@ bool SpeechRecognizerImpl::IsActive() const {
   // Checking the FSM state from another thread (thus, while the FSM is
   // potentially concurrently evolving) is meaningless.
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  return state_ != STATE_IDLE;
+  return state_ != STATE_IDLE && state_ != STATE_ENDED;
 }
 
 bool SpeechRecognizerImpl::IsCapturingAudio() const {
@@ -340,6 +340,12 @@ SpeechRecognizerImpl::ExecuteTransitionAndGetNextState(
           return AbortWithError(event_args);
       }
       break;
+
+    // TODO(primiano): remove this state when speech input extensions support
+    // will be removed and STATE_IDLE.EVENT_ABORT,EVENT_STOP_CAPTURE will be
+    // reset to NotFeasible (see TODO above).
+    case STATE_ENDED:
+      return DoNothing(event_args);
   }
   return NotFeasible(event_args);
 }
@@ -523,7 +529,7 @@ SpeechRecognizerImpl::FSMState SpeechRecognizerImpl::Abort(
 
   listener_->OnRecognitionEnd(session_id_);
 
-  return STATE_IDLE;
+  return STATE_ENDED;
 }
 
 SpeechRecognizerImpl::FSMState SpeechRecognizerImpl::ProcessIntermediateResult(
@@ -592,7 +598,7 @@ SpeechRecognizerImpl::ProcessFinalResult(const FSMEventArgs& event_args) {
   }
 
   listener_->OnRecognitionEnd(session_id_);
-  return STATE_IDLE;
+  return STATE_ENDED;
 }
 
 SpeechRecognizerImpl::FSMState
