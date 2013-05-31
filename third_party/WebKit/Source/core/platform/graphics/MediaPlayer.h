@@ -52,7 +52,6 @@ class MediaPlayer;
 class MediaPlayerPrivateInterface;
 class TimeRanges;
 class WebKitMediaSource;
-struct MediaPlayerFactory;
 
 class MediaPlayerClient {
 public:
@@ -252,25 +251,17 @@ public:
 
 private:
     explicit MediaPlayer(MediaPlayerClient*);
-    bool loadWithMediaEngine();
+    void initializeMediaPlayerPrivate();
 
     static CreateMediaEnginePlayer s_createMediaEngineFunction;
 
     MediaPlayerClient* m_mediaPlayerClient;
     OwnPtr<MediaPlayerPrivateInterface> m_private;
-    MediaPlayerFactory* m_currentMediaEngine;
-    KURL m_url;
-    String m_contentMIMEType;
-    String m_contentTypeCodecs;
-    String m_keySystem;
     Preload m_preload;
     double m_rate;
     double m_volume;
     bool m_muted;
-    bool m_contentMIMETypeWasInferredFromExtension;
     bool m_inDestructor;
-
-    RefPtr<WebKitMediaSource> m_mediaSource;
 };
 
 }
