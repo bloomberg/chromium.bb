@@ -13,6 +13,7 @@
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/proxy_object_var.h"
 #include "ppapi/shared_impl/api_id.h"
+#include "ppapi/shared_impl/proxy_lock.h"
 #include "ppapi/shared_impl/var.h"
 
 namespace ppapi {
@@ -175,7 +176,7 @@ void PluginVarTracker::DidDeleteInstance(PP_Instance instance) {
     if (!found->second.plugin_object_id) {
       // This object is for the freed instance and the plugin is not holding
       // any references to it. Deallocate immediately.
-      found->second.ppp_class->Deallocate(found->first);
+      CallWhileUnlocked(found->second.ppp_class->Deallocate, found->first);
       user_data_to_plugin_.erase(found);
     } else {
       // The plugin is holding refs to this object. We don't want to call
