@@ -25,51 +25,12 @@
 #include "core/platform/SharedBuffer.h"
 #include "core/platform/graphics/FontPlatformData.h"
 #include "core/platform/graphics/opentype/OpenTypeSanitizer.h"
+#include "core/platform/graphics/skia/SkiaSharedBufferStream.h"
 
-#include "SkStream.h"
-#include "SkTypeface.h"
+#include "third_party/skia/include/core/SkStream.h"
+#include "third_party/skia/include/core/SkTypeface.h"
 
 namespace WebCore {
-
-class RemoteFontStream : public SkStream {
-public:
-    explicit RemoteFontStream(PassRefPtr<SharedBuffer> buffer)
-        : m_buffer(buffer)
-        , m_offset(0)
-    {
-    }
-
-    virtual ~RemoteFontStream()
-    {
-    }
-
-    virtual bool rewind()
-    {
-        m_offset = 0;
-        return true;
-    }
-
-    virtual size_t read(void* buffer, size_t size)
-    {
-        if (!buffer && !size) {
-            // This is request for the length of the stream.
-            return m_buffer->size();
-        }
-        // This is a request to read bytes or skip bytes (when buffer is 0).
-        if (!m_buffer->data() || !m_buffer->size())
-            return 0;
-        size_t left = m_buffer->size() - m_offset;
-        size_t bytesToConsume = std::min(left, size);
-        if (buffer)
-            std::memcpy(buffer, m_buffer->data() + m_offset, bytesToConsume);
-        m_offset += bytesToConsume;
-        return bytesToConsume;
-    }
-
-private:
-    RefPtr<SharedBuffer> m_buffer;
-    size_t m_offset;
-};
 
 FontCustomPlatformData::~FontCustomPlatformData()
 {
@@ -104,7 +65,7 @@ FontCustomPlatformData* createFontCustomPlatformData(SharedBuffer* buffer)
         return 0;
 
     FontCustomPlatformData* fontCustomPlatformData = new FontCustomPlatformData(containerRef, cgFontRef.leakRef());
-    RemoteFontStream* stream = new RemoteFontStream(buffer);
+    SkiaSharedBufferStream* stream = new SkiaSharedBufferStream(buffer);
     fontCustomPlatformData->m_typeface = SkTypeface::CreateFromStream(stream);
     stream->unref();
     return fontCustomPlatformData;

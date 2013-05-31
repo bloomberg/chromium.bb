@@ -36,7 +36,8 @@
 #if OS(WINDOWS)
 #include "core/platform/graphics/opentype/OpenTypeUtilities.h"
 #elif OS(UNIX)
-#include "SkStream.h"
+#include "third_party/skia/include/core/SkStream.h"
+#include "core/platform/graphics/skia/SkiaSharedBufferStream.h"
 #endif
 
 #include "core/platform/LayoutTestSupport.h"
@@ -48,8 +49,6 @@
 #if OS(WINDOWS)
 #include <objbase.h>
 #include <wtf/text/Base64.h>
-#elif OS(UNIX)
-#include <cstring>
 #endif
 
 namespace WebCore {
@@ -124,48 +123,6 @@ static String createUniqueFontName()
 }
 #endif
 
-#if OS(UNIX)
-class RemoteFontStream : public SkStream {
-public:
-    explicit RemoteFontStream(PassRefPtr<SharedBuffer> buffer)
-        : m_buffer(buffer)
-        , m_offset(0)
-    {
-    }
-
-    virtual ~RemoteFontStream()
-    {
-    }
-
-    virtual bool rewind()
-    {
-        m_offset = 0;
-        return true;
-    }
-
-    virtual size_t read(void* buffer, size_t size)
-    {
-        if (!buffer && !size) {
-            // This is request for the length of the stream.
-            return m_buffer->size();
-        }
-        // This is a request to read bytes or skip bytes (when buffer is 0).
-        if (!m_buffer->data() || !m_buffer->size())
-            return 0;
-        size_t left = m_buffer->size() - m_offset;
-        size_t bytesToConsume = std::min(left, size);
-        if (buffer)
-            std::memcpy(buffer, m_buffer->data() + m_offset, bytesToConsume);
-        m_offset += bytesToConsume;
-        return bytesToConsume;
-    }
-
-private:
-    RefPtr<SharedBuffer> m_buffer;
-    size_t m_offset;
-};
-#endif
-
 FontCustomPlatformData* createFontCustomPlatformData(SharedBuffer* buffer)
 {
     ASSERT_ARG(buffer, buffer);
@@ -186,7 +143,7 @@ FontCustomPlatformData* createFontCustomPlatformData(SharedBuffer* buffer)
         return 0;
     return new FontCustomPlatformData(fontReference, fontName);
 #elif OS(UNIX)
-    RemoteFontStream* stream = new RemoteFontStream(buffer);
+    SkiaSharedBufferStream* stream = new SkiaSharedBufferStream(buffer);
     SkTypeface* typeface = SkTypeface::CreateFromStream(stream);
     stream->unref();
     if (!typeface)
