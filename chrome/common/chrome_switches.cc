@@ -1527,6 +1527,9 @@ const char kPasswordStore[]                 = "password-store";
 // if it does.
 const char kEnableAppListShim[]             = "enable-app-list-shim";
 
+// Enable to allow creation and launch of app shims for platform apps.
+const char kEnableAppShims[]                = "enable-app-shims";
+
 // Enables the tabs expose feature ( http://crbug.com/50307 ).
 const char kEnableExposeForTabs[]           = "enable-expose-for-tabs";
 

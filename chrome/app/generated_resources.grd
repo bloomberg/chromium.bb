@@ -7212,6 +7212,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <message name="IDS_FLAGS_ENABLE_APP_LIST_SHIM_DESCRIPTION" desc="Description of the flag to enable the app launcher app bundle.">
           Enable to ensure an OSX app bundle for the App Launcher exists under the Applications folder.
         </message>
+        <message name="IDS_FLAGS_ENABLE_APP_SHIMS_NAME" desc="Title for the flag to enable shortcuts for packaged apps to be added to Applications and to appear in the dock.">
+          Enable packaged app shortcuts.
+        </message>
+        <message name="IDS_FLAGS_ENABLE_APP_SHIMS_DESCRIPTION" desc="Description for the flag to enable packaged apps appearing in the dock in OSX.">
+          Enables packaged app shortcuts to be added to Applications and to appear in the dock.
+        </message>
       </if>
 
       <!-- Crashes -->

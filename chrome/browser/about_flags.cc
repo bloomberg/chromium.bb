@@ -1474,6 +1474,13 @@ const Experiment kExperiments[] = {
     kOsMac,
     SINGLE_VALUE_TYPE(switches::kEnableAppListShim)
   },
+  {
+    "enable-app-shims",
+    IDS_FLAGS_ENABLE_APP_SHIMS_NAME,
+    IDS_FLAGS_ENABLE_APP_SHIMS_DESCRIPTION,
+    kOsMac,
+    SINGLE_VALUE_TYPE(switches::kEnableAppShims)
+  },
 #endif
 #if defined(OS_CHROMEOS) || defined(OS_WIN)
   {
