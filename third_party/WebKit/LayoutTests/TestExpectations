@@ -47,7 +47,7 @@ webkit.org/b/86909 [ Win ] virtual/softwarecompositing/geometry/object-clip-rect
 webkit.org/b/86909 [ Win ] virtual/gpu/fast/canvas/webgl/webgl-composite-modes-repaint.html [ Slow ]
 webkit.org/b/90488 [ Win ] inspector/extensions/extensions-reload.html [ Slow ]
 webkit.org/b/111649 [ Mac Win Linux ] fast/events/intercept-postmessage.html [ Slow ]
-webkit.org/b/111640 [ Mac Win ] fast/dom/Window/window-special-properties.html [ Slow ]
+webkit.org/b/111640 [ Linux Mac Win ] fast/dom/Window/window-special-properties.html [ Slow ]
 webkit.org/b/82954 svg/hixie/perf/007.xml [ Slow ]
 crbug.com/239465 [ Mac ] fast/canvas/webgl/premultiplyalpha-test.html [ Failure Pass ]
 crbug.com/239465 [ Win ] fast/canvas/webgl/premultiplyalpha-test.html [ Crash Pass Timeout ]
@@ -1454,7 +1454,7 @@ crbug.com/237250 [ SnowLeopard Debug ] media/video-zoom.html [ Crash Pass ]
 crbug.com/237250 [ SnowLeopard Debug ] media/video-set-rate-from-pause.html [ Crash Pass ]
 crbug.com/237250 [ Lion Debug ] media/video-zoom-controls.html [ Crash Pass ]
 crbug.com/237270 [ Win7 ] transforms/2d/transform-2d.html [ Pass Timeout ]
-crbug.com/237270 [ Win ] virtual/gpu/fast/canvas/canvas-composite-alpha.html [ Pass Timeout ]
+crbug.com/237270 virtual/gpu/fast/canvas/canvas-composite-alpha.html [ Pass Timeout ]
 crbug.com/237270 [ Debug ] fast/dom/SelectorAPI/resig-SelectorsAPI-test.xhtml [ Pass Timeout ]
 # was: webkit.org/b/110873 - Flaky on most platforms
 crbug.com/237270 [ Debug ] fast/sub-pixel/transformed-iframe-copy-on-scroll.html [ ImageOnlyFailure Timeout ]
@@ -1809,6 +1809,8 @@ crbug.com/245555 [ Mac ] virtual/gpu/fast/canvas/webgl/webgl-composite-modes-rep
 crbug.com/245556 [ Win7 Release ] compositing/transitions/transform-on-large-layer.html [ Pass Timeout ]
 crbug.com/245557 [ Win7 ] virtual/gpu/fast/canvas/webgl/tex-image-and-sub-image-2d-with-image-rgb565.html [ Pass Timeout ]
 crbug.com/245558 [ MountainLion ] fast/forms/ValidityState-patternMismatch.html [ Crash Pass ]
+crbug.com/245566 [ Linux Win Debug ] editing/execCommand/delete-no-scroll.html [ Pass Timeout ]
+crbug.com/245567 http/tests/xmlhttprequest/send-undefined-and-null.html [ Failure Pass ]
 
 # This test seems to intermittently crash.
 crbug.com/245294 [ Mac Linux ] fast/forms/calendar-picker/calendar-picker-appearance-ar.html [ Crash Pass ]
