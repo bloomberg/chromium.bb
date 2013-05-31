@@ -214,8 +214,6 @@ RichMessageCenterButtonBar::RichMessageCenterButtonBar(
   quiet_mode_button_->SetToggledImage(
       views::Button::STATE_PRESSED,
       resource_bundle.GetImageSkiaNamed(IDR_NOTIFICATION_PAUSE_PRESSED));
-  quiet_mode_button_->SetToggledTooltipText(resource_bundle.GetLocalizedString(
-      IDS_MESSAGE_CENTER_QUIET_MODE_BUTTON_TOGGLED_TOOLTIP));
   quiet_mode_button_->SetToggled(message_center->IsQuietMode());
   button_container->AddChildView(quiet_mode_button_);
 
