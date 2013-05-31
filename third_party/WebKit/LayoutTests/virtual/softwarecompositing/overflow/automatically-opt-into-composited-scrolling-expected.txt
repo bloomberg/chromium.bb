@@ -10,31 +10,19 @@ PASS iteration 8: opted in, since doing so does not change the stacking order.
 PASS iteration 9: did not opt in, since doing so would change the stacking order.
 PASS iteration 10: did not opt in, since doing so would change the stacking order.
 PASS iteration 11: opted in, since doing so does not change the stacking order.
-FAIL - automatically opted in and changed stacking order 12
-	Ordering: successor (z-index: -2), firstChild (z-index: -1), container (z-index: 0), secondChild (z-index: 1)
-	hasPositionedAncestor: 0; containerIsPositioned: 0
+PASS iteration 12: did not opt in, since doing so would change the stacking order.
 PASS iteration 13: opted in, since doing so does not change the stacking order.
-FAIL - automatically opted in and changed stacking order 14
-	Ordering: successor (z-index: -2), firstChild (z-index: -1), ancestor (z-index: 0), secondChild (z-index: 1)
-	hasPositionedAncestor: 1; containerIsPositioned: 0
+PASS iteration 14: did not opt in, since doing so would change the stacking order.
 PASS iteration 15: opted in, since doing so does not change the stacking order.
 PASS iteration 16: opted in, since doing so does not change the stacking order.
 PASS iteration 17: opted in, since doing so does not change the stacking order.
 PASS iteration 18: did not opt in, since doing so would change the stacking order.
 PASS iteration 19: did not opt in, since doing so would change the stacking order.
 PASS iteration 20: opted in, since doing so does not change the stacking order.
-FAIL - automatically opted in and changed stacking order 21
-	Ordering: successor (z-index: -3), firstChild (z-index: -2), secondChild (z-index: -1), container (z-index: 0)
-	hasPositionedAncestor: 0; containerIsPositioned: 0
-FAIL - automatically opted in and changed stacking order 22
-	Ordering: predecessor (z-index: -2), firstChild (z-index: -1), secondChild (z-index: 0), container (z-index: 0)
-	hasPositionedAncestor: 0; containerIsPositioned: 0
-FAIL - automatically opted in and changed stacking order 23
-	Ordering: successor (z-index: -3), firstChild (z-index: -2), secondChild (z-index: -1), ancestor (z-index: 0)
-	hasPositionedAncestor: 1; containerIsPositioned: 0
-FAIL - automatically opted in and changed stacking order 24
-	Ordering: predecessor (z-index: -2), firstChild (z-index: -1), secondChild (z-index: 0), ancestor (z-index: 0)
-	hasPositionedAncestor: 1; containerIsPositioned: 0
+PASS iteration 21: did not opt in, since doing so would change the stacking order.
+PASS iteration 22: did not opt in, since doing so would change the stacking order.
+PASS iteration 23: did not opt in, since doing so would change the stacking order.
+PASS iteration 24: did not opt in, since doing so would change the stacking order.
 PASS iteration 25: opted in, since doing so does not change the stacking order.
 PASS iteration 26: opted in, since doing so does not change the stacking order.
 PASS iteration 27: did not opt in, since doing so would change the stacking order.
@@ -83,21 +71,13 @@ PASS iteration 69: did not opt in, since doing so would change the stacking orde
 PASS iteration 70: did not opt in, since doing so would change the stacking order.
 PASS iteration 71: opted in, since doing so does not change the stacking order.
 PASS iteration 72: did not opt in, since doing so would change the stacking order.
-FAIL - automatically opted in and changed stacking order 73
-	Ordering: firstChild (z-index: -2), secondChild (z-index: -1), predecessor (z-index: 0), container (z-index: 0)
-	hasPositionedAncestor: 0; containerIsPositioned: 0
+PASS iteration 73: did not opt in, since doing so would change the stacking order.
 PASS iteration 74: did not opt in, since doing so would change the stacking order.
-FAIL - automatically opted in and changed stacking order 75
-	Ordering: firstChild (z-index: -2), secondChild (z-index: -1), predecessor (z-index: 0), ancestor (z-index: 0)
-	hasPositionedAncestor: 1; containerIsPositioned: 0
+PASS iteration 75: did not opt in, since doing so would change the stacking order.
 PASS iteration 76: opted in, since doing so does not change the stacking order.
 PASS iteration 77: opted in, since doing so does not change the stacking order.
-FAIL - automatically opted in and changed stacking order 78
-	Ordering: firstChild (z-index: -3), secondChild (z-index: -2), predecessor (z-index: 0), container (z-index: 0)
-	hasPositionedAncestor: 0; containerIsPositioned: 0
-FAIL - automatically opted in and changed stacking order 79
-	Ordering: firstChild (z-index: -3), secondChild (z-index: -2), predecessor (z-index: 0), ancestor (z-index: 0)
-	hasPositionedAncestor: 1; containerIsPositioned: 0
+PASS iteration 78: did not opt in, since doing so would change the stacking order.
+PASS iteration 79: did not opt in, since doing so would change the stacking order.
 PASS iteration 80: opted in, since doing so does not change the stacking order.
 PASS iteration 81: opted in, since doing so does not change the stacking order.
 PASS iteration 82: opted in, since doing so does not change the stacking order.
@@ -108,42 +88,22 @@ PASS iteration 86: opted in, since doing so does not change the stacking order.
 PASS iteration 87: did not opt in, since doing so would change the stacking order.
 PASS iteration 88: did not opt in, since doing so would change the stacking order.
 PASS iteration 89: opted in, since doing so does not change the stacking order.
-FAIL - automatically opted in and changed stacking order 90
-	Ordering: firstChild (z-index: -1), container (z-index: 0), secondChild (z-index: 1), successor (z-index: 2)
-	hasPositionedAncestor: 0; containerIsPositioned: 0
+PASS iteration 90: did not opt in, since doing so would change the stacking order.
 PASS iteration 91: opted in, since doing so does not change the stacking order.
-FAIL - automatically opted in and changed stacking order 92
-	Ordering: firstChild (z-index: -1), ancestor (z-index: 0), secondChild (z-index: 1), successor (z-index: 2)
-	hasPositionedAncestor: 1; containerIsPositioned: 0
+PASS iteration 92: did not opt in, since doing so would change the stacking order.
 PASS iteration 93: opted in, since doing so does not change the stacking order.
 PASS iteration 94: opted in, since doing so does not change the stacking order.
 PASS iteration 95: opted in, since doing so does not change the stacking order.
-FAIL - automatically opted in and changed stacking order 96
-	Ordering: firstChild (z-index: -1), container (z-index: 0), secondChild (z-index: 0), successor (z-index: 0)
-	hasPositionedAncestor: 0; containerIsPositioned: 0
-FAIL - automatically opted in and changed stacking order 97
-	Ordering: firstChild (z-index: -1), ancestor (z-index: 0), secondChild (z-index: 0), successor (z-index: 0)
-	hasPositionedAncestor: 1; containerIsPositioned: 0
+PASS iteration 96: did not opt in, since doing so would change the stacking order.
+PASS iteration 97: did not opt in, since doing so would change the stacking order.
 PASS iteration 98: opted in, since doing so does not change the stacking order.
-FAIL - automatically opted in and changed stacking order 99
-	Ordering: firstChild (z-index: -2), secondChild (z-index: -1), container (z-index: 0), successor (z-index: 1)
-	hasPositionedAncestor: 0; containerIsPositioned: 0
-FAIL - automatically opted in and changed stacking order 100
-	Ordering: firstChild (z-index: -1), secondChild (z-index: 0), container (z-index: 0), predecessor (z-index: 1)
-	hasPositionedAncestor: 0; containerIsPositioned: 0
-FAIL - automatically opted in and changed stacking order 101
-	Ordering: firstChild (z-index: -2), secondChild (z-index: -1), ancestor (z-index: 0), successor (z-index: 1)
-	hasPositionedAncestor: 1; containerIsPositioned: 0
-FAIL - automatically opted in and changed stacking order 102
-	Ordering: firstChild (z-index: -1), secondChild (z-index: 0), ancestor (z-index: 0), predecessor (z-index: 1)
-	hasPositionedAncestor: 1; containerIsPositioned: 0
+PASS iteration 99: did not opt in, since doing so would change the stacking order.
+PASS iteration 100: did not opt in, since doing so would change the stacking order.
+PASS iteration 101: did not opt in, since doing so would change the stacking order.
+PASS iteration 102: did not opt in, since doing so would change the stacking order.
 PASS iteration 103: opted in, since doing so does not change the stacking order.
 PASS iteration 104: opted in, since doing so does not change the stacking order.
-FAIL - automatically opted in and changed stacking order 105
-	Ordering: firstChild (z-index: -2), secondChild (z-index: -1), container (z-index: 0), successor (z-index: 0)
-	hasPositionedAncestor: 0; containerIsPositioned: 0
-FAIL - automatically opted in and changed stacking order 106
-	Ordering: firstChild (z-index: -2), secondChild (z-index: -1), ancestor (z-index: 0), successor (z-index: 0)
-	hasPositionedAncestor: 1; containerIsPositioned: 0
+PASS iteration 105: did not opt in, since doing so would change the stacking order.
+PASS iteration 106: did not opt in, since doing so would change the stacking order.
 PASS iteration 107: opted in, since doing so does not change the stacking order.
 

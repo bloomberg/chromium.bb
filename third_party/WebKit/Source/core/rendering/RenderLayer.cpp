@@ -134,8 +134,8 @@ RenderLayer::RenderLayer(RenderLayerModelObject* renderer)
     , m_hasOutOfFlowPositionedDescendantDirty(true)
     , m_hasUnclippedDescendant(false)
     , m_needsCompositedScrolling(false)
-    , m_descendantsAreContiguousInStackingOrder(false)
-    , m_descendantsAreContiguousInStackingOrderDirty(true)
+    , m_canBePromotedToStackingContainer(false)
+    , m_canBePromotedToStackingContainerDirty(true)
     , m_isRootLayer(renderer->isRenderView())
     , m_usedTransparency(false)
     , m_paintingInsideReflection(false)
@@ -505,153 +505,65 @@ bool RenderLayer::acceleratedCompositingForOverflowScrollEnabled() const
     return settings && settings->acceleratedCompositingForOverflowScrollEnabled();
 }
 
-// If we are a stacking container, then this function will determine if our
-// descendants for a contiguous block in stacking order. This is required in
-// order for an element to be safely promoted to a stacking container. It is safe
-// to become a stacking container if this change would not alter the stacking
-// order of layers on the page. That can only happen if a non-descendant appear
-// between us and our descendants in stacking order. Here's an example:
-//
-//                                 this
-//                                /  |  \.
-//                               A   B   C
-//                              /\   |   /\.
-//                             0 -8  D  2  7
-//                                   |
-//                                   5
-//
-// I've labeled our normal flow descendants A, B, C, and D, our stacking
-// container descendants with their z indices, and us with 'this' (we're a
-// stacking container and our zIndex doesn't matter here). These nodes appear in
-// three lists: posZOrder, negZOrder, and normal flow (keep in mind that normal
-// flow layers don't overlap). So if we arrange these lists in order we get our
-// stacking order:
-//
-//                     [-8], [A-D], [0, 2, 5, 7]--> pos z-order.
-//                       |     |
-//        Neg z-order. <-+     +--> Normal flow descendants.
-//
-// We can then assign new, 'stacking' order indices to these elements as follows:
-//
-//                     [-8], [A-D], [0, 2, 5, 7]
-// 'Stacking' indices:  -1     0     1  2  3  4
-//
-// Note that the normal flow descendants can share an index because they don't
-// stack/overlap. Now our problem becomes very simple: a layer can safely become
-// a stacking container if the stacking-order indices of it and its descendants
-// appear in a contiguous block in the list of stacking indices. This problem
-// can be solved very efficiently by calculating the min/max stacking indices in
-// the subtree, and the number stacking container descendants. Once we have this
-// information, we know that the subtree's indices form a contiguous block if:
-//
-//           maxStackIndex - minStackIndex == numSCDescendants
-//
-// So for node A in the example above we would have:
-//   maxStackIndex = 1
-//   minStackIndex = -1
-//   numSCDecendants = 2
-//
-// and so,
-//       maxStackIndex - minStackIndex == numSCDescendants
-//  ===>                      1 - (-1) == 2
-//  ===>                             2 == 2
-//
-//  Since this is true, A can safely become a stacking container.
-//  Now, for node C we have:
-//
-//   maxStackIndex = 4
-//   minStackIndex = 0 <-- because C has stacking index 0.
-//   numSCDecendants = 2
-//
-// and so,
-//       maxStackIndex - minStackIndex == numSCDescendants
-//  ===>                         4 - 0 == 2
-//  ===>                             4 == 2
-//
-// Since this is false, C cannot be safely promoted to a stacking container. This
-// happened because of the elements with z-index 5 and 0. Now if 5 had been a
-// child of C rather than D, and A had no child with Z index 0, we would have had:
-//
-//   maxStackIndex = 3
-//   minStackIndex = 0 <-- because C has stacking index 0.
-//   numSCDecendants = 3
-//
-// and so,
-//       maxStackIndex - minStackIndex == numSCDescendants
-//  ===>                         3 - 0 == 3
-//  ===>                             3 == 3
-//
-//  And we would conclude that C could be promoted.
-void RenderLayer::updateDescendantsAreContiguousInStackingOrder()
+// Determine whether the current layer can be promoted to a stacking container.
+// We do this by computing what positive and negative z-order lists would look
+// like before and after promotion, and ensuring that proper stacking order is
+// preserved between the two sets of lists.
+void RenderLayer::updateCanBeStackingContainer()
 {
-    if (!m_descendantsAreContiguousInStackingOrderDirty || !isStackingContext() || !acceleratedCompositingForOverflowScrollEnabled())
+    TRACE_EVENT0("blink_rendering", "RenderLayer::updateCanBeStackingContainer");
+
+    if (isStackingContext() || !m_canBePromotedToStackingContainerDirty || !acceleratedCompositingForOverflowScrollEnabled())
         return;
 
-    OwnPtr<Vector<RenderLayer*> > posZOrderList;
-    OwnPtr<Vector<RenderLayer*> > negZOrderList;
-    rebuildZOrderLists(StopAtStackingContexts, posZOrderList, negZOrderList);
-
-    // Create a reverse lookup.
-    HashMap<const RenderLayer*, int> lookup;
-
-    if (negZOrderList) {
-        int stackingOrderIndex = -1;
-        size_t listSize = negZOrderList->size();
-        for (size_t i = 0; i < listSize; ++i) {
-            RenderLayer* currentLayer = negZOrderList->at(listSize - i - 1);
-            if (!currentLayer->isStackingContext())
-                continue;
-            lookup.set(currentLayer, stackingOrderIndex--);
-        }
-    }
-
-    if (posZOrderList) {
-        size_t listSize = posZOrderList->size();
-        int stackingOrderIndex = 1;
-        for (size_t i = 0; i < listSize; ++i) {
-            RenderLayer* currentLayer = posZOrderList->at(i);
-            if (!currentLayer->isStackingContext())
-                continue;
-            lookup.set(currentLayer, stackingOrderIndex++);
-        }
-    }
-
-    int minIndex = 0;
-    int maxIndex = 0;
-    int count = 0;
-    bool firstIteration = true;
-    updateDescendantsAreContiguousInStackingOrderRecursive(lookup, minIndex, maxIndex, count, firstIteration);
-
-    m_descendantsAreContiguousInStackingOrderDirty = false;
-}
-
-void RenderLayer::updateDescendantsAreContiguousInStackingOrderRecursive(const HashMap<const RenderLayer*, int>& lookup, int& minIndex, int& maxIndex, int& count, bool firstIteration)
-{
-    if (isStackingContext() && !firstIteration) {
-        if (lookup.contains(this)) {
-            minIndex = std::min(minIndex, lookup.get(this));
-            maxIndex = std::max(maxIndex, lookup.get(this));
-            count++;
-        }
+    FrameView* frameView = renderer()->view()->frameView();
+    if (!frameView || !frameView->containsScrollableArea(this))
         return;
+
+    RenderLayer* ancestorStackingContext = this->ancestorStackingContext();
+    if (!ancestorStackingContext)
+        return;
+
+    OwnPtr<Vector<RenderLayer*> > posZOrderListBeforePromote = adoptPtr(new Vector<RenderLayer*>);
+    OwnPtr<Vector<RenderLayer*> > negZOrderListBeforePromote = adoptPtr(new Vector<RenderLayer*>);
+    OwnPtr<Vector<RenderLayer*> > posZOrderListAfterPromote = adoptPtr(new Vector<RenderLayer*>);
+    OwnPtr<Vector<RenderLayer*> > negZOrderListAfterPromote = adoptPtr(new Vector<RenderLayer*>);
+
+    collectBeforePromotionZOrderList(ancestorStackingContext, posZOrderListBeforePromote, negZOrderListBeforePromote);
+    collectAfterPromotionZOrderList(ancestorStackingContext, posZOrderListAfterPromote, negZOrderListAfterPromote);
+
+    size_t maxIndex = std::min(posZOrderListAfterPromote->size() + negZOrderListAfterPromote->size(), posZOrderListBeforePromote->size() + negZOrderListBeforePromote->size());
+
+    m_canBePromotedToStackingContainerDirty = false;
+    m_canBePromotedToStackingContainer = false;
+
+    const RenderLayer* layerAfterPromote = 0;
+    for (size_t i = 0; i < maxIndex && layerAfterPromote != this; ++i) {
+        const RenderLayer* layerBeforePromote = i < negZOrderListBeforePromote->size()
+            ? negZOrderListBeforePromote->at(i)
+            : posZOrderListBeforePromote->at(i - negZOrderListBeforePromote->size());
+        layerAfterPromote = i < negZOrderListAfterPromote->size()
+            ? negZOrderListAfterPromote->at(i)
+            : posZOrderListAfterPromote->at(i - negZOrderListAfterPromote->size());
+
+        if (layerBeforePromote != layerAfterPromote && (layerAfterPromote != this || renderer()->hasBackground()))
+            return;
     }
 
-    for (RenderLayer* child = firstChild(); child; child = child->nextSibling()) {
-        int childMinIndex = 0;
-        int childMaxIndex = 0;
-        int childCount = 0;
-        child->updateDescendantsAreContiguousInStackingOrderRecursive(lookup, childMinIndex, childMaxIndex, childCount, false);
-        if (childCount) {
-            count += childCount;
-            minIndex = std::min(minIndex, childMinIndex);
-            maxIndex = std::max(maxIndex, childMaxIndex);
-        }
+    layerAfterPromote = 0;
+    for (size_t i = 0; i < maxIndex && layerAfterPromote != this; ++i) {
+        const RenderLayer* layerBeforePromote = i < posZOrderListBeforePromote->size()
+            ? posZOrderListBeforePromote->at(posZOrderListBeforePromote->size() - i - 1)
+            : negZOrderListBeforePromote->at(negZOrderListBeforePromote->size() + posZOrderListBeforePromote->size() - i - 1);
+        layerAfterPromote = i < posZOrderListAfterPromote->size()
+            ? posZOrderListAfterPromote->at(posZOrderListAfterPromote->size() - i - 1)
+            : negZOrderListAfterPromote->at(negZOrderListAfterPromote->size() + posZOrderListAfterPromote->size() - i - 1);
+
+        if (layerBeforePromote != layerAfterPromote && layerAfterPromote != this)
+            return;
     }
 
-    if (!isStackingContext()) {
-        m_descendantsAreContiguousInStackingOrder = (maxIndex - minIndex) == count;
-        m_descendantsAreContiguousInStackingOrderDirty = false;
-    }
+    m_canBePromotedToStackingContainer = true;
 }
 
 static inline bool isPositionedContainer(const RenderLayer* layer)
@@ -1085,8 +997,8 @@ bool RenderLayer::canBeStackingContainer() const
     if (isStackingContext() || !ancestorStackingContainer())
         return true;
 
-    ASSERT(!m_descendantsAreContiguousInStackingOrderDirty);
-    return m_descendantsAreContiguousInStackingOrder;
+    ASSERT(!m_canBePromotedToStackingContainerDirty);
+    return m_canBePromotedToStackingContainer;
 }
 
 void RenderLayer::setHasVisibleContent()
@@ -2067,31 +1979,27 @@ bool RenderLayer::needsCompositedScrolling() const
 
 void RenderLayer::updateNeedsCompositedScrolling()
 {
-    if (RenderLayer* ancestor = ancestorStackingContext())
-        ancestor->updateDescendantsAreContiguousInStackingOrder();
+    updateCanBeStackingContainer();
 
     bool needsCompositedScrolling = false;
+    updateDescendantDependentFlags();
 
-    FrameView* frameView = renderer()->view()->frameView();
-    if (frameView && frameView->containsScrollableArea(this)) {
-        updateDescendantDependentFlags();
-
-        bool forceUseCompositedScrolling = acceleratedCompositingForOverflowScrollEnabled()
-            && canBeStackingContainer()
-            && !hasUnclippedDescendant();
+    ASSERT(renderer()->view()->frameView() && renderer()->view()->frameView()->containsScrollableArea(this));
+    bool forceUseCompositedScrolling = acceleratedCompositingForOverflowScrollEnabled()
+        && canBeStackingContainer()
+        && !hasUnclippedDescendant();
 
 #if ENABLE(ACCELERATED_OVERFLOW_SCROLLING)
-        needsCompositedScrolling = forceUseCompositedScrolling || renderer()->style()->useTouchOverflowScrolling();
+    needsCompositedScrolling = forceUseCompositedScrolling || renderer()->style()->useTouchOverflowScrolling();
 #else
-        needsCompositedScrolling = forceUseCompositedScrolling;
+    needsCompositedScrolling = forceUseCompositedScrolling;
 #endif
-        // We gather a boolean value for use with Google UMA histograms to
-        // quantify the actual effects of a set of patches attempting to
-        // relax composited scrolling requirements, thereby increasing the
-        // number of composited overflow divs.
-        if (acceleratedCompositingForOverflowScrollEnabled())
-            HistogramSupport::histogramEnumeration("Renderer.NeedsCompositedScrolling", needsCompositedScrolling, 2);
-    }
+    // We gather a boolean value for use with Google UMA histograms to
+    // quantify the actual effects of a set of patches attempting to
+    // relax composited scrolling requirements, thereby increasing the
+    // number of composited overflow divs.
+    if (acceleratedCompositingForOverflowScrollEnabled())
+        HistogramSupport::histogramEnumeration("Renderer.NeedsCompositedScrolling", needsCompositedScrolling, 2);
 
     setNeedsCompositedScrolling(needsCompositedScrolling);
 }
@@ -5638,7 +5546,7 @@ void RenderLayer::dirtyZOrderLists()
         m_negZOrderList->clear();
     m_zOrderListsDirty = true;
 
-    m_descendantsAreContiguousInStackingOrderDirty = true;
+    m_canBePromotedToStackingContainerDirty = true;
 
     if (!renderer()->documentBeingDestroyed()) {
         compositor()->setNeedsUpdateCompositingRequirementsState();

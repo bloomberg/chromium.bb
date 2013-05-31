@@ -899,8 +899,7 @@ private:
     void dirtyAncestorChainHasOutOfFlowPositionedDescendantStatus();
 
     bool acceleratedCompositingForOverflowScrollEnabled() const;
-    void updateDescendantsAreContiguousInStackingOrder();
-    void updateDescendantsAreContiguousInStackingOrderRecursive(const HashMap<const RenderLayer*, int>&, int& minIndex, int& maxIndex, int& count, bool firstIteration);
+    void updateCanBeStackingContainer();
     void collectBeforePromotionZOrderList(RenderLayer* ancestorStackingContext, OwnPtr<Vector<RenderLayer*> >& posZOrderListBeforePromote, OwnPtr<Vector<RenderLayer*> >& negZOrderListBeforePromote);
     void collectAfterPromotionZOrderList(RenderLayer* ancestorStackingContext, OwnPtr<Vector<RenderLayer*> >& posZOrderListAfterPromote, OwnPtr<Vector<RenderLayer*> >& negZOrderListAfterPromote);
 
@@ -1192,8 +1191,8 @@ protected:
     // If this is true, then no non-descendant appears between any of our
     // descendants in stacking order. This is one of the requirements of being
     // able to safely become a stacking context.
-    bool m_descendantsAreContiguousInStackingOrder : 1;
-    bool m_descendantsAreContiguousInStackingOrderDirty : 1;
+    bool m_canBePromotedToStackingContainer : 1;
+    bool m_canBePromotedToStackingContainerDirty : 1;
 
     const bool m_isRootLayer : 1;
 
