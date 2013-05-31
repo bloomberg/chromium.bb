@@ -401,10 +401,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   bool LoadDescription(string16* error);
   bool LoadManifestVersion(string16* error);
 
-  // Returns true if the extension has more than one "UI surface". For example,
-  // an extension that has a browser action and a page action.
-  bool HasMultipleUISurfaces() const;
-
   // Updates the launch URL and extents for the extension using the given
   // |override_url|.
   void OverrideLaunchUrl(const GURL& override_url);

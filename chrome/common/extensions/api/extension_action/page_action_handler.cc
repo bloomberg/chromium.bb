@@ -56,6 +56,12 @@ bool PageActionHandler::Parse(Extension* extension, string16* error) {
     }
   }
 
+  // An extension cannot have both browser and page actions.
+  if (extension->manifest()->HasKey(keys::kBrowserAction)) {
+    *error = ASCIIToUTF16(errors::kOneUISurfaceOnly);
+    return false;
+  }
+
   // If page_action_value is not NULL, then there was a valid page action.
   if (page_action_value) {
     page_action_info = ActionInfo::Load(extension, page_action_value, error);

@@ -25,7 +25,6 @@
 #include "chrome/common/chrome_version_info.h"
 // TODO(rdevlin.cronin): Remove these once all references have been removed as
 // part of crbug.com/159265.
-#include "chrome/common/extensions/api/extension_action/action_info.h"
 #include "chrome/common/extensions/api/plugins/plugins_handler.h"
 #include "chrome/common/extensions/background_info.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
@@ -722,11 +721,6 @@ bool Extension::InitFromValue(int flags, string16* error) {
   if (!LoadSharedFeatures(error))
     return false;
 
-  if (HasMultipleUISurfaces()) {
-    *error = ASCIIToUTF16(errors::kOneUISurfaceOnly);
-    return false;
-  }
-
   finished_parsing_manifest_ = true;
 
   permissions_data_->FinalizePermissions(this);
@@ -1064,21 +1058,6 @@ bool Extension::LoadManifestVersion(string16* error) {
   }
 
   return true;
-}
-
-bool Extension::HasMultipleUISurfaces() const {
-  int num_surfaces = 0;
-
-  if (ActionInfo::GetPageActionInfo(this))
-    ++num_surfaces;
-
-  if (ActionInfo::GetBrowserActionInfo(this))
-    ++num_surfaces;
-
-  if (is_app())
-    ++num_surfaces;
-
-  return num_surfaces > 1;
 }
 
 void Extension::OverrideLaunchUrl(const GURL& override_url) {
