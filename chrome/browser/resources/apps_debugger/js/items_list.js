@@ -206,7 +206,7 @@ cr.define('apps_dev_tool', function() {
       if (!item.terminated)
         this.setEnabledCheckbox_(item, node);
       else
-        this.setTerminatedReloadLink_(node, item);
+        this.setTerminatedReloadLink_(item, node);
 
       // Set remove button handler.
       this.setRemoveButton_(item, node);
