@@ -69,15 +69,6 @@ TEST_F(OmniboxControllerTest, CheckDefaultAutocompleteProviders) {
   // Ensure we have at least one provider.
   ASSERT_NE(0, observed_providers);
 
-  // Ensure that a valid kInstantUIZeroSuggestUrlPrefix adds TYPE_ZERO_SUGGEST.
-  int providers_with_zero_suggest =
-      observed_providers | AutocompleteProvider::TYPE_ZERO_SUGGEST;
-  GetPrefs()->SetString(prefs::kInstantUIZeroSuggestUrlPrefix,
-                        "http://dummy.url.com/");
-  CreateController();
-  AssertProviders(providers_with_zero_suggest);
-  GetPrefs()->SetString(prefs::kInstantUIZeroSuggestUrlPrefix, std::string());
-
   // Ensure instant extended includes all the basic ones save for those that are
   // not expected to run in instant extended.
   int providers_with_instant_extended =

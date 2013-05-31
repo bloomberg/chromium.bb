@@ -626,6 +626,20 @@ void OmniboxEditModel::OpenMatch(const AutocompleteMatch& match,
   // open).
   if (popup_model()->IsOpen()) {
     const base::TimeTicks& now(base::TimeTicks::Now());
+    base::TimeDelta elapsed_time_since_user_first_modified_omnibox(
+        now - time_user_first_modified_omnibox_);
+    base::TimeDelta elapsed_time_since_last_change_to_default_match(
+        now - autocomplete_controller()->last_time_default_match_changed());
+    // These elapsed times don't really make sense for ZeroSuggest matches
+    // (because the user does not modify the omnibox for ZeroSuggest), so for
+    // those we set the elapsed times to something that will be ignored by
+    // metrics_log.cc.
+    if (match.provider->type() == AutocompleteProvider::TYPE_ZERO_SUGGEST) {
+      elapsed_time_since_user_first_modified_omnibox =
+          base::TimeDelta::FromMilliseconds(-1);
+      elapsed_time_since_last_change_to_default_match =
+          base::TimeDelta::FromMilliseconds(-1);
+    }
     // TODO(sreeram): Handle is_temporary_text_set_by_instant_ correctly.
     AutocompleteLog log(
         autocomplete_controller()->input().text(),
@@ -635,9 +649,9 @@ void OmniboxEditModel::OpenMatch(const AutocompleteMatch& match,
         -1,  // don't yet know tab ID; set later if appropriate
         delegate_->CurrentPageExists() ? ClassifyPage(delegate_->GetURL()) :
             metrics::OmniboxEventProto_PageClassification_OTHER,
-        now - time_user_first_modified_omnibox_,
+        elapsed_time_since_user_first_modified_omnibox,
         string16::npos,  // completed_length; possibly set later
-        now - autocomplete_controller()->last_time_default_match_changed(),
+        elapsed_time_since_last_change_to_default_match,
         result());
     DCHECK(user_input_in_progress_ ||
            match.provider->type() == AutocompleteProvider::TYPE_ZERO_SUGGEST)

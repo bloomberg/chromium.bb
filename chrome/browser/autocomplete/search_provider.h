@@ -123,6 +123,9 @@ class SearchProvider : public AutocompleteProvider,
   }
 
  private:
+  // TODO(hfung): Remove ZeroSuggestProvider as a friend class after
+  // refactoring common code to a new base class.
+  friend class ZeroSuggestProvider;
   friend class SearchProviderTest;
   FRIEND_TEST_ALL_PREFIXES(SearchProviderTest, NavigationInline);
   FRIEND_TEST_ALL_PREFIXES(SearchProviderTest, NavigationInlineDomainClassify);
