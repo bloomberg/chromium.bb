@@ -23,6 +23,7 @@
 #include "ui/gfx/rect_conversions.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/gfx/transform.h"
+#include "ui/gl/gl_context.h"
 #include "webkit/common/gpu/webgraphicscontext3d_in_process_command_buffer_impl.h"
 
 using webkit::gpu::WebGraphicsContext3DInProcessCommandBufferImpl;
@@ -183,6 +184,15 @@ bool SynchronousCompositorOutputSurface::DemandDrawHw(
       gfx::Rect damage_area) {
   DCHECK(CalledOnValidThread());
   DCHECK(client_);
+  DCHECK(context3d());
+
+  // Force a GL state restore next time a GLContextVirtual is made current.
+  // TODO(boliu): Move this to the end of this function after we have fixed
+  // all cases of MakeCurrent calls outside of draws. Tracked in
+  // crbug.com/239856.
+  gfx::GLContext* current_context = gfx::GLContext::GetCurrent();
+  if (current_context)
+    current_context->ReleaseCurrent(NULL);
 
   did_swap_buffer_ = false;
 
