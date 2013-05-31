@@ -22,9 +22,11 @@ namespace content {
 
 RendererWebAudioDeviceImpl::RendererWebAudioDeviceImpl(
     const media::AudioParameters& params,
-    WebAudioDevice::RenderCallback* callback)
+    WebAudioDevice::RenderCallback* callback,
+    int session_id)
     : params_(params),
-      client_callback_(callback) {
+      client_callback_(callback),
+      session_id_(session_id) {
   DCHECK(client_callback_);
 }
 
@@ -51,7 +53,7 @@ void RendererWebAudioDeviceImpl::start() {
       web_view ? RenderViewImpl::FromWebView(web_view) : NULL;
   output_device_ = AudioDeviceFactory::NewOutputDevice(
       render_view ? render_view->routing_id() : MSG_ROUTING_NONE);
-  output_device_->Initialize(params_, this);
+  output_device_->InitializeUnifiedStream(params_, this, session_id_);
   output_device_->Start();
   // Note: Default behavior is to auto-play on start.
 }

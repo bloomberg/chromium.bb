@@ -421,11 +421,11 @@ AudioParameters AudioManagerMac::GetInputStreamParameters(
 
 AudioOutputStream* AudioManagerMac::MakeLinearOutputStream(
     const AudioParameters& params) {
-  return MakeLowLatencyOutputStream(params);
+  return MakeLowLatencyOutputStream(params, std::string());
 }
 
 AudioOutputStream* AudioManagerMac::MakeLowLatencyOutputStream(
-    const AudioParameters& params) {
+    const AudioParameters& params, const std::string& input_device_id) {
   // Handle basic output with no input channels.
   if (params.input_channels() == 0) {
     AudioDeviceID device = kAudioObjectUnknown;
@@ -462,7 +462,8 @@ AudioOutputStream* AudioManagerMac::MakeLowLatencyOutputStream(
       LOG(INFO) << "Using AGGREGATE audio device";
   }
 
-  if (device != kAudioObjectUnknown)
+  if (device != kAudioObjectUnknown &&
+      input_device_id == AudioManagerBase::kDefaultDeviceId)
     return new AUHALStream(this, params, device);
 
   // Fallback to AudioSynchronizedStream which will handle completely
@@ -471,9 +472,13 @@ AudioOutputStream* AudioManagerMac::MakeLowLatencyOutputStream(
   // kAudioDeviceUnknown translates to "use default" here.
   // TODO(crogers): consider tracking UMA stats on AUHALStream
   // versus AudioSynchronizedStream.
+  AudioDeviceID audio_device_id = GetAudioDeviceIdByUId(true, input_device_id);
+  if (audio_device_id == kAudioObjectUnknown)
+    return NULL;
+
   return new AudioSynchronizedStream(this,
                                      params,
-                                     kAudioDeviceUnknown,
+                                     audio_device_id,
                                      kAudioDeviceUnknown);
 }
 

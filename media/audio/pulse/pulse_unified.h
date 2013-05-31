@@ -6,6 +6,7 @@
 #define MEDIA_AUDIO_PULSE_PULSE_UNIFIED_H_
 
 #include <pulse/pulseaudio.h>
+#include <string>
 
 #include "base/memory/scoped_ptr.h"
 #include "media/audio/audio_io.h"
@@ -20,6 +21,7 @@ class SeekableBuffer;
 class PulseAudioUnifiedStream : public AudioOutputStream {
  public:
   PulseAudioUnifiedStream(const AudioParameters& params,
+                          const std::string& input_device_id,
                           AudioManagerBase* manager);
 
   virtual ~PulseAudioUnifiedStream();
@@ -50,6 +52,9 @@ class PulseAudioUnifiedStream : public AudioOutputStream {
 
   // AudioParameters from the constructor.
   const AudioParameters params_;
+
+  // Device unique ID of the input device.
+  const std::string input_device_id_;
 
   // Audio manager that created us.  Used to report that we've closed.
   AudioManagerBase* manager_;

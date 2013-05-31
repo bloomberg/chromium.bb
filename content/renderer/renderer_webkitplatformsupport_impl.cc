@@ -10,6 +10,7 @@
 #include "base/metrics/histogram.h"
 #include "base/platform_file.h"
 #include "base/shared_memory.h"
+#include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "content/common/database_util.h"
 #include "content/common/file_utilities_messages.h"
@@ -680,16 +681,6 @@ RendererWebKitPlatformSupportImpl::createAudioDevice(
     double sample_rate,
     WebAudioDevice::RenderCallback* callback,
     const WebKit::WebString& input_device_id) {
-  if (input_device_id != "default") {
-    // Only allow audio input if we know for sure that WebKit is giving us the
-    // "default" input device.
-    // TODO(crogers): add support for non-default audio input devices when
-    // using synchronized audio I/O in WebAudio.
-    if (input_channels > 0)
-      DLOG(WARNING) << "createAudioDevice(): request for audio input ignored";
-    input_channels = 0;
-  }
-
   // The |channels| does not exactly identify the channel layout of the
   // device. The switch statement below assigns a best guess to the channel
   // layout based on number of channels.
@@ -725,12 +716,21 @@ RendererWebKitPlatformSupportImpl::createAudioDevice(
       layout = media::CHANNEL_LAYOUT_STEREO;
   }
 
+  int session_id = 0;
+  if (input_device_id.isNull() ||
+      !base::StringToInt(UTF16ToUTF8(input_device_id), &session_id)) {
+    if (input_channels > 0)
+      DLOG(WARNING) << "createAudioDevice(): request for audio input ignored";
+
+    input_channels = 0;
+  }
+
   media::AudioParameters params(
       media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
       layout, input_channels,
       static_cast<int>(sample_rate), 16, buffer_size);
 
-  return new RendererWebAudioDeviceImpl(params, callback);
+  return new RendererWebAudioDeviceImpl(params, callback, session_id);
 }
 
 //------------------------------------------------------------------------------

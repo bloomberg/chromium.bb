@@ -79,7 +79,8 @@ TEST(AudioMessageFilterTest, Basic) {
   MockAudioDelegate delegate;
   const scoped_ptr<media::AudioOutputIPC> ipc =
       filter->CreateAudioOutputIPC(kRenderViewId);
-  ipc->CreateStream(&delegate, media::AudioParameters());
+  static const int kSessionId = 0;
+  ipc->CreateStream(&delegate, media::AudioParameters(), kSessionId);
   static const int kStreamId = 1;
   EXPECT_EQ(&delegate, filter->delegates_.Lookup(kStreamId));
 
@@ -128,8 +129,9 @@ TEST(AudioMessageFilterTest, Delegates) {
       filter->CreateAudioOutputIPC(kRenderViewId);
   const scoped_ptr<media::AudioOutputIPC> ipc2 =
       filter->CreateAudioOutputIPC(kRenderViewId);
-  ipc1->CreateStream(&delegate1, media::AudioParameters());
-  ipc2->CreateStream(&delegate2, media::AudioParameters());
+  static const int kSessionId = 0;
+  ipc1->CreateStream(&delegate1, media::AudioParameters(), kSessionId);
+  ipc2->CreateStream(&delegate2, media::AudioParameters(), kSessionId);
   static const int kStreamId1 = 1;
   static const int kStreamId2 = 2;
   EXPECT_EQ(&delegate1, filter->delegates_.Lookup(kStreamId1));

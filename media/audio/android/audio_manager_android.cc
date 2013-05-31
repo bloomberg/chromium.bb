@@ -69,9 +69,9 @@ AudioParameters AudioManagerAndroid::GetInputStreamParameters(
 }
 
 AudioOutputStream* AudioManagerAndroid::MakeAudioOutputStream(
-    const AudioParameters& params) {
+    const AudioParameters& params, const std::string& input_device_id) {
   AudioOutputStream* stream =
-    AudioManagerBase::MakeAudioOutputStream(params);
+    AudioManagerBase::MakeAudioOutputStream(params, std::string());
   if (stream && output_stream_count() == 1)
     RegisterHeadsetReceiver();
   return stream;
@@ -105,7 +105,7 @@ AudioOutputStream* AudioManagerAndroid::MakeLinearOutputStream(
 }
 
 AudioOutputStream* AudioManagerAndroid::MakeLowLatencyOutputStream(
-      const AudioParameters& params) {
+      const AudioParameters& params, const std::string& input_device_id) {
   DCHECK_EQ(AudioParameters::AUDIO_PCM_LOW_LATENCY, params.format());
   return new OpenSLESOutputStream(this, params);
 }

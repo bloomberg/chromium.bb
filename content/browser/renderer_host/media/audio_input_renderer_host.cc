@@ -213,9 +213,19 @@ void AudioInputRendererHost::OnCreateStream(
     return;
   }
 
+  media::AudioParameters audio_params(config.params);
+  if (media_stream_manager_->audio_input_device_manager()->
+      ShouldUseFakeDevice()) {
+    audio_params.Reset(
+        media::AudioParameters::AUDIO_FAKE,
+        config.params.channel_layout(), config.params.channels(), 0,
+        config.params.sample_rate(), config.params.bits_per_sample(),
+        config.params.frames_per_buffer());
+  }
+
   // Check if we have the permission to open the device and which device to use.
   std::string device_id = media::AudioManagerBase::kDefaultDeviceId;
-  if (session_id != AudioInputDeviceManager::kFakeOpenSessionId) {
+  if (audio_params.format() != media::AudioParameters::AUDIO_FAKE) {
     const StreamDeviceInfo* info = media_stream_manager_->
         audio_input_device_manager()->GetOpenedDeviceInfoById(session_id);
     if (!info) {
@@ -226,16 +236,6 @@ void AudioInputRendererHost::OnCreateStream(
     }
 
     device_id = info->device.id;
-  }
-
-  media::AudioParameters audio_params(config.params);
-  if (media_stream_manager_->audio_input_device_manager()->
-      ShouldUseFakeDevice()) {
-    audio_params.Reset(
-        media::AudioParameters::AUDIO_FAKE,
-        config.params.channel_layout(), config.params.channels(), 0,
-        config.params.sample_rate(), config.params.bits_per_sample(),
-        config.params.frames_per_buffer());
   }
 
   // Create a new AudioEntry structure.

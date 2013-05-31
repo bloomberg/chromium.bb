@@ -7,6 +7,7 @@
 
 #include <vector>
 #include "base/basictypes.h"
+#include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "media/audio/audio_parameters.h"
 #include "media/base/audio_bus.h"
@@ -41,13 +42,6 @@ class AudioRendererSink
 
   // Sets important information about the audio stream format.
   // It must be called before any of the other methods.
-  // For clients wishing to have synchronized input and output,
-  // |params| may specify |input_channels| > 0, representing a
-  // number of input channels which will be at the same sample-rate
-  // and buffer-size as the output as specified in |params|.
-  // In this case, the callback's RenderIO() method will be called instead
-  // of Render(), providing the synchronized input data at the same time as
-  // when new output data is to be rendered.
   virtual void Initialize(const AudioParameters& params,
                           RenderCallback* callback) = 0;
 

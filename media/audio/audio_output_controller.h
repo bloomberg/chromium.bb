@@ -112,7 +112,8 @@ class MEDIA_EXPORT AudioOutputController
   // outlive AudioOutputController.
   static scoped_refptr<AudioOutputController> Create(
       AudioManager* audio_manager, EventHandler* event_handler,
-      const AudioParameters& params, SyncReader* sync_reader);
+      const AudioParameters& params, const std::string& input_device_id,
+      SyncReader* sync_reader);
 
   // Methods to control playback of the stream.
 
@@ -177,7 +178,9 @@ class MEDIA_EXPORT AudioOutputController
   static const int kPollPauseInMilliseconds;
 
   AudioOutputController(AudioManager* audio_manager, EventHandler* handler,
-                        const AudioParameters& params, SyncReader* sync_reader);
+                        const AudioParameters& params,
+                        const std::string& input_device_id,
+                        SyncReader* sync_reader);
 
   // The following methods are executed on the audio manager thread.
   void DoCreate(bool is_for_device_change);
@@ -209,6 +212,9 @@ class MEDIA_EXPORT AudioOutputController
   AudioManager* const audio_manager_;
   const AudioParameters params_;
   EventHandler* const handler_;
+
+  // Used by the unified IO to open the correct input device.
+  std::string input_device_id_;
 
   // Note: It's important to invalidate the weak pointers whenever stream_ is
   // changed.  See comment for weak_this_.

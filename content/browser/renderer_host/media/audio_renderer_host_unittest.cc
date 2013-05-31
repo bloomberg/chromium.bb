@@ -9,12 +9,16 @@
 #include "base/process_util.h"
 #include "base/sync_socket.h"
 #include "content/browser/browser_thread_impl.h"
+#include "content/browser/renderer_host/media/audio_input_device_manager.h"
 #include "content/browser/renderer_host/media/audio_mirroring_manager.h"
 #include "content/browser/renderer_host/media/audio_renderer_host.h"
+#include "content/browser/renderer_host/media/media_stream_manager.h"
 #include "content/browser/renderer_host/media/mock_media_observer.h"
 #include "content/common/media/audio_messages.h"
+#include "content/common/media/media_stream_options.h"
 #include "ipc/ipc_message_utils.h"
 #include "media/audio/audio_manager.h"
+#include "media/audio/audio_manager_base.h"
 #include "media/audio/fake_audio_output_stream.h"
 #include "net/url_request/url_request_context.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -56,11 +60,13 @@ class MockAudioRendererHost : public AudioRendererHost {
   explicit MockAudioRendererHost(
       media::AudioManager* audio_manager,
       AudioMirroringManager* mirroring_manager,
-      MediaInternals* media_internals)
+      MediaInternals* media_internals,
+      MediaStreamManager* media_stream_manager)
       : AudioRendererHost(kRenderProcessId,
                           audio_manager,
                           mirroring_manager,
-                          media_internals),
+                          media_internals,
+                          media_stream_manager),
         shared_memory_length_(0) {
   }
 
@@ -170,9 +176,12 @@ class AudioRendererHostTest : public testing::Test {
     ui_thread_.reset(new BrowserThreadImpl(BrowserThread::UI,
                                            message_loop_.get()));
     audio_manager_.reset(media::AudioManager::Create());
+    media_stream_manager_.reset(new MediaStreamManager(audio_manager_.get()));
+    media_stream_manager_->UseFakeDevice();
     observer_.reset(new MockMediaInternals());
     host_ = new MockAudioRendererHost(
-        audio_manager_.get(), &mirroring_manager_, observer_.get());
+        audio_manager_.get(), &mirroring_manager_, observer_.get(),
+        media_stream_manager_.get());
 
     // Simulate IPC channel connected.
     host_->OnChannelConnected(base::GetCurrentProcId());
@@ -188,11 +197,14 @@ class AudioRendererHostTest : public testing::Test {
 
     // We need to continue running message_loop_ to complete all destructions.
     SyncWithAudioThread();
-
     audio_manager_.reset();
 
     io_thread_.reset();
     ui_thread_.reset();
+
+    // Delete the IO message loop.  This will cause the MediaStreamManager to be
+    // notified so it will stop its device thread and device managers.
+    message_loop_.reset();
   }
 
   void Create() {
@@ -208,9 +220,47 @@ class AudioRendererHostTest : public testing::Test {
     // we receive the created message.
     host_->OnCreateStream(kStreamId,
                           kRenderViewId,
+                          0,
                           media::AudioParameters(
                               media::AudioParameters::AUDIO_FAKE,
                               media::CHANNEL_LAYOUT_STEREO,
+                              media::AudioParameters::kAudioCDSampleRate, 16,
+                              media::AudioParameters::kAudioCDSampleRate / 10));
+    message_loop_->Run();
+
+    // At some point in the future, a corresponding RemoveDiverter() call must
+    // be made.
+    EXPECT_CALL(mirroring_manager_,
+                RemoveDiverter(kRenderProcessId, kRenderViewId, NotNull()))
+        .RetiresOnSaturation();
+
+    // All created streams should ultimately be closed.
+    EXPECT_CALL(*observer_,
+                OnSetAudioStreamStatus(_, kStreamId, "closed"));
+
+    // Expect the audio stream will be deleted at some later point.
+    EXPECT_CALL(*observer_, OnDeleteAudioStream(_, kStreamId));
+  }
+
+  void CreateUnifiedStream() {
+    EXPECT_CALL(*observer_,
+                OnSetAudioStreamStatus(_, kStreamId, "created"));
+    EXPECT_CALL(*host_, OnStreamCreated(kStreamId, _))
+        .WillOnce(QuitMessageLoop(message_loop_.get()));
+    EXPECT_CALL(mirroring_manager_,
+                AddDiverter(kRenderProcessId, kRenderViewId, NotNull()))
+        .RetiresOnSaturation();
+    // Send a create stream message to the audio output stream and wait until
+    // we receive the created message.
+    // Use AudioInputDeviceManager::kFakeOpenSessionId as the session id to
+    // pass the permission check.
+    host_->OnCreateStream(kStreamId,
+                          kRenderViewId,
+                          AudioInputDeviceManager::kFakeOpenSessionId,
+                          media::AudioParameters(
+                              media::AudioParameters::AUDIO_FAKE,
+                              media::CHANNEL_LAYOUT_STEREO,
+                              2,
                               media::AudioParameters::kAudioCDSampleRate, 16,
                               media::AudioParameters::kAudioCDSampleRate / 10));
     message_loop_->Run();
@@ -315,6 +365,7 @@ class AudioRendererHostTest : public testing::Test {
   scoped_ptr<BrowserThreadImpl> io_thread_;
   scoped_ptr<BrowserThreadImpl> ui_thread_;
   scoped_ptr<media::AudioManager> audio_manager_;
+  scoped_ptr<MediaStreamManager> media_stream_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioRendererHostTest);
 };
@@ -376,6 +427,11 @@ TEST_F(AudioRendererHostTest, SimulateErrorAndClose) {
   Create();
   Play();
   SimulateError();
+  Close();
+}
+
+TEST_F(AudioRendererHostTest, CreateUnifiedStreamAndClose) {
+  CreateUnifiedStream();
   Close();
 }
 

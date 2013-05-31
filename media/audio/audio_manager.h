@@ -82,14 +82,14 @@ class MEDIA_EXPORT AudioManager {
   //
   // Do not free the returned AudioOutputStream. It is owned by AudioManager.
   virtual AudioOutputStream* MakeAudioOutputStream(
-      const AudioParameters& params) = 0;
+      const AudioParameters& params, const std::string& input_device_id) = 0;
 
   // Creates new audio output proxy. A proxy implements
   // AudioOutputStream interface, but unlike regular output stream
   // created with MakeAudioOutputStream() it opens device only when a
   // sound is actually playing.
   virtual AudioOutputStream* MakeAudioOutputStreamProxy(
-      const AudioParameters& params) = 0;
+      const AudioParameters& params, const std::string& input_device_id) = 0;
 
   // Factory to create audio recording streams.
   // |channels| can be 1 or 2.

@@ -112,13 +112,13 @@ AudioParameters AudioManagerPulse::GetInputStreamParameters(
 AudioOutputStream* AudioManagerPulse::MakeLinearOutputStream(
     const AudioParameters& params) {
   DCHECK_EQ(AudioParameters::AUDIO_PCM_LINEAR, params.format());
-  return MakeOutputStream(params);
+  return MakeOutputStream(params, std::string());
 }
 
 AudioOutputStream* AudioManagerPulse::MakeLowLatencyOutputStream(
-    const AudioParameters& params) {
+    const AudioParameters& params, const std::string& input_device_id) {
   DCHECK_EQ(AudioParameters::AUDIO_PCM_LOW_LATENCY, params.format());
-  return MakeOutputStream(params);
+  return MakeOutputStream(params, input_device_id);
 }
 
 AudioInputStream* AudioManagerPulse::MakeLinearInputStream(
@@ -162,9 +162,9 @@ AudioParameters AudioManagerPulse::GetPreferredOutputStreamParameters(
 }
 
 AudioOutputStream* AudioManagerPulse::MakeOutputStream(
-    const AudioParameters& params) {
+    const AudioParameters& params, const std::string& input_device_id) {
   if (params.input_channels()) {
-    return new PulseAudioUnifiedStream(params, this);
+    return new PulseAudioUnifiedStream(params, input_device_id, this);
   }
 
   return new PulseAudioOutputStream(params, this);

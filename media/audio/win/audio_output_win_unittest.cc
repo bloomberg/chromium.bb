@@ -184,7 +184,8 @@ TEST(WinAudioTest, PCMWaveStreamGetAndClose) {
 
   AudioOutputStream* oas = audio_man->MakeAudioOutputStream(
       AudioParameters(AudioParameters::AUDIO_PCM_LINEAR, CHANNEL_LAYOUT_STEREO,
-                      8000, 16, 256));
+                      8000, 16, 256),
+      std::string());
   ASSERT_TRUE(NULL != oas);
   oas->Close();
 }
@@ -199,22 +200,30 @@ TEST(WinAudioTest, SanityOnMakeParams) {
 
   AudioParameters::Format fmt = AudioParameters::AUDIO_PCM_LINEAR;
   EXPECT_TRUE(NULL == audio_man->MakeAudioOutputStream(
-      AudioParameters(fmt, CHANNEL_LAYOUT_UNSUPPORTED, 8000, 16, 256)));
+      AudioParameters(fmt, CHANNEL_LAYOUT_UNSUPPORTED, 8000, 16, 256),
+      std::string()));
   EXPECT_TRUE(NULL == audio_man->MakeAudioOutputStream(
-      AudioParameters(fmt, CHANNEL_LAYOUT_MONO, 1024 * 1024, 16, 256)));
+      AudioParameters(fmt, CHANNEL_LAYOUT_MONO, 1024 * 1024, 16, 256),
+      std::string()));
   EXPECT_TRUE(NULL == audio_man->MakeAudioOutputStream(
-      AudioParameters(fmt, CHANNEL_LAYOUT_STEREO, 8000, 80, 256)));
+      AudioParameters(fmt, CHANNEL_LAYOUT_STEREO, 8000, 80, 256),
+      std::string()));
   EXPECT_TRUE(NULL == audio_man->MakeAudioOutputStream(
-      AudioParameters(fmt, CHANNEL_LAYOUT_UNSUPPORTED, 8000, 16, 256)));
+      AudioParameters(fmt, CHANNEL_LAYOUT_UNSUPPORTED, 8000, 16, 256),
+      std::string()));
   EXPECT_TRUE(NULL == audio_man->MakeAudioOutputStream(
-      AudioParameters(fmt, CHANNEL_LAYOUT_STEREO, -8000, 16, 256)));
+      AudioParameters(fmt, CHANNEL_LAYOUT_STEREO, -8000, 16, 256),
+      std::string()));
   EXPECT_TRUE(NULL == audio_man->MakeAudioOutputStream(
-      AudioParameters(fmt, CHANNEL_LAYOUT_MONO, 8000, 16, -100)));
+      AudioParameters(fmt, CHANNEL_LAYOUT_MONO, 8000, 16, -100),
+      std::string()));
   EXPECT_TRUE(NULL == audio_man->MakeAudioOutputStream(
-      AudioParameters(fmt, CHANNEL_LAYOUT_MONO, 8000, 16, 0)));
+      AudioParameters(fmt, CHANNEL_LAYOUT_MONO, 8000, 16, 0),
+      std::string()));
   EXPECT_TRUE(NULL == audio_man->MakeAudioOutputStream(
       AudioParameters(fmt, CHANNEL_LAYOUT_MONO, 8000, 16,
-                      media::limits::kMaxSamplesPerPacket + 1)));
+                      media::limits::kMaxSamplesPerPacket + 1),
+      std::string()));
 }
 
 // Test that it can be opened and closed.
@@ -227,7 +236,8 @@ TEST(WinAudioTest, PCMWaveStreamOpenAndClose) {
 
   AudioOutputStream* oas = audio_man->MakeAudioOutputStream(
       AudioParameters(AudioParameters::AUDIO_PCM_LINEAR, CHANNEL_LAYOUT_STEREO,
-                      8000, 16, 256));
+                      8000, 16, 256),
+      std::string());
   ASSERT_TRUE(NULL != oas);
   EXPECT_TRUE(oas->Open());
   oas->Close();
@@ -243,7 +253,8 @@ TEST(WinAudioTest, PCMWaveStreamOpenLimit) {
 
   AudioOutputStream* oas = audio_man->MakeAudioOutputStream(
       AudioParameters(AudioParameters::AUDIO_PCM_LINEAR, CHANNEL_LAYOUT_STEREO,
-                      8000, 16, 1024 * 1024 * 1024));
+                      8000, 16, 1024 * 1024 * 1024),
+      std::string());
   EXPECT_TRUE(NULL == oas);
   if (oas)
     oas->Close();
@@ -261,7 +272,8 @@ TEST(WinAudioTest, PCMWaveSlowSource) {
 
   AudioOutputStream* oas = audio_man->MakeAudioOutputStream(
       AudioParameters(AudioParameters::AUDIO_PCM_LINEAR, CHANNEL_LAYOUT_MONO,
-                      16000, 16, 256));
+                      16000, 16, 256),
+      std::string());
   ASSERT_TRUE(NULL != oas);
   TestSourceLaggy test_laggy(2, 90);
   EXPECT_TRUE(oas->Open());
@@ -289,7 +301,8 @@ TEST(WinAudioTest, PCMWaveStreamPlaySlowLoop) {
   uint32 samples_100_ms = AudioParameters::kAudioCDSampleRate / 10;
   AudioOutputStream* oas = audio_man->MakeAudioOutputStream(
       AudioParameters(AudioParameters::AUDIO_PCM_LINEAR, CHANNEL_LAYOUT_MONO,
-                      AudioParameters::kAudioCDSampleRate, 16, samples_100_ms));
+                      AudioParameters::kAudioCDSampleRate, 16, samples_100_ms),
+      std::string());
   ASSERT_TRUE(NULL != oas);
 
   SineWaveAudioSource source(1, 200.0, AudioParameters::kAudioCDSampleRate);
@@ -319,7 +332,8 @@ TEST(WinAudioTest, PCMWaveStreamPlay200HzTone44Kss) {
   uint32 samples_100_ms = AudioParameters::kAudioCDSampleRate / 10;
   AudioOutputStream* oas = audio_man->MakeAudioOutputStream(
       AudioParameters(AudioParameters::AUDIO_PCM_LINEAR, CHANNEL_LAYOUT_MONO,
-                      AudioParameters::kAudioCDSampleRate, 16, samples_100_ms));
+                      AudioParameters::kAudioCDSampleRate, 16, samples_100_ms),
+      std::string());
   ASSERT_TRUE(NULL != oas);
 
   SineWaveAudioSource source(1, 200.0, AudioParameters::kAudioCDSampleRate);
@@ -347,7 +361,8 @@ TEST(WinAudioTest, PCMWaveStreamPlay200HzTone22Kss) {
   AudioOutputStream* oas = audio_man->MakeAudioOutputStream(
       AudioParameters(AudioParameters::AUDIO_PCM_LINEAR, CHANNEL_LAYOUT_MONO,
                       AudioParameters::kAudioCDSampleRate / 2, 16,
-                      samples_100_ms));
+                      samples_100_ms),
+      std::string());
   ASSERT_TRUE(NULL != oas);
 
   SineWaveAudioSource source(1, 200.0, AudioParameters::kAudioCDSampleRate/2);
@@ -386,7 +401,8 @@ TEST(WinAudioTest, PushSourceFile16KHz)  {
 
   AudioOutputStream* oas = audio_man->MakeAudioOutputStream(
       AudioParameters(AudioParameters::AUDIO_PCM_LINEAR, CHANNEL_LAYOUT_MONO,
-                      kSampleRate, 16, kSamples100ms));
+                      kSampleRate, 16, kSamples100ms),
+      std::string());
   ASSERT_TRUE(NULL != oas);
 
   EXPECT_TRUE(oas->Open());
@@ -422,7 +438,8 @@ TEST(WinAudioTest, PCMWaveStreamPlayTwice200HzTone44Kss) {
   uint32 samples_100_ms = AudioParameters::kAudioCDSampleRate / 10;
   AudioOutputStream* oas = audio_man->MakeAudioOutputStream(
       AudioParameters(AudioParameters::AUDIO_PCM_LINEAR, CHANNEL_LAYOUT_MONO,
-                      AudioParameters::kAudioCDSampleRate, 16, samples_100_ms));
+                      AudioParameters::kAudioCDSampleRate, 16, samples_100_ms),
+      std::string());
   ASSERT_TRUE(NULL != oas);
 
   SineWaveAudioSource source(1, 200.0, AudioParameters::kAudioCDSampleRate);
@@ -468,7 +485,8 @@ TEST(WinAudioTest, PCMWaveStreamPlay200HzToneLowLatency) {
   AudioOutputStream* oas = audio_man->MakeAudioOutputStream(
       AudioParameters(AudioParameters::AUDIO_PCM_LOW_LATENCY,
                       CHANNEL_LAYOUT_MONO, sample_rate,
-                      16, n * samples_10_ms));
+                      16, n * samples_10_ms),
+      std::string());
   ASSERT_TRUE(NULL != oas);
 
   SineWaveAudioSource source(1, 200, sample_rate);
@@ -501,7 +519,8 @@ TEST(WinAudioTest, PCMWaveStreamPendingBytes) {
   uint32 samples_100_ms = AudioParameters::kAudioCDSampleRate / 10;
   AudioOutputStream* oas = audio_man->MakeAudioOutputStream(
       AudioParameters(AudioParameters::AUDIO_PCM_LINEAR, CHANNEL_LAYOUT_MONO,
-                      AudioParameters::kAudioCDSampleRate, 16, samples_100_ms));
+                      AudioParameters::kAudioCDSampleRate, 16, samples_100_ms),
+      std::string());
   ASSERT_TRUE(NULL != oas);
 
   NiceMock<MockAudioSource> source;
@@ -660,7 +679,8 @@ TEST(WinAudioTest, SyncSocketBasic) {
                          CHANNEL_LAYOUT_MONO, sample_rate, 16, kSamples20ms);
 
 
-  AudioOutputStream* oas = audio_man->MakeAudioOutputStream(params);
+  AudioOutputStream* oas = audio_man->MakeAudioOutputStream(params,
+                                                            std::string());
   ASSERT_TRUE(NULL != oas);
 
   ASSERT_TRUE(oas->Open());
