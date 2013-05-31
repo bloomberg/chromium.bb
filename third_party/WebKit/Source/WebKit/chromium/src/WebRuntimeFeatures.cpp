@@ -430,6 +430,16 @@ bool WebRuntimeFeatures::isPagePopupEnabled()
     return RuntimeEnabledFeatures::pagePopupEnabled();
 }
 
+void WebRuntimeFeatures::enableParseSVGAsHTML(bool enable)
+{
+    RuntimeEnabledFeatures::setParseSVGAsHTMLEnabled(enable);
+}
+
+bool WebRuntimeFeatures::isParseSVGAsHTMLEnabled()
+{
+    return RuntimeEnabledFeatures::parseSVGAsHTMLEnabled();
+}
+
 void WebRuntimeFeatures::enablePeerConnection(bool enable)
 {
     RuntimeEnabledFeatures::setPeerConnectionEnabled(enable);

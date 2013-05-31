@@ -51,6 +51,7 @@ Media custom
 MediaStream status=stable
 Notifications status=stable
 PagePopup status=stable
+ParseSVGAsHTML
 PeerConnection depends_on=MediaStream, status=stable
 Quota status=stable
 RequestAutocomplete status=test

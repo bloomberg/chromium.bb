@@ -2042,9 +2042,9 @@ void Document::setVisuallyOrdered()
 
 PassRefPtr<DocumentParser> Document::createParser()
 {
-    if (isHTMLDocument()) {
+    if (isHTMLDocument() || (RuntimeEnabledFeatures::parseSVGAsHTMLEnabled() && isSVGDocument())) {
         bool reportErrors = InspectorInstrumentation::collectingHTMLParseErrors(this->page());
-        return HTMLDocumentParser::create(toHTMLDocument(this), reportErrors);
+        return HTMLDocumentParser::create(this, reportErrors);
     }
     // FIXME: this should probably pass the frame instead
     return XMLDocumentParser::create(this, view());

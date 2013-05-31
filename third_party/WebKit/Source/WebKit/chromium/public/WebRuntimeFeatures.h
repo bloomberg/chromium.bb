@@ -154,6 +154,9 @@ public:
     WEBKIT_EXPORT static void enablePagePopup(bool);
     WEBKIT_EXPORT static bool isPagePopupEnabled();
 
+    WEBKIT_EXPORT static void enableParseSVGAsHTML(bool);
+    WEBKIT_EXPORT static bool isParseSVGAsHTMLEnabled();
+
     WEBKIT_EXPORT static void enablePeerConnection(bool);
     WEBKIT_EXPORT static bool isPeerConnectionEnabled();
 
