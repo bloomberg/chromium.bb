@@ -876,10 +876,20 @@ bool RenderFlexibleBox::updateAutoMarginsInCrossAxis(RenderBox* child, LayoutUni
         }
         return true;
     }
-    if (topOrLeft.isAuto()) {
+    bool shouldAdjustTopOrLeft = true;
+    if (isColumnFlow() && !child->style()->isLeftToRightDirection()) {
         // For column flows, only make this adjustment if topOrLeft corresponds to the "before" margin,
         // so that flipForRightToLeftColumn will do the right thing.
-        if (!isColumnFlow() || child->style()->isLeftToRightDirection())
+        shouldAdjustTopOrLeft = false;
+    }
+    if (!isColumnFlow() && child->style()->isFlippedBlocksWritingMode()) {
+        // If we are a flipped writing mode, we need to adjust the opposite side. This is only needed
+        // for row flows because this only affects the block-direction axis.
+        shouldAdjustTopOrLeft = false;
+    }
+
+    if (topOrLeft.isAuto()) {
+        if (shouldAdjustTopOrLeft)
             adjustAlignmentForChild(child, availableAlignmentSpace);
 
         if (isHorizontal)
@@ -889,9 +899,7 @@ bool RenderFlexibleBox::updateAutoMarginsInCrossAxis(RenderBox* child, LayoutUni
         return true;
     }
     if (bottomOrRight.isAuto()) {
-        // For column flows, only make this adjustment if bottomOrRight corresponds to the "before" margin,
-        // so that flipForRightToLeftColumn will do the right thing.
-        if (isColumnFlow() && !child->style()->isLeftToRightDirection())
+        if (!shouldAdjustTopOrLeft)
             adjustAlignmentForChild(child, availableAlignmentSpace);
 
         if (isHorizontal)
