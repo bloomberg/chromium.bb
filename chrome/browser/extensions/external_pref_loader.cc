@@ -111,29 +111,27 @@ void ExternalPrefLoader::StartLoading() {
 void ExternalPrefLoader::LoadOnFileThread() {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
+  scoped_ptr<DictionaryValue> prefs(new DictionaryValue);
+
   // TODO(skerner): Some values of base_path_id_ will cause
   // PathService::Get() to return false, because the path does
   // not exist.  Find and fix the build/install scripts so that
   // this can become a CHECK().  Known examples include chrome
   // OS developer builds and linux install packages.
   // Tracked as crbug.com/70402 .
-  if (!PathService::Get(base_path_id_, &base_path_))
-    return;
+  if (PathService::Get(base_path_id_, &base_path_)) {
+    ReadExternalExtensionPrefFile(prefs.get());
 
-  scoped_ptr<DictionaryValue> prefs(new DictionaryValue);
+    if (!prefs->empty())
+      LOG(WARNING) << "You are using an old-style extension deployment method "
+                      "(external_extensions.json), which will soon be "
+                      "deprecated. (see http://code.google.com/chrome/"
+                      "extensions/external_extensions.html )";
 
-  ReadExternalExtensionPrefFile(prefs.get());
-  if (!prefs->empty())
-    LOG(WARNING) << "You are using an old-style extension deployment method "
-                    "(external_extensions.json), which will soon be "
-                    "deprecated. (see http://code.google.com/chrome/"
-                    "extensions/external_extensions.html )";
-
-  ReadStandaloneExtensionPrefFiles(prefs.get());
+    ReadStandaloneExtensionPrefFiles(prefs.get());
+  }
 
   prefs_.swap(prefs);
-  if (!prefs_)
-    prefs_.reset(new DictionaryValue());
 
   if (base_path_id_ == chrome::DIR_EXTERNAL_EXTENSIONS) {
     UMA_HISTOGRAM_COUNTS_100("Extensions.ExternalJsonCount",
