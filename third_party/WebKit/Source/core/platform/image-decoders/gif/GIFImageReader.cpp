@@ -351,45 +351,29 @@ bool GIFFrameContext::decode(const unsigned char* data, size_t length, WebCore::
     return true;
 }
 
-// Decode all frames before haltAtFrame.
-// This method uses GIFFrameContext:decode() to decode each frame; decoding error is reported to client as a critical failure.
+// Decode a frame.
+// This method uses GIFFrameContext:decode() to decode the frame; decoding error is reported to client as a critical failure.
 // Return true if decoding has progressed. Return false if an error has occurred.
-bool GIFImageReader::decode(GIFImageDecoder::GIFQuery query, unsigned haltAtFrame)
+bool GIFImageReader::decode(size_t frameIndex)
+{
+    bool frameDecoded = false;
+    GIFFrameContext* currentFrame = m_frames[frameIndex].get();
+
+    return currentFrame->decode(data(0), m_data->size(), m_client, &frameDecoded)
+        && (!frameDecoded || m_client->frameComplete(frameIndex));
+}
+
+bool GIFImageReader::parse(GIFImageDecoder::GIFParseQuery query)
 {
     ASSERT(m_bytesRead <= m_data->size());
 
-    if (!parse(m_bytesRead, m_data->size() - m_bytesRead, query == GIFImageDecoder::GIFSizeQuery))
-        return false;
-
-    if (query != GIFImageDecoder::GIFFullQuery)
-        return true;
-
-    while (m_currentDecodingFrame < std::min(m_frames.size(), static_cast<size_t>(haltAtFrame))) {
-        bool frameDecoded = false;
-        GIFFrameContext* currentFrame = m_frames[m_currentDecodingFrame].get();
-
-        if (!currentFrame->decode(data(0), m_data->size(), m_client, &frameDecoded))
-            return false;
-
-        // We need more data to continue decoding.
-        if (!frameDecoded)
-            break;
-
-        if (!m_client->frameComplete(m_currentDecodingFrame, currentFrame->delayTime, currentFrame->disposalMethod))
-            return false;
-        ++m_currentDecodingFrame;
-    }
-
-    // All frames decoded.
-    if (m_currentDecodingFrame == m_frames.size() && m_parseCompleted)
-        m_client->gifComplete();
-    return true;
+    return parseData(m_bytesRead, m_data->size() - m_bytesRead, query);
 }
 
 // Parse incoming GIF data stream into internal data structures.
 // Return true if parsing has progressed or there is not enough data.
 // Return false if a fatal error is encountered.
-bool GIFImageReader::parse(size_t dataPosition, size_t len, bool parseSizeOnly)
+bool GIFImageReader::parseData(size_t dataPosition, size_t len, GIFImageDecoder::GIFParseQuery query)
 {
     if (!len) {
         // No new data has come in since the last call, just ignore this call.
@@ -450,7 +434,6 @@ bool GIFImageReader::parse(size_t dataPosition, size_t len, bool parseSizeOnly)
             if (m_client && !m_client->setSize(m_screenWidth, m_screenHeight))
                 return false;
 
-            m_screenBgcolor = currentComponent[5];
             m_globalColormapSize = 2 << (currentComponent[4] & 0x07);
 
             if ((currentComponent[4] & 0x80) && m_globalColormapSize > 0) { /* global map */
@@ -675,7 +658,7 @@ bool GIFImageReader::parse(size_t dataPosition, size_t len, bool parseSizeOnly)
                     return false;
             }
 
-            if (parseSizeOnly) {
+            if (query == GIFImageDecoder::GIFSizeQuery) {
                 // The decoder needs to stop. Hand back the number of bytes we consumed from
                 // buffer minus 9 (the amount we consumed to read the header).
                 setRemainingBytes(len + 9);
