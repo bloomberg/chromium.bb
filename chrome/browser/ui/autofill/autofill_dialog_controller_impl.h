@@ -330,12 +330,18 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
   void FillOutputForSectionWithComparator(DialogSection section,
                                           const InputFieldComparator& compare);
 
-  // Fills in |form_structure_| using |form_group|. Utility method for
-  // FillOutputForSection.
-  void FillFormStructureForSection(const AutofillDataModel& data_model,
+  // Fills in |form_structure_| using |data_model|. Returns whether any matches
+  // were found in the form structure for the data in |section|. |data_model|
+  // may be NULL, in which case it's just a dry run (where the return value
+  // is still valid).
+  bool FillFormStructureForSection(const AutofillDataModel* data_model,
                                    size_t variant,
                                    DialogSection section,
                                    const InputFieldComparator& compare);
+
+  // Returns whether |form_structure|_| has any fields that match the fieldset
+  // represented by |section|.
+  bool FormStructureCaresAboutSection(DialogSection section) const;
 
   // Sets the CVC result on |form_structure_| to the value in |cvc|.
   void SetCvcResult(const string16& cvc);
@@ -589,6 +595,10 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
   // A map from DialogSection to editing state (true for editing, false for
   // not editing). This only tracks if the user has clicked the edit link.
   std::map<DialogSection, bool> section_editing_state_;
+
+  // Whether |form_structure_| has asked for any details that would indicate
+  // we should show a shipping section.
+  bool cares_about_shipping_;
 
   // The GUIDs for the currently showing unverified profiles popup.
   std::vector<PersonalDataManager::GUIDPair> popup_guids_;

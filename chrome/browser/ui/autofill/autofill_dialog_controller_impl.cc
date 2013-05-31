@@ -480,6 +480,12 @@ void AutofillDialogControllerImpl::Show() {
               arraysize(kShippingInputs),
               &requested_shipping_fields_);
 
+  cares_about_shipping_ =
+      FillFormStructureForSection(NULL,
+                                  0,
+                                  SECTION_SHIPPING,
+                                  base::Bind(DetailInputMatchesField));
+
   SuggestionsUpdated();
 
   // TODO(estade): don't show the dialog if the site didn't specify the right
@@ -658,6 +664,9 @@ bool AutofillDialogControllerImpl::SectionIsActive(DialogSection section)
     const {
   if (IsSubmitPausedOn(wallet::VERIFY_CVV))
     return section == SECTION_CC_BILLING;
+
+  if (!FormStructureCaresAboutSection(section))
+    return false;
 
   if (IsPayingWithWallet())
     return section == SECTION_CC_BILLING || section == SECTION_SHIPPING;
@@ -1872,6 +1881,7 @@ AutofillDialogControllerImpl::AutofillDialogControllerImpl(
       suggested_billing_(this),
       suggested_cc_billing_(this),
       suggested_shipping_(this),
+      cares_about_shipping_(true),
       input_showing_popup_(NULL),
       weak_ptr_factory_(this),
       is_first_run_(!profile_->GetPrefs()->HasPrefPath(
@@ -2002,10 +2012,8 @@ void AutofillDialogControllerImpl::SuggestionsUpdated() {
           addresses[i]->DisplayName(),
           addresses[i]->DisplayNameDetail());
 
-      if (addresses[i]->object_id() ==
-              wallet_items_->default_address_id()) {
+      if (addresses[i]->object_id() == wallet_items_->default_address_id())
         suggested_shipping_.SetCheckedItem(key);
-      }
     }
 
     if (!IsSubmitPausedOn(wallet::VERIFY_CVV)) {
@@ -2164,7 +2172,7 @@ void AutofillDialogControllerImpl::FillOutputForSectionWithComparator(
     AutofillProfile profile;
     profile.SetRawInfo(EMAIL_ADDRESS,
                        account_chooser_model_.active_wallet_account_name());
-    FillFormStructureForSection(profile, 0, section, compare);
+    FillFormStructureForSection(&profile, 0, section, compare);
     return;
   }
 
@@ -2196,7 +2204,7 @@ void AutofillDialogControllerImpl::FillOutputForSectionWithComparator(
       if (ShouldSaveDetailsLocally())
         GetManager()->SaveImportedCreditCard(card);
 
-      FillFormStructureForSection(card, 0, section, compare);
+      FillFormStructureForSection(&card, 0, section, compare);
 
       // Again, CVC needs special-casing. Fill it in directly from |output|.
       SetCvcResult(GetValueForType(output, CREDIT_CARD_VERIFICATION_CODE));
@@ -2216,7 +2224,7 @@ void AutofillDialogControllerImpl::FillOutputForSectionWithComparator(
       if (ShouldSaveDetailsLocally())
         SaveProfileGleanedFromSection(profile, section);
 
-      FillFormStructureForSection(profile, 0, section, compare);
+      FillFormStructureForSection(&profile, 0, section, compare);
     }
   }
 }
@@ -2226,11 +2234,12 @@ void AutofillDialogControllerImpl::FillOutputForSection(DialogSection section) {
                                      base::Bind(DetailInputMatchesField));
 }
 
-void AutofillDialogControllerImpl::FillFormStructureForSection(
-    const AutofillDataModel& data_model,
+bool AutofillDialogControllerImpl::FillFormStructureForSection(
+    const AutofillDataModel* data_model,
     size_t variant,
     DialogSection section,
     const InputFieldComparator& compare) {
+  bool found_match = false;
   std::string app_locale = g_browser_process->GetApplicationLocale();
   for (size_t i = 0; i < form_structure_.field_count(); ++i) {
     AutofillField* field = form_structure_.field(i);
@@ -2238,11 +2247,27 @@ void AutofillDialogControllerImpl::FillFormStructureForSection(
     const DetailInputs& inputs = RequestedFieldsForSection(section);
     for (size_t j = 0; j < inputs.size(); ++j) {
       if (compare.Run(inputs[j], *field)) {
-        data_model.FillFormField(*field, variant, app_locale, field);
+        found_match = true;
+        if (data_model)
+          data_model->FillFormField(*field, variant, app_locale, field);
         break;
       }
     }
   }
+
+  return found_match;
+}
+
+bool AutofillDialogControllerImpl::FormStructureCaresAboutSection(
+    DialogSection section) const {
+  // For now, only SECTION_SHIPPING may be omitted due to a site not asking for
+  // any of the fields.
+  // TODO(estade): remove !IsPayingWithWallet() check once WalletClient support
+  // is added. http://crbug.com/243514
+  if (section == SECTION_SHIPPING && !IsPayingWithWallet())
+    return cares_about_shipping_;
+
+  return true;
 }
 
 void AutofillDialogControllerImpl::SetCvcResult(const string16& cvc) {
@@ -2409,7 +2434,8 @@ bool AutofillDialogControllerImpl::SectionIsValid(
 }
 
 bool AutofillDialogControllerImpl::ShouldUseBillingForShipping() {
-  return suggested_shipping_.GetItemKeyForCheckedItem() == kSameAsBillingKey;
+  return SectionIsActive(SECTION_SHIPPING) &&
+      suggested_shipping_.GetItemKeyForCheckedItem() == kSameAsBillingKey;
 }
 
 bool AutofillDialogControllerImpl::ShouldSaveDetailsLocally() {

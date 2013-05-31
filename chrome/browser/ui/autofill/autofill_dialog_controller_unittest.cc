@@ -287,7 +287,8 @@ class AutofillDialogControllerTest : public testing::Test {
     : ui_thread_(BrowserThread::UI, &loop_),
       file_thread_(BrowserThread::FILE),
       file_blocking_thread_(BrowserThread::FILE_USER_BLOCKING),
-      io_thread_(BrowserThread::IO) {
+      io_thread_(BrowserThread::IO),
+      form_structure_(NULL) {
     file_thread_.Start();
     file_blocking_thread_.Start();
     io_thread_.StartIOThread();
@@ -1812,6 +1813,31 @@ TEST_F(AutofillDialogControllerTest, NoManageMenuItemForNewWalletUsers) {
   // "Same as billing" and "Add address...".
   EXPECT_EQ(
       2, controller()->MenuModelForSection(SECTION_SHIPPING)->GetItemCount());
+}
+
+TEST_F(AutofillDialogControllerTest, ShippingSectionCanBeHidden) {
+  SwitchToAutofill();
+
+  FormFieldData email_field;
+  email_field.autocomplete_attribute = "email";
+  FormFieldData cc_field;
+  cc_field.autocomplete_attribute = "cc-number";
+  FormFieldData billing_field;
+  billing_field.autocomplete_attribute = "billing region";
+
+  FormData form_data;
+  form_data.fields.push_back(email_field);
+  form_data.fields.push_back(cc_field);
+  form_data.fields.push_back(billing_field);
+
+  AutofillProfile full_profile(test::GetVerifiedProfile());
+  controller()->GetTestingManager()->AddTestingProfile(&full_profile);
+  SetUpControllerWithFormData(form_data);
+  EXPECT_FALSE(controller()->SectionIsActive(SECTION_SHIPPING));
+
+  FillCreditCardInputs();
+  controller()->OnAccept();
+  EXPECT_TRUE(form_structure());
 }
 
 }  // namespace autofill
