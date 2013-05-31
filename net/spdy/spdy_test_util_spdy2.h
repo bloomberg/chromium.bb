@@ -44,9 +44,6 @@ SpdyFrame* ConstructSpdyPush(const char* const extra_headers[],
                              const char* url,
                              const char* status,
                              const char* location);
-SpdyFrame* ConstructSpdyPush(int stream_id,
-                             int associated_stream_id,
-                             const char* url);
 
 SpdyFrame* ConstructSpdyPushHeaders(int stream_id,
                                     const char* const extra_headers[],
@@ -83,7 +80,9 @@ SpdyFrame* ConstructSpdySynReplyError(const char* const status,
 // will vary the most between calls.
 // Returns a SpdyFrame.
 SpdyFrame* ConstructSpdyPost(const char* url,
+                             SpdyStreamId stream_id,
                              int64 content_length,
+                             RequestPriority priority,
                              const char* const extra_headers[],
                              int extra_header_count);
 

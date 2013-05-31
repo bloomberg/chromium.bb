@@ -1679,7 +1679,7 @@ TEST_P(SpdyNetworkTransactionSpdy2Test, Head) {
 // Test that a simple POST works.
 TEST_P(SpdyNetworkTransactionSpdy2Test, Post) {
   scoped_ptr<SpdyFrame> req(
-      ConstructSpdyPost(kRequestUrl, kUploadDataSize, NULL, 0));
+      ConstructSpdyPost(kRequestUrl, 1, kUploadDataSize, LOWEST, NULL, 0));
   scoped_ptr<SpdyFrame> body(ConstructSpdyBodyFrame(1, true));
   MockWrite writes[] = {
     CreateMockWrite(*req),
@@ -1707,7 +1707,7 @@ TEST_P(SpdyNetworkTransactionSpdy2Test, Post) {
 // Test that a POST with a file works.
 TEST_P(SpdyNetworkTransactionSpdy2Test, FilePost) {
   scoped_ptr<SpdyFrame> req(
-      ConstructSpdyPost(kRequestUrl, kUploadDataSize, NULL, 0));
+      ConstructSpdyPost(kRequestUrl, 1, kUploadDataSize, LOWEST, NULL, 0));
   scoped_ptr<SpdyFrame> body(ConstructSpdyBodyFrame(1, true));
   MockWrite writes[] = {
     CreateMockWrite(*req),
@@ -1735,7 +1735,7 @@ TEST_P(SpdyNetworkTransactionSpdy2Test, FilePost) {
 // Test that a complex POST works.
 TEST_P(SpdyNetworkTransactionSpdy2Test, ComplexPost) {
   scoped_ptr<SpdyFrame> req(
-      ConstructSpdyPost(kRequestUrl, kUploadDataSize, NULL, 0));
+      ConstructSpdyPost(kRequestUrl, 1, kUploadDataSize, LOWEST, NULL, 0));
   scoped_ptr<SpdyFrame> body(ConstructSpdyBodyFrame(1, true));
   MockWrite writes[] = {
     CreateMockWrite(*req),
@@ -1864,7 +1864,8 @@ TEST_P(SpdyNetworkTransactionSpdy2Test, NullPost) {
 
   // When request.upload_data_stream is NULL for post, content-length is
   // expected to be 0.
-  scoped_ptr<SpdyFrame> req(ConstructSpdyPost(kRequestUrl, 0, NULL, 0));
+  scoped_ptr<SpdyFrame> req(
+      ConstructSpdyPost(kRequestUrl, 1, 0, LOWEST, NULL, 0));
   // Set the FIN bit since there will be no body.
   test::SetFrameFlags(req.get(), CONTROL_FLAG_FIN, SPDY2);
   MockWrite writes[] = {
@@ -1905,7 +1906,7 @@ TEST_P(SpdyNetworkTransactionSpdy2Test, EmptyPost) {
 
   const uint64 kContentLength = 0;
   scoped_ptr<SpdyFrame> req(
-      ConstructSpdyPost(kRequestUrl, kContentLength, NULL, 0));
+      ConstructSpdyPost(kRequestUrl, 1, kContentLength, LOWEST, NULL, 0));
   // Set the FIN bit since there will be no body.
   test::SetFrameFlags(req.get(), CONTROL_FLAG_FIN, SPDY2);
   MockWrite writes[] = {
@@ -1953,7 +1954,7 @@ TEST_P(SpdyNetworkTransactionSpdy2Test, PostWithEarlySynReply) {
   };
 
   scoped_ptr<SpdyFrame> req(
-      ConstructSpdyPost(kRequestUrl, kUploadDataSize, NULL, 0));
+      ConstructSpdyPost(kRequestUrl, 1, kUploadDataSize, LOWEST, NULL, 0));
   scoped_ptr<SpdyFrame> body(ConstructSpdyBodyFrame(1, true));
   MockWrite writes[] = {
     CreateMockWrite(*req, 0),

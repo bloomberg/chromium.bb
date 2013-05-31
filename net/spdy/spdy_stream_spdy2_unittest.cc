@@ -84,7 +84,7 @@ TEST_F(SpdyStreamSpdy2Test, SendDataAfterOpen) {
   session_ = SpdySessionDependencies::SpdyCreateSession(&session_deps_);
 
   scoped_ptr<SpdyFrame> req(
-      ConstructSpdyPost(kStreamUrl, kPostBodyLength, NULL, 0));
+      ConstructSpdyPost(kStreamUrl, 1, kPostBodyLength, LOWEST, NULL, 0));
   scoped_ptr<SpdyFrame> msg(
       ConstructSpdyBodyFrame(1, kPostBody, kPostBodyLength, false));
   MockWrite writes[] = {
@@ -196,7 +196,7 @@ TEST_F(SpdyStreamSpdy2Test, StreamError) {
   session_ = SpdySessionDependencies::SpdyCreateSession(&session_deps_);
 
   scoped_ptr<SpdyFrame> req(
-      ConstructSpdyPost(kStreamUrl, kPostBodyLength, NULL, 0));
+      ConstructSpdyPost(kStreamUrl, 1, kPostBodyLength, LOWEST, NULL, 0));
   scoped_ptr<SpdyFrame> msg(
       ConstructSpdyBodyFrame(1, kPostBody, kPostBodyLength, false));
   MockWrite writes[] = {
@@ -284,7 +284,7 @@ TEST_F(SpdyStreamSpdy2Test, SendLargeDataAfterOpenRequestResponse) {
   session_ = SpdySessionDependencies::SpdyCreateSession(&session_deps_);
 
   scoped_ptr<SpdyFrame> req(
-      ConstructSpdyPost(kStreamUrl, kPostBodyLength, NULL, 0));
+      ConstructSpdyPost(kStreamUrl, 1, kPostBodyLength, LOWEST, NULL, 0));
   std::string chunk_data(kMaxSpdyFrameChunkSize, 'x');
   scoped_ptr<SpdyFrame> chunk(
       ConstructSpdyBodyFrame(
@@ -351,7 +351,7 @@ TEST_F(SpdyStreamSpdy2Test, SendLargeDataAfterOpenBidirectional) {
   session_ = SpdySessionDependencies::SpdyCreateSession(&session_deps_);
 
   scoped_ptr<SpdyFrame> req(
-      ConstructSpdyPost(kStreamUrl, kPostBodyLength, NULL, 0));
+      ConstructSpdyPost(kStreamUrl, 1, kPostBodyLength, LOWEST, NULL, 0));
   std::string chunk_data(kMaxSpdyFrameChunkSize, 'x');
   scoped_ptr<SpdyFrame> chunk(
       ConstructSpdyBodyFrame(

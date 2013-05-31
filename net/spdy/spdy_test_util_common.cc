@@ -530,11 +530,11 @@ scoped_ptr<SpdyHeaderBlock> SpdyTestUtil::ConstructGetHeaderBlock(
   std::string scheme, host, path;
   ParseUrl(url.data(), &scheme, &host, &path);
   const char* const headers[] = {
-    is_spdy2() ? "method"  : ":method",  "GET",
-    is_spdy2() ? "url"     : ":path",    path.c_str(),
-    is_spdy2() ? "host"    : ":host",    host.c_str(),
-    is_spdy2() ? "scheme"  : ":scheme",  scheme.c_str(),
-    is_spdy2() ? "version" : ":version", "HTTP/1.1"
+    GetMethodKey(),  "GET",
+    GetPathKey(),    path.c_str(),
+    GetHostKey(),    host.c_str(),
+    GetSchemeKey(),  scheme.c_str(),
+    GetVersionKey(), "HTTP/1.1"
   };
   scoped_ptr<SpdyHeaderBlock> header_block(new SpdyHeaderBlock());
   AppendToHeaderBlock(headers, arraysize(headers) / 2, header_block.get());
@@ -548,12 +548,12 @@ scoped_ptr<SpdyHeaderBlock> SpdyTestUtil::ConstructPostHeaderBlock(
   ParseUrl(url.data(), &scheme, &host, &path);
   std::string length_str = base::Int64ToString(content_length);
   const char* const headers[] = {
-    is_spdy2() ? "method"  : ":method",  "POST",
-    is_spdy2() ? "url"     : ":path",    path.c_str(),
-    is_spdy2() ? "host"    : ":host",    host.c_str(),
-    is_spdy2() ? "scheme"  : ":scheme",  scheme.c_str(),
-    is_spdy2() ? "version" : ":version", "HTTP/1.1",
-    "content-length",               length_str.c_str()
+    GetMethodKey(),   "POST",
+    GetPathKey(),     path.c_str(),
+    GetHostKey(),     host.c_str(),
+    GetSchemeKey(),   scheme.c_str(),
+    GetVersionKey(),  "HTTP/1.1",
+    "content-length", length_str.c_str()
   };
   scoped_ptr<SpdyHeaderBlock> header_block(new SpdyHeaderBlock());
   AppendToHeaderBlock(headers, arraysize(headers) / 2, header_block.get());
@@ -728,11 +728,11 @@ SpdyFrame* SpdyTestUtil::ConstructSpdyGet(const char* const extra_headers[],
   const bool spdy2 = is_spdy2();
   const char* url = (spdy2 && !direct) ? "http://www.google.com/" : "/";
   const char* const kStandardGetHeaders[] = {
-    spdy2 ? "method"  : ":method",  "GET",
-    spdy2 ? "host"    : ":host",    "www.google.com",
-    spdy2 ? "scheme"  : ":scheme",  "http",
-    spdy2 ? "version" : ":version", "HTTP/1.1",
-    spdy2 ? "url"     : ":path",    url
+    GetMethodKey(),  "GET",
+    GetHostKey(),    "www.google.com",
+    GetSchemeKey(),  "http",
+    GetVersionKey(), "HTTP/1.1",
+    GetPathKey(),    url
   };
   return ConstructSpdyControlFrame(extra_headers,
                                    extra_header_count,
@@ -750,12 +750,11 @@ SpdyFrame* SpdyTestUtil::ConstructSpdyConnect(
     const char* const extra_headers[],
     int extra_header_count,
     int stream_id) const {
-  const bool spdy2 = is_spdy2();
   const char* const kConnectHeaders[] = {
-    spdy2 ? "method"  : ":method",  "CONNECT",
-    spdy2 ? "url"     : ":path",    "www.google.com:443",
-    spdy2 ? "host"    : ":host",    "www.google.com",
-    spdy2 ? "version" : ":version", "HTTP/1.1",
+    GetMethodKey(),  "CONNECT",
+    GetPathKey(),    "www.google.com:443",
+    GetHostKey(),    "www.google.com",
+    GetVersionKey(), "HTTP/1.1",
   };
   return ConstructSpdyControlFrame(extra_headers,
                                    extra_header_count,
@@ -769,8 +768,291 @@ SpdyFrame* SpdyTestUtil::ConstructSpdyConnect(
                                    0);
 }
 
+SpdyFrame* SpdyTestUtil::ConstructSpdyPush(const char* const extra_headers[],
+                                           int extra_header_count,
+                                           int stream_id,
+                                           int associated_stream_id) {
+  const char* const kStandardGetHeaders[] = {
+    "hello",         "bye",
+    GetStatusKey(),  "200",
+    GetVersionKey(), "HTTP/1.1"
+  };
+  return ConstructSpdyControlFrame(extra_headers,
+                                   extra_header_count,
+                                   false,
+                                   stream_id,
+                                   LOWEST,
+                                   SYN_STREAM,
+                                   CONTROL_FLAG_NONE,
+                                   kStandardGetHeaders,
+                                   arraysize(kStandardGetHeaders),
+                                   associated_stream_id);
+}
+
+SpdyFrame* SpdyTestUtil::ConstructSpdyPush(const char* const extra_headers[],
+                                           int extra_header_count,
+                                           int stream_id,
+                                           int associated_stream_id,
+                                           const char* url) {
+  std::string scheme, host, path;
+  ParseUrl(url, &scheme, &host, &path);
+  const char* const kStandardGetHeaders[] = {
+    "hello",         "bye",
+    GetStatusKey(),  "200 OK",
+    GetVersionKey(), "HTTP/1.1",
+    GetPathKey(),    is_spdy2() ? url : path.c_str(),
+    GetHostKey(),    host.c_str(),
+    GetSchemeKey(),  scheme.c_str(),
+  };
+  return ConstructSpdyControlFrame(extra_headers,
+                                   extra_header_count,
+                                   false,
+                                   stream_id,
+                                   LOWEST,
+                                   SYN_STREAM,
+                                   CONTROL_FLAG_NONE,
+                                   kStandardGetHeaders,
+                                   arraysize(kStandardGetHeaders),
+                                   associated_stream_id);
+
+}
+SpdyFrame* SpdyTestUtil::ConstructSpdyPush(const char* const extra_headers[],
+                                           int extra_header_count,
+                                           int stream_id,
+                                           int associated_stream_id,
+                                           const char* url,
+                                           const char* status,
+                                           const char* location) {
+  std::string scheme, host, path;
+  ParseUrl(url, &scheme, &host, &path);
+  const char* const kStandardGetHeaders[] = {
+    "hello",         "bye",
+    GetStatusKey(),  status,
+    "location",      location,
+    GetPathKey(),    is_spdy2() ? url : path.c_str(),
+    GetHostKey(),    host.c_str(),
+    GetSchemeKey(),  scheme.c_str(),
+    GetVersionKey(), "HTTP/1.1"
+  };
+  return ConstructSpdyControlFrame(extra_headers,
+                                   extra_header_count,
+                                   false,
+                                   stream_id,
+                                   LOWEST,
+                                   SYN_STREAM,
+                                   CONTROL_FLAG_NONE,
+                                   kStandardGetHeaders,
+                                   arraysize(kStandardGetHeaders),
+                                   associated_stream_id);
+}
+
+SpdyFrame* SpdyTestUtil::ConstructSpdyPushHeaders(
+    int stream_id,
+    const char* const extra_headers[],
+    int extra_header_count) {
+  const char* const kStandardGetHeaders[] = {
+    GetStatusKey(), "200 OK",
+    GetVersionKey(), "HTTP/1.1"
+  };
+  return ConstructSpdyControlFrame(extra_headers,
+                                   extra_header_count,
+                                   false,
+                                   stream_id,
+                                   LOWEST,
+                                   HEADERS,
+                                   CONTROL_FLAG_NONE,
+                                   kStandardGetHeaders,
+                                   arraysize(kStandardGetHeaders),
+                                   0);
+}
+
+SpdyFrame* SpdyTestUtil::ConstructSpdySynReplyError(
+    const char* const status,
+    const char* const* const extra_headers,
+    int extra_header_count,
+    int stream_id) {
+  const char* const kStandardGetHeaders[] = {
+    "hello", "bye",
+    GetStatusKey(), status,
+    GetVersionKey(), "HTTP/1.1"
+  };
+  return ConstructSpdyControlFrame(extra_headers,
+                                   extra_header_count,
+                                   false,
+                                   stream_id,
+                                   LOWEST,
+                                   SYN_REPLY,
+                                   CONTROL_FLAG_NONE,
+                                   kStandardGetHeaders,
+                                   arraysize(kStandardGetHeaders),
+                                   0);
+}
+
+SpdyFrame* SpdyTestUtil::ConstructSpdyGetSynReplyRedirect(int stream_id) {
+  static const char* const kExtraHeaders[] = {
+    "location", "http://www.foo.com/index.php",
+  };
+  return ConstructSpdySynReplyError("301 Moved Permanently", kExtraHeaders,
+                                    arraysize(kExtraHeaders)/2, stream_id);
+}
+
+SpdyFrame* SpdyTestUtil::ConstructSpdySynReplyError(int stream_id) {
+  return ConstructSpdySynReplyError("500 Internal Server Error", NULL, 0, 1);
+}
+
+SpdyFrame* SpdyTestUtil::ConstructSpdyGetSynReply(
+    const char* const extra_headers[],
+    int extra_header_count,
+    int stream_id) {
+  const char* const kStandardGetHeaders[] = {
+    "hello", "bye",
+    GetStatusKey(), "200",
+    GetVersionKey(), "HTTP/1.1"
+  };
+  return ConstructSpdyControlFrame(extra_headers,
+                                   extra_header_count,
+                                   false,
+                                   stream_id,
+                                   LOWEST,
+                                   SYN_REPLY,
+                                   CONTROL_FLAG_NONE,
+                                   kStandardGetHeaders,
+                                   arraysize(kStandardGetHeaders),
+                                   0);
+}
+
+SpdyFrame* SpdyTestUtil::ConstructSpdyPost(const char* url,
+                                           SpdyStreamId stream_id,
+                                           int64 content_length,
+                                           RequestPriority priority,
+                                           const char* const extra_headers[],
+                                           int extra_header_count) {
+  const SpdyHeaderInfo kSynStartHeader = {
+    SYN_STREAM,
+    stream_id,
+    0,                      // Associated stream ID
+    ConvertRequestPriorityToSpdyPriority(priority, spdy_version_),
+    kSpdyCredentialSlotUnused,
+    CONTROL_FLAG_NONE,
+    false,                  // Compressed
+    RST_STREAM_INVALID,
+    NULL,                   // Data
+    0,                      // Length
+    DATA_FLAG_NONE
+  };
+  return ConstructSpdyFrame(
+      kSynStartHeader, ConstructPostHeaderBlock(url, content_length));
+}
+
+SpdyFrame* SpdyTestUtil::ConstructChunkedSpdyPost(
+    const char* const extra_headers[],
+    int extra_header_count) {
+  const char* post_headers[] = {
+    GetMethodKey(), "POST",
+    GetPathKey(), "/",
+    GetHostKey(), "www.google.com",
+    GetSchemeKey(), "http",
+    GetVersionKey(), "HTTP/1.1"
+  };
+  return ConstructSpdyControlFrame(extra_headers,
+                                   extra_header_count,
+                                   false,
+                                   1,
+                                   LOWEST,
+                                   SYN_STREAM,
+                                   CONTROL_FLAG_NONE,
+                                   post_headers,
+                                   arraysize(post_headers),
+                                   0);
+}
+
+SpdyFrame* SpdyTestUtil::ConstructSpdyPostSynReply(
+    const char* const extra_headers[],
+    int extra_header_count) {
+  const char* const kStandardGetHeaders[] = {
+    "hello", "bye",
+    GetStatusKey(), "200",
+    GetPathKey(), "/index.php",
+    GetVersionKey(), "HTTP/1.1"
+  };
+  return ConstructSpdyControlFrame(extra_headers,
+                                   extra_header_count,
+                                   false,
+                                   1,
+                                   LOWEST,
+                                   SYN_REPLY,
+                                   CONTROL_FLAG_NONE,
+                                   kStandardGetHeaders,
+                                   arraysize(kStandardGetHeaders),
+                                   0);
+}
+
+SpdyFrame* SpdyTestUtil::ConstructSpdyBodyFrame(int stream_id, bool fin) {
+  SpdyFramer framer(spdy_version_);
+  return framer.CreateDataFrame(
+      stream_id, kUploadData, kUploadDataSize,
+      fin ? DATA_FLAG_FIN : DATA_FLAG_NONE);
+}
+
+SpdyFrame* SpdyTestUtil::ConstructSpdyBodyFrame(int stream_id,
+                                                const char* data,
+                                                uint32 len,
+                                                bool fin) {
+  SpdyFramer framer(spdy_version_);
+  return framer.CreateDataFrame(
+      stream_id, data, len, fin ? DATA_FLAG_FIN : DATA_FLAG_NONE);
+}
+
+SpdyFrame* SpdyTestUtil::ConstructWrappedSpdyFrame(
+    const scoped_ptr<SpdyFrame>& frame,
+    int stream_id) {
+  return ConstructSpdyBodyFrame(stream_id, frame->data(),
+                                frame->size(), false);
+}
+
+const SpdyHeaderInfo SpdyTestUtil::MakeSpdyHeader(SpdyFrameType type) {
+  const SpdyHeaderInfo kHeader = {
+    type,
+    1,                            // Stream ID
+    0,                            // Associated stream ID
+    ConvertRequestPriorityToSpdyPriority(LOWEST, spdy_version_),
+    kSpdyCredentialSlotUnused,
+    CONTROL_FLAG_FIN,             // Control Flags
+    false,                        // Compressed
+    RST_STREAM_INVALID,
+    NULL,                         // Data
+    0,                            // Length
+    DATA_FLAG_NONE
+  };
+  return kHeader;
+}
+
 scoped_ptr<SpdyFramer> SpdyTestUtil::CreateFramer() const {
   return scoped_ptr<SpdyFramer>(new SpdyFramer(spdy_version_));
+}
+
+const char* SpdyTestUtil::GetMethodKey() const {
+  return is_spdy2() ? "method" : ":method";
+}
+
+const char* SpdyTestUtil::GetStatusKey() const {
+  return is_spdy2() ? "status" : ":status";
+}
+
+const char* SpdyTestUtil::GetHostKey() const {
+  return is_spdy2() ? "host" : ":host";
+}
+
+const char* SpdyTestUtil::GetSchemeKey() const {
+  return is_spdy2() ? "scheme" : ":scheme";
+}
+
+const char* SpdyTestUtil::GetVersionKey() const {
+  return is_spdy2() ? "version" : ":version";
+}
+
+const char* SpdyTestUtil::GetPathKey() const {
+  return is_spdy2() ? "url" : ":path";
 }
 
 }  // namespace net

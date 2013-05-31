@@ -48,9 +48,6 @@ SpdyFrame* ConstructSpdyPush(const char* const extra_headers[],
                              const char* url,
                              const char* status,
                              const char* location);
-SpdyFrame* ConstructSpdyPush(int stream_id,
-                             int associated_stream_id,
-                             const char* url);
 
 SpdyFrame* ConstructSpdyPushHeaders(int stream_id,
                                     const char* const extra_headers[],
