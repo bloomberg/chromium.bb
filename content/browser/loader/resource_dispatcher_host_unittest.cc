@@ -16,6 +16,7 @@
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/loader/resource_message_filter.h"
+#include "content/browser/worker_host/worker_service_impl.h"
 #include "content/common/child_process_host_impl.h"
 #include "content/common/resource_messages.h"
 #include "content/common/view_messages.h"
@@ -591,6 +592,9 @@ class ResourceDispatcherHostTest : public testing::Test,
     if (ResourceDispatcherHostImpl::Get())
       ResourceDispatcherHostImpl::Get()->CancelRequestsForContext(
           browser_context_->GetResourceContext());
+
+    WorkerServiceImpl::GetInstance()->PerformTeardownForTesting();
+
     browser_context_.reset();
     message_loop_.RunUntilIdle();
   }
