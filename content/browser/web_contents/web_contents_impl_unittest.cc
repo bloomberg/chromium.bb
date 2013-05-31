@@ -1960,8 +1960,8 @@ TEST_F(WebContentsImplTest, CopyStateFromAndPruneSourceInterstitial) {
   EXPECT_FALSE(other_contents->ShowingInterstitialPage());
 }
 
-// Makes sure that CopyStateFromAndPrune does the right thing if the object
-// CopyStateFromAndPrune is invoked on is showing an interstitial.
+// Makes sure that CopyStateFromAndPrune cannot be called if the target is
+// showing an interstitial.
 TEST_F(WebContentsImplTest, CopyStateFromAndPruneTargetInterstitial) {
   // Navigate to a page.
   GURL url1("http://www.google.com");
@@ -1989,27 +1989,10 @@ TEST_F(WebContentsImplTest, CopyStateFromAndPruneTargetInterstitial) {
   interstitial->TestDidNavigate(1, url3);
   EXPECT_TRUE(interstitial->is_showing());
   EXPECT_EQ(2, other_controller.GetEntryCount());
-  other_contents->ExpectSetHistoryLengthAndPrune(
-      NavigationEntryImpl::FromNavigationEntry(
-          other_controller.GetEntryAtIndex(0))->site_instance(), 1,
-      other_controller.GetEntryAtIndex(0)->GetPageID());
-  other_controller.CopyStateFromAndPrune(&controller());
 
-  // The merged controller should only have two entries: url1 and url2.
-  ASSERT_EQ(2, other_controller.GetEntryCount());
-  EXPECT_EQ(1, other_controller.GetCurrentEntryIndex());
-  EXPECT_EQ(url1, other_controller.GetEntryAtIndex(0)->GetURL());
-  EXPECT_EQ(url3, other_controller.GetEntryAtIndex(1)->GetURL());
-
-  // It should have a transient entry.
-  EXPECT_TRUE(other_controller.GetTransientEntry());
-
-  // And the interstitial should be showing.
-  EXPECT_TRUE(other_contents->ShowingInterstitialPage());
-
-  // And the interstitial should do a reload on don't proceed.
-  EXPECT_TRUE(static_cast<InterstitialPageImpl*>(
-      other_contents->GetInterstitialPage())->reload_on_dont_proceed());
+  // Ensure that we do not allow calling CopyStateFromAndPrune when an
+  // interstitial is showing in the target.
+  EXPECT_FALSE(other_controller.CanPruneAllButVisible());
 }
 
 // Regression test for http://crbug.com/168611 - the URLs passed by the

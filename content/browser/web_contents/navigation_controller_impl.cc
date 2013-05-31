@@ -1204,6 +1204,9 @@ void NavigationControllerImpl::CopyStateFrom(
 
 void NavigationControllerImpl::CopyStateFromAndPrune(
     NavigationController* temp) {
+  // It is up to callers to check the invariants before calling this.
+  CHECK(CanPruneAllButVisible());
+
   NavigationControllerImpl* source =
       static_cast<NavigationControllerImpl*>(temp);
   // The SiteInstance and page_id of the last committed entry needs to be
@@ -1213,32 +1216,23 @@ void NavigationControllerImpl::CopyStateFromAndPrune(
   NavigationEntryImpl* last_committed =
       NavigationEntryImpl::FromNavigationEntry(GetLastCommittedEntry());
   scoped_refptr<SiteInstance> site_instance(
-      last_committed ? last_committed->site_instance() : NULL);
-  int32 minimum_page_id = last_committed ? last_committed->GetPageID() : -1;
-  int32 max_page_id = last_committed ?
-      web_contents_->GetMaxPageIDForSiteInstance(site_instance.get()) : -1;
-
-  // This code is intended for use when the last entry is the active entry.
-  DCHECK(
-      (transient_entry_index_ != -1 &&
-       transient_entry_index_ == GetEntryCount() - 1) ||
-      (pending_entry_ && (pending_entry_index_ == -1 ||
-                          pending_entry_index_ == GetEntryCount() - 1)) ||
-      (!pending_entry_ && last_committed_entry_index_ == GetEntryCount() - 1));
+      last_committed->site_instance());
+  int32 minimum_page_id = last_committed->GetPageID();
+  int32 max_page_id =
+      web_contents_->GetMaxPageIDForSiteInstance(site_instance.get());
 
   // Remove all the entries leaving the active entry.
-  PruneAllButActiveInternal();
+  PruneAllButVisibleInternal();
 
-  // We now have zero or one entries.  Ensure that adding the entries from
-  // source won't put us over the limit.
-  DCHECK(GetEntryCount() == 0 || GetEntryCount() == 1);
-  if (GetEntryCount() > 0)
-    source->PruneOldestEntryIfFull();
+  // We now have one entry, possibly with a new pending entry.  Ensure that
+  // adding the entries from source won't put us over the limit.
+  DCHECK_EQ(1, GetEntryCount());
+  source->PruneOldestEntryIfFull();
 
   // Insert the entries from source. Don't use source->GetCurrentEntryIndex as
-  // we don't want to copy over the transient entry.
-  int max_source_index = source->pending_entry_index_ != -1 ?
-      source->pending_entry_index_ : source->last_committed_entry_index_;
+  // we don't want to copy over the transient entry.  Ignore any pending entry,
+  // since it has not committed in source.
+  int max_source_index = source->last_committed_entry_index_;
   if (max_source_index == -1)
     max_source_index = source->GetEntryCount();
   else
@@ -1247,15 +1241,6 @@ void NavigationControllerImpl::CopyStateFromAndPrune(
 
   // Adjust indices such that the last entry and pending are at the end now.
   last_committed_entry_index_ = GetEntryCount() - 1;
-  if (pending_entry_index_ != -1)
-    pending_entry_index_ = GetEntryCount() - 1;
-  if (transient_entry_index_ != -1) {
-    // There's a transient entry. In this case we want the last committed to
-    // point to the previous entry.
-    transient_entry_index_ = GetEntryCount() - 1;
-    if (last_committed_entry_index_ != -1)
-      last_committed_entry_index_--;
-  }
 
   web_contents_->SetHistoryLengthAndPrune(site_instance.get(),
                                           max_source_index,
@@ -1274,13 +1259,32 @@ void NavigationControllerImpl::CopyStateFromAndPrune(
   }
 }
 
-void NavigationControllerImpl::PruneAllButActive() {
-  PruneAllButActiveInternal();
+bool NavigationControllerImpl::CanPruneAllButVisible() {
+  // If there is no last committed entry, we cannot prune.  Even if there is a
+  // pending entry, it may not commit, leaving this WebContents blank, despite
+  // possibly giving it new entries via CopyStateFromAndPrune.
+  if (last_committed_entry_index_ == -1)
+    return false;
 
-  // If there is an entry left, we need to update the session history length of
-  // the RenderView.
-  if (!GetActiveEntry())
-    return;
+  // We cannot prune if there is a pending entry at an existing entry index.
+  // It may not commit, so we have to keep the last committed entry, and thus
+  // there is no sensible place to keep the pending entry.  It is ok to have
+  // a new pending entry, which can optionally commit as a new navigation.
+  if (pending_entry_index_ != -1)
+    return false;
+
+  // We should not prune if we are currently showing a transient entry.
+  if (transient_entry_index_ != -1)
+    return false;
+
+  return true;
+}
+
+void NavigationControllerImpl::PruneAllButVisible() {
+  PruneAllButVisibleInternal();
+
+  // We should still have a last committed entry.
+  DCHECK_NE(-1, last_committed_entry_index_);
 
   NavigationEntryImpl* entry =
       NavigationEntryImpl::FromNavigationEntry(GetActiveEntry());
@@ -1293,43 +1297,16 @@ void NavigationControllerImpl::PruneAllButActive() {
       entry->site_instance(), 0, entry->GetPageID());
 }
 
-void NavigationControllerImpl::PruneAllButActiveInternal() {
-  if (transient_entry_index_ != -1) {
-    // There is a transient entry. Prune up to it.
-    DCHECK_EQ(GetEntryCount() - 1, transient_entry_index_);
-    entries_.erase(entries_.begin(), entries_.begin() + transient_entry_index_);
-    transient_entry_index_ = 0;
-    last_committed_entry_index_ = -1;
-    pending_entry_index_ = -1;
-  } else if (!pending_entry_) {
-    // There's no pending entry. Leave the last entry (if there is one).
-    if (!GetEntryCount())
-      return;
+void NavigationControllerImpl::PruneAllButVisibleInternal() {
+  // It is up to callers to check the invariants before calling this.
+  CHECK(CanPruneAllButVisible());
 
-    DCHECK_GE(last_committed_entry_index_, 0);
-    entries_.erase(entries_.begin(),
-                   entries_.begin() + last_committed_entry_index_);
-    entries_.erase(entries_.begin() + 1, entries_.end());
-    last_committed_entry_index_ = 0;
-  } else if (pending_entry_index_ != -1) {
-    entries_.erase(entries_.begin(), entries_.begin() + pending_entry_index_);
-    entries_.erase(entries_.begin() + 1, entries_.end());
-    pending_entry_index_ = 0;
-    last_committed_entry_index_ = 0;
-  } else {
-    // There is a pending_entry, but it's not in entries_.
-    pending_entry_index_ = -1;
-    last_committed_entry_index_ = -1;
-    entries_.clear();
-  }
-
-  if (web_contents_->GetInterstitialPage()) {
-    // Normally the interstitial page hides itself if the user doesn't proceeed.
-    // This would result in showing a NavigationEntry we just removed. Set this
-    // so the interstitial triggers a reload if the user doesn't proceed.
-    static_cast<InterstitialPageImpl*>(web_contents_->GetInterstitialPage())->
-        set_reload_on_dont_proceed(true);
-  }
+  // Erase all entries but the last committed entry.  There may still be a
+  // new pending entry after this.
+  entries_.erase(entries_.begin(),
+                 entries_.begin() + last_committed_entry_index_);
+  entries_.erase(entries_.begin() + 1, entries_.end());
+  last_committed_entry_index_ = 0;
 }
 
 void NavigationControllerImpl::ClearAllScreenshots() {

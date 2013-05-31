@@ -422,6 +422,14 @@ bool PrerenderManager::MaybeUsePrerenderedPage(WebContents* web_contents,
       prerender_data->contents()->prerender_contents()) {
     if (web_contents == new_web_contents)
       return false;  // Do not swap in to ourself.
+
+    // We cannot swap in if there is no last committed entry, because we would
+    // show a blank page under an existing entry from the current tab.  Even if
+    // there is a pending entry, it may not commit.
+    // TODO(creis): If there is a pending navigation and no last committed
+    // entry, we might be able to transfer the network request instead.
+    if (!new_web_contents->GetController().CanPruneAllButVisible())
+      return false;
   }
 
   // Do not use the prerendered version if there is an opener object.

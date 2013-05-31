@@ -386,18 +386,39 @@ class NavigationController {
   virtual void CopyStateFrom(const NavigationController& source) = 0;
 
   // A variant of CopyStateFrom. Removes all entries from this except the last
-  // entry, inserts all entries from |source| before and including the active
-  // entry. This method is intended for use when the last entry of |this| is the
-  // active entry. For example:
+  // committed entry, and inserts all entries from |source| before and including
+  // its last committed entry. For example:
   // source: A B *C* D
-  // this:   E F *G*   (last must be active or pending)
+  // this:   E F *G*
   // result: A B C *G*
-  // This ignores the transient index of the source and honors that of 'this'.
+  // If there is a pending entry after *G* in |this|, it is also preserved.
+  // This ignores any pending or transient entries in |source|.  Callers must
+  // ensure that |CanPruneAllButVisible| returns true before calling this, or it
+  // will crash.
   virtual void CopyStateFromAndPrune(NavigationController* source) = 0;
 
-  // Removes all the entries except the active entry. If there is a new pending
-  // navigation it is preserved.
-  virtual void PruneAllButActive() = 0;
+  // Returns whether it is safe to call PruneAllButVisible or
+  // CopyStateFromAndPrune.  There must be a last committed entry, no transient
+  // entry, and if there is a pending entry, it must be new and not an existing
+  // entry.
+  //
+  // If there were no last committed entry, the pending entry might not commit,
+  // leaving us with a blank page.  This is unsafe when used with
+  // |CopyStateFromAndPrune|, which would show an existing entry above the blank
+  // page.
+  // If there were a transient entry, we would not want to prune the other
+  // entries, which the transient entry could be referring to.
+  // If there were an existing pending entry, we could not prune the last
+  // committed entry, in case it did not commit.  That would leave us with no
+  // sensible place to put the pending entry when it did commit, after all other
+  // entries are pruned.  For example, it could be going back several entries.
+  // (New pending entries are safe, because they can always commit to the end.)
+  virtual bool CanPruneAllButVisible() = 0;
+
+  // Removes all the entries except the last committed entry. If there is a new
+  // pending navigation it is preserved.  Callers must ensure
+  // |CanPruneAllButVisible| returns true before calling this, or it will crash.
+  virtual void PruneAllButVisible() = 0;
 
   // Clears all screenshots associated with navigation entries in this
   // controller. Useful to reduce memory consumption in low-memory situations.

@@ -59,6 +59,8 @@
 #include "net/dns/mock_host_resolver.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "net/url_request/url_request_filter.h"
+#include "net/url_request/url_request_job.h"
 #include "ui/base/l10n/l10n_util.h"
 
 using content::BrowserThread;
@@ -579,6 +581,41 @@ class RestorePrerenderMode {
   PrerenderManager::PrerenderManagerMode prev_mode_;
 };
 
+// URLRequestJob (and associated handler) which never starts.
+class NeverStartURLRequestJob : public net::URLRequestJob {
+ public:
+  NeverStartURLRequestJob(net::URLRequest* request,
+                          net::NetworkDelegate* network_delegate)
+      : net::URLRequestJob(request, network_delegate) {
+  }
+
+  virtual void Start() OVERRIDE {}
+
+ private:
+  virtual ~NeverStartURLRequestJob() {}
+};
+
+class NeverStartProtocolHandler
+    : public net::URLRequestJobFactory::ProtocolHandler {
+ public:
+  NeverStartProtocolHandler() {}
+  virtual ~NeverStartProtocolHandler() {}
+
+  virtual net::URLRequestJob* MaybeCreateJob(
+      net::URLRequest* request,
+      net::NetworkDelegate* network_delegate) const OVERRIDE {
+    return new NeverStartURLRequestJob(request, network_delegate);
+  }
+};
+
+void CreateNeverStartProtocolHandlerOnIO(const GURL& url) {
+  CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  scoped_ptr<net::URLRequestJobFactory::ProtocolHandler> never_respond_handler(
+      new NeverStartProtocolHandler());
+  net::URLRequestFilter::GetInstance()->AddUrlProtocolHandler(
+      url, never_respond_handler.Pass());
+}
+
 }  // namespace
 
 class PrerenderBrowserTest : virtual public InProcessBrowserTest {
@@ -701,13 +738,14 @@ class PrerenderBrowserTest : virtual public InProcessBrowserTest {
   }
 
   void NavigateToDestURL() const {
-    NavigateToDestURLWithDisposition(CURRENT_TAB);
+    NavigateToDestURLWithDisposition(CURRENT_TAB, true);
   }
 
   // Opens the url in a new tab, with no opener.
   void NavigateToDestURLWithDisposition(
-      WindowOpenDisposition disposition) const {
-    NavigateToURLImpl(dest_url_, disposition);
+      WindowOpenDisposition disposition,
+      bool expect_swap_to_succeed) const {
+    NavigateToURLImpl(dest_url_, disposition, expect_swap_to_succeed);
   }
 
   void OpenDestURLViaClick() const {
@@ -818,7 +856,7 @@ class PrerenderBrowserTest : virtual public InProcessBrowserTest {
 
   void NavigateToURL(const std::string& dest_html_file) const {
     GURL dest_url = test_server()->GetURL(dest_html_file);
-    NavigateToURLImpl(dest_url, CURRENT_TAB);
+    NavigateToURLImpl(dest_url, CURRENT_TAB, true);
   }
 
   bool UrlIsInPrerenderManager(const std::string& html_file) const {
@@ -1085,7 +1123,8 @@ class PrerenderBrowserTest : virtual public InProcessBrowserTest {
   }
 
   void NavigateToURLImpl(const GURL& dest_url,
-                         WindowOpenDisposition disposition) const {
+                         WindowOpenDisposition disposition,
+                         bool expect_swap_to_succeed) const {
     ASSERT_NE(static_cast<PrerenderManager*>(NULL), GetPrerenderManager());
     // Make sure in navigating we have a URL to use in the PrerenderManager.
     ASSERT_NE(static_cast<PrerenderContents*>(NULL), GetPrerenderContents());
@@ -1118,10 +1157,11 @@ class PrerenderBrowserTest : virtual public InProcessBrowserTest {
         current_browser(), dest_url, disposition,
         ui_test_utils::BROWSER_TEST_NONE);
 
-    // Make sure the PrerenderContents found earlier was used or removed.
-    EXPECT_EQ(static_cast<PrerenderContents*>(NULL), GetPrerenderContents());
+    // Make sure the PrerenderContents found earlier was used or removed,
+    // unless we expect the swap in to fail.
+    EXPECT_EQ(expect_swap_to_succeed, !GetPrerenderContents());
 
-    if (call_javascript_ && web_contents) {
+    if (call_javascript_ && web_contents && expect_swap_to_succeed) {
       if (page_load_observer.get())
         page_load_observer->Wait();
 
@@ -1365,12 +1405,29 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderVisibility) {
   NavigateToDestURL();
 }
 
-// Checks that the visibility API works when the prerender is quickly opened
-// in a new tab before it stops loading.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderVisibilityQuickSwitch) {
-  PrerenderTestURL("files/prerender/prerender_visibility_quick.html",
-                   FINAL_STATUS_USED, 0);
-  NavigateToDestURL();
+// Checks that the prerendering of a page is canceled correctly if we try to
+// swap it in before it commits.
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderNoCommitNoSwap) {
+  // Navigate to a page that triggers a prerender for a URL that never commits.
+  const GURL kNoCommitUrl("http://never-respond.example.com");
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&CreateNeverStartProtocolHandlerOnIO, kNoCommitUrl));
+  PrerenderTestURL(kNoCommitUrl,
+                   FINAL_STATUS_CANCELLED,
+                   0);
+
+  // Navigate to the URL, but assume the contents won't be swapped in.
+  NavigateToDestURLWithDisposition(CURRENT_TAB, false);
+
+  // Confirm that the prerendered version of the URL is not swapped in,
+  // since it never committed.
+  EXPECT_TRUE(UrlIsInPrerenderManager(kNoCommitUrl));
+
+  // Post a task to cancel all the prerenders, so that we don't wait further.
+  base::MessageLoop::current()->PostTask(
+      FROM_HERE, base::Bind(&CancelAllPrerenders, GetPrerenderManager()));
+  content::RunMessageLoop();
 }
 
 // Checks that the prerendering of a page is canceled correctly when a

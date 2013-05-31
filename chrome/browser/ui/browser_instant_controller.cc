@@ -100,13 +100,32 @@ bool BrowserInstantController::MaybeSwapInInstantNTPContents(
 
   *target_contents = instant_ntp.get();
   if (source_contents) {
-    instant_ntp->GetController().CopyStateFromAndPrune(
-        &source_contents->GetController());
-    ReplaceWebContentsAt(
-        browser_->tab_strip_model()->GetIndexOfWebContents(source_contents),
-        instant_ntp.Pass());
+    // If the Instant NTP hasn't yet committed an entry, we can't call
+    // CopyStateFromAndPrune.  Instead, load the Local NTP URL directly in the
+    // source contents.
+    // TODO(sreeram): Always using the local URL is wrong in the case of the
+    // first tab in a window where we might want to use the remote URL. Fix.
+    if (!instant_ntp->GetController().CanPruneAllButVisible()) {
+      source_contents->GetController().LoadURL(chrome::GetLocalInstantURL(
+          profile()), content::Referrer(), content::PAGE_TRANSITION_GENERATED,
+          std::string());
+      *target_contents = source_contents;
+    } else {
+      instant_ntp->GetController().CopyStateFromAndPrune(
+          &source_contents->GetController());
+      ReplaceWebContentsAt(
+          browser_->tab_strip_model()->GetIndexOfWebContents(source_contents),
+          instant_ntp.Pass());
+    }
   } else {
-    instant_ntp->GetController().PruneAllButActive();
+    // If the Instant NTP hasn't yet committed an entry, we can't call
+    // PruneAllButVisible.  In that case, there shouldn't be any entries to
+    // prune anyway.
+    if (instant_ntp->GetController().CanPruneAllButVisible())
+      instant_ntp->GetController().PruneAllButVisible();
+    else
+      CHECK(!instant_ntp->GetController().GetLastCommittedEntry());
+
     // If |source_contents| is NULL, then the caller is responsible for
     // inserting instant_ntp into the tabstrip and will take ownership.
     ignore_result(instant_ntp.release());

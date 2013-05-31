@@ -862,7 +862,10 @@ bool InstantController::CommitIfPossible(InstantCommitType type) {
     overlay_->Submit(last_omnibox_text_);
   }
 
+  // We expect the WebContents to be in a valid state (i.e., has a last
+  // committed entry, no transient entry, and no existing pending entry).
   scoped_ptr<content::WebContents> overlay = overlay_->ReleaseContents();
+  CHECK(overlay->GetController().CanPruneAllButVisible());
 
   // If the overlay page has navigated since the last Update(), we need to add
   // the navigation to history ourselves. Else, the page will navigate after
@@ -902,7 +905,7 @@ bool InstantController::CommitIfPossible(InstantCommitType type) {
   }
 
   if (type == INSTANT_COMMIT_PRESSED_ALT_ENTER) {
-    overlay->GetController().PruneAllButActive();
+    overlay->GetController().PruneAllButVisible();
   } else {
     content::WebContents* active_tab = browser_->GetActiveWebContents();
     AddSessionStorageHistogram(extended_enabled(), active_tab, overlay.get());

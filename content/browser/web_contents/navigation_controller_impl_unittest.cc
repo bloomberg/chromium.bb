@@ -2785,7 +2785,7 @@ TEST_F(NavigationControllerTest, CopyStateFromAndPrune) {
   EXPECT_EQ(0, other_contents->GetMaxPageIDForSiteInstance(instance3));
 }
 
-// Test CopyStateFromAndPrune with 2 urls, the first selected and nothing in
+// Test CopyStateFromAndPrune with 2 urls, the first selected and 1 entry in
 // the target.
 TEST_F(NavigationControllerTest, CopyStateFromAndPrune2) {
   NavigationControllerImpl& controller = controller_impl();
@@ -2796,21 +2796,148 @@ TEST_F(NavigationControllerTest, CopyStateFromAndPrune2) {
   NavigateAndCommit(url1);
   NavigateAndCommit(url2);
   controller.GoBack();
+  contents()->CommitPendingNavigation();
 
   scoped_ptr<TestWebContents> other_contents(
       static_cast<TestWebContents*>(CreateTestWebContents()));
   NavigationControllerImpl& other_controller = other_contents->GetController();
-  other_contents->ExpectSetHistoryLengthAndPrune(NULL, 1, -1);
+  other_contents->NavigateAndCommit(url3);
+  other_contents->ExpectSetHistoryLengthAndPrune(
+      GetSiteInstanceFromEntry(other_controller.GetEntryAtIndex(0)), 1,
+      other_controller.GetEntryAtIndex(0)->GetPageID());
   other_controller.CopyStateFromAndPrune(&controller);
 
-  // other_controller should now contain the 1 url: url1.
+  // other_controller should now contain: url1, url3
 
-  ASSERT_EQ(1, other_controller.GetEntryCount());
-
-  ASSERT_EQ(0, other_controller.GetCurrentEntryIndex());
+  ASSERT_EQ(2, other_controller.GetEntryCount());
+  ASSERT_EQ(1, other_controller.GetCurrentEntryIndex());
 
   EXPECT_EQ(url1, other_controller.GetEntryAtIndex(0)->GetURL());
-  EXPECT_EQ(0, other_controller.GetEntryAtIndex(0)->GetPageID());
+  EXPECT_EQ(url3, other_controller.GetEntryAtIndex(1)->GetURL());
+  EXPECT_EQ(0, other_controller.GetEntryAtIndex(1)->GetPageID());
+
+  // The max page ID map should be copied over and updated with the max page ID
+  // from the current tab.
+  SiteInstance* instance1 =
+      GetSiteInstanceFromEntry(other_controller.GetEntryAtIndex(1));
+  EXPECT_EQ(0, other_contents->GetMaxPageIDForSiteInstance(instance1));
+}
+
+// Test CopyStateFromAndPrune with 2 urls, the last selected and 2 entries in
+// the target.
+TEST_F(NavigationControllerTest, CopyStateFromAndPrune3) {
+  NavigationControllerImpl& controller = controller_impl();
+  const GURL url1("http://foo1");
+  const GURL url2("http://foo2");
+  const GURL url3("http://foo3");
+  const GURL url4("http://foo4");
+
+  NavigateAndCommit(url1);
+  NavigateAndCommit(url2);
+
+  scoped_ptr<TestWebContents> other_contents(
+      static_cast<TestWebContents*>(CreateTestWebContents()));
+  NavigationControllerImpl& other_controller = other_contents->GetController();
+  other_contents->NavigateAndCommit(url3);
+  other_contents->NavigateAndCommit(url4);
+  other_contents->ExpectSetHistoryLengthAndPrune(
+      GetSiteInstanceFromEntry(other_controller.GetEntryAtIndex(1)), 2,
+      other_controller.GetEntryAtIndex(0)->GetPageID());
+  other_controller.CopyStateFromAndPrune(&controller);
+
+  // other_controller should now contain: url1, url2, url4
+
+  ASSERT_EQ(3, other_controller.GetEntryCount());
+  ASSERT_EQ(2, other_controller.GetCurrentEntryIndex());
+
+  EXPECT_EQ(url1, other_controller.GetEntryAtIndex(0)->GetURL());
+  EXPECT_EQ(url2, other_controller.GetEntryAtIndex(1)->GetURL());
+  EXPECT_EQ(url4, other_controller.GetEntryAtIndex(2)->GetURL());
+
+  // The max page ID map should be copied over and updated with the max page ID
+  // from the current tab.
+  SiteInstance* instance1 =
+      GetSiteInstanceFromEntry(other_controller.GetEntryAtIndex(2));
+  EXPECT_EQ(0, other_contents->GetMaxPageIDForSiteInstance(instance1));
+}
+
+// Test CopyStateFromAndPrune with 2 urls, 2 entries in the target, with
+// not the last entry selected in the target.
+TEST_F(NavigationControllerTest, CopyStateFromAndPruneNotLast) {
+  NavigationControllerImpl& controller = controller_impl();
+  const GURL url1("http://foo1");
+  const GURL url2("http://foo2");
+  const GURL url3("http://foo3");
+  const GURL url4("http://foo4");
+
+  NavigateAndCommit(url1);
+  NavigateAndCommit(url2);
+
+  scoped_ptr<TestWebContents> other_contents(
+      static_cast<TestWebContents*>(CreateTestWebContents()));
+  NavigationControllerImpl& other_controller = other_contents->GetController();
+  other_contents->NavigateAndCommit(url3);
+  other_contents->NavigateAndCommit(url4);
+  other_controller.GoBack();
+  other_contents->CommitPendingNavigation();
+  other_contents->ExpectSetHistoryLengthAndPrune(
+      GetSiteInstanceFromEntry(other_controller.GetEntryAtIndex(0)), 2,
+      other_controller.GetEntryAtIndex(0)->GetPageID());
+  other_controller.CopyStateFromAndPrune(&controller);
+
+  // other_controller should now contain: url1, url2, url3
+
+  ASSERT_EQ(3, other_controller.GetEntryCount());
+  ASSERT_EQ(2, other_controller.GetCurrentEntryIndex());
+
+  EXPECT_EQ(url1, other_controller.GetEntryAtIndex(0)->GetURL());
+  EXPECT_EQ(url2, other_controller.GetEntryAtIndex(1)->GetURL());
+  EXPECT_EQ(url3, other_controller.GetEntryAtIndex(2)->GetURL());
+
+  // The max page ID map should be copied over and updated with the max page ID
+  // from the current tab.
+  SiteInstance* instance1 =
+      GetSiteInstanceFromEntry(other_controller.GetEntryAtIndex(2));
+  EXPECT_EQ(0, other_contents->GetMaxPageIDForSiteInstance(instance1));
+}
+
+// Test CopyStateFromAndPrune with 2 urls, the first selected and 1 entry plus
+// a pending entry in the target.
+TEST_F(NavigationControllerTest, CopyStateFromAndPruneTargetPending) {
+  NavigationControllerImpl& controller = controller_impl();
+  const GURL url1("http://foo1");
+  const GURL url2("http://foo2");
+  const GURL url3("http://foo3");
+  const GURL url4("http://foo4");
+
+  NavigateAndCommit(url1);
+  NavigateAndCommit(url2);
+  controller.GoBack();
+  contents()->CommitPendingNavigation();
+
+  scoped_ptr<TestWebContents> other_contents(
+      static_cast<TestWebContents*>(CreateTestWebContents()));
+  NavigationControllerImpl& other_controller = other_contents->GetController();
+  other_contents->NavigateAndCommit(url3);
+  other_controller.LoadURL(
+      url4, Referrer(), PAGE_TRANSITION_TYPED, std::string());
+  other_contents->ExpectSetHistoryLengthAndPrune(
+      GetSiteInstanceFromEntry(other_controller.GetEntryAtIndex(0)), 1,
+      other_controller.GetEntryAtIndex(0)->GetPageID());
+  other_controller.CopyStateFromAndPrune(&controller);
+
+  // other_controller should now contain url1, url3, and a pending entry
+  // for url4.
+
+  ASSERT_EQ(2, other_controller.GetEntryCount());
+  EXPECT_EQ(1, other_controller.GetCurrentEntryIndex());
+
+  EXPECT_EQ(url1, other_controller.GetEntryAtIndex(0)->GetURL());
+  EXPECT_EQ(url3, other_controller.GetEntryAtIndex(1)->GetURL());
+
+  // And there should be a pending entry for url4.
+  ASSERT_TRUE(other_controller.GetPendingEntry());
+  EXPECT_EQ(url4, other_controller.GetPendingEntry()->GetURL());
 
   // The max page ID map should be copied over and updated with the max page ID
   // from the current tab.
@@ -2819,9 +2946,59 @@ TEST_F(NavigationControllerTest, CopyStateFromAndPrune2) {
   EXPECT_EQ(0, other_contents->GetMaxPageIDForSiteInstance(instance1));
 }
 
-// Test CopyStateFromAndPrune with 2 urls, the first selected and nothing in
-// the target.
-TEST_F(NavigationControllerTest, CopyStateFromAndPrune3) {
+// Test CopyStateFromAndPrune with 1 url in the source, 1 entry and a pending
+// client redirect entry (with the same page ID) in the target.  This used to
+// crash because the last committed entry would be pruned but max_page_id
+// remembered the page ID (http://crbug.com/234809).
+TEST_F(NavigationControllerTest, CopyStateFromAndPruneTargetPending2) {
+  NavigationControllerImpl& controller = controller_impl();
+  const GURL url1("http://foo1");
+  const GURL url2a("http://foo2/a");
+  const GURL url2b("http://foo2/b");
+
+  NavigateAndCommit(url1);
+
+  scoped_ptr<TestWebContents> other_contents(
+      static_cast<TestWebContents*>(CreateTestWebContents()));
+  NavigationControllerImpl& other_controller = other_contents->GetController();
+  other_contents->NavigateAndCommit(url2a);
+  // Simulate a client redirect, which has the same page ID as entry 2a.
+  other_controller.LoadURL(
+      url2b, Referrer(), PAGE_TRANSITION_LINK, std::string());
+  other_controller.GetPendingEntry()->SetPageID(
+      other_controller.GetLastCommittedEntry()->GetPageID());
+
+  other_contents->ExpectSetHistoryLengthAndPrune(
+      GetSiteInstanceFromEntry(other_controller.GetEntryAtIndex(0)), 1,
+      other_controller.GetEntryAtIndex(0)->GetPageID());
+  other_controller.CopyStateFromAndPrune(&controller);
+
+  // other_controller should now contain url1, url2a, and a pending entry
+  // for url2b.
+
+  ASSERT_EQ(2, other_controller.GetEntryCount());
+  EXPECT_EQ(1, other_controller.GetCurrentEntryIndex());
+
+  EXPECT_EQ(url1, other_controller.GetEntryAtIndex(0)->GetURL());
+  EXPECT_EQ(url2a, other_controller.GetEntryAtIndex(1)->GetURL());
+
+  // And there should be a pending entry for url4.
+  ASSERT_TRUE(other_controller.GetPendingEntry());
+  EXPECT_EQ(url2b, other_controller.GetPendingEntry()->GetURL());
+
+  // Let the pending entry commit.
+  other_contents->CommitPendingNavigation();
+
+  // The max page ID map should be copied over and updated with the max page ID
+  // from the current tab.
+  SiteInstance* instance1 =
+      GetSiteInstanceFromEntry(other_controller.GetEntryAtIndex(1));
+  EXPECT_EQ(0, other_contents->GetMaxPageIDForSiteInstance(instance1));
+}
+
+// Test CopyStateFromAndPrune with 2 urls, a back navigation pending in the
+// source, and 1 entry in the target. The back pending entry should be ignored.
+TEST_F(NavigationControllerTest, CopyStateFromAndPruneSourcePending) {
   NavigationControllerImpl& controller = controller_impl();
   const GURL url1("http://foo1");
   const GURL url2("http://foo2");
@@ -2834,29 +3011,26 @@ TEST_F(NavigationControllerTest, CopyStateFromAndPrune3) {
   scoped_ptr<TestWebContents> other_contents(
       static_cast<TestWebContents*>(CreateTestWebContents()));
   NavigationControllerImpl& other_controller = other_contents->GetController();
-  other_controller.LoadURL(
-      url3, Referrer(), PAGE_TRANSITION_TYPED, std::string());
-  other_contents->ExpectSetHistoryLengthAndPrune(NULL, 1, -1);
+  other_contents->NavigateAndCommit(url3);
+  other_contents->ExpectSetHistoryLengthAndPrune(
+      GetSiteInstanceFromEntry(other_controller.GetEntryAtIndex(0)), 2,
+      other_controller.GetEntryAtIndex(0)->GetPageID());
   other_controller.CopyStateFromAndPrune(&controller);
 
-  // other_controller should now contain 1 entry for url1, and a pending entry
-  // for url3.
+  // other_controller should now contain: url1, url2, url3
 
-  ASSERT_EQ(1, other_controller.GetEntryCount());
-
-  EXPECT_EQ(0, other_controller.GetCurrentEntryIndex());
+  ASSERT_EQ(3, other_controller.GetEntryCount());
+  ASSERT_EQ(2, other_controller.GetCurrentEntryIndex());
 
   EXPECT_EQ(url1, other_controller.GetEntryAtIndex(0)->GetURL());
-
-  // And there should be a pending entry for url3.
-  ASSERT_TRUE(other_controller.GetPendingEntry());
-
-  EXPECT_EQ(url3, other_controller.GetPendingEntry()->GetURL());
+  EXPECT_EQ(url2, other_controller.GetEntryAtIndex(1)->GetURL());
+  EXPECT_EQ(url3, other_controller.GetEntryAtIndex(2)->GetURL());
+  EXPECT_EQ(0, other_controller.GetEntryAtIndex(2)->GetPageID());
 
   // The max page ID map should be copied over and updated with the max page ID
   // from the current tab.
   SiteInstance* instance1 =
-      GetSiteInstanceFromEntry(other_controller.GetEntryAtIndex(0));
+      GetSiteInstanceFromEntry(other_controller.GetEntryAtIndex(2));
   EXPECT_EQ(0, other_contents->GetMaxPageIDForSiteInstance(instance1));
 }
 
@@ -2960,8 +3134,8 @@ TEST_F(NavigationControllerTest, HistoryNavigate) {
   EXPECT_TRUE(message == NULL);
 }
 
-// Test call to PruneAllButActive for the only entry.
-TEST_F(NavigationControllerTest, PruneAllButActiveForSingle) {
+// Test call to PruneAllButVisible for the only entry.
+TEST_F(NavigationControllerTest, PruneAllButVisibleForSingle) {
   NavigationControllerImpl& controller = controller_impl();
   const GURL url1("http://foo1");
   NavigateAndCommit(url1);
@@ -2970,14 +3144,14 @@ TEST_F(NavigationControllerTest, PruneAllButActiveForSingle) {
       GetSiteInstanceFromEntry(controller.GetEntryAtIndex(0)), 0,
       controller.GetEntryAtIndex(0)->GetPageID());
 
-  controller.PruneAllButActive();
+  controller.PruneAllButVisible();
 
   EXPECT_EQ(-1, controller.GetPendingEntryIndex());
   EXPECT_EQ(controller.GetEntryAtIndex(0)->GetURL(), url1);
 }
 
-// Test call to PruneAllButActive for last entry.
-TEST_F(NavigationControllerTest, PruneAllButActiveForLast) {
+// Test call to PruneAllButVisible for first entry.
+TEST_F(NavigationControllerTest, PruneAllButVisibleForFirst) {
   NavigationControllerImpl& controller = controller_impl();
   const GURL url1("http://foo/1");
   const GURL url2("http://foo/2");
@@ -2994,14 +3168,14 @@ TEST_F(NavigationControllerTest, PruneAllButActiveForLast) {
       GetSiteInstanceFromEntry(controller.GetEntryAtIndex(0)), 0,
       controller.GetEntryAtIndex(0)->GetPageID());
 
-  controller.PruneAllButActive();
+  controller.PruneAllButVisible();
 
   EXPECT_EQ(-1, controller.GetPendingEntryIndex());
   EXPECT_EQ(controller.GetEntryAtIndex(0)->GetURL(), url1);
 }
 
-// Test call to PruneAllButActive for intermediate entry.
-TEST_F(NavigationControllerTest, PruneAllButActiveForIntermediate) {
+// Test call to PruneAllButVisible for intermediate entry.
+TEST_F(NavigationControllerTest, PruneAllButVisibleForIntermediate) {
   NavigationControllerImpl& controller = controller_impl();
   const GURL url1("http://foo/1");
   const GURL url2("http://foo/2");
@@ -3017,36 +3191,15 @@ TEST_F(NavigationControllerTest, PruneAllButActiveForIntermediate) {
       GetSiteInstanceFromEntry(controller.GetEntryAtIndex(1)), 0,
       controller.GetEntryAtIndex(1)->GetPageID());
 
-  controller.PruneAllButActive();
+  controller.PruneAllButVisible();
 
   EXPECT_EQ(-1, controller.GetPendingEntryIndex());
   EXPECT_EQ(controller.GetEntryAtIndex(0)->GetURL(), url2);
 }
 
-// Test call to PruneAllButActive for a pending entry.
-TEST_F(NavigationControllerTest, PruneAllButActiveForPending) {
-  NavigationControllerImpl& controller = controller_impl();
-  const GURL url1("http://foo/1");
-  const GURL url2("http://foo/2");
-  const GURL url3("http://foo/3");
-
-  NavigateAndCommit(url1);
-  NavigateAndCommit(url2);
-  NavigateAndCommit(url3);
-  controller.GoBack();
-
-  contents()->ExpectSetHistoryLengthAndPrune(
-      GetSiteInstanceFromEntry(controller.GetEntryAtIndex(1)), 0,
-      controller.GetEntryAtIndex(1)->GetPageID());
-
-  controller.PruneAllButActive();
-
-  EXPECT_EQ(0, controller.GetPendingEntryIndex());
-}
-
-// Test call to PruneAllButActive for a pending entry that is not yet in the
+// Test call to PruneAllButVisible for a pending entry that is not yet in the
 // list of entries.
-TEST_F(NavigationControllerTest, PruneAllButActiveForPendingNotInList) {
+TEST_F(NavigationControllerTest, PruneAllButVisibleForPendingNotInList) {
   NavigationControllerImpl& controller = controller_impl();
   const GURL url1("http://foo/1");
   const GURL url2("http://foo/2");
@@ -3063,49 +3216,22 @@ TEST_F(NavigationControllerTest, PruneAllButActiveForPendingNotInList) {
 
   contents()->ExpectSetHistoryLengthAndPrune(
       NULL, 0, controller.GetPendingEntry()->GetPageID());
-  controller.PruneAllButActive();
+  controller.PruneAllButVisible();
 
-  // We should only have the pending entry at this point, and it should still
-  // not be in the entry list.
+  // We should only have the last committed and pending entries at this point,
+  // and the pending entry should still not be in the entry list.
+  EXPECT_EQ(0, controller.GetLastCommittedEntryIndex());
+  EXPECT_EQ(url2, controller.GetEntryAtIndex(0)->GetURL());
   EXPECT_EQ(-1, controller.GetPendingEntryIndex());
   EXPECT_TRUE(controller.GetPendingEntry());
-  EXPECT_EQ(0, controller.GetEntryCount());
+  EXPECT_EQ(1, controller.GetEntryCount());
 
   // Try to commit the pending entry.
   test_rvh()->SendNavigate(2, url3);
   EXPECT_EQ(-1, controller.GetPendingEntryIndex());
   EXPECT_FALSE(controller.GetPendingEntry());
-  EXPECT_EQ(1, controller.GetEntryCount());
-  EXPECT_EQ(url3, controller.GetEntryAtIndex(0)->GetURL());
-}
-
-// Test call to PruneAllButActive for transient entry.
-TEST_F(NavigationControllerTest, PruneAllButActiveForTransient) {
-  NavigationControllerImpl& controller = controller_impl();
-  const GURL url0("http://foo/0");
-  const GURL url1("http://foo/1");
-  const GURL transient_url("http://foo/transient");
-
-  controller.LoadURL(
-      url0, Referrer(), PAGE_TRANSITION_TYPED, std::string());
-  test_rvh()->SendNavigate(0, url0);
-  controller.LoadURL(
-      url1, Referrer(), PAGE_TRANSITION_TYPED, std::string());
-  test_rvh()->SendNavigate(1, url1);
-
-  // Adding a transient with no pending entry.
-  NavigationEntryImpl* transient_entry = new NavigationEntryImpl;
-  transient_entry->SetURL(transient_url);
-  controller.SetTransientEntry(transient_entry);
-
-  contents()->ExpectSetHistoryLengthAndPrune(
-      GetSiteInstanceFromEntry(controller.GetTransientEntry()), 0,
-      controller.GetTransientEntry()->GetPageID());
-
-  controller.PruneAllButActive();
-
-  EXPECT_EQ(-1, controller.GetPendingEntryIndex());
-  EXPECT_EQ(controller.GetTransientEntry()->GetURL(), transient_url);
+  EXPECT_EQ(2, controller.GetEntryCount());
+  EXPECT_EQ(url3, controller.GetEntryAtIndex(1)->GetURL());
 }
 
 // Test to ensure that when we do a history navigation back to the current
