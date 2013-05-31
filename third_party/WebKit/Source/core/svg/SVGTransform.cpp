@@ -25,8 +25,6 @@
 #include "core/platform/FloatConversion.h"
 #include "core/platform/graphics/FloatPoint.h"
 #include "core/platform/graphics/FloatSize.h"
-#include "core/svg/SVGAngle.h"
-#include "core/svg/SVGSVGElement.h"
 #include <wtf/MathExtras.h>
 #include <wtf/text/StringBuilder.h>
 #include <wtf/text/WTFString.h>

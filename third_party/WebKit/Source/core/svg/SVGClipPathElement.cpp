@@ -24,11 +24,8 @@
 #include "core/svg/SVGClipPathElement.h"
 
 #include "SVGNames.h"
-#include "core/dom/Attribute.h"
-#include "core/dom/Document.h"
 #include "core/rendering/svg/RenderSVGResourceClipper.h"
 #include "core/svg/SVGElementInstance.h"
-#include "core/svg/SVGTransformList.h"
 
 namespace WebCore {
 

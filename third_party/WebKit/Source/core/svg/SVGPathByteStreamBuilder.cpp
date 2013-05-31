@@ -21,10 +21,8 @@
 
 #include "core/svg/SVGPathByteStreamBuilder.h"
 
-#include "core/svg/SVGPathParser.h"
 #include "core/svg/SVGPathSeg.h"
-#include "core/svg/SVGPathStringSource.h"
-#include <wtf/OwnPtr.h>
+#include "wtf/OwnPtr.h"
 
 namespace WebCore {
 

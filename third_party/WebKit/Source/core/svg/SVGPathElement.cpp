@@ -23,7 +23,6 @@
 #include "core/svg/SVGPathElement.h"
 
 #include "SVGNames.h"
-#include "core/dom/Attribute.h"
 #include "core/rendering/svg/RenderSVGPath.h"
 #include "core/rendering/svg/RenderSVGResource.h"
 #include "core/svg/SVGElementInstance.h"
@@ -38,10 +37,8 @@
 #include "core/svg/SVGPathSegLinetoHorizontal.h"
 #include "core/svg/SVGPathSegLinetoVertical.h"
 #include "core/svg/SVGPathSegList.h"
-#include "core/svg/SVGPathSegListBuilder.h"
 #include "core/svg/SVGPathSegMoveto.h"
 #include "core/svg/SVGPathUtilities.h"
-#include "core/svg/SVGSVGElement.h"
 #include "core/svg/properties/SVGPathSegListPropertyTearOff.h"
 
 namespace WebCore {

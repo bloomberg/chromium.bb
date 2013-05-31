@@ -23,8 +23,6 @@
 #include "core/svg/SVGStyledLocatableElement.h"
 
 #include "core/platform/graphics/transforms/AffineTransform.h"
-#include "core/svg/SVGElement.h"
-#include "core/svg/SVGSVGElement.h"
 
 namespace WebCore {
 

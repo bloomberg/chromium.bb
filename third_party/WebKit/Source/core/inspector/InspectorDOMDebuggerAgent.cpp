@@ -33,11 +33,8 @@
 
 #include "InspectorFrontend.h"
 #include "core/dom/Event.h"
-#include "core/html/HTMLElement.h"
-#include "core/inspector/InspectorAgent.h"
 #include "core/inspector/InspectorDOMAgent.h"
 #include "core/inspector/InspectorDebuggerAgent.h"
-#include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/InspectorState.h"
 #include "core/inspector/InspectorValues.h"
 #include "core/inspector/InstrumentingAgents.h"

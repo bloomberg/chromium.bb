@@ -26,16 +26,11 @@
 
 #include "core/svg/SVGUseElement.h"
 
-#include "HTMLNames.h"
 #include "SVGNames.h"
 #include "XLinkNames.h"
-#include "core/dom/Attribute.h"
 #include "core/dom/Document.h"
 #include "core/dom/Event.h"
-#include "core/dom/EventListener.h"
-#include "core/dom/NodeRenderStyle.h"
 #include "core/dom/NodeTraversal.h"
-#include "core/dom/RegisteredEventListener.h"
 #include "core/dom/shadow/ElementShadow.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/loader/cache/CachedDocument.h"
@@ -44,14 +39,9 @@
 #include "core/rendering/svg/RenderSVGResource.h"
 #include "core/rendering/svg/RenderSVGTransformableContainer.h"
 #include "core/svg/SVGElementInstance.h"
-#include "core/svg/SVGElementInstanceList.h"
-#include "core/svg/SVGElementRareData.h"
 #include "core/svg/SVGGElement.h"
 #include "core/svg/SVGLengthContext.h"
 #include "core/svg/SVGSVGElement.h"
-#include "core/svg/SVGSymbolElement.h"
-#include "core/svg/animation/SVGSMILElement.h"
-#include "core/xml/XMLSerializer.h"
 #include "core/xml/parser/XMLDocumentParser.h"
 
 // Dump SVGElementInstance object tree - useful to debug instanceRoot problems

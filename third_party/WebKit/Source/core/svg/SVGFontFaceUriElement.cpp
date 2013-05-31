@@ -26,7 +26,6 @@
 #include "SVGNames.h"
 #include "XLinkNames.h"
 #include "core/css/CSSFontFaceSrcValue.h"
-#include "core/dom/Attribute.h"
 #include "core/dom/Document.h"
 #include "core/loader/cache/CachedFont.h"
 #include "core/loader/cache/CachedResourceLoader.h"

@@ -25,7 +25,6 @@
 #include "core/svg/SVGAnimateTransformElement.h"
 
 #include "SVGNames.h"
-#include "core/dom/Attribute.h"
 #include "core/svg/SVGTransformable.h"
 
 namespace WebCore {

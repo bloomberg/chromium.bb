@@ -24,14 +24,11 @@
 #include "core/svg/SVGFilterPrimitiveStandardAttributes.h"
 
 #include "SVGNames.h"
-#include "core/dom/Attribute.h"
 #include "core/platform/graphics/filters/FilterEffect.h"
 #include "core/rendering/svg/RenderSVGResourceFilterPrimitive.h"
 #include "core/svg/SVGElementInstance.h"
 #include "core/svg/SVGLength.h"
 #include "core/svg/SVGStyledElement.h"
-#include "core/svg/SVGUnitTypes.h"
-#include "core/svg/graphics/filters/SVGFilterBuilder.h"
 
 namespace WebCore {
 

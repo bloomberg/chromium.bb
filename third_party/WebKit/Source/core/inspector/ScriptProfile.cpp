@@ -32,7 +32,6 @@
 #include "core/inspector/ScriptProfile.h"
 
 #include "bindings/v8/V8Binding.h"
-#include "core/inspector/InspectorValues.h"
 #include <v8-profiler.h>
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"

@@ -24,7 +24,6 @@
 
 #include "SVGNames.h"
 #include "core/dom/NodeRenderingContext.h"
-#include "core/rendering/RenderInline.h"
 #include "core/rendering/svg/RenderSVGTSpan.h"
 
 namespace WebCore {

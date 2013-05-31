@@ -25,10 +25,7 @@
 #include "core/svg/SVGFontElement.h"
 
 #include "SVGNames.h"
-#include "core/dom/Document.h"
 #include "core/page/UseCounter.h"
-#include "core/platform/graphics/Font.h"
-#include "core/platform/graphics/GlyphPageTreeNode.h"
 #include "core/svg/SVGGlyphElement.h"
 #include "core/svg/SVGHKernElement.h"
 #include "core/svg/SVGMissingGlyphElement.h"

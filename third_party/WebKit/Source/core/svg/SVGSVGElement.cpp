@@ -27,7 +27,6 @@
 #include "SVGNames.h"
 #include "bindings/v8/ScriptEventListener.h"
 #include "core/css/CSSHelper.h"
-#include "core/dom/Attribute.h"
 #include "core/dom/Document.h"
 #include "core/dom/EventListener.h"
 #include "core/dom/EventNames.h"
@@ -54,7 +53,6 @@
 #include "core/svg/SVGTransformList.h"
 #include "core/svg/SVGViewElement.h"
 #include "core/svg/SVGViewSpec.h"
-#include "core/svg/SVGZoomEvent.h"
 #include "core/svg/animation/SMILTimeContainer.h"
 #include <wtf/StdLibExtras.h>
 

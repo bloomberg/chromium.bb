@@ -24,7 +24,6 @@
 
 #include "SVGNames.h"
 #include "XLinkNames.h"
-#include "core/svg/SVGGlyphElement.h"
 #include "core/svg/SVGParserUtilities.h"
 #include <wtf/text/AtomicString.h>
 

@@ -22,7 +22,6 @@
 #include "core/svg/SVGFEDropShadowElement.h"
 
 #include "SVGNames.h"
-#include "core/dom/Attribute.h"
 #include "core/rendering/style/RenderStyle.h"
 #include "core/rendering/style/SVGRenderStyle.h"
 #include "core/svg/SVGElementInstance.h"

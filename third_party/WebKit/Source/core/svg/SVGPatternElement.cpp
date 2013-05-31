@@ -24,21 +24,11 @@
 #include "core/svg/SVGPatternElement.h"
 
 #include "SVGNames.h"
-#include "core/dom/Attribute.h"
-#include "core/dom/Document.h"
-#include "core/platform/FloatConversion.h"
-#include "core/platform/graphics/GraphicsContext.h"
-#include "core/platform/graphics/ImageBuffer.h"
 #include "core/platform/graphics/transforms/AffineTransform.h"
-#include "core/rendering/svg/RenderSVGContainer.h"
 #include "core/rendering/svg/RenderSVGResourcePattern.h"
-#include "core/rendering/svg/SVGRenderSupport.h"
 #include "core/svg/PatternAttributes.h"
 #include "core/svg/SVGElementInstance.h"
 #include "core/svg/SVGFitToViewBox.h"
-#include "core/svg/SVGSVGElement.h"
-#include "core/svg/SVGStyledTransformableElement.h"
-#include "core/svg/SVGTransformable.h"
 
 namespace WebCore {
 

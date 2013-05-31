@@ -23,7 +23,6 @@
 #include "core/svg/SVGCursorElement.h"
 
 #include "SVGNames.h"
-#include "core/dom/Attr.h"
 #include "core/dom/Document.h"
 #include "core/svg/SVGElementInstance.h"
 

@@ -24,11 +24,9 @@
 #include "core/svg/SVGMarkerElement.h"
 
 #include "SVGNames.h"
-#include "core/dom/Attribute.h"
 #include "core/rendering/svg/RenderSVGResourceMarker.h"
 #include "core/svg/SVGElementInstance.h"
 #include "core/svg/SVGFitToViewBox.h"
-#include "core/svg/SVGSVGElement.h"
 
 namespace WebCore {
  

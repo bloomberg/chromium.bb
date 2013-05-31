@@ -54,7 +54,6 @@
 #include "core/loader/UniqueIdentifier.h"
 #include "core/loader/cache/CachedRawResource.h"
 #include "core/loader/cache/CachedResource.h"
-#include "core/loader/cache/CachedResourceLoader.h"
 #include "core/loader/cache/MemoryCache.h"
 #include "core/page/Frame.h"
 #include "core/page/Page.h"

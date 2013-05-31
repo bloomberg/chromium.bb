@@ -23,7 +23,6 @@
 #include "core/svg/SVGFEComponentTransferElement.h"
 
 #include "SVGNames.h"
-#include "core/dom/Attr.h"
 #include "core/platform/graphics/filters/FilterEffect.h"
 #include "core/svg/SVGFEFuncAElement.h"
 #include "core/svg/SVGFEFuncBElement.h"

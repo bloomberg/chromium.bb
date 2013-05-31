@@ -30,12 +30,8 @@
 #include "SVGNames.h"
 #include "core/css/CSSComputedStyleDeclaration.h"
 #include "core/css/CSSParser.h"
-#include "core/dom/Attribute.h"
-#include "core/dom/Document.h"
 #include "core/platform/FloatConversion.h"
-#include "core/rendering/RenderObject.h"
 #include "core/svg/SVGAnimateElement.h"
-#include "core/svg/SVGElementInstance.h"
 #include "core/svg/SVGParserUtilities.h"
 #include "core/svg/SVGStyledElement.h"
 #include <wtf/MathExtras.h>

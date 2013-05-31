@@ -26,12 +26,10 @@
 #include "CSSPropertyNames.h"
 #include "SVGNames.h"
 #include "XLinkNames.h"
-#include "core/dom/Attribute.h"
 #include "core/rendering/RenderImageResource.h"
 #include "core/rendering/svg/RenderSVGImage.h"
 #include "core/rendering/svg/RenderSVGResource.h"
 #include "core/svg/SVGElementInstance.h"
-#include "core/svg/SVGSVGElement.h"
 
 namespace WebCore {
 

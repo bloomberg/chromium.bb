@@ -34,10 +34,7 @@
 #include "core/inspector/InjectedScript.h"
 
 #include "bindings/v8/ScriptFunctionCall.h"
-#include "bindings/v8/SerializedScriptValue.h"
-#include "core/dom/Node.h"
 #include "core/inspector/InjectedScriptHost.h"
-#include "core/inspector/InjectedScriptModule.h"
 #include "core/inspector/InspectorValues.h"
 #include <wtf/text/WTFString.h>
 

@@ -36,7 +36,6 @@
 #include "core/inspector/InspectorOverlay.h"
 #include "core/inspector/InspectorPageAgent.h"
 #include "core/inspector/InstrumentingAgents.h"
-#include "core/page/Page.h"
 #include "core/page/PageConsole.h"
 
 namespace WebCore {

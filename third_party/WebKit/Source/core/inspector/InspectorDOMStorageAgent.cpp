@@ -35,7 +35,6 @@
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/WebCoreMemoryInstrumentation.h"
-#include "core/html/VoidCallback.h"
 #include "core/inspector/InspectorPageAgent.h"
 #include "core/inspector/InspectorState.h"
 #include "core/inspector/InspectorValues.h"
@@ -47,7 +46,6 @@
 #include "core/storage/Storage.h"
 #include "core/storage/StorageArea.h"
 #include "core/storage/StorageNamespace.h"
-#include "modules/webdatabase/Database.h"
 #include "weborigin/SecurityOrigin.h"
 
 #include <wtf/MemoryInstrumentationHashMap.h>

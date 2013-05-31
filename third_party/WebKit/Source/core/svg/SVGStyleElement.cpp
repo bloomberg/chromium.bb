@@ -26,9 +26,6 @@
 
 #include "SVGNames.h"
 #include "core/css/CSSStyleSheet.h"
-#include "core/dom/Attribute.h"
-#include "core/dom/Document.h"
-#include "core/dom/ExceptionCode.h"
 #include <wtf/StdLibExtras.h>
 
 namespace WebCore {

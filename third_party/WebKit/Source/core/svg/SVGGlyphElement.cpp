@@ -25,10 +25,8 @@
 #include "core/svg/SVGGlyphElement.h"
 
 #include "SVGNames.h"
-#include "core/dom/Attribute.h"
 #include "core/svg/SVGFontData.h"
 #include "core/svg/SVGFontElement.h"
-#include "core/svg/SVGFontFaceElement.h"
 #include "core/svg/SVGPathUtilities.h"
 
 namespace WebCore {

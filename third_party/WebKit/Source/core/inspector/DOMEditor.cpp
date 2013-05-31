@@ -33,7 +33,6 @@
 
 #include "core/inspector/DOMEditor.h"
 
-#include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/Node.h"

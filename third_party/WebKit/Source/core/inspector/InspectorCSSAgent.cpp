@@ -30,7 +30,6 @@
 #include "core/css/CSSComputedStyleDeclaration.h"
 #include "core/css/CSSImportRule.h"
 #include "core/css/CSSParser.h"
-#include "core/css/CSSPropertySourceData.h"
 #include "core/css/CSSRule.h"
 #include "core/css/CSSRuleList.h"
 #include "core/css/CSSStyleRule.h"
@@ -47,7 +46,6 @@
 #include "core/dom/Node.h"
 #include "core/dom/NodeList.h"
 #include "core/html/HTMLHeadElement.h"
-#include "core/html/HTMLStyleElement.h"
 #include "core/inspector/ContentSearchUtils.h"
 #include "core/inspector/InspectorDOMAgent.h"
 #include "core/inspector/InspectorHistory.h"
@@ -58,9 +56,7 @@
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/cache/CachedResource.h"
 #include "core/page/ContentSecurityPolicy.h"
-#include "core/page/DOMWindow.h"
 #include "core/rendering/RenderRegion.h"
-#include "core/svg/SVGStyleElement.h"
 
 #include <wtf/CurrentTime.h>
 #include <wtf/HashSet.h>

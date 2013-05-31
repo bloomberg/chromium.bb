@@ -31,7 +31,6 @@
 #include "core/inspector/InspectorDatabaseAgent.h"
 
 #include "InspectorFrontend.h"
-#include "core/dom/ExceptionCode.h"
 #include "core/dom/ExceptionCodePlaceholder.h"
 #include "core/html/VoidCallback.h"
 #include "core/inspector/InspectorDatabaseResource.h"

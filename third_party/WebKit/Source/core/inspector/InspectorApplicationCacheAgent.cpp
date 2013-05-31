@@ -27,18 +27,14 @@
 #include "core/inspector/InspectorApplicationCacheAgent.h"
 
 #include "InspectorFrontend.h"
-#include "core/inspector/InspectorAgent.h"
 #include "core/inspector/InspectorPageAgent.h"
 #include "core/inspector/InspectorState.h"
-#include "core/inspector/InspectorValues.h"
 #include "core/inspector/InstrumentingAgents.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/appcache/ApplicationCacheHost.h"
 #include "core/page/Frame.h"
-#include "core/page/Page.h"
 #include "core/platform/network/NetworkStateNotifier.h"
-#include "core/platform/network/ResourceResponse.h"
 
 namespace WebCore {
 

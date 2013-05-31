@@ -33,7 +33,6 @@
 #include "core/inspector/InspectorWorkerAgent.h"
 
 #include "InspectorFrontend.h"
-#include "core/inspector/InspectorFrontendChannel.h"
 #include "core/inspector/InspectorState.h"
 #include "core/inspector/InspectorValues.h"
 #include "core/inspector/InstrumentingAgents.h"

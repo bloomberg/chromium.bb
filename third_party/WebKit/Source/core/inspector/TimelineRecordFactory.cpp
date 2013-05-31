@@ -36,7 +36,6 @@
 #include "core/inspector/InspectorValues.h"
 #include "core/inspector/ScriptCallStack.h"
 #include "core/platform/graphics/FloatQuad.h"
-#include "core/platform/graphics/IntRect.h"
 #include "core/platform/graphics/LayoutRect.h"
 #include "core/platform/network/ResourceRequest.h"
 #include "core/platform/network/ResourceResponse.h"

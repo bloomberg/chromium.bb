@@ -26,9 +26,7 @@
 #include "core/svg/SVGMaskElement.h"
 
 #include "SVGNames.h"
-#include "core/dom/Attribute.h"
 #include "core/rendering/svg/RenderSVGResourceMasker.h"
-#include "core/rendering/svg/SVGRenderSupport.h"
 #include "core/svg/SVGElementInstance.h"
 #include "core/svg/SVGUnitTypes.h"
 

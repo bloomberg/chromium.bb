@@ -31,26 +31,14 @@
 #include "config.h"
 #include "core/inspector/InjectedScriptHost.h"
 
-#include "InspectorFrontend.h"
-#include "core/dom/Element.h"
-#include "core/html/HTMLFrameOwnerElement.h"
-#include "core/inspector/InjectedScript.h"
 #include "core/inspector/InspectorAgent.h"
-#include "core/inspector/InspectorClient.h"
 #include "core/inspector/InspectorConsoleAgent.h"
 #include "core/inspector/InspectorDOMAgent.h"
 #include "core/inspector/InspectorDOMStorageAgent.h"
 #include "core/inspector/InspectorDatabaseAgent.h"
 #include "core/inspector/InspectorDebuggerAgent.h"
 #include "core/inspector/InspectorValues.h"
-#include "core/loader/FrameLoader.h"
-#include "core/page/Frame.h"
 #include "core/platform/Pasteboard.h"
-#include "core/storage/Storage.h"
-#include "modules/webdatabase/Database.h"
-
-
-#include "core/editing/markup.h"
 
 #include <wtf/RefPtr.h>
 #include <wtf/StdLibExtras.h>

@@ -23,14 +23,9 @@
 #include "core/svg/SVGCircleElement.h"
 
 #include "SVGNames.h"
-#include "core/dom/Attribute.h"
-#include "core/dom/ExceptionCode.h"
-#include "core/platform/graphics/FloatPoint.h"
 #include "core/rendering/svg/RenderSVGEllipse.h"
-#include "core/rendering/svg/RenderSVGPath.h"
 #include "core/rendering/svg/RenderSVGResource.h"
 #include "core/svg/SVGElementInstance.h"
-#include "core/svg/SVGException.h"
 #include "core/svg/SVGLength.h"
 
 namespace WebCore {

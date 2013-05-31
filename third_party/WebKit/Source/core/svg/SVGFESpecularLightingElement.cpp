@@ -24,10 +24,8 @@
 #include "core/svg/SVGFESpecularLightingElement.h"
 
 #include "SVGNames.h"
-#include "core/dom/Attribute.h"
 #include "core/platform/graphics/filters/FilterEffect.h"
 #include "core/rendering/style/RenderStyle.h"
-#include "core/svg/SVGColor.h"
 #include "core/svg/SVGElementInstance.h"
 #include "core/svg/SVGFELightElement.h"
 #include "core/svg/SVGParserUtilities.h"

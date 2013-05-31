@@ -22,7 +22,6 @@
 #include "core/svg/SVGFEConvolveMatrixElement.h"
 
 #include "SVGNames.h"
-#include "core/dom/Attr.h"
 #include "core/platform/graphics/FloatPoint.h"
 #include "core/platform/graphics/IntPoint.h"
 #include "core/platform/graphics/IntSize.h"

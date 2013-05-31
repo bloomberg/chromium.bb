@@ -31,8 +31,6 @@
 #include "config.h"
 #include "core/inspector/ScriptCallFrame.h"
 
-#include "InspectorFrontend.h"
-#include "core/inspector/InspectorValues.h"
 #include <wtf/RefPtr.h>
 
 namespace WebCore {

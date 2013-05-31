@@ -26,8 +26,6 @@
 #include "config.h"
 #include "core/svg/animation/SMILTimeContainer.h"
 
-#include "SVGNames.h"
-#include "core/dom/Document.h"
 #include "core/dom/NodeTraversal.h"
 #include "core/svg/SVGSVGElement.h"
 #include "core/svg/animation/SVGSMILElement.h"

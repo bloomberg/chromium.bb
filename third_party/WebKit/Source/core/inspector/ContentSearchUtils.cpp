@@ -30,7 +30,6 @@
 
 #include "core/inspector/ContentSearchUtils.h"
 
-#include "core/inspector/InspectorValues.h"
 #include "core/platform/text/RegularExpression.h"
 #include <wtf/StdLibExtras.h>
 

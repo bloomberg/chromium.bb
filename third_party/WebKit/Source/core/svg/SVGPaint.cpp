@@ -24,9 +24,7 @@
 #include "core/svg/SVGPaint.h"
 
 #include "core/dom/WebCoreMemoryInstrumentation.h"
-#include "core/svg/SVGException.h"
-#include "core/svg/SVGURIReference.h"
-#include <wtf/text/WTFString.h>
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

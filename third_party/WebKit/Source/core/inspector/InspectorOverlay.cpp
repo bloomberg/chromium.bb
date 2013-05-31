@@ -32,7 +32,6 @@
 #include "InspectorOverlayPage.h"
 #include "bindings/v8/ScriptController.h"
 #include "bindings/v8/ScriptSourceCode.h"
-#include "bindings/v8/ScriptValue.h"
 #include "core/dom/Element.h"
 #include "core/dom/Node.h"
 #include "core/dom/StyledElement.h"

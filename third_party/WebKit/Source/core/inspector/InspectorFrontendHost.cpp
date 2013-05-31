@@ -30,12 +30,8 @@
 #include "config.h"
 #include "core/inspector/InspectorFrontendHost.h"
 
-#include "bindings/v8/DOMWrapperWorld.h"
 #include "bindings/v8/ScriptFunctionCall.h"
-#include "core/dom/Element.h"
 #include "core/dom/UserGestureIndicator.h"
-#include "core/html/HTMLFrameOwnerElement.h"
-#include "core/inspector/InspectorAgent.h"
 #include "core/inspector/InspectorController.h"
 #include "core/inspector/InspectorFrontendClient.h"
 #include "core/loader/FrameLoader.h"
@@ -50,7 +46,6 @@
 #include "core/platform/network/ResourceError.h"
 #include "core/platform/network/ResourceRequest.h"
 #include "core/platform/network/ResourceResponse.h"
-#include "core/rendering/HitTestResult.h"
 #include "core/rendering/RenderTheme.h"
 #include "modules/filesystem/DOMFileSystem.h"
 #include <wtf/StdLibExtras.h>

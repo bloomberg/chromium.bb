@@ -23,7 +23,6 @@
 #include "core/svg/SVGTests.h"
 
 #include "SVGNames.h"
-#include "core/dom/Attribute.h"
 #include "core/dom/DOMImplementation.h"
 #include "core/platform/Language.h"
 #include "core/svg/SVGElement.h"

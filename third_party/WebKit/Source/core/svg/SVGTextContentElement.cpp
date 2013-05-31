@@ -30,9 +30,7 @@
 #include "core/page/Frame.h"
 #include "core/rendering/RenderObject.h"
 #include "core/rendering/svg/RenderSVGResource.h"
-#include "core/rendering/svg/RenderSVGText.h"
 #include "core/rendering/svg/SVGTextQuery.h"
-#include "core/svg/SVGDocumentExtensions.h"
 #include "core/svg/SVGElementInstance.h"
 
 namespace WebCore {

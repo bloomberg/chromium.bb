@@ -24,11 +24,9 @@
 #include "core/svg/SVGLength.h"
 
 #include "SVGNames.h"
-#include "core/css/CSSHelper.h"
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExceptionCodePlaceholder.h"
-#include "core/platform/FloatConversion.h"
 #include "core/svg/SVGParserUtilities.h"
 
 #include <wtf/MathExtras.h>

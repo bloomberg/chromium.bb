@@ -40,8 +40,6 @@
 #include "core/dom/DocumentFragment.h"
 #include "core/dom/Node.h"
 #include "core/html/HTMLDocument.h"
-#include "core/html/HTMLElement.h"
-#include "core/html/HTMLHeadElement.h"
 #include "core/html/parser/HTMLDocumentParser.h"
 #include "core/inspector/DOMEditor.h"
 #include "core/inspector/InspectorHistory.h"
