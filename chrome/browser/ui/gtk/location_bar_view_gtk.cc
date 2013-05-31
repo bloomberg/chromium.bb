@@ -1107,12 +1107,12 @@ gboolean LocationBarViewGtk::HandleExpose(GtkWidget* widget,
   // of the background.
   if (!GtkThemeService::GetFrom(browser_->profile())->UsingNativeTheme()) {
     if (popup_window_mode_) {
-      NineBox(IDR_LOCATIONBG_POPUPMODE_EDGE,
-              IDR_LOCATIONBG_POPUPMODE_CENTER,
-              IDR_LOCATIONBG_POPUPMODE_EDGE,
+      NineBox(IDR_OMNIBOX_POPUP_EDGE,
+              IDR_OMNIBOX_POPUP_CENTER,
+              IDR_OMNIBOX_POPUP_EDGE,
               0, 0, 0, 0, 0, 0).RenderToWidget(widget);
     } else {
-      NineBox(IDR_LOCATION_BAR_BORDER, 5, 5, 4, 4).RenderToWidget(widget);
+      NineBox(IDR_OMNIBOX_BORDER, 5, 5, 4, 4).RenderToWidget(widget);
     }
   }
 

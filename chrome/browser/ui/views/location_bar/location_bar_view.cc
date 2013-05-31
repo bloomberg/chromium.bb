@@ -201,16 +201,16 @@ LocationBarView::LocationBarView(Browser* browser,
     set_id(VIEW_ID_OMNIBOX);
 
   const int kOmniboxPopupImages[] = {
-    IDR_LOCATIONBG_POPUPMODE_EDGE,
-    IDR_LOCATIONBG_POPUPMODE_CENTER,
-    IDR_LOCATIONBG_POPUPMODE_EDGE,
+    IDR_OMNIBOX_POPUP_EDGE,
+    IDR_OMNIBOX_POPUP_CENTER,
+    IDR_OMNIBOX_POPUP_EDGE,
   };
   background_painter_.reset(
       is_popup_mode_ ?
       new views::HorizontalPainter(kOmniboxPopupImages) :
       views::Painter::CreateImagePainter(
           *ui::ResourceBundle::GetSharedInstance().GetImageNamed(
-              IDR_LOCATION_BAR_BORDER).ToImageSkia(),
+              IDR_OMNIBOX_BORDER).ToImageSkia(),
           gfx::Insets(kBorderRoundCornerHeight, kBorderRoundCornerWidth,
                       kBorderRoundCornerHeight, kBorderRoundCornerWidth)));
 
