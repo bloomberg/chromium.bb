@@ -26,11 +26,6 @@ class MediaLog;
 struct MediaPlayerHostMsg_ReadFromDemuxerAck_Params;
 }
 
-namespace WebKit {
-class WebFrame;
-class WebMediaSource;
-}
-
 namespace webkit_media {
 
 class ProxyDecryptor;
@@ -50,14 +45,13 @@ class MediaSourceDelegate : public media::DemuxerHost {
     }
   };
 
-  MediaSourceDelegate(WebKit::WebFrame* frame,
-                      WebKit::WebMediaPlayerClient* client,
-                      WebMediaPlayerProxyAndroid* proxy,
+  MediaSourceDelegate(WebMediaPlayerProxyAndroid* proxy,
                       int player_id,
                       media::MediaLog* media_log);
   // Initialize the MediaSourceDelegate. |media_source| will be owned by
   // this object after this call.
   void Initialize(WebKit::WebMediaSource* media_source,
+                  const media::NeedKeyCB& need_key_cb,
                   const UpdateNetworkStateCB& update_network_state_cb);
 
   const WebKit::WebTimeRanges& Buffered();
@@ -66,24 +60,11 @@ class MediaSourceDelegate : public media::DemuxerHost {
   size_t AudioDecodedByteCount() const;
   size_t VideoDecodedByteCount() const;
 
-  WebKit::WebMediaPlayer::MediaKeyException GenerateKeyRequest(
-      const WebKit::WebString& key_system,
-      const unsigned char* init_data,
-      size_t init_data_length);
-  WebKit::WebMediaPlayer::MediaKeyException AddKey(
-      const WebKit::WebString& key_system,
-      const unsigned char* key,
-      size_t key_length,
-      const unsigned char* init_data,
-      size_t init_data_length,
-      const WebKit::WebString& session_id);
-  WebKit::WebMediaPlayer::MediaKeyException CancelKeyRequest(
-      const WebKit::WebString& key_system,
-      const WebKit::WebString& session_id);
-
   void Seek(base::TimeDelta time);
 
   void CancelPendingSeek();
+
+  void NotifyDemuxerReady(const std::string& key_system);
 
   // Called when DemuxerStreamPlayer needs to read data from ChunkDemuxer.
   // If it's the first request after the seek, |seek_done| will be true.
@@ -104,25 +85,15 @@ class MediaSourceDelegate : public media::DemuxerHost {
   virtual void SetDuration(base::TimeDelta duration) OVERRIDE;
   virtual void OnDemuxerError(media::PipelineStatus status) OVERRIDE;
 
-  // Callbacks for ChunkDemuxer & Decryptor.
+  // Callbacks for ChunkDemuxer.
   void OnDemuxerInitDone(media::PipelineStatus status);
   void OnDemuxerStopDone();
   void OnDemuxerOpened();
-  void OnKeyAdded(const std::string& key_system, const std::string& session_id);
-  void OnKeyError(const std::string& key_system,
-                  const std::string& session_id,
-                  media::MediaKeys::KeyError error_code,
-                  int system_code);
-  void OnKeyMessage(const std::string& key_system,
-                    const std::string& session_id,
-                    const std::string& message,
-                    const std::string& default_url);
   void OnNeedKey(const std::string& key_system,
                  const std::string& type,
                  const std::string& session_id,
                  scoped_ptr<uint8[]> init_data,
                  int init_data_size);
-  void OnDecryptorReady(media::Decryptor*);
   scoped_ptr<media::TextTrack> OnAddTextTrack(media::TextKind kind,
                                               const std::string& label,
                                               const std::string& language);
@@ -140,11 +111,8 @@ class MediaSourceDelegate : public media::DemuxerHost {
       media::DemuxerStream::Status status,
       const scoped_refptr<media::DecoderBuffer>& buffer);
 
-  void NotifyDemuxerReady(const std::string& key_system);
-
   base::WeakPtrFactory<MediaSourceDelegate> weak_this_;
 
-  WebKit::WebMediaPlayerClient* client_;
   WebMediaPlayerProxyAndroid* proxy_;
   int player_id_;
 
@@ -159,8 +127,7 @@ class MediaSourceDelegate : public media::DemuxerHost {
   // Keep a list of buffered time ranges.
   WebKit::WebTimeRanges buffered_web_time_ranges_;
 
-  // The decryptor that manages decryption keys and decrypts encrypted frames.
-  scoped_ptr<ProxyDecryptor> decryptor_;
+  media::NeedKeyCB need_key_cb_;
 
   // The currently selected key system. Empty string means that no key system
   // has been selected.

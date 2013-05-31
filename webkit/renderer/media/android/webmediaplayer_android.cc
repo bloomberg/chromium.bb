@@ -8,6 +8,7 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
+#include "base/metrics/histogram.h"
 #include "base/strings/string_number_conversions.h"
 #include "cc/layers/video_layer.h"
 #include "gpu/GLES2/gl2extchromium.h"
@@ -20,10 +21,12 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebMediaPlayerClient.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebMediaSource.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebRuntimeFeatures.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "webkit/renderer/compositor_bindings/web_layer_impl.h"
 #include "webkit/renderer/media/android/webmediaplayer_manager_android.h"
 #include "webkit/renderer/media/android/webmediaplayer_proxy_android.h"
+#include "webkit/renderer/media/crypto/key_systems.h"
 #include "webkit/renderer/media/webmediaplayer_util.h"
 
 static const uint32 kGLTextureExternalOES = 0x8D65;
@@ -36,6 +39,11 @@ using WebKit::WebTimeRanges;
 using WebKit::WebURL;
 using media::MediaPlayerAndroid;
 using media::VideoFrame;
+
+namespace {
+// Prefix for histograms related to Encrypted Media Extensions.
+const char* kMediaEme = "Media.EME.";
+}  // namespace
 
 namespace webkit_media {
 
@@ -75,6 +83,20 @@ WebMediaPlayerAndroid::WebMediaPlayerAndroid(
     stream_id_ = stream_texture_factory_->CreateStreamTexture(&texture_id_);
     ReallocateVideoFrame();
   }
+
+#if defined(GOOGLE_TV)
+  if (WebKit::WebRuntimeFeatures::isEncryptedMediaEnabled()) {
+    // |decryptor_| is owned, so Unretained() is safe here.
+    decryptor_.reset(new ProxyDecryptor(
+        client,
+        frame,
+        base::Bind(&WebMediaPlayerAndroid::OnKeyAdded, base::Unretained(this)),
+        base::Bind(&WebMediaPlayerAndroid::OnKeyError, base::Unretained(this)),
+        base::Bind(&WebMediaPlayerAndroid::OnKeyMessage,
+                   base::Unretained(this)),
+        base::Bind(&WebMediaPlayerAndroid::OnNeedKey, base::Unretained(this))));
+  }
+#endif  // defined(GOOGLE_TV)
 }
 
 WebMediaPlayerAndroid::~WebMediaPlayerAndroid() {
@@ -106,11 +128,11 @@ void WebMediaPlayerAndroid::load(const WebURL& url,
 
   if (media_source) {
     media_source_delegate_.reset(
-        new MediaSourceDelegate(
-            frame_, client_, proxy_, player_id_, media_log_));
+        new MediaSourceDelegate(proxy_, player_id_, media_log_));
     // |media_source_delegate_| is owned, so Unretained() is safe here.
     media_source_delegate_->Initialize(
         media_source,
+        base::Bind(&WebMediaPlayerAndroid::OnNeedKey, base::Unretained(this)),
         base::Bind(&WebMediaPlayerAndroid::UpdateNetworkState,
                    base::Unretained(this)));
   }
@@ -677,15 +699,109 @@ bool WebMediaPlayerAndroid::RetrieveGeometryChange(gfx::RectF* rect) {
   return true;
 }
 
-WebMediaPlayer::MediaKeyException
-WebMediaPlayerAndroid::generateKeyRequest(const WebString& key_system,
-                                              const unsigned char* init_data,
-                                              unsigned init_data_length) {
-  if (media_source_delegate_) {
-    return media_source_delegate_->GenerateKeyRequest(
-        key_system, init_data, init_data_length);
+// The following EME related code is copied from WebMediaPlayerImpl.
+// TODO(xhwang): Remove duplicate code between WebMediaPlayerAndroid and
+// WebMediaPlayerImpl.
+// TODO(kjyoun): Update Google TV EME implementation to use IPC.
+
+// Helper functions to report media EME related stats to UMA. They follow the
+// convention of more commonly used macros UMA_HISTOGRAM_ENUMERATION and
+// UMA_HISTOGRAM_COUNTS. The reason that we cannot use those macros directly is
+// that UMA_* macros require the names to be constant throughout the process'
+// lifetime.
+static void EmeUMAHistogramEnumeration(const std::string& key_system,
+                                       const std::string& method,
+                                       int sample,
+                                       int boundary_value) {
+  base::LinearHistogram::FactoryGet(
+      kMediaEme + KeySystemNameForUMA(key_system) + "." + method,
+      1, boundary_value, boundary_value + 1,
+      base::Histogram::kUmaTargetedHistogramFlag)->Add(sample);
+}
+
+static void EmeUMAHistogramCounts(const std::string& key_system,
+                                  const std::string& method,
+                                  int sample) {
+  // Use the same parameters as UMA_HISTOGRAM_COUNTS.
+  base::Histogram::FactoryGet(
+      kMediaEme + KeySystemNameForUMA(key_system) + "." + method,
+      1, 1000000, 50, base::Histogram::kUmaTargetedHistogramFlag)->Add(sample);
+}
+
+// Helper enum for reporting generateKeyRequest/addKey histograms.
+enum MediaKeyException {
+  kUnknownResultId,
+  kSuccess,
+  kKeySystemNotSupported,
+  kInvalidPlayerState,
+  kMaxMediaKeyException
+};
+
+static MediaKeyException MediaKeyExceptionForUMA(
+    WebMediaPlayer::MediaKeyException e) {
+  switch (e) {
+    case WebMediaPlayer::MediaKeyExceptionKeySystemNotSupported:
+      return kKeySystemNotSupported;
+    case WebMediaPlayer::MediaKeyExceptionInvalidPlayerState:
+      return kInvalidPlayerState;
+    case WebMediaPlayer::MediaKeyExceptionNoError:
+      return kSuccess;
+    default:
+      return kUnknownResultId;
   }
-  return MediaKeyExceptionKeySystemNotSupported;
+}
+
+// Helper for converting |key_system| name and exception |e| to a pair of enum
+// values from above, for reporting to UMA.
+static void ReportMediaKeyExceptionToUMA(
+    const std::string& method,
+    const WebString& key_system,
+    WebMediaPlayer::MediaKeyException e) {
+  MediaKeyException result_id = MediaKeyExceptionForUMA(e);
+  DCHECK_NE(result_id, kUnknownResultId) << e;
+  EmeUMAHistogramEnumeration(
+      key_system.utf8(), method, result_id, kMaxMediaKeyException);
+}
+
+WebMediaPlayer::MediaKeyException WebMediaPlayerAndroid::generateKeyRequest(
+    const WebString& key_system,
+    const unsigned char* init_data,
+    unsigned init_data_length) {
+  WebMediaPlayer::MediaKeyException e =
+      GenerateKeyRequestInternal(key_system, init_data, init_data_length);
+  ReportMediaKeyExceptionToUMA("generateKeyRequest", key_system, e);
+  return e;
+}
+
+WebMediaPlayer::MediaKeyException
+WebMediaPlayerAndroid::GenerateKeyRequestInternal(
+    const WebString& key_system,
+    const unsigned char* init_data,
+    unsigned init_data_length) {
+  if (!IsSupportedKeySystem(key_system))
+    return WebMediaPlayer::MediaKeyExceptionKeySystemNotSupported;
+
+  // We do not support run-time switching between key systems for now.
+  if (current_key_system_.isEmpty())
+    current_key_system_ = key_system;
+  else if (key_system != current_key_system_)
+    return WebMediaPlayer::MediaKeyExceptionInvalidPlayerState;
+
+  DVLOG(1) << "generateKeyRequest: " << key_system.utf8().data() << ": "
+           << std::string(reinterpret_cast<const char*>(init_data),
+                          static_cast<size_t>(init_data_length));
+
+  // TODO(xhwang): We assume all streams are from the same container (thus have
+  // the same "type") for now. In the future, the "type" should be passed down
+  // from the application.
+  if (!decryptor_->GenerateKeyRequest(key_system.utf8(),
+                                      init_data_type_,
+                                      init_data, init_data_length)) {
+    current_key_system_.reset();
+    return WebMediaPlayer::MediaKeyExceptionKeySystemNotSupported;
+  }
+
+  return WebMediaPlayer::MediaKeyExceptionNoError;
 }
 
 WebMediaPlayer::MediaKeyException WebMediaPlayerAndroid::addKey(
@@ -695,21 +811,136 @@ WebMediaPlayer::MediaKeyException WebMediaPlayerAndroid::addKey(
     const unsigned char* init_data,
     unsigned init_data_length,
     const WebString& session_id) {
-  if (media_source_delegate_) {
-    return media_source_delegate_->AddKey(
-        key_system, key, key_length, init_data, init_data_length, session_id);
-  }
-  return MediaKeyExceptionKeySystemNotSupported;
+  WebMediaPlayer::MediaKeyException e = AddKeyInternal(
+      key_system, key, key_length, init_data, init_data_length, session_id);
+  ReportMediaKeyExceptionToUMA("addKey", key_system, e);
+  return e;
+}
+
+WebMediaPlayer::MediaKeyException WebMediaPlayerAndroid::AddKeyInternal(
+    const WebString& key_system,
+    const unsigned char* key,
+    unsigned key_length,
+    const unsigned char* init_data,
+    unsigned init_data_length,
+    const WebString& session_id) {
+  DCHECK(key);
+  DCHECK_GT(key_length, 0u);
+
+  if (!IsSupportedKeySystem(key_system))
+    return WebMediaPlayer::MediaKeyExceptionKeySystemNotSupported;
+
+  if (current_key_system_.isEmpty() || key_system != current_key_system_)
+    return WebMediaPlayer::MediaKeyExceptionInvalidPlayerState;
+
+  DVLOG(1) << "addKey: " << key_system.utf8().data() << ": "
+           << std::string(reinterpret_cast<const char*>(key),
+                          static_cast<size_t>(key_length)) << ", "
+           << std::string(reinterpret_cast<const char*>(init_data),
+                          static_cast<size_t>(init_data_length))
+           << " [" << session_id.utf8().data() << "]";
+
+  decryptor_->AddKey(key_system.utf8(), key, key_length,
+                     init_data, init_data_length, session_id.utf8());
+  return WebMediaPlayer::MediaKeyExceptionNoError;
 }
 
 WebMediaPlayer::MediaKeyException WebMediaPlayerAndroid::cancelKeyRequest(
     const WebString& key_system,
     const WebString& session_id) {
-  if (media_source_delegate_)
-    return media_source_delegate_->CancelKeyRequest(key_system, session_id);
-  return MediaKeyExceptionKeySystemNotSupported;
+  WebMediaPlayer::MediaKeyException e =
+      CancelKeyRequestInternal(key_system, session_id);
+  ReportMediaKeyExceptionToUMA("cancelKeyRequest", key_system, e);
+  return e;
 }
-#endif
+
+WebMediaPlayer::MediaKeyException
+WebMediaPlayerAndroid::CancelKeyRequestInternal(
+    const WebString& key_system,
+    const WebString& session_id) {
+  if (!IsSupportedKeySystem(key_system))
+    return WebMediaPlayer::MediaKeyExceptionKeySystemNotSupported;
+
+  if (current_key_system_.isEmpty() || key_system != current_key_system_)
+    return WebMediaPlayer::MediaKeyExceptionInvalidPlayerState;
+
+  decryptor_->CancelKeyRequest(key_system.utf8(), session_id.utf8());
+  return WebMediaPlayer::MediaKeyExceptionNoError;
+}
+
+void WebMediaPlayerAndroid::OnKeyAdded(const std::string& key_system,
+                                       const std::string& session_id) {
+  EmeUMAHistogramCounts(key_system, "KeyAdded", 1);
+
+  if (media_source_delegate_)
+    media_source_delegate_->NotifyDemuxerReady(key_system);
+
+  client_->keyAdded(WebString::fromUTF8(key_system),
+                    WebString::fromUTF8(session_id));
+}
+
+#define COMPILE_ASSERT_MATCHING_ENUM(name) \
+  COMPILE_ASSERT(static_cast<int>(WebKit::WebMediaPlayerClient::name) == \
+                 static_cast<int>(media::MediaKeys::k ## name), \
+                 mismatching_enums)
+COMPILE_ASSERT_MATCHING_ENUM(UnknownError);
+COMPILE_ASSERT_MATCHING_ENUM(ClientError);
+COMPILE_ASSERT_MATCHING_ENUM(ServiceError);
+COMPILE_ASSERT_MATCHING_ENUM(OutputError);
+COMPILE_ASSERT_MATCHING_ENUM(HardwareChangeError);
+COMPILE_ASSERT_MATCHING_ENUM(DomainError);
+#undef COMPILE_ASSERT_MATCHING_ENUM
+
+void WebMediaPlayerAndroid::OnKeyError(const std::string& key_system,
+                                       const std::string& session_id,
+                                       media::MediaKeys::KeyError error_code,
+                                       int system_code) {
+  EmeUMAHistogramEnumeration(
+      key_system, "KeyError", error_code, media::MediaKeys::kMaxKeyError);
+
+  client_->keyError(
+      WebString::fromUTF8(key_system),
+      WebString::fromUTF8(session_id),
+      static_cast<WebKit::WebMediaPlayerClient::MediaKeyErrorCode>(error_code),
+      system_code);
+}
+
+void WebMediaPlayerAndroid::OnKeyMessage(const std::string& key_system,
+                                         const std::string& session_id,
+                                         const std::string& message,
+                                         const std::string& default_url) {
+  const GURL default_url_gurl(default_url);
+  DLOG_IF(WARNING, !default_url.empty() && !default_url_gurl.is_valid())
+      << "Invalid URL in default_url: " << default_url;
+
+  client_->keyMessage(WebString::fromUTF8(key_system),
+                      WebString::fromUTF8(session_id),
+                      reinterpret_cast<const uint8*>(message.data()),
+                      message.size(),
+                      default_url_gurl);
+}
+#endif  // defined(GOOGLE_TV)
+
+void WebMediaPlayerAndroid::OnNeedKey(const std::string& key_system,
+                                      const std::string& session_id,
+                                      const std::string& type,
+                                      scoped_ptr<uint8[]> init_data,
+                                      int init_data_size) {
+  // Do not fire NeedKey event if encrypted media is not enabled.
+  if (!decryptor_)
+    return;
+
+  UMA_HISTOGRAM_COUNTS(kMediaEme + std::string("NeedKey"), 1);
+
+  DCHECK(init_data_type_.empty() || type.empty() || type == init_data_type_);
+  if (init_data_type_.empty())
+    init_data_type_ = type;
+
+  client_->keyNeeded(WebString::fromUTF8(key_system),
+                     WebString::fromUTF8(session_id),
+                     init_data.get(),
+                     init_data_size);
+}
 
 void WebMediaPlayerAndroid::OnReadFromDemuxer(
     media::DemuxerStream::Type type, bool seek_done) {

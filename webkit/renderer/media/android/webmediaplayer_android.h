@@ -14,6 +14,7 @@
 #include "base/time.h"
 #include "cc/layers/video_frame_provider.h"
 #include "media/base/demuxer_stream.h"
+#include "media/base/media_keys.h"
 #include "third_party/WebKit/public/platform/WebGraphicsContext3D.h"
 #include "third_party/WebKit/public/platform/WebSize.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
@@ -21,6 +22,7 @@
 #include "ui/gfx/rect_f.h"
 #include "webkit/renderer/media/android/media_source_delegate.h"
 #include "webkit/renderer/media/android/stream_texture_factory_android.h"
+#include "webkit/renderer/media/crypto/proxy_decryptor.h"
 
 namespace media {
 class MediaLog;
@@ -199,7 +201,23 @@ class WebMediaPlayerAndroid
   virtual MediaKeyException cancelKeyRequest(
       const WebKit::WebString& key_system,
       const WebKit::WebString& session_id) OVERRIDE;
+
+  void OnKeyAdded(const std::string& key_system, const std::string& session_id);
+  void OnKeyError(const std::string& key_system,
+                  const std::string& session_id,
+                  media::MediaKeys::KeyError error_code,
+                  int system_code);
+  void OnKeyMessage(const std::string& key_system,
+                    const std::string& session_id,
+                    const std::string& message,
+                    const std::string& default_url);
 #endif
+
+  void OnNeedKey(const std::string& key_system,
+                 const std::string& type,
+                 const std::string& session_id,
+                 scoped_ptr<uint8[]> init_data,
+                 int init_data_size);
 
   // Called when DemuxerStreamPlayer needs to read data from ChunkDemuxer.
   void OnReadFromDemuxer(media::DemuxerStream::Type type, bool seek_done);
@@ -226,6 +244,24 @@ class WebMediaPlayerAndroid
 
  private:
   void ReallocateVideoFrame();
+
+#if defined(GOOGLE_TV)
+  // Actually do the work for generateKeyRequest/addKey so they can easily
+  // report results to UMA.
+  MediaKeyException GenerateKeyRequestInternal(
+      const WebKit::WebString& key_system,
+      const unsigned char* init_data,
+      unsigned init_data_length);
+  MediaKeyException AddKeyInternal(const WebKit::WebString& key_system,
+                                   const unsigned char* key,
+                                   unsigned key_length,
+                                   const unsigned char* init_data,
+                                   unsigned init_data_length,
+                                   const WebKit::WebString& session_id);
+  MediaKeyException CancelKeyRequestInternal(
+      const WebKit::WebString& key_system,
+      const WebKit::WebString& session_id);
+#endif
 
   WebKit::WebFrame* const frame_;
 
@@ -322,6 +358,17 @@ class WebMediaPlayerAndroid
   double current_time_;
 
   media::MediaLog* media_log_;
+
+  // The currently selected key system. Empty string means that no key system
+  // has been selected.
+  WebKit::WebString current_key_system_;
+
+  // Temporary for EME v0.1. In the future the init data type should be passed
+  // through GenerateKeyRequest() directly from WebKit.
+  std::string init_data_type_;
+
+  // The decryptor that manages decryption keys and decrypts encrypted frames.
+  scoped_ptr<ProxyDecryptor> decryptor_;
 
   DISALLOW_COPY_AND_ASSIGN(WebMediaPlayerAndroid);
 };

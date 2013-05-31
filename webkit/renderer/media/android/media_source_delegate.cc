@@ -12,12 +12,10 @@
 #include "media/base/media_log.h"
 #include "media/filters/chunk_demuxer.h"
 #include "third_party/WebKit/public/platform/WebString.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebMediaPlayerClient.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebMediaSource.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebRuntimeFeatures.h"
 #include "webkit/renderer/media/android/webmediaplayer_proxy_android.h"
 #include "webkit/renderer/media/crypto/key_systems.h"
-#include "webkit/renderer/media/crypto/proxy_decryptor.h"
 #include "webkit/renderer/media/webmediaplayer_util.h"
 #include "webkit/renderer/media/webmediasourceclient_impl.h"
 
@@ -61,31 +59,16 @@ static void LogMediaSourceError(const scoped_refptr<media::MediaLog>& media_log,
   media_log->AddEvent(media_log->CreateMediaSourceErrorEvent(error));
 }
 
-MediaSourceDelegate::MediaSourceDelegate(
-    WebKit::WebFrame* frame,
-    WebKit::WebMediaPlayerClient* client,
-    WebMediaPlayerProxyAndroid* proxy,
-    int player_id,
-    media::MediaLog* media_log)
+MediaSourceDelegate::MediaSourceDelegate(WebMediaPlayerProxyAndroid* proxy,
+                                         int player_id,
+                                         media::MediaLog* media_log)
     : weak_this_(this),
-      client_(client),
       proxy_(proxy),
       player_id_(player_id),
       media_log_(media_log),
       audio_params_(new MediaPlayerHostMsg_ReadFromDemuxerAck_Params),
       video_params_(new MediaPlayerHostMsg_ReadFromDemuxerAck_Params),
       seeking_(false) {
-  if (WebKit::WebRuntimeFeatures::isEncryptedMediaEnabled()) {
-    decryptor_.reset(new ProxyDecryptor(
-        client,
-        frame,
-        BIND_TO_RENDER_LOOP(&MediaSourceDelegate::OnKeyAdded),
-        BIND_TO_RENDER_LOOP(&MediaSourceDelegate::OnKeyError),
-        BIND_TO_RENDER_LOOP(&MediaSourceDelegate::OnKeyMessage),
-        BIND_TO_RENDER_LOOP(&MediaSourceDelegate::OnNeedKey)));
-    decryptor_->SetDecryptorReadyCB(
-        BIND_TO_RENDER_LOOP(&MediaSourceDelegate::OnDecryptorReady));
-  }
 }
 
 MediaSourceDelegate::~MediaSourceDelegate() {
@@ -102,7 +85,6 @@ void MediaSourceDelegate::Destroy() {
 
   update_network_state_cb_.Reset();
   media_source_.reset();
-  client_ = NULL;
   proxy_ = NULL;
 
   chunk_demuxer_->Stop(
@@ -111,9 +93,11 @@ void MediaSourceDelegate::Destroy() {
 
 void MediaSourceDelegate::Initialize(
     WebKit::WebMediaSource* media_source,
+    const media::NeedKeyCB& need_key_cb,
     const UpdateNetworkStateCB& update_network_state_cb) {
   DCHECK(media_source);
   media_source_.reset(media_source);
+  need_key_cb_ = need_key_cb;
   update_network_state_cb_ = update_network_state_cb;
 
   chunk_demuxer_.reset(new media::ChunkDemuxer(
@@ -146,75 +130,6 @@ size_t MediaSourceDelegate::AudioDecodedByteCount() const {
 
 size_t MediaSourceDelegate::VideoDecodedByteCount() const {
   return statistics_.video_bytes_decoded;
-}
-
-WebMediaPlayer::MediaKeyException MediaSourceDelegate::GenerateKeyRequest(
-    const WebString& key_system,
-    const unsigned char* init_data,
-    size_t init_data_length) {
-  if (!IsSupportedKeySystem(key_system))
-    return WebMediaPlayer::MediaKeyExceptionKeySystemNotSupported;
-
-  // We do not support run-time switching between key systems for now.
-  if (current_key_system_.isEmpty())
-    current_key_system_ = key_system;
-  else if (key_system != current_key_system_)
-    return WebMediaPlayer::MediaKeyExceptionInvalidPlayerState;
-
-  DVLOG(1) << "generateKeyRequest: " << key_system.utf8().data() << ": "
-           << std::string(reinterpret_cast<const char*>(init_data),
-                          init_data_length);
-
-  // TODO(xhwang): We assume all streams are from the same container (thus have
-  // the same "type") for now. In the future, the "type" should be passed down
-  // from the application.
-  if (!decryptor_->GenerateKeyRequest(key_system.utf8(),
-                                      init_data_type_,
-                                      init_data, init_data_length)) {
-    current_key_system_.reset();
-    return WebMediaPlayer::MediaKeyExceptionKeySystemNotSupported;
-  }
-
-  return WebMediaPlayer::MediaKeyExceptionNoError;
-}
-
-WebMediaPlayer::MediaKeyException MediaSourceDelegate::AddKey(
-    const WebString& key_system,
-    const unsigned char* key,
-    size_t key_length,
-    const unsigned char* init_data,
-    size_t init_data_length,
-    const WebString& session_id) {
-  DCHECK(key);
-  DCHECK_EQ(key_length, 16u);
-
-  if (!IsSupportedKeySystem(key_system))
-    return WebMediaPlayer::MediaKeyExceptionKeySystemNotSupported;
-
-  if (current_key_system_.isEmpty() || key_system != current_key_system_)
-    return WebMediaPlayer::MediaKeyExceptionInvalidPlayerState;
-
-  DVLOG(1) << "addKey: " << key_system.utf8().data() << ": "
-           << base::HexEncode(key, key_length) << ", "
-           << base::HexEncode(init_data, std::max(init_data_length, 256u))
-           << " [" << session_id.utf8().data() << "]";
-
-  decryptor_->AddKey(key_system.utf8(), key, key_length,
-                     init_data, init_data_length, session_id.utf8());
-  return WebMediaPlayer::MediaKeyExceptionNoError;
-}
-
-WebMediaPlayer::MediaKeyException MediaSourceDelegate::CancelKeyRequest(
-    const WebString& key_system,
-    const WebString& session_id) {
-  if (!IsSupportedKeySystem(key_system))
-    return WebMediaPlayer::MediaKeyExceptionKeySystemNotSupported;
-
-  if (current_key_system_.isEmpty() || key_system != current_key_system_)
-    return WebMediaPlayer::MediaKeyExceptionInvalidPlayerState;
-
-  decryptor_->CancelKeyRequest(key_system.utf8(), session_id.utf8());
-  return WebMediaPlayer::MediaKeyExceptionNoError;
 }
 
 void MediaSourceDelegate::Seek(base::TimeDelta time) {
@@ -439,70 +354,17 @@ void MediaSourceDelegate::OnDemuxerOpened() {
       chunk_demuxer_.get(), base::Bind(&LogMediaSourceError, media_log_)));
 }
 
-void MediaSourceDelegate::OnKeyError(const std::string& key_system,
-                                     const std::string& session_id,
-                                     media::MediaKeys::KeyError error_code,
-                                     int system_code) {
-  if (!client_)
-    return;
-
-  client_->keyError(
-      WebString::fromUTF8(key_system),
-      WebString::fromUTF8(session_id),
-      static_cast<WebKit::WebMediaPlayerClient::MediaKeyErrorCode>(error_code),
-      system_code);
-}
-
-void MediaSourceDelegate::OnKeyMessage(const std::string& key_system,
-                                       const std::string& session_id,
-                                       const std::string& message,
-                                       const std::string& default_url) {
-  const GURL default_url_gurl(default_url);
-  DLOG_IF(WARNING, !default_url.empty() && !default_url_gurl.is_valid())
-      << "Invalid URL in default_url: " << default_url;
-
-  if (!client_)
-    return;
-
-  client_->keyMessage(WebString::fromUTF8(key_system),
-                      WebString::fromUTF8(session_id),
-                      reinterpret_cast<const uint8*>(message.data()),
-                      message.size(),
-                      default_url_gurl);
-}
-
-void MediaSourceDelegate::OnKeyAdded(const std::string& key_system,
-                                     const std::string& session_id) {
-  if (!client_)
-    return;
-
-  NotifyDemuxerReady(key_system);
-
-  client_->keyAdded(WebString::fromUTF8(key_system),
-                    WebString::fromUTF8(session_id));
-}
-
 void MediaSourceDelegate::OnNeedKey(const std::string& key_system,
                                     const std::string& session_id,
                                     const std::string& type,
                                     scoped_ptr<uint8[]> init_data,
                                     int init_data_size) {
-  // Do not fire NeedKey event if encrypted media is not enabled.
-  if (!client_ || !decryptor_)
+  if (need_key_cb_.is_null())
     return;
 
-  CHECK(init_data_size >= 0);
-  DCHECK(init_data_type_.empty() || type.empty() || type == init_data_type_);
-  if (init_data_type_.empty())
-    init_data_type_ = type;
-
-  client_->keyNeeded(WebString::fromUTF8(key_system),
-                     WebString::fromUTF8(session_id),
-                     init_data.get(),
-                     init_data_size);
+  need_key_cb_.Run(
+      key_system, session_id, type, init_data.Pass(), init_data_size);
 }
-
-void MediaSourceDelegate::OnDecryptorReady(media::Decryptor* decryptor) {}
 
 scoped_ptr<media::TextTrack> MediaSourceDelegate::OnAddTextTrack(
     media::TextKind kind,
