@@ -11,6 +11,7 @@
 #include "base/cancelable_callback.h"
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "chrome/browser/chromeos/login/captive_portal_window_proxy.h"
 #include "chrome/browser/chromeos/login/screens/error_screen_actor.h"
@@ -94,21 +95,6 @@ class NetworkStateInformer
   std::string last_network_type() const { return last_network_type_; }
 
  private:
-  struct ProxyState {
-    ProxyState() : configured(false) {
-    }
-
-    ProxyState(const std::string& proxy_config, bool configured)
-        : proxy_config(proxy_config),
-          configured(configured) {
-    }
-
-    std::string proxy_config;
-    bool configured;
-  };
-
-  typedef std::map<std::string, ProxyState> ProxyStateMap;
-
   friend class base::RefCounted<NetworkStateInformer>;
 
   virtual ~NetworkStateInformer();
@@ -131,8 +117,7 @@ class NetworkStateInformer
   std::string last_network_type_;
   base::CancelableClosure check_state_;
 
-  // Caches proxy state for active networks.
-  ProxyStateMap proxy_state_map_;
+  base::WeakPtrFactory<NetworkStateInformer> weak_ptr_factory_;
 };
 
 }  // namespace chromeos
