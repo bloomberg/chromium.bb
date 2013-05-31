@@ -305,6 +305,10 @@ void GIFImageDecoder::decode(size_t frameIndex)
         frameToDecode = m_frameBufferCache[frameToDecode].requiredPreviousFrameIndex();
     } while (frameToDecode != notFound && m_frameBufferCache[frameToDecode].status() != ImageFrame::FrameComplete);
 
+    // The |rend| variable is needed by some compilers that can't correctly
+    // select from const and non-const versions of overloaded functions.
+    // Can remove the variable if Android compiler can compile
+    // 'iter != framesToDecode.rend()'.
     Vector<size_t>::const_reverse_iterator rend = framesToDecode.rend();
     for (Vector<size_t>::const_reverse_iterator iter = framesToDecode.rbegin(); iter != rend; ++iter) {
         size_t frameIndex = *iter;
