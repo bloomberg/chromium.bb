@@ -33,7 +33,6 @@ var app;
 if (!extensionId) {
   app = {
     getIsInstalled: appNatives.GetIsInstalled,
-    install: appNatives.Install,
     getDetails: appNatives.GetDetails,
     getDetailsForFrame: appNatives.GetDetailsForFrame,
     runningState: appNatives.GetRunningState
@@ -41,7 +40,6 @@ if (!extensionId) {
 } else {
   app = {
     getIsInstalled: wrapForLogging(appNatives.GetIsInstalled),
-    install: wrapForLogging(appNatives.Install),
     getDetails: wrapForLogging(appNatives.GetDetails),
     getDetailsForFrame: wrapForLogging(appNatives.GetDetailsForFrame),
     runningState: wrapForLogging(appNatives.GetRunningState)
