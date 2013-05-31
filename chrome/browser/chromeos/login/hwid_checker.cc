@@ -12,6 +12,7 @@
 #include "base/string_util.h"
 #include "chrome/browser/chromeos/system/statistics_provider.h"
 #include "chrome/common/chrome_switches.h"
+#include "chromeos/chromeos_switches.h"
 #include "third_party/re2/re2/re2.h"
 #include "third_party/zlib/zlib.h"
 
@@ -81,7 +82,9 @@ bool IsMachineHWIDCorrect() {
 #if !defined(GOOGLE_CHROME_BUILD)
   return true;
 #endif
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kTestType))
+  CommandLine* cmd_line = CommandLine::ForCurrentProcess();
+  if (cmd_line->HasSwitch(::switches::kTestType) ||
+      cmd_line->HasSwitch(chromeos::switches::kSkipHWIDCheck))
     return true;
   if (!base::chromeos::IsRunningOnChromeOS())
     return true;

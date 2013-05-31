@@ -174,6 +174,10 @@ const char kNoDiscardTabs[]                 = "no-discard-tabs";
 const char kOobeSkipPostLogin[]             = "oobe-skip-postlogin";
 #endif  // NDEBUG
 
+// Skips the machine hwid check. Useful for running in VMs because they have no
+// hwid.
+const char kSkipHWIDCheck[]                 = "skip-hwid-check";
+
 // Sends test messages on first call to RequestUpdate (stub only).
 const char kSmsTestMessages[] = "sms-test-messages";
 
