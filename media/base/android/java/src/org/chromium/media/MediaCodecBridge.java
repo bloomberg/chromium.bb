@@ -193,6 +193,11 @@ class MediaCodecBridge {
     }
 
     @CalledByNative
+    private static void setFrameHasADTSHeader(MediaFormat format) {
+        format.setInteger(MediaFormat.KEY_IS_ADTS, 1);
+    }
+
+    @CalledByNative
     private void configureAudio(MediaFormat format, MediaCrypto crypto, int flags,
             boolean playAudio) {
         mMediaCodec.configure(format, null, crypto, flags);

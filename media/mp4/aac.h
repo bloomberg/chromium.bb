@@ -52,6 +52,13 @@ class MEDIA_EXPORT AAC {
   // unchanged.
   bool ConvertEsdsToADTS(std::vector<uint8>* buffer) const;
 
+#if defined(OS_ANDROID)
+  // Returns the codec specific data needed by android MediaCodec.
+  std::vector<uint8> codec_specific_data() const {
+    return codec_specific_data_;
+  }
+#endif
+
   // Size in bytes of the ADTS header added by ConvertEsdsToADTS().
   static const size_t kADTSHeaderSize = 7;
 
@@ -65,6 +72,11 @@ class MEDIA_EXPORT AAC {
   uint8 profile_;
   uint8 frequency_index_;
   uint8 channel_config_;
+
+#if defined(OS_ANDROID)
+  // The codec specific data needed by the android MediaCodec.
+  std::vector<uint8> codec_specific_data_;
+#endif
 
   // The following variables store audio configuration information that
   // can be used by Chromium. They are based on the AAC specific

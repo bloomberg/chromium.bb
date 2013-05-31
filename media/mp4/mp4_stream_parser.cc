@@ -222,12 +222,16 @@ bool MP4StreamParser::ParseMoov(BoxReader* reader) {
       AudioCodec codec = kUnknownAudioCodec;
       ChannelLayout channel_layout = CHANNEL_LAYOUT_NONE;
       int sample_per_second = 0;
+      std::vector<uint8> extra_data;
       // Check if it is MPEG4 AAC defined in ISO 14496 Part 3 or
       // supported MPEG2 AAC varients.
       if (ESDescriptor::IsAAC(audio_type)) {
         codec = kCodecAAC;
         channel_layout = aac.GetChannelLayout(has_sbr_);
         sample_per_second = aac.GetOutputSamplesPerSecond(has_sbr_);
+#if defined(OS_ANDROID)
+        extra_data = aac.codec_specific_data();
+#endif
       } else if (audio_type == kEAC3) {
         codec = kCodecEAC3;
         channel_layout = GuessChannelLayout(entry.channelcount);
@@ -252,10 +256,10 @@ bool MP4StreamParser::ParseMoov(BoxReader* reader) {
 
       is_audio_track_encrypted_ = entry.sinf.info.track_encryption.is_encrypted;
       DVLOG(1) << "is_audio_track_encrypted_: " << is_audio_track_encrypted_;
-      audio_config.Initialize(codec, sample_format,
-                              channel_layout,
-                              sample_per_second,
-                              NULL, 0, is_audio_track_encrypted_, false);
+      audio_config.Initialize(
+          codec, sample_format, channel_layout, sample_per_second,
+          extra_data.size() ? &extra_data[0] : NULL, extra_data.size(),
+          is_audio_track_encrypted_, false);
       has_audio_ = true;
       audio_track_id_ = track->header.track_id;
     }

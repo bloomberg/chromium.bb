@@ -53,6 +53,9 @@ AAC::~AAC() {
 }
 
 bool AAC::Parse(const std::vector<uint8>& data) {
+#if defined(OS_ANDROID)
+  codec_specific_data_ = data;
+#endif
   if (data.empty())
     return false;
 

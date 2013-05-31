@@ -121,6 +121,10 @@ class AudioCodecBridge : public MediaCodecBridge {
 
  private:
   explicit AudioCodecBridge(const char* mime);
+
+  // Configure the java MediaFormat object with the extra codec data passed in.
+  bool ConfigureMediaFormat(jobject j_format, const AudioCodec codec,
+                            const uint8* extra_data, size_t extra_data_size);
 };
 
 class VideoCodecBridge : public MediaCodecBridge {

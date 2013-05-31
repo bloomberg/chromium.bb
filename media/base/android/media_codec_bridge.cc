@@ -15,8 +15,8 @@
 #include "base/logging.h"
 #include "base/safe_numerics.h"
 #include "base/stringprintf.h"
-
 #include "jni/MediaCodecBridge_jni.h"
+#include "media/base/bit_reader.h"
 
 using base::android::AttachCurrentThread;
 using base::android::ConvertUTF8ToJavaString;
@@ -83,6 +83,7 @@ MediaCodecBridge::~MediaCodecBridge() {
 void MediaCodecBridge::StartInternal() {
   JNIEnv* env = AttachCurrentThread();
   Java_MediaCodecBridge_start(env, j_media_codec_.obj());
+  GetOutputBuffers();
 }
 
 void MediaCodecBridge::Reset() {
@@ -193,57 +194,116 @@ bool AudioCodecBridge::Start(
           env, j_mime.obj(), sample_rate, channel_count));
   DCHECK(!j_format.is_null());
 
-  if (extra_data_size > 0) {
-    DCHECK_EQ(kCodecVorbis, codec);
-    if (extra_data[0] != 2) {
-      LOG(ERROR) << "Invalid number of headers before the codec header: "
-                 << extra_data[0];
-      return false;
-    }
-
-    size_t header_length[2];
-    // |total_length| keeps track of the total number of bytes before the last
-    // header.
-    size_t total_length = 1;
-    const uint8* current_pos = extra_data;
-    // Calculate the length of the first 2 headers.
-    for (int i = 0; i < 2; ++i) {
-      header_length[i] = 0;
-      while (total_length < extra_data_size) {
-        size_t size = *(++current_pos);
-        total_length += 1 + size;
-        if (total_length > 0x80000000) {
-          LOG(ERROR) << "Header size too large";
-          return false;
-        }
-        header_length[i] += size;
-        if (size < 0xFF)
-          break;
-      }
-      if (total_length >= extra_data_size) {
-        LOG(ERROR) << "Invalid header size in the extra data";
-        return false;
-      }
-    }
-    current_pos++;
-    // The first header is identification header.
-    jobject identification_header = env->NewDirectByteBuffer(
-        const_cast<uint8*>(current_pos), header_length[0]);
-    Java_MediaCodecBridge_setCodecSpecificData(
-        env, j_format.obj(), 0, identification_header);
-    // The last header is codec header.
-    jobject codec_header = env->NewDirectByteBuffer(
-        const_cast<uint8*>(extra_data + total_length),
-        extra_data_size - total_length);
-    Java_MediaCodecBridge_setCodecSpecificData(
-        env, j_format.obj(), 1, codec_header);
-    env->DeleteLocalRef(codec_header);
-    env->DeleteLocalRef(identification_header);
-  }
+  if (!ConfigureMediaFormat(j_format.obj(), codec, extra_data, extra_data_size))
+    return false;
 
   Java_MediaCodecBridge_configureAudio(
       env, media_codec(), j_format.obj(), NULL, 0, play_audio);
   StartInternal();
+  return true;
+}
+
+bool AudioCodecBridge::ConfigureMediaFormat(
+    jobject j_format, const AudioCodec codec, const uint8* extra_data,
+    size_t extra_data_size) {
+  if (extra_data_size == 0)
+    return true;
+
+  JNIEnv* env = AttachCurrentThread();
+  switch(codec) {
+    case kCodecVorbis:
+    {
+      if (extra_data[0] != 2) {
+        LOG(ERROR) << "Invalid number of vorbis headers before the codec "
+                   << "header: " << extra_data[0];
+        return false;
+      }
+
+      size_t header_length[2];
+      // |total_length| keeps track of the total number of bytes before the last
+      // header.
+      size_t total_length = 1;
+      const uint8* current_pos = extra_data;
+      // Calculate the length of the first 2 headers.
+      for (int i = 0; i < 2; ++i) {
+        header_length[i] = 0;
+        while (total_length < extra_data_size) {
+          size_t size = *(++current_pos);
+          total_length += 1 + size;
+          if (total_length > 0x80000000) {
+            LOG(ERROR) << "Vorbis header size too large";
+            return false;
+          }
+          header_length[i] += size;
+          if (size < 0xFF)
+            break;
+        }
+        if (total_length >= extra_data_size) {
+          LOG(ERROR) << "Invalid vorbis header size in the extra data";
+          return false;
+        }
+      }
+      current_pos++;
+      // The first header is identification header.
+      jobject identification_header = env->NewDirectByteBuffer(
+          const_cast<uint8*>(current_pos), header_length[0]);
+      Java_MediaCodecBridge_setCodecSpecificData(
+          env, j_format, 0, identification_header);
+      // The last header is codec header.
+      jobject codec_header = env->NewDirectByteBuffer(
+          const_cast<uint8*>(extra_data + total_length),
+          extra_data_size - total_length);
+      Java_MediaCodecBridge_setCodecSpecificData(
+          env, j_format, 1, codec_header);
+      env->DeleteLocalRef(codec_header);
+      env->DeleteLocalRef(identification_header);
+      break;
+    }
+    case kCodecAAC:
+    {
+      media::BitReader reader(extra_data, extra_data_size);
+
+      // The following code is copied from aac.cc
+      // TODO(qinmin): refactor the code in aac.cc to make it more reusable.
+      uint8 profile = 0;
+      uint8 frequency_index = 0;
+      uint8 channel_config = 0;
+      if (!reader.ReadBits(5, &profile) ||
+          !reader.ReadBits(4, &frequency_index)) {
+        LOG(ERROR) << "Unable to parse AAC header";
+        return false;
+      }
+      if (0xf == frequency_index && !reader.SkipBits(24)) {
+        LOG(ERROR) << "Unable to parse AAC header";
+        return false;
+      }
+      if (!reader.ReadBits(4, &channel_config)) {
+        LOG(ERROR) << "Unable to parse AAC header";
+        return false;
+      }
+
+      if (profile < 1 || profile > 4 || frequency_index == 0xf ||
+          channel_config > 7) {
+        LOG(ERROR) << "Invalid AAC header";
+        return false;
+      }
+      uint8 csd[2];
+      csd[0] = profile << 3 | frequency_index >> 1;
+      csd[1] = (frequency_index & 0x01) << 7 | channel_config << 3;
+      jobject header = env->NewDirectByteBuffer(csd, 2);
+      Java_MediaCodecBridge_setCodecSpecificData(
+          env, j_format, 0, header);
+      // TODO(qinmin): pass an extra variable to this function to determine
+      // whether we need to call this.
+      Java_MediaCodecBridge_setFrameHasADTSHeader(env, j_format);
+      env->DeleteLocalRef(header);
+      break;
+    }
+    default:
+      LOG(ERROR) << "Invalid header encountered for codec: "
+                 << AudioCodecToMimeType(codec);
+      return false;
+  }
   return true;
 }
 
