@@ -239,6 +239,7 @@ class CONTENT_EXPORT ContentRendererClient {
 
   // Returns whether BrowserPlugin should be allowed within the |container|.
   virtual bool AllowBrowserPlugin(WebKit::WebPluginContainer* container) const;
+
 };
 
 }  // namespace content

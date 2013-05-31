@@ -1,34 +1,29 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_MEDIA_WEBRTC_LOGGING_MESSAGE_FILTER_H_
-#define CONTENT_RENDERER_MEDIA_WEBRTC_LOGGING_MESSAGE_FILTER_H_
+#ifndef CHROME_RENDERER_MEDIA_WEBRTC_LOGGING_MESSAGE_FILTER_H_
+#define CHROME_RENDERER_MEDIA_WEBRTC_LOGGING_MESSAGE_FILTER_H_
 
 #include "base/shared_memory.h"
-#include "content/common/content_export.h"
 #include "ipc/ipc_channel_proxy.h"
 
 namespace base {
 class MessageLoopProxy;
 }
 
-namespace content {
-
 class WebRtcLoggingHandlerImpl;
 
 // Filter for WebRTC logging messages. Sits between WebRtcLoggingHandlerImpl
 // (renderer process) and WebRtcLoggingHandlerHost (browser process). Must be
 // called on the IO thread.
-class CONTENT_EXPORT WebRtcLoggingMessageFilter
+class WebRtcLoggingMessageFilter
     : public IPC::ChannelProxy::MessageFilter {
  public:
   explicit WebRtcLoggingMessageFilter(
       const scoped_refptr<base::MessageLoopProxy>& io_message_loop);
 
-  // We take owbership of |logging_handler|. See also comment below.
-  virtual void InitLogging(WebRtcLoggingHandlerImpl* logging_handler,
-                           const std::string& app_session_id,
+  virtual void InitLogging(const std::string& app_session_id,
                            const std::string& app_url);
 
   const scoped_refptr<base::MessageLoopProxy>& io_message_loop() {
@@ -44,6 +39,8 @@ class CONTENT_EXPORT WebRtcLoggingMessageFilter
   virtual void OnFilterAdded(IPC::Channel* channel) OVERRIDE;
   virtual void OnFilterRemoved() OVERRIDE;
   virtual void OnChannelClosing() OVERRIDE;
+
+  void CreateLoggingHandler();
 
   void OnLogOpened(base::SharedMemoryHandle handle, uint32 length);
   void OnOpenLogFailed();
@@ -63,6 +60,4 @@ class CONTENT_EXPORT WebRtcLoggingMessageFilter
   DISALLOW_COPY_AND_ASSIGN(WebRtcLoggingMessageFilter);
 };
 
-}  // namespace content
-
-#endif  // CONTENT_RENDERER_MEDIA_WEBRTC_LOGGING_MESSAGE_FILTER_H_
+#endif  // CHROME_RENDERER_MEDIA_WEBRTC_LOGGING_MESSAGE_FILTER_H_

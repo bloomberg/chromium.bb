@@ -65,7 +65,6 @@
 #include "content/renderer/media/peer_connection_tracker.h"
 #include "content/renderer/media/video_capture_impl_manager.h"
 #include "content/renderer/media/video_capture_message_filter.h"
-#include "content/renderer/media/webrtc_logging_message_filter.h"
 #include "content/renderer/memory_benchmarking_extension.h"
 #include "content/renderer/p2p/socket_dispatcher.h"
 #include "content/renderer/plugin_channel_host.h"
@@ -387,12 +386,6 @@ void RenderThreadImpl::Init() {
   AddFilter(audio_message_filter_.get());
 
   AddFilter(new IndexedDBMessageFilter);
-
-#if defined(ENABLE_WEBRTC)
-  webrtc_logging_message_filter_ =
-      new WebRtcLoggingMessageFilter(GetIOMessageLoopProxy());
-  AddFilter(webrtc_logging_message_filter_.get());
-#endif
 
   GetContentClient()->renderer()->RenderThreadStarted();
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,10 +13,8 @@
 // data is the same since the offset at each wrap is always the same.
 
 #include "base/memory/scoped_ptr.h"
-#include "content/common/partial_circular_buffer.h"
+#include "chrome/common/partial_circular_buffer.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-namespace content {
 
 const uint32 kWrapPosition = 20;
 const uint8 kInputData[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14};
@@ -134,5 +132,3 @@ TEST_F(PartialCircularBufferTest, WrapOnceSmallerOutputBuffer) {
 
   EXPECT_EQ(0u, pcb_read_->Read(output_data, sizeof(output_data)));
 }
-
-}  // namespace content

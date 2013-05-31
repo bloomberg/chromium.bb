@@ -181,6 +181,10 @@
 #include "chrome/browser/media_galleries/fileapi/media_file_system_mount_point_provider.h"
 #endif
 
+#if defined(ENABLE_WEBRTC)
+#include "chrome/browser/media/webrtc_logging_handler_host.h"
+#endif
+
 using base::FileDescriptor;
 using content::AccessTokenStore;
 using content::BrowserChildProcessHostIterator;
@@ -723,6 +727,9 @@ void ChromeContentBrowserClient::RenderProcessHostCreated(
       new prerender::PrerenderMessageFilter(id, profile));
   host->GetChannel()->AddFilter(new ValidationMessageMessageFilter(id));
   host->GetChannel()->AddFilter(new TtsMessageFilter(id, profile));
+#if defined(ENABLE_WEBRTC)
+  host->GetChannel()->AddFilter(new WebRtcLoggingHandlerHost());
+#endif
 
   host->Send(new ChromeViewMsg_SetIsIncognitoProcess(
       profile->IsOffTheRecord()));

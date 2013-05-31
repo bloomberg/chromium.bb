@@ -18,8 +18,7 @@
 #include "content/renderer/media/webaudio_capturer_source.h"
 #include "content/renderer/media/webrtc_audio_device_impl.h"
 #include "content/renderer/media/webrtc_local_audio_track.h"
-#include "content/renderer/media/webrtc_logging_handler_impl.h"
-#include "content/renderer/media/webrtc_logging_message_filter.h"
+#include "content/renderer/media/webrtc_logging_initializer.h"
 #include "content/renderer/media/webrtc_uma_histograms.h"
 #include "content/renderer/p2p/ipc_network_manager.h"
 #include "content/renderer/p2p/ipc_socket_factory.h"
@@ -217,8 +216,7 @@ MediaStreamDependencyFactory::MediaStreamDependencyFactory(
       p2p_socket_dispatcher_(p2p_socket_dispatcher),
       signaling_thread_(NULL),
       worker_thread_(NULL),
-      chrome_worker_thread_("Chrome_libJingle_WorkerThread"),
-      webrtc_log_open_(false) {
+      chrome_worker_thread_("Chrome_libJingle_WorkerThread") {
 }
 
 MediaStreamDependencyFactory::~MediaStreamDependencyFactory() {
@@ -506,17 +504,12 @@ MediaStreamDependencyFactory::CreatePeerConnection(
   webrtc::MediaConstraintsInterface::Constraints optional_constraints =
       constraints->GetOptional();
   std::string constraint_value;
-  if (!webrtc_log_open_ &&
-      optional_constraints.FindFirst(kWebRtcLoggingConstraint,
+  if (optional_constraints.FindFirst(kWebRtcLoggingConstraint,
                                      &constraint_value)) {
-    webrtc_log_open_ = true;
     std::string url = web_frame->document().url().spec();
-
     RenderThreadImpl::current()->GetIOMessageLoopProxy()->PostTask(
         FROM_HERE, base::Bind(
-            &MediaStreamDependencyFactory::CreateWebRtcLoggingHandler,
-            base::Unretained(this),
-            RenderThreadImpl::current()->webrtc_logging_message_filter(),
+            &InitWebRtcLogging,
             constraint_value,
             url));
   }
@@ -789,15 +782,6 @@ void MediaStreamDependencyFactory::CleanupPeerConnectionFactory() {
       NOTREACHED() << "Worker thread not running.";
     }
   }
-}
-
-void MediaStreamDependencyFactory::CreateWebRtcLoggingHandler(
-    WebRtcLoggingMessageFilter* filter,
-    const std::string& app_session_id,
-    const std::string& app_url) {
-  WebRtcLoggingHandlerImpl* handler =
-      new WebRtcLoggingHandlerImpl(filter->io_message_loop());
-  filter->InitLogging(handler, app_session_id, app_url);
 }
 
 }  // namespace content

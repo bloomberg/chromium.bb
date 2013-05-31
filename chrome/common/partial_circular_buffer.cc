@@ -1,14 +1,12 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/partial_circular_buffer.h"
+#include "chrome/common/partial_circular_buffer.h"
 
 #include <algorithm>
 
 #include "base/logging.h"
-
-namespace content {
 
 namespace {
 
@@ -162,5 +160,3 @@ void PartialCircularBuffer::DoWrite(void* dest, const void* src, uint32 num) {
       std::min(buffer_data_->total_written + num, data_size_);
   buffer_data_->end_position = position_;
 }
-
-}  // namespace content

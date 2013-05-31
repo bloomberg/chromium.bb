@@ -973,6 +973,8 @@
         'browser/media/media_stream_devices_controller.h',
         'browser/media/media_stream_infobar_delegate.cc',
         'browser/media/media_stream_infobar_delegate.h',
+        'browser/media/webrtc_logging_handler_host.cc',
+        'browser/media/webrtc_logging_handler_host.h',
         'browser/media_galleries/fileapi/filtering_file_enumerator.cc',
         'browser/media_galleries/fileapi/filtering_file_enumerator.h',
         'browser/media_galleries/fileapi/itunes_finder.cc',
@@ -3068,11 +3070,11 @@
             ['exclude', '^browser/managed_mode/'],
           ]
         }],
-        ['enable_webrtc==1', {
-          'dependencies': [
-            '../third_party/libjingle/libjingle.gyp:libjingle_webrtc',
-            '../third_party/libjingle/libjingle.gyp:libpeerconnection',
-          ],
+        ['enable_webrtc==0', {
+          'sources!': [
+            'browser/media/webrtc_logging_handler_host.cc',
+            'browser/media/webrtc_logging_handler_host.h',
+          ]
         }],
       ],
       'target_conditions': [

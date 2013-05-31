@@ -17,3 +17,7 @@
 #include "chrome/common/spellcheck_messages.h"
 #include "chrome/common/tts_messages.h"
 #include "chrome/common/validation_message_messages.h"
+
+#if defined(ENABLE_WEBRTC)
+#include "chrome/common/media/webrtc_logging_messages.h"
+#endif

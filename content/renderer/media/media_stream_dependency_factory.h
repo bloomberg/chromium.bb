@@ -217,8 +217,6 @@ class CONTENT_EXPORT MediaStreamDependencyFactory
   talk_base::Thread* worker_thread_;
   base::Thread chrome_worker_thread_;
 
-  bool webrtc_log_open_;
-
   DISALLOW_COPY_AND_ASSIGN(MediaStreamDependencyFactory);
 };
 

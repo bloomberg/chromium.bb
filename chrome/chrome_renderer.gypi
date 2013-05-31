@@ -145,6 +145,10 @@
         'renderer/isolated_world_ids.h',
         'renderer/loadtimes_extension_bindings.cc',
         'renderer/loadtimes_extension_bindings.h',
+        'renderer/media/webrtc_logging_handler_impl.cc',
+        'renderer/media/webrtc_logging_handler_impl.h',
+        'renderer/media/webrtc_logging_message_filter.cc',
+        'renderer/media/webrtc_logging_message_filter.h',
         'renderer/net/net_error_helper.cc',
         'renderer/net/net_error_helper.h',
         'renderer/net/predictor_queue.cc',
@@ -346,6 +350,14 @@
         }, {  # safe_browsing==0 || safe_browsing==2
           'sources/': [
             ['exclude', '^renderer/safe_browsing/'],
+          ],
+        }],
+        ['enable_webrtc==0', {
+          'sources!': [
+            'renderer/media/webrtc_logging_handler_impl.cc',
+            'renderer/media/webrtc_logging_handler_impl.h',
+            'renderer/media/webrtc_logging_message_filter.cc',
+            'renderer/media/webrtc_logging_message_filter.h',
           ],
         }],
         ['OS=="mac"', {

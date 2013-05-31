@@ -13,7 +13,6 @@
 #include "base/atomicops.h"
 #include "base/string_util.h"
 #include "base/threading/platform_thread.h"
-#include "third_party/libjingle/overrides/logging/log_message_delegate.h"
 #include "third_party/libjingle/source/talk/base/stream.h"
 #include "third_party/libjingle/source/talk/base/stringencode.h"
 #include "third_party/libjingle/source/talk/base/stringutils.h"
@@ -30,7 +29,7 @@
 
 namespace talk_base {
 
-LogMessageDelegate* g_logging_delegate = NULL;
+void (*g_logging_delegate_function)(const std::string&) = NULL;
 #ifndef NDEBUG
 COMPILE_ASSERT(sizeof(base::subtle::Atomic32) == sizeof(base::PlatformThreadId),
                atomic32_not_same_size_as_platformthreadid);
@@ -151,8 +150,8 @@ DiagnosticLogMessage::~DiagnosticLogMessage() {
   const std::string& str = print_stream_.str();
   if (log_to_chrome_)
     LOG_LAZY_STREAM_DIRECT(file_name_, line_, severity_) << str;
-  if (g_logging_delegate && severity_ <= LS_INFO)
-    g_logging_delegate->LogMessage(str);
+  if (g_logging_delegate_function && severity_ <= LS_INFO)
+    g_logging_delegate_function(str);
 }
 
 // Note: this function is a copy from the overriden libjingle implementation.
@@ -273,7 +272,8 @@ void LogMultiline(LoggingSeverity level, const char* label, bool input,
   }
 }
 
-void InitDiagnosticLoggingDelegate(LogMessageDelegate* delegate) {
+void InitDiagnosticLoggingDelegateFunction(
+    void (*delegate)(const std::string&)) {
 #ifndef NDEBUG
   // Ensure that this function is always called from the same thread.
   base::subtle::NoBarrier_CompareAndSwap(&g_init_logging_delegate_thread_id, 0,
@@ -281,9 +281,9 @@ void InitDiagnosticLoggingDelegate(LogMessageDelegate* delegate) {
   DCHECK_EQ(g_init_logging_delegate_thread_id,
             base::PlatformThread::CurrentId());
 #endif
-  CHECK(!g_logging_delegate);
+  CHECK(!g_logging_delegate_function);
   CHECK(delegate);
-  g_logging_delegate = delegate;
+  g_logging_delegate_function = delegate;
 }
 
 }  // namespace talk_base

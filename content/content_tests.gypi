@@ -368,7 +368,6 @@
         'common/gpu/gpu_memory_manager_unittest.cc',
         'common/inter_process_time_ticks_converter_unittest.cc',
         'common/page_zoom_unittest.cc',
-        'common/partial_circular_buffer_unittest.cc',
         'common/resource_dispatcher_unittest.cc',
         'common/sandbox_mac_diraccess_unittest.mm',
         'common/sandbox_mac_fontloading_unittest.mm',
@@ -596,7 +595,6 @@
             'renderer/media/video_source_handler_unittest.cc',
             'renderer/media/webrtc_audio_device_unittest.cc',
             'renderer/media/webrtc_local_audio_track_unittest.cc',
-            'renderer/media/webrtc_logging_handler_impl_unittest.cc',
           ],
           'dependencies': [
             '../third_party/libjingle/libjingle.gyp:libjingle_webrtc',

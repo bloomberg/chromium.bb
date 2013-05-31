@@ -352,6 +352,7 @@
         'common/mac/objc_method_swizzle.mm',
         'common/mac/objc_zombie.h',
         'common/mac/objc_zombie.mm',
+        'common/media/webrtc_logging_messages.h',
         'common/metrics/entropy_provider.cc',
         'common/metrics/entropy_provider.h',
         'common/metrics/metrics_log_base.cc',
@@ -380,6 +381,8 @@
         'common/omaha_query_params/omaha_query_params.h',
         'common/omnibox_focus_state.h',
         'common/one_click_signin_messages.h',
+        'common/partial_circular_buffer.cc',
+        'common/partial_circular_buffer.h',
         'common/pepper_flash.cc',
         'common/pepper_flash.h',
         'common/pref_names_util.cc',
@@ -572,6 +575,11 @@
           'dependencies': [
             '<(DEPTH)/base/third_party/nspr/nspr.gyp:nspr',
           ],
+        }],
+        ['enable_webrtc==0', {
+          'sources!': [
+            'common/media/webrtc_logging_messages.h',
+          ]
         }],
       ],
       'target_conditions': [

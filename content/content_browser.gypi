@@ -808,8 +808,6 @@
     'browser/renderer_host/media/web_contents_tracker.h',
     'browser/renderer_host/media/web_contents_video_capture_device.cc',
     'browser/renderer_host/media/web_contents_video_capture_device.h',
-    'browser/renderer_host/media/webrtc_logging_handler_host.cc',
-    'browser/renderer_host/media/webrtc_logging_handler_host.h',
     'browser/renderer_host/memory_benchmark_message_filter.cc',
     'browser/renderer_host/memory_benchmark_message_filter.h',
     'browser/renderer_host/native_web_keyboard_event_android.cc',

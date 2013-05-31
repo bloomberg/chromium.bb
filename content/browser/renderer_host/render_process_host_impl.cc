@@ -135,10 +135,6 @@
 #include "content/public/common/sandboxed_process_launcher_delegate.h"
 #endif
 
-#if defined(ENABLE_WEBRTC)
-#include "content/browser/renderer_host/media/webrtc_logging_handler_host.h"
-#endif
-
 #include "third_party/skia/include/core/SkBitmap.h"
 
 extern bool g_exited_main_message_loop;
@@ -695,9 +691,6 @@ void RenderProcessHostImpl::CreateMessageFilters() {
   channel_->AddFilter(new ProfilerMessageFilter(PROCESS_TYPE_RENDERER));
   channel_->AddFilter(new HistogramMessageFilter());
   channel_->AddFilter(new HyphenatorMessageFilter(this));
-#if defined(ENABLE_WEBRTC)
-  channel_->AddFilter(new WebRtcLoggingHandlerHost());
-#endif
 #if defined(USE_TCMALLOC) && (defined(OS_LINUX) || defined(OS_ANDROID))
   if (CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableMemoryBenchmarking))

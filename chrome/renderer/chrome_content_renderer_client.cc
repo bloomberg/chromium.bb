@@ -100,6 +100,10 @@
 
 #include "widevine_cdm_version.h"  // In SHARED_INTERMEDIATE_DIR.
 
+#if defined(ENABLE_WEBRTC)
+#include "chrome/renderer/media/webrtc_logging_message_filter.h"
+#endif
+
 using autofill::AutofillAgent;
 using autofill::PasswordAutofillAgent;
 using autofill::PasswordGenerationManager;
@@ -223,6 +227,10 @@ void ChromeContentRendererClient::RenderThreadStarted() {
   phishing_classifier_.reset(safe_browsing::PhishingClassifierFilter::Create());
 #endif
   prerender_dispatcher_.reset(new prerender::PrerenderDispatcher());
+#if defined(ENABLE_WEBRTC)
+  webrtc_logging_message_filter_ = new WebRtcLoggingMessageFilter(
+      content::RenderThread::Get()->GetIOMessageLoopProxy());
+#endif
 
   RenderThread* thread = RenderThread::Get();
 
@@ -234,6 +242,10 @@ void ChromeContentRendererClient::RenderThreadStarted() {
   thread->AddObserver(spellcheck_.get());
   thread->AddObserver(visited_link_slave_.get());
   thread->AddObserver(prerender_dispatcher_.get());
+
+#if defined(ENABLE_WEBRTC)
+  thread->AddFilter(webrtc_logging_message_filter_.get());
+#endif
 
   thread->RegisterExtension(extensions_v8::ExternalExtension::Get());
   thread->RegisterExtension(extensions_v8::LoadTimesExtension::Get());

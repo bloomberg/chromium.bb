@@ -1671,6 +1671,7 @@
         'common/multi_process_lock_unittest.cc',
         'common/net/net_error_tracker_unittest.cc',
         'common/net/x509_certificate_model_unittest.cc',
+        'common/partial_circular_buffer_unittest.cc',
         'common/pref_names_util_unittest.cc',
         'common/service_process_util_unittest.cc',
         'common/switch_utils_unittest.cc',
@@ -1687,6 +1688,7 @@
         'renderer/extensions/json_schema_unittest.cc',
         'renderer/extensions/module_system_unittest.cc',
         'renderer/extensions/renderer_permissions_policy_delegate_unittest.cc',
+        'renderer/media/webrtc_logging_handler_impl_unittest.cc',
         'renderer/net/predictor_queue_unittest.cc',
         'renderer/net/renderer_predictor_unittest.cc',
         'renderer/plugins/plugin_uma_unittest.cc',
@@ -2047,6 +2049,11 @@
           'sources!': [
             'browser/sessions/session_service_unittest.cc',
             'browser/ui/startup/session_crashed_infobar_delegate_unittest.cc',
+          ],
+        }],
+        ['enable_webrtc==0', {
+          'sources!': [
+            'renderer/media/webrtc_logging_handler_impl_unittest.cc',
           ],
         }],
         ['chromeos==1', {

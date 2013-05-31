@@ -1,14 +1,14 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/renderer_host/media/webrtc_logging_handler_host.h"
+#include "chrome/browser/media/webrtc_logging_handler_host.h"
 
 #include "base/bind.h"
 #include "base/logging.h"
-#include "content/common/media/webrtc_logging_messages.h"
+#include "chrome/common/media/webrtc_logging_messages.h"
 
-namespace content {
+using content::BrowserThread;
 
 #if defined(OS_ANDROID)
 const size_t kWebRtcLogSize = 1 * 1024 * 1024;  // 1 MB
@@ -23,7 +23,7 @@ WebRtcLoggingHandlerHost::~WebRtcLoggingHandlerHost() {
 }
 
 void WebRtcLoggingHandlerHost::OnChannelClosing() {
-  BrowserMessageFilter::OnChannelClosing();
+  content::BrowserMessageFilter::OnChannelClosing();
 }
 
 void WebRtcLoggingHandlerHost::OnDestruct() const {
@@ -64,5 +64,3 @@ void WebRtcLoggingHandlerHost::OnOpenLog(const std::string& app_session_id,
   app_url_ = app_url;
   Send(new WebRtcLoggingMsg_LogOpened(foreign_memory_handle, kWebRtcLogSize));
 }
-
-}  // namespace content
