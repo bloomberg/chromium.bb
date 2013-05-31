@@ -820,7 +820,7 @@ fbdev_compositor_create(struct wl_display *display, int *argc, char *argv[],
 			struct fbdev_parameters *param)
 {
 	struct fbdev_compositor *compositor;
-	const char *seat = default_seat;
+	const char *seat_id = default_seat;
 	uint32_t key;
 
 	weston_log("initializing fbdev backend\n");
@@ -864,7 +864,7 @@ fbdev_compositor_create(struct wl_display *display, int *argc, char *argv[],
 	if (fbdev_output_create(compositor, param->device) < 0)
 		goto out_pixman;
 
-	udev_input_init(&compositor->input, &compositor->base, compositor->udev, seat);
+	udev_input_init(&compositor->input, &compositor->base, compositor->udev, seat_id);
 
 	return &compositor->base;
 
