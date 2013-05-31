@@ -123,6 +123,7 @@
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/html/HTMLHeadElement.h"
 #include "core/html/HTMLIFrameElement.h"
+#include "core/html/HTMLImportsController.h"
 #include "core/html/HTMLLinkElement.h"
 #include "core/html/HTMLMapElement.h"
 #include "core/html/HTMLNameCollection.h"
@@ -638,6 +639,7 @@ void Document::dispose()
     detachParser();
 
     m_registry.clear();
+    m_imports.clear();
 
     // removeDetachedChildren() doesn't always unregister IDs,
     // so tear down scope information upfront to avoid having stale references in the map.
@@ -861,6 +863,23 @@ CustomElementRegistry* Document::ensureCustomElementRegistry()
         m_registry = adoptRef(new CustomElementRegistry(this));
     }
     return m_registry.get();
+}
+
+HTMLImportsController* Document::ensureImports()
+{
+    if (!m_imports)
+        m_imports = HTMLImportsController::create(this);
+    return m_imports.get();
+}
+
+void Document::didLoadAllImports()
+{
+    executeScriptsWaitingForResourcesIfNeeded();
+}
+
+bool Document::haveImportsLoaded() const
+{
+    return !m_imports || m_imports->haveLoaded();
 }
 
 PassRefPtr<DocumentFragment> Document::createDocumentFragment()
@@ -2625,13 +2644,20 @@ void Document::didRemoveAllPendingStylesheet()
     m_needsNotifyRemoveAllPendingStylesheet = false;
 
     styleResolverChanged(RecalcStyleIfNeeded);
-
-    if (ScriptableDocumentParser* parser = scriptableDocumentParser())
-        parser->executeScriptsWaitingForStylesheets();
+    executeScriptsWaitingForResourcesIfNeeded();
 
     if (m_gotoAnchorNeededAfterStylesheetsLoad && view())
         view()->scrollToFragment(m_url);
 }
+
+void Document::executeScriptsWaitingForResourcesIfNeeded()
+{
+    if (!haveStylesheetsAndImportsLoaded())
+        return;
+    if (ScriptableDocumentParser* parser = scriptableDocumentParser())
+        parser->executeScriptsWaitingForResources();
+}
+
 
 CSSStyleSheet* Document::elementSheet()
 {

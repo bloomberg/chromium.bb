@@ -35,24 +35,26 @@
 namespace WebCore {
 
 LinkRelAttribute::LinkRelAttribute()
-    : m_isStyleSheet(false)
-    , m_iconType(InvalidIcon)
+    : m_iconType(InvalidIcon)
+    , m_isStyleSheet(false)
     , m_isAlternate(false)
     , m_isDNSPrefetch(false)
     , m_isLinkPrefetch(false)
     , m_isLinkSubresource(false)
     , m_isLinkPrerender(false)
+    , m_isImport(false)
 {
 }
 
 LinkRelAttribute::LinkRelAttribute(const String& rel)
-    : m_isStyleSheet(false)
-    , m_iconType(InvalidIcon)
+    : m_iconType(InvalidIcon)
+    , m_isStyleSheet(false)
     , m_isAlternate(false)
     , m_isDNSPrefetch(false)
     , m_isLinkPrefetch(false)
     , m_isLinkSubresource(false)
     , m_isLinkPrerender(false)
+    , m_isImport(false)
 {
     if (equalIgnoringCase(rel, "stylesheet"))
         m_isStyleSheet = true;
@@ -69,6 +71,10 @@ LinkRelAttribute::LinkRelAttribute(const String& rel)
     else if (equalIgnoringCase(rel, "alternate stylesheet") || equalIgnoringCase(rel, "stylesheet alternate")) {
         m_isStyleSheet = true;
         m_isAlternate = true;
+    } else if (equalIgnoringCase(rel, "dns-prefetch")) {
+        m_isDNSPrefetch = true;
+    } else if (equalIgnoringCase(rel, "import")) {
+        m_isImport = true;
     } else {
         // Tokenize the rel attribute and set bits based on specific keywords that we find.
         String relCopy = rel;

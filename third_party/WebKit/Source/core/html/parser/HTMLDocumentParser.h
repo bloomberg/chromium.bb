@@ -124,7 +124,7 @@ private:
     virtual void stopParsing() OVERRIDE;
     virtual bool isWaitingForScripts() const OVERRIDE;
     virtual bool isExecutingScript() const OVERRIDE;
-    virtual void executeScriptsWaitingForStylesheets() OVERRIDE;
+    virtual void executeScriptsWaitingForResources() OVERRIDE;
 
     // HTMLScriptRunnerHost
     virtual void watchForLoad(CachedResource*) OVERRIDE;

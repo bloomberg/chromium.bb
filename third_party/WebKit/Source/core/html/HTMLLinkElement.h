@@ -29,6 +29,7 @@
 #include "core/html/DOMSettableTokenList.h"
 #include "core/html/HTMLElement.h"
 #include "core/html/LinkRelAttribute.h"
+#include "core/html/LinkResource.h"
 #include "core/loader/LinkLoader.h"
 #include "core/loader/LinkLoaderClient.h"
 #include "core/loader/cache/CachedResourceHandle.h"
@@ -37,24 +38,40 @@
 
 namespace WebCore {
 
+class DocumentFragment;
 class HTMLLinkElement;
 class KURL;
+class LinkImport;
 
 template<typename T> class EventSender;
 typedef EventSender<HTMLLinkElement> LinkEventSender;
 
-class LinkStyle FINAL : public CachedStyleSheetClient {
+//
+// LinkStyle handles dynaically change-able link resources, which is
+// typically @rel="stylesheet".
+//
+// It could be @rel="shortcut icon" or soething else though. Each of
+// types might better be handled by a separate class, but dynamically
+// changing @rel makes it harder to move such a design so we are
+// sticking current way so far.
+//
+class LinkStyle FINAL : public LinkResource, CachedStyleSheetClient {
+    WTF_MAKE_FAST_ALLOCATED;
 public:
+    static PassRefPtr<LinkStyle> create(HTMLLinkElement* owner);
+
     explicit LinkStyle(HTMLLinkElement* owner);
-    ~LinkStyle();
+    virtual ~LinkStyle();
+
+    virtual Type type() const OVERRIDE { return Style; }
+    virtual void process() OVERRIDE;
+    virtual void ownerRemoved() OVERRIDE;
 
     void startLoadingDynamicSheet();
     void notifyLoadedSheetAndAllCriticalSubresources(bool errorOccurred);
     bool sheetLoaded();
 
     void setDisabledState(bool);
-    void process();
-    void ownerRemoved();
     void setSheetTitle(const String&);
 
     bool styleSheetIsLoading() const;
@@ -99,7 +116,6 @@ private:
     bool m_loading;
     bool m_firedLoad;
     bool m_loadedSheet;
-    HTMLLinkElement* m_owner;
 };
 
 
@@ -123,12 +139,13 @@ public:
     // the icon size string as parsed from the HTML attribute
     String iconSizes() const;
 
-    CSSStyleSheet* sheet() const { return m_link ? m_link->sheet() : 0; }
+    CSSStyleSheet* sheet() const { return linkStyle() ? linkStyle()->sheet() : 0; }
+    DocumentFragment* import() const;
 
     bool styleSheetIsLoading() const;
 
-    bool isDisabled() const { return m_link->isDisabled(); }
-    bool isEnabledViaScript() const { return m_link->isEnabledViaScript(); }
+    bool isDisabled() const { return linkStyle() && linkStyle()->isDisabled(); }
+    bool isEnabledViaScript() const { return linkStyle() && linkStyle()->isEnabledViaScript(); }
     void setSizes(const String&);
     DOMSettableTokenList* sizes() const;
 
@@ -140,14 +157,15 @@ public:
 
     // For LinkStyle
     bool loadLink(const String& type, const KURL& url) { return m_linkLoader.loadLink(m_relAttribute, type, url, document()); }
-    bool isAlternate() const { return m_link->isUnset() && m_relAttribute.isAlternate(); }
-    bool shouldProcessStyle() { return linkStyleToProcess(); }
+    bool isAlternate() const { return linkStyle()->isUnset() && m_relAttribute.isAlternate(); }
+    bool shouldProcessStyle() { return linkResourceToProcess() && linkStyle(); }
 
 private:
     virtual void parseAttribute(const QualifiedName&, const AtomicString&) OVERRIDE;
 
-    LinkStyle* linkStyle() const { return m_link.get(); }
-    LinkStyle* linkStyleToProcess();
+    LinkStyle* linkStyle() const;
+    LinkImport* linkImport() const;
+    LinkResource* linkResourceToProcess();
 
     void process();
     static void processCallback(Node*);
@@ -173,7 +191,7 @@ private:
 private:
     HTMLLinkElement(const QualifiedName&, Document*, bool createdByParser);
 
-    OwnPtr<LinkStyle> m_link;
+    RefPtr<LinkResource> m_link;
     LinkLoader m_linkLoader;
 
     String m_type;

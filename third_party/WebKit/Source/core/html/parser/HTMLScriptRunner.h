@@ -56,8 +56,8 @@ public:
     void execute(PassRefPtr<Element> scriptToProcess, const TextPosition& scriptStartPosition);
 
     void executeScriptsWaitingForLoad(CachedResource*);
-    bool hasScriptsWaitingForStylesheets() const { return m_hasScriptsWaitingForStylesheets; }
-    void executeScriptsWaitingForStylesheets();
+    bool hasScriptsWaitingForResources() const { return m_hasScriptsWaitingForResources; }
+    void executeScriptsWaitingForResources();
     bool executeScriptsWaitingForParsing();
 
     bool hasParserBlockingScript() const;
@@ -93,8 +93,8 @@ private:
     // We only want stylesheet loads to trigger script execution if script
     // execution is currently stopped due to stylesheet loads, otherwise we'd
     // cause nested script execution when parsing <style> tags since </style>
-    // tags can cause Document to call executeScriptsWaitingForStylesheets.
-    bool m_hasScriptsWaitingForStylesheets;
+    // tags can cause Document to call executeScriptsWaitingForResources.
+    bool m_hasScriptsWaitingForResources;
 };
 
 }

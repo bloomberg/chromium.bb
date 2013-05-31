@@ -48,7 +48,7 @@ HTMLScriptRunner::HTMLScriptRunner(Document* document, HTMLScriptRunnerHost* hos
     : m_document(document)
     , m_host(host)
     , m_scriptNestingLevel(0)
-    , m_hasScriptsWaitingForStylesheets(false)
+    , m_hasScriptsWaitingForResources(false)
 {
     ASSERT(m_host);
 }
@@ -98,8 +98,8 @@ ScriptSourceCode HTMLScriptRunner::sourceFromPendingScript(const PendingScript& 
 
 bool HTMLScriptRunner::isPendingScriptReady(const PendingScript& script)
 {
-    m_hasScriptsWaitingForStylesheets = !m_document->haveStylesheetsLoaded();
-    if (m_hasScriptsWaitingForStylesheets)
+    m_hasScriptsWaitingForResources = !m_document->haveStylesheetsAndImportsLoaded();
+    if (m_hasScriptsWaitingForResources)
         return false;
     if (script.cachedScript() && !script.cachedScript()->isLoaded())
         return false;
@@ -110,7 +110,7 @@ void HTMLScriptRunner::executeParsingBlockingScript()
 {
     ASSERT(m_document);
     ASSERT(!isExecutingScript());
-    ASSERT(m_document->haveStylesheetsLoaded());
+    ASSERT(m_document->haveStylesheetsAndImportsLoaded());
     ASSERT(isPendingScriptReady(m_parserBlockingScript));
 
     InsertionPointRecord insertionPointRecord(m_host->inputStream());
@@ -203,14 +203,14 @@ void HTMLScriptRunner::executeScriptsWaitingForLoad(CachedResource* cachedScript
     executeParsingBlockingScripts();
 }
 
-void HTMLScriptRunner::executeScriptsWaitingForStylesheets()
+void HTMLScriptRunner::executeScriptsWaitingForResources()
 {
     ASSERT(m_document);
-    // Callers should check hasScriptsWaitingForStylesheets() before calling
+    // Callers should check hasScriptsWaitingForResources() before calling
     // to prevent parser or script re-entry during </style> parsing.
-    ASSERT(hasScriptsWaitingForStylesheets());
+    ASSERT(hasScriptsWaitingForResources());
     ASSERT(!isExecutingScript());
-    ASSERT(m_document->haveStylesheetsLoaded());
+    ASSERT(m_document->haveStylesheetsAndImportsLoaded());
     executeParsingBlockingScripts();
 }
 

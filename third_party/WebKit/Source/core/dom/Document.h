@@ -104,6 +104,7 @@ class HTMLDocument;
 class HTMLElement;
 class HTMLFrameOwnerElement;
 class HTMLHeadElement;
+class HTMLImportsController;
 class HTMLIFrameElement;
 class HTMLMapElement;
 class HTMLNameCollection;
@@ -429,6 +430,7 @@ public:
     void notifyRemovePendingSheetIfNeeded();
 
     bool haveStylesheetsLoaded() const;
+    bool haveStylesheetsAndImportsLoaded() const { return haveImportsLoaded() && haveStylesheetsLoaded(); }
 
     // This is a DOM function.
     StyleSheetList* styleSheets();
@@ -1062,6 +1064,11 @@ public:
     CustomElementRegistry* registry() const { return m_registry.get(); }
     CustomElementRegistry* ensureCustomElementRegistry();
 
+    HTMLImportsController* ensureImports();
+    HTMLImportsController* imports() const { return m_imports.get(); }
+    bool haveImportsLoaded() const;
+    void didLoadAllImports();
+
     void adjustFloatQuadsForScrollAndAbsoluteZoom(Vector<FloatQuad>&, RenderObject*);
     void adjustFloatRectForScrollAndAbsoluteZoom(FloatRect&, RenderObject*);
 
@@ -1151,6 +1158,8 @@ private:
     void buildAccessKeyMap(TreeScope* root);
 
     void createStyleResolver();
+
+    void executeScriptsWaitingForResourcesIfNeeded();
 
     void seamlessParentUpdatedStylesheets();
 
@@ -1410,6 +1419,7 @@ private:
     OwnPtr<TextAutosizer> m_textAutosizer;
 
     RefPtr<CustomElementRegistry> m_registry;
+    OwnPtr<HTMLImportsController> m_imports;
 
     bool m_scheduledTasksAreSuspended;
     

@@ -332,7 +332,7 @@ void StyleSheetContents::checkLoaded()
     RefPtr<StyleSheetContents> protect(this);
 
     // Avoid |this| being deleted by scripts that run via
-    // ScriptableDocumentParser::executeScriptsWaitingForStylesheets().
+    // ScriptableDocumentParser::executeScriptsWaitingForResources().
     // See <rdar://problem/6622300>.
     RefPtr<StyleSheetContents> protector(this);
     StyleSheetContents* parentSheet = parentStyleSheet();

@@ -1,0 +1,6 @@
+CONSOLE MESSAGE: Import from origin 'http://localhost:8080' has been blocked from loading by Cross-Origin Resource Sharing policy: Origin http://127.0.0.1:8000 is not allowed by Access-Control-Allow-Origin.
+PASS target.import is null
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

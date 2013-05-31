@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html>
+<head>
+<link id="target" rel="import" href="resources/cookie.cgi">
+<script src="/js-test-resources/js-test-pre.js"></script>
+</head>
+<body>
+<script>
+shouldBe("target.import.querySelector('h1').innerHTML", "'Cookie Sent!'");
+shouldBe("document.cookie.indexOf('htmlimport=hello')", "-1");
+</script>
+<script src="/js-test-resources/js-test-post.js"></script>
+</body>
+</html>

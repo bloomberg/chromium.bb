@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011 Google Inc. All rights reserved.
+ * Copyright (C) 2013 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -26,42 +26,40 @@
  * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *
  */
 
-#ifndef LinkRelAttribute_h
-#define LinkRelAttribute_h
+#include "config.h"
+#include "core/html/LinkResource.h"
 
-#include "core/dom/IconURL.h"
+#include "HTMLNames.h"
+#include "core/html/HTMLLinkElement.h"
 
 namespace WebCore {
 
-class LinkRelAttribute {
-public:
-    LinkRelAttribute();
-    explicit LinkRelAttribute(const String&);
+using namespace HTMLNames;
 
-    bool isStyleSheet() const { return m_isStyleSheet; }
-    IconType iconType() const { return m_iconType; }
-    bool isAlternate() const { return m_isAlternate; }
-    bool isDNSPrefetch() const { return m_isDNSPrefetch; }
-    bool isLinkPrefetch() const { return m_isLinkPrefetch; }
-    bool isLinkSubresource() const { return m_isLinkSubresource; }
-    bool isLinkPrerender() const { return m_isLinkPrerender; }
-    bool isImport() const { return m_isImport; }
-
-private:
-    IconType m_iconType;
-    bool m_isStyleSheet : 1;
-    bool m_isAlternate : 1;
-    bool m_isDNSPrefetch : 1;
-    bool m_isLinkPrefetch : 1;
-    bool m_isLinkSubresource : 1;
-    bool m_isLinkPrerender : 1;
-    bool m_isImport : 1;
-};
-    
+LinkResource::LinkResource(HTMLLinkElement* owner)
+    : m_owner(owner)
+{
 }
 
-#endif
+LinkResource::~LinkResource()
+{
+}
 
+LinkRequestBuilder::LinkRequestBuilder(HTMLLinkElement* owner)
+    : m_owner(owner)
+    , m_url(m_owner->getNonEmptyURLAttribute(hrefAttr))
+{
+    m_charset = m_owner->getAttribute(charsetAttr);
+    if (m_charset.isEmpty() && m_owner->document()->frame())
+        m_charset = m_owner->document()->charset();
+}
+
+CachedResourceRequest LinkRequestBuilder::build(bool blocking) const
+{
+    ResourceLoadPriority priority = blocking ? ResourceLoadPriorityUnresolved : ResourceLoadPriorityVeryLow;
+    return CachedResourceRequest(ResourceRequest(m_owner->document()->completeURL(m_url)), m_owner->localName(), m_charset, priority);
+}
+
+} // namespace WebCore

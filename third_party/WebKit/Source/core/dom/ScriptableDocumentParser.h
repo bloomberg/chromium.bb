@@ -40,7 +40,7 @@ public:
 
     // FIXME: Only the HTMLDocumentParser ever blocks script execution on
     // stylesheet load, which is likely a bug in the XMLDocumentParser.
-    virtual void executeScriptsWaitingForStylesheets() { }
+    virtual void executeScriptsWaitingForResources() { }
 
     virtual bool isWaitingForScripts() const = 0;
 

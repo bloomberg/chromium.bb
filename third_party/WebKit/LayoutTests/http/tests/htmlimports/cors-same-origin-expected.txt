@@ -1,0 +1,5 @@
+PASS target.import.querySelector('h1').innerHTML is 'Hello, CORS!'
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

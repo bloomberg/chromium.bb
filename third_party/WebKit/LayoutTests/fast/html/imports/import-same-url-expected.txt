@@ -1,0 +1,6 @@
+PASS target1.import is non-null.
+PASS target1.import is target2.import
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

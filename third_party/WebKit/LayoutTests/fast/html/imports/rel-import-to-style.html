@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<script src="../../js/resources/js-test-pre.js"></script>
+<script src="resources/import-helpers.js"></script>
+<head>
+<link id="target", rel="import" href="resources/hello.html">
+</head>
+<body>
+<script>
+waitAndTest([
+    {
+        description: "Updating attribute value shouldn't invalidate loaded import.",
+        setup: function()
+        {
+            debug("Before update:");
+            shouldBeNull("target.sheet");
+            shouldBeNonNull("target.import");
+            target.setAttribute("href", "resources/hello.css");
+            target.setAttribute("rel", "stylesheet");
+            window.placeholder = createPlaceholder();
+        },
+        ready: function() { return window.placeholder.import; },
+        test: function()
+        {
+            debug("After update:");
+            shouldBeNull("target.sheet");
+            shouldBeNonNull("target.import");
+        }
+    }
+]);
+</script>
+<script src="../../js/resources/js-test-post.js"></script>
+</body>
+</html>

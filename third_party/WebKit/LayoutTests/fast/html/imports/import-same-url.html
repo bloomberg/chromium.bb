@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+<script src="../../js/resources/js-test-pre.js"></script>
+<head>
+<link id="target1" rel="import" href="resources/hello.html">
+<link id="target2" rel="import" href="resources/hello.html">
+</head>
+<body>
+<script>
+shouldBeNonNull("target1.import");
+shouldBe("target1.import", "target2.import");
+</script>
+<script src="../../js/resources/js-test-post.js"></script>
+</body>
+</html>

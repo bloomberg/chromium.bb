@@ -1,0 +1,11 @@
+Updating attribute value shouldn't invalidate loaded import.
+Before update:
+PASS target.sheet is null
+PASS target.import is non-null.
+After update:
+PASS target.sheet is null
+PASS target.import is non-null.
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

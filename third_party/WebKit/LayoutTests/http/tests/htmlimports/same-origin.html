@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html>
+<head>
+<link id="target" rel="import" href="resources/hello.html">
+<script src="/js-test-resources/js-test-pre.js"></script>
+</head>
+<body>
+<script>
+shouldBe("target.import.querySelector('h1').innerHTML", "'Hello'");
+</script>
+<script src="/js-test-resources/js-test-post.js"></script>
+</body>
+</html>

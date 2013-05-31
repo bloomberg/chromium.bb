@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<script src="../../js/resources/js-test-pre.js"></script>
+<script src="resources/import-helpers.js"></script>
+<head>
+</head>
+<body>
+<script>
+
+waitAndTest([
+    {
+        description: "It shouldn't be loaded before insertion.",
+        setup: function()
+        {
+            window.placeholder = createPlaceholder();
+            window.toInsert = document.createElement("link");
+            window.toInsert.setAttribute("rel", "import");
+            window.toInsert.setAttribute("href", "resources/hello.html");
+
+        },
+        ready: function() { return window.placeholder.import; },
+        test: function()
+        {
+            shouldBeNull("toInsert.import");
+        }
+    },
+    {
+        description: "It should be loaded once it is inserted.",
+        setup: function()
+        {
+            document.head.appendChild(window.toInsert);
+        },
+        ready: function() { return toInsert.import; },
+        test: function()
+        {
+            shouldBe("toInsert.import.querySelector('h1').innerHTML", "'Hello'");
+        }
+    }
+]);
+
+</script>
+<script src="../../js/resources/js-test-post.js"></script>
+</body>
+</html>

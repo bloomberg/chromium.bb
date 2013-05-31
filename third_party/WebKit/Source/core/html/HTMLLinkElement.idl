@@ -33,5 +33,7 @@ interface HTMLLinkElement : HTMLElement {
 
     // DOM Level 2 Style
     readonly attribute StyleSheet sheet;
+
+    [EnabledAtRuntime=htmlImports] readonly attribute DocumentFragment import;
 };
 

@@ -1,0 +1,7 @@
+PASS target1.import.ownerDocument is non-null.
+PASS target1.import.ownerDocument is not document
+PASS target1.import.ownerDocument is target2.import.ownerDocument
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

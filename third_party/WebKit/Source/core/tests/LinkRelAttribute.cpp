@@ -37,7 +37,7 @@ using namespace WebCore;
 
 namespace {
 
-static inline void testLinkRelAttribute(String value, bool isStyleSheet, IconType iconType, bool isAlternate, bool isDNSPrefetch, bool isLinkSubresource, bool isLinkPrerender)
+static inline void testLinkRelAttribute(String value, bool isStyleSheet, IconType iconType, bool isAlternate, bool isDNSPrefetch, bool isLinkSubresource, bool isLinkPrerender, bool isImport = false)
 {
     LinkRelAttribute linkRelAttribute(value);
     ASSERT_EQ(isStyleSheet, linkRelAttribute.isStyleSheet()) << value.utf8().data();
@@ -46,6 +46,7 @@ static inline void testLinkRelAttribute(String value, bool isStyleSheet, IconTyp
     ASSERT_EQ(isDNSPrefetch, linkRelAttribute.isDNSPrefetch()) << value.utf8().data();
     ASSERT_EQ(isLinkSubresource, linkRelAttribute.isLinkSubresource()) << value.utf8().data();
     ASSERT_EQ(isLinkPrerender, linkRelAttribute.isLinkPrerender()) << value.utf8().data();
+    ASSERT_EQ(isImport, linkRelAttribute.isImport()) << value.utf8().data();
 }
 
 TEST(CoreLinkRelAttribute, Constructor)
@@ -77,6 +78,10 @@ TEST(CoreLinkRelAttribute, Constructor)
     testLinkRelAttribute("stylesheet icon prerender aLtErNaTe", true, Favicon, true, false, false, true);
     testLinkRelAttribute("alternate subresource", false, InvalidIcon, true, false, true, false);
     testLinkRelAttribute("alternate icon stylesheet", true, Favicon, true, false, false, false);
+
+    testLinkRelAttribute("import", false, InvalidIcon, false, false, false, false, true);
+    // "import" is mutually exclusive and "stylesheet" wins when they conflict.
+    testLinkRelAttribute("stylesheet import", true, InvalidIcon, false, false, false, false, false);
 }
 
 } // namespace
