@@ -49,7 +49,7 @@ v8.log
 /build/Release_x64
 /build/gomacc.lock
 /build/ipch/
-/build/util/LASTCHANGE
+/build/util/LASTCHANGE*
 /build/util/support
 /build/x64/
 # The Chrome OS build creates a /c symlink due to http://crbug.com/54866.

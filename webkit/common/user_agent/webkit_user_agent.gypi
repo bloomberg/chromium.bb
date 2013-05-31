@@ -50,18 +50,22 @@
               'action_name': 'webkit_version',
               'inputs': [
                 '<(script)',
-                '../../../build/util/lastchange.py',  # Used by the script.
-                # This depends on the svn revision of third_party/WebKit but does
-                # not list it as a dependency.  Incremental builds will have
-                # the wrong WEBKIT_SVN_REVISION.
+                '<(lastchange)',
+                '<(template)',
               ],
               'outputs': [
                 '<(SHARED_INTERMEDIATE_DIR)/webkit_version.h',
               ],
-              'action': ['python', '<(script)', '../../../third_party/WebKit/Source',
-                         '<(SHARED_INTERMEDIATE_DIR)'],
+              'action': ['python',
+                         '<(script)',
+                         '-f', '<(lastchange)',
+                         '<(template)',
+                         '<@(_outputs)',
+                       ],
               'variables': {
-                'script': '../build/webkit_version.py',
+                'script': '<(DEPTH)/chrome/tools/build/version.py',
+                'lastchange': '<(DEPTH)/build/util/LASTCHANGE.blink',
+                'template': '<(DEPTH)/webkit/build/webkit_version.h.in',
               },
             },
           ],

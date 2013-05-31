@@ -662,6 +662,14 @@ hooks = [
                "-o", "src/build/util/LASTCHANGE"],
   },
   {
+    # Update LASTCHANGE.blink. This is also run by export_tarball.py in
+    # src/tools/export_tarball - please keep them in sync.
+    "pattern": ".",
+    "action": ["python", "src/build/util/lastchange.py",
+               "-s", "src/third_party/WebKit",
+               "-o", "src/build/util/LASTCHANGE.blink"],
+  },
+  {
     # A change to a .gyp, .gypi, or to GYP itself should run the generator.
     "pattern": ".",
     "action": ["python", "src/build/gyp_chromium"],

@@ -149,7 +149,7 @@ def FetchGitSVNRevision(directory, svn_url_regex):
 
 
 def FetchVersionInfo(default_lastchange, directory=None,
-                     directory_regex_prior_to_src_url='chrome|svn'):
+                     directory_regex_prior_to_src_url='chrome|blink|svn'):
   """
   Returns the last change (in the form of a branch, revision tuple),
   from some appropriate revision control system.
