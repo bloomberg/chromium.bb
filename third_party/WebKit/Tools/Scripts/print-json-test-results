@@ -15,6 +15,8 @@ def main(argv):
                       help='include expected results along with unexpected')
     parser.add_option('--passes', action='store_true',
                       help='show passing tests')
+    parser.add_option('--ignored-failures-path', action='store',
+                      help='ignore failures seen in a previous run')
     options, args = parser.parse_args(argv)
 
     if args and args[0] != '-':
@@ -41,6 +43,25 @@ def main(argv):
     if options.flakes:
         tests_to_print += flakes.keys()
     print "\n".join(sorted(tests_to_print))
+
+    if options.ignored_failures_path:
+        with open(options.ignored_failures_path, 'r') as fp:
+            txt = fp.read()
+        if txt.startswith('ADD_RESULTS(') and txt.endswith(');'):
+            txt = txt[12:-2]  # ignore optional JSONP wrapper
+        results = json.loads(txt)
+        _, ignored_failures, _ = decode_results(results, options.expected)
+        new_failures = set(failures.keys()) - set(ignored_failures.keys())
+        if new_failures:
+            print "New failures:"
+            print "\n".join(sorted(new_failures))
+            print
+        if ignored_failures:
+            print "Ignored failures:"
+            print "\n".join(sorted(ignored_failures.keys()))
+        if new_failures:
+            return 1
+        return 0
 
 
 def decode_results(results, include_expected=False):
@@ -78,4 +99,4 @@ def convert_trie_to_flat_paths(trie, prefix=None):
 
 
 if __name__ ==  '__main__':
-    main(sys.argv[1:])
+    sys.exit(main(sys.argv[1:]))
