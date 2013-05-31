@@ -243,18 +243,8 @@ void VpxVideoDecoder::DoDecryptOrDecodeBuffer(
     return;
   }
 
-  if (status == DemuxerStream::kConfigChanged) {
-    if (!ConfigureDecoder()) {
-      state_ = kError;
-      base::ResetAndReturn(&read_cb_).Run(kDecodeError, NULL);
-      return;
-    }
-
-    ReadFromDemuxerStream();
-    return;
-  }
-
-  DCHECK_EQ(status, DemuxerStream::kOk);
+  // VideoFrameStream ensures no kConfigChanged is passed to VideoDecoders.
+  DCHECK_EQ(status, DemuxerStream::kOk) << status;
   DecodeBuffer(buffer);
 }
 

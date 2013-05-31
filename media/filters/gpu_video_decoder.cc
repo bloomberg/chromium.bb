@@ -385,17 +385,8 @@ void GpuVideoDecoder::RequestBufferDecode(
     return;
   }
 
-  if (status == DemuxerStream::kConfigChanged) {
-    if (pending_read_cb_.is_null())
-      return;
-    // TODO(acolwell): Add support for reinitializing the decoder when
-    // |status| == kConfigChanged. For now we just trigger a decode error.
-    state_ = kError;
-    base::ResetAndReturn(&pending_read_cb_).Run(kDecodeError, NULL);
-    return;
-  }
-
-  DCHECK_EQ(status, DemuxerStream::kOk);
+  // VideoFrameStream ensures no kConfigChanged is passed to VideoDecoders.
+  DCHECK_EQ(status, DemuxerStream::kOk) << status;
 
   if (!vda_) {
     EnqueueFrameAndTriggerFrameDelivery(VideoFrame::CreateEmptyFrame());

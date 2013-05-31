@@ -48,7 +48,6 @@ class MEDIA_EXPORT DecryptingVideoDecoder : public VideoDecoder {
     kDecryptorRequested,
     kPendingDecoderInit,
     kIdle,
-    kPendingConfigChange,
     kPendingDemuxerRead,
     kPendingDecode,
     kWaitingForKey,
@@ -62,9 +61,6 @@ class MEDIA_EXPORT DecryptingVideoDecoder : public VideoDecoder {
 
   // Callback for Decryptor::InitializeVideoDecoder() during initialization.
   void FinishInitialization(bool success);
-
-  // Callback for Decryptor::InitializeVideoDecoder() during config change.
-  void FinishConfigChange(bool success);
 
   void ReadFromDemuxerStream();
 

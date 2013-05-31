@@ -52,7 +52,7 @@ class MEDIA_EXPORT FFmpegVideoDecoder : public VideoDecoder {
   };
 
   // Reads from the demuxer stream and corresponding read callback.
-  void ReturnFrameOrReadFromDemuxerStream();
+  void ReadFromDemuxerStream();
   void BufferReady(DemuxerStream::Status status,
                    const scoped_refptr<DecoderBuffer>& buffer);
 
@@ -89,8 +89,6 @@ class MEDIA_EXPORT FFmpegVideoDecoder : public VideoDecoder {
 
   // Pointer to the demuxer stream that will feed us compressed buffers.
   DemuxerStream* demuxer_stream_;
-
-  std::list<scoped_refptr<VideoFrame> > decoded_frames_;
 
   DISALLOW_COPY_AND_ASSIGN(FFmpegVideoDecoder);
 };
