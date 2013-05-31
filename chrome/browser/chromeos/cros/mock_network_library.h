@@ -37,9 +37,6 @@ class MockNetworkLibrary : public NetworkLibrary {
   MOCK_METHOD1(RemovePinOperationObserver, void(PinOperationObserver*));
   MOCK_METHOD1(AddUserActionObserver, void(UserActionObserver*));
   MOCK_METHOD1(RemoveUserActionObserver, void(UserActionObserver*));
-  MOCK_METHOD0(Lock, void(void));
-  MOCK_METHOD0(Unlock, void(void));
-  MOCK_METHOD0(IsLocked, bool(void));
   MOCK_CONST_METHOD0(ethernet_network, const EthernetNetwork*(void));
   MOCK_CONST_METHOD0(ethernet_connecting, bool(void));
   MOCK_CONST_METHOD0(ethernet_connected, bool(void));
@@ -151,12 +148,6 @@ class MockNetworkLibrary : public NetworkLibrary {
   MOCK_CONST_METHOD0(cellular_enabled, bool(void));
   MOCK_CONST_METHOD0(wimax_enabled, bool(void));
   MOCK_CONST_METHOD0(mobile_enabled, bool(void));
-
-  MOCK_CONST_METHOD0(ethernet_busy, bool(void));
-  MOCK_CONST_METHOD0(wifi_busy, bool(void));
-  MOCK_CONST_METHOD0(cellular_busy, bool(void));
-  MOCK_CONST_METHOD0(wimax_busy, bool(void));
-  MOCK_CONST_METHOD0(mobile_busy, bool(void));
 
   MOCK_CONST_METHOD0(active_network, const Network*(void));
   MOCK_CONST_METHOD0(active_nonvirtual_network, const Network*(void));

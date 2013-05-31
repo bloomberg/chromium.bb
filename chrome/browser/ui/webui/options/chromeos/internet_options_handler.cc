@@ -1771,16 +1771,16 @@ ListValue* InternetOptionsHandler::GetRememberedList() {
 }
 
 void InternetOptionsHandler::FillNetworkInfo(DictionaryValue* dictionary) {
-  dictionary->SetBoolean(kTagAccessLocked, cros_->IsLocked());
+  dictionary->SetBoolean(kTagAccessLocked, false);  // TODO(stevenj) remove.
   dictionary->Set(kTagWiredList, GetWiredList());
   dictionary->Set(kTagWirelessList, GetWirelessList());
   dictionary->Set(kTagVpnList, GetVPNList());
   dictionary->Set(kTagRememberedList, GetRememberedList());
   dictionary->SetBoolean(kTagWifiAvailable, cros_->wifi_available());
-  dictionary->SetBoolean(kTagWifiBusy, cros_->wifi_busy());
+  dictionary->SetBoolean(kTagWifiBusy, false);  // TODO(stevenj) remove.
   dictionary->SetBoolean(kTagWifiEnabled, cros_->wifi_enabled());
   dictionary->SetBoolean(kTagCellularAvailable, cros_->cellular_available());
-  dictionary->SetBoolean(kTagCellularBusy, cros_->cellular_busy());
+  dictionary->SetBoolean(kTagCellularBusy, false);  // TODO(stevenj) remove.
   dictionary->SetBoolean(kTagCellularEnabled, cros_->cellular_enabled());
 
   const chromeos::NetworkDevice* cellular_device = cros_->FindCellularDevice();
@@ -1790,9 +1790,9 @@ void InternetOptionsHandler::FillNetworkInfo(DictionaryValue* dictionary) {
 
   dictionary->SetBoolean(kTagWimaxEnabled, cros_->wimax_enabled());
   dictionary->SetBoolean(kTagWimaxAvailable, cros_->wimax_available());
-  dictionary->SetBoolean(kTagWimaxBusy, cros_->wimax_busy());
+  dictionary->SetBoolean(kTagWimaxBusy, false);  // TODO(stevenj) remove.
   // TODO(kevers): The use of 'offline_mode' is not quite correct.  Update once
-  // we have proper back-end support.
+  // we have proper back-end support. TODO(stevenj) remove.
   dictionary->SetBoolean(kTagAirplaneMode, cros_->offline_mode());
 }
 

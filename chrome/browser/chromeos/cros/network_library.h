@@ -1365,15 +1365,6 @@ class NetworkLibrary {
   virtual void RemoveNetworkDeviceObserver(const std::string& device_path,
                                            NetworkDeviceObserver* observer) = 0;
 
-  // Temporarily locks down certain functionality in network library to prevent
-  // unplanned side effects. During the lock down, Enable*Device() calls cannot
-  // be made.
-  virtual void Lock() = 0;
-  // Removes temporarily lock of network library.
-  virtual void Unlock() = 0;
-  // Checks if access to network library is locked.
-  virtual bool IsLocked() = 0;
-
   virtual void AddPinOperationObserver(PinOperationObserver* observer) = 0;
   virtual void RemovePinOperationObserver(PinOperationObserver* observer) = 0;
 
@@ -1451,12 +1442,6 @@ class NetworkLibrary {
   virtual bool wimax_enabled() const = 0;
   virtual bool cellular_enabled() const = 0;
   virtual bool mobile_enabled() const = 0;
-
-  virtual bool ethernet_busy() const = 0;
-  virtual bool wifi_busy() const = 0;
-  virtual bool wimax_busy() const = 0;
-  virtual bool cellular_busy() const = 0;
-  virtual bool mobile_busy() const = 0;
 
   virtual bool wifi_scanning() const = 0;
   virtual bool cellular_initializing() const = 0;

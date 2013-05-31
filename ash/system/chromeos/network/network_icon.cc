@@ -273,6 +273,17 @@ gfx::ImageSkia GetImageForIndex(ImageType image_type,
       gfx::Rect(0, index * height, width, height));
 }
 
+const gfx::ImageSkia GetConnectedImage(const std::string& type,
+                                       IconType icon_type) {
+  if (type == flimflam::kTypeVPN) {
+    return *ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
+        IDR_AURA_UBER_TRAY_NETWORK_VPN);
+  }
+  ImageType image_type = ImageTypeForNetworkType(type);
+  const int connected_index = NumImagesForType(image_type) - 1;
+  return GetImageForIndex(image_type, icon_type, connected_index);
+}
+
 const gfx::ImageSkia GetDisconnectedImage(const std::string& type,
                                           IconType icon_type) {
   if (type == flimflam::kTypeVPN) {
@@ -629,6 +640,11 @@ gfx::ImageSkia GetImageForNetwork(const NetworkState* network,
   // Update and return the icon's image.
   icon->Update(network);
   return icon->image();
+}
+
+gfx::ImageSkia GetImageForConnectedNetwork(IconType icon_type,
+                                           const std::string& network_type) {
+  return GetConnectedImage(network_type, icon_type);
 }
 
 gfx::ImageSkia GetImageForConnectingNetwork(IconType icon_type,
