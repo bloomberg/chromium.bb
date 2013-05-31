@@ -2424,7 +2424,7 @@ planes_binding(struct weston_seat *seat, uint32_t time, uint32_t key, void *data
 
 static struct weston_compositor *
 drm_compositor_create(struct wl_display *display,
-		      int connector, const char *seat, int tty, int pixman,
+		      int connector, const char *seat_id, int tty, int pixman,
 		      int *argc, char *argv[],
 		      struct weston_config *config)
 {
@@ -2474,7 +2474,7 @@ drm_compositor_create(struct wl_display *display,
 		goto err_udev;
 	}
 
-	drm_device = find_primary_gpu(ec, seat);
+	drm_device = find_primary_gpu(ec, seat_id);
 	if (drm_device == NULL) {
 		weston_log("no drm device found\n");
 		goto err_tty;
@@ -2520,7 +2520,7 @@ drm_compositor_create(struct wl_display *display,
 
 	path = NULL;
 
-	if (udev_seat_create(&ec->base, ec->udev, seat) == NULL) {
+	if (udev_input_create(&ec->base, ec->udev, seat_id) == NULL) {
 		weston_log("failed to create input devices\n");
 		goto err_sprite;
 	}
@@ -2589,11 +2589,11 @@ backend_init(struct wl_display *display, int *argc, char *argv[],
 	     struct weston_config *config)
 {
 	int connector = 0, tty = 0, use_pixman = 0;
-	const char *seat = default_seat;
+	const char *seat_id = default_seat;
 
 	const struct weston_option drm_options[] = {
 		{ WESTON_OPTION_INTEGER, "connector", 0, &connector },
-		{ WESTON_OPTION_STRING, "seat", 0, &seat },
+		{ WESTON_OPTION_STRING, "seat", 0, &seat_id },
 		{ WESTON_OPTION_INTEGER, "tty", 0, &tty },
 		{ WESTON_OPTION_BOOLEAN, "current-mode", 0, &option_current_mode },
 		{ WESTON_OPTION_BOOLEAN, "use-pixman", 0, &use_pixman },
@@ -2601,6 +2601,6 @@ backend_init(struct wl_display *display, int *argc, char *argv[],
 
 	parse_options(drm_options, ARRAY_LENGTH(drm_options), argc, argv);
 
-	return drm_compositor_create(display, connector, seat, tty, use_pixman,
+	return drm_compositor_create(display, connector, seat_id, tty, use_pixman,
 				     argc, argv, config);
 }
