@@ -45,11 +45,20 @@ ImageSource::ImageSource(ImageSource::AlphaOption alphaOption, ImageSource::Gamm
 
 ImageSource::~ImageSource()
 {
+    clear(true);
 }
 
-size_t ImageSource::clearCacheExceptFrame(size_t clearExceptFrame)
+void ImageSource::clear(bool destroyAll, size_t clearBeforeFrame, SharedBuffer* data, bool allDataReceived)
 {
-    return m_decoder ? m_decoder->clearCacheExceptFrame(clearExceptFrame) : 0;
+    if (!destroyAll) {
+        if (m_decoder)
+            m_decoder->clearFrameBufferCache(clearBeforeFrame);
+        return;
+    }
+
+    m_decoder.clear();
+    if (data)
+        setData(data, allDataReceived);
 }
 
 bool ImageSource::initialized() const

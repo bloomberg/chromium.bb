@@ -102,10 +102,8 @@ size_t ICOImageDecoder::frameCount()
     decode(0, true);
     if (m_frameBufferCache.isEmpty()) {
         m_frameBufferCache.resize(m_dirEntries.size());
-        for (size_t i = 0; i < m_dirEntries.size(); ++i) {
+        for (size_t i = 0; i < m_dirEntries.size(); ++i)
             m_frameBufferCache[i].setPremultiplyAlpha(m_premultiplyAlpha);
-            m_frameBufferCache[i].setRequiredPreviousFrameIndex(notFound);
-        }
     }
     // CAUTION: We must not resize m_frameBufferCache again after this, as
     // decodeAtIndex() may give a BMPImageReader a pointer to one of the

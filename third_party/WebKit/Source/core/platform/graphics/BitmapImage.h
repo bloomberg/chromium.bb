@@ -106,25 +106,25 @@ public:
     }
     virtual ~BitmapImage();
     
-    virtual bool isBitmapImage() const OVERRIDE;
+    virtual bool isBitmapImage() const;
 
-    virtual bool hasSingleSecurityOrigin() const OVERRIDE;
+    virtual bool hasSingleSecurityOrigin() const;
 
-    virtual IntSize size() const OVERRIDE;
+    virtual IntSize size() const;
     IntSize sizeRespectingOrientation() const;
     IntSize currentFrameSize() const;
-    virtual bool getHotSpot(IntPoint&) const OVERRIDE;
+    virtual bool getHotSpot(IntPoint&) const;
 
-    virtual bool dataChanged(bool allDataReceived) OVERRIDE;
-    virtual String filenameExtension() const OVERRIDE;
+    virtual bool dataChanged(bool allDataReceived);
+    virtual String filenameExtension() const; 
 
     // It may look unusual that there is no start animation call as public API.  This is because
     // we start and stop animating lazily.  Animation begins whenever someone draws the image.  It will
     // automatically pause once all observers no longer want to render the image anywhere.
-    virtual void stopAnimation() OVERRIDE;
-    virtual void resetAnimation() OVERRIDE;
+    virtual void stopAnimation();
+    virtual void resetAnimation();
 
-    virtual unsigned decodedSize() const OVERRIDE;
+    virtual unsigned decodedSize() const;
 
     virtual PassNativeImagePtr nativeImageForCurrentFrame() OVERRIDE;
     virtual bool currentFrameKnownToBeOpaque() OVERRIDE;
@@ -132,7 +132,7 @@ public:
     ImageOrientation currentFrameOrientation();
 
 #if !ASSERT_DISABLED
-    virtual bool notSolidColor() OVERRIDE;
+    virtual bool notSolidColor();
 #endif
 
     void reportMemoryUsage(MemoryObjectInfo*) const OVERRIDE;
@@ -150,11 +150,11 @@ protected:
     BitmapImage(PassNativeImagePtr, ImageObserver* = 0);
     BitmapImage(ImageObserver* = 0);
 
-    virtual void draw(GraphicsContext*, const FloatRect& dstRect, const FloatRect& srcRect, ColorSpace styleColorSpace, CompositeOperator, BlendMode) OVERRIDE;
+    virtual void draw(GraphicsContext*, const FloatRect& dstRect, const FloatRect& srcRect, ColorSpace styleColorSpace, CompositeOperator, BlendMode);
     virtual void draw(GraphicsContext*, const FloatRect& dstRect, const FloatRect& srcRect, ColorSpace styleColorSpace, CompositeOperator, BlendMode, RespectImageOrientationEnum) OVERRIDE;
 
     size_t currentFrame() const { return m_currentFrame; }
-    size_t frameCount();
+    virtual size_t frameCount();
     PassNativeImagePtr frameAtIndex(size_t);
     bool frameIsCompleteAtIndex(size_t);
     float frameDurationAtIndex(size_t);
@@ -166,18 +166,22 @@ protected:
     // Called before accessing m_frames[index]. Returns false on index out of bounds.
     bool ensureFrameIsCached(size_t index);
 
-    // Called to invalidate cached data. This is used while animating large
-    // images to keep memory footprint low. The decoder may preserve some frames
-    // to avoid redecoding the whole image on every frame.
-    virtual void destroyDecodedData() OVERRIDE;
+    // Called to invalidate cached data.  When |destroyAll| is true, we wipe out
+    // the entire frame buffer cache and tell the image source to destroy
+    // everything; this is used when e.g. we want to free some room in the image
+    // cache.  If |destroyAll| is false, we only delete frames up to the current
+    // one; this is used while animating large images to keep memory footprint
+    // low without redecoding the whole image on every frame.
+    virtual void destroyDecodedData(bool destroyAll = true);
 
-    // If the image is large enough, calls destroyDecodedData().
-    void destroyDecodedDataIfNecessary();
+    // If the image is large enough, calls destroyDecodedData() and passes
+    // |destroyAll| along.
+    void destroyDecodedDataIfNecessary(bool destroyAll);
 
     // Generally called by destroyDecodedData(), destroys whole-image metadata
     // and notifies observers that the memory footprint has (hopefully)
     // decreased by |frameBytesCleared|.
-    void destroyMetadataAndNotify(size_t frameBytesCleared);
+    void destroyMetadataAndNotify(unsigned frameBytesCleared);
 
     // Whether or not size is available yet.    
     bool isSizeAvailable();
@@ -191,7 +195,7 @@ protected:
     // Animation.
     int repetitionCount(bool imageKnownToBeComplete);  // |imageKnownToBeComplete| should be set if the caller knows the entire image has been decoded.
     bool shouldAnimate();
-    virtual void startAnimation(bool catchUpIfNecessary = true) OVERRIDE;
+    virtual void startAnimation(bool catchUpIfNecessary = true);
     void advanceAnimation(Timer<BitmapImage>*);
 
     // Function that does the real work of advancing the animation.  When
