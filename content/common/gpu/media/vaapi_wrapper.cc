@@ -408,8 +408,8 @@ bool VaapiWrapper::pre_sandbox_init_done_ = false;
 // static
 void VaapiWrapper::PreSandboxInitialization() {
   DCHECK(!pre_sandbox_init_done_);
-  vaapi_handle = dlopen("libva.so", RTLD_NOW);
-  vaapi_x11_handle = dlopen("libva-x11.so", RTLD_NOW);
+  vaapi_handle = dlopen("libva.so.1", RTLD_NOW);
+  vaapi_x11_handle = dlopen("libva-x11.so.1", RTLD_NOW);
   pre_sandbox_init_done_ = vaapi_handle && vaapi_x11_handle;
 }
 
@@ -443,7 +443,7 @@ bool VaapiWrapper::PostSandboxInitialization() {
   VAAPI_DLSYM_OR_RETURN_ON_ERROR(Initialize, vaapi_handle);
   VAAPI_DLSYM_OR_RETURN_ON_ERROR(PutSurface, vaapi_x11_handle);
   VAAPI_DLSYM_OR_RETURN_ON_ERROR(RenderPicture, vaapi_handle);
-  VAAPI_DLSYM_OR_RETURN_ON_ERROR(SyncSurface, vaapi_x11_handle);
+  VAAPI_DLSYM_OR_RETURN_ON_ERROR(SyncSurface, vaapi_handle);
   VAAPI_DLSYM_OR_RETURN_ON_ERROR(Terminate, vaapi_handle);
 #undef VAAPI_DLSYM
 
