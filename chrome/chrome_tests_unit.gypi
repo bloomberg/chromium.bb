@@ -962,6 +962,7 @@
         'browser/net/url_fixer_upper_unittest.cc',
         'browser/net/url_info_unittest.cc',
         'browser/notifications/desktop_notification_service_unittest.cc',
+        'browser/notifications/notification_audio_controller_unittest.cc',
         'browser/notifications/sync_notifier/chrome_notifier_service_unittest.cc',
         'browser/notifications/sync_notifier/synced_notification_unittest.cc',
         'browser/omnibox/omnibox_field_trial_unittest.cc',

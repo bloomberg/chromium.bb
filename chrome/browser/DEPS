@@ -27,6 +27,7 @@ include_rules = [
   "+grit",  # For generated headers
   "+installer_util_strings",  # For generated headers
   "+media/base",  # For media switches
+  "+media/audio",
   "+policy",  # For generated headers and source
   "+ppapi/c",  # For various types.
   "+ppapi/host",
