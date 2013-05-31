@@ -582,6 +582,7 @@
         'browser/chromeos/drive/file_cache_unittest.cc',
         'browser/chromeos/drive/file_change_unittest.cc',
         'browser/chromeos/drive/file_system_unittest.cc',
+        'browser/chromeos/drive/file_system/copy_operation_unittest.cc',
         'browser/chromeos/drive/file_system/create_directory_operation_unittest.cc',
         'browser/chromeos/drive/file_system/create_file_operation_unittest.cc',
         'browser/chromeos/drive/file_system/download_operation_unittest.cc',
