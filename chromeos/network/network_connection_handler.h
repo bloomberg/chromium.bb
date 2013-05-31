@@ -16,6 +16,7 @@
 #include "chromeos/dbus/dbus_method_call_status.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_handler_callbacks.h"
+#include "chromeos/network/network_state_handler_observer.h"
 
 namespace chromeos {
 
@@ -29,28 +30,33 @@ class NetworkState;
 // 2. Request additional information (e.g. user data which contains certificate
 //    information) and determine whether sufficient information is available.
 // 3. Send the connect request.
-// 4. Invoke the appropriate callback (always) on success or failure.
+// 4. Wait for the network state to change to a non connecting state.
+// 5. Invoke the appropriate callback (always) on success or failure.
 //
 // NetworkConnectionHandler depends on NetworkStateHandler for immediately
 // available State information, and NetworkConfigurationHandler for any
 // configuration calls.
 
 class CHROMEOS_EXPORT NetworkConnectionHandler
-    : public base::SupportsWeakPtr<NetworkConnectionHandler> {
+    : public NetworkStateHandlerObserver,
+      public base::SupportsWeakPtr<NetworkConnectionHandler> {
  public:
-  // Constants for |error_name| from |error_callback| for Connect/Disconnect.
+  // Constants for |error_name| from |error_callback| for Connect.
   static const char kErrorNotFound[];
   static const char kErrorConnected[];
   static const char kErrorConnecting[];
-  static const char kErrorNotConnected[];
   static const char kErrorPassphraseRequired[];
   static const char kErrorActivationRequired[];
   static const char kErrorCertificateRequired[];
   static const char kErrorConfigurationRequired[];
   static const char kErrorShillError[];
-  static const char kErrorPreviousConnectFailed[];
+  static const char kErrorConnectFailed[];
+  static const char kErrorUnknown[];
 
-  ~NetworkConnectionHandler();
+  // Constants for |error_name| from |error_callback| for Disconnect.
+  static const char kErrorNotConnected[];
+
+  virtual ~NetworkConnectionHandler();
 
   // ConnectToNetwork() will start an asynchronous connection attempt.
   // On success, |success_callback| will be called.
@@ -82,19 +88,51 @@ class CHROMEOS_EXPORT NetworkConnectionHandler
                          const base::Closure& success_callback,
                          const network_handler::ErrorCallback& error_callback);
 
+  // Returns true if ConnectToNetwork has been called with |service_path| and
+  // has not completed (i.e. success or error callback has been called).
+  bool HasConnectingNetwork(const std::string& service_path);
+
+  // NetworkStateHandlerObserver
+  virtual void NetworkListChanged() OVERRIDE;
+  virtual void NetworkPropertiesUpdated(const NetworkState* network) OVERRIDE;
+
  private:
   friend class NetworkHandler;
   friend class NetworkConnectionHandlerTest;
+
+  struct ConnectRequest;
+
   NetworkConnectionHandler();
 
   void Init(NetworkStateHandler* network_state_handler,
             NetworkConfigurationHandler* network_configuration_handler);
 
+  ConnectRequest* pending_request(const std::string& service_path);
+
+  // Callback from Shill.Service.GetProperties. Parses |properties| to verify
+  // whether or not the network appears to be configured. If configured,
+  // attempts a connection, otherwise invokes error_callback from
+  // pending_requests_[service_path].
+  void VerifyConfiguredAndConnect(const std::string& service_path,
+                                  const base::DictionaryValue& properties);
+
   // Calls Shill.Manager.Connect asynchronously.
-  void CallShillConnect(
+  void CallShillConnect(const std::string& service_path);
+
+  // Handle failure from ConfigurationHandler calls.
+  void HandleConfigurationFailure(
       const std::string& service_path,
-      const base::Closure& success_callback,
-      const network_handler::ErrorCallback& error_callback);
+      const std::string& error_name,
+      scoped_ptr<base::DictionaryValue> error_data);
+
+  // Handle success or failure from Shill.Service.Connect.
+  void HandleShillConnectSuccess(const std::string& service_path);
+  void HandleShillConnectFailure(const std::string& service_path,
+                                 const std::string& error_name,
+                                 const std::string& error_message);
+
+  void CheckPendingRequest(const std::string service_path);
+  void CheckAllPendingRequests();
 
   // Calls Shill.Manager.Disconnect asynchronously.
   void CallShillDisconnect(
@@ -102,43 +140,23 @@ class CHROMEOS_EXPORT NetworkConnectionHandler
       const base::Closure& success_callback,
       const network_handler::ErrorCallback& error_callback);
 
-  // Callback from Shill.Service.GetProperties. Parses |properties| to verify
-  // whether or not the network appears to be configured. If configured,
-  // attempts a connection, otherwise invokes |error_callback|.
-  void VerifyConfiguredAndConnect(
-      const base::Closure& success_callback,
-      const network_handler::ErrorCallback& error_callback,
-      const std::string& service_path,
-      const base::DictionaryValue& properties);
-
-  // Sets the property for the service with an empty callback (logs errors).
-  void SetServiceProperty(const std::string& service_path,
-                          const std::string& property,
-                          const std::string& value) const;
-
-  // Handle failure from ConfigurationHandler calls.
-  void HandleConfigurationFailure(
+  // Handle success or failure from Shill.Service.Disconnect.
+  void HandleShillDisconnectSuccess(const std::string& service_path,
+                                    const base::Closure& success_callback);
+  void HandleShillDisconnectFailure(
       const std::string& service_path,
       const network_handler::ErrorCallback& error_callback,
       const std::string& error_name,
-      scoped_ptr<base::DictionaryValue> error_data);
-
-  // Handle success or failure from Shill.Service.Connect.
-  void HandleShillSuccess(const std::string& service_path,
-                          const base::Closure& success_callback);
-  void HandleShillFailure(const std::string& service_path,
-                          const network_handler::ErrorCallback& error_callback,
-                          const std::string& error_name,
-                          const std::string& error_message);
+      const std::string& error_message);
 
   // Local references to the associated handler instances.
   NetworkStateHandler* network_state_handler_;
   NetworkProfileHandler* network_profile_handler_;
   NetworkConfigurationHandler* network_configuration_handler_;
 
-  // Set of pending connect requests, used to prevent repeat attempts while
-  // waiting for Shill.
-  std::set<std::string> pending_requests_;
+  // Map of pending connect requests, used to prevent repeat attempts while
+  // waiting for Shill and to trigger callbacks on eventual success or failure.
+  std::map<std::string, ConnectRequest> pending_requests_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkConnectionHandler);
 };

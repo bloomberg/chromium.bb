@@ -205,6 +205,8 @@
         'system/chromeos/label_tray_view.cc',
         'system/chromeos/managed/tray_locally_managed_user.h',
         'system/chromeos/managed/tray_locally_managed_user.cc',
+        'system/chromeos/network/network_connect.cc',
+        'system/chromeos/network/network_connect.h',
         'system/chromeos/network/network_detailed_view.h',
         'system/chromeos/network/network_icon.cc',
         'system/chromeos/network/network_icon.h',

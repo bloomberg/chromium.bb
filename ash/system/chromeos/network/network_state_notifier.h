@@ -14,10 +14,18 @@
 #include "base/time.h"
 #include "chromeos/network/network_state_handler_observer.h"
 
+namespace chromeos {
+class NetworkState;
+}
+
 namespace ash {
 
 // This class observes NetworkStateHandler and generates notifications
-// on connection failures.
+// on connection failures. NOTE: The Observer for this class only triggers
+// "Out of credits" notifications, and failures triggered from NetworkLibrary
+// calls (which sets NetworkStateHandler::connecting_network()).
+// Failures from NetworkStateListDetailedView::ConnectToNetwork are now
+// handled by the ConnectToNetwork callbacks.
 class ASH_EXPORT NetworkStateNotifier :
       public chromeos::NetworkStateHandlerObserver,
       public NetworkTrayDelegate {
@@ -38,8 +46,15 @@ class ASH_EXPORT NetworkStateNotifier :
       NetworkObserver::MessageType message_type,
       size_t link_index) OVERRIDE;
 
+  // Show a connection error notification.
+  void ShowNetworkConnectError(const std::string& error_name,
+                               const std::string& service_path);
+
  private:
   typedef std::map<std::string, std::string> CachedStateMap;
+
+  void ShowConnectError(const std::string& error_name,
+                        const chromeos::NetworkState* network);
 
   void InitializeNetworks();
 

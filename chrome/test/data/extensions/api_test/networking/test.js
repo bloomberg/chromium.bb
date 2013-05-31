@@ -30,10 +30,12 @@ var privateHelpers = {
             self.onNetworkChange);
         done();
       };
-      var expectedState = expectedStates.pop();
-      assertEq(expectedState, properties.ConnectionState);
-      if (expectedStates.length == 0)
-        finishTest();
+      if (expectedStates.length > 0) {
+        var expectedState = expectedStates.pop();
+        assertEq(expectedState, properties.ConnectionState);
+        if (expectedStates.length == 0)
+          finishTest();
+      }
     };
     this.onNetworkChange = function(changes) {
       assertEq([network], changes);

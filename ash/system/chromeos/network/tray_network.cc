@@ -9,6 +9,7 @@
 #include "ash/system/chromeos/network/network_icon_animation.h"
 #include "ash/system/chromeos/network/network_state_list_detailed_view.h"
 #include "ash/system/chromeos/network/network_tray_delegate.h"
+#include "ash/system/chromeos/network/tray_network_state_observer.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/system/tray/system_tray_notifier.h"
@@ -19,6 +20,7 @@
 #include "ash/system/tray/tray_utils.h"
 #include "base/command_line.h"
 #include "base/utf_string_conversions.h"
+#include "chromeos/network/network_connection_handler.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "grit/ash_resources.h"
@@ -33,6 +35,7 @@
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/widget/widget.h"
 
+using chromeos::NetworkConnectionHandler;
 using chromeos::NetworkHandler;
 using chromeos::NetworkState;
 using chromeos::NetworkStateHandler;
@@ -540,13 +543,20 @@ void TrayNetwork::GetNetworkStateHandlerImageAndLabel(
     gfx::ImageSkia* image,
     base::string16* label,
     bool* animating) {
-  NetworkStateHandler* handler = NetworkHandler::Get()->network_state_handler();
-  const NetworkState* connected_network = handler->ConnectedNetworkByType(
-      NetworkStateHandler::kMatchTypeNonVirtual);
-  const NetworkState* connecting_network = handler->ConnectingNetworkByType(
-      NetworkStateHandler::kMatchTypeWireless);
-  if (!connecting_network && icon_type == network_icon::ICON_TYPE_TRAY)
-    connecting_network = handler->ConnectingNetworkByType(flimflam::kTypeVPN);
+  NetworkStateHandler* state_handler =
+      NetworkHandler::Get()->network_state_handler();
+  NetworkConnectionHandler* connect_handler =
+      NetworkHandler::Get()->network_connection_handler();
+  const NetworkState* connected_network =
+      state_handler->ConnectedNetworkByType(
+          NetworkStateHandler::kMatchTypeNonVirtual);
+  const NetworkState* connecting_network =
+      state_handler->ConnectingNetworkByType(
+          NetworkStateHandler::kMatchTypeWireless);
+  if (!connecting_network && icon_type == network_icon::ICON_TYPE_TRAY) {
+    connecting_network =
+        state_handler->ConnectingNetworkByType(flimflam::kTypeVPN);
+  }
 
   const NetworkState* network;
   // If we are connecting to a network, and there is either no connected
@@ -554,7 +564,8 @@ void TrayNetwork::GetNetworkStateHandlerImageAndLabel(
   // network.
   if (connecting_network &&
       (!connected_network ||
-       handler->connecting_network() == connecting_network->path())) {
+       state_handler->connecting_network() == connecting_network->path() ||
+       connect_handler->HasConnectingNetwork(connecting_network->path()))) {
     network = connecting_network;
   } else {
     network = connected_network;
@@ -570,7 +581,7 @@ void TrayNetwork::GetNetworkStateHandlerImageAndLabel(
 
   if (!network) {
     // If no connecting network, check if we are activating a network.
-    const NetworkState* mobile_network = handler->FirstNetworkByType(
+    const NetworkState* mobile_network = state_handler->FirstNetworkByType(
         NetworkStateHandler::kMatchTypeMobile);
     if (mobile_network && (mobile_network->activation_state() ==
                            flimflam::kActivationStateActivating)) {

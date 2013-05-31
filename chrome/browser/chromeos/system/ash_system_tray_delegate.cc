@@ -761,7 +761,7 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
 
   virtual void ConnectToNetwork(const std::string& network_id) OVERRIDE {
     DCHECK(!CommandLine::ForCurrentProcess()->HasSwitch(
-        chromeos::switches::kUseNewNetworkConfigurationHandlers));
+        chromeos::switches::kUseNewNetworkConnectionHandler));
     network_connect::ConnectResult result =
         network_connect::ConnectToNetwork(network_id, GetNativeWindow());
     if (result == network_connect::NETWORK_NOT_FOUND)

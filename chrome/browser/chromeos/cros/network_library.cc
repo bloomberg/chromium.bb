@@ -639,28 +639,47 @@ void VirtualNetwork::CopyCredentialsFromRemembered(Network* remembered) {
 }
 
 bool VirtualNetwork::NeedMoreInfoToConnect() const {
-  if (server_hostname_.empty() || username_.empty() ||
-      IsUserPassphraseRequired())
+  if (server_hostname_.empty()) {
+    VLOG(1) << "server_hostname_.empty()";
     return true;
-  if (error() != ERROR_NO_ERROR)
+  }
+  if (username_.empty()) {
+    VLOG(1) << "username_.empty()";
     return true;
+  }
+  if (IsUserPassphraseRequired()) {
+    VLOG(1) << "User Passphrase Required";
+    return true;
+  }
+  if (error() != ERROR_NO_ERROR) {
+    VLOG(1) << "Error: " << error();
+    return true;
+  }
   switch (provider_type_) {
     case PROVIDER_TYPE_L2TP_IPSEC_PSK:
-      if (IsPSKPassphraseRequired())
+      if (IsPSKPassphraseRequired()) {
+        VLOG(1) << "PSK Passphrase Required";
         return true;
+      }
       break;
     case PROVIDER_TYPE_L2TP_IPSEC_USER_CERT:
       if (client_cert_id_.empty() &&
-          client_cert_type() != CLIENT_CERT_TYPE_PATTERN)
+          client_cert_type() != CLIENT_CERT_TYPE_PATTERN) {
+        VLOG(1) << "Certificate Required";
         return true;
+      }
       break;
     case PROVIDER_TYPE_OPEN_VPN:
-      if (client_cert_id_.empty())
+      if (client_cert_id_.empty()) {
+        VLOG(1) << "client_cert_id_.empty()";
         return true;
+      }
       // For now we always need additional info for OpenVPN.
       // TODO(stevenjb): Check connectable() once shill sets that state
       // properly, or define another mechanism to determine when additional
       // credentials are required.
+      VLOG(1) << "OpenVPN requires credentials, connectable: "
+              << connectable();
       return true;
       break;
     case PROVIDER_TYPE_MAX:

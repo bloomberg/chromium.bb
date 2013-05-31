@@ -7,6 +7,7 @@
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
+#include "ash/system/chromeos/network/network_connect.h"
 #include "ash/system/chromeos/network/network_icon.h"
 #include "ash/system/chromeos/network/network_icon_animation.h"
 #include "ash/system/chromeos/network/tray_network_state_observer.h"
@@ -24,7 +25,6 @@
 #include "base/utf_string_conversions.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/network/device_state.h"
-#include "chromeos/network/network_connection_handler.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "grit/ash_resources.h"
@@ -40,7 +40,6 @@
 #include "ui/views/widget/widget.h"
 
 using chromeos::DeviceState;
-using chromeos::NetworkConnectionHandler;
 using chromeos::NetworkHandler;
 using chromeos::NetworkState;
 using chromeos::NetworkStateHandler;
@@ -276,7 +275,13 @@ void NetworkStateListDetailedView::OnViewClicked(views::View* sender) {
       Shell::GetInstance()->system_tray_delegate()->ShowNetworkSettings(
           service_path);
     } else {
-      ConnectToNetwork(service_path);
+      if (CommandLine::ForCurrentProcess()->HasSwitch(
+              chromeos::switches::kUseNewNetworkConnectionHandler)) {
+        ash::network_connect::ConnectToNetwork(service_path);
+      } else {
+        Shell::GetInstance()->system_tray_delegate()->ConnectToNetwork(
+            service_path);
+      }
     }
   }
 }
@@ -767,49 +772,6 @@ views::View* NetworkStateListDetailedView::CreateNetworkInfoView() {
   }
 
   return container;
-}
-
-void NetworkStateListDetailedView::ConnectToNetwork(
-    const std::string& service_path) {
-  const NetworkState* network = NetworkHandler::Get()->network_state_handler()->
-      GetNetworkState(service_path);
-  if (!network)
-    return;
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          chromeos::switches::kUseNewNetworkConfigurationHandlers)) {
-    const bool ignore_error_state = false;
-    NetworkHandler::Get()->network_connection_handler()->ConnectToNetwork(
-        service_path,
-        base::Bind(&base::DoNothing),
-        base::Bind(&NetworkStateListDetailedView::OnConnectFailed,
-                   AsWeakPtr(), service_path),
-        ignore_error_state);
-  } else {
-    Shell::GetInstance()->system_tray_delegate()->ConnectToNetwork(
-        service_path);
-  }
-}
-
-void NetworkStateListDetailedView::OnConnectFailed(
-    const std::string& service_path,
-    const std::string& error_name,
-    scoped_ptr<base::DictionaryValue> error_data) {
-  if (error_name == NetworkConnectionHandler::kErrorNotFound)
-    return;
-  if (error_name == NetworkConnectionHandler::kErrorPassphraseRequired) {
-    // TODO(stevenjb): Add inline UI to handle passphrase entry here.
-    Shell::GetInstance()->system_tray_delegate()->ConfigureNetwork(
-        service_path);
-    return;
-  }
-  if (error_name == NetworkConnectionHandler::kErrorCertificateRequired ||
-      error_name == NetworkConnectionHandler::kErrorConfigurationRequired) {
-    Shell::GetInstance()->system_tray_delegate()->ConfigureNetwork(
-        service_path);
-    return;
-  }
-  Shell::GetInstance()->system_tray_delegate()->ShowNetworkSettings(
-      service_path);
 }
 
 void NetworkStateListDetailedView::CallRequestScan() {

@@ -102,9 +102,12 @@ void ShillServiceClientStub::SetProperty(const dbus::ObjectPath& service_path,
   base::DictionaryValue* dict = NULL;
   if (!stub_services_.GetDictionaryWithoutPathExpansion(
           service_path.value(), &dict)) {
+    LOG(ERROR) << "Service not found:  " << service_path.value();
     error_callback.Run("Error.InvalidService", "Invalid Service");
     return;
   }
+  VLOG(1) << "Service.SetProperty: " << name << " = " << value
+          << " For: " << service_path.value();
   if (name == flimflam::kStateProperty) {
     // If the service went into a connected state, then move it to the top of
     // the list in the manager client.
@@ -186,19 +189,21 @@ void ShillServiceClientStub::ClearProperties(
 void ShillServiceClientStub::Connect(const dbus::ObjectPath& service_path,
                                      const base::Closure& callback,
                                      const ErrorCallback& error_callback) {
+  VLOG(1) << "ShillServiceClientStub::Connect: " << service_path.value();
   base::Value* service;
   if (!stub_services_.Get(service_path.value(), &service)) {
+    LOG(ERROR) << "Service not found:  " << service_path.value();
     error_callback.Run("Error.InvalidService", "Invalid Service");
     return;
   }
   base::TimeDelta delay;
+  // Set Associating
+  base::StringValue associating_value(flimflam::kStateAssociation);
+  SetServiceProperty(service_path.value(),
+                     flimflam::kStateProperty,
+                     associating_value);
   if (CommandLine::ForCurrentProcess()->HasSwitch(
           chromeos::switches::kEnableStubInteractive)) {
-    // Set Associating
-    base::StringValue associating_value(flimflam::kStateAssociation);
-    SetServiceProperty(service_path.value(),
-                       flimflam::kStateProperty,
-                       associating_value);
     const int kConnectDelaySeconds = 5;
     delay = base::TimeDelta::FromSeconds(kConnectDelaySeconds);
   }

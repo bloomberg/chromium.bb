@@ -6,8 +6,10 @@
 
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
+#include "ash/system/chromeos/network/network_connect.h"
 #include "ash/system/chromeos/network/network_observer.h"
 #include "ash/system/tray/system_tray_notifier.h"
+#include "base/command_line.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
@@ -15,6 +17,7 @@
 #include "chrome/browser/chromeos/options/network_config_view.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/webui/chromeos/mobile_setup_dialog.h"
+#include "chromeos/chromeos_switches.h"
 #include "grit/generated_resources.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -115,6 +118,12 @@ void ShowMobileSetup(const std::string& service_path) {
 
 ConnectResult ConnectToNetwork(const std::string& service_path,
                                gfx::NativeWindow parent_window) {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          chromeos::switches::kUseNewNetworkConnectionHandler)) {
+    ash::network_connect::ConnectToNetwork(service_path);
+    return CONNECT_STARTED;
+  }
+
   NetworkLibrary* cros = CrosLibrary::Get()->GetNetworkLibrary();
   Network* network = cros->FindNetworkByPath(service_path);
   if (!network)

@@ -10,6 +10,7 @@
 #include "base/string16.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
+#include "chromeos/network/network_connection_handler.h"
 #include "chromeos/network/network_event_log.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
@@ -17,6 +18,7 @@
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 
+using chromeos::NetworkConnectionHandler;
 using chromeos::NetworkHandler;
 using chromeos::NetworkState;
 using chromeos::NetworkStateHandler;
@@ -25,7 +27,19 @@ namespace {
 
 const int kMinTimeBetweenOutOfCreditsNotifySeconds = 10 * 60;
 
-string16 GetErrorString(const std::string& error) {
+// Error messages based on |error_name|, not network_state->error().
+string16 GetConnectErrorString(const std::string& error_name) {
+  if (error_name == NetworkConnectionHandler::kErrorNotFound)
+    return l10n_util::GetStringUTF16(IDS_CHROMEOS_NETWORK_ERROR_CONNECT_FAILED);
+  return string16();
+}
+
+// Error messages based on network_state->error().
+string16 GetErrorString(const NetworkState* network_state) {
+  DCHECK(network_state);
+  const std::string& error = network_state->error();
+  if (error.empty())
+    return string16();
   if (error == flimflam::kErrorOutOfRange)
     return l10n_util::GetStringUTF16(IDS_CHROMEOS_NETWORK_ERROR_OUT_OF_RANGE);
   if (error == flimflam::kErrorPinMissing)
@@ -137,17 +151,7 @@ void NetworkStateNotifier::NetworkConnectionStateChanged(
 
   NET_LOG_EVENT("ConnectionFailure", network->path());
 
-  std::vector<string16> no_links;
-  string16 error = GetErrorString(network->error());
-  ash::Shell::GetInstance()->system_tray_notifier()->NotifySetNetworkMessage(
-      this,
-      NetworkObserver::ERROR_CONNECT_FAILED,
-      NetworkObserver::GetNetworkTypeForNetworkState(network),
-      l10n_util::GetStringUTF16(IDS_NETWORK_CONNECTION_ERROR_TITLE),
-      l10n_util::GetStringFUTF16(
-            IDS_NETWORK_CONNECTION_ERROR_MESSAGE_WITH_DETAILS,
-            UTF8ToUTF16(network->name()), error),
-      no_links);
+  ShowConnectError("", network);
 }
 
 void NetworkStateNotifier::NetworkPropertiesUpdated(
@@ -193,6 +197,42 @@ void NetworkStateNotifier::NotificationLinkClicked(
     ash::Shell::GetInstance()->system_tray_notifier()->
         NotifyClearNetworkMessage(message_type);
   }
+}
+
+void NetworkStateNotifier::ShowNetworkConnectError(
+    const std::string& error_name,
+    const std::string& service_path) {
+  const NetworkState* network = NetworkHandler::Get()->network_state_handler()->
+      GetNetworkState(service_path);
+  ShowConnectError(error_name, network);
+}
+
+void NetworkStateNotifier::ShowConnectError(const std::string& error_name,
+                                            const NetworkState* network) {
+  std::vector<string16> no_links;
+  string16 error = GetConnectErrorString(error_name);
+  if (error.empty() && network)
+    error = GetErrorString(network);
+  if (error.empty())
+    error = l10n_util::GetStringUTF16(IDS_CHROMEOS_NETWORK_ERROR_UNKNOWN);
+  std::string name = network ? network->name() : "";
+  string16 error_msg;
+  if (network && !network->error_details().empty()) {
+    error_msg = l10n_util::GetStringFUTF16(
+        IDS_NETWORK_CONNECTION_ERROR_MESSAGE_WITH_SERVER_MESSAGE,
+        UTF8ToUTF16(name), error, UTF8ToUTF16(network->error_details()));
+  } else {
+    error_msg = l10n_util::GetStringFUTF16(
+        IDS_NETWORK_CONNECTION_ERROR_MESSAGE_WITH_DETAILS,
+        UTF8ToUTF16(name), error);
+  }
+  ash::Shell::GetInstance()->system_tray_notifier()->NotifySetNetworkMessage(
+      this,
+      NetworkObserver::ERROR_CONNECT_FAILED,
+      NetworkObserver::GetNetworkTypeForNetworkState(network),
+      l10n_util::GetStringUTF16(IDS_NETWORK_CONNECTION_ERROR_TITLE),
+      error_msg,
+      no_links);
 }
 
 void NetworkStateNotifier::InitializeNetworks() {

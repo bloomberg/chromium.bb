@@ -16,7 +16,7 @@ const char kSharedProfilePath[] = "/profile/default";
 const char* ConnectionStateToString(ConnectionState state) {
   switch (state) {
     case STATE_UNKNOWN:
-      break;
+      return flimflam::kUnknownString;
     case STATE_IDLE:
       return flimflam::kStateIdle;
     case STATE_CARRIER:

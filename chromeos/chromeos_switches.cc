@@ -191,5 +191,8 @@ const char kStubCrosSettings[]              = "stub-cros-settings";
 const char kUseNewNetworkConfigurationHandlers[] =
     "use-new-network-configuration-handlers";
 
+const char kUseNewNetworkConnectionHandler[] =
+    "use-new-network-connection-handler";
+
 }  // namespace switches
 }  // namespace chromeos
