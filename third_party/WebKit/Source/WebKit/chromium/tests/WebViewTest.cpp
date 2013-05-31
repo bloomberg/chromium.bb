@@ -340,12 +340,11 @@ void WebViewTest::testTextInputType(WebTextInputType expectedType, const std::st
     URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(m_baseURL.c_str()), WebString::fromUTF8(htmlFile.c_str()));
     WebView* webView = FrameTestHelpers::createWebViewAndLoad(m_baseURL + htmlFile);
     webView->setInitialFocus(false);
-    EXPECT_EQ(expectedType, webView->textInputType());
+    EXPECT_EQ(expectedType, webView->textInputInfo().type);
     webView->close();
 }
 
-// Disabled for https://bugs.webkit.org/show_bug.cgi?id=78746#c29
-TEST_F(WebViewTest, DISABLED_TextInputType)
+TEST_F(WebViewTest, TextInputType)
 {
     testTextInputType(WebTextInputTypeText, "input_field_default.html");
     testTextInputType(WebTextInputTypePassword, "input_field_password.html");
@@ -354,12 +353,6 @@ TEST_F(WebViewTest, DISABLED_TextInputType)
     testTextInputType(WebTextInputTypeNumber, "input_field_number.html");
     testTextInputType(WebTextInputTypeTelephone, "input_field_tel.html");
     testTextInputType(WebTextInputTypeURL, "input_field_url.html");
-    testTextInputType(WebTextInputTypeDate, "input_field_date.html");
-    testTextInputType(WebTextInputTypeDateTimeLocal, "input_field_datetimelocal.html");
-    testTextInputType(WebTextInputTypeMonth, "input_field_month.html");
-    testTextInputType(WebTextInputTypeTime, "input_field_time.html");
-    testTextInputType(WebTextInputTypeWeek, "input_field_week.html");
-
 }
 
 TEST_F(WebViewTest, SetEditableSelectionOffsetsAndTextInputInfo)
