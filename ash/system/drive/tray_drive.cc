@@ -394,8 +394,7 @@ TrayDrive::~TrayDrive() {
 }
 
 bool TrayDrive::GetInitialVisibility() {
-  scoped_ptr<DriveOperationStatusList> list(GetCurrentOperationList());
-  return list->size() > 0;
+  return false;
 }
 
 views::View* TrayDrive::CreateDefaultView(user::LoginStatus status) {

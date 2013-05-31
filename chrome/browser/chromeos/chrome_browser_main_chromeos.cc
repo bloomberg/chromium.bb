@@ -86,7 +86,6 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/rlz/rlz.h"
 #include "chrome/browser/storage_monitor/storage_monitor_chromeos.h"
-#include "chrome/browser/ui/ash/ash_init.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -554,14 +553,6 @@ void ChromeBrowserMainPartsChromeos::PreProfileInit() {
     // Load the default app order synchronously for restarting case.
     app_order_loader_.reset(
         new default_app_order::ExternalLoader(false /* async */));
-
-  // TODO(antrim): SessionStarted notification should be moved to
-  // PostProfileInit at some point, as NOTIFICATION_SESSION_STARTED should
-  // go after NOTIFICATION_LOGIN_USER_PROFILE_PREPARED, which requires
-  // loaded profile (and, thus, should be fired in PostProfileInit, as
-  // synchronous profile loading does not emit it).
-
-    user_manager->SessionStarted();
   }
 
   if (!app_order_loader_) {
@@ -601,10 +592,6 @@ void ChromeBrowserMainPartsChromeos::PostProfileInit() {
   // -- This used to be in ChromeBrowserMainParts::PreMainMessageLoopRun()
   // -- just after CreateProfile().
 
-  // Initialize the Ash Shell after the Default Profile has been created and
-  // before ash dependent systems are initialized.
-  chrome::OpenAsh();
-
   // Restarting Chrome inside existing user session. Possible cases:
   // 1. Chrome is restarted after crash.
   // 2. Chrome is started in browser_tests skipping the login flow
@@ -621,6 +608,14 @@ void ChromeBrowserMainPartsChromeos::PostProfileInit() {
 
     // This is done in LoginUtils::OnProfileCreated during normal login.
     LoginUtils::Get()->InitRlzDelayed(profile());
+
+    // Send the PROFILE_PREPARED notification and call SessionStarted()
+    // so that the Launcher and other Profile dependent classes are created.
+    content::NotificationService::current()->Notify(
+        chrome::NOTIFICATION_LOGIN_USER_PROFILE_PREPARED,
+        content::NotificationService::AllSources(),
+        content::Details<Profile>(profile()));
+    UserManager::Get()->SessionStarted();
 
     // Now is the good time to retrieve other logged in users for this session.
     // First user has been already marked as logged in and active in
@@ -829,8 +824,6 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
 
   // Clean up dependency on CrosSettings and stop pending data fetches.
   KioskAppManager::Shutdown();
-
-  chrome::CloseAsh();
 
   ChromeBrowserMainPartsLinux::PostMainMessageLoopRun();
 

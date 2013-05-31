@@ -61,6 +61,7 @@ class ProfileManager : public base::NonThreadSafe,
   // If GetDefaultProfile() or GetDefaultProfileOrOffTheRecord() is called
   // before this, a CHECK will be triggered.
   static void AllowGetDefaultProfile();
+  static bool IsGetDefaultProfileAllowed();
 
   // DEPRECATED: DO NOT USE unless in ChromeOS.
   // Same as instance method but provides the default user_data_dir as well.

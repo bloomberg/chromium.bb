@@ -281,6 +281,10 @@ void RootWindowController::InitForPrimaryDisplay() {
       new ToplevelWindowEventHandler(panel_container));
   panel_container->SetLayoutManager(panel_layout_manager_);
 
+  // TODO(stevenjb/oshima): Remove this call to CreateLauncher() and call
+  // ash::Shell::CreateLauncher() explicitly in ash_shell and ash_unittests
+  // so that the behavior and construction order is consistent betwheen Ash
+  // and Chrome.
   if (Shell::GetInstance()->session_state_delegate()->NumberOfLoggedInUsers())
     shelf_->CreateLauncher();
 

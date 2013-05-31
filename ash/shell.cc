@@ -837,7 +837,11 @@ SystemTray* Shell::GetPrimarySystemTray() {
 
 LauncherDelegate* Shell::GetLauncherDelegate() {
   if (!launcher_delegate_) {
-    launcher_model_.reset(new LauncherModel);
+    if (!launcher_model_)
+      launcher_model_.reset(new LauncherModel);
+    // Attempt to create the Launcher. This may fail if the application is not
+    // ready to create it yet, in which case the app is responsible for calling
+    // ash::Shell::CreateLauncher() when ready.
     launcher_delegate_.reset(
         delegate_->CreateLauncherDelegate(launcher_model_.get()));
   }

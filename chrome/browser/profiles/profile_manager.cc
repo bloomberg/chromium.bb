@@ -219,6 +219,11 @@ void ProfileManager::AllowGetDefaultProfile() {
 }
 
 // static
+bool ProfileManager::IsGetDefaultProfileAllowed() {
+  return s_allow_get_default_profile;
+}
+
+// static
 // TODO(nkostylev): Remove this method once all clients are migrated.
 Profile* ProfileManager::GetDefaultProfile() {
   CHECK(s_allow_get_default_profile)
