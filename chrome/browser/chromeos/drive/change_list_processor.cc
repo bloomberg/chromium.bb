@@ -206,7 +206,7 @@ void ChangeListProcessor::RemoveEntry(const ResourceEntry& entry) {
   base::FilePath file_path =
       resource_metadata_->GetFilePath(entry.resource_id());
 
-  FileError error = resource_metadata_->RemoveEntry(entry.resource_id(), NULL);
+  FileError error = resource_metadata_->RemoveEntry(entry.resource_id());
 
   if (error == FILE_ERROR_OK) {
     // Notify parent.

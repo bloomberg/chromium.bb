@@ -438,82 +438,6 @@ TEST_F(ResourceMetadataTestOnUIThread, GetResourceEntryPairByPaths) {
   ASSERT_FALSE(pair_result->second.entry.get());
 }
 
-TEST_F(ResourceMetadataTestOnUIThread, RemoveEntry) {
-  // Make sure file9 is found.
-  FileError error = FILE_ERROR_FAILED;
-  const std::string file9_resource_id = "resource_id:file9";
-  scoped_ptr<ResourceEntry> entry;
-  resource_metadata_->GetResourceEntryByIdOnUIThread(
-      file9_resource_id,
-      google_apis::test_util::CreateCopyResultCallback(&error, &entry));
-  google_apis::test_util::RunBlockingPoolTask();
-  EXPECT_EQ(FILE_ERROR_OK, error);
-  ASSERT_TRUE(entry.get());
-  EXPECT_EQ("file9", entry->base_name());
-
-  // Remove file9 using RemoveEntry.
-  base::FilePath drive_file_path;
-  resource_metadata_->RemoveEntryOnUIThread(
-      file9_resource_id,
-      google_apis::test_util::CreateCopyResultCallback(
-          &error, &drive_file_path));
-  google_apis::test_util::RunBlockingPoolTask();
-  EXPECT_EQ(FILE_ERROR_OK, error);
-  EXPECT_EQ(base::FilePath::FromUTF8Unsafe("drive/root/dir1/dir3"),
-            drive_file_path);
-
-  // file9 should no longer exist.
-  resource_metadata_->GetResourceEntryByIdOnUIThread(
-      file9_resource_id,
-      google_apis::test_util::CreateCopyResultCallback(&error, &entry));
-  google_apis::test_util::RunBlockingPoolTask();
-  EXPECT_EQ(FILE_ERROR_NOT_FOUND, error);
-  EXPECT_FALSE(entry.get());
-
-  // Look for dir3.
-  const std::string dir3_resource_id = "resource_id:dir3";
-  resource_metadata_->GetResourceEntryByIdOnUIThread(
-      dir3_resource_id,
-      google_apis::test_util::CreateCopyResultCallback(&error, &entry));
-  google_apis::test_util::RunBlockingPoolTask();
-  EXPECT_EQ(FILE_ERROR_OK, error);
-  ASSERT_TRUE(entry.get());
-  EXPECT_EQ("dir3", entry->base_name());
-
-  // Remove dir3 using RemoveEntry.
-  resource_metadata_->RemoveEntryOnUIThread(
-      dir3_resource_id,
-      google_apis::test_util::CreateCopyResultCallback(
-          &error, &drive_file_path));
-  google_apis::test_util::RunBlockingPoolTask();
-  EXPECT_EQ(FILE_ERROR_OK, error);
-  EXPECT_EQ(base::FilePath::FromUTF8Unsafe("drive/root/dir1"), drive_file_path);
-
-  // dir3 should no longer exist.
-  resource_metadata_->GetResourceEntryByIdOnUIThread(
-      dir3_resource_id,
-      google_apis::test_util::CreateCopyResultCallback(&error, &entry));
-  google_apis::test_util::RunBlockingPoolTask();
-  EXPECT_EQ(FILE_ERROR_NOT_FOUND, error);
-  EXPECT_FALSE(entry.get());
-
-  // Remove unknown resource_id using RemoveEntry.
-  resource_metadata_->RemoveEntryOnUIThread(
-      "foo",
-      google_apis::test_util::CreateCopyResultCallback(
-          &error, &drive_file_path));
-  google_apis::test_util::RunBlockingPoolTask();
-  EXPECT_EQ(FILE_ERROR_NOT_FOUND, error);
-
-  // Try removing root. This should fail.
-  resource_metadata_->RemoveEntryOnUIThread(
-      util::kDriveGrandRootSpecialResourceId,
-      google_apis::test_util::CreateCopyResultCallback(
-          &error, &drive_file_path));
-  google_apis::test_util::RunBlockingPoolTask();
-  EXPECT_EQ(FILE_ERROR_ACCESS_DENIED, error);
-}
-
 TEST_F(ResourceMetadataTestOnUIThread, MoveEntryToDirectory) {
   FileError error = FILE_ERROR_FAILED;
   base::FilePath drive_file_path;
@@ -1164,6 +1088,42 @@ TEST_F(ResourceMetadataTest, RefreshEntry) {
   dir_entry.set_parent_resource_id("resource_id:dir1");
   EXPECT_EQ(FILE_ERROR_INVALID_OPERATION,
             resource_metadata_->RefreshEntry(dir_entry));
+}
+
+TEST_F(ResourceMetadataTest, RemoveEntry) {
+  // Make sure file9 is found.
+  const std::string file9_resource_id = "resource_id:file9";
+  ResourceEntry entry;
+  EXPECT_EQ(FILE_ERROR_OK, resource_metadata_->GetResourceEntryById(
+      file9_resource_id, &entry));
+  EXPECT_EQ("file9", entry.base_name());
+
+  // Remove file9.
+  EXPECT_EQ(FILE_ERROR_OK, resource_metadata_->RemoveEntry(file9_resource_id));
+
+  // file9 should no longer exist.
+  EXPECT_EQ(FILE_ERROR_NOT_FOUND, resource_metadata_->GetResourceEntryById(
+      file9_resource_id, &entry));
+
+  // Look for dir3.
+  const std::string dir3_resource_id = "resource_id:dir3";
+  EXPECT_EQ(FILE_ERROR_OK, resource_metadata_->GetResourceEntryById(
+      dir3_resource_id, &entry));
+  EXPECT_EQ("dir3", entry.base_name());
+
+  // Remove dir3.
+  EXPECT_EQ(FILE_ERROR_OK, resource_metadata_->RemoveEntry(dir3_resource_id));
+
+  // dir3 should no longer exist.
+  EXPECT_EQ(FILE_ERROR_NOT_FOUND, resource_metadata_->GetResourceEntryById(
+      dir3_resource_id, &entry));
+
+  // Remove unknown resource_id using RemoveEntry.
+  EXPECT_EQ(FILE_ERROR_NOT_FOUND, resource_metadata_->RemoveEntry("foo"));
+
+  // Try removing root. This should fail.
+  EXPECT_EQ(FILE_ERROR_ACCESS_DENIED, resource_metadata_->RemoveEntry(
+      util::kDriveGrandRootSpecialResourceId));
 }
 
 TEST_F(ResourceMetadataTest, Iterate) {

@@ -16,7 +16,8 @@ namespace file_system {
 typedef OperationTestBase RemoveOperationTest;
 
 TEST_F(RemoveOperationTest, RemoveFile) {
-  RemoveOperation operation(observer(), scheduler(), metadata(), cache());
+  RemoveOperation operation(blocking_task_runner(), observer(), scheduler(),
+                            metadata(), cache());
 
   base::FilePath my_drive(FILE_PATH_LITERAL("drive/root"));
   base::FilePath nonexisting_file(
@@ -64,7 +65,8 @@ TEST_F(RemoveOperationTest, RemoveFile) {
 }
 
 TEST_F(RemoveOperationTest, RemoveDirectory) {
-  RemoveOperation operation(observer(), scheduler(), metadata(), cache());
+  RemoveOperation operation(blocking_task_runner(), observer(), scheduler(),
+                            metadata(), cache());
 
   base::FilePath empty_dir(FILE_PATH_LITERAL(
       "drive/root/Directory 1/Sub Directory Folder/Sub Sub Directory Folder"));

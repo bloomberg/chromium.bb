@@ -178,15 +178,8 @@ class ResourceMetadata {
                              const std::string& new_name,
                              const FileMoveCallback& callback);
 
-  // Removes entry with |resource_id| from its parent. Calls |callback| with the
-  // path of the parent directory. |callback| must not be null.
-  // Must be called on the UI thread.
-  void RemoveEntryOnUIThread(const std::string& resource_id,
-                             const FileMoveCallback& callback);
-
-  // Synchronous version of RemoveEntryOnUIThread().
-  FileError RemoveEntry(const std::string& resource_id,
-                        base::FilePath* out_file_path);
+  // Removes entry with |resource_id| from its parent.
+  FileError RemoveEntry(const std::string& resource_id);
 
   // Finds an entry (a file or a directory) by |resource_id|.
   // |callback| must not be null.
@@ -214,6 +207,10 @@ class ResourceMetadata {
   // Must be called on the UI thread.
   void ReadDirectoryByPathOnUIThread(const base::FilePath& file_path,
                                      const ReadDirectoryCallback& callback);
+
+  // Synchronous version of ReadDirectoryByPathOnUIThread().
+  FileError ReadDirectoryByPath(const base::FilePath& file_path,
+                                ResourceEntryVector* out_entries);
 
   // Similar to GetResourceEntryByPath() but this function finds a pair of
   // entries by |first_path| and |second_path|. If the entry for
@@ -283,10 +280,6 @@ class ResourceMetadata {
   FileError RenameEntry(const base::FilePath& file_path,
                         const std::string& new_name,
                         base::FilePath* out_file_path);
-
-  // Used to implement ReadDirectoryByPathOnUIThread().
-  FileError ReadDirectoryByPath(const base::FilePath& file_path,
-                                ResourceEntryVector* out_entries);
 
   // Used to implement RefreshDirectoryOnUIThread().
   FileError RefreshDirectory(const DirectoryFetchInfo& directory_fetch_info,

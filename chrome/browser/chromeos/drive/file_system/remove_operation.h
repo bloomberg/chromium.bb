@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_DRIVE_FILE_SYSTEM_REMOVE_OPERATION_H_
 
 #include "base/basictypes.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/drive/file_errors.h"
@@ -14,6 +15,7 @@
 
 namespace base {
 class FilePath;
+class SequencedTaskRunner;
 }  // namespace base
 
 namespace drive {
@@ -35,7 +37,8 @@ class OperationObserver;
 // metadata to reflect the new state.
 class RemoveOperation {
  public:
-  RemoveOperation(OperationObserver* observer,
+  RemoveOperation(base::SequencedTaskRunner* blocking_task_runner,
+                  OperationObserver* observer,
                   JobScheduler* scheduler,
                   internal::ResourceMetadata* metadata,
                   internal::FileCache* cache);
@@ -51,32 +54,22 @@ class RemoveOperation {
               const FileOperationCallback& callback);
 
  private:
-  // Part of Remove(). Called after GetResourceEntryByPath() is complete.
-  void RemoveAfterGetResourceEntry(const base::FilePath& path,
-                                   bool is_recursive,
-                                   const FileOperationCallback& callback,
-                                   FileError error,
-                                   scoped_ptr<ResourceEntry> entry);
+  // Part of Remove(). Called after CheckLocalState() completion.
+  void RemoveAfterCheckLocalState(const FileOperationCallback& callback,
+                                  const ResourceEntry* entry,
+                                  FileError error);
 
-  // Part of Remove(). Called when is_recursive = false and trying to remove
-  // a directory. In this case the emptiness of directory must be checked.
-  void RemoveAfterReadDirectory(const std::string& resource_id,
-                                const FileOperationCallback& callback,
-                                FileError error,
-                                scoped_ptr<ResourceEntryVector> entries);
+  // Part of Remove(). Called after server-side removal is done.
+  void RemoveAfterDeleteResource(const FileOperationCallback& callback,
+                                 const std::string& resource_id,
+                                 google_apis::GDataErrorCode status);
 
-  // Part of Remove(). Called after server-side removal is done. Removes the
-  // entry with |resource_id| from the resource metadata and the cache.
-  void RemoveResourceLocally(const FileOperationCallback& callback,
-                             const std::string& resource_id,
-                             google_apis::GDataErrorCode status);
+  // Part of Remove(). Called after UpdateLocalState() completion.
+  void RemoveAfterUpdateLocalState(const FileOperationCallback& callback,
+                                   const base::FilePath* changed_directory_path,
+                                   FileError error);
 
-  // Part of Remove(). Sends notification for directory changes, and runs
-  // |callback| with |error|.
-  void NotifyDirectoryChanged(const FileOperationCallback& callback,
-                              FileError error,
-                              const base::FilePath& directory_path);
-
+  scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
   OperationObserver* observer_;
   JobScheduler* scheduler_;
   internal::ResourceMetadata* metadata_;

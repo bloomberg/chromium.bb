@@ -143,7 +143,7 @@ void FileSystem::SetupOperations() {
   move_operation_.reset(new file_system::MoveOperation(
       observer, scheduler_, resource_metadata_));
   remove_operation_.reset(new file_system::RemoveOperation(
-      observer, scheduler_, resource_metadata_, cache_));
+      blocking_task_runner_, observer, scheduler_, resource_metadata_, cache_));
   touch_operation_.reset(new file_system::TouchOperation(
       blocking_task_runner_, observer, scheduler_, resource_metadata_));
   download_operation_.reset(new file_system::DownloadOperation(
