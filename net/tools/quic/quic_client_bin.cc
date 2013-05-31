@@ -6,7 +6,7 @@
 // --port and requests URLs specified on the command line.
 //
 // For example:
-//  quic_client --port 6122 /index.html /favicon.ico
+//  quic_client --port=6122 /index.html /favicon.ico
 
 #include "base/at_exit.h"
 #include "base/command_line.h"
@@ -49,6 +49,6 @@ int main(int argc, char *argv[]) {
 
   if (!client.Connect()) return 1;
 
-  client.SendRequestsAndWaitForResponse(argc, argv);
+  client.SendRequestsAndWaitForResponse(line->GetArgs());
   return 0;
 }

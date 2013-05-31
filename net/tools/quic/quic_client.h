@@ -10,6 +10,7 @@
 
 #include <string>
 
+#include "base/command_line.h"
 #include "base/hash_tables.h"
 #include "base/memory/scoped_ptr.h"
 #include "net/base/ip_endpoint.h"
@@ -61,7 +62,7 @@ class QuicClient : public EpollCallbackInterface {
 
   // Sends a request simple GET for each URL in arg, and then waits for
   // each to complete.
-  void SendRequestsAndWaitForResponse(int argc, char *argv[]);
+  void SendRequestsAndWaitForResponse(const CommandLine::StringVector& args);
 
   // Returns a newly created CreateReliableClientStream, owned by the
   // QuicClient.
