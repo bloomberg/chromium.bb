@@ -7,7 +7,7 @@ layer at (0,0) size 800x600
         RenderFlexibleBox {DIV} at (3,3) size 421x47
           RenderBlock {DIV} at (0,17) size 10x13
           RenderBlock {DIV} at (10,0) size 395x47
-          RenderBlock {DIV} at (405,17) size 16x13
+          RenderBlock {DIV} at (405,16) size 16x15
       RenderBR {BR} at (431,44) size 0x0
       RenderTextControl {INPUT} at (2,88) size 427x82 [bgcolor=#FFFFFF] [border: (2px inset #000000)]
       RenderBR {BR} at (431,130) size 0x0
@@ -15,7 +15,7 @@ layer at (0,0) size 800x600
         RenderFlexibleBox {DIV} at (6,1) size 210x23
           RenderBlock {DIV} at (0,5) size 10x13
           RenderBlock {DIV} at (10,0) size 184x23
-          RenderBlock {DIV} at (194,5) size 16x13
+          RenderBlock {DIV} at (194,4) size 16x15
 layer at (23,13) size 395x47 scrollWidth 409
   RenderBlock {DIV} at (0,0) size 395x47
     RenderText {#text} at (0,0) size 408x47

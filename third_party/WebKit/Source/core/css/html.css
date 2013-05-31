@@ -440,7 +440,7 @@ input::-webkit-clear-button {
     display: inline-block;
     -webkit-flex: none;
     -webkit-user-modify: read-only !important;
-    margin-left: 2px;
+    -webkit-margin-start: 2px;
 }
 
 input[type="search"]::-webkit-search-cancel-button {

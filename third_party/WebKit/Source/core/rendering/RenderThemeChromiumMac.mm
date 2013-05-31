@@ -660,6 +660,19 @@ NSControlSize RenderThemeChromiumMac::controlSizeForFont(RenderStyle* style) con
     return NSMiniControlSize;
 }
 
+// We don't use controlSizeForFont() for cancel buttons because it needs to fit
+// into the search field. The font size will already be modified by
+// setFontFromControlSize() called on the search field.
+static NSControlSize cancelButtonControlSizeForFont(RenderStyle* style)
+{
+    int fontSize = style->fontSize();
+    if (fontSize >= 13)
+        return NSRegularControlSize;
+    if (fontSize >= 11)
+        return NSSmallControlSize;
+    return NSMiniControlSize;
+}
+
 void RenderThemeChromiumMac::setControlSize(NSCell* cell, const IntSize* sizes, const IntSize& minSize, float zoomLevel)
 {
     NSControlSize size;
@@ -1509,9 +1522,10 @@ bool RenderThemeChromiumMac::paintSliderThumb(RenderObject* o, const PaintInfo& 
 bool RenderThemeChromiumMac::paintSearchField(RenderObject* o, const PaintInfo& paintInfo, const IntRect& r)
 {
     LocalCurrentGraphicsContext localContext(paintInfo.context);
-    NSSearchFieldCell* search = this->search();
 
+    NSSearchFieldCell* search = this->search();
     setSearchCellState(o, r);
+    [search setControlSize:controlSizeForFont(o->style())];
 
     GraphicsContextStateSaver stateSaver(*paintInfo.context);
 
@@ -1541,8 +1555,6 @@ bool RenderThemeChromiumMac::paintSearchField(RenderObject* o, const PaintInfo& 
 void RenderThemeChromiumMac::setSearchCellState(RenderObject* o, const IntRect&)
 {
     NSSearchFieldCell* search = this->search();
-
-    [search setControlSize:controlSizeForFont(o->style())];
 
     // Update the various states we respond to.
     updateActiveState(search, o);
@@ -1607,9 +1619,10 @@ bool RenderThemeChromiumMac::paintSearchFieldCancelButton(RenderObject* o, const
         return false;
 
     LocalCurrentGraphicsContext localContext(paintInfo.context);
-    setSearchCellState(input->renderer(), r);
 
     NSSearchFieldCell* search = this->search();
+    setSearchCellState(input->renderer(), r);
+    [search setControlSize:cancelButtonControlSizeForFont(o->style())];
 
     if (!input->isDisabledFormControl() && (input->isTextFormControl() && !toHTMLTextFormControlElement(input)->isReadOnly())) {
         updateActiveState([search cancelButtonCell], o);
@@ -1621,21 +1634,7 @@ bool RenderThemeChromiumMac::paintSearchFieldCancelButton(RenderObject* o, const
     GraphicsContextStateSaver stateSaver(*paintInfo.context);
 
     float zoomLevel = o->style()->effectiveZoom();
-
-    FloatRect localBounds = [search cancelButtonRectForBounds:NSRect(input->renderBox()->pixelSnappedBorderBoxRect())];
-
-#if ENABLE(INPUT_SPEECH)
-    // Take care of cases where the cancel button was not aligned with the right border of the input element (for e.g.
-    // when speech input is enabled for the input element.
-    IntRect absBoundingBox = input->renderer()->absoluteBoundingBoxRect();
-    int absRight = absBoundingBox.x() + absBoundingBox.width() - input->renderBox()->paddingRight() - input->renderBox()->borderRight();
-    int spaceToRightOfCancelButton = absRight - (r.x() + r.width());
-    localBounds.setX(localBounds.x() - spaceToRightOfCancelButton);
-#endif
-
-    localBounds = convertToPaintingRect(input->renderer(), o, localBounds, r);
-
-    FloatRect unzoomedRect(localBounds);
+    FloatRect unzoomedRect(r);
     if (zoomLevel != 1.0f) {
         unzoomedRect.setWidth(unzoomedRect.width() / zoomLevel);
         unzoomedRect.setHeight(unzoomedRect.height() / zoomLevel);
@@ -1651,7 +1650,7 @@ bool RenderThemeChromiumMac::paintSearchFieldCancelButton(RenderObject* o, const
 
 const IntSize* RenderThemeChromiumMac::cancelButtonSizes() const
 {
-    static const IntSize sizes[3] = { IntSize(16, 13), IntSize(13, 11), IntSize(13, 9) };
+    static const IntSize sizes[3] = { IntSize(16, 14), IntSize(13, 11), IntSize(13, 9) };
     return sizes;
 }
 
@@ -1700,9 +1699,10 @@ bool RenderThemeChromiumMac::paintSearchFieldResultsDecoration(RenderObject* o, 
         return false;
 
     LocalCurrentGraphicsContext localContext(paintInfo.context);
-    setSearchCellState(input->renderer(), r);
 
     NSSearchFieldCell* search = this->search();
+    setSearchCellState(input->renderer(), r);
+    [search setControlSize:controlSizeForFont(o->style())];
 
     if ([search searchMenuTemplate] != nil)
         [search setSearchMenuTemplate:nil];
