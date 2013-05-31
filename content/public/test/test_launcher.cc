@@ -55,10 +55,6 @@ const char kPreTestPrefix[] = "PRE_";
 // add a new binary that must be compiled on all builds.
 const char kManualTestPrefix[] = "MANUAL_";
 
-// Tests with this suffix are expected to crash, so it won't count as a failure.
-// A test that uses this must have a PRE_ prefix.
-const char kCrashTestSuffix[] = "_CRASH";
-
 TestLauncherDelegate* g_launcher_delegate;
 }
 
@@ -317,10 +313,8 @@ int RunTestInternal(const testing::TestCase* test_case,
       if (cur_test_name == pre_test_name) {
         int exit_code = RunTestInternal(test_case, pre_test_name, command_line,
                                         default_timeout, was_timeout);
-        if (exit_code != 0 &&
-            !EndsWith(pre_test_name, kCrashTestSuffix, true)) {
+        if (exit_code != 0)
           return exit_code;
-        }
       }
     }
   }
