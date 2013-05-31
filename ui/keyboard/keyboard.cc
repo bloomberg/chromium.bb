@@ -66,6 +66,11 @@ class KeyboardWebUIControllerFactory : public content::WebUIControllerFactory {
 namespace keyboard {
 
 void InitializeKeyboard() {
+  static bool initialized = false;
+  if (initialized)
+    return;
+  initialized = true;
+
   base::FilePath pak_dir;
   PathService::Get(base::DIR_MODULE, &pak_dir);
   base::FilePath pak_file = pak_dir.Append(

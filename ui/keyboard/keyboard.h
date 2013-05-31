@@ -12,7 +12,7 @@ namespace keyboard {
 // Initializes the keyboard module. This includes adding the necessary pak files
 // for loading resources used in for the virtual keyboard, and registers
 // a WebUIControllerFactory for creating a WebUIController necessary for the
-// virtual keyboard.
+// virtual keyboard. This becomes a no-op after the first call.
 KEYBOARD_EXPORT void InitializeKeyboard();
 
 }  // namespace keyboard

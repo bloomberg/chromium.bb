@@ -16,6 +16,8 @@
 #include "ui/aura/env.h"
 #include "ui/gfx/screen.h"
 #include "ui/gfx/screen_type_delegate.h"
+#include "ui/keyboard/keyboard.h"
+#include "ui/keyboard/keyboard_util.h"
 #include "ui/views/widget/desktop_aura/desktop_screen.h"
 
 #if defined(FILE_MANAGER_EXTENSION)
@@ -73,6 +75,12 @@ void ChromeBrowserMainExtraPartsAsh::PreProfileInit() {
     ui::SelectFileDialog::SetShellDialogsDelegate(
         &g_shell_dialogs_delegate.Get());
   }
+#else
+  // For OS_CHROMEOS, virtual keyboard needs to be initialized before profile
+  // initialized. Otherwise, virtual keyboard extension will not load at login
+  // screen.
+  if (keyboard::IsKeyboardEnabled())
+    keyboard::InitializeKeyboard();
 #endif
 
 #if defined(FILE_MANAGER_EXTENSION)
