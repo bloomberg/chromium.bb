@@ -898,7 +898,6 @@ public class AwSettings {
     /**
      * See {@link android.webkit.WebSettings#setPluginsEnabled}.
      */
-    @Deprecated
     public void setPluginsEnabled(boolean flag) {
         setPluginState(flag ? PluginState.ON : PluginState.OFF);
     }
@@ -918,7 +917,6 @@ public class AwSettings {
     /**
      * See {@link android.webkit.WebSettings#getPluginsEnabled}.
      */
-    @Deprecated
     public boolean getPluginsEnabled() {
         synchronized (mAwSettingsLock) {
             return mPluginState == PluginState.ON;

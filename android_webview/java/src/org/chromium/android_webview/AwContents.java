@@ -503,14 +503,6 @@ public class AwContents {
         nativeEnableOnNewPicture(mNativeAwContents, enabled);
     }
 
-    // This is no longer synchronous and just calls the Async version and return 0.
-    // TODO(boliu): Remove this method.
-    @Deprecated
-    public int findAllSync(String searchString) {
-        findAllAsync(searchString);
-        return 0;
-    }
-
     public void findAllAsync(String searchString) {
         if (mNativeAwContents == 0) return;
         nativeFindAllAsync(mNativeAwContents, searchString);

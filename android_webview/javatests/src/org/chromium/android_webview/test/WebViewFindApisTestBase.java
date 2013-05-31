@@ -62,23 +62,6 @@ public class WebViewFindApisTestBase extends AwTestBase {
     }
 
     /**
-     * Invokes findAllSync on the UI thread and returns the number of matches.
-     *
-     * @param searchString A string to search for.
-     * @return The number of instances of the string that were found.
-     * @throws Throwable
-     */
-    protected int findAllSyncOnUiThread(final String searchString)
-            throws Throwable {
-        return runTestOnUiThreadAndGetResult(new Callable<Integer>() {
-            @Override
-            public Integer call() {
-                return mContents.findAllSync(searchString);
-            }
-        });
-    }
-
-    /**
      * Invokes findAllAsync on the UI thread, blocks until find results are
      * received, and returns the number of matches.
      *
