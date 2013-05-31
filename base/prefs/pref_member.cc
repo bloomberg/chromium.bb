@@ -100,7 +100,7 @@ PrefMemberBase::Internal::~Internal() { }
 
 bool PrefMemberBase::Internal::IsOnCorrectThread() const {
   // In unit tests, there may not be a message loop.
-  return thread_loop_ == NULL || thread_loop_->BelongsToCurrentThread();
+  return thread_loop_.get() == NULL || thread_loop_->BelongsToCurrentThread();
 }
 
 void PrefMemberBase::Internal::UpdateValue(

@@ -68,8 +68,8 @@ class CreateTemporaryHelper {
 
   ~CreateTemporaryHelper() {
     if (file_handle_ != kInvalidPlatformFileValue) {
-      FileUtilProxy::Close(task_runner_, file_handle_,
-                           FileUtilProxy::StatusCallback());
+      FileUtilProxy::Close(
+          task_runner_.get(), file_handle_, FileUtilProxy::StatusCallback());
     }
   }
 

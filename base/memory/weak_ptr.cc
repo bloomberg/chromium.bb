@@ -40,9 +40,7 @@ WeakReference::WeakReference(const Flag* flag) : flag_(flag) {
 WeakReference::~WeakReference() {
 }
 
-bool WeakReference::is_valid() const {
-  return flag_ && flag_->IsValid();
-}
+bool WeakReference::is_valid() const { return flag_.get() && flag_->IsValid(); }
 
 WeakReferenceOwner::WeakReferenceOwner() {
 }
@@ -56,11 +54,11 @@ WeakReference WeakReferenceOwner::GetRef() const {
   if (!HasRefs())
     flag_ = new WeakReference::Flag();
 
-  return WeakReference(flag_);
+  return WeakReference(flag_.get());
 }
 
 void WeakReferenceOwner::Invalidate() {
-  if (flag_) {
+  if (flag_.get()) {
     flag_->Invalidate();
     flag_ = NULL;
   }

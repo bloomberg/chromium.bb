@@ -269,7 +269,7 @@ void PrefValueStore::CheckInitializationCompleted() {
   for (size_t i = 0; i <= PREF_STORE_TYPE_MAX; ++i) {
     scoped_refptr<PrefStore> store =
         GetPrefStore(static_cast<PrefStoreType>(i));
-    if (store && !store->IsInitializationComplete())
+    if (store.get() && !store->IsInitializationComplete())
       return;
   }
   pref_notifier_->OnInitializationCompleted(true);

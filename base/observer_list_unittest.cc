@@ -348,7 +348,7 @@ TEST(ObserverListThreadSafeTest, RemoveMultipleObservers) {
   scoped_refptr<ObserverListThreadSafe<Foo> > observer_list(
       new ObserverListThreadSafe<Foo>);
 
-  FooRemover a(observer_list);
+  FooRemover a(observer_list.get());
   Adder b(1);
 
   observer_list->AddObserver(&a);

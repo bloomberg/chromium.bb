@@ -130,7 +130,7 @@ TEST_F(MessagePumpLibeventTest, DeleteWatcher) {
       false, MessagePumpLibevent::WATCH_READ_WRITE, watcher, &delegate);
 
   // Spoof a libevent notification.
-  OnLibeventNotification(pump, watcher);
+  OnLibeventNotification(pump.get(), watcher);
 }
 
 class StopWatcher : public BaseWatcher {
@@ -154,7 +154,7 @@ TEST_F(MessagePumpLibeventTest, StopWatcher) {
       false, MessagePumpLibevent::WATCH_READ_WRITE, &watcher, &delegate);
 
   // Spoof a libevent notification.
-  OnLibeventNotification(pump, &watcher);
+  OnLibeventNotification(pump.get(), &watcher);
 }
 
 }  // namespace

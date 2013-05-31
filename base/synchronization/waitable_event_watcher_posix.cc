@@ -168,7 +168,7 @@ bool WaitableEventWatcher::StartWatching(
   current_ml->AddDestructionObserver(this);
 
   kernel_ = kernel;
-  waiter_ = new AsyncWaiter(current_ml, internal_callback_, cancel_flag_);
+  waiter_ = new AsyncWaiter(current_ml, internal_callback_, cancel_flag_.get());
   event->Enqueue(waiter_);
 
   return true;

@@ -98,14 +98,13 @@ class PrefValueStoreTest : public testing::Test {
     sync_associator_.reset(new MockPrefModelAssociator());
 
     // Create a fresh PrefValueStore.
-    pref_value_store_.reset(new PrefValueStore(
-        managed_pref_store_,
-        extension_pref_store_,
-        command_line_pref_store_,
-        user_pref_store_,
-        recommended_pref_store_,
-        default_pref_store_,
-        &pref_notifier_));
+    pref_value_store_.reset(new PrefValueStore(managed_pref_store_.get(),
+                                               extension_pref_store_.get(),
+                                               command_line_pref_store_.get(),
+                                               user_pref_store_.get(),
+                                               recommended_pref_store_.get(),
+                                               default_pref_store_.get(),
+                                               &pref_notifier_));
 
     pref_value_store_->set_callback(
         base::Bind(&MockPrefModelAssociator::ProcessPrefChange,

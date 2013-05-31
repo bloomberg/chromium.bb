@@ -127,7 +127,8 @@ class BASE_EXPORT WeakReferenceOwner {
 
   // Remove this when crbug.com/234964 is addressed.
   void DetachFromThreadHack() {
-    if (flag_) flag_->DetachFromThreadHack();
+    if (flag_.get())
+      flag_->DetachFromThreadHack();
   }
 
  private:

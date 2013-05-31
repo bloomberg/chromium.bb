@@ -119,14 +119,14 @@ template<class SuperPrefService, class ConstructionPrefRegistry>
 void TestingPrefServiceBase<
     SuperPrefService, ConstructionPrefRegistry>::SetManagedPref(
         const char* path, Value* value) {
-  SetPref(managed_prefs_, path, value);
+  SetPref(managed_prefs_.get(), path, value);
 }
 
 template<class SuperPrefService, class ConstructionPrefRegistry>
 void TestingPrefServiceBase<
     SuperPrefService, ConstructionPrefRegistry>::RemoveManagedPref(
         const char* path) {
-  RemovePref(managed_prefs_, path);
+  RemovePref(managed_prefs_.get(), path);
 }
 
 template<class SuperPrefService, class ConstructionPrefRegistry>
@@ -140,14 +140,14 @@ template<class SuperPrefService, class ConstructionPrefRegistry>
 void TestingPrefServiceBase<
     SuperPrefService, ConstructionPrefRegistry>::SetUserPref(
         const char* path, Value* value) {
-  SetPref(user_prefs_, path, value);
+  SetPref(user_prefs_.get(), path, value);
 }
 
 template<class SuperPrefService, class ConstructionPrefRegistry>
 void TestingPrefServiceBase<
     SuperPrefService, ConstructionPrefRegistry>::RemoveUserPref(
         const char* path) {
-  RemovePref(user_prefs_, path);
+  RemovePref(user_prefs_.get(), path);
 }
 
 template<class SuperPrefService, class ConstructionPrefRegistry>
@@ -161,7 +161,7 @@ template<class SuperPrefService, class ConstructionPrefRegistry>
 void TestingPrefServiceBase<
     SuperPrefService, ConstructionPrefRegistry>::SetRecommendedPref(
         const char* path, Value* value) {
-  SetPref(recommended_prefs_, path, value);
+  SetPref(recommended_prefs_.get(), path, value);
 }
 
 template<class SuperPrefService, class ConstructionPrefRegistry>

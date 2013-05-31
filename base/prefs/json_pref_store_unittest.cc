@@ -176,9 +176,8 @@ TEST_F(JsonPrefStoreTest, Basic) {
   //   }
   // }
 
-  RunBasicJsonPrefStoreTest(pref_store,
-                            input_file,
-                            data_dir_.AppendASCII("write.golden.json"));
+  RunBasicJsonPrefStoreTest(
+      pref_store.get(), input_file, data_dir_.AppendASCII("write.golden.json"));
 }
 
 TEST_F(JsonPrefStoreTest, BasicAsync) {
@@ -218,9 +217,8 @@ TEST_F(JsonPrefStoreTest, BasicAsync) {
   //   }
   // }
 
-  RunBasicJsonPrefStoreTest(pref_store,
-                            input_file,
-                            data_dir_.AppendASCII("write.golden.json"));
+  RunBasicJsonPrefStoreTest(
+      pref_store.get(), input_file, data_dir_.AppendASCII("write.golden.json"));
 }
 
 // Tests asynchronous reading of the file when there is no file.
