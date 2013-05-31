@@ -54,11 +54,15 @@ LocallyManagedUserCreationController*
     LocallyManagedUserCreationController::current_controller_ = NULL;
 
 LocallyManagedUserCreationController::LocallyManagedUserCreationController(
-    LocallyManagedUserCreationController::StatusConsumer* consumer)
+    LocallyManagedUserCreationController::StatusConsumer* consumer,
+    const std::string& manager_id)
     : consumer_(consumer),
       weak_factory_(this) {
   DCHECK(!current_controller_) << "More than one controller exist.";
   current_controller_ = this;
+  creation_context_.reset(
+      new LocallyManagedUserCreationController::UserCreationContext());
+  creation_context_->manager_id = manager_id;
 }
 
 LocallyManagedUserCreationController::~LocallyManagedUserCreationController() {
@@ -74,8 +78,6 @@ void LocallyManagedUserCreationController::SetUpCreation(string16 display_name,
 
 void LocallyManagedUserCreationController::SetManagerProfile(
     Profile* manager_profile) {
-  creation_context_.reset(
-      new LocallyManagedUserCreationController::UserCreationContext());
   creation_context_->manager_profile = manager_profile;
 }
 
@@ -87,7 +89,7 @@ void LocallyManagedUserCreationController::StartCreation() {
   std::string new_id = UserManager::Get()->GenerateUniqueLocallyManagedUserId();
 
   const User* user = UserManager::Get()->CreateLocallyManagedUserRecord(
-      new_id, creation_context_->display_name);
+      creation_context_->manager_id, new_id, creation_context_->display_name);
 
   creation_context_->user_id = user->email();
 

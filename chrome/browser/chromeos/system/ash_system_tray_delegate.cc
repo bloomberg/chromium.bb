@@ -450,8 +450,8 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
   virtual const std::string GetLocallyManagedUserManager() const OVERRIDE {
     if (GetUserLoginStatus() != ash::user::LOGGED_IN_LOCALLY_MANAGED)
       return std::string();
-    return UserManager::Get()->GetManagerForManagedUser(
-        chromeos::UserManager::Get()->GetActiveUser()->display_email());
+    return UserManager::Get()->GetManagerUserIdForManagedUser(
+        chromeos::UserManager::Get()->GetActiveUser()->email());
   }
 
   virtual const string16 GetLocallyManagedUserMessage() const OVERRIDE {

@@ -139,7 +139,7 @@ void LocallyManagedUserCreationScreen::AuthenticateManager(
     const std::string& manager_password) {
   // Make sure no two controllers exist at the same time.
   controller_.reset();
-  controller_.reset(new LocallyManagedUserCreationController(this));
+  controller_.reset(new LocallyManagedUserCreationController(this, manager_id));
 
   ExistingUserController::current_controller()->
       Login(UserContext(manager_id,

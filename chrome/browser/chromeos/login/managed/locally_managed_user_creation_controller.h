@@ -53,7 +53,8 @@ class LocallyManagedUserCreationController
   // All UI initialization is deferred till Init() call.
   // |Consumer| is not owned by controller, and it is expected that it wouldn't
   // be deleted before LocallyManagedUserCreationController.
-  explicit LocallyManagedUserCreationController(StatusConsumer* consumer);
+  LocallyManagedUserCreationController(StatusConsumer* consumer,
+                                       const std::string& manager_id);
   virtual ~LocallyManagedUserCreationController();
 
   // Returns the current locally managed user controller if it has been created.
@@ -74,6 +75,7 @@ class LocallyManagedUserCreationController
     ~UserCreationContext();
 
     string16 display_name;
+    std::string manager_id;
     std::string user_id;
     std::string password;
     std::string mount_hash;

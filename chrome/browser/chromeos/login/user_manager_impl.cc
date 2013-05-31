@@ -68,6 +68,14 @@ const char kRegularUsers[] = "LoggedInUsers";
 // A vector pref of the public accounts defined on this device.
 const char kPublicAccounts[] = "PublicAccounts";
 
+// A map from locally managed user id to manager user id.
+const char kManagedUserManagers[] =
+    "ManagedUserManagers";
+
+// A map from locally managed user id to manager display name.
+const char kManagedUserManagerNames[] =
+    "ManagedUserManagerNames";
+
 // A vector pref of the locally managed accounts defined on this device, that
 // had not logged in yet.
 const char kLocallyManagedUsersFirstRun[] = "LocallyManagedUsersFirstRun";
@@ -180,6 +188,9 @@ void UserManager::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterDictionaryPref(kUserOAuthTokenStatus);
   registry->RegisterDictionaryPref(kUserDisplayName);
   registry->RegisterDictionaryPref(kUserDisplayEmail);
+  registry->RegisterDictionaryPref(kManagedUserManagers);
+  registry->RegisterDictionaryPref(kManagedUserManagerNames);
+
   SessionLengthLimiter::RegisterPrefs(registry);
 }
 
@@ -409,13 +420,8 @@ std::string UserManagerImpl::GenerateUniqueLocallyManagedUserId() {
   return id;
 }
 
-std::string UserManagerImpl::GetManagerForManagedUser(
-    const std::string& managed_user_id) const {
-  // TODO (antrim): implement this method when we have appropriate API.
-  return std::string();
-}
-
 const User* UserManagerImpl::CreateLocallyManagedUserRecord(
+      const std::string& manager_id,
       const std::string& e_mail,
       const string16& display_name) {
   const User* user = FindLocallyManagedUser(display_name);
@@ -423,18 +429,55 @@ const User* UserManagerImpl::CreateLocallyManagedUserRecord(
   if (user)
     return user;
 
+  PrefService* local_state = g_browser_process->local_state();
+
   User* new_user = User::CreateLocallyManagedUser(e_mail);
-  ListPrefUpdate prefs_users_update(g_browser_process->local_state(),
-                                    kRegularUsers);
+  ListPrefUpdate prefs_users_update(local_state, kRegularUsers);
   prefs_users_update->Insert(0, new base::StringValue(e_mail));
-  ListPrefUpdate prefs_new_users_update(g_browser_process->local_state(),
+  ListPrefUpdate prefs_new_users_update(local_state,
                                         kLocallyManagedUsersFirstRun);
   prefs_new_users_update->Insert(0, new base::StringValue(e_mail));
   users_.insert(users_.begin(), new_user);
-  SaveUserDisplayName(e_mail, display_name);
 
+
+  const User* manager = FindUser(manager_id);
+  CHECK(manager);
+
+  DictionaryPrefUpdate manager_update(local_state, kManagedUserManagers);
+  DictionaryPrefUpdate manager_name_update(local_state,
+                                           kManagedUserManagerNames);
+  manager_update->SetWithoutPathExpansion(e_mail,
+      new base::StringValue(manager->display_email()));
+  manager_name_update->SetWithoutPathExpansion(e_mail,
+      new base::StringValue(manager->GetDisplayName()));
+
+
+  SaveUserDisplayName(e_mail, display_name);
   g_browser_process->local_state()->CommitPendingWrite();
   return new_user;
+}
+
+string16 UserManagerImpl::GetManagerDisplayNameForManagedUser(
+    const std::string& managed_user_id) const {
+  PrefService* local_state = g_browser_process->local_state();
+
+  const DictionaryValue* manager_names =
+      local_state->GetDictionary(kManagedUserManagerNames);
+  string16 result;
+  if (manager_names->GetStringWithoutPathExpansion(managed_user_id, &result) &&
+      !result.empty())
+    return result;
+  return UTF8ToUTF16(GetManagerUserIdForManagedUser(managed_user_id));
+}
+
+std::string UserManagerImpl::GetManagerUserIdForManagedUser(
+      const std::string& managed_user_id) const {
+  PrefService* local_state = g_browser_process->local_state();
+  const DictionaryValue* manager_ids =
+      local_state->GetDictionary(kManagedUserManagers);
+  std::string result;
+  manager_ids->GetStringWithoutPathExpansion(managed_user_id, &result);
+  return result;
 }
 
 void UserManagerImpl::RemoveUser(const std::string& email,
@@ -582,6 +625,24 @@ void UserManagerImpl::SaveUserDisplayName(const std::string& username,
   display_name_update->SetWithoutPathExpansion(
       username,
       new base::StringValue(display_name));
+
+  // Update name if this user is manager of some managed users.
+  const DictionaryValue* manager_ids =
+      local_state->GetDictionary(kManagedUserManagers);
+
+  DictionaryPrefUpdate manager_name_update(local_state,
+                                           kManagedUserManagerNames);
+  for (DictionaryValue::Iterator it(*manager_ids); !it.IsAtEnd();
+      it.Advance()) {
+    std::string manager_id;
+    bool has_manager_id = it.value().GetAsString(&manager_id);
+    DCHECK(has_manager_id);
+    if (gaia::CanonicalizeEmail(manager_id) == username) {
+      manager_name_update->SetWithoutPathExpansion(
+          it.key(),
+          new base::StringValue(display_name));
+    }
+  }
 }
 
 string16 UserManagerImpl::GetUserDisplayName(
@@ -1237,6 +1298,13 @@ void UserManagerImpl::RemoveNonCryptohomeData(const std::string& email) {
 
   ListPrefUpdate prefs_new_users_update(prefs, kLocallyManagedUsersFirstRun);
   prefs_new_users_update->Remove(base::StringValue(email), NULL);
+
+  DictionaryPrefUpdate managers_update(prefs, kManagedUserManagers);
+  managers_update->RemoveWithoutPathExpansion(email, NULL);
+
+  DictionaryPrefUpdate manager_names_update(prefs,
+                                            kManagedUserManagerNames);
+  manager_names_update->RemoveWithoutPathExpansion(email, NULL);
 }
 
 User* UserManagerImpl::RemoveRegularOrLocallyManagedUserFromList(

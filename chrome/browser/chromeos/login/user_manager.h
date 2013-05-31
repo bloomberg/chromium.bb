@@ -152,6 +152,7 @@ class UserManager {
   // persistent list. Returns created user, or existing user if there already
   // was locally managed user with such display name.
   virtual const User* CreateLocallyManagedUserRecord(
+      const std::string& manager_id,
       const std::string& e_mail,
       const string16& display_name) = 0;
 
@@ -220,6 +221,18 @@ class UserManager {
   virtual std::string GetUserDisplayEmail(
       const std::string& username) const = 0;
 
+  // Returns the display name for manager of user |managed_user_id| if it is
+  // known (was previously set by a |SaveUserDisplayName| call).
+  // Otherwise, returns a manager id.
+  virtual string16 GetManagerDisplayNameForManagedUser(
+      const std::string& managed_user_id) const = 0;
+
+  // Returns the user id for manager of user |managed_user_id| if it is known
+  // (user is actually a managed user).
+  // Otherwise, returns an empty string.
+  virtual std::string GetManagerUserIdForManagedUser(
+      const std::string& managed_user_id) const = 0;
+
   // Returns true if current user is an owner.
   virtual bool IsCurrentUserOwner() const = 0;
 
@@ -283,10 +296,6 @@ class UserManager {
   // status, display name, display email) is to be treated as ephemeral.
   virtual bool IsUserNonCryptohomeDataEphemeral(
       const std::string& email) const = 0;
-
-  // Returns manager user ID for given |managed_user_id|.
-  virtual std::string GetManagerForManagedUser(
-      const std::string& managed_user_id) const = 0;
 
   // Create a record about starting locally managed user creation transaction.
   virtual void StartLocallyManagedUserCreationTransaction(
