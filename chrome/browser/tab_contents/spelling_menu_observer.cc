@@ -252,16 +252,21 @@ void SpellingMenuObserver::ExecuteCommand(int command_id) {
 
   if (command_id >= IDC_SPELLCHECK_SUGGESTION_0 &&
       command_id <= IDC_SPELLCHECK_SUGGESTION_LAST) {
+    int suggestion_index = command_id - IDC_SPELLCHECK_SUGGESTION_0;
     proxy_->GetRenderViewHost()->ReplaceMisspelling(
-        suggestions_[command_id - IDC_SPELLCHECK_SUGGESTION_0]);
-    // GetSpellCheckHost() can return null when the suggested word is
-    // provided by Web SpellCheck API.
+        suggestions_[suggestion_index]);
+    // GetSpellCheckHost() can return null when the suggested word is provided
+    // by Web SpellCheck API.
     Profile* profile = proxy_->GetProfile();
     if (profile) {
-      SpellcheckService* spellcheck_service =
+      SpellcheckService* spellcheck =
           SpellcheckServiceFactory::GetForProfile(profile);
-      if (spellcheck_service && spellcheck_service->GetMetrics())
-        spellcheck_service->GetMetrics()->RecordReplacedWordStats(1);
+      if (spellcheck) {
+        if (spellcheck->GetMetrics())
+          spellcheck->GetMetrics()->RecordReplacedWordStats(1);
+        spellcheck->GetFeedbackSender()->SelectedSuggestion(
+            misspelling_hash_, suggestion_index);
+      }
     }
     return;
   }
