@@ -87,6 +87,11 @@ class SpellingServiceClient : public net::URLFetcherDelegate {
   // Returns whether the specified service is available for the given profile.
   static bool IsAvailable(Profile* profile, ServiceType type);
 
+ protected:
+  // Parses a JSON-RPC response from the Spelling service.
+  bool ParseResponse(const std::string& data,
+                     std::vector<SpellCheckResult>* results);
+
  private:
   struct TextCheckCallbackData {
     TextCheckCallbackData(TextCheckCompleteCallback callback, string16 text);
@@ -107,10 +112,6 @@ class SpellingServiceClient : public net::URLFetcherDelegate {
   // function is overridden by unit tests to prevent them from actually sending
   // requests to the Spelling service.
   virtual net::URLFetcher* CreateURLFetcher(const GURL& url);
-
-  // Parses a JSON-RPC response from the Spelling service.
-  bool ParseResponse(const std::string& data,
-                     std::vector<SpellCheckResult>* results);
 
   // The URLFetcher object used for sending a JSON-RPC request.
   std::map<const net::URLFetcher*, TextCheckCallbackData*> spellcheck_fetchers_;

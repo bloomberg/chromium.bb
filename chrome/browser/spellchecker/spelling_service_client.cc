@@ -28,6 +28,13 @@ namespace {
 // The URL for requesting spell checking and sending user feedback.
 const char kSpellingServiceURL[] = "https://www.googleapis.com/rpc";
 
+// The location of spellcheck suggestions in JSON response from spelling
+// service.
+const char kMisspellingsPath[] = "result.spellingCheckResponse.misspellings";
+
+// The location of error messages in JSON response from spelling service.
+const char kErrorPath[] = "error";
+
 }  // namespace
 
 SpellingServiceClient::SpellingServiceClient() {
@@ -126,37 +133,6 @@ bool SpellingServiceClient::IsAvailable(Profile* profile, ServiceType type) {
   }
 }
 
-SpellingServiceClient::TextCheckCallbackData::TextCheckCallbackData(
-    TextCheckCompleteCallback callback,
-    string16 text)
-      : callback(callback),
-        text(text) {
-}
-
-SpellingServiceClient::TextCheckCallbackData::~TextCheckCallbackData() {
-}
-
-void SpellingServiceClient::OnURLFetchComplete(
-    const net::URLFetcher* source) {
-  DCHECK(spellcheck_fetchers_[source]);
-  scoped_ptr<const net::URLFetcher> fetcher(source);
-  scoped_ptr<TextCheckCallbackData>
-      callback_data(spellcheck_fetchers_[fetcher.get()]);
-  bool success = false;
-  std::vector<SpellCheckResult> results;
-  if (fetcher->GetResponseCode() / 100 == 2) {
-    std::string data;
-    fetcher->GetResponseAsString(&data);
-    success = ParseResponse(data, &results);
-  }
-  callback_data->callback.Run(success, callback_data->text, results);
-  spellcheck_fetchers_.erase(fetcher.get());
-}
-
-net::URLFetcher* SpellingServiceClient::CreateURLFetcher(const GURL& url) {
-  return net::URLFetcher::Create(url, net::URLFetcher::POST, this);
-}
-
 bool SpellingServiceClient::ParseResponse(
     const std::string& data,
     std::vector<SpellCheckResult>* results) {
@@ -191,18 +167,31 @@ bool SpellingServiceClient::ParseResponse(
   //     }
   //   }
   // }
+  // If the service is not available, the Spelling service returns JSON with an
+  // error.
+  // {
+  //   "error": {
+  //     "code": 400,
+  //     "message": "Bad Request",
+  //     "data": [...]
+  //   }
+  // }
   scoped_ptr<DictionaryValue> value(
       static_cast<DictionaryValue*>(
           base::JSONReader::Read(data, base::JSON_ALLOW_TRAILING_COMMAS)));
   if (!value.get() || !value->IsType(base::Value::TYPE_DICTIONARY))
     return false;
 
+  // Check for errors from spelling service.
+  DictionaryValue* error = NULL;
+  if (value->GetDictionary(kErrorPath, &error))
+    return false;
+
   // Retrieve the array of Misspelling objects. When the input text does not
   // have misspelled words, it returns an empty JSON. (In this case, its HTTP
   // status is 200.) We just return true for this case.
   ListValue* misspellings = NULL;
-  const char kMisspellings[] = "result.spellingCheckResponse.misspellings";
-  if (!value->GetList(kMisspellings, &misspellings))
+  if (!value->GetList(kMisspellingsPath, &misspellings))
     return true;
 
   for (size_t i = 0; i < misspellings->GetSize(); ++i) {
@@ -233,4 +222,35 @@ bool SpellingServiceClient::ParseResponse(
     results->push_back(result);
   }
   return true;
+}
+
+SpellingServiceClient::TextCheckCallbackData::TextCheckCallbackData(
+    TextCheckCompleteCallback callback,
+    string16 text)
+      : callback(callback),
+        text(text) {
+}
+
+SpellingServiceClient::TextCheckCallbackData::~TextCheckCallbackData() {
+}
+
+void SpellingServiceClient::OnURLFetchComplete(
+    const net::URLFetcher* source) {
+  DCHECK(spellcheck_fetchers_[source]);
+  scoped_ptr<const net::URLFetcher> fetcher(source);
+  scoped_ptr<TextCheckCallbackData>
+      callback_data(spellcheck_fetchers_[fetcher.get()]);
+  bool success = false;
+  std::vector<SpellCheckResult> results;
+  if (fetcher->GetResponseCode() / 100 == 2) {
+    std::string data;
+    fetcher->GetResponseAsString(&data);
+    success = ParseResponse(data, &results);
+  }
+  callback_data->callback.Run(success, callback_data->text, results);
+  spellcheck_fetchers_.erase(fetcher.get());
+}
+
+net::URLFetcher* SpellingServiceClient::CreateURLFetcher(const GURL& url) {
+  return net::URLFetcher::Create(url, net::URLFetcher::POST, this);
 }

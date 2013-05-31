@@ -111,7 +111,8 @@ class TestSpellingURLFetcher : public net::TestURLFetcher {
 
 // A class derived from the SpellingServiceClient class used by the
 // SpellingServiceClientTest class. This class overrides CreateURLFetcher so
-// this test can use TestSpellingURLFetcher.
+// this test can use TestSpellingURLFetcher. This class also lets tests access
+// the ParseResponse method.
 class TestingSpellingServiceClient : public SpellingServiceClient {
  public:
   TestingSpellingServiceClient()
@@ -158,6 +159,11 @@ class TestingSpellingServiceClient : public SpellingServiceClient {
       text.replace(it->location, it->length, it->replacement);
     }
     EXPECT_EQ(corrected_text_, text);
+  }
+
+  bool ParseResponseSuccess(const std::string& data) {
+    std::vector<SpellCheckResult> results;
+    return ParseResponse(data, &results);
   }
 
  private:
@@ -376,4 +382,11 @@ TEST_F(SpellingServiceClientTest, AvailableServices) {
     EXPECT_TRUE(client_.IsAvailable(&profile_, kSuggest));
     EXPECT_FALSE(client_.IsAvailable(&profile_, kSpellcheck));
   }
+}
+
+// Verify that an error in JSON response from spelling service will result in
+// ParseResponse returning false.
+TEST_F(SpellingServiceClientTest, ResponseErrorTest) {
+  EXPECT_TRUE(client_.ParseResponseSuccess("{\"result\": {}}"));
+  EXPECT_FALSE(client_.ParseResponseSuccess("{\"error\": {}}"));
 }
