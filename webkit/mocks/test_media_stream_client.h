@@ -13,25 +13,11 @@
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "webkit/renderer/media/media_stream_client.h"
 
-namespace WebKit {
-class WebFrame;
-class WebMediaPlayer;
-class WebMediaPlayerClient;
-}
-
 namespace webkit_media {
 class MediaStreamAudioRenderer;
-class MediaStreamClient;
 }
 
 namespace webkit_glue {
-
-// This is used by WebFrameClient::createMediaPlayer().
-WebKit::WebMediaPlayer* CreateMediaPlayer(
-    WebKit::WebFrame* frame,
-    const WebKit::WebURL& url,
-    WebKit::WebMediaPlayerClient* client,
-    webkit_media::MediaStreamClient* media_stream_client);
 
 class TestMediaStreamClient : public webkit_media::MediaStreamClient {
  public:

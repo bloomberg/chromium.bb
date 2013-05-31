@@ -25,6 +25,7 @@
 #include "content/shell/common/shell_messages.h"
 #include "content/shell/common/webkit_test_helpers.h"
 #include "content/shell/renderer/shell_render_process_observer.h"
+#include "media/base/media_log.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
 #include "skia/ext/platform_canvas.h"
@@ -60,6 +61,9 @@
 #include "webkit/common/webpreferences.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/mocks/test_media_stream_client.h"
+#include "webkit/renderer/media/webmediaplayer_impl.h"
+#include "webkit/renderer/media/webmediaplayer_ms.h"
+#include "webkit/renderer/media/webmediaplayer_params.h"
 
 using WebKit::Platform;
 using WebKit::WebArrayBufferView;
@@ -535,8 +539,29 @@ WebMediaPlayer* WebKitTestRunner::createWebMediaPlayer(
     test_media_stream_client_.reset(
         new webkit_glue::TestMediaStreamClient());
   }
-  return webkit_glue::CreateMediaPlayer(
-      frame, url, client, test_media_stream_client_.get());
+
+  if (test_media_stream_client_->IsMediaStream(url)) {
+    return new webkit_media::WebMediaPlayerMS(
+        frame,
+        client,
+        base::WeakPtr<webkit_media::WebMediaPlayerDelegate>(),
+        test_media_stream_client_.get(),
+        new media::MediaLog());
+  }
+
+#if defined(OS_ANDROID)
+  return NULL;
+#else
+  // TODO(scherkus): Use RenderViewImpl::createMediaPlayer() instead of
+  // duplicating code here, see http://crbug.com/239826
+  webkit_media::WebMediaPlayerParams params(
+      GetMediaThreadMessageLoopProxy(), NULL, NULL, new media::MediaLog());
+  return new webkit_media::WebMediaPlayerImpl(
+      frame,
+      client,
+      base::WeakPtr<webkit_media::WebMediaPlayerDelegate>(),
+      params);
+#endif
 }
 
 // RenderViewObserver  --------------------------------------------------------
