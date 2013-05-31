@@ -53,6 +53,7 @@ crbug.com/239465 [ Mac ] fast/canvas/webgl/premultiplyalpha-test.html [ Failure 
 crbug.com/239465 [ Win ] fast/canvas/webgl/premultiplyalpha-test.html [ Crash Pass Timeout ]
 crbug.com/239794 [ Win Debug ] inspector/debugger/pause-in-internal-script.html [ Pass Timeout ]
 crbug.com/245596 [ Win7 ] fast/forms/access-key.html [ Crash Pass ]
+crbug.com/245600 [ Mac ] fast/forms/basic-buttons.html [ Crash Pass ]
 
 # Sometimes the output includes an empty line, sometimes it doesn't. Flake.
 crbug.com/239874 http/tests/xmlhttprequest/send-data-view.html [ Failure Pass ]
