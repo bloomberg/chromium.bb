@@ -2079,8 +2079,6 @@
         'browser/ui/webui/inspect_ui.h',
         'browser/ui/webui/instant_ui.cc',
         'browser/ui/webui/instant_ui.h',
-        'browser/ui/webui/managed_user_passphrase_dialog.cc',
-        'browser/ui/webui/managed_user_passphrase_dialog.h',
         'browser/ui/webui/memory_internals/memory_internals_handler.cc',
         'browser/ui/webui/memory_internals/memory_internals_handler.h',
         'browser/ui/webui/memory_internals/memory_internals_proxy.cc',

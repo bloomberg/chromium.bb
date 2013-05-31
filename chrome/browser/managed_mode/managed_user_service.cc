@@ -12,7 +12,6 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
-#include "chrome/browser/managed_mode/managed_mode_navigation_observer.h"
 #include "chrome/browser/managed_mode/managed_mode_site_list.h"
 #include "chrome/browser/managed_mode/managed_user_registration_service.h"
 #include "chrome/browser/policy/managed_mode_policy_provider.h"
@@ -146,43 +145,6 @@ bool ManagedUserService::ProfileIsManaged(Profile* profile) {
   return profile->GetPrefs()->GetBoolean(prefs::kProfileIsManaged);
 }
 
-bool ManagedUserService::IsElevatedForWebContents(
-    const content::WebContents* web_contents) const {
-  const ManagedModeNavigationObserver* observer =
-      ManagedModeNavigationObserver::FromWebContents(web_contents);
-  return observer ? observer->is_elevated() : false;
-}
-
-bool ManagedUserService::IsPassphraseEmpty() const {
-  PrefService* pref_service = profile_->GetPrefs();
-  return pref_service->GetString(prefs::kManagedModeLocalPassphrase).empty();
-}
-
-bool ManagedUserService::CanSkipPassphraseDialog(
-    const content::WebContents* web_contents) const {
-#if defined(OS_CHROMEOS)
-  NOTREACHED();
-#endif
-  return IsElevatedForWebContents(web_contents) ||
-         IsPassphraseEmpty();
-}
-
-void ManagedUserService::RequestAuthorization(
-    content::WebContents* web_contents,
-    const PassphraseCheckedCallback& callback) {
-#if defined(OS_CHROMEOS)
-  NOTREACHED();
-#endif
-
-  if (CanSkipPassphraseDialog(web_contents)) {
-    callback.Run(true);
-    return;
-  }
-
-  // Is deleted automatically when the dialog is closed.
-  new ManagedUserPassphraseDialog(web_contents, callback);
-}
-
 // static
 void ManagedUserService::RegisterUserPrefs(
     user_prefs::PrefRegistrySyncable* registry) {
@@ -194,12 +156,6 @@ void ManagedUserService::RegisterUserPrefs(
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
   registry->RegisterIntegerPref(
       prefs::kDefaultManagedModeFilteringBehavior, ManagedModeURLFilter::ALLOW,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterStringPref(
-      prefs::kManagedModeLocalPassphrase, std::string(),
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterStringPref(
-      prefs::kManagedModeLocalSalt, std::string(),
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
@@ -339,9 +295,6 @@ bool ManagedUserService::ExtensionManagementPolicyImpl(
     return true;
 
   if (elevated_for_testing_)
-    return true;
-
-  if (elevated_for_extensions_.count(extension_id))
     return true;
 
   if (error)

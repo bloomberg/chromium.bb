@@ -913,7 +913,6 @@
         'browser/mac/keystone_glue_unittest.mm',
         'browser/managed_mode/managed_mode_unittest.cc',
         'browser/managed_mode/managed_mode_url_filter_unittest.cc',
-        'browser/managed_mode/managed_user_passphrase_unittest.cc',
         'browser/managed_mode/managed_user_registration_service_unittest.cc',
         'browser/managed_mode/managed_user_service_unittest.cc',
         'browser/media_galleries/fileapi/itunes_finder_win_unittest.cc',
@@ -2291,7 +2290,6 @@
 
             'browser/browser_commands_unittest.cc',
             'browser/download/download_shelf_unittest.cc',
-            'browser/managed_mode/managed_user_passphrase_unittest.cc',
             'browser/net/gaia/gaia_oauth_fetcher_unittest.cc',
             'browser/page_cycler/page_cycler_unittest.cc',
             'browser/profiles/off_the_record_profile_impl_unittest.cc',

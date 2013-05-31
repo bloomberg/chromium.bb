@@ -316,7 +316,6 @@ extern const char kRecordMode[];
 extern const char kRemoteDebuggingFrontend[];
 extern const char kSilentDebuggerExtensionAPI[];
 extern const char kRendererPrintPreview[];
-extern const char kResetLocalPassphrase[];
 extern const char kResetVariationState[];
 extern const char kRestoreLastSession[];
 extern const char kSavePageAsMHTML[];

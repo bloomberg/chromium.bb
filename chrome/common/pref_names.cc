@@ -33,13 +33,6 @@ const char kHomePageIsNewTabPage[] = "homepage_is_newtabpage";
 // This is the URL of the page to load when opening new tabs.
 const char kHomePage[] = "homepage";
 
-// This preference is used to store the hash of a password of the custodian of
-// a managed user. It allows to unlock options which should be not available to
-// the managed user. The salt preference is used to derive the hash from the
-// password.
-const char kManagedModeLocalPassphrase[] = "managed_mode.passphrase";
-const char kManagedModeLocalSalt[] = "managed_mode.salt";
-
 // Maps host names to whether the host is manually allowed or blocked.
 const char kManagedModeManualHosts[] = "profile.managed.manual_hosts";
 // Maps URLs to whether the URL is manually allowed or blocked.

@@ -13,7 +13,6 @@
 #include "base/string16.h"
 #include "chrome/browser/extensions/management_policy.h"
 #include "chrome/browser/managed_mode/managed_mode_url_filter.h"
-#include "chrome/browser/ui/webui/managed_user_passphrase_dialog.h"
 #include "components/browser_context_keyed_service/browser_context_keyed_service.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -53,9 +52,6 @@ class ManagedUserService : public BrowserContextKeyedService,
   // Checks whether the given profile is managed without constructing a
   // ManagedUserService (which could lead to cyclic dependencies).
   static bool ProfileIsManaged(Profile* profile);
-
-  // Returns the elevation state for specific WebContents.
-  bool IsElevatedForWebContents(const content::WebContents* web_contents) const;
 
   static void RegisterUserPrefs(user_prefs::PrefRegistrySyncable* registry);
 
@@ -108,14 +104,6 @@ class ManagedUserService : public BrowserContextKeyedService,
   // Returns all URLS on the given host that have exceptions.
   void GetManualExceptionsForHost(const std::string& host,
                                   std::vector<GURL>* urls);
-
-  // Checks if the passphrase dialog can be skipped (the profile is already in
-  // elevated state for the given WebContents or the passphrase is empty).
-  bool CanSkipPassphraseDialog(const content::WebContents* web_contents) const;
-
-  // Handles the request to authorize as the custodian of the managed user.
-  void RequestAuthorization(content::WebContents* web_contents,
-                            const PassphraseCheckedCallback& callback);
 
   // Initializes this object. This method does nothing if the profile is not
   // managed.
@@ -213,9 +201,6 @@ class ManagedUserService : public BrowserContextKeyedService,
   // corresponding preference is changed.
   void UpdateManualURLs();
 
-  // Returns if the passphrase to authorize as the custodian is empty.
-  bool IsPassphraseEmpty() const;
-
   base::WeakPtrFactory<ManagedUserService> weak_ptr_factory_;
 
   // Owns us via the BrowserContextKeyedService mechanism.
@@ -223,10 +208,6 @@ class ManagedUserService : public BrowserContextKeyedService,
 
   content::NotificationRegistrar registrar_;
   PrefChangeRegistrar pref_change_registrar_;
-
-  // Stores the extension ids of the extensions which currently can be modified
-  // by the managed user.
-  std::set<std::string> elevated_for_extensions_;
 
   // Sets a profile in elevated state for testing if set to true.
   bool elevated_for_testing_;

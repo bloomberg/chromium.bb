@@ -29,12 +29,6 @@ class ManagedModeNavigationObserver
   // Sets the specific infobar as dismissed.
   void WarnInfobarDismissed();
 
-  // Returns the elevation state for the corresponding WebContents.
-  bool is_elevated() const;
-
-  // Set the elevation state for the corresponding WebContents.
-  void set_elevated(bool is_elevated);
-
   const std::vector<const content::NavigationEntry*>* blocked_navigations()
       const {
     return &blocked_navigations_.get();
@@ -74,10 +68,6 @@ class ManagedModeNavigationObserver
   InfoBarDelegate* warn_infobar_delegate_;
 
   ScopedVector<const content::NavigationEntry> blocked_navigations_;
-
-  // The elevation state corresponding to the current WebContents.
-  // Will be set to true for non-managed users.
-  bool is_elevated_;
 
   DISALLOW_COPY_AND_ASSIGN(ManagedModeNavigationObserver);
 };
