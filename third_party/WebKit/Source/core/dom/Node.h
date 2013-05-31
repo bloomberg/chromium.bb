@@ -604,14 +604,14 @@ public:
     PassRefPtr<Element> querySelector(const AtomicString& selectors, ExceptionCode&);
     PassRefPtr<NodeList> querySelectorAll(const AtomicString& selectors, ExceptionCode&);
 
-    unsigned short compareDocumentPosition(Node*);
+    unsigned short compareDocumentPosition(const Node*) const;
 
     enum ShadowTreesTreatment {
         TreatShadowTreesAsDisconnected,
         TreatShadowTreesAsComposed
     };
 
-    unsigned short compareDocumentPositionInternal(Node*, ShadowTreesTreatment);
+    unsigned short compareDocumentPositionInternal(const Node*, ShadowTreesTreatment) const;
 
     virtual Node* toNode();
     virtual HTMLInputElement* toInputElement();
