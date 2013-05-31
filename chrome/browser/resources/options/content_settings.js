@@ -41,13 +41,13 @@ cr.define('options', function() {
           // history so back/forward and tab restore works.
           var hash = event.currentTarget.getAttribute('contentType');
           var url = page.name + '#' + hash;
-          window.history.replaceState({pageName: page.name},
-                                      page.title,
-                                      '/' + url);
+          window.history.pushState({pageName: page.name},
+                                    page.title,
+                                    '/' + url);
 
           // Navigate after the history has been replaced in order to have the
           // correct hash loaded.
-          OptionsPage.navigateToPage('contentExceptions');
+          OptionsPage.showPageByName('contentExceptions', false);
 
           uber.invokeMethodOnParent('setPath', {path: url});
           uber.invokeMethodOnParent('setTitle',
