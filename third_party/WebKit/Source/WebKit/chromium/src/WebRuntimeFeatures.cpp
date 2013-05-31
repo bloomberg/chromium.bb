@@ -362,12 +362,12 @@ bool WebRuntimeFeatures::isLocalStorageEnabled()
 
 void WebRuntimeFeatures::enableMediaPlayer(bool enable)
 {
-    WebMediaPlayerClientImpl::setIsEnabled(enable);
+    RuntimeEnabledFeatures::setMediaEnabled(enable);
 }
 
 bool WebRuntimeFeatures::isMediaPlayerEnabled()
 {
-    return WebMediaPlayerClientImpl::isEnabled();
+    return RuntimeEnabledFeatures::mediaEnabled();
 }
 
 void WebRuntimeFeatures::enableMediaSource(bool enable)

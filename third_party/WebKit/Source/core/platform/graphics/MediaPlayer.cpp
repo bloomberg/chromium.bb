@@ -36,103 +36,29 @@
 #include "core/platform/Logging.h"
 #include "core/platform/MIMETypeFromURL.h"
 #include "core/platform/MIMETypeRegistry.h"
+#include "core/platform/graphics/InbandTextTrackPrivate.h"
 #include "core/platform/graphics/IntRect.h"
 #include "core/platform/graphics/MediaPlayerPrivate.h"
 #include "modules/mediasource/WebKitMediaSource.h"
-#include <wtf/text/CString.h>
+#include "wtf/text/WTFString.h"
+#include <public/Platform.h>
+#include <public/WebMimeRegistry.h>
 
-#include "core/platform/graphics/InbandTextTrackPrivate.h"
-
-#include "core/platform/graphics/chromium/MediaPlayerPrivateChromium.h"
+using WebKit::WebMimeRegistry;
 
 namespace WebCore {
 
-// engine support
+CreateMediaEnginePlayer MediaPlayer::s_createMediaEngineFunction = 0;
 
-struct MediaPlayerFactory {
-    WTF_MAKE_NONCOPYABLE(MediaPlayerFactory); WTF_MAKE_FAST_ALLOCATED;
-public:
-    MediaPlayerFactory(CreateMediaEnginePlayer constructor, MediaEngineSupportsType supportsTypeAndCodecs)
-        : constructor(constructor)
-        , supportsTypeAndCodecs(supportsTypeAndCodecs)
-    {
-    }
-
-    CreateMediaEnginePlayer constructor;
-    MediaEngineSupportsType supportsTypeAndCodecs;
-};
-
-static void addMediaEngine(CreateMediaEnginePlayer, MediaEngineSupportsType);
-
-// gInstalledEngine should not be accessed directly; call installedMediaEngine() instead.
-static MediaPlayerFactory* gInstalledEngine = 0;
-
-static MediaPlayerFactory* installedMediaEngine()
+void MediaPlayer::setMediaEngineCreateFunction(CreateMediaEnginePlayer createFunction)
 {
-    static bool enginesQueried = false;
-    if (!enginesQueried) {
-        enginesQueried = true;
-        MediaPlayerPrivate::registerMediaEngine(addMediaEngine);
-    }
-
-    return gInstalledEngine;
+    ASSERT(createFunction);
+    ASSERT(!s_createMediaEngineFunction);
+    s_createMediaEngineFunction = createFunction;
 }
-
-static void addMediaEngine(CreateMediaEnginePlayer constructor, MediaEngineSupportsType supportsType)
-{
-    ASSERT(constructor);
-    ASSERT(supportsType);
-
-    gInstalledEngine = new MediaPlayerFactory(constructor, supportsType);
-}
-
-static const AtomicString& applicationOctetStream()
-{
-    DEFINE_STATIC_LOCAL(const AtomicString, applicationOctetStream, ("application/octet-stream", AtomicString::ConstructFromLiteral));
-    return applicationOctetStream;
-}
-
-static const AtomicString& textPlain()
-{
-    DEFINE_STATIC_LOCAL(const AtomicString, textPlain, ("text/plain", AtomicString::ConstructFromLiteral));
-    return textPlain;
-}
-
-static const AtomicString& codecs()
-{
-    DEFINE_STATIC_LOCAL(const AtomicString, codecs, ("codecs", AtomicString::ConstructFromLiteral));
-    return codecs;
-}
-
-static MediaPlayerFactory* bestMediaEngineForTypeAndCodecs(const String& type, const String& codecs, const String& keySystem, const KURL& url)
-{
-    if (type.isEmpty())
-        return 0;
-
-    MediaPlayerFactory* engine = installedMediaEngine();
-    if (!engine)
-        return 0;
-
-    // 4.8.10.3 MIME types - In the absence of a specification to the contrary, the MIME type "application/octet-stream" 
-    // when used with parameters, e.g. "application/octet-stream;codecs=theora", is a type that the user agent knows 
-    // it cannot render.
-    if (type == applicationOctetStream()) {
-        if (!codecs.isEmpty())
-            return 0;
-    }
-
-    MediaPlayer::SupportsType engineSupport = engine->supportsTypeAndCodecs(type, codecs, keySystem, url);
-    if (engineSupport > MediaPlayer::IsNotSupported)
-        return engine;
-
-    return 0;
-}
-
-// media player
 
 MediaPlayer::MediaPlayer(MediaPlayerClient* client)
     : m_mediaPlayerClient(client)
-    , m_currentMediaEngine(0)
     , m_preload(Auto)
     , m_rate(1.0f)
     , m_volume(1.0f)
@@ -140,6 +66,7 @@ MediaPlayer::MediaPlayer(MediaPlayerClient* client)
     , m_contentMIMETypeWasInferredFromExtension(false)
     , m_inDestructor(false)
 {
+    ASSERT(s_createMediaEngineFunction);
     ASSERT(m_mediaPlayerClient);
 }
 
@@ -153,15 +80,17 @@ MediaPlayer::~MediaPlayer()
 
 bool MediaPlayer::load(const KURL& url, const ContentType& contentType, const String& keySystem)
 {
+    DEFINE_STATIC_LOCAL(const String, codecs, (ASCIILiteral("codecs")));
+
     m_contentMIMEType = contentType.type().lower();
-    m_contentTypeCodecs = contentType.parameter(codecs());
+    m_contentTypeCodecs = contentType.parameter(codecs);
     m_url = url;
     m_keySystem = keySystem.lower();
     m_contentMIMETypeWasInferredFromExtension = false;
     m_mediaSource = 0;
 
     // If the MIME type is missing or is not meaningful, try to figure it out from the URL.
-    if (m_contentMIMEType.isEmpty() || m_contentMIMEType == applicationOctetStream() || m_contentMIMEType == textPlain()) {
+    if (m_contentMIMEType.isEmpty() || m_contentMIMEType == "application/octet-stream" || m_contentMIMEType == "text/plain") {
         if (m_url.protocolIsData())
             m_contentMIMEType = mimeTypeFromDataURL(m_url.string());
         else {
@@ -178,8 +107,7 @@ bool MediaPlayer::load(const KURL& url, const ContentType& contentType, const St
         }
     }
 
-    loadWithMediaEngine();
-    return m_currentMediaEngine;
+    return loadWithMediaEngine();
 }
 
 bool MediaPlayer::load(const KURL& url, PassRefPtr<WebKitMediaSource> mediaSource)
@@ -190,29 +118,31 @@ bool MediaPlayer::load(const KURL& url, PassRefPtr<WebKitMediaSource> mediaSourc
     m_url = url;
     m_keySystem = "";
     m_contentMIMETypeWasInferredFromExtension = false;
-    loadWithMediaEngine();
-    return m_currentMediaEngine;
+    return loadWithMediaEngine();
 }
 
-void MediaPlayer::loadWithMediaEngine()
+bool MediaPlayer::loadWithMediaEngine()
 {
-    MediaPlayerFactory* engine = 0;
+    bool canCreateMediaEngine = false;
 
-    if (!m_contentMIMEType.isEmpty())
-        engine = bestMediaEngineForTypeAndCodecs(m_contentMIMEType, m_contentTypeCodecs, m_keySystem, m_url);
+    // 4.8.10.3 MIME types - In the absence of a specification to the contrary, the MIME type "application/octet-stream"
+    // when used with parameters, e.g. "application/octet-stream;codecs=theora", is a type that the user agent knows
+    // it cannot render.
+    if (!m_contentMIMEType.isEmpty() && (m_contentMIMEType != "application/octet-stream" || m_contentTypeCodecs.isEmpty())) {
+        WebMimeRegistry::SupportsType supported = WebKit::Platform::current()->mimeRegistry()->supportsMediaMIMEType(m_contentMIMEType, m_contentTypeCodecs, m_keySystem);
+        canCreateMediaEngine = (supported > WebMimeRegistry::IsNotSupported);
+    }
 
-    // If no MIME type is specified or the type was inferred from the file extension, just use the next engine.
-    if (!engine && (m_contentMIMEType.isEmpty() || m_contentMIMETypeWasInferredFromExtension))
-        engine = installedMediaEngine();
+    // If no MIME type is specified or the type was inferred from the file extension, always create the engine.
+    if (m_contentMIMEType.isEmpty() || m_contentMIMETypeWasInferredFromExtension)
+        canCreateMediaEngine = true;
 
-    // Don't delete and recreate the player unless it comes from a different engine.
-    if (!engine) {
+    // Don't delete and recreate the player if it's already present.
+    if (!canCreateMediaEngine) {
         LOG(Media, "MediaPlayer::loadWithMediaEngine - no media engine found for type \"%s\"", m_contentMIMEType.utf8().data());
-        m_currentMediaEngine = engine;
         m_private = nullptr;
-    } else if (m_currentMediaEngine != engine) {
-        m_currentMediaEngine = engine;
-        m_private = engine->constructor(this);
+    } else if (!m_private) {
+        m_private = s_createMediaEngineFunction(this);
         ASSERT(m_private);
         m_mediaPlayerClient->mediaPlayerEngineUpdated();
         m_private->setPreload(m_preload);
@@ -227,6 +157,8 @@ void MediaPlayer::loadWithMediaEngine()
         m_mediaPlayerClient->mediaPlayerEngineUpdated();
         m_mediaPlayerClient->mediaPlayerResourceNotSupported();
     }
+
+    return m_private;
 }
 
 void MediaPlayer::prepareToPlay()
@@ -421,31 +353,6 @@ bool MediaPlayer::copyVideoTextureToPlatformTexture(GraphicsContext3D* context, 
 {
     return m_private && m_private->copyVideoTextureToPlatformTexture(context, texture, level, type, internalFormat, premultiplyAlpha, flipY);
 }
-
-MediaPlayer::SupportsType MediaPlayer::supportsType(const ContentType& contentType, const String& keySystem, const KURL& url)
-{
-    String type = contentType.type().lower();
-    // The codecs string is not lower-cased because MP4 values are case sensitive
-    // per http://tools.ietf.org/html/rfc4281#page-7.
-    String typeCodecs = contentType.parameter(codecs());
-    String system = keySystem.lower();
-
-    // 4.8.10.3 MIME types - The canPlayType(type) method must return the empty string if type is a type that the 
-    // user agent knows it cannot render or is the type "application/octet-stream"
-    if (type == applicationOctetStream())
-        return IsNotSupported;
-
-    MediaPlayerFactory* engine = bestMediaEngineForTypeAndCodecs(type, typeCodecs, system, url);
-    if (!engine)
-        return IsNotSupported;
-
-    return engine->supportsTypeAndCodecs(type, typeCodecs, system, url);
-}
-
-bool MediaPlayer::isAvailable()
-{
-    return !!installedMediaEngine();
-} 
 
 #if USE(NATIVE_FULLSCREEN_VIDEO)
 void MediaPlayer::enterFullscreen()

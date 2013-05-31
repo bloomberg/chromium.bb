@@ -31,15 +31,9 @@
 #include "config.h"
 #include "RuntimeEnabledFeatures.h"
 
-#include "core/platform/graphics/MediaPlayer.h"
 #include "core/workers/SharedWorkerRepository.h"
 
 namespace WebCore {
-
-bool RuntimeEnabledFeatures::mediaEnabled()
-{
-    return MediaPlayer::isAvailable();
-}
 
 bool RuntimeEnabledFeatures::sharedWorkerEnabled()
 {

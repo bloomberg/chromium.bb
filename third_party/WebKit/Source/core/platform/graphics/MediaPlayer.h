@@ -119,20 +119,18 @@ public:
     virtual void mediaPlayerDidRemoveTrack(PassRefPtr<InbandTextTrackPrivate>) = 0;
 };
 
+typedef PassOwnPtr<MediaPlayerPrivateInterface> (*CreateMediaEnginePlayer)(MediaPlayer*);
+
 class MediaPlayer {
     WTF_MAKE_NONCOPYABLE(MediaPlayer); WTF_MAKE_FAST_ALLOCATED;
 public:
+    static void setMediaEngineCreateFunction(CreateMediaEnginePlayer);
 
     static PassOwnPtr<MediaPlayer> create(MediaPlayerClient* client)
     {
         return adoptPtr(new MediaPlayer(client));
     }
     virtual ~MediaPlayer();
-
-    // Media engine support.
-    enum SupportsType { IsNotSupported, IsSupported, MayBeSupported };
-    static MediaPlayer::SupportsType supportsType(const ContentType&, const String& keySystem, const KURL&);
-    static bool isAvailable();
 
     bool supportsFullscreen() const;
     bool supportsSave() const;
@@ -254,7 +252,9 @@ public:
 
 private:
     explicit MediaPlayer(MediaPlayerClient*);
-    void loadWithMediaEngine();
+    bool loadWithMediaEngine();
+
+    static CreateMediaEnginePlayer s_createMediaEngineFunction;
 
     MediaPlayerClient* m_mediaPlayerClient;
     OwnPtr<MediaPlayerPrivateInterface> m_private;
@@ -272,11 +272,6 @@ private:
 
     RefPtr<WebKitMediaSource> m_mediaSource;
 };
-
-typedef PassOwnPtr<MediaPlayerPrivateInterface> (*CreateMediaEnginePlayer)(MediaPlayer*);
-typedef MediaPlayer::SupportsType (*MediaEngineSupportsType)(const String& type, const String& codecs, const String& keySystem, const KURL& url);
-
-typedef void (*MediaEngineRegistrar)(CreateMediaEnginePlayer, MediaEngineSupportsType);
 
 }
 

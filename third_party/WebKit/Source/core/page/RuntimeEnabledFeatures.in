@@ -47,7 +47,7 @@ LangAttributeAwareFormControlUI
 LazyLayout
 LegacyEncryptedMedia status=stable
 LocalStorage status=stable
-Media custom
+Media status=stable
 MediaStream status=stable
 Notifications status=stable
 PagePopup status=stable

@@ -30,11 +30,9 @@
 #include "core/rendering/RenderLayerCompositor.h"
 #include "core/rendering/RenderView.h"
 #include "modules/mediastream/MediaStreamRegistry.h"
-#include <public/Platform.h>
 #include <public/WebCanvas.h>
 #include <public/WebCompositorSupport.h>
 #include <public/WebCString.h>
-#include <public/WebMimeRegistry.h>
 #include <public/WebRect.h>
 #include <public/WebSize.h>
 #include <public/WebString.h>
@@ -63,25 +61,6 @@ static PassOwnPtr<WebMediaPlayer> createWebMediaPlayer(WebMediaPlayerClient* cli
     if (!webFrame->client())
         return nullptr;
     return adoptPtr(webFrame->client()->createMediaPlayer(webFrame, url, client));
-}
-
-bool WebMediaPlayerClientImpl::m_isEnabled = false;
-
-bool WebMediaPlayerClientImpl::isEnabled()
-{
-    return m_isEnabled;
-}
-
-void WebMediaPlayerClientImpl::setIsEnabled(bool isEnabled)
-{
-    m_isEnabled = isEnabled;
-}
-
-void WebMediaPlayerClientImpl::registerSelf(MediaEngineRegistrar registrar)
-{
-    if (m_isEnabled) {
-        registrar(WebMediaPlayerClientImpl::create, WebMediaPlayerClientImpl::supportsType);
-    }
 }
 
 WebMediaPlayer* WebMediaPlayerClientImpl::mediaPlayer() const
@@ -694,26 +673,6 @@ PassOwnPtr<MediaPlayerPrivateInterface> WebMediaPlayerClientImpl::create(MediaPl
     OwnPtr<WebMediaPlayerClientImpl> client = adoptPtr(new WebMediaPlayerClientImpl());
     client->m_mediaPlayer = player;
     return client.release();
-}
-
-MediaPlayer::SupportsType WebMediaPlayerClientImpl::supportsType(const String& type,
-                                                                 const String& codecs,
-                                                                 const String& keySystem,
-                                                                 const KURL&)
-{
-    WebMimeRegistry::SupportsType supportsType = WebKit::Platform::current()->mimeRegistry()->supportsMediaMIMEType(type, codecs, keySystem);
-
-    switch (supportsType) {
-    default:
-        ASSERT_NOT_REACHED();
-    case WebMimeRegistry::IsNotSupported:
-        return MediaPlayer::IsNotSupported;
-    case WebMimeRegistry::IsSupported:
-        return MediaPlayer::IsSupported;
-    case WebMimeRegistry::MayBeSupported:
-        return MediaPlayer::MayBeSupported;
-    }
-    return MediaPlayer::IsNotSupported;
 }
 
 #if defined(OS_ANDROID)

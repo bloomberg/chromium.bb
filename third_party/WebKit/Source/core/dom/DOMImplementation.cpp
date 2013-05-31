@@ -26,6 +26,7 @@
 #include "core/dom/DOMImplementation.h"
 
 #include "HTMLNames.h"
+#include "RuntimeEnabledFeatures.h"
 #include "SVGNames.h"
 #include "core/css/CSSStyleSheet.h"
 #include "core/css/MediaList.h"
@@ -35,6 +36,7 @@
 #include "core/dom/Element.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/html/HTMLDocument.h"
+#include "core/html/HTMLMediaElement.h"
 #include "core/html/HTMLViewSourceDocument.h"
 #include "core/html/ImageDocument.h"
 #include "core/html/MediaDocument.h"
@@ -404,8 +406,7 @@ PassRefPtr<Document> DOMImplementation::createDocument(const String& type, Frame
         return ImageDocument::create(frame, url);
 
     // Check to see if the type can be played by our MediaPlayer, if so create a MediaDocument
-    // Key system is not applicable here.
-    if (MediaPlayer::supportsType(ContentType(type), String(), url))
+    if (HTMLMediaElement::supportsType(ContentType(type)))
         return MediaDocument::create(frame, url);
 
     // Everything else except text/plain can be overridden by plugins. In particular, Adobe SVG Viewer should be used for SVG, if installed.

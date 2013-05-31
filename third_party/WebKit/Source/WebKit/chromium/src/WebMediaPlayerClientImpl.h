@@ -57,9 +57,7 @@ class WebMediaPlayer;
 class WebMediaPlayerClientImpl : public WebCore::MediaPlayerPrivateInterface, public WebMediaPlayerClient {
 
 public:
-    static bool isEnabled();
-    static void setIsEnabled(bool);
-    static void registerSelf(WebCore::MediaEngineRegistrar);
+    static PassOwnPtr<WebCore::MediaPlayerPrivateInterface> create(WebCore::MediaPlayer*);
 
     // Returns the encapsulated WebKit::WebMediaPlayer.
     WebMediaPlayer* mediaPlayer() const;
@@ -149,16 +147,13 @@ public:
     virtual WebCore::MediaPlayer::MediaKeyException addKey(const String& keySystem, const unsigned char* key, unsigned keyLength, const unsigned char* initData, unsigned initDataLength, const String& sessionId) OVERRIDE;
     virtual WebCore::MediaPlayer::MediaKeyException cancelKeyRequest(const String& keySystem, const String& sessionId) OVERRIDE;
 
-protected:
-    WebMediaPlayerClientImpl();
 private:
+    WebMediaPlayerClientImpl();
+
     void startDelayedLoad();
     void loadRequested();
     void loadInternal();
 
-    static PassOwnPtr<WebCore::MediaPlayerPrivateInterface> create(WebCore::MediaPlayer*);
-    static WebCore::MediaPlayer::SupportsType supportsType(
-        const WTF::String& type, const WTF::String& codecs, const String& keySystem, const WebCore::KURL&);
     bool acceleratedRenderingInUse();
 
 #if defined(OS_ANDROID)

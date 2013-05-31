@@ -30,11 +30,11 @@
 #include "core/dom/GenericEventQueue.h"
 #include "core/html/HTMLElement.h"
 #include "core/html/MediaControllerInterface.h"
-#include "core/platform/graphics/MediaPlayer.h"
-
 #include "core/html/track/TextTrack.h"
 #include "core/html/track/TextTrackCue.h"
 #include "core/platform/PODIntervalTree.h"
+#include "core/platform/graphics/MediaPlayer.h"
+#include <public/WebMimeRegistry.h>
 
 namespace WebCore {
 
@@ -69,6 +69,8 @@ class HTMLMediaElement : public HTMLElement, public MediaPlayerClient, public Ac
     , private TextTrackClient
 {
 public:
+    static WebKit::WebMimeRegistry::SupportsType supportsType(const ContentType&, const String& keySystem = String());
+
     MediaPlayer* player() const { return m_player.get(); }
 
     virtual bool isVideo() const = 0;

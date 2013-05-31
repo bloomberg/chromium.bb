@@ -34,6 +34,7 @@
 #include <wtf/Uint8Array.h>
 #include <limits>
 #include "HTMLNames.h"
+#include "RuntimeEnabledFeatures.h"
 #include "bindings/v8/ScriptController.h"
 #include "bindings/v8/ScriptEventListener.h"
 #include "core/css/MediaList.h"
@@ -47,6 +48,7 @@
 #include "core/dom/WebCoreMemoryInstrumentation.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/html/HTMLSourceElement.h"
+#include "core/html/HTMLTrackElement.h"
 #include "core/html/MediaController.h"
 #include "core/html/MediaDocument.h"
 #include "core/html/MediaError.h"
@@ -55,6 +57,9 @@
 #include "core/html/MediaKeyEvent.h"
 #include "core/html/TimeRanges.h"
 #include "core/html/shadow/MediaControls.h"
+#include "core/html/track/InbandTextTrack.h"
+#include "core/html/track/TextTrackCueList.h"
+#include "core/html/track/TextTrackList.h"
 #include "core/loader/FrameLoader.h"
 #include "core/page/ContentSecurityPolicy.h"
 #include "core/page/Frame.h"
@@ -67,6 +72,7 @@
 #include "core/platform/Logging.h"
 #include "core/platform/MIMETypeFromURL.h"
 #include "core/platform/NotImplemented.h"
+#include "core/platform/graphics/InbandTextTrackPrivate.h"
 #include "core/platform/graphics/MediaPlayer.h"
 #include "core/rendering/RenderLayerCompositor.h"
 #include "core/rendering/RenderVideo.h"
@@ -76,13 +82,7 @@
 #include "modules/mediastream/MediaStreamRegistry.h"
 #include "weborigin/SecurityOrigin.h"
 #include "weborigin/SecurityPolicy.h"
-
-#include "RuntimeEnabledFeatures.h"
-#include "core/html/HTMLTrackElement.h"
-#include "core/html/track/InbandTextTrack.h"
-#include "core/html/track/TextTrackCueList.h"
-#include "core/html/track/TextTrackList.h"
-#include "core/platform/graphics/InbandTextTrackPrivate.h"
+#include <public/Platform.h>
 
 #if ENABLE(WEB_AUDIO)
 #include "core/platform/audio/AudioSourceProvider.h"
@@ -96,6 +96,7 @@
 #endif
 
 using namespace std;
+using WebKit::WebMimeRegistry;
 
 namespace WebCore {
 
@@ -188,6 +189,30 @@ public:
 private:
     HTMLMediaElement* m_mediaElement;
 };
+
+WebMimeRegistry::SupportsType HTMLMediaElement::supportsType(const ContentType& contentType, const String& keySystem)
+{
+    DEFINE_STATIC_LOCAL(const String, codecs, (ASCIILiteral("codecs")));
+
+    if (!RuntimeEnabledFeatures::mediaEnabled())
+        return WebMimeRegistry::IsNotSupported;
+
+    String type = contentType.type().lower();
+    // The codecs string is not lower-cased because MP4 values are case sensitive
+    // per http://tools.ietf.org/html/rfc4281#page-7.
+    String typeCodecs = contentType.parameter(codecs);
+    String system = keySystem.lower();
+
+    if (type.isEmpty())
+        return WebMimeRegistry::IsNotSupported;
+
+    // 4.8.10.3 MIME types - The canPlayType(type) method must return the empty string if type is a type that the
+    // user agent knows it cannot render or is the type "application/octet-stream"
+    if (type == "application/octet-stream")
+        return WebMimeRegistry::IsNotSupported;
+
+    return WebKit::Platform::current()->mimeRegistry()->supportsMediaMIMEType(type, typeCodecs, system);
+}
 
 HTMLMediaElement::HTMLMediaElement(const QualifiedName& tagName, Document* document, bool createdByParser)
     : HTMLElement(tagName, document)
@@ -557,19 +582,19 @@ HTMLMediaElement::NetworkState HTMLMediaElement::networkState() const
 
 String HTMLMediaElement::canPlayType(const String& mimeType, const String& keySystem, const KURL& url) const
 {
-    MediaPlayer::SupportsType support = MediaPlayer::supportsType(ContentType(mimeType), keySystem, url);
+    WebMimeRegistry::SupportsType support = supportsType(ContentType(mimeType), keySystem);
     String canPlay;
 
     // 4.8.10.3
     switch (support)
     {
-        case MediaPlayer::IsNotSupported:
+        case WebMimeRegistry::IsNotSupported:
             canPlay = emptyString();
             break;
-        case MediaPlayer::MayBeSupported:
+        case WebMimeRegistry::MayBeSupported:
             canPlay = ASCIILiteral("maybe");
             break;
-        case MediaPlayer::IsSupported:
+        case WebMimeRegistry::IsSupported:
             canPlay = ASCIILiteral("probably");
             break;
     }
@@ -2904,7 +2929,7 @@ KURL HTMLMediaElement::selectNextSourceChild(ContentType* contentType, String* k
             if (shouldLog)
                 LOG(Media, "HTMLMediaElement::selectNextSourceChild - 'type' is '%s' - key system is '%s'", type.utf8().data(), system.utf8().data());
 #endif
-            if (!MediaPlayer::supportsType(ContentType(type), system, mediaURL))
+            if (!supportsType(ContentType(type), system))
                 goto check_again;
         }
 

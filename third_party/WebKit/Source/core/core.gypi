@@ -2767,8 +2767,6 @@
             'platform/graphics/chromium/ImageFrameGenerator.h',
             'platform/graphics/chromium/LazyDecodingPixelRef.cpp',
             'platform/graphics/chromium/LazyDecodingPixelRef.h',
-            'platform/graphics/chromium/MediaPlayerPrivateChromium.cpp',
-            'platform/graphics/chromium/MediaPlayerPrivateChromium.h',
             'platform/graphics/chromium/OpaqueRectTrackingContentLayerDelegate.cpp',
             'platform/graphics/chromium/OpaqueRectTrackingContentLayerDelegate.h',
             'platform/graphics/chromium/PlatformIcon.h',
