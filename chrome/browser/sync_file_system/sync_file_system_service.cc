@@ -564,7 +564,7 @@ void SyncFileSystemService::UpdateSyncEnabledStatus(
     ProfileSyncServiceBase* profile_sync_service) {
   if (!profile_sync_service->HasSyncSetupCompleted())
     return;
-  sync_enabled_ = profile_sync_service->GetActiveDataTypes().Has(
+  sync_enabled_ = profile_sync_service->GetPreferredDataTypes().Has(
       syncer::APPS);
   remote_file_service_->SetSyncEnabled(sync_enabled_);
   if (sync_enabled_) {

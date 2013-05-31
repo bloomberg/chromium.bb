@@ -130,7 +130,7 @@ void PasswordGenerationManager::UpdateState(content::RenderViewHost* host,
   ProfileSyncService* sync_service =
       ProfileSyncServiceFactory::GetForProfile(profile);
   if (sync_service) {
-    syncer::ModelTypeSet sync_set = sync_service->GetActiveDataTypes();
+    syncer::ModelTypeSet sync_set = sync_service->GetPreferredDataTypes();
     password_sync_enabled = (sync_service->HasSyncSetupCompleted() &&
                              sync_set.Has(syncer::PASSWORDS));
   }

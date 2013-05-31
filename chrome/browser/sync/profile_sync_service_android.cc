@@ -464,7 +464,7 @@ jboolean ProfileSyncServiceAndroid::IsSyncKeystoreMigrationDone(
 jlong ProfileSyncServiceAndroid::GetEnabledDataTypes(JNIEnv* env,
                                                      jobject obj) {
   jlong model_type_selection = 0;
-  syncer::ModelTypeSet types = sync_service_->GetActiveDataTypes();
+  syncer::ModelTypeSet types = sync_service_->GetPreferredDataTypes();
   types.PutAll(syncer::ControlTypes());
   if (types.Has(syncer::BOOKMARKS)) {
     model_type_selection |= BOOKMARK;

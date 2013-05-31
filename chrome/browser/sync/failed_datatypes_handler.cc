@@ -20,6 +20,7 @@ syncer::ModelTypeSet GetTypesFromErrorsList(
   syncer::ModelTypeSet result;
   for (std::vector<syncer::SyncError>::const_iterator it = errors.begin();
        it != errors.end(); ++it) {
+    DCHECK(!result.Has(it->type()));
     result.Put(it->type());
   }
   return result;
