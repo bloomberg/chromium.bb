@@ -884,6 +884,10 @@ ui::Layer* Widget::GetLayer() {
   return native_widget_->GetLayer();
 }
 
+void Widget::ReorderNativeViews() {
+  native_widget_->ReorderNativeViews();
+}
+
 void Widget::UpdateRootLayers() {
   // Calculate the layers requires traversing the tree, and since nearly any
   // mutation of the tree can trigger this call we delay until absolutely

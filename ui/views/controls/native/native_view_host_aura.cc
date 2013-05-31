@@ -8,6 +8,7 @@
 #include "ui/aura/focus_manager.h"
 #include "ui/aura/window.h"
 #include "ui/views/controls/native/native_view_host.h"
+#include "ui/views/view_constants_aura.h"
 #include "ui/views/widget/widget.h"
 
 namespace views {
@@ -18,18 +19,23 @@ NativeViewHostAura::NativeViewHostAura(NativeViewHost* host)
 }
 
 NativeViewHostAura::~NativeViewHostAura() {
-  if (host_->native_view())
+  if (host_->native_view()) {
+    host_->native_view()->ClearProperty(views::kHostViewKey);
     host_->native_view()->RemoveObserver(this);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // NativeViewHostAura, NativeViewHostWrapper implementation:
 void NativeViewHostAura::NativeViewWillAttach() {
   host_->native_view()->AddObserver(this);
+  host_->native_view()->SetProperty(views::kHostViewKey,
+      static_cast<View*>(host_));
 }
 
 void NativeViewHostAura::NativeViewDetaching(bool destroyed) {
   if (!destroyed) {
+    host_->native_view()->ClearProperty(views::kHostViewKey);
     host_->native_view()->RemoveObserver(this);
     host_->native_view()->Hide();
     if (host_->native_view()->parent())

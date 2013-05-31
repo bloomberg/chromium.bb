@@ -41,6 +41,7 @@
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_aura_utils.h"
 #include "ui/views/widget/widget_delegate.h"
+#include "ui/views/widget/window_reorderer.h"
 
 DECLARE_EXPORTED_WINDOW_PROPERTY_TYPE(VIEWS_EXPORT,
                                       views::DesktopNativeWidgetAura*);
@@ -274,6 +275,9 @@ void DesktopNativeWidgetAura::InitNativeWidget(
   shadow_controller_.reset(
       new corewm::ShadowController(
           aura::client::GetActivationClient(root_window_.get())));
+
+  window_reorderer_.reset(new WindowReorderer(window_,
+      GetWidget()->GetRootView()));
 }
 
 NonClientFrameView* DesktopNativeWidgetAura::CreateNonClientFrameView() {
@@ -318,6 +322,10 @@ ui::Compositor* DesktopNativeWidgetAura::GetCompositor() {
 
 ui::Layer* DesktopNativeWidgetAura::GetLayer() {
   return window_->layer();
+}
+
+void DesktopNativeWidgetAura::ReorderNativeViews() {
+  window_reorderer_->ReorderChildWindows();
 }
 
 void DesktopNativeWidgetAura::ViewRemoved(View* view) {
