@@ -1035,8 +1035,8 @@ body .gallery > .toolbar > button.share[disabled] {
 
 .gallery .prompt .back-button {
   background-image: -webkit-image-set(
-    url('../images/gallery/butterbar_close_x.png') 1x,
-    url('../images/gallery/2x/butterbar_close_x.png') 2x);
+    url('../images/gallery/butterbar_close_button.png') 1x,
+    url('../images/gallery/2x/butterbar_close_button.png') 2x);
   background-position: center center;
   background-repeat: no-repeat;
   height: 16px;
