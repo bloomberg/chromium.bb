@@ -46,3 +46,13 @@ Query:"f_b"
 Input:["foo_bar","FOO_BAR","Foo_Bar","fOo_bAr"]
 Output:["Foo_Bar","fOo_bAr","foo_bar","FOO_BAR"]
 
+Exact substring match
+Query:"foo"
+Input:["a/fobazo","b/foobar","c/FOObar"]
+Output:["b/foobar","c/FOObar","a/fobazo"]
+
+Default scoring
+Query:"foo"
+Input:["foo1","foo2","foo3"]
+Output:["foo3","foo2","foo1"]
+

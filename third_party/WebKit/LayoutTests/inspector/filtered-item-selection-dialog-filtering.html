@@ -8,22 +8,27 @@ function test()
     WebInspector.showPanel("scripts");
 
     var overridenInput = [];
+    var overridenTitle = [];
     var overridenQuery = "";
+    var overridenScores = [];
     var delegate = {
-        itemTitleAt: function(itemIndex) { },
+        itemTitleAt: function(itemIndex) { return overridenTitles[itemIndex] || ""; },
         itemSuffixAt: function(itemIndex) { },
         itemSubtitleAt: function(itemIndex) { },
         itemKeyAt: function(itemIndex) { return overridenInput[itemIndex]; },
+        itemScoreAt: function(itemIndex) { return overridenScores[itemIndex] || 0; },
         itemsCount: function() { return overridenInput.length; },
         requestItems: function(callback) { callback(); },
         selectItem: function(itemIndex, promptValue) { },
         rewriteQuery: function(query) { return overridenQuery; },
     };
 
-    function checkQuery(title, query, input)
+    function checkQuery(title, query, input, titles, scores)
     {
         overridenInput = input;
         overridenQuery = query;
+        overridenTitles = titles || [];
+        overridenScores = scores || [];
 
         InspectorTest.addResult("\n" + title);
         InspectorTest.addResult("Query:" + JSON.stringify(query));
@@ -47,6 +52,8 @@ function test()
     checkQuery("Underscore matching", "fO_ba_b", ["foOBarBaz", "FoOBarBaz", "FoO_Bar_Baz", "foO_bar_baz", "foObarbaz", "foObarBaz", "afoOBarBaz", "aFoOBarBaz", "a foOBarBaz", "foOBorBaz", "foOBorCaz"]);
     checkQuery("Case insensitive matching", "fb", ["foo_bar", "FB", "foobar", "fBar"]);
     checkQuery("Case insensitive underscore matching", "f_b", ["foo_bar", "FOO_BAR", "Foo_Bar", "fOo_bAr"]);
+    checkQuery("Exact substring match", "foo", ["a/fobazo", "b/foobar", "c/FOObar"], ["fobazo", "foobar", "FOObar"]);
+    checkQuery("Default scoring", "foo", ["foo1", "foo2", "foo3"], undefined, [1,2,3]);
     InspectorTest.completeTest();
 }
 
