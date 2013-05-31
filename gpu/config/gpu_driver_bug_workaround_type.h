@@ -5,6 +5,8 @@
 #ifndef GPU_CONFIG_GPU_DRIVER_BUG_WORKAROUND_TYPE_H_
 #define GPU_CONFIG_GPU_DRIVER_BUG_WORKAROUND_TYPE_H_
 
+#include <string>
+
 #include "gpu/gpu_export.h"
 
 #define GPU_DRIVER_BUG_WORKAROUNDS(GPU_OP)            \
@@ -64,6 +66,9 @@ enum GPU_EXPORT GpuDriverBugWorkaroundType {
 #undef GPU_OP
   NUMBER_OF_GPU_DRIVER_BUG_WORKAROUND_TYPES
 };
+
+GPU_EXPORT std::string GpuDriverBugWorkaroundTypeToString(
+    GpuDriverBugWorkaroundType type);
 
 }  // namespace gpu
 

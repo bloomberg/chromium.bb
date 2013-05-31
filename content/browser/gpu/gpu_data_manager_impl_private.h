@@ -67,8 +67,11 @@ class CONTENT_EXPORT GpuDataManagerImplPrivate {
   gpu::GpuSwitchingOption GetGpuSwitchingOption() const;
 
   std::string GetBlacklistVersion() const;
+  std::string GetDriverBugListVersion() const;
 
-  base::ListValue* GetBlacklistReasons() const;
+  void GetBlacklistReasons(base::ListValue* reasons) const;
+
+  void GetDriverBugWorkarounds(base::ListValue* workarounds) const;
 
   void AddLogMessage(int level,
                      const std::string& header,

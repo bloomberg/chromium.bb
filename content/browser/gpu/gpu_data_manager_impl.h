@@ -111,12 +111,16 @@ class CONTENT_EXPORT GpuDataManagerImpl
   gpu::GpuSwitchingOption GetGpuSwitchingOption() const;
 
   std::string GetBlacklistVersion() const;
+  std::string GetDriverBugListVersion() const;
 
   // Returns the reasons for the latest run of blacklisting decisions.
   // For the structure of returned value, see documentation for
   // GpuBlacklist::GetBlacklistedReasons().
-  // Caller is responsible to release the returned value.
-  base::ListValue* GetBlacklistReasons() const;
+  void GetBlacklistReasons(base::ListValue* reasons) const;
+
+  // Returns the workarounds that are applied to the current system as
+  // a list of strings.
+  void GetDriverBugWorkarounds(base::ListValue* workarounds) const;
 
   void AddLogMessage(int level,
                      const std::string& header,

@@ -15,28 +15,6 @@ function onLoad() {
 
   // Create the views.
   cr.ui.decorate('#info-view', gpu.InfoView);
-
-  // Create the main tab control
-  var tabs = $('main-tabs');
-  cr.ui.decorate(tabs, cr.ui.TabBox);
-
-  // Sync the main-tabs selectedTabs in-sync with the location.
-  tabs.addEventListener('selectedChange', function() {
-    if (tabs.selectedTab.id) {
-      history.pushState('', '', '#' + tabs.selectedTab.id);
-    }
-  });
-  window.onhashchange = function() {
-    var cur = window.location.hash;
-    if (cur == '#' || cur == '') {
-      tabs.selectedTab = $('info-view');
-    } else {
-      var tab = $(window.location.hash.substr(1));
-      if (tab)
-        tabs.selectedTab = tab;
-    }
-  };
-  window.onhashchange();
 }
 
 document.addEventListener('DOMContentLoaded', onLoad);

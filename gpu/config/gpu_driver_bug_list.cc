@@ -44,5 +44,16 @@ GpuDriverBugList* GpuDriverBugList::Create() {
   return list;
 }
 
+std::string GpuDriverBugWorkaroundTypeToString(
+    GpuDriverBugWorkaroundType type) {
+  switch (type) {
+#define GPU_OP(type, name) case type: return #name;
+    GPU_DRIVER_BUG_WORKAROUNDS(GPU_OP)
+#undef GPU_OP
+    default:
+      return "unknown";
+  };
+}
+
 }  // namespace gpu
 

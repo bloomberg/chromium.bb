@@ -24,6 +24,7 @@
 #include "content/public/common/content_switches.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "gpu/config/gpu_control_list_jsons.h"
+#include "gpu/config/gpu_driver_bug_workaround_type.h"
 #include "gpu/config/gpu_feature_type.h"
 #include "gpu/config/gpu_info_collector.h"
 #include "gpu/config/gpu_util.h"
@@ -792,11 +793,26 @@ std::string GpuDataManagerImplPrivate::GetBlacklistVersion() const {
   return "0";
 }
 
-base::ListValue* GpuDataManagerImplPrivate::GetBlacklistReasons() const {
-  ListValue* reasons = new ListValue();
+std::string GpuDataManagerImplPrivate::GetDriverBugListVersion() const {
+  if (gpu_driver_bug_list_)
+    return gpu_driver_bug_list_->version();
+  return "0";
+}
+
+void GpuDataManagerImplPrivate::GetBlacklistReasons(
+    base::ListValue* reasons) const {
   if (gpu_blacklist_)
     gpu_blacklist_->GetReasons(reasons);
-  return reasons;
+}
+
+void GpuDataManagerImplPrivate::GetDriverBugWorkarounds(
+    base::ListValue* workarounds) const {
+  for (std::set<int>::const_iterator it = gpu_driver_bugs_.begin();
+       it != gpu_driver_bugs_.end(); ++it) {
+    workarounds->AppendString(
+        gpu::GpuDriverBugWorkaroundTypeToString(
+            static_cast<gpu::GpuDriverBugWorkaroundType>(*it)));
+  }
 }
 
 void GpuDataManagerImplPrivate::AddLogMessage(

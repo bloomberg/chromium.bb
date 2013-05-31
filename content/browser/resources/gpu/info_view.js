@@ -55,6 +55,10 @@ cr.define('gpu', function() {
             value: clientInfo.blacklist_version
           },
           {
+            description: 'Driver bug list version',
+            value: clientInfo.driver_bug_list_version
+          },
+          {
             description: 'ANGLE revision',
             value: clientInfo.angle_revision
           },
@@ -136,6 +140,8 @@ cr.define('gpu', function() {
       var featureStatusList = this.querySelector('.feature-status-list');
       var problemsDiv = this.querySelector('.problems-div');
       var problemsList = this.querySelector('.problems-list');
+      var workaroundsDiv = this.querySelector('.workarounds-div');
+      var workaroundsList = this.querySelector('.workarounds-list');
       var performanceDiv = this.querySelector('.performance-div');
       var gpuInfo = browserBridge.gpuInfo;
       var i;
@@ -181,9 +187,23 @@ cr.define('gpu', function() {
             problemsDiv.hidden = true;
           }
 
+          // driver bug workarounds list
+          if (gpuInfo.featureStatus.workarounds.length) {
+            workaroundsDiv.hidden = false;
+            workaroundsList.textContent = '';
+            for (i = 0; i < gpuInfo.featureStatus.workarounds.length; i++) {
+              var workaroundEl = document.createElement('li');
+              workaroundEl.textContent = gpuInfo.featureStatus.workarounds[i];
+              workaroundsList.appendChild(workaroundEl);
+            }
+          } else {
+            workaroundsDiv.hidden = true;
+          }
+
         } else {
           featureStatusList.textContent = '';
           problemsList.hidden = true;
+          workaroundsList.hidden = true;
         }
         if (gpuInfo.basic_info)
           this.setTable_('basic-info', gpuInfo.basic_info);

@@ -162,9 +162,20 @@ std::string GpuDataManagerImpl::GetBlacklistVersion() const {
   return private_->GetBlacklistVersion();
 }
 
-base::ListValue* GpuDataManagerImpl::GetBlacklistReasons() const {
+std::string GpuDataManagerImpl::GetDriverBugListVersion() const {
   base::AutoLock auto_lock(lock_);
-  return private_->GetBlacklistReasons();
+  return private_->GetDriverBugListVersion();
+}
+
+void GpuDataManagerImpl::GetBlacklistReasons(base::ListValue* reasons) const {
+  base::AutoLock auto_lock(lock_);
+  private_->GetBlacklistReasons(reasons);
+}
+
+void GpuDataManagerImpl::GetDriverBugWorkarounds(
+    base::ListValue* workarounds) const {
+  base::AutoLock auto_lock(lock_);
+  private_->GetDriverBugWorkarounds(workarounds);
 }
 
 void GpuDataManagerImpl::AddLogMessage(int level,

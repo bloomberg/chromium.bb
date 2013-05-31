@@ -434,8 +434,8 @@ base::Value* GetFeatureStatus() {
 
   // Build the problems list.
   {
-    base::ListValue* problem_list =
-        GpuDataManagerImpl::GetInstance()->GetBlacklistReasons();
+    base::ListValue* problem_list = new base::ListValue();
+    GpuDataManagerImpl::GetInstance()->GetBlacklistReasons(problem_list);
 
     if (gpu_access_blocked) {
       base::DictionaryValue* problem = new base::DictionaryValue();
@@ -458,6 +458,13 @@ base::Value* GetFeatureStatus() {
     }
 
     status->Set("problems", problem_list);
+  }
+
+  // Build driver bug workaround list.
+  {
+    base::ListValue* workaround_list = new base::ListValue();
+    GpuDataManagerImpl::GetInstance()->GetDriverBugWorkarounds(workaround_list);
+    status->Set("workarounds", workaround_list);
   }
 
   return status;
@@ -604,6 +611,8 @@ base::Value* GpuMessageHandler::OnRequestClientInfo(
   dict->SetString("graphics_backend", "Skia");
   dict->SetString("blacklist_version",
       GpuDataManagerImpl::GetInstance()->GetBlacklistVersion());
+  dict->SetString("driver_bug_list_version",
+      GpuDataManagerImpl::GetInstance()->GetDriverBugListVersion());
 
   return dict;
 }
