@@ -75,12 +75,18 @@ BOT_ASSIGNMENT = {
     'lucid-64-newlib-dbg-valgrind': 'bash buildbot/buildbot_valgrind.sh newlib',
     'lucid-64-glibc-dbg-valgrind': 'bash buildbot/buildbot_valgrind.sh glibc',
     # Coverage.
-    'mac10.6-newlib-coverage': 'bash buildbot/buildbot_coverage_mac.sh',
+    'mac10.6-newlib-coverage':
+         python + (' buildbot/buildbot_standard.py '
+                   'coverage 64 newlib --coverage --clang'),
     'lucid-64-32-newlib-coverage':
-        'bash buildbot/buildbot_coverage_linux.sh 32',
+         python + (' buildbot/buildbot_standard.py '
+                   'coverage 32 newlib --coverage'),
     'lucid-64-64-newlib-coverage':
-        'bash buildbot/buildbot_coverage_linux.sh 64',
-    'xp-newlib-coverage': 'buildbot\\buildbot_coverage_win.bat',
+         python + (' buildbot/buildbot_standard.py '
+                   'coverage 64 newlib --coverage'),
+    'xp-newlib-coverage':
+         python + (' buildbot/buildbot_standard.py '
+                   'coverage 32 newlib --coverage'),
     # PPAPI Integration.
     'lucid64-m32-n32-opt-ppapi':
         python + ' buildbot/buildbot_standard.py opt 32 newlib',
@@ -97,12 +103,18 @@ BOT_ASSIGNMENT = {
     'nacl-lucid64_glibc_dbg_valgrind':
         'bash buildbot/buildbot_valgrind.sh glibc',
     # Coverage trybots.
-    'nacl-mac10.6-newlib-coverage': 'bash buildbot/buildbot_coverage_mac.sh',
+    'nacl-mac10.6-newlib-coverage':
+         python + (' buildbot/buildbot_standard.py '
+                   'coverage 64 newlib --coverage --clang'),
     'nacl-lucid-64-32-newlib-coverage':
-        'bash buildbot/buildbot_coverage_linux.sh 32',
+         python + (' buildbot/buildbot_standard.py '
+                   'coverage 32 newlib --coverage'),
     'nacl-lucid-64-64-newlib-coverage':
-        'bash buildbot/buildbot_coverage_linux.sh 64',
-    'nacl-win32-newlib-coverage': 'buildbot\\buildbot_coverage_win.bat',
+         python + (' buildbot/buildbot_standard.py '
+                   'coverage 64 newlib --coverage'),
+    'nacl-win32-newlib-coverage':
+         python + (' buildbot/buildbot_standard.py '
+                   'coverage 32 newlib --coverage'),
     # Clang trybots.
     'nacl-lucid_64-newlib-dbg-clang':
         python + ' buildbot/buildbot_standard.py dbg 64 newlib --clang',

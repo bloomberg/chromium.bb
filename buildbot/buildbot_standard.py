@@ -107,7 +107,7 @@ def SetupContextVars(context):
 
 
 def ValidatorTest(context, architecture, validator, warn_only=False):
-  cmd=[
+  cmd = [
       sys.executable,
       'tests/abi_corpus/validator_regression_test.py',
       '--keep-going',
@@ -117,6 +117,41 @@ def ValidatorTest(context, architecture, validator, warn_only=False):
   if warn_only:
     cmd.append('--warn-only')
   Command(context, cmd=cmd)
+
+
+def SummarizeCoverage(context):
+  Command(context, [
+      sys.executable,
+      'tools/coverage_summary.py',
+      context['platform'] + '-' + context['default_scons_platform'],
+  ])
+
+
+def ArchiveCoverage(context):
+  gsutil = '../../../../third_party/gsutil/gsutil'
+  gsd_url = 'http://gsdview.appspot.com/nativeclient-coverage2/revs'
+  variant_name = ('coverage-' + context['platform'] + '-' +
+                  context['default_scons_platform'])
+  coverage_path = variant_name + '/html/index.html'
+  revision = os.environ.get('BUILDBOT_REVISION', 'None')
+  link_url = gsd_url + '/' + revision + '/' + coverage_path
+  gsd_base = 'gs://nativeclient-coverage2/revs'
+  gs_path = gsd_base + '/' + revision + '/' + variant_name
+  cov_dir = 'scons-out/' + variant_name + '/coverage'
+  # Copy lcov file.
+  Command(context, [
+      sys.executable, gsutil,
+      'cp', '-a', 'public-read',
+      cov_dir + '/coverage.lcov',
+      gs_path + '/coverage.lcov',
+  ])
+  # Copy html.
+  Command(context, [
+      sys.executable, gsutil,
+      'cp', '-R', '-a', 'public-read',
+      'html', gs_path,
+  ], cwd=cov_dir)
+  print '@@@STEP_LINK@view@%s@@@' % link_url
 
 
 def CommandGypBuild(context):
@@ -319,6 +354,12 @@ def BuildScript(status, context):
   if context['coverage']:
     with Step('collect_coverage', status, halt_on_fail=True):
       SCons(context, args=['coverage'])
+    with Step('summarize_coverage', status, halt_on_fail=False):
+      SummarizeCoverage(context)
+    slave_type = os.environ.get('BUILDBOT_SLAVE_TYPE')
+    if slave_type != 'Trybot' and slave_type is not None:
+      with Step('archive_coverage', status, halt_on_fail=True):
+        ArchiveCoverage(context)
     return
 
   ### BEGIN tests ###
