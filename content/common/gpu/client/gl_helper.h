@@ -17,6 +17,10 @@ class Rect;
 class Size;
 }
 
+namespace media {
+class VideoFrame;
+};
+
 class SkRegion;
 
 namespace content {
@@ -178,6 +182,9 @@ class ScopedFlush {
   DISALLOW_COPY_AND_ASSIGN(ScopedFlush);
 };
 
+
+class ReadbackYUVInterface;
+
 // Provides higher level operations on top of the WebKit::WebGraphicsContext3D
 // interfaces.
 class CONTENT_EXPORT GLHelper {
@@ -284,6 +291,20 @@ class CONTENT_EXPORT GLHelper {
                                 bool vertically_flip_texture,
                                 bool swizzle);
 
+  // Create a readback pipeline that will scale a subsection of the source
+  // texture, then convert it to YUV422 planar form and then read back that.
+  // This reduces the amount of memory read from GPU to CPU memory by a factor
+  // 2.6, which can be quite handy since readbacks have very limited speed
+  // on some platforms. All values in |dst_size| and |dst_subrect| must be
+  // a multiple of two.
+  ReadbackYUVInterface* CreateReadbackPipelineYUV(
+      ScalerQuality quality,
+      const gfx::Size& src_size,
+      const gfx::Rect& src_subrect,
+      const gfx::Size& dst_size,
+      const gfx::Rect& dst_subrect,
+      bool flip_vertically);
+
  protected:
   class CopyTextureToImpl;
 
@@ -297,6 +318,26 @@ class CONTENT_EXPORT GLHelper {
   scoped_ptr<GLHelperScaling> scaler_impl_;
 
   DISALLOW_COPY_AND_ASSIGN(GLHelper);
+};
+
+// Similar to a ScalerInterface, a yuv readback pipeline will
+// cache a scaler and all intermediate textures and frame buffers
+// needed to scale, crop, letterbox and read back a texture from
+// the GPU into CPU-accessible RAM. A single readback pipeline
+// can handle multiple outstanding readbacks at the same time, but
+// if the source or destination sizes change, you'll need to create
+// a new readback pipeline.
+class CONTENT_EXPORT ReadbackYUVInterface {
+public:
+  ReadbackYUVInterface() {}
+  virtual ~ReadbackYUVInterface() {}
+
+  // Note that |target| must use YV12 format.
+  virtual void ReadbackYUV(
+      WebKit::WebGLId texture,
+      media::VideoFrame* target,
+      const base::Callback<void(bool)>& callback) = 0;
+  virtual GLHelper::ScalerInterface* scaler() = 0;
 };
 
 }  // namespace content

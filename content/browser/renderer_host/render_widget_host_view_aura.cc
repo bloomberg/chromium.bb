@@ -345,28 +345,6 @@ void AcknowledgeBufferForGpu(
       route_id, gpu_host_id, ack);
 }
 
-void CopySnapshotToVideoFrame(const scoped_refptr<media::VideoFrame>& target,
-                              const gfx::Rect& region_in_frame,
-                              const base::Callback<void(bool)>& callback,
-                              bool succeed,
-                              const SkBitmap& bitmap) {
-  if (!succeed) {
-    callback.Run(false);
-    return;
-  }
-
-  DCHECK(region_in_frame.size() == gfx::Size(bitmap.width(), bitmap.height()));
-  {
-    SkAutoLockPixels lock(bitmap);
-    media::CopyRGBToVideoFrame(
-        reinterpret_cast<const uint8*>(bitmap.getPixels()),
-        bitmap.rowBytes(),
-        region_in_frame,
-        target.get());
-  }
-  callback.Run(true);
-}
-
 }  // namespace
 
 // We need to watch for mouse events outside a Web Popup or its parent
@@ -1255,15 +1233,55 @@ void RenderWidgetHostViewAura::CopyFromCompositingSurfaceToVideoFrame(
                               region_in_frame.y() & ~1,
                               region_in_frame.width() & ~1,
                               region_in_frame.height() & ~1);
+  ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
+  GLHelper* gl_helper = factory->GetGLHelper();
+  if (!gl_helper) {
+    return;
+  }
+  // Convert |src_subrect| from the views coordinate (upper-left origin) into
+  // the OpenGL coordinate (lower-left origin).
+  gfx::Rect src_subrect_in_gl = src_subrect;
+  src_subrect_in_gl.set_y(GetViewBounds().height() - src_subrect.bottom());
+  gfx::Rect src_subrect_in_pixel =
+      ConvertRectToPixel(current_surface_->device_scale_factor(),
+                         src_subrect_in_gl);
+
+  if (!yuv_readback_pipeline_ ||
+      yuv_readback_pipeline_->scaler()->SrcSize() != current_surface_->size() ||
+      yuv_readback_pipeline_->scaler()->SrcSubrect() != src_subrect_in_pixel ||
+      yuv_readback_pipeline_->scaler()->DstSize() != region_in_frame.size()) {
+    GLHelper::ScalerQuality quality = GLHelper::SCALER_QUALITY_FAST;
+    std::string quality_switch = switches::kTabCaptureDownscaleQuality;
+    // If we're scaling up, we can use the "best" quality.
+    if (current_surface_->size().width() < region_in_frame.size().width() &&
+        current_surface_->size().height() < region_in_frame.size().height()) {
+      quality_switch = switches::kTabCaptureUpscaleQuality;
+    }
+
+    std::string switch_value =
+        CommandLine::ForCurrentProcess()->GetSwitchValueASCII(quality_switch);
+    if (switch_value == "fast") {
+      quality = GLHelper::SCALER_QUALITY_FAST;
+    } else if (switch_value == "good") {
+      quality = GLHelper::SCALER_QUALITY_GOOD;
+    } else if (switch_value == "best") {
+      quality = GLHelper::SCALER_QUALITY_BEST;
+    }
+
+    yuv_readback_pipeline_.reset(
+        gl_helper->CreateReadbackPipelineYUV(quality,
+                                             current_surface_->size(),
+                                             src_subrect_in_pixel,
+                                             target->coded_size(),
+                                             region_in_frame,
+                                             true));
+  }
 
   scoped_callback_runner.Release();
-
-  CopyFromCompositingSurfaceHelper(src_subrect,
-                                   region_in_frame.size(),
-                                   base::Bind(CopySnapshotToVideoFrame,
-                                              target,
-                                              region_in_frame,
-                                              callback));
+  yuv_readback_pipeline_->ReadbackYUV(
+      current_surface_->PrepareTexture(),
+      target,
+      callback);
 }
 
 bool RenderWidgetHostViewAura::CanCopyToVideoFrame() const {

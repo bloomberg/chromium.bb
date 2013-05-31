@@ -28,6 +28,7 @@ class CONTENT_EXPORT GLHelperScaling {
     SHADER_BILINEAR2X2,
     SHADER_BICUBIC_UPSCALE,
     SHADER_BICUBIC_HALF_1D,
+    SHADER_PLANAR,
   };
 
   typedef std::pair<ShaderType, bool> ShaderProgramKeyType;
@@ -44,6 +45,13 @@ class CONTENT_EXPORT GLHelperScaling {
       const gfx::Size& dst_size,
       bool vertically_flip_texture,
       bool swizzle);
+
+  GLHelper::ScalerInterface* CreatePlanarScaler(
+      const gfx::Size& src_size,
+      const gfx::Rect& src_subrect,
+      const gfx::Size& dst_size,
+      bool vertically_flip_texture,
+      const float color_weights[4]);
 
  private:
   // A ScaleOp represents a pass in a scaler pipeline, in one dimension.

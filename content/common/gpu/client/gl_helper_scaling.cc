@@ -61,7 +61,8 @@ class ShaderProgram : public base::RefCounted<ShaderProgram> {
                   const gfx::Rect& src_subrect,
                   const gfx::Size& dst_size,
                   bool scale_x,
-                  bool flip_y);
+                  bool flip_y,
+                  GLfloat color_weights[4]);
 
  private:
   friend class base::RefCounted<ShaderProgram>;
@@ -88,6 +89,8 @@ class ShaderProgram : public base::RefCounted<ShaderProgram> {
   WebKit::WGC3Dint dst_pixelsize_location_;
   // Location of vector for scaling direction.
   WebKit::WGC3Dint scaling_vector_location_;
+  // Location of color weights.
+  WebKit::WGC3Dint color_weights_location_;
 
   DISALLOW_COPY_AND_ASSIGN(ShaderProgram);
 };
@@ -107,16 +110,30 @@ class ScalerImpl : public GLHelper::ScalerInterface {
   // If we are scaling in both X and Y, |scale_x| is ignored.
   // If |vertically_flip_texture| is true, output will be upside-down.
   // If |swizzle| is true, RGBA will be transformed into BGRA.
+  // |color_weights| are only used together with SHADER_PLANAR to specify
+  //   how to convert RGB colors into a single value.
   ScalerImpl(WebGraphicsContext3D* context,
              GLHelperScaling* scaler_helper,
              const GLHelperScaling::ScalerStage &scaler_stage,
-             ScalerImpl* subscaler) :
+             ScalerImpl* subscaler,
+             const float* color_weights) :
       context_(context),
       scaler_helper_(scaler_helper),
       spec_(scaler_stage),
       intermediate_texture_(0),
       dst_framebuffer_(context, context_->createFramebuffer()),
       subscaler_(subscaler) {
+    if (color_weights) {
+      color_weights_[0] = color_weights[0];
+      color_weights_[1] = color_weights[1];
+      color_weights_[2] = color_weights[2];
+      color_weights_[3] = color_weights[3];
+    } else {
+      color_weights_[0] = 0.0;
+      color_weights_[1] = 0.0;
+      color_weights_[2] = 0.0;
+      color_weights_[3] = 0.0;
+    }
     shader_program_ = scaler_helper_->GetShaderProgram(spec_.shader,
                                                        spec_.swizzle);
 
@@ -182,7 +199,8 @@ class ScalerImpl : public GLHelper::ScalerInterface {
                                 spec_.src_subrect,
                                 spec_.dst_size,
                                 spec_.scale_x,
-                                spec_.vertically_flip_texture);
+                                spec_.vertically_flip_texture,
+                                color_weights_);
     context_->viewport(0, 0, spec_.dst_size.width(), spec_.dst_size.height());
 
     // Conduct texture mapping by drawing a quad composed of two triangles.
@@ -209,6 +227,7 @@ class ScalerImpl : public GLHelper::ScalerInterface {
   WebGraphicsContext3D* context_;
   GLHelperScaling* scaler_helper_;
   GLHelperScaling::ScalerStage spec_;
+  GLfloat color_weights_[4];
   WebKit::WebGLId intermediate_texture_;
   scoped_refptr<ShaderProgram> shader_program_;
   ScopedFramebuffer dst_framebuffer_;
@@ -427,9 +446,26 @@ GLHelperScaling::CreateScaler(GLHelper::ScalerQuality quality,
 
   ScalerImpl* ret = NULL;
   for (unsigned int i = 0; i < scaler_stages.size(); i++) {
-    ret = new ScalerImpl(context_, this, scaler_stages[i], ret);
+    ret = new ScalerImpl(context_, this, scaler_stages[i], ret, NULL);
   }
   return ret;
+}
+
+GLHelper::ScalerInterface*
+GLHelperScaling::CreatePlanarScaler(
+    const gfx::Size& src_size,
+    const gfx::Rect& src_subrect,
+    const gfx::Size& dst_size,
+    bool vertically_flip_texture,
+    const float color_weights[4]) {
+  ScalerStage stage(SHADER_PLANAR,
+                    src_size,
+                    src_subrect,
+                    dst_size,
+                    true,
+                    vertically_flip_texture,
+                    false);
+  return new ScalerImpl(context_, this, stage, NULL, color_weights);
 }
 
 const WebKit::WGC3Dfloat GLHelperScaling::kVertexAttributes[] = {
@@ -478,7 +514,8 @@ GLHelperScaling::GetShaderProgram(ShaderType type,
 
     vertex_program.append(
         "  gl_Position = vec4(a_position, 0.0, 1.0);\n"
-        "  vec2 texcoord = src_subrect.xy + a_texcoord * src_subrect.zw;\n");
+        "  vec2 texcoord = src_subrect.xy + a_texcoord * src_subrect.zw;\n"
+        "  vec2 step = scaling_vector * src_subrect.zw / dst_pixelsize;\n");
 
     switch (type) {
       case SHADER_BILINEAR:
@@ -495,7 +532,7 @@ GLHelperScaling::GetShaderProgram(ShaderType type,
         shared_variables.append(
             "varying vec4 v_texcoords;\n");  // 2 texcoords packed in one quad
         vertex_program.append(
-            "  vec2 step = scaling_vector / dst_pixelsize / 4.0;\n"
+            "  step /= 4.0;\n"
             "  v_texcoords.xy = texcoord + step;\n"
             "  v_texcoords.zw = texcoord - step;\n");
 
@@ -511,7 +548,7 @@ GLHelperScaling::GetShaderProgram(ShaderType type,
             "varying vec4 v_texcoords1;\n"  // 2 texcoords packed in one quad
             "varying vec2 v_texcoords2;\n");
         vertex_program.append(
-            "  vec2 step = scaling_vector / dst_pixelsize / 3.0;\n"
+            "  step /= 3.0;\n"
             "  v_texcoords1.xy = texcoord + step;\n"
             "  v_texcoords1.zw = texcoord;\n"
             "  v_texcoords2 = texcoord - step;\n");
@@ -527,7 +564,7 @@ GLHelperScaling::GetShaderProgram(ShaderType type,
         shared_variables.append(
             "varying vec4 v_texcoords[2];\n");
         vertex_program.append(
-            "  vec2 step = scaling_vector / dst_pixelsize / 8.0;\n"
+            "  step /= 8.0;\n"
             "  v_texcoords[0].xy = texcoord - step * 3.0;\n"
             "  v_texcoords[0].zw = texcoord - step;\n"
             "  v_texcoords[1].xy = texcoord + step;\n"
@@ -548,7 +585,7 @@ GLHelperScaling::GetShaderProgram(ShaderType type,
         shared_variables.append(
             "varying vec4 v_texcoords[2];\n");
         vertex_program.append(
-            "  vec2 step = 1.0 / 4.0 / dst_pixelsize;\n"
+            "  step = src_subrect.zw / 4.0 / dst_pixelsize;\n"
             "  v_texcoords[0].xy = texcoord + vec2(step.x, step.y);\n"
             "  v_texcoords[0].zw = texcoord + vec2(step.x, -step.y);\n"
             "  v_texcoords[1].xy = texcoord + vec2(-step.x, step.y);\n"
@@ -572,7 +609,7 @@ GLHelperScaling::GetShaderProgram(ShaderType type,
             "const float LobeWeight = -3.0 / 64.0;\n"
             "varying vec4 v_texcoords[2];\n");
         vertex_program.append(
-            "  vec2 step = scaling_vector / src_pixelsize;\n"
+            "  step = src_subrect.zw * scaling_vector / src_pixelsize;\n"
             "  v_texcoords[0].xy = texcoord - LobeDist * step;\n"
             "  v_texcoords[0].zw = texcoord - CenterDist * step;\n"
             "  v_texcoords[1].xy = texcoord + CenterDist * step;\n"
@@ -626,6 +663,32 @@ GLHelperScaling::GetShaderProgram(ShaderType type,
             "  vec2 base = (floor(pixel_pos) + vec2(0.5)) / src_pixelsize;\n"
             "  vec2 step = scaling_vector / src_pixelsize;\n"
             "  gl_FragColor = pixels_x(base, step) * filt4(frac);\n");
+        break;
+
+      case SHADER_PLANAR:
+        // Converts four RGBA pixels into one pixel. Each RGBA
+        // pixel will be dot-multiplied with the color weights and
+        // then placed into a component of the output. This is used to
+        // convert RGBA textures into Y, U and V textures. We do this
+        // because single-component textures are not renderable on all
+        // architectures.
+        shared_variables.append(
+            "varying vec4 v_texcoords[2];\n"
+            "uniform vec4 color_weights;\n");
+        vertex_program.append(
+            "  step /= 4.0;\n"
+            "  v_texcoords[0].xy = texcoord - step * 1.5;\n"
+            "  v_texcoords[0].zw = texcoord - step * 0.5;\n"
+            "  v_texcoords[1].xy = texcoord + step * 0.5;\n"
+            "  v_texcoords[1].zw = texcoord + step * 1.5;\n");
+        fragment_program.append(
+            "  gl_FragColor = color_weights * mat4(\n"
+            "    vec4(texture2D(s_texture, v_texcoords[0].xy).rgb, 1.0),\n"
+            "    vec4(texture2D(s_texture, v_texcoords[0].zw).rgb, 1.0),\n"
+            "    vec4(texture2D(s_texture, v_texcoords[1].xy).rgb, 1.0),\n"
+            "    vec4(texture2D(s_texture, v_texcoords[1].zw).rgb, 1.0));\n");
+        // Swizzle makes no sense for this shader.
+        DCHECK(!swizzle);
         break;
     }
     if (swizzle) {
@@ -688,6 +751,8 @@ bool ShaderProgram::Setup(const WebKit::WGC3Dchar* vertex_shader_text,
                                                          "dst_pixelsize");
   scaling_vector_location_ = context_->getUniformLocation(program_,
                                                           "scaling_vector");
+  color_weights_location_ = context_->getUniformLocation(program_,
+                                                         "color_weights");
   return true;
 }
 
@@ -696,7 +761,8 @@ void ShaderProgram::UseProgram(
     const gfx::Rect& src_subrect,
     const gfx::Size& dst_size,
     bool scale_x,
-    bool flip_y) {
+    bool flip_y,
+    GLfloat color_weights[4]) {
   context_->useProgram(program_);
 
   WebKit::WGC3Dintptr offset = 0;
@@ -742,6 +808,7 @@ void ShaderProgram::UseProgram(
   context_->uniform2f(scaling_vector_location_,
                       scale_x ? 1.0 : 0.0,
                       scale_x ? 0.0 : 1.0);
+  context_->uniform4fv(color_weights_location_, 1, color_weights);
 }
 
 }  // namespace content

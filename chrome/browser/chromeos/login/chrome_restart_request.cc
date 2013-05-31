@@ -108,6 +108,8 @@ std::string DeriveCommandLine(const GURL& start_url,
       ::switches::kPpapiInProcess,
       ::switches::kRendererStartupDialog,
       ::switches::kEnableShareGroupAsyncTextureUpload,
+      ::switches::kTabCaptureUpscaleQuality,
+      ::switches::kTabCaptureDownscaleQuality,
 #if defined(USE_XI2_MT)
       ::switches::kTouchCalibration,
 #endif

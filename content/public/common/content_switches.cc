@@ -685,6 +685,13 @@ const char kSitePerProcess[]                = "site-per-process";
 // content. The switch is intended only for tests.
 const char kSkipGpuDataLoading[]            = "skip-gpu-data-loading";
 
+// Scaling quality for capturing tab. Should be one of "fast", "good" or "best".
+// One flag for upscaling, one for downscaling.
+// Upscale defaults to "best".
+const char kTabCaptureUpscaleQuality[]      = "tab-capture-upscale-quality";
+// Upscale defaults to "good".
+const char kTabCaptureDownscaleQuality[]    = "tab-capture-downscale-quality";
+
 // GestureTapDown events are deferred by this many miillseconds before
 // sending them to the renderer.
 const char kTapDownDeferralTimeMs[]         = "tap-down-deferral-time";

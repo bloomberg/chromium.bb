@@ -12,14 +12,18 @@
 #include <GLES2/gl2extchromium.h>
 
 #include "base/at_exit.h"
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
+#include "base/message_loop.h"
+#include "base/run_loop.h"
 #include "base/stringprintf.h"
 #include "base/time.h"
 #include "content/common/gpu/client/gl_helper.h"
 #include "content/common/gpu/client/gl_helper_scaling.h"
 #include "content/public/test/unittest_test_suite.h"
 #include "content/test/content_test_suite.h"
+#include "media/base/video_frame.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkTypes.h"
@@ -59,7 +63,6 @@ class GLHelperTest : public testing::Test {
         webkit::gpu::WebGraphicsContext3DInProcessCommandBufferImpl::
         CreateOffscreenContext(attributes));
     context_->makeContextCurrent();
-
     helper_.reset(new content::GLHelper(context_.get()));
     helper_scaling_.reset(new content::GLHelperScaling(
         context_.get(),
@@ -156,6 +159,9 @@ class GLHelperTest : public testing::Test {
           ret.append("bicubic 1/2");
           xy_matters = true;
           break;
+        case GLHelperScaling::SHADER_PLANAR:
+          ret.append("planar");
+          break;
       }
 
       if (xy_matters) {
@@ -233,6 +239,10 @@ class GLHelperTest : public testing::Test {
 
       // Codify valid scale operations.
       switch (scaler_stages[i].shader) {
+        case GLHelperScaling::SHADER_PLANAR:
+          EXPECT_TRUE(false) << "Invalid shader.";
+          break;
+
         case GLHelperScaling::SHADER_BILINEAR:
           if (quality != content::GLHelper::SCALER_QUALITY_FAST) {
             x_samples = 1;
@@ -503,19 +513,19 @@ class GLHelperTest : public testing::Test {
     for (int x = 0; x < xsize; ++x) {
       for (int y = 0; y < ysize; ++y) {
         switch (test_pattern) {
-          case 0: // Smooth test pattern
+          case 0:  // Smooth test pattern
             SetChannel(&input_pixels, x, y, 0, x * 10);
             SetChannel(&input_pixels, x, y, 1, y * 10);
             SetChannel(&input_pixels, x, y, 2, (x + y) * 10);
             SetChannel(&input_pixels, x, y, 3, 255);
             break;
-          case 1: // Small blocks
+          case 1:  // Small blocks
             SetChannel(&input_pixels, x, y, 0, x & 1 ? 255 : 0);
             SetChannel(&input_pixels, x, y, 1, y & 1 ? 255 : 0);
             SetChannel(&input_pixels, x, y, 2, (x + y) & 1 ? 255 : 0);
             SetChannel(&input_pixels, x, y, 3, 255);
             break;
-          case 2: // Medium blocks
+          case 2:  // Medium blocks
             SetChannel(&input_pixels, x, y, 0, 10 + x/2 * 50);
             SetChannel(&input_pixels, x, y, 1, 10 + y/3 * 50);
             SetChannel(&input_pixels, x, y, 2, (x + y)/5 * 50 + 5);
@@ -645,6 +655,249 @@ class GLHelperTest : public testing::Test {
         stages,
         "");
     EXPECT_EQ(PrintStages(stages), description);
+  }
+
+  // Note: Left/Right means Top/Bottom when used for Y dimension.
+  enum Margin {
+    MarginLeft,
+    MarginMiddle,
+    MarginRight,
+    MarginInvalid,
+  };
+
+  static Margin NextMargin(Margin m) {
+    switch (m) {
+      case MarginLeft:
+        return MarginMiddle;
+      case MarginMiddle:
+        return MarginRight;
+      case MarginRight:
+        return MarginInvalid;
+      default:
+        return MarginInvalid;
+    }
+  }
+
+  int compute_margin(int insize, int outsize, Margin m) {
+    int available = outsize - insize;
+    switch (m) {
+      default:
+        EXPECT_TRUE(false) << "This should not happen.";
+        return 0;
+      case MarginLeft:
+        return 0;
+      case MarginMiddle:
+        return (available / 2) & ~1;
+      case MarginRight:
+        return available;
+    }
+  }
+
+  // Convert 0.0 - 1.0 to 0 - 255
+  int float_to_byte(float v) {
+    int ret = static_cast<int>(floorf(v * 255.0f + 0.5f));
+    if (ret < 0) {
+      return 0;
+    }
+    if (ret > 255) {
+      return 255;
+    }
+    return ret;
+  }
+
+  static void callcallback(const base::Callback<void()>& callback,
+                           bool result) {
+    callback.Run();
+  }
+
+  void PrintPlane(unsigned char *plane, int xsize, int stride, int ysize) {
+    for (int y = 0; y < ysize; y++) {
+      for (int x = 0; x < xsize ; x++) {
+        printf("%3d, ", plane[y * stride + x]);
+      }
+      printf("   (%p)\n", plane + y * stride);
+    }
+  }
+
+  // Compare two planes make sure that each component of each pixel
+  // is no more than |maxdiff| apart.
+  void ComparePlane(unsigned char* truth,
+                    unsigned char* other,
+                    int maxdiff,
+                    int xsize,
+                    int stride,
+                    int ysize,
+                    SkBitmap* source,
+                    std::string message) {
+    for (int x = 0; x < xsize; x++) {
+      for (int y = 0; y < ysize; y++) {
+        int a = other[y * stride + x];
+        int b = truth[y * stride + x];
+        EXPECT_NEAR(a, b, maxdiff)
+            << " x=" << x
+            << " y=" << y
+            << " " << message;
+        if (std::abs(a - b) > maxdiff) {
+          printf("-------expected--------\n");
+          PrintPlane(truth, xsize, stride, ysize);
+          printf("-------actual--------\n");
+          PrintPlane(other, xsize, stride, ysize);
+          if (source) {
+            printf("-------before yuv conversion: red--------\n");
+            PrintChannel(source, 0);
+            printf("-------before yuv conversion: green------\n");
+            PrintChannel(source, 1);
+            printf("-------before yuv conversion: blue-------\n");
+            PrintChannel(source, 2);
+          }
+          return;
+        }
+      }
+    }
+  }
+
+  // YUV readback test. Create a test pattern, convert to YUV
+  // with reference implementation and compare to what gl_helper
+  // returns.
+  void TestYUVReadback(int xsize,
+                       int ysize,
+                       int output_xsize,
+                       int output_ysize,
+                       int xmargin,
+                       int ymargin,
+                       int test_pattern) {
+    WebGLId src_texture = context_->createTexture();
+    SkBitmap input_pixels;
+    input_pixels.setConfig(SkBitmap::kARGB_8888_Config, xsize, ysize);
+    input_pixels.allocPixels();
+    SkAutoLockPixels lock(input_pixels);
+
+    for (int x = 0; x < xsize; ++x) {
+      for (int y = 0; y < ysize; ++y) {
+        switch (test_pattern) {
+          case 0:  // Smooth test pattern
+            SetChannel(&input_pixels, x, y, 0, x * 10);
+            SetChannel(&input_pixels, x, y, 1, y * 10);
+            SetChannel(&input_pixels, x, y, 2, (x + y) * 10);
+            SetChannel(&input_pixels, x, y, 3, 255);
+            break;
+          case 1:  // Small blocks
+            SetChannel(&input_pixels, x, y, 0, x & 1 ? 255 : 0);
+            SetChannel(&input_pixels, x, y, 1, y & 1 ? 255 : 0);
+            SetChannel(&input_pixels, x, y, 2, (x + y) & 1 ? 255 : 0);
+            SetChannel(&input_pixels, x, y, 3, 255);
+            break;
+          case 2:  // Medium blocks
+            SetChannel(&input_pixels, x, y, 0, 10 + x/2 * 50);
+            SetChannel(&input_pixels, x, y, 1, 10 + y/3 * 50);
+            SetChannel(&input_pixels, x, y, 2, (x + y)/5 * 50 + 5);
+            SetChannel(&input_pixels, x, y, 3, 255);
+            break;
+        }
+      }
+    }
+
+    context_->bindTexture(GL_TEXTURE_2D, src_texture);
+    context_->texImage2D(GL_TEXTURE_2D,
+                         0,
+                         GL_RGBA,
+                         xsize,
+                         ysize,
+                         0,
+                         GL_RGBA,
+                         GL_UNSIGNED_BYTE,
+                         input_pixels.getPixels());
+
+    std::string message = base::StringPrintf("input size: %dx%d "
+                                             "output size: %dx%d "
+                                             "margin: %dx%d "
+                                             "pattern: %d",
+                                             xsize, ysize,
+                                             output_xsize, output_ysize,
+                                             xmargin, ymargin,
+                                             test_pattern);
+    scoped_ptr<ReadbackYUVInterface> yuv_reader(
+        helper_->CreateReadbackPipelineYUV(
+            content::GLHelper::SCALER_QUALITY_GOOD,
+            gfx::Size(xsize, ysize),
+            gfx::Rect(0, 0, xsize, ysize),
+            gfx::Size(output_xsize, output_ysize),
+            gfx::Rect(xmargin, ymargin, xsize, ysize),
+            false));
+
+    scoped_refptr<media::VideoFrame> output_frame =
+        media::VideoFrame::CreateFrame(
+            media::VideoFrame::YV12,
+            gfx::Size(output_xsize, output_ysize),
+            gfx::Rect(0, 0, output_xsize, output_ysize),
+            gfx::Size(output_xsize, output_ysize),
+            base::TimeDelta::FromSeconds(0));
+    scoped_refptr<media::VideoFrame> truth_frame =
+        media::VideoFrame::CreateFrame(
+            media::VideoFrame::YV12,
+            gfx::Size(output_xsize, output_ysize),
+            gfx::Rect(0, 0, output_xsize, output_ysize),
+            gfx::Size(output_xsize, output_ysize),
+            base::TimeDelta::FromSeconds(0));
+
+    base::RunLoop run_loop;
+    yuv_reader->ReadbackYUV(
+        src_texture,
+        output_frame.get(),
+        base::Bind(&callcallback, run_loop.QuitClosure()));
+    run_loop.Run();
+
+    unsigned char* Y = truth_frame->data(media::VideoFrame::kYPlane);
+    unsigned char* U = truth_frame->data(media::VideoFrame::kUPlane);
+    unsigned char* V = truth_frame->data(media::VideoFrame::kVPlane);
+    int32 y_stride = truth_frame->stride(media::VideoFrame::kYPlane);
+    int32 u_stride = truth_frame->stride(media::VideoFrame::kUPlane);
+    int32 v_stride = truth_frame->stride(media::VideoFrame::kVPlane);
+    memset(Y, 0x00, y_stride * output_ysize);
+    memset(U, 0x80, u_stride * output_ysize / 2);
+    memset(V, 0x80, v_stride * output_ysize / 2);
+
+    for (int y = 0; y < ysize; y++) {
+      for (int x = 0; x < xsize; x++) {
+        Y[(y + ymargin) * y_stride + x + xmargin] = float_to_byte(
+            ChannelAsFloat(&input_pixels, x, y, 0) * 0.257 +
+            ChannelAsFloat(&input_pixels, x, y, 1) * 0.504 +
+            ChannelAsFloat(&input_pixels, x, y, 2) * 0.098 +
+            0.0625);
+      }
+    }
+
+    for (int y = 0; y < ysize / 2; y++) {
+      for (int x = 0; x < xsize / 2; x++) {
+        U[(y + ymargin / 2) * u_stride + x + xmargin / 2] =
+            float_to_byte(
+                Bilinear(&input_pixels, x * 2 + 1.0, y * 2 + 1.0, 0) * -0.148 +
+                Bilinear(&input_pixels, x * 2 + 1.0, y * 2 + 1.0, 1) * -0.291 +
+                Bilinear(&input_pixels, x * 2 + 1.0, y * 2 + 1.0, 2) * 0.439 +
+                0.5);
+        V[(y + ymargin / 2) * v_stride + x + xmargin / 2] =
+            float_to_byte(
+                Bilinear(&input_pixels, x * 2 + 1.0, y * 2 + 1.0, 0) * 0.439 +
+                Bilinear(&input_pixels, x * 2 + 1.0, y * 2 + 1.0, 1) * -0.368 +
+                Bilinear(&input_pixels, x * 2 + 1.0, y * 2 + 1.0, 2) * -0.071 +
+                0.5);
+      }
+    }
+
+    ComparePlane(Y, output_frame->data(media::VideoFrame::kYPlane), 2,
+                 output_xsize, y_stride, output_ysize,
+                 &input_pixels,
+                 message + " Y plane");
+    ComparePlane(U, output_frame->data(media::VideoFrame::kUPlane), 2,
+                 output_xsize / 2, u_stride, output_ysize / 2,
+                 &input_pixels,
+                 message + " U plane");
+    ComparePlane(V, output_frame->data(media::VideoFrame::kVPlane), 2,
+                 output_xsize / 2, v_stride, output_ysize / 2,
+                 &input_pixels,
+                 message + " V plane");
+
+    context_->deleteTexture(src_texture);
   }
 
   void TestAddOps(int src,
@@ -844,6 +1097,42 @@ class GLHelperTest : public testing::Test {
   std::deque<GLHelperScaling::ScaleOp> x_ops_, y_ops_;
 };
 
+TEST_F(GLHelperTest, YUVReadbackTest) {
+  int sizes[] = { 2, 4, 14 };
+  for (unsigned int x = 0; x < arraysize(sizes); x++) {
+    for (unsigned int y = 0; y < arraysize(sizes); y++) {
+      for (unsigned int ox = x; ox < arraysize(sizes); ox++) {
+        for (unsigned int oy = y; oy < arraysize(sizes); oy++) {
+          // If output is a subsection of the destination frame, (letterbox)
+          // then try different variations of where the subsection goes.
+          for (Margin xm = x < ox ? MarginLeft : MarginRight;
+               xm <= MarginRight;
+               xm = NextMargin(xm)) {
+            for (Margin ym = y < oy ? MarginLeft : MarginRight;
+                 ym <= MarginRight;
+                 ym = NextMargin(ym)) {
+              for (int pattern = 0; pattern < 3; pattern++) {
+                TestYUVReadback(
+                    sizes[x],
+                    sizes[y],
+                    sizes[ox],
+                    sizes[oy],
+                    compute_margin(sizes[x], sizes[ox], xm),
+                    compute_margin(sizes[y], sizes[oy], ym),
+                    pattern);
+                if (HasFailure()) {
+                  return;
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+
 // Per pixel tests, all sizes are small so that we can print
 // out the generated bitmaps.
 TEST_F(GLHelperTest, ScaleTest) {
@@ -947,5 +1236,7 @@ int main(int argc, char** argv) {
 #endif
   gfx::GLSurface::InitializeOneOff();
 
-  return content::UnitTestTestSuite(suite).Run();
+  content::UnitTestTestSuite runner(suite);
+  base::MessageLoop message_loop;
+  return runner.Run();
 }

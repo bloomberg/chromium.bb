@@ -19,6 +19,7 @@
 #include "content/browser/renderer_host/image_transport_factory.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/common/content_export.h"
+#include "content/common/gpu/client/gl_helper.h"
 #include "third_party/skia/include/core/SkRegion.h"
 #include "ui/aura/client/activation_change_observer.h"
 #include "ui/aura/client/activation_delegate.h"
@@ -669,6 +670,10 @@ class RenderWidgetHostViewAura
 
   // Subscriber that listens to frame presentation events.
   scoped_ptr<RenderWidgetHostViewFrameSubscriber> frame_subscriber_;
+
+  // YUV readback pipeline.
+  scoped_ptr<content::ReadbackYUVInterface>
+      yuv_readback_pipeline_;
 
   TouchEditingClient* touch_editing_client_;
 
