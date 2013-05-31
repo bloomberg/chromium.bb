@@ -505,15 +505,7 @@ base::FilePath ExtensionURLToRelativeFilePath(const GURL& url) {
   if (skip != file_path.npos)
     file_path = file_path.substr(skip);
 
-  base::FilePath path =
-#if defined(OS_POSIX)
-    base::FilePath(file_path);
-#elif defined(OS_WIN)
-    base::FilePath(UTF8ToWide(file_path));
-#else
-    base::FilePath();
-    NOTIMPLEMENTED();
-#endif
+  base::FilePath path = base::FilePath::FromUTF8Unsafe(file_path);
 
   // It's still possible for someone to construct an annoying URL whose path
   // would still wind up not being considered relative at this point.

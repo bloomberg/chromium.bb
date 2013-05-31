@@ -290,11 +290,7 @@ ExtensionResource Extension::GetResource(
   // See: http://crbug.com/121164
   if (!new_path.empty() && new_path.at(0) == '/')
     new_path.erase(0, 1);
-#if defined(OS_POSIX)
-  base::FilePath relative_file_path(new_path);
-#elif defined(OS_WIN)
-  base::FilePath relative_file_path(UTF8ToWide(new_path));
-#endif
+  base::FilePath relative_file_path = base::FilePath::FromUTF8Unsafe(new_path);
   ExtensionResource r(id(), path(), relative_file_path);
   if ((creation_flags() & Extension::FOLLOW_SYMLINKS_ANYWHERE)) {
     r.set_follow_symlinks_anywhere();

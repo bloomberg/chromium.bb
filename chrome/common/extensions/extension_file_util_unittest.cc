@@ -263,13 +263,8 @@ TEST_F(ExtensionFileUtilTest, ExtensionURLToRelativeFilePath) {
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_cases); ++i) {
     GURL url(test_cases[i].url);
-#if defined(OS_POSIX)
-    base::FilePath expected_path(test_cases[i].expected_relative_path);
-#elif defined(OS_WIN)
-    base::FilePath expected_path(
-        UTF8ToWide(test_cases[i].expected_relative_path));
-#endif
-
+    base::FilePath expected_path =
+        base::FilePath::FromUTF8Unsafe(test_cases[i].expected_relative_path);
     base::FilePath actual_path =
         extension_file_util::ExtensionURLToRelativeFilePath(url);
     EXPECT_FALSE(actual_path.IsAbsolute()) <<

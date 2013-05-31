@@ -48,15 +48,8 @@ void GetFilePathAndQuery(const std::string& url,
       gurl.path().substr(1), (net::UnescapeRule::URL_SPECIAL_CHARS |
                               net::UnescapeRule::SPACES));
 
-#if defined(OS_WIN)
-  // The path we receive has the wrong slashes and escaping for what we need;
-  // this only appears to matter for getting icons from .exe files.
-  std::replace(path.begin(), path.end(), '/', '\\');
-  *file_path = base::FilePath(UTF8ToWide(path));
-#elif defined(OS_POSIX)
-  // The correct encoding on Linux may not actually be UTF8.
-  *file_path = base::FilePath(path);
-#endif
+  *file_path = base::FilePath::FromUTF8Unsafe(path);
+  *file_path = file_path->NormalizePathSeparators();
   query->assign(gurl.query());
 }
 

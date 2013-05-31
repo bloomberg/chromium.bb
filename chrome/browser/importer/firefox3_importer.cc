@@ -432,11 +432,7 @@ void Firefox3Importer::GetSearchEnginesXMLFiles(
               engine.substr(index + kProfilePrefix.length()));
       } else {
         // Looks like absolute path to the file.
-#if defined(OS_WIN)
-        file = base::FilePath(UTF8ToWide(engine));
-#else
-        file = base::FilePath(engine);
-#endif
+        file = base::FilePath::FromUTF8Unsafe(engine);
       }
       files->push_back(file);
     } while (s.Step() && !cancelled());

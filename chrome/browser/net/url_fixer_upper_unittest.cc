@@ -474,11 +474,7 @@ TEST(URLFixerUpperTest, FixupRelativeFile) {
   // make sure we pass through good URLs
   for (size_t i = 0; i < arraysize(fixup_cases); ++i) {
     fixup_case value = fixup_cases[i];
-#if defined(OS_WIN)
-    base::FilePath input(UTF8ToWide(value.input));
-#elif defined(OS_POSIX)
-    base::FilePath input(value.input);
-#endif
+    base::FilePath input = base::FilePath::FromUTF8Unsafe(value.input);
     EXPECT_EQ(value.output,
         URLFixerUpper::FixupRelativeFile(dir, input).possibly_invalid_spec());
   }

@@ -497,11 +497,7 @@ ExtensionProtocolHandler::MaybeCreateJob(
          SharedModuleInfo::IsExportAllowed(new_extension, new_relative_path))) {
       directory_path = new_extension->path();
       extension_id = new_extension_id;
-#if defined(OS_POSIX)
-      relative_path = base::FilePath(new_relative_path);
-#elif defined(OS_WIN)
-      relative_path = base::FilePath(UTF8ToWide(new_relative_path));
-#endif
+      relative_path = base::FilePath::FromUTF8Unsafe(new_relative_path);
     } else {
       return NULL;
     }
