@@ -8,6 +8,7 @@
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
+#include "base/debug/trace_event.h"
 #include "base/environment.h"
 #include "base/file_util.h"
 #include "base/files/file_path.h"
@@ -241,6 +242,7 @@ std::string ExitTypeToSessionTypePrefValue(Profile::ExitType type) {
 Profile* Profile::CreateProfile(const base::FilePath& path,
                                 Delegate* delegate,
                                 CreateMode create_mode) {
+  TRACE_EVENT0("browser", "Profile::CreateProfile")
   // Get sequenced task runner for making sure that file operations of
   // this profile (defined by |path|) are executed in expected order
   // (what was previously assured by the FILE thread).
@@ -355,6 +357,7 @@ ProfileImpl::ProfileImpl(
       start_time_(Time::Now()),
       delegate_(delegate),
       predictor_(NULL) {
+  TRACE_EVENT0("browser", "ProfileImpl::ctor")
   DCHECK(!path.empty()) << "Using an empty path will attempt to write " <<
                             "profile files to the root directory!";
 
@@ -428,6 +431,7 @@ ProfileImpl::ProfileImpl(
 }
 
 void ProfileImpl::DoFinalInit() {
+  TRACE_EVENT0("browser", "ProfileImpl::DoFinalInit")
   PrefService* prefs = GetPrefs();
   pref_change_registrar_.Init(prefs);
   pref_change_registrar_.Add(
@@ -543,13 +547,16 @@ void ProfileImpl::DoFinalInit() {
 
   if (!CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableRestoreSessionState)) {
+    TRACE_EVENT0("browser", "ProfileImpl::SetSaveSessionStorageOnDisk")
     content::BrowserContext::GetDefaultStoragePartition(this)->
         GetDOMStorageContext()->SetSaveSessionStorageOnDisk();
   }
 
   // Creation has been finished.
-  if (delegate_)
+  if (delegate_) {
+    TRACE_EVENT0("browser", "ProfileImpl::DoFileInit:DelegateOnProfileCreated")
     delegate_->OnProfileCreated(this, true, IsNewProfile());
+  }
 
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_PROFILE_CREATED,
@@ -697,6 +704,7 @@ ExtensionService* ProfileImpl::GetExtensionService() {
 ExtensionSpecialStoragePolicy*
     ProfileImpl::GetExtensionSpecialStoragePolicy() {
   if (!extension_special_storage_policy_) {
+    TRACE_EVENT0("browser", "ProfileImpl::GetExtensionSpecialStoragePolicy")
     extension_special_storage_policy_ = new ExtensionSpecialStoragePolicy(
         CookieSettings::Factory::GetForProfile(this));
   }
@@ -704,6 +712,7 @@ ExtensionSpecialStoragePolicy*
 }
 
 void ProfileImpl::OnPrefsLoaded(bool success) {
+  TRACE_EVENT0("browser", "ProfileImpl::OnPrefsLoaded")
   if (!success) {
     if (delegate_)
       delegate_->OnProfileCreated(this, false, false);
@@ -738,10 +747,13 @@ void ProfileImpl::OnPrefsLoaded(bool success) {
       this, false);
 
   DCHECK(!net_pref_observer_);
-  net_pref_observer_.reset(new NetPrefObserver(
-      prefs_.get(),
-      prerender::PrerenderManagerFactory::GetForProfile(this),
-      predictor_));
+  {
+    TRACE_EVENT0("browser", "ProfileImpl::OnPrefsLoaded:NetPrefObserver")
+    net_pref_observer_.reset(new NetPrefObserver(
+        prefs_.get(),
+        prerender::PrerenderManagerFactory::GetForProfile(this),
+        predictor_));
+  }
 
   ChromeVersionService::OnProfileLoaded(prefs_.get(), IsNewProfile());
   DoFinalInit();

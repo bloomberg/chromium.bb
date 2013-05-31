@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/debug/trace_event.h"
 #include "base/deferred_sequenced_task_runner.h"
 #include "base/file_util.h"
 #include "base/files/file_path.h"
@@ -467,6 +468,7 @@ std::vector<Profile*> ProfileManager::GetLoadedProfiles() const {
 }
 
 Profile* ProfileManager::GetProfile(const base::FilePath& profile_dir) {
+  TRACE_EVENT0("browser", "ProfileManager::GetProfile")
   // If the profile is already loaded (e.g., chrome.exe launched twice), just
   // return it.
   Profile* profile = GetProfileByPath(profile_dir);
