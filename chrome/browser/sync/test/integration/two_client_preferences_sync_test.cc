@@ -481,28 +481,15 @@ IN_PROC_BROWSER_TEST_F(TwoClientPreferencesSyncTest, kAcceptLanguages) {
   AppendStringPref(0, prefs::kAcceptLanguages, ",ar");
   AppendStringPref(1, prefs::kAcceptLanguages, ",fr");
   ASSERT_TRUE(AwaitQuiescence());
-  // kAcceptLanguages is not synced on Mac.
-#if !defined(OS_MACOSX)
   ASSERT_TRUE(StringPrefMatches(prefs::kAcceptLanguages));
-#else
-  ASSERT_FALSE(StringPrefMatches(prefs::kAcceptLanguages));
-#endif  // OS_MACOSX
 
   ChangeStringPref(0, prefs::kAcceptLanguages, "en-US");
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-#if !defined(OS_MACOSX)
   ASSERT_TRUE(StringPrefMatches(prefs::kAcceptLanguages));
-#else
-  ASSERT_FALSE(StringPrefMatches(prefs::kAcceptLanguages));
-#endif  // OS_MACOSX
 
   ChangeStringPref(0, prefs::kAcceptLanguages, "ar,en-US");
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-#if !defined(OS_MACOSX)
   ASSERT_TRUE(StringPrefMatches(prefs::kAcceptLanguages));
-#else
-  ASSERT_FALSE(StringPrefMatches(prefs::kAcceptLanguages));
-#endif  // OS_MACOSX
 }
 
 // TCM ID - 7590682

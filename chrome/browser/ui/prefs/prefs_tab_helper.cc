@@ -557,19 +557,10 @@ void PrefsTabHelper::RegisterUserPrefs(
       pref_defaults.force_enable_zoom,
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 #endif
-
-#if !defined(OS_MACOSX)
   registry->RegisterLocalizedStringPref(
       prefs::kAcceptLanguages,
       IDS_ACCEPT_LANGUAGES,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
-#else
-  // Not used in OSX.
-  registry->RegisterLocalizedStringPref(
-      prefs::kAcceptLanguages,
-      IDS_ACCEPT_LANGUAGES,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-#endif
   registry->RegisterLocalizedStringPref(
       prefs::kDefaultCharset,
       IDS_DEFAULT_ENCODING,
