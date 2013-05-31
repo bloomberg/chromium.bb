@@ -36,20 +36,20 @@ namespace extensions {
 class RulesRegistryServiceTest : public testing::Test {
  public:
   RulesRegistryServiceTest()
-      : ui(content::BrowserThread::UI, &message_loop),
-        io(content::BrowserThread::IO, &message_loop) {}
+      : ui_(content::BrowserThread::UI, &message_loop_),
+        io_(content::BrowserThread::IO, &message_loop_) {}
 
   virtual ~RulesRegistryServiceTest() {}
 
   virtual void TearDown() OVERRIDE {
     // Make sure that deletion traits of all registries are executed.
-    message_loop.RunUntilIdle();
+    message_loop_.RunUntilIdle();
   }
 
  protected:
-  base::MessageLoop message_loop;
-  content::TestBrowserThread ui;
-  content::TestBrowserThread io;
+  base::MessageLoop message_loop_;
+  content::TestBrowserThread ui_;
+  content::TestBrowserThread io_;
 };
 
 TEST_F(RulesRegistryServiceTest, TestConstructionAndMultiThreading) {
@@ -89,7 +89,7 @@ TEST_F(RulesRegistryServiceTest, TestConstructionAndMultiThreading) {
         base::Bind(&VerifyNumberOfRules,
                    registry_service.GetRulesRegistry("io"), 1));
 
-  message_loop.RunUntilIdle();
+  message_loop_.RunUntilIdle();
 
   // Test extension unloading.
 
@@ -105,7 +105,7 @@ TEST_F(RulesRegistryServiceTest, TestConstructionAndMultiThreading) {
         base::Bind(&VerifyNumberOfRules,
                    registry_service.GetRulesRegistry("io"), 0));
 
-  message_loop.RunUntilIdle();
+  message_loop_.RunUntilIdle();
 }
 
 }  // namespace extensions

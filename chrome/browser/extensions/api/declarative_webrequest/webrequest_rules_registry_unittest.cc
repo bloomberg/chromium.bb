@@ -77,9 +77,9 @@ class TestWebRequestRulesRegistry : public WebRequestRulesRegistry {
 class WebRequestRulesRegistryTest : public testing::Test {
  public:
   WebRequestRulesRegistryTest()
-      : message_loop(base::MessageLoop::TYPE_IO),
-        ui(content::BrowserThread::UI, &message_loop),
-        io(content::BrowserThread::IO, &message_loop) {}
+      : message_loop_(base::MessageLoop::TYPE_IO),
+        ui_(content::BrowserThread::UI, &message_loop_),
+        io_(content::BrowserThread::IO, &message_loop_) {}
 
   virtual ~WebRequestRulesRegistryTest() {}
 
@@ -87,7 +87,7 @@ class WebRequestRulesRegistryTest : public testing::Test {
 
   virtual void TearDown() OVERRIDE {
     // Make sure that deletion traits of all registries are executed.
-    message_loop.RunUntilIdle();
+    message_loop_.RunUntilIdle();
   }
 
   // Returns a rule that roughly matches http://*.example.com and
@@ -219,9 +219,9 @@ class WebRequestRulesRegistryTest : public testing::Test {
   }
 
  protected:
-  base::MessageLoop message_loop;
-  content::TestBrowserThread ui;
-  content::TestBrowserThread io;
+  base::MessageLoop message_loop_;
+  content::TestBrowserThread ui_;
+  content::TestBrowserThread io_;
   // Two extensions with host permissions for all URLs and the DWR permission.
   // Installation times will be so that |extension_| is older than
   // |extension2_|.
