@@ -277,6 +277,8 @@ class SearchTest : public BrowserWithTestWindowTest {
  protected:
   virtual void SetUp() OVERRIDE {
     BrowserWithTestWindowTest::SetUp();
+    field_trial_list_.reset(new base::FieldTrialList(
+        new metrics::SHA1EntropyProvider("42")));
     TemplateURLServiceFactory::GetInstance()->SetTestingFactoryAndUse(
         profile(), &TemplateURLServiceFactory::BuildInstanceFor);
     TemplateURLService* template_url_service =
@@ -329,6 +331,7 @@ class SearchTest : public BrowserWithTestWindowTest {
     template_url_service->SetDefaultSearchProvider(template_url);
   }
 
+  scoped_ptr<base::FieldTrialList> field_trial_list_;
 };
 
 struct SearchTestCase {
@@ -590,9 +593,14 @@ TEST_F(SearchTest, DefaultSearchProviderSupportsInstant) {
   EXPECT_FALSE(DefaultSearchProviderSupportsInstant(profile()));
 }
 
-TEST_F(SearchTest, IsInstantCheckboxEnabledExtendedEnabled) {
+TEST_F(SearchTest, IsInstantCheckboxEnabledExtendedEnabledWithInstant) {
   // Enable instant extended.
   EnableInstantExtendedAPIForTesting();
+
+  // Enable Instant.
+  ASSERT_TRUE(base::FieldTrialList::CreateTrialsFromString(
+      "InstantExtended/Group1 allow_instant:1/"));
+  ASSERT_TRUE(IsInstantCheckboxVisible());
 
   // Enable suggest.
   profile()->GetPrefs()->SetBoolean(prefs::kSearchSuggestEnabled, true);
@@ -602,6 +610,7 @@ TEST_F(SearchTest, IsInstantCheckboxEnabledExtendedEnabled) {
 
   profile()->GetPrefs()->SetBoolean(prefs::kSearchInstantEnabled, true);
 
+  EXPECT_TRUE(IsInstantCheckboxVisible());
   EXPECT_TRUE(IsInstantCheckboxEnabled(profile()));
   EXPECT_TRUE(IsInstantCheckboxChecked(profile()));
 
@@ -614,6 +623,7 @@ TEST_F(SearchTest, IsInstantCheckboxEnabledExtendedEnabled) {
   // Disable suggest.
   profile()->GetPrefs()->SetBoolean(prefs::kSearchSuggestEnabled, false);
 
+  EXPECT_TRUE(IsInstantCheckboxVisible());
   EXPECT_FALSE(IsInstantCheckboxEnabled(profile()));
   EXPECT_FALSE(IsInstantCheckboxChecked(profile()));
 
@@ -627,8 +637,56 @@ TEST_F(SearchTest, IsInstantCheckboxEnabledExtendedEnabled) {
 
   // Now that suggest is back on and the instant url is good, the checkbox
   // should be enabled and checked again.
+  EXPECT_TRUE(IsInstantCheckboxVisible());
   EXPECT_TRUE(IsInstantCheckboxEnabled(profile()));
   EXPECT_TRUE(IsInstantCheckboxChecked(profile()));
+}
+
+TEST_F(SearchTest, IsInstantCheckboxEnabledExtendedEnabledWithoutInstant) {
+  // Enable instant extended.
+  EnableInstantExtendedAPIForTesting();
+
+  // Leave Instant disallowed.
+  ASSERT_FALSE(IsInstantCheckboxVisible());
+
+  // Enable suggest.
+  profile()->GetPrefs()->SetBoolean(prefs::kSearchSuggestEnabled, true);
+
+  // Set an Instant URL with a valid search terms replacement key.
+  SetDefaultInstantTemplateUrl(true);
+
+  profile()->GetPrefs()->SetBoolean(prefs::kSearchInstantEnabled, true);
+
+  EXPECT_FALSE(IsInstantCheckboxVisible());
+  EXPECT_TRUE(IsInstantCheckboxEnabled(profile()));
+  EXPECT_FALSE(IsInstantCheckboxChecked(profile()));
+
+  // Set an Instant URL with no valid search terms replacement key.
+  SetDefaultInstantTemplateUrl(false);
+
+  // For extended instant, the checkbox should now be disabled.
+  EXPECT_FALSE(IsInstantCheckboxEnabled(profile()));
+
+  // Disable suggest.
+  profile()->GetPrefs()->SetBoolean(prefs::kSearchSuggestEnabled, false);
+
+  EXPECT_FALSE(IsInstantCheckboxVisible());
+  EXPECT_FALSE(IsInstantCheckboxEnabled(profile()));
+  EXPECT_FALSE(IsInstantCheckboxChecked(profile()));
+
+  // Set an Instant URL with a search terms replacement key.
+  SetDefaultInstantTemplateUrl(true);
+
+  // Should still be disabled, since suggest is still off.
+  EXPECT_FALSE(IsInstantCheckboxEnabled(profile()));
+
+  profile()->GetPrefs()->SetBoolean(prefs::kSearchSuggestEnabled, true);
+
+  // Now that suggest is back on and the instant url is good, the checkbox
+  // should be enabled and checked again, but still invisible.
+  EXPECT_FALSE(IsInstantCheckboxVisible());
+  EXPECT_TRUE(IsInstantCheckboxEnabled(profile()));
+  EXPECT_FALSE(IsInstantCheckboxChecked(profile()));
 }
 
 

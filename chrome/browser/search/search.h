@@ -98,6 +98,9 @@ void RegisterInstantUserPrefs(user_prefs::PrefRegistrySyncable* registry);
 // Sets the default value of prefs::kSearchInstantEnabled based on field trials.
 void SetInstantExtendedPrefDefault(Profile* profile);
 
+// Returns whether the Instant checkbox in chrome://settings/ should be shown.
+bool IsInstantCheckboxVisible();
+
 // Returns whether the Instant checkbox in chrome://settings/ should be enabled
 // (i.e., toggleable). This returns true iff prefs::kSearchSuggestEnabled is
 // true and the default search engine has a valid Instant URL in its template.

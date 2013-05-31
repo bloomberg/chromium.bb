@@ -52,7 +52,13 @@ const char kStalePageTimeoutFlagName[] = "stale";
 const int kStalePageTimeoutDefault = 3 * 3600;  // 3 hours.
 const int kStalePageTimeoutDisabled = 0;
 
+// Unless "allow_instant:1" is present, users cannot opt into Instant, nor will
+// the "instant" flag below have any effect.
+const char kAllowInstantSearchResultsFlagName[] = "allow_instant";
+
+// Sets the default state for the Instant checkbox.
 const char kInstantSearchResultsFlagName[] = "instant";
+
 const char kLocalOnlyFlagName[] = "local_only";
 const char kPreloadLocalOnlyNTPFlagName[] = "preload_local_only_ntp";
 const char kUseRemoteNTPOnStartupFlagName[] = "use_remote_ntp_on_startup";
@@ -397,6 +403,17 @@ bool IsInstantPrefEnabled(Profile* profile) {
          profile->GetPrefs()->GetBoolean(prefs::kSearchInstantEnabled);
 }
 
+bool IsInstantCheckboxVisible() {
+  FieldTrialFlags flags;
+  if (GetFieldTrialInfo(
+          base::FieldTrialList::FindFullName(kInstantExtendedFieldTrialName),
+          &flags, NULL)) {
+    return GetBoolValueForFlagWithDefault(
+        kAllowInstantSearchResultsFlagName, false, flags);
+  }
+  return false;
+}
+
 bool IsInstantCheckboxEnabled(Profile* profile) {
   return IsInstantExtendedAPIEnabled() &&
          !IsLocalOnlyInstantExtendedAPIEnabled() &&
@@ -416,7 +433,8 @@ bool IsInstantCheckboxChecked(Profile* profile) {
                           IsInstantPrefEnabled(profile));
   }
 
-  return IsInstantCheckboxEnabled(profile) &&
+  return IsInstantCheckboxVisible() &&
+         IsInstantCheckboxEnabled(profile) &&
          IsInstantPrefEnabled(profile);
 }
 

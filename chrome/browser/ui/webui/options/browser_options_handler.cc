@@ -650,6 +650,7 @@ void BrowserOptionsHandler::UpdateInstantCheckboxState() {
 
   web_ui()->CallJavascriptFunction(
       "BrowserOptions.updateInstantCheckboxState",
+      base::FundamentalValue(chrome::IsInstantCheckboxVisible()),
       base::FundamentalValue(chrome::IsInstantCheckboxEnabled(profile)),
       base::FundamentalValue(chrome::IsInstantCheckboxChecked(profile)),
       StringValue(chrome::GetInstantCheckboxLabel(profile)));
