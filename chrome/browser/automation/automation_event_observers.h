@@ -81,25 +81,19 @@ struct UserContext;
 // Event observer that listens for the completion of login.
 class LoginEventObserver
     : public AutomationEventObserver,
-      public chromeos::LoginStatusConsumer,
-      public content::NotificationObserver {
+      public chromeos::LoginStatusConsumer {
  public:
   LoginEventObserver(AutomationEventQueue* event_queue,
                      AutomationProvider* automation);
   virtual ~LoginEventObserver();
 
+  // chromeos::LoginStatusConsumer:
   virtual void OnLoginFailure(const chromeos::LoginFailure& error) OVERRIDE;
-
   virtual void OnLoginSuccess(const chromeos::UserContext& user_context,
                               bool pending_requests, bool using_oauth) OVERRIDE;
-  // Overridden from content::NotificationObserver.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
 
  private:
   base::WeakPtr<AutomationProvider> automation_;
-  content::NotificationRegistrar registrar_;
 
   void _NotifyLoginEvent(const std::string& error_string);
 

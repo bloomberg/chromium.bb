@@ -5,7 +5,6 @@
 #include "chrome/browser/automation/automation_event_observers.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
-#include "content/public/browser/notification_service.h"
 
 using chromeos::ExistingUserController;
 
@@ -23,6 +22,7 @@ LoginEventObserver::LoginEventObserver(
 LoginEventObserver::~LoginEventObserver() {}
 
 void LoginEventObserver::OnLoginFailure(const chromeos::LoginFailure& error) {
+  VLOG(1) << "Login failed, error=" << error.GetErrorString();
   _NotifyLoginEvent(error.GetErrorString());
 }
 
@@ -36,19 +36,8 @@ void LoginEventObserver::OnLoginSuccess(
     automation_->set_profile(
         g_browser_process->profile_manager()->GetLastUsedProfile());
   }
-  VLOG(1) << "Successfully logged in. Waiting for a page to load";
-  registrar_.Add(this, content::NOTIFICATION_LOAD_STOP,
-                 content::NotificationService::AllBrowserContextsAndSources());
-}
-
-void LoginEventObserver::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  if (type == content::NOTIFICATION_LOAD_STOP) {
-    VLOG(1) << "Page load done.";
-    _NotifyLoginEvent(std::string());
-  }
+  VLOG(1) << "Successfully logged in.";
+  _NotifyLoginEvent(std::string());
 }
 
 void LoginEventObserver::_NotifyLoginEvent(const std::string& error_string) {
