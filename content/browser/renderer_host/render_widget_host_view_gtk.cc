@@ -49,7 +49,7 @@
 #include "ui/base/x/x11_util.h"
 #include "ui/gfx/gtk_native_view_id_manager.h"
 #include "ui/gfx/gtk_preserve_window.h"
-#include "webkit/glue/webcursor_gtk_data.h"
+#include "webkit/common/cursors/webcursor_gtk_data.h"
 #include "webkit/plugins/npapi/webplugin.h"
 
 using WebKit::WebInputEventFactory;
