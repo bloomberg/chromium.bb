@@ -61,7 +61,6 @@
 .device-tab-entry:visited,
 .device-tab-entry:link {
   color: rgb(48, 57, 66);
-  text-decoration: none;
 }
 
 .device-show-more-tabs,
