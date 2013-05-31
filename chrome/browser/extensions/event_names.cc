@@ -102,9 +102,6 @@ const char kOnAudioDeviceChanged[] = "audio.onDeviceChanged";
 const char kOnLaunched[] = "app.runtime.onLaunched";
 const char kOnRestarted[] = "app.runtime.onRestarted";
 
-const char kDeveloperPrivateOnItemStateChanged[] =
-    "developerPrivate.onItemStateChanged";
-
 }  // namespace event_names
 
 }  // namespace extensions

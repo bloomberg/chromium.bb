@@ -8,7 +8,6 @@
 #include "base/platform_file.h"
 #include "chrome/browser/extensions/api/developer_private/entry_picker.h"
 #include "chrome/browser/extensions/api/file_system/file_system_api.h"
-#include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_function.h"
 #include "chrome/browser/extensions/extension_install_prompt.h"
 #include "chrome/browser/extensions/extension_uninstall_dialog.h"
@@ -55,27 +54,9 @@ typedef std::vector<linked_ptr<developer::ItemInspectView> >
 
 namespace extensions {
 
-class DeveloperPrivateEventRouter : public content::NotificationObserver {
- public:
-  explicit DeveloperPrivateEventRouter(Profile* profile);
-  virtual ~DeveloperPrivateEventRouter();
-
- private:
-  // content::NotificationObserver implementation
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
-
-  content::NotificationRegistrar registrar_;
-
-  Profile* profile_;
-
-  DISALLOW_COPY_AND_ASSIGN(DeveloperPrivateEventRouter);
-};
-
 // The profile-keyed service that manages the DeveloperPrivate API.
 class DeveloperPrivateAPI : public BrowserContextKeyedService,
-                            public extensions::EventRouter::Observer {
+                            public content::NotificationObserver {
  public:
   // Convenience method to get the DeveloperPrivateAPI for a profile.
   static DeveloperPrivateAPI* Get(Profile* profile);
@@ -92,25 +73,19 @@ class DeveloperPrivateAPI : public BrowserContextKeyedService,
   // BrowserContextKeyedService implementation
   virtual void Shutdown() OVERRIDE;
 
-  // EventRouter::Observer implementation.
-  virtual void OnListenerAdded(const extensions::EventListenerInfo& details)
-      OVERRIDE;
-  virtual void OnListenerRemoved(const extensions::EventListenerInfo& details)
-      OVERRIDE;
+  // content::NotificationObserver implementation.
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
  private:
   void RegisterNotifications();
-
-  Profile* profile_;
 
   // Used to start the load |load_extension_dialog_| in the last directory that
   // was loaded.
   base::FilePath last_unpacked_directory_;
 
-  // Created lazily upon OnListenerAdded.
-  scoped_ptr<DeveloperPrivateEventRouter> developer_private_event_router_;
-
-  DISALLOW_COPY_AND_ASSIGN(DeveloperPrivateAPI);
+  content::NotificationRegistrar registrar_;
 
 };
 

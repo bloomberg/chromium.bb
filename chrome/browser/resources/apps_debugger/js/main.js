@@ -16,6 +16,5 @@ window.addEventListener('load', function(e) {
   appsDevTool.initialize();
 });
 
-chrome.developerPrivate.onItemStateChanged.addListener(function(response) {
-  ItemList.loadItemsInfo();
-});
+chrome.management.onInstalled.addListener(ItemList.loadItemsInfo);
+chrome.management.onUninstalled.addListener(ItemList.loadItemsInfo);

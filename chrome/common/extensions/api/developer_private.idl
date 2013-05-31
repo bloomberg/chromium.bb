@@ -84,15 +84,6 @@ namespace developerPrivate {
     FOLDER
   };
 
-  enum EventType {
-    INSTALLED,
-    UNINSTALLED,
-    LOADED,
-    UNLOADED,
-    VIEW_REGISTERED,  // New window / view opened.
-    VIEW_UNREGISTERED  // window / view closed.
-  };
-
   dictionary PackDirectoryResponse {
     // The response message of success or error.
     DOMString message;
@@ -109,11 +100,6 @@ namespace developerPrivate {
 
   dictionary ProjectInfo {
     DOMString name;
-  };
-
-  dictionary EventData {
-    EventType event_type;
-    DOMString item_id;
   };
 
   callback VoidCallback = void ();
@@ -200,11 +186,6 @@ namespace developerPrivate {
     // strings as a dictionary mapping from string identifier to the
     // translated string to use in the apps_debugger app UI.
     static void getStrings(GetStringsCallback callback);
-  };
-
-  interface Events {
-    // Fired when a item state is changed.
-    static void onItemStateChanged(EventData response);
   };
 
 };
