@@ -9,6 +9,7 @@
 #include <iterator>
 
 #include "base/bind.h"
+#include "base/debug/trace_event.h"
 #include "components/browser_context_keyed_service/browser_context_keyed_base_factory.h"
 #include "content/public/browser/browser_context.h"
 
@@ -36,6 +37,8 @@ void BrowserContextDependencyManager::AddEdge(
 
 void BrowserContextDependencyManager::CreateBrowserContextServices(
     content::BrowserContext* context, bool is_testing_context) {
+  TRACE_EVENT0("browser",
+    "BrowserContextDependencyManager::CreateBrowserContextServices")
 #ifndef NDEBUG
   // Unmark |context| as dead. This exists because of unit tests, which will
   // often have similar stack structures. 0xWhatever might be created, go out
