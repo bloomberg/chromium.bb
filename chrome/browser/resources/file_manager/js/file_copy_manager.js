@@ -89,9 +89,15 @@ FileCopyManager.Task.prototype.setEntries = function(entries, callback) {
   var self = this;
 
   var onEntriesRecursed = function(result) {
-    // Deeper directory is moved earier.
-    self.pendingDirectories = result.dirEntries.sort(
-        function(a, b) { return a.fullPath < b.fullPath; });
+    if (self.move) {
+      // When moving, deeper directory is moved earier.
+      self.pendingDirectories = result.dirEntries.sort(
+          function(a, b) { return a.fullPath < b.fullPath; });
+    } else {
+      // When copying, upper directory is copied earier.
+      self.pendingDirectories = result.dirEntries.sort(
+          function(a, b) { return a.fullPath > b.fullPath; });
+    }
     self.pendingFiles = result.fileEntries;
     self.pendingBytes = result.fileBytes;
     callback();
