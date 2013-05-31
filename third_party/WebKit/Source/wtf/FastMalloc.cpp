@@ -454,10 +454,6 @@ extern "C"  const int jscore_fastmalloc_introspection = 0;
 
 #include <System/pthread_machdep.h>
 
-#if defined(__PTK_FRAMEWORK_JAVASCRIPTCORE_KEY0)
-#define WTF_USE_PTHREAD_GETSPECIFIC_DIRECT 1
-#endif
-
 #endif
 #endif
 
@@ -2700,11 +2696,7 @@ static __thread TCMalloc_ThreadCache *threadlocal_heap;
 // Therefore, we use TSD keys only after tsd_inited is set to true.
 // Until then, we use a slow path to get the heap object.
 static bool tsd_inited = false;
-#if USE(PTHREAD_GETSPECIFIC_DIRECT)
-static const pthread_key_t heap_key = __PTK_FRAMEWORK_JAVASCRIPTCORE_KEY0;
-#else
 static pthread_key_t heap_key;
-#endif
 #if OS(WINDOWS)
 DWORD tlsIndex = TLS_OUT_OF_INDEXES;
 #endif

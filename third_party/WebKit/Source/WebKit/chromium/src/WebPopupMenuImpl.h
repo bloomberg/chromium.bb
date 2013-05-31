@@ -43,9 +43,6 @@ class Frame;
 class FramelessScrollView;
 class KeyboardEvent;
 class Page;
-#if ENABLE(GESTURE_RECOGNIZER)
-class PlatformGestureRecognizer;
-#endif
 class PlatformKeyboardEvent;
 class Range;
 class Widget;
