@@ -273,6 +273,16 @@ class SpdyTestUtil {
                                 int tail_header_count) const;
 
   // Construct a generic SpdyControlFrame.
+  SpdyFrame* ConstructSpdyControlFrame(
+      scoped_ptr<SpdyHeaderBlock> headers,
+      bool compressed,
+      SpdyStreamId stream_id,
+      RequestPriority request_priority,
+      SpdyFrameType type,
+      SpdyControlFlags flags,
+      SpdyStreamId associated_stream_id) const;
+
+  // Construct a generic SpdyControlFrame.
   //
   // Warning: extra_header_count is the number of header-value pairs in
   // extra_headers (so half the number of elements), but tail_headers_size is

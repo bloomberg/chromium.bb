@@ -611,15 +611,12 @@ SpdyFrame* SpdyTestUtil::ConstructSpdyFrame(const SpdyHeaderInfo& header_info,
 }
 
 SpdyFrame* SpdyTestUtil::ConstructSpdyControlFrame(
-    const char* const extra_headers[],
-    int extra_header_count,
+    scoped_ptr<SpdyHeaderBlock> headers,
     bool compressed,
     SpdyStreamId stream_id,
     RequestPriority request_priority,
     SpdyFrameType type,
     SpdyControlFlags flags,
-    const char* const* tail_headers,
-    int tail_header_size,
     SpdyStreamId associated_stream_id) const {
   EXPECT_GE(type, FIRST_CONTROL_TYPE);
   EXPECT_LE(type, LAST_CONTROL_TYPE);
@@ -636,11 +633,27 @@ SpdyFrame* SpdyTestUtil::ConstructSpdyControlFrame(
     0,  // length
     DATA_FLAG_NONE
   };
+  return ConstructSpdyFrame(header_info, headers.Pass());
+}
+
+SpdyFrame* SpdyTestUtil::ConstructSpdyControlFrame(
+    const char* const extra_headers[],
+    int extra_header_count,
+    bool compressed,
+    SpdyStreamId stream_id,
+    RequestPriority request_priority,
+    SpdyFrameType type,
+    SpdyControlFlags flags,
+    const char* const* tail_headers,
+    int tail_header_size,
+    SpdyStreamId associated_stream_id) const {
   scoped_ptr<SpdyHeaderBlock> headers(new SpdyHeaderBlock());
   AppendToHeaderBlock(extra_headers, extra_header_count, headers.get());
   if (tail_headers && tail_header_size)
     AppendToHeaderBlock(tail_headers, tail_header_size / 2, headers.get());
-  return ConstructSpdyFrame(header_info, headers.Pass());
+  return ConstructSpdyControlFrame(
+      headers.Pass(), compressed, stream_id,
+      request_priority, type, flags, associated_stream_id);
 }
 
 std::string SpdyTestUtil::ConstructSpdyReplyString(
@@ -793,28 +806,29 @@ SpdyFrame* SpdyTestUtil::ConstructSpdyPush(const char* const extra_headers[],
                                            int stream_id,
                                            int associated_stream_id,
                                            const char* url) {
-  std::string scheme, host, path;
-  ParseUrl(url, &scheme, &host, &path);
-  const char* const kStandardGetHeaders[] = {
-    "hello",         "bye",
-    GetStatusKey(),  "200 OK",
-    GetVersionKey(), "HTTP/1.1",
-    GetPathKey(),    is_spdy2() ? url : path.c_str(),
-    GetHostKey(),    host.c_str(),
-    GetSchemeKey(),  scheme.c_str(),
-  };
-  return ConstructSpdyControlFrame(extra_headers,
-                                   extra_header_count,
+  scoped_ptr<SpdyHeaderBlock> headers(new SpdyHeaderBlock());
+  (*headers)["hello"] = "bye";
+  (*headers)[GetStatusKey()] = "200 OK";
+  (*headers)[GetVersionKey()] = "HTTP/1.1";
+  if (is_spdy2()) {
+    (*headers)["url"] = url;
+  } else {
+    std::string scheme, host, path;
+    ParseUrl(url, &scheme, &host, &path);
+    (*headers)[GetSchemeKey()] = scheme;
+    (*headers)[GetHostKey()] = host;
+    (*headers)[GetPathKey()] = path;
+  }
+  AppendToHeaderBlock(extra_headers, extra_header_count, headers.get());
+  return ConstructSpdyControlFrame(headers.Pass(),
                                    false,
                                    stream_id,
                                    LOWEST,
                                    SYN_STREAM,
                                    CONTROL_FLAG_NONE,
-                                   kStandardGetHeaders,
-                                   arraysize(kStandardGetHeaders),
                                    associated_stream_id);
-
 }
+
 SpdyFrame* SpdyTestUtil::ConstructSpdyPush(const char* const extra_headers[],
                                            int extra_header_count,
                                            int stream_id,
@@ -822,26 +836,27 @@ SpdyFrame* SpdyTestUtil::ConstructSpdyPush(const char* const extra_headers[],
                                            const char* url,
                                            const char* status,
                                            const char* location) {
-  std::string scheme, host, path;
-  ParseUrl(url, &scheme, &host, &path);
-  const char* const kStandardGetHeaders[] = {
-    "hello",         "bye",
-    GetStatusKey(),  status,
-    "location",      location,
-    GetPathKey(),    is_spdy2() ? url : path.c_str(),
-    GetHostKey(),    host.c_str(),
-    GetSchemeKey(),  scheme.c_str(),
-    GetVersionKey(), "HTTP/1.1"
-  };
-  return ConstructSpdyControlFrame(extra_headers,
-                                   extra_header_count,
+  scoped_ptr<SpdyHeaderBlock> headers(new SpdyHeaderBlock());
+  (*headers)["hello"] = "bye";
+  (*headers)[GetStatusKey()] = status;
+  (*headers)[GetVersionKey()] = "HTTP/1.1";
+  (*headers)["location"] = location;
+  if (is_spdy2()) {
+    (*headers)["url"] = url;
+  } else {
+    std::string scheme, host, path;
+    ParseUrl(url, &scheme, &host, &path);
+    (*headers)[GetSchemeKey()] = scheme;
+    (*headers)[GetHostKey()] = host;
+    (*headers)[GetPathKey()] = path;
+  }
+  AppendToHeaderBlock(extra_headers, extra_header_count, headers.get());
+  return ConstructSpdyControlFrame(headers.Pass(),
                                    false,
                                    stream_id,
                                    LOWEST,
                                    SYN_STREAM,
                                    CONTROL_FLAG_NONE,
-                                   kStandardGetHeaders,
-                                   arraysize(kStandardGetHeaders),
                                    associated_stream_id);
 }
 
