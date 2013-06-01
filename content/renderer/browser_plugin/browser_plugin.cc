@@ -1242,6 +1242,10 @@ bool BrowserPlugin::supportsKeyboardFocus() const {
   return true;
 }
 
+bool BrowserPlugin::supportsEditCommands() const {
+  return true;
+}
+
 bool BrowserPlugin::canProcessDrag() const {
   return true;
 }
@@ -1518,6 +1522,17 @@ bool BrowserPlugin::handleInputEvent(const WebKit::WebInputEvent& event,
     touch_event->touchesLength += touch_event->changedTouchesLength;
     modified_event = touch_event.get();
   }
+
+  if (WebKit::WebInputEvent::isKeyboardEventType(event.type) &&
+      !edit_commands_.empty()) {
+    browser_plugin_manager()->Send(
+        new BrowserPluginHostMsg_SetEditCommandsForNextKeyEvent(
+            render_view_routing_id_,
+            instance_id_,
+            edit_commands_));
+    edit_commands_.clear();
+  }
+
   browser_plugin_manager()->Send(
       new BrowserPluginHostMsg_HandleInputEvent(render_view_routing_id_,
                                                 guest_instance_id_,
@@ -1574,6 +1589,13 @@ bool BrowserPlugin::executeEditCommand(const WebKit::WebString& name) {
       guest_instance_id_,
       name.utf8()));
 
+  // BrowserPlugin swallows edit commands.
+  return true;
+}
+
+bool BrowserPlugin::executeEditCommand(const WebKit::WebString& name,
+                                       const WebKit::WebString& value) {
+  edit_commands_.push_back(EditCommand(name.utf8(), value.utf8()));
   // BrowserPlugin swallows edit commands.
   return true;
 }

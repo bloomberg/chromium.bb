@@ -2288,7 +2288,8 @@ bool RenderViewImpl::handleCurrentKeyboardEvent() {
     // key (but it's the exception). Once one edit command is not executed, it
     // seems safest to not execute the rest.
     if (!frame->executeCommand(WebString::fromUTF8(it->name),
-                               WebString::fromUTF8(it->value)))
+                               WebString::fromUTF8(it->value),
+                               GetFocusedNode()))
       break;
     did_execute_command = true;
   }

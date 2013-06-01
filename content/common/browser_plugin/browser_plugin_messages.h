@@ -15,6 +15,7 @@
 #include "content/common/browser_plugin/browser_plugin_message_enums.h"
 #include "content/common/content_export.h"
 #include "content/common/content_param_traits.h"
+#include "content/common/edit_command.h"
 #include "content/public/common/common_param_traits.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_message_macros.h"
@@ -151,6 +152,11 @@ IPC_MESSAGE_ROUTED1(BrowserPluginHostMsg_AllocateInstanceID,
 IPC_MESSAGE_ROUTED2(BrowserPluginHostMsg_ExecuteEditCommand,
                      int /* instance_id */,
                      std::string /* command */)
+
+// This message must be sent just before sending a key event.
+IPC_MESSAGE_ROUTED2(BrowserPluginHostMsg_SetEditCommandsForNextKeyEvent,
+                    int /* instance_id */,
+                    std::vector<content::EditCommand> /* edit_commands */)
 
 // This message is sent to the browser process to enable or disable autosize
 // mode.

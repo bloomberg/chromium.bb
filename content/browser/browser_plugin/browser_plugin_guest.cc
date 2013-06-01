@@ -350,6 +350,8 @@ bool BrowserPluginGuest::OnMessageReceivedFromEmbedder(
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_RespondPermission,
                         OnRespondPermission)
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_SetAutoSize, OnSetSize)
+    IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_SetEditCommandsForNextKeyEvent,
+                        OnSetEditCommandsForNextKeyEvent)
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_SetFocus, OnSetFocus)
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_SetName, OnSetName)
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_SetVisibility, OnSetVisibility)
@@ -976,6 +978,7 @@ bool BrowserPluginGuest::ShouldForwardToBrowserPluginGuest(
     case BrowserPluginHostMsg_ResizeGuest::ID:
     case BrowserPluginHostMsg_RespondPermission::ID:
     case BrowserPluginHostMsg_SetAutoSize::ID:
+    case BrowserPluginHostMsg_SetEditCommandsForNextKeyEvent::ID:
     case BrowserPluginHostMsg_SetFocus::ID:
     case BrowserPluginHostMsg_SetName::ID:
     case BrowserPluginHostMsg_SetVisibility::ID:
@@ -1318,6 +1321,13 @@ void BrowserPluginGuest::OnSetSize(
         resize_guest_params.view_rect.size());
   }
   OnResizeGuest(instance_id_, resize_guest_params);
+}
+
+void BrowserPluginGuest::OnSetEditCommandsForNextKeyEvent(
+    int instance_id,
+    const std::vector<EditCommand>& edit_commands) {
+  Send(new InputMsg_SetEditCommandsForNextKeyEvent(routing_id(),
+                                                   edit_commands));
 }
 
 void BrowserPluginGuest::OnSetVisibility(int instance_id, bool visible) {

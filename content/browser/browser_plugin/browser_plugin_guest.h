@@ -30,6 +30,7 @@
 #include "base/shared_memory.h"
 #include "base/time.h"
 #include "content/common/browser_plugin/browser_plugin_message_enums.h"
+#include "content/common/edit_command.h"
 #include "content/port/common/input_event_ack_state.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -364,6 +365,9 @@ class CONTENT_EXPORT BrowserPluginGuest
       int instance_id,
       const BrowserPluginHostMsg_AutoSize_Params& auto_size_params,
       const BrowserPluginHostMsg_ResizeGuest_Params& resize_guest_params);
+  void OnSetEditCommandsForNextKeyEvent(
+      int instance_id,
+      const std::vector<EditCommand>& edit_commands);
   // The guest WebContents is visible if both its embedder is visible and
   // the browser plugin element is visible. If either one is not then the
   // WebContents is marked as hidden. A hidden WebContents will consume

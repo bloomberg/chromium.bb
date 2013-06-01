@@ -180,6 +180,7 @@ class CONTENT_EXPORT BrowserPlugin :
   virtual NPObject* scriptableObject() OVERRIDE;
   virtual struct _NPP* pluginNPP() OVERRIDE;
   virtual bool supportsKeyboardFocus() const OVERRIDE;
+  virtual bool supportsEditCommands() const OVERRIDE;
   virtual bool canProcessDrag() const OVERRIDE;
   virtual void paint(
       WebKit::WebCanvas* canvas,
@@ -213,6 +214,8 @@ class CONTENT_EXPORT BrowserPlugin :
       void* notify_data,
       const WebKit::WebURLError& error) OVERRIDE;
   virtual bool executeEditCommand(const WebKit::WebString& name) OVERRIDE;
+  virtual bool executeEditCommand(const WebKit::WebString& name,
+                                  const WebKit::WebString& value) OVERRIDE;
 
   // MouseLockDispatcher::LockTarget implementation.
   virtual void OnLockMouseACK(bool succeeded) OVERRIDE;
@@ -459,6 +462,8 @@ class CONTENT_EXPORT BrowserPlugin :
   // Weak factory used in v8 |MakeWeak| callback, since the v8 callback might
   // get called after BrowserPlugin has been destroyed.
   base::WeakPtrFactory<BrowserPlugin> weak_ptr_factory_;
+
+  std::vector<EditCommand> edit_commands_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserPlugin);
 };

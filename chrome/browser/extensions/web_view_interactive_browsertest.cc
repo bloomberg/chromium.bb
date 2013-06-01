@@ -73,6 +73,18 @@ class WebViewInteractiveTest
 #endif
   }
 
+  void SendStartOfLineKeyPressToPlatformApp() {
+#if defined(OS_MACOSX)
+    // Send Cmd+Left on MacOSX.
+    ASSERT_TRUE(ui_test_utils::SendKeyPressToWindowSync(
+        GetPlatformAppWindow(), ui::VKEY_LEFT, false, false, false, true));
+#else
+    // Send Ctrl+Left on Windows and Linux/ChromeOS.
+    ASSERT_TRUE(ui_test_utils::SendKeyPressToWindowSync(
+        GetPlatformAppWindow(), ui::VKEY_LEFT, true, false, false, false));
+#endif
+  }
+
   void SendMouseEvent(ui_controls::MouseButton button,
                       ui_controls::MouseButtonState state) {
    if (first_click_) {
@@ -347,8 +359,27 @@ IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, EditCommands) {
 
   ExtensionTestMessageListener copy_listener("copy", false);
   SendCopyKeyPressToPlatformApp();
+
   // Wait for the guest to receive a 'copy' edit command.
   ASSERT_TRUE(copy_listener.WaitUntilSatisfied());
+}
+
+// Tests that guests receive edit commands and respond appropriately.
+IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, EditCommandsNoMenu) {
+  SetupTest("web_view/edit_commands_no_menu",
+      "files/extensions/platform_apps/web_view/edit_commands_no_menu/"
+      "guest.html");
+
+  ASSERT_TRUE(ui_test_utils::ShowAndFocusNativeWindow(
+      GetPlatformAppWindow()));
+
+  // Flush any pending events to make sure we start with a clean slate.
+  content::RunAllPendingInMessageLoop();
+
+  ExtensionTestMessageListener start_of_line_listener("StartOfLine", false);
+  SendStartOfLineKeyPressToPlatformApp();
+  // Wait for the guest to receive a 'copy' edit command.
+  ASSERT_TRUE(start_of_line_listener.WaitUntilSatisfied());
 }
 
 // Disabled due to timeouts/crashing on several platforms. crbug.com/241912
