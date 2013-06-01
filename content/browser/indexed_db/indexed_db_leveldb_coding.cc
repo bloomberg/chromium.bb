@@ -193,13 +193,8 @@ static const unsigned char kIndexMetaDataTypeMaximum = 255;
 
 const unsigned char kMinimumIndexId = 30;
 
-std::vector<char> EncodeByte(unsigned char c) {
-  std::vector<char> v;
-  v.reserve(kDefaultInlineBufferSize);
-  v.push_back(c);
-
-  DCHECK_LE(v.size(), kDefaultInlineBufferSize);
-  return v;
+void EncodeByte(unsigned char c, std::vector<char>* into) {
+  into->push_back(c);
 }
 
 const char* DecodeByte(const char* p,
@@ -213,18 +208,15 @@ const char* DecodeByte(const char* p,
   return p;
 }
 
-std::vector<char> MaxIDBKey() { return EncodeByte(kIndexedDBKeyNullTypeByte); }
-
-std::vector<char> MinIDBKey() {
-  return EncodeByte(kIndexedDBKeyMinKeyTypeByte);
+std::vector<char> MaxIDBKey() {
+  std::vector<char> ret;
+  EncodeByte(kIndexedDBKeyNullTypeByte, &ret);
+  return ret;
 }
 
-std::vector<char> EncodeBool(bool b) {
+std::vector<char> MinIDBKey() {
   std::vector<char> ret;
-  ret.reserve(kDefaultInlineBufferSize);
-  ret.push_back(b ? 1 : 0);
-
-  DCHECK_LE(ret.size(), kDefaultInlineBufferSize);
+  EncodeByte(kIndexedDBKeyMinKeyTypeByte, &ret);
   return ret;
 }
 
@@ -233,23 +225,20 @@ bool DecodeBool(const char* p, const char* limit) {
   return !!*p;
 }
 
-std::vector<char> EncodeInt(int64 nParam) {
+void EncodeBool(bool b, std::vector<char>* into) { into->push_back(b ? 1 : 0); }
+
+void EncodeInt(int64 nParam, std::vector<char>* into) {
 #ifndef NDEBUG
   // Exercised by unit tests in debug only.
   DCHECK_GE(nParam, 0);
 #endif
   uint64 n = static_cast<uint64>(nParam);
-  std::vector<char> ret;
-  ret.reserve(kDefaultInlineBufferSize);
 
   do {
     unsigned char c = n;
-    ret.push_back(c);
+    into->push_back(c);
     n >>= 8;
   } while (n);
-
-  DCHECK_LE(ret.size(), kDefaultInlineBufferSize);
-  return ret;
 }
 
 static int CompareInts(int64 a, int64 b) {
@@ -266,25 +255,20 @@ static int CompareInts(int64 a, int64 b) {
   return 0;
 }
 
-std::vector<char> EncodeVarInt(int64 nParam) {
+void EncodeVarInt(int64 nParam, std::vector<char>* into) {
 #ifndef NDEBUG
   // Exercised by unit tests in debug only.
   DCHECK_GE(nParam, 0);
 #endif
   uint64 n = static_cast<uint64>(nParam);
-  std::vector<char> ret;
-  ret.reserve(kDefaultInlineBufferSize);
 
   do {
     unsigned char c = n & 0x7f;
     n >>= 7;
     if (n)
       c |= 0x80;
-    ret.push_back(c);
+    into->push_back(c);
   } while (n);
-
-  DCHECK_LE(ret.size(), kDefaultInlineBufferSize);
-  return ret;
 }
 
 const char* DecodeVarInt(const char* p, const char* limit, int64& found_int) {
@@ -303,19 +287,18 @@ const char* DecodeVarInt(const char* p, const char* limit, int64& found_int) {
   return p;
 }
 
-std::vector<char> EncodeString(const string16& s) {
+void EncodeString(const string16& s, std::vector<char>* into) {
+  if (s.empty())
+    return;
   // Backing store is UTF-16BE, convert from host endianness.
   size_t length = s.length();
-  std::vector<char> ret(length * sizeof(char16));
-  if (!length)
-    return ret;
+  size_t current = into->size();
+  into->resize(into->size() + length * sizeof(char16));
 
   const char16* src = s.c_str();
-  char16* dst = reinterpret_cast<char16*>(&*ret.begin());
+  char16* dst = reinterpret_cast<char16*>(&*into->begin() + current);
   for (unsigned i = 0; i < length; ++i)
     *dst++ = htons(*src++);
-
-  return ret;
 }
 
 string16 DecodeString(const char* p, const char* limit) {
@@ -332,11 +315,9 @@ string16 DecodeString(const char* p, const char* limit) {
   return decoded;
 }
 
-std::vector<char> EncodeStringWithLength(const string16& s) {
-  std::vector<char> result = EncodeVarInt(s.length());
-  std::vector<char> encoded_value = EncodeString(s);
-  result.insert(result.end(), encoded_value.begin(), encoded_value.end());
-  return result;
+void EncodeStringWithLength(const string16& s, std::vector<char>* into) {
+  EncodeVarInt(s.length(), into);
+  EncodeString(s, into);
 }
 
 const char* DecodeStringWithLength(const char* p,
@@ -395,15 +376,10 @@ int CompareEncodedStringsWithLength(const char*& p,
   return (len_p > len_q) ? 1 : -1;
 }
 
-std::vector<char> EncodeDouble(double x) {
+void EncodeDouble(double x, std::vector<char>* into) {
   // TODO(jsbell): It would be nice if we could be byte order independent.
   const char* p = reinterpret_cast<char*>(&x);
-  std::vector<char> v;
-  v.reserve(kDefaultInlineBufferSize);
-  v.insert(v.end(), p, p + sizeof(x));
-
-  DCHECK_LE(v.size(), kDefaultInlineBufferSize);
-  return v;
+  into->insert(into->end(), p, p + sizeof(x));
 }
 
 const char* DecodeDouble(const char* p, const char* limit, double* d) {
@@ -417,54 +393,50 @@ const char* DecodeDouble(const char* p, const char* limit, double* d) {
 }
 
 std::vector<char> EncodeIDBKey(const IndexedDBKey& key) {
-  std::vector<char> ret;
-  ret.reserve(kDefaultInlineBufferSize);
-  EncodeIDBKey(key, ret);
-  return ret;
+  std::vector<char> buffer;
+  buffer.reserve(kDefaultInlineBufferSize);
+  EncodeIDBKey(key, &buffer);
+  return buffer;
 }
 
-void EncodeIDBKey(const IndexedDBKey& key, std::vector<char>& into) {
-  size_t previous_size = into.size();
+void EncodeIDBKey(const IndexedDBKey& key, std::vector<char>* into) {
+  size_t previous_size = into->size();
   DCHECK(key.IsValid());
   switch (key.type()) {
     case WebIDBKey::NullType:
     case WebIDBKey::InvalidType:
     case WebIDBKey::MinType: {
       NOTREACHED();
-      into.push_back(kIndexedDBKeyNullTypeByte);
+      EncodeByte(kIndexedDBKeyNullTypeByte, into);
       return;
     }
     case WebIDBKey::ArrayType: {
-      into.push_back(kIndexedDBKeyArrayTypeByte);
+      EncodeByte(kIndexedDBKeyArrayTypeByte, into);
       size_t length = key.array().size();
-      std::vector<char> encoded_length = EncodeVarInt(length);
-      into.insert(into.end(), encoded_length.begin(), encoded_length.end());
+      EncodeVarInt(length, into);
       for (size_t i = 0; i < length; ++i)
         EncodeIDBKey(key.array()[i], into);
-      DCHECK_GT(into.size(), previous_size);
+      DCHECK_GT(into->size(), previous_size);
       return;
     }
     case WebIDBKey::StringType: {
-      into.push_back(kIndexedDBKeyStringTypeByte);
-      std::vector<char> tmp = EncodeStringWithLength(key.string());
-      into.insert(into.end(), tmp.begin(), tmp.end());
-      DCHECK_GT(into.size(), previous_size);
+      EncodeByte(kIndexedDBKeyStringTypeByte, into);
+      EncodeStringWithLength(key.string(), into);
+      DCHECK_GT(into->size(), previous_size);
       return;
     }
     case WebIDBKey::DateType: {
-      into.push_back(kIndexedDBKeyDateTypeByte);
-      std::vector<char> tmp = EncodeDouble(key.date());
-      into.insert(into.end(), tmp.begin(), tmp.end());
+      EncodeByte(kIndexedDBKeyDateTypeByte, into);
+      EncodeDouble(key.date(), into);
       DCHECK_EQ(static_cast<size_t>(9),
-                static_cast<size_t>(into.size() - previous_size));
+                static_cast<size_t>(into->size() - previous_size));
       return;
     }
     case WebIDBKey::NumberType: {
-      into.push_back(kIndexedDBKeyNumberTypeByte);
-      std::vector<char> tmp = EncodeDouble(key.number());
-      into.insert(into.end(), tmp.begin(), tmp.end());
+      EncodeByte(kIndexedDBKeyNumberTypeByte, into);
+      EncodeDouble(key.number(), into);
       DCHECK_EQ(static_cast<size_t>(9),
-                static_cast<size_t>(into.size() - previous_size));
+                static_cast<size_t>(into->size() - previous_size));
       return;
     }
   }
@@ -685,37 +657,31 @@ int CompareEncodedIDBKeys(const std::vector<char>& key_a,
   return CompareEncodedIDBKeys(ptr_a, limit_a, ptr_b, limit_b, ok);
 }
 
-std::vector<char> EncodeIDBKeyPath(const IndexedDBKeyPath& key_path) {
+void EncodeIDBKeyPath(const IndexedDBKeyPath& key_path,
+                      std::vector<char>* into) {
   // May be typed, or may be a raw string. An invalid leading
   // byte is used to identify typed coding. New records are
   // always written as typed.
-  std::vector<char> ret;
-  ret.reserve(kDefaultInlineBufferSize);
-  ret.push_back(kIndexedDBKeyPathTypeCodedByte1);
-  ret.push_back(kIndexedDBKeyPathTypeCodedByte2);
-  ret.push_back(static_cast<char>(key_path.type()));
+  EncodeByte(kIndexedDBKeyPathTypeCodedByte1, into);
+  EncodeByte(kIndexedDBKeyPathTypeCodedByte2, into);
+  EncodeByte(static_cast<char>(key_path.type()), into);
   switch (key_path.type()) {
     case WebIDBKeyPath::NullType:
       break;
     case WebIDBKeyPath::StringType: {
-      std::vector<char> encoded_string =
-          EncodeStringWithLength(key_path.string());
-      ret.insert(ret.end(), encoded_string.begin(), encoded_string.end());
+      EncodeStringWithLength(key_path.string(), into);
       break;
     }
     case WebIDBKeyPath::ArrayType: {
       const std::vector<string16>& array = key_path.array();
       size_t count = array.size();
-      std::vector<char> encoded_count = EncodeVarInt(count);
-      ret.insert(ret.end(), encoded_count.begin(), encoded_count.end());
+      EncodeVarInt(count, into);
       for (size_t i = 0; i < count; ++i) {
-        std::vector<char> encoded_string = EncodeStringWithLength(array[i]);
-        ret.insert(ret.end(), encoded_string.begin(), encoded_string.end());
+        EncodeStringWithLength(array[i], into);
       }
       break;
     }
   }
-  return ret;
 }
 
 IndexedDBKeyPath DecodeIDBKeyPath(const char* p, const char* limit) {
@@ -1115,11 +1081,13 @@ std::vector<char> KeyPrefix::Encode() const {
 std::vector<char> KeyPrefix::EncodeInternal(int64 database_id,
                                             int64 object_store_id,
                                             int64 index_id) {
-  std::vector<char> database_id_string =
-      EncodeIntSafely(database_id, kMaxDatabaseId);
-  std::vector<char> object_store_id_string =
-      EncodeIntSafely(object_store_id, kMaxObjectStoreId);
-  std::vector<char> index_id_string = EncodeIntSafely(index_id, kMaxIndexId);
+  std::vector<char> database_id_string;
+  std::vector<char> object_store_id_string;
+  std::vector<char> index_id_string;
+
+  EncodeIntSafely(database_id, kMaxDatabaseId, &database_id_string);
+  EncodeIntSafely(object_store_id, kMaxObjectStoreId, &object_store_id_string);
+  EncodeIntSafely(index_id, kMaxIndexId, &index_id_string);
 
   DCHECK(database_id_string.size() <= kMaxDatabaseIdSizeBytes);
   DCHECK(object_store_id_string.size() <= kMaxObjectStoreIdSizeBytes);
@@ -1223,8 +1191,7 @@ const char* DatabaseFreeListKey::Decode(const char* start,
 std::vector<char> DatabaseFreeListKey::Encode(int64 database_id) {
   std::vector<char> ret = KeyPrefix::EncodeEmpty();
   ret.push_back(kDatabaseFreeListTypeByte);
-  std::vector<char> tmp = EncodeVarInt(database_id);
-  ret.insert(ret.end(), tmp.begin(), tmp.end());
+  EncodeVarInt(database_id, &ret);
   return ret;
 }
 
@@ -1269,10 +1236,8 @@ std::vector<char> DatabaseNameKey::Encode(const string16& origin,
                                           const string16& database_name) {
   std::vector<char> ret = KeyPrefix::EncodeEmpty();
   ret.push_back(kDatabaseNameTypeByte);
-  std::vector<char> tmp = EncodeStringWithLength(origin);
-  ret.insert(ret.end(), tmp.begin(), tmp.end());
-  tmp = EncodeStringWithLength(database_name);
-  ret.insert(ret.end(), tmp.begin(), tmp.end());
+  EncodeStringWithLength(origin, &ret);
+  EncodeStringWithLength(database_name, &ret);
   return ret;
 }
 
@@ -1336,8 +1301,7 @@ std::vector<char> ObjectStoreMetaDataKey::Encode(int64 database_id,
   KeyPrefix prefix(database_id);
   std::vector<char> ret = prefix.Encode();
   ret.push_back(kObjectStoreMetaDataTypeByte);
-  std::vector<char> tmp = EncodeVarInt(object_store_id);
-  ret.insert(ret.end(), tmp.begin(), tmp.end());
+  EncodeVarInt(object_store_id, &ret);
   ret.push_back(meta_data_type);
   return ret;
 }
@@ -1409,12 +1373,9 @@ std::vector<char> IndexMetaDataKey::Encode(int64 database_id,
   KeyPrefix prefix(database_id);
   std::vector<char> ret = prefix.Encode();
   ret.push_back(kIndexMetaDataTypeByte);
-  std::vector<char> tmp = EncodeVarInt(object_store_id);
-  ret.insert(ret.end(), tmp.begin(), tmp.end());
-  tmp = EncodeVarInt(index_id);
-  ret.insert(ret.end(), tmp.begin(), tmp.end());
-  tmp = EncodeByte(meta_data_type);
-  ret.insert(ret.end(), tmp.begin(), tmp.end());
+  EncodeVarInt(object_store_id, &ret);
+  EncodeVarInt(index_id, &ret);
+  EncodeByte(meta_data_type, &ret);
   return ret;
 }
 
@@ -1476,8 +1437,7 @@ std::vector<char> ObjectStoreFreeListKey::Encode(int64 database_id,
   KeyPrefix prefix(database_id);
   std::vector<char> ret = prefix.Encode();
   ret.push_back(kObjectStoreFreeListTypeByte);
-  std::vector<char> tmp = EncodeVarInt(object_store_id);
-  ret.insert(ret.end(), tmp.begin(), tmp.end());
+  EncodeVarInt(object_store_id, &ret);
   return ret;
 }
 
@@ -1529,10 +1489,8 @@ std::vector<char> IndexFreeListKey::Encode(int64 database_id,
   KeyPrefix prefix(database_id);
   std::vector<char> ret = prefix.Encode();
   ret.push_back(kIndexFreeListTypeByte);
-  std::vector<char> tmp = EncodeVarInt(object_store_id);
-  ret.insert(ret.end(), tmp.begin(), tmp.end());
-  tmp = EncodeVarInt(index_id);
-  ret.insert(ret.end(), tmp.begin(), tmp.end());
+  EncodeVarInt(object_store_id, &ret);
+  EncodeVarInt(index_id, &ret);
   return ret;
 }
 
@@ -1587,8 +1545,7 @@ std::vector<char> ObjectStoreNamesKey::Encode(
   KeyPrefix prefix(database_id);
   std::vector<char> ret = prefix.Encode();
   ret.push_back(kObjectStoreNamesTypeByte);
-  std::vector<char> tmp = EncodeStringWithLength(object_store_name);
-  ret.insert(ret.end(), tmp.begin(), tmp.end());
+  EncodeStringWithLength(object_store_name, &ret);
   return ret;
 }
 
@@ -1629,10 +1586,8 @@ std::vector<char> IndexNamesKey::Encode(int64 database_id,
   KeyPrefix prefix(database_id);
   std::vector<char> ret = prefix.Encode();
   ret.push_back(kIndexNamesKeyTypeByte);
-  std::vector<char> tmp = EncodeVarInt(object_store_id);
-  ret.insert(ret.end(), tmp.begin(), tmp.end());
-  tmp = EncodeStringWithLength(index_name);
-  ret.insert(ret.end(), tmp.begin(), tmp.end());
+  EncodeVarInt(object_store_id, &ret);
+  EncodeStringWithLength(index_name, &ret);
   return ret;
 }
 
@@ -1796,8 +1751,7 @@ std::vector<char> IndexDataKey::Encode(
   KeyPrefix prefix(database_id, object_store_id, index_id);
   std::vector<char> ret = prefix.Encode();
   ret.insert(ret.end(), encoded_user_key.begin(), encoded_user_key.end());
-  std::vector<char> tmp = EncodeVarInt(sequence_number);
-  ret.insert(ret.end(), tmp.begin(), tmp.end());
+  EncodeVarInt(sequence_number, &ret);
   ret.insert(ret.end(), encoded_primary_key.begin(), encoded_primary_key.end());
   return ret;
 }
