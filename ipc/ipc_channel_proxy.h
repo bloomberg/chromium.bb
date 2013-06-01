@@ -197,7 +197,7 @@ class IPC_EXPORT ChannelProxy : public Sender, public base::NonThreadSafe {
     Context(Listener* listener, base::SingleThreadTaskRunner* ipc_thread);
     void ClearIPCTaskRunner();
     base::SingleThreadTaskRunner* ipc_task_runner() const {
-      return ipc_task_runner_;
+      return ipc_task_runner_.get();
     }
     const std::string& channel_id() const { return channel_id_; }
 
@@ -268,7 +268,7 @@ class IPC_EXPORT ChannelProxy : public Sender, public base::NonThreadSafe {
     base::ProcessId peer_pid_;
   };
 
-  Context* context() { return context_; }
+  Context* context() { return context_.get(); }
 
   OutgoingMessageFilter* outgoing_message_filter() {
     return outgoing_message_filter_;

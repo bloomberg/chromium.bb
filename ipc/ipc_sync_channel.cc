@@ -133,7 +133,7 @@ class SyncChannel::ReceivedSyncMsgQueue :
 
     SyncMessageQueue::iterator iter = message_queue_.begin();
     while (iter != message_queue_.end()) {
-      if (iter->context == context) {
+      if (iter->context.get() == context) {
         delete iter->message;
         iter = message_queue_.erase(iter);
         message_queue_version_++;
@@ -150,7 +150,7 @@ class SyncChannel::ReceivedSyncMsgQueue :
 
   WaitableEvent* dispatch_event() { return &dispatch_event_; }
   base::SingleThreadTaskRunner* listener_task_runner() {
-    return listener_task_runner_;
+    return listener_task_runner_.get();
   }
 
   // Holds a pointer to the per-thread ReceivedSyncMsgQueue object.
@@ -483,7 +483,7 @@ bool SyncChannel::SendWithTimeout(Message* message, int timeout_ms) {
 
   // Wait for reply, or for any other incoming synchronous messages.
   // *this* might get deleted, so only call static functions at this point.
-  WaitForReply(context, pump_messages_event);
+  WaitForReply(context.get(), pump_messages_event);
 
   return context->Pop();
 }

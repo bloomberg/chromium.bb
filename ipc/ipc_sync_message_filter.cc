@@ -24,7 +24,7 @@ SyncMessageFilter::SyncMessageFilter(base::WaitableEvent* shutdown_event)
 bool SyncMessageFilter::Send(Message* message) {
   {
     base::AutoLock auto_lock(lock_);
-    if (!io_loop_) {
+    if (!io_loop_.get()) {
       delete message;
       return false;
     }
@@ -46,8 +46,8 @@ bool SyncMessageFilter::Send(Message* message) {
     base::AutoLock auto_lock(lock_);
     // Can't use this class on the main thread or else it can lead to deadlocks.
     // Also by definition, can't use this on IO thread since we're blocking it.
-    DCHECK(MessageLoopProxy::current() != listener_loop_);
-    DCHECK(MessageLoopProxy::current() != io_loop_);
+    DCHECK(MessageLoopProxy::current() != listener_loop_.get());
+    DCHECK(MessageLoopProxy::current() != io_loop_.get());
     pending_sync_messages_.insert(&pending_message);
   }
 

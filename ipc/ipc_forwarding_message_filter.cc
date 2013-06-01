@@ -14,7 +14,7 @@ ForwardingMessageFilter::ForwardingMessageFilter(
     size_t num_message_ids_to_filter,
     base::TaskRunner* target_task_runner)
     : target_task_runner_(target_task_runner) {
-  DCHECK(target_task_runner_);
+  DCHECK(target_task_runner_.get());
   for (size_t i = 0; i < num_message_ids_to_filter; i++)
     message_ids_to_filter_.insert(message_ids_to_filter[i]);
 }

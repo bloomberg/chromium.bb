@@ -150,7 +150,7 @@ class IPC_EXPORT SyncChannel : public ChannelProxy {
     base::WaitableEvent* shutdown_event() { return shutdown_event_; }
 
     ReceivedSyncMsgQueue* received_sync_msgs() {
-      return received_sync_msgs_;
+      return received_sync_msgs_.get();
     }
 
     void set_restrict_dispatch_group(int group) {
