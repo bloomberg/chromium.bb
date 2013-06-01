@@ -1887,6 +1887,15 @@ crbug.com/244276 [ Mac ] fast/images/gif-loop-count.html [ ImageOnlyFailure Pass
 # Wrong fixed-position layout
 crbug.com/243967 compositing/gestures/gesture-tapHighlight-simple-div-boxshadow-fixed-nested2.html [ ImageOnlyFailure ]
 
+# New baselines are needed due to the switch to use bicubic filtering in Skia.
+crbug.com/229120 virtual/deferred/fast/images/imagemap-focus-ring-zero-outline-width.html [ ImageOnlyFailure ]
+crbug.com/229120 virtual/deferred/fast/images/jpeg-with-color-profile.html [ ImageOnlyFailure ]
+crbug.com/229120 virtual/deferred/fast/images/pixel-crack-image-background-webkit-transform-scale.html [ ImageOnlyFailure ]
+crbug.com/229120 virtual/deferred/fast/images/png-with-color-profile.html [ ImageOnlyFailure ]
+crbug.com/229120 virtual/deferred/fast/images/rgb-png-with-cmyk-color-profile.html [ ImageOnlyFailure ]
+crbug.com/229120 virtual/deferred/fast/images/webp-color-profile-lossy.html [ ImageOnlyFailure ]
+crbug.com/229120 virtual/deferred/fast/images/ycbcr-with-cmyk-color-profile.html [ ImageOnlyFailure ]
+
 # DCHECK in SkFixed.h
 crbug.com/243309 [ Mac Debug ] accessibility/content-changed-notification-causes-crash.html [ Crash Pass ]
 crbug.com/243309 [ Mac Debug ] fast/css/font-size-nan.svg [ Crash Pass ]

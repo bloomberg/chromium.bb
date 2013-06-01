@@ -81,8 +81,7 @@ bool NativeImageSkia::hasResizedBitmap(const SkISize& scaledImageSize, const SkI
 
 SkBitmap NativeImageSkia::resizedBitmap(const SkISize& scaledImageSize, const SkIRect& scaledImageSubset) const
 {
-    if (DeferredImageDecoder::isLazyDecoded(m_image))
-        return DeferredImageDecoder::createResizedLazyDecodingBitmap(m_image, scaledImageSize, scaledImageSubset);
+    ASSERT(!DeferredImageDecoder::isLazyDecoded(m_image));
 
     if (!hasResizedBitmap(scaledImageSize, scaledImageSubset)) {
         bool shouldCache = isDataComplete()

@@ -38,6 +38,7 @@
 #include "core/platform/graphics/FloatRect.h"
 #include "core/platform/graphics/GraphicsContextStateSaver.h"
 #include "core/platform/graphics/ImageObserver.h"
+#include "core/platform/graphics/chromium/DeferredImageDecoder.h"
 #include "core/platform/graphics/skia/NativeImageSkia.h"
 #include "core/platform/graphics/skia/SkiaUtils.h"
 #include "core/platform/graphics/transforms/AffineTransform.h"
@@ -304,14 +305,24 @@ void Image::paintSkBitmap(GraphicsContext* context, const NativeImageSkia& bitma
     }
     resampling = limitResamplingMode(context, resampling);
     paint.setFilterBitmap(resampling == RESAMPLE_LINEAR);
-    if (resampling == RESAMPLE_AWESOME)
+
+    // FIXME: Bicubic filtering in Skia is only applied to defer-decoded images
+    // as an experiment. Once this filtering code path becomes stable we should
+    // turn this on for all cases, including non-defer-decoded images.
+    bool useBicubicFilter = resampling == RESAMPLE_AWESOME
+        && DeferredImageDecoder::isLazyDecoded(bitmap.bitmap());
+    if (useBicubicFilter)
+        paint.setFlags(paint.getFlags() | SkPaint::kBicubicFilterBitmap_Flag);
+
+    if (resampling == RESAMPLE_AWESOME && !useBicubicFilter) {
+        // Resample the image and then draw the result to canvas with bilinear
+        // filtering.
         drawResampledBitmap(context, paint, bitmap, srcRect, destRect);
-    else {
-        // No resampling necessary, we can just draw the bitmap. We want to
-        // filter it if we decided to do linear interpolation above, or if there
-        // is something interesting going on with the matrix (like a rotation).
-        // Note: for serialization, we will want to subset the bitmap first so
-        // we don't send extra pixels.
+    } else {
+        // We want to filter it if we decided to do interpolation above, or if
+        // there is something interesting going on with the matrix (like a rotation).
+        // Note: for serialization, we will want to subset the bitmap first so we
+        // don't send extra pixels.
         context->drawBitmapRect(bitmap.bitmap(), &srcRect, destRect, &paint);
     }
     context->didDrawRect(destRect, paint, &bitmap.bitmap());
@@ -376,7 +387,13 @@ void Image::drawPattern(GraphicsContext* context,
     SkMatrix matrix(patternTransform);
 
     SkShader* shader;
-    if (resampling == RESAMPLE_AWESOME) {
+
+    // Bicubic filter is only applied to defer-decoded images, see
+    // paintSkBitmap() for details.
+    bool useBicubicFilter = resampling == RESAMPLE_AWESOME
+        && DeferredImageDecoder::isLazyDecoded(bitmap->bitmap());
+
+    if (resampling == RESAMPLE_AWESOME && !useBicubicFilter) {
         // Do nice resampling.
         float scaleX = destBitmapWidth / normSrcRect.width();
         float scaleY = destBitmapHeight / normSrcRect.height();
@@ -398,7 +415,7 @@ void Image::drawPattern(GraphicsContext* context,
         matrix.setScaleX(ctm.getScaleX() ? 1 / ctm.getScaleX() : 1);
         matrix.setScaleY(ctm.getScaleY() ? 1 / ctm.getScaleY() : 1);
     } else {
-        // No need to do nice resampling.
+        // No need to resample before drawing.
         SkBitmap srcSubset;
         bitmap->bitmap().extractSubset(&srcSubset, enclosingIntRect(normSrcRect));
         shader = SkShader::CreateBitmapShader(srcSubset, SkShader::kRepeat_TileMode, SkShader::kRepeat_TileMode);
@@ -421,6 +438,8 @@ void Image::drawPattern(GraphicsContext* context,
     paint.setXfermodeMode(WebCoreCompositeToSkiaComposite(compositeOp, blendMode));
 
     paint.setFilterBitmap(resampling == RESAMPLE_LINEAR);
+    if (useBicubicFilter)
+        paint.setFlags(paint.getFlags() | SkPaint::kBicubicFilterBitmap_Flag);
 
     context->drawRect(destRect, paint);
 }
