@@ -67,7 +67,8 @@ namespace content {
 //     void reset();
 //   };
 
-template <unsigned maxDepth> class AVLTreeDefaultBSet {
+template <unsigned maxDepth>
+class AVLTreeDefaultBSet {
  public:
   bool& operator[](unsigned i) {
 #if defined(ADDRESS_SANITIZER)
@@ -354,7 +355,8 @@ class AVLTree {
     handle null() { return tree_->abs.null(); }
   };
 
-  template <typename fwd_iter> bool build(fwd_iter p, size num_nodes) {
+  template <typename fwd_iter>
+  bool build(fwd_iter p, size num_nodes) {
     if (num_nodes == 0) {
       abs.root = null();
       return true;

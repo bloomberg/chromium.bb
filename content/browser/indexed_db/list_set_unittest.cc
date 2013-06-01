@@ -92,7 +92,8 @@ TEST(ListSetTest, ListSetPrimitive) {
   }
 }
 
-template <typename T> class Wrapped {
+template <typename T>
+class Wrapped {
  public:
   Wrapped(const T& value) : value_(value) {}
   Wrapped(const Wrapped<T>& other) : value_(other.value_) {}

@@ -170,7 +170,7 @@ TEST(LevelDBDatabaseTest, TransactionIterator) {
 
   scoped_ptr<LevelDBIterator> it = transaction->CreateIterator();
 
-  const char empty[] = { 0 };
+  const char empty[] = {0};
   it->Seek(LevelDBSlice(empty, empty));
 
   EXPECT_TRUE(it->IsValid());

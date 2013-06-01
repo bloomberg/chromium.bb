@@ -456,10 +456,9 @@ scoped_refptr<IndexedDBBackingStore> IndexedDBBackingStore::Open(
   }
 
   // TODO(jsbell): Rework to use FilePath throughout.
-  base::FilePath identifier_path =
-      base::FilePath::FromUTF8Unsafe(UTF16ToUTF8(database_identifier));
-  base::FilePath file_path =
-      file_path_base.Append(identifier_path).AppendASCII(".indexeddb.leveldb");
+  base::FilePath identifier_path = base::FilePath::FromUTF8Unsafe(
+      UTF16ToUTF8(database_identifier) + ".indexeddb.leveldb");
+  base::FilePath file_path = file_path_base.Append(identifier_path);
 
   db = leveldb_factory->OpenLevelDB(file_path, comparator.get());
 

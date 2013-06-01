@@ -19,7 +19,8 @@
 // Member types of value (primitives and objects by value), raw pointers
 // and scoped_refptr<> are supported.
 //
-template <typename T> class list_set {
+template <typename T>
+class list_set {
  public:
   list_set() {}
   list_set(const list_set<T>& other) : list_(other.list_), set_(other.set_) {}
@@ -153,6 +154,7 @@ template <typename T> class list_set {
 // Prevent instantiation of list_set<scoped_ptr<T>> as the current
 // implementation would fail.
 // TODO(jsbell): Support scoped_ptr through specialization.
-template <typename T> class list_set<scoped_ptr<T> >;
+template <typename T>
+class list_set<scoped_ptr<T> >;
 
 #endif  // CONTENT_BROWSER_INDEXED_DB_LIST_SET_H_

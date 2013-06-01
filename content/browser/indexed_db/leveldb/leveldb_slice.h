@@ -18,8 +18,7 @@ class LevelDBSlice {
   }
 
   explicit LevelDBSlice(const std::vector<char>& v)
-      : begin_(&*v.begin()), end_(&*v.rbegin() + 1) {
-    DCHECK_GT(v.size(), static_cast<size_t>(0));
+      : begin_(v.empty() ? NULL : &*v.begin()), end_(begin_ + v.size()) {
     DCHECK_GE(end_, begin_);
   }
 

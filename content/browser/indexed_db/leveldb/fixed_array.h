@@ -34,7 +34,8 @@
 
 namespace content {
 
-template <typename T, size_t Size> class FixedArray {
+template <typename T, size_t Size>
+class FixedArray {
  public:
   T& operator[](size_t i) {
 #if defined(ADDRESS_SANITIZER)

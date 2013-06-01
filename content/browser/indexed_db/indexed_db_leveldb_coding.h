@@ -35,7 +35,8 @@ inline std::vector<char> EncodeIntSafely(int64 nParam, int64 max) {
   return EncodeInt(nParam);
 }
 
-template <class T> int64 DecodeInt(T begin, T end) {
+template <class T>
+int64 DecodeInt(T begin, T end) {
   // TODO(alecflett): Make this a DCHECK_LE().
   DCHECK(begin <= end);
   int64 ret = 0;
