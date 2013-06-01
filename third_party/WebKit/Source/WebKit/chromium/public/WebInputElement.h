@@ -110,6 +110,9 @@ namespace WebKit {
         // Exposes the default value of the maxLength attribute.
         WEBKIT_EXPORT static int defaultMaxLength();
 
+        // Returns the direction of the text in this element.
+        WEBKIT_EXPORT WebString directionForFormData() const;
+
         // Return the decoration added by the specified decorator if one exists.
         WEBKIT_EXPORT WebElement decorationElementFor(WebTextFieldDecoratorClient*);
 

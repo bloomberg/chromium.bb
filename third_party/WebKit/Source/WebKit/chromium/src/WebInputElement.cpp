@@ -247,6 +247,11 @@ int WebInputElement::defaultMaxLength()
     return HTMLInputElement::maximumLength;
 }
 
+WebString WebInputElement::directionForFormData() const
+{
+    return constUnwrap<HTMLInputElement>()->directionForFormData();
+}
+
 WebElement WebInputElement::decorationElementFor(WebTextFieldDecoratorClient* decoratorClient)
 {
     ShadowRoot* shadowRoot = unwrap<HTMLInputElement>()->youngestShadowRoot();
