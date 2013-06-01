@@ -25,6 +25,7 @@
 class SkBitmap;
 
 namespace base {
+class MessageLoopProxy;
 class RunLoop;
 }
 
@@ -260,6 +261,7 @@ class COMPOSITOR_EXPORT Compositor
 
   static void Initialize();
   static bool WasInitializedWithThread();
+  static scoped_refptr<base::MessageLoopProxy> GetCompositorMessageLoop();
   static void Terminate();
 
   // Schedules a redraw of the layer tree associated with this compositor.

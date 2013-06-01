@@ -544,6 +544,14 @@ bool Compositor::WasInitializedWithThread() {
 }
 
 // static
+scoped_refptr<base::MessageLoopProxy> Compositor::GetCompositorMessageLoop() {
+  scoped_refptr<base::MessageLoopProxy> proxy;
+  if (g_compositor_thread)
+    proxy = g_compositor_thread->message_loop_proxy();
+  return proxy;
+}
+
+// static
 void Compositor::Terminate() {
   if (g_compositor_thread) {
     g_compositor_thread->Stop();
