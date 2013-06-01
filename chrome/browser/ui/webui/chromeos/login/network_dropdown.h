@@ -5,11 +5,11 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_CHROMEOS_LOGIN_NETWORK_DROPDOWN_H_
 #define CHROME_BROWSER_UI_WEBUI_CHROMEOS_LOGIN_NETWORK_DROPDOWN_H_
 
+#include "ash/system/chromeos/network/network_icon_animation_observer.h"
 #include "base/basictypes.h"
 #include "base/timer.h"
-#include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/status/network_menu.h"
-#include "chrome/browser/chromeos/status/network_menu_icon.h"
+#include "chromeos/network/network_state_handler_observer.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace content {
@@ -19,11 +19,12 @@ class WebUI;
 namespace chromeos {
 
 class NetworkMenuWebUI;
+class NetworkState;
 
 // Class which implements network dropdown menu using WebUI.
 class NetworkDropdown : public NetworkMenu::Delegate,
-                        public NetworkMenuIcon::Delegate,
-                        NetworkLibrary::NetworkManagerObserver {
+                        public NetworkStateHandlerObserver,
+                        public ash::network_icon::AnimationObserver {
  public:
   NetworkDropdown(content::WebUI* web_ui, bool oobe);
   virtual ~NetworkDropdown();
@@ -31,16 +32,19 @@ class NetworkDropdown : public NetworkMenu::Delegate,
   // This method should be called, when item with the given id is chosen.
   void OnItemChosen(int id);
 
-  // NetworkMenu::Delegate implementation:
+  // NetworkMenu::Delegate
   virtual gfx::NativeWindow GetNativeWindow() const OVERRIDE;
   virtual void OpenButtonOptions() OVERRIDE;
   virtual bool ShouldOpenButtonOptions() const OVERRIDE;
 
-  // NetworkMenuIcon::Delegate implementation:
-  virtual void NetworkMenuIconChanged() OVERRIDE;
+  // NetworkStateHandlerObserver
+  virtual void DefaultNetworkChanged(const NetworkState* network) OVERRIDE;
+  virtual void NetworkConnectionStateChanged(
+      const NetworkState* network) OVERRIDE;
+  virtual void NetworkListChanged() OVERRIDE;
 
-  // NetworkLibrary::NetworkManagerObserver implementation:
-  virtual void OnNetworkManagerChanged(NetworkLibrary* cros) OVERRIDE;
+  // network_icon::AnimationObserver
+  virtual void NetworkIconChanged() OVERRIDE;
 
   // Refreshes control state. Usually there's no need to do it manually
   // as control refreshes itself on network state change.
@@ -50,14 +54,12 @@ class NetworkDropdown : public NetworkMenu::Delegate,
  private:
   void SetNetworkIconAndText();
 
-  // Forces network scan and refreshes control state. Should be called
+  // Request a network scan and refreshes control state. Should be called
   // by |network_scan_timer_| only.
-  void ForceNetworkScan();
+  void RequestNetworkScan();
 
   // The Network menu.
   scoped_ptr<NetworkMenuWebUI> network_menu_;
-  // The Network menu icon.
-  scoped_ptr<NetworkMenuIcon> network_icon_;
 
   content::WebUI* web_ui_;
 

@@ -58,6 +58,13 @@ ASH_EXPORT base::string16 GetLabelForNetwork(
 // is uninitialized.
 ASH_EXPORT int GetCellularUninitializedMsg();
 
+// Gets the correct icon and label for |icon_type|. Also sets |animating|
+// based on whether or not the icon is animating (i.e. connecting).
+ASH_EXPORT void GetDefaultNetworkImageAndLabel(IconType icon_type,
+                                               gfx::ImageSkia* image,
+                                               base::string16* label,
+                                               bool* animating);
+
 }  // namespace network_icon
 }  // namespace ash
 
