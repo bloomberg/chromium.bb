@@ -39,6 +39,7 @@
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_switches.h"
+#include "ui/base/latency_info.h"
 #include "ui/gl/gl_switches.h"
 
 
@@ -84,8 +85,7 @@ void SendGpuProcessMessage(GpuProcessHost::GpuProcessKind kind,
 
 void AcceleratedSurfaceBuffersSwappedCompletedForGPU(int host_id,
                                                      int route_id,
-                                                     bool alive,
-                                                     uint64 surface_handle) {
+                                                     bool alive) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
     BrowserThread::PostTask(
         BrowserThread::IO,
@@ -93,8 +93,7 @@ void AcceleratedSurfaceBuffersSwappedCompletedForGPU(int host_id,
         base::Bind(&AcceleratedSurfaceBuffersSwappedCompletedForGPU,
                    host_id,
                    route_id,
-                   alive,
-                   surface_handle));
+                   alive));
     return;
   }
 
@@ -117,13 +116,14 @@ void AcceleratedSurfaceBuffersSwappedCompletedForGPU(int host_id,
 void AcceleratedSurfaceBuffersSwappedCompletedForRenderer(
     int surface_id,
     base::TimeTicks timebase,
-    base::TimeDelta interval) {
+    base::TimeDelta interval,
+    const ui::LatencyInfo& latency_info) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     BrowserThread::PostTask(
         BrowserThread::UI,
         FROM_HERE,
         base::Bind(&AcceleratedSurfaceBuffersSwappedCompletedForRenderer,
-                   surface_id, timebase, interval));
+                   surface_id, timebase, interval, latency_info));
     return;
   }
 
@@ -142,19 +142,21 @@ void AcceleratedSurfaceBuffersSwappedCompletedForRenderer(
   RenderWidgetHostImpl::From(rwh)->AcknowledgeSwapBuffersToRenderer();
   if (interval != base::TimeDelta())
     RenderWidgetHostImpl::From(rwh)->UpdateVSyncParameters(timebase, interval);
+  RenderWidgetHostImpl::From(rwh)->FrameSwapped(latency_info);
 }
 
-void AcceleratedSurfaceBuffersSwappedCompleted(int host_id,
-                                               int route_id,
-                                               int surface_id,
-                                               uint64 surface_handle,
-                                               bool alive,
-                                               base::TimeTicks timebase,
-                                               base::TimeDelta interval) {
+void AcceleratedSurfaceBuffersSwappedCompleted(
+    int host_id,
+    int route_id,
+    int surface_id,
+    bool alive,
+    base::TimeTicks timebase,
+    base::TimeDelta interval,
+    const ui::LatencyInfo& latency_info) {
   AcceleratedSurfaceBuffersSwappedCompletedForGPU(host_id, route_id,
-                                                  alive, surface_handle);
+                                                  alive);
   AcceleratedSurfaceBuffersSwappedCompletedForRenderer(surface_id, timebase,
-                                                       interval);
+                                                       interval, latency_info);
 }
 
 // NOTE: changes to this class need to be reviewed by the security team.
@@ -912,7 +914,7 @@ void GpuProcessHost::OnAcceleratedSurfaceBuffersSwapped(
   base::ScopedClosureRunner scoped_completion_runner(
       base::Bind(&AcceleratedSurfaceBuffersSwappedCompletedForGPU,
                  host_id_, params.route_id,
-                 true /* alive */, params.surface_handle));
+                 true /* alive */));
 
   int render_process_id = 0;
   int render_widget_id = 0;
@@ -951,8 +953,8 @@ void GpuProcessHost::OnAcceleratedSurfaceBuffersSwapped(
 
   base::ScopedClosureRunner scoped_completion_runner(
       base::Bind(&AcceleratedSurfaceBuffersSwappedCompleted,
-          host_id_, params.route_id, params.surface_id, params.surface_handle,
-          true, base::TimeTicks(), base::TimeDelta()));
+          host_id_, params.route_id, params.surface_id,
+          true, base::TimeTicks(), base::TimeDelta(), ui::LatencyInfo()));
 
   gfx::GLSurfaceHandle handle =
       GpuSurfaceTracker::Get()->GetSurfaceHandle(params.surface_id);
@@ -978,6 +980,14 @@ void GpuProcessHost::OnAcceleratedSurfaceBuffersSwapped(
                  "EarlyOut_NativeWindowNotFound",
                  "handle",
                  handle.handle);
+    scoped_completion_runner.Release();
+    AcceleratedSurfaceBuffersSwappedCompleted(host_id_,
+                                              params.route_id,
+                                              params.surface_id,
+                                              true,
+                                              base::TimeTicks(),
+                                              base::TimeDelta(),
+                                              params.latency_info);
     return;
   }
 
@@ -985,11 +995,11 @@ void GpuProcessHost::OnAcceleratedSurfaceBuffersSwapped(
   presenter->AsyncPresentAndAcknowledge(
       params.size,
       params.surface_handle,
+      params.latency_info,
       base::Bind(&AcceleratedSurfaceBuffersSwappedCompleted,
                  host_id_,
                  params.route_id,
-                 params.surface_id,
-                 params.surface_handle));
+                 params.surface_id));
 
   FrameSubscriberMap::iterator it = frame_subscribers_.find(params.surface_id);
   if (it != frame_subscribers_.end() && it->second) {

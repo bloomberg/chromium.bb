@@ -14,6 +14,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/time.h"
 #include "base/win/scoped_comptr.h"
+#include "ui/base/latency_info.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/size.h"
 #include "ui/surface/surface_export.h"
@@ -33,7 +34,8 @@ class SURFACE_EXPORT AcceleratedPresenter
  public:
   typedef base::Callback<void(bool,
                               base::TimeTicks,
-                              base::TimeDelta)> CompletionTask;
+                              base::TimeDelta,
+                              const ui::LatencyInfo&)> CompletionTask;
 
   explicit AcceleratedPresenter(gfx::PluginWindowHandle window);
 
@@ -52,6 +54,7 @@ class SURFACE_EXPORT AcceleratedPresenter
   void AsyncPresentAndAcknowledge(
       const gfx::Size& size,
       int64 surface_handle,
+      const ui::LatencyInfo& latency_info,
       const CompletionTask& completion_task);
 
   // Schedule the presenter to free all its resources. This can be called on any
@@ -98,6 +101,7 @@ class SURFACE_EXPORT AcceleratedPresenter
   void DoPresentAndAcknowledge(
       const gfx::Size& size,
       int64 surface_handle,
+      const ui::LatencyInfo& latency_info,
       const CompletionTask& completion_task);
   void DoSuspend();
   void DoPresent(const base::Closure& composite_task);
@@ -170,6 +174,8 @@ class SURFACE_EXPORT AcceleratedPresenter
   // http://crbug.com/120904
   gfx::Size last_window_size_;
   base::Time last_window_resize_time_;
+
+  ui::LatencyInfo latency_info_;
 
   DISALLOW_COPY_AND_ASSIGN(AcceleratedPresenter);
 };

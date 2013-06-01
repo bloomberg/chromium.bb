@@ -25,6 +25,7 @@
 #include "media/base/video_frame.h"
 #include "media/base/video_util.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/base/latency_info.h"
 #include "ui/base/win/dpi.h"
 #include "ui/base/win/hwnd_util.h"
 #include "ui/base/win/shell.h"
@@ -380,11 +381,13 @@ scoped_refptr<AcceleratedPresenter> AcceleratedPresenter::GetForWindow(
 void AcceleratedPresenter::AsyncPresentAndAcknowledge(
     const gfx::Size& size,
     int64 surface_handle,
+    const ui::LatencyInfo& latency_info,
     const CompletionTask& completion_task) {
   if (!surface_handle) {
     TRACE_EVENT1("gpu", "EarlyOut_ZeroSurfaceHandle",
                  "surface_handle", surface_handle);
-    completion_task.Run(true, base::TimeTicks(), base::TimeDelta());
+    completion_task.Run(
+        true, base::TimeTicks(), base::TimeDelta(), ui::LatencyInfo());
     return;
   }
 
@@ -394,6 +397,7 @@ void AcceleratedPresenter::AsyncPresentAndAcknowledge(
                  this,
                  size,
                  surface_handle,
+                 latency_info,
                  completion_task));
 }
 
@@ -679,6 +683,7 @@ AcceleratedPresenter::~AcceleratedPresenter() {
 void AcceleratedPresenter::DoPresentAndAcknowledge(
     const gfx::Size& size,
     int64 surface_handle,
+    const ui::LatencyInfo& latency_info,
     const CompletionTask& completion_task) {
   TRACE_EVENT2(
       "gpu", "DoPresentAndAcknowledge",
@@ -689,18 +694,25 @@ void AcceleratedPresenter::DoPresentAndAcknowledge(
 
   base::AutoLock locked(*present_thread_->lock());
 
+  latency_info_.MergeWith(latency_info);
+
   // Initialize the device lazily since calling Direct3D can crash bots.
   present_thread_->InitDevice();
 
   if (!present_thread_->device()) {
-    completion_task.Run(false, base::TimeTicks(), base::TimeDelta());
+    completion_task.Run(
+        false, base::TimeTicks(), base::TimeDelta(), ui::LatencyInfo());
     TRACE_EVENT0("gpu", "EarlyOut_NoDevice");
     return;
   }
 
   // Ensure the task is acknowledged on early out after this point.
   base::ScopedClosureRunner scoped_completion_runner(
-      base::Bind(completion_task, true, base::TimeTicks(), base::TimeDelta()));
+      base::Bind(completion_task,
+                 true,
+                 base::TimeTicks(),
+                 base::TimeDelta(),
+                 ui::LatencyInfo()));
 
   // If invalidated, do nothing, the window is gone.
   if (!window_) {
@@ -845,6 +857,8 @@ void AcceleratedPresenter::DoPresentAndAcknowledge(
     ReleaseDC(window_, dc);
   }
 
+  latency_info_.swap_timestamp = base::TimeTicks::HighResNow();
+
   hidden_ = false;
 
   D3DDISPLAYMODE display_mode;
@@ -903,7 +917,8 @@ void AcceleratedPresenter::DoPresentAndAcknowledge(
   }
 
   scoped_completion_runner.Release();
-  completion_task.Run(true, last_vsync_time, refresh_period);
+  completion_task.Run(true, last_vsync_time, refresh_period, latency_info_);
+  latency_info_.Clear();
 }
 
 void AcceleratedPresenter::DoSuspend() {
