@@ -284,22 +284,6 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kConflictingModulesCheck)
   },
   {
-    "cloud-print-proxy",  // FLAGS:RECORD_UMA
-    IDS_FLAGS_CLOUD_PRINT_CONNECTOR_NAME,
-    IDS_FLAGS_CLOUD_PRINT_CONNECTOR_DESCRIPTION,
-    // For a Chrome build, we know we have a PDF plug-in on Windows, so it's
-    // fully enabled.
-    // Otherwise, where we know Windows could be working if a viable PDF
-    // plug-in could be supplied, we'll keep the lab enabled. Mac and Linux
-    // always have PDF rasterization available, so no flag needed there.
-#if !defined(GOOGLE_CHROME_BUILD)
-    kOsWin,
-#else
-    0,
-#endif
-    SINGLE_VALUE_TYPE(switches::kEnableCloudPrintProxy)
-  },
-  {
     "ignore-gpu-blacklist",
     IDS_FLAGS_IGNORE_GPU_BLACKLIST_NAME,
     IDS_FLAGS_IGNORE_GPU_BLACKLIST_DESCRIPTION,
