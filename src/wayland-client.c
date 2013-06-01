@@ -226,8 +226,7 @@ wl_proxy_create(struct wl_proxy *factory, const struct wl_interface *interface)
 	proxy->refcount = 1;
 
 	pthread_mutex_lock(&display->mutex);
-	proxy->object.id = wl_map_insert_new(&display->objects,
-					     WL_MAP_CLIENT_SIDE, proxy);
+	proxy->object.id = wl_map_insert_new(&display->objects, proxy);
 	pthread_mutex_unlock(&display->mutex);
 
 	return proxy;
@@ -518,17 +517,16 @@ wl_display_connect_to_fd(int fd)
 	memset(display, 0, sizeof *display);
 
 	display->fd = fd;
-	wl_map_init(&display->objects);
+	wl_map_init(&display->objects, WL_MAP_CLIENT_SIDE);
 	wl_event_queue_init(&display->queue, display);
 	wl_list_init(&display->event_queue_list);
 	pthread_mutex_init(&display->mutex, NULL);
 
-	wl_map_insert_new(&display->objects, WL_MAP_CLIENT_SIDE, NULL);
+	wl_map_insert_new(&display->objects, NULL);
 
 	display->proxy.object.interface = &wl_display_interface;
 	display->proxy.object.id =
-		wl_map_insert_new(&display->objects,
-				  WL_MAP_CLIENT_SIDE, display);
+		wl_map_insert_new(&display->objects, display);
 	display->proxy.display = display;
 	display->proxy.object.implementation = (void(**)(void)) &display_listener;
 	display->proxy.user_data = display;

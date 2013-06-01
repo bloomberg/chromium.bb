@@ -152,9 +152,10 @@ union map_entry {
 };
 
 WL_EXPORT void
-wl_map_init(struct wl_map *map)
+wl_map_init(struct wl_map *map, uint32_t side)
 {
 	memset(map, 0, sizeof *map);
+	map->side = side;
 }
 
 WL_EXPORT void
@@ -165,13 +166,13 @@ wl_map_release(struct wl_map *map)
 }
 
 WL_EXPORT uint32_t
-wl_map_insert_new(struct wl_map *map, uint32_t side, void *data)
+wl_map_insert_new(struct wl_map *map, void *data)
 {
 	union map_entry *start, *entry;
 	struct wl_array *entries;
 	uint32_t base;
 
-	if (side == WL_MAP_CLIENT_SIDE) {
+	if (map->side == WL_MAP_CLIENT_SIDE) {
 		entries = &map->client_entries;
 		base = 0;
 	} else {
@@ -203,8 +204,14 @@ wl_map_insert_at(struct wl_map *map, uint32_t i, void *data)
 	struct wl_array *entries;
 
 	if (i < WL_SERVER_ID_START) {
+		if (map->side == WL_MAP_CLIENT_SIDE)
+			return -1;
+
 		entries = &map->client_entries;
 	} else {
+		if (map->side == WL_MAP_SERVER_SIDE)
+			return -1;
+
 		entries = &map->server_entries;
 		i -= WL_SERVER_ID_START;
 	}
@@ -230,8 +237,14 @@ wl_map_reserve_new(struct wl_map *map, uint32_t i)
 	struct wl_array *entries;
 
 	if (i < WL_SERVER_ID_START) {
+		if (map->side == WL_MAP_CLIENT_SIDE)
+			return -1;
+
 		entries = &map->client_entries;
 	} else {
+		if (map->side == WL_MAP_SERVER_SIDE)
+			return -1;
+
 		entries = &map->server_entries;
 		i -= WL_SERVER_ID_START;
 	}
@@ -262,8 +275,14 @@ wl_map_remove(struct wl_map *map, uint32_t i)
 	struct wl_array *entries;
 
 	if (i < WL_SERVER_ID_START) {
+		if (map->side == WL_MAP_SERVER_SIDE)
+			return;
+
 		entries = &map->client_entries;
 	} else {
+		if (map->side == WL_MAP_CLIENT_SIDE)
+			return;
+
 		entries = &map->server_entries;
 		i -= WL_SERVER_ID_START;
 	}

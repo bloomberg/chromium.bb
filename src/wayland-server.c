@@ -336,7 +336,7 @@ wl_client_create(struct wl_display *display, int fd)
 	if (client->connection == NULL)
 		goto err_source;
 
-	wl_map_init(&client->objects);
+	wl_map_init(&client->objects, WL_MAP_SERVER_SIDE);
 
 	if (wl_map_insert_at(&client->objects, 0, NULL) < 0)
 		goto err_map;
@@ -379,8 +379,7 @@ wl_client_add_resource(struct wl_client *client,
 {
 	if (resource->object.id == 0) {
 		resource->object.id =
-			wl_map_insert_new(&client->objects,
-					  WL_MAP_SERVER_SIDE, resource);
+			wl_map_insert_new(&client->objects, resource);
 	} else if (wl_map_insert_at(&client->objects,
 				  resource->object.id, resource) < 0) {
 		wl_resource_post_error(client->display_resource,
@@ -932,7 +931,7 @@ wl_client_new_object(struct wl_client *client,
 {
 	uint32_t id;
 
-	id = wl_map_insert_new(&client->objects, WL_MAP_SERVER_SIDE, NULL);
+	id = wl_map_insert_new(&client->objects, NULL);
 	return wl_client_add_object(client,
 				    interface, implementation, id, data);
 
