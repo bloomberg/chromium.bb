@@ -1,0 +1,52 @@
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// File-level comment to appease parser. Eventually this will not be necessary.
+namespace experimental.systemInfo.display {
+
+  dictionary DisplayUnitInfo {
+    // The unique identifier of the display device.
+    DOMString id;
+    // The ordinal index for each display device.
+    long index;
+    // True if the display is the primary one.
+    boolean isPrimary;
+    // The y-coordinate of the upper-left corner of the work area on the
+    // display's screen.
+    long availTop;
+    // The x-coordinate of the upper-left corner of the work area on the
+    // display's screen.
+    long availLeft;
+    // The height of the work area on the display's screen in pixels.
+    long availHeight;
+    // The width of the work area on the display's screen in pixels.
+    long availWidth;
+    // The color depth of the display's screen.
+    long colorDepth;
+    // The pixel depth of the display's screen.
+    long pixelDepth;
+    // The height of the display's screen in pixels.
+    long height;
+    // The width of the display's screen in pixels.
+    long width;
+    // The absolute offset of the upper-left corner of the display's screen in
+    // the virtual-screen coordinate.
+    long absoluteTopOffset;
+    // The absolute offset of the upper-left corner of the display's screen in
+    // the virtual-screen coodinate.
+    long absoluteLeftOffset;
+    // The number of pixel per logic inch along the display's screen width.
+    long dpiX;
+    // The number of pixel per logic inch along the display's screen height.
+    long dpiY;
+  };
+
+  callback DisplayInfoCallback = void (DisplayUnitInfo[] info);
+
+  interface Functions {
+    // Get all display information on the system. The argument passed to the
+    // callback is an array of DisplayUnitInfo objects.
+    static void get(DisplayInfoCallback callback);
+  };
+};
