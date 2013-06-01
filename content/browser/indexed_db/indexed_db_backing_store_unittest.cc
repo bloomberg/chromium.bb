@@ -359,14 +359,15 @@ TEST(IndexedDBFactoryTest, BackingStoreLifetime) {
   scoped_refptr<IndexedDBBackingStore> disk_store2 =
       factory->TestOpenBackingStore(origin1, temp_directory.path());
   EXPECT_EQ(disk_store1.get(), disk_store2.get());
-  // TODO(alecflett): Verify refcount indirectly.
-  // EXPECT_EQ(2, disk_store2->RefCount());
+  EXPECT_FALSE(disk_store2->HasOneRef());
 
   scoped_refptr<IndexedDBBackingStore> disk_store3 =
       factory->TestOpenBackingStore(origin2, temp_directory.path());
   EXPECT_TRUE(disk_store3->HasOneRef());
-  // TODO(alecflett): Verify refcount indirectly.
-  // EXPECT_EQ(2, disk_store1->RefCount());
+  EXPECT_FALSE(disk_store1->HasOneRef());
+
+  disk_store2 = NULL;
+  EXPECT_TRUE(disk_store1->HasOneRef());
 }
 
 TEST(IndexedDBFactoryTest, MemoryBackingStoreLifetime) {
@@ -378,24 +379,26 @@ TEST(IndexedDBFactoryTest, MemoryBackingStoreLifetime) {
   scoped_refptr<MockIDBFactory> factory = MockIDBFactory::Create();
   scoped_refptr<IndexedDBBackingStore> mem_store1 =
       factory->TestOpenBackingStore(origin1, base::FilePath());
-  // TODO(alecflett): Verify refcount indirectly.
-  //  EXPECT_EQ(2, mem_store1->RefCount());
+  EXPECT_FALSE(mem_store1->HasOneRef()); // mem_store1 and factory
+
   scoped_refptr<IndexedDBBackingStore> mem_store2 =
       factory->TestOpenBackingStore(origin1, base::FilePath());
   EXPECT_EQ(mem_store1.get(), mem_store2.get());
-  // TODO(alecflett): Verify refcount indirectly.
-  // EXPECT_EQ(3, mem_store2->RefCount());
+  EXPECT_FALSE(mem_store1->HasOneRef()); // mem_store1, 2 and factory
+  EXPECT_FALSE(mem_store2->HasOneRef()); // mem_store1, 2 and factory
 
   scoped_refptr<IndexedDBBackingStore> mem_store3 =
       factory->TestOpenBackingStore(origin2, base::FilePath());
-  // TODO(alecflett): Verify refcount indirectly.
-  // EXPECT_EQ(2, mem_store3->RefCount());
-  // EXPECT_EQ(3, mem_store1->RefCount());
+  EXPECT_FALSE(mem_store1->HasOneRef()); // mem_store1, 2 and factory
+  EXPECT_FALSE(mem_store3->HasOneRef()); // mem_store3 and factory
 
   factory = NULL;
-  // TODO(alecflett): Verify refcount indirectly.
-  // EXPECT_EQ(2, mem_store1->RefCount());
-  // EXPECT_EQ(1, mem_store3->RefCount());
+  EXPECT_FALSE(mem_store1->HasOneRef()); // mem_store1 and 2
+  EXPECT_FALSE(mem_store2->HasOneRef()); // mem_store1 and 2
+  EXPECT_TRUE(mem_store3->HasOneRef());
+
+  mem_store2 = NULL;
+  EXPECT_TRUE(mem_store1->HasOneRef());
 }
 
 }  // namespace
