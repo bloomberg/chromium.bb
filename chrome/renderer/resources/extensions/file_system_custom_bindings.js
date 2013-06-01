@@ -15,9 +15,9 @@ var GetModuleSystem = requireNative('v8_context').GetModuleSystem;
 // TODO(sammc): Don't require extension. See http://crbug.com/235689.
 var GetExtensionViews = requireNative('extension').GetExtensionViews;
 
-var backgroundPage = GetExtensionViews(-1, 'BACKGROUND')[0];
+// Fallback to using the current window if no background page is running.
+var backgroundPage = GetExtensionViews(-1, 'BACKGROUND')[0] || window;
 var backgroundPageModuleSystem = GetModuleSystem(backgroundPage);
-var entryIdManager = backgroundPageModuleSystem.require('entryIdManager');
 
 // All windows use the bindFileEntryCallback from the background page so their
 // FileEntry objects have the background page's context as their own. This
@@ -58,6 +58,7 @@ if (window == backgroundPage) {
       }
     });
   };
+  var entryIdManager = require('entryIdManager');
 } else {
   // Force the fileSystem API to be loaded in the background page. Using
   // backgroundPageModuleSystem.require('fileSystem') is insufficient as
@@ -65,6 +66,7 @@ if (window == backgroundPage) {
   backgroundPage.chrome.fileSystem;
   var bindFileEntryCallback = backgroundPageModuleSystem.require(
       'fileSystem').bindFileEntryCallback;
+  var entryIdManager = backgroundPageModuleSystem.require('entryIdManager');
 }
 
 binding.registerCustomHook(function(bindingsAPI) {
