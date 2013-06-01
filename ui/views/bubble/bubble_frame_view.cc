@@ -141,9 +141,11 @@ gfx::Size BubbleFrameView::GetPreferredSize() {
   const gfx::Size client(GetWidget()->client_view()->GetPreferredSize());
   gfx::Size size(GetUpdatedWindowBounds(gfx::Rect(), client, false).size());
   // Accommodate the width of the title bar elements.
-  int title_bar_width = GetInsets().width() + border()->GetInsets().width() +
-      kTitleLeftInset + title_->GetPreferredSize().width() +
-      close_->width() + 1;
+  int title_bar_width = GetInsets().width() + border()->GetInsets().width();
+  if (!title_->text().empty())
+    title_bar_width += kTitleLeftInset + title_->GetPreferredSize().width();
+  if (close_->visible())
+    title_bar_width += close_->width() + 1;
   if (titlebar_extra_view_ != NULL)
     title_bar_width += titlebar_extra_view_->GetPreferredSize().width();
   size.SetToMax(gfx::Size(title_bar_width, 0));
