@@ -198,8 +198,8 @@ public:
 
     // List of acceptable MIME types separated by ",".
     // A MIME type may contain a wildcard, e.g. "text/*".
-    String accept() const { return m_accept; }
-    void setAccept(const String& accept) { m_accept = accept; }
+    AtomicString accept() const { return m_accept; }
+    void setAccept(const AtomicString& accept) { m_accept = accept; }
 
     bool wasCanceled() const { return m_error.isCancellation(); }
     bool errorOccurred() const { return m_status == LoadError || m_status == DecodeError; }
@@ -273,7 +273,7 @@ protected:
     bool hasClient(CachedResourceClient* client) { return m_clients.contains(client) || m_clientsAwaitingCallback.contains(client); }
 
     ResourceRequest m_resourceRequest;
-    String m_accept;
+    AtomicString m_accept;
     RefPtr<ResourceLoader> m_loader;
     ResourceLoaderOptions m_options;
     ResourceLoadPriority m_loadPriority;

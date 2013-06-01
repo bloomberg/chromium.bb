@@ -283,8 +283,10 @@ void CachedImage::clear()
 
 void CachedImage::setCustomAcceptHeader()
 {
+    DEFINE_STATIC_LOCAL(const AtomicString, acceptWebP, ("image/webp,*/*;q=0.8", AtomicString::ConstructFromLiteral));
+
     if (RuntimeEnabledFeatures::webPInAcceptHeaderEnabled())
-        setAccept("image/webp,*/*;q=0.8");
+        setAccept(acceptWebP);
 }
 
 inline void CachedImage::createImage()

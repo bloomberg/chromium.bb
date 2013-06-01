@@ -40,9 +40,11 @@ CachedXSLStyleSheet::CachedXSLStyleSheet(const ResourceRequest& resourceRequest)
     : CachedResource(resourceRequest, XSLStyleSheet)
     , m_decoder(TextResourceDecoder::create("text/xsl"))
 {
+    DEFINE_STATIC_LOCAL(const AtomicString, acceptXSLT, ("text/xml, application/xml, application/xhtml+xml, text/xsl, application/rss+xml, application/atom+xml", AtomicString::ConstructFromLiteral));
+
     // It's XML we want.
     // FIXME: This should accept more general xml formats */*+xml, image/svg+xml for example.
-    setAccept("text/xml, application/xml, application/xhtml+xml, text/xsl, application/rss+xml, application/atom+xml");
+    setAccept(acceptXSLT);
 }
 
 void CachedXSLStyleSheet::didAddClient(CachedResourceClient* c)

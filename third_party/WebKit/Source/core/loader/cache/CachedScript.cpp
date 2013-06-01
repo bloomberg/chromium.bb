@@ -43,10 +43,12 @@ CachedScript::CachedScript(const ResourceRequest& resourceRequest, const String&
     : CachedResource(resourceRequest, Script)
     , m_decoder(TextResourceDecoder::create("application/javascript", charset))
 {
+    DEFINE_STATIC_LOCAL(const AtomicString, acceptScript, ("*/*", AtomicString::ConstructFromLiteral));
+
     // It's javascript we want.
     // But some websites think their scripts are <some wrong mimetype here>
     // and refuse to serve them if we only accept application/x-javascript.
-    setAccept("*/*");
+    setAccept(acceptScript);
 }
 
 CachedScript::~CachedScript()

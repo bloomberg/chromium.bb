@@ -220,7 +220,7 @@ namespace WebCore {
         ResourceRequestCachePolicy m_cachePolicy;
         double m_timeoutInterval; // 0 is a magic value for platform default on platforms that have one.
         KURL m_firstPartyForCookies;
-        String m_httpMethod;
+        AtomicString m_httpMethod;
         HTTPHeaderMap m_httpHeaderFields;
         RefPtr<FormData> m_httpBody;
         bool m_allowCookies : 1;

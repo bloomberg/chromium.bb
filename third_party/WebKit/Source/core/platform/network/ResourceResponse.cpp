@@ -72,7 +72,7 @@ ResourceResponse::ResourceResponse()
 {
 }
 
-ResourceResponse::ResourceResponse(const KURL& url, const String& mimeType, long long expectedLength, const String& textEncodingName, const String& filename)
+ResourceResponse::ResourceResponse(const KURL& url, const AtomicString& mimeType, long long expectedLength, const AtomicString& textEncodingName, const String& filename)
     : m_url(url)
     , m_mimeType(mimeType)
     , m_expectedContentLength(expectedLength)
@@ -147,12 +147,12 @@ PassOwnPtr<CrossThreadResourceResponseData> ResourceResponse::copyData() const
 {
     OwnPtr<CrossThreadResourceResponseData> data = adoptPtr(new CrossThreadResourceResponseData);
     data->m_url = url().copy();
-    data->m_mimeType = mimeType().isolatedCopy();
+    data->m_mimeType = mimeType().string().isolatedCopy();
     data->m_expectedContentLength = expectedContentLength();
-    data->m_textEncodingName = textEncodingName().isolatedCopy();
+    data->m_textEncodingName = textEncodingName().string().isolatedCopy();
     data->m_suggestedFilename = suggestedFilename().isolatedCopy();
     data->m_httpStatusCode = httpStatusCode();
-    data->m_httpStatusText = httpStatusText().isolatedCopy();
+    data->m_httpStatusText = httpStatusText().string().isolatedCopy();
     data->m_httpHeaders = httpHeaderFields().copyData();
     data->m_lastModifiedDate = lastModifiedDate();
     if (m_resourceLoadTiming)
@@ -167,7 +167,7 @@ PassOwnPtr<CrossThreadResourceResponseData> ResourceResponse::copyData() const
     data->m_wasAlternateProtocolAvailable = m_wasAlternateProtocolAvailable;
     data->m_wasFetchedViaProxy = m_wasFetchedViaProxy;
     data->m_responseTime = m_responseTime;
-    data->m_remoteIPAddress = m_remoteIPAddress.isolatedCopy();
+    data->m_remoteIPAddress = m_remoteIPAddress.string().isolatedCopy();
     data->m_remotePort = m_remotePort;
 
     // Bug https://bugs.webkit.org/show_bug.cgi?id=60397 this doesn't support m_downloadedFile,
@@ -178,9 +178,7 @@ PassOwnPtr<CrossThreadResourceResponseData> ResourceResponse::copyData() const
 
 bool ResourceResponse::isHTTP() const
 {
-    String protocol = m_url.protocol();
-
-    return equalIgnoringCase(protocol, "http")  || equalIgnoringCase(protocol, "https");
+    return m_url.protocolIsInHTTPFamily();
 }
 
 const KURL& ResourceResponse::url() const
@@ -195,12 +193,12 @@ void ResourceResponse::setURL(const KURL& url)
     m_url = url;
 }
 
-const String& ResourceResponse::mimeType() const
+const AtomicString& ResourceResponse::mimeType() const
 {
     return m_mimeType;
 }
 
-void ResourceResponse::setMimeType(const String& mimeType)
+void ResourceResponse::setMimeType(const AtomicString& mimeType)
 {
     m_isNull = false;
 
@@ -221,12 +219,12 @@ void ResourceResponse::setExpectedContentLength(long long expectedContentLength)
     m_expectedContentLength = expectedContentLength;
 }
 
-const String& ResourceResponse::textEncodingName() const
+const AtomicString& ResourceResponse::textEncodingName() const
 {
     return m_textEncodingName;
 }
 
-void ResourceResponse::setTextEncodingName(const String& encodingName)
+void ResourceResponse::setTextEncodingName(const AtomicString& encodingName)
 {
     m_isNull = false;
 
@@ -258,12 +256,12 @@ void ResourceResponse::setHTTPStatusCode(int statusCode)
     m_httpStatusCode = statusCode;
 }
 
-const String& ResourceResponse::httpStatusText() const
+const AtomicString& ResourceResponse::httpStatusText() const
 {
     return m_httpStatusText;
 }
 
-void ResourceResponse::setHTTPStatusText(const String& statusText)
+void ResourceResponse::setHTTPStatusText(const AtomicString& statusText)
 {
     m_httpStatusText = statusText;
 }

@@ -61,22 +61,22 @@ public:
     PassOwnPtr<CrossThreadResourceResponseData> copyData() const;
 
     ResourceResponse();
-    ResourceResponse(const KURL& url, const String& mimeType, long long expectedLength, const String& textEncodingName, const String& filename);
+    ResourceResponse(const KURL&, const AtomicString& mimeType, long long expectedLength, const AtomicString& textEncodingName, const String& filename);
 
     bool isNull() const { return m_isNull; }
     bool isHTTP() const;
 
     const KURL& url() const;
-    void setURL(const KURL& url);
+    void setURL(const KURL&);
 
-    const String& mimeType() const;
-    void setMimeType(const String& mimeType);
+    const AtomicString& mimeType() const;
+    void setMimeType(const AtomicString&);
 
     long long expectedContentLength() const;
-    void setExpectedContentLength(long long expectedContentLength);
+    void setExpectedContentLength(long long);
 
-    const String& textEncodingName() const;
-    void setTextEncodingName(const String& name);
+    const AtomicString& textEncodingName() const;
+    void setTextEncodingName(const AtomicString&);
 
     // FIXME: Should compute this on the fly.
     // There should not be a setter exposed, as suggested file name is determined based on other headers in a manner that WebCore does not necessarily know about.
@@ -86,8 +86,8 @@ public:
     int httpStatusCode() const;
     void setHTTPStatusCode(int);
 
-    const String& httpStatusText() const;
-    void setHTTPStatusText(const String&);
+    const AtomicString& httpStatusText() const;
+    void setHTTPStatusText(const AtomicString&);
 
     String httpHeaderField(const AtomicString& name) const;
     String httpHeaderField(const char* name) const;
@@ -167,8 +167,8 @@ public:
     double responseTime() const { return m_responseTime; }
     void setResponseTime(double responseTime) { m_responseTime = responseTime; }
 
-    const String& remoteIPAddress() const { return m_remoteIPAddress; }
-    void setRemoteIPAddress(const String& value) { m_remoteIPAddress = value; }
+    const AtomicString& remoteIPAddress() const { return m_remoteIPAddress; }
+    void setRemoteIPAddress(const AtomicString& value) { m_remoteIPAddress = value; }
 
     unsigned short remotePort() const { return m_remotePort; }
     void setRemotePort(unsigned short value) { m_remotePort = value; }
@@ -196,12 +196,12 @@ private:
     void updateHeaderParsedState(const AtomicString& name);
 
     KURL m_url;
-    String m_mimeType;
+    AtomicString m_mimeType;
     long long m_expectedContentLength;
-    String m_textEncodingName;
+    AtomicString m_textEncodingName;
     String m_suggestedFilename;
     int m_httpStatusCode;
-    String m_httpStatusText;
+    AtomicString m_httpStatusText;
     HTTPHeaderMap m_httpHeaderFields;
     time_t m_lastModifiedDate;
     bool m_wasCached : 1;
@@ -265,7 +265,7 @@ private:
     double m_responseTime;
 
     // Remote IP address of the socket which fetched this resource.
-    String m_remoteIPAddress;
+    AtomicString m_remoteIPAddress;
 
     // Remote port number of the socket which fetched this resource.
     unsigned short m_remotePort;
