@@ -132,7 +132,6 @@ GraphicsLayer::GraphicsLayer(GraphicsLayerClient* client)
     , m_contentsLayerId(0)
     , m_linkHighlight(0)
     , m_contentsLayerPurpose(NoContentsLayer)
-    , m_inSetChildren(false)
     , m_scrollableArea(0)
 {
 #ifndef NDEBUG
@@ -190,29 +189,22 @@ bool GraphicsLayer::hasAncestor(GraphicsLayer* ancestor) const
 
 bool GraphicsLayer::setChildren(const Vector<GraphicsLayer*>& newChildren)
 {
-    // FIXME: change m_inSetChildren mechanism to addChildInternal()
-    m_inSetChildren = true;
-
     // If the contents of the arrays are the same, nothing to do.
-    if (newChildren == m_children) {
-        m_inSetChildren = false;
+    if (newChildren == m_children)
         return false;
-    }
 
     removeAllChildren();
 
     size_t listSize = newChildren.size();
     for (size_t i = 0; i < listSize; ++i)
-        addChild(newChildren[i]);
+        addChildInternal(newChildren[i]);
 
     updateChildList();
-
-    m_inSetChildren = false;
 
     return true;
 }
 
-void GraphicsLayer::addChild(GraphicsLayer* childLayer)
+void GraphicsLayer::addChildInternal(GraphicsLayer* childLayer)
 {
     ASSERT(childLayer != this);
     
@@ -222,8 +214,14 @@ void GraphicsLayer::addChild(GraphicsLayer* childLayer)
     childLayer->setParent(this);
     m_children.append(childLayer);
 
-    if (!m_inSetChildren)
-        updateChildList();
+    // Don't call updateChildList here, this function is used in cases where it
+    // should not be called until all children are processed.
+}
+
+void GraphicsLayer::addChild(GraphicsLayer* childLayer)
+{
+    addChildInternal(childLayer);
+    updateChildList();
 }
 
 void GraphicsLayer::addChildAtIndex(GraphicsLayer* childLayer, int index)

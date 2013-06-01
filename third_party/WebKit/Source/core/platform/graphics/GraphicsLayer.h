@@ -461,6 +461,10 @@ public:
     virtual void didScroll() OVERRIDE;
 
 protected:
+    // Adds a child without calling updateChildList(), so that adding children
+    // can be batched before updating.
+    void addChildInternal(GraphicsLayer*);
+
     // This method is used by platform GraphicsLayer classes to clear the filters
     // when compositing is not done in hardware. It is not virtual, so the caller
     // needs to notifiy the change to the platform layer as needed.
