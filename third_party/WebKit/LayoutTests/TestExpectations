@@ -1916,3 +1916,4 @@ crbug.com/245641 [ Win7 ] http/tests/loading/text-content-type-with-binary-exten
 crbug.com/245644 [ Win7 Linux Debug ] virtual/gpu/fast/canvas/2d.text.draw.fill.maxWidth.gradient.html [ Failure Pass ]
 
 crbug.com/245670 [ Linux ] fast/forms/access-key-for-all-elements.html [ Failure Pass ]
+crbug.com/169734 [ Win ] inspector-protocol/console-timestamp.html [ Failure Pass ]
