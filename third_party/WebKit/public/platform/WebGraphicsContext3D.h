@@ -186,8 +186,6 @@ public:
     // Query whether it is built on top of compliant GLES2 implementation.
     virtual bool isGLES2Compliant() { return true; }
 
-    virtual bool setParentContext(WebGraphicsContext3D* parentContext) { return false; }
-
     virtual unsigned insertSyncPoint() { return 0; }
     virtual void waitSyncPoint(unsigned) { }
     // This call passes ownership of the WebGraphicsSyncPointCallback to the
