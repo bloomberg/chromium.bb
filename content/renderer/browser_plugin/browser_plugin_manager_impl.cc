@@ -101,7 +101,7 @@ void BrowserPluginManagerImpl::OnPluginAtPositionRequest(
   gfx::Point local_position = position;
   while (!it.IsAtEnd()) {
     const BrowserPlugin* plugin = it.GetCurrentValue();
-    if (plugin->InBounds(position)) {
+    if (!plugin->guest_crashed() && plugin->InBounds(position)) {
       guest_instance_id = plugin->guest_instance_id();
       local_position = plugin->ToLocalCoordinates(position);
       break;
