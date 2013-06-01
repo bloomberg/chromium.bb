@@ -6,11 +6,11 @@
 
 #include "base/memory/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
-#import "chrome/browser/ui/cocoa/animation_utils.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "grit/ui_resources.h"
 #import "third_party/GTM/AppKit/GTMKeyValueAnimation.h"
+#include "ui/base/cocoa/animation_utils.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 

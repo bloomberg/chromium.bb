@@ -97,6 +97,7 @@
         'base/clipboard/custom_data_helper_mac.mm',
         'base/clipboard/scoped_clipboard_writer.cc',
         'base/clipboard/scoped_clipboard_writer.h',
+        'base/cocoa/animation_utils.h',
         'base/cocoa/base_view.h',
         'base/cocoa/base_view.mm',
         'base/cocoa/events_mac.mm',
