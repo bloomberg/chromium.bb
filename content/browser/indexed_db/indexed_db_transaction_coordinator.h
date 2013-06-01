@@ -31,8 +31,6 @@ class IndexedDBTransactionCoordinator {
   bool IsActive(IndexedDBTransaction* transaction);
 #endif
 
-  // TODO(jsbell): API to handle closed connections. http://crbug.com/241821
-
  private:
   void ProcessStartedTransactions();
   bool CanRunTransaction(IndexedDBTransaction* transaction);

@@ -13,7 +13,9 @@ namespace content {
 IndexedDBTransactionCoordinator::IndexedDBTransactionCoordinator() {}
 
 IndexedDBTransactionCoordinator::~IndexedDBTransactionCoordinator() {
-  // TODO(jsbell): DCHECK that all queues are empty. http://crbug.com/241821
+  DCHECK(!transactions_.size());
+  DCHECK(!queued_transactions_.size());
+  DCHECK(!started_transactions_.size());
 }
 
 void IndexedDBTransactionCoordinator::DidCreateTransaction(

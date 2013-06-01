@@ -246,8 +246,7 @@ void IndexedDBTransaction::Commit() {
   // Transactions must also be marked as completed before the
   // front-end is notified, as the transaction completion unblocks
   // operations like closing connections.
-  if (!unused)
-    database_->transaction_coordinator().DidFinishTransaction(this);
+  database_->transaction_coordinator().DidFinishTransaction(this);
   database_->TransactionFinished(this);
 
   if (committed) {
