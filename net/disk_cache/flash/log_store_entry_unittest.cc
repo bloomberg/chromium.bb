@@ -29,7 +29,7 @@ TEST_F(FlashCacheTest, LogStoreEntryEmpty) {
     const int kSize = 1024;
     scoped_refptr<net::IOBuffer> buf(new net::IOBuffer(kSize));
     EXPECT_EQ(0, entry->GetDataSize(i));
-    EXPECT_EQ(0, entry->ReadData(i, 0, buf, kSize));
+    EXPECT_EQ(0, entry->ReadData(i, 0, buf.get(), kSize));
   }
   EXPECT_TRUE(entry->Close());
   ASSERT_TRUE(log_store.Close());
@@ -49,7 +49,7 @@ TEST_F(FlashCacheTest, LogStoreEntryWriteRead) {
   for (int i = 0; i < disk_cache::kFlashLogStoreEntryNumStreams; ++i) {
     buffers[i] = new net::IOBuffer(sizes[i]);
     CacheTestFillBuffer(buffers[i]->data(), sizes[i], false);
-    EXPECT_EQ(sizes[i], entry->WriteData(i, 0, buffers[i], sizes[i]));
+    EXPECT_EQ(sizes[i], entry->WriteData(i, 0, buffers[i].get(), sizes[i]));
   }
   EXPECT_TRUE(entry->Close());
 
@@ -60,7 +60,7 @@ TEST_F(FlashCacheTest, LogStoreEntryWriteRead) {
   for (int i = 0; i < disk_cache::kFlashLogStoreEntryNumStreams; ++i) {
     EXPECT_EQ(sizes[i], entry->GetDataSize(i));
     scoped_refptr<net::IOBuffer> buffer(new net::IOBuffer(sizes[i]));
-    EXPECT_EQ(sizes[i], entry->ReadData(i, 0, buffer, sizes[i]));
+    EXPECT_EQ(sizes[i], entry->ReadData(i, 0, buffer.get(), sizes[i]));
     EXPECT_EQ(0, memcmp(buffers[i]->data(), buffer->data(), sizes[i]));
   }
   EXPECT_TRUE(entry->Close());

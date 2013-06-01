@@ -394,7 +394,8 @@ class DnsTCPAttempt : public DnsAttempt {
       return rv;
 
     WriteBigEndian<uint16>(length_buffer_->data(), query_->io_buffer()->size());
-    buffer_ = new DrainableIOBuffer(length_buffer_, length_buffer_->size());
+    buffer_ =
+        new DrainableIOBuffer(length_buffer_.get(), length_buffer_->size());
     next_state_ = STATE_SEND_LENGTH;
     return OK;
   }
@@ -407,10 +408,10 @@ class DnsTCPAttempt : public DnsAttempt {
     buffer_->DidConsume(rv);
     if (buffer_->BytesRemaining() > 0) {
       next_state_ = STATE_SEND_LENGTH;
-      return socket_->Write(buffer_,
-                            buffer_->BytesRemaining(),
-                            base::Bind(&DnsTCPAttempt::OnIOComplete,
-                                       base::Unretained(this)));
+      return socket_->Write(
+          buffer_.get(),
+          buffer_->BytesRemaining(),
+          base::Bind(&DnsTCPAttempt::OnIOComplete, base::Unretained(this)));
     }
     buffer_ = new DrainableIOBuffer(query_->io_buffer(),
                                     query_->io_buffer()->size());
@@ -426,12 +427,13 @@ class DnsTCPAttempt : public DnsAttempt {
     buffer_->DidConsume(rv);
     if (buffer_->BytesRemaining() > 0) {
       next_state_ = STATE_SEND_QUERY;
-      return socket_->Write(buffer_,
-                            buffer_->BytesRemaining(),
-                            base::Bind(&DnsTCPAttempt::OnIOComplete,
-                                       base::Unretained(this)));
+      return socket_->Write(
+          buffer_.get(),
+          buffer_->BytesRemaining(),
+          base::Bind(&DnsTCPAttempt::OnIOComplete, base::Unretained(this)));
     }
-    buffer_ = new DrainableIOBuffer(length_buffer_, length_buffer_->size());
+    buffer_ =
+        new DrainableIOBuffer(length_buffer_.get(), length_buffer_->size());
     next_state_ = STATE_READ_LENGTH;
     return OK;
   }
@@ -444,10 +446,10 @@ class DnsTCPAttempt : public DnsAttempt {
     buffer_->DidConsume(rv);
     if (buffer_->BytesRemaining() > 0) {
       next_state_ = STATE_READ_LENGTH;
-      return socket_->Read(buffer_,
-                           buffer_->BytesRemaining(),
-                           base::Bind(&DnsTCPAttempt::OnIOComplete,
-                                      base::Unretained(this)));
+      return socket_->Read(
+          buffer_.get(),
+          buffer_->BytesRemaining(),
+          base::Bind(&DnsTCPAttempt::OnIOComplete, base::Unretained(this)));
     }
     ReadBigEndian<uint16>(length_buffer_->data(), &response_length_);
     // Check if advertised response is too short. (Optimization only.)
@@ -468,10 +470,10 @@ class DnsTCPAttempt : public DnsAttempt {
     buffer_->DidConsume(rv);
     if (buffer_->BytesRemaining() > 0) {
       next_state_ = STATE_READ_RESPONSE;
-      return socket_->Read(buffer_,
-                           buffer_->BytesRemaining(),
-                           base::Bind(&DnsTCPAttempt::OnIOComplete,
-                                      base::Unretained(this)));
+      return socket_->Read(
+          buffer_.get(),
+          buffer_->BytesRemaining(),
+          base::Bind(&DnsTCPAttempt::OnIOComplete, base::Unretained(this)));
     }
     if (!response_->InitParse(buffer_->BytesConsumed(), *query_))
       return ERR_DNS_MALFORMED_RESPONSE;
@@ -534,7 +536,7 @@ class DnsTransactionImpl : public DnsTransaction,
       qnames_initial_size_(0),
       had_tcp_attempt_(false),
       first_server_index_(0) {
-    DCHECK(session_);
+    DCHECK(session_.get());
     DCHECK(!hostname_.empty());
     DCHECK(!callback_.is_null());
     DCHECK(!IsIPLiteral(hostname_));
@@ -937,11 +939,8 @@ class DnsTransactionFactoryImpl : public DnsTransactionFactory {
       uint16 qtype,
       const CallbackType& callback,
       const BoundNetLog& net_log) OVERRIDE {
-    return scoped_ptr<DnsTransaction>(new DnsTransactionImpl(session_,
-                                                             hostname,
-                                                             qtype,
-                                                             callback,
-                                                             net_log));
+    return scoped_ptr<DnsTransaction>(new DnsTransactionImpl(
+        session_.get(), hostname, qtype, callback, net_log));
   }
 
  private:

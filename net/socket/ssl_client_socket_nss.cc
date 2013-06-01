@@ -1093,8 +1093,8 @@ int SSLClientSocketNSS::Core::Connect(const CompletionCallback& callback) {
   DCHECK(user_read_callback_.is_null());
   DCHECK(user_write_callback_.is_null());
   DCHECK(user_connect_callback_.is_null());
-  DCHECK(!user_read_buf_);
-  DCHECK(!user_write_buf_);
+  DCHECK(!user_read_buf_.get());
+  DCHECK(!user_write_buf_.get());
 
   next_handshake_state_ = STATE_HANDSHAKE;
   int rv = DoHandshakeLoop(OK);
@@ -1148,7 +1148,7 @@ int SSLClientSocketNSS::Core::Read(IOBuffer* buf, int buf_len,
   DCHECK_EQ(STATE_NONE, next_handshake_state_);
   DCHECK(user_read_callback_.is_null());
   DCHECK(user_connect_callback_.is_null());
-  DCHECK(!user_read_buf_);
+  DCHECK(!user_read_buf_.get());
   DCHECK(nss_bufs_);
 
   user_read_buf_ = buf;
@@ -1202,7 +1202,7 @@ int SSLClientSocketNSS::Core::Write(IOBuffer* buf, int buf_len,
   DCHECK_EQ(STATE_NONE, next_handshake_state_);
   DCHECK(user_write_callback_.is_null());
   DCHECK(user_connect_callback_.is_null());
-  DCHECK(!user_write_buf_);
+  DCHECK(!user_write_buf_.get());
   DCHECK(nss_bufs_);
 
   user_write_buf_ = buf;
@@ -1545,9 +1545,9 @@ SECStatus SSLClientSocketNSS::Core::ClientAuthHandler(
 
   if (core->ssl_config_.send_client_cert) {
     // Second pass: a client certificate should have been selected.
-    if (core->ssl_config_.client_cert) {
-      CERTCertificate* cert = CERT_DupCertificate(
-          core->ssl_config_.client_cert->os_cert_handle());
+    if (core->ssl_config_.client_cert.get()) {
+      CERTCertificate* cert =
+          CERT_DupCertificate(core->ssl_config_.client_cert->os_cert_handle());
       SECKEYPrivateKey* privkey = PK11_FindKeyByAnyCert(cert, wincx);
       if (privkey) {
         // TODO(jsorianopastor): We should wait for server certificate
@@ -1957,7 +1957,7 @@ int SSLClientSocketNSS::Core::DoGetDBCertComplete(int result) {
 
 int SSLClientSocketNSS::Core::DoPayloadRead() {
   DCHECK(OnNSSTaskRunner());
-  DCHECK(user_read_buf_);
+  DCHECK(user_read_buf_.get());
   DCHECK_GT(user_read_buf_len_, 0);
 
   int rv;
@@ -2075,7 +2075,7 @@ int SSLClientSocketNSS::Core::DoPayloadRead() {
 int SSLClientSocketNSS::Core::DoPayloadWrite() {
   DCHECK(OnNSSTaskRunner());
 
-  DCHECK(user_write_buf_);
+  DCHECK(user_write_buf_.get());
 
   int old_amount_in_read_buffer = memio_GetReadableBufferSize(nss_bufs_);
   int rv = PR_Write(nss_fd_, user_write_buf_->data(), user_write_buf_len_);
@@ -2157,7 +2157,7 @@ int SSLClientSocketNSS::Core::BufferRecv() {
   } else {
     scoped_refptr<IOBuffer> read_buffer(new IOBuffer(nb));
     if (OnNetworkTaskRunner()) {
-      rv = DoBufferRecv(read_buffer, nb);
+      rv = DoBufferRecv(read_buffer.get(), nb);
     } else {
       bool posted = network_task_runner_->PostTask(
           FROM_HERE,
@@ -2202,7 +2202,7 @@ int SSLClientSocketNSS::Core::BufferSend() {
     memcpy(send_buffer->data() + len1, buf2, len2);
 
     if (OnNetworkTaskRunner()) {
-      rv = DoBufferSend(send_buffer, len);
+      rv = DoBufferSend(send_buffer.get(), len);
     } else {
       bool posted = network_task_runner_->PostTask(
           FROM_HERE,
@@ -2231,7 +2231,7 @@ void SSLClientSocketNSS::Core::OnRecvComplete(int result) {
 
   // Network layer received some data, check if client requested to read
   // decrypted data.
-  if (!user_read_buf_)
+  if (!user_read_buf_.get())
     return;
 
   int rv = DoReadLoop(result);
@@ -2253,15 +2253,13 @@ void SSLClientSocketNSS::Core::OnSendComplete(int result) {
   int rv_write = ERR_IO_PENDING;
   bool network_moved;
   do {
-    if (user_read_buf_)
+    if (user_read_buf_.get())
       rv_read = DoPayloadRead();
-    if (user_write_buf_)
+    if (user_write_buf_.get())
       rv_write = DoPayloadWrite();
     network_moved = DoTransportIO();
-  } while (rv_read == ERR_IO_PENDING &&
-           rv_write == ERR_IO_PENDING &&
-           (user_read_buf_ || user_write_buf_) &&
-           network_moved);
+  } while (rv_read == ERR_IO_PENDING && rv_write == ERR_IO_PENDING &&
+           (user_read_buf_.get() || user_write_buf_.get()) && network_moved);
 
   // If the parent SSLClientSocketNSS is deleted during the processing of the
   // Read callback and OnNSSTaskRunner() == OnNetworkTaskRunner(), then the Core
@@ -2269,13 +2267,13 @@ void SSLClientSocketNSS::Core::OnSendComplete(int result) {
   // an extra reference, then check if the Core was detached before invoking the
   // next callback.
   scoped_refptr<Core> guard(this);
-  if (user_read_buf_ && rv_read != ERR_IO_PENDING)
+  if (user_read_buf_.get() && rv_read != ERR_IO_PENDING)
     DoReadCallback(rv_read);
 
   if (OnNetworkTaskRunner() && detached_)
     return;
 
-  if (user_write_buf_ && rv_write != ERR_IO_PENDING)
+  if (user_write_buf_.get() && rv_write != ERR_IO_PENDING)
     DoWriteCallback(rv_write);
 }
 
@@ -2442,7 +2440,7 @@ void SSLClientSocketNSS::Core::UpdateServerCert() {
   nss_handshake_state_.server_cert_chain.Reset(nss_fd_);
   nss_handshake_state_.server_cert = X509Certificate::CreateFromDERCertChain(
       nss_handshake_state_.server_cert_chain.AsStringPieceVector());
-  if (nss_handshake_state_.server_cert) {
+  if (nss_handshake_state_.server_cert.get()) {
     // Since this will be called asynchronously on another thread, it needs to
     // own a reference to the certificate.
     NetLog::ParametersCallback net_log_callback =
@@ -2855,7 +2853,7 @@ bool SSLClientSocketNSS::GetSSLInfo(SSLInfo* ssl_info) {
   ssl_info->is_issued_by_known_root =
       server_cert_verify_result_.is_issued_by_known_root;
   ssl_info->client_cert_sent =
-      ssl_config_.send_client_cert && ssl_config_.client_cert;
+      ssl_config_.send_client_cert && ssl_config_.client_cert.get();
   ssl_info->channel_id_sent = WasChannelIDSent();
 
   PRUint16 cipher_suite = SSLConnectionStatusToCipherSuite(
@@ -3060,7 +3058,7 @@ bool SSLClientSocketNSS::UsingTCPFastOpen() const {
 
 int SSLClientSocketNSS::Read(IOBuffer* buf, int buf_len,
                              const CompletionCallback& callback) {
-  DCHECK(core_);
+  DCHECK(core_.get());
   DCHECK(!callback.is_null());
 
   EnterFunction(buf_len);
@@ -3072,7 +3070,7 @@ int SSLClientSocketNSS::Read(IOBuffer* buf, int buf_len,
 
 int SSLClientSocketNSS::Write(IOBuffer* buf, int buf_len,
                               const CompletionCallback& callback) {
-  DCHECK(core_);
+  DCHECK(core_.get());
   DCHECK(!callback.is_null());
 
   EnterFunction(buf_len);
@@ -3111,8 +3109,12 @@ int SSLClientSocketNSS::Init() {
 }
 
 void SSLClientSocketNSS::InitCore() {
-  core_ = new Core(base::ThreadTaskRunnerHandle::Get(), nss_task_runner_,
-                   transport_.get(), host_and_port_, ssl_config_, &net_log_,
+  core_ = new Core(base::ThreadTaskRunnerHandle::Get(),
+                   nss_task_runner_.get(),
+                   transport_.get(),
+                   host_and_port_,
+                   ssl_config_,
+                   &net_log_,
                    server_bound_cert_service_);
 }
 
@@ -3395,7 +3397,7 @@ int SSLClientSocketNSS::DoVerifyCert(int result) {
 
   // We may have failed to create X509Certificate object if we are
   // running inside sandbox.
-  if (!core_->state().server_cert) {
+  if (!core_->state().server_cert.get()) {
     server_cert_verify_result_.Reset();
     server_cert_verify_result_.cert_status = CERT_STATUS_INVALID;
     return ERR_CERT_INVALID;
@@ -3412,8 +3414,11 @@ int SSLClientSocketNSS::DoVerifyCert(int result) {
     flags |= CertVerifier::VERIFY_CERT_IO_ENABLED;
   verifier_.reset(new SingleRequestCertVerifier(cert_verifier_));
   return verifier_->Verify(
-      core_->state().server_cert, host_and_port_.host(), flags,
-      SSLConfigService::GetCRLSet(), &server_cert_verify_result_,
+      core_->state().server_cert.get(),
+      host_and_port_.host(),
+      flags,
+      SSLConfigService::GetCRLSet(),
+      &server_cert_verify_result_,
       base::Bind(&SSLClientSocketNSS::OnHandshakeIOComplete,
                  base::Unretained(this)),
       net_log_);

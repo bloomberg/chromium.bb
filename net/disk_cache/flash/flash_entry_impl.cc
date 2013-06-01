@@ -31,14 +31,15 @@ FlashEntryImpl::FlashEntryImpl(int32 id,
 }
 
 int FlashEntryImpl::Init(const CompletionCallback& callback) {
-  if (new_internal_entry_) {
+  if (new_internal_entry_.get()) {
     DCHECK(callback.is_null());
     init_ = true;
     return net::OK;
   }
-  DCHECK(!callback.is_null() && old_internal_entry_);
+  DCHECK(!callback.is_null() && old_internal_entry_.get());
   callback_ = callback;
-  PostTaskAndReplyWithResult(cache_thread_, FROM_HERE,
+  PostTaskAndReplyWithResult(cache_thread_.get(),
+                             FROM_HERE,
                              Bind(&InternalEntry::Init, old_internal_entry_),
                              Bind(&FlashEntryImpl::OnInitComplete, this));
   return net::ERR_IO_PENDING;

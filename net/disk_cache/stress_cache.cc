@@ -168,7 +168,8 @@ void StressTheCache(int iteration) {
     base::snprintf(buffer->data(), kSize,
                    "i: %d iter: %d, size: %d, truncate: %d     ", i, iteration,
                    size, truncate ? 1 : 0);
-    rv = entries[slot]->WriteData(0, 0, buffer, size, cb.callback(), truncate);
+    rv = entries[slot]
+        ->WriteData(0, 0, buffer.get(), size, cb.callback(), truncate);
     CHECK_EQ(size, cb.GetResult(rv));
 
     if (rand() % 100 > 80) {

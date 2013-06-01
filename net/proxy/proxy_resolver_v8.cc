@@ -710,7 +710,7 @@ void ProxyResolverV8::PurgeMemory() {
 int ProxyResolverV8::SetPacScript(
     const scoped_refptr<ProxyResolverScriptData>& script_data,
     const CompletionCallback& /*callback*/) {
-  DCHECK(script_data);
+  DCHECK(script_data.get());
   DCHECK(js_bindings_);
 
   context_.reset();

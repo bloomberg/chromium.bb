@@ -61,9 +61,7 @@ class NET_EXPORT_PRIVATE SerialWorker
   // Executed on origin thread after |DoRead| completes.
   virtual void OnWorkFinished() = 0;
 
-  base::MessageLoopProxy* loop() {
-    return message_loop_;
-  }
+  base::MessageLoopProxy* loop() { return message_loop_.get(); }
 
  private:
   enum State {

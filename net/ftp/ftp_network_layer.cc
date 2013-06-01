@@ -1,6 +1,6 @@
-// Copyright (c) 2008 The Chromium Authors. All rights reserved.  Use of this
-// source code is governed by a BSD-style license that can be found in the
-// LICENSE file.
+// Copyright (c) 2008 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
 #include "net/ftp/ftp_network_layer.h"
 
@@ -28,8 +28,8 @@ FtpTransaction* FtpNetworkLayer::CreateTransaction() {
   if (suspended_)
     return NULL;
 
-  return new FtpNetworkTransaction(
-      session_, ClientSocketFactory::GetDefaultFactory());
+  return new FtpNetworkTransaction(session_.get(),
+                                   ClientSocketFactory::GetDefaultFactory());
 }
 
 void FtpNetworkLayer::Suspend(bool suspend) {

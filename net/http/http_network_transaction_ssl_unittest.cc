@@ -129,7 +129,7 @@ TEST_F(HttpNetworkTransactionSSLTest, SSL3FallbackDisabled_Google) {
   scoped_refptr<HttpNetworkSession> session(
       new HttpNetworkSession(session_params_));
   scoped_ptr<HttpNetworkTransaction> trans(
-      new HttpNetworkTransaction(DEFAULT_PRIORITY, session));
+      new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   SSLConfig& ssl_config = GetServerSSLConfig(trans.get());
   ssl_config.unrestricted_ssl3_fallback_enabled = false;
@@ -175,7 +175,7 @@ TEST_F(HttpNetworkTransactionSSLTest, SSL3FallbackEnabled_Google) {
   scoped_refptr<HttpNetworkSession> session(
       new HttpNetworkSession(session_params_));
   scoped_ptr<HttpNetworkTransaction> trans(
-      new HttpNetworkTransaction(DEFAULT_PRIORITY, session));
+      new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   SSLConfig& ssl_config = GetServerSSLConfig(trans.get());
   ssl_config.unrestricted_ssl3_fallback_enabled = true;
@@ -222,7 +222,7 @@ TEST_F(HttpNetworkTransactionSSLTest, SSL3FallbackDisabled_Paypal) {
   scoped_refptr<HttpNetworkSession> session(
       new HttpNetworkSession(session_params_));
   scoped_ptr<HttpNetworkTransaction> trans(
-      new HttpNetworkTransaction(DEFAULT_PRIORITY, session));
+      new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   SSLConfig& ssl_config = GetServerSSLConfig(trans.get());
   ssl_config.unrestricted_ssl3_fallback_enabled = false;
@@ -275,7 +275,7 @@ TEST_F(HttpNetworkTransactionSSLTest, SSLFallback) {
   scoped_refptr<HttpNetworkSession> session(
       new HttpNetworkSession(session_params_));
   scoped_ptr<HttpNetworkTransaction> trans(
-      new HttpNetworkTransaction(DEFAULT_PRIORITY, session));
+      new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   SSLConfig& ssl_config = GetServerSSLConfig(trans.get());
   ssl_config.unrestricted_ssl3_fallback_enabled = true;

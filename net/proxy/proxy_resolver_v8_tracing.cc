@@ -1077,7 +1077,7 @@ ProxyResolverV8Tracing::ProxyResolverV8Tracing(
 
 ProxyResolverV8Tracing::~ProxyResolverV8Tracing() {
   // Note, all requests should have been cancelled.
-  CHECK(!set_pac_script_job_);
+  CHECK(!set_pac_script_job_.get());
   CHECK_EQ(0, num_outstanding_callbacks_);
 
   // Join the worker thread. See http://crbug.com/69710. Note that we call
@@ -1094,7 +1094,7 @@ int ProxyResolverV8Tracing::GetProxyForURL(const GURL& url,
                                            const BoundNetLog& net_log) {
   DCHECK(CalledOnValidThread());
   DCHECK(!callback.is_null());
-  DCHECK(!set_pac_script_job_);
+  DCHECK(!set_pac_script_job_.get());
 
   scoped_refptr<Job> job = new Job(this);
 
@@ -1116,7 +1116,7 @@ LoadState ProxyResolverV8Tracing::GetLoadState(RequestHandle request) const {
 }
 
 void ProxyResolverV8Tracing::CancelSetPacScript() {
-  DCHECK(set_pac_script_job_);
+  DCHECK(set_pac_script_job_.get());
   set_pac_script_job_->Cancel();
   set_pac_script_job_ = NULL;
 }
@@ -1139,7 +1139,7 @@ int ProxyResolverV8Tracing::SetPacScript(
   // Note that there should not be any outstanding (non-cancelled) Jobs when
   // setting the PAC script (ProxyService should guarantee this). If there are,
   // then they might complete in strange ways after the new script is set.
-  DCHECK(!set_pac_script_job_);
+  DCHECK(!set_pac_script_job_.get());
   CHECK_EQ(0, num_outstanding_callbacks_);
 
   set_pac_script_job_ = new Job(this);

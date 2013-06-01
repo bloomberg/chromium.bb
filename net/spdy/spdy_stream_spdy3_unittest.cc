@@ -172,7 +172,7 @@ TEST_F(SpdyStreamSpdy3Test, PushedStream) {
 
   // Conjure up a stream.
   SpdyStream stream(SPDY_PUSH_STREAM,
-                    spdy_session,
+                    spdy_session.get(),
                     std::string(),
                     DEFAULT_PRIORITY,
                     kSpdyStreamInitialWindowSize,

@@ -203,7 +203,7 @@ TEST_F(FileStreamTest, AsyncRead) {
   std::string data_read;
   for (;;) {
     scoped_refptr<IOBufferWithSize> buf = new IOBufferWithSize(4);
-    rv = stream.Read(buf, buf->size(), callback.callback());
+    rv = stream.Read(buf.get(), buf->size(), callback.callback());
     if (rv == ERR_IO_PENDING)
       rv = callback.WaitForResult();
     EXPECT_LE(0, rv);
@@ -234,7 +234,7 @@ TEST_F(FileStreamTest, AsyncRead_EarlyDelete) {
   EXPECT_EQ(file_size, total_bytes_avail);
 
   scoped_refptr<IOBufferWithSize> buf = new IOBufferWithSize(4);
-  rv = stream->Read(buf, buf->size(), callback.callback());
+  rv = stream->Read(buf.get(), buf->size(), callback.callback());
   stream.reset();  // Delete instead of closing it.
   if (rv < 0) {
     EXPECT_EQ(ERR_IO_PENDING, rv);
@@ -310,7 +310,7 @@ TEST_F(FileStreamTest, AsyncRead_FromOffset) {
   std::string data_read;
   for (;;) {
     scoped_refptr<IOBufferWithSize> buf = new IOBufferWithSize(4);
-    rv = stream.Read(buf, buf->size(), callback.callback());
+    rv = stream.Read(buf.get(), buf->size(), callback.callback());
     if (rv == ERR_IO_PENDING)
       rv = callback.WaitForResult();
     EXPECT_LE(0, rv);
@@ -422,10 +422,10 @@ TEST_F(FileStreamTest, AsyncWrite) {
 
   scoped_refptr<IOBufferWithSize> buf = CreateTestDataBuffer();
   scoped_refptr<DrainableIOBuffer> drainable =
-      new DrainableIOBuffer(buf, buf->size());
+      new DrainableIOBuffer(buf.get(), buf->size());
   while (total_bytes_written != kTestDataSize) {
-    rv = stream.Write(drainable, drainable->BytesRemaining(),
-                      callback.callback());
+    rv = stream.Write(
+        drainable.get(), drainable->BytesRemaining(), callback.callback());
     if (rv == ERR_IO_PENDING)
       rv = callback.WaitForResult();
     EXPECT_LT(0, rv);
@@ -455,7 +455,7 @@ TEST_F(FileStreamTest, AsyncWrite_EarlyDelete) {
   EXPECT_EQ(0, file_size);
 
   scoped_refptr<IOBufferWithSize> buf = CreateTestDataBuffer();
-  rv = stream->Write(buf, buf->size(), callback.callback());
+  rv = stream->Write(buf.get(), buf->size(), callback.callback());
   stream.reset();
   if (rv < 0) {
     EXPECT_EQ(ERR_IO_PENDING, rv);
@@ -519,10 +519,10 @@ TEST_F(FileStreamTest, AsyncWrite_FromOffset) {
 
   scoped_refptr<IOBufferWithSize> buf = CreateTestDataBuffer();
   scoped_refptr<DrainableIOBuffer> drainable =
-      new DrainableIOBuffer(buf, buf->size());
+      new DrainableIOBuffer(buf.get(), buf->size());
   while (total_bytes_written != kTestDataSize) {
-    rv = stream.Write(drainable, drainable->BytesRemaining(),
-                      callback.callback());
+    rv = stream.Write(
+        drainable.get(), drainable->BytesRemaining(), callback.callback());
     if (rv == ERR_IO_PENDING)
       rv = callback.WaitForResult();
     EXPECT_LT(0, rv);
@@ -646,7 +646,7 @@ TEST_F(FileStreamTest, BasicAsyncReadWrite) {
   std::string data_read;
   for (;;) {
     scoped_refptr<IOBufferWithSize> buf = new IOBufferWithSize(4);
-    rv = stream->Read(buf, buf->size(), callback.callback());
+    rv = stream->Read(buf.get(), buf->size(), callback.callback());
     if (rv == ERR_IO_PENDING)
       rv = callback.WaitForResult();
     EXPECT_LE(0, rv);
@@ -662,10 +662,10 @@ TEST_F(FileStreamTest, BasicAsyncReadWrite) {
 
   scoped_refptr<IOBufferWithSize> buf = CreateTestDataBuffer();
   scoped_refptr<DrainableIOBuffer> drainable =
-      new DrainableIOBuffer(buf, buf->size());
+      new DrainableIOBuffer(buf.get(), buf->size());
   while (total_bytes_written != kTestDataSize) {
-    rv = stream->Write(drainable, drainable->BytesRemaining(),
-                       callback.callback());
+    rv = stream->Write(
+        drainable.get(), drainable->BytesRemaining(), callback.callback());
     if (rv == ERR_IO_PENDING)
       rv = callback.WaitForResult();
     EXPECT_LT(0, rv);
@@ -710,10 +710,10 @@ TEST_F(FileStreamTest, BasicAsyncWriteRead) {
 
   scoped_refptr<IOBufferWithSize> buf = CreateTestDataBuffer();
   scoped_refptr<DrainableIOBuffer> drainable =
-      new DrainableIOBuffer(buf, buf->size());
+      new DrainableIOBuffer(buf.get(), buf->size());
   while (total_bytes_written != kTestDataSize) {
-    rv = stream->Write(drainable, drainable->BytesRemaining(),
-                      callback.callback());
+    rv = stream->Write(
+        drainable.get(), drainable->BytesRemaining(), callback.callback());
     if (rv == ERR_IO_PENDING)
       rv = callback.WaitForResult();
     EXPECT_LT(0, rv);
@@ -735,7 +735,7 @@ TEST_F(FileStreamTest, BasicAsyncWriteRead) {
   std::string data_read;
   for (;;) {
     scoped_refptr<IOBufferWithSize> buf = new IOBufferWithSize(4);
-    rv = stream->Read(buf, buf->size(), callback.callback());
+    rv = stream->Read(buf.get(), buf->size(), callback.callback());
     if (rv == ERR_IO_PENDING)
       rv = callback.WaitForResult();
     EXPECT_LE(0, rv);
@@ -758,11 +758,10 @@ TEST_F(FileStreamTest, BasicAsyncWriteRead) {
 
 class TestWriteReadCompletionCallback {
  public:
-  TestWriteReadCompletionCallback(
-      FileStream* stream,
-      int* total_bytes_written,
-      int* total_bytes_read,
-      std::string* data_read)
+  TestWriteReadCompletionCallback(FileStream* stream,
+                                  int* total_bytes_written,
+                                  int* total_bytes_read,
+                                  std::string* data_read)
       : result_(0),
         have_result_(false),
         waiting_for_result_(false),
@@ -773,8 +772,7 @@ class TestWriteReadCompletionCallback {
         callback_(base::Bind(&TestWriteReadCompletionCallback::OnComplete,
                              base::Unretained(this))),
         test_data_(CreateTestDataBuffer()),
-        drainable_(new DrainableIOBuffer(test_data_, kTestDataSize)) {
-  }
+        drainable_(new DrainableIOBuffer(test_data_.get(), kTestDataSize)) {}
 
   int WaitForResult() {
     DCHECK(!waiting_for_result_);
@@ -802,8 +800,8 @@ class TestWriteReadCompletionCallback {
       std::string data_read;
       TestWriteReadCompletionCallback callback(
           stream_, &total_bytes_written, &total_bytes_read, &data_read);
-      rv = stream_->Write(drainable_, drainable_->BytesRemaining(),
-                          callback.callback());
+      rv = stream_->Write(
+          drainable_.get(), drainable_->BytesRemaining(), callback.callback());
       DCHECK_EQ(ERR_IO_PENDING, rv);
       rv = callback.WaitForResult();
       drainable_->DidConsume(total_bytes_written);
@@ -816,7 +814,7 @@ class TestWriteReadCompletionCallback {
       TestCompletionCallback callback;
       for (;;) {
         scoped_refptr<IOBufferWithSize> buf = new IOBufferWithSize(4);
-        rv = stream_->Read(buf, buf->size(), callback.callback());
+        rv = stream_->Read(buf.get(), buf->size(), callback.callback());
         if (rv == ERR_IO_PENDING) {
           base::MessageLoop::ScopedNestableTaskAllower allow(
               base::MessageLoop::current());
@@ -878,7 +876,7 @@ TEST_F(FileStreamTest, AsyncWriteRead) {
                                            &total_bytes_read, &data_read);
 
   scoped_refptr<IOBufferWithSize> buf = CreateTestDataBuffer();
-  rv = stream->Write(buf, buf->size(), callback.callback());
+  rv = stream->Write(buf.get(), buf->size(), callback.callback());
   if (rv == ERR_IO_PENDING)
     rv = callback.WaitForResult();
   EXPECT_LT(0, rv);
@@ -907,8 +905,7 @@ class TestWriteCloseCompletionCallback {
         callback_(base::Bind(&TestWriteCloseCompletionCallback::OnComplete,
                              base::Unretained(this))),
         test_data_(CreateTestDataBuffer()),
-        drainable_(new DrainableIOBuffer(test_data_, kTestDataSize)) {
-  }
+        drainable_(new DrainableIOBuffer(test_data_.get(), kTestDataSize)) {}
 
   int WaitForResult() {
     DCHECK(!waiting_for_result_);
@@ -934,8 +931,8 @@ class TestWriteCloseCompletionCallback {
       // Recurse to finish writing all data.
       int total_bytes_written = 0;
       TestWriteCloseCompletionCallback callback(stream_, &total_bytes_written);
-      rv = stream_->Write(drainable_, drainable_->BytesRemaining(),
-                          callback.callback());
+      rv = stream_->Write(
+          drainable_.get(), drainable_->BytesRemaining(), callback.callback());
       DCHECK_EQ(ERR_IO_PENDING, rv);
       rv = callback.WaitForResult();
       drainable_->DidConsume(total_bytes_written);
@@ -985,7 +982,7 @@ TEST_F(FileStreamTest, AsyncWriteClose) {
   TestWriteCloseCompletionCallback callback(stream.get(), &total_bytes_written);
 
   scoped_refptr<IOBufferWithSize> buf = CreateTestDataBuffer();
-  rv = stream->Write(buf, buf->size(), callback.callback());
+  rv = stream->Write(buf.get(), buf->size(), callback.callback());
   if (rv == ERR_IO_PENDING)
     total_bytes_written = callback.WaitForResult();
   EXPECT_LT(0, total_bytes_written);
@@ -1055,7 +1052,7 @@ TEST_F(FileStreamTest, AsyncWriteError) {
 
   // Try passing NULL buffer to Write() and check that it fails.
   scoped_refptr<IOBuffer> buf = new WrappedIOBuffer(NULL);
-  rv = stream->Write(buf, 1, callback.callback());
+  rv = stream->Write(buf.get(), 1, callback.callback());
   if (rv == ERR_IO_PENDING)
     rv = callback.WaitForResult();
   EXPECT_LT(rv, 0);
@@ -1074,7 +1071,7 @@ TEST_F(FileStreamTest, AsyncReadError) {
 
   // Try passing NULL buffer to Read() and check that it fails.
   scoped_refptr<IOBuffer> buf = new WrappedIOBuffer(NULL);
-  rv = stream->Read(buf, 1, callback.callback());
+  rv = stream->Read(buf.get(), 1, callback.callback());
   if (rv == ERR_IO_PENDING)
     rv = callback.WaitForResult();
   EXPECT_LT(rv, 0);

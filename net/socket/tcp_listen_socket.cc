@@ -110,7 +110,7 @@ void TCPListenSocket::Accept() {
 #if defined(OS_POSIX)
   sock->WatchSocket(WAITING_READ);
 #endif
-  socket_delegate_->DidAccept(this, sock);
+  socket_delegate_->DidAccept(this, sock.get());
 }
 
 TCPListenSocketFactory::TCPListenSocketFactory(const string& ip, int port)

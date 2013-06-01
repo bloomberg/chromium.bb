@@ -69,7 +69,7 @@ int MockAsyncProxyResolverBase::GetProxyForURL(
 void MockAsyncProxyResolverBase::CancelRequest(RequestHandle request_handle) {
   scoped_refptr<Request> request = reinterpret_cast<Request*>(request_handle);
   cancelled_requests_.push_back(request);
-  RemovePendingRequest(request);
+  RemovePendingRequest(request.get());
 }
 
 LoadState MockAsyncProxyResolverBase::GetLoadState(

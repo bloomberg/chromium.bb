@@ -94,7 +94,7 @@ ExampleEmployer::~ExampleEmployer() {
 }
 
 bool ExampleEmployer::DoSomething(const net::CompletionCallback& callback) {
-  DCHECK(!request_) << "already in use";
+  DCHECK(!request_.get()) << "already in use";
 
   request_ = new ExampleWorker(this, callback);
 

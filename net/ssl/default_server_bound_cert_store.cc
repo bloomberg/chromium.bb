@@ -315,7 +315,7 @@ void DefaultServerBoundCertStore::SetForceKeepSessionState() {
   DCHECK(CalledOnValidThread());
   InitIfNecessary();
 
-  if (store_)
+  if (store_.get())
     store_->SetForceKeepSessionState();
 }
 
@@ -335,7 +335,7 @@ void DefaultServerBoundCertStore::DeleteAllInMemory() {
 
 void DefaultServerBoundCertStore::InitStore() {
   DCHECK(CalledOnValidThread());
-  DCHECK(store_) << "Store must exist to initialize";
+  DCHECK(store_.get()) << "Store must exist to initialize";
   DCHECK(!loaded_);
 
   store_->Load(base::Bind(&DefaultServerBoundCertStore::OnLoaded,
@@ -412,7 +412,7 @@ void DefaultServerBoundCertStore::SyncDeleteAllCreatedBetween(
     ServerBoundCert* cert = cur->second;
     if ((delete_begin.is_null() || cert->creation_time() >= delete_begin) &&
         (delete_end.is_null() || cert->creation_time() < delete_end)) {
-      if (store_)
+      if (store_.get())
         store_->DeleteServerBoundCert(*cert);
       delete cert;
       server_bound_certs_.erase(cur);
@@ -459,7 +459,7 @@ void DefaultServerBoundCertStore::InternalDeleteServerBoundCert(
     return;  // There is nothing to delete.
 
   ServerBoundCert* cert = it->second;
-  if (store_)
+  if (store_.get())
     store_->DeleteServerBoundCert(*cert);
   server_bound_certs_.erase(it);
   delete cert;
@@ -471,7 +471,7 @@ void DefaultServerBoundCertStore::InternalInsertServerBoundCert(
   DCHECK(CalledOnValidThread());
   DCHECK(loaded_);
 
-  if (store_)
+  if (store_.get())
     store_->AddServerBoundCert(*cert);
   server_bound_certs_[server_identifier] = cert;
 }

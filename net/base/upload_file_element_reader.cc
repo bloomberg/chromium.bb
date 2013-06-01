@@ -94,7 +94,7 @@ int ReadInternal(scoped_refptr<IOBuffer> buf,
 
 UploadFileElementReader::FileStreamDeleter::FileStreamDeleter(
     base::TaskRunner* task_runner) : task_runner_(task_runner) {
-  DCHECK(task_runner_);
+  DCHECK(task_runner_.get());
 }
 
 UploadFileElementReader::FileStreamDeleter::~FileStreamDeleter() {}
@@ -119,11 +119,11 @@ UploadFileElementReader::UploadFileElementReader(
       range_offset_(range_offset),
       range_length_(range_length),
       expected_modification_time_(expected_modification_time),
-      file_stream_(NULL, FileStreamDeleter(task_runner_)),
+      file_stream_(NULL, FileStreamDeleter(task_runner_.get())),
       content_length_(0),
       bytes_remaining_(0),
       weak_ptr_factory_(this) {
-  DCHECK(task_runner_);
+  DCHECK(task_runner_.get());
 }
 
 UploadFileElementReader::~UploadFileElementReader() {
@@ -138,10 +138,10 @@ int UploadFileElementReader::Init(const CompletionCallback& callback) {
   Reset();
 
   ScopedFileStreamPtr* file_stream =
-      new ScopedFileStreamPtr(NULL, FileStreamDeleter(task_runner_));
+      new ScopedFileStreamPtr(NULL, FileStreamDeleter(task_runner_.get()));
   uint64* content_length = new uint64;
   const bool posted = base::PostTaskAndReplyWithResult(
-      task_runner_,
+      task_runner_.get(),
       FROM_HERE,
       base::Bind(&InitInternal<FileStreamDeleter>,
                  path_,
@@ -182,7 +182,7 @@ int UploadFileElementReader::Read(IOBuffer* buf,
   // Pass the ownership of file_stream_ to the worker pool to safely perform
   // operation even when |this| is destructed before the read completes.
   const bool posted = base::PostTaskAndReplyWithResult(
-      task_runner_,
+      task_runner_.get(),
       FROM_HERE,
       base::Bind(&ReadInternal,
                  scoped_refptr<IOBuffer>(buf),

@@ -283,11 +283,11 @@ URLRequest::~URLRequest() {
 
   if (network_delegate_) {
     network_delegate_->NotifyURLRequestDestroyed(this);
-    if (job_)
+    if (job_.get())
       job_->NotifyURLRequestDestroyed();
   }
 
-  if (job_)
+  if (job_.get())
     OrphanJob();
 
   int deleted = context_->url_requests()->erase(this);
@@ -385,12 +385,12 @@ LoadStateWithParam URLRequest::GetLoadState() const {
     return LoadStateWithParam(LOAD_STATE_WAITING_FOR_DELEGATE,
                               load_state_param_);
   }
-  return LoadStateWithParam(job_ ? job_->GetLoadState() : LOAD_STATE_IDLE,
+  return LoadStateWithParam(job_.get() ? job_->GetLoadState() : LOAD_STATE_IDLE,
                             base::string16());
 }
 
 UploadProgress URLRequest::GetUploadProgress() const {
-  if (!job_) {
+  if (!job_.get()) {
     // We haven't started or the request was cancelled
     return UploadProgress();
   }
@@ -404,13 +404,13 @@ UploadProgress URLRequest::GetUploadProgress() const {
 }
 
 void URLRequest::GetResponseHeaderById(int id, string* value) {
-  DCHECK(job_);
+  DCHECK(job_.get());
   NOTREACHED() << "implement me!";
 }
 
 void URLRequest::GetResponseHeaderByName(const string& name, string* value) {
   DCHECK(value);
-  if (response_info_.headers) {
+  if (response_info_.headers.get()) {
     response_info_.headers->GetNormalizedHeader(name, value);
   } else {
     value->clear();
@@ -419,7 +419,7 @@ void URLRequest::GetResponseHeaderByName(const string& name, string* value) {
 
 void URLRequest::GetAllResponseHeaders(string* headers) {
   DCHECK(headers);
-  if (response_info_.headers) {
+  if (response_info_.headers.get()) {
     response_info_.headers->GetNormalizedHeaders(headers);
   } else {
     headers->clear();
@@ -427,7 +427,7 @@ void URLRequest::GetAllResponseHeaders(string* headers) {
 }
 
 HostPortPair URLRequest::GetSocketAddress() const {
-  DCHECK(job_);
+  DCHECK(job_.get());
   return job_->GetSocketAddress();
 }
 
@@ -440,22 +440,22 @@ void URLRequest::GetLoadTimingInfo(LoadTimingInfo* load_timing_info) const {
 }
 
 bool URLRequest::GetResponseCookies(ResponseCookies* cookies) {
-  DCHECK(job_);
+  DCHECK(job_.get());
   return job_->GetResponseCookies(cookies);
 }
 
 void URLRequest::GetMimeType(string* mime_type) {
-  DCHECK(job_);
+  DCHECK(job_.get());
   job_->GetMimeType(mime_type);
 }
 
 void URLRequest::GetCharset(string* charset) {
-  DCHECK(job_);
+  DCHECK(job_.get());
   job_->GetCharset(charset);
 }
 
 int URLRequest::GetResponseCode() {
-  DCHECK(job_);
+  DCHECK(job_.get());
   return job_->GetResponseCode();
 }
 
@@ -548,7 +548,7 @@ void URLRequest::Start() {
 ///////////////////////////////////////////////////////////////////////////////
 
 void URLRequest::BeforeRequestComplete(int error) {
-  DCHECK(!job_);
+  DCHECK(!job_.get());
   DCHECK_NE(ERR_IO_PENDING, error);
   DCHECK_EQ(network_delegate_, context_->network_delegate());
 
@@ -580,7 +580,7 @@ void URLRequest::BeforeRequestComplete(int error) {
 
 void URLRequest::StartJob(URLRequestJob* job) {
   DCHECK(!is_pending_);
-  DCHECK(!job_);
+  DCHECK(!job_.get());
 
   net_log_.BeginEvent(
       NetLog::TYPE_URL_REQUEST_START_JOB,
@@ -609,9 +609,9 @@ void URLRequest::StartJob(URLRequestJob* job) {
 
 void URLRequest::Restart() {
   // Should only be called if the original job didn't make any progress.
-  DCHECK(job_ && !job_->has_response_started());
-  RestartWithJob(URLRequestJobManager::GetInstance()->CreateJob(
-      this, network_delegate_));
+  DCHECK(job_.get() && !job_->has_response_started());
+  RestartWithJob(
+      URLRequestJobManager::GetInstance()->CreateJob(this, network_delegate_));
 }
 
 void URLRequest::RestartWithJob(URLRequestJob *job) {
@@ -630,7 +630,7 @@ void URLRequest::CancelWithError(int error) {
 
 void URLRequest::CancelWithSSLError(int error, const SSLInfo& ssl_info) {
   // This should only be called on a started request.
-  if (!is_pending_ || !job_ || job_->has_response_started()) {
+  if (!is_pending_ || !job_.get() || job_->has_response_started()) {
     NOTREACHED();
     return;
   }
@@ -655,7 +655,7 @@ void URLRequest::DoCancel(int error, const SSLInfo& ssl_info) {
     }
   }
 
-  if (is_pending_ && job_)
+  if (is_pending_ && job_.get())
     job_->Kill();
 
   // We need to notify about the end of this job here synchronously. The
@@ -669,7 +669,7 @@ void URLRequest::DoCancel(int error, const SSLInfo& ssl_info) {
 }
 
 bool URLRequest::Read(IOBuffer* dest, int dest_size, int* bytes_read) {
-  DCHECK(job_);
+  DCHECK(job_.get());
   DCHECK(bytes_read);
   *bytes_read = 0;
 
@@ -699,7 +699,7 @@ bool URLRequest::Read(IOBuffer* dest, int dest_size, int* bytes_read) {
 }
 
 void URLRequest::StopCaching() {
-  DCHECK(job_);
+  DCHECK(job_.get());
   job_->StopCaching();
 }
 
@@ -751,40 +751,40 @@ void URLRequest::NotifyResponseStarted() {
 }
 
 void URLRequest::FollowDeferredRedirect() {
-  CHECK(job_);
+  CHECK(job_.get());
   CHECK(status_.is_success());
 
   job_->FollowDeferredRedirect();
 }
 
 void URLRequest::SetAuth(const AuthCredentials& credentials) {
-  DCHECK(job_);
+  DCHECK(job_.get());
   DCHECK(job_->NeedsAuth());
 
   job_->SetAuth(credentials);
 }
 
 void URLRequest::CancelAuth() {
-  DCHECK(job_);
+  DCHECK(job_.get());
   DCHECK(job_->NeedsAuth());
 
   job_->CancelAuth();
 }
 
 void URLRequest::ContinueWithCertificate(X509Certificate* client_cert) {
-  DCHECK(job_);
+  DCHECK(job_.get());
 
   job_->ContinueWithCertificate(client_cert);
 }
 
 void URLRequest::ContinueDespiteLastError() {
-  DCHECK(job_);
+  DCHECK(job_.get());
 
   job_->ContinueDespiteLastError();
 }
 
 void URLRequest::PrepareToRestart() {
-  DCHECK(job_);
+  DCHECK(job_.get());
 
   // Close the current URL_REQUEST_START_JOB, since we will be starting a new
   // one.
@@ -887,7 +887,7 @@ const URLRequestContext* URLRequest::context() const {
 
 int64 URLRequest::GetExpectedContentSize() const {
   int64 expected_content_size = -1;
-  if (job_)
+  if (job_.get())
     expected_content_size = job_->expected_content_size();
 
   return expected_content_size;
@@ -900,7 +900,7 @@ void URLRequest::SetPriority(RequestPriority priority) {
     return;
 
   priority_ = priority;
-  if (job_) {
+  if (job_.get()) {
     net_log_.AddEvent(NetLog::TYPE_URL_REQUEST_SET_PRIORITY,
                       NetLog::IntegerCallback("priority", priority_));
     job_->SetPriority(priority_);
@@ -1045,7 +1045,7 @@ void URLRequest::OnHeadersComplete() {
   // Cache load timing information now, as information will be lost once the
   // socket is closed and the ClientSocketHandle is Reset, which will happen
   // once the body is complete.  The start times should already be populated.
-  if (job_) {
+  if (job_.get()) {
     // Keep a copy of the two times the URLRequest sets.
     base::TimeTicks request_start = load_timing_info_.request_start;
     base::Time request_start_time = load_timing_info_.request_start_time;
@@ -1072,7 +1072,7 @@ void URLRequest::NotifyRequestCompleted() {
   is_redirecting_ = false;
   has_notified_completion_ = true;
   if (network_delegate_)
-    network_delegate_->NotifyCompleted(this, job_ != NULL);
+    network_delegate_->NotifyCompleted(this, job_.get() != NULL);
 }
 
 void URLRequest::SetBlockedOnDelegate() {

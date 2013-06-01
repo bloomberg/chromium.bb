@@ -67,16 +67,24 @@ bool TimeWrite(int num_entries, disk_cache::Backend* cache,
     if (net::OK != cb.GetResult(rv))
       break;
     int ret = cache_entry->WriteData(
-        0, 0, buffer1, kSize1,
-        base::Bind(&CallbackTest::Run, base::Unretained(&callback)), false);
+        0,
+        0,
+        buffer1.get(),
+        kSize1,
+        base::Bind(&CallbackTest::Run, base::Unretained(&callback)),
+        false);
     if (net::ERR_IO_PENDING == ret)
       expected++;
     else if (kSize1 != ret)
       break;
 
     ret = cache_entry->WriteData(
-        1, 0, buffer2, entry.data_len,
-        base::Bind(&CallbackTest::Run, base::Unretained(&callback)), false);
+        1,
+        0,
+        buffer2.get(),
+        entry.data_len,
+        base::Bind(&CallbackTest::Run, base::Unretained(&callback)),
+        false);
     if (net::ERR_IO_PENDING == ret)
       expected++;
     else if (entry.data_len != ret)
@@ -116,7 +124,10 @@ bool TimeRead(int num_entries, disk_cache::Backend* cache,
     if (net::OK != cb.GetResult(rv))
       break;
     int ret = cache_entry->ReadData(
-        0, 0, buffer1, kSize1,
+        0,
+        0,
+        buffer1.get(),
+        kSize1,
         base::Bind(&CallbackTest::Run, base::Unretained(&callback)));
     if (net::ERR_IO_PENDING == ret)
       expected++;
@@ -124,7 +135,10 @@ bool TimeRead(int num_entries, disk_cache::Backend* cache,
       break;
 
     ret = cache_entry->ReadData(
-        1, 0, buffer2, entries[i].data_len,
+        1,
+        0,
+        buffer2.get(),
+        entries[i].data_len,
         base::Bind(&CallbackTest::Run, base::Unretained(&callback)));
     if (net::ERR_IO_PENDING == ret)
       expected++;

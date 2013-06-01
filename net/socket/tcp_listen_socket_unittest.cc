@@ -43,7 +43,7 @@ void TCPListenSocketTester::SetUp() {
 
   // verify Listen succeeded
   NextAction();
-  ASSERT_FALSE(server_ == NULL);
+  ASSERT_FALSE(server_.get() == NULL);
   ASSERT_EQ(ACTION_LISTEN, last_action_.type());
 
   // verify the connect/accept and setup test_socket_
@@ -127,7 +127,7 @@ void TCPListenSocketTester::Shutdown() {
 
 void TCPListenSocketTester::Listen() {
   server_ = DoListen();
-  ASSERT_TRUE(server_);
+  ASSERT_TRUE(server_.get());
   server_->AddRef();
   ReportAction(TCPListenSocketTestAction(ACTION_LISTEN));
 }

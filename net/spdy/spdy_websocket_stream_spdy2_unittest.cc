@@ -348,7 +348,7 @@ TEST_F(SpdyWebSocketStreamSpdy2Test, Basic) {
       base::Bind(&SpdyWebSocketStreamSpdy2Test::DoSendClosingFrame,
                  base::Unretained(this)));
 
-  websocket_stream_.reset(new SpdyWebSocketStream(session_, &delegate));
+  websocket_stream_.reset(new SpdyWebSocketStream(session_.get(), &delegate));
 
   BoundNetLog net_log;
   GURL url("ws://example.com/echo");
@@ -421,7 +421,7 @@ TEST_F(SpdyWebSocketStreamSpdy2Test, DestructionBeforeClose) {
       base::Bind(&SpdyWebSocketStreamSpdy2Test::DoSync,
                  base::Unretained(this)));
 
-  websocket_stream_.reset(new SpdyWebSocketStream(session_, &delegate));
+  websocket_stream_.reset(new SpdyWebSocketStream(session_.get(), &delegate));
 
   BoundNetLog net_log;
   GURL url("ws://example.com/echo");
@@ -484,7 +484,7 @@ TEST_F(SpdyWebSocketStreamSpdy2Test, DestructionAfterExplicitClose) {
       base::Bind(&SpdyWebSocketStreamSpdy2Test::DoClose,
                  base::Unretained(this)));
 
-  websocket_stream_.reset(new SpdyWebSocketStream(session_, &delegate));
+  websocket_stream_.reset(new SpdyWebSocketStream(session_.get(), &delegate));
 
   BoundNetLog net_log;
   GURL url("ws://example.com/echo");
@@ -550,7 +550,7 @@ TEST_F(SpdyWebSocketStreamSpdy2Test, IOPending) {
   SpdyWebSocketStreamEventRecorder block_delegate((CompletionCallback()));
 
   scoped_ptr<SpdyWebSocketStream> block_stream(
-      new SpdyWebSocketStream(session_, &block_delegate));
+      new SpdyWebSocketStream(session_.get(), &block_delegate));
   BoundNetLog block_net_log;
   GURL block_url("ws://example.com/block");
   ASSERT_EQ(OK,
@@ -568,7 +568,7 @@ TEST_F(SpdyWebSocketStreamSpdy2Test, IOPending) {
       base::Bind(&SpdyWebSocketStreamSpdy2Test::DoSendClosingFrame,
                  base::Unretained(this)));
 
-  websocket_stream_.reset(new SpdyWebSocketStream(session_, &delegate));
+  websocket_stream_.reset(new SpdyWebSocketStream(session_.get(), &delegate));
   BoundNetLog net_log;
   GURL url("ws://example.com/echo");
   ASSERT_EQ(ERR_IO_PENDING, websocket_stream_->InitializeStream(

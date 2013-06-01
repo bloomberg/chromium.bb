@@ -129,7 +129,7 @@ int StreamDelegateSendImmediate::OnResponseHeadersReceived(
           response, response_time, status);
   if (data_.data()) {
     scoped_refptr<StringIOBuffer> buf(new StringIOBuffer(data_.as_string()));
-    stream()->SendData(buf, buf->size(), MORE_DATA_TO_SEND);
+    stream()->SendData(buf.get(), buf->size(), MORE_DATA_TO_SEND);
   }
   return status;
 }

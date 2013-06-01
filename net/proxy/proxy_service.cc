@@ -477,7 +477,7 @@ class ProxyService::InitProxyResolver {
   }
 
   int DoSetPacScript() {
-    DCHECK(script_data_);
+    DCHECK(script_data_.get());
     // TODO(eroman): Should log this latency to the NetLog.
     next_state_ = STATE_SET_PAC_SCRIPT_COMPLETE;
     return proxy_resolver_->SetPacScript(
@@ -674,7 +674,7 @@ class ProxyService::ProxyScriptDeciderPoller {
     // Otherwise if it succeeded both this time and last time, we need to look
     // closer and see if we ended up downloading different content for the PAC
     // script.
-    return !script_data->Equals(last_script_data_);
+    return !script_data->Equals(last_script_data_.get());
   }
 
   void NotifyProxyServiceOfChange(
@@ -682,7 +682,7 @@ class ProxyService::ProxyScriptDeciderPoller {
       const scoped_refptr<ProxyResolverScriptData>& script_data,
       const ProxyConfig& effective_config) {
     // Note that |this| may be deleted after calling into the ProxyService.
-    change_callback_.Run(result, script_data, effective_config);
+    change_callback_.Run(result, script_data.get(), effective_config);
   }
 
   base::WeakPtrFactory<ProxyScriptDeciderPoller> weak_factory_;
@@ -993,7 +993,7 @@ int ProxyService::ResolveProxy(const GURL& raw_url,
   }
 
   DCHECK_EQ(ERR_IO_PENDING, rv);
-  DCHECK(!ContainsPendingRequest(req));
+  DCHECK(!ContainsPendingRequest(req.get()));
   pending_requests_.push_back(req);
 
   // Completion will be notified through |callback|, unless the caller cancels
@@ -1365,7 +1365,7 @@ ProxyConfigService* ProxyService::CreateSystemProxyConfigService(
   // notifications (delivered in either |glib_default_loop| or
   // |file_loop|) to keep us updated when the proxy config changes.
   linux_config_service->SetupAndFetchInitialConfig(
-      glib_thread_task_runner,
+      glib_thread_task_runner.get(),
       io_thread_task_runner,
       static_cast<base::MessageLoopForIO*>(file_loop));
 

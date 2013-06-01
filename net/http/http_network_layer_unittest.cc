@@ -38,10 +38,10 @@ class HttpNetworkLayerTest : public PlatformTest {
     session_params.host_resolver = &host_resolver_;
     session_params.cert_verifier = cert_verifier_.get();
     session_params.proxy_service = proxy_service_.get();
-    session_params.ssl_config_service = ssl_config_service_;
+    session_params.ssl_config_service = ssl_config_service_.get();
     session_params.http_server_properties = &http_server_properties_;
     network_session_ = new HttpNetworkSession(session_params);
-    factory_.reset(new HttpNetworkLayer(network_session_));
+    factory_.reset(new HttpNetworkLayer(network_session_.get()));
   }
 
   MockClientSocketFactory mock_socket_factory_;

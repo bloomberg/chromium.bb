@@ -511,7 +511,7 @@ bool MockHttpCache::ReadResponseInfo(disk_cache::Entry* disk_entry,
 
   net::TestCompletionCallback cb;
   scoped_refptr<net::IOBuffer> buffer(new net::IOBuffer(size));
-  int rv = disk_entry->ReadData(0, 0, buffer, size, cb.callback());
+  int rv = disk_entry->ReadData(0, 0, buffer.get(), size, cb.callback());
   rv = cb.GetResult(rv);
   EXPECT_EQ(size, rv);
 
@@ -532,7 +532,7 @@ bool MockHttpCache::WriteResponseInfo(
       reinterpret_cast<const char*>(pickle.data())));
   int len = static_cast<int>(pickle.size());
 
-  int rv =  disk_entry->WriteData(0, 0, data, len, cb.callback(), true);
+  int rv = disk_entry->WriteData(0, 0, data.get(), len, cb.callback(), true);
   rv = cb.GetResult(rv);
   return (rv == len);
 }

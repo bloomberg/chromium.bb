@@ -562,10 +562,10 @@ class HostResolverImpl::ProcTask
         completed_attempt_error_(ERR_UNEXPECTED),
         had_non_speculative_request_(false),
         net_log_(job_net_log) {
-    if (!params_.resolver_proc)
+    if (!params_.resolver_proc.get())
       params_.resolver_proc = HostResolverProc::GetDefault();
     // If default is unset, use the system proc.
-    if (!params_.resolver_proc)
+    if (!params_.resolver_proc.get())
       params_.resolver_proc = new SystemHostResolverProc();
   }
 
@@ -1260,7 +1260,7 @@ class HostResolverImpl::Job : public PrioritizedDispatcher::Job {
     // TODO(szym): Check if this is still needed.
     if (!req->info().is_speculative()) {
       had_non_speculative_request_ = true;
-      if (proc_task_)
+      if (proc_task_.get())
         proc_task_->set_had_non_speculative_request();
     }
 
@@ -2202,9 +2202,8 @@ bool HostResolverImpl::HaveDnsConfig() const {
   // ScopedDefaultHostResolverProc.
   // The alternative is to use NetworkChangeNotifier to override DnsConfig,
   // but that would introduce construction order requirements for NCN and SDHRP.
-  return (dns_client_.get() != NULL) &&
-         (dns_client_->GetConfig() != NULL) &&
-         !(proc_params_.resolver_proc == NULL &&
+  return (dns_client_.get() != NULL) && (dns_client_->GetConfig() != NULL) &&
+         !(proc_params_.resolver_proc.get() == NULL &&
            HostResolverProc::GetDefault() != NULL);
 }
 

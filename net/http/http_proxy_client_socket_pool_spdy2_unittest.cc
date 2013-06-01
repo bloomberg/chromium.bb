@@ -603,7 +603,7 @@ TEST_P(HttpProxyClientSocketPoolSpdy2Test, TunnelSetupRedirect) {
     const ProxyClientSocket* tunnel_socket =
         static_cast<ProxyClientSocket*>(handle_.socket());
     const HttpResponseInfo* response = tunnel_socket->GetConnectResponseInfo();
-    const HttpResponseHeaders* headers = response->headers;
+    const HttpResponseHeaders* headers = response->headers.get();
 
     // Make sure Set-Cookie header was stripped.
     EXPECT_FALSE(headers->HasHeader("set-cookie"));

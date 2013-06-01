@@ -250,7 +250,7 @@ void ProxyScriptFetcherImpl::ReadBody(URLRequest* request) {
   // Read as many bytes as are available synchronously.
   while (true) {
     int num_bytes;
-    if (!request->Read(buf_, kBufSize, &num_bytes)) {
+    if (!request->Read(buf_.get(), kBufSize, &num_bytes)) {
       // Check whether the read failed synchronously.
       if (!request->status().is_io_pending())
         OnResponseCompleted(request);

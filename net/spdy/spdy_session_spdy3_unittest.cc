@@ -420,13 +420,13 @@ TEST_F(SpdySessionSpdy3Test, DeleteExpiredPushStreams) {
   (*request_headers)[":host"] = "www.google.com";
   (*request_headers)[":path"] = "/";
 
-  scoped_ptr<SpdyStream> stream(
-      new SpdyStream(
-          SPDY_REQUEST_RESPONSE_STREAM,
-          session, std::string(), DEFAULT_PRIORITY,
-          kSpdyStreamInitialWindowSize,
-          kSpdyStreamInitialWindowSize,
-          session->net_log_));
+  scoped_ptr<SpdyStream> stream(new SpdyStream(SPDY_REQUEST_RESPONSE_STREAM,
+                                               session.get(),
+                                               std::string(),
+                                               DEFAULT_PRIORITY,
+                                               kSpdyStreamInitialWindowSize,
+                                               kSpdyStreamInitialWindowSize,
+                                               session->net_log_));
   stream->SendRequestHeaders(request_headers.Pass(), NO_MORE_DATA_TO_SEND);
   SpdyStream* stream_ptr = stream.get();
   session->InsertCreatedStream(stream.Pass());
@@ -1023,7 +1023,9 @@ void IPPoolingTest(SpdyPoolCloseSessionsType close_sessions_type) {
                                 false,
                                 OnHostResolutionCallback()));
   IPPoolingInitializedSession(test_host_port_pair.ToString(),
-                              transport_params, http_session, session);
+                              transport_params,
+                              http_session.get(),
+                              session.get());
 
   // TODO(rtenneti): MockClientSocket::GetPeerAddress return's 0 as the port
   // number. Fix it to return port 80 and then use GetPeerAddress to AddAlias.
@@ -1060,7 +1062,9 @@ void IPPoolingTest(SpdyPoolCloseSessionsType close_sessions_type) {
   // Initialize session for host 2.
   session_deps.socket_factory->AddSocketDataProvider(&data);
   IPPoolingInitializedSession(test_hosts[2].key.host_port_pair().ToString(),
-                              transport_params, http_session, session2);
+                              transport_params,
+                              http_session.get(),
+                              session2.get());
 
   // Grab the session to host 1 and verify that it is the same session
   // we got with host 0, and that is a different than host 2's session.
@@ -1072,7 +1076,9 @@ void IPPoolingTest(SpdyPoolCloseSessionsType close_sessions_type) {
   // Initialize session for host 1.
   session_deps.socket_factory->AddSocketDataProvider(&data);
   IPPoolingInitializedSession(test_hosts[2].key.host_port_pair().ToString(),
-                              transport_params, http_session, session2);
+                              transport_params,
+                              http_session.get(),
+                              session2.get());
 
   // Remove the aliases and observe that we still have a session for host1.
   pool_peer.RemoveAliases(test_hosts[0].key);
@@ -3026,13 +3032,13 @@ void SpdySessionSpdy3Test::RunResumeAfterUnstallTest31(
   EXPECT_TRUE(stream->HasUrl());
   EXPECT_EQ(kStreamUrl, stream->GetUrl().spec());
 
-  stall_fn.Run(session, stream);
+  stall_fn.Run(session.get(), stream);
 
   data.RunFor(2);
 
   EXPECT_TRUE(stream->send_stalled_by_flow_control());
 
-  unstall_function.Run(session, stream, kBodyDataSize);
+  unstall_function.Run(session.get(), stream, kBodyDataSize);
 
   EXPECT_FALSE(stream->send_stalled_by_flow_control());
 
@@ -3179,7 +3185,7 @@ TEST_F(SpdySessionSpdy3Test, ResumeByPriorityAfterSendWindowSizeIncrease31) {
   EXPECT_FALSE(stream1->send_stalled_by_flow_control());
   EXPECT_FALSE(stream2->send_stalled_by_flow_control());
 
-  StallSessionSend(session);
+  StallSessionSend(session.get());
 
   scoped_ptr<SpdyHeaderBlock> headers1(
       spdy_util_.ConstructPostHeaderBlock(kStreamUrl, kBodyDataSize));
@@ -3204,7 +3210,7 @@ TEST_F(SpdySessionSpdy3Test, ResumeByPriorityAfterSendWindowSizeIncrease31) {
   EXPECT_TRUE(stream2->send_stalled_by_flow_control());
 
   // This should unstall only stream2.
-  UnstallSessionSend(session, kBodyDataSize);
+  UnstallSessionSend(session.get(), kBodyDataSize);
 
   EXPECT_TRUE(stream1->send_stalled_by_flow_control());
   EXPECT_FALSE(stream2->send_stalled_by_flow_control());
@@ -3215,7 +3221,7 @@ TEST_F(SpdySessionSpdy3Test, ResumeByPriorityAfterSendWindowSizeIncrease31) {
   EXPECT_FALSE(stream2->send_stalled_by_flow_control());
 
   // This should then unstall stream1.
-  UnstallSessionSend(session, kBodyDataSize);
+  UnstallSessionSend(session.get(), kBodyDataSize);
 
   EXPECT_FALSE(stream1->send_stalled_by_flow_control());
   EXPECT_FALSE(stream2->send_stalled_by_flow_control());
@@ -3346,7 +3352,7 @@ TEST_F(SpdySessionSpdy3Test, SendWindowSizeIncreaseWithDeletedStreams31) {
   EXPECT_FALSE(stream2->send_stalled_by_flow_control());
   EXPECT_FALSE(stream3->send_stalled_by_flow_control());
 
-  StallSessionSend(session);
+  StallSessionSend(session.get());
 
   scoped_ptr<SpdyHeaderBlock> headers1(
       spdy_util_.ConstructPostHeaderBlock(kStreamUrl, kBodyDataSize));
@@ -3395,7 +3401,7 @@ TEST_F(SpdySessionSpdy3Test, SendWindowSizeIncreaseWithDeletedStreams31) {
 
   // Unstall stream2, which should then close stream3.
   delegate2.set_stream_to_close(stream3);
-  UnstallSessionSend(session, kBodyDataSize);
+  UnstallSessionSend(session.get(), kBodyDataSize);
 
   data.RunFor(1);
   EXPECT_EQ(NULL, stream3.get());
@@ -3493,7 +3499,7 @@ TEST_F(SpdySessionSpdy3Test, SendWindowSizeIncreaseWithDeletedSession31) {
   EXPECT_FALSE(stream1->send_stalled_by_flow_control());
   EXPECT_FALSE(stream2->send_stalled_by_flow_control());
 
-  StallSessionSend(session);
+  StallSessionSend(session.get());
 
   scoped_ptr<SpdyHeaderBlock> headers1(
       spdy_util_.ConstructPostHeaderBlock(kStreamUrl, kBodyDataSize));
@@ -3520,7 +3526,7 @@ TEST_F(SpdySessionSpdy3Test, SendWindowSizeIncreaseWithDeletedSession31) {
   EXPECT_TRUE(spdy_session_pool_->HasSession(key_));
 
   // Unstall stream1.
-  UnstallSessionSend(session, kBodyDataSize);
+  UnstallSessionSend(session.get(), kBodyDataSize);
 
   // Close the session (since we can't do it from within the delegate
   // method, since it's in the stream's loop).

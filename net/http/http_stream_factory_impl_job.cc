@@ -298,7 +298,7 @@ void HttpStreamFactoryImpl::Job::OnSpdySessionReadyCallback() {
   DCHECK(!stream_.get());
   DCHECK(!IsPreconnecting());
   DCHECK(using_spdy());
-  DCHECK(new_spdy_session_);
+  DCHECK(new_spdy_session_.get());
   scoped_refptr<SpdySession> spdy_session = new_spdy_session_;
   new_spdy_session_ = NULL;
   if (IsOrphaned()) {
@@ -367,11 +367,15 @@ void HttpStreamFactoryImpl::Job::OnHttpsProxyTunnelResponseCallback(
 
 void HttpStreamFactoryImpl::Job::OnPreconnectsComplete() {
   DCHECK(!request_);
-  if (new_spdy_session_) {
-    stream_factory_->OnSpdySessionReady(
-        new_spdy_session_, spdy_session_direct_, server_ssl_config_,
-        proxy_info_, was_npn_negotiated(), protocol_negotiated(), using_spdy(),
-        net_log_);
+  if (new_spdy_session_.get()) {
+    stream_factory_->OnSpdySessionReady(new_spdy_session_,
+                                        spdy_session_direct_,
+                                        server_ssl_config_,
+                                        proxy_info_,
+                                        was_npn_negotiated(),
+                                        protocol_negotiated(),
+                                        using_spdy(),
+                                        net_log_);
   }
   stream_factory_->OnPreconnectsComplete(this);
   // |this| may be deleted after this call.
@@ -480,12 +484,11 @@ int HttpStreamFactoryImpl::Job::RunLoop(int result) {
 
     case OK:
       next_state_ = STATE_DONE;
-      if (new_spdy_session_) {
+      if (new_spdy_session_.get()) {
         base::MessageLoop::current()->PostTask(
             FROM_HERE,
-            base::Bind(
-                &HttpStreamFactoryImpl::Job::OnSpdySessionReadyCallback,
-                ptr_factory_.GetWeakPtr()));
+            base::Bind(&HttpStreamFactoryImpl::Job::OnSpdySessionReadyCallback,
+                       ptr_factory_.GetWeakPtr()));
       } else {
         base::MessageLoop::current()->PostTask(
             FROM_HERE,
@@ -710,7 +713,7 @@ int HttpStreamFactoryImpl::Job::DoInitConnection() {
   SpdySessionKey spdy_session_key = GetSpdySessionKey();
   scoped_refptr<SpdySession> spdy_session =
       session_->spdy_session_pool()->GetIfExists(spdy_session_key, net_log_);
-  if (spdy_session && CanUseExistingSpdySession()) {
+  if (spdy_session.get() && CanUseExistingSpdySession()) {
     // If we're preconnecting, but we already have a SpdySession, we don't
     // actually need to preconnect any sockets, so we're done.
     if (IsPreconnecting())
@@ -815,7 +818,7 @@ int HttpStreamFactoryImpl::Job::DoInitConnectionComplete(int result) {
     SpdySessionKey spdy_session_key = GetSpdySessionKey();
     existing_spdy_session_ =
         session_->spdy_session_pool()->GetIfExists(spdy_session_key, net_log_);
-    if (existing_spdy_session_) {
+    if (existing_spdy_session_.get()) {
       using_spdy_ = true;
       next_state_ = STATE_CREATE_STREAM;
     } else {
@@ -961,7 +964,7 @@ int HttpStreamFactoryImpl::Job::DoWaitingUserAction(int result) {
 }
 
 int HttpStreamFactoryImpl::Job::DoCreateStream() {
-  DCHECK(connection_->socket() || existing_spdy_session_ ||
+  DCHECK(connection_->socket() || existing_spdy_session_.get() ||
          existing_available_pipeline_ || using_quic_);
 
   next_state_ = STATE_CREATE_STREAM_COMPLETE;
@@ -1019,7 +1022,7 @@ int HttpStreamFactoryImpl::Job::DoCreateStream() {
   }
 
   scoped_refptr<SpdySession> spdy_session;
-  if (existing_spdy_session_) {
+  if (existing_spdy_session_.get()) {
     // We picked up an existing session, so we don't need our socket.
     if (connection_->socket())
       connection_->socket()->Disconnect();
@@ -1028,10 +1031,13 @@ int HttpStreamFactoryImpl::Job::DoCreateStream() {
   } else {
     SpdySessionPool* spdy_pool = session_->spdy_session_pool();
     spdy_session = spdy_pool->GetIfExists(spdy_session_key, net_log_);
-    if (!spdy_session) {
-      int error = spdy_pool->GetSpdySessionFromSocket(
-          spdy_session_key, connection_.release(), net_log_,
-          spdy_certificate_error_, &new_spdy_session_, using_ssl_);
+    if (!spdy_session.get()) {
+      int error = spdy_pool->GetSpdySessionFromSocket(spdy_session_key,
+                                                      connection_.release(),
+                                                      net_log_,
+                                                      spdy_certificate_error_,
+                                                      &new_spdy_session_,
+                                                      using_ssl_);
       if (error != OK)
         return error;
       const HostPortPair& host_port_pair = spdy_session_key.host_port_pair();
@@ -1052,7 +1058,7 @@ int HttpStreamFactoryImpl::Job::DoCreateStream() {
   // will know when SpdySessions become available.
 
   bool use_relative_url = direct || request_info_.url.SchemeIs("https");
-  stream_.reset(new SpdyHttpStream(spdy_session, use_relative_url));
+  stream_.reset(new SpdyHttpStream(spdy_session.get(), use_relative_url));
   return OK;
 }
 
@@ -1285,7 +1291,7 @@ int HttpStreamFactoryImpl::Job::HandleCertificateError(int error) {
   // |ssl_info_.cert| may be NULL if we failed to create
   // X509Certificate for whatever reason, but normally it shouldn't
   // happen, unless this code is used inside sandbox.
-  if (ssl_info_.cert == NULL ||
+  if (ssl_info_.cert.get() == NULL ||
       !X509Certificate::GetDEREncoded(ssl_info_.cert->os_cert_handle(),
                                       &bad_cert.der_cert)) {
     return error;

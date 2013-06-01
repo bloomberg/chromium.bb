@@ -121,7 +121,7 @@ class NET_EXPORT HttpNetworkSession
 
   CertVerifier* cert_verifier() { return cert_verifier_; }
   ProxyService* proxy_service() { return proxy_service_; }
-  SSLConfigService* ssl_config_service() { return ssl_config_service_; }
+  SSLConfigService* ssl_config_service() { return ssl_config_service_.get(); }
   SpdySessionPool* spdy_session_pool() { return &spdy_session_pool_; }
   QuicStreamFactory* quic_stream_factory() { return &quic_stream_factory_; }
   HttpAuthHandlerFactory* http_auth_handler_factory() {

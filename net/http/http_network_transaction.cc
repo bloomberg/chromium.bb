@@ -157,7 +157,7 @@ HttpNetworkTransaction::~HttpNetworkTransaction() {
       } else {
         // Otherwise, we try to drain the response body.
         HttpStreamBase* stream = stream_.release();
-        stream->Drain(session_);
+        stream->Drain(session_.get());
       }
     }
   }
@@ -362,8 +362,10 @@ int HttpNetworkTransaction::Read(IOBuffer* buf, int buf_len,
 }
 
 const HttpResponseInfo* HttpNetworkTransaction::GetResponseInfo() const {
-  return ((headers_valid_ && response_.headers) || response_.ssl_info.cert ||
-          response_.cert_request_info) ? &response_ : NULL;
+  return ((headers_valid_ && response_.headers.get()) ||
+          response_.ssl_info.cert.get() || response_.cert_request_info.get())
+             ? &response_
+             : NULL;
 }
 
 LoadState HttpNetworkTransaction::GetLoadState() const {
@@ -841,7 +843,7 @@ int HttpNetworkTransaction::DoReadHeaders() {
 }
 
 int HttpNetworkTransaction::HandleConnectionClosedBeforeEndOfHeaders() {
-  if (!response_.headers && !stream_->IsConnectionReused()) {
+  if (!response_.headers.get() && !stream_->IsConnectionReused()) {
     // The connection was closed before any data was sent. Likely an error
     // rather than empty HTTP/0.9 response.
     return ERR_EMPTY_RESPONSE;
@@ -865,7 +867,7 @@ int HttpNetworkTransaction::DoReadHeadersComplete(int result) {
     DCHECK(stream_.get());
     DCHECK(is_https_request());
     response_.cert_request_info = new SSLCertRequestInfo;
-    stream_->GetSSLCertRequestInfo(response_.cert_request_info);
+    stream_->GetSSLCertRequestInfo(response_.cert_request_info.get());
     result = HandleCertificateRequest(result);
     if (result == OK)
       return result;
@@ -892,12 +894,12 @@ int HttpNetworkTransaction::DoReadHeadersComplete(int result) {
     if (rv != OK)
       return rv;
   }
-  DCHECK(response_.headers);
+  DCHECK(response_.headers.get());
 
   // Server-induced fallback is supported only if this is a PAC configured
   // proxy. See: http://crbug.com/143712
   if (response_.was_fetched_via_proxy && proxy_info_.did_use_pac_script() &&
-      response_.headers != NULL) {
+      response_.headers.get() != NULL) {
     bool should_fallback =
         response_.headers->HasHeaderValue("connection", "proxy-bypass");
     // Additionally, fallback if a 500 is returned via the data reduction proxy.
@@ -958,7 +960,7 @@ int HttpNetworkTransaction::DoReadHeadersComplete(int result) {
                                        request_->url.EffectiveIntPort());
   ProcessAlternateProtocol(session_->http_stream_factory(),
                            session_->http_server_properties(),
-                           *response_.headers,
+                           *response_.headers.get(),
                            endpoint);
 
   int rv = HandleAuthChallenge();
@@ -973,12 +975,13 @@ int HttpNetworkTransaction::DoReadHeadersComplete(int result) {
 }
 
 int HttpNetworkTransaction::DoReadBody() {
-  DCHECK(read_buf_);
+  DCHECK(read_buf_.get());
   DCHECK_GT(read_buf_len_, 0);
   DCHECK(stream_ != NULL);
 
   next_state_ = STATE_READ_BODY_COMPLETE;
-  return stream_->ReadResponseBody(read_buf_, read_buf_len_, io_callback_);
+  return stream_->ReadResponseBody(
+      read_buf_.get(), read_buf_len_, io_callback_);
 }
 
 int HttpNetworkTransaction::DoReadBodyComplete(int result) {
@@ -1164,7 +1167,7 @@ int HttpNetworkTransaction::HandleCertificateRequest(int error) {
   // Check that the certificate selected is still a certificate the server
   // is likely to accept, based on the criteria supplied in the
   // CertificateRequest message.
-  if (client_cert) {
+  if (client_cert.get()) {
     const std::vector<std::string>& cert_authorities =
         response_.cert_request_info->cert_authorities;
 
@@ -1322,7 +1325,7 @@ void HttpNetworkTransaction::ResetStateForAuthRestart() {
 }
 
 HttpResponseHeaders* HttpNetworkTransaction::GetResponseHeaders() const {
-  return response_.headers;
+  return response_.headers.get();
 }
 
 bool HttpNetworkTransaction::ShouldResendRequest(int error) const {
@@ -1361,7 +1364,7 @@ bool HttpNetworkTransaction::ShouldApplyServerAuth() const {
 
 int HttpNetworkTransaction::HandleAuthChallenge() {
   scoped_refptr<HttpResponseHeaders> headers(GetResponseHeaders());
-  DCHECK(headers);
+  DCHECK(headers.get());
 
   int status = headers->response_code();
   if (status != HTTP_UNAUTHORIZED &&

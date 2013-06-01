@@ -1206,7 +1206,7 @@ void EntryImpl::DeleteData(Addr address, int index) {
       LOG(ERROR) << "Failed to delete " <<
           backend_->GetFileName(address).value() << " from the cache.";
     }
-    if (files_[index])
+    if (files_[index].get())
       files_[index] = NULL;  // Releases the object.
   } else {
     backend_->DeleteBlock(address, true);

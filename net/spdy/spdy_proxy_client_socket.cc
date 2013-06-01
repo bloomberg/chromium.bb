@@ -67,7 +67,7 @@ SpdyProxyClientSocket::~SpdyProxyClientSocket() {
 }
 
 const HttpResponseInfo* SpdyProxyClientSocket::GetConnectResponseInfo() const {
-  return response_.headers ? &response_ : NULL;
+  return response_.headers.get() ? &response_ : NULL;
 }
 
 const scoped_refptr<HttpAuthController>&
@@ -192,7 +192,7 @@ bool SpdyProxyClientSocket::GetSSLInfo(SSLInfo* ssl_info) {
 int SpdyProxyClientSocket::Read(IOBuffer* buf, int buf_len,
                                 const CompletionCallback& callback) {
   DCHECK(read_callback_.is_null());
-  DCHECK(!user_buffer_);
+  DCHECK(!user_buffer_.get());
 
   if (next_state_ == STATE_DISCONNECTED)
     return ERR_SOCKET_NOT_CONNECTED;
@@ -422,7 +422,7 @@ int SpdyProxyClientSocket::DoReadReplyComplete(int result) {
 
     case 407:  // Proxy Authentication Required
       next_state_ = STATE_OPEN;
-      return HandleProxyAuthChallenge(auth_, &response_, net_log_);
+      return HandleProxyAuthChallenge(auth_.get(), &response_, net_log_);
 
     default:
       // Ignore response to avoid letting the proxy impersonate the target

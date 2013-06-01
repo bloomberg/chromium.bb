@@ -57,7 +57,7 @@ class MockHostResolverBase : public HostResolver,
  public:
   virtual ~MockHostResolverBase();
 
-  RuleBasedHostResolverProc* rules() { return rules_; }
+  RuleBasedHostResolverProc* rules() { return rules_.get(); }
   void set_rules(RuleBasedHostResolverProc* rules) { rules_ = rules; }
 
   // Controls whether resolutions complete synchronously or asynchronously.

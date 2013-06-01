@@ -38,7 +38,7 @@ class ServerBoundCertServiceTest : public testing::Test {
   }
 
   virtual ~ServerBoundCertServiceTest() {
-    if (sequenced_worker_pool_)
+    if (sequenced_worker_pool_.get())
       sequenced_worker_pool_->Shutdown();
   }
 
@@ -323,7 +323,7 @@ TEST_F(ServerBoundCertServiceTest, ExtractValuesFromBytesEC) {
   // Check that we can retrieve the cert from the bytes.
   scoped_refptr<X509Certificate> x509cert(
       X509Certificate::CreateFromBytes(der_cert.data(), der_cert.size()));
-  EXPECT_TRUE(x509cert != NULL);
+  EXPECT_TRUE(x509cert.get() != NULL);
 }
 
 // Tests that the callback of a canceled request is never made.

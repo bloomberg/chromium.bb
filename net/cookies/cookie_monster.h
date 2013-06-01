@@ -431,7 +431,7 @@ class NET_EXPORT CookieMonster : public CookieStore {
   // Note: this method should always be called with lock_ held.
   void InitIfNecessary() {
     if (!initialized_) {
-      if (store_) {
+      if (store_.get()) {
         InitStore();
       } else {
         loaded_ = true;

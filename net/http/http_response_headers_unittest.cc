@@ -969,7 +969,7 @@ TEST(HttpResponseHeadersTest, Update) {
     scoped_refptr<net::HttpResponseHeaders> new_parsed(
         new net::HttpResponseHeaders(new_headers));
 
-    parsed->Update(*new_parsed);
+    parsed->Update(*new_parsed.get());
 
     std::string resulting_headers;
     parsed->GetNormalizedHeaders(&resulting_headers);

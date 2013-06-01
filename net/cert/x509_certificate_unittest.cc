@@ -943,7 +943,7 @@ TEST_P(X509CertificateParseTest, CanParseFormat) {
 
     // Compare the parsed certificate with the expected certificate, by
     // comparing fingerprints.
-    const X509Certificate* cert = certs[i];
+    const X509Certificate* cert = certs[i].get();
     const SHA1HashValue& actual_fingerprint = cert->fingerprint();
     uint8* expected_fingerprint = test_data_.chain_fingerprints[i];
 

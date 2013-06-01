@@ -47,9 +47,9 @@ HttpProxySocketParams::HttpProxySocketParams(
       http_auth_cache_(tunnel ? http_auth_cache : NULL),
       http_auth_handler_factory_(tunnel ? http_auth_handler_factory : NULL),
       tunnel_(tunnel) {
-  DCHECK((transport_params == NULL && ssl_params != NULL) ||
-         (transport_params != NULL && ssl_params == NULL));
-  if (transport_params_) {
+  DCHECK((transport_params.get() == NULL && ssl_params.get() != NULL) ||
+         (transport_params.get() != NULL && ssl_params.get() == NULL));
+  if (transport_params_.get()) {
     ignore_limits_ = transport_params->ignore_limits();
   } else {
     ignore_limits_ = ssl_params->ignore_limits();
@@ -57,7 +57,7 @@ HttpProxySocketParams::HttpProxySocketParams(
 }
 
 const HostResolver::RequestInfo& HttpProxySocketParams::destination() const {
-  if (transport_params_ == NULL) {
+  if (transport_params_.get() == NULL) {
     return ssl_params_->transport_params()->destination();
   } else {
     return transport_params_->destination();
@@ -118,7 +118,7 @@ LoadState HttpProxyConnectJob::GetLoadState() const {
 }
 
 void HttpProxyConnectJob::GetAdditionalErrorState(ClientSocketHandle * handle) {
-  if (error_response_info_.cert_request_info) {
+  if (error_response_info_.cert_request_info.get()) {
     handle->set_ssl_error_response_info(error_response_info_);
     handle->set_is_ssl_error(true);
   }
@@ -282,7 +282,7 @@ int HttpProxyConnectJob::DoHttpProxyConnect() {
                                 params_->tunnel(),
                                 using_spdy_,
                                 protocol_negotiated_,
-                                params_->ssl_params() != NULL));
+                                params_->ssl_params().get() != NULL));
   return transport_socket_->Connect(callback_);
 }
 
@@ -347,7 +347,7 @@ int HttpProxyConnectJob::DoSpdyProxyCreateStreamComplete(int result) {
 }
 
 int HttpProxyConnectJob::ConnectInternal() {
-  if (params_->transport_params()) {
+  if (params_->transport_params().get()) {
     next_state_ = STATE_TCP_CONNECT;
   } else {
     next_state_ = STATE_SSL_CONNECT;

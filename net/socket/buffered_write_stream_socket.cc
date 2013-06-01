@@ -125,7 +125,8 @@ bool BufferedWriteStreamSocket::GetSSLInfo(SSLInfo* ssl_info) {
 
 void BufferedWriteStreamSocket::DoDelayedWrite() {
   int result = wrapped_socket_->Write(
-      io_buffer_, io_buffer_->RemainingCapacity(),
+      io_buffer_.get(),
+      io_buffer_->RemainingCapacity(),
       base::Bind(&BufferedWriteStreamSocket::OnIOComplete,
                  base::Unretained(this)));
   if (result == ERR_IO_PENDING) {

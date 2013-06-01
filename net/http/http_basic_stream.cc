@@ -35,8 +35,8 @@ int HttpBasicStream::InitializeStream(
     const CompletionCallback& callback) {
   DCHECK(!parser_.get());
   request_info_ = request_info;
-  parser_.reset(new HttpStreamParser(connection_.get(), request_info,
-                                     read_buf_, net_log));
+  parser_.reset(new HttpStreamParser(
+      connection_.get(), request_info, read_buf_.get(), net_log));
   return OK;
 }
 

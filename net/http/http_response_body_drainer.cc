@@ -87,7 +87,8 @@ int HttpResponseBodyDrainer::DoDrainResponseBody() {
   next_state_ = STATE_DRAIN_RESPONSE_BODY_COMPLETE;
 
   return stream_->ReadResponseBody(
-      read_buf_, read_size_ - total_read_,
+      read_buf_.get(),
+      read_size_ - total_read_,
       base::Bind(&HttpResponseBodyDrainer::OnIOComplete,
                  base::Unretained(this)));
 }

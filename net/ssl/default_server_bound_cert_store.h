@@ -90,7 +90,7 @@ class NET_EXPORT DefaultServerBoundCertStore : public ServerBoundCertStore {
   // loading?
   void InitIfNecessary() {
     if (!initialized_) {
-      if (store_) {
+      if (store_.get()) {
         InitStore();
       } else {
         loaded_ = true;

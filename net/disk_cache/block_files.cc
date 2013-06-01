@@ -450,7 +450,7 @@ bool BlockFiles::OpenBlockFile(int index) {
 
   if (header->updating || !ValidateCounters(header)) {
     // Last instance was not properly shutdown, or counters are out of sync.
-    if (!FixBlockFileHeader(file)) {
+    if (!FixBlockFileHeader(file.get())) {
       LOG(ERROR) << "Unable to fix block file " << name.value();
       return false;
     }
@@ -469,7 +469,7 @@ bool BlockFiles::OpenBlockFile(int index) {
       return false;
   }
 
-  ScopedFlush flush(file);
+  ScopedFlush flush(file.get());
   DCHECK(!block_files_[index]);
   file.swap(&block_files_[index]);
   return true;

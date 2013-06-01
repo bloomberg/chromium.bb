@@ -141,7 +141,7 @@ int SpdyHttpStream::ReadResponseBody(
   }
 
   CHECK(callback_.is_null());
-  CHECK(!user_buffer_);
+  CHECK(!user_buffer_.get());
   CHECK_EQ(0, user_buffer_len_);
 
   callback_ = callback;
@@ -187,7 +187,7 @@ bool SpdyHttpStream::GetLoadTimingInfo(LoadTimingInfo* load_timing_info) const {
   // The reused flag can only be correctly set once a stream has an ID.  Streams
   // get their IDs once the request has been successfully sent, so this does not
   // behave that differently from other stream types.
-  if (!spdy_session_ || (!stream_ && !stream_closed_))
+  if (!spdy_session_.get() || (!stream_ && !stream_closed_))
     return false;
 
   SpdyStreamId stream_id =
@@ -218,7 +218,7 @@ int SpdyHttpStream::SendRequest(const HttpRequestHeaders& request_headers,
   if (response_info_)
     response_info_->request_time = request_time;
 
-  CHECK(!request_body_buf_);
+  CHECK(!request_body_buf_.get());
   if (HasUploadData()) {
     // Use kMaxSpdyFrameChunkSize as the buffer size, since the request
     // body data is written with this size at a time.
@@ -347,7 +347,8 @@ int SpdyHttpStream::OnResponseHeadersReceived(const SpdyHeaderBlock& response,
     default:
       NOTREACHED();
   }
-  response_info_->vary_data.Init(*request_info_, *response_info_->headers);
+  response_info_->vary_data
+      .Init(*request_info_, *response_info_->headers.get());
   // TODO(ahendrickson): This is recorded after the entire SYN_STREAM control
   // frame has been received and processed.  Move to framer?
   response_info_->response_time = response_time;
@@ -373,7 +374,7 @@ int SpdyHttpStream::OnDataReceived(scoped_ptr<SpdyBuffer> buffer) {
   if (buffer) {
     response_body_queue_.Enqueue(buffer.Pass());
 
-    if (user_buffer_) {
+    if (user_buffer_.get()) {
       // Handing small chunks of data to the caller creates measurable overhead.
       // We buffer data in short time-spans and send a single read notification.
       ScheduleBufferedReadCallback();
@@ -429,11 +430,11 @@ void SpdyHttpStream::ReadAndSendRequestBodyData() {
     return;
 
   // Read the data from the request body stream.
-  const int rv = request_info_->upload_data_stream->Read(
-      request_body_buf_, request_body_buf_->size(),
-      base::Bind(
-          &SpdyHttpStream::OnRequestBodyReadCompleted,
-          weak_factory_.GetWeakPtr()));
+  const int rv = request_info_->upload_data_stream
+      ->Read(request_body_buf_.get(),
+             request_body_buf_->size(),
+             base::Bind(&SpdyHttpStream::OnRequestBodyReadCompleted,
+                        weak_factory_.GetWeakPtr()));
 
   if (rv != ERR_IO_PENDING) {
     // ERR_IO_PENDING is the only possible error.
@@ -451,7 +452,7 @@ void SpdyHttpStream::OnRequestBodyReadCompleted(int status) {
   } else {
     CHECK_GT(request_body_buf_size_, 0);
   }
-  stream_->SendData(request_body_buf_,
+  stream_->SendData(request_body_buf_.get(),
                     request_body_buf_size_,
                     eof ? NO_MORE_DATA_TO_SEND : MORE_DATA_TO_SEND);
 }
@@ -508,8 +509,8 @@ bool SpdyHttpStream::DoBufferedReadCallback() {
   }
 
   int rv = 0;
-  if (user_buffer_) {
-    rv = ReadResponseBody(user_buffer_, user_buffer_len_, callback_);
+  if (user_buffer_.get()) {
+    rv = ReadResponseBody(user_buffer_.get(), user_buffer_len_, callback_);
     CHECK_NE(rv, ERR_IO_PENDING);
     user_buffer_ = NULL;
     user_buffer_len_ = 0;

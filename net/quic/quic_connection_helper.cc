@@ -58,7 +58,8 @@ int QuicConnectionHelper::WritePacketToWire(
   scoped_refptr<StringIOBuffer> buf(
       new StringIOBuffer(std::string(packet.data(),
                                      packet.length())));
-  int rv = socket_->Write(buf, packet.length(),
+  int rv = socket_->Write(buf.get(),
+                          packet.length(),
                           base::Bind(&QuicConnectionHelper::OnWriteComplete,
                                      weak_factory_.GetWeakPtr()));
   if (rv >= 0) {

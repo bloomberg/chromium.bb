@@ -61,7 +61,7 @@ TEST_F(ClientCertStoreImplTest, EmptyQuery) {
   scoped_refptr<SSLCertRequestInfo> request(new SSLCertRequestInfo());
 
   std::vector<scoped_refptr<X509Certificate> > selected_certs;
-  bool rv = SelectClientCerts(certs, *request, &selected_certs);
+  bool rv = SelectClientCerts(certs, *request.get(), &selected_certs);
   EXPECT_TRUE(rv);
   EXPECT_EQ(0u, selected_certs.size());
 }
@@ -71,17 +71,17 @@ TEST_F(ClientCertStoreImplTest, EmptyQuery) {
 TEST_F(ClientCertStoreImplTest, AllIssuersAllowed) {
   scoped_refptr<X509Certificate> cert(
       ImportCertFromFile(GetTestCertsDirectory(), "client_1.pem"));
-  ASSERT_TRUE(cert);
+  ASSERT_TRUE(cert.get());
 
   std::vector<scoped_refptr<X509Certificate> > certs;
   certs.push_back(cert);
   scoped_refptr<SSLCertRequestInfo> request(new SSLCertRequestInfo());
 
   std::vector<scoped_refptr<X509Certificate> > selected_certs;
-  bool rv = SelectClientCerts(certs, *request, &selected_certs);
+  bool rv = SelectClientCerts(certs, *request.get(), &selected_certs);
   EXPECT_TRUE(rv);
   ASSERT_EQ(1u, selected_certs.size());
-  EXPECT_TRUE(selected_certs[0]->Equals(cert));
+  EXPECT_TRUE(selected_certs[0]->Equals(cert.get()));
 }
 
 // Verify that certificates are correctly filtered against CertRequestInfo with
@@ -89,10 +89,10 @@ TEST_F(ClientCertStoreImplTest, AllIssuersAllowed) {
 TEST_F(ClientCertStoreImplTest, CertAuthorityFiltering) {
   scoped_refptr<X509Certificate> cert_1(
       ImportCertFromFile(GetTestCertsDirectory(), "client_1.pem"));
-  ASSERT_TRUE(cert_1);
+  ASSERT_TRUE(cert_1.get());
   scoped_refptr<X509Certificate> cert_2(
       ImportCertFromFile(GetTestCertsDirectory(), "client_2.pem"));
-  ASSERT_TRUE(cert_2);
+  ASSERT_TRUE(cert_2.get());
 
   std::vector<std::string> authority_1(
       1, std::string(reinterpret_cast<const char*>(kAuthority1DN),
@@ -112,10 +112,10 @@ TEST_F(ClientCertStoreImplTest, CertAuthorityFiltering) {
   request->cert_authorities = authority_1;
 
   std::vector<scoped_refptr<X509Certificate> > selected_certs;
-  bool rv = SelectClientCerts(certs, *request, &selected_certs);
+  bool rv = SelectClientCerts(certs, *request.get(), &selected_certs);
   EXPECT_TRUE(rv);
   ASSERT_EQ(1u, selected_certs.size());
-  EXPECT_TRUE(selected_certs[0]->Equals(cert_1));
+  EXPECT_TRUE(selected_certs[0]->Equals(cert_1.get()));
 }
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)

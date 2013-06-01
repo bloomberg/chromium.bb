@@ -33,8 +33,9 @@ TEST_F(UploadBytesElementReaderTest, ReadPartially) {
   const size_t kHalfSize = bytes_.size() / 2;
   std::vector<char> buf(kHalfSize);
   scoped_refptr<IOBuffer> wrapped_buffer = new WrappedIOBuffer(&buf[0]);
-  EXPECT_EQ(static_cast<int>(buf.size()),
-            reader_->Read(wrapped_buffer, buf.size(), CompletionCallback()));
+  EXPECT_EQ(
+      static_cast<int>(buf.size()),
+      reader_->Read(wrapped_buffer.get(), buf.size(), CompletionCallback()));
   EXPECT_EQ(bytes_.size() - buf.size(), reader_->BytesRemaining());
   bytes_.resize(kHalfSize);  // Resize to compare.
   EXPECT_EQ(bytes_, buf);
@@ -43,20 +44,23 @@ TEST_F(UploadBytesElementReaderTest, ReadPartially) {
 TEST_F(UploadBytesElementReaderTest, ReadAll) {
   std::vector<char> buf(bytes_.size());
   scoped_refptr<IOBuffer> wrapped_buffer = new WrappedIOBuffer(&buf[0]);
-  EXPECT_EQ(static_cast<int>(buf.size()),
-            reader_->Read(wrapped_buffer, buf.size(), CompletionCallback()));
+  EXPECT_EQ(
+      static_cast<int>(buf.size()),
+      reader_->Read(wrapped_buffer.get(), buf.size(), CompletionCallback()));
   EXPECT_EQ(0U, reader_->BytesRemaining());
   EXPECT_EQ(bytes_, buf);
   // Try to read again.
-  EXPECT_EQ(0, reader_->Read(wrapped_buffer, buf.size(), CompletionCallback()));
+  EXPECT_EQ(
+      0, reader_->Read(wrapped_buffer.get(), buf.size(), CompletionCallback()));
 }
 
 TEST_F(UploadBytesElementReaderTest, ReadTooMuch) {
   const size_t kTooLargeSize = bytes_.size() * 2;
   std::vector<char> buf(kTooLargeSize);
   scoped_refptr<IOBuffer> wrapped_buffer = new WrappedIOBuffer(&buf[0]);
-  EXPECT_EQ(static_cast<int>(bytes_.size()),
-            reader_->Read(wrapped_buffer, buf.size(), CompletionCallback()));
+  EXPECT_EQ(
+      static_cast<int>(bytes_.size()),
+      reader_->Read(wrapped_buffer.get(), buf.size(), CompletionCallback()));
   EXPECT_EQ(0U, reader_->BytesRemaining());
   buf.resize(bytes_.size());  // Resize to compare.
   EXPECT_EQ(bytes_, buf);
@@ -67,8 +71,9 @@ TEST_F(UploadBytesElementReaderTest, MultipleInit) {
   scoped_refptr<IOBuffer> wrapped_buffer = new WrappedIOBuffer(&buf[0]);
 
   // Read all.
-  EXPECT_EQ(static_cast<int>(buf.size()),
-            reader_->Read(wrapped_buffer, buf.size(), CompletionCallback()));
+  EXPECT_EQ(
+      static_cast<int>(buf.size()),
+      reader_->Read(wrapped_buffer.get(), buf.size(), CompletionCallback()));
   EXPECT_EQ(0U, reader_->BytesRemaining());
   EXPECT_EQ(bytes_, buf);
 
@@ -78,8 +83,9 @@ TEST_F(UploadBytesElementReaderTest, MultipleInit) {
   EXPECT_EQ(bytes_.size(), reader_->BytesRemaining());
 
   // Read again.
-  EXPECT_EQ(static_cast<int>(buf.size()),
-            reader_->Read(wrapped_buffer, buf.size(), CompletionCallback()));
+  EXPECT_EQ(
+      static_cast<int>(buf.size()),
+      reader_->Read(wrapped_buffer.get(), buf.size(), CompletionCallback()));
   EXPECT_EQ(0U, reader_->BytesRemaining());
   EXPECT_EQ(bytes_, buf);
 }

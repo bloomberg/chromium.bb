@@ -326,7 +326,7 @@ class HttpNetworkTransactionSpdy3Test : public PlatformTest {
     const HttpResponseInfo* response = trans->GetResponseInfo();
     // Can't use ASSERT_* inside helper functions like this, so
     // return an error.
-    if (response == NULL || response->headers == NULL) {
+    if (response == NULL || response->headers.get() == NULL) {
       out.rv = ERR_UNEXPECTED;
       return out;
     }
@@ -874,7 +874,7 @@ TEST_F(HttpNetworkTransactionSpdy3Test, TwoIdenticalLocationHeaders) {
   EXPECT_EQ(OK, callback.WaitForResult());
 
   const HttpResponseInfo* response = trans->GetResponseInfo();
-  ASSERT_TRUE(response != NULL && response->headers != NULL);
+  ASSERT_TRUE(response != NULL && response->headers.get() != NULL);
   EXPECT_EQ("HTTP/1.1 302 Redirect", response->headers->GetStatusLine());
   std::string url;
   EXPECT_TRUE(response->headers->IsRedirect(&url));
@@ -938,7 +938,7 @@ TEST_F(HttpNetworkTransactionSpdy3Test, Head) {
   ASSERT_TRUE(response != NULL);
 
   // Check that the headers got parsed.
-  EXPECT_TRUE(response->headers != NULL);
+  EXPECT_TRUE(response->headers.get() != NULL);
   EXPECT_EQ(1234, response->headers->GetContentLength());
   EXPECT_EQ("HTTP/1.1 404 Not Found", response->headers->GetStatusLine());
 
@@ -981,7 +981,7 @@ TEST_F(HttpNetworkTransactionSpdy3Test, ReuseConnection) {
     request.load_flags = 0;
 
     scoped_ptr<HttpTransaction> trans(
-        new HttpNetworkTransaction(DEFAULT_PRIORITY, session));
+        new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
     TestCompletionCallback callback;
 
@@ -994,7 +994,7 @@ TEST_F(HttpNetworkTransactionSpdy3Test, ReuseConnection) {
     const HttpResponseInfo* response = trans->GetResponseInfo();
     ASSERT_TRUE(response != NULL);
 
-    EXPECT_TRUE(response->headers != NULL);
+    EXPECT_TRUE(response->headers.get() != NULL);
     EXPECT_EQ("HTTP/1.1 200 OK", response->headers->GetStatusLine());
 
     std::string response_data;
@@ -1039,7 +1039,7 @@ TEST_F(HttpNetworkTransactionSpdy3Test, Ignores100) {
   const HttpResponseInfo* response = trans->GetResponseInfo();
   ASSERT_TRUE(response != NULL);
 
-  EXPECT_TRUE(response->headers != NULL);
+  EXPECT_TRUE(response->headers.get() != NULL);
   EXPECT_EQ("HTTP/1.0 200 OK", response->headers->GetStatusLine());
 
   std::string response_data;
@@ -1081,7 +1081,7 @@ TEST_F(HttpNetworkTransactionSpdy3Test, Ignores1xx) {
   const HttpResponseInfo* response = trans->GetResponseInfo();
   ASSERT_TRUE(response != NULL);
 
-  EXPECT_TRUE(response->headers != NULL);
+  EXPECT_TRUE(response->headers.get() != NULL);
   EXPECT_EQ("HTTP/1.1 200 OK", response->headers->GetStatusLine());
 
   std::string response_data;
@@ -1204,7 +1204,7 @@ void HttpNetworkTransactionSpdy3Test::KeepAliveConnectionResendRequestTest(
     TestCompletionCallback callback;
 
     scoped_ptr<HttpTransaction> trans(
-      new HttpNetworkTransaction(DEFAULT_PRIORITY, session));
+        new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
     int rv = trans->Start(&request, callback.callback(), BoundNetLog());
     EXPECT_EQ(ERR_IO_PENDING, rv);
@@ -1225,7 +1225,7 @@ void HttpNetworkTransactionSpdy3Test::KeepAliveConnectionResendRequestTest(
     const HttpResponseInfo* response = trans->GetResponseInfo();
     ASSERT_TRUE(response != NULL);
 
-    EXPECT_TRUE(response->headers != NULL);
+    EXPECT_TRUE(response->headers.get() != NULL);
     EXPECT_EQ("HTTP/1.1 200 OK", response->headers->GetStatusLine());
 
     std::string response_data;
@@ -1315,7 +1315,7 @@ TEST_F(HttpNetworkTransactionSpdy3Test, KeepAliveEarlyClose) {
 
   scoped_refptr<HttpNetworkSession> session(CreateSession(&session_deps_));
   scoped_ptr<HttpTransaction> trans(
-      new HttpNetworkTransaction(DEFAULT_PRIORITY, session));
+      new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   MockRead data_reads[] = {
     MockRead("HTTP/1.0 200 OK\r\n"),
@@ -1336,11 +1336,11 @@ TEST_F(HttpNetworkTransactionSpdy3Test, KeepAliveEarlyClose) {
   EXPECT_EQ(OK, rv);
 
   scoped_refptr<IOBufferWithSize> io_buf(new IOBufferWithSize(100));
-  rv = trans->Read(io_buf, io_buf->size(), callback.callback());
+  rv = trans->Read(io_buf.get(), io_buf->size(), callback.callback());
   if (rv == ERR_IO_PENDING)
     rv = callback.WaitForResult();
   EXPECT_EQ(5, rv);
-  rv = trans->Read(io_buf, io_buf->size(), callback.callback());
+  rv = trans->Read(io_buf.get(), io_buf->size(), callback.callback());
   EXPECT_EQ(ERR_CONTENT_LENGTH_MISMATCH, rv);
 
   trans.reset();
@@ -1356,7 +1356,7 @@ TEST_F(HttpNetworkTransactionSpdy3Test, KeepAliveEarlyClose2) {
 
   scoped_refptr<HttpNetworkSession> session(CreateSession(&session_deps_));
   scoped_ptr<HttpTransaction> trans(
-      new HttpNetworkTransaction(DEFAULT_PRIORITY, session));
+      new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   MockRead data_reads[] = {
     MockRead("HTTP/1.0 200 OK\r\n"),
@@ -1376,7 +1376,7 @@ TEST_F(HttpNetworkTransactionSpdy3Test, KeepAliveEarlyClose2) {
   EXPECT_EQ(OK, rv);
 
   scoped_refptr<IOBufferWithSize> io_buf(new IOBufferWithSize(100));
-  rv = trans->Read(io_buf, io_buf->size(), callback.callback());
+  rv = trans->Read(io_buf.get(), io_buf->size(), callback.callback());
   if (rv == ERR_IO_PENDING)
     rv = callback.WaitForResult();
   EXPECT_EQ(ERR_CONTENT_LENGTH_MISMATCH, rv);
@@ -1435,7 +1435,7 @@ TEST_F(HttpNetworkTransactionSpdy3Test, KeepAliveAfterUnreadBody) {
     TestCompletionCallback callback;
 
     scoped_ptr<HttpTransaction> trans(
-      new HttpNetworkTransaction(DEFAULT_PRIORITY, session));
+        new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
     int rv = trans->Start(&request, callback.callback(), BoundNetLog());
     EXPECT_EQ(ERR_IO_PENDING, rv);
@@ -1456,7 +1456,7 @@ TEST_F(HttpNetworkTransactionSpdy3Test, KeepAliveAfterUnreadBody) {
     const HttpResponseInfo* response = trans->GetResponseInfo();
     ASSERT_TRUE(response != NULL);
 
-    ASSERT_TRUE(response->headers != NULL);
+    ASSERT_TRUE(response->headers.get() != NULL);
     response_lines[i] = response->headers->GetStatusLine();
 
     // We intentionally don't read the response bodies.
@@ -1480,14 +1480,14 @@ TEST_F(HttpNetworkTransactionSpdy3Test, KeepAliveAfterUnreadBody) {
 
   TestCompletionCallback callback;
   scoped_ptr<HttpTransaction> trans(
-      new HttpNetworkTransaction(DEFAULT_PRIORITY, session));
+      new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
   int rv = trans->Start(&request, callback.callback(), BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
   rv = callback.WaitForResult();
   EXPECT_EQ(OK, rv);
   const HttpResponseInfo* response = trans->GetResponseInfo();
   ASSERT_TRUE(response != NULL);
-  ASSERT_TRUE(response->headers != NULL);
+  ASSERT_TRUE(response->headers.get() != NULL);
   EXPECT_EQ("HTTP/1.1 200 OK", response->headers->GetStatusLine());
   std::string response_data;
   rv = ReadTransaction(trans.get(), &response_data);
@@ -1688,7 +1688,7 @@ TEST_F(HttpNetworkTransactionSpdy3Test, BasicAuthKeepAlive) {
   TestCompletionCallback callback1;
 
   scoped_ptr<HttpTransaction> trans(
-      new HttpNetworkTransaction(DEFAULT_PRIORITY, session));
+      new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
   int rv = trans->Start(&request, callback1.callback(), BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
 
@@ -1777,7 +1777,7 @@ TEST_F(HttpNetworkTransactionSpdy3Test, BasicAuthKeepAliveNoBody) {
   TestCompletionCallback callback1;
 
   scoped_ptr<HttpTransaction> trans(
-      new HttpNetworkTransaction(DEFAULT_PRIORITY, session));
+      new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
   int rv = trans->Start(&request, callback1.callback(), BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
 
@@ -1861,7 +1861,7 @@ TEST_F(HttpNetworkTransactionSpdy3Test, BasicAuthKeepAliveLargeBody) {
   TestCompletionCallback callback1;
 
   scoped_ptr<HttpTransaction> trans(
-      new HttpNetworkTransaction(DEFAULT_PRIORITY, session));
+      new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
   int rv = trans->Start(&request, callback1.callback(), BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
 
@@ -1947,7 +1947,7 @@ TEST_F(HttpNetworkTransactionSpdy3Test, BasicAuthKeepAliveImpatientServer) {
   TestCompletionCallback callback1;
 
   scoped_ptr<HttpTransaction> trans(
-      new HttpNetworkTransaction(DEFAULT_PRIORITY, session));
+      new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
   int rv = trans->Start(&request, callback1.callback(), BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
 
@@ -2032,7 +2032,7 @@ TEST_F(HttpNetworkTransactionSpdy3Test, BasicAuthProxyNoKeepAlive) {
   TestCompletionCallback callback1;
 
   scoped_ptr<HttpTransaction> trans(
-      new HttpNetworkTransaction(DEFAULT_PRIORITY, session));
+      new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   int rv = trans->Start(&request, callback1.callback(), log.bound());
   EXPECT_EQ(ERR_IO_PENDING, rv);
@@ -2051,7 +2051,7 @@ TEST_F(HttpNetworkTransactionSpdy3Test, BasicAuthProxyNoKeepAlive) {
 
   const HttpResponseInfo* response = trans->GetResponseInfo();
   ASSERT_TRUE(response != NULL);
-  ASSERT_FALSE(response->headers == NULL);
+  ASSERT_FALSE(response->headers.get() == NULL);
   EXPECT_EQ(407, response->headers->response_code());
   EXPECT_TRUE(HttpVersion(1, 1) == response->headers->GetHttpVersion());
   EXPECT_TRUE(CheckBasicProxyAuth(response->auth_challenge.get()));
@@ -2106,7 +2106,7 @@ TEST_F(HttpNetworkTransactionSpdy3Test, BasicAuthProxyKeepAlive) {
   scoped_refptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
   scoped_ptr<HttpTransaction> trans(
-      new HttpNetworkTransaction(DEFAULT_PRIORITY, session));
+      new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   // Since we have proxy, should try to establish tunnel.
   MockWrite data_writes1[] = {
@@ -2162,7 +2162,7 @@ TEST_F(HttpNetworkTransactionSpdy3Test, BasicAuthProxyKeepAlive) {
 
   const HttpResponseInfo* response = trans->GetResponseInfo();
   ASSERT_TRUE(response != NULL);
-  ASSERT_FALSE(response->headers == NULL);
+  ASSERT_FALSE(response->headers.get() == NULL);
   EXPECT_TRUE(response->headers->IsKeepAlive());
   EXPECT_EQ(407, response->headers->response_code());
   EXPECT_EQ(10, response->headers->GetContentLength());
@@ -2181,7 +2181,7 @@ TEST_F(HttpNetworkTransactionSpdy3Test, BasicAuthProxyKeepAlive) {
 
   response = trans->GetResponseInfo();
   ASSERT_TRUE(response != NULL);
-  ASSERT_FALSE(response->headers == NULL);
+  ASSERT_FALSE(response->headers.get() == NULL);
   EXPECT_TRUE(response->headers->IsKeepAlive());
   EXPECT_EQ(407, response->headers->response_code());
   EXPECT_EQ(10, response->headers->GetContentLength());
@@ -2207,7 +2207,7 @@ TEST_F(HttpNetworkTransactionSpdy3Test, BasicAuthProxyCancelTunnel) {
   scoped_refptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
   scoped_ptr<HttpTransaction> trans(
-      new HttpNetworkTransaction(DEFAULT_PRIORITY, session));
+      new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   // Since we have proxy, should try to establish tunnel.
   MockWrite data_writes[] = {
@@ -2339,7 +2339,7 @@ TEST_F(HttpNetworkTransactionSpdy3Test,
   TestCompletionCallback callback1;
 
   scoped_ptr<HttpTransaction> trans(
-      new HttpNetworkTransaction(DEFAULT_PRIORITY, session));
+      new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   int rv = trans->Start(&request, callback1.callback(), log.bound());
   EXPECT_EQ(ERR_IO_PENDING, rv);
@@ -2411,7 +2411,7 @@ TEST_F(HttpNetworkTransactionSpdy3Test, HttpProxyLoadTimingNoPacTwoRequests) {
 
   TestCompletionCallback callback1;
   scoped_ptr<HttpTransaction> trans1(
-      new HttpNetworkTransaction(DEFAULT_PRIORITY, session));
+      new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   int rv = trans1->Start(&request1, callback1.callback(), log.bound());
   EXPECT_EQ(ERR_IO_PENDING, rv);
@@ -2421,7 +2421,7 @@ TEST_F(HttpNetworkTransactionSpdy3Test, HttpProxyLoadTimingNoPacTwoRequests) {
 
   const HttpResponseInfo* response1 = trans1->GetResponseInfo();
   ASSERT_TRUE(response1 != NULL);
-  ASSERT_TRUE(response1->headers != NULL);
+  ASSERT_TRUE(response1->headers.get() != NULL);
   EXPECT_EQ(1, response1->headers->GetContentLength());
 
   LoadTimingInfo load_timing_info1;
@@ -2432,7 +2432,7 @@ TEST_F(HttpNetworkTransactionSpdy3Test, HttpProxyLoadTimingNoPacTwoRequests) {
 
   TestCompletionCallback callback2;
   scoped_ptr<HttpTransaction> trans2(
-      new HttpNetworkTransaction(DEFAULT_PRIORITY, session));
+      new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   rv = trans2->Start(&request2, callback2.callback(), log.bound());
   EXPECT_EQ(ERR_IO_PENDING, rv);
@@ -2442,7 +2442,7 @@ TEST_F(HttpNetworkTransactionSpdy3Test, HttpProxyLoadTimingNoPacTwoRequests) {
 
   const HttpResponseInfo* response2 = trans2->GetResponseInfo();
   ASSERT_TRUE(response2 != NULL);
-  ASSERT_TRUE(response2->headers != NULL);
+  ASSERT_TRUE(response2->headers.get() != NULL);
   EXPECT_EQ(2, response2->headers->GetContentLength());
 
   LoadTimingInfo load_timing_info2;
@@ -2509,7 +2509,7 @@ TEST_F(HttpNetworkTransactionSpdy3Test, HttpProxyLoadTimingWithPacTwoRequests) {
 
   TestCompletionCallback callback1;
   scoped_ptr<HttpTransaction> trans1(
-      new HttpNetworkTransaction(DEFAULT_PRIORITY, session));
+      new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   int rv = trans1->Start(&request1, callback1.callback(), log.bound());
   EXPECT_EQ(ERR_IO_PENDING, rv);
@@ -2519,7 +2519,7 @@ TEST_F(HttpNetworkTransactionSpdy3Test, HttpProxyLoadTimingWithPacTwoRequests) {
 
   const HttpResponseInfo* response1 = trans1->GetResponseInfo();
   ASSERT_TRUE(response1 != NULL);
-  ASSERT_TRUE(response1->headers != NULL);
+  ASSERT_TRUE(response1->headers.get() != NULL);
   EXPECT_EQ(1, response1->headers->GetContentLength());
 
   LoadTimingInfo load_timing_info1;
@@ -2531,7 +2531,7 @@ TEST_F(HttpNetworkTransactionSpdy3Test, HttpProxyLoadTimingWithPacTwoRequests) {
 
   TestCompletionCallback callback2;
   scoped_ptr<HttpTransaction> trans2(
-      new HttpNetworkTransaction(DEFAULT_PRIORITY, session));
+      new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   rv = trans2->Start(&request2, callback2.callback(), log.bound());
   EXPECT_EQ(ERR_IO_PENDING, rv);
@@ -2541,7 +2541,7 @@ TEST_F(HttpNetworkTransactionSpdy3Test, HttpProxyLoadTimingWithPacTwoRequests) {
 
   const HttpResponseInfo* response2 = trans2->GetResponseInfo();
   ASSERT_TRUE(response2 != NULL);
-  ASSERT_TRUE(response2->headers != NULL);
+  ASSERT_TRUE(response2->headers.get() != NULL);
   EXPECT_EQ(2, response2->headers->GetContentLength());
 
   LoadTimingInfo load_timing_info2;
@@ -2590,7 +2590,7 @@ TEST_F(HttpNetworkTransactionSpdy3Test, HttpsProxyGet) {
   TestCompletionCallback callback1;
 
   scoped_ptr<HttpTransaction> trans(
-      new HttpNetworkTransaction(DEFAULT_PRIORITY, session));
+      new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   int rv = trans->Start(&request, callback1.callback(), log.bound());
   EXPECT_EQ(ERR_IO_PENDING, rv);
@@ -2655,7 +2655,7 @@ TEST_F(HttpNetworkTransactionSpdy3Test, HttpsProxySpdyGet) {
   TestCompletionCallback callback1;
 
   scoped_ptr<HttpTransaction> trans(
-      new HttpNetworkTransaction(DEFAULT_PRIORITY, session));
+      new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   int rv = trans->Start(&request, callback1.callback(), log.bound());
   EXPECT_EQ(ERR_IO_PENDING, rv);
@@ -2670,7 +2670,7 @@ TEST_F(HttpNetworkTransactionSpdy3Test, HttpsProxySpdyGet) {
 
   const HttpResponseInfo* response = trans->GetResponseInfo();
   ASSERT_TRUE(response != NULL);
-  ASSERT_TRUE(response->headers != NULL);
+  ASSERT_TRUE(response->headers.get() != NULL);
   EXPECT_EQ("HTTP/1.1 200 OK", response->headers->GetStatusLine());
 
   std::string response_data;
@@ -2743,7 +2743,7 @@ TEST_F(HttpNetworkTransactionSpdy3Test, HttpsProxySpdyGetWithProxyAuth) {
   TestCompletionCallback callback1;
 
   scoped_ptr<HttpTransaction> trans(
-      new HttpNetworkTransaction(DEFAULT_PRIORITY, session));
+      new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   int rv = trans->Start(&request, callback1.callback(), log.bound());
   EXPECT_EQ(ERR_IO_PENDING, rv);
@@ -2754,7 +2754,7 @@ TEST_F(HttpNetworkTransactionSpdy3Test, HttpsProxySpdyGetWithProxyAuth) {
   const HttpResponseInfo* const response = trans->GetResponseInfo();
 
   ASSERT_TRUE(response != NULL);
-  ASSERT_TRUE(response->headers != NULL);
+  ASSERT_TRUE(response->headers.get() != NULL);
   EXPECT_EQ(407, response->headers->response_code());
   EXPECT_TRUE(response->was_fetched_via_spdy);
   EXPECT_TRUE(CheckBasicProxyAuth(response->auth_challenge.get()));
@@ -2771,7 +2771,7 @@ TEST_F(HttpNetworkTransactionSpdy3Test, HttpsProxySpdyGetWithProxyAuth) {
   const HttpResponseInfo* const response_restart = trans->GetResponseInfo();
 
   ASSERT_TRUE(response_restart != NULL);
-  ASSERT_TRUE(response_restart->headers != NULL);
+  ASSERT_TRUE(response_restart->headers.get() != NULL);
   EXPECT_EQ(200, response_restart->headers->response_code());
   // The password prompt info should not be set.
   EXPECT_TRUE(response_restart->auth_challenge.get() == NULL);
@@ -2792,7 +2792,7 @@ TEST_F(HttpNetworkTransactionSpdy3Test, HttpsProxySpdyConnectHttps) {
   scoped_refptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
   scoped_ptr<HttpTransaction> trans(
-      new HttpNetworkTransaction(DEFAULT_PRIORITY, session));
+      new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   // CONNECT to www.google.com:443 via SPDY
   scoped_ptr<SpdyFrame> connect(spdy_util_.ConstructSpdyConnect(NULL, 0, 1));
@@ -2854,7 +2854,7 @@ TEST_F(HttpNetworkTransactionSpdy3Test, HttpsProxySpdyConnectHttps) {
 
   const HttpResponseInfo* response = trans->GetResponseInfo();
   ASSERT_TRUE(response != NULL);
-  ASSERT_TRUE(response->headers != NULL);
+  ASSERT_TRUE(response->headers.get() != NULL);
   EXPECT_EQ("HTTP/1.1 200 OK", response->headers->GetStatusLine());
 
   std::string response_data;
@@ -2877,7 +2877,7 @@ TEST_F(HttpNetworkTransactionSpdy3Test, HttpsProxySpdyConnectSpdy) {
   scoped_refptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
   scoped_ptr<HttpTransaction> trans(
-      new HttpNetworkTransaction(DEFAULT_PRIORITY, session));
+      new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   // CONNECT to www.google.com:443 via SPDY
   scoped_ptr<SpdyFrame> connect(spdy_util_.ConstructSpdyConnect(NULL, 0, 1));
@@ -2938,7 +2938,7 @@ TEST_F(HttpNetworkTransactionSpdy3Test, HttpsProxySpdyConnectSpdy) {
 
   const HttpResponseInfo* response = trans->GetResponseInfo();
   ASSERT_TRUE(response != NULL);
-  ASSERT_TRUE(response->headers != NULL);
+  ASSERT_TRUE(response->headers.get() != NULL);
   EXPECT_EQ("HTTP/1.1 200 OK", response->headers->GetStatusLine());
 
   std::string response_data;
@@ -2961,7 +2961,7 @@ TEST_F(HttpNetworkTransactionSpdy3Test, HttpsProxySpdyConnectFailure) {
   scoped_refptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
   scoped_ptr<HttpTransaction> trans(
-      new HttpNetworkTransaction(DEFAULT_PRIORITY, session));
+      new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   // CONNECT to www.google.com:443 via SPDY
   scoped_ptr<SpdyFrame> connect(spdy_util_.ConstructSpdyConnect(NULL, 0, 1));
@@ -3113,7 +3113,7 @@ TEST_F(HttpNetworkTransactionSpdy3Test,
   TestCompletionCallback callback;
 
   scoped_ptr<HttpTransaction> trans(
-      new HttpNetworkTransaction(DEFAULT_PRIORITY, session));
+      new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
   int rv = trans->Start(&request1, callback.callback(), BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
   // The first connect and request, each of their responses, and the body.
@@ -3128,15 +3128,15 @@ TEST_F(HttpNetworkTransactionSpdy3Test,
 
   const HttpResponseInfo* response = trans->GetResponseInfo();
   ASSERT_TRUE(response != NULL);
-  ASSERT_TRUE(response->headers != NULL);
+  ASSERT_TRUE(response->headers.get() != NULL);
   EXPECT_EQ("HTTP/1.1 200 OK", response->headers->GetStatusLine());
 
   std::string response_data;
   scoped_refptr<net::IOBuffer> buf(new net::IOBuffer(256));
-  EXPECT_EQ(1, trans->Read(buf, 256, callback.callback()));
+  EXPECT_EQ(1, trans->Read(buf.get(), 256, callback.callback()));
 
   scoped_ptr<HttpTransaction> trans2(
-      new HttpNetworkTransaction(DEFAULT_PRIORITY, session));
+      new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
   rv = trans2->Start(&request2, callback.callback(), BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
 
@@ -3155,7 +3155,7 @@ TEST_F(HttpNetworkTransactionSpdy3Test,
   // separate stream.
   EXPECT_NE(load_timing_info.socket_log_id, load_timing_info2.socket_log_id);
 
-  EXPECT_EQ(2, trans2->Read(buf, 256, callback.callback()));
+  EXPECT_EQ(2, trans2->Read(buf.get(), 256, callback.callback()));
 }
 
 // Test load timing in the case of two HTTPS (non-SPDY) requests through a SPDY
@@ -3242,7 +3242,7 @@ TEST_F(HttpNetworkTransactionSpdy3Test,
   TestCompletionCallback callback;
 
   scoped_ptr<HttpTransaction> trans(
-      new HttpNetworkTransaction(DEFAULT_PRIORITY, session));
+      new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
   int rv = trans->Start(&request1, callback.callback(), BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
   // The first connect and request, each of their responses, and the body.
@@ -3257,17 +3257,17 @@ TEST_F(HttpNetworkTransactionSpdy3Test,
 
   const HttpResponseInfo* response = trans->GetResponseInfo();
   ASSERT_TRUE(response != NULL);
-  ASSERT_TRUE(response->headers != NULL);
+  ASSERT_TRUE(response->headers.get() != NULL);
   EXPECT_EQ("HTTP/1.1 200 OK", response->headers->GetStatusLine());
 
   std::string response_data;
   scoped_refptr<net::IOBuffer> buf(new net::IOBuffer(256));
-  EXPECT_EQ(1, trans->Read(buf, 256, callback.callback()));
+  EXPECT_EQ(1, trans->Read(buf.get(), 256, callback.callback()));
   // Delete the first request, so the second one can reuse the socket.
   trans.reset();
 
   scoped_ptr<HttpTransaction> trans2(
-      new HttpNetworkTransaction(DEFAULT_PRIORITY, session));
+      new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
   rv = trans2->Start(&request2, callback.callback(), BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
 
@@ -3284,7 +3284,7 @@ TEST_F(HttpNetworkTransactionSpdy3Test,
   // The requests should have the same ID.
   EXPECT_EQ(load_timing_info.socket_log_id, load_timing_info2.socket_log_id);
 
-  EXPECT_EQ(2, trans2->Read(buf, 256, callback.callback()));
+  EXPECT_EQ(2, trans2->Read(buf.get(), 256, callback.callback()));
 }
 
 // Test load timing in the case of of two HTTP requests through a SPDY HTTPS
@@ -3348,7 +3348,7 @@ TEST_F(HttpNetworkTransactionSpdy3Test,
   TestCompletionCallback callback;
 
   scoped_ptr<HttpTransaction> trans(
-      new HttpNetworkTransaction(DEFAULT_PRIORITY, session));
+      new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
   int rv = trans->Start(&request1, callback.callback(), BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
   spdy_data.RunFor(2);
@@ -3363,19 +3363,19 @@ TEST_F(HttpNetworkTransactionSpdy3Test,
 
   const HttpResponseInfo* response = trans->GetResponseInfo();
   ASSERT_TRUE(response != NULL);
-  ASSERT_TRUE(response->headers != NULL);
+  ASSERT_TRUE(response->headers.get() != NULL);
   EXPECT_EQ("HTTP/1.1 200 OK", response->headers->GetStatusLine());
 
   std::string response_data;
   scoped_refptr<net::IOBuffer> buf(new net::IOBuffer(256));
-  EXPECT_EQ(ERR_IO_PENDING, trans->Read(buf, 256, callback.callback()));
+  EXPECT_EQ(ERR_IO_PENDING, trans->Read(buf.get(), 256, callback.callback()));
   spdy_data.RunFor(1);
   EXPECT_EQ(1, callback.WaitForResult());
   // Delete the first request, so the second one can reuse the socket.
   trans.reset();
 
   scoped_ptr<HttpTransaction> trans2(
-      new HttpNetworkTransaction(DEFAULT_PRIORITY, session));
+      new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
   rv = trans2->Start(&request2, callback.callback(), BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
 
@@ -3390,7 +3390,7 @@ TEST_F(HttpNetworkTransactionSpdy3Test,
   // The requests should have the same ID.
   EXPECT_EQ(load_timing_info.socket_log_id, load_timing_info2.socket_log_id);
 
-  EXPECT_EQ(ERR_IO_PENDING, trans2->Read(buf, 256, callback.callback()));
+  EXPECT_EQ(ERR_IO_PENDING, trans2->Read(buf.get(), 256, callback.callback()));
   spdy_data.RunFor(1);
   EXPECT_EQ(2, callback.WaitForResult());
 }
@@ -3448,7 +3448,7 @@ TEST_F(HttpNetworkTransactionSpdy3Test, HttpsProxyAuthRetry) {
   TestCompletionCallback callback1;
 
   scoped_ptr<HttpTransaction> trans(
-      new HttpNetworkTransaction(DEFAULT_PRIORITY, session));
+      new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   int rv = trans->Start(&request, callback1.callback(), log.bound());
   EXPECT_EQ(ERR_IO_PENDING, rv);
@@ -3463,7 +3463,7 @@ TEST_F(HttpNetworkTransactionSpdy3Test, HttpsProxyAuthRetry) {
 
   const HttpResponseInfo* response = trans->GetResponseInfo();
   ASSERT_TRUE(response != NULL);
-  ASSERT_FALSE(response->headers == NULL);
+  ASSERT_FALSE(response->headers.get() == NULL);
   EXPECT_EQ(407, response->headers->response_code());
   EXPECT_TRUE(HttpVersion(1, 1) == response->headers->GetHttpVersion());
   EXPECT_TRUE(CheckBasicProxyAuth(response->auth_challenge.get()));
@@ -3527,7 +3527,7 @@ void HttpNetworkTransactionSpdy3Test::ConnectStatusHelperWithExpectedStatus(
   TestCompletionCallback callback;
 
   scoped_ptr<HttpTransaction> trans(
-      new HttpNetworkTransaction(DEFAULT_PRIORITY, session));
+      new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   int rv = trans->Start(&request, callback.callback(), BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
@@ -3923,7 +3923,7 @@ TEST_F(HttpNetworkTransactionSpdy3Test, NTLMAuth1) {
   TestCompletionCallback callback1;
 
   scoped_ptr<HttpTransaction> trans(
-      new HttpNetworkTransaction(DEFAULT_PRIORITY, session));
+      new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   int rv = trans->Start(&request, callback1.callback(), BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
@@ -4103,7 +4103,7 @@ TEST_F(HttpNetworkTransactionSpdy3Test, NTLMAuth2) {
   TestCompletionCallback callback1;
 
   scoped_ptr<HttpTransaction> trans(
-      new HttpNetworkTransaction(DEFAULT_PRIORITY, session));
+      new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   int rv = trans->Start(&request, callback1.callback(), BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
@@ -4220,7 +4220,7 @@ TEST_F(HttpNetworkTransactionSpdy3Test,
   scoped_refptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
   scoped_ptr<HttpTransaction> trans(
-      new HttpNetworkTransaction(DEFAULT_PRIORITY, session));
+      new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   // Since we have proxy, should try to establish tunnel.
   MockWrite data_writes1[] = {
@@ -4259,11 +4259,11 @@ TEST_F(HttpNetworkTransactionSpdy3Test,
 
   // We now check to make sure the TCPClientSocket was not added back to
   // the pool.
-  EXPECT_EQ(0, GetIdleSocketCountInTransportSocketPool(session));
+  EXPECT_EQ(0, GetIdleSocketCountInTransportSocketPool(session.get()));
   trans.reset();
   base::MessageLoop::current()->RunUntilIdle();
   // Make sure that the socket didn't get recycled after calling the destructor.
-  EXPECT_EQ(0, GetIdleSocketCountInTransportSocketPool(session));
+  EXPECT_EQ(0, GetIdleSocketCountInTransportSocketPool(session.get()));
 }
 
 // Make sure that we recycle a socket after reading all of the response body.
@@ -4276,7 +4276,7 @@ TEST_F(HttpNetworkTransactionSpdy3Test, RecycleSocket) {
   scoped_refptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
   scoped_ptr<HttpTransaction> trans(
-      new HttpNetworkTransaction(DEFAULT_PRIORITY, session));
+      new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   MockRead data_reads[] = {
     // A part of the response body is received with the response headers.
@@ -4302,11 +4302,11 @@ TEST_F(HttpNetworkTransactionSpdy3Test, RecycleSocket) {
   const HttpResponseInfo* response = trans->GetResponseInfo();
   ASSERT_TRUE(response != NULL);
 
-  EXPECT_TRUE(response->headers != NULL);
+  EXPECT_TRUE(response->headers.get() != NULL);
   std::string status_line = response->headers->GetStatusLine();
   EXPECT_EQ("HTTP/1.1 200 OK", status_line);
 
-  EXPECT_EQ(0, GetIdleSocketCountInTransportSocketPool(session));
+  EXPECT_EQ(0, GetIdleSocketCountInTransportSocketPool(session.get()));
 
   std::string response_data;
   rv = ReadTransaction(trans.get(), &response_data);
@@ -4318,7 +4318,7 @@ TEST_F(HttpNetworkTransactionSpdy3Test, RecycleSocket) {
   base::MessageLoop::current()->RunUntilIdle();
 
   // We now check to make sure the socket was added back to the pool.
-  EXPECT_EQ(1, GetIdleSocketCountInTransportSocketPool(session));
+  EXPECT_EQ(1, GetIdleSocketCountInTransportSocketPool(session.get()));
 }
 
 // Make sure that we recycle a SSL socket after reading all of the response
@@ -4353,7 +4353,7 @@ TEST_F(HttpNetworkTransactionSpdy3Test, RecycleSSLSocket) {
 
   scoped_refptr<HttpNetworkSession> session(CreateSession(&session_deps_));
   scoped_ptr<HttpTransaction> trans(
-      new HttpNetworkTransaction(DEFAULT_PRIORITY, session));
+      new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   int rv = trans->Start(&request, callback.callback(), BoundNetLog());
 
@@ -4362,10 +4362,10 @@ TEST_F(HttpNetworkTransactionSpdy3Test, RecycleSSLSocket) {
 
   const HttpResponseInfo* response = trans->GetResponseInfo();
   ASSERT_TRUE(response != NULL);
-  ASSERT_TRUE(response->headers != NULL);
+  ASSERT_TRUE(response->headers.get() != NULL);
   EXPECT_EQ("HTTP/1.1 200 OK", response->headers->GetStatusLine());
 
-  EXPECT_EQ(0, GetIdleSocketCountInTransportSocketPool(session));
+  EXPECT_EQ(0, GetIdleSocketCountInTransportSocketPool(session.get()));
 
   std::string response_data;
   rv = ReadTransaction(trans.get(), &response_data);
@@ -4377,7 +4377,7 @@ TEST_F(HttpNetworkTransactionSpdy3Test, RecycleSSLSocket) {
   base::MessageLoop::current()->RunUntilIdle();
 
   // We now check to make sure the socket was added back to the pool.
-  EXPECT_EQ(1, GetIdleSocketCountInSSLSocketPool(session));
+  EXPECT_EQ(1, GetIdleSocketCountInSSLSocketPool(session.get()));
 }
 
 // Grab a SSL socket, use it, and put it back into the pool.  Then, reuse it
@@ -4421,7 +4421,7 @@ TEST_F(HttpNetworkTransactionSpdy3Test, RecycleDeadSSLSocket) {
 
   scoped_refptr<HttpNetworkSession> session(CreateSession(&session_deps_));
   scoped_ptr<HttpTransaction> trans(
-      new HttpNetworkTransaction(DEFAULT_PRIORITY, session));
+      new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   int rv = trans->Start(&request, callback.callback(), BoundNetLog());
 
@@ -4430,10 +4430,10 @@ TEST_F(HttpNetworkTransactionSpdy3Test, RecycleDeadSSLSocket) {
 
   const HttpResponseInfo* response = trans->GetResponseInfo();
   ASSERT_TRUE(response != NULL);
-  ASSERT_TRUE(response->headers != NULL);
+  ASSERT_TRUE(response->headers.get() != NULL);
   EXPECT_EQ("HTTP/1.1 200 OK", response->headers->GetStatusLine());
 
-  EXPECT_EQ(0, GetIdleSocketCountInTransportSocketPool(session));
+  EXPECT_EQ(0, GetIdleSocketCountInTransportSocketPool(session.get()));
 
   std::string response_data;
   rv = ReadTransaction(trans.get(), &response_data);
@@ -4445,11 +4445,11 @@ TEST_F(HttpNetworkTransactionSpdy3Test, RecycleDeadSSLSocket) {
   base::MessageLoop::current()->RunUntilIdle();
 
   // We now check to make sure the socket was added back to the pool.
-  EXPECT_EQ(1, GetIdleSocketCountInSSLSocketPool(session));
+  EXPECT_EQ(1, GetIdleSocketCountInSSLSocketPool(session.get()));
 
   // Now start the second transaction, which should reuse the previous socket.
 
-  trans.reset(new HttpNetworkTransaction(DEFAULT_PRIORITY, session));
+  trans.reset(new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   rv = trans->Start(&request, callback.callback(), BoundNetLog());
 
@@ -4458,10 +4458,10 @@ TEST_F(HttpNetworkTransactionSpdy3Test, RecycleDeadSSLSocket) {
 
   response = trans->GetResponseInfo();
   ASSERT_TRUE(response != NULL);
-  ASSERT_TRUE(response->headers != NULL);
+  ASSERT_TRUE(response->headers.get() != NULL);
   EXPECT_EQ("HTTP/1.1 200 OK", response->headers->GetStatusLine());
 
-  EXPECT_EQ(0, GetIdleSocketCountInTransportSocketPool(session));
+  EXPECT_EQ(0, GetIdleSocketCountInTransportSocketPool(session.get()));
 
   rv = ReadTransaction(trans.get(), &response_data);
   EXPECT_EQ(OK, rv);
@@ -4472,7 +4472,7 @@ TEST_F(HttpNetworkTransactionSpdy3Test, RecycleDeadSSLSocket) {
   base::MessageLoop::current()->RunUntilIdle();
 
   // We now check to make sure the socket was added back to the pool.
-  EXPECT_EQ(1, GetIdleSocketCountInSSLSocketPool(session));
+  EXPECT_EQ(1, GetIdleSocketCountInSSLSocketPool(session.get()));
 }
 
 // Make sure that we recycle a socket after a zero-length response.
@@ -4489,7 +4489,7 @@ TEST_F(HttpNetworkTransactionSpdy3Test, RecycleSocketAfterZeroContentLength) {
   scoped_refptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
   scoped_ptr<HttpTransaction> trans(
-      new HttpNetworkTransaction(DEFAULT_PRIORITY, session));
+      new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   MockRead data_reads[] = {
     MockRead("HTTP/1.1 204 No Content\r\n"
@@ -4513,11 +4513,11 @@ TEST_F(HttpNetworkTransactionSpdy3Test, RecycleSocketAfterZeroContentLength) {
   const HttpResponseInfo* response = trans->GetResponseInfo();
   ASSERT_TRUE(response != NULL);
 
-  EXPECT_TRUE(response->headers != NULL);
+  EXPECT_TRUE(response->headers.get() != NULL);
   std::string status_line = response->headers->GetStatusLine();
   EXPECT_EQ("HTTP/1.1 204 No Content", status_line);
 
-  EXPECT_EQ(0, GetIdleSocketCountInTransportSocketPool(session));
+  EXPECT_EQ(0, GetIdleSocketCountInTransportSocketPool(session.get()));
 
   std::string response_data;
   rv = ReadTransaction(trans.get(), &response_data);
@@ -4529,7 +4529,7 @@ TEST_F(HttpNetworkTransactionSpdy3Test, RecycleSocketAfterZeroContentLength) {
   base::MessageLoop::current()->RunUntilIdle();
 
   // We now check to make sure the socket was added back to the pool.
-  EXPECT_EQ(1, GetIdleSocketCountInTransportSocketPool(session));
+  EXPECT_EQ(1, GetIdleSocketCountInTransportSocketPool(session.get()));
 }
 
 TEST_F(HttpNetworkTransactionSpdy3Test, ResendRequestOnWriteBodyError) {
@@ -4598,7 +4598,7 @@ TEST_F(HttpNetworkTransactionSpdy3Test, ResendRequestOnWriteBodyError) {
 
   for (int i = 0; i < 2; ++i) {
     scoped_ptr<HttpTransaction> trans(
-        new HttpNetworkTransaction(DEFAULT_PRIORITY, session));
+        new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
     TestCompletionCallback callback;
 
@@ -4611,7 +4611,7 @@ TEST_F(HttpNetworkTransactionSpdy3Test, ResendRequestOnWriteBodyError) {
     const HttpResponseInfo* response = trans->GetResponseInfo();
     ASSERT_TRUE(response != NULL);
 
-    EXPECT_TRUE(response->headers != NULL);
+    EXPECT_TRUE(response->headers.get() != NULL);
     EXPECT_EQ("HTTP/1.1 200 OK", response->headers->GetStatusLine());
 
     std::string response_data;
@@ -4821,7 +4821,7 @@ TEST_F(HttpNetworkTransactionSpdy3Test, BasicAuthCacheAndPreauth) {
     request.load_flags = 0;
 
     scoped_ptr<HttpTransaction> trans(
-      new HttpNetworkTransaction(DEFAULT_PRIORITY, session));
+        new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
     MockWrite data_writes1[] = {
       MockWrite("GET /x/y/z HTTP/1.1\r\n"
@@ -4897,7 +4897,7 @@ TEST_F(HttpNetworkTransactionSpdy3Test, BasicAuthCacheAndPreauth) {
     request.load_flags = 0;
 
     scoped_ptr<HttpTransaction> trans(
-      new HttpNetworkTransaction(DEFAULT_PRIORITY, session));
+        new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
     MockWrite data_writes1[] = {
       MockWrite("GET /x/y/a/b HTTP/1.1\r\n"
@@ -4981,7 +4981,7 @@ TEST_F(HttpNetworkTransactionSpdy3Test, BasicAuthCacheAndPreauth) {
     request.load_flags = 0;
 
     scoped_ptr<HttpTransaction> trans(
-      new HttpNetworkTransaction(DEFAULT_PRIORITY, session));
+        new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
     MockWrite data_writes1[] = {
       MockWrite("GET /x/y/z2 HTTP/1.1\r\n"
@@ -5029,7 +5029,7 @@ TEST_F(HttpNetworkTransactionSpdy3Test, BasicAuthCacheAndPreauth) {
     request.load_flags = 0;
 
     scoped_ptr<HttpTransaction> trans(
-      new HttpNetworkTransaction(DEFAULT_PRIORITY, session));
+        new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
     MockWrite data_writes1[] = {
       MockWrite("GET /x/1 HTTP/1.1\r\n"
@@ -5099,7 +5099,7 @@ TEST_F(HttpNetworkTransactionSpdy3Test, BasicAuthCacheAndPreauth) {
     request.load_flags = 0;
 
     scoped_ptr<HttpTransaction> trans(
-      new HttpNetworkTransaction(DEFAULT_PRIORITY, session));
+        new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
     MockWrite data_writes1[] = {
       MockWrite("GET /p/q/t HTTP/1.1\r\n"
@@ -5211,7 +5211,7 @@ TEST_F(HttpNetworkTransactionSpdy3Test, DigestPreAuthNonceCount) {
     request.load_flags = 0;
 
     scoped_ptr<HttpTransaction> trans(
-      new HttpNetworkTransaction(DEFAULT_PRIORITY, session));
+        new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
     MockWrite data_writes1[] = {
       MockWrite("GET /x/y/z HTTP/1.1\r\n"
@@ -5290,7 +5290,7 @@ TEST_F(HttpNetworkTransactionSpdy3Test, DigestPreAuthNonceCount) {
     request.load_flags = 0;
 
     scoped_ptr<HttpTransaction> trans(
-      new HttpNetworkTransaction(DEFAULT_PRIORITY, session));
+        new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
     MockWrite data_writes1[] = {
       MockWrite("GET /x/y/a/b HTTP/1.1\r\n"
@@ -5353,7 +5353,7 @@ TEST_F(HttpNetworkTransactionSpdy3Test, ResetStateForRestart) {
     scoped_refptr<HttpResponseHeaders> headers(new HttpResponseHeaders(temp));
     request.extra_headers.SetHeader("Foo", "1");
     request.extra_headers.SetHeader("bar", "23");
-    EXPECT_TRUE(response->vary_data.Init(request, *headers));
+    EXPECT_TRUE(response->vary_data.Init(request, *headers.get()));
   }
 
   // Cause the above state to be reset.
@@ -5903,7 +5903,7 @@ TEST_F(HttpNetworkTransactionSpdy3Test, BasicAuthSpdyProxy) {
   TestCompletionCallback callback1;
 
   scoped_ptr<HttpTransaction> trans(
-      new HttpNetworkTransaction(DEFAULT_PRIORITY, session));
+      new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   int rv = trans->Start(&request, callback1.callback(), log.bound());
   EXPECT_EQ(ERR_IO_PENDING, rv);
@@ -5922,7 +5922,7 @@ TEST_F(HttpNetworkTransactionSpdy3Test, BasicAuthSpdyProxy) {
 
   const HttpResponseInfo* response = trans->GetResponseInfo();
   ASSERT_TRUE(response != NULL);
-  ASSERT_FALSE(response->headers == NULL);
+  ASSERT_FALSE(response->headers.get() == NULL);
   EXPECT_EQ(407, response->headers->response_code());
   EXPECT_TRUE(HttpVersion(1, 1) == response->headers->GetHttpVersion());
   EXPECT_TRUE(response->auth_challenge.get() != NULL);
@@ -6024,7 +6024,7 @@ TEST_F(HttpNetworkTransactionSpdy3Test, CrossOriginProxyPush) {
   session_deps_.socket_factory->AddSSLSocketDataProvider(&proxy);
 
   scoped_ptr<HttpTransaction> trans(
-      new HttpNetworkTransaction(DEFAULT_PRIORITY, session));
+      new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
   TestCompletionCallback callback;
   int rv = trans->Start(&request, callback.callback(), log.bound());
   EXPECT_EQ(ERR_IO_PENDING, rv);
@@ -6034,7 +6034,7 @@ TEST_F(HttpNetworkTransactionSpdy3Test, CrossOriginProxyPush) {
   const HttpResponseInfo* response = trans->GetResponseInfo();
 
   scoped_ptr<HttpTransaction> push_trans(
-      new HttpNetworkTransaction(DEFAULT_PRIORITY, session));
+      new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
   rv = push_trans->Start(&push_request, callback.callback(), log.bound());
   EXPECT_EQ(ERR_IO_PENDING, rv);
 
@@ -6059,7 +6059,7 @@ TEST_F(HttpNetworkTransactionSpdy3Test, CrossOriginProxyPush) {
                                  CONNECT_TIMING_HAS_CONNECT_TIMES_ONLY);
 
   // Verify the pushed stream.
-  EXPECT_TRUE(push_response->headers != NULL);
+  EXPECT_TRUE(push_response->headers.get() != NULL);
   EXPECT_EQ(200, push_response->headers->response_code());
 
   rv = ReadTransaction(push_trans.get(), &response_data);
@@ -6138,7 +6138,7 @@ TEST_F(HttpNetworkTransactionSpdy3Test, CrossOriginProxyPushCorrectness) {
   session_deps_.socket_factory->AddSSLSocketDataProvider(&proxy);
 
   scoped_ptr<HttpTransaction> trans(
-      new HttpNetworkTransaction(DEFAULT_PRIORITY, session));
+      new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
   TestCompletionCallback callback;
   int rv = trans->Start(&request, callback.callback(), log.bound());
   EXPECT_EQ(ERR_IO_PENDING, rv);
@@ -6998,7 +6998,7 @@ int GroupNameTransactionHelper(
   request.load_flags = 0;
 
   scoped_ptr<HttpTransaction> trans(
-      new HttpNetworkTransaction(DEFAULT_PRIORITY, session));
+      new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   TestCompletionCallback callback;
 
@@ -7200,7 +7200,7 @@ TEST_F(HttpNetworkTransactionSpdy3Test, GroupNameForSOCKSConnections) {
     peer.SetClientSocketPoolManager(mock_pool_manager);
 
     scoped_ptr<HttpTransaction> trans(
-      new HttpNetworkTransaction(DEFAULT_PRIORITY, session));
+        new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
     EXPECT_EQ(ERR_IO_PENDING,
               GroupNameTransactionHelper(tests[i].url, session));
@@ -7368,7 +7368,7 @@ TEST_F(HttpNetworkTransactionSpdy3Test, ConnectionClosedAfterStartOfHeaders) {
   const HttpResponseInfo* response = trans->GetResponseInfo();
   ASSERT_TRUE(response != NULL);
 
-  EXPECT_TRUE(response->headers != NULL);
+  EXPECT_TRUE(response->headers.get() != NULL);
   EXPECT_EQ("HTTP/1.0 200 OK", response->headers->GetStatusLine());
 
   std::string response_data;
@@ -7430,7 +7430,7 @@ TEST_F(HttpNetworkTransactionSpdy3Test, DrainResetOK) {
   TestCompletionCallback callback1;
 
   scoped_ptr<HttpTransaction> trans(
-      new HttpNetworkTransaction(DEFAULT_PRIORITY, session));
+      new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   int rv = trans->Start(&request, callback1.callback(), BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
@@ -7520,7 +7520,7 @@ TEST_F(HttpNetworkTransactionSpdy3Test, LargeContentLengthThenClose) {
   const HttpResponseInfo* response = trans->GetResponseInfo();
   ASSERT_TRUE(response != NULL);
 
-  EXPECT_TRUE(response->headers != NULL);
+  EXPECT_TRUE(response->headers.get() != NULL);
   EXPECT_EQ("HTTP/1.0 200 OK", response->headers->GetStatusLine());
 
   std::string response_data;
@@ -7570,7 +7570,7 @@ TEST_F(HttpNetworkTransactionSpdy3Test, UploadFileSmallerThanLength) {
   const HttpResponseInfo* response = trans->GetResponseInfo();
   ASSERT_TRUE(response != NULL);
 
-  EXPECT_TRUE(response->headers != NULL);
+  EXPECT_TRUE(response->headers.get() != NULL);
   EXPECT_EQ("HTTP/1.0 200 OK", response->headers->GetStatusLine());
 
   std::string response_data;
@@ -7632,7 +7632,7 @@ TEST_F(HttpNetworkTransactionSpdy3Test, UploadUnreadableFile) {
 
   const HttpResponseInfo* response = trans->GetResponseInfo();
   ASSERT_TRUE(response != NULL);
-  EXPECT_TRUE(response->headers != NULL);
+  EXPECT_TRUE(response->headers.get() != NULL);
   EXPECT_EQ("HTTP/1.0 200 OK", response->headers->GetStatusLine());
 
   file_util::Delete(temp_file, false);
@@ -7701,7 +7701,7 @@ TEST_F(HttpNetworkTransactionSpdy3Test, UnreadableUploadFileAfterAuthRestart) {
 
   const HttpResponseInfo* response = trans->GetResponseInfo();
   ASSERT_TRUE(response != NULL);
-  ASSERT_TRUE(response->headers != NULL);
+  ASSERT_TRUE(response->headers.get() != NULL);
   EXPECT_EQ("HTTP/1.1 401 Unauthorized", response->headers->GetStatusLine());
   EXPECT_TRUE(CheckBasicServerAuth(response->auth_challenge.get()));
 
@@ -7719,7 +7719,7 @@ TEST_F(HttpNetworkTransactionSpdy3Test, UnreadableUploadFileAfterAuthRestart) {
 
   response = trans->GetResponseInfo();
   ASSERT_TRUE(response != NULL);
-  EXPECT_TRUE(response->headers != NULL);
+  EXPECT_TRUE(response->headers.get() != NULL);
   EXPECT_TRUE(response->auth_challenge.get() == NULL);
   EXPECT_EQ("HTTP/1.1 200 OK", response->headers->GetStatusLine());
 
@@ -7904,7 +7904,7 @@ TEST_F(HttpNetworkTransactionSpdy3Test, HonorAlternateProtocolHeader) {
 
   scoped_refptr<HttpNetworkSession> session(CreateSession(&session_deps_));
   scoped_ptr<HttpTransaction> trans(
-      new HttpNetworkTransaction(DEFAULT_PRIORITY, session));
+      new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   int rv = trans->Start(&request, callback.callback(), BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
@@ -7919,7 +7919,7 @@ TEST_F(HttpNetworkTransactionSpdy3Test, HonorAlternateProtocolHeader) {
 
   const HttpResponseInfo* response = trans->GetResponseInfo();
   ASSERT_TRUE(response != NULL);
-  ASSERT_TRUE(response->headers != NULL);
+  ASSERT_TRUE(response->headers.get() != NULL);
   EXPECT_EQ("HTTP/1.1 200 OK", response->headers->GetStatusLine());
   EXPECT_FALSE(response->was_fetched_via_spdy);
   EXPECT_FALSE(response->was_npn_negotiated);
@@ -7974,7 +7974,7 @@ TEST_F(HttpNetworkTransactionSpdy3Test,
       NPN_SPDY_3);
 
   scoped_ptr<HttpTransaction> trans(
-      new HttpNetworkTransaction(DEFAULT_PRIORITY, session));
+      new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
   TestCompletionCallback callback;
 
   int rv = trans->Start(&request, callback.callback(), BoundNetLog());
@@ -7983,7 +7983,7 @@ TEST_F(HttpNetworkTransactionSpdy3Test,
 
   const HttpResponseInfo* response = trans->GetResponseInfo();
   ASSERT_TRUE(response != NULL);
-  ASSERT_TRUE(response->headers != NULL);
+  ASSERT_TRUE(response->headers.get() != NULL);
   EXPECT_EQ("HTTP/1.1 200 OK", response->headers->GetStatusLine());
 
   std::string response_data;
@@ -8036,7 +8036,7 @@ TEST_F(HttpNetworkTransactionSpdy3Test,
       NPN_SPDY_3);
 
   scoped_ptr<HttpTransaction> trans(
-      new HttpNetworkTransaction(DEFAULT_PRIORITY, session));
+      new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
   TestCompletionCallback callback;
 
   int rv = trans->Start(
@@ -8086,7 +8086,7 @@ TEST_F(HttpNetworkTransactionSpdy3Test,
       NPN_SPDY_3);
 
   scoped_ptr<HttpTransaction> trans(
-      new HttpNetworkTransaction(DEFAULT_PRIORITY, session));
+      new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
   TestCompletionCallback callback;
 
   EXPECT_EQ(ERR_IO_PENDING, trans->Start(
@@ -8133,7 +8133,7 @@ TEST_F(HttpNetworkTransactionSpdy3Test,
       NPN_SPDY_3);
 
   scoped_ptr<HttpTransaction> trans(
-      new HttpNetworkTransaction(DEFAULT_PRIORITY, session));
+      new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
   TestCompletionCallback callback;
 
   int rv = trans->Start(
@@ -8181,7 +8181,7 @@ TEST_F(HttpNetworkTransactionSpdy3Test,
       NPN_SPDY_3);
 
   scoped_ptr<HttpTransaction> trans(
-      new HttpNetworkTransaction(DEFAULT_PRIORITY, session));
+      new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
   TestCompletionCallback callback;
 
   int rv = trans->Start(
@@ -8229,7 +8229,7 @@ TEST_F(HttpNetworkTransactionSpdy3Test,
       NPN_SPDY_3);
 
   scoped_ptr<HttpTransaction> trans(
-      new HttpNetworkTransaction(DEFAULT_PRIORITY, session));
+      new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
   TestCompletionCallback callback;
 
   int rv = trans->Start(
@@ -8272,7 +8272,7 @@ TEST_F(HttpNetworkTransactionSpdy3Test, AlternateProtocolUnsafeBlocked) {
       NPN_SPDY_3);
 
   scoped_ptr<HttpTransaction> trans(
-      new HttpNetworkTransaction(DEFAULT_PRIORITY, session));
+      new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
   TestCompletionCallback callback;
 
   int rv = trans->Start(&request, callback.callback(), BoundNetLog());
@@ -8285,7 +8285,7 @@ TEST_F(HttpNetworkTransactionSpdy3Test, AlternateProtocolUnsafeBlocked) {
 
   const HttpResponseInfo* response = trans->GetResponseInfo();
   ASSERT_TRUE(response != NULL);
-  ASSERT_TRUE(response->headers != NULL);
+  ASSERT_TRUE(response->headers.get() != NULL);
   EXPECT_EQ("HTTP/1.1 200 OK", response->headers->GetStatusLine());
 
   std::string response_data;
@@ -8348,7 +8348,7 @@ TEST_F(HttpNetworkTransactionSpdy3Test, UseAlternateProtocolForNpnSpdy) {
 
   scoped_refptr<HttpNetworkSession> session(CreateSession(&session_deps_));
   scoped_ptr<HttpTransaction> trans(
-      new HttpNetworkTransaction(DEFAULT_PRIORITY, session));
+      new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   int rv = trans->Start(&request, callback.callback(), BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
@@ -8356,14 +8356,14 @@ TEST_F(HttpNetworkTransactionSpdy3Test, UseAlternateProtocolForNpnSpdy) {
 
   const HttpResponseInfo* response = trans->GetResponseInfo();
   ASSERT_TRUE(response != NULL);
-  ASSERT_TRUE(response->headers != NULL);
+  ASSERT_TRUE(response->headers.get() != NULL);
   EXPECT_EQ("HTTP/1.1 200 OK", response->headers->GetStatusLine());
 
   std::string response_data;
   ASSERT_EQ(OK, ReadTransaction(trans.get(), &response_data));
   EXPECT_EQ("hello world", response_data);
 
-  trans.reset(new HttpNetworkTransaction(DEFAULT_PRIORITY, session));
+  trans.reset(new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   rv = trans->Start(&request, callback.callback(), BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
@@ -8371,7 +8371,7 @@ TEST_F(HttpNetworkTransactionSpdy3Test, UseAlternateProtocolForNpnSpdy) {
 
   response = trans->GetResponseInfo();
   ASSERT_TRUE(response != NULL);
-  ASSERT_TRUE(response->headers != NULL);
+  ASSERT_TRUE(response->headers.get() != NULL);
   EXPECT_EQ("HTTP/1.1 200 OK", response->headers->GetStatusLine());
   EXPECT_TRUE(response->was_fetched_via_spdy);
   EXPECT_TRUE(response->was_npn_negotiated);
@@ -8447,7 +8447,7 @@ TEST_F(HttpNetworkTransactionSpdy3Test, AlternateProtocolWithSpdyLateBinding) {
 
   scoped_refptr<HttpNetworkSession> session(CreateSession(&session_deps_));
   TestCompletionCallback callback1;
-  HttpNetworkTransaction trans1(DEFAULT_PRIORITY, session);
+  HttpNetworkTransaction trans1(DEFAULT_PRIORITY, session.get());
 
   int rv = trans1.Start(&request, callback1.callback(), BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
@@ -8455,7 +8455,7 @@ TEST_F(HttpNetworkTransactionSpdy3Test, AlternateProtocolWithSpdyLateBinding) {
 
   const HttpResponseInfo* response = trans1.GetResponseInfo();
   ASSERT_TRUE(response != NULL);
-  ASSERT_TRUE(response->headers != NULL);
+  ASSERT_TRUE(response->headers.get() != NULL);
   EXPECT_EQ("HTTP/1.1 200 OK", response->headers->GetStatusLine());
 
   std::string response_data;
@@ -8463,12 +8463,12 @@ TEST_F(HttpNetworkTransactionSpdy3Test, AlternateProtocolWithSpdyLateBinding) {
   EXPECT_EQ("hello world", response_data);
 
   TestCompletionCallback callback2;
-  HttpNetworkTransaction trans2(DEFAULT_PRIORITY, session);
+  HttpNetworkTransaction trans2(DEFAULT_PRIORITY, session.get());
   rv = trans2.Start(&request, callback2.callback(), BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
 
   TestCompletionCallback callback3;
-  HttpNetworkTransaction trans3(DEFAULT_PRIORITY, session);
+  HttpNetworkTransaction trans3(DEFAULT_PRIORITY, session.get());
   rv = trans3.Start(&request, callback3.callback(), BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
 
@@ -8477,7 +8477,7 @@ TEST_F(HttpNetworkTransactionSpdy3Test, AlternateProtocolWithSpdyLateBinding) {
 
   response = trans2.GetResponseInfo();
   ASSERT_TRUE(response != NULL);
-  ASSERT_TRUE(response->headers != NULL);
+  ASSERT_TRUE(response->headers.get() != NULL);
   EXPECT_EQ("HTTP/1.1 200 OK", response->headers->GetStatusLine());
   EXPECT_TRUE(response->was_fetched_via_spdy);
   EXPECT_TRUE(response->was_npn_negotiated);
@@ -8486,7 +8486,7 @@ TEST_F(HttpNetworkTransactionSpdy3Test, AlternateProtocolWithSpdyLateBinding) {
 
   response = trans3.GetResponseInfo();
   ASSERT_TRUE(response != NULL);
-  ASSERT_TRUE(response->headers != NULL);
+  ASSERT_TRUE(response->headers.get() != NULL);
   EXPECT_EQ("HTTP/1.1 200 OK", response->headers->GetStatusLine());
   EXPECT_TRUE(response->was_fetched_via_spdy);
   EXPECT_TRUE(response->was_npn_negotiated);
@@ -8534,7 +8534,7 @@ TEST_F(HttpNetworkTransactionSpdy3Test, StallAlternateProtocolForNpnSpdy) {
 
   scoped_refptr<HttpNetworkSession> session(CreateSession(&session_deps_));
   scoped_ptr<HttpTransaction> trans(
-      new HttpNetworkTransaction(DEFAULT_PRIORITY, session));
+      new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   int rv = trans->Start(&request, callback.callback(), BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
@@ -8542,14 +8542,14 @@ TEST_F(HttpNetworkTransactionSpdy3Test, StallAlternateProtocolForNpnSpdy) {
 
   const HttpResponseInfo* response = trans->GetResponseInfo();
   ASSERT_TRUE(response != NULL);
-  ASSERT_TRUE(response->headers != NULL);
+  ASSERT_TRUE(response->headers.get() != NULL);
   EXPECT_EQ("HTTP/1.1 200 OK", response->headers->GetStatusLine());
 
   std::string response_data;
   ASSERT_EQ(OK, ReadTransaction(trans.get(), &response_data));
   EXPECT_EQ("hello world", response_data);
 
-  trans.reset(new HttpNetworkTransaction(DEFAULT_PRIORITY, session));
+  trans.reset(new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   rv = trans->Start(&request, callback.callback(), BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
@@ -8557,7 +8557,7 @@ TEST_F(HttpNetworkTransactionSpdy3Test, StallAlternateProtocolForNpnSpdy) {
 
   response = trans->GetResponseInfo();
   ASSERT_TRUE(response != NULL);
-  ASSERT_TRUE(response->headers != NULL);
+  ASSERT_TRUE(response->headers.get() != NULL);
   EXPECT_EQ("HTTP/1.1 200 OK", response->headers->GetStatusLine());
   EXPECT_FALSE(response->was_fetched_via_spdy);
   EXPECT_FALSE(response->was_npn_negotiated);
@@ -8684,7 +8684,7 @@ TEST_F(HttpNetworkTransactionSpdy3Test,
 
   scoped_refptr<HttpNetworkSession> session(CreateSession(&session_deps_));
   scoped_ptr<HttpTransaction> trans(
-      new HttpNetworkTransaction(DEFAULT_PRIORITY, session));
+      new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   int rv = trans->Start(&request, callback.callback(), BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
@@ -8692,7 +8692,7 @@ TEST_F(HttpNetworkTransactionSpdy3Test,
 
   const HttpResponseInfo* response = trans->GetResponseInfo();
   ASSERT_TRUE(response != NULL);
-  ASSERT_TRUE(response->headers != NULL);
+  ASSERT_TRUE(response->headers.get() != NULL);
   EXPECT_EQ("HTTP/1.1 200 OK", response->headers->GetStatusLine());
   EXPECT_FALSE(response->was_fetched_via_spdy);
   EXPECT_FALSE(response->was_npn_negotiated);
@@ -8701,7 +8701,7 @@ TEST_F(HttpNetworkTransactionSpdy3Test,
   ASSERT_EQ(OK, ReadTransaction(trans.get(), &response_data));
   EXPECT_EQ("hello world", response_data);
 
-  trans.reset(new HttpNetworkTransaction(DEFAULT_PRIORITY, session));
+  trans.reset(new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   rv = trans->Start(&request, callback.callback(), BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
@@ -8709,7 +8709,7 @@ TEST_F(HttpNetworkTransactionSpdy3Test,
 
   response = trans->GetResponseInfo();
   ASSERT_TRUE(response != NULL);
-  ASSERT_TRUE(response->headers != NULL);
+  ASSERT_TRUE(response->headers.get() != NULL);
   EXPECT_EQ("HTTP/1.1 200 OK", response->headers->GetStatusLine());
   EXPECT_TRUE(response->was_fetched_via_spdy);
   EXPECT_TRUE(response->was_npn_negotiated);
@@ -8776,7 +8776,7 @@ TEST_F(HttpNetworkTransactionSpdy3Test,
   scoped_refptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
   scoped_ptr<HttpTransaction> trans(
-      new HttpNetworkTransaction(DEFAULT_PRIORITY, session));
+      new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   int rv = trans->Start(&request, callback.callback(), BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
@@ -8784,7 +8784,7 @@ TEST_F(HttpNetworkTransactionSpdy3Test,
 
   const HttpResponseInfo* response = trans->GetResponseInfo();
   ASSERT_TRUE(response != NULL);
-  ASSERT_TRUE(response->headers != NULL);
+  ASSERT_TRUE(response->headers.get() != NULL);
   EXPECT_EQ("HTTP/1.1 200 OK", response->headers->GetStatusLine());
 
   std::string response_data;
@@ -8830,7 +8830,7 @@ TEST_F(HttpNetworkTransactionSpdy3Test,
   EXPECT_EQ(OK, spdy_session->InitializeWithSocket(ssl_connection.release(),
                                                    true, OK));
 
-  trans.reset(new HttpNetworkTransaction(DEFAULT_PRIORITY, session));
+  trans.reset(new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   rv = trans->Start(&request, callback.callback(), BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
@@ -8838,7 +8838,7 @@ TEST_F(HttpNetworkTransactionSpdy3Test,
 
   response = trans->GetResponseInfo();
   ASSERT_TRUE(response != NULL);
-  ASSERT_TRUE(response->headers != NULL);
+  ASSERT_TRUE(response->headers.get() != NULL);
   EXPECT_EQ("HTTP/1.1 200 OK", response->headers->GetStatusLine());
   EXPECT_TRUE(response->was_fetched_via_spdy);
   EXPECT_TRUE(response->was_npn_negotiated);
@@ -9307,7 +9307,7 @@ TEST_F(HttpNetworkTransactionSpdy3Test, MultiRoundAuth) {
   session_peer.SetClientSocketPoolManager(mock_pool_manager);
 
   scoped_ptr<HttpTransaction> trans(
-      new HttpNetworkTransaction(DEFAULT_PRIORITY, session));
+      new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
   TestCompletionCallback callback;
 
   const MockWrite kGet(
@@ -9377,7 +9377,7 @@ TEST_F(HttpNetworkTransactionSpdy3Test, MultiRoundAuth) {
   // It should not be able to grab the TCP socket that trans has already
   // claimed.
   scoped_ptr<HttpTransaction> trans_compete(
-      new HttpNetworkTransaction(DEFAULT_PRIORITY, session));
+      new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
   TestCompletionCallback callback_compete;
   rv = trans_compete->Start(
       &request, callback_compete.callback(), BoundNetLog());
@@ -9422,11 +9422,11 @@ TEST_F(HttpNetworkTransactionSpdy3Test, MultiRoundAuth) {
   // Read the body since the fourth round was successful. This will also
   // release the socket back to the pool.
   scoped_refptr<IOBufferWithSize> io_buf(new IOBufferWithSize(50));
-  rv = trans->Read(io_buf, io_buf->size(), callback.callback());
+  rv = trans->Read(io_buf.get(), io_buf->size(), callback.callback());
   if (rv == ERR_IO_PENDING)
     rv = callback.WaitForResult();
   EXPECT_EQ(3, rv);
-  rv = trans->Read(io_buf, io_buf->size(), callback.callback());
+  rv = trans->Read(io_buf.get(), io_buf->size(), callback.callback());
   EXPECT_EQ(0, rv);
   // There are still 0 idle sockets, since the trans_compete transaction
   // will be handed it immediately after trans releases it to the group.
@@ -9436,11 +9436,11 @@ TEST_F(HttpNetworkTransactionSpdy3Test, MultiRoundAuth) {
   // read the body.
   rv = callback_compete.WaitForResult();
   EXPECT_EQ(OK, rv);
-  rv = trans_compete->Read(io_buf, io_buf->size(), callback.callback());
+  rv = trans_compete->Read(io_buf.get(), io_buf->size(), callback.callback());
   if (rv == ERR_IO_PENDING)
     rv = callback.WaitForResult();
   EXPECT_EQ(3, rv);
-  rv = trans_compete->Read(io_buf, io_buf->size(), callback.callback());
+  rv = trans_compete->Read(io_buf.get(), io_buf->size(), callback.callback());
   EXPECT_EQ(0, rv);
 
   // Finally, the socket is released to the group.
@@ -9486,7 +9486,7 @@ TEST_F(HttpNetworkTransactionSpdy3Test, NpnWithHttpOverSSL) {
 
   scoped_refptr<HttpNetworkSession> session(CreateSession(&session_deps_));
   scoped_ptr<HttpTransaction> trans(
-      new HttpNetworkTransaction(DEFAULT_PRIORITY, session));
+      new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   int rv = trans->Start(&request, callback.callback(), BoundNetLog());
 
@@ -9495,7 +9495,7 @@ TEST_F(HttpNetworkTransactionSpdy3Test, NpnWithHttpOverSSL) {
 
   const HttpResponseInfo* response = trans->GetResponseInfo();
   ASSERT_TRUE(response != NULL);
-  ASSERT_TRUE(response->headers != NULL);
+  ASSERT_TRUE(response->headers.get() != NULL);
   EXPECT_EQ("HTTP/1.1 200 OK", response->headers->GetStatusLine());
 
   std::string response_data;
@@ -9540,7 +9540,7 @@ TEST_F(HttpNetworkTransactionSpdy3Test, SpdyPostNPNServerHangup) {
 
   scoped_refptr<HttpNetworkSession> session(CreateSession(&session_deps_));
   scoped_ptr<HttpTransaction> trans(
-      new HttpNetworkTransaction(DEFAULT_PRIORITY, session));
+      new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   int rv = trans->Start(&request, callback.callback(), BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
@@ -9671,7 +9671,7 @@ TEST_F(HttpNetworkTransactionSpdy3Test, SpdyAlternateProtocolThroughProxy) {
   // First round should work and provide the Alternate-Protocol state.
   TestCompletionCallback callback_1;
   scoped_ptr<HttpTransaction> trans_1(
-      new HttpNetworkTransaction(DEFAULT_PRIORITY, session));
+      new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
   int rv = trans_1->Start(&request, callback_1.callback(), BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
   EXPECT_EQ(OK, callback_1.WaitForResult());
@@ -9679,7 +9679,7 @@ TEST_F(HttpNetworkTransactionSpdy3Test, SpdyAlternateProtocolThroughProxy) {
   // Second round should attempt a tunnel connect and get an auth challenge.
   TestCompletionCallback callback_2;
   scoped_ptr<HttpTransaction> trans_2(
-      new HttpNetworkTransaction(DEFAULT_PRIORITY, session));
+      new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
   rv = trans_2->Start(&request, callback_2.callback(), BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
   EXPECT_EQ(OK, callback_2.WaitForResult());
@@ -9777,7 +9777,7 @@ TEST_F(HttpNetworkTransactionSpdy3Test, ProxyGet) {
   TestCompletionCallback callback1;
 
   scoped_ptr<HttpTransaction> trans(
-      new HttpNetworkTransaction(DEFAULT_PRIORITY, session));
+      new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   int rv = trans->Start(&request, callback1.callback(), log.bound());
   EXPECT_EQ(ERR_IO_PENDING, rv);
@@ -9841,7 +9841,7 @@ TEST_F(HttpNetworkTransactionSpdy3Test, ProxyTunnelGet) {
   TestCompletionCallback callback1;
 
   scoped_ptr<HttpTransaction> trans(
-      new HttpNetworkTransaction(DEFAULT_PRIORITY, session));
+      new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   int rv = trans->Start(&request, callback1.callback(), log.bound());
   EXPECT_EQ(ERR_IO_PENDING, rv);
@@ -9911,7 +9911,7 @@ TEST_F(HttpNetworkTransactionSpdy3Test, ProxyTunnelGetHangup) {
   TestCompletionCallback callback1;
 
   scoped_ptr<HttpTransaction> trans(
-      new HttpNetworkTransaction(DEFAULT_PRIORITY, session));
+      new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   int rv = trans->Start(&request, callback1.callback(), log.bound());
   EXPECT_EQ(ERR_IO_PENDING, rv);
@@ -9988,7 +9988,7 @@ TEST_F(HttpNetworkTransactionSpdy3Test, PreconnectWithExistingSpdySession) {
   request.motivation = HttpRequestInfo::PRECONNECT_MOTIVATED;
 
   scoped_ptr<HttpTransaction> trans(
-      new HttpNetworkTransaction(DEFAULT_PRIORITY, session));
+      new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   int rv = trans->Start(&request, callback.callback(), BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
@@ -10016,7 +10016,7 @@ void HttpNetworkTransactionSpdy3Test::CheckErrorIsPassedBack(
 
   scoped_refptr<HttpNetworkSession> session(CreateSession(&session_deps_));
   scoped_ptr<HttpTransaction> trans(
-      new HttpNetworkTransaction(DEFAULT_PRIORITY, session));
+      new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   TestCompletionCallback callback;
   int rv = trans->Start(&request_info, callback.callback(), net::BoundNetLog());
@@ -10111,7 +10111,7 @@ TEST_F(HttpNetworkTransactionSpdy3Test,
 
   scoped_refptr<HttpNetworkSession> session(CreateSession(&session_deps_));
   scoped_ptr<HttpTransaction> trans(
-      new HttpNetworkTransaction(DEFAULT_PRIORITY, session));
+      new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   // Begin the SSL handshake with the peer. This consumes ssl_data1.
   TestCompletionCallback callback;
@@ -10232,7 +10232,7 @@ TEST_F(HttpNetworkTransactionSpdy3Test, ClientAuthCertCache_Direct_FalseStart) {
 
   scoped_refptr<HttpNetworkSession> session(CreateSession(&session_deps_));
   scoped_ptr<HttpTransaction> trans(
-      new HttpNetworkTransaction(DEFAULT_PRIORITY, session));
+      new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   // Begin the initial SSL handshake.
   TestCompletionCallback callback;
@@ -10326,7 +10326,7 @@ TEST_F(HttpNetworkTransactionSpdy3Test, ClientAuthCertCache_Proxy_Fail) {
     session_deps_.socket_factory->ResetNextMockIndexes();
     scoped_refptr<HttpNetworkSession> session(CreateSession(&session_deps_));
     scoped_ptr<HttpNetworkTransaction> trans(
-        new HttpNetworkTransaction(DEFAULT_PRIORITY, session));
+        new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
     // Begin the SSL handshake with the proxy.
     TestCompletionCallback callback;
@@ -10421,7 +10421,7 @@ TEST_F(HttpNetworkTransactionSpdy3Test, UseIPConnectionPooling) {
   request1.method = "GET";
   request1.url = GURL("https://www.google.com/");
   request1.load_flags = 0;
-  HttpNetworkTransaction trans1(DEFAULT_PRIORITY, session);
+  HttpNetworkTransaction trans1(DEFAULT_PRIORITY, session.get());
 
   int rv = trans1.Start(&request1, callback.callback(), BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
@@ -10429,7 +10429,7 @@ TEST_F(HttpNetworkTransactionSpdy3Test, UseIPConnectionPooling) {
 
   const HttpResponseInfo* response = trans1.GetResponseInfo();
   ASSERT_TRUE(response != NULL);
-  ASSERT_TRUE(response->headers != NULL);
+  ASSERT_TRUE(response->headers.get() != NULL);
   EXPECT_EQ("HTTP/1.1 200 OK", response->headers->GetStatusLine());
 
   std::string response_data;
@@ -10451,7 +10451,7 @@ TEST_F(HttpNetworkTransactionSpdy3Test, UseIPConnectionPooling) {
   request2.method = "GET";
   request2.url = GURL("https://www.gmail.com/");
   request2.load_flags = 0;
-  HttpNetworkTransaction trans2(DEFAULT_PRIORITY, session);
+  HttpNetworkTransaction trans2(DEFAULT_PRIORITY, session.get());
 
   rv = trans2.Start(&request2, callback.callback(), BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
@@ -10459,7 +10459,7 @@ TEST_F(HttpNetworkTransactionSpdy3Test, UseIPConnectionPooling) {
 
   response = trans2.GetResponseInfo();
   ASSERT_TRUE(response != NULL);
-  ASSERT_TRUE(response->headers != NULL);
+  ASSERT_TRUE(response->headers.get() != NULL);
   EXPECT_EQ("HTTP/1.1 200 OK", response->headers->GetStatusLine());
   EXPECT_TRUE(response->was_fetched_via_spdy);
   EXPECT_TRUE(response->was_npn_negotiated);
@@ -10516,7 +10516,7 @@ TEST_F(HttpNetworkTransactionSpdy3Test, UseIPConnectionPoolingAfterResolution) {
   request1.method = "GET";
   request1.url = GURL("https://www.google.com/");
   request1.load_flags = 0;
-  HttpNetworkTransaction trans1(DEFAULT_PRIORITY, session);
+  HttpNetworkTransaction trans1(DEFAULT_PRIORITY, session.get());
 
   int rv = trans1.Start(&request1, callback.callback(), BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
@@ -10524,7 +10524,7 @@ TEST_F(HttpNetworkTransactionSpdy3Test, UseIPConnectionPoolingAfterResolution) {
 
   const HttpResponseInfo* response = trans1.GetResponseInfo();
   ASSERT_TRUE(response != NULL);
-  ASSERT_TRUE(response->headers != NULL);
+  ASSERT_TRUE(response->headers.get() != NULL);
   EXPECT_EQ("HTTP/1.1 200 OK", response->headers->GetStatusLine());
 
   std::string response_data;
@@ -10535,7 +10535,7 @@ TEST_F(HttpNetworkTransactionSpdy3Test, UseIPConnectionPoolingAfterResolution) {
   request2.method = "GET";
   request2.url = GURL("https://www.gmail.com/");
   request2.load_flags = 0;
-  HttpNetworkTransaction trans2(DEFAULT_PRIORITY, session);
+  HttpNetworkTransaction trans2(DEFAULT_PRIORITY, session.get());
 
   rv = trans2.Start(&request2, callback.callback(), BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
@@ -10543,7 +10543,7 @@ TEST_F(HttpNetworkTransactionSpdy3Test, UseIPConnectionPoolingAfterResolution) {
 
   response = trans2.GetResponseInfo();
   ASSERT_TRUE(response != NULL);
-  ASSERT_TRUE(response->headers != NULL);
+  ASSERT_TRUE(response->headers.get() != NULL);
   EXPECT_EQ("HTTP/1.1 200 OK", response->headers->GetStatusLine());
   EXPECT_TRUE(response->was_fetched_via_spdy);
   EXPECT_TRUE(response->was_npn_negotiated);
@@ -10644,7 +10644,7 @@ TEST_F(HttpNetworkTransactionSpdy3Test,
   request1.method = "GET";
   request1.url = GURL("https://www.google.com/");
   request1.load_flags = 0;
-  HttpNetworkTransaction trans1(DEFAULT_PRIORITY, session);
+  HttpNetworkTransaction trans1(DEFAULT_PRIORITY, session.get());
 
   int rv = trans1.Start(&request1, callback.callback(), BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
@@ -10652,7 +10652,7 @@ TEST_F(HttpNetworkTransactionSpdy3Test,
 
   const HttpResponseInfo* response = trans1.GetResponseInfo();
   ASSERT_TRUE(response != NULL);
-  ASSERT_TRUE(response->headers != NULL);
+  ASSERT_TRUE(response->headers.get() != NULL);
   EXPECT_EQ("HTTP/1.1 200 OK", response->headers->GetStatusLine());
 
   std::string response_data;
@@ -10672,7 +10672,7 @@ TEST_F(HttpNetworkTransactionSpdy3Test,
   request2.method = "GET";
   request2.url = GURL("https://www.gmail.com/");
   request2.load_flags = 0;
-  HttpNetworkTransaction trans2(DEFAULT_PRIORITY, session);
+  HttpNetworkTransaction trans2(DEFAULT_PRIORITY, session.get());
 
   rv = trans2.Start(&request2, callback.callback(), BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
@@ -10680,7 +10680,7 @@ TEST_F(HttpNetworkTransactionSpdy3Test,
 
   response = trans2.GetResponseInfo();
   ASSERT_TRUE(response != NULL);
-  ASSERT_TRUE(response->headers != NULL);
+  ASSERT_TRUE(response->headers.get() != NULL);
   EXPECT_EQ("HTTP/1.1 200 OK", response->headers->GetStatusLine());
   EXPECT_TRUE(response->was_fetched_via_spdy);
   EXPECT_TRUE(response->was_npn_negotiated);
@@ -10792,7 +10792,7 @@ TEST_F(HttpNetworkTransactionSpdy3Test, DoNotUseSpdySessionForHttp) {
   request1.method = "GET";
   request1.url = GURL(https_url);
   request1.load_flags = 0;
-  HttpNetworkTransaction trans1(LOWEST, session);
+  HttpNetworkTransaction trans1(LOWEST, session.get());
   TestCompletionCallback callback1;
   EXPECT_EQ(ERR_IO_PENDING,
             trans1.Start(&request1, callback1.callback(), BoundNetLog()));
@@ -10806,7 +10806,7 @@ TEST_F(HttpNetworkTransactionSpdy3Test, DoNotUseSpdySessionForHttp) {
   request2.method = "GET";
   request2.url = GURL(httpUrl);
   request2.load_flags = 0;
-  HttpNetworkTransaction trans2(MEDIUM, session);
+  HttpNetworkTransaction trans2(MEDIUM, session.get());
   TestCompletionCallback callback2;
   EXPECT_EQ(ERR_IO_PENDING,
             trans2.Start(&request2, callback2.callback(), BoundNetLog()));
@@ -10877,7 +10877,7 @@ TEST_F(HttpNetworkTransactionSpdy3Test, DoNotUseSpdySessionForHttpOverTunnel) {
   request1.method = "GET";
   request1.url = GURL(https_url);
   request1.load_flags = 0;
-  HttpNetworkTransaction trans1(LOWEST, session);
+  HttpNetworkTransaction trans1(LOWEST, session.get());
   TestCompletionCallback callback1;
   EXPECT_EQ(ERR_IO_PENDING,
             trans1.Start(&request1, callback1.callback(), BoundNetLog()));
@@ -10897,7 +10897,7 @@ TEST_F(HttpNetworkTransactionSpdy3Test, DoNotUseSpdySessionForHttpOverTunnel) {
   request2.method = "GET";
   request2.url = GURL(httpUrl);
   request2.load_flags = 0;
-  HttpNetworkTransaction trans2(MEDIUM, session);
+  HttpNetworkTransaction trans2(MEDIUM, session.get());
   TestCompletionCallback callback2;
   EXPECT_EQ(ERR_IO_PENDING,
             trans2.Start(&request2, callback2.callback(), BoundNetLog()));
@@ -10959,7 +10959,7 @@ TEST_F(HttpNetworkTransactionSpdy3Test, UseSpdySessionForHttpWhenForced) {
   request1.method = "GET";
   request1.url = GURL(https_url);
   request1.load_flags = 0;
-  HttpNetworkTransaction trans1(LOWEST, session);
+  HttpNetworkTransaction trans1(LOWEST, session.get());
   TestCompletionCallback callback1;
   EXPECT_EQ(ERR_IO_PENDING,
             trans1.Start(&request1, callback1.callback(), BoundNetLog()));
@@ -10973,7 +10973,7 @@ TEST_F(HttpNetworkTransactionSpdy3Test, UseSpdySessionForHttpWhenForced) {
   request2.method = "GET";
   request2.url = GURL(http_url);
   request2.load_flags = 0;
-  HttpNetworkTransaction trans2(MEDIUM, session);
+  HttpNetworkTransaction trans2(MEDIUM, session.get());
   TestCompletionCallback callback2;
   EXPECT_EQ(ERR_IO_PENDING,
             trans2.Start(&request2, callback2.callback(), BoundNetLog()));
@@ -11082,7 +11082,7 @@ TEST_F(HttpNetworkTransactionSpdy3Test, DoNotUseSpdySessionIfCertDoesNotMatch) {
   request1.method = "GET";
   request1.url = GURL(url1);
   request1.load_flags = 0;
-  HttpNetworkTransaction trans1(DEFAULT_PRIORITY, session);
+  HttpNetworkTransaction trans1(DEFAULT_PRIORITY, session.get());
   TestCompletionCallback callback1;
   ASSERT_EQ(ERR_IO_PENDING,
             trans1.Start(&request1, callback1.callback(), BoundNetLog()));
@@ -11097,7 +11097,7 @@ TEST_F(HttpNetworkTransactionSpdy3Test, DoNotUseSpdySessionIfCertDoesNotMatch) {
   request2.method = "GET";
   request2.url = GURL(url2);
   request2.load_flags = 0;
-  HttpNetworkTransaction trans2(MEDIUM, session);
+  HttpNetworkTransaction trans2(MEDIUM, session.get());
   TestCompletionCallback callback2;
   EXPECT_EQ(ERR_IO_PENDING,
             trans2.Start(&request2, callback2.callback(), BoundNetLog()));
@@ -11163,7 +11163,7 @@ TEST_F(HttpNetworkTransactionSpdy3Test, ErrorSocketNotConnected) {
   request1.method = "GET";
   request1.url = GURL(https_url);
   request1.load_flags = 0;
-  HttpNetworkTransaction trans1(MEDIUM, session);
+  HttpNetworkTransaction trans1(MEDIUM, session.get());
   TestCompletionCallback callback1;
   EXPECT_EQ(ERR_IO_PENDING,
             trans1.Start(&request1, callback1.callback(), BoundNetLog()));
@@ -11175,7 +11175,7 @@ TEST_F(HttpNetworkTransactionSpdy3Test, ErrorSocketNotConnected) {
   request2.method = "GET";
   request2.url = GURL(https_url);
   request2.load_flags = 0;
-  HttpNetworkTransaction trans2(MEDIUM, session);
+  HttpNetworkTransaction trans2(MEDIUM, session.get());
   TestCompletionCallback callback2;
   EXPECT_EQ(ERR_IO_PENDING,
             trans2.Start(&request2, callback2.callback(), BoundNetLog()));
@@ -11272,7 +11272,7 @@ TEST_F(HttpNetworkTransactionSpdy3Test, CloseIdleSpdySessionToOpenNewOne) {
   request1.url = GURL("https://www.a.com/");
   request1.load_flags = 0;
   scoped_ptr<HttpNetworkTransaction> trans(
-      new HttpNetworkTransaction(DEFAULT_PRIORITY, session));
+      new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   int rv = trans->Start(&request1, callback.callback(), BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
@@ -11280,7 +11280,7 @@ TEST_F(HttpNetworkTransactionSpdy3Test, CloseIdleSpdySessionToOpenNewOne) {
 
   const HttpResponseInfo* response = trans->GetResponseInfo();
   ASSERT_TRUE(response != NULL);
-  ASSERT_TRUE(response->headers != NULL);
+  ASSERT_TRUE(response->headers.get() != NULL);
   EXPECT_EQ("HTTP/1.1 200 OK", response->headers->GetStatusLine());
   EXPECT_TRUE(response->was_fetched_via_spdy);
   EXPECT_TRUE(response->was_npn_negotiated);
@@ -11301,7 +11301,7 @@ TEST_F(HttpNetworkTransactionSpdy3Test, CloseIdleSpdySessionToOpenNewOne) {
   request2.method = "GET";
   request2.url = GURL("https://www.b.com/");
   request2.load_flags = 0;
-  trans.reset(new HttpNetworkTransaction(DEFAULT_PRIORITY, session));
+  trans.reset(new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   rv = trans->Start(&request2, callback.callback(), BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
@@ -11309,7 +11309,7 @@ TEST_F(HttpNetworkTransactionSpdy3Test, CloseIdleSpdySessionToOpenNewOne) {
 
   response = trans->GetResponseInfo();
   ASSERT_TRUE(response != NULL);
-  ASSERT_TRUE(response->headers != NULL);
+  ASSERT_TRUE(response->headers.get() != NULL);
   EXPECT_EQ("HTTP/1.1 200 OK", response->headers->GetStatusLine());
   EXPECT_TRUE(response->was_fetched_via_spdy);
   EXPECT_TRUE(response->was_npn_negotiated);
@@ -11329,7 +11329,7 @@ TEST_F(HttpNetworkTransactionSpdy3Test, CloseIdleSpdySessionToOpenNewOne) {
   request3.method = "GET";
   request3.url = GURL("http://www.a.com/");
   request3.load_flags = 0;
-  trans.reset(new HttpNetworkTransaction(DEFAULT_PRIORITY, session));
+  trans.reset(new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
   rv = trans->Start(&request3, callback.callback(), BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
@@ -11337,7 +11337,7 @@ TEST_F(HttpNetworkTransactionSpdy3Test, CloseIdleSpdySessionToOpenNewOne) {
 
   response = trans->GetResponseInfo();
   ASSERT_TRUE(response != NULL);
-  ASSERT_TRUE(response->headers != NULL);
+  ASSERT_TRUE(response->headers.get() != NULL);
   EXPECT_EQ("HTTP/1.1 200 OK", response->headers->GetStatusLine());
   EXPECT_FALSE(response->was_fetched_via_spdy);
   EXPECT_FALSE(response->was_npn_negotiated);

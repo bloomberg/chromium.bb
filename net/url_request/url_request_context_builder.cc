@@ -291,7 +291,7 @@ URLRequestContext* URLRequestContextBuilder::Build() {
     scoped_refptr<net::HttpNetworkSession> network_session(
         new net::HttpNetworkSession(network_session_params));
 
-    http_transaction_factory = new HttpNetworkLayer(network_session);
+    http_transaction_factory = new HttpNetworkLayer(network_session.get());
   }
   storage->set_http_transaction_factory(http_transaction_factory);
 

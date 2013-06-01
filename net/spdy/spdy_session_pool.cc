@@ -69,7 +69,7 @@ SpdySessionPool::SpdySessionPool(
       trusted_spdy_proxy_(
           HostPortPair::FromString(trusted_spdy_proxy)) {
   NetworkChangeNotifier::AddIPAddressObserver(this);
-  if (ssl_config_service_)
+  if (ssl_config_service_.get())
     ssl_config_service_->AddObserver(this);
   CertDatabase::GetInstance()->AddObserver(this);
 }
@@ -77,7 +77,7 @@ SpdySessionPool::SpdySessionPool(
 SpdySessionPool::~SpdySessionPool() {
   CloseAllSessions();
 
-  if (ssl_config_service_)
+  if (ssl_config_service_.get())
     ssl_config_service_->RemoveObserver(this);
   NetworkChangeNotifier::RemoveIPAddressObserver(this);
   CertDatabase::GetInstance()->RemoveObserver(this);
@@ -104,7 +104,7 @@ scoped_refptr<SpdySession> SpdySessionPool::GetInternal(
   if (!list) {
     // Check if we have a Session through a domain alias.
     spdy_session = GetFromAlias(spdy_session_key, net_log, true);
-    if (spdy_session) {
+    if (spdy_session.get()) {
       UMA_HISTOGRAM_ENUMERATION("Net.SpdySessionGet",
                                 FOUND_EXISTING_FROM_IP_POOL,
                                 SPDY_SESSION_GET_MAX);
@@ -439,7 +439,7 @@ void SpdySessionPool::CloseAllSessions() {
     SpdySessionList* list = sessions_.begin()->second;
     CHECK(list);
     const scoped_refptr<SpdySession>& session = list->front();
-    CHECK(session);
+    CHECK(session.get());
     // This call takes care of removing the session from the pool, as well as
     // removing the session list if the list is empty.
     session->CloseSessionOnError(
@@ -455,7 +455,7 @@ void SpdySessionPool::CloseCurrentSessions(net::Error error) {
     SpdySessionList* list = it->second;
     CHECK(list);
     const scoped_refptr<SpdySession>& session = list->front();
-    CHECK(session);
+    CHECK(session.get());
     session->set_spdy_session_pool(NULL);
   }
 
@@ -463,7 +463,7 @@ void SpdySessionPool::CloseCurrentSessions(net::Error error) {
     SpdySessionList* list = old_map.begin()->second;
     CHECK(list);
     const scoped_refptr<SpdySession>& session = list->front();
-    CHECK(session);
+    CHECK(session.get());
     session->CloseSessionOnError(error, false, "Closing current sessions.");
     list->pop_front();
     if (list->empty()) {
@@ -485,7 +485,7 @@ void SpdySessionPool::CloseIdleSessions() {
     // Assumes there is only 1 element in the list.
     SpdySessionList::iterator session_it = list->begin();
     const scoped_refptr<SpdySession>& session = *session_it;
-    CHECK(session);
+    CHECK(session.get());
     if (session->is_active()) {
       ++map_it;
       continue;

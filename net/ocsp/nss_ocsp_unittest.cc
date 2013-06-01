@@ -73,8 +73,7 @@ class NssHttpTest : public ::testing::Test {
       : context_(false),
         handler_(NULL),
         verify_proc_(new CertVerifyProcNSS),
-        verifier_(new MultiThreadedCertVerifier(verify_proc_)) {
-  }
+        verifier_(new MultiThreadedCertVerifier(verify_proc_.get())) {}
   virtual ~NssHttpTest() {}
 
   virtual void SetUp() {
@@ -136,16 +135,21 @@ TEST_F(NssHttpTest, TestAia) {
       ImportCertFromFile(GetTestCertsDirectory(), "aia-root.pem"));
   ASSERT_TRUE(test_root.get());
 
-  ScopedTestRoot scoped_root(test_root);
+  ScopedTestRoot scoped_root(test_root.get());
 
   CertVerifyResult verify_result;
   TestCompletionCallback test_callback;
   CertVerifier::RequestHandle request_handle;
 
   int flags = CertVerifier::VERIFY_CERT_IO_ENABLED;
-  int error = verifier()->Verify(test_cert, "aia-host.invalid", flags, NULL,
-                                 &verify_result, test_callback.callback(),
-                                 &request_handle, BoundNetLog());
+  int error = verifier()->Verify(test_cert.get(),
+                                 "aia-host.invalid",
+                                 flags,
+                                 NULL,
+                                 &verify_result,
+                                 test_callback.callback(),
+                                 &request_handle,
+                                 BoundNetLog());
   ASSERT_EQ(ERR_IO_PENDING, error);
 
   error = test_callback.WaitForResult();

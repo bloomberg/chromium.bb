@@ -219,7 +219,7 @@ CookieMonster* CreateMonsterFromStoreForGC(
     store->AddCookie(cc);
   }
 
-  return new CookieMonster(store, NULL);
+  return new CookieMonster(store.get(), NULL);
 }
 
 MockSimplePersistentCookieStore::~MockSimplePersistentCookieStore() {}

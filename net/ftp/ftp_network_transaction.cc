@@ -339,7 +339,7 @@ void FtpNetworkTransaction::ResetStateForRestart() {
   ctrl_response_buffer_.reset(new FtpCtrlResponseBuffer(net_log_));
   read_data_buf_ = NULL;
   read_data_buf_len_ = 0;
-  if (write_buf_)
+  if (write_buf_.get())
     write_buf_->SetOffset(0);
   last_error_ = OK;
   data_connection_port_ = 0;
@@ -459,8 +459,8 @@ int FtpNetworkTransaction::SendFtpCommand(const std::string& command,
   // which responses are for which command.
   DCHECK(!ctrl_response_buffer_->ResponseAvailable());
 
-  DCHECK(!write_command_buf_);
-  DCHECK(!write_buf_);
+  DCHECK(!write_command_buf_.get());
+  DCHECK(!write_buf_.get());
 
   if (!IsValidFTPCommandString(command)) {
     // Callers should validate the command themselves and return a more specific
@@ -472,7 +472,7 @@ int FtpNetworkTransaction::SendFtpCommand(const std::string& command,
   command_sent_ = cmd;
 
   write_command_buf_ = new IOBufferWithSize(command.length() + 2);
-  write_buf_ = new DrainableIOBuffer(write_command_buf_,
+  write_buf_ = new DrainableIOBuffer(write_command_buf_.get(),
                                      write_command_buf_->size());
   memcpy(write_command_buf_->data(), command.data(), command.length());
   memcpy(write_command_buf_->data() + command.length(), kCRLF, 2);
@@ -697,7 +697,7 @@ int FtpNetworkTransaction::DoCtrlConnectComplete(int result) {
 
 int FtpNetworkTransaction::DoCtrlRead() {
   next_state_ = STATE_CTRL_READ_COMPLETE;
-  return ctrl_socket_->Read(read_ctrl_buf_, kCtrlBufLen, io_callback_);
+  return ctrl_socket_->Read(read_ctrl_buf_.get(), kCtrlBufLen, io_callback_);
 }
 
 int FtpNetworkTransaction::DoCtrlReadComplete(int result) {
@@ -728,9 +728,8 @@ int FtpNetworkTransaction::DoCtrlReadComplete(int result) {
 int FtpNetworkTransaction::DoCtrlWrite() {
   next_state_ = STATE_CTRL_WRITE_COMPLETE;
 
-  return ctrl_socket_->Write(write_buf_,
-                             write_buf_->BytesRemaining(),
-                             io_callback_);
+  return ctrl_socket_->Write(
+      write_buf_.get(), write_buf_->BytesRemaining(), io_callback_);
 }
 
 int FtpNetworkTransaction::DoCtrlWriteComplete(int result) {
@@ -1283,7 +1282,7 @@ int FtpNetworkTransaction::DoDataConnectComplete(int result) {
 }
 
 int FtpNetworkTransaction::DoDataRead() {
-  DCHECK(read_data_buf_);
+  DCHECK(read_data_buf_.get());
   DCHECK_GT(read_data_buf_len_, 0);
 
   if (data_socket_ == NULL || !data_socket_->IsConnected()) {
@@ -1304,7 +1303,8 @@ int FtpNetworkTransaction::DoDataRead() {
 
   next_state_ = STATE_DATA_READ_COMPLETE;
   read_data_buf_->data()[0] = 0;
-  return data_socket_->Read(read_data_buf_, read_data_buf_len_, io_callback_);
+  return data_socket_->Read(
+      read_data_buf_.get(), read_data_buf_len_, io_callback_);
 }
 
 int FtpNetworkTransaction::DoDataReadComplete(int result) {

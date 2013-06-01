@@ -204,7 +204,7 @@ class CertVerifierWorker {
 
   // Returns the certificate being verified. May only be called /before/
   // Start() is called.
-  X509Certificate* certificate() const { return cert_; }
+  X509Certificate* certificate() const { return cert_.get(); }
 
   bool Start() {
     DCHECK_EQ(base::MessageLoop::current(), origin_loop_);
@@ -225,8 +225,12 @@ class CertVerifierWorker {
  private:
   void Run() {
     // Runs on a worker thread.
-    error_ = verify_proc_->Verify(cert_, hostname_, flags_, crl_set_,
-                                  additional_trust_anchors_, &verify_result_);
+    error_ = verify_proc_->Verify(cert_.get(),
+                                  hostname_,
+                                  flags_,
+                                  crl_set_.get(),
+                                  additional_trust_anchors_,
+                                  &verify_result_);
 #if defined(USE_NSS) || defined(OS_IOS)
     // Detach the thread from NSPR.
     // Calling NSS functions attaches the thread to NSPR, which stores
@@ -250,8 +254,11 @@ class CertVerifierWorker {
       // memory leaks or worse errors.
       base::AutoLock locked(lock_);
       if (!canceled_) {
-        cert_verifier_->HandleResult(cert_, hostname_, flags_,
-                                     additional_trust_anchors_, error_,
+        cert_verifier_->HandleResult(cert_.get(),
+                                     hostname_,
+                                     flags_,
+                                     additional_trust_anchors_,
+                                     error_,
                                      verify_result_);
       }
     }
@@ -448,8 +455,13 @@ int MultiThreadedCertVerifier::Verify(X509Certificate* cert,
   } else {
     // Need to make a new request.
     CertVerifierWorker* worker =
-        new CertVerifierWorker(verify_proc_, cert, hostname, flags, crl_set,
-                               additional_trust_anchors, this);
+        new CertVerifierWorker(verify_proc_.get(),
+                               cert,
+                               hostname,
+                               flags,
+                               crl_set,
+                               additional_trust_anchors,
+                               this);
     job = new CertVerifierJob(
         worker,
         BoundNetLog::Make(net_log.net_log(), NetLog::SOURCE_CERT_VERIFIER_JOB));

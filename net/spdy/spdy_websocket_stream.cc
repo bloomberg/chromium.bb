@@ -23,7 +23,7 @@ SpdyWebSocketStream::SpdyWebSocketStream(
       spdy_session_(spdy_session),
       pending_send_data_length_(0),
       delegate_(delegate) {
-  DCHECK(spdy_session_);
+  DCHECK(spdy_session_.get());
   DCHECK(delegate_);
 }
 

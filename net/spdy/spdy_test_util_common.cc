@@ -411,7 +411,7 @@ net::HttpNetworkSession::Params SpdySessionDependencies::CreateSessionParams(
   params.host_resolver = session_deps->host_resolver.get();
   params.cert_verifier = session_deps->cert_verifier.get();
   params.proxy_service = session_deps->proxy_service.get();
-  params.ssl_config_service = session_deps->ssl_config_service;
+  params.ssl_config_service = session_deps->ssl_config_service.get();
   params.http_auth_handler_factory =
       session_deps->http_auth_handler_factory.get();
   params.http_server_properties = &session_deps->http_server_properties;
@@ -456,8 +456,7 @@ SpdyURLRequestContext::SpdyURLRequestContext(NextProto protocol)
   SpdySessionPoolPeer pool_peer(network_session->spdy_session_pool());
   pool_peer.EnableSendingInitialSettings(false);
   storage_.set_http_transaction_factory(new HttpCache(
-      network_session,
-      HttpCache::DefaultBackend::InMemory(0)));
+      network_session.get(), HttpCache::DefaultBackend::InMemory(0)));
 }
 
 SpdyURLRequestContext::~SpdyURLRequestContext() {

@@ -162,7 +162,7 @@ ReadBufferingStreamSocket::ReadBufferingStreamSocket(
 }
 
 void ReadBufferingStreamSocket::SetBufferSize(int size) {
-  DCHECK(!user_read_buf_);
+  DCHECK(!user_read_buf_.get());
   buffer_size_ = size;
   read_buffer_->SetCapacity(size);
 }
@@ -210,11 +210,11 @@ int ReadBufferingStreamSocket::DoLoop(int result) {
 
 int ReadBufferingStreamSocket::DoRead() {
   state_ = STATE_READ_COMPLETE;
-  int rv = transport_->Read(
-      read_buffer_,
-      read_buffer_->RemainingCapacity(),
-      base::Bind(&ReadBufferingStreamSocket::OnReadCompleted,
-                 base::Unretained(this)));
+  int rv =
+      transport_->Read(read_buffer_.get(),
+                       read_buffer_->RemainingCapacity(),
+                       base::Bind(&ReadBufferingStreamSocket::OnReadCompleted,
+                                  base::Unretained(this)));
   return rv;
 }
 
@@ -835,8 +835,8 @@ TEST_F(SSLClientSocketTest, Read) {
       new net::IOBuffer(arraysize(request_text) - 1));
   memcpy(request_buffer->data(), request_text, arraysize(request_text) - 1);
 
-  rv = sock->Write(request_buffer, arraysize(request_text) - 1,
-                   callback.callback());
+  rv = sock->Write(
+      request_buffer.get(), arraysize(request_text) - 1, callback.callback());
   EXPECT_TRUE(rv >= 0 || rv == net::ERR_IO_PENDING);
 
   if (rv == net::ERR_IO_PENDING)
@@ -845,7 +845,7 @@ TEST_F(SSLClientSocketTest, Read) {
 
   scoped_refptr<net::IOBuffer> buf(new net::IOBuffer(4096));
   for (;;) {
-    rv = sock->Read(buf, 4096, callback.callback());
+    rv = sock->Read(buf.get(), 4096, callback.callback());
     EXPECT_TRUE(rv >= 0 || rv == net::ERR_IO_PENDING);
 
     if (rv == net::ERR_IO_PENDING)
@@ -897,8 +897,8 @@ TEST_F(SSLClientSocketTest, Read_WithSynchronousError) {
       new net::IOBuffer(kRequestTextSize));
   memcpy(request_buffer->data(), request_text, kRequestTextSize);
 
-  rv = callback.GetResult(sock->Write(request_buffer, kRequestTextSize,
-                                      callback.callback()));
+  rv = callback.GetResult(
+      sock->Write(request_buffer.get(), kRequestTextSize, callback.callback()));
   EXPECT_EQ(kRequestTextSize, rv);
 
   // Simulate an unclean/forcible shutdown.
@@ -909,7 +909,7 @@ TEST_F(SSLClientSocketTest, Read_WithSynchronousError) {
   // Note: This test will hang if this bug has regressed. Simply checking that
   // rv != ERR_IO_PENDING is insufficient, as ERR_IO_PENDING is a legitimate
   // result when using a dedicated task runner for NSS.
-  rv = callback.GetResult(sock->Read(buf, 4096, callback.callback()));
+  rv = callback.GetResult(sock->Read(buf.get(), 4096, callback.callback()));
 
 #if !defined(USE_OPENSSL)
   // NSS records the error exactly
@@ -952,7 +952,7 @@ TEST_F(SSLClientSocketTest, Read_FullDuplex) {
 
   // Issue a "hanging" Read first.
   scoped_refptr<net::IOBuffer> buf(new net::IOBuffer(4096));
-  rv = sock->Read(buf, 4096, callback.callback());
+  rv = sock->Read(buf.get(), 4096, callback.callback());
   // We haven't written the request, so there should be no response yet.
   ASSERT_EQ(net::ERR_IO_PENDING, rv);
 
@@ -968,7 +968,8 @@ TEST_F(SSLClientSocketTest, Read_FullDuplex) {
       new net::StringIOBuffer(request_text));
 
   net::TestCompletionCallback callback2;  // Used for Write only.
-  rv = sock->Write(request_buffer, request_text.size(), callback2.callback());
+  rv = sock->Write(
+      request_buffer.get(), request_text.size(), callback2.callback());
   EXPECT_TRUE(rv >= 0 || rv == net::ERR_IO_PENDING);
 
   if (rv == net::ERR_IO_PENDING)
@@ -1039,7 +1040,7 @@ TEST_F(SSLClientSocketTest, Read_DeleteWhilePendingFullDuplex) {
   // the ERR_IO_PENDING caused by SetReadShouldBlock() and thus return.
   DeleteSocketCallback read_callback(sock);
   scoped_refptr<net::IOBuffer> read_buf(new net::IOBuffer(4096));
-  rv = sock->Read(read_buf, 4096, read_callback.callback());
+  rv = sock->Read(read_buf.get(), 4096, read_callback.callback());
 
   // Ensure things didn't complete synchronously, otherwise |sock| is invalid.
   ASSERT_EQ(net::ERR_IO_PENDING, rv);
@@ -1062,7 +1063,7 @@ TEST_F(SSLClientSocketTest, Read_DeleteWhilePendingFullDuplex) {
   // SSLClientSocketOpenSSL::Write() will not return until all of
   // |request_buffer| has been written to the underlying BIO (although not
   // necessarily the underlying transport).
-  rv = callback.GetResult(sock->Write(request_buffer,
+  rv = callback.GetResult(sock->Write(request_buffer.get(),
                                       request_buffer->BytesRemaining(),
                                       callback.callback()));
   ASSERT_LT(0, rv);
@@ -1077,7 +1078,8 @@ TEST_F(SSLClientSocketTest, Read_DeleteWhilePendingFullDuplex) {
   // Attempt to write the remaining data. NSS will not be able to consume the
   // application data because the internal buffers are full, while OpenSSL will
   // return that its blocked because the underlying transport is blocked.
-  rv = sock->Write(request_buffer, request_buffer->BytesRemaining(),
+  rv = sock->Write(request_buffer.get(),
+                   request_buffer->BytesRemaining(),
                    callback.callback());
   ASSERT_EQ(net::ERR_IO_PENDING, rv);
   ASSERT_FALSE(callback.have_result());
@@ -1132,8 +1134,8 @@ TEST_F(SSLClientSocketTest, Read_SmallChunks) {
       new net::IOBuffer(arraysize(request_text) - 1));
   memcpy(request_buffer->data(), request_text, arraysize(request_text) - 1);
 
-  rv = sock->Write(request_buffer, arraysize(request_text) - 1,
-                   callback.callback());
+  rv = sock->Write(
+      request_buffer.get(), arraysize(request_text) - 1, callback.callback());
   EXPECT_TRUE(rv >= 0 || rv == net::ERR_IO_PENDING);
 
   if (rv == net::ERR_IO_PENDING)
@@ -1142,7 +1144,7 @@ TEST_F(SSLClientSocketTest, Read_SmallChunks) {
 
   scoped_refptr<net::IOBuffer> buf(new net::IOBuffer(1));
   for (;;) {
-    rv = sock->Read(buf, 1, callback.callback());
+    rv = sock->Read(buf.get(), 1, callback.callback());
     EXPECT_TRUE(rv >= 0 || rv == net::ERR_IO_PENDING);
 
     if (rv == net::ERR_IO_PENDING)
@@ -1186,7 +1188,7 @@ TEST_F(SSLClientSocketTest, Read_ManySmallRecords) {
   memcpy(request_buffer->data(), request_text, arraysize(request_text) - 1);
 
   rv = callback.GetResult(sock->Write(
-      request_buffer, arraysize(request_text) - 1, callback.callback()));
+      request_buffer.get(), arraysize(request_text) - 1, callback.callback()));
   ASSERT_GT(rv, 0);
   ASSERT_EQ(static_cast<int>(arraysize(request_text) - 1), rv);
 
@@ -1202,7 +1204,7 @@ TEST_F(SSLClientSocketTest, Read_ManySmallRecords) {
   transport->SetBufferSize(15000);
 
   scoped_refptr<net::IOBuffer> buffer(new net::IOBuffer(8192));
-  rv = callback.GetResult(sock->Read(buffer, 8192, callback.callback()));
+  rv = callback.GetResult(sock->Read(buffer.get(), 8192, callback.callback()));
   ASSERT_EQ(rv, 8192);
 }
 
@@ -1237,8 +1239,8 @@ TEST_F(SSLClientSocketTest, Read_Interrupted) {
       new net::IOBuffer(arraysize(request_text) - 1));
   memcpy(request_buffer->data(), request_text, arraysize(request_text) - 1);
 
-  rv = sock->Write(request_buffer, arraysize(request_text) - 1,
-                   callback.callback());
+  rv = sock->Write(
+      request_buffer.get(), arraysize(request_text) - 1, callback.callback());
   EXPECT_TRUE(rv >= 0 || rv == net::ERR_IO_PENDING);
 
   if (rv == net::ERR_IO_PENDING)
@@ -1247,7 +1249,7 @@ TEST_F(SSLClientSocketTest, Read_Interrupted) {
 
   // Do a partial read and then exit.  This test should not crash!
   scoped_refptr<net::IOBuffer> buf(new net::IOBuffer(512));
-  rv = sock->Read(buf, 512, callback.callback());
+  rv = sock->Read(buf.get(), 512, callback.callback());
   EXPECT_TRUE(rv > 0 || rv == net::ERR_IO_PENDING);
 
   if (rv == net::ERR_IO_PENDING)
@@ -1290,8 +1292,8 @@ TEST_F(SSLClientSocketTest, Read_FullLogging) {
       new net::IOBuffer(arraysize(request_text) - 1));
   memcpy(request_buffer->data(), request_text, arraysize(request_text) - 1);
 
-  rv = sock->Write(request_buffer, arraysize(request_text) - 1,
-                   callback.callback());
+  rv = sock->Write(
+      request_buffer.get(), arraysize(request_text) - 1, callback.callback());
   EXPECT_TRUE(rv >= 0 || rv == net::ERR_IO_PENDING);
 
   if (rv == net::ERR_IO_PENDING)
@@ -1306,7 +1308,7 @@ TEST_F(SSLClientSocketTest, Read_FullLogging) {
 
   scoped_refptr<net::IOBuffer> buf(new net::IOBuffer(4096));
   for (;;) {
-    rv = sock->Read(buf, 4096, callback.callback());
+    rv = sock->Read(buf.get(), 4096, callback.callback());
     EXPECT_TRUE(rv >= 0 || rv == net::ERR_IO_PENDING);
 
     if (rv == net::ERR_IO_PENDING)
@@ -1577,14 +1579,14 @@ TEST_F(SSLClientSocketTest, VerifyReturnChainProperlyOrdered) {
 
   // Add a rule that maps the server cert (A) to the chain of A->B->C2
   // rather than A->B->C.
-  cert_verifier_->AddResultForCert(certs[0], verify_result, net::OK);
+  cert_verifier_->AddResultForCert(certs[0].get(), verify_result, net::OK);
 
   // Load and install the root for the validated chain.
   scoped_refptr<net::X509Certificate> root_cert =
     net::ImportCertFromFile(net::GetTestCertsDirectory(),
                            "redundant-validated-chain-root.pem");
   ASSERT_NE(static_cast<net::X509Certificate*>(NULL), root_cert);
-  net::ScopedTestRoot scoped_root(root_cert);
+  net::ScopedTestRoot scoped_root(root_cert.get());
 
   // Set up a test server with CERT_CHAIN_WRONG_ROOT.
   net::SpawnedTestServer::SSLOptions ssl_options(
@@ -1692,7 +1694,7 @@ TEST_F(SSLClientSocketCertRequestInfoTest, NoAuthorities) {
   ssl_options.request_client_certificate = true;
   scoped_refptr<net::SSLCertRequestInfo> request_info =
       GetCertRequest(ssl_options);
-  ASSERT_TRUE(request_info);
+  ASSERT_TRUE(request_info.get());
   EXPECT_EQ(0u, request_info->cert_authorities.size());
 }
 
@@ -1733,7 +1735,7 @@ TEST_F(SSLClientSocketCertRequestInfoTest, TwoAuthorities) {
       net::GetTestClientCertsDirectory().Append(kDiginotarFile));
   scoped_refptr<net::SSLCertRequestInfo> request_info =
       GetCertRequest(ssl_options);
-  ASSERT_TRUE(request_info);
+  ASSERT_TRUE(request_info.get());
   ASSERT_EQ(2u, request_info->cert_authorities.size());
   EXPECT_EQ(std::string(reinterpret_cast<const char*>(kThawteDN), kThawteLen),
             request_info->cert_authorities[0]);

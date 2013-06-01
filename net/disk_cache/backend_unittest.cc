@@ -295,7 +295,7 @@ TEST_F(DiskCacheBackendTest, ExternalFiles) {
   // Now let's create a file with the cache.
   disk_cache::Entry* entry;
   ASSERT_EQ(net::OK, CreateEntry("key", &entry));
-  ASSERT_EQ(0, WriteData(entry, 0, 20000, buffer1, 0, false));
+  ASSERT_EQ(0, WriteData(entry, 0, 20000, buffer1.get(), 0, false));
   entry->Close();
 
   // And verify that the first file is still there.
@@ -336,7 +336,8 @@ void DiskCacheBackendTest::BackendShutdownWithPendingFileIO(bool fast) {
       // We are using the current thread as the cache thread because we want to
       // be able to call directly this method to make sure that the OS (instead
       // of us switching thread) is returning IO pending.
-      rv = entry->WriteDataImpl(0, i, buffer, kSize, cb.callback(), false);
+      rv =
+          entry->WriteDataImpl(0, i, buffer.get(), kSize, cb.callback(), false);
       if (rv == net::ERR_IO_PENDING)
         break;
       EXPECT_EQ(kSize, rv);
@@ -496,21 +497,23 @@ void DiskCacheBackendTest::BackendSetSize() {
 
   scoped_refptr<net::IOBuffer> buffer(new net::IOBuffer(cache_size));
   memset(buffer->data(), 0, cache_size);
-  EXPECT_EQ(cache_size / 10, WriteData(entry, 0, 0, buffer, cache_size / 10,
-                                       false)) << "normal file";
+  EXPECT_EQ(cache_size / 10,
+            WriteData(entry, 0, 0, buffer.get(), cache_size / 10, false))
+      << "normal file";
 
-  EXPECT_EQ(net::ERR_FAILED, WriteData(entry, 1, 0, buffer, cache_size / 5,
-                                       false)) << "file size above the limit";
+  EXPECT_EQ(net::ERR_FAILED,
+            WriteData(entry, 1, 0, buffer.get(), cache_size / 5, false))
+      << "file size above the limit";
 
   // By doubling the total size, we make this file cacheable.
   SetMaxSize(cache_size * 2);
-  EXPECT_EQ(cache_size / 5, WriteData(entry, 1, 0, buffer, cache_size / 5,
-                                      false));
+  EXPECT_EQ(cache_size / 5,
+            WriteData(entry, 1, 0, buffer.get(), cache_size / 5, false));
 
   // Let's fill up the cache!.
   SetMaxSize(cache_size * 10);
-  EXPECT_EQ(cache_size * 3 / 4, WriteData(entry, 0, 0, buffer,
-                                          cache_size * 3 / 4, false));
+  EXPECT_EQ(cache_size * 3 / 4,
+            WriteData(entry, 0, 0, buffer.get(), cache_size * 3 / 4, false));
   entry->Close();
   FlushQueueForTest();
 
@@ -519,13 +522,13 @@ void DiskCacheBackendTest::BackendSetSize() {
   // The cache is 95% full.
 
   ASSERT_EQ(net::OK, CreateEntry(second, &entry));
-  EXPECT_EQ(cache_size / 10, WriteData(entry, 0, 0, buffer, cache_size / 10,
-                                       false));
+  EXPECT_EQ(cache_size / 10,
+            WriteData(entry, 0, 0, buffer.get(), cache_size / 10, false));
 
   disk_cache::Entry* entry2;
   ASSERT_EQ(net::OK, CreateEntry("an extra key", &entry2));
-  EXPECT_EQ(cache_size / 10, WriteData(entry2, 0, 0, buffer, cache_size / 10,
-                                       false));
+  EXPECT_EQ(cache_size / 10,
+            WriteData(entry2, 0, 0, buffer.get(), cache_size / 10, false));
   entry2->Close();  // This will trigger the cache trim.
 
   EXPECT_NE(net::OK, OpenEntry(first, &entry2));
@@ -696,7 +699,7 @@ void DiskCacheBackendTest::BackendValidEntry() {
   scoped_refptr<net::IOBuffer> buffer1(new net::IOBuffer(kSize));
   memset(buffer1->data(), 0, kSize);
   base::strlcpy(buffer1->data(), "And the data to save", kSize);
-  EXPECT_EQ(kSize, WriteData(entry, 0, 0, buffer1, kSize, false));
+  EXPECT_EQ(kSize, WriteData(entry, 0, 0, buffer1.get(), kSize, false));
   entry->Close();
   SimulateCrash();
 
@@ -704,7 +707,7 @@ void DiskCacheBackendTest::BackendValidEntry() {
 
   scoped_refptr<net::IOBuffer> buffer2(new net::IOBuffer(kSize));
   memset(buffer2->data(), 0, kSize);
-  EXPECT_EQ(kSize, ReadData(entry, 0, 0, buffer2, kSize));
+  EXPECT_EQ(kSize, ReadData(entry, 0, 0, buffer2.get(), kSize));
   entry->Close();
   EXPECT_STREQ(buffer1->data(), buffer2->data());
 }
@@ -732,7 +735,7 @@ void DiskCacheBackendTest::BackendInvalidEntry() {
   scoped_refptr<net::IOBuffer> buffer(new net::IOBuffer(kSize));
   memset(buffer->data(), 0, kSize);
   base::strlcpy(buffer->data(), "And the data to save", kSize);
-  EXPECT_EQ(kSize, WriteData(entry, 0, 0, buffer, kSize, false));
+  EXPECT_EQ(kSize, WriteData(entry, 0, 0, buffer.get(), kSize, false));
   SimulateCrash();
 
   EXPECT_NE(net::OK, OpenEntry(key, &entry));
@@ -779,10 +782,10 @@ void DiskCacheBackendTest::BackendInvalidEntryRead() {
   scoped_refptr<net::IOBuffer> buffer(new net::IOBuffer(kSize));
   memset(buffer->data(), 0, kSize);
   base::strlcpy(buffer->data(), "And the data to save", kSize);
-  EXPECT_EQ(kSize, WriteData(entry, 0, 0, buffer, kSize, false));
+  EXPECT_EQ(kSize, WriteData(entry, 0, 0, buffer.get(), kSize, false));
   entry->Close();
   ASSERT_EQ(net::OK, OpenEntry(key, &entry));
-  EXPECT_EQ(kSize, ReadData(entry, 0, 0, buffer, kSize));
+  EXPECT_EQ(kSize, ReadData(entry, 0, 0, buffer.get(), kSize));
 
   SimulateCrash();
 
@@ -905,13 +908,13 @@ void DiskCacheBackendTest::BackendTrimInvalidEntry() {
 
   scoped_refptr<net::IOBuffer> buffer(new net::IOBuffer(kSize));
   memset(buffer->data(), 0, kSize);
-  EXPECT_EQ(kSize, WriteData(entry, 0, 0, buffer, kSize, false));
+  EXPECT_EQ(kSize, WriteData(entry, 0, 0, buffer.get(), kSize, false));
 
   // Simulate a crash.
   SimulateCrash();
 
   ASSERT_EQ(net::OK, CreateEntry(second, &entry));
-  EXPECT_EQ(kSize, WriteData(entry, 0, 0, buffer, kSize, false));
+  EXPECT_EQ(kSize, WriteData(entry, 0, 0, buffer.get(), kSize, false));
 
   EXPECT_EQ(2, cache_->GetEntryCount());
   SetMaxSize(kSize);
@@ -960,7 +963,7 @@ void DiskCacheBackendTest::BackendTrimInvalidEntry2() {
   for (int i = 0; i < 32; i++) {
     std::string key(base::StringPrintf("some key %d", i));
     ASSERT_EQ(net::OK, CreateEntry(key, &entry));
-    EXPECT_EQ(kSize, WriteData(entry, 0, 0, buffer, kSize, false));
+    EXPECT_EQ(kSize, WriteData(entry, 0, 0, buffer.get(), kSize, false));
     entry->Close();
     ASSERT_EQ(net::OK, OpenEntry(key, &entry));
     // Note that we are not closing the entries.
@@ -970,7 +973,7 @@ void DiskCacheBackendTest::BackendTrimInvalidEntry2() {
   SimulateCrash();
 
   ASSERT_EQ(net::OK, CreateEntry("Something else", &entry));
-  EXPECT_EQ(kSize, WriteData(entry, 0, 0, buffer, kSize, false));
+  EXPECT_EQ(kSize, WriteData(entry, 0, 0, buffer.get(), kSize, false));
 
   FlushQueueForTest();
   EXPECT_EQ(33, cache_->GetEntryCount());
@@ -1163,7 +1166,7 @@ TEST_F(DiskCacheBackendTest, ShaderCacheEnumerationReadData) {
   ASSERT_EQ(net::OK, CreateEntry(first, &entry1));
   memset(buffer1->data(), 0, kSize);
   base::strlcpy(buffer1->data(), "And the data to save", kSize);
-  EXPECT_EQ(kSize, WriteData(entry1, 0, 0, buffer1, kSize, false));
+  EXPECT_EQ(kSize, WriteData(entry1, 0, 0, buffer1.get(), kSize, false));
 
   ASSERT_EQ(net::OK, CreateEntry(second, &entry2));
   entry2->Close();
@@ -1174,7 +1177,7 @@ TEST_F(DiskCacheBackendTest, ShaderCacheEnumerationReadData) {
   AddDelay();
 
   // Read from the last item in the LRU.
-  EXPECT_EQ(kSize, ReadData(entry1, 0, 0, buffer1, kSize));
+  EXPECT_EQ(kSize, ReadData(entry1, 0, 0, buffer1.get(), kSize));
   entry1->Close();
 
   void* iter = NULL;
@@ -1197,10 +1200,10 @@ void DiskCacheBackendTest::BackendInvalidEntryEnumeration() {
   scoped_refptr<net::IOBuffer> buffer1(new net::IOBuffer(kSize));
   memset(buffer1->data(), 0, kSize);
   base::strlcpy(buffer1->data(), "And the data to save", kSize);
-  EXPECT_EQ(kSize, WriteData(entry1, 0, 0, buffer1, kSize, false));
+  EXPECT_EQ(kSize, WriteData(entry1, 0, 0, buffer1.get(), kSize, false));
   entry1->Close();
   ASSERT_EQ(net::OK, OpenEntry(key, &entry1));
-  EXPECT_EQ(kSize, ReadData(entry1, 0, 0, buffer1, kSize));
+  EXPECT_EQ(kSize, ReadData(entry1, 0, 0, buffer1.get(), kSize));
 
   std::string key2("Another key");
   ASSERT_EQ(net::OK, CreateEntry(key2, &entry2));
@@ -2401,8 +2404,8 @@ void DiskCacheBackendTest::BackendDisable4() {
   const int kBufSize = 20000;
   scoped_refptr<net::IOBuffer> buf(new net::IOBuffer(kBufSize));
   memset(buf->data(), 0, kBufSize);
-  EXPECT_EQ(100, WriteData(entry2, 0, 0, buf, 100, false));
-  EXPECT_EQ(kBufSize, WriteData(entry3, 0, 0, buf, kBufSize, false));
+  EXPECT_EQ(100, WriteData(entry2, 0, 0, buf.get(), 100, false));
+  EXPECT_EQ(kBufSize, WriteData(entry3, 0, 0, buf.get(), kBufSize, false));
 
   // This line should disable the cache but not delete it.
   EXPECT_NE(net::OK, OpenNextEntry(&iter, &entry4));
@@ -2410,13 +2413,13 @@ void DiskCacheBackendTest::BackendDisable4() {
 
   EXPECT_NE(net::OK, CreateEntry("cache is disabled", &entry4));
 
-  EXPECT_EQ(100, ReadData(entry2, 0, 0, buf, 100));
-  EXPECT_EQ(100, WriteData(entry2, 0, 0, buf, 100, false));
-  EXPECT_EQ(100, WriteData(entry2, 1, 0, buf, 100, false));
+  EXPECT_EQ(100, ReadData(entry2, 0, 0, buf.get(), 100));
+  EXPECT_EQ(100, WriteData(entry2, 0, 0, buf.get(), 100, false));
+  EXPECT_EQ(100, WriteData(entry2, 1, 0, buf.get(), 100, false));
 
-  EXPECT_EQ(kBufSize, ReadData(entry3, 0, 0, buf, kBufSize));
-  EXPECT_EQ(kBufSize, WriteData(entry3, 0, 0, buf, kBufSize, false));
-  EXPECT_EQ(kBufSize, WriteData(entry3, 1, 0, buf, kBufSize, false));
+  EXPECT_EQ(kBufSize, ReadData(entry3, 0, 0, buf.get(), kBufSize));
+  EXPECT_EQ(kBufSize, WriteData(entry3, 0, 0, buf.get(), kBufSize, false));
+  EXPECT_EQ(kBufSize, WriteData(entry3, 1, 0, buf.get(), kBufSize, false));
 
   std::string key = entry2->GetKey();
   EXPECT_EQ(sizeof(key2) - 1, key.size());
@@ -2675,14 +2678,16 @@ TEST_F(DiskCacheBackendTest, TotalBuffersSize1) {
   for (int i = 0; i < 10; i++) {
     SCOPED_TRACE(i);
     // Allocate 2MB for this entry.
-    EXPECT_EQ(kSize, WriteData(entry, 0, 0, buffer, kSize, true));
-    EXPECT_EQ(kSize, WriteData(entry, 1, 0, buffer, kSize, true));
-    EXPECT_EQ(kSize, WriteData(entry, 0, 1024 * 1024, buffer, kSize, false));
-    EXPECT_EQ(kSize, WriteData(entry, 1, 1024 * 1024, buffer, kSize, false));
+    EXPECT_EQ(kSize, WriteData(entry, 0, 0, buffer.get(), kSize, true));
+    EXPECT_EQ(kSize, WriteData(entry, 1, 0, buffer.get(), kSize, true));
+    EXPECT_EQ(kSize,
+              WriteData(entry, 0, 1024 * 1024, buffer.get(), kSize, false));
+    EXPECT_EQ(kSize,
+              WriteData(entry, 1, 1024 * 1024, buffer.get(), kSize, false));
 
     // Delete one of the buffers and truncate the other.
-    EXPECT_EQ(0, WriteData(entry, 0, 0, buffer, 0, true));
-    EXPECT_EQ(0, WriteData(entry, 1, 10, buffer, 0, true));
+    EXPECT_EQ(0, WriteData(entry, 0, 0, buffer.get(), 0, true));
+    EXPECT_EQ(0, WriteData(entry, 1, 10, buffer.get(), 0, true));
 
     // Delete the second buffer, writing 10 bytes to disk.
     entry->Close();
@@ -2974,7 +2979,7 @@ TEST_F(DiskCacheBackendTest, SimpleCacheOverBlockfileCache) {
   scoped_refptr<net::IOBuffer> buffer(new net::IOBuffer(kSize));
   CacheTestFillBuffer(buffer->data(), kSize, false);
   ASSERT_EQ(net::OK, CreateEntry("key", &entry));
-  ASSERT_EQ(0, WriteData(entry, 0, 0, buffer, 0, false));
+  ASSERT_EQ(0, WriteData(entry, 0, 0, buffer.get(), 0, false));
   entry->Close();
   delete cache_;
   cache_ = NULL;
@@ -3005,7 +3010,7 @@ TEST_F(DiskCacheBackendTest, BlockfileCacheOverSimpleCache) {
   scoped_refptr<net::IOBuffer> buffer(new net::IOBuffer(kSize));
   CacheTestFillBuffer(buffer->data(), kSize, false);
   ASSERT_EQ(net::OK, CreateEntry("key", &entry));
-  ASSERT_EQ(0, WriteData(entry, 0, 0, buffer, 0, false));
+  ASSERT_EQ(0, WriteData(entry, 0, 0, buffer.get(), 0, false));
   entry->Close();
   delete cache_;
   cache_ = NULL;

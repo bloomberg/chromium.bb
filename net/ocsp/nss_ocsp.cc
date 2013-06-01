@@ -300,7 +300,7 @@ class OCSPRequestSession
       response_code_ = request_->GetResponseCode();
       response_headers_ = request_->response_headers();
       response_headers_->GetMimeType(&response_content_type_);
-      request_->Read(buffer_, kRecvBufferSize, &bytes_read);
+      request_->Read(buffer_.get(), kRecvBufferSize, &bytes_read);
     }
     OnReadCompleted(request_, bytes_read);
   }
@@ -314,7 +314,7 @@ class OCSPRequestSession
       if (!request_->status().is_success() || bytes_read <= 0)
         break;
       data_.append(buffer_->data(), bytes_read);
-    } while (request_->Read(buffer_, kRecvBufferSize, &bytes_read));
+    } while (request_->Read(buffer_.get(), kRecvBufferSize, &bytes_read));
 
     if (!request_->status().is_io_pending()) {
       delete request_;

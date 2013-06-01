@@ -162,13 +162,15 @@ TEST_F(SOCKSClientSocketTest, CompleteHandshake) {
 
   scoped_refptr<IOBuffer> buffer(new IOBuffer(payload_write.size()));
   memcpy(buffer->data(), payload_write.data(), payload_write.size());
-  rv = user_sock_->Write(buffer, payload_write.size(), callback_.callback());
+  rv = user_sock_->Write(
+      buffer.get(), payload_write.size(), callback_.callback());
   EXPECT_EQ(ERR_IO_PENDING, rv);
   rv = callback_.WaitForResult();
   EXPECT_EQ(static_cast<int>(payload_write.size()), rv);
 
   buffer = new IOBuffer(payload_read.size());
-  rv = user_sock_->Read(buffer, payload_read.size(), callback_.callback());
+  rv =
+      user_sock_->Read(buffer.get(), payload_read.size(), callback_.callback());
   EXPECT_EQ(ERR_IO_PENDING, rv);
   rv = callback_.WaitForResult();
   EXPECT_EQ(static_cast<int>(payload_read.size()), rv);

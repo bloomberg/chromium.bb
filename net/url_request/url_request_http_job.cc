@@ -368,7 +368,7 @@ void URLRequestHttpJob::NotifyHeadersComplete() {
   // also need this info.
   is_cached_content_ = response_info_->was_cached;
 
-  if (!is_cached_content_ && throttling_entry_) {
+  if (!is_cached_content_ && throttling_entry_.get()) {
     URLRequestThrottlerHeaderAdapter response_adapter(GetResponseHeaders());
     throttling_entry_->UpdateWithResponse(request_info_.url.host(),
                                           &response_adapter);
@@ -488,7 +488,7 @@ void URLRequestHttpJob::StartTransactionInternal() {
     rv = request_->context()->http_transaction_factory()->CreateTransaction(
         priority_, &transaction_, http_transaction_delegate_.get());
     if (rv == OK) {
-      if (!throttling_entry_ ||
+      if (!throttling_entry_.get() ||
           !throttling_entry_->ShouldRejectRequest(*request_)) {
         rv = transaction_->Start(
             &request_info_, start_callback_, request_->net_log());
@@ -859,8 +859,10 @@ void URLRequestHttpJob::OnStartCompleted(int result) {
       // |on_headers_received_callback_| or
       // |NetworkDelegate::URLRequestDestroyed()| has been called.
       int error = network_delegate()->NotifyHeadersReceived(
-          request_, on_headers_received_callback_,
-          headers, &override_response_headers_);
+          request_,
+          on_headers_received_callback_,
+          headers.get(),
+          &override_response_headers_);
       if (error != net::OK) {
         if (error == net::ERR_IO_PENDING) {
           awaiting_callback_ = true;
@@ -892,7 +894,7 @@ void URLRequestHttpJob::OnStartCompleted(int result) {
     NotifySSLCertificateError(transaction_->GetResponseInfo()->ssl_info, fatal);
   } else if (result == ERR_SSL_CLIENT_AUTH_CERT_NEEDED) {
     NotifyCertificateRequested(
-        transaction_->GetResponseInfo()->cert_request_info);
+        transaction_->GetResponseInfo()->cert_request_info.get());
   } else {
     NotifyStartError(URLRequestStatus(URLRequestStatus::FAILED, result));
   }
@@ -990,7 +992,7 @@ void URLRequestHttpJob::GetResponseInfo(HttpResponseInfo* info) {
 
   if (response_info_) {
     *info = *response_info_;
-    if (override_response_headers_)
+    if (override_response_headers_.get())
       info->headers = override_response_headers_;
   }
 }
@@ -1478,8 +1480,8 @@ HttpResponseHeaders* URLRequestHttpJob::GetResponseHeaders() const {
   DCHECK(transaction_.get());
   DCHECK(transaction_->GetResponseInfo());
   return override_response_headers_.get() ?
-      override_response_headers_ :
-      transaction_->GetResponseInfo()->headers;
+             override_response_headers_.get() :
+             transaction_->GetResponseInfo()->headers.get();
 }
 
 void URLRequestHttpJob::NotifyURLRequestDestroyed() {

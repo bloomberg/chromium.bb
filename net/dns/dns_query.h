@@ -36,7 +36,7 @@ class NET_EXPORT_PRIVATE DnsQuery {
   base::StringPiece question() const;
 
   // IOBuffer accessor to be used for writing out the query.
-  IOBufferWithSize* io_buffer() const { return io_buffer_; }
+  IOBufferWithSize* io_buffer() const { return io_buffer_.get(); }
 
  private:
   DnsQuery(const DnsQuery& orig, uint16 id);

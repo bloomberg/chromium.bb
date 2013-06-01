@@ -84,12 +84,12 @@ int FileStream::Context::ReadAsync(IOBuffer* in_buf,
 
   scoped_refptr<IOBuffer> buf = in_buf;
   const bool posted = base::PostTaskAndReplyWithResult(
-      base::WorkerPool::GetTaskRunner(true /* task is slow */),
+      base::WorkerPool::GetTaskRunner(true /* task is slow */).get(),
       FROM_HERE,
-      base::Bind(&Context::ReadFileImpl,
-                 base::Unretained(this), buf, buf_len),
+      base::Bind(&Context::ReadFileImpl, base::Unretained(this), buf, buf_len),
       base::Bind(&Context::ProcessAsyncResult,
-                 base::Unretained(this), IntToInt64(callback),
+                 base::Unretained(this),
+                 IntToInt64(callback),
                  FILE_ERROR_SOURCE_READ));
   DCHECK(posted);
 
@@ -111,12 +111,12 @@ int FileStream::Context::WriteAsync(IOBuffer* in_buf,
 
   scoped_refptr<IOBuffer> buf = in_buf;
   const bool posted = base::PostTaskAndReplyWithResult(
-      base::WorkerPool::GetTaskRunner(true /* task is slow */),
+      base::WorkerPool::GetTaskRunner(true /* task is slow */).get(),
       FROM_HERE,
-      base::Bind(&Context::WriteFileImpl,
-                 base::Unretained(this), buf, buf_len),
+      base::Bind(&Context::WriteFileImpl, base::Unretained(this), buf, buf_len),
       base::Bind(&Context::ProcessAsyncResult,
-                 base::Unretained(this), IntToInt64(callback),
+                 base::Unretained(this),
+                 IntToInt64(callback),
                  FILE_ERROR_SOURCE_WRITE));
   DCHECK(posted);
 

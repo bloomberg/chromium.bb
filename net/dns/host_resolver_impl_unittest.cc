@@ -436,17 +436,16 @@ class HostResolverImplTest : public testing::Test {
   };
 
   void CreateResolver() {
-    resolver_.reset(new HostResolverImpl(
-        HostCache::CreateDefaultCache(),
-        DefaultLimits(),
-        DefaultParams(proc_),
-        NULL));
+    resolver_.reset(new HostResolverImpl(HostCache::CreateDefaultCache(),
+                                         DefaultLimits(),
+                                         DefaultParams(proc_.get()),
+                                         NULL));
   }
 
   // This HostResolverImpl will only allow 1 outstanding resolve at a time and
   // perform no retries.
   void CreateSerialResolver() {
-    HostResolverImpl::ProcTaskParams params = DefaultParams(proc_);
+    HostResolverImpl::ProcTaskParams params = DefaultParams(proc_.get());
     params.max_retry_attempts = 0u;
     PrioritizedDispatcher::Limits limits(NUM_PRIORITIES, 1);
     resolver_.reset(new HostResolverImpl(
@@ -781,11 +780,10 @@ TEST_F(HostResolverImplTest, StartWithinCallback) {
   set_handler(new MyHandler());
 
   // Turn off caching for this host resolver.
-  resolver_.reset(new HostResolverImpl(
-      scoped_ptr<HostCache>(),
-      DefaultLimits(),
-      DefaultParams(proc_),
-      NULL));
+  resolver_.reset(new HostResolverImpl(scoped_ptr<HostCache>(),
+                                       DefaultLimits(),
+                                       DefaultParams(proc_.get()),
+                                       NULL));
 
   for (size_t i = 0; i < 4; ++i) {
     EXPECT_EQ(ERR_IO_PENDING, CreateRequest("a", 80 + i)->Resolve()) << i;
@@ -1270,11 +1268,10 @@ class HostResolverImplDnsTest : public HostResolverImplTest {
   }
 
   void CreateResolver() {
-    resolver_.reset(new HostResolverImpl(
-        HostCache::CreateDefaultCache(),
-        DefaultLimits(),
-        DefaultParams(proc_),
-        NULL));
+    resolver_.reset(new HostResolverImpl(HostCache::CreateDefaultCache(),
+                                         DefaultLimits(),
+                                         DefaultParams(proc_.get()),
+                                         NULL));
     resolver_->SetDnsClient(CreateMockDnsClient(DnsConfig(), dns_rules_));
   }
 
@@ -1514,7 +1511,7 @@ TEST_F(HostResolverImplDnsTest, DualFamilyLocalhost) {
   scoped_refptr<HostResolverProc> proc(new SystemHostResolverProc());
   resolver_.reset(new HostResolverImpl(HostCache::CreateDefaultCache(),
                                        DefaultLimits(),
-                                       DefaultParams(proc),
+                                       DefaultParams(proc.get()),
                                        NULL));
   resolver_->SetDnsClient(CreateMockDnsClient(DnsConfig(), dns_rules_));
   resolver_->SetDefaultAddressFamily(ADDRESS_FAMILY_IPV4);

@@ -145,10 +145,10 @@ X509Certificate* NSSCertDatabase::FindRootInList(
   if (certificates.size() == 1)
     return certificates[0].get();
 
-  X509Certificate* cert0 = certificates[0];
-  X509Certificate* cert1 = certificates[1];
-  X509Certificate* certn_2 = certificates[certificates.size() - 2];
-  X509Certificate* certn_1 = certificates[certificates.size() - 1];
+  X509Certificate* cert0 = certificates[0].get();
+  X509Certificate* cert1 = certificates[1].get();
+  X509Certificate* certn_2 = certificates[certificates.size() - 2].get();
+  X509Certificate* certn_1 = certificates[certificates.size() - 1].get();
 
   if (CERT_CompareName(&cert1->os_cert_handle()->issuer,
                        &cert0->os_cert_handle()->subject) == SECEqual)

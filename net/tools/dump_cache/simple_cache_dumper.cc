@@ -183,7 +183,7 @@ int SimpleCacheDumper::DoReadHeaders() {
   state_ = STATE_READ_HEADERS_COMPLETE;
   int32 size = src_entry_->GetDataSize(0);
   buf_ = new IOBufferWithSize(size);
-  return src_entry_->ReadData(0, 0, buf_, size, io_callback_);
+  return src_entry_->ReadData(0, 0, buf_.get(), size, io_callback_);
 }
 
 int SimpleCacheDumper::DoReadHeadersComplete(int rv) {
@@ -195,8 +195,8 @@ int SimpleCacheDumper::DoReadHeadersComplete(int rv) {
 }
 
 int SimpleCacheDumper::DoWriteHeaders() {
-  int rv = writer_->WriteEntry(dst_entry_, 0, 0, buf_, buf_->size(),
-                               io_callback_);
+  int rv = writer_->WriteEntry(
+      dst_entry_, 0, 0, buf_.get(), buf_->size(), io_callback_);
   if (rv == 0)
     return ERR_FAILED;
 
@@ -222,7 +222,7 @@ int SimpleCacheDumper::DoReadBody() {
     return OK;
   }
   buf_ = new IOBufferWithSize(size);
-  return src_entry_->ReadData(1, 0, buf_, size, io_callback_);
+  return src_entry_->ReadData(1, 0, buf_.get(), size, io_callback_);
 }
 
 int SimpleCacheDumper::DoReadBodyComplete(int rv) {
@@ -234,8 +234,8 @@ int SimpleCacheDumper::DoReadBodyComplete(int rv) {
 }
 
 int SimpleCacheDumper::DoWriteBody() {
-  int rv = writer_->WriteEntry(dst_entry_, 1, 0, buf_, buf_->size(),
-                               io_callback_);
+  int rv = writer_->WriteEntry(
+      dst_entry_, 1, 0, buf_.get(), buf_->size(), io_callback_);
   if (rv == 0)
     return ERR_FAILED;
 

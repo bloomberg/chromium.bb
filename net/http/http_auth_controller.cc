@@ -251,7 +251,7 @@ int HttpAuthController::HandleAuthChallenge(
     bool establishing_tunnel,
     const BoundNetLog& net_log) {
   DCHECK(CalledOnValidThread());
-  DCHECK(headers);
+  DCHECK(headers.get());
   DCHECK(auth_origin_.is_valid());
   VLOG(1) << "The " << HttpAuth::GetAuthTargetString(target_) << " "
           << auth_origin_ << " requested auth "
@@ -263,8 +263,12 @@ int HttpAuthController::HandleAuthChallenge(
   // case.
   if (HaveAuth()) {
     std::string challenge_used;
-    HttpAuth::AuthorizationResult result = HttpAuth::HandleChallengeResponse(
-        handler_.get(), headers, target_, disabled_schemes_, &challenge_used);
+    HttpAuth::AuthorizationResult result =
+        HttpAuth::HandleChallengeResponse(handler_.get(),
+                                          headers.get(),
+                                          target_,
+                                          disabled_schemes_,
+                                          &challenge_used);
     switch (result) {
       case HttpAuth::AUTHORIZATION_RESULT_ACCEPT:
         break;
@@ -314,8 +318,11 @@ int HttpAuthController::HandleAuthChallenge(
     if (!handler_.get() && can_send_auth) {
       // Find the best authentication challenge that we support.
       HttpAuth::ChooseBestChallenge(http_auth_handler_factory_,
-                                    headers, target_, auth_origin_,
-                                    disabled_schemes_, net_log,
+                                    headers.get(),
+                                    target_,
+                                    auth_origin_,
+                                    disabled_schemes_,
+                                    net_log,
                                     &handler_);
       if (handler_.get())
         HistogramAuthEvent(handler_.get(), AUTH_EVENT_START);

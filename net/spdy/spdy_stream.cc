@@ -397,9 +397,8 @@ int SpdyStream::OnResponseHeadersReceived(const SpdyHeaderBlock& response) {
       // For a request/response stream, we're ready for the response
       // headers once we've finished sending the request headers and
       // the request body (if we have one).
-      if ((io_state_ < STATE_OPEN) ||
-          (send_status_ == MORE_DATA_TO_SEND) ||
-          pending_send_data_)
+      if ((io_state_ < STATE_OPEN) || (send_status_ == MORE_DATA_TO_SEND) ||
+          pending_send_data_.get())
         return ERR_SPDY_PROTOCOL_ERROR;
       break;
 
@@ -596,7 +595,7 @@ int SpdyStream::SendRequestHeaders(scoped_ptr<SpdyHeaderBlock> headers,
   CHECK_NE(type_, SPDY_PUSH_STREAM);
   CHECK_EQ(send_status_, MORE_DATA_TO_SEND);
   CHECK(!request_);
-  CHECK(!pending_send_data_);
+  CHECK(!pending_send_data_.get());
   CHECK_EQ(io_state_, STATE_NONE);
   request_ = headers.Pass();
   send_status_ = send_status;
@@ -610,7 +609,7 @@ void SpdyStream::SendData(IOBuffer* data,
   CHECK_NE(type_, SPDY_PUSH_STREAM);
   CHECK_EQ(send_status_, MORE_DATA_TO_SEND);
   CHECK_GE(io_state_, STATE_SEND_REQUEST_HEADERS_COMPLETE);
-  CHECK(!pending_send_data_);
+  CHECK(!pending_send_data_.get());
   pending_send_data_ = new DrainableIOBuffer(data, length);
   send_status_ = send_status;
   QueueNextDataFrame();
@@ -946,16 +945,17 @@ void SpdyStream::QueueNextDataFrame() {
   // that our stream_id is correct.
   DCHECK_GT(io_state_, STATE_SEND_REQUEST_HEADERS_COMPLETE);
   CHECK_GT(stream_id_, 0u);
-  CHECK(pending_send_data_);
+  CHECK(pending_send_data_.get());
   CHECK_GT(pending_send_data_->BytesRemaining(), 0);
 
   SpdyDataFlags flags =
       (send_status_ == NO_MORE_DATA_TO_SEND) ?
       DATA_FLAG_FIN : DATA_FLAG_NONE;
-  scoped_ptr<SpdyBuffer> data_buffer(session_->CreateDataBuffer(
-      stream_id_,
-      pending_send_data_, pending_send_data_->BytesRemaining(),
-      flags));
+  scoped_ptr<SpdyBuffer> data_buffer(
+      session_->CreateDataBuffer(stream_id_,
+                                 pending_send_data_.get(),
+                                 pending_send_data_->BytesRemaining(),
+                                 flags));
   // We'll get called again by PossiblyResumeIfSendStalled().
   if (!data_buffer)
     return;

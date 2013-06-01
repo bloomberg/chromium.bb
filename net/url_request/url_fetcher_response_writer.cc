@@ -62,10 +62,9 @@ int URLFetcherFileWriter::Initialize(const CompletionCallback& callback) {
   if (file_path_.empty()) {
     base::FilePath* temp_file_path = new base::FilePath;
     base::PostTaskAndReplyWithResult(
-        file_task_runner_,
+        file_task_runner_.get(),
         FROM_HERE,
-        base::Bind(&file_util::CreateTemporaryFile,
-                   temp_file_path),
+        base::Bind(&file_util::CreateTemporaryFile, temp_file_path),
         base::Bind(&URLFetcherFileWriter::DidCreateTempFile,
                    weak_factory_.GetWeakPtr(),
                    callback,

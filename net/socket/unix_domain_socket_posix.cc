@@ -151,7 +151,7 @@ void UnixDomainSocket::Accept() {
       new UnixDomainSocket(conn, socket_delegate_, auth_callback_));
   // It's up to the delegate to AddRef if it wants to keep it around.
   sock->WatchSocket(WAITING_READ);
-  socket_delegate_->DidAccept(this, sock);
+  socket_delegate_->DidAccept(this, sock.get());
 }
 
 UnixDomainSocketFactory::UnixDomainSocketFactory(

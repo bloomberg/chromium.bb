@@ -22,7 +22,7 @@ HttpServer::HttpServer(const StreamListenSocketFactory& factory,
                        HttpServer::Delegate* delegate)
     : delegate_(delegate),
       server_(factory.CreateAndListen(this)) {
-  DCHECK(server_);
+  DCHECK(server_.get());
 }
 
 void HttpServer::AcceptWebSocket(
@@ -76,7 +76,7 @@ void HttpServer::Close(int connection_id) {
 
   // Initiating close from server-side does not lead to the DidClose call.
   // Do it manually here.
-  DidClose(connection->socket_);
+  DidClose(connection->socket_.get());
 }
 
 int HttpServer::GetLocalAddress(IPEndPoint* address) {
@@ -142,7 +142,7 @@ void HttpServer::DidClose(StreamListenSocket* socket) {
   HttpConnection* connection = FindConnection(socket);
   DCHECK(connection != NULL);
   id_to_connection_.erase(connection->id());
-  socket_to_connection_.erase(connection->socket_);
+  socket_to_connection_.erase(connection->socket_.get());
   delete connection;
 }
 

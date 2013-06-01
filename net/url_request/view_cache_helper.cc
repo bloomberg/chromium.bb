@@ -288,7 +288,10 @@ int ViewCacheHelper::DoReadResponse() {
 
   buf_ = new IOBuffer(buf_len_);
   return entry_->ReadData(
-      0, 0, buf_, buf_len_,
+      0,
+      0,
+      buf_.get(),
+      buf_len_,
       base::Bind(&ViewCacheHelper::OnIOComplete, weak_factory_.GetWeakPtr()));
 }
 
@@ -296,9 +299,9 @@ int ViewCacheHelper::DoReadResponseComplete(int result) {
   if (result && result == buf_len_) {
     HttpResponseInfo response;
     bool truncated;
-    if (HttpCache::ParseResponseInfo(buf_->data(), buf_len_, &response,
-                                          &truncated) &&
-        response.headers) {
+    if (HttpCache::ParseResponseInfo(
+            buf_->data(), buf_len_, &response, &truncated) &&
+        response.headers.get()) {
       if (truncated)
         data_->append("<pre>RESPONSE_INFO_TRUNCATED</pre>");
 
@@ -333,7 +336,10 @@ int ViewCacheHelper::DoReadData() {
 
   buf_ = new IOBuffer(buf_len_);
   return entry_->ReadData(
-      index_, 0, buf_, buf_len_,
+      index_,
+      0,
+      buf_.get(),
+      buf_len_,
       base::Bind(&ViewCacheHelper::OnIOComplete, weak_factory_.GetWeakPtr()));
 }
 

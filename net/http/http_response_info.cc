@@ -183,7 +183,7 @@ bool HttpResponseInfo::InitFromPickle(const Pickle& pickle,
   if (flags & RESPONSE_INFO_HAS_CERT) {
     X509Certificate::PickleType type = GetPickleTypeForVersion(version);
     ssl_info.cert = X509Certificate::CreateFromPickle(pickle, &iter, type);
-    if (!ssl_info.cert)
+    if (!ssl_info.cert.get())
       return false;
   }
   if (flags & RESPONSE_INFO_HAS_CERT_STATUS) {

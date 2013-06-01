@@ -680,7 +680,7 @@ void HttpPipelinedConnectionImpl::GetSSLCertRequestInfo(
 
 void HttpPipelinedConnectionImpl::Drain(HttpPipelinedStream* stream,
                                         HttpNetworkSession* session) {
-  HttpResponseHeaders* headers = stream->GetResponseInfo()->headers;
+  HttpResponseHeaders* headers = stream->GetResponseInfo()->headers.get();
   if (!stream->CanFindEndOfResponse() || headers->IsChunkEncoded() ||
       !usable_) {
     // TODO(simonjam): Drain chunk-encoded responses if they're relatively

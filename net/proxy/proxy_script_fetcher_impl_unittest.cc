@@ -65,8 +65,7 @@ class RequestContext : public URLRequestContext {
     scoped_refptr<HttpNetworkSession> network_session(
         new HttpNetworkSession(params));
     storage_.set_http_transaction_factory(new HttpCache(
-        network_session,
-        HttpCache::DefaultBackend::InMemory(0)));
+        network_session.get(), HttpCache::DefaultBackend::InMemory(0)));
     URLRequestJobFactoryImpl* job_factory = new URLRequestJobFactoryImpl();
     job_factory->SetProtocolHandler("file", new FileProtocolHandler());
     storage_.set_job_factory(job_factory);

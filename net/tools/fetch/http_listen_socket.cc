@@ -31,7 +31,7 @@ void HttpListenSocket::Accept() {
     scoped_refptr<HttpListenSocket> sock(
         new HttpListenSocket(conn, delegate_));
     // It's up to the delegate to AddRef if it wants to keep it around.
-    DidAccept(this, sock);
+    DidAccept(this, sock.get());
   }
 }
 

@@ -71,13 +71,13 @@ void InternalEntry::Close() {
 bool InternalEntry::WriteKey(LogStoreEntry* entry, const std::string& key) {
   int key_size = static_cast<int>(key.size());
   scoped_refptr<IOBuffer> key_buf(new StringIOBuffer(key));
-  return entry->WriteData(0, 0, key_buf, key_size) == key_size;
+  return entry->WriteData(0, 0, key_buf.get(), key_size) == key_size;
 }
 
 bool InternalEntry::ReadKey(LogStoreEntry* entry, std::string* key) {
   int key_size = entry->GetDataSize(0);
   scoped_refptr<net::IOBuffer> key_buf(new net::IOBuffer(key_size));
-  if (entry->ReadData(0, 0, key_buf, key_size) != key_size)
+  if (entry->ReadData(0, 0, key_buf.get(), key_size) != key_size)
     return false;
   key->assign(key_buf->data(), key_size);
   return true;

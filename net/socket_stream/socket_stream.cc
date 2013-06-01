@@ -218,7 +218,7 @@ bool SocketStream::SendData(const char* data, int len) {
     return false;
 
   int total_buffered_bytes = len;
-  if (current_write_buf_) {
+  if (current_write_buf_.get()) {
     // Since
     // - the purpose of this check is to limit the amount of buffer used by
     //   this instance.
@@ -242,7 +242,7 @@ bool SocketStream::SendData(const char* data, int len) {
   // the loop, and therefore we don't need to enqueue DoLoop(). If b), it's ok
   // to do nothing. If current_write_buf_ is NULL, to make sure DoLoop() is
   // ran soon, enequeue it.
-  if (!current_write_buf_) {
+  if (!current_write_buf_.get()) {
     // Send pending data asynchronously, so that delegate won't be called
     // back before returning from SendData().
     base::MessageLoop::current()->PostTask(
@@ -348,7 +348,7 @@ void SocketStream::DoClose() {
   // the SocketStream.
   // If it's writing now, we should defer the closing after the current
   // writing is completed.
-  if (next_state_ == STATE_READ_WRITE && !current_write_buf_)
+  if (next_state_ == STATE_READ_WRITE && !current_write_buf_.get())
     DoLoop(ERR_ABORTED);
 
   // In other next_state_, we'll wait for callback of other APIs, such as
@@ -393,7 +393,7 @@ int SocketStream::DidEstablishConnection() {
 }
 
 int SocketStream::DidReceiveData(int result) {
-  DCHECK(read_buf_);
+  DCHECK(read_buf_.get());
   DCHECK_GT(result, 0);
   net_log_.AddEvent(NetLog::TYPE_SOCKET_STREAM_RECEIVED);
   int len = result;
@@ -408,7 +408,7 @@ int SocketStream::DidReceiveData(int result) {
 
 void SocketStream::DidSendData(int result) {
   DCHECK_GT(result, 0);
-  DCHECK(current_write_buf_);
+  DCHECK(current_write_buf_.get());
   net_log_.AddEvent(NetLog::TYPE_SOCKET_STREAM_SENT);
 
   int bytes_sent = result;
@@ -440,7 +440,7 @@ void SocketStream::OnReadCompleted(int result) {
     // 0 indicates end-of-file, so socket was closed.
     // Don't close the socket if it's still writing.
     server_closed_ = true;
-  } else if (result > 0 && read_buf_) {
+  } else if (result > 0 && read_buf_.get()) {
     result = DidReceiveData(result);
   }
   DoLoop(result);
@@ -821,7 +821,7 @@ int SocketStream::DoWriteTunnelHeaders() {
   int buf_len = static_cast<int>(tunnel_request_headers_->headers_.size() -
                                  tunnel_request_headers_bytes_sent_);
   DCHECK_GT(buf_len, 0);
-  return socket_->Write(tunnel_request_headers_, buf_len, io_callback_);
+  return socket_->Write(tunnel_request_headers_.get(), buf_len, io_callback_);
 }
 
 int SocketStream::DoWriteTunnelHeadersComplete(int result) {
@@ -864,7 +864,7 @@ int SocketStream::DoReadTunnelHeaders() {
   tunnel_response_headers_->SetDataOffset(tunnel_response_headers_len_);
   CHECK(tunnel_response_headers_->data());
 
-  return socket_->Read(tunnel_response_headers_, buf_len, io_callback_);
+  return socket_->Read(tunnel_response_headers_.get(), buf_len, io_callback_);
 }
 
 int SocketStream::DoReadTunnelHeadersComplete(int result) {
@@ -1104,7 +1104,7 @@ int SocketStream::DoReadWrite(int result) {
   // If client has requested close(), and there's nothing to write, then
   // let's close the socket.
   // We don't care about receiving data after the socket is closed.
-  if (closing_ && !current_write_buf_ && pending_write_bufs_.empty()) {
+  if (closing_ && !current_write_buf_.get() && pending_write_bufs_.empty()) {
     socket_->Disconnect();
     next_state_ = STATE_CLOSE;
     return OK;
@@ -1114,12 +1114,13 @@ int SocketStream::DoReadWrite(int result) {
 
   // If server already closed the socket, we don't try to read.
   if (!server_closed_) {
-    if (!read_buf_) {
+    if (!read_buf_.get()) {
       // No read pending and server didn't close the socket.
       read_buf_ = new IOBuffer(kReadBufferSize);
-      result = socket_->Read(read_buf_, kReadBufferSize,
-                             base::Bind(&SocketStream::OnReadCompleted,
-                                        base::Unretained(this)));
+      result = socket_->Read(
+          read_buf_.get(),
+          kReadBufferSize,
+          base::Bind(&SocketStream::OnReadCompleted, base::Unretained(this)));
       if (result > 0) {
         return DidReceiveData(result);
       } else if (result == 0) {
@@ -1138,28 +1139,27 @@ int SocketStream::DoReadWrite(int result) {
       }
     }
     // Read is pending.
-    DCHECK(read_buf_);
+    DCHECK(read_buf_.get());
   }
 
   if (waiting_for_write_completion_)
     return ERR_IO_PENDING;
 
-  if (!current_write_buf_) {
+  if (!current_write_buf_.get()) {
     if (pending_write_bufs_.empty()) {
       // Nothing buffered for send.
       return ERR_IO_PENDING;
     }
 
-    current_write_buf_ =
-        new DrainableIOBuffer(pending_write_bufs_.front(),
-                              pending_write_bufs_.front()->size());
+    current_write_buf_ = new DrainableIOBuffer(
+        pending_write_bufs_.front().get(), pending_write_bufs_.front()->size());
     pending_write_bufs_.pop_front();
   }
 
-  result = socket_->Write(current_write_buf_,
-                          current_write_buf_->BytesRemaining(),
-                          base::Bind(&SocketStream::OnWriteCompleted,
-                                     base::Unretained(this)));
+  result = socket_->Write(
+      current_write_buf_.get(),
+      current_write_buf_->BytesRemaining(),
+      base::Bind(&SocketStream::OnWriteCompleted, base::Unretained(this)));
 
   if (result == ERR_IO_PENDING) {
     waiting_for_write_completion_ = true;
@@ -1192,7 +1192,7 @@ int SocketStream::HandleCertificateRequest(int result, SSLConfig* ssl_config) {
   scoped_refptr<SSLCertRequestInfo> cert_request_info = new SSLCertRequestInfo;
   SSLClientSocket* ssl_socket =
       static_cast<SSLClientSocket*>(socket_.get());
-  ssl_socket->GetSSLCertRequestInfo(cert_request_info);
+  ssl_socket->GetSSLCertRequestInfo(cert_request_info.get());
 
   HttpTransactionFactory* factory = context_->http_transaction_factory();
   if (!factory)
@@ -1219,7 +1219,7 @@ int SocketStream::HandleCertificateRequest(int result, SSLConfig* ssl_config) {
   // CertificateRequest message.
   const std::vector<std::string>& cert_authorities =
       cert_request_info->cert_authorities;
-  if (client_cert && !cert_authorities.empty() &&
+  if (client_cert.get() && !cert_authorities.empty() &&
       !client_cert->IsIssuedByEncoded(cert_authorities)) {
     return result;
   }
@@ -1240,8 +1240,8 @@ int SocketStream::AllowCertErrorForReconnection(SSLConfig* ssl_config) {
   SSLClientSocket* ssl_socket = static_cast<SSLClientSocket*>(socket_.get());
   SSLInfo ssl_info;
   ssl_socket->GetSSLInfo(&ssl_info);
-  if (ssl_info.cert == NULL ||
-      ssl_config->IsAllowedBadCert(ssl_info.cert, NULL)) {
+  if (ssl_info.cert.get() == NULL ||
+      ssl_config->IsAllowedBadCert(ssl_info.cert.get(), NULL)) {
     // If we already have the certificate in the set of allowed bad
     // certificates, we did try it and failed again, so we should not
     // retry again: the connection should fail at last.

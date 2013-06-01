@@ -17,8 +17,8 @@ URLRequestContextGetter::~URLRequestContextGetter() {}
 void URLRequestContextGetter::OnDestruct() const {
   scoped_refptr<base::SingleThreadTaskRunner> network_task_runner =
       GetNetworkTaskRunner();
-  DCHECK(network_task_runner);
-  if (network_task_runner) {
+  DCHECK(network_task_runner.get());
+  if (network_task_runner.get()) {
     if (network_task_runner->BelongsToCurrentThread()) {
       delete this;
     } else {

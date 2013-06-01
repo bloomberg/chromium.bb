@@ -135,7 +135,7 @@ URLRequestTestJob::~URLRequestTestJob() {
 
 bool URLRequestTestJob::GetMimeType(std::string* mime_type) const {
   DCHECK(mime_type);
-  if (!response_headers_)
+  if (!response_headers_.get())
     return false;
   return response_headers_->GetMimeType(mime_type);
 }
@@ -153,7 +153,7 @@ void URLRequestTestJob::Start() {
 }
 
 void URLRequestTestJob::StartAsync() {
-  if (!response_headers_) {
+  if (!response_headers_.get()) {
     response_headers_ = new HttpResponseHeaders(test_headers());
     if (request_->url().spec() == test_url_1().spec()) {
       response_data_ = test_data_1();
@@ -209,7 +209,7 @@ bool URLRequestTestJob::ReadRawData(IOBuffer* buf, int buf_size,
 }
 
 void URLRequestTestJob::GetResponseInfo(HttpResponseInfo* info) {
-  if (response_headers_)
+  if (response_headers_.get())
     info->headers = response_headers_;
 }
 
@@ -225,14 +225,14 @@ void URLRequestTestJob::GetLoadTimingInfo(
 }
 
 int URLRequestTestJob::GetResponseCode() const {
-  if (response_headers_)
+  if (response_headers_.get())
     return response_headers_->response_code();
   return -1;
 }
 
 bool URLRequestTestJob::IsRedirectResponse(GURL* location,
                                            int* http_status_code) {
-  if (!response_headers_)
+  if (!response_headers_.get())
     return false;
 
   std::string value;

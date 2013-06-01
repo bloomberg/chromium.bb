@@ -107,7 +107,9 @@ class NET_EXPORT URLRequestContext
   }
 
   // Get the ssl config service for this context.
-  SSLConfigService* ssl_config_service() const { return ssl_config_service_; }
+  SSLConfigService* ssl_config_service() const {
+    return ssl_config_service_.get();
+  }
   void set_ssl_config_service(SSLConfigService* service) {
     ssl_config_service_ = service;
   }

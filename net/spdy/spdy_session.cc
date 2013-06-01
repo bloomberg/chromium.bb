@@ -244,8 +244,8 @@ int SpdyStreamRequest::StartRequest(
     RequestPriority priority,
     const BoundNetLog& net_log,
     const CompletionCallback& callback) {
-  DCHECK(session);
-  DCHECK(!session_);
+  DCHECK(session.get());
+  DCHECK(!session_.get());
   DCHECK(!stream_);
   DCHECK(callback_.is_null());
 
@@ -266,7 +266,7 @@ int SpdyStreamRequest::StartRequest(
 }
 
 void SpdyStreamRequest::CancelRequest() {
-  if (session_)
+  if (session_.get())
     session_->CancelStreamRequest(this);
   Reset();
 }
@@ -281,7 +281,7 @@ base::WeakPtr<SpdyStream> SpdyStreamRequest::ReleaseStream() {
 
 void SpdyStreamRequest::OnRequestCompleteSuccess(
     base::WeakPtr<SpdyStream>* stream) {
-  DCHECK(session_);
+  DCHECK(session_.get());
   DCHECK(!stream_);
   DCHECK(!callback_.is_null());
   CompletionCallback callback = callback_;
@@ -292,7 +292,7 @@ void SpdyStreamRequest::OnRequestCompleteSuccess(
 }
 
 void SpdyStreamRequest::OnRequestCompleteFailure(int rv) {
-  DCHECK(session_);
+  DCHECK(session_.get());
   DCHECK(!stream_);
   DCHECK(!callback_.is_null());
   CompletionCallback callback = callback_;
@@ -1200,7 +1200,7 @@ void SpdySession::WriteSocket() {
     // it's okay to use GetIOBufferForRemainingData() since the socket
     // doesn't use the IOBuffer past OnWriteComplete().
     int rv = connection_->socket()->Write(
-        write_io_buffer,
+        write_io_buffer.get(),
         in_flight_write_->GetRemainingSize(),
         base::Bind(&SpdySession::OnWriteComplete, weak_factory_.GetWeakPtr()));
     // Avoid persisting |write_io_buffer| past |in_flight_write_|'s

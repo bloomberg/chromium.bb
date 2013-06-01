@@ -70,12 +70,11 @@ void FileStream::Context::OpenAsync(const base::FilePath& path,
   BeginOpenEvent(path);
 
   const bool posted = base::PostTaskAndReplyWithResult(
-      base::WorkerPool::GetTaskRunner(true /* task_is_slow */),
+      base::WorkerPool::GetTaskRunner(true /* task_is_slow */).get(),
       FROM_HERE,
-      base::Bind(&Context::OpenFileImpl,
-                 base::Unretained(this), path, open_flags),
-      base::Bind(&Context::OnOpenCompleted,
-                 base::Unretained(this), callback));
+      base::Bind(
+          &Context::OpenFileImpl, base::Unretained(this), path, open_flags),
+      base::Bind(&Context::OnOpenCompleted, base::Unretained(this), callback));
   DCHECK(posted);
 
   async_in_progress_ = true;
@@ -113,12 +112,14 @@ void FileStream::Context::SeekAsync(Whence whence,
   DCHECK(!async_in_progress_);
 
   const bool posted = base::PostTaskAndReplyWithResult(
-      base::WorkerPool::GetTaskRunner(true /* task is slow */),
+      base::WorkerPool::GetTaskRunner(true /* task is slow */).get(),
       FROM_HERE,
-      base::Bind(&Context::SeekFileImpl,
-                 base::Unretained(this), whence, offset),
+      base::Bind(
+          &Context::SeekFileImpl, base::Unretained(this), whence, offset),
       base::Bind(&Context::ProcessAsyncResult,
-                 base::Unretained(this), callback, FILE_ERROR_SOURCE_SEEK));
+                 base::Unretained(this),
+                 callback,
+                 FILE_ERROR_SOURCE_SEEK));
   DCHECK(posted);
 
   async_in_progress_ = true;
@@ -134,12 +135,12 @@ void FileStream::Context::FlushAsync(const CompletionCallback& callback) {
   DCHECK(!async_in_progress_);
 
   const bool posted = base::PostTaskAndReplyWithResult(
-      base::WorkerPool::GetTaskRunner(true /* task is slow */),
+      base::WorkerPool::GetTaskRunner(true /* task is slow */).get(),
       FROM_HERE,
-      base::Bind(&Context::FlushFileImpl,
-                 base::Unretained(this)),
+      base::Bind(&Context::FlushFileImpl, base::Unretained(this)),
       base::Bind(&Context::ProcessAsyncResult,
-                 base::Unretained(this), IntToInt64(callback),
+                 base::Unretained(this),
+                 IntToInt64(callback),
                  FILE_ERROR_SOURCE_FLUSH));
   DCHECK(posted);
 

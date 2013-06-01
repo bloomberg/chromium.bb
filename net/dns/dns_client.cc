@@ -36,7 +36,7 @@ class DnsClientImpl : public DnsClient {
                                 socket_pool.Pass(),
                                 base::Bind(&base::RandInt),
                                 net_log_);
-      factory_ = DnsTransactionFactory::CreateFactory(session_);
+      factory_ = DnsTransactionFactory::CreateFactory(session_.get());
     }
   }
 

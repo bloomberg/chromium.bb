@@ -135,14 +135,14 @@ TestURLRequest::~TestURLRequest() {
 TestURLRequestContextGetter::TestURLRequestContextGetter(
     const scoped_refptr<base::SingleThreadTaskRunner>& network_task_runner)
     : network_task_runner_(network_task_runner) {
-  DCHECK(network_task_runner_);
+  DCHECK(network_task_runner_.get());
 }
 
 TestURLRequestContextGetter::TestURLRequestContextGetter(
     const scoped_refptr<base::SingleThreadTaskRunner>& network_task_runner,
     scoped_ptr<TestURLRequestContext> context)
     : network_task_runner_(network_task_runner), context_(context.Pass()) {
-  DCHECK(network_task_runner_);
+  DCHECK(network_task_runner_.get());
 }
 
 TestURLRequestContextGetter::~TestURLRequestContextGetter() {}
@@ -234,7 +234,7 @@ void TestDelegate::OnResponseStarted(URLRequest* request) {
   } else {
     // Initiate the first read.
     int bytes_read = 0;
-    if (request->Read(buf_, kBufferSize, &bytes_read))
+    if (request->Read(buf_.get(), kBufferSize, &bytes_read))
       OnReadCompleted(request, bytes_read);
     else if (!request->status().is_io_pending())
       OnResponseCompleted(request);
@@ -262,7 +262,7 @@ void TestDelegate::OnReadCompleted(URLRequest* request, int bytes_read) {
   // If it was not end of stream, request to read more.
   if (request->status().is_success() && bytes_read > 0) {
     bytes_read = 0;
-    while (request->Read(buf_, kBufferSize, &bytes_read)) {
+    while (request->Read(buf_.get(), kBufferSize, &bytes_read)) {
       if (bytes_read > 0) {
         data_received_.append(buf_->data(), bytes_read);
         received_bytes_count_ += bytes_read;

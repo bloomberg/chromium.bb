@@ -277,23 +277,22 @@ ClientSocketPoolManagerImpl::GetSocketPoolForHTTPProxy(
   DCHECK(tcp_https_ret.second);
 
   std::pair<SSLSocketPoolMap::iterator, bool> ssl_https_ret =
-      ssl_socket_pools_for_https_proxies_.insert(
-          std::make_pair(
-              http_proxy,
-              new SSLClientSocketPool(
-                  max_sockets_per_proxy_server(pool_type_),
-                  max_sockets_per_group(pool_type_),
-                  &ssl_for_https_proxy_pool_histograms_,
-                  host_resolver_,
-                  cert_verifier_,
-                  server_bound_cert_service_,
-                  transport_security_state_,
-                  ssl_session_cache_shard_,
-                  socket_factory_,
-                  tcp_https_ret.first->second /* https proxy */,
-                  NULL /* no socks proxy */,
-                  NULL /* no http proxy */,
-                  ssl_config_service_, net_log_)));
+      ssl_socket_pools_for_https_proxies_.insert(std::make_pair(
+          http_proxy,
+          new SSLClientSocketPool(max_sockets_per_proxy_server(pool_type_),
+                                  max_sockets_per_group(pool_type_),
+                                  &ssl_for_https_proxy_pool_histograms_,
+                                  host_resolver_,
+                                  cert_verifier_,
+                                  server_bound_cert_service_,
+                                  transport_security_state_,
+                                  ssl_session_cache_shard_,
+                                  socket_factory_,
+                                  tcp_https_ret.first->second /* https proxy */,
+                                  NULL /* no socks proxy */,
+                                  NULL /* no http proxy */,
+                                  ssl_config_service_.get(),
+                                  net_log_)));
   DCHECK(tcp_https_ret.second);
 
   std::pair<HTTPProxySocketPoolMap::iterator, bool> ret =
@@ -332,7 +331,7 @@ SSLClientSocketPool* ClientSocketPoolManagerImpl::GetSocketPoolForSSLWithProxy(
       NULL, /* no tcp pool, we always go through a proxy */
       GetSocketPoolForSOCKSProxy(proxy_server),
       GetSocketPoolForHTTPProxy(proxy_server),
-      ssl_config_service_,
+      ssl_config_service_.get(),
       net_log_);
 
   std::pair<SSLSocketPoolMap::iterator, bool> ret =

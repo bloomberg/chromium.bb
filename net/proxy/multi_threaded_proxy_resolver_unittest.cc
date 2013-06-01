@@ -87,7 +87,7 @@ class MockProxyResolver : public ProxyResolver {
   int request_count() const { return request_count_; }
 
   const ProxyResolverScriptData* last_script_data() const {
-    return last_script_data_;
+    return last_script_data_.get();
   }
 
   void SetResolveLatency(base::TimeDelta latency) {

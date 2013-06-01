@@ -47,7 +47,7 @@ bool TestRootCerts::AddFromFile(const base::FilePath& file) {
   if (root_certs.empty() || root_certs.size() > 1)
     return false;
 
-  return Add(root_certs.front());
+  return Add(root_certs.front().get());
 }
 
 TestRootCerts::TestRootCerts() {
@@ -66,7 +66,7 @@ ScopedTestRoot::~ScopedTestRoot() {
 }
 
 void ScopedTestRoot::Reset(X509Certificate* cert) {
-  if (cert_)
+  if (cert_.get())
     TestRootCerts::GetInstance()->Clear();
   if (cert)
     TestRootCerts::GetInstance()->Add(cert);

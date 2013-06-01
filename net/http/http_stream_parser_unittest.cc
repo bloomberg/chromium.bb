@@ -225,8 +225,8 @@ TEST(HttpStreamParser, AsyncChunkAndAsyncSocket) {
   request_info.upload_data_stream = &upload_stream;
 
   scoped_refptr<GrowableIOBuffer> read_buffer(new GrowableIOBuffer);
-  HttpStreamParser parser(socket_handle.get(), &request_info, read_buffer,
-                          BoundNetLog());
+  HttpStreamParser parser(
+      socket_handle.get(), &request_info, read_buffer.get(), BoundNetLog());
 
   HttpRequestHeaders request_headers;
   request_headers.SetHeader("Host", "localhost");
@@ -292,7 +292,8 @@ TEST(HttpStreamParser, AsyncChunkAndAsyncSocket) {
 
   // Finally, attempt to read the response body.
   scoped_refptr<IOBuffer> body_buffer(new IOBuffer(kBodySize));
-  rv = parser.ReadResponseBody(body_buffer, kBodySize, callback.callback());
+  rv = parser.ReadResponseBody(
+      body_buffer.get(), kBodySize, callback.callback());
   ASSERT_EQ(ERR_IO_PENDING, rv);
   data.RunFor(1);
 
@@ -382,8 +383,8 @@ TEST(HttpStreamParser, TruncatedHeaders) {
       request_info.load_flags = LOAD_NORMAL;
 
       scoped_refptr<GrowableIOBuffer> read_buffer(new GrowableIOBuffer);
-      HttpStreamParser parser(socket_handle.get(), &request_info, read_buffer,
-                              BoundNetLog());
+      HttpStreamParser parser(
+          socket_handle.get(), &request_info, read_buffer.get(), BoundNetLog());
 
       HttpRequestHeaders request_headers;
       HttpResponseInfo response_info;

@@ -95,7 +95,7 @@ NextProto HttpProxyClientSocket::GetProtocolNegotiated() const {
 }
 
 const HttpResponseInfo* HttpProxyClientSocket::GetConnectResponseInfo() const {
-  return response_.headers ? &response_ : NULL;
+  return response_.headers.get() ? &response_ : NULL;
 }
 
 HttpStream* HttpProxyClientSocket::CreateConnectResponseStream() {
@@ -414,8 +414,8 @@ int HttpProxyClientSocket::DoSendRequest() {
   }
 
   parser_buf_ = new GrowableIOBuffer();
-  http_stream_parser_.reset(
-      new HttpStreamParser(transport_.get(), &request_, parser_buf_, net_log_));
+  http_stream_parser_.reset(new HttpStreamParser(
+      transport_.get(), &request_, parser_buf_.get(), net_log_));
   return http_stream_parser_->SendRequest(
       request_line_, request_headers_, &response_, io_callback_);
 }
@@ -478,7 +478,7 @@ int HttpProxyClientSocket::DoReadHeadersComplete(int result) {
       // authentication code is smart enough to avoid being tricked by an
       // active network attacker.
       // The next state is intentionally not set as it should be STATE_NONE;
-      return HandleProxyAuthChallenge(auth_, &response_, net_log_);
+      return HandleProxyAuthChallenge(auth_.get(), &response_, net_log_);
 
     default:
       // Ignore response to avoid letting the proxy impersonate the target
@@ -493,11 +493,11 @@ int HttpProxyClientSocket::DoReadHeadersComplete(int result) {
 }
 
 int HttpProxyClientSocket::DoDrainBody() {
-  DCHECK(drain_buf_);
+  DCHECK(drain_buf_.get());
   DCHECK(transport_->is_initialized());
   next_state_ = STATE_DRAIN_BODY_COMPLETE;
-  return http_stream_parser_->ReadResponseBody(drain_buf_, kDrainBodyBufferSize,
-                                               io_callback_);
+  return http_stream_parser_->ReadResponseBody(
+      drain_buf_.get(), kDrainBodyBufferSize, io_callback_);
 }
 
 int HttpProxyClientSocket::DoDrainBodyComplete(int result) {

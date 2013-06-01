@@ -327,7 +327,8 @@ void UDPSocketLibevent::DoWriteCallback(int rv) {
 }
 
 void UDPSocketLibevent::DidCompleteRead() {
-  int result = InternalRecvFrom(read_buf_, read_buf_len_, recv_from_address_);
+  int result =
+      InternalRecvFrom(read_buf_.get(), read_buf_len_, recv_from_address_);
   if (result != ERR_IO_PENDING) {
     read_buf_ = NULL;
     read_buf_len_ = 0;
@@ -378,8 +379,8 @@ int UDPSocketLibevent::CreateSocket(const IPEndPoint& address) {
 }
 
 void UDPSocketLibevent::DidCompleteWrite() {
-  int result = InternalSendTo(write_buf_, write_buf_len_,
-                              send_to_address_.get());
+  int result =
+      InternalSendTo(write_buf_.get(), write_buf_len_, send_to_address_.get());
 
   if (result != ERR_IO_PENDING) {
     write_buf_ = NULL;

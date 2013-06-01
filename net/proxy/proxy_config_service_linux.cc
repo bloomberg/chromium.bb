@@ -234,7 +234,7 @@ class SettingGetterImplGConf : public ProxyConfigServiceLinux::SettingGetter {
                     base::MessageLoopForIO* file_loop) OVERRIDE {
     DCHECK(glib_thread_task_runner->BelongsToCurrentThread());
     DCHECK(!client_);
-    DCHECK(!task_runner_);
+    DCHECK(!task_runner_.get());
     task_runner_ = glib_thread_task_runner;
     client_ = gconf_client_get_default();
     if (!client_) {
@@ -317,7 +317,7 @@ class SettingGetterImplGConf : public ProxyConfigServiceLinux::SettingGetter {
   }
 
   virtual base::SingleThreadTaskRunner* GetNotificationTaskRunner() OVERRIDE {
-    return task_runner_;
+    return task_runner_.get();
   }
 
   virtual ProxyConfigSource GetConfigSource() OVERRIDE {
@@ -562,7 +562,7 @@ class SettingGetterImplGSettings
                     base::MessageLoopForIO* file_loop) OVERRIDE {
     DCHECK(glib_thread_task_runner->BelongsToCurrentThread());
     DCHECK(!client_);
-    DCHECK(!task_runner_);
+    DCHECK(!task_runner_.get());
 
     if (!SchemaExists("org.gnome.system.proxy") ||
         !(client_ = libgio_loader_.g_settings_new("org.gnome.system.proxy"))) {
@@ -619,7 +619,7 @@ class SettingGetterImplGSettings
   }
 
   virtual base::SingleThreadTaskRunner* GetNotificationTaskRunner() OVERRIDE {
-    return task_runner_;
+    return task_runner_.get();
   }
 
   virtual ProxyConfigSource GetConfigSource() OVERRIDE {
@@ -1562,7 +1562,7 @@ void ProxyConfigServiceLinux::Delegate::SetUpAndFetchInitialConfig(
   // then we don't set up proxy setting change notifications. This
   // should not be the usual case but is intended to simplify test
   // setups.
-  if (!io_thread_task_runner_ || !file_loop)
+  if (!io_thread_task_runner_.get() || !file_loop)
     VLOG(1) << "Monitoring of proxy setting changes is disabled";
 
   // Fetch and cache the current proxy config. The config is left in
@@ -1607,7 +1607,7 @@ void ProxyConfigServiceLinux::Delegate::SetUpAndFetchInitialConfig(
     if (io_thread_task_runner && file_loop) {
       scoped_refptr<base::SingleThreadTaskRunner> required_loop =
           setting_getter_->GetNotificationTaskRunner();
-      if (!required_loop || required_loop->BelongsToCurrentThread()) {
+      if (!required_loop.get() || required_loop->BelongsToCurrentThread()) {
         // In this case we are already on an acceptable thread.
         SetUpNotifications();
       } else {
@@ -1636,7 +1636,7 @@ void ProxyConfigServiceLinux::Delegate::SetUpAndFetchInitialConfig(
 void ProxyConfigServiceLinux::Delegate::SetUpNotifications() {
   scoped_refptr<base::SingleThreadTaskRunner> required_loop =
       setting_getter_->GetNotificationTaskRunner();
-  DCHECK(!required_loop || required_loop->BelongsToCurrentThread());
+  DCHECK(!required_loop.get() || required_loop->BelongsToCurrentThread());
   if (!setting_getter_->SetUpNotifications(this))
     LOG(ERROR) << "Unable to set up proxy configuration change notifications";
 }
@@ -1653,7 +1653,7 @@ ProxyConfigService::ConfigAvailability
     ProxyConfigServiceLinux::Delegate::GetLatestProxyConfig(
         ProxyConfig* config) {
   // This is called from the IO thread.
-  DCHECK(!io_thread_task_runner_ ||
+  DCHECK(!io_thread_task_runner_.get() ||
          io_thread_task_runner_->BelongsToCurrentThread());
 
   // Simply return the last proxy configuration that glib_default_loop
@@ -1678,7 +1678,7 @@ ProxyConfigService::ConfigAvailability
 void ProxyConfigServiceLinux::Delegate::OnCheckProxyConfigSettings() {
   scoped_refptr<base::SingleThreadTaskRunner> required_loop =
       setting_getter_->GetNotificationTaskRunner();
-  DCHECK(!required_loop || required_loop->BelongsToCurrentThread());
+  DCHECK(!required_loop.get() || required_loop->BelongsToCurrentThread());
   ProxyConfig new_config;
   bool valid = GetConfigFromSettings(&new_config);
   if (valid)
@@ -1714,7 +1714,7 @@ void ProxyConfigServiceLinux::Delegate::PostDestroyTask() {
     return;
   scoped_refptr<base::SingleThreadTaskRunner> shutdown_loop =
       setting_getter_->GetNotificationTaskRunner();
-  if (!shutdown_loop || shutdown_loop->BelongsToCurrentThread()) {
+  if (!shutdown_loop.get() || shutdown_loop->BelongsToCurrentThread()) {
     // Already on the right thread, call directly.
     // This is the case for the unittests.
     OnDestroy();
@@ -1728,7 +1728,7 @@ void ProxyConfigServiceLinux::Delegate::PostDestroyTask() {
 void ProxyConfigServiceLinux::Delegate::OnDestroy() {
   scoped_refptr<base::SingleThreadTaskRunner> shutdown_loop =
       setting_getter_->GetNotificationTaskRunner();
-  DCHECK(!shutdown_loop || shutdown_loop->BelongsToCurrentThread());
+  DCHECK(!shutdown_loop.get() || shutdown_loop->BelongsToCurrentThread());
   setting_getter_->ShutDown();
 }
 

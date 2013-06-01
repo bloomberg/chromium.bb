@@ -98,9 +98,9 @@ URLFetcherCore::URLFetcherCore(URLFetcher* fetcher,
 }
 
 void URLFetcherCore::Start() {
-  DCHECK(delegate_task_runner_);
-  DCHECK(request_context_getter_) << "We need an URLRequestContext!";
-  if (network_task_runner_) {
+  DCHECK(delegate_task_runner_.get());
+  DCHECK(request_context_getter_.get()) << "We need an URLRequestContext!";
+  if (network_task_runner_.get()) {
     DCHECK_EQ(network_task_runner_,
               request_context_getter_->GetNetworkTaskRunner());
   } else {
@@ -113,7 +113,7 @@ void URLFetcherCore::Start() {
 }
 
 void URLFetcherCore::Stop() {
-  if (delegate_task_runner_)  // May be NULL in tests.
+  if (delegate_task_runner_.get())  // May be NULL in tests.
     DCHECK(delegate_task_runner_->BelongsToCurrentThread());
 
   delegate_ = NULL;
@@ -183,7 +183,7 @@ void URLFetcherCore::SetChunkedUpload(const std::string& content_type) {
 
 void URLFetcherCore::AppendChunkToUpload(const std::string& content,
                                          bool is_last_chunk) {
-  DCHECK(delegate_task_runner_);
+  DCHECK(delegate_task_runner_.get());
   DCHECK(network_task_runner_.get());
   network_task_runner_->PostTask(
       FROM_HERE,
@@ -220,7 +220,7 @@ void URLFetcherCore::GetExtraRequestHeaders(
 
 void URLFetcherCore::SetRequestContext(
     URLRequestContextGetter* request_context_getter) {
-  DCHECK(!request_context_getter_);
+  DCHECK(!request_context_getter_.get());
   DCHECK(request_context_getter);
   request_context_getter_ = request_context_getter;
 }
@@ -281,7 +281,7 @@ void URLFetcherCore::SaveResponseToTemporaryFile(
 }
 
 HttpResponseHeaders* URLFetcherCore::GetResponseHeaders() const {
-  return response_headers_;
+  return response_headers_.get();
 }
 
 // TODO(panayiotis): socket_address_ is written in the IO thread,
@@ -431,14 +431,15 @@ void URLFetcherCore::OnReadCompleted(URLRequest* request,
     InformDelegateDownloadProgress();
     InformDelegateDownloadDataIfNecessary(bytes_read);
 
-    const int result = WriteBuffer(new DrainableIOBuffer(buffer_, bytes_read));
+    const int result =
+        WriteBuffer(new DrainableIOBuffer(buffer_.get(), bytes_read));
     if (result < 0) {
       // Write failed or waiting for write completion.
       if (result == ERR_IO_PENDING)
         waiting_on_write = true;
       break;
     }
-  } while (request_->Read(buffer_, kBufferSize, &bytes_read));
+  } while (request_->Read(buffer_.get(), kBufferSize, &bytes_read));
 
   const URLRequestStatus status = request_->status();
 
@@ -524,7 +525,7 @@ void URLFetcherCore::StartURLRequest() {
     return;
   }
 
-  DCHECK(request_context_getter_);
+  DCHECK(request_context_getter_.get());
   DCHECK(!request_.get());
 
   g_registry.Get().AddURLFetcherCore(this);
@@ -572,12 +573,12 @@ void URLFetcherCore::StartURLRequest() {
         request_->set_upload(make_scoped_ptr(
             UploadDataStream::CreateWithReader(reader.Pass(), 0)));
       } else if (!upload_file_path_.empty()) {
-        scoped_ptr<UploadElementReader> reader(new UploadFileElementReader(
-            upload_file_task_runner_,
-            upload_file_path_,
-            upload_range_offset_,
-            upload_range_length_,
-            base::Time()));
+        scoped_ptr<UploadElementReader> reader(
+            new UploadFileElementReader(upload_file_task_runner_.get(),
+                                        upload_file_path_,
+                                        upload_range_offset_,
+                                        upload_range_length_,
+                                        base::Time()));
         request_->set_upload(make_scoped_ptr(
             UploadDataStream::CreateWithReader(reader.Pass(), 0)));
       }
@@ -635,10 +636,10 @@ void URLFetcherCore::StartURLRequestWhenAppropriate() {
   if (was_cancelled_)
     return;
 
-  DCHECK(request_context_getter_);
+  DCHECK(request_context_getter_.get());
 
   int64 delay = 0LL;
-  if (original_url_throttler_entry_ == NULL) {
+  if (original_url_throttler_entry_.get() == NULL) {
     URLRequestThrottlerManager* manager =
         request_context_getter_->GetURLRequestContext()->throttler_manager();
     if (manager) {
@@ -646,7 +647,7 @@ void URLFetcherCore::StartURLRequestWhenAppropriate() {
           manager->RegisterRequestUrl(original_url_);
     }
   }
-  if (original_url_throttler_entry_ != NULL) {
+  if (original_url_throttler_entry_.get() != NULL) {
     delay = original_url_throttler_entry_->ReserveSendingTimeForNextRequest(
         GetBackoffReleaseTime());
   }
@@ -699,7 +700,7 @@ void URLFetcherCore::InformDelegateFetchIsComplete() {
 
 void URLFetcherCore::NotifyMalformedContent() {
   DCHECK(network_task_runner_->BelongsToCurrentThread());
-  if (url_throttler_entry_ != NULL) {
+  if (url_throttler_entry_.get() != NULL) {
     int status_code = response_code_;
     if (status_code == URLFetcher::RESPONSE_CODE_INVALID) {
       // The status code will generally be known by the time clients
@@ -788,12 +789,12 @@ void URLFetcherCore::ReleaseRequest() {
 base::TimeTicks URLFetcherCore::GetBackoffReleaseTime() {
   DCHECK(network_task_runner_->BelongsToCurrentThread());
 
-  if (original_url_throttler_entry_) {
+  if (original_url_throttler_entry_.get()) {
     base::TimeTicks original_url_backoff =
         original_url_throttler_entry_->GetExponentialBackoffReleaseTime();
     base::TimeTicks destination_url_backoff;
-    if (url_throttler_entry_ != NULL &&
-        original_url_throttler_entry_ != url_throttler_entry_) {
+    if (url_throttler_entry_.get() != NULL &&
+        original_url_throttler_entry_.get() != url_throttler_entry_.get()) {
       destination_url_backoff =
           url_throttler_entry_->GetExponentialBackoffReleaseTime();
     }
@@ -823,7 +824,8 @@ void URLFetcherCore::CompleteAddingUploadDataChunk(
 int URLFetcherCore::WriteBuffer(scoped_refptr<DrainableIOBuffer> data) {
   while (data->BytesRemaining() > 0) {
     const int result = response_writer_->Write(
-        data, data->BytesRemaining(),
+        data.get(),
+        data->BytesRemaining(),
         base::Bind(&URLFetcherCore::DidWriteBuffer, this, data));
     if (result < 0)
       return result;
@@ -860,7 +862,7 @@ void URLFetcherCore::ReadResponse() {
   int bytes_read = 0;
   if (request_->status().is_success() &&
       (request_type_ != URLFetcher::HEAD))
-    request_->Read(buffer_, kBufferSize, &bytes_read);
+    request_->Read(buffer_.get(), kBufferSize, &bytes_read);
   OnReadCompleted(request_.get(), bytes_read);
 }
 

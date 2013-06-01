@@ -203,7 +203,8 @@ void TestTransactionConsumer::DidFinish(int result) {
 void TestTransactionConsumer::Read() {
   state_ = READING;
   read_buf_ = new net::IOBuffer(1024);
-  int result = trans_->Read(read_buf_, 1024,
+  int result = trans_->Read(read_buf_.get(),
+                            1024,
                             base::Bind(&TestTransactionConsumer::OnIOComplete,
                                        base::Unretained(this)));
   if (result != net::ERR_IO_PENDING)
@@ -274,7 +275,7 @@ int MockNetworkTransaction::Start(const net::HttpRequestInfo* request,
     response_.response_time = t->response_time;
 
   response_.headers = new net::HttpResponseHeaders(header_data);
-  response_.vary_data.Init(*request, *response_.headers);
+  response_.vary_data.Init(*request, *response_.headers.get());
   response_.ssl_info.cert_status = t->cert_status;
   data_ = resp_data;
 
@@ -426,7 +427,7 @@ int ReadTransaction(net::HttpTransaction* trans, std::string* result) {
   std::string content;
   do {
     scoped_refptr<net::IOBuffer> buf(new net::IOBuffer(256));
-    rv = trans->Read(buf, 256, callback.callback());
+    rv = trans->Read(buf.get(), 256, callback.callback());
     if (rv == net::ERR_IO_PENDING)
       rv = callback.WaitForResult();
 

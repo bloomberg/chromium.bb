@@ -424,15 +424,16 @@ ScopedDefaultHostResolverProc::ScopedDefaultHostResolverProc(
 }
 
 ScopedDefaultHostResolverProc::~ScopedDefaultHostResolverProc() {
-  HostResolverProc* old_proc = HostResolverProc::SetDefault(previous_proc_);
+  HostResolverProc* old_proc =
+      HostResolverProc::SetDefault(previous_proc_.get());
   // The lifetimes of multiple instances must be nested.
   CHECK_EQ(old_proc, current_proc_);
 }
 
 void ScopedDefaultHostResolverProc::Init(HostResolverProc* proc) {
   current_proc_ = proc;
-  previous_proc_ = HostResolverProc::SetDefault(current_proc_);
-  current_proc_->SetLastProc(previous_proc_);
+  previous_proc_ = HostResolverProc::SetDefault(current_proc_.get());
+  current_proc_->SetLastProc(previous_proc_.get());
 }
 
 }  // namespace net

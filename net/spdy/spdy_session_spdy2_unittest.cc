@@ -336,12 +336,13 @@ TEST_F(SpdySessionSpdy2Test, DeleteExpiredPushStreams) {
   (*request_headers)["host"] = "www.google.com";
   (*request_headers)["url"] = "/";
 
-  scoped_ptr<SpdyStream> stream(
-      new SpdyStream(SPDY_REQUEST_RESPONSE_STREAM,
-                     session, std::string(), DEFAULT_PRIORITY,
-                     kSpdyStreamInitialWindowSize,
-                     kSpdyStreamInitialWindowSize,
-                     session->net_log_));
+  scoped_ptr<SpdyStream> stream(new SpdyStream(SPDY_REQUEST_RESPONSE_STREAM,
+                                               session.get(),
+                                               std::string(),
+                                               DEFAULT_PRIORITY,
+                                               kSpdyStreamInitialWindowSize,
+                                               kSpdyStreamInitialWindowSize,
+                                               session->net_log_));
   stream->SendRequestHeaders(request_headers.Pass(), NO_MORE_DATA_TO_SEND);
   SpdyStream* stream_ptr = stream.get();
   session->InsertCreatedStream(stream.Pass());
@@ -929,7 +930,9 @@ void IPPoolingTest(SpdyPoolCloseSessionsType close_sessions_type) {
                                 false,
                                 OnHostResolutionCallback()));
   IPPoolingInitializedSession(test_host_port_pair.ToString(),
-                              transport_params, http_session, session);
+                              transport_params,
+                              http_session.get(),
+                              session.get());
 
   // TODO(rtenneti): MockClientSocket::GetPeerAddress return's 0 as the port
   // number. Fix it to return port 80 and then use GetPeerAddress to AddAlias.
@@ -966,7 +969,9 @@ void IPPoolingTest(SpdyPoolCloseSessionsType close_sessions_type) {
   // Initialize session for host 2.
   session_deps.socket_factory->AddSocketDataProvider(&data);
   IPPoolingInitializedSession(test_hosts[2].key.host_port_pair().ToString(),
-                              transport_params, http_session, session2);
+                              transport_params,
+                              http_session.get(),
+                              session2.get());
 
   // Grab the session to host 1 and verify that it is the same session
   // we got with host 0, and that is a different than host 2's session.
@@ -978,7 +983,9 @@ void IPPoolingTest(SpdyPoolCloseSessionsType close_sessions_type) {
   // Initialize session for host 1.
   session_deps.socket_factory->AddSocketDataProvider(&data);
   IPPoolingInitializedSession(test_hosts[2].key.host_port_pair().ToString(),
-                              transport_params, http_session, session2);
+                              transport_params,
+                              http_session.get(),
+                              session2.get());
 
   // Remove the aliases and observe that we still have a session for host1.
   pool_peer.RemoveAliases(test_hosts[0].key);

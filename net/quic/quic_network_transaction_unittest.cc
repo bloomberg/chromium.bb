@@ -236,7 +236,7 @@ class QuicNetworkTransactionTest : public PlatformTest {
   void CheckWasQuicResponse(const scoped_ptr<HttpNetworkTransaction>& trans) {
     const HttpResponseInfo* response = trans->GetResponseInfo();
     ASSERT_TRUE(response != NULL);
-    ASSERT_TRUE(response->headers != NULL);
+    ASSERT_TRUE(response->headers.get() != NULL);
     EXPECT_EQ("HTTP/1.1 200 OK", response->headers->GetStatusLine());
     EXPECT_TRUE(response->was_fetched_via_spdy);
     EXPECT_TRUE(response->was_npn_negotiated);
@@ -247,7 +247,7 @@ class QuicNetworkTransactionTest : public PlatformTest {
   void CheckWasHttpResponse(const scoped_ptr<HttpNetworkTransaction>& trans) {
     const HttpResponseInfo* response = trans->GetResponseInfo();
     ASSERT_TRUE(response != NULL);
-    ASSERT_TRUE(response->headers != NULL);
+    ASSERT_TRUE(response->headers.get() != NULL);
     EXPECT_EQ("HTTP/1.1 200 OK", response->headers->GetStatusLine());
     EXPECT_FALSE(response->was_fetched_via_spdy);
     EXPECT_FALSE(response->was_npn_negotiated);
@@ -271,7 +271,7 @@ class QuicNetworkTransactionTest : public PlatformTest {
 
   void SendRequestAndExpectHttpResponse(const std::string& expected) {
     scoped_ptr<HttpNetworkTransaction> trans(
-        new HttpNetworkTransaction(DEFAULT_PRIORITY, session_));
+        new HttpNetworkTransaction(DEFAULT_PRIORITY, session_.get()));
     RunTransaction(trans.get());
     CheckWasHttpResponse(trans);
     CheckResponseData(trans.get(), expected);
@@ -279,7 +279,7 @@ class QuicNetworkTransactionTest : public PlatformTest {
 
   void SendRequestAndExpectQuicResponse(const std::string& expected) {
     scoped_ptr<HttpNetworkTransaction> trans(
-        new HttpNetworkTransaction(DEFAULT_PRIORITY, session_));
+        new HttpNetworkTransaction(DEFAULT_PRIORITY, session_.get()));
     RunTransaction(trans.get());
     CheckWasQuicResponse(trans);
     CheckResponseData(trans.get(), expected);
@@ -412,7 +412,7 @@ TEST_F(QuicNetworkTransactionTest, ForceQuicWithErrorConnecting) {
   CreateSession();
 
   scoped_ptr<HttpNetworkTransaction> trans(
-      new HttpNetworkTransaction(DEFAULT_PRIORITY, session_));
+      new HttpNetworkTransaction(DEFAULT_PRIORITY, session_.get()));
   TestCompletionCallback callback;
   int rv = trans->Start(&request_, callback.callback(), net_log_.bound());
   EXPECT_EQ(ERR_IO_PENDING, rv);

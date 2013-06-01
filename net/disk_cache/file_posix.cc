@@ -118,7 +118,7 @@ void FileInFlightIO::PostRead(disk_cache::File *file, void* buf, size_t buf_len,
 
   base::WorkerPool::PostTask(FROM_HERE,
       base::Bind(&FileBackgroundIO::Read, operation.get()), true);
-  OnOperationPosted(operation);
+  OnOperationPosted(operation.get());
 }
 
 void FileInFlightIO::PostWrite(disk_cache::File* file, const void* buf,
@@ -130,7 +130,7 @@ void FileInFlightIO::PostWrite(disk_cache::File* file, const void* buf,
 
   base::WorkerPool::PostTask(FROM_HERE,
       base::Bind(&FileBackgroundIO::Write, operation.get()), true);
-  OnOperationPosted(operation);
+  OnOperationPosted(operation.get());
 }
 
 // Runs on the IO thread.

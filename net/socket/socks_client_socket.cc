@@ -343,7 +343,8 @@ int SOCKSClientSocket::DoHandshakeWrite() {
   memcpy(handshake_buf_->data(), &buffer_[bytes_sent_],
          handshake_buf_len);
   return transport_->socket()->Write(
-      handshake_buf_, handshake_buf_len,
+      handshake_buf_.get(),
+      handshake_buf_len,
       base::Bind(&SOCKSClientSocket::OnIOComplete, base::Unretained(this)));
 }
 
@@ -376,9 +377,10 @@ int SOCKSClientSocket::DoHandshakeRead() {
 
   int handshake_buf_len = kReadHeaderSize - bytes_received_;
   handshake_buf_ = new IOBuffer(handshake_buf_len);
-  return transport_->socket()->Read(handshake_buf_, handshake_buf_len,
-                                    base::Bind(&SOCKSClientSocket::OnIOComplete,
-                                               base::Unretained(this)));
+  return transport_->socket()->Read(
+      handshake_buf_.get(),
+      handshake_buf_len,
+      base::Bind(&SOCKSClientSocket::OnIOComplete, base::Unretained(this)));
 }
 
 int SOCKSClientSocket::DoHandshakeReadComplete(int result) {

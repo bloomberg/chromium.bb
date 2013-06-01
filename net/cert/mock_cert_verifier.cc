@@ -23,7 +23,7 @@ struct MockCertVerifier::Rule {
         result(result),
         rv(rv) {
     DCHECK(cert);
-    DCHECK(result.verified_cert);
+    DCHECK(result.verified_cert.get());
   }
 
   scoped_refptr<X509Certificate> cert;

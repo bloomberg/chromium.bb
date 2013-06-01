@@ -62,14 +62,12 @@ HttpCache* HttpNetworkLayer::GetCache() {
   return NULL;
 }
 
-HttpNetworkSession* HttpNetworkLayer::GetSession() {
-  return session_;
-}
+HttpNetworkSession* HttpNetworkLayer::GetSession() { return session_.get(); }
 
 void HttpNetworkLayer::OnSuspend() {
   suspended_ = true;
 
-  if (session_)
+  if (session_.get())
     session_->CloseIdleConnections();
 }
 

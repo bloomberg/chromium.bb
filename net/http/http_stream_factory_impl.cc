@@ -240,8 +240,11 @@ void HttpStreamFactoryImpl::OnSpdySessionReady(
                       using_spdy,
                       net_log);
     bool use_relative_url = direct || request->url().SchemeIs("https");
-    request->OnStreamReady(NULL, used_ssl_config, used_proxy_info,
-                           new SpdyHttpStream(spdy_session, use_relative_url));
+    request->OnStreamReady(
+        NULL,
+        used_ssl_config,
+        used_proxy_info,
+        new SpdyHttpStream(spdy_session.get(), use_relative_url));
   }
   // TODO(mbelshe): Alert other valid requests.
 }

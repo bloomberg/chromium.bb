@@ -325,7 +325,7 @@ MultiThreadedProxyResolver::Executor::Executor(
 }
 
 void MultiThreadedProxyResolver::Executor::StartJob(Job* job) {
-  DCHECK(!outstanding_job_);
+  DCHECK(!outstanding_job_.get());
   outstanding_job_ = job;
 
   // Run the job. Once it has completed (regardless of whether it was
@@ -355,7 +355,7 @@ void MultiThreadedProxyResolver::Executor::Destroy() {
   }
 
   // Cancel any outstanding job.
-  if (outstanding_job_) {
+  if (outstanding_job_.get()) {
     outstanding_job_->Cancel();
     // Orphan the job (since this executor may be deleted soon).
     outstanding_job_->set_executor(NULL);
@@ -383,7 +383,7 @@ MultiThreadedProxyResolver::Executor::~Executor() {
   DCHECK(!coordinator_) << "Destroy() was not called";
   DCHECK(!thread_.get());
   DCHECK(!resolver_.get());
-  DCHECK(!outstanding_job_);
+  DCHECK(!outstanding_job_.get());
 }
 
 // MultiThreadedProxyResolver --------------------------------------------------
@@ -423,7 +423,7 @@ int MultiThreadedProxyResolver::GetProxyForURL(
   Executor* executor = FindIdleExecutor();
   if (executor) {
     DCHECK_EQ(0u, pending_jobs_.size());
-    executor->StartJob(job);
+    executor->StartJob(job.get());
     return ERR_IO_PENDING;
   }
 
@@ -487,7 +487,7 @@ void MultiThreadedProxyResolver::PurgeMemory() {
   DCHECK(CalledOnValidThread());
   for (ExecutorList::iterator it = executors_.begin();
        it != executors_.end(); ++it) {
-    Executor* executor = *it;
+    Executor* executor = it->get();
     executor->PurgeMemory();
   }
 }
@@ -521,7 +521,7 @@ void MultiThreadedProxyResolver::CheckNoOutstandingUserRequests() const {
 
   for (ExecutorList::const_iterator it = executors_.begin();
        it != executors_.end(); ++it) {
-    const Executor* executor = *it;
+    const Executor* executor = it->get();
     Job* job = executor->outstanding_job();
     // The "has_user_callback()" is to exclude jobs for which the callback
     // has already been invoked, or was not user-initiated (as in the case of
@@ -537,7 +537,7 @@ void MultiThreadedProxyResolver::ReleaseAllExecutors() {
   DCHECK(CalledOnValidThread());
   for (ExecutorList::iterator it = executors_.begin();
        it != executors_.end(); ++it) {
-    Executor* executor = *it;
+    Executor* executor = it->get();
     executor->Destroy();
   }
   executors_.clear();
@@ -548,7 +548,7 @@ MultiThreadedProxyResolver::FindIdleExecutor() {
   DCHECK(CalledOnValidThread());
   for (ExecutorList::iterator it = executors_.begin();
        it != executors_.end(); ++it) {
-    Executor* executor = *it;
+    Executor* executor = it->get();
     if (!executor->outstanding_job())
       return executor;
   }
@@ -577,7 +577,7 @@ void MultiThreadedProxyResolver::OnExecutorReady(Executor* executor) {
   // to the executor.
   scoped_refptr<Job> job = pending_jobs_.front();
   pending_jobs_.pop_front();
-  executor->StartJob(job);
+  executor->StartJob(job.get());
 }
 
 }  // namespace net

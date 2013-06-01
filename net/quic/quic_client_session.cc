@@ -167,7 +167,8 @@ void QuicClientSession::StartReading() {
     return;
   }
   read_pending_ = true;
-  int rv = socket_->Read(read_buffer_, read_buffer_->size(),
+  int rv = socket_->Read(read_buffer_.get(),
+                         read_buffer_->size(),
                          base::Bind(&QuicClientSession::OnReadComplete,
                                     weak_factory_.GetWeakPtr()));
   if (rv == ERR_IO_PENDING) {

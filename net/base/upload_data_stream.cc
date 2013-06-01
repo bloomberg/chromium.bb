@@ -189,7 +189,7 @@ int UploadDataStream::ReadInternal(scoped_refptr<DrainableIOBuffer> buf,
       break;
 
     int result = reader->Read(
-        buf,
+        buf.get(),
         buf->BytesRemaining(),
         base::Bind(base::IgnoreResult(&UploadDataStream::ResumePendingRead),
                    weak_ptr_factory_.GetWeakPtr(),

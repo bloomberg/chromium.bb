@@ -506,13 +506,13 @@ TEST_F(URLRequestThrottlerManagerTest, OptOutHeader) {
   entry->UpdateWithResponse("www.google.com", &response_adapter);
 
   // Ensure that the same entry on error always allows everything.
-  ExpectEntryAllowsAllOnErrorIfOptedOut(entry, true, request_);
+  ExpectEntryAllowsAllOnErrorIfOptedOut(entry.get(), true, request_);
 
   // Ensure that a freshly created entry (for a different URL on an
   // already opted-out host) also gets "always allow" behavior.
   scoped_refptr<net::URLRequestThrottlerEntryInterface> other_entry =
       manager.RegisterRequestUrl(GURL("http://www.google.com/bingobob"));
-  ExpectEntryAllowsAllOnErrorIfOptedOut(other_entry, true, request_);
+  ExpectEntryAllowsAllOnErrorIfOptedOut(other_entry.get(), true, request_);
 
   // Fake a response with the opt-out header incorrectly specified.
   scoped_refptr<net::URLRequestThrottlerEntryInterface> no_opt_out_entry =
@@ -520,12 +520,13 @@ TEST_F(URLRequestThrottlerManagerTest, OptOutHeader) {
   MockURLRequestThrottlerHeaderAdapter wrong_adapter(
       std::string(), "yesplease", 200);
   no_opt_out_entry->UpdateWithResponse("www.nike.com", &wrong_adapter);
-  ExpectEntryAllowsAllOnErrorIfOptedOut(no_opt_out_entry, false, request_);
+  ExpectEntryAllowsAllOnErrorIfOptedOut(
+      no_opt_out_entry.get(), false, request_);
 
   // A localhost entry should always be opted out.
   scoped_refptr<net::URLRequestThrottlerEntryInterface> localhost_entry =
       manager.RegisterRequestUrl(GURL("http://localhost/hello"));
-  ExpectEntryAllowsAllOnErrorIfOptedOut(localhost_entry, true, request_);
+  ExpectEntryAllowsAllOnErrorIfOptedOut(localhost_entry.get(), true, request_);
 }
 
 TEST_F(URLRequestThrottlerManagerTest, ClearOnNetworkChange) {

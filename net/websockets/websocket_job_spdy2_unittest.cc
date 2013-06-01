@@ -388,7 +388,7 @@ class WebSocketJobSpdy2Test : public PlatformTest {
       }
 
       ssl_config_service_ = new MockSSLConfigService();
-      context_->set_ssl_config_service(ssl_config_service_);
+      context_->set_ssl_config_service(ssl_config_service_.get());
       proxy_service_.reset(ProxyService::CreateDirect());
       context_->set_proxy_service(proxy_service_.get());
       host_resolver_.reset(new MockHostResolver);
@@ -413,15 +413,15 @@ class WebSocketJobSpdy2Test : public PlatformTest {
   }
   void SkipToConnecting() {
     websocket_->state_ = WebSocketJob::CONNECTING;
-    WebSocketThrottle::GetInstance()->PutInQueue(websocket_);
+    WebSocketThrottle::GetInstance()->PutInQueue(websocket_.get());
   }
   WebSocketJob::State GetWebSocketJobState() {
     return websocket_->state_;
   }
   void CloseWebSocketJob() {
-    if (websocket_->socket_) {
+    if (websocket_->socket_.get()) {
       websocket_->socket_->DetachDelegate();
-      WebSocketThrottle::GetInstance()->RemoveFromQueue(websocket_);
+      WebSocketThrottle::GetInstance()->RemoveFromQueue(websocket_.get());
     }
     websocket_->state_ = WebSocketJob::CLOSED;
     websocket_->delegate_ = NULL;
@@ -614,9 +614,7 @@ void WebSocketJobSpdy2Test::TestSlowHandshake() {
   for (size_t i = 0; i < lines.size() - 2; i++) {
     std::string line = lines[i] + "\r\n";
     SCOPED_TRACE("Line: " + line);
-    websocket_->OnReceivedData(socket_,
-                               line.c_str(),
-                               line.size());
+    websocket_->OnReceivedData(socket_.get(), line.c_str(), line.size());
     base::MessageLoop::current()->RunUntilIdle();
     EXPECT_TRUE(delegate.received_data().empty());
     EXPECT_EQ(WebSocketJob::CONNECTING, GetWebSocketJobState());
@@ -635,10 +633,11 @@ TEST_F(WebSocketJobSpdy2Test, DelayedCookies) {
   GURL cookieUrl("http://example.com/demo");
   CookieOptions cookie_options;
   scoped_refptr<DelayedCookieMonster> cookie_store = new DelayedCookieMonster();
-  context_->set_cookie_store(cookie_store);
-  cookie_store->SetCookieWithOptionsAsync(
-      cookieUrl, "CR-test=1", cookie_options,
-      CookieMonster::SetCookiesCallback());
+  context_->set_cookie_store(cookie_store.get());
+  cookie_store->SetCookieWithOptionsAsync(cookieUrl,
+                                          "CR-test=1",
+                                          cookie_options,
+                                          CookieMonster::SetCookiesCallback());
   cookie_options.set_include_httponly();
   cookie_store->SetCookieWithOptionsAsync(
       cookieUrl, "CR-test-httponly=1", cookie_options,
@@ -654,7 +653,7 @@ TEST_F(WebSocketJobSpdy2Test, DelayedCookies) {
   base::MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(kHandshakeRequestWithFilteredCookie, sent_data());
   EXPECT_EQ(WebSocketJob::CONNECTING, GetWebSocketJobState());
-  websocket_->OnSentData(socket_,
+  websocket_->OnSentData(socket_.get(),
                          kHandshakeRequestWithFilteredCookieLength);
   EXPECT_EQ(kHandshakeRequestWithCookieLength,
             delegate.amount_sent());
@@ -689,7 +688,7 @@ void WebSocketJobSpdy2Test::TestHandshakeWithCookie() {
   base::MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(kHandshakeRequestWithFilteredCookie, sent_data());
   EXPECT_EQ(WebSocketJob::CONNECTING, GetWebSocketJobState());
-  websocket_->OnSentData(socket_,
+  websocket_->OnSentData(socket_.get(),
                          kHandshakeRequestWithFilteredCookieLength);
   EXPECT_EQ(kHandshakeRequestWithCookieLength,
             delegate.amount_sent());
@@ -733,9 +732,8 @@ void WebSocketJobSpdy2Test::TestHandshakeWithCookieButNotAllowed() {
   base::MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(kHandshakeRequestWithoutCookie, sent_data());
   EXPECT_EQ(WebSocketJob::CONNECTING, GetWebSocketJobState());
-  websocket_->OnSentData(socket_, kHandshakeRequestWithoutCookieLength);
-  EXPECT_EQ(kHandshakeRequestWithCookieLength,
-            delegate.amount_sent());
+  websocket_->OnSentData(socket_.get(), kHandshakeRequestWithoutCookieLength);
+  EXPECT_EQ(kHandshakeRequestWithCookieLength, delegate.amount_sent());
 
   websocket_->OnReceivedData(socket_.get(),
                              kHandshakeResponseWithCookie,
@@ -863,7 +861,7 @@ void WebSocketJobSpdy2Test::TestConnectByWebSocket(
 
     // Remove the former WebSocket object from throttling queue to unblock the
     // latter.
-    WebSocketThrottle::GetInstance()->RemoveFromQueue(block_websocket);
+    WebSocketThrottle::GetInstance()->RemoveFromQueue(block_websocket.get());
     block_websocket->state_ = WebSocketJob::CLOSED;
     block_websocket = NULL;
     WebSocketThrottle::GetInstance()->WakeupSocketIfNecessary();
@@ -979,7 +977,7 @@ void WebSocketJobSpdy2Test::TestConnectBySpdy(
 
     // Remove the former WebSocket object from throttling queue to unblock the
     // latter.
-    WebSocketThrottle::GetInstance()->RemoveFromQueue(block_websocket);
+    WebSocketThrottle::GetInstance()->RemoveFromQueue(block_websocket.get());
     block_websocket->state_ = WebSocketJob::CLOSED;
     block_websocket = NULL;
     WebSocketThrottle::GetInstance()->WakeupSocketIfNecessary();

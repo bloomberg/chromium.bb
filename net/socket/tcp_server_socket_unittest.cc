@@ -220,9 +220,8 @@ TEST_F(TCPServerSocketTest, AcceptIO) {
     memmove(write_buffer->data(), message.data(), message.size());
 
     TestCompletionCallback write_callback;
-    int write_result = accepted_socket->Write(write_buffer,
-                                              write_buffer->size(),
-                                              write_callback.callback());
+    int write_result = accepted_socket->Write(
+        write_buffer.get(), write_buffer->size(), write_callback.callback());
     write_result = write_callback.GetResult(write_result);
     ASSERT_TRUE(write_result >= 0);
     ASSERT_TRUE(bytes_written + write_result <= message.size());
@@ -234,9 +233,8 @@ TEST_F(TCPServerSocketTest, AcceptIO) {
     scoped_refptr<net::IOBufferWithSize> read_buffer(
         new net::IOBufferWithSize(message.size() - bytes_read));
     TestCompletionCallback read_callback;
-    int read_result = connecting_socket.Read(read_buffer,
-                                             read_buffer->size(),
-                                             read_callback.callback());
+    int read_result = connecting_socket.Read(
+        read_buffer.get(), read_buffer->size(), read_callback.callback());
     read_result = read_callback.GetResult(read_result);
     ASSERT_TRUE(read_result >= 0);
     ASSERT_TRUE(bytes_read + read_result <= message.size());

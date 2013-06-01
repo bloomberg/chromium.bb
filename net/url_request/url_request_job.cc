@@ -71,7 +71,7 @@ bool URLRequestJob::Read(IOBuffer* buf, int buf_size, int *bytes_read) {
   DCHECK_LT(buf_size, 1000000);  // Sanity check.
   DCHECK(buf);
   DCHECK(bytes_read);
-  DCHECK(filtered_read_buffer_ == NULL);
+  DCHECK(filtered_read_buffer_.get() == NULL);
   DCHECK_EQ(0, filtered_read_buffer_len_);
 
   *bytes_read = 0;
@@ -338,8 +338,8 @@ void URLRequestJob::NotifyHeadersComplete() {
     GetAuthChallengeInfo(&auth_info);
     // Need to check for a NULL auth_info because the server may have failed
     // to send a challenge with the 401 response.
-    if (auth_info) {
-      request_->NotifyAuthRequired(auth_info);
+    if (auth_info.get()) {
+      request_->NotifyAuthRequired(auth_info.get());
       // Wait for SetAuth or CancelAuth to be called.
       return;
     }
@@ -505,10 +505,12 @@ void URLRequestJob::FilteredDataRead(int bytes_read) {
 
 bool URLRequestJob::ReadFilteredData(int* bytes_read) {
   DCHECK(filter_.get());  // don't add data if there is no filter
-  DCHECK(filtered_read_buffer_ != NULL);  // we need to have a buffer to fill
+  DCHECK(filtered_read_buffer_.get() !=
+         NULL);                             // we need to have a buffer to fill
   DCHECK_GT(filtered_read_buffer_len_, 0);  // sanity check
   DCHECK_LT(filtered_read_buffer_len_, 1000000);  // sanity check
-  DCHECK(raw_read_buffer_ == NULL);  // there should be no raw read buffer yet
+  DCHECK(raw_read_buffer_.get() ==
+         NULL);  // there should be no raw read buffer yet
 
   bool rv = false;
   *bytes_read = 0;
@@ -664,7 +666,7 @@ bool URLRequestJob::ReadRawDataForFilter(int* bytes_read) {
 bool URLRequestJob::ReadRawDataHelper(IOBuffer* buf, int buf_size,
                                       int* bytes_read) {
   DCHECK(!request_->status().is_io_pending());
-  DCHECK(raw_read_buffer_ == NULL);
+  DCHECK(raw_read_buffer_.get() == NULL);
 
   // Keep a pointer to the read buffer, so we have access to it in the
   // OnRawReadComplete() callback in the event that the read completes
@@ -697,7 +699,7 @@ void URLRequestJob::FollowRedirect(const GURL& location, int http_status_code) {
 }
 
 void URLRequestJob::OnRawReadComplete(int bytes_read) {
-  DCHECK(raw_read_buffer_);
+  DCHECK(raw_read_buffer_.get());
   if (bytes_read > 0) {
     RecordBytesRead(bytes_read);
   }

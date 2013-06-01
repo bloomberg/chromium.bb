@@ -75,9 +75,9 @@ int HostResolverProc::ResolveUsingPrevious(
     HostResolverFlags host_resolver_flags,
     AddressList* addrlist,
     int* os_error) {
-  if (previous_proc_) {
-    return previous_proc_->Resolve(host, address_family, host_resolver_flags,
-                                   addrlist, os_error);
+  if (previous_proc_.get()) {
+    return previous_proc_->Resolve(
+        host, address_family, host_resolver_flags, addrlist, os_error);
   }
 
   // Final fallback is the system resolver.
@@ -86,7 +86,7 @@ int HostResolverProc::ResolveUsingPrevious(
 }
 
 void HostResolverProc::SetPreviousProc(HostResolverProc* proc) {
-  HostResolverProc* current_previous = previous_proc_;
+  HostResolverProc* current_previous = previous_proc_.get();
   previous_proc_ = NULL;
   // Now that we've guaranteed |this| is the last proc in a chain, we can
   // detect potential cycles using GetLastProc().
@@ -102,8 +102,8 @@ HostResolverProc* HostResolverProc::GetLastProc(HostResolverProc* proc) {
   if (proc == NULL)
     return NULL;
   HostResolverProc* last_proc = proc;
-  while (last_proc->previous_proc_ != NULL)
-    last_proc = last_proc->previous_proc_;
+  while (last_proc->previous_proc_.get() != NULL)
+    last_proc = last_proc->previous_proc_.get();
   return last_proc;
 }
 

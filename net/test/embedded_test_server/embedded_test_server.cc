@@ -74,7 +74,7 @@ EmbeddedTestServer::EmbeddedTestServer(
     : io_thread_(io_thread),
       port_(-1),
       weak_factory_(this) {
-  DCHECK(io_thread_);
+  DCHECK(io_thread_.get());
   DCHECK(thread_checker_.CalledOnValidThread());
 }
 

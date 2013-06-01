@@ -118,7 +118,7 @@ void DelayedCookieMonster::DeleteSessionCookiesAsync(const DeleteCallback&) {
 }
 
 CookieMonster* DelayedCookieMonster::GetCookieMonster() {
-  return cookie_monster_;
+  return cookie_monster_.get();
 }
 
 }  // namespace net

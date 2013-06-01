@@ -148,7 +148,7 @@ void TestURLFetcher::SaveResponseToTemporaryFile(
 }
 
 HttpResponseHeaders* TestURLFetcher::GetResponseHeaders() const {
-  return fake_response_headers_;
+  return fake_response_headers_.get();
 }
 
 HostPortPair TestURLFetcher::GetSocketAddress() const {

@@ -89,7 +89,7 @@ int QuicHttpStream::SendRequest(const HttpRequestHeaders& request_headers,
     // packet due to overhead.
     raw_request_body_buf_ = new IOBufferWithSize(kMaxPacketSize);
     // The request body buffer is empty at first.
-    request_body_buf_ = new DrainableIOBuffer(raw_request_body_buf_, 0);
+    request_body_buf_ = new DrainableIOBuffer(raw_request_body_buf_.get(), 0);
   }
 
   // Store the response info.
@@ -166,7 +166,7 @@ int QuicHttpStream::ReadResponseBody(
   }
 
   CHECK(callback_.is_null());
-  CHECK(!user_buffer_);
+  CHECK(!user_buffer_.get());
   CHECK_EQ(0, user_buffer_len_);
 
   callback_ = callback;
@@ -379,10 +379,10 @@ int QuicHttpStream::DoSendHeadersComplete(int rv) {
 
 int QuicHttpStream::DoReadRequestBody() {
   next_state_ = STATE_READ_REQUEST_BODY_COMPLETE;
-  return request_body_stream_->Read(raw_request_body_buf_,
-                                    raw_request_body_buf_->size(),
-                                    base::Bind(&QuicHttpStream::OnIOComplete,
-                                               weak_factory_.GetWeakPtr()));
+  return request_body_stream_->Read(
+      raw_request_body_buf_.get(),
+      raw_request_body_buf_->size(),
+      base::Bind(&QuicHttpStream::OnIOComplete, weak_factory_.GetWeakPtr()));
 }
 
 int QuicHttpStream::DoReadRequestBodyComplete(int rv) {
@@ -391,7 +391,7 @@ int QuicHttpStream::DoReadRequestBodyComplete(int rv) {
   if (rv < 0)
     return rv;
 
-  request_body_buf_ = new DrainableIOBuffer(raw_request_body_buf_, rv);
+  request_body_buf_ = new DrainableIOBuffer(raw_request_body_buf_.get(), rv);
   if (rv == 0) {  // Reached the end.
     DCHECK(request_body_stream_->IsEOF());
   }
@@ -405,7 +405,7 @@ int QuicHttpStream::DoSendBody() {
     return ERR_UNEXPECTED;
 
   CHECK(request_body_stream_);
-  CHECK(request_body_buf_);
+  CHECK(request_body_buf_.get());
   const bool eof = request_body_stream_->IsEOF();
   int len = request_body_buf_->BytesRemaining();
   if (len > 0 || eof) {
@@ -465,7 +465,8 @@ int QuicHttpStream::ParseResponseHeaders() {
   response_info_->socket_address = HostPortPair::FromIPEndPoint(address);
   response_info_->connection_info =
       HttpResponseInfo::CONNECTION_INFO_QUIC1_SPDY3;
-  response_info_->vary_data.Init(*request_info_, *response_info_->headers);
+  response_info_->vary_data
+      .Init(*request_info_, *response_info_->headers.get());
   response_info_->was_npn_negotiated = true;
   response_info_->npn_negotiated_protocol = "quic/1+spdy/3";
   response_headers_received_ = true;

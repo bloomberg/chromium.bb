@@ -130,7 +130,7 @@ HttpNetworkSession::HttpNetworkSession(const Params& params)
       http_stream_factory_(new HttpStreamFactoryImpl(this)),
       params_(params) {
   DCHECK(proxy_service_);
-  DCHECK(ssl_config_service_);
+  DCHECK(ssl_config_service_.get());
   CHECK(http_server_properties_);
 }
 

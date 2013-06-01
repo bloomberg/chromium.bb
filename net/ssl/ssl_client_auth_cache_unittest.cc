@@ -34,13 +34,13 @@ TEST(SSLClientAuthCacheTest, LookupAddRemove) {
   EXPECT_FALSE(cache.Lookup(server1, &cached_cert));
 
   // Add client certificate for server1.
-  cache.Add(server1, cert1);
+  cache.Add(server1, cert1.get());
   cached_cert = NULL;
   EXPECT_TRUE(cache.Lookup(server1, &cached_cert));
   EXPECT_EQ(cert1, cached_cert);
 
   // Add client certificate for server2.
-  cache.Add(server2, cert2);
+  cache.Add(server2, cert2.get());
   cached_cert = NULL;
   EXPECT_TRUE(cache.Lookup(server1, &cached_cert));
   EXPECT_EQ(cert1, cached_cert.get());
@@ -49,7 +49,7 @@ TEST(SSLClientAuthCacheTest, LookupAddRemove) {
   EXPECT_EQ(cert2, cached_cert);
 
   // Overwrite the client certificate for server1.
-  cache.Add(server1, cert3);
+  cache.Add(server1, cert3.get());
   cached_cert = NULL;
   EXPECT_TRUE(cache.Lookup(server1, &cached_cert));
   EXPECT_EQ(cert3, cached_cert);
@@ -125,7 +125,7 @@ TEST(SSLClientAuthCacheTest, LookupNullPreference) {
   EXPECT_FALSE(cache.Lookup(server1, &cached_cert));
 
   // Add a new preference for a specific certificate.
-  cache.Add(server1, cert1);
+  cache.Add(server1, cert1.get());
   cached_cert = NULL;
   EXPECT_TRUE(cache.Lookup(server1, &cached_cert));
   EXPECT_EQ(cert1, cached_cert);
@@ -147,7 +147,7 @@ TEST(SSLClientAuthCacheTest, OnCertAdded) {
   scoped_refptr<X509Certificate> cert1(
       new X509Certificate("foo", "CA", start_date, expiration_date));
 
-  cache.Add(server1, cert1);
+  cache.Add(server1, cert1.get());
 
   std::string server2("foo2:443");
   cache.Add(server2, NULL);

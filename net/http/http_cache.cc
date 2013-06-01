@@ -76,8 +76,14 @@ int HttpCache::DefaultBackend::CreateBackend(
     NetLog* net_log, disk_cache::Backend** backend,
     const CompletionCallback& callback) {
   DCHECK_GE(max_bytes_, 0);
-  return disk_cache::CreateCacheBackend(type_, backend_type_, path_, max_bytes_,
-                                        true, thread_, net_log, backend,
+  return disk_cache::CreateCacheBackend(type_,
+                                        backend_type_,
+                                        path_,
+                                        max_bytes_,
+                                        true,
+                                        thread_.get(),
+                                        net_log,
+                                        backend,
                                         callback);
 }
 
@@ -242,7 +248,8 @@ void HttpCache::MetadataWriter::VerifyResponse(int result) {
     return SelfDestroy();
 
   result = transaction_->WriteMetadata(
-      buf_, buf_len_,
+      buf_.get(),
+      buf_len_,
       base::Bind(&MetadataWriter::OnIOComplete, base::Unretained(this)));
   if (result != ERR_IO_PENDING)
     SelfDestroy();

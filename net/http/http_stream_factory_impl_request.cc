@@ -313,7 +313,7 @@ void HttpStreamFactoryImpl::Request::OnSpdySessionReady(
   delegate_->OnStreamReady(
       job->server_ssl_config(),
       job->proxy_info(),
-      new SpdyHttpStream(spdy_session, use_relative_url));
+      new SpdyHttpStream(spdy_session.get(), use_relative_url));
   // |this| may be deleted after this point.
   factory->OnSpdySessionReady(
       spdy_session, direct, used_ssl_config, used_proxy_info,

@@ -38,7 +38,7 @@ URLRequestThrottlerManager::~URLRequestThrottlerManager() {
   // entries, detach the entries' back-pointer to the manager.
   UrlEntryMap::iterator i = url_entries_.begin();
   while (i != url_entries_.end()) {
-    if (i->second != NULL) {
+    if (i->second.get() != NULL) {
       i->second->DetachManager();
     }
     ++i;

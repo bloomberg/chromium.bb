@@ -55,7 +55,9 @@ class MockAsyncProxyResolverBase : public ProxyResolver {
         const net::CompletionCallback& callback);
     ~SetPacScriptRequest();
 
-    const ProxyResolverScriptData* script_data() const { return script_data_; }
+    const ProxyResolverScriptData* script_data() const {
+      return script_data_.get();
+    }
 
     void CompleteNow(int rv);
 
