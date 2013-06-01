@@ -32,7 +32,7 @@
 #include "core/platform/MemoryUsageSupport.h"
 
 #include <SkGraphics.h>
-#include <public/Platform.h>
+#include "public/platform/Platform.h"
 #include <wtf/OwnPtr.h>
 
 namespace WebCore {

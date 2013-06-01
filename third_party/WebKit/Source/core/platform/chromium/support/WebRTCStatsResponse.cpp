@@ -24,7 +24,7 @@
 
 #include "config.h"
 
-#include <public/WebRTCStatsResponse.h>
+#include "public/platform/WebRTCStatsResponse.h"
 
 #include "core/platform/mediastream/RTCStatsResponseBase.h"
 #include <wtf/PassOwnPtr.h>

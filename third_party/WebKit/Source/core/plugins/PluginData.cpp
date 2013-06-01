@@ -25,7 +25,7 @@
 #include "core/plugins/PluginData.h"
 
 #include "core/plugins/PluginListBuilder.h"
-#include <public/Platform.h>
+#include "public/platform/Platform.h"
 
 namespace WebCore {
 

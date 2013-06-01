@@ -35,9 +35,9 @@
 #include "core/platform/Scrollbar.h"
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/win/SystemInfo.h"
-#include <public/Platform.h>
-#include <public/WebRect.h>
-#include <public/win/WebThemeEngine.h>
+#include "public/platform/Platform.h"
+#include "public/platform/WebRect.h"
+#include "public/platform/win/WebThemeEngine.h"
 
 namespace WebCore {
 

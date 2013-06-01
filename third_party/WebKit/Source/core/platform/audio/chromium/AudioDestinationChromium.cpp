@@ -34,7 +34,7 @@
 
 #include "core/platform/audio/AudioFIFO.h"
 #include "core/platform/audio/AudioPullFIFO.h"
-#include <public/Platform.h>
+#include "public/platform/Platform.h"
 
 namespace WebCore {
 

@@ -51,7 +51,7 @@
 #include "core/platform/image-encoders/skia/JPEGImageEncoder.h"
 #include "core/platform/image-encoders/skia/PNGImageEncoder.h"
 #include "core/platform/image-encoders/skia/WEBPImageEncoder.h"
-#include <public/Platform.h>
+#include "public/platform/Platform.h"
 
 #include <wtf/text/Base64.h>
 #include <wtf/text/WTFString.h>

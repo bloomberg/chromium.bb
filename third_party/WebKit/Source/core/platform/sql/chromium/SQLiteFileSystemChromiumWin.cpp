@@ -33,7 +33,7 @@
 
 #include <windows.h>
 #include <sqlite3.h>
-#include <public/Platform.h>
+#include "public/platform/Platform.h"
 
 using namespace WebCore;
 

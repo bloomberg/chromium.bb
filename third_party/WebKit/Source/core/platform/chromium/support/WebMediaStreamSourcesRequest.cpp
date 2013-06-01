@@ -30,12 +30,12 @@
 
 #include "config.h"
 
-#include <public/WebMediaStreamSourcesRequest.h>
+#include "public/platform/WebMediaStreamSourcesRequest.h"
 
 #include "core/platform/mediastream/MediaStreamSource.h"
 #include "core/platform/mediastream/MediaStreamSourcesQueryClient.h"
-#include <public/WebMediaStreamSource.h>
-#include <public/WebVector.h>
+#include "public/platform/WebMediaStreamSource.h"
+#include "public/platform/WebVector.h"
 #include <wtf/Vector.h>
 
 using namespace WebCore;

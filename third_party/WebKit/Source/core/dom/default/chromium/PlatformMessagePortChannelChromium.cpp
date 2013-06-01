@@ -34,9 +34,9 @@
 #include "bindings/v8/SerializedScriptValue.h"
 #include "core/dom/MessagePort.h"
 
-#include <public/Platform.h>
-#include <public/WebMessagePortChannel.h>
-#include <public/WebString.h>
+#include "public/platform/Platform.h"
+#include "public/platform/WebMessagePortChannel.h"
+#include "public/platform/WebString.h"
 
 namespace WebCore {
 

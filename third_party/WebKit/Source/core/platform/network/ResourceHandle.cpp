@@ -39,12 +39,12 @@
 #include "core/platform/network/ResourceHandleInternal.h"
 #include "core/platform/network/ResourceRequest.h"
 #include "core/platform/network/ResourceResponse.h"
-#include <public/Platform.h>
-#include <public/WebURLError.h>
-#include <public/WebURLLoader.h>
-#include <public/WebURLLoaderClient.h>
-#include <public/WebURLRequest.h>
-#include <public/WebURLResponse.h>
+#include "public/platform/Platform.h"
+#include "public/platform/WebURLError.h"
+#include "public/platform/WebURLLoader.h"
+#include "public/platform/WebURLLoaderClient.h"
+#include "public/platform/WebURLRequest.h"
+#include "public/platform/WebURLResponse.h"
 
 using namespace WebKit;
 

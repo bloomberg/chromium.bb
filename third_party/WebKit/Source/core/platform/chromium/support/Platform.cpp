@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include <public/Platform.h>
+#include "public/platform/Platform.h"
 
 namespace WebKit {
 

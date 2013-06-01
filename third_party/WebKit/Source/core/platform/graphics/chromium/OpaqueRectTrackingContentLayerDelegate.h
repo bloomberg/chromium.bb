@@ -25,7 +25,7 @@
 #ifndef OpaqueRectTrackingContentLayerDelegate_h
 #define OpaqueRectTrackingContentLayerDelegate_h
 
-#include <public/WebContentLayerClient.h>
+#include "public/platform/WebContentLayerClient.h"
 #include <wtf/Noncopyable.h>
 #include <wtf/PassOwnPtr.h>
 

@@ -29,7 +29,7 @@
 #include "SkBitmap.h"
 #include "SkPixelRef.h"
 
-#include <public/WebDiscardableMemory.h>
+#include "public/platform/WebDiscardableMemory.h"
 #include <wtf/OwnPtr.h>
 #include <wtf/PassOwnPtr.h>
 

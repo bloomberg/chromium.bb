@@ -29,16 +29,16 @@
  */
 
 #include "config.h"
-#include <public/WebURLResponse.h>
+#include "public/platform/WebURLResponse.h"
 
 #include "core/platform/chromium/support/WebURLResponsePrivate.h"
 #include "core/platform/network/ResourceLoadTiming.h"
 #include "core/platform/network/ResourceResponse.h"
-#include <public/WebHTTPHeaderVisitor.h>
-#include <public/WebHTTPLoadInfo.h>
-#include <public/WebString.h>
-#include <public/WebURL.h>
-#include <public/WebURLLoadTiming.h>
+#include "public/platform/WebHTTPHeaderVisitor.h"
+#include "public/platform/WebHTTPLoadInfo.h"
+#include "public/platform/WebString.h"
+#include "public/platform/WebURL.h"
+#include "public/platform/WebURLLoadTiming.h"
 #include <wtf/RefPtr.h>
 
 using namespace WebCore;

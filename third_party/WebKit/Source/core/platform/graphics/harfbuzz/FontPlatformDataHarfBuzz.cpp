@@ -37,10 +37,10 @@
 #include "core/platform/graphics/FontCache.h"
 #include "core/platform/graphics/harfbuzz/HarfBuzzFace.h"
 
-#include <public/linux/WebFontInfo.h>
-#include <public/linux/WebFontRenderStyle.h>
-#include <public/linux/WebSandboxSupport.h>
-#include <public/Platform.h>
+#include "public/platform/linux/WebFontInfo.h"
+#include "public/platform/linux/WebFontRenderStyle.h"
+#include "public/platform/linux/WebSandboxSupport.h"
+#include "public/platform/Platform.h"
 #include <wtf/text/StringImpl.h>
 #include <wtf/text/WTFString.h>
 

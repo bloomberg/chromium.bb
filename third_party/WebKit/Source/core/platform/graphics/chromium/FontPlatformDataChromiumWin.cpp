@@ -41,8 +41,8 @@
 #include "core/platform/graphics/FontCache.h"
 #include "core/platform/graphics/skia/SkiaFontWin.h"
 #include "core/platform/win/HWndDC.h"
-#include <public/Platform.h>
-#include <public/win/WebSandboxSupport.h>
+#include "public/platform/Platform.h"
+#include "public/platform/win/WebSandboxSupport.h"
 #include <wtf/StdLibExtras.h>
 
 namespace WebCore {

@@ -50,9 +50,9 @@
 #include "core/platform/graphics/skia/NativeImageSkia.h"
 #include "core/rendering/RenderImage.h"
 
-#include <public/Platform.h>
-#include <public/WebClipboard.h>
-#include <public/WebDragData.h>
+#include "public/platform/Platform.h"
+#include "public/platform/WebClipboard.h"
+#include "public/platform/WebDragData.h"
 
 namespace WebCore {
 

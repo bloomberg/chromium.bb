@@ -34,11 +34,11 @@
 
 #include "core/platform/mediastream/MediaStreamDescriptor.h"
 #include "core/platform/mediastream/MediaStreamSourcesQueryClient.h"
-#include <public/Platform.h>
-#include <public/WebMediaStream.h>
-#include <public/WebMediaStreamCenter.h>
-#include <public/WebMediaStreamSourcesRequest.h>
-#include <public/WebMediaStreamTrack.h>
+#include "public/platform/Platform.h"
+#include "public/platform/WebMediaStream.h"
+#include "public/platform/WebMediaStreamCenter.h"
+#include "public/platform/WebMediaStreamSourcesRequest.h"
+#include "public/platform/WebMediaStreamTrack.h"
 #include <wtf/MainThread.h>
 #include <wtf/PassOwnPtr.h>
 

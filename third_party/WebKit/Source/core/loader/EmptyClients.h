@@ -44,7 +44,7 @@
 #include "core/platform/text/TextCheckerClient.h"
 #include "modules/device_orientation/DeviceMotionClient.h"
 
-#include <public/WebScreenInfo.h>
+#include "public/platform/WebScreenInfo.h"
 #include <v8.h>
 
 /*

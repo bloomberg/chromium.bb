@@ -34,7 +34,7 @@
 #include "core/html/track/TextTrackCue.h"
 #include "core/platform/PODIntervalTree.h"
 #include "core/platform/graphics/MediaPlayer.h"
-#include <public/WebMimeRegistry.h>
+#include "public/platform/WebMimeRegistry.h"
 
 namespace WebCore {
 

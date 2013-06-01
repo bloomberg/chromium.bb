@@ -34,9 +34,9 @@
 #include "core/platform/PlatformMouseEvent.h"
 #include "core/platform/Scrollbar.h"
 #include "core/platform/graphics/GraphicsContext.h"
-#include <public/default/WebThemeEngine.h>
-#include <public/Platform.h>
-#include <public/WebRect.h>
+#include "public/platform/default/WebThemeEngine.h"
+#include "public/platform/Platform.h"
+#include "public/platform/WebRect.h"
 
 namespace WebCore {
 

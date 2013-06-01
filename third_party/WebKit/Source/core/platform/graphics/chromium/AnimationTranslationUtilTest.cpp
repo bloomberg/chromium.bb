@@ -36,7 +36,7 @@
 #include "core/platform/graphics/transforms/TranslateTransformOperation.h"
 #include "wtf/RefPtr.h"
 #include <gtest/gtest.h>
-#include <public/WebAnimation.h>
+#include "public/platform/WebAnimation.h"
 
 using namespace WebCore;
 using namespace WebKit;

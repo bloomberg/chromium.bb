@@ -26,8 +26,8 @@
 #include "config.h"
 #include "core/platform/text/Hyphenation.h"
 
-#include <public/Platform.h>
-#include <public/WebHyphenator.h>
+#include "public/platform/Platform.h"
+#include "public/platform/WebHyphenator.h"
 
 namespace WebCore {
 

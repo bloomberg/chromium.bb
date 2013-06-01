@@ -28,7 +28,7 @@
 #include "core/platform/mediastream/chromium/RTCDTMFSenderHandlerChromium.h"
 
 #include "core/platform/mediastream/RTCDTMFSenderHandlerClient.h"
-#include <public/WebRTCDTMFSenderHandler.h>
+#include "public/platform/WebRTCDTMFSenderHandler.h"
 #include <wtf/PassOwnPtr.h>
 
 using namespace WebKit;

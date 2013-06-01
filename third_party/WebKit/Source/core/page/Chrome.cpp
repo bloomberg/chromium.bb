@@ -22,7 +22,7 @@
 #include "config.h"
 #include "core/page/Chrome.h"
 
-#include <public/WebScreenInfo.h>
+#include "public/platform/WebScreenInfo.h"
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefPtr.h>
 #include <wtf/text/StringBuilder.h>

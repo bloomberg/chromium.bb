@@ -49,7 +49,7 @@
 #include "core/html/canvas/WebGLContextAttributes.h"
 #include "core/html/canvas/WebGLRenderingContext.h"
 
-#include <public/Platform.h>
+#include "public/platform/Platform.h"
 
 namespace WebCore {
 

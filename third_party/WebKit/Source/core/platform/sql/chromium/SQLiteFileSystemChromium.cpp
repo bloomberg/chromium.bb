@@ -32,7 +32,7 @@
 #include "core/platform/sql/SQLiteFileSystem.h"
 
 #include <sqlite3.h>
-#include <public/Platform.h>
+#include "public/platform/Platform.h"
 #include <wtf/text/CString.h>
 
 // SQLiteFileSystem::registerSQLiteVFS() is implemented in the

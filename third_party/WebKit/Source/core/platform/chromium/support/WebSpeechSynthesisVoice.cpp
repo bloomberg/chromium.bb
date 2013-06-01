@@ -24,7 +24,7 @@
  */
 
 #include "config.h"
-#include <public/WebSpeechSynthesisVoice.h>
+#include "public/platform/WebSpeechSynthesisVoice.h"
 
 #include "modules/speech/SpeechRecognitionAlternative.h"
 #include "modules/speech/SpeechSynthesisVoice.h"

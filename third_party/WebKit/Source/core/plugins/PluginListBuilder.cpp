@@ -32,7 +32,7 @@
 #include "core/plugins/PluginListBuilder.h"
 
 #include "core/plugins/PluginData.h"
-#include <public/WebString.h>
+#include "public/platform/WebString.h"
 #include <wtf/Vector.h>
 
 namespace WebCore {

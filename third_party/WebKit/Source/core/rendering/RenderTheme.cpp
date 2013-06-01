@@ -53,9 +53,9 @@
 #include "core/rendering/RenderMeter.h"
 #include "core/rendering/RenderView.h"
 #include "core/rendering/style/RenderStyle.h"
-#include <public/Platform.h>
-#include <public/WebFallbackThemeEngine.h>
-#include <public/WebRect.h>
+#include "public/platform/Platform.h"
+#include "public/platform/WebFallbackThemeEngine.h"
+#include "public/platform/WebRect.h"
 
 #if ENABLE(INPUT_SPEECH)
 #include "core/rendering/RenderInputSpeech.h"

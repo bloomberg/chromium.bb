@@ -24,13 +24,13 @@
 
 #include "config.h"
 
-#include <public/WebMediaStreamTrack.h>
+#include "public/platform/WebMediaStreamTrack.h"
 
 #include "core/platform/mediastream/MediaStreamComponent.h"
 #include "core/platform/mediastream/MediaStreamSource.h"
-#include <public/WebMediaStream.h>
-#include <public/WebMediaStreamSource.h>
-#include <public/WebString.h>
+#include "public/platform/WebMediaStream.h"
+#include "public/platform/WebMediaStreamSource.h"
+#include "public/platform/WebString.h"
 #include <wtf/Vector.h>
 
 using namespace WebCore;

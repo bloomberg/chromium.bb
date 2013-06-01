@@ -32,7 +32,7 @@
 #define WrappedResourceRequest_h
 
 #include "core/platform/chromium/support/WebURLRequestPrivate.h"
-#include <public/WebURLRequest.h>
+#include "public/platform/WebURLRequest.h"
 
 namespace WebKit {
 

@@ -36,10 +36,10 @@
 #include "core/platform/network/SocketStreamError.h"
 #include "core/platform/network/SocketStreamHandleClient.h"
 #include "core/platform/network/SocketStreamHandleInternal.h"
-#include <public/Platform.h>
-#include <public/WebData.h>
-#include <public/WebSocketStreamError.h>
-#include <public/WebSocketStreamHandle.h>
+#include "public/platform/Platform.h"
+#include "public/platform/WebData.h"
+#include "public/platform/WebSocketStreamError.h"
+#include "public/platform/WebSocketStreamHandle.h"
 #include <wtf/PassOwnPtr.h>
 
 namespace WebCore {

@@ -39,13 +39,13 @@
 #include "core/platform/graphics/transforms/TransformOperations.h"
 #include "core/platform/graphics/transforms/TranslateTransformOperation.h"
 
-#include <public/Platform.h>
-#include <public/WebAnimation.h>
-#include <public/WebAnimationCurve.h>
-#include <public/WebCompositorSupport.h>
-#include <public/WebFloatAnimationCurve.h>
-#include <public/WebTransformAnimationCurve.h>
-#include <public/WebTransformOperations.h>
+#include "public/platform/Platform.h"
+#include "public/platform/WebAnimation.h"
+#include "public/platform/WebAnimationCurve.h"
+#include "public/platform/WebCompositorSupport.h"
+#include "public/platform/WebFloatAnimationCurve.h"
+#include "public/platform/WebTransformAnimationCurve.h"
+#include "public/platform/WebTransformOperations.h"
 
 #include <wtf/OwnPtr.h>
 #include <wtf/text/CString.h>

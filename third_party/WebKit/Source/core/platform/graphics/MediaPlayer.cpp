@@ -41,8 +41,8 @@
 #include "core/platform/graphics/MediaPlayerPrivate.h"
 #include "modules/mediasource/WebKitMediaSource.h"
 #include "wtf/text/WTFString.h"
-#include <public/Platform.h>
-#include <public/WebMimeRegistry.h>
+#include "public/platform/Platform.h"
+#include "public/platform/WebMimeRegistry.h"
 
 using WebKit::WebMimeRegistry;
 

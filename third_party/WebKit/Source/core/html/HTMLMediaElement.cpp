@@ -82,7 +82,7 @@
 #include "modules/mediastream/MediaStreamRegistry.h"
 #include "weborigin/SecurityOrigin.h"
 #include "weborigin/SecurityPolicy.h"
-#include <public/Platform.h>
+#include "public/platform/Platform.h"
 
 #if ENABLE(WEB_AUDIO)
 #include "core/platform/audio/AudioSourceProvider.h"

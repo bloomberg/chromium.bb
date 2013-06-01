@@ -31,7 +31,7 @@
 #ifndef ClipboardUtilitiesChromium_h
 #define ClipboardUtilitiesChromium_h
 
-#include <public/WebClipboard.h>
+#include "public/platform/WebClipboard.h"
 #include <wtf/Forward.h>
 
 namespace WebCore {

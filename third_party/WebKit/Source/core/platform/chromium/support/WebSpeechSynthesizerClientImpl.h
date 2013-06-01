@@ -27,9 +27,9 @@
 #define WebSpeechSynthesizerClientImpl_h
 
 #include "core/platform/PlatformSpeechSynthesizer.h"
-#include <public/WebSpeechSynthesisUtterance.h>
-#include <public/WebSpeechSynthesisVoice.h>
-#include <public/WebSpeechSynthesizerClient.h>
+#include "public/platform/WebSpeechSynthesisUtterance.h"
+#include "public/platform/WebSpeechSynthesisVoice.h"
+#include "public/platform/WebSpeechSynthesizerClient.h"
 #include <wtf/HashMap.h>
 #include <wtf/Vector.h>
 

@@ -26,8 +26,8 @@
 #ifndef WebScrollbarThemeGeometryNative_h
 #define WebScrollbarThemeGeometryNative_h
 
-#include <public/WebRect.h>
-#include <public/WebScrollbarThemeGeometry.h>
+#include "public/platform/WebRect.h"
+#include "public/platform/WebScrollbarThemeGeometry.h"
 #include <wtf/PassOwnPtr.h>
 
 namespace WebCore {

@@ -31,7 +31,7 @@
 #include "config.h"
 #include "core/platform/EventTracer.h"
 
-#include <public/Platform.h>
+#include "public/platform/Platform.h"
 
 namespace WebCore {
 

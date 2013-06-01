@@ -47,10 +47,10 @@
 #include "wtf/text/StringHash.h"
 #include "wtf/text/WTFString.h"
 
-#include <public/Platform.h>
-#include <public/WebGraphicsContext3D.h>
-#include <public/WebGraphicsContext3DProvider.h>
-#include <public/WebGraphicsMemoryAllocation.h>
+#include "public/platform/Platform.h"
+#include "public/platform/WebGraphicsContext3D.h"
+#include "public/platform/WebGraphicsContext3DProvider.h"
+#include "public/platform/WebGraphicsMemoryAllocation.h"
 
 namespace {
 

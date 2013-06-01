@@ -34,7 +34,7 @@
 #include "core/platform/KURL.h"
 #include "core/platform/Pasteboard.h"
 
-#include <public/WebClipboard.h>
+#include "public/platform/WebClipboard.h"
 #include <wtf/text/StringBuilder.h>
 #include <wtf/text/WTFString.h>
 

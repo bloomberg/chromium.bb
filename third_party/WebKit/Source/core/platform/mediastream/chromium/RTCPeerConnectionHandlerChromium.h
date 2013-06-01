@@ -33,8 +33,8 @@
 
 #include "core/platform/mediastream/MediaStreamDescriptor.h"
 #include "core/platform/mediastream/RTCPeerConnectionHandler.h"
-#include <public/WebRTCPeerConnectionHandler.h>
-#include <public/WebRTCPeerConnectionHandlerClient.h>
+#include "public/platform/WebRTCPeerConnectionHandler.h"
+#include "public/platform/WebRTCPeerConnectionHandlerClient.h"
 #include <wtf/OwnPtr.h>
 #include <wtf/PassRefPtr.h>
 

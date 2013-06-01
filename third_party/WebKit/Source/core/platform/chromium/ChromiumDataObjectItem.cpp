@@ -39,8 +39,8 @@
 #include "core/platform/chromium/ClipboardMimeTypes.h"
 #include "core/platform/chromium/ClipboardUtilitiesChromium.h"
 
-#include <public/Platform.h>
-#include <public/WebClipboard.h>
+#include "public/platform/Platform.h"
+#include "public/platform/WebClipboard.h"
 
 namespace WebCore {
 

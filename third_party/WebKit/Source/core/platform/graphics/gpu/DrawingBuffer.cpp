@@ -37,10 +37,10 @@
 #include "core/platform/graphics/Extensions3D.h"
 #include "core/platform/graphics/GraphicsContext3D.h"
 #include "core/platform/graphics/GraphicsLayer.h"
-#include <public/Platform.h>
-#include <public/WebCompositorSupport.h>
-#include <public/WebExternalTextureLayer.h>
-#include <public/WebGraphicsContext3D.h>
+#include "public/platform/Platform.h"
+#include "public/platform/WebCompositorSupport.h"
+#include "public/platform/WebExternalTextureLayer.h"
+#include "public/platform/WebGraphicsContext3D.h"
 
 using namespace std;
 

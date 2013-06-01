@@ -24,15 +24,15 @@
 
 #include "config.h"
 
-#include <public/WebMediaStream.h>
+#include "public/platform/WebMediaStream.h"
 
 #include "core/platform/UUID.h"
 #include "core/platform/mediastream/MediaStreamComponent.h"
 #include "core/platform/mediastream/MediaStreamDescriptor.h"
 #include "core/platform/mediastream/MediaStreamSource.h"
-#include <public/WebMediaStreamSource.h>
-#include <public/WebMediaStreamTrack.h>
-#include <public/WebString.h>
+#include "public/platform/WebMediaStreamSource.h"
+#include "public/platform/WebMediaStreamTrack.h"
+#include "public/platform/WebString.h"
 #include <wtf/OwnPtr.h>
 #include <wtf/PassOwnPtr.h>
 #include <wtf/Vector.h>

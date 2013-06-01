@@ -28,7 +28,7 @@
 
 #include "core/platform/ScrollbarThemeClient.h"
 #include "wtf/Noncopyable.h"
-#include <public/WebScrollbar.h>
+#include "public/platform/WebScrollbar.h"
 
 namespace WebCore {
 class ScrollView;

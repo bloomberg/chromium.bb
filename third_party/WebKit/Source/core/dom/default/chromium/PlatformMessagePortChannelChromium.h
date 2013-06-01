@@ -33,7 +33,7 @@
 
 
 #include "core/dom/MessagePortChannel.h"
-#include <public/WebMessagePortChannelClient.h>
+#include "public/platform/WebMessagePortChannelClient.h"
 #include <wtf/PassRefPtr.h>
 #include <wtf/Threading.h>
 

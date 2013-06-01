@@ -26,7 +26,7 @@
 #include "config.h"
 #include "core/platform/SharedTimer.h"
 
-#include <public/Platform.h>
+#include "public/platform/Platform.h"
 
 namespace WebCore {
 

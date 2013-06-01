@@ -31,7 +31,7 @@
 #include "config.h"
 #include "core/platform/Language.h"
 
-#include <public/Platform.h>
+#include "public/platform/Platform.h"
 #include <wtf/text/WTFString.h>
 #include <wtf/Vector.h>
 

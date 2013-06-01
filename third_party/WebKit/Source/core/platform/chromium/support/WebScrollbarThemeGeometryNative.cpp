@@ -29,7 +29,7 @@
 
 #include "core/platform/ScrollbarThemeComposite.h"
 #include "core/platform/chromium/support/WebScrollbarThemeClientImpl.h"
-#include <public/WebScrollbar.h>
+#include "public/platform/WebScrollbar.h"
 
 using namespace WebCore;
 

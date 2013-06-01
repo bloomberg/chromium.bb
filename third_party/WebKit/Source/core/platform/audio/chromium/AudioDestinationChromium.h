@@ -33,8 +33,8 @@
 #include "core/platform/audio/AudioDestination.h"
 #include "core/platform/audio/AudioIOCallback.h"
 #include "core/platform/audio/AudioSourceProvider.h"
-#include <public/WebAudioDevice.h>
-#include <public/WebVector.h>
+#include "public/platform/WebAudioDevice.h"
+#include "public/platform/WebVector.h"
 
 namespace WebCore { 
 

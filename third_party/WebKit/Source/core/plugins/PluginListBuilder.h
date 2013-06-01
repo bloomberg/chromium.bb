@@ -32,7 +32,7 @@
 #define PluginListBuilder_h
 
 #include "core/plugins/PluginData.h"
-#include <public/WebPluginListBuilder.h>
+#include "public/platform/WebPluginListBuilder.h"
 #include <wtf/Vector.h>
 
 namespace WebCore {

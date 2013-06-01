@@ -29,13 +29,13 @@
  */
 
 #include "config.h"
-#include <public/WebURLRequest.h>
+#include "public/platform/WebURLRequest.h"
 
 #include "core/platform/chromium/support/WebURLRequestPrivate.h"
 #include "core/platform/network/ResourceRequest.h"
-#include <public/WebHTTPBody.h>
-#include <public/WebHTTPHeaderVisitor.h>
-#include <public/WebURL.h>
+#include "public/platform/WebHTTPBody.h"
+#include "public/platform/WebHTTPHeaderVisitor.h"
+#include "public/platform/WebURL.h"
 
 using namespace WebCore;
 

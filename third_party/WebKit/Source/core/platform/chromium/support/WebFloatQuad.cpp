@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include <public/WebFloatQuad.h>
+#include "public/platform/WebFloatQuad.h"
 
 #include <algorithm>
 #include <math.h>

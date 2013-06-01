@@ -34,9 +34,9 @@
 #include "core/platform/FileMetadata.h"
 #include "core/platform/NotImplemented.h"
 
-#include <public/Platform.h>
-#include <public/WebFileInfo.h>
-#include <public/WebFileUtilities.h>
+#include "public/platform/Platform.h"
+#include "public/platform/WebFileInfo.h"
+#include "public/platform/WebFileUtilities.h"
 #include <wtf/text/WTFString.h>
 
 namespace WebCore {

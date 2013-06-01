@@ -43,13 +43,13 @@
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 
-#include <public/WebAnimationDelegate.h>
-#include <public/WebCompositingReasons.h>
-#include <public/WebContentLayer.h>
-#include <public/WebImageLayer.h>
-#include <public/WebLayer.h>
-#include <public/WebLayerScrollClient.h>
-#include <public/WebSolidColorLayer.h>
+#include "public/platform/WebAnimationDelegate.h"
+#include "public/platform/WebCompositingReasons.h"
+#include "public/platform/WebContentLayer.h"
+#include "public/platform/WebImageLayer.h"
+#include "public/platform/WebLayer.h"
+#include "public/platform/WebLayerScrollClient.h"
+#include "public/platform/WebSolidColorLayer.h"
 
 enum LayerTreeAsTextBehaviorFlags {
     LayerTreeAsTextBehaviorNormal = 0,

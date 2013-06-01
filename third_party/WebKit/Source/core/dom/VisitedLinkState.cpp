@@ -33,7 +33,7 @@
 #include "core/dom/NodeTraversal.h"
 #include "core/html/HTMLAnchorElement.h"
 #include "core/page/Page.h"
-#include <public/Platform.h>
+#include "public/platform/Platform.h"
 
 namespace WebCore {
 

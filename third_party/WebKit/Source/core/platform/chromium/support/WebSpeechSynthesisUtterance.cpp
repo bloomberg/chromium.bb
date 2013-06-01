@@ -25,7 +25,7 @@
 
 #include "config.h"
 
-#include <public/WebSpeechSynthesisUtterance.h>
+#include "public/platform/WebSpeechSynthesisUtterance.h"
 
 #include "core/platform/PlatformSpeechSynthesisUtterance.h"
 #include <wtf/PassRefPtr.h>

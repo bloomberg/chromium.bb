@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include <public/WebThreadSafeData.h>
+#include "public/platform/WebThreadSafeData.h"
 
 #include "core/platform/network/BlobData.h"
 

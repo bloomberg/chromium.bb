@@ -30,7 +30,7 @@
 
 #include "config.h"
 
-#include <public/WebMediaConstraints.h>
+#include "public/platform/WebMediaConstraints.h"
 
 #include "core/platform/mediastream/MediaConstraints.h"
 

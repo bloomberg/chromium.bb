@@ -43,13 +43,13 @@
 #include "core/rendering/RenderLayerBacking.h"
 #include "core/rendering/RenderLayerCompositor.h"
 #include "core/rendering/RenderView.h"
-#include <public/Platform.h>
-#include <public/WebCompositorSupport.h>
-#include <public/WebLayerPositionConstraint.h>
-#include <public/WebScrollbar.h>
-#include <public/WebScrollbarLayer.h>
-#include <public/WebScrollbarThemeGeometry.h>
-#include <public/WebScrollbarThemePainter.h>
+#include "public/platform/Platform.h"
+#include "public/platform/WebCompositorSupport.h"
+#include "public/platform/WebLayerPositionConstraint.h"
+#include "public/platform/WebScrollbar.h"
+#include "public/platform/WebScrollbarLayer.h"
+#include "public/platform/WebScrollbarThemeGeometry.h"
+#include "public/platform/WebScrollbarThemePainter.h"
 
 using WebKit::WebLayer;
 using WebKit::WebLayerPositionConstraint;

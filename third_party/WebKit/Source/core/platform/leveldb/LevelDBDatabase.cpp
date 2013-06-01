@@ -43,7 +43,7 @@
 #include <wtf/text/WTFString.h>
 
 #include <env_idb.h>
-#include <public/Platform.h>
+#include "public/platform/Platform.h"
 
 namespace WebCore {
 

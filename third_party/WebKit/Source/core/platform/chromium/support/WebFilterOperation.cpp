@@ -24,7 +24,7 @@
  */
 
 #include "config.h"
-#include <public/WebFilterOperation.h>
+#include "public/platform/WebFilterOperation.h"
 
 #include <string.h>
 

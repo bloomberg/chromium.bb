@@ -26,8 +26,8 @@
 #include "config.h"
 
 #include <cmath>
-#include <public/WebFilterOperation.h>
-#include <public/WebFilterOperations.h>
+#include "public/platform/WebFilterOperation.h"
+#include "public/platform/WebFilterOperations.h"
 #include <wtf/Vector.h>
 
 namespace WebKit {

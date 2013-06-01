@@ -30,10 +30,10 @@
 
 #include "config.h"
 
-#include <public/WebRTCSessionDescriptionRequest.h>
+#include "public/platform/WebRTCSessionDescriptionRequest.h"
 
 #include "core/platform/mediastream/RTCSessionDescriptionRequest.h"
-#include <public/WebRTCSessionDescription.h>
+#include "public/platform/WebRTCSessionDescription.h"
 #include <wtf/PassOwnPtr.h>
 
 using namespace WebCore;

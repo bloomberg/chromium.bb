@@ -35,9 +35,9 @@
 #include "core/platform/graphics/IntSize.h"
 #include "core/platform/text/DateTimeFormat.h"
 
-#include <public/Platform.h>
-#include <public/WebLocalizedString.h>
-#include <public/WebString.h>
+#include "public/platform/Platform.h"
+#include "public/platform/WebLocalizedString.h"
+#include "public/platform/WebString.h"
 #include <wtf/text/StringBuilder.h>
 #include <wtf/text/WTFString.h>
 

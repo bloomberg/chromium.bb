@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include <public/WebURL.h>
+#include "public/platform/WebURL.h"
 
 #include "core/platform/KURL.h"
 

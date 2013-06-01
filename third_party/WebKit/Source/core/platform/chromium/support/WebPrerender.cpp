@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include <public/WebPrerender.h>
+#include "public/platform/WebPrerender.h"
 #include <wtf/PassRefPtr.h>
 
 #include "core/platform/chromium/Prerender.h"

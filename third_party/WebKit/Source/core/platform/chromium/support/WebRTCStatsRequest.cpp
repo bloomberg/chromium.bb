@@ -30,13 +30,13 @@
 
 #include "config.h"
 
-#include <public/WebRTCStatsRequest.h>
+#include "public/platform/WebRTCStatsRequest.h"
 
 #include "core/platform/mediastream/RTCStatsRequest.h"
 #include "modules/mediastream/RTCStatsResponse.h"
-#include <public/WebMediaStream.h>
-#include <public/WebMediaStreamTrack.h>
-#include <public/WebRTCStatsResponse.h>
+#include "public/platform/WebMediaStream.h"
+#include "public/platform/WebMediaStreamTrack.h"
+#include "public/platform/WebRTCStatsResponse.h"
 #include <wtf/PassOwnPtr.h>
 
 using namespace WebCore;

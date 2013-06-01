@@ -30,9 +30,9 @@
  */
 
 #include "config.h"
-#include <public/WebCString.h>
+#include "public/platform/WebCString.h"
 
-#include <public/WebString.h>
+#include "public/platform/WebString.h"
 #include <wtf/text/CString.h>
 
 namespace WebKit {

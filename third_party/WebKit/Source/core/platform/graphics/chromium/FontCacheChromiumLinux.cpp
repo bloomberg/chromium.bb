@@ -26,10 +26,10 @@
 
 #include "core/platform/graphics/FontCache.h"
 
-#include <public/linux/WebFontFamily.h>
-#include <public/linux/WebFontInfo.h>
-#include <public/linux/WebSandboxSupport.h>
-#include <public/Platform.h>
+#include "public/platform/linux/WebFontFamily.h"
+#include "public/platform/linux/WebFontInfo.h"
+#include "public/platform/linux/WebSandboxSupport.h"
+#include "public/platform/Platform.h"
 
 namespace WebCore {
 

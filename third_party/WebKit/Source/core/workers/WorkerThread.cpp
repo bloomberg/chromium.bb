@@ -41,8 +41,8 @@
 #include <wtf/Noncopyable.h>
 #include <wtf/text/WTFString.h>
 
-#include <public/Platform.h>
-#include <public/WebWorkerRunLoop.h>
+#include "public/platform/Platform.h"
+#include "public/platform/WebWorkerRunLoop.h"
 
 namespace WebCore {
 

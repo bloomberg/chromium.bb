@@ -44,10 +44,10 @@
 #include "core/rendering/RenderBox.h"
 #include "core/rendering/RenderProgress.h"
 #include "core/rendering/RenderSlider.h"
-#include <public/Platform.h>
-#include <public/WebColor.h>
-#include <public/WebRect.h>
-#include <public/win/WebThemeEngine.h>
+#include "public/platform/Platform.h"
+#include "public/platform/WebColor.h"
+#include "public/platform/WebRect.h"
+#include "public/platform/win/WebThemeEngine.h"
 #include <wtf/CurrentTime.h>
 
 

@@ -34,10 +34,10 @@
 #include "core/platform/PlatformSpeechSynthesisUtterance.h"
 #include "core/platform/PlatformSpeechSynthesisVoice.h"
 #include "core/platform/chromium/support/WebSpeechSynthesizerClientImpl.h"
-#include <public/Platform.h>
-#include <public/WebSpeechSynthesisUtterance.h>
-#include <public/WebSpeechSynthesizer.h>
-#include <public/WebSpeechSynthesizerClient.h>
+#include "public/platform/Platform.h"
+#include "public/platform/WebSpeechSynthesisUtterance.h"
+#include "public/platform/WebSpeechSynthesizer.h"
+#include "public/platform/WebSpeechSynthesizerClient.h"
 #include <wtf/RetainPtr.h>
 
 namespace WebCore {

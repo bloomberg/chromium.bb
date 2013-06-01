@@ -28,7 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <public/WebPrerenderingSupport.h>
+#include "public/platform/WebPrerenderingSupport.h"
 
 namespace WebKit {
 

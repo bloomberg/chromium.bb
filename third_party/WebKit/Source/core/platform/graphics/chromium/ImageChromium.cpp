@@ -33,8 +33,8 @@
 #include "core/platform/graphics/BitmapImage.h"
 #include "core/platform/graphics/Image.h"
 
-#include <public/Platform.h>
-#include <public/WebData.h>
+#include "public/platform/Platform.h"
+#include "public/platform/WebData.h"
 
 namespace WebCore {
 

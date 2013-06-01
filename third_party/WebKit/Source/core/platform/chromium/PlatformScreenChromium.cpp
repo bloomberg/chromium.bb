@@ -34,8 +34,8 @@
 #include "core/platform/HostWindow.h"
 #include "core/platform/ScrollView.h"
 #include "core/platform/graphics/FloatRect.h"
-#include <public/Platform.h>
-#include <public/WebScreenInfo.h>
+#include "public/platform/Platform.h"
+#include "public/platform/WebScreenInfo.h"
 
 namespace WebCore {
 

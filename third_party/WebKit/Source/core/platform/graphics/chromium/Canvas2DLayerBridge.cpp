@@ -34,9 +34,9 @@
 #include "core/platform/graphics/GraphicsContext3D.h"
 #include "core/platform/graphics/GraphicsLayer.h"
 #include "core/platform/graphics/chromium/Canvas2DLayerManager.h"
-#include <public/Platform.h>
-#include <public/WebCompositorSupport.h>
-#include <public/WebGraphicsContext3D.h>
+#include "public/platform/Platform.h"
+#include "public/platform/WebCompositorSupport.h"
+#include "public/platform/WebGraphicsContext3D.h"
 
 using WebKit::WebExternalTextureLayer;
 using WebKit::WebGraphicsContext3D;

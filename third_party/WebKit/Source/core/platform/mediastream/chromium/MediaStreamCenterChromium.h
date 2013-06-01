@@ -33,7 +33,7 @@
 
 #include "core/platform/mediastream/MediaStreamCenter.h"
 
-#include <public/WebMediaStreamCenterClient.h>
+#include "public/platform/WebMediaStreamCenterClient.h"
 #include <wtf/OwnPtr.h>
 #include <wtf/PassRefPtr.h>
 #include <wtf/text/WTFString.h>

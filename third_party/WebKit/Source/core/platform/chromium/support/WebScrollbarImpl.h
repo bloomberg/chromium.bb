@@ -25,7 +25,7 @@
 #ifndef WebScrollbarImpl_h
 #define WebScrollbarImpl_h
 
-#include <public/WebScrollbar.h>
+#include "public/platform/WebScrollbar.h"
 
 namespace WebCore {
 class Scrollbar;

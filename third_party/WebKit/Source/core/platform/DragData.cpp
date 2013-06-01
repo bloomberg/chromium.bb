@@ -39,8 +39,8 @@
 #include "modules/filesystem/DraggedIsolatedFileSystem.h"
 #include "wtf/text/WTFString.h"
 
-#include <public/Platform.h>
-#include <public/WebFileUtilities.h>
+#include "public/platform/Platform.h"
+#include "public/platform/WebFileUtilities.h"
 
 namespace WebCore {
 

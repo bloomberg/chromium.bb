@@ -30,12 +30,12 @@
 
 #include "config.h"
 
-#include <public/WebRTCConfiguration.h>
+#include "public/platform/WebRTCConfiguration.h"
 
 #include "core/platform/mediastream/RTCConfiguration.h"
-#include <public/WebString.h>
-#include <public/WebURL.h>
-#include <public/WebVector.h>
+#include "public/platform/WebString.h"
+#include "public/platform/WebURL.h"
+#include "public/platform/WebVector.h"
 
 using namespace WebCore;
 

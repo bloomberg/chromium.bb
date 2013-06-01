@@ -31,9 +31,9 @@
 #include "config.h"
 #include "core/platform/SSLKeyGenerator.h"
 
-#include <public/Platform.h>
-#include <public/WebString.h>
-#include <public/WebURL.h>
+#include "public/platform/Platform.h"
+#include "public/platform/WebString.h"
+#include "public/platform/WebURL.h"
 #include <wtf/text/WTFString.h>
 
 namespace WebCore {

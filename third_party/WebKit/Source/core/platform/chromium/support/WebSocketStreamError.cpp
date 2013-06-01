@@ -29,10 +29,10 @@
  */
 
 #include "config.h"
-#include <public/WebSocketStreamError.h>
+#include "public/platform/WebSocketStreamError.h"
 
 #include "core/platform/network/SocketStreamError.h"
-#include <public/WebString.h>
+#include "public/platform/WebString.h"
 
 using namespace WebCore;
 

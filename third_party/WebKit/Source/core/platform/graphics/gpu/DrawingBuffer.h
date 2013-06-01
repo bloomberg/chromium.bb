@@ -36,8 +36,8 @@
 #include "core/platform/graphics/IntSize.h"
 #include "core/platform/graphics/PlatformLayer.h"
 
-#include <public/WebExternalTextureLayerClient.h>
-#include <public/WebExternalTextureMailbox.h>
+#include "public/platform/WebExternalTextureLayerClient.h"
+#include "public/platform/WebExternalTextureMailbox.h"
 #include <wtf/Noncopyable.h>
 #include <wtf/OwnPtr.h>
 #include <wtf/PassOwnPtr.h>

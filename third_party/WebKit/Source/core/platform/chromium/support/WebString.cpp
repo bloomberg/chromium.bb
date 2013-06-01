@@ -29,9 +29,9 @@
  */
 
 #include "config.h"
-#include <public/WebString.h>
+#include "public/platform/WebString.h"
 
-#include <public/WebCString.h>
+#include "public/platform/WebCString.h"
 #include <wtf/text/AtomicString.h>
 #include <wtf/text/CString.h>
 #include <wtf/text/WTFString.h>

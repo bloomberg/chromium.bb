@@ -30,12 +30,12 @@
 
 #include "config.h"
 
-#include <public/WebMediaStreamSource.h>
+#include "public/platform/WebMediaStreamSource.h"
 
 #include "core/platform/audio/AudioBus.h"
 #include "core/platform/mediastream/MediaStreamSource.h"
-#include <public/WebAudioDestinationConsumer.h>
-#include <public/WebString.h>
+#include "public/platform/WebAudioDestinationConsumer.h"
+#include "public/platform/WebString.h"
 #include <wtf/MainThread.h>
 #include <wtf/PassOwnPtr.h>
 #include <wtf/Vector.h>

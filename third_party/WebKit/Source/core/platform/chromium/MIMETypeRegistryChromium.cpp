@@ -33,8 +33,8 @@
 
 #include "core/plugins/PluginData.h"
 
-#include <public/Platform.h>
-#include <public/WebMimeRegistry.h>
+#include "public/platform/Platform.h"
+#include "public/platform/WebMimeRegistry.h"
 #include <wtf/text/CString.h>
 
 // NOTE: Unlike other ports, we don't use the shared implementation in

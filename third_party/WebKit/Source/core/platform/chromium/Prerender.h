@@ -34,7 +34,7 @@
 
 #include "core/platform/KURL.h"
 #include "weborigin/ReferrerPolicy.h"
-#include <public/WebSize.h>
+#include "public/platform/WebSize.h"
 #include <wtf/OwnPtr.h>
 #include <wtf/PassOwnPtr.h>
 #include <wtf/PassRefPtr.h>

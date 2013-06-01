@@ -33,12 +33,12 @@
 #include "core/platform/PrerenderClient.h"
 #include "core/platform/chromium/Prerender.h"
 
-#include <public/Platform.h>
-#include <public/WebPrerender.h>
-#include <public/WebPrerenderingSupport.h>
-#include <public/WebReferrerPolicy.h>
-#include <public/WebString.h>
-#include <public/WebURL.h>
+#include "public/platform/Platform.h"
+#include "public/platform/WebPrerender.h"
+#include "public/platform/WebPrerenderingSupport.h"
+#include "public/platform/WebReferrerPolicy.h"
+#include "public/platform/WebString.h"
+#include "public/platform/WebURL.h"
 
 namespace WebCore {
 

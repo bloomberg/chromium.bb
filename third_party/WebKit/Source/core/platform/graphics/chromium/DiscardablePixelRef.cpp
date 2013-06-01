@@ -26,7 +26,7 @@
 #include "config.h"
 #include "core/platform/graphics/chromium/DiscardablePixelRef.h"
 
-#include <public/Platform.h>
+#include "public/platform/Platform.h"
 #include <wtf/StdLibExtras.h>
 
 namespace WebCore {

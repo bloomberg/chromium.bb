@@ -26,7 +26,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define Canvas2DLayerManager_h
 
 #include "core/platform/graphics/chromium/Canvas2DLayerBridge.h"
-#include <public/WebThread.h>
+#include "public/platform/WebThread.h"
 
 class Canvas2DLayerManagerTest;
 

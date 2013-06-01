@@ -30,11 +30,11 @@
 
 #include "config.h"
 
-#include <public/WebRTCSessionDescription.h>
+#include "public/platform/WebRTCSessionDescription.h"
 
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
-#include <public/WebString.h>
+#include "public/platform/WebString.h"
 
 namespace WebKit {
 

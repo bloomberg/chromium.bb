@@ -33,9 +33,9 @@
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderObject.h"
 #include "core/rendering/RenderProgress.h"
-#include <public/default/WebThemeEngine.h>
-#include <public/Platform.h>
-#include <public/WebRect.h>
+#include "public/platform/default/WebThemeEngine.h"
+#include "public/platform/Platform.h"
+#include "public/platform/WebRect.h"
 
 namespace WebCore {
 

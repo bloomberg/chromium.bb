@@ -35,11 +35,11 @@
 #include "core/page/Frame.h"
 #include "core/platform/Cookie.h"
 #include "core/platform/network/NetworkingContext.h"
-#include <public/Platform.h>
-#include <public/WebCookie.h>
-#include <public/WebCookieJar.h>
-#include <public/WebURL.h>
-#include <public/WebVector.h>
+#include "public/platform/Platform.h"
+#include "public/platform/WebCookie.h"
+#include "public/platform/WebCookieJar.h"
+#include "public/platform/WebURL.h"
+#include "public/platform/WebVector.h"
 
 namespace WebCore {
 

@@ -27,8 +27,8 @@
 
 #include "core/platform/mediastream/RTCDataChannelHandler.h"
 #include "core/platform/mediastream/RTCDataChannelHandlerClient.h"
-#include <public/WebRTCDataChannelHandler.h>
-#include <public/WebRTCDataChannelHandlerClient.h>
+#include "public/platform/WebRTCDataChannelHandler.h"
+#include "public/platform/WebRTCDataChannelHandlerClient.h"
 #include <wtf/OwnPtr.h>
 #include <wtf/PassOwnPtr.h>
 

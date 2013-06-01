@@ -53,15 +53,15 @@
 #include "wtf/text/StringHash.h"
 #include "wtf/text/WTFString.h"
 
-#include <public/Platform.h>
-#include <public/WebAnimation.h>
-#include <public/WebCompositorSupport.h>
-#include <public/WebFilterOperation.h>
-#include <public/WebFilterOperations.h>
-#include <public/WebFloatPoint.h>
-#include <public/WebFloatRect.h>
-#include <public/WebPoint.h>
-#include <public/WebSize.h>
+#include "public/platform/Platform.h"
+#include "public/platform/WebAnimation.h"
+#include "public/platform/WebCompositorSupport.h"
+#include "public/platform/WebFilterOperation.h"
+#include "public/platform/WebFilterOperations.h"
+#include "public/platform/WebFloatPoint.h"
+#include "public/platform/WebFloatRect.h"
+#include "public/platform/WebPoint.h"
+#include "public/platform/WebSize.h"
 
 #ifndef NDEBUG
 #include <stdio.h>

@@ -29,8 +29,8 @@
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/graphics/IntRect.h"
 #include "core/platform/graphics/transforms/AffineTransform.h"
-#include <public/WebFloatRect.h>
-#include <public/WebRect.h>
+#include "public/platform/WebFloatRect.h"
+#include "public/platform/WebRect.h"
 
 using WebKit::WebFloatRect;
 using WebKit::WebRect;

@@ -30,7 +30,7 @@
 
 #include "config.h"
 
-#include <public/WebRTCVoidRequest.h>
+#include "public/platform/WebRTCVoidRequest.h"
 
 #include "core/platform/mediastream/RTCVoidRequest.h"
 #include <wtf/PassOwnPtr.h>

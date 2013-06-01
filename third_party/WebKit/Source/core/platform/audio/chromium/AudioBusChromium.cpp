@@ -28,8 +28,8 @@
 
 #include "core/platform/audio/AudioBus.h"
 
-#include <public/Platform.h>
-#include <public/WebAudioBus.h>
+#include "public/platform/Platform.h"
+#include "public/platform/WebAudioBus.h"
 
 namespace WebCore {
 

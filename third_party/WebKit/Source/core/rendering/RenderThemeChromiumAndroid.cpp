@@ -37,8 +37,8 @@
 #include "core/rendering/RenderProgress.h"
 #include "core/rendering/RenderSlider.h"
 
-#include <public/android/WebThemeEngine.h>
-#include <public/Platform.h>
+#include "public/platform/android/WebThemeEngine.h"
+#include "public/platform/Platform.h"
 
 namespace WebCore {
 

@@ -32,7 +32,7 @@
 #define Task_h
 
 #include "wtf/Functional.h"
-#include <public/WebThread.h>
+#include "public/platform/WebThread.h"
 
 namespace WebCore {
 

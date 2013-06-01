@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include <public/WebDeviceMotionData.h>
+#include "public/platform/WebDeviceMotionData.h"
 
 #include <string.h>
 

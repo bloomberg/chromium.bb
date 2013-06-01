@@ -30,9 +30,9 @@
 #include "SkImage.h"
 #include "core/platform/graphics/GraphicsContext3D.h"
 #include "core/platform/graphics/IntSize.h"
-#include <public/WebExternalTextureLayer.h>
-#include <public/WebExternalTextureLayerClient.h>
-#include <public/WebExternalTextureMailbox.h>
+#include "public/platform/WebExternalTextureLayer.h"
+#include "public/platform/WebExternalTextureLayerClient.h"
+#include "public/platform/WebExternalTextureMailbox.h"
 #include <wtf/DoublyLinkedList.h>
 #include <wtf/PassOwnPtr.h>
 #include <wtf/RefPtr.h>

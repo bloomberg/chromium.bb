@@ -28,8 +28,8 @@
 
 #include "core/platform/mediastream/RTCDTMFSenderHandler.h"
 #include "core/platform/mediastream/RTCDTMFSenderHandlerClient.h"
-#include <public/WebRTCDTMFSenderHandler.h>
-#include <public/WebRTCDTMFSenderHandlerClient.h>
+#include "public/platform/WebRTCDTMFSenderHandler.h"
+#include "public/platform/WebRTCDTMFSenderHandlerClient.h"
 #include <wtf/OwnPtr.h>
 #include <wtf/PassOwnPtr.h>
 
