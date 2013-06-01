@@ -167,8 +167,8 @@ bool NativeMessagingHost::ProcessGenerateKeyPair(
     const base::DictionaryValue& message,
     scoped_ptr<base::DictionaryValue> response) {
   scoped_refptr<RsaKeyPair> key_pair = RsaKeyPair::Generate();
-  response->SetString("private_key", key_pair->ToString());
-  response->SetString("public_key", key_pair->GetPublicKey());
+  response->SetString("privateKey", key_pair->ToString());
+  response->SetString("publicKey", key_pair->GetPublicKey());
   SendResponse(response.Pass());
   return true;
 }
@@ -276,7 +276,7 @@ void NativeMessagingHost::SendUsageStatsConsentResponse(
     bool set_by_policy) {
   response->SetBoolean("supported", supported);
   response->SetBoolean("allowed", allowed);
-  response->SetBoolean("set_by_policy", set_by_policy);
+  response->SetBoolean("setByPolicy", set_by_policy);
   SendResponse(response.Pass());
 }
 

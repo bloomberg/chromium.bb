@@ -52,8 +52,8 @@ void VerifyGenerateKeyPairResponse(const base::DictionaryValue* response) {
   std::string value;
   EXPECT_TRUE(response->GetString("type", &value));
   EXPECT_EQ("generateKeyPairResponse", value);
-  EXPECT_TRUE(response->GetString("private_key", &value));
-  EXPECT_TRUE(response->GetString("public_key", &value));
+  EXPECT_TRUE(response->GetString("privateKey", &value));
+  EXPECT_TRUE(response->GetString("publicKey", &value));
 }
 
 void VerifyGetDaemonConfigResponse(const base::DictionaryValue* response) {
@@ -74,7 +74,7 @@ void VerifyGetUsageStatsConsentResponse(const base::DictionaryValue* response) {
   bool supported, allowed, set_by_policy;
   EXPECT_TRUE(response->GetBoolean("supported", &supported));
   EXPECT_TRUE(response->GetBoolean("allowed", &allowed));
-  EXPECT_TRUE(response->GetBoolean("set_by_policy", &set_by_policy));
+  EXPECT_TRUE(response->GetBoolean("setByPolicy", &set_by_policy));
   EXPECT_TRUE(supported);
   EXPECT_TRUE(allowed);
   EXPECT_TRUE(set_by_policy);

@@ -233,12 +233,12 @@ remoting.HostNativeMessaging.prototype.onIncomingMessage_ = function(message) {
 
     case 'generateKeyPairResponse':
       /** @type {*} */
-      var private_key = message['private_key'];
+      var privateKey = message['privateKey'];
       /** @type {*} */
-      var public_key = message['public_key'];
-      if (checkType_('private_key', private_key, 'string') &&
-          checkType_('public_key', public_key, 'string')) {
-        callback(private_key, public_key);
+      var publicKey = message['publicKey'];
+      if (checkType_('privateKey', privateKey, 'string') &&
+          checkType_('publicKey', publicKey, 'string')) {
+        callback(privateKey, publicKey);
       }
       break;
 
@@ -263,11 +263,11 @@ remoting.HostNativeMessaging.prototype.onIncomingMessage_ = function(message) {
       /** @type {*} */
       var allowed = message['allowed'];
       /** @type {*} */
-      var set_by_policy = message['set_by_policy'];
+      var setByPolicy = message['setByPolicy'];
       if (checkType_('supported', supported, 'boolean') &&
           checkType_('allowed', allowed, 'boolean') &&
-          checkType_('set_by_policy', set_by_policy, 'boolean')) {
-        callback(supported, allowed, set_by_policy);
+          checkType_('setByPolicy', setByPolicy, 'boolean')) {
+        callback(supported, allowed, setByPolicy);
       }
       break;
 
