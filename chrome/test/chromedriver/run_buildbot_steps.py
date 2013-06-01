@@ -80,14 +80,22 @@ def Download():
 
 def MaybeRelease(revision):
   # Version is embedded as: const char kChromeDriverVersion[] = "0.1";
+  # Minimum supported Chrome version is embedded as:
+  # const int kMinimumSupportedChromeVersion[] = {27, 0, 1453, 0};
   with open(os.path.join(_THIS_DIR, 'chrome', 'version.cc'), 'r') as f:
-    version_line = filter(lambda x: 'kChromeDriverVersion' in x, f.readlines())
+    lines = f.readlines()
+    version_line = filter(lambda x: 'kChromeDriverVersion' in x, lines)
+    chrome_min_version_line = filter(
+        lambda x: 'kMinimumSupportedChromeVersion' in x, lines)
   version = version_line[0].split('"')[1]
+  chrome_min_version = chrome_min_version_line[0].split('{')[1].split(',')[0]
+  with open(os.path.join(chrome_paths.GetSrc(), 'chrome', 'VERSION'), 'r') as f:
+    chrome_max_version = f.readlines()[0].split('=')[1]
 
   bitness = '32'
   if util.IsLinux() and platform.architecture()[0] == '64bit':
     bitness = '64'
-  zip_name = 'chromedriver2_%s%s_%s.zip' % (
+  zip_name = 'chromedriver_%s%s_%s.zip' % (
       util.GetPlatformName(), bitness, version)
 
   site = 'https://code.google.com/p/chromedriver/downloads/list'
@@ -119,7 +127,10 @@ def MaybeRelease(revision):
       sys.executable,
       os.path.join(_THIS_DIR, 'third_party', 'googlecode',
                    'googlecode_upload.py'),
-      '--summary', 'version of ChromeDriver2 r%s' % revision,
+      '--summary',
+      'ChromeDriver server for %s%s (v%s.%s.dyu) supports Chrome v%s-%s' % (
+          util.GetPlatformName(), bitness, version, revision,
+          chrome_min_version, chrome_max_version),
       '--project', 'chromedriver',
       '--user', 'chromedriver.bot@gmail.com',
       zip_path
