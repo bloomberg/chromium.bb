@@ -142,12 +142,12 @@ void ChromeBrowserMainPartsLinux::PostProfileInit() {
 }
 
 void ChromeBrowserMainPartsLinux::PostMainMessageLoopRun() {
+  ChromeBrowserMainPartsPosix::PostMainMessageLoopRun();
+
 #if !defined(OS_CHROMEOS)
   // Delete it now. Otherwise the FILE thread would be gone when we try to
   // release it in the dtor and Valgrind would report a leak on almost every
   // single browser_test.
   storage_monitor_.reset();
 #endif
-
-  ChromeBrowserMainPartsPosix::PostMainMessageLoopRun();
 }

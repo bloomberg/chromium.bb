@@ -18,9 +18,9 @@
 
 class ChromeBrowserMainPartsLinux;
 class ChromeBrowserMainPartsMac;
+class MediaGalleriesPlatformAppBrowserTest;
 class MediaGalleriesPrivateApiTest;
 class MediaGalleriesPrivateEjectApiTest;
-class PlatformAppMediaGalleriesBrowserTest;
 class SystemInfoStorageApiTest;
 
 namespace device {
@@ -116,10 +116,10 @@ class StorageMonitor {
       base::Callback<void(EjectStatus)> callback);
 
  protected:
+  friend class ::MediaGalleriesPlatformAppBrowserTest;
   friend class ::MediaGalleriesPrivateApiTest;
   friend class ::MediaGalleriesPrivateEjectApiTest;
   friend class MediaFileSystemRegistryTest;
-  friend class ::PlatformAppMediaGalleriesBrowserTest;
   friend class ::SystemInfoStorageApiTest;
 
   StorageMonitor();

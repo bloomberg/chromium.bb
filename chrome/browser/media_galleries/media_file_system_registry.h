@@ -87,12 +87,8 @@ class MediaFileSystemRegistry : public RemovableStorageObserver {
   // RemovableStorageObserver implementation.
   virtual void OnRemovableStorageDetached(const StorageInfo& info) OVERRIDE;
 
-  size_t GetExtensionGalleriesHostCountForTests() const;
-
-  // See TransientDeviceIds::GetTransientIdForDeviceId().
-  uint64 GetTransientIdForDeviceId(const std::string& device_id);
-
  private:
+  friend class MediaFileSystemRegistryTest;
   friend class TestMediaFileSystemContext;
   class MediaFileSystemContextImpl;
 

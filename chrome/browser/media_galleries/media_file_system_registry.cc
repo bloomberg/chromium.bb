@@ -367,12 +367,7 @@ class ExtensionGalleriesHost
     if (!StorageInfo::IsRemovableDevice(device_id))
       return std::string();
 
-    // StorageMonitor may be NULL in unit tests.
-    StorageMonitor* monitor = StorageMonitor::GetInstance();
-    if (!monitor)
-      return std::string();
-
-    return monitor->GetTransientIdForDeviceId(device_id);
+    return StorageMonitor::GetInstance()->GetTransientIdForDeviceId(device_id);
   }
 
   void CleanUp() {
@@ -469,10 +464,7 @@ MediaGalleriesPreferences* MediaFileSystemRegistry::GetPreferences(
   extension_hosts_map_[profile] = ExtensionHostMap();
 
   // TODO(gbillock): Move this stanza to MediaGalleriesPreferences init code.
-  // StorageMonitor may be NULL in unit tests.
   StorageMonitor* monitor = StorageMonitor::GetInstance();
-  if (!monitor)
-    return preferences;
   std::vector<StorageInfo> existing_devices = monitor->GetAttachedStorage();
   for (size_t i = 0; i < existing_devices.size(); i++) {
     if (!StorageInfo::IsMediaDevice(existing_devices[i].device_id()))
@@ -542,17 +534,6 @@ void MediaFileSystemRegistry::OnRemovableStorageDetached(
   }
 }
 
-size_t MediaFileSystemRegistry::GetExtensionGalleriesHostCountForTests() const {
-  size_t extension_galleries_host_count = 0;
-  for (ExtensionGalleriesHostMap::const_iterator it =
-           extension_hosts_map_.begin();
-       it != extension_hosts_map_.end();
-       ++it) {
-    extension_galleries_host_count += it->second.size();
-  }
-  return extension_galleries_host_count;
-}
-
 /******************
  * Private methods
  ******************/
@@ -615,10 +596,6 @@ class MediaFileSystemRegistry::MediaFileSystemContextImpl
     IsolatedContext::GetInstance()->RevokeFileSystem(fsid);
   }
 
-  virtual MediaFileSystemRegistry* GetMediaFileSystemRegistry() OVERRIDE {
-    return registry_;
-  }
-
  private:
   MediaFileSystemRegistry* registry_;
 
@@ -627,17 +604,15 @@ class MediaFileSystemRegistry::MediaFileSystemContextImpl
 
 MediaFileSystemRegistry::MediaFileSystemRegistry()
     : file_system_context_(new MediaFileSystemContextImpl(this)) {
-  // StorageMonitor may be NULL in unit tests.
-  StorageMonitor* monitor = StorageMonitor::GetInstance();
-  if (monitor)
-    monitor->AddObserver(this);
+  StorageMonitor::GetInstance()->AddObserver(this);
 }
 
 MediaFileSystemRegistry::~MediaFileSystemRegistry() {
-  // StorageMonitor may be NULL in unit tests.
-  StorageMonitor* monitor = StorageMonitor::GetInstance();
-  if (monitor)
-    monitor->RemoveObserver(this);
+  // TODO(gbillock): This is needed because the unit test uses the
+  // g_browser_process registry. We should create one in the unit test,
+  // and then can remove this.
+  if (StorageMonitor::GetInstance())
+    StorageMonitor::GetInstance()->RemoveObserver(this);
   DCHECK(mtp_device_delegate_map_.empty());
 }
 

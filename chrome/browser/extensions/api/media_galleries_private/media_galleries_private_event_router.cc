@@ -38,16 +38,15 @@ MediaGalleriesPrivateEventRouter::MediaGalleriesPrivateEventRouter(
     : profile_(profile) {
   DCHECK(profile_);
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  chrome::StorageMonitor* monitor = chrome::StorageMonitor::GetInstance();
-  if (monitor)
-    monitor->AddObserver(this);
+  chrome::StorageMonitor::GetInstance()->AddObserver(this);
 }
 
 MediaGalleriesPrivateEventRouter::~MediaGalleriesPrivateEventRouter() {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  chrome::StorageMonitor* monitor = chrome::StorageMonitor::GetInstance();
-  if (monitor)
-    monitor->RemoveObserver(this);
+  // TODO(gbillock): Remove this check once we have destruction order
+  // fixed up for profile services and the storage monitor.
+  if (chrome::StorageMonitor::GetInstance())
+    chrome::StorageMonitor::GetInstance()->RemoveObserver(this);
 }
 
 void MediaGalleriesPrivateEventRouter::OnGalleryChanged(

@@ -38,9 +38,6 @@ class MediaFileSystemContext {
 
   // Revoke the passed |fsid|.
   virtual void RevokeFileSystem(const std::string& fsid) = 0;
-
-  // The MediaFileSystemRegistry that owns this context.
-  virtual MediaFileSystemRegistry* GetMediaFileSystemRegistry() = 0;
 };
 
 }  // namespace

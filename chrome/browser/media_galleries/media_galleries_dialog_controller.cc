@@ -106,9 +106,7 @@ MediaGalleriesDialogController::MediaGalleriesDialogController(
 
   dialog_.reset(MediaGalleriesDialog::Create(this));
 
-  StorageMonitor* monitor = StorageMonitor::GetInstance();
-  if (monitor)
-    monitor->AddObserver(this);
+  StorageMonitor::GetInstance()->AddObserver(this);
 
   preferences_->AddGalleryChangeObserver(this);
 }
@@ -119,9 +117,7 @@ MediaGalleriesDialogController::MediaGalleriesDialogController()
       preferences_(NULL) {}
 
 MediaGalleriesDialogController::~MediaGalleriesDialogController() {
-  StorageMonitor* monitor = StorageMonitor::GetInstance();
-  if (monitor)
-    monitor->RemoveObserver(this);
+  StorageMonitor::GetInstance()->RemoveObserver(this);
 
   if (select_folder_dialog_.get())
     select_folder_dialog_->ListenerDestroyed();

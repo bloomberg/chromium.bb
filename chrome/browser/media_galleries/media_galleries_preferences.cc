@@ -235,15 +235,11 @@ MediaGalleriesPreferences::MediaGalleriesPreferences(Profile* profile)
 
   InitFromPrefs(false /*no notification*/);
 
-  StorageMonitor* monitor = StorageMonitor::GetInstance();
-  if (monitor)
-    monitor->AddObserver(this);
+  StorageMonitor::GetInstance()->AddObserver(this);
 }
 
 MediaGalleriesPreferences::~MediaGalleriesPreferences() {
-  StorageMonitor* monitor = StorageMonitor::GetInstance();
-  if (monitor)
-    monitor->RemoveObserver(this);
+  StorageMonitor::GetInstance()->RemoveObserver(this);
 }
 
 void MediaGalleriesPreferences::AddDefaultGalleriesIfFreshProfile() {

@@ -87,9 +87,9 @@ class TestMediaFileSystemContext : public MediaFileSystemContext {
 
   virtual void RevokeFileSystem(const std::string& fsid) OVERRIDE;
 
-  virtual MediaFileSystemRegistry* GetMediaFileSystemRegistry() OVERRIDE;
-
   base::FilePath GetPathForId(const std::string& fsid) const;
+
+  MediaFileSystemRegistry* registry() { return registry_; }
 
  private:
   std::string AddFSEntry(const std::string& device_id,
@@ -146,11 +146,6 @@ void TestMediaFileSystemContext::RevokeFileSystem(const std::string& fsid) {
   if (!ContainsKey(file_systems_by_id_, fsid))
     return;
   EXPECT_EQ(1U, file_systems_by_id_.erase(fsid));
-}
-
-MediaFileSystemRegistry*
-TestMediaFileSystemContext::GetMediaFileSystemRegistry() {
-  return registry_;
 }
 
 base::FilePath TestMediaFileSystemContext::GetPathForId(
@@ -345,9 +340,12 @@ class MediaFileSystemRegistryTest : public ChromeRenderViewHostTestHarness {
     StorageMonitor::GetInstance()->receiver()->ProcessDetach(id);
   }
 
-  MediaFileSystemRegistry* GetMediaFileSystemRegistry() {
-    return test_file_system_context_->GetMediaFileSystemRegistry();
+  MediaFileSystemRegistry* registry() {
+    return test_file_system_context_->registry();
   }
+
+  size_t GetExtensionGalleriesHostCount(
+      const MediaFileSystemRegistry* registry) const;
 
  protected:
   virtual void SetUp() OVERRIDE;
@@ -382,7 +380,7 @@ class MediaFileSystemRegistryTest : public ChromeRenderViewHostTestHarness {
 #if defined(OS_WIN)
   scoped_ptr<test::TestStorageMonitorWin> monitor_;
 #else
-  chrome::test::TestStorageMonitor monitor_;
+  scoped_ptr<chrome::test::TestStorageMonitor> monitor_;
 #endif
 
   MockProfileSharedRenderProcessHostFactory rph_factory_;
@@ -719,6 +717,19 @@ MediaFileSystemRegistryTest::GetAutoAddedGalleries(
   return result;
 }
 
+size_t MediaFileSystemRegistryTest::GetExtensionGalleriesHostCount(
+    const MediaFileSystemRegistry* registry) const {
+  size_t extension_galleries_host_count = 0;
+  for (MediaFileSystemRegistry::ExtensionGalleriesHostMap::const_iterator it =
+           registry->extension_hosts_map_.begin();
+       it != registry->extension_hosts_map_.end();
+       ++it) {
+    extension_galleries_host_count += it->second.size();
+  }
+  return extension_galleries_host_count;
+}
+
+
 void MediaFileSystemRegistryTest::SetUp() {
 #if defined(OS_WIN)
   test::TestPortableDeviceWatcherWin* portable_device_watcher =
@@ -736,6 +747,9 @@ void MediaFileSystemRegistryTest::SetUp() {
   base::RunLoop().RunUntilIdle();
   mount_watcher->FlushWorkerPoolForTesting();
   base::RunLoop().RunUntilIdle();
+#else
+  monitor_.reset(new test::TestStorageMonitor());
+  monitor_->Init();
 #endif
 
   ChromeRenderViewHostTestHarness::SetUp();
@@ -758,7 +772,7 @@ void MediaFileSystemRegistryTest::TearDown() {
   ChromeRenderViewHostTestHarness::TearDown();
   MediaFileSystemRegistry* registry =
       g_browser_process->media_file_system_registry();
-  EXPECT_EQ(0U, registry->GetExtensionGalleriesHostCountForTests());
+  EXPECT_EQ(0U, GetExtensionGalleriesHostCount(registry));
   BrowserThread::GetBlockingPool()->FlushForTesting();
   base::MessageLoop::current()->RunUntilIdle();
 }
@@ -851,7 +865,7 @@ TEST_F(MediaFileSystemRegistryTest,
   // Forget the device.
   bool forget_gallery = false;
   MediaGalleriesPreferences* prefs =
-      GetMediaFileSystemRegistry()->GetPreferences(profile_state->profile());
+      registry()->GetPreferences(profile_state->profile());
   const MediaGalleriesPrefInfoMap& galleries = prefs->known_galleries();
   for (MediaGalleriesPrefInfoMap::const_iterator it = galleries.begin();
        it != galleries.end(); ++it) {
@@ -866,7 +880,7 @@ TEST_F(MediaFileSystemRegistryTest,
   EXPECT_EQ(gallery_count, GetAutoAddedGalleries(profile_state).size());
 
   // Call GetPreferences() and the gallery count should not change.
-  GetMediaFileSystemRegistry()->GetPreferences(profile_state->profile());
+  registry()->GetPreferences(profile_state->profile());
   EXPECT_EQ(gallery_count, GetAutoAddedGalleries(profile_state).size());
 }
 
