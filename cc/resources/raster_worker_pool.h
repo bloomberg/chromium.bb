@@ -40,7 +40,7 @@ class CC_EXPORT RasterWorkerPool : public WorkerPool {
     ~Task();
 
     // Returns true if Task is null (doesn't refer to anything).
-    bool is_null() const { return !internal_; }
+    bool is_null() const { return !internal_.get(); }
 
     // Returns the Task into an uninitialized state.
     void Reset();

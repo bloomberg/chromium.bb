@@ -44,7 +44,7 @@ scoped_refptr<cc::ContextProvider>
 LayerTreePixelTest::OffscreenContextProviderForCompositorThread() {
   scoped_refptr<webkit::gpu::ContextProviderInProcess> provider =
       webkit::gpu::ContextProviderInProcess::Create();
-  CHECK(provider);
+  CHECK(provider.get());
   return provider;
 }
 

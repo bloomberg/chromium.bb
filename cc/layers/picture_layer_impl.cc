@@ -977,8 +977,8 @@ void PictureLayerImpl::UpdateLCDTextStatus() {
   // Further tiles created due to new tilings should be considered invalidated.
   pending_layer->invalidation_.Union(gfx::Rect(bounds()));
   pending_layer->is_using_lcd_text_ = is_using_lcd_text_;
-  pending_layer->pile_ = PicturePileImpl::CreateFromOther(pending_layer->pile_,
-                                                          is_using_lcd_text_);
+  pending_layer->pile_ = PicturePileImpl::CreateFromOther(
+      pending_layer->pile_.get(), is_using_lcd_text_);
   pending_layer->tilings_->DestroyAndRecreateTilesWithText();
 }
 

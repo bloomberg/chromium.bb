@@ -72,7 +72,7 @@ class CC_EXPORT PictureLayerTiling {
     std::vector<Tile*> all_tiles;
     for (TileMap::const_iterator it = tiles_.begin();
          it != tiles_.end(); ++it)
-      all_tiles.push_back(it->second);
+      all_tiles.push_back(it->second.get());
     return all_tiles;
   }
 

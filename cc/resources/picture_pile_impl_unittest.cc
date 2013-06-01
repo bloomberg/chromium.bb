@@ -157,67 +157,49 @@ TEST(PicturePileImplTest, PixelRefIteratorEmpty) {
   // Tile sized iterators.
   {
     PicturePileImpl::PixelRefIterator iterator(
-        gfx::Rect(0, 0, 128, 128),
-        1.0,
-        pile);
+        gfx::Rect(0, 0, 128, 128), 1.0, pile.get());
     EXPECT_FALSE(iterator);
   }
   {
     PicturePileImpl::PixelRefIterator iterator(
-        gfx::Rect(0, 0, 256, 256),
-        2.0,
-        pile);
+        gfx::Rect(0, 0, 256, 256), 2.0, pile.get());
     EXPECT_FALSE(iterator);
   }
   {
     PicturePileImpl::PixelRefIterator iterator(
-        gfx::Rect(0, 0, 64, 64),
-        0.5,
-        pile);
+        gfx::Rect(0, 0, 64, 64), 0.5, pile.get());
     EXPECT_FALSE(iterator);
   }
   // Shifted tile sized iterators.
   {
     PicturePileImpl::PixelRefIterator iterator(
-        gfx::Rect(140, 140, 128, 128),
-        1.0,
-        pile);
+        gfx::Rect(140, 140, 128, 128), 1.0, pile.get());
     EXPECT_FALSE(iterator);
   }
   {
     PicturePileImpl::PixelRefIterator iterator(
-        gfx::Rect(280, 280, 256, 256),
-        2.0,
-        pile);
+        gfx::Rect(280, 280, 256, 256), 2.0, pile.get());
     EXPECT_FALSE(iterator);
   }
   {
     PicturePileImpl::PixelRefIterator iterator(
-        gfx::Rect(70, 70, 64, 64),
-        0.5,
-        pile);
+        gfx::Rect(70, 70, 64, 64), 0.5, pile.get());
     EXPECT_FALSE(iterator);
   }
   // Layer sized iterators.
   {
     PicturePileImpl::PixelRefIterator iterator(
-        gfx::Rect(0, 0, 256, 256),
-        1.0,
-        pile);
+        gfx::Rect(0, 0, 256, 256), 1.0, pile.get());
     EXPECT_FALSE(iterator);
   }
   {
     PicturePileImpl::PixelRefIterator iterator(
-        gfx::Rect(0, 0, 512, 512),
-        2.0,
-        pile);
+        gfx::Rect(0, 0, 512, 512), 2.0, pile.get());
     EXPECT_FALSE(iterator);
   }
   {
     PicturePileImpl::PixelRefIterator iterator(
-        gfx::Rect(0, 0, 128, 128),
-        0.5,
-        pile);
+        gfx::Rect(0, 0, 128, 128), 0.5, pile.get());
     EXPECT_FALSE(iterator);
   }
 }
@@ -248,67 +230,49 @@ TEST(PicturePileImplTest, PixelRefIteratorNoLazyRefs) {
   // Tile sized iterators.
   {
     PicturePileImpl::PixelRefIterator iterator(
-        gfx::Rect(0, 0, 128, 128),
-        1.0,
-        pile);
+        gfx::Rect(0, 0, 128, 128), 1.0, pile.get());
     EXPECT_FALSE(iterator);
   }
   {
     PicturePileImpl::PixelRefIterator iterator(
-        gfx::Rect(0, 0, 256, 256),
-        2.0,
-        pile);
+        gfx::Rect(0, 0, 256, 256), 2.0, pile.get());
     EXPECT_FALSE(iterator);
   }
   {
     PicturePileImpl::PixelRefIterator iterator(
-        gfx::Rect(0, 0, 64, 64),
-        0.5,
-        pile);
+        gfx::Rect(0, 0, 64, 64), 0.5, pile.get());
     EXPECT_FALSE(iterator);
   }
   // Shifted tile sized iterators.
   {
     PicturePileImpl::PixelRefIterator iterator(
-        gfx::Rect(140, 140, 128, 128),
-        1.0,
-        pile);
+        gfx::Rect(140, 140, 128, 128), 1.0, pile.get());
     EXPECT_FALSE(iterator);
   }
   {
     PicturePileImpl::PixelRefIterator iterator(
-        gfx::Rect(280, 280, 256, 256),
-        2.0,
-        pile);
+        gfx::Rect(280, 280, 256, 256), 2.0, pile.get());
     EXPECT_FALSE(iterator);
   }
   {
     PicturePileImpl::PixelRefIterator iterator(
-        gfx::Rect(70, 70, 64, 64),
-        0.5,
-        pile);
+        gfx::Rect(70, 70, 64, 64), 0.5, pile.get());
     EXPECT_FALSE(iterator);
   }
   // Layer sized iterators.
   {
     PicturePileImpl::PixelRefIterator iterator(
-        gfx::Rect(0, 0, 256, 256),
-        1.0,
-        pile);
+        gfx::Rect(0, 0, 256, 256), 1.0, pile.get());
     EXPECT_FALSE(iterator);
   }
   {
     PicturePileImpl::PixelRefIterator iterator(
-        gfx::Rect(0, 0, 512, 512),
-        2.0,
-        pile);
+        gfx::Rect(0, 0, 512, 512), 2.0, pile.get());
     EXPECT_FALSE(iterator);
   }
   {
     PicturePileImpl::PixelRefIterator iterator(
-        gfx::Rect(0, 0, 128, 128),
-        0.5,
-        pile);
+        gfx::Rect(0, 0, 128, 128), 0.5, pile.get());
     EXPECT_FALSE(iterator);
   }
 }
@@ -340,27 +304,21 @@ TEST(PicturePileImplTest, PixelRefIteratorLazyRefs) {
   // Tile sized iterators. These should find only one pixel ref.
   {
     PicturePileImpl::PixelRefIterator iterator(
-        gfx::Rect(0, 0, 128, 128),
-        1.0,
-        pile);
+        gfx::Rect(0, 0, 128, 128), 1.0, pile.get());
     EXPECT_TRUE(iterator);
     EXPECT_TRUE(*iterator == lazy_bitmap[0][0].pixelRef());
     EXPECT_FALSE(++iterator);
   }
   {
     PicturePileImpl::PixelRefIterator iterator(
-        gfx::Rect(0, 0, 256, 256),
-        2.0,
-        pile);
+        gfx::Rect(0, 0, 256, 256), 2.0, pile.get());
     EXPECT_TRUE(iterator);
     EXPECT_TRUE(*iterator == lazy_bitmap[0][0].pixelRef());
     EXPECT_FALSE(++iterator);
   }
   {
     PicturePileImpl::PixelRefIterator iterator(
-        gfx::Rect(0, 0, 64, 64),
-        0.5,
-        pile);
+        gfx::Rect(0, 0, 64, 64), 0.5, pile.get());
     EXPECT_TRUE(iterator);
     EXPECT_TRUE(*iterator == lazy_bitmap[0][0].pixelRef());
     EXPECT_FALSE(++iterator);
@@ -368,27 +326,21 @@ TEST(PicturePileImplTest, PixelRefIteratorLazyRefs) {
   // Shifted tile sized iterators. These should find only one pixel ref.
   {
     PicturePileImpl::PixelRefIterator iterator(
-        gfx::Rect(140, 140, 128, 128),
-        1.0,
-        pile);
+        gfx::Rect(140, 140, 128, 128), 1.0, pile.get());
     EXPECT_TRUE(iterator);
     EXPECT_TRUE(*iterator == lazy_bitmap[1][1].pixelRef());
     EXPECT_FALSE(++iterator);
   }
   {
     PicturePileImpl::PixelRefIterator iterator(
-        gfx::Rect(280, 280, 256, 256),
-        2.0,
-        pile);
+        gfx::Rect(280, 280, 256, 256), 2.0, pile.get());
     EXPECT_TRUE(iterator);
     EXPECT_TRUE(*iterator == lazy_bitmap[1][1].pixelRef());
     EXPECT_FALSE(++iterator);
   }
   {
     PicturePileImpl::PixelRefIterator iterator(
-        gfx::Rect(70, 70, 64, 64),
-        0.5,
-        pile);
+        gfx::Rect(70, 70, 64, 64), 0.5, pile.get());
     EXPECT_TRUE(iterator);
     EXPECT_TRUE(*iterator == lazy_bitmap[1][1].pixelRef());
     EXPECT_FALSE(++iterator);
@@ -396,17 +348,13 @@ TEST(PicturePileImplTest, PixelRefIteratorLazyRefs) {
   // Ensure there's no lazy pixel refs in the empty cell
   {
     PicturePileImpl::PixelRefIterator iterator(
-        gfx::Rect(140, 0, 128, 128),
-        1.0,
-        pile);
+        gfx::Rect(140, 0, 128, 128), 1.0, pile.get());
     EXPECT_FALSE(iterator);
   }
   // Layer sized iterators. These should find all 3 pixel refs.
   {
     PicturePileImpl::PixelRefIterator iterator(
-        gfx::Rect(0, 0, 256, 256),
-        1.0,
-        pile);
+        gfx::Rect(0, 0, 256, 256), 1.0, pile.get());
     EXPECT_TRUE(iterator);
     EXPECT_TRUE(*iterator == lazy_bitmap[0][0].pixelRef());
     EXPECT_TRUE(++iterator);
@@ -417,9 +365,7 @@ TEST(PicturePileImplTest, PixelRefIteratorLazyRefs) {
   }
   {
     PicturePileImpl::PixelRefIterator iterator(
-        gfx::Rect(0, 0, 512, 512),
-        2.0,
-        pile);
+        gfx::Rect(0, 0, 512, 512), 2.0, pile.get());
     EXPECT_TRUE(iterator);
     EXPECT_TRUE(*iterator == lazy_bitmap[0][0].pixelRef());
     EXPECT_TRUE(++iterator);
@@ -430,9 +376,7 @@ TEST(PicturePileImplTest, PixelRefIteratorLazyRefs) {
   }
   {
     PicturePileImpl::PixelRefIterator iterator(
-        gfx::Rect(0, 0, 128, 128),
-        0.5,
-        pile);
+        gfx::Rect(0, 0, 128, 128), 0.5, pile.get());
     EXPECT_TRUE(iterator);
     EXPECT_TRUE(*iterator == lazy_bitmap[0][0].pixelRef());
     EXPECT_TRUE(++iterator);
@@ -470,27 +414,21 @@ TEST(PicturePileImplTest, PixelRefIteratorLazyRefsOneTile) {
   // Tile sized iterators. These should find only one pixel ref.
   {
     PicturePileImpl::PixelRefIterator iterator(
-        gfx::Rect(0, 0, 256, 256),
-        1.0,
-        pile);
+        gfx::Rect(0, 0, 256, 256), 1.0, pile.get());
     EXPECT_TRUE(iterator);
     EXPECT_TRUE(*iterator == lazy_bitmap[0][0].pixelRef());
     EXPECT_FALSE(++iterator);
   }
   {
     PicturePileImpl::PixelRefIterator iterator(
-        gfx::Rect(0, 0, 512, 512),
-        2.0,
-        pile);
+        gfx::Rect(0, 0, 512, 512), 2.0, pile.get());
     EXPECT_TRUE(iterator);
     EXPECT_TRUE(*iterator == lazy_bitmap[0][0].pixelRef());
     EXPECT_FALSE(++iterator);
   }
   {
     PicturePileImpl::PixelRefIterator iterator(
-        gfx::Rect(0, 0, 128, 128),
-        0.5,
-        pile);
+        gfx::Rect(0, 0, 128, 128), 0.5, pile.get());
     EXPECT_TRUE(iterator);
     EXPECT_TRUE(*iterator == lazy_bitmap[0][0].pixelRef());
     EXPECT_FALSE(++iterator);
@@ -498,27 +436,21 @@ TEST(PicturePileImplTest, PixelRefIteratorLazyRefsOneTile) {
   // Shifted tile sized iterators. These should find only one pixel ref.
   {
     PicturePileImpl::PixelRefIterator iterator(
-        gfx::Rect(260, 260, 256, 256),
-        1.0,
-        pile);
+        gfx::Rect(260, 260, 256, 256), 1.0, pile.get());
     EXPECT_TRUE(iterator);
     EXPECT_TRUE(*iterator == lazy_bitmap[1][1].pixelRef());
     EXPECT_FALSE(++iterator);
   }
   {
     PicturePileImpl::PixelRefIterator iterator(
-        gfx::Rect(520, 520, 512, 512),
-        2.0,
-        pile);
+        gfx::Rect(520, 520, 512, 512), 2.0, pile.get());
     EXPECT_TRUE(iterator);
     EXPECT_TRUE(*iterator == lazy_bitmap[1][1].pixelRef());
     EXPECT_FALSE(++iterator);
   }
   {
     PicturePileImpl::PixelRefIterator iterator(
-        gfx::Rect(130, 130, 128, 128),
-        0.5,
-        pile);
+        gfx::Rect(130, 130, 128, 128), 0.5, pile.get());
     EXPECT_TRUE(iterator);
     EXPECT_TRUE(*iterator == lazy_bitmap[1][1].pixelRef());
     EXPECT_FALSE(++iterator);
@@ -526,17 +458,13 @@ TEST(PicturePileImplTest, PixelRefIteratorLazyRefsOneTile) {
   // Ensure there's no lazy pixel refs in the empty cell
   {
     PicturePileImpl::PixelRefIterator iterator(
-        gfx::Rect(0, 256, 256, 256),
-        1.0,
-        pile);
+        gfx::Rect(0, 256, 256, 256), 1.0, pile.get());
     EXPECT_FALSE(iterator);
   }
   // Layer sized iterators. These should find three pixel ref.
   {
     PicturePileImpl::PixelRefIterator iterator(
-        gfx::Rect(0, 0, 512, 512),
-        1.0,
-        pile);
+        gfx::Rect(0, 0, 512, 512), 1.0, pile.get());
     EXPECT_TRUE(iterator);
     EXPECT_TRUE(*iterator == lazy_bitmap[0][0].pixelRef());
     EXPECT_TRUE(++iterator);
@@ -547,9 +475,7 @@ TEST(PicturePileImplTest, PixelRefIteratorLazyRefsOneTile) {
   }
   {
     PicturePileImpl::PixelRefIterator iterator(
-        gfx::Rect(0, 0, 1024, 1024),
-        2.0,
-        pile);
+        gfx::Rect(0, 0, 1024, 1024), 2.0, pile.get());
     EXPECT_TRUE(iterator);
     EXPECT_TRUE(*iterator == lazy_bitmap[0][0].pixelRef());
     EXPECT_TRUE(++iterator);
@@ -560,9 +486,7 @@ TEST(PicturePileImplTest, PixelRefIteratorLazyRefsOneTile) {
   }
   {
     PicturePileImpl::PixelRefIterator iterator(
-        gfx::Rect(0, 0, 256, 256),
-        0.5,
-        pile);
+        gfx::Rect(0, 0, 256, 256), 0.5, pile.get());
     EXPECT_TRUE(iterator);
     EXPECT_TRUE(*iterator == lazy_bitmap[0][0].pixelRef());
     EXPECT_TRUE(++iterator);
@@ -574,9 +498,7 @@ TEST(PicturePileImplTest, PixelRefIteratorLazyRefsOneTile) {
 
   // Copy test.
   PicturePileImpl::PixelRefIterator iterator(
-      gfx::Rect(0, 0, 512, 512),
-      1.0,
-      pile);
+      gfx::Rect(0, 0, 512, 512), 1.0, pile.get());
   EXPECT_TRUE(iterator);
   EXPECT_TRUE(*iterator == lazy_bitmap[0][0].pixelRef());
   EXPECT_TRUE(++iterator);
@@ -628,27 +550,21 @@ TEST(PicturePileImplTest, PixelRefIteratorLazyRefsBaseNonLazy) {
   // Tile sized iterators. These should find only one pixel ref.
   {
     PicturePileImpl::PixelRefIterator iterator(
-        gfx::Rect(0, 0, 256, 256),
-        1.0,
-        pile);
+        gfx::Rect(0, 0, 256, 256), 1.0, pile.get());
     EXPECT_TRUE(iterator);
     EXPECT_TRUE(*iterator == lazy_bitmap[0][0].pixelRef());
     EXPECT_FALSE(++iterator);
   }
   {
     PicturePileImpl::PixelRefIterator iterator(
-        gfx::Rect(0, 0, 512, 512),
-        2.0,
-        pile);
+        gfx::Rect(0, 0, 512, 512), 2.0, pile.get());
     EXPECT_TRUE(iterator);
     EXPECT_TRUE(*iterator == lazy_bitmap[0][0].pixelRef());
     EXPECT_FALSE(++iterator);
   }
   {
     PicturePileImpl::PixelRefIterator iterator(
-        gfx::Rect(0, 0, 128, 128),
-        0.5,
-        pile);
+        gfx::Rect(0, 0, 128, 128), 0.5, pile.get());
     EXPECT_TRUE(iterator);
     EXPECT_TRUE(*iterator == lazy_bitmap[0][0].pixelRef());
     EXPECT_FALSE(++iterator);
@@ -656,27 +572,21 @@ TEST(PicturePileImplTest, PixelRefIteratorLazyRefsBaseNonLazy) {
   // Shifted tile sized iterators. These should find only one pixel ref.
   {
     PicturePileImpl::PixelRefIterator iterator(
-        gfx::Rect(260, 260, 256, 256),
-        1.0,
-        pile);
+        gfx::Rect(260, 260, 256, 256), 1.0, pile.get());
     EXPECT_TRUE(iterator);
     EXPECT_TRUE(*iterator == lazy_bitmap[1][1].pixelRef());
     EXPECT_FALSE(++iterator);
   }
   {
     PicturePileImpl::PixelRefIterator iterator(
-        gfx::Rect(520, 520, 512, 512),
-        2.0,
-        pile);
+        gfx::Rect(520, 520, 512, 512), 2.0, pile.get());
     EXPECT_TRUE(iterator);
     EXPECT_TRUE(*iterator == lazy_bitmap[1][1].pixelRef());
     EXPECT_FALSE(++iterator);
   }
   {
     PicturePileImpl::PixelRefIterator iterator(
-        gfx::Rect(130, 130, 128, 128),
-        0.5,
-        pile);
+        gfx::Rect(130, 130, 128, 128), 0.5, pile.get());
     EXPECT_TRUE(iterator);
     EXPECT_TRUE(*iterator == lazy_bitmap[1][1].pixelRef());
     EXPECT_FALSE(++iterator);
@@ -684,17 +594,13 @@ TEST(PicturePileImplTest, PixelRefIteratorLazyRefsBaseNonLazy) {
   // Ensure there's no lazy pixel refs in the empty cell
   {
     PicturePileImpl::PixelRefIterator iterator(
-        gfx::Rect(0, 256, 256, 256),
-        1.0,
-        pile);
+        gfx::Rect(0, 256, 256, 256), 1.0, pile.get());
     EXPECT_FALSE(iterator);
   }
   // Layer sized iterators. These should find three pixel ref.
   {
     PicturePileImpl::PixelRefIterator iterator(
-        gfx::Rect(0, 0, 512, 512),
-        1.0,
-        pile);
+        gfx::Rect(0, 0, 512, 512), 1.0, pile.get());
     EXPECT_TRUE(iterator);
     EXPECT_TRUE(*iterator == lazy_bitmap[0][0].pixelRef());
     EXPECT_TRUE(++iterator);
@@ -705,9 +611,7 @@ TEST(PicturePileImplTest, PixelRefIteratorLazyRefsBaseNonLazy) {
   }
   {
     PicturePileImpl::PixelRefIterator iterator(
-        gfx::Rect(0, 0, 1024, 1024),
-        2.0,
-        pile);
+        gfx::Rect(0, 0, 1024, 1024), 2.0, pile.get());
     EXPECT_TRUE(iterator);
     EXPECT_TRUE(*iterator == lazy_bitmap[0][0].pixelRef());
     EXPECT_TRUE(++iterator);
@@ -718,9 +622,7 @@ TEST(PicturePileImplTest, PixelRefIteratorLazyRefsBaseNonLazy) {
   }
   {
     PicturePileImpl::PixelRefIterator iterator(
-        gfx::Rect(0, 0, 256, 256),
-        0.5,
-        pile);
+        gfx::Rect(0, 0, 256, 256), 0.5, pile.get());
     EXPECT_TRUE(iterator);
     EXPECT_TRUE(*iterator == lazy_bitmap[0][0].pixelRef());
     EXPECT_TRUE(++iterator);
@@ -783,27 +685,21 @@ TEST(PicturePileImplTest, PixelRefIteratorMultiplePictures) {
   // These should find only one pixel ref.
   {
     PicturePileImpl::PixelRefIterator iterator(
-        gfx::Rect(0, 0, 128, 128),
-        1.0,
-        pile);
+        gfx::Rect(0, 0, 128, 128), 1.0, pile.get());
     EXPECT_TRUE(iterator);
     EXPECT_TRUE(*iterator == lazy_bitmap[0][0].pixelRef());
     EXPECT_FALSE(++iterator);
   }
   {
     PicturePileImpl::PixelRefIterator iterator(
-        gfx::Rect(128, 0, 128, 128),
-        1.0,
-        pile);
+        gfx::Rect(128, 0, 128, 128), 1.0, pile.get());
     EXPECT_TRUE(iterator);
     EXPECT_TRUE(*iterator == lazy_bitmap[0][1].pixelRef());
     EXPECT_FALSE(++iterator);
   }
   {
     PicturePileImpl::PixelRefIterator iterator(
-        gfx::Rect(128, 128, 128, 128),
-        1.0,
-        pile);
+        gfx::Rect(128, 128, 128, 128), 1.0, pile.get());
     EXPECT_TRUE(iterator);
     EXPECT_TRUE(*iterator == lazy_bitmap[1][1].pixelRef());
     EXPECT_FALSE(++iterator);
@@ -811,9 +707,7 @@ TEST(PicturePileImplTest, PixelRefIteratorMultiplePictures) {
   // This one should not find any refs
   {
     PicturePileImpl::PixelRefIterator iterator(
-        gfx::Rect(0, 128, 128, 128),
-        1.0,
-        pile);
+        gfx::Rect(0, 128, 128, 128), 1.0, pile.get());
     EXPECT_FALSE(iterator);
   }
 }

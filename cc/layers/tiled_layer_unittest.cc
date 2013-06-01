@@ -124,9 +124,9 @@ class TiledLayerTest : public testing::Test {
 
   void CalcDrawProps(const scoped_refptr<FakeTiledLayer>& layer1,
                      const scoped_refptr<FakeTiledLayer>& layer2) {
-    if (layer1 && !layer1->parent())
+    if (layer1.get() && !layer1->parent())
       layer_tree_host_->root_layer()->AddChild(layer1);
-    if (layer2 && !layer2->parent())
+    if (layer2.get() && !layer2->parent())
       layer_tree_host_->root_layer()->AddChild(layer2);
     if (occlusion_)
       occlusion_->SetRenderTarget(layer_tree_host_->root_layer());
@@ -157,35 +157,35 @@ class TiledLayerTest : public testing::Test {
                      const scoped_ptr<FakeTiledLayerImpl>& layer_impl2) {
     // Get textures
     resource_manager_->ClearPriorities();
-    if (layer1)
+    if (layer1.get())
       layer1->SetTexturePriorities(priority_calculator_);
-    if (layer2)
+    if (layer2.get())
       layer2->SetTexturePriorities(priority_calculator_);
     resource_manager_->PrioritizeTextures();
 
     // Save paint properties
-    if (layer1)
+    if (layer1.get())
       layer1->SavePaintProperties();
-    if (layer2)
+    if (layer2.get())
       layer2->SavePaintProperties();
 
     // Update content
-    if (layer1)
+    if (layer1.get())
       layer1->Update(queue_.get(), occlusion_, NULL);
-    if (layer2)
+    if (layer2.get())
       layer2->Update(queue_.get(), occlusion_, NULL);
 
     bool needs_update = false;
-    if (layer1)
+    if (layer1.get())
       needs_update |= layer1->NeedsIdlePaint();
-    if (layer2)
+    if (layer2.get())
       needs_update |= layer2->NeedsIdlePaint();
 
     // Update textures and push.
     UpdateTextures();
-    if (layer1)
+    if (layer1.get())
       LayerPushPropertiesTo(layer1.get(), layer_impl1.get());
-    if (layer2)
+    if (layer2.get())
       LayerPushPropertiesTo(layer2.get(), layer_impl2.get());
 
     return needs_update;

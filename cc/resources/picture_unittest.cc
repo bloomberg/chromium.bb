@@ -44,7 +44,7 @@ TEST(PictureTest, AsBase64String) {
   tmp.reset(new base::StringValue("abc!@#$%"));
   scoped_refptr<Picture> invalid_picture =
       Picture::CreateFromValue(tmp.get());
-  EXPECT_TRUE(!invalid_picture);
+  EXPECT_TRUE(!invalid_picture.get());
 
   // Single full-size rect picture.
   content_layer_client.add_draw_rect(layer_rect, red_paint);
@@ -56,7 +56,7 @@ TEST(PictureTest, AsBase64String) {
   // Reconstruct the picture.
   scoped_refptr<Picture> one_rect_picture_check =
       Picture::CreateFromValue(serialized_one_rect.get());
-  EXPECT_TRUE(!!one_rect_picture_check);
+  EXPECT_TRUE(!!one_rect_picture_check.get());
 
   // Check for equivalence.
   unsigned char one_rect_buffer[4 * 100 * 100] = {0};
@@ -82,7 +82,7 @@ TEST(PictureTest, AsBase64String) {
   // Reconstruct the picture.
   scoped_refptr<Picture> two_rect_picture_check =
       Picture::CreateFromValue(serialized_two_rect.get());
-  EXPECT_TRUE(!!two_rect_picture_check);
+  EXPECT_TRUE(!!two_rect_picture_check.get());
 
   // Check for equivalence.
   unsigned char two_rect_buffer[4 * 100 * 100] = {0};
@@ -141,9 +141,8 @@ TEST(PictureTest, PixelRefIterator) {
   }
   for (int y = 0; y < 4; ++y) {
     for (int x = 0; x < 4; ++x) {
-      Picture::PixelRefIterator iterator(
-          gfx::Rect(x * 512, y * 512, 500, 500),
-          picture);
+      Picture::PixelRefIterator iterator(gfx::Rect(x * 512, y * 512, 500, 500),
+                                         picture.get());
       if ((x + y) & 1) {
         EXPECT_TRUE(iterator) << x << " " << y;
         EXPECT_TRUE(*iterator == lazy_bitmap[y][x].pixelRef()) << x << " " << y;
@@ -155,9 +154,8 @@ TEST(PictureTest, PixelRefIterator) {
   }
   // Capture 4 pixel refs.
   {
-    Picture::PixelRefIterator iterator(
-        gfx::Rect(512, 512, 2048, 2048),
-        picture);
+    Picture::PixelRefIterator iterator(gfx::Rect(512, 512, 2048, 2048),
+                                       picture.get());
     EXPECT_TRUE(iterator);
     EXPECT_TRUE(*iterator == lazy_bitmap[1][2].pixelRef());
     EXPECT_TRUE(++iterator);
@@ -170,9 +168,8 @@ TEST(PictureTest, PixelRefIterator) {
   }
 
   // Copy test.
-  Picture::PixelRefIterator iterator(
-        gfx::Rect(512, 512, 2048, 2048),
-        picture);
+  Picture::PixelRefIterator iterator(gfx::Rect(512, 512, 2048, 2048),
+                                     picture.get());
   EXPECT_TRUE(iterator);
   EXPECT_TRUE(*iterator == lazy_bitmap[1][2].pixelRef());
   EXPECT_TRUE(++iterator);
@@ -240,8 +237,7 @@ TEST(PictureTest, PixelRefIteratorNonZeroLayer) {
   for (int y = 0; y < 4; ++y) {
     for (int x = 0; x < 4; ++x) {
       Picture::PixelRefIterator iterator(
-          gfx::Rect(1024 + x * 512, y * 512, 500, 500),
-          picture);
+          gfx::Rect(1024 + x * 512, y * 512, 500, 500), picture.get());
       if ((x + y) & 1) {
         EXPECT_TRUE(iterator) << x << " " << y;
         EXPECT_TRUE(*iterator == lazy_bitmap[y][x].pixelRef());
@@ -253,9 +249,8 @@ TEST(PictureTest, PixelRefIteratorNonZeroLayer) {
   }
   // Capture 4 pixel refs.
   {
-    Picture::PixelRefIterator iterator(
-        gfx::Rect(1024 + 512, 512, 2048, 2048),
-        picture);
+    Picture::PixelRefIterator iterator(gfx::Rect(1024 + 512, 512, 2048, 2048),
+                                       picture.get());
     EXPECT_TRUE(iterator);
     EXPECT_TRUE(*iterator == lazy_bitmap[1][2].pixelRef());
     EXPECT_TRUE(++iterator);
@@ -269,9 +264,8 @@ TEST(PictureTest, PixelRefIteratorNonZeroLayer) {
 
   // Copy test.
   {
-    Picture::PixelRefIterator iterator(
-          gfx::Rect(1024 + 512, 512, 2048, 2048),
-          picture);
+    Picture::PixelRefIterator iterator(gfx::Rect(1024 + 512, 512, 2048, 2048),
+                                       picture.get());
     EXPECT_TRUE(iterator);
     EXPECT_TRUE(*iterator == lazy_bitmap[1][2].pixelRef());
     EXPECT_TRUE(++iterator);
@@ -297,27 +291,23 @@ TEST(PictureTest, PixelRefIteratorNonZeroLayer) {
 
   // Non intersecting rects
   {
-    Picture::PixelRefIterator iterator(
-        gfx::Rect(0, 0, 1000, 1000),
-        picture);
+    Picture::PixelRefIterator iterator(gfx::Rect(0, 0, 1000, 1000),
+                                       picture.get());
     EXPECT_FALSE(iterator);
   }
   {
-    Picture::PixelRefIterator iterator(
-        gfx::Rect(3500, 0, 1000, 1000),
-        picture);
+    Picture::PixelRefIterator iterator(gfx::Rect(3500, 0, 1000, 1000),
+                                       picture.get());
     EXPECT_FALSE(iterator);
   }
   {
-    Picture::PixelRefIterator iterator(
-        gfx::Rect(0, 1100, 1000, 1000),
-        picture);
+    Picture::PixelRefIterator iterator(gfx::Rect(0, 1100, 1000, 1000),
+                                       picture.get());
     EXPECT_FALSE(iterator);
   }
   {
-    Picture::PixelRefIterator iterator(
-        gfx::Rect(3500, 1100, 1000, 1000),
-        picture);
+    Picture::PixelRefIterator iterator(gfx::Rect(3500, 1100, 1000, 1000),
+                                       picture.get());
     EXPECT_FALSE(iterator);
   }
 }
@@ -361,8 +351,7 @@ TEST(PictureTest, PixelRefIteratorOnePixelQuery) {
   for (int y = 0; y < 4; ++y) {
     for (int x = 0; x < 4; ++x) {
       Picture::PixelRefIterator iterator(
-          gfx::Rect(x * 512, y * 512 + 256, 1, 1),
-          picture);
+          gfx::Rect(x * 512, y * 512 + 256, 1, 1), picture.get());
       if ((x + y) & 1) {
         EXPECT_TRUE(iterator) << x << " " << y;
         EXPECT_TRUE(*iterator == lazy_bitmap[y][x].pixelRef());

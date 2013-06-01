@@ -1987,7 +1987,7 @@ void GLRenderer::SwapBuffers(const ui::LatencyInfo& latency_info) {
   // We don't have real fences, so we mark read fences as passed
   // assuming a double-buffered GPU pipeline. A texture can be
   // written to after one full frame has past since it was last read.
-  if (last_swap_fence_)
+  if (last_swap_fence_.get())
     static_cast<SimpleSwapFence*>(last_swap_fence_.get())->SetHasPassed();
   last_swap_fence_ = resource_provider_->GetReadLockFence();
   resource_provider_->SetReadLockFence(new SimpleSwapFence());

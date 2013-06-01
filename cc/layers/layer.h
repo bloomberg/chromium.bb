@@ -268,10 +268,11 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
   Layer* replica_layer() { return replica_layer_.get(); }
   const Layer* replica_layer() const { return replica_layer_.get(); }
 
-  bool has_mask() const { return !!mask_layer_; }
-  bool has_replica() const { return !!replica_layer_; }
+  bool has_mask() const { return !!mask_layer_.get(); }
+  bool has_replica() const { return !!replica_layer_.get(); }
   bool replica_has_mask() const {
-    return replica_layer_ && (mask_layer_ || replica_layer_->mask_layer_);
+    return replica_layer_.get() &&
+           (mask_layer_.get() || replica_layer_->mask_layer_.get());
   }
 
   // These methods typically need to be overwritten by derived classes.

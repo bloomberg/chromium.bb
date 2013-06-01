@@ -71,7 +71,7 @@ PicturePileImpl::~PicturePileImpl() {
 PicturePileImpl* PicturePileImpl::GetCloneForDrawingOnThread(
     unsigned thread_index) const {
   CHECK_GT(clones_for_drawing_.clones_.size(), thread_index);
-  return clones_for_drawing_.clones_[thread_index];
+  return clones_for_drawing_.clones_[thread_index].get();
 }
 
 void PicturePileImpl::RasterDirect(
@@ -367,9 +367,8 @@ void PicturePileImpl::PixelRefIterator::AdvanceToPictureWithPixelRefs() {
     for (;
          picture_list_iterator_ != picture_list_->end();
          ++picture_list_iterator_) {
-      pixel_ref_iterator_ = Picture::PixelRefIterator(
-          layer_rect_,
-          *picture_list_iterator_);
+      pixel_ref_iterator_ =
+          Picture::PixelRefIterator(layer_rect_, picture_list_iterator_->get());
       if (pixel_ref_iterator_)
         return;
     }

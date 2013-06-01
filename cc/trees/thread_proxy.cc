@@ -216,7 +216,7 @@ void ThreadProxy::DoCreateAndInitializeOutputSurface() {
   if (created_offscreen_context_provider_) {
     offscreen_context_provider = layer_tree_host_->client()->
         OffscreenContextProviderForCompositorThread();
-    success = !!offscreen_context_provider;
+    success = !!offscreen_context_provider.get();
     if (!success) {
       OnOutputSurfaceInitializeAttempted(false, capabilities);
       return;
@@ -730,7 +730,7 @@ void ThreadProxy::BeginFrameOnMainThread(
       layer_tree_host_->needs_offscreen_context()) {
     offscreen_context_provider = layer_tree_host_->client()->
         OffscreenContextProviderForCompositorThread();
-    if (offscreen_context_provider)
+    if (offscreen_context_provider.get())
       created_offscreen_context_provider_ = true;
   }
 
@@ -782,7 +782,7 @@ void ThreadProxy::StartCommitOnImplThread(
     return;
   }
 
-  if (offscreen_context_provider)
+  if (offscreen_context_provider.get())
     offscreen_context_provider->BindToCurrentThread();
   if (layer_tree_host_impl_->resource_provider()) {
     layer_tree_host_impl_->resource_provider()->
@@ -1162,7 +1162,7 @@ void ThreadProxy::InitializeOutputSurfaceOnImplThread(
 
   *success = layer_tree_host_impl_->InitializeRenderer(output_surface.Pass());
 
-  if (offscreen_context_provider)
+  if (offscreen_context_provider.get())
     offscreen_context_provider->BindToCurrentThread();
 
   if (*success) {
@@ -1186,7 +1186,7 @@ void ThreadProxy::InitializeOutputSurfaceOnImplThread(
           set_offscreen_context_provider(offscreen_context_provider);
 
     scheduler_on_impl_thread_->DidCreateAndInitializeOutputSurface();
-  } else if (offscreen_context_provider) {
+  } else if (offscreen_context_provider.get()) {
     offscreen_context_provider->VerifyContexts();
   }
 

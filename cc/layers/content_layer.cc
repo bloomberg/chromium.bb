@@ -91,7 +91,7 @@ LayerUpdater* ContentLayer::Updater() const {
 }
 
 void ContentLayer::CreateUpdaterIfNeeded() {
-  if (updater_)
+  if (updater_.get())
     return;
   scoped_ptr<LayerPainter> painter =
       ContentLayerPainter::Create(client_).PassAs<LayerPainter>();
@@ -115,7 +115,7 @@ void ContentLayer::CreateUpdaterIfNeeded() {
 
 void ContentLayer::SetContentsOpaque(bool opaque) {
   Layer::SetContentsOpaque(opaque);
-  if (updater_)
+  if (updater_.get())
     updater_->SetOpaque(opaque);
 }
 

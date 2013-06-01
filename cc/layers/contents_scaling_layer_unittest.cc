@@ -58,22 +58,22 @@ TEST(ContentsScalingLayerTest, CheckContentsBounds) {
   root->AddChild(test_layer);
 
   test_layer->SetBounds(gfx::Size(320, 240));
-  CalcDrawProps(root, 1.f);
+  CalcDrawProps(root.get(), 1.f);
   EXPECT_FLOAT_EQ(1.f, test_layer->contents_scale_x());
   EXPECT_FLOAT_EQ(1.f, test_layer->contents_scale_y());
   EXPECT_EQ(320, test_layer->content_bounds().width());
   EXPECT_EQ(240, test_layer->content_bounds().height());
 
-  CalcDrawProps(root, 2.f);
+  CalcDrawProps(root.get(), 2.f);
   EXPECT_EQ(640, test_layer->content_bounds().width());
   EXPECT_EQ(480, test_layer->content_bounds().height());
 
   test_layer->SetBounds(gfx::Size(10, 20));
-  CalcDrawProps(root, 2.f);
+  CalcDrawProps(root.get(), 2.f);
   EXPECT_EQ(20, test_layer->content_bounds().width());
   EXPECT_EQ(40, test_layer->content_bounds().height());
 
-  CalcDrawProps(root, 1.33f);
+  CalcDrawProps(root.get(), 1.33f);
   EXPECT_EQ(14, test_layer->content_bounds().width());
   EXPECT_EQ(27, test_layer->content_bounds().height());
 }

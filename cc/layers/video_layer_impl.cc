@@ -81,7 +81,7 @@ void VideoLayerImpl::WillDraw(ResourceProvider* resource_provider) {
   // lock should not cause a deadlock.
   frame_ = provider_client_impl_->AcquireLockAndCurrentFrame();
 
-  if (!frame_) {
+  if (!frame_.get()) {
     // Drop any resources used by the updater if there is no frame to display.
     updater_.reset();
 
@@ -124,7 +124,7 @@ void VideoLayerImpl::WillDraw(ResourceProvider* resource_provider) {
 
 void VideoLayerImpl::AppendQuads(QuadSink* quad_sink,
                                  AppendQuadsData* append_quads_data) {
-  if (!frame_)
+  if (!frame_.get())
     return;
 
   SharedQuadState* shared_quad_state =
@@ -280,7 +280,7 @@ void VideoLayerImpl::AppendQuads(QuadSink* quad_sink,
 void VideoLayerImpl::DidDraw(ResourceProvider* resource_provider) {
   LayerImpl::DidDraw(resource_provider);
 
-  if (!frame_)
+  if (!frame_.get())
     return;
 
   if (frame_resource_type_ ==

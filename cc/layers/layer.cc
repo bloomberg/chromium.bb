@@ -73,11 +73,11 @@ Layer::~Layer() {
 
   // Remove the parent reference from all children and dependents.
   RemoveAllChildren();
-  if (mask_layer_) {
+  if (mask_layer_.get()) {
     DCHECK_EQ(this, mask_layer_->parent());
     mask_layer_->RemoveFromParent();
   }
-  if (replica_layer_) {
+  if (replica_layer_.get()) {
     DCHECK_EQ(this, replica_layer_->parent());
     replica_layer_->RemoveFromParent();
   }
@@ -92,9 +92,9 @@ void Layer::SetLayerTreeHost(LayerTreeHost* host) {
   for (size_t i = 0; i < children_.size(); ++i)
     children_[i]->SetLayerTreeHost(host);
 
-  if (mask_layer_)
+  if (mask_layer_.get())
     mask_layer_->SetLayerTreeHost(host);
-  if (replica_layer_)
+  if (replica_layer_.get())
     replica_layer_->SetLayerTreeHost(host);
 
   if (host) {
@@ -177,9 +177,9 @@ void Layer::SetParent(Layer* layer) {
     return;
 
   reset_raster_scale_to_unknown();
-  if (mask_layer_)
+  if (mask_layer_.get())
     mask_layer_->reset_raster_scale_to_unknown();
-  if (replica_layer_ && replica_layer_->mask_layer_)
+  if (replica_layer_.get() && replica_layer_->mask_layer_.get())
     replica_layer_->mask_layer_->reset_raster_scale_to_unknown();
 }
 
@@ -213,13 +213,13 @@ void Layer::RemoveFromParent() {
 }
 
 void Layer::RemoveChildOrDependent(Layer* child) {
-  if (mask_layer_ == child) {
+  if (mask_layer_.get() == child) {
     mask_layer_->SetParent(NULL);
     mask_layer_ = NULL;
     SetNeedsFullTreeSync();
     return;
   }
-  if (replica_layer_ == child) {
+  if (replica_layer_.get() == child) {
     replica_layer_->SetParent(NULL);
     replica_layer_ = NULL;
     SetNeedsFullTreeSync();
@@ -229,7 +229,7 @@ void Layer::RemoveChildOrDependent(Layer* child) {
   for (LayerList::iterator iter = children_.begin();
        iter != children_.end();
        ++iter) {
-    if (*iter != child)
+    if (iter->get() != child)
       continue;
 
     child->SetParent(NULL);
@@ -244,7 +244,7 @@ void Layer::ReplaceChild(Layer* reference, scoped_refptr<Layer> new_layer) {
   DCHECK_EQ(reference->parent(), this);
   DCHECK(IsPropertyChangeAllowed());
 
-  if (reference == new_layer)
+  if (reference == new_layer.get())
     return;
 
   int reference_index = IndexOfChild(reference);
@@ -255,7 +255,7 @@ void Layer::ReplaceChild(Layer* reference, scoped_refptr<Layer> new_layer) {
 
   reference->RemoveFromParent();
 
-  if (new_layer) {
+  if (new_layer.get()) {
     new_layer->RemoveFromParent();
     InsertChild(new_layer, reference_index);
   }
@@ -263,7 +263,7 @@ void Layer::ReplaceChild(Layer* reference, scoped_refptr<Layer> new_layer) {
 
 int Layer::IndexOfChild(const Layer* reference) {
   for (size_t i = 0; i < children_.size(); ++i) {
-    if (children_[i] == reference)
+    if (children_[i].get() == reference)
       return i;
   }
   return -1;
@@ -366,14 +366,14 @@ void Layer::SetMasksToBounds(bool masks_to_bounds) {
 
 void Layer::SetMaskLayer(Layer* mask_layer) {
   DCHECK(IsPropertyChangeAllowed());
-  if (mask_layer_ == mask_layer)
+  if (mask_layer_.get() == mask_layer)
     return;
-  if (mask_layer_) {
+  if (mask_layer_.get()) {
     DCHECK_EQ(this, mask_layer_->parent());
     mask_layer_->RemoveFromParent();
   }
   mask_layer_ = mask_layer;
-  if (mask_layer_) {
+  if (mask_layer_.get()) {
     DCHECK(!mask_layer_->parent());
     mask_layer_->RemoveFromParent();
     mask_layer_->SetParent(this);
@@ -384,14 +384,14 @@ void Layer::SetMaskLayer(Layer* mask_layer) {
 
 void Layer::SetReplicaLayer(Layer* layer) {
   DCHECK(IsPropertyChangeAllowed());
-  if (replica_layer_ == layer)
+  if (replica_layer_.get() == layer)
     return;
-  if (replica_layer_) {
+  if (replica_layer_.get()) {
     DCHECK_EQ(this, replica_layer_->parent());
     replica_layer_->RemoveFromParent();
   }
   replica_layer_ = layer;
-  if (replica_layer_) {
+  if (replica_layer_.get()) {
     DCHECK(!replica_layer_->parent());
     replica_layer_->RemoveFromParent();
     replica_layer_->SetParent(this);

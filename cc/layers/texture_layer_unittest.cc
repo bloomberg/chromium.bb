@@ -69,7 +69,7 @@ class TextureLayerTest : public testing::Test {
 
 TEST_F(TextureLayerTest, SyncImplWhenChangingTextureId) {
   scoped_refptr<TextureLayer> test_layer = TextureLayer::Create(NULL);
-  ASSERT_TRUE(test_layer);
+  ASSERT_TRUE(test_layer.get());
 
   EXPECT_CALL(*layer_tree_host_, AcquireLayerTextures()).Times(AnyNumber());
   EXPECT_CALL(*layer_tree_host_, SetNeedsCommit()).Times(AnyNumber());
@@ -97,7 +97,7 @@ TEST_F(TextureLayerTest, SyncImplWhenDrawing) {
   gfx::RectF dirty_rect(0.f, 0.f, 1.f, 1.f);
 
   scoped_refptr<TextureLayer> test_layer = TextureLayer::Create(NULL);
-  ASSERT_TRUE(test_layer);
+  ASSERT_TRUE(test_layer.get());
   scoped_ptr<TextureLayerImpl> impl_layer;
   impl_layer = TextureLayerImpl::Create(host_impl_.active_tree(), 1, false);
   ASSERT_TRUE(impl_layer);
@@ -147,12 +147,12 @@ TEST_F(TextureLayerTest, SyncImplWhenDrawing) {
 
 TEST_F(TextureLayerTest, SyncImplWhenRemovingFromTree) {
   scoped_refptr<Layer> root_layer = Layer::Create();
-  ASSERT_TRUE(root_layer);
+  ASSERT_TRUE(root_layer.get());
   scoped_refptr<Layer> child_layer = Layer::Create();
-  ASSERT_TRUE(child_layer);
+  ASSERT_TRUE(child_layer.get());
   root_layer->AddChild(child_layer);
   scoped_refptr<TextureLayer> test_layer = TextureLayer::Create(NULL);
-  ASSERT_TRUE(test_layer);
+  ASSERT_TRUE(test_layer.get());
   test_layer->SetTextureId(0);
   child_layer->AddChild(test_layer);
 
@@ -254,7 +254,7 @@ class TextureLayerWithMailboxTest : public TextureLayerTest {
 
 TEST_F(TextureLayerWithMailboxTest, ReplaceMailboxOnMainThreadBeforeCommit) {
   scoped_refptr<TextureLayer> test_layer = TextureLayer::CreateForMailbox(NULL);
-  ASSERT_TRUE(test_layer);
+  ASSERT_TRUE(test_layer.get());
 
   EXPECT_CALL(*layer_tree_host_, AcquireLayerTextures()).Times(0);
   EXPECT_CALL(*layer_tree_host_, SetNeedsCommit()).Times(AnyNumber());

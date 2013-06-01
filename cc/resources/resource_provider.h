@@ -318,7 +318,7 @@ class CC_EXPORT ResourceProvider {
   void SetReadLockFence(scoped_refptr<Fence> fence) {
     current_read_lock_fence_ = fence;
   }
-  Fence* GetReadLockFence() { return current_read_lock_fence_; }
+  Fence* GetReadLockFence() { return current_read_lock_fence_.get(); }
 
   // Enable read lock fences for a specific resource.
   void EnableReadLockFences(ResourceProvider::ResourceId id, bool enable);
@@ -377,8 +377,8 @@ class CC_EXPORT ResourceProvider {
   typedef base::hash_map<int, Child> ChildMap;
 
   bool ReadLockFenceHasPassed(Resource* resource) {
-    return !resource->read_lock_fence ||
-        resource->read_lock_fence->HasPassed();
+    return !resource->read_lock_fence.get() ||
+           resource->read_lock_fence->HasPassed();
   }
 
   explicit ResourceProvider(OutputSurface* output_surface);

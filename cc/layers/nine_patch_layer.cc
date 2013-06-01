@@ -75,7 +75,7 @@ void NinePatchLayer::Update(ResourceUpdateQueue* queue,
 }
 
 void NinePatchLayer::CreateUpdaterIfNeeded() {
-  if (updater_)
+  if (updater_.get())
     return;
 
   updater_ = ImageLayerUpdater::Create();

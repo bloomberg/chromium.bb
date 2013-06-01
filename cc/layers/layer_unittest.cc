@@ -144,7 +144,7 @@ class LayerTest : public testing::Test {
 
 TEST_F(LayerTest, BasicCreateAndDestroy) {
   scoped_refptr<Layer> test_layer = Layer::Create();
-  ASSERT_TRUE(test_layer);
+  ASSERT_TRUE(test_layer.get());
 
   EXPECT_CALL(*layer_tree_host_, SetNeedsCommit()).Times(0);
   test_layer->SetLayerTreeHost(layer_tree_host_.get());

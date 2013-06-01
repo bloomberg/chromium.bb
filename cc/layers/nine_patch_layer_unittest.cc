@@ -57,7 +57,7 @@ class NinePatchLayerTest : public testing::Test {
 
 TEST_F(NinePatchLayerTest, TriggerFullUploadOnceWhenChangingBitmap) {
   scoped_refptr<NinePatchLayer> test_layer = NinePatchLayer::Create();
-  ASSERT_TRUE(test_layer);
+  ASSERT_TRUE(test_layer.get());
   test_layer->SetIsDrawable(true);
   test_layer->SetBounds(gfx::Size(100, 100));
 

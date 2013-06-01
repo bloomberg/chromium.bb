@@ -59,7 +59,7 @@ class RasterWorkerPoolPictureTaskImpl : public internal::WorkerPoolTask {
         picture_pile_(picture_pile),
         callback_(callback),
         reply_(reply) {
-    DCHECK(picture_pile_);
+    DCHECK(picture_pile_.get());
   }
 
   // Overridden from internal::WorkerPoolTask:

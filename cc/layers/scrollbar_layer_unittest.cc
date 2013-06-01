@@ -457,7 +457,7 @@ class ScrollbarLayerTestResourceCreation : public testing::Test {
     scrollbar_layer->draw_properties().visible_content_rect =
         gfx::Rect(0, 0, 100, 200);
     scrollbar_layer->CreateRenderSurface();
-    scrollbar_layer->draw_properties().render_target = scrollbar_layer;
+    scrollbar_layer->draw_properties().render_target = scrollbar_layer.get();
 
     testing::Mock::VerifyAndClearExpectations(layer_tree_host_.get());
     EXPECT_EQ(scrollbar_layer->layer_tree_host(), layer_tree_host_.get());
@@ -536,7 +536,7 @@ class ScaledScrollbarLayerTestResourceCreation : public testing::Test {
                   scaled_size.width(),
                   scaled_size.height());
     scrollbar_layer->CreateRenderSurface();
-    scrollbar_layer->draw_properties().render_target = scrollbar_layer;
+    scrollbar_layer->draw_properties().render_target = scrollbar_layer.get();
 
     testing::Mock::VerifyAndClearExpectations(layer_tree_host_.get());
     EXPECT_EQ(scrollbar_layer->layer_tree_host(), layer_tree_host_.get());

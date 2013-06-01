@@ -78,7 +78,7 @@ bool WorkerPoolTask::IsReadyToRun() const {
   // TODO(reveman): Use counter to improve performance.
   for (TaskVector::const_reverse_iterator it = dependencies_.rbegin();
        it != dependencies_.rend(); ++it) {
-    WorkerPoolTask* dependency = *it;
+    WorkerPoolTask* dependency = it->get();
     if (!dependency->HasFinishedRunning())
       return false;
   }
@@ -296,7 +296,7 @@ void WorkerPool::Inner::ScheduleTasks(internal::WorkerPoolTask* root) {
     // First remove all completed tasks from |new_pending_tasks|.
     for (TaskDeque::iterator it = completed_tasks_.begin();
          it != completed_tasks_.end(); ++it) {
-      internal::WorkerPoolTask* task = *it;
+      internal::WorkerPoolTask* task = it->get();
       new_pending_tasks.take_and_erase(task);
     }
 
@@ -430,9 +430,9 @@ void WorkerPool::Inner::Run() {
     ready_to_run_tasks_.erase(ready_to_run_tasks_.begin());
 
     // Move task from |pending_tasks_| to |running_tasks_|.
-    DCHECK(pending_tasks_.contains(task));
-    DCHECK(!running_tasks_.contains(task));
-    running_tasks_.set(task, pending_tasks_.take_and_erase(task));
+    DCHECK(pending_tasks_.contains(task.get()));
+    DCHECK(!running_tasks_.contains(task.get()));
+    running_tasks_.set(task.get(), pending_tasks_.take_and_erase(task.get()));
 
     // There may be more work available, so wake up another worker thread.
     has_ready_to_run_tasks_cv_.Signal();
@@ -450,13 +450,13 @@ void WorkerPool::Inner::Run() {
     task->DidRun();
 
     // Now iterate over all dependents to check if they are ready to run.
-    scoped_ptr<ScheduledTask> scheduled_task = running_tasks_.take_and_erase(
-        task);
+    scoped_ptr<ScheduledTask> scheduled_task =
+        running_tasks_.take_and_erase(task.get());
     if (scheduled_task) {
       typedef internal::WorkerPoolTask::TaskVector TaskVector;
       for (TaskVector::iterator it = scheduled_task->dependents().begin();
            it != scheduled_task->dependents().end(); ++it) {
-        internal::WorkerPoolTask* dependent = *it;
+        internal::WorkerPoolTask* dependent = it->get();
         if (!dependent->IsReadyToRun())
           continue;
 
@@ -516,7 +516,7 @@ unsigned WorkerPool::Inner::BuildScheduledTaskMapRecursive(
   typedef internal::WorkerPoolTask::TaskVector TaskVector;
   for (TaskVector::iterator it = task->dependencies().begin();
        it != task->dependencies().end(); ++it) {
-    internal::WorkerPoolTask* dependency = *it;
+    internal::WorkerPoolTask* dependency = it->get();
     priority = BuildScheduledTaskMapRecursive(
         dependency, task, priority, scheduled_tasks);
   }

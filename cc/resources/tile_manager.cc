@@ -322,7 +322,7 @@ void TileManager::ManageTiles() {
 
 void TileManager::CheckForCompletedTileUploads() {
   while (!tiles_with_pending_upload_.empty()) {
-    Tile* tile = tiles_with_pending_upload_.front();
+    Tile* tile = tiles_with_pending_upload_.front().get();
     DCHECK(tile->tile_version().resource_);
 
     // Set pixel tasks complete in the order they are posted.
@@ -351,7 +351,7 @@ void TileManager::CheckForCompletedTileUploads() {
 
 void TileManager::AbortPendingTileUploads() {
   while (!tiles_with_pending_upload_.empty()) {
-    Tile* tile = tiles_with_pending_upload_.front();
+    Tile* tile = tiles_with_pending_upload_.front().get();
     DCHECK(tile->tile_version().resource_);
 
     resource_pool_->resource_provider()->AbortSetPixels(
@@ -838,7 +838,7 @@ void TileManager::OnRasterTaskCompleted(
     tile->tile_version().set_solid_color(analysis->solid_color);
     resource_pool_->resource_provider()->ReleasePixelBuffer(resource->id());
     resource_pool_->ReleaseResource(resource.Pass());
-    DidFinishTileInitialization(tile);
+    DidFinishTileInitialization(tile.get());
     return;
   }
 
@@ -852,7 +852,7 @@ void TileManager::OnRasterTaskCompleted(
 
   if (tile->required_for_activation() &&
       client_->ShouldForceTileUploadsRequiredForActivationToComplete())
-    ForceTileUploadToComplete(tile);
+    ForceTileUploadToComplete(tile.get());
 }
 
 void TileManager::DidFinishTileInitialization(Tile* tile) {

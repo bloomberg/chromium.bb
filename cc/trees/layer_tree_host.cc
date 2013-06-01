@@ -132,7 +132,7 @@ bool LayerTreeHost::InitializeProxy(scoped_ptr<Proxy> proxy) {
 
 LayerTreeHost::~LayerTreeHost() {
   TRACE_EVENT0("cc", "LayerTreeHost::~LayerTreeHost");
-  if (root_layer_)
+  if (root_layer_.get())
     root_layer_->SetLayerTreeHost(NULL);
 
   if (proxy_) {
@@ -145,7 +145,7 @@ LayerTreeHost::~LayerTreeHost() {
   if (it != rate_limiters_.end())
     it->second->Stop();
 
-  if (root_layer_) {
+  if (root_layer_.get()) {
     // The layer tree must be destroyed before the layer tree host. We've
     // made a contract with our animation controllers that the registrar
     // will outlive them, and we must make good.
@@ -297,7 +297,7 @@ void LayerTreeHost::FinishCommitOnImplThread(LayerTreeHostImpl* host_impl) {
   sync_tree->set_needs_full_tree_sync(needs_full_tree_sync_);
   needs_full_tree_sync_ = false;
 
-  if (root_layer_ && hud_layer_) {
+  if (root_layer_.get() && hud_layer_.get()) {
     LayerImpl* hud_impl = LayerTreeHostCommon::FindLayerInSubtree(
         sync_tree->root_layer(), hud_layer_->id());
     sync_tree->set_hud_layer(static_cast<HeadsUpDisplayLayerImpl*>(hud_impl));
@@ -368,12 +368,12 @@ void LayerTreeHost::WillCommit() {
 
 void LayerTreeHost::UpdateHudLayer() {
   if (debug_state_.ShowHudInfo()) {
-    if (!hud_layer_)
+    if (!hud_layer_.get())
       hud_layer_ = HeadsUpDisplayLayer::Create();
 
-    if (root_layer_ && !hud_layer_->parent())
+    if (root_layer_.get() && !hud_layer_->parent())
       root_layer_->AddChild(hud_layer_);
-  } else if (hud_layer_) {
+  } else if (hud_layer_.get()) {
     hud_layer_->RemoveFromParent();
     hud_layer_ = NULL;
   }
@@ -526,16 +526,16 @@ void LayerTreeHost::SetAnimationEvents(scoped_ptr<AnimationEventsVector> events,
 }
 
 void LayerTreeHost::SetRootLayer(scoped_refptr<Layer> root_layer) {
-  if (root_layer_ == root_layer)
+  if (root_layer_.get() == root_layer.get())
     return;
 
-  if (root_layer_)
+  if (root_layer_.get())
     root_layer_->SetLayerTreeHost(NULL);
   root_layer_ = root_layer;
-  if (root_layer_)
+  if (root_layer_.get())
     root_layer_->SetLayerTreeHost(this);
 
-  if (hud_layer_)
+  if (hud_layer_.get())
     hud_layer_->RemoveFromParent();
 
   SetNeedsFullTreeSync();
@@ -955,7 +955,7 @@ bool LayerTreeHost::PaintLayerContents(
 }
 
 void LayerTreeHost::ApplyScrollAndScale(const ScrollAndScaleSet& info) {
-  if (!root_layer_)
+  if (!root_layer_.get())
     return;
 
   Layer* root_scroll_layer = FindFirstScrollableLayer(root_layer_.get());
@@ -1040,7 +1040,7 @@ void LayerTreeHost::UpdateTopControlsState(TopControlsState constraints,
 }
 
 bool LayerTreeHost::BlocksPendingCommit() const {
-  if (!root_layer_)
+  if (!root_layer_.get())
     return false;
   return root_layer_->BlocksPendingCommitRecursive();
 }

@@ -146,7 +146,7 @@ void PicturePile::InvalidateRect(
       picture_rect.Union((*overlaps[j])->LayerRect());
   }
 
-  Picture* base_picture = picture_list.front();
+  Picture* base_picture = picture_list.front().get();
   int max_pixels = kResetThreshold * base_picture->LayerRect().size().GetArea();
   if (picture_rect.size().GetArea() > max_pixels) {
     // This picture list will be entirely recreated, so clear it.

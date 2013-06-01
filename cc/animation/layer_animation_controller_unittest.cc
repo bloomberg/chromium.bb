@@ -38,7 +38,7 @@ TEST(LayerAnimationControllerTest, SyncNewAnimation) {
 
   EXPECT_FALSE(controller_impl->GetAnimation(Animation::Opacity));
 
-  AddOpacityTransitionToController(controller, 1, 0, 1, false);
+  AddOpacityTransitionToController(controller.get(), 1, 0, 1, false);
   int group_id = controller->GetAnimation(Animation::Opacity)->group();
 
   controller->PushAnimationUpdatesTo(controller_impl.get());
@@ -63,7 +63,7 @@ TEST(LayerAnimationControllerTest, DoNotClobberStartTimes) {
 
   EXPECT_FALSE(controller_impl->GetAnimation(Animation::Opacity));
 
-  AddOpacityTransitionToController(controller, 1, 0, 1, false);
+  AddOpacityTransitionToController(controller.get(), 1, 0, 1, false);
   int group_id = controller->GetAnimation(Animation::Opacity)->group();
 
   controller->PushAnimationUpdatesTo(controller_impl.get());
@@ -106,7 +106,7 @@ TEST(LayerAnimationControllerTest, SyncPauseAndResume) {
 
   EXPECT_FALSE(controller_impl->GetAnimation(Animation::Opacity));
 
-  AddOpacityTransitionToController(controller, 1, 0, 1, false);
+  AddOpacityTransitionToController(controller.get(), 1, 0, 1, false);
   int group_id = controller->GetAnimation(Animation::Opacity)->group();
 
   controller->PushAnimationUpdatesTo(controller_impl.get());
@@ -167,7 +167,7 @@ TEST(LayerAnimationControllerTest, DoNotSyncFinishedAnimation) {
   EXPECT_FALSE(controller_impl->GetAnimation(Animation::Opacity));
 
   int animation_id =
-      AddOpacityTransitionToController(controller, 1, 0, 1, false);
+      AddOpacityTransitionToController(controller.get(), 1, 0, 1, false);
   int group_id = controller->GetAnimation(Animation::Opacity)->group();
 
   controller->PushAnimationUpdatesTo(controller_impl.get());
@@ -208,7 +208,7 @@ TEST(LayerAnimationControllerTest, AnimationsAreDeleted) {
   controller->AddValueObserver(&dummy);
   controller_impl->AddValueObserver(&dummy_impl);
 
-  AddOpacityTransitionToController(controller, 1.0, 0.0f, 1.0f, false);
+  AddOpacityTransitionToController(controller.get(), 1.0, 0.0f, 1.0f, false);
   controller->Animate(0.0);
   controller->UpdateState(true, NULL);
   controller->PushAnimationUpdatesTo(controller_impl.get());
@@ -256,11 +256,11 @@ TEST(LayerAnimationControllerTest, TransferAnimationsTo) {
       LayerAnimationController::Create(1));
   controller->AddValueObserver(&dummy);
 
-  int opacity_animation_id =
-      AddOpacityTransitionToController(controller, 1.0, 0.0f, 1.0f, false);
+  int opacity_animation_id = AddOpacityTransitionToController(
+      controller.get(), 1.0, 0.0f, 1.0f, false);
 
   int transform_animation_id =
-      AddAnimatedTransformToController(controller, 1.0, 10, 10);
+      AddAnimatedTransformToController(controller.get(), 1.0, 10, 10);
 
   controller->Animate(1.0);
 
@@ -270,7 +270,7 @@ TEST(LayerAnimationControllerTest, TransferAnimationsTo) {
   EXPECT_EQ(Animation::Starting,
             controller->GetAnimation(Animation::Transform)->run_state());
 
-  controller->TransferAnimationsTo(other_controller);
+  controller->TransferAnimationsTo(other_controller.get());
 
   // Ensure both animations have been transfered.
   EXPECT_FALSE(controller->has_any_animation());

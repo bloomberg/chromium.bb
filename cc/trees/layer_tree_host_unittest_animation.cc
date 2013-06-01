@@ -305,7 +305,7 @@ class LayerTreeHostAnimationTestAddAnimationWithTimingFunction
   }
 
   virtual void BeginTest() OVERRIDE {
-    PostAddAnimationToMainThread(content_);
+    PostAddAnimationToMainThread(content_.get());
   }
 
   virtual void AnimateLayers(
@@ -369,7 +369,7 @@ class LayerTreeHostAnimationTestSynchronizeAnimationStartTimes
   }
 
   virtual void BeginTest() OVERRIDE {
-    PostAddAnimationToMainThread(content_);
+    PostAddAnimationToMainThread(content_.get());
   }
 
   virtual void notifyAnimationStarted(double time) OVERRIDE {
@@ -640,7 +640,7 @@ class LayerTreeHostAnimationTestRunAnimationWhenNotCanDraw
 
   virtual void BeginTest() OVERRIDE {
     layer_tree_host()->SetViewportSize(gfx::Size());
-    PostAddAnimationToMainThread(content_);
+    PostAddAnimationToMainThread(content_.get());
   }
 
   virtual void notifyAnimationStarted(double wall_clock_time) OVERRIDE {
@@ -681,7 +681,7 @@ class LayerTreeHostAnimationTestRunAnimationWhenNotVisible
 
   virtual void BeginTest() OVERRIDE {
     visible_ = true;
-    PostAddAnimationToMainThread(content_);
+    PostAddAnimationToMainThread(content_.get());
   }
 
   virtual void DidCommit() OVERRIDE {
@@ -762,12 +762,12 @@ class LayerTreeHostAnimationTestCheckerboardDoesntStartAnimations
     switch (layer_tree_host()->commit_number()) {
       case 1:
         // The animation is longer than 1 BeginFrame interval.
-        AddOpacityTransitionToLayer(content_, 0.1, 0.2f, 0.8f, false);
+        AddOpacityTransitionToLayer(content_.get(), 0.1, 0.2f, 0.8f, false);
         added_animations_++;
         break;
       case 2:
         // This second animation will not be drawn so it should not start.
-        AddAnimatedTransformToLayer(content_, 0.1, 5, 5);
+        AddAnimatedTransformToLayer(content_.get(), 0.1, 5, 5);
         added_animations_++;
         break;
     }

@@ -225,8 +225,11 @@ void Picture::CloneForDrawing(int num_threads) {
                     pixel_refs_));
     clones_.push_back(clone);
 
-    TRACE_EVENT_OBJECT_SNAPSHOT_WITH_ID(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
-      "cc::Picture", clone.get(), TracedPicture::AsTraceablePicture(clone));
+    TRACE_EVENT_OBJECT_SNAPSHOT_WITH_ID(
+        TRACE_DISABLED_BY_DEFAULT("cc.debug"),
+        "cc::Picture",
+        clone.get(),
+        TracedPicture::AsTraceablePicture(clone.get()));
   }
 }
 

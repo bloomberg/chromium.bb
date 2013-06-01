@@ -72,7 +72,7 @@ class FakeWorkerPool : public WorkerPool {
                          &tasks));
 
     scheduled_tasks_completion_.reset(new CompletionEvent);
-    WorkerPool::ScheduleTasks(completion_task);
+    WorkerPool::ScheduleTasks(completion_task.get());
   }
 
   void WaitForTasksToComplete() {

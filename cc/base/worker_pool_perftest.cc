@@ -113,7 +113,7 @@ class WorkerPoolPerfTest : public testing::Test,
                        max_depth,
                        num_children_per_node);
       }
-    } else if (leaf_task_) {
+    } else if (leaf_task_.get()) {
       children.push_back(leaf_task_);
     }
     dependencies->push_back(make_scoped_refptr(new PerfTaskImpl(&children)));
@@ -161,7 +161,7 @@ class WorkerPoolPerfTest : public testing::Test,
       scoped_refptr<PerfTaskImpl> root_task(
           make_scoped_refptr(new PerfTaskImpl(&children)));
 
-      worker_pool_->ScheduleTasks(root_task);
+      worker_pool_->ScheduleTasks(root_task.get());
       leaf_task_->WaitForTaskToStartRunning();
       worker_pool_->ScheduleTasks(NULL);
       worker_pool_->CheckForCompletedTasks();
@@ -182,7 +182,7 @@ class WorkerPoolPerfTest : public testing::Test,
       scoped_refptr<PerfControlTaskImpl> root_task(
           make_scoped_refptr(new PerfControlTaskImpl(&children)));
 
-      worker_pool_->ScheduleTasks(root_task);
+      worker_pool_->ScheduleTasks(root_task.get());
       root_task->WaitForTaskToStartRunning();
       root_task->AllowTaskToFinish();
       worker_pool_->CheckForCompletedTasks();

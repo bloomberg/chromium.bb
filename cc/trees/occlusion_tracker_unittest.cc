@@ -220,7 +220,7 @@ template <typename Types> class OcclusionTrackerTest : public testing::Test {
     typename Types::ContentLayerType* layer_ptr = layer.get();
     SetProperties(layer_ptr, transform, position, bounds);
 
-    DCHECK(!root_);
+    DCHECK(!root_.get());
     root_ = Types::PassLayerPtr(&layer);
     return layer_ptr;
   }

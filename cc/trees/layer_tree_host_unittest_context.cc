@@ -137,12 +137,12 @@ class LayerTreeHostContextTest : public LayerTreeTest {
   OffscreenContextProviderForMainThread() OVERRIDE {
     DCHECK(!ImplThread());
 
-    if (!offscreen_contexts_main_thread_ ||
+    if (!offscreen_contexts_main_thread_.get() ||
         offscreen_contexts_main_thread_->DestroyedOnMainThread()) {
       offscreen_contexts_main_thread_ = FakeContextProvider::Create(
           base::Bind(&LayerTreeHostContextTest::CreateOffscreenContext3d,
                      base::Unretained(this)));
-      if (offscreen_contexts_main_thread_ &&
+      if (offscreen_contexts_main_thread_.get() &&
           !offscreen_contexts_main_thread_->BindToCurrentThread())
         offscreen_contexts_main_thread_ = NULL;
     }
@@ -153,7 +153,7 @@ class LayerTreeHostContextTest : public LayerTreeTest {
   OffscreenContextProviderForCompositorThread() OVERRIDE {
     DCHECK(ImplThread());
 
-    if (!offscreen_contexts_compositor_thread_ ||
+    if (!offscreen_contexts_compositor_thread_.get() ||
         offscreen_contexts_compositor_thread_->DestroyedOnMainThread()) {
       offscreen_contexts_compositor_thread_ = FakeContextProvider::Create(
           base::Bind(&LayerTreeHostContextTest::CreateOffscreenContext3d,

@@ -44,7 +44,7 @@ scoped_ptr<OutputSurface> FakeLayerTreeHostClient::CreateOutputSurface() {
 
 scoped_refptr<cc::ContextProvider> FakeLayerTreeHostClient::
     OffscreenContextProviderForMainThread() {
-  if (!main_thread_contexts_ ||
+  if (!main_thread_contexts_.get() ||
       main_thread_contexts_->DestroyedOnMainThread()) {
     main_thread_contexts_ = FakeContextProvider::Create();
     if (!main_thread_contexts_->BindToCurrentThread())
@@ -55,7 +55,7 @@ scoped_refptr<cc::ContextProvider> FakeLayerTreeHostClient::
 
 scoped_refptr<cc::ContextProvider> FakeLayerTreeHostClient::
     OffscreenContextProviderForCompositorThread() {
-  if (!compositor_thread_contexts_ ||
+  if (!compositor_thread_contexts_.get() ||
       compositor_thread_contexts_->DestroyedOnMainThread())
     compositor_thread_contexts_ = FakeContextProvider::Create();
   return compositor_thread_contexts_;

@@ -54,7 +54,7 @@ void ImageLayer::Update(ResourceUpdateQueue* queue,
 }
 
 void ImageLayer::CreateUpdaterIfNeeded() {
-  if (updater_)
+  if (updater_.get())
     return;
 
   updater_ = ImageLayerUpdater::Create();

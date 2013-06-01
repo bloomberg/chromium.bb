@@ -152,7 +152,7 @@ class ScrollingLayerTreePerfTest : public LayerTreeHostPerfTestJsonReader {
   virtual void BuildTree() OVERRIDE {
     LayerTreeHostPerfTestJsonReader::BuildTree();
     scrollable_ = layer_tree_host()->root_layer()->children()[1];
-    ASSERT_TRUE(scrollable_);
+    ASSERT_TRUE(scrollable_.get());
   }
 
   virtual void Layout() OVERRIDE {
