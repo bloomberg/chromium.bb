@@ -32,13 +32,13 @@
 
 #include "MockWebMediaStreamCenter.h"
 
-#include <public/WebAudioDestinationConsumer.h>
-#include <public/WebMediaStream.h>
-#include <public/WebMediaStreamCenterClient.h>
-#include <public/WebMediaStreamSource.h>
-#include <public/WebMediaStreamSourcesRequest.h>
-#include <public/WebMediaStreamTrack.h>
-#include <public/WebVector.h>
+#include "public/platform/WebAudioDestinationConsumer.h"
+#include "public/platform/WebMediaStream.h"
+#include "public/platform/WebMediaStreamCenterClient.h"
+#include "public/platform/WebMediaStreamSource.h"
+#include "public/platform/WebMediaStreamSourcesRequest.h"
+#include "public/platform/WebMediaStreamTrack.h"
+#include "public/platform/WebVector.h"
 
 using namespace WebKit;
 

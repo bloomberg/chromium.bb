@@ -39,7 +39,7 @@
 #include "WebTestDelegate.h"
 #include "WebTestProxy.h"
 #include "WebViewClient.h"
-#include <public/WebFileSystemType.h>
+#include "public/platform/WebFileSystemType.h"
 #include <wtf/HashMap.h>
 #include <wtf/HashSet.h>
 #include <wtf/Vector.h>

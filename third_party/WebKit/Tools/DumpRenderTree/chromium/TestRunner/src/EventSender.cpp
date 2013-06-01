@@ -52,10 +52,10 @@
 #include "WebTestDelegate.h"
 #include "WebTouchPoint.h"
 #include "WebView.h"
-#include <public/WebDragData.h>
-#include <public/WebPoint.h>
-#include <public/WebString.h>
-#include <public/WebVector.h>
+#include "public/platform/WebDragData.h"
+#include "public/platform/WebPoint.h"
+#include "public/platform/WebString.h"
+#include "public/platform/WebVector.h"
 
 #ifdef WIN32
 #include "win/WebInputEventFactory.h"

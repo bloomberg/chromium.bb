@@ -27,8 +27,8 @@
 
 #include "TestCommon.h"
 #include "WebTask.h"
-#include <public/WebRTCDataChannelHandler.h>
-#include <public/WebString.h>
+#include "public/platform/WebRTCDataChannelHandler.h"
+#include "public/platform/WebString.h"
 
 namespace WebTestRunner {
 

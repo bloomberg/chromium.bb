@@ -32,7 +32,7 @@
 #define TestCommon_h
 
 #include <base/compiler_specific.h>
-#include <public/WebCommon.h>
+#include "public/platform/WebCommon.h"
 #include <stdio.h>
 #include <string>
 

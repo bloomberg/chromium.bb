@@ -33,10 +33,10 @@
 
 #include "TestCommon.h"
 #include "WebAccessibilityObject.h"
-#include <public/WebCString.h>
-#include <public/WebPoint.h>
-#include <public/WebRect.h>
-#include <public/WebString.h>
+#include "public/platform/WebCString.h"
+#include "public/platform/WebPoint.h"
+#include "public/platform/WebRect.h"
+#include "public/platform/WebString.h"
 
 using namespace WebKit;
 using namespace std;

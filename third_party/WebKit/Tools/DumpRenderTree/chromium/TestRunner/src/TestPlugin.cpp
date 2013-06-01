@@ -34,9 +34,9 @@
 #include "WebTestDelegate.h"
 #include "WebTouchPoint.h"
 #include "WebUserGestureIndicator.h"
-#include <public/Platform.h>
-#include <public/WebCompositorSupport.h>
-#include <public/WebGraphicsContext3D.h>
+#include "public/platform/Platform.h"
+#include "public/platform/WebCompositorSupport.h"
+#include "public/platform/WebGraphicsContext3D.h"
 
 using namespace WebKit;
 using namespace std;

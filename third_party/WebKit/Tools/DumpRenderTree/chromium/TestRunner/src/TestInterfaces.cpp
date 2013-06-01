@@ -40,8 +40,8 @@
 #include "WebCache.h"
 #include "WebKit.h"
 #include "WebRuntimeFeatures.h"
-#include <public/WebString.h>
-#include <public/WebURL.h>
+#include "public/platform/WebString.h"
+#include "public/platform/WebURL.h"
 
 using namespace WebKit;
 using namespace std;

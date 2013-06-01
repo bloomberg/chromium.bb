@@ -34,8 +34,8 @@
 #include "WebDataSource.h"
 #include "WebHistoryItem.h"
 #include "webkit/support/webkit_support.h"
-#include <public/WebString.h>
-#include <public/WebURL.h>
+#include "public/platform/WebString.h"
+#include "public/platform/WebURL.h"
 #include <string>
 #include <wtf/RefCounted.h>
 #include <wtf/RefPtr.h>

@@ -32,7 +32,7 @@
 
 #include "MockConstraints.h"
 
-#include <public/WebMediaConstraints.h>
+#include "public/platform/WebMediaConstraints.h"
 
 using namespace WebKit;
 

@@ -46,7 +46,7 @@
 #include "WebBindings.h"
 #include "WebFrame.h"
 #include <memory>
-#include <public/WebString.h>
+#include "public/platform/WebString.h"
 
 using namespace WebKit;
 using namespace std;

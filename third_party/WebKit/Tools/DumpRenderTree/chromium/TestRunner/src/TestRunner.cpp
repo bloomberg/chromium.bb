@@ -61,9 +61,9 @@
 #include "v8/include/v8.h"
 #include <limits>
 #include <memory>
-#include <public/WebData.h>
-#include <public/WebPoint.h>
-#include <public/WebURLResponse.h>
+#include "public/platform/WebData.h"
+#include "public/platform/WebPoint.h"
+#include "public/platform/WebURLResponse.h"
 
 #if defined(__linux__) || defined(ANDROID)
 #include "linux/WebFontRendering.h"

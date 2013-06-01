@@ -32,7 +32,7 @@
 #define GamepadController_h
 
 #include "CppBoundClass.h"
-#include <public/WebGamepads.h>
+#include "public/platform/WebGamepads.h"
 
 namespace WebKit {
 class WebGamepads;

@@ -31,7 +31,7 @@
 #include "WebSpeechInputResult.h"
 #include "WebTask.h"
 #include <map>
-#include <public/WebRect.h>
+#include "public/platform/WebRect.h"
 #include <string>
 #include <vector>
 

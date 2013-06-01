@@ -30,7 +30,7 @@
 #ifndef WebTestThemeEngineMac_h
 #define WebTestThemeEngineMac_h
 
-#include <public/mac/WebThemeEngine.h>
+#include "public/platform/mac/WebThemeEngine.h"
 
 namespace WebTestRunner {
 

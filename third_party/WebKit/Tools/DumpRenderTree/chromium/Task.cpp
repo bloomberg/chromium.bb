@@ -34,7 +34,7 @@
 #include "WebKit.h"
 #include "WebTask.h"
 #include "webkit/support/webkit_support.h"
-#include <public/Platform.h>
+#include "public/platform/Platform.h"
 #include <wtf/OwnPtr.h>
 #include <wtf/PassOwnPtr.h>
 

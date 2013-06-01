@@ -31,7 +31,7 @@
 #ifndef MockPlatform_h
 #define MockPlatform_h
 
-#include <public/Platform.h>
+#include "public/platform/Platform.h"
 #include <wtf/OwnPtr.h>
 #include <wtf/PassOwnPtr.h>
 

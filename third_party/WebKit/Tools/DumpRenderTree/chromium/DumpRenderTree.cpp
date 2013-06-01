@@ -34,7 +34,7 @@
 #include "MockPlatform.h"
 #include "TestShell.h"
 #include "webkit/support/webkit_support.h"
-#include <public/WebCompositorSupport.h>
+#include "public/platform/WebCompositorSupport.h"
 #include <v8/include/v8-testing.h>
 #include <v8/include/v8.h>
 #include <wtf/OwnPtr.h>

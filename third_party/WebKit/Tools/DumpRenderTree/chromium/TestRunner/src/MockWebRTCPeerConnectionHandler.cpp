@@ -36,17 +36,17 @@
 #include "MockWebRTCDataChannelHandler.h"
 #include "TestInterfaces.h"
 #include "WebTestDelegate.h"
-#include <public/WebMediaConstraints.h>
-#include <public/WebMediaStream.h>
-#include <public/WebMediaStreamTrack.h>
-#include <public/WebRTCPeerConnectionHandlerClient.h>
-#include <public/WebRTCSessionDescription.h>
-#include <public/WebRTCSessionDescriptionRequest.h>
-#include <public/WebRTCStatsRequest.h>
-#include <public/WebRTCStatsResponse.h>
-#include <public/WebRTCVoidRequest.h>
-#include <public/WebString.h>
-#include <public/WebVector.h>
+#include "public/platform/WebMediaConstraints.h"
+#include "public/platform/WebMediaStream.h"
+#include "public/platform/WebMediaStreamTrack.h"
+#include "public/platform/WebRTCPeerConnectionHandlerClient.h"
+#include "public/platform/WebRTCSessionDescription.h"
+#include "public/platform/WebRTCSessionDescriptionRequest.h"
+#include "public/platform/WebRTCStatsRequest.h"
+#include "public/platform/WebRTCStatsResponse.h"
+#include "public/platform/WebRTCVoidRequest.h"
+#include "public/platform/WebString.h"
+#include "public/platform/WebVector.h"
 
 using namespace WebKit;
 

@@ -66,10 +66,10 @@
 // FIXME: Including platform_canvas.h here is a layering violation.
 #include <cctype>
 #include "skia/ext/platform_canvas.h"
-#include <public/WebCString.h>
-#include <public/WebURLError.h>
-#include <public/WebURLRequest.h>
-#include <public/WebURLResponse.h>
+#include "public/platform/WebCString.h"
+#include "public/platform/WebURLError.h"
+#include "public/platform/WebURLRequest.h"
+#include "public/platform/WebURLResponse.h"
 
 using namespace WebKit;
 using namespace std;

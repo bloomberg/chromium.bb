@@ -29,8 +29,8 @@
 
 #include "WebTestDelegate.h"
 #include <assert.h>
-#include <public/WebMediaStreamSource.h>
-#include <public/WebRTCDTMFSenderHandlerClient.h>
+#include "public/platform/WebMediaStreamSource.h"
+#include "public/platform/WebRTCDTMFSenderHandlerClient.h"
 
 using namespace WebKit;
 

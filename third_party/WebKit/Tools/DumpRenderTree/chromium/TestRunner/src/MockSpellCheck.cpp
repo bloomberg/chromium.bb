@@ -32,7 +32,7 @@
 #include "MockSpellCheck.h"
 
 #include "TestCommon.h"
-#include <public/WebCString.h>
+#include "public/platform/WebCString.h"
 
 using namespace WebKit;
 using namespace std;

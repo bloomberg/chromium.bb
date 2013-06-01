@@ -28,9 +28,9 @@
 
 #include "TestCommon.h"
 #include "WebTask.h"
-#include <public/WebMediaStreamTrack.h>
-#include <public/WebRTCDTMFSenderHandler.h>
-#include <public/WebString.h>
+#include "public/platform/WebMediaStreamTrack.h"
+#include "public/platform/WebRTCDTMFSenderHandler.h"
+#include "public/platform/WebString.h"
 
 namespace WebTestRunner {
 

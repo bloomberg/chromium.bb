@@ -33,7 +33,7 @@
 
 #include "WebDevToolsAgentClient.h"
 #include "WebTask.h"
-#include <public/WebString.h>
+#include "public/platform/WebString.h"
 #include <wtf/HashMap.h>
 #include <wtf/Noncopyable.h>
 

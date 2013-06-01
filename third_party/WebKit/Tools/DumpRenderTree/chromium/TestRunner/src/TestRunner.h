@@ -41,7 +41,7 @@
 #include "WebTextDirection.h"
 #include <deque>
 #include <memory>
-#include <public/WebURL.h>
+#include "public/platform/WebURL.h"
 #include <set>
 #include <string>
 

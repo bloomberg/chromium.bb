@@ -60,16 +60,16 @@
 #include "webkit/support/webkit_support.h"
 #include <cctype>
 #include <clocale>
-#include <public/WebCString.h>
-#include <public/WebCompositorOutputSurface.h>
-#include <public/WebCompositorSupport.h>
-#include <public/WebDragData.h>
-#include <public/WebRect.h>
-#include <public/WebSize.h>
-#include <public/WebStorageNamespace.h>
-#include <public/WebThread.h>
-#include <public/WebURLRequest.h>
-#include <public/WebURLResponse.h>
+#include "public/platform/WebCString.h"
+#include "public/platform/WebCompositorOutputSurface.h"
+#include "public/platform/WebCompositorSupport.h"
+#include "public/platform/WebDragData.h"
+#include "public/platform/WebRect.h"
+#include "public/platform/WebSize.h"
+#include "public/platform/WebStorageNamespace.h"
+#include "public/platform/WebThread.h"
+#include "public/platform/WebURLRequest.h"
+#include "public/platform/WebURLResponse.h"
 
 #include <wtf/Assertions.h>
 #include <wtf/OwnArrayPtr.h>

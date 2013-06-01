@@ -47,7 +47,7 @@
 #ifndef WebTestThemeEngineWin_h
 #define WebTestThemeEngineWin_h
 
-#include <public/win/WebThemeEngine.h>
+#include "public/platform/win/WebThemeEngine.h"
 
 namespace WebTestRunner {
 

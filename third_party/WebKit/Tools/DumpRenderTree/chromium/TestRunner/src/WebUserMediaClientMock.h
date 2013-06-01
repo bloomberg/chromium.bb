@@ -34,9 +34,9 @@
 #include "TestCommon.h"
 #include "WebTask.h"
 #include "WebUserMediaClient.h"
-#include <public/WebCommon.h>
-#include <public/WebString.h>
-#include <public/WebURL.h>
+#include "public/platform/WebCommon.h"
+#include "public/platform/WebString.h"
+#include "public/platform/WebURL.h"
 
 namespace WebTestRunner {
 

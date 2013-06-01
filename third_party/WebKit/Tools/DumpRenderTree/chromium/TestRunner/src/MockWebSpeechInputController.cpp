@@ -28,8 +28,8 @@
 
 #include "WebSpeechInputListener.h"
 #include "WebTestDelegate.h"
-#include <public/WebCString.h>
-#include <public/WebVector.h>
+#include "public/platform/WebCString.h"
+#include "public/platform/WebVector.h"
 
 #if ENABLE_INPUT_SPEECH
 

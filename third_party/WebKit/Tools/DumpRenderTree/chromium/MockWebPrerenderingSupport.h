@@ -31,7 +31,7 @@
 #ifndef MockWebPrerenderingSupport_h
 #define MockWebPrerenderingSupport_h
 
-#include <public/WebPrerenderingSupport.h>
+#include "public/platform/WebPrerenderingSupport.h"
 
 class MockWebPrerenderingSupport : public WebKit::WebPrerenderingSupport {
 public:

@@ -32,7 +32,7 @@
 #include "MockPlatform.h"
 
 #include "WebTestInterfaces.h"
-#include <public/WebMediaStreamCenter.h>
+#include "public/platform/WebMediaStreamCenter.h"
 #include <wtf/Assertions.h>
 #include <wtf/PassOwnPtr.h>
 

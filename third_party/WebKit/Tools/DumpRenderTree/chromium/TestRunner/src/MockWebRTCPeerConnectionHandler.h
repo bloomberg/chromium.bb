@@ -33,10 +33,10 @@
 
 #include "TestCommon.h"
 #include "WebTask.h"
-#include <public/WebRTCPeerConnectionHandler.h>
-#include <public/WebRTCSessionDescription.h>
-#include <public/WebRTCSessionDescriptionRequest.h>
-#include <public/WebRTCStatsRequest.h>
+#include "public/platform/WebRTCPeerConnectionHandler.h"
+#include "public/platform/WebRTCSessionDescription.h"
+#include "public/platform/WebRTCSessionDescriptionRequest.h"
+#include "public/platform/WebRTCStatsRequest.h"
 
 namespace WebKit {
 class WebRTCPeerConnectionHandlerClient;

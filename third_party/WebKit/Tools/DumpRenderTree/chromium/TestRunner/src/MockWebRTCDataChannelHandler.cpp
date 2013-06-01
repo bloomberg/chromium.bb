@@ -28,7 +28,7 @@
 
 #include "WebTestDelegate.h"
 #include <assert.h>
-#include <public/WebRTCDataChannelHandlerClient.h>
+#include "public/platform/WebRTCDataChannelHandlerClient.h"
 
 using namespace WebKit;
 

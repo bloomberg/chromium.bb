@@ -38,8 +38,8 @@
 #include "WebInputEvent.h"
 #include "WebRange.h"
 #include "WebView.h"
-#include <public/WebString.h>
-#include <public/WebVector.h>
+#include "public/platform/WebString.h"
+#include "public/platform/WebVector.h"
 #include <string>
 
 using namespace WebKit;

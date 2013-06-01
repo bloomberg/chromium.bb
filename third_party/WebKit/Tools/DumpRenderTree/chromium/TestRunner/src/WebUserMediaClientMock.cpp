@@ -36,11 +36,11 @@
 #include "WebMediaStreamRegistry.h"
 #include "WebTestDelegate.h"
 #include "WebUserMediaRequest.h"
-#include <public/WebMediaConstraints.h>
-#include <public/WebMediaStream.h>
-#include <public/WebMediaStreamSource.h>
-#include <public/WebMediaStreamTrack.h>
-#include <public/WebVector.h>
+#include "public/platform/WebMediaConstraints.h"
+#include "public/platform/WebMediaStream.h"
+#include "public/platform/WebMediaStreamSource.h"
+#include "public/platform/WebMediaStreamTrack.h"
+#include "public/platform/WebVector.h"
 
 using namespace WebKit;
 

@@ -29,8 +29,8 @@
 #include "WebPlugin.h"
 #include "WebPluginContainer.h"
 #include <memory>
-#include <public/WebExternalTextureLayer.h>
-#include <public/WebExternalTextureLayerClient.h>
+#include "public/platform/WebExternalTextureLayer.h"
+#include "public/platform/WebExternalTextureLayerClient.h"
 #include <string>
 
 namespace WebTestRunner {
