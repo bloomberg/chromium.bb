@@ -175,16 +175,16 @@ BufferedSocketWriter::BufferedSocketWriter() {
 
 void BufferedSocketWriter::GetNextPacket(
     net::IOBuffer** buffer, int* size) {
-  if (!current_buf_) {
+  if (!current_buf_.get()) {
     if (queue_.empty()) {
       *buffer = NULL;
       return;  // Nothing to write.
     }
-    current_buf_ = new net::DrainableIOBuffer(
-        queue_.front()->data, queue_.front()->data->size());
+    current_buf_ = new net::DrainableIOBuffer(queue_.front()->data.get(),
+                                              queue_.front()->data->size());
   }
 
-  *buffer = current_buf_;
+  *buffer = current_buf_.get();
   *size = current_buf_->BytesRemaining();
 }
 
@@ -215,7 +215,7 @@ void BufferedDatagramWriter::GetNextPacket(
     *buffer = NULL;
     return;  // Nothing to write.
   }
-  *buffer = queue_.front()->data;
+  *buffer = queue_.front()->data.get();
   *size = queue_.front()->data->size();
 }
 

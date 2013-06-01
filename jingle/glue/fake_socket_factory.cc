@@ -171,7 +171,7 @@ talk_base::AsyncPacketSocket* FakeSocketFactory::CreateUdpSocket(
   CHECK_EQ(min_port, 0);
   CHECK_EQ(max_port, 0);
   return new FakeUDPPacketSocket(
-      socket_manager_, net::IPEndPoint(address_, ++last_allocated_port_));
+      socket_manager_.get(), net::IPEndPoint(address_, ++last_allocated_port_));
 }
 
 talk_base::AsyncPacketSocket* FakeSocketFactory::CreateServerTcpSocket(

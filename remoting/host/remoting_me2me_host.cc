@@ -633,7 +633,7 @@ bool HostProcess::ApplyConfig(scoped_ptr<JsonHostConfig> config) {
   }
 
   key_pair_ = RsaKeyPair::FromString(key_base64);
-  if (!key_pair_) {
+  if (!key_pair_.get()) {
     LOG(ERROR) << "Invalid private key in the config file.";
     return false;
   }

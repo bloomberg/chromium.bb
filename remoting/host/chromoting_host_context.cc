@@ -51,14 +51,13 @@ scoped_ptr<ChromotingHostContext> ChromotingHostContext::Create(
   DCHECK(ui_task_runner->BelongsToCurrentThread());
 
   scoped_ptr<ChromotingHostContext> context(
-      new ChromotingHostContext(ui_task_runner));
-  if (!context->audio_task_runner_ ||
-      !context->file_task_runner_ ||
-      !context->input_task_runner_ ||
-      !context->network_task_runner_ ||
-      !context->video_capture_task_runner_ ||
-      !context->video_encode_task_runner_ ||
-      !context->url_request_context_getter_) {
+      new ChromotingHostContext(ui_task_runner.get()));
+  if (!context->audio_task_runner_.get() || !context->file_task_runner_.get() ||
+      !context->input_task_runner_.get() ||
+      !context->network_task_runner_.get() ||
+      !context->video_capture_task_runner_.get() ||
+      !context->video_encode_task_runner_.get() ||
+      !context->url_request_context_getter_.get()) {
     context.reset();
   }
 

@@ -48,7 +48,8 @@ void MessageReader::DoRead() {
   while (!closed_ && !read_pending_ && pending_messages_ == 0) {
     read_buffer_ = new net::IOBuffer(kReadBufferSize);
     int result = socket_->Read(
-        read_buffer_, kReadBufferSize,
+        read_buffer_.get(),
+        kReadBufferSize,
         base::Bind(&MessageReader::OnRead, weak_factory_.GetWeakPtr()));
     HandleReadResult(result);
   }
@@ -71,7 +72,7 @@ void MessageReader::HandleReadResult(int result) {
     return;
 
   if (result > 0) {
-    OnDataReceived(read_buffer_, result);
+    OnDataReceived(read_buffer_.get(), result);
   } else if (result == net::ERR_IO_PENDING) {
     read_pending_ = true;
   } else {

@@ -257,9 +257,10 @@ void UdpPacketSocket::DoSend() {
 
   PendingPacket& packet = send_queue_.front();
   int result = socket_->SendTo(
-      packet.data, packet.data->size(), packet.address,
-      base::Bind(&UdpPacketSocket::OnSendCompleted,
-                 base::Unretained(this)));
+      packet.data.get(),
+      packet.data->size(),
+      packet.address,
+      base::Bind(&UdpPacketSocket::OnSendCompleted, base::Unretained(this)));
   if (result == net::ERR_IO_PENDING) {
     send_pending_ = true;
   } else {
@@ -290,7 +291,9 @@ void UdpPacketSocket::DoRead() {
   while (result >= 0) {
     receive_buffer_ = new net::IOBuffer(kReceiveBufferSize);
     result = socket_->RecvFrom(
-        receive_buffer_, kReceiveBufferSize, &receive_address_,
+        receive_buffer_.get(),
+        kReceiveBufferSize,
+        &receive_address_,
         base::Bind(&UdpPacketSocket::OnReadCompleted, base::Unretained(this)));
     HandleReadResult(result);
   }

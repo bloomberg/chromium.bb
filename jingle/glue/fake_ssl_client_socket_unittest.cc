@@ -164,14 +164,15 @@ class FakeSSLClientSocketTest : public testing::Test {
         scoped_refptr<net::IOBuffer> read_buf(
             new net::IOBuffer(read_buf_len));
         int read_status = fake_ssl_client_socket.Read(
-            read_buf, read_buf_len, test_completion_callback.callback());
+            read_buf.get(), read_buf_len, test_completion_callback.callback());
         ExpectStatus(mode, read_len, read_status, &test_completion_callback);
 
         scoped_refptr<net::IOBuffer> write_buf(
             new net::StringIOBuffer(kWriteTestData));
-        int write_status = fake_ssl_client_socket.Write(
-            write_buf, arraysize(kWriteTestData),
-            test_completion_callback.callback());
+        int write_status =
+            fake_ssl_client_socket.Write(write_buf.get(),
+                                         arraysize(kWriteTestData),
+                                         test_completion_callback.callback());
         ExpectStatus(mode, arraysize(kWriteTestData), write_status,
                      &test_completion_callback);
       } else {

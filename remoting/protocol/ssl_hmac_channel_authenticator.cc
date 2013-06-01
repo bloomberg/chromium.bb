@@ -65,15 +65,18 @@ void SslHmacChannelAuthenticator::SecureAndAuthenticate(
     scoped_refptr<net::X509Certificate> cert =
         net::X509Certificate::CreateFromBytes(
             local_cert_.data(), local_cert_.length());
-    if (!cert) {
+    if (!cert.get()) {
       LOG(ERROR) << "Failed to parse X509Certificate";
       NotifyError(net::ERR_FAILED);
       return;
     }
 
     net::SSLConfig ssl_config;
-    net::SSLServerSocket* server_socket = net::CreateSSLServerSocket(
-        socket.release(), cert, local_key_pair_->private_key(), ssl_config);
+    net::SSLServerSocket* server_socket =
+        net::CreateSSLServerSocket(socket.release(),
+                                   cert.get(),
+                                   local_key_pair_->private_key(),
+                                   ssl_config);
     socket_.reset(server_socket);
 
     result = server_socket->Handshake(base::Bind(
@@ -153,7 +156,8 @@ void SslHmacChannelAuthenticator::WriteAuthenticationBytes(
     bool* callback_called) {
   while (true) {
     int result = socket_->Write(
-        auth_write_buf_, auth_write_buf_->BytesRemaining(),
+        auth_write_buf_.get(),
+        auth_write_buf_->BytesRemaining(),
         base::Bind(&SslHmacChannelAuthenticator::OnAuthBytesWritten,
                    base::Unretained(this)));
     if (result == net::ERR_IO_PENDING)
@@ -191,11 +195,11 @@ bool SslHmacChannelAuthenticator::HandleAuthBytesWritten(
 
 void SslHmacChannelAuthenticator::ReadAuthenticationBytes() {
   while (true) {
-    int result = socket_->Read(
-        auth_read_buf_,
-        auth_read_buf_->RemainingCapacity(),
-        base::Bind(&SslHmacChannelAuthenticator::OnAuthBytesRead,
-                   base::Unretained(this)));
+    int result =
+        socket_->Read(auth_read_buf_.get(),
+                      auth_read_buf_->RemainingCapacity(),
+                      base::Bind(&SslHmacChannelAuthenticator::OnAuthBytesRead,
+                                 base::Unretained(this)));
     if (result == net::ERR_IO_PENDING)
       break;
     if (!HandleAuthBytesRead(result))
@@ -249,7 +253,7 @@ bool SslHmacChannelAuthenticator::VerifyAuthBytes(
 }
 
 void SslHmacChannelAuthenticator::CheckDone(bool* callback_called) {
-  if (auth_write_buf_ == NULL && auth_read_buf_ == NULL) {
+  if (auth_write_buf_.get() == NULL && auth_read_buf_.get() == NULL) {
     DCHECK(socket_.get() != NULL);
     if (callback_called)
       *callback_called = true;

@@ -256,10 +256,16 @@ TEST_F(ChannelMultiplexerTest, WriteFailSync) {
   EXPECT_CALL(cb2, OnDone(_))
       .Times(0);
 
-  EXPECT_EQ(net::ERR_FAILED, host_socket1_->Write(buf, buf->size(), base::Bind(
-      &MockSocketCallback::OnDone, base::Unretained(&cb1))));
-  EXPECT_EQ(net::ERR_FAILED, host_socket2_->Write(buf, buf->size(), base::Bind(
-        &MockSocketCallback::OnDone, base::Unretained(&cb2))));
+  EXPECT_EQ(net::ERR_FAILED,
+            host_socket1_->Write(buf.get(),
+                                 buf->size(),
+                                 base::Bind(&MockSocketCallback::OnDone,
+                                            base::Unretained(&cb1))));
+  EXPECT_EQ(net::ERR_FAILED,
+            host_socket2_->Write(buf.get(),
+                                 buf->size(),
+                                 base::Bind(&MockSocketCallback::OnDone,
+                                            base::Unretained(&cb2))));
 
   message_loop_.RunUntilIdle();
 }
@@ -286,11 +292,15 @@ TEST_F(ChannelMultiplexerTest, WriteFailAsync) {
   EXPECT_CALL(cb2, OnDone(net::ERR_FAILED));
 
   EXPECT_EQ(net::ERR_IO_PENDING,
-            host_socket1_->Write(buf, buf->size(), base::Bind(
-                &MockSocketCallback::OnDone, base::Unretained(&cb1))));
+            host_socket1_->Write(buf.get(),
+                                 buf->size(),
+                                 base::Bind(&MockSocketCallback::OnDone,
+                                            base::Unretained(&cb1))));
   EXPECT_EQ(net::ERR_IO_PENDING,
-            host_socket2_->Write(buf, buf->size(), base::Bind(
-                &MockSocketCallback::OnDone, base::Unretained(&cb2))));
+            host_socket2_->Write(buf.get(),
+                                 buf->size(),
+                                 base::Bind(&MockSocketCallback::OnDone,
+                                            base::Unretained(&cb2))));
 
   message_loop_.RunUntilIdle();
 }
@@ -321,11 +331,15 @@ TEST_F(ChannelMultiplexerTest, DeleteWhenFailed) {
       .WillOnce(InvokeWithoutArgs(this, &ChannelMultiplexerTest::DeleteAll));
 
   EXPECT_EQ(net::ERR_IO_PENDING,
-            host_socket1_->Write(buf, buf->size(), base::Bind(
-                &MockSocketCallback::OnDone, base::Unretained(&cb1))));
+            host_socket1_->Write(buf.get(),
+                                 buf->size(),
+                                 base::Bind(&MockSocketCallback::OnDone,
+                                            base::Unretained(&cb1))));
   EXPECT_EQ(net::ERR_IO_PENDING,
-            host_socket2_->Write(buf, buf->size(), base::Bind(
-                &MockSocketCallback::OnDone, base::Unretained(&cb2))));
+            host_socket2_->Write(buf.get(),
+                                 buf->size(),
+                                 base::Bind(&MockSocketCallback::OnDone,
+                                            base::Unretained(&cb2))));
 
   message_loop_.RunUntilIdle();
 

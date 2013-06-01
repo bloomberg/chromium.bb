@@ -69,10 +69,11 @@ class NegotiatingAuthenticatorTest : public AuthenticatorTestBase {
       methods.push_back(AuthenticationMethod::Spake2(
           AuthenticationMethod::NONE));
     }
-    bool pairing_expected = pairing_registry != NULL;
-    FetchSecretCallback fetch_secret_callback = base::Bind(
-        &NegotiatingAuthenticatorTest::FetchSecret,
-        client_interactive_pin, pairing_expected);
+    bool pairing_expected = pairing_registry.get() != NULL;
+    FetchSecretCallback fetch_secret_callback =
+        base::Bind(&NegotiatingAuthenticatorTest::FetchSecret,
+                   client_interactive_pin,
+                   pairing_expected);
     client_as_negotiating_authenticator_ = new NegotiatingClientAuthenticator(
         client_id, client_paired_secret,
         kTestHostId, fetch_secret_callback,

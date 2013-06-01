@@ -41,7 +41,7 @@ scoped_ptr<Authenticator> NegotiatingHostAuthenticator::CreateWithSharedSecret(
   result->shared_secret_hash_ = shared_secret_hash;
   result->pairing_registry_ = pairing_registry;
   result->AddMethod(AuthenticationMethod::Spake2(hash_function));
-  if (pairing_registry) {
+  if (pairing_registry.get()) {
     result->AddMethod(AuthenticationMethod::Spake2Pair());
   }
   return scoped_ptr<Authenticator>(result.Pass());

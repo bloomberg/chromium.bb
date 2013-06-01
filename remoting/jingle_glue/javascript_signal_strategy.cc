@@ -40,7 +40,7 @@ void JavascriptSignalStrategy::Connect() {
 void JavascriptSignalStrategy::Disconnect() {
   DCHECK(CalledOnValidThread());
 
-  if (xmpp_proxy_)
+  if (xmpp_proxy_.get())
     xmpp_proxy_->DetachCallback();
   FOR_EACH_OBSERVER(Listener, listeners_,
                     OnSignalStrategyStateChange(DISCONNECTED));

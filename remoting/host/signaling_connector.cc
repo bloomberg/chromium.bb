@@ -62,7 +62,7 @@ void SignalingConnector::EnableOAuth(
   oauth_credentials_ = oauth_credentials.Pass();
   gaia_oauth_client_.reset(
       new gaia::GaiaOAuthClient(GaiaUrls::GetInstance()->oauth2_token_url(),
-                                url_request_context_getter_));
+                                url_request_context_getter_.get()));
 }
 
 void SignalingConnector::OnSignalStrategyStateChange(

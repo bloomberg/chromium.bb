@@ -86,11 +86,11 @@ ClientSession::ClientSession(
 
 ClientSession::~ClientSession() {
   DCHECK(CalledOnValidThread());
-  DCHECK(!audio_scheduler_);
+  DCHECK(!audio_scheduler_.get());
   DCHECK(!desktop_environment_);
   DCHECK(!input_injector_);
   DCHECK(!screen_controls_);
-  DCHECK(!video_scheduler_);
+  DCHECK(!video_scheduler_.get());
 
   connection_.reset();
 }
@@ -138,7 +138,7 @@ void ClientSession::ControlAudio(const protocol::AudioControl& audio_control) {
   if (audio_control.has_enable()) {
     VLOG(1) << "Received AudioControl (enable="
             << audio_control.enable() << ")";
-    if (audio_scheduler_)
+    if (audio_scheduler_.get())
       audio_scheduler_->Pause(!audio_control.enable());
   }
 }
@@ -176,11 +176,11 @@ void ClientSession::OnConnectionAuthenticated(
     protocol::ConnectionToClient* connection) {
   DCHECK(CalledOnValidThread());
   DCHECK_EQ(connection_.get(), connection);
-  DCHECK(!audio_scheduler_);
+  DCHECK(!audio_scheduler_.get());
   DCHECK(!desktop_environment_);
   DCHECK(!input_injector_);
   DCHECK(!screen_controls_);
-  DCHECK(!video_scheduler_);
+  DCHECK(!video_scheduler_.get());
 
   auth_input_filter_.set_enabled(true);
   auth_clipboard_filter_.set_enabled(true);
@@ -311,11 +311,11 @@ void ClientSession::OnConnectionClosed(
 
   // Stop components access the client, audio or video stubs, which are no
   // longer valid once ConnectionToClient calls OnConnectionClosed().
-  if (audio_scheduler_) {
+  if (audio_scheduler_.get()) {
     audio_scheduler_->Stop();
     audio_scheduler_ = NULL;
   }
-  if (video_scheduler_) {
+  if (video_scheduler_.get()) {
     video_scheduler_->Stop();
     video_scheduler_ = NULL;
   }
@@ -335,7 +335,7 @@ void ClientSession::OnSequenceNumberUpdated(
   DCHECK(CalledOnValidThread());
   DCHECK_EQ(connection_.get(), connection);
 
-  if (video_scheduler_)
+  if (video_scheduler_.get())
     video_scheduler_->UpdateSequenceNumber(sequence_number);
 
   event_handler_->OnSessionSequenceNumber(this, sequence_number);

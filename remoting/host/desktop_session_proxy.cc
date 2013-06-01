@@ -253,7 +253,7 @@ bool DesktopSessionProxy::AttachToDesktop(
   desktop_channel_.reset(new IPC::ChannelProxy(desktop_channel_handle,
                                                IPC::Channel::MODE_CLIENT,
                                                this,
-                                               io_task_runner_));
+                                               io_task_runner_.get()));
 
   // Pass ID of the client (which is authenticated at this point) to the desktop
   // session agent and start the agent.
@@ -469,7 +469,7 @@ void DesktopSessionProxy::OnCaptureCompleted(
   // a more privileged process.
   scoped_refptr<IpcSharedBufferCore> shared_buffer_core =
       GetSharedBufferCore(serialized_frame.shared_buffer_id);
-  CHECK(shared_buffer_core);
+  CHECK(shared_buffer_core.get());
 
   scoped_ptr<webrtc::DesktopFrame> frame(
       new webrtc::SharedMemoryDesktopFrame(

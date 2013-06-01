@@ -42,7 +42,7 @@ ProxyResolvingClientSocket::ProxyResolvingClientSocket(
                   request_context_getter->GetURLRequestContext()->net_log(),
                   net::NetLog::SOURCE_SOCKET)),
           weak_factory_(this) {
-  DCHECK(request_context_getter);
+  DCHECK(request_context_getter.get());
   net::URLRequestContext* request_context =
       request_context_getter->GetURLRequestContext();
   DCHECK(request_context);

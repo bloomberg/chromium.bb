@@ -59,7 +59,7 @@ class HeartbeatSenderTest
 
   virtual void SetUp() OVERRIDE {
     key_pair_ = RsaKeyPair::FromString(kTestRsaKeyPair);
-    ASSERT_TRUE(key_pair_);
+    ASSERT_TRUE(key_pair_.get());
 
     EXPECT_CALL(signal_strategy_, GetState())
         .WillOnce(Return(SignalStrategy::DISCONNECTED));
@@ -238,7 +238,7 @@ void HeartbeatSenderTest::ValidateHeartbeatStanza(
   EXPECT_TRUE(heartbeat_stanza->NextNamed(signature_tag) == NULL);
 
   scoped_refptr<RsaKeyPair> key_pair = RsaKeyPair::FromString(kTestRsaKeyPair);
-  ASSERT_TRUE(key_pair);
+  ASSERT_TRUE(key_pair.get());
   std::string expected_signature =
       key_pair->SignMessage(std::string(kTestJid) + ' ' + expectedSequenceId);
   EXPECT_EQ(expected_signature, signature->BodyText());

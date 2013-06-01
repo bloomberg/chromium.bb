@@ -200,7 +200,8 @@ void FakeSSLClientSocket::ProcessConnectDone() {
 
 int FakeSSLClientSocket::DoSendClientHello() {
   int status = transport_socket_->Write(
-      write_buf_, write_buf_->BytesRemaining(),
+      write_buf_.get(),
+      write_buf_->BytesRemaining(),
       base::Bind(&FakeSSLClientSocket::OnSendClientHelloDone,
                  base::Unretained(this)));
   if (status < net::OK) {
@@ -234,7 +235,8 @@ void FakeSSLClientSocket::ProcessSendClientHelloDone(size_t written) {
 
 int FakeSSLClientSocket::DoVerifyServerHello() {
   int status = transport_socket_->Read(
-      read_buf_, read_buf_->BytesRemaining(),
+      read_buf_.get(),
+      read_buf_->BytesRemaining(),
       base::Bind(&FakeSSLClientSocket::OnVerifyServerHelloDone,
                  base::Unretained(this)));
   if (status < net::OK) {

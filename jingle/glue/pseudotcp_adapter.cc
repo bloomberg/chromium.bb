@@ -360,9 +360,10 @@ cricket::IPseudoTcpNotify::WriteResult PseudoTcpAdapter::Core::TcpWritePacket(
   // send exactly as many bytes as we requested, or fail.
   int result;
   if (socket_.get()) {
-    result = socket_->Write(write_buffer, len,
-                            base::Bind(&PseudoTcpAdapter::Core::OnWritten,
-                                       base::Unretained(this)));
+    result = socket_->Write(
+        write_buffer.get(),
+        len,
+        base::Bind(&PseudoTcpAdapter::Core::OnWritten, base::Unretained(this)));
   } else {
     result = net::ERR_CONNECTION_CLOSED;
   }
@@ -379,14 +380,15 @@ cricket::IPseudoTcpNotify::WriteResult PseudoTcpAdapter::Core::TcpWritePacket(
 }
 
 void PseudoTcpAdapter::Core::DoReadFromSocket() {
-  if (!socket_read_buffer_)
+  if (!socket_read_buffer_.get())
     socket_read_buffer_ = new net::IOBuffer(kReadBufferSize);
 
   int result = 1;
   while (socket_.get() && result > 0) {
-    result = socket_->Read(socket_read_buffer_, kReadBufferSize,
-                           base::Bind(&PseudoTcpAdapter::Core::OnRead,
-                                      base::Unretained(this)));
+    result = socket_->Read(
+        socket_read_buffer_.get(),
+        kReadBufferSize,
+        base::Bind(&PseudoTcpAdapter::Core::OnRead, base::Unretained(this)));
     if (result != net::ERR_IO_PENDING)
       HandleReadResults(result);
   }

@@ -231,7 +231,8 @@ class TCPChannelTester : public base::RefCountedThreadSafe<TCPChannelTester> {
       int bytes_to_write = std::min(output_buffer_->BytesRemaining(),
                                     kMessageSize);
       result = client_socket_->Write(
-          output_buffer_, bytes_to_write,
+          output_buffer_.get(),
+          bytes_to_write,
           base::Bind(&TCPChannelTester::OnWritten, base::Unretained(this)));
       HandleWriteResult(result);
     }
@@ -257,9 +258,10 @@ class TCPChannelTester : public base::RefCountedThreadSafe<TCPChannelTester> {
     while (result > 0) {
       input_buffer_->set_offset(input_buffer_->capacity() - kMessageSize);
 
-      result = host_socket_->Read(input_buffer_, kMessageSize,
-                                  base::Bind(&TCPChannelTester::OnRead,
-                                             base::Unretained(this)));
+      result = host_socket_->Read(
+          input_buffer_.get(),
+          kMessageSize,
+          base::Bind(&TCPChannelTester::OnRead, base::Unretained(this)));
       HandleReadResult(result);
     };
   }

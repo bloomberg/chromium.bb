@@ -104,7 +104,7 @@ URLRequestContext::URLRequestContext(
   scoped_refptr<net::HttpNetworkSession> network_session(
       new net::HttpNetworkSession(session_params));
   storage_.set_http_transaction_factory(
-      new net::HttpNetworkLayer(network_session));
+      new net::HttpNetworkLayer(network_session.get()));
   storage_.set_net_log(net_log.release());
 }
 
@@ -115,8 +115,8 @@ URLRequestContextGetter::URLRequestContextGetter(
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> network_task_runner)
     : network_task_runner_(network_task_runner) {
-  proxy_config_service_.reset(
-      CreateSystemProxyConfigService(ui_task_runner, network_task_runner_));
+  proxy_config_service_.reset(CreateSystemProxyConfigService(
+      ui_task_runner.get(), network_task_runner_.get()));
 }
 
 net::URLRequestContext* URLRequestContextGetter::GetURLRequestContext() {

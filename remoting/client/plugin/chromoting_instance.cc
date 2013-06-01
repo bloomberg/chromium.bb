@@ -168,9 +168,8 @@ bool ChromotingInstance::ParseAuthMethods(const std::string& auth_methods_str,
 ChromotingInstance::ChromotingInstance(PP_Instance pp_instance)
     : pp::Instance(pp_instance),
       initialized_(false),
-      plugin_task_runner_(
-          new PluginThreadTaskRunner(&plugin_thread_delegate_)),
-      context_(plugin_task_runner_),
+      plugin_task_runner_(new PluginThreadTaskRunner(&plugin_thread_delegate_)),
+      context_(plugin_task_runner_.get()),
       input_tracker_(&mouse_input_filter_),
 #if defined(OS_MACOSX)
       // On Mac we need an extra filter to inject missing keyup events.
@@ -646,7 +645,8 @@ void ChromotingInstance::Connect(const ClientConfig& config) {
   // Setup the XMPP Proxy.
   xmpp_proxy_ = new PepperXmppProxy(
       base::Bind(&ChromotingInstance::SendOutgoingIq, AsWeakPtr()),
-      plugin_task_runner_, context_.main_task_runner());
+      plugin_task_runner_.get(),
+      context_.main_task_runner());
 
   scoped_ptr<cricket::HttpPortAllocatorBase> port_allocator(
       PepperPortAllocator::Create(this));
@@ -686,7 +686,7 @@ void ChromotingInstance::Disconnect() {
 void ChromotingInstance::OnIncomingIq(const std::string& iq) {
   // Just ignore the message if it's received before Connect() is called. It's
   // likely to be a leftover from a previous session, so it's safe to ignore it.
-  if (xmpp_proxy_)
+  if (xmpp_proxy_.get())
     xmpp_proxy_->OnIq(iq);
 }
 

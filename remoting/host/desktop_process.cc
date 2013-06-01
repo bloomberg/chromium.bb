@@ -36,7 +36,7 @@ DesktopProcess::DesktopProcess(
 
 DesktopProcess::~DesktopProcess() {
   DCHECK(!daemon_channel_);
-  DCHECK(!desktop_agent_);
+  DCHECK(!desktop_agent_.get());
 }
 
 DesktopEnvironmentFactory& DesktopProcess::desktop_environment_factory() {
@@ -79,7 +79,7 @@ void DesktopProcess::OnChannelConnected(int32 peer_pid) {
 void DesktopProcess::OnChannelError() {
   // Shutdown the desktop process.
   daemon_channel_.reset();
-  if (desktop_agent_) {
+  if (desktop_agent_.get()) {
     desktop_agent_->Stop();
     desktop_agent_ = NULL;
   }
@@ -142,7 +142,7 @@ bool DesktopProcess::Start(
   daemon_channel_.reset(new IPC::ChannelProxy(daemon_channel_name_,
                                               IPC::Channel::MODE_CLIENT,
                                               this,
-                                              io_task_runner));
+                                              io_task_runner.get()));
 
   // Pass |desktop_pipe| to the daemon.
   daemon_channel_->Send(

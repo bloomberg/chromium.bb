@@ -52,7 +52,7 @@ void CompoundBuffer::Append(net::IOBuffer* buffer, int size) {
 void CompoundBuffer::Append(const CompoundBuffer& buffer) {
   for (DataChunkList::const_iterator it = buffer.chunks_.begin();
        it != buffer.chunks_.end(); ++it) {
-    Append(it->buffer, it->start, it->size);
+    Append(it->buffer.get(), it->start, it->size);
   }
 }
 
@@ -75,7 +75,7 @@ void CompoundBuffer::Prepend(net::IOBuffer* buffer, int size) {
 void CompoundBuffer::Prepend(const CompoundBuffer& buffer) {
   for (DataChunkList::const_iterator it = buffer.chunks_.begin();
        it != buffer.chunks_.end(); ++it) {
-    Prepend(it->buffer, it->start, it->size);
+    Prepend(it->buffer.get(), it->start, it->size);
   }
 }
 void CompoundBuffer::AppendCopyOf(const char* data, int size) {

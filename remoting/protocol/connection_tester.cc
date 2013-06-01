@@ -74,7 +74,8 @@ void StreamConnectionTester::DoWrite() {
     int bytes_to_write = std::min(output_buffer_->BytesRemaining(),
                                   message_size_);
     result = client_socket_->Write(
-        output_buffer_, bytes_to_write,
+        output_buffer_.get(),
+        bytes_to_write,
         base::Bind(&StreamConnectionTester::OnWritten, base::Unretained(this)));
     HandleWriteResult(result);
   }
@@ -100,7 +101,8 @@ void StreamConnectionTester::DoRead() {
   while (result > 0) {
     input_buffer_->SetCapacity(input_buffer_->offset() + message_size_);
     result = host_socket_->Read(
-        input_buffer_, message_size_,
+        input_buffer_.get(),
+        message_size_,
         base::Bind(&StreamConnectionTester::OnRead, base::Unretained(this)));
     HandleReadResult(result);
   };
@@ -185,7 +187,8 @@ void DatagramConnectionTester::DoWrite() {
   memcpy(packet->data(), &packets_sent_, sizeof(packets_sent_));
 
   int result = client_socket_->Write(
-      packet, message_size_,
+      packet.get(),
+      message_size_,
       base::Bind(&DatagramConnectionTester::OnWritten, base::Unretained(this)));
   HandleWriteResult(result);
 }
@@ -216,7 +219,8 @@ void DatagramConnectionTester::DoRead() {
     read_buffer_ = new net::IOBuffer(kReadSize);
 
     result = host_socket_->Read(
-        read_buffer_, kReadSize,
+        read_buffer_.get(),
+        kReadSize,
         base::Bind(&DatagramConnectionTester::OnRead, base::Unretained(this)));
     HandleReadResult(result);
   };

@@ -44,7 +44,7 @@ RegisterSupportHostRequest::RegisterSupportHostRequest(
       directory_bot_jid_(directory_bot_jid),
       callback_(callback) {
   DCHECK(signal_strategy_);
-  DCHECK(key_pair_);
+  DCHECK(key_pair_.get());
   signal_strategy_->AddListener(this);
   iq_sender_.reset(new IqSender(signal_strategy_));
 }

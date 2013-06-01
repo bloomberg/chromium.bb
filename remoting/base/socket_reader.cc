@@ -40,8 +40,9 @@ void SocketReader::DoRead() {
   while (true) {
     read_buffer_ = new net::IOBuffer(kReadBufferSize);
     int result = socket_->Read(
-        read_buffer_, kReadBufferSize, base::Bind(&SocketReader::OnRead,
-                                                  weak_factory_.GetWeakPtr()));
+        read_buffer_.get(),
+        kReadBufferSize,
+        base::Bind(&SocketReader::OnRead, weak_factory_.GetWeakPtr()));
     HandleReadResult(result);
     if (result <= 0)
       break;

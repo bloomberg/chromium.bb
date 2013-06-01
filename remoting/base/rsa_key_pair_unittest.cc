@@ -75,7 +75,7 @@ TEST_F(RsaKeyPairTest, Signatures) {
 TEST_F(RsaKeyPairTest, GenerateKey) {
   // Test that we can generate a valid key.
   scoped_refptr<RsaKeyPair> key_pair = RsaKeyPair::Generate();
-  ASSERT_TRUE(key_pair);
+  ASSERT_TRUE(key_pair.get());
   ASSERT_NE(key_pair->ToString(), "");
   ASSERT_NE(key_pair->GetPublicKey(), "");
   ASSERT_NE(key_pair->SignMessage(kTestMessage), "");

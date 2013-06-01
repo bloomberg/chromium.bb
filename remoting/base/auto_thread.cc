@@ -57,9 +57,9 @@ scoped_refptr<AutoThreadTaskRunner> AutoThread::CreateWithType(
     const char* name,
     scoped_refptr<AutoThreadTaskRunner> joiner,
     base::MessageLoop::Type type) {
-  AutoThread* thread = new AutoThread(name, joiner);
+  AutoThread* thread = new AutoThread(name, joiner.get());
   scoped_refptr<AutoThreadTaskRunner> task_runner = thread->StartWithType(type);
-  if (!task_runner)
+  if (!task_runner.get())
     delete thread;
   return task_runner;
 }
@@ -167,9 +167,10 @@ void AutoThread::QuitThread(
   base::MessageLoop::current()->Quit();
   was_quit_properly_ = true;
 
-  if (joiner_) {
-    joiner_->PostTask(FROM_HERE, base::Bind(&AutoThread::JoinAndDeleteThread,
-                                            base::Unretained(this)));
+  if (joiner_.get()) {
+    joiner_->PostTask(
+        FROM_HERE,
+        base::Bind(&AutoThread::JoinAndDeleteThread, base::Unretained(this)));
   }
 }
 

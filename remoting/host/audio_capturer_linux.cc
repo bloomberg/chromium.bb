@@ -79,13 +79,13 @@ void AudioCapturerLinux::OnDataRead(
 }
 
 bool AudioCapturer::IsSupported() {
-  return g_pulseaudio_pipe_sink_reader.Get() != NULL;
+  return g_pulseaudio_pipe_sink_reader.Get().get() != NULL;
 }
 
 scoped_ptr<AudioCapturer> AudioCapturer::Create() {
   scoped_refptr<AudioPipeReader> reader =
       g_pulseaudio_pipe_sink_reader.Get();
-  if (!reader)
+  if (!reader.get())
     return scoped_ptr<AudioCapturer>();
   return scoped_ptr<AudioCapturer>(new AudioCapturerLinux(reader));
 }

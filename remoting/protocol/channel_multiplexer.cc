@@ -344,7 +344,7 @@ void ChannelMultiplexer::MuxSocket::OnWriteFailed() {
 
 void ChannelMultiplexer::MuxSocket::OnPacketReceived() {
   if (!read_callback_.is_null()) {
-    int result = channel_->DoRead(read_buffer_, read_buffer_size_);
+    int result = channel_->DoRead(read_buffer_.get(), read_buffer_size_);
     read_buffer_ = NULL;
     DCHECK_GT(result, 0);
     net::CompletionCallback cb;

@@ -68,10 +68,16 @@ void ChromotingClient::Start(
   // Create a WeakPtr to ourself for to use for all posted tasks.
   weak_ptr_ = weak_factory_.GetWeakPtr();
 
-  connection_->Connect(xmpp_proxy, config_.local_jid, config_.host_jid,
-                       config_.host_public_key, transport_factory.Pass(),
-                       authenticator.Pass(), this, this, this,
-                       rectangle_decoder_,
+  connection_->Connect(xmpp_proxy,
+                       config_.local_jid,
+                       config_.host_jid,
+                       config_.host_public_key,
+                       transport_factory.Pass(),
+                       authenticator.Pass(),
+                       this,
+                       this,
+                       this,
+                       rectangle_decoder_.get(),
                        audio_decode_scheduler_.get());
 }
 
@@ -83,7 +89,7 @@ void ChromotingClient::Stop(const base::Closure& shutdown_task) {
 }
 
 FrameProducer* ChromotingClient::GetFrameProducer() {
-  return rectangle_decoder_;
+  return rectangle_decoder_.get();
 }
 
 void ChromotingClient::OnDisconnected(const base::Closure& shutdown_task) {

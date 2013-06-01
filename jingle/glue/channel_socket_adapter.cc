@@ -143,7 +143,7 @@ void TransportChannelSocketAdapter::OnNewPacket(
   DCHECK_EQ(base::MessageLoop::current(), message_loop_);
   DCHECK_EQ(channel, channel_);
   if (!read_callback_.is_null()) {
-    DCHECK(read_buffer_);
+    DCHECK(read_buffer_.get());
     CHECK_LT(data_size, static_cast<size_t>(std::numeric_limits<int>::max()));
 
     if (read_buffer_size_ < static_cast<int>(data_size)) {

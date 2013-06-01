@@ -35,7 +35,7 @@ class CompoundBufferTest : public testing::Test {
 
   // Following 5 methods are used with IterateOverPieces().
   void Append(int pos, int size) {
-    target_.Append(data_, data_->data() + pos, size);
+    target_.Append(data_.get(), data_->data() + pos, size);
   }
 
   void AppendCopyOf(int pos, int size) {
@@ -43,7 +43,7 @@ class CompoundBufferTest : public testing::Test {
   }
 
   void Prepend(int pos, int size) {
-    target_.Prepend(data_, data_->data() + kDataSize - pos - size, size);
+    target_.Prepend(data_.get(), data_->data() + kDataSize - pos - size, size);
   }
 
   void PrependCopyOf(int pos, int size) {

@@ -123,7 +123,7 @@ scoped_ptr<Authenticator> Me2MeHostAuthenticatorFactory::CreateAuthenticator(
     return scoped_ptr<Authenticator>(new RejectingAuthenticator());
   }
 
-  if (!local_cert_.empty() && key_pair_) {
+  if (!local_cert_.empty() && key_pair_.get()) {
     if (token_validator_factory_) {
       return NegotiatingHostAuthenticator::CreateWithThirdPartyAuth(
           local_cert_, key_pair_,

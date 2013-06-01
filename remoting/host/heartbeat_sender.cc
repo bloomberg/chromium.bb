@@ -65,7 +65,7 @@ HeartbeatSender::HeartbeatSender(
       heartbeat_succeeded_(false),
       failed_startup_heartbeat_count_(0) {
   DCHECK(signal_strategy_);
-  DCHECK(key_pair_);
+  DCHECK(key_pair_.get());
 
   signal_strategy_->AddListener(this);
 

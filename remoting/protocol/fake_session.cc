@@ -119,7 +119,7 @@ void FakeSocket::DoAsyncWrite(scoped_refptr<net::IOBuffer> buf, int buf_len,
     return;
   }
 
-  DoWrite(buf, buf_len);
+  DoWrite(buf.get(), buf_len);
   callback.Run(buf_len);
 }
 

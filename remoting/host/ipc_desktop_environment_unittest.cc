@@ -364,16 +364,16 @@ void IpcDesktopEnvironmentTest::ReflectClipboardEvent(
 }
 
 void IpcDesktopEnvironmentTest::CreateDesktopProcess() {
-  EXPECT_TRUE(task_runner_);
-  EXPECT_TRUE(io_task_runner_);
+  EXPECT_TRUE(task_runner_.get());
+  EXPECT_TRUE(io_task_runner_.get());
 
   // Create the daemon end of the daemon-to-desktop channel.
   desktop_channel_name_ = IPC::Channel::GenerateUniqueRandomChannelID();
-  desktop_channel_.reset(new IPC::ChannelProxy(
-      IPC::ChannelHandle(desktop_channel_name_),
-      IPC::Channel::MODE_SERVER,
-      &desktop_listener_,
-      io_task_runner_));
+  desktop_channel_.reset(
+      new IPC::ChannelProxy(IPC::ChannelHandle(desktop_channel_name_),
+                            IPC::Channel::MODE_SERVER,
+                            &desktop_listener_,
+                            io_task_runner_.get()));
 
   // Create and start the desktop process.
   desktop_process_.reset(new DesktopProcess(task_runner_,

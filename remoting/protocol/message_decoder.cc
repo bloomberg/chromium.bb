@@ -22,7 +22,7 @@ MessageDecoder::~MessageDecoder() {}
 
 void MessageDecoder::AddData(scoped_refptr<net::IOBuffer> data,
                              int data_size) {
-  buffer_.Append(data, data_size);
+  buffer_.Append(data.get(), data_size);
 }
 
 CompoundBuffer* MessageDecoder::GetNextMessage() {

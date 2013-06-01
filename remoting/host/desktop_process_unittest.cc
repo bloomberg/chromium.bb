@@ -176,11 +176,10 @@ void DesktopProcessTest::ConnectNetworkChannel(
   IPC::ChannelHandle channel_handle(desktop_process);
 #endif  // defined(OS_WIN)
 
-  network_channel_.reset(new IPC::ChannelProxy(
-      channel_handle,
-      IPC::Channel::MODE_CLIENT,
-      &network_listener_,
-      io_task_runner_));
+  network_channel_.reset(new IPC::ChannelProxy(channel_handle,
+                                               IPC::Channel::MODE_CLIENT,
+                                               &network_listener_,
+                                               io_task_runner_.get()));
 }
 
 void DesktopProcessTest::OnDesktopAttached(
@@ -248,11 +247,10 @@ void DesktopProcessTest::RunDesktopProcess() {
       "IPC thread", ui_task_runner, base::MessageLoop::TYPE_IO);
 
   std::string channel_name = IPC::Channel::GenerateUniqueRandomChannelID();
-  daemon_channel_.reset(new IPC::ChannelProxy(
-      IPC::ChannelHandle(channel_name),
-      IPC::Channel::MODE_SERVER,
-      &daemon_listener_,
-      io_task_runner_));
+  daemon_channel_.reset(new IPC::ChannelProxy(IPC::ChannelHandle(channel_name),
+                                              IPC::Channel::MODE_SERVER,
+                                              &daemon_listener_,
+                                              io_task_runner_.get()));
 
   scoped_ptr<MockDesktopEnvironmentFactory> desktop_environment_factory(
       new MockDesktopEnvironmentFactory());

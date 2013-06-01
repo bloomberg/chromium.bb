@@ -28,7 +28,7 @@ void ClientContext::Stop() {
 }
 
 base::SingleThreadTaskRunner* ClientContext::main_task_runner() {
-  return main_task_runner_;
+  return main_task_runner_.get();
 }
 
 base::SingleThreadTaskRunner* ClientContext::decode_task_runner() {

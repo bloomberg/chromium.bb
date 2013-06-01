@@ -97,7 +97,7 @@ std::string RsaKeyPair::GenerateCertificate() const {
           key_.get(), "CN=chromoting",
           base::RandInt(1, std::numeric_limits<int>::max()),
           base::TimeDelta::FromDays(1));
-  if (!cert)
+  if (!cert.get())
     return std::string();
 
   std::string encoded;
