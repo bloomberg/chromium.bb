@@ -190,6 +190,7 @@ BrowserContextKeyedService* IdentityAPITestFactory(
   return new IdentityAPI(static_cast<Profile*>(profile));
 }
 
+// DO NOT USE THIS CLASS until finding a safe way to close the window.
 // Waits for a specific GURL to generate a NOTIFICATION_LOAD_STOP
 // event, and closes the window embedding the webcontents.
 class WaitForGURLAndCloseWindow : public content::WindowedNotificationObserver {
@@ -995,7 +996,8 @@ class LaunchWebAuthFlowFunctionTest : public AsyncExtensionBrowserTest {
   }
 };
 
-IN_PROC_BROWSER_TEST_F(LaunchWebAuthFlowFunctionTest, UserCloseWindow) {
+IN_PROC_BROWSER_TEST_F(LaunchWebAuthFlowFunctionTest,
+                       DISABLED_UserCloseWindow) {
   net::SpawnedTestServer https_server(
       net::SpawnedTestServer::TYPE_HTTPS,
       net::SpawnedTestServer::kLocalhost,
