@@ -146,7 +146,6 @@ class Port(object):
         self._test_configuration = None
         self._reftest_list = {}
         self._results_directory = None
-        self._root_was_set = hasattr(options, 'root') and options.root
 
     def buildbot_archives_baselines(self):
         return True
@@ -237,8 +236,7 @@ class Port(object):
     def check_build(self, needs_http):
         """This routine is used to ensure that the build is up to date
         and all the needed binaries are present."""
-        # If we're using a pre-built copy of WebKit (--root), we assume it also includes a build of DRT.
-        if not self._root_was_set and self.get_option('build'):
+        if self.get_option('build'):
             return False
         if not self._check_driver():
             return False
@@ -1207,18 +1205,11 @@ class Port(object):
         return self._filesystem.join(self.layout_tests_dir(), 'http', 'conf', config_file_name)
 
     def _build_path(self, *comps):
-        root_directory = self.get_option('root')
-        if not root_directory:
-            build_directory = self.get_option('build_directory')
-            if build_directory:
-                root_directory = self._filesystem.join(build_directory, self.get_option('configuration'))
-            else:
-                root_directory = self._config.build_directory(self.get_option('configuration'))
-            # Set --root so that we can pass this to subprocesses and avoid making the
-            # slow call to config.build_directory() N times in each worker.
-            # FIXME: This is like @memoized, but more annoying and fragile; there should be another
-            # way to propagate values without mutating the options list.
-            self.set_option_default('root', root_directory)
+        build_directory = self.get_option('build_directory')
+        if build_directory:
+            root_directory = self._filesystem.join(build_directory, self.get_option('configuration'))
+        else:
+            root_directory = self._config.build_directory(self.get_option('configuration'))
         return self._filesystem.join(self._filesystem.abspath(root_directory), *comps)
 
     def _path_to_driver(self, configuration=None):
