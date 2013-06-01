@@ -29,7 +29,7 @@ namespace extensions {
 
 // Encapsulates the SQL connection for the activity log database.
 // This class holds the database connection and has methods for writing.
-// All of the methods except constructor and SetErrorDelegate need to be
+// All of the methods except constructor and SetErrorCallback need to be
 // called on the DB thread. For this reason, the ActivityLog calls Close from
 // its destructor instead of destructing its ActivityDatabase object.
 class ActivityDatabase {
@@ -37,9 +37,9 @@ class ActivityDatabase {
   // Need to call Init to actually use the ActivityDatabase.
   ActivityDatabase();
 
-  // Sets up an optional error delegate.
+  // Sets up an optional error callback.
   // Should be the only thing done before Init.
-  void SetErrorDelegate(sql::ErrorDelegate* error_delegate);
+  void SetErrorCallback(const sql::Connection::ErrorCallback& error_callback);
 
   // Opens the DB and creates tables as necessary.
   void Init(const base::FilePath& db_name);
