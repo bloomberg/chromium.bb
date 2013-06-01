@@ -261,8 +261,6 @@ class WebDataServiceFake : public AutofillWebDataService {
     return web_database_;
   }
 
-  virtual void ShutdownOnUIThread() OVERRIDE {}
-
   void OnAutofillEntriesChanged(const AutofillChangeList& changes) {
     WaitableEvent event(true, false);
 
@@ -314,7 +312,6 @@ class WebDataServiceFake : public AutofillWebDataService {
 
   void DestroySyncableService() {
     ASSERT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::DB));
-    AutofillWebDataService::ShutdownOnDBThread();
     autocomplete_syncable_service_ = NULL;
     autofill_profile_syncable_service_ = NULL;
     backend_.reset();
@@ -539,6 +536,7 @@ class ProfileSyncServiceAutofillTest
     // Note: The tear down order is important.
     ProfileSyncServiceFactory::GetInstance()->SetTestingFactory(
         profile_.get(), NULL);
+    web_data_service_->ShutdownOnUIThread();
     web_data_service_->ShutdownSyncableService();
     web_data_service_ = NULL;
     profile_->ResetRequestContext();

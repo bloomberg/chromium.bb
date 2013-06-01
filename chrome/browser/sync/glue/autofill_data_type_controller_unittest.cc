@@ -75,16 +75,6 @@ class FakeWebDataService : public AutofillWebDataService {
     return is_database_loaded_;
   }
 
-  virtual void ShutdownOnUIThread() OVERRIDE {
-    // The storage for syncable services must be destructed on the DB
-    // thread.
-    base::RunLoop run_loop;
-    BrowserThread::PostTaskAndReply(BrowserThread::DB, FROM_HERE,
-        base::Bind(&FakeWebDataService::ShutdownOnDBThread,
-                   base::Unretained(this)), run_loop.QuitClosure());
-    run_loop.Run();
-  }
-
   // Note: this implementation violates the contract for AddDBObserver (which
   // should support having multiple observers at the same time), however, it
   // is the simplest thing that works for the purpose of the unit test, which
@@ -159,6 +149,12 @@ class MockWebDataServiceWrapperSyncable : public MockWebDataServiceWrapper {
   virtual void Shutdown() OVERRIDE {
     static_cast<FakeWebDataService*>(
         fake_autofill_web_data_.get())->ShutdownOnUIThread();
+    // Make sure WebDataService is shutdown properly on DB thread before we
+    // destroy it.
+    base::RunLoop run_loop;
+    ASSERT_TRUE(BrowserThread::PostTaskAndReply(BrowserThread::DB, FROM_HERE,
+        base::Bind(&base::DoNothing), run_loop.QuitClosure()));
+    run_loop.Run();
   }
 
  private:

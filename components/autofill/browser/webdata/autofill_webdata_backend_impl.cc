@@ -43,6 +43,7 @@ void AutofillWebDataBackendImpl::RemoveObserver(
 }
 
 AutofillWebDataBackendImpl::~AutofillWebDataBackendImpl() {
+  DCHECK(!user_data_.get()); // Forgot to call ResetUserData?
 }
 
 WebDatabase* AutofillWebDataBackendImpl::GetDatabase() {
@@ -61,6 +62,17 @@ void AutofillWebDataBackendImpl::NotifyOfMultipleAutofillChanges() {
   BrowserThread::PostTask(BrowserThread::UI,
                           FROM_HERE,
                           on_changed_callback_);
+}
+
+base::SupportsUserData* AutofillWebDataBackendImpl::GetDBUserData() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
+  if (!user_data_)
+    user_data_.reset(new SupportsUserDataAggregatable());
+  return user_data_.get();
+}
+
+void AutofillWebDataBackendImpl::ResetUserData() {
+  user_data_.reset();
 }
 
 WebDatabase::State AutofillWebDataBackendImpl::AddFormElements(

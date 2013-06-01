@@ -106,11 +106,11 @@ WebDataServiceWrapper::WebDataServiceWrapper(Profile* profile) {
       web_database_, base::Bind(&ProfileErrorCallback));
   web_data_->Init();
 
-autofill_web_data_->GetAutofillBackend(
-       base::Bind(&InitSyncableServicesOnDBThread,
-                  autofill_web_data_,
-                  profile_path,
-                  g_browser_process->GetApplicationLocale()));
+  autofill_web_data_->GetAutofillBackend(
+         base::Bind(&InitSyncableServicesOnDBThread,
+                    autofill_web_data_,
+                    profile_path,
+                    g_browser_process->GetApplicationLocale()));
 }
 
 WebDataServiceWrapper::~WebDataServiceWrapper() {

@@ -105,30 +105,11 @@ class AutofillWebDataService : public AutofillWebData,
 
   virtual void NotifyAutofillMultipleChangedOnUIThread();
 
-  virtual void ShutdownOnDBThread();
-
   base::WeakPtr<AutofillWebDataService> AsWeakPtr() {
     return weak_ptr_factory_.GetWeakPtr();
   }
 
  private:
-  // This makes the destructor public, and thus allows us to aggregate
-  // SupportsUserData. It is private by default to prevent incorrect
-  // usage in class hierarchies where it is inherited by
-  // reference-counted objects.
-  class SupportsUserDataAggregatable : public base::SupportsUserData {
-   public:
-    SupportsUserDataAggregatable() {}
-    virtual ~SupportsUserDataAggregatable() {}
-   private:
-    DISALLOW_COPY_AND_ASSIGN(SupportsUserDataAggregatable);
-  };
-
-  // Storage for user data to be accessed only on the DB thread. May
-  // be used e.g. for SyncableService subclasses that need to be owned
-  // by this object. Is created on first call to |GetDBUserData()|.
-  scoped_ptr<SupportsUserDataAggregatable> db_thread_user_data_;
-
   ObserverList<AutofillWebDataServiceObserverOnUIThread> ui_observer_list_;
 
   // This factory is used on the UI thread. All vended weak pointers are

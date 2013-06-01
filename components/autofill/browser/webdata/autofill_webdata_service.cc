@@ -49,9 +49,9 @@ AutofillWebDataService::AutofillWebDataService()
 
 void AutofillWebDataService::ShutdownOnUIThread() {
   weak_ptr_factory_.InvalidateWeakPtrs();
-  BrowserThread::PostTask(
-    BrowserThread::DB, FROM_HERE,
-    base::Bind(&AutofillWebDataService::ShutdownOnDBThread, this));
+  BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
+      Bind(&AutofillWebDataBackendImpl::ResetUserData,
+           autofill_backend_));
   WebDataServiceBase::ShutdownOnUIThread();
 }
 
@@ -193,9 +193,7 @@ void AutofillWebDataService::RemoveObserver(
 
 base::SupportsUserData* AutofillWebDataService::GetDBUserData() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
-  if (!db_thread_user_data_)
-    db_thread_user_data_.reset(new SupportsUserDataAggregatable());
-  return db_thread_user_data_.get();
+  return autofill_backend_->GetDBUserData();
 }
 
 void AutofillWebDataService::GetAutofillBackend(
@@ -205,13 +203,7 @@ void AutofillWebDataService::GetAutofillBackend(
                           base::Bind(callback, autofill_backend_));
 }
 
-void AutofillWebDataService::ShutdownOnDBThread() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
-  db_thread_user_data_.reset();
-}
-
 AutofillWebDataService::~AutofillWebDataService() {
-  DCHECK(!db_thread_user_data_.get()) << "Forgot to call ShutdownOnUIThread?";
 }
 
 void AutofillWebDataService::NotifyAutofillMultipleChangedOnUIThread() {

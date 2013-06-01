@@ -8,6 +8,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
+#include "base/supports_user_data.h"
 #include "components/autofill/browser/webdata/autofill_webdata.h"
 #include "components/autofill/browser/webdata/autofill_webdata_backend.h"
 #include "components/autofill/common/form_field_data.h"
@@ -51,6 +52,14 @@ class AutofillWebDataBackendImpl
   virtual WebDatabase* GetDatabase() OVERRIDE;
   virtual void RemoveExpiredFormElements() OVERRIDE;
   virtual void NotifyOfMultipleAutofillChanges() OVERRIDE;
+
+  // Returns a SupportsUserData objects that may be used to store data
+  // owned by the DB thread on this object. Should be called only from
+  // the DB thread, and will be destroyed on the DB thread soon after
+  // |ShutdownOnUIThread()| is called.
+  base::SupportsUserData* GetDBUserData();
+
+  void ResetUserData();
 
   // Adds form fields to the web database.
   WebDatabase::State AddFormElements(const std::vector<FormFieldData>& fields,
@@ -134,6 +143,23 @@ class AutofillWebDataBackendImpl
   // (http://crbug/112250).
   friend class base::RefCountedThreadSafe<AutofillWebDataBackendImpl,
       content::BrowserThread::DeleteOnDBThread>;
+
+  // This makes the destructor public, and thus allows us to aggregate
+  // SupportsUserData. It is private by default to prevent incorrect
+  // usage in class hierarchies where it is inherited by
+  // reference-counted objects.
+  class SupportsUserDataAggregatable : public base::SupportsUserData {
+   public:
+    SupportsUserDataAggregatable() {}
+    virtual ~SupportsUserDataAggregatable() {}
+   private:
+    DISALLOW_COPY_AND_ASSIGN(SupportsUserDataAggregatable);
+  };
+
+  // Storage for user data to be accessed only on the DB thread. May
+  // be used e.g. for SyncableService subclasses that need to be owned
+  // by this object. Is created on first call to |GetDBUserData()|.
+  scoped_ptr<SupportsUserDataAggregatable> user_data_;
 
   WebDatabase::State RemoveExpiredFormElementsImpl(WebDatabase* db);
 
