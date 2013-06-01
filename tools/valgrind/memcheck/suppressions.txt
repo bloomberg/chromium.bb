@@ -7325,3 +7325,17 @@ fun:_ZN7content21RenderViewHostManager8NavigateERKNS_19NavigationEntryImplE
    fun:_ZN7content21ContentMainRunnerImpl3RunEv
    fun:_ZN7content11ContentMainEiPPKcPNS_19ContentMainDelegateE
 }
+{
+   bug_245866
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN4base23EnsureProcessTerminatedEi
+   fun:_ZN7content6Zygote17HandleReapRequestEiRK6Pickle14PickleIterator
+   fun:_ZN7content6Zygote24HandleRequestFromBrowserEi
+   fun:_ZN7content6Zygote15ProcessRequestsEv
+   fun:_ZN7content10ZygoteMainERKNS_18MainFunctionParamsEPNS_18ZygoteForkDelegateE
+   fun:_ZN7content9RunZygoteERKNS_18MainFunctionParamsEPNS_19ContentMainDelegateE
+   fun:_ZN7content23RunNamedProcessTypeMainERKSsRKNS_18MainFunctionParamsEPNS_19ContentMainDelegateE
+   fun:_ZN7content21ContentMainRunnerImpl3RunEv
+   fun:_ZN7content11ContentMainEiPPKcPNS_19ContentMainDelegateE
+}
