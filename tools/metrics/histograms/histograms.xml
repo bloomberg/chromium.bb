@@ -11860,6 +11860,7 @@ other types of suffix sets.
   <int value="458" label="AUDIO_SETACTIVEDEVICES"/>
   <int value="459" label="AUDIO_SETPROPERTIES"/>
   <int value="460" label="USB_RESETDEVICE"/>
+  <int value="461" label="SYSTEMINFO_CPU_GET"/>
 </enum>
 
 <enum name="ExternalDeviceAction" type="int">

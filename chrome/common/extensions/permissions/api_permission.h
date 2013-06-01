@@ -132,6 +132,7 @@ class APIPermission {
     kWebSocketProxyPrivate,
     kWebstorePrivate,
     kWebView,
+    kSystemInfoCpu,
     kEnumBoundary
   };
 

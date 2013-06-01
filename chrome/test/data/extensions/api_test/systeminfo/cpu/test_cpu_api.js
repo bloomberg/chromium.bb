@@ -5,8 +5,6 @@
 // systeminfo.cpu api test
 // browser_tests.exe --gtest_filter=SystemInfoCpuApiTest.*
 
-chrome.systemInfo = chrome.experimental.systemInfo;
-
 var userStep = 3;
 var kernelStep = 2;
 var idleStep = 1;

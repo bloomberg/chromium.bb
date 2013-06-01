@@ -540,6 +540,7 @@ enum HistogramValue {
   MUSICMANAGERPRIVATE_GETDEVICEID,
   TTS_PAUSE,
   TTS_RESUME,
+  SYSTEMINFO_CPU_GET,
   ENUM_BOUNDARY // Last entry: Add new entries above.
 };
 

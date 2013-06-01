@@ -18,8 +18,8 @@
 #include "chrome/browser/extensions/api/system_info_storage/storage_info_provider.h"
 #include "chrome/browser/extensions/event_names.h"
 #include "chrome/browser/extensions/event_router_forwarder.h"
-#include "chrome/common/extensions/api/experimental_system_info_cpu.h"
 #include "chrome/common/extensions/api/experimental_system_info_storage.h"
+#include "chrome/common/extensions/api/system_info_cpu.h"
 #include "ui/gfx/display_observer.h"
 
 #if defined(USE_ASH)
@@ -29,7 +29,7 @@
 
 namespace extensions {
 
-using api::experimental_system_info_cpu::CpuUpdateInfo;
+using api::system_info_cpu::CpuUpdateInfo;
 using api::experimental_system_info_storage::StorageUnitInfo;
 using api::experimental_system_info_storage::StorageUnitType;
 using api::experimental_system_info_storage::StorageChangeInfo;
@@ -100,7 +100,7 @@ class SystemInfoEventRouter
 
   // The callback for CPU sampling cycle. Called from FILE thread.
   void OnNextCpuSampling(
-      scoped_ptr<api::experimental_system_info_cpu::CpuUpdateInfo> info);
+      scoped_ptr<api::system_info_cpu::CpuUpdateInfo> info);
 
   // Called to dispatch the systemInfo.display.onDisplayChanged event.
   void OnDisplayChanged();

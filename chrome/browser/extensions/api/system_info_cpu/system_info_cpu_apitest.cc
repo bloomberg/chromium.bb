@@ -11,7 +11,9 @@
 
 namespace extensions {
 
-using api::experimental_system_info_cpu::CpuInfo;
+using api::system_info_cpu::CpuInfo;
+
+const char kExtensionId[] = "lfakdgdkbaleijdcpbfbngfphpmgfdfn";
 
 class MockCpuInfoProviderImpl : public CpuInfoProvider {
  public:
@@ -63,7 +65,8 @@ class SystemInfoCpuApiTest: public ExtensionApiTest {
 
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     ExtensionApiTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitch(switches::kEnableExperimentalExtensionApis);
+    command_line->AppendSwitchASCII(switches::kWhitelistedExtensionID,
+                                    kExtensionId);
   }
 
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {

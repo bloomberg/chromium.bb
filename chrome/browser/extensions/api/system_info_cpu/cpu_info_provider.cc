@@ -14,8 +14,8 @@
 
 namespace extensions {
 
-using api::experimental_system_info_cpu::CpuInfo;
-using api::experimental_system_info_cpu::CpuUpdateInfo;
+using api::system_info_cpu::CpuInfo;
+using api::system_info_cpu::CpuUpdateInfo;
 using content::BrowserThread;
 
 // Default sampling interval is 1000ms.

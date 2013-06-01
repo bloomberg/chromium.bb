@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 // File-level comment to appease parser. Eventually this will not be necessary.
-namespace experimental.systemInfo.cpu {
+namespace systemInfo.cpu {
 
   dictionary CpuInfo {
     // The number of logical processors.
@@ -25,7 +25,7 @@ namespace experimental.systemInfo.cpu {
   callback CpuInfoCallback = void (CpuInfo info);
   
   interface Functions {
-    // Get CPU information.
+    // Queries basic CPU information of the system.
     static void get(CpuInfoCallback callback);
   };
 

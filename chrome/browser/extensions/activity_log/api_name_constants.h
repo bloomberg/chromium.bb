@@ -190,7 +190,8 @@ const char* const kNames[] = {
     "windows.getCurrent", "windows.getLastFocused", "windows.onCreated",
     "windows.onFocusChanged", "windows.onRemoved", "windows.remove",
     "windows.update",
-    "tabs.getSelected", "tabs.sendRequest"
+    "tabs.getSelected", "tabs.sendRequest",
+    "systemInfo.cpu.get"
 };
 
 }  // namespace activity_log_api_name_constants

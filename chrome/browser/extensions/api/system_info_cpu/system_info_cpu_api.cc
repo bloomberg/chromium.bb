@@ -2,13 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/command_line.h"
 #include "chrome/browser/extensions/api/system_info_cpu/system_info_cpu_api.h"
-
 #include "chrome/browser/extensions/api/system_info_cpu/cpu_info_provider.h"
+#include "chrome/common/chrome_switches.h"
+#include "chrome/common/extensions/features/base_feature_provider.h"
 
 namespace extensions {
 
-using api::experimental_system_info_cpu::CpuInfo;
+using api::system_info_cpu::CpuInfo;
 
 SystemInfoCpuGetFunction::SystemInfoCpuGetFunction() {
 }

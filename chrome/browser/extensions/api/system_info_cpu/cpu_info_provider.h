@@ -8,7 +8,7 @@
 
 #include "base/timer.h"
 #include "chrome/browser/extensions/api/system_info/system_info_provider.h"
-#include "chrome/common/extensions/api/experimental_system_info_cpu.h"
+#include "chrome/common/extensions/api/system_info_cpu.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
@@ -16,15 +16,15 @@ namespace extensions {
 
 class CpuInfoProvider
     : public content::NotificationObserver,
-      public SystemInfoProvider<api::experimental_system_info_cpu::CpuInfo> {
+      public SystemInfoProvider<api::system_info_cpu::CpuInfo> {
  public:
   typedef base::Callback<
-      void(scoped_ptr<api::experimental_system_info_cpu::CpuUpdateInfo>)>
+      void(scoped_ptr<api::system_info_cpu::CpuUpdateInfo>)>
           SamplingCallback;
 
   // Overriden from SystemInfoProvider<CpuInfo>.
   virtual bool QueryInfo(
-      api::experimental_system_info_cpu::CpuInfo* info) OVERRIDE;
+      api::system_info_cpu::CpuInfo* info) OVERRIDE;
 
   // Start sampling the CPU usage. The callback gets called when one sampling
   // cycle is completed periodically with the CPU updated usage info for each
@@ -39,7 +39,7 @@ class CpuInfoProvider
   static CpuInfoProvider* Get();
 
  private:
-  friend class SystemInfoProvider<api::experimental_system_info_cpu::CpuInfo>;
+  friend class SystemInfoProvider<api::system_info_cpu::CpuInfo>;
   friend class MockCpuInfoProviderImpl;
   friend class TestCpuInfoProvider;
 
