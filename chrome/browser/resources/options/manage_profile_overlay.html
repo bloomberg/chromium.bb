@@ -8,18 +8,18 @@
           i18n-content="manageProfilesIconLabel">
       </div>
       <grid id="manage-profile-icon-grid"></grid>
-      <div id="manage-profile-name-label-container">
-        <span id="manage-profile-name-label"
-          i18n-content="manageProfilesNameLabel"></span>
-      </div>
       <div id="manage-profile-name-input-container">
-        <input id="manage-profile-name" type="text" required>
+        <label>
+          <span id="manage-profile-name-label" for="manage-profile-name"
+              i18n-content="manageProfilesNameLabel">
+          </span>
+          <input id="manage-profile-name" type="text" required>
+        </label>
       </div>
-      <div id="manage-profile-error-bubble" hidden>
-      </div>
+      <div id="manage-profile-error-bubble" hidden></div>
     </div>
     <div class="action-area">
-      <div class="action-area-settings-container">
+      <div class="action-area-shortcut-container">
         <button id="remove-shortcut-button"
             i18n-content="removeProfileShortcut" hidden>
         </button>
@@ -39,12 +39,9 @@
     <div class="content-area">
       <div id="delete-profile-message"></div>
     </div>
-    <div class="action-area">
-      <div class="button-strip">
-        <button id="delete-profile-cancel" i18n-content="cancel"></button>
-        <button id="delete-profile-ok"
-            i18n-content="deleteProfileOK"></button>
-      </div>
+    <div class="action-area button-strip">
+      <button id="delete-profile-cancel" i18n-content="cancel"></button>
+      <button id="delete-profile-ok" i18n-content="deleteProfileOK"></button>
     </div>
   </div>
   <!-- Dialog for creating profiles. -->
@@ -53,50 +50,48 @@
     <div id="create-profile-content" class="content-area">
       <div id="create-profile-instructions"></div>
       <grid id="create-profile-icon-grid"></grid>
-      <div id="create-profile-name-label-container">
-        <span id="create-profile-name-label"
-            i18n-content="manageProfilesNameLabel">
-        </span>
-      </div>
       <div id="create-profile-name-input-container">
-        <input id="create-profile-name" type="text" required>
+        <label>
+          <span id="create-profile-name-label" for="create-profile-name"
+              i18n-content="manageProfilesNameLabel">
+          </span>
+          <input id="create-profile-name" type="text" required>
+        </label>
       </div>
       <div id="create-profile-error-bubble" hidden></div>
     </div>
-    <div class="action-area">
-      <div class="action-area-checkbox-container">
-        <div id="create-shortcut-container" class="checkbox" hidden>
-          <label>
-            <input id="create-shortcut" type="checkbox">
-            <span for="create-shortcut" i18n-content="createProfileShortcut">
-            </span>
-          </label>
-        </div>
-        <div id="create-profile-limited-container" class="checkbox" hidden>
-          <label>
-            <input id="create-profile-limited" type="checkbox">
-            <span id="create-profile-limited-signed-in">
-              <span id="create-profile-limited-signed-in-label"></span>
-              <a href="#" id="create-profile-limited-signed-in-link"
-                  i18n-content="learnMore">
-              </a>
-            </span>
-            <span id="create-profile-limited-not-signed-in" hidden>
-              <span id="create-profile-limited-not-signed-in-label"
-                  i18n-content="manageProfilesLimitedNotSignedInLabel">
-              </span>
-              <a href="#" id="create-profile-limited-not-signed-in-link"
-                  i18n-content="manageProfilesLimitedNotSignedInLink">
-              </a>
-            </span>
-          </label>
-        </div>
+    <div class="content-area">
+      <div id="create-shortcut-container" class="checkbox" hidden>
+        <label>
+          <input id="create-shortcut" type="checkbox">
+          <span for="create-shortcut" i18n-content="createProfileShortcut">
+          </span>
+        </label>
       </div>
-      <div class="button-strip">
-        <button id="create-profile-cancel" i18n-content="cancel"></button>
-        <button id="create-profile-ok" i18n-content="createProfileConfirm">
-        </button>
+      <div id="create-profile-limited-container" class="checkbox" hidden>
+        <label>
+          <input id="create-profile-limited" type="checkbox">
+          <span id="create-profile-limited-signed-in">
+            <span id="create-profile-limited-signed-in-label"></span>
+            <a href="#" id="create-profile-limited-signed-in-link"
+                i18n-content="learnMore">
+            </a>
+          </span>
+          <span id="create-profile-limited-not-signed-in" hidden>
+            <span id="create-profile-limited-not-signed-in-label"
+                i18n-content="manageProfilesLimitedNotSignedInLabel">
+            </span>
+            <a href="#" id="create-profile-limited-not-signed-in-link"
+                i18n-content="manageProfilesLimitedNotSignedInLink">
+            </a>
+          </span>
+        </label>
       </div>
+    </div>
+    <div class="action-area button-strip">
+      <button id="create-profile-cancel" i18n-content="cancel"></button>
+      <button id="create-profile-ok" i18n-content="createProfileConfirm">
+      </button>
     </div>
   </div>
 </div>

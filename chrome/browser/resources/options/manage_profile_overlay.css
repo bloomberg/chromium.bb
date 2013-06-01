@@ -18,17 +18,14 @@
   width: 38px;
 }
 
-#create-profile-name-label-container,
 #create-profile-name-input-container,
-#manage-profile-name-label-container,
 #manage-profile-name-input-container {
-  -webkit-box-align: center;
-  -webkit-box-orient: horizontal;
-  -webkit-box-pack: center;
-  display: -webkit-box;
-  margin-left: auto;
-  margin-right: auto;
-  width: 50%;
+  margin-top: 5px;
+}
+
+#create-profile-name,
+#manage-profile-name {
+  margin-left: 10px;
 }
 
 #create-profile-name:invalid,
@@ -100,8 +97,7 @@
   margin-bottom: 5px;
 }
 
-.action-area-checkbox-container,
-.action-area-settings-container {
+.action-area-shortcut-container {
   -webkit-box-flex: 1;
 }
 
