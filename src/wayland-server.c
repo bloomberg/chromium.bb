@@ -338,7 +338,7 @@ wl_client_create(struct wl_display *display, int fd)
 
 	wl_map_init(&client->objects, WL_MAP_SERVER_SIDE);
 
-	if (wl_map_insert_at(&client->objects, 0, NULL) < 0)
+	if (wl_map_insert_at(&client->objects, 0, 0, NULL) < 0)
 		goto err_map;
 
 	wl_signal_init(&client->destroy_signal);
@@ -379,8 +379,8 @@ wl_client_add_resource(struct wl_client *client,
 {
 	if (resource->object.id == 0) {
 		resource->object.id =
-			wl_map_insert_new(&client->objects, resource);
-	} else if (wl_map_insert_at(&client->objects,
+			wl_map_insert_new(&client->objects, 0, resource);
+	} else if (wl_map_insert_at(&client->objects, 0,
 				  resource->object.id, resource) < 0) {
 		wl_resource_post_error(client->display_resource,
 				       WL_DISPLAY_ERROR_INVALID_OBJECT,
@@ -433,7 +433,7 @@ wl_resource_destroy(struct wl_resource *resource)
 			wl_resource_queue_event(client->display_resource,
 						WL_DISPLAY_DELETE_ID, id);
 		}
-		wl_map_insert_at(&client->objects, id, NULL);
+		wl_map_insert_at(&client->objects, 0, id, NULL);
 	} else {
 		wl_map_remove(&client->objects, id);
 	}
@@ -912,7 +912,7 @@ wl_client_add_object(struct wl_client *client,
 	resource->client = client;
 	resource->destroy = (void *) free;
 
-	if (wl_map_insert_at(&client->objects, resource->object.id, resource) < 0) {
+	if (wl_map_insert_at(&client->objects, 0, resource->object.id, resource) < 0) {
 		wl_resource_post_error(client->display_resource,
 				       WL_DISPLAY_ERROR_INVALID_OBJECT,
 				       "invalid new id %d",
@@ -931,7 +931,7 @@ wl_client_new_object(struct wl_client *client,
 {
 	uint32_t id;
 
-	id = wl_map_insert_new(&client->objects, NULL);
+	id = wl_map_insert_new(&client->objects, 0, NULL);
 	return wl_client_add_object(client,
 				    interface, implementation, id, data);
 

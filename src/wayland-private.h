@@ -41,6 +41,14 @@
 #define WL_SERVER_ID_START 0xff000000
 #define WL_CLOSURE_MAX_ARGS 20
 
+/* Flags for wl_map_insert_new and wl_map_insert_at.  Flags can be queried with
+ * wl_map_lookup_flags.  The current implementation has room for 1 bit worth of
+ * flags.  If more flags are ever added, the implementation of wl_map will have
+ * to change to allow for new flags */
+enum wl_map_entry_flags {
+	WL_MAP_ENTRY_LEGACY = (1 << 0)
+};
+
 struct wl_map {
 	struct wl_array client_entries;
 	struct wl_array server_entries;
@@ -52,11 +60,12 @@ typedef void (*wl_iterator_func_t)(void *element, void *data);
 
 void wl_map_init(struct wl_map *map, uint32_t side);
 void wl_map_release(struct wl_map *map);
-uint32_t wl_map_insert_new(struct wl_map *map, void *data);
-int wl_map_insert_at(struct wl_map *map, uint32_t i, void *data);
+uint32_t wl_map_insert_new(struct wl_map *map, uint32_t flags, void *data);
+int wl_map_insert_at(struct wl_map *map, uint32_t flags, uint32_t i, void *data);
 int wl_map_reserve_new(struct wl_map *map, uint32_t i);
 void wl_map_remove(struct wl_map *map, uint32_t i);
 void *wl_map_lookup(struct wl_map *map, uint32_t i);
+uint32_t wl_map_lookup_flags(struct wl_map *map, uint32_t i);
 void wl_map_for_each(struct wl_map *map, wl_iterator_func_t func, void *data);
 
 struct wl_connection;

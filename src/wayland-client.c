@@ -226,7 +226,7 @@ wl_proxy_create(struct wl_proxy *factory, const struct wl_interface *interface)
 	proxy->refcount = 1;
 
 	pthread_mutex_lock(&display->mutex);
-	proxy->object.id = wl_map_insert_new(&display->objects, proxy);
+	proxy->object.id = wl_map_insert_new(&display->objects, 0, proxy);
 	pthread_mutex_unlock(&display->mutex);
 
 	return proxy;
@@ -252,7 +252,7 @@ wl_proxy_create_for_id(struct wl_proxy *factory,
 	proxy->flags = 0;
 	proxy->refcount = 1;
 
-	wl_map_insert_at(&display->objects, id, proxy);
+	wl_map_insert_at(&display->objects, 0, id, proxy);
 
 	return proxy;
 }
@@ -273,10 +273,10 @@ wl_proxy_destroy(struct wl_proxy *proxy)
 	if (proxy->flags & WL_PROXY_FLAG_ID_DELETED)
 		wl_map_remove(&proxy->display->objects, proxy->object.id);
 	else if (proxy->object.id < WL_SERVER_ID_START)
-		wl_map_insert_at(&proxy->display->objects,
+		wl_map_insert_at(&proxy->display->objects, 0,
 				 proxy->object.id, WL_ZOMBIE_OBJECT);
 	else
-		wl_map_insert_at(&proxy->display->objects,
+		wl_map_insert_at(&proxy->display->objects, 0,
 				 proxy->object.id, NULL);
 
 
@@ -522,11 +522,11 @@ wl_display_connect_to_fd(int fd)
 	wl_list_init(&display->event_queue_list);
 	pthread_mutex_init(&display->mutex, NULL);
 
-	wl_map_insert_new(&display->objects, NULL);
+	wl_map_insert_new(&display->objects, 0, NULL);
 
 	display->proxy.object.interface = &wl_display_interface;
 	display->proxy.object.id =
-		wl_map_insert_new(&display->objects, display);
+		wl_map_insert_new(&display->objects, 0, display);
 	display->proxy.display = display;
 	display->proxy.object.implementation = (void(**)(void)) &display_listener;
 	display->proxy.user_data = display;

@@ -151,6 +151,10 @@ union map_entry {
 	void *data;
 };
 
+#define map_entry_is_free(entry) ((entry).next & 0x1)
+#define map_entry_get_data(entry) ((void *)((entry).next & ~(uintptr_t)0x3))
+#define map_entry_get_flags(entry) (((entry).next >> 1) & 0x1)
+
 WL_EXPORT void
 wl_map_init(struct wl_map *map, uint32_t side)
 {
@@ -166,7 +170,7 @@ wl_map_release(struct wl_map *map)
 }
 
 WL_EXPORT uint32_t
-wl_map_insert_new(struct wl_map *map, void *data)
+wl_map_insert_new(struct wl_map *map, uint32_t flags, void *data)
 {
 	union map_entry *start, *entry;
 	struct wl_array *entries;
@@ -192,12 +196,13 @@ wl_map_insert_new(struct wl_map *map, void *data)
 	}
 
 	entry->data = data;
+	entry->next |= (flags & 0x1) << 1;
 
 	return (entry - start) + base;
 }
 
 WL_EXPORT int
-wl_map_insert_at(struct wl_map *map, uint32_t i, void *data)
+wl_map_insert_at(struct wl_map *map, uint32_t flags, uint32_t i, void *data)
 {
 	union map_entry *start;
 	uint32_t count;
@@ -225,6 +230,7 @@ wl_map_insert_at(struct wl_map *map, uint32_t i, void *data)
 
 	start = entries->data;
 	start[i].data = data;
+	start[i].next |= (flags & 0x1) << 1;
 
 	return 0;
 }
@@ -309,10 +315,33 @@ wl_map_lookup(struct wl_map *map, uint32_t i)
 	start = entries->data;
 	count = entries->size / sizeof *start;
 
-	if (i < count && !(start[i].next & 1))
-		return start[i].data;
+	if (i < count && !map_entry_is_free(start[i]))
+		return map_entry_get_data(start[i]);
 
 	return NULL;
+}
+
+WL_EXPORT uint32_t
+wl_map_lookup_flags(struct wl_map *map, uint32_t i)
+{
+	union map_entry *start;
+	uint32_t count;
+	struct wl_array *entries;
+
+	if (i < WL_SERVER_ID_START) {
+		entries = &map->client_entries;
+	} else {
+		entries = &map->server_entries;
+		i -= WL_SERVER_ID_START;
+	}
+
+	start = entries->data;
+	count = entries->size / sizeof *start;
+
+	if (i < count && !map_entry_is_free(start[i]))
+		return map_entry_get_flags(start[i]);
+
+	return 0;
 }
 
 static void
@@ -324,8 +353,8 @@ for_each_helper(struct wl_array *entries, wl_iterator_func_t func, void *data)
 	end = (union map_entry *) ((char *) entries->data + entries->size);
 
 	for (p = start; p < end; p++)
-		if (p->data && !(p->next & 1))
-			func(p->data, data);
+		if (p->data && !map_entry_is_free(*p))
+			func(map_entry_get_data(*p), data);
 }
 
 WL_EXPORT void
