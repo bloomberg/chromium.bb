@@ -537,8 +537,11 @@ TEST(WeakPtrDeathTest, NonOwnerThreadDeletesWeakPtrAfterReference) {
   background.DeRef(&arrow);
 
   // Main thread deletes Target, violating thread binding.
-  Target* foo = target.release();
-  ASSERT_DEATH(delete foo, "");
+  ASSERT_DEATH(target.reset(), "");
+
+  // |target.reset()| died so |target| still holds the object, so we
+  // must pass it to the background thread to teardown.
+  background.DeleteTarget(target.release());
 }
 
 TEST(WeakPtrDeathTest, NonOwnerThreadDeletesObjectAfterReference) {
