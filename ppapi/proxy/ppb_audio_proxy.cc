@@ -11,7 +11,6 @@
 #include "ppapi/c/ppb_audio.h"
 #include "ppapi/c/ppb_audio_config.h"
 #include "ppapi/c/ppb_var.h"
-#include "ppapi/c/trusted/ppb_audio_trusted.h"
 #include "ppapi/proxy/enter_proxy.h"
 #include "ppapi/proxy/plugin_dispatcher.h"
 #include "ppapi/proxy/ppapi_messages.h"

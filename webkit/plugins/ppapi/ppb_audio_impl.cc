@@ -9,7 +9,6 @@
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/ppb_audio.h"
 #include "ppapi/c/ppb_audio_config.h"
-#include "ppapi/c/trusted/ppb_audio_trusted.h"
 #include "ppapi/shared_impl/resource_tracker.h"
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/ppb_audio_config_api.h"

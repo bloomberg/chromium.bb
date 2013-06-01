@@ -6,7 +6,6 @@
 
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/pp_size.h"
-#include "ppapi/c/trusted/ppb_image_data_trusted.h"
 #include "ppapi/proxy/audio_input_resource.h"
 #include "ppapi/proxy/browser_font_resource_trusted.h"
 #include "ppapi/proxy/connection.h"

@@ -5,14 +5,6 @@
 #define LEGACY_IFACE(iface_str, function_name)
 #endif
 
-LEGACY_IFACE(PPB_AUDIO_TRUSTED_INTERFACE_0_6,
-             ::ppapi::thunk::GetPPB_AudioTrusted_0_6_Thunk())
-LEGACY_IFACE(PPB_BUFFER_TRUSTED_INTERFACE_0_1,
-             ::ppapi::thunk::GetPPB_BufferTrusted_0_1_Thunk())
-LEGACY_IFACE(PPB_GRAPHICS_3D_TRUSTED_INTERFACE_1_0,
-             ::ppapi::thunk::GetPPB_Graphics3DTrusted_1_0_Thunk())
-LEGACY_IFACE(PPB_IMAGEDATA_TRUSTED_INTERFACE_0_4,
-             ::ppapi::thunk::GetPPB_ImageDataTrusted_0_4_Thunk())
 LEGACY_IFACE(PPB_INPUT_EVENT_INTERFACE_1_0,
              ::ppapi::thunk::GetPPB_InputEvent_1_0_Thunk())
 LEGACY_IFACE(PPB_INSTANCE_PRIVATE_INTERFACE_0_1,

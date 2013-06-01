@@ -107,15 +107,11 @@
 #include "ppapi/c/private/ppp_content_decryptor_private.h"
 #include "ppapi/c/private/ppp_flash_browser_operations.h"
 #include "ppapi/c/private/ppp_instance_private.h"
-#include "ppapi/c/trusted/ppb_audio_trusted.h"
 #include "ppapi/c/trusted/ppb_broker_trusted.h"
 #include "ppapi/c/trusted/ppb_browser_font_trusted.h"
-#include "ppapi/c/trusted/ppb_buffer_trusted.h"
 #include "ppapi/c/trusted/ppb_char_set_trusted.h"
 #include "ppapi/c/trusted/ppb_file_chooser_trusted.h"
 #include "ppapi/c/trusted/ppb_file_io_trusted.h"
-#include "ppapi/c/trusted/ppb_graphics_3d_trusted.h"
-#include "ppapi/c/trusted/ppb_image_data_trusted.h"
 #include "ppapi/c/trusted/ppb_url_loader_trusted.h"
 
 /* Use local strcmp to avoid dependency on libc. */
@@ -174,17 +170,13 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPP_Instance_1_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPP_Instance_1_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPP_Messaging_1_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPP_MouseLock_1_0;
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_AudioTrusted_0_6;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_BrokerTrusted_0_2;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_BrokerTrusted_0_3;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_BrowserFont_Trusted_1_0;
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_BufferTrusted_0_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_CharSet_Trusted_1_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_FileChooserTrusted_0_5;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_FileChooserTrusted_0_6;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_FileIOTrusted_0_4;
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Graphics3DTrusted_1_0;
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_ImageDataTrusted_0_4;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_URLLoaderTrusted_0_3;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_AudioInput_Dev_0_2;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_AudioInput_Dev_0_3;
@@ -1224,30 +1216,6 @@ static void Pnacl_M14_PPP_Messaging_HandleMessage(PP_Instance instance, struct P
 
 /* Not generating wrapper methods for PPP_MouseLock_1_0 */
 
-/* Begin wrapper methods for PPB_AudioTrusted_0_6 */
-
-static PP_Resource Pnacl_M14_PPB_AudioTrusted_CreateTrusted(PP_Instance instance) {
-  const struct PPB_AudioTrusted_0_6 *iface = Pnacl_WrapperInfo_PPB_AudioTrusted_0_6.real_iface;
-  return iface->CreateTrusted(instance);
-}
-
-static int32_t Pnacl_M14_PPB_AudioTrusted_Open(PP_Resource audio, PP_Resource config, struct PP_CompletionCallback* create_callback) {
-  const struct PPB_AudioTrusted_0_6 *iface = Pnacl_WrapperInfo_PPB_AudioTrusted_0_6.real_iface;
-  return iface->Open(audio, config, *create_callback);
-}
-
-static int32_t Pnacl_M14_PPB_AudioTrusted_GetSyncSocket(PP_Resource audio, int* sync_socket) {
-  const struct PPB_AudioTrusted_0_6 *iface = Pnacl_WrapperInfo_PPB_AudioTrusted_0_6.real_iface;
-  return iface->GetSyncSocket(audio, sync_socket);
-}
-
-static int32_t Pnacl_M14_PPB_AudioTrusted_GetSharedMemory(PP_Resource audio, int* shm_handle, uint32_t* shm_size) {
-  const struct PPB_AudioTrusted_0_6 *iface = Pnacl_WrapperInfo_PPB_AudioTrusted_0_6.real_iface;
-  return iface->GetSharedMemory(audio, shm_handle, shm_size);
-}
-
-/* End wrapper methods for PPB_AudioTrusted_0_6 */
-
 /* Begin wrapper methods for PPB_BrokerTrusted_0_2 */
 
 static PP_Resource Pnacl_M14_PPB_BrokerTrusted_CreateTrusted(PP_Instance instance) {
@@ -1345,8 +1313,6 @@ static int32_t Pnacl_M19_PPB_BrowserFont_Trusted_PixelOffsetForCharacter(PP_Reso
 
 /* End wrapper methods for PPB_BrowserFont_Trusted_1_0 */
 
-/* Not generating wrapper methods for PPB_BufferTrusted_0_1 */
-
 /* Begin wrapper methods for PPB_CharSet_Trusted_1_0 */
 
 static PP_Bool Pnacl_M18_PPB_CharSet_Trusted_UTF16ToCharSet(const uint16_t utf16[], uint32_t utf16_len, const char* output_char_set, PP_CharSet_Trusted_ConversionError on_error, char* output_buffer, uint32_t* output_length) {
@@ -1402,62 +1368,6 @@ static int32_t Pnacl_M14_PPB_FileIOTrusted_WillSetLength(PP_Resource file_io, in
 }
 
 /* End wrapper methods for PPB_FileIOTrusted_0_4 */
-
-/* Begin wrapper methods for PPB_Graphics3DTrusted_1_0 */
-
-static PP_Resource Pnacl_M16_PPB_Graphics3DTrusted_CreateRaw(PP_Instance instance_id, PP_Resource share_context, const int32_t attrib_list[]) {
-  const struct PPB_Graphics3DTrusted_1_0 *iface = Pnacl_WrapperInfo_PPB_Graphics3DTrusted_1_0.real_iface;
-  return iface->CreateRaw(instance_id, share_context, attrib_list);
-}
-
-static PP_Bool Pnacl_M16_PPB_Graphics3DTrusted_InitCommandBuffer(PP_Resource context_id) {
-  const struct PPB_Graphics3DTrusted_1_0 *iface = Pnacl_WrapperInfo_PPB_Graphics3DTrusted_1_0.real_iface;
-  return iface->InitCommandBuffer(context_id);
-}
-
-static PP_Bool Pnacl_M16_PPB_Graphics3DTrusted_SetGetBuffer(PP_Resource context, int32_t transfer_buffer_id) {
-  const struct PPB_Graphics3DTrusted_1_0 *iface = Pnacl_WrapperInfo_PPB_Graphics3DTrusted_1_0.real_iface;
-  return iface->SetGetBuffer(context, transfer_buffer_id);
-}
-
-static void Pnacl_M16_PPB_Graphics3DTrusted_GetState(struct PP_Graphics3DTrustedState* _struct_result, PP_Resource context) {
-  const struct PPB_Graphics3DTrusted_1_0 *iface = Pnacl_WrapperInfo_PPB_Graphics3DTrusted_1_0.real_iface;
-  *_struct_result = iface->GetState(context);
-}
-
-static int32_t Pnacl_M16_PPB_Graphics3DTrusted_CreateTransferBuffer(PP_Resource context, uint32_t size) {
-  const struct PPB_Graphics3DTrusted_1_0 *iface = Pnacl_WrapperInfo_PPB_Graphics3DTrusted_1_0.real_iface;
-  return iface->CreateTransferBuffer(context, size);
-}
-
-static PP_Bool Pnacl_M16_PPB_Graphics3DTrusted_DestroyTransferBuffer(PP_Resource context, int32_t id) {
-  const struct PPB_Graphics3DTrusted_1_0 *iface = Pnacl_WrapperInfo_PPB_Graphics3DTrusted_1_0.real_iface;
-  return iface->DestroyTransferBuffer(context, id);
-}
-
-static PP_Bool Pnacl_M16_PPB_Graphics3DTrusted_GetTransferBuffer(PP_Resource context, int32_t id, int* shm_handle, uint32_t* shm_size) {
-  const struct PPB_Graphics3DTrusted_1_0 *iface = Pnacl_WrapperInfo_PPB_Graphics3DTrusted_1_0.real_iface;
-  return iface->GetTransferBuffer(context, id, shm_handle, shm_size);
-}
-
-static PP_Bool Pnacl_M16_PPB_Graphics3DTrusted_Flush(PP_Resource context, int32_t put_offset) {
-  const struct PPB_Graphics3DTrusted_1_0 *iface = Pnacl_WrapperInfo_PPB_Graphics3DTrusted_1_0.real_iface;
-  return iface->Flush(context, put_offset);
-}
-
-static void Pnacl_M16_PPB_Graphics3DTrusted_FlushSync(struct PP_Graphics3DTrustedState* _struct_result, PP_Resource context, int32_t put_offset) {
-  const struct PPB_Graphics3DTrusted_1_0 *iface = Pnacl_WrapperInfo_PPB_Graphics3DTrusted_1_0.real_iface;
-  *_struct_result = iface->FlushSync(context, put_offset);
-}
-
-static void Pnacl_M16_PPB_Graphics3DTrusted_FlushSyncFast(struct PP_Graphics3DTrustedState* _struct_result, PP_Resource context, int32_t put_offset, int32_t last_known_get) {
-  const struct PPB_Graphics3DTrusted_1_0 *iface = Pnacl_WrapperInfo_PPB_Graphics3DTrusted_1_0.real_iface;
-  *_struct_result = iface->FlushSyncFast(context, put_offset, last_known_get);
-}
-
-/* End wrapper methods for PPB_Graphics3DTrusted_1_0 */
-
-/* Not generating wrapper methods for PPB_ImageDataTrusted_0_4 */
 
 /* Not generating wrapper methods for PPB_URLLoaderTrusted_0_3 */
 
@@ -4044,13 +3954,6 @@ struct PPP_Messaging_1_0 Pnacl_Wrappers_PPP_Messaging_1_0 = {
 
 /* Not generating wrapper interface for PPP_MouseLock_1_0 */
 
-struct PPB_AudioTrusted_0_6 Pnacl_Wrappers_PPB_AudioTrusted_0_6 = {
-    .CreateTrusted = (PP_Resource (*)(PP_Instance instance))&Pnacl_M14_PPB_AudioTrusted_CreateTrusted,
-    .Open = (int32_t (*)(PP_Resource audio, PP_Resource config, struct PP_CompletionCallback create_callback))&Pnacl_M14_PPB_AudioTrusted_Open,
-    .GetSyncSocket = (int32_t (*)(PP_Resource audio, int* sync_socket))&Pnacl_M14_PPB_AudioTrusted_GetSyncSocket,
-    .GetSharedMemory = (int32_t (*)(PP_Resource audio, int* shm_handle, uint32_t* shm_size))&Pnacl_M14_PPB_AudioTrusted_GetSharedMemory
-};
-
 struct PPB_BrokerTrusted_0_2 Pnacl_Wrappers_PPB_BrokerTrusted_0_2 = {
     .CreateTrusted = (PP_Resource (*)(PP_Instance instance))&Pnacl_M14_PPB_BrokerTrusted_CreateTrusted,
     .IsBrokerTrusted = (PP_Bool (*)(PP_Resource resource))&Pnacl_M14_PPB_BrokerTrusted_IsBrokerTrusted,
@@ -4077,8 +3980,6 @@ struct PPB_BrowserFont_Trusted_1_0 Pnacl_Wrappers_PPB_BrowserFont_Trusted_1_0 = 
     .PixelOffsetForCharacter = (int32_t (*)(PP_Resource font, const struct PP_BrowserFont_Trusted_TextRun* text, uint32_t char_offset))&Pnacl_M19_PPB_BrowserFont_Trusted_PixelOffsetForCharacter
 };
 
-/* Not generating wrapper interface for PPB_BufferTrusted_0_1 */
-
 struct PPB_CharSet_Trusted_1_0 Pnacl_Wrappers_PPB_CharSet_Trusted_1_0 = {
     .UTF16ToCharSet = (PP_Bool (*)(const uint16_t utf16[], uint32_t utf16_len, const char* output_char_set, PP_CharSet_Trusted_ConversionError on_error, char* output_buffer, uint32_t* output_length))&Pnacl_M18_PPB_CharSet_Trusted_UTF16ToCharSet,
     .CharSetToUTF16 = (PP_Bool (*)(const char* input, uint32_t input_len, const char* input_char_set, PP_CharSet_Trusted_ConversionError on_error, uint16_t* output_buffer, uint32_t* output_utf16_length))&Pnacl_M18_PPB_CharSet_Trusted_CharSetToUTF16,
@@ -4098,21 +3999,6 @@ struct PPB_FileIOTrusted_0_4 Pnacl_Wrappers_PPB_FileIOTrusted_0_4 = {
     .WillWrite = (int32_t (*)(PP_Resource file_io, int64_t offset, int32_t bytes_to_write, struct PP_CompletionCallback callback))&Pnacl_M14_PPB_FileIOTrusted_WillWrite,
     .WillSetLength = (int32_t (*)(PP_Resource file_io, int64_t length, struct PP_CompletionCallback callback))&Pnacl_M14_PPB_FileIOTrusted_WillSetLength
 };
-
-struct PPB_Graphics3DTrusted_1_0 Pnacl_Wrappers_PPB_Graphics3DTrusted_1_0 = {
-    .CreateRaw = (PP_Resource (*)(PP_Instance instance_id, PP_Resource share_context, const int32_t attrib_list[]))&Pnacl_M16_PPB_Graphics3DTrusted_CreateRaw,
-    .InitCommandBuffer = (PP_Bool (*)(PP_Resource context_id))&Pnacl_M16_PPB_Graphics3DTrusted_InitCommandBuffer,
-    .SetGetBuffer = (PP_Bool (*)(PP_Resource context, int32_t transfer_buffer_id))&Pnacl_M16_PPB_Graphics3DTrusted_SetGetBuffer,
-    .GetState = (struct PP_Graphics3DTrustedState (*)(PP_Resource context))&Pnacl_M16_PPB_Graphics3DTrusted_GetState,
-    .CreateTransferBuffer = (int32_t (*)(PP_Resource context, uint32_t size))&Pnacl_M16_PPB_Graphics3DTrusted_CreateTransferBuffer,
-    .DestroyTransferBuffer = (PP_Bool (*)(PP_Resource context, int32_t id))&Pnacl_M16_PPB_Graphics3DTrusted_DestroyTransferBuffer,
-    .GetTransferBuffer = (PP_Bool (*)(PP_Resource context, int32_t id, int* shm_handle, uint32_t* shm_size))&Pnacl_M16_PPB_Graphics3DTrusted_GetTransferBuffer,
-    .Flush = (PP_Bool (*)(PP_Resource context, int32_t put_offset))&Pnacl_M16_PPB_Graphics3DTrusted_Flush,
-    .FlushSync = (struct PP_Graphics3DTrustedState (*)(PP_Resource context, int32_t put_offset))&Pnacl_M16_PPB_Graphics3DTrusted_FlushSync,
-    .FlushSyncFast = (struct PP_Graphics3DTrustedState (*)(PP_Resource context, int32_t put_offset, int32_t last_known_get))&Pnacl_M16_PPB_Graphics3DTrusted_FlushSyncFast
-};
-
-/* Not generating wrapper interface for PPB_ImageDataTrusted_0_4 */
 
 /* Not generating wrapper interface for PPB_URLLoaderTrusted_0_3 */
 
@@ -5017,12 +4903,6 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPP_MouseLock_1_0 = {
   .real_iface = NULL
 };
 
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_AudioTrusted_0_6 = {
-  .iface_macro = PPB_AUDIO_TRUSTED_INTERFACE_0_6,
-  .wrapped_iface = (void *) &Pnacl_Wrappers_PPB_AudioTrusted_0_6,
-  .real_iface = NULL
-};
-
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_BrokerTrusted_0_2 = {
   .iface_macro = PPB_BROKER_TRUSTED_INTERFACE_0_2,
   .wrapped_iface = (void *) &Pnacl_Wrappers_PPB_BrokerTrusted_0_2,
@@ -5038,12 +4918,6 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_BrokerTrusted_0_3 = {
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_BrowserFont_Trusted_1_0 = {
   .iface_macro = PPB_BROWSERFONT_TRUSTED_INTERFACE_1_0,
   .wrapped_iface = (void *) &Pnacl_Wrappers_PPB_BrowserFont_Trusted_1_0,
-  .real_iface = NULL
-};
-
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_BufferTrusted_0_1 = {
-  .iface_macro = PPB_BUFFER_TRUSTED_INTERFACE_0_1,
-  .wrapped_iface = NULL /* Still need slot for real_iface */,
   .real_iface = NULL
 };
 
@@ -5068,18 +4942,6 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_FileChooserTrusted_0_6 = 
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_FileIOTrusted_0_4 = {
   .iface_macro = PPB_FILEIOTRUSTED_INTERFACE_0_4,
   .wrapped_iface = (void *) &Pnacl_Wrappers_PPB_FileIOTrusted_0_4,
-  .real_iface = NULL
-};
-
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Graphics3DTrusted_1_0 = {
-  .iface_macro = PPB_GRAPHICS_3D_TRUSTED_INTERFACE_1_0,
-  .wrapped_iface = (void *) &Pnacl_Wrappers_PPB_Graphics3DTrusted_1_0,
-  .real_iface = NULL
-};
-
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_ImageDataTrusted_0_4 = {
-  .iface_macro = PPB_IMAGEDATA_TRUSTED_INTERFACE_0_4,
-  .wrapped_iface = NULL /* Still need slot for real_iface */,
   .real_iface = NULL
 };
 
@@ -5714,17 +5576,13 @@ static struct __PnaclWrapperInfo *s_ppb_wrappers[] = {
   &Pnacl_WrapperInfo_PPB_View_1_0,
   &Pnacl_WrapperInfo_PPB_View_1_1,
   &Pnacl_WrapperInfo_PPB_WebSocket_1_0,
-  &Pnacl_WrapperInfo_PPB_AudioTrusted_0_6,
   &Pnacl_WrapperInfo_PPB_BrokerTrusted_0_2,
   &Pnacl_WrapperInfo_PPB_BrokerTrusted_0_3,
   &Pnacl_WrapperInfo_PPB_BrowserFont_Trusted_1_0,
-  &Pnacl_WrapperInfo_PPB_BufferTrusted_0_1,
   &Pnacl_WrapperInfo_PPB_CharSet_Trusted_1_0,
   &Pnacl_WrapperInfo_PPB_FileChooserTrusted_0_5,
   &Pnacl_WrapperInfo_PPB_FileChooserTrusted_0_6,
   &Pnacl_WrapperInfo_PPB_FileIOTrusted_0_4,
-  &Pnacl_WrapperInfo_PPB_Graphics3DTrusted_1_0,
-  &Pnacl_WrapperInfo_PPB_ImageDataTrusted_0_4,
   &Pnacl_WrapperInfo_PPB_URLLoaderTrusted_0_3,
   &Pnacl_WrapperInfo_PPB_AudioInput_Dev_0_2,
   &Pnacl_WrapperInfo_PPB_AudioInput_Dev_0_3,

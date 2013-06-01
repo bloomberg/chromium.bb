@@ -45,22 +45,10 @@ base::SharedMemoryHandle TransportSHMHandleFromInt(Dispatcher* dispatcher,
   return dispatcher->ShareHandleWithRemote(source, false);
 }
 
-PP_Graphics3DTrustedState GetErrorState() {
-  PP_Graphics3DTrustedState error_state = { 0 };
-  error_state.error = PPB_GRAPHICS3D_TRUSTED_ERROR_GENERICERROR;
+gpu::CommandBuffer::State GetErrorState() {
+  gpu::CommandBuffer::State error_state;
+  error_state.error = gpu::error::kGenericError;
   return error_state;
-}
-
-gpu::CommandBuffer::State GPUStateFromPPState(
-    const PP_Graphics3DTrustedState& s) {
-  gpu::CommandBuffer::State state;
-  state.num_entries = s.num_entries;
-  state.get_offset = s.get_offset;
-  state.put_offset = s.put_offset;
-  state.token = s.token;
-  state.error = static_cast<gpu::error::Error>(s.error);
-  state.generation = s.generation;
-  return state;
 }
 
 }  // namespace
@@ -214,7 +202,7 @@ PP_Bool Graphics3D::SetGetBuffer(int32_t /* transfer_buffer_id */) {
   return PP_FALSE;
 }
 
-PP_Graphics3DTrustedState Graphics3D::GetState() {
+gpu::CommandBuffer::State Graphics3D::GetState() {
   return GetErrorState();
 }
 
@@ -222,7 +210,7 @@ PP_Bool Graphics3D::Flush(int32_t put_offset) {
   return PP_FALSE;
 }
 
-PP_Graphics3DTrustedState Graphics3D::FlushSync(int32_t put_offset) {
+gpu::CommandBuffer::State Graphics3D::FlushSync(int32_t put_offset) {
   return GetErrorState();
 }
 
@@ -240,7 +228,7 @@ PP_Bool Graphics3D::GetTransferBuffer(int32_t id,
   return PP_FALSE;
 }
 
-PP_Graphics3DTrustedState Graphics3D::FlushSyncFast(int32_t put_offset,
+gpu::CommandBuffer::State Graphics3D::FlushSyncFast(int32_t put_offset,
                                                     int32_t last_known_get) {
   return GetErrorState();
 }
@@ -410,8 +398,7 @@ void PPB_Graphics3D_Proxy::OnMsgGetState(const HostResource& context,
     *success = false;
     return;
   }
-  PP_Graphics3DTrustedState pp_state = enter.object()->GetState();
-  *state = GPUStateFromPPState(pp_state);
+  *state = enter.object()->GetState();
   *success = true;
 }
 
@@ -425,9 +412,7 @@ void PPB_Graphics3D_Proxy::OnMsgFlush(const HostResource& context,
     *success = false;
     return;
   }
-  PP_Graphics3DTrustedState pp_state = enter.object()->FlushSyncFast(
-      put_offset, last_known_get);
-  *state = GPUStateFromPPState(pp_state);
+  *state = enter.object()->FlushSyncFast(put_offset, last_known_get);
   *success = true;
 }
 

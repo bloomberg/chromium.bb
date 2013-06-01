@@ -178,8 +178,7 @@ def CheckPassByValue(filenode, releases):
   # http://crbug.com/233439
   type_whitelist = ['PP_ArrayOutput', 'PP_CompletionCallback',
                     'PP_Ext_EventListener', 'PP_FloatPoint',
-                    'PP_Graphics3DTrustedState', 'PP_Point', 'PP_TouchPoint',
-                    'PP_Var']
+                    'PP_Point', 'PP_TouchPoint', 'PP_Var']
   nodes_to_check = filenode.GetListOf('Struct')
   nodes_to_check.extend(filenode.GetListOf('Union'))
   for node in nodes_to_check:

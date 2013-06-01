@@ -26,15 +26,15 @@ class PPB_Graphics3D_Impl : public ::ppapi::PPB_Graphics3D_Shared {
 
   // PPB_Graphics3D_API trusted implementation.
   virtual PP_Bool SetGetBuffer(int32_t transfer_buffer_id) OVERRIDE;
-  virtual PP_Graphics3DTrustedState GetState() OVERRIDE;
+  virtual gpu::CommandBuffer::State GetState() OVERRIDE;
   virtual int32_t CreateTransferBuffer(uint32_t size) OVERRIDE;
   virtual PP_Bool DestroyTransferBuffer(int32_t id) OVERRIDE;
   virtual PP_Bool GetTransferBuffer(int32_t id,
                                     int* shm_handle,
                                     uint32_t* shm_size) OVERRIDE;
   virtual PP_Bool Flush(int32_t put_offset) OVERRIDE;
-  virtual PP_Graphics3DTrustedState FlushSync(int32_t put_offset) OVERRIDE;
-  virtual PP_Graphics3DTrustedState FlushSyncFast(
+  virtual gpu::CommandBuffer::State FlushSync(int32_t put_offset) OVERRIDE;
+  virtual gpu::CommandBuffer::State FlushSyncFast(
       int32_t put_offset,
       int32_t last_known_get) OVERRIDE;
   virtual uint32_t InsertSyncPoint() OVERRIDE;

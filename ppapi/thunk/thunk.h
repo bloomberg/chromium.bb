@@ -6,10 +6,6 @@
 #define PPAPI_THUNK_THUNK_H_
 
 #include "ppapi/c/private/ppb_instance_private.h"
-#include "ppapi/c/trusted/ppb_audio_trusted.h"
-#include "ppapi/c/trusted/ppb_buffer_trusted.h"
-#include "ppapi/c/trusted/ppb_graphics_3d_trusted.h"
-#include "ppapi/c/trusted/ppb_image_data_trusted.h"
 #include "ppapi/thunk/ppapi_thunk_export.h"
 
 // Declares a getter for the interface thunk of the form:
@@ -40,13 +36,6 @@ namespace thunk {
 // Old-style thunk getters. Only put trusted/private stuff here (it hasn't
 // yet been converted to the new system). Otherwise, add the declaration to
 // the appropriate interfaces_*.h file.
-PPAPI_THUNK_EXPORT const PPB_AudioTrusted_0_6* GetPPB_AudioTrusted_0_6_Thunk();
-PPAPI_THUNK_EXPORT const PPB_BufferTrusted_0_1*
-    GetPPB_BufferTrusted_0_1_Thunk();
-PPAPI_THUNK_EXPORT const PPB_Graphics3DTrusted_1_0*
-    GetPPB_Graphics3DTrusted_1_0_Thunk();
-PPAPI_THUNK_EXPORT const PPB_ImageDataTrusted_0_4*
-    GetPPB_ImageDataTrusted_0_4_Thunk();
 PPAPI_THUNK_EXPORT const PPB_Instance_Private_0_1*
     GetPPB_Instance_Private_0_1_Thunk();
 

@@ -12,7 +12,6 @@
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/ppb_audio.h"
 #include "ppapi/c/ppb_audio_config.h"
-#include "ppapi/c/trusted/ppb_audio_trusted.h"
 #include "ppapi/shared_impl/ppb_audio_config_shared.h"
 #include "ppapi/shared_impl/ppb_audio_shared.h"
 #include "ppapi/shared_impl/resource.h"

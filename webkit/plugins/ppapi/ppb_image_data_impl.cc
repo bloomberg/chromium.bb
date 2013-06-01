@@ -13,7 +13,6 @@
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/ppb_image_data.h"
-#include "ppapi/c/trusted/ppb_image_data_trusted.h"
 #include "ppapi/thunk/thunk.h"
 #include "third_party/skia/include/core/SkColorPriv.h"
 #include "webkit/plugins/ppapi/common.h"
