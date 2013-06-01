@@ -249,6 +249,10 @@ class SpdyTestUtil {
  public:
   explicit SpdyTestUtil(NextProto protocol);
 
+  // Add the appropriate headers to put |url| into |block|.
+  void AddUrlToHeaderBlock(base::StringPiece url,
+                           SpdyHeaderBlock* headers) const;
+
   scoped_ptr<SpdyHeaderBlock> ConstructGetHeaderBlock(
       base::StringPiece url) const;
   scoped_ptr<SpdyHeaderBlock> ConstructPostHeaderBlock(
@@ -458,7 +462,6 @@ class SpdyTestUtil {
   bool is_spdy2() const { return protocol_ < kProtoSPDY3; }
   scoped_ptr<SpdyFramer> CreateFramer() const;
 
- private:
   const char* GetMethodKey() const;
   const char* GetStatusKey() const;
   const char* GetHostKey() const;
@@ -466,6 +469,7 @@ class SpdyTestUtil {
   const char* GetVersionKey() const;
   const char* GetPathKey() const;
 
+ private:
   const NextProto protocol_;
   const SpdyMajorVersion spdy_version_;
 };

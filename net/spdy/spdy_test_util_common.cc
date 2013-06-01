@@ -33,9 +33,9 @@ bool next_proto_is_spdy(NextProto next_proto) {
 
 // Parses a URL into the scheme, host, and path components required for a
 // SPDY request.
-void ParseUrl(const char* const url, std::string* scheme, std::string* host,
+void ParseUrl(base::StringPiece url, std::string* scheme, std::string* host,
               std::string* path) {
-  GURL gurl(url);
+  GURL gurl(url.as_string());
   path->assign(gurl.PathForRequest());
   scheme->assign(gurl.scheme());
   host->assign(gurl.host());
@@ -524,6 +524,22 @@ SpdyTestUtil::SpdyTestUtil(NextProto protocol)
   DCHECK(next_proto_is_spdy(protocol)) << "Invalid protocol: " << protocol;
 }
 
+void SpdyTestUtil::AddUrlToHeaderBlock(base::StringPiece url,
+                                       SpdyHeaderBlock* headers) const {
+  if (is_spdy2()) {
+    (*headers)["url"] = url.as_string();
+  } else {
+    std::string scheme, host, path;
+    ParseUrl(url, &scheme, &host, &path);
+    (*headers)[GetSchemeKey()] = scheme;
+    (*headers)[GetHostKey()] = host;
+    (*headers)[GetPathKey()] = path;
+  }
+}
+
+// TODO(akalin): Change the functions below to use
+// AddUrlToHeaderBlock().
+
 scoped_ptr<SpdyHeaderBlock> SpdyTestUtil::ConstructGetHeaderBlock(
     base::StringPiece url) const {
   std::string scheme, host, path;
@@ -810,15 +826,7 @@ SpdyFrame* SpdyTestUtil::ConstructSpdyPush(const char* const extra_headers[],
   (*headers)["hello"] = "bye";
   (*headers)[GetStatusKey()] = "200 OK";
   (*headers)[GetVersionKey()] = "HTTP/1.1";
-  if (is_spdy2()) {
-    (*headers)["url"] = url;
-  } else {
-    std::string scheme, host, path;
-    ParseUrl(url, &scheme, &host, &path);
-    (*headers)[GetSchemeKey()] = scheme;
-    (*headers)[GetHostKey()] = host;
-    (*headers)[GetPathKey()] = path;
-  }
+  AddUrlToHeaderBlock(url, headers.get());
   AppendToHeaderBlock(extra_headers, extra_header_count, headers.get());
   return ConstructSpdyControlFrame(headers.Pass(),
                                    false,
@@ -841,15 +849,7 @@ SpdyFrame* SpdyTestUtil::ConstructSpdyPush(const char* const extra_headers[],
   (*headers)[GetStatusKey()] = status;
   (*headers)[GetVersionKey()] = "HTTP/1.1";
   (*headers)["location"] = location;
-  if (is_spdy2()) {
-    (*headers)["url"] = url;
-  } else {
-    std::string scheme, host, path;
-    ParseUrl(url, &scheme, &host, &path);
-    (*headers)[GetSchemeKey()] = scheme;
-    (*headers)[GetHostKey()] = host;
-    (*headers)[GetPathKey()] = path;
-  }
+  AddUrlToHeaderBlock(url, headers.get());
   AppendToHeaderBlock(extra_headers, extra_header_count, headers.get());
   return ConstructSpdyControlFrame(headers.Pass(),
                                    false,
