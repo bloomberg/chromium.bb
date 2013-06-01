@@ -207,6 +207,10 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   // Overridden from AppListModelObserver:
   virtual void OnAppListModelStatusChanged() OVERRIDE;
 
+  // Hide a given view temporarily without losing (mouse) events and / or
+  // changing the size of it.
+  void HideView(views::View* view, bool hide);
+
   AppListModel* model_;  // Owned by AppListView.
   AppsGridViewDelegate* delegate_;
   PaginationModel* pagination_model_;  // Owned by AppListController.

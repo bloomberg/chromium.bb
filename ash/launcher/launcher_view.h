@@ -105,6 +105,7 @@ class ASH_EXPORT LauncherView : public views::View,
       const gfx::Point& location_in_screen_coordinates,
       const gfx::ImageSkia& icon,
       views::View* replaced_view,
+      const gfx::Vector2d& cursor_offset_from_center,
       float scale_factor) OVERRIDE;
   virtual void UpdateDragIconProxy(
       const gfx::Point& location_in_screen_coordinates) OVERRIDE;

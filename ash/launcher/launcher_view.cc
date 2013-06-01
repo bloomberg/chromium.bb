@@ -545,6 +545,7 @@ void LauncherView::CreateDragIconProxy(
     const gfx::Point& location_in_screen_coordinates,
     const gfx::ImageSkia& icon,
     views::View* replaced_view,
+    const gfx::Vector2d& cursor_offset_from_center,
     float scale_factor) {
   drag_replaced_view_ = replaced_view;
   drag_image_.reset(new ash::internal::DragImageView(
@@ -553,7 +554,8 @@ void LauncherView::CreateDragIconProxy(
   gfx::Size size = drag_image_->GetPreferredSize();
   size.set_width(size.width() * scale_factor);
   size.set_height(size.height() * scale_factor);
-  drag_image_offset_ = gfx::Vector2d(size.width() / 2, size.height() / 2);
+  drag_image_offset_ = gfx::Vector2d(size.width() / 2, size.height() / 2) +
+                       cursor_offset_from_center;
   gfx::Rect drag_image_bounds(
       GetPositionInScreen(location_in_screen_coordinates,
                           drag_replaced_view_) - drag_image_offset_, size);

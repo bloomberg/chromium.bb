@@ -9,6 +9,7 @@
 
 namespace gfx {
 class Point;
+class Vector2d;
 }  // namespace gfx
 
 namespace app_list {
@@ -21,10 +22,13 @@ class ApplicationDragAndDropHost {
   // The proxy should get created using the |icon| with a magnification of
   // |scale_factor| at a center location of |location_in_screen_coordinates.
   // Use |replaced_view| to find the screen which is used.
+  // The |cursor_offset_from_center| is the offset from the mouse cursor to
+  // the center of the item.
   virtual void CreateDragIconProxy(
       const gfx::Point& location_in_screen_coordinates,
       const gfx::ImageSkia& icon,
       views::View* replaced_view,
+      const gfx::Vector2d& cursor_offset_from_center,
       float scale_factor) = 0;
 
   // Update the screen location of the Drag icon proxy.
