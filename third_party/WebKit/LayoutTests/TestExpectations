@@ -1217,7 +1217,7 @@ crbug.com/237003 [ Win ] http/tests/w3c/webperf/submission/Google/resource-timin
 
 webkit.org/b/103148 [ Lion ] fast/frames/iframe-scaling-with-scroll.html [ ImageOnlyFailure Pass ]
 webkit.org/b/103148 [ Lion ] fast/frames/iframe-scrolling-attribute.html [ ImageOnlyFailure Pass ]
-webkit.org/b/103161 [ Win Debug ] inspector/console/command-line-api-inspect.html [ Skip ]
+webkit.org/b/103161 inspector/console/command-line-api-inspect.html [ Pass Failure Slow ]
 webkit.org/b/103148 svg/batik/text/textPosition2.svg [ Failure Pass ]
 webkit.org/b/103148 [ Linux ] fast/text/atsui-small-caps-punctuation-size.html [ Failure ImageOnlyFailure Pass ]
 
