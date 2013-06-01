@@ -56,7 +56,8 @@ void ShortcutManager::Observe(int type,
               .ptr();
       const Extension* extension = installed_info->extension;
       if (extension->is_platform_app() &&
-          extension->location() != extensions::Manifest::COMPONENT) {
+          extension->location() != extensions::Manifest::COMPONENT &&
+          extension->ShouldDisplayInAppLauncher()) {
         // If the app is being updated, update any existing shortcuts but do not
         // create new ones. If it is being installed, automatically create a
         // shortcut in the applications menu (e.g., Start Menu).
