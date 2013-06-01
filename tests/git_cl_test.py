@@ -386,8 +386,8 @@ class TestGitCl(TestCase):
           '# Enter a description of the change.\n'
           '# This will be displayed on the codereview site.\n'
           '# The first line will also be used as the subject of the review.\n'
-          '#----------------------This line is 76 characters long'
-          '----------------------\n' +
+          '#--------------------This line is 72 characters long'
+          '--------------------\n' +
           expected_description,
           desc)
       return returned_description
