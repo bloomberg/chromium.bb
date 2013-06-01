@@ -27,7 +27,7 @@ Session::Session(const std::string& id)
       sticky_modifiers(0),
       mouse_position(0, 0),
       implicit_wait(0),
-      page_load_timeout(0),
+      page_load_timeout(-1),
       script_timeout(0) {
 }
 
@@ -39,7 +39,7 @@ Session::Session(const std::string& id, scoped_ptr<Chrome> chrome)
       sticky_modifiers(0),
       mouse_position(0, 0),
       implicit_wait(0),
-      page_load_timeout(0),
+      page_load_timeout(-1),
       script_timeout(0),
       capabilities(CreateCapabilities()) {
 }

@@ -20,6 +20,7 @@ enum StatusCode {
   kUnknownError = 13,
   kJavaScriptError = 17,
   kXPathLookupError = 19,
+  kTimeout = 21,
   kNoSuchWindow = 23,
   kInvalidCookieDomain = 24,
   kUnexpectedAlertOpen = 26,

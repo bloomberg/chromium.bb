@@ -258,13 +258,33 @@ Status WebViewImpl::DeleteCookie(const std::string& name,
   return client_->SendCommand("Page.deleteCookie", params);
 }
 
-Status WebViewImpl::WaitForPendingNavigations(const std::string& frame_id) {
-  log_->AddEntry(Log::kLog, "waiting for pending navigations");
-  Status status = client_->HandleEventsUntil(
+Status WebViewImpl::WaitForPendingNavigations(const std::string& frame_id,
+                                              int timeout) {
+  log_->AddEntry(Log::kLog, "waiting for pending navigations...");
+  Status status(kOk);
+  if (timeout == -1 )
+    status = client_->HandleEventsUntil(
       base::Bind(&WebViewImpl::IsNotPendingNavigation, base::Unretained(this),
                  frame_id));
+  else
+    status = client_->HandleEventsUntil(
+      base::Bind(&WebViewImpl::IsNotPendingNavigation, base::Unretained(this),
+                 frame_id),
+      base::TimeDelta::FromMilliseconds(timeout));
+  if (status.code() == kTimeout) {
+    log_->AddEntry(Log::kLog, "timed out. stopping navigations...");
+    scoped_ptr<base::Value> unused_value;
+    EvaluateScript(std::string(), "window.stop();", &unused_value);
+    // Ignore status and return kTimeout.
+    client_->HandleEventsUntil(base::Bind(&WebViewImpl::IsNotPendingNavigation,
+                                          base::Unretained(this), frame_id));
+  }
   log_->AddEntry(Log::kLog, "done waiting for pending navigations");
   return status;
+}
+
+Status WebViewImpl::WaitForPendingNavigations(const std::string& frame_id) {
+  return WaitForPendingNavigations(frame_id, -1);
 }
 
 Status WebViewImpl::IsPendingNavigation(const std::string& frame_id,

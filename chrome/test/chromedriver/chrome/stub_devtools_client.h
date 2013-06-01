@@ -34,6 +34,8 @@ class StubDevToolsClient : public DevToolsClient {
       const base::DictionaryValue& params,
       scoped_ptr<base::DictionaryValue>* result) OVERRIDE;
   virtual void AddListener(DevToolsEventListener* listener) OVERRIDE;
+  virtual Status HandleEventsUntil(const ConditionalFunc& conditional_func,
+                                   const base::TimeDelta& timeout) OVERRIDE;
   virtual Status HandleEventsUntil(
       const ConditionalFunc& conditional_func) OVERRIDE;
 

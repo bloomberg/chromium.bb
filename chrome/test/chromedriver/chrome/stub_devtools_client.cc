@@ -40,6 +40,12 @@ void StubDevToolsClient::AddListener(DevToolsEventListener* listener) {
 }
 
 Status StubDevToolsClient::HandleEventsUntil(
+    const ConditionalFunc& conditional_func,
+    const base::TimeDelta& timeout) {
+  return Status(kOk);
+}
+
+Status StubDevToolsClient::HandleEventsUntil(
       const ConditionalFunc& conditional_func) {
   return Status(kOk);
 }

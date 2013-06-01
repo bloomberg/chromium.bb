@@ -56,7 +56,6 @@ _REVISION_NEGATIVE_FILTER['HEAD'] = [
     'MiscTest.testShouldBeAbleToGetTheSourceOfAnXmlDocument',
     'PageLoadingTest.shouldBeAbleToDisableAcceptOfInsecureSslCertsWithRequiredCapability',
     'PageLoadingTest.testShouldNotWaitIndefinitelyIfAnExternalResourceFailsToLoad',
-    'PageLoadingTest.testShouldTimeoutIfAPageTakesTooLongToLoad',
     # PerformanceLoggingTest is for firefox only; "performance" log deprecated.
     'PerformanceLoggingTest.*',
     'ProxySettingTest.canConfigureProxyWithRequiredCapability',

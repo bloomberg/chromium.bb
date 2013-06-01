@@ -249,13 +249,17 @@ Status ExecuteSetTimeout(
     const base::DictionaryValue& params,
     scoped_ptr<base::Value>* value) {
   double ms_double;
-  if (!params.GetDouble("ms", &ms_double) || ms_double < 0)
-    return Status(kUnknownError, "'ms' must be a non-negative number");
+  if (!params.GetDouble("ms", &ms_double))
+    return Status(kUnknownError, "'ms' must be a double");
   std::string type;
   if (!params.GetString("type", &type))
     return Status(kUnknownError, "'type' must be a string");
 
   int ms = static_cast<int>(ms_double);
+  if (ms < 0)
+    ms = -1;
+  // TODO(frankf): implicit and script timeout should be cleared
+  // if negative timeout is specified.
   if (type == "implicit")
     session->implicit_wait = ms;
   else if (type == "script")

@@ -605,6 +605,19 @@ TEST(DevToolsClientImpl, HandleEventsUntil) {
   ASSERT_EQ(kOk, status.code());
 }
 
+TEST(DevToolsClientImpl, HandleEventsUntilTimeout) {
+  SyncWebSocketFactory factory =
+      base::Bind(&CreateMockSyncWebSocket<MockSyncWebSocket>);
+  Logger logger;
+  DevToolsClientImpl client(factory, "http://url", "id",
+                            base::Bind(&CloserFunc), &logger,
+                            base::Bind(&ReturnEvent));
+  ASSERT_EQ(kOk, client.ConnectIfNecessary().code());
+  Status status = client.HandleEventsUntil(base::Bind(&AlwaysTrue),
+                                           base::TimeDelta());
+  ASSERT_EQ(kTimeout, status.code());
+}
+
 TEST(DevToolsClientImpl, WaitForNextEventCommand) {
   SyncWebSocketFactory factory =
       base::Bind(&CreateMockSyncWebSocket<MockSyncWebSocket>);

@@ -8,6 +8,7 @@
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
+#include "base/stringprintf.h"
 #include "base/values.h"
 #include "chrome/test/chromedriver/chrome/devtools_event_listener.h"
 #include "chrome/test/chromedriver/chrome/log.h"
@@ -157,11 +158,17 @@ void DevToolsClientImpl::AddListener(DevToolsEventListener* listener) {
 }
 
 Status DevToolsClientImpl::HandleEventsUntil(
-    const ConditionalFunc& conditional_func) {
+    const ConditionalFunc& conditional_func, const base::TimeDelta& timeout) {
   if (!socket_->IsConnected())
     return Status(kDisconnected, "not connected to DevTools");
 
+  base::TimeTicks deadline = base::TimeTicks::Now() + timeout;
+
   while (true) {
+    if (base::TimeTicks::Now() >= deadline)
+      return Status(kTimeout, base::StringPrintf(
+          "exceeded %dms", static_cast<int>(timeout.InMilliseconds())));
+
     if (!socket_->HasNextMessage()) {
       bool is_condition_met;
       Status status = conditional_func.Run(&is_condition_met);
@@ -176,6 +183,12 @@ Status DevToolsClientImpl::HandleEventsUntil(
       return status;
   }
   return Status(kOk);
+}
+
+Status DevToolsClientImpl::HandleEventsUntil(
+    const ConditionalFunc& conditional_func) {
+  return HandleEventsUntil(
+      conditional_func, base::TimeDelta::FromMilliseconds(50 * 60 * 1000));
 }
 
 DevToolsClientImpl::ResponseInfo::ResponseInfo(const std::string& method)

@@ -12,6 +12,7 @@
 
 namespace base {
 class DictionaryValue;
+class TimeDelta;
 }
 
 class DevToolsEventListener;
@@ -42,6 +43,10 @@ class DevToolsClient {
   // Handles events until the given function reports the condition is met
   // and there are no more received events to handle. If the given
   // function ever returns an error, returns immediately with the error.
+  // If the condition is not met within |timeout|ms, kTimeout status
+  // is returned.
+  virtual Status HandleEventsUntil(const ConditionalFunc& conditional_func,
+                                   const base::TimeDelta& timeout) = 0;
   virtual Status HandleEventsUntil(const ConditionalFunc& conditional_func) = 0;
 
   // Handles events that have been received but not yet handled.

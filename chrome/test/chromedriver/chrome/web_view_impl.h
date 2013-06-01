@@ -70,6 +70,8 @@ class WebViewImpl : public WebView {
   virtual Status GetCookies(scoped_ptr<base::ListValue>* cookies) OVERRIDE;
   virtual Status DeleteCookie(const std::string& name,
                               const std::string& url) OVERRIDE;
+  virtual Status WaitForPendingNavigations(const std::string& frame_id,
+                                           int timeout) OVERRIDE;
   virtual Status WaitForPendingNavigations(
       const std::string& frame_id) OVERRIDE;
   virtual Status IsPendingNavigation(
