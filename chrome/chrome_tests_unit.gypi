@@ -939,6 +939,7 @@
         'browser/metrics/variations/resource_request_allowed_notifier_unittest.cc',
         'browser/nacl_host/nacl_file_host_unittest.cc',
         'browser/nacl_host/nacl_validation_cache_unittest.cc',
+        'browser/nacl_host/pnacl_translation_cache_unittest.cc',
         'browser/net/chrome_fraudulent_certificate_reporter_unittest.cc',
         'browser/net/chrome_net_log_unittest.cc',
         'browser/net/chrome_network_delegate_unittest.cc',
@@ -1911,6 +1912,7 @@
           'sources!':[
             'browser/nacl_host/nacl_file_host_unittest.cc',
             'browser/nacl_host/nacl_validation_cache_unittest.cc',
+            'browser/nacl_host/pnacl_translation_cache_unittest.cc',
             'nacl/nacl_ipc_adapter_unittest.cc',
             'nacl/nacl_validation_query_unittest.cc',
           ],
