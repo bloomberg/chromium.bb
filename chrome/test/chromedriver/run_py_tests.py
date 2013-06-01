@@ -13,6 +13,9 @@ import tempfile
 import time
 import unittest
 
+_THIS_DIR = os.path.abspath(os.path.dirname(__file__))
+sys.path.insert(0, os.path.join(_THIS_DIR, 'client'))
+
 import chrome_paths
 import chromedriver
 import unittest_util
@@ -20,7 +23,6 @@ import util
 from webelement import WebElement
 import webserver
 
-_THIS_DIR = os.path.abspath(os.path.dirname(__file__))
 _TEST_DATA_DIR = os.path.join(_THIS_DIR, os.pardir, 'data', 'chromedriver')
 
 if util.IsLinux():
@@ -116,7 +118,7 @@ class ChromeDriverBaseTest(unittest.TestCase):
         pass
 
   def CreateDriver(self, **kwargs):
-    driver = chromedriver.ChromeDriver(_CHROMEDRIVER_LIB,
+    driver = chromedriver.ChromeDriver(_CHROMEDRIVER_SERVER_URL,
                                        chrome_binary=_CHROME_BINARY,
                                        android_package=_ANDROID_PACKAGE,
                                        **kwargs)
@@ -610,7 +612,7 @@ if __name__ == '__main__':
   parser = optparse.OptionParser()
   parser.add_option(
       '', '--chromedriver',
-      help='Path to a build of the chromedriver library(REQUIRED!)')
+      help='Path to chromedriver server (REQUIRED!)')
   parser.add_option(
       '', '--chrome', help='Path to a build of the chrome binary')
   parser.add_option(
@@ -628,8 +630,9 @@ if __name__ == '__main__':
     parser.error('chromedriver is required or the given path is invalid.' +
                  'Please run "%s --help" for help' % __file__)
 
-  global _CHROMEDRIVER_LIB
-  _CHROMEDRIVER_LIB = os.path.abspath(options.chromedriver)
+  server = chromedriver.Server(os.path.abspath(options.chromedriver))
+  global _CHROMEDRIVER_SERVER_URL
+  _CHROMEDRIVER_SERVER_URL = server.GetUrl()
 
   global _CHROME_BINARY
   if options.chrome:

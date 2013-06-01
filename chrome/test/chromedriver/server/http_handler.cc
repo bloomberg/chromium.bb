@@ -245,6 +245,8 @@ scoped_ptr<HttpHandler::CommandMap> HttpHandler::CreateCommandMap() {
       // Allow quit all to be called with GET or POST.
       CommandMapping(kGet, kShutdownPath, CommandNames::kQuitAll),
       CommandMapping(kPost, kShutdownPath, CommandNames::kQuitAll),
+      CommandMapping(kGet, "session/:sessionId/is_loading",
+                     CommandNames::kIsLoading),
   };
   return scoped_ptr<CommandMap>(
       new CommandMap(commands, commands + arraysize(commands)));

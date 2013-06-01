@@ -1,6 +1,9 @@
-# Copyright (c) 2013 The Chromium Authors. All rights reserved.
+# Copyright 2013 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
+
+from command_executor import Command
+
 
 class WebElement(object):
   """Represents an HTML element."""
@@ -12,27 +15,27 @@ class WebElement(object):
     if params is None:
       params = {}
     params['id'] = self._id;
-    return self._chromedriver.ExecuteSessionCommand(command, params)
+    return self._chromedriver.ExecuteCommand(command, params)
 
   def FindElement(self, strategy, target):
     return self._Execute(
-        'findChildElement', {'using': strategy, 'value': target})
+        Command.FIND_CHILD_ELEMENT, {'using': strategy, 'value': target})
 
   def FindElements(self, strategy, target):
     return self._Execute(
-        'findChildElements', {'using': strategy, 'value': target})
+        Command.FIND_CHILD_ELEMENTS, {'using': strategy, 'value': target})
 
   def HoverOver(self):
-    self._Execute('hoverOverElement')
+    self._Execute(Command.HOVER_OVER_ELEMENT)
 
   def Click(self):
-    self._Execute('clickElement')
+    self._Execute(Command.CLICK_ELEMENT)
 
   def SingleTap(self):
-    self._Execute('touchSingleTap')
+    self._Execute(Command.TOUCH_SINGLE_TAP)
 
   def Clear(self):
-    self._Execute('clearElement')
+    self._Execute(Command.CLEAR_ELEMENT)
 
   def SendKeys(self, *values):
     typing = []
@@ -41,4 +44,4 @@ class WebElement(object):
         value = str(value)
       for i in range(len(value)):
         typing.append(value[i])
-    self._Execute('sendKeysToElement', {'value': typing})
+    self._Execute(Command.SEND_KEYS_TO_ELEMENT, {'value': typing})
