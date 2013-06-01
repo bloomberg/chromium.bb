@@ -515,10 +515,13 @@ class RenderWidgetHostViewAura::TransientWindowObserver
 
   void SendPluginCutoutRects() {
     std::vector<gfx::Rect> cutouts;
-    const aura::Window::Windows& transients = top_level_->transient_children();
-    for (size_t i = 0; i < transients.size(); ++i) {
-      if (transients[i]->IsVisible())
-        cutouts.push_back(transients[i]->GetBoundsInRootWindow());
+    if (top_level_) {
+      const aura::Window::Windows& transients =
+          top_level_->transient_children();
+      for (size_t i = 0; i < transients.size(); ++i) {
+        if (transients[i]->IsVisible())
+          cutouts.push_back(transients[i]->GetBoundsInRootWindow());
+      }
     }
 
     view_->UpdateTransientRects(cutouts);

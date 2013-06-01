@@ -153,6 +153,8 @@
         'test/test_activation_client.h',
         'test/test_aura_initializer.cc',
         'test/test_aura_initializer.h',
+        'test/test_cursor_client.cc',
+        'test/test_cursor_client.h',
         'test/test_event_handler.cc',
         'test/test_event_handler.h',
         'test/test_screen.cc',

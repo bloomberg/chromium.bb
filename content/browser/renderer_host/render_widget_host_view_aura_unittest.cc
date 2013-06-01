@@ -9,6 +9,7 @@
 #include "base/utf_string_conversions.h"
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
+#include "content/common/input_messages.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/test/mock_render_process_host.h"
@@ -17,7 +18,9 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/env.h"
+#include "ui/aura/root_window.h"
 #include "ui/aura/test/aura_test_helper.h"
+#include "ui/aura/test/test_cursor_client.h"
 #include "ui/aura/test/test_screen.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/window.h"
@@ -423,6 +426,90 @@ TEST_F(RenderWidgetHostViewAuraTest, PhysicalBackingSizeWithScale) {
     EXPECT_EQ("100x100",
         params.a.physical_backing_size.ToString());  // backing size
   }
+}
+
+// Checks that InputMsg_CursorVisibilityChange IPC messages are dispatched
+// to the renderer at the correct times.
+TEST_F(RenderWidgetHostViewAuraTest, CursorVisibilityChange) {
+  view_->InitAsChild(NULL);
+  view_->GetNativeView()->SetDefaultParentByRootWindow(
+      parent_view_->GetNativeView()->GetRootWindow(), gfx::Rect());
+  view_->SetSize(gfx::Size(100, 100));
+
+  aura::test::TestCursorClient cursor_client;
+  aura::client::SetCursorClient(
+      parent_view_->GetNativeView()->GetRootWindow(), &cursor_client);
+
+  cursor_client.AddObserver(view_);
+
+  // Expect a message the first time the cursor is shown.
+  view_->WasShown();
+  sink_->ClearMessages();
+  cursor_client.ShowCursor();
+  EXPECT_EQ(1u, sink_->message_count());
+  EXPECT_TRUE(sink_->GetUniqueMessageMatching(
+      InputMsg_CursorVisibilityChange::ID));
+
+  // No message expected if the renderer already knows the cursor is visible.
+  sink_->ClearMessages();
+  cursor_client.ShowCursor();
+  EXPECT_EQ(0u, sink_->message_count());
+
+  // Hiding the cursor should send a message.
+  sink_->ClearMessages();
+  cursor_client.HideCursor();
+  EXPECT_EQ(1u, sink_->message_count());
+  EXPECT_TRUE(sink_->GetUniqueMessageMatching(
+      InputMsg_CursorVisibilityChange::ID));
+
+  // No message expected if the renderer already knows the cursor is invisible.
+  sink_->ClearMessages();
+  cursor_client.HideCursor();
+  EXPECT_EQ(0u, sink_->message_count());
+
+  // No messages should be sent while the view is invisible.
+  view_->WasHidden();
+  sink_->ClearMessages();
+  cursor_client.ShowCursor();
+  EXPECT_EQ(0u, sink_->message_count());
+  cursor_client.HideCursor();
+  EXPECT_EQ(0u, sink_->message_count());
+
+  // Show the view. Since the cursor was invisible when the view was hidden,
+  // no message should be sent.
+  sink_->ClearMessages();
+  view_->WasShown();
+  EXPECT_FALSE(sink_->GetUniqueMessageMatching(
+      InputMsg_CursorVisibilityChange::ID));
+
+  // No message expected if the renderer already knows the cursor is invisible.
+  sink_->ClearMessages();
+  cursor_client.HideCursor();
+  EXPECT_EQ(0u, sink_->message_count());
+
+  // Showing the cursor should send a message.
+  sink_->ClearMessages();
+  cursor_client.ShowCursor();
+  EXPECT_EQ(1u, sink_->message_count());
+  EXPECT_TRUE(sink_->GetUniqueMessageMatching(
+      InputMsg_CursorVisibilityChange::ID));
+
+  // No messages should be sent while the view is invisible.
+  view_->WasHidden();
+  sink_->ClearMessages();
+  cursor_client.HideCursor();
+  EXPECT_EQ(0u, sink_->message_count());
+
+  // Show the view. Since the cursor was visible when the view was hidden,
+  // a message is expected to be sent.
+  sink_->ClearMessages();
+  view_->WasShown();
+  EXPECT_TRUE(sink_->GetUniqueMessageMatching(
+      InputMsg_CursorVisibilityChange::ID));
+
+  cursor_client.RemoveObserver(view_);
+  aura::client::SetCursorClient(
+      parent_view_->GetNativeView()->GetRootWindow(), NULL);
 }
 
 }  // namespace content

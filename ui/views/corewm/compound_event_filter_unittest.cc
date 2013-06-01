@@ -11,6 +11,7 @@
 #include "ui/aura/test/aura_test_base.h"
 #include "ui/aura/test/event_generator.h"
 #include "ui/aura/test/test_activation_client.h"
+#include "ui/aura/test/test_cursor_client.h"
 #include "ui/aura/test/test_windows.h"
 #include "ui/base/events/event.h"
 #include "ui/base/events/event_utils.h"
@@ -20,66 +21,6 @@ namespace {
 base::TimeDelta GetTime() {
   return ui::EventTimeForNow();
 }
-
-class TestCursorClient : public aura::client::CursorClient {
- public:
-  TestCursorClient() : visible_(true), mouse_events_enabled_(true) {}
-  virtual ~TestCursorClient() {}
-
-  virtual void SetCursor(gfx::NativeCursor cursor) OVERRIDE {
-  }
-
-  virtual void ShowCursor() OVERRIDE {
-    visible_ = true;
-  }
-
-  virtual void HideCursor() OVERRIDE {
-    visible_ = false;
-  }
-
-  virtual bool IsCursorVisible() const OVERRIDE {
-    return visible_;
-  }
-
-  virtual void EnableMouseEvents() OVERRIDE {
-    mouse_events_enabled_ = true;
-  }
-
-  virtual void DisableMouseEvents() OVERRIDE {
-    mouse_events_enabled_ = false;
-  }
-
-  virtual bool IsMouseEventsEnabled() const OVERRIDE {
-    return mouse_events_enabled_;
-  }
-
-  virtual void SetScale(float scale) OVERRIDE {
-  }
-
-  virtual void SetDisplay(const gfx::Display& display) OVERRIDE {
-  }
-
-  virtual void LockCursor() OVERRIDE {
-  }
-
-  virtual void UnlockCursor() OVERRIDE {
-  }
-
-  virtual void SetCursorResourceModule(const string16& module_name) OVERRIDE {
-  }
-
-  virtual void AddObserver(
-      aura::client::CursorClientObserver* observer) OVERRIDE {
-  }
-
-  virtual void RemoveObserver(
-      aura::client::CursorClientObserver* observer) OVERRIDE {
-  }
-
- private:
-  bool visible_;
-  bool mouse_events_enabled_;
-};
 
 }
 
@@ -116,7 +57,7 @@ TEST_F(CompoundEventFilterTest, TouchHidesCursor) {
   window->Show();
   window->SetCapture();
 
-  TestCursorClient cursor_client;
+  aura::test::TestCursorClient cursor_client;
   aura::client::SetCursorClient(root_window(), &cursor_client);
 
   ui::MouseEvent mouse0(ui::ET_MOUSE_MOVED, gfx::Point(10, 10),
@@ -194,7 +135,7 @@ TEST_F(CompoundEventFilterTest, DontHideWhenMouseDown) {
       gfx::Rect(5, 5, 100, 100), root_window()));
   window->Show();
 
-  TestCursorClient cursor_client;
+  aura::test::TestCursorClient cursor_client;
   aura::client::SetCursorClient(root_window(), &cursor_client);
 
   // Move and press the mouse over the window.
