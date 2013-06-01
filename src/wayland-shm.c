@@ -37,7 +37,7 @@
 #include "wayland-server.h"
 
 struct wl_shm_pool {
-	struct wl_resource resource;
+	struct wl_resource *resource;
 	int refcount;
 	char *data;
 	int size;
@@ -65,8 +65,7 @@ shm_pool_unref(struct wl_shm_pool *pool)
 static void
 destroy_buffer(struct wl_resource *resource)
 {
-	struct wl_shm_buffer *buffer =
-		container_of(resource, struct wl_shm_buffer, buffer.resource);
+	struct wl_shm_buffer *buffer = wl_resource_get_user_data(resource);
 
 	if (buffer->pool)
 		shm_pool_unref(buffer->pool);
@@ -89,7 +88,7 @@ shm_pool_create_buffer(struct wl_client *client, struct wl_resource *resource,
 		       int32_t width, int32_t height,
 		       int32_t stride, uint32_t format)
 {
-	struct wl_shm_pool *pool = resource->data;
+	struct wl_shm_pool *pool = wl_resource_get_user_data(resource);
 	struct wl_shm_buffer *buffer;
 
 	switch (format) {
@@ -128,9 +127,11 @@ shm_pool_create_buffer(struct wl_client *client, struct wl_resource *resource,
 	buffer->pool = pool;
 	pool->refcount++;
 
-	wl_resource_init(&buffer->buffer.resource, &wl_buffer_interface,
-			 &shm_buffer_interface, id, buffer);
-	buffer->buffer.resource.client = resource->client;
+	buffer->buffer.resource.object.id = id;
+	buffer->buffer.resource.object.interface = &wl_buffer_interface;
+	buffer->buffer.resource.object.implementation = &shm_buffer_interface;
+	buffer->buffer.resource.data = buffer;
+	buffer->buffer.resource.client = client;
 	buffer->buffer.resource.destroy = destroy_buffer;
 
 	wl_client_add_resource(client, &buffer->buffer.resource);
@@ -139,7 +140,7 @@ shm_pool_create_buffer(struct wl_client *client, struct wl_resource *resource,
 static void
 destroy_pool(struct wl_resource *resource)
 {
-	struct wl_shm_pool *pool = resource->data;
+	struct wl_shm_pool *pool = wl_resource_get_user_data(resource);
 
 	shm_pool_unref(pool);
 }
@@ -154,7 +155,7 @@ static void
 shm_pool_resize(struct wl_client *client, struct wl_resource *resource,
 		int32_t size)
 {
-	struct wl_shm_pool *pool = resource->data;
+	struct wl_shm_pool *pool = wl_resource_get_user_data(resource);
 	void *data;
 
 	data = mremap(pool->data, pool->size, size, MREMAP_MAYMOVE);
@@ -207,12 +208,12 @@ shm_create_pool(struct wl_client *client, struct wl_resource *resource,
 	}
 	close(fd);
 
-	wl_resource_init(&pool->resource, &wl_shm_pool_interface,
-			 &shm_pool_interface, id, pool);
-	pool->resource.client = client;
-	pool->resource.destroy = destroy_pool;
+	pool->resource = wl_client_add_object(client, &wl_shm_pool_interface,
+					      &shm_pool_interface, id, pool);
+	if (!pool->resource)
+		goto err_free;
 
-	wl_client_add_resource(client, &pool->resource);
+	wl_resource_set_destructor(pool->resource, destroy_pool);
 
 	return;
 
@@ -275,8 +276,10 @@ wl_shm_buffer_create(struct wl_client *client,
 	buffer->offset = 0;
 	buffer->pool = NULL;
 
-	wl_resource_init(&buffer->buffer.resource, &wl_buffer_interface,
-			 &shm_buffer_interface, id, buffer);
+	buffer->buffer.resource.object.id = id;
+	buffer->buffer.resource.object.interface = &wl_buffer_interface;
+	buffer->buffer.resource.object.implementation = &shm_buffer_interface;
+	buffer->buffer.resource.data = buffer;
 	buffer->buffer.resource.client = client;
 	buffer->buffer.resource.destroy = destroy_buffer;
 

@@ -78,6 +78,8 @@ int wl_event_loop_get_fd(struct wl_event_loop *loop);
 struct wl_client;
 struct wl_display;
 struct wl_listener;
+struct wl_resource;
+struct wl_global;
 typedef void (*wl_notify_func_t)(struct wl_listener *listener, void *data);
 
 void wl_event_loop_add_destroy_listener(struct wl_event_loop *loop,
@@ -177,9 +179,17 @@ wl_signal_emit(struct wl_signal *signal, void *data)
 		l->notify(l, data);
 }
 
+typedef void (*wl_resource_destroy_func_t)(struct wl_resource *resource);
+
+/* The wl_resource structure has be deprecated as a transparent structure.
+ * While wl_resource will still exist, it will, in the future, be an opaque
+ * pointer.  Instead of accessing wl_resource directly, it should be created by
+ * wl_client_add_object and wl_client_new_object and only accessed by the
+ * accessor functions provided.
+ */
 struct wl_resource {
 	struct wl_object object;
-	void (*destroy)(struct wl_resource *resource);
+	wl_resource_destroy_func_t destroy;
 	struct wl_list link;
 	struct wl_signal destroy_signal;
 	struct wl_client *client;
@@ -239,13 +249,28 @@ void wl_resource_post_no_memory(struct wl_resource *resource);
 
 uint32_t
 wl_client_add_resource(struct wl_client *client,
-		       struct wl_resource *resource);
+		       struct wl_resource *resource) WL_DEPRECATED;
 
 struct wl_display *
 wl_client_get_display(struct wl_client *client);
 
 void
 wl_resource_destroy(struct wl_resource *resource);
+struct wl_list *
+wl_resource_get_link(struct wl_resource *resource);
+struct wl_client *
+wl_resource_get_client(struct wl_resource *resource);
+void *
+wl_resource_get_user_data(struct wl_resource *resource);
+void
+wl_resource_set_destructor(struct wl_resource *resource,
+			   wl_resource_destroy_func_t destroy);
+void
+wl_resource_add_destroy_listener(struct wl_resource *resource,
+				 struct wl_listener * listener);
+struct wl_listener *
+wl_resource_get_destroy_listener(struct wl_resource *resource,
+				 wl_notify_func_t notify);
 
 void *
 wl_shm_buffer_get_data(struct wl_buffer *buffer);

@@ -379,8 +379,9 @@ wl_client_add_resource(struct wl_client *client,
 {
 	if (resource->object.id == 0) {
 		resource->object.id =
-			wl_map_insert_new(&client->objects, 0, resource);
-	} else if (wl_map_insert_at(&client->objects, 0,
+			wl_map_insert_new(&client->objects,
+					  WL_MAP_ENTRY_LEGACY, resource);
+	} else if (wl_map_insert_at(&client->objects, WL_MAP_ENTRY_LEGACY,
 				  resource->object.id, resource) < 0) {
 		wl_resource_post_error(client->display_resource,
 				       WL_DISPLAY_ERROR_INVALID_OBJECT,
@@ -437,6 +438,45 @@ wl_resource_destroy(struct wl_resource *resource)
 	} else {
 		wl_map_remove(&client->objects, id);
 	}
+}
+
+WL_EXPORT struct wl_list *
+wl_resource_get_link(struct wl_resource *resource)
+{
+	return &resource->link;
+}
+
+WL_EXPORT struct wl_client *
+wl_resource_get_client(struct wl_resource *resource)
+{
+	return resource->client;
+}
+
+WL_EXPORT void *
+wl_resource_get_user_data(struct wl_resource *resource)
+{
+	return resource->data;
+}
+
+WL_EXPORT void
+wl_resource_set_destructor(struct wl_resource *resource,
+			   wl_resource_destroy_func_t destroy)
+{
+	resource->destroy = destroy;
+}
+
+WL_EXPORT void
+wl_resource_add_destroy_listener(struct wl_resource *resource,
+				 struct wl_listener * listener)
+{
+	wl_signal_add(&resource->destroy_signal, listener);
+}
+
+WL_EXPORT struct wl_listener *
+wl_resource_get_destroy_listener(struct wl_resource *resource,
+				 wl_notify_func_t notify)
+{
+	return wl_signal_get(&resource->destroy_signal, notify);
 }
 
 WL_EXPORT void
