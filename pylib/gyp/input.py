@@ -46,7 +46,7 @@ base_path_sections = [
 ]
 path_sections = []
 
-is_path_section_charset = set('=+?!%')
+is_path_section_charset = set('=+?!')
 is_path_section_match_re = re.compile('_(dir|file|path)s?$')
 
 def IsPathSection(section):
@@ -1859,7 +1859,7 @@ def MakePathRelative(to_file, fro_file, item):
         gyp.common.RelativePath(os.path.dirname(fro_file),
                                 os.path.dirname(to_file)),
                                 item)).replace('\\', '/')
-    if item.endswith('/'):
+    if item[-1] == '/':
       ret += '/'
     return ret
 
