@@ -13,12 +13,12 @@
 #include "base/guid.h"
 #include "base/i18n/case_conversion.h"
 #include "base/string_util.h"
-#include "chrome/browser/autocomplete/autocomplete_log.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/autocomplete/autocomplete_result.h"
 #include "chrome/browser/history/history_notifications.h"
 #include "chrome/browser/history/history_service.h"
 #include "chrome/browser/history/shortcuts_database.h"
+#include "chrome/browser/omnibox/omnibox_log.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/browser_thread.h"
@@ -245,7 +245,7 @@ void ShortcutsBackend::Observe(int type,
 
   DCHECK(type == chrome::NOTIFICATION_OMNIBOX_OPENED_URL);
 
-  AutocompleteLog* log = content::Details<AutocompleteLog>(details).ptr();
+  OmniboxLog* log = content::Details<OmniboxLog>(details).ptr();
   string16 text_lowercase(base::i18n::ToLower(log->text));
 
   const AutocompleteMatch& match(log->result.match_at(log->selected_index));

@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_AUTOCOMPLETE_AUTOCOMPLETE_LOG_H_
-#define CHROME_BROWSER_AUTOCOMPLETE_AUTOCOMPLETE_LOG_H_
+#ifndef CHROME_BROWSER_OMNIBOX_OMNIBOX_LOG_H_
+#define CHROME_BROWSER_OMNIBOX_OMNIBOX_LOG_H_
 
 #include <stddef.h>
 
@@ -18,8 +18,8 @@ class AutocompleteResult;
 
 // The data to log (via the metrics service) when the user selects an item from
 // the omnibox popup.
-struct AutocompleteLog {
-  AutocompleteLog(
+struct OmniboxLog {
+  OmniboxLog(
       const string16& text,
       bool just_deleted_text,
       AutocompleteInput::Type input_type,
@@ -31,7 +31,7 @@ struct AutocompleteLog {
       size_t completed_length,
       base::TimeDelta elapsed_time_since_last_change_to_default_match,
       const AutocompleteResult& result);
-  ~AutocompleteLog();
+  ~OmniboxLog();
 
   // The user's input text in the omnibox.
   string16 text;
@@ -83,4 +83,4 @@ struct AutocompleteLog {
   ProvidersInfo providers_info;
 };
 
-#endif  // CHROME_BROWSER_AUTOCOMPLETE_AUTOCOMPLETE_LOG_H_
+#endif  // CHROME_BROWSER_OMNIBOX_OMNIBOX_LOG_H_

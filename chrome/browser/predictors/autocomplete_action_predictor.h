@@ -20,10 +20,10 @@
 #include "content/public/browser/notification_registrar.h"
 #include "googleurl/src/gurl.h"
 
-struct AutocompleteLog;
 struct AutocompleteMatch;
 class AutocompleteResult;
 class HistoryService;
+struct OmniboxLog;
 class PredictorsHandler;
 class Profile;
 
@@ -163,7 +163,7 @@ class AutocompleteActionPredictor
   void DeleteRowsWithURLs(const history::URLRows& rows);
 
   // Called when NOTIFICATION_OMNIBOX_OPENED_URL is observed.
-  void OnOmniboxOpenedUrl(const AutocompleteLog& log);
+  void OnOmniboxOpenedUrl(const OmniboxLog& log);
 
   // Adds and updates rows in the database and caches.
   void AddAndUpdateRows(

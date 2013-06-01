@@ -17,7 +17,6 @@
 #include "chrome/browser/autocomplete/autocomplete_classifier.h"
 #include "chrome/browser/autocomplete/autocomplete_classifier_factory.h"
 #include "chrome/browser/autocomplete/autocomplete_input.h"
-#include "chrome/browser/autocomplete/autocomplete_log.h"
 #include "chrome/browser/autocomplete/autocomplete_provider.h"
 #include "chrome/browser/autocomplete/extension_app_provider.h"
 #include "chrome/browser/autocomplete/history_url_provider.h"
@@ -29,6 +28,7 @@
 #include "chrome/browser/google/google_url_tracker.h"
 #include "chrome/browser/net/predictor.h"
 #include "chrome/browser/net/url_fixer_upper.h"
+#include "chrome/browser/omnibox/omnibox_log.h"
 #include "chrome/browser/predictors/autocomplete_action_predictor.h"
 #include "chrome/browser/predictors/autocomplete_action_predictor_factory.h"
 #include "chrome/browser/prerender/prerender_field_trial.h"
@@ -645,7 +645,7 @@ void OmniboxEditModel::OpenMatch(const AutocompleteMatch& match,
           base::TimeDelta::FromMilliseconds(-1);
     }
     // TODO(sreeram): Handle is_temporary_text_set_by_instant_ correctly.
-    AutocompleteLog log(
+    OmniboxLog log(
         autocomplete_controller()->input().text(),
         just_deleted_text_,
         autocomplete_controller()->input().type(),
@@ -686,7 +686,7 @@ void OmniboxEditModel::OpenMatch(const AutocompleteMatch& match,
     content::NotificationService::current()->Notify(
         chrome::NOTIFICATION_OMNIBOX_OPENED_URL,
         content::Source<Profile>(profile_),
-        content::Details<AutocompleteLog>(&log));
+        content::Details<OmniboxLog>(&log));
     HISTOGRAM_ENUMERATION("Omnibox.EventCount", 1, 2);
   }
 

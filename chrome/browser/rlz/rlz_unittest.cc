@@ -11,8 +11,8 @@
 #include "base/stringprintf.h"
 #include "base/threading/thread.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/autocomplete/autocomplete_log.h"
 #include "chrome/browser/google/google_util.h"
+#include "chrome/browser/omnibox/omnibox_log.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/env_vars.h"
@@ -291,7 +291,7 @@ void RlzLibTest::SetRegistryBrandValue(const wchar_t* name,
 void RlzLibTest::SimulateOmniboxUsage() {
   tracker_.Observe(chrome::NOTIFICATION_OMNIBOX_OPENED_URL,
                    content::NotificationService::AllSources(),
-                   content::Details<AutocompleteLog>(NULL));
+                   content::Details<OmniboxLog>(NULL));
 }
 
 void RlzLibTest::SimulateHomepageUsage() {

@@ -10,11 +10,11 @@
 #include "base/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/prefs/pref_service.h"
-#include "chrome/browser/autocomplete/autocomplete_log.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/autocomplete/autocomplete_result.h"
 #include "chrome/browser/infobars/confirm_infobar_delegate.h"
 #include "chrome/browser/infobars/infobar_service.h"
+#include "chrome/browser/omnibox/omnibox_log.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_service.h"
@@ -219,7 +219,7 @@ void OmniboxSearchHint::Observe(int type,
   if (type == content::NOTIFICATION_NAV_ENTRY_COMMITTED) {
     HintInfoBarDelegate::Create(web_contents_, this);
   } else if (type == chrome::NOTIFICATION_OMNIBOX_OPENED_URL) {
-    AutocompleteLog* log = content::Details<AutocompleteLog>(details).ptr();
+    OmniboxLog* log = content::Details<OmniboxLog>(details).ptr();
     AutocompleteMatch::Type type =
         log->result.match_at(log->selected_index).type;
     if (AutocompleteMatch::IsSearchType(type)) {

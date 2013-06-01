@@ -170,7 +170,6 @@
 #include "base/tracked_objects.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/autocomplete/autocomplete_log.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/process_map.h"
@@ -183,14 +182,15 @@
 #include "chrome/browser/metrics/tracking_synchronizer.h"
 #include "chrome/browser/net/http_pipelining_compatibility_client.h"
 #include "chrome/browser/net/network_stats.h"
+#include "chrome/browser/omnibox/omnibox_log.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_otr_state.h"
 #include "chrome/common/child_process_logging.h"
-#include "chrome/common/chrome_process_type.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "chrome/common/chrome_process_type.h"
 #include "chrome/common/chrome_result_codes.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/metrics/entropy_provider.h"
@@ -732,7 +732,7 @@ void MetricsService::Observe(int type,
           static_cast<MetricsLog*>(log_manager_.current_log());
       DCHECK(current_log);
       current_log->RecordOmniboxOpenedURL(
-          *content::Details<AutocompleteLog>(details).ptr());
+          *content::Details<OmniboxLog>(details).ptr());
       break;
     }
 

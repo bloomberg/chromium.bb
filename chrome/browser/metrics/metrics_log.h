@@ -21,8 +21,8 @@
 #include "chrome/browser/metrics/perf_provider_chromeos.h"
 #endif
 
-struct AutocompleteLog;
 class MetricsNetworkObserver;
+struct OmniboxLog;
 class PrefService;
 class PrefRegistrySimple;
 
@@ -110,7 +110,7 @@ class MetricsLog : public MetricsLogBase {
 
   // Records the input text, available choices, and selected entry when the
   // user uses the Omnibox to open a URL.
-  void RecordOmniboxOpenedURL(const AutocompleteLog& log);
+  void RecordOmniboxOpenedURL(const OmniboxLog& log);
 
   // Records the passed profiled data, which should be a snapshot of the
   // browser's profiled performance during startup for a single process.

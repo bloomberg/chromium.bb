@@ -1,10 +1,10 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/autocomplete/autocomplete_log.h"
+#include "chrome/browser/omnibox/omnibox_log.h"
 
-AutocompleteLog::AutocompleteLog(
+OmniboxLog::OmniboxLog(
     const string16& text,
     bool just_deleted_text,
     AutocompleteInput::Type input_type,
@@ -30,5 +30,4 @@ AutocompleteLog::AutocompleteLog(
       providers_info() {
 }
 
-AutocompleteLog::~AutocompleteLog() {
-}
+OmniboxLog::~OmniboxLog() {}
