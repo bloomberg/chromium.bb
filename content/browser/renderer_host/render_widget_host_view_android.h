@@ -266,9 +266,6 @@ class RenderWidgetHostViewAndroid
   // The mailbox of the previously received frame.
   gpu::Mailbox current_mailbox_;
 
-  // The mailbox of the frame we last returned.
-  gpu::Mailbox last_mailbox_;
-
   base::WeakPtrFactory<RenderWidgetHostViewAndroid> weak_ptr_factory_;
 
   std::queue<base::Closure> ack_callbacks_;
