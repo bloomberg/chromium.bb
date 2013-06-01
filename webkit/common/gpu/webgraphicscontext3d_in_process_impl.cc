@@ -279,11 +279,6 @@ int WebGraphicsContext3DInProcessImpl::height() {
   return cached_height_;
 }
 
-bool WebGraphicsContext3DInProcessImpl::setParentContext(
-    WebGraphicsContext3D* parent_context) {
-  return false;
-}
-
 void WebGraphicsContext3DInProcessImpl::prepareTexture() {
   if (!gl_surface_->IsOffscreen()) {
     gl_surface_->SwapBuffers();

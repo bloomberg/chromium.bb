@@ -148,8 +148,6 @@ WebGraphicsContext3DCommandBufferImpl::WebGraphicsContext3DCommandBufferImpl(
       bound_fbo_(0),
       weak_ptr_factory_(this),
       initialized_(false),
-      parent_(NULL),
-      parent_texture_id_(0),
       command_buffer_(NULL),
       gles2_helper_(NULL),
       transfer_buffer_(NULL),
@@ -406,68 +404,11 @@ int WebGraphicsContext3DCommandBufferImpl::height() {
   return cached_height_;
 }
 
-bool WebGraphicsContext3DCommandBufferImpl::setParentContext(
-    WebGraphicsContext3D* parent_context) {
-  WebGraphicsContext3DCommandBufferImpl* parent_context_impl =
-      static_cast<WebGraphicsContext3DCommandBufferImpl*>(parent_context);
-  return SetParent(parent_context_impl);
-}
-
 unsigned int WebGraphicsContext3DCommandBufferImpl::insertSyncPoint() {
   return gl_->InsertSyncPointCHROMIUM();
 }
 
-bool WebGraphicsContext3DCommandBufferImpl::SetParent(
-    WebGraphicsContext3DCommandBufferImpl* new_parent) {
-  if (parent_ == new_parent)
-    return true;
-
-  // Allocate a texture ID with respect to the parent and change the parent.
-  uint32 new_parent_texture_id = 0;
-  if (command_buffer_) {
-    if (new_parent) {
-      // Flush any remaining commands in the parent context to make sure the
-      // texture id accounting stays consistent.
-      int32 token = new_parent->gles2_helper_->InsertToken();
-      new_parent->gles2_helper_->WaitForToken(token);
-      new_parent_texture_id =
-        new_parent->real_gl_->MakeTextureId();
-
-      if (!command_buffer_->SetParent(new_parent->command_buffer_,
-                                      new_parent_texture_id)) {
-        new_parent->real_gl_->FreeTextureId(parent_texture_id_);
-        return false;
-      }
-    } else {
-      if (!command_buffer_->SetParent(NULL, 0))
-        return false;
-    }
-  }
-
-  // Free the previous parent's texture ID.
-  if (parent_ && parent_texture_id_ != 0) {
-    // Flush any remaining commands in the parent context to make sure the
-    // texture id accounting stays consistent.
-    gpu::gles2::GLES2Implementation* parent_gles2 =
-        parent_->real_gl_;
-    parent_gles2->helper()->CommandBufferHelper::Finish();
-    parent_gles2->FreeTextureId(parent_texture_id_);
-  }
-
-  if (new_parent) {
-    parent_ = new_parent;
-    parent_texture_id_ = new_parent_texture_id;
-  } else {
-    parent_ = NULL;
-    parent_texture_id_ = 0;
-  }
-
-  return true;
-}
-
 void WebGraphicsContext3DCommandBufferImpl::Destroy() {
-  SetParent(NULL);
-
   if (gl_) {
     // First flush the context to ensure that any pending frees of resources
     // are completed. Otherwise, if this context is part of a share group,

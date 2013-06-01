@@ -926,11 +926,6 @@ int WebGraphicsContext3DInProcessCommandBufferImpl::height() {
   return cached_height_;
 }
 
-bool WebGraphicsContext3DInProcessCommandBufferImpl::setParentContext(
-    WebGraphicsContext3D* parent_context) {
-  return false;
-}
-
 void WebGraphicsContext3DInProcessCommandBufferImpl::prepareTexture() {
   // Copies the contents of the off-screen render target into the texture
   // used by the compositor.

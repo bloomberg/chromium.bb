@@ -118,8 +118,6 @@ class WebGraphicsContext3DCommandBufferImpl
   virtual int width();
   virtual int height();
 
-  virtual bool setParentContext(WebGraphicsContext3D* parent_context);
-
   virtual unsigned int insertSyncPoint();
   virtual void waitSyncPoint(unsigned int sync_point);
   virtual void signalSyncPoint(unsigned sync_point,
@@ -647,8 +645,6 @@ class WebGraphicsContext3DCommandBufferImpl
       bool onscreen,
       const char* allowed_extensions);
 
-  bool SetParent(WebGraphicsContext3DCommandBufferImpl* parent_context);
-
   void Destroy();
 
   // Create a CommandBufferProxy that renders directly to a view. The view and
@@ -728,8 +724,6 @@ class WebGraphicsContext3DCommandBufferImpl
                       unsigned int height);
 
   bool initialized_;
-  WebGraphicsContext3DCommandBufferImpl* parent_;
-  uint32 parent_texture_id_;
   CommandBufferProxyImpl* command_buffer_;
   gpu::gles2::GLES2CmdHelper* gles2_helper_;
   gpu::TransferBuffer* transfer_buffer_;
