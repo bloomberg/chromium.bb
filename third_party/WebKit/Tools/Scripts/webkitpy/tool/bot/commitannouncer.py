@@ -67,6 +67,7 @@ class CommitAnnouncer(SingleServerIRCBot):
                 commit_detail = self._commit_detail(commit)
                 if commit_detail:
                     _log.info('%s Posting commit %s' % (self._time(), commit))
+                    _log.info('%s Posted message: %s' % (self._time(), repr(commit_detail)))
                     self._post(commit_detail)
                 else:
                     _log.error('Malformed commit log for %s' % commit)
@@ -150,8 +151,10 @@ class CommitAnnouncer(SingleServerIRCBot):
         commit, email, subject, body = commit_detail.split('\n', 3)
         review_string = 'Review URL: '
         svn_string = 'git-svn-id: svn://svn.chromium.org/blink/trunk@'
+        red_flag_strings = ['NOTRY=true', 'TBR=']
         review_url = ''
         svn_url = ''
+        red_flags = []
 
         for line in body.split('\n'):
             if line.startswith(review_string):
@@ -164,6 +167,9 @@ class CommitAnnouncer(SingleServerIRCBot):
                 if not revision.isdigit():
                     continue
                 svn_url = 'https://src.chromium.org/viewvc/blink?view=revision&revision=%s' % revision
+            for red_flag_string in red_flag_strings:
+                if line.lower().startswith(red_flag_string.lower()):
+                    red_flags.append(line.strip())
 
         if review_url:
             match = re.search(r'(?P<review_id>\d+)', review_url)
@@ -171,7 +177,9 @@ class CommitAnnouncer(SingleServerIRCBot):
                 review_url = 'http://crrev.com/%s' % match.group('review_id')
         first_url = review_url if review_url else 'https://chromium.googlesource.com/chromium/blink/+/%s' % commit[:8]
 
-        return '%s committed "%s" %s %s' % (email, subject, first_url, svn_url)
+        red_flag_message = ' \x037%s\x03' % (' '.join(red_flags)) if red_flags else ''
+
+        return '%s committed "%s" %s %s%s' % (email, subject, first_url, svn_url, red_flag_message)
 
     def _post(self, message):
         self.connection.execute_delayed(0, lambda: self.connection.privmsg(channel, message))
