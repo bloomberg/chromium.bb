@@ -96,7 +96,7 @@ class AppBackgroundPageApiTest : public ExtensionApiTest {
   }
 
   void UnloadExtensionViaTask(const std::string& id) {
-    MessageLoop::current()->PostTask(
+    base::MessageLoop::current()->PostTask(
         FROM_HERE,
         base::Bind(&AppBackgroundPageApiTest::UnloadExtension, this, id));
   }

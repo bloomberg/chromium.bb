@@ -730,10 +730,4 @@ COMPILE_ASSERT(sizeof(MessageLoop) == sizeof(MessageLoopForIO),
 
 }  // namespace base
 
-// TODO(brettw) remove this when all users are updated to explicitly use the
-// namespace
-using base::MessageLoop;
-using base::MessageLoopForIO;
-using base::MessageLoopForUI;
-
 #endif  // BASE_MESSAGE_LOOP_H_

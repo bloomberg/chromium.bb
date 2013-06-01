@@ -334,7 +334,7 @@ TEST_F(PasswordFormManagerTest, TestDynamicAction) {
 
 TEST_F(PasswordFormManagerTest, TestAlternateUsername) {
   // Need a MessageLoop for callbacks.
-  MessageLoop message_loop;
+  base::MessageLoop message_loop;
   PasswordStoreFactory::GetInstance()->SetTestingFactory(
       profile(), &TestPasswordStore::Create);
   scoped_refptr<TestPasswordStore> password_store =

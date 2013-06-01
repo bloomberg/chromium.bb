@@ -44,7 +44,7 @@ class NotificationBitmapFetcherTestDelegate
     // For async calls, we need to quit the message loop so the test can
     // continue.
     if (async_) {
-      MessageLoop::current()->Quit();
+      base::MessageLoop::current()->Quit();
     }
   }
 
