@@ -60,8 +60,7 @@ class MediaDecoderJob {
   void Release();
 
  protected:
-  MediaDecoderJob(
-      bool is_audio, const scoped_refptr<base::MessageLoopProxy>& message_loop);
+  MediaDecoderJob(base::Thread* thread, bool is_audio);
 
   // Release the output buffer and render it.
   void ReleaseOutputBuffer(
@@ -89,7 +88,7 @@ class MediaDecoderJob {
   scoped_refptr<base::MessageLoopProxy> message_loop_;
 
   // Thread the decode task runs on.
-  scoped_ptr<base::Thread> thread_;
+  base::Thread* thread_;
 
   // Whether the decoder needs to be flushed.
   bool needs_flush_;
@@ -209,7 +208,7 @@ class MEDIA_EXPORT MediaSourcePlayer : public MediaPlayerAndroid {
   base::Time start_wallclock_time_;
   base::TimeDelta start_presentation_timestamp_;
 
-  // Decoder jobs
+  // Decoder jobs.
   ScopedMediaDecoderJob audio_decoder_job_;
   ScopedMediaDecoderJob video_decoder_job_;
 

@@ -8,6 +8,7 @@
 #include "base/android/jni_string.h"
 #include "base/basictypes.h"
 #include "base/bind.h"
+#include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/threading/thread.h"
@@ -15,15 +16,43 @@
 #include "media/base/android/media_player_manager.h"
 
 namespace {
+
 // Timeout value for media codec operations.
 const int kMediaCodecTimeoutInMicroseconds = 5000;
+
+class DecoderThread : public base::Thread {
+ public:
+  virtual ~DecoderThread() {}
+ protected:
+  DecoderThread(const char* name) : base::Thread(name) { Start(); }
+};
+
+class AudioDecoderThread : public DecoderThread {
+ public:
+  AudioDecoderThread() : DecoderThread("MediaSource_AudioDecoderThread") {}
+};
+
+class VideoDecoderThread : public DecoderThread {
+ public:
+  VideoDecoderThread() : DecoderThread("MediaSource_VideoDecoderThread") {}
+};
+
+// TODO(qinmin): Check if it is tolerable to use worker pool to handle all the
+// decoding tasks so that we don't need the global threads here.
+// http://crbug.com/245750
+base::LazyInstance<AudioDecoderThread>::Leaky
+    g_audio_decoder_thread = LAZY_INSTANCE_INITIALIZER;
+
+base::LazyInstance<VideoDecoderThread>::Leaky
+    g_video_decoder_thread = LAZY_INSTANCE_INITIALIZER;
+
 }
 
 namespace media {
 
-MediaDecoderJob::MediaDecoderJob(
-    bool is_audio, const scoped_refptr<base::MessageLoopProxy>& message_loop)
-    : message_loop_(message_loop),
+MediaDecoderJob::MediaDecoderJob(base::Thread* thread, bool is_audio)
+    : message_loop_(base::MessageLoopProxy::current()),
+      thread_(thread),
       needs_flush_(false),
       is_audio_(is_audio),
       weak_this_(this) {
@@ -35,9 +64,8 @@ MediaDecoderJob::~MediaDecoderJob() {}
 class AudioDecoderJob : public MediaDecoderJob {
  public:
   AudioDecoderJob(
-      const scoped_refptr<base::MessageLoopProxy>& message_loop,
-      const AudioCodec audio_codec, int sample_rate, int channel_count,
-      const uint8* extra_data, size_t extra_data_size);
+      const AudioCodec audio_codec, int sample_rate,
+      int channel_count, const uint8* extra_data, size_t extra_data_size);
   virtual ~AudioDecoderJob() {}
 };
 
@@ -45,7 +73,6 @@ class AudioDecoderJob : public MediaDecoderJob {
 class VideoDecoderJob : public MediaDecoderJob {
  public:
   VideoDecoderJob(
-      const scoped_refptr<base::MessageLoopProxy>& message_loop,
       const VideoCodec video_codec, const gfx::Size& size, jobject surface);
   virtual ~VideoDecoderJob() {}
 
@@ -58,8 +85,6 @@ void MediaDecoderJob::Decode(
     const base::Time& start_wallclock_time,
     const base::TimeDelta& start_presentation_timestamp,
     const MediaDecoderJob::DecoderCallback& callback) {
-  if (!thread_->IsRunning())
-    thread_->Start();
   thread_->message_loop()->PostTask(FROM_HERE, base::Bind(
       &MediaDecoderJob::DecodeInternal, base::Unretained(this), unit,
       start_wallclock_time, start_presentation_timestamp, needs_flush_,
@@ -169,28 +194,24 @@ void MediaDecoderJob::Release() {
 }
 
 VideoDecoderJob::VideoDecoderJob(
-    const scoped_refptr<base::MessageLoopProxy>& message_loop,
     const VideoCodec video_codec, const gfx::Size& size, jobject surface)
-    : MediaDecoderJob(false, message_loop) {
+    : MediaDecoderJob(g_video_decoder_thread.Pointer(), false) {
   scoped_ptr<VideoCodecBridge> codec(VideoCodecBridge::Create(video_codec));
   codec->Start(video_codec, size, surface);
   media_codec_bridge_.reset(codec.release());
-  thread_.reset(new base::Thread("MediaSource_VideoDecoderThread"));
 }
 
 AudioDecoderJob::AudioDecoderJob(
-    const scoped_refptr<base::MessageLoopProxy>& message_loop,
     const AudioCodec audio_codec,
     int sample_rate,
     int channel_count,
     const uint8* extra_data,
     size_t extra_data_size)
-    : MediaDecoderJob(true, message_loop) {
+    : MediaDecoderJob(g_audio_decoder_thread.Pointer(), true) {
   scoped_ptr<AudioCodecBridge> codec(AudioCodecBridge::Create(audio_codec));
   codec->Start(audio_codec, sample_rate, channel_count, extra_data,
                extra_data_size, true);
   media_codec_bridge_.reset(codec.release());
-  thread_.reset(new base::Thread("MediaSource_AudioDecoderThread"));
 }
 
 MediaSourcePlayer::MediaSourcePlayer(
@@ -236,8 +257,7 @@ void MediaSourcePlayer::SetVideoSurface(gfx::ScopedJavaSurface surface) {
 
   if (HasVideo()) {
     video_decoder_job_.reset(new VideoDecoderJob(
-        base::MessageLoopProxy::current(), video_codec_,
-        gfx::Size(width_, height_), surface.j_surface().obj()));
+        video_codec_, gfx::Size(width_, height_), surface.j_surface().obj()));
   }
 
   // Inform the fullscreen view the player is ready.
@@ -263,8 +283,8 @@ void MediaSourcePlayer::Start() {
   playing_ = true;
   if (HasAudio() && !audio_decoder_job_) {
     audio_decoder_job_.reset(new AudioDecoderJob(
-        base::MessageLoopProxy::current(), audio_codec_, sampling_rate_,
-        num_channels_, &audio_extra_data_[0], audio_extra_data_.size()));
+        audio_codec_, sampling_rate_, num_channels_,
+        &audio_extra_data_[0], audio_extra_data_.size()));
   }
 
   if (HasVideo() && !video_decoder_job_) {
