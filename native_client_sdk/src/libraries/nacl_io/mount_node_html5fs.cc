@@ -65,6 +65,10 @@ int32_t ModeToOpenFlags(int mode) {
 }  // namespace
 
 int MountNodeHtml5Fs::FSync() {
+  // Cannot call Flush on a directory; simply do nothing.
+  if (IsDirectory())
+    return 0;
+
   int32_t result = mount_->ppapi()->GetFileIoInterface()->Flush(
       fileio_resource_, PP_BlockUntilComplete());
   if (result != PP_OK) {
@@ -85,6 +89,12 @@ int MountNodeHtml5Fs::GetDents(size_t offs, struct dirent* pdir, size_t size) {
   // If the buffer is too small, fail
   if (size < sizeof(struct dirent)) {
     errno = EINVAL;
+    return -1;
+  }
+
+  // If this is not a directory, fail
+  if (!IsDirectory()) {
+    errno = ENOTDIR;
     return -1;
   }
 
@@ -124,7 +134,7 @@ int MountNodeHtml5Fs::GetDents(size_t offs, struct dirent* pdir, size_t size) {
 
     dirents.push_back(dirent());
     struct dirent& direntry = dirents.back();
-    direntry.d_ino = 0;  // TODO(binji): Is this needed?
+    direntry.d_ino = 1;  // Must be > 0.
     direntry.d_off = sizeof(struct dirent);
     direntry.d_reclen = sizeof(struct dirent);
     strncpy(direntry.d_name, file_name, file_name_length);
@@ -142,15 +152,15 @@ int MountNodeHtml5Fs::GetDents(size_t offs, struct dirent* pdir, size_t size) {
   if (offs + size >= max) size = max - offs;
 
   memcpy(pdir, reinterpret_cast<char*>(dirents.data()) + offs, size);
-  return 0;
+  return size;
 }
 
 int MountNodeHtml5Fs::GetStat(struct stat* stat) {
   AutoLock lock(&lock_);
 
   PP_FileInfo info;
-  int32_t result = mount_->ppapi()->GetFileIoInterface()->Query(
-      fileio_resource_, &info, PP_BlockUntilComplete());
+  int32_t result = mount_->ppapi()->GetFileRefInterface()->Query(
+      fileref_resource_, &info, PP_BlockUntilComplete());
   if (result != PP_OK) {
     errno = PPErrorToErrno(result);
     return -1;
@@ -175,6 +185,11 @@ int MountNodeHtml5Fs::GetStat(struct stat* stat) {
 }
 
 int MountNodeHtml5Fs::Read(size_t offs, void* buf, size_t count) {
+  if (IsDirectory()) {
+    errno = EISDIR;
+    return -1;
+  }
+
   int32_t result = mount_->ppapi()->GetFileIoInterface()->Read(
       fileio_resource_, offs, static_cast<char*>(buf),
       static_cast<int32_t>(count),
@@ -188,6 +203,11 @@ int MountNodeHtml5Fs::Read(size_t offs, void* buf, size_t count) {
 }
 
 int MountNodeHtml5Fs::FTruncate(off_t size) {
+  if (IsDirectory()) {
+    errno = EISDIR;
+    return -1;
+  }
+
   int32_t result = mount_->ppapi()->GetFileIoInterface()->SetLength(
       fileio_resource_, size, PP_BlockUntilComplete());
   if (result != PP_OK) {
@@ -199,6 +219,11 @@ int MountNodeHtml5Fs::FTruncate(off_t size) {
 }
 
 int MountNodeHtml5Fs::Write(size_t offs, const void* buf, size_t count) {
+  if (IsDirectory()) {
+    errno = EISDIR;
+    return -1;
+  }
+
   int32_t result = mount_->ppapi()->GetFileIoInterface()->Write(
       fileio_resource_, offs, static_cast<const char*>(buf),
       static_cast<int32_t>(count), PP_BlockUntilComplete());
@@ -214,8 +239,8 @@ size_t MountNodeHtml5Fs::GetSize() {
   AutoLock lock(&lock_);
 
   PP_FileInfo info;
-  int32_t result = mount_->ppapi()->GetFileIoInterface()->Query(
-      fileio_resource_, &info, PP_BlockUntilComplete());
+  int32_t result = mount_->ppapi()->GetFileRefInterface()->Query(
+      fileref_resource_, &info, PP_BlockUntilComplete());
   if (result != PP_OK) {
     errno = PPErrorToErrno(result);
     return -1;
@@ -233,6 +258,14 @@ MountNodeHtml5Fs::MountNodeHtml5Fs(Mount* mount, PP_Resource fileref_resource)
 bool MountNodeHtml5Fs::Init(int perm) {
   if (!MountNode::Init(Mount::OpenModeToPermission(perm)))
     return false;
+
+  // First query the FileRef to see if it is a file or directory.
+  PP_FileInfo file_info;
+  mount_->ppapi()->GetFileRefInterface()->Query(fileref_resource_, &file_info,
+                                                PP_BlockUntilComplete());
+  // If this is a directory, do not get a FileIO.
+  if (file_info.type == PP_FILETYPE_DIRECTORY)
+    return true;
 
   fileio_resource_= mount_->ppapi()->GetFileIoInterface()->Create(
       mount_->ppapi()->GetInstance());

@@ -39,11 +39,13 @@ BEGIN_INTERFACE(FileIoInterface, PPB_FileIO, PPB_FILEIO_INTERFACE_1_0)
           const char*, int32_t, PP_CompletionCallback)
 END_INTERFACE(FileIoInterface, PPB_FileIO)
 
-BEGIN_INTERFACE(FileRefInterface, PPB_FileRef, PPB_FILEREF_INTERFACE_1_0)
+BEGIN_INTERFACE(FileRefInterface, PPB_FileRef, PPB_FILEREF_INTERFACE_1_1)
   METHOD2(FileRefInterface, PP_Resource, Create, PP_Resource, const char*)
   METHOD2(FileRefInterface, int32_t, Delete, PP_Resource, PP_CompletionCallback)
   METHOD1(FileRefInterface, PP_Var, GetName, PP_Resource)
   METHOD3(FileRefInterface, int32_t, MakeDirectory, PP_Resource, PP_Bool,
+          PP_CompletionCallback)
+  METHOD3(FileRefInterface, int32_t, Query, PP_Resource, PP_FileInfo*,
           PP_CompletionCallback)
   METHOD3(FileRefInterface, int32_t, ReadDirectoryEntries, PP_Resource,
           const PP_ArrayOutput&, PP_CompletionCallback)
