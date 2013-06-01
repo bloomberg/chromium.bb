@@ -19,7 +19,7 @@ struct OneShotEvent::TaskInfo {
            const scoped_refptr<TaskRunner>& runner,
            const base::Closure& task)
       : from_here(from_here), runner(runner), task(task) {
-    CHECK(runner);  // Detect mistakes with a decent stack frame.
+    CHECK(runner.get());  // Detect mistakes with a decent stack frame.
   }
   tracked_objects::Location from_here;
   scoped_refptr<TaskRunner> runner;
