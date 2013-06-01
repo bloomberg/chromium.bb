@@ -12,6 +12,7 @@
 #include "base/compiler_specific.h"
 #include "base/debug/leak_tracker.h"
 #include "base/logging.h"
+#include "base/metrics/field_trial.h"
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
 #include "base/stl_util.h"
@@ -95,6 +96,9 @@ class SafeBrowsingURLRequestContext;
 // Quit task, so base::Bind() calls are not refcounted.
 
 namespace {
+
+const char kQuicFieldTrialName[] = "QUIC";
+const char kQuicFieldTrialEnabledGroupName[] = "Enabled";
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
 void ObserveKeychainEvents() {
@@ -531,9 +535,7 @@ void IOThread::Init() {
     globals_->testing_fixed_https_port =
         GetSwitchValueAsInt(command_line, switches::kTestingFixedHttpsPort);
   }
-  if (command_line.HasSwitch(switches::kEnableQuic)) {
-    globals_->enable_quic.set(true);
-  }
+  globals_->enable_quic.set(ShouldEnableQuic(command_line));
   if (command_line.HasSwitch(switches::kOriginPortToForceQuicOn)) {
     globals_->origin_port_to_force_quic_on.set(
         GetSwitchValueAsInt(command_line,
@@ -936,4 +938,20 @@ void IOThread::InitSystemRequestContextOnIOThread() {
 
 void IOThread::UpdateDnsClientEnabled() {
   globals()->host_resolver->SetDnsClientEnabled(*dns_client_enabled_);
+}
+
+bool IOThread::ShouldEnableQuic(const CommandLine& command_line) {
+  // Always fetch the field trial group to ensure it is reported correctly.
+  // The command line flags will be associated with a group that is reported
+  // so long as trial is actually queried.
+  std::string quic_trial_group =
+      base::FieldTrialList::FindFullName(kQuicFieldTrialName);
+
+  if (command_line.HasSwitch(switches::kDisableQuic))
+    return false;
+
+  if (command_line.HasSwitch(switches::kEnableQuic))
+    return true;
+
+  return quic_trial_group == kQuicFieldTrialEnabledGroupName;
 }

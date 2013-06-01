@@ -379,6 +379,9 @@ const char kDisablePrerenderLocalPredictor[] =
 // disable that check. This switch is used during automated testing.
 const char kDisablePromptOnRepost[]         = "disable-prompt-on-repost";
 
+// Disables support for the QUIC protocol.
+const char kDisableQuic[]                   = "disable-quic";
+
 // Prevents the URLs of BackgroundContents from being remembered and
 // re-launched when the browser restarts.
 const char kDisableRestoreBackgroundContents[] =

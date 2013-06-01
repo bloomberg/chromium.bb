@@ -251,6 +251,10 @@ class IOThread : public content::BrowserThreadDelegate {
 
   void UpdateDnsClientEnabled();
 
+  // Returns true if QUIC should be enabled, either as a result
+  // of a field trial or a command line flag.
+  bool ShouldEnableQuic(const CommandLine& command_line);
+
   // The NetLog is owned by the browser process, to allow logging from other
   // threads during shutdown, but is used most frequently on the IOThread.
   ChromeNetLog* net_log_;

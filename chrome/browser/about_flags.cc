@@ -679,6 +679,14 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kEnableAutologin)
   },
   {
+    "enable-quic",
+    IDS_FLAGS_ENABLE_QUIC_NAME,
+    IDS_FLAGS_ENABLE_QUIC_DESCRIPTION,
+    kOsAll,
+    ENABLE_DISABLE_VALUE_TYPE(switches::kEnableQuic,
+                              switches::kDisableQuic)
+  },
+  {
     "enable-async-dns",
     IDS_FLAGS_ENABLE_ASYNC_DNS_NAME,
     IDS_FLAGS_ENABLE_ASYNC_DNS_DESCRIPTION,
