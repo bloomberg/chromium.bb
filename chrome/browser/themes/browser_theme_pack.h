@@ -112,8 +112,11 @@ class BrowserThemePack : public base::RefCountedThreadSafe<
   // The type passed to ui::DataPack::WritePack.
   typedef std::map<uint16, base::StringPiece> RawDataForWriting;
 
-  // An association between an id and the base::FilePath that has the image data.
-  typedef std::map<int, base::FilePath> FilePathMap;
+  // Maps scale factors (enum values) to file paths.
+  typedef std::map<ui::ScaleFactor, base::FilePath> ScaleFactorToFileMap;
+
+  // Maps image ids to maps of scale factors to file paths.
+  typedef std::map<int, ScaleFactorToFileMap> FilePathMap;
 
   // Default. Everything is empty.
   BrowserThemePack();
@@ -144,6 +147,12 @@ class BrowserThemePack : public base::RefCountedThreadSafe<
   void ParseImageNamesFromJSON(const base::DictionaryValue* images_value,
                                const base::FilePath& images_path,
                                FilePathMap* file_paths) const;
+
+  // Helper function to populate the FilePathMap.
+  void AddFileAtScaleToMap(const std::string& image_name,
+                           ui::ScaleFactor scale_factor,
+                           const base::FilePath& image_path,
+                           FilePathMap* file_paths) const;
 
   // Creates the data for |source_images_| from |file_paths|.
   void BuildSourceImagesArray(const FilePathMap& file_paths);
@@ -202,6 +211,12 @@ class BrowserThemePack : public base::RefCountedThreadSafe<
   // Returns a unique id to use to store the raw bitmap for |prs_id| at
   // |scale_factor| in memory.
   int GetRawIDByPersistentID(int prs_id, ui::ScaleFactor scale_factor) const;
+
+  // Returns true if the |key| specifies a valid scale (e.g. "100") and
+  // the corresponding scale factor is currently in use. If true, returns
+  // the scale factor in |scale_factor|.
+  bool GetScaleFactorFromManifestKey(const std::string& key,
+                                     ui::ScaleFactor* scale_factor) const;
 
   // Data pack, if we have one.
   scoped_ptr<ui::DataPack> data_pack_;

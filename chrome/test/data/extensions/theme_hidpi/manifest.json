@@ -1,5 +1,6 @@
 {
    "name" : "HighDPI",
+   "key" : "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDh+ndFpTRdmV69ZOwIFiHaPRSij7jDI/010cI1wqxHOZYc9TK5LdWbuPkQV1dGMNhfIltfYfEjcRxHerJKU72RZSyMpGd8Kvw2vnqws9pfjTMBGD9U0J+kNx3S+tawjM1jRkx0+WGSTISTd92hudOdrZcrtjeetixSiQDJu0++MQIDAQAB",
    "version" : "1.0",
    "manifest_version" : 2,
    "theme": {

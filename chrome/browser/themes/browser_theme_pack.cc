@@ -10,6 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/stl_util.h"
 #include "base/string_util.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/utf_string_conversions.h"
@@ -567,6 +568,20 @@ scoped_refptr<BrowserThemePack> BrowserThemePack::BuildFromExtension(
     image_skia->MakeThreadSafe();
   }
 
+  // Set ThemeImageSource on |images_on_ui_thread_| to resample the source
+  // image if a caller of BrowserThemePack::GetImageNamed() requests an
+  // ImageSkiaRep for a scale factor not specified by the theme author.
+  // Callers of BrowserThemePack::GetImageNamed() to be able to retrieve
+  // ImageSkiaReps for all supported scale factors.
+  for (ImageCache::iterator it = pack->images_on_ui_thread_.begin();
+       it != pack->images_on_ui_thread_.end(); ++it) {
+    const gfx::ImageSkia source_image_skia = it->second.AsImageSkia();
+    ThemeImageSource* source = new ThemeImageSource(source_image_skia);
+    // image_skia takes ownership of source.
+    gfx::ImageSkia image_skia(source, source_image_skia.size());
+    it->second = gfx::Image(image_skia);
+  }
+
   // The BrowserThemePack is now in a consistent state.
   return pack;
 }
@@ -729,6 +744,7 @@ gfx::Image BrowserThemePack::GetImageNamed(int idr_id) {
 
   // TODO(pkotwicz): Do something better than loading the bitmaps
   // for all the scale factors associated with |idr_id|.
+  // See crbug.com/243831.
   gfx::ImageSkia source_image_skia;
   for (size_t i = 0; i < scale_factors_.size(); ++i) {
     scoped_refptr<base::RefCountedMemory> memory =
@@ -1062,20 +1078,50 @@ void BrowserThemePack::ParseImageNamesFromJSON(
 
   for (DictionaryValue::Iterator iter(*images_value); !iter.IsAtEnd();
        iter.Advance()) {
-    std::string val;
-    if (iter.value().GetAsString(&val)) {
-      int id = GetPersistentIDByName(iter.key());
-      if (id != -1)
-        (*file_paths)[id] = images_path.AppendASCII(val);
-#if defined(OS_WIN) && defined(USE_AURA)
-      id = GetPersistentIDByNameHelper(iter.key(),
-                                       kPersistingImagesWinDesktopAura,
-                                       kPersistingImagesWinDesktopAuraLength);
-      if (id != -1)
-        (*file_paths)[id] = images_path.AppendASCII(val);
-#endif
+    if (iter.value().IsType(Value::TYPE_DICTIONARY)) {
+      const DictionaryValue* inner_value = NULL;
+      if (iter.value().GetAsDictionary(&inner_value)) {
+        for (DictionaryValue::Iterator inner_iter(*inner_value);
+             !inner_iter.IsAtEnd();
+             inner_iter.Advance()) {
+          std::string name;
+          ui::ScaleFactor scale_factor = ui::SCALE_FACTOR_NONE;
+          if (GetScaleFactorFromManifestKey(inner_iter.key(), &scale_factor) &&
+              inner_iter.value().IsType(Value::TYPE_STRING) &&
+              inner_iter.value().GetAsString(&name)) {
+            AddFileAtScaleToMap(iter.key(),
+                                scale_factor,
+                                images_path.AppendASCII(name),
+                                file_paths);
+          }
+        }
+      }
+    } else if (iter.value().IsType(Value::TYPE_STRING)) {
+      std::string name;
+      if (iter.value().GetAsString(&name)) {
+        AddFileAtScaleToMap(iter.key(),
+                            ui::SCALE_FACTOR_100P,
+                            images_path.AppendASCII(name),
+                            file_paths);
+      }
     }
   }
+}
+
+void BrowserThemePack::AddFileAtScaleToMap(const std::string& image_name,
+                                           ui::ScaleFactor scale_factor,
+                                           const base::FilePath& image_path,
+                                           FilePathMap* file_paths) const {
+  int id = GetPersistentIDByName(image_name);
+  if (id != -1)
+    (*file_paths)[id][scale_factor] = image_path;
+#if defined(OS_WIN) && defined(USE_AURA)
+  id = GetPersistentIDByNameHelper(image_name,
+                                   kPersistingImagesWinDesktopAura,
+                                   kPersistingImagesWinDesktopAuraLength);
+  if (id != -1)
+    (*file_paths)[id][scale_factor] = image_path;
+#endif
 }
 
 void BrowserThemePack::BuildSourceImagesArray(const FilePathMap& file_paths) {
@@ -1099,14 +1145,7 @@ bool BrowserThemePack::LoadRawBitmapsTo(
 
   for (FilePathMap::const_iterator it = file_paths.begin();
        it != file_paths.end(); ++it) {
-    scoped_refptr<base::RefCountedMemory> raw_data(ReadFileData(it->second));
-    if (!raw_data.get()) {
-      LOG(ERROR) << "Could not load theme image";
-      return false;
-    }
-
     int prs_id = it->first;
-
     // Some images need to go directly into |image_memory_|. No modification is
     // necessary or desirable.
     bool is_copyable = false;
@@ -1116,21 +1155,48 @@ bool BrowserThemePack::LoadRawBitmapsTo(
         break;
       }
     }
-
-    if (is_copyable) {
-      int raw_id = GetRawIDByPersistentID(prs_id, ui::SCALE_FACTOR_100P);
-      image_memory_[raw_id] = raw_data;
-    } else if (raw_data.get() && raw_data->size()) {
-      // Decode the PNG.
-      SkBitmap bitmap;
-      if (gfx::PNGCodec::Decode(raw_data->front(), raw_data->size(),
-                                &bitmap)) {
-        (*image_cache)[prs_id] =
-            gfx::Image(gfx::ImageSkia::CreateFrom1xBitmap(bitmap));
-      } else {
-        NOTREACHED() << "Unable to decode theme image resource " << it->first;
+    gfx::ImageSkia image_skia;
+    for (int pass = 0; pass < 2; ++pass) {
+      // Two passes: In the first pass, we process only scale factor
+      // 100% and in the second pass all other scale factors. We
+      // process scale factor 100% first because the first image added
+      // in image_skia.AddRepresentation() determines the DIP size for
+      // all representations.
+      for (ScaleFactorToFileMap::const_iterator s2f = it->second.begin();
+           s2f != it->second.end(); ++s2f) {
+        ui::ScaleFactor scale_factor = s2f->first;
+        if ((pass == 0 && scale_factor != ui::SCALE_FACTOR_100P) ||
+            (pass == 1 && scale_factor == ui::SCALE_FACTOR_100P)) {
+          continue;
+        }
+        scoped_refptr<base::RefCountedMemory> raw_data(
+            ReadFileData(s2f->second));
+        if (!raw_data.get() || !raw_data->size()) {
+          LOG(ERROR) << "Could not load theme image"
+                     << " prs_id=" << prs_id
+                     << " scale_factor_enum=" << scale_factor
+                     << " file=" << s2f->second.value()
+                     << (raw_data.get() ? " (zero size)" : " (read error)");
+          return false;
+        }
+        if (is_copyable) {
+          int raw_id = GetRawIDByPersistentID(prs_id, scale_factor);
+          image_memory_[raw_id] = raw_data;
+        } else {
+          SkBitmap bitmap;
+          if (gfx::PNGCodec::Decode(raw_data->front(), raw_data->size(),
+                                    &bitmap)) {
+            image_skia.AddRepresentation(
+                gfx::ImageSkiaRep(bitmap, scale_factor));
+          } else {
+            NOTREACHED() << "Unable to decode theme image resource "
+                         << it->first;
+          }
+        }
       }
     }
+    if (!is_copyable && !image_skia.isNull())
+      (*image_cache)[prs_id] = gfx::Image(image_skia);
   }
 
   return true;
@@ -1360,4 +1426,21 @@ int BrowserThemePack::GetRawIDByPersistentID(
       return static_cast<int>(kPersistingImagesLength * i) + prs_id;
   }
   return -1;
+}
+
+bool BrowserThemePack::GetScaleFactorFromManifestKey(
+    const std::string& key,
+    ui::ScaleFactor* scale_factor) const {
+  int percent = 0;
+  if (base::StringToInt(key, &percent)) {
+    float scale = static_cast<float>(percent) / 100.0f;
+    ui::ScaleFactor factor = ui::GetScaleFactorFromScale(scale);
+    // To be valid the scale factor must be in use.
+    if (std::find(scale_factors_.begin(), scale_factors_.end(), factor)
+        != scale_factors_.end()) {
+      *scale_factor = factor;
+      return true;
+    }
+  }
+  return false;
 }
