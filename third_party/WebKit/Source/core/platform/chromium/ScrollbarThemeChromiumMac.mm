@@ -31,14 +31,14 @@
 #include "core/page/FrameView.h"
 #include "core/platform/ScrollView.h"
 #include "core/platform/graphics/Gradient.h"
+#include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/graphics/GraphicsContextStateSaver.h"
 #include "core/platform/graphics/ImageBuffer.h"
-#include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/mac/LocalCurrentGraphicsContext.h"
 #include "core/platform/mac/NSScrollerImpDetails.h"
 #include "core/platform/mac/ScrollAnimatorMac.h"
+#include "public/platform/mac/WebThemeEngine.h"
 #include "skia/ext/skia_utils_mac.h"
-#include <public/mac/WebThemeEngine.h>
 #include <public/Platform.h>
 #include <public/WebRect.h>
 

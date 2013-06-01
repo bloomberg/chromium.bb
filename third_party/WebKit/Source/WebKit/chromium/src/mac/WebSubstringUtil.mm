@@ -48,7 +48,7 @@
 #include "core/platform/graphics/mac/ColorMac.h"
 #include "core/rendering/RenderObject.h"
 #include "core/rendering/style/RenderStyle.h"
-#include <public/WebRect.h>
+#include "public/platform/WebRect.h"
 
 using namespace WebCore;
 

@@ -31,7 +31,7 @@
 #include "InbandTextTrackPrivateImpl.h"
 #include "WebInbandTextTrack.h"
 #include "core/platform/graphics/InbandTextTrackPrivateClient.h"
-#include "public/WebString.h"
+#include "public/platform/WebString.h"
 
 namespace WebKit {
 
