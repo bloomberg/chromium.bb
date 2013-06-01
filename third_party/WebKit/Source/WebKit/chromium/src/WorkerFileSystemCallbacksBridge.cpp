@@ -41,10 +41,10 @@
 #include "core/workers/WorkerContext.h"
 #include "core/workers/WorkerLoaderProxy.h"
 #include "core/workers/WorkerThread.h"
-#include <public/WebFileInfo.h>
-#include <public/WebFileSystemEntry.h>
-#include <public/WebString.h>
-#include <public/WebURL.h>
+#include "public/platform/WebFileInfo.h"
+#include "public/platform/WebFileSystemEntry.h"
+#include "public/platform/WebString.h"
+#include "public/platform/WebURL.h"
 #include <wtf/MainThread.h>
 #include <wtf/Threading.h>
 #include <wtf/UnusedParam.h>

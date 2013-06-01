@@ -44,11 +44,11 @@
 #include "core/platform/network/HTTPParsers.h"
 #include "core/platform/network/ResourceError.h"
 #include "core/xml/XMLHttpRequest.h"
-#include <public/WebHTTPHeaderVisitor.h>
-#include <public/WebString.h>
-#include <public/WebURLError.h>
-#include <public/WebURLLoaderClient.h>
-#include <public/WebURLRequest.h>
+#include "public/platform/WebHTTPHeaderVisitor.h"
+#include "public/platform/WebString.h"
+#include "public/platform/WebURLError.h"
+#include "public/platform/WebURLLoaderClient.h"
+#include "public/platform/WebURLRequest.h"
 #include <wtf/HashSet.h>
 #include <wtf/text/WTFString.h>
 

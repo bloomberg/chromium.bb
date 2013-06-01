@@ -49,10 +49,10 @@
 #include "core/page/PageSerializer.h"
 #include "core/platform/KURL.h"
 #include "core/platform/SerializedResource.h"
-#include <public/WebCString.h>
-#include <public/WebString.h>
-#include <public/WebURL.h>
-#include <public/WebVector.h>
+#include "public/platform/WebCString.h"
+#include "public/platform/WebString.h"
+#include "public/platform/WebURL.h"
+#include "public/platform/WebVector.h"
 #include <wtf/text/StringConcatenate.h>
 #include <wtf/Vector.h>
 

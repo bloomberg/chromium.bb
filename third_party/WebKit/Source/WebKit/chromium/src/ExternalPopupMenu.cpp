@@ -40,7 +40,7 @@
 #include "core/platform/graphics/FloatQuad.h"
 #include "core/platform/graphics/IntPoint.h"
 #include "core/platform/text/TextDirection.h"
-#include <public/WebVector.h>
+#include "public/platform/WebVector.h"
 
 using namespace WebCore;
 

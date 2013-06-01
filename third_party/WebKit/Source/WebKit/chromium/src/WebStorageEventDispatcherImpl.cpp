@@ -31,7 +31,7 @@
 #include "config.h"
 #include "WebStorageEventDispatcher.h"
 
-#include <public/WebURL.h>
+#include "public/platform/WebURL.h"
 #include <wtf/PassOwnPtr.h>
 #include "StorageAreaProxy.h"
 #include "WebViewImpl.h"

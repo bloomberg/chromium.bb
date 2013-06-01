@@ -47,10 +47,10 @@
 #include "core/page/FrameView.h"
 #include "core/platform/PlatformKeyboardEvent.h"
 #include "core/rendering/style/RenderStyle.h"
-#include <public/WebPoint.h>
-#include <public/WebRect.h>
-#include <public/WebString.h>
-#include <public/WebURL.h>
+#include "public/platform/WebPoint.h"
+#include "public/platform/WebRect.h"
+#include "public/platform/WebString.h"
+#include "public/platform/WebURL.h"
 #include <wtf/text/StringBuilder.h>
 
 using namespace WebCore;

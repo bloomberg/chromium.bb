@@ -51,8 +51,8 @@
 #include "core/platform/Widget.h"
 #include "core/rendering/RenderObject.h"
 #include "core/rendering/RenderWidget.h"
-#include <public/WebString.h>
-#include <public/WebVector.h>
+#include "public/platform/WebString.h"
+#include "public/platform/WebVector.h"
 
 using namespace WebCore;
 

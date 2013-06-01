@@ -31,7 +31,7 @@
 #include "WebColorChooser.h"
 #include "core/platform/ColorChooserClient.h"
 #include "core/platform/graphics/Color.h"
-#include <public/WebColor.h>
+#include "public/platform/WebColor.h"
 
 using namespace WebCore;
 

@@ -40,8 +40,8 @@
 #include "core/page/Frame.h"
 #include "core/page/Page.h"
 #include "core/platform/NotImplemented.h"
-#include <public/WebFloatPoint.h>
-#include <public/WebString.h>
+#include "public/platform/WebFloatPoint.h"
+#include "public/platform/WebString.h"
 #include <wtf/text/WTFString.h>
 
 using namespace WebCore;

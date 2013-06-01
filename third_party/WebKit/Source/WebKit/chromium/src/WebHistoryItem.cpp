@@ -37,10 +37,10 @@
 #include "core/html/FormController.h"
 #include "core/platform/KURL.h"
 #include "core/platform/network/FormData.h"
-#include <public/WebHTTPBody.h>
-#include <public/WebPoint.h>
-#include <public/WebString.h>
-#include <public/WebVector.h>
+#include "public/platform/WebHTTPBody.h"
+#include "public/platform/WebPoint.h"
+#include "public/platform/WebString.h"
+#include "public/platform/WebVector.h"
 
 using namespace WebCore;
 

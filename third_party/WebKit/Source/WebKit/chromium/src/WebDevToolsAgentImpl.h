@@ -36,8 +36,8 @@
 
 #include "WebDevToolsAgentPrivate.h"
 #include "WebPageOverlay.h"
-#include <public/WebSize.h>
-#include <public/WebThread.h>
+#include "public/platform/WebSize.h"
+#include "public/platform/WebThread.h"
 #include <wtf/Forward.h>
 #include <wtf/OwnPtr.h>
 

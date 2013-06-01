@@ -69,11 +69,11 @@
 #include "core/rendering/RenderLayerCompositor.h"
 #include "core/rendering/RenderView.h"
 #include "v8.h"
-#include <public/Platform.h>
-#include <public/WebFloatRect.h>
-#include <public/WebThread.h>
-#include <public/WebUnitTestSupport.h>
-#include <public/WebURLResponse.h>
+#include "public/platform/Platform.h"
+#include "public/platform/WebFloatRect.h"
+#include "public/platform/WebThread.h"
+#include "public/platform/WebUnitTestSupport.h"
+#include "public/platform/WebURLResponse.h"
 #include <wtf/dtoa/utils.h>
 #include <wtf/Forward.h>
 

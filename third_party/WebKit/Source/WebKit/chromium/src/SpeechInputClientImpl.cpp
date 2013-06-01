@@ -31,7 +31,7 @@
 #include "config.h"
 #include "SpeechInputClientImpl.h"
 
-#include <public/WebString.h>
+#include "public/platform/WebString.h"
 #include <wtf/PassOwnPtr.h>
 #include <wtf/text/WTFString.h>
 #include "WebSecurityOrigin.h"

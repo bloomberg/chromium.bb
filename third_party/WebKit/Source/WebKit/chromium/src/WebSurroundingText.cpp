@@ -33,7 +33,7 @@
 #include "core/editing/SurroundingText.h"
 #include "core/editing/VisiblePosition.h"
 #include "core/rendering/RenderObject.h"
-#include <public/WebPoint.h>
+#include "public/platform/WebPoint.h"
 
 using namespace WebCore;
 

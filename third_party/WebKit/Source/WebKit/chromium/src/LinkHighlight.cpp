@@ -41,13 +41,13 @@
 #include "core/rendering/RenderObject.h"
 #include "core/rendering/RenderView.h"
 #include "core/rendering/style/ShadowData.h"
-#include <public/Platform.h>
-#include <public/WebAnimationCurve.h>
-#include <public/WebCompositorSupport.h>
-#include <public/WebFloatAnimationCurve.h>
-#include <public/WebFloatPoint.h>
-#include <public/WebRect.h>
-#include <public/WebSize.h>
+#include "public/platform/Platform.h"
+#include "public/platform/WebAnimationCurve.h"
+#include "public/platform/WebCompositorSupport.h"
+#include "public/platform/WebFloatAnimationCurve.h"
+#include "public/platform/WebFloatPoint.h"
+#include "public/platform/WebRect.h"
+#include "public/platform/WebSize.h"
 #include <wtf/CurrentTime.h>
 
 using namespace WebCore;

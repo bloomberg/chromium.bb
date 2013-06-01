@@ -30,13 +30,13 @@
 #include "core/rendering/RenderLayerCompositor.h"
 #include "core/rendering/RenderView.h"
 #include "modules/mediastream/MediaStreamRegistry.h"
-#include <public/WebCanvas.h>
-#include <public/WebCompositorSupport.h>
-#include <public/WebCString.h>
-#include <public/WebRect.h>
-#include <public/WebSize.h>
-#include <public/WebString.h>
-#include <public/WebURL.h>
+#include "public/platform/WebCanvas.h"
+#include "public/platform/WebCompositorSupport.h"
+#include "public/platform/WebCString.h"
+#include "public/platform/WebRect.h"
+#include "public/platform/WebSize.h"
+#include "public/platform/WebString.h"
+#include "public/platform/WebURL.h"
 
 #if defined(OS_ANDROID)
 #include "GrContext.h"

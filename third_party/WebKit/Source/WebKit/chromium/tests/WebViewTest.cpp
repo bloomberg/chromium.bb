@@ -49,10 +49,10 @@
 #include "core/dom/Element.h"
 #include "core/html/HTMLDocument.h"
 #include "core/page/FrameView.h"
-#include <public/Platform.h>
-#include <public/WebSize.h>
-#include <public/WebThread.h>
-#include <public/WebUnitTestSupport.h>
+#include "public/platform/Platform.h"
+#include "public/platform/WebSize.h"
+#include "public/platform/WebThread.h"
+#include "public/platform/WebUnitTestSupport.h"
 
 using namespace WebKit;
 using WebKit::FrameTestHelpers::runPendingTasks;

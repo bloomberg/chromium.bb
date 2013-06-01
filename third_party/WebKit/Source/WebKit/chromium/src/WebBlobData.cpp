@@ -31,7 +31,7 @@
 #include "config.h"
 
 #include "core/platform/network/BlobData.h"
-#include <public/WebBlobData.h>
+#include "public/platform/WebBlobData.h"
 #include <wtf/PassOwnPtr.h>
 
 using namespace WebCore;

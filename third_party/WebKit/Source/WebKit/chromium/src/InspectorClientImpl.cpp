@@ -40,9 +40,9 @@
 #include "core/page/Settings.h"
 #include "core/platform/NotImplemented.h"
 #include "core/platform/graphics/FloatRect.h"
-#include <public/WebRect.h>
-#include <public/WebURL.h>
-#include <public/WebURLRequest.h>
+#include "public/platform/WebRect.h"
+#include "public/platform/WebURL.h"
+#include "public/platform/WebURLRequest.h"
 #include <wtf/Vector.h>
 
 using namespace WebCore;

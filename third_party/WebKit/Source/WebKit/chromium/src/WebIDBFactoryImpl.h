@@ -29,7 +29,7 @@
 #ifndef WebIDBFactoryImpl_h
 #define WebIDBFactoryImpl_h
 
-#include <public/WebIDBFactory.h>
+#include "public/platform/WebIDBFactory.h"
 #include <wtf/RefPtr.h>
 
 namespace WebCore { class IDBFactoryBackendInterface; }

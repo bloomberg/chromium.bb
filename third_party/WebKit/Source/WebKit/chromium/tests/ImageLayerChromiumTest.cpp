@@ -28,7 +28,7 @@
 #include "core/platform/graphics/GraphicsLayer.h"
 #include "core/platform/graphics/Image.h"
 #include "core/platform/graphics/skia/NativeImageSkia.h"
-#include <public/WebImageLayer.h>
+#include "public/platform/WebImageLayer.h"
 #include <wtf/PassOwnPtr.h>
 
 using namespace WebCore;

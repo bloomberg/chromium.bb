@@ -32,7 +32,7 @@
 #define AssociatedURLLoader_h
 
 #include "WebURLLoaderOptions.h"
-#include <public/WebURLLoader.h>
+#include "public/platform/WebURLLoader.h"
 #include <wtf/Noncopyable.h>
 #include <wtf/OwnPtr.h>
 #include <wtf/RefPtr.h>

@@ -34,7 +34,7 @@
 
 #include "FakeWebGraphicsContext3D.h"
 #include "core/platform/graphics/GraphicsContext3D.h"
-#include <public/Platform.h>
+#include "public/platform/Platform.h"
 
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>

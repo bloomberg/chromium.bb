@@ -34,7 +34,7 @@
 #include "CSSValueKeywords.h"
 #include "core/platform/graphics/Color.h"
 #include "core/rendering/RenderTheme.h"
-#include <public/WebColor.h>
+#include "public/platform/WebColor.h"
 #include <wtf/UnusedParam.h>
 
 using namespace::WebCore;

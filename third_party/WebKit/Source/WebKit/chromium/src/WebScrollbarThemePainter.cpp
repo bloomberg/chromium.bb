@@ -25,12 +25,12 @@
 
 #include "config.h"
 
-#include <public/WebScrollbarThemePainter.h>
+#include "public/platform/WebScrollbarThemePainter.h"
 
 #include "core/platform/Scrollbar.h"
 #include "core/platform/ScrollbarThemeComposite.h"
 #include "core/platform/graphics/GraphicsContext.h"
-#include <public/WebRect.h>
+#include "public/platform/WebRect.h"
 
 using namespace WebCore;
 

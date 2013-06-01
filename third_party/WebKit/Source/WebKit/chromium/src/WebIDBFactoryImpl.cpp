@@ -31,8 +31,8 @@
 #include "config.h"
 #include "WebIDBFactoryImpl.h"
 
-#include <public/WebIDBDatabaseCallbacks.h>
-#include <public/WebIDBDatabaseError.h>
+#include "public/platform/WebIDBDatabaseCallbacks.h"
+#include "public/platform/WebIDBDatabaseError.h"
 #include <wtf/OwnPtr.h>
 #include "IDBCallbacksProxy.h"
 #include "IDBDatabaseCallbacksProxy.h"

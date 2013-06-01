@@ -29,13 +29,13 @@
 #include "config.h"
 #include "IDBCallbacksProxy.h"
 
-#include <public/WebData.h>
-#include <public/WebIDBCallbacks.h>
-#include <public/WebIDBDatabaseCallbacks.h>
-#include <public/WebIDBDatabaseError.h>
-#include <public/WebIDBDatabaseException.h>
-#include <public/WebIDBKey.h>
-#include <public/WebIDBMetadata.h>
+#include "public/platform/WebData.h"
+#include "public/platform/WebIDBCallbacks.h"
+#include "public/platform/WebIDBDatabaseCallbacks.h"
+#include "public/platform/WebIDBDatabaseError.h"
+#include "public/platform/WebIDBDatabaseException.h"
+#include "public/platform/WebIDBKey.h"
+#include "public/platform/WebIDBMetadata.h"
 #include "IDBDatabaseBackendProxy.h"
 #include "IDBDatabaseCallbacksProxy.h"
 #include "WebIDBCursorImpl.h"

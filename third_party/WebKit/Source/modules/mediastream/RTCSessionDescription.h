@@ -36,7 +36,7 @@
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/text/WTFString.h"
-#include <public/WebRTCSessionDescription.h>
+#include "public/platform/WebRTCSessionDescription.h"
 
 namespace WebCore {
 

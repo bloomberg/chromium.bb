@@ -33,13 +33,13 @@
 #include "wtf/PassOwnPtr.h"
 
 #include <gtest/gtest.h>
-#include <public/Platform.h>
-#include <public/WebCompositorSupport.h>
-#include <public/WebFloatAnimationCurve.h>
-#include <public/WebGraphicsContext3D.h>
-#include <public/WebLayer.h>
-#include <public/WebLayerTreeView.h>
-#include <public/WebUnitTestSupport.h>
+#include "public/platform/Platform.h"
+#include "public/platform/WebCompositorSupport.h"
+#include "public/platform/WebFloatAnimationCurve.h"
+#include "public/platform/WebGraphicsContext3D.h"
+#include "public/platform/WebLayer.h"
+#include "public/platform/WebLayerTreeView.h"
+#include "public/platform/WebUnitTestSupport.h"
 
 using namespace WebCore;
 using namespace WebKit;

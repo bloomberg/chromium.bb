@@ -49,8 +49,8 @@
 #include "core/workers/WorkerThread.h"
 #include <v8.h>
 
-#include <public/Platform.h>
-#include <public/WebWorkerRunLoop.h>
+#include "public/platform/Platform.h"
+#include "public/platform/WebWorkerRunLoop.h"
 
 namespace WebCore {
 

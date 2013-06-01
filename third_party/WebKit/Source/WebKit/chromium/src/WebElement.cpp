@@ -36,7 +36,7 @@
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/rendering/RenderBoxModelObject.h"
 #include "core/rendering/RenderObject.h"
-#include <public/WebRect.h>
+#include "public/platform/WebRect.h"
 #include <wtf/PassRefPtr.h>
 
 

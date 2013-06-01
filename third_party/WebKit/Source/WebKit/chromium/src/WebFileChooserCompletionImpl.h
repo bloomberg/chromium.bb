@@ -33,8 +33,8 @@
 
 #include "WebFileChooserCompletion.h"
 #include "core/platform/FileChooser.h"
-#include <public/WebString.h>
-#include <public/WebVector.h>
+#include "public/platform/WebString.h"
+#include "public/platform/WebVector.h"
 #include <wtf/PassRefPtr.h>
 
 using WebKit::WebFileChooserCompletion;

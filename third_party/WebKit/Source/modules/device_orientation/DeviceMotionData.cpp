@@ -25,7 +25,7 @@
 
 #include "config.h"
 #include "modules/device_orientation/DeviceMotionData.h"
-#include <public/WebDeviceMotionData.h>
+#include "public/platform/WebDeviceMotionData.h"
 
 namespace WebCore {
 

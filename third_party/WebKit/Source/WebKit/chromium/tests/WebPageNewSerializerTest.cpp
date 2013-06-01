@@ -39,13 +39,13 @@
 #include "WebSettings.h"
 #include "WebView.h"
 #include <gtest/gtest.h>
-#include <public/Platform.h>
-#include <public/WebString.h>
-#include <public/WebThread.h>
-#include <public/WebURL.h>
-#include <public/WebURLRequest.h>
-#include <public/WebURLResponse.h>
-#include <public/WebUnitTestSupport.h>
+#include "public/platform/Platform.h"
+#include "public/platform/WebString.h"
+#include "public/platform/WebThread.h"
+#include "public/platform/WebURL.h"
+#include "public/platform/WebURLRequest.h"
+#include "public/platform/WebURLResponse.h"
+#include "public/platform/WebUnitTestSupport.h"
 
 using namespace WebKit;
 using WebKit::FrameTestHelpers::runPendingTasks;

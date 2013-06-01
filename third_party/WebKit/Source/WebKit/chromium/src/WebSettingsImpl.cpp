@@ -36,8 +36,8 @@
 #include "core/platform/graphics/chromium/DeferredImageDecoder.h"
 #include "wtf/UnusedParam.h"
 
-#include <public/WebString.h>
-#include <public/WebURL.h>
+#include "public/platform/WebString.h"
+#include "public/platform/WebURL.h"
 
 #if defined(OS_WIN)
 #include "core/rendering/RenderThemeChromiumWin.h"

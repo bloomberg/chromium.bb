@@ -43,7 +43,7 @@
 #include "core/platform/NotImplemented.h"
 #include "core/workers/WorkerContext.h"
 #include "core/workers/WorkerThread.h"
-#include <public/WebFileSystem.h>
+#include "public/platform/WebFileSystem.h"
 #include <wtf/text/CString.h>
 
 using namespace WebKit;

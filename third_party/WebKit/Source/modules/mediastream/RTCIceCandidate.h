@@ -37,7 +37,7 @@
 #include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
 #include "wtf/text/WTFString.h"
-#include <public/WebRTCICECandidate.h>
+#include "public/platform/WebRTCICECandidate.h"
 
 namespace WebCore {
 

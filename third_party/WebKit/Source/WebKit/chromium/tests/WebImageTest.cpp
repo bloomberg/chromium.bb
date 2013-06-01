@@ -30,15 +30,15 @@
 
 #include "config.h"
 
-#include <public/WebImage.h>
+#include "public/platform/WebImage.h"
 
 #include <gtest/gtest.h>
 #include "core/platform/FileSystem.h"
 #include "core/platform/SharedBuffer.h"
-#include <public/Platform.h>
-#include <public/WebData.h>
-#include <public/WebSize.h>
-#include <public/WebUnitTestSupport.h>
+#include "public/platform/Platform.h"
+#include "public/platform/WebData.h"
+#include "public/platform/WebSize.h"
+#include "public/platform/WebUnitTestSupport.h"
 
 using namespace WebCore;
 using namespace WebKit;

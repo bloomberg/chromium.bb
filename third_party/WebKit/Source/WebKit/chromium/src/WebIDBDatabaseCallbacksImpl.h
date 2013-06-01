@@ -26,8 +26,8 @@
 #ifndef WebIDBDatabaseCallbacksImpl_h
 #define WebIDBDatabaseCallbacksImpl_h
 
-#include <public/WebIDBDatabaseCallbacks.h>
-#include <public/WebString.h>
+#include "public/platform/WebIDBDatabaseCallbacks.h"
+#include "public/platform/WebString.h"
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefPtr.h>
 

@@ -27,8 +27,8 @@
 #include "core/platform/graphics/filters/FilterOperations.h"
 
 #include <gtest/gtest.h>
-#include <public/WebFilterOperation.h>
-#include <public/WebFilterOperations.h>
+#include "public/platform/WebFilterOperation.h"
+#include "public/platform/WebFilterOperations.h"
 
 using namespace WebCore;
 using namespace WebKit;

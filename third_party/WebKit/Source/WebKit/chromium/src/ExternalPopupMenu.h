@@ -33,8 +33,8 @@
 
 #include "WebExternalPopupMenuClient.h"
 #include "core/platform/PopupMenu.h"
-#include <public/WebCanvas.h>
-#include <public/WebScrollbar.h>
+#include "public/platform/WebCanvas.h"
+#include "public/platform/WebScrollbar.h"
 
 namespace WebCore {
 class FloatQuad;

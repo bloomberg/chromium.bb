@@ -42,7 +42,7 @@
 #include "core/html/HTMLInputElement.h"
 #include "core/html/shadow/TextControlInnerElements.h"
 #include "core/html/shadow/TextFieldDecorationElement.h"
-#include <public/WebString.h>
+#include "public/platform/WebString.h"
 #include <wtf/PassRefPtr.h>
 
 using namespace WebCore;

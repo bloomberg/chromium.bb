@@ -30,7 +30,7 @@
 #include "core/page/FrameView.h"
 #include "core/platform/Scrollbar.h"
 #include "core/platform/ScrollbarTheme.h"
-#include <public/WebRect.h>
+#include "public/platform/WebRect.h"
 
 using namespace WebCore;
 

@@ -34,8 +34,8 @@
 #include "core/platform/NotImplemented.h"
 #include "modules/device_orientation/DeviceMotionController.h"
 #include "modules/device_orientation/DeviceMotionData.h"
-#include <public/Platform.h>
-#include <public/WebDeviceMotionData.h>
+#include "public/platform/Platform.h"
+#include "public/platform/WebDeviceMotionData.h"
 
 namespace WebCore {
 

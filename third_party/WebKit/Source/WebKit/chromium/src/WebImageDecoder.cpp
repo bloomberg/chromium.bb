@@ -38,9 +38,9 @@
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/PassRefPtr.h"
-#include <public/WebData.h>
-#include <public/WebImage.h>
-#include <public/WebSize.h>
+#include "public/platform/WebData.h"
+#include "public/platform/WebImage.h"
+#include "public/platform/WebSize.h"
 
 using namespace WebCore;
 

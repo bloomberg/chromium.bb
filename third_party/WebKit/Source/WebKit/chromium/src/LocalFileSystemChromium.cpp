@@ -47,9 +47,9 @@
 #include "modules/filesystem/FileSystemCallback.h"
 #include "modules/filesystem/FileSystemCallbacks.h"
 #include "modules/filesystem/FileSystemType.h"
-#include <public/WebFileError.h>
-#include <public/WebFileSystem.h>
-#include <public/WebFileSystemType.h>
+#include "public/platform/WebFileError.h"
+#include "public/platform/WebFileSystem.h"
+#include "public/platform/WebFileSystemType.h"
 #include <wtf/text/WTFString.h>
 #include <wtf/Threading.h>
 

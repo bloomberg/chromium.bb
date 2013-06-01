@@ -34,7 +34,7 @@
 #include "DeviceMotionData.h"
 #include "wtf/RefPtr.h"
 #include "wtf/Vector.h"
-#include <public/WebDeviceMotionListener.h>
+#include "public/platform/WebDeviceMotionListener.h"
 
 namespace WebKit {
 class WebDeviceMotionData;

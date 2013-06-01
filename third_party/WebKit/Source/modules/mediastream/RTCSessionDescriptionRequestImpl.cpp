@@ -36,7 +36,7 @@
 #include "modules/mediastream/RTCPeerConnection.h"
 #include "modules/mediastream/RTCSessionDescription.h"
 #include "modules/mediastream/RTCSessionDescriptionCallback.h"
-#include <public/WebRTCSessionDescription.h>
+#include "public/platform/WebRTCSessionDescription.h"
 
 namespace WebCore {
 

@@ -32,10 +32,10 @@
 #define WorkerFileSystemCallbacksBridge_h
 
 #include "core/dom/ScriptExecutionContext.h"
-#include <public/WebFileError.h>
-#include <public/WebFileSystem.h>
-#include <public/WebFileSystemType.h>
-#include <public/WebVector.h>
+#include "public/platform/WebFileError.h"
+#include "public/platform/WebFileSystem.h"
+#include "public/platform/WebFileSystemType.h"
+#include "public/platform/WebVector.h"
 #include <wtf/PassOwnPtr.h>
 #include <wtf/PassRefPtr.h>
 #include <wtf/text/WTFString.h>

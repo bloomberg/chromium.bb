@@ -24,11 +24,11 @@
  */
 
 #include "config.h"
-#include <public/WebIDBMetadata.h>
+#include "public/platform/WebIDBMetadata.h"
 
-#include <public/WebIDBKeyPath.h>
-#include <public/WebString.h>
-#include <public/WebVector.h>
+#include "public/platform/WebIDBKeyPath.h"
+#include "public/platform/WebString.h"
+#include "public/platform/WebVector.h"
 #include "modules/indexeddb/IDBMetadata.h"
 
 using namespace WebCore;

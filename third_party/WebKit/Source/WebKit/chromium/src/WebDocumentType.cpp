@@ -32,7 +32,7 @@
 #include "WebDocumentType.h"
 
 #include "core/dom/DocumentType.h"
-#include <public/WebString.h>
+#include "public/platform/WebString.h"
 #include <wtf/PassRefPtr.h>
 
 using namespace WebCore;

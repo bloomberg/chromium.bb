@@ -34,7 +34,7 @@
 
 #include "bindings/v8/Dictionary.h"
 #include "core/dom/ExceptionCode.h"
-#include <public/WebRTCSessionDescription.h>
+#include "public/platform/WebRTCSessionDescription.h"
 
 namespace WebCore {
 

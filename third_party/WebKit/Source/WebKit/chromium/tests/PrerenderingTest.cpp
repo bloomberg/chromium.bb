@@ -46,11 +46,11 @@
 #include <functional>
 #include <gtest/gtest.h>
 #include <list>
-#include <public/Platform.h>
-#include <public/WebPrerender.h>
-#include <public/WebPrerenderingSupport.h>
-#include <public/WebString.h>
-#include <public/WebUnitTestSupport.h>
+#include "public/platform/Platform.h"
+#include "public/platform/WebPrerender.h"
+#include "public/platform/WebPrerenderingSupport.h"
+#include "public/platform/WebString.h"
+#include "public/platform/WebUnitTestSupport.h"
 #include <wtf/OwnPtr.h>
 
 using namespace WebKit;

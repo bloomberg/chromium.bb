@@ -43,8 +43,8 @@
 #include "modules/websockets/WebSocketChannelClient.h"
 #include "wtf/ArrayBuffer.h"
 
-#include <public/WebString.h>
-#include <public/WebURL.h>
+#include "public/platform/WebString.h"
+#include "public/platform/WebURL.h"
 
 using namespace WebCore;
 

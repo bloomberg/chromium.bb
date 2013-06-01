@@ -31,8 +31,8 @@
 #include "config.h"
 #include "WebSecurityOrigin.h"
 
-#include <public/WebString.h>
-#include <public/WebURL.h>
+#include "public/platform/WebString.h"
+#include "public/platform/WebURL.h"
 #include <wtf/PassRefPtr.h>
 #include "core/platform/KURL.h"
 #include "weborigin/DatabaseIdentifier.h"

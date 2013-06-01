@@ -26,8 +26,8 @@
 #ifndef WebIDBDatabaseImpl_h
 #define WebIDBDatabaseImpl_h
 
-#include <public/WebCommon.h>
-#include <public/WebIDBDatabase.h>
+#include "public/platform/WebCommon.h"
+#include "public/platform/WebIDBDatabase.h"
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefPtr.h>
 #include "IDBDatabaseCallbacksProxy.h"

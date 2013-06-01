@@ -36,7 +36,7 @@
 #include "core/page/ChromeClient.h"
 #include "core/platform/PopupMenu.h"
 #include "modules/navigatorcontentutils/NavigatorContentUtilsClient.h"
-#include <public/WebColor.h>
+#include "public/platform/WebColor.h"
 #include <wtf/PassOwnPtr.h>
 
 namespace WebCore {

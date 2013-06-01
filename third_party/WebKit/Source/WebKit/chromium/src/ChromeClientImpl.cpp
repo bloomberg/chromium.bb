@@ -78,9 +78,9 @@
 #if ENABLE(INPUT_TYPE_COLOR)
 #include "WebColorChooser.h"
 #endif
-#include <public/Platform.h>
-#include <public/WebRect.h>
-#include <public/WebURLRequest.h>
+#include "public/platform/Platform.h"
+#include "public/platform/WebRect.h"
+#include "public/platform/WebURLRequest.h"
 #include <wtf/text/CString.h>
 #include <wtf/text/StringBuilder.h>
 #include <wtf/text/StringConcatenate.h>

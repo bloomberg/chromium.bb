@@ -93,8 +93,8 @@
 #include "core/loader/FrameLoader.h"
 #include "core/platform/KURL.h"
 #include "wtf/text/TextEncoding.h"
-#include <public/WebURL.h>
-#include <public/WebVector.h>
+#include "public/platform/WebURL.h"
+#include "public/platform/WebVector.h"
 
 using namespace WebCore;
 

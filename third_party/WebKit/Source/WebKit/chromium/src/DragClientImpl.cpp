@@ -37,9 +37,9 @@
 #include "core/platform/chromium/ClipboardChromium.h"
 #include "core/platform/chromium/DragImageRef.h"
 #include "core/platform/graphics/skia/NativeImageSkia.h"
-#include <public/WebCommon.h>
-#include <public/WebDragData.h>
-#include <public/WebImage.h>
+#include "public/platform/WebCommon.h"
+#include "public/platform/WebDragData.h"
+#include "public/platform/WebImage.h"
 
 using namespace WebCore;
 

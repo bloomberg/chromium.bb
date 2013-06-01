@@ -33,7 +33,7 @@
 
 #include "WebWidget.h"
 #include "core/page/Page.h"
-#include <public/WebCanvas.h>
+#include "public/platform/WebCanvas.h"
 #include <wtf/OwnPtr.h>
 
 namespace WebCore {

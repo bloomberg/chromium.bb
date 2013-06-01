@@ -38,9 +38,9 @@
 #include "core/workers/WorkerLoaderProxy.h"
 #include "core/workers/WorkerThread.h"
 #include "modules/filesystem/AsyncFileWriterClient.h"
-#include <public/Platform.h>
-#include <public/WebCString.h>
-#include <public/WebFileSystem.h>
+#include "public/platform/Platform.h"
+#include "public/platform/WebCString.h"
+#include "public/platform/WebFileSystem.h"
 #include <wtf/MainThread.h>
 #include <wtf/Threading.h>
 

@@ -34,7 +34,7 @@
 #include "WebSocket.h"
 #include "WebSocketClient.h"
 #include "modules/websockets/WebSocketChannelClient.h"
-#include <public/WebCommon.h>
+#include "public/platform/WebCommon.h"
 #include <wtf/OwnPtr.h>
 #include <wtf/RefPtr.h>
 

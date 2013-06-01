@@ -31,7 +31,7 @@
 #include "config.h"
 #include "modules/webdatabase/chromium/QuotaTracker.h"
 
-#include <public/Platform.h>
+#include "public/platform/Platform.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/Threading.h"
 

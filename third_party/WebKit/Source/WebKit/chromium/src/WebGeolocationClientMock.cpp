@@ -40,7 +40,7 @@
 #include "modules/geolocation/GeolocationError.h"
 #include "modules/geolocation/GeolocationPosition.h"
 #include "modules/geolocation/PositionError.h"
-#include <public/WebString.h>
+#include "public/platform/WebString.h"
 #include <wtf/CurrentTime.h>
 
 using namespace WebCore;

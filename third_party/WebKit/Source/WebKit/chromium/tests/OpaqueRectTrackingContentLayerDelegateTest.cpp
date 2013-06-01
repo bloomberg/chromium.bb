@@ -30,8 +30,8 @@
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/graphics/IntRect.h"
 #include "skia/ext/platform_canvas.h"
-#include <public/WebFloatRect.h>
-#include <public/WebRect.h>
+#include "public/platform/WebFloatRect.h"
+#include "public/platform/WebRect.h"
 
 #include <gtest/gtest.h>
 

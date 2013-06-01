@@ -35,12 +35,12 @@
 #include "WebFrame.h"
 #include "WebFrameClient.h"
 #include "WebView.h"
-#include <public/Platform.h>
-#include <public/WebString.h>
-#include <public/WebURL.h>
-#include <public/WebURLRequest.h>
-#include <public/WebURLResponse.h>
-#include <public/WebUnitTestSupport.h>
+#include "public/platform/Platform.h"
+#include "public/platform/WebString.h"
+#include "public/platform/WebURL.h"
+#include "public/platform/WebURLRequest.h"
+#include "public/platform/WebURLResponse.h"
+#include "public/platform/WebUnitTestSupport.h"
 
 #include <gtest/gtest.h>
 

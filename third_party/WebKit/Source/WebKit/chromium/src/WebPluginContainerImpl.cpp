@@ -76,17 +76,17 @@
 #include "core/plugins/IFrameShimSupport.h"
 #include "core/rendering/HitTestResult.h"
 #include "core/rendering/RenderBox.h"
-#include <public/Platform.h>
-#include <public/WebClipboard.h>
-#include <public/WebCompositorSupport.h>
-#include <public/WebDragData.h>
-#include <public/WebExternalTextureLayer.h>
-#include <public/WebRect.h>
-#include <public/WebString.h>
-#include <public/WebURL.h>
-#include <public/WebURLError.h>
-#include <public/WebURLRequest.h>
-#include <public/WebVector.h>
+#include "public/platform/Platform.h"
+#include "public/platform/WebClipboard.h"
+#include "public/platform/WebCompositorSupport.h"
+#include "public/platform/WebDragData.h"
+#include "public/platform/WebExternalTextureLayer.h"
+#include "public/platform/WebRect.h"
+#include "public/platform/WebString.h"
+#include "public/platform/WebURL.h"
+#include "public/platform/WebURLError.h"
+#include "public/platform/WebURLRequest.h"
+#include "public/platform/WebVector.h"
 
 using namespace WebCore;
 

@@ -31,8 +31,8 @@
 #include "FakeWebGraphicsContext3D.h"
 #include "SkDevice.h"
 #include "core/platform/graphics/GraphicsContext3D.h"
-#include <public/Platform.h>
-#include <public/WebThread.h>
+#include "public/platform/Platform.h"
+#include "public/platform/WebThread.h"
 
 using namespace WebCore;
 using testing::InSequence;

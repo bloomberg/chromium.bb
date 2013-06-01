@@ -35,7 +35,7 @@
 #include "WebFrameClient.h"
 #include "WebFrameImpl.h"
 #include "core/loader/DocumentLoader.h"
-#include <public/WebURL.h>
+#include "public/platform/WebURL.h"
 
 namespace WebCore {
 

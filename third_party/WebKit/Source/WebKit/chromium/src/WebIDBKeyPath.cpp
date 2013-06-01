@@ -24,10 +24,10 @@
  */
 
 #include "config.h"
-#include <public/WebIDBKeyPath.h>
+#include "public/platform/WebIDBKeyPath.h"
 
-#include <public/WebString.h>
-#include <public/WebVector.h>
+#include "public/platform/WebString.h"
+#include "public/platform/WebVector.h"
 #include <wtf/Vector.h>
 #include "modules/indexeddb/IDBKeyPath.h"
 

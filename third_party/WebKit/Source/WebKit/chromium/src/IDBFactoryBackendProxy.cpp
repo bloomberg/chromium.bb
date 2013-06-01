@@ -29,10 +29,10 @@
 #include "config.h"
 #include "IDBFactoryBackendProxy.h"
 
-#include <public/WebIDBDatabase.h>
-#include <public/WebIDBDatabaseError.h>
-#include <public/WebIDBFactory.h>
-#include <public/WebVector.h>
+#include "public/platform/WebIDBDatabase.h"
+#include "public/platform/WebIDBDatabaseError.h"
+#include "public/platform/WebIDBFactory.h"
+#include "public/platform/WebVector.h"
 #include "IDBDatabaseBackendProxy.h"
 #include "WebFrameImpl.h"
 #include "WebIDBCallbacksImpl.h"

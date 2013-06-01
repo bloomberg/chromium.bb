@@ -31,8 +31,8 @@
 #include "config.h"
 #include "WebSecurityPolicy.h"
 
-#include <public/WebString.h>
-#include <public/WebURL.h>
+#include "public/platform/WebString.h"
+#include "public/platform/WebURL.h"
 #include "core/loader/FrameLoader.h"
 #include "weborigin/SchemeRegistry.h"
 #include "weborigin/SecurityOrigin.h"

@@ -33,7 +33,7 @@
 
 #include "WebFileWriterClient.h"
 #include "modules/filesystem/AsyncFileWriter.h"
-#include <public/WebFileError.h>
+#include "public/platform/WebFileError.h"
 #include <wtf/PassOwnPtr.h>
 
 namespace WebKit {

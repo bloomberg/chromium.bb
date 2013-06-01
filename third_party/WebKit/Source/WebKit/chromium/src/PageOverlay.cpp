@@ -36,7 +36,7 @@
 #include "core/page/Settings.h"
 #include "core/platform/graphics/GraphicsLayer.h"
 #include "core/platform/graphics/GraphicsLayerClient.h"
-#include <public/WebLayer.h>
+#include "public/platform/WebLayer.h"
 
 using namespace WebCore;
 

@@ -35,7 +35,7 @@
 #include <WebStorageQuotaType.h>
 #include "core/dom/ScriptExecutionContext.h"
 #include "core/storage/StorageArea.h"
-#include <public/WebVector.h>
+#include "public/platform/WebVector.h"
 #include <wtf/PassOwnPtr.h>
 #include <wtf/PassRefPtr.h>
 #include <wtf/text/WTFString.h>

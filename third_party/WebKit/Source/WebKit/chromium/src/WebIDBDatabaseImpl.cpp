@@ -26,12 +26,12 @@
 #include "config.h"
 #include "WebIDBDatabaseImpl.h"
 
-#include <public/WebIDBCallbacks.h>
-#include <public/WebIDBDatabaseCallbacks.h>
-#include <public/WebIDBDatabaseError.h>
-#include <public/WebIDBKey.h>
-#include <public/WebIDBKeyRange.h>
-#include <public/WebIDBMetadata.h>
+#include "public/platform/WebIDBCallbacks.h"
+#include "public/platform/WebIDBDatabaseCallbacks.h"
+#include "public/platform/WebIDBDatabaseError.h"
+#include "public/platform/WebIDBKey.h"
+#include "public/platform/WebIDBKeyRange.h"
+#include "public/platform/WebIDBMetadata.h"
 #include "IDBCallbacksProxy.h"
 #include "IDBDatabaseCallbacksProxy.h"
 #include "core/platform/SharedBuffer.h"

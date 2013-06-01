@@ -29,8 +29,8 @@
 #include "FakeWebGraphicsContext3D.h"
 #include "SkDeferredCanvas.h"
 #include "core/platform/graphics/ImageBuffer.h"
-#include <public/Platform.h>
-#include <public/WebThread.h>
+#include "public/platform/Platform.h"
+#include "public/platform/WebThread.h"
 
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>

@@ -58,10 +58,10 @@
 #include "WebPermissionClient.h"
 #include "WebViewImpl.h"
 #include "core/dom/default/chromium/PlatformMessagePortChannelChromium.h"
-#include <public/WebFileSystemCallbacks.h>
-#include <public/WebMessagePortChannel.h>
-#include <public/WebString.h>
-#include <public/WebURL.h>
+#include "public/platform/WebFileSystemCallbacks.h"
+#include "public/platform/WebMessagePortChannel.h"
+#include "public/platform/WebString.h"
+#include "public/platform/WebURL.h"
 
 using namespace WebCore;
 

@@ -56,9 +56,9 @@
 #include "wtf/UnusedParam.h"
 #include "wtf/text/AtomicString.h"
 #include "wtf/text/TextEncoding.h"
-#include <public/Platform.h>
-#include <public/WebPrerenderingSupport.h>
-#include <public/WebThread.h>
+#include "public/platform/Platform.h"
+#include "public/platform/WebPrerenderingSupport.h"
+#include "public/platform/WebThread.h"
 #include <v8.h>
 
 namespace WebKit {

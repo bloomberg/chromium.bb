@@ -34,8 +34,8 @@
 #include "URLTestHelpers.h"
 #include "WebView.h"
 #include <gtest/gtest.h>
-#include <public/Platform.h>
-#include <public/WebUnitTestSupport.h>
+#include "public/platform/Platform.h"
+#include "public/platform/WebUnitTestSupport.h"
 #include <v8/include/v8-profiler.h>
 #include <v8/include/v8.h>
 

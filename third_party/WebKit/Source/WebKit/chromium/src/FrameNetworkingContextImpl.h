@@ -21,7 +21,7 @@
 #define FrameNetworkingContextImpl_h
 
 #include "core/loader/FrameNetworkingContext.h"
-#include <public/WebCookieJar.h>
+#include "public/platform/WebCookieJar.h"
 
 namespace WebKit {
 

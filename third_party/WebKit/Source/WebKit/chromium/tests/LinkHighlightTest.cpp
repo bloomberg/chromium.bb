@@ -39,11 +39,11 @@
 #include "core/dom/Node.h"
 #include "core/page/FrameView.h"
 #include "core/platform/graphics/IntRect.h"
-#include <public/Platform.h>
-#include <public/WebContentLayer.h>
-#include <public/WebFloatPoint.h>
-#include <public/WebSize.h>
-#include <public/WebUnitTestSupport.h>
+#include "public/platform/Platform.h"
+#include "public/platform/WebContentLayer.h"
+#include "public/platform/WebFloatPoint.h"
+#include "public/platform/WebSize.h"
+#include "public/platform/WebUnitTestSupport.h"
 #include <wtf/PassOwnPtr.h>
 
 

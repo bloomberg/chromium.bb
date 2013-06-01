@@ -39,8 +39,8 @@
 #include "WebViewImpl.h"
 #include "core/dom/Document.h"
 #include "core/page/FrameView.h"
-#include <public/Platform.h>
-#include <public/WebUnitTestSupport.h>
+#include "public/platform/Platform.h"
+#include "public/platform/WebUnitTestSupport.h"
 
 using namespace WebKit;
 

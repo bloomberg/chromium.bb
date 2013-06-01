@@ -33,7 +33,7 @@
 
 #include "WebFontRenderStyle.h"
 #include <fontconfig/fontconfig.h>
-#include <public/linux/WebFontFamily.h>
+#include "public/platform/linux/WebFontFamily.h"
 #include <string.h>
 #include <unicode/utf16.h>
 

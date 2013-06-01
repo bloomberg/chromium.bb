@@ -34,7 +34,7 @@
 #include "HTMLNames.h"
 #include "core/html/HTMLOptionElement.h"
 #include "core/html/HTMLSelectElement.h"
-#include <public/WebString.h>
+#include "public/platform/WebString.h"
 #include <wtf/PassRefPtr.h>
 
 using namespace WebCore;

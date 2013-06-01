@@ -44,8 +44,8 @@
 #include "core/page/FrameView.h"
 #include "core/page/Page.h"
 #include "core/rendering/RenderTheme.h"
-#include <public/WebString.h>
-#include <public/WebVector.h>
+#include "public/platform/WebString.h"
+#include "public/platform/WebVector.h"
 
 using namespace WebCore;
 

@@ -30,10 +30,10 @@
 #include "core/platform/graphics/GraphicsLayer.h"
 #include "core/platform/graphics/IntPoint.h"
 #include "core/platform/graphics/Path.h"
-#include <public/WebAnimationDelegate.h>
-#include <public/WebContentLayer.h>
-#include <public/WebContentLayerClient.h>
-#include <public/WebLayer.h>
+#include "public/platform/WebAnimationDelegate.h"
+#include "public/platform/WebContentLayer.h"
+#include "public/platform/WebContentLayerClient.h"
+#include "public/platform/WebLayer.h"
 #include <wtf/OwnPtr.h>
 
 namespace WebCore {

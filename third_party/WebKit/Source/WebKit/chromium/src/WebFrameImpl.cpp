@@ -71,16 +71,16 @@
 #include "config.h"
 #include "WebFrameImpl.h"
 
-#include <public/Platform.h>
-#include <public/WebFileSystem.h>
-#include <public/WebFileSystemType.h>
-#include <public/WebFloatPoint.h>
-#include <public/WebFloatRect.h>
-#include <public/WebPoint.h>
-#include <public/WebRect.h>
-#include <public/WebSize.h>
-#include <public/WebURLError.h>
-#include <public/WebVector.h>
+#include "public/platform/Platform.h"
+#include "public/platform/WebFileSystem.h"
+#include "public/platform/WebFileSystemType.h"
+#include "public/platform/WebFloatPoint.h"
+#include "public/platform/WebFloatRect.h"
+#include "public/platform/WebPoint.h"
+#include "public/platform/WebRect.h"
+#include "public/platform/WebSize.h"
+#include "public/platform/WebURLError.h"
+#include "public/platform/WebVector.h"
 #include <wtf/CurrentTime.h>
 #include <wtf/HashMap.h>
 #include <algorithm>

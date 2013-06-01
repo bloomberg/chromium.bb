@@ -38,8 +38,8 @@
 #include "core/workers/WorkerObjectProxy.h"
 
 #include "WebWorkerBase.h"
-#include <public/WebFileSystem.h>
-#include <public/WebFileSystemType.h>
+#include "public/platform/WebFileSystem.h"
+#include "public/platform/WebFileSystemType.h"
 #include <wtf/OwnPtr.h>
 #include <wtf/PassOwnPtr.h>
 #include <wtf/RefPtr.h>

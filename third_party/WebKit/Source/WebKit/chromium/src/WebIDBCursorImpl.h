@@ -26,8 +26,8 @@
 #ifndef WebIDBCursorImpl_h
 #define WebIDBCursorImpl_h
 
-#include <public/WebCommon.h>
-#include <public/WebIDBCursor.h>
+#include "public/platform/WebCommon.h"
+#include "public/platform/WebIDBCursor.h"
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefPtr.h>
 

@@ -26,7 +26,7 @@
 #ifndef WebIDBCallbacksImpl_h
 #define WebIDBCallbacksImpl_h
 
-#include <public/WebIDBCallbacks.h>
+#include "public/platform/WebIDBCallbacks.h"
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefPtr.h>
 

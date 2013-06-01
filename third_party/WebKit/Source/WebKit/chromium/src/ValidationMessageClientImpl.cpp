@@ -34,8 +34,8 @@
 #include "core/platform/HostWindow.h"
 #include "core/rendering/RenderObject.h"
 #include "wtf/CurrentTime.h"
-#include <public/WebRect.h>
-#include <public/WebString.h>
+#include "public/platform/WebRect.h"
+#include "public/platform/WebString.h"
 
 using namespace WebCore;
 

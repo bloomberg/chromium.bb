@@ -32,7 +32,7 @@
 #define URLTestHelpers_h
 
 #include "core/platform/KURL.h"
-#include <public/WebString.h>
+#include "public/platform/WebString.h"
 
 namespace WebKit {
 

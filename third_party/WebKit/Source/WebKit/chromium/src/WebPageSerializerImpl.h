@@ -41,8 +41,8 @@
 #include "WebEntities.h"
 #include "WebPageSerializer.h"
 #include "WebPageSerializerClient.h"
-#include <public/WebString.h>
-#include <public/WebURL.h>
+#include "public/platform/WebString.h"
+#include "public/platform/WebURL.h"
 
 namespace WTF{
 class TextEncoding;

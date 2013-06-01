@@ -26,10 +26,10 @@
 #include "config.h"
 #include "StorageNamespaceProxy.h"
 
-#include <public/Platform.h>
-#include <public/WebStorageArea.h>
-#include <public/WebStorageNamespace.h>
-#include <public/WebString.h>
+#include "public/platform/Platform.h"
+#include "public/platform/WebStorageArea.h"
+#include "public/platform/WebStorageNamespace.h"
+#include "public/platform/WebString.h"
 #include "ChromeClientImpl.h"
 #include "StorageAreaProxy.h"
 #include "WebKit.h"

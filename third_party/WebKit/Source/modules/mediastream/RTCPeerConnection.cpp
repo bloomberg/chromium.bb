@@ -57,8 +57,8 @@
 #include "modules/mediastream/RTCStatsCallback.h"
 #include "modules/mediastream/RTCStatsRequestImpl.h"
 #include "modules/mediastream/RTCVoidRequestImpl.h"
-#include <public/WebRTCICECandidate.h>
-#include <public/WebRTCSessionDescription.h>
+#include "public/platform/WebRTCICECandidate.h"
+#include "public/platform/WebRTCSessionDescription.h"
 
 namespace WebCore {
 

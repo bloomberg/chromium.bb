@@ -29,9 +29,9 @@
  */
 
 #include "config.h"
-#include <public/WebIDBDatabaseError.h>
+#include "public/platform/WebIDBDatabaseError.h"
 
-#include <public/WebString.h>
+#include "public/platform/WebString.h"
 #include "modules/indexeddb/IDBDatabaseError.h"
 
 using namespace WebCore;

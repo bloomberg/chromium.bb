@@ -37,9 +37,9 @@
 #include "core/platform/ScrollbarTheme.h"
 #include "core/platform/chromium/KeyboardCodes.h"
 #include "core/platform/graphics/GraphicsContext.h"
-#include <public/WebCanvas.h>
-#include <public/WebRect.h>
-#include <public/WebVector.h>
+#include "public/platform/WebCanvas.h"
+#include "public/platform/WebRect.h"
+#include "public/platform/WebVector.h"
 
 using namespace std;
 using namespace WebCore;

@@ -36,7 +36,7 @@
 #include "modules/indexeddb/IDBTracing.h"
 #include "modules/indexeddb/IDBTransactionBackendImpl.h"
 #include "modules/indexeddb/IDBTransactionCoordinator.h"
-#include <public/Platform.h>
+#include "public/platform/Platform.h"
 #include "wtf/TemporaryChange.h"
 
 namespace WebCore {

@@ -38,7 +38,7 @@
 #include "modules/notifications/Notification.h"
 #include "weborigin/SecurityOrigin.h"
 
-#include <public/WebURL.h>
+#include "public/platform/WebURL.h"
 #include "WebNotification.h"
 #include "WebNotificationPermissionCallback.h"
 #include "WebNotificationPresenter.h"

@@ -31,10 +31,10 @@
 #include "config.h"
 #include "core/loader/appcache/ApplicationCacheHost.h"
 
-#include <public/WebURL.h>
-#include <public/WebURLError.h>
-#include <public/WebURLResponse.h>
-#include <public/WebVector.h>
+#include "public/platform/WebURL.h"
+#include "public/platform/WebURLError.h"
+#include "public/platform/WebURLResponse.h"
+#include "public/platform/WebVector.h"
 #include "ApplicationCacheHostInternal.h"
 #include "WebFrameImpl.h"
 #include "core/dom/ProgressEvent.h"

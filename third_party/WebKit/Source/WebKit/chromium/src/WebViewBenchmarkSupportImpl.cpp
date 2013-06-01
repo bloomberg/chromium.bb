@@ -35,7 +35,7 @@
 #include "core/platform/graphics/IntRect.h"
 #include "core/platform/graphics/IntSize.h"
 
-#include <public/WebCanvas.h>
+#include "public/platform/WebCanvas.h"
 #include <wtf/CurrentTime.h>
 #include <wtf/OwnPtr.h>
 #include <wtf/Vector.h>

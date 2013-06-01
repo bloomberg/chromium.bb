@@ -37,7 +37,7 @@
 #include "core/page/Frame.h"
 #include "core/page/FrameDestructionObserver.h"
 #include "core/platform/graphics/FloatRect.h"
-#include <public/WebFileSystemType.h>
+#include "public/platform/WebFileSystemType.h"
 #include <wtf/Compiler.h>
 #include <wtf/OwnPtr.h>
 #include <wtf/RefCounted.h>

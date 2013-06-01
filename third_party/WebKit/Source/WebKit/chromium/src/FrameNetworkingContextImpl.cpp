@@ -33,7 +33,7 @@
 
 #include "WebFrameClient.h"
 #include "WebFrameImpl.h"
-#include <public/Platform.h>
+#include "public/platform/Platform.h"
 
 namespace WebKit {
 

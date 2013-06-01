@@ -52,13 +52,13 @@
 #include "core/platform/graphics/GraphicsLayer.h"
 #include "core/platform/graphics/IntPoint.h"
 #include "core/platform/graphics/IntRect.h"
-#include <public/WebFloatQuad.h>
-#include <public/WebGestureCurveTarget.h>
-#include <public/WebLayer.h>
-#include <public/WebPoint.h>
-#include <public/WebRect.h>
-#include <public/WebSize.h>
-#include <public/WebString.h>
+#include "public/platform/WebFloatQuad.h"
+#include "public/platform/WebGestureCurveTarget.h"
+#include "public/platform/WebLayer.h"
+#include "public/platform/WebPoint.h"
+#include "public/platform/WebRect.h"
+#include "public/platform/WebSize.h"
+#include "public/platform/WebString.h"
 #include <wtf/OwnPtr.h>
 #include <wtf/RefCounted.h>
 

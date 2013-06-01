@@ -46,9 +46,9 @@
 #include "WebView.h"
 #include "WebViewImpl.h"
 #include "core/dom/Element.h"
-#include <public/Platform.h>
-#include <public/WebThread.h>
-#include <public/WebUnitTestSupport.h>
+#include "public/platform/Platform.h"
+#include "public/platform/WebThread.h"
+#include "public/platform/WebUnitTestSupport.h"
 
 using namespace WebKit;
 

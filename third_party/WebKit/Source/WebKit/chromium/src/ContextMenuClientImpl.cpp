@@ -68,11 +68,11 @@
 #include "core/platform/text/TextBreakIterator.h"
 #include "core/rendering/HitTestResult.h"
 #include "core/rendering/RenderWidget.h"
-#include <public/WebPoint.h>
-#include <public/WebString.h>
-#include <public/WebURL.h>
-#include <public/WebURLResponse.h>
-#include <public/WebVector.h>
+#include "public/platform/WebPoint.h"
+#include "public/platform/WebString.h"
+#include "public/platform/WebURL.h"
+#include "public/platform/WebURLResponse.h"
+#include "public/platform/WebVector.h"
 #include <wtf/text/WTFString.h>
 
 using namespace WebCore;

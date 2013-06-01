@@ -38,11 +38,11 @@
 #include "core/rendering/RenderLayerBacking.h"
 #include "core/rendering/RenderLayerCompositor.h"
 #include "core/rendering/RenderView.h"
-#include <public/Platform.h>
-#include <public/WebLayer.h>
-#include <public/WebLayerPositionConstraint.h>
-#include <public/WebLayerTreeView.h>
-#include <public/WebUnitTestSupport.h>
+#include "public/platform/Platform.h"
+#include "public/platform/WebLayer.h"
+#include "public/platform/WebLayerPositionConstraint.h"
+#include "public/platform/WebLayerTreeView.h"
+#include "public/platform/WebUnitTestSupport.h"
 
 using namespace WebCore;
 using namespace WebKit;

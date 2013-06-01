@@ -31,10 +31,10 @@
 #include "config.h"
 #include "WebSharedWorkerImpl.h"
 
-#include <public/WebFileError.h>
-#include <public/WebMessagePortChannel.h>
-#include <public/WebString.h>
-#include <public/WebURL.h>
+#include "public/platform/WebFileError.h"
+#include "public/platform/WebMessagePortChannel.h"
+#include "public/platform/WebString.h"
+#include "public/platform/WebURL.h"
 #include <wtf/MainThread.h>
 #include "WebDataSourceImpl.h"
 #include "WebFrameClient.h"

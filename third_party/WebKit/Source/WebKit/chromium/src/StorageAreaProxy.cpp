@@ -40,9 +40,9 @@
 #include "core/storage/StorageEvent.h"
 #include "weborigin/SecurityOrigin.h"
 
-#include <public/WebStorageArea.h>
-#include <public/WebString.h>
-#include <public/WebURL.h>
+#include "public/platform/WebStorageArea.h"
+#include "public/platform/WebString.h"
+#include "public/platform/WebURL.h"
 #include "WebFrameImpl.h"
 #include "WebPermissionClient.h"
 #include "WebViewImpl.h"

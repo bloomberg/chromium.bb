@@ -35,10 +35,10 @@
 #include "core/dom/ScriptExecutionContext.h"
 #include "core/platform/AsyncFileSystemCallbacks.h"
 #include "core/platform/FileMetadata.h"
-#include <public/WebFileInfo.h>
-#include <public/WebFileSystem.h>
-#include <public/WebFileSystemEntry.h>
-#include <public/WebString.h>
+#include "public/platform/WebFileInfo.h"
+#include "public/platform/WebFileSystem.h"
+#include "public/platform/WebFileSystemEntry.h"
+#include "public/platform/WebString.h"
 #include <wtf/Vector.h>
 
 using namespace WebCore;

@@ -44,8 +44,8 @@
 #include "core/platform/NotImplemented.h"
 #include "core/platform/text/PlatformLocale.h"
 #include "core/rendering/RenderTheme.h"
-#include <public/Platform.h>
-#include <public/WebLocalizedString.h>
+#include "public/platform/Platform.h"
+#include "public/platform/WebLocalizedString.h"
 
 #if !ENABLE(CALENDAR_PICKER)
 #error "ENABLE_INPUT_MULTIPLE_FIELDS_UI requires ENABLE_CALENDAR_PICKER in Chromium."

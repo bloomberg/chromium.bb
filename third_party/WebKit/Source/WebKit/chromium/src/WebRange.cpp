@@ -41,8 +41,8 @@
 #include "core/editing/TextIterator.h"
 #include "core/page/Frame.h"
 #include "core/page/FrameView.h"
-#include <public/WebFloatQuad.h>
-#include <public/WebString.h>
+#include "public/platform/WebFloatQuad.h"
+#include "public/platform/WebString.h"
 #include <wtf/PassRefPtr.h>
 
 using namespace WebCore;

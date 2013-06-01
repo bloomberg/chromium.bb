@@ -34,11 +34,11 @@
 #include "core/platform/chromium/ChromiumDataObject.h"
 #include "core/platform/chromium/ClipboardMimeTypes.h"
 #include "modules/filesystem/DraggedIsolatedFileSystem.h"
-#include <public/WebData.h>
-#include <public/WebDragData.h>
-#include <public/WebString.h>
-#include <public/WebURL.h>
-#include <public/WebVector.h>
+#include "public/platform/WebData.h"
+#include "public/platform/WebDragData.h"
+#include "public/platform/WebString.h"
+#include "public/platform/WebURL.h"
+#include "public/platform/WebVector.h"
 #include <wtf/HashMap.h>
 #include <wtf/PassRefPtr.h>
 

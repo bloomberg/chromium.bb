@@ -36,8 +36,8 @@
 #include "core/platform/ColorChooserClient.h"
 #include "core/platform/LocalizedStrings.h"
 #include "core/platform/graphics/IntRect.h"
-#include <public/Platform.h>
-#include <public/WebLocalizedString.h>
+#include "public/platform/Platform.h"
+#include "public/platform/WebLocalizedString.h"
 
 using namespace WebCore;
 

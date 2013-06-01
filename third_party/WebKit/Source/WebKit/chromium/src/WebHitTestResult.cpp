@@ -34,8 +34,8 @@
 #include "core/platform/KURL.h"
 #include "core/rendering/HitTestResult.h"
 #include "core/rendering/RenderObject.h"
-#include <public/WebPoint.h>
-#include <public/WebURL.h>
+#include "public/platform/WebPoint.h"
+#include "public/platform/WebURL.h"
 
 using namespace WebCore;
 

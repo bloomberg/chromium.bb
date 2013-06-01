@@ -30,7 +30,7 @@
 
 #include "config.h"
 #include "PaintAggregator.h"
-#include <public/Platform.h>
+#include "public/platform/Platform.h"
 using namespace WebCore;
 
 namespace WebKit {

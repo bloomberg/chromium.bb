@@ -40,7 +40,7 @@
 #include "modules/indexeddb/IDBLevelDBCoding.h"
 #include "modules/indexeddb/IDBMetadata.h"
 #include "modules/indexeddb/IDBTracing.h"
-#include <public/Platform.h>
+#include "public/platform/Platform.h"
 #include "wtf/Assertions.h"
 
 namespace WebCore {

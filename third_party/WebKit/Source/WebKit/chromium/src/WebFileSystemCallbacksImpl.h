@@ -32,9 +32,9 @@
 #define WebFileSystemCallbacksImpl_h
 
 #include "modules/filesystem/FileSystemType.h"
-#include <public/WebFileSystem.h>
-#include <public/WebFileSystemCallbacks.h>
-#include <public/WebVector.h>
+#include "public/platform/WebFileSystem.h"
+#include "public/platform/WebFileSystemCallbacks.h"
+#include "public/platform/WebVector.h"
 #include <wtf/OwnPtr.h>
 #include <wtf/PassOwnPtr.h>
 

@@ -35,9 +35,9 @@
 #include "core/platform/graphics/Image.h"
 #include "core/platform/graphics/skia/NativeImageSkia.h"
 #include "core/platform/image-decoders/ImageDecoder.h"
-#include <public/WebData.h>
-#include <public/WebImage.h>
-#include <public/WebSize.h>
+#include "public/platform/WebData.h"
+#include "public/platform/WebImage.h"
+#include "public/platform/WebSize.h"
 #include <wtf/OwnPtr.h>
 #include <wtf/PassOwnPtr.h>
 #include <wtf/PassRefPtr.h>

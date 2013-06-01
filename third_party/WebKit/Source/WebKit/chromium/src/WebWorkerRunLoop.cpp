@@ -23,7 +23,7 @@
  */
 
 #include "config.h"
-#include <public/WebWorkerRunLoop.h>
+#include "public/platform/WebWorkerRunLoop.h"
 
 #include "core/workers/WorkerRunLoop.h"
 
