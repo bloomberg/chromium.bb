@@ -915,6 +915,14 @@ void ResourceDispatcherHostImpl::BeginRequest(
   int process_type = filter_->process_type();
   int child_id = filter_->child_id();
 
+  // Reject invalid priority.
+  int priority = static_cast<int>(request_data.priority);
+  if (priority < net::MINIMUM_PRIORITY || priority >= net::NUM_PRIORITIES) {
+    RecordAction(UserMetricsAction("BadMessageTerminate_RDH"));
+    filter_->BadMessageReceived();
+    return;
+  }
+
   // If we crash here, figure out what URL the renderer was requesting.
   // http://crbug.com/91398
   char url_buf[128];
