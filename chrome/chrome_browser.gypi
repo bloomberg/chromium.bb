@@ -1228,6 +1228,8 @@
         'browser/notifications/sync_notifier/chrome_notifier_service.h',
         'browser/notifications/sync_notifier/chrome_notifier_service_factory.cc',
         'browser/notifications/sync_notifier/chrome_notifier_service_factory.h',
+        'browser/notifications/sync_notifier/notification_bitmap_fetcher.cc',
+        'browser/notifications/sync_notifier/notification_bitmap_fetcher.h',
         'browser/notifications/sync_notifier/synced_notification.cc',
         'browser/notifications/sync_notifier/synced_notification.h',
         'browser/omnibox_search_hint.cc',
