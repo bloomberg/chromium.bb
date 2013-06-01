@@ -116,48 +116,36 @@ class SSLUITest : public InProcessBrowserTest {
     command_line->AppendSwitch(switches::kProcessPerSite);
   }
 
-  void CheckAuthenticatedState(WebContents* tab,
-                               bool displayed_insecure_content) {
+  void CheckState(WebContents* tab,
+                  content::SecurityStyle expected_security_style,
+                  bool expected_displayed_insecure_content,
+                  bool expected_ran_insecure_content) {
     ASSERT_FALSE(tab->IsCrashed());
     NavigationEntry* entry = tab->GetController().GetActiveEntry();
     ASSERT_TRUE(entry);
     EXPECT_EQ(content::PAGE_TYPE_NORMAL, entry->GetPageType());
-    EXPECT_EQ(content::SECURITY_STYLE_AUTHENTICATED,
-              entry->GetSSL().security_style);
+    EXPECT_EQ(expected_security_style, entry->GetSSL().security_style);
     EXPECT_EQ(0U, entry->GetSSL().cert_status & net::CERT_STATUS_ALL_ERRORS);
-    EXPECT_EQ(displayed_insecure_content,
-              !!(entry->GetSSL().content_status &
-                 SSLStatus::DISPLAYED_INSECURE_CONTENT));
-    EXPECT_FALSE(
-        !!(entry->GetSSL().content_status & SSLStatus::RAN_INSECURE_CONTENT));
+    bool displayed_insecure_content =
+        entry->GetSSL().content_status & SSLStatus::DISPLAYED_INSECURE_CONTENT;
+    EXPECT_EQ(expected_displayed_insecure_content, displayed_insecure_content);
+    bool ran_insecure_content =
+        entry->GetSSL().content_status & SSLStatus::RAN_INSECURE_CONTENT;
+    EXPECT_EQ(expected_ran_insecure_content, ran_insecure_content);
+  }
+
+  void CheckAuthenticatedState(WebContents* tab,
+                               bool expected_displayed_insecure_content) {
+    CheckState(tab, content::SECURITY_STYLE_AUTHENTICATED,
+               expected_displayed_insecure_content, false);
   }
 
   void CheckUnauthenticatedState(WebContents* tab) {
-    ASSERT_FALSE(tab->IsCrashed());
-    NavigationEntry* entry = tab->GetController().GetActiveEntry();
-    ASSERT_TRUE(entry);
-    EXPECT_EQ(content::PAGE_TYPE_NORMAL, entry->GetPageType());
-    EXPECT_EQ(content::SECURITY_STYLE_UNAUTHENTICATED,
-              entry->GetSSL().security_style);
-    EXPECT_EQ(0U, entry->GetSSL().cert_status & net::CERT_STATUS_ALL_ERRORS);
-    EXPECT_FALSE(!!(entry->GetSSL().content_status &
-                    SSLStatus::DISPLAYED_INSECURE_CONTENT));
-    EXPECT_FALSE(
-        !!(entry->GetSSL().content_status & SSLStatus::RAN_INSECURE_CONTENT));
+    CheckState(tab, content::SECURITY_STYLE_UNAUTHENTICATED, false, false);
   }
 
   void CheckBrokenAuthenticatedState(WebContents* tab) {
-    ASSERT_FALSE(tab->IsCrashed());
-    NavigationEntry* entry = tab->GetController().GetActiveEntry();
-    ASSERT_TRUE(entry);
-    EXPECT_EQ(content::PAGE_TYPE_NORMAL, entry->GetPageType());
-    EXPECT_EQ(content::SECURITY_STYLE_AUTHENTICATION_BROKEN,
-              entry->GetSSL().security_style);
-    EXPECT_EQ(0U, entry->GetSSL().cert_status & net::CERT_STATUS_ALL_ERRORS);
-    EXPECT_FALSE(!!(entry->GetSSL().content_status &
-                    SSLStatus::DISPLAYED_INSECURE_CONTENT));
-    EXPECT_TRUE(
-        !!(entry->GetSSL().content_status & SSLStatus::RAN_INSECURE_CONTENT));
+    CheckState(tab, content::SECURITY_STYLE_AUTHENTICATION_BROKEN, false, true);
   }
 
   void CheckAuthenticationBrokenState(WebContents* tab,
@@ -186,38 +174,38 @@ class SSLUITest : public InProcessBrowserTest {
       LOG(WARNING) << "Got unexpected cert error: " << extra_cert_errors;
   }
 
-  void CheckWorkerLoadResult(WebContents* tab, bool expectLoaded) {
+  void CheckWorkerLoadResult(WebContents* tab, bool expected_load) {
     // Workers are async and we don't have notifications for them passing
     // messages since they do it between renderer and worker processes.
     // So have a polling loop, check every 200ms, timeout at 30s.
-    const int timeout_ms = 200;
-    base::Time timeToQuit = base::Time::Now() +
+    const int kTimeoutMS = 200;
+    base::Time time_to_quit = base::Time::Now() +
         base::TimeDelta::FromMilliseconds(30000);
 
-    while (base::Time::Now() < timeToQuit) {
-      bool workerFinished = false;
+    while (base::Time::Now() < time_to_quit) {
+      bool worker_finished = false;
       ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
           tab,
           "window.domAutomationController.send(IsWorkerFinished());",
-          &workerFinished));
+          &worker_finished));
 
-      if (workerFinished)
+      if (worker_finished)
         break;
 
       // Wait a bit.
       base::MessageLoop::current()->PostDelayedTask(
           FROM_HERE,
           base::MessageLoop::QuitClosure(),
-          base::TimeDelta::FromMilliseconds(timeout_ms));
+          base::TimeDelta::FromMilliseconds(kTimeoutMS));
       content::RunMessageLoop();
     }
 
-    bool actuallyLoadedContent = false;
+    bool actually_loaded_content = false;
     ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
         tab,
         "window.domAutomationController.send(IsContentLoaded());",
-        &actuallyLoadedContent));
-    EXPECT_EQ(expectLoaded, actuallyLoadedContent);
+        &actually_loaded_content));
+    EXPECT_EQ(expected_load, actually_loaded_content);
   }
 
   void ProceedThroughInterstitial(WebContents* tab) {
@@ -592,26 +580,26 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, MAYBE_TestWSSInvalidCertAndClose) {
   watcher.AlsoWaitForTitle(ASCIIToUTF16("FAIL"));
 
   // Create GURLs to test pages.
-  std::string masterUrlPath = base::StringPrintf("%s?%d",
+  std::string master_url_path = base::StringPrintf("%s?%d",
       test_server()->GetURL("files/ssl/wss_close.html").spec().c_str(),
       wss_server_expired_.host_port_pair().port());
-  GURL masterUrl(masterUrlPath);
-  std::string slaveUrlPath = base::StringPrintf("%s?%d",
+  GURL master_url(master_url_path);
+  std::string slave_url_path = base::StringPrintf("%s?%d",
       test_server()->GetURL("files/ssl/wss_close_slave.html").spec().c_str(),
       wss_server_expired_.host_port_pair().port());
-  GURL slaveUrl(slaveUrlPath);
+  GURL slave_url(slave_url_path);
 
   // Create tabs and visit pages which keep on creating wss connections.
   WebContents* tabs[16];
   for (int i = 0; i < 16; ++i) {
-    tabs[i] = chrome::AddSelectedTabWithURL(browser(), slaveUrl,
+    tabs[i] = chrome::AddSelectedTabWithURL(browser(), slave_url,
                                             content::PAGE_TRANSITION_LINK);
   }
   chrome::SelectNextTab(browser());
 
   // Visit a page which waits for one TLS handshake failure.
   // The title will be changed to 'PASS'.
-  ui_test_utils::NavigateToURL(browser(), masterUrl);
+  ui_test_utils::NavigateToURL(browser(), master_url);
   const string16 result = watcher.WaitAndGetTitle();
   EXPECT_TRUE(LowerCaseEqualsASCII(result, "pass"));
 
@@ -1009,8 +997,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestRunsInsecureContentTwoTabs) {
   observer.Wait();
 
   // Both tabs should have the same process.
-  EXPECT_EQ(tab1->GetRenderProcessHost(),
-            tab2->GetRenderProcessHost());
+  EXPECT_EQ(tab1->GetRenderProcessHost(), tab2->GetRenderProcessHost());
 
   // The new tab has insecure content.
   CheckAuthenticationBrokenState(tab2, 0, true, false);
