@@ -132,6 +132,11 @@ class DriveMetadataDB {
   SyncStatusCode GetOrigins(ResourceIdByOrigin* incremental_sync_origins,
                             ResourceIdByOrigin* disabled_origins);
 
+  SyncStatusCode WriteToDB(leveldb::WriteBatch* batch) {
+    return LevelDBStatusToSyncStatusCode(db_->Write(
+        leveldb::WriteOptions(), batch));
+  }
+
  private:
   friend class DriveMetadataStore;
 
@@ -528,7 +533,7 @@ void DriveMetadataStore::EnableOrigin(
   std::string resource_id = found->second;
   disabled_origins_.erase(found);
 
-  // |Origin| goes back to DriveFileSyncService.pending_batch_sync_origins_
+  // |origin| goes back to DriveFileSyncService::pending_batch_sync_origins_
   // only and is not stored in drive_metadata_store.
   found = incremental_sync_origins_.find(origin);
   if (found != incremental_sync_origins_.end())
@@ -836,10 +841,9 @@ SyncStatusCode DriveMetadataDB::SetLargestChangestamp(
   DCHECK(CalledOnValidThread());
   DCHECK(db_.get());
 
-  leveldb::Status status = db_->Put(
-      leveldb::WriteOptions(),
-      kChangeStampKey, base::Int64ToString(largest_changestamp));
-  return LevelDBStatusToSyncStatusCode(status);
+  leveldb::WriteBatch batch;
+  batch.Put(kChangeStampKey, base::Int64ToString(largest_changestamp));
+  return WriteToDB(&batch);
 }
 
 SyncStatusCode DriveMetadataDB::SetSyncRootDirectory(
@@ -847,10 +851,9 @@ SyncStatusCode DriveMetadataDB::SetSyncRootDirectory(
   DCHECK(CalledOnValidThread());
   DCHECK(db_.get());
 
-  leveldb::Status status = db_->Put(leveldb::WriteOptions(),
-                                    kSyncRootDirectoryKey,
-                                    drive::RemoveWapiIdPrefix(resource_id));
-  return LevelDBStatusToSyncStatusCode(status);
+  leveldb::WriteBatch batch;
+  batch.Put(kSyncRootDirectoryKey, drive::RemoveWapiIdPrefix(resource_id));
+  return WriteToDB(&batch);
 }
 
 SyncStatusCode DriveMetadataDB::SetOriginRootDirectory(
@@ -864,9 +867,9 @@ SyncStatusCode DriveMetadataDB::SetOriginRootDirectory(
   if (key.empty())
     return SYNC_DATABASE_ERROR_FAILED;
 
-  leveldb::Status status = db_->Put(
-      leveldb::WriteOptions(), key, drive::RemoveWapiIdPrefix(resource_id));
-  return LevelDBStatusToSyncStatusCode(status);
+  leveldb::WriteBatch batch;
+  batch.Put(key, drive::RemoveWapiIdPrefix(resource_id));
+  return WriteToDB(&batch);
 }
 
 SyncStatusCode DriveMetadataDB::GetSyncRootDirectory(std::string* resource_id) {
@@ -896,10 +899,10 @@ SyncStatusCode DriveMetadataDB::UpdateEntry(const FileSystemURL& url,
   std::string value;
   bool success = metadata.SerializeToString(&value);
   DCHECK(success);
-  leveldb::Status status  = db_->Put(
-      leveldb::WriteOptions(), metadata_key, value);
 
-  return LevelDBStatusToSyncStatusCode(status);
+  leveldb::WriteBatch batch;
+  batch.Put(metadata_key, value);
+  return WriteToDB(&batch);
 }
 
 SyncStatusCode DriveMetadataDB::DeleteEntry(const FileSystemURL& url) {
@@ -907,9 +910,9 @@ SyncStatusCode DriveMetadataDB::DeleteEntry(const FileSystemURL& url) {
   DCHECK(db_.get());
 
   std::string metadata_key = FileSystemURLToMetadataKey(url);
-  leveldb::Status status = db_->Delete(
-      leveldb::WriteOptions(), metadata_key);
-  return LevelDBStatusToSyncStatusCode(status);
+  leveldb::WriteBatch batch;
+  batch.Delete(metadata_key);
+  return WriteToDB(&batch);
 }
 
 SyncStatusCode DriveMetadataDB::UpdateOriginAsIncrementalSync(
@@ -921,9 +924,7 @@ SyncStatusCode DriveMetadataDB::UpdateOriginAsIncrementalSync(
   batch.Delete(CreateKeyForOriginRoot(origin, DISABLED_ORIGIN));
   batch.Put(CreateKeyForOriginRoot(origin, INCREMENTAL_SYNC_ORIGIN),
             drive::RemoveWapiIdPrefix(resource_id));
-  leveldb::Status status = db_->Write(leveldb::WriteOptions(), &batch);
-
-  return LevelDBStatusToSyncStatusCode(status);
+  return WriteToDB(&batch);
 }
 
 SyncStatusCode DriveMetadataDB::EnableOrigin(
@@ -932,13 +933,12 @@ SyncStatusCode DriveMetadataDB::EnableOrigin(
   DCHECK(db_.get());
 
   // No DB entry as enabled origins go back to
-  // DriveFileSyncService.pending_batch_sync_origins only.
+  // DriveFileSyncService::pending_batch_sync_origins only.
   leveldb::WriteBatch batch;
   batch.Delete(CreateKeyForOriginRoot(origin, INCREMENTAL_SYNC_ORIGIN));
   batch.Delete(CreateKeyForOriginRoot(origin, DISABLED_ORIGIN));
-  leveldb::Status status = db_->Write(leveldb::WriteOptions(), &batch);
 
-  return LevelDBStatusToSyncStatusCode(status);
+  return WriteToDB(&batch);
 }
 
 SyncStatusCode DriveMetadataDB::DisableOrigin(
@@ -966,9 +966,8 @@ SyncStatusCode DriveMetadataDB::DisableOrigin(
       break;
     batch.Delete(key);
   }
-  leveldb::Status status = db_->Write(leveldb::WriteOptions(), &batch);
 
-  return LevelDBStatusToSyncStatusCode(status);
+  return WriteToDB(&batch);
 }
 
 SyncStatusCode DriveMetadataDB::RemoveOrigin(const GURL& origin_to_remove) {
@@ -993,8 +992,7 @@ SyncStatusCode DriveMetadataDB::RemoveOrigin(const GURL& origin_to_remove) {
     batch.Delete(key);
   }
 
-  leveldb::Status status = db_->Write(leveldb::WriteOptions(), &batch);
-  return LevelDBStatusToSyncStatusCode(status);
+  return WriteToDB(&batch);
 }
 
 SyncStatusCode DriveMetadataDB::GetOrigins(
