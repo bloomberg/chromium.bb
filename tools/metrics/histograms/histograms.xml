@@ -55,6 +55,13 @@ other types of suffix sets.
 
 <histograms>
 
+<histogram name="Apps.AppLaunch" enum="AppLaunch">
+  <summary>
+    The number of times v2 packaged apps are launched grouped by
+    extension_misc::AppLaunchBuckets. See also Extensions.AppLaunch.
+  </summary>
+</histogram>
+
 <histogram name="AsyncDNS.ConfigChange" enum="BooleanSuccess">
   <summary>
     Whether DnsConfigService::OnConfigChange actually corresponded to a change
@@ -1634,12 +1641,33 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Extensions.AppLaunch" enum="AppLaunch">
+  <summary>
+    The number of times v1 apps are launched grouped by
+    extension_misc::AppLaunchBuckets. See also Apps.AppLaunch for v2 apps.
+  </summary>
+</histogram>
+
+<histogram name="Extensions.AppTabLaunchType" enum="ExtensionLaunchType">
+  <summary>
+    The number of apps launched grouped by ExtensionPrefs::LaunchType.
+  </summary>
+</histogram>
+
 <histogram name="Extensions.DisabledUIUserResponse"
     enum="ExtensionDisabledUIUserResponse">
   <summary>
     User response to the dialog shown when an extension is disabled due to an
     update requiring more permissions.
   </summary>
+</histogram>
+
+<histogram name="Extensions.ExtensionInstalled">
+  <summary>An extension has been installed.</summary>
+</histogram>
+
+<histogram name="Extensions.ExtensionUninstalled">
+  <summary>An extension has been uninstalled.</summary>
 </histogram>
 
 <histogram name="Extensions.FunctionCalls" enum="ExtensionFunctions">
@@ -6141,6 +6169,165 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="NewTabPage.AppsPageDragSource" enum="AppsPageDragSource">
+  <summary>
+    Histogram for the source of app page drags. For any succesful drop onto an
+    apps pane of the NTP, this logs where the drag originated.
+  </summary>
+</histogram>
+
+<histogram name="NewTabPage.DefaultPageType" enum="NtpPaneType">
+  <summary>The default pane when the NTP is first opened.</summary>
+</histogram>
+
+<histogram name="NewTabPage.HoverTimeClicked">
+  <summary>
+    Histogram of the time, in milliseconds, users have the cursor over a most
+    visited thumbnail before clicking.
+  </summary>
+</histogram>
+
+<histogram name="NewTabPage.HoverTimeNotClicked">
+  <summary>
+    Histogram of the time, in milliseconds, users have the cursor over a most
+    visited thumbnail before moving it away from the thumbnail without clicking.
+  </summary>
+</histogram>
+
+<histogram name="NewTabPage.MobilePromo" enum="NewTabPageMobilePromo">
+  <summary>
+    Android: Tallies counts for how the user interacted with the NTP promo page.
+  </summary>
+</histogram>
+
+<histogram name="NewTabPage.MostVisited">
+  <summary>
+    Histogram for user clicks of the most visited thumbnails. The value is equal
+    to the index of the thumbnail.
+  </summary>
+</histogram>
+
+<histogram name="NewTabPage.MostVisitedAction" enum="NtpFollowAction">
+  <summary>
+    Action taken by the user on the Most Visited NTP pane.  If the user switches
+    panes during this use of the NTP, this action is sometimes not recorded. Ask
+    mpearson@ for details.
+  </summary>
+</histogram>
+
+<histogram name="NewTabPage.NonVisibleScreenshots">
+  <summary>
+    The number of screenshots that were cached for the non-visible but ranked
+    suggestions on the Suggested NTP pane.
+  </summary>
+</histogram>
+
+<histogram name="NewTabPage.NonVisibleSuggestedSiteRank">
+  <summary>
+    Given that the user has typed a URL, and given that that specific URL was
+    ranked but not visible on the Suggested pane of the NTP, this is the rank
+    that the Suggested pane had for that URL.
+  </summary>
+</histogram>
+
+<histogram name="NewTabPage.OtherSessionsMenu" enum="NtpOtherSessionsType">
+  <summary>
+    Histogram for usage of the menu on the NTP that allows the user to access
+    tabs from other devices.
+  </summary>
+</histogram>
+
+<histogram name="NewTabPage.PreviousSelectedPageType" enum="NtpPaneType">
+  <summary>
+    The pane that had been previously selected when the user switches panes in
+    the NTP.
+  </summary>
+</histogram>
+
+<histogram name="NewTabPage.Promo.Bubble" enum="NtpPromoAction">
+  <summary>Histogram for NTP bubble promo activity.</summary>
+</histogram>
+
+<histogram name="NewTabPage.Promo.Notification" enum="NtpPromoAction">
+  <summary>Histogram for NTP notification promo activity.</summary>
+</histogram>
+
+<histogram name="NewTabPage.SearchURLs.Total">
+  <summary>TBD.</summary>
+</histogram>
+
+<histogram name="NewTabPage.SelectedPageType" enum="NtpPaneType">
+  <summary>The pane selected when the user switches panes in the NTP.</summary>
+</histogram>
+
+<histogram name="NewTabPage.SessionRestore">
+  <summary>
+    Histogram for user clicks of the Recently Closed items. The value is the
+    recency of the entry being restored (0 is most recent).
+  </summary>
+</histogram>
+
+<histogram name="NewTabPage.SingleSessionPageSwitches">
+  <summary>
+    Histogram to track how many times a user switched pages in a single NTP
+    session.
+  </summary>
+</histogram>
+
+<histogram name="NewTabPage.SuggestedSite">
+  <summary>
+    Histogram for user clicks of the suggested site thumbnails. The value is
+    equal to the index of the thumbnail.
+  </summary>
+</histogram>
+
+<histogram name="NewTabPage.SuggestedSitesAction" enum="NtpFollowAction">
+  <summary>Action taken by the user on the Suggested Sites NTP pane.</summary>
+</histogram>
+
+<histogram name="NewTabPage.SuggestedSitesLoadTime">
+  <summary>Time to load the Suggested Sites NTP pane, in milliseconds.</summary>
+</histogram>
+
+<histogram name="NewTabPage.SuggestedSitesViewTime">
+  <summary>Time spent on the Suggested Sites NTP pane, in seconds.</summary>
+</histogram>
+
+<histogram name="NewTabPage.VisibleScreenshots">
+  <summary>
+    The number of screenshots that were cached for the visible suggestions on
+    the Suggested NTP pane.
+  </summary>
+</histogram>
+
+<histogram name="NewTabPage.VisibleSuggestedSiteRank">
+  <summary>
+    Given that the user has typed a URL, and given that that specific URL was
+    visible on the Suggested pane of the NTP, this is the rank that the
+    Suggested pane had for that URL.
+  </summary>
+</histogram>
+
+<histogram name="ntp.searchurls.total">
+  <summary>TBD</summary>
+</histogram>
+
+<histogram name="NtpHandler.AttachShownPageType" enum="NtpPaneType">
+  <obsolete>
+    Deprecated 10/2011. No longer tracked, replaced with
+    NewTabPage.DefaultPageType
+  </obsolete>
+  <summary>The default pane when the NTP is first opened.</summary>
+</histogram>
+
+<histogram name="NtpHandler.SelectedShownPageType" enum="NtpPaneType">
+  <obsolete>
+    Deprecated 10/2011. No longer tracked, replaced with
+    NewTabPage.SelectedPageType
+  </obsolete>
+  <summary>The pane selected when the user switches panes in the NTP.</summary>
+</histogram>
+
 <histogram name="OfflinePolicy.SuccessfulResourceLoadPercentage" units="%">
   <summary>
     When a page is loaded in offline mode, the percentage of resources on that
@@ -7613,6 +7800,10 @@ other types of suffix sets.
     user navigation. If the page is never used, it is not included in this
     histogram.
   </summary>
+</histogram>
+
+<histogram name="Profile.AppCount">
+  <summary>The number of installed apps when a profile is opened.</summary>
 </histogram>
 
 <histogram name="Renderer.PixelIncreaseFromTransitions">
@@ -10103,6 +10294,39 @@ other types of suffix sets.
   <int value="3" label="LowMemory"/>
 </enum>
 
+<enum name="AppLaunch" type="int">
+  <int value="0" label="NTP_APPS_MAXIMIZED"/>
+  <int value="1" label="NTP_APPS_COLLAPSED"/>
+  <int value="2" label="NTP_APPS_MENU"/>
+  <int value="3" label="NTP_MOST_VISITED"/>
+  <int value="4" label="NTP_RECENTLY_CLOSED"/>
+  <int value="5" label="BOOKMARK_BAR"/>
+  <int value="6" label="CONTENT_NAVIGATION"/>
+  <int value="7" label="SESSION_RESTORE"/>
+  <int value="8" label="AUTOLAUNCH"/>
+  <int value="9" label="OMNIBOX_APP"/>
+  <int value="10" label="OMNIBOX_LOCATION"/>
+  <int value="11" label="OMNIBOX_INSTANT"/>
+  <int value="12" label="EXTENSION_API"/>
+  <int value="13" label="CMD_LINE_APP"/>
+  <int value="14" label="CMD_LINE_URL"/>
+  <int value="15" label="NTP_WEBSTORE"/>
+  <int value="16" label="NTP_APP_RE_ENABLE"/>
+  <int value="17" label="CMD_LINE_APP_LEGACY"/>
+  <int value="18" label="NTP_WEBSTORE_FOOTER"/>
+  <int value="19" label="NTP_WEBSTORE_PLUS_ICON"/>
+  <int value="20" label="APP_LIST_MAIN"/>
+  <int value="21" label="APP_LIST_SEARCH"/>
+</enum>
+
+<enum name="AppsPageDragSource" type="int">
+  <int value="0" label="Same apps pane"/>
+  <int value="1" label="Different apps pane"/>
+  <int value="2" label="Most visited pane"/>
+  <int value="3" label="Bookmarks pane"/>
+  <int value="4" label="Outside of NTP (e.g. bookmarks bar)"/>
+</enum>
+
 <enum name="AsyncDNSConfigParsePosix" type="int">
   <int value="0" label="OK"/>
   <int value="1" label="RES_INIT_FAILED"/>
@@ -11861,6 +12085,12 @@ other types of suffix sets.
   <int value="459" label="AUDIO_SETPROPERTIES"/>
   <int value="460" label="USB_RESETDEVICE"/>
   <int value="461" label="SYSTEMINFO_CPU_GET"/>
+</enum>
+
+<enum name="ExtensionLaunchType" type="int">
+  <int value="0" label="PINNED"/>
+  <int value="1" label="REGULAR"/>
+  <int value="2" label="FULLSCREEN"/>
 </enum>
 
 <enum name="ExternalDeviceAction" type="int">
@@ -13699,6 +13929,56 @@ other types of suffix sets.
   <int value="14" label="HTTP_GET_FAILED"/>
 </enum>
 
+<enum name="NewTabPageMobilePromo" type="int">
+  <summary>
+    These values are defined inside the PromoImpressionBuckets enum in
+    chrome/browser/ui/webui/ntp/android/promo_handler.cc
+  </summary>
+  <int value="0" label="Shown from most visited page"/>
+  <int value="1" label="Shown from open tabs page"/>
+  <int value="2" label="Shown from sync promo page"/>
+  <int value="3" label="User pressed 'Try Chrome'"/>
+  <int value="4" label="User dismissed the promo"/>
+</enum>
+
+<enum name="NtpFollowAction" type="int">
+  <int value="0" label="PAGE_TRANSITION_LINK"/>
+  <int value="1" label="PAGE_TRANSITION_TYPED"/>
+  <int value="2" label="PAGE_TRANSITION_AUTO_BOOKMARK"/>
+  <int value="3" label="PAGE_TRANSITION_AUTO_SUBFRAME"/>
+  <int value="4" label="PAGE_TRANSITION_MANUAL_SUBFRAME"/>
+  <int value="5" label="PAGE_TRANSITION_GENERATED"/>
+  <int value="6" label="PAGE_TRANSITION_START_PAGE"/>
+  <int value="7" label="PAGE_TRANSITION_FORM_SUBMIT"/>
+  <int value="8" label="PAGE_TRANSITION_RELOAD"/>
+  <int value="9" label="PAGE_TRANSITION_KEYWORD"/>
+  <int value="10" label="PAGE_TRANSITION_KEYWORD_GENERATED"/>
+  <int value="11" label="Clicked on a tile."/>
+  <int value="12" label="Clicked to other NTP pane."/>
+  <int value="13" label="Other action"/>
+</enum>
+
+<enum name="NtpOtherSessionsType" type="int">
+  <int value="0" label="Menu initialized"/>
+  <int value="1" label="Menu shown"/>
+  <int value="2" label="Link clicked"/>
+  <int value="3" label="Link context menu shown"/>
+  <int value="4" label="Device context menu shown"/>
+</enum>
+
+<enum name="NtpPaneType" type="int">
+  <int value="1" label="MostVisited"/>
+  <int value="2" label="Apps"/>
+  <int value="3" label="Bookmarks"/>
+  <int value="4" label="Suggestions"/>
+</enum>
+
+<enum name="NtpPromoAction" type="int">
+  <int value="0" label="NTP Promo viewed"/>
+  <int value="1" label="NTP Promo closed"/>
+  <int value="2" label="NTP Promo link clicked"/>
+</enum>
+
 <enum name="OfflineStatus" type="int">
   <int value="0" label="Fresh data load from Cache"/>
   <int value="1" label="Successful network request (validation or fetch)."/>
@@ -15352,6 +15632,19 @@ other types of suffix sets.
   <affected-histogram name="PLT.LoadType"/>
 </fieldtrial>
 
+<fieldtrial name="DefaultAppsExperiment">
+  <group name="NoDefaultApps" label="User's without default apps installed"/>
+  <group name="WithDefaultApps" label="User's with default apps installed"/>
+  <affected-histogram name="Extensions.AppTabLaunchType"/>
+  <affected-histogram name="Extensions.ExtensionInstalled"/>
+  <affected-histogram name="Extensions.ExtensionUninstalled"/>
+  <affected-histogram name="NewTabPage.DefaultPageType"/>
+  <affected-histogram name="NewTabPage.SelectedPageType"/>
+  <affected-histogram name="NtpHandler.AttachShownPageType"/>
+  <affected-histogram name="NtpHandler.SelectedShownPageType"/>
+  <affected-histogram name="Profile.AppCount"/>
+</fieldtrial>
+
 <fieldtrial name="DefaultPinnedApps">
   <group name="Existing"/>
   <group name="Control"/>
@@ -16657,6 +16950,14 @@ other types of suffix sets.
   <group name="Full_Handshake" label="Full"/>
   <affected-histogram name="Net.SSL_Connection_Latency"/>
   <affected-histogram name="Net.SSL_Connection_Latency_Google"/>
+</fieldtrial>
+
+<fieldtrial name="WebStoreLinkExperiment">
+  <group name="Disabled" label="Neither extra webstore link is visible"/>
+  <group name="FooterLink" label="Link in bottom right of footer"/>
+  <group name="PlusIcon" label="Plus icon in apps page"/>
+  <affected-histogram name="Extensions.AppLaunch"/>
+  <affected-histogram name="NewTabPage.DefaultPageType"/>
 </fieldtrial>
 
 </fieldtrials>
