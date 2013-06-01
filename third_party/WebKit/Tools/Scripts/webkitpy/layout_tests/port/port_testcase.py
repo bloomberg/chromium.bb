@@ -472,6 +472,11 @@ class PortTestCase(unittest.TestCase):
                               options=MockOptions(additional_platform_directory=["internal-testwebkitport"]))
         self.assertEqual(platform_dirs(port), ['LayoutTests', 'testwebkitport', 'testwebkitport-version', 'internal-testwebkitport'])
 
+    def test_root_option(self):
+        port = TestWebKitPort()
+        port._options = MockOptions(root='/foo')
+        self.assertEqual(port._path_to_driver(), "/foo/content_shell")
+
     def test_test_expectations(self):
         # Check that we read the expectations file
         host = MockSystemHost()

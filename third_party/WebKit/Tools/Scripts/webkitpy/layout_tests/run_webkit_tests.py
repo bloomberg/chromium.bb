@@ -109,6 +109,22 @@ def parse_args(args):
             help="Run Android layout tests on these devices."),
     ]))
 
+    option_group_definitions.append(("WebKit Options", [
+        optparse.make_option("--gc-between-tests", action="store_true", default=False,
+            help="Force garbage collection between each test"),
+        optparse.make_option("--complex-text", action="store_true", default=False,
+            help="Use the complex text code path for all text (Mac OS X and Windows only)"),
+        optparse.make_option("-l", "--leaks", action="store_true", default=False,
+            help="Enable leaks checking (Mac OS X only)"),
+        optparse.make_option("-g", "--guard-malloc", action="store_true", default=False,
+            help="Enable Guard Malloc (Mac OS X only)"),
+        optparse.make_option("--threaded", action="store_true", default=False,
+            help="Run a concurrent JavaScript thread with each test"),
+        # FIXME: We should merge this w/ --build-directory and only have one flag.
+        optparse.make_option("--root", action="store",
+            help="Path to a directory containing the executables needed to run tests."),
+    ]))
+
     option_group_definitions.append(("Results Options", [
         optparse.make_option("-p", "--pixel", "--pixel-tests", action="store_true",
             dest="pixel_tests", help="Enable pixel-to-pixel PNG comparisons"),
