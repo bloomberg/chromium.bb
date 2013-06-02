@@ -27,7 +27,7 @@ media::VideoCapture* VideoCaptureImplManager::AddDevice(
   Devices::iterator it = devices_.find(id);
   if (it == devices_.end()) {
     VideoCaptureImpl* vc =
-        new VideoCaptureImpl(id, message_loop_proxy_, filter_);
+        new VideoCaptureImpl(id, message_loop_proxy_.get(), filter_.get());
     devices_[id] = new Device(vc, handler);
     vc->Init();
     return vc;

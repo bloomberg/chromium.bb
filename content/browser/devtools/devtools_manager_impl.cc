@@ -49,7 +49,7 @@ DevToolsAgentHost* DevToolsManagerImpl::GetDevToolsAgentHostFor(
     DevToolsClientHost* client_host) {
   ClientToAgentHostMap::iterator it = client_to_agent_host_.find(client_host);
   if (it != client_to_agent_host_.end())
-    return it->second;
+    return it->second.get();
   return NULL;
 }
 
@@ -142,8 +142,7 @@ void DevToolsManagerImpl::UnbindClientHost(DevToolsAgentHostImpl* agent_host,
   scoped_refptr<DevToolsAgentHostImpl> protect(agent_host);
   DCHECK(agent_to_client_host_.find(agent_host)->second ==
       client_host);
-  DCHECK(client_to_agent_host_.find(client_host)->second ==
-      agent_host);
+  DCHECK(client_to_agent_host_.find(client_host)->second.get() == agent_host);
   agent_host->set_close_listener(NULL);
 
   agent_to_client_host_.erase(agent_host);

@@ -108,7 +108,7 @@ P2PPortAllocatorSession::P2PPortAllocatorSession(
 }
 
 P2PPortAllocatorSession::~P2PPortAllocatorSession() {
-  if (stun_address_request_)
+  if (stun_address_request_.get())
     stun_address_request_->Cancel();
 }
 
@@ -155,7 +155,7 @@ void P2PPortAllocatorSession::GetPortConfigurations() {
 }
 
 void P2PPortAllocatorSession::ResolveStunServerAddress() {
-  if (stun_address_request_)
+  if (stun_address_request_.get())
     return;
 
   stun_address_request_ =

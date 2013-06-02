@@ -49,7 +49,7 @@ void AudioInputDeviceManager::Register(
     base::MessageLoopProxy* device_thread_loop) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK(!listener_);
-  DCHECK(!device_loop_);
+  DCHECK(!device_loop_.get());
   listener_ = listener;
   device_loop_ = device_thread_loop;
 }

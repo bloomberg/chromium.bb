@@ -83,7 +83,7 @@ void ResolveProxyMsgHelper::StartPendingRequest() {
   // Verify the request wasn't started yet.
   DCHECK(NULL == req.pac_req);
 
-  if (context_getter_) {
+  if (context_getter_.get()) {
     proxy_service_ = context_getter_->GetURLRequestContext()->proxy_service();
     context_getter_ = NULL;
   }

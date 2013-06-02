@@ -59,7 +59,7 @@ void GoogleOneShotRemoteEngineTest::CreateAndTestRequest(
                      2 /* bytes per sample */));
   client.set_delegate(this);
   client.StartRecognition();
-  client.TakeAudioChunk(*dummy_audio_chunk);
+  client.TakeAudioChunk(*dummy_audio_chunk.get());
   client.AudioChunksEnded();
   net::TestURLFetcher* fetcher = url_fetcher_factory_.GetFetcherByID(0);
   ASSERT_TRUE(fetcher);

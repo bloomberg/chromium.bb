@@ -192,12 +192,12 @@ bool DownloadResourceHandler::OnResponseStarted(
   }
 
   std::string content_type_header;
-  if (!response->head.headers ||
+  if (!response->head.headers.get() ||
       !response->head.headers->GetMimeType(&content_type_header))
     content_type_header = "";
   info->original_mime_type = content_type_header;
 
-  if (!response->head.headers ||
+  if (!response->head.headers.get() ||
       !response->head.headers->EnumerateHeader(
           NULL, "Accept-Ranges", &accept_ranges_)) {
     accept_ranges_ = "";
@@ -243,7 +243,7 @@ bool DownloadResourceHandler::OnWillRead(int request_id, net::IOBuffer** buf,
                                          int* buf_size, int min_size) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK(buf && buf_size);
-  DCHECK(!read_buffer_);
+  DCHECK(!read_buffer_.get());
 
   *buf_size = min_size < 0 ? kReadBufSize : min_size;
   last_buffer_size_ = *buf_size;
@@ -256,7 +256,7 @@ bool DownloadResourceHandler::OnWillRead(int request_id, net::IOBuffer** buf,
 bool DownloadResourceHandler::OnReadCompleted(int request_id, int bytes_read,
                                               bool* defer) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  DCHECK(read_buffer_);
+  DCHECK(read_buffer_.get());
 
   base::TimeTicks now(base::TimeTicks::Now());
   if (!last_read_time_.is_null()) {
@@ -275,7 +275,7 @@ bool DownloadResourceHandler::OnReadCompleted(int request_id, int bytes_read,
   if (!bytes_read)
     return true;
   bytes_read_ += bytes_read;
-  DCHECK(read_buffer_);
+  DCHECK(read_buffer_.get());
 
   // Take the data ship it down the stream.  If the stream is full, pause the
   // request; the stream callback will resume it.

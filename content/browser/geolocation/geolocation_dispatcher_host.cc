@@ -143,11 +143,16 @@ void GeolocationDispatcherHostImpl::OnRequestPermission(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DVLOG(1) << __FUNCTION__ << " " << render_process_id_ << ":"
            << render_view_id << ":" << bridge_id;
-  if (geolocation_permission_context_) {
+  if (geolocation_permission_context_.get()) {
     geolocation_permission_context_->RequestGeolocationPermission(
-        render_process_id_, render_view_id, bridge_id, requesting_frame,
-        base::Bind(&SendGeolocationPermissionResponse, render_process_id_,
-                   render_view_id, bridge_id));
+        render_process_id_,
+        render_view_id,
+        bridge_id,
+        requesting_frame,
+        base::Bind(&SendGeolocationPermissionResponse,
+                   render_process_id_,
+                   render_view_id,
+                   bridge_id));
   } else {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
@@ -163,8 +168,8 @@ void GeolocationDispatcherHostImpl::OnCancelPermissionRequest(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DVLOG(1) << __FUNCTION__ << " " << render_process_id_ << ":"
            << render_view_id << ":" << bridge_id;
-  if (geolocation_permission_context_) {
-  geolocation_permission_context_->CancelGeolocationPermissionRequest(
+  if (geolocation_permission_context_.get()) {
+    geolocation_permission_context_->CancelGeolocationPermissionRequest(
         render_process_id_, render_view_id, bridge_id, requesting_frame);
   }
 }

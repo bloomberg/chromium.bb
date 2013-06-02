@@ -157,7 +157,7 @@ TracingMessageHandler::TracingMessageHandler()
 }
 
 TracingMessageHandler::~TracingMessageHandler() {
-  if (select_trace_file_dialog_)
+  if (select_trace_file_dialog_.get())
     select_trace_file_dialog_->ListenerDestroyed();
 
   // If we are the current subscriber, this will result in ending tracing.
@@ -310,7 +310,7 @@ void TracingMessageHandler::FileSelectionCanceled(void* params) {
 
 void TracingMessageHandler::OnLoadTraceFile(const base::ListValue* list) {
   // Only allow a single dialog at a time.
-  if (select_trace_file_dialog_)
+  if (select_trace_file_dialog_.get())
     return;
   select_trace_file_dialog_type_ = ui::SelectFileDialog::SELECT_OPEN_FILE;
   select_trace_file_dialog_ = ui::SelectFileDialog::Create(
@@ -360,7 +360,7 @@ void TracingMessageHandler::LoadTraceFileComplete(string16* contents,
 
 void TracingMessageHandler::OnSaveTraceFile(const base::ListValue* list) {
   // Only allow a single dialog at a time.
-  if (select_trace_file_dialog_)
+  if (select_trace_file_dialog_.get())
     return;
 
   DCHECK(list->GetSize() == 1);

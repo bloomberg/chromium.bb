@@ -46,7 +46,7 @@ void ChromeAppCacheService::InitializeOnIOThread(
           BrowserThread::FILE_USER_BLOCKING),
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::CACHE));
   set_appcache_policy(this);
-  set_special_storage_policy(special_storage_policy);
+  set_special_storage_policy(special_storage_policy.get());
 }
 
 bool ChromeAppCacheService::CanLoadAppCache(const GURL& manifest_url,

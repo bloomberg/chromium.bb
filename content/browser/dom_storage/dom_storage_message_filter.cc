@@ -32,7 +32,7 @@ DOMStorageMessageFilter::~DOMStorageMessageFilter() {
 
 void DOMStorageMessageFilter::InitializeInSequence() {
   DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::IO));
-  host_.reset(new dom_storage::DomStorageHost(context_));
+  host_.reset(new dom_storage::DomStorageHost(context_.get()));
   context_->AddEventObserver(this);
 }
 

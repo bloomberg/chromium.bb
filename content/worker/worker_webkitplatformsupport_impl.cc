@@ -96,7 +96,7 @@ WebFileSystem* WorkerWebKitPlatformSupportImpl::fileSystem() {
 
 WebFileUtilities* WorkerWebKitPlatformSupportImpl::fileUtilities() {
   if (!file_utilities_) {
-    file_utilities_.reset(new FileUtilities(thread_safe_sender_));
+    file_utilities_.reset(new FileUtilities(thread_safe_sender_.get()));
     file_utilities_->set_sandbox_enabled(sandboxEnabled());
   }
   return file_utilities_.get();
@@ -282,8 +282,8 @@ WebString WorkerWebKitPlatformSupportImpl::preferredExtensionForMIMEType(
 }
 
 WebBlobRegistry* WorkerWebKitPlatformSupportImpl::blobRegistry() {
-  if (!blob_registry_.get() && thread_safe_sender_)
-    blob_registry_.reset(new WebBlobRegistryImpl(thread_safe_sender_));
+  if (!blob_registry_.get() && thread_safe_sender_.get())
+    blob_registry_.reset(new WebBlobRegistryImpl(thread_safe_sender_.get()));
   return blob_registry_.get();
 }
 

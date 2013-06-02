@@ -150,14 +150,14 @@ void URLRequestMockHTTPJob::GetResponseInfoConst(
 bool URLRequestMockHTTPJob::GetMimeType(std::string* mime_type) const {
   net::HttpResponseInfo info;
   GetResponseInfoConst(&info);
-  return info.headers && info.headers->GetMimeType(mime_type);
+  return info.headers.get() && info.headers->GetMimeType(mime_type);
 }
 
 int URLRequestMockHTTPJob::GetResponseCode() const {
   net::HttpResponseInfo info;
   GetResponseInfoConst(&info);
   // If we have headers, get the response code from them.
-  if (info.headers)
+  if (info.headers.get())
     return info.headers->response_code();
   return net::URLRequestJob::GetResponseCode();
 }
@@ -165,7 +165,7 @@ int URLRequestMockHTTPJob::GetResponseCode() const {
 bool URLRequestMockHTTPJob::GetCharset(std::string* charset) {
   net::HttpResponseInfo info;
   GetResponseInfo(&info);
-  return info.headers && info.headers->GetCharset(charset);
+  return info.headers.get() && info.headers->GetCharset(charset);
 }
 
 }  // namespace content

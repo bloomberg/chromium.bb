@@ -263,7 +263,7 @@ void PluginChannel::OnCreateInstance(const std::string& mime_type,
   *instance_id = GenerateRouteID();
   scoped_refptr<WebPluginDelegateStub> stub(new WebPluginDelegateStub(
       mime_type, *instance_id, this));
-  AddRoute(*instance_id, stub, NULL);
+  AddRoute(*instance_id, stub.get(), NULL);
   plugin_stubs_.push_back(stub);
 }
 
@@ -305,7 +305,7 @@ void PluginChannel::OnClearSiteData(const std::string& site,
   base::FilePath path = command_line->GetSwitchValuePath(switches::kPluginPath);
   scoped_refptr<webkit::npapi::PluginLib> plugin_lib(
       webkit::npapi::PluginLib::CreatePluginLib(path));
-  if (plugin_lib) {
+  if (plugin_lib.get()) {
     NPError err = plugin_lib->NP_Initialize();
     if (err == NPERR_NO_ERROR) {
       const char* site_str = site.empty() ? NULL : site.c_str();

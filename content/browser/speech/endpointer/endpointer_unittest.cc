@@ -123,7 +123,7 @@ class EndpointerFrameProcessor : public FrameProcessor {
                                 int frame_size) OVERRIDE {
     scoped_refptr<AudioChunk> frame(
         new AudioChunk(reinterpret_cast<uint8*>(samples), kFrameSize * 2, 2));
-    endpointer_->ProcessAudio(*frame, NULL);
+    endpointer_->ProcessAudio(*frame.get(), NULL);
     int64 ep_time;
     return endpointer_->Status(&ep_time);
   }

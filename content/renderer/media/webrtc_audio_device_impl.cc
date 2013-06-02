@@ -220,14 +220,14 @@ int32_t WebRtcAudioDeviceImpl::Init() {
   if (initialized_)
     return 0;
 
-  DCHECK(!capturer_);
+  DCHECK(!capturer_.get());
   capturer_ = WebRtcAudioCapturer::CreateCapturer();
   // Add itself as an audio track to the |capturer_|. This is because WebRTC
   // supports only one ADM but multiple audio tracks, so the ADM can't be the
   // sink of certain audio track now.
   // TODO(xians): Register the ADM as the sink of the audio track if WebRTC
   // supports one ADM for each audio track.
-  if (capturer_)
+  if (capturer_.get())
     capturer_->AddSink(this);
 
   // We need to return a success to continue the initialization of WebRtc VoE
@@ -250,15 +250,15 @@ int32_t WebRtcAudioDeviceImpl::Terminate() {
   StopPlayout();
 
   // It is necessary to stop the |renderer_| before going away.
-  if (renderer_) {
+  if (renderer_.get()) {
     // Grab a local reference while we call Stop(), which will trigger a call to
     // RemoveAudioRenderer that clears our reference to the audio renderer.
     scoped_refptr<WebRtcAudioRenderer> local_renderer(renderer_);
     local_renderer->Stop();
-    DCHECK(!renderer_);
+    DCHECK(!renderer_.get());
   }
 
-  if (capturer_) {
+  if (capturer_.get()) {
     // |capturer_| is stopped by the media stream, so do not need to
     // call Stop() here.
     capturer_->RemoveSink(this);
@@ -283,14 +283,14 @@ bool WebRtcAudioDeviceImpl::PlayoutIsInitialized() const {
 }
 
 int32_t WebRtcAudioDeviceImpl::RecordingIsAvailable(bool* available) {
-  *available = (capturer_ != NULL);
+  *available = (capturer_.get() != NULL);
   return 0;
 }
 
 bool WebRtcAudioDeviceImpl::RecordingIsInitialized() const {
   DVLOG(1) << "WebRtcAudioDeviceImpl::RecordingIsInitialized()";
   DCHECK(thread_checker_.CalledOnValidThread());
-  return (capturer_ != NULL);
+  return (capturer_.get() != NULL);
 }
 
 int32_t WebRtcAudioDeviceImpl::StartPlayout() {
@@ -386,7 +386,7 @@ int32_t WebRtcAudioDeviceImpl::SetAGC(bool enable) {
   // The current implementation does not support changing the AGC state while
   // recording. Using this approach simplifies the design and it is also
   // inline with the  latest WebRTC standard.
-  if (!capturer_ || capturer_->is_recording())
+  if (!capturer_.get() || capturer_->is_recording())
     return -1;
 
   capturer_->SetAutomaticGainControl(enable);
@@ -405,7 +405,7 @@ bool WebRtcAudioDeviceImpl::AGC() const {
 int32_t WebRtcAudioDeviceImpl::SetMicrophoneVolume(uint32_t volume) {
   DVLOG(1) << "WebRtcAudioDeviceImpl::SetMicrophoneVolume(" << volume << ")";
   DCHECK(initialized_);
-  if (!capturer_)
+  if (!capturer_.get())
     return -1;
 
   if (volume > kMaxVolumeLevel)
@@ -426,7 +426,7 @@ int32_t WebRtcAudioDeviceImpl::MicrophoneVolume(uint32_t* volume) const {
   // and cached in the same method, i.e. we don't ask the native audio layer
   // for the actual micropone level here.
   DCHECK(initialized_);
-  if (!capturer_)
+  if (!capturer_.get())
     return -1;
   base::AutoLock auto_lock(lock_);
   *volume = microphone_volume_;
@@ -452,7 +452,7 @@ int32_t WebRtcAudioDeviceImpl::StereoPlayoutIsAvailable(bool* available) const {
 int32_t WebRtcAudioDeviceImpl::StereoRecordingIsAvailable(
     bool* available) const {
   DCHECK(initialized_);
-  if (!capturer_)
+  if (!capturer_.get())
     return -1;
   *available = (input_channels() == 2);
   return 0;
@@ -487,7 +487,7 @@ bool WebRtcAudioDeviceImpl::SetAudioRenderer(WebRtcAudioRenderer* renderer) {
   DCHECK(renderer);
 
   base::AutoLock auto_lock(lock_);
-  if (renderer_)
+  if (renderer_.get())
     return false;
 
   if (!renderer->Initialize(this))

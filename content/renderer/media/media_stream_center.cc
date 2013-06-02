@@ -29,7 +29,7 @@ static webrtc::MediaStreamInterface* GetNativeMediaStream(
     const WebKit::WebMediaStream& stream) {
   MediaStreamExtraData* extra_data =
       static_cast<MediaStreamExtraData*>(stream.extraData());
-  return extra_data->stream();
+  return extra_data->stream().get();
 }
 
 static webrtc::MediaStreamTrackInterface* GetNativeMediaStreamTrack(

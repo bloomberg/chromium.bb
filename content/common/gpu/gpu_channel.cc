@@ -126,7 +126,7 @@ class GpuChannelMessageFilter : public IPC::ChannelProxy::MessageFilter {
     // All other messages get processed by the GpuChannel.
     if (!handled) {
       messages_forwarded_to_channel_++;
-      if (preempting_flag_)
+      if (preempting_flag_.get())
         pending_messages_.push(PendingMessage(messages_forwarded_to_channel_));
       UpdatePreemptionState();
     }
@@ -486,7 +486,7 @@ bool GpuChannel::Init(base::MessageLoopProxy* io_message_loop,
       gpu_channel_manager_->sync_point_manager(),
       base::MessageLoopProxy::current());
   io_message_loop_ = io_message_loop;
-  channel_->AddFilter(filter_);
+  channel_->AddFilter(filter_.get());
 
   return true;
 }
@@ -603,11 +603,12 @@ void GpuChannel::StubSchedulingChanged(bool scheduled) {
   bool a_stub_is_descheduled = num_stubs_descheduled_ > 0;
 
   if (a_stub_is_descheduled != a_stub_was_descheduled) {
-    if (preempting_flag_) {
+    if (preempting_flag_.get()) {
       io_message_loop_->PostTask(
           FROM_HERE,
           base::Bind(&GpuChannelMessageFilter::UpdateStubSchedulingState,
-                     filter_, a_stub_is_descheduled));
+                     filter_,
+                     a_stub_is_descheduled));
     }
   }
 }
@@ -637,24 +638,24 @@ void GpuChannel::CreateViewCommandBuffer(
 #endif
 
   *route_id = GenerateRouteID();
-  scoped_ptr<GpuCommandBufferStub> stub(new GpuCommandBufferStub(
-      this,
-      share_group,
-      window,
-      mailbox_manager_,
-      image_manager_,
-      gfx::Size(),
-      disallowed_features_,
-      init_params.allowed_extensions,
-      init_params.attribs,
-      init_params.gpu_preference,
-      use_virtualized_gl_context,
-      *route_id,
-      surface_id,
-      watchdog_,
-      software_,
-      init_params.active_url));
-  if (preempted_flag_)
+  scoped_ptr<GpuCommandBufferStub> stub(
+      new GpuCommandBufferStub(this,
+                               share_group,
+                               window,
+                               mailbox_manager_.get(),
+                               image_manager_.get(),
+                               gfx::Size(),
+                               disallowed_features_,
+                               init_params.allowed_extensions,
+                               init_params.attribs,
+                               init_params.gpu_preference,
+                               use_virtualized_gl_context,
+                               *route_id,
+                               surface_id,
+                               watchdog_,
+                               software_,
+                               init_params.active_url));
+  if (preempted_flag_.get())
     stub->SetPreemptByFlag(preempted_flag_);
   router_.AddRoute(*route_id, stub.get());
   stubs_.AddWithID(stub.release(), *route_id);
@@ -682,7 +683,7 @@ void GpuChannel::CreateImage(
   }
 
   scoped_refptr<gfx::GLImage> image = gfx::GLImage::CreateGLImage(window);
-  if (!image)
+  if (!image.get())
     return;
 
   image_manager_->AddImage(image.get(), image_id);
@@ -721,7 +722,7 @@ void GpuChannel::RemoveRoute(int32 route_id) {
 }
 
 gpu::PreemptionFlag* GpuChannel::GetPreemptionFlag() {
-  if (!preempting_flag_) {
+  if (!preempting_flag_.get()) {
     preempting_flag_ = new gpu::PreemptionFlag;
     io_message_loop_->PostTask(
         FROM_HERE, base::Bind(
@@ -742,7 +743,7 @@ void GpuChannel::SetPreemptByFlag(
 }
 
 GpuChannel::~GpuChannel() {
-  if (preempting_flag_)
+  if (preempting_flag_.get())
     preempting_flag_->Reset();
 }
 
@@ -872,7 +873,7 @@ void GpuChannel::OnCreateOffscreenCommandBuffer(
       watchdog_,
       software_,
       init_params.active_url));
-  if (preempted_flag_)
+  if (preempted_flag_.get())
     stub->SetPreemptByFlag(preempted_flag_);
   router_.AddRoute(*route_id, stub.get());
   stubs_.AddWithID(stub.release(), *route_id);
@@ -941,11 +942,12 @@ void GpuChannel::OnCollectRenderingStatsForSurface(
 
 void GpuChannel::MessageProcessed() {
   messages_processed_++;
-  if (preempting_flag_) {
+  if (preempting_flag_.get()) {
     io_message_loop_->PostTask(
         FROM_HERE,
         base::Bind(&GpuChannelMessageFilter::MessageProcessed,
-                   filter_, messages_processed_));
+                   filter_,
+                   messages_processed_));
   }
 }
 

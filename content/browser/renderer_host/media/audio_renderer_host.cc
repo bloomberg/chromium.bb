@@ -45,9 +45,7 @@ class AudioRendererHost::AudioEntry
     return render_view_id_;
   }
 
-  media::AudioOutputController* controller() const {
-    return controller_;
-  }
+  media::AudioOutputController* controller() const { return controller_.get(); }
 
   base::SharedMemory* shared_memory() {
     return shared_memory_.get();
@@ -95,7 +93,7 @@ AudioRendererHost::AudioEntry::AudioEntry(
           host->audio_manager_, this, params, reader.get())),
       shared_memory_(shared_memory.Pass()),
       reader_(reader.Pass()) {
-  DCHECK(controller_);
+  DCHECK(controller_.get());
 }
 
 AudioRendererHost::AudioEntry::~AudioEntry() {}

@@ -44,7 +44,7 @@ StreamURLRequestJob::StreamURLRequestJob(
       total_bytes_read_(0),
       max_range_(0),
       request_failed_(false) {
-  DCHECK(stream_);
+  DCHECK(stream_.get());
   stream_->SetReadObserver(this);
 }
 
@@ -55,9 +55,10 @@ StreamURLRequestJob::~StreamURLRequestJob() {
 void StreamURLRequestJob::OnDataAvailable(Stream* stream) {
   // Clear the IO_PENDING status.
   SetStatus(net::URLRequestStatus());
-  if (pending_buffer_) {
+  if (pending_buffer_.get()) {
     int bytes_read;
-    stream_->ReadRawData(pending_buffer_, pending_buffer_size_, &bytes_read);
+    stream_->ReadRawData(
+        pending_buffer_.get(), pending_buffer_size_, &bytes_read);
 
     // Clear the buffers before notifying the read is complete, so that it is
     // safe for the observer to read.
@@ -234,7 +235,7 @@ void StreamURLRequestJob::HeadersCompleted(int status_code,
 }
 
 void StreamURLRequestJob::ClearStream() {
-  if (stream_) {
+  if (stream_.get()) {
     stream_->RemoveReadObserver(this);
     stream_ = NULL;
   }

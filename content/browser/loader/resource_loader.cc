@@ -70,9 +70,9 @@ ResourceLoader::ResourceLoader(scoped_ptr<net::URLRequest> request,
 }
 
 ResourceLoader::~ResourceLoader() {
-  if (login_delegate_)
+  if (login_delegate_.get())
     login_delegate_->OnRequestCancelled();
-  if (ssl_client_auth_handler_)
+  if (ssl_client_auth_handler_.get())
     ssl_client_auth_handler_->OnRequestCancelled();
 
   // Run ResourceHandler destructor before we tear-down the rest of our state
@@ -250,10 +250,10 @@ void ResourceLoader::OnReceivedRedirect(net::URLRequest* unused,
   }
 
   scoped_refptr<ResourceResponse> response(new ResourceResponse());
-  PopulateResourceResponse(request_.get(), response);
+  PopulateResourceResponse(request_.get(), response.get());
 
-  if (!handler_->OnRequestRedirected(info->GetRequestID(), new_url, response,
-                                     defer)) {
+  if (!handler_->OnRequestRedirected(
+          info->GetRequestID(), new_url, response.get(), defer)) {
     Cancel();
   } else if (*defer) {
     deferred_stage_ = DEFERRED_REDIRECT;  // Follow redirect when resumed.
@@ -277,10 +277,10 @@ void ResourceLoader::OnAuthRequired(net::URLRequest* unused,
   // Create a login dialog on the UI thread to get authentication data, or pull
   // from cache and continue on the IO thread.
 
-  DCHECK(!login_delegate_) <<
-      "OnAuthRequired called with login_delegate pending";
+  DCHECK(!login_delegate_.get())
+      << "OnAuthRequired called with login_delegate pending";
   login_delegate_ = delegate_->CreateLoginDelegate(this, auth_info);
-  if (!login_delegate_)
+  if (!login_delegate_.get())
     request_->CancelAuth();
 }
 
@@ -303,8 +303,8 @@ void ResourceLoader::OnCertificateRequested(
   }
 #endif
 
-  DCHECK(!ssl_client_auth_handler_) <<
-      "OnCertificateRequested called with ssl_client_auth_handler pending";
+  DCHECK(!ssl_client_auth_handler_.get())
+      << "OnCertificateRequested called with ssl_client_auth_handler pending";
   ssl_client_auth_handler_ = new SSLClientAuthHandler(request_.get(),
                                                       cert_info);
   ssl_client_auth_handler_->SelectCertificate();
@@ -478,11 +478,11 @@ void ResourceLoader::CancelRequestInternal(int error, bool from_renderer) {
   // IO_PENDING?
   bool was_pending = request_->is_pending();
 
-  if (login_delegate_) {
+  if (login_delegate_.get()) {
     login_delegate_->OnRequestCancelled();
     login_delegate_ = NULL;
   }
-  if (ssl_client_auth_handler_) {
+  if (ssl_client_auth_handler_.get()) {
     ssl_client_auth_handler_->OnRequestCancelled();
     ssl_client_auth_handler_ = NULL;
   }
@@ -504,7 +504,7 @@ void ResourceLoader::CompleteResponseStarted() {
   ResourceRequestInfoImpl* info = GetRequestInfo();
 
   scoped_refptr<ResourceResponse> response(new ResourceResponse());
-  PopulateResourceResponse(request_.get(), response);
+  PopulateResourceResponse(request_.get(), response.get());
 
   // The --site-per-process flag enables an out-of-process iframes
   // prototype. It works by changing the MIME type of cross-site subframe
@@ -534,10 +534,9 @@ void ResourceLoader::CompleteResponseStarted() {
     response->head.mime_type = "application/browser-plugin";
   }
 
-  if (request_->ssl_info().cert) {
-    int cert_id =
-        CertStore::GetInstance()->StoreCert(request_->ssl_info().cert,
-                                            info->GetChildID());
+  if (request_->ssl_info().cert.get()) {
+    int cert_id = CertStore::GetInstance()->StoreCert(
+        request_->ssl_info().cert.get(), info->GetChildID());
     response->head.security_info = SerializeSecurityInfo(
         cert_id,
         request_->ssl_info().cert_status,
@@ -553,7 +552,8 @@ void ResourceLoader::CompleteResponseStarted() {
   delegate_->DidReceiveResponse(this);
 
   bool defer = false;
-  if (!handler_->OnResponseStarted(info->GetRequestID(), response, &defer)) {
+  if (!handler_->OnResponseStarted(
+          info->GetRequestID(), response.get(), &defer)) {
     Cancel();
   } else if (defer) {
     deferred_stage_ = DEFERRED_READ;  // Read first chunk when resumed.
@@ -632,8 +632,8 @@ void ResourceLoader::ResponseCompleted() {
 
   std::string security_info;
   const net::SSLInfo& ssl_info = request_->ssl_info();
-  if (ssl_info.cert != NULL) {
-    int cert_id = CertStore::GetInstance()->StoreCert(ssl_info.cert,
+  if (ssl_info.cert.get() != NULL) {
+    int cert_id = CertStore::GetInstance()->StoreCert(ssl_info.cert.get(),
                                                       info->GetChildID());
     security_info = SerializeSecurityInfo(
         cert_id, ssl_info.cert_status, ssl_info.security_bits,

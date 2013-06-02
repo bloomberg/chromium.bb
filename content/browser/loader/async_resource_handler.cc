@@ -173,8 +173,8 @@ bool AsyncResourceHandler::OnResponseStarted(int request_id,
 
   ResourceContext* resource_context = filter_->resource_context();
   if (rdh_->delegate()) {
-    rdh_->delegate()->OnResponseStarted(request_, resource_context, response,
-                                        filter_);
+    rdh_->delegate()->OnResponseStarted(
+        request_, resource_context, response, filter_.get());
   }
 
   DevToolsNetLogObserver::PopulateResponseInfo(request_, response);
@@ -198,10 +198,10 @@ bool AsyncResourceHandler::OnResponseStarted(int request_id,
       routing_id_, request_id, response->head));
   sent_received_response_msg_ = true;
 
-  if (request_->response_info().metadata) {
+  if (request_->response_info().metadata.get()) {
     std::vector<char> copy(request_->response_info().metadata->data(),
                            request_->response_info().metadata->data() +
-                           request_->response_info().metadata->size());
+                               request_->response_info().metadata->size());
     filter_->Send(new ResourceMsg_ReceivedCachedMetadata(
         routing_id_, request_id, copy));
   }
@@ -226,7 +226,7 @@ bool AsyncResourceHandler::OnWillRead(int request_id, net::IOBuffer** buf,
   char* memory = buffer_->Allocate(&allocation_size_);
   CHECK(memory);
 
-  *buf = new DependentIOBuffer(buffer_, memory);
+  *buf = new DependentIOBuffer(buffer_.get(), memory);
   *buf_size = allocation_size_;
 
   UMA_HISTOGRAM_CUSTOM_COUNTS(
@@ -338,7 +338,7 @@ bool AsyncResourceHandler::OnResponseCompleted(
 }
 
 bool AsyncResourceHandler::EnsureResourceBufferIsInitialized() {
-  if (buffer_ && buffer_->IsInitialized())
+  if (buffer_.get() && buffer_->IsInitialized())
     return true;
 
   if (!has_checked_for_sufficient_resources_) {

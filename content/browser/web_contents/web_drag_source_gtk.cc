@@ -256,7 +256,7 @@ void WebDragSourceGtk::OnDragDataGet(GtkWidget* sender,
                     web_contents_->GetEncoding(),
                     web_contents_);
             drag_file_downloader->Start(
-                new PromiseFileFinalizer(drag_file_downloader));
+                new PromiseFileFinalizer(drag_file_downloader.get()));
 
             // Set the status code to success.
             status_code = 'S';

@@ -164,7 +164,7 @@ void GoogleOneShotRemoteEngine::StartRecognition() {
   DCHECK(!url_fetcher_.get());
   std::string lang_param = config_.language;
 
-  if (lang_param.empty() && url_context_) {
+  if (lang_param.empty() && url_context_.get()) {
     // If no language is provided then we use the first from the accepted
     // language list. If this list is empty then it defaults to "en-US".
     // Example of the contents of this list: "es,en-GB;q=0.8", ""
@@ -211,7 +211,7 @@ void GoogleOneShotRemoteEngine::StartRecognition() {
                                              net::URLFetcher::POST,
                                              this));
   url_fetcher_->SetChunkedUpload(encoder_->mime_type());
-  url_fetcher_->SetRequestContext(url_context_);
+  url_fetcher_->SetRequestContext(url_context_.get());
   url_fetcher_->SetReferrer(config_.origin_url);
 
   // The speech recognition API does not require user identification as part
@@ -249,7 +249,7 @@ void GoogleOneShotRemoteEngine::AudioChunksEnded() {
       new AudioChunk(reinterpret_cast<uint8*>(&samples[0]),
                      samples.size() * sizeof(int16),
                      encoder_->bits_per_sample() / 8));
-  encoder_->Encode(*dummy_chunk);
+  encoder_->Encode(*dummy_chunk.get());
   encoder_->Flush();
   scoped_refptr<AudioChunk> encoded_dummy_data(
       encoder_->GetEncodedDataAndClear());

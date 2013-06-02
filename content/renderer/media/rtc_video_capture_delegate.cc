@@ -107,7 +107,7 @@ void RtcVideoCaptureDelegate::OnBufferReadyOnCaptureThread(
         state_callback_.Run(CAPTURE_RUNNING);
     }
 
-    captured_callback_.Run(*buf);
+    captured_callback_.Run(*buf.get());
   }
   capture->FeedBuffer(buf);
 }

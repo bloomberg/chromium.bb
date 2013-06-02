@@ -338,19 +338,19 @@ TEST_F(WebContentsImplTest, UpdateMaxPageID) {
   // Starts at -1.
   EXPECT_EQ(-1, contents()->GetMaxPageID());
   EXPECT_EQ(-1, contents()->GetMaxPageIDForSiteInstance(instance1));
-  EXPECT_EQ(-1, contents()->GetMaxPageIDForSiteInstance(instance2));
+  EXPECT_EQ(-1, contents()->GetMaxPageIDForSiteInstance(instance2.get()));
 
   // Make sure max_page_id_ is monotonically increasing per SiteInstance.
   contents()->UpdateMaxPageID(3);
   contents()->UpdateMaxPageID(1);
   EXPECT_EQ(3, contents()->GetMaxPageID());
   EXPECT_EQ(3, contents()->GetMaxPageIDForSiteInstance(instance1));
-  EXPECT_EQ(-1, contents()->GetMaxPageIDForSiteInstance(instance2));
+  EXPECT_EQ(-1, contents()->GetMaxPageIDForSiteInstance(instance2.get()));
 
-  contents()->UpdateMaxPageIDForSiteInstance(instance2, 7);
+  contents()->UpdateMaxPageIDForSiteInstance(instance2.get(), 7);
   EXPECT_EQ(3, contents()->GetMaxPageID());
   EXPECT_EQ(3, contents()->GetMaxPageIDForSiteInstance(instance1));
-  EXPECT_EQ(7, contents()->GetMaxPageIDForSiteInstance(instance2));
+  EXPECT_EQ(7, contents()->GetMaxPageIDForSiteInstance(instance2.get()));
 }
 
 // Test simple same-SiteInstance navigation.

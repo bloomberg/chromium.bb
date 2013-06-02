@@ -195,7 +195,7 @@ bool WebGraphicsContext3DCommandBufferImpl::Initialize(
     gpu_preference_ = gfx::PreferDiscreteGpu;
 
   host_ = factory_->EstablishGpuChannelSync(cause);
-  if (!host_)
+  if (!host_.get())
     return false;
   DCHECK(host_->state() == GpuChannelHost::kConnected);
 
@@ -276,7 +276,7 @@ bool WebGraphicsContext3DCommandBufferImpl::MaybeInitializeGL(
 bool WebGraphicsContext3DCommandBufferImpl::InitializeCommandBuffer(
     bool onscreen,
     const char* allowed_extensions) {
-  if (!host_)
+  if (!host_.get())
     return false;
   // We need to lock g_all_shared_contexts to ensure that the context we picked
   // for our share group isn't deleted.
@@ -438,7 +438,7 @@ void WebGraphicsContext3DCommandBufferImpl::Destroy() {
   gles2_helper_ = NULL;
 
   if (command_buffer_) {
-    if (host_)
+    if (host_.get())
       host_->DestroyCommandBuffer(command_buffer_);
     else
       delete command_buffer_;
@@ -450,11 +450,11 @@ void WebGraphicsContext3DCommandBufferImpl::Destroy() {
 
 // TODO(apatrick,piman): This should be renamed to something clearer.
 int WebGraphicsContext3DCommandBufferImpl::GetGPUProcessID() {
-  return host_ ? host_->gpu_host_id() : 0;
+  return host_.get() ? host_->gpu_host_id() : 0;
 }
 
 int WebGraphicsContext3DCommandBufferImpl::GetChannelID() {
-  return host_ ? host_->client_id() : 0;
+  return host_.get() ? host_->client_id() : 0;
 }
 
 int WebGraphicsContext3DCommandBufferImpl::GetContextID() {
@@ -1459,7 +1459,7 @@ WGC3Denum WebGraphicsContext3DCommandBufferImpl::getGraphicsResetStatusARB() {
 bool WebGraphicsContext3DCommandBufferImpl::IsCommandBufferContextLost() {
   // If the channel shut down unexpectedly, let that supersede the
   // command buffer's state.
-  if (host_ && host_->state() == GpuChannelHost::kLost)
+  if (host_.get() && host_->state() == GpuChannelHost::kLost)
     return true;
   gpu::CommandBuffer::State state = command_buffer_->GetLastState();
   return state.error == gpu::error::kLostContext;

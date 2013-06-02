@@ -176,14 +176,14 @@ MediaStreamManager::~MediaStreamManager() {
 
 VideoCaptureManager* MediaStreamManager::video_capture_manager() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  DCHECK(video_capture_manager_);
-  return video_capture_manager_;
+  DCHECK(video_capture_manager_.get());
+  return video_capture_manager_.get();
 }
 
 AudioInputDeviceManager* MediaStreamManager::audio_input_device_manager() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  DCHECK(audio_input_device_manager_);
-  return audio_input_device_manager_;
+  DCHECK(audio_input_device_manager_.get());
+  return audio_input_device_manager_.get();
 }
 
 std::string MediaStreamManager::MakeMediaAccessRequest(

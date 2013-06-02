@@ -276,24 +276,22 @@ namespace {
 void CreateDummyGlContext() {
   scoped_refptr<gfx::GLSurface> surface(
       gfx::GLSurface::CreateOffscreenGLSurface(false, gfx::Size(1, 1)));
-  if (!surface) {
+  if (!surface.get()) {
     VLOG(1) << "gfx::GLSurface::CreateOffscreenGLSurface failed";
     return;
   }
 
   // On Linux, this is needed to make sure /dev/nvidiactl has
   // been opened and its descriptor cached.
-  scoped_refptr<gfx::GLContext> context(
-      gfx::GLContext::CreateGLContext(NULL,
-                                      surface,
-                                      gfx::PreferDiscreteGpu));
-  if (!context) {
+  scoped_refptr<gfx::GLContext> context(gfx::GLContext::CreateGLContext(
+      NULL, surface.get(), gfx::PreferDiscreteGpu));
+  if (!context.get()) {
     VLOG(1) << "gfx::GLContext::CreateGLContext failed";
     return;
   }
 
   // Similarly, this is needed for /dev/nvidia0.
-  if (context->MakeCurrent(surface)) {
+  if (context->MakeCurrent(surface.get())) {
     context->ReleaseCurrent(surface.get());
   } else {
     VLOG(1)  << "gfx::GLContext::MakeCurrent failed";

@@ -45,7 +45,7 @@ WebStorageAreaImpl::WebStorageAreaImpl(
 WebStorageAreaImpl::~WebStorageAreaImpl() {
   g_all_areas_map.Pointer()->Remove(connection_id_);
   if (dispatcher())
-    dispatcher()->CloseCachedArea(connection_id_, cached_area_);
+    dispatcher()->CloseCachedArea(connection_id_, cached_area_.get());
 }
 
 unsigned WebStorageAreaImpl::length() {

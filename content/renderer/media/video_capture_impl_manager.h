@@ -47,7 +47,7 @@ class CONTENT_EXPORT VideoCaptureImplManager
   virtual void SuspendDevices(bool suspend);
 
   VideoCaptureMessageFilter* video_capture_message_filter() const {
-    return filter_;
+    return filter_.get();
   }
 
  protected:

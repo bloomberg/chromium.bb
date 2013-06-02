@@ -87,7 +87,7 @@ void IndexedDBQuotaClient::GetOriginUsage(const GURL& origin_url,
   }
 
   base::PostTaskAndReplyWithResult(
-      webkit_thread_message_loop_,
+      webkit_thread_message_loop_.get(),
       FROM_HERE,
       base::Bind(
           &GetOriginUsageOnWebKitThread, indexed_db_context_, origin_url),
@@ -147,7 +147,7 @@ void IndexedDBQuotaClient::DeleteOriginData(const GURL& origin,
   }
 
   base::PostTaskAndReplyWithResult(
-      webkit_thread_message_loop_,
+      webkit_thread_message_loop_.get(),
       FROM_HERE,
       base::Bind(&DeleteOriginDataOnWebKitThread, indexed_db_context_, origin),
       callback);

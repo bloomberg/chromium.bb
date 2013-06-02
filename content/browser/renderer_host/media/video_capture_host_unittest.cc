@@ -223,10 +223,10 @@ class VideoCaptureHostTest : public testing::Test {
   virtual void TearDown() OVERRIDE {
     // Verifies and removes the expectations on host_ and
     // returns true iff successful.
-    Mock::VerifyAndClearExpectations(host_);
+    Mock::VerifyAndClearExpectations(host_.get());
 
-    EXPECT_CALL(*host_, OnStateChanged(kDeviceId,
-                                       VIDEO_CAPTURE_STATE_STOPPED))
+    EXPECT_CALL(*host_.get(),
+                OnStateChanged(kDeviceId, VIDEO_CAPTURE_STATE_STOPPED))
         .Times(AnyNumber());
 
     // Simulate closing the IPC channel.
@@ -247,21 +247,19 @@ class VideoCaptureHostTest : public testing::Test {
   void StartCapture() {
     InSequence s;
     // 1. First - get info about the new resolution
-    EXPECT_CALL(*host_, OnDeviceInfo(kDeviceId));
+    EXPECT_CALL(*host_.get(), OnDeviceInfo(kDeviceId));
 
     // 2. Change state to started
-    EXPECT_CALL(*host_, OnStateChanged(kDeviceId,
-                                       VIDEO_CAPTURE_STATE_STARTED));
+    EXPECT_CALL(*host_.get(),
+                OnStateChanged(kDeviceId, VIDEO_CAPTURE_STATE_STARTED));
 
     // 3. Newly created buffers will arrive.
-    EXPECT_CALL(*host_, OnNewBufferCreated(kDeviceId, _, _, _))
-        .Times(AnyNumber())
-        .WillRepeatedly(Return());
+    EXPECT_CALL(*host_.get(), OnNewBufferCreated(kDeviceId, _, _, _))
+        .Times(AnyNumber()).WillRepeatedly(Return());
 
     // 4. First filled buffer will arrive.
-    EXPECT_CALL(*host_, OnBufferFilled(kDeviceId, _, _))
-        .Times(AnyNumber())
-        .WillOnce(ExitMessageLoop(message_loop_.get()));
+    EXPECT_CALL(*host_.get(), OnBufferFilled(kDeviceId, _, _))
+        .Times(AnyNumber()).WillOnce(ExitMessageLoop(message_loop_.get()));
 
     media::VideoCaptureParams params;
     params.width = 352;
@@ -298,8 +296,8 @@ class VideoCaptureHostTest : public testing::Test {
 #endif
 
   void StopCapture() {
-    EXPECT_CALL(*host_, OnStateChanged(kDeviceId,
-                                       VIDEO_CAPTURE_STATE_STOPPED))
+    EXPECT_CALL(*host_.get(),
+                OnStateChanged(kDeviceId, VIDEO_CAPTURE_STATE_STOPPED))
         .WillOnce(ExitMessageLoop(message_loop_.get()));
 
     host_->OnStopCapture(kDeviceId);
@@ -314,9 +312,8 @@ class VideoCaptureHostTest : public testing::Test {
   }
 
   void NotifyPacketReady() {
-    EXPECT_CALL(*host_, OnBufferFilled(kDeviceId, _, _))
-        .Times(AnyNumber())
-        .WillOnce(ExitMessageLoop(message_loop_.get()))
+    EXPECT_CALL(*host_.get(), OnBufferFilled(kDeviceId, _, _))
+        .Times(AnyNumber()).WillOnce(ExitMessageLoop(message_loop_.get()))
         .RetiresOnSaturation();
     message_loop_->Run();
   }
@@ -327,8 +324,8 @@ class VideoCaptureHostTest : public testing::Test {
 
   void SimulateError() {
     // Expect a change state to error state  sent through IPC.
-    EXPECT_CALL(*host_, OnStateChanged(kDeviceId, VIDEO_CAPTURE_STATE_ERROR))
-        .Times(1);
+    EXPECT_CALL(*host_.get(),
+                OnStateChanged(kDeviceId, VIDEO_CAPTURE_STATE_ERROR)).Times(1);
     VideoCaptureControllerID id(kDeviceId);
     host_->OnError(id);
     // Wait for the error callback.
@@ -365,9 +362,8 @@ TEST_F(VideoCaptureHostTest, StartCaptureErrorStop) {
 }
 
 TEST_F(VideoCaptureHostTest, StartCaptureError) {
-  EXPECT_CALL(*host_, OnStateChanged(kDeviceId,
-                                     VIDEO_CAPTURE_STATE_STOPPED))
-      .Times(0);
+  EXPECT_CALL(*host_.get(),
+              OnStateChanged(kDeviceId, VIDEO_CAPTURE_STATE_STOPPED)).Times(0);
   StartCapture();
   NotifyPacketReady();
   SimulateError();

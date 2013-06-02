@@ -253,11 +253,11 @@ class DeviceDataProvider : public base::NonThreadSafe {
   DeviceDataProvider() {
     DCHECK(factory_function_);
     impl_ = (*factory_function_)();
-    DCHECK(impl_);
+    DCHECK(impl_.get());
     impl_->SetContainer(this);
   }
   virtual ~DeviceDataProvider() {
-    DCHECK(impl_);
+    DCHECK(impl_.get());
     impl_->SetContainer(NULL);
   }
 

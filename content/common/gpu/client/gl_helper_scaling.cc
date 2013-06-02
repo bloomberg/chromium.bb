@@ -489,7 +489,7 @@ GLHelperScaling::GetShaderProgram(ShaderType type,
                                   bool swizzle) {
   ShaderProgramKeyType key(type, swizzle);
   scoped_refptr<ShaderProgram>& cache_entry(shader_programs_[key]);
-  if (!cache_entry) {
+  if (!cache_entry.get()) {
     cache_entry = new ShaderProgram(context_, helper_);
     std::basic_string<WebKit::WGC3Dchar> vertex_program;
     std::basic_string<WebKit::WGC3Dchar> fragment_program;

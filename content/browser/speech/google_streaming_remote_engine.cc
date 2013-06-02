@@ -327,7 +327,7 @@ GoogleStreamingRemoteEngine::ConnectBothStreams(const FSMEventArgs&) {
 
   downstream_fetcher_.reset(URLFetcher::Create(
       kDownstreamUrlFetcherIdForTests, downstream_url, URLFetcher::GET, this));
-  downstream_fetcher_->SetRequestContext(url_context_);
+  downstream_fetcher_->SetRequestContext(url_context_.get());
   downstream_fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SAVE_COOKIES |
                                     net::LOAD_DO_NOT_SEND_COOKIES |
                                     net::LOAD_DO_NOT_SEND_AUTH_DATA);
@@ -367,7 +367,7 @@ GoogleStreamingRemoteEngine::ConnectBothStreams(const FSMEventArgs&) {
   upstream_fetcher_.reset(URLFetcher::Create(
       kUpstreamUrlFetcherIdForTests, upstream_url, URLFetcher::POST, this));
   upstream_fetcher_->SetChunkedUpload(encoder_->mime_type());
-  upstream_fetcher_->SetRequestContext(url_context_);
+  upstream_fetcher_->SetRequestContext(url_context_.get());
   upstream_fetcher_->SetReferrer(config_.origin_url);
   upstream_fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SAVE_COOKIES |
                                   net::LOAD_DO_NOT_SEND_COOKIES |
@@ -382,7 +382,7 @@ GoogleStreamingRemoteEngine::TransmitAudioUpstream(
     const FSMEventArgs& event_args) {
   DCHECK(upstream_fetcher_.get());
   DCHECK(event_args.audio_data.get());
-  const AudioChunk& audio = *(event_args.audio_data);
+  const AudioChunk& audio = *(event_args.audio_data.get());
 
   DCHECK_EQ(audio.bytes_per_sample(), config_.audio_num_bits_per_sample / 8);
   encoder_->Encode(audio);
@@ -494,7 +494,7 @@ GoogleStreamingRemoteEngine::CloseUpstreamAndWaitForResults(
       new AudioChunk(reinterpret_cast<uint8*>(&samples[0]),
                      samples.size() * sizeof(short),
                      encoder_->bits_per_sample() / 8);
-  encoder_->Encode(*dummy_chunk);
+  encoder_->Encode(*dummy_chunk.get());
   encoder_->Flush();
   scoped_refptr<AudioChunk> encoded_dummy_data =
       encoder_->GetEncodedDataAndClear();
@@ -554,7 +554,7 @@ GoogleStreamingRemoteEngine::NotFeasible(const FSMEventArgs& event_args) {
 
 std::string GoogleStreamingRemoteEngine::GetAcceptedLanguages() const {
   std::string langs = config_.language;
-  if (langs.empty() && url_context_) {
+  if (langs.empty() && url_context_.get()) {
     // If no language is provided then we use the first from the accepted
     // language list. If this list is empty then it defaults to "en-US".
     // Example of the contents of this list: "es,en-GB;q=0.8", ""

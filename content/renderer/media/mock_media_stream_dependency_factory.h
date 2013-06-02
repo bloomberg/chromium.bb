@@ -181,8 +181,8 @@ class MockMediaStreamDependencyFactory : public MediaStreamDependencyFactory {
   virtual bool EnsurePeerConnectionFactory() OVERRIDE;
   virtual bool PeerConnectionFactoryCreated() OVERRIDE;
 
-  MockAudioSource* last_audio_source() { return last_audio_source_; }
-  MockVideoSource* last_video_source() { return last_video_source_; }
+  MockAudioSource* last_audio_source() { return last_audio_source_.get(); }
+  MockVideoSource* last_video_source() { return last_video_source_.get(); }
 
  private:
   bool mock_pc_factory_created_;

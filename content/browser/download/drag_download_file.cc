@@ -189,7 +189,7 @@ void DragDownloadFile::Start(ui::DownloadFileObserver* observer) {
 
   DCHECK(!observer_.get());
   observer_ = observer;
-  DCHECK(observer_);
+  DCHECK(observer_.get());
 
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, base::Bind(
       &DragDownloadFileUI::InitiateDownload, base::Unretained(drag_ui_),

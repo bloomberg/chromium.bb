@@ -2083,7 +2083,7 @@ WebView* RenderViewImpl::createView(
       routing_id_,
       renderer_preferences_,
       transferred_preferences,
-      shared_popup_counter_,
+      shared_popup_counter_.get(),
       routing_id,
       main_frame_routing_id,
       surface_id,
@@ -2827,7 +2827,7 @@ WebMediaPlayer* RenderViewImpl::createMediaPlayer(
   if (!cmd_line->HasSwitch(switches::kDisableAudio)) {
     sink = RenderThreadImpl::current()->GetAudioRendererMixerManager()->
         CreateInput(routing_id_);
-    DVLOG(1) << "Using AudioRendererMixerManager-provided sink: " << sink;
+    DVLOG(1) << "Using AudioRendererMixerManager-provided sink: " << sink.get();
   }
 
   scoped_refptr<media::GpuVideoDecoder::Factories> gpu_factories;
@@ -2837,7 +2837,7 @@ WebMediaPlayer* RenderViewImpl::createMediaPlayer(
   if (context3d) {
     scoped_refptr<base::MessageLoopProxy> factories_loop =
         RenderThreadImpl::current()->compositor_message_loop_proxy();
-    if (!factories_loop)
+    if (!factories_loop.get())
       factories_loop = base::MessageLoopProxy::current();
     GpuChannelHost* gpu_channel_host =
         RenderThreadImpl::current()->EstablishGpuChannelSync(
@@ -4148,9 +4148,9 @@ void RenderViewImpl::CheckPreferredSize() {
 }
 
 BrowserPluginManager* RenderViewImpl::GetBrowserPluginManager() {
-  if (!browser_plugin_manager_)
+  if (!browser_plugin_manager_.get())
     browser_plugin_manager_ = BrowserPluginManager::Create(this);
-  return browser_plugin_manager_;
+  return browser_plugin_manager_.get();
 }
 
 void RenderViewImpl::EnsureMediaStreamImpl() {
@@ -5986,7 +5986,7 @@ void RenderViewImpl::OnSetFocus(bool enable) {
   // Notify all Pepper plugins.
   pepper_helper_->OnSetFocus(enable);
   // Notify all BrowserPlugins of the RenderView's focus state.
-  if (browser_plugin_manager_)
+  if (browser_plugin_manager_.get())
     browser_plugin_manager_->UpdateFocusState();
 }
 
@@ -6133,7 +6133,7 @@ void RenderViewImpl::SetDeviceScaleFactor(float device_scale_factor) {
   if (auto_resize_mode_)
     AutoResizeCompositor();
 
-  if (browser_plugin_manager_)
+  if (browser_plugin_manager_.get())
     browser_plugin_manager_->UpdateDeviceScaleFactor(device_scale_factor_);
 }
 

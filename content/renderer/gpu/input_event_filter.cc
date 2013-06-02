@@ -22,7 +22,7 @@ InputEventFilter::InputEventFilter(
       sender_(NULL),
       target_loop_(target_loop),
       handler_(handler) {
-  DCHECK(target_loop_);
+  DCHECK(target_loop_.get());
   DCHECK(!handler_.is_null());
 }
 

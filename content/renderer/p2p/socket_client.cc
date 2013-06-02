@@ -111,7 +111,7 @@ void P2PSocketClient::OnIncomingTcpConnection(const net::IPEndPoint& address) {
   DCHECK_EQ(state_, STATE_OPEN);
 
   scoped_refptr<P2PSocketClient> new_client = new P2PSocketClient(dispatcher_);
-  new_client->socket_id_ = dispatcher_->RegisterClient(new_client);
+  new_client->socket_id_ = dispatcher_->RegisterClient(new_client.get());
   new_client->state_ = STATE_OPEN;
   new_client->delegate_message_loop_ = delegate_message_loop_;
 
@@ -127,7 +127,7 @@ void P2PSocketClient::DeliverOnIncomingTcpConnection(
     const net::IPEndPoint& address, scoped_refptr<P2PSocketClient> new_client) {
   DCHECK(delegate_message_loop_->BelongsToCurrentThread());
   if (delegate_) {
-    delegate_->OnIncomingTcpConnection(address, new_client);
+    delegate_->OnIncomingTcpConnection(address, new_client.get());
   } else {
     // Just close the socket if there is no delegate to accept it.
     new_client->Close();

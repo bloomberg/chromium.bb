@@ -35,9 +35,9 @@ TEST(VideoCaptureBufferPoolTest, BufferPool) {
   ASSERT_TRUE(NULL != frame3.get());
 
   // Touch the memory.
-  media::FillYUV(frame1, 0x11, 0x22, 0x33);
-  media::FillYUV(frame2, 0x44, 0x55, 0x66);
-  media::FillYUV(frame3, 0x77, 0x88, 0x99);
+  media::FillYUV(frame1.get(), 0x11, 0x22, 0x33);
+  media::FillYUV(frame2.get(), 0x44, 0x55, 0x66);
+  media::FillYUV(frame3.get(), 0x77, 0x88, 0x99);
 
   // Fourth frame should fail.
   ASSERT_EQ(NULL, pool->ReserveForProducer(0).get()) << "Pool should be empty";
@@ -87,7 +87,7 @@ TEST(VideoCaptureBufferPoolTest, BufferPool) {
   pool->RelinquishConsumerHold(buffer_id3, 1);
   ASSERT_FALSE(pool->IsAnyBufferHeldForConsumers());
   frame3 = pool->ReserveForProducer(0);
-  ASSERT_TRUE(NULL != frame3);
+  ASSERT_TRUE(NULL != frame3.get());
   ASSERT_FALSE(pool->IsAnyBufferHeldForConsumers());
   ASSERT_EQ(NULL, pool->ReserveForProducer(0).get()) << "Pool should be empty";
 
@@ -106,7 +106,7 @@ TEST(VideoCaptureBufferPoolTest, BufferPool) {
   ASSERT_EQ(NULL, pool->ReserveForProducer(0).get()) << "Pool should be empty";
   frame1 = NULL;  // Should free the frame.
   frame2 = pool->ReserveForProducer(0);
-  ASSERT_TRUE(NULL != frame2);
+  ASSERT_TRUE(NULL != frame2.get());
   ASSERT_EQ(buffer_id1, pool->RecognizeReservedBuffer(frame2));
   ASSERT_EQ(NULL, pool->ReserveForProducer(0).get()) << "Pool should be empty";
 
@@ -114,7 +114,7 @@ TEST(VideoCaptureBufferPoolTest, BufferPool) {
   // that this buffer has been through the consumer-hold cycle.
   frame2 = NULL;
   frame1 = pool->ReserveForProducer(0);
-  ASSERT_TRUE(NULL != frame1);
+  ASSERT_TRUE(NULL != frame1.get());
   ASSERT_EQ(buffer_id1, pool->RecognizeReservedBuffer(frame1));
   ASSERT_EQ(NULL, pool->ReserveForProducer(0).get()) << "Pool should be empty";
 
@@ -124,12 +124,12 @@ TEST(VideoCaptureBufferPoolTest, BufferPool) {
   pool = NULL;
 
   // Touch the memory.
-  media::FillYUV(frame1, 0x11, 0x22, 0x33);
-  media::FillYUV(frame4, 0x44, 0x55, 0x66);
+  media::FillYUV(frame1.get(), 0x11, 0x22, 0x33);
+  media::FillYUV(frame4.get(), 0x44, 0x55, 0x66);
 
   frame1 = NULL;
 
-  media::FillYUV(frame4, 0x44, 0x55, 0x66);
+  media::FillYUV(frame4.get(), 0x44, 0x55, 0x66);
   frame4 = NULL;
 }
 

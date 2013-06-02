@@ -392,12 +392,13 @@ IN_PROC_BROWSER_TEST_F(CompositingRenderWidgetHostViewBrowserTest, CopyTwice) {
   base::RunLoop run_loop;
   scoped_refptr<media::VideoFrame> first_output =
       media::VideoFrame::CreateBlackFrame(frame_size());
-  ASSERT_TRUE(first_output);
+  ASSERT_TRUE(first_output.get());
   scoped_refptr<media::VideoFrame> second_output =
       media::VideoFrame::CreateBlackFrame(frame_size());
-  ASSERT_TRUE(second_output);
+  ASSERT_TRUE(second_output.get());
   view->CopyFromCompositingSurfaceToVideoFrame(
-      gfx::Rect(view->GetViewBounds().size()), first_output,
+      gfx::Rect(view->GetViewBounds().size()),
+      first_output,
       base::Bind(&RenderWidgetHostViewBrowserTest::FrameDelivered,
                  base::Unretained(this),
                  base::MessageLoopProxy::current(),

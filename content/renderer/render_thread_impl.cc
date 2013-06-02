@@ -373,7 +373,7 @@ void RenderThreadImpl::Init() {
   AddObserver(peer_connection_tracker_.get());
 
   p2p_socket_dispatcher_ = new P2PSocketDispatcher(GetIOMessageLoopProxy());
-  AddFilter(p2p_socket_dispatcher_);
+  AddFilter(p2p_socket_dispatcher_.get());
 #endif  // defined(ENABLE_WEBRTC)
   vc_manager_ = new VideoCaptureImplManager();
   AddFilter(vc_manager_->video_capture_message_filter());
@@ -427,7 +427,7 @@ void RenderThreadImpl::Shutdown() {
     web_database_observer_impl_->WaitForAllDatabasesToClose();
 
   // Shutdown in reverse of the initialization order.
-  if (devtools_agent_message_filter_) {
+  if (devtools_agent_message_filter_.get()) {
     RemoveFilter(devtools_agent_message_filter_.get());
     devtools_agent_message_filter_ = NULL;
   }
@@ -447,7 +447,7 @@ void RenderThreadImpl::Shutdown() {
   if (file_thread_)
     file_thread_->Stop();
 
-  if (compositor_output_surface_filter_) {
+  if (compositor_output_surface_filter_.get()) {
     RemoveFilter(compositor_output_surface_filter_.get());
     compositor_output_surface_filter_ = NULL;
   }
@@ -471,7 +471,7 @@ void RenderThreadImpl::Shutdown() {
 
   // Leak shared contexts on other threads, as we can not get to the correct
   // thread to destroy them.
-  if (shared_contexts_compositor_thread_)
+  if (shared_contexts_compositor_thread_.get())
     shared_contexts_compositor_thread_->set_leak_on_destroy();
 }
 
@@ -777,7 +777,7 @@ void RenderThreadImpl::EnsureWebKitInitialized() {
     output_surface_loop = base::MessageLoopProxy::current();
 
   compositor_output_surface_filter_ =
-      CompositorOutputSurface::CreateFilter(output_surface_loop);
+      CompositorOutputSurface::CreateFilter(output_surface_loop.get());
   AddFilter(compositor_output_surface_filter_.get());
 
   WebScriptController::enableV8SingleThreadMode();
@@ -1005,11 +1005,11 @@ scoped_refptr<ContextProviderCommandBuffer>
 RenderThreadImpl::OffscreenContextProviderForMainThread() {
   DCHECK(IsMainThread());
 
-  if (!shared_contexts_main_thread_ ||
+  if (!shared_contexts_main_thread_.get() ||
       shared_contexts_main_thread_->DestroyedOnMainThread()) {
     shared_contexts_main_thread_ =
         RendererContextProviderCommandBuffer::Create();
-    if (shared_contexts_main_thread_ &&
+    if (shared_contexts_main_thread_.get() &&
         !shared_contexts_main_thread_->BindToCurrentThread())
       shared_contexts_main_thread_ = NULL;
   }
@@ -1020,7 +1020,7 @@ scoped_refptr<ContextProviderCommandBuffer>
 RenderThreadImpl::OffscreenContextProviderForCompositorThread() {
   DCHECK(IsMainThread());
 
-  if (!shared_contexts_compositor_thread_ ||
+  if (!shared_contexts_compositor_thread_.get() ||
       shared_contexts_compositor_thread_->DestroyedOnMainThread()) {
     shared_contexts_compositor_thread_ =
         RendererContextProviderCommandBuffer::Create();
@@ -1210,7 +1210,7 @@ GpuChannelHost* RenderThreadImpl::EstablishGpuChannelSync(
     CauseForGpuLaunch cause_for_gpu_launch) {
   TRACE_EVENT0("gpu", "RenderThreadImpl::EstablishGpuChannelSync");
 
-  if (gpu_channel_) {
+  if (gpu_channel_.get()) {
     // Do nothing if we already have a GPU channel or are already
     // establishing one.
     if (gpu_channel_->state() == GpuChannelHost::kUnconnected ||
@@ -1274,14 +1274,14 @@ RenderThreadImpl::GetMediaStreamDependencyFactory() {
 #if defined(ENABLE_WEBRTC)
   if (!media_stream_factory_) {
     media_stream_factory_.reset(new MediaStreamDependencyFactory(
-        vc_manager_, p2p_socket_dispatcher_));
+        vc_manager_.get(), p2p_socket_dispatcher_.get()));
   }
 #endif
   return media_stream_factory_.get();
 }
 
 GpuChannelHost* RenderThreadImpl::GetGpuChannel() {
-  if (!gpu_channel_)
+  if (!gpu_channel_.get())
     return NULL;
 
   if (gpu_channel_->state() != GpuChannelHost::kConnected)

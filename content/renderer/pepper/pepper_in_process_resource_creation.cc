@@ -71,10 +71,12 @@ PP_Resource PepperInProcessResourceCreation::CreateFileChooser(
     const PP_Var& accept_types) {
   scoped_refptr<ppapi::StringVar> string_var =
       ppapi::StringVar::FromPPVar(accept_types);
-  std::string str = string_var ? string_var->value() : std::string();
+  std::string str = string_var.get() ? string_var->value() : std::string();
   return (new ppapi::proxy::FileChooserResource(
       host_impl_->in_process_router()->GetPluginConnection(),
-      instance, mode, str.c_str()))->GetReference();
+      instance,
+      mode,
+      str.c_str()))->GetReference();
 }
 
 PP_Resource PepperInProcessResourceCreation::CreateFileIO(

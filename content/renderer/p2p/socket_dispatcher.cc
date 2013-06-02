@@ -85,7 +85,7 @@ void P2PSocketDispatcher::OnChannelClosing() {
 }
 
 base::MessageLoopProxy* P2PSocketDispatcher::message_loop() {
-  return message_loop_;
+  return message_loop_.get();
 }
 
 int P2PSocketDispatcher::RegisterClient(P2PSocketClient* client) {

@@ -198,7 +198,7 @@ class AudioRendererHostTest : public testing::Test {
   void Create() {
     EXPECT_CALL(*observer_,
                 OnSetAudioStreamStatus(_, kStreamId, "created"));
-    EXPECT_CALL(*host_, OnStreamCreated(kStreamId, _))
+    EXPECT_CALL(*host_.get(), OnStreamCreated(kStreamId, _))
         .WillOnce(QuitMessageLoop(message_loop_.get()));
     EXPECT_CALL(mirroring_manager_,
                 AddDiverter(kRenderProcessId, kRenderViewId, NotNull()))
@@ -239,7 +239,7 @@ class AudioRendererHostTest : public testing::Test {
   void Play() {
     EXPECT_CALL(*observer_,
                 OnSetAudioStreamPlaying(_, kStreamId, true));
-    EXPECT_CALL(*host_, OnStreamPlaying(kStreamId))
+    EXPECT_CALL(*host_.get(), OnStreamPlaying(kStreamId))
         .WillOnce(QuitMessageLoop(message_loop_.get()));
 
     host_->OnPlayStream(kStreamId);
@@ -249,7 +249,7 @@ class AudioRendererHostTest : public testing::Test {
   void Pause() {
     EXPECT_CALL(*observer_,
                 OnSetAudioStreamPlaying(_, kStreamId, false));
-    EXPECT_CALL(*host_, OnStreamPaused(kStreamId))
+    EXPECT_CALL(*host_.get(), OnStreamPaused(kStreamId))
         .WillOnce(QuitMessageLoop(message_loop_.get()));
 
     host_->OnPauseStream(kStreamId);
@@ -271,7 +271,7 @@ class AudioRendererHostTest : public testing::Test {
         << "Calls Create() before calling this method";
 
     // Expect an error signal sent through IPC.
-    EXPECT_CALL(*host_, OnStreamError(kStreamId));
+    EXPECT_CALL(*host_.get(), OnStreamError(kStreamId));
 
     // Simulate an error sent from the audio device.
     host_->ReportErrorAndClose(kStreamId);

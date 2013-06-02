@@ -16,7 +16,7 @@ StreamRegistry::~StreamRegistry() {
 
 void StreamRegistry::RegisterStream(scoped_refptr<Stream> stream) {
   DCHECK(CalledOnValidThread());
-  DCHECK(stream);
+  DCHECK(stream.get());
   DCHECK(!stream->url().is_empty());
   streams_[stream->url()] = stream;
 }
@@ -33,7 +33,7 @@ scoped_refptr<Stream> StreamRegistry::GetStream(const GURL& url) {
 bool StreamRegistry::CloneStream(const GURL& url, const GURL& src_url) {
   DCHECK(CalledOnValidThread());
   scoped_refptr<Stream> stream(GetStream(src_url));
-  if (stream) {
+  if (stream.get()) {
     streams_[url] = stream;
     return true;
   }

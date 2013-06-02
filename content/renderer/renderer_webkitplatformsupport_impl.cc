@@ -229,7 +229,7 @@ WebKit::WebMimeRegistry* RendererWebKitPlatformSupportImpl::mimeRegistry() {
 WebKit::WebFileUtilities*
 RendererWebKitPlatformSupportImpl::fileUtilities() {
   if (!file_utilities_) {
-    file_utilities_.reset(new FileUtilities(thread_safe_sender_));
+    file_utilities_.reset(new FileUtilities(thread_safe_sender_.get()));
     file_utilities_->set_sandbox_enabled(sandboxEnabled());
   }
   return file_utilities_.get();
@@ -764,8 +764,8 @@ void RendererWebKitPlatformSupportImpl::screenColorProfile(
 
 WebBlobRegistry* RendererWebKitPlatformSupportImpl::blobRegistry() {
   // thread_safe_sender_ can be NULL when running some tests.
-  if (!blob_registry_.get() && thread_safe_sender_)
-    blob_registry_.reset(new WebBlobRegistryImpl(thread_safe_sender_));
+  if (!blob_registry_.get() && thread_safe_sender_.get())
+    blob_registry_.reset(new WebBlobRegistryImpl(thread_safe_sender_.get()));
   return blob_registry_.get();
 }
 
@@ -890,12 +890,12 @@ RendererWebKitPlatformSupportImpl::createOffscreenGraphicsContext3D(
 
 WebKit::WebGraphicsContext3DProvider* RendererWebKitPlatformSupportImpl::
     createSharedOffscreenGraphicsContext3DProvider() {
-  if (!shared_offscreen_context_ ||
+  if (!shared_offscreen_context_.get() ||
       shared_offscreen_context_->DestroyedOnMainThread()) {
     shared_offscreen_context_ =
         RenderThreadImpl::current()->OffscreenContextProviderForMainThread();
   }
-  if (!shared_offscreen_context_)
+  if (!shared_offscreen_context_.get())
     return NULL;
   return new webkit::gpu::WebGraphicsContext3DProviderImpl(
       shared_offscreen_context_);

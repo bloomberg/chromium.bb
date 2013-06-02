@@ -63,7 +63,7 @@ RenderWidgetHelper::BackingStoreMsgProxy::BackingStoreMsgProxy(
 RenderWidgetHelper::BackingStoreMsgProxy::~BackingStoreMsgProxy() {
   // If the paint message was never dispatched, then we need to let the
   // helper know that we are going away.
-  if (!cancelled_ && helper_)
+  if (!cancelled_ && helper_.get())
     helper_->OnDiscardBackingStoreMsg(this);
 }
 

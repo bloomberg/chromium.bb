@@ -136,7 +136,7 @@ class InputEventFilterTest : public testing::Test {
         message_loop_.message_loop_proxy(),
         base::Bind(&InputEventRecorder::HandleInputEvent,
             base::Unretained(&event_recorder_)));
-    event_recorder_.set_filter(filter_);
+    event_recorder_.set_filter(filter_.get());
 
     filter_->OnFilterAdded(&ipc_sink_);
   }
@@ -163,14 +163,14 @@ TEST_F(InputEventFilterTest, Basic) {
   InitMouseEvent(&kEvents[1], WebInputEvent::MouseMove, 20, 20);
   InitMouseEvent(&kEvents[2], WebInputEvent::MouseUp, 30, 30);
 
-  AddEventsToFilter(filter_, kEvents, arraysize(kEvents));
+  AddEventsToFilter(filter_.get(), kEvents, arraysize(kEvents));
   EXPECT_EQ(0U, ipc_sink_.message_count());
   EXPECT_EQ(0U, event_recorder_.record_count());
   EXPECT_EQ(0U, message_recorder_.message_count());
 
   filter_->AddRoute(kTestRoutingID);
 
-  AddEventsToFilter(filter_, kEvents, arraysize(kEvents));
+  AddEventsToFilter(filter_.get(), kEvents, arraysize(kEvents));
   ASSERT_EQ(arraysize(kEvents), ipc_sink_.message_count());
   ASSERT_EQ(arraysize(kEvents), event_recorder_.record_count());
   EXPECT_EQ(0U, message_recorder_.message_count());
@@ -197,7 +197,7 @@ TEST_F(InputEventFilterTest, Basic) {
 
   event_recorder_.set_send_to_widget(true);
 
-  AddEventsToFilter(filter_, kEvents, arraysize(kEvents));
+  AddEventsToFilter(filter_.get(), kEvents, arraysize(kEvents));
   EXPECT_EQ(arraysize(kEvents), ipc_sink_.message_count());
   EXPECT_EQ(2 * arraysize(kEvents), event_recorder_.record_count());
   EXPECT_EQ(arraysize(kEvents), message_recorder_.message_count());
@@ -220,7 +220,7 @@ TEST_F(InputEventFilterTest, Basic) {
 
   event_recorder_.set_handle_events(true);
 
-  AddEventsToFilter(filter_, kEvents, arraysize(kEvents));
+  AddEventsToFilter(filter_.get(), kEvents, arraysize(kEvents));
   EXPECT_EQ(arraysize(kEvents), ipc_sink_.message_count());
   EXPECT_EQ(arraysize(kEvents), event_recorder_.record_count());
   EXPECT_EQ(0U, message_recorder_.message_count());
@@ -286,7 +286,7 @@ TEST_F(InputEventFilterTest, PreserveRelativeOrder) {
                                               &mouse_up,
                                               ui::LatencyInfo(),
                                               false));
-  AddMessagesToFilter(filter_, messages);
+  AddMessagesToFilter(filter_.get(), messages);
 
   // We should have sent all messages back to the main thread and preserved
   // their relative order.

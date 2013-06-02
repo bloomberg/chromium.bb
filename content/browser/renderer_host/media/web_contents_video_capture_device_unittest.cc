@@ -175,7 +175,8 @@ class CaptureTestView : public TestRenderWidgetHostView {
       const scoped_refptr<media::VideoFrame>& target,
       const base::Callback<void(bool)>& callback) OVERRIDE {
     SkColor c = ConvertRgbToYuv(controller_->GetSolidColor());
-    media::FillYUV(target, SkColorGetR(c), SkColorGetG(c), SkColorGetB(c));
+    media::FillYUV(
+        target.get(), SkColorGetR(c), SkColorGetG(c), SkColorGetB(c));
     callback.Run(true);
     controller_->SignalCopy();
   }
@@ -197,9 +198,11 @@ class CaptureTestView : public TestRenderWidgetHostView {
     if (subscriber_ && subscriber_->ShouldCaptureFrame(present_time,
                                                        &target, &callback)) {
       SkColor c = ConvertRgbToYuv(controller_->GetSolidColor());
-      media::FillYUV(target, SkColorGetR(c), SkColorGetG(c), SkColorGetB(c));
-      BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-          base::Bind(callback, present_time, true));
+      media::FillYUV(
+          target.get(), SkColorGetR(c), SkColorGetG(c), SkColorGetB(c));
+      BrowserThread::PostTask(BrowserThread::UI,
+                              FROM_HERE,
+                              base::Bind(callback, present_time, true));
       controller_->SignalCopy();
     }
   }
@@ -447,7 +450,7 @@ class WebContentsVideoCaptureDeviceTest : public testing::Test {
     static_cast<SiteInstanceImpl*>(site_instance.get())->
         set_render_process_host_factory(render_process_host_factory_.get());
     web_contents_.reset(
-        TestWebContents::Create(browser_context_.get(), site_instance));
+        TestWebContents::Create(browser_context_.get(), site_instance.get()));
 
     // This is actually a CaptureTestRenderViewHost.
     RenderWidgetHostImpl* rwh =

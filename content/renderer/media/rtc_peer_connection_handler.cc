@@ -229,8 +229,7 @@ class SetSessionDescriptionRequest
 class StatsResponse : public webrtc::StatsObserver {
  public:
   explicit StatsResponse(const scoped_refptr<LocalRTCStatsRequest>& request)
-      : request_(request),
-        response_(request_->createResponse()) {}
+      : request_(request.get()), response_(request_->createResponse()) {}
 
   virtual void OnComplete(
       const std::vector<webrtc::StatsReport>& reports) OVERRIDE {
@@ -360,7 +359,7 @@ bool RTCPeerConnectionHandler::initialize(
   native_peer_connection_ =
       dependency_factory_->CreatePeerConnection(
           servers, &constraints, frame_, this);
-  if (!native_peer_connection_) {
+  if (!native_peer_connection_.get()) {
     LOG(ERROR) << "Failed to initialize native PeerConnection.";
     return false;
   }
@@ -382,7 +381,7 @@ bool RTCPeerConnectionHandler::InitializeForTest(
   native_peer_connection_ =
       dependency_factory_->CreatePeerConnection(
           servers, &constraints, NULL, this);
-  if (!native_peer_connection_) {
+  if (!native_peer_connection_.get()) {
     LOG(ERROR) << "Failed to initialize native PeerConnection.";
     return false;
   }
@@ -397,7 +396,7 @@ void RTCPeerConnectionHandler::createOffer(
       new talk_base::RefCountedObject<CreateSessionDescriptionRequest>(
           request, this, PeerConnectionTracker::ACTION_CREATE_OFFER));
   RTCMediaConstraints constraints(options);
-  native_peer_connection_->CreateOffer(description_request, &constraints);
+  native_peer_connection_->CreateOffer(description_request.get(), &constraints);
 
   if (peer_connection_tracker_)
     peer_connection_tracker_->TrackCreateOffer(this, constraints);
@@ -410,7 +409,8 @@ void RTCPeerConnectionHandler::createAnswer(
       new talk_base::RefCountedObject<CreateSessionDescriptionRequest>(
           request, this, PeerConnectionTracker::ACTION_CREATE_ANSWER));
   RTCMediaConstraints constraints(options);
-  native_peer_connection_->CreateAnswer(description_request, &constraints);
+  native_peer_connection_->CreateAnswer(description_request.get(),
+                                        &constraints);
 
   if (peer_connection_tracker_)
     peer_connection_tracker_->TrackCreateAnswer(this, constraints);
@@ -438,7 +438,7 @@ void RTCPeerConnectionHandler::setLocalDescription(
   scoped_refptr<SetSessionDescriptionRequest> set_request(
       new talk_base::RefCountedObject<SetSessionDescriptionRequest>(
           request, this, PeerConnectionTracker::ACTION_SET_LOCAL_DESCRIPTION));
-  native_peer_connection_->SetLocalDescription(set_request, native_desc);
+  native_peer_connection_->SetLocalDescription(set_request.get(), native_desc);
 }
 
 void RTCPeerConnectionHandler::setRemoteDescription(
@@ -463,7 +463,7 @@ void RTCPeerConnectionHandler::setRemoteDescription(
   scoped_refptr<SetSessionDescriptionRequest> set_request(
       new talk_base::RefCountedObject<SetSessionDescriptionRequest>(
           request, this, PeerConnectionTracker::ACTION_SET_REMOTE_DESCRIPTION));
-  native_peer_connection_->SetRemoteDescription(set_request, native_desc);
+  native_peer_connection_->SetRemoteDescription(set_request.get(), native_desc);
 }
 
 WebKit::WebRTCSessionDescription
@@ -544,7 +544,7 @@ void RTCPeerConnectionHandler::getStats(
     const WebKit::WebRTCStatsRequest& request) {
   scoped_refptr<LocalRTCStatsRequest> inner_request(
       new talk_base::RefCountedObject<LocalRTCStatsRequest>(request));
-  getStats(inner_request);
+  getStats(inner_request.get());
 }
 
 void RTCPeerConnectionHandler::getStats(LocalRTCStatsRequest* request) {

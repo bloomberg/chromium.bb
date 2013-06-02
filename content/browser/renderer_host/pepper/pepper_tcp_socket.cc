@@ -168,9 +168,10 @@ void PepperTCPSocket::Read(int32 bytes_to_read) {
   }
 
   read_buffer_ = new net::IOBuffer(bytes_to_read);
-  int result = socket_->Read(read_buffer_, bytes_to_read,
-                             base::Bind(&PepperTCPSocket::OnReadCompleted,
-                                        base::Unretained(this)));
+  int result = socket_->Read(
+      read_buffer_.get(),
+      bytes_to_read,
+      base::Bind(&PepperTCPSocket::OnReadCompleted, base::Unretained(this)));
   if (result != net::ERR_IO_PENDING)
     OnReadCompleted(result);
 }
@@ -192,7 +193,8 @@ void PepperTCPSocket::Write(const std::string& data) {
 
   write_buffer_base_ = new net::IOBuffer(data_size);
   memcpy(write_buffer_base_->data(), data.data(), data_size);
-  write_buffer_ = new net::DrainableIOBuffer(write_buffer_base_, data_size);
+  write_buffer_ =
+      new net::DrainableIOBuffer(write_buffer_base_.get(), data_size);
   DoWrite();
 }
 
@@ -291,9 +293,9 @@ bool PepperTCPSocket::GetCertificateFields(
     ppapi::PPB_X509Certificate_Fields* fields) {
   scoped_refptr<net::X509Certificate> cert =
       net::X509Certificate::CreateFromBytes(der, length);
-  if (!cert)
+  if (!cert.get())
     return false;
-  return GetCertificateFields(*cert, fields);
+  return GetCertificateFields(*cert.get(), fields);
 }
 
 void PepperTCPSocket::SendReadACKError() {
@@ -314,8 +316,8 @@ void PepperTCPSocket::SendSSLHandshakeACK(bool succeeded) {
         static_cast<net::SSLClientSocket*>(socket_.get());
     net::SSLInfo ssl_info;
     ssl_socket->GetSSLInfo(&ssl_info);
-    if (ssl_info.cert)
-      GetCertificateFields(*ssl_info.cert, &certificate_fields);
+    if (ssl_info.cert.get())
+      GetCertificateFields(*ssl_info.cert.get(), &certificate_fields);
   }
   manager_->Send(new PpapiMsg_PPBTCPSocket_SSLHandshakeACK(
       routing_id_,
@@ -443,9 +445,10 @@ void PepperTCPSocket::DoWrite() {
   DCHECK(write_buffer_.get());
   DCHECK_GT(write_buffer_->BytesRemaining(), 0);
 
-  int result = socket_->Write(write_buffer_, write_buffer_->BytesRemaining(),
-                              base::Bind(&PepperTCPSocket::OnWriteCompleted,
-                                         base::Unretained(this)));
+  int result = socket_->Write(
+      write_buffer_.get(),
+      write_buffer_->BytesRemaining(),
+      base::Bind(&PepperTCPSocket::OnWriteCompleted, base::Unretained(this)));
   if (result != net::ERR_IO_PENDING)
     OnWriteCompleted(result);
 }

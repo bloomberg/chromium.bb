@@ -58,13 +58,13 @@ CompositorOutputSurface::CompositorOutputSurface(
       routing_id_(routing_id),
       prefers_smoothness_(false),
       main_thread_handle_(base::PlatformThread::CurrentHandle()) {
-  DCHECK(output_surface_filter_);
+  DCHECK(output_surface_filter_.get());
   CommandLine* command_line = CommandLine::ForCurrentProcess();
   capabilities_.has_parent_compositor = command_line->HasSwitch(
       switches::kEnableDelegatedRenderer);
   DetachFromThread();
   message_sender_ = RenderThreadImpl::current()->sync_message_filter();
-  DCHECK(message_sender_);
+  DCHECK(message_sender_.get());
 }
 
 CompositorOutputSurface::~CompositorOutputSurface() {
@@ -72,7 +72,7 @@ CompositorOutputSurface::~CompositorOutputSurface() {
   if (!client_)
     return;
   UpdateSmoothnessTakesPriority(false);
-  if (output_surface_proxy_)
+  if (output_surface_proxy_.get())
     output_surface_proxy_->ClearOutputSurface();
   output_surface_filter_->RemoveRoute(routing_id_);
 }

@@ -23,8 +23,9 @@ ChromeBlobStorageContext* ChromeBlobStorageContext::GetFor(
   if (!context->GetUserData(kBlobStorageContextKeyName)) {
     scoped_refptr<ChromeBlobStorageContext> blob =
         new ChromeBlobStorageContext();
-    context->SetUserData(kBlobStorageContextKeyName,
-                         new UserDataAdapter<ChromeBlobStorageContext>(blob));
+    context->SetUserData(
+        kBlobStorageContextKeyName,
+        new UserDataAdapter<ChromeBlobStorageContext>(blob.get()));
     // Check first to avoid memory leak in unittests.
     if (BrowserThread::IsMessageLoopValid(BrowserThread::IO)) {
       BrowserThread::PostTask(

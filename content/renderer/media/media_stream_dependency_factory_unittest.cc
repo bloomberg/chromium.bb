@@ -127,7 +127,7 @@ class MediaStreamDependencyFactoryTest : public ::testing::Test {
                          size_t num_video_tracks) {
     content::MediaStreamExtraData* extra_data =
         static_cast<content::MediaStreamExtraData*>(stream_desc.extraData());
-    ASSERT_TRUE(extra_data && extra_data->stream());
+    ASSERT_TRUE(extra_data && extra_data->stream().get());
     EXPECT_TRUE(extra_data->is_local());
     EXPECT_EQ(num_audio_tracks, extra_data->stream()->GetAudioTracks().size());
     EXPECT_EQ(num_video_tracks, extra_data->stream()->GetVideoTracks().size());

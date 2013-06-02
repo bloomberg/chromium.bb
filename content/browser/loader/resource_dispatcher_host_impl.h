@@ -154,7 +154,7 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
   static const int kAvgBytesPerOutstandingRequest = 4400;
 
   SaveFileManager* save_file_manager() const {
-    return save_file_manager_;
+    return save_file_manager_.get();
   }
 
   // Called when the unload handler for a cross-site request has finished.

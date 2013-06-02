@@ -209,13 +209,12 @@ class WebContentsAudioInputStreamTest : public testing::Test {
 
     ASSERT_EQ(kRenderProcessId, current_render_process_id_);
     ASSERT_EQ(kRenderViewId, current_render_view_id_);
-    EXPECT_CALL(*mock_tracker_, Start(kRenderProcessId, kRenderViewId, _))
+    EXPECT_CALL(*mock_tracker_.get(), Start(kRenderProcessId, kRenderViewId, _))
         .WillOnce(DoAll(
-            SaveArg<2>(&change_callback_),
-            WithArgs<0, 1>(
-                Invoke(&change_callback_,
-                       &WebContentsTracker::ChangeCallback::Run))));
-    EXPECT_CALL(*mock_tracker_, Stop());  // At Close() time.
+             SaveArg<2>(&change_callback_),
+             WithArgs<0, 1>(Invoke(&change_callback_,
+                                   &WebContentsTracker::ChangeCallback::Run))));
+    EXPECT_CALL(*mock_tracker_.get(), Stop());  // At Close() time.
 
     wcais_ = new WebContentsAudioInputStream(
         current_render_process_id_, current_render_view_id_,

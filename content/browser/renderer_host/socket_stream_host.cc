@@ -67,33 +67,33 @@ void SocketStreamHost::Connect(const GURL& url,
 
 bool SocketStreamHost::SendData(const std::vector<char>& data) {
   VLOG(1) << "SocketStreamHost::SendData";
-  return socket_ && socket_->SendData(&data[0], data.size());
+  return socket_.get() && socket_->SendData(&data[0], data.size());
 }
 
 void SocketStreamHost::Close() {
   VLOG(1) << "SocketStreamHost::Close";
-  if (!socket_)
+  if (!socket_.get())
     return;
   socket_->Close();
 }
 
 void SocketStreamHost::CancelWithError(int error) {
   VLOG(1) << "SocketStreamHost::CancelWithError: error=" << error;
-  if (!socket_)
+  if (!socket_.get())
     return;
   socket_->CancelWithError(error);
 }
 
 void SocketStreamHost::CancelWithSSLError(const net::SSLInfo& ssl_info) {
   VLOG(1) << "SocketStreamHost::CancelWithSSLError";
-  if (!socket_)
+  if (!socket_.get())
     return;
   socket_->CancelWithSSLError(ssl_info);
 }
 
 void SocketStreamHost::ContinueDespiteError() {
   VLOG(1) << "SocketStreamHost::ContinueDespiteError";
-  if (!socket_)
+  if (!socket_.get())
     return;
   socket_->ContinueDespiteError();
 }

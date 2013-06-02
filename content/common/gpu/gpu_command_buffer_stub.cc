@@ -370,10 +370,10 @@ void GpuCommandBufferStub::Destroy() {
   // Make sure that context_ is current while we destroy surface_, because
   // surface_ may have GL resources that it needs to destroy, and will need
   // context_ to be current in order to not leak these resources.
-  if (context)
+  if (context.get())
     context->MakeCurrent(surface_.get());
   surface_ = NULL;
-  if (context)
+  if (context.get())
     context->ReleaseCurrent(NULL);
 }
 
@@ -406,7 +406,7 @@ void GpuCommandBufferStub::OnInitialize(
   scheduler_.reset(new gpu::GpuScheduler(command_buffer_.get(),
                                          decoder_.get(),
                                          decoder_.get()));
-  if (preemption_flag_)
+  if (preemption_flag_.get())
     scheduler_->SetPreemptByFlag(preemption_flag_);
 
   decoder_->set_engine(scheduler_.get());
@@ -429,7 +429,7 @@ void GpuCommandBufferStub::OnInitialize(
     surface_ = manager->GetDefaultOffscreenSurface();
   }
 
-  if (!surface_) {
+  if (!surface_.get()) {
     DLOG(ERROR) << "Failed to create surface.\n";
     OnInitializeFailed(reply_message);
     return;
@@ -440,19 +440,18 @@ void GpuCommandBufferStub::OnInitialize(
           switches::kEnableVirtualGLContexts) || use_virtualized_gl_context_) &&
       channel_->share_group()) {
     context = channel_->share_group()->GetSharedContext();
-    if (!context) {
+    if (!context.get()) {
       context = gfx::GLContext::CreateGLContext(
           channel_->share_group(),
           channel_->gpu_channel_manager()->GetDefaultOffscreenSurface(),
           gpu_preference_);
-      channel_->share_group()->SetSharedContext(context);
+      channel_->share_group()->SetSharedContext(context.get());
     }
     // This should be a non-virtual GL context.
     DCHECK(context->GetHandle());
-    context = new gpu::GLContextVirtual(channel_->share_group(),
-                                        context,
-                                        decoder_->AsWeakPtr());
-    if (!context->Initialize(surface_, gpu_preference_)) {
+    context = new gpu::GLContextVirtual(
+        channel_->share_group(), context.get(), decoder_->AsWeakPtr());
+    if (!context->Initialize(surface_.get(), gpu_preference_)) {
       // TODO(sievers): The real context created above for the default
       // offscreen surface might not be compatible with this surface.
       // Need to adjust at least GLX to be able to create the initial context
@@ -466,19 +465,17 @@ void GpuCommandBufferStub::OnInitialize(
       LOG(INFO) << "Created virtual GL context.";
     }
   }
-  if (!context) {
+  if (!context.get()) {
     context = gfx::GLContext::CreateGLContext(
-        channel_->share_group(),
-        surface_.get(),
-        gpu_preference_);
+        channel_->share_group(), surface_.get(), gpu_preference_);
   }
-  if (!context) {
+  if (!context.get()) {
     DLOG(ERROR) << "Failed to create context.\n";
     OnInitializeFailed(reply_message);
     return;
   }
 
-  if (!context->MakeCurrent(surface_)) {
+  if (!context->MakeCurrent(surface_.get())) {
     LOG(ERROR) << "Failed to make context current.";
     OnInitializeFailed(reply_message);
     return;
@@ -761,7 +758,7 @@ void GpuCommandBufferStub::OnSetSurfaceVisible(bool visible) {
 
 void GpuCommandBufferStub::OnDiscardBackbuffer() {
   TRACE_EVENT0("gpu", "GpuCommandBufferStub::OnDiscardBackbuffer");
-  if (!surface_)
+  if (!surface_.get())
     return;
   if (surface_->DeferDraws()) {
     DCHECK(!IsScheduled());
@@ -774,7 +771,7 @@ void GpuCommandBufferStub::OnDiscardBackbuffer() {
 
 void GpuCommandBufferStub::OnEnsureBackbuffer() {
   TRACE_EVENT0("gpu", "GpuCommandBufferStub::OnEnsureBackbuffer");
-  if (!surface_)
+  if (!surface_.get())
     return;
   if (surface_->DeferDraws()) {
     DCHECK(!IsScheduled());
@@ -897,7 +894,7 @@ bool GpuCommandBufferStub::GetTotalGpuMemory(uint64* bytes) {
 }
 
 gfx::Size GpuCommandBufferStub::GetSurfaceSize() const {
-  if (!surface_)
+  if (!surface_.get())
     return gfx::Size();
   return surface_->GetSize();
 }
@@ -920,7 +917,7 @@ void GpuCommandBufferStub::SetMemoryAllocation(
           last_memory_allocation_.browser_allocation)) {
     // This can be called outside of OnMessageReceived, so the context needs
     // to be made current before calling methods on the surface.
-    if (surface_ && MakeCurrent())
+    if (surface_.get() && MakeCurrent())
       surface_->SetFrontbufferAllocation(
           allocation.browser_allocation.suggest_have_frontbuffer);
   }

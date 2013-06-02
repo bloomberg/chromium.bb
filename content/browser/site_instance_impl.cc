@@ -195,8 +195,8 @@ SiteInstance* SiteInstanceImpl::GetRelatedSiteInstance(const GURL& url) {
 }
 
 bool SiteInstanceImpl::IsRelatedSiteInstance(const SiteInstance* instance) {
-  return browsing_instance_ ==
-      static_cast<const SiteInstanceImpl*>(instance)->browsing_instance_;
+  return browsing_instance_.get() == static_cast<const SiteInstanceImpl*>(
+                                         instance)->browsing_instance_.get();
 }
 
 bool SiteInstanceImpl::HasWrongProcessForURL(const GURL& url) {

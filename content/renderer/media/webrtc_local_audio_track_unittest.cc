@@ -32,7 +32,7 @@ class FakeAudioThread : public base::PlatformThread::Delegate {
     : capturer_(capturer),
       thread_(),
       closure_(false, false) {
-    DCHECK(capturer);
+    DCHECK(capturer.get());
     audio_bus_ = media::AudioBus::Create(capturer_->audio_parameters());
   }
 
@@ -45,7 +45,8 @@ class FakeAudioThread : public base::PlatformThread::Delegate {
         return;
 
       media::AudioCapturerSource::CaptureCallback* callback =
-          static_cast<media::AudioCapturerSource::CaptureCallback*>(capturer_);
+          static_cast<media::AudioCapturerSource::CaptureCallback*>(
+              capturer_.get());
       audio_bus_->Zero();
       callback->Capture(audio_bus_.get(), 0, 0);
 
@@ -108,14 +109,14 @@ class WebRtcLocalAudioTrackTest : public ::testing::Test {
   virtual void SetUp() OVERRIDE {
     capturer_ = WebRtcAudioCapturer::CreateCapturer();
     capturer_source_ = new MockCapturerSource();
-    EXPECT_CALL(*capturer_source_, Initialize(_, capturer_.get(), 0))
+    EXPECT_CALL(*capturer_source_.get(), Initialize(_, capturer_.get(), 0))
         .WillOnce(Return());
     capturer_->SetCapturerSource(capturer_source_,
                                  media::CHANNEL_LAYOUT_STEREO,
                                  48000);
 
-    EXPECT_CALL(*capturer_source_, Start()).WillOnce(Return());
-    EXPECT_CALL(*capturer_source_, SetAutomaticGainControl(false))
+    EXPECT_CALL(*capturer_source_.get(), Start()).WillOnce(Return());
+    EXPECT_CALL(*capturer_source_.get(), SetAutomaticGainControl(false))
         .WillOnce(Return());
     capturer_->Start();
     audio_thread_.reset(new FakeAudioThread(capturer_));
@@ -125,7 +126,7 @@ class WebRtcLocalAudioTrackTest : public ::testing::Test {
   virtual void TearDown() {
     audio_thread_->Stop();
     audio_thread_.reset();
-    EXPECT_CALL(*capturer_source_, Stop()).WillOnce(Return());
+    EXPECT_CALL(*capturer_source_.get(), Stop()).WillOnce(Return());
     capturer_->Stop();
   }
 

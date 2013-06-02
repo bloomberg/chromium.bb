@@ -217,12 +217,12 @@ class RendererURLRequestContextSelector
 
   virtual net::URLRequestContext* GetRequestContext(
       ResourceType::Type resource_type) OVERRIDE {
-    net::URLRequestContextGetter* request_context = request_context_;
+    net::URLRequestContextGetter* request_context = request_context_.get();
     // If the request has resource type of ResourceType::MEDIA, we use a request
     // context specific to media for handling it because these resources have
     // specific needs for caching.
     if (resource_type == ResourceType::MEDIA)
-      request_context = media_request_context_;
+      request_context = media_request_context_.get();
     return request_context->GetURLRequestContext();
   }
 
@@ -561,7 +561,7 @@ void RenderProcessHostImpl::CreateMessageFilters() {
   if (supports_browser_plugin_) {
     scoped_refptr<BrowserPluginMessageFilter> bp_message_filter(
         new BrowserPluginMessageFilter(GetID(), IsGuest()));
-    channel_->AddFilter(bp_message_filter);
+    channel_->AddFilter(bp_message_filter.get());
   }
 
   scoped_refptr<RenderMessageFilter> render_message_filter(
@@ -574,10 +574,10 @@ void RenderProcessHostImpl::CreateMessageFilters() {
 #endif
           GetBrowserContext(),
           GetBrowserContext()->GetRequestContextForRenderProcess(GetID()),
-          widget_helper_,
+          widget_helper_.get(),
           media_internals,
           storage_partition_impl_->GetDOMStorageContext()));
-  channel_->AddFilter(render_message_filter);
+  channel_->AddFilter(render_message_filter.get());
   BrowserContext* browser_context = GetBrowserContext();
   ResourceContext* resource_context = browser_context->GetResourceContext();
 
@@ -611,12 +611,12 @@ void RenderProcessHostImpl::CreateMessageFilters() {
           GetID(),
           storage_partition_impl_->GetIndexedDBContext()));
   if (IsGuest()) {
-    if (!g_browser_plugin_geolocation_context.Get()) {
+    if (!g_browser_plugin_geolocation_context.Get().get()) {
       g_browser_plugin_geolocation_context.Get() =
           new BrowserPluginGeolocationPermissionContext();
     }
     channel_->AddFilter(GeolocationDispatcherHost::New(
-        GetID(), g_browser_plugin_geolocation_context.Get()));
+        GetID(), g_browser_plugin_geolocation_context.Get().get()));
   } else {
     channel_->AddFilter(GeolocationDispatcherHost::New(
         GetID(), browser_context->GetGeolocationPermissionContext()));
@@ -625,7 +625,7 @@ void RenderProcessHostImpl::CreateMessageFilters() {
   channel_->AddFilter(gpu_message_filter_);
 #if defined(ENABLE_WEBRTC)
   peer_connection_tracker_host_ = new PeerConnectionTrackerHost(GetID());
-  channel_->AddFilter(peer_connection_tracker_host_);
+  channel_->AddFilter(peer_connection_tracker_host_.get());
   channel_->AddFilter(new MediaStreamDispatcherHost(GetID()));
 #endif
 #if defined(ENABLE_PLUGINS)

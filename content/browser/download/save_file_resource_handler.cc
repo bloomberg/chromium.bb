@@ -76,7 +76,7 @@ bool SaveFileResourceHandler::OnWillStart(int request_id,
 bool SaveFileResourceHandler::OnWillRead(int request_id, net::IOBuffer** buf,
                                          int* buf_size, int min_size) {
   DCHECK(buf && buf_size);
-  if (!read_buffer_) {
+  if (!read_buffer_.get()) {
     *buf_size = min_size < 0 ? kReadBufSize : min_size;
     read_buffer_ = new net::IOBuffer(*buf_size);
   }
@@ -86,7 +86,7 @@ bool SaveFileResourceHandler::OnWillRead(int request_id, net::IOBuffer** buf,
 
 bool SaveFileResourceHandler::OnReadCompleted(int request_id, int bytes_read,
                                               bool* defer) {
-  DCHECK(read_buffer_);
+  DCHECK(read_buffer_.get());
   // We are passing ownership of this buffer to the save file manager.
   scoped_refptr<net::IOBuffer> buffer;
   read_buffer_.swap(buffer);

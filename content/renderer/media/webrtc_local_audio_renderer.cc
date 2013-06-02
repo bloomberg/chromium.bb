@@ -98,7 +98,7 @@ WebRtcLocalAudioRenderer::WebRtcLocalAudioRenderer(
 
 WebRtcLocalAudioRenderer::~WebRtcLocalAudioRenderer() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(!sink_);
+  DCHECK(!sink_.get());
   DVLOG(1) << "WebRtcLocalAudioRenderer::~WebRtcLocalAudioRenderer()";
 }
 
@@ -111,7 +111,7 @@ void WebRtcLocalAudioRenderer::Start() {
   audio_track_->AddSink(this);
 
   base::AutoLock auto_lock(thread_lock_);
-  DCHECK(!sink_);
+  DCHECK(!sink_.get());
 
   // TODO(henrika): we could add a more dynamic solution here but I prefer
   // a fixed size combined with bad audio at overflow. The alternative is
@@ -149,7 +149,7 @@ void WebRtcLocalAudioRenderer::Stop() {
   DVLOG(1) << "WebRtcLocalAudioRenderer::Stop()";
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  if (!sink_)
+  if (!sink_.get())
     return;
 
   {
@@ -178,7 +178,7 @@ void WebRtcLocalAudioRenderer::Play() {
   DCHECK(thread_checker_.CalledOnValidThread());
   base::AutoLock auto_lock(thread_lock_);
 
-  if (!sink_)
+  if (!sink_.get())
     return;
 
   // Resumes rendering by ensuring that WebRtcLocalAudioRenderer::Render()
@@ -195,7 +195,7 @@ void WebRtcLocalAudioRenderer::Pause() {
   DCHECK(thread_checker_.CalledOnValidThread());
   base::AutoLock auto_lock(thread_lock_);
 
-  if (!sink_)
+  if (!sink_.get())
     return;
 
   // Temporarily suspends rendering audio.
@@ -208,14 +208,14 @@ void WebRtcLocalAudioRenderer::SetVolume(float volume) {
   DVLOG(1) << "WebRtcLocalAudioRenderer::SetVolume(" << volume << ")";
   DCHECK(thread_checker_.CalledOnValidThread());
   base::AutoLock auto_lock(thread_lock_);
-  if (sink_)
+  if (sink_.get())
     sink_->SetVolume(volume);
 }
 
 base::TimeDelta WebRtcLocalAudioRenderer::GetCurrentRenderTime() const {
   DCHECK(thread_checker_.CalledOnValidThread());
   base::AutoLock auto_lock(thread_lock_);
-  if (!sink_)
+  if (!sink_.get())
     return base::TimeDelta();
   return total_render_time();
 }

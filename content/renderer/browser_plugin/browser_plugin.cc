@@ -434,7 +434,7 @@ void BrowserPlugin::Attach(int guest_instance_id) {
 }
 
 void BrowserPlugin::DidCommitCompositorFrame() {
-  if (compositing_helper_)
+  if (compositing_helper_.get())
     compositing_helper_->DidCommitCompositorFrame();
 }
 
@@ -1181,12 +1181,12 @@ void BrowserPlugin::EnableCompositing(bool enable) {
     // compositing.
     backing_store_.reset();
     current_damage_buffer_.reset();
-    if (!compositing_helper_) {
-      compositing_helper_ = new BrowserPluginCompositingHelper(
-          container_,
-          browser_plugin_manager(),
-          guest_instance_id_,
-          render_view_routing_id_);
+    if (!compositing_helper_.get()) {
+      compositing_helper_ =
+          new BrowserPluginCompositingHelper(container_,
+                                             browser_plugin_manager(),
+                                             guest_instance_id_,
+                                             render_view_routing_id_);
     }
   } else {
     // We're switching back to the software path. We create a new damage
@@ -1216,7 +1216,7 @@ void BrowserPlugin::destroy() {
   // call returns, so let's not keep a reference to it around.
   g_plugin_container_map.Get().erase(container_);
   container_ = NULL;
-  if (compositing_helper_)
+  if (compositing_helper_.get())
     compositing_helper_->OnContainerDestroy();
   // Will be a no-op if the mouse is not currently locked.
   if (render_view_)
@@ -1485,7 +1485,7 @@ void BrowserPlugin::updateVisibility(bool visible) {
   if (!HasGuestInstanceID())
     return;
 
-  if (compositing_helper_)
+  if (compositing_helper_.get())
     compositing_helper_->UpdateVisibility(visible);
 
   browser_plugin_manager()->Send(new BrowserPluginHostMsg_SetVisibility(

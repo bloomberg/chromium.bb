@@ -57,7 +57,7 @@ bool TextureImageTransportSurface::Initialize() {
 
   GpuChannelManager* manager = helper_->manager();
   surface_ = manager->GetDefaultOffscreenSurface();
-  if (!surface_)
+  if (!surface_.get())
     return false;
 
   if (!helper_->Initialize())
@@ -74,7 +74,7 @@ bool TextureImageTransportSurface::Initialize() {
 }
 
 void TextureImageTransportSurface::Destroy() {
-  if (surface_)
+  if (surface_.get())
     surface_ = NULL;
 
   helper_->Destroy();
@@ -117,7 +117,7 @@ bool TextureImageTransportSurface::SetBackbufferAllocation(bool allocation) {
   backbuffer_suggested_allocation_ = allocation;
 
   if (backbuffer_suggested_allocation_) {
-    DCHECK(!backbuffer_);
+    DCHECK(!backbuffer_.get());
     CreateBackTexture();
   } else {
     ReleaseBackTexture();
@@ -194,7 +194,7 @@ bool TextureImageTransportSurface::SwapBuffers() {
   if (!frontbuffer_suggested_allocation_)
     return true;
 
-  if (!backbuffer_) {
+  if (!backbuffer_.get()) {
     LOG(ERROR) << "Swap without valid backing.";
     return true;
   }
@@ -230,7 +230,7 @@ bool TextureImageTransportSurface::PostSubBuffer(
   if (new_damage_rect.IsEmpty())
     return true;
 
-  if (!backbuffer_) {
+  if (!backbuffer_.get()) {
     LOG(ERROR) << "Swap without valid backing.";
     return true;
   }
@@ -297,7 +297,7 @@ void TextureImageTransportSurface::BufferPresentedImpl(
   // We should not have allowed the backbuffer to be discarded while the ack
   // was pending.
   DCHECK(backbuffer_suggested_allocation_);
-  DCHECK(backbuffer_);
+  DCHECK(backbuffer_.get());
 
   bool swap = true;
   if (!mailbox_name.empty()) {
@@ -319,9 +319,9 @@ void TextureImageTransportSurface::BufferPresentedImpl(
   // finished with its context when it inserts the sync point that
   // triggers this callback.
   if (helper_->MakeCurrent()) {
-    if (frontbuffer_ && !frontbuffer_suggested_allocation_)
+    if (frontbuffer_.get() && !frontbuffer_suggested_allocation_)
       ReleaseFrontTexture();
-    if (!backbuffer_ || backbuffer_size() != current_size_)
+    if (!backbuffer_.get() || backbuffer_size() != current_size_)
       CreateBackTexture();
     else
       AttachBackTextureToFBO();
@@ -363,7 +363,7 @@ void TextureImageTransportSurface::CreateBackTexture() {
   // in the mailbox, so we shouldn't be reallocating it now.
   DCHECK(!is_swap_buffers_pending_);
 
-  if (backbuffer_ && backbuffer_size() == current_size_)
+  if (backbuffer_.get() && backbuffer_size() == current_size_)
     return;
 
   VLOG(1) << "Allocating new backbuffer texture";
@@ -372,25 +372,21 @@ void TextureImageTransportSurface::CreateBackTexture() {
   // size, after we allocated it as 1x1. So here we simply delete
   // the previous texture on resize, to insure we don't 'run out of
   // memory'.
-  if (backbuffer_ &&
-      helper_->stub()
-             ->decoder()
-             ->GetContextGroup()
-             ->feature_info()
-             ->workarounds()
-             .delete_instead_of_resize_fbo) {
+  if (backbuffer_.get() &&
+      helper_->stub()->decoder()->GetContextGroup()->feature_info()
+          ->workarounds().delete_instead_of_resize_fbo) {
     ReleaseBackTexture();
   }
   GLES2Decoder* decoder = helper_->stub()->decoder();
   TextureManager* texture_manager =
       decoder->GetContextGroup()->texture_manager();
-  if (!backbuffer_) {
+  if (!backbuffer_.get()) {
     mailbox_manager_->GenerateMailboxName(&back_mailbox_name_);
     GLuint service_id;
     glGenTextures(1, &service_id);
     backbuffer_ = TextureRef::Create(texture_manager, 0, service_id);
-    texture_manager->SetTarget(backbuffer_, GL_TEXTURE_2D);
-    Texture* texture = texture_manager->Produce(backbuffer_);
+    texture_manager->SetTarget(backbuffer_.get(), GL_TEXTURE_2D);
+    Texture* texture = texture_manager->Produce(backbuffer_.get());
     bool success = mailbox_manager_->ProduceTexture(
         GL_TEXTURE_2D, back_mailbox_name_, texture);
     DCHECK(success);
@@ -403,27 +399,38 @@ void TextureImageTransportSurface::CreateBackTexture() {
         current_size_.width(), current_size_.height(), 0,
         GL_RGBA, GL_UNSIGNED_BYTE, NULL);
     gpu::gles2::ErrorState* error_state = decoder->GetErrorState();
-    texture_manager->SetParameter("Backbuffer", error_state, backbuffer_,
-                                  GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    texture_manager->SetParameter("Backbuffer", error_state, backbuffer_,
-                                  GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    texture_manager->SetParameter("Backbuffer", error_state, backbuffer_,
-                                  GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    texture_manager->SetParameter("Backbuffer", error_state, backbuffer_,
-                                  GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    texture_manager->SetLevelInfo(
-        backbuffer_,
-        GL_TEXTURE_2D,
-        0,
-        GL_RGBA,
-        current_size_.width(),
-        current_size_.height(),
-        1,
-        0,
-        GL_RGBA,
-        GL_UNSIGNED_BYTE,
-        true);
-    DCHECK(texture_manager->CanRender(backbuffer_));
+    texture_manager->SetParameter("Backbuffer",
+                                  error_state,
+                                  backbuffer_.get(),
+                                  GL_TEXTURE_MIN_FILTER,
+                                  GL_LINEAR);
+    texture_manager->SetParameter("Backbuffer",
+                                  error_state,
+                                  backbuffer_.get(),
+                                  GL_TEXTURE_MAG_FILTER,
+                                  GL_LINEAR);
+    texture_manager->SetParameter("Backbuffer",
+                                  error_state,
+                                  backbuffer_.get(),
+                                  GL_TEXTURE_WRAP_S,
+                                  GL_CLAMP_TO_EDGE);
+    texture_manager->SetParameter("Backbuffer",
+                                  error_state,
+                                  backbuffer_.get(),
+                                  GL_TEXTURE_WRAP_T,
+                                  GL_CLAMP_TO_EDGE);
+    texture_manager->SetLevelInfo(backbuffer_.get(),
+                                  GL_TEXTURE_2D,
+                                  0,
+                                  GL_RGBA,
+                                  current_size_.width(),
+                                  current_size_.height(),
+                                  1,
+                                  0,
+                                  GL_RGBA,
+                                  GL_UNSIGNED_BYTE,
+                                  true);
+    DCHECK(texture_manager->CanRender(backbuffer_.get()));
     CHECK_GL_ERROR();
   }
 
@@ -432,7 +439,7 @@ void TextureImageTransportSurface::CreateBackTexture() {
 
 void TextureImageTransportSurface::AttachBackTextureToFBO() {
   DCHECK(helper_->stub()->decoder()->GetGLContext()->IsCurrent(NULL));
-  DCHECK(backbuffer_);
+  DCHECK(backbuffer_.get());
   gfx::ScopedFrameBufferBinder fbo_binder(fbo_id_);
   glFramebufferTexture2DEXT(GL_FRAMEBUFFER,
       GL_COLOR_ATTACHMENT0,

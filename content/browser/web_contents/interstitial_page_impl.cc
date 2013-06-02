@@ -490,15 +490,19 @@ RenderViewHost* InterstitialPageImpl::CreateRenderViewHost() {
   scoped_refptr<SiteInstance> site_instance =
       SiteInstance::Create(browser_context);
   DOMStorageContextImpl* dom_storage_context =
-      static_cast<DOMStorageContextImpl*>(
-          BrowserContext::GetStoragePartition(
-              browser_context, site_instance)->GetDOMStorageContext());
+      static_cast<DOMStorageContextImpl*>(BrowserContext::GetStoragePartition(
+          browser_context, site_instance.get())->GetDOMStorageContext());
   SessionStorageNamespaceImpl* session_storage_namespace_impl =
       new SessionStorageNamespaceImpl(dom_storage_context);
 
-  RenderViewHostImpl* render_view_host = new RenderViewHostImpl(
-      site_instance, this, this, MSG_ROUTING_NONE, MSG_ROUTING_NONE, false,
-      session_storage_namespace_impl);
+  RenderViewHostImpl* render_view_host =
+      new RenderViewHostImpl(site_instance.get(),
+                             this,
+                             this,
+                             MSG_ROUTING_NONE,
+                             MSG_ROUTING_NONE,
+                             false,
+                             session_storage_namespace_impl);
   web_contents_->RenderViewForInterstitialPageCreated(render_view_host);
   return render_view_host;
 }

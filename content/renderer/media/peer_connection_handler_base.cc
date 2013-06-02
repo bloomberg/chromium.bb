@@ -21,7 +21,7 @@ static webrtc::MediaStreamInterface* GetNativeMediaStream(
   MediaStreamExtraData* extra_data =
       static_cast<MediaStreamExtraData*>(stream.extraData());
   if (extra_data)
-    return extra_data->stream();
+    return extra_data->stream().get();
   return NULL;
 }
 

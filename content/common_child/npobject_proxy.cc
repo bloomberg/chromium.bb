@@ -70,7 +70,7 @@ NPObjectProxy::NPObjectProxy(
 }
 
 NPObjectProxy::~NPObjectProxy() {
-  if (channel_) {
+  if (channel_.get()) {
     // This NPObjectProxy instance is now invalid and should not be reused for
     // requests initiated by plugins. We may receive requests for the
     // same NPObject in the context of the outgoing NPObjectMsg_Release call.
@@ -94,7 +94,7 @@ NPObject* NPObjectProxy::Create(NPChannelBase* channel,
 }
 
 bool NPObjectProxy::Send(IPC::Message* msg) {
-  if (channel_)
+  if (channel_.get())
     return channel_->Send(msg);
 
   delete msg;
@@ -193,9 +193,12 @@ bool NPObjectProxy::NPInvokePrivate(NPP npp,
   std::vector<NPVariant_Param> args_param;
   for (unsigned int i = 0; i < arg_count; ++i) {
     NPVariant_Param param;
-    CreateNPVariantParam(
-        args[i], channel_copy, &param, false, render_view_id,
-        proxy->page_url_);
+    CreateNPVariantParam(args[i],
+                         channel_copy.get(),
+                         &param,
+                         false,
+                         render_view_id,
+                         proxy->page_url_);
     args_param.push_back(param);
   }
 
@@ -224,7 +227,7 @@ bool NPObjectProxy::NPInvokePrivate(NPP npp,
     return false;
 
   CreateNPVariant(
-      param_result, channel_copy, np_result, render_view_id, page_url);
+      param_result, channel_copy.get(), np_result, render_view_id, page_url);
   return true;
 }
 
@@ -419,9 +422,12 @@ bool NPObjectProxy::NPNConstruct(NPObject *obj,
   std::vector<NPVariant_Param> args_param;
   for (unsigned int i = 0; i < arg_count; ++i) {
     NPVariant_Param param;
-    CreateNPVariantParam(
-        args[i], channel_copy, &param, false, render_view_id,
-        proxy->page_url_);
+    CreateNPVariantParam(args[i],
+                         channel_copy.get(),
+                         &param,
+                         false,
+                         render_view_id,
+                         proxy->page_url_);
     args_param.push_back(param);
   }
 
@@ -445,7 +451,7 @@ bool NPObjectProxy::NPNConstruct(NPObject *obj,
     return false;
 
   CreateNPVariant(
-      param_result, channel_copy, np_result, render_view_id, page_url);
+      param_result, channel_copy.get(), np_result, render_view_id, page_url);
   return true;
 }
 

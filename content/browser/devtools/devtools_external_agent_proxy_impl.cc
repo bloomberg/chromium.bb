@@ -63,7 +63,7 @@ scoped_refptr<DevToolsAgentHost> DevToolsExternalAgentProxyImpl::
 void DevToolsExternalAgentProxyImpl::DispatchOnClientHost(
     const std::string& message) {
   DevToolsManagerImpl::GetInstance()->DispatchOnInspectorFrontend(
-      agent_host_, message);
+      agent_host_.get(), message);
 }
 
 void DevToolsExternalAgentProxyImpl::ConnectionClosed() {

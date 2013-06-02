@@ -68,7 +68,7 @@ bool CertificateResourceHandler::OnWillRead(int request_id,
 
   // TODO(gauravsh): Should we use 'min_size' here?
   DCHECK(buf && buf_size);
-  if (!read_buffer_) {
+  if (!read_buffer_.get()) {
     read_buffer_ = new net::IOBuffer(kReadBufSize);
   }
   *buf = read_buffer_.get();
@@ -84,7 +84,7 @@ bool CertificateResourceHandler::OnReadCompleted(int request_id,
     return true;
 
   // We have more data to read.
-  DCHECK(read_buffer_);
+  DCHECK(read_buffer_.get());
   content_length_ += bytes_read;
 
   // Release the ownership of the buffer, and store a reference
@@ -107,7 +107,7 @@ bool CertificateResourceHandler::OnResponseCompleted(
   AssembleResource();
 
   const void* content_bytes = NULL;
-  if (resource_buffer_)
+  if (resource_buffer_.get())
     content_bytes = resource_buffer_->data();
 
   // Note that it's up to the browser to verify that the certificate
@@ -132,7 +132,7 @@ void CertificateResourceHandler::AssembleResource() {
   // Copy the data into it.
   size_t bytes_copied = 0;
   for (size_t i = 0; i < buffer_.size(); ++i) {
-    net::IOBuffer* data = buffer_[i].first;
+    net::IOBuffer* data = buffer_[i].first.get();
     size_t data_len = buffer_[i].second;
     DCHECK(data != NULL);
     DCHECK_LE(bytes_copied + data_len, content_length_);

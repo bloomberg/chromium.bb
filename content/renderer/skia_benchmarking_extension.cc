@@ -75,7 +75,7 @@ class SkiaBenchmarkingWrapper : public v8::Extension {
 
     scoped_refptr<cc::Picture> picture =
         cc::Picture::CreateFromValue(picture_value.get());
-    if (!picture)
+    if (!picture.get())
       return v8::Undefined();
 
     float scale = 1.0f;

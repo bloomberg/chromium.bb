@@ -346,7 +346,7 @@ WebKit::WebPlugin* PepperPluginDelegateImpl::CreatePepperWebPlugin(
       CreatePepperPluginModule(webplugin_info, &pepper_plugin_was_registered));
 
   if (pepper_plugin_was_registered) {
-    if (!pepper_module)
+    if (!pepper_module.get())
       return NULL;
     return new webkit::ppapi::WebPluginImpl(
         pepper_module.get(), params, AsWeakPtr());
@@ -365,12 +365,12 @@ PepperPluginDelegateImpl::CreatePepperPluginModule(
   base::FilePath path(webplugin_info.path);
   scoped_refptr<webkit::ppapi::PluginModule> module =
       PepperPluginRegistry::GetInstance()->GetLiveModule(path);
-  if (module) {
+  if (module.get()) {
     if (!module->GetEmbedderState()) {
       // If the module exists and no embedder state was associated with it,
       // then the module was one of the ones preloaded and is an in-process
       // plugin. We need to associate our host state with it.
-      CreateHostForInProcessModule(render_view_, module, webplugin_info);
+      CreateHostForInProcessModule(render_view_, module.get(), webplugin_info);
     }
     return module;
   }
@@ -408,9 +408,9 @@ PepperPluginDelegateImpl::CreatePepperPluginModule(
       info->name, path,
       PepperPluginRegistry::GetInstance(),
       permissions);
-  PepperPluginRegistry::GetInstance()->AddLiveModule(path, module);
+  PepperPluginRegistry::GetInstance()->AddLiveModule(path, module.get());
 
-  if (!CreateOutOfProcessModule(module,
+  if (!CreateOutOfProcessModule(module.get(),
                                 path,
                                 permissions,
                                 channel_handle,
@@ -431,7 +431,7 @@ RendererPpapiHost* PepperPluginDelegateImpl::CreateExternalPluginModule(
     int plugin_child_id) {
   // We don't call PepperPluginRegistry::AddLiveModule, as this module is
   // managed externally.
-  return CreateOutOfProcessModule(module,
+  return CreateOutOfProcessModule(module.get(),
                                   path,
                                   permissions,
                                   channel_handle,
@@ -898,9 +898,9 @@ PepperPluginDelegateImpl::ConnectToBroker(
 
   scoped_refptr<PepperBrokerImpl> broker =
       static_cast<PepperBrokerImpl*>(plugin_module->GetBroker());
-  if (!broker) {
+  if (!broker.get()) {
     broker = CreateBroker(plugin_module);
-    if (!broker)
+    if (!broker.get())
       return NULL;
   }
 
@@ -919,7 +919,7 @@ PepperPluginDelegateImpl::ConnectToBroker(
   // |broker| goes out of scope.
   broker->AddPendingConnect(client);
 
-  return broker;
+  return broker.get();
 }
 
 void PepperPluginDelegateImpl::OnPpapiBrokerPermissionResult(

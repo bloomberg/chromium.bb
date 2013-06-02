@@ -61,7 +61,7 @@ class TextureImageTransportSurface
  private:
 
   gfx::Size backbuffer_size() const {
-    DCHECK(backbuffer_);
+    DCHECK(backbuffer_.get());
     GLsizei width = 0;
     GLsizei height = 0;
     backbuffer_->texture()->GetLevelSize(GL_TEXTURE_2D, 0, &width, &height);

@@ -218,10 +218,13 @@ int ShaderDiskCacheEntry::WriteCallback(int rv) {
 
   op_type_ = WRITE_DATA;
   scoped_refptr<net::StringIOBuffer> io_buf = new net::StringIOBuffer(shader_);
-  return entry_->WriteData(1, 0, io_buf, shader_.length(),
-                           base::Bind(&ShaderDiskCacheEntry::OnOpComplete,
-                                      this),
-                           false);
+  return entry_->WriteData(
+      1,
+      0,
+      io_buf.get(),
+      shader_.length(),
+      base::Bind(&ShaderDiskCacheEntry::OnOpComplete, this),
+      false);
 }
 
 int ShaderDiskCacheEntry::IOComplete(int rv) {
@@ -304,9 +307,12 @@ int ShaderDiskReadHelper::OpenNextEntryComplete(int rv) {
 
   op_type_ = READ_COMPLETE;
   buf_ = new net::IOBufferWithSize(entry_->GetDataSize(1));
-  return entry_->ReadData(1, 0, buf_, buf_->size(),
-                          base::Bind(&ShaderDiskReadHelper::OnOpComplete,
-                                     this));
+  return entry_->ReadData(
+      1,
+      0,
+      buf_.get(),
+      buf_->size(),
+      base::Bind(&ShaderDiskReadHelper::OnOpComplete, this));
 }
 
 int ShaderDiskReadHelper::ReadComplete(int rv) {

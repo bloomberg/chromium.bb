@@ -32,7 +32,7 @@ DevToolsNetLogObserver::ResourceInfo*
 DevToolsNetLogObserver::GetResourceInfo(uint32 id) {
   RequestToInfoMap::iterator it = request_to_info_.find(id);
   if (it != request_to_info_.end())
-    return it->second;
+    return it->second.get();
   return NULL;
 }
 

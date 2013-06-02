@@ -84,7 +84,7 @@ Shell* ShellAddedObserver::GetShell() {
 void ShellAddedObserver::ShellCreated(Shell* shell) {
   DCHECK(!shell_);
   shell_ = shell;
-  if (runner_)
+  if (runner_.get())
     runner_->QuitClosure().Run();
 }
 

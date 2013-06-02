@@ -105,7 +105,7 @@ bool HardwareSampleRatesAreValid() {
 // HardwareSampleRatesAreValid() has been called and returned true.
 bool InitializeCapturer(WebRtcAudioDeviceImpl* webrtc_audio_device) {
   // Access the capturer owned and created by the audio device.
-  WebRtcAudioCapturer* capturer = webrtc_audio_device->capturer();
+  WebRtcAudioCapturer* capturer = webrtc_audio_device->capturer().get();
   if (!capturer)
     return false;
 
@@ -297,7 +297,7 @@ int RunWebRtcLoopbackTimeTest(media::AudioManager* manager,
   EXPECT_TRUE(engine.valid());
   ScopedWebRTCPtr<webrtc::VoEBase> base(engine.get());
   EXPECT_TRUE(base.valid());
-  int err = base->Init(webrtc_audio_device);
+  int err = base->Init(webrtc_audio_device.get());
   EXPECT_EQ(0, err);
 
   // We use SetCaptureFormat() and SetRenderFormat() to configure the audio
@@ -454,7 +454,7 @@ TEST_F(WebRTCAudioDeviceTest, Construct) {
   ASSERT_TRUE(engine.valid());
 
   ScopedWebRTCPtr<webrtc::VoEBase> base(engine.get());
-  int err = base->Init(webrtc_audio_device);
+  int err = base->Init(webrtc_audio_device.get());
   EXPECT_TRUE(InitializeCapturer(webrtc_audio_device.get()));
   EXPECT_EQ(0, err);
   EXPECT_EQ(0, base->Terminate());
@@ -493,14 +493,14 @@ TEST_F(WebRTCAudioDeviceTest, DISABLED_StartPlayout) {
       new WebRtcAudioRenderer(kRenderViewId);
   scoped_refptr<WebRtcAudioDeviceImpl> webrtc_audio_device(
       new WebRtcAudioDeviceImpl());
-  EXPECT_TRUE(webrtc_audio_device->SetAudioRenderer(renderer));
+  EXPECT_TRUE(webrtc_audio_device->SetAudioRenderer(renderer.get()));
 
   WebRTCAutoDelete<webrtc::VoiceEngine> engine(webrtc::VoiceEngine::Create());
   ASSERT_TRUE(engine.valid());
 
   ScopedWebRTCPtr<webrtc::VoEBase> base(engine.get());
   ASSERT_TRUE(base.valid());
-  int err = base->Init(webrtc_audio_device);
+  int err = base->Init(webrtc_audio_device.get());
   ASSERT_EQ(0, err);
 
   int ch = base->CreateChannel();
@@ -578,7 +578,7 @@ TEST_F(WebRTCAudioDeviceTest, MAYBE_StartRecording) {
 
   ScopedWebRTCPtr<webrtc::VoEBase> base(engine.get());
   ASSERT_TRUE(base.valid());
-  int err = base->Init(webrtc_audio_device);
+  int err = base->Init(webrtc_audio_device.get());
   ASSERT_EQ(0, err);
 
   EXPECT_TRUE(InitializeCapturer(webrtc_audio_device.get()));
@@ -656,14 +656,14 @@ TEST_F(WebRTCAudioDeviceTest, DISABLED_PlayLocalFile) {
       new WebRtcAudioRenderer(kRenderViewId);
   scoped_refptr<WebRtcAudioDeviceImpl> webrtc_audio_device(
       new WebRtcAudioDeviceImpl());
-  EXPECT_TRUE(webrtc_audio_device->SetAudioRenderer(renderer));
+  EXPECT_TRUE(webrtc_audio_device->SetAudioRenderer(renderer.get()));
 
   WebRTCAutoDelete<webrtc::VoiceEngine> engine(webrtc::VoiceEngine::Create());
   ASSERT_TRUE(engine.valid());
 
   ScopedWebRTCPtr<webrtc::VoEBase> base(engine.get());
   ASSERT_TRUE(base.valid());
-  int err = base->Init(webrtc_audio_device);
+  int err = base->Init(webrtc_audio_device.get());
   ASSERT_EQ(0, err);
 
   int ch = base->CreateChannel();
@@ -734,14 +734,14 @@ TEST_F(WebRTCAudioDeviceTest, MAYBE_FullDuplexAudioWithAGC) {
       new WebRtcAudioRenderer(kRenderViewId);
   scoped_refptr<WebRtcAudioDeviceImpl> webrtc_audio_device(
       new WebRtcAudioDeviceImpl());
-  EXPECT_TRUE(webrtc_audio_device->SetAudioRenderer(renderer));
+  EXPECT_TRUE(webrtc_audio_device->SetAudioRenderer(renderer.get()));
 
   WebRTCAutoDelete<webrtc::VoiceEngine> engine(webrtc::VoiceEngine::Create());
   ASSERT_TRUE(engine.valid());
 
   ScopedWebRTCPtr<webrtc::VoEBase> base(engine.get());
   ASSERT_TRUE(base.valid());
-  int err = base->Init(webrtc_audio_device);
+  int err = base->Init(webrtc_audio_device.get());
   ASSERT_EQ(0, err);
 
   EXPECT_TRUE(InitializeCapturer(webrtc_audio_device.get()));
@@ -811,7 +811,7 @@ TEST_F(WebRTCAudioDeviceTest, WebRtcRecordingSetupTime) {
 
   ScopedWebRTCPtr<webrtc::VoEBase> base(engine.get());
   ASSERT_TRUE(base.valid());
-  int err = base->Init(webrtc_audio_device);
+  int err = base->Init(webrtc_audio_device.get());
   ASSERT_EQ(0, err);
 
   EXPECT_TRUE(InitializeCapturer(webrtc_audio_device.get()));
@@ -820,7 +820,7 @@ TEST_F(WebRTCAudioDeviceTest, WebRtcRecordingSetupTime) {
   base::WaitableEvent event(false, false);
   scoped_ptr<MockWebRtcAudioCapturerSink> capturer_sink(
       new MockWebRtcAudioCapturerSink(&event));
-  WebRtcAudioCapturer* capturer = webrtc_audio_device->capturer();
+  WebRtcAudioCapturer* capturer = webrtc_audio_device->capturer().get();
   capturer->AddSink(capturer_sink.get());
 
   int ch = base->CreateChannel();

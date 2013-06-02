@@ -70,7 +70,7 @@ FileAPIMessageFilter::FileAPIMessageFilter(
       request_context_(NULL),
       blob_storage_context_(blob_storage_context) {
   DCHECK(context_);
-  DCHECK(request_context_getter_);
+  DCHECK(request_context_getter_.get());
   DCHECK(blob_storage_context);
 }
 
@@ -91,7 +91,7 @@ FileAPIMessageFilter::FileAPIMessageFilter(
 void FileAPIMessageFilter::OnChannelConnected(int32 peer_pid) {
   BrowserMessageFilter::OnChannelConnected(peer_pid);
 
-  if (request_context_getter_) {
+  if (request_context_getter_.get()) {
     DCHECK(!request_context_);
     request_context_ = request_context_getter_->GetURLRequestContext();
     request_context_getter_ = NULL;
@@ -757,13 +757,13 @@ void FileAPIMessageFilter::DidCreateSnapshot(
     //   when the filesystem has been granted permissions. This happens with:
     //   - Drive filesystems
     //   - Picasa filesystems
-    DCHECK(snapshot_file ||
+    DCHECK(snapshot_file.get() ||
            fileapi::SandboxMountPointProvider::IsSandboxType(url.type()) ||
            url.type() == fileapi::kFileSystemTypeDrive ||
            url.type() == fileapi::kFileSystemTypePicasa);
     ChildProcessSecurityPolicyImpl::GetInstance()->GrantReadFile(
         process_id_, platform_path);
-    if (snapshot_file) {
+    if (snapshot_file.get()) {
       // This will revoke all permissions for the file when the last ref
       // of the file is dropped (assuming it's ok).
       snapshot_file->AddFinalReleaseCallback(
@@ -771,7 +771,7 @@ void FileAPIMessageFilter::DidCreateSnapshot(
     }
   }
 
-  if (snapshot_file) {
+  if (snapshot_file.get()) {
     // This ref is held until OnDidReceiveSnapshotFile is called.
     in_transit_snapshot_files_[request_id] = snapshot_file;
   }

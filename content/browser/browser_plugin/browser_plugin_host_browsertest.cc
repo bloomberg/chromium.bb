@@ -113,7 +113,7 @@ class TestBrowserPluginHostFactory : public BrowserPluginHostFactory {
   virtual BrowserPluginGuestManager*
       CreateBrowserPluginGuestManager() OVERRIDE {
     guest_manager_instance_count_++;
-    if (message_loop_runner_)
+    if (message_loop_runner_.get())
       message_loop_runner_->Quit();
     return new TestBrowserPluginGuestManager();
   }
@@ -217,7 +217,7 @@ class RenderViewHostMessageObserver : public RenderViewHostObserver {
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE {
     if (message.type() == message_id_) {
       message_received_ = true;
-      if (message_loop_runner_)
+      if (message_loop_runner_.get())
         message_loop_runner_->Quit();
     }
     return false;

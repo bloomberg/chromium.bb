@@ -770,7 +770,7 @@ void ResourceDispatcherHostTest::CancelRequest(int request_id) {
 }
 
 void ResourceDispatcherHostTest::CompleteStartRequest(int request_id) {
-  CompleteStartRequest(filter_, request_id);
+  CompleteStartRequest(filter_.get(), request_id);
 }
 
 void ResourceDispatcherHostTest::CompleteStartRequest(
@@ -1749,7 +1749,8 @@ TEST_F(ResourceDispatcherHostTest, TransferNavigation) {
   ResourceHostMsg_RequestResource transfer_request_msg(
       new_render_view_id, new_request_id, request);
   bool msg_was_ok;
-  host_.OnMessageReceived(transfer_request_msg, second_filter, &msg_was_ok);
+  host_.OnMessageReceived(
+      transfer_request_msg, second_filter.get(), &msg_was_ok);
   base::MessageLoop::current()->RunUntilIdle();
 
   // Flush all the pending requests.
@@ -1811,7 +1812,8 @@ TEST_F(ResourceDispatcherHostTest, TransferNavigationAndThenRedirect) {
   ResourceHostMsg_RequestResource transfer_request_msg(
       new_render_view_id, new_request_id, request);
   bool msg_was_ok;
-  host_.OnMessageReceived(transfer_request_msg, second_filter, &msg_was_ok);
+  host_.OnMessageReceived(
+      transfer_request_msg, second_filter.get(), &msg_was_ok);
   base::MessageLoop::current()->RunUntilIdle();
 
   // Response data for "http://other.com/blerg":
@@ -1822,7 +1824,7 @@ TEST_F(ResourceDispatcherHostTest, TransferNavigationAndThenRedirect) {
 
   // OK, let the redirect happen.
   SetDelayedStartJobGeneration(false);
-  CompleteStartRequest(second_filter, new_request_id);
+  CompleteStartRequest(second_filter.get(), new_request_id);
   base::MessageLoop::current()->RunUntilIdle();
 
   // Flush all the pending requests.
@@ -1831,7 +1833,7 @@ TEST_F(ResourceDispatcherHostTest, TransferNavigationAndThenRedirect) {
   // Now, simulate the renderer choosing to follow the redirect.
   ResourceHostMsg_FollowRedirect redirect_msg(
       new_render_view_id, new_request_id, false, GURL());
-  host_.OnMessageReceived(redirect_msg, second_filter, &msg_was_ok);
+  host_.OnMessageReceived(redirect_msg, second_filter.get(), &msg_was_ok);
   base::MessageLoop::current()->RunUntilIdle();
 
   // Flush all the pending requests.

@@ -43,7 +43,7 @@ class NPObjectProxy : public IPC::Listener,
   // IPC::Sender implementation:
   virtual bool Send(IPC::Message* msg) OVERRIDE;
   int route_id() { return route_id_; }
-  NPChannelBase* channel() { return channel_; }
+  NPChannelBase* channel() { return channel_.get(); }
 
   // The next 9 functions are called on NPObjects from the plugin and browser.
   static bool NPHasMethod(NPObject *obj,

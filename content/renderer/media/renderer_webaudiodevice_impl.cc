@@ -29,13 +29,13 @@ RendererWebAudioDeviceImpl::RendererWebAudioDeviceImpl(
 }
 
 RendererWebAudioDeviceImpl::~RendererWebAudioDeviceImpl() {
-  DCHECK(!output_device_);
+  DCHECK(!output_device_.get());
 }
 
 void RendererWebAudioDeviceImpl::start() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  if (output_device_)
+  if (output_device_.get())
     return;  // Already started.
 
   // Assumption: This method is being invoked within a V8 call stack.  CHECKs
@@ -59,7 +59,7 @@ void RendererWebAudioDeviceImpl::start() {
 void RendererWebAudioDeviceImpl::stop() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  if (output_device_) {
+  if (output_device_.get()) {
     output_device_->Stop();
     output_device_ = NULL;
   }

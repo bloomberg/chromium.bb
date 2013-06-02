@@ -144,7 +144,7 @@ bool PluginChannelHost::Init(base::MessageLoopProxy* ipc_message_loop,
       NPChannelBase::Init(ipc_message_loop, create_pipe_now, shutdown_event);
   if (ret) {
     is_listening_filter_ = new IsListeningFilter;
-    channel_->AddFilter(is_listening_filter_);
+    channel_->AddFilter(is_listening_filter_.get());
   }
   return ret;
 }

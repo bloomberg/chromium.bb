@@ -278,7 +278,7 @@ bool PepperGraphics2DHost::ReadImageData(PP_Resource image,
 
   if (image_resource->format() != image_data_->format()) {
     // Convert the image data if the format does not match.
-    ConvertImageData(image_data_, src_irect, image_resource, dest_rect);
+    ConvertImageData(image_data_.get(), src_irect, image_resource, dest_rect);
   } else {
     SkCanvas* dest_canvas = image_resource->GetCanvas();
 
@@ -322,7 +322,7 @@ void PepperGraphics2DHost::Paint(WebKit::WebCanvas* canvas,
                                  const gfx::Rect& plugin_rect,
                                  const gfx::Rect& paint_rect) {
   TRACE_EVENT0("pepper", "PepperGraphics2DHost::Paint");
-  ImageDataAutoMapper auto_mapper(image_data_);
+  ImageDataAutoMapper auto_mapper(image_data_.get());
   const SkBitmap& backing_bitmap = *image_data_->GetMappedBitmap();
 
   gfx::Rect invalidate_rect = plugin_rect;
@@ -563,8 +563,9 @@ int32_t PepperGraphics2DHost::Flush(PP_Resource* old_image_data) {
     gfx::Rect op_rect;
     switch (operation.type) {
       case QueuedOperation::PAINT:
-        ExecutePaintImageData(operation.paint_image,
-                              operation.paint_x, operation.paint_y,
+        ExecutePaintImageData(operation.paint_image.get(),
+                              operation.paint_x,
+                              operation.paint_y,
                               operation.paint_src_rect,
                               &op_rect);
         break;
@@ -578,7 +579,8 @@ int32_t PepperGraphics2DHost::Flush(PP_Resource* old_image_data) {
         // reference, if there are more than one ReplaceContents calls queued
         // the first |old_image_data| will get overwritten and leaked. So we
         // only supply this for the first call.
-        ExecuteReplaceContents(operation.replace_image, &op_rect,
+        ExecuteReplaceContents(operation.replace_image.get(),
+                               &op_rect,
                                done_replace_contents ? NULL : old_image_data);
         done_replace_contents = true;
         break;
@@ -660,7 +662,7 @@ void PepperGraphics2DHost::ExecutePaintImageData(PPB_ImageData_Impl* image,
 
   if (image->format() != image_data_->format()) {
     // Convert the image data if the format does not match.
-    ConvertImageData(image, src_irect, image_data_, dest_rect);
+    ConvertImageData(image, src_irect, image_data_.get(), dest_rect);
   } else {
     // We're guaranteed to have a mapped canvas since we mapped it in Init().
     SkCanvas* backing_canvas = image_data_->GetCanvas();
@@ -693,7 +695,7 @@ void PepperGraphics2DHost::ExecuteReplaceContents(PPB_ImageData_Impl* image,
                          SkIntToScalar(0),
                          SkIntToScalar(image_data_->width()),
                          SkIntToScalar(image_data_->height()) };
-    ConvertImageData(image, src_irect, image_data_, dest_rect);
+    ConvertImageData(image, src_irect, image_data_.get(), dest_rect);
   } else {
     // The passed-in image may not be mapped in our process, and we need to
     // guarantee that the current backing store is always mapped.

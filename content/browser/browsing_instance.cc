@@ -45,8 +45,9 @@ SiteInstance* BrowsingInstance::GetSiteInstanceForURL(const GURL& url) {
 }
 
 void BrowsingInstance::RegisterSiteInstance(SiteInstance* site_instance) {
-  DCHECK(static_cast<SiteInstanceImpl*>(site_instance)->
-         browsing_instance_ == this);
+  DCHECK(static_cast<SiteInstanceImpl*>(site_instance)
+             ->browsing_instance_.get() ==
+         this);
   DCHECK(static_cast<SiteInstanceImpl*>(site_instance)->HasSite());
   std::string site = site_instance->GetSiteURL().possibly_invalid_spec();
 
@@ -63,8 +64,9 @@ void BrowsingInstance::RegisterSiteInstance(SiteInstance* site_instance) {
 }
 
 void BrowsingInstance::UnregisterSiteInstance(SiteInstance* site_instance) {
-  DCHECK(static_cast<SiteInstanceImpl*>(site_instance)->
-         browsing_instance_ == this);
+  DCHECK(static_cast<SiteInstanceImpl*>(site_instance)
+             ->browsing_instance_.get() ==
+         this);
   DCHECK(static_cast<SiteInstanceImpl*>(site_instance)->HasSite());
   std::string site = site_instance->GetSiteURL().possibly_invalid_spec();
 

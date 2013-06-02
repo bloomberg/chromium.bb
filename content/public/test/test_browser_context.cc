@@ -70,7 +70,7 @@ DownloadManagerDelegate* TestBrowserContext::GetDownloadManagerDelegate() {
 }
 
 net::URLRequestContextGetter* TestBrowserContext::GetRequestContext() {
-  if (!request_context_) {
+  if (!request_context_.get()) {
     request_context_ = new TestContextURLRequestContextGetter(
         GetResourceContext()->GetRequestContext());
   }

@@ -89,7 +89,7 @@ void ProviderImpl::PollingThread::Initialize(DataFetcherFactory factory,
 
     if (fetcher) {
       scoped_refptr<const DeviceData> device_data(fetcher->GetDeviceData(type));
-      if (device_data != NULL) {
+      if (device_data.get() != NULL) {
         // Pass ownership of fetcher to provider_.
         data_fetcher_.swap(fetcher);
         last_device_data_map_[type] = device_data;
@@ -129,13 +129,13 @@ void ProviderImpl::PollingThread::DoPoll() {
     scoped_refptr<const DeviceData> device_data(data_fetcher_->GetDeviceData(
         device_data_type));
 
-    if (device_data == NULL) {
+    if (device_data.get() == NULL) {
       LOG(ERROR) << "Failed to poll device data fetcher.";
       ScheduleDoNotify(NULL, device_data_type);
       continue;
     }
 
-    const DeviceData* old_data = last_device_data_map_[device_data_type];
+    const DeviceData* old_data = last_device_data_map_[device_data_type].get();
     if (old_data != NULL && !device_data->ShouldFireEvent(old_data))
       continue;
 
@@ -197,7 +197,7 @@ void ProviderImpl::AddObserver(Observer* observer) {
     Start(type);
   else {
     // Notify observer of most recent notification if one exists.
-    const DeviceData *last_notification = last_notifications_map_[type];
+    const DeviceData* last_notification = last_notifications_map_[type].get();
     if (last_notification != NULL)
       observer->OnDeviceDataUpdate(last_notification, type);
   }
@@ -273,7 +273,7 @@ void ProviderImpl::DoNotify(const scoped_refptr<const DeviceData>& data,
       (*i)->OnDeviceDataUpdate(data.get(), device_data_type);
   }
 
-  if (data == NULL) {
+  if (data.get() == NULL) {
     // Notify observers exactly once about failure to provide data.
     typedef std::set<Observer*>::iterator Iterator;
     Iterator i = observers_.begin();

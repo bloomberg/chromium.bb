@@ -22,11 +22,11 @@ DeviceOrientationMessageFilter::~DeviceOrientationMessageFilter() {
 void DeviceOrientationMessageFilter::OnStartUpdating(int render_view_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
-  if (!provider_)
+  if (!provider_.get())
     provider_ = Provider::GetInstance();
 
-  observers_map_[render_view_id] = new ObserverDelegate(device_data_type_,
-      provider_, render_view_id, this);
+  observers_map_[render_view_id] = new ObserverDelegate(
+      device_data_type_, provider_.get(), render_view_id, this);
 }
 
 void DeviceOrientationMessageFilter::OnStopUpdating(int render_view_id) {

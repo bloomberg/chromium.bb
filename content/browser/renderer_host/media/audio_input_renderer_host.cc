@@ -285,7 +285,7 @@ void AudioInputRendererHost::OnCreateStream(
         entry->writer.get());
   }
 
-  if (!entry->controller) {
+  if (!entry->controller.get()) {
     SendErrorMessage(stream_id);
     return;
   }
@@ -395,7 +395,7 @@ AudioInputRendererHost::AudioEntry* AudioInputRendererHost::LookupByController(
   // TODO(hclam): Implement a faster look up method.
   for (AudioEntryMap::iterator i = audio_entries_.begin();
        i != audio_entries_.end(); ++i) {
-    if (controller == i->second->controller)
+    if (controller == i->second->controller.get())
       return i->second;
   }
   return NULL;

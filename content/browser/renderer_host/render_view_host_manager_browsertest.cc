@@ -69,7 +69,7 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest, NoScriptAccessAfterSwapOut) {
   // Get the original SiteInstance for later comparison.
   scoped_refptr<SiteInstance> orig_site_instance(
       shell()->web_contents()->GetSiteInstance());
-  EXPECT_TRUE(orig_site_instance != NULL);
+  EXPECT_TRUE(orig_site_instance.get() != NULL);
 
   // Open a same-site link in a new window.
   ShellAddedObserver new_shell_observer;
@@ -137,7 +137,7 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
   // Get the original SiteInstance for later comparison.
   scoped_refptr<SiteInstance> orig_site_instance(
       shell()->web_contents()->GetSiteInstance());
-  EXPECT_TRUE(orig_site_instance != NULL);
+  EXPECT_TRUE(orig_site_instance.get() != NULL);
 
   // Test clicking a rel=noreferrer + target=blank link.
   ShellAddedObserver new_shell_observer;
@@ -190,7 +190,7 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
   // Get the original SiteInstance for later comparison.
   scoped_refptr<SiteInstance> orig_site_instance(
       shell()->web_contents()->GetSiteInstance());
-  EXPECT_TRUE(orig_site_instance != NULL);
+  EXPECT_TRUE(orig_site_instance.get() != NULL);
 
   // Test clicking a same-site rel=noreferrer + target=foo link.
   ShellAddedObserver new_shell_observer;
@@ -243,7 +243,7 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
   // Get the original SiteInstance for later comparison.
   scoped_refptr<SiteInstance> orig_site_instance(
       shell()->web_contents()->GetSiteInstance());
-  EXPECT_TRUE(orig_site_instance != NULL);
+  EXPECT_TRUE(orig_site_instance.get() != NULL);
 
   // Test clicking a target=blank link.
   ShellAddedObserver new_shell_observer;
@@ -291,7 +291,7 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
   // Get the original SiteInstance for later comparison.
   scoped_refptr<SiteInstance> orig_site_instance(
       shell()->web_contents()->GetSiteInstance());
-  EXPECT_TRUE(orig_site_instance != NULL);
+  EXPECT_TRUE(orig_site_instance.get() != NULL);
 
   // Test clicking a rel=noreferrer link.
   bool success = false;
@@ -359,7 +359,7 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
   // Get the original SiteInstance for later comparison.
   scoped_refptr<SiteInstance> orig_site_instance(
       shell()->web_contents()->GetSiteInstance());
-  EXPECT_TRUE(orig_site_instance != NULL);
+  EXPECT_TRUE(orig_site_instance.get() != NULL);
 
   // Test clicking a target=foo link.
   ShellAddedObserver new_shell_observer;
@@ -442,7 +442,7 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest, DisownOpener) {
   // Get the original SiteInstance for later comparison.
   scoped_refptr<SiteInstance> orig_site_instance(
       shell()->web_contents()->GetSiteInstance());
-  EXPECT_TRUE(orig_site_instance != NULL);
+  EXPECT_TRUE(orig_site_instance.get() != NULL);
 
   // Test clicking a target=_blank link.
   ShellAddedObserver new_shell_observer;
@@ -545,10 +545,9 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
   WebContents* opener_contents = shell()->web_contents();
   scoped_refptr<SiteInstance> orig_site_instance(
       opener_contents->GetSiteInstance());
-  EXPECT_TRUE(orig_site_instance != NULL);
-  RenderViewHostManager* opener_manager =
-      static_cast<WebContentsImpl*>(opener_contents)->
-          GetRenderManagerForTesting();
+  EXPECT_TRUE(orig_site_instance.get() != NULL);
+  RenderViewHostManager* opener_manager = static_cast<WebContentsImpl*>(
+      opener_contents)->GetRenderManagerForTesting();
 
   // 1) Open two more windows, one named.  These initially have openers but no
   // reference to each other.  We will later post a message between them.
@@ -595,8 +594,10 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
   // We now have three windows.  The opener should have a swapped out RVH
   // for the new SiteInstance, but the _blank window should not.
   EXPECT_EQ(3u, Shell::windows().size());
-  EXPECT_TRUE(opener_manager->GetSwappedOutRenderViewHost(foo_site_instance));
-  EXPECT_FALSE(new_manager->GetSwappedOutRenderViewHost(foo_site_instance));
+  EXPECT_TRUE(
+      opener_manager->GetSwappedOutRenderViewHost(foo_site_instance.get()));
+  EXPECT_FALSE(
+      new_manager->GetSwappedOutRenderViewHost(foo_site_instance.get()));
 
   // 2) Fail to post a message from the foo window to the opener if the target
   // origin is wrong.  We won't see an error, but we can check for the right
@@ -607,7 +608,8 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
       "    'http://google.com'));",
       &success));
   EXPECT_TRUE(success);
-  ASSERT_FALSE(opener_manager->GetSwappedOutRenderViewHost(orig_site_instance));
+  ASSERT_FALSE(
+      opener_manager->GetSwappedOutRenderViewHost(orig_site_instance.get()));
 
   // 3) Post a message from the foo window to the opener.  The opener will
   // reply, causing the foo window to update its own title.
@@ -619,7 +621,8 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
       "window.domAutomationController.send(postToOpener('msg','*'));",
       &success));
   EXPECT_TRUE(success);
-  ASSERT_FALSE(opener_manager->GetSwappedOutRenderViewHost(orig_site_instance));
+  ASSERT_FALSE(
+      opener_manager->GetSwappedOutRenderViewHost(orig_site_instance.get()));
   title_observer.Wait();
 
   // We should have received only 1 message in the opener and "foo" tabs,
@@ -653,7 +656,8 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
 
   // This postMessage should have created a swapped out RVH for the new
   // SiteInstance in the target=_blank window.
-  EXPECT_TRUE(new_manager->GetSwappedOutRenderViewHost(foo_site_instance));
+  EXPECT_TRUE(
+      new_manager->GetSwappedOutRenderViewHost(foo_site_instance.get()));
 
   // TODO(nasko): Test subframe targeting of postMessage once
   // http://crbug.com/153701 is fixed.
@@ -683,7 +687,7 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
   WebContents* orig_contents = shell()->web_contents();
   scoped_refptr<SiteInstance> orig_site_instance(
       orig_contents->GetSiteInstance());
-  EXPECT_TRUE(orig_site_instance != NULL);
+  EXPECT_TRUE(orig_site_instance.get() != NULL);
 
   // Test clicking a target=foo link.
   ShellAddedObserver new_shell_observer;
@@ -753,7 +757,7 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
   // Get the original SiteInstance for later comparison.
   scoped_refptr<SiteInstance> orig_site_instance(
       shell()->web_contents()->GetSiteInstance());
-  EXPECT_TRUE(orig_site_instance != NULL);
+  EXPECT_TRUE(orig_site_instance.get() != NULL);
 
   // Test clicking a target=foo link.
   ShellAddedObserver new_shell_observer;
@@ -821,7 +825,7 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest, ClickLinkAfter204Error) {
   // Get the original SiteInstance for later comparison.
   scoped_refptr<SiteInstance> orig_site_instance(
       shell()->web_contents()->GetSiteInstance());
-  EXPECT_TRUE(orig_site_instance != NULL);
+  EXPECT_TRUE(orig_site_instance.get() != NULL);
 
   // Load a cross-site page that fails with a 204 error.
   NavigateToURL(shell(), https_server.GetURL("nocontent"));

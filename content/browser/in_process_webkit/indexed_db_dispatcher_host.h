@@ -59,7 +59,7 @@ class IndexedDBDispatcherHost : public BrowserMessageFilter {
   void FinishTransaction(int64 host_transaction_id, bool committed);
 
   // A shortcut for accessing our context.
-  IndexedDBContextImpl* Context() { return indexed_db_context_; }
+  IndexedDBContextImpl* Context() { return indexed_db_context_.get(); }
 
   // The various IndexedDBCallbacks children call these methods to add the
   // results into the applicable map.  See below for more details.

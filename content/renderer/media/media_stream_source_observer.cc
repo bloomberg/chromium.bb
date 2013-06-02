@@ -20,14 +20,14 @@ MediaStreamSourceObserver::MediaStreamSourceObserver(
 
 MediaStreamSourceObserver::~MediaStreamSourceObserver() {
   DCHECK(CalledOnValidThread());
-  if (webrtc_source_)
+  if (webrtc_source_.get())
     webrtc_source_->UnregisterObserver(this);
 }
 
 void MediaStreamSourceObserver::OnChanged() {
   DCHECK(CalledOnValidThread());
   // There should be no more notification after kEnded.
-  DCHECK(webrtc_source_ != NULL);
+  DCHECK(webrtc_source_.get() != NULL);
 
   webrtc::MediaSourceInterface::SourceState state = webrtc_source_->state();
   if (state == state_)

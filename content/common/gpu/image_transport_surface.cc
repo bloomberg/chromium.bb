@@ -34,7 +34,7 @@ scoped_refptr<gfx::GLSurface> ImageTransportSurface::CreateSurface(
   else
     surface = CreateNativeSurface(manager, stub, handle);
 
-  if (!surface || !surface->Initialize())
+  if (!surface.get() || !surface->Initialize())
     return NULL;
   return surface;
 }

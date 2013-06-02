@@ -87,28 +87,30 @@ DOMStorageContextImpl::~DOMStorageContextImpl() {
 
 void DOMStorageContextImpl::GetLocalStorageUsage(
     const GetLocalStorageUsageCallback& callback) {
-  DCHECK(context_);
-  context_->task_runner()->PostShutdownBlockingTask(
-      FROM_HERE,
-      DomStorageTaskRunner::PRIMARY_SEQUENCE,
-      base::Bind(&GetLocalStorageUsageHelper,
-                 base::MessageLoopProxy::current(),
-                 context_, callback));
+  DCHECK(context_.get());
+  context_->task_runner()
+      ->PostShutdownBlockingTask(FROM_HERE,
+                                 DomStorageTaskRunner::PRIMARY_SEQUENCE,
+                                 base::Bind(&GetLocalStorageUsageHelper,
+                                            base::MessageLoopProxy::current(),
+                                            context_,
+                                            callback));
 }
 
 void DOMStorageContextImpl::GetSessionStorageUsage(
     const GetSessionStorageUsageCallback& callback) {
-  DCHECK(context_);
-  context_->task_runner()->PostShutdownBlockingTask(
-      FROM_HERE,
-      DomStorageTaskRunner::PRIMARY_SEQUENCE,
-      base::Bind(&GetSessionStorageUsageHelper,
-                 base::MessageLoopProxy::current(),
-                 context_, callback));
+  DCHECK(context_.get());
+  context_->task_runner()
+      ->PostShutdownBlockingTask(FROM_HERE,
+                                 DomStorageTaskRunner::PRIMARY_SEQUENCE,
+                                 base::Bind(&GetSessionStorageUsageHelper,
+                                            base::MessageLoopProxy::current(),
+                                            context_,
+                                            callback));
 }
 
 void DOMStorageContextImpl::DeleteLocalStorage(const GURL& origin) {
-  DCHECK(context_);
+  DCHECK(context_.get());
   context_->task_runner()->PostShutdownBlockingTask(
       FROM_HERE,
       DomStorageTaskRunner::PRIMARY_SEQUENCE,
@@ -117,16 +119,16 @@ void DOMStorageContextImpl::DeleteLocalStorage(const GURL& origin) {
 
 void DOMStorageContextImpl::DeleteSessionStorage(
     const dom_storage::SessionStorageUsageInfo& usage_info) {
-  DCHECK(context_);
+  DCHECK(context_.get());
   context_->task_runner()->PostShutdownBlockingTask(
       FROM_HERE,
       DomStorageTaskRunner::PRIMARY_SEQUENCE,
-      base::Bind(&DomStorageContext::DeleteSessionStorage, context_,
-                 usage_info));
+      base::Bind(
+          &DomStorageContext::DeleteSessionStorage, context_, usage_info));
 }
 
 void DOMStorageContextImpl::SetSaveSessionStorageOnDisk() {
-  DCHECK(context_);
+  DCHECK(context_.get());
   context_->SetSaveSessionStorageOnDisk();
 }
 
@@ -138,7 +140,7 @@ DOMStorageContextImpl::RecreateSessionStorage(
 }
 
 void DOMStorageContextImpl::StartScavengingUnusedSessionStorage() {
-  DCHECK(context_);
+  DCHECK(context_.get());
   context_->task_runner()->PostShutdownBlockingTask(
       FROM_HERE,
       DomStorageTaskRunner::PRIMARY_SEQUENCE,
@@ -147,7 +149,7 @@ void DOMStorageContextImpl::StartScavengingUnusedSessionStorage() {
 }
 
 void DOMStorageContextImpl::PurgeMemory() {
-  DCHECK(context_);
+  DCHECK(context_.get());
   context_->task_runner()->PostShutdownBlockingTask(
       FROM_HERE,
       DomStorageTaskRunner::PRIMARY_SEQUENCE,
@@ -155,7 +157,7 @@ void DOMStorageContextImpl::PurgeMemory() {
 }
 
 void DOMStorageContextImpl::SetForceKeepSessionState() {
-  DCHECK(context_);
+  DCHECK(context_.get());
   context_->task_runner()->PostShutdownBlockingTask(
       FROM_HERE,
       DomStorageTaskRunner::PRIMARY_SEQUENCE,
@@ -163,7 +165,7 @@ void DOMStorageContextImpl::SetForceKeepSessionState() {
 }
 
 void DOMStorageContextImpl::Shutdown() {
-  DCHECK(context_);
+  DCHECK(context_.get());
   context_->task_runner()->PostShutdownBlockingTask(
       FROM_HERE,
       DomStorageTaskRunner::PRIMARY_SEQUENCE,

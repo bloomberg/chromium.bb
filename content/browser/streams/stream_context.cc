@@ -22,7 +22,7 @@ StreamContext* StreamContext::GetFor(BrowserContext* context) {
   if (!context->GetUserData(kStreamContextKeyName)) {
     scoped_refptr<StreamContext> stream = new StreamContext();
     context->SetUserData(kStreamContextKeyName,
-                         new UserDataAdapter<StreamContext>(stream));
+                         new UserDataAdapter<StreamContext>(stream.get()));
     // Check first to avoid memory leak in unittests.
     if (BrowserThread::IsMessageLoopValid(BrowserThread::IO)) {
       BrowserThread::PostTask(

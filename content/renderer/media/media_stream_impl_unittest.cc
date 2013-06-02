@@ -95,7 +95,7 @@ class MediaStreamImplTest : public ::testing::Test {
     WebKit::WebMediaStream desc = ms_impl_->last_generated_stream();
     content::MediaStreamExtraData* extra_data =
         static_cast<content::MediaStreamExtraData*>(desc.extraData());
-    if (!extra_data || !extra_data->stream()) {
+    if (!extra_data || !extra_data->stream().get()) {
       ADD_FAILURE();
       return desc;
     }

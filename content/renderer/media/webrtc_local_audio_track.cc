@@ -28,7 +28,7 @@ WebRtcLocalAudioTrack::WebRtcLocalAudioTrack(
     : webrtc::MediaStreamTrack<webrtc::AudioTrackInterface>(label),
       capturer_(capturer),
       track_source_(track_source) {
-  DCHECK(capturer);
+  DCHECK(capturer.get());
   capturer_->AddSink(this);
   DVLOG(1) << "WebRtcLocalAudioTrack::WebRtcLocalAudioTrack()";
 }

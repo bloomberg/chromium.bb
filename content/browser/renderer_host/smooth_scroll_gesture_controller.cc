@@ -30,7 +30,7 @@ SmoothScrollGestureController::~SmoothScrollGestureController() {
 void SmoothScrollGestureController::BeginSmoothScroll(
     RenderWidgetHostViewPort* view,
     const ViewHostMsg_BeginSmoothScroll_Params& params) {
-  if (pending_smooth_scroll_gesture_)
+  if (pending_smooth_scroll_gesture_.get())
     return;
 
   rwh_ = view->GetRenderWidgetHost();

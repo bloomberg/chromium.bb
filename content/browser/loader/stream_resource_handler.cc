@@ -63,7 +63,7 @@ bool StreamResourceHandler::OnWillRead(int request_id,
   static const int kReadBufSize = 32768;
 
   DCHECK(buf && buf_size);
-  if (!read_buffer_)
+  if (!read_buffer_.get())
     read_buffer_ = new net::IOBuffer(kReadBufSize);
   *buf = read_buffer_.get();
   *buf_size = kReadBufSize;
@@ -78,7 +78,7 @@ bool StreamResourceHandler::OnReadCompleted(int request_id,
     return true;
 
   // We have more data to read.
-  DCHECK(read_buffer_);
+  DCHECK(read_buffer_.get());
 
   // Release the ownership of the buffer, and store a reference
   // to it. A new one will be allocated in OnWillRead().

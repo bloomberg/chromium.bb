@@ -63,8 +63,8 @@ class BlobProtocolHandler : public net::URLRequestJobFactory::ProtocolHandler {
     if (!webkit_blob_protocol_handler_impl_) {
       webkit_blob_protocol_handler_impl_.reset(
           new WebKitBlobProtocolHandlerImpl(blob_storage_context_->controller(),
-                                            stream_context_,
-                                            file_system_context_));
+                                            stream_context_.get(),
+                                            file_system_context_.get()));
     }
     return webkit_blob_protocol_handler_impl_->MaybeCreateJob(request,
                                                               network_delegate);
@@ -93,7 +93,7 @@ class BlobProtocolHandler : public net::URLRequestJobFactory::ProtocolHandler {
         net::NetworkDelegate* network_delegate) const OVERRIDE {
       scoped_refptr<Stream> stream =
           stream_context_->registry()->GetStream(request->url());
-      if (stream)
+      if (stream.get())
         return new StreamURLRequestJob(request, network_delegate, stream);
 
       return webkit_blob::BlobProtocolHandler::MaybeCreateJob(

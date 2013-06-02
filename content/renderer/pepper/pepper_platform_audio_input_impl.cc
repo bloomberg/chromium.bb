@@ -82,7 +82,7 @@ void PepperPlatformAudioInputImpl::OnStreamCreated(
   // TODO(yzshen): Make use of circular buffer scheme. crbug.com/181449.
   DCHECK_EQ(1, total_segments);
 
-  if (base::MessageLoopProxy::current() != main_message_loop_proxy_) {
+  if (base::MessageLoopProxy::current() != main_message_loop_proxy_.get()) {
     // If shutdown has occurred, |client_| will be NULL and the handles will be
     // cleaned up on the main thread.
     main_message_loop_proxy_->PostTask(

@@ -641,10 +641,8 @@ void DevToolsHttpHandlerImpl::OnWebSocketRequestUI(
     return;
   }
 
-  DevToolsClientHostImpl* client_host =
-      new DevToolsClientHostImpl(thread_->message_loop(),
-                                 server_,
-                                 connection_id);
+  DevToolsClientHostImpl* client_host = new DevToolsClientHostImpl(
+      thread_->message_loop(), server_.get(), connection_id);
   connection_to_client_host_ui_[connection_id] = client_host;
 
   DevToolsManager::GetInstance()->
@@ -818,7 +816,7 @@ base::DictionaryValue* DevToolsHttpHandlerImpl::SerializePageInfo(
   scoped_refptr<DevToolsAgentHost> agent(
       DevToolsAgentHost::GetOrCreateFor(rvh));
 
-  std::string id = binding_->GetIdentifier(agent);
+  std::string id = binding_->GetIdentifier(agent.get());
   dictionary->SetString(kTargetIdField, id);
 
   switch (delegate_->GetTargetType(rvh)) {
@@ -860,7 +858,7 @@ base::DictionaryValue* DevToolsHttpHandlerImpl::SerializeWorkerInfo(
   scoped_refptr<DevToolsAgentHost> agent(DevToolsAgentHost::GetForWorker(
       worker.process_id, worker.route_id));
 
-  std::string id = binding_->GetIdentifier(agent);
+  std::string id = binding_->GetIdentifier(agent.get());
 
   dictionary->SetString(kTargetIdField, id);
   dictionary->SetString(kTargetTypeField, kTargetTypeOther);

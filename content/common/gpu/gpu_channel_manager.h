@@ -93,7 +93,7 @@ class GpuChannelManager : public IPC::Listener,
 
   GpuChannel* LookupChannel(int32 client_id);
 
-  SyncPointManager* sync_point_manager() { return sync_point_manager_; }
+  SyncPointManager* sync_point_manager() { return sync_point_manager_.get(); }
 
   gfx::GLSurface* GetDefaultOffscreenSurface();
 

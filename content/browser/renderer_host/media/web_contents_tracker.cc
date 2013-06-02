@@ -20,10 +20,10 @@ WebContentsTracker::~WebContentsTracker() {
 
 void WebContentsTracker::Start(int render_process_id, int render_view_id,
                                const ChangeCallback& callback) {
-  DCHECK(!message_loop_ || message_loop_->BelongsToCurrentThread());
+  DCHECK(!message_loop_.get() || message_loop_->BelongsToCurrentThread());
 
   message_loop_ = base::MessageLoopProxy::current();
-  DCHECK(message_loop_);
+  DCHECK(message_loop_.get());
   callback_ = callback;
 
   BrowserThread::PostTask(

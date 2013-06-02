@@ -106,7 +106,7 @@ class WorkerProcessHost : public BrowserChildProcessHostDelegate,
       return main_resource_appcache_id_;
     }
     WorkerDocumentSet* worker_document_set() const {
-      return worker_document_set_;
+      return worker_document_set_.get();
     }
     ResourceContext* resource_context() const {
       return resource_context_;

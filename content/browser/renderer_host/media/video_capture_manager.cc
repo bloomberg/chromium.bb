@@ -62,7 +62,7 @@ void VideoCaptureManager::Register(MediaStreamProviderListener* listener,
                                    base::MessageLoopProxy* device_thread_loop) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK(!listener_);
-  DCHECK(!device_loop_);
+  DCHECK(!device_loop_.get());
   listener_ = listener;
   device_loop_ = device_thread_loop;
 }
@@ -487,13 +487,14 @@ void VideoCaptureManager::DoAddControllerOnDeviceThread(
     Controllers::iterator cit = controllers_.find(video_capture_device);
     if (cit == controllers_.end()) {
       controller = new VideoCaptureController(this);
-      controllers_[video_capture_device] = new Controller(controller, handler);
+      controllers_[video_capture_device] =
+          new Controller(controller.get(), handler);
     } else {
       controllers_[video_capture_device]->handlers.push_front(handler);
       controller = controllers_[video_capture_device]->controller;
     }
   }
-  added_cb.Run(controller);
+  added_cb.Run(controller.get());
 }
 
 void VideoCaptureManager::RemoveController(
@@ -513,7 +514,7 @@ void VideoCaptureManager::DoRemoveControllerOnDeviceThread(
 
   for (Controllers::iterator cit = controllers_.begin();
        cit != controllers_.end(); ++cit) {
-    if (controller == cit->second->controller) {
+    if (controller == cit->second->controller.get()) {
       Handlers& handlers = cit->second->handlers;
       for (Handlers::iterator hit = handlers.begin();
            hit != handlers.end(); ++hit) {

@@ -122,7 +122,7 @@ scoped_refptr<VideoSourceInterface> VideoSourceHandler::GetFirstVideoSource(
     LOG(ERROR) << "GetFirstVideoSource - MediaStreamExtraData is NULL.";
     return source;
   }
-  webrtc::MediaStreamInterface* native_stream = extra_data->stream();
+  webrtc::MediaStreamInterface* native_stream = extra_data->stream().get();
   if (!native_stream) {
     LOG(ERROR) << "GetFirstVideoSource - native stream is NULL.";
     return source;

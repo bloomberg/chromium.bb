@@ -272,8 +272,8 @@ WebContents* WebContents::CreateWithSessionStorage(
            session_storage_namespace_map.begin();
        it != session_storage_namespace_map.end();
        ++it) {
-    new_contents->GetController().SetSessionStorageNamespace(it->first,
-                                                             it->second);
+    new_contents->GetController()
+        .SetSessionStorageNamespace(it->first, it->second.get());
   }
 
   new_contents->Init(params);
@@ -1415,9 +1415,8 @@ void WebContentsImpl::CreateNewWindow(
       GetContentClient()->browser()->
           GetStoragePartitionIdForSite(GetBrowserContext(),
                                        site_instance->GetSiteURL());
-  StoragePartition* partition =
-      BrowserContext::GetStoragePartition(GetBrowserContext(),
-                                          site_instance);
+  StoragePartition* partition = BrowserContext::GetStoragePartition(
+      GetBrowserContext(), site_instance.get());
   DOMStorageContextImpl* dom_storage_context =
       static_cast<DOMStorageContextImpl*>(partition->GetDOMStorageContext());
   SessionStorageNamespaceImpl* session_storage_namespace_impl =
@@ -1426,7 +1425,7 @@ void WebContentsImpl::CreateNewWindow(
   new_contents->GetController().SetSessionStorageNamespace(
       partition_id,
       session_storage_namespace);
-  CreateParams create_params(GetBrowserContext(), site_instance);
+  CreateParams create_params(GetBrowserContext(), site_instance.get());
   create_params.routing_id = route_id;
   create_params.main_frame_routing_id = main_frame_route_id;
   if (!is_guest) {

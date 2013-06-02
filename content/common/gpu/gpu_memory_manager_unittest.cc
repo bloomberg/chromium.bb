@@ -88,7 +88,7 @@ class FakeClient : public GpuMemoryManagerClient {
     if (!share_group_) {
       memory_tracker_ = new FakeMemoryTracker();
       tracking_group_.reset(
-          memmgr_->CreateTrackingGroup(0, memory_tracker_));
+          memmgr_->CreateTrackingGroup(0, memory_tracker_.get()));
     }
     client_state_.reset(memmgr_->CreateClientState(this, false, true));
   }
@@ -104,9 +104,9 @@ class FakeClient : public GpuMemoryManagerClient {
       , tracking_group_(NULL) {
     memory_tracker_ = new FakeMemoryTracker();
     tracking_group_.reset(
-        memmgr_->CreateTrackingGroup(0, memory_tracker_));
-    client_state_.reset(memmgr_->CreateClientState(
-        this, surface_id != 0, visible));
+        memmgr_->CreateTrackingGroup(0, memory_tracker_.get()));
+    client_state_.reset(
+        memmgr_->CreateClientState(this, surface_id != 0, visible));
   }
 
   virtual ~FakeClient() {

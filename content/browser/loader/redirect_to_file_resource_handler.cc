@@ -79,7 +79,7 @@ bool RedirectToFileResourceHandler::OnResponseStarted(
     bool* defer) {
   if (response->head.error_code == net::OK ||
       response->head.error_code == net::ERR_IO_PENDING) {
-    DCHECK(deletable_file_ && !deletable_file_->path().empty());
+    DCHECK(deletable_file_.get() && !deletable_file_->path().empty());
     response->head.download_file_path = deletable_file_->path();
   }
   return next_handler_->OnResponseStarted(request_id, response, defer);
@@ -89,7 +89,7 @@ bool RedirectToFileResourceHandler::OnWillStart(int request_id,
                                                 const GURL& url,
                                                 bool* defer) {
   request_id_ = request_id;
-  if (!deletable_file_) {
+  if (!deletable_file_.get()) {
     // Defer starting the request until we have created the temporary file.
     // TODO(darin): This is sub-optimal.  We should not delay starting the
     // network request like this.
@@ -116,7 +116,7 @@ bool RedirectToFileResourceHandler::OnWillRead(int request_id,
   // We should have paused this network request already if the buffer is full.
   DCHECK(!BufIsFull());
 
-  *buf = buf_;
+  *buf = buf_.get();
   *buf_size = buf_->RemainingCapacity();
 
   buf_write_pending_ = true;
@@ -231,11 +231,11 @@ bool RedirectToFileResourceHandler::WriteMore() {
     // bowels of its implementation, the use of scoped_refptr here is not
     // spurious.
     scoped_refptr<DependentIOBuffer> wrapped = new DependentIOBuffer(
-        buf_, buf_->StartOfBuffer() + write_cursor_);
+        buf_.get(), buf_->StartOfBuffer() + write_cursor_);
     int write_len = buf_->offset() - write_cursor_;
 
     int rv = file_stream_->Write(
-        wrapped,
+        wrapped.get(),
         write_len,
         base::Bind(&RedirectToFileResourceHandler::DidWriteToFile,
                    base::Unretained(this)));

@@ -110,7 +110,7 @@ bool WebRtcAudioRenderer::Initialize(WebRtcAudioRendererSource* source) {
   base::AutoLock auto_lock(lock_);
   DCHECK_EQ(state_, UNINITIALIZED);
   DCHECK(source);
-  DCHECK(!sink_);
+  DCHECK(!sink_.get());
   DCHECK(!source_);
 
   // Use stereo output on all platforms exept Android.

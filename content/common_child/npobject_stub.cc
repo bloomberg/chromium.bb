@@ -148,10 +148,13 @@ void NPObjectStub::OnInvoke(bool is_default,
   int arg_count = static_cast<int>(args.size());
   NPVariant* args_var = new NPVariant[arg_count];
   for (int i = 0; i < arg_count; ++i) {
-    if (!CreateNPVariant(
-            args[i], channel_, &(args_var[i]), render_view_id_, page_url_)) {
-      NPObjectMsg_Invoke::WriteReplyParams(reply_msg, result_param,
-                                           return_value);
+    if (!CreateNPVariant(args[i],
+                         channel_.get(),
+                         &(args_var[i]),
+                         render_view_id_,
+                         page_url_)) {
+      NPObjectMsg_Invoke::WriteReplyParams(
+          reply_msg, result_param, return_value);
       channel_->Send(reply_msg);
       delete[] args_var;
       return;
@@ -190,8 +193,12 @@ void NPObjectStub::OnInvoke(bool is_default,
 
   delete[] args_var;
 
-  CreateNPVariantParam(
-      result_var, channel_, &result_param, true, render_view_id_, page_url_);
+  CreateNPVariantParam(result_var,
+                       channel_.get(),
+                       &result_param,
+                       true,
+                       render_view_id_,
+                       page_url_);
   NPObjectMsg_Invoke::WriteReplyParams(reply_msg, result_param, return_value);
   channel_->Send(reply_msg);
 }
@@ -228,7 +235,7 @@ void NPObjectStub::OnGetProperty(const NPIdentifier_Param& name,
   }
 
   CreateNPVariantParam(
-      result_var, channel_, property, true, render_view_id_, page_url_);
+      result_var, channel_.get(), property, true, render_view_id_, page_url_);
 }
 
 void NPObjectStub::OnSetProperty(const NPIdentifier_Param& name,
@@ -237,8 +244,11 @@ void NPObjectStub::OnSetProperty(const NPIdentifier_Param& name,
   bool result = false;
   NPIdentifier id = CreateNPIdentifier(name);
   NPVariant property_var;
-  if (!CreateNPVariant(
-          property, channel_, &property_var, render_view_id_, page_url_)) {
+  if (!CreateNPVariant(property,
+                       channel_.get(),
+                       &property_var,
+                       render_view_id_,
+                       page_url_)) {
     NPObjectMsg_SetProperty::WriteReplyParams(reply_msg, result);
     channel_->Send(reply_msg);
     return;
@@ -343,10 +353,13 @@ void NPObjectStub::OnConstruct(const std::vector<NPVariant_Param>& args,
   int arg_count = static_cast<int>(args.size());
   NPVariant* args_var = new NPVariant[arg_count];
   for (int i = 0; i < arg_count; ++i) {
-    if (!CreateNPVariant(
-           args[i], channel_, &(args_var[i]), render_view_id_, page_url_)) {
-      NPObjectMsg_Invoke::WriteReplyParams(reply_msg, result_param,
-                                           return_value);
+    if (!CreateNPVariant(args[i],
+                         channel_.get(),
+                         &(args_var[i]),
+                         render_view_id_,
+                         page_url_)) {
+      NPObjectMsg_Invoke::WriteReplyParams(
+          reply_msg, result_param, return_value);
       channel_->Send(reply_msg);
       delete[] args_var;
       return;
@@ -371,8 +384,12 @@ void NPObjectStub::OnConstruct(const std::vector<NPVariant_Param>& args,
 
   delete[] args_var;
 
-  CreateNPVariantParam(
-      result_var, channel_, &result_param, true, render_view_id_, page_url_);
+  CreateNPVariantParam(result_var,
+                       channel_.get(),
+                       &result_param,
+                       true,
+                       render_view_id_,
+                       page_url_);
   NPObjectMsg_Invoke::WriteReplyParams(reply_msg, result_param, return_value);
   channel_->Send(reply_msg);
 }
@@ -394,8 +411,12 @@ void NPObjectStub::OnEvaluate(const std::string& script,
                                                   &script_string, &result_var);
 
   NPVariant_Param result_param;
-  CreateNPVariantParam(
-      result_var, channel_, &result_param, true, render_view_id_, page_url_);
+  CreateNPVariantParam(result_var,
+                       channel_.get(),
+                       &result_param,
+                       true,
+                       render_view_id_,
+                       page_url_);
   NPObjectMsg_Evaluate::WriteReplyParams(reply_msg, result_param, return_value);
   channel_->Send(reply_msg);
 }

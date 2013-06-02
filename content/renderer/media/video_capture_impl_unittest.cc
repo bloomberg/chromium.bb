@@ -63,8 +63,7 @@ class VideoCaptureImplTest : public ::testing::Test {
     MockVideoCaptureImpl(const media::VideoCaptureSessionId id,
                          scoped_refptr<base::MessageLoopProxy> ml_proxy,
                          VideoCaptureMessageFilter* filter)
-        : VideoCaptureImpl(id, ml_proxy, filter) {
-    }
+        : VideoCaptureImpl(id, ml_proxy.get(), filter) {}
     virtual ~MockVideoCaptureImpl() {}
 
     // Override Send() to mimic device to send events.
@@ -111,9 +110,8 @@ class VideoCaptureImplTest : public ::testing::Test {
     message_filter_ = new MockVideoCaptureMessageFilter;
     session_id_ = 1;
 
-    video_capture_impl_ = new MockVideoCaptureImpl(session_id_,
-                                                   message_loop_proxy_,
-                                                   message_filter_);
+    video_capture_impl_ = new MockVideoCaptureImpl(
+        session_id_, message_loop_proxy_, message_filter_.get());
 
     video_capture_impl_->device_id_ = 2;
   }

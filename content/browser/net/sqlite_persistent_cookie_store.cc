@@ -1069,7 +1069,7 @@ void SQLitePersistentCookieStore::Backend::DeleteSessionCookiesOnShutdown() {
   if (!db_)
     return;
 
-  if (!special_storage_policy_)
+  if (!special_storage_policy_.get())
     return;
 
   sql::Statement del_smt(db_->GetCachedStatement(

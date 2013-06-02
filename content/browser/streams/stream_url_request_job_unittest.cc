@@ -40,7 +40,7 @@ class StreamURLRequestJobTest : public testing::Test {
         net::URLRequest* request,
         net::NetworkDelegate* network_delegate) const OVERRIDE {
       scoped_refptr<Stream> stream = registry_->GetStream(request->url());
-      if (stream)
+      if (stream.get())
         return new StreamURLRequestJob(request, network_delegate, stream);
       return NULL;
     }

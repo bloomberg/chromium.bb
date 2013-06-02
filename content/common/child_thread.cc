@@ -116,9 +116,8 @@ void ChildThread::Init() {
 
   sync_message_filter_ =
       new IPC::SyncMessageFilter(ChildProcess::current()->GetShutDownEvent());
-  thread_safe_sender_ =
-      new ThreadSafeSender(base::MessageLoopProxy::current(),
-                           sync_message_filter_);
+  thread_safe_sender_ = new ThreadSafeSender(base::MessageLoopProxy::current(),
+                                             sync_message_filter_.get());
   histogram_message_filter_ = new ChildHistogramMessageFilter();
   resource_message_filter_ =
       new ChildResourceMessageFilter(resource_dispatcher());

@@ -115,7 +115,7 @@ TEST_F(VideoDestinationHandlerTest, Open) {
   MediaStreamExtraData* extra_data =
       static_cast<MediaStreamExtraData*>(test_stream.extraData());
   DCHECK(extra_data);
-  webrtc::MediaStreamInterface* native_stream = extra_data->stream();
+  webrtc::MediaStreamInterface* native_stream = extra_data->stream().get();
   DCHECK(native_stream);
   webrtc::VideoTrackVector native_video_tracks =
       native_stream->GetVideoTracks();

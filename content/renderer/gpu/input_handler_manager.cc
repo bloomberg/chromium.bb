@@ -31,7 +31,7 @@ InputHandlerManager::~InputHandlerManager() {
 
 IPC::ChannelProxy::MessageFilter*
 InputHandlerManager::GetMessageFilter() const {
-  return filter_;
+  return filter_.get();
 }
 
 void InputHandlerManager::AddInputHandler(

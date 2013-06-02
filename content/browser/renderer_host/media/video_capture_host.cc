@@ -32,7 +32,7 @@ void VideoCaptureHost::OnChannelClosing() {
 
   // Since the IPC channel is gone, close all requested VideCaptureDevices.
   for (EntryMap::iterator it = entries_.begin(); it != entries_.end(); it++) {
-    VideoCaptureController* controller = it->second->controller;
+    VideoCaptureController* controller = it->second->controller.get();
     if (controller) {
       VideoCaptureControllerID controller_id(it->first);
       controller->StopCapture(controller_id, this);
@@ -255,7 +255,7 @@ void VideoCaptureHost::OnReceiveEmptyBuffer(int device_id, int buffer_id) {
   EntryMap::iterator it = entries_.find(controller_id);
   if (it != entries_.end()) {
     scoped_refptr<VideoCaptureController> controller = it->second->controller;
-    if (controller)
+    if (controller.get())
       controller->ReturnBuffer(controller_id, this, buffer_id);
   }
 }
@@ -268,7 +268,7 @@ void VideoCaptureHost::DeleteVideoCaptureControllerOnIOThread(
   if (it == entries_.end())
     return;
 
-  VideoCaptureController* controller = it->second->controller;
+  VideoCaptureController* controller = it->second->controller.get();
   if (controller) {
     controller->StopCapture(controller_id, this);
     GetVideoCaptureManager()->RemoveController(controller, this);

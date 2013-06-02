@@ -31,7 +31,7 @@ void MockMediaStreamRegistry::Init(const std::string& stream_url) {
   WebKit::WebString webkit_stream_label(UTF8ToUTF16(stream->label()));
   test_stream_.initialize(webkit_stream_label,
                           webkit_audio_tracks, webkit_video_tracks);
-  test_stream_.setExtraData(new MediaStreamExtraData(stream, false));
+  test_stream_.setExtraData(new MediaStreamExtraData(stream.get(), false));
 }
 
 bool MockMediaStreamRegistry::AddVideoTrack(const std::string& track_id) {

@@ -339,7 +339,7 @@ bool BrowserThread::PostBlockingPoolSequencedTask(
 
 // static
 base::SequencedWorkerPool* BrowserThread::GetBlockingPool() {
-  return g_globals.Get().blocking_pool;
+  return g_globals.Get().blocking_pool.get();
 }
 
 // static

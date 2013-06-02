@@ -234,7 +234,7 @@ void WebRtcAudioCapturer::SetCapturerSource(
   scoped_refptr<ConfiguredBuffer> current_buffer;
   {
     base::AutoLock auto_lock(lock_);
-    if (source_ == source)
+    if (source_.get() == source.get())
       return;
 
     source_.swap(old_source);
@@ -245,15 +245,15 @@ void WebRtcAudioCapturer::SetCapturerSource(
     running_ = false;
   }
 
-  const bool no_default_audio_source_exists = !current_buffer;
+  const bool no_default_audio_source_exists = !current_buffer.get();
 
   // Detach the old source from normal recording or perform first-time
   // initialization if Initialize() has never been called. For the second
   // case, the caller is not "taking over an ongoing session" but instead
   // "taking control over a new session".
-  if (old_source || no_default_audio_source_exists) {
+  if (old_source.get() || no_default_audio_source_exists) {
     DVLOG(1) << "New capture source will now be utilized.";
-    if (old_source)
+    if (old_source.get())
       old_source->Stop();
 
     // Dispatch the new parameters both to the sink(s) and to the new source.
@@ -268,7 +268,7 @@ void WebRtcAudioCapturer::SetCapturerSource(
     }
   }
 
-  if (source) {
+  if (source.get()) {
     // Make sure to grab the new parameters in case they were reconfigured.
     source->Initialize(current_buffer->params(), this, session_id_);
   }
@@ -282,7 +282,7 @@ void WebRtcAudioCapturer::Start() {
 
   // Start the data source, i.e., start capturing data from the current source.
   // Note that, the source does not have to be a microphone.
-  if (source_) {
+  if (source_.get()) {
     // We need to set the AGC control before starting the stream.
     source_->SetAutomaticGainControl(agc_is_enabled_);
     source_->Start();
@@ -303,14 +303,14 @@ void WebRtcAudioCapturer::Stop() {
     running_ = false;
   }
 
-  if (source)
+  if (source.get())
     source->Stop();
 }
 
 void WebRtcAudioCapturer::SetVolume(double volume) {
   DVLOG(1) << "WebRtcAudioCapturer::SetVolume()";
   base::AutoLock auto_lock(lock_);
-  if (source_)
+  if (source_.get())
     source_->SetVolume(volume);
 }
 
@@ -320,7 +320,7 @@ void WebRtcAudioCapturer::SetAutomaticGainControl(bool enable) {
   // Initialize(), in this case stored setting will be applied in Start().
   agc_is_enabled_ = enable;
 
-  if (source_)
+  if (source_.get())
     source_->SetAutomaticGainControl(enable);
 }
 

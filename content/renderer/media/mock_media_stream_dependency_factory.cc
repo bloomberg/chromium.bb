@@ -273,7 +273,7 @@ void MockLocalVideoTrack::UnregisterObserver(ObserverInterface* observer) {
 }
 
 VideoSourceInterface* MockLocalVideoTrack::GetSource() const {
-  return source_;
+  return source_.get();
 }
 
 std::string MockLocalAudioTrack::kind() const {

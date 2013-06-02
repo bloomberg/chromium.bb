@@ -238,7 +238,7 @@ void VideoCaptureImpl::DoFeedBufferOnCaptureThread(
 
   CachedDIB::iterator it;
   for (it = cached_dibs_.begin(); it != cached_dibs_.end(); ++it) {
-    if (buffer == it->second->mapped_memory)
+    if (buffer.get() == it->second->mapped_memory.get())
       break;
   }
 
@@ -292,7 +292,7 @@ void VideoCaptureImpl::DoBufferReceivedOnCaptureThread(
 
   media::VideoCapture::VideoFrameBuffer* buffer;
   DCHECK(cached_dibs_.find(buffer_id) != cached_dibs_.end());
-  buffer = cached_dibs_[buffer_id]->mapped_memory;
+  buffer = cached_dibs_[buffer_id]->mapped_memory.get();
   buffer->timestamp = timestamp;
 
   for (ClientInfo::iterator it = clients_.begin(); it != clients_.end(); ++it) {

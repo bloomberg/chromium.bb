@@ -50,7 +50,7 @@ class TestStreamReader : public StreamReadObserver {
     scoped_refptr<net::IOBuffer> buffer(new net::IOBuffer(kBufferSize));
 
     int bytes_read = 0;
-    while (stream->ReadRawData(buffer, kBufferSize, &bytes_read) ==
+    while (stream->ReadRawData(buffer.get(), kBufferSize, &bytes_read) ==
            Stream::STREAM_HAS_DATA) {
       size_t old_capacity = buffer_->capacity();
       buffer_->SetCapacity(old_capacity + bytes_read);
@@ -135,9 +135,9 @@ TEST_F(StreamTest, Stream) {
 
   const int kBufferSize = 1000000;
   scoped_refptr<net::IOBuffer> buffer(NewIOBuffer(kBufferSize));
-  writer.Write(stream, buffer, kBufferSize);
+  writer.Write(stream.get(), buffer, kBufferSize);
   stream->Finalize();
-  reader.Read(stream);
+  reader.Read(stream.get());
   base::MessageLoop::current()->RunUntilIdle();
 
   ASSERT_EQ(reader.buffer()->capacity(), kBufferSize);
@@ -165,7 +165,7 @@ TEST_F(StreamTest, GetStream_Missing) {
 
   GURL url2("blob://stream2");
   scoped_refptr<Stream> stream2 = registry_->GetStream(url2);
-  ASSERT_FALSE(stream2);
+  ASSERT_FALSE(stream2.get());
 }
 
 TEST_F(StreamTest, CloneStream) {
@@ -192,7 +192,7 @@ TEST_F(StreamTest, CloneStream_Missing) {
   GURL url3("blob://stream3");
   ASSERT_FALSE(registry_->CloneStream(url2, url3));
   scoped_refptr<Stream> stream2 = registry_->GetStream(url2);
-  ASSERT_FALSE(stream2);
+  ASSERT_FALSE(stream2.get());
 }
 
 TEST_F(StreamTest, UnregisterStream) {
@@ -204,7 +204,7 @@ TEST_F(StreamTest, UnregisterStream) {
 
   registry_->UnregisterStream(url);
   scoped_refptr<Stream> stream2 = registry_->GetStream(url);
-  ASSERT_FALSE(stream2);
+  ASSERT_FALSE(stream2.get());
 }
 
 }  // namespace content

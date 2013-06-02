@@ -13,7 +13,7 @@ namespace IPC {
 void ParamTraits<scoped_refptr<net::HttpResponseHeaders> >::Write(
     Message* m, const param_type& p) {
   WriteParam(m, p.get() != NULL);
-  if (p) {
+  if (p.get()) {
     // Do not disclose Set-Cookie headers over IPC.
     p->Persist(m, net::HttpResponseHeaders::PERSIST_SANS_COOKIES);
   }
@@ -138,7 +138,7 @@ void ParamTraits<webkit_base::DataElement>::Log(
 void ParamTraits<scoped_refptr<webkit_glue::ResourceDevToolsInfo> >::Write(
     Message* m, const param_type& p) {
   WriteParam(m, p.get() != NULL);
-  if (p) {
+  if (p.get()) {
     WriteParam(m, p->http_status_code);
     WriteParam(m, p->http_status_text);
     WriteParam(m, p->request_headers);
@@ -168,7 +168,7 @@ bool ParamTraits<scoped_refptr<webkit_glue::ResourceDevToolsInfo> >::Read(
 void ParamTraits<scoped_refptr<webkit_glue::ResourceDevToolsInfo> >::Log(
     const param_type& p, std::string* l) {
   l->append("(");
-  if (p) {
+  if (p.get()) {
     LogParam(p->request_headers, l);
     l->append(", ");
     LogParam(p->response_headers, l);
@@ -264,7 +264,7 @@ void ParamTraits<scoped_refptr<webkit_glue::ResourceRequestBody> >::Write(
     Message* m,
     const param_type& p) {
   WriteParam(m, p.get() != NULL);
-  if (p) {
+  if (p.get()) {
     WriteParam(m, *p->elements());
     WriteParam(m, p->identifier());
   }

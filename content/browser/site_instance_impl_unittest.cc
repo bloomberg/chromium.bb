@@ -408,7 +408,7 @@ TEST_F(SiteInstanceTest, OneSiteInstancePerSite) {
       static_cast<SiteInstanceImpl*>(
           browsing_instance->GetSiteInstanceForURL(url_b1)));
   EXPECT_NE(site_instance_a1.get(), site_instance_b1.get());
-  EXPECT_TRUE(site_instance_a1->IsRelatedSiteInstance(site_instance_b1));
+  EXPECT_TRUE(site_instance_a1->IsRelatedSiteInstance(site_instance_b1.get()));
 
   // Getting the new SiteInstance from the BrowsingInstance and from another
   // SiteInstance in the BrowsingInstance should give the same result.
@@ -431,7 +431,8 @@ TEST_F(SiteInstanceTest, OneSiteInstancePerSite) {
       static_cast<SiteInstanceImpl*>(
           browsing_instance2->GetSiteInstanceForURL(url_a2)));
   EXPECT_NE(site_instance_a1.get(), site_instance_a2_2.get());
-  EXPECT_FALSE(site_instance_a1->IsRelatedSiteInstance(site_instance_a2_2));
+  EXPECT_FALSE(
+      site_instance_a1->IsRelatedSiteInstance(site_instance_a2_2.get()));
 
   // The two SiteInstances for http://google.com should not use the same process
   // if process-per-site is not enabled.
@@ -482,7 +483,7 @@ TEST_F(SiteInstanceTest, OneSiteInstancePerSiteInBrowserContext) {
       static_cast<SiteInstanceImpl*>(
           browsing_instance->GetSiteInstanceForURL(url_b1)));
   EXPECT_NE(site_instance_a1.get(), site_instance_b1.get());
-  EXPECT_TRUE(site_instance_a1->IsRelatedSiteInstance(site_instance_b1));
+  EXPECT_TRUE(site_instance_a1->IsRelatedSiteInstance(site_instance_b1.get()));
 
   // Getting the new SiteInstance from the BrowsingInstance and from another
   // SiteInstance in the BrowsingInstance should give the same result.

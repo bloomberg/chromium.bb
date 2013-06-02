@@ -215,7 +215,7 @@ RenderWidget* RenderWidget::Create(int32 opener_id,
   scoped_refptr<RenderWidget> widget(
       new RenderWidget(popup_type, screen_info, false));
   if (widget->Init(opener_id)) {  // adds reference on success.
-    return widget;
+    return widget.get();
   }
   return NULL;
 }

@@ -44,7 +44,7 @@ DatabaseMessageFilter::DatabaseMessageFilter(
     webkit_database::DatabaseTracker* db_tracker)
     : db_tracker_(db_tracker),
       observer_added_(false) {
-  DCHECK(db_tracker_);
+  DCHECK(db_tracker_.get());
 }
 
 void DatabaseMessageFilter::OnChannelClosing() {
@@ -135,9 +135,9 @@ void DatabaseMessageFilter::OnDatabaseOpenFile(const string16& vfs_file_name,
                                             &database_name, NULL) &&
              !db_tracker_->IsDatabaseScheduledForDeletion(origin_identifier,
                                                           database_name)) {
-      base::FilePath db_file =
-          DatabaseUtil::GetFullFilePathForVfsFile(db_tracker_, vfs_file_name);
-      if (!db_file.empty()) {
+    base::FilePath db_file = DatabaseUtil::GetFullFilePathForVfsFile(
+        db_tracker_.get(), vfs_file_name);
+    if (!db_file.empty()) {
         if (db_tracker_->IsIncognitoProfile()) {
           db_tracker_->GetIncognitoFileHandle(vfs_file_name, &file_handle);
           if (file_handle == base::kInvalidPlatformFileValue) {
@@ -180,7 +180,7 @@ void DatabaseMessageFilter::DatabaseDeleteFile(const string16& vfs_file_name,
   // be deleted after kNumDeleteRetries attempts.
   int error_code = SQLITE_IOERR_DELETE;
   base::FilePath db_file =
-      DatabaseUtil::GetFullFilePathForVfsFile(db_tracker_, vfs_file_name);
+      DatabaseUtil::GetFullFilePathForVfsFile(db_tracker_.get(), vfs_file_name);
   if (!db_file.empty()) {
     // In order to delete a journal file in incognito mode, we only need to
     // close the open handle to it that's stored in the database tracker.
@@ -222,7 +222,7 @@ void DatabaseMessageFilter::OnDatabaseGetFileAttributes(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   int32 attributes = -1;
   base::FilePath db_file =
-      DatabaseUtil::GetFullFilePathForVfsFile(db_tracker_, vfs_file_name);
+      DatabaseUtil::GetFullFilePathForVfsFile(db_tracker_.get(), vfs_file_name);
   if (!db_file.empty())
     attributes = VfsBackend::GetFileAttributes(db_file);
 
@@ -236,7 +236,7 @@ void DatabaseMessageFilter::OnDatabaseGetFileSize(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   int64 size = 0;
   base::FilePath db_file =
-      DatabaseUtil::GetFullFilePathForVfsFile(db_tracker_, vfs_file_name);
+      DatabaseUtil::GetFullFilePathForVfsFile(db_tracker_.get(), vfs_file_name);
   if (!db_file.empty())
     size = VfsBackend::GetFileSize(db_file);
 

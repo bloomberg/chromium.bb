@@ -44,7 +44,7 @@ class AudioRendererMixerManagerTest : public testing::Test {
     // We don't want to deal with instantiating a real AudioOutputDevice since
     // it's not important to our testing, so we inject a mock.
     mock_sink_ = new media::MockAudioRendererSink();
-    manager_->SetAudioRendererSinkForTesting(mock_sink_);
+    manager_->SetAudioRendererSinkForTesting(mock_sink_.get());
   }
 
   media::AudioRendererMixer* GetMixer(int source_render_view_id,
@@ -75,8 +75,8 @@ class AudioRendererMixerManagerTest : public testing::Test {
 TEST_F(AudioRendererMixerManagerTest, GetRemoveMixer) {
   // Since we're testing two different sets of parameters, we expect
   // AudioRendererMixerManager to call Start and Stop on our mock twice.
-  EXPECT_CALL(*mock_sink_, Start()).Times(2);
-  EXPECT_CALL(*mock_sink_, Stop()).Times(2);
+  EXPECT_CALL(*mock_sink_.get(), Start()).Times(2);
+  EXPECT_CALL(*mock_sink_.get(), Stop()).Times(2);
 
   // There should be no mixers outstanding to start with.
   EXPECT_EQ(mixer_count(), 0);
@@ -121,8 +121,8 @@ TEST_F(AudioRendererMixerManagerTest, GetRemoveMixer) {
 TEST_F(AudioRendererMixerManagerTest, CreateInput) {
   // Expect AudioRendererMixerManager to call Start and Stop on our mock twice
   // each.  Note: Under normal conditions, each mixer would get its own sink!
-  EXPECT_CALL(*mock_sink_, Start()).Times(2);
-  EXPECT_CALL(*mock_sink_, Stop()).Times(2);
+  EXPECT_CALL(*mock_sink_.get(), Start()).Times(2);
+  EXPECT_CALL(*mock_sink_.get(), Stop()).Times(2);
 
   media::AudioParameters params(
       media::AudioParameters::AUDIO_PCM_LINEAR, kChannelLayout, kSampleRate,

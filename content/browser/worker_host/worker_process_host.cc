@@ -247,10 +247,9 @@ void WorkerProcessHost::CreateMessageFilters(int render_process_id) {
       render_process_id, resource_context_, partition_,
       base::Bind(&WorkerServiceImpl::next_worker_route_id,
                  base::Unretained(WorkerServiceImpl::GetInstance())));
-  process_->GetHost()->AddFilter(worker_message_filter_);
+  process_->GetHost()->AddFilter(worker_message_filter_.get());
   process_->GetHost()->AddFilter(new AppCacheDispatcherHost(
-      partition_.appcache_service(),
-      process_->GetData().id));
+      partition_.appcache_service(), process_->GetData().id));
   process_->GetHost()->AddFilter(new FileAPIMessageFilter(
       process_->GetData().id,
       url_request_context,
@@ -310,7 +309,7 @@ bool WorkerProcessHost::FilterMessage(const IPC::Message& message,
                                       WorkerMessageFilter* filter) {
   for (Instances::iterator i = instances_.begin(); i != instances_.end(); ++i) {
     if (!i->closed() && i->HasFilter(filter, message.routing_id())) {
-      RelayMessage(message, worker_message_filter_, i->worker_route_id());
+      RelayMessage(message, worker_message_filter_.get(), i->worker_route_id());
       return true;
     }
   }

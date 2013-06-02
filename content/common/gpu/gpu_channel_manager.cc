@@ -49,7 +49,7 @@ GpuChannelManager::GpuChannelManager(ChildThread* gpu_child_thread,
 
 GpuChannelManager::~GpuChannelManager() {
   gpu_channels_.clear();
-  if (default_offscreen_surface_) {
+  if (default_offscreen_surface_.get()) {
     default_offscreen_surface_->Destroy();
     default_offscreen_surface_ = NULL;
   }
@@ -90,7 +90,7 @@ GpuChannel* GpuChannelManager::LookupChannel(int32 client_id) {
   if (iter == gpu_channels_.end())
     return NULL;
   else
-    return iter->second;
+    return iter->second.get();
 }
 
 bool GpuChannelManager::OnMessageReceived(const IPC::Message& msg) {
@@ -119,13 +119,13 @@ void GpuChannelManager::OnEstablishChannel(int client_id, bool share_context) {
   gfx::GLShareGroup* share_group = NULL;
   gpu::gles2::MailboxManager* mailbox_manager = NULL;
   if (share_context) {
-    if (!share_group_) {
+    if (!share_group_.get()) {
       share_group_ = new gfx::GLShareGroup;
-      DCHECK(!mailbox_manager_);
+      DCHECK(!mailbox_manager_.get());
       mailbox_manager_ = new gpu::gles2::MailboxManager;
     }
-    share_group = share_group_;
-    mailbox_manager = mailbox_manager_;
+    share_group = share_group_.get();
+    mailbox_manager = mailbox_manager_.get();
   }
 
   scoped_refptr<GpuChannel> channel = new GpuChannel(this,
@@ -134,7 +134,7 @@ void GpuChannelManager::OnEstablishChannel(int client_id, bool share_context) {
                                                      mailbox_manager,
                                                      client_id,
                                                      false);
-  if (channel->Init(io_message_loop_, shutdown_event_)) {
+  if (channel->Init(io_message_loop_.get(), shutdown_event_)) {
     gpu_channels_[client_id] = channel;
     channel_handle.name = channel->GetChannelName();
 
@@ -289,9 +289,9 @@ void GpuChannelManager::OnLoseAllContexts() {
 }
 
 gfx::GLSurface* GpuChannelManager::GetDefaultOffscreenSurface() {
-  if (!default_offscreen_surface_) {
-    default_offscreen_surface_ = gfx::GLSurface::CreateOffscreenGLSurface(
-        false, gfx::Size(1, 1));
+  if (!default_offscreen_surface_.get()) {
+    default_offscreen_surface_ =
+        gfx::GLSurface::CreateOffscreenGLSurface(false, gfx::Size(1, 1));
   }
   return default_offscreen_surface_.get();
 }

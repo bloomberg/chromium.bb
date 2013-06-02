@@ -87,7 +87,7 @@ class MotionUpdateChecker : public UpdateChecker {
     ASSERT_EQ(DeviceData::kTypeMotion, device_data_type);
 
     scoped_refptr<const Motion> motion(static_cast<const Motion*>(device_data));
-    if (motion == NULL)
+    if (motion.get() == NULL)
       motion = new Motion();
 
     scoped_refptr<const Motion> expected(static_cast<const Motion*>(
@@ -173,7 +173,7 @@ class OrientationUpdateChecker : public UpdateChecker {
 
     scoped_refptr<const Orientation> orientation(
         static_cast<const Orientation*>(device_data));
-    if (orientation == NULL)
+    if (orientation.get() == NULL)
       orientation = new Orientation();
 
     scoped_refptr<const Orientation> expected(static_cast<const Orientation*>(
@@ -218,7 +218,7 @@ class TestDataUpdateChecker : public UpdateChecker {
 
     scoped_refptr<const TestData> test_data(
         static_cast<const TestData*>(device_data));
-    if (test_data == NULL)
+    if (test_data.get() == NULL)
       test_data = new TestData();
 
     scoped_refptr<const TestData> expected(static_cast<const TestData*>(
@@ -287,7 +287,7 @@ class MockDeviceDataFactory
       base::AutoLock auto_lock(device_data_factory_->lock_);
       if (device_data_factory_->is_failing_)
         return NULL;
-      return device_data_factory_->device_data_map_[device_data_type];
+      return device_data_factory_->device_data_map_[device_data_type].get();
     }
 
    private:
@@ -322,7 +322,7 @@ class DeviceOrientationProviderTest : public testing::Test {
   // DataFetcherFactory factory.
   void Init(ProviderImpl::DataFetcherFactory factory) {
     provider_ = new ProviderImpl(factory);
-    Provider::SetInstanceForTests(provider_);
+    Provider::SetInstanceForTests(provider_.get());
   }
 
  protected:
@@ -384,9 +384,9 @@ TEST_F(DeviceOrientationProviderTest, BasicPushTest) {
 
   scoped_ptr<OrientationUpdateChecker> checker(
       new OrientationUpdateChecker(&pending_expectations_));
-  checker->AddExpectation(test_orientation);
-  device_data_factory->SetDeviceData(test_orientation,
-      DeviceData::kTypeOrientation);
+  checker->AddExpectation(test_orientation.get());
+  device_data_factory->SetDeviceData(test_orientation.get(),
+                                     DeviceData::kTypeOrientation);
   provider_->AddObserver(checker.get());
   base::MessageLoop::current()->Run();
 
@@ -425,26 +425,26 @@ TEST_F(DeviceOrientationProviderTest, MultipleObserversPushTest) {
   scoped_ptr<OrientationUpdateChecker> checker_c(
       new OrientationUpdateChecker(&pending_expectations_));
 
-  checker_a->AddExpectation(test_orientations[0]);
-  device_data_factory->SetDeviceData(test_orientations[0],
-      DeviceData::kTypeOrientation);
+  checker_a->AddExpectation(test_orientations[0].get());
+  device_data_factory->SetDeviceData(test_orientations[0].get(),
+                                     DeviceData::kTypeOrientation);
   provider_->AddObserver(checker_a.get());
   base::MessageLoop::current()->Run();
 
-  checker_a->AddExpectation(test_orientations[1]);
-  checker_b->AddExpectation(test_orientations[0]);
-  checker_b->AddExpectation(test_orientations[1]);
-  device_data_factory->SetDeviceData(test_orientations[1],
-      DeviceData::kTypeOrientation);
+  checker_a->AddExpectation(test_orientations[1].get());
+  checker_b->AddExpectation(test_orientations[0].get());
+  checker_b->AddExpectation(test_orientations[1].get());
+  device_data_factory->SetDeviceData(test_orientations[1].get(),
+                                     DeviceData::kTypeOrientation);
   provider_->AddObserver(checker_b.get());
   base::MessageLoop::current()->Run();
 
   provider_->RemoveObserver(checker_a.get());
-  checker_b->AddExpectation(test_orientations[2]);
-  checker_c->AddExpectation(test_orientations[1]);
-  checker_c->AddExpectation(test_orientations[2]);
-  device_data_factory->SetDeviceData(test_orientations[2],
-      DeviceData::kTypeOrientation);
+  checker_b->AddExpectation(test_orientations[2].get());
+  checker_c->AddExpectation(test_orientations[1].get());
+  checker_c->AddExpectation(test_orientations[2].get());
+  device_data_factory->SetDeviceData(test_orientations[2].get(),
+                                     DeviceData::kTypeOrientation);
   provider_->AddObserver(checker_c.get());
   base::MessageLoop::current()->Run();
 
@@ -477,9 +477,9 @@ TEST_F(DeviceOrientationProviderTest, FailingFirstDataTypeTest) {
   provider_->AddObserver(test_data_checker.get());
   base::MessageLoop::current()->Run();
 
-  orientation_checker->AddExpectation(test_orientation);
-  device_data_factory->SetDeviceData(test_orientation,
-      DeviceData::kTypeOrientation);
+  orientation_checker->AddExpectation(test_orientation.get());
+  device_data_factory->SetDeviceData(test_orientation.get(),
+                                     DeviceData::kTypeOrientation);
   provider_->AddObserver(orientation_checker.get());
   base::MessageLoop::current()->Run();
 
@@ -514,15 +514,15 @@ TEST_F(DeviceOrientationProviderTest, MAYBE_ObserverNotRemoved) {
 
   scoped_ptr<OrientationUpdateChecker> checker(
       new OrientationUpdateChecker(&pending_expectations_));
-  checker->AddExpectation(test_orientation);
-  device_data_factory->SetDeviceData(test_orientation,
-      DeviceData::kTypeOrientation);
+  checker->AddExpectation(test_orientation.get());
+  device_data_factory->SetDeviceData(test_orientation.get(),
+                                     DeviceData::kTypeOrientation);
   provider_->AddObserver(checker.get());
   base::MessageLoop::current()->Run();
 
-  checker->AddExpectation(test_orientation2);
-  device_data_factory->SetDeviceData(test_orientation2,
-      DeviceData::kTypeOrientation);
+  checker->AddExpectation(test_orientation2.get());
+  device_data_factory->SetDeviceData(test_orientation2.get(),
+                                     DeviceData::kTypeOrientation);
   base::MessageLoop::current()->Run();
 
   MockDeviceDataFactory::SetCurInstance(NULL);
@@ -552,9 +552,9 @@ TEST_F(DeviceOrientationProviderTest, MAYBE_StartFailing) {
   scoped_ptr<OrientationUpdateChecker> checker_b(new OrientationUpdateChecker(
       &pending_expectations_));
 
-  device_data_factory->SetDeviceData(test_orientation,
-      DeviceData::kTypeOrientation);
-  checker_a->AddExpectation(test_orientation);
+  device_data_factory->SetDeviceData(test_orientation.get(),
+                                     DeviceData::kTypeOrientation);
+  checker_a->AddExpectation(test_orientation.get());
   provider_->AddObserver(checker_a.get());
   base::MessageLoop::current()->Run();
 
@@ -594,17 +594,17 @@ TEST_F(DeviceOrientationProviderTest, StartStopStart) {
   scoped_ptr<OrientationUpdateChecker> checker_b(new OrientationUpdateChecker(
       &pending_expectations_));
 
-  checker_a->AddExpectation(test_orientation);
-  device_data_factory->SetDeviceData(test_orientation,
-      DeviceData::kTypeOrientation);
+  checker_a->AddExpectation(test_orientation.get());
+  device_data_factory->SetDeviceData(test_orientation.get(),
+                                     DeviceData::kTypeOrientation);
   provider_->AddObserver(checker_a.get());
   base::MessageLoop::current()->Run();
 
   provider_->RemoveObserver(checker_a.get()); // This stops the Provider.
 
-  checker_b->AddExpectation(test_orientation2);
-  device_data_factory->SetDeviceData(test_orientation2,
-      DeviceData::kTypeOrientation);
+  checker_b->AddExpectation(test_orientation2.get());
+  device_data_factory->SetDeviceData(test_orientation2.get(),
+                                     DeviceData::kTypeOrientation);
   provider_->AddObserver(checker_b.get());
   base::MessageLoop::current()->Run();
 
@@ -634,14 +634,16 @@ TEST_F(DeviceOrientationProviderTest, FLAKY_MotionAlwaysFires) {
   scoped_ptr<MotionUpdateChecker> checker(new MotionUpdateChecker(
       &pending_expectations_));
 
-  device_data_factory->SetDeviceData(test_motion, DeviceData::kTypeMotion);
-  checker->AddExpectation(test_motion);
+  device_data_factory->SetDeviceData(test_motion.get(),
+                                     DeviceData::kTypeMotion);
+  checker->AddExpectation(test_motion.get());
   provider_->AddObserver(checker.get());
   base::MessageLoop::current()->Run();
 
   // The observer should receive the same motion again.
-  device_data_factory->SetDeviceData(test_motion, DeviceData::kTypeMotion);
-  checker->AddExpectation(test_motion);
+  device_data_factory->SetDeviceData(test_motion.get(),
+                                     DeviceData::kTypeMotion);
+  checker->AddExpectation(test_motion.get());
   base::MessageLoop::current()->Run();
 
   provider_->RemoveObserver(checker.get());
@@ -684,23 +686,23 @@ TEST_F(DeviceOrientationProviderTest, OrientationSignificantlyDifferent) {
   scoped_ptr<OrientationUpdateChecker> checker_b(new OrientationUpdateChecker(
       &pending_expectations_));
 
-  device_data_factory->SetDeviceData(first_orientation,
-      DeviceData::kTypeOrientation);
-  checker_a->AddExpectation(first_orientation);
+  device_data_factory->SetDeviceData(first_orientation.get(),
+                                     DeviceData::kTypeOrientation);
+  checker_a->AddExpectation(first_orientation.get());
   provider_->AddObserver(checker_a.get());
   base::MessageLoop::current()->Run();
 
   // The observers should not see this insignificantly different orientation.
-  device_data_factory->SetDeviceData(second_orientation,
-      DeviceData::kTypeOrientation);
-  checker_b->AddExpectation(first_orientation);
+  device_data_factory->SetDeviceData(second_orientation.get(),
+                                     DeviceData::kTypeOrientation);
+  checker_b->AddExpectation(first_orientation.get());
   provider_->AddObserver(checker_b.get());
   base::MessageLoop::current()->Run();
 
-  device_data_factory->SetDeviceData(third_orientation,
-      DeviceData::kTypeOrientation);
-  checker_a->AddExpectation(third_orientation);
-  checker_b->AddExpectation(third_orientation);
+  device_data_factory->SetDeviceData(third_orientation.get(),
+                                     DeviceData::kTypeOrientation);
+  checker_a->AddExpectation(third_orientation.get());
+  checker_b->AddExpectation(third_orientation.get());
   base::MessageLoop::current()->Run();
 
   provider_->RemoveObserver(checker_a.get());

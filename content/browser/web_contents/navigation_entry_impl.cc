@@ -314,7 +314,7 @@ void NavigationEntryImpl::ClearExtraData(const std::string& key) {
 void NavigationEntryImpl::SetScreenshotPNGData(
     scoped_refptr<base::RefCountedBytes> png_data) {
   screenshot_ = png_data;
-  if (screenshot_)
+  if (screenshot_.get())
     UMA_HISTOGRAM_MEMORY_KB("Overscroll.ScreenshotSize", screenshot_->size());
 }
 

@@ -109,9 +109,11 @@ void P2PSocketHostUdp::OnError() {
 void P2PSocketHostUdp::DoRead() {
   int result;
   do {
-    result = socket_->RecvFrom(recv_buffer_, kReadBufferSize, &recv_address_,
-                               base::Bind(&P2PSocketHostUdp::OnRecv,
-                                          base::Unretained(this)));
+    result = socket_->RecvFrom(
+        recv_buffer_.get(),
+        kReadBufferSize,
+        &recv_address_,
+        base::Bind(&P2PSocketHostUdp::OnRecv, base::Unretained(this)));
     if (result == net::ERR_IO_PENDING)
       return;
     HandleReadResult(result);
@@ -181,17 +183,21 @@ void P2PSocketHostUdp::Send(const net::IPEndPoint& to,
 void P2PSocketHostUdp::DoSend(const PendingPacket& packet) {
   TRACE_EVENT_ASYNC_BEGIN2("p2p", "Udp::DoSend", this,
                            "id", id_, "size", packet.size);
-  int result = socket_->SendTo(packet.data, packet.size, packet.to,
-                               base::Bind(&P2PSocketHostUdp::OnSend,
-                                          base::Unretained(this)));
+  int result = socket_->SendTo(
+      packet.data.get(),
+      packet.size,
+      packet.to,
+      base::Bind(&P2PSocketHostUdp::OnSend, base::Unretained(this)));
 
   // sendto() may return an error, e.g. if we've received an ICMP Destination
   // Unreachable message. When this happens try sending the same packet again,
   // and just drop it if it fails again.
   if (IsTransientError(result)) {
-    result = socket_->SendTo(packet.data, packet.size, packet.to,
-                             base::Bind(&P2PSocketHostUdp::OnSend,
-                                        base::Unretained(this)));
+    result = socket_->SendTo(
+        packet.data.get(),
+        packet.size,
+        packet.to,
+        base::Bind(&P2PSocketHostUdp::OnSend, base::Unretained(this)));
   }
 
   if (result == net::ERR_IO_PENDING) {

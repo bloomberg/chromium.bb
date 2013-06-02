@@ -160,7 +160,7 @@ void ThrottlingResourceHandler::ResumeRedirect() {
   deferred_response_.swap(response);
 
   bool defer = false;
-  if (!OnRequestRedirected(request_id_, new_url, response, &defer)) {
+  if (!OnRequestRedirected(request_id_, new_url, response.get(), &defer)) {
     controller()->Cancel();
   } else if (!defer) {
     controller()->Resume();
@@ -174,7 +174,7 @@ void ThrottlingResourceHandler::ResumeResponse() {
   deferred_response_.swap(response);
 
   bool defer = false;
-  if (!OnResponseStarted(request_id_, response, &defer)) {
+  if (!OnResponseStarted(request_id_, response.get(), &defer)) {
     controller()->Cancel();
   } else if (!defer) {
     controller()->Resume();

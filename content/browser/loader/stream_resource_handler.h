@@ -63,7 +63,7 @@ class StreamResourceHandler : public StreamWriteObserver,
 
   virtual void OnDataDownloaded(int request_id, int bytes_downloaded) OVERRIDE;
 
-  Stream* stream() { return stream_; }
+  Stream* stream() { return stream_.get(); }
 
  private:
   virtual void OnSpaceAvailable(Stream* stream) OVERRIDE;

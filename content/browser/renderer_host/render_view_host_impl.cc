@@ -188,8 +188,8 @@ RenderViewHostImpl::RenderViewHostImpl(
           static_cast<SessionStorageNamespaceImpl*>(session_storage)),
       save_accessibility_tree_for_testing_(false),
       render_view_termination_status_(base::TERMINATION_STATUS_STILL_RUNNING) {
-  DCHECK(session_storage_namespace_);
-  DCHECK(instance_);
+  DCHECK(session_storage_namespace_.get());
+  DCHECK(instance_.get());
   CHECK(delegate_);  // http://crbug.com/82827
 
   if (main_frame_routing_id == MSG_ROUTING_NONE)
@@ -226,7 +226,7 @@ RenderViewHostDelegate* RenderViewHostImpl::GetDelegate() const {
 }
 
 SiteInstance* RenderViewHostImpl::GetSiteInstance() const {
-  return instance_;
+  return instance_.get();
 }
 
 bool RenderViewHostImpl::CreateRenderView(

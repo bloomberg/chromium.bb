@@ -58,7 +58,8 @@ void WebBlobRegistryImpl::registerBlobURL(
           size_t shared_memory_size = std::min(
               data_size, kMaxSharedMemoryBytes);
           scoped_ptr<base::SharedMemory> shared_memory(
-              ChildThread::AllocateSharedMemory(shared_memory_size, sender_));
+              ChildThread::AllocateSharedMemory(shared_memory_size,
+                                                sender_.get()));
           CHECK(shared_memory.get());
           while (data_size) {
             size_t chunk_size = std::min(data_size, shared_memory_size);

@@ -70,8 +70,8 @@ bool SyncResourceHandler::OnResponseStarted(
     ResourceResponse* response,
     bool* defer) {
   if (rdh_->delegate()) {
-    rdh_->delegate()->OnResponseStarted(request_, filter_->resource_context(),
-                                        response, filter_);
+    rdh_->delegate()->OnResponseStarted(
+        request_, filter_->resource_context(), response, filter_.get());
   }
 
   DevToolsNetLogObserver::PopulateResponseInfo(request_, response);

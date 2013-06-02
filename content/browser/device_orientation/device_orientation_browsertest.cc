@@ -58,8 +58,8 @@ IN_PROC_BROWSER_TEST_F(DeviceOrientationBrowserTest, BasicTest) {
   test_orientation->set_beta(2);
   test_orientation->set_gamma(3);
   test_orientation->set_absolute(true);
-  scoped_refptr<MockProvider> provider(new MockProvider(
-    test_orientation, DeviceData::kTypeOrientation));
+  scoped_refptr<MockProvider> provider(
+      new MockProvider(test_orientation.get(), DeviceData::kTypeOrientation));
   Provider::SetInstanceForTests(provider.get());
 
   // The test page will register an event handler for orientation events,

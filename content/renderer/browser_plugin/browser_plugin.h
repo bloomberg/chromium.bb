@@ -259,7 +259,7 @@ class CONTENT_EXPORT BrowserPlugin :
   // Gets the Min Width value used for auto size.
   int GetAdjustedMinWidth() const;
   BrowserPluginManager* browser_plugin_manager() const {
-    return browser_plugin_manager_;
+    return browser_plugin_manager_.get();
   }
 
   // Virtual to allow for mocking in tests.

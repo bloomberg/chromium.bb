@@ -37,7 +37,7 @@ void RTCVideoRenderer::Start() {
   DCHECK(message_loop_proxy_->BelongsToCurrentThread());
   DCHECK_EQ(state_, kStopped);
 
-  if (video_track_) {
+  if (video_track_.get()) {
     video_track_->AddRenderer(this);
     video_track_->RegisterObserver(this);
   }
@@ -47,7 +47,7 @@ void RTCVideoRenderer::Start() {
 
 void RTCVideoRenderer::Stop() {
   DCHECK(message_loop_proxy_->BelongsToCurrentThread());
-  if (video_track_) {
+  if (video_track_.get()) {
     state_ = kStopped;
     video_track_->RemoveRenderer(this);
     video_track_->UnregisterObserver(this);
@@ -57,14 +57,14 @@ void RTCVideoRenderer::Stop() {
 
 void RTCVideoRenderer::Play() {
   DCHECK(message_loop_proxy_->BelongsToCurrentThread());
-  if (video_track_ && state_ == kPaused) {
+  if (video_track_.get() && state_ == kPaused) {
     state_ = kStarted;
   }
 }
 
 void RTCVideoRenderer::Pause() {
   DCHECK(message_loop_proxy_->BelongsToCurrentThread());
-  if (video_track_ && state_ == kStarted) {
+  if (video_track_.get() && state_ == kStarted) {
     state_ = kPaused;
   }
 }
@@ -98,9 +98,11 @@ void RTCVideoRenderer::RenderFrame(const cricket::VideoFrame* frame) {
 
   int y_rows = frame->GetHeight();
   int uv_rows = frame->GetHeight() / 2;  // YV12 format.
-  CopyYPlane(frame->GetYPlane(), frame->GetYPitch(), y_rows, video_frame);
-  CopyUPlane(frame->GetUPlane(), frame->GetUPitch(), uv_rows, video_frame);
-  CopyVPlane(frame->GetVPlane(), frame->GetVPitch(), uv_rows, video_frame);
+  CopyYPlane(frame->GetYPlane(), frame->GetYPitch(), y_rows, video_frame.get());
+  CopyUPlane(
+      frame->GetUPlane(), frame->GetUPitch(), uv_rows, video_frame.get());
+  CopyVPlane(
+      frame->GetVPlane(), frame->GetVPitch(), uv_rows, video_frame.get());
 
   message_loop_proxy_->PostTask(
       FROM_HERE, base::Bind(&RTCVideoRenderer::DoRenderFrameOnMainThread,

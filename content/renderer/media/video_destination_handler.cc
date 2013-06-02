@@ -190,7 +190,7 @@ bool VideoDestinationHandler::Open(
   // Gets a handler to the native video track, which owns the |writer|.
   MediaStreamExtraData* extra_data =
       static_cast<MediaStreamExtraData*>(stream.extraData());
-  webrtc::MediaStreamInterface* native_stream = extra_data->stream();
+  webrtc::MediaStreamInterface* native_stream = extra_data->stream().get();
   DCHECK(native_stream);
   VideoTrackVector video_tracks = native_stream->GetVideoTracks();
   // Currently one supports one video track per media stream.

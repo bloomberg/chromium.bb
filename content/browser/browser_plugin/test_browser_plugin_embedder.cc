@@ -21,7 +21,7 @@ TestBrowserPluginEmbedder::~TestBrowserPluginEmbedder() {
 void TestBrowserPluginEmbedder::GetRenderViewHostCallback(
     RenderViewHost* rvh, int x, int y) {
   last_rvh_at_position_response_ = rvh;
-  if (message_loop_runner_)
+  if (message_loop_runner_.get())
     message_loop_runner_->Quit();
 }
 

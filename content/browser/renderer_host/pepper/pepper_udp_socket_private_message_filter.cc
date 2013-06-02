@@ -165,7 +165,7 @@ int32_t PepperUDPSocketPrivateMessageFilter::OnMsgRecvFrom(
   if (closed_)
     return PP_ERROR_FAILED;
 
-  if (recvfrom_buffer_)
+  if (recvfrom_buffer_.get())
     return PP_ERROR_INPROGRESS;
   if (num_bytes > ppapi::proxy::UDPSocketPrivateResource::kMaxReadSize) {
     // |num_bytes| value is checked on the plugin side.
@@ -174,9 +174,12 @@ int32_t PepperUDPSocketPrivateMessageFilter::OnMsgRecvFrom(
   }
   recvfrom_buffer_ = new net::IOBuffer(num_bytes);
   int result = socket_->RecvFrom(
-      recvfrom_buffer_, num_bytes, &recvfrom_address_,
+      recvfrom_buffer_.get(),
+      num_bytes,
+      &recvfrom_address_,
       base::Bind(&PepperUDPSocketPrivateMessageFilter::OnRecvFromCompleted,
-                 this, context->MakeReplyMessageContext()));
+                 this,
+                 context->MakeReplyMessageContext()));
   if (result != net::ERR_IO_PENDING)
     OnRecvFromCompleted(context->MakeReplyMessageContext(), result);
   return PP_OK_COMPLETIONPENDING;
@@ -263,7 +266,7 @@ void PepperUDPSocketPrivateMessageFilter::DoSendTo(
     return;
   }
 
-  if (sendto_buffer_) {
+  if (sendto_buffer_.get()) {
     SendSendToError(context, PP_ERROR_INPROGRESS);
     return;
   }
@@ -292,8 +295,11 @@ void PepperUDPSocketPrivateMessageFilter::DoSendTo(
   }
 
   int result = socket_->SendTo(
-      sendto_buffer_, sendto_buffer_->size(), net::IPEndPoint(address, port),
-      base::Bind(&PepperUDPSocketPrivateMessageFilter::OnSendToCompleted, this,
+      sendto_buffer_.get(),
+      sendto_buffer_->size(),
+      net::IPEndPoint(address, port),
+      base::Bind(&PepperUDPSocketPrivateMessageFilter::OnSendToCompleted,
+                 this,
                  context));
   if (result != net::ERR_IO_PENDING)
     OnSendToCompleted(context, result);

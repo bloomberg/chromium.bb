@@ -231,12 +231,12 @@ StoragePartitionImpl* StoragePartitionImpl::Create(
       new ChromeAppCacheService(quota_manager->proxy());
 
   return new StoragePartitionImpl(partition_path,
-                                  quota_manager,
-                                  appcache_service,
-                                  filesystem_context,
-                                  database_tracker,
-                                  dom_storage_context,
-                                  indexed_db_context);
+                                  quota_manager.get(),
+                                  appcache_service.get(),
+                                  filesystem_context.get(),
+                                  database_tracker.get(),
+                                  dom_storage_context.get(),
+                                  indexed_db_context.get());
 }
 
 base::FilePath StoragePartitionImpl::GetPath() {
@@ -244,36 +244,36 @@ base::FilePath StoragePartitionImpl::GetPath() {
 }
 
 net::URLRequestContextGetter* StoragePartitionImpl::GetURLRequestContext() {
-  return url_request_context_;
+  return url_request_context_.get();
 }
 
 net::URLRequestContextGetter*
 StoragePartitionImpl::GetMediaURLRequestContext() {
-  return media_url_request_context_;
+  return media_url_request_context_.get();
 }
 
 quota::QuotaManager* StoragePartitionImpl::GetQuotaManager() {
-  return quota_manager_;
+  return quota_manager_.get();
 }
 
 ChromeAppCacheService* StoragePartitionImpl::GetAppCacheService() {
-  return appcache_service_;
+  return appcache_service_.get();
 }
 
 fileapi::FileSystemContext* StoragePartitionImpl::GetFileSystemContext() {
-  return filesystem_context_;
+  return filesystem_context_.get();
 }
 
 webkit_database::DatabaseTracker* StoragePartitionImpl::GetDatabaseTracker() {
-  return database_tracker_;
+  return database_tracker_.get();
 }
 
 DOMStorageContextImpl* StoragePartitionImpl::GetDOMStorageContext() {
-  return dom_storage_context_;
+  return dom_storage_context_.get();
 }
 
 IndexedDBContextImpl* StoragePartitionImpl::GetIndexedDBContext() {
-  return indexed_db_context_;
+  return indexed_db_context_.get();
 }
 
 void StoragePartitionImpl::AsyncClearDataForOrigin(

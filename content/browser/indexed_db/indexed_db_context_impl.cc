@@ -273,7 +273,7 @@ bool IndexedDBContextImpl::IsOverQuota(const GURL& origin_url) {
 }
 
 quota::QuotaManagerProxy* IndexedDBContextImpl::quota_manager_proxy() {
-  return quota_manager_proxy_;
+  return quota_manager_proxy_.get();
 }
 
 IndexedDBContextImpl::~IndexedDBContextImpl() {

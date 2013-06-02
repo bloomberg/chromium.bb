@@ -151,9 +151,9 @@ SpeechRecognizerImpl::recognition_engine() const {
 
 SpeechRecognizerImpl::~SpeechRecognizerImpl() {
   endpointer_.EndSession();
-  if (audio_controller_) {
-    audio_controller_->Close(base::Bind(&KeepAudioControllerRefcountedForDtor,
-                                        audio_controller_));
+  if (audio_controller_.get()) {
+    audio_controller_->Close(
+        base::Bind(&KeepAudioControllerRefcountedForDtor, audio_controller_));
   }
 }
 
@@ -225,7 +225,7 @@ void SpeechRecognizerImpl::DispatchEvent(const FSMEventArgs& event_args) {
 
   if (event_args.event == EVENT_AUDIO_DATA) {
     DCHECK(event_args.audio_data.get() != NULL);
-    ProcessAudioPipeline(*event_args.audio_data);
+    ProcessAudioPipeline(*event_args.audio_data.get());
   }
 
   // The audio pipeline must be processed before the event dispatch, otherwise
@@ -439,7 +439,7 @@ SpeechRecognizerImpl::StartRecognitionEngine(const FSMEventArgs& event_args) {
   // This is a little hack, since TakeAudioChunk() is already called by
   // ProcessAudioPipeline(). It is the best tradeoff, unless we allow dropping
   // the first audio chunk captured after opening the audio device.
-  recognition_engine_->TakeAudioChunk(*(event_args.audio_data));
+  recognition_engine_->TakeAudioChunk(*(event_args.audio_data.get()));
   return STATE_ESTIMATING_ENVIRONMENT;
 }
 

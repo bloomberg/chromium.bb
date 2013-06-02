@@ -667,7 +667,7 @@ void NavigationControllerImpl::LoadURLWithParams(const LoadURLParams& params) {
     case LOAD_TYPE_BROWSER_INITIATED_HTTP_POST:
       entry->SetHasPostData(true);
       entry->SetBrowserInitiatedPostData(
-          params.browser_initiated_post_data);
+          params.browser_initiated_post_data.get());
       break;
     case LOAD_TYPE_DATA:
       entry->SetBaseURLForDataURL(params.base_url_for_data_url);

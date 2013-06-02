@@ -118,10 +118,10 @@ int SpeechRecognitionManagerImpl::CreateSession(
   SpeechRecognitionEngine* google_remote_engine;
   if (config.is_legacy_api) {
     google_remote_engine =
-        new GoogleOneShotRemoteEngine(config.url_request_context_getter);
+        new GoogleOneShotRemoteEngine(config.url_request_context_getter.get());
   } else {
-    google_remote_engine =
-        new GoogleStreamingRemoteEngine(config.url_request_context_getter);
+    google_remote_engine = new GoogleStreamingRemoteEngine(
+        config.url_request_context_getter.get());
   }
 
   google_remote_engine->SetConfig(remote_engine_config);
@@ -602,7 +602,7 @@ void SpeechRecognitionManagerImpl::ResetCapturingSessionId(
 }
 
 void SpeechRecognitionManagerImpl::SessionDelete(const Session& session) {
-  DCHECK(session.recognizer == NULL || !session.recognizer->IsActive());
+  DCHECK(session.recognizer.get() == NULL || !session.recognizer->IsActive());
   if (primary_session_id_ == session.id)
     primary_session_id_ = kSessionIDInvalid;
   sessions_.erase(session.id);

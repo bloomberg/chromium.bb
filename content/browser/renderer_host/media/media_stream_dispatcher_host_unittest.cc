@@ -160,7 +160,7 @@ class MediaStreamDispatcherHostTest : public testing::Test {
     // Use the fake content client and browser.
     content_client_.reset(new TestContentClient);
     SetContentClient(content_client_.get());
-    old_browser_client_ = SetBrowserClientForTesting(host_);
+    old_browser_client_ = SetBrowserClientForTesting(host_.get());
   }
 
   virtual void SetupFakeUI(bool expect_started) {
@@ -197,7 +197,7 @@ TEST_F(MediaStreamDispatcherHostTest, GenerateStream) {
   StreamOptions options(MEDIA_NO_SERVICE, MEDIA_DEVICE_VIDEO_CAPTURE);
 
   SetupFakeUI(true);
-  EXPECT_CALL(*host_, OnStreamGenerated(kRenderId, kPageRequestId, 0, 1));
+  EXPECT_CALL(*host_.get(), OnStreamGenerated(kRenderId, kPageRequestId, 0, 1));
   host_->OnGenerateStream(kPageRequestId, options);
 
   WaitForResult();
@@ -220,7 +220,7 @@ TEST_F(MediaStreamDispatcherHostTest, GenerateThreeStreams) {
 
   // Generate first stream.
   SetupFakeUI(true);
-  EXPECT_CALL(*host_, OnStreamGenerated(kRenderId, kPageRequestId, 0, 1));
+  EXPECT_CALL(*host_.get(), OnStreamGenerated(kRenderId, kPageRequestId, 0, 1));
   host_->OnGenerateStream(kPageRequestId, options);
 
   WaitForResult();
@@ -236,9 +236,9 @@ TEST_F(MediaStreamDispatcherHostTest, GenerateThreeStreams) {
 
   // Generate second stream.
   SetupFakeUI(true);
-  EXPECT_CALL(*host_, OnStreamGenerated(kRenderId, kPageRequestId + 1, 0, 1));
-  host_->OnGenerateStream(kPageRequestId+1, options);
-
+  EXPECT_CALL(*host_.get(),
+              OnStreamGenerated(kRenderId, kPageRequestId + 1, 0, 1));
+  host_->OnGenerateStream(kPageRequestId + 1, options);
 
   WaitForResult();
 
@@ -255,8 +255,9 @@ TEST_F(MediaStreamDispatcherHostTest, GenerateThreeStreams) {
 
   // Generate third stream.
   SetupFakeUI(true);
-  EXPECT_CALL(*host_, OnStreamGenerated(kRenderId, kPageRequestId + 2, 0, 1));
-  host_->OnGenerateStream(kPageRequestId+2, options);
+  EXPECT_CALL(*host_.get(),
+              OnStreamGenerated(kRenderId, kPageRequestId + 2, 0, 1));
+  host_->OnGenerateStream(kPageRequestId + 2, options);
 
   WaitForResult();
 
@@ -284,7 +285,8 @@ TEST_F(MediaStreamDispatcherHostTest, FailOpenVideoDevice) {
   media::FakeVideoCaptureDevice::SetFailNextCreate();
   SetupFakeUI(false);
   host_->OnGenerateStream(kPageRequestId, options);
-  EXPECT_CALL(*host_, OnStreamGenerationFailed(kRenderId, kPageRequestId));
+  EXPECT_CALL(*host_.get(),
+              OnStreamGenerationFailed(kRenderId, kPageRequestId));
   WaitForResult();
 }
 
@@ -312,7 +314,8 @@ TEST_F(MediaStreamDispatcherHostTest, StopGeneratedStreamsOnChannelClosing) {
   size_t generated_streams = 3;
   for (size_t i = 0; i < generated_streams; ++i) {
     SetupFakeUI(true);
-    EXPECT_CALL(*host_, OnStreamGenerated(kRenderId, kPageRequestId + i, 0, 1));
+    EXPECT_CALL(*host_.get(),
+                OnStreamGenerated(kRenderId, kPageRequestId + i, 0, 1));
     host_->OnGenerateStream(kPageRequestId + i, options);
 
     // Wait until the stream is generated.
@@ -338,8 +341,9 @@ TEST_F(MediaStreamDispatcherHostTest, CloseFromUI) {
     .WillOnce(SaveArg<0>(&close_callback));
   media_stream_manager_->UseFakeUI(stream_ui.PassAs<MediaStreamUI>());
 
-  EXPECT_CALL(*host_, OnStreamGenerated(kRenderId, kPageRequestId, 0, 1));
-  EXPECT_CALL(*host_, OnStreamGenerationFailed(kRenderId, kPageRequestId));
+  EXPECT_CALL(*host_.get(), OnStreamGenerated(kRenderId, kPageRequestId, 0, 1));
+  EXPECT_CALL(*host_.get(),
+              OnStreamGenerationFailed(kRenderId, kPageRequestId));
   host_->OnGenerateStream(kPageRequestId, options);
 
   WaitForResult();

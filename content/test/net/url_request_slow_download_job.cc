@@ -203,9 +203,10 @@ bool URLRequestSlowDownloadJob::ReadRawData(net::IOBuffer* buf, int buf_size,
 void URLRequestSlowDownloadJob::CheckDoneStatus() {
   if (should_finish_download_) {
     VLOG(10) << __FUNCTION__ << " called w/ should_finish_download_ set.";
-    DCHECK(NULL != buffer_);
+    DCHECK(NULL != buffer_.get());
     int bytes_written = 0;
-    ReadStatus status = FillBufferHelper(buffer_, buffer_size_, &bytes_written);
+    ReadStatus status =
+        FillBufferHelper(buffer_.get(), buffer_size_, &bytes_written);
     DCHECK_EQ(BUFFER_FILLED, status);
     buffer_ = NULL;                     // Release the reference.
     SetStatus(net::URLRequestStatus());
@@ -267,7 +268,7 @@ void URLRequestSlowDownloadJob::GetResponseInfoConst(
 bool URLRequestSlowDownloadJob::GetMimeType(std::string* mime_type) const {
   net::HttpResponseInfo info;
   GetResponseInfoConst(&info);
-  return info.headers && info.headers->GetMimeType(mime_type);
+  return info.headers.get() && info.headers->GetMimeType(mime_type);
 }
 
 }  // namespace content

@@ -121,7 +121,7 @@ void CertStoreImpl::RemoveCertInternal(int cert_id) {
   CertMap::iterator cert_iter = id_to_cert_.find(cert_id);
   DCHECK(cert_iter != id_to_cert_.end());
 
-  ReverseCertMap::iterator id_iter = cert_to_id_.find(cert_iter->second);
+  ReverseCertMap::iterator id_iter = cert_to_id_.find(cert_iter->second.get());
   DCHECK(id_iter != cert_to_id_.end());
   cert_to_id_.erase(id_iter);
 

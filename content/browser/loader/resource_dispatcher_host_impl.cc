@@ -182,7 +182,7 @@ bool ShouldServiceRequest(int process_type,
   }
 
   // Check if the renderer is permitted to upload the requested files.
-  if (request_data.request_body) {
+  if (request_data.request_body.get()) {
     const std::vector<ResourceRequestBody::Element>* uploads =
         request_data.request_body->elements();
     std::vector<ResourceRequestBody::Element>::const_iterator iter;
@@ -280,8 +280,8 @@ int BuildLoadFlagsForRequest(
 }
 
 int GetCertID(net::URLRequest* request, int child_id) {
-  if (request->ssl_info().cert) {
-    return CertStore::GetInstance()->StoreCert(request->ssl_info().cert,
+  if (request->ssl_info().cert.get()) {
+    return CertStore::GetInstance()->StoreCert(request->ssl_info().cert.get(),
                                                child_id);
   }
   return 0;
@@ -1017,7 +1017,7 @@ void ResourceDispatcherHostImpl::BeginRequest(
   request->SetPriority(request_data.priority);
 
   // Resolve elements from request_body and prepare upload data.
-  if (request_data.request_body) {
+  if (request_data.request_body.get()) {
     request->set_upload(make_scoped_ptr(
         request_data.request_body->ResolveElementsAndCreateUploadDataStream(
             filter_->blob_storage_context()->controller(),

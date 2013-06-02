@@ -104,7 +104,7 @@ void IndexedDBInternalsUI::GetAllOriginsOnWebkitThread(
   for (ContextList::const_iterator iter = contexts->begin();
        iter != contexts->end();
        ++iter, ++path_iter) {
-    IndexedDBContext* context = *iter;
+    IndexedDBContext* context = iter->get();
     const base::FilePath& context_path = *path_iter;
 
     scoped_ptr<std::vector<IndexedDBInfo> > info_list(
@@ -174,7 +174,7 @@ void IndexedDBInternalsUI::DownloadOriginData(const base::ListValue* args) {
       &FindContext, partition_path, &result_partition, &result_context);
   BrowserContext::ForEachStoragePartition(browser_context, cb);
   DCHECK(result_partition);
-  DCHECK(result_context);
+  DCHECK(result_context.get());
 
   BrowserThread::PostTask(
       BrowserThread::WEBKIT_DEPRECATED,

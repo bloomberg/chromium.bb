@@ -25,7 +25,7 @@ class RemoteMediaStreamTrackObserver
   virtual ~RemoteMediaStreamTrackObserver();
 
   webrtc::MediaStreamTrackInterface* observered_track() {
-    return webrtc_track_;
+    return webrtc_track_.get();
   }
   const WebKit::WebMediaStreamTrack& webkit_track() { return webkit_track_; }
 

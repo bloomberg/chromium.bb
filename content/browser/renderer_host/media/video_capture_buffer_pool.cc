@@ -91,7 +91,7 @@ scoped_refptr<media::VideoFrame> VideoCaptureBufferPool::ReserveForProducer(
 
   if (buffer->rotation != rotation) {
     // TODO(nick): Generalize the |rotation| mechanism.
-    media::FillYUV(frame, 0, 128, 128);
+    media::FillYUV(frame.get(), 0, 128, 128);
     buffer->rotation = rotation;
   }
 

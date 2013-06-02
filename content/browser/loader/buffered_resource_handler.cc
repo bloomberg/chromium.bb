@@ -119,7 +119,7 @@ bool BufferedResourceHandler::OnResponseStarted(
   // responses end up being translated to 200 or whatever the cached response
   // code happens to be.  It should be very rare to see a 304 at this level.
 
-  if (!(response_->head.headers &&
+  if (!(response_->head.headers.get() &&
         response_->head.headers->response_code() == 304)) {
     if (ShouldSniffContent()) {
       state_ = STATE_BUFFERING;
@@ -153,9 +153,9 @@ bool BufferedResourceHandler::OnWillRead(int request_id, net::IOBuffer** buf,
 
   DCHECK_EQ(-1, min_size);
 
-  if (read_buffer_) {
+  if (read_buffer_.get()) {
     CHECK_LT(bytes_read_, read_buffer_size_);
-    *buf = new DependentIOBuffer(read_buffer_, bytes_read_);
+    *buf = new DependentIOBuffer(read_buffer_.get(), bytes_read_);
     *buf_size = read_buffer_size_ - bytes_read_;
   } else {
     if (!next_handler_->OnWillRead(request_id, buf, buf_size, min_size))
@@ -229,7 +229,7 @@ bool BufferedResourceHandler::ProcessResponse(bool* defer) {
   DCHECK_EQ(STATE_PROCESSING, state_);
 
   // TODO(darin): Stop special-casing 304 responses.
-  if (!(response_->head.headers &&
+  if (!(response_->head.headers.get() &&
         response_->head.headers->response_code() == 304)) {
     if (!SelectNextHandler(defer))
       return false;
@@ -240,10 +240,10 @@ bool BufferedResourceHandler::ProcessResponse(bool* defer) {
   state_ = STATE_REPLAYING;
 
   int request_id = ResourceRequestInfo::ForRequest(request_)->GetRequestID();
-  if (!next_handler_->OnResponseStarted(request_id, response_, defer))
+  if (!next_handler_->OnResponseStarted(request_id, response_.get(), defer))
     return false;
 
-  if (!read_buffer_) {
+  if (!read_buffer_.get()) {
     state_ = STATE_STREAMING;
     return true;
   }
@@ -321,7 +321,7 @@ bool BufferedResourceHandler::SelectNextHandler(bool* defer) {
       return true;
 
     scoped_ptr<ResourceHandler> handler(
-        host_->MaybeInterceptAsStream(request_, response_));
+        host_->MaybeInterceptAsStream(request_, response_.get()));
     if (handler)
       return UseAlternateNextHandler(handler.Pass());
 
@@ -356,7 +356,7 @@ bool BufferedResourceHandler::SelectNextHandler(bool* defer) {
 
 bool BufferedResourceHandler::UseAlternateNextHandler(
     scoped_ptr<ResourceHandler> new_handler) {
-  if (response_->head.headers &&  // Can be NULL if FTP.
+  if (response_->head.headers.get() &&  // Can be NULL if FTP.
       response_->head.headers->response_code() / 100 != 2) {
     // The response code indicates that this is an error page, but we don't
     // know how to display the content.  We follow Firefox here and show our
@@ -373,7 +373,7 @@ bool BufferedResourceHandler::UseAlternateNextHandler(
   // the new ResourceHandler.
   // TODO(darin): We should probably check the return values of these.
   bool defer_ignored = false;
-  next_handler_->OnResponseStarted(request_id, response_, &defer_ignored);
+  next_handler_->OnResponseStarted(request_id, response_.get(), &defer_ignored);
   DCHECK(!defer_ignored);
   net::URLRequestStatus status(net::URLRequestStatus::CANCELED,
                                net::ERR_ABORTED);
@@ -388,7 +388,7 @@ bool BufferedResourceHandler::UseAlternateNextHandler(
 }
 
 bool BufferedResourceHandler::ReplayReadCompleted(bool* defer) {
-  DCHECK(read_buffer_);
+  DCHECK(read_buffer_.get());
 
   int request_id = ResourceRequestInfo::ForRequest(request_)->GetRequestID();
   bool result = next_handler_->OnReadCompleted(request_id, bytes_read_, defer);

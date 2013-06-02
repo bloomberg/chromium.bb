@@ -39,7 +39,7 @@ NPChannelBase* NPChannelBase::GetChannel(
     channel = iter->second;
   }
 
-  DCHECK(channel != NULL);
+  DCHECK(channel.get() != NULL);
 
   if (!channel->channel_valid()) {
     channel->channel_handle_ = channel_handle;
@@ -55,7 +55,7 @@ NPChannelBase* NPChannelBase::GetChannel(
     }
   }
 
-  return channel;
+  return channel.get();
 }
 
 void NPChannelBase::Broadcast(IPC::Message* message) {
@@ -81,7 +81,7 @@ NPChannelBase::~NPChannelBase() {
 }
 
 NPChannelBase* NPChannelBase::GetCurrentChannel() {
-  return g_lazy_channel_stack.Pointer()->top();
+  return g_lazy_channel_stack.Pointer()->top().get();
 }
 
 void NPChannelBase::CleanupChannels() {
@@ -237,7 +237,7 @@ void NPChannelBase::RemoveRoute(int route_id) {
 
     for (ChannelMap::iterator iter = g_channels.Get().begin();
          iter != g_channels.Get().end(); ++iter) {
-      if (iter->second == this) {
+      if (iter->second.get() == this) {
         g_channels.Get().erase(iter);
         return;
       }
@@ -262,7 +262,7 @@ void NPChannelBase::OnChannelError() {
   // RemoveRoute() can clean things up correctly.
   for (ChannelMap::iterator iter = g_channels.Get().begin();
        iter != g_channels.Get().end(); ++iter) {
-    if (iter->second == this) {
+    if (iter->second.get() == this) {
       // Insert new element before invalidating |iter|.
       g_channels.Get()[iter->first + "-error"] = iter->second;
       g_channels.Get().erase(iter);

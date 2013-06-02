@@ -52,7 +52,7 @@ class SocketPump : public net::StreamListenSocket::Delegate {
   std::string Init() {
     std::string channel_name;
     server_socket_ = delegate_->CreateSocketForTethering(this, &channel_name);
-    if (!server_socket_ || channel_name.empty())
+    if (!server_socket_.get() || channel_name.empty())
       SelfDestruct();
     return channel_name;
   }
@@ -62,7 +62,7 @@ class SocketPump : public net::StreamListenSocket::Delegate {
  private:
   virtual void DidAccept(net::StreamListenSocket* server,
                          net::StreamListenSocket* socket) OVERRIDE {
-    if (accepted_socket_)
+    if (accepted_socket_.get())
       return;
 
     buffer_ = new net::IOBuffer(kBufferSize);
@@ -70,9 +70,10 @@ class SocketPump : public net::StreamListenSocket::Delegate {
     wire_buffer_->SetCapacity(kBufferSize);
 
     accepted_socket_ = socket;
-    int result = client_socket_->Read(buffer_, kBufferSize,
-                                      base::Bind(&SocketPump::OnClientRead,
-                                                 base::Unretained(this)));
+    int result = client_socket_->Read(
+        buffer_.get(),
+        kBufferSize,
+        base::Bind(&SocketPump::OnClientRead, base::Unretained(this)));
     if (result != net::ERR_IO_PENDING)
       OnClientRead(result);
   }
@@ -101,9 +102,10 @@ class SocketPump : public net::StreamListenSocket::Delegate {
     }
 
     accepted_socket_->Send(buffer_->data(), result);
-    result = client_socket_->Read(buffer_, kBufferSize,
-                                  base::Bind(&SocketPump::OnClientRead,
-                                             base::Unretained(this)));
+    result = client_socket_->Read(
+        buffer_.get(),
+        kBufferSize,
+        base::Bind(&SocketPump::OnClientRead, base::Unretained(this)));
     if (result != net::ERR_IO_PENDING)
       OnClientRead(result);
   }
@@ -128,8 +130,9 @@ class SocketPump : public net::StreamListenSocket::Delegate {
     scoped_refptr<net::IOBuffer> buffer = new net::IOBuffer(remaining);
     memcpy(buffer->data(), wire_buffer_->data(), remaining);
     result = client_socket_->Write(
-        buffer, remaining, base::Bind(&SocketPump::OnClientWrite,
-                                      base::Unretained(this)));
+        buffer.get(),
+        remaining,
+        base::Bind(&SocketPump::OnClientWrite, base::Unretained(this)));
 
     // Shrink buffer
     int offset = wire_buffer_->offset();

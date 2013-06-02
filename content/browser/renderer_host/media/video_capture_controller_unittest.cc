@@ -156,10 +156,9 @@ class VideoCaptureControllerTest : public testing::Test {
 
     vcm_ = new MockVideoCaptureManager();
     vcm_->Init();
-    controller_ = new VideoCaptureController(vcm_);
-    controller_handler_.reset(
-        new MockVideoCaptureControllerEventHandler(controller_.get(),
-                                                   message_loop_.get()));
+    controller_ = new VideoCaptureController(vcm_.get());
+    controller_handler_.reset(new MockVideoCaptureControllerEventHandler(
+        controller_.get(), message_loop_.get()));
   }
 
   virtual void TearDown() OVERRIDE {}
@@ -184,11 +183,10 @@ TEST_F(VideoCaptureControllerTest, StartAndStop) {
   capture_params.frame_per_second = 30;
 
   InSequence s;
-  EXPECT_CALL(*vcm_,
+  EXPECT_CALL(*vcm_.get(),
               StartCapture(capture_params.width,
                            capture_params.height,
-                           controller_.get()))
-      .Times(1);
+                           controller_.get())).Times(1);
   EXPECT_CALL(*controller_handler_,
               DoFrameInfo(controller_handler_->controller_id_))
       .Times(AtLeast(1));
@@ -202,9 +200,7 @@ TEST_F(VideoCaptureControllerTest, StartAndStop) {
                             controller_handler_->controller_id_,
                             controller_handler_.get(),
                             message_loop_.get()));
-  EXPECT_CALL(*vcm_,
-              StopCapture(vcm_->video_session_id_))
-      .Times(1);
+  EXPECT_CALL(*vcm_.get(), StopCapture(vcm_->video_session_id_)).Times(1);
 
   controller_->StartCapture(controller_handler_->controller_id_,
                             controller_handler_.get(),
@@ -222,11 +218,10 @@ TEST_F(VideoCaptureControllerTest, StopSession) {
   capture_params.frame_per_second = 30;
 
   InSequence s;
-  EXPECT_CALL(*vcm_,
+  EXPECT_CALL(*vcm_.get(),
               StartCapture(capture_params.width,
                            capture_params.height,
-                           controller_.get()))
-      .Times(1);
+                           controller_.get())).Times(1);
   EXPECT_CALL(*controller_handler_,
               DoFrameInfo(controller_handler_->controller_id_))
       .Times(AtLeast(1));
@@ -258,9 +253,7 @@ TEST_F(VideoCaptureControllerTest, StopSession) {
       base::MessageLoop::QuitClosure(), base::TimeDelta::FromSeconds(1));
   message_loop_->Run();
 
-  EXPECT_CALL(*vcm_,
-              StopCapture(vcm_->video_session_id_))
-      .Times(1);
+  EXPECT_CALL(*vcm_.get(), StopCapture(vcm_->video_session_id_)).Times(1);
   controller_->StopCapture(controller_handler_->controller_id_,
                            controller_handler_.get());
 }

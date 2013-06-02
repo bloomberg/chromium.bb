@@ -1254,7 +1254,7 @@ void GpuProcessHost::CreateChannelCache(int32 client_id, size_t cache_size) {
 
   scoped_refptr<ShaderDiskCache> cache =
       ShaderCacheFactory::GetInstance()->Get(client_id);
-  if (!cache)
+  if (!cache.get())
     return;
 
   cache->set_max_cache_size(cache_size);

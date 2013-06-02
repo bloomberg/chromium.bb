@@ -43,10 +43,12 @@ bool BrowserMessageFilter::OnMessageReceived(const IPC::Message& message) {
   if (thread == BrowserThread::IO) {
     scoped_refptr<base::TaskRunner> runner =
         OverrideTaskRunnerForMessage(message);
-    if (runner) {
-      runner->PostTask(FROM_HERE,
+    if (runner.get()) {
+      runner->PostTask(
+          FROM_HERE,
           base::Bind(base::IgnoreResult(&BrowserMessageFilter::DispatchMessage),
-                     this, message));
+                     this,
+                     message));
       return true;
     }
     return DispatchMessage(message);

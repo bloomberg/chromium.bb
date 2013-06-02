@@ -112,7 +112,7 @@ class MockScreenshotManager : public content::WebContentsScreenshotManager {
   virtual void OnScreenshotSet(content::NavigationEntryImpl* entry) OVERRIDE {
     encoding_screenshot_in_progress_ = false;
     WebContentsScreenshotManager::OnScreenshotSet(entry);
-    if (message_loop_runner_)
+    if (message_loop_runner_.get())
       message_loop_runner_->Quit();
   }
 

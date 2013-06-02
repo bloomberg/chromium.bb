@@ -112,7 +112,7 @@ void P2PSocketHostTcpBase::OnConnected(int result) {
 void P2PSocketHostTcpBase::DoRead() {
   int result;
   do {
-    if (!read_buffer_) {
+    if (!read_buffer_.get()) {
       read_buffer_ = new net::GrowableIOBuffer();
       read_buffer_->SetCapacity(kReadBufferSize);
     } else if (read_buffer_->RemainingCapacity() < kReadBufferSize) {
@@ -123,9 +123,10 @@ void P2PSocketHostTcpBase::DoRead() {
       read_buffer_->SetCapacity(read_buffer_->capacity() + kReadBufferSize -
                                 read_buffer_->RemainingCapacity());
     }
-    result = socket_->Read(read_buffer_, read_buffer_->RemainingCapacity(),
-                           base::Bind(&P2PSocketHostTcp::OnRead,
-                                      base::Unretained(this)));
+    result = socket_->Read(
+        read_buffer_.get(),
+        read_buffer_->RemainingCapacity(),
+        base::Bind(&P2PSocketHostTcp::OnRead, base::Unretained(this)));
     DidCompleteRead(result);
   } while (result > 0);
 }
@@ -187,7 +188,7 @@ void P2PSocketHostTcpBase::Send(const net::IPEndPoint& to,
 
 void P2PSocketHostTcpBase::WriteOrQueue(
     scoped_refptr<net::DrainableIOBuffer>& buffer) {
-  if (write_buffer_) {
+  if (write_buffer_.get()) {
     write_queue_.push(buffer);
     return;
   }
@@ -197,10 +198,11 @@ void P2PSocketHostTcpBase::WriteOrQueue(
 }
 
 void P2PSocketHostTcpBase::DoWrite() {
-  while (write_buffer_ && state_ == STATE_OPEN && !write_pending_) {
-    int result = socket_->Write(write_buffer_, write_buffer_->BytesRemaining(),
-                                base::Bind(&P2PSocketHostTcp::OnWritten,
-                                           base::Unretained(this)));
+  while (write_buffer_.get() && state_ == STATE_OPEN && !write_pending_) {
+    int result = socket_->Write(
+        write_buffer_.get(),
+        write_buffer_->BytesRemaining(),
+        base::Bind(&P2PSocketHostTcp::OnWritten, base::Unretained(this)));
     HandleWriteResult(result);
   }
 }
@@ -215,7 +217,7 @@ void P2PSocketHostTcpBase::OnWritten(int result) {
 }
 
 void P2PSocketHostTcpBase::HandleWriteResult(int result) {
-  DCHECK(write_buffer_);
+  DCHECK(write_buffer_.get());
   if (result >= 0) {
     write_buffer_->DidConsume(result);
     if (write_buffer_->BytesRemaining() == 0) {

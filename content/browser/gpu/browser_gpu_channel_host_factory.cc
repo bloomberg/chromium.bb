@@ -251,7 +251,7 @@ void BrowserGpuChannelHostFactory::GpuChannelEstablishedOnIO(
 
 GpuChannelHost* BrowserGpuChannelHostFactory::EstablishGpuChannelSync(
     CauseForGpuLaunch cause_for_gpu_launch) {
-  if (gpu_channel_) {
+  if (gpu_channel_.get()) {
     // Recreate the channel if it has been lost.
     if (gpu_channel_->state() == GpuChannelHost::kLost)
       gpu_channel_ = NULL;
@@ -298,7 +298,7 @@ void BrowserGpuChannelHostFactory::AddFilterOnIO(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   GpuProcessHost* host = GpuProcessHost::FromID(host_id);
   if (host)
-    host->AddFilter(filter);
+    host->AddFilter(filter.get());
 }
 
 void BrowserGpuChannelHostFactory::SetHandlerForControlMessages(

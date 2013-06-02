@@ -136,7 +136,7 @@ TEST_F(DevToolsManagerTest, OpenAndManuallyCloseDevToolsClientHost) {
   EXPECT_FALSE(agent->IsAttached());
 
   TestDevToolsClientHost client_host;
-  manager->RegisterDevToolsClientHostFor(agent, &client_host);
+  manager->RegisterDevToolsClientHostFor(agent.get(), &client_host);
   // Test that the connection is established.
   EXPECT_TRUE(agent->IsAttached());
   EXPECT_EQ(agent, manager->GetDevToolsAgentHostFor(&client_host));
@@ -153,12 +153,12 @@ TEST_F(DevToolsManagerTest, ForwardMessageToClient) {
   TestDevToolsClientHost client_host;
   scoped_refptr<DevToolsAgentHost> agent_host(
       DevToolsAgentHost::GetOrCreateFor(rvh()));
-  manager->RegisterDevToolsClientHostFor(agent_host, &client_host);
+  manager->RegisterDevToolsClientHostFor(agent_host.get(), &client_host);
   EXPECT_EQ(0, TestDevToolsClientHost::close_counter);
 
   std::string m = "test message";
   agent_host = DevToolsAgentHost::GetOrCreateFor(rvh());
-  manager->DispatchOnInspectorFrontend(agent_host, m);
+  manager->DispatchOnInspectorFrontend(agent_host.get(), m);
   EXPECT_TRUE(&m == client_host.last_sent_message);
 
   client_host.Close(manager);
@@ -175,8 +175,8 @@ TEST_F(DevToolsManagerTest, NoUnresponsiveDialogInInspectedContents) {
   TestDevToolsClientHost client_host;
   scoped_refptr<DevToolsAgentHost> agent_host(
       DevToolsAgentHost::GetOrCreateFor(inspected_rvh));
-  DevToolsManager::GetInstance()->
-      RegisterDevToolsClientHostFor(agent_host, &client_host);
+  DevToolsManager::GetInstance()->RegisterDevToolsClientHostFor(
+      agent_host.get(), &client_host);
 
   // Start with a short timeout.
   inspected_rvh->StartHangMonitorTimeout(TimeDelta::FromMilliseconds(10));
@@ -283,7 +283,7 @@ TEST_F(DevToolsManagerTest, TestExternalProxy) {
   DevToolsManager* manager = DevToolsManager::GetInstance();
 
   TestDevToolsClientHost client_host;
-  manager->RegisterDevToolsClientHostFor(agent_host, &client_host);
+  manager->RegisterDevToolsClientHostFor(agent_host.get(), &client_host);
 
   manager->DispatchOnInspectorBackend(&client_host, "message1");
   manager->DispatchOnInspectorBackend(&client_host, "message2");

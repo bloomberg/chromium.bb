@@ -91,9 +91,8 @@ bool CrossSiteResourceHandler::OnResponseStarted(
   // In both cases, the pending RenderViewHost will stick around until the next
   // cross-site navigation, since we are unable to tell when to destroy it.
   // See RenderViewHostManager::RendererAbortedProvisionalLoad.
-  if (info->is_download() ||
-      (response->head.headers &&
-       response->head.headers->response_code() == 204)) {
+  if (info->is_download() || (response->head.headers.get() &&
+                              response->head.headers->response_code() == 204)) {
     return next_handler_->OnResponseStarted(request_id, response, defer);
   }
 

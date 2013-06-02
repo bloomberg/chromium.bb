@@ -46,10 +46,10 @@ class CONTENT_EXPORT MediaStreamSourceExtraData
     // See |source_observer_|.
   }
 
-  webrtc::VideoSourceInterface* video_source() { return video_source_; }
-  media::AudioCapturerSource* audio_source() { return audio_source_; }
+  webrtc::VideoSourceInterface* video_source() { return video_source_.get(); }
+  media::AudioCapturerSource* audio_source() { return audio_source_.get(); }
   webrtc::AudioSourceInterface* local_audio_source() {
-    return local_audio_source_;
+    return local_audio_source_.get();
   }
 
  private:

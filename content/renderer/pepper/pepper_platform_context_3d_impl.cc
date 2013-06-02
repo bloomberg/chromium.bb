@@ -53,7 +53,7 @@ bool PlatformContext3DImpl::Init(const int32* attrib_list,
 
   channel_ = render_thread->EstablishGpuChannelSync(
       CAUSE_FOR_GPU_LAUNCH_PEPPERPLATFORMCONTEXT3DIMPL_INITIALIZE);
-  if (!channel_)
+  if (!channel_.get())
     return false;
   DCHECK(channel_->state() == GpuChannelHost::kConnected);
 
@@ -120,15 +120,14 @@ bool PlatformContext3DImpl::Init(const int32* attrib_list,
 }
 
 bool PlatformContext3DImpl::SetParentAndCreateBackingTextureIfNeeded() {
-  if (parent_context_provider_ &&
-      !parent_context_provider_->DestroyedOnMainThread() &&
-      parent_texture_id_)
+  if (parent_context_provider_.get() &&
+      !parent_context_provider_->DestroyedOnMainThread() && parent_texture_id_)
     return true;
 
   parent_context_provider_ =
       RenderThreadImpl::current()->OffscreenContextProviderForMainThread();
   parent_texture_id_ = 0;
-  if (!parent_context_provider_)
+  if (!parent_context_provider_.get())
     return false;
 
   // Flush any remaining commands in the parent context to make sure the
@@ -147,7 +146,7 @@ bool PlatformContext3DImpl::SetParentAndCreateBackingTextureIfNeeded() {
 }
 
 void PlatformContext3DImpl::DestroyParentContextProviderAndBackingTexture() {
-  if (!parent_context_provider_)
+  if (!parent_context_provider_.get())
     return;
 
   if (parent_texture_id_) {
@@ -169,7 +168,7 @@ unsigned PlatformContext3DImpl::GetBackingTextureId() {
 }
 
 WebKit::WebGraphicsContext3D* PlatformContext3DImpl::GetParentContext() {
-  if (!parent_context_provider_)
+  if (!parent_context_provider_.get())
     return NULL;
   return parent_context_provider_->Context3d();
 }

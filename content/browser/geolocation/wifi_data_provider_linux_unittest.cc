@@ -39,12 +39,11 @@ class GeolocationWifiDataProviderLinuxTest : public testing::Test {
     // Set an expectation so mock_network_manager_proxy_'s
     // CallMethodAndBlock() will use CreateNetworkManagerProxyResponse()
     // to return responses.
-    EXPECT_CALL(*mock_network_manager_proxy_,
+    EXPECT_CALL(*mock_network_manager_proxy_.get(),
                 MockCallMethodAndBlock(_, _))
-        .WillRepeatedly(Invoke(
-            this,
-            &GeolocationWifiDataProviderLinuxTest::
-            CreateNetworkManagerProxyResponse));
+        .WillRepeatedly(Invoke(this,
+                               &GeolocationWifiDataProviderLinuxTest::
+                                   CreateNetworkManagerProxyResponse));
 
     // Create a mock proxy that behaves as NetworkManager/Devices/0.
     mock_device_proxy_ =
@@ -52,11 +51,10 @@ class GeolocationWifiDataProviderLinuxTest : public testing::Test {
             mock_bus_.get(),
             "org.freedesktop.NetworkManager",
             dbus::ObjectPath("/org/freedesktop/NetworkManager/Devices/0"));
-    EXPECT_CALL(*mock_device_proxy_,
-                MockCallMethodAndBlock(_, _))
+    EXPECT_CALL(*mock_device_proxy_.get(), MockCallMethodAndBlock(_, _))
         .WillRepeatedly(Invoke(
-            this,
-            &GeolocationWifiDataProviderLinuxTest::CreateDeviceProxyResponse));
+             this,
+             &GeolocationWifiDataProviderLinuxTest::CreateDeviceProxyResponse));
 
     // Create a mock proxy that behaves as NetworkManager/AccessPoint/0.
     mock_access_point_proxy_ =
@@ -64,34 +62,37 @@ class GeolocationWifiDataProviderLinuxTest : public testing::Test {
             mock_bus_.get(),
             "org.freedesktop.NetworkManager",
             dbus::ObjectPath("/org/freedesktop/NetworkManager/AccessPoint/0"));
-    EXPECT_CALL(*mock_access_point_proxy_,
-                MockCallMethodAndBlock(_, _))
-        .WillRepeatedly(Invoke(
-            this,
-            &GeolocationWifiDataProviderLinuxTest::
-            CreateAccessPointProxyResponse));
+    EXPECT_CALL(*mock_access_point_proxy_.get(), MockCallMethodAndBlock(_, _))
+        .WillRepeatedly(Invoke(this,
+                               &GeolocationWifiDataProviderLinuxTest::
+                                   CreateAccessPointProxyResponse));
 
     // Set an expectation so mock_bus_'s GetObjectProxy() for the given
     // service name and the object path will return
     // mock_network_manager_proxy_.
-    EXPECT_CALL(*mock_bus_, GetObjectProxy(
-        "org.freedesktop.NetworkManager",
-        dbus::ObjectPath("/org/freedesktop/NetworkManager")))
+    EXPECT_CALL(
+        *mock_bus_.get(),
+        GetObjectProxy("org.freedesktop.NetworkManager",
+                       dbus::ObjectPath("/org/freedesktop/NetworkManager")))
         .WillOnce(Return(mock_network_manager_proxy_.get()));
     // Likewise, set an expectation for mock_device_proxy_.
-    EXPECT_CALL(*mock_bus_, GetObjectProxy(
-        "org.freedesktop.NetworkManager",
-        dbus::ObjectPath("/org/freedesktop/NetworkManager/Devices/0")))
+    EXPECT_CALL(
+        *mock_bus_.get(),
+        GetObjectProxy(
+            "org.freedesktop.NetworkManager",
+            dbus::ObjectPath("/org/freedesktop/NetworkManager/Devices/0")))
         .WillOnce(Return(mock_device_proxy_.get()))
         .WillOnce(Return(mock_device_proxy_.get()));
     // Likewise, set an expectation for mock_access_point_proxy_.
-    EXPECT_CALL(*mock_bus_, GetObjectProxy(
-        "org.freedesktop.NetworkManager",
-        dbus::ObjectPath("/org/freedesktop/NetworkManager/AccessPoint/0")))
+    EXPECT_CALL(
+        *mock_bus_.get(),
+        GetObjectProxy(
+            "org.freedesktop.NetworkManager",
+            dbus::ObjectPath("/org/freedesktop/NetworkManager/AccessPoint/0")))
         .WillOnce(Return(mock_access_point_proxy_.get()));
 
     // ShutdownAndBlock() should be called.
-    EXPECT_CALL(*mock_bus_, ShutdownAndBlock()).WillOnce(Return());
+    EXPECT_CALL(*mock_bus_.get(), ShutdownAndBlock()).WillOnce(Return());
 
     // Create the wlan API with the mock bus object injected.
     wifi_provider_linux_ = new WifiDataProviderLinux;

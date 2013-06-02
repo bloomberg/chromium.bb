@@ -97,14 +97,14 @@ class CONTENT_EXPORT ChildThread : public IPC::Listener, public IPC::Sender {
   // lifetime is less than the main thread. The |filter| returned may only
   // be used on background threads.
   IPC::SyncMessageFilter* sync_message_filter() const {
-    return sync_message_filter_;
+    return sync_message_filter_.get();
   }
 
   // The getter should only be called on the main thread, however the
   // IPC::Sender it returns may be safely called on any thread including
   // the main thread.
   ThreadSafeSender* thread_safe_sender() const {
-    return thread_safe_sender_;
+    return thread_safe_sender_.get();
   }
 
   ChildHistogramMessageFilter* child_histogram_message_filter() const {

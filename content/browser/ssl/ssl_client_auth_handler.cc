@@ -86,8 +86,10 @@ void SSLClientAuthHandler::DoCertificateSelected(net::X509Certificate* cert) {
 void SSLClientAuthHandler::DoSelectCertificate(
     int render_process_host_id, int render_view_host_id) {
   GetContentClient()->browser()->SelectClientCertificate(
-      render_process_host_id, render_view_host_id, http_network_session_,
-      cert_request_info_,
+      render_process_host_id,
+      render_view_host_id,
+      http_network_session_,
+      cert_request_info_.get(),
       base::Bind(&SSLClientAuthHandler::CertificateSelected, this));
 }
 

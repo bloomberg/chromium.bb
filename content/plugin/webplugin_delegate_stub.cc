@@ -165,8 +165,10 @@ void WebPluginDelegateStub::OnInit(const PluginMsg_Init_Params& params,
   base::FilePath path =
       command_line.GetSwitchValuePath(switches::kPluginPath);
 
-  webplugin_ = new WebPluginProxy(
-      channel_, instance_id_, page_url_, params.host_render_view_routing_id);
+  webplugin_ = new WebPluginProxy(channel_.get(),
+                                  instance_id_,
+                                  page_url_,
+                                  params.host_render_view_routing_id);
   delegate_ = webkit::npapi::WebPluginDelegateImpl::Create(path, mime_type_);
   if (delegate_) {
     webplugin_->set_delegate(delegate_);

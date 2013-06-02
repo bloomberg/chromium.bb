@@ -153,7 +153,7 @@ class GeolocationLocationArbitratorTest : public testing::Test {
 };
 
 TEST_F(GeolocationLocationArbitratorTest, CreateDestroy) {
-  EXPECT_TRUE(access_token_store_);
+  EXPECT_TRUE(access_token_store_.get());
   EXPECT_TRUE(arbitrator_ != NULL);
   arbitrator_.reset();
   SUCCEED();
@@ -170,7 +170,7 @@ TEST_F(GeolocationLocationArbitratorTest, OnPermissionGranted) {
 }
 
 TEST_F(GeolocationLocationArbitratorTest, NormalUsage) {
-  ASSERT_TRUE(access_token_store_);
+  ASSERT_TRUE(access_token_store_.get());
   ASSERT_TRUE(arbitrator_ != NULL);
 
   EXPECT_FALSE(cell());

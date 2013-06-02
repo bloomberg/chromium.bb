@@ -48,7 +48,7 @@ void SharedResourcesDataSource::StartDataRequest(
   scoped_refptr<base::RefCountedStaticMemory> bytes(
       content::GetContentClient()->GetDataResourceBytes(idr));
 
-  callback.Run(bytes);
+  callback.Run(bytes.get());
 }
 
 std::string SharedResourcesDataSource::GetMimeType(

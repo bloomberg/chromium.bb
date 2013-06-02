@@ -365,7 +365,7 @@ bool RenderWidgetCompositor::initialize(cc::LayerTreeSettings settings) {
   scoped_ptr<cc::Thread> impl_thread;
   scoped_refptr<base::MessageLoopProxy> compositor_message_loop_proxy =
       RenderThreadImpl::current()->compositor_message_loop_proxy();
-  threaded_ = !!compositor_message_loop_proxy;
+  threaded_ = !!compositor_message_loop_proxy.get();
   if (threaded_) {
     impl_thread = cc::ThreadImpl::CreateForDifferentThread(
         compositor_message_loop_proxy);

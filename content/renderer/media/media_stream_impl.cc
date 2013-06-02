@@ -101,7 +101,7 @@ webrtc::MediaStreamInterface* GetNativeMediaStream(
       static_cast<content::MediaStreamExtraData*>(descriptor.extraData());
   if (!extra_data)
     return NULL;
-  return extra_data->stream();
+  return extra_data->stream().get();
 }
 
 }  // namespace
@@ -258,10 +258,10 @@ MediaStreamImpl::GetAudioRenderer(const GURL& url) {
 
   if (extra_data->is_local()) {
     // Create the local audio renderer if the stream contains audio tracks.
-    return CreateLocalAudioRenderer(extra_data->stream());
+    return CreateLocalAudioRenderer(extra_data->stream().get());
   }
 
-  webrtc::MediaStreamInterface* stream = extra_data->stream();
+  webrtc::MediaStreamInterface* stream = extra_data->stream().get();
   if (!stream || stream->GetAudioTracks().empty())
     return NULL;
 
@@ -271,10 +271,10 @@ MediaStreamImpl::GetAudioRenderer(const GURL& url) {
 
   // Share the existing renderer if any, otherwise create a new one.
   scoped_refptr<WebRtcAudioRenderer> renderer(audio_device->renderer());
-  if (!renderer) {
-    renderer = CreateRemoteAudioRenderer(extra_data->stream());
+  if (!renderer.get()) {
+    renderer = CreateRemoteAudioRenderer(extra_data->stream().get());
 
-    if (renderer && !audio_device->SetAudioRenderer(renderer))
+    if (renderer.get() && !audio_device->SetAudioRenderer(renderer.get()))
       renderer = NULL;
   }
   return renderer;
@@ -549,7 +549,7 @@ MediaStreamImpl::CreateLocalAudioRenderer(
 
   scoped_refptr<WebRtcAudioCapturer> source =
       dependency_factory_->GetWebRtcAudioDevice()->capturer();
-  if (!source) {
+  if (!source.get()) {
     return NULL;
   }
 

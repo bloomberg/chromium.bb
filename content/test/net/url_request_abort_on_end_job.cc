@@ -83,7 +83,7 @@ void URLRequestAbortOnEndJob::GetResponseInfo(net::HttpResponseInfo* info) {
 bool URLRequestAbortOnEndJob::GetMimeType(std::string* mime_type) const {
   net::HttpResponseInfo info;
   GetResponseInfoConst(&info);
-  return info.headers && info.headers->GetMimeType(mime_type);
+  return info.headers.get() && info.headers->GetMimeType(mime_type);
 }
 
 void URLRequestAbortOnEndJob::StartAsync() {

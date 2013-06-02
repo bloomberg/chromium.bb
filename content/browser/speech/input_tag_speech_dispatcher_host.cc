@@ -128,7 +128,7 @@ void InputTagSpeechDispatcherHost::StartRecognitionOnIO(
   config.origin_url = params.origin_url;
   config.initial_context = context;
   config.url_request_context_getter = url_request_context_getter_.get();
-  if (recognition_preferences_) {
+  if (recognition_preferences_.get()) {
     config.filter_profanities = recognition_preferences_->FilterProfanities();
   } else {
     config.filter_profanities = false;

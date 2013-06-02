@@ -229,7 +229,7 @@ PepperPluginRegistry::PepperPluginRegistry() {
     scoped_refptr<webkit::ppapi::PluginModule> module =
         new webkit::ppapi::PluginModule(current.name, current.path, this,
             ppapi::PpapiPermissions(current.permissions));
-    AddLiveModule(current.path, module);
+    AddLiveModule(current.path, module.get());
     if (current.is_internal) {
       if (!module->InitAsInternalPlugin(current.internal_entry_points)) {
         DLOG(ERROR) << "Failed to load pepper module: " << current.path.value();

@@ -495,7 +495,7 @@ void ChildProcessLauncher::SetProcessBackgrounded(bool background) {
 
 void ChildProcessLauncher::SetTerminateChildOnShutdown(
   bool terminate_on_shutdown) {
-  if (context_)
+  if (context_.get())
     context_->set_terminate_child_on_shutdown(terminate_on_shutdown);
 }
 

@@ -175,7 +175,7 @@ class DomStorageDispatcher::ProxyImpl : public DomStorageProxy {
 DomStorageDispatcher::ProxyImpl::ProxyImpl(RenderThreadImpl* sender)
     : sender_(sender),
       throttling_filter_(new MessageThrottlingFilter(sender)) {
-  sender_->AddFilter(throttling_filter_);
+  sender_->AddFilter(throttling_filter_.get());
 }
 
 DomStorageCachedArea* DomStorageDispatcher::ProxyImpl::OpenCachedArea(
@@ -183,11 +183,11 @@ DomStorageCachedArea* DomStorageDispatcher::ProxyImpl::OpenCachedArea(
   std::string key = GetCachedAreaKey(namespace_id, origin);
   if (CachedAreaHolder* holder = GetAreaHolder(key)) {
     ++(holder->open_count_);
-    return holder->area_;
+    return holder->area_.get();
   }
   scoped_refptr<DomStorageCachedArea> area =
       new DomStorageCachedArea(namespace_id, origin, this);
-  cached_areas_[key] = CachedAreaHolder(area, 1);
+  cached_areas_[key] = CachedAreaHolder(area.get(), 1);
   return area.get();
 }
 
@@ -218,7 +218,7 @@ void DomStorageDispatcher::ProxyImpl::CompleteOnePendingCallback(bool success) {
 
 void DomStorageDispatcher::ProxyImpl::Shutdown() {
   throttling_filter_->Shutdown();
-  sender_->RemoveFilter(throttling_filter_);
+  sender_->RemoveFilter(throttling_filter_.get());
   sender_ = NULL;
   cached_areas_.clear();
   pending_callbacks_.clear();

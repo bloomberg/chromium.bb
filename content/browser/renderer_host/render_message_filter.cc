@@ -310,7 +310,7 @@ RenderMessageFilter::RenderMessageFilter(
       render_process_id_(render_process_id),
       cpu_usage_(0),
       media_internals_(media_internals) {
-  DCHECK(request_context_);
+  DCHECK(request_context_.get());
 
   render_widget_helper_->Init(render_process_id_, resource_dispatcher_host_);
 }
@@ -468,7 +468,7 @@ void RenderMessageFilter::OnCreateWindow(
 
   // This will clone the sessionStorage for namespace_id_to_clone.
   scoped_refptr<SessionStorageNamespaceImpl> cloned_namespace =
-      new SessionStorageNamespaceImpl(dom_storage_context_,
+      new SessionStorageNamespaceImpl(dom_storage_context_.get(),
                                       params.session_storage_namespace_id);
   *cloned_session_storage_namespace_id = cloned_namespace->id();
 
@@ -478,7 +478,7 @@ void RenderMessageFilter::OnCreateWindow(
                                          route_id,
                                          main_frame_route_id,
                                          surface_id,
-                                         cloned_namespace);
+                                         cloned_namespace.get());
 }
 
 void RenderMessageFilter::OnCreateWidget(int opener_id,
@@ -912,9 +912,11 @@ void RenderMessageFilter::OnCacheableMetadataAvailable(
   const net::RequestPriority kPriority = net::LOW;
   scoped_refptr<net::IOBuffer> buf(new net::IOBuffer(data.size()));
   memcpy(buf->data(), &data.front(), data.size());
-  cache->WriteMetadata(
-      url, kPriority,
-      base::Time::FromDoubleT(expected_response_time), buf, data.size());
+  cache->WriteMetadata(url,
+                       kPriority,
+                       base::Time::FromDoubleT(expected_response_time),
+                       buf.get(),
+                       data.size());
 }
 
 void RenderMessageFilter::OnKeygen(uint32 key_size_index,

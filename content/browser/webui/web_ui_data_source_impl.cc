@@ -213,7 +213,7 @@ void WebUIDataSourceImpl::SendFromResourceBundle(
     const URLDataSource::GotDataCallback& callback, int idr) {
   scoped_refptr<base::RefCountedStaticMemory> response(
       GetContentClient()->GetDataResourceBytes(idr));
-  callback.Run(response);
+  callback.Run(response.get());
 }
 
 }  // namespace content

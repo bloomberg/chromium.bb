@@ -124,7 +124,7 @@ class GpuCommandBufferStub
 
   void SendCachedShader(const std::string& key, const std::string& shader);
 
-  gfx::GLSurface* surface() const { return surface_; }
+  gfx::GLSurface* surface() const { return surface_.get(); }
 
   void AddDestructionObserver(DestructionObserver* observer);
   void RemoveDestructionObserver(DestructionObserver* observer);

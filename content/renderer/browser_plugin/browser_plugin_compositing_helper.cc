@@ -40,7 +40,7 @@ BrowserPluginCompositingHelper::~BrowserPluginCompositingHelper() {
 }
 
 void BrowserPluginCompositingHelper::DidCommitCompositorFrame() {
-  if (!delegated_layer_ || !ack_pending_)
+  if (!delegated_layer_.get() || !ack_pending_)
     return;
 
   cc::CompositorFrameAck ack;
@@ -58,7 +58,7 @@ void BrowserPluginCompositingHelper::DidCommitCompositorFrame() {
 }
 
 void BrowserPluginCompositingHelper::EnableCompositing(bool enable) {
-  if (enable && !background_layer_) {
+  if (enable && !background_layer_.get()) {
     background_layer_ = cc::SolidColorLayer::Create();
     background_layer_->SetMasksToBounds(true);
     background_layer_->SetBackgroundColor(
@@ -99,7 +99,7 @@ void BrowserPluginCompositingHelper::FreeMailboxMemory(
 
   scoped_refptr<cc::ContextProvider> context_provider =
       RenderThreadImpl::current()->OffscreenContextProviderForMainThread();
-  if (!context_provider)
+  if (!context_provider.get())
     return;
 
   WebKit::WebGraphicsContext3D *context = context_provider->Context3d();
@@ -195,7 +195,7 @@ void BrowserPluginCompositingHelper::OnBuffersSwapped(
     int gpu_route_id,
     int gpu_host_id,
     float device_scale_factor) {
-  DCHECK(!delegated_layer_);
+  DCHECK(!delegated_layer_.get());
   // If the guest crashed but the GPU process didn't, we may still have
   // a transport surface waiting on an ACK, which we must send to
   // avoid leaking.
@@ -214,12 +214,12 @@ void BrowserPluginCompositingHelper::OnBuffersSwapped(
 
   ack_pending_ = true;
   // Browser plugin getting destroyed, do a fast ACK.
-  if (!background_layer_) {
+  if (!background_layer_.get()) {
     MailboxReleased(mailbox_name, gpu_route_id, gpu_host_id, 0, false);
     return;
   }
 
-  if (!texture_layer_) {
+  if (!texture_layer_.get()) {
     texture_layer_ = cc::TextureLayer::CreateForMailbox(NULL);
     texture_layer_->SetIsDrawable(true);
     texture_layer_->SetContentsOpaque(true);
@@ -266,8 +266,8 @@ void BrowserPluginCompositingHelper::OnCompositorFrameSwapped(
     scoped_ptr<cc::CompositorFrame> frame,
     int route_id,
     int host_id) {
-  DCHECK(!texture_layer_);
-  if (!delegated_layer_) {
+  DCHECK(!texture_layer_.get());
+  if (!delegated_layer_.get()) {
     delegated_layer_ = cc::DelegatedRendererLayer::Create(NULL);
     delegated_layer_->SetIsDrawable(true);
     delegated_layer_->SetContentsOpaque(true);
@@ -291,9 +291,9 @@ void BrowserPluginCompositingHelper::OnCompositorFrameSwapped(
 }
 
 void BrowserPluginCompositingHelper::UpdateVisibility(bool visible) {
-  if (texture_layer_)
+  if (texture_layer_.get())
     texture_layer_->SetIsDrawable(visible);
-  if (delegated_layer_)
+  if (delegated_layer_.get())
     delegated_layer_->SetIsDrawable(visible);
 }
 

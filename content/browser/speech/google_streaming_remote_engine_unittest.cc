@@ -380,7 +380,7 @@ void GoogleStreamingRemoteEngineTest::InjectDummyAudioChunk() {
                      sizeof(dummy_audio_buffer_data),
                      2 /* bytes per sample */));
   DCHECK(engine_under_test_.get());
-  engine_under_test_->TakeAudioChunk(*dummy_audio_chunk);
+  engine_under_test_->TakeAudioChunk(*dummy_audio_chunk.get());
 }
 
 size_t GoogleStreamingRemoteEngineTest::UpstreamChunksUploadedFromLastCall() {

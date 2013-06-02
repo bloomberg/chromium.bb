@@ -53,7 +53,7 @@ void URLDataSourceImpl::SendResponseOnIOThread(
     scoped_refptr<base::RefCountedMemory> bytes) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   if (backend_)
-    backend_->DataAvailable(request_id, bytes);
+    backend_->DataAvailable(request_id, bytes.get());
 }
 
 }  // namespace content
