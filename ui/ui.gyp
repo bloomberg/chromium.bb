@@ -270,6 +270,7 @@
         'base/models/tree_model.h',
         'base/models/tree_node_iterator.h',
         'base/models/tree_node_model.h',
+        'base/ozone/events_ozone.cc',
         'base/ozone/surface_factory_ozone.cc',
         'base/ozone/surface_factory_ozone.h',
         'base/range/range.cc',

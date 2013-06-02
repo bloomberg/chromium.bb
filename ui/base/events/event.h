@@ -422,6 +422,7 @@ class UI_EXPORT MouseWheelEvent : public MouseEvent {
   // Note: x_offset() > 0/y_offset() > 0 means scroll left/up.
   int x_offset() const { return offset_.x(); }
   int y_offset() const { return offset_.y(); }
+  const gfx::Vector2d& offset() const { return offset_; }
 
  private:
   gfx::Vector2d offset_;

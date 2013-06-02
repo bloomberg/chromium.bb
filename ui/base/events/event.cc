@@ -550,6 +550,9 @@ uint16 KeyEvent::GetUnmodifiedCharacter() const {
   copy.state &= ~kIgnoredModifiers;
   uint16 ch = GetCharacterFromXEvent(reinterpret_cast<XEvent*>(&copy));
   return ch ? ch : GetCharacterFromKeyCode(key_code_, flags() & EF_SHIFT_DOWN);
+#elif defined(USE_OZONE)
+  return is_char() ? key_code_ : GetCharacterFromKeyCode(
+                                     key_code_, flags() & EF_SHIFT_DOWN);
 #else
   NOTIMPLEMENTED();
   return 0;
