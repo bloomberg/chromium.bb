@@ -117,7 +117,8 @@ void PictureLayerImpl::AppendQuads(QuadSink* quad_sink,
       draw_properties().can_draw_directly_to_backbuffer &&
       layer_tree_impl()->settings().force_direct_layer_drawing;
 
-  if (draw_direct_to_backbuffer || !append_quads_data->allow_tile_draw_quads) {
+  if (draw_direct_to_backbuffer ||
+      current_draw_mode_ == DRAW_MODE_RESOURCELESS_SOFTWARE) {
     AppendDebugBorderQuad(
         quad_sink,
         shared_quad_state,

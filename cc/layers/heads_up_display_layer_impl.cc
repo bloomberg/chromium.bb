@@ -81,8 +81,10 @@ scoped_ptr<LayerImpl> HeadsUpDisplayLayerImpl::CreateLayerImpl(
   return HeadsUpDisplayLayerImpl::Create(tree_impl, id()).PassAs<LayerImpl>();
 }
 
-void HeadsUpDisplayLayerImpl::WillDraw(ResourceProvider* resource_provider) {
-  LayerImpl::WillDraw(resource_provider);
+bool HeadsUpDisplayLayerImpl::WillDraw(DrawMode draw_mode,
+                                       ResourceProvider* resource_provider) {
+  if (draw_mode == DRAW_MODE_RESOURCELESS_SOFTWARE)
+    return false;
 
   if (!hud_resource_)
     hud_resource_ = ScopedResource::create(resource_provider);
@@ -100,6 +102,8 @@ void HeadsUpDisplayLayerImpl::WillDraw(ResourceProvider* resource_provider) {
     hud_resource_->Allocate(
         bounds(), GL_RGBA, ResourceProvider::TextureUsageAny);
   }
+
+  return LayerImpl::WillDraw(draw_mode, resource_provider);
 }
 
 void HeadsUpDisplayLayerImpl::AppendQuads(QuadSink* quad_sink,

@@ -74,6 +74,13 @@ void ScrollbarLayerImpl::PushPropertiesTo(LayerImpl* layer) {
   scrollbar_layer->set_thumb_resource_id(thumb_resource_id_);
 }
 
+bool ScrollbarLayerImpl::WillDraw(DrawMode draw_mode,
+                                  ResourceProvider* resource_provider) {
+  LayerImpl::WillDraw(draw_mode, resource_provider);
+  return draw_mode != DRAW_MODE_RESOURCELESS_SOFTWARE ||
+         layer_tree_impl()->settings().solid_color_scrollbars;
+}
+
 void ScrollbarLayerImpl::AppendQuads(QuadSink* quad_sink,
                                      AppendQuadsData* append_quads_data) {
   bool premultipled_alpha = true;

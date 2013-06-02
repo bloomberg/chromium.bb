@@ -30,7 +30,8 @@ class CC_EXPORT IOSurfaceLayerImpl : public LayerImpl {
   virtual void AppendQuads(QuadSink* quad_sink,
                            AppendQuadsData* append_quads_data) OVERRIDE;
 
-  virtual void WillDraw(ResourceProvider* resource_provider) OVERRIDE;
+  virtual bool WillDraw(DrawMode draw_mode,
+                        ResourceProvider* resource_provider) OVERRIDE;
   virtual void DidLoseOutputSurface() OVERRIDE;
 
   virtual void DumpLayerProperties(std::string* str, int indent) const OVERRIDE;

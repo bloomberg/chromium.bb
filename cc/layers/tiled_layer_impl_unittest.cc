@@ -97,7 +97,9 @@ TEST_F(TiledLayerImplTest, EmptyQuadList) {
         CreateLayer(tile_size, layer_size, LayerTilingData::NO_BORDER_TEXELS);
     MockQuadCuller quad_culler;
     AppendQuadsData data;
+    EXPECT_TRUE(layer->WillDraw(DRAW_MODE_HARDWARE, NULL));
     layer->AppendQuads(&quad_culler, &data);
+    layer->DidDraw(NULL);
     unsigned num_tiles = num_tiles_x * num_tiles_y;
     EXPECT_EQ(quad_culler.quad_list().size(), num_tiles);
   }
@@ -109,9 +111,7 @@ TEST_F(TiledLayerImplTest, EmptyQuadList) {
     layer->draw_properties().visible_content_rect = gfx::Rect();
 
     MockQuadCuller quad_culler;
-    AppendQuadsData data;
-    layer->AppendQuads(&quad_culler, &data);
-    EXPECT_EQ(quad_culler.quad_list().size(), 0u);
+    EXPECT_FALSE(layer->WillDraw(DRAW_MODE_HARDWARE, NULL));
   }
 
   // Layer with non-intersecting visible layer rect produces no quads
@@ -124,7 +124,9 @@ TEST_F(TiledLayerImplTest, EmptyQuadList) {
 
     MockQuadCuller quad_culler;
     AppendQuadsData data;
+    EXPECT_TRUE(layer->WillDraw(DRAW_MODE_HARDWARE, NULL));
     layer->AppendQuads(&quad_culler, &data);
+    layer->DidDraw(NULL);
     EXPECT_EQ(quad_culler.quad_list().size(), 0u);
   }
 

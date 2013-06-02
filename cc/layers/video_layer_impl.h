@@ -30,7 +30,8 @@ class CC_EXPORT VideoLayerImpl : public LayerImpl {
   virtual scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl)
       OVERRIDE;
   virtual void PushPropertiesTo(LayerImpl* layer) OVERRIDE;
-  virtual void WillDraw(ResourceProvider* resource_provider) OVERRIDE;
+  virtual bool WillDraw(DrawMode draw_mode,
+                        ResourceProvider* resource_provider) OVERRIDE;
   virtual void AppendQuads(QuadSink* quad_sink,
                            AppendQuadsData* append_quads_data) OVERRIDE;
   virtual void DidDraw(ResourceProvider* resource_provider) OVERRIDE;

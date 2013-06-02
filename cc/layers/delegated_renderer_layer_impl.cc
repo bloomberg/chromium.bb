@@ -255,6 +255,13 @@ void DelegatedRendererLayerImpl::AppendContributingRenderPasses(
   }
 }
 
+bool DelegatedRendererLayerImpl::WillDraw(DrawMode draw_mode,
+                                          ResourceProvider* resource_provider) {
+  if (draw_mode == DRAW_MODE_RESOURCELESS_SOFTWARE)
+    return false;
+  return LayerImpl::WillDraw(draw_mode, resource_provider);
+}
+
 void DelegatedRendererLayerImpl::AppendQuads(
     QuadSink* quad_sink,
     AppendQuadsData* append_quads_data) {

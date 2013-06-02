@@ -61,15 +61,17 @@ void IOSurfaceLayerImpl::PushPropertiesTo(LayerImpl* layer) {
   io_surface_layer->SetIOSurfaceProperties(io_surface_id_, io_surface_size_);
 }
 
-void IOSurfaceLayerImpl::WillDraw(ResourceProvider* resource_provider) {
-  LayerImpl::WillDraw(resource_provider);
+bool IOSurfaceLayerImpl::WillDraw(DrawMode draw_mode,
+                                  ResourceProvider* resource_provider) {
+  if (draw_mode == DRAW_MODE_RESOURCELESS_SOFTWARE)
+    return false;
 
   if (io_surface_changed_) {
     WebKit::WebGraphicsContext3D* context3d =
         resource_provider->GraphicsContext3D();
     if (!context3d) {
       // FIXME: Implement this path for software compositing.
-      return;
+      return false;
     }
 
     // FIXME: Do this in a way that we can track memory usage.
@@ -98,6 +100,8 @@ void IOSurfaceLayerImpl::WillDraw(ResourceProvider* resource_provider) {
     // has allocated.
     io_surface_changed_ = false;
   }
+
+  return LayerImpl::WillDraw(draw_mode, resource_provider);
 }
 
 void IOSurfaceLayerImpl::AppendQuads(QuadSink* quad_sink,

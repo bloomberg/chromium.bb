@@ -155,13 +155,22 @@ void TiledLayerImpl::PushPropertiesTo(LayerImpl* layer) {
   }
 }
 
+bool TiledLayerImpl::WillDraw(DrawMode draw_mode,
+                              ResourceProvider* resource_provider) {
+  if (!tiler_ || tiler_->has_empty_bounds() ||
+      visible_content_rect().IsEmpty() ||
+      draw_mode == DRAW_MODE_RESOURCELESS_SOFTWARE)
+    return false;
+  return LayerImpl::WillDraw(draw_mode, resource_provider);
+}
+
 void TiledLayerImpl::AppendQuads(QuadSink* quad_sink,
                                  AppendQuadsData* append_quads_data) {
+  DCHECK(tiler_);
+  DCHECK(!tiler_->has_empty_bounds());
+  DCHECK(!visible_content_rect().IsEmpty());
+
   gfx::Rect content_rect = visible_content_rect();
-
-  if (!tiler_ || tiler_->has_empty_bounds() || content_rect.IsEmpty())
-    return;
-
   SharedQuadState* shared_quad_state =
       quad_sink->UseSharedQuadState(CreateSharedQuadState());
   AppendDebugBorderQuad(quad_sink, shared_quad_state, append_quads_data);

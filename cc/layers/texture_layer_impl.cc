@@ -63,20 +63,25 @@ void TextureLayerImpl::PushPropertiesTo(LayerImpl* layer) {
   }
 }
 
-void TextureLayerImpl::WillDraw(ResourceProvider* resource_provider) {
-  if (uses_mailbox_ || !texture_id_)
-    return;
-  DCHECK(!external_texture_resource_);
-  external_texture_resource_ =
-      resource_provider->CreateResourceFromExternalTexture(
-          GL_TEXTURE_2D,
-          texture_id_);
+bool TextureLayerImpl::WillDraw(DrawMode draw_mode,
+                                ResourceProvider* resource_provider) {
+  if (draw_mode == DRAW_MODE_RESOURCELESS_SOFTWARE)
+    return false;
+
+  if (!uses_mailbox_ && texture_id_) {
+    DCHECK(!external_texture_resource_);
+    external_texture_resource_ =
+        resource_provider->CreateResourceFromExternalTexture(
+            GL_TEXTURE_2D,
+            texture_id_);
+  }
+  return external_texture_resource_ &&
+         LayerImpl::WillDraw(draw_mode, resource_provider);
 }
 
 void TextureLayerImpl::AppendQuads(QuadSink* quad_sink,
                                    AppendQuadsData* append_quads_data) {
-  if (!external_texture_resource_)
-    return;
+  DCHECK(external_texture_resource_);
 
   SharedQuadState* shared_quad_state =
       quad_sink->UseSharedQuadState(CreateSharedQuadState());
@@ -103,6 +108,7 @@ void TextureLayerImpl::AppendQuads(QuadSink* quad_sink,
 }
 
 void TextureLayerImpl::DidDraw(ResourceProvider* resource_provider) {
+  LayerImpl::DidDraw(resource_provider);
   if (uses_mailbox_ || !external_texture_resource_)
     return;
   // FIXME: the following assert will not be true when sending resources to a

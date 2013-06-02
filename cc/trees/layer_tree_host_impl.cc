@@ -414,6 +414,17 @@ void LayerTreeHostImpl::FrameData::AppendRenderPass(
   render_passes.push_back(render_pass.Pass());
 }
 
+static DrawMode GetDrawMode(OutputSurface* output_surface) {
+  if (output_surface->ForcedDrawToSoftwareDevice()) {
+    return DRAW_MODE_RESOURCELESS_SOFTWARE;
+  } else if (output_surface->context3d()) {
+    return DRAW_MODE_HARDWARE;
+  } else {
+    DCHECK(output_surface->software_device());
+    return DRAW_MODE_SOFTWARE;
+  }
+}
+
 static void AppendQuadsForLayer(RenderPass* target_render_pass,
                                 LayerImpl* layer,
                                 const OcclusionTrackerImpl& occlusion_tracker,
@@ -592,6 +603,8 @@ bool LayerTreeHostImpl::CalculateRenderPasses(FrameData* frame) {
 
   int layers_drawn = 0;
 
+  const DrawMode draw_mode = GetDrawMode(output_surface_.get());
+
   LayerIteratorType end =
       LayerIteratorType::End(frame->render_surface_layer_list);
   for (LayerIteratorType it =
@@ -607,8 +620,6 @@ bool LayerTreeHostImpl::CalculateRenderPasses(FrameData* frame) {
     occlusion_tracker.EnterLayer(it, prevent_occlusion);
 
     AppendQuadsData append_quads_data(target_render_pass->id);
-    if (output_surface_->ForcedDrawToSoftwareDevice())
-      append_quads_data.allow_tile_draw_quads = false;
 
     if (it.represents_target_render_surface()) {
       if (it->HasCopyRequest()) {
@@ -639,9 +650,9 @@ bool LayerTreeHostImpl::CalculateRenderPasses(FrameData* frame) {
               &has_occlusion_from_outside_target_surface)) {
         append_quads_data.had_occlusion_from_outside_target_surface |=
             has_occlusion_from_outside_target_surface;
-      } else {
+      } else if (it->WillDraw(draw_mode, resource_provider_.get())) {
         DCHECK_EQ(active_tree_, it->layer_tree_impl());
-        it->WillDraw(resource_provider_.get());
+
         frame->will_draw_layers.push_back(*it);
 
         if (it->HasContributingDelegatedRenderPasses()) {

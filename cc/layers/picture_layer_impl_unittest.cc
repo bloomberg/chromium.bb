@@ -800,8 +800,9 @@ TEST_F(PictureLayerImplTest, DisallowTileDrawQuads) {
   AddDefaultTilingsWithInvalidation(invalidation);
 
   AppendQuadsData data;
-  data.allow_tile_draw_quads = false;
+  active_layer_->WillDraw(DRAW_MODE_RESOURCELESS_SOFTWARE, NULL);
   active_layer_->AppendQuads(&quad_culler, &data);
+  active_layer_->DidDraw(NULL);
 
   ASSERT_EQ(1U, quad_culler.quad_list().size());
   EXPECT_EQ(DrawQuad::PICTURE_CONTENT, quad_culler.quad_list()[0]->material);

@@ -55,9 +55,7 @@ LayerImpl::LayerImpl(LayerTreeImpl* tree_impl, int id)
       is_container_for_fixed_position_layers_(false),
       draw_depth_(0.f),
       compositing_reasons_(kCompositingReasonUnknown),
-#ifndef NDEBUG
-      between_will_draw_and_did_draw_(false),
-#endif
+      current_draw_mode_(DRAW_MODE_NONE),
       horizontal_scrollbar_layer_(NULL),
       vertical_scrollbar_layer_(NULL) {
   DCHECK_GT(layer_id_, 0);
@@ -70,9 +68,7 @@ LayerImpl::LayerImpl(LayerTreeImpl* tree_impl, int id)
 }
 
 LayerImpl::~LayerImpl() {
-#ifndef NDEBUG
-  DCHECK(!between_will_draw_and_did_draw_);
-#endif
+  DCHECK_EQ(DRAW_MODE_NONE, current_draw_mode_);
 
   layer_tree_impl_->UnregisterLayer(this);
   layer_animation_controller_->RemoveValueObserver(this);
@@ -147,19 +143,18 @@ scoped_ptr<SharedQuadState> LayerImpl::CreateSharedQuadState() const {
   return state.Pass();
 }
 
-void LayerImpl::WillDraw(ResourceProvider* resource_provider) {
-#ifndef NDEBUG
+bool LayerImpl::WillDraw(DrawMode draw_mode,
+                         ResourceProvider* resource_provider) {
   // WillDraw/DidDraw must be matched.
-  DCHECK(!between_will_draw_and_did_draw_);
-  between_will_draw_and_did_draw_ = true;
-#endif
+  DCHECK_NE(DRAW_MODE_NONE, draw_mode);
+  DCHECK_EQ(DRAW_MODE_NONE, current_draw_mode_);
+  current_draw_mode_ = draw_mode;
+  return true;
 }
 
 void LayerImpl::DidDraw(ResourceProvider* resource_provider) {
-#ifndef NDEBUG
-  DCHECK(between_will_draw_and_did_draw_);
-  between_will_draw_and_did_draw_ = false;
-#endif
+  DCHECK_NE(DRAW_MODE_NONE, current_draw_mode_);
+  current_draw_mode_ = DRAW_MODE_NONE;
 }
 
 bool LayerImpl::ShowDebugBorders() const {

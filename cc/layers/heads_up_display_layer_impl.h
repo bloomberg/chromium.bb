@@ -36,7 +36,8 @@ class CC_EXPORT HeadsUpDisplayLayerImpl : public LayerImpl {
   virtual scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl)
       OVERRIDE;
 
-  virtual void WillDraw(ResourceProvider* resource_provider) OVERRIDE;
+  virtual bool WillDraw(DrawMode draw_mode,
+                        ResourceProvider* resource_provider) OVERRIDE;
   virtual void AppendQuads(QuadSink* quad_sink,
                            AppendQuadsData* append_quads_data) OVERRIDE;
   void UpdateHudTexture(ResourceProvider* resource_provider);

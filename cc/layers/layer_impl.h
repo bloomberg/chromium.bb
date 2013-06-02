@@ -49,6 +49,13 @@ class Layer;
 
 struct AppendQuadsData;
 
+enum DrawMode {
+  DRAW_MODE_NONE,
+  DRAW_MODE_HARDWARE,
+  DRAW_MODE_SOFTWARE,
+  DRAW_MODE_RESOURCELESS_SOFTWARE
+};
+
 class CC_EXPORT LayerImpl : LayerAnimationValueObserver {
  public:
   static scoped_ptr<LayerImpl> Create(LayerTreeImpl* tree_impl, int id) {
@@ -99,11 +106,14 @@ class CC_EXPORT LayerImpl : LayerAnimationValueObserver {
   LayerTreeImpl* layer_tree_impl() const { return layer_tree_impl_; }
 
   scoped_ptr<SharedQuadState> CreateSharedQuadState() const;
-  // WillDraw must be called before AppendQuads. If WillDraw is called,
+  // WillDraw must be called before AppendQuads. If WillDraw returns false,
+  // AppendQuads and DidDraw will not be called. If WillDraw returns true,
   // DidDraw is guaranteed to be called before another WillDraw or before
   // the layer is destroyed. To enforce this, any class that overrides
-  // WillDraw/DqidDraw must call the base class version.
-  virtual void WillDraw(ResourceProvider* resource_provider);
+  // WillDraw/DidDraw must call the base class version only if WillDraw
+  // returns true.
+  virtual bool WillDraw(DrawMode draw_mode,
+                        ResourceProvider* resource_provider);
   virtual void AppendQuads(QuadSink* quad_sink,
                            AppendQuadsData* append_quads_data) {}
   virtual void DidDraw(ResourceProvider* resource_provider);
@@ -530,10 +540,10 @@ class CC_EXPORT LayerImpl : LayerAnimationValueObserver {
   WebKit::WebFilterOperations background_filters_;
   skia::RefPtr<SkImageFilter> filter_;
 
-#ifndef NDEBUG
-  bool between_will_draw_and_did_draw_;
-#endif
+ protected:
+  DrawMode current_draw_mode_;
 
+ private:
   // Rect indicating what was repainted/updated during update.
   // Note that plugin layers bypass this and leave it empty.
   // Uses layer's content space.
