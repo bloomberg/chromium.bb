@@ -27,12 +27,14 @@
 
 #include "core/html/canvas/WebGLRenderingContext.h"
 
+#include "RuntimeEnabledFeatures.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/html/HTMLCanvasElement.h"
 #include "core/html/HTMLImageElement.h"
 #include "core/html/HTMLVideoElement.h"
 #include "core/html/ImageData.h"
 #include "core/html/canvas/EXTDrawBuffers.h"
+#include "core/html/canvas/EXTFragDepth.h"
 #include "core/html/canvas/EXTTextureFilterAnisotropic.h"
 #include "core/html/canvas/OESElementIndexUint.h"
 #include "core/html/canvas/OESStandardDerivatives.h"
@@ -575,24 +577,27 @@ WebGLRenderingContext::WebGLRenderingContext(HTMLCanvasElement* passedCanvas, Pa
     static const char* webkitPrefix[] = { "WEBKIT_", 0, };
     static const char* bothPrefixes[] = { "", "WEBKIT_", 0, };
 
-    registerExtension<EXTDrawBuffers>(m_extDrawBuffers, false, false, unprefixed);
-    registerExtension<EXTTextureFilterAnisotropic>(m_extTextureFilterAnisotropic, false, true, webkitPrefix);
-    registerExtension<OESElementIndexUint>(m_oesElementIndexUint, false, false, unprefixed);
-    registerExtension<OESStandardDerivatives>(m_oesStandardDerivatives, false, false, unprefixed);
-    registerExtension<OESTextureFloat>(m_oesTextureFloat, false, false, unprefixed);
-    registerExtension<OESTextureFloatLinear>(m_oesTextureFloatLinear, false, false, unprefixed);
-    registerExtension<OESTextureHalfFloat>(m_oesTextureHalfFloat, false, false, unprefixed);
-    registerExtension<OESTextureHalfFloatLinear>(m_oesTextureHalfFloatLinear, false, false, unprefixed);
-    registerExtension<OESVertexArrayObject>(m_oesVertexArrayObject, false, false, unprefixed);
-    registerExtension<WebGLCompressedTextureATC>(m_webglCompressedTextureATC, false, true, webkitPrefix);
-    registerExtension<WebGLCompressedTexturePVRTC>(m_webglCompressedTexturePVRTC, false, true, webkitPrefix);
-    registerExtension<WebGLCompressedTextureS3TC>(m_webglCompressedTextureS3TC, false, true, bothPrefixes);
-    registerExtension<WebGLDepthTexture>(m_webglDepthTexture, false, true, bothPrefixes);
-    registerExtension<WebGLLoseContext>(m_webglLoseContext, false, false, bothPrefixes);
+    registerExtension<EXTDrawBuffers>(m_extDrawBuffers, false, false, false, unprefixed);
+    registerExtension<EXTTextureFilterAnisotropic>(m_extTextureFilterAnisotropic, false, false, true, webkitPrefix);
+    registerExtension<OESElementIndexUint>(m_oesElementIndexUint, false, false, false, unprefixed);
+    registerExtension<OESStandardDerivatives>(m_oesStandardDerivatives, false, false, false, unprefixed);
+    registerExtension<OESTextureFloat>(m_oesTextureFloat, false, false, false, unprefixed);
+    registerExtension<OESTextureFloatLinear>(m_oesTextureFloatLinear, false, false, false, unprefixed);
+    registerExtension<OESTextureHalfFloat>(m_oesTextureHalfFloat, false, false, false, unprefixed);
+    registerExtension<OESTextureHalfFloatLinear>(m_oesTextureHalfFloatLinear, false, false, false, unprefixed);
+    registerExtension<OESVertexArrayObject>(m_oesVertexArrayObject, false, false, false, unprefixed);
+    registerExtension<WebGLCompressedTextureATC>(m_webglCompressedTextureATC, false, false, true, webkitPrefix);
+    registerExtension<WebGLCompressedTexturePVRTC>(m_webglCompressedTexturePVRTC, false, false, true, webkitPrefix);
+    registerExtension<WebGLCompressedTextureS3TC>(m_webglCompressedTextureS3TC, false, false, true, bothPrefixes);
+    registerExtension<WebGLDepthTexture>(m_webglDepthTexture, false, false, true, bothPrefixes);
+    registerExtension<WebGLLoseContext>(m_webglLoseContext, false, false, false, bothPrefixes);
+
+    // Register draft extensions.
+    registerExtension<EXTFragDepth>(m_extFragDepth, false, true, false, unprefixed);
 
     // Register privileged extensions.
-    registerExtension<WebGLDebugRendererInfo>(m_webglDebugRendererInfo, true, false, unprefixed);
-    registerExtension<WebGLDebugShaders>(m_webglDebugShaders, true, false, unprefixed);
+    registerExtension<WebGLDebugRendererInfo>(m_webglDebugRendererInfo, true, false, false, unprefixed);
+    registerExtension<WebGLDebugShaders>(m_webglDebugShaders, true, false, false, unprefixed);
 }
 
 void WebGLRenderingContext::initializeNewContext()
@@ -2127,6 +2132,8 @@ WebGLExtension* WebGLRenderingContext::getExtension(const String& name)
         if (tracker->matchesNameWithPrefixes(name)) {
             if (tracker->getPrivileged() && !allowPrivilegedExtensions())
                 return 0;
+            if (tracker->getDraft() && !RuntimeEnabledFeatures::webGLDraftExtensionsEnabled())
+                return 0;
             if (!tracker->supported(this))
                 return 0;
             return tracker->getExtension(this);
@@ -2609,7 +2616,11 @@ Vector<String> WebGLRenderingContext::getSupportedExtensions()
 
     for (size_t i = 0; i < m_extensions.size(); ++i) {
         ExtensionTracker* tracker = m_extensions[i];
-        if ((!tracker->getPrivileged() || allowPrivilegedExtensions()) && tracker->supported(this))
+        if (tracker->getPrivileged() && !allowPrivilegedExtensions())
+            continue;
+        if (tracker->getDraft() && !RuntimeEnabledFeatures::webGLDraftExtensionsEnabled())
+            continue;
+        if (tracker->supported(this))
             result.append(String(tracker->getPrefixed()  ? "WEBKIT_" : "") + tracker->getExtensionName());
     }
 

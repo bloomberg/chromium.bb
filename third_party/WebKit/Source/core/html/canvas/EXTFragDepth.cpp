@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010 Google Inc. All rights reserved.
+ * Copyright (C) 2013 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -23,49 +23,44 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebGLExtension_h
-#define WebGLExtension_h
+#include "config.h"
 
-#include "core/html/canvas/WebGLRenderingContext.h"
+#include "core/html/canvas/EXTFragDepth.h"
+
+#include "core/platform/graphics/Extensions3D.h"
 
 namespace WebCore {
 
-class WebGLExtension {
-    WTF_MAKE_FAST_ALLOCATED;
-public:
-    // Extension names are needed to properly wrap instances in JavaScript objects.
-    enum ExtensionName {
-        EXTDrawBuffersName,
-        EXTFragDepthName,
-        EXTTextureFilterAnisotropicName,
-        OESElementIndexUintName,
-        OESStandardDerivativesName,
-        OESTextureFloatLinearName,
-        OESTextureFloatName,
-        OESTextureHalfFloatLinearName,
-        OESTextureHalfFloatName,
-        OESVertexArrayObjectName,
-        WebGLCompressedTextureATCName,
-        WebGLCompressedTexturePVRTCName,
-        WebGLCompressedTextureS3TCName,
-        WebGLDebugRendererInfoName,
-        WebGLDebugShadersName,
-        WebGLDepthTextureName,
-        WebGLLoseContextName,
-    };
+EXTFragDepth::EXTFragDepth(WebGLRenderingContext* context)
+    : WebGLExtension(context)
+{
+    ScriptWrappable::init(this);
+    context->graphicsContext3D()->getExtensions()->ensureEnabled("GL_EXT_frag_depth");
+}
 
-    void ref() { m_context->ref(); }
-    void deref() { m_context->deref(); }
-    WebGLRenderingContext* context() { return m_context; }
+EXTFragDepth::~EXTFragDepth()
+{
+}
 
-    virtual ~WebGLExtension();
-    virtual ExtensionName getName() const = 0;
+WebGLExtension::ExtensionName EXTFragDepth::getName() const
+{
+    return EXTFragDepthName;
+}
 
-protected:
-    WebGLExtension(WebGLRenderingContext*);
-    WebGLRenderingContext* m_context;
-};
+PassOwnPtr<EXTFragDepth> EXTFragDepth::create(WebGLRenderingContext* context)
+{
+    return adoptPtr(new EXTFragDepth(context));
+}
+
+bool EXTFragDepth::supported(WebGLRenderingContext* context)
+{
+    Extensions3D* extensions = context->graphicsContext3D()->getExtensions();
+    return extensions->supports("GL_EXT_frag_depth");
+}
+
+const char* EXTFragDepth::getExtensionName()
+{
+    return "EXT_frag_depth";
+}
 
 } // namespace WebCore
-
-#endif // WebGLExtension_h

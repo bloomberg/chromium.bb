@@ -44,6 +44,7 @@ namespace WebCore {
 
 class DrawingBuffer;
 class EXTDrawBuffers;
+class EXTFragDepth;
 class EXTTextureFilterAnisotropic;
 class HTMLImageElement;
 class HTMLVideoElement;
@@ -499,6 +500,7 @@ public:
 
     // Enabled extension objects.
     OwnPtr<EXTDrawBuffers> m_extDrawBuffers;
+    OwnPtr<EXTFragDepth> m_extFragDepth;
     OwnPtr<EXTTextureFilterAnisotropic> m_extTextureFilterAnisotropic;
     OwnPtr<OESTextureFloat> m_oesTextureFloat;
     OwnPtr<OESTextureFloatLinear> m_oesTextureFloatLinear;
@@ -517,8 +519,9 @@ public:
 
     class ExtensionTracker {
     public:
-        ExtensionTracker(bool privileged, bool prefixed, const char** prefixes)
+        ExtensionTracker(bool privileged, bool draft, bool prefixed, const char** prefixes)
             : m_privileged(privileged)
+            , m_draft(draft)
             , m_prefixed(prefixed)
             , m_prefixes(prefixes)
         {
@@ -534,6 +537,11 @@ public:
             return m_privileged;
         }
 
+        bool getDraft() const
+        {
+            return m_draft;
+        }
+
         bool matchesNameWithPrefixes(const String&) const;
 
         virtual WebGLExtension* getExtension(WebGLRenderingContext*) const = 0;
@@ -542,6 +550,7 @@ public:
 
     private:
         bool m_privileged;
+        bool m_draft;
         bool m_prefixed;
         const char** m_prefixes;
     };
@@ -549,8 +558,8 @@ public:
     template <typename T>
     class TypedExtensionTracker : public ExtensionTracker {
     public:
-        TypedExtensionTracker(OwnPtr<T>& extensionField, bool privileged, bool prefixed, const char** prefixes)
-            : ExtensionTracker(privileged, prefixed, prefixes)
+        TypedExtensionTracker(OwnPtr<T>& extensionField, bool privileged, bool draft, bool prefixed, const char** prefixes)
+            : ExtensionTracker(privileged, draft, prefixed, prefixes)
             , m_extensionField(extensionField)
         {
         }
@@ -580,9 +589,9 @@ public:
     Vector<ExtensionTracker*> m_extensions;
 
     template <typename T>
-    void registerExtension(OwnPtr<T>& extensionPtr, bool privileged, bool prefixed, const char** prefixes)
+    void registerExtension(OwnPtr<T>& extensionPtr, bool privileged, bool draft, bool prefixed, const char** prefixes)
     {
-        m_extensions.append(new TypedExtensionTracker<T>(extensionPtr, privileged, prefixed, prefixes));
+        m_extensions.append(new TypedExtensionTracker<T>(extensionPtr, privileged, draft, prefixed, prefixes));
     }
 
     // Errors raised by synthesizeGLError() while the context is lost.

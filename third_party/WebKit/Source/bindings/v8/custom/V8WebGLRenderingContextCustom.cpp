@@ -34,6 +34,7 @@
 
 #include "V8ArrayBufferView.h"
 #include "V8EXTDrawBuffers.h"
+#include "V8EXTFragDepth.h"
 #include "V8EXTTextureFilterAnisotropic.h"
 #include "V8Float32Array.h"
 #include "V8HTMLCanvasElement.h"
@@ -180,6 +181,10 @@ static v8::Handle<v8::Value> toV8Object(WebGLExtension* extension, v8::Handle<v8
     case WebGLExtension::EXTDrawBuffersName:
         extensionObject = toV8(static_cast<EXTDrawBuffers*>(extension), contextObject, isolate);
         referenceName = "extDrawBuffersName";
+        break;
+    case WebGLExtension::EXTFragDepthName:
+        extensionObject = toV8(static_cast<EXTFragDepth*>(extension), contextObject, isolate);
+        referenceName = "extFragDepthName";
         break;
     case WebGLExtension::EXTTextureFilterAnisotropicName:
         extensionObject = toV8(static_cast<EXTTextureFilterAnisotropic*>(extension), contextObject, isolate);

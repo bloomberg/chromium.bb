@@ -193,6 +193,9 @@ public:
     WEBKIT_EXPORT static void enableWebAudio(bool);
     WEBKIT_EXPORT static bool isWebAudioEnabled();
 
+    WEBKIT_EXPORT static void enableWebGLDraftExtensions(bool);
+    WEBKIT_EXPORT static bool isWebGLDraftExtensionsEnabled();
+
     WEBKIT_EXPORT static void enableWebMIDI(bool);
     WEBKIT_EXPORT static bool isWebMIDIEnabled();
 

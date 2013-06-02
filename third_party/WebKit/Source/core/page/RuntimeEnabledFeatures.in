@@ -66,6 +66,7 @@ Touch status=stable
 VideoTrack status=stable
 WebAnimations
 WebAudio condition=WEB_AUDIO, status=stable
+WebGLDraftExtensions status=experimental
 WebMIDI status=test
 WebKitMediaSource status=stable
 WebPInAcceptHeader

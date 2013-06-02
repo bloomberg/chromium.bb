@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010 Google Inc. All rights reserved.
+ * Copyright (C) 2013 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -23,49 +23,28 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebGLExtension_h
-#define WebGLExtension_h
+#ifndef EXTFragDepth_h
+#define EXTFragDepth_h
 
-#include "core/html/canvas/WebGLRenderingContext.h"
+#include "bindings/v8/ScriptWrappable.h"
+#include "core/html/canvas/WebGLExtension.h"
+#include "wtf/PassOwnPtr.h"
 
 namespace WebCore {
 
-class WebGLExtension {
-    WTF_MAKE_FAST_ALLOCATED;
+class EXTFragDepth : public WebGLExtension, public ScriptWrappable {
 public:
-    // Extension names are needed to properly wrap instances in JavaScript objects.
-    enum ExtensionName {
-        EXTDrawBuffersName,
-        EXTFragDepthName,
-        EXTTextureFilterAnisotropicName,
-        OESElementIndexUintName,
-        OESStandardDerivativesName,
-        OESTextureFloatLinearName,
-        OESTextureFloatName,
-        OESTextureHalfFloatLinearName,
-        OESTextureHalfFloatName,
-        OESVertexArrayObjectName,
-        WebGLCompressedTextureATCName,
-        WebGLCompressedTexturePVRTCName,
-        WebGLCompressedTextureS3TCName,
-        WebGLDebugRendererInfoName,
-        WebGLDebugShadersName,
-        WebGLDepthTextureName,
-        WebGLLoseContextName,
-    };
+    static PassOwnPtr<EXTFragDepth> create(WebGLRenderingContext*);
+    static bool supported(WebGLRenderingContext*);
+    static const char* getExtensionName();
 
-    void ref() { m_context->ref(); }
-    void deref() { m_context->deref(); }
-    WebGLRenderingContext* context() { return m_context; }
+    virtual ~EXTFragDepth();
+    virtual ExtensionName getName() const;
 
-    virtual ~WebGLExtension();
-    virtual ExtensionName getName() const = 0;
-
-protected:
-    WebGLExtension(WebGLRenderingContext*);
-    WebGLRenderingContext* m_context;
+private:
+    explicit EXTFragDepth(WebGLRenderingContext*);
 };
 
 } // namespace WebCore
 
-#endif // WebGLExtension_h
+#endif // EXTFragDepth_h

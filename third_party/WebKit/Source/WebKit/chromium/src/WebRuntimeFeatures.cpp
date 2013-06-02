@@ -560,6 +560,16 @@ bool WebRuntimeFeatures::isWebAudioEnabled()
     return RuntimeEnabledFeatures::webAudioEnabled();
 }
 
+void WebRuntimeFeatures::enableWebGLDraftExtensions(bool enable)
+{
+    RuntimeEnabledFeatures::setWebGLDraftExtensionsEnabled(enable);
+}
+
+bool WebRuntimeFeatures::isWebGLDraftExtensionsEnabled()
+{
+    return RuntimeEnabledFeatures::webGLDraftExtensionsEnabled();
+}
+
 void WebRuntimeFeatures::enableWebMIDI(bool enable)
 {
     return RuntimeEnabledFeatures::setWebMIDIEnabled(enable);
