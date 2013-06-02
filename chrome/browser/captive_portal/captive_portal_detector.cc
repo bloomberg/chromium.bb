@@ -60,7 +60,7 @@ void CaptivePortalDetector::DetectCaptivePortal(
                                              net::URLFetcher::GET,
                                              this));
   url_fetcher_->SetAutomaticallyRetryOn5xx(false);
-  url_fetcher_->SetRequestContext(request_context_);
+  url_fetcher_->SetRequestContext(request_context_.get());
 
   // Can't safely use net::LOAD_DISABLE_CERT_REVOCATION_CHECKING here,
   // since then the connection may be reused without checking the cert.

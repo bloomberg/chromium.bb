@@ -277,7 +277,7 @@ bool BrowsingDataRemoveFunction::RunImpl() {
 
 void BrowsingDataRemoveFunction::CheckRemovingPluginDataSupported(
     scoped_refptr<PluginPrefs> plugin_prefs) {
-  if (!PluginDataRemoverHelper::IsSupported(plugin_prefs))
+  if (!PluginDataRemoverHelper::IsSupported(plugin_prefs.get()))
     removal_mask_ &= ~BrowsingDataRemover::REMOVE_PLUGIN_DATA;
 
   BrowserThread::PostTask(

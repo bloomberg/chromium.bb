@@ -325,7 +325,7 @@ UserScriptMaster::UserScriptMaster(Profile* profile)
 }
 
 UserScriptMaster::~UserScriptMaster() {
-  if (script_reloader_)
+  if (script_reloader_.get())
     script_reloader_->DisownMaster();
 }
 
@@ -417,7 +417,7 @@ void UserScriptMaster::Observe(int type,
   }
 
   if (should_start_load) {
-    if (script_reloader_) {
+    if (script_reloader_.get()) {
       pending_load_ = true;
     } else {
       StartLoad();
@@ -426,7 +426,7 @@ void UserScriptMaster::Observe(int type,
 }
 
 void UserScriptMaster::StartLoad() {
-  if (!script_reloader_)
+  if (!script_reloader_.get())
     script_reloader_ = new ScriptReloader(this);
 
   script_reloader_->StartLoad(user_scripts_, extensions_info_);

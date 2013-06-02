@@ -211,7 +211,7 @@ bool AutomationProvider::InitializeChannel(const std::string& channel_id) {
       GetChannelMode(use_named_interface),
       this,
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO)));
-  channel_->AddFilter(automation_resource_message_filter_);
+  channel_->AddFilter(automation_resource_message_filter_.get());
 
 #if defined(OS_CHROMEOS)
   if (use_initial_load_observers_) {

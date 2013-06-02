@@ -181,7 +181,7 @@ class WebViewInteractiveTest
    private:
     void CreatedCallback(content::RenderWidgetHost* rwh) {
       last_render_widget_host_ = rwh;
-      if (message_loop_)
+      if (message_loop_.get())
         message_loop_->Quit();
       else
         created_ = true;

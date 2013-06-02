@@ -41,8 +41,8 @@ void BrowsingDataAppCacheHelper::StartFetching(const base::Closure& callback) {
   appcache_info_callback_.Reset(
       base::Bind(&BrowsingDataAppCacheHelper::OnFetchComplete,
                  base::Unretained(this)));
-  appcache_service_->
-      GetAllAppCacheInfo(info_collection_, appcache_info_callback_.callback());
+  appcache_service_->GetAllAppCacheInfo(info_collection_.get(),
+                                        appcache_info_callback_.callback());
 }
 
 void BrowsingDataAppCacheHelper::DeleteAppCacheGroup(

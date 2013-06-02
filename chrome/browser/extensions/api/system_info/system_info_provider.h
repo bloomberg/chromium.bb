@@ -51,7 +51,7 @@ class SystemInfoProvider
   // For testing
   static void InitializeForTesting(
       scoped_refptr<SystemInfoProvider<T> > provider) {
-    DCHECK(provider != NULL);
+    DCHECK(provider.get() != NULL);
     single_shared_provider_.Get() = provider;
   }
 

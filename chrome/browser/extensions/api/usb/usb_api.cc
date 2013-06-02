@@ -450,9 +450,9 @@ void UsbFindDevicesFunction::AsyncWorkStart() {
 
 void UsbFindDevicesFunction::OnCompleted() {
   for (size_t i = 0; i < devices_.size(); ++i) {
-    UsbDevice* const device = devices_[i];
-    UsbDeviceResource* const resource = new UsbDeviceResource(
-        extension_->id(), device);
+    UsbDevice* const device = devices_[i].get();
+    UsbDeviceResource* const resource =
+        new UsbDeviceResource(extension_->id(), device);
 
     Device js_device;
     result_->Append(PopulateDevice(manager_->Add(resource),
@@ -483,8 +483,8 @@ void UsbListInterfacesFunction::AsyncWorkStart() {
   }
 
   config_ = new UsbConfigDescriptor();
-  resource->device()->ListInterfaces(config_, base::Bind(
-      &UsbListInterfacesFunction::OnCompleted, this));
+  resource->device()->ListInterfaces(
+      config_.get(), base::Bind(&UsbListInterfacesFunction::OnCompleted, this));
 }
 
 void UsbListInterfacesFunction::OnCompleted(bool success) {
@@ -743,13 +743,21 @@ void UsbControlTransferFunction::AsyncWorkStart() {
 
   scoped_refptr<net::IOBuffer> buffer = CreateBufferForTransfer(
       transfer, direction, size);
-  if (!buffer) {
+  if (!buffer.get()) {
     CompleteWithError(kErrorMalformedParameters);
     return;
   }
 
-  resource->device()->ControlTransfer(direction, request_type, recipient,
-      transfer.request, transfer.value, transfer.index, buffer, size, 0,
+  resource->device()->ControlTransfer(
+      direction,
+      request_type,
+      recipient,
+      transfer.request,
+      transfer.value,
+      transfer.index,
+      buffer.get(),
+      size,
+      0,
       base::Bind(&UsbControlTransferFunction::OnCompleted, this));
 }
 
@@ -788,13 +796,18 @@ void UsbBulkTransferFunction::AsyncWorkStart() {
 
   scoped_refptr<net::IOBuffer> buffer = CreateBufferForTransfer(
       transfer, direction, size);
-  if (!buffer) {
+  if (!buffer.get()) {
     CompleteWithError(kErrorMalformedParameters);
     return;
   }
 
-  resource->device()->BulkTransfer(direction, transfer.endpoint,
-      buffer, size, 0, base::Bind(&UsbBulkTransferFunction::OnCompleted, this));
+  resource->device()
+      ->BulkTransfer(direction,
+                     transfer.endpoint,
+                     buffer.get(),
+                     size,
+                     0,
+                     base::Bind(&UsbBulkTransferFunction::OnCompleted, this));
 }
 
 UsbInterruptTransferFunction::UsbInterruptTransferFunction() {}
@@ -832,13 +845,18 @@ void UsbInterruptTransferFunction::AsyncWorkStart() {
 
   scoped_refptr<net::IOBuffer> buffer = CreateBufferForTransfer(
       transfer, direction, size);
-  if (!buffer) {
+  if (!buffer.get()) {
     CompleteWithError(kErrorMalformedParameters);
     return;
   }
 
-  resource->device()->InterruptTransfer(direction, transfer.endpoint, buffer,
-      size, 0, base::Bind(&UsbInterruptTransferFunction::OnCompleted, this));
+  resource->device()->InterruptTransfer(
+      direction,
+      transfer.endpoint,
+      buffer.get(),
+      size,
+      0,
+      base::Bind(&UsbInterruptTransferFunction::OnCompleted, this));
 }
 
 UsbIsochronousTransferFunction::UsbIsochronousTransferFunction() {}
@@ -892,14 +910,20 @@ void UsbIsochronousTransferFunction::AsyncWorkStart() {
 
   scoped_refptr<net::IOBuffer> buffer = CreateBufferForTransfer(
       generic_transfer, direction, size);
-  if (!buffer) {
+  if (!buffer.get()) {
     CompleteWithError(kErrorMalformedParameters);
     return;
   }
 
-  resource->device()->IsochronousTransfer(direction, generic_transfer.endpoint,
-      buffer, size, packets, packet_length, 0, base::Bind(
-          &UsbIsochronousTransferFunction::OnCompleted, this));
+  resource->device()->IsochronousTransfer(
+      direction,
+      generic_transfer.endpoint,
+      buffer.get(),
+      size,
+      packets,
+      packet_length,
+      0,
+      base::Bind(&UsbIsochronousTransferFunction::OnCompleted, this));
 }
 
 UsbResetDeviceFunction::UsbResetDeviceFunction() {}

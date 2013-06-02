@@ -46,7 +46,7 @@ bool ExtensionSpecialStoragePolicy::IsStorageUnlimited(const GURL& origin) {
 }
 
 bool ExtensionSpecialStoragePolicy::IsStorageSessionOnly(const GURL& origin) {
-  if (cookie_settings_ == NULL)
+  if (cookie_settings_.get() == NULL)
     return false;
   return cookie_settings_->IsCookieSessionOnly(origin);
 }
@@ -56,7 +56,7 @@ bool ExtensionSpecialStoragePolicy::CanQueryDiskSize(const GURL& origin) {
 }
 
 bool ExtensionSpecialStoragePolicy::HasSessionOnlyOrigins() {
-  if (cookie_settings_ == NULL)
+  if (cookie_settings_.get() == NULL)
     return false;
   if (cookie_settings_->GetDefaultCookieSetting(NULL) ==
       CONTENT_SETTING_SESSION_ONLY)

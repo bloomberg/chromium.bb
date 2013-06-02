@@ -63,7 +63,7 @@ void BrowsingDataCookieHelper::FetchCookiesOnIOThread() {
   scoped_refptr<net::CookieMonster> cookie_monster =
       request_context_getter_->GetURLRequestContext()->
       cookie_store()->GetCookieMonster();
-  if (cookie_monster) {
+  if (cookie_monster.get()) {
     cookie_monster->GetAllCookiesAsync(
         base::Bind(&BrowsingDataCookieHelper::OnFetchComplete, this));
   } else {
@@ -93,7 +93,7 @@ void BrowsingDataCookieHelper::DeleteCookieOnIOThread(
   scoped_refptr<net::CookieMonster> cookie_monster =
       request_context_getter_->GetURLRequestContext()->
       cookie_store()->GetCookieMonster();
-  if (cookie_monster) {
+  if (cookie_monster.get()) {
     cookie_monster->DeleteCanonicalCookieAsync(
         cookie, net::CookieMonster::DeleteCookieCallback());
   }

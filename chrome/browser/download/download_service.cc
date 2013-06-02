@@ -42,7 +42,7 @@ ChromeDownloadManagerDelegate* DownloadService::GetDownloadManagerDelegate() {
 
   // In case the delegate has already been set by
   // SetDownloadManagerDelegateForTesting.
-  if (!manager_delegate_)
+  if (!manager_delegate_.get())
     manager_delegate_ = new ChromeDownloadManagerDelegate(profile_);
 
   manager_delegate_->SetDownloadManager(manager);

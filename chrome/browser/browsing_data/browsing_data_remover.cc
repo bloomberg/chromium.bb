@@ -745,8 +745,8 @@ void BrowsingDataRemover::ClearCacheOnIOThread() {
   // This function should be called on the IO thread.
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK_EQ(STATE_NONE, next_cache_state_);
-  DCHECK(main_context_getter_);
-  DCHECK(media_context_getter_);
+  DCHECK(main_context_getter_.get());
+  DCHECK(media_context_getter_.get());
 
   next_cache_state_ = STATE_CREATE_MAIN;
   DoClearCache(net::OK);
@@ -764,8 +764,9 @@ void BrowsingDataRemover::DoClearCache(int rv) {
       case STATE_CREATE_MEDIA: {
         // Get a pointer to the cache.
         net::URLRequestContextGetter* getter =
-            (next_cache_state_ == STATE_CREATE_MAIN) ?
-                main_context_getter_ : media_context_getter_;
+            (next_cache_state_ == STATE_CREATE_MAIN)
+                ? main_context_getter_.get()
+                : media_context_getter_.get();
         net::HttpTransactionFactory* factory =
             getter->GetURLRequestContext()->http_transaction_factory();
 
@@ -877,9 +878,8 @@ void BrowsingDataRemover::OnGotLocalStorageUsageInfo(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   for (size_t i = 0; i < infos.size(); ++i) {
-    if (!BrowsingDataHelper::DoesOriginMatchMask(infos[i].origin,
-                                                 origin_set_mask_,
-                                                 special_storage_policy_))
+    if (!BrowsingDataHelper::DoesOriginMatchMask(
+            infos[i].origin, origin_set_mask_, special_storage_policy_.get()))
       continue;
 
     if (infos[i].last_modified >= delete_begin_ &&
@@ -906,9 +906,8 @@ void BrowsingDataRemover::OnGotSessionStorageUsageInfo(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   for (size_t i = 0; i < infos.size(); ++i) {
-    if (!BrowsingDataHelper::DoesOriginMatchMask(infos[i].origin,
-                                                 origin_set_mask_,
-                                                 special_storage_policy_))
+    if (!BrowsingDataHelper::DoesOriginMatchMask(
+            infos[i].origin, origin_set_mask_, special_storage_policy_.get()))
       continue;
 
     dom_storage_context_->DeleteSessionStorage(infos[i]);
@@ -968,7 +967,7 @@ void BrowsingDataRemover::OnGotQuotaManagedOrigins(
 
     if (!BrowsingDataHelper::DoesOriginMatchMask(origin->GetOrigin(),
                                                  origin_set_mask_,
-                                                 special_storage_policy_))
+                                                 special_storage_policy_.get()))
       continue;
 
     ++quota_managed_origins_to_delete_count_;

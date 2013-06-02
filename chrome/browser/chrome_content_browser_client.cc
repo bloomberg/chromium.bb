@@ -1612,9 +1612,9 @@ void ChromeContentBrowserClient::SelectClientCertificate(
       const std::vector<scoped_refptr<net::X509Certificate> >&
           all_client_certs = cert_request_info->client_certs;
       for (size_t i = 0; i < all_client_certs.size(); ++i) {
-        if (CertMatchesFilter(*all_client_certs[i], *filter_dict)) {
+        if (CertMatchesFilter(*all_client_certs[i].get(), *filter_dict)) {
           // Use the first certificate that is matched by the filter.
-          callback.Run(all_client_certs[i]);
+          callback.Run(all_client_certs[i].get());
           return;
         }
       }

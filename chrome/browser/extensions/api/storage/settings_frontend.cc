@@ -176,7 +176,7 @@ void SettingsFrontend::RunWithStorage(
   scoped_refptr<const Extension> extension =
       extensions::ExtensionSystem::Get(profile_)->extension_service()->
           GetExtensionById(extension_id, true);
-  CHECK(extension);
+  CHECK(extension.get());
 
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,

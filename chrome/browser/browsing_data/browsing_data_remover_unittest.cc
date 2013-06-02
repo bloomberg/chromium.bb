@@ -238,7 +238,7 @@ class RemoveSafeBrowsingCookieTester : public RemoveCookieTester {
       : browser_process_(TestingBrowserProcess::GetGlobal()) {
     scoped_refptr<SafeBrowsingService> sb_service =
         SafeBrowsingService::CreateSafeBrowsingService();
-    browser_process_->SetSafeBrowsingService(sb_service);
+    browser_process_->SetSafeBrowsingService(sb_service.get());
     sb_service->Initialize();
     base::MessageLoop::current()->RunUntilIdle();
 
@@ -623,15 +623,15 @@ class BrowsingDataRemoverTest : public testing::Test,
   }
 
   quota::MockQuotaManager* GetMockManager() {
-    if (!quota_manager_) {
+    if (!quota_manager_.get()) {
       quota_manager_ = new quota::MockQuotaManager(
-        profile_->IsOffTheRecord(),
-        profile_->GetPath(),
-        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO),
-        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB),
-        profile_->GetExtensionSpecialStoragePolicy());
+          profile_->IsOffTheRecord(),
+          profile_->GetPath(),
+          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO),
+          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB),
+          profile_->GetExtensionSpecialStoragePolicy());
     }
-    return quota_manager_;
+    return quota_manager_.get();
   }
 
   // content::NotificationObserver implementation.
@@ -775,7 +775,7 @@ TEST_F(BrowsingDataRemoverTest, RemoveUnprotectedLocalStorageForever) {
   scoped_refptr<MockExtensionSpecialStoragePolicy> mock_policy =
       new MockExtensionSpecialStoragePolicy;
   mock_policy->AddProtected(kOrigin1.GetOrigin());
-  GetProfile()->SetExtensionSpecialStoragePolicy(mock_policy);
+  GetProfile()->SetExtensionSpecialStoragePolicy(mock_policy.get());
 
   RemoveLocalStorageTester tester(GetProfile());
 
@@ -801,7 +801,7 @@ TEST_F(BrowsingDataRemoverTest, RemoveProtectedLocalStorageForever) {
   scoped_refptr<MockExtensionSpecialStoragePolicy> mock_policy =
       new MockExtensionSpecialStoragePolicy;
   mock_policy->AddProtected(kOrigin1.GetOrigin());
-  GetProfile()->SetExtensionSpecialStoragePolicy(mock_policy);
+  GetProfile()->SetExtensionSpecialStoragePolicy(mock_policy.get());
 
   RemoveLocalStorageTester tester(GetProfile());
 
@@ -1178,7 +1178,7 @@ TEST_F(BrowsingDataRemoverTest, RemoveQuotaManagedUnprotectedOrigins) {
   scoped_refptr<MockExtensionSpecialStoragePolicy> mock_policy =
       new MockExtensionSpecialStoragePolicy;
   mock_policy->AddProtected(kOrigin1.GetOrigin());
-  GetProfile()->SetExtensionSpecialStoragePolicy(mock_policy);
+  GetProfile()->SetExtensionSpecialStoragePolicy(mock_policy.get());
 
   PopulateTestQuotaManagedData(GetMockManager());
 
@@ -1212,7 +1212,7 @@ TEST_F(BrowsingDataRemoverTest, RemoveQuotaManagedProtectedSpecificOrigin) {
   scoped_refptr<MockExtensionSpecialStoragePolicy> mock_policy =
       new MockExtensionSpecialStoragePolicy;
   mock_policy->AddProtected(kOrigin1.GetOrigin());
-  GetProfile()->SetExtensionSpecialStoragePolicy(mock_policy);
+  GetProfile()->SetExtensionSpecialStoragePolicy(mock_policy.get());
 
   PopulateTestQuotaManagedData(GetMockManager());
 
@@ -1247,7 +1247,7 @@ TEST_F(BrowsingDataRemoverTest, RemoveQuotaManagedProtectedOrigins) {
   scoped_refptr<MockExtensionSpecialStoragePolicy> mock_policy =
       new MockExtensionSpecialStoragePolicy;
   mock_policy->AddProtected(kOrigin1.GetOrigin());
-  GetProfile()->SetExtensionSpecialStoragePolicy(mock_policy);
+  GetProfile()->SetExtensionSpecialStoragePolicy(mock_policy.get());
 
   PopulateTestQuotaManagedData(GetMockManager());
 

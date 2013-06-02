@@ -74,7 +74,7 @@ void BookmarkProviderTest::SetUp() {
   profile_.reset(new TestingProfile());
   DCHECK(profile_.get());
   provider_ = new BookmarkProvider(this, profile_.get());
-  DCHECK(provider_);
+  DCHECK(provider_.get());
   provider_->set_bookmark_model_for_testing(model_.get());
 
   const BookmarkNode* other_node = model_->other_node();

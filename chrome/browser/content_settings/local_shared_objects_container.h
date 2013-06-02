@@ -38,28 +38,26 @@ class LocalSharedObjectsContainer {
   scoped_ptr<CookiesTreeModel> CreateCookiesTreeModel() const;
 
   CannedBrowsingDataAppCacheHelper* appcaches() const {
-    return appcaches_;
+    return appcaches_.get();
   }
-  CannedBrowsingDataCookieHelper* cookies() const {
-    return cookies_;
-  }
+  CannedBrowsingDataCookieHelper* cookies() const { return cookies_.get(); }
   CannedBrowsingDataDatabaseHelper* databases() const {
-    return databases_;
+    return databases_.get();
   }
   CannedBrowsingDataFileSystemHelper* file_systems() const {
-    return file_systems_;
+    return file_systems_.get();
   }
   CannedBrowsingDataIndexedDBHelper* indexed_dbs() const {
-    return indexed_dbs_;
+    return indexed_dbs_.get();
   }
   CannedBrowsingDataLocalStorageHelper* local_storages() const {
-    return local_storages_;
+    return local_storages_.get();
   }
   CannedBrowsingDataServerBoundCertHelper* server_bound_certs() const {
-    return server_bound_certs_;
+    return server_bound_certs_.get();
   }
   CannedBrowsingDataLocalStorageHelper* session_storages() const {
-    return session_storages_;
+    return session_storages_.get();
   }
 
  private:

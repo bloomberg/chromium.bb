@@ -213,7 +213,7 @@ DevToolsWindow* DevToolsWindow::GetDockedInstanceForInspectedTab(
     return NULL;
   scoped_refptr<DevToolsAgentHost> agent(DevToolsAgentHost::GetOrCreateFor(
       inspected_web_contents->GetRenderViewHost()));
-  DevToolsWindow* window = FindDevToolsWindow(agent);
+  DevToolsWindow* window = FindDevToolsWindow(agent.get());
   return window && window->IsDocked() ? window : NULL;
 }
 
@@ -630,10 +630,11 @@ WebContents* DevToolsWindow::OpenURLFromTab(WebContents* source,
   DevToolsManager* manager = DevToolsManager::GetInstance();
   scoped_refptr<DevToolsAgentHost> agent_host(
       manager->GetDevToolsAgentHostFor(frontend_host_.get()));
-  if (!agent_host)
+  if (!agent_host.get())
     return NULL;
   manager->ClientHostClosing(frontend_host_.get());
-  manager->RegisterDevToolsClientHostFor(agent_host, frontend_host_.get());
+  manager->RegisterDevToolsClientHostFor(agent_host.get(),
+                                         frontend_host_.get());
 
   chrome::NavigateParams nav_params(profile_, params.url, params.transition);
   FillNavigateParamsFromOpenURLParams(&nav_params, params);
@@ -815,14 +816,15 @@ DevToolsWindow* DevToolsWindow::ToggleDevToolsWindow(
   scoped_refptr<DevToolsAgentHost> agent(
       DevToolsAgentHost::GetOrCreateFor(inspected_rvh));
   DevToolsManager* manager = DevToolsManager::GetInstance();
-  DevToolsWindow* window = FindDevToolsWindow(agent);
+  DevToolsWindow* window = FindDevToolsWindow(agent.get());
   bool do_open = force_open;
   if (!window) {
     Profile* profile = Profile::FromBrowserContext(
         inspected_rvh->GetProcess()->GetBrowserContext());
     DevToolsDockSide dock_side = GetDockSideFromPrefs(profile);
     window = Create(profile, GURL(), inspected_rvh, dock_side, false);
-    manager->RegisterDevToolsClientHostFor(agent, window->frontend_host_.get());
+    manager->RegisterDevToolsClientHostFor(agent.get(),
+                                           window->frontend_host_.get());
     do_open = true;
   }
 

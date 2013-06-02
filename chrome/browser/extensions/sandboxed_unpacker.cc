@@ -328,8 +328,8 @@ void SandboxedUnpacker::OnProcessCrashed(int exit_code) {
 
 void SandboxedUnpacker::StartProcessOnIOThread(
     const base::FilePath& temp_crx_path) {
-  UtilityProcessHost* host = UtilityProcessHost::Create(
-      this, unpacker_io_task_runner_);
+  UtilityProcessHost* host =
+      UtilityProcessHost::Create(this, unpacker_io_task_runner_.get());
   // Grant the subprocess access to the entire subdir the extension file is
   // in, so that it can unpack to that dir.
   host->SetExposedDir(temp_crx_path.DirName());
@@ -375,11 +375,9 @@ void SandboxedUnpacker::OnUnpackExtensionSucceeded(
       Extension::REQUIRE_KEY | creation_flags_,
       &utf8_error);
 
-
-  if (!extension_) {
-    ReportFailure(
-        INVALID_MANIFEST,
-        ASCIIToUTF16("Manifest is invalid: " + utf8_error));
+  if (!extension_.get()) {
+    ReportFailure(INVALID_MANIFEST,
+                  ASCIIToUTF16("Manifest is invalid: " + utf8_error));
     return;
   }
 
@@ -582,10 +580,8 @@ void SandboxedUnpacker::ReportSuccess(
       crx_path_, base::TimeTicks::Now() - unpack_start_time_);
 
   // Client takes ownership of temporary directory and extension.
-  client_->OnUnpackSuccess(temp_dir_.Take(),
-                           extension_root_,
-                           &original_manifest,
-                           extension_);
+  client_->OnUnpackSuccess(
+      temp_dir_.Take(), extension_root_, &original_manifest, extension_.get());
   extension_ = NULL;
 }
 
@@ -642,7 +638,7 @@ bool SandboxedUnpacker::RewriteImageFiles() {
   // out our own versions of the parsed images, and we want to make sure the
   // originals are gone for good.
   std::set<base::FilePath> image_paths =
-      extension_file_util::GetBrowserImagePaths(extension_);
+      extension_file_util::GetBrowserImagePaths(extension_.get());
   if (image_paths.size() != images.size()) {
     // Decoded images don't match what's in the manifest.
     ReportFailure(

@@ -287,7 +287,7 @@ TEST(WebRequestConditionAttributeTest, Stages) {
                                              &single_stage_list,
                                              &error));
     EXPECT_EQ("", error);
-    ASSERT_TRUE(one_stage_attributes.back() != NULL);
+    ASSERT_TRUE(one_stage_attributes.back().get() != NULL);
   }
 
   const GURL url_empty;

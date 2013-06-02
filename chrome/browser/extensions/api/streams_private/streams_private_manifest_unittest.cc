@@ -37,7 +37,7 @@ TEST_F(StreamsPrivateManifestTest, ValidMimeTypesHandlerMIMETypes) {
       .Build();
 
   ASSERT_TRUE(extension.get());
-  MimeTypesHandler* handler = MimeTypesHandler::GetHandler(extension);
+  MimeTypesHandler* handler = MimeTypesHandler::GetHandler(extension.get());
   ASSERT_TRUE(handler != NULL);
 
   EXPECT_FALSE(handler->CanHandleMIMEType("plain/html"));
@@ -58,7 +58,7 @@ TEST_F(StreamsPrivateManifestTest,
 
   ASSERT_TRUE(extension.get());
 
-  MimeTypesHandler* handler = MimeTypesHandler::GetHandler(extension);
+  MimeTypesHandler* handler = MimeTypesHandler::GetHandler(extension.get());
   ASSERT_TRUE(handler == NULL);
 }
 

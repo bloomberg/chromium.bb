@@ -117,44 +117,48 @@ TEST_F(BrowsingDataHelperTest, TestMatches) {
   // Protect kOrigin1.
   mock_policy->AddProtected(kOrigin1.GetOrigin());
 
-  EXPECT_FALSE(Match(kOrigin1, kUnprotected, mock_policy));
-  EXPECT_TRUE(Match(kOrigin2, kUnprotected, mock_policy));
-  EXPECT_FALSE(Match(kOriginExt, kUnprotected, mock_policy));
-  EXPECT_FALSE(Match(kOriginDevTools, kUnprotected, mock_policy));
+  EXPECT_FALSE(Match(kOrigin1, kUnprotected, mock_policy.get()));
+  EXPECT_TRUE(Match(kOrigin2, kUnprotected, mock_policy.get()));
+  EXPECT_FALSE(Match(kOriginExt, kUnprotected, mock_policy.get()));
+  EXPECT_FALSE(Match(kOriginDevTools, kUnprotected, mock_policy.get()));
 
-  EXPECT_TRUE(Match(kOrigin1, kProtected, mock_policy));
-  EXPECT_FALSE(Match(kOrigin2, kProtected, mock_policy));
-  EXPECT_FALSE(Match(kOriginExt, kProtected, mock_policy));
-  EXPECT_FALSE(Match(kOriginDevTools, kProtected, mock_policy));
+  EXPECT_TRUE(Match(kOrigin1, kProtected, mock_policy.get()));
+  EXPECT_FALSE(Match(kOrigin2, kProtected, mock_policy.get()));
+  EXPECT_FALSE(Match(kOriginExt, kProtected, mock_policy.get()));
+  EXPECT_FALSE(Match(kOriginDevTools, kProtected, mock_policy.get()));
 
-  EXPECT_FALSE(Match(kOrigin1, kExtension, mock_policy));
-  EXPECT_FALSE(Match(kOrigin2, kExtension, mock_policy));
-  EXPECT_TRUE(Match(kOriginExt, kExtension, mock_policy));
-  EXPECT_FALSE(Match(kOriginDevTools, kExtension, mock_policy));
+  EXPECT_FALSE(Match(kOrigin1, kExtension, mock_policy.get()));
+  EXPECT_FALSE(Match(kOrigin2, kExtension, mock_policy.get()));
+  EXPECT_TRUE(Match(kOriginExt, kExtension, mock_policy.get()));
+  EXPECT_FALSE(Match(kOriginDevTools, kExtension, mock_policy.get()));
 
-  EXPECT_TRUE(Match(kOrigin1, kUnprotected | kProtected, mock_policy));
-  EXPECT_TRUE(Match(kOrigin2, kUnprotected | kProtected, mock_policy));
-  EXPECT_FALSE(Match(kOriginExt, kUnprotected | kProtected, mock_policy));
-  EXPECT_FALSE(Match(kOriginDevTools, kUnprotected | kProtected, mock_policy));
+  EXPECT_TRUE(Match(kOrigin1, kUnprotected | kProtected, mock_policy.get()));
+  EXPECT_TRUE(Match(kOrigin2, kUnprotected | kProtected, mock_policy.get()));
+  EXPECT_FALSE(Match(kOriginExt, kUnprotected | kProtected, mock_policy.get()));
+  EXPECT_FALSE(
+      Match(kOriginDevTools, kUnprotected | kProtected, mock_policy.get()));
 
-  EXPECT_FALSE(Match(kOrigin1, kUnprotected | kExtension, mock_policy));
-  EXPECT_TRUE(Match(kOrigin2, kUnprotected | kExtension, mock_policy));
-  EXPECT_TRUE(Match(kOriginExt, kUnprotected | kExtension, mock_policy));
-  EXPECT_FALSE(Match(kOriginDevTools, kUnprotected | kExtension, mock_policy));
+  EXPECT_FALSE(Match(kOrigin1, kUnprotected | kExtension, mock_policy.get()));
+  EXPECT_TRUE(Match(kOrigin2, kUnprotected | kExtension, mock_policy.get()));
+  EXPECT_TRUE(Match(kOriginExt, kUnprotected | kExtension, mock_policy.get()));
+  EXPECT_FALSE(
+      Match(kOriginDevTools, kUnprotected | kExtension, mock_policy.get()));
 
-  EXPECT_TRUE(Match(kOrigin1, kProtected | kExtension, mock_policy));
-  EXPECT_FALSE(Match(kOrigin2, kProtected | kExtension, mock_policy));
-  EXPECT_TRUE(Match(kOriginExt, kProtected | kExtension, mock_policy));
-  EXPECT_FALSE(Match(kOriginDevTools, kProtected | kExtension, mock_policy));
+  EXPECT_TRUE(Match(kOrigin1, kProtected | kExtension, mock_policy.get()));
+  EXPECT_FALSE(Match(kOrigin2, kProtected | kExtension, mock_policy.get()));
+  EXPECT_TRUE(Match(kOriginExt, kProtected | kExtension, mock_policy.get()));
+  EXPECT_FALSE(
+      Match(kOriginDevTools, kProtected | kExtension, mock_policy.get()));
 
-  EXPECT_TRUE(Match(kOrigin1, kUnprotected | kProtected | kExtension,
-      mock_policy));
-  EXPECT_TRUE(Match(kOrigin2, kUnprotected | kProtected | kExtension,
-      mock_policy));
-  EXPECT_TRUE(Match(kOriginExt, kUnprotected | kProtected | kExtension,
-      mock_policy));
-  EXPECT_FALSE(Match(kOriginDevTools, kUnprotected | kProtected | kExtension,
-      mock_policy));
+  EXPECT_TRUE(Match(
+      kOrigin1, kUnprotected | kProtected | kExtension, mock_policy.get()));
+  EXPECT_TRUE(Match(
+      kOrigin2, kUnprotected | kProtected | kExtension, mock_policy.get()));
+  EXPECT_TRUE(Match(
+      kOriginExt, kUnprotected | kProtected | kExtension, mock_policy.get()));
+  EXPECT_FALSE(Match(kOriginDevTools,
+                     kUnprotected | kProtected | kExtension,
+                     mock_policy.get()));
 }
 
 }  // namespace

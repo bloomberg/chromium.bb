@@ -70,7 +70,7 @@ IN_PROC_BROWSER_TEST_F(NotificationsApiTest, TestIdUsage) {
     notification_function->set_has_callback(true);
 
     scoped_ptr<base::Value> result(utils::RunFunctionAndReturnSingleResult(
-        notification_function,
+        notification_function.get(),
         "[\"\", "  // Empty string: ask API to generate ID
         "{"
         "\"type\": \"basic\","
@@ -78,7 +78,8 @@ IN_PROC_BROWSER_TEST_F(NotificationsApiTest, TestIdUsage) {
         "\"title\": \"Attention!\","
         "\"message\": \"Check out Cirque du Soleil\""
         "}]",
-        browser(), utils::NONE));
+        browser(),
+        utils::NONE));
 
     ASSERT_EQ(base::Value::TYPE_STRING, result->GetType());
     ASSERT_TRUE(result->GetAsString(&notification_id));
@@ -95,15 +96,17 @@ IN_PROC_BROWSER_TEST_F(NotificationsApiTest, TestIdUsage) {
     notification_function->set_has_callback(true);
 
     scoped_ptr<base::Value> result(utils::RunFunctionAndReturnSingleResult(
-        notification_function,
-        "[\"" + notification_id + "\", "
-        "{"
-        "\"type\": \"basic\","
-        "\"iconUrl\": \"an/image/that/does/not/exist.png\","
-        "\"title\": \"Attention!\","
-        "\"message\": \"Too late! The show ended yesterday\""
-        "}]",
-        browser(), utils::NONE));
+        notification_function.get(),
+        "[\"" + notification_id +
+            "\", "
+            "{"
+            "\"type\": \"basic\","
+            "\"iconUrl\": \"an/image/that/does/not/exist.png\","
+            "\"title\": \"Attention!\","
+            "\"message\": \"Too late! The show ended yesterday\""
+            "}]",
+        browser(),
+        utils::NONE));
 
     ASSERT_EQ(base::Value::TYPE_BOOLEAN, result->GetType());
     bool copy_bool_value = false;
@@ -127,7 +130,7 @@ IN_PROC_BROWSER_TEST_F(NotificationsApiTest, TestIdUsage) {
     notification_function->set_has_callback(true);
 
     scoped_ptr<base::Value> result(utils::RunFunctionAndReturnSingleResult(
-        notification_function,
+        notification_function.get(),
         "[\"xxxxxxxxxxxx\", "
         "{"
         "\"type\": \"basic\","
@@ -135,7 +138,8 @@ IN_PROC_BROWSER_TEST_F(NotificationsApiTest, TestIdUsage) {
         "\"title\": \"!\","
         "\"message\": \"!\""
         "}]",
-        browser(), utils::NONE));
+        browser(),
+        utils::NONE));
 
     ASSERT_EQ(base::Value::TYPE_BOOLEAN, result->GetType());
     bool copy_bool_value = false;
@@ -152,9 +156,11 @@ IN_PROC_BROWSER_TEST_F(NotificationsApiTest, TestIdUsage) {
     notification_function->set_extension(empty_extension.get());
     notification_function->set_has_callback(true);
 
-    scoped_ptr<base::Value> result(utils::RunFunctionAndReturnSingleResult(
-        notification_function,
-        "[\"xxxxxxxxxxx\"]", browser(), utils::NONE));
+    scoped_ptr<base::Value> result(
+        utils::RunFunctionAndReturnSingleResult(notification_function.get(),
+                                                "[\"xxxxxxxxxxx\"]",
+                                                browser(),
+                                                utils::NONE));
 
     ASSERT_EQ(base::Value::TYPE_BOOLEAN, result->GetType());
     bool copy_bool_value = false;
@@ -171,9 +177,11 @@ IN_PROC_BROWSER_TEST_F(NotificationsApiTest, TestIdUsage) {
     notification_function->set_extension(empty_extension.get());
     notification_function->set_has_callback(true);
 
-    scoped_ptr<base::Value> result(utils::RunFunctionAndReturnSingleResult(
-        notification_function,
-        "[\"" + notification_id + "\"]", browser(), utils::NONE));
+    scoped_ptr<base::Value> result(
+        utils::RunFunctionAndReturnSingleResult(notification_function.get(),
+                                                "[\"" + notification_id + "\"]",
+                                                browser(),
+                                                utils::NONE));
 
     ASSERT_EQ(base::Value::TYPE_BOOLEAN, result->GetType());
     bool copy_bool_value = false;
@@ -192,7 +200,7 @@ IN_PROC_BROWSER_TEST_F(NotificationsApiTest, TestBaseFormatNotification) {
   notification_create_function->set_has_callback(true);
 
   scoped_ptr<base::Value> result(utils::RunFunctionAndReturnSingleResult(
-      notification_create_function,
+      notification_create_function.get(),
       "[\"\", "
       "{"
       "\"type\": \"basic\","
@@ -213,7 +221,8 @@ IN_PROC_BROWSER_TEST_F(NotificationsApiTest, TestBaseFormatNotification) {
       "\"expandedMessage\": \"This is a longer expanded message.\","
       "\"imageUrl\": \"http://www.google.com/logos/2012/election12-hp.jpg\""
       "}]",
-      browser(), utils::NONE));
+      browser(),
+      utils::NONE));
 
   std::string notification_id;
   ASSERT_EQ(base::Value::TYPE_STRING, result->GetType());
@@ -231,7 +240,7 @@ IN_PROC_BROWSER_TEST_F(NotificationsApiTest, TestMultipleItemNotification) {
   notification_create_function->set_has_callback(true);
 
   scoped_ptr<base::Value> result(utils::RunFunctionAndReturnSingleResult(
-      notification_create_function,
+      notification_create_function.get(),
       "[\"\", "
       "{"
       "\"type\": \"list\","
@@ -253,7 +262,8 @@ IN_PROC_BROWSER_TEST_F(NotificationsApiTest, TestMultipleItemNotification) {
       "\"priority\": 1,"
       "\"eventTime\": 1361488019.9999999"
       "}]",
-      browser(), utils::NONE));
+      browser(),
+      utils::NONE));
   // TODO(dharcourt): [...], items = [{title: foo, message: bar}, ...], [...]
 
   std::string notification_id;
@@ -278,7 +288,7 @@ IN_PROC_BROWSER_TEST_F(NotificationsApiTest, MAYBE_TestGetAll) {
     notification_get_all_function->set_extension(empty_extension.get());
     notification_get_all_function->set_has_callback(true);
     scoped_ptr<base::Value> result(utils::RunFunctionAndReturnSingleResult(
-        notification_get_all_function, "[]", browser(), utils::NONE));
+        notification_get_all_function.get(), "[]", browser(), utils::NONE));
 
     base::DictionaryValue* return_value;
     ASSERT_EQ(base::Value::TYPE_DICTIONARY, result->GetType());
@@ -297,7 +307,7 @@ IN_PROC_BROWSER_TEST_F(NotificationsApiTest, MAYBE_TestGetAll) {
     notification_create_function->set_has_callback(true);
 
     scoped_ptr<base::Value> result(utils::RunFunctionAndReturnSingleResult(
-        notification_create_function,
+        notification_create_function.get(),
         base::StringPrintf("[\"identifier-%u\", "
                            "{"
                            "\"type\": \"basic\","
@@ -319,7 +329,7 @@ IN_PROC_BROWSER_TEST_F(NotificationsApiTest, MAYBE_TestGetAll) {
     notification_get_all_function->set_extension(empty_extension.get());
     notification_get_all_function->set_has_callback(true);
     scoped_ptr<base::Value> result(utils::RunFunctionAndReturnSingleResult(
-        notification_get_all_function, "[]", browser(), utils::NONE));
+        notification_get_all_function.get(), "[]", browser(), utils::NONE));
 
     base::DictionaryValue* return_value;
     ASSERT_EQ(base::Value::TYPE_DICTIONARY, result->GetType());

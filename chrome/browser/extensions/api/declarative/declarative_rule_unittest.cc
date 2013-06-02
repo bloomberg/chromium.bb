@@ -108,7 +108,7 @@ struct FulfillableCondition {
 
   void GetURLMatcherConditionSets(
       URLMatcherConditionSet::Vector* condition_sets) const {
-    if (condition_set)
+    if (condition_set.get())
       condition_sets->push_back(condition_set);
   }
 

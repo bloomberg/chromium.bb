@@ -1263,9 +1263,9 @@ void NotifyWebRequestAPIUsed(
   if (!g_browser_process->profile_manager()->IsValidProfile(profile))
     return;
 
-  if (profile->GetExtensionService()->HasUsedWebRequest(extension))
+  if (profile->GetExtensionService()->HasUsedWebRequest(extension.get()))
     return;
-  profile->GetExtensionService()->SetHasUsedWebRequest(extension, true);
+  profile->GetExtensionService()->SetHasUsedWebRequest(extension.get(), true);
 
   content::BrowserContext* browser_context = profile;
   for (content::RenderProcessHost::iterator it =

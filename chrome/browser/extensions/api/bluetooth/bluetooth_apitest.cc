@@ -168,54 +168,41 @@ IN_PROC_BROWSER_TEST_F(BluetoothApiTest, Profiles) {
   scoped_refptr<TestBluetoothAddProfileFunction> add_profile_function;
   add_profile_function = setupFunction(
       new TestBluetoothAddProfileFunction(profile1_.get()));
-  std::string error(
-      utils::RunFunctionAndReturnError(
-          add_profile_function,
-          "[{\"uuid\": \"1234\"}]",
-          browser()));
+  std::string error(utils::RunFunctionAndReturnError(
+      add_profile_function.get(), "[{\"uuid\": \"1234\"}]", browser()));
   ASSERT_TRUE(error.empty());
 
   // Registering the profile for the same uuid again will throw an error.
   add_profile_function = setupFunction(
       new TestBluetoothAddProfileFunction(profile2_.get()));
   error = utils::RunFunctionAndReturnError(
-      add_profile_function,
-      "[{\"uuid\": \"1234\"}]",
-      browser());
+      add_profile_function.get(), "[{\"uuid\": \"1234\"}]", browser());
   ASSERT_FALSE(error.empty());
 
   add_profile_function = setupFunction(
       new TestBluetoothAddProfileFunction(profile2_.get()));
   error = utils::RunFunctionAndReturnError(
-      add_profile_function,
-      "[{\"uuid\": \"5678\"}]",
-      browser());
+      add_profile_function.get(), "[{\"uuid\": \"5678\"}]", browser());
   ASSERT_TRUE(error.empty());
 
   scoped_refptr<api::BluetoothRemoveProfileFunction> remove_profile_function;
   remove_profile_function = setupFunction(
       new api::BluetoothRemoveProfileFunction());
   error = utils::RunFunctionAndReturnError(
-      remove_profile_function,
-      "[{\"uuid\": \"1234\"}]",
-      browser());
+      remove_profile_function.get(), "[{\"uuid\": \"1234\"}]", browser());
   ASSERT_TRUE(error.empty());
 
   remove_profile_function = setupFunction(
       new api::BluetoothRemoveProfileFunction());
   error = utils::RunFunctionAndReturnError(
-      remove_profile_function,
-      "[{\"uuid\": \"5678\"}]",
-      browser());
+      remove_profile_function.get(), "[{\"uuid\": \"5678\"}]", browser());
   ASSERT_TRUE(error.empty());
 
   // Removing the same profile again will throw an error.
   remove_profile_function = setupFunction(
       new api::BluetoothRemoveProfileFunction());
   error = utils::RunFunctionAndReturnError(
-      remove_profile_function,
-      "[{\"uuid\": \"5678\"}]",
-      browser());
+      remove_profile_function.get(), "[{\"uuid\": \"5678\"}]", browser());
   ASSERT_FALSE(error.empty());
 }
 
@@ -235,7 +222,7 @@ IN_PROC_BROWSER_TEST_F(BluetoothApiTest, GetAdapterState) {
   get_adapter_state = setupFunction(new api::BluetoothGetAdapterStateFunction);
 
   scoped_ptr<base::Value> result(utils::RunFunctionAndReturnSingleResult(
-        get_adapter_state, "[]", browser()));
+      get_adapter_state.get(), "[]", browser()));
   ASSERT_TRUE(result.get() != NULL);
   api::bluetooth::AdapterState state;
   ASSERT_TRUE(api::bluetooth::AdapterState::Populate(*result, &state));
@@ -257,7 +244,7 @@ IN_PROC_BROWSER_TEST_F(BluetoothApiTest, GetLocalOutOfBandPairingData) {
             new api::BluetoothGetLocalOutOfBandPairingDataFunction));
 
   scoped_ptr<base::Value> result(utils::RunFunctionAndReturnSingleResult(
-      get_oob_function, "[]", browser()));
+      get_oob_function.get(), "[]", browser()));
 
   base::DictionaryValue* dict;
   EXPECT_TRUE(result->GetAsDictionary(&dict));
@@ -280,8 +267,8 @@ IN_PROC_BROWSER_TEST_F(BluetoothApiTest, GetLocalOutOfBandPairingData) {
   get_oob_function =
       setupFunction(new api::BluetoothGetLocalOutOfBandPairingDataFunction);
 
-  std::string error(
-      utils::RunFunctionAndReturnError(get_oob_function, "[]", browser()));
+  std::string error(utils::RunFunctionAndReturnError(
+      get_oob_function.get(), "[]", browser()));
   EXPECT_FALSE(error.empty());
 }
 
@@ -299,8 +286,8 @@ IN_PROC_BROWSER_TEST_F(BluetoothApiTest, SetOutOfBandPairingData) {
   set_oob_function = setupFunction(
       new api::BluetoothSetOutOfBandPairingDataFunction);
   // There isn't actually a result.
-  (void)utils::RunFunctionAndReturnSingleResult(
-      set_oob_function, params, browser());
+  (void) utils::RunFunctionAndReturnSingleResult(
+      set_oob_function.get(), params, browser());
 
   // Try again with an error
   testing::Mock::VerifyAndClearExpectations(mock_adapter_);
@@ -313,8 +300,8 @@ IN_PROC_BROWSER_TEST_F(BluetoothApiTest, SetOutOfBandPairingData) {
 
   set_oob_function = setupFunction(
       new api::BluetoothSetOutOfBandPairingDataFunction);
-  std::string error(
-      utils::RunFunctionAndReturnError(set_oob_function, params, browser()));
+  std::string error(utils::RunFunctionAndReturnError(
+      set_oob_function.get(), params, browser()));
   EXPECT_FALSE(error.empty());
 
   // TODO(bryeung): Also test setting the data when there is support for
@@ -331,7 +318,7 @@ IN_PROC_BROWSER_TEST_F(BluetoothApiTest, Discovery) {
   scoped_refptr<api::BluetoothStartDiscoveryFunction> start_function;
   start_function = setupFunction(new api::BluetoothStartDiscoveryFunction);
   std::string error(
-      utils::RunFunctionAndReturnError(start_function, "[]", browser()));
+      utils::RunFunctionAndReturnError(start_function.get(), "[]", browser()));
   ASSERT_FALSE(error.empty());
 
   // Reset for a successful start
@@ -340,7 +327,8 @@ IN_PROC_BROWSER_TEST_F(BluetoothApiTest, Discovery) {
       .WillOnce(testing::Invoke(CallDiscoveryCallback));
 
   start_function = setupFunction(new api::BluetoothStartDiscoveryFunction);
-  (void)utils::RunFunctionAndReturnError(start_function, "[]", browser());
+  (void)
+      utils::RunFunctionAndReturnError(start_function.get(), "[]", browser());
 
   // Reset to try stopping
   testing::Mock::VerifyAndClearExpectations(mock_adapter_);
@@ -350,7 +338,8 @@ IN_PROC_BROWSER_TEST_F(BluetoothApiTest, Discovery) {
   EXPECT_CALL(*mock_adapter_, RemoveObserver(testing::_));
   scoped_refptr<api::BluetoothStopDiscoveryFunction> stop_function;
   stop_function = setupFunction(new api::BluetoothStopDiscoveryFunction);
-  (void)utils::RunFunctionAndReturnSingleResult(stop_function, "[]", browser());
+  (void) utils::RunFunctionAndReturnSingleResult(
+      stop_function.get(), "[]", browser());
 
   // Reset to try stopping with an error
   SetUpMockAdapter();
@@ -358,7 +347,8 @@ IN_PROC_BROWSER_TEST_F(BluetoothApiTest, Discovery) {
       .WillOnce(testing::Invoke(CallDiscoveryErrorCallback));
   EXPECT_CALL(*mock_adapter_, RemoveObserver(testing::_));
   stop_function = setupFunction(new api::BluetoothStopDiscoveryFunction);
-  error = utils::RunFunctionAndReturnError(stop_function, "[]", browser());
+  error =
+      utils::RunFunctionAndReturnError(stop_function.get(), "[]", browser());
   ASSERT_FALSE(error.empty());
   SetUpMockAdapter();
 }

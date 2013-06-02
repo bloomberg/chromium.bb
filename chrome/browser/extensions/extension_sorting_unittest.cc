@@ -807,7 +807,7 @@ class ExtensionSortingDefaultOrdinalsBase : public ExtensionSortingTest {
     scoped_refptr<Extension> app = Extension::Create(
         prefs_.temp_dir().AppendASCII(name), Manifest::EXTERNAL_PREF,
         simple_dict, Extension::NO_FLAGS, &errors);
-    EXPECT_TRUE(app) << errors;
+    EXPECT_TRUE(app.get()) << errors;
     EXPECT_TRUE(Extension::IdIsValid(app->id()));
     return app;
   }

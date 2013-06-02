@@ -125,9 +125,9 @@ class ExtensionActionIconFactoryTest
     scoped_refptr<Extension> extension =
         Extension::Create(test_file, location, *valid_value,
                           Extension::NO_FLAGS, &error);
-    EXPECT_TRUE(extension) << error;
-    if (extension)
-      extension_service_->AddExtension(extension);
+    EXPECT_TRUE(extension.get()) << error;
+    if (extension.get())
+      extension_service_->AddExtension(extension.get());
     return extension;
   }
 
@@ -190,7 +190,7 @@ TEST_F(ExtensionActionIconFactoryTest, NoIcons) {
   scoped_refptr<Extension> extension(CreateExtension(
       "browser_action/no_icon", Manifest::INVALID_LOCATION));
   ASSERT_TRUE(extension.get() != NULL);
-  ExtensionAction* browser_action = GetBrowserAction(*extension);
+  ExtensionAction* browser_action = GetBrowserAction(*extension.get());
   ASSERT_TRUE(browser_action);
   ASSERT_FALSE(browser_action->default_icon());
   ASSERT_TRUE(browser_action->GetExplicitlySetIcon(0 /*tab id*/).isNull());
@@ -198,7 +198,7 @@ TEST_F(ExtensionActionIconFactoryTest, NoIcons) {
   gfx::ImageSkia favicon = GetFavicon();
 
   ExtensionActionIconFactory icon_factory(
-      profile(), extension,browser_action, this);
+      profile(), extension.get(), browser_action, this);
 
   gfx::Image icon = icon_factory.GetIcon(0);
 
@@ -216,7 +216,7 @@ TEST_F(ExtensionActionIconFactoryTest, AfterSetIcon) {
   scoped_refptr<Extension> extension(CreateExtension(
       "browser_action/no_icon", Manifest::INVALID_LOCATION));
   ASSERT_TRUE(extension.get() != NULL);
-  ExtensionAction* browser_action = GetBrowserAction(*extension);
+  ExtensionAction* browser_action = GetBrowserAction(*extension.get());
   ASSERT_TRUE(browser_action);
   ASSERT_FALSE(browser_action->default_icon());
   ASSERT_TRUE(browser_action->GetExplicitlySetIcon(0 /*tab id*/).isNull());
@@ -229,7 +229,7 @@ TEST_F(ExtensionActionIconFactoryTest, AfterSetIcon) {
   ASSERT_FALSE(browser_action->GetExplicitlySetIcon(0 /*tab id*/).isNull());
 
   ExtensionActionIconFactory icon_factory(
-      profile(), extension, browser_action, this);
+      profile(), extension.get(), browser_action, this);
 
   gfx::Image icon = icon_factory.GetIcon(0);
 
@@ -254,7 +254,7 @@ TEST_F(ExtensionActionIconFactoryTest, DefaultIcon) {
   scoped_refptr<Extension> extension(CreateExtension(
       "browser_action/no_icon", Manifest::INVALID_LOCATION));
   ASSERT_TRUE(extension.get() != NULL);
-  ExtensionAction* browser_action = GetBrowserAction(*extension);
+  ExtensionAction* browser_action = GetBrowserAction(*extension.get());
   ASSERT_TRUE(browser_action);
   ASSERT_FALSE(browser_action->default_icon());
   ASSERT_TRUE(browser_action->GetExplicitlySetIcon(0 /*tab id*/).isNull());
@@ -270,7 +270,7 @@ TEST_F(ExtensionActionIconFactoryTest, DefaultIcon) {
   ASSERT_TRUE(browser_action->default_icon());
 
   ExtensionActionIconFactory icon_factory(
-      profile(), extension, browser_action, this);
+      profile(), extension.get(), browser_action, this);
 
   gfx::Image icon = icon_factory.GetIcon(0);
 

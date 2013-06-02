@@ -313,9 +313,9 @@ void CookieTreeAppCacheNode::DeleteStoredObjects() {
   LocalDataContainer* container = GetLocalDataContainerForNode(this);
 
   if (container) {
-    DCHECK(container->appcache_helper_);
-    container->appcache_helper_->DeleteAppCacheGroup(
-        appcache_info_->manifest_url);
+    DCHECK(container->appcache_helper_.get());
+    container->appcache_helper_
+        ->DeleteAppCacheGroup(appcache_info_->manifest_url);
     container->appcache_info_[origin_url_].erase(appcache_info_);
   }
 }
@@ -959,7 +959,7 @@ void CookiesTreeModel::UpdateSearchResults(const string16& filter) {
 
 const ExtensionSet* CookiesTreeModel::ExtensionsProtectingNode(
     const CookieTreeNode& cookie_node) {
-  if (!special_storage_policy_)
+  if (!special_storage_policy_.get())
     return NULL;
 
   CookieTreeNode::DetailedInfo info = cookie_node.GetDetailedInfo();

@@ -186,13 +186,13 @@ void ComponentLoader::Load(const ComponentExtensionInfo& info) {
       *info.manifest,
       flags,
       &error));
-  if (!extension) {
+  if (!extension.get()) {
     LOG(ERROR) << error;
     return;
   }
 
   CHECK_EQ(info.extension_id, extension->id()) << extension->name();
-  extension_service_->AddComponentExtension(extension);
+  extension_service_->AddComponentExtension(extension.get());
 }
 
 void ComponentLoader::RemoveAll() {

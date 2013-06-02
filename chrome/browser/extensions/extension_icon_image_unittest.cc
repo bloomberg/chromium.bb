@@ -219,21 +219,21 @@ TEST_F(ExtensionIconImageTest, Basic) {
 
   // Load images we expect to find as representations in icon_image, so we
   // can later use them to validate icon_image.
-  SkBitmap bitmap_16 =
-      GetTestBitmap(extension, "16.png", 16);
+  SkBitmap bitmap_16 = GetTestBitmap(extension.get(), "16.png", 16);
   ASSERT_FALSE(bitmap_16.empty());
 
   // There is no image of size 32 defined in the extension manifest, so we
   // should expect manifest image of size 48 resized to size 32.
   SkBitmap bitmap_48_resized_to_32 =
-      GetTestBitmap(extension, "48.png", 32);
+      GetTestBitmap(extension.get(), "48.png", 32);
   ASSERT_FALSE(bitmap_48_resized_to_32.empty());
 
   IconImage image(profile.get(),
-                  extension,
-                  extensions::IconsInfo::GetIcons(extension),
+                  extension.get(),
+                  extensions::IconsInfo::GetIcons(extension.get()),
                   16,
-                  default_icon, this);
+                  default_icon,
+                  this);
 
   // No representations in |image_| yet.
   gfx::ImageSkia::ImageSkiaReps image_reps = image.image_skia().image_reps();
@@ -290,15 +290,15 @@ TEST_F(ExtensionIconImageTest, FallbackToSmallerWhenNoBigger) {
 
   // Load images we expect to find as representations in icon_image, so we
   // can later use them to validate icon_image.
-  SkBitmap bitmap_48 =
-      GetTestBitmap(extension, "48.png", 48);
+  SkBitmap bitmap_48 = GetTestBitmap(extension.get(), "48.png", 48);
   ASSERT_FALSE(bitmap_48.empty());
 
   IconImage image(profile.get(),
-                  extension,
-                  extensions::IconsInfo::GetIcons(extension),
+                  extension.get(),
+                  extensions::IconsInfo::GetIcons(extension.get()),
                   32,
-                  default_icon, this);
+                  default_icon,
+                  this);
 
   gfx::ImageSkiaRep representation =
       image.image_skia().GetRepresentation(ui::SCALE_FACTOR_200P);
@@ -330,15 +330,15 @@ TEST_F(ExtensionIconImageTest, FallbackToSmaller) {
 
   // Load images we expect to find as representations in icon_image, so we
   // can later use them to validate icon_image.
-  SkBitmap bitmap_16 =
-      GetTestBitmap(extension, "16.png", 16);
+  SkBitmap bitmap_16 = GetTestBitmap(extension.get(), "16.png", 16);
   ASSERT_FALSE(bitmap_16.empty());
 
   IconImage image(profile.get(),
-                  extension,
-                  extensions::IconsInfo::GetIcons(extension),
+                  extension.get(),
+                  extensions::IconsInfo::GetIcons(extension.get()),
                   17,
-                  default_icon, this);
+                  default_icon,
+                  this);
 
   gfx::ImageSkiaRep representation =
       image.image_skia().GetRepresentation(ui::SCALE_FACTOR_100P);
@@ -368,8 +368,12 @@ TEST_F(ExtensionIconImageTest, NoResources) {
   gfx::ImageSkia default_icon = GetDefaultIcon();
 
   const int kRequestedSize = 24;
-  IconImage image(profile.get(), extension, empty_icon_set, kRequestedSize,
-                  default_icon, this);
+  IconImage image(profile.get(),
+                  extension.get(),
+                  empty_icon_set,
+                  kRequestedSize,
+                  default_icon,
+                  this);
 
   gfx::ImageSkiaRep representation =
       image.image_skia().GetRepresentation(ui::SCALE_FACTOR_100P);
@@ -406,8 +410,12 @@ TEST_F(ExtensionIconImageTest, InvalidResource) {
 
   gfx::ImageSkia default_icon = GetDefaultIcon();
 
-  IconImage image(profile.get(), extension, invalid_icon_set, kInvalidIconSize,
-                  default_icon, this);
+  IconImage image(profile.get(),
+                  extension.get(),
+                  invalid_icon_set,
+                  kInvalidIconSize,
+                  default_icon,
+                  this);
 
   gfx::ImageSkiaRep representation =
       image.image_skia().GetRepresentation(ui::SCALE_FACTOR_100P);
@@ -443,8 +451,12 @@ TEST_F(ExtensionIconImageTest, LazyDefaultIcon) {
   ExtensionIconSet empty_icon_set;
 
   const int kRequestedSize = 128;
-  IconImage image(profile.get(), extension, empty_icon_set, kRequestedSize,
-                  lazy_default_icon, this);
+  IconImage image(profile.get(),
+                  extension.get(),
+                  empty_icon_set,
+                  kRequestedSize,
+                  lazy_default_icon,
+                  this);
 
   ASSERT_FALSE(lazy_default_icon.HasRepresentation(ui::SCALE_FACTOR_100P));
 
@@ -479,8 +491,12 @@ TEST_F(ExtensionIconImageTest, LazyDefaultIcon_AsyncIconImage) {
   ExtensionIconSet invalid_icon_set;
   invalid_icon_set.Add(kInvalidIconSize, "invalid.png");
 
-  IconImage image(profile.get(), extension, invalid_icon_set, kInvalidIconSize,
-                  lazy_default_icon, this);
+  IconImage image(profile.get(),
+                  extension.get(),
+                  invalid_icon_set,
+                  kInvalidIconSize,
+                  lazy_default_icon,
+                  this);
 
   ASSERT_FALSE(lazy_default_icon.HasRepresentation(ui::SCALE_FACTOR_100P));
 
@@ -516,16 +532,16 @@ TEST_F(ExtensionIconImageTest, IconImageDestruction) {
 
   // Load images we expect to find as representations in icon_image, so we
   // can later use them to validate icon_image.
-  SkBitmap bitmap_16 =
-      GetTestBitmap(extension, "16.png", 16);
+  SkBitmap bitmap_16 = GetTestBitmap(extension.get(), "16.png", 16);
   ASSERT_FALSE(bitmap_16.empty());
 
   scoped_ptr<IconImage> image(
       new IconImage(profile.get(),
-                    extension,
-                    extensions::IconsInfo::GetIcons(extension),
+                    extension.get(),
+                    extensions::IconsInfo::GetIcons(extension.get()),
                     16,
-                    default_icon, this));
+                    default_icon,
+                    this));
 
   // Load an image representation.
   gfx::ImageSkiaRep representation =

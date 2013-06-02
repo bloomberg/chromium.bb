@@ -107,8 +107,7 @@ void InstalledLoader::Load(const ExtensionInfo& info, bool write_to_prefs) {
   // Once installed, non-unpacked extensions cannot change their IDs (e.g., by
   // updating the 'key' field in their manifest).
   // TODO(jstritar): migrate preferences when unpacked extensions change IDs.
-  if (extension &&
-      !Manifest::IsUnpackedLocation(extension->location()) &&
+  if (extension.get() && !Manifest::IsUnpackedLocation(extension->location()) &&
       info.extension_id != extension->id()) {
     error = errors::kCannotChangeExtensionID;
     extension = NULL;
@@ -119,24 +118,23 @@ void InstalledLoader::Load(const ExtensionInfo& info, bool write_to_prefs) {
   // Chrome was not running.
   const ManagementPolicy* policy = extensions::ExtensionSystem::Get(
       extension_service_->profile())->management_policy();
-  if (extension &&
-      !policy->UserMayLoad(extension, NULL)) {
+  if (extension.get() && !policy->UserMayLoad(extension.get(), NULL)) {
     // The error message from UserMayInstall() often contains the extension ID
     // and is therefore not well suited to this UI.
     error = errors::kDisabledByPolicy;
     extension = NULL;
   }
 
-  if (!extension) {
-    extension_service_->
-        ReportExtensionLoadError(info.extension_path, error, false);
+  if (!extension.get()) {
+    extension_service_->ReportExtensionLoadError(
+        info.extension_path, error, false);
     return;
   }
 
   if (write_to_prefs)
-    extension_prefs_->UpdateManifest(extension);
+    extension_prefs_->UpdateManifest(extension.get());
 
-  extension_service_->AddExtension(extension);
+  extension_service_->AddExtension(extension.get());
 }
 
 void InstalledLoader::LoadAllExtensions() {
@@ -206,9 +204,9 @@ void InstalledLoader::LoadAllExtensions() {
               GetCreationFlags(info),
               &error));
 
-      if (!extension) {
-        extension_service_->
-            ReportExtensionLoadError(info->extension_path, error, false);
+      if (!extension.get()) {
+        extension_service_->ReportExtensionLoadError(
+            info->extension_path, error, false);
         continue;
       }
 

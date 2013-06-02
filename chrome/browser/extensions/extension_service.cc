@@ -666,7 +666,7 @@ bool ExtensionService::UpdateExtension(const std::string& id,
   installer->InstallCrx(extension_path);
 
   if (out_crx_installer)
-    *out_crx_installer = installer;
+    *out_crx_installer = installer.get();
 
   return true;
 }
@@ -744,7 +744,7 @@ bool ExtensionService::UninstallExtension(
   scoped_refptr<const Extension> extension(GetInstalledExtension(extension_id));
 
   // Callers should not send us nonexistent extensions.
-  CHECK(extension);
+  CHECK(extension.get());
 
   // Policy change which triggers an uninstall will always set
   // |external_uninstall| to true so this is the only way to uninstall
@@ -755,28 +755,29 @@ bool ExtensionService::UninstallExtension(
     content::NotificationService::current()->Notify(
         chrome::NOTIFICATION_EXTENSION_UNINSTALL_NOT_ALLOWED,
         content::Source<Profile>(profile_),
-        content::Details<const Extension>(extension));
+        content::Details<const Extension>(extension.get()));
     return false;
   }
 
   // Extract the data we need for sync now, but don't actually sync until we've
   // completed the uninstallation.
   syncer::SyncChange sync_change;
-  if (app_sync_bundle_.HandlesApp(*extension)) {
-    sync_change = app_sync_bundle_.CreateSyncChangeToDelete(extension);
-  } else if (extension_sync_bundle_.HandlesExtension(*extension)) {
-    sync_change = extension_sync_bundle_.CreateSyncChangeToDelete(extension);
+  if (app_sync_bundle_.HandlesApp(*extension.get())) {
+    sync_change = app_sync_bundle_.CreateSyncChangeToDelete(extension.get());
+  } else if (extension_sync_bundle_.HandlesExtension(*extension.get())) {
+    sync_change =
+        extension_sync_bundle_.CreateSyncChangeToDelete(extension.get());
   }
 
-  if (IsUnacknowledgedExternalExtension(extension)) {
+  if (IsUnacknowledgedExternalExtension(extension.get())) {
     UMA_HISTOGRAM_ENUMERATION("Extensions.ExternalExtensionEvent",
                               EXTERNAL_EXTENSION_UNINSTALLED,
                               EXTERNAL_EXTENSION_BUCKET_BOUNDARY);
   }
   UMA_HISTOGRAM_ENUMERATION("Extensions.UninstallType",
                             extension->GetType(), 100);
-  RecordPermissionMessagesHistogram(
-      extension, "Extensions.Permissions_Uninstall");
+  RecordPermissionMessagesHistogram(extension.get(),
+                                    "Extensions.Permissions_Uninstall");
 
   // Unload before doing more cleanup to ensure that nothing is hanging on to
   // any of these resources.
@@ -799,7 +800,7 @@ bool ExtensionService::UninstallExtension(
   GURL launch_web_url_origin(extension->launch_web_url());
   launch_web_url_origin = launch_web_url_origin.GetOrigin();
   bool is_storage_isolated =
-      extensions::AppIsolationInfo::HasIsolatedStorage(extension);
+      extensions::AppIsolationInfo::HasIsolatedStorage(extension.get());
 
   if (is_storage_isolated) {
     BrowserContext::AsyncObliterateStoragePartition(
@@ -824,7 +825,7 @@ bool ExtensionService::UninstallExtension(
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_EXTENSION_UNINSTALLED,
       content::Source<Profile>(profile_),
-      content::Details<const Extension>(extension));
+      content::Details<const Extension>(extension.get()));
 
   if (app_sync_bundle_.HasExtensionId(extension_id) &&
       sync_change.sync_data().GetDataType() == syncer::APPS) {
@@ -1136,8 +1137,8 @@ bool ExtensionService::is_ready() {
 }
 
 base::SequencedTaskRunner* ExtensionService::GetFileTaskRunner() {
-  if (file_task_runner_)
-    return file_task_runner_;
+  if (file_task_runner_.get())
+    return file_task_runner_.get();
 
   // We should be able to interrupt any part of extension install process during
   // shutdown. SKIP_ON_SHUTDOWN ensures that not started extension install tasks
@@ -1148,7 +1149,7 @@ base::SequencedTaskRunner* ExtensionService::GetFileTaskRunner() {
       GetSequencedTaskRunnerWithShutdownBehavior(
         BrowserThread::GetBlockingPool()->GetNamedSequenceToken(token),
         base::SequencedWorkerPool::SKIP_ON_SHUTDOWN);
-  return file_task_runner_;
+  return file_task_runner_.get();
 }
 
 extensions::ExtensionUpdater* ExtensionService::updater() {
@@ -1801,7 +1802,7 @@ void ExtensionService::UnloadExtension(
 
   // This method can be called via PostTask, so the extension may have been
   // unloaded by the time this runs.
-  if (!extension) {
+  if (!extension.get()) {
     // In case the extension may have crashed/uninstalled. Allow the profile to
     // clean up its RequestContexts.
     system_->UnregisterExtensionWithRequestContexts(extension_id, reason);
@@ -1824,7 +1825,7 @@ void ExtensionService::UnloadExtension(
   extension_runtime_data_.erase(extension_id);
 
   if (disabled_extensions_.Contains(extension->id())) {
-    UnloadedExtensionInfo details(extension, reason);
+    UnloadedExtensionInfo details(extension.get(), reason);
     details.already_disabled = true;
     disabled_extensions_.Remove(extension->id());
     content::NotificationService::current()->Notify(
@@ -2045,7 +2046,7 @@ void ExtensionService::UpdateActivePermissions(const Extension* extension) {
   scoped_refptr<PermissionSet> active_permissions =
       extension_prefs()->GetActivePermissions(extension->id());
 
-  if (active_permissions) {
+  if (active_permissions.get()) {
     // We restrict the active permissions to be within the bounds defined in the
     // extension's manifest.
     //  a) active permissions must be a subset of optional + default permissions
@@ -2066,7 +2067,7 @@ void ExtensionService::UpdateActivePermissions(const Extension* extension) {
         adjusted_active.get());
 
     extensions::PermissionsUpdater perms_updater(profile());
-    perms_updater.UpdateActivePermissions(extension, adjusted_active);
+    perms_updater.UpdateActivePermissions(extension, adjusted_active.get());
   }
 }
 
@@ -2316,13 +2317,13 @@ void ExtensionService::FinishDelayedInstallation(
     const std::string& extension_id) {
   scoped_refptr<const Extension> extension(
       GetPendingExtensionUpdate(extension_id));
-  CHECK(extension);
+  CHECK(extension.get());
   delayed_updates_for_idle_.Remove(extension_id);
 
   if (!extension_prefs_->FinishDelayedInstallInfo(extension_id))
     NOTREACHED();
 
-  FinishInstallation(extension);
+  FinishInstallation(extension.get());
 }
 
 void ExtensionService::FinishInstallation(const Extension* extension) {
@@ -2857,20 +2858,21 @@ void ExtensionService::ManageBlacklist(
        it != no_longer_blacklisted.end(); ++it) {
     scoped_refptr<const Extension> extension =
         blacklisted_extensions_.GetByID(*it);
-    DCHECK(extension);
-    if (!extension)
+    DCHECK(extension.get());
+    if (!extension.get())
       continue;
     blacklisted_extensions_.Remove(*it);
-    AddExtension(extension);
+    AddExtension(extension.get());
     UMA_HISTOGRAM_ENUMERATION("ExtensionBlacklist.UnblacklistInstalled",
-                              extension->location(), Manifest::NUM_LOCATIONS);
+                              extension->location(),
+                              Manifest::NUM_LOCATIONS);
   }
 
   for (std::set<std::string>::iterator it = not_yet_blacklisted.begin();
        it != not_yet_blacklisted.end(); ++it) {
     scoped_refptr<const Extension> extension = GetInstalledExtension(*it);
-    DCHECK(extension);
-    if (!extension)
+    DCHECK(extension.get());
+    if (!extension.get())
       continue;
     blacklisted_extensions_.Insert(extension);
     UnloadExtension(*it, extension_misc::UNLOAD_REASON_BLACKLIST);

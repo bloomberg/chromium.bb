@@ -71,7 +71,7 @@ class URLRequestAutomationJob : public net::URLRequestJob {
   }
 
   AutomationResourceMessageFilter* message_filter() const {
-    return message_filter_;
+    return message_filter_.get();
   }
 
   // Resumes a job, which was waiting for the external host to connect to the

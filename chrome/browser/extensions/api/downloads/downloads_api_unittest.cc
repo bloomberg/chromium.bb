@@ -809,8 +809,8 @@ class HTML5FileWriter {
     CHECK_EQ(base::PLATFORM_FILE_OK, result);
     blob_data_->AppendData(payload_);
     url_request_context_.reset(new TestURLRequestContext(fs_));
-    url_request_context_->blob_storage_controller()->AddFinishedBlob(
-        blob_url(), blob_data_);
+    url_request_context_->blob_storage_controller()
+        ->AddFinishedBlob(blob_url(), blob_data_.get());
     operation()->Write(
         url_request_context_.get(),
         fs_->CrackURL(GURL(root_ + filename_)),

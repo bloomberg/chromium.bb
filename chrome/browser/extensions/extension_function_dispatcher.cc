@@ -258,7 +258,7 @@ void ExtensionFunctionDispatcher::DispatchOnIOThread(
                               profile, callback));
   scoped_ptr<ListValue> args(params.arguments.DeepCopy());
 
-  if (!function) {
+  if (!function.get()) {
     LogFailure(extension,
                params.name,
                args.Pass(),
@@ -278,7 +278,7 @@ void ExtensionFunctionDispatcher::DispatchOnIOThread(
   function->set_include_incognito(
       extension_info_map->IsIncognitoEnabled(extension->id()));
 
-  if (!CheckPermissions(function, extension, params, callback)) {
+  if (!CheckPermissions(function.get(), extension, params, callback)) {
     LogFailure(extension,
                params.name,
                args.Pass(),
@@ -289,7 +289,7 @@ void ExtensionFunctionDispatcher::DispatchOnIOThread(
 
   ExtensionsQuotaService* quota = extension_info_map->GetQuotaService();
   std::string violation_error = quota->Assess(extension->id(),
-                                              function,
+                                              function.get(),
                                               &params.arguments,
                                               base::TimeTicks::Now());
   if (violation_error.empty()) {
@@ -363,7 +363,7 @@ void ExtensionFunctionDispatcher::DispatchWithCallback(
                               profile(), callback));
   scoped_ptr<ListValue> args(params.arguments.DeepCopy());
 
-  if (!function) {
+  if (!function.get()) {
     LogFailure(extension,
                params.name,
                args.Pass(),
@@ -383,7 +383,7 @@ void ExtensionFunctionDispatcher::DispatchWithCallback(
   function_ui->set_profile(profile_);
   function->set_include_incognito(service->CanCrossIncognito(extension));
 
-  if (!CheckPermissions(function, extension, params, callback)) {
+  if (!CheckPermissions(function.get(), extension, params, callback)) {
     LogFailure(extension,
                params.name,
                args.Pass(),
@@ -394,7 +394,7 @@ void ExtensionFunctionDispatcher::DispatchWithCallback(
 
   ExtensionsQuotaService* quota = service->quota_service();
   std::string violation_error = quota->Assess(extension->id(),
-                                              function,
+                                              function.get(),
                                               &params.arguments,
                                               base::TimeTicks::Now());
   if (violation_error.empty()) {

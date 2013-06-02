@@ -143,14 +143,13 @@ void CrxInstaller::InstallCrx(const base::FilePath& source_file) {
   source_file_ = source_file;
 
   scoped_refptr<SandboxedUnpacker> unpacker(
-      new SandboxedUnpacker(
-          source_file,
-          content::ResourceDispatcherHost::Get() != NULL,
-          install_source_,
-          creation_flags_,
-          install_directory_,
-          installer_task_runner_,
-          this));
+      new SandboxedUnpacker(source_file,
+                            content::ResourceDispatcherHost::Get() != NULL,
+                            install_source_,
+                            creation_flags_,
+                            install_directory_,
+                            installer_task_runner_.get(),
+                            this));
 
   if (!installer_task_runner_->PostTask(
           FROM_HERE,
@@ -175,12 +174,12 @@ void CrxInstaller::ConvertUserScriptOnFileThread() {
   string16 error;
   scoped_refptr<Extension> extension = ConvertUserScriptToExtension(
       source_file_, download_url_, install_directory_, &error);
-  if (!extension) {
+  if (!extension.get()) {
     ReportFailureFromFileThread(CrxInstallerError(error));
     return;
   }
 
-  OnUnpackSuccess(extension->path(), extension->path(), NULL, extension);
+  OnUnpackSuccess(extension->path(), extension->path(), NULL, extension.get());
 }
 
 void CrxInstaller::InstallWebApp(const WebApplicationInfo& web_app) {
@@ -199,7 +198,7 @@ void CrxInstaller::ConvertWebAppOnFileThread(
   string16 error;
   scoped_refptr<Extension> extension(
       ConvertWebAppToExtension(web_app, base::Time::Now(), install_directory));
-  if (!extension) {
+  if (!extension.get()) {
     // Validation should have stopped any potential errors before getting here.
     NOTREACHED() << "Could not convert web app to extension.";
     return;
@@ -207,7 +206,7 @@ void CrxInstaller::ConvertWebAppOnFileThread(
 
   // TODO(aa): conversion data gets lost here :(
 
-  OnUnpackSuccess(extension->path(), extension->path(), NULL, extension);
+  OnUnpackSuccess(extension->path(), extension->path(), NULL, extension.get());
 }
 
 CrxInstallerError CrxInstaller::AllowInstall(const Extension* extension) {

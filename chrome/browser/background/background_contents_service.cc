@@ -139,14 +139,13 @@ void NotificationImageReady(
     notification_icon = rb.GetImageNamed(IDR_EXTENSION_DEFAULT_ICON);
   }
   string16 title;  // no notification title
-  DesktopNotificationService::AddIconNotification(
-      extension_url,
-      title,
-      message,
-      notification_icon,
-      string16(),
-      delegate,
-      profile);
+  DesktopNotificationService::AddIconNotification(extension_url,
+                                                  title,
+                                                  message,
+                                                  notification_icon,
+                                                  string16(),
+                                                  delegate.get(),
+                                                  profile);
 }
 #endif
 

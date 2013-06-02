@@ -111,7 +111,7 @@ class PushMessagingCanaryTest : public ExtensionApiTest {
     resolver->AllowDirectLookup("*.gstatic.com");
     resolver->AllowDirectLookup("*.googleapis.com");
     mock_host_resolver_override_.reset(
-        new net::ScopedDefaultHostResolverProc(resolver));
+        new net::ScopedDefaultHostResolverProc(resolver.get()));
   }
 
   // We need to reset the DNS lookup when we finish, or the test will fail.

@@ -245,10 +245,10 @@ class ExtensionBrowsingDataTest : public InProcessBrowserTest,
       EXPECT_EQ(NULL, RunFunctionAndReturnSingleResult(
         function.get(), args, browser())) << " for " << args;
     } else {
-      EXPECT_TRUE(
-          MatchPattern(RunFunctionAndReturnError(function, args, browser()),
-              extension_browsing_data_api_constants::kDeleteProhibitedError)) <<
-                  " for " << args;
+      EXPECT_TRUE(MatchPattern(
+          RunFunctionAndReturnError(function.get(), args, browser()),
+          extension_browsing_data_api_constants::kDeleteProhibitedError))
+          << " for " << args;
     }
   }
 
@@ -263,11 +263,10 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowsingDataTest, OneAtATime) {
   BrowsingDataRemover::set_removing(true);
   scoped_refptr<RemoveBrowsingDataFunction> function =
       new RemoveBrowsingDataFunction();
-  EXPECT_TRUE(MatchPattern(
-      RunFunctionAndReturnError(function,
-                                kRemoveEverythingArguments,
-                                browser()),
-      extension_browsing_data_api_constants::kOneAtATimeError));
+  EXPECT_TRUE(
+      MatchPattern(RunFunctionAndReturnError(
+                       function.get(), kRemoveEverythingArguments, browser()),
+                   extension_browsing_data_api_constants::kOneAtATimeError));
   BrowsingDataRemover::set_removing(false);
 
   EXPECT_EQ(base::Time(), GetBeginTime());

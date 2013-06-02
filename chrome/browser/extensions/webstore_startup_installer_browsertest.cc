@@ -219,7 +219,7 @@ IN_PROC_BROWSER_TEST_F(WebstoreStartupInstallerTest, InstallFromHostedApp) {
                   .Set("web_url", kInstallUrl.spec())))
           .Set("manifest_version", 2))
       .Build();
-  ASSERT_TRUE(hosted_app);
+  ASSERT_TRUE(hosted_app.get());
 
   ExtensionService* extension_service =
       extensions::ExtensionSystem::Get(browser()->profile())->

@@ -3674,7 +3674,7 @@ void TestingAutomationProvider::GetExtensionsInfo(DictionaryValue* args,
       ExtensionActionManager::Get(browser->profile());
   for (ExtensionList::const_iterator it = all.begin();
        it != all.end(); ++it) {
-    const Extension* extension = *it;
+    const Extension* extension = it->get();
     std::string id = extension->id();
     DictionaryValue* extension_value = new DictionaryValue;
     extension_value->SetString("id", id);

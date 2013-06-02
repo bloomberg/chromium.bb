@@ -143,7 +143,7 @@ class ValidateCrxHelper : public SandboxedUnpackerClient {
                               Manifest::INTERNAL,
                               0, /* no special creation flags */
                               temp_dir_,
-                              file_thread_proxy,
+                              file_thread_proxy.get(),
                               this));
     unpacker->Start();
   }
@@ -337,7 +337,7 @@ std::string StartupHelper::WebStoreIdFromLimitedInstallCmdLine(
 }
 
 StartupHelper::~StartupHelper() {
-  if (pack_job_)
+  if (pack_job_.get())
     pack_job_->ClearClient();
 }
 

@@ -84,7 +84,7 @@ TestExtensionPrefs::pref_registry() {
 
 void TestExtensionPrefs::ResetPrefRegistry() {
   pref_registry_ = new user_prefs::PrefRegistrySyncable;
-  ExtensionPrefs::RegisterUserPrefs(pref_registry_);
+  ExtensionPrefs::RegisterUserPrefs(pref_registry_.get());
 }
 
 void TestExtensionPrefs::RecreateExtensionPrefs() {
@@ -106,10 +106,10 @@ void TestExtensionPrefs::RecreateExtensionPrefs() {
 
   extension_pref_value_map_.reset(new ExtensionPrefValueMap);
   PrefServiceMockBuilder builder;
-  builder.WithUserFilePrefs(preferences_file_, task_runner_);
+  builder.WithUserFilePrefs(preferences_file_, task_runner_.get());
   builder.WithExtensionPrefs(
       new ExtensionPrefStore(extension_pref_value_map_.get(), false));
-  pref_service_.reset(builder.CreateSyncable(pref_registry_));
+  pref_service_.reset(builder.CreateSyncable(pref_registry_.get()));
 
   prefs_.reset(ExtensionPrefs::Create(
       pref_service_.get(),
@@ -156,12 +156,13 @@ scoped_refptr<Extension> TestExtensionPrefs::AddExtensionWithManifestAndFlags(
   std::string errors;
   scoped_refptr<Extension> extension = Extension::Create(
       path, location, manifest, extra_flags, &errors);
-  EXPECT_TRUE(extension) << errors;
-  if (!extension)
+  EXPECT_TRUE(extension.get()) << errors;
+  if (!extension.get())
     return NULL;
 
   EXPECT_TRUE(Extension::IdIsValid(extension->id()));
-  prefs_->OnExtensionInstalled(extension, Extension::ENABLED,
+  prefs_->OnExtensionInstalled(extension.get(),
+                               Extension::ENABLED,
                                syncer::StringOrdinal::CreateInitialOrdinal());
   return extension;
 }

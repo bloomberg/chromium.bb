@@ -1925,9 +1925,12 @@ void ExtensionWebRequestEventRouter::OnRulesRegistryReady(
       base::Time::Now() - blocked_request.blocking_time;
   UMA_HISTOGRAM_TIMES("Extensions.NetworkDelayRegistryLoad", block_time);
 
-  ProcessDeclarativeRules(profile, blocked_request.extension_info_map,
-                          event_name, blocked_request.request, request_stage,
-                          blocked_request.original_response_headers);
+  ProcessDeclarativeRules(profile,
+                          blocked_request.extension_info_map,
+                          event_name,
+                          blocked_request.request,
+                          request_stage,
+                          blocked_request.original_response_headers.get());
   // Reset to NULL so that nobody relies on this being set.
   blocked_request.extension_info_map = NULL;
   DecrementBlockCount(profile, std::string(), event_name, request_id, NULL);

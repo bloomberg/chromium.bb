@@ -247,7 +247,7 @@ bool BluetoothGetProfilesFunction::DoWork(
 bool BluetoothGetAdapterStateFunction::DoWork(
     scoped_refptr<BluetoothAdapter> adapter) {
   bluetooth::AdapterState state;
-  PopulateAdapterState(*adapter, &state);
+  PopulateAdapterState(*adapter.get(), &state);
   SetResult(state.ToValue().release());
   SendResponse(true);
   return true;
@@ -447,7 +447,7 @@ void BluetoothReadFunction::Work() {
     return;
 
   scoped_refptr<net::GrowableIOBuffer> buffer(new net::GrowableIOBuffer);
-  success_ = socket_->Receive(buffer);
+  success_ = socket_->Receive(buffer.get());
   if (success_)
     SetResult(base::BinaryValue::CreateWithCopiedBuffer(buffer->StartOfBuffer(),
                                                         buffer->offset()));
@@ -501,8 +501,9 @@ void BluetoothWriteFunction::Work() {
   scoped_refptr<net::WrappedIOBuffer> wrapped_io_buffer(
       new net::WrappedIOBuffer(data_to_write_->GetBuffer()));
   scoped_refptr<net::DrainableIOBuffer> drainable_io_buffer(
-      new net::DrainableIOBuffer(wrapped_io_buffer, data_to_write_->GetSize()));
-  success_ = socket_->Send(drainable_io_buffer);
+      new net::DrainableIOBuffer(wrapped_io_buffer.get(),
+                                 data_to_write_->GetSize()));
+  success_ = socket_->Send(drainable_io_buffer.get());
   if (success_) {
     if (drainable_io_buffer->BytesConsumed() > 0)
       SetResult(

@@ -1967,9 +1967,8 @@ ExecuteCodeInTabFunction::ExecuteCodeInTabFunction()
 ExecuteCodeInTabFunction::~ExecuteCodeInTabFunction() {}
 
 bool ExecuteCodeInTabFunction::HasPermission() {
-  if (Init() &&
-      PermissionsData::HasAPIPermissionForTab(
-          extension_, execute_tab_id_, APIPermission::kTab)) {
+  if (Init() && PermissionsData::HasAPIPermissionForTab(
+                    extension_.get(), execute_tab_id_, APIPermission::kTab)) {
     return true;
   }
   return ExtensionFunction::HasPermission();

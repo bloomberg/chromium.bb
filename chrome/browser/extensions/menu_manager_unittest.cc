@@ -79,7 +79,7 @@ class MenuManagerTest : public testing::Test {
   Extension* AddExtension(std::string name) {
     scoped_refptr<Extension> extension = prefs_.AddExtension(name);
     extensions_.push_back(extension);
-    return extension;
+    return extension.get();
   }
 
  protected:

@@ -416,8 +416,9 @@ void BeginInstallWithManifestFunction::OnWebstoreParseSuccess(
       std::string(),
       &error);
 
-  if (!dummy_extension_) {
-    OnWebstoreParseFailure(id_, WebstoreInstallHelper::Delegate::MANIFEST_ERROR,
+  if (!dummy_extension_.get()) {
+    OnWebstoreParseFailure(id_,
+                           WebstoreInstallHelper::Delegate::MANIFEST_ERROR,
                            kInvalidManifestError);
     return;
   }
@@ -490,7 +491,7 @@ void BeginInstallWithManifestFunction::SigninCompletedOrNotNeeded() {
   install_prompt_.reset(new ExtensionInstallPrompt(web_contents));
   install_prompt_->ConfirmWebstoreInstall(
       this,
-      dummy_extension_,
+      dummy_extension_.get(),
       &icon_,
       ExtensionInstallPrompt::GetDefaultShowDialogCallback());
   // Control flow finishes up in InstallUIProceed or InstallUIAbort.
@@ -515,7 +516,7 @@ void BeginInstallWithManifestFunction::InstallUIProceed() {
   // for all extension installs, so we only need to record the web store
   // specific histogram here.
   ExtensionService::RecordPermissionMessagesHistogram(
-      dummy_extension_, "Extensions.Permissions_WebStoreInstall");
+      dummy_extension_.get(), "Extensions.Permissions_WebStoreInstall");
 
   // Matches the AddRef in RunImpl().
   Release();
@@ -533,14 +534,14 @@ void BeginInstallWithManifestFunction::InstallUIAbort(bool user_initiated) {
   std::string histogram_name = user_initiated ?
       "Extensions.Permissions_WebStoreInstallCancel" :
       "Extensions.Permissions_WebStoreInstallAbort";
-  ExtensionService::RecordPermissionMessagesHistogram(
-      dummy_extension_, histogram_name.c_str());
+  ExtensionService::RecordPermissionMessagesHistogram(dummy_extension_.get(),
+                                                      histogram_name.c_str());
 
   histogram_name = user_initiated ?
       "Extensions.Permissions_InstallCancel" :
       "Extensions.Permissions_InstallAbort";
-  ExtensionService::RecordPermissionMessagesHistogram(
-      dummy_extension_, histogram_name.c_str());
+  ExtensionService::RecordPermissionMessagesHistogram(dummy_extension_.get(),
+                                                      histogram_name.c_str());
 
   // Matches the AddRef in RunImpl().
   Release();

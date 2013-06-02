@@ -345,7 +345,7 @@ class WorkerDevToolsSanityTest : public InProcessBrowserTest {
     if (WorkerService::GetInstance()->TerminateWorker(
             worker_data->worker_process_id, worker_data->worker_route_id)) {
       WorkerService::GetInstance()->AddObserver(
-          new WorkerTerminationObserver(worker_data));
+          new WorkerTerminationObserver(worker_data.get()));
       return;
     }
     FAIL() << "Failed to terminate worker.\n";
@@ -392,8 +392,7 @@ class WorkerDevToolsSanityTest : public InProcessBrowserTest {
             worker_data->worker_process_id,
             worker_data->worker_route_id));
     DevToolsManager::GetInstance()->RegisterDevToolsClientHostFor(
-        agent_host,
-        window_->GetDevToolsClientHostForTest());
+        agent_host.get(), window_->GetDevToolsClientHostForTest());
     RenderViewHost* client_rvh = window_->GetRenderViewHost();
     WebContents* client_contents = WebContents::FromRenderViewHost(client_rvh);
     if (client_contents->IsLoading()) {

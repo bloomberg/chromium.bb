@@ -126,7 +126,7 @@ scoped_ptr<ContentCondition> ContentCondition::Create(
       return scoped_ptr<ContentCondition>(NULL);
   }
 
-  if (!url_matcher_condition_set) {
+  if (!url_matcher_condition_set.get()) {
     URLMatcherConditionSet::Conditions url_matcher_conditions;
     url_matcher_conditions.insert(
         url_matcher_condition_factory->CreateHostPrefixCondition(

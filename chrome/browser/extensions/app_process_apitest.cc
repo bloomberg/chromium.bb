@@ -300,7 +300,7 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, MAYBE_BookmarkAppGetsNormalProcess) {
       extensions::Manifest::UNPACKED,
       Extension::FROM_BOOKMARK,
       &error));
-  service->OnExtensionInstalled(extension,
+  service->OnExtensionInstalled(extension.get(),
                                 syncer::StringOrdinal::CreateInitialOrdinal(),
                                 false /* no requirement errors */,
                                 false /* don't wait for idle */);

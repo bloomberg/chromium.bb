@@ -242,7 +242,7 @@ void SavePackageFilePicker::FileSelected(
     DCHECK(index >= kSelectFileHtmlOnlyIndex &&
            index <= kSelectFileCompleteIndex);
     save_type = kIndexToSaveType[index];
-    if (select_file_dialog_ &&
+    if (select_file_dialog_.get() &&
         select_file_dialog_->HasMultipleFileTypeChoices())
       download_prefs_->SetSaveFileType(save_type);
 #endif

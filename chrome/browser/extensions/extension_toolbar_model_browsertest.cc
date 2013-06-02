@@ -58,7 +58,7 @@ class ExtensionToolbarModelTest : public ExtensionBrowserTest,
     for (extensions::ExtensionList::const_iterator i = toolbar_items.begin();
          i < toolbar_items.end(); ++i) {
       if (index-- == 0)
-        return *i;
+        return i->get();
     }
     return NULL;
   }

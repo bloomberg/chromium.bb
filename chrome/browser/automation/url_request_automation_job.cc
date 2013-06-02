@@ -108,9 +108,9 @@ URLRequestAutomationJob::URLRequestAutomationJob(
       upload_size_(0),
       weak_factory_(this) {
   DVLOG(1) << "URLRequestAutomationJob create. Count: " << ++instance_count_;
-  DCHECK(message_filter_ != NULL);
+  DCHECK(message_filter_.get() != NULL);
 
-  if (message_filter_) {
+  if (message_filter_.get()) {
     id_ = message_filter_->NewAutomationRequestId();
     DCHECK_NE(id_, 0);
   }
@@ -152,9 +152,12 @@ net::URLRequestJob* URLRequestAutomationJob::Factory(
       if (AutomationResourceMessageFilter::LookupRegisteredRenderView(
               child_id, route_id, &details)) {
         URLRequestAutomationJob* job = new URLRequestAutomationJob(
-            request, network_delegate,
+            request,
+            network_delegate,
             request->context()->http_user_agent_settings(),
-            details.tab_handle, info->GetRequestID(), details.filter,
+            details.tab_handle,
+            info->GetRequestID(),
+            details.filter.get(),
             details.is_pending_render_view);
         return job;
       }
@@ -208,7 +211,7 @@ bool URLRequestAutomationJob::ReadRawData(
   pending_buf_ = buf;
   pending_buf_size_ = buf_size;
 
-  if (message_filter_) {
+  if (message_filter_.get()) {
     message_filter_->Send(new AutomationMsg_RequestRead(tab_, id_, buf_size));
     SetStatus(net::URLRequestStatus(net::URLRequestStatus::IO_PENDING, 0));
   } else {
@@ -223,7 +226,7 @@ bool URLRequestAutomationJob::ReadRawData(
 bool URLRequestAutomationJob::GetMimeType(std::string* mime_type) const {
   if (!mime_type_.empty()) {
     *mime_type = mime_type_;
-  } else if (headers_) {
+  } else if (headers_.get()) {
     headers_->GetMimeType(mime_type);
   }
 
@@ -231,13 +234,13 @@ bool URLRequestAutomationJob::GetMimeType(std::string* mime_type) const {
 }
 
 bool URLRequestAutomationJob::GetCharset(std::string* charset) {
-  if (headers_)
+  if (headers_.get())
     return headers_->GetCharset(charset);
   return false;
 }
 
 void URLRequestAutomationJob::GetResponseInfo(net::HttpResponseInfo* info) {
-  if (headers_)
+  if (headers_.get())
     info->headers = headers_;
   if (request_->url().SchemeIsSecure()) {
     // Make up a fake certificate for this response since we don't have
@@ -257,7 +260,7 @@ void URLRequestAutomationJob::GetResponseInfo(net::HttpResponseInfo* info) {
 }
 
 int URLRequestAutomationJob::GetResponseCode() const {
-  if (headers_)
+  if (headers_.get())
     return headers_->response_code();
 
   static const int kDefaultResponseCode = 200;
@@ -359,7 +362,7 @@ void URLRequestAutomationJob::OnDataAvailable(
   // Clear any IO pending status.
   SetStatus(net::URLRequestStatus());
 
-  if (pending_buf_ && pending_buf_->data()) {
+  if (pending_buf_.get() && pending_buf_->data()) {
     DCHECK_GE(pending_buf_size_, bytes.size());
     const int bytes_to_copy = std::min(bytes.size(), pending_buf_size_);
     memcpy(pending_buf_->data(), &bytes[0], bytes_to_copy);
@@ -403,7 +406,7 @@ void URLRequestAutomationJob::OnRequestEnd(
     // 2. In response to a read request.
     if (!has_response_started()) {
       NotifyStartError(status);
-    } else if (pending_buf_) {
+    } else if (pending_buf_.get()) {
       pending_buf_ = NULL;
       pending_buf_size_ = 0;
       NotifyDone(status);
@@ -426,7 +429,7 @@ void URLRequestAutomationJob::Cleanup() {
   id_ = 0;
   tab_ = 0;
 
-  DCHECK(!message_filter_);
+  DCHECK(!message_filter_.get());
   DisconnectFromMessageFilter();
 
   pending_buf_ = NULL;
@@ -506,13 +509,13 @@ void URLRequestAutomationJob::StartAsync() {
   automation_request.resource_type = resource_type;
   automation_request.load_flags = request_->load_flags();
 
-  DCHECK(message_filter_);
-  message_filter_->Send(new AutomationMsg_RequestStart(
-      tab_, id_, automation_request));
+  DCHECK(message_filter_.get());
+  message_filter_->Send(
+      new AutomationMsg_RequestStart(tab_, id_, automation_request));
 }
 
 void URLRequestAutomationJob::DisconnectFromMessageFilter() {
-  if (message_filter_) {
+  if (message_filter_.get()) {
     message_filter_->UnRegisterRequest(this);
     message_filter_ = NULL;
   }
@@ -533,7 +536,7 @@ void URLRequestAutomationJob::NotifyJobCompletionTask() {
     NotifyDone(request_status_);
   }
   // Reset any pending reads.
-  if (pending_buf_) {
+  if (pending_buf_.get()) {
     pending_buf_ = NULL;
     pending_buf_size_ = 0;
     NotifyReadComplete(0);

@@ -522,7 +522,7 @@ TEST_F(IdleTest, UnloadCleanup) {
   }
 
   // Threshold will reset after unload (and listen count == 0)
-  UnloadedExtensionInfo details(extension_,
+  UnloadedExtensionInfo details(extension_.get(),
                                 extension_misc::UNLOAD_REASON_UNINSTALL);
   idle_manager_->Observe(
       chrome::NOTIFICATION_EXTENSION_UNLOADED,
@@ -543,7 +543,7 @@ TEST_F(IdleTest, UnloadCleanup) {
 
 // Verifies that unloading an extension with no listeners or threshold works.
 TEST_F(IdleTest, UnloadOnly) {
-  UnloadedExtensionInfo details(extension_,
+  UnloadedExtensionInfo details(extension_.get(),
                                 extension_misc::UNLOAD_REASON_UNINSTALL);
   idle_manager_->Observe(
       chrome::NOTIFICATION_EXTENSION_UNLOADED,
@@ -555,7 +555,7 @@ TEST_F(IdleTest, UnloadOnly) {
 // listener removals.
 TEST_F(IdleTest, UnloadWhileListening) {
   ScopedListen listen(idle_manager_, extension_->id());
-  UnloadedExtensionInfo details(extension_,
+  UnloadedExtensionInfo details(extension_.get(),
                                 extension_misc::UNLOAD_REASON_UNINSTALL);
   idle_manager_->Observe(
       chrome::NOTIFICATION_EXTENSION_UNLOADED,

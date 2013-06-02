@@ -157,7 +157,7 @@ class PowerApiTest : public BrowserWithTestWindowTest {
         static_cast<UIThreadExtensionFunction*>(
             new PowerReleaseKeepAwakeFunction));
     function->set_extension(extension);
-    return utils::RunFunction(function, args, browser(), utils::NONE);
+    return utils::RunFunction(function.get(), args, browser(), utils::NONE);
   }
 
   // Send a notification to PowerApiManager saying that |extension| has

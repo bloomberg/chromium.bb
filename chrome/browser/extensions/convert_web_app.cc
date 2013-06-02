@@ -190,7 +190,7 @@ scoped_refptr<Extension> ConvertWebAppToExtension(
       *root,
       extension_flags,
       &error);
-  if (!extension) {
+  if (!extension.get()) {
     LOG(ERROR) << error;
     return NULL;
   }

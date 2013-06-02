@@ -65,7 +65,7 @@ void ExtensionPrefsTest::RegisterPreferences(
     user_prefs::PrefRegistrySyncable* registry) {}
 
 void ExtensionPrefsTest::SetUp() {
-  RegisterPreferences(prefs_.pref_registry());
+  RegisterPreferences(prefs_.pref_registry().get());
   Initialize();
 }
 
@@ -74,7 +74,7 @@ void ExtensionPrefsTest::TearDown() {
 
   // Reset ExtensionPrefs, and re-verify.
   prefs_.ResetPrefRegistry();
-  RegisterPreferences(prefs_.pref_registry());
+  RegisterPreferences(prefs_.pref_registry().get());
   prefs_.RecreateExtensionPrefs();
   Verify();
   prefs_.pref_service()->CommitPendingWrite();
@@ -354,13 +354,13 @@ class ExtensionPrefsActivePermissions : public ExtensionPrefsTest {
     EXPECT_EQ(active_perms_->apis(), active->apis());
     EXPECT_EQ(active_perms_->explicit_hosts(), active->explicit_hosts());
     EXPECT_EQ(active_perms_->scriptable_hosts(), active->scriptable_hosts());
-    EXPECT_EQ(*active_perms_, *active);
+    EXPECT_EQ(*active_perms_.get(), *active.get());
   }
 
   virtual void Verify() OVERRIDE {
     scoped_refptr<PermissionSet> permissions(
         prefs()->GetActivePermissions(extension_id_));
-    EXPECT_EQ(*active_perms_, *permissions);
+    EXPECT_EQ(*active_perms_.get(), *permissions.get());
   }
 
  private:
@@ -465,7 +465,7 @@ class ExtensionPrefsDelayedInstallInfo : public ExtensionPrefsTest {
     std::string errors;
     scoped_refptr<Extension> extension = Extension::Create(
         path, Manifest::INTERNAL, manifest, Extension::NO_FLAGS, id, &errors);
-    ASSERT_TRUE(extension) << errors;
+    ASSERT_TRUE(extension.get()) << errors;
     ASSERT_EQ(id, extension->id());
     prefs()->SetDelayedInstallInfo(extension.get(), Extension::ENABLED,
                                    syncer::StringOrdinal());

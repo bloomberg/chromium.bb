@@ -251,7 +251,7 @@ class MockService : public TestExtensionService {
         manifest.SetString(extension_manifest_keys::kUpdateURL, *update_url);
       scoped_refptr<Extension> e =
           prefs_->AddExtensionWithManifest(manifest, location);
-      ASSERT_TRUE(e != NULL);
+      ASSERT_TRUE(e.get() != NULL);
       list->push_back(e);
     }
   }
@@ -689,7 +689,7 @@ class ExtensionUpdaterTest : public testing::Test {
     const std::string& id = extensions[0]->id();
     EXPECT_CALL(delegate, GetPingDataForExtension(id, _));
 
-    downloader.AddExtension(*extensions[0], 0);
+    downloader.AddExtension(*extensions[0].get(), 0);
     downloader.StartAllPending();
     net::TestURLFetcher* fetcher =
         factory.GetFetcherByID(ExtensionDownloader::kManifestFetcherId);
@@ -1447,7 +1447,7 @@ class ExtensionUpdaterTest : public testing::Test {
         new ExtensionDownloader(&updater, service.request_context()));
 
     ManifestFetchData fetch_data(update_url, 0);
-    const Extension* extension = tmp[0];
+    const Extension* extension = tmp[0].get();
     fetch_data.AddExtension(extension->id(),
                             extension->VersionString(),
                             &kNeverPingedData,

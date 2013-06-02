@@ -119,9 +119,9 @@ TEST_F(ScriptBubbleControllerTest, Basics) {
                         .Append("activeTab")))
       .Build();
 
-  extension_service_->AddExtension(extension1);
-  extension_service_->AddExtension(extension2);
-  extension_service_->AddExtension(extension3);
+  extension_service_->AddExtension(extension1.get());
+  extension_service_->AddExtension(extension2.get());
+  extension_service_->AddExtension(extension3.get());
 
   EXPECT_EQ(0u, script_bubble_controller_->extensions_running_scripts().size());
 

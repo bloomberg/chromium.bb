@@ -62,7 +62,7 @@ bool PermissionsContainsFunction::RunImpl() {
     return false;
 
   results_ = Contains::Results::Create(
-      GetExtension()->GetActivePermissions()->Contains(*permissions));
+      GetExtension()->GetActivePermissions()->Contains(*permissions.get()));
   return true;
 }
 
@@ -181,8 +181,8 @@ bool PermissionsRequestFunction::RunImpl() {
           requested_permissions_.get());
 
   // The requested permissions must be defined as optional in the manifest.
-  if (!PermissionsData::GetOptionalPermissions(GetExtension())->Contains(
-          *manifest_required_requested_permissions)) {
+  if (!PermissionsData::GetOptionalPermissions(GetExtension())
+          ->Contains(*manifest_required_requested_permissions.get())) {
     error_ = kNotInOptionalPermissionsError;
     return false;
   }
@@ -192,7 +192,7 @@ bool PermissionsRequestFunction::RunImpl() {
   scoped_refptr<const PermissionSet> granted =
       ExtensionPrefs::Get(profile_)->
           GetGrantedPermissions(GetExtension()->id());
-  if (granted && granted->Contains(*requested_permissions_)) {
+  if (granted.get() && granted->Contains(*requested_permissions_.get())) {
     PermissionsUpdater perms_updater(profile());
     perms_updater.AddPermissions(GetExtension(), requested_permissions_.get());
     results_ = Request::Results::Create(true);

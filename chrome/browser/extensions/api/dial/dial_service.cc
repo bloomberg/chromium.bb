@@ -350,7 +350,7 @@ bool DialServiceImpl::ParseResponse(const std::string& response,
       new HttpResponseHeaders(raw_headers);
 
   std::string device_url_str;
-  if (!GetHeader(headers, kSsdpLocationHeader, &device_url_str) ||
+  if (!GetHeader(headers.get(), kSsdpLocationHeader, &device_url_str) ||
       device_url_str.empty()) {
     DVLOG(1) << "No LOCATION header found.";
     return false;
@@ -363,7 +363,8 @@ bool DialServiceImpl::ParseResponse(const std::string& response,
   }
 
   std::string device_id;
-  if (!GetHeader(headers, kSsdpUsnHeader, &device_id) || device_id.empty()) {
+  if (!GetHeader(headers.get(), kSsdpUsnHeader, &device_id) ||
+      device_id.empty()) {
     DVLOG(1) << "No USN header found.";
     return false;
   }
@@ -375,11 +376,11 @@ bool DialServiceImpl::ParseResponse(const std::string& response,
   // TODO(mfoltz): Parse the max-age value from the cache control header.
   // http://crbug.com/165289
   std::string cache_control;
-  GetHeader(headers, kSsdpCacheControlHeader, &cache_control);
+  GetHeader(headers.get(), kSsdpCacheControlHeader, &cache_control);
 
   std::string config_id;
   int config_id_int;
-  if (GetHeader(headers, kSsdpConfigIdHeader, &config_id) &&
+  if (GetHeader(headers.get(), kSsdpConfigIdHeader, &config_id) &&
       base::StringToInt(config_id, &config_id_int)) {
     device->set_config_id(config_id_int);
   } else {

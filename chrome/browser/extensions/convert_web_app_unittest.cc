@@ -138,13 +138,16 @@ TEST(ExtensionFromWebApp, Basic) {
   EXPECT_EQ("http://aaronboodman.com/gearpad/*",
             extension->web_extent().patterns().begin()->GetAsString());
 
-  EXPECT_EQ(web_app.icons.size(), IconsInfo::GetIcons(extension).map().size());
+  EXPECT_EQ(web_app.icons.size(),
+            IconsInfo::GetIcons(extension.get()).map().size());
   for (size_t i = 0; i < web_app.icons.size(); ++i) {
     EXPECT_EQ(base::StringPrintf("icons/%i.png", web_app.icons[i].width),
-              IconsInfo::GetIcons(extension).Get(
+              IconsInfo::GetIcons(extension.get()).Get(
                   web_app.icons[i].width, ExtensionIconSet::MATCH_EXACTLY));
-    ExtensionResource resource = IconsInfo::GetIconResource(
-        extension, web_app.icons[i].width, ExtensionIconSet::MATCH_EXACTLY);
+    ExtensionResource resource =
+        IconsInfo::GetIconResource(extension.get(),
+                                   web_app.icons[i].width,
+                                   ExtensionIconSet::MATCH_EXACTLY);
     ASSERT_TRUE(!resource.empty());
     EXPECT_TRUE(file_util::PathExists(resource.GetFilePath()));
   }
@@ -178,7 +181,7 @@ TEST(ExtensionFromWebApp, Minimal) {
   EXPECT_EQ(UTF16ToUTF8(web_app.title), extension->name());
   EXPECT_EQ("", extension->description());
   EXPECT_EQ(web_app.app_url, extension->GetFullLaunchURL());
-  EXPECT_EQ(0u, IconsInfo::GetIcons(extension).map().size());
+  EXPECT_EQ(0u, IconsInfo::GetIcons(extension.get()).map().size());
   EXPECT_EQ(0u, extension->GetActivePermissions()->apis().size());
   ASSERT_EQ(1u, extension->web_extent().patterns().size());
   EXPECT_EQ("*://aaronboodman.com/*",

@@ -46,7 +46,7 @@ class BrowsingDataCookieHelper
   virtual ~BrowsingDataCookieHelper();
 
   net::URLRequestContextGetter* request_context_getter() {
-    return request_context_getter_;
+    return request_context_getter_.get();
   }
 
  private:

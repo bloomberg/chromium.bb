@@ -42,7 +42,7 @@ class MockWebContentsDelegate : public content::WebContentsDelegate {
       const content::MediaStreamRequest& request,
       const content::MediaResponseCallback& callback) OVERRIDE {
     requested_ = true;
-    if (message_loop_runner_)
+    if (message_loop_runner_.get())
       message_loop_runner_->Quit();
   }
 
@@ -103,7 +103,7 @@ class MockDownloadWebContentsDelegate : public content::WebContentsDelegate {
 
     if (waiting_for_decision_) {
       EXPECT_EQ(expect_allow_, allow);
-      if (message_loop_runner_)
+      if (message_loop_runner_.get())
         message_loop_runner_->Quit();
       return;
     }

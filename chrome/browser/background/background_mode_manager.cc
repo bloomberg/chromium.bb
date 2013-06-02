@@ -123,8 +123,8 @@ void BackgroundModeManager::BackgroundModeData::BuildProfileMenu(
              applications_->begin();
          cursor != applications_->end();
          ++cursor, ++position) {
-      const gfx::ImageSkia* icon = applications_->GetIcon(*cursor);
-      DCHECK(position == applications_->GetPosition(*cursor));
+      const gfx::ImageSkia* icon = applications_->GetIcon(cursor->get());
+      DCHECK(position == applications_->GetPosition(cursor->get()));
       const std::string& name = (*cursor)->name();
       menu->AddItem(position, UTF8ToUTF16(name));
       if (icon)

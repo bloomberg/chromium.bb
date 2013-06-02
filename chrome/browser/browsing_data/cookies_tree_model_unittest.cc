@@ -79,7 +79,7 @@ class CookiesTreeModelTest : public testing::Test {
         new CookieSettings(profile_->GetHostContentSettingsMap(),
                            profile_->GetPrefs());
     special_storage_policy_ =
-        new ExtensionSpecialStoragePolicy(cookie_settings);
+        new ExtensionSpecialStoragePolicy(cookie_settings.get());
   }
 
   virtual void TearDown() OVERRIDE {
@@ -97,21 +97,19 @@ class CookiesTreeModelTest : public testing::Test {
 
   scoped_ptr<CookiesTreeModel> CreateCookiesTreeModelWithInitialSample() {
     LocalDataContainer* container = new LocalDataContainer(
-        mock_browsing_data_cookie_helper_,
-        mock_browsing_data_database_helper_,
-        mock_browsing_data_local_storage_helper_,
-        mock_browsing_data_session_storage_helper_,
-        mock_browsing_data_appcache_helper_,
-        mock_browsing_data_indexed_db_helper_,
-        mock_browsing_data_file_system_helper_,
-        mock_browsing_data_quota_helper_,
-        mock_browsing_data_server_bound_cert_helper_,
-        mock_browsing_data_flash_lso_helper_);
+        mock_browsing_data_cookie_helper_.get(),
+        mock_browsing_data_database_helper_.get(),
+        mock_browsing_data_local_storage_helper_.get(),
+        mock_browsing_data_session_storage_helper_.get(),
+        mock_browsing_data_appcache_helper_.get(),
+        mock_browsing_data_indexed_db_helper_.get(),
+        mock_browsing_data_file_system_helper_.get(),
+        mock_browsing_data_quota_helper_.get(),
+        mock_browsing_data_server_bound_cert_helper_.get(),
+        mock_browsing_data_flash_lso_helper_.get());
 
     CookiesTreeModel* cookies_model =
-        new CookiesTreeModel(container,
-                             special_storage_policy_,
-                             false);
+        new CookiesTreeModel(container, special_storage_policy_.get(), false);
     mock_browsing_data_cookie_helper_->
         AddCookieSamples(GURL("http://foo1"), "A=1");
     mock_browsing_data_cookie_helper_->
@@ -820,18 +818,19 @@ TEST_F(CookiesTreeModelTest, RemoveCookieNode) {
 }
 
 TEST_F(CookiesTreeModelTest, RemoveSingleCookieNode) {
-  LocalDataContainer* container = new LocalDataContainer(
-      mock_browsing_data_cookie_helper_,
-      mock_browsing_data_database_helper_,
-      mock_browsing_data_local_storage_helper_,
-      mock_browsing_data_session_storage_helper_,
-      mock_browsing_data_appcache_helper_,
-      mock_browsing_data_indexed_db_helper_,
-      mock_browsing_data_file_system_helper_,
-      mock_browsing_data_quota_helper_,
-      mock_browsing_data_server_bound_cert_helper_,
-      mock_browsing_data_flash_lso_helper_);
-  CookiesTreeModel cookies_model(container, special_storage_policy_, false);
+  LocalDataContainer* container =
+      new LocalDataContainer(mock_browsing_data_cookie_helper_.get(),
+                             mock_browsing_data_database_helper_.get(),
+                             mock_browsing_data_local_storage_helper_.get(),
+                             mock_browsing_data_session_storage_helper_.get(),
+                             mock_browsing_data_appcache_helper_.get(),
+                             mock_browsing_data_indexed_db_helper_.get(),
+                             mock_browsing_data_file_system_helper_.get(),
+                             mock_browsing_data_quota_helper_.get(),
+                             mock_browsing_data_server_bound_cert_helper_.get(),
+                             mock_browsing_data_flash_lso_helper_.get());
+  CookiesTreeModel cookies_model(
+      container, special_storage_policy_.get(), false);
 
   mock_browsing_data_cookie_helper_->
       AddCookieSamples(GURL("http://foo1"), "A=1");
@@ -908,18 +907,19 @@ TEST_F(CookiesTreeModelTest, RemoveSingleCookieNode) {
 }
 
 TEST_F(CookiesTreeModelTest, RemoveSingleCookieNodeOf3) {
-  LocalDataContainer* container = new LocalDataContainer(
-      mock_browsing_data_cookie_helper_,
-      mock_browsing_data_database_helper_,
-      mock_browsing_data_local_storage_helper_,
-      mock_browsing_data_session_storage_helper_,
-      mock_browsing_data_appcache_helper_,
-      mock_browsing_data_indexed_db_helper_,
-      mock_browsing_data_file_system_helper_,
-      mock_browsing_data_quota_helper_,
-      mock_browsing_data_server_bound_cert_helper_,
-      mock_browsing_data_flash_lso_helper_);
-  CookiesTreeModel cookies_model(container, special_storage_policy_,false);
+  LocalDataContainer* container =
+      new LocalDataContainer(mock_browsing_data_cookie_helper_.get(),
+                             mock_browsing_data_database_helper_.get(),
+                             mock_browsing_data_local_storage_helper_.get(),
+                             mock_browsing_data_session_storage_helper_.get(),
+                             mock_browsing_data_appcache_helper_.get(),
+                             mock_browsing_data_indexed_db_helper_.get(),
+                             mock_browsing_data_file_system_helper_.get(),
+                             mock_browsing_data_quota_helper_.get(),
+                             mock_browsing_data_server_bound_cert_helper_.get(),
+                             mock_browsing_data_flash_lso_helper_.get());
+  CookiesTreeModel cookies_model(
+      container, special_storage_policy_.get(), false);
 
   mock_browsing_data_cookie_helper_->
       AddCookieSamples(GURL("http://foo1"), "A=1");
@@ -999,18 +999,19 @@ TEST_F(CookiesTreeModelTest, RemoveSingleCookieNodeOf3) {
 }
 
 TEST_F(CookiesTreeModelTest, RemoveSecondOrigin) {
-  LocalDataContainer* container = new LocalDataContainer(
-      mock_browsing_data_cookie_helper_,
-      mock_browsing_data_database_helper_,
-      mock_browsing_data_local_storage_helper_,
-      mock_browsing_data_session_storage_helper_,
-      mock_browsing_data_appcache_helper_,
-      mock_browsing_data_indexed_db_helper_,
-      mock_browsing_data_file_system_helper_,
-      mock_browsing_data_quota_helper_,
-      mock_browsing_data_server_bound_cert_helper_,
-      mock_browsing_data_flash_lso_helper_);
-  CookiesTreeModel cookies_model(container, special_storage_policy_,false);
+  LocalDataContainer* container =
+      new LocalDataContainer(mock_browsing_data_cookie_helper_.get(),
+                             mock_browsing_data_database_helper_.get(),
+                             mock_browsing_data_local_storage_helper_.get(),
+                             mock_browsing_data_session_storage_helper_.get(),
+                             mock_browsing_data_appcache_helper_.get(),
+                             mock_browsing_data_indexed_db_helper_.get(),
+                             mock_browsing_data_file_system_helper_.get(),
+                             mock_browsing_data_quota_helper_.get(),
+                             mock_browsing_data_server_bound_cert_helper_.get(),
+                             mock_browsing_data_flash_lso_helper_.get());
+  CookiesTreeModel cookies_model(
+      container, special_storage_policy_.get(), false);
 
   mock_browsing_data_cookie_helper_->
       AddCookieSamples(GURL("http://foo1"), "A=1");
@@ -1041,18 +1042,19 @@ TEST_F(CookiesTreeModelTest, RemoveSecondOrigin) {
 }
 
 TEST_F(CookiesTreeModelTest, OriginOrdering) {
-  LocalDataContainer* container = new LocalDataContainer(
-      mock_browsing_data_cookie_helper_,
-      mock_browsing_data_database_helper_,
-      mock_browsing_data_local_storage_helper_,
-      mock_browsing_data_session_storage_helper_,
-      mock_browsing_data_appcache_helper_,
-      mock_browsing_data_indexed_db_helper_,
-      mock_browsing_data_file_system_helper_,
-      mock_browsing_data_quota_helper_,
-      mock_browsing_data_server_bound_cert_helper_,
-      mock_browsing_data_flash_lso_helper_);
-  CookiesTreeModel cookies_model(container, special_storage_policy_, false);
+  LocalDataContainer* container =
+      new LocalDataContainer(mock_browsing_data_cookie_helper_.get(),
+                             mock_browsing_data_database_helper_.get(),
+                             mock_browsing_data_local_storage_helper_.get(),
+                             mock_browsing_data_session_storage_helper_.get(),
+                             mock_browsing_data_appcache_helper_.get(),
+                             mock_browsing_data_indexed_db_helper_.get(),
+                             mock_browsing_data_file_system_helper_.get(),
+                             mock_browsing_data_quota_helper_.get(),
+                             mock_browsing_data_server_bound_cert_helper_.get(),
+                             mock_browsing_data_flash_lso_helper_.get());
+  CookiesTreeModel cookies_model(
+      container, special_storage_policy_.get(), false);
 
   mock_browsing_data_cookie_helper_->
       AddCookieSamples(GURL("http://a.foo2.com"), "A=1");
@@ -1088,18 +1090,19 @@ TEST_F(CookiesTreeModelTest, OriginOrdering) {
 
 TEST_F(CookiesTreeModelTest, ContentSettings) {
   GURL host("http://xyz.com/");
-  LocalDataContainer* container = new LocalDataContainer(
-      mock_browsing_data_cookie_helper_,
-      mock_browsing_data_database_helper_,
-      mock_browsing_data_local_storage_helper_,
-      mock_browsing_data_session_storage_helper_,
-      mock_browsing_data_appcache_helper_,
-      mock_browsing_data_indexed_db_helper_,
-      mock_browsing_data_file_system_helper_,
-      mock_browsing_data_quota_helper_,
-      mock_browsing_data_server_bound_cert_helper_,
-      mock_browsing_data_flash_lso_helper_);
-  CookiesTreeModel cookies_model(container, special_storage_policy_, false);
+  LocalDataContainer* container =
+      new LocalDataContainer(mock_browsing_data_cookie_helper_.get(),
+                             mock_browsing_data_database_helper_.get(),
+                             mock_browsing_data_local_storage_helper_.get(),
+                             mock_browsing_data_session_storage_helper_.get(),
+                             mock_browsing_data_appcache_helper_.get(),
+                             mock_browsing_data_indexed_db_helper_.get(),
+                             mock_browsing_data_file_system_helper_.get(),
+                             mock_browsing_data_quota_helper_.get(),
+                             mock_browsing_data_server_bound_cert_helper_.get(),
+                             mock_browsing_data_flash_lso_helper_.get());
+  CookiesTreeModel cookies_model(
+      container, special_storage_policy_.get(), false);
 
   mock_browsing_data_cookie_helper_->AddCookieSamples(host, "A=1");
   mock_browsing_data_cookie_helper_->Notify();
@@ -1161,18 +1164,19 @@ TEST_F(CookiesTreeModelTest, FileSystemFilter) {
 }
 
 TEST_F(CookiesTreeModelTest, CookiesFilter) {
-  LocalDataContainer* container = new LocalDataContainer(
-      mock_browsing_data_cookie_helper_,
-      mock_browsing_data_database_helper_,
-      mock_browsing_data_local_storage_helper_,
-      mock_browsing_data_session_storage_helper_,
-      mock_browsing_data_appcache_helper_,
-      mock_browsing_data_indexed_db_helper_,
-      mock_browsing_data_file_system_helper_,
-      mock_browsing_data_quota_helper_,
-      mock_browsing_data_server_bound_cert_helper_,
-      mock_browsing_data_flash_lso_helper_);
-  CookiesTreeModel cookies_model(container, special_storage_policy_, false);
+  LocalDataContainer* container =
+      new LocalDataContainer(mock_browsing_data_cookie_helper_.get(),
+                             mock_browsing_data_database_helper_.get(),
+                             mock_browsing_data_local_storage_helper_.get(),
+                             mock_browsing_data_session_storage_helper_.get(),
+                             mock_browsing_data_appcache_helper_.get(),
+                             mock_browsing_data_indexed_db_helper_.get(),
+                             mock_browsing_data_file_system_helper_.get(),
+                             mock_browsing_data_quota_helper_.get(),
+                             mock_browsing_data_server_bound_cert_helper_.get(),
+                             mock_browsing_data_flash_lso_helper_.get());
+  CookiesTreeModel cookies_model(
+      container, special_storage_policy_.get(), false);
 
   mock_browsing_data_cookie_helper_->
       AddCookieSamples(GURL("http://123.com"), "A=1");

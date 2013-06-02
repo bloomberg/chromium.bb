@@ -55,11 +55,9 @@ class PermissionsUpdaterListener : public content::NotificationObserver {
   }
 
   bool received_notification() const { return received_notification_; }
-  const Extension* extension() const { return extension_; }
-  const PermissionSet* permissions() const { return permissions_; }
-  UpdatedExtensionPermissionsInfo::Reason reason() const {
-    return reason_;
-  }
+  const Extension* extension() const { return extension_.get(); }
+  const PermissionSet* permissions() const { return permissions_.get(); }
+  UpdatedExtensionPermissionsInfo::Reason reason() const { return reason_; }
 
  private:
   virtual void Observe(int type,
@@ -129,7 +127,7 @@ TEST_F(PermissionsUpdaterTest, AddAndRemovePermissions) {
   // Make sure it loaded properly.
   scoped_refptr<const PermissionSet> permissions =
       extension->GetActivePermissions();
-  ASSERT_EQ(*default_permissions, *extension->GetActivePermissions());
+  ASSERT_EQ(*default_permissions.get(), *extension->GetActivePermissions());
 
   // Add a few permissions.
   APIPermissionSet apis;
@@ -151,12 +149,12 @@ TEST_F(PermissionsUpdaterTest, AddAndRemovePermissions) {
   ASSERT_TRUE(listener.received_notification());
   ASSERT_EQ(extension, listener.extension());
   ASSERT_EQ(UpdatedExtensionPermissionsInfo::ADDED, listener.reason());
-  ASSERT_EQ(*delta, *listener.permissions());
+  ASSERT_EQ(*delta.get(), *listener.permissions());
 
   // Make sure the extension's active permissions reflect the change.
   scoped_refptr<PermissionSet> active_permissions =
-      PermissionSet::CreateUnion(default_permissions, delta);
-  ASSERT_EQ(*active_permissions, *extension->GetActivePermissions());
+      PermissionSet::CreateUnion(default_permissions.get(), delta.get());
+  ASSERT_EQ(*active_permissions.get(), *extension->GetActivePermissions());
 
   // Verify that the new granted and active permissions were also stored
   // in the extension preferences. In this case, the granted permissions should
@@ -167,10 +165,10 @@ TEST_F(PermissionsUpdaterTest, AddAndRemovePermissions) {
 
   scoped_refptr<PermissionSet> from_prefs =
       prefs->GetActivePermissions(extension->id());
-  ASSERT_EQ(*active_permissions, *from_prefs);
+  ASSERT_EQ(*active_permissions.get(), *from_prefs.get());
 
   from_prefs = prefs->GetGrantedPermissions(extension->id());
-  ASSERT_EQ(*active_permissions, *from_prefs);
+  ASSERT_EQ(*active_permissions.get(), *from_prefs.get());
 
   // In the second part of the test, we'll remove the permissions that we
   // just added except for 'notification'.
@@ -178,27 +176,27 @@ TEST_F(PermissionsUpdaterTest, AddAndRemovePermissions) {
   delta = new PermissionSet(apis, hosts, URLPatternSet());
 
   listener.Reset();
-  updater.RemovePermissions(extension, delta);
+  updater.RemovePermissions(extension.get(), delta.get());
   listener.Wait();
 
   // Verify that the notification was correct.
   ASSERT_TRUE(listener.received_notification());
   ASSERT_EQ(extension, listener.extension());
   ASSERT_EQ(UpdatedExtensionPermissionsInfo::REMOVED, listener.reason());
-  ASSERT_EQ(*delta, *listener.permissions());
+  ASSERT_EQ(*delta.get(), *listener.permissions());
 
   // Make sure the extension's active permissions reflect the change.
   active_permissions =
-      PermissionSet::CreateDifference(active_permissions, delta);
-  ASSERT_EQ(*active_permissions, *extension->GetActivePermissions());
+      PermissionSet::CreateDifference(active_permissions.get(), delta.get());
+  ASSERT_EQ(*active_permissions.get(), *extension->GetActivePermissions());
 
   // Verify that the extension prefs hold the new active permissions and the
   // same granted permissions.
   from_prefs = prefs->GetActivePermissions(extension->id());
-  ASSERT_EQ(*active_permissions, *from_prefs);
+  ASSERT_EQ(*active_permissions.get(), *from_prefs.get());
 
   from_prefs = prefs->GetGrantedPermissions(extension->id());
-  ASSERT_EQ(*granted_permissions, *from_prefs);
+  ASSERT_EQ(*granted_permissions.get(), *from_prefs.get());
 }
 
 }  // namespace extensions

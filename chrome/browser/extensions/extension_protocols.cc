@@ -176,7 +176,7 @@ class GeneratedBackgroundPageJob : public net::URLRequestSimpleJob {
 
     *data = "<!DOCTYPE html>\n<body>\n";
     const std::vector<std::string>& background_scripts =
-        extensions::BackgroundInfo::GetBackgroundScripts(extension_);
+        extensions::BackgroundInfo::GetBackgroundScripts(extension_.get());
     for (size_t i = 0; i < background_scripts.size(); ++i) {
       *data += "<script src=\"";
       *data += background_scripts[i];

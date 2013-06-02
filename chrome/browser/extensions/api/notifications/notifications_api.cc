@@ -58,7 +58,7 @@ class NotificationsApiDelegate : public NotificationDelegate {
         id_(id),
         scoped_id_(CreateScopedIdentifier(extension_id, id)),
         process_id_(-1) {
-    DCHECK(api_function_);
+    DCHECK(api_function_.get());
     if (api_function_->render_view_host())
       process_id_ = api_function->render_view_host()->GetProcess()->GetID();
   }
@@ -105,7 +105,7 @@ class NotificationsApiDelegate : public NotificationDelegate {
     // until ReleaseRVH is called, and api_function_ (as a
     // UIThreadExtensionFunction) will zero out its copy of render_view_host
     // when the RVH goes away.
-    if (!api_function_)
+    if (!api_function_.get())
       return NULL;
     return api_function_->render_view_host();
   }

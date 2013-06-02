@@ -123,9 +123,7 @@ IN_PROC_BROWSER_TEST_F(SocketApiTest, SocketUDPCreateGood) {
   socket_create_function->set_has_callback(true);
 
   scoped_ptr<base::Value> result(utils::RunFunctionAndReturnSingleResult(
-      socket_create_function,
-      "[\"udp\"]",
-      browser(), utils::NONE));
+      socket_create_function.get(), "[\"udp\"]", browser(), utils::NONE));
   ASSERT_EQ(base::Value::TYPE_DICTIONARY, result->GetType());
   DictionaryValue *value = static_cast<DictionaryValue*>(result.get());
   int socketId = -1;
@@ -142,9 +140,7 @@ IN_PROC_BROWSER_TEST_F(SocketApiTest, SocketTCPCreateGood) {
   socket_create_function->set_has_callback(true);
 
   scoped_ptr<base::Value> result(utils::RunFunctionAndReturnSingleResult(
-      socket_create_function,
-      "[\"tcp\"]",
-      browser(), utils::NONE));
+      socket_create_function.get(), "[\"tcp\"]", browser(), utils::NONE));
   ASSERT_EQ(base::Value::TYPE_DICTIONARY, result->GetType());
   DictionaryValue *value = static_cast<DictionaryValue*>(result.get());
   int socketId = -1;
@@ -161,7 +157,7 @@ IN_PROC_BROWSER_TEST_F(SocketApiTest, GetNetworkList) {
   socket_function->set_has_callback(true);
 
   scoped_ptr<base::Value> result(utils::RunFunctionAndReturnSingleResult(
-      socket_function, "[]", browser(), utils::NONE));
+      socket_function.get(), "[]", browser(), utils::NONE));
   ASSERT_EQ(base::Value::TYPE_LIST, result->GetType());
 
   // If we're invoking socket tests, all we can confirm is that we have at

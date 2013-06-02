@@ -82,7 +82,7 @@ BrowsingDataFileSystemHelperImpl::BrowsingDataFileSystemHelperImpl(
     fileapi::FileSystemContext* filesystem_context)
     : filesystem_context_(filesystem_context),
       is_fetching_(false) {
-  DCHECK(filesystem_context_);
+  DCHECK(filesystem_context_.get());
 }
 
 BrowsingDataFileSystemHelperImpl::~BrowsingDataFileSystemHelperImpl() {
@@ -132,14 +132,11 @@ void BrowsingDataFileSystemHelperImpl::FetchFileSystemInfoInFileThread() {
     // We can call these synchronous methods as we've already verified that
     // we're running on the FILE thread.
     int64 persistent_usage = quota_util->GetOriginUsageOnFileThread(
-        filesystem_context_, current,
-        fileapi::kFileSystemTypePersistent);
+        filesystem_context_.get(), current, fileapi::kFileSystemTypePersistent);
     int64 temporary_usage = quota_util->GetOriginUsageOnFileThread(
-        filesystem_context_, current,
-        fileapi::kFileSystemTypeTemporary);
+        filesystem_context_.get(), current, fileapi::kFileSystemTypeTemporary);
     int64 syncable_usage = quota_util->GetOriginUsageOnFileThread(
-        filesystem_context_, current,
-        fileapi::kFileSystemTypeSyncable);
+        filesystem_context_.get(), current, fileapi::kFileSystemTypeSyncable);
     file_system_info_.push_back(
         FileSystemInfo(
             current,

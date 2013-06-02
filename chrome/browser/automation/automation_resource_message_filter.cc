@@ -263,7 +263,7 @@ void AutomationResourceMessageFilter::RegisterRenderViewInIOThread(
   // instances. If the filter instances are different it means that a new
   // automation channel (External host process) was created for this tab.
   if (automation_details_iter != filtered_render_views_.Get().end() &&
-      automation_details_iter->second.filter == filter) {
+      automation_details_iter->second.filter.get() == filter) {
     DCHECK_GT(automation_details_iter->second.ref_count, 0);
     automation_details_iter->second.ref_count++;
     // The tab handle and the pending status may have changed:-
@@ -321,7 +321,7 @@ void AutomationResourceMessageFilter::ResumePendingRenderViewInIOThread(
   DCHECK(automation_details_iter->second.is_pending_render_view);
 
   AutomationResourceMessageFilter* old_filter =
-      automation_details_iter->second.filter;
+      automation_details_iter->second.filter.get();
   DCHECK(old_filter != NULL);
 
   filtered_render_views_.Get()[renderer_key] =
@@ -394,7 +394,7 @@ void AutomationResourceMessageFilter::GetCookiesForUrl(
       filtered_render_views_.Get().find(renderer_key));
 
   DCHECK(automation_details_iter != filtered_render_views_.Get().end());
-  DCHECK(automation_details_iter->second.filter != NULL);
+  DCHECK(automation_details_iter->second.filter.get() != NULL);
 
   int completion_callback_id = GetNextCompletionCallbackId();
   DCHECK(!ContainsKey(completion_callback_map_.Get(), completion_callback_id));
@@ -409,13 +409,14 @@ void AutomationResourceMessageFilter::GetCookiesForUrl(
 
   completion_callback_map_.Get()[completion_callback_id] = cookie_info;
 
-  DCHECK(automation_details_iter->second.filter != NULL);
+  DCHECK(automation_details_iter->second.filter.get() != NULL);
 
-  if (automation_details_iter->second.filter) {
-    automation_details_iter->second.filter->Send(
-        new AutomationMsg_GetCookiesFromHost(
-            automation_details_iter->second.tab_handle, url,
-            completion_callback_id));
+  if (automation_details_iter->second.filter.get()) {
+    automation_details_iter->second.filter
+        ->Send(new AutomationMsg_GetCookiesFromHost(
+              automation_details_iter->second.tab_handle,
+              url,
+              completion_callback_id));
   }
 }
 
@@ -446,12 +447,12 @@ void AutomationResourceMessageFilter::SetCookiesForUrl(
       filtered_render_views_.Get().find(RendererId(
           render_process_id, render_view_id)));
   DCHECK(automation_details_iter != filtered_render_views_.Get().end());
-  DCHECK(automation_details_iter->second.filter != NULL);
+  DCHECK(automation_details_iter->second.filter.get() != NULL);
 
-  if (automation_details_iter->second.filter) {
-    automation_details_iter->second.filter->Send(
-        new AutomationMsg_SetCookieAsync(
-            automation_details_iter->second.tab_handle, url, cookie_line));
+  if (automation_details_iter->second.filter.get()) {
+    automation_details_iter->second.filter
+        ->Send(new AutomationMsg_SetCookieAsync(
+              automation_details_iter->second.tab_handle, url, cookie_line));
   }
 }
 

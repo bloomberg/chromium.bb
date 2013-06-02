@@ -40,7 +40,7 @@ TEST(ExtensionPermissionsAPIHelpers, Pack) {
       new PermissionSet(apis, hosts, URLPatternSet());
 
   // Pack the permission set to value and verify its contents.
-  scoped_ptr<Permissions> permissions(PackPermissionSet(permission_set));
+  scoped_ptr<Permissions> permissions(PackPermissionSet(permission_set.get()));
   scoped_ptr<DictionaryValue> value(permissions->ToValue());
   ListValue* api_list = NULL;
   ListValue* origin_list = NULL;
@@ -71,7 +71,7 @@ TEST(ExtensionPermissionsAPIHelpers, Pack) {
   from_value = UnpackPermissionSet(permissions_object, true, &error);
   EXPECT_TRUE(error.empty());
 
-  EXPECT_EQ(*permission_set, *from_value);
+  EXPECT_EQ(*permission_set.get(), *from_value.get());
 }
 
 // Tests various error conditions and edge cases when unpacking values
@@ -93,7 +93,7 @@ TEST(ExtensionPermissionsAPIHelpers, Unpack) {
     EXPECT_TRUE(Permissions::Populate(*value, &permissions_object));
     permissions = UnpackPermissionSet(permissions_object, true, &error);
     EXPECT_TRUE(permissions->HasAPIPermission(APIPermission::kTab));
-    EXPECT_TRUE(permissions);
+    EXPECT_TRUE(permissions.get());
     EXPECT_TRUE(error.empty());
   }
 
@@ -104,7 +104,7 @@ TEST(ExtensionPermissionsAPIHelpers, Unpack) {
     value->Set("origins", origins->DeepCopy());
     EXPECT_TRUE(Permissions::Populate(*value, &permissions_object));
     permissions = UnpackPermissionSet(permissions_object, true, &error);
-    EXPECT_TRUE(permissions);
+    EXPECT_TRUE(permissions.get());
     EXPECT_TRUE(error.empty());
     EXPECT_TRUE(permissions->HasExplicitAccessToOrigin(GURL("http://a.com/")));
   }
@@ -152,7 +152,7 @@ TEST(ExtensionPermissionsAPIHelpers, Unpack) {
     value->Set("random", Value::CreateIntegerValue(3));
     EXPECT_TRUE(Permissions::Populate(*value, &permissions_object));
     permissions = UnpackPermissionSet(permissions_object, true, &error);
-    EXPECT_TRUE(permissions);
+    EXPECT_TRUE(permissions.get());
     EXPECT_TRUE(error.empty());
     EXPECT_TRUE(permissions->HasExplicitAccessToOrigin(GURL("http://a.com/")));
   }
@@ -166,7 +166,7 @@ TEST(ExtensionPermissionsAPIHelpers, Unpack) {
     value->Set("permissions", invalid_apis->DeepCopy());
     EXPECT_TRUE(Permissions::Populate(*value, &permissions_object));
     permissions = UnpackPermissionSet(permissions_object, true, &error);
-    EXPECT_FALSE(permissions);
+    EXPECT_FALSE(permissions.get());
     EXPECT_FALSE(error.empty());
     EXPECT_EQ(error, "'unknown_permission' is not a recognized permission.");
   }

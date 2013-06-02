@@ -73,7 +73,7 @@ const Extension* TestExtensionEnvironment::MakeExtension(
 
   scoped_refptr<Extension> result =
       ExtensionBuilder().SetManifest(manifest.Pass()).Build();
-  GetExtensionService()->AddExtension(result);
+  GetExtensionService()->AddExtension(result.get());
   return result.get();
 }
 

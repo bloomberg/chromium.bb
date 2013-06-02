@@ -219,7 +219,7 @@ BookmarkModel::~BookmarkModel() {
   FOR_EACH_OBSERVER(BookmarkModelObserver, observers_,
                     BookmarkModelBeingDeleted(this));
 
-  if (store_) {
+  if (store_.get()) {
     // The store maintains a reference back to us. We need to tell it we're gone
     // so that it doesn't try and invoke a method back on us again.
     store_->BookmarkModelDeleted();
@@ -253,7 +253,7 @@ void BookmarkModel::Load(
                  content::Source<Profile>(profile_));
 
   // Load the bookmarks. BookmarkStorage notifies us when done.
-  store_ = new BookmarkStorage(profile_, this, task_runner);
+  store_ = new BookmarkStorage(profile_, this, task_runner.get());
   store_->LoadBookmarks(CreateLoadDetails());
 }
 

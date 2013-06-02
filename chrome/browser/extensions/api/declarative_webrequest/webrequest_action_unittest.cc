@@ -113,7 +113,7 @@ void WebRequestActionWithThreadsTest::SetUp() {
                                      Extension::NO_FLAGS,
                                      "ext_id_1",
                                      &error);
-  ASSERT_TRUE(extension_) << error;
+  ASSERT_TRUE(extension_.get()) << error;
   extension_all_urls_ =
       LoadManifestUnchecked("permissions",
                             "web_request_all_host_permissions.json",
@@ -121,9 +121,9 @@ void WebRequestActionWithThreadsTest::SetUp() {
                             Extension::NO_FLAGS,
                             "ext_id_2",
                             &error);
-  ASSERT_TRUE(extension_all_urls_) << error;
+  ASSERT_TRUE(extension_all_urls_.get()) << error;
   extension_info_map_ = new ExtensionInfoMap;
-  ASSERT_TRUE(extension_info_map_);
+  ASSERT_TRUE(extension_info_map_.get());
   extension_info_map_->AddExtension(
       extension_.get(), base::Time::Now(), false /*incognito_enabled*/);
   extension_info_map_->AddExtension(extension_all_urls_.get(),
@@ -140,12 +140,12 @@ bool WebRequestActionWithThreadsTest::ActionWorksOnRequest(
   std::list<LinkedPtrEventResponseDelta> deltas;
   scoped_refptr<net::HttpResponseHeaders> headers(
       new net::HttpResponseHeaders(""));
-  WebRequestData request_data(&regular_request, stage, headers);
+  WebRequestData request_data(&regular_request, stage, headers.get());
   std::set<std::string> ignored_tags;
-  WebRequestAction::ApplyInfo apply_info = {
-    extension_info_map_, request_data, false /*crosses_incognito*/, &deltas,
-    &ignored_tags
-  };
+  WebRequestAction::ApplyInfo apply_info = { extension_info_map_.get(),
+                                             request_data,
+                                             false /*crosses_incognito*/,
+                                             &deltas, &ignored_tags };
   action_set->Apply(extension_id, base::Time(), &apply_info);
   return (1u == deltas.size() || 0u < ignored_tags.size());
 }

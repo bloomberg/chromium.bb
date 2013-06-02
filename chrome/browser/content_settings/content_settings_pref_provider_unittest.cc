@@ -138,16 +138,16 @@ TEST_F(PrefProviderTest, Incognito) {
   builder.WithUserPrefs(user_prefs);
   scoped_refptr<user_prefs::PrefRegistrySyncable> registry(
       new user_prefs::PrefRegistrySyncable);
-  PrefServiceSyncable* regular_prefs = builder.CreateSyncable(registry);
+  PrefServiceSyncable* regular_prefs = builder.CreateSyncable(registry.get());
 
-  chrome::RegisterUserPrefs(registry);
+  chrome::RegisterUserPrefs(registry.get());
 
   builder.WithUserPrefs(otr_user_prefs);
   scoped_refptr<user_prefs::PrefRegistrySyncable> otr_registry(
       new user_prefs::PrefRegistrySyncable);
-  PrefServiceSyncable* otr_prefs = builder.CreateSyncable(otr_registry);
+  PrefServiceSyncable* otr_prefs = builder.CreateSyncable(otr_registry.get());
 
-  chrome::RegisterUserPrefs(otr_registry);
+  chrome::RegisterUserPrefs(otr_registry.get());
 
   TestingProfile::Builder profile_builder;
   profile_builder.SetPrefService(make_scoped_ptr(regular_prefs));

@@ -1929,7 +1929,7 @@ TEST_F(SearchProviderTest, NavigationInline) {
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); i++) {
     QueryForInput(ASCIIToUTF16(cases[i].input), false, false);
     SearchProvider::NavigationResult result(
-        *provider_, GURL(cases[i].url), string16(), false, 0);
+        *provider_.get(), GURL(cases[i].url), string16(), false, 0);
     AutocompleteMatch match(provider_->NavigationToMatch(result));
     EXPECT_EQ(cases[i].inline_offset, match.inline_autocomplete_offset);
     EXPECT_EQ(ASCIIToUTF16(cases[i].fill_into_edit), match.fill_into_edit);
@@ -1941,7 +1941,7 @@ TEST_F(SearchProviderTest, NavigationInlineSchemeSubstring) {
   const string16 input(ASCIIToUTF16("ht"));
   const string16 url(ASCIIToUTF16("http://a.com"));
   const SearchProvider::NavigationResult result(
-      *provider_, GURL(url), string16(), false, 0);
+      *provider_.get(), GURL(url), string16(), false, 0);
 
   // Check the offset and strings when inline autocompletion is allowed.
   QueryForInput(input, false, false);
@@ -1963,7 +1963,7 @@ TEST_F(SearchProviderTest, NavigationInlineDomainClassify) {
   QueryForInput(ASCIIToUTF16("w"), false, false);
   const GURL url("http://www.wow.com");
   const SearchProvider::NavigationResult result(
-      *provider_, url, string16(), false, 0);
+      *provider_.get(), url, string16(), false, 0);
   AutocompleteMatch match(provider_->NavigationToMatch(result));
   EXPECT_EQ(5U, match.inline_autocomplete_offset);
   EXPECT_EQ(ASCIIToUTF16("www.wow.com"), match.fill_into_edit);
@@ -2124,9 +2124,11 @@ TEST_F(SearchProviderTest, RemoveStaleResultsTest) {
         break;
       if (cases[i].results[j].is_navigation_result) {
         provider_->default_results_.navigation_results.push_back(
-            SearchProvider::NavigationResult(
-                *provider_, GURL(suggestion), string16(),
-                false, cases[i].results[j].relevance));
+            SearchProvider::NavigationResult(*provider_.get(),
+                                             GURL(suggestion),
+                                             string16(),
+                                             false,
+                                             cases[i].results[j].relevance));
       } else {
         provider_->default_results_.suggest_results.push_back(
             SearchProvider::SuggestResult(ASCIIToUTF16(suggestion), false,

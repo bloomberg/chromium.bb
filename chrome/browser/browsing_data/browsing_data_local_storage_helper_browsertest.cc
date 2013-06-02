@@ -113,10 +113,9 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataLocalStorageHelperTest, CallbackCompletes) {
   scoped_refptr<BrowsingDataLocalStorageHelper> local_storage_helper(
       new BrowsingDataLocalStorageHelper(browser()->profile()));
   CreateLocalStorageFilesForTest();
-  StopTestOnCallback stop_test_on_callback(local_storage_helper);
-  local_storage_helper->StartFetching(
-      base::Bind(&StopTestOnCallback::Callback,
-                 base::Unretained(&stop_test_on_callback)));
+  StopTestOnCallback stop_test_on_callback(local_storage_helper.get());
+  local_storage_helper->StartFetching(base::Bind(
+      &StopTestOnCallback::Callback, base::Unretained(&stop_test_on_callback)));
   // Blocks until StopTestOnCallback::Callback is notified.
   content::RunMessageLoop();
 }

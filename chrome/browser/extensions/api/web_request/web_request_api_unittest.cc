@@ -1273,9 +1273,8 @@ TEST(ExtensionWebRequestHelpersTest, TestCalculateOnHeadersReceivedDelta) {
   // Key3 is deleted
   new_headers.push_back(ResponseHeader("Key4", "Value4"));  // Added
 
-  scoped_ptr<EventResponseDelta> delta(
-      CalculateOnHeadersReceivedDelta("extid", base::Time::Now(), cancel,
-          base_headers, &new_headers));
+  scoped_ptr<EventResponseDelta> delta(CalculateOnHeadersReceivedDelta(
+      "extid", base::Time::Now(), cancel, base_headers.get(), &new_headers));
   ASSERT_TRUE(delta.get());
   EXPECT_TRUE(delta->cancel);
   EXPECT_EQ(2u, delta->added_response_headers.size());

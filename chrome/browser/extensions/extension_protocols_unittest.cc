@@ -89,7 +89,7 @@ class ExtensionProtocolTest : public testing::Test {
         resource_context_.GetRequestContext();
     job_factory_.SetProtocolHandler(
         kExtensionScheme,
-        CreateExtensionProtocolHandler(incognito, extension_info_map_));
+        CreateExtensionProtocolHandler(incognito, extension_info_map_.get()));
     request_context->set_job_factory(&job_factory_);
   }
 
@@ -144,7 +144,7 @@ TEST_F(ExtensionProtocolTest, IncognitoRequest) {
     scoped_refptr<Extension> extension =
         CreateTestExtension(cases[i].name, cases[i].incognito_split_mode);
     extension_info_map_->AddExtension(
-        extension, base::Time::Now(), cases[i].incognito_enabled);
+        extension.get(), base::Time::Now(), cases[i].incognito_enabled);
 
     // First test a main frame request.
     {
@@ -192,8 +192,7 @@ TEST_F(ExtensionProtocolTest, ComponentResourceRequest) {
   SetProtocolHandler(false);
 
   scoped_refptr<Extension> extension = CreateWebStoreExtension();
-  extension_info_map_->AddExtension(
-      extension, base::Time::Now(), false);
+  extension_info_map_->AddExtension(extension.get(), base::Time::Now(), false);
 
   // First test it with the extension enabled.
   {

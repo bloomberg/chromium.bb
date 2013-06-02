@@ -42,7 +42,7 @@ class BrowsingDataQuotaHelperTest : public testing::Test {
     helper_ = new BrowsingDataQuotaHelperImpl(
         BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
         BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO),
-        quota_manager_);
+        quota_manager_.get());
   }
 
   virtual void TearDown() OVERRIDE {

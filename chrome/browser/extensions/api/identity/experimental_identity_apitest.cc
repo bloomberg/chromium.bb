@@ -319,7 +319,7 @@ IN_PROC_BROWSER_TEST_F(ExperimentalGetAuthTokenFunctionTest,
   scoped_refptr<const Extension> extension(CreateExtension(CLIENT_ID | SCOPES));
   scoped_refptr<ExperimentalMockGetAuthTokenFunction> func(
       new ExperimentalMockGetAuthTokenFunction());
-  func->set_extension(extension);
+  func->set_extension(extension.get());
   EXPECT_CALL(*func.get(), HasLoginToken()).WillOnce(Return(true));
   TestOAuth2MintTokenFlow* flow = new TestOAuth2MintTokenFlow(
       TestOAuth2MintTokenFlow::ISSUE_ADVICE_SUCCESS, func.get());
@@ -330,7 +330,7 @@ IN_PROC_BROWSER_TEST_F(ExperimentalGetAuthTokenFunctionTest,
   EXPECT_FALSE(func->login_ui_shown());
   EXPECT_FALSE(func->install_ui_shown());
 
-  const OAuth2Info& oauth2_info = OAuth2Info::GetOAuth2Info(extension);
+  const OAuth2Info& oauth2_info = OAuth2Info::GetOAuth2Info(extension.get());
   EXPECT_EQ(
       IdentityTokenCacheValue::CACHE_STATUS_NOTFOUND,
       id_api()->GetCachedToken(extension->id(), oauth2_info.scopes).status());
@@ -357,8 +357,8 @@ IN_PROC_BROWSER_TEST_F(ExperimentalGetAuthTokenFunctionTest,
   scoped_refptr<ExperimentalMockGetAuthTokenFunction> func(
       new ExperimentalMockGetAuthTokenFunction());
   scoped_refptr<const Extension> extension(CreateExtension(CLIENT_ID | SCOPES));
-  func->set_extension(extension);
-  const OAuth2Info& oauth2_info = OAuth2Info::GetOAuth2Info(extension);
+  func->set_extension(extension.get());
+  const OAuth2Info& oauth2_info = OAuth2Info::GetOAuth2Info(extension.get());
   EXPECT_CALL(*func.get(), HasLoginToken()).WillOnce(Return(true));
   TestOAuth2MintTokenFlow* flow = new TestOAuth2MintTokenFlow(
       TestOAuth2MintTokenFlow::MINT_TOKEN_SUCCESS, func.get());
@@ -501,8 +501,8 @@ IN_PROC_BROWSER_TEST_F(ExperimentalGetAuthTokenFunctionTest,
   scoped_refptr<ExperimentalMockGetAuthTokenFunction> func(
       new ExperimentalMockGetAuthTokenFunction());
   scoped_refptr<const Extension> extension(CreateExtension(CLIENT_ID | SCOPES));
-  func->set_extension(extension);
-  const OAuth2Info& oauth2_info = OAuth2Info::GetOAuth2Info(extension);
+  func->set_extension(extension.get());
+  const OAuth2Info& oauth2_info = OAuth2Info::GetOAuth2Info(extension.get());
   EXPECT_CALL(*func.get(), HasLoginToken()).WillOnce(Return(false));
   func->set_login_ui_result(true);
   TestOAuth2MintTokenFlow* flow1 = new TestOAuth2MintTokenFlow(
@@ -606,7 +606,7 @@ class ExperimentalLaunchWebAuthFlowFunctionTest :
         extra_params.length() ? "," : "",
         extra_params.c_str());
 
-    RunFunctionAsync(function, args);
+    RunFunctionAsync(function.get(), args);
 
     observer.Wait();
 
@@ -644,14 +644,15 @@ IN_PROC_BROWSER_TEST_F(ExperimentalLaunchWebAuthFlowFunctionTest,
       new ExperimentalIdentityLaunchWebAuthFlowFunction());
 
   RunFunctionAsync(
-      function, "[{\"interactive\": true, \"url\": \"data:text/html,auth\"}]");
+      function.get(),
+      "[{\"interactive\": true, \"url\": \"data:text/html,auth\"}]");
 
   observer.Wait();
   Browser* web_auth_flow_browser =
       content::Source<Browser>(observer.source()).ptr();
   web_auth_flow_browser->window()->Close();
 
-  EXPECT_EQ(std::string(errors::kUserRejected), WaitForError(function));
+  EXPECT_EQ(std::string(errors::kUserRejected), WaitForError(function.get()));
 }
 
 IN_PROC_BROWSER_TEST_F(ExperimentalLaunchWebAuthFlowFunctionTest,
@@ -662,7 +663,7 @@ IN_PROC_BROWSER_TEST_F(ExperimentalLaunchWebAuthFlowFunctionTest,
   function->set_extension(empty_extension.get());
 
   std::string error = utils::RunFunctionAndReturnError(
-      function,
+      function.get(),
       "[{\"interactive\": false, \"url\": \"data:text/html,auth\"}]",
       browser());
 
@@ -678,7 +679,7 @@ IN_PROC_BROWSER_TEST_F(ExperimentalLaunchWebAuthFlowFunctionTest,
 
   function->InitFinalRedirectURLPrefixesForTest("abcdefghij");
   scoped_ptr<base::Value> value(utils::RunFunctionAndReturnSingleResult(
-      function,
+      function.get(),
       "[{\"interactive\": false,"
       "\"url\": \"https://abcdefghij.chromiumapp.org/callback#test\"}]",
       browser()));
@@ -698,7 +699,7 @@ IN_PROC_BROWSER_TEST_F(ExperimentalLaunchWebAuthFlowFunctionTest,
 
   function->InitFinalRedirectURLPrefixesForTest("abcdefghij");
   scoped_ptr<base::Value> value(utils::RunFunctionAndReturnSingleResult(
-      function,
+      function.get(),
       "[{\"interactive\": true,"
       "\"url\": \"https://abcdefghij.chromiumapp.org/callback#test\"}]",
       browser()));
@@ -718,7 +719,7 @@ IN_PROC_BROWSER_TEST_F(ExperimentalLaunchWebAuthFlowFunctionTest,
 
   function->InitFinalRedirectURLPrefixesForTest("abcdefghij");
   scoped_ptr<base::Value> value(utils::RunFunctionAndReturnSingleResult(
-      function,
+      function.get(),
       "[{\"interactive\": true,"
       "\"url\": \"data:text/html,<script>window.location.replace('"
       "https://abcdefghij.chromiumapp.org/callback#test')</script>\"}]",

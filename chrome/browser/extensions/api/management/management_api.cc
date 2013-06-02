@@ -394,9 +394,9 @@ void ManagementGetPermissionWarningsByManifestFunction::OnParseSuccess(
     return;
   }
 
-  std::vector<std::string> warnings = CreateWarningsList(extension);
-  results_ = management::GetPermissionWarningsByManifest::Results::Create(
-      warnings);
+  std::vector<std::string> warnings = CreateWarningsList(extension.get());
+  results_ =
+      management::GetPermissionWarningsByManifest::Results::Create(warnings);
   SendResponse(true);
 
   // Matched with AddRef() in RunImpl().

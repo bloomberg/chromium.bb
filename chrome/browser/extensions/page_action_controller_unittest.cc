@@ -82,12 +82,12 @@ TEST_F(PageActionControllerTest, NavigationClearsState) {
                    .Set("page_action", DictionaryBuilder()
                         .Set("default_title", "Hello")))
       .Build();
-  extension_service_->AddExtension(extension);
+  extension_service_->AddExtension(extension.get());
 
   NavigateAndCommit(GURL("http://www.google.com"));
 
-  ExtensionAction& page_action = *ExtensionActionManager::Get(profile())->
-      GetPageAction(*extension);
+  ExtensionAction& page_action =
+      *ExtensionActionManager::Get(profile())->GetPageAction(*extension.get());
   page_action.SetTitle(tab_id(), "Goodbye");
   page_action.SetPopupUrl(
       tab_id(), extension->GetResourceURL("popup.html"));

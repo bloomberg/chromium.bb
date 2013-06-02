@@ -793,7 +793,7 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
   {
     TRACE_EVENT0("startup",
       "ChromeBrowserMainParts::PreCreateThreadsImpl:InitBrowswerProcessImpl");
-    browser_process_.reset(new BrowserProcessImpl(local_state_task_runner,
+    browser_process_.reset(new BrowserProcessImpl(local_state_task_runner.get(),
                                                   parsed_command_line()));
   }
 
@@ -819,9 +819,8 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
             switches::kProfilingOutputFile));
   }
 
-  local_state_ = InitializeLocalState(local_state_task_runner,
-                                      parsed_command_line(),
-                                      is_first_run);
+  local_state_ = InitializeLocalState(
+      local_state_task_runner.get(), parsed_command_line(), is_first_run);
 
   // These members must be initialized before returning from this function.
   master_prefs_.reset(new first_run::MasterPrefs);

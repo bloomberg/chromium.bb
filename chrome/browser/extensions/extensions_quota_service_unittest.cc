@@ -218,55 +218,85 @@ TEST_F(QuotaLimitHeuristicTest, Sustained) {
 TEST_F(ExtensionsQuotaServiceTest, NoHeuristic) {
   scoped_refptr<MockFunction> f(new MockFunction("foo"));
   ListValue args;
-  EXPECT_EQ("", service_->Assess(extension_a_, f, &args, kStartTime));
+  EXPECT_EQ("", service_->Assess(extension_a_, f.get(), &args, kStartTime));
 }
 
 TEST_F(ExtensionsQuotaServiceTest, FrozenHeuristic) {
   scoped_refptr<MockFunction> f(new FrozenMockFunction("foo"));
   ListValue args;
   args.Append(new base::FundamentalValue(1));
-  EXPECT_NE("", service_->Assess(extension_a_, f, &args, kStartTime));
+  EXPECT_NE("", service_->Assess(extension_a_, f.get(), &args, kStartTime));
 }
 
 TEST_F(ExtensionsQuotaServiceTest, SingleHeuristic) {
   scoped_refptr<MockFunction> f(new TimedLimitMockFunction("foo"));
   ListValue args;
   args.Append(new base::FundamentalValue(1));
-  EXPECT_EQ("", service_->Assess(extension_a_, f, &args, kStartTime));
-  EXPECT_EQ("", service_->Assess(extension_a_, f, &args,
-                                 kStartTime + TimeDelta::FromSeconds(10)));
-  EXPECT_NE("", service_->Assess(extension_a_, f, &args,
-              kStartTime + TimeDelta::FromSeconds(15)));
+  EXPECT_EQ("", service_->Assess(extension_a_, f.get(), &args, kStartTime));
+  EXPECT_EQ("",
+            service_->Assess(extension_a_,
+                             f.get(),
+                             &args,
+                             kStartTime + TimeDelta::FromSeconds(10)));
+  EXPECT_NE("",
+            service_->Assess(extension_a_,
+                             f.get(),
+                             &args,
+                             kStartTime + TimeDelta::FromSeconds(15)));
 
   ListValue args2;
   args2.Append(new base::FundamentalValue(1));
   args2.Append(new base::FundamentalValue(2));
-  EXPECT_EQ("", service_->Assess(extension_b_, f, &args2, kStartTime));
-  EXPECT_EQ("", service_->Assess(extension_b_, f, &args2,
-                                 kStartTime + TimeDelta::FromSeconds(10)));
+  EXPECT_EQ("", service_->Assess(extension_b_, f.get(), &args2, kStartTime));
+  EXPECT_EQ("",
+            service_->Assess(extension_b_,
+                             f.get(),
+                             &args2,
+                             kStartTime + TimeDelta::FromSeconds(10)));
 
   TimeDelta peace = TimeDelta::FromMinutes(30);
-  EXPECT_EQ("", service_->Assess(extension_b_, f, &args, kStartTime + peace));
-  EXPECT_EQ("", service_->Assess(
-        extension_b_, f, &args,
-        kStartTime + peace + TimeDelta::FromSeconds(10)));
-  EXPECT_NE("", service_->Assess(extension_b_, f, &args2,
-               kStartTime + peace + TimeDelta::FromSeconds(15)));
+  EXPECT_EQ("",
+            service_->Assess(extension_b_, f.get(), &args, kStartTime + peace));
+  EXPECT_EQ("",
+            service_->Assess(extension_b_,
+                             f.get(),
+                             &args,
+                             kStartTime + peace + TimeDelta::FromSeconds(10)));
+  EXPECT_NE("",
+            service_->Assess(extension_b_,
+                             f.get(),
+                             &args2,
+                             kStartTime + peace + TimeDelta::FromSeconds(15)));
 
   // Test that items are independent.
   ListValue args3;
   args3.Append(new base::FundamentalValue(3));
-  EXPECT_EQ("", service_->Assess(extension_c_, f, &args, kStartTime));
-  EXPECT_EQ("", service_->Assess(extension_c_, f, &args3,
-                                 kStartTime + TimeDelta::FromSeconds(10)));
-  EXPECT_EQ("", service_->Assess(extension_c_, f, &args,
-                                 kStartTime + TimeDelta::FromSeconds(15)));
-  EXPECT_EQ("", service_->Assess(extension_c_, f, &args3,
-                                 kStartTime + TimeDelta::FromSeconds(20)));
-  EXPECT_NE("", service_->Assess(extension_c_, f, &args,
-                                 kStartTime + TimeDelta::FromSeconds(25)));
-  EXPECT_NE("", service_->Assess(extension_c_, f, &args3,
-                                 kStartTime + TimeDelta::FromSeconds(30)));
+  EXPECT_EQ("", service_->Assess(extension_c_, f.get(), &args, kStartTime));
+  EXPECT_EQ("",
+            service_->Assess(extension_c_,
+                             f.get(),
+                             &args3,
+                             kStartTime + TimeDelta::FromSeconds(10)));
+  EXPECT_EQ("",
+            service_->Assess(extension_c_,
+                             f.get(),
+                             &args,
+                             kStartTime + TimeDelta::FromSeconds(15)));
+  EXPECT_EQ("",
+            service_->Assess(extension_c_,
+                             f.get(),
+                             &args3,
+                             kStartTime + TimeDelta::FromSeconds(20)));
+  EXPECT_NE("",
+            service_->Assess(extension_c_,
+                             f.get(),
+                             &args,
+                             kStartTime + TimeDelta::FromSeconds(25)));
+  EXPECT_NE("",
+            service_->Assess(extension_c_,
+                             f.get(),
+                             &args3,
+                             kStartTime + TimeDelta::FromSeconds(30)));
 }
 
 TEST_F(ExtensionsQuotaServiceTest, ChainedHeuristics) {
@@ -278,30 +308,48 @@ TEST_F(ExtensionsQuotaServiceTest, ChainedHeuristics) {
   // One event per minute for 20 minutes comes in under the sustained limit,
   // but is equal to the timed limit.
   for (int i = 0; i < 20; i++) {
-    EXPECT_EQ("", service_->Assess(
-          extension_a_, f, &args,
-          kStartTime + TimeDelta::FromSeconds(10 + i * 60)));
+    EXPECT_EQ(
+        "",
+        service_->Assess(extension_a_,
+                         f.get(),
+                         &args,
+                         kStartTime + TimeDelta::FromSeconds(10 + i * 60)));
   }
 
   // This will bring us to 21 events in an hour, which is a violation.
-  EXPECT_NE("", service_->Assess(extension_a_, f, &args,
-                                 kStartTime + TimeDelta::FromMinutes(30)));
+  EXPECT_NE("",
+            service_->Assess(extension_a_,
+                             f.get(),
+                             &args,
+                             kStartTime + TimeDelta::FromMinutes(30)));
 
   // Now, check that we can still hit the lower limit.
   for (int i = 0; i < 5; i++) {
-    EXPECT_EQ("", service_->Assess(
-          extension_b_, f, &args,
-          kStartTime + TimeDelta::FromSeconds(10 + i * 60)));
-    EXPECT_EQ("", service_->Assess(
-          extension_b_, f, &args,
-          kStartTime + TimeDelta::FromSeconds(15 + i * 60)));
-    EXPECT_EQ("", service_->Assess(
-          extension_b_, f, &args,
-          kStartTime + TimeDelta::FromSeconds(20 + i * 60)));
+    EXPECT_EQ(
+        "",
+        service_->Assess(extension_b_,
+                         f.get(),
+                         &args,
+                         kStartTime + TimeDelta::FromSeconds(10 + i * 60)));
+    EXPECT_EQ(
+        "",
+        service_->Assess(extension_b_,
+                         f.get(),
+                         &args,
+                         kStartTime + TimeDelta::FromSeconds(15 + i * 60)));
+    EXPECT_EQ(
+        "",
+        service_->Assess(extension_b_,
+                         f.get(),
+                         &args,
+                         kStartTime + TimeDelta::FromSeconds(20 + i * 60)));
   }
 
-  EXPECT_NE("", service_->Assess(extension_b_, f, &args,
-               kStartTime + TimeDelta::FromMinutes(6)));
+  EXPECT_NE("",
+            service_->Assess(extension_b_,
+                             f.get(),
+                             &args,
+                             kStartTime + TimeDelta::FromMinutes(6)));
 }
 
 TEST_F(ExtensionsQuotaServiceTest, MultipleFunctionsDontInterfere) {
@@ -313,16 +361,28 @@ TEST_F(ExtensionsQuotaServiceTest, MultipleFunctionsDontInterfere) {
   args_f.Append(new base::FundamentalValue(1));
   args_g.Append(new base::FundamentalValue(2));
 
-  EXPECT_EQ("", service_->Assess(extension_a_, f, &args_f, kStartTime));
-  EXPECT_EQ("", service_->Assess(extension_a_, g, &args_g, kStartTime));
-  EXPECT_EQ("", service_->Assess(extension_a_, f, &args_f,
-                                 kStartTime + TimeDelta::FromSeconds(10)));
-  EXPECT_EQ("", service_->Assess(extension_a_, g, &args_g,
-                                 kStartTime + TimeDelta::FromSeconds(10)));
-  EXPECT_NE("", service_->Assess(extension_a_, f, &args_f,
-                                 kStartTime + TimeDelta::FromSeconds(15)));
-  EXPECT_NE("", service_->Assess(extension_a_, g, &args_g,
-                                 kStartTime + TimeDelta::FromSeconds(15)));
+  EXPECT_EQ("", service_->Assess(extension_a_, f.get(), &args_f, kStartTime));
+  EXPECT_EQ("", service_->Assess(extension_a_, g.get(), &args_g, kStartTime));
+  EXPECT_EQ("",
+            service_->Assess(extension_a_,
+                             f.get(),
+                             &args_f,
+                             kStartTime + TimeDelta::FromSeconds(10)));
+  EXPECT_EQ("",
+            service_->Assess(extension_a_,
+                             g.get(),
+                             &args_g,
+                             kStartTime + TimeDelta::FromSeconds(10)));
+  EXPECT_NE("",
+            service_->Assess(extension_a_,
+                             f.get(),
+                             &args_f,
+                             kStartTime + TimeDelta::FromSeconds(15)));
+  EXPECT_NE("",
+            service_->Assess(extension_a_,
+                             g.get(),
+                             &args_g,
+                             kStartTime + TimeDelta::FromSeconds(15)));
 }
 
 TEST_F(ExtensionsQuotaServiceTest, ViolatorsWillBeViolators) {
@@ -330,16 +390,26 @@ TEST_F(ExtensionsQuotaServiceTest, ViolatorsWillBeViolators) {
   scoped_refptr<MockFunction> g(new TimedLimitMockFunction("bar"));
   ListValue arg;
   arg.Append(new base::FundamentalValue(1));
-  EXPECT_EQ("", service_->Assess(extension_a_, f, &arg, kStartTime));
-  EXPECT_EQ("", service_->Assess(extension_a_, f, &arg,
-                                 kStartTime + TimeDelta::FromSeconds(10)));
-  EXPECT_NE("", service_->Assess(extension_a_, f, &arg,
-                                 kStartTime + TimeDelta::FromSeconds(15)));
+  EXPECT_EQ("", service_->Assess(extension_a_, f.get(), &arg, kStartTime));
+  EXPECT_EQ("",
+            service_->Assess(extension_a_,
+                             f.get(),
+                             &arg,
+                             kStartTime + TimeDelta::FromSeconds(10)));
+  EXPECT_NE("",
+            service_->Assess(extension_a_,
+                             f.get(),
+                             &arg,
+                             kStartTime + TimeDelta::FromSeconds(15)));
 
   // We don't allow this extension to use quota limited functions even if they
   // wait a while.
-  EXPECT_NE("", service_->Assess(extension_a_, f, &arg,
-                                 kStartTime + TimeDelta::FromDays(1)));
-  EXPECT_NE("", service_->Assess(extension_a_, g, &arg,
-                                 kStartTime + TimeDelta::FromDays(1)));
+  EXPECT_NE(
+      "",
+      service_->Assess(
+          extension_a_, f.get(), &arg, kStartTime + TimeDelta::FromDays(1)));
+  EXPECT_NE(
+      "",
+      service_->Assess(
+          extension_a_, g.get(), &arg, kStartTime + TimeDelta::FromDays(1)));
 }

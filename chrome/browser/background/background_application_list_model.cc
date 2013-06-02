@@ -226,7 +226,7 @@ void BackgroundApplicationListModel::DissociateApplicationData(
 const Extension* BackgroundApplicationListModel::GetExtension(
     int position) const {
   DCHECK(position >= 0 && static_cast<size_t>(position) < extensions_.size());
-  return extensions_[position];
+  return extensions_[position].get();
 }
 
 const BackgroundApplicationListModel::Application*

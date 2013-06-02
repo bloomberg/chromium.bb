@@ -67,7 +67,7 @@ SimpleExtensionLoadPrompt::~SimpleExtensionLoadPrompt() {
 void SimpleExtensionLoadPrompt::ShowPrompt() {
   install_ui_->ConfirmInstall(
       this,
-      extension_,
+      extension_.get(),
       ExtensionInstallPrompt::GetDefaultShowDialogCallback());
 }
 

@@ -52,7 +52,7 @@ void ExtensionWebRequestHelpersTestWithThreadsTest::SetUp() {
                                                     Extension::NO_FLAGS,
                                                     "ext_id_1",
                                                     &error);
-  ASSERT_TRUE(permissionless_extension_) << error;
+  ASSERT_TRUE(permissionless_extension_.get()) << error;
   com_extension_ =
       LoadManifestUnchecked("permissions",
                             "web_request_com_host_permissions.json",
@@ -60,7 +60,7 @@ void ExtensionWebRequestHelpersTestWithThreadsTest::SetUp() {
                             Extension::NO_FLAGS,
                             "ext_id_2",
                             &error);
-  ASSERT_TRUE(com_extension_) << error;
+  ASSERT_TRUE(com_extension_.get()) << error;
   extension_info_map_ = new ExtensionInfoMap;
   extension_info_map_->AddExtension(permissionless_extension_.get(),
                                     base::Time::Now(),
@@ -149,25 +149,25 @@ TEST_F(ExtensionWebRequestHelpersTestWithThreadsTest,
       GURL("http://example.com"), NULL, &context, NULL);
 
   EXPECT_TRUE(WebRequestPermissions::CanExtensionAccessURL(
-      extension_info_map_,
+      extension_info_map_.get(),
       permissionless_extension_->id(),
       request.url(),
       false /*crosses_incognito*/,
       WebRequestPermissions::DO_NOT_CHECK_HOST));
   EXPECT_FALSE(WebRequestPermissions::CanExtensionAccessURL(
-      extension_info_map_,
+      extension_info_map_.get(),
       permissionless_extension_->id(),
       request.url(),
       false /*crosses_incognito*/,
       WebRequestPermissions::REQUIRE_HOST_PERMISSION));
   EXPECT_TRUE(WebRequestPermissions::CanExtensionAccessURL(
-      extension_info_map_,
+      extension_info_map_.get(),
       com_extension_->id(),
       request.url(),
       false /*crosses_incognito*/,
       WebRequestPermissions::REQUIRE_HOST_PERMISSION));
   EXPECT_FALSE(WebRequestPermissions::CanExtensionAccessURL(
-      extension_info_map_,
+      extension_info_map_.get(),
       com_extension_->id(),
       request.url(),
       false /*crosses_incognito*/,

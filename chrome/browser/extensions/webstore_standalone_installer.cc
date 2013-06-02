@@ -261,16 +261,14 @@ WebstoreStandaloneInstaller::CreateInstallUI() {
           localized_name_,
           localized_description_,
           &error);
-  if (!localized_extension_for_display_) {
+  if (!localized_extension_for_display_.get()) {
     CompleteInstall(kInvalidManifestError);
     return;
   }
 
   install_ui_.reset(new ExtensionInstallPrompt(GetWebContents()));
-  install_ui_->ConfirmStandaloneInstall(this,
-                                        localized_extension_for_display_,
-                                        &icon_,
-                                        *install_prompt_);
+  install_ui_->ConfirmStandaloneInstall(
+      this, localized_extension_for_display_.get(), &icon_, *install_prompt_);
 }
 
 }  // namespace extensions

@@ -118,7 +118,7 @@ TEST_F(ImageLoaderTest, LoadImage) {
   ASSERT_TRUE(extension.get() != NULL);
 
   ExtensionResource image_resource = extensions::IconsInfo::GetIconResource(
-      extension,
+      extension.get(),
       extension_misc::EXTENSION_ICON_SMALLISH,
       ExtensionIconSet::MATCH_EXACTLY);
   gfx::Size max_size(extension_misc::EXTENSION_ICON_SMALLISH,
@@ -151,7 +151,7 @@ TEST_F(ImageLoaderTest, DeleteExtensionWhileWaitingForCache) {
   ASSERT_TRUE(extension.get() != NULL);
 
   ExtensionResource image_resource = extensions::IconsInfo::GetIconResource(
-      extension,
+      extension.get(),
       extension_misc::EXTENSION_ICON_SMALLISH,
       ExtensionIconSet::MATCH_EXACTLY);
   gfx::Size max_size(extension_misc::EXTENSION_ICON_SMALLISH,
@@ -202,7 +202,7 @@ TEST_F(ImageLoaderTest, MultipleImages) {
                  extension_misc::EXTENSION_ICON_BITTY};
   for (size_t i = 0; i < arraysize(sizes); ++i) {
     ExtensionResource resource = extensions::IconsInfo::GetIconResource(
-        extension, sizes[i], ExtensionIconSet::MATCH_EXACTLY);
+        extension.get(), sizes[i], ExtensionIconSet::MATCH_EXACTLY);
     info_list.push_back(ImageLoader::ImageRepresentation(
         resource,
         ImageLoader::ImageRepresentation::RESIZE_WHEN_LARGER,
@@ -245,7 +245,7 @@ TEST_F(ImageLoaderTest, IsComponentExtensionResource) {
   ASSERT_TRUE(extension.get() != NULL);
 
   ExtensionResource resource = extensions::IconsInfo::GetIconResource(
-      extension,
+      extension.get(),
       extension_misc::EXTENSION_ICON_BITTY,
       ExtensionIconSet::MATCH_EXACTLY);
 

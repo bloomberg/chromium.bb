@@ -61,7 +61,7 @@ IN_PROC_BROWSER_TEST_F(DnsApiTest, DnsResolveIPLiteral) {
   resolve_function->set_has_callback(true);
 
   scoped_ptr<base::Value> result(RunFunctionAndReturnSingleResult(
-      resolve_function, "[\"127.0.0.1\"]", browser()));
+      resolve_function.get(), "[\"127.0.0.1\"]", browser()));
   ASSERT_EQ(base::Value::TYPE_DICTIONARY, result->GetType());
   DictionaryValue *value = static_cast<DictionaryValue*>(result.get());
 

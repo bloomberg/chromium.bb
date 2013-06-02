@@ -60,7 +60,7 @@ class ExtensionAlarmsTest : public BrowserWithTestWindowTest {
         extensions::Manifest::UNPACKED);
 
     // Make sure there's a RenderViewHost for alarms to warn into.
-    AddTab(browser(), BackgroundInfo::GetBackgroundURL(extension_));
+    AddTab(browser(), BackgroundInfo::GetBackgroundURL(extension_.get()));
     contents_ = browser()->tab_strip_model()->GetActiveWebContents();
 
     test_clock_->SetNow(base::Time::FromDoubleT(10));

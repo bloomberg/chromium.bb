@@ -45,24 +45,24 @@ void LocalDataContainer::Init(CookiesTreeModel* model) {
   DCHECK(!model_);
   model_ = model;
 
-  DCHECK(cookie_helper_);
+  DCHECK(cookie_helper_.get());
   cookie_helper_->StartFetching(
       base::Bind(&LocalDataContainer::OnCookiesModelInfoLoaded,
                  weak_ptr_factory_.GetWeakPtr()));
 
-  if (database_helper_) {
+  if (database_helper_.get()) {
     database_helper_->StartFetching(
         base::Bind(&LocalDataContainer::OnDatabaseModelInfoLoaded,
                    weak_ptr_factory_.GetWeakPtr()));
   }
 
-  if (local_storage_helper_) {
+  if (local_storage_helper_.get()) {
     local_storage_helper_->StartFetching(
         base::Bind(&LocalDataContainer::OnLocalStorageModelInfoLoaded,
                    weak_ptr_factory_.GetWeakPtr()));
   }
 
-  if (session_storage_helper_) {
+  if (session_storage_helper_.get()) {
     session_storage_helper_->StartFetching(
         base::Bind(&LocalDataContainer::OnSessionStorageModelInfoLoaded,
                    weak_ptr_factory_.GetWeakPtr()));
@@ -70,37 +70,37 @@ void LocalDataContainer::Init(CookiesTreeModel* model) {
 
   // TODO(michaeln): When all of the UI implementations have been updated, make
   // this a required parameter.
-  if (appcache_helper_) {
+  if (appcache_helper_.get()) {
     appcache_helper_->StartFetching(
         base::Bind(&LocalDataContainer::OnAppCacheModelInfoLoaded,
                    weak_ptr_factory_.GetWeakPtr()));
   }
 
-  if (indexed_db_helper_) {
+  if (indexed_db_helper_.get()) {
     indexed_db_helper_->StartFetching(
         base::Bind(&LocalDataContainer::OnIndexedDBModelInfoLoaded,
                    weak_ptr_factory_.GetWeakPtr()));
   }
 
-  if (file_system_helper_) {
+  if (file_system_helper_.get()) {
     file_system_helper_->StartFetching(
         base::Bind(&LocalDataContainer::OnFileSystemModelInfoLoaded,
                    weak_ptr_factory_.GetWeakPtr()));
   }
 
-  if (quota_helper_) {
+  if (quota_helper_.get()) {
     quota_helper_->StartFetching(
         base::Bind(&LocalDataContainer::OnQuotaModelInfoLoaded,
                    weak_ptr_factory_.GetWeakPtr()));
   }
 
-  if (server_bound_cert_helper_) {
+  if (server_bound_cert_helper_.get()) {
     server_bound_cert_helper_->StartFetching(
         base::Bind(&LocalDataContainer::OnServerBoundCertModelInfoLoaded,
                    weak_ptr_factory_.GetWeakPtr()));
   }
 
-  if (flash_lso_helper_) {
+  if (flash_lso_helper_.get()) {
     flash_lso_helper_->StartFetching(
         base::Bind(&LocalDataContainer::OnFlashLSOInfoLoaded,
                    weak_ptr_factory_.GetWeakPtr()));
@@ -115,7 +115,7 @@ void LocalDataContainer::OnAppCacheModelInfoLoaded() {
 
   scoped_refptr<AppCacheInfoCollection> appcache_info =
       appcache_helper_->info_collection();
-  if (!appcache_info || appcache_info->infos_by_origin.empty())
+  if (!appcache_info.get() || appcache_info->infos_by_origin.empty())
     return;
 
   for (InfoByOrigin::const_iterator origin =

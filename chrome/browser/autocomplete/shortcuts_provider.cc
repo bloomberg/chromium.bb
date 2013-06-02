@@ -56,7 +56,7 @@ ShortcutsProvider::ShortcutsProvider(AutocompleteProviderListener* listener,
       initialized_(false) {
   scoped_refptr<history::ShortcutsBackend> backend =
       ShortcutsBackendFactory::GetForProfile(profile_);
-  if (backend) {
+  if (backend.get()) {
     backend->AddObserver(this);
     if (backend->initialized())
       initialized_ = true;
@@ -119,7 +119,7 @@ void ShortcutsProvider::DeleteMatch(const AutocompleteMatch& match) {
 ShortcutsProvider::~ShortcutsProvider() {
   scoped_refptr<history::ShortcutsBackend> backend =
       ShortcutsBackendFactory::GetForProfileIfExists(profile_);
-  if (backend)
+  if (backend.get())
     backend->RemoveObserver(this);
 }
 
@@ -135,7 +135,7 @@ void ShortcutsProvider::DeleteMatchesWithURLs(const std::set<GURL>& urls) {
 void ShortcutsProvider::DeleteShortcutsWithURLs(const std::set<GURL>& urls) {
   scoped_refptr<history::ShortcutsBackend> backend =
       ShortcutsBackendFactory::GetForProfileIfExists(profile_);
-  if (!backend)
+  if (!backend.get())
     return;  // We are off the record.
   for (std::set<GURL>::const_iterator url = urls.begin(); url != urls.end();
        ++url)
@@ -145,7 +145,7 @@ void ShortcutsProvider::DeleteShortcutsWithURLs(const std::set<GURL>& urls) {
 void ShortcutsProvider::GetMatches(const AutocompleteInput& input) {
   scoped_refptr<history::ShortcutsBackend> backend =
       ShortcutsBackendFactory::GetForProfileIfExists(profile_);
-  if (!backend)
+  if (!backend.get())
     return;
   // Get the URLs from the shortcuts database with keys that partially or
   // completely match the search term.

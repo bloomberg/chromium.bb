@@ -240,17 +240,16 @@ void WebRequestRulesRegistryTest::SetUp() {
                                      Extension::NO_FLAGS,
                                      kExtensionId,
                                      &error);
-  ASSERT_TRUE(extension_) << error;
-  extension2_ =
-      LoadManifestUnchecked("permissions",
-                            "web_request_all_host_permissions.json",
-                            Manifest::INVALID_LOCATION,
-                            Extension::NO_FLAGS,
-                            kExtensionId2,
-                            &error);
-  ASSERT_TRUE(extension2_) << error;
+  ASSERT_TRUE(extension_.get()) << error;
+  extension2_ = LoadManifestUnchecked("permissions",
+                                      "web_request_all_host_permissions.json",
+                                      Manifest::INVALID_LOCATION,
+                                      Extension::NO_FLAGS,
+                                      kExtensionId2,
+                                      &error);
+  ASSERT_TRUE(extension2_.get()) << error;
   extension_info_map_ = new ExtensionInfoMap;
-  ASSERT_TRUE(extension_info_map_);
+  ASSERT_TRUE(extension_info_map_.get());
   extension_info_map_->AddExtension(extension_.get(),
                                     base::Time() + base::TimeDelta::FromDays(1),
                                     false /*incognito_enabled*/);

@@ -163,7 +163,7 @@ net::URLRequestJob* ProtocolHandlerRegistry::IOThreadDelegate::MaybeCreateJob(
 ProtocolHandlerRegistry::JobInterceptorFactory::JobInterceptorFactory(
     IOThreadDelegate* io_thread_delegate)
     : io_thread_delegate_(io_thread_delegate) {
-  DCHECK(io_thread_delegate_);
+  DCHECK(io_thread_delegate_.get());
   DetachFromThread();
 }
 
@@ -301,7 +301,7 @@ void ProtocolHandlerRegistry::Delegate::RegisterWithOSAsDefaultClient(
   // and it will be automatically freed once all its tasks have finished.
   scoped_refptr<ShellIntegration::DefaultProtocolClientWorker> worker;
   worker = CreateShellWorker(observer, protocol);
-  observer->SetWorker(worker);
+  observer->SetWorker(worker.get());
   registry->default_client_observers_.push_back(observer);
   worker->StartSetAsDefault();
 }
@@ -474,7 +474,7 @@ void ProtocolHandlerRegistry::InitProtocolSettings() {
       DefaultClientObserver* observer = delegate_->CreateShellObserver(this);
       scoped_refptr<ShellIntegration::DefaultProtocolClientWorker> worker;
       worker = delegate_->CreateShellWorker(observer, handler.protocol());
-      observer->SetWorker(worker);
+      observer->SetWorker(worker.get());
       default_client_observers_.push_back(observer);
       worker->StartCheckIsDefault();
     }
@@ -882,6 +882,6 @@ ProtocolHandlerRegistry::CreateJobInterceptorFactory() {
   // this is always created on the UI thread (in profile_io's
   // InitializeOnUIThread. Any method calls must be done
   // on the IO thread (this is checked).
-  return scoped_ptr<JobInterceptorFactory>(new JobInterceptorFactory(
-      io_thread_delegate_));
+  return scoped_ptr<JobInterceptorFactory>(
+      new JobInterceptorFactory(io_thread_delegate_.get()));
 }

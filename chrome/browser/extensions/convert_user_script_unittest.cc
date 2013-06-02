@@ -61,9 +61,9 @@ TEST_F(ExtensionFromUserScript, Basic) {
             extension->public_key());
   EXPECT_EQ(Manifest::TYPE_USER_SCRIPT, extension->GetType());
 
-  ASSERT_EQ(1u, ContentScriptsInfo::GetContentScripts(extension).size());
+  ASSERT_EQ(1u, ContentScriptsInfo::GetContentScripts(extension.get()).size());
   const UserScript& script =
-      ContentScriptsInfo::GetContentScripts(extension)[0];
+      ContentScriptsInfo::GetContentScripts(extension.get())[0];
   EXPECT_EQ(UserScript::DOCUMENT_IDLE, script.run_location());
   ASSERT_EQ(2u, script.globs().size());
   EXPECT_EQ("http://www.google.com/*", script.globs().at(0));
@@ -114,9 +114,9 @@ TEST_F(ExtensionFromUserScript, NoMetadata) {
             extension->public_key());
   EXPECT_EQ(Manifest::TYPE_USER_SCRIPT, extension->GetType());
 
-  ASSERT_EQ(1u, ContentScriptsInfo::GetContentScripts(extension).size());
+  ASSERT_EQ(1u, ContentScriptsInfo::GetContentScripts(extension.get()).size());
   const UserScript& script =
-      ContentScriptsInfo::GetContentScripts(extension)[0];
+      ContentScriptsInfo::GetContentScripts(extension.get())[0];
   ASSERT_EQ(1u, script.globs().size());
   EXPECT_EQ("*", script.globs()[0]);
   EXPECT_EQ(0u, script.exclude_globs().size());
@@ -181,9 +181,9 @@ TEST_F(ExtensionFromUserScript, RunAtDocumentStart) {
   EXPECT_EQ(Manifest::TYPE_USER_SCRIPT, extension->GetType());
 
   // Validate run location.
-  ASSERT_EQ(1u, ContentScriptsInfo::GetContentScripts(extension).size());
+  ASSERT_EQ(1u, ContentScriptsInfo::GetContentScripts(extension.get()).size());
   const UserScript& script =
-      ContentScriptsInfo::GetContentScripts(extension)[0];
+      ContentScriptsInfo::GetContentScripts(extension.get())[0];
   EXPECT_EQ(UserScript::DOCUMENT_START, script.run_location());
 }
 
@@ -216,9 +216,9 @@ TEST_F(ExtensionFromUserScript, RunAtDocumentEnd) {
   EXPECT_EQ(Manifest::TYPE_USER_SCRIPT, extension->GetType());
 
   // Validate run location.
-  ASSERT_EQ(1u, ContentScriptsInfo::GetContentScripts(extension).size());
+  ASSERT_EQ(1u, ContentScriptsInfo::GetContentScripts(extension.get()).size());
   const UserScript& script =
-      ContentScriptsInfo::GetContentScripts(extension)[0];
+      ContentScriptsInfo::GetContentScripts(extension.get())[0];
   EXPECT_EQ(UserScript::DOCUMENT_END, script.run_location());
 }
 
@@ -252,9 +252,9 @@ TEST_F(ExtensionFromUserScript, RunAtDocumentIdle) {
   EXPECT_EQ(Manifest::TYPE_USER_SCRIPT, extension->GetType());
 
   // Validate run location.
-  ASSERT_EQ(1u, ContentScriptsInfo::GetContentScripts(extension).size());
+  ASSERT_EQ(1u, ContentScriptsInfo::GetContentScripts(extension.get()).size());
   const UserScript& script =
-      ContentScriptsInfo::GetContentScripts(extension)[0];
+      ContentScriptsInfo::GetContentScripts(extension.get())[0];
   EXPECT_EQ(UserScript::DOCUMENT_IDLE, script.run_location());
 }
 

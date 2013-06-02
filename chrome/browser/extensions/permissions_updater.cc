@@ -44,9 +44,9 @@ void PermissionsUpdater::AddPermissions(
   scoped_refptr<const PermissionSet> existing(
       extension->GetActivePermissions());
   scoped_refptr<PermissionSet> total(
-      PermissionSet::CreateUnion(existing, permissions));
+      PermissionSet::CreateUnion(existing.get(), permissions));
   scoped_refptr<PermissionSet> added(
-      PermissionSet::CreateDifference(total.get(), existing));
+      PermissionSet::CreateDifference(total.get(), existing.get()));
 
   UpdateActivePermissions(extension, total.get());
 
@@ -61,9 +61,9 @@ void PermissionsUpdater::RemovePermissions(
   scoped_refptr<const PermissionSet> existing(
       extension->GetActivePermissions());
   scoped_refptr<PermissionSet> total(
-      PermissionSet::CreateDifference(existing, permissions));
+      PermissionSet::CreateDifference(existing.get(), permissions));
   scoped_refptr<PermissionSet> removed(
-      PermissionSet::CreateDifference(existing, total.get()));
+      PermissionSet::CreateDifference(existing.get(), total.get()));
 
   // We update the active permissions, and not the granted permissions, because
   // the extension, not the user, removed the permissions. This allows the

@@ -44,7 +44,7 @@ class StorageSchemaManifestHandlerTest : public testing::Test {
     scoped_refptr<Extension> extension = Extension::Create(
         temp_dir_.path(), Manifest::UNPACKED, manifest_,
         Extension::NO_FLAGS, "", &error);
-    if (!extension)
+    if (!extension.get())
       return NULL;
     base::FilePath schema_path = temp_dir_.path().AppendASCII("schema.json");
     if (schema.empty()) {
@@ -60,7 +60,7 @@ class StorageSchemaManifestHandlerTest : public testing::Test {
 
   testing::AssertionResult Validates(const std::string& schema) {
     scoped_refptr<Extension> extension = CreateExtension(schema);
-    if (!extension)
+    if (!extension.get())
       return testing::AssertionFailure() << "Failed to create test extension";
     std::string error;
     std::vector<InstallWarning> warnings;
@@ -78,7 +78,7 @@ class StorageSchemaManifestHandlerTest : public testing::Test {
 
 TEST_F(StorageSchemaManifestHandlerTest, Parse) {
   scoped_refptr<Extension> extension = CreateExtension("");
-  ASSERT_TRUE(extension);
+  ASSERT_TRUE(extension.get());
 
   // No storage.managed_schema entry.
   string16 error;
@@ -87,12 +87,12 @@ TEST_F(StorageSchemaManifestHandlerTest, Parse) {
   // Not a string.
   manifest_.SetInteger("storage.managed_schema", 123);
   extension = CreateExtension("");
-  EXPECT_FALSE(extension);
+  EXPECT_FALSE(extension.get());
 
   // All good now.
   manifest_.SetString("storage.managed_schema", "schema.json");
   extension = CreateExtension("");
-  ASSERT_TRUE(extension);
+  ASSERT_TRUE(extension.get());
   EXPECT_TRUE(handler_->Parse(extension.get(), &error)) << error;
 }
 

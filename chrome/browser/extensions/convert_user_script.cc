@@ -180,7 +180,7 @@ scoped_refptr<Extension> ConvertUserScriptToExtension(
       Extension::NO_FLAGS,
       &utf8_error);
   *error = UTF8ToUTF16(utf8_error);
-  if (!extension) {
+  if (!extension.get()) {
     NOTREACHED() << "Could not init extension " << *error;
     return NULL;
   }

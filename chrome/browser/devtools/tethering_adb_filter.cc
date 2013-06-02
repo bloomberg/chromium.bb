@@ -100,9 +100,11 @@ class SocketTunnel {
 
   void Pump(net::StreamSocket* from, net::StreamSocket* to) {
     scoped_refptr<net::IOBuffer> buffer = new net::IOBuffer(kBufferSize);
-    int result = from->Read(buffer, kBufferSize,
-          base::Bind(&SocketTunnel::OnRead, base::Unretained(this), from, to,
-                     buffer));
+    int result = from->Read(
+        buffer.get(),
+        kBufferSize,
+        base::Bind(
+            &SocketTunnel::OnRead, base::Unretained(this), from, to, buffer));
     if (result != net::ERR_IO_PENDING)
       OnRead(from, to, buffer, result);
   }
@@ -118,12 +120,16 @@ class SocketTunnel {
 
     int total = result;
     scoped_refptr<net::DrainableIOBuffer> drainable =
-        new net::DrainableIOBuffer(buffer, total);
+        new net::DrainableIOBuffer(buffer.get(), total);
 
     ++pending_writes_;
-    result = to->Write(drainable, total,
+    result = to->Write(drainable.get(),
+                       total,
                        base::Bind(&SocketTunnel::OnWritten,
-                                  base::Unretained(this), drainable, from, to));
+                                  base::Unretained(this),
+                                  drainable,
+                                  from,
+                                  to));
     if (result != net::ERR_IO_PENDING)
       OnWritten(drainable, from, to, result);
   }
@@ -141,9 +147,12 @@ class SocketTunnel {
     drainable->DidConsume(result);
     if (drainable->BytesRemaining() > 0) {
       ++pending_writes_;
-      result = to->Write(drainable, drainable->BytesRemaining(),
+      result = to->Write(drainable.get(),
+                         drainable->BytesRemaining(),
                          base::Bind(&SocketTunnel::OnWritten,
-                                    base::Unretained(this), drainable, from,
+                                    base::Unretained(this),
+                                    drainable,
+                                    from,
                                     to));
       if (result != net::ERR_IO_PENDING)
         OnWritten(drainable, from, to, result);

@@ -31,14 +31,14 @@ TEST(DeclarativeContentActionTest, InvalidCreation) {
   result = ContentAction::Create(*ParseJson("[]"), &error, &bad_message);
   EXPECT_TRUE(bad_message);
   EXPECT_EQ("", error);
-  EXPECT_FALSE(result);
+  EXPECT_FALSE(result.get());
 
   // Test missing instanceType element.
   error.clear();
   result = ContentAction::Create(*ParseJson("{}"), &error, &bad_message);
   EXPECT_TRUE(bad_message);
   EXPECT_EQ("", error);
-  EXPECT_FALSE(result);
+  EXPECT_FALSE(result.get());
 
   // Test wrong instanceType element.
   error.clear();
@@ -48,7 +48,7 @@ TEST(DeclarativeContentActionTest, InvalidCreation) {
       "}"),
                                  &error, &bad_message);
   EXPECT_THAT(error, HasSubstr("invalid instanceType"));
-  EXPECT_FALSE(result);
+  EXPECT_FALSE(result.get());
 }
 
 TEST(DeclarativeContentActionTest, ShowPageAction) {
@@ -63,7 +63,7 @@ TEST(DeclarativeContentActionTest, ShowPageAction) {
       &error, &bad_message);
   EXPECT_EQ("", error);
   EXPECT_FALSE(bad_message);
-  ASSERT_TRUE(result);
+  ASSERT_TRUE(result.get());
   EXPECT_EQ(ContentAction::ACTION_SHOW_PAGE_ACTION, result->GetType());
 
   const Extension* extension = env.MakeExtension(

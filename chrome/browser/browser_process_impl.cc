@@ -680,9 +680,9 @@ void BrowserProcessImpl::RegisterPrefs(PrefRegistrySimple* registry) {
 
 DownloadRequestLimiter* BrowserProcessImpl::download_request_limiter() {
   DCHECK(CalledOnValidThread());
-  if (!download_request_limiter_)
+  if (!download_request_limiter_.get())
     download_request_limiter_ = new DownloadRequestLimiter();
-  return download_request_limiter_;
+  return download_request_limiter_.get();
 }
 
 BackgroundModeManager* BrowserProcessImpl::background_mode_manager() {
@@ -813,11 +813,11 @@ void BrowserProcessImpl::CreateLocalState() {
   scoped_refptr<PrefRegistrySimple> pref_registry = new PrefRegistrySimple;
 
   // Register local state preferences.
-  chrome::RegisterLocalState(pref_registry);
+  chrome::RegisterLocalState(pref_registry.get());
 
   local_state_.reset(
       chrome_prefs::CreateLocalState(local_state_path,
-                                     local_state_task_runner_,
+                                     local_state_task_runner_.get(),
                                      policy_service(),
                                      NULL,
                                      pref_registry,

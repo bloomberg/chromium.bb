@@ -251,7 +251,7 @@ UserScriptMaster* ExtensionSystemImpl::Shared::user_script_master() {
 }
 
 ExtensionInfoMap* ExtensionSystemImpl::Shared::info_map() {
-  if (!extension_info_map_)
+  if (!extension_info_map_.get())
     extension_info_map_ = new ExtensionInfoMap();
   return extension_info_map_.get();
 }

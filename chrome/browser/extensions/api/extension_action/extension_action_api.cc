@@ -464,11 +464,11 @@ void ExtensionActionFunction::NotifyChange() {
   switch (extension_action_->action_type()) {
     case ActionInfo::TYPE_BROWSER:
     case ActionInfo::TYPE_PAGE:
-      if (ExtensionActionManager::Get(profile_)->
-          GetBrowserAction(*extension_)) {
+      if (ExtensionActionManager::Get(profile_)
+              ->GetBrowserAction(*extension_.get())) {
         NotifyBrowserActionChange();
-      } else if (ExtensionActionManager::Get(profile_)->
-                     GetPageAction(*extension_)) {
+      } else if (ExtensionActionManager::Get(profile_)
+                     ->GetPageAction(*extension_.get())) {
         NotifyLocationBarChange();
       }
       return;

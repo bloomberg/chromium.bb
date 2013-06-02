@@ -201,7 +201,7 @@ void ChromeDownloadManagerDelegateTest::TearDown() {
 }
 
 void ChromeDownloadManagerDelegateTest::VerifyAndClearExpectations() {
-  ::testing::Mock::VerifyAndClearExpectations(delegate_);
+  ::testing::Mock::VerifyAndClearExpectations(delegate_.get());
 }
 
 content::MockDownloadItem*

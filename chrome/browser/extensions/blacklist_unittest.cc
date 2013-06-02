@@ -57,10 +57,10 @@ TEST_F(BlacklistTest, SetFromUpdater) {
   prefs_.prefs()->SetExtensionBlacklisted(extension_c->id(), true);
   prefs_.prefs()->SetExtensionBlacklisted(extension_d->id(), true);
 
-  EXPECT_FALSE(IsBlacklisted(extension_a));
-  EXPECT_FALSE(IsBlacklisted(extension_b));
-  EXPECT_TRUE(IsBlacklisted(extension_c));
-  EXPECT_TRUE(IsBlacklisted(extension_d));
+  EXPECT_FALSE(IsBlacklisted(extension_a.get()));
+  EXPECT_FALSE(IsBlacklisted(extension_b.get()));
+  EXPECT_TRUE(IsBlacklisted(extension_c.get()));
+  EXPECT_TRUE(IsBlacklisted(extension_d.get()));
 
   // Mix up the blacklist.
   {
@@ -69,10 +69,10 @@ TEST_F(BlacklistTest, SetFromUpdater) {
     blacklist.push_back(extension_c->id());
     blacklist_.SetFromUpdater(blacklist, "1");
   }
-  EXPECT_FALSE(IsBlacklisted(extension_a));
-  EXPECT_TRUE(IsBlacklisted(extension_b));
-  EXPECT_TRUE(IsBlacklisted(extension_c));
-  EXPECT_FALSE(IsBlacklisted(extension_d));
+  EXPECT_FALSE(IsBlacklisted(extension_a.get()));
+  EXPECT_TRUE(IsBlacklisted(extension_b.get()));
+  EXPECT_TRUE(IsBlacklisted(extension_c.get()));
+  EXPECT_FALSE(IsBlacklisted(extension_d.get()));
 
   // No-op, just in case.
   {
@@ -81,10 +81,10 @@ TEST_F(BlacklistTest, SetFromUpdater) {
     blacklist.push_back(extension_c->id());
     blacklist_.SetFromUpdater(blacklist, "2");
   }
-  EXPECT_FALSE(IsBlacklisted(extension_a));
-  EXPECT_TRUE(IsBlacklisted(extension_b));
-  EXPECT_TRUE(IsBlacklisted(extension_c));
-  EXPECT_FALSE(IsBlacklisted(extension_d));
+  EXPECT_FALSE(IsBlacklisted(extension_a.get()));
+  EXPECT_TRUE(IsBlacklisted(extension_b.get()));
+  EXPECT_TRUE(IsBlacklisted(extension_c.get()));
+  EXPECT_FALSE(IsBlacklisted(extension_d.get()));
 
   // Strictly increase the blacklist.
   {
@@ -95,10 +95,10 @@ TEST_F(BlacklistTest, SetFromUpdater) {
     blacklist.push_back(extension_d->id());
     blacklist_.SetFromUpdater(blacklist, "3");
   }
-  EXPECT_TRUE(IsBlacklisted(extension_a));
-  EXPECT_TRUE(IsBlacklisted(extension_b));
-  EXPECT_TRUE(IsBlacklisted(extension_c));
-  EXPECT_TRUE(IsBlacklisted(extension_d));
+  EXPECT_TRUE(IsBlacklisted(extension_a.get()));
+  EXPECT_TRUE(IsBlacklisted(extension_b.get()));
+  EXPECT_TRUE(IsBlacklisted(extension_c.get()));
+  EXPECT_TRUE(IsBlacklisted(extension_d.get()));
 
   // Strictly decrease the blacklist.
   {
@@ -107,20 +107,20 @@ TEST_F(BlacklistTest, SetFromUpdater) {
     blacklist.push_back(extension_b->id());
     blacklist_.SetFromUpdater(blacklist, "4");
   }
-  EXPECT_TRUE(IsBlacklisted(extension_a));
-  EXPECT_TRUE(IsBlacklisted(extension_b));
-  EXPECT_FALSE(IsBlacklisted(extension_c));
-  EXPECT_FALSE(IsBlacklisted(extension_d));
+  EXPECT_TRUE(IsBlacklisted(extension_a.get()));
+  EXPECT_TRUE(IsBlacklisted(extension_b.get()));
+  EXPECT_FALSE(IsBlacklisted(extension_c.get()));
+  EXPECT_FALSE(IsBlacklisted(extension_d.get()));
 
   // Clear the blacklist.
   {
     std::vector<std::string> blacklist;
     blacklist_.SetFromUpdater(blacklist, "5");
   }
-  EXPECT_FALSE(IsBlacklisted(extension_a));
-  EXPECT_FALSE(IsBlacklisted(extension_b));
-  EXPECT_FALSE(IsBlacklisted(extension_c));
-  EXPECT_FALSE(IsBlacklisted(extension_d));
+  EXPECT_FALSE(IsBlacklisted(extension_a.get()));
+  EXPECT_FALSE(IsBlacklisted(extension_b.get()));
+  EXPECT_FALSE(IsBlacklisted(extension_c.get()));
+  EXPECT_FALSE(IsBlacklisted(extension_d.get()));
 }
 
 void Assign(std::set<std::string> *to, const std::set<std::string>& from) {
@@ -171,21 +171,21 @@ TEST_F(BlacklistTest, PrefsVsSafeBrowsing) {
   }
 
   // The manager is still disabled at this point, so c won't be blacklisted.
-  EXPECT_TRUE(IsBlacklisted(extension_a));
-  EXPECT_TRUE(IsBlacklisted(extension_b));
-  EXPECT_FALSE(IsBlacklisted(extension_c));
+  EXPECT_TRUE(IsBlacklisted(extension_a.get()));
+  EXPECT_TRUE(IsBlacklisted(extension_b.get()));
+  EXPECT_FALSE(IsBlacklisted(extension_c.get()));
 
   // Now it should be.
   safe_browsing_database_manager_->set_enabled(true);
-  EXPECT_TRUE(IsBlacklisted(extension_a));
-  EXPECT_TRUE(IsBlacklisted(extension_b));
-  EXPECT_TRUE(IsBlacklisted(extension_c));
+  EXPECT_TRUE(IsBlacklisted(extension_a.get()));
+  EXPECT_TRUE(IsBlacklisted(extension_b.get()));
+  EXPECT_TRUE(IsBlacklisted(extension_c.get()));
 
   // Corner case: nothing in safebrowsing (but still enabled).
   safe_browsing_database_manager_->set_unsafe_ids(std::set<std::string>());
-  EXPECT_TRUE(IsBlacklisted(extension_a));
-  EXPECT_TRUE(IsBlacklisted(extension_b));
-  EXPECT_FALSE(IsBlacklisted(extension_c));
+  EXPECT_TRUE(IsBlacklisted(extension_a.get()));
+  EXPECT_TRUE(IsBlacklisted(extension_b.get()));
+  EXPECT_FALSE(IsBlacklisted(extension_c.get()));
 
   // Corner case: nothing in prefs.
   prefs_.prefs()->SetExtensionBlacklisted(extension_a->id(), false);
@@ -196,9 +196,9 @@ TEST_F(BlacklistTest, PrefsVsSafeBrowsing) {
     bc.insert(extension_c->id());
     safe_browsing_database_manager_->set_unsafe_ids(bc);
   }
-  EXPECT_FALSE(IsBlacklisted(extension_a));
-  EXPECT_TRUE(IsBlacklisted(extension_b));
-  EXPECT_TRUE(IsBlacklisted(extension_c));
+  EXPECT_FALSE(IsBlacklisted(extension_a.get()));
+  EXPECT_TRUE(IsBlacklisted(extension_b.get()));
+  EXPECT_TRUE(IsBlacklisted(extension_c.get()));
 }
 
 }  // namespace extensions

@@ -112,9 +112,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementApiBrowserTest,
 
   EXPECT_TRUE(MatchPattern(
       util::RunFunctionAndReturnError(
-          uninstall_function,
+          uninstall_function.get(),
           base::StringPrintf("[\"%s\", {\"showConfirmDialog\": true}]",
-              id.c_str()),
+                             id.c_str()),
           browser()),
       keys::kUninstallCanceledError));
 
@@ -126,7 +126,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementApiBrowserTest,
   ManagementUninstallFunction::SetAutoConfirmForTest(true);
 
   util::RunFunctionAndReturnSingleResult(
-      uninstall_function,
+      uninstall_function.get(),
       base::StringPrintf("[\"%s\", {\"showConfirmDialog\": true}]", id.c_str()),
       browser());
 

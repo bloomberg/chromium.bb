@@ -114,9 +114,9 @@ bool WebRequestCondition::IsFulfilled(
 
 void WebRequestCondition::GetURLMatcherConditionSets(
     URLMatcherConditionSet::Vector* condition_sets) const {
-  if (url_matcher_conditions_)
+  if (url_matcher_conditions_.get())
     condition_sets->push_back(url_matcher_conditions_);
-  if (first_party_url_matcher_conditions_)
+  if (first_party_url_matcher_conditions_.get())
     condition_sets->push_back(first_party_url_matcher_conditions_);
 }
 

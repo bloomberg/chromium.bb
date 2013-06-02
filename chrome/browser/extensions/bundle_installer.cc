@@ -261,8 +261,8 @@ void BundleInstaller::ShowPrompt() {
   scoped_refptr<PermissionSet> permissions;
   for (size_t i = 0; i < dummy_extensions_.size(); ++i) {
     permissions = PermissionSet::CreateUnion(
-        permissions,
-        PermissionsData::GetRequiredPermissions(dummy_extensions_[i]));
+        permissions.get(),
+        PermissionsData::GetRequiredPermissions(dummy_extensions_[i].get()));
   }
 
   if (g_auto_approve_for_test == PROCEED) {
@@ -280,7 +280,7 @@ void BundleInstaller::ShowPrompt() {
     if (browser)
       web_contents = browser->tab_strip_model()->GetActiveWebContents();
     install_ui_.reset(new ExtensionInstallPrompt(web_contents));
-    install_ui_->ConfirmBundleInstall(this, permissions);
+    install_ui_->ConfirmBundleInstall(this, permissions.get());
   }
 }
 

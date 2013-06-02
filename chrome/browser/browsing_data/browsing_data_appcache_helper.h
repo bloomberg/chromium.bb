@@ -31,7 +31,7 @@ class BrowsingDataAppCacheHelper
 
   appcache::AppCacheInfoCollection* info_collection() const {
     DCHECK(!is_fetching_);
-    return info_collection_;
+    return info_collection_.get();
   }
 
  protected:

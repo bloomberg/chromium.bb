@@ -369,7 +369,9 @@ class AgentHostDelegate : public base::RefCountedThreadSafe<AgentHostDelegate>,
   void StartListeningOnHandlerThread() {
     scoped_refptr<net::IOBuffer> response_buffer =
         new net::IOBuffer(kBufferSize);
-    int result = socket_->Read(response_buffer, kBufferSize,
+    int result = socket_->Read(
+        response_buffer.get(),
+        kBufferSize,
         base::Bind(&AgentHostDelegate::OnBytesRead, this, response_buffer));
     if (result != net::ERR_IO_PENDING)
       OnBytesRead(response_buffer, result);
@@ -408,7 +410,9 @@ class AgentHostDelegate : public base::RefCountedThreadSafe<AgentHostDelegate>,
       return;
     }
 
-    result = socket_->Read(response_buffer, kBufferSize,
+    result = socket_->Read(
+        response_buffer.get(),
+        kBufferSize,
         base::Bind(&AgentHostDelegate::OnBytesRead, this, response_buffer));
     if (result != net::ERR_IO_PENDING)
       OnBytesRead(response_buffer, result);
@@ -422,8 +426,10 @@ class AgentHostDelegate : public base::RefCountedThreadSafe<AgentHostDelegate>,
         new net::StringIOBuffer(encoded_frame);
     if (!socket_)
       return;
-    int result = socket_->Write(request_buffer, request_buffer->size(),
-        base::Bind(&AgentHostDelegate::CloseIfNecessary, this));
+    int result =
+        socket_->Write(request_buffer.get(),
+                       request_buffer->size(),
+                       base::Bind(&AgentHostDelegate::CloseIfNecessary, this));
     if (result != net::ERR_IO_PENDING)
       CloseIfNecessary(result);
   }

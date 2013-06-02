@@ -98,15 +98,15 @@ TEST(DedupingFactoryTest, InstantiationParameterized) {
       factory.Instantiate(kTypeName, d1.get(), &error, &bad_message));
   scoped_refptr<const BaseClass> c2(
       factory.Instantiate(kTypeName, d2.get(), &error, &bad_message));
-  ASSERT_TRUE(c1);
-  ASSERT_TRUE(c2);
+  ASSERT_TRUE(c1.get());
+  ASSERT_TRUE(c2.get());
   EXPECT_EQ(1, static_cast<const Foo*>(c1.get())->parameter());
   EXPECT_EQ(2, static_cast<const Foo*>(c2.get())->parameter());
 
   // This one produces an overflow, now the cache contains [2, 3]
   scoped_refptr<const BaseClass> c3(
       factory.Instantiate(kTypeName, d3.get(), &error, &bad_message));
-  ASSERT_TRUE(c3);
+  ASSERT_TRUE(c3.get());
   EXPECT_EQ(3, static_cast<const Foo*>(c3.get())->parameter());
 
   // Reuse 2, this should give the same instance as c2.
@@ -144,8 +144,8 @@ TEST(DedupingFactoryTest, InstantiationNonParameterized) {
       factory.Instantiate(kTypeName, d1.get(), &error, &bad_message));
   scoped_refptr<const BaseClass> c2(
       factory.Instantiate(kTypeName, d2.get(), &error, &bad_message));
-  ASSERT_TRUE(c1);
-  ASSERT_TRUE(c2);
+  ASSERT_TRUE(c1.get());
+  ASSERT_TRUE(c2.get());
   EXPECT_EQ(1, static_cast<const Foo*>(c1.get())->parameter());
   EXPECT_EQ(1, static_cast<const Foo*>(c2.get())->parameter());
   EXPECT_EQ(c1, c2);
@@ -168,8 +168,8 @@ TEST(DedupingFactoryTest, TypeNames) {
   scoped_refptr<const BaseClass> c1_b(
       factory.Instantiate(kTypeName2, d1.get(), &error, &bad_message));
 
-  ASSERT_TRUE(c1_a);
-  ASSERT_TRUE(c1_b);
+  ASSERT_TRUE(c1_a.get());
+  ASSERT_TRUE(c1_b.get());
   EXPECT_NE(c1_a, c1_b);
 }
 
@@ -191,8 +191,8 @@ TEST(DedupingFactoryTest, Clear) {
   scoped_refptr<const BaseClass> c1_b(
       factory.Instantiate(kTypeName, d1.get(), &error, &bad_message));
 
-  ASSERT_TRUE(c1_a);
-  ASSERT_TRUE(c1_b);
+  ASSERT_TRUE(c1_a.get());
+  ASSERT_TRUE(c1_b.get());
   EXPECT_NE(c1_a, c1_b);
 }
 

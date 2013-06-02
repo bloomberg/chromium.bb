@@ -54,7 +54,7 @@ static scoped_refptr<Extension> CreateExtension(const std::string& name) {
   scoped_refptr<Extension> extension = Extension::Create(
       path.AppendASCII(name), Manifest::INVALID_LOCATION, manifest,
       Extension::NO_FLAGS, &error);
-  EXPECT_TRUE(extension) << error;
+  EXPECT_TRUE(extension.get()) << error;
 
   return extension;
 }
@@ -77,7 +77,7 @@ static scoped_refptr<Extension> LoadManifest(const std::string& dir,
       path, Manifest::INVALID_LOCATION,
       *static_cast<DictionaryValue*>(result.get()),
       Extension::NO_FLAGS, &error);
-  EXPECT_TRUE(extension) << error;
+  EXPECT_TRUE(extension.get()) << error;
 
   return extension;
 }
@@ -95,12 +95,12 @@ TEST_F(ExtensionInfoMapTest, RefCounting) {
   EXPECT_TRUE(extension3->HasOneRef());
 
   // Add a ref to each extension and give it to the info map.
-  info_map->AddExtension(extension1, base::Time(), false);
-  info_map->AddExtension(extension2, base::Time(), false);
-  info_map->AddExtension(extension3, base::Time(), false);
+  info_map->AddExtension(extension1.get(), base::Time(), false);
+  info_map->AddExtension(extension2.get(), base::Time(), false);
+  info_map->AddExtension(extension3.get(), base::Time(), false);
 
   // Release extension1, and the info map should have the only ref.
-  const Extension* weak_extension1 = extension1;
+  const Extension* weak_extension1 = extension1.get();
   extension1 = NULL;
   EXPECT_TRUE(weak_extension1->HasOneRef());
 
@@ -121,8 +121,8 @@ TEST_F(ExtensionInfoMapTest, Properties) {
   scoped_refptr<Extension> extension1(CreateExtension("extension1"));
   scoped_refptr<Extension> extension2(CreateExtension("extension2"));
 
-  info_map->AddExtension(extension1, base::Time(), false);
-  info_map->AddExtension(extension2, base::Time(), false);
+  info_map->AddExtension(extension1.get(), base::Time(), false);
+  info_map->AddExtension(extension2.get(), base::Time(), false);
 
   EXPECT_EQ(2u, info_map->extensions().size());
   EXPECT_EQ(extension1.get(), info_map->extensions().GetByID(extension1->id()));
@@ -144,8 +144,8 @@ TEST_F(ExtensionInfoMapTest, CheckPermissions) {
   ASSERT_TRUE(app->is_app());
   ASSERT_TRUE(app->web_extent().MatchesURL(app_url));
 
-  info_map->AddExtension(app, base::Time(), false);
-  info_map->AddExtension(extension, base::Time(), false);
+  info_map->AddExtension(app.get(), base::Time(), false);
+  info_map->AddExtension(extension.get(), base::Time(), false);
 
   // The app should have the notifications permission, either from a
   // chrome-extension URL or from its web extent.

@@ -678,7 +678,7 @@ void ExtensionInstallPrompt::OnMintTokenFailure(
 }
 
 void ExtensionInstallPrompt::ShowConfirmation() {
-  if (permissions_ &&
+  if (permissions_.get() &&
       (!extension_ ||
        !extensions::PermissionsData::ShouldSkipPermissionWarnings(
            extension_))) {

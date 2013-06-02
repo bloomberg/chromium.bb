@@ -134,7 +134,7 @@ scoped_refptr<const BaseClassT> DedupingFactory<BaseClassT>::Instantiate(
     if (prototypes.empty()) {
       scoped_refptr<const BaseClassT> new_object =
           (*factory_method)(instance_type, value, error, bad_message);
-      if (!new_object || !error->empty() || *bad_message)
+      if (!new_object.get() || !error->empty() || *bad_message)
         return scoped_refptr<const BaseClassT>();
       prototypes.push_back(new_object);
     }
@@ -144,7 +144,7 @@ scoped_refptr<const BaseClassT> DedupingFactory<BaseClassT>::Instantiate(
   // Handle parameterized objects.
   scoped_refptr<const BaseClassT> new_object =
       (*factory_method)(instance_type, value, error, bad_message);
-  if (!new_object || !error->empty() || *bad_message)
+  if (!new_object.get() || !error->empty() || *bad_message)
     return scoped_refptr<const BaseClassT>();
 
   size_t length = 0;

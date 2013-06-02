@@ -407,8 +407,8 @@ ExtensionDevToolsClientHost::ExtensionDevToolsClientHost(
                  content::NotificationService::AllSources());
 
   // Attach to debugger and tell it we are ready.
-  DevToolsManager::GetInstance()->
-      RegisterDevToolsClientHostFor(agent_host_, this);
+  DevToolsManager::GetInstance()->RegisterDevToolsClientHostFor(
+      agent_host_.get(), this);
 
   if (infobar_delegate_) {
     infobar_delegate_->AttachClientHost(this);
@@ -537,7 +537,7 @@ void ExtensionDevToolsClientHost::DispatchOnInspectorFrontend(
     extensions::ExtensionSystem::Get(profile_)->event_router()->
         DispatchEventToExtension(extension_id_, event.Pass());
   } else {
-    DebuggerSendCommandFunction* function = pending_requests_[id];
+    DebuggerSendCommandFunction* function = pending_requests_[id].get();
     if (!function)
       return;
 
@@ -599,7 +599,7 @@ bool DebuggerFunction::InitAgentHost() {
     return false;
   }
 
-  if (!agent_host_) {
+  if (!agent_host_.get()) {
     FormatErrorMessage(keys::kNoTargetError);
     return false;
   }
@@ -610,8 +610,8 @@ bool DebuggerFunction::InitClientHost() {
   if (!InitAgentHost())
     return false;
 
-  client_host_ = AttachedClientHosts::GetInstance()->
-      Lookup(agent_host_, GetExtension()->id());
+  client_host_ = AttachedClientHosts::GetInstance()->Lookup(
+      agent_host_.get(), GetExtension()->id());
 
   if (!client_host_) {
     FormatErrorMessage(keys::kNotAttachedError);
@@ -665,7 +665,7 @@ bool DebuggerAttachFunction::RunImpl() {
   }
 
   new ExtensionDevToolsClientHost(profile(),
-                                  agent_host_,
+                                  agent_host_.get(),
                                   GetExtension()->id(),
                                   GetExtension()->name(),
                                   debuggee_,

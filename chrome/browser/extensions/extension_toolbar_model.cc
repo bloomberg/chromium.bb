@@ -352,8 +352,8 @@ void ExtensionToolbarModel::Populate(
 
   // Erase current icons.
   for (size_t i = 0; i < toolbar_items_.size(); i++) {
-    FOR_EACH_OBSERVER(Observer, observers_,
-                      BrowserActionRemoved(toolbar_items_[i]));
+    FOR_EACH_OBSERVER(
+        Observer, observers_, BrowserActionRemoved(toolbar_items_[i].get()));
   }
   toolbar_items_.clear();
 
@@ -367,7 +367,7 @@ void ExtensionToolbarModel::Populate(
     // syncing NPAPI-containing extensions, so if one of those is not actually
     // synced, we'll get a NULL in the list.  This sort of case can also happen
     // if some error prevents an extension from loading.
-    if (*iter != NULL)
+    if (iter->get() != NULL)
       toolbar_items_.push_back(*iter);
   }
   toolbar_items_.insert(toolbar_items_.end(), unsorted.begin(),
@@ -375,8 +375,8 @@ void ExtensionToolbarModel::Populate(
 
   // Inform observers.
   for (size_t i = 0; i < toolbar_items_.size(); i++) {
-    FOR_EACH_OBSERVER(Observer, observers_,
-                      BrowserActionAdded(toolbar_items_[i], i));
+    FOR_EACH_OBSERVER(
+        Observer, observers_, BrowserActionAdded(toolbar_items_[i].get(), i));
   }
 }
 
