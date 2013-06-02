@@ -54,8 +54,6 @@ namespace WebCore {
 
 class CSSCursorImageValue;
 class CSSFontSelector;
-class CSSFontFace;
-class CSSFontFaceRule;
 class CSSImageGeneratorValue;
 class CSSImageSetValue;
 class CSSImageValue;
@@ -67,29 +65,20 @@ class CSSSelector;
 class CSSStyleSheet;
 class CSSValue;
 class ContainerNode;
-class CustomFilterOperation;
-class CustomFilterParameter;
-class CustomFilterParameterList;
-class CustomFilterProgram;
-struct CustomFilterProgramMixSettings;
 class DeprecatedStyleBuilder;
 class Document;
 class Element;
 class ElementRuleCollector;
 class Frame;
 class FrameView;
-class KURL;
 class KeyframeList;
 class KeyframeValue;
 class MediaQueryEvaluator;
 class Node;
 class RenderRegion;
-class RenderScrollbar;
 class RuleData;
 class RuleSet;
-class ScopedStyleResolver;
 class Settings;
-class StaticCSSRuleList;
 class StyleCustomFilterProgramCache;
 class StyleImage;
 class StyleKeyframe;
@@ -104,7 +93,6 @@ class StyleShader;
 class StyleSheet;
 class StyleSheetList;
 class StyledElement;
-class ViewportStyleResolver;
 
 class MediaQueryResult {
     WTF_MAKE_NONCOPYABLE(MediaQueryResult); WTF_MAKE_FAST_ALLOCATED;
@@ -229,9 +217,6 @@ public:
     void initializeFontStyle(Settings*);
     void setFontSize(FontDescription&, float size);
 
-private:
-    static float getComputedSizeFromSpecifiedSize(Document*, RenderStyle*, bool isAbsoluteSize, float specifiedSize, bool useSVGZoomRules);
-
 public:
     bool useSVGZoomRules();
 
@@ -345,8 +330,6 @@ private:
     template <StyleApplicationPass pass>
     void applyAnimatedProperties(const Element* target);
     void resolveVariables(CSSPropertyID, CSSValue*, Vector<std::pair<CSSPropertyID, String> >& knownExpressions);
-    static bool isValidRegionStyleProperty(CSSPropertyID);
-    static bool isValidCueStyleProperty(CSSPropertyID);
     void matchPageRules(MatchResult&, RuleSet*, bool isLeftPage, bool isFirstPage, const String& pageName);
     void matchPageRulesForList(Vector<StyleRulePage*>& matchedRules, const Vector<StyleRulePage*>&, bool isLeftPage, bool isFirstPage, const String& pageName);
     Settings* documentSettings() { return m_document->settings(); }
@@ -403,7 +386,6 @@ private:
     PassRefPtr<StyleImage> loadPendingImage(StylePendingImage*);
     void loadPendingImages();
 
-    static unsigned computeMatchedPropertiesHash(const MatchedProperties*, unsigned size);
     struct MatchedPropertiesCacheItem {
         void reportMemoryUsage(MemoryObjectInfo*) const;
         Vector<MatchedProperties> matchedProperties;
