@@ -20,7 +20,7 @@ TEST(AppCacheTest, CleanupUnusedCache) {
   cache->set_complete(true);
   scoped_refptr<AppCacheGroup> group(
       new AppCacheGroup(service.storage(), GURL("http://blah/manifest"), 111));
-  group->AddCache(cache);
+  group->AddCache(cache.get());
 
   AppCacheHost host1(1, &frontend, &service);
   AppCacheHost host2(2, &frontend, &service);
@@ -559,9 +559,12 @@ TEST(AppCacheTest, ToFromDatabaseRecords) {
   std::vector<AppCacheDatabase::NamespaceRecord> intercepts;
   std::vector<AppCacheDatabase::NamespaceRecord> fallbacks;
   std::vector<AppCacheDatabase::OnlineWhiteListRecord> whitelists;
-  cache->ToDatabaseRecords(
-      group, &cache_record, &entries,
-      &intercepts, &fallbacks, &whitelists);
+  cache->ToDatabaseRecords(group.get(),
+                           &cache_record,
+                           &entries,
+                           &intercepts,
+                           &fallbacks,
+                           &whitelists);
   EXPECT_EQ(kCacheId, cache_record.cache_id);
   EXPECT_EQ(kGroupId, cache_record.group_id);
   EXPECT_TRUE(cache_record.online_wildcard);

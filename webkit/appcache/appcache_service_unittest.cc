@@ -130,9 +130,9 @@ class AppCacheServiceTest : public testing::Test {
         AppCacheEntry(AppCacheEntry::MANIFEST, kMockResponseId,
                       kMockInfoSize + kMockBodySize));
     cache->set_complete(true);
-    group->AddCache(cache);
-    mock_storage()->AddStoredGroup(group);
-    mock_storage()->AddStoredCache(cache);
+    group->AddCache(cache.get());
+    mock_storage()->AddStoredGroup(group.get());
+    mock_storage()->AddStoredCache(cache.get());
   }
 
   void SetupMockReader(
@@ -212,7 +212,7 @@ TEST_F(AppCacheServiceTest, DeleteAppCachesForOrigin) {
   info_vector.push_back(mock_manifest_2);
   info_vector.push_back(mock_manifest_3);
   info->infos_by_origin[kOrigin] = info_vector;
-  mock_storage()->SimulateGetAllInfo(info);
+  mock_storage()->SimulateGetAllInfo(info.get());
   service_->DeleteAppCachesForOrigin(kOrigin, deletion_callback_);
   EXPECT_EQ(0, delete_completion_count_);
   base::MessageLoop::current()->RunUntilIdle();
@@ -222,7 +222,7 @@ TEST_F(AppCacheServiceTest, DeleteAppCachesForOrigin) {
 
   // Should fail if storage fails to delete.
   info->infos_by_origin[kOrigin] = info_vector;
-  mock_storage()->SimulateGetAllInfo(info);
+  mock_storage()->SimulateGetAllInfo(info.get());
   mock_storage()->SimulateMakeGroupObsoleteFailure();
   service_->DeleteAppCachesForOrigin(kOrigin, deletion_callback_);
   EXPECT_EQ(0, delete_completion_count_);

@@ -62,11 +62,9 @@ class CrossOperationTestHelper {
         base::MessageLoopProxy::current(),
         NULL /* special storage policy */);
     quota_manager_proxy_ = new quota::MockQuotaManagerProxy(
-        quota_manager_,
-        base::MessageLoopProxy::current());
-    file_system_context_ = CreateFileSystemContextForTesting(
-        quota_manager_proxy_,
-        base_dir);
+        quota_manager_.get(), base::MessageLoopProxy::current());
+    file_system_context_ =
+        CreateFileSystemContextForTesting(quota_manager_proxy_.get(), base_dir);
 
     // Prepare the origin's root directory.
     FileSystemMountPointProvider* mount_point_provider =
@@ -116,12 +114,12 @@ class CrossOperationTestHelper {
 
   base::PlatformFileError Copy(const FileSystemURL& src,
                                const FileSystemURL& dest) {
-    return AsyncFileTestHelper::Copy(file_system_context_, src, dest);
+    return AsyncFileTestHelper::Copy(file_system_context_.get(), src, dest);
   }
 
   base::PlatformFileError Move(const FileSystemURL& src,
                                const FileSystemURL& dest) {
-    return AsyncFileTestHelper::Move(file_system_context_, src, dest);
+    return AsyncFileTestHelper::Move(file_system_context_.get(), src, dest);
   }
 
   base::PlatformFileError SetUpTestCaseFiles(
@@ -188,36 +186,37 @@ class CrossOperationTestHelper {
   base::PlatformFileError ReadDirectory(const FileSystemURL& url,
                                         FileEntryList* entries) {
     return AsyncFileTestHelper::ReadDirectory(
-        file_system_context_, url, entries);
+        file_system_context_.get(), url, entries);
   }
 
   base::PlatformFileError CreateDirectory(const FileSystemURL& url) {
-    return AsyncFileTestHelper::CreateDirectory(
-        file_system_context_, url);
+    return AsyncFileTestHelper::CreateDirectory(file_system_context_.get(),
+                                                url);
   }
 
   base::PlatformFileError CreateFile(const FileSystemURL& url, size_t size) {
     base::PlatformFileError result =
-        AsyncFileTestHelper::CreateFile(file_system_context_, url);
+        AsyncFileTestHelper::CreateFile(file_system_context_.get(), url);
     if (result != base::PLATFORM_FILE_OK)
       return result;
-    return AsyncFileTestHelper::TruncateFile(file_system_context_, url, size);
+    return AsyncFileTestHelper::TruncateFile(
+        file_system_context_.get(), url, size);
   }
 
   bool FileExists(const FileSystemURL& url, int64 expected_size) {
     return AsyncFileTestHelper::FileExists(
-        file_system_context_, url, expected_size);
+        file_system_context_.get(), url, expected_size);
   }
 
   bool DirectoryExists(const FileSystemURL& url) {
-    return AsyncFileTestHelper::DirectoryExists(file_system_context_, url);
+    return AsyncFileTestHelper::DirectoryExists(file_system_context_.get(),
+                                                url);
   }
 
  private:
   void GetUsageAndQuota(FileSystemType type, int64* usage, int64* quota) {
-    quota::QuotaStatusCode status =
-        AsyncFileTestHelper::GetUsageAndQuota(
-            quota_manager_, origin_, type, usage, quota);
+    quota::QuotaStatusCode status = AsyncFileTestHelper::GetUsageAndQuota(
+        quota_manager_.get(), origin_, type, usage, quota);
     ASSERT_EQ(quota::kQuotaStatusOk, status);
   }
 

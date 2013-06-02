@@ -335,8 +335,9 @@ class MainPageJob : public BaseInternalsJob {
     DCHECK(request_);
     info_collection_ = new AppCacheInfoCollection;
     appcache_service_->GetAllAppCacheInfo(
-        info_collection_, base::Bind(&MainPageJob::OnGotInfoComplete,
-                                     weak_factory_.GetWeakPtr()));
+        info_collection_.get(),
+        base::Bind(&MainPageJob::OnGotInfoComplete,
+                   weak_factory_.GetWeakPtr()));
   }
 
   // Produces a page containing the listing
@@ -349,7 +350,7 @@ class MainPageJob : public BaseInternalsJob {
 
     out->clear();
     EmitPageStart(out);
-    if (!info_collection_) {
+    if (!info_collection_.get()) {
       out->append(kErrorMessage);
     } else if (info_collection_->infos_by_origin.empty()) {
       out->append(kEmptyAppCachesMessage);
@@ -548,15 +549,18 @@ class ViewEntryJob : public BaseInternalsJob,
     EmitPageStart(out);
     EmitAnchor(entry_url_.spec(), entry_url_.spec(), out);
     out->append("<br/>\n");
-    if (response_info_) {
+    if (response_info_.get()) {
       if (response_info_->http_response_info())
-        EmitResponseHeaders(response_info_->http_response_info()->headers, out);
+        EmitResponseHeaders(response_info_->http_response_info()->headers.get(),
+                            out);
       else
         out->append("Failed to read response headers.<br>");
 
-      if (response_data_) {
-        EmitHexDump(response_data_->data(), amount_read_,
-                    response_info_->response_data_size(), out);
+      if (response_data_.get()) {
+        EmitHexDump(response_data_->data(),
+                    amount_read_,
+                    response_info_->response_data_size(),
+                    out);
       } else {
         out->append("Failed to read response data.<br>");
       }
@@ -589,7 +593,8 @@ class ViewEntryJob : public BaseInternalsJob,
     reader_.reset(appcache_service_->storage()->CreateResponseReader(
         manifest_url_, group_id_, response_id_));
     reader_->ReadData(
-        response_data_, amount_to_read,
+        response_data_.get(),
+        amount_to_read,
         base::Bind(&ViewEntryJob::OnReadComplete, base::Unretained(this)));
   }
 

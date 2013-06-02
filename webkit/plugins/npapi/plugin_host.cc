@@ -90,7 +90,7 @@ PluginHost *PluginHost::Singleton() {
   }
 
   DCHECK(singleton.get() != NULL);
-  return singleton;
+  return singleton.get();
 }
 
 void PluginHost::InitializeHostFuncs() {
@@ -344,7 +344,7 @@ NPError NPN_RequestRead(NPStream* stream, NPByteRange* range_list) {
 
   scoped_refptr<PluginInstance> plugin(
       reinterpret_cast<PluginInstance*>(stream->ndata));
-  if (!plugin)
+  if (!plugin.get())
     return NPERR_GENERIC_ERROR;
 
   plugin->RequestRead(stream, range_list);
@@ -361,7 +361,7 @@ static NPError GetURLNotify(NPP id,
     return NPERR_INVALID_URL;
 
   scoped_refptr<PluginInstance> plugin(FindInstance(id));
-  if (!plugin) {
+  if (!plugin.get()) {
     return NPERR_GENERIC_ERROR;
   }
 
@@ -425,7 +425,7 @@ static NPError PostURLNotify(NPP id,
     return NPERR_INVALID_URL;
 
   scoped_refptr<PluginInstance> plugin(FindInstance(id));
-  if (!plugin) {
+  if (!plugin.get()) {
     NOTREACHED();
     return NPERR_GENERIC_ERROR;
   }
@@ -683,7 +683,7 @@ NPError NPN_GetValue(NPP id, NPNVariable variable, void* value) {
   switch (static_cast<int>(variable)) {
     case NPNVWindowNPObject: {
       scoped_refptr<PluginInstance> plugin(FindInstance(id));
-      if (!plugin) {
+      if (!plugin.get()) {
         NOTREACHED();
         return NPERR_INVALID_INSTANCE_ERROR;
       }
@@ -703,7 +703,7 @@ NPError NPN_GetValue(NPP id, NPNVariable variable, void* value) {
     }
     case NPNVPluginElementNPObject: {
       scoped_refptr<PluginInstance> plugin(FindInstance(id));
-      if (!plugin) {
+      if (!plugin.get()) {
         NOTREACHED();
         return NPERR_INVALID_INSTANCE_ERROR;
       }
@@ -724,7 +724,7 @@ NPError NPN_GetValue(NPP id, NPNVariable variable, void* value) {
   #if !defined(OS_MACOSX)  // OS X doesn't have windowed plugins.
     case NPNVnetscapeWindow: {
       scoped_refptr<PluginInstance> plugin = FindInstance(id);
-      if (!plugin) {
+      if (!plugin.get()) {
         NOTREACHED();
         return NPERR_INVALID_INSTANCE_ERROR;
       }
@@ -761,7 +761,7 @@ NPError NPN_GetValue(NPP id, NPNVariable variable, void* value) {
     case NPNVprivateModeBool: {
       NPBool* private_mode = reinterpret_cast<NPBool*>(value);
       scoped_refptr<PluginInstance> plugin(FindInstance(id));
-      if (!plugin) {
+      if (!plugin.get()) {
         NOTREACHED();
         return NPERR_INVALID_INSTANCE_ERROR;
       }
@@ -836,7 +836,7 @@ NPError NPN_SetValue(NPP id, NPPVariable variable, void* value) {
   // Allows the plugin to set various modes
 
   scoped_refptr<PluginInstance> plugin(FindInstance(id));
-  if (!plugin) {
+  if (!plugin.get()) {
     NOTREACHED();
     return NPERR_INVALID_INSTANCE_ERROR;
   }
@@ -920,13 +920,13 @@ void* NPN_GetJavaPeer(NPP) {
 
 void NPN_PushPopupsEnabledState(NPP id, NPBool enabled) {
   scoped_refptr<PluginInstance> plugin(FindInstance(id));
-  if (plugin)
+  if (plugin.get())
     plugin->PushPopupsEnabledState(enabled ? true : false);
 }
 
 void NPN_PopPopupsEnabledState(NPP id) {
   scoped_refptr<PluginInstance> plugin(FindInstance(id));
-  if (plugin)
+  if (plugin.get())
     plugin->PopPopupsEnabledState();
 }
 
@@ -934,7 +934,7 @@ void NPN_PluginThreadAsyncCall(NPP id,
                                void (*func)(void*),
                                void* user_data) {
   scoped_refptr<PluginInstance> plugin(FindInstance(id));
-  if (plugin)
+  if (plugin.get())
     plugin->PluginThreadAsyncCall(func, user_data);
 }
 
@@ -956,7 +956,7 @@ NPError NPN_GetValueForURL(NPP id,
     case NPNURLVProxy: {
       result = "DIRECT";
       scoped_refptr<PluginInstance> plugin(FindInstance(id));
-      if (!plugin)
+      if (!plugin.get())
         return NPERR_GENERIC_ERROR;
 
       WebPlugin* webplugin = plugin->webplugin();
@@ -969,7 +969,7 @@ NPError NPN_GetValueForURL(NPP id,
     }
     case NPNURLVCookie: {
       scoped_refptr<PluginInstance> plugin(FindInstance(id));
-      if (!plugin)
+      if (!plugin.get())
         return NPERR_GENERIC_ERROR;
 
       WebPlugin* webplugin = plugin->webplugin();
@@ -1009,7 +1009,7 @@ NPError NPN_SetValueForURL(NPP id,
   switch (variable) {
     case NPNURLVCookie: {
       scoped_refptr<PluginInstance> plugin(FindInstance(id));
-      if (!plugin)
+      if (!plugin.get())
         return NPERR_GENERIC_ERROR;
 
       WebPlugin* webplugin = plugin->webplugin();
@@ -1055,7 +1055,7 @@ uint32_t NPN_ScheduleTimer(NPP id,
                            NPBool repeat,
                            void (*func)(NPP id, uint32_t timer_id)) {
   scoped_refptr<PluginInstance> plugin(FindInstance(id));
-  if (!plugin)
+  if (!plugin.get())
     return 0;
 
   return plugin->ScheduleTimer(interval, repeat, func);
@@ -1063,7 +1063,7 @@ uint32_t NPN_ScheduleTimer(NPP id,
 
 void NPN_UnscheduleTimer(NPP id, uint32_t timer_id) {
   scoped_refptr<PluginInstance> plugin(FindInstance(id));
-  if (plugin)
+  if (plugin.get())
     plugin->UnscheduleTimer(timer_id);
 }
 
@@ -1072,7 +1072,7 @@ NPError NPN_PopUpContextMenu(NPP id, NPMenu* menu) {
     return NPERR_INVALID_PARAM;
 
   scoped_refptr<PluginInstance> plugin(FindInstance(id));
-  if (plugin) {
+  if (plugin.get()) {
     return plugin->PopUpContextMenu(menu);
   }
   NOTREACHED();
@@ -1084,9 +1084,9 @@ NPBool NPN_ConvertPoint(NPP id, double sourceX, double sourceY,
                         double *destX, double *destY,
                         NPCoordinateSpace destSpace) {
   scoped_refptr<PluginInstance> plugin(FindInstance(id));
-  if (plugin) {
-    return plugin->ConvertPoint(sourceX, sourceY, sourceSpace,
-                                destX, destY, destSpace);
+  if (plugin.get()) {
+    return plugin->ConvertPoint(
+        sourceX, sourceY, sourceSpace, destX, destY, destSpace);
   }
   NOTREACHED();
   return false;
@@ -1106,7 +1106,7 @@ NPBool NPN_UnfocusInstance(NPP id, NPFocusDirection direction) {
 
 void NPN_URLRedirectResponse(NPP instance, void* notify_data, NPBool allow) {
   scoped_refptr<PluginInstance> plugin(FindInstance(instance));
-  if (plugin) {
+  if (plugin.get()) {
     plugin->URLRedirectResponse(!!allow, notify_data);
   }
 }

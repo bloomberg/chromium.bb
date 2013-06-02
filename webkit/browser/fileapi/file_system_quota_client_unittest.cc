@@ -59,8 +59,7 @@ class FileSystemQuotaClientTest : public testing::Test {
 
  protected:
   FileSystemQuotaClient* NewQuotaClient(bool is_incognito) {
-    return new FileSystemQuotaClient(
-        file_system_context_, is_incognito);
+    return new FileSystemQuotaClient(file_system_context_.get(), is_incognito);
   }
 
   void GetOriginUsageAsync(FileSystemQuotaClient* quota_client,
@@ -115,7 +114,7 @@ class FileSystemQuotaClientTest : public testing::Test {
   FileSystemOperationContext* CreateFileSystemOperationContext(
       FileSystemType type) {
     FileSystemOperationContext* context =
-        new FileSystemOperationContext(file_system_context_);
+        new FileSystemOperationContext(file_system_context_.get());
     context->set_allowed_bytes_growth(100000000);
     context->set_update_observers(
         *file_system_context_->GetUpdateObservers(type));

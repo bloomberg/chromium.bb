@@ -166,7 +166,7 @@ class WEBKIT_STORAGE_EXPORT LocalFileSystemOperation
                            base::FilePath* platform_path);
 
   FileSystemContext* file_system_context() const {
-    return file_system_context_;
+    return file_system_context_.get();
   }
 
   FileSystemOperationContext* operation_context() const {

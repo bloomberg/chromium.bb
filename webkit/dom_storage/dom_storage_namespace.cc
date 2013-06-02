@@ -41,14 +41,17 @@ DomStorageNamespace::~DomStorageNamespace() {
 DomStorageArea* DomStorageNamespace::OpenStorageArea(const GURL& origin) {
   if (AreaHolder* holder = GetAreaHolder(origin)) {
     ++(holder->open_count_);
-    return holder->area_;
+    return holder->area_.get();
   }
   DomStorageArea* area;
   if (namespace_id_ == kLocalStorageNamespaceId) {
-    area = new DomStorageArea(origin, directory_, task_runner_);
+    area = new DomStorageArea(origin, directory_, task_runner_.get());
   } else {
-    area = new DomStorageArea(namespace_id_, persistent_namespace_id_, origin,
-                              session_storage_database_, task_runner_);
+    area = new DomStorageArea(namespace_id_,
+                              persistent_namespace_id_,
+                              origin,
+                              session_storage_database_.get(),
+                              task_runner_.get());
   }
   areas_[origin] = AreaHolder(area, 1);
   return area;
@@ -66,7 +69,7 @@ void DomStorageNamespace::CloseStorageArea(DomStorageArea* area) {
 DomStorageArea* DomStorageNamespace::GetOpenStorageArea(const GURL& origin) {
   AreaHolder* holder = GetAreaHolder(origin);
   if (holder && holder->open_count_)
-    return holder->area_;
+    return holder->area_.get();
   return NULL;
 }
 
@@ -75,9 +78,11 @@ DomStorageNamespace* DomStorageNamespace::Clone(
     const std::string& clone_persistent_namespace_id) {
   DCHECK_NE(kLocalStorageNamespaceId, namespace_id_);
   DCHECK_NE(kLocalStorageNamespaceId, clone_namespace_id);
-  DomStorageNamespace* clone = new DomStorageNamespace(
-      clone_namespace_id, clone_persistent_namespace_id,
-      session_storage_database_, task_runner_);
+  DomStorageNamespace* clone =
+      new DomStorageNamespace(clone_namespace_id,
+                              clone_persistent_namespace_id,
+                              session_storage_database_.get(),
+                              task_runner_.get());
   AreaMap::const_iterator it = areas_.begin();
   // Clone the in-memory structures.
   for (; it != areas_.end(); ++it) {
@@ -86,12 +91,13 @@ DomStorageNamespace* DomStorageNamespace::Clone(
     clone->areas_[it->first] = AreaHolder(area, 0);
   }
   // And clone the on-disk structures, too.
-  if (session_storage_database_) {
+  if (session_storage_database_.get()) {
     task_runner_->PostShutdownBlockingTask(
         FROM_HERE,
         DomStorageTaskRunner::COMMIT_SEQUENCE,
         base::Bind(base::IgnoreResult(&SessionStorageDatabase::CloneNamespace),
-                   session_storage_database_.get(), persistent_namespace_id_,
+                   session_storage_database_.get(),
+                   persistent_namespace_id_,
                    clone_persistent_namespace_id));
   }
   return clone;
@@ -106,7 +112,7 @@ void DomStorageNamespace::DeleteLocalStorageOrigin(const GURL& origin) {
   }
   if (!directory_.empty()) {
     scoped_refptr<DomStorageArea> area =
-        new DomStorageArea(origin, directory_, task_runner_);
+        new DomStorageArea(origin, directory_, task_runner_.get());
     area->DeleteOrigin();
   }
 }

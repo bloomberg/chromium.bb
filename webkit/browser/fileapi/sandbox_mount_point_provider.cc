@@ -171,7 +171,8 @@ SandboxMountPointProvider::SandboxMountPointProvider(
   AccessObserverList::Source access_observers_src;
 
   if (enable_usage_tracking_) {
-    update_observers_src.AddObserver(quota_observer_.get(), file_task_runner_);
+    update_observers_src.AddObserver(quota_observer_.get(),
+                                     file_task_runner_.get());
     access_observers_src.AddObserver(quota_observer_.get(), NULL);
   }
 
@@ -317,7 +318,7 @@ FileSystemOperation* SandboxMountPointProvider::CreateFileSystemOperation(
   operation_context->set_update_observers(update_observers_);
   operation_context->set_access_observers(access_observers_);
 
-  if (special_storage_policy_ &&
+  if (special_storage_policy_.get() &&
       special_storage_policy_->IsStorageUnlimited(url.origin())) {
     operation_context->set_quota_limit_type(quota::kQuotaLimitTypeUnlimited);
   } else {

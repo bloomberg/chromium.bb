@@ -31,7 +31,7 @@ PluginLib* PluginLib::CreatePluginLib(const base::FilePath& filename) {
 
   for (size_t i = 0; i < g_loaded_libs->size(); ++i) {
     if ((*g_loaded_libs)[i]->plugin_info().path == filename)
-      return (*g_loaded_libs)[i];
+      return (*g_loaded_libs)[i].get();
   }
 
   webkit::WebPluginInfo info;

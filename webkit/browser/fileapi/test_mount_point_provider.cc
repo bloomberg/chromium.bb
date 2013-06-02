@@ -80,7 +80,7 @@ TestMountPointProvider::TestMountPointProvider(
       quota_util_(new QuotaUtil),
       require_copy_or_move_validator_(false) {
   UpdateObserverList::Source source;
-  source.AddObserver(quota_util_.get(), task_runner_);
+  source.AddObserver(quota_util_.get(), task_runner_.get());
   observers_ = UpdateObserverList(source);
 }
 

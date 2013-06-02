@@ -49,7 +49,7 @@ class LocalFileUtilTest : public testing::Test {
  protected:
   FileSystemOperationContext* NewContext() {
     FileSystemOperationContext* context =
-      new FileSystemOperationContext(file_system_context_);
+        new FileSystemOperationContext(file_system_context_.get());
     context->set_update_observers(
         *file_system_context_->GetUpdateObservers(kFileSystemType));
     context->set_root_path(data_dir_.path());
@@ -110,7 +110,7 @@ class LocalFileUtilTest : public testing::Test {
   }
 
   FileSystemContext* file_system_context() {
-    return file_system_context_;
+    return file_system_context_.get();
   }
 
  private:

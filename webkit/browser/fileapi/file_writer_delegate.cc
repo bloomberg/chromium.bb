@@ -143,7 +143,7 @@ void FileWriterDelegate::OnDataReceived(int bytes_read) {
     // This could easily be optimized to rotate between a pool of buffers, so
     // that we could read and write at the same time.  It's not yet clear that
     // it's necessary.
-    cursor_ = new net::DrainableIOBuffer(io_buffer_, bytes_read_);
+    cursor_ = new net::DrainableIOBuffer(io_buffer_.get(), bytes_read_);
     Write();
   }
 }
@@ -152,7 +152,7 @@ void FileWriterDelegate::Write() {
   writing_started_ = true;
   int64 bytes_to_write = bytes_read_ - bytes_written_;
   int write_response =
-      file_stream_writer_->Write(cursor_,
+      file_stream_writer_->Write(cursor_.get(),
                                  static_cast<int>(bytes_to_write),
                                  base::Bind(&FileWriterDelegate::OnDataWritten,
                                             weak_factory_.GetWeakPtr()));

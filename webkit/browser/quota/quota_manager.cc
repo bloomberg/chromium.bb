@@ -948,12 +948,11 @@ void QuotaManager::GetAvailableSpace(const AvailableSpaceCallback& callback) {
   if (!available_space_callbacks_.Add(callback))
     return;
 
-  PostTaskAndReplyWithResult(
-      db_thread_,
-      FROM_HERE,
-      base::Bind(get_disk_space_fn_, profile_path_),
-      base::Bind(&QuotaManager::DidGetAvailableSpace,
-                 weak_factory_.GetWeakPtr()));
+  PostTaskAndReplyWithResult(db_thread_.get(),
+                             FROM_HERE,
+                             base::Bind(get_disk_space_fn_, profile_path_),
+                             base::Bind(&QuotaManager::DidGetAvailableSpace,
+                                        weak_factory_.GetWeakPtr()));
 }
 
 void QuotaManager::GetTemporaryGlobalQuota(const QuotaCallback& callback) {
@@ -1124,19 +1123,16 @@ bool QuotaManager::ResetUsageTracker(StorageType type) {
     return false;
   switch (type) {
     case kStorageTypeTemporary:
-      temporary_usage_tracker_.reset(
-          new UsageTracker(clients_, kStorageTypeTemporary,
-                           special_storage_policy_));
+      temporary_usage_tracker_.reset(new UsageTracker(
+          clients_, kStorageTypeTemporary, special_storage_policy_.get()));
       return true;
     case kStorageTypePersistent:
-      persistent_usage_tracker_.reset(
-          new UsageTracker(clients_, kStorageTypePersistent,
-                           special_storage_policy_));
+      persistent_usage_tracker_.reset(new UsageTracker(
+          clients_, kStorageTypePersistent, special_storage_policy_.get()));
       return true;
     case kStorageTypeSyncable:
-      syncable_usage_tracker_.reset(
-          new UsageTracker(clients_, kStorageTypeSyncable,
-                           special_storage_policy_));
+      syncable_usage_tracker_.reset(new UsageTracker(
+          clients_, kStorageTypeSyncable, special_storage_policy_.get()));
       return true;
     default:
       NOTREACHED();
@@ -1170,15 +1166,12 @@ void QuotaManager::LazyInitialize() {
   database_.reset(new QuotaDatabase(is_incognito_ ? base::FilePath() :
       profile_path_.AppendASCII(kDatabaseName)));
 
-  temporary_usage_tracker_.reset(
-      new UsageTracker(clients_, kStorageTypeTemporary,
-                       special_storage_policy_));
-  persistent_usage_tracker_.reset(
-      new UsageTracker(clients_, kStorageTypePersistent,
-                       special_storage_policy_));
-  syncable_usage_tracker_.reset(
-      new UsageTracker(clients_, kStorageTypeSyncable,
-                       special_storage_policy_));
+  temporary_usage_tracker_.reset(new UsageTracker(
+      clients_, kStorageTypeTemporary, special_storage_policy_.get()));
+  persistent_usage_tracker_.reset(new UsageTracker(
+      clients_, kStorageTypePersistent, special_storage_policy_.get()));
+  syncable_usage_tracker_.reset(new UsageTracker(
+      clients_, kStorageTypeSyncable, special_storage_policy_.get()));
 
   int64* temporary_quota_override = new int64(-1);
   int64* desired_available_space = new int64(-1);
@@ -1340,8 +1333,10 @@ void QuotaManager::DidGetTemporaryGlobalUsageForHistogram(
   size_t num_origins = origins.size();
   size_t protected_origins = 0;
   size_t unlimited_origins = 0;
-  CountOriginType(origins, special_storage_policy_,
-                  &protected_origins, &unlimited_origins);
+  CountOriginType(origins,
+                  special_storage_policy_.get(),
+                  &protected_origins,
+                  &unlimited_origins);
 
   UMA_HISTOGRAM_COUNTS("Quota.NumberOfTemporaryStorageOrigins",
                        num_origins);
@@ -1362,8 +1357,10 @@ void QuotaManager::DidGetPersistentGlobalUsageForHistogram(
   size_t num_origins = origins.size();
   size_t protected_origins = 0;
   size_t unlimited_origins = 0;
-  CountOriginType(origins, special_storage_policy_,
-                  &protected_origins, &unlimited_origins);
+  CountOriginType(origins,
+                  special_storage_policy_.get(),
+                  &protected_origins,
+                  &unlimited_origins);
 
   UMA_HISTOGRAM_COUNTS("Quota.NumberOfPersistentStorageOrigins",
                        num_origins);
@@ -1556,7 +1553,7 @@ void QuotaManager::PostTaskAndReplyWithResultForDBThread(
   // |database_|, therefore we can be sure that database_ is alive when this
   // task runs.
   base::PostTaskAndReplyWithResult(
-      db_thread_,
+      db_thread_.get(),
       from_here,
       base::Bind(task, base::Unretained(database_.get())),
       reply);
@@ -1653,7 +1650,7 @@ void QuotaManagerProxy::SetUsageCacheEnabled(QuotaClient::ID client_id,
 }
 
 QuotaManager* QuotaManagerProxy::quota_manager() const {
-  DCHECK(!io_thread_ || io_thread_->BelongsToCurrentThread());
+  DCHECK(!io_thread_.get() || io_thread_->BelongsToCurrentThread());
   return manager_;
 }
 

@@ -91,7 +91,7 @@ void DomStorageCachedArea::Clear(int connection_id, const GURL& page_url) {
 
 void DomStorageCachedArea::ApplyMutation(
     const NullableString16& key, const NullableString16& new_value) {
-  if (!map_ || ignore_all_mutations_)
+  if (!map_.get() || ignore_all_mutations_)
     return;
 
   if (key.is_null()) {
@@ -135,11 +135,11 @@ void DomStorageCachedArea::ApplyMutation(
 }
 
 size_t DomStorageCachedArea::MemoryBytesUsedByCache() const {
-  return map_ ? map_->bytes_used() : 0;
+  return map_.get() ? map_->bytes_used() : 0;
 }
 
 void DomStorageCachedArea::Prime(int connection_id) {
-  DCHECK(!map_);
+  DCHECK(!map_.get());
 
   // The LoadArea method is actually synchronous, but we have to
   // wait for an asyncly delivered message to know when incoming

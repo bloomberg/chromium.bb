@@ -42,12 +42,11 @@ class MockQuotaManagerTest : public testing::Test {
   virtual void SetUp() {
     ASSERT_TRUE(data_dir_.CreateUniqueTempDir());
     policy_ = new MockSpecialStoragePolicy;
-    manager_ = new MockQuotaManager(
-        false /* is_incognito */,
-        data_dir_.path(),
-        base::MessageLoopProxy::current(),
-        base::MessageLoopProxy::current(),
-        policy_);
+    manager_ = new MockQuotaManager(false /* is_incognito */,
+                                    data_dir_.path(),
+                                    base::MessageLoopProxy::current(),
+                                    base::MessageLoopProxy::current(),
+                                    policy_.get());
   }
 
   virtual void TearDown() {

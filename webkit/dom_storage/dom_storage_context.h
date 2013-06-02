@@ -101,7 +101,7 @@ class WEBKIT_STORAGE_EXPORT DomStorageContext
     return sessionstorage_directory_;
   }
 
-  DomStorageTaskRunner* task_runner() const { return task_runner_; }
+  DomStorageTaskRunner* task_runner() const { return task_runner_.get(); }
   DomStorageNamespace* GetStorageNamespace(int64 namespace_id);
 
   void GetLocalStorageUsage(std::vector<LocalStorageUsageInfo>* infos,

@@ -461,13 +461,13 @@ class RequestProxy
     headers.AddHeadersFromString(params->headers);
     request_->SetExtraRequestHeaders(headers);
     request_->set_load_flags(params->load_flags);
-    if (params->request_body) {
+    if (params->request_body.get()) {
       request_->set_upload(make_scoped_ptr(
           params->request_body->ResolveElementsAndCreateUploadDataStream(
-              static_cast<TestShellRequestContext*>(g_request_context)->
-              blob_storage_controller(),
-              static_cast<TestShellRequestContext*>(g_request_context)->
-              file_system_context(),
+              static_cast<TestShellRequestContext*>(g_request_context)
+                  ->blob_storage_controller(),
+              static_cast<TestShellRequestContext*>(g_request_context)
+                  ->file_system_context(),
               base::MessageLoopProxy::current())));
     }
     SimpleAppCacheSystem::SetExtraRequestInfo(
@@ -525,7 +525,7 @@ class RequestProxy
 
     if (request_->status().is_success()) {
       int bytes_read;
-      if (request_->Read(buf_, kDataSize, &bytes_read) && bytes_read) {
+      if (request_->Read(buf_.get(), kDataSize, &bytes_read) && bytes_read) {
         OnReceivedData(bytes_read);
       } else if (!request_->status().is_io_pending()) {
         Done();
@@ -694,7 +694,7 @@ class RequestProxy
     request->GetMimeType(&info->mime_type);
     request->GetCharset(&info->charset);
     info->content_length = request->GetExpectedContentSize();
-    if (downloaded_file_)
+    if (downloaded_file_.get())
       info->download_file_path = downloaded_file_->path();
     SimpleAppCacheSystem::GetExtraResponseInfo(
         request,
@@ -763,7 +763,7 @@ class RequestProxy
     }
 
     info->mime_type.clear();
-    DCHECK(info->headers);
+    DCHECK(info->headers.get());
     int status_code = info->headers->response_code();
     // File protocol does not support response headers.
     info->headers = NULL;
@@ -925,7 +925,7 @@ class ResourceLoaderBridgeImpl : public ResourceLoaderBridge {
 
   virtual void SetRequestBody(ResourceRequestBody* request_body) OVERRIDE {
     DCHECK(params_.get());
-    DCHECK(!params_->request_body);
+    DCHECK(!params_->request_body.get());
     params_->request_body = request_body;
   }
 

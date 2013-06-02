@@ -159,7 +159,7 @@ void AppCacheURLRequestJob::OnResponseInfoLoaded(
 }
 
 const net::HttpResponseInfo* AppCacheURLRequestJob::http_info() const {
-  if (!info_)
+  if (!info_.get())
     return NULL;
   if (range_response_info_)
     return range_response_info_.get();
@@ -191,7 +191,7 @@ void AppCacheURLRequestJob::SetupRangeResponse() {
   const char kPartialStatusLine[] = "HTTP/1.1 206 Partial Content";
   range_response_info_.reset(
       new net::HttpResponseInfo(*info_->http_response_info()));
-  net::HttpResponseHeaders* headers = range_response_info_->headers;
+  net::HttpResponseHeaders* headers = range_response_info_->headers.get();
   headers->RemoveHeader(kLengthHeader);
   headers->RemoveHeader(kRangeHeader);
   headers->ReplaceStatusLine(kPartialStatusLine);
@@ -248,7 +248,7 @@ net::LoadState AppCacheURLRequestJob::GetLoadState() const {
     return net::LOAD_STATE_WAITING_FOR_APPCACHE;
   if (delivery_type_ != APPCACHED_DELIVERY)
     return net::LOAD_STATE_IDLE;
-  if (!info_)
+  if (!info_.get())
     return net::LOAD_STATE_WAITING_FOR_APPCACHE;
   if (reader_.get() && reader_->IsReadPending())
     return net::LOAD_STATE_READING_RESPONSE;

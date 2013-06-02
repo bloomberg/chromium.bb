@@ -173,8 +173,8 @@ class QuotaDatabaseTest : public testing::Test {
         new MockSpecialStoragePolicy);
     policy->AddUnlimited(kOrigin1);
     policy->AddProtected(kOrigin2);
-    EXPECT_TRUE(db.GetLRUOrigin(kStorageTypeTemporary, exceptions,
-                                policy, &origin));
+    EXPECT_TRUE(db.GetLRUOrigin(
+        kStorageTypeTemporary, exceptions, policy.get(), &origin));
     EXPECT_EQ(kOrigin2.spec(), origin.spec());
 
     exceptions.insert(kOrigin1);

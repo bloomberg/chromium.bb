@@ -76,7 +76,7 @@ class FileSystemURLRequestJobTest : public testing::Test {
   virtual void TearDown() OVERRIDE {
     net::URLRequest::Deprecated::RegisterProtocolFactory("filesystem", NULL);
     ClearUnusedJob();
-    if (pending_job_) {
+    if (pending_job_.get()) {
       pending_job_->Kill();
       pending_job_ = NULL;
     }
@@ -130,7 +130,7 @@ class FileSystemURLRequestJobTest : public testing::Test {
         kFileSystemTypeTemporary,
         base::FilePath().AppendASCII(dir_name));
 
-    FileSystemOperationContext context(file_system_context_);
+    FileSystemOperationContext context(file_system_context_.get());
     context.set_allowed_bytes_growth(1024);
 
     ASSERT_EQ(base::PLATFORM_FILE_OK, file_util->CreateDirectory(
@@ -149,7 +149,7 @@ class FileSystemURLRequestJobTest : public testing::Test {
         kFileSystemTypeTemporary,
         base::FilePath().AppendASCII(file_name));
 
-    FileSystemOperationContext context(file_system_context_);
+    FileSystemOperationContext context(file_system_context_.get());
     context.set_allowed_bytes_growth(1024);
 
     base::PlatformFile handle = base::kInvalidPlatformFileValue;

@@ -154,8 +154,8 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
       media_log_->CreateEvent(media::MediaLogEvent::WEBMEDIAPLAYER_CREATED));
 
   CHECK(media_thread_.Start());
-  pipeline_.reset(new media::Pipeline(
-      media_thread_.message_loop_proxy(), media_log_));
+  pipeline_.reset(new media::Pipeline(media_thread_.message_loop_proxy(),
+                                      media_log_.get()));
 
   // Let V8 know we started new thread if we did not do it yet.
   // Made separate task to avoid deletion of player currently being created.
@@ -183,8 +183,9 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
 
   // Use the null sink if no sink was provided.
   audio_source_provider_ = new WebAudioSourceProviderImpl(
-      params.audio_renderer_sink() ? params.audio_renderer_sink() :
-      new media::NullAudioSink(media_thread_.message_loop_proxy()));
+      params.audio_renderer_sink().get()
+          ? params.audio_renderer_sink()
+          : new media::NullAudioSink(media_thread_.message_loop_proxy()));
 }
 
 WebMediaPlayerImpl::~WebMediaPlayerImpl() {
@@ -248,8 +249,10 @@ void WebMediaPlayerImpl::load(const WebKit::WebURL& url, CORSMode cors_mode) {
   // Otherwise it's a regular request which requires resolving the URL first.
   GURL gurl(url);
   data_source_.reset(new BufferedDataSource(
-      main_loop_, frame_, media_log_, base::Bind(
-          &WebMediaPlayerImpl::NotifyDownloading, AsWeakPtr())));
+      main_loop_,
+      frame_,
+      media_log_.get(),
+      base::Bind(&WebMediaPlayerImpl::NotifyDownloading, AsWeakPtr())));
   data_source_->Initialize(
       url, static_cast<BufferedResourceLoader::CORSMode>(cors_mode),
       base::Bind(
@@ -542,7 +545,7 @@ void WebMediaPlayerImpl::paint(WebCanvas* canvas,
     video_frame = current_frame_;
   }
   gfx::Rect gfx_rect(rect);
-  skcanvas_video_renderer_.Paint(video_frame, canvas, gfx_rect, alpha);
+  skcanvas_video_renderer_.Paint(video_frame.get(), canvas, gfx_rect, alpha);
 }
 
 bool WebMediaPlayerImpl::hasSingleSecurityOrigin() const {
@@ -634,7 +637,7 @@ bool WebMediaPlayerImpl::copyVideoTextureToPlatformTexture(
     base::AutoLock auto_lock(lock_);
     video_frame = current_frame_;
   }
-  if (video_frame &&
+  if (video_frame.get() &&
       video_frame->format() == media::VideoFrame::NATIVE_TEXTURE &&
       video_frame->texture_target() == GL_TEXTURE_2D) {
     uint32 source_texture = video_frame->texture_id();
@@ -1097,7 +1100,7 @@ void WebMediaPlayerImpl::StartPipeline(WebKit::WebMediaSource* media_source) {
 
   scoped_ptr<media::AudioRenderer> audio_renderer(
       new media::AudioRendererImpl(media_thread_.message_loop_proxy(),
-                                   audio_source_provider_,
+                                   audio_source_provider_.get(),
                                    audio_decoders.Pass(),
                                    set_decryptor_ready_cb));
   filter_collection->SetAudioRenderer(audio_renderer.Pass());
@@ -1105,7 +1108,7 @@ void WebMediaPlayerImpl::StartPipeline(WebKit::WebMediaSource* media_source) {
   // Create our video decoders and renderer.
   ScopedVector<media::VideoDecoder> video_decoders;
 
-  if (gpu_factories_) {
+  if (gpu_factories_.get()) {
     video_decoders.push_back(new media::GpuVideoDecoder(
         media_thread_.message_loop_proxy(), gpu_factories_));
   }
@@ -1177,7 +1180,7 @@ void WebMediaPlayerImpl::Destroy() {
     chunk_demuxer_ = NULL;
   }
 
-  if (gpu_factories_) {
+  if (gpu_factories_.get()) {
     gpu_factories_->Abort();
     gpu_factories_ = NULL;
   }
@@ -1210,7 +1213,7 @@ WebKit::WebMediaPlayerClient* WebMediaPlayerImpl::GetClient() {
 }
 
 WebKit::WebAudioSourceProvider* WebMediaPlayerImpl::audioSourceProvider() {
-  return audio_source_provider_;
+  return audio_source_provider_.get();
 }
 
 void WebMediaPlayerImpl::IncrementExternallyAllocatedMemory() {
@@ -1241,7 +1244,7 @@ void WebMediaPlayerImpl::FrameReady(
     const scoped_refptr<media::VideoFrame>& frame) {
   base::AutoLock auto_lock(lock_);
 
-  if (current_frame_ &&
+  if (current_frame_.get() &&
       current_frame_->natural_size() != frame->natural_size() &&
       !pending_size_change_) {
     pending_size_change_ = true;

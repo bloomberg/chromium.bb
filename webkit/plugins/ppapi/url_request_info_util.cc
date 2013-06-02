@@ -106,7 +106,7 @@ bool EnsureFileRefObjectsPopulated(::ppapi::URLRequestInfoData* data) {
   // is the state of the request as it comes off IPC).
   for (size_t i = 0; i < data->body.size(); ++i) {
     URLRequestInfoData::BodyItem& item = data->body[i];
-    if (item.is_file && !item.file_ref) {
+    if (item.is_file && !item.file_ref.get()) {
       EnterResourceNoLock<PPB_FileRef_API> enter(
           item.file_ref_host_resource.host_resource(), false);
       if (!enter.succeeded())
@@ -157,7 +157,7 @@ bool CreateWebURLRequest(::ppapi::URLRequestInfoData* data,
     for (size_t i = 0; i < data->body.size(); ++i) {
       const URLRequestInfoData::BodyItem& item = data->body[i];
       if (item.is_file) {
-        if (!AppendFileRefToBody(item.file_ref,
+        if (!AppendFileRefToBody(item.file_ref.get(),
                                  item.start_offset,
                                  item.number_of_bytes,
                                  item.expected_last_modified_time,

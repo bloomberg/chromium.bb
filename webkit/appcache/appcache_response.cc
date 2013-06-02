@@ -204,8 +204,10 @@ void AppCacheResponseReader::ContinueReadData() {
     DCHECK(range_length_ >= read_position_);
     buffer_len_ = range_length_ - read_position_;
   }
-  ReadRaw(kResponseContentIndex, range_offset_ + read_position_,
-          buffer_, buffer_len_);
+  ReadRaw(kResponseContentIndex,
+          range_offset_ + read_position_,
+          buffer_.get(),
+          buffer_len_);
 }
 
 void AppCacheResponseReader::SetReadRange(int offset, int length) {
@@ -216,13 +218,13 @@ void AppCacheResponseReader::SetReadRange(int offset, int length) {
 
 void AppCacheResponseReader::OnIOComplete(int result) {
   if (result >= 0) {
-    if (info_buffer_) {
+    if (info_buffer_.get()) {
       // Deserialize the http info structure, ensuring we got headers.
       Pickle pickle(buffer_->data(), result);
       scoped_ptr<net::HttpResponseInfo> info(new net::HttpResponseInfo);
       bool response_truncated = false;
       if (!info->InitFromPickle(pickle, &response_truncated) ||
-          !info->headers) {
+          !info->headers.get()) {
         InvokeUserCompletionCallback(net::ERR_FAILED);
         return;
       }
@@ -271,7 +273,7 @@ void AppCacheResponseReader::OnOpenEntryComplete(
     open_callback_.Reset();
   }
 
-  if (info_buffer_)
+  if (info_buffer_.get())
     ContinueReadInfo();
   else
     ContinueReadData();
@@ -301,7 +303,7 @@ void AppCacheResponseWriter::WriteInfo(
   DCHECK(info_buf->http_info.get());
   DCHECK(!buffer_.get());
   DCHECK(!info_buffer_.get());
-  DCHECK(info_buf->http_info->headers);
+  DCHECK(info_buf->http_info->headers.get());
 
   info_buffer_ = info_buf;
   callback_ = callback;  // cleared on completion
@@ -320,7 +322,7 @@ void AppCacheResponseWriter::ContinueWriteInfo() {
   info_buffer_->http_info->Persist(pickle, kSkipTransientHeaders, kTruncated);
   write_amount_ = static_cast<int>(pickle->size());
   buffer_ = new WrappedPickleIOBuffer(pickle);  // takes ownership of pickle
-  WriteRaw(kResponseInfoIndex, 0, buffer_, write_amount_);
+  WriteRaw(kResponseInfoIndex, 0, buffer_.get(), write_amount_);
 }
 
 void AppCacheResponseWriter::WriteData(
@@ -343,13 +345,14 @@ void AppCacheResponseWriter::ContinueWriteData() {
     ScheduleIOCompletionCallback(net::ERR_FAILED);
     return;
   }
-  WriteRaw(kResponseContentIndex, write_position_, buffer_, write_amount_);
+  WriteRaw(
+      kResponseContentIndex, write_position_, buffer_.get(), write_amount_);
 }
 
 void AppCacheResponseWriter::OnIOComplete(int result) {
   if (result >= 0) {
     DCHECK(write_amount_ == result);
-    if (!info_buffer_)
+    if (!info_buffer_.get())
       write_position_ += result;
     else
       info_size_ = result;
@@ -411,7 +414,7 @@ void AppCacheResponseWriter::OnCreateEntryComplete(
     create_callback_.Reset();
   }
 
-  if (info_buffer_)
+  if (info_buffer_.get())
     ContinueWriteInfo();
   else
     ContinueWriteData();

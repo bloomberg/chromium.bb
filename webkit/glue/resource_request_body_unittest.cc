@@ -102,14 +102,14 @@ TEST(ResourceRequestBodyTest, ResolveBlobAndCreateUploadDataStream) {
   scoped_refptr<BlobData> blob_data(new BlobData());
 
   GURL blob_url0("blob://url_0");
-  blob_storage_controller.AddFinishedBlob(blob_url0, blob_data);
+  blob_storage_controller.AddFinishedBlob(blob_url0, blob_data.get());
 
   blob_data->AppendData("BlobData");
   blob_data->AppendFile(
       base::FilePath(FILE_PATH_LITERAL("BlobFile.txt")), 0, 20, time1);
 
   GURL blob_url1("blob://url_1");
-  blob_storage_controller.AddFinishedBlob(blob_url1, blob_data);
+  blob_storage_controller.AddFinishedBlob(blob_url1, blob_data.get());
 
   GURL blob_url2("blob://url_2");
   blob_storage_controller.CloneBlob(blob_url2, blob_url1);

@@ -66,8 +66,8 @@ scoped_ptr<BlobDataHandle> BlobStorageContext::GetBlobDataFromUUID(
   if (found->second.flags & EXCEEDED_MEMORY)
     return result.Pass();
   DCHECK(!(found->second.flags & BEING_BUILT));
-  result.reset(new BlobDataHandle(found->second.data, this,
-                                  base::MessageLoopProxy::current()));
+  result.reset(new BlobDataHandle(
+      found->second.data.get(), this, base::MessageLoopProxy::current()));
   return result.Pass();
 }
 
@@ -107,7 +107,7 @@ void BlobStorageContext::AppendBlobDataItem(
     return;
   if (found->second.flags & EXCEEDED_MEMORY)
     return;
-  BlobData* target_blob_data = found->second.data;
+  BlobData* target_blob_data = found->second.data.get();
   DCHECK(target_blob_data);
 
   bool exceeded_memory = false;
@@ -292,8 +292,8 @@ void BlobStorageContext::AppendFileItem(
   // It may be a temporary file that should be deleted when no longer needed.
   scoped_refptr<ShareableFileReference> shareable_file =
       ShareableFileReference::Get(file_path);
-  if (shareable_file)
-    target_blob_data->AttachShareableFileReference(shareable_file);
+  if (shareable_file.get())
+    target_blob_data->AttachShareableFileReference(shareable_file.get());
 }
 
 void BlobStorageContext::AppendFileSystemFileItem(

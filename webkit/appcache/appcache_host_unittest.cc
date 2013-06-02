@@ -189,7 +189,7 @@ TEST_F(AppCacheHostTest, Basic) {
 TEST_F(AppCacheHostTest, SelectNoCache) {
   scoped_refptr<MockQuotaManagerProxy> mock_quota_proxy(
       new MockQuotaManagerProxy);
-  service_.set_quota_manager_proxy(mock_quota_proxy);
+  service_.set_quota_manager_proxy(mock_quota_proxy.get());
 
   // Reset our mock frontend
   mock_frontend_.last_cache_id_ = -333;
@@ -350,13 +350,13 @@ TEST_F(AppCacheHostTest, SetSwappableCache) {
 
   scoped_refptr<AppCacheGroup> group1(new AppCacheGroup(
       service_.storage(), GURL(), service_.storage()->NewGroupId()));
-  host.SetSwappableCache(group1);
+  host.SetSwappableCache(group1.get());
   EXPECT_FALSE(host.swappable_cache_.get());
 
   AppCache* cache1 = new AppCache(service_.storage(), 111);
   cache1->set_complete(true);
   group1->AddCache(cache1);
-  host.SetSwappableCache(group1);
+  host.SetSwappableCache(group1.get());
   EXPECT_EQ(cache1, host.swappable_cache_.get());
 
   mock_frontend_.last_host_id_ = -222;  // to verify we received OnCacheSelected
@@ -399,15 +399,15 @@ TEST_F(AppCacheHostTest, SetSwappableCache) {
   cache5->set_complete(true);
   group2->AddCache(cache5);
   host.group_being_updated_ = group2;
-  host.OnUpdateComplete(group2);
-  EXPECT_FALSE(host.group_being_updated_);
+  host.OnUpdateComplete(group2.get());
+  EXPECT_FALSE(host.group_being_updated_.get());
   EXPECT_EQ(cache5, host.swappable_cache_.get());
 
   group2->RemoveCache(cache5);
   EXPECT_FALSE(group2->HasCache());
   host.group_being_updated_ = group2;
-  host.OnUpdateComplete(group2);
-  EXPECT_FALSE(host.group_being_updated_);
+  host.OnUpdateComplete(group2.get());
+  EXPECT_FALSE(host.group_being_updated_.get());
   EXPECT_FALSE(host.swappable_cache_.get());  // group2 had no newest cache
 }
 
@@ -450,7 +450,7 @@ TEST_F(AppCacheHostTest, SelectCacheAllowed) {
       new MockQuotaManagerProxy);
   MockAppCachePolicy mock_appcache_policy;
   mock_appcache_policy.can_create_return_value_ = true;
-  service_.set_quota_manager_proxy(mock_quota_proxy);
+  service_.set_quota_manager_proxy(mock_quota_proxy.get());
   service_.set_appcache_policy(&mock_appcache_policy);
 
   // Reset our mock frontend
@@ -488,7 +488,7 @@ TEST_F(AppCacheHostTest, SelectCacheBlocked) {
       new MockQuotaManagerProxy);
   MockAppCachePolicy mock_appcache_policy;
   mock_appcache_policy.can_create_return_value_ = false;
-  service_.set_quota_manager_proxy(mock_quota_proxy);
+  service_.set_quota_manager_proxy(mock_quota_proxy.get());
   service_.set_appcache_policy(&mock_appcache_policy);
 
   // Reset our mock frontend

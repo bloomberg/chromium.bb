@@ -104,7 +104,7 @@ class PluginInstance : public base::RefCountedThreadSafe<PluginInstance> {
   // Get the mimeType for this plugin stream
   const std::string &mime_type() { return mime_type_; }
 
-  PluginLib* plugin_lib() { return plugin_; }
+  PluginLib* plugin_lib() { return plugin_.get(); }
 
 #if defined(OS_MACOSX)
   // Get/Set the Mac NPAPI drawing and event models

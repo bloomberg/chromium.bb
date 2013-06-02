@@ -37,12 +37,12 @@ class LocalFileStreamWriterTest : public testing::Test {
                           const std::string& data) {
     scoped_refptr<net::StringIOBuffer> buffer(new net::StringIOBuffer(data));
     scoped_refptr<net::DrainableIOBuffer> drainable(
-        new net::DrainableIOBuffer(buffer, buffer->size()));
+        new net::DrainableIOBuffer(buffer.get(), buffer->size()));
 
     while (drainable->BytesRemaining() > 0) {
       net::TestCompletionCallback callback;
-      int result = writer->Write(drainable, drainable->BytesRemaining(),
-                                 callback.callback());
+      int result = writer->Write(
+          drainable.get(), drainable->BytesRemaining(), callback.callback());
       if (result == net::ERR_IO_PENDING)
         result = callback.WaitForResult();
       if (result <= 0)
@@ -146,7 +146,8 @@ TEST_F(LocalFileStreamWriterTest, CancelWrite) {
   scoped_ptr<LocalFileStreamWriter> writer(new LocalFileStreamWriter(path, 0));
 
   scoped_refptr<net::StringIOBuffer> buffer(new net::StringIOBuffer("xxx"));
-  int result = writer->Write(buffer, buffer->size(), base::Bind(&NeverCalled));
+  int result =
+      writer->Write(buffer.get(), buffer->size(), base::Bind(&NeverCalled));
   ASSERT_EQ(net::ERR_IO_PENDING, result);
 
   net::TestCompletionCallback callback;

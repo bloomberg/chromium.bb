@@ -155,7 +155,7 @@ AppCacheDiskCache::AppCacheDiskCache()
 }
 
 AppCacheDiskCache::~AppCacheDiskCache() {
-  if (create_backend_callback_) {
+  if (create_backend_callback_.get()) {
     create_backend_callback_->Cancel();
     create_backend_callback_ = NULL;
     OnCreateBackendComplete(net::ERR_ABORTED);
@@ -184,7 +184,7 @@ void AppCacheDiskCache::Disable() {
 
   is_disabled_ = true;
 
-  if (create_backend_callback_) {
+  if (create_backend_callback_.get()) {
     create_backend_callback_->Cancel();
     create_backend_callback_ = NULL;
     OnCreateBackendComplete(net::ERR_ABORTED);

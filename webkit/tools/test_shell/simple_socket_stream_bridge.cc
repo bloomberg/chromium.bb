@@ -178,7 +178,7 @@ void WebSocketStreamHandleBridgeImpl::DoConnect(const GURL& url) {
 void WebSocketStreamHandleBridgeImpl::DoSend(std::vector<char>* data) {
   DCHECK(base::MessageLoop::current() == g_io_thread);
   scoped_ptr<std::vector<char> > scoped_data(data);
-  if (!socket_)
+  if (!socket_.get())
     return;
   if (!socket_->SendData(&(data->at(0)), data->size()))
     socket_->Close();
@@ -186,7 +186,7 @@ void WebSocketStreamHandleBridgeImpl::DoSend(std::vector<char>* data) {
 
 void WebSocketStreamHandleBridgeImpl::DoClose() {
   DCHECK(base::MessageLoop::current() == g_io_thread);
-  if (!socket_)
+  if (!socket_.get())
     return;
   socket_->Close();
 }
@@ -220,7 +220,7 @@ void WebSocketStreamHandleBridgeImpl::DoOnClose() {
   base::subtle::NoBarrier_AtomicIncrement(&num_pending_tasks_, -1);
   // Don't handle OnClose if there are pending tasks.
   DCHECK_EQ(num_pending_tasks_, 0);
-  DCHECK(!socket_);
+  DCHECK(!socket_.get());
   DCHECK_EQ(socket_id_, kNoSocketId);
   webkit_glue::WebSocketStreamHandleDelegate* delegate = delegate_;
   delegate_ = NULL;

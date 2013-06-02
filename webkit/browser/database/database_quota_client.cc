@@ -101,10 +101,9 @@ DatabaseQuotaClient::DatabaseQuotaClient(
 }
 
 DatabaseQuotaClient::~DatabaseQuotaClient() {
-  if (db_tracker_thread_ &&
-      !db_tracker_thread_->RunsTasksOnCurrentThread() &&
-      db_tracker_) {
-    DatabaseTracker* tracker = db_tracker_;
+  if (db_tracker_thread_.get() &&
+      !db_tracker_thread_->RunsTasksOnCurrentThread() && db_tracker_.get()) {
+    DatabaseTracker* tracker = db_tracker_.get();
     tracker->AddRef();
     db_tracker_ = NULL;
     if (!db_tracker_thread_->ReleaseSoon(FROM_HERE, tracker))
@@ -134,11 +133,9 @@ void DatabaseQuotaClient::GetOriginUsage(
   }
 
   base::PostTaskAndReplyWithResult(
-      db_tracker_thread_,
+      db_tracker_thread_.get(),
       FROM_HERE,
-      base::Bind(&GetOriginUsageOnDBThread,
-                 db_tracker_,
-                 origin_url),
+      base::Bind(&GetOriginUsageOnDBThread, db_tracker_, origin_url),
       callback);
 }
 
@@ -209,7 +206,7 @@ void DatabaseQuotaClient::DeleteOriginData(
                  callback);
 
   PostTaskAndReplyWithResult(
-      db_tracker_thread_,
+      db_tracker_thread_.get(),
       FROM_HERE,
       base::Bind(&DatabaseTracker::DeleteDataForOrigin,
                  db_tracker_,

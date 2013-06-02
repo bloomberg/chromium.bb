@@ -222,7 +222,7 @@ void PopulateURLResponse(
     response->setLoadTiming(timing);
   }
 
-  if (info.devtools_info) {
+  if (info.devtools_info.get()) {
     WebHTTPLoadInfo load_info;
 
     load_info.setHTTPStatusCode(info.devtools_info->http_status_code);
@@ -250,7 +250,7 @@ void PopulateURLResponse(
     response->setHTTPLoadInfo(load_info);
   }
 
-  const net::HttpResponseHeaders* headers = info.headers;
+  const net::HttpResponseHeaders* headers = info.headers.get();
   if (!headers)
     return;
 
@@ -552,7 +552,7 @@ void WebURLLoaderImpl::Context::Start(
       }
     }
     request_body->set_identifier(request.httpBody().identifier());
-    bridge_->SetRequestBody(request_body);
+    bridge_->SetRequestBody(request_body.get());
   }
 
   if (sync_load_response) {
@@ -646,7 +646,7 @@ void WebURLLoaderImpl::Context::OnReceivedResponse(
 
   DCHECK(!ftp_listing_delegate_.get());
   DCHECK(!multipart_delegate_.get());
-  if (info.headers && info.mime_type == "multipart/x-mixed-replace") {
+  if (info.headers.get() && info.mime_type == "multipart/x-mixed-replace") {
     std::string content_type;
     info.headers->EnumerateHeader(NULL, "content-type", &content_type);
 

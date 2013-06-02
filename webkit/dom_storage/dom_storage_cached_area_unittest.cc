@@ -152,15 +152,15 @@ class DomStorageCachedAreaTest : public testing::Test {
 TEST_F(DomStorageCachedAreaTest, Basics) {
   EXPECT_TRUE(mock_proxy_->HasOneRef());
   scoped_refptr<DomStorageCachedArea> cached_area =
-      new DomStorageCachedArea(kNamespaceId, kOrigin, mock_proxy_);
+      new DomStorageCachedArea(kNamespaceId, kOrigin, mock_proxy_.get());
   EXPECT_EQ(kNamespaceId, cached_area->namespace_id());
   EXPECT_EQ(kOrigin, cached_area->origin());
   EXPECT_FALSE(mock_proxy_->HasOneRef());
   cached_area->ApplyMutation(NullableString16(kKey, false),
                              NullableString16(kValue, false));
-  EXPECT_FALSE(IsPrimed(cached_area));
+  EXPECT_FALSE(IsPrimed(cached_area.get()));
 
-  ResetAll(cached_area);
+  ResetAll(cached_area.get());
   EXPECT_EQ(kNamespaceId, cached_area->namespace_id());
   EXPECT_EQ(kOrigin, cached_area->origin());
 
@@ -177,33 +177,33 @@ TEST_F(DomStorageCachedAreaTest, Basics) {
 TEST_F(DomStorageCachedAreaTest, Getters) {
   const int kConnectionId = 7;
   scoped_refptr<DomStorageCachedArea> cached_area =
-      new DomStorageCachedArea(kNamespaceId, kOrigin, mock_proxy_);
+      new DomStorageCachedArea(kNamespaceId, kOrigin, mock_proxy_.get());
 
   // GetLength, we expect to see one call to load in the proxy.
-  EXPECT_FALSE(IsPrimed(cached_area));
+  EXPECT_FALSE(IsPrimed(cached_area.get()));
   EXPECT_EQ(0u, cached_area->GetLength(kConnectionId));
-  EXPECT_TRUE(IsPrimed(cached_area));
+  EXPECT_TRUE(IsPrimed(cached_area.get()));
   EXPECT_TRUE(mock_proxy_->observed_load_area_);
   EXPECT_EQ(kConnectionId, mock_proxy_->observed_connection_id_);
   EXPECT_EQ(1u, mock_proxy_->pending_callbacks_.size());
-  EXPECT_TRUE(IsIgnoringAllMutations(cached_area));
+  EXPECT_TRUE(IsIgnoringAllMutations(cached_area.get()));
   mock_proxy_->CompleteAllPendingCallbacks();
-  EXPECT_FALSE(IsIgnoringAllMutations(cached_area));
+  EXPECT_FALSE(IsIgnoringAllMutations(cached_area.get()));
 
   // GetKey, expect the one call to load.
-  ResetAll(cached_area);
-  EXPECT_FALSE(IsPrimed(cached_area));
+  ResetAll(cached_area.get());
+  EXPECT_FALSE(IsPrimed(cached_area.get()));
   EXPECT_TRUE(cached_area->GetKey(kConnectionId, 2).is_null());
-  EXPECT_TRUE(IsPrimed(cached_area));
+  EXPECT_TRUE(IsPrimed(cached_area.get()));
   EXPECT_TRUE(mock_proxy_->observed_load_area_);
   EXPECT_EQ(kConnectionId, mock_proxy_->observed_connection_id_);
   EXPECT_EQ(1u, mock_proxy_->pending_callbacks_.size());
 
   // GetItem, ditto.
-  ResetAll(cached_area);
-  EXPECT_FALSE(IsPrimed(cached_area));
+  ResetAll(cached_area.get());
+  EXPECT_FALSE(IsPrimed(cached_area.get()));
   EXPECT_TRUE(cached_area->GetItem(kConnectionId, kKey).is_null());
-  EXPECT_TRUE(IsPrimed(cached_area));
+  EXPECT_TRUE(IsPrimed(cached_area.get()));
   EXPECT_TRUE(mock_proxy_->observed_load_area_);
   EXPECT_EQ(kConnectionId, mock_proxy_->observed_connection_id_);
   EXPECT_EQ(1u, mock_proxy_->pending_callbacks_.size());
@@ -212,13 +212,13 @@ TEST_F(DomStorageCachedAreaTest, Getters) {
 TEST_F(DomStorageCachedAreaTest, Setters) {
   const int kConnectionId = 7;
   scoped_refptr<DomStorageCachedArea> cached_area =
-      new DomStorageCachedArea(kNamespaceId, kOrigin, mock_proxy_);
+      new DomStorageCachedArea(kNamespaceId, kOrigin, mock_proxy_.get());
 
   // SetItem, we expect a call to load followed by a call to set item
   // in the proxy.
-  EXPECT_FALSE(IsPrimed(cached_area));
+  EXPECT_FALSE(IsPrimed(cached_area.get()));
   EXPECT_TRUE(cached_area->SetItem(kConnectionId, kKey, kValue, kPageUrl));
-  EXPECT_TRUE(IsPrimed(cached_area));
+  EXPECT_TRUE(IsPrimed(cached_area.get()));
   EXPECT_TRUE(mock_proxy_->observed_load_area_);
   EXPECT_TRUE(mock_proxy_->observed_set_item_);
   EXPECT_EQ(kConnectionId, mock_proxy_->observed_connection_id_);
@@ -229,20 +229,20 @@ TEST_F(DomStorageCachedAreaTest, Setters) {
 
   // Clear, we expect a just the one call to clear in the proxy since
   // there's no need to load the data prior to deleting it.
-  ResetAll(cached_area);
-  EXPECT_FALSE(IsPrimed(cached_area));
+  ResetAll(cached_area.get());
+  EXPECT_FALSE(IsPrimed(cached_area.get()));
   cached_area->Clear(kConnectionId, kPageUrl);
-  EXPECT_TRUE(IsPrimed(cached_area));
+  EXPECT_TRUE(IsPrimed(cached_area.get()));
   EXPECT_TRUE(mock_proxy_->observed_clear_area_);
   EXPECT_EQ(kConnectionId, mock_proxy_->observed_connection_id_);
   EXPECT_EQ(kPageUrl, mock_proxy_->observed_page_url_);
   EXPECT_EQ(1u, mock_proxy_->pending_callbacks_.size());
 
   // RemoveItem with nothing to remove, expect just one call to load.
-  ResetAll(cached_area);
-  EXPECT_FALSE(IsPrimed(cached_area));
+  ResetAll(cached_area.get());
+  EXPECT_FALSE(IsPrimed(cached_area.get()));
   cached_area->RemoveItem(kConnectionId, kKey, kPageUrl);
-  EXPECT_TRUE(IsPrimed(cached_area));
+  EXPECT_TRUE(IsPrimed(cached_area.get()));
   EXPECT_TRUE(mock_proxy_->observed_load_area_);
   EXPECT_FALSE(mock_proxy_->observed_remove_item_);
   EXPECT_EQ(kConnectionId, mock_proxy_->observed_connection_id_);
@@ -250,11 +250,11 @@ TEST_F(DomStorageCachedAreaTest, Setters) {
 
   // RemoveItem with something to remove, expect a call to load followed
   // by a call to remove.
-  ResetAll(cached_area);
+  ResetAll(cached_area.get());
   mock_proxy_->load_area_return_values_[kKey] = NullableString16(kValue, false);
-  EXPECT_FALSE(IsPrimed(cached_area));
+  EXPECT_FALSE(IsPrimed(cached_area.get()));
   cached_area->RemoveItem(kConnectionId, kKey, kPageUrl);
-  EXPECT_TRUE(IsPrimed(cached_area));
+  EXPECT_TRUE(IsPrimed(cached_area.get()));
   EXPECT_TRUE(mock_proxy_->observed_load_area_);
   EXPECT_TRUE(mock_proxy_->observed_remove_item_);
   EXPECT_EQ(kConnectionId, mock_proxy_->observed_connection_id_);
@@ -266,10 +266,10 @@ TEST_F(DomStorageCachedAreaTest, Setters) {
 TEST_F(DomStorageCachedAreaTest, MutationsAreIgnoredUntilLoadCompletion) {
   const int kConnectionId = 7;
   scoped_refptr<DomStorageCachedArea> cached_area =
-      new DomStorageCachedArea(kNamespaceId, kOrigin, mock_proxy_);
+      new DomStorageCachedArea(kNamespaceId, kOrigin, mock_proxy_.get());
   EXPECT_TRUE(cached_area->GetItem(kConnectionId, kKey).is_null());
-  EXPECT_TRUE(IsPrimed(cached_area));
-  EXPECT_TRUE(IsIgnoringAllMutations(cached_area));
+  EXPECT_TRUE(IsPrimed(cached_area.get()));
+  EXPECT_TRUE(IsIgnoringAllMutations(cached_area.get()));
 
   // Before load completion, the mutation should be ignored.
   cached_area->ApplyMutation(NullableString16(kKey, false),
@@ -278,7 +278,7 @@ TEST_F(DomStorageCachedAreaTest, MutationsAreIgnoredUntilLoadCompletion) {
 
   // Call the load completion callback.
   mock_proxy_->CompleteOnePendingCallback(true);
-  EXPECT_FALSE(IsIgnoringAllMutations(cached_area));
+  EXPECT_FALSE(IsIgnoringAllMutations(cached_area.get()));
 
   // Verify that mutations are now applied.
   cached_area->ApplyMutation(NullableString16(kKey, false),
@@ -289,61 +289,61 @@ TEST_F(DomStorageCachedAreaTest, MutationsAreIgnoredUntilLoadCompletion) {
 TEST_F(DomStorageCachedAreaTest, MutationsAreIgnoredUntilClearCompletion) {
   const int kConnectionId = 4;
   scoped_refptr<DomStorageCachedArea> cached_area =
-      new DomStorageCachedArea(kNamespaceId, kOrigin, mock_proxy_);
+      new DomStorageCachedArea(kNamespaceId, kOrigin, mock_proxy_.get());
   cached_area->Clear(kConnectionId, kPageUrl);
-  EXPECT_TRUE(IsIgnoringAllMutations(cached_area));
+  EXPECT_TRUE(IsIgnoringAllMutations(cached_area.get()));
   mock_proxy_->CompleteOnePendingCallback(true);
-  EXPECT_FALSE(IsIgnoringAllMutations(cached_area));
+  EXPECT_FALSE(IsIgnoringAllMutations(cached_area.get()));
 
   // Verify that calling Clear twice works as expected, the first
   // completion callback should have been cancelled.
-  ResetCacheOnly(cached_area);
+  ResetCacheOnly(cached_area.get());
   cached_area->Clear(kConnectionId, kPageUrl);
-  EXPECT_TRUE(IsIgnoringAllMutations(cached_area));
+  EXPECT_TRUE(IsIgnoringAllMutations(cached_area.get()));
   cached_area->Clear(kConnectionId, kPageUrl);
-  EXPECT_TRUE(IsIgnoringAllMutations(cached_area));
+  EXPECT_TRUE(IsIgnoringAllMutations(cached_area.get()));
   mock_proxy_->CompleteOnePendingCallback(true);
-  EXPECT_TRUE(IsIgnoringAllMutations(cached_area));
+  EXPECT_TRUE(IsIgnoringAllMutations(cached_area.get()));
   mock_proxy_->CompleteOnePendingCallback(true);
-  EXPECT_FALSE(IsIgnoringAllMutations(cached_area));
+  EXPECT_FALSE(IsIgnoringAllMutations(cached_area.get()));
 }
 
 TEST_F(DomStorageCachedAreaTest, KeyMutationsAreIgnoredUntilCompletion) {
   const int kConnectionId = 8;
   scoped_refptr<DomStorageCachedArea> cached_area =
-      new DomStorageCachedArea(kNamespaceId, kOrigin, mock_proxy_);
+      new DomStorageCachedArea(kNamespaceId, kOrigin, mock_proxy_.get());
 
   // SetItem
   EXPECT_TRUE(cached_area->SetItem(kConnectionId, kKey, kValue, kPageUrl));
   mock_proxy_->CompleteOnePendingCallback(true);  // load completion
-  EXPECT_FALSE(IsIgnoringAllMutations(cached_area));
-  EXPECT_TRUE(IsIgnoringKeyMutations(cached_area, kKey));
+  EXPECT_FALSE(IsIgnoringAllMutations(cached_area.get()));
+  EXPECT_TRUE(IsIgnoringKeyMutations(cached_area.get(), kKey));
   cached_area->ApplyMutation(NullableString16(kKey, false),
                              NullableString16(true));
   EXPECT_EQ(kValue, cached_area->GetItem(kConnectionId, kKey).string());
   mock_proxy_->CompleteOnePendingCallback(true);  // set completion
-  EXPECT_FALSE(IsIgnoringKeyMutations(cached_area, kKey));
+  EXPECT_FALSE(IsIgnoringKeyMutations(cached_area.get(), kKey));
 
   // RemoveItem
   cached_area->RemoveItem(kConnectionId, kKey, kPageUrl);
-  EXPECT_TRUE(IsIgnoringKeyMutations(cached_area, kKey));
+  EXPECT_TRUE(IsIgnoringKeyMutations(cached_area.get(), kKey));
   mock_proxy_->CompleteOnePendingCallback(true);  // remove completion
-  EXPECT_FALSE(IsIgnoringKeyMutations(cached_area, kKey));
+  EXPECT_FALSE(IsIgnoringKeyMutations(cached_area.get(), kKey));
 
   // Multiple mutations to the same key.
   EXPECT_TRUE(cached_area->SetItem(kConnectionId, kKey, kValue, kPageUrl));
   cached_area->RemoveItem(kConnectionId, kKey, kPageUrl);
-  EXPECT_TRUE(IsIgnoringKeyMutations(cached_area, kKey));
+  EXPECT_TRUE(IsIgnoringKeyMutations(cached_area.get(), kKey));
   mock_proxy_->CompleteOnePendingCallback(true);  // set completion
-  EXPECT_TRUE(IsIgnoringKeyMutations(cached_area, kKey));
+  EXPECT_TRUE(IsIgnoringKeyMutations(cached_area.get(), kKey));
   mock_proxy_->CompleteOnePendingCallback(true);  // remove completion
-  EXPECT_FALSE(IsIgnoringKeyMutations(cached_area, kKey));
+  EXPECT_FALSE(IsIgnoringKeyMutations(cached_area.get(), kKey));
 
   // A failed set item operation should Reset the cache.
   EXPECT_TRUE(cached_area->SetItem(kConnectionId, kKey, kValue, kPageUrl));
-  EXPECT_TRUE(IsIgnoringKeyMutations(cached_area, kKey));
+  EXPECT_TRUE(IsIgnoringKeyMutations(cached_area.get(), kKey));
   mock_proxy_->CompleteOnePendingCallback(false);
-  EXPECT_FALSE(IsPrimed(cached_area));
+  EXPECT_FALSE(IsPrimed(cached_area.get()));
 }
 
 }  // namespace dom_storage

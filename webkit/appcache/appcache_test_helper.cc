@@ -57,8 +57,9 @@ void AppCacheTestHelper::GetOriginsWithCaches(AppCacheService* appcache_service,
   appcache_info_ = new AppCacheInfoCollection;
   origins_ = origins;
   appcache_service->GetAllAppCacheInfo(
-      appcache_info_, base::Bind(&AppCacheTestHelper::OnGotAppCacheInfo,
-                                 base::Unretained(this)));
+      appcache_info_.get(),
+      base::Bind(&AppCacheTestHelper::OnGotAppCacheInfo,
+                 base::Unretained(this)));
 
   // OnGotAppCacheInfo will quit the message loop.
   base::MessageLoop::current()->Run();

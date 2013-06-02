@@ -23,8 +23,8 @@ BlobProtocolHandler::BlobProtocolHandler(
       file_system_context_(file_system_context),
       file_loop_proxy_(loop_proxy) {
   DCHECK(blob_storage_controller_);
-  DCHECK(file_system_context_);
-  DCHECK(file_loop_proxy_);
+  DCHECK(file_system_context_.get());
+  DCHECK(file_loop_proxy_.get());
 }
 
 BlobProtocolHandler::~BlobProtocolHandler() {}
@@ -32,12 +32,15 @@ BlobProtocolHandler::~BlobProtocolHandler() {}
 net::URLRequestJob* BlobProtocolHandler::MaybeCreateJob(
     net::URLRequest* request, net::NetworkDelegate* network_delegate) const {
   scoped_refptr<webkit_blob::BlobData> data = LookupBlobData(request);
-  if (!data) {
+  if (!data.get()) {
     // This request is not coming through resource dispatcher host.
     data = blob_storage_controller_->GetBlobDataFromUrl(request->url());
   }
-  return new webkit_blob::BlobURLRequestJob(
-      request, network_delegate, data, file_system_context_, file_loop_proxy_);
+  return new webkit_blob::BlobURLRequestJob(request,
+                                            network_delegate,
+                                            data.get(),
+                                            file_system_context_.get(),
+                                            file_loop_proxy_.get());
 }
 
 scoped_refptr<webkit_blob::BlobData>

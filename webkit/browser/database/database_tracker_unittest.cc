@@ -196,8 +196,11 @@ class DatabaseTracker_TestHelper_Test {
         new quota::MockSpecialStoragePolicy;
     special_storage_policy->AddProtected(GURL(kOrigin2Url));
     scoped_refptr<DatabaseTracker> tracker(
-        new DatabaseTracker(temp_dir.path(), incognito_mode,
-                            special_storage_policy, NULL, NULL));
+        new DatabaseTracker(temp_dir.path(),
+                            incognito_mode,
+                            special_storage_policy.get(),
+                            NULL,
+                            NULL));
 
     // Create and open three databases.
     int64 database_size = 0;
@@ -301,8 +304,11 @@ class DatabaseTracker_TestHelper_Test {
         new quota::MockSpecialStoragePolicy;
     special_storage_policy->AddProtected(GURL(kOrigin2Url));
     scoped_refptr<DatabaseTracker> tracker(
-        new DatabaseTracker(temp_dir.path(), incognito_mode,
-                            special_storage_policy, NULL, NULL));
+        new DatabaseTracker(temp_dir.path(),
+                            incognito_mode,
+                            special_storage_policy.get(),
+                            NULL,
+                            NULL));
 
     // Add two observers.
     TestObserver observer1;
@@ -452,8 +458,11 @@ class DatabaseTracker_TestHelper_Test {
     scoped_refptr<TestQuotaManagerProxy> test_quota_proxy(
         new TestQuotaManagerProxy);
     scoped_refptr<DatabaseTracker> tracker(
-        new DatabaseTracker(temp_dir.path(), false /* incognito */,
-                            NULL, test_quota_proxy, NULL));
+        new DatabaseTracker(temp_dir.path(),
+                            false /* incognito */,
+                            NULL,
+                            test_quota_proxy.get(),
+                            NULL));
     EXPECT_TRUE(test_quota_proxy->registered_client_);
 
     // Create a database and modify it a couple of times, close it,
@@ -554,9 +563,11 @@ class DatabaseTracker_TestHelper_Test {
           new quota::MockSpecialStoragePolicy;
       special_storage_policy->AddSessionOnly(GURL(kOrigin2Url));
       scoped_refptr<DatabaseTracker> tracker(
-          new DatabaseTracker(
-              temp_dir.path(), false, special_storage_policy, NULL,
-              base::MessageLoopProxy::current()));
+          new DatabaseTracker(temp_dir.path(),
+                              false,
+                              special_storage_policy.get(),
+                              NULL,
+                              base::MessageLoopProxy::current()));
 
       // Open two new databases.
       tracker->DatabaseOpened(kOrigin1, kDB1, kDescription, 0,
@@ -632,9 +643,11 @@ class DatabaseTracker_TestHelper_Test {
           new quota::MockSpecialStoragePolicy;
       special_storage_policy->AddSessionOnly(GURL(kOrigin2Url));
       scoped_refptr<DatabaseTracker> tracker(
-          new DatabaseTracker(
-              temp_dir.path(), false, special_storage_policy, NULL,
-              base::MessageLoopProxy::current()));
+          new DatabaseTracker(temp_dir.path(),
+                              false,
+                              special_storage_policy.get(),
+                              NULL,
+                              base::MessageLoopProxy::current()));
       tracker->SetForceKeepSessionState();
 
       // Open two new databases.

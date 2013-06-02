@@ -86,10 +86,9 @@ class FileWriterDelegateTest : public PlatformTest {
   }
 
   int64 usage() {
-    return file_system_context_->GetQuotaUtil(kFileSystemType)->
-        GetOriginUsageOnFileThread(file_system_context_,
-                                   kOrigin,
-                                   kFileSystemType);
+    return file_system_context_->GetQuotaUtil(kFileSystemType)
+        ->GetOriginUsageOnFileThread(
+              file_system_context_.get(), kOrigin, kFileSystemType);
   }
 
   int64 GetFileSizeOnDisk(const char* test_file_path) {
@@ -114,7 +113,7 @@ class FileWriterDelegateTest : public PlatformTest {
 
   scoped_ptr<FileSystemOperationContext> NewOperationContext() {
     FileSystemOperationContext* context =
-      new FileSystemOperationContext(file_system_context_);
+        new FileSystemOperationContext(file_system_context_.get());
     context->set_update_observers(
         *file_system_context_->GetUpdateObservers(kFileSystemType));
     context->set_root_path(dir_.path());
@@ -127,7 +126,7 @@ class FileWriterDelegateTest : public PlatformTest {
       int64 allowed_growth,
       Result* result) {
     SandboxFileStreamWriter* writer = new SandboxFileStreamWriter(
-        file_system_context_,
+        file_system_context_.get(),
         GetFileSystemURL(test_file_path),
         offset,
         *file_system_context_->GetUpdateObservers(kFileSystemType));

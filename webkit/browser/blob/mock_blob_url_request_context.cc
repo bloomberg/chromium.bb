@@ -64,7 +64,7 @@ ScopedTextBlob::ScopedTextBlob(
   DCHECK(blob_storage_controller_);
   scoped_refptr<BlobData> blob_data(new BlobData());
   blob_data->AppendData(data);
-  blob_storage_controller_->AddFinishedBlob(blob_url_, blob_data);
+  blob_storage_controller_->AddFinishedBlob(blob_url_, blob_data.get());
 }
 
 ScopedTextBlob::~ScopedTextBlob() {

@@ -43,8 +43,8 @@ class DomStorageContextTest : public testing::Test {
             base::MessageLoopProxy::current());
     context_ = new DomStorageContext(temp_dir_.path(),
                                      base::FilePath(),
-                                     storage_policy_,
-                                     task_runner_);
+                                     storage_policy_.get(),
+                                     task_runner_.get());
   }
 
   virtual void TearDown() {
@@ -192,8 +192,8 @@ TEST_F(DomStorageContextTest, DeleteSessionStorage) {
   // Create a DomStorageContext which will save sessionStorage on disk.
   context_ = new DomStorageContext(temp_dir_.path(),
                                    temp_dir_.path(),
-                                   storage_policy_,
-                                   task_runner_);
+                                   storage_policy_.get(),
+                                   task_runner_.get());
   context_->SetSaveSessionStorageOnDisk();
   ASSERT_EQ(temp_dir_.path(), context_->sessionstorage_directory());
 
@@ -215,8 +215,10 @@ TEST_F(DomStorageContextTest, DeleteSessionStorage) {
   context_->Shutdown();
   context_ = NULL;
   base::MessageLoop::current()->RunUntilIdle();
-  context_ = new DomStorageContext(
-      temp_dir_.path(), temp_dir_.path(), storage_policy_, task_runner_);
+  context_ = new DomStorageContext(temp_dir_.path(),
+                                   temp_dir_.path(),
+                                   storage_policy_.get(),
+                                   task_runner_.get());
   context_->SetSaveSessionStorageOnDisk();
 
   // Read the data back.
@@ -238,8 +240,10 @@ TEST_F(DomStorageContextTest, DeleteSessionStorage) {
   context_->Shutdown();
   context_ = NULL;
   base::MessageLoop::current()->RunUntilIdle();
-  context_ = new DomStorageContext(
-      temp_dir_.path(), temp_dir_.path(), storage_policy_, task_runner_);
+  context_ = new DomStorageContext(temp_dir_.path(),
+                                   temp_dir_.path(),
+                                   storage_policy_.get(),
+                                   task_runner_.get());
   context_->SetSaveSessionStorageOnDisk();
 
   // Now there should be no data.

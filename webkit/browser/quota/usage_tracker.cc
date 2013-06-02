@@ -279,12 +279,12 @@ ClientUsageTracker::ClientUsageTracker(
       special_storage_policy_(special_storage_policy) {
   DCHECK(tracker_);
   DCHECK(client_);
-  if (special_storage_policy_)
+  if (special_storage_policy_.get())
     special_storage_policy_->AddObserver(this);
 }
 
 ClientUsageTracker::~ClientUsageTracker() {
-  if (special_storage_policy_)
+  if (special_storage_policy_.get())
     special_storage_policy_->RemoveObserver(this);
 }
 

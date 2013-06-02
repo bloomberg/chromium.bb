@@ -36,7 +36,7 @@ class WEBKIT_STORAGE_EXPORT AppCache : public base::RefCounted<AppCache> {
 
   int64 cache_id() const { return cache_id_; }
 
-  AppCacheGroup* owning_group() const { return owning_group_; }
+  AppCacheGroup* owning_group() const { return owning_group_.get(); }
 
   bool is_complete() const { return is_complete_; }
   void set_complete(bool value) { is_complete_ = value; }

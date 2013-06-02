@@ -54,7 +54,7 @@ bool MakeBufferResource(PP_Instance instance,
 
   scoped_refptr<PPB_Buffer_Impl> buffer(
       PPB_Buffer_Impl::CreateResource(instance, size));
-  if (!buffer)
+  if (!buffer.get())
     return false;
 
   BufferAutoMapper mapper(buffer.get());
@@ -353,10 +353,9 @@ bool ContentDecryptorDelegate::Decrypt(
   // now because there is only one pending audio/video decrypt request at any
   // time. This is enforced by the media pipeline.
   scoped_refptr<PPB_Buffer_Impl> encrypted_resource;
-  if (!MakeMediaBufferResource(stream_type,
-                               encrypted_buffer,
-                               &encrypted_resource) ||
-      !encrypted_resource) {
+  if (!MakeMediaBufferResource(
+          stream_type, encrypted_buffer, &encrypted_resource) ||
+      !encrypted_resource.get()) {
     return false;
   }
   ScopedPPResource pp_resource(encrypted_resource.get());
@@ -536,7 +535,7 @@ bool ContentDecryptorDelegate::DecryptAndDecodeAudio(
   }
 
   // The resource should not be NULL for non-EOS buffer.
-  if (!encrypted_buffer->IsEndOfStream() && !encrypted_resource)
+  if (!encrypted_buffer->IsEndOfStream() && !encrypted_resource.get())
     return false;
 
   const uint32_t request_id = next_decryption_request_id_++;
@@ -580,7 +579,7 @@ bool ContentDecryptorDelegate::DecryptAndDecodeVideo(
   }
 
   // The resource should not be 0 for non-EOS buffer.
-  if (!encrypted_buffer->IsEndOfStream() && !encrypted_resource)
+  if (!encrypted_buffer->IsEndOfStream() && !encrypted_resource.get())
     return false;
 
   const uint32_t request_id = next_decryption_request_id_++;
@@ -978,7 +977,7 @@ bool ContentDecryptorDelegate::MakeMediaBufferResource(
                                                   video_input_resource_;
 
   const size_t data_size = static_cast<size_t>(encrypted_buffer->GetDataSize());
-  if (!media_resource || media_resource->size() < data_size) {
+  if (!media_resource.get() || media_resource->size() < data_size) {
     // Either the buffer hasn't been created yet, or we have one that isn't big
     // enough to fit |size| bytes.
 
@@ -988,8 +987,8 @@ bool ContentDecryptorDelegate::MakeMediaBufferResource(
     // they are usually small (compared to outputs). The over-allocated memory
     // should be negligible.
     const uint32_t kMinimumMediaBufferSize = 1024;
-    uint32_t media_resource_size = media_resource ? media_resource->size() :
-                                                    kMinimumMediaBufferSize;
+    uint32_t media_resource_size =
+        media_resource.get() ? media_resource->size() : kMinimumMediaBufferSize;
     while (media_resource_size < data_size)
       media_resource_size *= 2;
 
@@ -999,11 +998,11 @@ bool ContentDecryptorDelegate::MakeMediaBufferResource(
              << " bytes to fit input.";
     media_resource = PPB_Buffer_Impl::CreateResource(pp_instance_,
                                                      media_resource_size);
-    if (!media_resource)
+    if (!media_resource.get())
       return false;
   }
 
-  BufferAutoMapper mapper(media_resource);
+  BufferAutoMapper mapper(media_resource.get());
   if (!mapper.data() || mapper.size() < data_size) {
     media_resource = NULL;
     return false;

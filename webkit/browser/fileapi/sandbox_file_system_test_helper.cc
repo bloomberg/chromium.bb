@@ -91,8 +91,8 @@ FileSystemURL SandboxFileSystemTestHelper::CreateURL(
 }
 
 int64 SandboxFileSystemTestHelper::GetCachedOriginUsage() const {
-  return file_system_context_->GetQuotaUtil(type_)->GetOriginUsageOnFileThread(
-      file_system_context_, origin_, type_);
+  return file_system_context_->GetQuotaUtil(type_)
+      ->GetOriginUsageOnFileThread(file_system_context_.get(), origin_, type_);
 }
 
 int64 SandboxFileSystemTestHelper::ComputeCurrentOriginUsage() {
@@ -133,7 +133,7 @@ FileSystemUsageCache* SandboxFileSystemTestHelper::usage_cache() {
 }
 
 void SandboxFileSystemTestHelper::SetUpFileSystem() {
-  DCHECK(file_system_context_);
+  DCHECK(file_system_context_.get());
   DCHECK(file_system_context_->sandbox_provider()->CanHandleType(type_));
 
   file_util_ = file_system_context_->GetFileUtil(type_);

@@ -19,7 +19,7 @@ DomStorageHost::DomStorageHost(DomStorageContext* context)
 DomStorageHost::~DomStorageHost() {
   AreaMap::const_iterator it = connections_.begin();
   for (; it != connections_.end(); ++it)
-    it->second.namespace_->CloseStorageArea(it->second.area_);
+    it->second.namespace_->CloseStorageArea(it->second.area_.get());
   connections_.clear();  // Clear prior to releasing the context_
 }
 
@@ -30,14 +30,14 @@ bool DomStorageHost::OpenStorageArea(int connection_id, int namespace_id,
     return false;  // Indicates the renderer gave us very bad data.
   NamespaceAndArea references;
   references.namespace_ = context_->GetStorageNamespace(namespace_id);
-  if (!references.namespace_) {
+  if (!references.namespace_.get()) {
     // TODO(michaeln): Fix crbug/134003 and return false here.
     // Until then return true to avoid crashing the renderer for
     // sending a bad message.
     return true;
   }
   references.area_ = references.namespace_->OpenStorageArea(origin);
-  DCHECK(references.area_);
+  DCHECK(references.area_.get());
   connections_[connection_id] = references;
   return true;
 }
@@ -46,8 +46,7 @@ void DomStorageHost::CloseStorageArea(int connection_id) {
   AreaMap::iterator found = connections_.find(connection_id);
   if (found == connections_.end())
     return;
-  found->second.namespace_->CloseStorageArea(
-      found->second.area_);
+  found->second.namespace_->CloseStorageArea(found->second.area_.get());
   connections_.erase(found);
 }
 
@@ -152,14 +151,14 @@ DomStorageArea* DomStorageHost::GetOpenArea(int connection_id) {
   AreaMap::iterator found = connections_.find(connection_id);
   if (found == connections_.end())
     return NULL;
-  return found->second.area_;
+  return found->second.area_.get();
 }
 
 DomStorageNamespace* DomStorageHost::GetNamespace(int connection_id) {
   AreaMap::iterator found = connections_.find(connection_id);
   if (found == connections_.end())
     return NULL;
-  return found->second.namespace_;
+  return found->second.namespace_.get();
 }
 
 // NamespaceAndArea

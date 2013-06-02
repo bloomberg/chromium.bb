@@ -102,7 +102,7 @@ void ClearSessionOnlyOrigins(
   for (origin = origins.begin(); origin != origins.end(); ++origin) {
     if (!special_storage_policy->IsStorageSessionOnly(*origin))
       continue;
-    if (special_storage_policy &&
+    if (special_storage_policy.get() &&
         special_storage_policy->IsStorageProtected(*origin))
       continue;
 
@@ -135,7 +135,7 @@ class AppCacheStorageImpl::DatabaseTask
   explicit DatabaseTask(AppCacheStorageImpl* storage)
       : storage_(storage), database_(storage->database_),
         io_thread_(base::MessageLoopProxy::current()) {
-    DCHECK(io_thread_);
+    DCHECK(io_thread_.get());
   }
 
   void AddDelegate(DelegateReference* delegate_reference) {
@@ -369,7 +369,7 @@ void AppCacheStorageImpl::GetAllInfoTask::Run() {
 
 void AppCacheStorageImpl::GetAllInfoTask::RunCompleted() {
   DCHECK(delegates_.size() == 1);
-  FOR_EACH_DELEGATE(delegates_, OnAllInfo(info_collection_));
+  FOR_EACH_DELEGATE(delegates_, OnAllInfo(info_collection_.get()));
 }
 
 // StoreOrLoadTask -------
@@ -513,7 +513,7 @@ void AppCacheStorageImpl::CacheLoadTask::RunCompleted() {
     DCHECK(cache_record_.cache_id == cache_id_);
     CreateCacheAndGroupFromRecords(&cache, &group);
   }
-  FOR_EACH_DELEGATE(delegates_, OnCacheLoaded(cache, cache_id_));
+  FOR_EACH_DELEGATE(delegates_, OnCacheLoaded(cache.get(), cache_id_));
 }
 
 // GroupLoadTask -------
@@ -557,13 +557,13 @@ void AppCacheStorageImpl::GroupLoadTask::RunCompleted() {
       CreateCacheAndGroupFromRecords(&cache, &group);
     } else {
       group = storage_->working_set_.GetGroup(manifest_url_);
-      if (!group) {
-        group = new AppCacheGroup(
-            storage_, manifest_url_, storage_->NewGroupId());
+      if (!group.get()) {
+        group =
+            new AppCacheGroup(storage_, manifest_url_, storage_->NewGroupId());
       }
     }
   }
-  FOR_EACH_DELEGATE(delegates_, OnGroupLoaded(group, manifest_url_));
+  FOR_EACH_DELEGATE(delegates_, OnGroupLoaded(group.get(), manifest_url_));
 }
 
 // StoreGroupAndCacheTask -------
@@ -752,17 +752,18 @@ void AppCacheStorageImpl::StoreGroupAndCacheTask::RunCompleted() {
   if (success_) {
     storage_->UpdateUsageMapAndNotify(
         group_->manifest_url().GetOrigin(), new_origin_usage_);
-    if (cache_ != group_->newest_complete_cache()) {
+    if (cache_.get() != group_->newest_complete_cache()) {
       cache_->set_complete(true);
-      group_->AddCache(cache_);
+      group_->AddCache(cache_.get());
     }
     if (group_->creation_time().is_null())
       group_->set_creation_time(group_record_.creation_time);
     group_->AddNewlyDeletableResponseIds(&newly_deletable_response_ids_);
   }
-  FOR_EACH_DELEGATE(delegates_,
-                    OnGroupAndNewestCacheStored(group_, cache_, success_,
-                                                would_exceed_quota_));
+  FOR_EACH_DELEGATE(
+      delegates_,
+      OnGroupAndNewestCacheStored(
+          group_.get(), cache_.get(), success_, would_exceed_quota_));
   group_ = NULL;
   cache_ = NULL;
 
@@ -1170,10 +1171,10 @@ void AppCacheStorageImpl::MakeGroupObsoleteTask::RunCompleted() {
       // Also remove from the working set, caches for an 'obsolete' group
       // may linger in use, but the group itself cannot be looked up by
       // 'manifest_url' in the working set any longer.
-      storage_->working_set()->RemoveGroup(group_);
+      storage_->working_set()->RemoveGroup(group_.get());
     }
   }
-  FOR_EACH_DELEGATE(delegates_, OnGroupMadeObsolete(group_, success_));
+  FOR_EACH_DELEGATE(delegates_, OnGroupMadeObsolete(group_.get(), success_));
   group_ = NULL;
 }
 
@@ -1375,14 +1376,14 @@ void AppCacheStorageImpl::LoadCache(int64 id, Delegate* delegate) {
     return;
   }
   scoped_refptr<CacheLoadTask> task(GetPendingCacheLoadTask(id));
-  if (task) {
+  if (task.get()) {
     task->AddDelegate(GetOrCreateDelegateReference(delegate));
     return;
   }
   task = new CacheLoadTask(id, this);
   task->AddDelegate(GetOrCreateDelegateReference(delegate));
   task->Schedule();
-  pending_cache_loads_[id] = task;
+  pending_cache_loads_[id] = task.get();
 }
 
 void AppCacheStorageImpl::LoadOrCreateGroup(
@@ -1404,7 +1405,7 @@ void AppCacheStorageImpl::LoadOrCreateGroup(
   }
 
   scoped_refptr<GroupLoadTask> task(GetPendingGroupLoadTask(manifest_url));
-  if (task) {
+  if (task.get()) {
     task->AddDelegate(GetOrCreateDelegateReference(delegate));
     return;
   }
@@ -1413,7 +1414,7 @@ void AppCacheStorageImpl::LoadOrCreateGroup(
     // No need to query the database, return a new group immediately.
     scoped_refptr<AppCacheGroup> group(new AppCacheGroup(
         service_->storage(), manifest_url, NewGroupId()));
-    delegate->OnGroupLoaded(group, manifest_url);
+    delegate->OnGroupLoaded(group.get(), manifest_url);
     return;
   }
 
@@ -1780,7 +1781,9 @@ AppCacheDiskCache* AppCacheStorageImpl::disk_cache() {
     } else {
       rv = disk_cache_->InitWithDiskBackend(
           cache_directory_.Append(kDiskCacheDirectoryName),
-          kMaxDiskCacheSize, false, cache_thread_,
+          kMaxDiskCacheSize,
+          false,
+          cache_thread_.get(),
           base::Bind(&AppCacheStorageImpl::OnDiskCacheInitialized,
                      base::Unretained(this)));
     }

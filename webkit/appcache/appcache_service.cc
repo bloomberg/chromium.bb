@@ -374,8 +374,9 @@ void AppCacheService::CheckResponseHelper::OnGroupLoaded(
       manifest_url_, group->group_id(), response_id_));
   info_buffer_ = new HttpResponseInfoIOBuffer();
   response_reader_->ReadInfo(
-      info_buffer_, base::Bind(&CheckResponseHelper::OnReadInfoComplete,
-                               base::Unretained(this)));
+      info_buffer_.get(),
+      base::Bind(&CheckResponseHelper::OnReadInfoComplete,
+                 base::Unretained(this)));
 }
 
 void AppCacheService::CheckResponseHelper::OnReadInfoComplete(int result) {
@@ -391,7 +392,8 @@ void AppCacheService::CheckResponseHelper::OnReadInfoComplete(int result) {
   // Start reading the data.
   data_buffer_ = new net::IOBuffer(kIOBufferSize);
   response_reader_->ReadData(
-      data_buffer_, kIOBufferSize,
+      data_buffer_.get(),
+      kIOBufferSize,
       base::Bind(&CheckResponseHelper::OnReadDataComplete,
                  base::Unretained(this)));
 }
@@ -401,7 +403,8 @@ void AppCacheService::CheckResponseHelper::OnReadDataComplete(int result) {
     // Keep reading until we've read thru everything or failed to read.
     amount_data_read_ += result;
     response_reader_->ReadData(
-        data_buffer_, kIOBufferSize,
+        data_buffer_.get(),
+        kIOBufferSize,
         base::Bind(&CheckResponseHelper::OnReadDataComplete,
                    base::Unretained(this)));
     return;
@@ -430,7 +433,7 @@ AppCacheService::AppCacheService(quota::QuotaManagerProxy* quota_manager_proxy)
       quota_manager_proxy_(quota_manager_proxy),
       request_context_(NULL),
       force_keep_session_state_(false) {
-  if (quota_manager_proxy_) {
+  if (quota_manager_proxy_.get()) {
     quota_client_ = new AppCacheQuotaClient(this);
     quota_manager_proxy_->RegisterClient(quota_client_);
   }

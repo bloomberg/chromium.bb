@@ -158,7 +158,8 @@ class AppCacheResponseTest : public testing::Test {
     static const char* kHttpBody = "Hello";
     scoped_refptr<IOBuffer> body(new WrappedIOBuffer(kHttpBody));
     std::string raw_headers(kHttpHeaders, arraysize(kHttpHeaders));
-    WriteResponse(MakeHttpResponseInfo(raw_headers), body, strlen(kHttpBody));
+    WriteResponse(
+        MakeHttpResponseInfo(raw_headers), body.get(), strlen(kHttpBody));
   }
 
   int basic_response_size() { return 5; }  // should match kHttpBody above
@@ -176,30 +177,29 @@ class AppCacheResponseTest : public testing::Test {
     EXPECT_FALSE(writer_->IsWritePending());
     expected_write_result_ = GetHttpResponseInfoSize(head);
     write_info_buffer_ = new HttpResponseInfoIOBuffer(head);
-    writer_->WriteInfo(
-        write_info_buffer_,
-        base::Bind(&AppCacheResponseTest::OnWriteInfoComplete,
-                   base::Unretained(this)));
+    writer_->WriteInfo(write_info_buffer_.get(),
+                       base::Bind(&AppCacheResponseTest::OnWriteInfoComplete,
+                                  base::Unretained(this)));
   }
 
   void WriteResponseBody(scoped_refptr<IOBuffer> io_buffer, int buf_len) {
     EXPECT_FALSE(writer_->IsWritePending());
     write_buffer_ = io_buffer;
     expected_write_result_ = buf_len;
-    writer_->WriteData(
-        write_buffer_, buf_len,
-        base::Bind(&AppCacheResponseTest::OnWriteComplete,
-                   base::Unretained(this)));
+    writer_->WriteData(write_buffer_.get(),
+                       buf_len,
+                       base::Bind(&AppCacheResponseTest::OnWriteComplete,
+                                  base::Unretained(this)));
   }
 
   void ReadResponseBody(scoped_refptr<IOBuffer> io_buffer, int buf_len) {
     EXPECT_FALSE(reader_->IsReadPending());
     read_buffer_ = io_buffer;
     expected_read_result_ = buf_len;
-    reader_->ReadData(
-        read_buffer_, buf_len,
-        base::Bind(&AppCacheResponseTest::OnReadComplete,
-                   base::Unretained(this)));
+    reader_->ReadData(read_buffer_.get(),
+                      buf_len,
+                      base::Bind(&AppCacheResponseTest::OnReadComplete,
+                                 base::Unretained(this)));
   }
 
   // AppCacheResponseReader / Writer completion callbacks
@@ -309,10 +309,9 @@ class AppCacheResponseTest : public testing::Test {
   void ReadNonExistentInfo() {
     EXPECT_FALSE(reader_->IsReadPending());
     read_info_buffer_ = new HttpResponseInfoIOBuffer();
-    reader_->ReadInfo(
-        read_info_buffer_,
-        base::Bind(&AppCacheResponseTest::OnReadInfoComplete,
-                   base::Unretained(this)));
+    reader_->ReadInfo(read_info_buffer_.get(),
+                      base::Bind(&AppCacheResponseTest::OnReadInfoComplete,
+                                 base::Unretained(this)));
     EXPECT_TRUE(reader_->IsReadPending());
     expected_read_result_ = net::ERR_CACHE_MISS;
   }
@@ -320,10 +319,10 @@ class AppCacheResponseTest : public testing::Test {
   void ReadNonExistentData() {
     EXPECT_FALSE(reader_->IsReadPending());
     read_buffer_ = new IOBuffer(kBlockSize);
-    reader_->ReadData(
-        read_buffer_, kBlockSize,
-        base::Bind(&AppCacheResponseTest::OnReadComplete,
-                   base::Unretained(this)));
+    reader_->ReadData(read_buffer_.get(),
+                      kBlockSize,
+                      base::Bind(&AppCacheResponseTest::OnReadComplete,
+                                 base::Unretained(this)));
     EXPECT_TRUE(reader_->IsReadPending());
     expected_read_result_ = net::ERR_CACHE_MISS;
   }
@@ -499,10 +498,10 @@ class AppCacheResponseTest : public testing::Test {
     EXPECT_FALSE(reader_->IsReadPending());
     read_buffer_ = new IOBuffer(kBlockSize);
     expected_read_result_ = 0;
-    reader_->ReadData(
-        read_buffer_, kBlockSize,
-        base::Bind(&AppCacheResponseTest::OnReadComplete,
-                   base::Unretained(this)));
+    reader_->ReadData(read_buffer_.get(),
+                      kBlockSize,
+                      base::Bind(&AppCacheResponseTest::OnReadComplete,
+                                 base::Unretained(this)));
   }
 
   void ReadRange() {

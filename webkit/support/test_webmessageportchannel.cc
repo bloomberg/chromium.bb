@@ -59,7 +59,7 @@ void TestWebMessagePortChannel::entangle(WebMessagePortChannel* remote) {
 
 void TestWebMessagePortChannel::postMessage(const WebString& data,
     WebMessagePortChannelArray* ports) {
-  if (remote_ == NULL)
+  if (remote_.get() == NULL)
     return;
   base::MessageLoop::current()->PostTask(
       FROM_HERE,

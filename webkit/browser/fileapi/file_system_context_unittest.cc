@@ -49,25 +49,24 @@ class FileSystemContextTest : public testing::Test {
 
     storage_policy_ = new quota::MockSpecialStoragePolicy();
 
-    mock_quota_manager_ = new quota::MockQuotaManager(
-        false /* is_incognito */,
-        data_dir_.path(),
-        base::MessageLoopProxy::current(),
-        base::MessageLoopProxy::current(),
-        storage_policy_);
+    mock_quota_manager_ =
+        new quota::MockQuotaManager(false /* is_incognito */,
+                                    data_dir_.path(),
+                                    base::MessageLoopProxy::current(),
+                                    base::MessageLoopProxy::current(),
+                                    storage_policy_.get());
   }
 
  protected:
   FileSystemContext* CreateFileSystemContextForTest(
       ExternalMountPoints* external_mount_points) {
-    return new FileSystemContext(
-        FileSystemTaskRunners::CreateMockTaskRunners(),
-        external_mount_points,
-        storage_policy_,
-        mock_quota_manager_->proxy(),
-        ScopedVector<FileSystemMountPointProvider>(),
-        data_dir_.path(),
-        CreateAllowFileAccessOptions());
+    return new FileSystemContext(FileSystemTaskRunners::CreateMockTaskRunners(),
+                                 external_mount_points,
+                                 storage_policy_.get(),
+                                 mock_quota_manager_->proxy(),
+                                 ScopedVector<FileSystemMountPointProvider>(),
+                                 data_dir_.path(),
+                                 CreateAllowFileAccessOptions());
   }
 
   // Verifies a *valid* filesystem url has expected values.
@@ -186,7 +185,7 @@ TEST_F(FileSystemContextTest, CrackFileSystemURL) {
   scoped_refptr<ExternalMountPoints> external_mount_points(
       ExternalMountPoints::CreateRefCounted());
   scoped_refptr<FileSystemContext> file_system_context(
-      CreateFileSystemContextForTest(external_mount_points));
+      CreateFileSystemContextForTest(external_mount_points.get()));
 
   // Register an isolated mount point.
   std::string isolated_file_system_name = "root";

@@ -213,7 +213,7 @@ bool WebLayerImpl::hasActiveAnimation() { return layer_->HasActiveAnimation(); }
 
 void WebLayerImpl::transferAnimationsTo(WebLayer* other) {
   DCHECK(other);
-  layer_->TransferAnimationsTo(static_cast<WebLayerImpl*>(other)->layer_);
+  layer_->TransferAnimationsTo(static_cast<WebLayerImpl*>(other)->layer_.get());
 }
 
 void WebLayerImpl::setForceRenderSurface(bool force_render_surface) {

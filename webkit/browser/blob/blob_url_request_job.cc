@@ -80,7 +80,7 @@ BlobURLRequestJob::BlobURLRequestJob(
       error_(false),
       headers_set_(false),
       byte_range_set_(false) {
-  DCHECK(file_thread_proxy_);
+  DCHECK(file_thread_proxy_.get());
 }
 
 void BlobURLRequestJob::Start() {
@@ -121,7 +121,7 @@ bool BlobURLRequestJob::ReadRawData(net::IOBuffer* dest,
   }
 
   // Keep track of the buffer.
-  DCHECK(!read_buf_);
+  DCHECK(!read_buf_.get());
   read_buf_ = new net::DrainableIOBuffer(dest, dest_size);
 
   return ReadLoop(bytes_read);
@@ -178,7 +178,7 @@ void BlobURLRequestJob::DidStart() {
   }
 
   // If the blob data is not present, bail out.
-  if (!blob_data_) {
+  if (!blob_data_.get()) {
     NotifyFailure(net::ERR_FILE_NOT_FOUND);
     return;
   }
@@ -392,9 +392,9 @@ bool BlobURLRequestJob::ReadFileItem(FileStreamReader* reader,
   DCHECK_GE(read_buf_->BytesRemaining(), bytes_to_read);
   DCHECK(reader);
   const int result = reader->Read(
-      read_buf_, bytes_to_read,
-      base::Bind(&BlobURLRequestJob::DidReadFile,
-                 base::Unretained(this)));
+      read_buf_.get(),
+      bytes_to_read,
+      base::Bind(&BlobURLRequestJob::DidReadFile, base::Unretained(this)));
   if (result >= 0) {
     // Data is immediately available.
     if (GetStatus().is_io_pending())
@@ -585,11 +585,10 @@ void BlobURLRequestJob::CreateFileStreamReader(size_t index,
   FileStreamReader* reader = NULL;
   switch (item.type()) {
     case BlobData::Item::TYPE_FILE:
-      reader = new LocalFileStreamReader(
-          file_thread_proxy_,
-          item.path(),
-          item.offset() + additional_offset,
-          item.expected_modification_time());
+      reader = new LocalFileStreamReader(file_thread_proxy_.get(),
+                                         item.path(),
+                                         item.offset() + additional_offset,
+                                         item.expected_modification_time());
       break;
     case BlobData::Item::TYPE_FILE_FILESYSTEM:
       reader = file_system_context_->CreateFileStreamReader(

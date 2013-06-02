@@ -106,8 +106,8 @@ class FileSystemDirURLRequestJobTest : public testing::Test {
   }
 
   FileSystemOperationContext* NewOperationContext() {
-    FileSystemOperationContext* context(new FileSystemOperationContext(
-        file_system_context_));
+    FileSystemOperationContext* context(
+        new FileSystemOperationContext(file_system_context_.get()));
     context->set_allowed_bytes_growth(1024);
     return context;
   }

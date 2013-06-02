@@ -121,14 +121,14 @@ TEST(BlobStorageContextTest, CompoundBlobs) {
   scoped_ptr<BlobDataHandle> blob_data_handle;
 
   // Test a blob referring to only data and a file.
-  blob_data_handle = context.AddFinishedBlob(blob_data1);
+  blob_data_handle = context.AddFinishedBlob(blob_data1.get());
   ASSERT_TRUE(blob_data_handle.get());
-  EXPECT_TRUE(*(blob_data_handle->data()) == *blob_data1);
+  EXPECT_TRUE(*(blob_data_handle->data()) == *blob_data1.get());
 
   // Test a blob composed in part with another blob.
-  blob_data_handle = context.AddFinishedBlob(blob_data2);
+  blob_data_handle = context.AddFinishedBlob(blob_data2.get());
   ASSERT_TRUE(blob_data_handle.get());
-  EXPECT_TRUE(*(blob_data_handle->data()) == *canonicalized_blob_data2);
+  EXPECT_TRUE(*(blob_data_handle->data()) == *canonicalized_blob_data2.get());
 }
 
 TEST(BlobStorageContextTest, PublicBlobUrls) {

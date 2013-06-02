@@ -81,7 +81,7 @@ bool PPVarToNPVariantNoCopy(PP_Var var, NPVariant* result) {
     }
     case PP_VARTYPE_OBJECT: {
       scoped_refptr<NPObjectVar> object(NPObjectVar::FromPPVar(var));
-      if (!object) {
+      if (!object.get()) {
         VOID_TO_NPVARIANT(*result);
         return false;
       }
@@ -112,7 +112,7 @@ class ObjectAccessorTryCatch : public TryCatch {
   ObjectAccessorTryCatch(PP_Var object, PP_Var* exception)
       : TryCatch(exception),
         object_(NPObjectVar::FromPPVar(object)) {
-    if (!object_) {
+    if (!object_.get()) {
       SetException(kInvalidObjectException);
     }
   }
@@ -379,7 +379,7 @@ bool IsInstanceOfDeprecated(PP_Var var,
                             const PPP_Class_Deprecated* ppp_class,
                             void** ppp_class_data) {
   scoped_refptr<NPObjectVar> object(NPObjectVar::FromPPVar(var));
-  if (!object)
+  if (!object.get())
     return false;  // Not an object at all.
 
   return PluginObject::IsInstanceOf(object->np_object(),

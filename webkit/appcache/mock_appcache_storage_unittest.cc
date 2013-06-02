@@ -89,7 +89,7 @@ TEST_F(MockAppCacheStorageTest, LoadCache_Miss) {
   EXPECT_NE(111, delegate.loaded_cache_id_);
   base::MessageLoop::current()->RunUntilIdle();  // Do async task execution.
   EXPECT_EQ(111, delegate.loaded_cache_id_);
-  EXPECT_FALSE(delegate.loaded_cache_);
+  EXPECT_FALSE(delegate.loaded_cache_.get());
 }
 
 TEST_F(MockAppCacheStorageTest, LoadCache_NearHit) {
@@ -171,9 +171,9 @@ TEST_F(MockAppCacheStorageTest, LoadGroupAndCache_FarHit) {
   int64 cache_id = storage->NewCacheId();
   scoped_refptr<AppCache> cache(new AppCache(service.storage(), cache_id));
   cache->set_complete(true);
-  group->AddCache(cache);
-  storage->AddStoredGroup(group);
-  storage->AddStoredCache(cache);
+  group->AddCache(cache.get());
+  storage->AddStoredGroup(group.get());
+  storage->AddStoredCache(cache.get());
 
   // Drop the references from above so the only refs to these
   // objects are from within the storage class. This is to make
@@ -228,7 +228,7 @@ TEST_F(MockAppCacheStorageTest, StoreNewGroup) {
   MockStorageDelegate delegate;
   EXPECT_TRUE(storage->stored_caches_.empty());
   EXPECT_TRUE(storage->stored_groups_.empty());
-  storage->StoreGroupAndNewestCache(group, cache, &delegate);
+  storage->StoreGroupAndNewestCache(group.get(), cache.get(), &delegate);
   EXPECT_FALSE(delegate.stored_group_success_);
   EXPECT_TRUE(storage->stored_caches_.empty());
   EXPECT_TRUE(storage->stored_groups_.empty());
@@ -255,9 +255,9 @@ TEST_F(MockAppCacheStorageTest, StoreExistingGroup) {
   scoped_refptr<AppCache> old_cache(
       new AppCache(service.storage(), old_cache_id));
   old_cache->set_complete(true);
-  group->AddCache(old_cache);
-  storage->AddStoredGroup(group);
-  storage->AddStoredCache(old_cache);
+  group->AddCache(old_cache.get());
+  storage->AddStoredGroup(group.get());
+  storage->AddStoredCache(old_cache.get());
   int64 new_cache_id = storage->NewCacheId();
   scoped_refptr<AppCache> new_cache(
       new AppCache(service.storage(), new_cache_id));
@@ -267,20 +267,20 @@ TEST_F(MockAppCacheStorageTest, StoreExistingGroup) {
   MockStorageDelegate delegate;
   EXPECT_EQ(size_t(1), storage->stored_caches_.size());
   EXPECT_EQ(size_t(1), storage->stored_groups_.size());
-  EXPECT_TRUE(storage->IsCacheStored(old_cache));
-  EXPECT_FALSE(storage->IsCacheStored(new_cache));
-  storage->StoreGroupAndNewestCache(group, new_cache, &delegate);
+  EXPECT_TRUE(storage->IsCacheStored(old_cache.get()));
+  EXPECT_FALSE(storage->IsCacheStored(new_cache.get()));
+  storage->StoreGroupAndNewestCache(group.get(), new_cache.get(), &delegate);
   EXPECT_FALSE(delegate.stored_group_success_);
   EXPECT_EQ(size_t(1), storage->stored_caches_.size());
   EXPECT_EQ(size_t(1), storage->stored_groups_.size());
-  EXPECT_TRUE(storage->IsCacheStored(old_cache));
-  EXPECT_FALSE(storage->IsCacheStored(new_cache));
+  EXPECT_TRUE(storage->IsCacheStored(old_cache.get()));
+  EXPECT_FALSE(storage->IsCacheStored(new_cache.get()));
   base::MessageLoop::current()->RunUntilIdle();  // Do async task execution.
   EXPECT_TRUE(delegate.stored_group_success_);
   EXPECT_EQ(size_t(1), storage->stored_caches_.size());
   EXPECT_EQ(size_t(1), storage->stored_groups_.size());
-  EXPECT_FALSE(storage->IsCacheStored(old_cache));
-  EXPECT_TRUE(storage->IsCacheStored(new_cache));
+  EXPECT_FALSE(storage->IsCacheStored(old_cache.get()));
+  EXPECT_TRUE(storage->IsCacheStored(new_cache.get()));
   EXPECT_EQ(new_cache.get(), group->newest_complete_cache());
   EXPECT_TRUE(new_cache->is_complete());
 }
@@ -299,9 +299,9 @@ TEST_F(MockAppCacheStorageTest, StoreExistingGroupExistingCache) {
   int64 cache_id = storage->NewCacheId();
   scoped_refptr<AppCache> cache(new AppCache(service.storage(), cache_id));
   cache->set_complete(true);
-  group->AddCache(cache);
-  storage->AddStoredGroup(group);
-  storage->AddStoredCache(cache);
+  group->AddCache(cache.get());
+  storage->AddStoredGroup(group.get());
+  storage->AddStoredCache(cache.get());
   // Hold our refs to simulate the UpdateJob holding these refs.
 
   // Change the group's newest cache.
@@ -313,8 +313,8 @@ TEST_F(MockAppCacheStorageTest, StoreExistingGroupExistingCache) {
   MockStorageDelegate delegate;
   EXPECT_EQ(size_t(1), storage->stored_caches_.size());
   EXPECT_EQ(size_t(1), storage->stored_groups_.size());
-  EXPECT_TRUE(storage->IsCacheStored(cache));
-  storage->StoreGroupAndNewestCache(group, cache, &delegate);
+  EXPECT_TRUE(storage->IsCacheStored(cache.get()));
+  storage->StoreGroupAndNewestCache(group.get(), cache.get(), &delegate);
   EXPECT_FALSE(delegate.stored_group_success_);
   EXPECT_EQ(size_t(1), storage->stored_caches_.size());
   EXPECT_EQ(size_t(1), storage->stored_groups_.size());
@@ -322,7 +322,7 @@ TEST_F(MockAppCacheStorageTest, StoreExistingGroupExistingCache) {
   EXPECT_TRUE(delegate.stored_group_success_);
   EXPECT_EQ(size_t(1), storage->stored_caches_.size());
   EXPECT_EQ(size_t(1), storage->stored_groups_.size());
-  EXPECT_TRUE(storage->IsCacheStored(cache));
+  EXPECT_TRUE(storage->IsCacheStored(cache.get()));
   EXPECT_EQ(cache, group->newest_complete_cache());
   EXPECT_TRUE(cache->GetEntry(entry_url));
 }
@@ -341,9 +341,9 @@ TEST_F(MockAppCacheStorageTest, MakeGroupObsolete) {
   int64 cache_id = storage->NewCacheId();
   scoped_refptr<AppCache> cache(new AppCache(service.storage(), cache_id));
   cache->set_complete(true);
-  group->AddCache(cache);
-  storage->AddStoredGroup(group);
-  storage->AddStoredCache(cache);
+  group->AddCache(cache.get());
+  storage->AddStoredGroup(group.get());
+  storage->AddStoredCache(cache.get());
   // Hold our refs to simulate the UpdateJob holding these refs.
 
   // Conduct the test.
@@ -353,7 +353,7 @@ TEST_F(MockAppCacheStorageTest, MakeGroupObsolete) {
   EXPECT_EQ(size_t(1), storage->stored_groups_.size());
   EXPECT_FALSE(cache->HasOneRef());
   EXPECT_FALSE(group->HasOneRef());
-  storage->MakeGroupObsolete(group, &delegate);
+  storage->MakeGroupObsolete(group.get(), &delegate);
   EXPECT_FALSE(group->is_obsolete());
   EXPECT_EQ(size_t(1), storage->stored_caches_.size());
   EXPECT_EQ(size_t(1), storage->stored_groups_.size());
@@ -432,9 +432,9 @@ TEST_F(MockAppCacheStorageTest, BasicFindMainResponse) {
   cache->set_complete(true);
   scoped_refptr<AppCacheGroup> group(
       new AppCacheGroup(service.storage(), kManifestUrl, 111));
-  group->AddCache(cache);
-  storage->AddStoredGroup(group);
-  storage->AddStoredCache(cache);
+  group->AddCache(cache.get());
+  storage->AddStoredGroup(group.get());
+  storage->AddStoredCache(cache.get());
 
   // Conduct the test.
   MockStorageDelegate delegate;
@@ -485,9 +485,9 @@ TEST_F(MockAppCacheStorageTest, BasicFindMainFallbackResponse) {
 
   scoped_refptr<AppCacheGroup> group(
       new AppCacheGroup(service.storage(), kManifestUrl, 111));
-  group->AddCache(cache);
-  storage->AddStoredGroup(group);
-  storage->AddStoredCache(cache);
+  group->AddCache(cache.get());
+  storage->AddStoredGroup(group.get());
+  storage->AddStoredCache(cache.get());
 
   // The test url is in both fallback namespace urls, but should match
   // the longer of the two.
@@ -532,9 +532,9 @@ TEST_F(MockAppCacheStorageTest, FindMainResponseWithMultipleCandidates) {
   cache->set_complete(true);
   scoped_refptr<AppCacheGroup> group(
       new AppCacheGroup(service.storage(), kManifestUrl1, 111));
-  group->AddCache(cache);
-  storage->AddStoredGroup(group);
-  storage->AddStoredCache(cache);
+  group->AddCache(cache.get());
+  storage->AddStoredGroup(group.get());
+  storage->AddStoredCache(cache.get());
   // Drop our references to cache1 so it appears as "not in use".
   cache = NULL;
   group = NULL;
@@ -545,9 +545,9 @@ TEST_F(MockAppCacheStorageTest, FindMainResponseWithMultipleCandidates) {
       kEntryUrl, AppCacheEntry(AppCacheEntry::EXPLICIT, kResponseId2));
   cache->set_complete(true);
   group = new AppCacheGroup(service.storage(), kManifestUrl2, 222);
-  group->AddCache(cache);
-  storage->AddStoredGroup(group);
-  storage->AddStoredCache(cache);
+  group->AddCache(cache.get());
+  storage->AddStoredGroup(group.get());
+  storage->AddStoredCache(cache.get());
 
   // Conduct the test, we should find the response from the second cache
   // since it's "in use".
@@ -592,9 +592,9 @@ TEST_F(MockAppCacheStorageTest, FindMainResponseExclusions) {
   cache->set_complete(true);
   scoped_refptr<AppCacheGroup> group(
       new AppCacheGroup(service.storage(), kManifestUrl, 111));
-  group->AddCache(cache);
-  storage->AddStoredGroup(group);
-  storage->AddStoredCache(cache);
+  group->AddCache(cache.get());
+  storage->AddStoredGroup(group.get());
+  storage->AddStoredCache(cache.get());
 
   MockStorageDelegate delegate;
 

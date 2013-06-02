@@ -93,7 +93,7 @@ void SimpleFileSystem::OpenFileSystem(
     WebKit::WebFileSystemType type,
     long long, bool create,
     WebFileSystemCallbacks* callbacks) {
-  if (!frame || !file_system_context_) {
+  if (!frame || !file_system_context_.get()) {
     // The FileSystem temp directory was not initialized successfully.
     callbacks->didFail(WebKit::WebFileErrorSecurity);
     return;
@@ -112,7 +112,7 @@ void SimpleFileSystem::DeleteFileSystem(
     WebFrame* frame,
     WebKit::WebFileSystemType type,
     WebFileSystemCallbacks* callbacks) {
-  if (!frame || !file_system_context_) {
+  if (!frame || !file_system_context_.get()) {
     callbacks->didFail(WebKit::WebFileErrorSecurity);
     return;
   }

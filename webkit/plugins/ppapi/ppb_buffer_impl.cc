@@ -32,7 +32,7 @@ PPB_Buffer_Impl::~PPB_Buffer_Impl() {
 // static
 PP_Resource PPB_Buffer_Impl::Create(PP_Instance instance, uint32_t size) {
   scoped_refptr<PPB_Buffer_Impl> new_resource(CreateResource(instance, size));
-  if (new_resource)
+  if (new_resource.get())
     return new_resource->GetReference();
   return 0;
 }

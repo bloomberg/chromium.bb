@@ -29,7 +29,7 @@ TEST(ShareableFileReferenceTest, TestReferences) {
   reference1 = ShareableFileReference::Get(file);
   EXPECT_FALSE(reference1.get());
   reference1 = ShareableFileReference::GetOrCreate(
-      file, ShareableFileReference::DELETE_ON_FINAL_RELEASE, loop_proxy);
+      file, ShareableFileReference::DELETE_ON_FINAL_RELEASE, loop_proxy.get());
   EXPECT_TRUE(reference1.get());
   EXPECT_TRUE(file == reference1->path());
 
@@ -38,7 +38,7 @@ TEST(ShareableFileReferenceTest, TestReferences) {
   reference2 = ShareableFileReference::Get(file);
   EXPECT_EQ(reference1.get(), reference2.get());
   reference2 = ShareableFileReference::GetOrCreate(
-      file, ShareableFileReference::DELETE_ON_FINAL_RELEASE, loop_proxy);
+      file, ShareableFileReference::DELETE_ON_FINAL_RELEASE, loop_proxy.get());
   EXPECT_EQ(reference1.get(), reference2.get());
 
   // Drop the first reference, the file and reference should still be there.

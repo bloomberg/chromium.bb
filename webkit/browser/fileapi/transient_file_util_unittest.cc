@@ -59,7 +59,7 @@ class TransientFileUtilTest : public testing::Test {
 
   scoped_ptr<FileSystemOperationContext> NewOperationContext() {
     return make_scoped_ptr(
-        new FileSystemOperationContext(file_system_context_));
+        new FileSystemOperationContext(file_system_context_.get()));
   }
 
   FileSystemFileUtil* file_util() { return transient_file_util_.get(); }

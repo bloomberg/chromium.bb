@@ -356,7 +356,7 @@ WebKit::WebGraphicsContext3DProvider* TestWebKitPlatformSupport::
   main_thread_contexts_ =
       webkit::gpu::TestContextProviderFactory::GetInstance()->
           OffscreenContextProviderForMainThread();
-  if (!main_thread_contexts_)
+  if (!main_thread_contexts_.get())
     return NULL;
   return new webkit::gpu::WebGraphicsContext3DProviderImpl(
       main_thread_contexts_);

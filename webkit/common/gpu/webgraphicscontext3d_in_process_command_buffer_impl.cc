@@ -352,7 +352,7 @@ scoped_ptr<GpuMemoryBuffer> ImageFactoryInProcess::CreateGpuMemoryBuffer(
       gfx::GLImage::CreateGLImageForGpuMemoryBuffer(buffer->GetNativeBuffer(),
                                                     gfx::Size(width, height));
   *image_id = ++next_id_;  // Valid image_ids start from 1.
-  image_manager_->AddImage(gl_image, *image_id);
+  image_manager_->AddImage(gl_image.get(), *image_id);
   return buffer.Pass();
 }
 
@@ -604,7 +604,7 @@ bool GLInProcessContext::Initialize(
     else
       surface_ = gfx::GLSurface::CreateViewGLSurface(false, window);
 
-    if (!surface_) {
+    if (!surface_.get()) {
       LOG(ERROR) << "Could not create GLSurface.";
       Destroy();
       return false;
@@ -612,17 +612,15 @@ bool GLInProcessContext::Initialize(
 
     if (g_use_virtualized_gl_context) {
       context_ = share_group->GetSharedContext();
-      if (!context_) {
-        context_ = gfx::GLContext::CreateGLContext(share_group.get(),
-                                                   surface_.get(),
-                                                   gpu_preference);
-        share_group->SetSharedContext(context_);
+      if (!context_.get()) {
+        context_ = gfx::GLContext::CreateGLContext(
+            share_group.get(), surface_.get(), gpu_preference);
+        share_group->SetSharedContext(context_.get());
       }
 
-      context_ = new ::gpu::GLContextVirtual(share_group.get(),
-                                             context_,
-                                             decoder_->AsWeakPtr());
-      if (context_->Initialize(surface_, gpu_preference)) {
+      context_ = new ::gpu::GLContextVirtual(
+          share_group.get(), context_.get(), decoder_->AsWeakPtr());
+      if (context_->Initialize(surface_.get(), gpu_preference)) {
         VLOG(1) << "Created virtual GL context.";
       } else {
         context_ = NULL;
@@ -633,13 +631,13 @@ bool GLInProcessContext::Initialize(
                                                  gpu_preference);
     }
 
-    if (!context_) {
+    if (!context_.get()) {
       LOG(ERROR) << "Could not create GLContext.";
       Destroy();
       return false;
     }
 
-    if (!context_->MakeCurrent(surface_)) {
+    if (!context_->MakeCurrent(surface_.get())) {
       LOG(ERROR) << "Could not make context current.";
       Destroy();
       return false;
@@ -707,7 +705,7 @@ bool GLInProcessContext::Initialize(
       transfer_buffer_.get(),
       true,
       false,
-      image_factory_));
+      image_factory_.get()));
 
   if (!gles2_implementation_->Initialize(
       kStartTransferBufferSize,

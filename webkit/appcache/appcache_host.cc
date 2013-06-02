@@ -58,9 +58,9 @@ AppCacheHost::AppCacheHost(int host_id, AppCacheFrontend* frontend,
 
 AppCacheHost::~AppCacheHost() {
   FOR_EACH_OBSERVER(Observer, observers_, OnDestructionImminent(this));
-  if (associated_cache_)
+  if (associated_cache_.get())
     associated_cache_->UnassociateHost(this);
-  if (group_being_updated_)
+  if (group_being_updated_.get())
     group_being_updated_->RemoveUpdateObserver(this);
   service_->storage()->CancelDelegateCallbacks(this);
   if (service()->quota_manager_proxy() && !origin_in_use_.is_empty())
@@ -208,7 +208,7 @@ void AppCacheHost::DoPendingStartUpdate() {
 
   // 6.9.8 Application cache API
   bool success = false;
-  if (associated_cache_ && associated_cache_->owning_group()) {
+  if (associated_cache_.get() && associated_cache_->owning_group()) {
     AppCacheGroup* group = associated_cache_->owning_group();
     if (!group->is_obsolete() && !group->is_being_deleted()) {
       success = true;
@@ -240,15 +240,15 @@ void AppCacheHost::DoPendingSwapCache() {
 
   // 6.9.8 Application cache API
   bool success = false;
-  if (associated_cache_ && associated_cache_->owning_group()) {
+  if (associated_cache_.get() && associated_cache_->owning_group()) {
     if (associated_cache_->owning_group()->is_obsolete()) {
       success = true;
       AssociateNoCache(GURL());
-    } else if (swappable_cache_) {
+    } else if (swappable_cache_.get()) {
       DCHECK(swappable_cache_.get() ==
              swappable_cache_->owning_group()->newest_complete_cache());
       success = true;
-      AssociateCompleteCache(swappable_cache_);
+      AssociateCompleteCache(swappable_cache_.get());
     }
   }
 
@@ -321,7 +321,7 @@ Status AppCacheHost::GetStatus() {
     return CHECKING;
   if (cache->owning_group()->update_status() == AppCacheGroup::DOWNLOADING)
     return DOWNLOADING;
-  if (swappable_cache_)
+  if (swappable_cache_.get())
     return UPDATE_READY;
   return IDLE;
 }
@@ -418,7 +418,7 @@ void AppCacheHost::FinishCacheSelection(
 }
 
 void AppCacheHost::ObserveGroupBeingUpdated(AppCacheGroup* group) {
-  DCHECK(!group_being_updated_);
+  DCHECK(!group_being_updated_.get());
   group_being_updated_ = group;
   newest_cache_of_group_being_updated_ = group->newest_complete_cache();
   group->AddUpdateObserver(this);
@@ -449,7 +449,7 @@ void AppCacheHost::SetSwappableCache(AppCacheGroup* group) {
     swappable_cache_ = NULL;
   } else {
     AppCache* new_cache = group->newest_complete_cache();
-    if (new_cache != associated_cache_)
+    if (new_cache != associated_cache_.get())
       swappable_cache_ = new_cache;
     else
       swappable_cache_ = NULL;
@@ -459,7 +459,8 @@ void AppCacheHost::SetSwappableCache(AppCacheGroup* group) {
 void AppCacheHost::LoadMainResourceCache(int64 cache_id) {
   DCHECK(cache_id != kNoCacheId);
   if (pending_main_resource_cache_id_ == cache_id ||
-      (main_resource_cache_ && main_resource_cache_->cache_id() == cache_id)) {
+      (main_resource_cache_.get() &&
+       main_resource_cache_->cache_id() == cache_id)) {
     return;
   }
   pending_main_resource_cache_id_ = cache_id;
@@ -496,7 +497,7 @@ void AppCacheHost::AssociateCompleteCache(AppCache* cache) {
 
 void AppCacheHost::AssociateCacheHelper(AppCache* cache,
                                         const GURL& manifest_url) {
-  if (associated_cache_) {
+  if (associated_cache_.get()) {
     associated_cache_->UnassociateHost(this);
   }
 

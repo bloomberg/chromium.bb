@@ -181,7 +181,7 @@ void MockAppCacheStorage::DeleteResponses(
 void MockAppCacheStorage::ProcessGetAllInfo(
     scoped_refptr<DelegateReference> delegate_ref) {
   if (delegate_ref->delegate)
-    delegate_ref->delegate->OnAllInfo(simulated_appcache_info_);
+    delegate_ref->delegate->OnAllInfo(simulated_appcache_info_.get());
 }
 
 void MockAppCacheStorage::ProcessLoadCache(
@@ -197,11 +197,11 @@ void MockAppCacheStorage::ProcessLoadOrCreateGroup(
 
   // Newly created groups are not put in the stored_groups collection
   // until StoreGroupAndNewestCache is called.
-  if (!group)
+  if (!group.get())
     group = new AppCacheGroup(service_->storage(), manifest_url, NewGroupId());
 
   if (delegate_ref->delegate)
-    delegate_ref->delegate->OnGroupLoaded(group, manifest_url);
+    delegate_ref->delegate->OnGroupLoaded(group.get(), manifest_url);
 }
 
 void MockAppCacheStorage::ProcessStoreGroupAndNewestCache(
@@ -211,15 +211,16 @@ void MockAppCacheStorage::ProcessStoreGroupAndNewestCache(
   Delegate* delegate = delegate_ref->delegate;
   if (simulate_store_group_and_newest_cache_failure_) {
     if (delegate)
-      delegate->OnGroupAndNewestCacheStored(group, newest_cache, false, false);
+      delegate->OnGroupAndNewestCacheStored(
+          group.get(), newest_cache.get(), false, false);
     return;
   }
 
-  AddStoredGroup(group);
-  if (newest_cache != group->newest_complete_cache()) {
+  AddStoredGroup(group.get());
+  if (newest_cache.get() != group->newest_complete_cache()) {
     newest_cache->set_complete(true);
-    group->AddCache(newest_cache);
-    AddStoredCache(newest_cache);
+    group->AddCache(newest_cache.get());
+    AddStoredCache(newest_cache.get());
 
     // Copy the collection prior to removal, on final release
     // of a cache the group's collection will change.
@@ -228,7 +229,8 @@ void MockAppCacheStorage::ProcessStoreGroupAndNewestCache(
   }
 
   if (delegate)
-    delegate->OnGroupAndNewestCacheStored(group, newest_cache, true, false);
+    delegate->OnGroupAndNewestCacheStored(
+        group.get(), newest_cache.get(), true, false);
 }
 
 namespace {
@@ -416,11 +418,11 @@ void MockAppCacheStorage::ProcessMakeGroupObsolete(
     scoped_refptr<DelegateReference> delegate_ref) {
   if (simulate_make_group_obsolete_failure_) {
     if (delegate_ref->delegate)
-      delegate_ref->delegate->OnGroupMadeObsolete(group, false);
+      delegate_ref->delegate->OnGroupMadeObsolete(group.get(), false);
     return;
   }
 
-  RemoveStoredGroup(group);
+  RemoveStoredGroup(group.get());
   if (group->newest_complete_cache())
     RemoveStoredCache(group->newest_complete_cache());
 
@@ -434,10 +436,10 @@ void MockAppCacheStorage::ProcessMakeGroupObsolete(
   // Also remove from the working set, caches for an 'obsolete' group
   // may linger in use, but the group itself cannot be looked up by
   // 'manifest_url' in the working set any longer.
-  working_set()->RemoveGroup(group);
+  working_set()->RemoveGroup(group.get());
 
   if (delegate_ref->delegate)
-    delegate_ref->delegate->OnGroupMadeObsolete(group, true);
+    delegate_ref->delegate->OnGroupMadeObsolete(group.get(), true);
 }
 
 void MockAppCacheStorage::ScheduleTask(const base::Closure& task) {

@@ -386,14 +386,14 @@ class AppCacheRequestHandlerTest : public testing::Test {
     // real network job gets created. We expect NULL here which will cause
     // the net library to create a real job.
     job_ = handler_->MaybeLoadResource(request_.get(), empty_network_delegate_);
-    EXPECT_FALSE(job_);
+    EXPECT_FALSE(job_.get());
 
     // Simulate an http error of the real network job.
     request_->SimulateResponseCode(500);
 
     job_ = handler_->MaybeLoadFallbackForResponse(
         request_.get(), empty_network_delegate_);
-    EXPECT_TRUE(job_);
+    EXPECT_TRUE(job_.get());
     EXPECT_TRUE(job_->is_delivering_appcache_response());
 
     int64 cache_id = kNoCacheId;
@@ -446,7 +446,7 @@ class AppCacheRequestHandlerTest : public testing::Test {
     // real network job gets created. We expect NULL here which will cause
     // the net library to create a real job.
     job_ = handler_->MaybeLoadResource(request_.get(), empty_network_delegate_);
-    EXPECT_FALSE(job_);
+    EXPECT_FALSE(job_.get());
 
     // Simulate an http error of the real network job, but with custom
     // headers that override the fallback behavior.
@@ -461,7 +461,7 @@ class AppCacheRequestHandlerTest : public testing::Test {
 
     job_ = handler_->MaybeLoadFallbackForResponse(
         request_.get(), empty_network_delegate_);
-    EXPECT_FALSE(job_);
+    EXPECT_FALSE(job_.get());
 
     TestFinished();
   }
@@ -526,7 +526,7 @@ class AppCacheRequestHandlerTest : public testing::Test {
     EXPECT_TRUE(job_.get());
     EXPECT_TRUE(job_->is_waiting());
 
-    host_->FinishCacheSelection(cache, NULL);
+    host_->FinishCacheSelection(cache.get(), NULL);
     EXPECT_FALSE(job_->is_waiting());
     EXPECT_TRUE(job_->is_delivering_error_response());
 

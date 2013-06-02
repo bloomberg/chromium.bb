@@ -299,7 +299,7 @@ void FileSystemUsageCache::ScheduleCloseTimer() {
 }
 
 bool FileSystemUsageCache::CalledOnValidThread() {
-  return !task_runner_ || task_runner_->RunsTasksOnCurrentThread();
+  return !task_runner_.get() || task_runner_->RunsTasksOnCurrentThread();
 }
 
 bool FileSystemUsageCache::HasCacheFileHandle(const base::FilePath& file_path) {

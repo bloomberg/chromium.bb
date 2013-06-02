@@ -60,9 +60,11 @@ int LocalFileStreamReader::Read(net::IOBuffer* buf, int buf_len,
 int64 LocalFileStreamReader::GetLength(
     const net::Int64CompletionCallback& callback) {
   const bool posted = base::FileUtilProxy::GetFileInfo(
-      task_runner_, file_path_,
+      task_runner_.get(),
+      file_path_,
       base::Bind(&LocalFileStreamReader::DidGetFileInfoForGetLength,
-                 weak_factory_.GetWeakPtr(), callback));
+                 weak_factory_.GetWeakPtr(),
+                 callback));
   DCHECK(posted);
   return net::ERR_IO_PENDING;
 }

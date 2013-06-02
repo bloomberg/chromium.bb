@@ -60,8 +60,9 @@ class SyncableFileOperationRunnerTest : public testing::Test {
     file_system_.SetUp();
     sync_context_ = new LocalFileSyncContext(base::MessageLoopProxy::current(),
                                              base::MessageLoopProxy::current());
-    ASSERT_EQ(SYNC_STATUS_OK,
-              file_system_.MaybeInitializeFileSystemContext(sync_context_));
+    ASSERT_EQ(
+        SYNC_STATUS_OK,
+        file_system_.MaybeInitializeFileSystemContext(sync_context_.get()));
 
     ASSERT_EQ(base::PLATFORM_FILE_OK, file_system_.OpenFileSystem());
     ASSERT_EQ(base::PLATFORM_FILE_OK,
@@ -69,7 +70,7 @@ class SyncableFileOperationRunnerTest : public testing::Test {
   }
 
   virtual void TearDown() OVERRIDE {
-    if (sync_context_)
+    if (sync_context_.get())
       sync_context_->ShutdownOnUIThread();
     sync_context_ = NULL;
 

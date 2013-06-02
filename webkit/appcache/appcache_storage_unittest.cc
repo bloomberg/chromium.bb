@@ -31,13 +31,13 @@ TEST_F(AppCacheStorageTest, AddRemoveCache) {
   EXPECT_EQ(cache.get(),
             service.storage()->working_set()->GetCache(111));
 
-  service.storage()->working_set()->RemoveCache(cache);
+  service.storage()->working_set()->RemoveCache(cache.get());
 
   EXPECT_TRUE(!service.storage()->working_set()->GetCache(111));
 
   // Removing non-existing cache from service should not fail.
   MockAppCacheService dummy;
-  dummy.storage()->working_set()->RemoveCache(cache);
+  dummy.storage()->working_set()->RemoveCache(cache.get());
 }
 
 TEST_F(AppCacheStorageTest, AddRemoveGroup) {
@@ -47,13 +47,13 @@ TEST_F(AppCacheStorageTest, AddRemoveGroup) {
 
   EXPECT_EQ(group.get(), service.storage()->working_set()->GetGroup(GURL()));
 
-  service.storage()->working_set()->RemoveGroup(group);
+  service.storage()->working_set()->RemoveGroup(group.get());
 
   EXPECT_TRUE(!service.storage()->working_set()->GetGroup(GURL()));
 
   // Removing non-existing group from service should not fail.
   MockAppCacheService dummy;
-  dummy.storage()->working_set()->RemoveGroup(group);
+  dummy.storage()->working_set()->RemoveGroup(group.get());
 }
 
 TEST_F(AppCacheStorageTest, AddRemoveResponseInfo) {
@@ -66,13 +66,13 @@ TEST_F(AppCacheStorageTest, AddRemoveResponseInfo) {
   EXPECT_EQ(info.get(),
             service.storage()->working_set()->GetResponseInfo(111));
 
-  service.storage()->working_set()->RemoveResponseInfo(info);
+  service.storage()->working_set()->RemoveResponseInfo(info.get());
 
   EXPECT_TRUE(!service.storage()->working_set()->GetResponseInfo(111));
 
   // Removing non-existing info from service should not fail.
   MockAppCacheService dummy;
-  dummy.storage()->working_set()->RemoveResponseInfo(info);
+  dummy.storage()->working_set()->RemoveResponseInfo(info.get());
 }
 
 TEST_F(AppCacheStorageTest, DelegateReferences) {
@@ -120,7 +120,7 @@ TEST_F(AppCacheStorageTest, UsageMap) {
   MockAppCacheService service;
   scoped_refptr<quota::MockQuotaManagerProxy> mock_proxy(
       new quota::MockQuotaManagerProxy(NULL, NULL));
-  service.set_quota_manager_proxy(mock_proxy);
+  service.set_quota_manager_proxy(mock_proxy.get());
 
   service.storage()->UpdateUsageMapAndNotify(kOrigin, 0);
   EXPECT_EQ(0, mock_proxy->notify_storage_modified_count());

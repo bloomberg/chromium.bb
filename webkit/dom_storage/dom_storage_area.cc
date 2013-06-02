@@ -201,9 +201,11 @@ DomStorageArea* DomStorageArea::ShallowCopy(
   DCHECK_NE(kLocalStorageNamespaceId, namespace_id_);
   DCHECK_NE(kLocalStorageNamespaceId, destination_namespace_id);
 
-  DomStorageArea* copy = new DomStorageArea(
-      destination_namespace_id, destination_persistent_namespace_id, origin_,
-      session_storage_backing_, task_runner_);
+  DomStorageArea* copy = new DomStorageArea(destination_namespace_id,
+                                            destination_persistent_namespace_id,
+                                            origin_,
+                                            session_storage_backing_.get(),
+                                            task_runner_.get());
   copy->map_ = map_;
   copy->is_shutdown_ = is_shutdown_;
   copy->is_initial_import_done_ = true;

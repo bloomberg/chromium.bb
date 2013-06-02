@@ -98,8 +98,8 @@ class CopyOrMoveFileValidatorTestHelper {
     ASSERT_FALSE(FileExists(copy_dest_, 10));
 
     EXPECT_EQ(expected,
-              AsyncFileTestHelper::Copy(file_system_context_, copy_src_,
-                                        copy_dest_));
+              AsyncFileTestHelper::Copy(
+                  file_system_context_.get(), copy_src_, copy_dest_));
 
     EXPECT_TRUE(FileExists(copy_src_, 10));
     if (expected == base::PLATFORM_FILE_OK)
@@ -113,8 +113,8 @@ class CopyOrMoveFileValidatorTestHelper {
     ASSERT_FALSE(FileExists(move_dest_, 10));
 
     EXPECT_EQ(expected,
-              AsyncFileTestHelper::Move(file_system_context_, move_src_,
-                                        move_dest_));
+              AsyncFileTestHelper::Move(
+                  file_system_context_.get(), move_src_, move_dest_));
 
     if (expected == base::PLATFORM_FILE_OK) {
       EXPECT_FALSE(FileExists(move_src_, 10));
@@ -140,19 +140,21 @@ class CopyOrMoveFileValidatorTestHelper {
 
   base::PlatformFileError CreateFile(const FileSystemURL& url, size_t size) {
     base::PlatformFileError result =
-        AsyncFileTestHelper::CreateFile(file_system_context_, url);
+        AsyncFileTestHelper::CreateFile(file_system_context_.get(), url);
     if (result != base::PLATFORM_FILE_OK)
       return result;
-    return AsyncFileTestHelper::TruncateFile(file_system_context_, url, size);
+    return AsyncFileTestHelper::TruncateFile(
+        file_system_context_.get(), url, size);
   }
 
   base::PlatformFileError CreateDirectory(const FileSystemURL& url) {
-    return AsyncFileTestHelper::CreateDirectory(file_system_context_, url);
+    return AsyncFileTestHelper::CreateDirectory(file_system_context_.get(),
+                                                url);
   }
 
   bool FileExists(const FileSystemURL& url, int64 expected_size) {
     return AsyncFileTestHelper::FileExists(
-        file_system_context_, url, expected_size);
+        file_system_context_.get(), url, expected_size);
   }
 
   base::ScopedTempDir base_;

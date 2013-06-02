@@ -61,8 +61,8 @@ void AppCacheStorage::ResponseInfoLoadTask::StartIfNeeded() {
     return;
   reader_.reset(
       storage_->CreateResponseReader(manifest_url_, group_id_, response_id_));
-  reader_->ReadInfo(
-      info_buffer_, base::Bind(&ResponseInfoLoadTask::OnReadComplete,
+  reader_->ReadInfo(info_buffer_.get(),
+                    base::Bind(&ResponseInfoLoadTask::OnReadComplete,
                                base::Unretained(this)));
 }
 

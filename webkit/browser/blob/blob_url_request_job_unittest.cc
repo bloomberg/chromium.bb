@@ -123,8 +123,8 @@ class BlobURLRequestJobTest : public testing::Test {
         net::NetworkDelegate* network_delegate) const OVERRIDE {
       return new BlobURLRequestJob(request,
                                    network_delegate,
-                                   test_->blob_data_,
-                                   test_->file_system_context_,
+                                   test_->blob_data_.get(),
+                                   test_->file_system_context_.get(),
                                    base::MessageLoopProxy::current());
     }
 
@@ -207,7 +207,7 @@ class BlobURLRequestJobTest : public testing::Test {
     fileapi::FileSystemFileUtil* file_util =
         file_system_context_->GetFileUtil(kFileSystemType);
 
-    fileapi::FileSystemOperationContext context(file_system_context_);
+    fileapi::FileSystemOperationContext context(file_system_context_.get());
     context.set_allowed_bytes_growth(1024);
 
     base::PlatformFile handle = base::kInvalidPlatformFileValue;

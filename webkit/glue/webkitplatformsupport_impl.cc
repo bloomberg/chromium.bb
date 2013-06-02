@@ -829,10 +829,10 @@ WebKit::WebThread* WebKitPlatformSupportImpl::currentThread() {
 
   scoped_refptr<base::MessageLoopProxy> message_loop =
       base::MessageLoopProxy::current();
-  if (!message_loop)
+  if (!message_loop.get())
     return NULL;
 
-  thread = new WebThreadImplForMessageLoop(message_loop);
+  thread = new WebThreadImplForMessageLoop(message_loop.get());
   current_thread_slot_.Set(thread);
   return thread;
 }

@@ -57,7 +57,7 @@ class WEBKIT_STORAGE_EXPORT DomStorageCachedArea :
   // Primes the cache, loading all values for the area.
   void Prime(int connection_id);
   void PrimeIfNeeded(int connection_id) {
-    if (!map_)
+    if (!map_.get())
       Prime(connection_id);
   }
 

@@ -49,7 +49,7 @@ bool DomStorageSession::IsFromContext(DomStorageContext* context) {
 }
 
 DomStorageSession* DomStorageSession::Clone() {
-  return CloneFrom(context_, namespace_id_);
+  return CloneFrom(context_.get(), namespace_id_);
 }
 
 // static

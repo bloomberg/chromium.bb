@@ -48,7 +48,7 @@ class QuotaTask {
 
   QuotaTaskObserver* observer() const { return observer_; }
   base::SingleThreadTaskRunner* original_task_runner() const {
-    return original_task_runner_;
+    return original_task_runner_.get();
   }
 
  private:

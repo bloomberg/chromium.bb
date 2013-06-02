@@ -73,7 +73,7 @@ class LocalFileSystemOperationWriteTest
     file_system_context_ = CreateFileSystemContextForTesting(
         quota_manager_->proxy(), dir_.path());
     url_request_context_.reset(
-        new MockBlobURLRequestContext(file_system_context_));
+        new MockBlobURLRequestContext(file_system_context_.get()));
 
     NewOperation()->CreateFile(
         URLForPath(virtual_path_), true /* exclusive */,
@@ -194,8 +194,8 @@ TEST_F(LocalFileSystemOperationWriteTest, TestWriteZero) {
   GURL blob_url("blob:zero");
   scoped_refptr<webkit_blob::BlobData> blob_data(new webkit_blob::BlobData());
 
-  url_request_context().blob_storage_controller()->AddFinishedBlob(
-      blob_url, blob_data);
+  url_request_context().blob_storage_controller()
+      ->AddFinishedBlob(blob_url, blob_data.get());
 
   NewOperation()->Write(
       &url_request_context(), URLForPath(virtual_path_),

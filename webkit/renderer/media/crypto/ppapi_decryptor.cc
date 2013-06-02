@@ -38,7 +38,7 @@ PpapiDecryptor::PpapiDecryptor(
       render_loop_proxy_(base::MessageLoopProxy::current()),
       weak_ptr_factory_(this),
       weak_this_(weak_ptr_factory_.GetWeakPtr()) {
-  DCHECK(plugin_instance_);
+  DCHECK(plugin_instance_.get());
 }
 
 PpapiDecryptor::~PpapiDecryptor() {

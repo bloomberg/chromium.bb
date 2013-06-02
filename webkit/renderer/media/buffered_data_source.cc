@@ -122,7 +122,7 @@ BufferedResourceLoader* BufferedDataSource::CreateResourceLoader(
                                     strategy,
                                     bitrate_,
                                     playback_rate_,
-                                    media_log_);
+                                    media_log_.get());
 }
 
 void BufferedDataSource::set_host(media::DataSourceHost* host) {

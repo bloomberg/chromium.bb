@@ -171,7 +171,7 @@ void ViewBlobInternalsJob::GenerateHTML(std::string* out) const {
        ++iter) {
     AddHTMLBoldText(iter->first, out);
     AddHTMLButton(kRemove, iter->first, out);
-    GenerateHTMLForBlobData(*iter->second, out);
+    GenerateHTMLForBlobData(*iter->second.get(), out);
   }
 }
 

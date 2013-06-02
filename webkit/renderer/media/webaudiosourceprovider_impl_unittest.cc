@@ -33,34 +33,34 @@ class WebAudioSourceProviderImplTest
   void CallAllSinkMethodsAndVerify(bool verify) {
     testing::InSequence s;
 
-    EXPECT_CALL(*mock_sink_, Start()).Times(verify);
+    EXPECT_CALL(*mock_sink_.get(), Start()).Times(verify);
     wasp_impl_->Start();
 
-    EXPECT_CALL(*mock_sink_, Play()).Times(verify);
+    EXPECT_CALL(*mock_sink_.get(), Play()).Times(verify);
     wasp_impl_->Play();
 
-    EXPECT_CALL(*mock_sink_, Pause()).Times(verify);
+    EXPECT_CALL(*mock_sink_.get(), Pause()).Times(verify);
     wasp_impl_->Pause();
 
-    EXPECT_CALL(*mock_sink_, SetVolume(kTestVolume)).Times(verify);
+    EXPECT_CALL(*mock_sink_.get(), SetVolume(kTestVolume)).Times(verify);
     wasp_impl_->SetVolume(kTestVolume);
 
-    EXPECT_CALL(*mock_sink_, Stop()).Times(verify);
+    EXPECT_CALL(*mock_sink_.get(), Stop()).Times(verify);
     wasp_impl_->Stop();
 
-    testing::Mock::VerifyAndClear(mock_sink_);
+    testing::Mock::VerifyAndClear(mock_sink_.get());
   }
 
   void SetClient(WebKit::WebAudioSourceProviderClient* client) {
     testing::InSequence s;
 
     if (client) {
-      EXPECT_CALL(*mock_sink_, Stop());
+      EXPECT_CALL(*mock_sink_.get(), Stop());
       EXPECT_CALL(*this, setFormat(params_.channels(), params_.sample_rate()));
     }
     wasp_impl_->setClient(client);
 
-    testing::Mock::VerifyAndClear(mock_sink_);
+    testing::Mock::VerifyAndClear(mock_sink_.get());
     testing::Mock::VerifyAndClear(this);
   }
 
@@ -92,7 +92,7 @@ TEST_F(WebAudioSourceProviderImplTest, SetClientBeforeInitialize) {
   // setClient() with a NULL client should do nothing if no client is set.
   wasp_impl_->setClient(NULL);
 
-  EXPECT_CALL(*mock_sink_, Stop());
+  EXPECT_CALL(*mock_sink_.get(), Stop());
   wasp_impl_->setClient(this);
 
   // When Initialize() is called after setClient(), the params should propagate
@@ -118,7 +118,7 @@ TEST_F(WebAudioSourceProviderImplTest, SinkMethods) {
   CallAllSinkMethodsAndVerify(false);
 
   // Removing the client should cause WASP to revert to the underlying sink.
-  EXPECT_CALL(*mock_sink_, SetVolume(kTestVolume));
+  EXPECT_CALL(*mock_sink_.get(), SetVolume(kTestVolume));
   SetClient(NULL);
   CallAllSinkMethodsAndVerify(true);
 }
@@ -128,12 +128,12 @@ TEST_F(WebAudioSourceProviderImplTest, SinkStateRestored) {
   wasp_impl_->Initialize(params_, &fake_callback_);
 
   // Verify state set before the client is set propagates back afterward.
-  EXPECT_CALL(*mock_sink_, Start());
+  EXPECT_CALL(*mock_sink_.get(), Start());
   wasp_impl_->Start();
   SetClient(this);
 
-  EXPECT_CALL(*mock_sink_, SetVolume(1.0));
-  EXPECT_CALL(*mock_sink_, Start());
+  EXPECT_CALL(*mock_sink_.get(), SetVolume(1.0));
+  EXPECT_CALL(*mock_sink_.get(), Start());
   SetClient(NULL);
 
   // Verify state set while the client was attached propagates back afterward.
@@ -141,9 +141,9 @@ TEST_F(WebAudioSourceProviderImplTest, SinkStateRestored) {
   wasp_impl_->Play();
   wasp_impl_->SetVolume(kTestVolume);
 
-  EXPECT_CALL(*mock_sink_, SetVolume(kTestVolume));
-  EXPECT_CALL(*mock_sink_, Start());
-  EXPECT_CALL(*mock_sink_, Play());
+  EXPECT_CALL(*mock_sink_.get(), SetVolume(kTestVolume));
+  EXPECT_CALL(*mock_sink_.get(), Start());
+  EXPECT_CALL(*mock_sink_.get(), Play());
   SetClient(NULL);
 }
 

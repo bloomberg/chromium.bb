@@ -74,12 +74,11 @@ class QuotaManagerTest : public testing::Test {
 
  protected:
   void ResetQuotaManager(bool is_incognito) {
-    quota_manager_ = new QuotaManager(
-        is_incognito,
-        data_dir_.path(),
-        MessageLoopProxy::current(),
-        MessageLoopProxy::current(),
-        mock_special_storage_policy_);
+    quota_manager_ = new QuotaManager(is_incognito,
+                                      data_dir_.path(),
+                                      MessageLoopProxy::current(),
+                                      MessageLoopProxy::current(),
+                                      mock_special_storage_policy_.get());
     // Don't (automatically) start the eviction for testing.
     quota_manager_->eviction_disabled_ = true;
     // Don't query the hard disk for remaining capacity.

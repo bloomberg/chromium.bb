@@ -111,7 +111,8 @@ class AppCacheURLRequestJobTest : public testing::Test {
       scoped_refptr<IOBuffer> wrapped_buffer(
           new net::WrappedIOBuffer(received_data_->data() + amount_received_));
       int bytes_read = 0;
-      EXPECT_FALSE(request->Read(wrapped_buffer, kBlockSize, &bytes_read));
+      EXPECT_FALSE(
+          request->Read(wrapped_buffer.get(), kBlockSize, &bytes_read));
       EXPECT_EQ(0, bytes_read);
     }
 
@@ -252,8 +253,8 @@ class AppCacheURLRequestJobTest : public testing::Test {
   void WriteBasicResponse() {
     scoped_refptr<IOBuffer> body(new WrappedIOBuffer(kHttpBasicBody));
     std::string raw_headers(kHttpBasicHeaders, arraysize(kHttpBasicHeaders));
-    WriteResponse(MakeHttpResponseInfo(raw_headers), body,
-                  strlen(kHttpBasicBody));
+    WriteResponse(
+        MakeHttpResponseInfo(raw_headers), body.get(), strlen(kHttpBasicBody));
   }
 
   void WriteResponse(net::HttpResponseInfo* head,
@@ -270,7 +271,7 @@ class AppCacheURLRequestJobTest : public testing::Test {
     expected_write_result_ = GetHttpResponseInfoSize(head);
     write_info_buffer_ = new HttpResponseInfoIOBuffer(head);
     writer_->WriteInfo(
-        write_info_buffer_,
+        write_info_buffer_.get(),
         base::Bind(&AppCacheURLRequestJobTest::OnWriteInfoComplete,
                    base::Unretained(this)));
   }
@@ -279,20 +280,20 @@ class AppCacheURLRequestJobTest : public testing::Test {
     EXPECT_FALSE(writer_->IsWritePending());
     write_buffer_ = io_buffer;
     expected_write_result_ = buf_len;
-    writer_->WriteData(
-        write_buffer_, buf_len,
-        base::Bind(&AppCacheURLRequestJobTest::OnWriteComplete,
-                   base::Unretained(this)));
+    writer_->WriteData(write_buffer_.get(),
+                       buf_len,
+                       base::Bind(&AppCacheURLRequestJobTest::OnWriteComplete,
+                                  base::Unretained(this)));
   }
 
   void ReadResponseBody(scoped_refptr<IOBuffer> io_buffer, int buf_len) {
     EXPECT_FALSE(reader_->IsReadPending());
     read_buffer_ = io_buffer;
     expected_read_result_ = buf_len;
-    reader_->ReadData(
-        read_buffer_, buf_len,
-        base::Bind(&AppCacheURLRequestJobTest::OnReadComplete,
-                   base::Unretained(this)));
+    reader_->ReadData(read_buffer_.get(),
+                      buf_len,
+                      base::Bind(&AppCacheURLRequestJobTest::OnReadComplete,
+                                 base::Unretained(this)));
   }
 
   // AppCacheResponseReader / Writer completion callbacks
@@ -543,7 +544,7 @@ class AppCacheURLRequestJobTest : public testing::Test {
 
     // Start the request.
     EXPECT_FALSE(job->has_been_started());
-    mock_factory_job_ = job;
+    mock_factory_job_ = job.get();
     request_->Start();
     EXPECT_FALSE(mock_factory_job_);
     EXPECT_TRUE(job->has_been_started());
@@ -602,7 +603,8 @@ class AppCacheURLRequestJobTest : public testing::Test {
     for (int i = 0; i < 3; ++i, p += kBlockSize)
       FillData(i + 1, p, kBlockSize);
     std::string raw_headers(kHttpHeaders, arraysize(kHttpHeaders));
-    WriteResponse(MakeHttpResponseInfo(raw_headers), body, kBlockSize * 3);
+    WriteResponse(
+        MakeHttpResponseInfo(raw_headers), body.get(), kBlockSize * 3);
   }
 
   void VerifyDeliverLargeAppCachedResponse() {
@@ -656,7 +658,7 @@ class AppCacheURLRequestJobTest : public testing::Test {
 
     // Start the request.
     EXPECT_FALSE(job->has_been_started());
-    mock_factory_job_ = job;
+    mock_factory_job_ = job.get();
     request_->Start();
     EXPECT_FALSE(mock_factory_job_);
     EXPECT_TRUE(job->has_been_started());

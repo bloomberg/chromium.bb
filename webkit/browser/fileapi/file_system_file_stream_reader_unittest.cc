@@ -43,7 +43,7 @@ void ReadFromReader(FileSystemFileStreamReader* reader,
   while (total_bytes_read < size) {
     scoped_refptr<net::IOBufferWithSize> buf(
         new net::IOBufferWithSize(size - total_bytes_read));
-    int rv = reader->Read(buf, buf->size(), callback.callback());
+    int rv = reader->Read(buf.get(), buf->size(), callback.callback());
     if (rv == net::ERR_IO_PENDING)
       rv = callback.WaitForResult();
     if (rv < 0)
@@ -89,7 +89,7 @@ class FileSystemFileStreamReaderTest : public testing::Test {
       const std::string& file_name,
       int64 initial_offset,
       const base::Time& expected_modification_time) {
-    return new FileSystemFileStreamReader(file_system_context_,
+    return new FileSystemFileStreamReader(file_system_context_.get(),
                                           GetFileSystemURL(file_name),
                                           initial_offset,
                                           expected_modification_time);
@@ -107,7 +107,7 @@ class FileSystemFileStreamReaderTest : public testing::Test {
         sandbox_provider()->GetFileUtil(kFileSystemTypeTemporary);
     FileSystemURL url = GetFileSystemURL(file_name);
 
-    FileSystemOperationContext context(file_system_context_);
+    FileSystemOperationContext context(file_system_context_.get());
     context.set_allowed_bytes_growth(1024);
 
     base::PlatformFile handle = base::kInvalidPlatformFileValue;
@@ -271,7 +271,7 @@ TEST_F(FileSystemFileStreamReaderTest, DeleteWithUnfinishedRead) {
   net::TestCompletionCallback callback;
   scoped_refptr<net::IOBufferWithSize> buf(
       new net::IOBufferWithSize(kTestDataSize));
-  int rv = reader->Read(buf, buf->size(), base::Bind(&NeverCalled));
+  int rv = reader->Read(buf.get(), buf->size(), base::Bind(&NeverCalled));
   ASSERT_TRUE(rv == net::ERR_IO_PENDING || rv >= 0);
 
   // Delete immediately.

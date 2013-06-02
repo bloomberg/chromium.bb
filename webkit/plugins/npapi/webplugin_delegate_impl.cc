@@ -102,7 +102,7 @@ bool WebPluginDelegateImpl::Initialize(
 }
 
 void WebPluginDelegateImpl::DestroyInstance() {
-  if (instance_ && (instance_->npp()->ndata != NULL)) {
+  if (instance_.get() && (instance_->npp()->ndata != NULL)) {
     // Shutdown all streams before destroying so that
     // no streams are left "in progress".  Need to do
     // this before calling set_web_plugin(NULL) because the

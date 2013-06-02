@@ -54,7 +54,7 @@ void BlobStorageController::AppendBlobDataItem(
   BlobMap::iterator found = unfinalized_blob_map_.find(url.spec());
   if (found == unfinalized_blob_map_.end())
     return;
-  BlobData* target_blob_data = found->second;
+  BlobData* target_blob_data = found->second.get();
   DCHECK(target_blob_data);
 
   memory_usage_ -= target_blob_data->GetMemoryUsage();
@@ -163,7 +163,7 @@ bool BlobStorageController::RemoveFromMapHelper(
   BlobMap::iterator found = map->find(url.spec());
   if (found == map->end())
     return false;
-  if (DecrementBlobDataUsage(found->second))
+  if (DecrementBlobDataUsage(found->second.get()))
     memory_usage_ -= found->second->GetMemoryUsage();
   map->erase(found);
   return true;
@@ -229,8 +229,8 @@ void BlobStorageController::AppendFileItem(
   // It may be a temporary file that should be deleted when no longer needed.
   scoped_refptr<ShareableFileReference> shareable_file =
       ShareableFileReference::Get(file_path);
-  if (shareable_file)
-    target_blob_data->AttachShareableFileReference(shareable_file);
+  if (shareable_file.get())
+    target_blob_data->AttachShareableFileReference(shareable_file.get());
 }
 
 void BlobStorageController::AppendFileSystemFileItem(

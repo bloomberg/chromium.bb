@@ -51,7 +51,7 @@ scoped_refptr<NPObjectVar> NPObjectVar::FromPPVar(PP_Var var) {
     return scoped_refptr<NPObjectVar>(NULL);
   scoped_refptr<Var> var_object(
       PpapiGlobals::Get()->GetVarTracker()->GetVar(var));
-  if (!var_object)
+  if (!var_object.get())
     return scoped_refptr<NPObjectVar>();
   return scoped_refptr<NPObjectVar>(var_object->AsNPObjectVar());
 }

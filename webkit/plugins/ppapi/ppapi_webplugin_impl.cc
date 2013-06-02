@@ -90,7 +90,7 @@ bool WebPluginImpl::initialize(WebPluginContainer* container) {
   instance_ = init_data_->module->CreateInstance(init_data_->delegate,
                                                  container,
                                                  init_data_->url);
-  if (!instance_)
+  if (!instance_.get())
     return false;
 
   // Enable script objects for this plugin.
@@ -123,7 +123,7 @@ void WebPluginImpl::destroy() {
   if (container_)
     container_->clearScriptObjects();
 
-  if (instance_) {
+  if (instance_.get()) {
     ::ppapi::PpapiGlobals::Get()->GetVarTracker()->ReleaseVar(instance_object_);
     instance_object_ = PP_MakeUndefined();
     instance_->Delete();
@@ -140,13 +140,13 @@ NPObject* WebPluginImpl::scriptableObject() {
     instance_object_ = instance_->GetInstanceObject();
   // GetInstanceObject talked to the plugin which may have removed the instance
   // from the DOM, in which case instance_ would be NULL now.
-  if (!instance_)
+  if (!instance_.get())
     return NULL;
 
   scoped_refptr<NPObjectVar> object(NPObjectVar::FromPPVar(instance_object_));
   // If there's an InstanceObject, tell the Instance's MessageChannel to pass
   // any non-postMessage calls to it.
-  if (object) {
+  if (object.get()) {
     instance_->message_channel().SetPassthroughObject(object->np_object());
   }
   NPObject* message_channel_np_object(instance_->message_channel().np_object());

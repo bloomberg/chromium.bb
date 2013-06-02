@@ -26,9 +26,9 @@ TestContextProviderFactory::~TestContextProviderFactory() {}
 
 scoped_refptr<cc::ContextProvider> TestContextProviderFactory::
     OffscreenContextProviderForMainThread() {
-  if (!main_thread_ || main_thread_->DestroyedOnMainThread()) {
+  if (!main_thread_.get() || main_thread_->DestroyedOnMainThread()) {
     main_thread_ = ContextProviderInProcess::Create();
-    if (main_thread_ && !main_thread_->BindToCurrentThread())
+    if (main_thread_.get() && !main_thread_->BindToCurrentThread())
       main_thread_ = NULL;
   }
   return main_thread_;
@@ -36,8 +36,7 @@ scoped_refptr<cc::ContextProvider> TestContextProviderFactory::
 
 scoped_refptr<cc::ContextProvider> TestContextProviderFactory::
     OffscreenContextProviderForCompositorThread() {
-  if (!compositor_thread_ ||
-      compositor_thread_->DestroyedOnMainThread())
+  if (!compositor_thread_.get() || compositor_thread_->DestroyedOnMainThread())
     compositor_thread_ = ContextProviderInProcess::Create();
   return compositor_thread_;
 }

@@ -125,7 +125,7 @@ WebGraphicsContext3DInProcessImpl::CreateForWindow(
 
   scoped_refptr<gfx::GLSurface> gl_surface =
       gfx::GLSurface::CreateViewGLSurface(false, window);
-  if (!gl_surface)
+  if (!gl_surface.get())
     return NULL;
 
   gfx::GpuPreference gpu_preference = gfx::PreferDiscreteGpu;
@@ -134,7 +134,7 @@ WebGraphicsContext3DInProcessImpl::CreateForWindow(
       share_group,
       gl_surface.get(),
       gpu_preference);
-  if (!gl_context)
+  if (!gl_context.get())
     return NULL;
   scoped_ptr<WebGraphicsContext3DInProcessImpl> context(
       new WebGraphicsContext3DInProcessImpl(
@@ -162,7 +162,7 @@ bool WebGraphicsContext3DInProcessImpl::Initialize(
   if (render_directly_to_web_view_)
     attributes_.antialias = false;
 
-  if (!gl_context_->MakeCurrent(gl_surface_)) {
+  if (!gl_context_->MakeCurrent(gl_surface_.get())) {
     gl_context_ = NULL;
     return false;
   }

@@ -67,7 +67,7 @@ bool PPVarToNPVariant(PP_Var var, NPVariant* result) {
     }
     case PP_VARTYPE_OBJECT: {
       scoped_refptr<NPObjectVar> object(NPObjectVar::FromPPVar(var));
-      if (!object) {
+      if (!object.get()) {
         VOID_TO_NPVARIANT(*result);
         return false;
       }
@@ -151,7 +151,7 @@ PP_Var NPObjectToPPVar(PluginInstance* instance, NPObject* object) {
   scoped_refptr<NPObjectVar> object_var(
       HostGlobals::Get()->host_var_tracker()->NPObjectVarForNPObject(
           instance->pp_instance(), object));
-  if (!object_var) {  // No object for this module yet, make a new one.
+  if (!object_var.get()) {  // No object for this module yet, make a new one.
     object_var = new NPObjectVar(instance->pp_instance(), object);
   }
   return object_var->GetPPVar();

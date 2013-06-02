@@ -1167,7 +1167,7 @@ SandboxDirectoryDatabase* ObfuscatedFileUtil::GetDirectoryDatabase(
 
 base::FilePath ObfuscatedFileUtil::GetDirectoryForOrigin(
     const GURL& origin, bool create, base::PlatformFileError* error_code) {
-  if (special_storage_policy_ &&
+  if (special_storage_policy_.get() &&
       special_storage_policy_->HasIsolatedStorage(origin)) {
     CHECK(isolated_origin_.is_empty() || isolated_origin_ == origin)
         << "multiple origins for an isolated site: "

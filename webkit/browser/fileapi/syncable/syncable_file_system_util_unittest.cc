@@ -132,7 +132,7 @@ TEST(SyncableFileSystemUtilTest, SerializeBeforeOpenFileSystem) {
   EXPECT_FALSE(deserialized.is_valid());
 
   ASSERT_EQ(sync_file_system::SYNC_STATUS_OK,
-            file_system.MaybeInitializeFileSystemContext(sync_context));
+            file_system.MaybeInitializeFileSystemContext(sync_context.get()));
 
   // After initialization this should be ok (even before opening the file
   // system).

@@ -44,21 +44,21 @@ TEST(BlobStorageControllerTest, RegisterBlobUrl) {
   // Test registering a blob URL referring to the blob data containing only
   // data and file.
   GURL blob_url1("blob://url_1");
-  blob_storage_controller.AddFinishedBlob(blob_url1, blob_data1);
+  blob_storage_controller.AddFinishedBlob(blob_url1, blob_data1.get());
 
   BlobData* blob_data_found =
       blob_storage_controller.GetBlobDataFromUrl(blob_url1);
   ASSERT_TRUE(blob_data_found != NULL);
-  EXPECT_TRUE(*blob_data_found == *blob_data1);
+  EXPECT_TRUE(*blob_data_found == *blob_data1.get());
 
   // Test registering a blob URL referring to the blob data containing data,
   // file and blob.
   GURL blob_url2("blob://url_2");
-  blob_storage_controller.AddFinishedBlob(blob_url2, blob_data2);
+  blob_storage_controller.AddFinishedBlob(blob_url2, blob_data2.get());
 
   blob_data_found = blob_storage_controller.GetBlobDataFromUrl(blob_url2);
   ASSERT_TRUE(blob_data_found != NULL);
-  EXPECT_TRUE(*blob_data_found == *canonicalized_blob_data2);
+  EXPECT_TRUE(*blob_data_found == *canonicalized_blob_data2.get());
 
   // Test registering a blob URL referring to existent blob URL.
   GURL blob_url3("blob://url_3");
@@ -66,7 +66,7 @@ TEST(BlobStorageControllerTest, RegisterBlobUrl) {
 
   blob_data_found = blob_storage_controller.GetBlobDataFromUrl(blob_url3);
   ASSERT_TRUE(blob_data_found != NULL);
-  EXPECT_TRUE(*blob_data_found == *blob_data1);
+  EXPECT_TRUE(*blob_data_found == *blob_data1.get());
 
   // Test unregistering a blob URL.
   blob_storage_controller.RemoveBlob(blob_url3);

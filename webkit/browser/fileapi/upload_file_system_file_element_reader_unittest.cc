@@ -55,9 +55,12 @@ class UploadFileSystemFileElementReaderTest : public testing::Test {
                         &file_modification_time_);
 
     // Create and initialize a reader.
-    reader_.reset(new UploadFileSystemFileElementReader(
-        file_system_context_, file_url_, 0, kuint64max,
-        file_modification_time_));
+    reader_.reset(
+        new UploadFileSystemFileElementReader(file_system_context_.get(),
+                                              file_url_,
+                                              0,
+                                              kuint64max,
+                                              file_modification_time_));
     net::TestCompletionCallback callback;
     ASSERT_EQ(net::ERR_IO_PENDING, reader_->Init(callback.callback()));
     EXPECT_EQ(net::OK, callback.WaitForResult());
@@ -84,7 +87,7 @@ class UploadFileSystemFileElementReaderTest : public testing::Test {
     fileapi::FileSystemFileUtil* file_util =
         file_system_context_->GetFileUtil(kFileSystemType);
 
-    fileapi::FileSystemOperationContext context(file_system_context_);
+    fileapi::FileSystemOperationContext context(file_system_context_.get());
     context.set_allowed_bytes_growth(1024);
 
     base::PlatformFile handle = base::kInvalidPlatformFileValue;
@@ -131,13 +134,13 @@ TEST_F(UploadFileSystemFileElementReaderTest, ReadAll) {
   scoped_refptr<net::IOBufferWithSize> buf =
       new net::IOBufferWithSize(file_data_.size());
   net::TestCompletionCallback read_callback;
-  ASSERT_EQ(net::ERR_IO_PENDING, reader_->Read(buf, buf->size(),
-                                               read_callback.callback()));
+  ASSERT_EQ(net::ERR_IO_PENDING,
+            reader_->Read(buf.get(), buf->size(), read_callback.callback()));
   EXPECT_EQ(buf->size(), read_callback.WaitForResult());
   EXPECT_EQ(0U, reader_->BytesRemaining());
   EXPECT_TRUE(std::equal(file_data_.begin(), file_data_.end(), buf->data()));
   // Try to read again.
-  EXPECT_EQ(0, reader_->Read(buf, buf->size(), read_callback.callback()));
+  EXPECT_EQ(0, reader_->Read(buf.get(), buf->size(), read_callback.callback()));
 }
 
 TEST_F(UploadFileSystemFileElementReaderTest, ReadPartially) {
@@ -148,16 +151,16 @@ TEST_F(UploadFileSystemFileElementReaderTest, ReadPartially) {
       new net::IOBufferWithSize(kHalfSize);
 
   net::TestCompletionCallback read_callback1;
-  ASSERT_EQ(net::ERR_IO_PENDING, reader_->Read(buf, buf->size(),
-                                               read_callback1.callback()));
+  ASSERT_EQ(net::ERR_IO_PENDING,
+            reader_->Read(buf.get(), buf->size(), read_callback1.callback()));
   EXPECT_EQ(buf->size(), read_callback1.WaitForResult());
   EXPECT_EQ(file_data_.size() - buf->size(), reader_->BytesRemaining());
   EXPECT_TRUE(std::equal(file_data_.begin(), file_data_.begin() + kHalfSize,
                          buf->data()));
 
   net::TestCompletionCallback read_callback2;
-  EXPECT_EQ(net::ERR_IO_PENDING, reader_->Read(buf, buf->size(),
-                                               read_callback2.callback()));
+  EXPECT_EQ(net::ERR_IO_PENDING,
+            reader_->Read(buf.get(), buf->size(), read_callback2.callback()));
   EXPECT_EQ(buf->size(), read_callback2.WaitForResult());
   EXPECT_EQ(0U, reader_->BytesRemaining());
   EXPECT_TRUE(std::equal(file_data_.begin() + kHalfSize, file_data_.end(),
@@ -169,8 +172,8 @@ TEST_F(UploadFileSystemFileElementReaderTest, ReadTooMuch) {
   scoped_refptr<net::IOBufferWithSize> buf =
       new net::IOBufferWithSize(kTooLargeSize);
   net::TestCompletionCallback read_callback;
-  ASSERT_EQ(net::ERR_IO_PENDING, reader_->Read(buf, buf->size(),
-                                               read_callback.callback()));
+  ASSERT_EQ(net::ERR_IO_PENDING,
+            reader_->Read(buf.get(), buf->size(), read_callback.callback()));
   EXPECT_EQ(static_cast<int>(file_data_.size()), read_callback.WaitForResult());
   EXPECT_EQ(0U, reader_->BytesRemaining());
   EXPECT_TRUE(std::equal(file_data_.begin(), file_data_.end(), buf->data()));
@@ -182,8 +185,8 @@ TEST_F(UploadFileSystemFileElementReaderTest, MultipleInit) {
 
   // Read all.
   net::TestCompletionCallback read_callback1;
-  ASSERT_EQ(net::ERR_IO_PENDING, reader_->Read(buf, buf->size(),
-                                               read_callback1.callback()));
+  ASSERT_EQ(net::ERR_IO_PENDING,
+            reader_->Read(buf.get(), buf->size(), read_callback1.callback()));
   EXPECT_EQ(buf->size(), read_callback1.WaitForResult());
   EXPECT_EQ(0U, reader_->BytesRemaining());
   EXPECT_TRUE(std::equal(file_data_.begin(), file_data_.end(), buf->data()));
@@ -197,8 +200,8 @@ TEST_F(UploadFileSystemFileElementReaderTest, MultipleInit) {
 
   // Read again.
   net::TestCompletionCallback read_callback2;
-  ASSERT_EQ(net::ERR_IO_PENDING, reader_->Read(buf, buf->size(),
-                                               read_callback2.callback()));
+  ASSERT_EQ(net::ERR_IO_PENDING,
+            reader_->Read(buf.get(), buf->size(), read_callback2.callback()));
   EXPECT_EQ(buf->size(), read_callback2.WaitForResult());
   EXPECT_EQ(0U, reader_->BytesRemaining());
   EXPECT_TRUE(std::equal(file_data_.begin(), file_data_.end(), buf->data()));
@@ -210,8 +213,8 @@ TEST_F(UploadFileSystemFileElementReaderTest, InitDuringAsyncOperation) {
 
   // Start reading all.
   net::TestCompletionCallback read_callback1;
-  EXPECT_EQ(net::ERR_IO_PENDING, reader_->Read(buf, buf->size(),
-                                               read_callback1.callback()));
+  EXPECT_EQ(net::ERR_IO_PENDING,
+            reader_->Read(buf.get(), buf->size(), read_callback1.callback()));
 
   // Call Init to cancel the previous read.
   net::TestCompletionCallback init_callback1;
@@ -228,8 +231,8 @@ TEST_F(UploadFileSystemFileElementReaderTest, InitDuringAsyncOperation) {
   scoped_refptr<net::IOBufferWithSize> buf2 =
       new net::IOBufferWithSize(file_data_.size() / 2);
   net::TestCompletionCallback read_callback2;
-  EXPECT_EQ(net::ERR_IO_PENDING, reader_->Read(buf2, buf2->size(),
-                                               read_callback2.callback()));
+  EXPECT_EQ(net::ERR_IO_PENDING,
+            reader_->Read(buf2.get(), buf2->size(), read_callback2.callback()));
   EXPECT_EQ(buf2->size(), read_callback2.WaitForResult());
   EXPECT_EQ(file_data_.size() - buf2->size(), reader_->BytesRemaining());
   EXPECT_TRUE(std::equal(file_data_.begin(), file_data_.begin() + buf2->size(),
@@ -244,7 +247,7 @@ TEST_F(UploadFileSystemFileElementReaderTest, Range) {
   const int kOffset = 2;
   const int kLength = file_data_.size() - kOffset * 3;
   reader_.reset(new UploadFileSystemFileElementReader(
-      file_system_context_, file_url_, kOffset, kLength, base::Time()));
+      file_system_context_.get(), file_url_, kOffset, kLength, base::Time()));
   net::TestCompletionCallback init_callback;
   ASSERT_EQ(net::ERR_IO_PENDING, reader_->Init(init_callback.callback()));
   EXPECT_EQ(net::OK, init_callback.WaitForResult());
@@ -252,8 +255,8 @@ TEST_F(UploadFileSystemFileElementReaderTest, Range) {
   EXPECT_EQ(static_cast<uint64>(kLength), reader_->BytesRemaining());
   scoped_refptr<net::IOBufferWithSize> buf = new net::IOBufferWithSize(kLength);
   net::TestCompletionCallback read_callback;
-  ASSERT_EQ(net::ERR_IO_PENDING, reader_->Read(buf, buf->size(),
-                                               read_callback.callback()));
+  ASSERT_EQ(net::ERR_IO_PENDING,
+            reader_->Read(buf.get(), buf->size(), read_callback.callback()));
   EXPECT_EQ(kLength, read_callback.WaitForResult());
   EXPECT_TRUE(std::equal(file_data_.begin() + kOffset,
                          file_data_.begin() + kOffset + kLength,
@@ -264,9 +267,12 @@ TEST_F(UploadFileSystemFileElementReaderTest, FileChanged) {
   // Expect one second before the actual modification time to simulate change.
   const base::Time expected_modification_time =
       file_modification_time_ - base::TimeDelta::FromSeconds(1);
-  reader_.reset(new UploadFileSystemFileElementReader(
-      file_system_context_, file_url_, 0, kuint64max,
-      expected_modification_time));
+  reader_.reset(
+      new UploadFileSystemFileElementReader(file_system_context_.get(),
+                                            file_url_,
+                                            0,
+                                            kuint64max,
+                                            expected_modification_time));
   net::TestCompletionCallback init_callback;
   ASSERT_EQ(net::ERR_IO_PENDING, reader_->Init(init_callback.callback()));
   EXPECT_EQ(net::ERR_UPLOAD_FILE_CHANGED, init_callback.WaitForResult());
@@ -275,7 +281,7 @@ TEST_F(UploadFileSystemFileElementReaderTest, FileChanged) {
 TEST_F(UploadFileSystemFileElementReaderTest, WrongURL) {
   const GURL wrong_url = GetFileSystemURL("wrong_file_name.dat");
   reader_.reset(new UploadFileSystemFileElementReader(
-      file_system_context_, wrong_url, 0, kuint64max, base::Time()));
+      file_system_context_.get(), wrong_url, 0, kuint64max, base::Time()));
   net::TestCompletionCallback init_callback;
   ASSERT_EQ(net::ERR_IO_PENDING, reader_->Init(init_callback.callback()));
   EXPECT_EQ(net::ERR_FILE_NOT_FOUND, init_callback.WaitForResult());

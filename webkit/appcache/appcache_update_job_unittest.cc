@@ -624,7 +624,8 @@ class AppCacheUpdateJobTest : public testing::Test,
     group_ = new AppCacheGroup(service_->storage(), GURL("http://failme"),
                                service_->storage()->NewGroupId());
 
-    AppCacheUpdateJob* update = new AppCacheUpdateJob(service_.get(), group_);
+    AppCacheUpdateJob* update =
+        new AppCacheUpdateJob(service_.get(), group_.get());
     group_->update_job_ = update;
 
     MockFrontend mock_frontend;
@@ -678,7 +679,8 @@ class AppCacheUpdateJobTest : public testing::Test,
 
       AppCacheHost host4(4, &mock_frontend3, service_.get());
 
-      AppCacheUpdateJob* update = new AppCacheUpdateJob(service_.get(), group_);
+      AppCacheUpdateJob* update =
+          new AppCacheUpdateJob(service_.get(), group_.get());
       group_->update_job_ = update;
       update->StartUpdate(&host4, GURL());
 
@@ -722,7 +724,8 @@ class AppCacheUpdateJobTest : public testing::Test,
     MakeService();
     group_ = new AppCacheGroup(service_->storage(), GURL("http://failme"),
                                service_->storage()->NewGroupId());
-    AppCacheUpdateJob* update = new AppCacheUpdateJob(service_.get(), group_);
+    AppCacheUpdateJob* update =
+        new AppCacheUpdateJob(service_.get(), group_.get());
     group_->update_job_ = update;
 
     MockFrontend* frontend = MakeMockFrontend();
@@ -748,7 +751,8 @@ class AppCacheUpdateJobTest : public testing::Test,
     MakeService();
     group_ = new AppCacheGroup(service_->storage(), GURL("http://failme"),
                                service_->storage()->NewGroupId());
-    AppCacheUpdateJob* update = new AppCacheUpdateJob(service_.get(), group_);
+    AppCacheUpdateJob* update =
+        new AppCacheUpdateJob(service_.get(), group_.get());
     group_->update_job_ = update;
 
     AppCache* cache = MakeCacheForGroup(1, 111);
@@ -790,7 +794,8 @@ class AppCacheUpdateJobTest : public testing::Test,
     MakeService();
     group_ = new AppCacheGroup(service_->storage(), GURL("http://testme"),
                                service_->storage()->NewGroupId());
-    AppCacheUpdateJob* update = new AppCacheUpdateJob(service_.get(), group_);
+    AppCacheUpdateJob* update =
+        new AppCacheUpdateJob(service_.get(), group_.get());
     group_->update_job_ = update;
 
     MockFrontend* frontend = MakeMockFrontend();
@@ -816,7 +821,8 @@ class AppCacheUpdateJobTest : public testing::Test,
         service_->storage(),
         MockHttpServer::GetMockUrl("files/missing-mime-manifest"),
         service_->storage()->NewGroupId());
-    AppCacheUpdateJob* update = new AppCacheUpdateJob(service_.get(), group_);
+    AppCacheUpdateJob* update =
+        new AppCacheUpdateJob(service_.get(), group_.get());
     group_->update_job_ = update;
 
     AppCache* cache = MakeCacheForGroup(service_->storage()->NewCacheId(), 33);
@@ -852,7 +858,8 @@ class AppCacheUpdateJobTest : public testing::Test,
     group_ = new AppCacheGroup(
         service_->storage(), MockHttpServer::GetMockUrl("files/nosuchfile"),
         service_->storage()->NewGroupId());
-    AppCacheUpdateJob* update = new AppCacheUpdateJob(service_.get(), group_);
+    AppCacheUpdateJob* update =
+        new AppCacheUpdateJob(service_.get(), group_.get());
     group_->update_job_ = update;
 
     AppCache* cache = MakeCacheForGroup(1, 111);
@@ -888,7 +895,8 @@ class AppCacheUpdateJobTest : public testing::Test,
     group_ = new AppCacheGroup(
         service_->storage(), MockHttpServer::GetMockUrl("files/gone"),
         service_->storage()->NewGroupId());
-    AppCacheUpdateJob* update = new AppCacheUpdateJob(service_.get(), group_);
+    AppCacheUpdateJob* update =
+        new AppCacheUpdateJob(service_.get(), group_.get());
     group_->update_job_ = update;
 
     MockFrontend* frontend = MakeMockFrontend();
@@ -913,7 +921,8 @@ class AppCacheUpdateJobTest : public testing::Test,
     group_ = new AppCacheGroup(
         service_->storage(), MockHttpServer::GetMockUrl("files/notmodified"),
         service_->storage()->NewGroupId());
-    AppCacheUpdateJob* update = new AppCacheUpdateJob(service_.get(), group_);
+    AppCacheUpdateJob* update =
+        new AppCacheUpdateJob(service_.get(), group_.get());
     group_->update_job_ = update;
 
     MockFrontend* frontend = MakeMockFrontend();
@@ -938,7 +947,8 @@ class AppCacheUpdateJobTest : public testing::Test,
     group_ = new AppCacheGroup(
         service_->storage(), MockHttpServer::GetMockUrl("files/notmodified"),
         service_->storage()->NewGroupId());
-    AppCacheUpdateJob* update = new AppCacheUpdateJob(service_.get(), group_);
+    AppCacheUpdateJob* update =
+        new AppCacheUpdateJob(service_.get(), group_.get());
     group_->update_job_ = update;
 
     AppCache* cache = MakeCacheForGroup(1, 111);
@@ -974,7 +984,8 @@ class AppCacheUpdateJobTest : public testing::Test,
     group_ = new AppCacheGroup(
         service_->storage(), MockHttpServer::GetMockUrl("files/manifest1"),
         service_->storage()->NewGroupId());
-    AppCacheUpdateJob* update = new AppCacheUpdateJob(service_.get(), group_);
+    AppCacheUpdateJob* update =
+        new AppCacheUpdateJob(service_.get(), group_.get());
     group_->update_job_ = update;
 
     // Create response writer to get a response id.
@@ -1007,7 +1018,8 @@ class AppCacheUpdateJobTest : public testing::Test,
     scoped_refptr<net::StringIOBuffer> io_buffer(
         new net::StringIOBuffer(seed_data));
     response_writer_->WriteData(
-        io_buffer, seed_data.length(),
+        io_buffer.get(),
+        seed_data.length(),
         base::Bind(&AppCacheUpdateJobTest::StartUpdateAfterSeedingStorageData,
                    base::Unretained(this)));
 
@@ -1022,7 +1034,8 @@ class AppCacheUpdateJobTest : public testing::Test,
     group_ = new AppCacheGroup(
         service_->storage(), MockHttpServer::GetMockUrl("files/empty-manifest"),
         service_->storage()->NewGroupId());
-    AppCacheUpdateJob* update = new AppCacheUpdateJob(service_.get(), group_);
+    AppCacheUpdateJob* update =
+        new AppCacheUpdateJob(service_.get(), group_.get());
     group_->update_job_ = update;
 
     // Create a malformed cache with a missing manifest entry.
@@ -1069,7 +1082,8 @@ class AppCacheUpdateJobTest : public testing::Test,
     group_ = new AppCacheGroup(
         service_->storage(), manifest_url,
         service_->storage()->NewGroupId());
-    AppCacheUpdateJob* update = new AppCacheUpdateJob(service_.get(), group_);
+    AppCacheUpdateJob* update =
+        new AppCacheUpdateJob(service_.get(), group_.get());
     group_->update_job_ = update;
 
     MockFrontend* frontend = MakeMockFrontend();
@@ -1096,7 +1110,8 @@ class AppCacheUpdateJobTest : public testing::Test,
     group_ = new AppCacheGroup(
         service_->storage(), manifest_url,
         service_->storage()->NewGroupId());
-    AppCacheUpdateJob* update = new AppCacheUpdateJob(service_.get(), group_);
+    AppCacheUpdateJob* update =
+        new AppCacheUpdateJob(service_.get(), group_.get());
     group_->update_job_ = update;
 
     MockFrontend* frontend = MakeMockFrontend();
@@ -1121,7 +1136,8 @@ class AppCacheUpdateJobTest : public testing::Test,
     group_ = new AppCacheGroup(
         service_->storage(), MockHttpServer::GetMockUrl("files/manifest1"),
         service_->storage()->NewGroupId());
-    AppCacheUpdateJob* update = new AppCacheUpdateJob(service_.get(), group_);
+    AppCacheUpdateJob* update =
+        new AppCacheUpdateJob(service_.get(), group_.get());
     group_->update_job_ = update;
 
     // Create a response writer to get a response id.
@@ -1166,7 +1182,8 @@ class AppCacheUpdateJobTest : public testing::Test,
     scoped_refptr<net::StringIOBuffer> io_buffer(
         new net::StringIOBuffer(seed_data));
     response_writer_->WriteData(
-        io_buffer, seed_data.length(),
+        io_buffer.get(),
+        seed_data.length(),
         base::Bind(&AppCacheUpdateJobTest::StartUpdateAfterSeedingStorageData,
                    base::Unretained(this)));
 
@@ -1180,7 +1197,8 @@ class AppCacheUpdateJobTest : public testing::Test,
     group_ = new AppCacheGroup(
         service_->storage(), MockHttpServer::GetMockUrl("files/manifest1"),
         service_->storage()->NewGroupId());
-    AppCacheUpdateJob* update = new AppCacheUpdateJob(service_.get(), group_);
+    AppCacheUpdateJob* update =
+        new AppCacheUpdateJob(service_.get(), group_.get());
     group_->update_job_ = update;
 
     AppCache* cache = MakeCacheForGroup(service_->storage()->NewCacheId(), 42);
@@ -1228,7 +1246,7 @@ class AppCacheUpdateJobTest : public testing::Test,
     scoped_refptr<HttpResponseInfoIOBuffer> io_buffer(
         new HttpResponseInfoIOBuffer(response_info));  // adds ref to info
     response_writer_->WriteInfo(
-        io_buffer,
+        io_buffer.get(),
         base::Bind(&AppCacheUpdateJobTest::StartUpdateAfterSeedingStorageData,
                    base::Unretained(this)));
 
@@ -1242,7 +1260,8 @@ class AppCacheUpdateJobTest : public testing::Test,
     group_ = new AppCacheGroup(
         service_->storage(), MockHttpServer::GetMockUrl("files/manifest1"),
         service_->storage()->NewGroupId());
-    AppCacheUpdateJob* update = new AppCacheUpdateJob(service_.get(), group_);
+    AppCacheUpdateJob* update =
+        new AppCacheUpdateJob(service_.get(), group_.get());
     group_->update_job_ = update;
 
     AppCache* cache = MakeCacheForGroup(service_->storage()->NewCacheId(), 42);
@@ -1287,7 +1306,7 @@ class AppCacheUpdateJobTest : public testing::Test,
     scoped_refptr<HttpResponseInfoIOBuffer> io_buffer(
         new HttpResponseInfoIOBuffer(response_info));  // adds ref to info
     response_writer_->WriteInfo(
-        io_buffer,
+        io_buffer.get(),
         base::Bind(&AppCacheUpdateJobTest::StartUpdateAfterSeedingStorageData,
                    base::Unretained(this)));
 
@@ -1301,7 +1320,8 @@ class AppCacheUpdateJobTest : public testing::Test,
     group_ = new AppCacheGroup(
         service_->storage(), MockHttpServer::GetMockUrl("files/manifest1"),
         service_->storage()->NewGroupId());
-    AppCacheUpdateJob* update = new AppCacheUpdateJob(service_.get(), group_);
+    AppCacheUpdateJob* update =
+        new AppCacheUpdateJob(service_.get(), group_.get());
     group_->update_job_ = update;
 
     AppCache* cache = MakeCacheForGroup(service_->storage()->NewCacheId(), 42);
@@ -1346,7 +1366,7 @@ class AppCacheUpdateJobTest : public testing::Test,
     scoped_refptr<HttpResponseInfoIOBuffer> io_buffer(
         new HttpResponseInfoIOBuffer(response_info));  // adds ref to info
     response_writer_->WriteInfo(
-        io_buffer,
+        io_buffer.get(),
         base::Bind(&AppCacheUpdateJobTest::StartUpdateAfterSeedingStorageData,
                    base::Unretained(this)));
 
@@ -1360,7 +1380,8 @@ class AppCacheUpdateJobTest : public testing::Test,
     group_ = new AppCacheGroup(service_->storage(),
         MockHttpServer::GetMockUrl("files/manifest-merged-types"),
         service_->storage()->NewGroupId());
-    AppCacheUpdateJob* update = new AppCacheUpdateJob(service_.get(), group_);
+    AppCacheUpdateJob* update =
+        new AppCacheUpdateJob(service_.get(), group_.get());
     group_->update_job_ = update;
 
     AppCache* cache = MakeCacheForGroup(service_->storage()->NewCacheId(), 42);
@@ -1410,7 +1431,8 @@ class AppCacheUpdateJobTest : public testing::Test,
     group_ = new AppCacheGroup(service_->storage(),
         MockHttpServer::GetMockUrl("files/manifest-with-404"),
         service_->storage()->NewGroupId());
-    AppCacheUpdateJob* update = new AppCacheUpdateJob(service_.get(), group_);
+    AppCacheUpdateJob* update =
+        new AppCacheUpdateJob(service_.get(), group_.get());
     group_->update_job_ = update;
 
     MockFrontend* frontend = MakeMockFrontend();
@@ -1435,7 +1457,8 @@ class AppCacheUpdateJobTest : public testing::Test,
     group_ = new AppCacheGroup(service_->storage(),
         MockHttpServer::GetMockUrl("files/manifest-fb-404"),
         service_->storage()->NewGroupId());
-    AppCacheUpdateJob* update = new AppCacheUpdateJob(service_.get(), group_);
+    AppCacheUpdateJob* update =
+        new AppCacheUpdateJob(service_.get(), group_.get());
     group_->update_job_ = update;
 
     AppCache* cache = MakeCacheForGroup(service_->storage()->NewCacheId(), 99);
@@ -1479,7 +1502,8 @@ class AppCacheUpdateJobTest : public testing::Test,
     group_ = new AppCacheGroup(
         service_->storage(), kManifestUrl,
         service_->storage()->NewGroupId());
-    AppCacheUpdateJob* update = new AppCacheUpdateJob(service_.get(), group_);
+    AppCacheUpdateJob* update =
+        new AppCacheUpdateJob(service_.get(), group_.get());
     group_->update_job_ = update;
 
     AppCache* cache = MakeCacheForGroup(service_->storage()->NewCacheId(), 25);
@@ -1570,7 +1594,8 @@ class AppCacheUpdateJobTest : public testing::Test,
     group_ = new AppCacheGroup(
         service_->storage(), MockHttpServer::GetMockUrl("files/empty-manifest"),
         service_->storage()->NewGroupId());
-    AppCacheUpdateJob* update = new AppCacheUpdateJob(service_.get(), group_);
+    AppCacheUpdateJob* update =
+        new AppCacheUpdateJob(service_.get(), group_.get());
     group_->update_job_ = update;
 
     AppCache* cache = MakeCacheForGroup(service_->storage()->NewCacheId(), 33);
@@ -1613,7 +1638,8 @@ class AppCacheUpdateJobTest : public testing::Test,
     group_ = new AppCacheGroup(service_->storage(),
         MockHttpServer::GetMockUrl("files/empty-file-manifest"),
         service_->storage()->NewGroupId());
-    AppCacheUpdateJob* update = new AppCacheUpdateJob(service_.get(), group_);
+    AppCacheUpdateJob* update =
+        new AppCacheUpdateJob(service_.get(), group_.get());
     group_->update_job_ = update;
 
     AppCache* cache = MakeCacheForGroup(service_->storage()->NewCacheId(), 22);
@@ -1655,7 +1681,8 @@ class AppCacheUpdateJobTest : public testing::Test,
     group_ = new AppCacheGroup(service_->storage(),
                                RetryRequestTestJob::kRetryUrl,
                                service_->storage()->NewGroupId());
-    AppCacheUpdateJob* update = new AppCacheUpdateJob(service_.get(), group_);
+    AppCacheUpdateJob* update =
+        new AppCacheUpdateJob(service_.get(), group_.get());
     group_->update_job_ = update;
 
     MockFrontend* frontend = MakeMockFrontend();
@@ -1688,7 +1715,8 @@ class AppCacheUpdateJobTest : public testing::Test,
     group_ = new AppCacheGroup(service_->storage(),
                                RetryRequestTestJob::kRetryUrl,
                                service_->storage()->NewGroupId());
-    AppCacheUpdateJob* update = new AppCacheUpdateJob(service_.get(), group_);
+    AppCacheUpdateJob* update =
+        new AppCacheUpdateJob(service_.get(), group_.get());
     group_->update_job_ = update;
 
     MockFrontend* frontend = MakeMockFrontend();
@@ -1722,7 +1750,8 @@ class AppCacheUpdateJobTest : public testing::Test,
     group_ = new AppCacheGroup(service_->storage(),
                                RetryRequestTestJob::kRetryUrl,
                                service_->storage()->NewGroupId());
-    AppCacheUpdateJob* update = new AppCacheUpdateJob(service_.get(), group_);
+    AppCacheUpdateJob* update =
+        new AppCacheUpdateJob(service_.get(), group_.get());
     group_->update_job_ = update;
 
     MockFrontend* frontend = MakeMockFrontend();
@@ -1755,7 +1784,8 @@ class AppCacheUpdateJobTest : public testing::Test,
     group_ = new AppCacheGroup(service_->storage(),
                                RetryRequestTestJob::kRetryUrl,
                                service_->storage()->NewGroupId());
-    AppCacheUpdateJob* update = new AppCacheUpdateJob(service_.get(), group_);
+    AppCacheUpdateJob* update =
+        new AppCacheUpdateJob(service_.get(), group_.get());
     group_->update_job_ = update;
 
     MockFrontend* frontend = MakeMockFrontend();
@@ -1787,7 +1817,8 @@ class AppCacheUpdateJobTest : public testing::Test,
     MakeService();
     group_ = new AppCacheGroup(service_->storage(), GURL("http://retryurl"),
                                service_->storage()->NewGroupId());
-    AppCacheUpdateJob* update = new AppCacheUpdateJob(service_.get(), group_);
+    AppCacheUpdateJob* update =
+        new AppCacheUpdateJob(service_.get(), group_.get());
     group_->update_job_ = update;
 
     MockFrontend* frontend = MakeMockFrontend();
@@ -1816,7 +1847,8 @@ class AppCacheUpdateJobTest : public testing::Test,
     group_ = new AppCacheGroup(
         service_->storage(), MockHttpServer::GetMockUrl("files/manifest1"),
         service_->storage()->NewGroupId());
-    AppCacheUpdateJob* update = new AppCacheUpdateJob(service_.get(), group_);
+    AppCacheUpdateJob* update =
+        new AppCacheUpdateJob(service_.get(), group_.get());
     group_->update_job_ = update;
 
     MockFrontend* frontend = MakeMockFrontend();
@@ -1844,7 +1876,8 @@ class AppCacheUpdateJobTest : public testing::Test,
     group_ = new AppCacheGroup(
         service_->storage(), MockHttpServer::GetMockUrl("files/manifest1"),
         service_->storage()->NewGroupId());
-    AppCacheUpdateJob* update = new AppCacheUpdateJob(service_.get(), group_);
+    AppCacheUpdateJob* update =
+        new AppCacheUpdateJob(service_.get(), group_.get());
     group_->update_job_ = update;
 
     AppCache* cache = MakeCacheForGroup(service_->storage()->NewCacheId(), 11);
@@ -1919,7 +1952,7 @@ class AppCacheUpdateJobTest : public testing::Test,
     tested_manifest_path_override_ = "files/notmodified";
     expect_group_obsolete_ = false;
     expect_group_has_cache_ = true;
-    expect_newest_cache_ = cache;  // unchanged
+    expect_newest_cache_ = cache.get();  // unchanged
     MockFrontend::HostIds ids1(1, host->host_id());
     frontend->AddExpectedEvent(ids1, ERROR_EVENT);
     frontend->expected_error_message_ =
@@ -1939,7 +1972,8 @@ class AppCacheUpdateJobTest : public testing::Test,
     group_ = new AppCacheGroup(
         service_->storage(), MockHttpServer::GetMockUrl("files/nosuchfile"),
         service_->storage()->NewGroupId());
-    AppCacheUpdateJob* update = new AppCacheUpdateJob(service_.get(), group_);
+    AppCacheUpdateJob* update =
+        new AppCacheUpdateJob(service_.get(), group_.get());
     group_->update_job_ = update;
 
     AppCache* cache = MakeCacheForGroup(1, 111);
@@ -1973,7 +2007,8 @@ class AppCacheUpdateJobTest : public testing::Test,
 
     MakeService();
     group_ = new AppCacheGroup(service_->storage(), GURL("http://failme"), 111);
-    AppCacheUpdateJob* update = new AppCacheUpdateJob(service_.get(), group_);
+    AppCacheUpdateJob* update =
+        new AppCacheUpdateJob(service_.get(), group_.get());
     group_->update_job_ = update;
 
     MockFrontend* frontend = MakeMockFrontend();
@@ -2001,7 +2036,8 @@ class AppCacheUpdateJobTest : public testing::Test,
     MakeService();
     group_ = new AppCacheGroup(service_->storage(),
         MockHttpServer::GetMockUrl("files/bad-manifest"), 111);
-    AppCacheUpdateJob* update = new AppCacheUpdateJob(service_.get(), group_);
+    AppCacheUpdateJob* update =
+        new AppCacheUpdateJob(service_.get(), group_.get());
     group_->update_job_ = update;
 
     MockFrontend* frontend = MakeMockFrontend();
@@ -2029,7 +2065,8 @@ class AppCacheUpdateJobTest : public testing::Test,
         service_->storage(),
         MockHttpServer::GetMockUrl("files/nosuchfile"),
         111);
-    AppCacheUpdateJob* update = new AppCacheUpdateJob(service_.get(), group_);
+    AppCacheUpdateJob* update =
+        new AppCacheUpdateJob(service_.get(), group_.get());
     group_->update_job_ = update;
 
     MockFrontend* frontend = MakeMockFrontend();
@@ -2056,7 +2093,8 @@ class AppCacheUpdateJobTest : public testing::Test,
     MakeService();
     group_ = new AppCacheGroup(service_->storage(),
         MockHttpServer::GetMockUrl("files/manifest-fb-404"), 111);
-    AppCacheUpdateJob* update = new AppCacheUpdateJob(service_.get(), group_);
+    AppCacheUpdateJob* update =
+        new AppCacheUpdateJob(service_.get(), group_.get());
     group_->update_job_ = update;
 
     MockFrontend* frontend = MakeMockFrontend();
@@ -2088,7 +2126,8 @@ class AppCacheUpdateJobTest : public testing::Test,
         service_->storage(),
         MockHttpServer::GetMockUrl("files/manifest1"),
         111);
-    AppCacheUpdateJob* update = new AppCacheUpdateJob(service_.get(), group_);
+    AppCacheUpdateJob* update =
+        new AppCacheUpdateJob(service_.get(), group_.get());
     group_->update_job_ = update;
 
     MockFrontend* frontend1 = MakeMockFrontend();
@@ -2129,7 +2168,8 @@ class AppCacheUpdateJobTest : public testing::Test,
         service_->storage(),
         MockHttpServer::GetMockUrl("files/manifest1"),
         111);
-    AppCacheUpdateJob* update = new AppCacheUpdateJob(service_.get(), group_);
+    AppCacheUpdateJob* update =
+        new AppCacheUpdateJob(service_.get(), group_.get());
     group_->update_job_ = update;
 
     AppCache* cache = MakeCacheForGroup(service_->storage()->NewCacheId(), 42);
@@ -2183,7 +2223,8 @@ class AppCacheUpdateJobTest : public testing::Test,
         service_->storage(),
         MockHttpServer::GetMockUrl("files/manifest1"),
         111);
-    AppCacheUpdateJob* update = new AppCacheUpdateJob(service_.get(), group_);
+    AppCacheUpdateJob* update =
+        new AppCacheUpdateJob(service_.get(), group_.get());
     group_->update_job_ = update;
 
     MockFrontend* frontend1 = MakeMockFrontend();
@@ -2230,7 +2271,8 @@ class AppCacheUpdateJobTest : public testing::Test,
         service_->storage(),
         MockHttpServer::GetMockUrl("files/manifest1"),
         111);
-    AppCacheUpdateJob* update = new AppCacheUpdateJob(service_.get(), group_);
+    AppCacheUpdateJob* update =
+        new AppCacheUpdateJob(service_.get(), group_.get());
     group_->update_job_ = update;
 
     AppCache* cache = MakeCacheForGroup(service_->storage()->NewCacheId(), 42);
@@ -2287,7 +2329,8 @@ class AppCacheUpdateJobTest : public testing::Test,
     MakeService();
     group_ = new AppCacheGroup(service_->storage(),
         MockHttpServer::GetMockUrl("files/notmodified"), 111);
-    AppCacheUpdateJob* update = new AppCacheUpdateJob(service_.get(), group_);
+    AppCacheUpdateJob* update =
+        new AppCacheUpdateJob(service_.get(), group_.get());
     group_->update_job_ = update;
 
     AppCache* cache = MakeCacheForGroup(1, 111);
@@ -2341,7 +2384,8 @@ class AppCacheUpdateJobTest : public testing::Test,
     group_ = new AppCacheGroup(
         service_->storage(), MockHttpServer::GetMockUrl("files/manifest1"),
         service_->storage()->NewGroupId());
-    AppCacheUpdateJob* update = new AppCacheUpdateJob(service_.get(), group_);
+    AppCacheUpdateJob* update =
+        new AppCacheUpdateJob(service_.get(), group_.get());
     group_->update_job_ = update;
 
     MockFrontend* frontend1 = MakeMockFrontend();
@@ -2427,7 +2471,8 @@ class AppCacheUpdateJobTest : public testing::Test,
     group_ = new AppCacheGroup(
         service_->storage(), MockHttpServer::GetMockUrl("files/notmodified"),
         service_->storage()->NewGroupId());
-    AppCacheUpdateJob* update = new AppCacheUpdateJob(service_.get(), group_);
+    AppCacheUpdateJob* update =
+        new AppCacheUpdateJob(service_.get(), group_.get());
     group_->update_job_ = update;
 
     AppCache* cache = MakeCacheForGroup(1, 111);
@@ -2508,7 +2553,8 @@ class AppCacheUpdateJobTest : public testing::Test,
         service_->storage(),
         MockHttpServer::GetMockUrl("files/manifest1"),
         111);
-    AppCacheUpdateJob* update = new AppCacheUpdateJob(service_.get(), group_);
+    AppCacheUpdateJob* update =
+        new AppCacheUpdateJob(service_.get(), group_.get());
     group_->update_job_ = update;
 
     AppCache* cache = MakeCacheForGroup(service_->storage()->NewCacheId(), 42);
@@ -2592,7 +2638,8 @@ class AppCacheUpdateJobTest : public testing::Test,
         service_->storage(),
         MockHttpServer::GetMockUrl("files/manifest1"),
         111);
-    AppCacheUpdateJob* update = new AppCacheUpdateJob(service_.get(), group_);
+    AppCacheUpdateJob* update =
+        new AppCacheUpdateJob(service_.get(), group_.get());
     group_->update_job_ = update;
 
     // Pretend update job has been running and is about to terminate.
@@ -2644,7 +2691,8 @@ class AppCacheUpdateJobTest : public testing::Test,
     MakeService();
     group_ = new AppCacheGroup(
         service_->storage(), GURL("http://headertest"), 111);
-    AppCacheUpdateJob* update = new AppCacheUpdateJob(service_.get(), group_);
+    AppCacheUpdateJob* update =
+        new AppCacheUpdateJob(service_.get(), group_.get());
     group_->update_job_ = update;
 
     // First test against a cache attempt. Will start manifest fetch
@@ -2667,7 +2715,7 @@ class AppCacheUpdateJobTest : public testing::Test,
     response_info->headers = headers;  // adds ref to headers
 
     HttpHeadersRequestTestJob::Initialize(std::string(), std::string());
-    update = new AppCacheUpdateJob(service_.get(), group_);
+    update = new AppCacheUpdateJob(service_.get(), group_.get());
     group_->update_job_ = update;
     group_->update_status_ = AppCacheGroup::DOWNLOADING;
     update->manifest_response_info_.reset(response_info);
@@ -2689,7 +2737,7 @@ class AppCacheUpdateJobTest : public testing::Test,
 
     HttpHeadersRequestTestJob::Initialize("Sat, 29 Oct 1994 19:43:31 GMT",
                                           std::string());
-    update = new AppCacheUpdateJob(service_.get(), group_);
+    update = new AppCacheUpdateJob(service_.get(), group_.get());
     group_->update_job_ = update;
     group_->update_status_ = AppCacheGroup::DOWNLOADING;
     update->manifest_response_info_.reset(response_info);
@@ -2716,7 +2764,8 @@ class AppCacheUpdateJobTest : public testing::Test,
         service_->storage(),
         MockHttpServer::GetMockUrl("files/manifest1"),
         111);
-    AppCacheUpdateJob* update = new AppCacheUpdateJob(service_.get(), group_);
+    AppCacheUpdateJob* update =
+        new AppCacheUpdateJob(service_.get(), group_.get());
     group_->update_job_ = update;
 
     // Give the newest cache a manifest enry that is in storage.
@@ -2757,7 +2806,7 @@ class AppCacheUpdateJobTest : public testing::Test,
     scoped_refptr<HttpResponseInfoIOBuffer> io_buffer(
         new HttpResponseInfoIOBuffer(response_info));  // adds ref to info
     response_writer_->WriteInfo(
-        io_buffer,
+        io_buffer.get(),
         base::Bind(&AppCacheUpdateJobTest::StartUpdateAfterSeedingStorageData,
                    base::Unretained(this)));
 
@@ -2778,7 +2827,8 @@ class AppCacheUpdateJobTest : public testing::Test,
         service_->storage(),
         MockHttpServer::GetMockUrl("files/manifest1"),
         111);
-    AppCacheUpdateJob* update = new AppCacheUpdateJob(service_.get(), group_);
+    AppCacheUpdateJob* update =
+        new AppCacheUpdateJob(service_.get(), group_.get());
     group_->update_job_ = update;
 
     // Give the newest cache a manifest enry that is in storage.
@@ -2819,7 +2869,7 @@ class AppCacheUpdateJobTest : public testing::Test,
     scoped_refptr<HttpResponseInfoIOBuffer> io_buffer(
         new HttpResponseInfoIOBuffer(response_info));  // adds ref to info
     response_writer_->WriteInfo(
-        io_buffer,
+        io_buffer.get(),
         base::Bind(&AppCacheUpdateJobTest::StartUpdateAfterSeedingStorageData,
                    base::Unretained(this)));
 
@@ -2838,7 +2888,8 @@ class AppCacheUpdateJobTest : public testing::Test,
     MakeService();
     group_ = new AppCacheGroup(
         service_->storage(), GURL("http://headertest"), 111);
-    AppCacheUpdateJob* update = new AppCacheUpdateJob(service_.get(), group_);
+    AppCacheUpdateJob* update =
+        new AppCacheUpdateJob(service_.get(), group_.get());
     group_->update_job_ = update;
 
     // Simulate a refetch manifest request that uses an ETag header.
@@ -2875,7 +2926,8 @@ class AppCacheUpdateJobTest : public testing::Test,
     MakeService();
     group_ = new AppCacheGroup(
         service_->storage(), GURL("http://headertest"), 111);
-    AppCacheUpdateJob* update = new AppCacheUpdateJob(service_.get(), group_);
+    AppCacheUpdateJob* update =
+        new AppCacheUpdateJob(service_.get(), group_.get());
     group_->update_job_ = update;
 
     // Simulate a refetch manifest request that uses an ETag header.
@@ -2908,7 +2960,8 @@ class AppCacheUpdateJobTest : public testing::Test,
     MakeService();
     group_ = new AppCacheGroup(
         service_->storage(), manifest_url, service_->storage()->NewGroupId());
-    AppCacheUpdateJob* update = new AppCacheUpdateJob(service_.get(), group_);
+    AppCacheUpdateJob* update =
+        new AppCacheUpdateJob(service_.get(), group_.get());
     group_->update_job_ = update;
 
     MockFrontend* frontend = MakeMockFrontend();
@@ -2935,7 +2988,8 @@ class AppCacheUpdateJobTest : public testing::Test,
     MakeService();
     group_ = new AppCacheGroup(
         service_->storage(), manifest_url, service_->storage()->NewGroupId());
-    AppCacheUpdateJob* update = new AppCacheUpdateJob(service_.get(), group_);
+    AppCacheUpdateJob* update =
+        new AppCacheUpdateJob(service_.get(), group_.get());
     group_->update_job_ = update;
 
     MockFrontend* frontend = MakeMockFrontend();
@@ -3031,7 +3085,7 @@ class AppCacheUpdateJobTest : public testing::Test,
         new AppCacheResponseInfo(service_.get(), manifest_url,
                                  response_id, http_info, 0));
     response_infos_.push_back(info);
-    return info;
+    return info.get();
   }
 
   MockFrontend* MakeMockFrontend() {
@@ -3073,7 +3127,7 @@ class AppCacheUpdateJobTest : public testing::Test,
         // when update succeeds.
         MockAppCacheStorage* storage =
             reinterpret_cast<MockAppCacheStorage*>(service_->storage());
-        EXPECT_TRUE(storage->IsGroupStored(group_));
+        EXPECT_TRUE(storage->IsGroupStored(group_.get()));
         EXPECT_TRUE(storage->IsCacheStored(group_->newest_complete_cache()));
 
         // Check that all entries in the newest cache were stored.
@@ -3366,7 +3420,7 @@ TEST_F(AppCacheUpdateJobTest, AlreadyChecking) {
       new AppCacheGroup(service.storage(), GURL("http://manifesturl.com"),
                         service.storage()->NewGroupId()));
 
-  AppCacheUpdateJob update(&service, group);
+  AppCacheUpdateJob update(&service, group.get());
 
   // Pretend group is in checking state.
   group->update_job_ = &update;
@@ -3394,7 +3448,7 @@ TEST_F(AppCacheUpdateJobTest, AlreadyDownloading) {
       new AppCacheGroup(service.storage(), GURL("http://manifesturl.com"),
                         service.storage()->NewGroupId()));
 
-  AppCacheUpdateJob update(&service, group);
+  AppCacheUpdateJob update(&service, group.get());
 
   // Pretend group is in downloading state.
   group->update_job_ = &update;

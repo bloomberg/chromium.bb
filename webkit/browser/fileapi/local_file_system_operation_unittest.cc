@@ -90,7 +90,7 @@ class LocalFileSystemOperationTest
   }
 
   const ShareableFileReference* shareable_file_ref() const {
-    return shareable_file_ref_;
+    return shareable_file_ref_.get();
   }
 
   quota::MockQuotaManager* quota_manager() {
@@ -225,11 +225,11 @@ class LocalFileSystemOperationTest
 
   void GetUsageAndQuota(int64* usage, int64* quota) {
     quota::QuotaStatusCode status =
-        AsyncFileTestHelper::GetUsageAndQuota(
-            quota_manager_,
-            sandbox_file_system_.origin(),
-            sandbox_file_system_.type(),
-            usage, quota);
+        AsyncFileTestHelper::GetUsageAndQuota(quota_manager_.get(),
+                                              sandbox_file_system_.origin(),
+                                              sandbox_file_system_.type(),
+                                              usage,
+                                              quota);
     base::MessageLoop::current()->RunUntilIdle();
     ASSERT_EQ(quota::kQuotaStatusOk, status);
   }

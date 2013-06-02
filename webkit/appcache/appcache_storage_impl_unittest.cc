@@ -187,7 +187,7 @@ class AppCacheStorageImplTest : public testing::Test {
           notify_storage_modified_count_(0),
           last_delta_(0),
           mock_manager_(new MockQuotaManager) {
-      manager_ = mock_manager_;
+      manager_ = mock_manager_.get();
     }
 
     virtual void NotifyStorageAccessed(quota::QuotaClient::ID client_id,
@@ -354,7 +354,7 @@ class AppCacheStorageImplTest : public testing::Test {
 
   void Verify_LoadCache_Miss() {
     EXPECT_EQ(111, delegate()->loaded_cache_id_);
-    EXPECT_FALSE(delegate()->loaded_cache_);
+    EXPECT_FALSE(delegate()->loaded_cache_.get());
     EXPECT_EQ(0, mock_quota_manager_proxy_->notify_storage_accessed_count_);
     EXPECT_EQ(0, mock_quota_manager_proxy_->notify_storage_modified_count_);
     TestFinished();
@@ -444,7 +444,7 @@ class AppCacheStorageImplTest : public testing::Test {
   }
 
   void Verify_LoadCache_Far_Hit() {
-    EXPECT_TRUE(delegate()->loaded_cache_);
+    EXPECT_TRUE(delegate()->loaded_cache_.get());
     EXPECT_TRUE(delegate()->loaded_cache_->HasOneRef());
     EXPECT_EQ(1, delegate()->loaded_cache_id_);
 
@@ -458,7 +458,7 @@ class AppCacheStorageImplTest : public testing::Test {
 
     // Drop things from the working set.
     delegate()->loaded_cache_ = NULL;
-    EXPECT_FALSE(delegate()->loaded_group_);
+    EXPECT_FALSE(delegate()->loaded_group_.get());
 
     // Conduct the group load test, also complete asynchronously.
     PushNextTask(base::Bind(&AppCacheStorageImplTest::Verify_LoadGroup_Far_Hit,
@@ -468,7 +468,7 @@ class AppCacheStorageImplTest : public testing::Test {
   }
 
   void Verify_LoadGroup_Far_Hit() {
-    EXPECT_TRUE(delegate()->loaded_group_);
+    EXPECT_TRUE(delegate()->loaded_group_.get());
     EXPECT_EQ(kManifestUrl, delegate()->loaded_manifest_url_);
     EXPECT_TRUE(delegate()->loaded_group_->newest_complete_cache());
     delegate()->loaded_groups_newest_cache_ = NULL;
@@ -499,7 +499,7 @@ class AppCacheStorageImplTest : public testing::Test {
     mock_quota_manager_proxy_->mock_manager_->async_ = true;
 
     // Conduct the store test.
-    storage()->StoreGroupAndNewestCache(group_, cache_, delegate());
+    storage()->StoreGroupAndNewestCache(group_.get(), cache_.get(), delegate());
     EXPECT_FALSE(delegate()->stored_group_success_);
   }
 
@@ -542,7 +542,8 @@ class AppCacheStorageImplTest : public testing::Test {
                                                kDefaultEntrySize + 100));
 
     // Conduct the test.
-    storage()->StoreGroupAndNewestCache(group_, cache2_, delegate());
+    storage()->StoreGroupAndNewestCache(
+        group_.get(), cache2_.get(), delegate());
     EXPECT_FALSE(delegate()->stored_group_success_);
   }
 
@@ -593,7 +594,7 @@ class AppCacheStorageImplTest : public testing::Test {
 
     // Conduct the test.
     EXPECT_EQ(cache_, group_->newest_complete_cache());
-    storage()->StoreGroupAndNewestCache(group_, cache_, delegate());
+    storage()->StoreGroupAndNewestCache(group_.get(), cache_.get(), delegate());
     EXPECT_FALSE(delegate()->stored_group_success_);
   }
 
@@ -649,7 +650,7 @@ class AppCacheStorageImplTest : public testing::Test {
     // and hold a ref to the group to simulate the CacheHost holding that ref.
 
     // Conduct the store test.
-    storage()->StoreGroupAndNewestCache(group_, cache_, delegate());
+    storage()->StoreGroupAndNewestCache(group_.get(), cache_.get(), delegate());
     EXPECT_FALSE(delegate()->stored_group_success_);  // Expected to be async.
   }
 
@@ -702,7 +703,7 @@ class AppCacheStorageImplTest : public testing::Test {
     EXPECT_TRUE(database()->InsertOnlineWhiteList(&online_whitelist_record));
 
     // Conduct the test.
-    storage()->MakeGroupObsolete(group_, delegate());
+    storage()->MakeGroupObsolete(group_.get(), delegate());
     EXPECT_FALSE(group_->is_obsolete());
   }
 
@@ -919,8 +920,12 @@ class AppCacheStorageImplTest : public testing::Test {
     std::vector<AppCacheDatabase::NamespaceRecord> intercepts;
     std::vector<AppCacheDatabase::NamespaceRecord> fallbacks;
     std::vector<AppCacheDatabase::OnlineWhiteListRecord> whitelists;
-    cache_->ToDatabaseRecords(group_,
-        &cache_record, &entries, &intercepts, &fallbacks, &whitelists);
+    cache_->ToDatabaseRecords(group_.get(),
+                              &cache_record,
+                              &entries,
+                              &intercepts,
+                              &fallbacks,
+                              &whitelists);
 
     std::vector<AppCacheDatabase::EntryRecord>::const_iterator iter =
         entries.begin();
@@ -989,8 +994,12 @@ class AppCacheStorageImplTest : public testing::Test {
     std::vector<AppCacheDatabase::NamespaceRecord> intercepts;
     std::vector<AppCacheDatabase::NamespaceRecord> fallbacks;
     std::vector<AppCacheDatabase::OnlineWhiteListRecord> whitelists;
-    cache_->ToDatabaseRecords(group_,
-        &cache_record, &entries, &intercepts, &fallbacks, &whitelists);
+    cache_->ToDatabaseRecords(group_.get(),
+                              &cache_record,
+                              &entries,
+                              &intercepts,
+                              &fallbacks,
+                              &whitelists);
 
     std::vector<AppCacheDatabase::EntryRecord>::const_iterator iter =
         entries.begin();
@@ -1052,8 +1061,12 @@ class AppCacheStorageImplTest : public testing::Test {
     std::vector<AppCacheDatabase::NamespaceRecord> intercepts;
     std::vector<AppCacheDatabase::NamespaceRecord> fallbacks;
     std::vector<AppCacheDatabase::OnlineWhiteListRecord> whitelists;
-    cache_->ToDatabaseRecords(group_,
-        &cache_record, &entries, &intercepts, &fallbacks, &whitelists);
+    cache_->ToDatabaseRecords(group_.get(),
+                              &cache_record,
+                              &entries,
+                              &intercepts,
+                              &fallbacks,
+                              &whitelists);
 
     std::vector<AppCacheDatabase::EntryRecord>::const_iterator iter =
         entries.begin();
@@ -1134,8 +1147,12 @@ class AppCacheStorageImplTest : public testing::Test {
     std::vector<AppCacheDatabase::NamespaceRecord> intercepts;
     std::vector<AppCacheDatabase::NamespaceRecord> fallbacks;
     std::vector<AppCacheDatabase::OnlineWhiteListRecord> whitelists;
-    cache_->ToDatabaseRecords(group_,
-        &cache_record, &entries, &intercepts, &fallbacks, &whitelists);
+    cache_->ToDatabaseRecords(group_.get(),
+                              &cache_record,
+                              &entries,
+                              &intercepts,
+                              &fallbacks,
+                              &whitelists);
 
     std::vector<AppCacheDatabase::EntryRecord>::const_iterator iter =
         entries.begin();
@@ -1465,7 +1482,7 @@ class AppCacheStorageImplTest : public testing::Test {
     cache_ = new AppCache(storage(), cache_id);
     cache_->AddEntry(kDefaultEntryUrl, default_entry);
     cache_->set_complete(true);
-    group_->AddCache(cache_);
+    group_->AddCache(cache_.get());
     if (add_to_database) {
       AppCacheDatabase::GroupRecord group_record;
       group_record.group_id = group_id;
