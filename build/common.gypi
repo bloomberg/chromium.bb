@@ -1567,8 +1567,6 @@
         'clang%': 1,
       }],
       ['asan==1 and OS=="mac"', {
-        # See http://crbug.com/145503.
-        'component': "static_library",
         # TODO(glider): we do not strip ASan binaries until the dynamic ASan
         # runtime is fully adopted. See http://crbug.com/242503.
         'mac_strip_release': 0,
