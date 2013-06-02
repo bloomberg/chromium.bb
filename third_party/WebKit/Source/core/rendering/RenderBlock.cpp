@@ -4752,7 +4752,7 @@ void RenderBlock::markShapeInsideDescendantsForLayout()
 
 void RenderBlock::markAllDescendantsWithFloatsForLayout(RenderBox* floatToRemove, bool inLayout)
 {
-    if (!everHadLayout())
+    if (!everHadLayout() && !containsFloats())
         return;
 
     MarkingBehavior markParents = inLayout ? MarkOnlyThis : MarkContainingBlockChain;
