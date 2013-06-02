@@ -841,7 +841,7 @@ public:
     bool allowScriptNonce(const String&) const;
 
     void gatherReportURIs(DOMStringList&) const;
-    const String& evalDisabledErrorMessage() { return m_evalDisabledErrorMessage; }
+    const String& evalDisabledErrorMessage() const { return m_evalDisabledErrorMessage; }
     ContentSecurityPolicy::ReflectedXSSDisposition reflectedXSSDisposition() const { return m_reflectedXSSDisposition; }
     bool isReportOnly() const { return m_reportOnly; }
     const Vector<KURL>& reportURIs() const { return m_reportURIs; }

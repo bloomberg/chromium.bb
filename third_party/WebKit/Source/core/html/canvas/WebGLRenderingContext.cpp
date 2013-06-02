@@ -288,7 +288,7 @@ namespace {
         }
 
     private:
-        bool hasMoreCharacters()
+        bool hasMoreCharacters() const
         {
             return (m_position < m_length);
         }
@@ -305,7 +305,7 @@ namespace {
 
         void process(UChar);
 
-        bool peek(UChar& character)
+        bool peek(UChar& character) const
         {
             if (m_position + 1 >= m_length)
                 return false;
@@ -324,7 +324,7 @@ namespace {
             ++m_position;
         }
 
-        bool isNewline(UChar character)
+        static bool isNewline(UChar character)
         {
             // Don't attempt to canonicalize newline related characters.
             return (character == '\n' || character == '\r');
@@ -1820,7 +1820,6 @@ void WebGLRenderingContext::drawElements(GC3Denum mode, GC3Dsizei count, GC3Denu
         return;
     }
 
-    unsigned numElements = 0;
     if (!validateRenderingState()) {
         synthesizeGLError(GraphicsContext3D::INVALID_OPERATION, "drawElements", "attribs not setup correctly");
         return;
