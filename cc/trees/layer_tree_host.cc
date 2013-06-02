@@ -178,7 +178,8 @@ LayerTreeHost::OnCreateAndInitializeOutputSurfaceAttempted(bool success) {
     }
     settings_.max_partial_texture_updates = max_partial_texture_updates;
 
-    if (!contents_texture_manager_) {
+    if (!contents_texture_manager_ &&
+        (!settings_.impl_side_painting || !settings_.solid_color_scrollbars)) {
       contents_texture_manager_ =
           PrioritizedResourceManager::Create(proxy_.get());
       surface_memory_placeholder_ =
@@ -253,23 +254,26 @@ void LayerTreeHost::FinishCommitOnImplThread(LayerTreeHostImpl* host_impl) {
   // If there are linked evicted backings, these backings' resources may be put
   // into the impl tree, so we can't draw yet. Determine this before clearing
   // all evicted backings.
-  bool new_impl_tree_has_no_evicted_resources =
-      !contents_texture_manager_->LinkedEvictedBackingsExist();
+  bool new_impl_tree_has_no_evicted_resources = false;
+  if (contents_texture_manager_) {
+    new_impl_tree_has_no_evicted_resources =
+        !contents_texture_manager_->LinkedEvictedBackingsExist();
 
-  // If the memory limit has been increased since this now-finishing
-  // commit began, and the extra now-available memory would have been used,
-  // then request another commit.
-  if (contents_texture_manager_->MaxMemoryLimitBytes() <
-      host_impl->memory_allocation_limit_bytes() &&
-      contents_texture_manager_->MaxMemoryLimitBytes() <
-      contents_texture_manager_->MaxMemoryNeededBytes()) {
-    host_impl->SetNeedsCommit();
+    // If the memory limit has been increased since this now-finishing
+    // commit began, and the extra now-available memory would have been used,
+    // then request another commit.
+    if (contents_texture_manager_->MaxMemoryLimitBytes() <
+            host_impl->memory_allocation_limit_bytes() &&
+        contents_texture_manager_->MaxMemoryLimitBytes() <
+            contents_texture_manager_->MaxMemoryNeededBytes()) {
+      host_impl->SetNeedsCommit();
+    }
+
+    host_impl->set_max_memory_needed_bytes(
+        contents_texture_manager_->MaxMemoryNeededBytes());
+
+    contents_texture_manager_->UpdateBackingsInDrawingImplTree();
   }
-
-  host_impl->set_max_memory_needed_bytes(
-      contents_texture_manager_->MaxMemoryNeededBytes());
-
-  contents_texture_manager_->UpdateBackingsInDrawingImplTree();
 
   // In impl-side painting, synchronize to the pending tree so that it has
   // time to raster before being displayed.  If no pending tree is needed,
@@ -644,7 +648,7 @@ void LayerTreeHost::UpdateLayers(ResourceUpdateQueue* queue,
   if (device_viewport_size().IsEmpty())
     return;
 
-  if (memory_allocation_limit_bytes) {
+  if (contents_texture_manager_ && memory_allocation_limit_bytes) {
     contents_texture_manager_->SetMaxMemoryLimitBytes(
         memory_allocation_limit_bytes);
   }
@@ -789,6 +793,8 @@ void LayerTreeHost::ReduceMemoryUsage() {
 }
 
 void LayerTreeHost::SetPrioritiesForSurfaces(size_t surface_memory_bytes) {
+  DCHECK(surface_memory_placeholder_);
+
   // Surfaces have a place holder for their memory since they are managed
   // independantly but should still be tracked and reduce other memory usage.
   surface_memory_placeholder_->SetTextureManager(
@@ -824,6 +830,9 @@ void LayerTreeHost::SetPrioritiesForLayers(const LayerList& update_list) {
 
 void LayerTreeHost::PrioritizeTextures(
     const LayerList& render_surface_layer_list, OverdrawMetrics* metrics) {
+  if (!contents_texture_manager_)
+    return;
+
   contents_texture_manager_->ClearPriorities();
 
   size_t memory_for_render_surfaces_metric =

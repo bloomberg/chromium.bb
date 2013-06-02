@@ -789,18 +789,20 @@ void ThreadProxy::StartCommitOnImplThread(
         set_offscreen_context_provider(offscreen_context_provider);
   }
 
-  if (layer_tree_host_->contents_texture_manager()->
-          LinkedEvictedBackingsExist()) {
-    // Clear any uploads we were making to textures linked to evicted
-    // resources
-    queue->ClearUploadsToEvictedResources();
-    // Some textures in the layer tree are invalid. Kick off another commit
-    // to fill them again.
-    SetNeedsCommitOnImplThread();
-  }
+  if (layer_tree_host_->contents_texture_manager()) {
+    if (layer_tree_host_->contents_texture_manager()->
+            LinkedEvictedBackingsExist()) {
+      // Clear any uploads we were making to textures linked to evicted
+      // resources
+      queue->ClearUploadsToEvictedResources();
+      // Some textures in the layer tree are invalid. Kick off another commit
+      // to fill them again.
+      SetNeedsCommitOnImplThread();
+    }
 
-  layer_tree_host_->contents_texture_manager()->
-      PushTexturePrioritiesToBackings();
+    layer_tree_host_->contents_texture_manager()->
+        PushTexturePrioritiesToBackings();
+  }
 
   commit_completion_event_on_impl_thread_ = completion;
   if (layer_tree_host_impl_->resource_provider()) {

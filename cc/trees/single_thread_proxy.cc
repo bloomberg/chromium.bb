@@ -185,8 +185,10 @@ void SingleThreadProxy::DoCommit(scoped_ptr<ResourceUpdateQueue> queue) {
 
     layer_tree_host_impl_->BeginCommit();
 
-    layer_tree_host_->contents_texture_manager()->
-        PushTexturePrioritiesToBackings();
+    if (layer_tree_host_->contents_texture_manager()) {
+      layer_tree_host_->contents_texture_manager()->
+          PushTexturePrioritiesToBackings();
+    }
     layer_tree_host_->BeginCommitOnImplThread(layer_tree_host_impl_.get());
 
     scoped_ptr<ResourceUpdateController> update_controller =
@@ -390,7 +392,10 @@ bool SingleThreadProxy::CommitAndComposite(
       created_offscreen_context_provider_ = true;
   }
 
-  layer_tree_host_->contents_texture_manager()->UnlinkAndClearEvictedBackings();
+  if (layer_tree_host_->contents_texture_manager()) {
+    layer_tree_host_->contents_texture_manager()
+        ->UnlinkAndClearEvictedBackings();
+  }
 
   scoped_ptr<ResourceUpdateQueue> queue =
       make_scoped_ptr(new ResourceUpdateQueue);
