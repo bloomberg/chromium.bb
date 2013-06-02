@@ -17,10 +17,8 @@
 #include <utility>
 #include <vector>
 
-#include <X11/extensions/randr.h>
 #include <X11/extensions/shape.h>
 #include <X11/extensions/XInput2.h>
-#include <X11/extensions/Xrandr.h>
 
 #include "base/bind.h"
 #include "base/command_line.h"

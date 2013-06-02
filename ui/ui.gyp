@@ -807,7 +807,6 @@
               'libraries': [
                 '-lX11',
                 '-lXcursor',
-                '-lXrandr',  # For XRR* function calls in x11_util.cc.
                 '-lXrender',  # For XRender* function calls in x11_util.cc.
               ],
             },
@@ -816,7 +815,6 @@
             'libraries': [
               '-lX11',
               '-lXcursor',
-              '-lXrandr',  # For XRR* function calls in x11_util.cc.
               '-lXrender',  # For XRender* function calls in x11_util.cc.
             ],
           },

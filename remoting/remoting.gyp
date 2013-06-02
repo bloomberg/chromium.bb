@@ -501,6 +501,7 @@
                   '-lXfixes',
                   '-lXtst',
                   '-lXi',
+                  '-lXrandr',
                   '-lpam',
                 ],
               },
