@@ -53,7 +53,7 @@ TEST_F(ScriptBadgeManifestTest, ScriptBadgeBasic) {
       .Build());
   ASSERT_TRUE(extension.get());
   const ActionInfo* script_badge_info =
-      ActionInfo::GetScriptBadgeInfo(extension);
+      ActionInfo::GetScriptBadgeInfo(extension.get());
   ASSERT_TRUE(script_badge_info);
   EXPECT_THAT(StripMissingFlagWarning(extension->install_warnings()),
               testing::ElementsAre(/*empty*/));
@@ -93,7 +93,7 @@ TEST_F(ScriptBadgeManifestTest, ScriptBadgeExplicitTitleAndIconsIgnored) {
       .Build());
   ASSERT_TRUE(extension.get());
   const ActionInfo* script_badge_info =
-      ActionInfo::GetScriptBadgeInfo(extension);
+      ActionInfo::GetScriptBadgeInfo(extension.get());
   ASSERT_TRUE(script_badge_info);
 
   EXPECT_THAT(StripMissingFlagWarning(extension->install_warnings()),
@@ -129,7 +129,7 @@ TEST_F(ScriptBadgeManifestTest, ScriptBadgeIconFallsBackToPuzzlePiece) {
       .Build());
   ASSERT_TRUE(extension.get());
   const ActionInfo* script_badge_info =
-      ActionInfo::GetScriptBadgeInfo(extension);
+      ActionInfo::GetScriptBadgeInfo(extension.get());
   ASSERT_TRUE(script_badge_info);
   EXPECT_THAT(extension->install_warnings(),
               testing::ElementsAre(/*empty*/));

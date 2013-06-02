@@ -100,9 +100,9 @@ TEST_F(InitValueManifestTest, InitFromValueValid) {
   // Test with an options page.
   extension = LoadAndExpectSuccess("init_valid_options.json");
   EXPECT_EQ("chrome-extension",
-            ManifestURL::GetOptionsPage(extension).scheme());
+            ManifestURL::GetOptionsPage(extension.get()).scheme());
   EXPECT_EQ("/options.html",
-            ManifestURL::GetOptionsPage(extension).path());
+            ManifestURL::GetOptionsPage(extension.get()).path());
 
   Testcase testcases[] = {
     // Test that an empty list of page actions does not stop a browser action

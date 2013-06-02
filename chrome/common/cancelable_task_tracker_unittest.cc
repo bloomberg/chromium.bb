@@ -230,18 +230,14 @@ TEST_F(CancelableTaskTrackerTest, CancelAll) {
   scoped_refptr<base::TestSimpleTaskRunner> test_task_runner(
       new base::TestSimpleTaskRunner());
 
-  ignore_result(
-      task_tracker_.PostTask(
-          test_task_runner,
-          FROM_HERE,
-          MakeExpectedNotRunClosure(FROM_HERE)));
+  ignore_result(task_tracker_.PostTask(
+      test_task_runner.get(), FROM_HERE, MakeExpectedNotRunClosure(FROM_HERE)));
 
   ignore_result(
-      task_tracker_.PostTaskAndReply(
-          test_task_runner,
-          FROM_HERE,
-          MakeExpectedNotRunClosure(FROM_HERE),
-          MakeExpectedNotRunClosure(FROM_HERE)));
+      task_tracker_.PostTaskAndReply(test_task_runner.get(),
+                                     FROM_HERE,
+                                     MakeExpectedNotRunClosure(FROM_HERE),
+                                     MakeExpectedNotRunClosure(FROM_HERE)));
 
   CancelableTaskTracker::IsCanceledCallback is_canceled;
   ignore_result(task_tracker_.NewTrackedTaskId(&is_canceled));
@@ -269,18 +265,15 @@ TEST_F(CancelableTaskTrackerTest, DestructionCancelsAll) {
     // Create another task tracker with a smaller scope.
     CancelableTaskTracker task_tracker;
 
-    ignore_result(
-        task_tracker.PostTask(
-            test_task_runner,
-            FROM_HERE,
-            MakeExpectedNotRunClosure(FROM_HERE)));
+    ignore_result(task_tracker.PostTask(test_task_runner.get(),
+                                        FROM_HERE,
+                                        MakeExpectedNotRunClosure(FROM_HERE)));
 
     ignore_result(
-        task_tracker.PostTaskAndReply(
-            test_task_runner,
-            FROM_HERE,
-            MakeExpectedNotRunClosure(FROM_HERE),
-            MakeExpectedNotRunClosure(FROM_HERE)));
+        task_tracker.PostTaskAndReply(test_task_runner.get(),
+                                      FROM_HERE,
+                                      MakeExpectedNotRunClosure(FROM_HERE),
+                                      MakeExpectedNotRunClosure(FROM_HERE)));
 
     ignore_result(task_tracker_.NewTrackedTaskId(&is_canceled));
   }
@@ -301,11 +294,8 @@ TEST_F(CancelableTaskTrackerTest, HasTrackedTasksPost) {
 
   EXPECT_FALSE(task_tracker_.HasTrackedTasks());
 
-  ignore_result(
-      task_tracker_.PostTask(
-          test_task_runner,
-          FROM_HERE,
-          MakeExpectedNotRunClosure(FROM_HERE)));
+  ignore_result(task_tracker_.PostTask(
+      test_task_runner.get(), FROM_HERE, MakeExpectedNotRunClosure(FROM_HERE)));
 
   task_tracker_.TryCancelAll();
 
@@ -327,11 +317,10 @@ TEST_F(CancelableTaskTrackerTest, HasTrackedTasksPostWithReply) {
   EXPECT_FALSE(task_tracker_.HasTrackedTasks());
 
   ignore_result(
-      task_tracker_.PostTaskAndReply(
-          test_task_runner,
-          FROM_HERE,
-          MakeExpectedNotRunClosure(FROM_HERE),
-          MakeExpectedNotRunClosure(FROM_HERE)));
+      task_tracker_.PostTaskAndReply(test_task_runner.get(),
+                                     FROM_HERE,
+                                     MakeExpectedNotRunClosure(FROM_HERE),
+                                     MakeExpectedNotRunClosure(FROM_HERE)));
 
   task_tracker_.TryCancelAll();
 

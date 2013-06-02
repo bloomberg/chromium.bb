@@ -33,7 +33,7 @@ TEST_F(BrowserActionManifestTest,
 
   ASSERT_TRUE(extension.get());
   const ActionInfo* browser_action_info =
-      ActionInfo::GetBrowserActionInfo(extension);
+      ActionInfo::GetBrowserActionInfo(extension.get());
   ASSERT_TRUE(browser_action_info);
   EXPECT_TRUE(browser_action_info->default_icon.empty());
 }
@@ -52,7 +52,7 @@ TEST_F(BrowserActionManifestTest,
 
   ASSERT_TRUE(extension.get());
   const ActionInfo* browser_action_info =
-      ActionInfo::GetBrowserActionInfo(extension);
+      ActionInfo::GetBrowserActionInfo(extension.get());
   ASSERT_TRUE(browser_action_info);
   ASSERT_FALSE(browser_action_info->default_icon.empty());
 
@@ -79,7 +79,7 @@ TEST_F(BrowserActionManifestTest,
 
   ASSERT_TRUE(extension.get());
   const ActionInfo* browser_action_info =
-      ActionInfo::GetBrowserActionInfo(extension);
+      ActionInfo::GetBrowserActionInfo(extension.get());
   ASSERT_TRUE(browser_action_info);
   ASSERT_FALSE(browser_action_info->default_icon.empty());
 

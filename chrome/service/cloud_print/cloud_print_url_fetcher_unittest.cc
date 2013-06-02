@@ -220,7 +220,7 @@ void CloudPrintURLFetcherTest::CreateFetcher(const GURL& url, int max_retries) {
   scoped_refptr<net::URLRequestThrottlerEntry>
   entry(new net::URLRequestThrottlerEntry(
       fetcher_->throttler_manager(), std::string(), 200, 3, 1, 2.0, 0.0, 256));
-  fetcher_->throttler_manager()->OverrideEntryForTests(url, entry);
+  fetcher_->throttler_manager()->OverrideEntryForTests(url, entry.get());
 
   max_retries_ = max_retries;
   start_time_ = Time::Now();

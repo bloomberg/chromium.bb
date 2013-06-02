@@ -63,7 +63,7 @@ class ConnectorSettingsTest : public testing::Test {
       file_util::WriteFile(file_name, content.c_str(), content.size());
     }
     ServiceProcessPrefs* prefs =
-        new ServiceProcessPrefs(file_name, message_loop_proxy_);
+        new ServiceProcessPrefs(file_name, message_loop_proxy_.get());
     prefs->ReadPrefs();
     return prefs;
   }

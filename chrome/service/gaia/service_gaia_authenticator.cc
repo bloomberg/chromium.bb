@@ -41,7 +41,7 @@ bool ServiceGaiaAuthenticator::Post(const GURL& url,
                                     unsigned long* response_code,
                                     std::string* response_body) {
   DCHECK(url.SchemeIsSecure());
-  DCHECK(io_message_loop_proxy_);
+  DCHECK(io_message_loop_proxy_.get());
   io_message_loop_proxy_->PostTask(
       FROM_HERE,
       base::Bind(&ServiceGaiaAuthenticator::DoPost, this, url, post_body));

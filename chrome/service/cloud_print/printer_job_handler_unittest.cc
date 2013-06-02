@@ -385,16 +385,12 @@ class MockPrintSystem : public PrintSystem {
     return PrintSystem::PrintSystemResult(false, "failure");
   }
 
-  MockJobSpooler& JobSpooler() {
-    return *job_spooler_;
-  }
+  MockJobSpooler& JobSpooler() { return *job_spooler_.get(); }
 
-  MockPrinterWatcher& PrinterWatcher() {
-    return *printer_watcher_;
-  }
+  MockPrinterWatcher& PrinterWatcher() { return *printer_watcher_.get(); }
 
   MockPrintServerWatcher& PrintServerWatcher() {
-    return *print_server_watcher_;
+    return *print_server_watcher_.get();
   }
 
   MOCK_METHOD0(Init, PrintSystem::PrintSystemResult());
@@ -491,7 +487,7 @@ void PrinterJobHandlerTest::SetUp() {
   ON_CALL(print_system_->PrinterWatcher(), GetCurrentPrinterInfo(_))
       .WillByDefault(Invoke(this, &PrinterJobHandlerTest::GetPrinterInfo));
 
-  ON_CALL(*print_system_, GetPrinterCapsAndDefaults(_, _))
+  ON_CALL(*print_system_.get(), GetPrinterCapsAndDefaults(_, _))
       .WillByDefault(Invoke(this, &PrinterJobHandlerTest::SendCapsAndDefaults));
 
   CloudPrintURLFetcher::set_factory(&cloud_print_factory_);
@@ -580,9 +576,11 @@ void PrinterJobHandlerTest::SetUpJobSuccessTest(int job_num) {
 }
 
 void PrinterJobHandlerTest::BeginTest(int timeout_seconds) {
-  job_handler_ = new PrinterJobHandler(basic_info_, info_from_cloud_,
+  job_handler_ = new PrinterJobHandler(basic_info_,
+                                       info_from_cloud_,
                                        GURL(kExampleCloudPrintServerURL),
-                                       print_system_, &jobhandler_delegate_);
+                                       print_system_.get(),
+                                       &jobhandler_delegate_);
 
   job_handler_->Initialize();
 

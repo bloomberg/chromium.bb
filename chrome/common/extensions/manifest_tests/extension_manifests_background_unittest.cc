@@ -37,17 +37,17 @@ TEST_F(ExtensionManifestBackgroundTest, BackgroundScripts) {
 
   scoped_refptr<Extension> extension(
       LoadAndExpectSuccess(Manifest(manifest.get(), "")));
-  ASSERT_TRUE(extension);
+  ASSERT_TRUE(extension.get());
   const std::vector<std::string>& background_scripts =
-      BackgroundInfo::GetBackgroundScripts(extension);
+      BackgroundInfo::GetBackgroundScripts(extension.get());
   ASSERT_EQ(2u, background_scripts.size());
   EXPECT_EQ("foo.js", background_scripts[0u]);
   EXPECT_EQ("bar/baz.js", background_scripts[1u]);
 
-  EXPECT_TRUE(BackgroundInfo::HasBackgroundPage(extension));
-  EXPECT_EQ(std::string("/") +
-            extension_filenames::kGeneratedBackgroundPageFilename,
-            BackgroundInfo::GetBackgroundURL(extension).path());
+  EXPECT_TRUE(BackgroundInfo::HasBackgroundPage(extension.get()));
+  EXPECT_EQ(
+      std::string("/") + extension_filenames::kGeneratedBackgroundPageFilename,
+      BackgroundInfo::GetBackgroundURL(extension.get()).path());
 
   manifest->SetString("background_page", "monkey.html");
   LoadAndExpectError(Manifest(manifest.get(), ""),
@@ -57,17 +57,19 @@ TEST_F(ExtensionManifestBackgroundTest, BackgroundScripts) {
 TEST_F(ExtensionManifestBackgroundTest, BackgroundPage) {
   scoped_refptr<Extension> extension(
       LoadAndExpectSuccess("background_page.json"));
-  ASSERT_TRUE(extension);
-  EXPECT_EQ("/foo.html", BackgroundInfo::GetBackgroundURL(extension).path());
-  EXPECT_TRUE(BackgroundInfo::AllowJSAccess(extension));
+  ASSERT_TRUE(extension.get());
+  EXPECT_EQ("/foo.html",
+            BackgroundInfo::GetBackgroundURL(extension.get()).path());
+  EXPECT_TRUE(BackgroundInfo::AllowJSAccess(extension.get()));
 
   std::string error;
   scoped_ptr<base::DictionaryValue> manifest(
       LoadManifest("background_page_legacy.json", &error));
   ASSERT_TRUE(manifest.get());
   extension = LoadAndExpectSuccess(Manifest(manifest.get(), ""));
-  ASSERT_TRUE(extension);
-  EXPECT_EQ("/foo.html", BackgroundInfo::GetBackgroundURL(extension).path());
+  ASSERT_TRUE(extension.get());
+  EXPECT_EQ("/foo.html",
+            BackgroundInfo::GetBackgroundURL(extension.get()).path());
 
   manifest->SetInteger(keys::kManifestVersion, 2);
   LoadAndExpectWarning(
@@ -78,12 +80,12 @@ TEST_F(ExtensionManifestBackgroundTest, BackgroundPage) {
 TEST_F(ExtensionManifestBackgroundTest, BackgroundAllowNoJsAccess) {
   scoped_refptr<Extension> extension;
   extension = LoadAndExpectSuccess("background_allow_no_js_access.json");
-  ASSERT_TRUE(extension);
-  EXPECT_FALSE(BackgroundInfo::AllowJSAccess(extension));
+  ASSERT_TRUE(extension.get());
+  EXPECT_FALSE(BackgroundInfo::AllowJSAccess(extension.get()));
 
   extension = LoadAndExpectSuccess("background_allow_no_js_access2.json");
-  ASSERT_TRUE(extension);
-  EXPECT_FALSE(BackgroundInfo::AllowJSAccess(extension));
+  ASSERT_TRUE(extension.get());
+  EXPECT_FALSE(BackgroundInfo::AllowJSAccess(extension.get()));
 }
 
 TEST_F(ExtensionManifestBackgroundTest, BackgroundPageWebRequest) {
@@ -100,8 +102,8 @@ TEST_F(ExtensionManifestBackgroundTest, BackgroundPageWebRequest) {
   manifest->SetInteger(keys::kManifestVersion, 2);
   scoped_refptr<Extension> extension(
       LoadAndExpectSuccess(Manifest(manifest.get(), "")));
-  ASSERT_TRUE(extension);
-  EXPECT_TRUE(BackgroundInfo::HasLazyBackgroundPage(extension));
+  ASSERT_TRUE(extension.get());
+  EXPECT_TRUE(BackgroundInfo::HasLazyBackgroundPage(extension.get()));
 
   base::ListValue* permissions = new base::ListValue();
   permissions->Append(new base::StringValue("webRequest"));

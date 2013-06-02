@@ -153,7 +153,7 @@ void PerfUITestSuite::BuildCachedThemePakIn(
                         *valid_value,
                         Extension::NO_FLAGS,
                         &error);
-  if (!extension)
+  if (!extension.get())
     LOG(FATAL) << "Error loading theme extension: " << error;
 
   // Build the "Cached Theme.pak" file in the template. (It's not committed
@@ -166,8 +166,8 @@ void PerfUITestSuite::BuildCachedThemePakIn(
                                           &message_loop_);
 
   scoped_refptr<BrowserThemePack> theme(
-      BrowserThemePack::BuildFromExtension(extension));
-  if (!theme)
+      BrowserThemePack::BuildFromExtension(extension.get()));
+  if (!theme.get())
     LOG(FATAL) << "Failed to load theme from extension";
 
   theme->WriteToDisk(extension_base.AppendASCII("Cached Theme.pak"));

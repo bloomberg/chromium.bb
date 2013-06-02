@@ -31,11 +31,13 @@ TEST_F(SharedModuleManifestTest, ExportsAll) {
 
   scoped_refptr<Extension> extension = LoadAndExpectSuccess(manifest);
 
-  EXPECT_TRUE(SharedModuleInfo::IsSharedModule(extension)) << manifest.name();
-  EXPECT_FALSE(SharedModuleInfo::ImportsModules(extension)) << manifest.name();
-  EXPECT_TRUE(SharedModuleInfo::IsExportAllowed(extension, "foo"))
+  EXPECT_TRUE(SharedModuleInfo::IsSharedModule(extension.get()))
       << manifest.name();
-  EXPECT_TRUE(SharedModuleInfo::IsExportAllowed(extension, "foo/bar"))
+  EXPECT_FALSE(SharedModuleInfo::ImportsModules(extension.get()))
+      << manifest.name();
+  EXPECT_TRUE(SharedModuleInfo::IsExportAllowed(extension.get(), "foo"))
+      << manifest.name();
+  EXPECT_TRUE(SharedModuleInfo::IsExportAllowed(extension.get(), "foo/bar"))
       << manifest.name();
 }
 
@@ -44,11 +46,13 @@ TEST_F(SharedModuleManifestTest, ExportFoo) {
 
   scoped_refptr<Extension> extension = LoadAndExpectSuccess(manifest);
 
-  EXPECT_TRUE(SharedModuleInfo::IsSharedModule(extension)) << manifest.name();
-  EXPECT_FALSE(SharedModuleInfo::ImportsModules(extension)) << manifest.name();
-  EXPECT_TRUE(SharedModuleInfo::IsExportAllowed(extension, "foo"))
+  EXPECT_TRUE(SharedModuleInfo::IsSharedModule(extension.get()))
       << manifest.name();
-  EXPECT_FALSE(SharedModuleInfo::IsExportAllowed(extension, "foo/bar"))
+  EXPECT_FALSE(SharedModuleInfo::ImportsModules(extension.get()))
+      << manifest.name();
+  EXPECT_TRUE(SharedModuleInfo::IsExportAllowed(extension.get(), "foo"))
+      << manifest.name();
+  EXPECT_FALSE(SharedModuleInfo::IsExportAllowed(extension.get(), "foo/bar"))
       << manifest.name();
 }
 
@@ -82,18 +86,23 @@ TEST_F(SharedModuleManifestTest, Import) {
 
   scoped_refptr<Extension> extension = LoadAndExpectSuccess(manifest);
 
-  EXPECT_FALSE(SharedModuleInfo::IsSharedModule(extension)) << manifest.name();
-  EXPECT_TRUE(SharedModuleInfo::ImportsModules(extension)) << manifest.name();
+  EXPECT_FALSE(SharedModuleInfo::IsSharedModule(extension.get()))
+      << manifest.name();
+  EXPECT_TRUE(SharedModuleInfo::ImportsModules(extension.get()))
+      << manifest.name();
   const std::vector<SharedModuleInfo::ImportInfo>& imports =
-      SharedModuleInfo::GetImports(extension);
+      SharedModuleInfo::GetImports(extension.get());
   ASSERT_EQ(2U, imports.size());
   EXPECT_EQ(imports[0].extension_id, kImportId1);
   EXPECT_EQ(imports[0].minimum_version, "");
   EXPECT_EQ(imports[1].extension_id, kImportId2);
   EXPECT_TRUE(base::Version(imports[1].minimum_version).IsValid());
-  EXPECT_TRUE(SharedModuleInfo::ImportsExtensionById(extension, kImportId1));
-  EXPECT_TRUE(SharedModuleInfo::ImportsExtensionById(extension, kImportId2));
-  EXPECT_FALSE(SharedModuleInfo::ImportsExtensionById(extension, kNoImport));
+  EXPECT_TRUE(
+      SharedModuleInfo::ImportsExtensionById(extension.get(), kImportId1));
+  EXPECT_TRUE(
+      SharedModuleInfo::ImportsExtensionById(extension.get(), kImportId2));
+  EXPECT_FALSE(
+      SharedModuleInfo::ImportsExtensionById(extension.get(), kNoImport));
 }
 
 TEST_F(SharedModuleManifestTest, ImportParseErrors) {

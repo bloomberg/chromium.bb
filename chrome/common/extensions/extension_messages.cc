@@ -42,9 +42,9 @@ scoped_refptr<Extension> ExtensionMsg_Loaded_Params::ConvertToExtension(
     std::string* error) const {
   scoped_refptr<Extension> extension =
       Extension::Create(path, location, *manifest, creation_flags, error);
-  if (extension) {
+  if (extension.get()) {
     extensions::PermissionsData::SetActivePermissions(
-        extension,
+        extension.get(),
         new PermissionSet(apis, explicit_hosts, scriptable_hosts));
   }
   return extension;

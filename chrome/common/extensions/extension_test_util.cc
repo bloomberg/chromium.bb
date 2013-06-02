@@ -68,7 +68,7 @@ scoped_refptr<Extension> LoadManifest(const std::string& dir,
   scoped_refptr<Extension> extension =
       LoadManifestUnchecked(dir, test_file, location, extra_flags, &error);
 
-  EXPECT_TRUE(extension) << test_file << ":" << error;
+  EXPECT_TRUE(extension.get()) << test_file << ":" << error;
   return extension;
 }
 

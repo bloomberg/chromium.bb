@@ -617,7 +617,7 @@ void Dispatcher::OnLoaded(
   for (i = loaded_extensions.begin(); i != loaded_extensions.end(); ++i) {
     std::string error;
     scoped_refptr<const Extension> extension = i->ConvertToExtension(&error);
-    if (!extension) {
+    if (!extension.get()) {
       extension_load_errors_[i->id] = error;
       continue;
     }
@@ -1272,10 +1272,11 @@ void Dispatcher::OnUpdatePermissions(int reason_id,
   const PermissionSet* new_active = NULL;
   switch (reason) {
     case UpdatedExtensionPermissionsInfo::ADDED:
-      new_active = PermissionSet::CreateUnion(old_active, delta);
+      new_active = PermissionSet::CreateUnion(old_active.get(), delta.get());
       break;
     case UpdatedExtensionPermissionsInfo::REMOVED:
-      new_active = PermissionSet::CreateDifference(old_active, delta);
+      new_active =
+          PermissionSet::CreateDifference(old_active.get(), delta.get());
       break;
   }
 

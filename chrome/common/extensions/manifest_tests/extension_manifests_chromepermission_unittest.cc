@@ -31,7 +31,7 @@ TEST_F(ExtensionManifestTest, ChromeURLPermissionAllowedWithFlag) {
   EXPECT_EQ("", error);
   const GURL newtab_url("chrome://newtab/");
   EXPECT_TRUE(PermissionsData::CanExecuteScriptOnPage(
-      extension, newtab_url, newtab_url, 0, NULL, -1, &error)) << error;
+      extension.get(), newtab_url, newtab_url, 0, NULL, -1, &error)) << error;
 }
 
 TEST_F(ExtensionManifestTest, ChromeResourcesPermissionValidOnlyForComponents) {

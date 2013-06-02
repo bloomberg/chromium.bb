@@ -229,7 +229,7 @@ TEST_F(ManifestHandlerTest, FailingHandlers) {
       *manifest_a,
       Extension::NO_FLAGS,
       &error);
-  EXPECT_TRUE(extension);
+  EXPECT_TRUE(extension.get());
 
   // Register a handler for "a" that fails.
   ParsingWatcher watcher;
@@ -242,7 +242,7 @@ TEST_F(ManifestHandlerTest, FailingHandlers) {
       *manifest_a,
       Extension::NO_FLAGS,
       &error);
-  EXPECT_FALSE(extension);
+  EXPECT_FALSE(extension.get());
   EXPECT_EQ("A", error);
 }
 
@@ -256,24 +256,24 @@ TEST_F(ManifestHandlerTest, Validate) {
                    .Set("a", 1)
                    .Set("b", 2))
       .Build();
-  EXPECT_TRUE(extension);
+  EXPECT_TRUE(extension.get());
 
   std::string error;
   std::vector<InstallWarning> warnings;
   // Always validates and fails.
   (new TestManifestValidator(false, true, SingleKey("c")))->Register();
-  EXPECT_FALSE(ManifestHandler::ValidateExtension(
-      extension, &error, &warnings));
+  EXPECT_FALSE(
+      ManifestHandler::ValidateExtension(extension.get(), &error, &warnings));
 
   // This overrides the registered handler for "c".
   (new TestManifestValidator(false, false, SingleKey("c")))->Register();
-  EXPECT_TRUE(ManifestHandler::ValidateExtension(
-      extension, &error, &warnings));
+  EXPECT_TRUE(
+      ManifestHandler::ValidateExtension(extension.get(), &error, &warnings));
 
   // Validates "a" and fails.
   (new TestManifestValidator(false, true, SingleKey("a")))->Register();
-  EXPECT_FALSE(ManifestHandler::ValidateExtension(
-      extension, &error, &warnings));
+  EXPECT_FALSE(
+      ManifestHandler::ValidateExtension(extension.get(), &error, &warnings));
 }
 
 }  // namespace extensions

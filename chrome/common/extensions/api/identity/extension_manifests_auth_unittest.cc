@@ -38,10 +38,10 @@ TEST_F(OAuth2ManifestTest, OAuth2SectionParsing) {
     scoped_refptr<extensions::Extension> extension =
         LoadAndExpectSuccess(manifest);
     EXPECT_TRUE(extension->install_warnings().empty());
-    EXPECT_EQ("client1", OAuth2Info::GetOAuth2Info(extension).client_id);
-    EXPECT_EQ(2U, OAuth2Info::GetOAuth2Info(extension).scopes.size());
-    EXPECT_EQ("scope1", OAuth2Info::GetOAuth2Info(extension).scopes[0]);
-    EXPECT_EQ("scope2", OAuth2Info::GetOAuth2Info(extension).scopes[1]);
+    EXPECT_EQ("client1", OAuth2Info::GetOAuth2Info(extension.get()).client_id);
+    EXPECT_EQ(2U, OAuth2Info::GetOAuth2Info(extension.get()).scopes.size());
+    EXPECT_EQ("scope1", OAuth2Info::GetOAuth2Info(extension.get()).scopes[0]);
+    EXPECT_EQ("scope2", OAuth2Info::GetOAuth2Info(extension.get()).scopes[1]);
   }
 
   // OAuth2 section should be parsed for a packaged app.
@@ -54,10 +54,10 @@ TEST_F(OAuth2ManifestTest, OAuth2SectionParsing) {
     scoped_refptr<extensions::Extension> extension =
         LoadAndExpectSuccess(manifest);
     EXPECT_TRUE(extension->install_warnings().empty());
-    EXPECT_EQ("client1", OAuth2Info::GetOAuth2Info(extension).client_id);
-    EXPECT_EQ(2U, OAuth2Info::GetOAuth2Info(extension).scopes.size());
-    EXPECT_EQ("scope1", OAuth2Info::GetOAuth2Info(extension).scopes[0]);
-    EXPECT_EQ("scope2", OAuth2Info::GetOAuth2Info(extension).scopes[1]);
+    EXPECT_EQ("client1", OAuth2Info::GetOAuth2Info(extension.get()).client_id);
+    EXPECT_EQ(2U, OAuth2Info::GetOAuth2Info(extension.get()).scopes.size());
+    EXPECT_EQ("scope1", OAuth2Info::GetOAuth2Info(extension.get()).scopes[0]);
+    EXPECT_EQ("scope2", OAuth2Info::GetOAuth2Info(extension.get()).scopes[1]);
   }
 
   // OAuth2 section should NOT be parsed for a hosted app.
@@ -75,8 +75,8 @@ TEST_F(OAuth2ManifestTest, OAuth2SectionParsing) {
     EXPECT_EQ("'oauth2' is only allowed for extensions, legacy packaged apps "
                   "and packaged apps, and this is a hosted app.",
               warning.message);
-    EXPECT_EQ("", OAuth2Info::GetOAuth2Info(extension).client_id);
-    EXPECT_TRUE(OAuth2Info::GetOAuth2Info(extension).scopes.empty());
+    EXPECT_EQ("", OAuth2Info::GetOAuth2Info(extension.get()).client_id);
+    EXPECT_TRUE(OAuth2Info::GetOAuth2Info(extension.get()).scopes.empty());
   }
 }
 

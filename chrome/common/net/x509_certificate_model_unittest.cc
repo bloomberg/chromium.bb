@@ -28,7 +28,7 @@ TEST(X509CertificateModelTest, GetTypeCA) {
   // Test that explicitly distrusted CA certs are still returned as CA_CERT
   // type. See http://crbug.com/96654.
   EXPECT_TRUE(net::NSSCertDatabase::GetInstance()->SetCertTrust(
-      cert, net::CA_CERT, net::NSSCertDatabase::DISTRUSTED_SSL));
+      cert.get(), net::CA_CERT, net::NSSCertDatabase::DISTRUSTED_SSL));
 
   EXPECT_EQ(net::CA_CERT,
             x509_certificate_model::GetType(cert->os_cert_handle()));
@@ -56,14 +56,14 @@ TEST(X509CertificateModelTest, GetTypeServer) {
   net::NSSCertDatabase* cert_db = net::NSSCertDatabase::GetInstance();
   // Test GetCertType with server certs and explicit trust.
   EXPECT_TRUE(cert_db->SetCertTrust(
-      cert, net::SERVER_CERT, net::NSSCertDatabase::TRUSTED_SSL));
+      cert.get(), net::SERVER_CERT, net::NSSCertDatabase::TRUSTED_SSL));
 
   EXPECT_EQ(net::SERVER_CERT,
             x509_certificate_model::GetType(cert->os_cert_handle()));
 
   // Test GetCertType with server certs and explicit distrust.
   EXPECT_TRUE(cert_db->SetCertTrust(
-      cert, net::SERVER_CERT, net::NSSCertDatabase::DISTRUSTED_SSL));
+      cert.get(), net::SERVER_CERT, net::NSSCertDatabase::DISTRUSTED_SSL));
 
   EXPECT_EQ(net::SERVER_CERT,
             x509_certificate_model::GetType(cert->os_cert_handle()));

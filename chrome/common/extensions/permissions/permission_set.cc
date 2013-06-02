@@ -120,8 +120,8 @@ PermissionSet* PermissionSet::CreateDifference(
     const PermissionSet* set1,
     const PermissionSet* set2) {
   scoped_refptr<PermissionSet> empty = new PermissionSet();
-  const PermissionSet* set1_safe = (set1 == NULL) ? empty : set1;
-  const PermissionSet* set2_safe = (set2 == NULL) ? empty : set2;
+  const PermissionSet* set1_safe = (set1 == NULL) ? empty.get() : set1;
+  const PermissionSet* set2_safe = (set2 == NULL) ? empty.get() : set2;
 
   APIPermissionSet apis;
   APIPermissionSet::Difference(set1_safe->apis(), set2_safe->apis(), &apis);
@@ -144,8 +144,8 @@ PermissionSet* PermissionSet::CreateIntersection(
     const PermissionSet* set1,
     const PermissionSet* set2) {
   scoped_refptr<PermissionSet> empty = new PermissionSet();
-  const PermissionSet* set1_safe = (set1 == NULL) ? empty : set1;
-  const PermissionSet* set2_safe = (set2 == NULL) ? empty : set2;
+  const PermissionSet* set1_safe = (set1 == NULL) ? empty.get() : set1;
+  const PermissionSet* set2_safe = (set2 == NULL) ? empty.get() : set2;
 
   APIPermissionSet apis;
   APIPermissionSet::Intersection(set1_safe->apis(), set2_safe->apis(), &apis);
@@ -168,8 +168,8 @@ PermissionSet* PermissionSet::CreateUnion(
     const PermissionSet* set1,
     const PermissionSet* set2) {
   scoped_refptr<PermissionSet> empty = new PermissionSet();
-  const PermissionSet* set1_safe = (set1 == NULL) ? empty : set1;
-  const PermissionSet* set2_safe = (set2 == NULL) ? empty : set2;
+  const PermissionSet* set1_safe = (set1 == NULL) ? empty.get() : set1;
+  const PermissionSet* set2_safe = (set2 == NULL) ? empty.get() : set2;
 
   APIPermissionSet apis;
   APIPermissionSet::Union(set1_safe->apis(), set2_safe->apis(), &apis);

@@ -23,15 +23,15 @@ class PlatformAppsManifestTest : public ExtensionManifestTest {
 TEST_F(PlatformAppsManifestTest, PlatformApps) {
   scoped_refptr<Extension> extension =
       LoadAndExpectSuccess("init_valid_platform_app.json");
-  EXPECT_TRUE(AppIsolationInfo::HasIsolatedStorage(extension));
-  EXPECT_TRUE(IncognitoInfo::IsSplitMode(extension));
+  EXPECT_TRUE(AppIsolationInfo::HasIsolatedStorage(extension.get()));
+  EXPECT_TRUE(IncognitoInfo::IsSplitMode(extension.get()));
 
   extension =
       LoadAndExpectSuccess("init_valid_platform_app_no_manifest_version.json");
   EXPECT_EQ(2, extension->manifest_version());
 
   extension = LoadAndExpectSuccess("incognito_valid_platform_app.json");
-  EXPECT_TRUE(IncognitoInfo::IsSplitMode(extension));
+  EXPECT_TRUE(IncognitoInfo::IsSplitMode(extension.get()));
 
   Testcase error_testcases[] = {
     Testcase("init_invalid_platform_app_2.json",
@@ -87,9 +87,9 @@ TEST_F(PlatformAppsManifestTest, PlatformAppContentSecurityPolicy) {
   EXPECT_EQ(0U, extension->install_warnings().size())
       << "Unexpected warning " << extension->install_warnings()[0].message;
   EXPECT_TRUE(extension->is_platform_app());
-  EXPECT_EQ(
-      "default-src 'self' https://www.google.com",
-      CSPInfo::GetResourceContentSecurityPolicy(extension, std::string()));
+  EXPECT_EQ("default-src 'self' https://www.google.com",
+            CSPInfo::GetResourceContentSecurityPolicy(extension.get(),
+                                                      std::string()));
 
   // But even whitelisted ones must specify a secure policy.
   LoadAndExpectError(

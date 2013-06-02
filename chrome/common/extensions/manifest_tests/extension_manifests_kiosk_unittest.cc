@@ -21,37 +21,37 @@ TEST_F(ExtensionManifestKioskEnabledTest, InvalidKioskEnabled) {
 TEST_F(ExtensionManifestKioskEnabledTest, KioskEnabledHostedApp) {
   scoped_refptr<Extension> extension(
       LoadAndExpectSuccess("kiosk_enabled_hosted_app.json"));
-  EXPECT_FALSE(KioskEnabledInfo::IsKioskEnabled(extension));
+  EXPECT_FALSE(KioskEnabledInfo::IsKioskEnabled(extension.get()));
 }
 
 TEST_F(ExtensionManifestKioskEnabledTest, KioskEnabledPackagedApp) {
   scoped_refptr<Extension> extension(
       LoadAndExpectSuccess("kiosk_enabled_packaged_app.json"));
-  EXPECT_FALSE(KioskEnabledInfo::IsKioskEnabled(extension));
+  EXPECT_FALSE(KioskEnabledInfo::IsKioskEnabled(extension.get()));
 }
 
 TEST_F(ExtensionManifestKioskEnabledTest, KioskEnabledExtension) {
   scoped_refptr<Extension> extension(
       LoadAndExpectSuccess("kiosk_enabled_extension.json"));
-  EXPECT_FALSE(KioskEnabledInfo::IsKioskEnabled(extension));
+  EXPECT_FALSE(KioskEnabledInfo::IsKioskEnabled(extension.get()));
 }
 
 TEST_F(ExtensionManifestKioskEnabledTest, KioskEnabledPlatformApp) {
   scoped_refptr<Extension> extension(
       LoadAndExpectSuccess("kiosk_enabled_platform_app.json"));
-  EXPECT_TRUE(KioskEnabledInfo::IsKioskEnabled(extension));
+  EXPECT_TRUE(KioskEnabledInfo::IsKioskEnabled(extension.get()));
 }
 
 TEST_F(ExtensionManifestKioskEnabledTest, KioskDisabledPlatformApp) {
   scoped_refptr<Extension> extension(
       LoadAndExpectSuccess("kiosk_disabled_platform_app.json"));
-  EXPECT_FALSE(KioskEnabledInfo::IsKioskEnabled(extension));
+  EXPECT_FALSE(KioskEnabledInfo::IsKioskEnabled(extension.get()));
 }
 
 TEST_F(ExtensionManifestKioskEnabledTest, KioskDefaultPlatformApp) {
   scoped_refptr<Extension> extension(
       LoadAndExpectSuccess("kiosk_default_platform_app.json"));
-  EXPECT_FALSE(KioskEnabledInfo::IsKioskEnabled(extension));
+  EXPECT_FALSE(KioskEnabledInfo::IsKioskEnabled(extension.get()));
 }
 
 }  // namespace extensions

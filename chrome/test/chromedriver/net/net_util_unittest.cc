@@ -113,26 +113,27 @@ class FetchUrlTest : public testing::Test,
 
 TEST_F(FetchUrlTest, Http200) {
   std::string response("stuff");
-  ASSERT_TRUE(FetchUrl(server_url_, context_getter_, &response));
+  ASSERT_TRUE(FetchUrl(server_url_, context_getter_.get(), &response));
   ASSERT_STREQ("hello", response.c_str());
 }
 
 TEST_F(FetchUrlTest, HttpNon200) {
   response_ = kSend404;
   std::string response("stuff");
-  ASSERT_FALSE(FetchUrl(server_url_, context_getter_, &response));
+  ASSERT_FALSE(FetchUrl(server_url_, context_getter_.get(), &response));
   ASSERT_STREQ("stuff", response.c_str());
 }
 
 TEST_F(FetchUrlTest, ConnectionClose) {
   response_ = kClose;
   std::string response("stuff");
-  ASSERT_FALSE(FetchUrl(server_url_, context_getter_, &response));
+  ASSERT_FALSE(FetchUrl(server_url_, context_getter_.get(), &response));
   ASSERT_STREQ("stuff", response.c_str());
 }
 
 TEST_F(FetchUrlTest, NoServer) {
   std::string response("stuff");
-  ASSERT_FALSE(FetchUrl("http://localhost:33333", context_getter_, &response));
+  ASSERT_FALSE(
+      FetchUrl("http://localhost:33333", context_getter_.get(), &response));
   ASSERT_STREQ("stuff", response.c_str());
 }

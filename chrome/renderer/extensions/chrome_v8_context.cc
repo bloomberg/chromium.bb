@@ -64,7 +64,7 @@ void ChromeV8Context::Invalidate() {
 }
 
 std::string ChromeV8Context::GetExtensionID() {
-  return extension_ ? extension_->id() : std::string();
+  return extension_.get() ? extension_->id() : std::string();
 }
 
 // static
@@ -165,7 +165,7 @@ Feature::Availability ChromeV8Context::GetAvailability(
     const std::string& api_name) {
   return ExtensionAPI::GetSharedInstance()->IsAvailable(
       api_name,
-      extension_,
+      extension_.get(),
       context_type_,
       UserScriptSlave::GetDataSourceURLForFrame(web_frame_));
 }

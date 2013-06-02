@@ -50,7 +50,7 @@ void CommandExecutorImpl::Init() {
   CHECK(io_thread_.StartWithOptions(options));
   context_getter_ = new URLRequestContextGetter(
       io_thread_.message_loop_proxy());
-  socket_factory_ = CreateSyncWebSocketFactory(context_getter_);
+  socket_factory_ = CreateSyncWebSocketFactory(context_getter_.get());
   adb_.reset(new AdbImpl(io_thread_.message_loop_proxy(), log_));
   device_manager_.reset(new DeviceManager(adb_.get()));
 

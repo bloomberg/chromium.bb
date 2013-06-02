@@ -203,7 +203,7 @@ PP_Resource GetFontFileWithFallback(
 
   scoped_refptr<ppapi::StringVar> face_name(ppapi::StringVar::FromPPVar(
       description->face));
-  if (!face_name)
+  if (!face_name.get())
     return 0;
 
   int fd = content::MatchFontWithFallback(
@@ -322,7 +322,7 @@ void HistogramPDFPageCount(PP_Instance /*instance*/, int count) {
 void UserMetricsRecordAction(PP_Instance /*instance*/, PP_Var action) {
   scoped_refptr<ppapi::StringVar> action_str(
       ppapi::StringVar::FromPPVar(action));
-  if (action_str)
+  if (action_str.get())
     RenderThread::Get()->RecordUserMetrics(action_str->value());
 }
 
@@ -403,7 +403,7 @@ PP_Resource GetResourceImageForScale(PP_Instance instance_id,
     return 0;
   }
 
-  webkit::ppapi::ImageDataAutoMapper mapper(image_data);
+  webkit::ppapi::ImageDataAutoMapper mapper(image_data.get());
   if (!mapper.is_valid())
     return 0;
 

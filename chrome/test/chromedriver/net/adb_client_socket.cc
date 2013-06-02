@@ -141,7 +141,9 @@ class HttpOverAdbSocket {
     scoped_refptr<net::StringIOBuffer> request_buffer =
         new net::StringIOBuffer(request_);
 
-    result = socket_->Write(request_buffer, request_buffer->size(),
+    result = socket_->Write(
+        request_buffer.get(),
+        request_buffer->size(),
         base::Bind(&HttpOverAdbSocket::ReadResponse, base::Unretained(this)));
     if (result != net::ERR_IO_PENDING)
       ReadResponse(result);
@@ -154,9 +156,12 @@ class HttpOverAdbSocket {
     scoped_refptr<net::IOBuffer> response_buffer =
         new net::IOBuffer(kBufferSize);
 
-    result = socket_->Read(response_buffer, kBufferSize,
-        base::Bind(&HttpOverAdbSocket::OnResponseData, base::Unretained(this),
-                   response_buffer, -1));
+    result = socket_->Read(response_buffer.get(),
+                           kBufferSize,
+                           base::Bind(&HttpOverAdbSocket::OnResponseData,
+                                      base::Unretained(this),
+                                      response_buffer,
+                                      -1));
     if (result != net::ERR_IO_PENDING)
       OnResponseData(response_buffer, -1, result);
   }
@@ -204,9 +209,12 @@ class HttpOverAdbSocket {
       return;
     }
 
-    result = socket_->Read(response_buffer, kBufferSize,
-        base::Bind(&HttpOverAdbSocket::OnResponseData, base::Unretained(this),
-                   response_buffer, bytes_total));
+    result = socket_->Read(response_buffer.get(),
+                           kBufferSize,
+                           base::Bind(&HttpOverAdbSocket::OnResponseData,
+                                      base::Unretained(this),
+                                      response_buffer,
+                                      bytes_total));
     if (result != net::ERR_IO_PENDING)
       OnResponseData(response_buffer, bytes_total, result);
   }
@@ -376,9 +384,12 @@ void AdbClientSocket::SendCommand(const std::string& command,
                                   const CommandCallback& callback) {
   scoped_refptr<net::StringIOBuffer> request_buffer =
       new net::StringIOBuffer(EncodeMessage(command));
-  int result = socket_->Write(request_buffer, request_buffer->size(),
-      base::Bind(&AdbClientSocket::ReadResponse, base::Unretained(this),
-                 callback, is_void));
+  int result = socket_->Write(request_buffer.get(),
+                              request_buffer->size(),
+                              base::Bind(&AdbClientSocket::ReadResponse,
+                                         base::Unretained(this),
+                                         callback,
+                                         is_void));
   if (result != net::ERR_IO_PENDING)
     ReadResponse(callback, is_void, result);
 }
@@ -392,9 +403,13 @@ void AdbClientSocket::ReadResponse(const CommandCallback& callback,
   }
   scoped_refptr<net::IOBuffer> response_buffer =
       new net::IOBuffer(kBufferSize);
-  result = socket_->Read(response_buffer, kBufferSize,
-      base::Bind(&AdbClientSocket::OnResponseHeader, base::Unretained(this),
-                 callback, is_void, response_buffer));
+  result = socket_->Read(response_buffer.get(),
+                         kBufferSize,
+                         base::Bind(&AdbClientSocket::OnResponseHeader,
+                                    base::Unretained(this),
+                                    callback,
+                                    is_void,
+                                    response_buffer));
   if (result != net::ERR_IO_PENDING)
     OnResponseHeader(callback, is_void, response_buffer, result);
 }
@@ -460,9 +475,14 @@ void AdbClientSocket::OnResponseData(
   }
 
   // Read tail
-  result = socket_->Read(response_buffer, kBufferSize,
-      base::Bind(&AdbClientSocket::OnResponseData, base::Unretained(this),
-                 callback, new_response, response_buffer, bytes_left));
+  result = socket_->Read(response_buffer.get(),
+                         kBufferSize,
+                         base::Bind(&AdbClientSocket::OnResponseData,
+                                    base::Unretained(this),
+                                    callback,
+                                    new_response,
+                                    response_buffer,
+                                    bytes_left));
   if (result > 0)
     OnResponseData(callback, new_response, response_buffer, bytes_left, result);
   else if (result != net::ERR_IO_PENDING)

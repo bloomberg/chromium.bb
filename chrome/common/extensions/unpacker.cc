@@ -197,17 +197,18 @@ bool Unpacker::Run() {
 
   // Decode any images that the browser needs to display.
   std::set<base::FilePath> image_paths =
-      extension_file_util::GetBrowserImagePaths(extension);
+      extension_file_util::GetBrowserImagePaths(extension.get());
   for (std::set<base::FilePath>::iterator it = image_paths.begin();
-       it != image_paths.end(); ++it) {
+       it != image_paths.end();
+       ++it) {
     if (!AddDecodedImage(*it))
       return false;  // Error was already reported.
   }
 
   // Parse all message catalogs (if any).
   parsed_catalogs_.reset(new DictionaryValue);
-  if (!LocaleInfo::GetDefaultLocale(extension).empty()) {
-    if (!ReadAllMessageCatalogs(LocaleInfo::GetDefaultLocale(extension)))
+  if (!LocaleInfo::GetDefaultLocale(extension.get()).empty()) {
+    if (!ReadAllMessageCatalogs(LocaleInfo::GetDefaultLocale(extension.get())))
       return false;  // Error was already reported.
   }
 

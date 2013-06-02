@@ -29,9 +29,10 @@ class ExternallyConnectableTest : public ExtensionManifestTest {
 TEST_F(ExternallyConnectableTest, IDsAndMatches) {
   scoped_refptr<Extension> extension =
       LoadAndExpectSuccess("externally_connectable_ids_and_matches.json");
-  ASSERT_TRUE(extension);
+  ASSERT_TRUE(extension.get());
 
-  ExternallyConnectableInfo* info = ExternallyConnectableInfo::Get(extension);
+  ExternallyConnectableInfo* info =
+      ExternallyConnectableInfo::Get(extension.get());
   ASSERT_TRUE(info);
 
   EXPECT_THAT(info->ids, ElementsAre("abcdefghijklmnopabcdefghijklmnop",
@@ -86,9 +87,10 @@ TEST_F(ExternallyConnectableTest, IDsAndMatches) {
 TEST_F(ExternallyConnectableTest, IDs) {
   scoped_refptr<Extension> extension =
       LoadAndExpectSuccess("externally_connectable_ids.json");
-  ASSERT_TRUE(extension);
+  ASSERT_TRUE(extension.get());
 
-  ExternallyConnectableInfo* info = ExternallyConnectableInfo::Get(extension);
+  ExternallyConnectableInfo* info =
+      ExternallyConnectableInfo::Get(extension.get());
   ASSERT_TRUE(info);
 
   EXPECT_THAT(info->ids, ElementsAre("abcdefghijklmnopabcdefghijklmnop",
@@ -102,9 +104,10 @@ TEST_F(ExternallyConnectableTest, IDs) {
 TEST_F(ExternallyConnectableTest, Matches) {
   scoped_refptr<Extension> extension =
       LoadAndExpectSuccess("externally_connectable_matches.json");
-  ASSERT_TRUE(extension);
+  ASSERT_TRUE(extension.get());
 
-  ExternallyConnectableInfo* info = ExternallyConnectableInfo::Get(extension);
+  ExternallyConnectableInfo* info =
+      ExternallyConnectableInfo::Get(extension.get());
   ASSERT_TRUE(info);
 
   EXPECT_THAT(info->ids, ElementsAre());
@@ -139,9 +142,10 @@ TEST_F(ExternallyConnectableTest, Matches) {
 TEST_F(ExternallyConnectableTest, AllIDs) {
   scoped_refptr<Extension> extension =
       LoadAndExpectSuccess("externally_connectable_all_ids.json");
-  ASSERT_TRUE(extension);
+  ASSERT_TRUE(extension.get());
 
-  ExternallyConnectableInfo* info = ExternallyConnectableInfo::Get(extension);
+  ExternallyConnectableInfo* info =
+      ExternallyConnectableInfo::Get(extension.get());
   ASSERT_TRUE(info);
 
   EXPECT_THAT(info->ids, ElementsAre("abcdefghijklmnopabcdefghijklmnop",

@@ -748,7 +748,7 @@ class PageLoadTest : public UITest {
     registry->RegisterIntegerPref(prefs::kStabilityCrashCount, 0);
     registry->RegisterIntegerPref(prefs::kStabilityRendererCrashCount, 0);
 
-    scoped_ptr<PrefService> local_state(GetLocalState(registry));
+    scoped_ptr<PrefService> local_state(GetLocalState(registry.get()));
     if (!local_state.get())
       return;
 

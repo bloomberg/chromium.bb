@@ -13,7 +13,7 @@ namespace {
 
 scoped_ptr<SyncWebSocket> CreateSyncWebSocket(
     scoped_refptr<URLRequestContextGetter> context_getter) {
-  return scoped_ptr<SyncWebSocket>(new SyncWebSocketImpl(context_getter));
+  return scoped_ptr<SyncWebSocket>(new SyncWebSocketImpl(context_getter.get()));
 }
 
 }  // namespace

@@ -32,9 +32,9 @@ TEST_F(CommandsManifestTest, CommandManifestSimple) {
 
   scoped_refptr<Extension> extension =
       LoadAndExpectSuccess("command_simple.json");
-  ASSERT_TRUE(extension);
+  ASSERT_TRUE(extension.get());
 
-  const CommandMap* commands = CommandsInfo::GetNamedCommands(extension);
+  const CommandMap* commands = CommandsInfo::GetNamedCommands(extension.get());
   ASSERT_TRUE(commands);
   ASSERT_EQ(1u, commands->size());
   CommandMap::const_iterator iter = commands->begin();
@@ -45,14 +45,15 @@ TEST_F(CommandsManifestTest, CommandManifestSimple) {
   ASSERT_EQ(ctrl_shift_f, named_command->accelerator());
 
   const Command* browser_action =
-      CommandsInfo::GetBrowserActionCommand(extension);
+      CommandsInfo::GetBrowserActionCommand(extension.get());
   ASSERT_TRUE(NULL != browser_action);
   ASSERT_STREQ("_execute_browser_action",
                browser_action->command_name().c_str());
   ASSERT_STREQ("", UTF16ToASCII(browser_action->description()).c_str());
   ASSERT_EQ(alt_shift_f, browser_action->accelerator());
 
-  const Command* page_action = CommandsInfo::GetPageActionCommand(extension);
+  const Command* page_action =
+      CommandsInfo::GetPageActionCommand(extension.get());
   ASSERT_TRUE(NULL != page_action);
   ASSERT_STREQ("_execute_page_action",
       page_action->command_name().c_str());
@@ -86,7 +87,7 @@ TEST_F(CommandsManifestTest, BrowserActionSynthesizesCommand) {
   // An extension with a browser action but no extension command specified
   // should get a command assigned to it.
   const extensions::Command* command =
-      CommandsInfo::GetBrowserActionCommand(extension);
+      CommandsInfo::GetBrowserActionCommand(extension.get());
   ASSERT_TRUE(command != NULL);
   ASSERT_EQ(ui::VKEY_UNKNOWN, command->accelerator().key_code());
 }

@@ -47,21 +47,21 @@ class SyncWebSocketImplTest : public testing::Test {
 }  // namespace
 
 TEST_F(SyncWebSocketImplTest, CreateDestroy) {
-  SyncWebSocketImpl sock(context_getter_);
+  SyncWebSocketImpl sock(context_getter_.get());
 }
 
 TEST_F(SyncWebSocketImplTest, Connect) {
-  SyncWebSocketImpl sock(context_getter_);
+  SyncWebSocketImpl sock(context_getter_.get());
   ASSERT_TRUE(sock.Connect(server_.web_socket_url()));
 }
 
 TEST_F(SyncWebSocketImplTest, ConnectFail) {
-  SyncWebSocketImpl sock(context_getter_);
+  SyncWebSocketImpl sock(context_getter_.get());
   ASSERT_FALSE(sock.Connect(GURL("ws://127.0.0.1:33333")));
 }
 
 TEST_F(SyncWebSocketImplTest, SendReceive) {
-  SyncWebSocketImpl sock(context_getter_);
+  SyncWebSocketImpl sock(context_getter_.get());
   ASSERT_TRUE(sock.Connect(server_.web_socket_url()));
   ASSERT_TRUE(sock.Send("hi"));
   std::string message;
@@ -70,7 +70,7 @@ TEST_F(SyncWebSocketImplTest, SendReceive) {
 }
 
 TEST_F(SyncWebSocketImplTest, SendReceiveLarge) {
-  SyncWebSocketImpl sock(context_getter_);
+  SyncWebSocketImpl sock(context_getter_.get());
   ASSERT_TRUE(sock.Connect(server_.web_socket_url()));
   std::string wrote_message(10 << 20, 'a');
   ASSERT_TRUE(sock.Send(wrote_message));
@@ -81,7 +81,7 @@ TEST_F(SyncWebSocketImplTest, SendReceiveLarge) {
 }
 
 TEST_F(SyncWebSocketImplTest, SendReceiveMany) {
-  SyncWebSocketImpl sock(context_getter_);
+  SyncWebSocketImpl sock(context_getter_.get());
   ASSERT_TRUE(sock.Connect(server_.web_socket_url()));
   ASSERT_TRUE(sock.Send("1"));
   ASSERT_TRUE(sock.Send("2"));
@@ -97,7 +97,7 @@ TEST_F(SyncWebSocketImplTest, SendReceiveMany) {
 
 TEST_F(SyncWebSocketImplTest, CloseOnReceive) {
   server_.SetMessageAction(TestHttpServer::kCloseOnMessage);
-  SyncWebSocketImpl sock(context_getter_);
+  SyncWebSocketImpl sock(context_getter_.get());
   ASSERT_TRUE(sock.Connect(server_.web_socket_url()));
   ASSERT_TRUE(sock.Send("1"));
   std::string message;
@@ -106,14 +106,14 @@ TEST_F(SyncWebSocketImplTest, CloseOnReceive) {
 }
 
 TEST_F(SyncWebSocketImplTest, CloseOnSend) {
-  SyncWebSocketImpl sock(context_getter_);
+  SyncWebSocketImpl sock(context_getter_.get());
   ASSERT_TRUE(sock.Connect(server_.web_socket_url()));
   server_.Stop();
   ASSERT_FALSE(sock.Send("1"));
 }
 
 TEST_F(SyncWebSocketImplTest, Reconnect) {
-  SyncWebSocketImpl sock(context_getter_);
+  SyncWebSocketImpl sock(context_getter_.get());
   ASSERT_TRUE(sock.Connect(server_.web_socket_url()));
   ASSERT_TRUE(sock.Send("1"));
   // Wait for SyncWebSocket to receive the response from the server.

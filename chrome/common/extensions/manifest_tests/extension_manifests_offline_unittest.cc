@@ -20,22 +20,22 @@ TEST_F(ExtensionManifestOfflineEnabledTest, OfflineEnabled) {
                      errors::kInvalidOfflineEnabled);
   scoped_refptr<Extension> extension_0(
       LoadAndExpectSuccess("offline_enabled_extension.json"));
-  EXPECT_TRUE(OfflineEnabledInfo::IsOfflineEnabled(extension_0));
+  EXPECT_TRUE(OfflineEnabledInfo::IsOfflineEnabled(extension_0.get()));
   scoped_refptr<Extension> extension_1(
       LoadAndExpectSuccess("offline_enabled_packaged_app.json"));
-  EXPECT_TRUE(OfflineEnabledInfo::IsOfflineEnabled(extension_1));
+  EXPECT_TRUE(OfflineEnabledInfo::IsOfflineEnabled(extension_1.get()));
   scoped_refptr<Extension> extension_2(
       LoadAndExpectSuccess("offline_disabled_packaged_app.json"));
-  EXPECT_FALSE(OfflineEnabledInfo::IsOfflineEnabled(extension_2));
+  EXPECT_FALSE(OfflineEnabledInfo::IsOfflineEnabled(extension_2.get()));
   scoped_refptr<Extension> extension_3(
       LoadAndExpectSuccess("offline_default_packaged_app.json"));
-  EXPECT_FALSE(OfflineEnabledInfo::IsOfflineEnabled(extension_3));
+  EXPECT_FALSE(OfflineEnabledInfo::IsOfflineEnabled(extension_3.get()));
   scoped_refptr<Extension> extension_4(
       LoadAndExpectSuccess("offline_enabled_hosted_app.json"));
-  EXPECT_TRUE(OfflineEnabledInfo::IsOfflineEnabled(extension_4));
+  EXPECT_TRUE(OfflineEnabledInfo::IsOfflineEnabled(extension_4.get()));
   scoped_refptr<Extension> extension_5(
       LoadAndExpectSuccess("offline_default_platform_app.json"));
-  EXPECT_TRUE(OfflineEnabledInfo::IsOfflineEnabled(extension_5));
+  EXPECT_TRUE(OfflineEnabledInfo::IsOfflineEnabled(extension_5.get()));
 }
 
 }  // namespace extensions

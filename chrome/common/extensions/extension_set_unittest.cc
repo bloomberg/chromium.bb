@@ -62,7 +62,7 @@ TEST(ExtensionSetTest, ExtensionSet) {
   scoped_refptr<Extension> ext4(
       CreateTestExtension("c", std::string(), std::string()));
 
-  ASSERT_TRUE(ext1 && ext2 && ext3 && ext4);
+  ASSERT_TRUE(ext1.get() && ext2.get() && ext3.get() && ext4.get());
 
   ExtensionSet extensions;
 
@@ -123,7 +123,7 @@ TEST(ExtensionSetTest, ExtensionSet) {
       CreateTestExtension("d", std::string(), std::string()));
   scoped_refptr<Extension> ext6(
       CreateTestExtension("e", std::string(), std::string()));
-  ASSERT_TRUE(ext5 && ext6);
+  ASSERT_TRUE(ext5.get() && ext6.get());
 
   scoped_ptr<ExtensionSet> to_add(new ExtensionSet());
   // |ext3| is already in |extensions|, should not affect size.

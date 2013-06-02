@@ -196,7 +196,7 @@ class FrameRateTest
     // race condition caused by an html redirect. If that is the case, verify
     // that flag kHasRedirect is enabled for the current test.
     ASSERT_TRUE(WaitUntilJavaScriptCondition(
-        tab,
+        tab.get(),
         std::wstring(),
         L"window.domAutomationController.send(__initialized);",
         TestTimeouts::large_test_timeout()));
@@ -211,7 +211,7 @@ class FrameRateTest
 
     // Block until the tests completes.
     ASSERT_TRUE(WaitUntilJavaScriptCondition(
-        tab,
+        tab.get(),
         std::wstring(),
         L"window.domAutomationController.send(!__running_all);",
         TestTimeouts::large_test_timeout()));

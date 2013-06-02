@@ -24,11 +24,11 @@ TEST_F(URLOverridesManifestTest, Override) {
 
   extension = LoadAndExpectSuccess("override_new_tab.json");
   EXPECT_EQ(extension->url().spec() + "newtab.html",
-            extensions::URLOverrides::GetChromeURLOverrides(extension).
-                find("newtab")->second.spec());
+            extensions::URLOverrides::GetChromeURLOverrides(extension.get())
+                .find("newtab")->second.spec());
 
   extension = LoadAndExpectSuccess("override_history.json");
   EXPECT_EQ(extension->url().spec() + "history.html",
-            extensions::URLOverrides::GetChromeURLOverrides(extension).
-                find("history")->second.spec());
+            extensions::URLOverrides::GetChromeURLOverrides(extension.get())
+                .find("history")->second.spec());
 }

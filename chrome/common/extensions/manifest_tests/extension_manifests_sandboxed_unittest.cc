@@ -41,23 +41,30 @@ TEST_F(SandboxedPagesManifestTest, SandboxedPages) {
   const char kCustomSandboxedCSP[] =
       "sandbox; script-src: https://www.google.com";
 
-  EXPECT_EQ(kSandboxedCSP,
-            CSPInfo::GetResourceContentSecurityPolicy(extension1, "/test"));
-  EXPECT_EQ(kDefaultCSP,
-            CSPInfo::GetResourceContentSecurityPolicy(extension1, "/none"));
-  EXPECT_EQ(kDefaultCSP,
-            CSPInfo::GetResourceContentSecurityPolicy(extension2, "/test"));
-  EXPECT_EQ(kCustomSandboxedCSP,
-            CSPInfo::GetResourceContentSecurityPolicy(extension3, "/test"));
-  EXPECT_EQ(kDefaultCSP,
-            CSPInfo::GetResourceContentSecurityPolicy(extension3, "/none"));
-  EXPECT_EQ(kSandboxedCSP,
-            CSPInfo::GetResourceContentSecurityPolicy(extension4, "/test"));
   EXPECT_EQ(
       kSandboxedCSP,
-      CSPInfo::GetResourceContentSecurityPolicy(extension5, "/path/test.ext"));
-  EXPECT_EQ(kDefaultCSP,
-            CSPInfo::GetResourceContentSecurityPolicy(extension5, "/test"));
+      CSPInfo::GetResourceContentSecurityPolicy(extension1.get(), "/test"));
+  EXPECT_EQ(
+      kDefaultCSP,
+      CSPInfo::GetResourceContentSecurityPolicy(extension1.get(), "/none"));
+  EXPECT_EQ(
+      kDefaultCSP,
+      CSPInfo::GetResourceContentSecurityPolicy(extension2.get(), "/test"));
+  EXPECT_EQ(
+      kCustomSandboxedCSP,
+      CSPInfo::GetResourceContentSecurityPolicy(extension3.get(), "/test"));
+  EXPECT_EQ(
+      kDefaultCSP,
+      CSPInfo::GetResourceContentSecurityPolicy(extension3.get(), "/none"));
+  EXPECT_EQ(
+      kSandboxedCSP,
+      CSPInfo::GetResourceContentSecurityPolicy(extension4.get(), "/test"));
+  EXPECT_EQ(kSandboxedCSP,
+            CSPInfo::GetResourceContentSecurityPolicy(extension5.get(),
+                                                      "/path/test.ext"));
+  EXPECT_EQ(
+      kDefaultCSP,
+      CSPInfo::GetResourceContentSecurityPolicy(extension5.get(), "/test"));
 
   Testcase testcases[] = {
     Testcase("sandboxed_pages_invalid_1.json",

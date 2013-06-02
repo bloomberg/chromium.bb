@@ -51,16 +51,16 @@ TEST_F(RequirementsManifestTest, RequirementsValid) {
   scoped_refptr<Extension> extension(LoadAndExpectSuccess(
       "requirements_valid_empty.json"));
   ASSERT_TRUE(extension.get());
-  EXPECT_EQ(RequirementsInfo::GetRequirements(extension).webgl, false);
-  EXPECT_EQ(RequirementsInfo::GetRequirements(extension).css3d, false);
-  EXPECT_EQ(RequirementsInfo::GetRequirements(extension).npapi, false);
+  EXPECT_EQ(RequirementsInfo::GetRequirements(extension.get()).webgl, false);
+  EXPECT_EQ(RequirementsInfo::GetRequirements(extension.get()).css3d, false);
+  EXPECT_EQ(RequirementsInfo::GetRequirements(extension.get()).npapi, false);
 
   // Test loading all the requirements.
   extension = LoadAndExpectSuccess("requirements_valid_full.json");
   ASSERT_TRUE(extension.get());
-  EXPECT_EQ(RequirementsInfo::GetRequirements(extension).webgl, true);
-  EXPECT_EQ(RequirementsInfo::GetRequirements(extension).css3d, true);
-  EXPECT_EQ(RequirementsInfo::GetRequirements(extension).npapi, true);
+  EXPECT_EQ(RequirementsInfo::GetRequirements(extension.get()).webgl, true);
+  EXPECT_EQ(RequirementsInfo::GetRequirements(extension.get()).css3d, true);
+  EXPECT_EQ(RequirementsInfo::GetRequirements(extension.get()).npapi, true);
 }
 
 // When an npapi plugin is present, the default of the "npapi" requirement
@@ -69,28 +69,28 @@ TEST_F(RequirementsManifestTest, RequirementsNpapiDefault) {
   scoped_refptr<Extension> extension(LoadAndExpectSuccess(
       "requirements_npapi_empty.json"));
   ASSERT_TRUE(extension.get());
-  EXPECT_EQ(RequirementsInfo::GetRequirements(extension).webgl, false);
-  EXPECT_EQ(RequirementsInfo::GetRequirements(extension).css3d, false);
-  EXPECT_EQ(RequirementsInfo::GetRequirements(extension).npapi, true);
+  EXPECT_EQ(RequirementsInfo::GetRequirements(extension.get()).webgl, false);
+  EXPECT_EQ(RequirementsInfo::GetRequirements(extension.get()).css3d, false);
+  EXPECT_EQ(RequirementsInfo::GetRequirements(extension.get()).npapi, true);
 
   extension = LoadAndExpectSuccess(
       "requirements_npapi_empty_plugins_empty.json");
   ASSERT_TRUE(extension.get());
-  EXPECT_EQ(RequirementsInfo::GetRequirements(extension).webgl, false);
-  EXPECT_EQ(RequirementsInfo::GetRequirements(extension).css3d, false);
-  EXPECT_EQ(RequirementsInfo::GetRequirements(extension).npapi, false);
+  EXPECT_EQ(RequirementsInfo::GetRequirements(extension.get()).webgl, false);
+  EXPECT_EQ(RequirementsInfo::GetRequirements(extension.get()).css3d, false);
+  EXPECT_EQ(RequirementsInfo::GetRequirements(extension.get()).npapi, false);
 
   extension = LoadAndExpectSuccess("requirements_npapi.json");
   ASSERT_TRUE(extension.get());
-  EXPECT_EQ(RequirementsInfo::GetRequirements(extension).webgl, false);
-  EXPECT_EQ(RequirementsInfo::GetRequirements(extension).css3d, false);
-  EXPECT_EQ(RequirementsInfo::GetRequirements(extension).npapi, false);
+  EXPECT_EQ(RequirementsInfo::GetRequirements(extension.get()).webgl, false);
+  EXPECT_EQ(RequirementsInfo::GetRequirements(extension.get()).css3d, false);
+  EXPECT_EQ(RequirementsInfo::GetRequirements(extension.get()).npapi, false);
 
   extension = LoadAndExpectSuccess("requirements_npapi_plugins_empty.json");
   ASSERT_TRUE(extension.get());
-  EXPECT_EQ(RequirementsInfo::GetRequirements(extension).webgl, false);
-  EXPECT_EQ(RequirementsInfo::GetRequirements(extension).css3d, false);
-  EXPECT_EQ(RequirementsInfo::GetRequirements(extension).npapi, true);
+  EXPECT_EQ(RequirementsInfo::GetRequirements(extension.get()).webgl, false);
+  EXPECT_EQ(RequirementsInfo::GetRequirements(extension.get()).css3d, false);
+  EXPECT_EQ(RequirementsInfo::GetRequirements(extension.get()).npapi, true);
 }
 
 }  // namespace extensions

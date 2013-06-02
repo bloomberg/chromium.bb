@@ -348,8 +348,7 @@ void PermissionsData::UpdateTabSpecificPermissions(
       &extension->permissions_data()->tab_specific_permissions_;
   if (tab_permissions->count(tab_id)) {
     (*tab_permissions)[tab_id] = PermissionSet::CreateUnion(
-        (*tab_permissions)[tab_id],
-        permissions.get());
+        (*tab_permissions)[tab_id].get(), permissions.get());
   } else {
     (*tab_permissions)[tab_id] = permissions;
   }

@@ -343,7 +343,7 @@ class MockWebUIDataSource : public content::URLDataSource {
     std::string dummy_html = "<html><body>Dummy</body></html>";
     scoped_refptr<base::RefCountedString> response =
         base::RefCountedString::TakeString(&dummy_html);
-    callback.Run(response);
+    callback.Run(response.get());
   }
 
   virtual std::string GetMimeType(const std::string& path) const OVERRIDE {

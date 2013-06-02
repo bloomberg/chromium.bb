@@ -27,7 +27,7 @@ TEST_F(IsolatedAppsManifestTest, IsolatedApps) {
       switches::kEnableExperimentalExtensionApis);
   scoped_refptr<Extension> extension2(
       LoadAndExpectSuccess("isolated_app_valid.json"));
-  EXPECT_TRUE(AppIsolationInfo::HasIsolatedStorage(extension2));
+  EXPECT_TRUE(AppIsolationInfo::HasIsolatedStorage(extension2.get()));
 }
 
 }  // namespace extensions

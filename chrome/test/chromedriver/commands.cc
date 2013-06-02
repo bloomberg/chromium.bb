@@ -88,7 +88,7 @@ Status ExecuteNewSession(
     return status;
 
   scoped_ptr<Chrome> chrome;
-  status = LaunchChrome(bound_params.context_getter,
+  status = LaunchChrome(bound_params.context_getter.get(),
                         port,
                         bound_params.socket_factory,
                         bound_params.log,

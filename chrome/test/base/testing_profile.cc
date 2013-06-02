@@ -328,7 +328,7 @@ TestingProfile::~TestingProfile() {
 
   browser_context_dependency_manager_->DestroyBrowserContextServices(this);
 
-  if (host_content_settings_map_)
+  if (host_content_settings_map_.get())
     host_content_settings_map_->ShutdownOnUIThread();
 
   DestroyTopSites();
@@ -616,10 +616,9 @@ net::URLRequestContextGetter* TestingProfile::GetRequestContextForRenderProcess(
 }
 
 void TestingProfile::CreateRequestContext() {
-  if (!request_context_)
-    request_context_ =
-        new net::TestURLRequestContextGetter(
-            BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO));
+  if (!request_context_.get())
+    request_context_ = new net::TestURLRequestContextGetter(
+        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO));
 }
 
 void TestingProfile::ResetRequestContext() {
@@ -648,7 +647,7 @@ TestingProfile::GetMediaRequestContextForStoragePartition(
 }
 
 net::URLRequestContextGetter* TestingProfile::GetRequestContextForExtensions() {
-  if (!extensions_request_context_)
+  if (!extensions_request_context_.get())
     extensions_request_context_ = new TestExtensionURLRequestContextGetter();
   return extensions_request_context_.get();
 }

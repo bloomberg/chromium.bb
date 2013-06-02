@@ -286,7 +286,7 @@ TEST_F(NaClIPCAdapterTest, ReadWithChannelError) {
    private:
     scoped_refptr<NaClIPCAdapter> adapter_;
   };
-  MyThread thread(adapter_);
+  MyThread thread(adapter_.get());
 
   // IMPORTANT: do not return early from here down (including ASSERT_*) because
   // the thread needs to joined or it will assert.

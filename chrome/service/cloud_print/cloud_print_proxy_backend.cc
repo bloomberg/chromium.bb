@@ -175,9 +175,7 @@ CloudPrintProxyBackend::CloudPrintProxyBackend(
   core_ = new Core(this, settings, oauth_client_info, enable_job_poll);
 }
 
-CloudPrintProxyBackend::~CloudPrintProxyBackend() {
-  DCHECK(!core_);
-}
+CloudPrintProxyBackend::~CloudPrintProxyBackend() { DCHECK(!core_.get()); }
 
 bool CloudPrintProxyBackend::InitializeWithLsid(
     const std::string& lsid,

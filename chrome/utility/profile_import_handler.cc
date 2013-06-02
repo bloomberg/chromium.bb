@@ -39,9 +39,9 @@ void ProfileImportHandler::OnImportStart(
       localized_strings, content::UtilityThread::Get(),
       base::MessageLoopProxy::current());
   importer_ = importer::CreateImporterByType(source_profile.importer_type);
-  if (!importer_) {
-    Send(new ProfileImportProcessHostMsg_Import_Finished(false,
-        "Importer could not be created."));
+  if (!importer_.get()) {
+    Send(new ProfileImportProcessHostMsg_Import_Finished(
+        false, "Importer could not be created."));
     return;
   }
 

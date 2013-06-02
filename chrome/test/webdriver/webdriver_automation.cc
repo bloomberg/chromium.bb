@@ -792,12 +792,12 @@ void Automation::NavigateToURLAsync(const WebViewId& view_id,
   } else {
     scoped_refptr<BrowserProxy> browser =
         automation()->GetBrowserWindow(view_locator.browser_index());
-    if (!browser) {
+    if (!browser.get()) {
       *error = new Error(kUnknownError, "Couldn't obtain browser proxy");
       return;
     }
     scoped_refptr<TabProxy> tab = browser->GetTab(view_locator.tab_index());
-    if (!tab) {
+    if (!tab.get()) {
       *error = new Error(kUnknownError, "Couldn't obtain tab proxy");
       return;
     }

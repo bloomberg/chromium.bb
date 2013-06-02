@@ -417,7 +417,7 @@ bool NaClIPCAdapter::OnMessageReceived(const IPC::Message& msg) {
           IPC::ChannelHandle channel_handle =
               IPC::Channel::GenerateVerifiedChannelID("nacl");
           scoped_refptr<NaClIPCAdapter> ipc_adapter(
-              new NaClIPCAdapter(channel_handle, task_runner_));
+              new NaClIPCAdapter(channel_handle, task_runner_.get()));
           ipc_adapter->ConnectChannel();
 #if defined(OS_POSIX)
           channel_handle.socket = base::FileDescriptor(

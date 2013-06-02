@@ -46,7 +46,7 @@ PermissionMessages BluetoothDevicePermission::GetMessages() const {
 
     const std::string& device_address = i->device_address();
     string16 device_identifier;
-    if (bluetooth_adapter) {
+    if (bluetooth_adapter.get()) {
       device::BluetoothDevice* device =
           bluetooth_adapter->GetDevice(device_address);
       if (device)

@@ -18,7 +18,7 @@ class IconsManifestTest : public ExtensionManifestTest {
 TEST_F(IconsManifestTest, NormalizeIconPaths) {
   scoped_refptr<extensions::Extension> extension(
       LoadAndExpectSuccess("normalize_icon_paths.json"));
-  const ExtensionIconSet& icons = IconsInfo::GetIcons(extension);
+  const ExtensionIconSet& icons = IconsInfo::GetIcons(extension.get());
 
   EXPECT_EQ("16.png", icons.Get(extension_misc::EXTENSION_ICON_BITTY,
                                 ExtensionIconSet::MATCH_EXACTLY));
@@ -29,14 +29,15 @@ TEST_F(IconsManifestTest, NormalizeIconPaths) {
 TEST_F(IconsManifestTest, InvalidIconSizes) {
   scoped_refptr<extensions::Extension> extension(
       LoadAndExpectSuccess("init_ignored_icon_size.json"));
-  EXPECT_EQ("", IconsInfo::GetIcons(extension).Get(
-      300, ExtensionIconSet::MATCH_EXACTLY));
+  EXPECT_EQ("",
+            IconsInfo::GetIcons(extension.get())
+                .Get(300, ExtensionIconSet::MATCH_EXACTLY));
 }
 
 TEST_F(IconsManifestTest, ValidIconSizes) {
   scoped_refptr<extensions::Extension> extension(
       LoadAndExpectSuccess("init_valid_icon_size.json"));
-  const ExtensionIconSet& icons = IconsInfo::GetIcons(extension);
+  const ExtensionIconSet& icons = IconsInfo::GetIcons(extension.get());
 
   EXPECT_EQ("16.png", icons.Get(extension_misc::EXTENSION_ICON_BITTY,
                                 ExtensionIconSet::MATCH_EXACTLY));

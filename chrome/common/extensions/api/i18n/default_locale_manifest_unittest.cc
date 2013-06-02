@@ -18,7 +18,7 @@ TEST_F(DefaultLocaleManifestTest, DefaultLocale) {
 
   scoped_refptr<Extension> extension(
       LoadAndExpectSuccess("default_locale_valid.json"));
-  EXPECT_EQ("de-AT", LocaleInfo::GetDefaultLocale(extension));
+  EXPECT_EQ("de-AT", LocaleInfo::GetDefaultLocale(extension.get()));
 }
 
 }  // namespace extensions

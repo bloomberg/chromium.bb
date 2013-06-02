@@ -141,12 +141,12 @@ void TestHttpServer::StartOnServerThread(bool* success,
   } else {
     server_ = NULL;
   }
-  *success = server_;
+  *success = server_.get();
   event->Signal();
 }
 
 void TestHttpServer::StopOnServerThread(base::WaitableEvent* event) {
-  if (server_)
+  if (server_.get())
     server_ = NULL;
   event->Signal();
 }

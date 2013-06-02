@@ -250,7 +250,7 @@ int MockPrinter::GetPrintedPages() const {
 
 const MockPrinterPage* MockPrinter::GetPrintedPage(unsigned int pageno) const {
   if (pages_.size() > pageno)
-    return pages_[pageno];
+    return pages_[pageno].get();
   else
     return NULL;
 }

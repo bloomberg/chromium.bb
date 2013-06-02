@@ -170,55 +170,57 @@ TEST(ExtensionTest, WantsFileAccess) {
   extension = LoadManifest("permissions", "permissions_all_urls.json");
   EXPECT_TRUE(extension->wants_file_access());
   EXPECT_FALSE(PermissionsData::CanExecuteScriptOnPage(
-      extension, file_url, file_url, -1, NULL, -1, NULL));
+      extension.get(), file_url, file_url, -1, NULL, -1, NULL));
   extension = LoadManifest(
       "permissions", "permissions_all_urls.json", Extension::ALLOW_FILE_ACCESS);
   EXPECT_TRUE(extension->wants_file_access());
   EXPECT_TRUE(PermissionsData::CanExecuteScriptOnPage(
-      extension, file_url, file_url, -1, NULL, -1, NULL));
+      extension.get(), file_url, file_url, -1, NULL, -1, NULL));
 
   // file:///* permission
   extension = LoadManifest("permissions", "permissions_file_scheme.json");
   EXPECT_TRUE(extension->wants_file_access());
   EXPECT_FALSE(PermissionsData::CanExecuteScriptOnPage(
-      extension, file_url, file_url, -1, NULL, -1, NULL));
-  extension = LoadManifest("permissions", "permissions_file_scheme.json",
-      Extension::ALLOW_FILE_ACCESS);
+      extension.get(), file_url, file_url, -1, NULL, -1, NULL));
+  extension = LoadManifest("permissions",
+                           "permissions_file_scheme.json",
+                           Extension::ALLOW_FILE_ACCESS);
   EXPECT_TRUE(extension->wants_file_access());
   EXPECT_TRUE(PermissionsData::CanExecuteScriptOnPage(
-      extension, file_url, file_url, -1, NULL, -1, NULL));
+      extension.get(), file_url, file_url, -1, NULL, -1, NULL));
 
   // http://* permission
   extension = LoadManifest("permissions", "permissions_http_scheme.json");
   EXPECT_FALSE(extension->wants_file_access());
   EXPECT_FALSE(PermissionsData::CanExecuteScriptOnPage(
-      extension, file_url, file_url, -1, NULL, -1, NULL));
-  extension = LoadManifest("permissions", "permissions_http_scheme.json",
-      Extension::ALLOW_FILE_ACCESS);
+      extension.get(), file_url, file_url, -1, NULL, -1, NULL));
+  extension = LoadManifest("permissions",
+                           "permissions_http_scheme.json",
+                           Extension::ALLOW_FILE_ACCESS);
   EXPECT_FALSE(extension->wants_file_access());
   EXPECT_FALSE(PermissionsData::CanExecuteScriptOnPage(
-      extension, file_url, file_url, -1, NULL, -1, NULL));
+      extension.get(), file_url, file_url, -1, NULL, -1, NULL));
 
   // <all_urls> content script match
   extension = LoadManifest("permissions", "content_script_all_urls.json");
   EXPECT_TRUE(extension->wants_file_access());
   EXPECT_FALSE(PermissionsData::CanExecuteScriptOnPage(
-      extension,
+      extension.get(),
       file_url,
       file_url,
       -1,
-      &ContentScriptsInfo::GetContentScripts(extension)[0],
+      &ContentScriptsInfo::GetContentScripts(extension.get())[0],
       -1,
       NULL));
   extension = LoadManifest("permissions", "content_script_all_urls.json",
       Extension::ALLOW_FILE_ACCESS);
   EXPECT_TRUE(extension->wants_file_access());
   EXPECT_TRUE(PermissionsData::CanExecuteScriptOnPage(
-      extension,
+      extension.get(),
       file_url,
       file_url,
       -1,
-      &ContentScriptsInfo::GetContentScripts(extension)[0],
+      &ContentScriptsInfo::GetContentScripts(extension.get())[0],
       -1,
       NULL));
 
@@ -226,22 +228,22 @@ TEST(ExtensionTest, WantsFileAccess) {
   extension = LoadManifest("permissions", "content_script_file_scheme.json");
   EXPECT_TRUE(extension->wants_file_access());
   EXPECT_FALSE(PermissionsData::CanExecuteScriptOnPage(
-      extension,
+      extension.get(),
       file_url,
       file_url,
       -1,
-      &ContentScriptsInfo::GetContentScripts(extension)[0],
+      &ContentScriptsInfo::GetContentScripts(extension.get())[0],
       -1,
       NULL));
   extension = LoadManifest("permissions", "content_script_file_scheme.json",
       Extension::ALLOW_FILE_ACCESS);
   EXPECT_TRUE(extension->wants_file_access());
   EXPECT_TRUE(PermissionsData::CanExecuteScriptOnPage(
-      extension,
+      extension.get(),
       file_url,
       file_url,
       -1,
-      &ContentScriptsInfo::GetContentScripts(extension)[0],
+      &ContentScriptsInfo::GetContentScripts(extension.get())[0],
       -1,
       NULL));
 
@@ -249,22 +251,22 @@ TEST(ExtensionTest, WantsFileAccess) {
   extension = LoadManifest("permissions", "content_script_http_scheme.json");
   EXPECT_FALSE(extension->wants_file_access());
   EXPECT_FALSE(PermissionsData::CanExecuteScriptOnPage(
-      extension,
+      extension.get(),
       file_url,
       file_url,
       -1,
-      &ContentScriptsInfo::GetContentScripts(extension)[0],
+      &ContentScriptsInfo::GetContentScripts(extension.get())[0],
       -1,
       NULL));
   extension = LoadManifest("permissions", "content_script_http_scheme.json",
       Extension::ALLOW_FILE_ACCESS);
   EXPECT_FALSE(extension->wants_file_access());
   EXPECT_FALSE(PermissionsData::CanExecuteScriptOnPage(
-      extension,
+      extension.get(),
       file_url,
       file_url,
       -1,
-      &ContentScriptsInfo::GetContentScripts(extension)[0],
+      &ContentScriptsInfo::GetContentScripts(extension.get())[0],
       -1,
       NULL));
 }

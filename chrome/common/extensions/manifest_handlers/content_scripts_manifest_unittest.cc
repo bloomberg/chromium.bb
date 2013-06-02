@@ -49,8 +49,8 @@ TEST_F(ContentScriptsManifestTest, OnChromeUrlsWithFlag) {
   scoped_refptr<Extension> extension =
     LoadAndExpectSuccess("content_script_chrome_url_invalid.json");
   const GURL newtab_url("chrome://newtab/");
-  EXPECT_TRUE(ContentScriptsInfo::ExtensionHasScriptAtURL(extension,
-                                                          newtab_url));
+  EXPECT_TRUE(
+      ContentScriptsInfo::ExtensionHasScriptAtURL(extension.get(), newtab_url));
 }
 
 TEST_F(ContentScriptsManifestTest, ScriptableHosts) {
@@ -58,7 +58,7 @@ TEST_F(ContentScriptsManifestTest, ScriptableHosts) {
   scoped_refptr<Extension> extension =
       LoadAndExpectSuccess("content_script_yahoo.json");
   URLPatternSet scriptable_hosts =
-      ContentScriptsInfo::GetScriptableHosts(extension);
+      ContentScriptsInfo::GetScriptableHosts(extension.get());
 
   URLPatternSet expected;
   expected.AddPattern(

@@ -125,12 +125,11 @@ TEST(PermissionsTest, EffectiveHostPermissions) {
 
   extension = LoadManifest("effective_host_permissions", "empty.json");
   permissions = extension->GetActivePermissions();
-  EXPECT_EQ(
-      0u,
-      PermissionsData::GetEffectiveHostPermissions(
-          extension).patterns().size());
-  EXPECT_FALSE(permissions->HasEffectiveAccessToURL(
-      GURL("http://www.google.com")));
+  EXPECT_EQ(0u,
+            PermissionsData::GetEffectiveHostPermissions(extension.get())
+                .patterns().size());
+  EXPECT_FALSE(
+      permissions->HasEffectiveAccessToURL(GURL("http://www.google.com")));
   EXPECT_FALSE(permissions->HasEffectiveAccessToAllHosts());
 
   extension = LoadManifest("effective_host_permissions", "one_host.json");
@@ -270,12 +269,12 @@ TEST(PermissionsTest, CreateUnion) {
   set1 = new PermissionSet(apis1, explicit_hosts1, scriptable_hosts1);
   set2 = new PermissionSet(apis2, explicit_hosts2, scriptable_hosts2);
   union_set = PermissionSet::CreateUnion(set1.get(), set2.get());
-  EXPECT_TRUE(set1->Contains(*set2));
-  EXPECT_TRUE(set1->Contains(*union_set));
-  EXPECT_FALSE(set2->Contains(*set1));
-  EXPECT_FALSE(set2->Contains(*union_set));
-  EXPECT_TRUE(union_set->Contains(*set1));
-  EXPECT_TRUE(union_set->Contains(*set2));
+  EXPECT_TRUE(set1->Contains(*set2.get()));
+  EXPECT_TRUE(set1->Contains(*union_set.get()));
+  EXPECT_FALSE(set2->Contains(*set1.get()));
+  EXPECT_FALSE(set2->Contains(*union_set.get()));
+  EXPECT_TRUE(union_set->Contains(*set1.get()));
+  EXPECT_TRUE(union_set->Contains(*set2.get()));
 
   EXPECT_FALSE(union_set->HasEffectiveFullAccess());
   EXPECT_EQ(expected_apis, union_set->apis());
@@ -330,12 +329,12 @@ TEST(PermissionsTest, CreateUnion) {
   set2 = new PermissionSet(apis2, explicit_hosts2, scriptable_hosts2);
   union_set = PermissionSet::CreateUnion(set1.get(), set2.get());
 
-  EXPECT_FALSE(set1->Contains(*set2));
-  EXPECT_FALSE(set1->Contains(*union_set));
-  EXPECT_FALSE(set2->Contains(*set1));
-  EXPECT_FALSE(set2->Contains(*union_set));
-  EXPECT_TRUE(union_set->Contains(*set1));
-  EXPECT_TRUE(union_set->Contains(*set2));
+  EXPECT_FALSE(set1->Contains(*set2.get()));
+  EXPECT_FALSE(set1->Contains(*union_set.get()));
+  EXPECT_FALSE(set2->Contains(*set1.get()));
+  EXPECT_FALSE(set2->Contains(*union_set.get()));
+  EXPECT_TRUE(union_set->Contains(*set1.get()));
+  EXPECT_TRUE(union_set->Contains(*set2.get()));
 
   EXPECT_TRUE(union_set->HasEffectiveFullAccess());
   EXPECT_TRUE(union_set->HasEffectiveAccessToAllHosts());
@@ -390,12 +389,12 @@ TEST(PermissionsTest, CreateIntersection) {
   set1 = new PermissionSet(apis1, explicit_hosts1, scriptable_hosts1);
   set2 = new PermissionSet(apis2, explicit_hosts2, scriptable_hosts2);
   new_set = PermissionSet::CreateIntersection(set1.get(), set2.get());
-  EXPECT_TRUE(set1->Contains(*new_set));
-  EXPECT_TRUE(set2->Contains(*new_set));
-  EXPECT_TRUE(set1->Contains(*set2));
-  EXPECT_FALSE(set2->Contains(*set1));
-  EXPECT_FALSE(new_set->Contains(*set1));
-  EXPECT_TRUE(new_set->Contains(*set2));
+  EXPECT_TRUE(set1->Contains(*new_set.get()));
+  EXPECT_TRUE(set2->Contains(*new_set.get()));
+  EXPECT_TRUE(set1->Contains(*set2.get()));
+  EXPECT_FALSE(set2->Contains(*set1.get()));
+  EXPECT_FALSE(new_set->Contains(*set1.get()));
+  EXPECT_TRUE(new_set->Contains(*set2.get()));
 
   EXPECT_TRUE(new_set->IsEmpty());
   EXPECT_FALSE(new_set->HasEffectiveFullAccess());
@@ -444,12 +443,12 @@ TEST(PermissionsTest, CreateIntersection) {
   set2 = new PermissionSet(apis2, explicit_hosts2, scriptable_hosts2);
   new_set = PermissionSet::CreateIntersection(set1.get(), set2.get());
 
-  EXPECT_TRUE(set1->Contains(*new_set));
-  EXPECT_TRUE(set2->Contains(*new_set));
-  EXPECT_FALSE(set1->Contains(*set2));
-  EXPECT_FALSE(set2->Contains(*set1));
-  EXPECT_FALSE(new_set->Contains(*set1));
-  EXPECT_FALSE(new_set->Contains(*set2));
+  EXPECT_TRUE(set1->Contains(*new_set.get()));
+  EXPECT_TRUE(set2->Contains(*new_set.get()));
+  EXPECT_FALSE(set1->Contains(*set2.get()));
+  EXPECT_FALSE(set2->Contains(*set1.get()));
+  EXPECT_FALSE(new_set->Contains(*set1.get()));
+  EXPECT_FALSE(new_set->Contains(*set2.get()));
 
   EXPECT_FALSE(new_set->HasEffectiveFullAccess());
   EXPECT_FALSE(new_set->HasEffectiveAccessToAllHosts());
@@ -504,7 +503,7 @@ TEST(PermissionsTest, CreateDifference) {
   set1 = new PermissionSet(apis1, explicit_hosts1, scriptable_hosts1);
   set2 = new PermissionSet(apis2, explicit_hosts2, scriptable_hosts2);
   new_set = PermissionSet::CreateDifference(set1.get(), set2.get());
-  EXPECT_EQ(*set1, *new_set);
+  EXPECT_EQ(*set1.get(), *new_set.get());
 
   // Now use a real second set.
   apis2.insert(APIPermission::kTab);
@@ -545,8 +544,8 @@ TEST(PermissionsTest, CreateDifference) {
   set2 = new PermissionSet(apis2, explicit_hosts2, scriptable_hosts2);
   new_set = PermissionSet::CreateDifference(set1.get(), set2.get());
 
-  EXPECT_TRUE(set1->Contains(*new_set));
-  EXPECT_FALSE(set2->Contains(*new_set));
+  EXPECT_TRUE(set1->Contains(*new_set.get()));
+  EXPECT_FALSE(set2->Contains(*new_set.get()));
 
   EXPECT_FALSE(new_set->HasEffectiveFullAccess());
   EXPECT_FALSE(new_set->HasEffectiveAccessToAllHosts());
@@ -607,7 +606,7 @@ TEST(PermissionsTest, HasLessPrivilegesThan) {
         new_extension->GetActivePermissions());
 
     EXPECT_EQ(kTests[i].expect_increase,
-              old_p->HasLessPrivilegesThan(new_p)) << kTests[i].base_name;
+              old_p->HasLessPrivilegesThan(new_p.get())) << kTests[i].base_name;
   }
 }
 
@@ -814,7 +813,7 @@ TEST(PermissionsTest, GetWarningMessages_ManyHosts) {
 
   extension = LoadManifest("permissions", "many-hosts.json");
   std::vector<string16> warnings =
-      PermissionsData::GetPermissionMessageStrings(extension);
+      PermissionsData::GetPermissionMessageStrings(extension.get());
   ASSERT_EQ(1u, warnings.size());
   EXPECT_EQ("Access your data on encrypted.google.com and www.google.com",
             UTF16ToUTF8(warnings[0]));
@@ -826,8 +825,8 @@ TEST(PermissionsTest, GetWarningMessages_Plugins) {
 
   extension = LoadManifest("permissions", "plugins.json");
   std::vector<string16> warnings =
-      PermissionsData::GetPermissionMessageStrings(extension);
-  // We don't parse the plugins key on Chrome OS, so it should not ask for any
+      PermissionsData::GetPermissionMessageStrings(extension.get());
+// We don't parse the plugins key on Chrome OS, so it should not ask for any
   // permissions.
 #if defined(OS_CHROMEOS)
   ASSERT_EQ(0u, warnings.size());
@@ -878,9 +877,9 @@ TEST(PermissionsTest, GetWarningMessages_Serial) {
   EXPECT_TRUE(extension->is_platform_app());
   EXPECT_TRUE(extension->HasAPIPermission(APIPermission::kSerial));
   std::vector<string16> warnings =
-      PermissionsData::GetPermissionMessageStrings(extension);
-  EXPECT_TRUE(Contains(warnings,
-                       "Use serial devices attached to your computer"));
+      PermissionsData::GetPermissionMessageStrings(extension.get());
+  EXPECT_TRUE(
+      Contains(warnings, "Use serial devices attached to your computer"));
   ASSERT_EQ(1u, warnings.size());
 }
 
@@ -892,7 +891,7 @@ TEST(PermissionsTest, GetWarningMessages_Socket_AnyHost) {
   EXPECT_TRUE(extension->is_platform_app());
   EXPECT_TRUE(extension->HasAPIPermission(APIPermission::kSocket));
   std::vector<string16> warnings =
-      PermissionsData::GetPermissionMessageStrings(extension);
+      PermissionsData::GetPermissionMessageStrings(extension.get());
   EXPECT_EQ(1u, warnings.size());
   EXPECT_TRUE(Contains(warnings, "Exchange data with any computer "
                                  "on the local network or internet"));
@@ -906,7 +905,7 @@ TEST(PermissionsTest, GetWarningMessages_Socket_OneDomainTwoHostnames) {
   EXPECT_TRUE(extension->is_platform_app());
   EXPECT_TRUE(extension->HasAPIPermission(APIPermission::kSocket));
   std::vector<string16> warnings =
-      PermissionsData::GetPermissionMessageStrings(extension);
+      PermissionsData::GetPermissionMessageStrings(extension.get());
 
   // Verify the warnings, including support for unicode characters, the fact
   // that domain host warnings come before specific host warnings, and the fact
@@ -932,7 +931,7 @@ TEST(PermissionsTest, GetWarningMessages_Socket_TwoDomainsOneHostname) {
   EXPECT_TRUE(extension->is_platform_app());
   EXPECT_TRUE(extension->HasAPIPermission(APIPermission::kSocket));
   std::vector<string16> warnings =
-      PermissionsData::GetPermissionMessageStrings(extension);
+      PermissionsData::GetPermissionMessageStrings(extension.get());
 
   // Verify the warnings, including the fact that domain host warnings come
   // before specific host warnings and the fact that domains and hostnames are
@@ -954,12 +953,12 @@ TEST(PermissionsTest, GetWarningMessages_PlatformApppHosts) {
   extension = LoadManifest("permissions", "platform_app_hosts.json");
   EXPECT_TRUE(extension->is_platform_app());
   std::vector<string16> warnings =
-      PermissionsData::GetPermissionMessageStrings(extension);
+      PermissionsData::GetPermissionMessageStrings(extension.get());
   ASSERT_EQ(0u, warnings.size());
 
   extension = LoadManifest("permissions", "platform_app_all_urls.json");
   EXPECT_TRUE(extension->is_platform_app());
-  warnings = PermissionsData::GetPermissionMessageStrings(extension);
+  warnings = PermissionsData::GetPermissionMessageStrings(extension.get());
   ASSERT_EQ(0u, warnings.size());
 }
 
@@ -1354,7 +1353,7 @@ TEST(PermissionsTest, SyncFileSystemPermission) {
   EXPECT_TRUE(extension->is_platform_app());
   EXPECT_TRUE(extension->HasAPIPermission(APIPermission::kSyncFileSystem));
   std::vector<string16> warnings =
-      PermissionsData::GetPermissionMessageStrings(extension);
+      PermissionsData::GetPermissionMessageStrings(extension.get());
   EXPECT_TRUE(Contains(warnings, "Store data in your Google Drive account"));
   ASSERT_EQ(1u, warnings.size());
 }

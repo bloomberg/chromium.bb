@@ -161,10 +161,9 @@ bool ServiceProcess::Initialize(base::MessageLoopForUI* message_loop,
   PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
   base::FilePath pref_path =
       user_data_dir.Append(chrome::kServiceStateFileName);
-  service_prefs_.reset(
-      new ServiceProcessPrefs(
-          pref_path,
-          JsonPrefStore::GetTaskRunnerForFile(pref_path, blocking_pool_)));
+  service_prefs_.reset(new ServiceProcessPrefs(
+      pref_path,
+      JsonPrefStore::GetTaskRunnerForFile(pref_path, blocking_pool_.get())));
   service_prefs_->ReadPrefs();
 
   // This switch it required to run connector with test gaia.

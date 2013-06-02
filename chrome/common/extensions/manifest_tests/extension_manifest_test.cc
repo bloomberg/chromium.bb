@@ -122,7 +122,7 @@ scoped_refptr<Extension> ExtensionManifestTest::LoadAndExpectSuccess(
   std::string error;
   scoped_refptr<Extension> extension =
       LoadExtension(manifest, &error, location, flags);
-  EXPECT_TRUE(extension) << manifest.name();
+  EXPECT_TRUE(extension.get()) << manifest.name();
   EXPECT_EQ("", error) << manifest.name();
   return extension;
 }
@@ -142,7 +142,7 @@ scoped_refptr<Extension> ExtensionManifestTest::LoadAndExpectWarning(
   std::string error;
   scoped_refptr<Extension> extension =
       LoadExtension(manifest, &error, location, flags);
-  EXPECT_TRUE(extension) << manifest.name();
+  EXPECT_TRUE(extension.get()) << manifest.name();
   EXPECT_EQ("", error) << manifest.name();
   EXPECT_EQ(1u, extension->install_warnings().size());
   EXPECT_EQ(expected_warning, extension->install_warnings()[0].message);

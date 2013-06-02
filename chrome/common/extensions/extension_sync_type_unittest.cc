@@ -58,7 +58,7 @@ class ExtensionSyncTypeTest : public testing::Test {
     std::string error;
     scoped_refptr<Extension> extension = Extension::Create(
         extension_path, location, source, creation_flags, &error);
-    EXPECT_TRUE(extension);
+    EXPECT_TRUE(extension.get());
     EXPECT_EQ("", error);
     return extension;
   }
@@ -225,7 +225,7 @@ TEST_F(ExtensionSyncTypeTest, ExtensionWithPlugin) {
       MakeSyncTestExtension(EXTENSION, GURL(), GURL(),
                             Manifest::INTERNAL, 1, base::FilePath(),
                             Extension::NO_FLAGS));
-  if (extension)
+  if (extension.get())
     EXPECT_EQ(extension->GetSyncType(), Extension::SYNC_TYPE_NONE);
 }
 
@@ -234,7 +234,7 @@ TEST_F(ExtensionSyncTypeTest, ExtensionWithTwoPlugins) {
       MakeSyncTestExtension(EXTENSION, GURL(), GURL(),
                             Manifest::INTERNAL, 2, base::FilePath(),
                             Extension::NO_FLAGS));
-  if (extension)
+  if (extension.get())
     EXPECT_EQ(extension->GetSyncType(), Extension::SYNC_TYPE_NONE);
 }
 #endif // !defined(OS_CHROMEOS)
