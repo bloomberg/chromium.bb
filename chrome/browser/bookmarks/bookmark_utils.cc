@@ -131,7 +131,7 @@ void CopyToClipboard(BookmarkModel* model,
   if (nodes.empty())
     return;
 
-  BookmarkNodeData(nodes).WriteToClipboard(NULL);
+  BookmarkNodeData(nodes).WriteToClipboard();
 
   if (remove_nodes) {
     for (size_t i = 0; i < nodes.size(); ++i) {

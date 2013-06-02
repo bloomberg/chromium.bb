@@ -43,7 +43,6 @@ const char kWebKitSmartPasteFormat[] = "webkit_smart";
 const char kBookmarkFormat[] = "bookmark";
 const char kMimeTypePepperCustomData[] = "chromium/x-pepper-custom-data";
 const char kMimeTypeWebCustomData[] = "chromium/x-web-custom-data";
-const char kSourceTagFormat[] = "source_tag";
 
 class ClipboardMap {
  public:
@@ -184,9 +183,7 @@ Clipboard::~Clipboard() {
 }
 
 // Main entry point used to write several values in the clipboard.
-void Clipboard::WriteObjectsImpl(Buffer buffer,
-                                 const ObjectMap& objects,
-                                 SourceTag tag) {
+void Clipboard::WriteObjects(Buffer buffer, const ObjectMap& objects) {
   DCHECK(CalledOnValidThread());
   DCHECK_EQ(buffer, BUFFER_STANDARD);
   g_map.Get().Clear();
@@ -194,7 +191,6 @@ void Clipboard::WriteObjectsImpl(Buffer buffer,
        iter != objects.end(); ++iter) {
     DispatchObject(static_cast<ObjectType>(iter->first), iter->second);
   }
-  WriteSourceTag(tag);
 }
 
 uint64 Clipboard::GetSequenceNumber(Clipboard::Buffer /* buffer */) {
@@ -312,14 +308,6 @@ void Clipboard::ReadData(const Clipboard::FormatType& format,
   *result = g_map.Get().Get(format.data());
 }
 
-SourceTag Clipboard::ReadSourceTag(Buffer buffer) const {
-  DCHECK(CalledOnValidThread());
-  DCHECK_EQ(buffer, BUFFER_STANDARD);
-  std::string result;
-  ReadData(GetSourceTagFormatType(), &result);
-  return Binary2SourceTag(result);
-}
-
 // static
 Clipboard::FormatType Clipboard::GetFormatType(
     const std::string& format_string) {
@@ -374,12 +362,6 @@ const Clipboard::FormatType& Clipboard::GetPepperCustomDataFormatType() {
   return type;
 }
 
-// static
-const Clipboard::FormatType& Clipboard::GetSourceTagFormatType() {
-  CR_DEFINE_STATIC_LOCAL(FormatType, type, (kSourceTagFormat));
-  return type;
-}
-
 void Clipboard::WriteText(const char* text_data, size_t text_len) {
   g_map.Get().Set(kPlainTextFormat, std::string(text_data, text_len));
 }
@@ -424,13 +406,6 @@ void Clipboard::WriteBitmap(const char* pixel_data, const char* size_data) {
 void Clipboard::WriteData(const Clipboard::FormatType& format,
                           const char* data_data, size_t data_len) {
   g_map.Get().Set(format.data(), std::string(data_data, data_len));
-}
-
-void Clipboard::WriteSourceTag(SourceTag tag) {
-  if (tag != SourceTag()) {
-    ObjectMapParam binary = SourceTag2Binary(tag);
-    WriteData(GetSourceTagFormatType(), &binary[0], binary.size());
-  }
 }
 
 // See clipboard_android_initialization.h for more information.

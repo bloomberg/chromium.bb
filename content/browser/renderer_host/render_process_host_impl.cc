@@ -601,7 +601,7 @@ void RenderProcessHostImpl::CreateMessageFilters() {
   channel_->AddFilter(new AppCacheDispatcherHost(
       storage_partition_impl_->GetAppCacheService(),
       GetID()));
-  channel_->AddFilter(new ClipboardMessageFilter(browser_context));
+  channel_->AddFilter(new ClipboardMessageFilter);
   channel_->AddFilter(
       new DOMStorageMessageFilter(
           GetID(),

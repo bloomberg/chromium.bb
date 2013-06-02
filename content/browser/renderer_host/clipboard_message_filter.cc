@@ -18,22 +18,6 @@
 
 namespace content {
 
-namespace {
-
-// Writes objects to the clipboard with a SourceTag corresponding to
-// |browser_context|.
-void WriteObjectsWrapper(ui::Clipboard* clipboard,
-                         const ui::Clipboard::ObjectMap& objects,
-                         BrowserContext* browser_context) {
-  ui::SourceTag source_tag =
-      BrowserContext::GetMarkerForOffTheRecordContext(browser_context);
-  clipboard->WriteObjects(ui::Clipboard::BUFFER_STANDARD,
-                          objects,
-                          source_tag);
-}
-
-}  // namespace
-
 #if defined(OS_WIN)
 
 namespace {
@@ -41,20 +25,17 @@ namespace {
 // The write must be performed on the UI thread because the clipboard object
 // from the IO thread cannot create windows so it cannot be the "owner" of the
 // clipboard's contents.  // See http://crbug.com/5823.
-void WriteObjectsOnUIThread(ui::Clipboard::ObjectMap* objects,
-                            BrowserContext* browser_context) {
+void WriteObjectsOnUIThread(ui::Clipboard::ObjectMap* objects) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   static ui::Clipboard* clipboard = ui::Clipboard::GetForCurrentThread();
-  WriteObjectsWrapper(clipboard, *objects, browser_context);
+  clipboard->WriteObjects(ui::Clipboard::BUFFER_STANDARD, *objects);
 }
 
 }  // namespace
 
 #endif
 
-ClipboardMessageFilter::ClipboardMessageFilter(BrowserContext* browser_context)
-    : browser_context_(browser_context) {
-}
+ClipboardMessageFilter::ClipboardMessageFilter() {}
 
 void ClipboardMessageFilter::OverrideThreadForMessage(
     const IPC::Message& message, BrowserThread::ID* thread) {
@@ -126,10 +107,9 @@ void ClipboardMessageFilter::OnWriteObjectsSync(
   BrowserThread::PostTask(
       BrowserThread::UI,
       FROM_HERE,
-      base::Bind(&WriteObjectsOnUIThread, base::Owned(long_living_objects),
-                 browser_context_));
+      base::Bind(&WriteObjectsOnUIThread, base::Owned(long_living_objects)));
 #else
-  WriteObjectsWrapper(GetClipboard(), objects, browser_context_);
+  GetClipboard()->WriteObjects(ui::Clipboard::BUFFER_STANDARD, objects);
 #endif
 }
 
@@ -149,10 +129,9 @@ void ClipboardMessageFilter::OnWriteObjectsAsync(
   BrowserThread::PostTask(
       BrowserThread::UI,
       FROM_HERE,
-      base::Bind(&WriteObjectsOnUIThread, base::Owned(long_living_objects),
-                 browser_context_));
+      base::Bind(&WriteObjectsOnUIThread, base::Owned(long_living_objects)));
 #else
-  WriteObjectsWrapper(GetClipboard(), objects, browser_context_);
+  GetClipboard()->WriteObjects(ui::Clipboard::BUFFER_STANDARD, objects);
 #endif
 }
 

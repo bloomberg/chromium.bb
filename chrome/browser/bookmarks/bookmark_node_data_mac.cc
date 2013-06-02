@@ -14,12 +14,11 @@ bool BookmarkNodeData::ClipboardContainsBookmarks() {
       bookmark_pasteboard_helper_mac::kCopyPastePasteboard);
 }
 
-void BookmarkNodeData::WriteToClipboard(Profile* profile) const {
+void BookmarkNodeData::WriteToClipboard() const {
   bookmark_pasteboard_helper_mac::WriteToPasteboard(
       bookmark_pasteboard_helper_mac::kCopyPastePasteboard,
       elements,
-      profile_path_,
-      content::BrowserContext::GetMarkerForOffTheRecordContext(profile));
+      profile_path_);
 }
 
 bool BookmarkNodeData::ReadFromClipboard() {

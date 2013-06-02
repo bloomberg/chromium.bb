@@ -34,7 +34,6 @@
 #include "content/common/gpu/gpu_messages.h"
 #include "content/common/input_messages.h"
 #include "content/common/view_messages.h"
-#include "content/public/browser/browser_context.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/common/content_switches.h"
 #include "skia/ext/platform_canvas.h"
@@ -965,12 +964,10 @@ void RenderWidgetHostViewGtk::SelectionChanged(const string16& text,
     return;
   }
 
-  BrowserContext* browser_context = host_->GetProcess()->GetBrowserContext();
   // Set the BUFFER_SELECTION to the ui::Clipboard.
   ui::ScopedClipboardWriter clipboard_writer(
       ui::Clipboard::GetForCurrentThread(),
-      ui::Clipboard::BUFFER_SELECTION,
-      BrowserContext::GetMarkerForOffTheRecordContext(browser_context));
+      ui::Clipboard::BUFFER_SELECTION);
   clipboard_writer.WriteText(text.substr(pos, n));
 }
 

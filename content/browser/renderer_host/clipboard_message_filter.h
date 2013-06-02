@@ -16,11 +16,9 @@ class GURL;
 
 namespace content {
 
-class BrowserContext;
-
 class ClipboardMessageFilter : public BrowserMessageFilter {
  public:
-  ClipboardMessageFilter(BrowserContext* browser_context);
+  ClipboardMessageFilter();
 
   virtual void OverrideThreadForMessage(
       const IPC::Message& message,
@@ -65,8 +63,6 @@ class ClipboardMessageFilter : public BrowserMessageFilter {
   // thread. This instance of the clipboard should be accessed only on the IO
   // thread.
   static ui::Clipboard* GetClipboard();
-
-  BrowserContext* const browser_context_;
 
   DISALLOW_COPY_AND_ASSIGN(ClipboardMessageFilter);
 };

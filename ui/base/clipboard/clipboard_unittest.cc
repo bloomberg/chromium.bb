@@ -361,8 +361,7 @@ TEST_F(ClipboardTest, SharedBitmapTest) {
   Clipboard::ReplaceSharedMemHandle(&objects, handle_to_share, current_process);
 
   clipboard().WriteObjects(Clipboard::BUFFER_STANDARD,
-                           objects,
-                           SourceTag());
+                           objects);
 
   EXPECT_TRUE(clipboard().IsFormatAvailable(Clipboard::GetBitmapFormatType(),
                                             Clipboard::BUFFER_STANDARD));

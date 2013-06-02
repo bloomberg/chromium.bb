@@ -9,6 +9,7 @@
 #include "base/strings/string_split.h"
 #include "base/utf_string_conversions.h"
 #include "ui/base/accessibility/accessible_view_state.h"
+#include "ui/base/clipboard/clipboard.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
 #include "ui/views/controls/button/checkbox.h"
 #include "ui/views/controls/image_view.h"
@@ -66,8 +67,7 @@ MessageBoxView::InitParams::InitParams(const string16& message)
     : options(NO_OPTIONS),
       message(message),
       message_width(kDefaultMessageWidth),
-      inter_row_vertical_spacing(kRelatedControlVerticalSpacing),
-      clipboard_source_tag() {}
+      inter_row_vertical_spacing(kRelatedControlVerticalSpacing) {}
 
 MessageBoxView::InitParams::~InitParams() {
 }
@@ -141,9 +141,7 @@ bool MessageBoxView::AcceleratorPressed(const ui::Accelerator& accelerator) {
   if (!clipboard)
     return false;
 
-  ui::ScopedClipboardWriter scw(clipboard,
-                                ui::Clipboard::BUFFER_STANDARD,
-                                source_tag_);
+  ui::ScopedClipboardWriter scw(clipboard, ui::Clipboard::BUFFER_STANDARD);
   string16 text = message_labels_[0]->text();
   for (size_t i = 1; i < message_labels_.size(); ++i)
     text += message_labels_[i]->text();
@@ -189,7 +187,6 @@ void MessageBoxView::Init(const InitParams& params) {
   }
 
   inter_row_vertical_spacing_ = params.inter_row_vertical_spacing;
-  source_tag_ = params.clipboard_source_tag;
 
   ResetLayoutManager();
 }

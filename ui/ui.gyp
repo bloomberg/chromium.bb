@@ -87,7 +87,6 @@
         'base/clipboard/clipboard_constants.cc',
         'base/clipboard/clipboard_gtk.cc',
         'base/clipboard/clipboard_mac.mm',
-        'base/clipboard/clipboard_sourcetag.h',
         'base/clipboard/clipboard_util_win.cc',
         'base/clipboard/clipboard_util_win.h',
         'base/clipboard/clipboard_win.cc',

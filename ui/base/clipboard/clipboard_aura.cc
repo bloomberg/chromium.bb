@@ -34,7 +34,6 @@ enum AuraClipboardFormat {
   BITMAP    = 1 << 4,
   CUSTOM    = 1 << 5,
   WEB       = 1 << 6,
-  SOURCETAG = 1 << 7,
 };
 
 // ClipboardData contains data copied to the Clipboard for a variety of formats.
@@ -43,7 +42,6 @@ class ClipboardData {
  public:
   ClipboardData()
       : bitmap_data_(),
-        source_tag_(),
         web_smart_paste_(false),
         format_(0) {}
 
@@ -120,12 +118,6 @@ class ClipboardData {
     format_ |= WEB;
   }
 
-  SourceTag source_tag() const { return source_tag_; }
-  void set_source_tag(SourceTag tag) {
-    source_tag_ = tag;
-    format_ |= SOURCETAG;
-  }
-
  private:
   // Plain text in UTF8 format.
   std::string text_;
@@ -151,9 +143,6 @@ class ClipboardData {
   // Data with custom format.
   std::string custom_data_format_;
   std::string custom_data_data_;
-
-  // SourceTag.
-  SourceTag source_tag_;
 
   // WebKit smart paste data.
   bool web_smart_paste_;
@@ -307,13 +296,6 @@ class AuraClipboard {
     *result = data->custom_data_data();
   }
 
-  SourceTag ReadSourceTag() const {
-    if (!HasFormat(SOURCETAG))
-      return SourceTag();
-    const ClipboardData* data = GetData();
-    return data->source_tag();
-  }
-
   // Writes |data| to the top of the clipboard stack.
   void WriteData(ClipboardData* data) {
     DCHECK(data);
@@ -417,11 +399,6 @@ class ClipboardDataBuilder {
     data->SetCustomData(format, std::string(data_data, data_len));
   }
 
-  static void WriteSourceTag(SourceTag tag) {
-    ClipboardData* data = GetCurrentData();
-    data->set_source_tag(tag);
-  }
-
  private:
   static ClipboardData* GetCurrentData() {
     if (!current_data_)
@@ -475,16 +452,13 @@ Clipboard::~Clipboard() {
   DeleteClipboard();
 }
 
-void Clipboard::WriteObjectsImpl(Buffer buffer,
-                                 const ObjectMap& objects,
-                                 SourceTag tag) {
+void Clipboard::WriteObjects(Buffer buffer, const ObjectMap& objects) {
   DCHECK(CalledOnValidThread());
   DCHECK(IsValidBuffer(buffer));
   for (ObjectMap::const_iterator iter = objects.begin();
        iter != objects.end(); ++iter) {
     DispatchObject(static_cast<ObjectType>(iter->first), iter->second);
   }
-  WriteSourceTag(tag);
   ClipboardDataBuilder::CommitToClipboard();
 }
 
@@ -591,12 +565,6 @@ void Clipboard::ReadData(const FormatType& format, std::string* result) const {
   GetClipboard()->ReadData(format.ToString(), result);
 }
 
-SourceTag Clipboard::ReadSourceTag(Buffer buffer) const {
-  DCHECK(CalledOnValidThread());
-  DCHECK_EQ(BUFFER_STANDARD, buffer);
-  return GetClipboard()->ReadSourceTag();
-}
-
 uint64 Clipboard::GetSequenceNumber(Buffer buffer) {
   DCHECK(CalledOnValidThread());
   return GetClipboard()->GetNumClipboardEntries();
@@ -636,11 +604,6 @@ void Clipboard::WriteData(const FormatType& format,
                           const char* data_data,
                           size_t data_len) {
   ClipboardDataBuilder::WriteData(format.ToString(), data_data, data_len);
-}
-
-void Clipboard::WriteSourceTag(SourceTag tag) {
-  if (tag != SourceTag())
-    ClipboardDataBuilder::WriteSourceTag(tag);
 }
 
 // static

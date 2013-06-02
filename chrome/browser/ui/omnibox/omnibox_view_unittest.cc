@@ -73,8 +73,7 @@ TEST_F(OmniboxViewTest, GetClipboardText) {
 #if !defined(OS_CHROMEOS)
   // Does an empty clipboard get empty text?
   clipboard->WriteObjects(ui::Clipboard::BUFFER_STANDARD,
-                          ui::Clipboard::ObjectMap(),
-                          ui::SourceTag());
+                          ui::Clipboard::ObjectMap());
   EXPECT_EQ(string16(), OmniboxView::GetClipboardText());
 #endif
 

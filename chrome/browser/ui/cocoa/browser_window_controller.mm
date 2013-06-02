@@ -1874,10 +1874,7 @@ enum {
 - (id)windowWillReturnFieldEditor:(NSWindow*)sender toObject:(id)obj {
   // Ask the toolbar controller if it wants to return a custom field editor
   // for the specific object.
-  id fieldEditor = [toolbarController_ customFieldEditorForObject:obj];
-  if (!fieldEditor && findBarCocoaController_)
-    fieldEditor = [findBarCocoaController_ customFieldEditorForObject:obj];
-  return fieldEditor;
+  return [toolbarController_ customFieldEditorForObject:obj];
 }
 
 // (Needed for |BookmarkBarControllerDelegate| protocol.)
