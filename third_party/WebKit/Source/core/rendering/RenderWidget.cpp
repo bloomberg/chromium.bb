@@ -202,6 +202,9 @@ void RenderWidget::setWidget(PassRefPtr<Widget> widget)
         }
         moveWidgetToParentSoon(m_widget.get(), m_frameView);
     }
+
+    if (AXObjectCache* cache = document()->existingAXObjectCache())
+        cache->childrenChanged(this);
 }
 
 void RenderWidget::layout()

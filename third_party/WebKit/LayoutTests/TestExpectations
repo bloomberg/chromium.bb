@@ -1110,8 +1110,6 @@ webkit.org/b/92570 [ Mac Win Debug ] inspector/debugger/dom-breakpoints.html [ P
 webkit.org/b/92570 [ Win Debug ] inspector/timeline/timeline-network-received-data.html [ Failure Pass ]
 webkit.org/b/92570 [ Win Debug ] inspector/timeline/timeline-start-time.html [ Failure Pass Timeout ]
 
-webkit.org/b/92941 accessibility/loading-iframe-updates-axtree.html [ Timeout ]
-
 webkit.org/b/93566 [ Debug ] fast/parser/iframe-sets-parent-to-javascript-url.html [ Failure Pass ]
 webkit.org/b/93567 [ Debug ] fast/parser/javascript-url-compat-mode.html [ Failure Pass ]
 
