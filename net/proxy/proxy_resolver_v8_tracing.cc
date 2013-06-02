@@ -570,6 +570,36 @@ void ProxyResolverV8Tracing::Job::RecordMetrics() const {
     UPDATE_HISTOGRAMS("Net.ProxyResolver.BlockingDNSMode.");
 
 #undef UPDATE_HISTOGRAMS
+
+  // Histograms to better understand http://crbug.com/240536 -- long
+  // URLs can cause a significant slowdown in PAC execution. Figure out how
+  // severe this is in the wild.
+  if (!blocking_dns_) {
+    size_t url_size = url_.spec().size();
+
+    UMA_HISTOGRAM_CUSTOM_COUNTS(
+        "Net.ProxyResolver.URLSize", url_size, 1, 200000, 50);
+
+    if (url_size > 2048) {
+      UMA_HISTOGRAM_MEDIUM_TIMES("Net.ProxyResolver.ExecutionTime_UrlOver2K",
+                                 metrics_execution_time_);
+    }
+
+    if (url_size > 4096) {
+      UMA_HISTOGRAM_MEDIUM_TIMES("Net.ProxyResolver.ExecutionTime_UrlOver4K",
+                                 metrics_execution_time_);
+    }
+
+    if (url_size > 8192) {
+      UMA_HISTOGRAM_MEDIUM_TIMES("Net.ProxyResolver.ExecutionTime_UrlOver8K",
+                                 metrics_execution_time_);
+    }
+
+    if (url_size > 131072) {
+      UMA_HISTOGRAM_MEDIUM_TIMES("Net.ProxyResolver.ExecutionTime_UrlOver128K",
+                                 metrics_execution_time_);
+    }
+  }
 }
 
 

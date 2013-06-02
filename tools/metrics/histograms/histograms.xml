@@ -4103,6 +4103,10 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Net.ProxyResolver.URLSize">
+  <summary>The length of the URL that was passed into the PAC script.</summary>
+</histogram>
+
 <histogram name="Net.PublicKeyPinFailureDomain" enum="PublicKeyPinFailedDomain">
   <summary>
     Second-level domains for which we have observed public key pinning failures.
@@ -16473,6 +16477,14 @@ other types of suffix sets.
   <affected-histogram name="NetConnectivity3.PacedPacket.Send6.SeriesAcked"/>
   <affected-histogram name="NetConnectivity3.StartPacket.Send6.PacketsSent"/>
   <affected-histogram name="NetConnectivity3.StartPacket.Send6.SeriesAcked"/>
+</fieldtrial>
+
+<fieldtrial name="NetProxyResolverExecutionTime">
+  <group name="UrlOver2K" label="URL length was over 2K"/>
+  <group name="UrlOver4K" label="URL length was over 4K"/>
+  <group name="UrlOver8K" label="URL length was over 8K"/>
+  <group name="UrlOver128K" label="URL length was over 128K"/>
+  <affected-histogram name="Net.ProxyResolver.ExecutionTime"/>
 </fieldtrial>
 
 <fieldtrial name="OmniboxProviderTime" separator=".">
