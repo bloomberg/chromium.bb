@@ -11,10 +11,13 @@
 #include "net/dns/mock_host_resolver.h"
 
 // Used to fire all of the listeners on the buttons.
-static const char kScriptBeginClickingTestButtons[] =
+static const char kScriptClickAllTestButtons[] =
     "(function() {"
     "  setRunningAsRobot();"
-    "  beginClickingTestButtons();"
+    "  var buttons = document.getElementsByTagName('button');"
+    "  for (var i=0; i < buttons.length; i++) {"
+    "    buttons[i].click();"
+    "  }"
     "})();";
 
 class ActivityLogExtensionTest : public ExtensionApiTest {
@@ -29,7 +32,7 @@ class ActivityLogExtensionTest : public ExtensionApiTest {
 namespace extensions {
 
 // Flakily times out: http://crbug.com/245594.
-IN_PROC_BROWSER_TEST_F(ActivityLogExtensionTest, ExtensionEndToEnd) {
+IN_PROC_BROWSER_TEST_F(ActivityLogExtensionTest, DISABLED_ExtensionEndToEnd) {
   host_resolver()->AddRule("*", "127.0.0.1");
   StartTestServer();
 
@@ -47,7 +50,7 @@ IN_PROC_BROWSER_TEST_F(ActivityLogExtensionTest, ExtensionEndToEnd) {
   // Run the test by firing all the buttons.  Wait until completion.
   ResultCatcher catcher;
   ASSERT_TRUE(content::ExecuteScript(tab_strip->GetActiveWebContents(),
-                                     kScriptBeginClickingTestButtons));
+                                     kScriptClickAllTestButtons));
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
 
