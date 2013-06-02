@@ -227,9 +227,9 @@ PP_Resource ResourceCreationProxy::CreateFileChooser(
     PP_FileChooserMode_Dev mode,
     const PP_Var& accept_types) {
   scoped_refptr<StringVar> string_var = StringVar::FromPPVar(accept_types);
-  std::string str = string_var ? string_var->value() : std::string();
-  return (new FileChooserResource(GetConnection(), instance, mode,
-                                  str.c_str()))->GetReference();
+  std::string str = string_var.get() ? string_var->value() : std::string();
+  return (new FileChooserResource(GetConnection(), instance, mode, str.c_str()))
+      ->GetReference();
 }
 
 PP_Resource ResourceCreationProxy::CreateGraphics2D(PP_Instance instance,

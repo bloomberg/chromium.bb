@@ -59,7 +59,7 @@ InstanceData::InstanceData()
 
 InstanceData::~InstanceData() {
   // Run any pending mouse lock callback to prevent leaks.
-  if (mouse_lock_callback)
+  if (mouse_lock_callback.get())
     mouse_lock_callback->Abort();
 }
 

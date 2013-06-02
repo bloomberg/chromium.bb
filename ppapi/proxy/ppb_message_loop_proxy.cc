@@ -177,10 +177,9 @@ void MessageLoopResource::PostClosure(
     const tracked_objects::Location& from_here,
     const base::Closure& closure,
     int64 delay_ms) {
-  if (loop_proxy_) {
-    loop_proxy_->PostDelayedTask(from_here,
-                                 closure,
-                                 base::TimeDelta::FromMilliseconds(delay_ms));
+  if (loop_proxy_.get()) {
+    loop_proxy_->PostDelayedTask(
+        from_here, closure, base::TimeDelta::FromMilliseconds(delay_ms));
   } else {
     TaskInfo info;
     info.from_here = FROM_HERE;

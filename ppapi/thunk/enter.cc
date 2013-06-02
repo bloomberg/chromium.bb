@@ -73,12 +73,13 @@ EnterBase::~EnterBase() {
   // callback_ is cleared any time it is run, scheduled to be run, or once we
   // know it will be completed asynchronously. So by this point it should be
   // NULL.
-  DCHECK(!callback_) << "|callback_| is not NULL. Did you forget to call "
-      "|EnterBase::SetResult| in the interface's thunk?";
+  DCHECK(!callback_.get())
+      << "|callback_| is not NULL. Did you forget to call "
+         "|EnterBase::SetResult| in the interface's thunk?";
 }
 
 int32_t EnterBase::SetResult(int32_t result) {
-  if (!callback_) {
+  if (!callback_.get()) {
     // It doesn't make sense to call SetResult if there is no callback.
     NOTREACHED();
     retval_ = result;
@@ -132,7 +133,7 @@ void EnterBase::SetStateForCallbackError(bool report_error) {
     // In-process plugins can't make PPAPI calls off the main thread.
     CHECK(IsMainThread());
   }
-  if (callback_) {
+  if (callback_.get()) {
     if (callback_->is_blocking() && IsMainThread()) {
       // Blocking callbacks are never allowed on the main thread.
       callback_->MarkAsCompleted();
@@ -193,12 +194,12 @@ void EnterBase::SetStateForResourceError(PP_Resource pp_resource,
   if (object)
     return;  // Everything worked.
 
-  if (callback_ && callback_->is_required()) {
+  if (callback_.get() && callback_->is_required()) {
     callback_->PostRun(static_cast<int32_t>(PP_ERROR_BADRESOURCE));
     callback_ = NULL;
     retval_ = PP_OK_COMPLETIONPENDING;
   } else {
-    if (callback_)
+    if (callback_.get())
       callback_->MarkAsCompleted();
     callback_ = NULL;
     retval_ = PP_ERROR_BADRESOURCE;
@@ -235,12 +236,12 @@ void EnterBase::SetStateForFunctionError(PP_Instance pp_instance,
   if (object)
     return;  // Everything worked.
 
-  if (callback_ && callback_->is_required()) {
+  if (callback_.get() && callback_->is_required()) {
     callback_->PostRun(static_cast<int32_t>(PP_ERROR_BADARGUMENT));
     callback_ = NULL;
     retval_ = PP_OK_COMPLETIONPENDING;
   } else {
-    if (callback_)
+    if (callback_.get())
       callback_->MarkAsCompleted();
     callback_ = NULL;
     retval_ = PP_ERROR_BADARGUMENT;

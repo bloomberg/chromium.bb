@@ -47,7 +47,7 @@ int32_t VideoSourceResource::Open(
 
   scoped_refptr<StringVar> stream_url_var = StringVar::FromPPVar(stream_url);
   const uint32_t kMaxStreamIdSizeInBytes = 16384;
-  if (!stream_url_var ||
+  if (!stream_url_var.get() ||
       stream_url_var->value().size() > kMaxStreamIdSizeInBytes)
     return PP_ERROR_BADARGUMENT;
   Call<PpapiPluginMsg_VideoSource_OpenReply>(RENDERER,

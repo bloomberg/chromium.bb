@@ -123,8 +123,8 @@ void TrackedCallback::Run(int32_t result) {
   } else {
     // If there's a target_loop_, and we're not on the right thread, we need to
     // post to target_loop_.
-    if (target_loop_ &&
-        target_loop_ != PpapiGlobals::Get()->GetCurrentMessageLoop()) {
+    if (target_loop_.get() &&
+        target_loop_.get() != PpapiGlobals::Get()->GetCurrentMessageLoop()) {
       PostRun(result);
       return;
     }
@@ -152,7 +152,7 @@ void TrackedCallback::PostRun(int32_t result) {
 
   base::Closure callback_closure(
       RunWhileLocked(base::Bind(&TrackedCallback::Run, this, result)));
-  if (!target_loop_) {
+  if (!target_loop_.get()) {
     // We must be running in-process and on the main thread (the Enter
     // classes protect against having a null target_loop_ otherwise).
     DCHECK(IsMainThread());

@@ -40,7 +40,7 @@ void ResourceMessageFilter::OnFilterDestroyed() {
 bool ResourceMessageFilter::HandleMessage(const IPC::Message& msg,
                                           HostMessageContext* context) {
   scoped_refptr<base::TaskRunner> runner = OverrideTaskRunnerForMessage(msg);
-  if (runner) {
+  if (runner.get()) {
     // TODO(raymes): We need to make a copy so the context can be used on other
     // threads. It would be better to have a thread-safe refcounted context.
     HostMessageContext context_copy = *context;

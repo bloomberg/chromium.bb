@@ -56,7 +56,7 @@ SerializedVar::Inner::~Inner() {
 }
 
 PP_Var SerializedVar::Inner::GetVar() {
-  DCHECK(serialization_rules_);
+  DCHECK(serialization_rules_.get());
 
 #if defined(NACL_WIN64)
   NOTREACHED();
@@ -74,7 +74,7 @@ PP_Var SerializedVar::Inner::GetVar() {
 void SerializedVar::Inner::SetVar(PP_Var var) {
   // Sanity check, when updating the var we should have received a
   // serialization rules pointer already.
-  DCHECK(serialization_rules_);
+  DCHECK(serialization_rules_.get());
   var_ = var;
   raw_var_data_.reset(NULL);
 }
@@ -100,7 +100,7 @@ void SerializedVar::Inner::WriteToMessage(IPC::Message* m) const {
   // that returns a var. This means the message handler didn't write to the
   // output parameter, or possibly you used the wrong helper class
   // (normally SerializedVarReturnValue).
-  DCHECK(serialization_rules_);
+  DCHECK(serialization_rules_.get());
 
 #ifndef NDEBUG
   // We should only be serializing something once.

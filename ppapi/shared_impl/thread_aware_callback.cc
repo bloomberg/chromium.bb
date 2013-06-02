@@ -49,7 +49,7 @@ bool ThreadAwareCallbackBase::HasTargetLoop() {
 
 void ThreadAwareCallbackBase::InternalRunOnTargetThread(
     const base::Closure& closure) {
-  if (target_loop_ != PpapiGlobals::Get()->GetCurrentMessageLoop()) {
+  if (target_loop_.get() != PpapiGlobals::Get()->GetCurrentMessageLoop()) {
     target_loop_->PostClosure(
         FROM_HERE,
         RunWhileLocked(base::Bind(&Core::RunIfNotAborted, core_, closure)),

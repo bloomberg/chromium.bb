@@ -124,7 +124,7 @@ void PDFResource::HistogramPDFPageCount(int count) {
 void PDFResource::UserMetricsRecordAction(const PP_Var& action) {
   scoped_refptr<ppapi::StringVar> action_str(
       ppapi::StringVar::FromPPVar(action));
-  if (action_str) {
+  if (action_str.get()) {
     Post(RENDERER,
          PpapiHostMsg_PDF_UserMetricsRecordAction(action_str->value()));
   }

@@ -199,11 +199,9 @@ TEST_F(PluginVarTrackerTest, PluginObjectInstanceDeleted) {
   // Make a var with one reference.
   scoped_refptr<ProxyObjectVar> object(
       new ProxyObjectVar(plugin_dispatcher(), host_object.value.as_id));
-  PP_Var plugin_var = MakeObject(var_tracker().AddVar(object));
-  var_tracker().PluginImplementedObjectCreated(pp_instance,
-                                               plugin_var,
-                                               &mark_on_deallocate_class,
-                                               user_data);
+  PP_Var plugin_var = MakeObject(var_tracker().AddVar(object.get()));
+  var_tracker().PluginImplementedObjectCreated(
+      pp_instance, plugin_var, &mark_on_deallocate_class, user_data);
 
   // Release the plugin ref to the var. WebKit hasn't called destroy so
   // we won't get a destroy call.
@@ -230,11 +228,9 @@ TEST_F(PluginVarTrackerTest, PluginObjectLeaked) {
   // Make a var with one reference.
   scoped_refptr<ProxyObjectVar> object(
       new ProxyObjectVar(plugin_dispatcher(), host_object.value.as_id));
-  PP_Var plugin_var = MakeObject(var_tracker().AddVar(object));
-  var_tracker().PluginImplementedObjectCreated(pp_instance,
-                                               plugin_var,
-                                               &mark_on_deallocate_class,
-                                               user_data);
+  PP_Var plugin_var = MakeObject(var_tracker().AddVar(object.get()));
+  var_tracker().PluginImplementedObjectCreated(
+      pp_instance, plugin_var, &mark_on_deallocate_class, user_data);
 
   // Destroy the instance. This should not call deallocate since the plugin
   // still has a ref.

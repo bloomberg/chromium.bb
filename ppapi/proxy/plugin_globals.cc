@@ -76,7 +76,7 @@ PluginGlobals::~PluginGlobals() {
     // count, so this will delete the MessageLoop resource. We do this before
     // we clear plugin_globals_, because the Resource destructor tries to access
     // this PluginGlobals.
-    DCHECK(!loop_for_main_thread_ || loop_for_main_thread_->HasOneRef());
+    DCHECK(!loop_for_main_thread_.get() || loop_for_main_thread_->HasOneRef());
     loop_for_main_thread_ = NULL;
   }
   plugin_globals_ = NULL;

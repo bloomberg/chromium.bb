@@ -104,7 +104,7 @@ class PPAPI_PROXY_EXPORT SerializedVar {
     ~Inner();
 
     VarSerializationRules* serialization_rules() {
-      return serialization_rules_;
+      return serialization_rules_.get();
     }
     void set_serialization_rules(VarSerializationRules* serialization_rules) {
       serialization_rules_ = serialization_rules;

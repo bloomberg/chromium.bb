@@ -325,7 +325,7 @@ void URLLoaderResource::SetDefersLoading(bool defers_loading) {
 
 int32_t URLLoaderResource::ValidateCallback(
     scoped_refptr<TrackedCallback> callback) {
-  DCHECK(callback);
+  DCHECK(callback.get());
   if (TrackedCallback::IsPending(pending_callback_))
     return PP_ERROR_INPROGRESS;
   return PP_OK;

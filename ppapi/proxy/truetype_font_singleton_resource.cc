@@ -49,7 +49,7 @@ int32_t TrueTypeFontSingletonResource::GetFontsInFamily(
       const scoped_refptr<TrackedCallback>& callback) {
   scoped_refptr<StringVar> family_var = StringVar::FromPPVar(family);
   const uint32_t kMaxFamilySizeInBytes = 1024;
-  if (!family_var || family_var->value().size() > kMaxFamilySizeInBytes)
+  if (!family_var.get() || family_var->value().size() > kMaxFamilySizeInBytes)
     return PP_ERROR_BADARGUMENT;
   Call<PpapiPluginMsg_TrueTypeFontSingleton_GetFontsInFamilyReply>(BROWSER,
       PpapiHostMsg_TrueTypeFontSingleton_GetFontsInFamily(family_var->value()),

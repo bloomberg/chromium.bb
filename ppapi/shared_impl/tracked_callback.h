@@ -117,9 +117,7 @@ class PPAPI_SHARED_EXPORT TrackedCallback
     return (callback_.func &&
             (callback_.flags & PP_COMPLETIONCALLBACK_FLAG_OPTIONAL));
   }
-  bool has_null_target_loop() const {
-    return target_loop_ == NULL;
-  }
+  bool has_null_target_loop() const { return target_loop_.get() == NULL; }
 
  private:
   // TrackedCallback and EnterBase manage dealing with how to invoke callbacks

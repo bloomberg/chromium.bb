@@ -157,7 +157,7 @@ PP_Var StringVar::StringToPPVar(const std::string& var) {
 // static
 PP_Var StringVar::StringToPPVar(const char* data, uint32 len) {
   scoped_refptr<StringVar> str(new StringVar(data, len));
-  if (!str || !IsStringUTF8(str->value()))
+  if (!str.get() || !IsStringUTF8(str->value()))
     return PP_MakeNull();
   return str->GetPPVar();
 }
@@ -168,7 +168,7 @@ StringVar* StringVar::FromPPVar(PP_Var var) {
     return NULL;
   scoped_refptr<Var> var_object(
       PpapiGlobals::Get()->GetVarTracker()->GetVar(var));
-  if (!var_object)
+  if (!var_object.get())
     return NULL;
   return var_object->AsStringVar();
 }
@@ -202,7 +202,7 @@ ArrayBufferVar* ArrayBufferVar::FromPPVar(PP_Var var) {
     return NULL;
   scoped_refptr<Var> var_object(
       PpapiGlobals::Get()->GetVarTracker()->GetVar(var));
-  if (!var_object)
+  if (!var_object.get())
     return NULL;
   return var_object->AsArrayBufferVar();
 }

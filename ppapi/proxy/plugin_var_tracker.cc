@@ -57,7 +57,7 @@ PP_Var PluginVarTracker::ReceiveObjectPassRef(const PP_Var& host_var,
     // two references on our behalf. We want to transfer that extra reference
     // to our list. This means we addref in the plugin, and release the extra
     // one in the renderer.
-    SendReleaseObjectMsg(*object);
+    SendReleaseObjectMsg(*object.get());
   }
   info.ref_count++;
   return ret;

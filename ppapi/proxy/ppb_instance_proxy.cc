@@ -411,7 +411,7 @@ Resource* PPB_Instance_Proxy::GetSingletonResource(PP_Instance instance,
 #endif  // !defined(OS_NACL) && !defined(NACL_WIN64)
   }
 
-  if (!new_singleton) {
+  if (!new_singleton.get()) {
     // Getting here implies that a constructor is missing in the above switch.
     NOTREACHED();
     return NULL;

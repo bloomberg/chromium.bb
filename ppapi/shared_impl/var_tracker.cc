@@ -199,7 +199,7 @@ PP_Var VarTracker::MakeArrayBufferPPVar(uint32 size_in_bytes) {
   CheckThreadingPreconditions();
 
   scoped_refptr<ArrayBufferVar> array_buffer(CreateArrayBuffer(size_in_bytes));
-  if (!array_buffer)
+  if (!array_buffer.get())
     return PP_MakeNull();
   return array_buffer->GetPPVar();
 }
@@ -229,7 +229,7 @@ PP_Var VarTracker::MakeArrayBufferPPVar(uint32 size_in_bytes,
 
   scoped_refptr<ArrayBufferVar> array_buffer(
       CreateShmArrayBuffer(size_in_bytes, handle));
-  if (!array_buffer)
+  if (!array_buffer.get())
     return PP_MakeNull();
   return array_buffer->GetPPVar();
 }
