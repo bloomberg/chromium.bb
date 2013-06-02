@@ -283,7 +283,7 @@ void AutocheckoutManager::MaybeShowAutocheckoutBubble(
       scoped_refptr<net::URLRequestContextGetter>(
           browser_context->GetRequestContext());
 
-  if (!request_context)
+  if (!request_context.get())
     return;
 
   base::Closure task = base::Bind(&GetGoogleCookies, request_context, callback);

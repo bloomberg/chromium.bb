@@ -100,7 +100,7 @@ void RefcountedBrowserContextKeyedServiceFactory::Associate(
 void RefcountedBrowserContextKeyedServiceFactory::BrowserContextShutdown(
     content::BrowserContext* context) {
   RefCountedStorage::iterator it = mapping_.find(context);
-  if (it != mapping_.end() && it->second)
+  if (it != mapping_.end() && it->second.get())
     it->second->ShutdownOnUIThread();
 }
 

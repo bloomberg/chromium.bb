@@ -51,7 +51,7 @@ WebDatabaseService::~WebDatabaseService() {
 }
 
 void WebDatabaseService::AddTable(scoped_ptr<WebDatabaseTable> table) {
-  if (!wds_backend_) {
+  if (!wds_backend_.get()) {
     wds_backend_ = new WebDataServiceBackend(
         path_, new BackendDelegate(weak_ptr_factory_.GetWeakPtr()));
   }
@@ -59,7 +59,7 @@ void WebDatabaseService::AddTable(scoped_ptr<WebDatabaseTable> table) {
 }
 
 void WebDatabaseService::LoadDatabase() {
-  DCHECK(wds_backend_);
+  DCHECK(wds_backend_.get());
 
   BrowserThread::PostTask(
       BrowserThread::DB,
@@ -68,7 +68,7 @@ void WebDatabaseService::LoadDatabase() {
 }
 
 void WebDatabaseService::UnloadDatabase() {
-  if (!wds_backend_)
+  if (!wds_backend_.get())
     return;
   BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
       Bind(&WebDataServiceBackend::ShutdownDatabase,
@@ -76,7 +76,7 @@ void WebDatabaseService::UnloadDatabase() {
 }
 
 void WebDatabaseService::ShutdownDatabase() {
-  if (!wds_backend_)
+  if (!wds_backend_.get())
     return;
   weak_ptr_factory_.InvalidateWeakPtrs();
   BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
@@ -86,7 +86,7 @@ void WebDatabaseService::ShutdownDatabase() {
 
 WebDatabase* WebDatabaseService::GetDatabaseOnDB() const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
-  if (!wds_backend_)
+  if (!wds_backend_.get())
     return NULL;
   return wds_backend_->database();
 }
@@ -98,13 +98,13 @@ scoped_refptr<WebDataServiceBackend> WebDatabaseService::GetBackend() const {
 void WebDatabaseService::ScheduleDBTask(
     const tracked_objects::Location& from_here,
     const WriteTask& task) {
-  if (!wds_backend_) {
+  if (!wds_backend_.get()) {
     NOTREACHED() << "Task scheduled after Shutdown()";
     return;
   }
 
   scoped_ptr<WebDataRequest> request(
-      new WebDataRequest(NULL, wds_backend_->request_manager()));
+      new WebDataRequest(NULL, wds_backend_->request_manager().get()));
 
   BrowserThread::PostTask(BrowserThread::DB, from_here,
       Bind(&WebDataServiceBackend::DBWriteTaskWrapper, wds_backend_,
@@ -118,13 +118,13 @@ WebDataServiceBase::Handle WebDatabaseService::ScheduleDBTaskWithResult(
   DCHECK(consumer);
   WebDataServiceBase::Handle handle = 0;
 
-  if (!wds_backend_) {
+  if (!wds_backend_.get()) {
     NOTREACHED() << "Task scheduled after Shutdown()";
     return handle;
   }
 
   scoped_ptr<WebDataRequest> request(
-      new WebDataRequest(consumer, wds_backend_->request_manager()));
+      new WebDataRequest(consumer, wds_backend_->request_manager().get()));
   handle = request->GetHandle();
 
   BrowserThread::PostTask(BrowserThread::DB, from_here,
@@ -135,7 +135,7 @@ WebDataServiceBase::Handle WebDatabaseService::ScheduleDBTaskWithResult(
 }
 
 void WebDatabaseService::CancelRequest(WebDataServiceBase::Handle h) {
-  if (!wds_backend_)
+  if (!wds_backend_.get())
     return;
   wds_backend_->request_manager()->CancelRequest(h);
 }

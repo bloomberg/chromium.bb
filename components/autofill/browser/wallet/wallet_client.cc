@@ -238,7 +238,7 @@ WalletClient::WalletClient(net::URLRequestContextGetter* context_getter,
       request_type_(NO_PENDING_REQUEST),
       one_time_pad_(kOneTimePadLength),
       encryption_escrow_client_(context_getter, this) {
-  DCHECK(context_getter_);
+  DCHECK(context_getter_.get());
   DCHECK(delegate_);
 }
 
@@ -632,7 +632,7 @@ void WalletClient::MakeWalletRequest(const GURL& url,
 
   request_.reset(net::URLFetcher::Create(
       0, url, net::URLFetcher::POST, this));
-  request_->SetRequestContext(context_getter_);
+  request_->SetRequestContext(context_getter_.get());
   DVLOG(1) << "Making request to " << url << " with post_body=" << post_body;
   request_->SetUploadData(kJsonMimeType, post_body);
   request_started_timestamp_ = base::Time::Now();

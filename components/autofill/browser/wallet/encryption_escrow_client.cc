@@ -45,7 +45,7 @@ EncryptionEscrowClient::EncryptionEscrowClient(
     : context_getter_(context_getter),
       observer_(observer),
       request_type_(NO_PENDING_REQUEST) {
-  DCHECK(context_getter_);
+  DCHECK(context_getter_.get());
   DCHECK(observer_);
 }
 
@@ -119,7 +119,7 @@ void EncryptionEscrowClient::MakeRequest(const GURL& url,
 
   request_.reset(net::URLFetcher::Create(
       1, url, net::URLFetcher::POST, this));
-  request_->SetRequestContext(context_getter_);
+  request_->SetRequestContext(context_getter_.get());
   DVLOG(1) << "url=" << url << ", post_body=" << post_body;
   request_->SetUploadData(kApplicationMimeType, post_body);
   request_->Start();

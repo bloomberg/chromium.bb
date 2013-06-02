@@ -54,19 +54,19 @@ void WebDataServiceBase::Init() {
 }
 
 void WebDataServiceBase::UnloadDatabase() {
-  if (!wdbs_)
+  if (!wdbs_.get())
     return;
   wdbs_->UnloadDatabase();
 }
 
 void WebDataServiceBase::ShutdownDatabase() {
-  if (!wdbs_)
+  if (!wdbs_.get())
     return;
   wdbs_->ShutdownDatabase();
 }
 
 void WebDataServiceBase::CancelRequest(Handle h) {
-  if (!wdbs_)
+  if (!wdbs_.get())
     return;
   wdbs_->CancelRequest(h);
 }
@@ -80,19 +80,19 @@ bool WebDataServiceBase::IsDatabaseLoaded() {
 }
 
 void WebDataServiceBase::AddDBObserver(WebDatabaseObserver* observer) {
-  if (!wdbs_)
+  if (!wdbs_.get())
     return;
   wdbs_->AddObserver(observer);
 }
 
 void WebDataServiceBase::RemoveDBObserver(WebDatabaseObserver* observer) {
-  if (!wdbs_)
+  if (!wdbs_.get())
     return;
   wdbs_->RemoveObserver(observer);
 }
 
 WebDatabase* WebDataServiceBase::GetDatabase() {
-  if (!wdbs_)
+  if (!wdbs_.get())
     return NULL;
   return wdbs_->GetDatabaseOnDB();
 }

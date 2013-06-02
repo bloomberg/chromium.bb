@@ -141,7 +141,7 @@ TEST_F(AutocompleteHistoryManagerTest, CreditCardNumberValue) {
   valid_cc.form_control_type = "text";
   form.fields.push_back(valid_cc);
 
-  EXPECT_CALL(*web_data_service_, AddFormFields(_)).Times(0);
+  EXPECT_CALL(*web_data_service_.get(), AddFormFields(_)).Times(0);
   autocomplete_manager_->OnFormSubmitted(form);
 }
 
@@ -184,7 +184,7 @@ TEST_F(AutocompleteHistoryManagerTest, SSNValue) {
   ssn.form_control_type = "text";
   form.fields.push_back(ssn);
 
-  EXPECT_CALL(*web_data_service_, AddFormFields(_)).Times(0);
+  EXPECT_CALL(*web_data_service_.get(), AddFormFields(_)).Times(0);
   autocomplete_manager_->OnFormSubmitted(form);
 }
 

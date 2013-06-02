@@ -168,14 +168,14 @@ void AutofillWebDataService::RemoveOriginURLsModifiedBetween(
 void AutofillWebDataService::AddObserver(
     AutofillWebDataServiceObserverOnDBThread* observer) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
-  if (autofill_backend_)
+  if (autofill_backend_.get())
     autofill_backend_->AddObserver(observer);
 }
 
 void AutofillWebDataService::RemoveObserver(
     AutofillWebDataServiceObserverOnDBThread* observer) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
-  if (autofill_backend_)
+  if (autofill_backend_.get())
     autofill_backend_->RemoveObserver(observer);
 }
 

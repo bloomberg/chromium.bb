@@ -170,7 +170,7 @@ void AutocompleteHistoryManager::SetExternalDelegate(
 
 void AutocompleteHistoryManager::CancelPendingQuery() {
   if (pending_query_handle_) {
-    if (autofill_data_)
+    if (autofill_data_.get())
       autofill_data_->CancelRequest(pending_query_handle_);
     pending_query_handle_ = 0;
   }
