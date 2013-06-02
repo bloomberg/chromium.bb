@@ -225,7 +225,7 @@ ObjectProxy* Bus::GetObjectProxyWithOptions(const std::string& service_name,
                                        options);
   ObjectProxyTable::iterator iter = object_proxy_table_.find(key);
   if (iter != object_proxy_table_.end()) {
-    return iter->second;
+    return iter->second.get();
   }
 
   scoped_refptr<ObjectProxy> object_proxy =
@@ -281,7 +281,7 @@ ExportedObject* Bus::GetExportedObject(const ObjectPath& object_path) {
   // Check if we already have the requested exported object.
   ExportedObjectTable::iterator iter = exported_object_table_.find(object_path);
   if (iter != exported_object_table_.end()) {
-    return iter->second;
+    return iter->second.get();
   }
 
   scoped_refptr<ExportedObject> exported_object =
@@ -328,7 +328,7 @@ ObjectManager* Bus::GetObjectManager(const std::string& service_name,
   const ObjectManagerTable::key_type key(service_name + object_path.value());
   ObjectManagerTable::iterator iter = object_manager_table_.find(key);
   if (iter != object_manager_table_.end()) {
-    return iter->second;
+    return iter->second.get();
   }
 
   scoped_refptr<ObjectManager> object_manager =

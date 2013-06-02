@@ -39,25 +39,23 @@ class MockTest : public testing::Test {
 
     // Set an expectation so mock_proxy's CallMethodAndBlock() will use
     // CreateMockProxyResponse() to return responses.
-    EXPECT_CALL(*mock_proxy_, MockCallMethodAndBlock(_, _))
+    EXPECT_CALL(*mock_proxy_.get(), MockCallMethodAndBlock(_, _))
         .WillRepeatedly(Invoke(this, &MockTest::CreateMockProxyResponse));
 
     // Set an expectation so mock_proxy's CallMethod() will use
     // HandleMockProxyResponseWithMessageLoop() to return responses.
-    EXPECT_CALL(*mock_proxy_, CallMethod(_, _, _))
-        .WillRepeatedly(
-            Invoke(this,
-                   &MockTest::HandleMockProxyResponseWithMessageLoop));
+    EXPECT_CALL(*mock_proxy_.get(), CallMethod(_, _, _)).WillRepeatedly(
+        Invoke(this, &MockTest::HandleMockProxyResponseWithMessageLoop));
 
     // Set an expectation so mock_bus's GetObjectProxy() for the given
     // service name and the object path will return mock_proxy_.
-    EXPECT_CALL(*mock_bus_, GetObjectProxy(
-        "org.chromium.TestService",
-        dbus::ObjectPath("/org/chromium/TestObject")))
+    EXPECT_CALL(*mock_bus_.get(),
+                GetObjectProxy("org.chromium.TestService",
+                               dbus::ObjectPath("/org/chromium/TestObject")))
         .WillOnce(Return(mock_proxy_.get()));
 
     // ShutdownAndBlock() will be called in TearDown().
-    EXPECT_CALL(*mock_bus_, ShutdownAndBlock()).WillOnce(Return());
+    EXPECT_CALL(*mock_bus_.get(), ShutdownAndBlock()).WillOnce(Return());
   }
 
   virtual void TearDown() {
