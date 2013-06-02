@@ -64,7 +64,7 @@ class ServiceStateURLRequestDelegate : public net::URLRequest::Delegate {
     const int kBufSize = 100000;
     scoped_refptr<net::IOBuffer> buf(new net::IOBuffer(kBufSize));
     int num_bytes = 0;
-    while (request->Read(buf, kBufSize, &num_bytes)) {
+    while (request->Read(buf.get(), kBufSize, &num_bytes)) {
       data_.append(buf->data(), buf->data() + num_bytes);
     }
   }
