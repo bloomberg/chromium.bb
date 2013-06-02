@@ -27,6 +27,7 @@
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/extension_constants.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -35,6 +36,9 @@
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/image/image.h"
+#include "ui/gfx/image/image_skia_operations.h"
+#include "ui/gfx/size.h"
 
 namespace extensions {
 
@@ -61,7 +65,9 @@ class ExternalInstallDialogDelegate
   ExternalInstallDialogDelegate(Browser* browser,
                                 ExtensionService* service,
                                 const Extension* extension,
-                                ExternalInstallGlobalError* global_error);
+                                bool use_global_error);
+
+  Browser* browser() { return browser_; }
 
  private:
   friend class base::RefCountedThreadSafe<ExternalInstallDialogDelegate>;
@@ -76,6 +82,7 @@ class ExternalInstallDialogDelegate
   // The UI for showing the install dialog when enabling.
   scoped_ptr<ExtensionInstallPrompt> install_ui_;
 
+  Browser* browser_;
   ExtensionService* service_;
   const Extension* extension_;
 };
@@ -121,15 +128,14 @@ class ExternalInstallMenuAlert : public GlobalError,
 class ExternalInstallGlobalError : public ExternalInstallMenuAlert {
  public:
   ExternalInstallGlobalError(ExtensionService* service,
-                             const Extension* extension);
+                             const Extension* extension,
+                             ExternalInstallDialogDelegate* delegate,
+                             const ExtensionInstallPrompt::Prompt& prompt);
   virtual ~ExternalInstallGlobalError();
-
-  void set_prompt(const ExtensionInstallPrompt::Prompt& prompt) {
-    prompt_ = &prompt;
-  }
 
   virtual void ExecuteMenuItem(Browser* browser) OVERRIDE;
   virtual bool HasBubbleView() OVERRIDE;
+  virtual gfx::Image GetBubbleViewIcon() OVERRIDE;
   virtual string16 GetBubbleViewTitle() OVERRIDE;
   virtual std::vector<string16> GetBubbleViewMessages() OVERRIDE;
   virtual string16 GetBubbleViewAcceptButtonLabel() OVERRIDE;
@@ -146,12 +152,30 @@ class ExternalInstallGlobalError : public ExternalInstallMenuAlert {
   const ExtensionInstallPrompt::Prompt* prompt_;
 };
 
-static void SetExternalInstallBubble(
-    ExternalInstallGlobalError* global_error,
+static void CreateExternalInstallGlobalError(
+    base::WeakPtr<ExtensionService> service,
+    const std::string& extension_id,
     const ExtensionInstallPrompt::ShowParams& show_params,
-    ExtensionInstallPrompt::Delegate* delegate,
+    ExtensionInstallPrompt::Delegate* prompt_delegate,
     const ExtensionInstallPrompt::Prompt& prompt) {
-  global_error->set_prompt(prompt);
+  if (!service.get())
+    return;
+  const Extension* extension = service->GetInstalledExtension(extension_id);
+  if (!extension)
+    return;
+  GlobalErrorService* error_service =
+      GlobalErrorServiceFactory::GetForProfile(service->profile());
+  if (error_service->GetGlobalErrorByMenuItemCommandID(kMenuCommandId))
+    return;
+
+  ExternalInstallDialogDelegate* delegate =
+      static_cast<ExternalInstallDialogDelegate*>(prompt_delegate);
+  ExternalInstallGlobalError* error_bubble = new ExternalInstallGlobalError(
+      service, extension, delegate, prompt);
+  error_service->AddGlobalError(error_bubble);
+  // Show bubble immediately if possible.
+  if (delegate->browser())
+    error_bubble->ShowBubbleView(delegate->browser());
 }
 
 static void ShowExternalInstallDialog(
@@ -159,7 +183,7 @@ static void ShowExternalInstallDialog(
     Browser* browser,
     const Extension* extension) {
   // This object manages its own lifetime.
-  new ExternalInstallDialogDelegate(browser, service, extension, NULL);
+  new ExternalInstallDialogDelegate(browser, service, extension, false);
 }
 
 // ExternalInstallDialogDelegate --------------------------------------------
@@ -168,16 +192,17 @@ ExternalInstallDialogDelegate::ExternalInstallDialogDelegate(
     Browser* browser,
     ExtensionService* service,
     const Extension* extension,
-    ExternalInstallGlobalError* global_error)
-    : service_(service), extension_(extension) {
+    bool use_global_error)
+    : browser_(browser), service_(service), extension_(extension) {
   AddRef();  // Balanced in Proceed or Abort.
 
   install_ui_.reset(
       ExtensionInstallUI::CreateInstallPromptWithBrowser(browser));
 
   const ExtensionInstallPrompt::ShowDialogCallback callback =
-      global_error ?
-      base::Bind(&SetExternalInstallBubble, global_error) :
+      use_global_error ?
+      base::Bind(&CreateExternalInstallGlobalError,
+                 service->AsWeakPtr(), extension->id()) :
       ExtensionInstallPrompt::GetDefaultShowDialogCallback();
   install_ui_->ConfirmExternalInstall(this, extension_, callback);
 }
@@ -298,10 +323,12 @@ void ExternalInstallMenuAlert::Observe(
 
 ExternalInstallGlobalError::ExternalInstallGlobalError(
     ExtensionService* service,
-    const Extension* extension)
-    : ExternalInstallMenuAlert(service, extension) {
-  delegate_ = new ExternalInstallDialogDelegate(
-      NULL, service_, extension_, this);
+    const Extension* extension,
+    ExternalInstallDialogDelegate* delegate,
+    const ExtensionInstallPrompt::Prompt& prompt)
+    : ExternalInstallMenuAlert(service, extension),
+      delegate_(delegate),
+      prompt_(&prompt) {
 }
 
 ExternalInstallGlobalError::~ExternalInstallGlobalError() {
@@ -315,6 +342,17 @@ void ExternalInstallGlobalError::ExecuteMenuItem(Browser* browser) {
 
 bool ExternalInstallGlobalError::HasBubbleView() {
   return true;
+}
+
+gfx::Image ExternalInstallGlobalError::GetBubbleViewIcon() {
+  if (prompt_->icon().IsEmpty())
+    return GlobalError::GetBubbleViewIcon();
+  // Scale icon to a reasonable size.
+  return gfx::Image(gfx::ImageSkiaOperations::CreateResizedImage(
+      *prompt_->icon().ToImageSkia(),
+      skia::ImageOperations::RESIZE_BEST,
+      gfx::Size(extension_misc::EXTENSION_ICON_SMALL,
+                extension_misc::EXTENSION_ICON_SMALL)));
 }
 
 string16 ExternalInstallGlobalError::GetBubbleViewTitle() {
@@ -363,33 +401,26 @@ void ExternalInstallGlobalError::BubbleViewCancelButtonPressed(
 
 // Public interface ---------------------------------------------------------
 
-bool AddExternalInstallError(ExtensionService* service,
+void AddExternalInstallError(ExtensionService* service,
                              const Extension* extension,
                              bool is_new_profile) {
   GlobalErrorService* error_service =
       GlobalErrorServiceFactory::GetForProfile(service->profile());
-  GlobalError* error = error_service->GetGlobalErrorByMenuItemCommandID(
-      kMenuCommandId);
-  if (error)
-    return false;
+  if (error_service->GetGlobalErrorByMenuItemCommandID(kMenuCommandId))
+    return;
 
   if (UseBubbleInstall(extension, is_new_profile)) {
-    ExternalInstallGlobalError* error_bubble = new ExternalInstallGlobalError(
-        service, extension);
-    error_service->AddGlobalError(error_bubble);
-    // Show bubble immediately if possible.
+    Browser* browser = NULL;
 #if !defined(OS_ANDROID)
-    Browser* browser = chrome::FindTabbedBrowser(service->profile(),
-                                                 true,
-                                                 chrome::GetActiveDesktop());
-    if (browser)
-      error_bubble->ShowBubbleView(browser);
+    browser = chrome::FindTabbedBrowser(service->profile(),
+                                        true,
+                                        chrome::GetActiveDesktop());
 #endif
+    new ExternalInstallDialogDelegate(browser, service, extension, true);
   } else {
     error_service->AddGlobalError(
         new ExternalInstallMenuAlert(service, extension));
   }
-  return true;
 }
 
 void RemoveExternalInstallError(ExtensionService* service) {
