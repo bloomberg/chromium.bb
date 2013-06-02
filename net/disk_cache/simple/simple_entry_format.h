@@ -27,7 +27,7 @@ const uint64 kSimpleFinalMagicNumber = GG_UINT64_C(0xf4fa6f45970d41d8);
 //   - the key.
 //   - the data.
 //   - at the end, a SimpleFileEOF record.
-const uint32 kSimpleVersion = 2;
+const uint32 kSimpleVersion = 3;
 
 static const int kSimpleEntryFileCount = 3;
 
