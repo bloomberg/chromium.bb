@@ -830,13 +830,6 @@ bool TransportSecurityState::DomainState::ShouldSSLErrorsBeFatal() const {
   return true;
 }
 
-bool TransportSecurityState::DomainState::Equals(
-    const DomainState& other) const {
-  // TODO(palmer): Implement this
-  (void) other;
-  return true;
-}
-
 bool TransportSecurityState::DomainState::HasPublicKeyPins() const {
   return static_spki_hashes.size() > 0 ||
          bad_static_spki_hashes.size() > 0 ||

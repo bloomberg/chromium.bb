@@ -93,8 +93,6 @@ class NET_EXPORT TransportSecurityState
     // hard-fail behavior (e.g. if HSTS is set for the domain)
     bool ShouldSSLErrorsBeFatal() const;
 
-    bool Equals(const DomainState& other) const;
-
     UpgradeMode upgrade_mode;
 
     // The absolute time (UTC) when this DomainState was first created.

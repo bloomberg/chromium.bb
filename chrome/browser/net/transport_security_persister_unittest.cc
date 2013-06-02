@@ -152,7 +152,6 @@ TEST_F(TransportSecurityPersisterTest, SerializeData3) {
   size_t count = 0;
   TransportSecurityState::Iterator j(state_);
   while (j.HasNext()) {
-    EXPECT_TRUE(saved[j.hostname()].Equals(j.domain_state()));
     count++;
     j.Advance();
   }
