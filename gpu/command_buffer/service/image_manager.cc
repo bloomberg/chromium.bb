@@ -26,7 +26,7 @@ void ImageManager::RemoveImage(int32 service_id) {
 gfx::GLImage* ImageManager::LookupImage(int32 service_id) {
   GLImageMap::const_iterator iter = gl_images_.find(service_id);
   if (iter != gl_images_.end())
-    return iter->second;
+    return iter->second.get();
 
   return NULL;
 }

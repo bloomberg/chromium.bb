@@ -142,7 +142,7 @@ EGLSurface Display::CreateWindowSurface(EGLConfig config,
   if (!gl_context_.get())
     return EGL_NO_SURFACE;
 
-  gl_context_->MakeCurrent(gl_surface_);
+  gl_context_->MakeCurrent(gl_surface_.get());
 
   EGLint depth_size = 0;
   EGLint alpha_size = 0;

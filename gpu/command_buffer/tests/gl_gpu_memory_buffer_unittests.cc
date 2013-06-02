@@ -43,7 +43,7 @@ class MockGpuMemoryBufferTest : public testing::Test {
     image_manager_ = new ImageManager;
     image_factory_.reset(
         new StrictMock<ImageFactoryMock>(image_manager_));
-    options.image_manager = image_manager_;
+    options.image_manager = image_manager_.get();
     options.image_factory = image_factory_.get();
 
     gl_.Initialize(options);
@@ -116,13 +116,9 @@ TEST_F(MockGpuMemoryBufferTest, Lifecycle) {
 
   // Bind the texture and the image.
   glBindTexture(GL_TEXTURE_2D, texture_id);
-  EXPECT_CALL(*gl_image, BindTexImage())
-      .Times(1)
-      .WillOnce(Return(true))
+  EXPECT_CALL(*gl_image.get(), BindTexImage()).Times(1).WillOnce(Return(true))
       .RetiresOnSaturation();
-  EXPECT_CALL(*gl_image, GetSize())
-      .Times(1)
-      .WillOnce(Return(size))
+  EXPECT_CALL(*gl_image.get(), GetSize()).Times(1).WillOnce(Return(size))
       .RetiresOnSaturation();
   glBindTexImage2DCHROMIUM(GL_TEXTURE_2D, image_id);
 

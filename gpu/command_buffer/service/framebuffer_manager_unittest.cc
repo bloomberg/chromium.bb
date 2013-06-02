@@ -431,11 +431,11 @@ TEST_F(FramebufferInfoTest, AttachTexture) {
   texture_manager_.CreateTexture(kTextureClient1Id, kTextureService1Id);
   scoped_refptr<TextureRef> texture1(
       texture_manager_.GetTexture(kTextureClient1Id));
-  ASSERT_TRUE(texture1 != NULL);
+  ASSERT_TRUE(texture1.get() != NULL);
 
   // check adding one attachment
   framebuffer_->AttachTexture(
-      GL_COLOR_ATTACHMENT0, texture1, kTarget1, kLevel1);
+      GL_COLOR_ATTACHMENT0, texture1.get(), kTarget1, kLevel1);
   EXPECT_FALSE(framebuffer_->HasUnclearedAttachment(GL_COLOR_ATTACHMENT0));
   EXPECT_EQ(static_cast<GLenum>(GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT),
             framebuffer_->IsPossiblyComplete());
@@ -443,24 +443,47 @@ TEST_F(FramebufferInfoTest, AttachTexture) {
   EXPECT_EQ(static_cast<GLenum>(0), framebuffer_->GetColorAttachmentFormat());
 
   // Try format that doesn't work with COLOR_ATTACHMENT0
-  texture_manager_.SetTarget(texture1, GL_TEXTURE_2D);
-  texture_manager_.SetLevelInfo(
-      texture1, GL_TEXTURE_2D, kLevel1,
-      kBadFormat1, kWidth1, kHeight1, kDepth, kBorder, kBadFormat1, kType,
-      true);
+  texture_manager_.SetTarget(texture1.get(), GL_TEXTURE_2D);
+  texture_manager_.SetLevelInfo(texture1.get(),
+                                GL_TEXTURE_2D,
+                                kLevel1,
+                                kBadFormat1,
+                                kWidth1,
+                                kHeight1,
+                                kDepth,
+                                kBorder,
+                                kBadFormat1,
+                                kType,
+                                true);
   EXPECT_EQ(static_cast<GLenum>(GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT),
             framebuffer_->IsPossiblyComplete());
 
   // Try a good format.
-  texture_manager_.SetLevelInfo(
-      texture1, GL_TEXTURE_2D, kLevel1,
-      kFormat1, kWidth1, kHeight1, kDepth, kBorder, kFormat1, kType, false);
+  texture_manager_.SetLevelInfo(texture1.get(),
+                                GL_TEXTURE_2D,
+                                kLevel1,
+                                kFormat1,
+                                kWidth1,
+                                kHeight1,
+                                kDepth,
+                                kBorder,
+                                kFormat1,
+                                kType,
+                                false);
   EXPECT_EQ(static_cast<GLenum>(GL_FRAMEBUFFER_COMPLETE),
             framebuffer_->IsPossiblyComplete());
   EXPECT_FALSE(framebuffer_->IsCleared());
-  texture_manager_.SetLevelInfo(
-      texture1, GL_TEXTURE_2D, kLevel1,
-      kFormat1, kWidth1, kHeight1, kDepth, kBorder, kFormat1, kType, true);
+  texture_manager_.SetLevelInfo(texture1.get(),
+                                GL_TEXTURE_2D,
+                                kLevel1,
+                                kFormat1,
+                                kWidth1,
+                                kHeight1,
+                                kDepth,
+                                kBorder,
+                                kFormat1,
+                                kType,
+                                true);
   EXPECT_EQ(static_cast<GLenum>(GL_FRAMEBUFFER_COMPLETE),
             framebuffer_->IsPossiblyComplete());
   EXPECT_TRUE(framebuffer_->IsCleared());
@@ -480,14 +503,22 @@ TEST_F(FramebufferInfoTest, AttachTexture) {
   texture_manager_.CreateTexture(kTextureClient2Id, kTextureService2Id);
   scoped_refptr<TextureRef> texture2(
       texture_manager_.GetTexture(kTextureClient2Id));
-  ASSERT_TRUE(texture2 != NULL);
-  texture_manager_.SetTarget(texture2, GL_TEXTURE_2D);
-  texture_manager_.SetLevelInfo(
-      texture2, GL_TEXTURE_2D, kLevel2,
-      kFormat2, kWidth2, kHeight2, kDepth, kBorder, kFormat2, kType, true);
+  ASSERT_TRUE(texture2.get() != NULL);
+  texture_manager_.SetTarget(texture2.get(), GL_TEXTURE_2D);
+  texture_manager_.SetLevelInfo(texture2.get(),
+                                GL_TEXTURE_2D,
+                                kLevel2,
+                                kFormat2,
+                                kWidth2,
+                                kHeight2,
+                                kDepth,
+                                kBorder,
+                                kFormat2,
+                                kType,
+                                true);
 
   framebuffer_->AttachTexture(
-      GL_COLOR_ATTACHMENT0, texture2, kTarget2, kLevel2);
+      GL_COLOR_ATTACHMENT0, texture2.get(), kTarget2, kLevel2);
   EXPECT_EQ(static_cast<GLenum>(kFormat2),
             framebuffer_->GetColorAttachmentFormat());
   EXPECT_EQ(static_cast<GLenum>(GL_FRAMEBUFFER_COMPLETE),
@@ -503,9 +534,17 @@ TEST_F(FramebufferInfoTest, AttachTexture) {
   EXPECT_TRUE(attachment->cleared());
 
   // Check changing attachment
-  texture_manager_.SetLevelInfo(
-      texture2, GL_TEXTURE_2D, kLevel3,
-      kFormat3, kWidth3, kHeight3, kDepth, kBorder, kFormat3, kType, false);
+  texture_manager_.SetLevelInfo(texture2.get(),
+                                GL_TEXTURE_2D,
+                                kLevel3,
+                                kFormat3,
+                                kWidth3,
+                                kHeight3,
+                                kDepth,
+                                kBorder,
+                                kFormat3,
+                                kType,
+                                false);
   attachment = framebuffer_->GetAttachment(GL_COLOR_ATTACHMENT0);
   ASSERT_TRUE(attachment != NULL);
   EXPECT_EQ(kWidth3, attachment->width());
@@ -520,9 +559,17 @@ TEST_F(FramebufferInfoTest, AttachTexture) {
   EXPECT_FALSE(framebuffer_->IsCleared());
 
   // Set to size 0
-  texture_manager_.SetLevelInfo(
-      texture2, GL_TEXTURE_2D, kLevel3,
-      kFormat3, 0, 0, kDepth, kBorder, kFormat3, kType, false);
+  texture_manager_.SetLevelInfo(texture2.get(),
+                                GL_TEXTURE_2D,
+                                kLevel3,
+                                kFormat3,
+                                0,
+                                0,
+                                kDepth,
+                                kBorder,
+                                kFormat3,
+                                kType,
+                                false);
   EXPECT_EQ(static_cast<GLenum>(GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT),
             framebuffer_->IsPossiblyComplete());
 
@@ -582,27 +629,27 @@ TEST_F(FramebufferInfoTest, UnbindTexture) {
   texture_manager_.CreateTexture(kTextureClient1Id, kTextureService1Id);
   scoped_refptr<TextureRef> texture1(
       texture_manager_.GetTexture(kTextureClient1Id));
-  ASSERT_TRUE(texture1 != NULL);
+  ASSERT_TRUE(texture1.get() != NULL);
   texture_manager_.CreateTexture(kTextureClient2Id, kTextureService2Id);
   scoped_refptr<TextureRef> texture2(
       texture_manager_.GetTexture(kTextureClient2Id));
-  ASSERT_TRUE(texture2 != NULL);
+  ASSERT_TRUE(texture2.get() != NULL);
 
   // Attach to 2 attachment points.
   framebuffer_->AttachTexture(
-      GL_COLOR_ATTACHMENT0, texture1, kTarget1, kLevel1);
+      GL_COLOR_ATTACHMENT0, texture1.get(), kTarget1, kLevel1);
   framebuffer_->AttachTexture(
-      GL_DEPTH_ATTACHMENT, texture1, kTarget1, kLevel1);
+      GL_DEPTH_ATTACHMENT, texture1.get(), kTarget1, kLevel1);
   // Check they were attached.
   EXPECT_TRUE(framebuffer_->GetAttachment(GL_COLOR_ATTACHMENT0) != NULL);
   EXPECT_TRUE(framebuffer_->GetAttachment(GL_DEPTH_ATTACHMENT) != NULL);
   // Unbind unattached texture.
-  framebuffer_->UnbindTexture(kTarget1, texture2);
+  framebuffer_->UnbindTexture(kTarget1, texture2.get());
   // Should be no-op.
   EXPECT_TRUE(framebuffer_->GetAttachment(GL_COLOR_ATTACHMENT0) != NULL);
   EXPECT_TRUE(framebuffer_->GetAttachment(GL_DEPTH_ATTACHMENT) != NULL);
   // Unbind texture.
-  framebuffer_->UnbindTexture(kTarget1, texture1);
+  framebuffer_->UnbindTexture(kTarget1, texture1.get());
   // Check they were detached
   EXPECT_TRUE(framebuffer_->GetAttachment(GL_COLOR_ATTACHMENT0) == NULL);
   EXPECT_TRUE(framebuffer_->GetAttachment(GL_DEPTH_ATTACHMENT) == NULL);
@@ -624,7 +671,7 @@ TEST_F(FramebufferInfoTest, IsCompleteMarkAsComplete) {
   texture_manager_.CreateTexture(kTextureClient2Id, kTextureService2Id);
   scoped_refptr<TextureRef> texture2(
       texture_manager_.GetTexture(kTextureClient2Id));
-  ASSERT_TRUE(texture2 != NULL);
+  ASSERT_TRUE(texture2.get() != NULL);
 
   // Check MarkAsComlete marks as complete.
   manager_.MarkAsComplete(framebuffer_);
@@ -632,7 +679,7 @@ TEST_F(FramebufferInfoTest, IsCompleteMarkAsComplete) {
 
   // Check at attaching marks as not complete.
   framebuffer_->AttachTexture(
-      GL_COLOR_ATTACHMENT0, texture2, kTarget1, kLevel1);
+      GL_COLOR_ATTACHMENT0, texture2.get(), kTarget1, kLevel1);
   EXPECT_FALSE(manager_.IsComplete(framebuffer_));
   manager_.MarkAsComplete(framebuffer_);
   EXPECT_TRUE(manager_.IsComplete(framebuffer_));
@@ -649,7 +696,7 @@ TEST_F(FramebufferInfoTest, IsCompleteMarkAsComplete) {
   EXPECT_FALSE(manager_.IsComplete(framebuffer_));
   manager_.MarkAsComplete(framebuffer_);
   EXPECT_TRUE(manager_.IsComplete(framebuffer_));
-  framebuffer_->UnbindTexture(kTarget1, texture2);
+  framebuffer_->UnbindTexture(kTarget1, texture2.get());
   EXPECT_FALSE(manager_.IsComplete(framebuffer_));
 }
 
@@ -669,8 +716,8 @@ TEST_F(FramebufferInfoTest, GetStatus) {
   texture_manager_.CreateTexture(kTextureClient2Id, kTextureService2Id);
   scoped_refptr<TextureRef> texture2(
       texture_manager_.GetTexture(kTextureClient2Id));
-  ASSERT_TRUE(texture2 != NULL);
-  texture_manager_.SetTarget(texture2, GL_TEXTURE_2D);
+  ASSERT_TRUE(texture2.get() != NULL);
+  texture_manager_.SetTarget(texture2.get(), GL_TEXTURE_2D);
 
   EXPECT_CALL(*gl_, CheckFramebufferStatusEXT(GL_FRAMEBUFFER))
       .WillOnce(Return(GL_FRAMEBUFFER_COMPLETE))
@@ -687,10 +734,9 @@ TEST_F(FramebufferInfoTest, GetStatus) {
 
   // Check changing the attachments calls CheckFramebufferStatus.
   framebuffer_->AttachTexture(
-      GL_COLOR_ATTACHMENT0, texture2, kTarget1, kLevel1);
+      GL_COLOR_ATTACHMENT0, texture2.get(), kTarget1, kLevel1);
   EXPECT_CALL(*gl_, CheckFramebufferStatusEXT(GL_FRAMEBUFFER))
-      .WillOnce(Return(GL_FRAMEBUFFER_COMPLETE))
-      .RetiresOnSaturation();
+      .WillOnce(Return(GL_FRAMEBUFFER_COMPLETE)).RetiresOnSaturation();
   framebuffer_->GetStatus(&texture_manager_, GL_FRAMEBUFFER);
 
   // Check a second call for the same type does not call anything.
@@ -731,9 +777,13 @@ TEST_F(FramebufferInfoTest, GetStatus) {
   framebuffer_->GetStatus(&texture_manager_, GL_READ_FRAMEBUFFER);
 
   // Check changing the format calls CheckFramebuffferStatus.
-  TestHelper::SetTexParameterWithExpectations(
-      gl_.get(), error_state_.get(), &texture_manager_,
-      texture2, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE, GL_NO_ERROR);
+  TestHelper::SetTexParameterWithExpectations(gl_.get(),
+                                              error_state_.get(),
+                                              &texture_manager_,
+                                              texture2.get(),
+                                              GL_TEXTURE_WRAP_S,
+                                              GL_CLAMP_TO_EDGE,
+                                              GL_NO_ERROR);
 
   EXPECT_CALL(*gl_, CheckFramebufferStatusEXT(GL_READ_FRAMEBUFFER))
       .WillOnce(Return(GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT))
@@ -751,9 +801,13 @@ TEST_F(FramebufferInfoTest, GetStatus) {
         .WillOnce(Return(GL_FRAMEBUFFER_COMPLETE))
         .RetiresOnSaturation();
   }
-  TestHelper::SetTexParameterWithExpectations(
-      gl_.get(), error_state_.get(), &texture_manager_,
-      texture2, GL_TEXTURE_WRAP_S, GL_REPEAT, GL_NO_ERROR);
+  TestHelper::SetTexParameterWithExpectations(gl_.get(),
+                                              error_state_.get(),
+                                              &texture_manager_,
+                                              texture2.get(),
+                                              GL_TEXTURE_WRAP_S,
+                                              GL_REPEAT,
+                                              GL_NO_ERROR);
   framebuffer_->GetStatus(&texture_manager_, GL_READ_FRAMEBUFFER);
 
   // Check Unbinding does not call CheckFramebufferStatus

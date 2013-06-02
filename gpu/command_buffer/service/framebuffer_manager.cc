@@ -67,7 +67,7 @@ class RenderbufferAttachment
       RenderbufferManager* renderbuffer_manager,
       TextureManager* /* texture_manager */,
       bool cleared) OVERRIDE {
-    renderbuffer_manager->SetCleared(renderbuffer_, cleared);
+    renderbuffer_manager->SetCleared(renderbuffer_.get(), cleared);
   }
 
   virtual bool IsTexture(
@@ -77,7 +77,7 @@ class RenderbufferAttachment
 
   virtual bool IsRenderbuffer(
        Renderbuffer* renderbuffer) const OVERRIDE {
-     return renderbuffer_ == renderbuffer;
+    return renderbuffer_.get() == renderbuffer;
   }
 
   virtual bool CanRenderTo() const OVERRIDE {
@@ -165,7 +165,8 @@ class TextureAttachment
       RenderbufferManager* /* renderbuffer_manager */,
       TextureManager* texture_manager,
       bool cleared) OVERRIDE {
-    texture_manager->SetLevelCleared(texture_ref_, target_, level_, cleared);
+    texture_manager->SetLevelCleared(
+        texture_ref_.get(), target_, level_, cleared);
   }
 
   virtual bool IsTexture(TextureRef* texture) const OVERRIDE {
@@ -207,7 +208,8 @@ class TextureAttachment
   virtual void AddToSignature(
       TextureManager* texture_manager, std::string* signature) const OVERRIDE {
     DCHECK(signature);
-    texture_manager->AddToSignature(texture_ref_, target_, level_, signature);
+    texture_manager->AddToSignature(
+        texture_ref_.get(), target_, level_, signature);
   }
 
  protected:
@@ -305,7 +307,7 @@ bool Framebuffer::HasUnclearedAttachment(
   AttachmentMap::const_iterator it =
       attachments_.find(attachment);
   if (it != attachments_.end()) {
-    const Attachment* attachment = it->second;
+    const Attachment* attachment = it->second.get();
     return !attachment->cleared();
   }
   return false;
@@ -318,7 +320,7 @@ void Framebuffer::MarkAttachmentAsCleared(
       bool cleared) {
   AttachmentMap::iterator it = attachments_.find(attachment);
   if (it != attachments_.end()) {
-    Attachment* a = it->second;
+    Attachment* a = it->second.get();
     if (a->cleared() != cleared) {
       a->SetCleared(renderbuffer_manager,
                     texture_manager,
@@ -333,7 +335,7 @@ void Framebuffer::MarkAttachmentsAsCleared(
       bool cleared) {
   for (AttachmentMap::iterator it = attachments_.begin();
        it != attachments_.end(); ++it) {
-    Attachment* attachment = it->second;
+    Attachment* attachment = it->second.get();
     if (attachment->cleared() != cleared) {
       attachment->SetCleared(renderbuffer_manager, texture_manager, cleared);
     }
@@ -355,7 +357,7 @@ GLenum Framebuffer::GetColorAttachmentFormat() const {
   if (it == attachments_.end()) {
     return 0;
   }
-  const Attachment* attachment = it->second;
+  const Attachment* attachment = it->second.get();
   return attachment->internal_format();
 }
 
@@ -369,9 +371,9 @@ GLenum Framebuffer::IsPossiblyComplete() const {
   for (AttachmentMap::const_iterator it = attachments_.begin();
        it != attachments_.end(); ++it) {
     GLenum attachment_type = it->first;
-    Attachment* attachment = it->second;
-    if (!attachment->ValidForAttachmentType(
-            attachment_type, manager_->max_color_attachments_)) {
+    Attachment* attachment = it->second.get();
+    if (!attachment->ValidForAttachmentType(attachment_type,
+                                            manager_->max_color_attachments_)) {
       return GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT;
     }
     if (width < 0) {
@@ -404,9 +406,9 @@ GLenum Framebuffer::GetStatus(
     signature = base::StringPrintf("|FBO|target=%04x", target);
     for (AttachmentMap::const_iterator it = attachments_.begin();
          it != attachments_.end(); ++it) {
-      Attachment* attachment = it->second;
-      signature += base::StringPrintf(
-          "|Attachment|attachmentpoint=%04x", it->first);
+      Attachment* attachment = it->second.get();
+      signature +=
+          base::StringPrintf("|Attachment|attachmentpoint=%04x", it->first);
       attachment->AddToSignature(texture_manager, &signature);
     }
 
@@ -436,7 +438,7 @@ bool Framebuffer::IsCleared() const {
   // are all the attachments cleaared?
   for (AttachmentMap::const_iterator it = attachments_.begin();
        it != attachments_.end(); ++it) {
-    Attachment* attachment = it->second;
+    Attachment* attachment = it->second.get();
     if (!attachment->cleared()) {
       return false;
     }
@@ -465,7 +467,7 @@ void Framebuffer::UnbindRenderbuffer(
     done = true;
     for (AttachmentMap::const_iterator it = attachments_.begin();
          it != attachments_.end(); ++it) {
-      Attachment* attachment = it->second;
+      Attachment* attachment = it->second.get();
       if (attachment->IsRenderbuffer(renderbuffer)) {
         // TODO(gman): manually detach renderbuffer.
         // glFramebufferRenderbufferEXT(target, it->first, GL_RENDERBUFFER, 0);
@@ -484,7 +486,7 @@ void Framebuffer::UnbindTexture(
     done = true;
     for (AttachmentMap::const_iterator it = attachments_.begin();
          it != attachments_.end(); ++it) {
-      Attachment* attachment = it->second;
+      Attachment* attachment = it->second.get();
       if (attachment->IsTexture(texture_ref)) {
         // TODO(gman): manually detach texture.
         // glFramebufferTexture2DEXT(target, it->first, GL_TEXTURE_2D, 0, 0);
@@ -545,7 +547,7 @@ const Framebuffer::Attachment*
         GLenum attachment) const {
   AttachmentMap::const_iterator it = attachments_.find(attachment);
   if (it != attachments_.end()) {
-    return it->second;
+    return it->second.get();
   }
   return NULL;
 }

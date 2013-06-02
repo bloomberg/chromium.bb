@@ -113,13 +113,12 @@ bool ContextGroup::Initialize(
     draw_buffer_ = GL_BACK;
   }
 
-  buffer_manager_.reset(new BufferManager(
-      memory_tracker_, feature_info_.get()));
+  buffer_manager_.reset(
+      new BufferManager(memory_tracker_.get(), feature_info_.get()));
   framebuffer_manager_.reset(
       new FramebufferManager(max_draw_buffers_, max_color_attachments_));
-  renderbuffer_manager_.reset(new RenderbufferManager(memory_tracker_,
-                                                      max_renderbuffer_size,
-                                                      max_samples));
+  renderbuffer_manager_.reset(new RenderbufferManager(
+      memory_tracker_.get(), max_renderbuffer_size, max_samples));
   shader_manager_.reset(new ShaderManager());
   program_manager_.reset(new ProgramManager(program_cache_));
 
@@ -166,7 +165,7 @@ bool ContextGroup::Initialize(
         feature_info_->workarounds().max_cube_map_texture_size);
   }
 
-  texture_manager_.reset(new TextureManager(memory_tracker_,
+  texture_manager_.reset(new TextureManager(memory_tracker_.get(),
                                             feature_info_.get(),
                                             max_texture_size,
                                             max_cube_map_texture_size));

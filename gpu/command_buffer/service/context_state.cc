@@ -53,47 +53,50 @@ void ContextState::RestoreTextureUnitBindings(GLuint unit) const {
   DCHECK_LT(unit, texture_units.size());
   const TextureUnit& texture_unit = texture_units[unit];
   glActiveTexture(GL_TEXTURE0 + unit);
-  GLuint service_id = texture_unit.bound_texture_2d ?
-      texture_unit.bound_texture_2d->service_id() : 0;
+  GLuint service_id = texture_unit.bound_texture_2d.get()
+                          ? texture_unit.bound_texture_2d->service_id()
+                          : 0;
   glBindTexture(GL_TEXTURE_2D, service_id);
-  service_id = texture_unit.bound_texture_cube_map ?
-      texture_unit.bound_texture_cube_map->service_id() : 0;
+  service_id = texture_unit.bound_texture_cube_map.get()
+                   ? texture_unit.bound_texture_cube_map->service_id()
+                   : 0;
   glBindTexture(GL_TEXTURE_CUBE_MAP, service_id);
 
   if (feature_info_->feature_flags().oes_egl_image_external) {
-    service_id = texture_unit.bound_texture_external_oes ?
-        texture_unit.bound_texture_external_oes->service_id() : 0;
+    service_id = texture_unit.bound_texture_external_oes.get()
+                     ? texture_unit.bound_texture_external_oes->service_id()
+                     : 0;
     glBindTexture(GL_TEXTURE_EXTERNAL_OES, service_id);
   }
 
   if (feature_info_->feature_flags().arb_texture_rectangle) {
-    service_id = texture_unit.bound_texture_rectangle_arb ?
-        texture_unit.bound_texture_rectangle_arb->service_id() : 0;
+    service_id = texture_unit.bound_texture_rectangle_arb.get()
+                     ? texture_unit.bound_texture_rectangle_arb->service_id()
+                     : 0;
     glBindTexture(GL_TEXTURE_RECTANGLE_ARB, service_id);
   }
 }
 
 void ContextState::RestoreBufferBindings() const {
-  if (vertex_attrib_manager) {
+  if (vertex_attrib_manager.get()) {
     Buffer* element_array_buffer =
         vertex_attrib_manager->element_array_buffer();
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,
         element_array_buffer ? element_array_buffer->service_id() : 0);
   }
-  glBindBuffer(
-      GL_ARRAY_BUFFER,
-      bound_array_buffer ? bound_array_buffer->service_id() : 0);
+  glBindBuffer(GL_ARRAY_BUFFER,
+               bound_array_buffer.get() ? bound_array_buffer->service_id() : 0);
 }
 
 void ContextState::RestoreRenderbufferBindings() const {
   // Restore Bindings
   glBindRenderbufferEXT(
       GL_RENDERBUFFER,
-      bound_renderbuffer ? bound_renderbuffer->service_id() : 0);
+      bound_renderbuffer.get() ? bound_renderbuffer->service_id() : 0);
 }
 
 void ContextState::RestoreProgramBindings() const {
-  glUseProgram(current_program ? current_program->service_id() : 0);
+  glUseProgram(current_program.get() ? current_program->service_id() : 0);
 }
 
 void ContextState::RestoreActiveTexture() const {
@@ -147,7 +150,7 @@ void ContextState::RestoreState() const {
   // Restore Attrib State
   // TODO: This if should not be needed. RestoreState is getting called
   // before GLES2Decoder::Initialize which is a bug.
-  if (vertex_attrib_manager) {
+  if (vertex_attrib_manager.get()) {
     // TODO(gman): Move this restoration to VertexAttribManager.
     for (size_t attrib = 0; attrib < vertex_attrib_manager->num_attribs();
          ++attrib) {

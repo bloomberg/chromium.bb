@@ -58,11 +58,10 @@ class RenderbufferManagerMemoryTrackerTest
   scoped_refptr<MockMemoryTracker> mock_memory_tracker_;
 };
 
-#define EXPECT_MEMORY_ALLOCATION_CHANGE(old_size, new_size, pool) \
-    EXPECT_CALL(*mock_memory_tracker_, \
-                TrackMemoryAllocatedChange(old_size, new_size, pool)) \
-        .Times(1) \
-        .RetiresOnSaturation() \
+#define EXPECT_MEMORY_ALLOCATION_CHANGE(old_size, new_size, pool)   \
+  EXPECT_CALL(*mock_memory_tracker_.get(),                          \
+              TrackMemoryAllocatedChange(old_size, new_size, pool)) \
+      .Times(1).RetiresOnSaturation()
 
 // GCC requires these declarations, but MSVC requires they not be present
 #ifndef COMPILER_MSVC
@@ -82,7 +81,7 @@ TEST_F(RenderbufferManagerTest, Basic) {
   // Check renderbuffer got created.
   scoped_refptr<Renderbuffer> renderbuffer1 =
       manager_->GetRenderbuffer(kClient1Id);
-  ASSERT_TRUE(renderbuffer1 != NULL);
+  ASSERT_TRUE(renderbuffer1.get() != NULL);
   EXPECT_FALSE(manager_->HaveUnclearedRenderbuffers());
   EXPECT_EQ(kClient1Id, renderbuffer1->client_id());
   // Check we get nothing for a non-existent renderbuffer.
@@ -205,7 +204,7 @@ TEST_F(RenderbufferManagerTest, UseDeletedRenderbufferInfo) {
   manager_->CreateRenderbuffer(kClient1Id, kService1Id);
   scoped_refptr<Renderbuffer> renderbuffer1(
       manager_->GetRenderbuffer(kClient1Id));
-  ASSERT_TRUE(renderbuffer1 != NULL);
+  ASSERT_TRUE(renderbuffer1.get() != NULL);
   // Remove it.
   manager_->RemoveRenderbuffer(kClient1Id);
   // Use after removing.
@@ -213,10 +212,10 @@ TEST_F(RenderbufferManagerTest, UseDeletedRenderbufferInfo) {
   const GLenum kFormat = GL_RGBA4;
   const GLsizei kWidth = 128;
   const GLsizei kHeight = 64;
-  manager_->SetInfo(renderbuffer1, kSamples, kFormat, kWidth, kHeight);
+  manager_->SetInfo(renderbuffer1.get(), kSamples, kFormat, kWidth, kHeight);
   // See that it still affects manager.
   EXPECT_TRUE(manager_->HaveUnclearedRenderbuffers());
-  manager_->SetCleared(renderbuffer1, true);
+  manager_->SetCleared(renderbuffer1.get(), true);
   EXPECT_FALSE(manager_->HaveUnclearedRenderbuffers());
   // Check that the renderbuffer is deleted when the last ref is released.
   EXPECT_CALL(*gl_, DeleteRenderbuffersEXT(1, ::testing::Pointee(kService1Id)))
@@ -241,12 +240,12 @@ TEST_F(RenderbufferManagerTest, AddToSignature) {
   manager_->CreateRenderbuffer(kClient1Id, kService1Id);
   scoped_refptr<Renderbuffer> renderbuffer1(
       manager_->GetRenderbuffer(kClient1Id));
-  ASSERT_TRUE(renderbuffer1 != NULL);
+  ASSERT_TRUE(renderbuffer1.get() != NULL);
   const GLsizei kSamples = 4;
   const GLenum kFormat = GL_RGBA4;
   const GLsizei kWidth = 128;
   const GLsizei kHeight = 64;
-  manager_->SetInfo(renderbuffer1, kSamples, kFormat, kWidth, kHeight);
+  manager_->SetInfo(renderbuffer1.get(), kSamples, kFormat, kWidth, kHeight);
   std::string signature1;
   std::string signature2;
   renderbuffer1->AddToSignature(&signature1);
@@ -255,27 +254,31 @@ TEST_F(RenderbufferManagerTest, AddToSignature) {
   EXPECT_FALSE(InSet(&string_set, signature1));
 
   // change things and see that the signatures change.
-  manager_->SetInfo(renderbuffer1, kSamples +  1, kFormat, kWidth, kHeight);
+  manager_->SetInfo(
+      renderbuffer1.get(), kSamples + 1, kFormat, kWidth, kHeight);
   renderbuffer1->AddToSignature(&signature2);
   EXPECT_FALSE(InSet(&string_set, signature2));
 
-  manager_->SetInfo(renderbuffer1, kSamples, kFormat + 1, kWidth, kHeight);
+  manager_->SetInfo(
+      renderbuffer1.get(), kSamples, kFormat + 1, kWidth, kHeight);
   signature2.clear();
   renderbuffer1->AddToSignature(&signature2);
   EXPECT_FALSE(InSet(&string_set, signature2));
 
-  manager_->SetInfo(renderbuffer1, kSamples, kFormat, kWidth + 1, kHeight);
+  manager_->SetInfo(
+      renderbuffer1.get(), kSamples, kFormat, kWidth + 1, kHeight);
   signature2.clear();
   renderbuffer1->AddToSignature(&signature2);
   EXPECT_FALSE(InSet(&string_set, signature2));
 
-  manager_->SetInfo(renderbuffer1, kSamples, kFormat, kWidth, kHeight + 1);
+  manager_->SetInfo(
+      renderbuffer1.get(), kSamples, kFormat, kWidth, kHeight + 1);
   signature2.clear();
   renderbuffer1->AddToSignature(&signature2);
   EXPECT_FALSE(InSet(&string_set, signature2));
 
   // put it back to the same and it should be the same.
-  manager_->SetInfo(renderbuffer1, kSamples, kFormat, kWidth, kHeight);
+  manager_->SetInfo(renderbuffer1.get(), kSamples, kFormat, kWidth, kHeight);
   signature2.clear();
   renderbuffer1->AddToSignature(&signature2);
   EXPECT_EQ(signature1, signature2);

@@ -252,7 +252,7 @@ void GLES2DecoderTestBase::InitDecoder(
 
   context_ = new gfx::GLContextStub;
 
-  context_->MakeCurrent(surface_);
+  context_->MakeCurrent(surface_.get());
 
   int32 attributes[] = {
     EGL_ALPHA_SIZE, request_alpha ? 8 : 0,

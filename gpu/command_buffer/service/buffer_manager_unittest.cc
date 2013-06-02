@@ -108,11 +108,10 @@ class BufferManagerClientSideArraysTest : public BufferManagerTestBase {
   scoped_refptr<FeatureInfo> feature_info_;
 };
 
-#define EXPECT_MEMORY_ALLOCATION_CHANGE(old_size, new_size, pool) \
-    EXPECT_CALL(*mock_memory_tracker_, \
-                TrackMemoryAllocatedChange(old_size, new_size, pool)) \
-        .Times(1) \
-        .RetiresOnSaturation() \
+#define EXPECT_MEMORY_ALLOCATION_CHANGE(old_size, new_size, pool)   \
+  EXPECT_CALL(*mock_memory_tracker_.get(),                          \
+              TrackMemoryAllocatedChange(old_size, new_size, pool)) \
+      .Times(1).RetiresOnSaturation()
 
 TEST_F(BufferManagerTest, Basic) {
   const GLuint kClientBuffer1Id = 1;
@@ -359,12 +358,12 @@ TEST_F(BufferManagerTest, UseDeletedBuffer) {
   const uint32 data[] = {10, 9, 8, 7, 6, 5, 4, 3, 2, 1};
   manager_->CreateBuffer(kClientBufferId, kServiceBufferId);
   scoped_refptr<Buffer> buffer = manager_->GetBuffer(kClientBufferId);
-  ASSERT_TRUE(buffer != NULL);
-  manager_->SetTarget(buffer, GL_ARRAY_BUFFER);
+  ASSERT_TRUE(buffer.get() != NULL);
+  manager_->SetTarget(buffer.get(), GL_ARRAY_BUFFER);
   // Remove buffer
   manager_->RemoveBuffer(kClientBufferId);
   // Use it after removing
-  DoBufferData(buffer, sizeof(data), GL_STATIC_DRAW, NULL, GL_NO_ERROR);
+  DoBufferData(buffer.get(), sizeof(data), GL_STATIC_DRAW, NULL, GL_NO_ERROR);
   // Check that it gets deleted when the last reference is released.
   EXPECT_CALL(*gl_, DeleteBuffersARB(1, ::testing::Pointee(kServiceBufferId)))
       .Times(1)

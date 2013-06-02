@@ -143,7 +143,7 @@ Renderbuffer* RenderbufferManager::GetRenderbuffer(
 void RenderbufferManager::RemoveRenderbuffer(GLuint client_id) {
   RenderbufferMap::iterator it = renderbuffers_.find(client_id);
   if (it != renderbuffers_.end()) {
-    Renderbuffer* renderbuffer = it->second;
+    Renderbuffer* renderbuffer = it->second.get();
     renderbuffer->MarkAsDeleted();
     renderbuffers_.erase(it);
   }

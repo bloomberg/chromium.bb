@@ -202,7 +202,7 @@ void MemoryProgramCache::SaveLinkedProgram(
 
   if (store_.find(sha_string) != store_.end()) {
     const StoreMap::iterator found = store_.find(sha_string);
-    const ProgramCacheValue* evicting = found->second;
+    const ProgramCacheValue* evicting = found->second.get();
     curr_size_bytes_ -= evicting->length;
     Evict(sha_string, evicting->shader_0_hash, evicting->shader_1_hash);
     store_.erase(found);

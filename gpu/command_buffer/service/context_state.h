@@ -70,13 +70,13 @@ struct GPU_EXPORT TextureUnit {
   }
 
   void Unbind(TextureRef* texture) {
-    if (bound_texture_2d == texture) {
+    if (bound_texture_2d.get() == texture) {
       bound_texture_2d = NULL;
     }
-    if (bound_texture_cube_map == texture) {
+    if (bound_texture_cube_map.get() == texture) {
       bound_texture_cube_map = NULL;
     }
-    if (bound_texture_external_oes == texture) {
+    if (bound_texture_external_oes.get() == texture) {
       bound_texture_external_oes = NULL;
     }
   }

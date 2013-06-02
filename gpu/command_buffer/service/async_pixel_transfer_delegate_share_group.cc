@@ -86,7 +86,7 @@ class TransferThread : public base::Thread {
     }
 
     surface_ = gfx::GLSurface::CreateOffscreenGLSurface(false, gfx::Size(1, 1));
-    if (!surface_) {
+    if (!surface_.get()) {
       LOG(ERROR) << "Unable to create GLSurface";
       caller_wait->Signal();
       return;
@@ -97,15 +97,15 @@ class TransferThread : public base::Thread {
     // upload (that would hopefully be optimized as a DMA transfer by the
     // driver).
     context_ = gfx::GLContext::CreateGLContext(parent_context->share_group(),
-                                               surface_,
+                                               surface_.get(),
                                                gfx::PreferIntegratedGpu);
-    if (!context_) {
+    if (!context_.get()) {
       LOG(ERROR) << "Unable to create GLContext.";
       caller_wait->Signal();
       return;
     }
 
-    context_->MakeCurrent(surface_);
+    context_->MakeCurrent(surface_.get());
     initialized_ = true;
     caller_wait->Signal();
   }
@@ -229,7 +229,7 @@ class TransferStateInternal
     DCHECK_EQ(0, tex_params.level);
 
     base::TimeTicks begin_time;
-    if (texture_upload_stats)
+    if (texture_upload_stats.get())
       begin_time = base::TimeTicks::HighResNow();
 
     void* data =
@@ -252,7 +252,7 @@ class TransferStateInternal
 
     MarkAsCompleted();
 
-    if (texture_upload_stats) {
+    if (texture_upload_stats.get()) {
       texture_upload_stats->AddUpload(base::TimeTicks::HighResNow() -
                                       begin_time);
     }
@@ -390,7 +390,7 @@ void AsyncPixelTransferDelegateShareGroup::WaitForTransferCompletion(
       AsyncPixelTransferState* transfer_state) {
   scoped_refptr<TransferStateInternal> state =
       static_cast<AsyncTransferStateImpl*>(transfer_state)->internal();
-  DCHECK(state);
+  DCHECK(state.get());
   DCHECK(state->texture_id());
 
   if (state->TransferIsInProgress()) {
@@ -417,7 +417,7 @@ void AsyncPixelTransferDelegateShareGroup::AsyncTexImage2D(
   DCHECK(mem_params.shared_memory);
   DCHECK_LE(mem_params.shm_data_offset + mem_params.shm_data_size,
             mem_params.shm_size);
-  DCHECK(state);
+  DCHECK(state.get());
   DCHECK(state->texture_id());
   DCHECK(!state->TransferIsInProgress());
   DCHECK_EQ(static_cast<GLenum>(GL_TEXTURE_2D), tex_params.target);
@@ -482,13 +482,13 @@ void AsyncPixelTransferDelegateShareGroup::AsyncTexSubImage2D(
 }
 
 uint32 AsyncPixelTransferDelegateShareGroup::GetTextureUploadCount() {
-  DCHECK(texture_upload_stats_);
+  DCHECK(texture_upload_stats_.get());
   return texture_upload_stats_->GetStats(NULL);
 }
 
 base::TimeDelta
     AsyncPixelTransferDelegateShareGroup::GetTotalTextureUploadTime() {
-  DCHECK(texture_upload_stats_);
+  DCHECK(texture_upload_stats_.get());
   base::TimeDelta total_texture_upload_time;
   texture_upload_stats_->GetStats(&total_texture_upload_time);
   return total_texture_upload_time;

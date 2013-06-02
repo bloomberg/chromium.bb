@@ -8381,23 +8381,20 @@ TEST_F(GLES2DecoderManualInitTest, MemoryTrackerTexImage2D) {
       false,   // request stencil
       true);   // bind generates resource
   DoBindTexture(GL_TEXTURE_2D, client_texture_id_, kServiceTextureId);
-  EXPECT_CALL(*memory_tracker, EnsureGPUMemoryAvailable(128))
-      .WillOnce(Return(true))
-      .RetiresOnSaturation();
+  EXPECT_CALL(*memory_tracker.get(), EnsureGPUMemoryAvailable(128))
+      .WillOnce(Return(true)).RetiresOnSaturation();
   DoTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 8, 4, 0, GL_RGBA, GL_UNSIGNED_BYTE,
                kSharedMemoryId, kSharedMemoryOffset);
   EXPECT_EQ(128u, memory_tracker->GetPoolSize(MemoryTracker::kUnmanaged));
-  EXPECT_CALL(*memory_tracker, EnsureGPUMemoryAvailable(64))
-      .WillOnce(Return(true))
-      .RetiresOnSaturation();
+  EXPECT_CALL(*memory_tracker.get(), EnsureGPUMemoryAvailable(64))
+      .WillOnce(Return(true)).RetiresOnSaturation();
   DoTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 4, 4, 0, GL_RGBA, GL_UNSIGNED_BYTE,
                kSharedMemoryId, kSharedMemoryOffset);
   EXPECT_EQ(64u, memory_tracker->GetPoolSize(MemoryTracker::kUnmanaged));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
   // Check we get out of memory and no call to glTexImage2D if Ensure fails.
-  EXPECT_CALL(*memory_tracker, EnsureGPUMemoryAvailable(64))
-      .WillOnce(Return(false))
-      .RetiresOnSaturation();
+  EXPECT_CALL(*memory_tracker.get(), EnsureGPUMemoryAvailable(64))
+      .WillOnce(Return(false)).RetiresOnSaturation();
   TexImage2D cmd;
   cmd.Init(GL_TEXTURE_2D, 0, GL_RGBA, 4, 4, 0, GL_RGBA, GL_UNSIGNED_BYTE,
            kSharedMemoryId, kSharedMemoryOffset);
@@ -8422,9 +8419,8 @@ TEST_F(GLES2DecoderManualInitTest, MemoryTrackerTexStorage2DEXT) {
   DoBindTexture(GL_TEXTURE_2D, client_texture_id_, kServiceTextureId);
   // Check we get out of memory and no call to glTexStorage2DEXT
   // if Ensure fails.
-  EXPECT_CALL(*memory_tracker, EnsureGPUMemoryAvailable(128))
-      .WillOnce(Return(false))
-      .RetiresOnSaturation();
+  EXPECT_CALL(*memory_tracker.get(), EnsureGPUMemoryAvailable(128))
+      .WillOnce(Return(false)).RetiresOnSaturation();
   TexStorage2DEXT cmd;
   cmd.Init(GL_TEXTURE_2D, 1, GL_RGBA8, 8, 4);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
@@ -8452,9 +8448,8 @@ TEST_F(GLES2DecoderManualInitTest, MemoryTrackerCopyTexImage2D) {
       false,   // request stencil
       true);   // bind generates resource
   DoBindTexture(GL_TEXTURE_2D, client_texture_id_, kServiceTextureId);
-  EXPECT_CALL(*memory_tracker, EnsureGPUMemoryAvailable(128))
-      .WillOnce(Return(true))
-      .RetiresOnSaturation();
+  EXPECT_CALL(*memory_tracker.get(), EnsureGPUMemoryAvailable(128))
+      .WillOnce(Return(true)).RetiresOnSaturation();
   EXPECT_CALL(*gl_, GetError())
       .WillOnce(Return(GL_NO_ERROR))
       .WillOnce(Return(GL_NO_ERROR))
@@ -8469,9 +8464,8 @@ TEST_F(GLES2DecoderManualInitTest, MemoryTrackerCopyTexImage2D) {
   EXPECT_EQ(128u, memory_tracker->GetPoolSize(MemoryTracker::kUnmanaged));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
   // Check we get out of memory and no call to glCopyTexImage2D if Ensure fails.
-  EXPECT_CALL(*memory_tracker, EnsureGPUMemoryAvailable(128))
-      .WillOnce(Return(false))
-      .RetiresOnSaturation();
+  EXPECT_CALL(*memory_tracker.get(), EnsureGPUMemoryAvailable(128))
+      .WillOnce(Return(false)).RetiresOnSaturation();
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_OUT_OF_MEMORY, GetGLError());
   EXPECT_EQ(128u, memory_tracker->GetPoolSize(MemoryTracker::kUnmanaged));
@@ -8496,9 +8490,8 @@ TEST_F(GLES2DecoderManualInitTest, MemoryTrackerRenderbufferStorage) {
       .WillOnce(Return(GL_NO_ERROR))
       .WillOnce(Return(GL_NO_ERROR))
       .RetiresOnSaturation();
-  EXPECT_CALL(*memory_tracker, EnsureGPUMemoryAvailable(128))
-      .WillOnce(Return(true))
-      .RetiresOnSaturation();
+  EXPECT_CALL(*memory_tracker.get(), EnsureGPUMemoryAvailable(128))
+      .WillOnce(Return(true)).RetiresOnSaturation();
   EXPECT_CALL(*gl_, RenderbufferStorageEXT(
       GL_RENDERBUFFER, GL_RGBA, 8, 4))
       .Times(1)
@@ -8510,9 +8503,8 @@ TEST_F(GLES2DecoderManualInitTest, MemoryTrackerRenderbufferStorage) {
   EXPECT_EQ(128u, memory_tracker->GetPoolSize(MemoryTracker::kUnmanaged));
   // Check we get out of memory and no call to glRenderbufferStorage if Ensure
   // fails.
-  EXPECT_CALL(*memory_tracker, EnsureGPUMemoryAvailable(128))
-      .WillOnce(Return(false))
-      .RetiresOnSaturation();
+  EXPECT_CALL(*memory_tracker.get(), EnsureGPUMemoryAvailable(128))
+      .WillOnce(Return(false)).RetiresOnSaturation();
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_OUT_OF_MEMORY, GetGLError());
   EXPECT_EQ(128u, memory_tracker->GetPoolSize(MemoryTracker::kUnmanaged));
@@ -8537,9 +8529,8 @@ TEST_F(GLES2DecoderManualInitTest, MemoryTrackerBufferData) {
       .WillOnce(Return(GL_NO_ERROR))
       .WillOnce(Return(GL_NO_ERROR))
       .RetiresOnSaturation();
-  EXPECT_CALL(*memory_tracker, EnsureGPUMemoryAvailable(128))
-      .WillOnce(Return(true))
-      .RetiresOnSaturation();
+  EXPECT_CALL(*memory_tracker.get(), EnsureGPUMemoryAvailable(128))
+      .WillOnce(Return(true)).RetiresOnSaturation();
   EXPECT_CALL(*gl_, BufferData(GL_ARRAY_BUFFER, 128, _, GL_STREAM_DRAW))
       .Times(1)
       .RetiresOnSaturation();
@@ -8550,9 +8541,8 @@ TEST_F(GLES2DecoderManualInitTest, MemoryTrackerBufferData) {
   EXPECT_EQ(128u, memory_tracker->GetPoolSize(MemoryTracker::kManaged));
   // Check we get out of memory and no call to glBufferData if Ensure
   // fails.
-  EXPECT_CALL(*memory_tracker, EnsureGPUMemoryAvailable(128))
-      .WillOnce(Return(false))
-      .RetiresOnSaturation();
+  EXPECT_CALL(*memory_tracker.get(), EnsureGPUMemoryAvailable(128))
+      .WillOnce(Return(false)).RetiresOnSaturation();
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_OUT_OF_MEMORY, GetGLError());
   EXPECT_EQ(128u, memory_tracker->GetPoolSize(MemoryTracker::kManaged));

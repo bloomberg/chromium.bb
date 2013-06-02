@@ -93,16 +93,15 @@ class TransferThread : public base::Thread {
     bool software = false;
     surface_ = new gfx::PbufferGLSurfaceEGL(software, gfx::Size(1,1));
     surface_->Initialize();
-    context_ = gfx::GLContext::CreateGLContext(share_group,
-                                               surface_,
-                                               gfx::PreferDiscreteGpu);
-    bool is_current = context_->MakeCurrent(surface_);
+    context_ = gfx::GLContext::CreateGLContext(
+        share_group, surface_.get(), gfx::PreferDiscreteGpu);
+    bool is_current = context_->MakeCurrent(surface_.get());
     DCHECK(is_current);
   }
 
   virtual void CleanUp() OVERRIDE {
     surface_ = NULL;
-    context_->ReleaseCurrent(surface_);
+    context_->ReleaseCurrent(surface_.get());
     context_ = NULL;
   }
 
@@ -304,7 +303,7 @@ class TransferStateInternal
         AsyncPixelTransferDelegate::GetAddress(safe_shared_memory, mem_params);
 
     base::TimeTicks begin_time;
-    if (texture_upload_stats)
+    if (texture_upload_stats.get())
       begin_time = base::TimeTicks::HighResNow();
 
     if (!thread_texture_id_) {
@@ -325,7 +324,7 @@ class TransferStateInternal
     MarkAsCompleted();
 
     DCHECK(CHECK_GL());
-    if (texture_upload_stats) {
+    if (texture_upload_stats.get()) {
       texture_upload_stats->AddUpload(base::TimeTicks::HighResNow() -
                                       begin_time);
     }
@@ -495,7 +494,7 @@ void AsyncPixelTransferDelegateEGL::WaitForTransferCompletion(
       AsyncPixelTransferState* transfer_state) {
   scoped_refptr<TransferStateInternal> state =
       static_cast<AsyncTransferStateImpl*>(transfer_state)->internal_.get();
-  DCHECK(state);
+  DCHECK(state.get());
   DCHECK(state->texture_id_);
 
   if (state->TransferIsInProgress()) {
@@ -526,7 +525,7 @@ void AsyncPixelTransferDelegateEGL::AsyncTexImage2D(
   DCHECK(mem_params.shared_memory);
   DCHECK_LE(mem_params.shm_data_offset + mem_params.shm_data_size,
             mem_params.shm_size);
-  DCHECK(state);
+  DCHECK(state.get());
   DCHECK(state->texture_id_);
   DCHECK(!state->TransferIsInProgress());
   DCHECK_EQ(state->egl_image_, EGL_NO_IMAGE_KHR);
@@ -601,12 +600,12 @@ void AsyncPixelTransferDelegateEGL::AsyncTexSubImage2D(
 }
 
 uint32 AsyncPixelTransferDelegateEGL::GetTextureUploadCount() {
-  CHECK(texture_upload_stats_);
+  CHECK(texture_upload_stats_.get());
   return texture_upload_stats_->GetStats(NULL);
 }
 
 base::TimeDelta AsyncPixelTransferDelegateEGL::GetTotalTextureUploadTime() {
-  CHECK(texture_upload_stats_);
+  CHECK(texture_upload_stats_.get());
   base::TimeDelta total_texture_upload_time;
   texture_upload_stats_->GetStats(&total_texture_upload_time);
   return total_texture_upload_time;
@@ -731,7 +730,7 @@ bool AsyncPixelTransferDelegateEGL::WorkAroundAsyncTexSubImage2D(
 
   void* data = GetAddress(mem_params);
   base::TimeTicks begin_time;
-  if (texture_upload_stats_)
+  if (texture_upload_stats_.get())
     begin_time = base::TimeTicks::HighResNow();
   {
     TRACE_EVENT0("gpu", "glTexSubImage2D");
@@ -739,9 +738,9 @@ bool AsyncPixelTransferDelegateEGL::WorkAroundAsyncTexSubImage2D(
     // The DCHECKs above verify this is always the same.
     DoTexImage2D(state->define_params_, data);
   }
-  if (texture_upload_stats_) {
-    texture_upload_stats_->AddUpload(
-        base::TimeTicks::HighResNow() - begin_time);
+  if (texture_upload_stats_.get()) {
+    texture_upload_stats_->AddUpload(base::TimeTicks::HighResNow() -
+                                     begin_time);
   }
 
   DCHECK(CHECK_GL());

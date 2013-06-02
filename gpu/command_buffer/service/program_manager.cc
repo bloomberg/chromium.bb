@@ -559,14 +559,14 @@ bool Program::Link(ShaderManager* manager,
         &bind_attrib_location_map_);
 
     if (status == ProgramCache::LINK_SUCCEEDED) {
-      ProgramCache::ProgramLoadResult success = cache->LoadLinkedProgram(
-                  service_id(),
-                  attached_shaders_[0],
-                  vertex_translator,
-                  attached_shaders_[1],
-                  fragment_translator,
-                  &bind_attrib_location_map_,
-                  shader_callback);
+      ProgramCache::ProgramLoadResult success =
+          cache->LoadLinkedProgram(service_id(),
+                                   attached_shaders_[0].get(),
+                                   vertex_translator,
+                                   attached_shaders_[1].get(),
+                                   fragment_translator,
+                                   &bind_attrib_location_map_,
+                                   shader_callback);
       link = success != ProgramCache::PROGRAM_LOAD_SUCCESS;
       UMA_HISTOGRAM_BOOLEAN("GPU.ProgramCache.LoadBinarySuccess", !link);
     }
@@ -583,7 +583,7 @@ bool Program::Link(ShaderManager* manager,
               vertex_translator,
               fragment_translator);
           manager_->ForceCompileShader(shader->deferred_compilation_source(),
-                                       attached_shaders_[i],
+                                       attached_shaders_[i].get(),
                                        translator,
                                        feature_info);
           DCHECK(shader->IsValid());
@@ -610,9 +610,9 @@ bool Program::Link(ShaderManager* manager,
     if (link) {
       if (cache) {
         cache->SaveLinkedProgram(service_id(),
-                                 attached_shaders_[0],
+                                 attached_shaders_[0].get(),
                                  vertex_translator,
-                                 attached_shaders_[1],
+                                 attached_shaders_[1].get(),
                                  fragment_translator,
                                  &bind_attrib_location_map_,
                                  shader_callback);
@@ -951,7 +951,7 @@ bool Program::AttachShader(
   DCHECK(shader_manager);
   DCHECK(shader);
   int index = ShaderTypeToIndex(shader->shader_type());
-  if (attached_shaders_[index] != NULL) {
+  if (attached_shaders_[index].get() != NULL) {
     return false;
   }
   attached_shaders_[index] = scoped_refptr<Shader>(shader);
@@ -976,15 +976,15 @@ bool Program::DetachShader(
 void Program::DetachShaders(ShaderManager* shader_manager) {
   DCHECK(shader_manager);
   for (int ii = 0; ii < kMaxAttachedShaders; ++ii) {
-    if (attached_shaders_[ii]) {
-      DetachShader(shader_manager, attached_shaders_[ii]);
+    if (attached_shaders_[ii].get()) {
+      DetachShader(shader_manager, attached_shaders_[ii].get());
     }
   }
 }
 
 bool Program::CanLink() const {
   for (int ii = 0; ii < kMaxAttachedShaders; ++ii) {
-    if (!attached_shaders_[ii] || !attached_shaders_[ii]->IsValid()) {
+    if (!attached_shaders_[ii].get() || !attached_shaders_[ii]->IsValid()) {
       return false;
     }
   }
@@ -998,7 +998,7 @@ bool Program::DetectAttribLocationBindingConflicts() const {
     // Find out if an attribute is declared in this program's shaders.
     bool active = false;
     for (int ii = 0; ii < kMaxAttachedShaders; ++ii) {
-      if (!attached_shaders_[ii] || !attached_shaders_[ii]->IsValid())
+      if (!attached_shaders_[ii].get() || !attached_shaders_[ii]->IsValid())
         continue;
       if (attached_shaders_[ii]->GetAttribInfo(it->first)) {
         active = true;
@@ -1145,7 +1145,7 @@ Program* ProgramManager::CreateProgram(
                          scoped_refptr<Program>(
                              new Program(this, service_id))));
   DCHECK(result.second);
-  return result.first->second;
+  return result.first->second.get();
 }
 
 Program* ProgramManager::GetProgram(GLuint client_id) {

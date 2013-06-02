@@ -93,7 +93,7 @@ ShaderManager::~ShaderManager() {
 void ShaderManager::Destroy(bool have_context) {
   while (!shaders_.empty()) {
     if (have_context) {
-      Shader* shader = shaders_.begin()->second;
+      Shader* shader = shaders_.begin()->second.get();
       if (!shader->IsDeleted()) {
         glDeleteShader(shader->service_id());
         shader->MarkAsDeleted();
@@ -112,7 +112,7 @@ Shader* ShaderManager::CreateShader(
           client_id, scoped_refptr<Shader>(
               new Shader(service_id, shader_type))));
   DCHECK(result.second);
-  return result.first->second;
+  return result.first->second.get();
 }
 
 Shader* ShaderManager::GetShader(GLuint client_id) {

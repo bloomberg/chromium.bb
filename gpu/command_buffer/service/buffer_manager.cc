@@ -56,7 +56,7 @@ Buffer* BufferManager::GetBuffer(
 void BufferManager::RemoveBuffer(GLuint client_id) {
   BufferMap::iterator it = buffers_.find(client_id);
   if (it != buffers_.end()) {
-    Buffer* buffer = it->second;
+    Buffer* buffer = it->second.get();
     buffer->MarkAsDeleted();
     buffers_.erase(it);
   }

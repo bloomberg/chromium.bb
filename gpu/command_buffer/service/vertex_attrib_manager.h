@@ -35,9 +35,7 @@ class GPU_EXPORT VertexAttrib {
   // Returns true if this VertexAttrib can access index.
   bool CanAccess(GLuint index) const;
 
-  Buffer* buffer() const {
-    return buffer_;
-  }
+  Buffer* buffer() const { return buffer_.get(); }
 
   GLsizei offset() const {
     return offset_;
@@ -223,9 +221,7 @@ class GPU_EXPORT VertexAttribManager :
 
   void SetElementArrayBuffer(Buffer* buffer);
 
-  Buffer* element_array_buffer() const {
-    return element_array_buffer_;
-  }
+  Buffer* element_array_buffer() const { return element_array_buffer_.get(); }
 
   GLuint service_id() const {
     return service_id_;

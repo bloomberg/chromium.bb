@@ -47,7 +47,7 @@ VertexAttribManager* VertexArrayManager::GetVertexAttribManager(
 void VertexArrayManager::RemoveVertexAttribManager(GLuint client_id) {
   VertexAttribManagerMap::iterator it = vertex_attrib_managers_.find(client_id);
   if (it != vertex_attrib_managers_.end()) {
-    VertexAttribManager* vertex_attrib_manager = it->second;
+    VertexAttribManager* vertex_attrib_manager = it->second.get();
     vertex_attrib_manager->MarkAsDeleted();
     vertex_attrib_managers_.erase(it);
   }

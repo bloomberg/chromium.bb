@@ -94,7 +94,7 @@ TEST_F(GpuControlListEntryTest, DetailedEntry) {
   );
 
   ScopedEntry entry(GetEntryFromString(json));
-  EXPECT_TRUE(entry != NULL);
+  EXPECT_TRUE(entry.get() != NULL);
   EXPECT_EQ(GpuControlList::kOsMacosx, entry->GetOsType());
   EXPECT_FALSE(entry->disabled());
   EXPECT_EQ(5u, entry->id());
@@ -124,7 +124,7 @@ TEST_F(GpuControlListEntryTest, VendorOnAllOsEntry) {
       }
   );
   ScopedEntry entry(GetEntryFromString(json));
-  EXPECT_TRUE(entry != NULL);
+  EXPECT_TRUE(entry.get() != NULL);
   EXPECT_EQ(GpuControlList::kOsAny, entry->GetOsType());
 
   const GpuControlList::OsType os_type[] = {
@@ -152,7 +152,7 @@ TEST_F(GpuControlListEntryTest, VendorOnLinuxEntry) {
       }
   );
   ScopedEntry entry(GetEntryFromString(json));
-  EXPECT_TRUE(entry != NULL);
+  EXPECT_TRUE(entry.get() != NULL);
   EXPECT_EQ(GpuControlList::kOsLinux, entry->GetOsType());
 
   const GpuControlList::OsType os_type[] = {
@@ -185,7 +185,7 @@ TEST_F(GpuControlListEntryTest, AllExceptNVidiaOnLinuxEntry) {
       }
   );
   ScopedEntry entry(GetEntryFromString(json));
-  EXPECT_TRUE(entry != NULL);
+  EXPECT_TRUE(entry.get() != NULL);
   EXPECT_EQ(GpuControlList::kOsLinux, entry->GetOsType());
 
   const GpuControlList::OsType os_type[] = {
@@ -217,7 +217,7 @@ TEST_F(GpuControlListEntryTest, AllExceptIntelOnLinuxEntry) {
       }
   );
   ScopedEntry entry(GetEntryFromString(json));
-  EXPECT_TRUE(entry != NULL);
+  EXPECT_TRUE(entry.get() != NULL);
   EXPECT_EQ(GpuControlList::kOsLinux, entry->GetOsType());
 
   const GpuControlList::OsType os_type[] = {
@@ -249,7 +249,7 @@ TEST_F(GpuControlListEntryTest, DateOnWindowsEntry) {
       }
   );
   ScopedEntry entry(GetEntryFromString(json));
-  EXPECT_TRUE(entry != NULL);
+  EXPECT_TRUE(entry.get() != NULL);
   EXPECT_EQ(GpuControlList::kOsWin, entry->GetOsType());
 
   GPUInfo gpu_info;
@@ -276,7 +276,7 @@ TEST_F(GpuControlListEntryTest, MultipleDevicesEntry) {
       }
   );
   ScopedEntry entry(GetEntryFromString(json));
-  EXPECT_TRUE(entry != NULL);
+  EXPECT_TRUE(entry.get() != NULL);
   EXPECT_EQ(GpuControlList::kOsAny, entry->GetOsType());
 
   const GpuControlList::OsType os_type[] = {
@@ -303,7 +303,7 @@ TEST_F(GpuControlListEntryTest, ChromeOSEntry) {
       }
   );
   ScopedEntry entry(GetEntryFromString(json));
-  EXPECT_TRUE(entry != NULL);
+  EXPECT_TRUE(entry.get() != NULL);
   EXPECT_EQ(GpuControlList::kOsChromeOS, entry->GetOsType());
 
   const GpuControlList::OsType os_type[] = {
@@ -329,7 +329,7 @@ TEST_F(GpuControlListEntryTest, MalformedVendor) {
       }
   );
   ScopedEntry entry(GetEntryFromString(json));
-  EXPECT_TRUE(entry == NULL);
+  EXPECT_TRUE(entry.get() == NULL);
 }
 
 TEST_F(GpuControlListEntryTest, UnknownFieldEntry) {
@@ -343,7 +343,7 @@ TEST_F(GpuControlListEntryTest, UnknownFieldEntry) {
       }
   );
   ScopedEntry entry(GetEntryFromString(json));
-  EXPECT_TRUE(entry != NULL);
+  EXPECT_TRUE(entry.get() != NULL);
   EXPECT_TRUE(entry->contains_unknown_fields());
   EXPECT_FALSE(entry->contains_unknown_features());
 }
@@ -363,7 +363,7 @@ TEST_F(GpuControlListEntryTest, UnknownExceptionFieldEntry) {
       }
   );
   ScopedEntry entry(GetEntryFromString(json));
-  EXPECT_TRUE(entry != NULL);
+  EXPECT_TRUE(entry.get() != NULL);
   EXPECT_TRUE(entry->contains_unknown_fields());
   EXPECT_FALSE(entry->contains_unknown_features());
 }
@@ -379,7 +379,7 @@ TEST_F(GpuControlListEntryTest, UnknownFeatureEntry) {
       }
   );
   ScopedEntry entry(GetEntryFromString(json));
-  EXPECT_TRUE(entry != NULL);
+  EXPECT_TRUE(entry.get() != NULL);
   EXPECT_FALSE(entry->contains_unknown_fields());
   EXPECT_TRUE(entry->contains_unknown_features());
   EXPECT_EQ(1u, entry->features().size());
@@ -410,7 +410,7 @@ TEST_F(GpuControlListEntryTest, GlVendorEntry) {
       }
   );
   ScopedEntry entry(GetEntryFromString(json));
-  EXPECT_TRUE(entry != NULL);
+  EXPECT_TRUE(entry.get() != NULL);
 
   const GpuControlList::OsType os_type[] = {
     GpuControlList::kOsMacosx,
@@ -437,7 +437,7 @@ TEST_F(GpuControlListEntryTest, GlRendererEntry) {
       }
   );
   ScopedEntry entry(GetEntryFromString(json));
-  EXPECT_TRUE(entry != NULL);
+  EXPECT_TRUE(entry.get() != NULL);
 
   const GpuControlList::OsType os_type[] = {
     GpuControlList::kOsMacosx,
@@ -464,9 +464,8 @@ TEST_F(GpuControlListEntryTest, PerfGraphicsEntry) {
       }
   );
   ScopedEntry entry(GetEntryFromString(json));
-  EXPECT_TRUE(entry != NULL);
-  EXPECT_TRUE(entry->Contains(
-      GpuControlList::kOsWin, "10.6", gpu_info()));
+  EXPECT_TRUE(entry.get() != NULL);
+  EXPECT_TRUE(entry->Contains(GpuControlList::kOsWin, "10.6", gpu_info()));
 }
 
 TEST_F(GpuControlListEntryTest, PerfGamingEntry) {
@@ -483,9 +482,8 @@ TEST_F(GpuControlListEntryTest, PerfGamingEntry) {
       }
   );
   ScopedEntry entry(GetEntryFromString(json));
-  EXPECT_TRUE(entry != NULL);
-  EXPECT_FALSE(entry->Contains(
-      GpuControlList::kOsWin, "10.6", gpu_info()));
+  EXPECT_TRUE(entry.get() != NULL);
+  EXPECT_FALSE(entry->Contains(GpuControlList::kOsWin, "10.6", gpu_info()));
 }
 
 TEST_F(GpuControlListEntryTest, PerfOverallEntry) {
@@ -503,9 +501,8 @@ TEST_F(GpuControlListEntryTest, PerfOverallEntry) {
       }
   );
   ScopedEntry entry(GetEntryFromString(json));
-  EXPECT_TRUE(entry != NULL);
-  EXPECT_TRUE(entry->Contains(
-      GpuControlList::kOsWin, "10.6", gpu_info()));
+  EXPECT_TRUE(entry.get() != NULL);
+  EXPECT_TRUE(entry->Contains(GpuControlList::kOsWin, "10.6", gpu_info()));
 }
 
 TEST_F(GpuControlListEntryTest, DisabledEntry) {
@@ -519,7 +516,7 @@ TEST_F(GpuControlListEntryTest, DisabledEntry) {
       }
   );
   ScopedEntry entry(GetEntryFromString(json));
-  EXPECT_TRUE(entry != NULL);
+  EXPECT_TRUE(entry.get() != NULL);
   EXPECT_TRUE(entry->disabled());
 }
 
@@ -540,7 +537,7 @@ TEST_F(GpuControlListEntryTest, OptimusEntry) {
   gpu_info.optimus = true;
 
   ScopedEntry entry(GetEntryFromString(json));
-  EXPECT_TRUE(entry != NULL);
+  EXPECT_TRUE(entry.get() != NULL);
   EXPECT_EQ(GpuControlList::kOsLinux, entry->GetOsType());
   EXPECT_TRUE(entry->Contains(
       GpuControlList::kOsLinux, "10.6", gpu_info));
@@ -563,7 +560,7 @@ TEST_F(GpuControlListEntryTest, AMDSwitchableEntry) {
   gpu_info.amd_switchable = true;
 
   ScopedEntry entry(GetEntryFromString(json));
-  EXPECT_TRUE(entry != NULL);
+  EXPECT_TRUE(entry.get() != NULL);
   EXPECT_EQ(GpuControlList::kOsMacosx, entry->GetOsType());
   EXPECT_TRUE(entry->Contains(
       GpuControlList::kOsMacosx, "10.6", gpu_info));
@@ -591,7 +588,7 @@ TEST_F(GpuControlListEntryTest, LexicalDriverVersionEntry) {
   gpu_info.gpu.vendor_id = 0x1002;
 
   ScopedEntry entry(GetEntryFromString(json));
-  EXPECT_TRUE(entry != NULL);
+  EXPECT_TRUE(entry.get() != NULL);
   EXPECT_EQ(GpuControlList::kOsLinux, entry->GetOsType());
 
   gpu_info.driver_version = "8.76";
@@ -623,7 +620,7 @@ TEST_F(GpuControlListEntryTest, MultipleGPUsAnyEntry) {
       }
   );
   ScopedEntry entry(GetEntryFromString(json));
-  EXPECT_TRUE(entry != NULL);
+  EXPECT_TRUE(entry.get() != NULL);
   EXPECT_EQ(GpuControlList::kOsMacosx, entry->GetOsType());
 
   GPUInfo gpu_info;
@@ -656,7 +653,7 @@ TEST_F(GpuControlListEntryTest, MultipleGPUsSecondaryEntry) {
       }
   );
   ScopedEntry entry(GetEntryFromString(json));
-  EXPECT_TRUE(entry != NULL);
+  EXPECT_TRUE(entry.get() != NULL);
   EXPECT_EQ(GpuControlList::kOsMacosx, entry->GetOsType());
 
   GPUInfo gpu_info;
@@ -688,7 +685,7 @@ TEST_F(GpuControlListEntryTest, NeedsMoreInfoEntry) {
       }
   );
   ScopedEntry entry(GetEntryFromString(json));
-  EXPECT_TRUE(entry != NULL);
+  EXPECT_TRUE(entry.get() != NULL);
 
   GPUInfo gpu_info;
   gpu_info.gpu.vendor_id = 0x8086;
@@ -717,7 +714,7 @@ TEST_F(GpuControlListEntryTest, NeedsMoreInfoForExceptionsEntry) {
       }
   );
   ScopedEntry entry(GetEntryFromString(json));
-  EXPECT_TRUE(entry != NULL);
+  EXPECT_TRUE(entry.get() != NULL);
 
   GPUInfo gpu_info;
   gpu_info.gpu.vendor_id = 0x8086;
@@ -737,7 +734,7 @@ TEST_F(GpuControlListEntryTest, FeatureTypeAllEntry) {
       }
   );
   ScopedEntry entry(GetEntryFromString(json, true));
-  EXPECT_TRUE(entry != NULL);
+  EXPECT_TRUE(entry.get() != NULL);
   EXPECT_EQ(3u, entry->features().size());
   EXPECT_EQ(1u, entry->features().count(TEST_FEATURE_0));
   EXPECT_EQ(1u, entry->features().count(TEST_FEATURE_1));

@@ -88,13 +88,13 @@ TEST_F(ShaderManagerTest, DeleteBug) {
       manager_.CreateShader(kClient1Id, kService1Id, kShaderType));
   scoped_refptr<Shader> shader2(
       manager_.CreateShader(kClient2Id, kService2Id, kShaderType));
-  ASSERT_TRUE(shader1);
-  ASSERT_TRUE(shader2);
-  manager_.UseShader(shader1);
-  manager_.MarkAsDeleted(shader1);
-  manager_.MarkAsDeleted(shader2);
-  EXPECT_TRUE(manager_.IsOwned(shader1));
-  EXPECT_FALSE(manager_.IsOwned(shader2));
+  ASSERT_TRUE(shader1.get());
+  ASSERT_TRUE(shader2.get());
+  manager_.UseShader(shader1.get());
+  manager_.MarkAsDeleted(shader1.get());
+  manager_.MarkAsDeleted(shader2.get());
+  EXPECT_TRUE(manager_.IsOwned(shader1.get()));
+  EXPECT_FALSE(manager_.IsOwned(shader2.get()));
 }
 
 TEST_F(ShaderManagerTest, Shader) {

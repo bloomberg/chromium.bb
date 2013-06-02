@@ -62,7 +62,7 @@ void VertexAttrib::SetInfo(
 }
 
 void VertexAttrib::Unbind(Buffer* buffer) {
-  if (buffer_ == buffer) {
+  if (buffer_.get() == buffer) {
     buffer_ = NULL;
   }
 }
@@ -72,7 +72,7 @@ bool VertexAttrib::CanAccess(GLuint index) const {
     return true;
   }
 
-  if (!buffer_ || buffer_->IsDeleted()) {
+  if (!buffer_.get() || buffer_->IsDeleted()) {
     return false;
   }
 
@@ -152,7 +152,7 @@ bool VertexAttribManager::Enable(GLuint index, bool enable) {
 }
 
 void VertexAttribManager::Unbind(Buffer* buffer) {
-  if (element_array_buffer_ == buffer) {
+  if (element_array_buffer_.get() == buffer) {
     element_array_buffer_ = NULL;
   }
   for (uint32 vv = 0; vv < vertex_attribs_.size(); ++vv) {
