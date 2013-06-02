@@ -355,7 +355,7 @@ TEST_F(SpdyWebSocketStreamSpdy3Test, Basic) {
   GURL url("ws://example.com/echo");
   ASSERT_EQ(OK, websocket_stream_->InitializeStream(url, HIGHEST, net_log));
 
-  ASSERT_TRUE(websocket_stream_->stream_);
+  ASSERT_TRUE(websocket_stream_->stream_.get());
 
   SendRequest();
 

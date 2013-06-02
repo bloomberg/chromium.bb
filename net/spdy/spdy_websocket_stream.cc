@@ -45,14 +45,14 @@ int SpdyWebSocketStream::InitializeStream(const GURL& url,
 
   if (rv == OK) {
     stream_ = stream_request_.ReleaseStream();
-    DCHECK(stream_);
+    DCHECK(stream_.get());
     stream_->SetDelegate(this);
   }
   return rv;
 }
 
 int SpdyWebSocketStream::SendRequest(scoped_ptr<SpdyHeaderBlock> headers) {
-  if (!stream_) {
+  if (!stream_.get()) {
     NOTREACHED();
     return ERR_UNEXPECTED;
   }
@@ -63,7 +63,7 @@ int SpdyWebSocketStream::SendRequest(scoped_ptr<SpdyHeaderBlock> headers) {
 }
 
 int SpdyWebSocketStream::SendData(const char* data, int length) {
-  if (!stream_) {
+  if (!stream_.get()) {
     NOTREACHED();
     return ERR_UNEXPECTED;
   }
@@ -76,9 +76,9 @@ int SpdyWebSocketStream::SendData(const char* data, int length) {
 }
 
 void SpdyWebSocketStream::Close() {
-  if (stream_) {
+  if (stream_.get()) {
     stream_->Close();
-    DCHECK(!stream_);
+    DCHECK(!stream_.get());
   }
 }
 
@@ -121,7 +121,7 @@ void SpdyWebSocketStream::OnSpdyStreamCreated(int result) {
   DCHECK_NE(ERR_IO_PENDING, result);
   if (result == OK) {
     stream_ = stream_request_.ReleaseStream();
-    DCHECK(stream_);
+    DCHECK(stream_.get());
     stream_->SetDelegate(this);
   }
   DCHECK(delegate_);

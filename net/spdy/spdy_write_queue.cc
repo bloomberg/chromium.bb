@@ -22,7 +22,7 @@ SpdyWriteQueue::PendingWrite::PendingWrite(
     : frame_type(frame_type),
       frame_producer(frame_producer),
       stream(stream),
-      has_stream(stream != NULL) {}
+      has_stream(stream.get() != NULL) {}
 
 SpdyWriteQueue::PendingWrite::~PendingWrite() {}
 
@@ -36,7 +36,7 @@ void SpdyWriteQueue::Enqueue(RequestPriority priority,
                              SpdyFrameType frame_type,
                              scoped_ptr<SpdyBufferProducer> frame_producer,
                              const base::WeakPtr<SpdyStream>& stream) {
-  if (stream)
+  if (stream.get())
     DCHECK_EQ(stream->priority(), priority);
   queue_[priority].push_back(
       PendingWrite(frame_type, frame_producer.release(), stream));
@@ -53,7 +53,7 @@ bool SpdyWriteQueue::Dequeue(SpdyFrameType* frame_type,
       frame_producer->reset(pending_write.frame_producer);
       *stream = pending_write.stream;
       if (pending_write.has_stream)
-        DCHECK(*stream);
+        DCHECK(stream->get());
       return true;
     }
   }
@@ -62,7 +62,7 @@ bool SpdyWriteQueue::Dequeue(SpdyFrameType* frame_type,
 
 void SpdyWriteQueue::RemovePendingWritesForStream(
     const base::WeakPtr<SpdyStream>& stream) {
-  DCHECK(stream);
+  DCHECK(stream.get());
   if (DCHECK_IS_ON()) {
     // |stream| should not have pending writes in a queue not matching
     // its priority.
@@ -81,7 +81,7 @@ void SpdyWriteQueue::RemovePendingWritesForStream(
   std::deque<PendingWrite>::iterator out_it = queue->begin();
   for (std::deque<PendingWrite>::const_iterator it = queue->begin();
        it != queue->end(); ++it) {
-    if (it->stream == stream) {
+    if (it->stream.get() == stream.get()) {
       delete it->frame_producer;
     } else {
       *out_it = *it;
@@ -99,8 +99,8 @@ void SpdyWriteQueue::RemovePendingWritesForStreamsAfter(
     std::deque<PendingWrite>::iterator out_it = queue->begin();
     for (std::deque<PendingWrite>::const_iterator it = queue->begin();
          it != queue->end(); ++it) {
-      if (it->stream && (it->stream->stream_id() > last_good_stream_id ||
-                         it->stream->stream_id() == 0)) {
+      if (it->stream.get() && (it->stream->stream_id() > last_good_stream_id ||
+                               it->stream->stream_id() == 0)) {
         delete it->frame_producer;
       } else {
         *out_it = *it;

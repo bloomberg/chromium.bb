@@ -233,7 +233,7 @@ void SimpleBackendImpl::IndexReadyForDoom(Time initial_time,
     EntryMap::iterator it = active_entries_.find(entry_hash);
     if (it == active_entries_.end())
       continue;
-    SimpleEntryImpl* entry = it->second;
+    SimpleEntryImpl* entry = it->second.get();
     entry->Doom();
 
     (*removed_key_hashes)[i] = removed_key_hashes->back();
@@ -330,12 +330,12 @@ scoped_refptr<SimpleEntryImpl> SimpleBackendImpl::CreateOrFindActiveEntry(
                                             base::WeakPtr<SimpleEntryImpl>()));
   EntryMap::iterator& it = insert_result.first;
   if (insert_result.second)
-    DCHECK(!it->second);
-  if (!it->second) {
+    DCHECK(!it->second.get());
+  if (!it->second.get()) {
     SimpleEntryImpl* entry = new SimpleEntryImpl(this, path_, key, entry_hash);
     it->second = entry->AsWeakPtr();
   }
-  DCHECK(it->second);
+  DCHECK(it->second.get());
   // It's possible, but unlikely, that we have an entry hash collision with a
   // currently active entry.
   if (key != it->second->key()) {

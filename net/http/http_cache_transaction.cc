@@ -216,7 +216,7 @@ HttpCache::Transaction::~Transaction() {
   cache_io_start_ = base::TimeTicks();
   deferred_cache_sensitivity_delay_ = base::TimeDelta();
 
-  if (cache_) {
+  if (cache_.get()) {
     if (entry_) {
       bool cancel_request = reading_;
       if (cancel_request) {
@@ -247,7 +247,7 @@ int HttpCache::Transaction::WriteMetadata(IOBuffer* buf, int buf_len,
   DCHECK(buf);
   DCHECK_GT(buf_len, 0);
   DCHECK(!callback.is_null());
-  if (!cache_ || !entry_)
+  if (!cache_.get() || !entry_)
     return ERR_UNEXPECTED;
 
   // We don't need to track this operation for anything.
@@ -303,7 +303,7 @@ int HttpCache::Transaction::Start(const HttpRequestInfo* request,
   DCHECK(!network_trans_.get());
   DCHECK(!entry_);
 
-  if (!cache_)
+  if (!cache_.get())
     return ERR_UNEXPECTED;
 
   SetRequest(net_log, request);
@@ -327,7 +327,7 @@ int HttpCache::Transaction::RestartIgnoringLastError(
   // Ensure that we only have one asynchronous call at a time.
   DCHECK(callback_.is_null());
 
-  if (!cache_)
+  if (!cache_.get())
     return ERR_UNEXPECTED;
 
   int rv = RestartNetworkRequest();
@@ -346,7 +346,7 @@ int HttpCache::Transaction::RestartWithCertificate(
   // Ensure that we only have one asynchronous call at a time.
   DCHECK(callback_.is_null());
 
-  if (!cache_)
+  if (!cache_.get())
     return ERR_UNEXPECTED;
 
   int rv = RestartNetworkRequestWithCertificate(client_cert);
@@ -366,7 +366,7 @@ int HttpCache::Transaction::RestartWithAuth(
   // Ensure that we only have one asynchronous call at a time.
   DCHECK(callback_.is_null());
 
-  if (!cache_)
+  if (!cache_.get())
     return ERR_UNEXPECTED;
 
   // Clear the intermediate response since we are going to start over.
@@ -394,7 +394,7 @@ int HttpCache::Transaction::Read(IOBuffer* buf, int buf_len,
 
   DCHECK(callback_.is_null());
 
-  if (!cache_)
+  if (!cache_.get())
     return ERR_UNEXPECTED;
 
   // If we have an intermediate auth response at this point, then it means the
@@ -447,14 +447,14 @@ void HttpCache::Transaction::StopCaching() {
   // entry how it is (it will be marked as truncated at destruction), and let
   // the next piece of code that executes know that we are now reading directly
   // from the net.
-  if (cache_ && entry_ && (mode_ & WRITE) && network_trans_.get() &&
+  if (cache_.get() && entry_ && (mode_ & WRITE) && network_trans_.get() &&
       !is_sparse_ && !range_requested_) {
     mode_ = NONE;
   }
 }
 
 void HttpCache::Transaction::DoneReading() {
-  if (cache_ && entry_) {
+  if (cache_.get() && entry_) {
     DCHECK(reading_);
     DCHECK_NE(mode_, UPDATE);
     if (mode_ & WRITE)
@@ -477,7 +477,7 @@ LoadState HttpCache::Transaction::GetLoadState() const {
   if (state != LOAD_STATE_WAITING_FOR_CACHE)
     return state;
 
-  if (cache_)
+  if (cache_.get())
     return cache_->GetLoadStateForPendingTransaction(this);
 
   return LOAD_STATE_IDLE;
@@ -855,7 +855,7 @@ int HttpCache::Transaction::DoSendRequest() {
 int HttpCache::Transaction::DoSendRequestComplete(int result) {
   ReportNetworkActionFinish();
 
-  if (!cache_)
+  if (!cache_.get())
     return ERR_UNEXPECTED;
 
   // If requested, and we have a readable cache entry, and we have
@@ -992,7 +992,7 @@ int HttpCache::Transaction::DoNetworkReadComplete(int result) {
 
   ReportNetworkActionFinish();
 
-  if (!cache_)
+  if (!cache_.get())
     return ERR_UNEXPECTED;
 
   // If there is an error or we aren't saving the data, we are done; just wait
@@ -1007,7 +1007,7 @@ int HttpCache::Transaction::DoNetworkReadComplete(int result) {
 int HttpCache::Transaction::DoInitEntry() {
   DCHECK(!new_entry_);
 
-  if (!cache_)
+  if (!cache_.get())
     return ERR_UNEXPECTED;
 
   if (mode_ == WRITE) {
@@ -1531,7 +1531,7 @@ int HttpCache::Transaction::DoCacheQueryData() {
 
 int HttpCache::Transaction::DoCacheQueryDataComplete(int result) {
   DCHECK_EQ(OK, result);
-  if (!cache_)
+  if (!cache_.get())
     return ERR_UNEXPECTED;
 
   return ValidateEntryHeadersAndContinue();
@@ -1563,7 +1563,7 @@ int HttpCache::Transaction::DoCacheReadDataComplete(int result) {
                                       result);
   }
 
-  if (!cache_)
+  if (!cache_.get())
     return ERR_UNEXPECTED;
 
   if (partial_.get()) {
@@ -1607,7 +1607,7 @@ int HttpCache::Transaction::DoCacheWriteDataComplete(int result) {
     }
   }
   // Balance the AddRef from DoCacheWriteData.
-  if (!cache_)
+  if (!cache_.get())
     return ERR_UNEXPECTED;
 
   if (result != write_len_) {
@@ -2317,7 +2317,7 @@ int HttpCache::Transaction::OnCacheReadError(int result, bool restart) {
   }
 
   // Avoid using this entry in the future.
-  if (cache_)
+  if (cache_.get())
     cache_->DoomActiveEntry(cache_key_);
 
   if (restart) {
@@ -2510,7 +2510,7 @@ void HttpCache::Transaction::UpdateTransactionPattern(
 
 void HttpCache::Transaction::RecordHistograms() {
   DCHECK_NE(PATTERN_UNDEFINED, transaction_pattern_);
-  if (!cache_ || !cache_->GetCurrentBackend() ||
+  if (!cache_.get() || !cache_->GetCurrentBackend() ||
       cache_->GetCurrentBackend()->GetCacheType() != DISK_CACHE ||
       cache_->mode() != NORMAL || request_->method != "GET") {
     return;

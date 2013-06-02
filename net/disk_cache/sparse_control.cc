@@ -104,7 +104,7 @@ void ChildrenDeleter::Start(char* buffer, int len) {
 
 void ChildrenDeleter::ReadData(disk_cache::Addr address, int len) {
   DCHECK(address.is_block_file());
-  if (!backend_)
+  if (!backend_.get())
     return Release();
 
   disk_cache::File* file(backend_->File(address));
@@ -127,7 +127,7 @@ void ChildrenDeleter::ReadData(disk_cache::Addr address, int len) {
 
 void ChildrenDeleter::DeleteChildren() {
   int child_id = 0;
-  if (!children_map_.FindNextSetBit(&child_id) || !backend_) {
+  if (!children_map_.FindNextSetBit(&child_id) || !backend_.get()) {
     // We are done. Just delete this object.
     return Release();
   }
@@ -350,9 +350,9 @@ void SparseControl::DeleteChildren(EntryImpl* entry) {
 
   entry->net_log().AddEvent(net::NetLog::TYPE_SPARSE_DELETE_CHILDREN);
 
-  DCHECK(entry->backend_);
-  ChildrenDeleter* deleter = new ChildrenDeleter(entry->backend_,
-                                                 entry->GetKey());
+  DCHECK(entry->backend_.get());
+  ChildrenDeleter* deleter =
+      new ChildrenDeleter(entry->backend_.get(), entry->GetKey());
   // The object will self destruct when finished.
   deleter->AddRef();
 
@@ -461,7 +461,7 @@ bool SparseControl::OpenChild() {
   if (!ChildPresent())
     return ContinueWithoutChild(key);
 
-  if (!entry_->backend_)
+  if (!entry_->backend_.get())
     return false;
 
   child_ = entry_->backend_->OpenEntryImpl(key);
@@ -539,7 +539,7 @@ bool SparseControl::ContinueWithoutChild(const std::string& key) {
   if (kGetRangeOperation == operation_)
     return true;
 
-  if (!entry_->backend_)
+  if (!entry_->backend_.get())
     return false;
 
   child_ = entry_->backend_->CreateEntryImpl(key);

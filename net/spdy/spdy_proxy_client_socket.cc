@@ -137,11 +137,11 @@ void SpdyProxyClientSocket::Disconnect() {
 
   next_state_ = STATE_DISCONNECTED;
 
-  if (spdy_stream_) {
+  if (spdy_stream_.get()) {
     // This will cause OnClose to be invoked, which takes care of
     // cleaning up all the internal state.
     spdy_stream_->Cancel();
-    DCHECK(!spdy_stream_);
+    DCHECK(!spdy_stream_.get());
   }
 }
 
@@ -167,7 +167,7 @@ void SpdyProxyClientSocket::SetOmniboxSpeculation() {
 }
 
 bool SpdyProxyClientSocket::WasEverUsed() const {
-  return was_ever_used_ || (spdy_stream_ && spdy_stream_->WasEverUsed());
+  return was_ever_used_ || (spdy_stream_.get() && spdy_stream_->WasEverUsed());
 }
 
 bool SpdyProxyClientSocket::UsingTCPFastOpen() const {
@@ -225,7 +225,7 @@ int SpdyProxyClientSocket::Write(IOBuffer* buf, int buf_len,
   if (next_state_ != STATE_OPEN)
     return ERR_SOCKET_NOT_CONNECTED;
 
-  DCHECK(spdy_stream_);
+  DCHECK(spdy_stream_.get());
   spdy_stream_->SendData(buf, buf_len, MORE_DATA_TO_SEND);
   net_log_.AddByteTransferEvent(NetLog::TYPE_SOCKET_BYTES_SENT,
                                 buf_len, buf->data());
@@ -408,7 +408,7 @@ int SpdyProxyClientSocket::DoReadReplyComplete(int result) {
         // Immediately hand off our SpdyStream to a newly created
         // SpdyHttpStream so that any subsequent SpdyFrames are processed in
         // the context of the HttpStream, not the socket.
-        DCHECK(spdy_stream_);
+        DCHECK(spdy_stream_.get());
         base::WeakPtr<SpdyStream> stream = spdy_stream_;
         spdy_stream_.reset();
         response_stream_.reset(new SpdyHttpStream(NULL, false));
@@ -518,7 +518,7 @@ void SpdyProxyClientSocket::OnClose(int status)  {
     OnDataReceived(scoped_ptr<SpdyBuffer>());
   }
   // This may have been deleted by read_callback_, so check first.
-  if (weak_ptr && !write_callback.is_null())
+  if (weak_ptr.get() && !write_callback.is_null())
     write_callback.Run(ERR_CONNECTION_CLOSED);
 }
 

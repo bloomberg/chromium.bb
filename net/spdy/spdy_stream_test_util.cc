@@ -35,9 +35,9 @@ int ClosingDelegate::OnDataReceived(scoped_ptr<SpdyBuffer> buffer) {
 void ClosingDelegate::OnDataSent() {}
 
 void ClosingDelegate::OnClose(int status) {
-  DCHECK(stream_);
+  DCHECK(stream_.get());
   stream_->Close();
-  DCHECK(!stream_);
+  DCHECK(!stream_.get());
 }
 
 StreamDelegateBase::StreamDelegateBase(
@@ -74,7 +74,7 @@ int StreamDelegateBase::OnDataReceived(scoped_ptr<SpdyBuffer> buffer) {
 void StreamDelegateBase::OnDataSent() {}
 
 void StreamDelegateBase::OnClose(int status) {
-  if (!stream_)
+  if (!stream_.get())
     return;
   stream_id_ = stream_->stream_id();
   stream_.reset();

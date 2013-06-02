@@ -480,7 +480,8 @@ void DeterministicSocketData::Run() {
   }
   // We're done consuming new data, but it is possible there are still some
   // pending callbacks which we expect to complete before returning.
-  while (delegate_ && (delegate_->WritePending() || delegate_->ReadPending()) &&
+  while (delegate_.get() &&
+         (delegate_->WritePending() || delegate_->ReadPending()) &&
          !stopped()) {
     InvokeCallbacks();
     base::RunLoop().RunUntilIdle();
@@ -589,13 +590,13 @@ void DeterministicSocketData::Reset() {
 }
 
 void DeterministicSocketData::InvokeCallbacks() {
-  if (delegate_ && delegate_->WritePending() &&
+  if (delegate_.get() && delegate_->WritePending() &&
       (current_write().sequence_number == sequence_number())) {
     NextStep();
     delegate_->CompleteWrite();
     return;
   }
-  if (delegate_ && delegate_->ReadPending() &&
+  if (delegate_.get() && delegate_->ReadPending() &&
       (current_read().sequence_number == sequence_number())) {
     NextStep();
     delegate_->CompleteRead();

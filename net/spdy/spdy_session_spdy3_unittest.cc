@@ -3032,13 +3032,13 @@ void SpdySessionSpdy3Test::RunResumeAfterUnstallTest31(
   EXPECT_TRUE(stream->HasUrl());
   EXPECT_EQ(kStreamUrl, stream->GetUrl().spec());
 
-  stall_fn.Run(session.get(), stream);
+  stall_fn.Run(session.get(), stream.get());
 
   data.RunFor(2);
 
   EXPECT_TRUE(stream->send_stalled_by_flow_control());
 
-  unstall_function.Run(session.get(), stream, kBodyDataSize);
+  unstall_function.Run(session.get(), stream.get(), kBodyDataSize);
 
   EXPECT_FALSE(stream->send_stalled_by_flow_control());
 
@@ -3259,7 +3259,7 @@ class StreamClosingDelegate : public test::StreamDelegateWithBody {
 
   virtual void OnDataSent() OVERRIDE {
     test::StreamDelegateWithBody::OnDataSent();
-    if (stream_to_close_) {
+    if (stream_to_close_.get()) {
       stream_to_close_->Close();
       EXPECT_EQ(NULL, stream_to_close_.get());
     }

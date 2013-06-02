@@ -59,13 +59,13 @@ class SpdyStream::SynStreamBufferProducer : public SpdyBufferProducer {
  public:
   SynStreamBufferProducer(const base::WeakPtr<SpdyStream>& stream)
       : stream_(stream) {
-    DCHECK(stream_);
+    DCHECK(stream_.get());
   }
 
   virtual ~SynStreamBufferProducer() {}
 
   virtual scoped_ptr<SpdyBuffer> ProduceBuffer() OVERRIDE {
-    if (!stream_) {
+    if (!stream_.get()) {
       NOTREACHED();
       return scoped_ptr<SpdyBuffer>();
     }

@@ -246,7 +246,7 @@ int SpdyStreamRequest::StartRequest(
     const CompletionCallback& callback) {
   DCHECK(session.get());
   DCHECK(!session_.get());
-  DCHECK(!stream_);
+  DCHECK(!stream_.get());
   DCHECK(callback_.is_null());
 
   type_ = type;
@@ -274,7 +274,7 @@ void SpdyStreamRequest::CancelRequest() {
 base::WeakPtr<SpdyStream> SpdyStreamRequest::ReleaseStream() {
   DCHECK(!session_.get());
   base::WeakPtr<SpdyStream> stream = stream_;
-  DCHECK(stream);
+  DCHECK(stream.get());
   Reset();
   return stream;
 }
@@ -282,18 +282,18 @@ base::WeakPtr<SpdyStream> SpdyStreamRequest::ReleaseStream() {
 void SpdyStreamRequest::OnRequestCompleteSuccess(
     base::WeakPtr<SpdyStream>* stream) {
   DCHECK(session_.get());
-  DCHECK(!stream_);
+  DCHECK(!stream_.get());
   DCHECK(!callback_.is_null());
   CompletionCallback callback = callback_;
   Reset();
-  DCHECK(*stream);
+  DCHECK(stream->get());
   stream_ = *stream;
   callback.Run(OK);
 }
 
 void SpdyStreamRequest::OnRequestCompleteFailure(int rv) {
   DCHECK(session_.get());
-  DCHECK(!stream_);
+  DCHECK(!stream_.get());
   DCHECK(!callback_.is_null());
   CompletionCallback callback = callback_;
   Reset();
@@ -923,7 +923,7 @@ void SpdySession::CloseCreatedStream(
   DCHECK_EQ(0u, stream->stream_id());
 
   scoped_ptr<SpdyStream> owned_stream(stream.get());
-  created_streams_.erase(stream);
+  created_streams_.erase(stream.get());
 
   DeleteStream(owned_stream.Pass(), status);
 }
@@ -1100,7 +1100,7 @@ void SpdySession::OnWriteComplete(int result) {
     if (in_flight_write_->GetRemainingSize() == 0) {
       // It is possible that the stream was cancelled while we were
       // writing to the socket.
-      if (in_flight_write_stream_) {
+      if (in_flight_write_stream_.get()) {
         DCHECK_GT(in_flight_write_frame_size_, 0u);
         in_flight_write_stream_->OnFrameWriteComplete(
             in_flight_write_frame_type_,
@@ -1162,13 +1162,13 @@ void SpdySession::WriteSocket() {
       if (!write_queue_.Dequeue(&frame_type, &producer, &stream))
         break;
 
-      if (stream)
+      if (stream.get())
         DCHECK(!stream->closed());
 
       // Activate the stream only when sending the SYN_STREAM frame to
       // guarantee monotonically-increasing stream IDs.
       if (frame_type == SYN_STREAM) {
-        if (stream && stream->stream_id() == 0) {
+        if (stream.get() && stream->stream_id() == 0) {
           scoped_ptr<SpdyStream> owned_stream =
               ActivateCreatedStream(stream.get());
           InsertActivatedStream(owned_stream.Pass());
@@ -1441,7 +1441,7 @@ void SpdySession::InsertActivatedStream(scoped_ptr<SpdyStream> stream) {
 }
 
 void SpdySession::DeleteStream(scoped_ptr<SpdyStream> stream, int status) {
-  if (in_flight_write_stream_ == stream.get()) {
+  if (in_flight_write_stream_.get() == stream.get()) {
     // If we're deleting the stream for the in-flight write, we still
     // need to let the write complete, so we clear
     // |in_flight_write_stream_| and let the write finish on its own
@@ -2259,10 +2259,10 @@ void SpdySession::CompleteStreamRequest(SpdyStreamRequest* pending_request) {
   pending_stream_request_completions_.erase(it);
 
   if (rv == OK) {
-    DCHECK(stream);
+    DCHECK(stream.get());
     pending_request->OnRequestCompleteSuccess(&stream);
   } else {
-    DCHECK(!stream);
+    DCHECK(!stream.get());
     pending_request->OnRequestCompleteFailure(rv);
   }
 }

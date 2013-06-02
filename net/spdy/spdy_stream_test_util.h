@@ -35,7 +35,7 @@ class ClosingDelegate : public SpdyStream::Delegate {
   virtual void OnClose(int status) OVERRIDE;
 
   // Returns whether or not the stream is closed.
-  bool StreamIsClosed() const { return !stream_; }
+  bool StreamIsClosed() const { return !stream_.get(); }
 
  private:
   base::WeakPtr<SpdyStream> stream_;
@@ -65,7 +65,7 @@ class StreamDelegateBase : public SpdyStream::Delegate {
   std::string TakeReceivedData();
 
   // Returns whether or not the stream is closed.
-  bool StreamIsClosed() const { return !stream_; }
+  bool StreamIsClosed() const { return !stream_.get(); }
 
   // Returns the stream's ID. If called when the stream is closed,
   // returns the stream's ID when it was open.

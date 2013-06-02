@@ -49,9 +49,9 @@ void SpdyHttpStream::InitializeWithExistingStream(
 }
 
 SpdyHttpStream::~SpdyHttpStream() {
-  if (stream_) {
+  if (stream_.get()) {
     stream_->DetachDelegate();
-    DCHECK(!stream_);
+    DCHECK(!stream_.get());
   }
 }
 
@@ -71,7 +71,7 @@ int SpdyHttpStream::InitializeStream(const HttpRequestInfo* request_info,
       return error;
 
     // |stream_| may be NULL even if OK was returned.
-    if (stream_) {
+    if (stream_.get()) {
       DCHECK_EQ(stream_->type(), SPDY_PUSH_STREAM);
       stream_->SetDelegate(this);
       return OK;
@@ -109,7 +109,7 @@ int SpdyHttpStream::ReadResponseHeaders(const CompletionCallback& callback) {
   if (stream_closed_)
     return closed_stream_status_;
 
-  CHECK(stream_);
+  CHECK(stream_.get());
 
   // Check if we already have the response headers. If so, return synchronously.
   if(stream_->response_received()) {
@@ -125,7 +125,7 @@ int SpdyHttpStream::ReadResponseHeaders(const CompletionCallback& callback) {
 
 int SpdyHttpStream::ReadResponseBody(
     IOBuffer* buf, int buf_len, const CompletionCallback& callback) {
-  if (stream_) {
+  if (stream_.get()) {
     CHECK(stream_->is_idle());
     CHECK(!stream_->closed());
   }
@@ -187,7 +187,7 @@ bool SpdyHttpStream::GetLoadTimingInfo(LoadTimingInfo* load_timing_info) const {
   // The reused flag can only be correctly set once a stream has an ID.  Streams
   // get their IDs once the request has been successfully sent, so this does not
   // behave that differently from other stream types.
-  if (!spdy_session_.get() || (!stream_ && !stream_closed_))
+  if (!spdy_session_.get() || (!stream_.get() && !stream_closed_))
     return false;
 
   SpdyStreamId stream_id =
@@ -282,9 +282,9 @@ int SpdyHttpStream::SendRequest(const HttpRequestHeaders& request_headers,
 
 void SpdyHttpStream::Cancel() {
   callback_.Reset();
-  if (stream_) {
+  if (stream_.get()) {
     stream_->Cancel();
-    DCHECK(!stream_);
+    DCHECK(!stream_.get());
   }
 }
 
@@ -389,7 +389,7 @@ void SpdyHttpStream::OnDataSent() {
 }
 
 void SpdyHttpStream::OnClose(int status) {
-  if (stream_) {
+  if (stream_.get()) {
     stream_closed_ = true;
     closed_stream_status_ = status;
     closed_stream_id_ = stream_->stream_id();
@@ -492,7 +492,7 @@ bool SpdyHttpStream::DoBufferedReadCallback() {
 
   // If the transaction is cancelled or errored out, we don't need to complete
   // the read.
-  if (!stream_ && !stream_closed_)
+  if (!stream_.get() && !stream_closed_)
     return false;
 
   int stream_status =
@@ -531,7 +531,7 @@ void SpdyHttpStream::DoCallback(int rv) {
 }
 
 void SpdyHttpStream::GetSSLInfo(SSLInfo* ssl_info) {
-  DCHECK(stream_);
+  DCHECK(stream_.get());
   bool using_npn;
   NextProto protocol_negotiated = kProtoUnknown;
   stream_->GetSSLInfo(ssl_info, &using_npn, &protocol_negotiated);
@@ -539,7 +539,7 @@ void SpdyHttpStream::GetSSLInfo(SSLInfo* ssl_info) {
 
 void SpdyHttpStream::GetSSLCertRequestInfo(
     SSLCertRequestInfo* cert_request_info) {
-  DCHECK(stream_);
+  DCHECK(stream_.get());
   stream_->GetSSLCertRequestInfo(cert_request_info);
 }
 
