@@ -41,7 +41,7 @@ routes = [
     ('/testfile/upload', testfilehandler.Upload),
     ('/testfile/uploadform', testfilehandler.UploadForm),
     ('/testfile/?', testfilehandler.GetFile),
-    ('/*|/menu', menu.Menu),
+    ('/', menu.Menu),
 ]
 
 application = webapp.WSGIApplication(routes, debug=True)
