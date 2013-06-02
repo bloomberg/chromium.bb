@@ -68,6 +68,7 @@
 #include "core/rendering/HitTestResult.h"
 #include "core/rendering/RenderLayerCompositor.h"
 #include "core/rendering/RenderView.h"
+#include "core/rendering/TextAutosizer.h"
 #include "v8.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebFloatRect.h"
@@ -324,6 +325,55 @@ TEST_F(WebFrameTest, FrameViewNeedsLayoutOnFixedLayoutResize)
     EXPECT_EQ(prevLayoutCount, webViewImpl->mainFrameImpl()->frameView()->layoutCount());
 
     webViewImpl->layout();
+}
+
+TEST_F(WebFrameTest, ChangeInFixedLayoutTriggersTextAutosizingRecalculate)
+{
+    registerMockedHttpURLLoad("fixed_layout.html");
+
+    FixedLayoutTestWebViewClient client;
+    int viewportWidth = 640;
+    int viewportHeight = 480;
+
+    // Make sure we initialize to minimum scale, even if the window size
+    // only becomes available after the load begins.
+    m_webView = FrameTestHelpers::createWebViewAndLoad(m_baseURL + "fixed_layout.html", true, 0, &client);
+    m_webView->enableFixedLayoutMode(true);
+    m_webView->settings()->setViewportEnabled(true);
+    WebViewImpl* webViewImpl = static_cast<WebViewImpl*>(m_webView);
+
+    WebCore::Document* document = webViewImpl->page()->mainFrame()->document();
+    document->settings()->setTextAutosizingEnabled(true);
+    EXPECT_TRUE(document->settings()->textAutosizingEnabled());
+    webViewImpl->resize(WebSize(viewportWidth, viewportHeight));
+    webViewImpl->layout();
+
+    WebCore::RenderObject* renderer = document->renderer();
+    bool multiplierSetAtLeastOnce = false;
+    while (renderer) {
+        if (renderer->style()) {
+            renderer->style()->setTextAutosizingMultiplier(2);
+            EXPECT_EQ(2, renderer->style()->textAutosizingMultiplier());
+            multiplierSetAtLeastOnce = true;
+        }
+        renderer = renderer->nextInPreOrder();
+    }
+    EXPECT_TRUE(multiplierSetAtLeastOnce);
+
+    WebCore::ViewportArguments arguments = document->viewportArguments();
+    arguments.width += 10;
+    webViewImpl->updatePageDefinedPageScaleConstraints(arguments);
+
+    bool multiplierCheckedAtLeastOnce = false;
+    renderer = document->renderer();
+    while (renderer) {
+        if (renderer->style()) {
+            EXPECT_EQ(1, renderer->style()->textAutosizingMultiplier());
+            multiplierCheckedAtLeastOnce = true;
+        }
+        renderer = renderer->nextInPreOrder();
+    }
+    EXPECT_TRUE(multiplierCheckedAtLeastOnce);
 }
 
 TEST_F(WebFrameTest, DeviceScaleFactorUsesDefaultWithoutViewportTag)

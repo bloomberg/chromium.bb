@@ -151,6 +151,7 @@
 #include "core/rendering/RenderLayerCompositor.h"
 #include "core/rendering/RenderView.h"
 #include "core/rendering/RenderWidget.h"
+#include "core/rendering/TextAutosizer.h"
 #include "modules/battery/BatteryController.h"
 #include "modules/geolocation/GeolocationController.h"
 #include "weborigin/SchemeRegistry.h"
@@ -3006,7 +3007,13 @@ void WebViewImpl::updatePageDefinedPageScaleConstraints(const ViewportArguments&
     if (settingsImpl()->supportDeprecatedTargetDensityDPI())
         m_pageScaleConstraintsSet.adjustPageDefinedConstraintsForAndroidWebView(arguments, m_size, page()->settings()->layoutFallbackWidth(), deviceScaleFactor(), page()->settings()->useWideViewport(), page()->settings()->loadWithOverviewMode());
 
-    setFixedLayoutSize(flooredIntSize(m_pageScaleConstraintsSet.pageDefinedConstraints().layoutSize));
+    WebSize layoutSize = flooredIntSize(m_pageScaleConstraintsSet.pageDefinedConstraints().layoutSize);
+
+    if (page()->settings() && page()->settings()->textAutosizingEnabled() && page()->mainFrame()
+        && layoutSize.width != fixedLayoutSize().width)
+            page()->mainFrame()->document()->textAutosizer()->recalculateMultipliers();
+
+    setFixedLayoutSize(layoutSize);
 }
 
 IntSize WebViewImpl::contentsSize() const
