@@ -155,7 +155,7 @@ public:
 
 private:
     GlyphMapLayer m_rootLayer;
-    Vector<SVGGlyph, 256> m_glyphTable;
+    Vector<SVGGlyph> m_glyphTable;
     HashMap<String, Glyph> m_namedGlyphs;
     int m_currentPriority;
 };
