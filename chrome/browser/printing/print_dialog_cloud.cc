@@ -213,7 +213,7 @@ CloudPrintDataSender::~CloudPrintDataSender() {}
 // needed. - 4/1/2010
 void CloudPrintDataSender::SendPrintData() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  if (!data_ || !data_->size())
+  if (!data_.get() || !data_->size())
     return;
 
   std::string base64_data;
@@ -373,8 +373,11 @@ CloudPrintFlowHandler::CreateCloudPrintDataSender() {
   DCHECK(web_ui());
   print_data_helper_.reset(new CloudPrintDataSenderHelper(web_ui()));
   scoped_refptr<CloudPrintDataSender> sender(
-      new CloudPrintDataSender(print_data_helper_.get(), print_job_title_,
-                               print_ticket_, file_type_, data_));
+      new CloudPrintDataSender(print_data_helper_.get(),
+                               print_job_title_,
+                               print_ticket_,
+                               file_type_,
+                               data_.get()));
   return sender;
 }
 

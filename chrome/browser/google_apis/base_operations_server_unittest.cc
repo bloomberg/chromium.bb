@@ -50,7 +50,7 @@ class BaseOperationsServerTest : public testing::Test {
             content::BrowserThread::IO));
 
     operation_runner_.reset(new OperationRunner(profile_.get(),
-                                                request_context_getter_,
+                                                request_context_getter_.get(),
                                                 std::vector<std::string>(),
                                                 kTestUserAgent));
     operation_runner_->auth_service()->set_access_token_for_testing(

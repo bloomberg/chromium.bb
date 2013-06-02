@@ -393,7 +393,7 @@ bool SQLiteServerBoundCertStore::Backend::EnsureDatabaseVersion() {
       scoped_refptr<net::X509Certificate> cert(
           net::X509Certificate::CreateFromBytes(
               cert_from_db.data(), cert_from_db.size()));
-      if (cert) {
+      if (cert.get()) {
         if (cur_version == 2) {
           update_expires_smt.Reset(true);
           update_expires_smt.BindInt64(0,

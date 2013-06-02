@@ -152,7 +152,7 @@ class CommitLaterTask : public base::RefCounted<CommitLaterTask> {
   }
 
   void RunCommit() {
-    if (history_backend_)
+    if (history_backend_.get())
       history_backend_->Commit();
   }
 
@@ -273,7 +273,7 @@ HistoryBackend::HistoryBackend(const base::FilePath& history_dir,
 }
 
 HistoryBackend::~HistoryBackend() {
-  DCHECK(!scheduled_commit_) << "Deleting without cleanup";
+  DCHECK(!scheduled_commit_.get()) << "Deleting without cleanup";
   ReleaseDBTasks();
 
 #if defined(OS_ANDROID)
@@ -2365,7 +2365,7 @@ bool HistoryBackend::ValidateSetFaviconsParams(
   typedef std::map<GURL, size_t> BitmapsPerIconURL;
   BitmapsPerIconURL num_bitmaps_per_icon_url;
   for (size_t i = 0; i < favicon_bitmap_data.size(); ++i) {
-    if (!favicon_bitmap_data[i].bitmap_data)
+    if (!favicon_bitmap_data[i].bitmap_data.get())
       return false;
 
     const GURL& icon_url = favicon_bitmap_data[i].icon_url;
@@ -2389,7 +2389,7 @@ bool HistoryBackend::ValidateSetFaviconsParams(
 bool HistoryBackend::IsFaviconBitmapDataEqual(
     FaviconBitmapID bitmap_id,
     const scoped_refptr<base::RefCountedMemory>& new_bitmap_data) {
-  if (!new_bitmap_data)
+  if (!new_bitmap_data.get())
     return false;
 
   scoped_refptr<base::RefCountedMemory> original_bitmap_data;
@@ -2648,7 +2648,7 @@ void HistoryBackend::Commit() {
 }
 
 void HistoryBackend::ScheduleCommit() {
-  if (scheduled_commit_)
+  if (scheduled_commit_.get())
     return;
   scheduled_commit_ = new CommitLaterTask(this);
   base::MessageLoop::current()->PostDelayedTask(
@@ -2658,7 +2658,7 @@ void HistoryBackend::ScheduleCommit() {
 }
 
 void HistoryBackend::CancelScheduledCommit() {
-  if (scheduled_commit_) {
+  if (scheduled_commit_.get()) {
     scheduled_commit_->Cancel();
     scheduled_commit_ = NULL;
   }
@@ -2870,7 +2870,7 @@ void HistoryBackend::KillHistoryDatabase() {
 
 void HistoryBackend::ProcessDBTask(
     scoped_refptr<HistoryDBTaskRequest> request) {
-  DCHECK(request);
+  DCHECK(request.get());
   if (request->canceled())
     return;
 

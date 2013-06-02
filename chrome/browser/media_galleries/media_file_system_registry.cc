@@ -676,7 +676,7 @@ MediaFileSystemRegistry::GetOrCreateScopedMTPDeviceMapEntry(
                      base::Unretained(this),
                      device_location));
   mtp_device_host->Init();
-  mtp_device_delegate_map_[device_location] = mtp_device_host;
+  mtp_device_delegate_map_[device_location] = mtp_device_host.get();
   return mtp_device_host;
 }
 

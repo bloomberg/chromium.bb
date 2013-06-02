@@ -60,7 +60,7 @@ void PrintJobManager::PopPrinterQuery(int document_cookie,
   for (PrinterQueries::iterator itr = queued_queries_.begin();
        itr != queued_queries_.end();
        ++itr) {
-    PrinterQuery* current_query = *itr;
+    PrinterQuery* current_query = itr->get();
     if (current_query->cookie() == document_cookie &&
         !current_query->is_callback_pending()) {
       *job = current_query;

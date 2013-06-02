@@ -184,10 +184,10 @@ PasswordStoreFactory::BuildServiceInstanceFor(
 #else
   NOTIMPLEMENTED();
 #endif
-  if (!ps)
+  if (!ps.get())
     delete login_db;
 
-  if (!ps || !ps->Init()) {
+  if (!ps.get() || !ps->Init()) {
     NOTREACHED() << "Could not initialize password manager.";
     return NULL;
   }

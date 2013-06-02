@@ -849,8 +849,11 @@ void Predictor::PreconnectUrlOnIOThread(
   GURL canonical_url(CanonicalizeUrl(url));
   recent_preconnects_.SetRecentlySeen(canonical_url);
 
-  PreconnectOnIOThread(url, first_party_for_cookies, motivation, count,
-                       url_request_context_getter_);
+  PreconnectOnIOThread(url,
+                       first_party_for_cookies,
+                       motivation,
+                       count,
+                       url_request_context_getter_.get());
 }
 
 void Predictor::RecordPreconnectNavigationStats(const GURL& url) {

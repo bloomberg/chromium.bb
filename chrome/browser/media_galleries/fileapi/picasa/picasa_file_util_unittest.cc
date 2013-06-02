@@ -202,7 +202,7 @@ class PicasaFileUtilTest : public testing::Test {
     file_system_context_ = new fileapi::FileSystemContext(
         fileapi::FileSystemTaskRunners::CreateMockTaskRunners(),
         fileapi::ExternalMountPoints::CreateRefCounted().get(),
-        storage_policy,
+        storage_policy.get(),
         NULL,
         additional_providers.Pass(),
         profile_dir_.path(),

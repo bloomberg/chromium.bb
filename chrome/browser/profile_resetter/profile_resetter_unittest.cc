@@ -24,7 +24,7 @@ class MockObject {
   }
 
   void StopLoop() {
-    DCHECK(runner_);
+    DCHECK(runner_.get());
     Callback();
     runner_->Quit();
   }

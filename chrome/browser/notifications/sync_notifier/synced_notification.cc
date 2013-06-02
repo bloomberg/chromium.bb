@@ -151,7 +151,7 @@ void SyncedNotification::Show(NotificationUIManager* notification_manager,
                                  display_source,
                                  replace_key,
                                  &optional_fields,
-                                 delegate);
+                                 delegate.get());
 
     notification_manager->Add(ui_notification, profile);
   } else {
@@ -163,7 +163,7 @@ void SyncedNotification::Show(NotificationUIManager* notification_manager,
                                  WebKit::WebTextDirectionDefault,
                                  display_source,
                                  replace_key,
-                                 delegate);
+                                 delegate.get());
 
     notification_manager->Add(ui_notification, profile);
 

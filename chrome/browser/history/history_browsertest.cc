@@ -91,7 +91,7 @@ class HistoryBrowserTest : public InProcessBrowserTest {
     HistoryService* history =
         HistoryServiceFactory::GetForProfile(GetProfile(),
                                              Profile::EXPLICIT_ACCESS);
-    history->HistoryService::ScheduleDBTask(task, &request_consumer);
+    history->HistoryService::ScheduleDBTask(task.get(), &request_consumer);
     content::RunMessageLoop();
   }
 

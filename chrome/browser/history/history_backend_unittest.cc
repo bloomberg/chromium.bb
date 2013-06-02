@@ -387,7 +387,7 @@ class HistoryBackendTest : public testing::Test {
   friend class HistoryBackendTestDelegate;
 
   virtual void TearDown() {
-    if (backend_)
+    if (backend_.get())
       backend_->Closing();
     backend_ = NULL;
     mem_backend_.reset();
@@ -2347,7 +2347,7 @@ TEST_F(HistoryBackendTest, QueryFilteredURLs) {
                      base::Unretained(static_cast<HistoryBackendTest*>(this))));
   HistoryBackendCancelableRequest cancellable_request;
   cancellable_request.MockScheduleOfRequest<QueryFilteredURLsRequest>(
-      request1);
+      request1.get());
 
   VisitFilter filter;
   // Time limit is |tested_time| +/- 45 min.
@@ -2370,7 +2370,7 @@ TEST_F(HistoryBackendTest, QueryFilteredURLs) {
           base::Bind(&HistoryBackendTest::OnQueryFiltered,
                      base::Unretained(static_cast<HistoryBackendTest*>(this))));
   cancellable_request.MockScheduleOfRequest<QueryFilteredURLsRequest>(
-      request2);
+      request2.get());
   filter.SetFilterTime(tested_time + one_hour);
   filter.SetFilterWidth(one_hour);
   backend_->QueryFilteredURLs(request2, 100, filter, false);
@@ -2386,7 +2386,7 @@ TEST_F(HistoryBackendTest, QueryFilteredURLs) {
           base::Bind(&HistoryBackendTest::OnQueryFiltered,
                      base::Unretained(static_cast<HistoryBackendTest*>(this))));
   cancellable_request.MockScheduleOfRequest<QueryFilteredURLsRequest>(
-      request3);
+      request3.get());
   filter.SetFilterTime(tested_time - one_hour);
   filter.SetFilterWidth(one_hour);
   backend_->QueryFilteredURLs(request3, 100, filter, false);
@@ -2407,7 +2407,7 @@ TEST_F(HistoryBackendTest, QueryFilteredURLs) {
           base::Bind(&HistoryBackendTest::OnQueryFiltered,
                      base::Unretained(static_cast<HistoryBackendTest*>(this))));
   cancellable_request.MockScheduleOfRequest<QueryFilteredURLsRequest>(
-      request4);
+      request4.get());
   filter.SetFilterTime(tested_time);
   filter.SetDayOfTheWeekFilter(static_cast<int>(exploded_time.day_of_week));
   backend_->QueryFilteredURLs(request4, 100, filter, false);
@@ -2423,7 +2423,7 @@ TEST_F(HistoryBackendTest, QueryFilteredURLs) {
           base::Bind(&HistoryBackendTest::OnQueryFiltered,
                      base::Unretained(static_cast<HistoryBackendTest*>(this))));
   cancellable_request.MockScheduleOfRequest<QueryFilteredURLsRequest>(
-      request5);
+      request5.get());
   filter.SetFilterTime(tested_time - base::TimeDelta::FromMinutes(40));
   filter.SetFilterWidth(base::TimeDelta::FromMinutes(20));
   backend_->QueryFilteredURLs(request5, 100, filter, false);
@@ -2438,7 +2438,7 @@ TEST_F(HistoryBackendTest, QueryFilteredURLs) {
           base::Bind(&HistoryBackendTest::OnQueryFiltered,
                      base::Unretained(static_cast<HistoryBackendTest*>(this))));
   cancellable_request.MockScheduleOfRequest<QueryFilteredURLsRequest>(
-      request6);
+      request6.get());
   filter.SetFilterTime(tested_time);
   filter.SetFilterWidth(one_hour * 2);
   backend_->QueryFilteredURLs(request6, 100, filter, true);

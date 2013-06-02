@@ -49,7 +49,7 @@ void StartTestStepFromClientThread(
     scoped_refptr<AccessTokenStore>* store,
     const AccessTokenStore::LoadAccessTokensCallbackType& callback) {
   ASSERT_TRUE(BrowserThread::CurrentlyOn(kExpectedClientThreadId));
-  if (*store == NULL)
+  if (store->get() == NULL)
     (*store) = new ChromeAccessTokenStore();
   (*store)->LoadAccessTokens(callback);
 }

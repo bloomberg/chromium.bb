@@ -192,7 +192,7 @@ void PrintViewManager::RenderViewGone(base::TerminationStatus status) {
     return;
 
   scoped_refptr<PrintedDocument> document(print_job_->document());
-  if (document) {
+  if (document.get()) {
     // If IsComplete() returns false, the document isn't completely rendered.
     // Since our renderer is gone, there's nothing to do, cancel it. Otherwise,
     // the print job may finish without problem.

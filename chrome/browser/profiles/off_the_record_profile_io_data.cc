@@ -77,7 +77,7 @@ OffTheRecordProfileIOData::Handle::CreateMainRequestContextGetter(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 #endif  // defined(OS_CHROMEOS)
   LazyInitialize();
-  DCHECK(!main_request_context_getter_);
+  DCHECK(!main_request_context_getter_.get());
   main_request_context_getter_ =
       ChromeURLRequestContextGetter::CreateOffTheRecord(
           profile_, io_data_, protocol_handlers);
@@ -88,7 +88,7 @@ scoped_refptr<ChromeURLRequestContextGetter>
 OffTheRecordProfileIOData::Handle::GetExtensionsRequestContextGetter() const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   LazyInitialize();
-  if (!extensions_request_context_getter_) {
+  if (!extensions_request_context_getter_.get()) {
     extensions_request_context_getter_ =
         ChromeURLRequestContextGetter::CreateOffTheRecordForExtensions(
             profile_, io_data_);
@@ -201,8 +201,8 @@ void OffTheRecordProfileIOData::InitializeInternal(
   set_server_bound_cert_service(server_bound_cert_service);
   main_context->set_server_bound_cert_service(server_bound_cert_service);
 
-  main_context->set_cookie_store(
-      new net::CookieMonster(NULL, profile_params->cookie_monster_delegate));
+  main_context->set_cookie_store(new net::CookieMonster(
+      NULL, profile_params->cookie_monster_delegate.get()));
 
   net::HttpCache::BackendFactory* main_backend =
       net::HttpCache::DefaultBackend::InMemory(0);

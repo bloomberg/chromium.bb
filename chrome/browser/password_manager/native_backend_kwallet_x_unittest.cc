@@ -250,31 +250,29 @@ void NativeBackendKWalletTest::SetUp() {
       new dbus::MockObjectProxy(mock_session_bus_.get(),
                                 "org.kde.klauncher",
                                 dbus::ObjectPath("/KLauncher"));
-  EXPECT_CALL(*mock_klauncher_proxy_,
-              MockCallMethodAndBlock(_, _))
-      .WillRepeatedly(Invoke(this,
-          &NativeBackendKWalletTest::KLauncherMethodCall));
+  EXPECT_CALL(*mock_klauncher_proxy_.get(), MockCallMethodAndBlock(_, _))
+      .WillRepeatedly(
+           Invoke(this, &NativeBackendKWalletTest::KLauncherMethodCall));
 
   mock_kwallet_proxy_ =
       new dbus::MockObjectProxy(mock_session_bus_.get(),
                                 "org.kde.kwalletd",
                                 dbus::ObjectPath("/modules/kwalletd"));
-  EXPECT_CALL(*mock_kwallet_proxy_,
-              MockCallMethodAndBlock(_, _))
-      .WillRepeatedly(Invoke(this,
-          &NativeBackendKWalletTest::KWalletMethodCall));
+  EXPECT_CALL(*mock_kwallet_proxy_.get(), MockCallMethodAndBlock(_, _))
+      .WillRepeatedly(
+           Invoke(this, &NativeBackendKWalletTest::KWalletMethodCall));
 
-  EXPECT_CALL(*mock_session_bus_, GetObjectProxy(
-      "org.kde.klauncher",
-      dbus::ObjectPath("/KLauncher")))
+  EXPECT_CALL(
+      *mock_session_bus_.get(),
+      GetObjectProxy("org.kde.klauncher", dbus::ObjectPath("/KLauncher")))
       .WillRepeatedly(Return(mock_klauncher_proxy_.get()));
-  EXPECT_CALL(*mock_session_bus_, GetObjectProxy(
-      "org.kde.kwalletd",
-      dbus::ObjectPath("/modules/kwalletd")))
+  EXPECT_CALL(
+      *mock_session_bus_.get(),
+      GetObjectProxy("org.kde.kwalletd", dbus::ObjectPath("/modules/kwalletd")))
       .WillRepeatedly(Return(mock_kwallet_proxy_.get()));
 
-  EXPECT_CALL(*mock_session_bus_,
-              ShutdownAndBlock()).WillOnce(Return()).WillRepeatedly(Return());
+  EXPECT_CALL(*mock_session_bus_.get(), ShutdownAndBlock()).WillOnce(Return())
+      .WillRepeatedly(Return());
 }
 
 void NativeBackendKWalletTest::TearDown() {

@@ -199,7 +199,7 @@ CancelableRequestProvider::Handle PasswordStore::Schedule(
       NewGetLoginsRequest(
           base::Bind(&PasswordStoreConsumer::OnPasswordStoreRequestDone,
                      base::Unretained(consumer))));
-  AddRequest(request, consumer->cancelable_consumer());
+  AddRequest(request.get(), consumer->cancelable_consumer());
   ScheduleTask(base::Bind(func, this, request));
   return request->handle();
 }
@@ -215,7 +215,7 @@ CancelableRequestProvider::Handle PasswordStore::Schedule(
           base::Bind(&PasswordStoreConsumer::OnPasswordStoreRequestDone,
                      base::Unretained(consumer))));
   request->set_ignore_logins_cutoff(ignore_logins_cutoff);
-  AddRequest(request, consumer->cancelable_consumer());
+  AddRequest(request.get(), consumer->cancelable_consumer());
   ScheduleTask(base::Bind(func, this, request, form));
   return request->handle();
 }

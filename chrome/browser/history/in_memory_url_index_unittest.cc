@@ -1052,7 +1052,7 @@ TEST_F(InMemoryURLIndexTest, CacheSaveRestore) {
   EXPECT_GT(new_data.restored_cache_version_, 0);
 
   // Compare the captured and restored for equality.
-  ExpectPrivateDataEqual(*old_data, new_data);
+  ExpectPrivateDataEqual(*old_data.get(), new_data);
 }
 
 class InMemoryURLIndexCacheTest : public testing::Test {

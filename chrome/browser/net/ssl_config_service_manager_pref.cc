@@ -243,7 +243,7 @@ void SSLConfigServiceManagerPref::RegisterPrefs(PrefRegistrySimple* registry) {
 }
 
 net::SSLConfigService* SSLConfigServiceManagerPref::Get() {
-  return ssl_config_service_;
+  return ssl_config_service_.get();
 }
 
 void SSLConfigServiceManagerPref::OnPreferenceChanged(

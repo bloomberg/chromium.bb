@@ -124,8 +124,7 @@ class ExperimentURLRequestContext : public net::URLRequestContext {
     scoped_refptr<net::HttpNetworkSession> network_session(
         new net::HttpNetworkSession(session_params));
     storage_.set_http_transaction_factory(new net::HttpCache(
-        network_session,
-        net::HttpCache::DefaultBackend::InMemory(0)));
+        network_session.get(), net::HttpCache::DefaultBackend::InMemory(0)));
     // In-memory cookie store.
     storage_.set_cookie_store(new net::CookieMonster(NULL, NULL));
 
@@ -369,7 +368,7 @@ void ConnectionTester::TestRunner::ReadBody(net::URLRequest* request) {
   scoped_refptr<net::IOBuffer> unused_buffer(
       new net::IOBuffer(kReadBufferSize));
   int num_bytes;
-  if (request->Read(unused_buffer, kReadBufferSize, &num_bytes)) {
+  if (request->Read(unused_buffer.get(), kReadBufferSize, &num_bytes)) {
     OnReadCompleted(request, num_bytes);
   } else if (!request->status().is_io_pending()) {
     // Read failed synchronously.

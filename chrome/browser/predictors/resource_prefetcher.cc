@@ -167,7 +167,7 @@ void ResourcePrefetcher::ReadFullResponse(net::URLRequest* request) {
     int bytes_read = 0;
     scoped_refptr<net::IOBuffer> buffer(new net::IOBuffer(
         kResourceBufferSizeBytes));
-    status = request->Read(buffer, kResourceBufferSizeBytes, &bytes_read);
+    status = request->Read(buffer.get(), kResourceBufferSizeBytes, &bytes_read);
 
     if (status) {
       status = ShouldContinueReadingRequest(request, bytes_read);

@@ -107,7 +107,7 @@ void EvictedDomainCookieCounter::OnCookieChanged(
     ProcessNewCookie(key, cookie, current_time);
   }
 
-  if (next_cookie_monster_delegate_)
+  if (next_cookie_monster_delegate_.get())
     next_cookie_monster_delegate_->OnCookieChanged(cookie, removed, cause);
 }
 

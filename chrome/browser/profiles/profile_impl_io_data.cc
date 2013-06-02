@@ -161,14 +161,15 @@ ProfileImplIOData::Handle::CreateMainRequestContextGetter(
     IOThread* io_thread) const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   LazyInitialize();
-  DCHECK(!main_request_context_getter_);
+  DCHECK(!main_request_context_getter_.get());
   main_request_context_getter_ = ChromeURLRequestContextGetter::CreateOriginal(
       profile_, io_data_, protocol_handlers);
 
-  io_data_->predictor_->InitNetworkPredictor(profile_->GetPrefs(),
-                                             local_state,
-                                             io_thread,
-                                             main_request_context_getter_);
+  io_data_->predictor_
+      ->InitNetworkPredictor(profile_->GetPrefs(),
+                             local_state,
+                             io_thread,
+                             main_request_context_getter_.get());
 
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_PROFILE_URL_REQUEST_CONTEXT_GETTER_INITIALIZED,
@@ -181,10 +182,10 @@ scoped_refptr<ChromeURLRequestContextGetter>
 ProfileImplIOData::Handle::GetMediaRequestContextGetter() const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   LazyInitialize();
-  if (!media_request_context_getter_) {
+  if (!media_request_context_getter_.get()) {
     media_request_context_getter_ =
-        ChromeURLRequestContextGetter::CreateOriginalForMedia(
-            profile_, io_data_);
+        ChromeURLRequestContextGetter::CreateOriginalForMedia(profile_,
+                                                              io_data_);
   }
   return media_request_context_getter_;
 }
@@ -193,10 +194,10 @@ scoped_refptr<ChromeURLRequestContextGetter>
 ProfileImplIOData::Handle::GetExtensionsRequestContextGetter() const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   LazyInitialize();
-  if (!extensions_request_context_getter_) {
+  if (!extensions_request_context_getter_.get()) {
     extensions_request_context_getter_ =
-        ChromeURLRequestContextGetter::CreateOriginalForExtensions(
-            profile_, io_data_);
+        ChromeURLRequestContextGetter::CreateOriginalForExtensions(profile_,
+                                                                   io_data_);
   }
   return extensions_request_context_getter_;
 }
@@ -255,7 +256,7 @@ ProfileImplIOData::Handle::GetIsolatedMediaRequestContextGetter(
   ChromeURLRequestContextGetterMap::const_iterator app_iter =
       app_request_context_getter_map_.find(descriptor);
   DCHECK(app_iter != app_request_context_getter_map_.end());
-  ChromeURLRequestContextGetter* app_context = app_iter->second;
+  ChromeURLRequestContextGetter* app_context = app_iter->second.get();
   ChromeURLRequestContextGetter* context =
       ChromeURLRequestContextGetter::CreateOriginalForIsolatedMedia(
           profile_, app_context, io_data_, descriptor);
@@ -371,7 +372,7 @@ void ProfileImplIOData::InitializeInternal(
   if (record_mode || playback_mode) {
     // Don't use existing cookies and use an in-memory store.
     cookie_store = new net::CookieMonster(
-        NULL, profile_params->cookie_monster_delegate);
+        NULL, profile_params->cookie_monster_delegate.get());
     // Don't use existing server-bound certs and use an in-memory store.
     server_bound_cert_service = new net::ServerBoundCertService(
         new net::DefaultServerBoundCertStore(NULL),
@@ -379,18 +380,18 @@ void ProfileImplIOData::InitializeInternal(
   }
 
   // setup cookie store
-  if (!cookie_store) {
+  if (!cookie_store.get()) {
     DCHECK(!lazy_params_->cookie_path.empty());
 
     cookie_store = content::CreatePersistentCookieStore(
         lazy_params_->cookie_path,
         lazy_params_->restore_old_session_cookies,
-        lazy_params_->special_storage_policy,
-        profile_params->cookie_monster_delegate);
+        lazy_params_->special_storage_policy.get(),
+        profile_params->cookie_monster_delegate.get());
     cookie_store->GetCookieMonster()->SetPersistSessionCookies(true);
   }
 
-  main_context->set_cookie_store(cookie_store);
+  main_context->set_cookie_store(cookie_store.get());
 
   // Setup server bound cert service.
   if (!server_bound_cert_service) {
@@ -399,7 +400,7 @@ void ProfileImplIOData::InitializeInternal(
     scoped_refptr<SQLiteServerBoundCertStore> server_bound_cert_db =
         new SQLiteServerBoundCertStore(
             lazy_params_->server_bound_cert_path,
-            lazy_params_->special_storage_policy);
+            lazy_params_->special_storage_policy.get());
     server_bound_cert_service = new net::ServerBoundCertService(
         new net::DefaultServerBoundCertStore(server_bound_cert_db.get()),
         base::WorkerPool::GetTaskRunner(true));
@@ -558,7 +559,7 @@ ProfileImplIOData::InitializeAppRequestContext(
   }
 
   // Use an app-specific cookie store.
-  if (!cookie_store) {
+  if (!cookie_store.get()) {
     DCHECK(!cookie_path.empty());
 
     // TODO(creis): We should have a cookie delegate for notifying the cookie
@@ -572,7 +573,7 @@ ProfileImplIOData::InitializeAppRequestContext(
   }
 
   // Transfer ownership of the cookies and cache to AppRequestContext.
-  context->SetCookieStore(cookie_store);
+  context->SetCookieStore(cookie_store.get());
   context->SetHttpTransactionFactory(
       scoped_ptr<net::HttpTransactionFactory>(app_http_cache));
 

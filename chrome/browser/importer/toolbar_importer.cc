@@ -75,7 +75,7 @@ void Toolbar5Importer::StartImport(
 
   bridge_ = bridge;
   items_to_import_ = items;
-  DCHECK(source_profile.request_context_getter);
+  DCHECK(source_profile.request_context_getter.get());
   request_context_getter_ = source_profile.request_context_getter;
   state_ = INITIALIZED;
 
@@ -173,7 +173,7 @@ void Toolbar5Importer::EndImport() {
       data_fetcher_ = NULL;
     }
 
-    if (bridge_)
+    if (bridge_.get())
       bridge_->NotifyEnded();
   }
 }

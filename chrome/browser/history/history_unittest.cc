@@ -145,7 +145,7 @@ class HistoryBackendDBTest : public HistoryUnitTestBase {
   }
 
   void DeleteBackend() {
-    if (backend_) {
+    if (backend_.get()) {
       backend_->Closing();
       backend_ = NULL;
     }

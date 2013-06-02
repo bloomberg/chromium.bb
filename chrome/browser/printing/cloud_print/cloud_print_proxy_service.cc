@@ -154,7 +154,7 @@ void CloudPrintProxyService::GetPrintersAvalibleForRegistration(
     printing::PrinterList printer_list;
     scoped_refptr<printing::PrintBackend> backend(
         printing::PrintBackend::CreateInstance(NULL));
-    if (backend)
+    if (backend.get())
       backend->EnumeratePrinters(&printer_list);
     for (size_t i = 0; i < printer_list.size(); ++i)
       printers->push_back(printer_list[i].printer_name);

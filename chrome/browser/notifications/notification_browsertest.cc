@@ -112,7 +112,7 @@ class MessageCenterChangeObserver
 
   void OnMessageCenterChanged() {
     notification_received_ = true;
-    if (message_loop_runner_)
+    if (message_loop_runner_.get())
       message_loop_runner_->Quit();
   }
 

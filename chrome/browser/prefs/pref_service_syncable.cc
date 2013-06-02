@@ -91,16 +91,15 @@ PrefServiceSyncable* PrefServiceSyncable::CreateIncognitoPrefService(
           pref_registry_.get())->ForkForIncognito();
   PrefServiceSyncable* incognito_service = new PrefServiceSyncable(
       pref_notifier,
-      pref_value_store_->CloneAndSpecialize(
-          NULL,  // managed
-          incognito_extension_prefs,
-          NULL,  // command_line_prefs
-          incognito_pref_store,
-          NULL,  // recommended
-          forked_registry->defaults(),
-          pref_notifier),
+      pref_value_store_->CloneAndSpecialize(NULL,  // managed
+                                            incognito_extension_prefs,
+                                            NULL,  // command_line_prefs
+                                            incognito_pref_store,
+                                            NULL,  // recommended
+                                            forked_registry->defaults(),
+                                            pref_notifier),
       incognito_pref_store,
-      forked_registry,
+      forked_registry.get(),
       read_error_callback_,
       false);
   return incognito_service;

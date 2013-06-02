@@ -455,10 +455,10 @@ void IOThread::ChangedToOnTheRecord() {
 
 net::URLRequestContextGetter* IOThread::system_url_request_context_getter() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (!system_url_request_context_getter_) {
+  if (!system_url_request_context_getter_.get()) {
     InitSystemRequestContext();
   }
-  return system_url_request_context_getter_;
+  return system_url_request_context_getter_.get();
 }
 
 void IOThread::Init() {
@@ -555,8 +555,8 @@ void IOThread::Init() {
 
   scoped_refptr<net::HttpNetworkSession> network_session(
       new net::HttpNetworkSession(session_params));
-  globals_->proxy_script_fetcher_http_transaction_factory.reset(
-      new net::HttpNetworkLayer(network_session));
+  globals_->proxy_script_fetcher_http_transaction_factory
+      .reset(new net::HttpNetworkLayer(network_session.get()));
   scoped_ptr<net::URLRequestJobFactoryImpl> job_factory(
       new net::URLRequestJobFactoryImpl());
   job_factory->SetProtocolHandler(chrome::kDataScheme,
@@ -887,7 +887,7 @@ void IOThread::ChangedToOnTheRecordOnIOThread() {
 }
 
 void IOThread::InitSystemRequestContext() {
-  if (system_url_request_context_getter_)
+  if (system_url_request_context_getter_.get())
     return;
   // If we're in unit_tests, IOThread may not be run.
   if (!BrowserThread::IsMessageLoopValid(BrowserThread::IO))

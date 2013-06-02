@@ -66,7 +66,7 @@ void TestHarness::SetUp() {
 
 ConfigurationPolicyProvider* TestHarness::CreateProvider(
     const PolicyDefinitionList* policy_definition_list) {
-  return new ManagedModePolicyProvider(pref_store_);
+  return new ManagedModePolicyProvider(pref_store_.get());
 }
 
 void TestHarness::InstallEmptyPolicy() {}
@@ -124,8 +124,7 @@ INSTANTIATE_TEST_CASE_P(
 class ManagedModePolicyProviderAPITest : public PolicyTestBase {
  protected:
   ManagedModePolicyProviderAPITest()
-      : pref_store_(new TestingPrefStore),
-        provider_(pref_store_) {
+      : pref_store_(new TestingPrefStore), provider_(pref_store_.get()) {
     pref_store_->SetInitializationCompleted();
   }
   virtual ~ManagedModePolicyProviderAPITest() {}
@@ -170,7 +169,7 @@ TEST_F(ManagedModePolicyProviderAPITest, SetPolicy) {
   EXPECT_TRUE(provider_.policies().Equals(expected_bundle));
 
   // A newly-created provider should have the same policies.
-  ManagedModePolicyProvider new_provider(pref_store_);
+  ManagedModePolicyProvider new_provider(pref_store_.get());
   new_provider.Init();
   EXPECT_TRUE(new_provider.policies().Equals(expected_bundle));
 

@@ -128,15 +128,14 @@ class NativeMediaFileUtilTest : public testing::Test {
     additional_providers.push_back(new MediaFileSystemMountPointProvider(
         data_dir_.path()));
 
-    file_system_context_ =
-        new fileapi::FileSystemContext(
-            fileapi::FileSystemTaskRunners::CreateMockTaskRunners(),
-            fileapi::ExternalMountPoints::CreateRefCounted().get(),
-            storage_policy,
-            NULL,
-            additional_providers.Pass(),
-            data_dir_.path(),
-            fileapi::CreateAllowFileAccessOptions());
+    file_system_context_ = new fileapi::FileSystemContext(
+        fileapi::FileSystemTaskRunners::CreateMockTaskRunners(),
+        fileapi::ExternalMountPoints::CreateRefCounted().get(),
+        storage_policy.get(),
+        NULL,
+        additional_providers.Pass(),
+        data_dir_.path(),
+        fileapi::CreateAllowFileAccessOptions());
 
     file_util_ = file_system_context_->GetFileUtil(
         fileapi::kFileSystemTypeNativeMedia);

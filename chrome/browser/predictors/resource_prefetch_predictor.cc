@@ -208,7 +208,7 @@ bool ResourcePrefetchPredictor::IsHandledSubresource(
     resource_status |= RESOURCE_STATUS_URL_TOO_LONG;
   }
 
-  if (!response->response_info().headers)
+  if (!response->response_info().headers.get())
     resource_status |= RESOURCE_STATUS_HEADERS_MISSING;
 
   if (!IsCacheable(response))
@@ -229,7 +229,7 @@ bool ResourcePrefetchPredictor::IsCacheable(const net::URLRequest* response) {
   // For non cached responses, we will ensure that the freshness lifetime is
   // some sane value.
   const net::HttpResponseInfo& response_info = response->response_info();
-  if (!response_info.headers)
+  if (!response_info.headers.get())
     return false;
   base::Time response_time(response_info.response_time);
   response_time += base::TimeDelta::FromSeconds(1);
@@ -442,7 +442,7 @@ void ResourcePrefetchPredictor::Observe(
 }
 
 void ResourcePrefetchPredictor::Shutdown() {
-  if (prefetch_manager_) {
+  if (prefetch_manager_.get()) {
     prefetch_manager_->ShutdownOnUIThread();
     prefetch_manager_ = NULL;
   }

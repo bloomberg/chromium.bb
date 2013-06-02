@@ -18,7 +18,7 @@ StartupTaskRunnerService::~StartupTaskRunnerService() {
 scoped_refptr<base::DeferredSequencedTaskRunner>
     StartupTaskRunnerService::GetBookmarkTaskRunner() {
   DCHECK(CalledOnValidThread());
-  if (!bookmark_task_runner_) {
+  if (!bookmark_task_runner_.get()) {
     bookmark_task_runner_ =
         new base::DeferredSequencedTaskRunner(profile_->GetIOTaskRunner());
   }

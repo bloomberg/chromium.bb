@@ -392,12 +392,8 @@ JobEventDetails::JobEventDetails(Type type,
 JobEventDetails::~JobEventDetails() {
 }
 
-PrintedDocument* JobEventDetails::document() const {
-  return document_;
-}
+PrintedDocument* JobEventDetails::document() const { return document_.get(); }
 
-PrintedPage* JobEventDetails::page() const {
-  return page_;
-}
+PrintedPage* JobEventDetails::page() const { return page_.get(); }
 
 }  // namespace printing

@@ -158,8 +158,8 @@ class TypedUrlSyncableServiceTest : public testing::Test {
 
   virtual void SetUp() OVERRIDE {
     fake_history_backend_ = new TestHistoryBackend();
-    typed_url_sync_service_.reset(new TypedUrlSyncableService(
-        fake_history_backend_));
+    typed_url_sync_service_.reset(
+        new TypedUrlSyncableService(fake_history_backend_.get()));
     fake_change_processor_.reset(new TestChangeProcessor);
   }
 

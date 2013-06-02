@@ -2624,7 +2624,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
       web_contents->GetRenderViewHost()));
   DevToolsManager* manager = DevToolsManager::GetInstance();
   FakeDevToolsClientHost client_host;
-  manager->RegisterDevToolsClientHostFor(agent, &client_host);
+  manager->RegisterDevToolsClientHostFor(agent.get(), &client_host);
   const char* url = "files/prerender/prerender_page.html";
   PrerenderTestURL(url, FINAL_STATUS_DEVTOOLS_ATTACHED, 1);
   NavigateToURL(url);

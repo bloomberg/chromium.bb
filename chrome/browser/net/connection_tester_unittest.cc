@@ -130,13 +130,13 @@ class ConnectionTesterTest : public PlatformTest {
     session_params.host_resolver = &host_resolver_;
     session_params.cert_verifier = cert_verifier_.get();
     session_params.http_auth_handler_factory = &http_auth_handler_factory_;
-    session_params.ssl_config_service = ssl_config_service_;
+    session_params.ssl_config_service = ssl_config_service_.get();
     session_params.proxy_service = proxy_service_.get();
     session_params.http_server_properties = &http_server_properties_impl_;
     scoped_refptr<net::HttpNetworkSession> network_session(
         new net::HttpNetworkSession(session_params));
     http_transaction_factory_.reset(
-        new net::HttpNetworkLayer(network_session));
+        new net::HttpNetworkLayer(network_session.get()));
     proxy_script_fetcher_context_->set_http_transaction_factory(
         http_transaction_factory_.get());
     // In-memory cookie store.

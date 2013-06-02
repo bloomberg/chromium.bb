@@ -169,9 +169,9 @@ TEST_F(SSLConfigServiceManagerPrefTest, NoCommandLinePrefs) {
   PrefServiceMockBuilder builder;
   builder.WithUserPrefs(local_state_store.get());
   scoped_refptr<PrefRegistrySimple> registry = new PrefRegistrySimple;
-  scoped_ptr<PrefService> local_state(builder.Create(registry));
+  scoped_ptr<PrefService> local_state(builder.Create(registry.get()));
 
-  SSLConfigServiceManager::RegisterPrefs(registry);
+  SSLConfigServiceManager::RegisterPrefs(registry.get());
 
   scoped_ptr<SSLConfigServiceManager> config_manager(
       SSLConfigServiceManager::CreateDefaultManager(local_state.get()));
@@ -221,9 +221,9 @@ TEST_F(SSLConfigServiceManagerPrefTest, CommandLinePrefs) {
   builder.WithUserPrefs(local_state_store.get());
   builder.WithCommandLine(&command_line);
   scoped_refptr<PrefRegistrySimple> registry = new PrefRegistrySimple;
-  scoped_ptr<PrefService> local_state(builder.Create(registry));
+  scoped_ptr<PrefService> local_state(builder.Create(registry.get()));
 
-  SSLConfigServiceManager::RegisterPrefs(registry);
+  SSLConfigServiceManager::RegisterPrefs(registry.get());
 
   scoped_ptr<SSLConfigServiceManager> config_manager(
       SSLConfigServiceManager::CreateDefaultManager(local_state.get()));

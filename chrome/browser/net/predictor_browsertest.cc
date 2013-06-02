@@ -104,7 +104,7 @@ class PredictorBrowserTest : public InProcessBrowserTest {
  protected:
   virtual void SetUp() OVERRIDE {
     net::ScopedDefaultHostResolverProc scoped_host_resolver_proc(
-        host_resolution_request_recorder_);
+        host_resolution_request_recorder_.get());
     InProcessBrowserTest::SetUp();
   }
 

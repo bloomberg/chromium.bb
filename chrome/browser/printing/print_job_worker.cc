@@ -201,7 +201,7 @@ void PrintJobWorker::StartPrinting(PrintedDocument* new_document) {
   DCHECK(new_document->settings().Equals(printing_context_->settings()));
 
   if (!document_.get() || page_number_ != PageNumber::npos() ||
-      document_ != new_document) {
+      document_.get() != new_document) {
     return;
   }
 
@@ -274,7 +274,7 @@ void PrintJobWorker::OnNewPage() {
       break;
     }
     // The page is there, print it.
-    SpoolPage(page);
+    SpoolPage(page.get());
     ++page_number_;
     if (page_number_ == PageNumber::npos()) {
       OnDocumentDone();

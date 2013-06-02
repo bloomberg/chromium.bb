@@ -103,7 +103,7 @@ TEST_F(ChromePrefServiceUserFilePrefsTest, PreserveEmptyValue) {
   builder.WithUserFilePrefs(pref_file, message_loop_.message_loop_proxy());
   scoped_refptr<user_prefs::PrefRegistrySyncable> registry(
       new user_prefs::PrefRegistrySyncable);
-  scoped_ptr<PrefServiceSyncable> prefs(builder.CreateSyncable(registry));
+  scoped_ptr<PrefServiceSyncable> prefs(builder.CreateSyncable(registry.get()));
 
   // Register testing prefs.
   registry->RegisterListPref("list",

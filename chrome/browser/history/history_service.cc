@@ -258,7 +258,7 @@ bool HistoryService::BackendLoaded() {
 
 void HistoryService::UnloadBackend() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  if (!history_backend_)
+  if (!history_backend_.get())
     return;  // Already unloaded.
 
   // Get rid of the in-memory backend.
@@ -1063,7 +1063,7 @@ syncer::SyncError HistoryService::ProcessLocalDeleteDirective(
 void HistoryService::SetInMemoryBackend(int backend_id,
     history::InMemoryHistoryBackend* mem_backend) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  if (!history_backend_ || current_backend_id_ != backend_id) {
+  if (!history_backend_.get() || current_backend_id_ != backend_id) {
     DVLOG(1) << "Message from obsolete backend";
     // Cleaning up the memory backend.
     delete mem_backend;
@@ -1079,7 +1079,7 @@ void HistoryService::SetInMemoryBackend(int backend_id,
 void HistoryService::NotifyProfileError(int backend_id,
                                         sql::InitStatus init_status) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  if (!history_backend_ || current_backend_id_ != backend_id) {
+  if (!history_backend_.get() || current_backend_id_ != backend_id) {
     DVLOG(1) << "Message from obsolete backend";
     return;
   }
@@ -1109,13 +1109,15 @@ void HistoryService::ExpireHistoryBetween(
     CancelableTaskTracker* tracker) {
   DCHECK(thread_);
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(history_backend_);
-  tracker->PostTaskAndReply(
-      thread_->message_loop_proxy(),
-      FROM_HERE,
-      base::Bind(&HistoryBackend::ExpireHistoryBetween,
-                 history_backend_, restrict_urls, begin_time, end_time),
-      callback);
+  DCHECK(history_backend_.get());
+  tracker->PostTaskAndReply(thread_->message_loop_proxy(),
+                            FROM_HERE,
+                            base::Bind(&HistoryBackend::ExpireHistoryBetween,
+                                       history_backend_,
+                                       restrict_urls,
+                                       begin_time,
+                                       end_time),
+                            callback);
 }
 
 void HistoryService::ExpireHistory(
@@ -1124,7 +1126,7 @@ void HistoryService::ExpireHistory(
     CancelableTaskTracker* tracker) {
   DCHECK(thread_);
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(history_backend_);
+  DCHECK(history_backend_.get());
   tracker->PostTaskAndReply(
       thread_->message_loop_proxy(),
       FROM_HERE,
@@ -1191,7 +1193,7 @@ void HistoryService::BroadcastNotificationsHelper(
 
 void HistoryService::LoadBackendIfNecessary() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  if (!thread_ || history_backend_)
+  if (!thread_ || history_backend_.get())
     return;  // Failed to init, or already started loading.
 
   ++current_backend_id_;
@@ -1216,7 +1218,7 @@ void HistoryService::LoadBackendIfNecessary() {
 
 void HistoryService::OnDBLoaded(int backend_id) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  if (!history_backend_ || current_backend_id_ != backend_id) {
+  if (!history_backend_.get() || current_backend_id_ != backend_id) {
     DVLOG(1) << "Message from obsolete backend";
     return;
   }
@@ -1241,7 +1243,7 @@ bool HistoryService::GetRowForURL(const GURL& url, history::URLRow* url_row) {
 
 void HistoryService::StartTopSitesMigration(int backend_id) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  if (!history_backend_ || current_backend_id_ != backend_id) {
+  if (!history_backend_.get() || current_backend_id_ != backend_id) {
     DVLOG(1) << "Message from obsolete backend";
     return;
   }

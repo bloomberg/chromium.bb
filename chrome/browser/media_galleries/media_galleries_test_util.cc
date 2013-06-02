@@ -60,7 +60,7 @@ scoped_refptr<extensions::Extension> AddMediaGalleriesApp(
       syncer::StringOrdinal::CreateInitialOrdinal());
   ExtensionService* extension_service =
       extensions::ExtensionSystem::Get(profile)->extension_service();
-  extension_service->AddExtension(extension);
+  extension_service->AddExtension(extension.get());
   extension_service->EnableExtension(extension->id());
 
   return extension;

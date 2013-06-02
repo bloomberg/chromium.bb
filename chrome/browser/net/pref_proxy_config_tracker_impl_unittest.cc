@@ -342,10 +342,9 @@ class PrefProxyConfigTrackerImplCommandLineTest
         command_line_.AppendSwitch(name);
     }
     scoped_refptr<PrefRegistrySimple> registry = new PrefRegistrySimple;
-    pref_service_.reset(
-        PrefServiceMockBuilder().WithCommandLine(
-            &command_line_).Create(registry));
-    Init(pref_service_.get(), registry);
+    pref_service_.reset(PrefServiceMockBuilder().WithCommandLine(&command_line_)
+                            .Create(registry.get()));
+    Init(pref_service_.get(), registry.get());
   }
 
  private:

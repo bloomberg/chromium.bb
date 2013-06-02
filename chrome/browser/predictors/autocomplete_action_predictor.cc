@@ -150,10 +150,9 @@ void AutocompleteActionPredictor::StartPrerendering(
     content::SessionStorageNamespaceMap::const_iterator it =
         session_storage_namespace_map.find(std::string());
     if (it != session_storage_namespace_map.end())
-      session_storage_namespace = it->second;
-    prerender_handle_.reset(
-        prerender_manager->AddPrerenderFromOmnibox(
-            url, session_storage_namespace, size));
+      session_storage_namespace = it->second.get();
+    prerender_handle_.reset(prerender_manager->AddPrerenderFromOmnibox(
+        url, session_storage_namespace, size));
   }
   if (old_prerender_handle)
     old_prerender_handle->OnCancel();

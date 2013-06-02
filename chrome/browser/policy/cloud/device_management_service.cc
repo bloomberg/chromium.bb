@@ -567,7 +567,7 @@ void DeviceManagementService::ScheduleInitialization(int64 delay_milliseconds) {
 void DeviceManagementService::Initialize() {
   if (initialized_)
     return;
-  DCHECK(!request_context_getter_);
+  DCHECK(!request_context_getter_.get());
   request_context_getter_ = new DeviceManagementRequestContextGetter(
       g_browser_process->system_request_context());
   initialized_ = true;

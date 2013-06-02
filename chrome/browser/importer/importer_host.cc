@@ -133,7 +133,7 @@ void ImporterHost::StartImportSettings(
   writer_ = writer;
   importer_ = importer::CreateImporterByType(source_profile.importer_type);
   // If we fail to create the Importer, exit, as we cannot do anything.
-  if (!importer_) {
+  if (!importer_.get()) {
     NotifyImportEnded();
     return;
   }

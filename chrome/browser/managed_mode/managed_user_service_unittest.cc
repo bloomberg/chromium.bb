@@ -239,7 +239,7 @@ TEST_F(ManagedUserServiceExtensionTest, InstallContentPacks) {
       extension_load_observer.details();
   scoped_refptr<extensions::Extension> extension =
       make_scoped_refptr(details.ptr());
-  ASSERT_TRUE(extension);
+  ASSERT_TRUE(extension.get());
 
   ScopedVector<ManagedModeSiteList> site_lists =
       GetActiveSiteLists(managed_user_service);

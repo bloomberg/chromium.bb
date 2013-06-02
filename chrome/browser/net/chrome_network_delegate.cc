@@ -623,7 +623,7 @@ bool ChromeNetworkDelegate::OnCanGetCookies(
     const net::URLRequest& request,
     const net::CookieList& cookie_list) {
   // NULL during tests, or when we're running in the system context.
-  if (!cookie_settings_)
+  if (!cookie_settings_.get())
     return true;
 
   bool allow = cookie_settings_->IsReadingCookieAllowed(
@@ -648,7 +648,7 @@ bool ChromeNetworkDelegate::OnCanSetCookie(const net::URLRequest& request,
                                            const std::string& cookie_line,
                                            net::CookieOptions* options) {
   // NULL during tests, or when we're running in the system context.
-  if (!cookie_settings_)
+  if (!cookie_settings_.get())
     return true;
 
   bool allow = cookie_settings_->IsSettingCookieAllowed(
@@ -738,7 +738,7 @@ bool ChromeNetworkDelegate::OnCanEnablePrivacyMode(
     const GURL& url,
     const GURL& first_party_for_cookies) const {
   // NULL during tests, or when we're running in the system context.
-  if (!cookie_settings_)
+  if (!cookie_settings_.get())
     return false;
 
   bool reading_cookie_allowed = cookie_settings_->IsReadingCookieAllowed(

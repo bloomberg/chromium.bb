@@ -251,7 +251,7 @@ Profile* Profile::CreateProfile(const base::FilePath& path,
                                           BrowserThread::GetBlockingPool());
   if (create_mode == CREATE_MODE_ASYNCHRONOUS) {
     DCHECK(delegate);
-    CreateProfileDirectory(sequenced_task_runner, path);
+    CreateProfileDirectory(sequenced_task_runner.get(), path);
   } else if (create_mode == CREATE_MODE_SYNCHRONOUS) {
     if (!file_util::PathExists(path)) {
       // TODO(tc): http://b/1094718 Bad things happen if we can't write to the
@@ -264,7 +264,8 @@ Profile* Profile::CreateProfile(const base::FilePath& path,
     NOTREACHED();
   }
 
-  return new ProfileImpl(path, delegate, create_mode, sequenced_task_runner);
+  return new ProfileImpl(
+      path, delegate, create_mode, sequenced_task_runner.get());
 }
 
 // static
@@ -396,7 +397,7 @@ ProfileImpl::ProfileImpl(
          create_mode == CREATE_MODE_SYNCHRONOUS);
   bool async_prefs = create_mode == CREATE_MODE_ASYNCHRONOUS;
 
-  chrome::RegisterUserPrefs(pref_registry_);
+  chrome::RegisterUserPrefs(pref_registry_.get());
 
   {
     // On startup, preference loading is always synchronous so a scoped timer
@@ -459,7 +460,7 @@ void ProfileImpl::DoFinalInit() {
   scoped_refptr<base::SequencedTaskRunner> sequenced_task_runner =
       JsonPrefStore::GetTaskRunnerForFile(base_cache_path_,
                                           BrowserThread::GetBlockingPool());
-  CreateProfileDirectory(sequenced_task_runner, base_cache_path_);
+  CreateProfileDirectory(sequenced_task_runner.get(), base_cache_path_);
 
   // Now that the profile is hooked up to receive pref change notifications to
   // kGoogleServicesUsername, initialize components that depend on it to reflect
@@ -639,13 +640,13 @@ ProfileImpl::~ProfileImpl() {
   BrowserContextDependencyManager::GetInstance()->DestroyBrowserContextServices(
       this);
 
-  if (top_sites_)
+  if (top_sites_.get())
     top_sites_->Shutdown();
 
   if (pref_proxy_config_tracker_)
     pref_proxy_config_tracker_->DetachFromPrefService();
 
-  if (host_content_settings_map_)
+  if (host_content_settings_map_.get())
     host_content_settings_map_->ShutdownOnUIThread();
 
   // This causes the Preferences file to be written to disk.
@@ -703,7 +704,7 @@ ExtensionService* ProfileImpl::GetExtensionService() {
 
 ExtensionSpecialStoragePolicy*
     ProfileImpl::GetExtensionSpecialStoragePolicy() {
-  if (!extension_special_storage_policy_) {
+  if (!extension_special_storage_policy_.get()) {
     TRACE_EVENT0("browser", "ProfileImpl::GetExtensionSpecialStoragePolicy")
     extension_special_storage_policy_ = new ExtensionSpecialStoragePolicy(
         CookieSettings::Factory::GetForProfile(this));
@@ -885,7 +886,7 @@ net::SSLConfigService* ProfileImpl::GetSSLConfigService() {
 }
 
 HostContentSettingsMap* ProfileImpl::GetHostContentSettingsMap() {
-  if (!host_content_settings_map_) {
+  if (!host_content_settings_map_.get()) {
     host_content_settings_map_ = new HostContentSettingsMap(GetPrefs(), false);
   }
   return host_content_settings_map_.get();
@@ -926,15 +927,15 @@ Time ProfileImpl::GetStartTime() const {
 }
 
 history::TopSites* ProfileImpl::GetTopSites() {
-  if (!top_sites_) {
+  if (!top_sites_.get()) {
     top_sites_ = history::TopSites::Create(
         this, GetPath().Append(chrome::kTopSitesFilename));
   }
-  return top_sites_;
+  return top_sites_.get();
 }
 
 history::TopSites* ProfileImpl::GetTopSitesWithoutCreating() {
-  return top_sites_;
+  return top_sites_.get();
 }
 
 void ProfileImpl::OnDefaultZoomLevelChanged() {

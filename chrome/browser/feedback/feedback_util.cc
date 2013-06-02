@@ -240,7 +240,7 @@ bool FeedbackUtil::ValidFeedbackSize(const std::string& content) {
 
 // static
 void FeedbackUtil::SendReport(scoped_refptr<FeedbackData> data) {
-  if (!data) {
+  if (!data.get()) {
     LOG(ERROR) << "FeedbackUtil::SendReport called with NULL data!";
     NOTREACHED();
     return;

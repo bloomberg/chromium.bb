@@ -83,7 +83,7 @@ void PrepareBuilder(
 #endif  // ENABLE_CONFIGURATION_POLICY
 
   builder->WithAsync(async);
-  builder->WithExtensionPrefs(extension_prefs);
+  builder->WithExtensionPrefs(extension_prefs.get());
   builder->WithCommandLinePrefs(
       new CommandLinePrefStore(CommandLine::ForCurrentProcess()));
   builder->WithReadErrorCallback(base::Bind(&HandleReadError));
@@ -108,7 +108,7 @@ PrefService* CreateLocalState(
                  policy_service,
                  extension_prefs,
                  async);
-  return builder.Create(pref_registry);
+  return builder.Create(pref_registry.get());
 }
 
 PrefServiceSyncable* CreateProfilePrefs(
@@ -125,7 +125,7 @@ PrefServiceSyncable* CreateProfilePrefs(
                  policy_service,
                  extension_prefs,
                  async);
-  return builder.CreateSyncable(pref_registry);
+  return builder.CreateSyncable(pref_registry.get());
 }
 
 }  // namespace chrome_prefs

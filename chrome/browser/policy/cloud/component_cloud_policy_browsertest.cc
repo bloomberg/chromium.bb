@@ -121,7 +121,7 @@ class ComponentCloudPolicyTest : public ExtensionBrowserTest {
     ExtensionTestMessageListener ready_listener("ready", true);
     event_listener_.reset(new ExtensionTestMessageListener("event", true));
     extension_ = LoadExtension(kTestExtensionPath);
-    ASSERT_TRUE(extension_);
+    ASSERT_TRUE(extension_.get());
     ASSERT_EQ(kTestExtension, extension_->id());
     EXPECT_TRUE(ready_listener.WaitUntilSatisfied());
 
@@ -177,7 +177,7 @@ class ComponentCloudPolicyTest : public ExtensionBrowserTest {
     }
     scoped_refptr<const extensions::Extension> extension(
         ExtensionBrowserTest::LoadExtension(full_path.Append(path)));
-    if (!extension) {
+    if (!extension.get()) {
       ADD_FAILURE();
       return NULL;
     }

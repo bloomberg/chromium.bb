@@ -1438,11 +1438,13 @@ void PrerenderManager::RecordLikelyLoginOnURL(const GURL& url) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (!IsWebURL(url))
     return;
-  if (logged_in_predictor_table_) {
+  if (logged_in_predictor_table_.get()) {
     BrowserThread::PostTask(
-        BrowserThread::DB, FROM_HERE,
+        BrowserThread::DB,
+        FROM_HERE,
         base::Bind(&LoggedInPredictorTable::AddDomainFromURL,
-                   logged_in_predictor_table_, url));
+                   logged_in_predictor_table_,
+                   url));
   }
   std::string key = LoggedInPredictorTable::GetKey(url);
   if (!logged_in_state_.get())
@@ -1458,7 +1460,7 @@ void PrerenderManager::CheckIfLikelyLoggedInOnURL(
     bool* database_was_present,
     const base::Closure& result_cb) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (!logged_in_predictor_table_) {
+  if (!logged_in_predictor_table_.get()) {
     *database_was_present = false;
     *lookup_result = false;
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, result_cb);
@@ -1517,11 +1519,12 @@ void PrerenderManager::CookieChangedAnyCookiesLeftLookupResult(
   if (cookies_exist)
     return;
 
-  if (logged_in_predictor_table_) {
-    BrowserThread::PostTask(
-        BrowserThread::DB, FROM_HERE,
-        base::Bind(&LoggedInPredictorTable::DeleteDomain,
-                   logged_in_predictor_table_, domain_key));
+  if (logged_in_predictor_table_.get()) {
+    BrowserThread::PostTask(BrowserThread::DB,
+                            FROM_HERE,
+                            base::Bind(&LoggedInPredictorTable::DeleteDomain,
+                                       logged_in_predictor_table_,
+                                       domain_key));
   }
 
   if (logged_in_state_.get())
