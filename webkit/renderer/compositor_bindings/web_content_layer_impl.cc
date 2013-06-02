@@ -48,9 +48,6 @@ void WebContentLayerImpl::setDoubleSided(bool double_sided) {
   layer_->layer()->SetDoubleSided(double_sided);
 }
 
-// TODO(alokp): Remove this function from WebContentLayer API.
-void WebContentLayerImpl::setUseLCDText(bool enable) {}
-
 void WebContentLayerImpl::setDrawCheckerboardForMissingTiles(bool enable) {
   layer_->layer()->SetDrawCheckerboardForMissingTiles(enable);
 }

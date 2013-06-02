@@ -29,7 +29,6 @@ class WebContentLayerImpl : public WebKit::WebContentLayer,
   // WebContentLayer implementation.
   virtual WebKit::WebLayer* layer();
   virtual void setDoubleSided(bool double_sided);
-  virtual void setUseLCDText(bool use_lcd_text);
   virtual void setDrawCheckerboardForMissingTiles(bool checkerboard);
 
  protected:
