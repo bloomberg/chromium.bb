@@ -157,21 +157,16 @@ ActivityLog* ActivityLog::GetInstance(Profile* profile) {
   return ActivityLogFactory::GetForProfile(profile);
 }
 
-void ActivityLog::AddObserver(const Extension* extension,
-                              ActivityLog::Observer* observer) {
+void ActivityLog::AddObserver(ActivityLog::Observer* observer) {
   if (!IsLogEnabled()) return;
-  if (observers_.count(extension) == 0)
-    observers_[extension] = new ObserverListThreadSafe<Observer>;
-  observers_[extension]->AddObserver(observer);
+  // TODO(felt) Re-implement Observer notification HERE for the API.
 }
 
-void ActivityLog::RemoveObserver(const Extension* extension,
-                                 ActivityLog::Observer* observer) {
-  if (observers_.count(extension) == 1)
-    observers_[extension]->RemoveObserver(observer);
+void ActivityLog::RemoveObserver(ActivityLog::Observer* observer) {
+  // TODO(felt) Re-implement Observer notification HERE for the API.
 }
 
-void ActivityLog::LogAPIActionInternal(const Extension* extension,
+void ActivityLog::LogAPIActionInternal(const std::string& extension_id,
                                        const std::string& api_call,
                                        ListValue* args,
                                        const std::string& extra,
@@ -183,29 +178,14 @@ void ActivityLog::LogAPIActionInternal(const Extension* extension,
       APIAction::LookupTabId(api_call, args, profile_);
     }
     scoped_refptr<APIAction> action = new APIAction(
-        extension->id(),
+        extension_id,
         base::Time::Now(),
         type,
         api_call,
         MakeArgList(args),
         extra);
     ScheduleAndForget(&ActivityDatabase::RecordAction, action);
-
-    // Display the action.
-    ObserverMap::const_iterator iter = observers_.find(extension);
-    if (iter != observers_.end()) {
-      if (type == APIAction::CALL) {
-        iter->second->Notify(&Observer::OnExtensionActivity,
-                             extension,
-                             ActivityLog::ACTIVITY_EXTENSION_API_CALL,
-                             MakeCallSignature(api_call, args));
-      } else if (type == APIAction::EVENT_CALLBACK) {
-        iter->second->Notify(&Observer::OnExtensionActivity,
-                             extension,
-                             ActivityLog::ACTIVITY_EVENT_DISPATCH,
-                             MakeCallSignature(api_call, args));
-      }
-    }
+    // TODO(felt) Re-implement Observer notification HERE for the API.
     if (log_activity_to_stdout_)
       LOG(INFO) << action->PrintForDebug();
   } else {
@@ -214,7 +194,7 @@ void ActivityLog::LogAPIActionInternal(const Extension* extension,
 }
 
 // A wrapper around LogAPIActionInternal, but we know it's an API call.
-void ActivityLog::LogAPIAction(const Extension* extension,
+void ActivityLog::LogAPIAction(const std::string& extension_id,
                                const std::string& api_call,
                                ListValue* args,
                                const std::string& extra) {
@@ -222,7 +202,7 @@ void ActivityLog::LogAPIAction(const Extension* extension,
   if (!testing_mode_ &&
       arg_whitelist_api_.find(api_call) == arg_whitelist_api_.end())
     args->Clear();
-  LogAPIActionInternal(extension,
+  LogAPIActionInternal(extension_id,
                        api_call,
                        args,
                        extra,
@@ -233,7 +213,7 @@ void ActivityLog::LogAPIAction(const Extension* extension,
 // being fired and triggering extension code. Having the two separate methods
 // (LogAPIAction vs LogEventAction) lets us hide how we actually choose to
 // handle them. Right now they're being handled almost the same.
-void ActivityLog::LogEventAction(const Extension* extension,
+void ActivityLog::LogEventAction(const std::string& extension_id,
                                  const std::string& api_call,
                                  ListValue* args,
                                  const std::string& extra) {
@@ -241,14 +221,14 @@ void ActivityLog::LogEventAction(const Extension* extension,
   if (!testing_mode_ &&
       arg_whitelist_api_.find(api_call) == arg_whitelist_api_.end())
     args->Clear();
-  LogAPIActionInternal(extension,
+  LogAPIActionInternal(extension_id,
                        api_call,
                        args,
                        extra,
                        APIAction::EVENT_CALLBACK);
 }
 
-void ActivityLog::LogBlockedAction(const Extension* extension,
+void ActivityLog::LogBlockedAction(const std::string& extension_id,
                                    const std::string& blocked_call,
                                    ListValue* args,
                                    BlockedAction::Reason reason,
@@ -257,27 +237,19 @@ void ActivityLog::LogBlockedAction(const Extension* extension,
   if (!testing_mode_ &&
       arg_whitelist_api_.find(blocked_call) == arg_whitelist_api_.end())
     args->Clear();
-  scoped_refptr<BlockedAction> action = new BlockedAction(extension->id(),
+  scoped_refptr<BlockedAction> action = new BlockedAction(extension_id,
                                                           base::Time::Now(),
                                                           blocked_call,
                                                           MakeArgList(args),
                                                           reason,
                                                           extra);
   ScheduleAndForget(&ActivityDatabase::RecordAction, action);
-  // Display the action.
-  ObserverMap::const_iterator iter = observers_.find(extension);
-  if (iter != observers_.end()) {
-    std::string blocked_str = MakeCallSignature(blocked_call, args);
-    iter->second->Notify(&Observer::OnExtensionActivity,
-                         extension,
-                         ActivityLog::ACTIVITY_EXTENSION_API_BLOCK,
-                         blocked_str);
-  }
+  // TODO(felt) Re-implement Observer notification HERE for the API.
   if (log_activity_to_stdout_)
     LOG(INFO) << action->PrintForDebug();
 }
 
-void ActivityLog::LogDOMAction(const Extension* extension,
+void ActivityLog::LogDOMAction(const std::string& extension_id,
                                const GURL& url,
                                const string16& url_title,
                                const std::string& api_call,
@@ -288,7 +260,7 @@ void ActivityLog::LogDOMAction(const Extension* extension,
   if (call_type == DomActionType::METHOD && api_call == "XMLHttpRequest.open")
     call_type = DomActionType::XHR;
   scoped_refptr<DOMAction> action = new DOMAction(
-      extension->id(),
+      extension_id,
       base::Time::Now(),
       call_type,
       url,
@@ -297,29 +269,12 @@ void ActivityLog::LogDOMAction(const Extension* extension,
       MakeArgList(args),
       extra);
   ScheduleAndForget(&ActivityDatabase::RecordAction, action);
-
-  // Display the action.
-  ObserverMap::const_iterator iter = observers_.find(extension);
-  if (iter != observers_.end()) {
-    // TODO(felt): This is a kludge, planning to update this when new
-    // UI is in place.
-    if (call_type == DomActionType::INSERTED) {
-      iter->second->Notify(&Observer::OnExtensionActivity,
-                           extension,
-                           ActivityLog::ACTIVITY_CONTENT_SCRIPT,
-                           action->PrintForDebug());
-    } else {
-      iter->second->Notify(&Observer::OnExtensionActivity,
-                           extension,
-                           ActivityLog::ACTIVITY_CONTENT_SCRIPT,
-                           MakeCallSignature(api_call, args));
-    }
-  }
+  // TODO(felt) Re-implement Observer notification HERE for the API.
   if (log_activity_to_stdout_)
     LOG(INFO) << action->PrintForDebug();
 }
 
-void ActivityLog::LogWebRequestAction(const Extension* extension,
+void ActivityLog::LogWebRequestAction(const std::string& extension_id,
                                       const GURL& url,
                                       const std::string& api_call,
                                       scoped_ptr<DictionaryValue> details,
@@ -341,7 +296,7 @@ void ActivityLog::LogWebRequestAction(const Extension* extension,
   serializer.SerializeAndOmitBinaryValues(*details);
 
   scoped_refptr<DOMAction> action = new DOMAction(
-      extension->id(),
+      extension_id,
       base::Time::Now(),
       DomActionType::WEBREQUEST,
       url,
@@ -350,15 +305,7 @@ void ActivityLog::LogWebRequestAction(const Extension* extension,
       details_string,
       extra);
   ScheduleAndForget(&ActivityDatabase::RecordAction, action);
-
-  // Display the action.
-  ObserverMap::const_iterator iter = observers_.find(extension);
-  if (iter != observers_.end()) {
-    iter->second->Notify(&Observer::OnExtensionActivity,
-                         extension,
-                         ActivityLog::ACTIVITY_CONTENT_SCRIPT,
-                         action->PrintForDebug());
-  }
+  // TODO(felt) Re-implement Observer notification HERE for the API.
   if (log_activity_to_stdout_)
     LOG(INFO) << action->PrintForDebug();
 }
@@ -409,7 +356,7 @@ void ActivityLog::OnScriptsExecuted(
       }
       scoped_ptr<ListValue> script_names(new ListValue());
       script_names->Set(0, new StringValue(ext_scripts_str));
-      LogDOMAction(extension,
+      LogDOMAction(extension->id(),
                    on_url,
                    web_contents->GetTitle(),
                    std::string(),  // no api call here
@@ -423,23 +370,6 @@ void ActivityLog::OnScriptsExecuted(
 void ActivityLog::DatabaseErrorCallback(int error, sql::Statement* stmt) {
   if (sql::IsErrorCatastrophic(error))
     ScheduleAndForget(&ActivityDatabase::KillDatabase);
-}
-
-// static
-const char* ActivityLog::ActivityToString(Activity activity) {
-  switch (activity) {
-    case ActivityLog::ACTIVITY_EXTENSION_API_CALL:
-      return "api_call";
-    case ActivityLog::ACTIVITY_EXTENSION_API_BLOCK:
-      return "api_block";
-    case ActivityLog::ACTIVITY_CONTENT_SCRIPT:
-      return "content_script";
-    case ActivityLog::ACTIVITY_EVENT_DISPATCH:
-      return "event_dispatch";
-    default:
-      NOTREACHED();
-      return "";
-  }
 }
 
 }  // namespace extensions
