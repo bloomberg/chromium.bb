@@ -28,6 +28,7 @@
 
 from datetime import datetime
 import logging
+import re
 import sys
 import traceback
 
@@ -240,11 +241,11 @@ class JsonResults(object):
                 aggregated_item.insert(0, item)
 
     @classmethod
-    def _normalize_results(cls, aggregated_json, num_runs):
+    def _normalize_results(cls, aggregated_json, num_runs, run_time_pruning_threshold):
         names_to_delete = []
         for test_name in aggregated_json:
             if _is_directory(aggregated_json[test_name]):
-                cls._normalize_results(aggregated_json[test_name], num_runs)
+                cls._normalize_results(aggregated_json[test_name], num_runs, run_time_pruning_threshold)
                 # If normalizing deletes all the children of this directory, also delete the directory.
                 if not aggregated_json[test_name]:
                     names_to_delete.append(test_name)
@@ -252,14 +253,14 @@ class JsonResults(object):
                 leaf = aggregated_json[test_name]
                 leaf[RESULTS_KEY] = cls._remove_items_over_max_number_of_builds(leaf[RESULTS_KEY], num_runs)
                 leaf[TIMES_KEY] = cls._remove_items_over_max_number_of_builds(leaf[TIMES_KEY], num_runs)
-                if cls._should_delete_leaf(leaf):
+                if cls._should_delete_leaf(leaf, run_time_pruning_threshold):
                     names_to_delete.append(test_name)
 
         for test_name in names_to_delete:
             del aggregated_json[test_name]
 
     @classmethod
-    def _should_delete_leaf(cls, leaf):
+    def _should_delete_leaf(cls, leaf, run_time_pruning_threshold):
         if leaf.get(EXPECTED_KEY, PASS_STRING) != PASS_STRING:
             return False
 
@@ -272,7 +273,7 @@ class JsonResults(object):
                 return False
 
         for time in leaf[TIMES_KEY]:
-            if time[1] >= JSON_RESULTS_MIN_TIME:
+            if time[1] >= run_time_pruning_threshold:
                 return False
 
         return True
@@ -447,7 +448,10 @@ class JsonResults(object):
 
         aggregated_json[VERSIONS_KEY] = JSON_RESULTS_HIERARCHICAL_VERSION
         aggregated_json[builder][FAILURE_MAP_KEY] = CHAR_TO_FAILURE
-        cls._normalize_results(aggregated_json[builder][TESTS_KEY], num_runs)
+
+        is_debug_builder = re.search(r"(Debug|Dbg)", builder, re.I)
+        run_time_pruning_threshold = 2 * JSON_RESULTS_MIN_TIME if is_debug_builder else JSON_RESULTS_MIN_TIME
+        cls._normalize_results(aggregated_json[builder][TESTS_KEY], num_runs, run_time_pruning_threshold)
         return cls._generate_file_data(aggregated_json, sort_keys), 200
 
     @classmethod

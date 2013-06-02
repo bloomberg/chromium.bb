@@ -232,12 +232,12 @@ class JsonResultsTest(unittest.TestCase):
         return json_string
 
     def _test_merge(self, aggregated_data, incremental_data, expected_data, max_builds=jsonresults.JSON_RESULTS_MAX_BUILDS):
-        aggregated_results = self._make_test_json(aggregated_data)
-        incremental_json, _ = JsonResults._get_incremental_json(self._builder, self._make_test_json(incremental_data), is_full_results_format=False)
+        aggregated_results = self._make_test_json(aggregated_data, builder_name=self._builder)
+        incremental_json, _ = JsonResults._get_incremental_json(self._builder, self._make_test_json(incremental_data, builder_name=self._builder), is_full_results_format=False)
         merged_results, status_code = JsonResults.merge(self._builder, aggregated_results, incremental_json, num_runs=max_builds, sort_keys=True)
 
         if expected_data:
-            expected_results = self._make_test_json(expected_data)
+            expected_results = self._make_test_json(expected_data, builder_name=self._builder)
             self.assert_json_equal(merged_results, expected_results)
             self.assertEqual(status_code, 200)
         else:
@@ -822,7 +822,6 @@ class JsonResultsTest(unittest.TestCase):
 
 
     def test_merge_keep_test_with_all_pass_but_slow_time(self):
-        # Do not remove test where all run pass but max running time >= 5 seconds
         self._test_merge(
             # Aggregated results
             {"builds": ["2", "1"],
@@ -845,6 +844,37 @@ class JsonResultsTest(unittest.TestCase):
              "tests": {"001.html": {
                            "results": [[201, PASS]],
                            "times": [[1, 1], [200, jsonresults.JSON_RESULTS_MIN_TIME]]},
+                       "002.html": {
+                           "results": [[1, PASS], [10, TEXT]],
+                           "times": [[11, 0]]}}})
+
+    def test_merge_pruning_slow_tests_for_debug_builders(self):
+        self._builder = "MockBuilder(dbg)"
+        self._test_merge(
+            # Aggregated results
+            {"builds": ["2", "1"],
+             "tests": {"001.html": {
+                           "results": [[200, PASS]],
+                           "times": [[200, 2 * jsonresults.JSON_RESULTS_MIN_TIME]]},
+                       "002.html": {
+                           "results": [[10, TEXT]],
+                           "times": [[10, 0]]}}},
+            # Incremental results
+            {"builds": ["3"],
+             "tests": {"001.html": {
+                           "results": [[1, PASS]],
+                           "times": [[1, 1]]},
+                       "002.html": {
+                           "results": [[1, PASS]],
+                           "times": [[1, 0]]},
+                       "003.html": {
+                           "results": [[1, PASS]],
+                           "times": [[1, jsonresults.JSON_RESULTS_MIN_TIME]]}}},
+            # Expected results
+            {"builds": ["3", "2", "1"],
+             "tests": {"001.html": {
+                           "results": [[201, PASS]],
+                           "times": [[1, 1], [200, 2 * jsonresults.JSON_RESULTS_MIN_TIME]]},
                        "002.html": {
                            "results": [[1, PASS], [10, TEXT]],
                            "times": [[11, 0]]}}})
