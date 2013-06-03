@@ -154,6 +154,14 @@
             '-fomit-frame-pointer',
           ],
           'conditions': [
+            ['OS != "win" or clang == 1', {
+              # If we're not doing C99 conversion, add the normal source code.
+              'sources': ['<@(c_sources)'],
+            }, {
+              # Otherwise, compile the converted source code.
+              'dependencies': ['convert_ffmpeg_sources'],
+              'sources': ['<@(converter_outputs)'],
+            }],
             ['target_arch != "arm" and target_arch != "mipsel"', {
               'dependencies': [
                 'ffmpeg_yasm',
@@ -360,10 +368,7 @@
                 4116, 4307, 4273
               ],
               'conditions': [
-                ['clang', {
-                  # Compile the original C99 sources if we're using clang.  This
-                  # support is experimental and unsupported!
-                  'sources': ['<@(c_sources)'],
+                ['clang == 1', {
                   'defines': [
                     'inline=__inline',
                     'strtoll=_strtoi64',
@@ -375,10 +380,6 @@
                     '_snprintf=avpriv_snprintf',
                     'vsnprintf=avpriv_vsnprintf',
                   ],
-                }, {
-                  # Otherwise, compile the translated C89 source code.
-                  'dependencies': ['convert_ffmpeg_sources'],
-                  'sources': ['<@(converter_outputs)'],
                 }],
                 ['target_arch == "x64"', {
                   # TODO(wolenetz): We should fix this.  http://crbug.com/171009
