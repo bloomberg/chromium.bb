@@ -497,16 +497,16 @@
         'test/accounts_client/url_request_context_getter.h',
       ],
     },
-    
+
     # The Sync end-to-end (and associated infrastructure) tests.
     {
       'target_name': 'sync_endtoend_tests',
       'type': '<(gtest_target_type)',
       'dependencies': [
         '../base/base.gyp:run_all_unittests',
-        '../build/temp_gyp/googleurl.gyp:googleurl',
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
+        '../url/url.gyp:url_lib',
         'test_support_accounts_client',
       ],
       'sources': [

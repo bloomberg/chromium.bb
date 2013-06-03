@@ -9,10 +9,10 @@
       'type': '<(component)',
       'dependencies': [
         '../base/base.gyp:base',
-        '../build/temp_gyp/googleurl.gyp:googleurl',
         '../content/content.gyp:content_browser',
         '../skia/skia.gyp:skia',
         '../third_party/protobuf/protobuf.gyp:protobuf_lite',
+        '../url/url.gyp:url_lib',
       ],
       'include_dirs': [
         '..',

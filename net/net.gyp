@@ -51,12 +51,12 @@
         '../base/base.gyp:base',
         '../base/base.gyp:base_i18n',
         '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
-        '../build/temp_gyp/googleurl.gyp:googleurl',
         '../crypto/crypto.gyp:crypto',
         '../sdch/sdch.gyp:sdch',
         '../third_party/icu/icu.gyp:icui18n',
         '../third_party/icu/icu.gyp:icuuc',
         '../third_party/zlib/zlib.gyp:zlib',
+        '../url/url.gyp:url_lib',
         'net_resources',
       ],
       'sources': [
@@ -1449,11 +1449,11 @@
         '../base/base.gyp:base',
         '../base/base.gyp:base_i18n',
         '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
-        '../build/temp_gyp/googleurl.gyp:googleurl',
         '../crypto/crypto.gyp:crypto',
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
         '../third_party/zlib/zlib.gyp:zlib',
+        '../url/url.gyp:url_lib',
         'net',
         'net_test_support',
       ],
@@ -2074,8 +2074,8 @@
         '../base/base.gyp:base',
         '../base/base.gyp:base_i18n',
         '../base/base.gyp:test_support_perf',
-        '../build/temp_gyp/googleurl.gyp:googleurl',
         '../testing/gtest.gyp:gtest',
+        '../url/url.gyp:url_lib',
         'net',
         'net_test_support',
       ],
@@ -2113,9 +2113,9 @@
       'dependencies': [
         '../base/base.gyp:base',
         '../base/base.gyp:test_support_base',
-        '../build/temp_gyp/googleurl.gyp:googleurl',
         '../net/tools/tld_cleanup/tld_cleanup.gyp:tld_cleanup_util',
         '../testing/gtest.gyp:gtest',
+        '../url/url.gyp:url_lib',
         'net',
       ],
       'export_dependent_settings': [
@@ -2315,7 +2315,7 @@
           'variables': { 'enable_wexit_time_destructors': 1, },
           'dependencies': [
             '../base/base.gyp:base',
-            '../build/temp_gyp/googleurl.gyp:googleurl',
+            '../url/url.gyp:url_lib',
             '../v8/tools/gyp/v8.gyp:v8',
             'net'
           ],
@@ -2386,8 +2386,8 @@
           'dependencies': [
             '../base/base.gyp:base',
             '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
-            '../build/temp_gyp/googleurl.gyp:googleurl',
             '../testing/gtest.gyp:gtest',
+            '../url/url.gyp:url_lib',
             'net',
             'net_with_v8',
           ],
@@ -2403,7 +2403,7 @@
           'variables': { 'enable_wexit_time_destructors': 1, },
           'dependencies': [
             '../base/base.gyp:base',
-            '../build/temp_gyp/googleurl.gyp:googleurl',
+            '../url/url.gyp:url_lib',
             'net',
           ],
           'sources': [
@@ -2440,7 +2440,7 @@
           'dependencies': [
             '../base/base.gyp:base',
             '../base/base.gyp:base_i18n',
-            '../build/temp_gyp/googleurl.gyp:googleurl',
+            '../url/url.gyp:url_lib',
             'net',
           ],
           'sources': [
@@ -2595,10 +2595,10 @@
           'type': 'static_library',
           'dependencies': [
             '../base/base.gyp:base',
-            '../crypto/crypto.gyp:crypto',
             '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
-            '../build/temp_gyp/googleurl.gyp:googleurl',
+            '../crypto/crypto.gyp:crypto',
             '../third_party/openssl/openssl.gyp:openssl',
+            '../url/url.gyp:url_lib',
             'flip_balsa_and_epoll_library',
             'net',
           ],

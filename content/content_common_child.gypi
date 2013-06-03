@@ -5,9 +5,9 @@
 {
   'dependencies': [
     '../base/base.gyp:base',
-    '../build/temp_gyp/googleurl.gyp:googleurl',
     '../components/tracing.gyp:tracing',
     '../ui/ui.gyp:ui',
+    '../url/url.gyp:url_lib',
   ],
   'include_dirs': [
     '..',

@@ -12,7 +12,7 @@
       'type': 'static_library',
       'dependencies': [
         '../../../base/base.gyp:base',
-        '../../../build/temp_gyp/googleurl.gyp:googleurl',
+        '../../../url/url.gyp:url_lib',
       ],
       'sources': [
         'tld_cleanup_util.h',

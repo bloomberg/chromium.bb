@@ -32,7 +32,6 @@
         '<(DEPTH)/base/base.gyp:base_i18n',
         '<(DEPTH)/base/base.gyp:base_prefs',
         '<(DEPTH)/base/base.gyp:base_static',
-        '<(DEPTH)/build/temp_gyp/googleurl.gyp:googleurl',
         '<(DEPTH)/chrome/chrome_resources.gyp:chrome_resources',
         '<(DEPTH)/chrome/chrome_resources.gyp:chrome_strings',
         '<(DEPTH)/chrome/chrome_resources.gyp:theme_resources',
@@ -48,6 +47,7 @@
         '<(DEPTH)/third_party/sqlite/sqlite.gyp:sqlite',
         '<(DEPTH)/third_party/zlib/zlib.gyp:zip',
         '<(DEPTH)/ui/ui.gyp:ui_resources',
+        '<(DEPTH)/url/url.gyp:url_lib',
         '<(DEPTH)/webkit/common/user_agent/webkit_user_agent.gyp:user_agent',
       ],
       'sources': [

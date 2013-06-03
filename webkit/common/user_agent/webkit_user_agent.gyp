@@ -16,6 +16,7 @@
       'dependencies': [
         '<(DEPTH)/base/base.gyp:base',
         '<(DEPTH)/base/base.gyp:base_i18n',
+        '<(DEPTH)/build/temp_gyp/googleurl.gyp:googleurl',
       ],
       'sources': [
         'user_agent.cc',

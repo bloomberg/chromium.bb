@@ -55,7 +55,7 @@ deps = {
     (Var("googlecode_url") % "google-breakpad") + "/trunk/src@1182",
 
   "src/googleurl":
-    (Var("googlecode_url") % "google-url") + "/trunk@183",
+    (Var("googlecode_url") % "google-url") + "/trunk@185",
 
   "src/sdch/open-vcdiff":
     (Var("googlecode_url") % "open-vcdiff") + "/trunk@42",

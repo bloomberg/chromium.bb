@@ -10,8 +10,8 @@
       'dependencies': [
         '../base/base.gyp:base',
         '../content/content.gyp:content_common',
-        '../build/temp_gyp/googleurl.gyp:googleurl',
         '../ipc/ipc.gyp:ipc',
+        '../url/url.gyp:url_lib',
       ],
       'sources': [
         'visitedlink/common/visitedlink_common.cc',

@@ -38,10 +38,10 @@
       'dependencies': [
         '../../base/base.gyp:base',
         '../../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
-        '../../build/temp_gyp/googleurl.gyp:googleurl',
         '../../content/content.gyp:content_browser',
         '../../ipc/ipc.gyp:ipc',
         '../../skia/skia.gyp:skia',
+        '../../url/url.gyp:url_lib',
         '../aura/aura.gyp:aura',
         '../compositor/compositor.gyp:compositor',
         '../ui.gyp:ui',
