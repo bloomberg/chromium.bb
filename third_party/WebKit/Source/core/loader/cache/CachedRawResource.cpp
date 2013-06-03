@@ -81,12 +81,6 @@ void CachedRawResource::didAddClient(CachedResourceClient* c)
     CachedResource::didAddClient(client);
 }
 
-void CachedRawResource::allClientsRemoved()
-{
-    if (m_loader)
-        m_loader->cancelIfNotFinishing();
-}
-
 void CachedRawResource::willSendRequest(ResourceRequest& request, const ResourceResponse& response)
 {
     CachedResourceHandle<CachedRawResource> protect(this);

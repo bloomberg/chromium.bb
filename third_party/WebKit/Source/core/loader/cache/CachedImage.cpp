@@ -131,6 +131,7 @@ void CachedImage::allClientsRemoved()
     m_pendingContainerSizeRequests.clear();
     if (m_image && !errorOccurred())
         m_image->resetAnimation();
+    CachedResource::allClientsRemoved();
 }
 
 pair<Image*, float> CachedImage::brokenImage(float deviceScaleFactor) const

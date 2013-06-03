@@ -124,7 +124,7 @@ public:
 
     virtual void didAddClient(CachedResourceClient*);
     virtual void didRemoveClient(CachedResourceClient*) { }
-    virtual void allClientsRemoved() { }
+    virtual void allClientsRemoved();
     void destroyDecodedDataIfNeeded();
 
     unsigned count() const { return m_clients.size(); }
@@ -287,10 +287,12 @@ protected:
     RefPtr<SharedBuffer> m_data;
     OwnPtr<PurgeableBuffer> m_purgeableData;
     Timer<CachedResource> m_decodedDataDeletionTimer;
+    Timer<CachedResource> m_cancelTimer;
 
 private:
     bool addClientToSet(CachedResourceClient*);
     void decodedDataDeletionTimerFired(Timer<CachedResource>*);
+    void cancelTimerFired(Timer<CachedResource>*);
 
     void revalidationSucceeded(const ResourceResponse&);
     void revalidationFailed();

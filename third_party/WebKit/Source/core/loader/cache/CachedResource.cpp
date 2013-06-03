@@ -142,6 +142,7 @@ CachedResource::CachedResource(const ResourceRequest& request, Type type)
     , m_loadPriority(defaultPriorityForResourceType(type))
     , m_responseTimestamp(currentTime())
     , m_decodedDataDeletionTimer(this, &CachedResource::decodedDataDeletionTimerFired)
+    , m_cancelTimer(this, &CachedResource::cancelTimerFired)
     , m_lastDecodedAccessTime(0)
     , m_loadFinishTime(0)
     , m_identifier(0)
@@ -474,6 +475,22 @@ void CachedResource::removeClient(CachedResourceClient* client)
             memoryCache()->prune();
     }
     // This object may be dead here.
+}
+
+void CachedResource::allClientsRemoved()
+{
+    if (m_type == MainResource || m_type == RawResource)
+        cancelTimerFired(&m_cancelTimer);
+    else if (!m_cancelTimer.isActive())
+        m_cancelTimer.startOneShot(0);
+}
+
+void CachedResource::cancelTimerFired(Timer<CachedResource>* timer)
+{
+    ASSERT_UNUSED(timer, timer == &m_cancelTimer);
+    if (hasClients() || !m_loader)
+        return;
+    m_loader->cancelIfNotFinishing();
 }
 
 void CachedResource::destroyDecodedDataIfNeeded()

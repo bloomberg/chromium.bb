@@ -52,7 +52,6 @@ private:
     virtual void appendData(const char*, int) OVERRIDE;
 
     virtual bool shouldIgnoreHTTPStatusCodeErrors() const { return true; }
-    virtual void allClientsRemoved();
 
     virtual void willSendRequest(ResourceRequest&, const ResourceResponse&);
     virtual void responseReceived(const ResourceResponse&);

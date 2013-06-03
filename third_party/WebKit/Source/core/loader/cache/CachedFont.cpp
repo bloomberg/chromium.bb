@@ -158,6 +158,7 @@ void CachedFont::allClientsRemoved()
         delete m_fontData;
         m_fontData = 0;
     }
+    CachedResource::allClientsRemoved();
 }
 
 void CachedFont::checkNotify()
