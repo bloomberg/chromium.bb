@@ -80,4 +80,12 @@ HTMLStyleElement* StyleSheetList::getNamedItem(const String& name) const
     return 0;
 }
 
+CSSStyleSheet* StyleSheetList::anonymousNamedGetter(const AtomicString& name)
+{
+    HTMLStyleElement* item = getNamedItem(name);
+    if (!item)
+        return 0;
+    return item->sheet();
+}
+
 } // namespace WebCore
