@@ -35,7 +35,6 @@ namespace {
 
 // Test suffixes appended to the Javascript tests' names.
 const char kDownloadsVolume[] = "Downloads";
-const char kDriveVolume[] = "Drive";
 
 enum EntryType {
   FILE,
@@ -46,6 +45,17 @@ enum SharedOption {
   NONE,
   SHARED,
 };
+
+enum GuestMode {
+  NOT_IN_GUEST_MODE,
+  IN_GUEST_MODE
+};
+
+// This global operator is used from Google Test to format error messages.
+std::ostream& operator<<(std::ostream& os, const GuestMode& guest_mode) {
+  return os << (guest_mode == IN_GUEST_MODE ?
+                "IN_GUEST_MODE" : "NOT_IN_GUEST_MODE");
+}
 
 struct TestEntryInfo {
   EntryType type;
@@ -84,9 +94,6 @@ class TestVolume {
 
   // Creates an entry with given information.
   virtual void CreateEntry(const TestEntryInfo& entry) = 0;
-
-  // Returns the name of volume such as "Downloads" or "Drive".
-  virtual std::string GetName() const = 0;
 };
 
 // The local volume class for test.
@@ -161,10 +168,6 @@ class LocalTestVolume : public TestVolume {
     ASSERT_TRUE(file_util::SetLastModifiedTime(path, time));
   }
 
-  virtual std::string GetName() const OVERRIDE {
-    return mount_name_;
-  }
-
  private:
   std::string mount_name_;
   base::FilePath local_path_;
@@ -232,10 +235,6 @@ class DriveTestVolume : public TestVolume {
     ASSERT_TRUE(error == google_apis::HTTP_SUCCESS);
     ASSERT_TRUE(resource_entry);
     CheckForUpdates();
-  }
-
-  virtual std::string GetName() const OVERRIDE {
-    return "Drive";
   }
 
   // Creates a test file with the given spec.
@@ -312,31 +311,73 @@ class DriveTestVolume : public TestVolume {
   drive::DriveIntegrationService* integration_service_;
 };
 
-// The base test class. Used by FileManagerBrowserLocalTest,
-// FileManagerBrowserDriveTest, and FileManagerBrowserTransferTest.
-// The boolean parameter, retrieved by GetParam(), is true if testing in the
-// guest mode. See SetUpCommandLine() below for details.
-class FileManagerBrowserTestBase : public ExtensionApiTest,
-                                   public ::testing::WithParamInterface<bool> {
+// Parameter of FileManagerBrowserTestBase.
+// The second value is the case name of javascript.
+typedef std::tr1::tuple<GuestMode, const char*> TestParameter;
+
+// The base test class.
+class FileManagerBrowserTestBase :
+      public ExtensionApiTest,
+      public ::testing::WithParamInterface<TestParameter> {
  protected:
+  FileManagerBrowserTestBase() :
+      local_volume_(new LocalTestVolume(kDownloadsVolume)),
+      drive_volume_(std::tr1::get<0>(GetParam()) != IN_GUEST_MODE ?
+                    new DriveTestVolume() : NULL),
+      guest_mode_(std::tr1::get<0>(GetParam())) {}
+
+  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE;
+
+  virtual void SetUpOnMainThread() OVERRIDE;
+
   // Adds an incognito and guest-mode flags for tests in the guest mode.
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE;
 
   // Loads our testing extension and sends it a string identifying the current
   // test.
-  void StartTest(const std::string& test_name);
+  void StartTest();
 
   // Creates test files and directories.
-  void CreateTestEntries(TestVolume* volume, const TestEntryInfo* entries,
+  void CreateTestEntries(TestVolume* volume,
+                         const TestEntryInfo* entries,
                          size_t num_entries);
 
-  // Runs the file display test on the passed |volume|, shared by subclasses.
-  void DoTestFileDisplay(TestVolume* volume);
+ protected:
+  const scoped_ptr<LocalTestVolume> local_volume_;
+  const scoped_ptr<DriveTestVolume> drive_volume_;
+
+ private:
+  GuestMode guest_mode_;
 };
 
+void FileManagerBrowserTestBase::SetUpInProcessBrowserTestFixture() {
+  ExtensionApiTest::SetUpInProcessBrowserTestFixture();
+  extensions::ComponentLoader::EnableBackgroundExtensionsForTesting();
+  if (drive_volume_)
+    ASSERT_TRUE(drive_volume_->SetUp());
+}
+
+void FileManagerBrowserTestBase::SetUpOnMainThread() {
+  ExtensionApiTest::SetUpOnMainThread();
+  ASSERT_TRUE(local_volume_->Mount(browser()->profile()));
+  CreateTestEntries(local_volume_.get(),
+                    kTestEntrySetCommon,
+                    arraysize(kTestEntrySetCommon));
+  if (drive_volume_) {
+    CreateTestEntries(drive_volume_.get(),
+                      kTestEntrySetCommon,
+                      arraysize(kTestEntrySetCommon));
+    // For testing Drive, create more entries with Drive specific attributes.
+    // TODO(haruki): Add a case for an entry cached by DriveCache.
+    CreateTestEntries(drive_volume_.get(),
+                      kTestEntrySetDriveOnly,
+                      arraysize(kTestEntrySetDriveOnly));
+    drive_test_util::WaitUntilDriveMountPointIsAdded(browser()->profile());
+  }
+}
+
 void FileManagerBrowserTestBase::SetUpCommandLine(CommandLine* command_line) {
-  bool in_guest_mode = GetParam();
-  if (in_guest_mode) {
+  if (guest_mode_ == IN_GUEST_MODE) {
     command_line->AppendSwitch(chromeos::switches::kGuestSession);
     command_line->AppendSwitchNative(chromeos::switches::kLoginUser, "");
     command_line->AppendSwitch(switches::kIncognito);
@@ -344,16 +385,16 @@ void FileManagerBrowserTestBase::SetUpCommandLine(CommandLine* command_line) {
   ExtensionApiTest::SetUpCommandLine(command_line);
 }
 
-void FileManagerBrowserTestBase::StartTest(const std::string& test_name) {
+void FileManagerBrowserTestBase::StartTest() {
   base::FilePath path = test_data_dir_.AppendASCII("file_manager_browsertest");
   const extensions::Extension* extension = LoadExtensionAsComponent(path);
   ASSERT_TRUE(extension);
 
-  bool in_guest_mode = GetParam();
+  bool in_guest_mode = guest_mode_ == IN_GUEST_MODE;
   ExtensionTestMessageListener listener(
       in_guest_mode ? "which test guest" : "which test non-guest", true);
   ASSERT_TRUE(listener.WaitUntilSatisfied());
-  listener.Reply(test_name);
+  listener.Reply(std::tr1::get<1>(GetParam()));
 }
 
 void FileManagerBrowserTestBase::CreateTestEntries(
@@ -363,9 +404,11 @@ void FileManagerBrowserTestBase::CreateTestEntries(
   }
 }
 
-void FileManagerBrowserTestBase::DoTestFileDisplay(TestVolume* volume) {
+class FileManagerBrowserFileDisplayTest : public FileManagerBrowserTestBase {};
+
+IN_PROC_BROWSER_TEST_P(FileManagerBrowserFileDisplayTest, Test) {
   ResultCatcher catcher;
-  ASSERT_NO_FATAL_FAILURE(StartTest("fileDisplay" + volume->GetName()));
+  ASSERT_NO_FATAL_FAILURE(StartTest());
 
   ExtensionTestMessageListener listener("initial check done", true);
   ASSERT_TRUE(listener.WaitUntilSatisfied());
@@ -377,240 +420,84 @@ void FileManagerBrowserTestBase::DoTestFileDisplay(TestVolume* volume) {
     NONE,
     "4 Sep 1998 00:00:00"
   };
-  volume->CreateEntry(entry);
+  if (drive_volume_)
+    drive_volume_->CreateEntry(entry);
+  local_volume_->CreateEntry(entry);
   listener.Reply("file added");
 
   ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
 
-// A class to test local volumes.
-class FileManagerBrowserLocalTest : public FileManagerBrowserTestBase {
- public:
-  FileManagerBrowserLocalTest() : volume_("Downloads") {}
+INSTANTIATE_TEST_CASE_P(
+    AllTests,
+    FileManagerBrowserFileDisplayTest,
+    ::testing::Values(TestParameter(NOT_IN_GUEST_MODE, "fileDisplayDownloads"),
+                      TestParameter(IN_GUEST_MODE, "fileDisplayDownloads"),
+                      TestParameter(NOT_IN_GUEST_MODE, "fileDisplayDrive")));
 
- protected:
-  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
-    FileManagerBrowserTestBase::SetUpInProcessBrowserTestFixture();
-    extensions::ComponentLoader::EnableBackgroundExtensionsForTesting();
-  }
+// A test class that just executes JavaScript unit test.
+class FileManagerBrowserSimpleTest : public FileManagerBrowserTestBase {};
 
-  virtual void SetUpOnMainThread() OVERRIDE {
-    FileManagerBrowserTestBase::SetUpOnMainThread();
-    ASSERT_TRUE(volume_.Mount(browser()->profile()));
-    CreateTestEntries(&volume_, kTestEntrySetCommon,
-                      arraysize(kTestEntrySetCommon));
-  }
-
-  LocalTestVolume volume_;
-};
-
-INSTANTIATE_TEST_CASE_P(InGuestMode,
-                        FileManagerBrowserLocalTest,
-                        ::testing::Values(true));
-
-INSTANTIATE_TEST_CASE_P(InNonGuestMode,
-                        FileManagerBrowserLocalTest,
-                        ::testing::Values(false));
-
-// A class to test Drive's volumes
-class FileManagerBrowserDriveTest : public FileManagerBrowserTestBase {
- protected:
-  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
-    FileManagerBrowserTestBase::SetUpInProcessBrowserTestFixture();
-    extensions::ComponentLoader::EnableBackgroundExtensionsForTesting();
-    ASSERT_TRUE(volume_.SetUp());
-  }
-
-  virtual void SetUpOnMainThread() OVERRIDE {
-    FileManagerBrowserTestBase::SetUpOnMainThread();
-    CreateTestEntries(&volume_, kTestEntrySetCommon,
-                      arraysize(kTestEntrySetCommon));
-    // For testing Drive, create more entries with Drive specific attributes.
-    // TODO(haruki): Add a case for an entry cached by DriveCache.
-    CreateTestEntries(&volume_, kTestEntrySetDriveOnly,
-                      arraysize(kTestEntrySetDriveOnly));
-    drive_test_util::WaitUntilDriveMountPointIsAdded(browser()->profile());
-  }
-
-  DriveTestVolume volume_;
-};
-
-// Don't test Drive in the guest mode as it's not supported.
-INSTANTIATE_TEST_CASE_P(InNonGuestMode,
-                        FileManagerBrowserDriveTest,
-                        ::testing::Values(false));
-
-// A class to test both local and Drive's volumes.
-class FileManagerBrowserTransferTest : public FileManagerBrowserTestBase {
- public:
-  FileManagerBrowserTransferTest() : local_volume_("Downloads") {}
-
- protected:
-  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
-    FileManagerBrowserTestBase::SetUpInProcessBrowserTestFixture();
-    extensions::ComponentLoader::EnableBackgroundExtensionsForTesting();
-    ASSERT_TRUE(drive_volume_.SetUp());
-  }
-
-  virtual void SetUpOnMainThread() OVERRIDE {
-    FileManagerBrowserTestBase::SetUpOnMainThread();
-    ASSERT_TRUE(local_volume_.Mount(browser()->profile()));
-    CreateTestEntries(&local_volume_, kTestEntrySetCommon,
-                      arraysize(kTestEntrySetCommon));
-    CreateTestEntries(&drive_volume_, kTestEntrySetCommon,
-                      arraysize(kTestEntrySetCommon));
-    CreateTestEntries(&drive_volume_, kTestEntrySetDriveOnly,
-                      arraysize(kTestEntrySetDriveOnly));
-    drive_test_util::WaitUntilDriveMountPointIsAdded(browser()->profile());
-  }
-
-  LocalTestVolume local_volume_;
-  DriveTestVolume drive_volume_;
-};
-
-// FileManagerBrowserTransferTest depends on Drive and Drive is not supported in
-// the guest mode.
-INSTANTIATE_TEST_CASE_P(InNonGuestMode,
-                        FileManagerBrowserTransferTest,
-                        ::testing::Values(false));
-
-IN_PROC_BROWSER_TEST_P(FileManagerBrowserLocalTest, TestFileDisplay) {
-  DoTestFileDisplay(&volume_);
-}
-
-IN_PROC_BROWSER_TEST_P(FileManagerBrowserLocalTest, TestGalleryOpen) {
+IN_PROC_BROWSER_TEST_P(FileManagerBrowserSimpleTest, Test) {
   ResultCatcher catcher;
-  ASSERT_NO_FATAL_FAILURE(StartTest("galleryOpenDownloads"));
+  ASSERT_NO_FATAL_FAILURE(StartTest());
   ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
 
-IN_PROC_BROWSER_TEST_P(FileManagerBrowserLocalTest, TestKeyboardDelete) {
-  ResultCatcher catcher;
-  ASSERT_NO_FATAL_FAILURE(StartTest("keyboardDeleteDownloads"));
-  ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
-}
+INSTANTIATE_TEST_CASE_P(
+    OpenSpecialTypes,
+    FileManagerBrowserSimpleTest,
+    ::testing::Values(TestParameter(IN_GUEST_MODE, "videoOpenDownloads"),
+                      TestParameter(NOT_IN_GUEST_MODE, "videoOpenDownloads"),
+                      TestParameter(NOT_IN_GUEST_MODE, "videoOpenDrive"),
+                      TestParameter(IN_GUEST_MODE, "audioOpenDownloads"),
+                      TestParameter(NOT_IN_GUEST_MODE, "audioOpenDownloads"),
+                      TestParameter(NOT_IN_GUEST_MODE, "audioOpenDrive"),
+                      TestParameter(IN_GUEST_MODE, "galleryOpenDownloads"),
+                      TestParameter(NOT_IN_GUEST_MODE,
+                                    "galleryOpenDownloads")));
+                      // Disabled temporarily since fails on Linux Chromium OS
+                      // ASAN Tests (2).  TODO(mtomasz): crbug.com/243611.
+                      // TestParameter(NOT_IN_GUEST_MODE, "galleryOpenDrive")));
 
-// Disabled temporarily since fails on Linux Chromium OS ASAN Tests (2).
-// TODO(mtomasz): crbug.com/243611.
-IN_PROC_BROWSER_TEST_P(FileManagerBrowserDriveTest, DISABLED_TestGalleryOpen) {
-  ResultCatcher catcher;
-  ASSERT_NO_FATAL_FAILURE(StartTest("galleryOpenDrive"));
-  ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
-}
+INSTANTIATE_TEST_CASE_P(
+    KeyboardOpeartions,
+    FileManagerBrowserSimpleTest,
+    ::testing::Values(TestParameter(IN_GUEST_MODE, "keyboardDeleteDownloads"),
+                      TestParameter(NOT_IN_GUEST_MODE,
+                                    "keyboardDeleteDownloads"),
+                      TestParameter(NOT_IN_GUEST_MODE, "keyboardDeleteDrive"),
+                      TestParameter(IN_GUEST_MODE, "keyboardCopyDownloads"),
+                      TestParameter(NOT_IN_GUEST_MODE, "keyboardCopyDownloads"),
+                      TestParameter(NOT_IN_GUEST_MODE, "keyboardCopyDrive")));
 
-IN_PROC_BROWSER_TEST_P(FileManagerBrowserLocalTest, TestAudioOpen) {
-  ResultCatcher catcher;
-  ASSERT_NO_FATAL_FAILURE(StartTest("galleryOpenDownloads"));
-  ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();}
+INSTANTIATE_TEST_CASE_P(
+    DriveSpecific,
+    FileManagerBrowserSimpleTest,
+    ::testing::Values(TestParameter(NOT_IN_GUEST_MODE, "openSidebarRecent"),
+                      TestParameter(NOT_IN_GUEST_MODE, "openSidebarOffline"),
+                      TestParameter(NOT_IN_GUEST_MODE,
+                                    "openSidebarSharedWithMe"),
+                      TestParameter(NOT_IN_GUEST_MODE, "autocomplete")));
 
-IN_PROC_BROWSER_TEST_P(FileManagerBrowserDriveTest, TestAudioOpen) {
-  ResultCatcher catcher;
-  ASSERT_NO_FATAL_FAILURE(StartTest("galleryOpenDrive"));
-  ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
-}
-
-IN_PROC_BROWSER_TEST_P(FileManagerBrowserLocalTest, TestVideoOpen) {
-  ResultCatcher catcher;
-  ASSERT_NO_FATAL_FAILURE(StartTest("galleryOpenDownloads"));
-  ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
-}
-
-IN_PROC_BROWSER_TEST_P(FileManagerBrowserDriveTest, TestVideoOpen) {
-  ResultCatcher catcher;
-  ASSERT_NO_FATAL_FAILURE(StartTest("galleryOpenDrive"));
-  ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
-}
-
-IN_PROC_BROWSER_TEST_P(FileManagerBrowserDriveTest, TestKeyboardCopy) {
-  ResultCatcher catcher;
-  ASSERT_NO_FATAL_FAILURE(StartTest("keyboardCopyDrive"));
-  ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
-}
-
-IN_PROC_BROWSER_TEST_P(FileManagerBrowserDriveTest, TestKeyboardDelete) {
-  ResultCatcher catcher;
-  ASSERT_NO_FATAL_FAILURE(StartTest("keyboardDeleteDrive"));
-  ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
-}
-
-IN_PROC_BROWSER_TEST_P(FileManagerBrowserDriveTest, TestOpenRecent) {
-  ResultCatcher catcher;
-  ASSERT_NO_FATAL_FAILURE(StartTest("openSidebarRecent"));
-  ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
-}
-
-IN_PROC_BROWSER_TEST_P(FileManagerBrowserDriveTest, TestOpenOffline) {
-  ResultCatcher catcher;
-  ASSERT_NO_FATAL_FAILURE(StartTest("openSidebarOffline"));
-  ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
-}
-
-IN_PROC_BROWSER_TEST_P(FileManagerBrowserDriveTest, TestOpenSharedWithMe) {
-  ResultCatcher catcher;
-  ASSERT_NO_FATAL_FAILURE(StartTest("openSidebarSharedWithMe"));
-  ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
-}
-
-IN_PROC_BROWSER_TEST_P(FileManagerBrowserDriveTest, TestAutocomplete) {
-  ResultCatcher catcher;
-  ASSERT_NO_FATAL_FAILURE(StartTest("autocomplete"));
-  ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
-}
-
-IN_PROC_BROWSER_TEST_P(FileManagerBrowserTransferTest,
-                       TransferFromDriveToDownloads) {
-  ResultCatcher catcher;
-  ASSERT_NO_FATAL_FAILURE(StartTest("transferFromDriveToDownloads"));
-  ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
-}
-
-IN_PROC_BROWSER_TEST_P(FileManagerBrowserTransferTest,
-                       TransferFromDownloadsToDrive) {
-  ResultCatcher catcher;
-  ASSERT_NO_FATAL_FAILURE(StartTest("transferFromDownloadsToDrive"));
-  ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
-}
-
-IN_PROC_BROWSER_TEST_P(FileManagerBrowserTransferTest,
-                       TransferFromSharedToDownloads) {
-  ResultCatcher catcher;
-  ASSERT_NO_FATAL_FAILURE(StartTest("transferFromSharedToDownloads"));
-  ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
-}
-
-IN_PROC_BROWSER_TEST_P(FileManagerBrowserTransferTest,
-                       TransferFromSharedToDrive) {
-  ResultCatcher catcher;
-  ASSERT_NO_FATAL_FAILURE(StartTest("transferFromSharedToDrive"));
-  ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
-}
-
-IN_PROC_BROWSER_TEST_P(FileManagerBrowserTransferTest,
-                       TransferFromRecentToDownloads) {
-  ResultCatcher catcher;
-  ASSERT_NO_FATAL_FAILURE(StartTest("transferFromRecentToDownloads"));
-  ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
-}
-
-IN_PROC_BROWSER_TEST_P(FileManagerBrowserTransferTest,
-                       TransferFromRecentToDrive) {
-  ResultCatcher catcher;
-  ASSERT_NO_FATAL_FAILURE(StartTest("transferFromRecentToDrive"));
-  ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
-}
-
-IN_PROC_BROWSER_TEST_P(FileManagerBrowserTransferTest,
-                       TransferFromOfflineToDownloads) {
-  ResultCatcher catcher;
-  ASSERT_NO_FATAL_FAILURE(StartTest("transferFromOfflineToDownloads"));
-  ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
-}
-
-IN_PROC_BROWSER_TEST_P(FileManagerBrowserTransferTest,
-                       TransferFromOfflineToDrive) {
-  ResultCatcher catcher;
-  ASSERT_NO_FATAL_FAILURE(StartTest("transferFromOfflineToDrive"));
-  ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
-}
+INSTANTIATE_TEST_CASE_P(
+    Transfer,
+    FileManagerBrowserSimpleTest,
+    ::testing::Values(TestParameter(NOT_IN_GUEST_MODE,
+                                    "transferFromDriveToDownloads"),
+                      TestParameter(NOT_IN_GUEST_MODE,
+                                    "transferFromDownloadsToDrive"),
+                      TestParameter(NOT_IN_GUEST_MODE,
+                                    "transferFromSharedToDownloads"),
+                      TestParameter(NOT_IN_GUEST_MODE,
+                                    "transferFromSharedToDrive"),
+                      TestParameter(NOT_IN_GUEST_MODE,
+                                    "transferFromRecentToDownloads"),
+                      TestParameter(NOT_IN_GUEST_MODE,
+                                    "transferFromRecentToDrive"),
+                      TestParameter(NOT_IN_GUEST_MODE,
+                                    "transferFromOfflineToDownloads"),
+                      TestParameter(NOT_IN_GUEST_MODE,
+                                    "transferFromOfflineToDrive")));
 
 }  // namespace
