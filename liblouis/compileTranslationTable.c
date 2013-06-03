@@ -232,6 +232,15 @@ static TranslationTableHeader *table;
 static TranslationTableOffset tableSize;
 static TranslationTableOffset tableUsed;
 
+typedef struct
+{
+  void *next;
+  void *table;
+  int tableListLength;
+  char tableList[1];
+} ChainEntry;
+static ChainEntry *tableChain = NULL;
+
 static const char *characterClassNames[] = {
   "space",
   "letter",
@@ -750,6 +759,13 @@ allocateSpaceInTable (FileInfo * nested, TranslationTableOffset * offset,
 	  outOfMemory ();
 	}
       memset (((unsigned char *) newTable) + tableSize, 0, size - tableSize);
+      /* update references to the old table */
+      {
+	ChainEntry *entry;
+	for (entry = tableChain; entry != NULL; entry = entry->next)
+	  if (entry->table == table)
+	    entry->table = (TranslationTableHeader *) newTable;
+      }
       table = (TranslationTableHeader *) newTable;
       tableSize = size;
     }
@@ -4833,14 +4849,6 @@ cleanup:
   return (void *) table;
 }
 
-typedef struct
-{
-  void *next;
-  void *table;
-  int tableListLength;
-  char tableList[1];
-} ChainEntry;
-static ChainEntry *tableChain = NULL;
 static ChainEntry *lastTrans = NULL;
 static void *
 getTable (const char *tableList)

@@ -1,5 +1,10 @@
 2013-06-03  Christian Egli  <christian.egli@sbs.ch>
 
+	* liblouis/compileTranslationTable.c (allocateSpaceInTable): When
+	the table needs more space it is reallocated. Unfortunately not
+	all references to the table (such as the tableChain) are updated.
+	This is now fixed.
+
 	* tests/tables/large.ctb:
 	* tests/tables/Makefile.am:
 	* HACKING: Added a new section about profiling and some test table
