@@ -400,44 +400,24 @@ Document::Document(Frame* frame, const KURL& url, DocumentClassFlags documentCla
     , TreeScope(this)
     , m_styleResolverThrowawayTimer(this, &Document::styleResolverThrowawayTimerFired)
     , m_lastStyleResolverAccessTime(0)
-    , m_didCalculateStyleResolver(false)
-    , m_ignorePendingStylesheets(false)
-    , m_needsNotifyRemoveAllPendingStylesheet(false)
-    , m_hasNodesWithPlaceholderStyle(false)
-    , m_pendingSheetLayout(NoLayoutWithPendingSheets)
-    , m_frame(frame)
     , m_activeParserCount(0)
     , m_contextFeatures(ContextFeatures::defaultSwitch())
-    , m_wellFormed(false)
-    , m_printing(false)
-    , m_paginatedForScreen(false)
-    , m_ignoreAutofocus(false)
     , m_compatibilityMode(NoQuirksMode)
     , m_compatibilityModeLocked(false)
-    , m_textColor(Color::black)
     , m_didPostCheckFocusedNodeTask(false)
     , m_domTreeVersion(++s_globalTreeVersion)
-    , m_listenerTypes(0)
     , m_mutationObserverTypes(0)
     , m_styleSheetCollection(DocumentStyleSheetCollection::create(this))
     , m_visitedLinkState(VisitedLinkState::create(this))
-    , m_visuallyOrdered(false)
     , m_readyState(Complete)
-    , m_bParsing(false)
     , m_styleRecalcTimer(this, &Document::styleRecalcTimerFired)
-    , m_inStyleRecalc(false)
-    , m_closeAfterStyleRecalc(false)
-    , m_gotoAnchorNeededAfterStylesheetsLoad(false)
     , m_pendingStyleRecalcShouldForce(false)
     , m_frameElementsShouldIgnoreScrolling(false)
     , m_containsValidityStyleRules(false)
     , m_updateFocusAppearanceRestoresSelection(false)
     , m_ignoreDestructiveWriteCount(0)
     , m_titleSetExplicitly(false)
-    , m_markers(adoptPtr(new DocumentMarkerController))
     , m_updateFocusAppearanceTimer(this, &Document::updateFocusAppearanceTimerFired)
-    , m_cssTarget(0)
-    , m_processingLoadEvent(false)
     , m_loadEventFinished(false)
     , m_startTime(currentTime())
     , m_overMinimumLayoutThreshold(false)
@@ -472,8 +452,6 @@ Document::Document(Frame* frame, const KURL& url, DocumentClassFlags documentCla
     , m_writeRecursionDepth(0)
     , m_wheelEventHandlerCount(0)
     , m_lastHandledUserGestureTimestamp(0)
-    , m_prerenderer(Prerenderer::create(this))
-    , m_textAutosizer(TextAutosizer::create(this))
     , m_pendingTasksTimer(this, &Document::pendingTasksTimerFired)
     , m_scheduledTasksAreSuspended(false)
     , m_sharedObjectPoolClearTimer(this, &Document::sharedObjectPoolClearTimerFired)
@@ -486,31 +464,63 @@ Document::Document(Frame* frame, const KURL& url, DocumentClassFlags documentCla
     , m_didAssociateFormControlsTimer(this, &Document::didAssociateFormControlsTimerFired)
 {
     ScriptWrappable::init(this);
+    m_printing = false;
+    m_paginatedForScreen = false;
 
-    if (m_frame) {
+    m_ignoreAutofocus = false;
+
+    m_frame = frame;
+    if (m_frame)
         provideContextFeaturesToDocumentFrom(this, m_frame->page());
 
-        // We depend on the url getting immediately set in subframes, but we
-        // also depend on the url NOT getting immediately set in opened windows.
-        // See fast/dom/early-frame-url.html
-        // and fast/dom/location-new-window-no-crash.html, respectively.
-        // FIXME: Can/should we unify this behavior?
-        if (m_frame->ownerElement() || !url.isEmpty())
-            setURL(url);
+    // We depend on the url getting immediately set in subframes, but we
+    // also depend on the url NOT getting immediately set in opened windows.
+    // See fast/dom/early-frame-url.html
+    // and fast/dom/location-new-window-no-crash.html, respectively.
+    // FIXME: Can/should we unify this behavior?
+    if ((frame && frame->ownerElement()) || !url.isEmpty())
+        setURL(url);
 
+    m_markers = adoptPtr(new DocumentMarkerController);
+
+    if (m_frame)
         m_cachedResourceLoader = m_frame->loader()->activeDocumentLoader()->cachedResourceLoader();
-    }
-
     if (!m_cachedResourceLoader)
         m_cachedResourceLoader = CachedResourceLoader::create(0);
     m_cachedResourceLoader->setDocument(this);
+
+    m_prerenderer = Prerenderer::create(this);
+    m_textAutosizer = TextAutosizer::create(this);
+    m_visuallyOrdered = false;
+    m_bParsing = false;
+    m_wellFormed = false;
+
+    m_textColor = Color::black;
+    m_listenerTypes = 0;
+    m_inStyleRecalc = false;
+    m_closeAfterStyleRecalc = false;
+
+    m_gotoAnchorNeededAfterStylesheetsLoad = false;
+
+    m_didCalculateStyleResolver = false;
+    m_ignorePendingStylesheets = false;
+    m_needsNotifyRemoveAllPendingStylesheet = false;
+    m_hasNodesWithPlaceholderStyle = false;
+    m_pendingSheetLayout = NoLayoutWithPendingSheets;
+
+    m_cssTarget = 0;
 
     resetLinkColor();
     resetVisitedLinkColor();
     resetActiveLinkColor();
 
+    m_processingLoadEvent = false;
+
     initSecurityContext();
     initDNSPrefetch();
+
+    static int docID = 0;
+    m_docID = docID++;
 
     for (unsigned i = 0; i < WTF_ARRAY_LENGTH(m_nodeListCounts); i++)
         m_nodeListCounts[i] = 0;
