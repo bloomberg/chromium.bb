@@ -23,7 +23,8 @@ class RendererWebAudioDeviceImpl
       public media::AudioRendererSink::RenderCallback {
  public:
   RendererWebAudioDeviceImpl(const media::AudioParameters& params,
-                             WebKit::WebAudioDevice::RenderCallback* callback);
+                             WebKit::WebAudioDevice::RenderCallback* callback,
+                             int session_id);
   virtual ~RendererWebAudioDeviceImpl();
 
   // WebKit::WebAudioDevice implementation.
@@ -53,6 +54,9 @@ class RendererWebAudioDeviceImpl
 
   // When non-NULL, we are started.  When NULL, we are stopped.
   scoped_refptr<media::AudioOutputDevice> output_device_;
+
+  // ID to allow browser to select the correct input device for unified IO.
+  int session_id_;
 
   DISALLOW_COPY_AND_ASSIGN(RendererWebAudioDeviceImpl);
 };

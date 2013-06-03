@@ -29,6 +29,13 @@ AudioInputDeviceManager::AudioInputDeviceManager(
       next_capture_session_id_(kFirstSessionId),
       use_fake_device_(false),
       audio_manager_(audio_manager) {
+  // TODO(xians): Remove this fake_device after the unittests do not need it.
+  StreamDeviceInfo fake_device(MEDIA_DEVICE_AUDIO_CAPTURE,
+                               media::AudioManagerBase::kDefaultDeviceName,
+                               media::AudioManagerBase::kDefaultDeviceId,
+                               44100, media::CHANNEL_LAYOUT_STEREO, false);
+  fake_device.session_id = kFakeOpenSessionId;
+  devices_.push_back(fake_device);
 }
 
 AudioInputDeviceManager::~AudioInputDeviceManager() {
@@ -88,7 +95,8 @@ void AudioInputDeviceManager::Close(int session_id) {
   if (device == devices_.end())
     return;
   const MediaStreamType stream_type = device->device.type;
-  devices_.erase(device);
+  if (session_id != kFakeOpenSessionId)
+    devices_.erase(device);
 
   // Post a callback through the listener on IO thread since
   // MediaStreamManager is expecting the callback asynchronously.
@@ -134,6 +142,14 @@ void AudioInputDeviceManager::EnumerateOnDeviceThread(
         stream_type, it->device_name, it->unique_id, false));
   }
 
+  // If the |use_fake_device_| flag is on, inject the fake device if there is
+  // no available device on the OS.
+  if (use_fake_device_ && devices->empty()) {
+    devices->push_back(StreamDeviceInfo(
+        stream_type, media::AudioManagerBase::kDefaultDeviceName,
+        media::AudioManagerBase::kDefaultDeviceId, false));
+  }
+
   // Return the device list through the listener by posting a task on
   // IO thread since MediaStreamManager handles the callback asynchronously.
   BrowserThread::PostTask(
@@ -147,14 +163,21 @@ void AudioInputDeviceManager::OpenOnDeviceThread(
     int session_id, const StreamDeviceInfo& info) {
   DCHECK(IsOnDeviceThread());
 
-  // Get the preferred sample rate and channel configuration for the
-  // audio device.
-  media::AudioParameters params =
-      audio_manager_->GetInputStreamParameters(info.device.id);
-
   StreamDeviceInfo out(info.device.type, info.device.name, info.device.id,
-                       params.sample_rate(), params.channel_layout(), false);
+                       0, 0, false);
   out.session_id = session_id;
+  if (use_fake_device_) {
+    // Don't need to query the hardware information if using fake device.
+    out.device.sample_rate = 44100;
+    out.device.channel_layout = media::CHANNEL_LAYOUT_STEREO;
+  } else {
+    // Get the preferred sample rate and channel configuration for the
+    // audio device.
+    media::AudioParameters params =
+        audio_manager_->GetInputStreamParameters(info.device.id);
+    out.device.sample_rate = params.sample_rate();
+    out.device.channel_layout = params.channel_layout();
+  }
 
   // Return the |session_id| through the listener by posting a task on
   // IO thread since MediaStreamManager handles the callback asynchronously.

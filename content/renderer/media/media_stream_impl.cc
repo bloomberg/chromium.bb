@@ -91,7 +91,8 @@ void CreateWebKitSourceVector(
           UTF8ToUTF16(devices[i].device.name));
     webkit_sources[i].setExtraData(
         new content::MediaStreamSourceExtraData(devices[i], webkit_sources[i]));
-    webkit_sources[i].setDeviceId(UTF8ToUTF16(devices[i].device.id.c_str()));
+    webkit_sources[i].setDeviceId(UTF8ToUTF16(
+        base::IntToString(devices[i].session_id)));
   }
 }
 

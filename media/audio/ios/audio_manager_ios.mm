@@ -62,7 +62,7 @@ AudioParameters AudioManagerIOS::GetInputStreamParameters(
 }
 
 AudioOutputStream* AudioManagerIOS::MakeAudioOutputStream(
-    const AudioParameters& params) {
+    const AudioParameters& params, const std::string& input_device_id) {
   NOTIMPLEMENTED();  // Only input is supported on iOS.
   return NULL;
 }
@@ -82,24 +82,24 @@ AudioInputStream* AudioManagerIOS::MakeAudioInputStream(
 }
 
 AudioOutputStream* AudioManagerIOS::MakeLinearOutputStream(
-      const AudioParameters& params) {
+    const AudioParameters& params) {
   NOTIMPLEMENTED();  // Only input is supported on iOS.
   return NULL;
 }
 
 AudioOutputStream* AudioManagerIOS::MakeLowLatencyOutputStream(
-      const AudioParameters& params) {
+    const AudioParameters& params, const std::string& input_device_id) {
   NOTIMPLEMENTED();  // Only input is supported on iOS.
   return NULL;
 }
 
 AudioInputStream* AudioManagerIOS::MakeLinearInputStream(
-      const AudioParameters& params, const std::string& device_id) {
+    const AudioParameters& params, const std::string& device_id) {
   return MakeAudioInputStream(params, device_id);
 }
 
 AudioInputStream* AudioManagerIOS::MakeLowLatencyInputStream(
-      const AudioParameters& params, const std::string& device_id) {
+    const AudioParameters& params, const std::string& device_id) {
   NOTIMPLEMENTED();  // Only linear audio input is supported on iOS.
   return MakeAudioInputStream(params, device_id);
 }

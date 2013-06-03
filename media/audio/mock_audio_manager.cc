@@ -37,13 +37,15 @@ void MockAudioManager::GetAudioInputDeviceNames(
 }
 
 media::AudioOutputStream* MockAudioManager::MakeAudioOutputStream(
-        const media::AudioParameters& params) {
+        const media::AudioParameters& params,
+        const std::string& input_device_id) {
   NOTREACHED();
   return NULL;
 }
 
 media::AudioOutputStream* MockAudioManager::MakeAudioOutputStreamProxy(
-    const media::AudioParameters& params) {
+    const media::AudioParameters& params,
+    const std::string& input_device_id) {
   NOTREACHED();
   return NULL;
 }

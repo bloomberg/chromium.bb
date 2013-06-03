@@ -12,12 +12,15 @@
 #include "base/shared_memory.h"
 #include "content/browser/browser_main_loop.h"
 #include "content/browser/media/media_internals.h"
+#include "content/browser/renderer_host/media/audio_input_device_manager.h"
 #include "content/browser/renderer_host/media/audio_mirroring_manager.h"
 #include "content/browser/renderer_host/media/audio_sync_reader.h"
+#include "content/browser/renderer_host/media/media_stream_manager.h"
 #include "content/common/media/audio_messages.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/media_observer.h"
 #include "content/public/common/content_switches.h"
+#include "media/audio/audio_manager_base.h"
 #include "media/audio/shared_memory_util.h"
 #include "media/base/audio_bus.h"
 #include "media/base/limits.h"
@@ -33,6 +36,7 @@ class AudioRendererHost::AudioEntry
              int stream_id,
              int render_view_id,
              const media::AudioParameters& params,
+             const std::string& input_device_id,
              scoped_ptr<base::SharedMemory> shared_memory,
              scoped_ptr<media::AudioOutputController::SyncReader> reader);
   virtual ~AudioEntry();
@@ -84,13 +88,14 @@ class AudioRendererHost::AudioEntry
 AudioRendererHost::AudioEntry::AudioEntry(
     AudioRendererHost* host, int stream_id, int render_view_id,
     const media::AudioParameters& params,
+    const std::string& input_device_id,
     scoped_ptr<base::SharedMemory> shared_memory,
     scoped_ptr<media::AudioOutputController::SyncReader> reader)
     : host_(host),
       stream_id_(stream_id),
       render_view_id_(render_view_id),
       controller_(media::AudioOutputController::Create(
-          host->audio_manager_, this, params, reader.get())),
+          host->audio_manager_, this, params, input_device_id, reader.get())),
       shared_memory_(shared_memory.Pass()),
       reader_(reader.Pass()) {
   DCHECK(controller_.get());
@@ -104,12 +109,15 @@ AudioRendererHost::AudioRendererHost(
     int render_process_id,
     media::AudioManager* audio_manager,
     AudioMirroringManager* mirroring_manager,
-    MediaInternals* media_internals)
+    MediaInternals* media_internals,
+    MediaStreamManager* media_stream_manager)
     : render_process_id_(render_process_id),
       audio_manager_(audio_manager),
       mirroring_manager_(mirroring_manager),
-      media_internals_(media_internals) {
+      media_internals_(media_internals),
+      media_stream_manager_(media_stream_manager) {
   DCHECK(audio_manager_);
+  DCHECK(media_stream_manager_);
 }
 
 AudioRendererHost::~AudioRendererHost() {
@@ -265,12 +273,14 @@ bool AudioRendererHost::OnMessageReceived(const IPC::Message& message,
 }
 
 void AudioRendererHost::OnCreateStream(
-    int stream_id, int render_view_id, const media::AudioParameters& params) {
+    int stream_id, int render_view_id, int session_id,
+    const media::AudioParameters& params) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   DVLOG(1) << "AudioRendererHost@" << this
            << "::OnCreateStream(stream_id=" << stream_id
-           << ", render_view_id=" << render_view_id << ")";
+           << ", render_view_id=" << render_view_id
+           << ", session_id=" << session_id << ")";
   DCHECK_GT(render_view_id, 0);
 
   // media::AudioParameters is validated in the deserializer.
@@ -280,6 +290,22 @@ void AudioRendererHost::OnCreateStream(
       LookupById(stream_id) != NULL) {
     SendErrorMessage(stream_id);
     return;
+  }
+
+  // When the |input_channels| is valid, clients are trying to create a unified
+  // IO stream which opens an input device mapping to the |session_id|.
+  std::string input_device_id;
+  if (input_channels > 0) {
+    const StreamDeviceInfo* info = media_stream_manager_->
+        audio_input_device_manager()->GetOpenedDeviceInfoById(session_id);
+    if (!info) {
+      SendErrorMessage(stream_id);
+      DLOG(WARNING) << "No permission has been granted to input stream with "
+                    << "session_id=" << session_id;
+      return;
+    }
+
+    input_device_id = info->device.id;
   }
 
   // Calculate output and input memory size.
@@ -308,7 +334,8 @@ void AudioRendererHost::OnCreateStream(
   }
 
   scoped_ptr<AudioEntry> entry(new AudioEntry(
-      this, stream_id, render_view_id, params, shared_memory.Pass(),
+      this, stream_id, render_view_id, params, input_device_id,
+      shared_memory.Pass(),
       reader.PassAs<media::AudioOutputController::SyncReader>()));
   if (mirroring_manager_) {
     mirroring_manager_->AddDiverter(

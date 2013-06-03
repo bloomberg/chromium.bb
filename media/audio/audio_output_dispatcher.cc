@@ -10,10 +10,12 @@ namespace media {
 
 AudioOutputDispatcher::AudioOutputDispatcher(
     AudioManager* audio_manager,
-    const AudioParameters& params)
+    const AudioParameters& params,
+    const std::string& input_device_id)
     : audio_manager_(audio_manager),
       message_loop_(base::MessageLoop::current()),
-      params_(params) {
+      params_(params),
+      input_device_id_(input_device_id) {
   // We expect to be instantiated on the audio thread.  Otherwise the
   // message_loop_ member will point to the wrong message loop!
   DCHECK(audio_manager->GetMessageLoop()->BelongsToCurrentThread());

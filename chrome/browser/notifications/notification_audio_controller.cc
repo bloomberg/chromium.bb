@@ -251,7 +251,7 @@ bool NotificationAudioController::AudioHandler::StartPlayingSound(
   if (!params.IsValid())
     return false;
 
-  stream_ = audio_manager_->MakeAudioOutputStreamProxy(params);
+  stream_ = audio_manager_->MakeAudioOutputStreamProxy(params, std::string());
   if (!stream_->Open()) {
     DLOG(ERROR) << "Failed to open the output stream";
     stream_->Close();

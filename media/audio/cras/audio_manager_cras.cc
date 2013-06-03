@@ -74,8 +74,9 @@ AudioOutputStream* AudioManagerCras::MakeLinearOutputStream(
 }
 
 AudioOutputStream* AudioManagerCras::MakeLowLatencyOutputStream(
-    const AudioParameters& params) {
+    const AudioParameters& params, const std::string& input_device_id) {
   DCHECK_EQ(AudioParameters::AUDIO_PCM_LOW_LATENCY, params.format());
+  // TODO(dgreid): Open the correct input device for unified IO.
   return MakeOutputStream(params);
 }
 
