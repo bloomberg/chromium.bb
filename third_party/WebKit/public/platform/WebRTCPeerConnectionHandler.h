@@ -31,6 +31,9 @@
 #ifndef WebRTCPeerConnectionHandler_h
 #define WebRTCPeerConnectionHandler_h
 
+#include "WebCommon.h"
+#include "WebString.h"
+
 namespace WebKit {
 class WebMediaConstraints;
 class WebMediaStream;
@@ -44,7 +47,15 @@ class WebRTCSessionDescription;
 class WebRTCSessionDescriptionRequest;
 class WebRTCStatsRequest;
 class WebRTCVoidRequest;
-class WebString;
+
+struct WebRTCDataChannelInit {
+    unsigned short id;
+    bool ordered;
+    bool negotiated;
+    int maxRetransmitTime;
+    int maxRetransmits;
+    WebString protocol;
+};
 
 class WebRTCPeerConnectionHandler {
 public:
@@ -64,6 +75,11 @@ public:
     virtual void removeStream(const WebMediaStream&) = 0;
     virtual void getStats(const WebRTCStatsRequest&) = 0;
     virtual WebRTCDataChannelHandler* createDataChannel(const WebString& label, bool reliable) = 0;
+    virtual WebRTCDataChannelHandler* createDataChannel(const WebString& label, const WebRTCDataChannelInit& init)
+    {
+        WEBKIT_ASSERT_NOT_REACHED();
+        return 0;
+    }
     virtual WebRTCDTMFSenderHandler* createDTMFSender(const WebMediaStreamTrack&) = 0;
     virtual void stop() = 0;
 };
