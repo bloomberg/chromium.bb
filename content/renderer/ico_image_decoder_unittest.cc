@@ -18,12 +18,7 @@ class ICOImageDecoderTest : public ImageDecoderTest {
   }
 };
 
-#if defined(OS_LINUX)
-#define MAYBE_Decoding DISABLED_Decoding
-#else
-#define MAYBE_Decoding Decoding
-#endif
-TEST_F(ICOImageDecoderTest, MAYBE_Decoding) {
+TEST_F(ICOImageDecoderTest, Decoding) {
   TestDecoding();
 }
 
