@@ -197,7 +197,10 @@ def DisassembleChunk(data, bitness):
 
     objdump_proc = subprocess.Popen(
         ['objdump',
-         '-mi386', arch, '--disassemble-all', '--target=binary', tmp.name],
+         '-mi386', arch, '--target=binary',
+         '--disassemble-all', '--disassemble-zeroes',
+         '--insn-width=15',
+         tmp.name],
         stdout=subprocess.PIPE)
 
     instructions = []
