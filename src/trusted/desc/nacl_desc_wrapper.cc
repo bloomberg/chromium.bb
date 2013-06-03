@@ -6,6 +6,7 @@
 #include <new>
 #include "native_client/src/include/portability.h"
 #include "native_client/src/include/portability_string.h"
+#include "native_client/src/public/imc_types.h"
 #include "native_client/src/shared/imc/nacl_imc_c.h"
 #include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/shared/platform/nacl_log.h"
@@ -26,7 +27,6 @@
 #include "native_client/src/trusted/desc/nrd_xfer.h"
 #include "native_client/src/trusted/nacl_base/nacl_refcount.h"
 #include "native_client/src/trusted/service_runtime/include/sys/errno.h"
-#include "native_client/src/trusted/service_runtime/include/sys/nacl_imc_api.h"
 #include "native_client/src/trusted/service_runtime/nacl_config.h"
 
 // TODO(polina): follow the style guide and replace "nhdp" and "ndiodp" with

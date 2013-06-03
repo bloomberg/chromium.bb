@@ -10,10 +10,10 @@
 #include "native_client/src/include/nacl_base.h"
 #include "native_client/src/include/portability.h"
 
-#include "native_client/src/trusted/desc/nacl_desc_base.h"
+/* Get NACL_NAME_SERVICE_CONNECTION_MAX. */
+#include "native_client/src/public/name_service.h"
 
-#include "native_client/src/trusted/service_runtime/include/sys/nacl_name_service.h"
-/* get NACL_NAME_SERVICE_CONNECTION_MAX */
+#include "native_client/src/trusted/desc/nacl_desc_base.h"
 
 #include "native_client/src/trusted/simple_service/nacl_simple_service.h"
 #include "native_client/src/trusted/simple_service/nacl_simple_ltd_service.h"
@@ -95,7 +95,7 @@ struct NaClNameServiceVtbl {
   /*
    * The following functions return 0 for success, and non-zero to
    * indicate the reason for failure.  The set of possible failures is
-   * in src/trusted/service_runtime/include/sys/nacl_name_service.h.
+   * in src/public/name_service.h.
    *
    * They don't really have to be virtual, but this makes it easier to
    * subclass and modify later, should the need occur.

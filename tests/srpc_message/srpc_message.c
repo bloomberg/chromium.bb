@@ -17,8 +17,8 @@
 #if defined(__native_client__)
 #include <pthread.h>
 #include <stdint.h>
+#include "native_client/src/public/imc_syscalls.h"
 #include "native_client/src/shared/srpc/nacl_srpc.h"
-#include "native_client/src/trusted/service_runtime/include/sys/nacl_syscalls.h"
 #else
 #include "native_client/src/include/portability.h"
 #include "native_client/src/shared/platform/nacl_threads.h"

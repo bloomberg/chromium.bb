@@ -11,7 +11,7 @@
 #include <errno.h>
 #include <sys/types.h>
 
-#include "native_client/src/trusted/service_runtime/include/sys/nacl_syscalls.h"
+#include "native_client/src/public/imc_syscalls.h"
 #include "native_client/src/untrusted/nacl/syscall_bindings_trampoline.h"
 
 int imc_accept(int d) {

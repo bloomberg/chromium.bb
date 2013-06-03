@@ -21,6 +21,8 @@
 #include "native_client/src/include/nacl_platform.h"
 #include "native_client/src/include/nacl_macros.h"
 
+#include "native_client/src/public/imc_types.h"
+
 #include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/shared/platform/nacl_sync_checked.h"
@@ -50,7 +52,6 @@
 #include "native_client/src/trusted/service_runtime/include/machine/_types.h"
 #include "native_client/src/trusted/service_runtime/include/sys/errno.h"
 #include "native_client/src/trusted/service_runtime/include/sys/fcntl.h"
-#include "native_client/src/trusted/service_runtime/include/sys/nacl_imc_api.h"
 #include "native_client/src/trusted/service_runtime/include/sys/stat.h"
 #include "native_client/src/trusted/service_runtime/include/sys/time.h"
 #include "native_client/src/trusted/service_runtime/include/sys/unistd.h"

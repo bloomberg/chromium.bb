@@ -10,9 +10,9 @@
 #include <string.h>
 #include <unistd.h>
 
+#include "native_client/src/public/imc_syscalls.h"
+#include "native_client/src/public/imc_types.h"
 #include "native_client/src/include/nacl_macros.h"
-#include "native_client/src/trusted/service_runtime/include/sys/nacl_imc_api.h"
-#include "native_client/src/trusted/service_runtime/include/sys/nacl_syscalls.h"
 
 
 #define EXAMPLE_DESC 10

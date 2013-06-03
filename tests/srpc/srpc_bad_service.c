@@ -11,8 +11,8 @@
 #include <sys/time.h>
 #include <unistd.h>
 
-#include "native_client/src/trusted/service_runtime/include/sys/nacl_imc_api.h"
-#include "native_client/src/trusted/service_runtime/include/sys/nacl_syscalls.h"
+#include "native_client/src/public/imc_syscalls.h"
+#include "native_client/src/public/imc_types.h"
 
 #define BOUND_SOCKET  3
 

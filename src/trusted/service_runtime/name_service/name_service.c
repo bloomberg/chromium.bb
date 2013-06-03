@@ -11,6 +11,7 @@
 
 #include "native_client/src/trusted/service_runtime/name_service/name_service.h"
 
+#include "native_client/src/public/name_service.h"
 
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/shared/platform/nacl_sync.h"
@@ -24,7 +25,6 @@
 #include "native_client/src/trusted/desc/nrd_xfer.h"
 
 #include "native_client/src/trusted/service_runtime/include/sys/fcntl.h"
-#include "native_client/src/trusted/service_runtime/include/sys/nacl_name_service.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
 
 #include "native_client/src/trusted/simple_service/nacl_simple_service.h"

@@ -1,22 +1,24 @@
-// -*- c++ -*-
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
+/*
+ * Copyright (c) 2013 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
 
 #include "native_client/tests/subprocess/process_lib.h"
 
 #include <errno.h>
 #include <fcntl.h>
 #include <stdlib.h>
+#include <unistd.h>
 
 // TODO(bsy) get rid of debug printfs
 
 // The header files below access private, not-guaranteed-to-be-stable
 // ABIs/APIs.
+#include "native_client/src/public/imc_syscalls.h"
+#include "native_client/src/public/name_service.h"
 #include "native_client/src/trusted/service_runtime/include/bits/nacl_syscalls.h"
-#include "native_client/src/trusted/service_runtime/include/sys/nacl_syscalls.h"
 #include "native_client/src/trusted/service_runtime/include/sys/nacl_kernel_service.h"
-#include "native_client/src/trusted/service_runtime/include/sys/nacl_name_service.h"
 // get NACL_SYSCALL_BLOCK_SIZE, NACL_SYSCALL_START_ADDR
 #include "native_client/src/trusted/service_runtime/nacl_config.h"
 

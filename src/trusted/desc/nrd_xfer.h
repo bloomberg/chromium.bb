@@ -1,7 +1,7 @@
 /*
- * Copyright 2008 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2013 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 /*
@@ -37,9 +37,8 @@
 #include "native_client/src/include/portability.h"
 
 #include "native_client/src/include/nacl_base.h"
+#include "native_client/src/public/imc_types.h"  /* NaClImcMsgIoVec */
 #include "native_client/src/trusted/service_runtime/include/machine/_types.h"
-#include "native_client/src/trusted/service_runtime/include/sys/nacl_imc_api.h"
-/* NaClImcMsgIoVec */
 
 EXTERN_C_BEGIN
 

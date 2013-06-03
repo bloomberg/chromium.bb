@@ -15,12 +15,12 @@
 #include "native_client/src/include/nacl_scoped_ptr.h"
 #include "native_client/src/include/nacl_string.h"
 
+#include "native_client/src/public/name_service.h"
 #include "native_client/src/shared/platform/refcount_base.h"
 #include "native_client/src/shared/platform/nacl_sync.h"
 #include "native_client/src/trusted/desc/nacl_desc_wrapper.h"
 #include "native_client/src/trusted/reverse_service/reverse_service_c.h"
 #include "native_client/src/trusted/service_runtime/include/sys/errno.h"
-#include "native_client/src/trusted/service_runtime/include/sys/nacl_name_service.h"
 
 struct NaClFileInfo;
 

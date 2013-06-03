@@ -12,8 +12,8 @@
 #include <string.h>
 #include <unistd.h>
 
-#include "native_client/src/trusted/service_runtime/include/sys/nacl_imc_api.h"
-#include "native_client/src/trusted/service_runtime/include/sys/nacl_syscalls.h"
+#include "native_client/src/public/imc_syscalls.h"
+#include "native_client/src/public/imc_types.h"
 
 /* TODO(mseaborn): This should really be in an IMC header file. */
 static const int kKnownInvalidDescNumber = -1;

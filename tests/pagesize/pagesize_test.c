@@ -22,9 +22,9 @@
 #include <sys/fcntl.h>
 #include <sys/mman.h>
 
+#include "native_client/src/public/imc_syscalls.h"
+#include "native_client/src/public/name_service.h"
 #include "native_client/src/shared/srpc/nacl_srpc.h"
-#include "native_client/src/trusted/service_runtime/include/sys/nacl_name_service.h"
-#include "native_client/src/trusted/service_runtime/include/sys/nacl_syscalls.h"
 
 /* globals */
 int g_verbosity = 0;

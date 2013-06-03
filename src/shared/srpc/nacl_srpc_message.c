@@ -33,7 +33,7 @@
 # include <errno.h>
 # define NACL_ABI_EIO EIO
 # define NACL_ABI_EINVAL EINVAL
-#include "native_client/src/trusted/service_runtime/include/sys/nacl_syscalls.h"
+# include "native_client/src/public/imc_syscalls.h"
 #else
 # include "native_client/src/trusted/desc/nacl_desc_base.h"
 # include "native_client/src/trusted/service_runtime/include/sys/errno.h"

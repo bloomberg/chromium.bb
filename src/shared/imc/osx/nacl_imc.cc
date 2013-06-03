@@ -21,6 +21,7 @@
 #include <sys/types.h>
 #include <sys/un.h>
 
+#include "native_client/src/public/imc_types.h"
 #include "native_client/src/shared/platform/nacl_log.h"
 
 
@@ -56,7 +57,6 @@
 #endif  /* SIGPIPE_ALT_FIX */
 
 #include <algorithm>
-#include "native_client/src/trusted/service_runtime/include/sys/nacl_imc_api.h"
 
 
 /*

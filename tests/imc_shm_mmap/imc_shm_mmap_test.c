@@ -10,8 +10,8 @@
 #include <errno.h>
 #include <sys/mman.h>
 
-#include "native_client/src/trusted/service_runtime/include/sys/nacl_imc_api.h"
-#include "native_client/src/trusted/service_runtime/include/sys/nacl_syscalls.h"
+#include "native_client/src/public/imc_syscalls.h"
+#include "native_client/src/public/imc_types.h"
 #include "native_client/tests/inbrowser_test_runner/test_runner.h"
 
 int verbosity = 0;

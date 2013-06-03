@@ -16,7 +16,7 @@ EXTERN_C_BEGIN
 
 #ifdef __native_client__
 #include <sys/types.h>
-#include "native_client/src/trusted/service_runtime/include/sys/nacl_imc_api.h"
+#include "native_client/src/public/imc_types.h"
 #else  /* __native_client__ */
 #include "native_client/src/include/portability.h"
 #include "native_client/src/trusted/desc/nrd_xfer.h"

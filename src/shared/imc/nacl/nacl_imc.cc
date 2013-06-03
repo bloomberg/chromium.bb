@@ -15,9 +15,9 @@
 #include <algorithm>
 
 #include "native_client/src/shared/imc/nacl_imc_c.h"
-#include "native_client/src/trusted/service_runtime/include/sys/nacl_syscalls.h"
 
 #if defined(__native_client__)
+#include "native_client/src/public/imc_syscalls.h"
 typedef NaClAbiNaClImcMsgHdr NaClImcMsgHdr;
 #endif
 

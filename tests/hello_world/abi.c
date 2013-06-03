@@ -21,7 +21,7 @@
 #include <sys/stat.h>
 #include <sys/time.h>
 
-#include "native_client/src/trusted/service_runtime/include/sys/nacl_imc_api.h"
+#include "native_client/src/public/imc_types.h"
 
 
 int Assert(int actual, int expected, const char* mesg) {

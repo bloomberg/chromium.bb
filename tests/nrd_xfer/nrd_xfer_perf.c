@@ -22,8 +22,8 @@
 #include <errno.h>
 
 /* NOTE(robertm): no errno magic here, why? */
-#include "native_client/src/trusted/service_runtime/include/sys/nacl_imc_api.h"
-#include "native_client/src/trusted/service_runtime/include/sys/nacl_syscalls.h"
+#include "native_client/src/public/imc_syscalls.h"
+#include "native_client/src/public/imc_types.h"
 
 int                         debug = 0;
 
