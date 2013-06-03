@@ -37,13 +37,13 @@ function event_handler_DOMCharacterDataModified() {
 
 document.addEventListener("DOMCharacterDataModified", event_handler_DOMCharacterDataModified, false);
 
-setTimeout(function() {
+window.addEventListener("load", function() {
   var selection=window.getSelection();
   document.execCommand("SelectAll", false)
   var range = selection.getRangeAt(0);
   var documentFragment = range.extractContents();
   document.execCommand('Undo',false);
-}, 1);
+});
 </script>
 </head>
 <body>
