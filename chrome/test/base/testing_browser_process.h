@@ -107,6 +107,10 @@ class TestingBrowserProcess : public BrowserProcess {
       media_file_system_registry() OVERRIDE;
   virtual bool created_local_state() const OVERRIDE;
 
+#if defined(ENABLE_WEBRTC)
+  virtual WebRtcLogUploader* webrtc_log_uploader() OVERRIDE;
+#endif
+
   // Set the local state for tests. Consumer is responsible for cleaning it up
   // afterwards (using ScopedTestingLocalState, for example).
   void SetLocalState(PrefService* local_state);

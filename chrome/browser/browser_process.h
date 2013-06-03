@@ -40,6 +40,9 @@ class RenderWidgetSnapshotTaker;
 class SafeBrowsingService;
 class StatusTray;
 class WatchDogThread;
+#if defined(ENABLE_WEBRTC)
+class WebRtcLogUploader;
+#endif
 
 namespace chrome {
 class MediaFileSystemRegistry;
@@ -212,6 +215,10 @@ class BrowserProcess {
   virtual chrome::MediaFileSystemRegistry* media_file_system_registry() = 0;
 
   virtual bool created_local_state() const = 0;
+
+#if defined(ENABLE_WEBRTC)
+  virtual WebRtcLogUploader* webrtc_log_uploader() = 0;
+#endif
 
  private:
   DISALLOW_COPY_AND_ASSIGN(BrowserProcess);
