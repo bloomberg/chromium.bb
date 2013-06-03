@@ -384,7 +384,18 @@ const StylePropertyShorthand& webkitGridRowShorthand()
     };
     DEFINE_STATIC_LOCAL(StylePropertyShorthand, webkitGridRowLonghands, (webkitGridRowProperties, WTF_ARRAY_LENGTH(webkitGridRowProperties)));
     return webkitGridRowLonghands;
+}
 
+const StylePropertyShorthand& gridAreaShorthand()
+{
+    static const CSSPropertyID gridAreaProperties[] = {
+        CSSPropertyWebkitGridStart,
+        CSSPropertyWebkitGridBefore,
+        CSSPropertyWebkitGridEnd,
+        CSSPropertyWebkitGridAfter
+    };
+    DEFINE_STATIC_LOCAL(StylePropertyShorthand, gridAreaLonghands, (gridAreaProperties, WTF_ARRAY_LENGTH(gridAreaProperties)));
+    return gridAreaLonghands;
 }
 
 const StylePropertyShorthand& webkitMarqueeShorthand()
@@ -540,6 +551,8 @@ const StylePropertyShorthand& shorthandForProperty(CSSPropertyID propertyID)
         return webkitGridColumnShorthand();
     case CSSPropertyWebkitGridRow:
         return webkitGridRowShorthand();
+    case CSSPropertyGridArea:
+        return gridAreaShorthand();
     case CSSPropertyWebkitMarginCollapse:
         return webkitMarginCollapseShorthand();
     case CSSPropertyWebkitMarquee:

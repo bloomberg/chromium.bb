@@ -577,6 +577,7 @@ bool CSSProperty::isInheritedProperty(CSSPropertyID propertyID)
     case CSSPropertyWebkitGridRow:
     case CSSPropertyWebkitGridRows:
     case CSSPropertyWebkitGridStart:
+    case CSSPropertyGridArea:
     case CSSPropertyWebkitJustifyContent:
     case CSSPropertyWebkitLineClamp:
     case CSSPropertyWebkitLogicalHeight:

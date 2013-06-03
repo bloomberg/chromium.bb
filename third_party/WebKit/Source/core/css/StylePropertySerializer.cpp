@@ -344,6 +344,8 @@ String StylePropertySerializer::getPropertyValue(CSSPropertyID propertyID) const
         return getShorthandValue(webkitGridColumnShorthand());
     case CSSPropertyWebkitGridRow:
         return getShorthandValue(webkitGridRowShorthand());
+    case CSSPropertyGridArea:
+        return getShorthandValue(gridAreaShorthand());
     case CSSPropertyFont:
         return fontValue();
     case CSSPropertyMargin:

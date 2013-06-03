@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script>
+if (window.testRunner)
+    testRunner.overridePreference("WebKitCSSGridLayoutEnabled", 1);
+</script>
+<style>
+#oneValueGridArea {
+    grid-area: 1;
+}
+
+#twoValueGridArea {
+    grid-area: -1 / span 1;
+}
+
+#threeValueGridArea {
+    grid-area: span / 10 / -1;
+}
+
+#fourValueGridArea {
+    grid-area: -5 / 5 span / span 8 / 9;
+}
+</style>
+<script src="../js/resources/js-test-pre.js"></script>
+</head>
+<body>
+<div id="oneValueGridArea"></div>
+<div id="twoValueGridArea"></div>
+<div id="threeValueGridArea"></div>
+<div id="fourValueGridArea"></div>
+<script>
+    description('This test checks that grid-area is properly parsed and stored internally.');
+    function valueOrDefaultGridPosition(gridPosition)
+    {
+        return gridPosition === undefined ? "auto" : gridPosition;
+    }
+
+    function checkColumnRowValues(gridItem, gridStart, gridBefore, gridEnd, gridAfter)
+    {
+        this.gridItem = gridItem;
+        shouldBeEqualToString("getComputedStyle(gridItem, '').getPropertyValue('-webkit-grid-start')", gridStart);
+        shouldBeEqualToString("getComputedStyle(gridItem, '').getPropertyValue('-webkit-grid-before')", valueOrDefaultGridPosition(gridBefore));
+        shouldBeEqualToString("getComputedStyle(gridItem, '').getPropertyValue('-webkit-grid-end')", valueOrDefaultGridPosition(gridEnd));
+        shouldBeEqualToString("getComputedStyle(gridItem, '').getPropertyValue('-webkit-grid-after')", valueOrDefaultGridPosition(gridAfter));
+    }
+
+    function testGridAreaCSSParsing(gridItemId, gridStart, gridBefore, gridEnd, gridAfter)
+    {
+        checkColumnRowValues(document.getElementById(gridItemId), gridStart, gridBefore, gridEnd, gridAfter);
+    }
+
+    function testGridAreaJSParsing(gridAreaValue)
+    {
+        var element = document.createElement("div");
+        document.body.appendChild(element);
+        // Pre-fill it with values to detect that we properly handle and reset unset values.
+        element.style.gridArea = "1 / 2 / 3 / 4";
+        element.style.gridArea = gridAreaValue;
+
+        // Get the different values.
+        var gridColumnRowValues = gridAreaValue.split("/");
+        var gridBefore = gridColumnRowValues[1] ? gridColumnRowValues[1].trim() : undefined;
+        var gridEnd = gridColumnRowValues[2] ? gridColumnRowValues[2].trim() : undefined;
+        var gridAfter = gridColumnRowValues[3] ? gridColumnRowValues[3].trim() : undefined;
+        checkColumnRowValues(element, gridColumnRowValues[0].trim(), gridBefore, gridEnd, gridAfter);
+        document.body.removeChild(element);
+    }
+
+    function testGridAreaInvalidJSParsing(gridAreaValue)
+    {
+        var element = document.createElement("div");
+        document.body.appendChild(element);
+        checkColumnRowValues(element, "auto", "auto", "auto", "auto");
+        document.body.removeChild(element);
+    }
+
+    function testInitialGridArea()
+    {
+        var element = document.createElement("div");
+        document.body.appendChild(element);
+        element.style.gridArea = "1 / 2 / 3 / 4";
+        checkColumnRowValues(element, "1", "2", "3", "4");
+
+        element.style.gridArea = "initial";
+        checkColumnRowValues(element, "auto", "auto", "auto", "auto");
+
+        document.body.removeChild(element);
+    }
+
+    function testInheritGridArea()
+    {
+        var parentElement = document.createElement("div");
+        document.body.appendChild(parentElement);
+        parentElement.style.gridArea = "1 / 2 / 3 / 4";
+        checkColumnRowValues(parentElement, "1", "2", "3", "4");
+
+        var element = document.createElement("div");
+        parentElement.appendChild(element);
+        element.style.gridArea = "inherit";
+        checkColumnRowValues(element, "1", "2", "3", "4");
+
+        document.body.removeChild(parentElement);
+    }
+
+    debug("Test getting grid-area set through CSS");
+    testGridAreaCSSParsing("oneValueGridArea", "1");
+    testGridAreaCSSParsing("twoValueGridArea", "-1", "span 1");
+    testGridAreaCSSParsing("threeValueGridArea", "span 1", "10", "-1");
+    testGridAreaCSSParsing("fourValueGridArea", "-5", "span 5", "span 8", "9");
+
+    debug("");
+    debug("Test getting and setting grid-area set through JS");
+    testGridAreaJSParsing("-1");
+    testGridAreaJSParsing("-1 / span 5");
+    testGridAreaJSParsing("-1 / 10 / span 3");
+
+    debug("");
+    debug("Test setting grid-area to 'initial' through JS");
+    testInitialGridArea();
+
+    debug("");
+    debug("Test setting grid-area to 'inherit' through JS");
+    testInheritGridArea();
+
+    debug("");
+    debug("Test setting some positions to invalid values through JS");
+    testGridAreaInvalidJSParsing("span / span / span /");
+    testGridAreaInvalidJSParsing("1/ span span / 1 / span");
+    testGridAreaInvalidJSParsing("span / 1 / -1 / 1 -1");
+    testGridAreaInvalidJSParsing("span / 1 / -1 / 1 span -1");
+</script>
+</body>
+</html>

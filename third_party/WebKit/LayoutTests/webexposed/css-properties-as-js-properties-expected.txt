@@ -89,6 +89,7 @@ fontVariant
 fontWeight
 glyphOrientationHorizontal
 glyphOrientationVertical
+gridArea
 height
 imageRendering
 kerning

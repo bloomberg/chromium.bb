@@ -2684,6 +2684,7 @@ void StyleResolver::applyProperty(CSSPropertyID id, CSSValue* value)
     case CSSPropertyWebkitFlexFlow:
     case CSSPropertyWebkitGridColumn:
     case CSSPropertyWebkitGridRow:
+    case CSSPropertyGridArea:
     case CSSPropertyWebkitMarginCollapse:
     case CSSPropertyWebkitMarquee:
     case CSSPropertyWebkitMask:
