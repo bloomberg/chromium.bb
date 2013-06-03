@@ -33,9 +33,10 @@ div {
     if (!window.eventSender)
         alert("To manually test, hover over the green div. The overflow should be properly clipped.");
 
+    document.body.offsetTop; // Force layout. The mouse is not tracked before first layout.
     var transformed = document.getElementById("transformed");
     eventSender.mouseMoveTo(transformed.offsetLeft + 10, transformed.offsetTop + 10);
-    document.body.offsetTop;
+    document.body.offsetTop; // Update layout for hovered state.
 </script>
 </body>
 </html>
