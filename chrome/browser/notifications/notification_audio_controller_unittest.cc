@@ -76,6 +76,8 @@ TEST_F(NotificationAudioControllerTest, PlaySound) {
   EXPECT_EQ(1u, GetHandlersSize());
 }
 
+// TODO(mukai): http://crbug.com/246061
+#if !defined(OS_WIN) && !defined(ARCH_CPU_X86_64)
 TEST_F(NotificationAudioControllerTest, PlayInvalidSound) {
   notification_audio_controller()->RequestPlayNotificationSound(
       kDummyNotificationId,
@@ -83,6 +85,7 @@ TEST_F(NotificationAudioControllerTest, PlayInvalidSound) {
       base::StringPiece(kInvalidAudioData, arraysize(kInvalidAudioData)));
   EXPECT_EQ(0u, GetHandlersSize());
 }
+#endif
 
 TEST_F(NotificationAudioControllerTest, PlayTwoSounds) {
   notification_audio_controller()->RequestPlayNotificationSound(
