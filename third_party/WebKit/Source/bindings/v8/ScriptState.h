@@ -47,13 +47,13 @@ class WorkerContext;
 class ScriptState {
     WTF_MAKE_NONCOPYABLE(ScriptState);
 public:
-    bool hadException() { return !m_exception.IsEmpty(); }
+    bool hadException() { return !m_exception.isEmpty(); }
     void setException(v8::Local<v8::Value> exception)
     {
-        m_exception = exception;
+        m_exception.set(m_isolate, exception);
     }
-    v8::Local<v8::Value> exception() { return m_exception; }
-    void clearException() { m_exception.Clear(); }
+    v8::Local<v8::Value> exception() { return m_exception.newLocal(m_isolate); }
+    void clearException() { m_exception.clear(); }
 
     v8::Local<v8::Context> context() const
     {
@@ -87,7 +87,7 @@ private:
 
     static void makeWeakCallback(v8::Isolate*, v8::Persistent<v8::Context>*, ScriptState*);
 
-    v8::Local<v8::Value> m_exception;
+    ScopedPersistent<v8::Value> m_exception;
     ScopedPersistent<v8::Context> m_context;
     v8::Isolate* m_isolate;
 };
