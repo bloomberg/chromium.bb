@@ -51,6 +51,18 @@ function initialize_extensionsPanelTest()
         click.initMouseEvent("click", true, true);
         xpathResult.singleNodeValue.dispatchEvent(click);
     }
+
+    InspectorTest.installShowResourceLocationHooks = function()
+    {
+        function showAnchorLocationHook(anchor)
+        {
+            var url = anchor.href.replace(/^.*(([/][^/]*){3}[^/)]*)$/, "...$1");
+            InspectorTest.addResult("Showing resource " + url + " in panel " + this.name + " (" + WebInspector.inspectorView.currentPanel().name + "), line: " + anchor.lineNumber);
+        }
+        var panels = ["scripts", "resources", "network"];
+        for (var i = 0; i < panels.length; ++i)
+            InspectorTest.addSniffer(WebInspector.panel(panels[i]), "showAnchorLocation", showAnchorLocationHook, true);
+    }
 }
 
 function extension_testCreatePanel(nextTest)
@@ -79,12 +91,37 @@ function extension_testCreatePanel(nextTest)
 
     function onPanelCreated(panel)
     {
+        function onPanelShown(window)
+        {
+            if (!expectOnShown) {
+                 output("FAIL: unexpected onShown event");
+                 nextTest();
+                 return;
+            }
+            output("Panel shown");
+            panel.onShown.removeListener(onPanelShown);
+            panel.onHidden.addListener(onPanelHidden);
+            evaluateOnFrontend("reply(InspectorTest.getPanelSize())", function(result) {
+                 if (result.width !== window.innerWidth)
+                     output("panel width mismatch, outer: " + result.width + ", inner:" + window.innerWidth);
+                 else if (result.height !== window.innerHeight)
+                     output("panel height mismatch, outer: " + result.height + ", inner:" + window.innerHeight);
+                 else
+                     output("Extension panel size correct");
+                 extension_showPanel("console");
+            });
+         }
+
+         function onPanelHidden()
+         {
+             panel.onHidden.removeListener(onPanelHidden);
+             output("Panel hidden");
+             nextTest();
+         }
+
         output("Panel created");
         dumpObject(panel);
-        panel.onHidden.addListener(function() {
-            output("Panel hidden");
-        });
-        panel.onShown.addListener(onPanelShown.bind(this, panel));
+        panel.onShown.addListener(onPanelShown);
 
         // This is not authorized and therefore should not produce any output
         panel.show();
@@ -158,6 +195,39 @@ function extension_testStatusBarButtons(nextTest)
     webInspector.panels.create("Buttons Panel", basePath + "extension-panel.png", basePath + "non-existent.html", onPanelCreated);
 }
 
+function extension_testOpenResource(nextTest)
+{
+    var urls;
+    var urlIndex = 0;
+
+    evaluateOnFrontend("InspectorTest.installShowResourceLocationHooks(); reply();", function() {
+        webInspector.inspectedWindow.eval("loadResources(); location.href", function(inspectedPageURL) {
+            var basePath = inspectedPageURL.replace(/\/[^/]*$/, "/");
+            urls = [inspectedPageURL, basePath + "resources/abe.png", basePath + "resources/missing.txt", "not-found.html", "javascript:console.error('oh no!')"];
+            showNextURL();
+        });
+    });
+    function showNextURL()
+    {
+        if (urlIndex >= urls.length) {
+            nextTest();
+            return;
+        }
+        var url = urls[urlIndex++];
+        output("Showing " + trimURL(url));
+        webInspector.panels.openResource(url, 1000 + urlIndex, showNextURL);
+    }
+}
+
+function loadResources()
+{
+    var xhr = new XMLHttpRequest();
+    xhr.open("GET", "resources/missing.txt", false);
+    xhr.send();
+    var img = document.createElement("img");
+    img.src = "resources/abe.png";
+    document.body.appendChild(img);
+}
 </script>
 </head>
 <body onload="runTest()">
