@@ -30,8 +30,8 @@
 
 #include "WebTestThemeEngineMac.h"
 
-#include <public/WebCanvas.h>
-#include <public/WebRect.h>
+#include "public/platform/WebCanvas.h"
+#include "public/platform/WebRect.h"
 #include "skia/ext/skia_utils_mac.h"
 #import <AppKit/NSAffineTransform.h>
 #import <AppKit/NSGraphicsContext.h>

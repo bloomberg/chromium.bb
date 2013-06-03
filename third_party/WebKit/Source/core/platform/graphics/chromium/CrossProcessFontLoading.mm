@@ -32,9 +32,9 @@
 #import <AppKit/NSFont.h>
 #import "core/platform/graphics/FontPlatformData.h"
 #include "core/platform/LinkHash.h"
-#import <public/mac/WebSandboxSupport.h>
-#import <public/Platform.h>
-#import <wtf/HashMap.h>
+#import "public/platform/mac/WebSandboxSupport.h"
+#import "public/platform/Platform.h"
+#import "wtf/HashMap.h"
 
 namespace WebCore {
 

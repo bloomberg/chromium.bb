@@ -39,8 +39,8 @@
 #include "core/platform/mac/ScrollAnimatorMac.h"
 #include "public/platform/mac/WebThemeEngine.h"
 #include "skia/ext/skia_utils_mac.h"
-#include <public/Platform.h>
-#include <public/WebRect.h>
+#include "public/platform/Platform.h"
+#include "public/platform/WebRect.h"
 
 namespace WebCore {
 
