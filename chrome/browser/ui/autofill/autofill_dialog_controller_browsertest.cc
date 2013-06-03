@@ -124,13 +124,8 @@ class TestAutofillDialogController : public AutofillDialogControllerImpl {
     return &test_manager_;
   }
 
-  bool IsSectionInEditState(DialogSection section) const {
-    const std::map<DialogSection, bool>& state = section_editing_state();
-    std::map<DialogSection, bool>::const_iterator it = state.find(section);
-    return it != state.end() && it->second;
-  }
-
   using AutofillDialogControllerImpl::DisableWallet;
+  using AutofillDialogControllerImpl::IsEditingExistingData;
 
  protected:
   virtual PersonalDataManager* GetManager() OVERRIDE {
@@ -496,11 +491,11 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, ExpiredCard) {
   ASSERT_EQ(4, model->GetItemCount());
 
   ASSERT_TRUE(model->IsItemCheckedAt(0));
-  EXPECT_FALSE(controller()->IsSectionInEditState(SECTION_CC));
+  EXPECT_FALSE(controller()->IsEditingExistingData(SECTION_CC));
 
   model->ActivatedAt(1);
   ASSERT_TRUE(model->IsItemCheckedAt(1));
-  EXPECT_TRUE(controller()->IsSectionInEditState(SECTION_CC));
+  EXPECT_TRUE(controller()->IsEditingExistingData(SECTION_CC));
 }
 #endif  // defined(TOOLKIT_VIEWS)
 

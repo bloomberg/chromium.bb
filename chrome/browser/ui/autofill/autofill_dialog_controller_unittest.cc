@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <map>
+
 #include "base/guid.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
@@ -240,13 +242,10 @@ class TestAutofillDialogController
 
   void set_dialog_type(DialogType dialog_type) { dialog_type_ = dialog_type; }
 
-  bool IsSectionInEditState(DialogSection section) {
-    std::map<DialogSection, bool> state = section_editing_state();
-    return state[section];
-  }
-
   MOCK_METHOD0(LoadRiskFingerprintData, void());
   using AutofillDialogControllerImpl::OnDidLoadRiskFingerprintData;
+
+  using AutofillDialogControllerImpl::IsEditingExistingData;
 
  protected:
   virtual PersonalDataManager* GetManager() OVERRIDE {
@@ -887,13 +886,13 @@ TEST_F(AutofillDialogControllerTest, WalletDefaultItems) {
       controller()->MenuModelForSection(SECTION_CC_BILLING)->GetItemCount());
   EXPECT_TRUE(controller()->MenuModelForSection(SECTION_CC_BILLING)->
       IsItemCheckedAt(2));
-  ASSERT_FALSE(controller()->IsSectionInEditState(SECTION_CC_BILLING));
+  ASSERT_FALSE(controller()->IsEditingExistingData(SECTION_CC_BILLING));
   // "use billing", "add", "manage", and 5 suggestions.
   EXPECT_EQ(8,
       controller()->MenuModelForSection(SECTION_SHIPPING)->GetItemCount());
   EXPECT_TRUE(controller()->MenuModelForSection(SECTION_SHIPPING)->
       IsItemCheckedAt(4));
-  ASSERT_FALSE(controller()->IsSectionInEditState(SECTION_SHIPPING));
+  ASSERT_FALSE(controller()->IsEditingExistingData(SECTION_SHIPPING));
 }
 
 // Tests that invalid and AMEX default instruments are ignored.
@@ -1738,10 +1737,10 @@ TEST_F(AutofillDialogControllerTest, UpgradeMinimalAddress) {
   controller()->OnDidGetWalletItems(wallet_items.Pass());
 
   // Assert that dialog's SECTION_CC_BILLING section is in edit mode.
-  ASSERT_TRUE(controller()->IsSectionInEditState(SECTION_CC_BILLING));
+  ASSERT_TRUE(controller()->IsEditingExistingData(SECTION_CC_BILLING));
   // Shipping section should be in edit mode because of
   // is_minimal_shipping_address.
-  ASSERT_TRUE(controller()->IsSectionInEditState(SECTION_SHIPPING));
+  ASSERT_TRUE(controller()->IsEditingExistingData(SECTION_SHIPPING));
 }
 
 TEST_F(AutofillDialogControllerTest, RiskNeverLoadsWithPendingLegalDocuments) {

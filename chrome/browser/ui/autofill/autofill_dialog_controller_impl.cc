@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/autofill/autofill_dialog_controller_impl.h"
 
 #include <algorithm>
+#include <map>
 #include <string>
 
 #include "base/base64.h"
@@ -792,7 +793,7 @@ void AutofillDialogControllerImpl::EnsureLegalDocumentsText() {
 
 void AutofillDialogControllerImpl::PrepareDetailInputsForSection(
     DialogSection section) {
-  section_editing_state_[section] = false;
+  SetEditingExistingData(section, false);
   scoped_ptr<DataModelWrapper> wrapper = CreateWrapper(section);
 
   // If the chosen item in |model| yields an empty suggestion text, it is
@@ -800,7 +801,7 @@ void AutofillDialogControllerImpl::PrepareDetailInputsForSection(
   SuggestionsMenuModel* model = SuggestionsMenuModelForSection(section);
   if (IsASuggestionItemKey(model->GetItemKeyForCheckedItem()) &&
       SuggestionTextForSection(section).empty()) {
-    section_editing_state_[section] = true;
+    SetEditingExistingData(section, true);
   }
 
   // Reset all previously entered data and stop editing |section|.
@@ -810,7 +811,7 @@ void AutofillDialogControllerImpl::PrepareDetailInputsForSection(
     it->editable = InputIsEditable(*it, section);
   }
 
-  if (wrapper && section_editing_state_[section])
+  if (wrapper && IsEditingExistingData(section))
     wrapper->FillInputs(inputs);
 
   if (view_)
@@ -957,7 +958,7 @@ string16 AutofillDialogControllerImpl::SuggestionTextForSection(
   // When the user has clicked 'edit' or a suggestion is somehow invalid (e.g. a
   // user selects a credit card that has expired), don't show a suggestion (even
   // though there is a profile selected in the model).
-  if (section_editing_state_[section])
+  if (IsEditingExistingData(section))
     return string16();
 
   SuggestionsMenuModel* model = SuggestionsMenuModelForSection(section);
@@ -1098,7 +1099,7 @@ bool AutofillDialogControllerImpl::EditEnabledForSection(
 void AutofillDialogControllerImpl::EditClickedForSection(
     DialogSection section) {
   scoped_ptr<DataModelWrapper> model = CreateWrapper(section);
-  section_editing_state_[section] = true;
+  SetEditingExistingData(section, true);
 
   DetailInputs* inputs = MutableRequestedFieldsForSection(section);
   for (DetailInputs::iterator it = inputs->begin(); it != inputs->end(); ++it) {
@@ -2376,11 +2377,22 @@ void AutofillDialogControllerImpl::HidePopup() {
   input_showing_popup_ = NULL;
 }
 
+bool AutofillDialogControllerImpl::IsEditingExistingData(
+    DialogSection section) const {
+  return section_editing_state_.count(section) > 0;
+}
+
+void AutofillDialogControllerImpl::SetEditingExistingData(
+    DialogSection section, bool editing) {
+  if (editing)
+    section_editing_state_.insert(section);
+  else
+    section_editing_state_.erase(section);
+}
+
 bool AutofillDialogControllerImpl::IsManuallyEditingSection(
     DialogSection section) const {
-  std::map<DialogSection, bool>::const_iterator it =
-      section_editing_state_.find(section);
-  return (it != section_editing_state_.end() && it->second) ||
+  return IsEditingExistingData(section) ||
          SuggestionsMenuModelForSection(section)->
              GetItemKeyForCheckedItem() == kAddNewItemKey;
 }
@@ -2407,9 +2419,7 @@ bool AutofillDialogControllerImpl::InputIsEditable(
   if (input.type != CREDIT_CARD_NUMBER || !IsPayingWithWallet())
     return true;
 
-  std::map<DialogSection, bool>::const_iterator it =
-      section_editing_state_.find(section);
-  if (it != section_editing_state_.end() && it->second)
+  if (IsEditingExistingData(section))
     return false;
 
   return true;
@@ -2512,7 +2522,7 @@ void AutofillDialogControllerImpl::SubmitWithWallet() {
   scoped_ptr<wallet::WalletClient::UpdateInstrumentRequest> update_request =
       CreateUpdateInstrumentRequest(
           inputted_instrument.get(),
-          !section_editing_state_[SECTION_CC_BILLING] ? std::string() :
+          !IsEditingExistingData(SECTION_CC_BILLING) ? std::string() :
               wallet_items_->instruments()[instrument_index]->object_id());
 
   scoped_ptr<wallet::Address> inputted_address;
@@ -2534,7 +2544,7 @@ void AutofillDialogControllerImpl::SubmitWithWallet() {
       }
     } else {
       inputted_address = CreateTransientAddress();
-      if (section_editing_state_[SECTION_SHIPPING]) {
+      if (IsEditingExistingData(SECTION_SHIPPING)) {
         inputted_address->set_object_id(
             wallet_items_->addresses()[address_index]->object_id());
         DCHECK(!inputted_address->object_id().empty());

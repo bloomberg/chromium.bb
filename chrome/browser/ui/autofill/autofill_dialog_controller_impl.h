@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_UI_AUTOFILL_AUTOFILL_DIALOG_CONTROLLER_IMPL_H_
 #define CHROME_BROWSER_UI_AUTOFILL_AUTOFILL_DIALOG_CONTROLLER_IMPL_H_
 
-#include <map>
+#include <set>
 #include <vector>
 
 #include "base/callback.h"
@@ -274,10 +274,9 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
   // Opens the given URL in a new foreground tab.
   virtual void OpenTabWithUrl(const GURL& url);
 
-  // Exposed for testing.
-  const std::map<DialogSection, bool>& section_editing_state() const {
-    return section_editing_state_;
-  }
+  // Whether |section| was sent into edit mode based on existing data. This
+  // happens when a user clicks "Edit" or a suggestion is invalid.
+  virtual bool IsEditingExistingData(DialogSection section) const;
 
  private:
   // Whether or not the current request wants credit info back.
@@ -396,6 +395,10 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
 
   // Hides |popup_controller_|'s popup view, if it exists.
   void HidePopup();
+
+  // Set whether the currently editing |section| was originally based on
+  // existing Wallet or Autofill data.
+  void SetEditingExistingData(DialogSection section, bool editing);
 
   // Whether the user has chosen to enter all new data in |section|. This
   // happens via choosing "Add a new X..." from a section's suggestion menu.
@@ -592,9 +595,8 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
   SuggestionsMenuModel suggested_cc_billing_;
   SuggestionsMenuModel suggested_shipping_;
 
-  // A map from DialogSection to editing state (true for editing, false for
-  // not editing). This only tracks if the user has clicked the edit link.
-  std::map<DialogSection, bool> section_editing_state_;
+  // |DialogSection|s that are in edit mode that are based on existing data.
+  std::set<DialogSection> section_editing_state_;
 
   // Whether |form_structure_| has asked for any details that would indicate
   // we should show a shipping section.
