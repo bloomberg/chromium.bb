@@ -31,7 +31,38 @@ namespace chromeos {
 
 class FileAccessPermissions;
 
-// An interface to provide local filesystem paths.
+// CrosMountPointProvider is a Chrome OS specific implementation of
+// ExternalFileSystemMountPointProvider. This class is responsible for a
+// number of things, including:
+//
+// - Add default mount points
+// - Grant/revoke/check file access permissions
+// - Create FileSystemOperation per file system type
+// - Create FileStreamReader/Writer per file system type
+//
+// Chrome OS specific mount points:
+//
+// "Downloads" is a mount point for user's Downloads directory on the local
+// disk, where downloaded files are stored by default.
+//
+// "archive" is a mount point for an archive file, such as a zip file. This
+// mount point exposes contents of an archive file via cros_disks and AVFS
+// <http://avf.sourceforge.net/>.
+//
+// "removable" is a mount point for removable media such as an SD card.
+// Insertion and removal of removable media are handled by cros_disks.
+//
+// "oem" is a read-only mount point for a directory containing OEM data.
+//
+// "drive" is a mount point for Google Drive. Drive is integrated with the
+// FileSystem API layer via drive::FileSystemProxy. This mount point is added
+// by drive::DriveIntegrationService.
+//
+// These mount points are placed under the "external" namespace, and file
+// system URLs for these mount points look like:
+//
+//   filesystem:<origin>/external/<mount_name>/...
+//
 class WEBKIT_STORAGE_EXPORT CrosMountPointProvider
     : public fileapi::ExternalFileSystemMountPointProvider {
  public:

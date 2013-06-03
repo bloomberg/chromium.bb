@@ -60,6 +60,7 @@ CrosMountPointProvider::CrosMountPointProvider(
       mount_points_(mount_points),
       system_mount_points_(system_mount_points) {
   // Add default system mount points.
+  // TODO(satorux): Move this to a more relevant place: crbug.com/245587
   system_mount_points_->RegisterFileSystem(
       "archive",
       fileapi::kFileSystemTypeNativeLocal,

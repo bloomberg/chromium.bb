@@ -29,7 +29,7 @@ class RemoteFileSystemProxyInterface;
 class RemoteFileStreamWriter : public fileapi::FileStreamWriter {
  public:
   // Creates a writer for a file on |remote_filesystem| with path url |url|
-  // (like "filesystem:chrome-extension://id/external/special/drive/...") that
+  // (like "filesystem:chrome-extension://id/external/drive/...") that
   // starts writing from |offset|. When invalid parameters are set, the first
   // call to Write() method fails.
   RemoteFileStreamWriter(
