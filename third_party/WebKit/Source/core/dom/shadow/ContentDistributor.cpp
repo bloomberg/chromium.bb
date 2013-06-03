@@ -325,8 +325,7 @@ void ContentDistributor::distributeNodeChildrenTo(InsertionPoint* insertionPoint
             if (innerInsertionPoint->hasDistribution()) {
                 for (size_t i = 0; i < innerInsertionPoint->size(); ++i) {
                     distribution.append(innerInsertionPoint->at(i));
-                    if (!m_nodeToInsertionPoint.contains(innerInsertionPoint->at(i)))
-                        m_nodeToInsertionPoint.add(innerInsertionPoint->at(i), insertionPoint);
+                    m_nodeToInsertionPoint.add(innerInsertionPoint->at(i), insertionPoint);
                 }
             } else {
                 for (Node* child = innerInsertionPoint->firstChild(); child; child = child->nextSibling()) {
@@ -336,8 +335,7 @@ void ContentDistributor::distributeNodeChildrenTo(InsertionPoint* insertionPoint
             }
         } else {
             distribution.append(node);
-            if (!m_nodeToInsertionPoint.contains(node))
-                m_nodeToInsertionPoint.add(node, insertionPoint);
+            m_nodeToInsertionPoint.add(node, insertionPoint);
         }
     }
 

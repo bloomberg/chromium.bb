@@ -1153,9 +1153,8 @@ void RenderTableSection::paintObject(PaintInfo& paintInfo, const LayoutPoint& pa
                             continue;
 
                         if (current.cells[i]->rowSpan() > 1 || current.cells[i]->colSpan() > 1) {
-                            if (spanningCells.contains(current.cells[i]))
+                            if (!spanningCells.add(current.cells[i]).isNewEntry)
                                 continue;
-                            spanningCells.add(current.cells[i]);
                         }
 
                         cells.append(current.cells[i]);

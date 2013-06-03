@@ -205,9 +205,8 @@ static bool parseCustomFilterParameterList(CSSValue* parametersValue, CustomFilt
 
         String name = primitiveValue->getStringValue();
         // Do not allow duplicate parameter names.
-        if (knownParameterNames.contains(name))
+        if (!knownParameterNames.add(name).isNewEntry)
             return false;
-        knownParameterNames.add(name);
 
         iterator.advance();
 

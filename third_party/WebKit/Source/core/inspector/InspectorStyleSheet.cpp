@@ -770,10 +770,9 @@ void InspectorStyle::populateAllProperties(Vector<InspectorStyleProperty>& resul
 
     for (int i = 0, size = m_style->length(); i < size; ++i) {
         String name = m_style->item(i);
-        if (sourcePropertyNames.contains(name.lower()))
+        if (!sourcePropertyNames.add(name.lower()).isNewEntry)
             continue;
 
-        sourcePropertyNames.add(name.lower());
         result.append(InspectorStyleProperty(CSSPropertySourceData(name, m_style->getPropertyValue(name), !m_style->getPropertyPriority(name).isEmpty(), false, true, SourceRange()), false));
     }
 }
@@ -869,8 +868,7 @@ PassRefPtr<TypeBuilder::CSS::CSSStyle> InspectorStyle::styleWithProperties() con
 
                 String shorthand = m_style->getPropertyShorthand(name);
                 if (!shorthand.isEmpty()) {
-                    if (!foundShorthands.contains(shorthand)) {
-                        foundShorthands.add(shorthand);
+                    if (foundShorthands.add(shorthand).isNewEntry) {
                         RefPtr<TypeBuilder::CSS::ShorthandEntry> entry = TypeBuilder::CSS::ShorthandEntry::create()
                             .setName(shorthand)
                             .setValue(shorthandValue(shorthand));

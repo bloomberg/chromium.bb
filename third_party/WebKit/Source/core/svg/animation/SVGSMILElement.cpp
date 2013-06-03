@@ -1124,9 +1124,8 @@ void SVGSMILElement::notifyDependentsIntervalChanged(NewOrExistingInterval newOr
 {
     ASSERT(m_intervalBegin.isFinite());
     DEFINE_STATIC_LOCAL(HashSet<SVGSMILElement*>, loopBreaker, ());
-    if (loopBreaker.contains(this))
+    if (!loopBreaker.add(this).isNewEntry)
         return;
-    loopBreaker.add(this);
     
     TimeDependentSet::iterator end = m_timeDependents.end();
     for (TimeDependentSet::iterator it = m_timeDependents.begin(); it != end; ++it) {

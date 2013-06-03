@@ -399,9 +399,8 @@ void InspectorOverlay::drawNodeHighlight()
             size_t classNameCount = classNamesString.size();
             for (size_t i = 0; i < classNameCount; ++i) {
                 const AtomicString& className = classNamesString[i];
-                if (usedClassNames.contains(className))
+                if (!usedClassNames.add(className).isNewEntry)
                     continue;
-                usedClassNames.add(className);
                 classNames.append('.');
                 classNames.append(className);
             }
