@@ -225,6 +225,8 @@ void MediaControls::changedVolume()
 {
     if (m_volumeSlider)
         m_volumeSlider->setVolume(m_mediaController->volume());
+    if (m_panelMuteButton && m_panelMuteButton->renderer())
+        m_panelMuteButton->renderer()->repaint();
 }
 
 void MediaControls::changedClosedCaptionsVisibility()
