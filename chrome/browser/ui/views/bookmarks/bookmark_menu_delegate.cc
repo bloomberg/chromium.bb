@@ -105,8 +105,6 @@ void BookmarkMenuDelegate::SetActiveMenu(const BookmarkNode* node,
 string16 BookmarkMenuDelegate::GetTooltipText(
     int id,
     const gfx::Point& screen_loc) const {
-  DCHECK(menu_id_to_node_map_.find(id) != menu_id_to_node_map_.end());
-
   MenuIDToNodeMap::const_iterator i = menu_id_to_node_map_.find(id);
   DCHECK(i != menu_id_to_node_map_.end());
   const BookmarkNode* node = i->second;
@@ -328,55 +326,40 @@ void BookmarkMenuDelegate::BookmarkModelChanged() {
 }
 
 void BookmarkMenuDelegate::BookmarkNodeFaviconChanged(
-    BookmarkModel* model, const BookmarkNode* node) {
-  NodeToMenuIDMap::iterator menu_pair = node_to_menu_id_map_.find(node);
-  if (menu_pair == node_to_menu_id_map_.end())
+    BookmarkModel* model,
+    const BookmarkNode* node) {
+  NodeToMenuMap::iterator menu_pair = node_to_menu_map_.find(node);
+  if (menu_pair == node_to_menu_map_.end())
     return;  // We're not showing a menu item for the node.
 
-  // Iterate through the menus looking for the menu containing node.
-  for (NodeToMenuMap::iterator i(node_to_menu_map_.begin());
-       i != node_to_menu_map_.end(); ++i) {
-    MenuItemView* menu_item = i->second->GetMenuItemByID(menu_pair->second);
-    if (menu_item) {
-      const gfx::Image& favicon = model->GetFavicon(node);
-      menu_item->SetIcon(favicon.AsImageSkia());
-      return;
-    }
-  }
-
-  if (parent_menu_item_) {
-    MenuItemView* menu_item = parent_menu_item_->GetMenuItemByID(
-        menu_pair->second);
-    if (menu_item) {
-      const gfx::Image& favicon = model->GetFavicon(node);
-      menu_item->SetIcon(favicon.AsImageSkia());
-    }
-  }
+  menu_pair->second->SetIcon(model->GetFavicon(node).AsImageSkia());
 }
 
 void BookmarkMenuDelegate::WillRemoveBookmarks(
     const std::vector<const BookmarkNode*>& bookmarks) {
   DCHECK(!is_mutating_model_);
-  is_mutating_model_ = true;
+  is_mutating_model_ = true;  // Set to false in DidRemoveBookmarks().
 
   // Remove the observer so that when the remove happens we don't prematurely
-  // cancel the menu. The observer ias added back in DidRemoveBookmarks.
+  // cancel the menu. The observer is added back in DidRemoveBookmarks().
   BookmarkModelFactory::GetForProfile(profile_)->RemoveObserver(this);
 
   // Remove the menu items.
   std::set<MenuItemView*> changed_parent_menus;
   for (std::vector<const BookmarkNode*>::const_iterator i(bookmarks.begin());
        i != bookmarks.end(); ++i) {
-    NodeToMenuIDMap::iterator node_to_menu = node_to_menu_id_map_.find(*i);
-    if (node_to_menu != node_to_menu_id_map_.end()) {
-      MenuItemView* menu = GetMenuByID(node_to_menu->second);
-      DCHECK(menu);  // If there an entry in node_to_menu_id_map_, there should
-                     // be a menu.
+    NodeToMenuMap::iterator node_to_menu = node_to_menu_map_.find(*i);
+    if (node_to_menu != node_to_menu_map_.end()) {
+      MenuItemView* menu = node_to_menu->second;
       MenuItemView* parent = menu->GetParentMenuItem();
-      DCHECK(parent);
-      changed_parent_menus.insert(parent);
-      parent->RemoveMenuItemAt(menu->parent()->GetIndexOf(menu));
-      node_to_menu_id_map_.erase(node_to_menu);
+      // |parent| is NULL when removing a root. This happens when right clicking
+      // to delete an empty folder.
+      if (parent) {
+        changed_parent_menus.insert(parent);
+        parent->RemoveMenuItemAt(menu->parent()->GetIndexOf(menu));
+      }
+      node_to_menu_map_.erase(node_to_menu);
+      menu_id_to_node_map_.erase(menu->GetCommand());
     }
   }
 
@@ -390,9 +373,9 @@ void BookmarkMenuDelegate::WillRemoveBookmarks(
        i != changed_parent_menus.end(); ++i)
     (*i)->ChildrenChanged();
 
-  // Remove any descendants of the removed nodes in |node_to_menu_id_map_|.
-  for (NodeToMenuIDMap::iterator i(node_to_menu_id_map_.begin());
-       i != node_to_menu_id_map_.end(); ) {
+  // Remove any descendants of the removed nodes in |node_to_menu_map_|.
+  for (NodeToMenuMap::iterator i(node_to_menu_map_.begin());
+       i != node_to_menu_map_.end(); ) {
     bool ancestor_removed = false;
     for (std::vector<const BookmarkNode*>::const_iterator j(bookmarks.begin());
          j != bookmarks.end(); ++j) {
@@ -401,10 +384,12 @@ void BookmarkMenuDelegate::WillRemoveBookmarks(
         break;
       }
     }
-    if (ancestor_removed)
-      node_to_menu_id_map_.erase(i++);
-    else
+    if (ancestor_removed) {
+      menu_id_to_node_map_.erase(i->second->GetCommand());
+      node_to_menu_map_.erase(i++);
+    } else {
       ++i;
+    }
   }
 }
 
@@ -425,7 +410,6 @@ MenuItemView* BookmarkMenuDelegate::CreateMenu(const BookmarkNode* parent,
   BuildMenu(parent, start_child_index, menu, &next_menu_id_);
   if (show_options == SHOW_PERMANENT_FOLDERS)
     BuildMenusForPermanentNodes(menu, &next_menu_id_);
-  node_to_menu_map_[parent] = menu;
   return menu;
 }
 
@@ -466,41 +450,30 @@ void BookmarkMenuDelegate::BuildMenu(const BookmarkNode* parent,
                                      int start_child_index,
                                      MenuItemView* menu,
                                      int* next_menu_id) {
+  node_to_menu_map_[parent] = menu;
   DCHECK(parent->empty() || start_child_index < parent->child_count());
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   for (int i = start_child_index; i < parent->child_count(); ++i) {
     const BookmarkNode* node = parent->GetChild(i);
-    int id = *next_menu_id;
-
+    const int id = *next_menu_id;
     (*next_menu_id)++;
+
+    menu_id_to_node_map_[id] = node;
     if (node->is_url()) {
       const gfx::Image& image = BookmarkModelFactory::GetForProfile(
           profile_)->GetFavicon(node);
       const gfx::ImageSkia* icon = image.IsEmpty() ?
           rb.GetImageSkiaNamed(IDR_DEFAULT_FAVICON) : image.ToImageSkia();
-      menu->AppendMenuItemWithIcon(id, node->GetTitle(), *icon);
-      node_to_menu_id_map_[node] = id;
+      node_to_menu_map_[node] =
+          menu->AppendMenuItemWithIcon(id, node->GetTitle(), *icon);
     } else if (node->is_folder()) {
       gfx::ImageSkia* folder_icon =
           rb.GetImageSkiaNamed(IDR_BOOKMARK_BAR_FOLDER);
       MenuItemView* submenu = menu->AppendSubMenuWithIcon(
           id, node->GetTitle(), *folder_icon);
-      node_to_menu_id_map_[node] = id;
       BuildMenu(node, 0, submenu, next_menu_id);
     } else {
       NOTREACHED();
     }
-    menu_id_to_node_map_[id] = node;
   }
-}
-
-MenuItemView* BookmarkMenuDelegate::GetMenuByID(int id) {
-  for (NodeToMenuMap::const_iterator i(node_to_menu_map_.begin());
-       i != node_to_menu_map_.end(); ++i) {
-    MenuItemView* menu = i->second->GetMenuItemByID(id);
-    if (menu)
-      return menu;
-  }
-
-  return parent_menu_item_ ? parent_menu_item_->GetMenuItemByID(id) : NULL;
 }

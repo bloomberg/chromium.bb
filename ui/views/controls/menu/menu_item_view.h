@@ -167,9 +167,8 @@ class VIEWS_EXPORT MenuItemView : public View {
                               Type type,
                               ui::MenuSeparatorType separator_style);
 
-  // Remove an item from the menu at a specified index.
-  // ChildrenChanged() should be called after removing menu items (whether
-  // the menu may be active or not).
+  // Remove an item from the menu at a specified index. The removed MenuItemView
+  // is deleted when ChildrenChanged() is invoked.
   void RemoveMenuItemAt(int index);
 
   // Appends an item to this menu.

@@ -165,11 +165,11 @@ class VIEWS_EXPORT MenuDelegate {
                                const ui::DropTargetEvent& event,
                                DropPosition* position);
 
-  // Invoked to perform the drop operation. This is ONLY invoked if
-  // canDrop returned true for the parent menu item, and GetDropOperation
-  // returned an operation other than ui::DragDropTypes::DRAG_NONE.
+  // Invoked to perform the drop operation. This is ONLY invoked if CanDrop()
+  // returned true for the parent menu item, and GetDropOperation() returned an
+  // operation other than ui::DragDropTypes::DRAG_NONE.
   //
-  // menu indicates the menu the drop occurred on.
+  // |menu| is the menu the drop occurred on.
   virtual int OnPerformDrop(MenuItemView* menu,
                             DropPosition position,
                             const ui::DropTargetEvent& event);

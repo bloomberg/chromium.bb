@@ -131,11 +131,9 @@ class BookmarkMenuDelegate : public BaseBookmarkModelObserver,
 
  private:
   typedef std::map<int, const BookmarkNode*> MenuIDToNodeMap;
-  typedef std::map<const BookmarkNode*, int> NodeToMenuIDMap;
   typedef std::map<const BookmarkNode*, views::MenuItemView*> NodeToMenuMap;
 
-  // Creates a menu and adds it to node_to_menu_id_map_. This uses
-  // BuildMenu to recursively populate the menu.
+  // Creates a menu. This uses BuildMenu() to recursively populate the menu.
   views::MenuItemView* CreateMenu(const BookmarkNode* parent,
                                   int start_child_index,
                                   ShowOptions show_options);
@@ -161,9 +159,6 @@ class BookmarkMenuDelegate : public BaseBookmarkModelObserver,
                  views::MenuItemView* menu,
                  int* next_menu_id);
 
-  // Returns the menu whose id is |id|.
-  views::MenuItemView* GetMenuByID(int id);
-
   Browser* browser_;
   Profile* profile_;
 
@@ -174,10 +169,6 @@ class BookmarkMenuDelegate : public BaseBookmarkModelObserver,
 
   // Maps from menu id to BookmarkNode.
   MenuIDToNodeMap menu_id_to_node_map_;
-
-  // Mapping from node to menu id. This only contains entries for nodes of type
-  // URL.
-  NodeToMenuIDMap node_to_menu_id_map_;
 
   // Current menu.
   views::MenuItemView* menu_;
@@ -194,7 +185,7 @@ class BookmarkMenuDelegate : public BaseBookmarkModelObserver,
   // If non-NULL this is the |parent| passed to Init and is NOT owned by us.
   views::MenuItemView* parent_menu_item_;
 
-  // Maps from node to menu. This is used if a NULL parent is passed to Init().
+  // Maps from node to menu.
   NodeToMenuMap node_to_menu_map_;
 
   // ID of the next menu item.
