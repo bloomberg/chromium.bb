@@ -743,13 +743,6 @@ void AutofillDialogControllerImpl::OnWalletOrSigninUpdate() {
     initial_user_state_ = GetInitialUserState();
 }
 
-void AutofillDialogControllerImpl::OnWalletSigninError() {
-  signin_helper_.reset();
-  account_chooser_model_.SetHadWalletSigninError();
-  GetWalletClient()->CancelRequests();
-  LogDialogLatencyToShow();
-}
-
 void AutofillDialogControllerImpl::EnsureLegalDocumentsText() {
   if (!wallet_items_ || wallet_items_->legal_documents().empty())
     return;
@@ -1977,6 +1970,13 @@ void AutofillDialogControllerImpl::OpenTabWithUrl(const GURL& url) {
 #endif
 }
 
+void AutofillDialogControllerImpl::OnWalletSigninError() {
+  signin_helper_.reset();
+  account_chooser_model_.SetHadWalletSigninError();
+  GetWalletClient()->CancelRequests();
+  LogDialogLatencyToShow();
+}
+
 void AutofillDialogControllerImpl::DisableWallet() {
   signin_helper_.reset();
   wallet_items_.reset();
@@ -2725,12 +2725,15 @@ void AutofillDialogControllerImpl::FinishSubmit() {
   LogOnFinishSubmitMetrics();
 
   // On a successful submit, if the user manually selected "pay without wallet",
-  // stop trying to pay with Wallet on future runs of the dialog.
-  bool manually_selected_pay_without_wallet =
-      !account_chooser_model_.WalletIsSelected() &&
-      !account_chooser_model_.had_wallet_error();
-  profile_->GetPrefs()->SetBoolean(::prefs::kAutofillDialogPayWithoutWallet,
-                                   manually_selected_pay_without_wallet);
+  // stop trying to pay with Wallet on future runs of the dialog. On the other
+  // hand, if there was an error that prevented the user from having the choice
+  // of using Wallet, leave the pref alone.
+  if (!account_chooser_model_.had_wallet_error() &&
+      account_chooser_model_.HasAccountsToChoose()) {
+    profile_->GetPrefs()->SetBoolean(
+        ::prefs::kAutofillDialogPayWithoutWallet,
+        !account_chooser_model_.WalletIsSelected());
+  }
 
   switch (GetDialogType()) {
     case DIALOG_TYPE_AUTOCHECKOUT:

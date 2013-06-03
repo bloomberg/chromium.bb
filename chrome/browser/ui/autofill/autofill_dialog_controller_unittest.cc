@@ -242,9 +242,12 @@ class TestAutofillDialogController
 
   void set_dialog_type(DialogType dialog_type) { dialog_type_ = dialog_type; }
 
+  void SimulateSigninError() {
+    OnWalletSigninError();
+  }
+
   MOCK_METHOD0(LoadRiskFingerprintData, void());
   using AutofillDialogControllerImpl::OnDidLoadRiskFingerprintData;
-
   using AutofillDialogControllerImpl::IsEditingExistingData;
 
  protected:
@@ -297,18 +300,11 @@ class AutofillDialogControllerTest : public testing::Test {
 
   // testing::Test implementation:
   virtual void SetUp() OVERRIDE {
-    FormData form_data;
-    for (size_t i = 0; i < arraysize(kFieldsFromPage); ++i) {
-      FormFieldData field;
-      field.autocomplete_attribute = kFieldsFromPage[i];
-      form_data.fields.push_back(field);
-    }
-
     profile()->CreateRequestContext();
     test_web_contents_.reset(
         content::WebContentsTester::CreateTestWebContents(profile(), NULL));
 
-    SetUpControllerWithFormData(form_data);
+    SetUpControllerWithFormData(DefaultFormData());
   }
 
   virtual void TearDown() OVERRIDE {
@@ -317,6 +313,16 @@ class AutofillDialogControllerTest : public testing::Test {
   }
 
  protected:
+  FormData DefaultFormData() {
+    FormData form_data;
+    for (size_t i = 0; i < arraysize(kFieldsFromPage); ++i) {
+      FormFieldData field;
+      field.autocomplete_attribute = kFieldsFromPage[i];
+      form_data.fields.push_back(field);
+    }
+    return form_data;
+  }
+
   void SetUpControllerWithFormData(const FormData& form_data) {
     if (controller_)
       controller_->ViewClosed();
@@ -366,6 +372,10 @@ class AutofillDialogControllerTest : public testing::Test {
   void SwitchToWallet() {
     controller_->MenuModelForAccountChooser()->ActivatedAt(
         TestAccountChooserModel::kActiveWalletItemId);
+  }
+
+  void SimulateSigninError() {
+    controller_->SimulateSigninError();
   }
 
   void UseBillingForShipping() {
@@ -1637,20 +1647,61 @@ TEST_F(AutofillDialogControllerTest, ViewCancelDoesntSetPref) {
       ::prefs::kAutofillDialogPayWithoutWallet));
 }
 
+TEST_F(AutofillDialogControllerTest, SubmitWithSigninErrorDoesntSetPref) {
+  ASSERT_FALSE(profile()->GetPrefs()->HasPrefPath(
+      ::prefs::kAutofillDialogPayWithoutWallet));
+
+  SimulateSigninError();
+  FillCreditCardInputs();
+  controller()->OnAccept();
+
+  EXPECT_FALSE(profile()->GetPrefs()->HasPrefPath(
+      ::prefs::kAutofillDialogPayWithoutWallet));
+}
+
 TEST_F(AutofillDialogControllerTest, ViewSubmitSetsPref) {
   ASSERT_FALSE(profile()->GetPrefs()->HasPrefPath(
       ::prefs::kAutofillDialogPayWithoutWallet));
 
   SwitchToAutofill();
-
-  // We also have to simulate CC inputs to keep the controller happy.
   FillCreditCardInputs();
-
   controller()->OnAccept();
 
   EXPECT_TRUE(profile()->GetPrefs()->HasPrefPath(
       ::prefs::kAutofillDialogPayWithoutWallet));
   EXPECT_TRUE(profile()->GetPrefs()->GetBoolean(
+      ::prefs::kAutofillDialogPayWithoutWallet));
+
+  // Try again with a signin error (just leaves the pref alone).
+  SetUpControllerWithFormData(DefaultFormData());
+
+  // Setting up the controller again should not change the pref.
+  EXPECT_TRUE(profile()->GetPrefs()->HasPrefPath(
+      ::prefs::kAutofillDialogPayWithoutWallet));
+  EXPECT_TRUE(profile()->GetPrefs()->GetBoolean(
+      ::prefs::kAutofillDialogPayWithoutWallet));
+
+  SimulateSigninError();
+  FillCreditCardInputs();
+  controller()->OnAccept();
+  EXPECT_TRUE(profile()->GetPrefs()->HasPrefPath(
+      ::prefs::kAutofillDialogPayWithoutWallet));
+  EXPECT_TRUE(profile()->GetPrefs()->GetBoolean(
+      ::prefs::kAutofillDialogPayWithoutWallet));
+
+  // Succesfully choosing wallet does set the pref.
+  SetUpControllerWithFormData(DefaultFormData());
+
+  SwitchToWallet();
+  scoped_ptr<wallet::WalletItems> wallet_items = wallet::GetTestWalletItems();
+  wallet_items->AddInstrument(wallet::GetTestMaskedInstrument());
+  controller()->OnDidGetWalletItems(wallet_items.Pass());
+  controller()->OnAccept();
+  controller()->OnDidGetFullWallet(wallet::GetTestFullWallet());
+
+  EXPECT_TRUE(profile()->GetPrefs()->HasPrefPath(
+      ::prefs::kAutofillDialogPayWithoutWallet));
+  EXPECT_FALSE(profile()->GetPrefs()->GetBoolean(
       ::prefs::kAutofillDialogPayWithoutWallet));
 }
 

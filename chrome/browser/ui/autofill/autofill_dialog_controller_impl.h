@@ -278,6 +278,9 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
   // happens when a user clicks "Edit" or a suggestion is invalid.
   virtual bool IsEditingExistingData(DialogSection section) const;
 
+  // Should be called on the Wallet sign-in error.
+  virtual void OnWalletSigninError();
+
  private:
   // Whether or not the current request wants credit info back.
   bool RequestingCreditCardInfo() const;
@@ -304,9 +307,6 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
 
   // Refreshes the model on Wallet or sign-in state update.
   void OnWalletOrSigninUpdate();
-
-  // Should be called on the Wallet sign-in error.
-  void OnWalletSigninError();
 
   // Calculates |legal_documents_text_| and |legal_document_link_ranges_| if
   // they have not already been calculated.

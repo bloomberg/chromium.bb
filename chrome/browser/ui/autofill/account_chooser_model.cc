@@ -91,20 +91,20 @@ void AccountChooserModel::ExecuteCommand(int command_id, int event_flags) {
     return;
 
   // Log metrics.
-   AutofillMetrics::DialogUiEvent chooser_event;
-   if (command_id == kAutofillItemId) {
-     chooser_event =
-         AutofillMetrics::DIALOG_UI_ACCOUNT_CHOOSER_SWITCHED_TO_AUTOFILL;
-   } else if (checked_item_ == kAutofillItemId) {
-     chooser_event =
-         AutofillMetrics::DIALOG_UI_ACCOUNT_CHOOSER_SWITCHED_TO_WALLET;
-   } else {
-     chooser_event =
-         AutofillMetrics::DIALOG_UI_ACCOUNT_CHOOSER_SWITCHED_WALLET_ACCOUNT;
-   }
-   metric_logger_.LogDialogUiEvent(dialog_type_, chooser_event);
+  AutofillMetrics::DialogUiEvent chooser_event;
+  if (command_id == kAutofillItemId) {
+    chooser_event =
+        AutofillMetrics::DIALOG_UI_ACCOUNT_CHOOSER_SWITCHED_TO_AUTOFILL;
+  } else if (checked_item_ == kAutofillItemId) {
+    chooser_event =
+        AutofillMetrics::DIALOG_UI_ACCOUNT_CHOOSER_SWITCHED_TO_WALLET;
+  } else {
+    chooser_event =
+        AutofillMetrics::DIALOG_UI_ACCOUNT_CHOOSER_SWITCHED_WALLET_ACCOUNT;
+  }
+  metric_logger_.LogDialogUiEvent(dialog_type_, chooser_event);
 
-   checked_item_ = command_id;
+  checked_item_ = command_id;
   ReconstructMenuItems();
   delegate_->AccountChoiceChanged();
 }
