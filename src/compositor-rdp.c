@@ -42,6 +42,7 @@
 #include "pixman-renderer.h"
 
 #define MAX_FREERDP_FDS 32
+#define DEFAULT_AXIS_STEP_DISTANCE wl_fixed_from_int(10)
 
 struct rdp_compositor_config {
 	int width;
@@ -758,7 +759,7 @@ xf_peer_activate(freerdp_peer *client)
 
 static void
 xf_mouseEvent(rdpInput *input, UINT16 flags, UINT16 x, UINT16 y) {
-	wl_fixed_t wl_x, wl_y;
+	wl_fixed_t wl_x, wl_y, axis;
 	RdpPeerContext *peerContext = (RdpPeerContext *)input->context;
 	struct rdp_output *output;
 	uint32_t button = 0;
@@ -784,6 +785,22 @@ xf_mouseEvent(rdpInput *input, UINT16 flags, UINT16 x, UINT16 y) {
 		notify_button(&peerContext->item.seat, weston_compositor_get_time(), button,
 			(flags & PTR_FLAGS_DOWN) ? WL_POINTER_BUTTON_STATE_PRESSED : WL_POINTER_BUTTON_STATE_RELEASED
 		);
+	}
+
+	if (flags & PTR_FLAGS_WHEEL) {
+		/* DEFAULT_AXIS_STEP_DISTANCE is stolen from compositor-x11.c
+		 * The RDP specs says the lower bits of flags contains the "the number of rotation
+		 * units the mouse wheel was rotated".
+		 *
+		 * http://blogs.msdn.com/b/oldnewthing/archive/2013/01/23/10387366.aspx explains the 120 value
+		 */
+		axis = (DEFAULT_AXIS_STEP_DISTANCE * (flags & 0xff)) / 120;
+		if (flags & PTR_FLAGS_WHEEL_NEGATIVE)
+			axis = -axis;
+
+		notify_axis(&peerContext->item.seat, weston_compositor_get_time(),
+					    WL_POINTER_AXIS_VERTICAL_SCROLL,
+					    axis);
 	}
 }
 
