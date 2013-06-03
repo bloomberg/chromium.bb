@@ -229,6 +229,26 @@ const Experiment::Choice kSimpleCacheBackendChoices[] = {
     switches::kUseSimpleCacheBackend, "on"}
 };
 
+const Experiment::Choice kTabCaptureUpscaleQualityChoices[] = {
+  { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
+  { IDS_FLAGS_TAB_CAPTURE_SCALE_QUALITY_FAST,
+    switches::kTabCaptureUpscaleQuality, "fast" },
+  { IDS_FLAGS_TAB_CAPTURE_SCALE_QUALITY_GOOD,
+    switches::kTabCaptureUpscaleQuality, "good" },
+  { IDS_FLAGS_TAB_CAPTURE_SCALE_QUALITY_BEST,
+    switches::kTabCaptureUpscaleQuality, "best" },
+};
+
+const Experiment::Choice kTabCaptureDownscaleQualityChoices[] = {
+  { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
+  { IDS_FLAGS_TAB_CAPTURE_SCALE_QUALITY_FAST,
+    switches::kTabCaptureDownscaleQuality, "fast" },
+  { IDS_FLAGS_TAB_CAPTURE_SCALE_QUALITY_GOOD,
+    switches::kTabCaptureDownscaleQuality, "good" },
+  { IDS_FLAGS_TAB_CAPTURE_SCALE_QUALITY_BEST,
+    switches::kTabCaptureDownscaleQuality, "best" },
+};
+
 // RECORDING USER METRICS FOR FLAGS:
 // -----------------------------------------------------------------------------
 // The first line of the experiment is the internal name. If you'd like to
@@ -1485,6 +1505,22 @@ const Experiment kExperiments[] = {
     IDS_FLAGS_ENABLE_OMNIBOX_AUTO_COMPLETION_FOR_IME_DESCRIPTION,
     kOsCrOS,
     SINGLE_VALUE_TYPE(switches::kEnableOmniboxAutoCompletionForIme)
+  },
+#endif
+#if defined(USE_AURA)
+  {
+    "tab-capture-upscale-quality",
+    IDS_FLAGS_TAB_CAPTURE_UPSCALE_QUALITY_NAME,
+    IDS_FLAGS_TAB_CAPTURE_UPSCALE_QUALITY_DESCRIPTION,
+    kOsAll,
+    MULTI_VALUE_TYPE(kTabCaptureUpscaleQualityChoices)
+  },
+  {
+    "tab-capture-downscale-quality",
+    IDS_FLAGS_TAB_CAPTURE_DOWNSCALE_QUALITY_NAME,
+    IDS_FLAGS_TAB_CAPTURE_DOWNSCALE_QUALITY_DESCRIPTION,
+    kOsAll,
+    MULTI_VALUE_TYPE(kTabCaptureDownscaleQualityChoices)
   },
 #endif
 };

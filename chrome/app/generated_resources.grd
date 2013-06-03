@@ -7152,6 +7152,27 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_MAX_TILES_FOR_INTEREST_AREA_VENTI" desc="">
         512
       </message>
+      <message name="IDS_FLAGS_TAB_CAPTURE_UPSCALE_QUALITY_NAME" desc="">
+        Tab capture upscaling quality.
+      </message>
+      <message name="IDS_FLAGS_TAB_CAPTURE_UPSCALE_QUALITY_DESCRIPTION" desc="">
+        Specifies quality setting for images captured if scaling up.
+      </message>
+      <message name="IDS_FLAGS_TAB_CAPTURE_DOWNSCALE_QUALITY_NAME" desc="">
+        Tab capture downscaling quality.
+      </message>
+      <message name="IDS_FLAGS_TAB_CAPTURE_DOWNSCALE_QUALITY_DESCRIPTION" desc="">
+        Specifies quality setting for images captured if scaling down.
+      </message>
+      <message name="IDS_FLAGS_TAB_CAPTURE_SCALE_QUALITY_FAST" desc="">
+	fast
+      </message>
+      <message name="IDS_FLAGS_TAB_CAPTURE_SCALE_QUALITY_GOOD" desc="">
+	good
+      </message>
+      <message name="IDS_FLAGS_TAB_CAPTURE_SCALE_QUALITY_BEST" desc="">
+	best
+      </message>
       <message name="IDS_FLAGS_DEFAULT_TILE_WIDTH_NAME" desc="Name of about:flags option for default tile width.">
         Default tile width
       </message>
