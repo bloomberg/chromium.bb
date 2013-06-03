@@ -113,36 +113,6 @@ void ChangeListLoader::LoadDirectoryFromServer(
           callback));
 }
 
-void ChangeListLoader::UpdateFromChangeList(
-    scoped_ptr<google_apis::AboutResource> about_resource,
-    ScopedVector<ChangeList> change_lists,
-    bool is_delta_update,
-    const base::Closure& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
-
-  ChangeListProcessor* change_list_processor =
-      new ChangeListProcessor(resource_metadata_);
-  // Don't send directory content change notification while performing
-  // the initial content retrieval.
-  const bool should_notify_changed_directories = is_delta_update;
-
-  util::Log("Apply change lists (is delta: %d)", is_delta_update);
-  blocking_task_runner_->PostTaskAndReply(
-      FROM_HERE,
-      base::Bind(&ChangeListProcessor::Apply,
-                 base::Unretained(change_list_processor),
-                 base::Passed(&about_resource),
-                 base::Passed(&change_lists),
-                 is_delta_update),
-      base::Bind(&ChangeListLoader::UpdateFromChangeListAfterApply,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 base::Owned(change_list_processor),
-                 should_notify_changed_directories,
-                 base::Time::Now(),
-                 callback));
-}
-
 void ChangeListLoader::Load(const DirectoryFetchInfo& directory_fetch_info,
                             const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -679,6 +649,36 @@ void ChangeListLoader::DoLoadDirectoryFromServerAfterRefresh(
     FOR_EACH_OBSERVER(ChangeListLoaderObserver, observers_,
                       OnDirectoryChanged(directory_path));
   }
+}
+
+void ChangeListLoader::UpdateFromChangeList(
+    scoped_ptr<google_apis::AboutResource> about_resource,
+    ScopedVector<ChangeList> change_lists,
+    bool is_delta_update,
+    const base::Closure& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+
+  ChangeListProcessor* change_list_processor =
+      new ChangeListProcessor(resource_metadata_);
+  // Don't send directory content change notification while performing
+  // the initial content retrieval.
+  const bool should_notify_changed_directories = is_delta_update;
+
+  util::Log("Apply change lists (is delta: %d)", is_delta_update);
+  blocking_task_runner_->PostTaskAndReply(
+      FROM_HERE,
+      base::Bind(&ChangeListProcessor::Apply,
+                 base::Unretained(change_list_processor),
+                 base::Passed(&about_resource),
+                 base::Passed(&change_lists),
+                 is_delta_update),
+      base::Bind(&ChangeListLoader::UpdateFromChangeListAfterApply,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 base::Owned(change_list_processor),
+                 should_notify_changed_directories,
+                 base::Time::Now(),
+                 callback));
 }
 
 void ChangeListLoader::UpdateFromChangeListAfterApply(

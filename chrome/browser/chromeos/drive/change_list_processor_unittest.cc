@@ -95,9 +95,9 @@ class ChangeListProcessorTest : public testing::Test {
     google_apis::test_util::RunBlockingPoolTask();
   }
 
-  // Applies the |changes| to |metadata_| as a delta update. Delta changeslists
+  // Applies the |changes| to |metadata_| as a delta update. Delta changelists
   // should contain their changestamp in themselves.
-  void ApplyChangeList(ScopedVector<ChangeList> changes) {
+  std::set<base::FilePath> ApplyChangeList(ScopedVector<ChangeList> changes) {
     scoped_ptr<google_apis::AboutResource> null_about_resource;
 
     ChangeListProcessor processor(metadata_.get());
@@ -109,6 +109,7 @@ class ChangeListProcessorTest : public testing::Test {
                    base::Passed(&changes),
                    true));  // is_delta_update
     google_apis::test_util::RunBlockingPoolTask();
+    return processor.changed_dirs();
   }
 
   // Gets the resource entry for the path from |metadata_| synchronously.
@@ -233,12 +234,19 @@ TEST_F(ChangeListProcessorTest, DeltaFileAddedInNewDirectory) {
 
   // Apply the changelist and check the effect.
   ApplyFullResourceList(ParseChangeList(kBaseResourceListFile));
-  ApplyChangeList(ParseChangeList(kTestJson));
+  std::set<base::FilePath> changed_dirs =
+      ApplyChangeList(ParseChangeList(kTestJson));
 
   EXPECT_EQ(16730, GetChangestamp());  // the value is written in kTestJson.
   EXPECT_TRUE(GetResourceEntry("drive/root/New Directory"));
   EXPECT_TRUE(GetResourceEntry(
       "drive/root/New Directory/File in new dir.gdoc"));
+
+  EXPECT_EQ(2U, changed_dirs.size());
+  EXPECT_TRUE(changed_dirs.count(
+      base::FilePath::FromUTF8Unsafe("drive/root")));
+  EXPECT_TRUE(changed_dirs.count(
+      base::FilePath::FromUTF8Unsafe("drive/root/New Directory")));
 }
 
 TEST_F(ChangeListProcessorTest, DeltaDirMovedFromRootToDirectory) {
@@ -260,12 +268,25 @@ TEST_F(ChangeListProcessorTest, DeltaDirMovedFromRootToDirectory) {
 
   // Apply the changelist and check the effect.
   ApplyFullResourceList(ParseChangeList(kBaseResourceListFile));
-  ApplyChangeList(ParseChangeList(kTestJson));
+  std::set<base::FilePath> changed_dirs =
+      ApplyChangeList(ParseChangeList(kTestJson));
 
   EXPECT_EQ(16809, GetChangestamp());  // the value is written in kTestJson.
   EXPECT_FALSE(GetResourceEntry("drive/root/Directory 1"));
   EXPECT_TRUE(GetResourceEntry(
       "drive/root/Directory 2 excludeDir-test/Directory 1"));
+
+  EXPECT_EQ(4U, changed_dirs.size());
+  EXPECT_TRUE(changed_dirs.count(
+      base::FilePath::FromUTF8Unsafe("drive/root")));
+  EXPECT_TRUE(changed_dirs.count(
+      base::FilePath::FromUTF8Unsafe("drive/root/Directory 1")));
+  EXPECT_TRUE(changed_dirs.count(
+      base::FilePath::FromUTF8Unsafe(
+          "drive/root/Directory 2 excludeDir-test")));
+  EXPECT_TRUE(changed_dirs.count(
+      base::FilePath::FromUTF8Unsafe(
+          "drive/root/Directory 2 excludeDir-test/Directory 1")));
 }
 
 TEST_F(ChangeListProcessorTest, DeltaFileMovedFromDirectoryToRoot) {
@@ -288,12 +309,19 @@ TEST_F(ChangeListProcessorTest, DeltaFileMovedFromDirectoryToRoot) {
 
   // Apply the changelist and check the effect.
   ApplyFullResourceList(ParseChangeList(kBaseResourceListFile));
-  ApplyChangeList(ParseChangeList(kTestJson));
+  std::set<base::FilePath> changed_dirs =
+      ApplyChangeList(ParseChangeList(kTestJson));
 
   EXPECT_EQ(16815, GetChangestamp());  // the value is written in kTestJson.
   EXPECT_FALSE(GetResourceEntry(
       "drive/root/Directory 1/SubDirectory File 1.txt"));
   EXPECT_TRUE(GetResourceEntry("drive/root/SubDirectory File 1.txt"));
+
+  EXPECT_EQ(2U, changed_dirs.size());
+  EXPECT_TRUE(changed_dirs.count(
+      base::FilePath::FromUTF8Unsafe("drive/root")));
+  EXPECT_TRUE(changed_dirs.count(
+      base::FilePath::FromUTF8Unsafe("drive/root/Directory 1")));
 }
 
 TEST_F(ChangeListProcessorTest, DeltaFileRenamedInDirectory) {
@@ -317,17 +345,159 @@ TEST_F(ChangeListProcessorTest, DeltaFileRenamedInDirectory) {
 
   // Apply the changelist and check the effect.
   ApplyFullResourceList(ParseChangeList(kBaseResourceListFile));
-  ApplyChangeList(ParseChangeList(kTestJson));
+  std::set<base::FilePath> changed_dirs =
+      ApplyChangeList(ParseChangeList(kTestJson));
 
   EXPECT_EQ(16767, GetChangestamp());  // the value is written in kTestJson.
   EXPECT_FALSE(GetResourceEntry(
       "drive/root/Directory 1/SubDirectory File 1.txt"));
   EXPECT_TRUE(GetResourceEntry(
       "drive/root/Directory 1/New SubDirectory File 1.txt"));
+
+  EXPECT_EQ(2U, changed_dirs.size());
+  EXPECT_TRUE(changed_dirs.count(
+      base::FilePath::FromUTF8Unsafe("drive/root")));
+  EXPECT_TRUE(changed_dirs.count(
+      base::FilePath::FromUTF8Unsafe("drive/root/Directory 1")));
 }
 
-// TODO(kinaba): add test for all patterns in test/data/chromeos/gdata
-// http://crbug.com/147728.
+TEST_F(ChangeListProcessorTest, DeltaAddAndDeleteFileInRoot) {
+  const char kTestJsonAdd[] =
+      "chromeos/gdata/delta_file_added_in_root.json";
+  const char kTestJsonDelete[] =
+      "chromeos/gdata/delta_file_deleted_in_root.json";
+
+  const std::string kParentId("fake_root");
+  const std::string kFileId("document:added_in_root_id");
+
+  ChangeListProcessor::ResourceEntryMap entry_map;
+
+  // Check the content of kTestJsonAdd.
+  ChangeListProcessor::ConvertToMap(
+      ParseChangeList(kTestJsonAdd), &entry_map, NULL);
+  EXPECT_EQ(1U, entry_map.size());
+  EXPECT_TRUE(entry_map.count(kFileId));
+  EXPECT_EQ(kParentId, entry_map[kFileId].parent_resource_id());
+  EXPECT_EQ("Added file", entry_map[kFileId].title());
+  EXPECT_FALSE(entry_map[kFileId].deleted());
+
+  // Apply.
+  ApplyFullResourceList(ParseChangeList(kBaseResourceListFile));
+  std::set<base::FilePath> changed_dirs =
+      ApplyChangeList(ParseChangeList(kTestJsonAdd));
+  EXPECT_EQ(16683, GetChangestamp());
+  EXPECT_TRUE(GetResourceEntry("drive/root/Added file.gdoc"));
+  EXPECT_EQ(1U, changed_dirs.size());
+  EXPECT_TRUE(changed_dirs.count(
+      base::FilePath::FromUTF8Unsafe("drive/root")));
+
+  // Check the content of kTestJsonDelete.
+  entry_map.clear();
+  ChangeListProcessor::ConvertToMap(
+      ParseChangeList(kTestJsonDelete), &entry_map, NULL);
+  EXPECT_EQ(1U, entry_map.size());
+  EXPECT_TRUE(entry_map.count(kFileId));
+  EXPECT_EQ(kParentId, entry_map[kFileId].parent_resource_id());
+  EXPECT_EQ("Added file", entry_map[kFileId].title());
+  EXPECT_TRUE(entry_map[kFileId].deleted());
+
+  // Apply.
+  changed_dirs = ApplyChangeList(ParseChangeList(kTestJsonDelete));
+  EXPECT_EQ(16687, GetChangestamp());
+  EXPECT_FALSE(GetResourceEntry("drive/root/Added file.gdoc"));
+  EXPECT_EQ(1U, changed_dirs.size());
+  EXPECT_TRUE(changed_dirs.count(
+      base::FilePath::FromUTF8Unsafe("drive/root")));
+}
+
+
+TEST_F(ChangeListProcessorTest, DeltaAddAndDeleteFileFromExistingDirectory) {
+  const char kTestJsonAdd[] =
+      "chromeos/gdata/delta_file_added_in_directory.json";
+  const char kTestJsonDelete[] =
+      "chromeos/gdata/delta_file_deleted_in_directory.json";
+
+  const std::string kParentId("folder:1_folder_resource_id");
+  const std::string kFileId("document:added_in_root_id");
+
+  ChangeListProcessor::ResourceEntryMap entry_map;
+
+  // Check the content of kTestJsonAdd.
+  ChangeListProcessor::ConvertToMap(
+      ParseChangeList(kTestJsonAdd), &entry_map, NULL);
+  EXPECT_EQ(2U, entry_map.size());
+  EXPECT_TRUE(entry_map.count(kFileId));
+  EXPECT_TRUE(entry_map.count(kParentId));
+  EXPECT_EQ(kParentId, entry_map[kFileId].parent_resource_id());
+  EXPECT_EQ("Added file", entry_map[kFileId].title());
+  EXPECT_FALSE(entry_map[kFileId].deleted());
+
+  // Apply.
+  ApplyFullResourceList(ParseChangeList(kBaseResourceListFile));
+  std::set<base::FilePath> changed_dirs =
+      ApplyChangeList(ParseChangeList(kTestJsonAdd));
+  EXPECT_EQ(16730, GetChangestamp());
+  EXPECT_TRUE(GetResourceEntry("drive/root/Directory 1/Added file.gdoc"));
+
+  EXPECT_EQ(2U, changed_dirs.size());
+  EXPECT_TRUE(changed_dirs.count(
+      base::FilePath::FromUTF8Unsafe("drive/root")));
+  EXPECT_TRUE(changed_dirs.count(
+      base::FilePath::FromUTF8Unsafe("drive/root/Directory 1")));
+
+  // Check the content of kTestJsonDelete.
+  entry_map.clear();
+  ChangeListProcessor::ConvertToMap(
+      ParseChangeList(kTestJsonDelete), &entry_map, NULL);
+  EXPECT_EQ(1U, entry_map.size());
+  EXPECT_TRUE(entry_map.count(kFileId));
+  EXPECT_EQ(kParentId, entry_map[kFileId].parent_resource_id());
+  EXPECT_EQ("Added file", entry_map[kFileId].title());
+  EXPECT_TRUE(entry_map[kFileId].deleted());
+
+  // Apply.
+  changed_dirs = ApplyChangeList(ParseChangeList(kTestJsonDelete));
+  EXPECT_EQ(16770, GetChangestamp());
+  EXPECT_FALSE(GetResourceEntry("drive/root/Directory 1/Added file.gdoc"));
+
+  EXPECT_EQ(1U, changed_dirs.size());
+  EXPECT_TRUE(changed_dirs.count(
+      base::FilePath::FromUTF8Unsafe("drive/root/Directory 1")));
+}
+
+TEST_F(ChangeListProcessorTest, DeltaAddFileToNewButDeletedDirectory) {
+  // This feed contains the following updates:
+  // 1) A new PDF file is added to a new directory
+  // 2) but the new directory is marked "deleted" (i.e. moved to Trash)
+  // Hence, the PDF file should be just ignored.
+  const char kTestJson[] =
+      "chromeos/gdata/delta_file_added_in_new_but_deleted_directory.json";
+
+  ChangeListProcessor::ResourceEntryMap entry_map;
+  ChangeListProcessor::ConvertToMap(
+      ParseChangeList(kTestJson), &entry_map, NULL);
+
+  const std::string kRootId("fake_root");
+  const std::string kDirId("folder:new_folder_resource_id");
+  const std::string kFileId("pdf:file_added_in_deleted_dir_id");
+
+  // Check the content of parsed ResourceEntryMap.
+  EXPECT_EQ(2U, entry_map.size());
+  EXPECT_TRUE(entry_map.count(kDirId));
+  EXPECT_TRUE(entry_map.count(kFileId));
+  EXPECT_EQ(kDirId, entry_map[kFileId].parent_resource_id());
+  EXPECT_TRUE(entry_map[kDirId].deleted());
+
+  // Apply the changelist and check the effect.
+  ApplyFullResourceList(ParseChangeList(kBaseResourceListFile));
+  std::set<base::FilePath> changed_dirs =
+      ApplyChangeList(ParseChangeList(kTestJson));
+
+  EXPECT_EQ(16730, GetChangestamp());  // the value is written in kTestJson.
+  EXPECT_FALSE(GetResourceEntry("drive/root/New Directory/new_pdf_file.pdf"));
+
+  EXPECT_TRUE(changed_dirs.empty());
+}
 
 }  // namespace internal
 }  // namespace drive

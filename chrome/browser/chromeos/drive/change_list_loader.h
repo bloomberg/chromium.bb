@@ -106,19 +106,6 @@ class ChangeListLoader {
   void LoadDirectoryFromServer(const std::string& directory_resource_id,
                                const FileOperationCallback& callback);
 
-  // TODO(satorux): Make this private. crbug.com/232208
-  // Updates from the whole change list collected in |change_lists|.
-  // Record file statistics as UMA histograms.
-  //
-  // See comments at ChangeListProcessor::ApplyFeeds() for
-  // |about_resource| and |is_delta_update|.
-  // |callback| must not be null.
-  void UpdateFromChangeList(
-      scoped_ptr<google_apis::AboutResource> about_resource,
-      ScopedVector<ChangeList> change_lists,
-      bool is_delta_update,
-      const base::Closure& callback);
-
  private:
   // Starts the resource metadata loading and calls |callback| when it's
   // done. |directory_fetch_info| is used for fast fetch. If there is already
@@ -265,8 +252,20 @@ class ChangeListLoader {
                        google_apis::GDataErrorCode status,
                        scoped_ptr<google_apis::ResourceList> resource_list);
 
+  // Updates from the whole change list collected in |change_lists|.
+  // Record file statistics as UMA histograms.
+  //
+  // See comments at ChangeListProcessor::Apply() for
+  // |about_resource| and |is_delta_update|.
+  // |callback| must not be null.
+  void UpdateFromChangeList(
+      scoped_ptr<google_apis::AboutResource> about_resource,
+      ScopedVector<ChangeList> change_lists,
+      bool is_delta_update,
+      const base::Closure& callback);
+
   // Part of UpdateFromChangeList().
-  // Called when ChangeListProcessor::ApplyFeeds() is complete.
+  // Called when ChangeListProcessor::Apply() is complete.
   // Notifies directory changes per the result of the change list processing.
   void UpdateFromChangeListAfterApply(
       ChangeListProcessor* change_list_processor,

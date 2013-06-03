@@ -11,8 +11,6 @@
 #include "base/message_loop.h"
 #include "base/threading/worker_pool.h"
 #include "base/values.h"
-#include "chrome/browser/chromeos/drive/change_list_loader.h"
-#include "chrome/browser/chromeos/drive/change_list_processor.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/google_apis/drive_api_parser.h"
 
@@ -93,41 +91,6 @@ bool CacheStatesEqual(const FileCacheEntry& a, const FileCacheEntry& b) {
           a.is_dirty() == b.is_dirty() &&
           a.is_mounted() == b.is_mounted() &&
           a.is_persistent() == b.is_persistent());
-}
-
-bool LoadChangeFeed(const std::string& relative_path,
-                    internal::ChangeListLoader* change_list_loader,
-                    bool is_delta_feed,
-                    const std::string& root_resource_id,
-                    int64 root_feed_changestamp) {
-  scoped_ptr<Value> document =
-      google_apis::test_util::LoadJSONFile(relative_path);
-  if (!document.get())
-    return false;
-  if (document->GetType() != Value::TYPE_DICTIONARY)
-    return false;
-
-  scoped_ptr<google_apis::ResourceList> document_feed(
-      google_apis::ResourceList::ExtractAndParse(*document));
-  if (!document_feed.get())
-    return false;
-
-  ScopedVector<internal::ChangeList> change_lists;
-  change_lists.push_back(new internal::ChangeList(*document_feed));
-
-  scoped_ptr<google_apis::AboutResource> about_resource(
-      new google_apis::AboutResource);
-  about_resource->set_largest_change_id(root_feed_changestamp);
-  about_resource->set_root_folder_id(root_resource_id);
-
-  change_list_loader->UpdateFromChangeList(
-      about_resource.Pass(),
-      change_lists.Pass(),
-      is_delta_feed,
-      base::Bind(&base::DoNothing));
-  google_apis::test_util::RunBlockingPoolTask();
-
-  return true;
 }
 
 bool PrepareTestCacheResources(
