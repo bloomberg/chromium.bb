@@ -36,6 +36,7 @@
 #include "V8HTMLEmbedElement.h"
 #include "V8HTMLObjectElement.h"
 #include "bindings/v8/NPV8Object.h"
+#include "bindings/v8/UnsafePersistent.h"
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8NPUtils.h"
 #include "bindings/v8/V8ObjectConstructor.h"
@@ -165,18 +166,19 @@ v8::Handle<v8::Value> npObjectInvokeDefaultHandler(const v8::Arguments& args)
 class V8NPTemplateMap {
 public:
     // NPIdentifier is PrivateIdentifier*.
-    typedef HashMap<PrivateIdentifier*, v8::Persistent<v8::FunctionTemplate> > MapType;
+    typedef HashMap<PrivateIdentifier*, UnsafePersistent<v8::FunctionTemplate> > MapType;
 
-    v8::Persistent<v8::FunctionTemplate> get(PrivateIdentifier* key)
+    UnsafePersistent<v8::FunctionTemplate> get(PrivateIdentifier* key)
     {
         return m_map.get(key);
     }
 
-    void set(PrivateIdentifier* key, v8::Persistent<v8::FunctionTemplate> wrapper)
+    void set(PrivateIdentifier* key, v8::Handle<v8::FunctionTemplate> handle)
     {
         ASSERT(!m_map.contains(key));
-        m_map.set(key, wrapper);
+        v8::Persistent<v8::FunctionTemplate> wrapper(m_isolate, handle);
         wrapper.MakeWeak(m_isolate, key, &makeWeakCallback);
+        m_map.set(key, UnsafePersistent<v8::FunctionTemplate>(wrapper));
     }
 
     static V8NPTemplateMap& sharedInstance(v8::Isolate* isolate)
@@ -196,8 +198,7 @@ private:
     {
         MapType::iterator it = m_map.find(key);
         ASSERT(it != m_map.end());
-        it->value.Dispose(m_isolate);
-        it->value.Clear();
+        it->value.dispose();
         m_map.remove(it);
     }
 
@@ -245,18 +246,19 @@ static v8::Handle<v8::Value> npObjectGetProperty(v8::Local<v8::Object> self, NPI
             return throwError(v8ReferenceError, "NPObject deleted", isolate);
 
         PrivateIdentifier* id = static_cast<PrivateIdentifier*>(identifier);
-        v8::Persistent<v8::FunctionTemplate> functionTemplate = V8NPTemplateMap::sharedInstance(isolate).get(id);
+        UnsafePersistent<v8::FunctionTemplate> functionTemplate = V8NPTemplateMap::sharedInstance(isolate).get(id);
+        // FunctionTemplate caches function for each context.
+        v8::Local<v8::Function> v8Function;
         // Cache templates using identifier as the key.
-        if (functionTemplate.IsEmpty()) {
+        if (functionTemplate.isEmpty()) {
             // Create a new template.
             v8::Local<v8::FunctionTemplate> temp = v8::FunctionTemplate::New();
             temp->SetCallHandler(npObjectMethodHandler, key);
-            functionTemplate.Reset(isolate, temp);
-            V8NPTemplateMap::sharedInstance(isolate).set(id, functionTemplate);
+            V8NPTemplateMap::sharedInstance(isolate).set(id, temp);
+            v8Function = temp->GetFunction();
+        } else {
+            v8Function = functionTemplate.newLocal(isolate)->GetFunction();
         }
-
-        // FunctionTemplate caches function for each context.
-        v8::Local<v8::Function> v8Function = functionTemplate->GetFunction();
         v8Function->SetName(v8::Handle<v8::String>::Cast(key));
         return v8Function;
     }
