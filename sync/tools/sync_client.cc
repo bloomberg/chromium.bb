@@ -310,10 +310,8 @@ int SyncClientMain(int argc, char* argv[]) {
   const char kUserAgent[] = "sync_client";
   // TODO(akalin): Replace this with just the context getter once
   // HttpPostProviderFactory is removed.
-  scoped_ptr<HttpPostProviderFactory> post_factory(
-      new HttpBridgeFactory(context_getter,
-                            kUserAgent,
-                            NetworkTimeUpdateCallback()));
+  scoped_ptr<HttpPostProviderFactory> post_factory(new HttpBridgeFactory(
+      context_getter.get(), kUserAgent, NetworkTimeUpdateCallback()));
   // Used only when committing bookmarks, so it's okay to leave this
   // as NULL.
   ExtensionsActivityMonitor* extensions_activity_monitor = NULL;

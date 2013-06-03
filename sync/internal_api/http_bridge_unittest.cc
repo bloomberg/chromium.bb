@@ -160,11 +160,11 @@ void SyncHttpBridgeTest::RunSyncThreadBridgeUseTest(
   scoped_refptr<net::URLRequestContextGetter> ctx_getter(
       new net::TestURLRequestContextGetter(io_thread_.message_loop_proxy()));
   {
-    scoped_refptr<ShuntedHttpBridge> bridge(new ShuntedHttpBridge(
-        ctx_getter, this, true));
+    scoped_refptr<ShuntedHttpBridge> bridge(
+        new ShuntedHttpBridge(ctx_getter.get(), this, true));
     bridge->SetURL("http://www.google.com", 9999);
     bridge->SetPostPayload("text/plain", 2, " ");
-    bridge_for_race_test_ = bridge;
+    bridge_for_race_test_ = bridge.get();
     signal_when_created->Signal();
 
     int os_error = 0;
@@ -190,8 +190,8 @@ TEST_F(SyncHttpBridgeTest, TestUsesSameHttpNetworkSession) {
 TEST_F(SyncHttpBridgeTest, TestMakeSynchronousPostShunted) {
   scoped_refptr<net::URLRequestContextGetter> ctx_getter(
       new net::TestURLRequestContextGetter(io_thread()->message_loop_proxy()));
-  scoped_refptr<HttpBridge> http_bridge(new ShuntedHttpBridge(
-      ctx_getter, this, false));
+  scoped_refptr<HttpBridge> http_bridge(
+      new ShuntedHttpBridge(ctx_getter.get(), this, false));
   http_bridge->SetURL("http://www.google.com", 9999);
   http_bridge->SetPostPayload("text/plain", 2, " ");
 
@@ -312,8 +312,8 @@ TEST_F(SyncHttpBridgeTest, TestResponseHeader) {
 TEST_F(SyncHttpBridgeTest, Abort) {
   scoped_refptr<net::URLRequestContextGetter> ctx_getter(
       new net::TestURLRequestContextGetter(io_thread()->message_loop_proxy()));
-  scoped_refptr<ShuntedHttpBridge> http_bridge(new ShuntedHttpBridge(
-      ctx_getter, this, true));
+  scoped_refptr<ShuntedHttpBridge> http_bridge(
+      new ShuntedHttpBridge(ctx_getter.get(), this, true));
   http_bridge->SetURL("http://www.google.com", 9999);
   http_bridge->SetPostPayload("text/plain", 2, " ");
 
@@ -331,8 +331,8 @@ TEST_F(SyncHttpBridgeTest, Abort) {
 TEST_F(SyncHttpBridgeTest, AbortLate) {
   scoped_refptr<net::URLRequestContextGetter> ctx_getter(
       new net::TestURLRequestContextGetter(io_thread()->message_loop_proxy()));
-  scoped_refptr<ShuntedHttpBridge> http_bridge(new ShuntedHttpBridge(
-      ctx_getter, this, false));
+  scoped_refptr<ShuntedHttpBridge> http_bridge(
+      new ShuntedHttpBridge(ctx_getter.get(), this, false));
   http_bridge->SetURL("http://www.google.com", 9999);
   http_bridge->SetPostPayload("text/plain", 2, " ");
 

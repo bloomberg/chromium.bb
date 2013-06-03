@@ -29,8 +29,8 @@ HttpBridge::RequestContextGetter::RequestContextGetter(
       network_task_runner_(
           baseline_context_getter_->GetNetworkTaskRunner()),
       user_agent_(user_agent) {
-  DCHECK(baseline_context_getter_);
-  DCHECK(network_task_runner_);
+  DCHECK(baseline_context_getter_.get());
+  DCHECK(network_task_runner_.get());
   DCHECK(!user_agent_.empty());
 }
 
@@ -70,7 +70,7 @@ HttpBridgeFactory::~HttpBridgeFactory() {
 }
 
 HttpPostProviderInterface* HttpBridgeFactory::Create() {
-  HttpBridge* http = new HttpBridge(request_context_getter_,
+  HttpBridge* http = new HttpBridge(request_context_getter_.get(),
                                     network_time_update_callback_);
   http->AddRef();
   return http;
@@ -228,7 +228,7 @@ void HttpBridge::MakeAsynchronousPost() {
 
   fetch_state_.url_poster = net::URLFetcher::Create(
       url_for_request_, net::URLFetcher::POST, this);
-  fetch_state_.url_poster->SetRequestContext(context_getter_for_request_);
+  fetch_state_.url_poster->SetRequestContext(context_getter_for_request_.get());
   fetch_state_.url_poster->SetUploadData(content_type_, request_content_);
   fetch_state_.url_poster->SetExtraRequestHeaders(extra_headers_);
   fetch_state_.url_poster->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES);
@@ -323,7 +323,7 @@ void HttpBridge::OnURLFetchComplete(const net::URLFetcher* source) {
 
 net::URLRequestContextGetter* HttpBridge::GetRequestContextGetterForTest()
     const {
-  return context_getter_for_request_;
+  return context_getter_for_request_.get();
 }
 
 void HttpBridge::UpdateNetworkTime() {

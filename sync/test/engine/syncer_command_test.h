@@ -83,7 +83,7 @@ class SyncerCommandTestBase : public testing::Test,
     std::vector<ModelSafeWorker*> workers;
     std::vector<scoped_refptr<ModelSafeWorker> >::iterator it;
     for (it = workers_.begin(); it != workers_.end(); ++it)
-      workers.push_back(*it);
+      workers.push_back(it->get());
     return workers;
   }
   void GetModelSafeRoutingInfo(ModelSafeRoutingInfo* out) {

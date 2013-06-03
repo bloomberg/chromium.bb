@@ -77,7 +77,7 @@ void NonBlockingInvalidator::Core::Initialize(
     const std::string& invalidation_bootstrap_data,
     const WeakHandle<InvalidationStateTracker>& invalidation_state_tracker,
     const std::string& client_info) {
-  DCHECK(notifier_options.request_context_getter);
+  DCHECK(notifier_options.request_context_getter.get());
   DCHECK_EQ(notifier::NOTIFICATION_SERVER,
             notifier_options.notification_method);
   network_task_runner_ = notifier_options.request_context_getter->

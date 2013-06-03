@@ -85,7 +85,7 @@ void PrintedDocument::SetPage(int page_number,
       mutable_.first_page = page_number;
 #endif
   }
-  DebugDump(*page);
+  DebugDump(*page.get());
 }
 
 bool PrintedDocument::GetPage(int page_number,
