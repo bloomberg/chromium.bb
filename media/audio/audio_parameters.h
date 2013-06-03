@@ -79,6 +79,16 @@ class MEDIA_EXPORT AudioParameters {
   // Set to CHANNEL_LAYOUT_DISCRETE with given number of channels.
   void SetDiscreteChannels(int channels);
 
+  // Comparison with other AudioParams.
+  bool operator==(const AudioParameters& other) const {
+    return format_ == other.format() &&
+           channel_layout_ == other.channel_layout() &&
+           channels_ == other.channels() &&
+           input_channels_ == other.input_channels() &&
+           bits_per_sample_ == other.bits_per_sample() &&
+           frames_per_buffer_ == other.frames_per_buffer();
+  }
+
  private:
   Format format_;                 // Format of the stream.
   ChannelLayout channel_layout_;  // Order of surround sound channels.

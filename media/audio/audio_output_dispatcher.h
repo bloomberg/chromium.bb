@@ -37,7 +37,8 @@ class MEDIA_EXPORT AudioOutputDispatcher
     : public base::RefCountedThreadSafe<AudioOutputDispatcher> {
  public:
   AudioOutputDispatcher(AudioManager* audio_manager,
-                        const AudioParameters& params);
+                        const AudioParameters& params,
+                        const std::string& input_device_id);
 
   // Called by AudioOutputProxy to open the stream.
   // Returns false, if it fails to open it.
@@ -64,6 +65,9 @@ class MEDIA_EXPORT AudioOutputDispatcher
   // Called on the audio thread when the AudioManager is shutting down.
   virtual void Shutdown() = 0;
 
+  // Accessor to the input device id used by unified IO.
+  const std::string& input_device_id() const { return input_device_id_; }
+
  protected:
   friend class base::RefCountedThreadSafe<AudioOutputDispatcher>;
   friend class AudioOutputProxyTest;
@@ -75,6 +79,7 @@ class MEDIA_EXPORT AudioOutputDispatcher
   AudioManager* audio_manager_;
   base::MessageLoop* message_loop_;
   AudioParameters params_;
+  const std::string input_device_id_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AudioOutputDispatcher);
