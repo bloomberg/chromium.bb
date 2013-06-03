@@ -87,7 +87,7 @@ class ChangeListProcessorTest : public testing::Test {
     ChangeListProcessor processor(metadata_.get());
     blocking_task_runner_->PostTask(
         FROM_HERE,
-        base::Bind(&ChangeListProcessor::ApplyFeeds,
+        base::Bind(&ChangeListProcessor::Apply,
                    base::Unretained(&processor),
                    base::Passed(&about_resource),
                    base::Passed(&changes),
@@ -103,7 +103,7 @@ class ChangeListProcessorTest : public testing::Test {
     ChangeListProcessor processor(metadata_.get());
     blocking_task_runner_->PostTask(
         FROM_HERE,
-        base::Bind(&ChangeListProcessor::ApplyFeeds,
+        base::Bind(&ChangeListProcessor::Apply,
                    base::Unretained(&processor),
                    base::Passed(&null_about_resource),
                    base::Passed(&changes),
@@ -213,7 +213,7 @@ TEST_F(ChangeListProcessorTest, DeltaFileAddedInNewDirectory) {
       "chromeos/gdata/delta_file_added_in_new_directory.json";
 
   ChangeListProcessor::ResourceEntryMap entry_map;
-  ChangeListProcessor::FeedToEntryMap(
+  ChangeListProcessor::ConvertToMap(
       ParseChangeList(kTestJson), &entry_map, NULL);
 
   const std::string kRootId("fake_root");
@@ -246,7 +246,7 @@ TEST_F(ChangeListProcessorTest, DeltaDirMovedFromRootToDirectory) {
       "chromeos/gdata/delta_dir_moved_from_root_to_directory.json";
 
   ChangeListProcessor::ResourceEntryMap entry_map;
-  ChangeListProcessor::FeedToEntryMap(
+  ChangeListProcessor::ConvertToMap(
       ParseChangeList(kTestJson), &entry_map, NULL);
 
   const std::string kMovedId("folder:1_folder_resource_id");
@@ -273,7 +273,7 @@ TEST_F(ChangeListProcessorTest, DeltaFileMovedFromDirectoryToRoot) {
       "chromeos/gdata/delta_file_moved_from_directory_to_root.json";
 
   ChangeListProcessor::ResourceEntryMap entry_map;
-  ChangeListProcessor::FeedToEntryMap(
+  ChangeListProcessor::ConvertToMap(
       ParseChangeList(kTestJson), &entry_map, NULL);
 
   const std::string kRootId("fake_root");
@@ -301,7 +301,7 @@ TEST_F(ChangeListProcessorTest, DeltaFileRenamedInDirectory) {
       "chromeos/gdata/delta_file_renamed_in_directory.json";
 
   ChangeListProcessor::ResourceEntryMap entry_map;
-  ChangeListProcessor::FeedToEntryMap(
+  ChangeListProcessor::ConvertToMap(
       ParseChangeList(kTestJson), &entry_map, NULL);
 
   const std::string kRootId("fake_root");
@@ -331,4 +331,3 @@ TEST_F(ChangeListProcessorTest, DeltaFileRenamedInDirectory) {
 
 }  // namespace internal
 }  // namespace drive
-

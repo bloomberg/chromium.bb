@@ -70,14 +70,14 @@ ChangeListProcessor::ChangeListProcessor(ResourceMetadata* resource_metadata)
 ChangeListProcessor::~ChangeListProcessor() {
 }
 
-void ChangeListProcessor::ApplyFeeds(
+void ChangeListProcessor::Apply(
     scoped_ptr<google_apis::AboutResource> about_resource,
     ScopedVector<ChangeList> change_lists,
-    bool is_delta_feed) {
-  DCHECK(is_delta_feed || about_resource.get());
+    bool is_delta_update) {
+  DCHECK(is_delta_update || about_resource.get());
 
   int64 largest_changestamp = 0;
-  if (is_delta_feed) {
+  if (is_delta_update) {
     if (!change_lists.empty()) {
       // The changestamp appears in the first page of the change list.
       // The changestamp does not appear in the full resource list.
@@ -95,7 +95,7 @@ void ChangeListProcessor::ApplyFeeds(
   }
 
   ChangeListToEntryMapUMAStats uma_stats;
-  FeedToEntryMap(change_lists.Pass(), &entry_map_, &uma_stats);
+  ConvertToMap(change_lists.Pass(), &entry_map_, &uma_stats);
 
   // Add the largest changestamp for directories.
   for (ResourceEntryMap::iterator it = entry_map_.begin();
@@ -106,7 +106,7 @@ void ChangeListProcessor::ApplyFeeds(
     }
   }
 
-  ApplyEntryMap(is_delta_feed, about_resource.Pass());
+  ApplyEntryMap(is_delta_update, about_resource.Pass());
 
   // Update the root entry and finish.
   UpdateRootEntry(largest_changestamp);
@@ -117,15 +117,15 @@ void ChangeListProcessor::ApplyFeeds(
   DLOG_IF(ERROR, error != FILE_ERROR_OK) << "SetLargestChangeStamp failed: "
                                          << FileErrorToString(error);
 
-  // Shouldn't record histograms when processing delta feeds.
-  if (!is_delta_feed)
+  // Shouldn't record histograms when processing delta update.
+  if (!is_delta_update)
     uma_stats.UpdateFileCountUmaHistograms();
 }
 
 void ChangeListProcessor::ApplyEntryMap(
-    bool is_delta_feed,
+    bool is_delta_update,
     scoped_ptr<google_apis::AboutResource> about_resource) {
-  if (!is_delta_feed) {  // Full update.
+  if (!is_delta_update) {  // Full update.
     DCHECK(about_resource);
 
     FileError error = resource_metadata_->Reset();
@@ -251,7 +251,7 @@ void ChangeListProcessor::RefreshEntry(const ResourceEntry& entry) {
 }
 
 // static
-void ChangeListProcessor::FeedToEntryMap(
+void ChangeListProcessor::ConvertToMap(
     ScopedVector<ChangeList> change_lists,
     ResourceEntryMap* entry_map,
     ChangeListToEntryMapUMAStats* uma_stats) {

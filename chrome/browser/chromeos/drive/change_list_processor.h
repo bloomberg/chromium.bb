@@ -47,45 +47,46 @@ class ChangeList {
   DISALLOW_COPY_AND_ASSIGN(ChangeList);
 };
 
-// ChangeListProcessor is used to process feeds from WAPI (codename for
-// Documents List API) or Google Drive API.
+// ChangeListProcessor is used to process change lists, or full resource
+// lists from WAPI (codename for Documents List API) or Google Drive API, and
+// updates the resource metadata stored locally.
 class ChangeListProcessor {
  public:
   typedef std::map<std::string /* resource_id */, ResourceEntry>
       ResourceEntryMap;
 
-  // Class used to record UMA stats with FeedToEntryMap().
+  // Class used to record UMA stats with ConvertToMap().
   class ChangeListToEntryMapUMAStats;
 
   explicit ChangeListProcessor(ResourceMetadata* resource_metadata);
   ~ChangeListProcessor();
 
-  // Applies the documents feeds to the file system using |resource_metadata_|.
+  // Applies change lists or full resource lists to |resource_metadata_|.
   //
-  // |is_delta_feed| determines the type of feed to process, whether it is a
-  // root feed (false) or a delta feed (true).
+  // |is_delta_update| determines the type of input data to process, whether
+  // it is full resource lists (false) or change lists (true).
   //
   // Must be run on the same task runner as |resource_metadata_| uses.
   //
   // TODO(hashimoto): Report error on failures.
-  void ApplyFeeds(scoped_ptr<google_apis::AboutResource> about_resource,
-                  ScopedVector<ChangeList> change_lists,
-                  bool is_delta_feed);
+  void Apply(scoped_ptr<google_apis::AboutResource> about_resource,
+             ScopedVector<ChangeList> change_lists,
+             bool is_delta_update);
 
   // Converts change lists into a ResourceEntryMap.
   // |uma_stats| may be NULL.
-  static void FeedToEntryMap(ScopedVector<ChangeList> change_lists,
-                             ResourceEntryMap* entry_map,
-                             ChangeListToEntryMapUMAStats* uma_stats);
+  static void ConvertToMap(ScopedVector<ChangeList> change_lists,
+                           ResourceEntryMap* entry_map,
+                           ChangeListToEntryMapUMAStats* uma_stats);
 
-  // The set of changed directories as a result of feed processing.
+  // The set of changed directories as a result of change list processing.
   const std::set<base::FilePath>& changed_dirs() const { return changed_dirs_; }
 
  private:
-  // Applies the pre-processed feed from entry_map_ onto the filesystem.
-  // If this is not delta feed update (i.e. |is_delta_feed| is false),
+  // Applies the pre-processed metadata from entry_map_ onto the resource
+  // metadata. If this is not delta update (i.e. |is_delta_update| is false),
   // |about_resource| must not be null.
-  void ApplyEntryMap(bool is_delta_feed,
+  void ApplyEntryMap(bool is_delta_update,
                      scoped_ptr<google_apis::AboutResource> about_resource);
 
   // Apply the next item from entry_map_ to the file system. The async

@@ -130,7 +130,7 @@ void ChangeListLoader::UpdateFromChangeList(
   util::Log("Apply change lists (is delta: %d)", is_delta_update);
   blocking_task_runner_->PostTaskAndReply(
       FROM_HERE,
-      base::Bind(&ChangeListProcessor::ApplyFeeds,
+      base::Bind(&ChangeListProcessor::Apply,
                  base::Unretained(change_list_processor),
                  base::Passed(&about_resource),
                  base::Passed(&change_lists),
@@ -654,7 +654,7 @@ void ChangeListLoader::DoLoadDirectoryFromServerAfterLoad(
   }
 
   ChangeListProcessor::ResourceEntryMap entry_map;
-  ChangeListProcessor::FeedToEntryMap(change_lists.Pass(), &entry_map, NULL);
+  ChangeListProcessor::ConvertToMap(change_lists.Pass(), &entry_map, NULL);
   resource_metadata_->RefreshDirectoryOnUIThread(
       directory_fetch_info,
       entry_map,
