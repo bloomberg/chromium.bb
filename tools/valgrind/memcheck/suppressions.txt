@@ -7374,3 +7374,17 @@ fun:_ZN7content21RenderViewHostManager8NavigateERKNS_19NavigationEntryImplE
    ...
    fun:_ZN11pnacl_cache21PNaClTranslationCache9InitCacheERKN4base8FilePathEbRKNS1_8CallbackIFviEEE
 }
+{
+   bug_246148
+   Memcheck:Leak
+   fun:_Znw*
+   ...
+   fun:_ZN7content16SiteInstanceImpl10GetProcessEv
+   fun:_ZN7content18RenderViewHostImplC1EPNS_12SiteInstanceEPNS_22RenderViewHostDelegateEPNS_24RenderWidgetHostDelegateEiibPNS_23SessionStorageNamespaceE
+   fun:_ZN7content21RenderViewHostFactory6CreateEPNS_12SiteInstanceEPNS_22RenderViewHostDelegateEPNS_24RenderWidgetHostDelegateEiibPNS_23SessionStorageNamespaceE
+   fun:_ZN7content21RenderViewHostManager4InitEPNS_14BrowserContextEPNS_12SiteInstanceEii
+   fun:_ZN7content15WebContentsImpl4InitERKNS_11WebContents12CreateParamsE
+   fun:_ZN7content15TestWebContents6CreateEPNS_14BrowserContextEPNS_12SiteInstanceE
+   fun:_ZN7content17WebContentsTester21CreateTestWebContentsEPNS_14BrowserContextEPNS_12SiteInstanceE
+   fun:_ZN8autofill12_GLOBAL__N_128AutofillDialogControllerTest5SetUpEv
+}
