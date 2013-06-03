@@ -1,17 +1,29 @@
 <html>
 <head>
+<style>
+div#img-container {
+    position: relative;
+    width: 99px;
+    height: 99px;
+    overflow: clip;
+}
+</style>
 <script src="../../http/tests/inspector/inspector-test.js"></script>
 <script src="../../http/tests/inspector/timeline-test.js"></script>
 <script>
 
 function addImage(src, width, height, callback)
 {
-    var img = document.createElement("img");
+    var img = document.getElementById("img-container").firstElementChild;
     img.width = width;
     img.height = height;
-    img.onload = callback;
+    img.onload = function()
+    {
+        if (window.testRunner)
+            testRunner.display();
+        callback();
+    }
     img.src = src;
-    document.body.appendChild(img);
 }
 
 function addImage1() { addImage("resources/test.bmp", "25", "25", addImage2); }
@@ -20,14 +32,11 @@ function addImage3() { addImage("resources/test.ico", "25", "25", addImage4); }
 function addImage4() { addImage("resources/test.jpg", "25", "25", addImage5); }
 function addImage5() { addImage("resources/test.png", "25", "25", addImage6); }
 function addImage6() { addImage("resources/test.webp", "25", "25", addImage7); }
-function addImage7() { addImage("resources/big.png", "5000", "5000", displayPage); }
+function addImage7() { addImage("resources/big.png", "150", "150", allImagesAdded); }
 
-function displayPage()
+function allImagesAdded()
 {
-    if (window.testRunner) {
-        testRunner.display();
-        testRunner.waitUntilDone();
-    }
+    document.getElementById("img-container").style.display = "none";
     testRunner.evaluateInWebInspector(0, "window.step2()");
 }
 
@@ -49,8 +58,11 @@ function test()
     {
         for (var i = 0; i < records.length; ++i) {
             var record = records[i];
-            if (record.type === WebInspector.TimelineModel.RecordType.DecodeImage || record.type === WebInspector.TimelineModel.RecordType.ResizeImage)
+            if (record.type === WebInspector.TimelineModel.RecordType.DecodeImage || record.type === WebInspector.TimelineModel.RecordType.ResizeImage) {
+                // Some decode events may happen in the background, so we won't have a stack trace.
+                delete record.stackTrace;
                 InspectorTest.printTimelineRecordProperties(record);
+            }
         }
         InspectorTest.completeTest();
     }
@@ -63,6 +75,6 @@ function test()
 <p>
 Tests the Timeline API instrumentation of a DecodeImage and ResizeImage events
 </p>
-
+<div id="img-container"><img></div>
 </body>
 </html>
