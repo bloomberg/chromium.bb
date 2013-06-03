@@ -158,6 +158,8 @@ void Path::apply(void* info, PathApplierFunction function) const
             break;
         case SkPath::kDone_Verb:
             return;
+        default: // place-holder for kConic_Verb, when that lands from skia
+            break;
         }
         function(info, &pathElement);
     }
