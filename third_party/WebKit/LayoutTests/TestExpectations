@@ -1920,3 +1920,4 @@ crbug.com/245670 [ Linux ] fast/forms/access-key-for-all-elements.html [ Failure
 crbug.com/169734 [ Win ] inspector-protocol/console-timestamp.html [ Failure Pass ]
 crbug.com/246072 fast/forms/post-popup-no-multiple-windows.html [ Pass Timeout ]
 
+crbug.com/246118 [ Debug ] inspector/timeline/timeline-decode-resize.html [ Crash Pass Slow ]
