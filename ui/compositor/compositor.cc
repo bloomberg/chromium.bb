@@ -212,11 +212,11 @@ WebKit::WebGraphicsContext3D* DefaultContextFactory::CreateOffscreenContext() {
 
 scoped_refptr<cc::ContextProvider>
 DefaultContextFactory::OffscreenContextProviderForMainThread() {
-  if (!offscreen_contexts_main_thread_ ||
+  if (!offscreen_contexts_main_thread_.get() ||
       !offscreen_contexts_main_thread_->DestroyedOnMainThread()) {
     offscreen_contexts_main_thread_ =
         ContextProviderFromContextFactory::Create(this);
-    if (offscreen_contexts_main_thread_ &&
+    if (offscreen_contexts_main_thread_.get() &&
         !offscreen_contexts_main_thread_->BindToCurrentThread())
       offscreen_contexts_main_thread_ = NULL;
   }
@@ -225,7 +225,7 @@ DefaultContextFactory::OffscreenContextProviderForMainThread() {
 
 scoped_refptr<cc::ContextProvider>
 DefaultContextFactory::OffscreenContextProviderForCompositorThread() {
-  if (!offscreen_contexts_compositor_thread_ ||
+  if (!offscreen_contexts_compositor_thread_.get() ||
       !offscreen_contexts_compositor_thread_->DestroyedOnMainThread()) {
     offscreen_contexts_compositor_thread_ =
         ContextProviderFromContextFactory::Create(this);
@@ -283,7 +283,7 @@ WebKit::WebGraphicsContext3D* TestContextFactory::CreateOffscreenContext() {
 
 scoped_refptr<cc::ContextProvider>
 TestContextFactory::OffscreenContextProviderForMainThread() {
-  if (!offscreen_contexts_main_thread_ ||
+  if (!offscreen_contexts_main_thread_.get() ||
       offscreen_contexts_main_thread_->DestroyedOnMainThread()) {
     offscreen_contexts_main_thread_ =
         ContextProviderFromContextFactory::Create(this);
@@ -294,7 +294,7 @@ TestContextFactory::OffscreenContextProviderForMainThread() {
 
 scoped_refptr<cc::ContextProvider>
 TestContextFactory::OffscreenContextProviderForCompositorThread() {
-  if (!offscreen_contexts_compositor_thread_ ||
+  if (!offscreen_contexts_compositor_thread_.get() ||
       offscreen_contexts_compositor_thread_->DestroyedOnMainThread()) {
     offscreen_contexts_compositor_thread_ =
         ContextProviderFromContextFactory::Create(this);

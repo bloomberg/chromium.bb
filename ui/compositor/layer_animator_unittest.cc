@@ -2308,7 +2308,7 @@ TEST(LayerAnimatorTest, TestSetterRespectEnqueueStrategy) {
 
   delegate.SetOpacityFromAnimation(start_opacity);
 
-  ScopedLayerAnimationSettings settings(animator);
+  ScopedLayerAnimationSettings settings(animator.get());
   settings.SetPreemptionStrategy(
       LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
   settings.SetTransitionDuration(base::TimeDelta::FromSeconds(1));

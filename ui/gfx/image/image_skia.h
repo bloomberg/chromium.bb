@@ -114,7 +114,7 @@ class UI_EXPORT ImageSkia {
   bool IsThreadSafe() const;
 
   // Returns true if this is a null object.
-  bool isNull() const { return storage_ == NULL; }
+  bool isNull() const { return storage_.get() == NULL; }
 
   // Width and height of image in DIP coordinate system.
   int width() const;

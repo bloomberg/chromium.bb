@@ -304,23 +304,23 @@ const ImageSkiaRep& ImageSkia::GetRepresentation(
 }
 
 void ImageSkia::SetReadOnly() {
-  CHECK(storage_);
+  CHECK(storage_.get());
   storage_->SetReadOnly();
   DetachStorageFromThread();
 }
 
 void ImageSkia::MakeThreadSafe() {
-  CHECK(storage_);
+  CHECK(storage_.get());
   EnsureRepsForSupportedScaleFactors();
   // Delete source as we no longer needs it.
-  if (storage_)
+  if (storage_.get())
     storage_->DeleteSource();
   storage_->SetReadOnly();
   CHECK(IsThreadSafe());
 }
 
 bool ImageSkia::IsThreadSafe() const {
-  return !storage_ || (storage_->read_only() && !storage_->has_source());
+  return !storage_.get() || (storage_->read_only() && !storage_->has_source());
 }
 
 int ImageSkia::width() const {
@@ -358,7 +358,7 @@ void ImageSkia::EnsureRepsForSupportedScaleFactors() const {
   // Don't check ReadOnly because the source may generate images
   // even for read only ImageSkia. Concurrent access will be protected
   // by |DCHECK(CalledOnValidThread())| in FindRepresentation.
-  if (storage_ && storage_->has_source()) {
+  if (storage_.get() && storage_->has_source()) {
     std::vector<ui::ScaleFactor> supported_scale_factors =
         ui::GetSupportedScaleFactors();
     for (size_t i = 0; i < supported_scale_factors.size(); ++i)
@@ -398,15 +398,15 @@ SkBitmap& ImageSkia::GetBitmap() const {
 }
 
 bool ImageSkia::CanRead() const {
-  return !storage_ || storage_->CanRead();
+  return !storage_.get() || storage_->CanRead();
 }
 
 bool ImageSkia::CanModify() const {
-  return !storage_ || storage_->CanModify();
+  return !storage_.get() || storage_->CanModify();
 }
 
 void ImageSkia::DetachStorageFromThread() {
-  if (storage_)
+  if (storage_.get())
     storage_->DetachFromThread();
 }
 

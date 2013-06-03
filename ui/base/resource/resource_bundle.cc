@@ -608,7 +608,7 @@ bool ResourceBundle::LoadBitmap(const ResourceHandle& data_handle,
   DCHECK(fell_back_to_1x);
   scoped_refptr<base::RefCountedMemory> memory(
       data_handle.GetStaticMemory(resource_id));
-  if (!memory)
+  if (!memory.get())
     return false;
 
   if (DecodePNG(memory->front(), memory->size(), bitmap, fell_back_to_1x))
