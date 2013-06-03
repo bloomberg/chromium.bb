@@ -129,8 +129,19 @@ def ProcessSuperinstructionsFile(filename, bitness, gas, objdump, out_file):
           validate_superinstruction = spec.ValidateSuperinstruction32
         else:
           validate_superinstruction = spec.ValidateSuperinstruction64
-        superinstruction_valid = validate_superinstruction(superinstruction)
-        assert superinstruction_validated == superinstruction_valid
+
+        try:
+          validate_superinstruction(superinstruction)
+          assert superinstruction_validated, (
+              'validator rejected superinstruction allowed by spec',
+              superinstruction)
+        except spec.SandboxingError as e:
+          assert not superinstruction_validated, (
+              'validator allowed superinstruction rejected by spec',
+              superinstruction,
+              e)
+        except spec.DoNotMatchError:
+          raise
   finally:
     os.remove(object_file.name)
 

@@ -203,7 +203,6 @@ def DisassembleChunk(data, bitness):
     instructions = []
     total_bytes = 0
     for line in objdump_parser.SkipHeader(objdump_proc.stdout):
-      print repr(line)
       insn = objdump_parser.ParseLine(line)
       insn = objdump_parser.CanonicalizeInstruction(insn)
       instructions.append(insn)

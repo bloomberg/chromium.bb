@@ -8,7 +8,33 @@
 # Should serve as formal and up-to-date ABI reference and as baseline for
 # validator exhaustive tests.
 
+# It is generally organized as a set of functions responsible for recognizing
+# and validating specific patterns (jump instructions, regular instructions,
+# superinstructions, etc.)
+# There are three outcomes for running such function:
+#   - function raises DoNotMatchError (which means instruction is of completely
+#     different structure, for example when we call ValidateSuperinstruction on
+#     nop)
+#   - function raises SandboxingError (which means instruction generally matches
+#     respective pattern, but some rules are violated)
+#   - function returns (which means instruction(s) is(are) safe)
+#
+# Why exceptions instead of returning False or something? Because they carry
+# stack traces, which makes it easier to investigate why particular instruction
+# was rejected.
+# Why distinguish DoNotMatchError and SandboxingError? Because on the topmost
+# level we attempt to call all matchers and we need to see which error message
+# was most relevant.
+
 import re
+
+
+class DoNotMatchError(Exception):
+  pass
+
+
+class SandboxingError(Exception):
+  pass
 
 
 def ValidateSuperinstruction32(superinstruction):
@@ -24,8 +50,6 @@ def ValidateSuperinstruction32(superinstruction):
 
   Args:
       superinstruction: list of objdump_parser.Instruction tuples
-  Returns:
-      True if superinstruction is valid, otherwise False
   """
 
   call_jmp = re.compile(
@@ -40,16 +64,22 @@ def ValidateSuperinstruction32(superinstruction):
   if call_jmp.match(dangerous_instruction):
     # If "dangerous instruction" is call or jmp then we need to check if two
     # lines match
-    assert len(superinstruction) == 2
+
+    if len(superinstruction) != 2:
+      raise DoNotMatchError(superinstruction)
+
     register_and = (
         and_for_call_jmp.match(superinstruction[0].disasm).group('register'))
     register_call_jmp = call_jmp.match(dangerous_instruction).group('register')
     if register_and == register_call_jmp:
-      return True
-    return False
+      return
 
-  assert False, ('Unknown "dangerous" instruction: {0}'.
-                 format(dangerous_instruction))
+    raise SandboxingError(
+        'nacljump32/naclcall32: {0} != {1}'.format(
+            register_and, register_call_jmp),
+        superinstruction)
+
+  raise DoNotMatchError(superinstruction)
 
 
 def ValidateSuperinstruction64(superinstruction):
@@ -66,8 +96,6 @@ def ValidateSuperinstruction64(superinstruction):
 
   Args:
       superinstruction: list of objdump_parser.Instruction tuples
-  Returns:
-      True if superinstruction is valid, otherwise False
   """
 
   dangerous_instruction = superinstruction[-1].disasm
@@ -85,7 +113,9 @@ def ValidateSuperinstruction64(superinstruction):
   if callq_jmpq.match(dangerous_instruction):
     # If "dangerous instruction" is callq or jmpq then we need to check if all
     # three lines match
-    assert len(superinstruction) == 3
+
+    if len(superinstruction) != 3:
+      raise DoNotMatchError(superinstruction)
     register_and = (
         and_for_callq_jmpq.match(superinstruction[0].disasm).group('register'))
     register_add = (
@@ -102,8 +132,14 @@ def ValidateSuperinstruction64(superinstruction):
       assert False, ('Unknown (or possible non-32-bit) register found. '
                      'This should never happen!')
     if register_and == register_add == register_callq_jmpq:
-      return True
-    return False
+      return
+
+    raise SandboxingError(
+        'nacljump64/naclcall64: registers do not match ({0}, {1}, {2})'.format(
+            register_and, register_add, register_callq_jmpq),
+        superinstruction)
+
+    raise DoNotMatchError(superinstruction)
 
   # These are dangerous string instructions (there are three cases)
   string_instruction_rdi_no_rsi = re.compile(
@@ -123,25 +159,37 @@ def ValidateSuperinstruction64(superinstruction):
   lea_r15_rdi_rdi = re.compile(r'lea [(]%r15,%rdi,1[)],%rdi$')
 
   if string_instruction_rsi_no_rdi.match(dangerous_instruction):
-    assert len(superinstruction) == 3
-    assert mov_esi_esi.match(superinstruction[0].disasm) is not None
-    assert lea_r15_rsi_rsi.match(superinstruction[1].disasm) is not None
-    return True
+    if len(superinstruction) != 3:
+      raise DoNotMatchError(superinstruction)
+    if mov_esi_esi.match(superinstruction[0].disasm) is None:
+      raise DoNotMatchError(superinstruction)
+    if lea_r15_rsi_rsi.match(superinstruction[1].disasm) is None:
+      raise DoNotMatchError(superinstruction)
+    return
 
   if string_instruction_rdi_no_rsi.match(dangerous_instruction):
-    assert len(superinstruction) == 3
-    assert mov_edi_edi.match(superinstruction[0].disasm) is not None
-    assert lea_r15_rdi_rdi.match(superinstruction[1].disasm) is not None
+    if len(superinstruction) != 3:
+      raise DoNotMatchError(superinstruction)
+    if mov_edi_edi.match(superinstruction[0].disasm) is None:
+      raise DoNotMatchError(superinstruction)
+    if lea_r15_rdi_rdi.match(superinstruction[1].disasm) is None:
+      raise DoNotMatchError(superinstruction)
     # vmaskmovdqu is disabled for compatibility with the previous validator
-    return not dangerous_instruction.startswith('vmaskmovdqu ')
+    if dangerous_instruction.startswith('vmaskmovdqu '):
+      raise SandboxingError('vmaskmovdqu is disallowed', superinstruction)
+    return
 
   if string_instruction_rsi_rdi.match(dangerous_instruction):
-    assert len(superinstruction) == 5
-    assert mov_esi_esi.match(superinstruction[0].disasm) is not None
-    assert lea_r15_rsi_rsi.match(superinstruction[1].disasm) is not None
-    assert mov_edi_edi.match(superinstruction[2].disasm) is not None
-    assert lea_r15_rdi_rdi.match(superinstruction[3].disasm) is not None
-    return True
+    if len(superinstruction) != 5:
+      raise DoNotMatchError(superinstruction)
+    if mov_esi_esi.match(superinstruction[0].disasm) is None:
+      raise DoNotMatchError(superinstruction)
+    if lea_r15_rsi_rsi.match(superinstruction[1].disasm) is None:
+      raise DoNotMatchError(superinstruction)
+    if mov_edi_edi.match(superinstruction[2].disasm) is None:
+      raise DoNotMatchError(superinstruction)
+    if lea_r15_rdi_rdi.match(superinstruction[3].disasm) is None:
+      raise DoNotMatchError(superinstruction)
+    return
 
-  assert False, ('Unknown "dangerous" instruction: {0}'.
-                 format(dangerous_instruction))
+  raise DoNotMatchError(superinstruction)
