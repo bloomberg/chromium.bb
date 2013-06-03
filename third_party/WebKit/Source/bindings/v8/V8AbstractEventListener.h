@@ -84,12 +84,12 @@ namespace WebCore {
             // Protect this event listener to keep it alive.
             RefPtr<V8AbstractEventListener> guard(this);
             prepareListenerObject(context);
-            return v8::Local<v8::Object>::New(m_listener.get());
+            return m_listener.newLocal(m_isolate);
         }
 
         v8::Local<v8::Object> getExistingListenerObject()
         {
-            return v8::Local<v8::Object>::New(m_listener.get());
+            return m_listener.newLocal(m_isolate);
         }
 
         // Provides access to the underlying handle for GC. Returned

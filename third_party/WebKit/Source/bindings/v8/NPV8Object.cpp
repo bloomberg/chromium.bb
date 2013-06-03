@@ -268,7 +268,7 @@ bool _NPN_InvokeDefault(NPP npp, NPObject* npObject, const NPVariant* arguments,
 
     VOID_TO_NPVARIANT(*result);
 
-    v8::HandleScope handleScope;
+    v8::HandleScope handleScope(isolate);
     v8::Handle<v8::Context> context = toV8Context(npp, npObject);
     if (context.IsEmpty())
         return false;
@@ -277,7 +277,7 @@ bool _NPN_InvokeDefault(NPP npp, NPObject* npObject, const NPVariant* arguments,
     ExceptionCatcher exceptionCatcher;
 
     // Lookup the function object and call it.
-    v8::Handle<v8::Object> functionObject(v8NpObject->v8Object);
+    v8::Local<v8::Object> functionObject = v8::Local<v8::Object>::New(isolate, v8NpObject->v8Object);
     if (!functionObject->IsFunction())
         return false;
 
