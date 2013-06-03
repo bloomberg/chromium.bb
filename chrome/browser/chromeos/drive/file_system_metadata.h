@@ -20,7 +20,7 @@ struct FileSystemMetadata {
   // from the one on the server)
   int64 largest_changestamp;
 
-  // True if the feed is now being fetched from the server.
+  // True if the resource metadata is now being fetched from the server.
   bool refreshing;
 
   // Time of the last update check.

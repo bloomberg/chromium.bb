@@ -39,14 +39,14 @@ class SearchOperation {
                   internal::ResourceMetadata* metadata);
   ~SearchOperation();
 
-  // Performs server side content search operation for |search_query|.
-  // If |next_feed| is set, this is the feed url that will be fetched.
-  // Upon completion, |callback| will be called with the result.
-  // This is implementation of FileSystemInterface::Search() method.
+  // Performs server side content search operation for |search_query|.  If
+  // |next_url| is set, this is the search result url that will be fetched.
+  // Upon completion, |callback| will be called with the result.  This is
+  // implementation of FileSystemInterface::Search() method.
   //
   // |callback| must not be null.
   void Search(const std::string& search_query,
-              const GURL& next_feed,
+              const GURL& next_url,
               const SearchCallback& callback);
 
  private:
@@ -61,7 +61,7 @@ class SearchOperation {
   // is completed.
   void SearchAfterRefreshEntry(
       const SearchCallback& callback,
-      const GURL& next_feed,
+      const GURL& next_url,
       scoped_ptr<std::vector<SearchResultInfo> > result,
       FileError error);
 

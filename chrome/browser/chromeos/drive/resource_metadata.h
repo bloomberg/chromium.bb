@@ -76,7 +76,7 @@ typedef base::Callback<void(FileError error,
                             scoped_ptr<ResourceEntryVector> entries)>
     ReadDirectoryCallback;
 
-// Used to get a set of changed directories for feed processing.
+// Used to get a set of child directories.
 typedef base::Callback<void(const std::set<base::FilePath>&)>
     GetChildDirectoriesCallback;
 

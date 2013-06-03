@@ -31,7 +31,7 @@ FileError UpdateLocalStateForCreateDirectoryRecursively(
   DCHECK(file_path);
 
   FileError result = metadata->AddEntry(entry);
-  // Depending on timing, a metadata may be updated by delta feed already.
+  // Depending on timing, a metadata may be updated by change list already.
   // So, FILE_ERROR_EXISTS is not an error.
   if (result == FILE_ERROR_EXISTS)
     result = FILE_ERROR_OK;

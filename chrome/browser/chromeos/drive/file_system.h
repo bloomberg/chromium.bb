@@ -78,7 +78,7 @@ class FileSystem : public FileSystemInterface,
       const std::string& resource_id,
       const GetResourceEntryCallback& callback) OVERRIDE;
   virtual void Search(const std::string& search_query,
-                      const GURL& next_feed,
+                      const GURL& next_url,
                       const SearchCallback& callback) OVERRIDE;
   virtual void SearchMetadata(const std::string& query,
                               int options,
@@ -172,8 +172,7 @@ class FileSystem : public FileSystemInterface,
   virtual void OnLoadFromServerComplete() OVERRIDE;
   virtual void OnInitialLoadComplete() OVERRIDE;
 
-  // Used in tests to update the file system from |feed_list|.
-  // See also the comment at ChangeListLoader::UpdateFromFeed().
+  // Used in tests to update the file system using the change list loader.
   internal::ChangeListLoader* change_list_loader() {
     return change_list_loader_.get();
   }

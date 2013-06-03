@@ -85,12 +85,12 @@ SearchOperation::~SearchOperation() {
 }
 
 void SearchOperation::Search(const std::string& search_query,
-                             const GURL& next_feed,
+                             const GURL& next_url,
                              const SearchCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  if (next_feed.is_empty()) {
+  if (next_url.is_empty()) {
     // This is first request for the |search_query|.
     scheduler_->Search(
         search_query,
@@ -99,7 +99,7 @@ void SearchOperation::Search(const std::string& search_query,
   } else {
     // There is the remaining result so fetch it.
     scheduler_->ContinueGetResourceList(
-        next_feed,
+        next_url,
         base::Bind(&SearchOperation::SearchAfterGetResourceList,
                    weak_ptr_factory_.GetWeakPtr(), callback));
   }
@@ -120,8 +120,8 @@ void SearchOperation::SearchAfterGetResourceList(
 
   DCHECK(resource_list);
 
-  GURL next_feed;
-  resource_list->GetNextFeedURL(&next_feed);
+  GURL next_url;
+  resource_list->GetNextFeedURL(&next_url);
 
   // The search results will be returned using virtual directory.
   // The directory is not really part of the file system, so it has no parent or
@@ -131,7 +131,7 @@ void SearchOperation::SearchAfterGetResourceList(
   if (resource_list->entries().empty()) {
     // Short cut. If the resource entry is empty, we don't need to refresh
     // the resource metadata.
-    callback.Run(FILE_ERROR_OK, next_feed, result.Pass());
+    callback.Run(FILE_ERROR_OK, next_url, result.Pass());
     return;
   }
 
@@ -146,13 +146,13 @@ void SearchOperation::SearchAfterGetResourceList(
       base::Bind(&SearchOperation::SearchAfterRefreshEntry,
                  weak_ptr_factory_.GetWeakPtr(),
                  callback,
-                 next_feed,
+                 next_url,
                  base::Passed(&result)));
 }
 
 void SearchOperation::SearchAfterRefreshEntry(
     const SearchCallback& callback,
-    const GURL& next_feed,
+    const GURL& next_url,
     scoped_ptr<std::vector<SearchResultInfo> > result,
     FileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -164,7 +164,7 @@ void SearchOperation::SearchAfterRefreshEntry(
     return;
   }
 
-  callback.Run(error, next_feed, result.Pass());
+  callback.Run(error, next_url, result.Pass());
 }
 
 }  // namespace file_system

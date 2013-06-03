@@ -95,7 +95,7 @@ typedef base::Callback<void(FileError error,
 // If |error| is not FILE_ERROR_OK, |result_paths| is empty.
 typedef base::Callback<void(
     FileError error,
-    const GURL& next_feed,
+    const GURL& next_url,
     scoped_ptr<std::vector<SearchResultInfo> > result_paths)> SearchCallback;
 
 // Callback for SearchMetadata(). On success, |error| is FILE_ERROR_OK, and
@@ -397,13 +397,13 @@ class FileSystemInterface {
                                 const FileOperationCallback& callback) = 0;
 
   // Does server side content search for |search_query|.
-  // If |next_feed| is set, this is the feed url that will be fetched.
+  // If |next_url| is set, this is the search result url that will be fetched.
   // Search results will be returned as a list of results' |SearchResultInfo|
   // structs, which contains file's path and is_directory flag.
   //
   // |callback| must not be null.
   virtual void Search(const std::string& search_query,
-                      const GURL& next_feed,
+                      const GURL& next_url,
                       const SearchCallback& callback) = 0;
 
   // Searches the local resource metadata, and returns the entries
@@ -451,7 +451,7 @@ class FileSystemInterface {
       const std::string& md5,
       const GetCacheEntryCallback& callback) = 0;
 
-  // Reloads the file system feeds from the server.
+  // Reloads the resource metadata from the server.
   virtual void Reload() = 0;
 };
 

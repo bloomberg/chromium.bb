@@ -68,7 +68,7 @@ class FileCache {
   // Enum defining GCache subdirectory location.
   // This indexes into |FileCache::cache_paths_| vector.
   enum CacheSubDirectoryType {
-    CACHE_TYPE_META = 0,       // Downloaded feeds.
+    CACHE_TYPE_META = 0,       // Resource metadata.
     CACHE_TYPE_PERSISTENT,     // Files that are pinned or modified locally,
                                // not evictable, hopefully.
     CACHE_TYPE_TMP,            // Files that don't meet criteria to be in

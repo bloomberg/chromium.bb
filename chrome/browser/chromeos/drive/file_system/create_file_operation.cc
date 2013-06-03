@@ -85,7 +85,7 @@ FileError UpdateLocalStateForCreateFile(
   ResourceEntry entry = ConvertToResourceEntry(*resource_entry);
   FileError error = metadata->AddEntry(entry);
 
-  // Depending on timing, the metadata may have inserted via change list feed
+  // Depending on timing, the metadata may have inserted via change list
   // already. So, FILE_ERROR_EXISTS is not an error.
   if (error == FILE_ERROR_EXISTS)
     error = FILE_ERROR_OK;

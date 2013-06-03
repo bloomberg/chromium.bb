@@ -265,7 +265,7 @@ void JobScheduler::GetChangeList(
 }
 
 void JobScheduler::ContinueGetResourceList(
-    const GURL& feed_url,
+    const GURL& next_url,
     const google_apis::GetResourceListCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
@@ -274,7 +274,7 @@ void JobScheduler::ContinueGetResourceList(
   new_job->task = base::Bind(
       &google_apis::DriveServiceInterface::ContinueGetResourceList,
       base::Unretained(drive_service_),
-      feed_url,
+      next_url,
       base::Bind(&JobScheduler::OnGetResourceListJobDone,
                  weak_ptr_factory_.GetWeakPtr(),
                  new_job->job_info.job_id,

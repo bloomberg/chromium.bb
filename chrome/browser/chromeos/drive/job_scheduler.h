@@ -89,7 +89,7 @@ class JobScheduler
   // Adds ContinueGetResourceList operation to the queue.
   // |callback| must not be null.
   void ContinueGetResourceList(
-      const GURL& feed_url,
+      const GURL& next_url,
       const google_apis::GetResourceListCallback& callback);
 
   // Adds a GetResourceEntry operation to the queue.

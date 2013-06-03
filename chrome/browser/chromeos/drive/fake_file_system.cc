@@ -211,7 +211,7 @@ void FakeFileSystem::RefreshDirectory(
 }
 
 void FakeFileSystem::Search(const std::string& search_query,
-                            const GURL& next_feed,
+                            const GURL& next_url,
                             const SearchCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }

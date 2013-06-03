@@ -691,11 +691,11 @@ void FileSystem::OnGetAboutResource(
 }
 
 void FileSystem::Search(const std::string& search_query,
-                        const GURL& next_feed,
+                        const GURL& next_url,
                         const SearchCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
-  search_operation_->Search(search_query, next_feed, callback);
+  search_operation_->Search(search_query, next_url, callback);
 }
 
 void FileSystem::SearchMetadata(const std::string& query,

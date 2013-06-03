@@ -39,8 +39,6 @@ namespace {
 typedef fileapi::RemoteFileSystemProxyInterface::OpenFileCallback
     OpenFileCallback;
 
-const char kFeedField[] = "feed";
-
 // Helper function to run reply on results of base::CreatePlatformFile() on
 // IO thread.
 void OnPlatformFileOpened(

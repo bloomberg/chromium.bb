@@ -83,7 +83,7 @@ class DummyFileSystem : public FileSystemInterface {
       const base::FilePath& file_path,
       const FileOperationCallback& callback) OVERRIDE {}
   virtual void Search(const std::string& search_query,
-                      const GURL& next_feed,
+                      const GURL& next_url,
                       const SearchCallback& callback) OVERRIDE {}
   virtual void SearchMetadata(
       const std::string& query,

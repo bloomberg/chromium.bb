@@ -30,7 +30,7 @@ class MockFileSystem : public FileSystemInterface {
                void(const std::string& resource_id,
                     const GetResourceEntryCallback& callback));
   MOCK_METHOD3(Search, void(const std::string& search_query,
-                            const GURL& next_feed,
+                            const GURL& next_url,
                             const SearchCallback& callback));
   MOCK_METHOD4(SearchMetadata, void(const std::string& query,
                                     int options,
