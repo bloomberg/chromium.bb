@@ -115,11 +115,6 @@ DEFINE_GLOBAL(QualifiedName, anyName, nullAtom, starAtom, starAtom)
 
 void QualifiedName::init()
 {
-    static bool initialized;
-    if (initialized)
-        return;
-    initialized = true;
-
     ASSERT(starAtom.impl());
     new ((void*)&anyName) QualifiedName(nullAtom, starAtom, starAtom);
 }

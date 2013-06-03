@@ -37,6 +37,7 @@
 #include "WebWorkerClientImpl.h"
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8RecursionScope.h"
+#include "core/Init.h"
 #include "core/dom/CustomElementRegistry.h"
 #include "core/dom/MutationObserver.h"
 #include "core/page/Frame.h"

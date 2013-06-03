@@ -30,17 +30,11 @@
 #include "config.h"
 #include "core/page/Frame.h"
 
-#include "CSSPropertyNames.h"
-#include "FontFamilyNames.h"
-#include "HTMLNames.h"
-#include "XMLNSNames.h"
-#include "XMLNames.h"
 #include "bindings/v8/ScriptController.h"
 #include "bindings/v8/ScriptSourceCode.h"
 #include "bindings/v8/ScriptValue.h"
 #include "bindings/v8/npruntime_impl.h"
 #include "core/css/CSSComputedStyleDeclaration.h"
-#include "core/css/MediaFeatureNames.h"
 #include "core/css/StylePropertySet.h"
 #include "core/dom/DocumentType.h"
 #include "core/dom/Event.h"
@@ -100,11 +94,6 @@
 #include <wtf/PassOwnPtr.h>
 #include <wtf/RefCountedLeakCounter.h>
 #include <wtf/StdLibExtras.h>
-#include <wtf/text/StringStatics.h>
-
-#include "MathMLNames.h"
-#include "SVGNames.h"
-#include "XLinkNames.h"
 
 using namespace std;
 
@@ -137,21 +126,6 @@ static inline float parentTextZoomFactor(Frame* frame)
     return parent->textZoomFactor();
 }
 
-void init()
-{
-    AtomicString::init();
-    HTMLNames::init();
-    SVGNames::init();
-    XLinkNames::init();
-    MathMLNames::init();
-    XMLNSNames::init();
-    XMLNames::init();
-    FontFamilyNames::init();
-    MediaFeatureNames::init();
-    WTF::StringStatics::init();
-    QualifiedName::init();
-}
-
 inline Frame::Frame(Page* page, HTMLFrameOwnerElement* ownerElement, FrameLoaderClient* frameLoaderClient)
     : m_page(page)
     , m_treeNode(this, parentFromOwnerElement(ownerElement))
@@ -171,7 +145,6 @@ inline Frame::Frame(Page* page, HTMLFrameOwnerElement* ownerElement, FrameLoader
     , m_inViewSourceMode(false)
 {
     ASSERT(page);
-    WebCore::init();
 
     if (ownerElement) {
         page->incrementSubframeCount();

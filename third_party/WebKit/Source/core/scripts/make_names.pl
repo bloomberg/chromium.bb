@@ -559,14 +559,8 @@ sub printInit
 
 print F "\nvoid init()
 {
-    static bool initialized = false;
-    if (initialized)
-        return;
-    initialized = true;
-
     // Use placement new to initialize the globals.
 
-    AtomicString::init();
 ";
 }
 

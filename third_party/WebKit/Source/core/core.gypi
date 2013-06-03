@@ -463,6 +463,8 @@
             'svg/SVGZoomEvent.idl',
         ],
         'webcore_files': [
+            'Init.cpp',
+            'Init.h',
             'accessibility/AXObjectCache.cpp',
             'accessibility/AccessibilityARIAGrid.cpp',
             'accessibility/AccessibilityARIAGrid.h',

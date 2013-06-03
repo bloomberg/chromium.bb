@@ -73,11 +73,6 @@ NEVER_INLINE unsigned StringImpl::hashSlowCase() const
 
 void AtomicString::init()
 {
-    static bool initialized;
-    if (initialized)
-        return;
-    initialized = true;
-
     ASSERT(isMainThread());
 
     new (NotNull, (void*)&nullAtom) AtomicString;
@@ -86,11 +81,6 @@ void AtomicString::init()
 
 void StringStatics::init()
 {
-    static bool initialized;
-    if (initialized)
-        return;
-    initialized = true;
-
     ASSERT(isMainThread());
 
     // FIXME: These should be allocated at compile time.
