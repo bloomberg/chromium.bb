@@ -120,6 +120,10 @@
 #include "chrome/browser/ui/app_list/app_list_service.h"
 #endif
 
+#if defined(ENABLE_WEBRTC)
+#include "chrome/browser/media/webrtc_log_uploader.h"
+#endif
+
 #if (defined(OS_WIN) || defined(OS_LINUX)) && !defined(OS_CHROMEOS)
 // How often to check if the persistent instance of Chrome needs to restart
 // to install an update.
@@ -630,6 +634,14 @@ BrowserProcessImpl::media_file_system_registry() {
 bool BrowserProcessImpl::created_local_state() const {
     return created_local_state_;
 }
+
+#if defined(ENABLE_WEBRTC)
+WebRtcLogUploader* BrowserProcessImpl::webrtc_log_uploader() {
+  if (!webrtc_log_uploader_.get())
+    webrtc_log_uploader_.reset(new WebRtcLogUploader());
+  return webrtc_log_uploader_.get();
+}
+#endif
 
 // static
 void BrowserProcessImpl::RegisterPrefs(PrefRegistrySimple* registry) {
