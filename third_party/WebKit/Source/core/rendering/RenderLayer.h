@@ -878,11 +878,11 @@ public:
     void setForceNeedsCompositedScrolling(ForceNeedsCompositedScrollingMode);
 
 private:
-enum CollectLayersBehavior {
-    ForceLayerToStackingContainer,
-    OverflowScrollCanBeStackingContainers,
-    OnlyStackingContextsCanBeStackingContainers
-};
+    enum CollectLayersBehavior {
+        ForceLayerToStackingContainer,
+        OverflowScrollCanBeStackingContainers,
+        OnlyStackingContextsCanBeStackingContainers
+    };
 
     void updateZOrderLists();
     void rebuildZOrderLists();
