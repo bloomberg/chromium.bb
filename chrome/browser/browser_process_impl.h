@@ -128,9 +128,6 @@ class BrowserProcessImpl : public BrowserProcess,
   virtual chrome::MediaFileSystemRegistry*
       media_file_system_registry() OVERRIDE;
   virtual bool created_local_state() const OVERRIDE;
-#if defined(ENABLE_WEBRTC)
-  virtual WebRtcLogUploader* webrtc_log_uploader() OVERRIDE;
-#endif
 
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
@@ -295,11 +292,6 @@ class BrowserProcessImpl : public BrowserProcess,
   // TODO(eroman): Remove this when done debugging 113031. This tracks
   // the callstack which released the final module reference count.
   base::debug::StackTrace release_last_reference_callstack_;
-
-#if defined(ENABLE_WEBRTC)
-  // Lazily initialized.
-  scoped_ptr<WebRtcLogUploader> webrtc_log_uploader_;
-#endif
 
   DISALLOW_COPY_AND_ASSIGN(BrowserProcessImpl);
 };

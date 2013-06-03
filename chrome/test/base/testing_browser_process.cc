@@ -324,12 +324,6 @@ bool TestingBrowserProcess::created_local_state() const {
     return (local_state_ != NULL);
 }
 
-#if defined(ENABLE_WEBRTC)
-WebRtcLogUploader* TestingBrowserProcess::webrtc_log_uploader() {
-  return NULL;
-}
-#endif
-
 void TestingBrowserProcess::SetBookmarkPromptController(
     BookmarkPromptController* controller) {
 #if !defined(OS_IOS)
