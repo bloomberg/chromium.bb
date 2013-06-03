@@ -31,6 +31,7 @@ per-file spellcheck_result.h=rlp@chromium.org
 per-file spellcheck_result.h=rouslan@chromium.org
 
 # Instant/Search files.
+per-file instant_restricted_id_cache*=sreeram@chromium.org
 per-file instant_types.*=dhollowa@chromium.org
 per-file instant_types.*=jered@chromium.org
 per-file instant_types.*=samarth@chromium.org
