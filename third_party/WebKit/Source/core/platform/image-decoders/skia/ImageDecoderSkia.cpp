@@ -40,6 +40,10 @@ ImageFrame::ImageFrame()
     , m_duration(0)
     , m_disposalMethod(DisposeNotSpecified)
     , m_premultiplyAlpha(true)
+    , m_requiredPreviousFrameIndex(notFound)
+#if !ASSERT_DISABLED
+    , m_requiredPreviousFrameIndexValid(false)
+#endif
 {
 }
 
@@ -61,6 +65,11 @@ ImageFrame& ImageFrame::operator=(const ImageFrame& other)
     // Be sure that this is called after we've called setStatus(), since we
     // look at our status to know what to do with the alpha value.
     setHasAlpha(other.hasAlpha());
+    // Copy raw fields to avoid ASSERT failure in requiredPreviousFrameIndex().
+    m_requiredPreviousFrameIndex = other.m_requiredPreviousFrameIndex;
+#if !ASSERT_DISABLED
+    m_requiredPreviousFrameIndexValid = other.m_requiredPreviousFrameIndexValid;
+#endif
     return *this;
 }
 

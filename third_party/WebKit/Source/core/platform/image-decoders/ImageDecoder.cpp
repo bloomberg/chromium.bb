@@ -127,7 +127,7 @@ bool ImageDecoder::frameIsCompleteAtIndex(size_t index) const
 
 unsigned ImageDecoder::frameBytesAtIndex(size_t index) const
 {
-    if (m_frameBufferCache.size() <= index)
+    if (m_frameBufferCache.size() <= index || m_frameBufferCache[index].status() == ImageFrame::FrameEmpty)
         return 0;
     // FIXME: Use the dimension of the requested frame.
     return m_size.area() * sizeof(ImageFrame::PixelData);
@@ -138,6 +138,75 @@ void ImageDecoder::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
     MemoryClassInfo info(memoryObjectInfo, this, PlatformMemoryTypes::Image);
     info.addMember(m_data, "data");
     info.addMember(m_frameBufferCache, "frameBufferCache");
+}
+
+size_t ImageDecoder::clearCacheExceptFrame(size_t clearExceptFrame)
+{
+    // Don't clear if there are no frames or only one frame.
+    if (m_frameBufferCache.size() <= 1)
+        return 0;
+
+    // We need to preserve frames such that:
+    //  1. We don't clear |clearExceptFrame|;
+    //  2. We don't clear any frame from which a future initFrameBuffer() call
+    //     will copy bitmap data.
+    // All other frames can be cleared.
+    while ((clearExceptFrame < m_frameBufferCache.size()) && (m_frameBufferCache[clearExceptFrame].status() == ImageFrame::FrameEmpty))
+        clearExceptFrame = m_frameBufferCache[clearExceptFrame].requiredPreviousFrameIndex();
+
+    size_t frameBytesCleared = 0;
+    for (size_t i = 0; i < m_frameBufferCache.size(); ++i) {
+        if (i != clearExceptFrame) {
+            frameBytesCleared += frameBytesAtIndex(i);
+            clearFrameBuffer(i);
+        }
+    }
+    return frameBytesCleared;
+}
+
+void ImageDecoder::clearFrameBuffer(size_t frameIndex)
+{
+    m_frameBufferCache[frameIndex].clearPixelData();
+}
+
+size_t ImageDecoder::findRequiredPreviousFrame(size_t frameIndex)
+{
+    ASSERT(frameIndex <= m_frameBufferCache.size());
+    if (!frameIndex) {
+        // The first frame doesn't rely on any previous data.
+        return notFound;
+    }
+
+    // The starting state for this frame depends on the previous frame's
+    // disposal method.
+    size_t prevFrame = frameIndex - 1;
+    const ImageFrame* prevBuffer = &m_frameBufferCache[prevFrame];
+    ASSERT(prevBuffer->requiredPreviousFrameIndexValid());
+
+    switch (prevBuffer->disposalMethod()) {
+    case ImageFrame::DisposeNotSpecified:
+    case ImageFrame::DisposeKeep:
+        // prevFrame will be used as the starting state for this frame.
+        // FIXME: Be even smarter by checking the frame sizes and/or alpha-containing regions.
+        return prevFrame;
+    case ImageFrame::DisposeOverwritePrevious:
+        // Frames that use the DisposeOverwritePrevious method are effectively
+        // no-ops in terms of changing the starting state of a frame compared to
+        // the starting state of the previous frame, so skip over them and
+        // return the required previous frame of it.
+        return prevBuffer->requiredPreviousFrameIndex();
+    case ImageFrame::DisposeOverwriteBgcolor:
+        // If the previous frame fills the whole image, then the current frame
+        // can be decoded alone. Likewise, if the previous frame could be
+        // decoded without reference to any prior frame, the starting state for
+        // this frame is a blank frame, so it can again be decoded alone.
+        // Otherwise, the previous frame contributes to this frame.
+        return (prevBuffer->originalFrameRect().contains(IntRect(IntPoint(), size()))
+            || (prevBuffer->requiredPreviousFrameIndex() == notFound)) ? notFound : prevFrame;
+    default:
+        ASSERT_NOT_REACHED();
+        return notFound;
+    }
 }
 
 } // namespace WebCore

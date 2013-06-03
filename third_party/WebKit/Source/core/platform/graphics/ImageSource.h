@@ -80,30 +80,24 @@ public:
     ~ImageSource();
 
     // Tells the ImageSource that the Image no longer cares about decoded frame
-    // data -- at all (if |destroyAll| is true), or before frame
-    // |clearBeforeFrame| (if |destroyAll| is false). The ImageSource should
-    // delete cached decoded data for these frames where possible to keep memory
-    // usage low. When |destroyAll| is true, the ImageSource should also reset
-    // any local state so that decoding can begin again.
+    // data except for the specified frame. Callers may pass WTF::notFound to
+    // clear all frames.
     //
-    // Implementations that delete less than what's specified above waste
-    // memory. Implementations that delete more may burn CPU re-decoding frames
-    // that could otherwise have been cached, or encounter errors if they're
-    // asked to decode frames they can't decode due to the loss of previous
-    // decoded frames.
+    // In response, the ImageSource should delete cached decoded data for other
+    // frames where possible to keep memory use low. The expectation is that in
+    // the future, the caller may call createFrameAtIndex() with an index larger
+    // than the one passed to this function, and the implementation may then
+    // make use of the preserved frame data here in decoding that frame.
+    // By contrast, callers who call this function and then later ask for an
+    // earlier frame may require more work to be done, e.g. redecoding the image
+    // from the beginning.
     //
-    // Callers should not call clear(false, n) and subsequently call
-    // createFrameAtIndex(m) with m < n, unless they first call clear(true).
-    // This ensures that stateful ImageSources/decoders will work properly.
+    // Implementations may elect to preserve more frames than the one requested
+    // here if doing so is likely to save CPU time in the future, but will pay
+    // an increased memory cost to do so.
     //
-    // The |data| and |allDataReceived| parameters should be supplied by callers
-    // who set |destroyAll| to true if they wish to be able to continue using
-    // the ImageSource. This way implementations which choose to destroy their
-    // decoders in some cases can reconstruct them correctly.
-    void clear(bool destroyAll,
-        size_t clearBeforeFrame = 0,
-        SharedBuffer* data = 0,
-        bool allDataReceived = false);
+    // Returns the number of bytes of frame data actually cleared.
+    size_t clearCacheExceptFrame(size_t);
 
     bool initialized() const;
 
@@ -122,8 +116,6 @@ public:
 
     size_t frameCount() const;
 
-    // Callers should not call this after calling clear() with a higher index;
-    // see comments on clear() above.
     PassNativeImagePtr createFrameAtIndex(size_t);
 
     float frameDurationAtIndex(size_t) const;

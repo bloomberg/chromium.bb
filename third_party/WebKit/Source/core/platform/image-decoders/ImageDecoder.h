@@ -115,6 +115,14 @@ namespace WebCore {
         FrameDisposalMethod disposalMethod() const { return m_disposalMethod; }
         bool premultiplyAlpha() const { return m_premultiplyAlpha; }
         void reportMemoryUsage(MemoryObjectInfo*) const;
+        size_t requiredPreviousFrameIndex() const
+        {
+            ASSERT(m_requiredPreviousFrameIndexValid);
+            return m_requiredPreviousFrameIndex;
+        }
+#if !ASSERT_DISABLED
+        bool requiredPreviousFrameIndexValid() const { return m_requiredPreviousFrameIndexValid; }
+#endif
 
         void setHasAlpha(bool alpha);
         void setOriginalFrameRect(const IntRect& r) { m_originalFrameRect = r; }
@@ -122,6 +130,13 @@ namespace WebCore {
         void setDuration(unsigned duration) { m_duration = duration; }
         void setDisposalMethod(FrameDisposalMethod method) { m_disposalMethod = method; }
         void setPremultiplyAlpha(bool premultiplyAlpha) { m_premultiplyAlpha = premultiplyAlpha; }
+        void setRequiredPreviousFrameIndex(size_t previousFrameIndex)
+        {
+            m_requiredPreviousFrameIndex = previousFrameIndex;
+#if !ASSERT_DISABLED
+            m_requiredPreviousFrameIndexValid = true;
+#endif
+        }
 
         inline void setRGBA(int x, int y, unsigned r, unsigned g, unsigned b, unsigned a)
         {
@@ -200,6 +215,15 @@ namespace WebCore {
         unsigned m_duration;
         FrameDisposalMethod m_disposalMethod;
         bool m_premultiplyAlpha;
+
+        // The frame that must be decoded before this frame can be decoded.
+        // WTF::notFound if this frame doesn't require any previous frame.
+        // This is used by ImageDecoder::clearCacheExceptFrame(), and will never
+        // be read for image formats that do not have multiple frames.
+        size_t m_requiredPreviousFrameIndex;
+#if !ASSERT_DISABLED
+        bool m_requiredPreviousFrameIndexValid;
+#endif
     };
 
     // ImageDecoder is a base for all format-specific decoders
@@ -358,10 +382,13 @@ namespace WebCore {
 
         bool failed() const { return m_failed; }
 
-        // Clears decoded pixel data from before the provided frame unless that
-        // data may be needed to decode future frames (e.g. due to GIF frame
-        // compositing).
-        virtual void clearFrameBufferCache(size_t) { }
+        // Clears decoded pixel data from all frames except the provided frame,
+        // unless that frame has status FrameEmpty, in which case we instead
+        // preserve the most recent frame whose data is required in order to
+        // decode this frame. Callers may pass WTF::notFound to clear all frames.
+        //
+        // Returns the number of bytes of frame data actually cleared.
+        size_t clearCacheExceptFrame(size_t);
 
         // If the image has a cursor hot-spot, stores it in the argument
         // and returns true. Otherwise returns false.
@@ -378,6 +405,25 @@ namespace WebCore {
         }
 
     protected:
+        // Calculates the most recent frame whose image data may be needed in
+        // order to decode frame |frameIndex|, based on frame disposal methods.
+        // If no previous frame's data is required, returns WTF::notFound.
+        //
+        // This function requires that the previous frame's
+        // |m_requiredPreviousFrameIndex| member has been set correctly. The
+        // easiest way to ensure this is for subclasses to call this method and
+        // store the result on the frame via setRequiredPreviousFrameIndex()
+        // as soon as the frame has been created and parsed sufficiently to
+        // determine the disposal method; assuming this happens for all frames
+        // in order, the required invariant will hold.
+        //
+        // Image formats which do not use more than one frame do not need to
+        // worry about this; see comments on
+        // ImageFrame::m_requiredPreviousFrameIndex.
+        size_t findRequiredPreviousFrame(size_t frameIndex);
+
+        virtual void clearFrameBuffer(size_t frameIndex);
+
         RefPtr<SharedBuffer> m_data; // The encoded data.
         Vector<ImageFrame, 1> m_frameBufferCache;
         bool m_premultiplyAlpha;

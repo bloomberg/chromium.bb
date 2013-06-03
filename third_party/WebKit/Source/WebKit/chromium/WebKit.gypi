@@ -46,7 +46,6 @@
             'tests/FrameLoaderClientImplTest.cpp',
             'tests/FrameTestHelpers.cpp',
             'tests/FrameTestHelpers.h',
-            'tests/GIFImageDecoderTest.cpp',
             'tests/GraphicsContextTest.cpp',
             'tests/GraphicsLayerTest.cpp',
             'tests/IDBAbortOnCorruptTest.cpp',
