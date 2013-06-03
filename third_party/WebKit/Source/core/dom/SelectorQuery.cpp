@@ -32,6 +32,7 @@
 #include "core/css/SelectorCheckerFastPath.h"
 #include "core/css/SiblingTraversalStrategies.h"
 #include "core/dom/Document.h"
+#include "core/dom/NodeTraversal.h"
 #include "core/dom/StaticNodeList.h"
 
 namespace WebCore {
@@ -162,32 +163,15 @@ void SelectorDataList::execute(Node* rootNode, Vector<RefPtr<Node> >& matchedEle
             matchedElements.append(element);
         return;
     }
-
-    unsigned selectorCount = m_selectors.size();
-
-    Node* n = traverseRootNode->firstChild();
-    while (n) {
-        if (n->isElementNode()) {
-            Element* element = toElement(n);
-            for (unsigned i = 0; i < selectorCount; ++i) {
-                if (selectorMatches(m_selectors[i], element, rootNode)) {
-                    matchedElements.append(element);
-                    if (firstMatchOnly)
-                        return;
-                    break;
-                }
-            }
-            if (element->firstChild()) {
-                n = element->firstChild();
-                continue;
+    for (Element* element = ElementTraversal::firstWithin(rootNode); element; element = ElementTraversal::next(element, rootNode)) {
+        for (unsigned i = 0; i < m_selectors.size(); ++i) {
+            if (selectorMatches(m_selectors[i], element, rootNode)) {
+                matchedElements.append(element);
+                if (firstMatchOnly)
+                    return;
+                break;
             }
         }
-        while (!n->nextSibling()) {
-            n = n->parentNode();
-            if (n == traverseRootNode)
-                return;
-        }
-        n = n->nextSibling();
     }
 }
 
