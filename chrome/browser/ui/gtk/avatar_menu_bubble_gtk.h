@@ -50,9 +50,16 @@ class AvatarMenuBubbleGtk : public BubbleDelegateGtk,
   CHROMEGTK_CALLBACK_1(AvatarMenuBubbleGtk, void, OnSizeRequest,
                        GtkRequisition*);
   CHROMEGTK_CALLBACK_0(AvatarMenuBubbleGtk, void, OnNewProfileLinkClicked);
+  CHROMEGTK_CALLBACK_0(AvatarMenuBubbleGtk, void, OnSwitchProfileLinkClicked);
 
   // Create all widgets in this bubble.
   void InitContents();
+
+  // Create the menu contents for a normal profile.
+  void InitMenuContents();
+
+  // Create the managed user specific contents of the menu.
+  void InitManagedUserContents();
 
   // Close the bubble and set bubble_ to NULL.
   void CloseBubble();
@@ -63,13 +70,17 @@ class AvatarMenuBubbleGtk : public BubbleDelegateGtk,
   // A weak pointer to the parent widget of all widgets in the bubble.
   GtkWidget* contents_;
 
+  // A weak pointer to the only child widget of |contents_| which contains all
+  // widgets in the bubble.
+  GtkWidget* inner_contents_;
+
   // A weak pointer to the bubble window.
   BubbleGtk* bubble_;
 
   // A weak pointer to the theme service.
   GtkThemeService* theme_service_;
 
-  // A weak pointer to the new proifle link to keep its theme information
+  // A weak pointer to the new profile link to keep its theme information
   // updated.
   GtkWidget* new_profile_link_;
 
@@ -79,6 +90,9 @@ class AvatarMenuBubbleGtk : public BubbleDelegateGtk,
   // The minimum width to display the bubble. This is used to prevent the bubble
   // from automatically reducing its size when hovering over a profile item.
   int minimum_width_;
+
+  // Is set to true if the managed user has clicked on Switch Users.
+  bool switching_;
 
   DISALLOW_COPY_AND_ASSIGN(AvatarMenuBubbleGtk);
 };

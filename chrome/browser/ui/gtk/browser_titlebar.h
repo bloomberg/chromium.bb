@@ -114,6 +114,9 @@ class BrowserTitlebar : public content::NotificationObserver,
   // change in the window.
   void UpdateTextColor();
 
+  // Updates the color of the avatar label text and background.
+  void UpdateAvatarLabel();
+
   // Update the titlebar spacing based on the custom frame and maximized state.
   void UpdateTitlebarAlignment();
 
@@ -198,8 +201,20 @@ class BrowserTitlebar : public content::NotificationObserver,
   GtkWidget* titlebar_left_avatar_frame_;
   GtkWidget* titlebar_right_avatar_frame_;
 
+  // Avatar label. Used if the active profile is managed. The label is either
+  // displayed on the right side of the avatar image if the image is displayed
+  // on the left, or on the left side of the avatar image if the image is
+  // displayed on the right.
+  GtkWidget* titlebar_left_label_frame_;
+  GtkWidget* titlebar_right_label_frame_;
+
   // The avatar image widget. It will be NULL if there is no avatar displayed.
   GtkWidget* avatar_;
+
+  // The avatar label of a managed user. It will be NULL if no avatar label is
+  // displayed.
+  GtkWidget* avatar_label_;
+  GtkWidget* avatar_label_bg_;
 
   // Padding between the titlebar buttons and the top of the screen. Only show
   // when not maximized.

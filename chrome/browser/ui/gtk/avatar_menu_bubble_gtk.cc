@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/gtk/avatar_menu_bubble_gtk.h"
 
 #include "base/i18n/rtl.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/avatar_menu_model.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
@@ -39,14 +40,14 @@ AvatarMenuBubbleGtk::AvatarMenuBubbleGtk(Browser* browser,
                                          BubbleGtk::FrameStyle arrow,
                                          const gfx::Rect* rect)
     : contents_(NULL),
+      inner_contents_(NULL),
       theme_service_(GtkThemeService::GetFrom(browser->profile())),
       new_profile_link_(NULL),
-      minimum_width_(kBubbleMinWidth) {
+      minimum_width_(kBubbleMinWidth),
+      switching_(false) {
   avatar_menu_model_.reset(new AvatarMenuModel(
       &g_browser_process->profile_manager()->GetProfileInfoCache(),
       this, browser));
-
-  InitContents();
 
   OnAvatarMenuModelChanged(avatar_menu_model_.get());
 
@@ -118,17 +119,14 @@ void AvatarMenuBubbleGtk::OnNewProfileLinkClicked(GtkWidget* link) {
   CloseBubble();
 }
 
-void AvatarMenuBubbleGtk::InitContents() {
+void AvatarMenuBubbleGtk::OnSwitchProfileLinkClicked(GtkWidget* link) {
+  switching_ = true;
+  OnAvatarMenuModelChanged(avatar_menu_model_.get());
+}
+
+void AvatarMenuBubbleGtk::InitMenuContents() {
   size_t profile_count = avatar_menu_model_->GetNumberOfItems();
-
-  contents_ = gtk_vbox_new(FALSE, ui::kControlSpacing);
-  gtk_container_set_border_width(GTK_CONTAINER(contents_),
-                                 ui::kContentAreaBorder);
-  g_signal_connect(contents_, "size-request",
-                   G_CALLBACK(OnSizeRequestThunk), this);
-
   GtkWidget* items_vbox = gtk_vbox_new(FALSE, ui::kContentAreaSpacing);
-
   for (size_t i = 0; i < profile_count; ++i) {
     AvatarMenuModel::Item menu_item = avatar_menu_model_->GetItemAt(i);
     AvatarMenuItemGtk* item = new AvatarMenuItemGtk(
@@ -140,11 +138,11 @@ void AvatarMenuBubbleGtk::InitContents() {
     if (menu_item.active)
       gtk_container_set_focus_child(GTK_CONTAINER(items_vbox), item->widget());
   }
-
-  gtk_box_pack_start(GTK_BOX(contents_), items_vbox, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(inner_contents_), items_vbox, TRUE, TRUE, 0);
 
   if (avatar_menu_model_->ShouldShowAddNewProfileLink()) {
-    gtk_box_pack_start(GTK_BOX(contents_), gtk_hseparator_new(), TRUE, TRUE, 0);
+    gtk_box_pack_start(GTK_BOX(inner_contents_),
+                       gtk_hseparator_new(), TRUE, TRUE, 0);
 
     // The new profile link.
     new_profile_link_ = theme_service_->BuildChromeLinkButton(
@@ -157,8 +155,73 @@ void AvatarMenuBubbleGtk::InitContents() {
                               0, 0, kNewProfileLinkLeftPadding, 0);
     gtk_container_add(GTK_CONTAINER(link_align), new_profile_link_);
 
-    gtk_box_pack_start(GTK_BOX(contents_), link_align, FALSE, FALSE, 0);
+    gtk_box_pack_start(GTK_BOX(inner_contents_), link_align, FALSE, FALSE, 0);
   }
+
+}
+
+void AvatarMenuBubbleGtk::InitManagedUserContents() {
+  int active_index = avatar_menu_model_->GetActiveProfileIndex();
+  AvatarMenuModel::Item menu_item =
+      avatar_menu_model_->GetItemAt(active_index);
+  AvatarMenuItemGtk* item = new AvatarMenuItemGtk(
+      this, menu_item, active_index, theme_service_);
+  items_.push_back(item);
+
+  gtk_box_pack_start(GTK_BOX(inner_contents_), item->widget(), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(inner_contents_),
+                     gtk_hseparator_new(), TRUE, TRUE, 0);
+
+  // Add information about managed users.
+  GtkWidget* status_label =
+      theme_service_->BuildLabel(std::string(), ui::kGdkBlack);
+  char* markup = g_markup_printf_escaped(
+      "<span size='small'>%s</span>",
+      UTF16ToUTF8(avatar_menu_model_->GetManagedUserInformation()).c_str());
+  const int kLabelWidth = 150;
+  gtk_widget_set_size_request(status_label, kLabelWidth, -1);
+  gtk_label_set_markup(GTK_LABEL(status_label), markup);
+  gtk_label_set_line_wrap(GTK_LABEL(status_label), TRUE);
+  gtk_misc_set_alignment(GTK_MISC(status_label), 0, 0);
+  g_free(markup);
+  gtk_box_pack_start(GTK_BOX(inner_contents_), status_label, FALSE, FALSE, 0);
+
+  gtk_box_pack_start(GTK_BOX(inner_contents_),
+                     gtk_hseparator_new(), TRUE, TRUE, 0);
+
+  // The switch profile link.
+  GtkWidget* switch_profile_link = theme_service_->BuildChromeLinkButton(
+      l10n_util::GetStringUTF8(IDS_PROFILES_SWITCH_PROFILE_LINK));
+  g_signal_connect(switch_profile_link, "clicked",
+                   G_CALLBACK(OnSwitchProfileLinkClickedThunk), this);
+
+  GtkWidget* link_align = gtk_alignment_new(0, 0, 0, 0);
+  gtk_alignment_set_padding(GTK_ALIGNMENT(link_align),
+                            0, 0, kNewProfileLinkLeftPadding, 0);
+  gtk_container_add(GTK_CONTAINER(link_align), switch_profile_link);
+
+  gtk_box_pack_start(GTK_BOX(inner_contents_), link_align, FALSE, FALSE, 0);
+}
+
+void AvatarMenuBubbleGtk::InitContents() {
+  // Destroy the old inner contents to allow replacing it.
+  if (inner_contents_)
+    gtk_widget_destroy(inner_contents_);
+  inner_contents_ = gtk_vbox_new(FALSE, ui::kControlSpacing);
+  if (!contents_)
+    contents_ = gtk_vbox_new(FALSE, 0);
+  gtk_container_set_border_width(GTK_CONTAINER(inner_contents_),
+                                 ui::kContentAreaBorder);
+  g_signal_connect(inner_contents_, "size-request",
+                   G_CALLBACK(OnSizeRequestThunk), this);
+
+  if (avatar_menu_model_->GetManagedUserInformation().empty() || switching_)
+    InitMenuContents();
+  else
+    InitManagedUserContents();
+  gtk_box_pack_start(GTK_BOX(contents_), inner_contents_, TRUE, TRUE, 0);
+  if (bubble_)
+    gtk_widget_show_all(contents_);
 }
 
 void AvatarMenuBubbleGtk::CloseBubble() {
