@@ -1,11 +1,10 @@
-<style>
-body {
-    font-family: ahem;
-    -webkit-font-smoothing: none;
-}
-</style>
-<summary>a<span>b<div>c</div>d</span>e</summary>
+<!DOCTYPE html>
+<html>
+<body>
+<div>a<span>b<div>c</div>d</span>e</div>
 <script>
+// This test turns fullscreen on and off quickly,
+// then see if it renderes just like as before.
     if ("webkitRequestFullScreen" in Element.prototype) {
         if (window.testRunner)
             testRunner.waitUntilDone();
@@ -16,7 +15,7 @@ body {
             if (document.webkitIsFullScreen) {
                 setTimeout(function () {
                     document.webkitCancelFullScreen();
-                }, 0)
+                }, 0);
             } else {
                 if (window.testRunner)
                     testRunner.notifyDone();
@@ -32,3 +31,5 @@ body {
             eventSender.keyDown('a');
     }
 </script>
+</body>
+</html>
