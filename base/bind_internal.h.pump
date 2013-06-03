@@ -286,6 +286,7 @@ struct InvokeHelper;
 
 $for ARITY [[
 $range ARG 1..ARITY
+$range WEAKCALL_ARG 2..ARITY
 
 template <typename ReturnType, typename Runnable[[]]
 $if ARITY > 0 [[,]] $for ARG , [[typename A$(ARG)]]>
@@ -309,16 +310,18 @@ $if ARITY > 0[[, ]] $for ARG , [[A$(ARG) a$(ARG)]]) {
 
 $if ARITY > 0 [[
 
-template <typename Runnable[[]], $for ARG , [[typename A$(ARG)]]>
+template <typename Runnable[[]], typename BoundWeakPtr
+$if ARITY > 1[[, ]] $for WEAKCALL_ARG , [[typename A$(WEAKCALL_ARG)]]>
 struct InvokeHelper<true, void, Runnable,
-    void($for ARG , [[A$(ARG)]])>  {
-  static void MakeItSo(Runnable runnable[[]]
-$if ARITY > 0[[, ]] $for ARG , [[A$(ARG) a$(ARG)]]) {
-    if (!a1.get()) {
+    void(BoundWeakPtr
+$if ARITY > 1[[, ]] $for WEAKCALL_ARG , [[A$(WEAKCALL_ARG)]])>  {
+  static void MakeItSo(Runnable runnable, BoundWeakPtr weak_ptr
+$if ARITY > 1[[, ]] $for WEAKCALL_ARG , [[A$(WEAKCALL_ARG) a$(WEAKCALL_ARG)]]) {
+    if (!weak_ptr.get()) {
       return;
     }
-
-    runnable.Run($for ARG , [[CallbackForward(a$(ARG))]]);
+    runnable.Run(weak_ptr.get()
+$if ARITY > 1[[, ]] $for WEAKCALL_ARG , [[CallbackForward(a$(WEAKCALL_ARG))]]);
   }
 };
 

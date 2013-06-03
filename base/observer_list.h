@@ -89,12 +89,12 @@ class ObserverListBase
     }
 
     ~Iterator() {
-      if (list_ && --list_->notify_depth_ == 0)
+      if (list_.get() && --list_->notify_depth_ == 0)
         list_->Compact();
     }
 
     ObserverType* GetNext() {
-      if (!list_)
+      if (!list_.get())
         return NULL;
       ListType& observers = list_->observers_;
       // Advance if the current element is null
