@@ -16,3 +16,6 @@ ScrollAnimatorNoneTest.ScrollQuadraticSmoothed
 ScrollAnimatorNoneTest.ScrollTwiceCubic
 ScrollAnimatorNoneTest.VaryingInputsEquivalencyCoastSteep
 WebViewTest.VisitedLinkCrash
+
+# Disabled until blink roll r151682
+DeferredImageDecoderTest.drawScaledIntoSkPicture
