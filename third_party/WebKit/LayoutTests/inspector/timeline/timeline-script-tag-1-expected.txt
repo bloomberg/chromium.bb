@@ -3,10 +3,7 @@ Tests the Timeline API instrumentation of an HTML script tag.
 
 
 ParseHTML
-----> ScheduleStyleRecalculation
-----> InvalidateLayout
 ParseHTML
-----> ScheduleStyleRecalculation
 ----> EvaluateScript
 --------> TimeStamp : SCRIPT TAG
 EvaluateScript Properties:
@@ -24,14 +21,10 @@ EvaluateScript Properties:
     usedHeapSize : <number>
 }
 ParseHTML
-----> InvalidateLayout
 ParseHTML
-----> InvalidateLayout
 ----> EventDispatch
 --------> FunctionCall
 ------------> FunctionCall
 ----> MarkLoad
-----> Layout
---------> Layout
 ----> MarkDOMContent
 

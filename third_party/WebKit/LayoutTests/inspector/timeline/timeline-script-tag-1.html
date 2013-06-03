@@ -33,8 +33,9 @@ function test()
                 InspectorTest.printTimelineRecordProperties(record);
             else if (record.type === WebInspector.TimelineModel.RecordType.ParseHTML) {
                 var children = [];
+                var skipCategories = { rendering: true, painting: true };
                 for (var i = 0; i < record.children.length; ++i) {
-                    if (record.children[i].type !== WebInspector.TimelineModel.RecordType.RecalculateStyles)
+                    if (!skipCategories[WebInspector.TimelinePresentationModel.categoryForRecord(record.children[i]).name])
                         children.push(record.children[i]);
                 }
                 record.children = children;

@@ -566,9 +566,6 @@ void InspectorTimelineAgent::stopConsoleTiming(Frame* frame, const String& messa
 
 void InspectorTimelineAgent::domContentLoadedEventFired(Frame* frame)
 {
-    if (frame->page()->mainFrame() != frame)
-        return;
-
     bool isMainFrame = frame && m_pageAgent && (frame == m_pageAgent->mainFrame());
     appendRecord(TimelineRecordFactory::createMarkData(isMainFrame), TimelineRecordType::MarkDOMContent, false, frame);
 }
