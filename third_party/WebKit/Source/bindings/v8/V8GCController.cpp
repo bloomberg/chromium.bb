@@ -285,7 +285,8 @@ public:
             if (m_constructRetainedObjectInfos)
                 m_groupsWhichNeedRetainerInfo.append(root);
         } else if (classId == v8DOMObjectClassId) {
-            void* root = type->opaqueRootForGC(object, wrapper, m_isolate);
+            ASSERT(!wrapper.IsIndependent(m_isolate));
+            void* root = type->opaqueRootForGC(object, m_isolate);
             m_isolate->SetObjectGroupId(wrapper, v8::UniqueId(reinterpret_cast<intptr_t>(root)));
         } else {
             ASSERT_NOT_REACHED();

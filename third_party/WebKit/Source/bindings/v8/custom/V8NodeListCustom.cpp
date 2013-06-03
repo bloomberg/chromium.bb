@@ -42,9 +42,8 @@
 
 namespace WebCore {
 
-void* V8NodeList::opaqueRootForGC(void* object, v8::Persistent<v8::Object> wrapper, v8::Isolate* isolate)
+void* V8NodeList::opaqueRootForGC(void* object, v8::Isolate* isolate)
 {
-    ASSERT(V8NodeList::HasInstanceInAnyWorld(wrapper, isolate));
     NodeList* impl = static_cast<NodeList*>(object);
     if (!impl->isLiveNodeList())
         return object;

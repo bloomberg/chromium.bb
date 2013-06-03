@@ -481,9 +481,8 @@ sub GenerateOpaqueRootForGC
     }
 
     my $code = <<END;
-void* ${v8ClassName}::opaqueRootForGC(void* object, v8::Persistent<v8::Object> wrapper, v8::Isolate* isolate)
+void* ${v8ClassName}::opaqueRootForGC(void* object, v8::Isolate* isolate)
 {
-    ASSERT(!wrapper.IsIndependent(isolate));
     ${implClassName}* impl = static_cast<${implClassName}*>(object);
 END
     my $isReachableMethod = $interface->extendedAttributes->{"GenerateIsReachable"};
@@ -682,7 +681,7 @@ END
 END
 
     if (NeedsOpaqueRootForGC($interface)) {
-        $header{classPublic}->add("    static void* opaqueRootForGC(void*, v8::Persistent<v8::Object>, v8::Isolate*);\n");
+        $header{classPublic}->add("    static void* opaqueRootForGC(void*, v8::Isolate*);\n");
     }
 
     if (InheritsExtendedAttribute($interface, "ActiveDOMObject")) {
