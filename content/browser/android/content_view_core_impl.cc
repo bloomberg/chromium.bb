@@ -800,7 +800,12 @@ jint ContentViewCoreImpl::GetCurrentRenderProcessId(JNIEnv* env, jobject obj) {
 
 ScopedJavaLocalRef<jstring> ContentViewCoreImpl::GetURL(
     JNIEnv* env, jobject) const {
-  return ConvertUTF8ToJavaString(env, GetWebContents()->GetURL().spec());
+  // The current users of the Java API expect to use the active entry
+  // rather than the visible entry, which is exposed by WebContents::GetURL.
+  content::NavigationEntry* entry =
+      web_contents_->GetController().GetActiveEntry();
+  GURL url = entry ? entry->GetVirtualURL() : GURL::EmptyGURL();
+  return ConvertUTF8ToJavaString(env, url.spec());
 }
 
 ScopedJavaLocalRef<jstring> ContentViewCoreImpl::GetTitle(

@@ -58,7 +58,7 @@ class SearchProviderTest : public InProcessBrowserTest {
         search_provider_test_url_.path() + "#" + expected_result);
     ui_test_utils::NavigateToURLWithDisposition(
         browser, test_url, NEW_FOREGROUND_TAB,
-        ui_test_utils::BROWSER_TEST_WAIT_FOR_TAB);
+        ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
 
     // Bundle up information needed to verify the result.
     content::WebContents* tab =

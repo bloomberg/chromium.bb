@@ -865,10 +865,7 @@ TEST_F(NavigationControllerTest, LoadURL_AbortDoesntCancelPending) {
   EXPECT_FALSE(contents()->GetDelegate());
   contents()->SetDelegate(delegate.get());
 
-  // Without any navigations, the renderer starts at about:blank.
-  const GURL kExistingURL("about:blank");
-
-  // Now make a pending new navigation.
+  // Start with a pending new navigation.
   const GURL kNewURL("http://eh");
   controller.LoadURL(
       kNewURL, Referrer(), PAGE_TRANSITION_TYPED, std::string());
@@ -897,6 +894,14 @@ TEST_F(NavigationControllerTest, LoadURL_AbortDoesntCancelPending) {
   EXPECT_TRUE(controller.GetPendingEntry());
   EXPECT_EQ(-1, controller.GetLastCommittedEntryIndex());
   EXPECT_EQ(1, delegate->navigation_state_change_count());
+  NavigationEntry* pending_entry = controller.GetPendingEntry();
+
+  // Ensure that a reload keeps the same pending entry.
+  controller.Reload(true);
+  EXPECT_EQ(-1, controller.GetPendingEntryIndex());
+  EXPECT_TRUE(controller.GetPendingEntry());
+  EXPECT_EQ(pending_entry, controller.GetPendingEntry());
+  EXPECT_EQ(-1, controller.GetLastCommittedEntryIndex());
 
   contents()->SetDelegate(NULL);
 }
@@ -908,16 +913,21 @@ TEST_F(NavigationControllerTest, LoadURL_RedirectAbortDoesntShowPendingURL) {
   TestNotificationTracker notifications;
   RegisterForAllNavNotifications(&notifications, &controller);
 
+  // First make an existing committed entry.
+  const GURL kExistingURL("http://foo/eh");
+  controller.LoadURL(kExistingURL, content::Referrer(),
+                     content::PAGE_TRANSITION_TYPED, std::string());
+  test_rvh()->SendNavigate(0, kExistingURL);
+  EXPECT_TRUE(notifications.Check1AndReset(
+      content::NOTIFICATION_NAV_ENTRY_COMMITTED));
+
   // Set a WebContentsDelegate to listen for state changes.
   scoped_ptr<TestWebContentsDelegate> delegate(new TestWebContentsDelegate());
   EXPECT_FALSE(contents()->GetDelegate());
   contents()->SetDelegate(delegate.get());
 
-  // Without any navigations, the renderer starts at about:blank.
-  const GURL kExistingURL("about:blank");
-
   // Now make a pending new navigation, initiated by the renderer.
-  const GURL kNewURL("http://eh");
+  const GURL kNewURL("http://foo/bee");
   NavigationController::LoadURLParams load_url_params(kNewURL);
   load_url_params.transition_type = PAGE_TRANSITION_TYPED;
   load_url_params.is_renderer_initiated = true;
@@ -925,16 +935,14 @@ TEST_F(NavigationControllerTest, LoadURL_RedirectAbortDoesntShowPendingURL) {
   EXPECT_EQ(0U, notifications.size());
   EXPECT_EQ(-1, controller.GetPendingEntryIndex());
   EXPECT_TRUE(controller.GetPendingEntry());
-  EXPECT_EQ(-1, controller.GetLastCommittedEntryIndex());
-  EXPECT_EQ(1, delegate->navigation_state_change_count());
+  EXPECT_EQ(0, controller.GetLastCommittedEntryIndex());
+  EXPECT_EQ(0, delegate->navigation_state_change_count());
 
-  // There should be no visible entry (resulting in about:blank in the
-  // omnibox), because it was renderer-initiated and there's no last committed
-  // entry.
-  EXPECT_FALSE(controller.GetVisibleEntry());
+  // The visible entry should be the last committed URL, not the pending one.
+  EXPECT_EQ(kExistingURL, controller.GetVisibleEntry()->GetURL());
 
   // Now the navigation redirects.
-  const GURL kRedirectURL("http://bee");
+  const GURL kRedirectURL("http://foo/see");
   test_rvh()->OnMessageReceived(
       ViewHostMsg_DidRedirectProvisionalLoad(0,  // routing_id
                                              -1,  // pending page_id
@@ -962,12 +970,12 @@ TEST_F(NavigationControllerTest, LoadURL_RedirectAbortDoesntShowPendingURL) {
   // change.
   EXPECT_EQ(-1, controller.GetPendingEntryIndex());
   EXPECT_TRUE(controller.GetPendingEntry());
-  EXPECT_EQ(-1, controller.GetLastCommittedEntryIndex());
-  EXPECT_EQ(1, delegate->navigation_state_change_count());
+  EXPECT_EQ(0, controller.GetLastCommittedEntryIndex());
+  EXPECT_EQ(0, delegate->navigation_state_change_count());
 
-  // There should be no visible entry (resulting in about:blank in the
-  // omnibox), ensuring no spoof is possible.
-  EXPECT_FALSE(controller.GetVisibleEntry());
+  // The visible entry should be the last committed URL, not the pending one,
+  // so that no spoof is possible.
+  EXPECT_EQ(kExistingURL, controller.GetVisibleEntry()->GetURL());
 
   contents()->SetDelegate(NULL);
 }
@@ -2544,6 +2552,86 @@ TEST_F(NavigationControllerTest, DontShowRendererURLUntilCommit) {
   notifications.Reset();
 }
 
+// Tests that the URLs for renderer-initiated navigations in new tabs are
+// displayed to the user before commit, as long as the initial about:blank
+// page has not been modified.  If so, we must revert to showing about:blank.
+// See http://crbug.com/9682.
+TEST_F(NavigationControllerTest, ShowRendererURLInNewTabUntilModified) {
+  NavigationControllerImpl& controller = controller_impl();
+  TestNotificationTracker notifications;
+  RegisterForAllNavNotifications(&notifications, &controller);
+
+  const GURL url("http://foo");
+
+  // For renderer-initiated navigations in new tabs (with no committed entries),
+  // we show the pending entry's URL as long as the about:blank page is not
+  // modified.
+  NavigationController::LoadURLParams load_url_params(url);
+  load_url_params.transition_type = PAGE_TRANSITION_LINK;
+  load_url_params.is_renderer_initiated = true;
+  controller.LoadURLWithParams(load_url_params);
+  EXPECT_EQ(url, controller.GetActiveEntry()->GetURL());
+  EXPECT_EQ(url, controller.GetVisibleEntry()->GetURL());
+  EXPECT_TRUE(
+      NavigationEntryImpl::FromNavigationEntry(controller.GetPendingEntry())->
+          is_renderer_initiated());
+  EXPECT_TRUE(controller.IsInitialNavigation());
+  EXPECT_FALSE(test_rvh()->has_accessed_initial_document());
+
+  // There should be no title yet.
+  EXPECT_TRUE(contents()->GetTitle().empty());
+
+  // If something else modifies the contents of the about:blank page, then
+  // we must revert to showing about:blank to avoid a URL spoof.
+  test_rvh()->OnMessageReceived(
+        ViewHostMsg_DidAccessInitialDocument(0));
+  EXPECT_TRUE(test_rvh()->has_accessed_initial_document());
+  EXPECT_FALSE(controller.GetVisibleEntry());
+  EXPECT_EQ(url, controller.GetActiveEntry()->GetURL());
+
+  notifications.Reset();
+}
+
+TEST_F(NavigationControllerTest, DontShowRendererURLInNewTabAfterCommit) {
+  NavigationControllerImpl& controller = controller_impl();
+  TestNotificationTracker notifications;
+  RegisterForAllNavNotifications(&notifications, &controller);
+
+  const GURL url1("http://foo/eh");
+  const GURL url2("http://foo/bee");
+
+  // For renderer-initiated navigations in new tabs (with no committed entries),
+  // we show the pending entry's URL as long as the about:blank page is not
+  // modified.
+  NavigationController::LoadURLParams load_url_params(url1);
+  load_url_params.transition_type = PAGE_TRANSITION_LINK;
+  load_url_params.is_renderer_initiated = true;
+  controller.LoadURLWithParams(load_url_params);
+  EXPECT_EQ(url1, controller.GetActiveEntry()->GetURL());
+  EXPECT_EQ(url1, controller.GetVisibleEntry()->GetURL());
+  EXPECT_TRUE(
+      NavigationEntryImpl::FromNavigationEntry(controller.GetPendingEntry())->
+          is_renderer_initiated());
+  EXPECT_TRUE(controller.IsInitialNavigation());
+  EXPECT_FALSE(test_rvh()->has_accessed_initial_document());
+
+  // Simulate a commit and then starting a new pending navigation.
+  test_rvh()->SendNavigate(0, url1);
+  NavigationController::LoadURLParams load_url2_params(url2);
+  load_url2_params.transition_type = PAGE_TRANSITION_LINK;
+  load_url2_params.is_renderer_initiated = true;
+  controller.LoadURLWithParams(load_url2_params);
+
+  // We should not consider this an initial navigation, and thus should
+  // not show the pending URL.
+  EXPECT_FALSE(test_rvh()->has_accessed_initial_document());
+  EXPECT_FALSE(controller.IsInitialNavigation());
+  EXPECT_TRUE(controller.GetVisibleEntry());
+  EXPECT_EQ(url1, controller.GetVisibleEntry()->GetURL());
+
+  notifications.Reset();
+}
+
 // Tests that IsInPageNavigation returns appropriate results.  Prevents
 // regression for bug 1126349.
 TEST_F(NavigationControllerTest, IsInPageNavigation) {
@@ -2609,8 +2697,10 @@ TEST_F(NavigationControllerTest, CloneAndGoBack) {
   NavigationControllerImpl& controller = controller_impl();
   const GURL url1("http://foo1");
   const GURL url2("http://foo2");
+  const string16 title(ASCIIToUTF16("Title"));
 
   NavigateAndCommit(url1);
+  controller.GetActiveEntry()->SetTitle(title);
   NavigateAndCommit(url2);
 
   scoped_ptr<WebContents> clone(controller.GetWebContents()->Clone());
@@ -2620,6 +2710,32 @@ TEST_F(NavigationControllerTest, CloneAndGoBack) {
   clone->GetController().GoBack();
   // Navigating back should have triggered needs_reload_ to go false.
   EXPECT_FALSE(clone->GetController().NeedsReload());
+
+  // Ensure that the pending URL and its title are visible.
+  EXPECT_EQ(url1, clone->GetController().GetVisibleEntry()->GetURL());
+  EXPECT_EQ(title, clone->GetTitle());
+}
+
+// Make sure that reloading a cloned tab doesn't change its pending entry index.
+// See http://crbug.com/234491.
+TEST_F(NavigationControllerTest, CloneAndReload) {
+  NavigationControllerImpl& controller = controller_impl();
+  const GURL url1("http://foo1");
+  const GURL url2("http://foo2");
+  const string16 title(ASCIIToUTF16("Title"));
+
+  NavigateAndCommit(url1);
+  controller.GetActiveEntry()->SetTitle(title);
+  NavigateAndCommit(url2);
+
+  scoped_ptr<WebContents> clone(controller.GetWebContents()->Clone());
+  clone->GetController().LoadIfNecessary();
+
+  ASSERT_EQ(2, clone->GetController().GetEntryCount());
+  EXPECT_EQ(1, clone->GetController().GetPendingEntryIndex());
+
+  clone->GetController().Reload(true);
+  EXPECT_EQ(1, clone->GetController().GetPendingEntryIndex());
 }
 
 // Make sure that cloning a WebContentsImpl doesn't copy interstitials.
