@@ -54,6 +54,17 @@ crbug.com/239794 [ Win Debug ] inspector/debugger/pause-in-internal-script.html 
 crbug.com/245596 [ Win7 ] fast/forms/access-key.html [ Crash Pass ]
 crbug.com/245600 [ Mac ] fast/forms/basic-buttons.html [ Crash Pass ]
 
+crbug.com/246275 [ Linux ] css2.1/20110323/inline-block-replaced-height-004.htm [ Failure ]
+crbug.com/246275 [ Linux ] css2.1/20110323/inline-block-replaced-height-005.htm [ Failure ]
+crbug.com/246275 [ Linux ] css2.1/20110323/inline-block-replaced-height-007.htm [ Failure ]
+crbug.com/246275 [ Linux ] css2.1/20110323/inline-replaced-height-004.htm [ Failure ]
+crbug.com/246275 [ Linux ] css2.1/20110323/inline-replaced-height-005.htm [ Failure ]
+crbug.com/246275 [ Linux ] css2.1/20110323/inline-replaced-height-007.htm [ Failure ]
+crbug.com/246275 [ Linux ] fast/css/style-scoped/style-scoped-apply-author-styles.html [ Failure ]
+crbug.com/246275 [ Linux ] fast/css/style-scoped/style-scoped-with-important-rule.html [ Failure ]
+crbug.com/246275 [ Linux ] fast/dom/shadow/iframe-shadow.html [ Failure ]
+crbug.com/246275 [ Linux ] fast/dom/shadow/shadow-root-resetStyleInheritance.html [ ImageOnlyFailure ]
+
 # Sometimes the output includes an empty line, sometimes it doesn't. Flake.
 crbug.com/239874 http/tests/xmlhttprequest/send-data-view.html [ Failure Pass ]
 
