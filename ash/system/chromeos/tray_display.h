@@ -5,13 +5,8 @@
 #ifndef ASH_SYSTEM_CHROMEOS_TRAY_DISPLAY_H_
 #define ASH_SYSTEM_CHROMEOS_TRAY_DISPLAY_H_
 
+#include "ash/display/display_controller.h"
 #include "ash/system/tray/system_tray_item.h"
-#include "base/memory/scoped_ptr.h"
-#include "ui/gfx/display_observer.h"
-
-#if defined(OS_CHROMEOS)
-#include "chromeos/display/output_configurator.h"
-#endif
 
 namespace views {
 class View;
@@ -19,13 +14,19 @@ class View;
 
 namespace ash {
 namespace internal {
+
+enum TrayDisplayMode {
+  TRAY_DISPLAY_SINGLE,
+  TRAY_DISPLAY_EXTENDED,
+  TRAY_DISPLAY_MIRRORED,
+  TRAY_DISPLAY_DOCKED,
+};
+
 class DisplayView;
+class DisplayNotificationView;
 
 class TrayDisplay : public SystemTrayItem,
-#if defined(OS_CHROMEOS)
-                    public chromeos::OutputConfigurator::Observer,
-#endif
-                    public gfx::DisplayObserver {
+                    public DisplayController::Observer {
  public:
   explicit TrayDisplay(SystemTray* system_tray);
   virtual ~TrayDisplay();
@@ -33,19 +34,18 @@ class TrayDisplay : public SystemTrayItem,
  private:
   // Overridden from SystemTrayItem.
   virtual views::View* CreateDefaultView(user::LoginStatus status) OVERRIDE;
+  virtual views::View* CreateNotificationView(
+      user::LoginStatus status) OVERRIDE;
   virtual void DestroyDefaultView() OVERRIDE;
+  virtual void DestroyNotificationView() OVERRIDE;
+  virtual bool ShouldShowLauncher() const OVERRIDE;
 
-  // Overridden from aura::DisplayObserver
-  virtual void OnDisplayBoundsChanged(const gfx::Display& display) OVERRIDE;
-  virtual void OnDisplayAdded(const gfx::Display& new_display) OVERRIDE;
-  virtual void OnDisplayRemoved(const gfx::Display& old_display) OVERRIDE;
-
-#if defined(OS_CHROMEOS)
-  // Overridden from chromeos::OutputConfigurator::Observer
-  virtual void OnDisplayModeChanged() OVERRIDE;
-#endif
+  // Overridden from DisplayControllerObserver:
+  virtual void OnDisplayConfigurationChanged() OVERRIDE;
 
   DisplayView* default_;
+  DisplayNotificationView* notification_;
+  TrayDisplayMode current_mode_;
 
   DISALLOW_COPY_AND_ASSIGN(TrayDisplay);
 };

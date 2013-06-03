@@ -108,6 +108,25 @@ void TrayNotificationView::UpdateViewAndImage(views::View* new_contents,
   SchedulePaint();
 }
 
+void TrayNotificationView::StartAutoCloseTimer(int seconds) {
+  autoclose_.Stop();
+  autoclose_delay_ = seconds;
+  if (autoclose_delay_) {
+    autoclose_.Start(FROM_HERE,
+                     base::TimeDelta::FromSeconds(autoclose_delay_),
+                     this, &TrayNotificationView::HandleClose);
+  }
+}
+
+void TrayNotificationView::StopAutoCloseTimer() {
+  autoclose_.Stop();
+}
+
+void TrayNotificationView::RestartAutoCloseTimer() {
+  if (autoclose_delay_)
+    StartAutoCloseTimer(autoclose_delay_);
+}
+
 void TrayNotificationView::ButtonPressed(views::Button* sender,
                                          const ui::Event& event) {
   HandleClose();

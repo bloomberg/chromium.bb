@@ -5,6 +5,7 @@
 #ifndef ASH_SYSTEM_TRAY_TRAY_NOTIFICATION_VIEW_H_
 #define ASH_SYSTEM_TRAY_TRAY_NOTIFICATION_VIEWS_H_
 
+#include "base/timer.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/slide_out_view.h"
 
@@ -51,6 +52,11 @@ class TrayNotificationView : public views::SlideOutView,
   void UpdateViewAndImage(views::View* new_contents,
                           const gfx::ImageSkia& image);
 
+  // Autoclose timer operations.
+  void StartAutoCloseTimer(int seconds);
+  void StopAutoCloseTimer();
+  void RestartAutoCloseTimer();
+
   // Overridden from ButtonListener.
   virtual void ButtonPressed(views::Button* sender,
                              const ui::Event& event) OVERRIDE;
@@ -79,6 +85,9 @@ class TrayNotificationView : public views::SlideOutView,
   SystemTrayItem* owner_;
   int icon_id_;
   views::ImageView* icon_;
+
+  int autoclose_delay_;
+  base::OneShotTimer<TrayNotificationView> autoclose_;
 
   DISALLOW_COPY_AND_ASSIGN(TrayNotificationView);
 };
