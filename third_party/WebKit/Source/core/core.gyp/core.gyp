@@ -41,6 +41,7 @@
     'enable_wexit_time_destructors': 1,
 
     'webcore_include_dirs': [
+      '../../..',
       '../..',
       '<(SHARED_INTERMEDIATE_DIR)/webkit',
       '<(SHARED_INTERMEDIATE_DIR)/webkit/bindings',
@@ -345,7 +346,6 @@
         'inspector_instrumentation_sources',
         'core_derived_sources.gyp:make_derived_sources',
         '../../bindings/derived_sources.gyp:bindings_derived_sources',
-        '../../Platform/Platform.gyp/Platform.gyp:webkit_platform',
         '../../wtf/wtf.gyp:wtf',
         '../../config.gyp:config',
         '../../weborigin/weborigin.gyp:weborigin',
@@ -368,7 +368,6 @@
         '<(libjpeg_gyp_path):libjpeg',
       ],
       'export_dependent_settings': [
-        '../../Platform/Platform.gyp/Platform.gyp:webkit_platform',
         '../../wtf/wtf.gyp:wtf',
         '../../config.gyp:config',
         '<(DEPTH)/build/temp_gyp/googleurl.gyp:googleurl',
@@ -1017,7 +1016,6 @@
         'webcore_svg',
         # Exported.
         'webcore_derived',
-        '../../Platform/Platform.gyp/Platform.gyp:webkit_platform',
         '../../wtf/wtf.gyp:wtf',
         '<(DEPTH)/build/temp_gyp/googleurl.gyp:googleurl',
         '<(DEPTH)/skia/skia.gyp:skia',
@@ -1026,7 +1024,6 @@
         '<(DEPTH)/v8/tools/gyp/v8.gyp:v8',
       ],
       'export_dependent_settings': [
-        '../../Platform/Platform.gyp/Platform.gyp:webkit_platform',
         '../../wtf/wtf.gyp:wtf',
         'webcore_derived',
         '<(DEPTH)/build/temp_gyp/googleurl.gyp:googleurl',

@@ -42,7 +42,6 @@
             'type': '<(component)',
             'variables': { 'enable_wexit_time_destructors': 1, },
             'dependencies': [
-                '../../Platform/Platform.gyp/Platform.gyp:webkit_platform',
                 '../../core/core.gyp/core.gyp:webcore',
                 '../../modules/modules.gyp:modules',
                 '<(DEPTH)/skia/skia.gyp:skia',
@@ -52,7 +51,6 @@
                 '<(DEPTH)/v8/tools/gyp/v8.gyp:v8',
             ],
             'export_dependent_settings': [
-                '../../Platform/Platform.gyp/Platform.gyp:webkit_platform',
                 '<(DEPTH)/skia/skia.gyp:skia',
                 '<(DEPTH)/third_party/icu/icu.gyp:icuuc',
                 '<(DEPTH)/third_party/npapi/npapi.gyp:npapi',
