@@ -68,6 +68,7 @@ config.currentPlatform = 'chromium';
 config.kBlinkSvnURL = 'svn://svn.chromium.org/blink/trunk';
 config.kBlinkRevisionURL = 'http://src.chromium.org/viewvc/blink';
 config.kSvnLogURL = 'http://build.chromium.org/cgi-bin/svn-log';
+config.kRietveldURL = "https://codereview.chromium.org";
 
 var kTenMinutesInMilliseconds = 10 * 60 * 1000;
 config.kUpdateFrequency = kTenMinutesInMilliseconds;

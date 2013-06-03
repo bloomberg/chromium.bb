@@ -28,14 +28,14 @@ James, a web developer from Birmingham, UK.
 -->
 <html>
 <head>
-<meta http-equiv="X-WebKit-CSP" content="default-src 'none';
+<meta http-equiv="Content-Security-Policy" content="default-src 'none';
                                          script-src 'self' file: https://ajax.googleapis.com;
                                          style-src 'self' 'unsafe-inline' file: https://ajax.googleapis.com http://fonts.googleapis.com;
                                          font-src http://themes.googleusercontent.com;
                                          img-src 'self' https://ajax.googleapis.com http://build.chromium.org http://build.webkit.org;
                                          media-src 'self' http://build.chromium.org http://build.webkit.org;
                                          frame-src 'self' http://build.chromium.org http://build.webkit.org http://test-results.appspot.com;
-                                         connect-src 'self' http://trac.webkit.org http://build.chromium.org http://build.webkit.org">
+                                         connect-src 'self' http://trac.webkit.org http://build.chromium.org http://build.webkit.org https://codereview.chromium.org">
 <title>Garden-O-Matic</title>
 <link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Open+Sans:400,700">
 <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.15/themes/base/jquery-ui.css">
@@ -53,6 +53,7 @@ James, a web developer from Birmingham, UK.
 <script src="scripts/base.js"></script>
 <script src="scripts/config.js"></script>
 <script src="scripts/net.js"></script>
+<script src="scripts/rollbot.js"></script>
 <script src="scripts/svn-log.js"></script>
 <script src="scripts/builders.js"></script>
 <script src="scripts/checkout.js"></script>

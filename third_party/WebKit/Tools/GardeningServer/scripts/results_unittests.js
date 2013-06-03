@@ -34,7 +34,7 @@ unittest.kExampleResultsJSON = {
         "scrollbars": {
             "custom-scrollbar-with-incomplete-style.html": {
                 "expected": "IMAGE",
-                "actual": "IMAGE"
+                "actual": "IMAGE",
             },
             "expected-wontfix": {
                 "expected": "WONTFIX",
@@ -42,28 +42,28 @@ unittest.kExampleResultsJSON = {
             },
             "flaky-scrollbar.html": {
                 "expected": "PASS",
-                "actual": "PASS TEXT"
+                "actual": "PASS TEXT",
                 "is_unexpected": true,
             },
             "unexpected-failing-flaky-scrollbar.html": {
                 "expected": "TEXT",
-                "actual": "TIMEOUT TEXT"
+                "actual": "TIMEOUT TEXT",
                 "is_unexpected": true,
             },
             "unexpected-pass.html": {
                 "expected": "FAIL",
-                "actual": "PASS"
+                "actual": "PASS",
                 "is_unexpected": true,
             }
         },
         "userscripts": {
             "user-script-video-document.html": {
                 "expected": "FAIL",
-                "actual": "TEXT"
+                "actual": "TEXT",
             },
             "another-test.html": {
                 "expected": "PASS",
-                "actual": "TEXT"
+                "actual": "TEXT",
                 "is_unexpected": true,
             }
         },
@@ -171,7 +171,8 @@ test("unexpectedFailures", 1, function() {
     deepEqual(unexpectedFailures, {
         "userscripts/another-test.html": {
             "expected": "PASS",
-            "actual": "TEXT"
+            "actual": "TEXT",
+            "is_unexpected": true,
         }
     });
 });
@@ -184,7 +185,8 @@ test("unexpectedFailuresByTest", 1, function() {
         "userscripts/another-test.html": {
             "Mock Builder": {
                 "expected": "PASS",
-                "actual": "TEXT"
+                "actual": "TEXT",
+                "is_unexpected": true,
             }
         }
     });
@@ -235,14 +237,15 @@ test("resultType", 12, function() {
 test("resultNodeForTest", 4, function() {
     deepEqual(results.resultNodeForTest(unittest.kExampleResultsJSON, "userscripts/another-test.html"), {
         "expected": "PASS",
-        "actual": "TEXT"
+        "actual": "TEXT",
+        "is_unexpected": true,
     });
     equals(results.resultNodeForTest(unittest.kExampleResultsJSON, "foo.html"), null);
     equals(results.resultNodeForTest(unittest.kExampleResultsJSON, "userscripts/foo.html"), null);
     equals(results.resultNodeForTest(unittest.kExampleResultsJSON, "userscripts/foo/bar.html"), null);
 });
 
-test("walkHistory", 6, function() {
+test("walkHistory", 5, function() {
     var simulator = new NetworkSimulator();
 
     var keyMap = {
@@ -343,10 +346,6 @@ test("walkHistory", 6, function() {
         results.unifyRegressionRanges(["Mock Builder", "Another Builder"], "userscripts/another-test.html", function(oldestFailingRevision, newestPassingRevision) {
             equals(oldestFailingRevision, 90426);
             equals(newestPassingRevision, 90425);
-        });
-
-        results.countFailureOccurences(["Mock Builder", "Another Builder"], "userscripts/another-test.html", function(failureCount) {
-            equals(failureCount, 4);
         });
     });
 });

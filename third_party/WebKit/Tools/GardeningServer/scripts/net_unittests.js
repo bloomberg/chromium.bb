@@ -59,7 +59,7 @@ NetworkSimulator.prototype.runTest = function(testCase)
     }
 
     window.net = realNet;
-    equal(window.net, realNet, "Failed to restore real base!");
+    equal(window.net, realNet);
 };
 
 (function () {

@@ -65,7 +65,8 @@ test("UnexpectedFailures", 3, function() {
           "userscripts/another-test.html": {
             "Mock Builder": {
               "expected": "PASS",
-              "actual": "TEXT"
+              "actual": "TEXT",
+              "is_unexpected": true,
             }
           }
         };
