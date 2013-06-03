@@ -59,7 +59,7 @@ InvalidatorFactory::InvalidatorFactory(
         invalidation_state_tracker)
     : notifier_options_(notifier_options),
       client_info_(client_info) {
-  if (!invalidation_state_tracker) {
+  if (!invalidation_state_tracker.get()) {
     return;
   }
 
