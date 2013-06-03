@@ -58,7 +58,7 @@ device_added(struct udev_device *udev_device, struct udev_seat *master)
 	fd = weston_launcher_open(c, devnode, O_RDWR | O_NONBLOCK);
 	if (fd < 0) {
 		weston_log("opening input device '%s' failed.\n", devnode);
-		return -1;
+		return 0;
 	}
 
 	device = evdev_device_create(&master->base, devnode, fd);
@@ -69,7 +69,7 @@ device_added(struct udev_device *udev_device, struct udev_seat *master)
 	} else if (device == NULL) {
 		close(fd);
 		weston_log("failed to create input device '%s'.\n", devnode);
-		return -1;
+		return 0;
 	}
 
 	calibration_values =
@@ -140,6 +140,7 @@ udev_seat_add_devices(struct udev_seat *seat, struct udev *udev)
 			"\t- seats misconfigured "
 			"(Weston backend option 'seat', "
 			"udev device property ID_SEAT)\n");
+		return -1;
 	}
 
 	return 0;
