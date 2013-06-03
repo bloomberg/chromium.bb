@@ -462,12 +462,12 @@ void AppListControllerDelegateWin::CreateNewWindow(Profile* profile,
 
 void AppListControllerDelegateWin::ActivateApp(
     Profile* profile, const extensions::Extension* extension, int event_flags) {
-  AppListServiceImpl::RecordAppListAppLaunch();
   LaunchApp(profile, extension, event_flags);
 }
 
 void AppListControllerDelegateWin::LaunchApp(
     Profile* profile, const extensions::Extension* extension, int event_flags) {
+  AppListServiceImpl::RecordAppListAppLaunch();
   chrome::OpenApplication(chrome::AppLaunchParams(
       profile, extension, NEW_FOREGROUND_TAB));
 }
