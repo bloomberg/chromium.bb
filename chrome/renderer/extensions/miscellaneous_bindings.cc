@@ -95,65 +95,43 @@ class ExtensionImpl : public extensions::ChromeV8Extension {
     if (!renderview)
       return v8::Undefined();
 
-    // Arguments are (int32 port_id, object message).
-    CHECK_EQ(2, args.Length());
-    CHECK(args[0]->IsInt32());
-
-    int port_id = args[0]->Int32Value();
-    if (!HasPortData(port_id)) {
-      return v8::ThrowException(v8::Exception::Error(
-        v8::String::New(kPortClosedError)));
+    if (args.Length() >= 2 && args[0]->IsInt32() && args[1]->IsString()) {
+      int port_id = args[0]->Int32Value();
+      if (!HasPortData(port_id)) {
+        return v8::ThrowException(v8::Exception::Error(
+          v8::String::New(kPortClosedError)));
+      }
+      std::string message = *v8::String::Utf8Value(args[1]->ToString());
+      renderview->Send(new ExtensionHostMsg_PostMessage(
+          renderview->GetRoutingID(), port_id, message));
     }
-
-    // The message can be any base::Value but IPC can't serialize that, so we
-    // give it a singleton base::ListValue instead, or an empty list if the
-    // argument was undefined (v8 value converter will return NULL for this).
-    scoped_ptr<V8ValueConverter> converter(V8ValueConverter::create());
-    scoped_ptr<base::Value> message(
-        converter->FromV8Value(args[1], v8_context()));
-    ListValue message_as_list;
-    if (message)
-      message_as_list.Append(message.release());
-
-    renderview->Send(new ExtensionHostMsg_PostMessage(
-        renderview->GetRoutingID(), port_id, message_as_list));
-
     return v8::Undefined();
   }
 
   // Forcefully disconnects a port.
   v8::Handle<v8::Value> CloseChannel(const v8::Arguments& args) {
-    // Arguments are (int32 port_id, boolean notify_browser).
-    CHECK_EQ(2, args.Length());
-    CHECK(args[0]->IsInt32());
-    CHECK(args[1]->IsBoolean());
-
-    int port_id = args[0]->Int32Value();
-    if (!HasPortData(port_id))
-      return v8::Undefined();
-
-    // Send via the RenderThread because the RenderView might be closing.
-    bool notify_browser = args[1]->BooleanValue();
-    if (notify_browser) {
-      content::RenderThread::Get()->Send(
-          new ExtensionHostMsg_CloseChannel(port_id, std::string()));
+    if (args.Length() >= 2 && args[0]->IsInt32() && args[1]->IsBoolean()) {
+      int port_id = args[0]->Int32Value();
+      if (!HasPortData(port_id)) {
+        return v8::Undefined();
+      }
+      // Send via the RenderThread because the RenderView might be closing.
+      bool notify_browser = args[1]->BooleanValue();
+      if (notify_browser)
+        content::RenderThread::Get()->Send(
+            new ExtensionHostMsg_CloseChannel(port_id, std::string()));
+      ClearPortData(port_id);
     }
-
-    ClearPortData(port_id);
-
     return v8::Undefined();
   }
 
   // A new port has been created for a context.  This occurs both when script
   // opens a connection, and when a connection is opened to this script.
   v8::Handle<v8::Value> PortAddRef(const v8::Arguments& args) {
-    // Arguments are (int32 port_id).
-    CHECK_EQ(1, args.Length());
-    CHECK(args[0]->IsInt32());
-
-    int port_id = args[0]->Int32Value();
-    ++GetPortData(port_id).ref_count;
-
+    if (args.Length() >= 1 && args[0]->IsInt32()) {
+      int port_id = args[0]->Int32Value();
+      ++GetPortData(port_id).ref_count;
+    }
     return v8::Undefined();
   }
 
@@ -161,18 +139,15 @@ class ExtensionImpl : public extensions::ChromeV8Extension {
   // frames with a reference to a given port, we will disconnect it and notify
   // the other end of the channel.
   v8::Handle<v8::Value> PortRelease(const v8::Arguments& args) {
-    // Arguments are (int32 port_id).
-    CHECK_EQ(1, args.Length());
-    CHECK(args[0]->IsInt32());
-
-    int port_id = args[0]->Int32Value();
-    if (HasPortData(port_id) && --GetPortData(port_id).ref_count == 0) {
-      // Send via the RenderThread because the RenderView might be closing.
-      content::RenderThread::Get()->Send(
-          new ExtensionHostMsg_CloseChannel(port_id, std::string()));
-      ClearPortData(port_id);
+    if (args.Length() >= 1 && args[0]->IsInt32()) {
+      int port_id = args[0]->Int32Value();
+      if (HasPortData(port_id) && --GetPortData(port_id).ref_count == 0) {
+        // Send via the RenderThread because the RenderView might be closing.
+        content::RenderThread::Get()->Send(
+            new ExtensionHostMsg_CloseChannel(port_id, std::string()));
+        ClearPortData(port_id);
+      }
     }
-
     return v8::Undefined();
   }
 
@@ -296,7 +271,7 @@ void MiscellaneousBindings::DispatchOnConnect(
 void MiscellaneousBindings::DeliverMessage(
     const ChromeV8ContextSet::ContextSet& contexts,
     int target_port_id,
-    const base::ListValue& message,
+    const std::string& message,
     content::RenderView* restrict_to_render_view) {
   v8::HandleScope handle_scope;
 
@@ -306,9 +281,6 @@ void MiscellaneousBindings::DeliverMessage(
         restrict_to_render_view != (*it)->GetRenderView()) {
       continue;
     }
-
-    v8::Handle<v8::Context> context = (*it)->v8_context();
-    v8::Context::Scope context_scope(context);
 
     // Check to see whether the context has this port before bothering to create
     // the message.
@@ -330,19 +302,7 @@ void MiscellaneousBindings::DeliverMessage(
       continue;
 
     std::vector<v8::Handle<v8::Value> > arguments;
-
-    // Convert the message to a v8 object; either a value or undefined.
-    // See PostMessage for more details.
-    if (message.empty()) {
-      arguments.push_back(v8::Undefined());
-    } else {
-      CHECK_EQ(1u, message.GetSize());
-      const base::Value* message_value = NULL;
-      message.Get(0, &message_value);
-      scoped_ptr<V8ValueConverter> converter(V8ValueConverter::create());
-      arguments.push_back(converter->ToV8Value(message_value, context));
-    }
-
+    arguments.push_back(v8::String::New(message.c_str(), message.size()));
     arguments.push_back(port_id_handle);
     CHECK((*it)->CallChromeHiddenMethod("Port.dispatchOnMessage",
                                         arguments.size(),
