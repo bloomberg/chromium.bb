@@ -211,7 +211,7 @@ class WeakHandleCore
     if (!Get()) {
       return;
     }
-    (Get()->*fn)();
+    (Get().get()->*fn)();
   }
 
   template <typename U, typename A1>
@@ -221,7 +221,7 @@ class WeakHandleCore
     if (!Get()) {
       return;
     }
-    (Get()->*fn)(a1);
+    (Get().get()->*fn)(a1);
   }
 
   template <typename U, typename A1, typename A2>
@@ -232,7 +232,7 @@ class WeakHandleCore
     if (!Get()) {
       return;
     }
-    (Get()->*fn)(a1, a2);
+    (Get().get()->*fn)(a1, a2);
   }
 
   template <typename U, typename A1, typename A2, typename A3>
@@ -244,7 +244,7 @@ class WeakHandleCore
     if (!Get()) {
       return;
     }
-    (Get()->*fn)(a1, a2, a3);
+    (Get().get()->*fn)(a1, a2, a3);
   }
 
   template <typename U, typename A1, typename A2, typename A3, typename A4>
@@ -257,7 +257,7 @@ class WeakHandleCore
     if (!Get()) {
       return;
     }
-    (Get()->*fn)(a1, a2, a3, a4);
+    (Get().get()->*fn)(a1, a2, a3, a4);
   }
 
   // Must be dereferenced only on the owner thread.  May be destroyed
