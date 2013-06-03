@@ -71,7 +71,6 @@ private:
     AtomicString m_mediaFeature;
     RefPtr<CSSValue> m_value;
     bool m_isValid;
-    String m_serializationCache;
 };
 
 } // namespace

@@ -279,9 +279,6 @@ MediaQueryExp::~MediaQueryExp()
 
 String MediaQueryExp::serialize() const
 {
-    if (!m_serializationCache.isNull())
-        return m_serializationCache;
-
     StringBuilder result;
     result.append("(");
     result.append(m_mediaFeature.lower());
@@ -291,15 +288,13 @@ String MediaQueryExp::serialize() const
     }
     result.append(")");
 
-    const_cast<MediaQueryExp*>(this)->m_serializationCache = result.toString();
-    return m_serializationCache;
+    return result.toString();
 }
 
 void MediaQueryExp::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
 {
     MemoryClassInfo info(memoryObjectInfo, this, WebCoreMemoryTypes::CSS);
     info.addMember(m_mediaFeature, "mediaFeature");
-    info.addMember(m_serializationCache, "serializationCache");
     info.addMember(m_value, "value");
 }
 

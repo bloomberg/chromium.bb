@@ -80,7 +80,6 @@ static bool expressionCompare(const OwnPtr<MediaQueryExp>& a, const OwnPtr<Media
     return codePointCompare(a->serialize(), b->serialize()) < 0;
 }
 
-
 MediaQuery::MediaQuery(Restrictor r, const String& mediaType, PassOwnPtr<Vector<OwnPtr<MediaQueryExp> > > exprs)
     : m_restrictor(r)
     , m_mediaType(mediaType.lower())
@@ -94,18 +93,19 @@ MediaQuery::MediaQuery(Restrictor r, const String& mediaType, PassOwnPtr<Vector<
 
     nonCopyingSort(m_expressions->begin(), m_expressions->end(), expressionCompare);
 
-    // remove all duplicated expressions
-    String key;
+    // Remove all duplicated expressions.
+    MediaQueryExp* key = 0;
     for (int i = m_expressions->size() - 1; i >= 0; --i) {
+        MediaQueryExp* exp = m_expressions->at(i).get();
 
-        // if not all of the expressions is valid the media query must be ignored.
+        // If not all of the expressions are valid the media query must be ignored.
         if (!m_ignored)
-            m_ignored = !m_expressions->at(i)->isValid();
+            m_ignored = !exp->isValid();
 
-        if (m_expressions->at(i)->serialize() == key)
+        if (key && *exp == *key)
             m_expressions->remove(i);
         else
-            key = m_expressions->at(i)->serialize();
+            key = exp;
     }
 }
 
