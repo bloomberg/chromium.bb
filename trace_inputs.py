@@ -691,14 +691,14 @@ def write_json(filepath_or_handle, data, dense):
 def assert_is_renderable(pseudo_string):
   """Asserts the input is a valid object to be processed by render()."""
   assert (
-      isinstance(pseudo_string, (None.__class__, unicode)) or
+      pseudo_string is None or
+      isinstance(pseudo_string, unicode) or
       hasattr(pseudo_string, 'render')), repr(pseudo_string)
 
 
 def render(pseudo_string):
   """Converts the pseudo-string to an unicode string."""
-  assert_is_renderable(pseudo_string)
-  if isinstance(pseudo_string, (None.__class__, unicode)):
+  if pseudo_string is None or isinstance(pseudo_string, unicode):
     return pseudo_string
   return pseudo_string.render()
 
@@ -1197,6 +1197,7 @@ class Strace(ApiBase):
   @staticmethod
   def load_filename(filename):
     """Parses a filename in a log."""
+    # TODO(maruel): Be compatible with strace -x.
     assert isinstance(filename, str)
     out = ''
     i = 0
@@ -1292,9 +1293,13 @@ class Strace(ApiBase):
         def __init__(self, parent, value):
           assert_is_renderable(parent)
           self.parent = parent
-          assert isinstance(value, (None.__class__, str)), repr(value)
-          self.value = Strace.load_filename(value) if value else value
+          assert (
+              value is None or
+              (isinstance(value, unicode) and not os.path.isabs(value)))
+          self.value = value
           if self.value:
+            # TODO(maruel): On POSIX, '\\' is a valid character so remove this
+            # assert.
             assert '\\' not in self.value, value
             assert '\\' not in self.value, (repr(value), repr(self.value))
 
@@ -1303,11 +1308,8 @@ class Strace(ApiBase):
 
           This function is used to return the late-bound value.
           """
-          if self.value and self.value.startswith(u'/'):
-            # An absolute path.
-            # TODO(maruel): This is wrong, we can't assert it is utf-8.
-            return self.value
-          parent = self.parent.render() if self.parent else u'<None>'
+          assert self.parent is not None
+          parent = render(self.parent)
           if self.value:
             return os.path.normpath(os.path.join(parent, self.value))
           return parent
@@ -1329,7 +1331,10 @@ class Strace(ApiBase):
         self._pending_calls = {}
         self._line_number = 0
         # Current directory when the process started.
-        self.initial_cwd = self.RelativePath(self._root(), None)
+        if isinstance(self._root(), unicode):
+          self.initial_cwd = self._root()
+        else:
+          self.initial_cwd = self.RelativePath(self._root(), None)
         self.parentid = None
         self._done = False
 
@@ -1442,7 +1447,7 @@ class Strace(ApiBase):
       @parse_args(r'^\"(.+?)\"$', True)
       def handle_chdir(self, args, _result):
         """Updates cwd."""
-        self.cwd = self.RelativePath(self, args[0])
+        self.cwd = self._mangle(args[0])
         logging.debug('handle_chdir(%d, %s)' % (self.pid, self.cwd))
 
       @parse_args(r'^\"(.+?)\", (\d+), (\d+)$', False)
@@ -1470,7 +1475,7 @@ class Strace(ApiBase):
         # still prints '0' as the result.
         filepath = args[0]
         self._handle_file(filepath, Results.File.READ)
-        self.executable = self.RelativePath(self.get_cwd(), filepath)
+        self.executable = self._mangle(filepath)
         try:
           self.command = strace_process_quoted_arguments(args[1])
         except ValueError as e:
@@ -1498,8 +1503,17 @@ class Strace(ApiBase):
       def handle_futex(self, _args, _result):
         pass
 
-      def handle_getcwd(self, _args, _result):
-        pass
+      @parse_args(r'^\"(.+?)\", (\d+)$', False)
+      def handle_getcwd(self, args, _result):
+        if os.path.isabs(args[0]):
+          logging.debug('handle_chdir(%d, %s)' % (self.pid, self.cwd))
+          if not isinstance(self.cwd, unicode):
+            # Take the occasion to reset the path.
+            self.cwd = self._mangle(args[0])
+          else:
+            # It should always match.
+            assert self.cwd == Strace.load_filename(args[0]), (
+                self.cwd, args[0])
 
       @parse_args(r'^\"(.+?)\", \"(.+?)\"$', True)
       def handle_link(self, args, _result):
@@ -1612,8 +1626,24 @@ class Strace(ApiBase):
         self.children.append(child)
 
       def _handle_file(self, filepath, mode):
-        filepath = self.RelativePath(self.get_cwd(), filepath)
+        filepath = self._mangle(filepath)
         self.add_file(filepath, mode)
+
+      def _mangle(self, filepath):
+        """Decodes a filepath found in the log and convert it to a late-bound
+        path if necessary.
+
+        |filepath| is an strace 'encoded' string and the returned value is
+        either an unicode string if the path was absolute or a late bound path
+        otherwise.
+        """
+        filepath = Strace.load_filename(filepath)
+        if os.path.isabs(filepath):
+          return filepath
+        else:
+          if isinstance(self.get_cwd(), unicode):
+            return os.path.normpath(os.path.join(self.get_cwd(), filepath))
+          return self.RelativePath(self.get_cwd(), filepath)
 
     def __init__(self, blacklist, root_pid, initial_cwd):
       """|root_pid| may be None when the root process is not known.
