@@ -221,7 +221,7 @@ weston_client_launch(struct weston_compositor *compositor,
 
 	if (pid == 0) {
 		child_client_exec(sv[1], path);
-		exit(-1);
+		_exit(-1);
 	}
 
 	close(sv[1]);
