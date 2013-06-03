@@ -213,7 +213,7 @@ public:
         datasize = size;
         m_isDataSizeDefined = true;
     }
-    void clearDecodeState() { m_lzwContext.clear(); }
+
 private:
     OwnPtr<GIFLZWContext> m_lzwContext;
     Vector<GIFLZWBlock> m_lzwBlocks; // LZW blocks for this frame.
@@ -231,6 +231,7 @@ public:
         , m_state(GIFType)
         , m_bytesToConsume(6) // Number of bytes for GIF type, either "GIF87a" or "GIF89a".
         , m_bytesRead(0)
+        , m_screenBgcolor(0)
         , m_version(0)
         , m_screenWidth(0)
         , m_screenHeight(0)
@@ -238,6 +239,7 @@ public:
         , m_globalColormapPosition(0)
         , m_globalColormapSize(0)
         , m_loopCount(cLoopCountNotSeen)
+        , m_currentDecodingFrame(0)
         , m_parseCompleted(false)
     {
     }
@@ -247,8 +249,8 @@ public:
     }
 
     void setData(PassRefPtr<WebCore::SharedBuffer> data) { m_data = data; }
-    bool parse(WebCore::GIFImageDecoder::GIFParseQuery);
-    bool decode(size_t frameIndex);
+    // FIXME: haltAtFrame should be size_t.
+    bool decode(WebCore::GIFImageDecoder::GIFQuery, unsigned haltAtFrame);
 
     size_t imagesCount() const
     {
@@ -287,10 +289,8 @@ public:
 
     bool parseCompleted() const { return m_parseCompleted; }
 
-    void clearDecodeState(size_t index) { m_frames[index]->clearDecodeState(); }
-
 private:
-    bool parseData(size_t dataPosition, size_t len, WebCore::GIFImageDecoder::GIFParseQuery);
+    bool parse(size_t dataPosition, size_t len, bool parseSizeOnly);
     void setRemainingBytes(size_t);
 
     const unsigned char* data(size_t dataPosition) const
@@ -312,6 +312,7 @@ private:
     size_t m_bytesRead; // Number of bytes processed.
     
     // Global (multi-image) state.
+    int m_screenBgcolor; // Logical screen background color.
     int m_version; // Either 89 for GIF89 or 87 for GIF87.
     unsigned m_screenWidth; // Logical screen width & height.
     unsigned m_screenHeight;
@@ -321,6 +322,7 @@ private:
     int m_loopCount; // Netscape specific extension block to control the number of animation loops a GIF renders.
     
     Vector<OwnPtr<GIFFrameContext> > m_frames;
+    size_t m_currentDecodingFrame;
 
     RefPtr<WebCore::SharedBuffer> m_data;
     bool m_parseCompleted;

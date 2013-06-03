@@ -61,7 +61,7 @@ public:
     IntSize frameSizeAtIndex(size_t index) const;
     size_t frameCount();
     int repetitionCount() const;
-    size_t clearCacheExceptFrame(size_t);
+    void clearFrameBufferCache(size_t);
     bool frameHasAlphaAtIndex(size_t index) const;
     bool frameIsCompleteAtIndex(size_t) const;
     float frameDurationAtIndex(size_t) const;

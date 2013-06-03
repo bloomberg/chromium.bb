@@ -171,11 +171,12 @@ int DeferredImageDecoder::repetitionCount() const
     return m_actualDecoder ? m_actualDecoder->repetitionCount() : cAnimationNone;
 }
 
-size_t DeferredImageDecoder::clearCacheExceptFrame(size_t clearExceptFrame)
+void DeferredImageDecoder::clearFrameBufferCache(size_t clearBeforeFrame)
 {
     // If image decoding is deferred then frame buffer cache is managed by
     // the compositor and this call is ignored.
-    return m_actualDecoder ? m_actualDecoder->clearCacheExceptFrame(clearExceptFrame) : 0;
+    if (m_actualDecoder)
+        m_actualDecoder->clearFrameBufferCache(clearBeforeFrame);
 }
 
 bool DeferredImageDecoder::frameHasAlphaAtIndex(size_t index) const

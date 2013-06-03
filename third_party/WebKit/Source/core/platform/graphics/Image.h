@@ -94,7 +94,7 @@ public:
     
     virtual String filenameExtension() const { return String(); } // null string if unknown
 
-    virtual void destroyDecodedData() = 0;
+    virtual void destroyDecodedData(bool destroyAll = true) = 0;
     virtual unsigned decodedSize() const = 0;
 
     SharedBuffer* data() { return m_encodedImageData.get(); }
