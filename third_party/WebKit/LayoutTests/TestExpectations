@@ -891,6 +891,9 @@ webkit.org/b/72039 webaudio/test-basic.html [ Missing Pass ]
 webkit.org/b/72039 http/tests/download/literal-utf-8.html [ Missing Pass ]
 webkit.org/b/72039 editing/pasteboard/drag-files-to-editable-element.html [ Missing Pass ]
 
+Bug(crogers) webaudio/waveshaper-oversample-2x.html [ Pass Failure ]
+Bug(crogers) webaudio/waveshaper-oversample-4x.html [ Pass Failure ]
+
 webkit.org/b/110929 http/tests/multipart/policy-ignore-crash.php [ Missing Pass ]
 webkit.org/b/110929 http/tests/multipart/multipart-html.php [ Missing Pass ]
 webkit.org/b/111023 fast/loader/unload-hyperlink-targeted.html [ Pass Timeout ]

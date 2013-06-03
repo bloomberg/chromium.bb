@@ -27,6 +27,8 @@
 #if ENABLE(WEB_AUDIO)
 
 #include "modules/webaudio/WaveShaperNode.h"
+
+#include "core/dom/ExceptionCode.h"
 #include "wtf/MainThread.h"
 
 namespace WebCore {
@@ -37,6 +39,8 @@ WaveShaperNode::WaveShaperNode(AudioContext* context)
     ScriptWrappable::init(this);
     m_processor = adoptPtr(new WaveShaperProcessor(context->sampleRate(), 1));
     setNodeType(NodeTypeWaveShaper);
+
+    initialize();
 }
 
 void WaveShaperNode::setCurve(Float32Array* curve)
@@ -48,6 +52,33 @@ void WaveShaperNode::setCurve(Float32Array* curve)
 Float32Array* WaveShaperNode::curve()
 {
     return waveShaperProcessor()->curve();
+}
+
+void WaveShaperNode::setOversample(const String& type, ExceptionCode& ec)
+{
+    if (type == "none")
+        waveShaperProcessor()->setOversample(WaveShaperProcessor::OverSampleNone);
+    else if (type == "2x")
+        waveShaperProcessor()->setOversample(WaveShaperProcessor::OverSample2x);
+    else if (type == "4x")
+        waveShaperProcessor()->setOversample(WaveShaperProcessor::OverSample4x);
+    else
+        ec = INVALID_STATE_ERR;
+}
+
+String WaveShaperNode::oversample() const
+{
+    switch (const_cast<WaveShaperNode*>(this)->waveShaperProcessor()->oversample()) {
+    case WaveShaperProcessor::OverSampleNone:
+        return "none";
+    case WaveShaperProcessor::OverSample2x:
+        return "2x";
+    case WaveShaperProcessor::OverSample4x:
+        return "4x";
+    default:
+        ASSERT_NOT_REACHED();
+        return "none";
+    }
 }
 
 } // namespace WebCore
