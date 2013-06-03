@@ -127,7 +127,11 @@ public:
             return;
 
         ASSERT(value->IsObject());
+#ifdef V8_USE_UNSAFE_HANDLES
         v8::Persistent<v8::Object> wrapper = v8::Persistent<v8::Object>::Cast(value);
+#else
+        v8::Persistent<v8::Object>& wrapper = v8::Persistent<v8::Object>::Cast(value);
+#endif
         ASSERT(V8DOMWrapper::maybeDOMWrapper(value));
         ASSERT(V8Node::HasInstanceInAnyWorld(wrapper, m_isolate));
         Node* node = V8Node::toNative(wrapper);
@@ -237,7 +241,11 @@ public:
     virtual void VisitPersistentHandle(v8::Persistent<v8::Value> value, uint16_t classId) OVERRIDE
     {
         ASSERT(value->IsObject());
+#ifdef V8_USE_UNSAFE_HANDLES
         v8::Persistent<v8::Object> wrapper = v8::Persistent<v8::Object>::Cast(value);
+#else
+        v8::Persistent<v8::Object>& wrapper = v8::Persistent<v8::Object>::Cast(value);
+#endif
 
         if (classId != v8DOMNodeClassId && classId != v8DOMObjectClassId)
             return;

@@ -286,7 +286,11 @@ void ScriptProfiler::visitNodeWrappers(WrappedNodeVisitor* visitor)
             UNUSED_PARAM(m_isolate);
             ASSERT(V8Node::HasInstance(value, m_isolate, worldType(m_isolate)));
             ASSERT(value->IsObject());
+#ifdef V8_USE_UNSAFE_HANDLES
             v8::Persistent<v8::Object> wrapper = v8::Persistent<v8::Object>::Cast(value);
+#else
+            v8::Persistent<v8::Object>& wrapper = v8::Persistent<v8::Object>::Cast(value);
+#endif
             m_visitor->visitNode(V8Node::toNative(wrapper));
         }
 
@@ -317,7 +321,11 @@ void ScriptProfiler::visitExternalArrays(ExternalArrayVisitor* visitor)
             if (classId != v8DOMObjectClassId)
                 return;
             ASSERT(value->IsObject());
+#ifdef V8_USE_UNSAFE_HANDLES
             v8::Persistent<v8::Object> wrapper = v8::Persistent<v8::Object>::Cast(value);
+#else
+            v8::Persistent<v8::Object>& wrapper = v8::Persistent<v8::Object>::Cast(value);
+#endif
             if (!toWrapperTypeInfo(wrapper)->isSubclass(&V8ArrayBufferView::info))
                 return;
             m_visitor->visitJSExternalArray(V8ArrayBufferView::toNative(wrapper));
@@ -352,4 +360,3 @@ ProfileNameIdleTimeMap* ScriptProfiler::currentProfileNameIdleTimeMap()
 }
 
 } // namespace WebCore
-
