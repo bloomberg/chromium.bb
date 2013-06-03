@@ -1287,15 +1287,6 @@ webkit.org/b/109963 [ Debug ] inspector/profiler/heap-snapshot-get-profile-crash
 
 webkit.org/b/110247 [ Debug ] fast/workers/storage/interrupt-database.html [ Crash Pass Slow ]
 
-# Logic in RenderLayer::collectLayers needs to be fixed.
-crbug.com/238282 compositing/overflow/out-of-flow-pos-descendants-should-affect-all-ancestors.html [ Failure ]
-crbug.com/238282 compositing/overflow/textarea-scroll-touch.html [ Pass Failure ]
-crbug.com/238282 virtual/gpu/compositedscrolling/overflow/out-of-flow-pos-descendants-should-affect-all-ancestors.html [ Failure ]
-crbug.com/238282 virtual/gpu/compositedscrolling/overflow/textarea-scroll-touch.html [ Pass Failure ]
-crbug.com/238282 virtual/gpu/compositedscrolling/scrollbars/overflow-scrollbar-combinations.html [ Failure ]
-crbug.com/238282 virtual/softwarecompositing/overflow/out-of-flow-pos-descendants-should-affect-all-ancestors.html [ Failure ]
-crbug.com/238282 virtual/softwarecompositing/overflow/textarea-scroll-touch.html [ Failure ]
-
 # This test is quite large, and can time out on win debug builds.
 crbug.com/245836 [ Win Debug ] compositing/overflow/automatically-opt-into-composited-scrolling.html [ Pass Timeout ]
 crbug.com/245836 [ Win Debug ] virtual/gpu/compositedscrolling/overflow/automatically-opt-into-composited-scrolling.html [ Pass Timeout ]

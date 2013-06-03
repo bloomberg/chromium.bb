@@ -577,17 +577,7 @@ static inline bool isPositionedContainer(const RenderLayer* layer)
 
 void RenderLayer::collectBeforePromotionZOrderList(RenderLayer* ancestorStackingContext, OwnPtr<Vector<RenderLayer*> >& posZOrderListBeforePromote, OwnPtr<Vector<RenderLayer*> >& negZOrderListBeforePromote)
 {
-    // FIXME: TemporaryChange should support bit fields.
-    bool oldNeedsCompositedScrolling = m_needsCompositedScrolling;
-    bool oldIsNormalFlowOnly = m_isNormalFlowOnly;
-
-    m_needsCompositedScrolling = false;
-    m_isNormalFlowOnly = shouldBeNormalFlowOnly();
-
-    ancestorStackingContext->rebuildZOrderLists(StopAtStackingContexts, posZOrderListBeforePromote, negZOrderListBeforePromote, 0);
-
-    m_needsCompositedScrolling = oldNeedsCompositedScrolling;
-    m_isNormalFlowOnly = oldIsNormalFlowOnly;
+    ancestorStackingContext->rebuildZOrderLists(posZOrderListBeforePromote, negZOrderListBeforePromote, this, OnlyStackingContextsCanBeStackingContainers);
 
     const RenderLayer* positionedAncestor = parent();
     while (positionedAncestor && !isPositionedContainer(positionedAncestor) && !positionedAncestor->isStackingContext())
@@ -618,17 +608,7 @@ void RenderLayer::collectBeforePromotionZOrderList(RenderLayer* ancestorStacking
 
 void RenderLayer::collectAfterPromotionZOrderList(RenderLayer* ancestorStackingContext, OwnPtr<Vector<RenderLayer*> >& posZOrderListAfterPromote, OwnPtr<Vector<RenderLayer*> >& negZOrderListAfterPromote)
 {
-    // FIXME: TemporaryChange should support bit fields.
-    bool oldNeedsCompositedScrolling = m_needsCompositedScrolling;
-    bool oldIsNormalFlowOnly = m_isNormalFlowOnly;
-
-    m_isNormalFlowOnly = false;
-    m_needsCompositedScrolling = true;
-
-    ancestorStackingContext->rebuildZOrderLists(StopAtStackingContexts, posZOrderListAfterPromote, negZOrderListAfterPromote, this);
-
-    m_needsCompositedScrolling = oldNeedsCompositedScrolling;
-    m_isNormalFlowOnly = oldIsNormalFlowOnly;
+    ancestorStackingContext->rebuildZOrderLists(posZOrderListAfterPromote, negZOrderListAfterPromote, this, ForceLayerToStackingContainer);
 }
 
 // Compute what positive and negative z-order lists would look like before and
@@ -5591,16 +5571,16 @@ void RenderLayer::rebuildZOrderLists()
 {
     ASSERT(m_layerListMutationAllowed);
     ASSERT(isDirtyStackingContainer());
-    rebuildZOrderLists(StopAtStackingContainers, m_posZOrderList, m_negZOrderList);
+    rebuildZOrderLists(m_posZOrderList, m_negZOrderList);
     m_zOrderListsDirty = false;
 }
 
-void RenderLayer::rebuildZOrderLists(CollectLayersBehavior behavior, OwnPtr<Vector<RenderLayer*> >& posZOrderList, OwnPtr<Vector<RenderLayer*> >& negZOrderList, const RenderLayer* layerToForceAsStackingContainer)
+void RenderLayer::rebuildZOrderLists(OwnPtr<Vector<RenderLayer*> >& posZOrderList, OwnPtr<Vector<RenderLayer*> >& negZOrderList, const RenderLayer* layerToForceAsStackingContainer, CollectLayersBehavior collectLayersBehavior)
 {
     bool includeHiddenLayers = compositor()->inCompositingMode();
     for (RenderLayer* child = firstChild(); child; child = child->nextSibling())
         if (!m_reflection || reflectionLayer() != child)
-            child->collectLayers(includeHiddenLayers, behavior, posZOrderList, negZOrderList, layerToForceAsStackingContainer);
+            child->collectLayers(includeHiddenLayers, posZOrderList, negZOrderList, layerToForceAsStackingContainer, collectLayersBehavior);
 
     // Sort the two lists.
     if (posZOrderList)
@@ -5642,7 +5622,7 @@ void RenderLayer::updateNormalFlowList()
     m_normalFlowListDirty = false;
 }
 
-void RenderLayer::collectLayers(bool includeHiddenLayers, CollectLayersBehavior behavior, OwnPtr<Vector<RenderLayer*> >& posBuffer, OwnPtr<Vector<RenderLayer*> >& negBuffer, const RenderLayer* layerToForceAsStackingContainer)
+void RenderLayer::collectLayers(bool includeHiddenLayers, OwnPtr<Vector<RenderLayer*> >& posBuffer, OwnPtr<Vector<RenderLayer*> >& negBuffer, const RenderLayer* layerToForceAsStackingContainer, CollectLayersBehavior collectLayersBehavior)
 {
     if (isInTopLayer())
         return;
@@ -5650,20 +5630,33 @@ void RenderLayer::collectLayers(bool includeHiddenLayers, CollectLayersBehavior 
     updateDescendantDependentFlags();
 
     bool isStacking = false;
+    bool isNormalFlow = false;
 
-    switch (behavior) {
-        case StopAtStackingContexts:
-            isStacking = (this == layerToForceAsStackingContainer) || isStackingContext();
-            break;
-
-        case StopAtStackingContainers:
-            isStacking = (this == layerToForceAsStackingContainer) || isStackingContainer();
-            break;
+    switch (collectLayersBehavior) {
+    case ForceLayerToStackingContainer:
+        ASSERT(layerToForceAsStackingContainer);
+        if (this == layerToForceAsStackingContainer) {
+            isStacking = true;
+            isNormalFlow = false;
+        } else {
+            isStacking = isStackingContext();
+            isNormalFlow = shouldBeNormalFlowOnlyIgnoringCompositedScrolling();
+        }
+        break;
+    case OverflowScrollCanBeStackingContainers:
+        ASSERT(!layerToForceAsStackingContainer);
+        isStacking = isStackingContainer();
+        isNormalFlow = isNormalFlowOnly();
+        break;
+    case OnlyStackingContextsCanBeStackingContainers:
+        isStacking = isStackingContext();
+        isNormalFlow = shouldBeNormalFlowOnlyIgnoringCompositedScrolling();
+        break;
     }
 
     // Overflow layers are just painted by their enclosing layers, so they don't get put in zorder lists.
     bool includeHiddenLayer = includeHiddenLayers || (m_hasVisibleContent || (m_hasVisibleDescendant && isStacking));
-    if (includeHiddenLayer && !isNormalFlowOnly() && !isOutOfFlowRenderFlowThread()) {
+    if (includeHiddenLayer && !isNormalFlow && !isOutOfFlowRenderFlowThread()) {
         // Determine which buffer the child should be in.
         OwnPtr<Vector<RenderLayer*> >& buffer = (zIndex() >= 0) ? posBuffer : negBuffer;
 
@@ -5681,7 +5674,7 @@ void RenderLayer::collectLayers(bool includeHiddenLayers, CollectLayersBehavior 
         for (RenderLayer* child = firstChild(); child; child = child->nextSibling()) {
             // Ignore reflections.
             if (!m_reflection || reflectionLayer() != child)
-                child->collectLayers(includeHiddenLayers, behavior, posBuffer, negBuffer, layerToForceAsStackingContainer);
+                child->collectLayers(includeHiddenLayers, posBuffer, negBuffer, layerToForceAsStackingContainer, collectLayersBehavior);
         }
     }
 }
@@ -5743,23 +5736,28 @@ void RenderLayer::repaintIncludingNonCompositingDescendants(RenderLayerModelObje
 
 bool RenderLayer::shouldBeNormalFlowOnly() const
 {
-    return (renderer()->hasOverflowClip()
-                || renderer()->hasReflection()
-                || renderer()->hasMask()
-                || renderer()->isCanvas()
-                || renderer()->isVideo()
-                || renderer()->isEmbeddedObject()
-                || renderer()->isRenderIFrame()
-                || (renderer()->style()->specifiesColumns() && !isRootLayer()))
-            && !renderer()->isPositioned()
-            && !renderer()->hasTransform()
-            && !renderer()->hasClipPath()
-            && !renderer()->hasFilter()
-            && !renderer()->hasBlendMode()
-            && !isTransparent()
-            && !needsCompositedScrolling()
-            && !renderer()->isFloatingWithShapeOutside()
-            ;
+    return shouldBeNormalFlowOnlyIgnoringCompositedScrolling() && !needsCompositedScrolling();
+}
+
+bool RenderLayer::shouldBeNormalFlowOnlyIgnoringCompositedScrolling() const
+{
+    const bool couldBeNormalFlow = renderer()->hasOverflowClip()
+        || renderer()->hasReflection()
+        || renderer()->hasMask()
+        || renderer()->isCanvas()
+        || renderer()->isVideo()
+        || renderer()->isEmbeddedObject()
+        || renderer()->isRenderIFrame()
+        || (renderer()->style()->specifiesColumns() && !isRootLayer());
+    const bool preventsElementFromBeingNormalFlow = renderer()->isPositioned()
+        || renderer()->hasTransform()
+        || renderer()->hasClipPath()
+        || renderer()->hasFilter()
+        || renderer()->hasBlendMode()
+        || isTransparent()
+        || renderer()->isFloatingWithShapeOutside();
+
+    return couldBeNormalFlow && !preventsElementFromBeingNormalFlow;
 }
 
 void RenderLayer::updateIsNormalFlowOnly()

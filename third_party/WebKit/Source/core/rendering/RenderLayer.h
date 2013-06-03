@@ -878,12 +878,16 @@ public:
     void setForceNeedsCompositedScrolling(ForceNeedsCompositedScrollingMode);
 
 private:
-    enum CollectLayersBehavior { StopAtStackingContexts, StopAtStackingContainers };
+enum CollectLayersBehavior {
+    ForceLayerToStackingContainer,
+    OverflowScrollCanBeStackingContainers,
+    OnlyStackingContextsCanBeStackingContainers
+};
 
     void updateZOrderLists();
     void rebuildZOrderLists();
     // See the comment for collectLayers for information about the layerToForceAsStackingContainer parameter.
-    void rebuildZOrderLists(CollectLayersBehavior, OwnPtr<Vector<RenderLayer*> >&, OwnPtr<Vector<RenderLayer*> >&, const RenderLayer* layerToForceAsStackingContainer = 0);
+    void rebuildZOrderLists(OwnPtr<Vector<RenderLayer*> >&, OwnPtr<Vector<RenderLayer*> >&, const RenderLayer* layerToForceAsStackingContainer = 0, CollectLayersBehavior = OverflowScrollCanBeStackingContainers);
     void clearZOrderLists();
 
     void updateNormalFlowList();
@@ -962,7 +966,7 @@ private:
     // post-promotion layer lists, by allowing us to treat a layer as if it is a
     // stacking context, without adding a new member to RenderLayer or modifying
     // the style (which could cause extra allocations).
-    void collectLayers(bool includeHiddenLayers, CollectLayersBehavior, OwnPtr<Vector<RenderLayer*> >&, OwnPtr<Vector<RenderLayer*> >&, const RenderLayer* layerToForceAsStackingContainer = 0);
+    void collectLayers(bool includeHiddenLayers, OwnPtr<Vector<RenderLayer*> >&, OwnPtr<Vector<RenderLayer*> >&, const RenderLayer* layerToForceAsStackingContainer = 0, CollectLayersBehavior = OverflowScrollCanBeStackingContainers);
 
     struct LayerPaintingInfo {
         LayerPaintingInfo(RenderLayer* inRootLayer, const LayoutRect& inDirtyRect, PaintBehavior inPaintBehavior, const LayoutSize& inSubPixelAccumulation, RenderObject* inPaintingRoot = 0, RenderRegion*inRegion = 0, OverlapTestRequestMap* inOverlapTestRequests = 0)
@@ -1046,6 +1050,7 @@ private:
     bool hasScrollableVerticalOverflow() const;
 
     bool shouldBeNormalFlowOnly() const;
+    bool shouldBeNormalFlowOnlyIgnoringCompositedScrolling() const;
 
     bool shouldBeSelfPaintingLayer() const;
 
