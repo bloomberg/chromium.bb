@@ -290,6 +290,9 @@ HTMLMediaElement::HTMLMediaElement(const QualifiedName& tagName, Document* docum
 HTMLMediaElement::~HTMLMediaElement()
 {
     LOG(Media, "HTMLMediaElement::~HTMLMediaElement");
+
+    m_asyncEventQueue->close();
+
     setShouldDelayLoadEvent(false);
     if (m_textTracks)
         m_textTracks->clearOwner();
@@ -542,9 +545,8 @@ void HTMLMediaElement::scheduleEvent(const AtomicString& eventName)
 #if LOG_MEDIA_EVENTS
     LOG(Media, "HTMLMediaElement::scheduleEvent - scheduling '%s'", eventName.string().ascii().data());
 #endif
-    RefPtr<Event> event = Event::create(eventName, false, true);
-    event->setTarget(this);
 
+    RefPtr<Event> event = Event::create(eventName, false, true);
     m_asyncEventQueue->enqueueEvent(event.release());
 }
 
@@ -905,8 +907,6 @@ static bool eventTimeCueCompare(const std::pair<double, TextTrackCue*>& a,
 
 void HTMLMediaElement::updateActiveTextTrackCues(double movieTime)
 {
-    LOG(Media, "HTMLMediaElement::updateActiveTextTrackCues");
-
     // 4.8.10.8 Playing the media resource
 
     //  If the current playback position changes while the steps are running,
@@ -914,6 +914,8 @@ void HTMLMediaElement::updateActiveTextTrackCues(double movieTime)
     //  immediately rerun the steps.
     if (ignoreTrackDisplayUpdateRequests())
         return;
+
+    LOG(Media, "HTMLMediaElement::updateActiveTextTrackCues");
 
     // 1 - Let current cues be a list of cues, initialized to contain all the
     // cues of all the hidden, showing, or showing by default text tracks of the
@@ -3508,6 +3510,8 @@ void HTMLMediaElement::stop()
 
     stopPeriodicTimers();
     cancelPendingEventsAndCallbacks();
+
+    m_asyncEventQueue->close();
 }
 
 void HTMLMediaElement::suspend(ReasonForSuspension why)
