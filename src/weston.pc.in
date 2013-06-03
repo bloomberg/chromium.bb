@@ -2,6 +2,8 @@ prefix=@prefix@
 exec_prefix=@exec_prefix@
 libdir=@libdir@
 includedir=@includedir@
+libexecdir=@libexecdir@
+pkglibexecdir=${libexecdir}/@PACKAGE@
 
 Name: Weston Plugin API
 Description: Header files for Weston plugin development
