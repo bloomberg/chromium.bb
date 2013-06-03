@@ -201,7 +201,6 @@ ScrollBar.prototype.redraw_ = function() {
       this.hidden = hidden;
       this.button_.style.top = buttonTop + 'px';
       this.button_.style.height = buttonSize + 'px';
-      console.log(Date.now() - time);
     }.bind(this));
   }
 
