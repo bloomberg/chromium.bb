@@ -69,8 +69,6 @@ public:
     void setDefersLoading(bool);
     bool defersLoading() const { return m_defersLoading; }
 
-    unsigned long identifier() const { return m_identifier; }
-
     void releaseResources();
 
     void didChangePriority(ResourceLoadPriority);
@@ -110,8 +108,6 @@ private:
 
     ResourceRequest m_request;
     ResourceRequest m_originalRequest; // Before redirects.
-    
-    unsigned long m_identifier;
 
     bool m_loadingMultipartContent;
     bool m_notifiedLoadComplete;

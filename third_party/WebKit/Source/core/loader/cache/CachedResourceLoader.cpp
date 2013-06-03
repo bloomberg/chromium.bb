@@ -41,6 +41,7 @@
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
 #include "core/loader/PingLoader.h"
+#include "core/loader/UniqueIdentifier.h"
 #include "core/loader/cache/CachedCSSStyleSheet.h"
 #include "core/loader/cache/CachedDocument.h"
 #include "core/loader/cache/CachedFont.h"
@@ -390,6 +391,9 @@ CachedResourceHandle<CachedResource> CachedResourceLoader::requestResource(Cache
 
     if (!request.forPreload() || policy != Use)
         resource->setLoadPriority(request.priority());
+
+    if (policy != Use)
+        resource->setIdentifier(createUniqueIdentifier());
 
     if ((policy != Use || resource->stillNeedsLoad()) && CachedResourceRequest::NoDefer == request.defer()) {
         if (!frame())

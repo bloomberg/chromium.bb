@@ -81,8 +81,9 @@ namespace WebCore {
         void detachFromFrame();
 
         FrameLoader* frameLoader() const;
-        ResourceLoader* mainResourceLoader() const;
         PassRefPtr<SharedBuffer> mainResourceData() const;
+
+        unsigned long mainResourceIdentifier() const;
         
         DocumentWriter* writer() const { return &m_writer; }
 
@@ -191,6 +192,7 @@ namespace WebCore {
         void setMainDocumentError(const ResourceError&);
         void commitLoad(const char*, int);
         void clearMainResourceLoader();
+        ResourceLoader* mainResourceLoader() const;
 
         void setupForReplace();
         void maybeFinishLoadingMultipartContent();

@@ -395,7 +395,7 @@ void DocumentThreadableLoader::loadRequest(const ResourceRequest& request, Secur
         m_resource = m_document->cachedResourceLoader()->requestRawResource(newRequest);
         if (m_resource) {
             if (m_resource->loader()) {
-                unsigned long identifier = m_resource->loader()->identifier();
+                unsigned long identifier = m_resource->identifier();
                 InspectorInstrumentation::documentThreadableLoaderStartedLoadingForClient(m_document, identifier, m_client);
             }
             m_resource->addClient(this);

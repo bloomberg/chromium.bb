@@ -142,6 +142,11 @@ PassRefPtr<SharedBuffer> DocumentLoader::mainResourceData() const
     return 0;
 }
 
+unsigned long DocumentLoader::mainResourceIdentifier() const
+{
+    return m_mainResource ? m_mainResource->identifier() : m_identifierForLoadWithoutResourceLoader;
+}
+
 Document* DocumentLoader::document() const
 {
     if (m_frame && m_frame->loader()->documentLoader() == this)
@@ -540,7 +545,7 @@ void DocumentLoader::responseReceived(CachedResource* resource, const ResourceRe
     if (it != response.httpHeaderFields().end()) {
         String content = it->value;
         ASSERT(m_mainResource);
-        unsigned long identifier = m_identifierForLoadWithoutResourceLoader ? m_identifierForLoadWithoutResourceLoader : m_mainResource->identifier();
+        unsigned long identifier = mainResourceIdentifier();
         ASSERT(identifier);
         if (frameLoader()->shouldInterruptLoadForXFrameOptions(content, response.url(), identifier)) {
             InspectorInstrumentation::continueAfterXFrameOptionsDenied(m_frame, this, identifier, response);
@@ -573,7 +578,7 @@ void DocumentLoader::responseReceived(CachedResource* resource, const ResourceRe
         frameLoader()->notifier()->dispatchDidReceiveResponse(this, m_identifierForLoadWithoutResourceLoader, m_response, 0);
 
     if (!shouldContinueForResponse()) {
-        InspectorInstrumentation::continueWithPolicyIgnore(m_frame, this, mainResourceLoader()->identifier(), m_response);
+        InspectorInstrumentation::continueWithPolicyIgnore(m_frame, this, m_mainResource->identifier(), m_response);
         stopLoadingForPolicyChange();
         return;
     }
@@ -1004,11 +1009,6 @@ void DocumentLoader::startLoadingMainResource()
         m_applicationCacheHost = adoptPtr(new ApplicationCacheHost(this));
         maybeLoadEmpty();
         return;
-    }
-
-    if (!mainResourceLoader()) {
-        m_identifierForLoadWithoutResourceLoader = createUniqueIdentifier();
-        frameLoader()->notifier()->dispatchWillSendRequest(this, m_identifierForLoadWithoutResourceLoader, request, ResourceResponse());
     }
     m_mainResource->addClient(this);
 

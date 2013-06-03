@@ -97,6 +97,9 @@ public:
     void setResourceError(const ResourceError& error) { m_error = error; }
     const ResourceError& resourceError() const { return m_error; }
 
+    void setIdentifier(unsigned long identifier) { m_identifier = identifier; }
+    unsigned long identifier() const { return m_identifier; }
+
     virtual bool shouldIgnoreHTTPStatusCodeErrors() const { return false; }
 
     ResourceRequest& resourceRequest() { return m_resourceRequest; }
@@ -307,6 +310,8 @@ private:
 
     double m_lastDecodedAccessTime; // Used as a "thrash guard" in the cache
     double m_loadFinishTime;
+
+    unsigned long m_identifier;
 
     unsigned m_encodedSize;
     unsigned m_decodedSize;

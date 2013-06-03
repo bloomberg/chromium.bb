@@ -38,7 +38,6 @@ namespace WebCore {
 
 CachedRawResource::CachedRawResource(ResourceRequest& resourceRequest, Type type)
     : CachedResource(resourceRequest, type)
-    , m_identifier(0)
 {
 }
 
@@ -103,8 +102,6 @@ void CachedRawResource::willSendRequest(ResourceRequest& request, const Resource
 void CachedRawResource::responseReceived(const ResourceResponse& response)
 {
     CachedResourceHandle<CachedRawResource> protect(this);
-    if (!m_identifier)
-        m_identifier = m_loader->identifier();
     CachedResource::responseReceived(response);
     CachedResourceClientWalker<CachedRawResourceClient> w(m_clients);
     while (CachedRawResourceClient* c = w.next())
@@ -123,14 +120,6 @@ void CachedRawResource::didDownloadData(int dataLength)
     CachedResourceClientWalker<CachedRawResourceClient> w(m_clients);
     while (CachedRawResourceClient* c = w.next())
         c->dataDownloaded(this, dataLength);
-}
-
-void CachedRawResource::switchClientsToRevalidatedResource()
-{
-    ASSERT(m_loader);
-    ASSERT(m_identifier);
-    static_cast<CachedRawResource*>(resourceToRevalidate())->m_identifier = m_identifier;
-    CachedResource::switchClientsToRevalidatedResource();
 }
 
 void CachedRawResource::setDefersLoading(bool defers)

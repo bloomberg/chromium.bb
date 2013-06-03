@@ -144,6 +144,7 @@ CachedResource::CachedResource(const ResourceRequest& request, Type type)
     , m_decodedDataDeletionTimer(this, &CachedResource::decodedDataDeletionTimerFired)
     , m_lastDecodedAccessTime(0)
     , m_loadFinishTime(0)
+    , m_identifier(0)
     , m_encodedSize(0)
     , m_decodedSize(0)
     , m_accessCount(0)
@@ -637,6 +638,8 @@ void CachedResource::switchClientsToRevalidatedResource()
     ASSERT(!inCache());
 
     LOG(ResourceLoading, "CachedResource %p switchClientsToRevalidatedResource %p", this, m_resourceToRevalidate);
+
+    m_resourceToRevalidate->m_identifier = m_identifier;
 
     m_switchingClientsToRevalidatedResource = true;
     HashSet<CachedResourceHandleBase*>::iterator end = m_handlesToRevalidate.end();
