@@ -64,6 +64,7 @@ class WebGestureCurveTarget;
 class WebGestureCurve;
 class WebGraphicsContext3DProvider;
 class WebHyphenator;
+class WebIDBFactory;
 class WebMediaStreamCenter;
 class WebMediaStreamCenterClient;
 class WebMessagePortChannel;
@@ -179,6 +180,10 @@ public:
     // Must return non-null.
     virtual WebFileSystem* fileSystem() { return 0; }
 
+    // IndexedDB ----------------------------------------------------------
+
+    // Must return non-null.
+    virtual WebIDBFactory* idbFactory() { return 0; }
 
     // Gamepad -------------------------------------------------------------
 
@@ -405,7 +410,7 @@ public:
     virtual TraceEventAPIAtomicWord* getTraceSamplingState(const unsigned bucketName) { return 0; }
 
     // Add a trace event to the platform tracing system. Depending on the actual
-    // enabled state, this event may be recorded or dropped. 
+    // enabled state, this event may be recorded or dropped.
     // - phase specifies the type of event:
     //   - BEGIN ('B'): Marks the beginning of a scoped event.
     //   - END ('E'): Marks the end of a scoped event.
