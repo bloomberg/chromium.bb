@@ -54,6 +54,7 @@ MIDIAccess::~MIDIAccess()
 MIDIAccess::MIDIAccess(ScriptExecutionContext* context)
     : ActiveDOMObject(context)
 {
+    ScriptWrappable::init(this);
 }
 
 } // namespace WebCore

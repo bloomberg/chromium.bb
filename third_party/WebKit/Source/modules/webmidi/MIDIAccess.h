@@ -31,6 +31,7 @@
 #ifndef MIDIAccess_h
 #define MIDIAccess_h
 
+#include "bindings/v8/ScriptWrappable.h"
 #include "core/dom/ActiveDOMObject.h"
 #include "core/dom/EventTarget.h"
 #include "modules/webmidi/MIDIInput.h"
@@ -43,7 +44,7 @@ namespace WebCore {
 
 class ScriptExecutionContext;
 
-class MIDIAccess : public ActiveDOMObject, public RefCounted<MIDIAccess>, public EventTarget {
+class MIDIAccess : public RefCounted<MIDIAccess>, public ScriptWrappable, public ActiveDOMObject, public EventTarget {
 public:
     virtual ~MIDIAccess();
     static PassRefPtr<MIDIAccess> create(ScriptExecutionContext*);
