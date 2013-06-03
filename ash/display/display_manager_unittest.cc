@@ -371,7 +371,13 @@ DisplayInfo CreateDisplayInfo(int64 id, const gfx::Rect& bounds) {
   return info;
 }
 
-TEST_F(DisplayManagerTest, TestNativeDisplaysChanged) {
+#if defined(OS_WIN)
+// Crashes flakily on Win8 Aura: http://crbug.com/246109.
+#define MAYBE_TestNativeDisplaysChanged DISABLED_TestNativeDisplaysChanged
+#else
+#define MAYBE_TestNativeDisplaysChanged TestNativeDisplaysChanged
+#endif
+TEST_F(DisplayManagerTest, MAYBE_TestNativeDisplaysChanged) {
   const int internal_display_id =
       test::DisplayManagerTestApi(display_manager()).
       SetFirstDisplayAsInternalDisplay();
