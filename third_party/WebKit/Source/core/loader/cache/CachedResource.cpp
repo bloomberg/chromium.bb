@@ -218,26 +218,6 @@ void CachedResource::load(CachedResourceLoader* cachedResourceLoader, const Reso
 
     if (!accept().isEmpty())
         m_resourceRequest.setHTTPAccept(accept());
-
-    if (isCacheValidator()) {
-        CachedResource* resourceToRevalidate = m_resourceToRevalidate;
-        ASSERT(resourceToRevalidate->canUseCacheValidator());
-        ASSERT(resourceToRevalidate->isLoaded());
-        const String& lastModified = resourceToRevalidate->response().httpHeaderField("Last-Modified");
-        const String& eTag = resourceToRevalidate->response().httpHeaderField("ETag");
-        if (!lastModified.isEmpty() || !eTag.isEmpty()) {
-            ASSERT(cachedResourceLoader->cachePolicy(type()) != CachePolicyReload);
-            if (cachedResourceLoader->cachePolicy(type()) == CachePolicyRevalidate)
-                m_resourceRequest.setHTTPHeaderField("Cache-Control", "max-age=0");
-            if (!lastModified.isEmpty())
-                m_resourceRequest.setHTTPHeaderField("If-Modified-Since", lastModified);
-            if (!eTag.isEmpty())
-                m_resourceRequest.setHTTPHeaderField("If-None-Match", eTag);
-        }
-    }
-
-    if (type() == CachedResource::LinkPrefetch || type() == CachedResource::LinkSubresource)
-        m_resourceRequest.setHTTPHeaderField("Purpose", "prefetch");
     m_resourceRequest.setPriority(loadPriority());
 
     // FIXME: It's unfortunate that the cache layer and below get to know anything about fragment identifiers.

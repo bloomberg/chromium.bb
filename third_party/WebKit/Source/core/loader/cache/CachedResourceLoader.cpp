@@ -541,6 +541,8 @@ void CachedResourceLoader::addAdditionalRequestHeaders(ResourceRequest& request,
         request.setCachePolicy(resourceRequestCachePolicy(request, type));
     if (request.targetType() == ResourceRequest::TargetIsUnspecified)
         determineTargetType(request, type);
+    if (type == CachedResource::LinkPrefetch || type == CachedResource::LinkSubresource)
+        request.setHTTPHeaderField("Purpose", "prefetch");
     frameLoader->addExtraFieldsToRequest(request);
 }
 
@@ -548,11 +550,26 @@ CachedResourceHandle<CachedResource> CachedResourceLoader::revalidateResource(co
 {
     ASSERT(resource);
     ASSERT(resource->inCache());
+    ASSERT(resource->isLoaded());
     ASSERT(resource->canUseCacheValidator());
     ASSERT(!resource->resourceToRevalidate());
 
-    addAdditionalRequestHeaders(resource->resourceRequest(), resource->type());
-    CachedResourceHandle<CachedResource> newResource = createResource(resource->type(), resource->resourceRequest(), resource->encoding());
+    ResourceRequest revalidatingRequest(resource->resourceRequest());
+    addAdditionalRequestHeaders(revalidatingRequest, resource->type());
+
+    const String& lastModified = resource->response().httpHeaderField("Last-Modified");
+    const String& eTag = resource->response().httpHeaderField("ETag");
+    if (!lastModified.isEmpty() || !eTag.isEmpty()) {
+        ASSERT(cachePolicy(resource->type()) != CachePolicyReload);
+        if (cachePolicy(resource->type()) == CachePolicyRevalidate)
+            revalidatingRequest.setHTTPHeaderField("Cache-Control", "max-age=0");
+        if (!lastModified.isEmpty())
+            revalidatingRequest.setHTTPHeaderField("If-Modified-Since", lastModified);
+        if (!eTag.isEmpty())
+            revalidatingRequest.setHTTPHeaderField("If-None-Match", eTag);
+    }
+
+    CachedResourceHandle<CachedResource> newResource = createResource(resource->type(), revalidatingRequest, resource->encoding());
     
     LOG(ResourceLoading, "Resource %p created to revalidate %p", newResource.get(), resource);
     newResource->setResourceToRevalidate(resource);
