@@ -40,7 +40,7 @@ def ParseLine(line):
   address, bytes, disasm = line.strip().split('\t')
   assert disasm.strip() != ''
 
-  return Instruction(address, bytes.split(), disasm)
+  return Instruction(address, [int(byte, 16) for byte in bytes.split()], disasm)
 
 
 def CanonicalizeInstruction(insn):

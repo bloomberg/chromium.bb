@@ -124,7 +124,7 @@ def ProcessSuperinstructionsFile(filename, bitness, gas, objdump, out_file):
           superinstruction.append(instruction)
           objdump_bytes += instruction.bytes
         # Bytes in objdump output in and source file should match
-        assert ['0x' + b for b in objdump_bytes] == superinstruction_bytes
+        assert ['0x%02x' % b for b in objdump_bytes] == superinstruction_bytes
         if bitness == 32:
           validate_superinstruction = spec.ValidateSuperinstruction32
         else:
