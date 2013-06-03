@@ -1724,8 +1724,6 @@ crbug.com/243314 [ Mac Debug ] fast/forms/text/text-set-selection-crash.html [ C
 crbug.com/243314 [ Mac Debug ] media/video-reverse-play-duration.html [ Crash Timeout ]
 crbug.com/243314 [ Mac Debug ] svg/custom/js-late-clipPath-and-object-creation.svg [ Crash ]
 crbug.com/243314 [ Mac Debug ] virtual/gpu/compositedscrolling/overflow/build-paint-order-list-where-opt-in-decisions-can-affect-each-other.html [ Crash ]
-crbug.com/242851 editing/pasteboard/drop-file-svg.html [ Crash ]
-crbug.com/242851 editing/pasteboard/file-drag-to-editable.html [ Crash ]
 
 # Switching to content shell failures
 crbug.com/243353 [ Mac ] animations/dynamic-stylesheet-loading.html [ Timeout ]

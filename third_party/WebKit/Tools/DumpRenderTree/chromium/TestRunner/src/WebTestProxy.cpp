@@ -1143,13 +1143,14 @@ void WebTestProxyBase::didReceiveServerRedirectForProvisionalLoad(WebFrame* fram
     }
 }
 
-void WebTestProxyBase::didFailProvisionalLoad(WebFrame* frame, const WebURLError&)
+bool WebTestProxyBase::didFailProvisionalLoad(WebFrame* frame, const WebURLError&)
 {
     if (m_testInterfaces->testRunner()->shouldDumpFrameLoadCallbacks()) {
         printFrameDescription(m_delegate, frame);
         m_delegate->printMessage(" - didFailProvisionalLoadWithError\n");
     }
     locationChangeDone(frame);
+    return !frame->provisionalDataSource();
 }
 
 void WebTestProxyBase::didCommitProvisionalLoad(WebFrame* frame, bool)
