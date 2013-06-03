@@ -67,6 +67,9 @@ webkit.org/b/90488 [ Debug ] http/tests/inspector-enabled [ Slow ]
 # Similar slowness, but always times out on some platforms.
 webkit.org/b/90488 [ Win Mac Debug ] inspector/styles/styles-computed-trace.html [ Timeout ]
 
+# Inspector IndexedDB tests are slow in Release as well.
+crbug.com/246190 [ Release ] http/tests/inspector/indexeddb [ Slow ]
+
 # Test became flaky on WinXP, already was on Win7 Debug and Mac10.7 debug
 crbug.com/241855 [ XP Release ] editing/selection/doubleclick-crash.html [ Failure Pass ]
 crbug.com/241855 [ Lion Win7 Debug ] editing/selection/doubleclick-crash.html [ Failure Pass ]
@@ -1684,8 +1687,6 @@ crbug.com/231948 inspector/debugger/open-close-open.html [ Timeout ]
 crbug.com/231949 fast/events/drag-to-navigate.html [ Timeout ]
 crbug.com/231950 editing/pasteboard/drag-and-drop-objectimage-contenteditable.html [ Timeout ]
 crbug.com/233884 animations/3d/transform-origin-vs-functions.html [ Failure ]
-crbug.com/233885 http/tests/inspector/indexeddb/database-names.html [ Failure ]
-crbug.com/233886 http/tests/inspector/indexeddb/resources-panel.html [ Failure ]
 crbug.com/233887 plugins/call-as-function.html [ Failure ]
 crbug.com/233888 virtual/softwarecompositing/reflections/nested-reflection-animated.html [ ImageOnlyFailure ]
 crbug.com/235449 fast/loader/stateobjects/state-attribute-history-getter.html [ Failure Pass ]
