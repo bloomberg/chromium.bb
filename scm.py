@@ -113,7 +113,8 @@ class GIT(object):
       upstream_branch = GIT.GetUpstreamBranch(cwd)
       if upstream_branch is None:
         raise gclient_utils.Error('Cannot determine upstream branch')
-    command = ['diff', '--name-status', '-r', '%s...' % upstream_branch]
+    command = ['diff', '--name-status', '--no-renames',
+               '-r', '%s...' % upstream_branch]
     if not files:
       pass
     elif isinstance(files, basestring):
@@ -346,7 +347,9 @@ class GIT(object):
       branch = GIT.GetUpstreamBranch(cwd)
     command = ['diff', '-p', '--no-color', '--no-prefix', '--no-ext-diff',
                branch + "..." + branch_head]
-    if not full_move:
+    if full_move:
+      command.append('--no-renames')
+    else:
       command.append('-C')
     # TODO(maruel): --binary support.
     if files:
