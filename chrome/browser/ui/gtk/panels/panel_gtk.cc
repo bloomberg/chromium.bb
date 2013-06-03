@@ -316,6 +316,7 @@ void PanelGtk::Init() {
   gtk_widget_show(window_container_);
 
   ConnectAccelerators();
+  SetPanelAlwaysOnTop(always_on_top_);
 }
 
 void PanelGtk::SetWindowCornerStyle(panel::CornerStyle corner_style) {
@@ -1006,8 +1007,6 @@ bool PanelGtk::IsPanelAlwaysOnTop() const {
 }
 
 void PanelGtk::SetPanelAlwaysOnTop(bool on_top) {
-  if (always_on_top_ == on_top)
-    return;
   always_on_top_ = on_top;
 
   gtk_window_set_keep_above(window_, on_top);
