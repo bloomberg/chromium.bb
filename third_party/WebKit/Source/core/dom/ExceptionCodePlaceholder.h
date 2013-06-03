@@ -41,7 +41,7 @@ typedef int ExceptionCode;
 class ExceptionCodePlaceholder {
     WTF_MAKE_NONCOPYABLE(ExceptionCodePlaceholder);
 public:
-    ExceptionCodePlaceholder() { }
+    ExceptionCodePlaceholder();
     explicit ExceptionCodePlaceholder(ExceptionCode);
 
     operator ExceptionCode& () const { return m_code; }
@@ -49,6 +49,11 @@ public:
 protected:
     mutable ExceptionCode m_code;
 };
+
+inline ExceptionCodePlaceholder::ExceptionCodePlaceholder()
+    : m_code(0)
+{
+}
 
 inline ExceptionCodePlaceholder::ExceptionCodePlaceholder(ExceptionCode code)
     : m_code(code)
