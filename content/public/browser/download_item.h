@@ -155,7 +155,11 @@ class CONTENT_EXPORT DownloadItem : public base::SupportsUserData {
   virtual DownloadId GetGlobalId() const = 0;
   virtual DownloadState GetState() const = 0;
 
-  // Only valid if |GetState() == DownloadItem::INTERRUPTED|.
+  // Returns the most recent interrupt reason for this download. Returns
+  // DOWNLOAD_INTERRUPT_REASON_NONE if there is no previous interrupt reason.
+  // Cancelled downloads return DOWNLOAD_INTERRUPT_REASON_USER_CANCELLED. If
+  // the download was resumed, then the return value is the interrupt reason
+  // prior to resumption.
   virtual DownloadInterruptReason GetLastReason() const = 0;
 
   virtual bool IsPaused() const = 0;

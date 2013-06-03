@@ -86,35 +86,41 @@ class SafeBrowsingState : public DownloadCompletionBlocker {
 
 SafeBrowsingState::~SafeBrowsingState() {}
 
-// Returns a file path in the form that is expected by
-// platform_util::OpenItem/ShowItemInFolder, including any transformation
-// required for download abstractions layered on top of the core system,
-// e.g. download to Drive.
+// Used with GetPlatformDownloadPath() to indicate which platform path to
+// return.
+enum PlatformDownloadPathType {
+  // Return the platform specific target path.
+  PLATFORM_TARGET_PATH,
+
+  // Return the platform specific current path. If the download is in-progress
+  // and the download location is a local filesystem path, then
+  // GetPlatformDownloadPath will return the path to the intermediate file.
+  PLATFORM_CURRENT_PATH
+};
+
+// Returns a path in the form that that is expected by platform_util::OpenItem /
+// platform_util::ShowItemInFolder / DownloadTargetDeterminer.
+//
+// DownloadItems corresponding to Drive downloads use a temporary file as the
+// target path. The paths returned by DownloadItem::GetFullPath() /
+// GetTargetFilePath() refer to this temporary file. This function looks up the
+// corresponding path in Drive for these downloads.
+//
+// How the platform path is determined is based on PlatformDownloadPathType.
 base::FilePath GetPlatformDownloadPath(Profile* profile,
-                                       const DownloadItem* download) {
+                                       const DownloadItem* download,
+                                       PlatformDownloadPathType path_type) {
 #if defined(OS_CHROMEOS)
+  // Drive downloads always return the target path for all types.
   drive::DownloadHandler* drive_download_handler =
       drive::DownloadHandler::GetForProfile(profile);
   if (drive_download_handler &&
       drive_download_handler->IsDriveDownload(download))
     return drive_download_handler->GetTargetPath(download);
 #endif
-  // The caller wants to open the download or show it in a file browser. The
-  // download could be in one of three states:
-  // - Complete: The path we want is GetTargetFilePath().
-  // - Not complete, but there's an intermediate file: GetFullPath() will be
-  //     non-empty and is the location of the intermediate file. Since no target
-  //     file exits yet, use GetFullPath(). This should only happen during
-  //     ShowDownloadInShell().
-  // - Not Complete, and there's no intermediate file: GetFullPath() will be
-  //     empty. This shouldn't happen since CanShowInFolder() returns false and
-  //     this function shouldn't have been called.
-  if (download->GetState() == DownloadItem::COMPLETE) {
-    DCHECK(!download->GetTargetFilePath().empty());
-    return download->GetTargetFilePath();
-  }
 
-  DCHECK(!download->GetFullPath().empty());
+  if (path_type == PLATFORM_TARGET_PATH)
+    return download->GetTargetFilePath();
   return download->GetFullPath();
 }
 
@@ -179,10 +185,13 @@ DownloadId ChromeDownloadManagerDelegate::GetNextId() {
 bool ChromeDownloadManagerDelegate::DetermineDownloadTarget(
     DownloadItem* download,
     const content::DownloadTargetCallback& callback) {
-  DownloadTargetDeterminer::Start(download,
-                                  download_prefs_.get(),
-                                  this,
-                                  callback);
+  DownloadTargetDeterminer::Start(
+      download,
+      GetPlatformDownloadPath(
+          profile_, download, PLATFORM_TARGET_PATH),
+      download_prefs_.get(),
+      this,
+      callback);
   return true;
 }
 
@@ -331,14 +340,20 @@ void ChromeDownloadManagerDelegate::OpenDownload(DownloadItem* download) {
   DCHECK_EQ(DownloadItem::COMPLETE, download->GetState());
   if (!download->CanOpenDownload())
     return;
-  platform_util::OpenItem(GetPlatformDownloadPath(profile_, download));
+  base::FilePath platform_path(
+      GetPlatformDownloadPath(profile_, download, PLATFORM_TARGET_PATH));
+  DCHECK(!platform_path.empty());
+  platform_util::OpenItem(platform_path);
 }
 
 void ChromeDownloadManagerDelegate::ShowDownloadInShell(
     DownloadItem* download) {
   if (!download->CanShowInFolder())
     return;
-  platform_util::ShowItemInFolder(GetPlatformDownloadPath(profile_, download));
+  base::FilePath platform_path(
+      GetPlatformDownloadPath(profile_, download, PLATFORM_CURRENT_PATH));
+  DCHECK(!platform_path.empty());
+  platform_util::ShowItemInFolder(platform_path);
 }
 
 void ChromeDownloadManagerDelegate::CheckForFileExistence(

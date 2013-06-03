@@ -22,19 +22,18 @@
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/download_interrupt_reasons.h"
 #include "grit/generated_resources.h"
 #include "net/base/net_util.h"
 #include "ui/base/l10n/l10n_util.h"
-
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/drive/download_handler.h"
-#include "chrome/browser/chromeos/drive/file_system_util.h"
-#endif
 
 using content::BrowserThread;
 using content::DownloadItem;
 
 namespace {
+
+const base::FilePath::CharType kCrdownloadSuffix[] =
+    FILE_PATH_LITERAL(".crdownload");
 
 // Condenses the results from HistoryService::GetVisibleVisitCountToHost() to a
 // single bool. A host is considered visited before if prior visible visits were
@@ -58,17 +57,21 @@ DownloadTargetDeterminerDelegate::~DownloadTargetDeterminerDelegate() {
 
 DownloadTargetDeterminer::DownloadTargetDeterminer(
     DownloadItem* download,
+    const base::FilePath& initial_virtual_path,
     DownloadPrefs* download_prefs,
     DownloadTargetDeterminerDelegate* delegate,
     const content::DownloadTargetCallback& callback)
     : next_state_(STATE_GENERATE_TARGET_PATH),
       should_prompt_(false),
-      create_directory_(false),
-      conflict_action_(download->GetForcedFilePath().empty() ?
-                       DownloadPathReservationTracker::UNIQUIFY :
-                       DownloadPathReservationTracker::OVERWRITE),
+      should_notify_extensions_(false),
+      create_target_directory_(false),
+      conflict_action_(DownloadPathReservationTracker::OVERWRITE),
       danger_type_(download->GetDangerType()),
+      virtual_path_(initial_virtual_path),
       download_(download),
+      is_resumption_(download_->GetLastReason() !=
+                         content::DOWNLOAD_INTERRUPT_REASON_NONE &&
+                     !initial_virtual_path.empty()),
       download_prefs_(download_prefs),
       delegate_(delegate),
       completion_callback_(callback),
@@ -135,18 +138,26 @@ void DownloadTargetDeterminer::DoLoop() {
 DownloadTargetDeterminer::Result
     DownloadTargetDeterminer::DoGenerateTargetPath() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(virtual_path_.empty());
   DCHECK(local_path_.empty());
+  DCHECK(!should_prompt_);
+  DCHECK(!should_notify_extensions_);
+  DCHECK_EQ(DownloadPathReservationTracker::OVERWRITE, conflict_action_);
   bool is_forced_path = !download_->GetForcedFilePath().empty();
 
   next_state_ = STATE_NOTIFY_EXTENSIONS;
 
-  // If we don't have a forced path, we should construct a path for the
-  // download. Forced paths are only specified for programmatic downloads
-  // (WebStore, Drag&Drop). Treat the path as a virtual path. We will eventually
-  // determine whether this is a local path and if not, figure out a local path.
-  if (!is_forced_path) {
-   std::string default_filename(
+  if (!virtual_path_.empty() && HasPromptedForPath() && !is_forced_path) {
+    // The download is being resumed and the user has already been prompted for
+    // a path. Assume that it's okay to overwrite the file if there's a conflict
+    // and reuse the selection.
+    should_prompt_ = ShouldPromptForDownload(virtual_path_);
+  } else if (!is_forced_path) {
+    // If we don't have a forced path, we should construct a path for the
+    // download. Forced paths are only specified for programmatic downloads
+    // (WebStore, Drag&Drop). Treat the path as a virtual path. We will
+    // eventually determine whether this is a local path and if not, figure out
+    // a local path.
+    std::string default_filename(
         l10n_util::GetStringUTF8(IDS_DEFAULT_DOWNLOAD_FILENAME));
     base::FilePath generated_filename = net::GenerateFileName(
         download_->GetURL(),
@@ -166,9 +177,14 @@ DownloadTargetDeterminer::Result
       target_directory = download_prefs_->DownloadPath();
     }
     virtual_path_ = target_directory.Append(generated_filename);
+    conflict_action_ = DownloadPathReservationTracker::UNIQUIFY;
+    should_notify_extensions_ = true;
   } else {
-    DCHECK(!should_prompt_);
     virtual_path_ = download_->GetForcedFilePath();
+    // If this is a resumed download which was previously interrupted due to an
+    // issue with the forced path, the user is still not prompted. If the path
+    // supplied to a programmatic download is invalid, then the caller needs to
+    // intervene.
   }
   DCHECK(virtual_path_.IsAbsolute());
   DVLOG(20) << "Generated virtual path: " << virtual_path_.AsUTF8Unsafe();
@@ -192,9 +208,7 @@ DownloadTargetDeterminer::Result
 
   next_state_ = STATE_RESERVE_VIRTUAL_PATH;
 
-  // If the target path is forced or if we don't have an extensions event
-  // router, then proceed with the original path.
-  if (!download_->GetForcedFilePath().empty())
+  if (!should_notify_extensions_)
     return CONTINUE;
 
   delegate_->NotifyExtensions(download_, virtual_path_,
@@ -224,7 +238,7 @@ void DownloadTargetDeterminer::NotifyExtensionsDone(
     // suggest it.
     net::GenerateSafeFileName(std::string(), false, &new_path);
     virtual_path_ = new_path;
-    create_directory_ = true;
+    create_target_directory_ = true;
     conflict_action_ = conflict_action;
   }
 
@@ -239,7 +253,7 @@ DownloadTargetDeterminer::Result
   next_state_ = STATE_PROMPT_USER_FOR_DOWNLOAD_PATH;
 
   delegate_->ReserveVirtualPath(
-      download_, virtual_path_, create_directory_, conflict_action_,
+      download_, virtual_path_, create_target_directory_, conflict_action_,
       base::Bind(&DownloadTargetDeterminer::ReserveVirtualPathDone,
                  weak_ptr_factory_.GetWeakPtr()));
   return QUIT_DOLOOP;
@@ -346,11 +360,8 @@ DownloadTargetDeterminer::Result
   // danger level of the download depends on the file type. This excludes cases
   // where the download has already been deemed dangerous, or where the user is
   // going to be prompted or where this is a programmatic download.
-  if (danger_type_ != content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS ||
-      should_prompt_ ||
-      !download_->GetForcedFilePath().empty()) {
+  if (danger_type_ != content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS)
     return CONTINUE;
-  }
 
   // Assume that:
   // IsDangerousFile(VISITED_REFERRER) => IsDangerousFile(NO_VISITS_...)
@@ -397,6 +408,8 @@ DownloadTargetDeterminer::Result
   DCHECK(!virtual_path_.empty());
   DCHECK(!local_path_.empty());
   DCHECK(intermediate_path_.empty());
+  DCHECK(!virtual_path_.MatchesExtension(kCrdownloadSuffix));
+  DCHECK(!local_path_.MatchesExtension(kCrdownloadSuffix));
 
   next_state_ = STATE_NONE;
 
@@ -427,6 +440,19 @@ DownloadTargetDeterminer::Result
   // Other safe downloads get a .crdownload suffix for their intermediate name.
   if (danger_type_ == content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS) {
     intermediate_path_ = GetCrDownloadPath(local_path_);
+    return COMPLETE;
+  }
+
+  // If this is a resumed download, then re-use the existing intermediate path
+  // if one is available. A resumed download shouldn't cause a non-dangerous
+  // download to be considered dangerous upon resumption. Therefore the
+  // intermediate file should already be in the correct form.
+  if (is_resumption_ && !download_->GetFullPath().empty() &&
+      local_path_.DirName() == download_->GetFullPath().DirName()) {
+    DCHECK_NE(content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
+              download_->GetDangerType());
+    DCHECK_EQ(kCrdownloadSuffix, download_->GetFullPath().Extension());
+    intermediate_path_ = download_->GetFullPath();
     return COMPLETE;
   }
 
@@ -463,8 +489,9 @@ void DownloadTargetDeterminer::ScheduleCallbackAndDeleteSelf() {
       FROM_HERE,
       base::Bind(completion_callback_,
                  local_path_,
-                 (should_prompt_ ? DownloadItem::TARGET_DISPOSITION_PROMPT :
-                                   DownloadItem::TARGET_DISPOSITION_OVERWRITE),
+                 (HasPromptedForPath() || should_prompt_
+                      ? DownloadItem::TARGET_DISPOSITION_PROMPT
+                      : DownloadItem::TARGET_DISPOSITION_OVERWRITE),
                  danger_type_,
                  intermediate_path_));
   completion_callback_.Reset();
@@ -485,12 +512,23 @@ Profile* DownloadTargetDeterminer::GetProfile() {
 }
 
 bool DownloadTargetDeterminer::ShouldPromptForDownload(
-    const base::FilePath& filename) {
+    const base::FilePath& filename) const {
+  if (is_resumption_) {
+    // For resumed downloads, if the target disposition or prefs require
+    // prompting, the user has already been prompted. Try to respect the user's
+    // selection, unless we've discovered that the target path cannot be used
+    // for some reason.
+    content::DownloadInterruptReason reason = download_->GetLastReason();
+    return (reason == content::DOWNLOAD_INTERRUPT_REASON_FILE_ACCESS_DENIED ||
+            reason == content::DOWNLOAD_INTERRUPT_REASON_FILE_NO_SPACE ||
+            reason == content::DOWNLOAD_INTERRUPT_REASON_FILE_TOO_LARGE);
+  }
+
   // If the download path is forced, don't prompt.
   if (!download_->GetForcedFilePath().empty()) {
     // 'Save As' downloads shouldn't have a forced path.
-    DCHECK_NE(DownloadItem::TARGET_DISPOSITION_PROMPT,
-              download_->GetTargetDisposition());
+    DCHECK(DownloadItem::TARGET_DISPOSITION_PROMPT !=
+           download_->GetTargetDisposition());
     return false;
   }
 
@@ -525,8 +563,21 @@ bool DownloadTargetDeterminer::ShouldPromptForDownload(
   return false;
 }
 
+bool DownloadTargetDeterminer::HasPromptedForPath() const {
+  return (is_resumption_ && download_->GetTargetDisposition() ==
+                                DownloadItem::TARGET_DISPOSITION_PROMPT);
+}
+
 bool DownloadTargetDeterminer::IsDangerousFile(PriorVisitsToReferrer visits) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  // If the user has has been prompted or will be, assume that the user has
+  // approved the download. A programmatic download is considered safe unless it
+  // contains malware.
+  if (HasPromptedForPath() || should_prompt_ ||
+      !download_->GetForcedFilePath().empty())
+    return false;
+
   const bool is_extension_download =
       download_crx_util::IsExtensionDownload(*download_);
 
@@ -583,18 +634,19 @@ void DownloadTargetDeterminer::OnDownloadDestroyed(
 // static
 void DownloadTargetDeterminer::Start(
     content::DownloadItem* download,
+    const base::FilePath& initial_virtual_path,
     DownloadPrefs* download_prefs,
     DownloadTargetDeterminerDelegate* delegate,
     const content::DownloadTargetCallback& callback) {
   // DownloadTargetDeterminer owns itself and will self destruct when the job is
   // complete or the download item is destroyed. The callback is always invoked
   // asynchronously.
-  new DownloadTargetDeterminer(download, download_prefs, delegate, callback);
+  new DownloadTargetDeterminer(download, initial_virtual_path, download_prefs,
+                               delegate, callback);
 }
 
 // static
 base::FilePath DownloadTargetDeterminer::GetCrDownloadPath(
     const base::FilePath& suggested_path) {
-  return base::FilePath(suggested_path.value() +
-                        FILE_PATH_LITERAL(".crdownload"));
+  return base::FilePath(suggested_path.value() + kCrdownloadSuffix);
 }

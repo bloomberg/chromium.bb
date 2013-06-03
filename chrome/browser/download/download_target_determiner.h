@@ -52,6 +52,12 @@ class DownloadTargetDeterminer
  public:
   // Start the process of determing the target of |download|.
   //
+  // |initial_virtual_path| if non-empty, defines the initial virtual path for
+  //   the target determination process. If one isn't specified, one will be
+  //   generated based on the response data specified in |download| and the
+  //   users' downloads directory.
+  //   Note: |initial_virtual_path| is only used if download has prompted the
+  //       user before and doesn't have a forced path.
   // |download_prefs| is required and must outlive |download|. It is used for
   //   determining the user's preferences regarding the default downloads
   //   directory, prompting and auto-open behavior.
@@ -61,6 +67,7 @@ class DownloadTargetDeterminer
   //
   // Start() should be called on the UI thread.
   static void Start(content::DownloadItem* download,
+                    const base::FilePath& initial_virtual_path,
                     DownloadPrefs* download_prefs,
                     DownloadTargetDeterminerDelegate* delegate,
                     const content::DownloadTargetCallback& callback);
@@ -114,6 +121,7 @@ class DownloadTargetDeterminer
   // are as per Start() above.
   DownloadTargetDeterminer(
       content::DownloadItem* download,
+      const base::FilePath& initial_virtual_path,
       DownloadPrefs* download_prefs,
       DownloadTargetDeterminerDelegate* delegate,
       const content::DownloadTargetCallback& callback);
@@ -214,7 +222,21 @@ class DownloadTargetDeterminer
 
   Profile* GetProfile();
 
-  bool ShouldPromptForDownload(const base::FilePath& filename);
+  // Determine whether to prompt the user for the download location. For regular
+  // downloads, this determination is based on the target disposition, auto-open
+  // behavior, among other factors. For an interrupted download, this
+  // determination will be based on the interrupt reason. It is assumed that
+  // download interruptions always occur after the first round of download
+  // target determination is complete.
+  bool ShouldPromptForDownload(const base::FilePath& filename) const;
+
+  // Returns true if the user has been prompted for this download at least once
+  // prior to this target determination operation. This method is only expected
+  // to return true for a resuming interrupted download that has prompted the
+  // user before interruption. The return value does not depend on whether the
+  // user will be or has been prompted during the current target determination
+  // operation.
+  bool HasPromptedForPath() const;
 
   // Returns true if this download should show the "dangerous file" warning.
   // Various factors are considered, such as the type of the file, whether a
@@ -228,7 +250,8 @@ class DownloadTargetDeterminer
   // state
   State next_state_;
   bool should_prompt_;
-  bool create_directory_;
+  bool should_notify_extensions_;
+  bool create_target_directory_;
   DownloadPathReservationTracker::FilenameConflictAction conflict_action_;
   content::DownloadDangerType danger_type_;
   base::FilePath virtual_path_;
@@ -236,6 +259,7 @@ class DownloadTargetDeterminer
   base::FilePath intermediate_path_;
 
   content::DownloadItem* download_;
+  const bool is_resumption_;
   DownloadPrefs* download_prefs_;
   DownloadTargetDeterminerDelegate* delegate_;
   content::DownloadTargetCallback completion_callback_;

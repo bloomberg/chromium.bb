@@ -13,6 +13,7 @@
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_pref_service_syncable.h"
 #include "chrome/test/base/testing_profile.h"
+#include "content/public/browser/download_interrupt_reasons.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/test/mock_download_item.h"
@@ -220,10 +221,14 @@ content::MockDownloadItem*
       .WillByDefault(ReturnRefOfCopy(std::string()));
   ON_CALL(*item, GetId())
       .WillByDefault(Return(id));
+  ON_CALL(*item, GetLastReason())
+      .WillByDefault(Return(content::DOWNLOAD_INTERRUPT_REASON_NONE));
   ON_CALL(*item, GetReferrerUrl())
       .WillByDefault(ReturnRefOfCopy(GURL()));
   ON_CALL(*item, GetState())
       .WillByDefault(Return(DownloadItem::IN_PROGRESS));
+  ON_CALL(*item, GetTargetFilePath())
+      .WillByDefault(ReturnRefOfCopy(base::FilePath()));
   ON_CALL(*item, GetTransitionType())
       .WillByDefault(Return(content::PAGE_TRANSITION_LINK));
   ON_CALL(*item, GetWebContents())

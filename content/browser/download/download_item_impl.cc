@@ -1064,18 +1064,6 @@ void DownloadItemImpl::OnDownloadFileInitialized(
     return;
   }
 
-  // If we're resuming an interrupted download, we may already know the download
-  // target so we can skip target name determination. GetFullPath() is non-empty
-  // for interrupted downloads where the intermediate file is still present, and
-  // also for downloads with forced paths.
-  if (!GetTargetFilePath().empty() && !GetFullPath().empty()) {
-    // TODO(rdsmith/asanka): Check to confirm that the target path isn't
-    // present on disk; if it is, we should re-do filename determination to
-    // give the user a chance not to collide.
-    MaybeCompleteDownload();
-    return;
-  }
-
   delegate_->DetermineDownloadTarget(
       this, base::Bind(&DownloadItemImpl::OnDownloadTargetDetermined,
                        weak_ptr_factory_.GetWeakPtr()));
@@ -1117,6 +1105,19 @@ void DownloadItemImpl::OnDownloadTargetDetermined(
   // that they are both on the same device and subject to same
   // space/permission/availability constraints.
   DCHECK(intermediate_path.DirName() == target_path.DirName());
+
+  // During resumption, we may choose to proceed with the same intermediate
+  // file. No rename is necessary if our intermediate file already has the
+  // correct name.
+  //
+  // The intermediate name may change from its original value during filename
+  // determination on resumption, for example if the reason for the interruption
+  // was the download target running out space, resulting in a user prompt.
+  if (intermediate_path == current_path_) {
+    OnDownloadRenamedToIntermediateName(DOWNLOAD_INTERRUPT_REASON_NONE,
+                                        intermediate_path);
+    return;
+  }
 
   // Rename to intermediate name.
   // TODO(asanka): Skip this rename if AllDataSaved() is true. This avoids a
