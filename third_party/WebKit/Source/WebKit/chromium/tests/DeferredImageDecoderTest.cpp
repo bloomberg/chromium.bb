@@ -137,7 +137,7 @@ TEST_F(DeferredImageDecoderTest, drawIntoSkPicture)
     EXPECT_EQ(SkColorSetARGB(255, 255, 255, 255), canvasBitmap.getColor(0, 0));
 }
 
-TEST_F(DeferredImageDecoderTest, drawScaledIntoSkPicture)
+TEST_F(DeferredImageDecoderTest, DISABLED_drawScaledIntoSkPicture)
 {
     RefPtr<NativeImageSkia> image = m_lazyDecoder->frameBufferAtIndex(0)->asNewNativeImage();
     SkBitmap scaledBitmap = image->resizedBitmap(SkISize::Make(50, 51), SkIRect::MakeWH(50, 51));
