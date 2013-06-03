@@ -118,6 +118,8 @@
         'base/cocoa/tracking_area.mm',
         'base/cocoa/underlay_opengl_hosting_window.h',
         'base/cocoa/underlay_opengl_hosting_window.mm',
+        'base/cocoa/view_description.h',
+        'base/cocoa/view_description.mm',
         'base/cocoa/window_size_constants.h',
         'base/cocoa/window_size_constants.mm',
         'base/cursor/cursor.cc',
