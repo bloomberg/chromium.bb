@@ -71,8 +71,6 @@ LinkRelAttribute::LinkRelAttribute(const String& rel)
     else if (equalIgnoringCase(rel, "alternate stylesheet") || equalIgnoringCase(rel, "stylesheet alternate")) {
         m_isStyleSheet = true;
         m_isAlternate = true;
-    } else if (equalIgnoringCase(rel, "dns-prefetch")) {
-        m_isDNSPrefetch = true;
     } else if (equalIgnoringCase(rel, "import")) {
         m_isImport = true;
     } else {
