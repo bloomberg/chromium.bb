@@ -61,6 +61,12 @@ class CHROMEOS_EXPORT PowerPolicyController
   static std::string GetPolicyDebugString(
       const power_manager::PowerManagementPolicy& policy);
 
+  // Delay in milliseconds between the screen being turned off and the
+  // screen being locked. Used if the |enable_screen_lock| pref is set but
+  // |*_screen_lock_delay_ms| are unset or set to higher values than what
+  // this constant would imply.
+  const static int kScreenLockAfterOffDelayMs;
+
   PowerPolicyController(DBusThreadManager* manager, PowerManagerClient* client);
   virtual ~PowerPolicyController();
 

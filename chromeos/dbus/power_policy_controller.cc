@@ -58,6 +58,8 @@ power_manager::PowerManagementPolicy_Action GetProtoAction(
 
 }  // namespace
 
+const int PowerPolicyController::kScreenLockAfterOffDelayMs = 10000;  // 10 sec.
+
 // -1 is interpreted as "unset" by powerd, resulting in powerd's default
 // delays being used instead.  There are no similarly-interpreted values
 // for the other fields, unfortunately (but the constructor-assigned values
@@ -147,13 +149,13 @@ void PowerPolicyController::ApplyPrefs(const PrefValues& values) {
   delays->set_idle_warning_ms(values.ac_idle_warning_delay_ms);
   delays->set_idle_ms(values.ac_idle_delay_ms);
 
-  // If screen-locking is enabled, ensure that the screen is locked when
-  // it's turned off due to user inactivity.
+  // If screen-locking is enabled, ensure that the screen is locked soon
+  // after it's turned off due to user inactivity.
+  int64 lock_ms = delays->screen_off_ms() + kScreenLockAfterOffDelayMs;
   if (values.enable_screen_lock && delays->screen_off_ms() > 0 &&
-      (delays->screen_lock_ms() <= 0 ||
-       delays->screen_off_ms() < delays->screen_lock_ms())) {
-    delays->set_screen_lock_ms(delays->screen_off_ms());
-  }
+      (delays->screen_lock_ms() <= 0 || lock_ms < delays->screen_lock_ms()) &&
+      lock_ms < delays->idle_ms())
+    delays->set_screen_lock_ms(lock_ms);
 
   delays = prefs_policy_.mutable_battery_delays();
   delays->set_screen_dim_ms(values.battery_screen_dim_delay_ms);
@@ -161,11 +163,12 @@ void PowerPolicyController::ApplyPrefs(const PrefValues& values) {
   delays->set_screen_lock_ms(values.battery_screen_lock_delay_ms);
   delays->set_idle_warning_ms(values.battery_idle_warning_delay_ms);
   delays->set_idle_ms(values.battery_idle_delay_ms);
+
+  lock_ms = delays->screen_off_ms() + kScreenLockAfterOffDelayMs;
   if (values.enable_screen_lock && delays->screen_off_ms() > 0 &&
-      (delays->screen_lock_ms() <= 0 ||
-       delays->screen_off_ms() < delays->screen_lock_ms())) {
-    delays->set_screen_lock_ms(delays->screen_off_ms());
-  }
+      (delays->screen_lock_ms() <= 0 || lock_ms < delays->screen_lock_ms()) &&
+      lock_ms < delays->idle_ms())
+    delays->set_screen_lock_ms(lock_ms);
 
   prefs_policy_.set_idle_action(GetProtoAction(values.idle_action));
   prefs_policy_.set_lid_closed_action(GetProtoAction(values.lid_closed_action));
@@ -223,8 +226,10 @@ void PowerPolicyController::SendCurrentPolicy() {
   if (honor_screen_wake_locks_ && !screen_wake_locks_.empty()) {
     policy.mutable_ac_delays()->set_screen_dim_ms(0);
     policy.mutable_ac_delays()->set_screen_off_ms(0);
+    policy.mutable_ac_delays()->set_screen_lock_ms(0);
     policy.mutable_battery_delays()->set_screen_dim_ms(0);
     policy.mutable_battery_delays()->set_screen_off_ms(0);
+    policy.mutable_battery_delays()->set_screen_lock_ms(0);
   }
 
   if ((!screen_wake_locks_.empty() || !system_wake_locks_.empty()) &&

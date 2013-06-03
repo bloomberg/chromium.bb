@@ -95,22 +95,43 @@ TEST_F(PowerPolicyControllerTest, Prefs) {
                 fake_power_client_.get_policy()));
 
   // The enable-screen-lock pref should force the screen-lock delays to
-  // match the screen-off delays.
+  // match the screen-off delays plus a constant value.
   prefs.enable_screen_lock = true;
   policy_controller_->ApplyPrefs(prefs);
-  expected_policy.mutable_ac_delays()->set_screen_lock_ms(660000);
-  expected_policy.mutable_battery_delays()->set_screen_lock_ms(360000);
+  expected_policy.mutable_ac_delays()->set_screen_lock_ms(
+      660000 + PowerPolicyController::kScreenLockAfterOffDelayMs);
+  expected_policy.mutable_battery_delays()->set_screen_lock_ms(
+      360000 + PowerPolicyController::kScreenLockAfterOffDelayMs);
   EXPECT_EQ(PowerPolicyController::GetPolicyDebugString(expected_policy),
             PowerPolicyController::GetPolicyDebugString(
                 fake_power_client_.get_policy()));
 
   // If the screen-lock-delay prefs are set to lower values than the
-  // screen-off delays, the lock prefs should take precedence.
+  // screen-off delays plus the constant, the lock prefs should take
+  // precedence.
   prefs.ac_screen_lock_delay_ms = 70000;
   prefs.battery_screen_lock_delay_ms = 60000;
   policy_controller_->ApplyPrefs(prefs);
   expected_policy.mutable_ac_delays()->set_screen_lock_ms(70000);
   expected_policy.mutable_battery_delays()->set_screen_lock_ms(60000);
+  EXPECT_EQ(PowerPolicyController::GetPolicyDebugString(expected_policy),
+            PowerPolicyController::GetPolicyDebugString(
+                fake_power_client_.get_policy()));
+
+  // If the artificial screen-lock delays would exceed the idle delay, they
+  // shouldn't be set -- the power manager would ignore them since the
+  // idle action should lock the screen in this case.
+  prefs.ac_screen_off_delay_ms = prefs.ac_idle_delay_ms - 1;
+  prefs.battery_screen_off_delay_ms = prefs.battery_idle_delay_ms - 1;
+  prefs.ac_screen_lock_delay_ms = -1;
+  prefs.battery_screen_lock_delay_ms = -1;
+  policy_controller_->ApplyPrefs(prefs);
+  expected_policy.mutable_ac_delays()->set_screen_off_ms(
+      prefs.ac_screen_off_delay_ms);
+  expected_policy.mutable_battery_delays()->set_screen_off_ms(
+      prefs.battery_screen_off_delay_ms);
+  expected_policy.mutable_ac_delays()->set_screen_lock_ms(-1);
+  expected_policy.mutable_battery_delays()->set_screen_lock_ms(-1);
   EXPECT_EQ(PowerPolicyController::GetPolicyDebugString(expected_policy),
             PowerPolicyController::GetPolicyDebugString(
                 fake_power_client_.get_policy()));
@@ -146,8 +167,10 @@ TEST_F(PowerPolicyControllerTest, WakeLocks) {
       kScreenWakeLockReason);
   expected_policy.mutable_ac_delays()->set_screen_dim_ms(0);
   expected_policy.mutable_ac_delays()->set_screen_off_ms(0);
+  expected_policy.mutable_ac_delays()->set_screen_lock_ms(0);
   expected_policy.mutable_battery_delays()->set_screen_dim_ms(0);
   expected_policy.mutable_battery_delays()->set_screen_off_ms(0);
+  expected_policy.mutable_battery_delays()->set_screen_lock_ms(0);
   expected_policy.set_reason(
       std::string(kScreenWakeLockReason) + ", " + kSystemWakeLockReason);
   EXPECT_EQ(PowerPolicyController::GetPolicyDebugString(expected_policy),
