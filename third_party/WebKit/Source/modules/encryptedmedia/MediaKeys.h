@@ -28,6 +28,7 @@
 
 #if ENABLE(ENCRYPTED_MEDIA_V2)
 
+#include "bindings/v8/ScriptWrappable.h"
 #include "core/dom/EventTarget.h"
 #include "core/dom/ExceptionCode.h"
 #include "modules/encryptedmedia/CDM.h"
@@ -43,7 +44,7 @@ namespace WebCore {
 class MediaKeySession;
 class HTMLMediaElement;
 
-class MediaKeys : public RefCounted<MediaKeys>, public CDMClient {
+class MediaKeys : public RefCounted<MediaKeys>, public ScriptWrappable, public CDMClient {
 public:
     static PassRefPtr<MediaKeys> create(const String& keySystem, ExceptionCode&);
     ~MediaKeys();

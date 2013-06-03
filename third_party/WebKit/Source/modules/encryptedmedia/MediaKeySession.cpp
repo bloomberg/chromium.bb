@@ -51,6 +51,7 @@ MediaKeySession::MediaKeySession(ScriptExecutionContext* context, MediaKeys* key
     , m_keyRequestTimer(this, &MediaKeySession::keyRequestTimerFired)
     , m_addKeyTimer(this, &MediaKeySession::addKeyTimerFired)
 {
+    ScriptWrappable::init(this);
 }
 
 MediaKeySession::~MediaKeySession()

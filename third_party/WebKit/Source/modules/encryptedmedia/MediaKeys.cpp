@@ -70,6 +70,7 @@ MediaKeys::MediaKeys(const String& keySystem, PassOwnPtr<CDM> cdm)
     , m_keySystem(keySystem)
     , m_cdm(cdm)
 {
+    ScriptWrappable::init(this);
     m_cdm->setClient(this);
 }
 

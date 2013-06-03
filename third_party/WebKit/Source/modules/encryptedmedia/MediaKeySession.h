@@ -28,6 +28,7 @@
 
 #if ENABLE(ENCRYPTED_MEDIA_V2)
 
+#include "bindings/v8/ScriptWrappable.h"
 #include "core/dom/ContextDestructionObserver.h"
 #include "core/dom/EventTarget.h"
 #include "core/dom/ExceptionCode.h"
@@ -45,7 +46,7 @@ class MediaKeyError;
 class MediaKeys;
 class CDMSession;
 
-class MediaKeySession : public RefCounted<MediaKeySession>, public EventTarget, public ContextDestructionObserver {
+class MediaKeySession : public RefCounted<MediaKeySession>, public ScriptWrappable, public EventTarget, public ContextDestructionObserver {
 public:
     static PassRefPtr<MediaKeySession> create(ScriptExecutionContext*, MediaKeys*, const String& keySystem);
     ~MediaKeySession();
