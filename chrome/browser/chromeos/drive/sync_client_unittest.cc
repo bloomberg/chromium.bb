@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/drive/sync_client.h"
 
+#include <set>
 #include <vector>
 
 #include "base/file_util.h"
@@ -14,39 +15,63 @@
 #include "base/test/test_timeouts.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
+#include "chrome/browser/chromeos/drive/dummy_file_system.h"
 #include "chrome/browser/chromeos/drive/file_cache.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
-#include "chrome/browser/chromeos/drive/mock_file_system.h"
 #include "chrome/browser/chromeos/drive/test_util.h"
 #include "chrome/browser/google_apis/test_util.h"
 #include "content/public/test/test_browser_thread.h"
-#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-using ::testing::StrictMock;
-using ::testing::_;
 
 namespace drive {
 namespace internal {
 
 namespace {
 
-// Action used to set mock expectations for GetFileByResourceId().
-ACTION_P2(MockGetFileByResourceId, error, local_path) {
-  arg2.Run(error, local_path, scoped_ptr<ResourceEntry>(new ResourceEntry));
-}
+// Test file system for checking the behavior of SyncClient.
+// It just records the arguments GetFileByResourceId and UpdateFileByResourceId.
+class SyncClientTestFileSystem : public DummyFileSystem {
+ public:
+  // FileSystemInterface overrides.
+  virtual void GetFileByResourceId(
+      const std::string& resource_id,
+      const ClientContext& context,
+      const GetFileCallback& get_file_callback,
+      const google_apis::GetContentCallback& get_content_callback) OVERRIDE {
+    downloaded_.insert(resource_id);
+    get_file_callback.Run(
+        FILE_ERROR_OK,
+        base::FilePath::FromUTF8Unsafe("local_path_does_not_matter"),
+        scoped_ptr<ResourceEntry>(new ResourceEntry));
+  }
 
-// Action used to set mock expectations for UpdateFileByResourceId().
-ACTION_P(MockUpdateFileByResourceId, error) {
-  arg2.Run(error);
-}
+  virtual void UpdateFileByResourceId(
+      const std::string& resource_id,
+      const ClientContext& context,
+      const FileOperationCallback& callback) OVERRIDE {
+    uploaded_.insert(resource_id);
+    callback.Run(FILE_ERROR_OK);
+  }
 
-// Action used to set mock expectations for GetResourceEntryById().
-ACTION_P2(MockGetResourceEntryById, error, md5) {
-  scoped_ptr<ResourceEntry> entry(new ResourceEntry);
-  entry->mutable_file_specific_info()->set_file_md5(md5);
-  arg1.Run(error, entry.Pass());
-}
+  virtual void GetResourceEntryById(
+      const std::string& resource_id,
+      const GetResourceEntryCallback& callback) OVERRIDE {
+    // Only md5 field is cared in SyncClient, so fill only the field. To test
+    // the case that there is a server-side update, this test implementation
+    // returns a new md5 value different from values set in SetUpCache().
+    scoped_ptr<ResourceEntry> entry(new ResourceEntry);
+    entry->mutable_file_specific_info()->set_file_md5("new_md5");
+    callback.Run(FILE_ERROR_OK, entry.Pass());
+  }
+
+  // Returns the multiset of IDs that the SyncClient tried to download/upload.
+  const std::multiset<std::string>& downloaded() const { return downloaded_; }
+  const std::multiset<std::string>& uploaded() const { return uploaded_; }
+
+ private:
+  std::multiset<std::string> downloaded_;
+  std::multiset<std::string> uploaded_;
+};
 
 }  // namespace
 
@@ -54,7 +79,7 @@ class SyncClientTest : public testing::Test {
  public:
   SyncClientTest()
       : ui_thread_(content::BrowserThread::UI, &message_loop_),
-        mock_file_system_(new StrictMock<MockFileSystem>) {
+        test_file_system_(new SyncClientTestFileSystem) {
   }
 
   virtual void SetUp() OVERRIDE {
@@ -76,9 +101,7 @@ class SyncClientTest : public testing::Test {
     SetUpCache();
 
     // Initialize the sync client.
-    EXPECT_CALL(*mock_file_system_, AddObserver(_)).Times(1);
-    EXPECT_CALL(*mock_file_system_, RemoveObserver(_)).Times(1);
-    sync_client_.reset(new SyncClient(mock_file_system_.get(), cache_.get()));
+    sync_client_.reset(new SyncClient(test_file_system_.get(), cache_.get()));
 
     // Disable delaying so that DoSyncLoop() starts immediately.
     sync_client_->set_delay_for_testing(base::TimeDelta::FromSeconds(0));
@@ -158,35 +181,6 @@ class SyncClientTest : public testing::Test {
     EXPECT_EQ(FILE_ERROR_OK, error);
   }
 
-  // Sets the expectation for MockFileSystem::GetFileByResourceId(),
-  // that simulates successful retrieval of a file for the given resource ID.
-  void SetExpectationForGetFileByResourceId(const std::string& resource_id) {
-    EXPECT_CALL(*mock_file_system_, GetFileByResourceId(resource_id, _, _, _))
-        .WillOnce(
-            MockGetFileByResourceId(
-                FILE_ERROR_OK,
-                base::FilePath::FromUTF8Unsafe("local_path_does_not_matter")));
-  }
-
-  // Sets the expectation for MockFileSystem::UpdateFileByResourceId(),
-  // that simulates successful uploading of a file for the given resource ID.
-  void SetExpectationForUpdateFileByResourceId(const std::string& resource_id) {
-    EXPECT_CALL(*mock_file_system_, UpdateFileByResourceId(resource_id, _, _))
-        .WillOnce(MockUpdateFileByResourceId(FILE_ERROR_OK));
-  }
-
-  // Sets the expectation for MockFileSystem::GetResourceEntryById(),
-  // that simulates successful retrieval of file info for the given resource
-  // ID.
-  //
-  // This is used for testing StartCheckingExistingPinnedFiles(), hence we
-  // are only interested in the MD5 value in ResourceEntry.
-  void SetExpectationForGetFileInfoByResourceId(const std::string& resource_id,
-                                                const std::string& new_md5) {
-    EXPECT_CALL(*mock_file_system_, GetResourceEntryById(resource_id, _))
-        .WillOnce(MockGetResourceEntryById(FILE_ERROR_OK, new_md5));
-  }
-
   // Returns the resource IDs in the queue to be fetched.
   std::vector<std::string> GetResourceIdsToBeFetched() {
     return sync_client_->GetResourceIdsForTesting(SyncClient::FETCH);
@@ -211,7 +205,7 @@ class SyncClientTest : public testing::Test {
   base::MessageLoopForUI message_loop_;
   content::TestBrowserThread ui_thread_;
   base::ScopedTempDir temp_dir_;
-  scoped_ptr<StrictMock<MockFileSystem> > mock_file_system_;
+  scoped_ptr<SyncClientTestFileSystem> test_file_system_;
   scoped_ptr<FileCache, test_util::DestroyHelperForTests> cache_;
   scoped_ptr<SyncClient> sync_client_;
 };
@@ -220,26 +214,32 @@ TEST_F(SyncClientTest, StartInitialScan) {
   // Start processing the files in the backlog. This will collect the
   // resource IDs of these files.
   sync_client_->StartProcessingBacklog();
+  google_apis::test_util::RunBlockingPoolTask();
 
   // Check the contents of the queue for fetching.
-  SetExpectationForGetFileByResourceId("resource_id_not_fetched_bar");
-  SetExpectationForGetFileByResourceId("resource_id_not_fetched_baz");
-  SetExpectationForGetFileByResourceId("resource_id_not_fetched_foo");
+  EXPECT_EQ(3U, test_file_system_->downloaded().size());
+  EXPECT_EQ(1U, test_file_system_->downloaded().count(
+      "resource_id_not_fetched_bar"));
+  EXPECT_EQ(1U, test_file_system_->downloaded().count(
+      "resource_id_not_fetched_baz"));
+  EXPECT_EQ(1U, test_file_system_->downloaded().count(
+      "resource_id_not_fetched_foo"));
 
   // Check the contents of the queue for uploading.
-  SetExpectationForUpdateFileByResourceId("resource_id_dirty");
-
-  google_apis::test_util::RunBlockingPoolTask();
+  EXPECT_EQ(1U, test_file_system_->uploaded().size());
+  EXPECT_EQ(1U, test_file_system_->uploaded().count(
+      "resource_id_dirty"));
 }
 
 TEST_F(SyncClientTest, OnCachePinned) {
   // This file will be fetched by GetFileByResourceId() as OnCachePinned()
   // will kick off the sync loop.
-  SetExpectationForGetFileByResourceId("resource_id_not_fetched_foo");
-
   sync_client_->OnCachePinned("resource_id_not_fetched_foo", "md5");
-
   google_apis::test_util::RunBlockingPoolTask();
+
+  EXPECT_EQ(1U, test_file_system_->downloaded().size());
+  EXPECT_EQ(1U, test_file_system_->downloaded().count(
+      "resource_id_not_fetched_foo"));
 }
 
 TEST_F(SyncClientTest, OnCacheUnpinned) {
@@ -250,11 +250,12 @@ TEST_F(SyncClientTest, OnCacheUnpinned) {
 
   sync_client_->OnCacheUnpinned("resource_id_not_fetched_foo", "md5");
   sync_client_->OnCacheUnpinned("resource_id_not_fetched_baz", "md5");
+  google_apis::test_util::RunBlockingPoolTask();
 
   // Only resource_id_not_fetched_foo should be fetched.
-  SetExpectationForGetFileByResourceId("resource_id_not_fetched_bar");
-
-  google_apis::test_util::RunBlockingPoolTask();
+  EXPECT_EQ(1U, test_file_system_->downloaded().size());
+  EXPECT_EQ(1U, test_file_system_->downloaded().count(
+      "resource_id_not_fetched_bar"));
 }
 
 TEST_F(SyncClientTest, Deduplication) {
@@ -270,26 +271,16 @@ TEST_F(SyncClientTest, Deduplication) {
 }
 
 TEST_F(SyncClientTest, ExistingPinnedFiles) {
-  // Set the expectation so that the MockFileSystem returns "new_md5"
-  // for "resource_id_fetched". This simulates that the file is updated on
-  // the server side, and the new MD5 is obtained from the server (i.e. the
-  // local cache file is stale).
-  SetExpectationForGetFileInfoByResourceId("resource_id_fetched",
-                                           "new_md5");
-  // Set the expectation so that the MockFileSystem returns "some_md5"
-  // for "resource_id_dirty". The MD5 on the server is always different from
-  // the MD5 of a dirty file, which is set to "local". We should not collect
-  // this by StartCheckingExistingPinnedFiles().
-  SetExpectationForGetFileInfoByResourceId("resource_id_dirty",
-                                           "some_md5");
-
   // Start checking the existing pinned files. This will collect the resource
   // IDs of pinned files, with stale local cache files.
   sync_client_->StartCheckingExistingPinnedFiles();
-
-  SetExpectationForGetFileByResourceId("resource_id_fetched");
-
   google_apis::test_util::RunBlockingPoolTask();
+
+  // "resource_id_fetched" and "resource_id_dirty" are the existing pinned
+  // files. Test file system returns new MD5 values for both of them. Then,
+  // the non-dirty cache should be synced, but dirty cache should not.
+  EXPECT_EQ(1U, test_file_system_->downloaded().size());
+  EXPECT_EQ(1U, test_file_system_->downloaded().count("resource_id_fetched"));
 }
 
 }  // namespace internal
