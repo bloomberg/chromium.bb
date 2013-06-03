@@ -3657,6 +3657,7 @@
             'animation/TimedItemCalculationsTest.cpp',
             'animation/TimedItemTest.cpp',
             'platform/DecimalTest.cpp',
+            'platform/SharedBufferTest.cpp',
             'platform/chromium/ClipboardChromiumTest.cpp',
             'platform/graphics/chromium/AnimationTranslationUtilTest.cpp',
             'platform/image-decoders/ImageDecoderTest.cpp',

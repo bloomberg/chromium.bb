@@ -27,6 +27,7 @@
 #ifndef SharedBuffer_h
 #define SharedBuffer_h
 
+#include "wtf/ArrayBuffer.h"
 #include <wtf/Forward.h>
 #include <wtf/OwnPtr.h>
 #include <wtf/RefCounted.h>
@@ -92,6 +93,9 @@ public:
 
     void createPurgeableBuffer() const;
 
+    // Creates an ArrayBuffer and copies this SharedBuffer's contents to that
+    // ArrayBuffer without merging segmented buffers into a flat buffer.
+    PassRefPtr<ArrayBuffer> getAsArrayBuffer() const;
 
 private:
     SharedBuffer();

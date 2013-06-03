@@ -292,6 +292,26 @@ unsigned SharedBuffer::getSomeData(const char*& someData, unsigned position) con
     return 0;
 }
 
+PassRefPtr<ArrayBuffer> SharedBuffer::getAsArrayBuffer() const
+{
+    RefPtr<ArrayBuffer> arrayBuffer = ArrayBuffer::createUninitialized(static_cast<unsigned>(size()), 1);
+
+    const char* segment = 0;
+    unsigned position = 0;
+    while (unsigned segmentSize = getSomeData(segment, position)) {
+        memcpy(static_cast<char*>(arrayBuffer->data()) + position, segment, segmentSize);
+        position += segmentSize;
+    }
+
+    if (position != arrayBuffer->byteLength()) {
+        ASSERT_NOT_REACHED();
+        // Don't return the incomplete ArrayBuffer.
+        return 0;
+    }
+
+    return arrayBuffer;
+}
+
 PassRefPtr<SharedBuffer> utf8Buffer(const String& string)
 {
     // Allocate a buffer big enough to hold all the characters.
