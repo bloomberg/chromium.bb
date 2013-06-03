@@ -147,6 +147,7 @@ CSSParserSelector::CSSParserSelector()
 
 CSSParserSelector::CSSParserSelector(const QualifiedName& tagQName)
     : m_selector(adoptPtr(new CSSSelector(tagQName)))
+    , m_functionArgumentSelector(0)
 {
 }
 
