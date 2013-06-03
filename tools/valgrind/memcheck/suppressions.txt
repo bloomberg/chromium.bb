@@ -7308,7 +7308,7 @@ fun:_ZN7content21RenderViewHostManager8NavigateERKNS_19NavigationEntryImplE
    fun:_ZN3IPC12ChannelProxy7Context15OnChannelClosedEv
 }
 {
-   bug_245828a
+   bug_245828
    Memcheck:Leak
    fun:_Znw*
    fun:_ZN4base8internal20PostTaskAndReplyImpl16PostTaskAndReplyERKN15tracked_objects8LocationERKNS_8CallbackIFvvEEESA_
@@ -7326,7 +7326,7 @@ fun:_ZN7content21RenderViewHostManager8NavigateERKNS_19NavigationEntryImplE
    fun:_ZN7content11ContentMainEiPPKcPNS_19ContentMainDelegateE
 }
 {
-   bug_245828b
+   bug_246359
    Memcheck:Leak
    fun:_Znw*
    fun:_ZN7content21ShellBrowserMainParts21PreMainMessageLoopRunEv
