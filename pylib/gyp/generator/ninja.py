@@ -1479,9 +1479,9 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
   master_ninja.newline()
 
   deps = None
-  if flavor != 'win':
+  if int(generator_flags.get('use_deps', '0')) and flavor != 'win':
     deps = 'gcc'
-  elif int(generator_flags.get('use_deps', '0')):
+  if int(generator_flags.get('use_deps', '0')) and flavor == 'win':
     deps = 'msvc'
 
   if flavor != 'win':
