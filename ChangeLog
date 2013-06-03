@@ -1,3 +1,10 @@
+2013-06-03  Christian Egli  <christian.egli@sbs.ch>
+
+	* tests/tables/large.ctb:
+	* tests/tables/Makefile.am:
+	* HACKING: Added a new section about profiling and some test table
+	that can be used for profiling.
+
 2013-05-28  Christian Egli  <christian.egli@sbs.ch>
 
 	* tests/hash_collision.c:
