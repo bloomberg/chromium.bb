@@ -26,6 +26,10 @@ MESSAGE_CENTER_EXPORT
 
   // View controller that provides this window's content.
   scoped_nsobject<MCTrayViewController> viewController_;
+
+  // An event monitor that listens for clicks outside the tray window to cause
+  // it to close.
+  id clickEventMonitor_;
 }
 
 // Designated initializer.
