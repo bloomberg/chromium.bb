@@ -1876,3 +1876,24 @@
    fun:ash::test::AshTestBase::UpdateDisplay
    fun:ash::internal::MirrorWindowControllerTest_MirrorCursor_Test::TestBody
 }
+{
+   bug_245092a
+   Heapcheck:Leak
+   ...
+   fun:disk_cache::MemBackendImpl::CreateBackend
+   fun:disk_cache::CreateCacheBackend
+   fun:pnacl_cache::PNaClTranslationCache::Init
+   fun:pnacl_cache::PNaClTranslationCache::InitWithMemBackend
+   fun:pnacl_cache::PNaClTranslationCache::InitCache
+}
+{
+   bug_245092b
+   Heapcheck:Leak
+   ...
+   fun:disk_cache::Mem*
+   ...
+   fun:pnacl_cache::PNaClTranslationCacheWriteEntry::DispatchNext
+   fun:pnacl_cache::PNaClTranslationCacheWriteEntry::OpenEntry
+   fun:pnacl_cache::PNaClTranslationCacheWriteEntry::Cache
+   fun:pnacl_cache::PNaClTranslationCache::StoreNexe
+}
