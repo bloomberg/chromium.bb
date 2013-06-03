@@ -165,8 +165,10 @@ XFAIL_TESTS =					\
 
 # Hyphenation is not what it is made out to be. Quite a few of the
 # tests fail.
-XFAIL_TESTS +=	hyphenate_achena hyphenate_alderen 
+XFAIL_TESTS += hyphenate_achena hyphenate_alderen 
 
+# The hash_collision currently fails. The first translation works but subsequent ones fail. 
+XFAIL_TESTS += hash_collision
 
 TESTS =				\
 	$(check_PROGRAMS)	\

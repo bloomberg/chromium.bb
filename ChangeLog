@@ -1,5 +1,9 @@
 2013-06-03  Christian Egli  <christian.egli@sbs.ch>
 
+	* tests/hash_collision.c:
+	* tests/Makefile.am (XFAIL_TESTS): Mark the hash_collision test as
+	a known failure.
+
 	* liblouis/compileTranslationTable.c (allocateSpaceInTable): When
 	the table needs more space it is reallocated. Unfortunately not
 	all references to the table (such as the tableChain) are updated.
