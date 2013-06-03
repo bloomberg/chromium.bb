@@ -116,6 +116,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, MAYBE_PluginLoadUnload) {
 #elif defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(ARCH_CPU_ARM_FAMILY)
 // Timing out on ARM linux http://crbug.com/238467
 #define MAYBE_PluginPrivate DISABLED_PluginPrivate
+#elif defined(OS_WIN) && defined(ARCH_CPU_X86_64)
+// TODO(jschuh): Failing plugin tests. crbug.com/244653
+#define MAYBE_PluginPrivate DISABLED_PluginPrivate
 #else
 #define MAYBE_PluginPrivate PluginPrivate
 #endif
