@@ -10998,11 +10998,23 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
       <message name="IDS_ENTERPRISE_SIGNIN_PROFILE_LINK_LEARN_MORE" desc="The link to get more information about profile linking after signing into an enterprise account">
 	Learn more
       </message>
-      <message name="IDS_ENTERPRISE_SIGNIN_CREATE_NEW_PROFILE_YES" desc="Text of the button to create a new profile after enterprise account signin">
+      <message name="IDS_ENTERPRISE_SIGNIN_CREATE_NEW_PROFILE" desc="Text of the button to create a new profile after enterprise account signin">
 	Create a new user
       </message>
-      <message name="IDS_ENTERPRISE_SIGNIN_CREATE_NEW_PROFILE_CANCEL" desc="Text of the button to cancel signin">
+      <message name="IDS_ENTERPRISE_SIGNIN_CANCEL" desc="Text of the button to cancel signin">
 	Cancel
+      </message>
+
+      <!-- Enterprise sign-in profile linking -->
+      <!-- TODO(dconnelly): remove "new-style" once the old dialog is gone. -->
+      <message name="IDS_ENTERPRISE_SIGNIN_CREATE_NEW_PROFILE_NEW_STYLE" desc="Text of the button to create a new profile after enterprise account signin">
+        Create new profile
+      </message>
+      <message name="IDS_ENTERPRISE_SIGNIN_CONTINUE_NEW_STYLE" desc="Text of the button to link the current profile with the signed-in enterprise account">
+        Continue
+      </message>
+      <message name="IDS_ENTERPRISE_SIGNIN_ALERT_NEW_STYLE" desc="The text of the prompt to create a new profile after signing into an enterprise account">
+        <ph name="USER_NAME">$1<ex>pat@example.com</ex></ph> is managed by <ph name="DOMAIN">$2<ex>example.com</ex></ph>
       </message>
 
       <!-- Cookies Window -->

@@ -6,10 +6,18 @@
 #define CHROME_BROWSER_UI_SYNC_PROFILE_SIGNIN_CONFIRMATION_HELPER_H_
 
 #include "base/callback.h"
+#include "third_party/skia/include/core/SkColor.h"
 
 class Profile;
 
 namespace ui {
+
+// Blend parameters for the dialog prompt bar.
+const SkAlpha kSigninConfirmationPromptBarBackgroundAlpha = 0x0A;
+const SkAlpha kSigninConfirmationPromptBarBorderAlpha = 0x1F;
+
+// Create slightly different colors for the dialog prompt bar.
+SkColor GetSigninConfirmationPromptBarColor(SkAlpha alpha);
 
 // Determines whether the browser has ever been shutdown since the
 // profile was created.

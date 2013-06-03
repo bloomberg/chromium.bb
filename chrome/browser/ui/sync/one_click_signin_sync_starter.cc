@@ -23,10 +23,12 @@
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/sync_prefs.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chrome_pages.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
 #include "chrome/browser/ui/webui/signin/profile_signin_confirmation_dialog.h"
@@ -140,7 +142,21 @@ void OneClickSigninSyncStarter::OnRegisteredForPolicy(
   policy_client_.swap(client);
 
   // Allow user to create a new profile before continuing with sign-in.
-  ProfileSigninConfirmationDialog::ShowDialog(
+  Browser* browser =
+      chrome::FindBrowserWithProfile(profile_, chrome::GetActiveDesktop());
+  if (!browser) {
+    CancelSigninAndDelete();
+    return;
+  }
+  content::WebContents* web_contents =
+      browser->tab_strip_model()->GetActiveWebContents();
+  if (!web_contents) {
+    CancelSigninAndDelete();
+    return;
+  }
+  chrome::ShowProfileSigninConfirmationDialog(
+      browser,
+      web_contents,
       profile_,
       signin->GetUsernameForAuthInProgress(),
       base::Bind(&OneClickSigninSyncStarter::CancelSigninAndDelete,

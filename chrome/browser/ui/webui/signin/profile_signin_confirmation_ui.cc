@@ -24,26 +24,26 @@ ProfileSigninConfirmationUI::ProfileSigninConfirmationUI(content::WebUI* web_ui)
 
   html_source->AddLocalizedString(
       "createProfileButtonText",
-      IDS_ENTERPRISE_SIGNIN_CREATE_NEW_PROFILE_YES);
+      IDS_ENTERPRISE_SIGNIN_CREATE_NEW_PROFILE);
   html_source->AddLocalizedString(
       "continueButtonText",
-      IDS_ENTERPRISE_SIGNIN_CREATE_NEW_PROFILE_NO);
+      IDS_ENTERPRISE_SIGNIN_CONTINUE);
   html_source->AddLocalizedString("okButtonText", IDS_OK);
   html_source->AddLocalizedString(
       "cancelButtonText",
-      IDS_ENTERPRISE_SIGNIN_CREATE_NEW_PROFILE_CANCEL);
+      IDS_ENTERPRISE_SIGNIN_CANCEL);
   html_source->AddLocalizedString(
       "learnMoreText",
       IDS_ENTERPRISE_SIGNIN_PROFILE_LINK_LEARN_MORE);
   html_source->AddLocalizedString(
       "dialogTitle",
-      IDS_ENTERPRISE_SIGNIN_PROFILE_LINK_DIALOG_TITLE);
+      IDS_ENTERPRISE_SIGNIN_TITLE);
   html_source->AddLocalizedString(
       "dialogMessage",
-      IDS_ENTERPRISE_SIGNIN_PROFILE_LINK_MESSAGE);
+      IDS_ENTERPRISE_SIGNIN_EXPLANATION);
   html_source->AddLocalizedString(
       "dialogPrompt",
-      IDS_ENTERPRISE_SIGNIN_CREATE_NEW_PROFILE_PROMPT);
+      IDS_ENTERPRISE_SIGNIN_CREATE_NEW_PROFILE_MESSAGE);
 
   html_source->SetJsonPath("strings.js");
 

@@ -1860,6 +1860,8 @@
         'browser/ui/views/stubs_aura.cc',
         'browser/ui/views/sync/one_click_signin_bubble_view.cc',
         'browser/ui/views/sync/one_click_signin_bubble_view.h',
+        'browser/ui/views/sync/profile_signin_confirmation_dialog_views.cc',
+        'browser/ui/views/sync/profile_signin_confirmation_dialog_views.h',
         'browser/ui/views/tab_contents/chrome_web_contents_view_delegate_views.cc',
         'browser/ui/views/tab_contents/chrome_web_contents_view_delegate_views.h',
         'browser/ui/views/tab_contents/render_view_context_menu_views.cc',

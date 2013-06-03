@@ -21,6 +21,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_set.h"
+#include "ui/gfx/color_utils.h"
+#include "ui/native_theme/native_theme.h"
 
 // TODO(dconnelly): change VLOG to DVLOG (crbug.com/240195)
 
@@ -199,6 +201,17 @@ void ProfileSigninConfirmationHelper::ReturnResult(bool result) {
 }  // namespace
 
 namespace ui {
+
+SkColor GetSigninConfirmationPromptBarColor(SkAlpha alpha) {
+  static const SkColor kBackgroundColor =
+      ui::NativeTheme::instance()->GetSystemColor(
+          ui::NativeTheme::kColorId_DialogBackground);
+  unsigned char background_luminance =
+      color_utils::GetLuminanceForColor(kBackgroundColor);
+  const SkColor blend_color =
+      background_luminance < 128 ? SK_ColorWHITE : SK_ColorBLACK;
+  return color_utils::AlphaBlend(blend_color, kBackgroundColor, alpha);
+}
 
 bool HasBeenShutdown(Profile* profile) {
   bool has_been_shutdown = !profile->IsNewProfile();

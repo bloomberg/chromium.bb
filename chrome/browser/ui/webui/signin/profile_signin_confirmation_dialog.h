@@ -8,35 +8,41 @@
 #include <string>
 
 #include "base/callback.h"
-#include "base/memory/weak_ptr.h"
 #include "base/string16.h"
 #include "chrome/browser/common/cancelable_request.h"
 #include "chrome/browser/history/history_types.h"
+#include "chrome/browser/ui/sync/profile_signin_confirmation_helper.h"
 #include "chrome/browser/ui/webui/constrained_web_dialog_ui.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/web_dialogs/web_dialog_delegate.h"
 
+class Browser;
 class Profile;
 class WebUIMessageHandler;
+
+namespace content {
+class WebContents;
+}
 
 // A tab-modal dialog to allow a user signing in with a managed account
 // to create a new Chrome profile.
 class ProfileSigninConfirmationDialog : public ui::WebDialogDelegate {
  public:
-  // Creates and shows the modal dialog.  |profile| is the current Chrome
-  // profile and |username| is the GAIA username that the user is signing
-  // in with.
-  static void ShowDialog(Profile* profile,
-                         const std::string& username,
-                         const base::Closure& cancel_signin,
-                         const base::Closure& signin_with_new_profile,
-                         const base::Closure& continue_signin);
+  // Create and show the dialog, which owns itself.
+  static void ShowDialog(
+      content::WebContents* web_contents,
+      Profile* profile,
+      const std::string& username,
+      const base::Closure& cancel_signin,
+      const base::Closure& signin_with_new_profile,
+      const base::Closure& continue_signin);
 
   // Closes the dialog, which will delete itself.
   void Close() const;
 
  private:
   ProfileSigninConfirmationDialog(
+      content::WebContents* web_contents,
       Profile* profile,
       const std::string& username,
       const base::Closure& cancel_signin,
@@ -62,28 +68,29 @@ class ProfileSigninConfirmationDialog : public ui::WebDialogDelegate {
                                bool* out_close_dialog) OVERRIDE;
   virtual bool ShouldShowDialogTitle() const OVERRIDE;
 
-  // Weak ptr to delegate.
-  ConstrainedWebDialogDelegate* delegate_;
+  // Weak pointer to the containing view.
+  content::WebContents* web_contents_;
+
+  // Weak pointer to the profile being signed-in.
+  Profile* profile_;
 
   // The GAIA username being signed in.
   std::string username_;
-
-  // Whether to show the "Create a new profile" button.
-  bool prompt_for_new_profile_;
 
   // Dialog button callbacks.
   base::Closure cancel_signin_;
   base::Closure signin_with_new_profile_;
   base::Closure continue_signin_;
 
-  // Weak pointer to the profile being signed-in.
-  Profile* profile_;
+  // Weak pointer to the delegate.
+  ConstrainedWebDialogDelegate* delegate_;
+
+  // Whether to show the "Create a new profile" button.
+  bool prompt_for_new_profile_;
 
   // Cleanup bookkeeping.  Labeled mutable to get around inherited const
   // label on GetWebUIMessageHandlers.
   mutable bool closed_by_handler_;
-
-  base::WeakPtrFactory<ProfileSigninConfirmationDialog> weak_pointer_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileSigninConfirmationDialog);
 };
