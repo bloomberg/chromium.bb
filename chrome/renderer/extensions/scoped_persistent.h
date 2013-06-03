@@ -27,22 +27,34 @@ class ScopedPersistent {
   }
 
   void reset(v8::Handle<T> handle) {
-    handle_.Reset(GetIsolate(handle), handle);
+    if (!handle.IsEmpty())
+      handle_.Reset(GetIsolate(handle), handle);
+    else
+      reset();
   }
 
   void reset() {
     if (handle_.IsEmpty())
       return;
-    handle_.Dispose(GetIsolate(handle_));
+    handle_.Dispose();
     handle_.Clear();
   }
 
-  v8::Persistent<T> operator->() const {
-    return handle_;
+  v8::Handle<T> operator->() const {
+    return get();
   }
 
-  v8::Persistent<T> get() const {
-    return handle_;
+  // TODO(dcarney): Remove this function
+  // This is an unsafe access to the underlying handle
+  v8::Handle<T> get() const {
+    return *reinterpret_cast<v8::Handle<T>*>(
+      const_cast<v8::Persistent<T>* >(&handle_));
+  }
+
+  v8::Handle<T> newHandle() const {
+    if (handle_.IsEmpty())
+      return v8::Local<T>();
+    return v8::Local<T>::New(GetIsolate(handle_), handle_);
   }
 
   template<typename P>
@@ -56,10 +68,14 @@ class ScopedPersistent {
   static v8::Isolate* GetIsolate(v8::Handle<U> object_handle) {
     // Only works for v8::Object and its subclasses. Add specialisations for
     // anything else.
-    return GetIsolate(object_handle->CreationContext());
+    if (!object_handle.IsEmpty())
+      return GetIsolate(object_handle->CreationContext());
+    return v8::Isolate::GetCurrent();
   }
   static v8::Isolate* GetIsolate(v8::Handle<v8::Context> context_handle) {
-    return context_handle->GetIsolate();
+    if (!context_handle.IsEmpty())
+      return context_handle->GetIsolate();
+    return v8::Isolate::GetCurrent();
   }
   static v8::Isolate* GetIsolate(
       v8::Handle<v8::ObjectTemplate> template_handle) {
