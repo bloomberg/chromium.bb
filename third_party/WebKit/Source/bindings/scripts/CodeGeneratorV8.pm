@@ -694,7 +694,7 @@ END
 
     if ($interfaceName eq "DOMWindow") {
         $header{classPublic}->add(<<END);
-    static v8::Persistent<v8::ObjectTemplate> GetShadowObjectTemplate(v8::Isolate*, WrapperWorldType);
+    static v8::Handle<v8::ObjectTemplate> GetShadowObjectTemplate(v8::Isolate*, WrapperWorldType);
 END
     }
 
@@ -4000,14 +4000,13 @@ END
     # configuration method.
     if ($interfaceName eq "DOMWindow") {
         $implementation{nameSpaceWebCore}->add(<<END);
-static v8::Persistent<v8::ObjectTemplate> ConfigureShadowObjectTemplate(v8::Persistent<v8::ObjectTemplate> templ, v8::Isolate* isolate, WrapperWorldType currentWorldType)
+static void ConfigureShadowObjectTemplate(v8::Persistent<v8::ObjectTemplate>& templ, v8::Isolate* isolate, WrapperWorldType currentWorldType)
 {
     V8DOMConfiguration::batchConfigureAttributes(templ, v8::Handle<v8::ObjectTemplate>(), shadowAttrs, WTF_ARRAY_LENGTH(shadowAttrs), isolate, currentWorldType);
 
     // Install a security handler with V8.
     templ->SetAccessCheckCallbacks(V8DOMWindow::namedSecurityCheckCustom, V8DOMWindow::indexedSecurityCheckCustom, v8::External::New(&V8DOMWindow::info));
     templ->SetInternalFieldCount(V8DOMWindow::internalFieldCount);
-    return templ;
 }
 END
     }
@@ -4295,7 +4294,7 @@ END
 
     if ($interfaceName eq "DOMWindow") {
         $implementation{nameSpaceWebCore}->add(<<END);
-v8::Persistent<v8::ObjectTemplate> V8DOMWindow::GetShadowObjectTemplate(v8::Isolate* isolate, WrapperWorldType currentWorldType)
+v8::Handle<v8::ObjectTemplate> V8DOMWindow::GetShadowObjectTemplate(v8::Isolate* isolate, WrapperWorldType currentWorldType)
 {
     if (currentWorldType == MainWorld) {
         static v8::Persistent<v8::ObjectTemplate> V8DOMWindowShadowObjectCacheForMainWorld;
@@ -4303,14 +4302,14 @@ v8::Persistent<v8::ObjectTemplate> V8DOMWindow::GetShadowObjectTemplate(v8::Isol
             V8DOMWindowShadowObjectCacheForMainWorld.Reset(isolate, v8::ObjectTemplate::New());
             ConfigureShadowObjectTemplate(V8DOMWindowShadowObjectCacheForMainWorld, isolate, currentWorldType);
         }
-        return V8DOMWindowShadowObjectCacheForMainWorld;
+        return v8::Local<v8::ObjectTemplate>::New(isolate, V8DOMWindowShadowObjectCacheForMainWorld);
     } else {
         static v8::Persistent<v8::ObjectTemplate> V8DOMWindowShadowObjectCacheForNonMainWorld;
         if (V8DOMWindowShadowObjectCacheForNonMainWorld.IsEmpty()) {
             V8DOMWindowShadowObjectCacheForNonMainWorld.Reset(isolate, v8::ObjectTemplate::New());
             ConfigureShadowObjectTemplate(V8DOMWindowShadowObjectCacheForNonMainWorld, isolate, currentWorldType);
         }
-        return V8DOMWindowShadowObjectCacheForNonMainWorld;
+        return v8::Local<v8::ObjectTemplate>::New(isolate, V8DOMWindowShadowObjectCacheForNonMainWorld);
     }
 }
 
