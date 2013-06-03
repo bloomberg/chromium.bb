@@ -17,7 +17,12 @@
 #include "sync/api/syncable_service.h"
 
 class GoogleServiceAuthError;
+class ManagedUserRefreshTokenFetcher;
 class PrefService;
+
+namespace browser_sync {
+class DeviceInfo;
+}
 
 namespace user_prefs {
 class PrefRegistrySyncable;
@@ -37,13 +42,17 @@ class ManagedUserRegistrationService : public BrowserContextKeyedService,
                               const std::string& /* token */)>
       RegistrationCallback;
 
-  explicit ManagedUserRegistrationService(PrefService* prefs);
+  ManagedUserRegistrationService(
+      PrefService* prefs,
+      scoped_ptr<ManagedUserRefreshTokenFetcher> token_fetcher);
   virtual ~ManagedUserRegistrationService();
 
   static void RegisterUserPrefs(user_prefs::PrefRegistrySyncable* registry);
 
   // Registers a new managed user with the server. |name| is the display name of
   // the user. |callback| is called with the result of the registration.
+  // TODO(bauerb): There should be a way to cancel a pending managed user
+  // registration.
   void Register(const string16& name, const RegistrationCallback& callback);
 
   // Convenience method that registers a new managed user with the server and
@@ -77,8 +86,13 @@ class ManagedUserRegistrationService : public BrowserContextKeyedService,
   // Called when the Sync server has acknowledged a newly created managed user.
   void OnManagedUserAcknowledged(const std::string& managed_user_id);
 
+  // Fetches the managed user token when we have the device info.
+  void FetchToken(const string16& name,
+                  const browser_sync::DeviceInfo& device_info);
+
   // Called when we have received a token for the managed user.
-  void OnReceivedToken(const std::string& token);
+  void OnReceivedToken(const GoogleServiceAuthError& error,
+                       const std::string& token);
 
   // Dispatches the callback if all the conditions have been met.
   void DispatchCallbackIfReady();
@@ -94,6 +108,7 @@ class ManagedUserRegistrationService : public BrowserContextKeyedService,
   base::WeakPtrFactory<ManagedUserRegistrationService> weak_ptr_factory_;
   PrefService* prefs_;
   PrefChangeRegistrar pref_change_registrar_;
+  scoped_ptr<ManagedUserRefreshTokenFetcher> token_fetcher_;
 
   scoped_ptr<syncer::SyncChangeProcessor> sync_processor_;
   scoped_ptr<syncer::SyncErrorFactory> error_handler_;

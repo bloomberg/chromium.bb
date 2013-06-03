@@ -303,18 +303,6 @@ bool OAuth2TokenService::RefreshTokenIsAvailable() {
   return !GetRefreshToken().empty();
 }
 
-// static
-void OAuth2TokenService::InformConsumer(
-    base::WeakPtr<OAuth2TokenService::RequestImpl> request,
-    const GoogleServiceAuthError& error,
-    const std::string& access_token,
-    const base::Time& expiration_date) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-
-  if (request)
-    request->InformConsumer(error, access_token, expiration_date);
-}
-
 scoped_ptr<OAuth2TokenService::Request> OAuth2TokenService::StartRequest(
     const OAuth2TokenService::ScopeSet& scopes,
     OAuth2TokenService::Consumer* consumer) {
@@ -325,7 +313,7 @@ scoped_ptr<OAuth2TokenService::Request> OAuth2TokenService::StartRequest(
   std::string refresh_token = GetRefreshToken();
   if (refresh_token.empty()) {
     base::MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
-        &OAuth2TokenService::InformConsumer,
+        &RequestImpl::InformConsumer,
         request->AsWeakPtr(),
         GoogleServiceAuthError(
             GoogleServiceAuthError::USER_NOT_SIGNED_UP),
@@ -364,7 +352,7 @@ scoped_ptr<OAuth2TokenService::Request>
   const CacheEntry* cache_entry = GetCacheEntry(scopes);
   scoped_ptr<RequestImpl> request(new RequestImpl(consumer));
   base::MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
-      &OAuth2TokenService::InformConsumer,
+      &RequestImpl::InformConsumer,
       request->AsWeakPtr(),
       GoogleServiceAuthError(GoogleServiceAuthError::NONE),
       cache_entry->access_token,
@@ -443,7 +431,7 @@ bool OAuth2TokenService::RemoveCacheEntry(
     const std::string& token_to_remove) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   TokenCache::iterator token_iterator = token_cache_.find(scopes);
-  if (token_iterator == token_cache_.end() &&
+  if (token_iterator != token_cache_.end() &&
       token_iterator->second.access_token == token_to_remove) {
     token_cache_.erase(token_iterator);
     return true;
