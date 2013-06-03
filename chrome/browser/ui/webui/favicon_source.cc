@@ -271,7 +271,7 @@ void FaviconSource::OnFaviconDataAvailable(
     const chrome::FaviconBitmapResult& bitmap_result) {
   if (bitmap_result.is_valid()) {
     // Forward the data along to the networking system.
-    request.callback.Run(bitmap_result.bitmap_data);
+    request.callback.Run(bitmap_result.bitmap_data.get());
   } else if (!HandleMissingResource(request)) {
     SendDefaultResponse(request);
   }
@@ -300,7 +300,8 @@ void FaviconSource::SendDefaultResponse(const IconRequest& icon_request) {
       resource_id = IDR_DEFAULT_FAVICON;
       break;
   }
-  base::RefCountedMemory* default_favicon = default_favicons_[favicon_index];
+  base::RefCountedMemory* default_favicon =
+      default_favicons_[favicon_index].get();
 
   if (!default_favicon) {
     ui::ScaleFactor scale_factor = icon_request.scale_factor;

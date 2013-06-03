@@ -81,7 +81,7 @@ void SafeBrowsingPingManager::ReportSafeBrowsingHit(
       post_data.empty() ? net::URLFetcher::GET : net::URLFetcher::POST,
       this);
   report->SetLoadFlags(net::LOAD_DISABLE_CACHE);
-  report->SetRequestContext(request_context_getter_);
+  report->SetRequestContext(request_context_getter_.get());
   if (!post_data.empty())
     report->SetUploadData("text/plain", post_data);
   safebrowsing_reports_.insert(report);
@@ -95,7 +95,7 @@ void SafeBrowsingPingManager::ReportMalwareDetails(
   net::URLFetcher* fetcher = net::URLFetcher::Create(
       report_url, net::URLFetcher::POST, this);
   fetcher->SetLoadFlags(net::LOAD_DISABLE_CACHE);
-  fetcher->SetRequestContext(request_context_getter_);
+  fetcher->SetRequestContext(request_context_getter_.get());
   fetcher->SetUploadData("application/octet-stream", report);
   // Don't try too hard to send reports on failures.
   fetcher->SetAutomaticallyRetryOn5xx(false);

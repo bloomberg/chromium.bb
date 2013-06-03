@@ -60,7 +60,7 @@ class MockProfile : public TestingProfile {
   }
 
   virtual history::TopSites* GetTopSites() OVERRIDE {
-    return mock_top_sites_;
+    return mock_top_sites_.get();
   }
 
   void AddKnownURL(const GURL& url, const ThumbnailScore& score) {

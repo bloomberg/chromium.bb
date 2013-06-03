@@ -41,7 +41,7 @@ syncer::ModelSafeGroup
 
 void AutofillProfileDataTypeController::WebDatabaseLoaded() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (web_data_service_)
+  if (web_data_service_.get())
     web_data_service_->RemoveDBObserver(this);
   OnModelLoaded();
 }
@@ -53,7 +53,7 @@ void AutofillProfileDataTypeController::OnPersonalDataChanged() {
   personal_data_->RemoveObserver(this);
   web_data_service_ = AutofillWebDataService::FromBrowserContext(profile());
 
-  if (!web_data_service_)
+  if (!web_data_service_.get())
     return;
 
   if (web_data_service_->IsDatabaseLoaded())
@@ -86,7 +86,7 @@ bool AutofillProfileDataTypeController::StartModels() {
 
   web_data_service_ = AutofillWebDataService::FromBrowserContext(profile());
 
-  if (!web_data_service_)
+  if (!web_data_service_.get())
     return false;
 
   if (web_data_service_->IsDatabaseLoaded())
@@ -100,7 +100,7 @@ void AutofillProfileDataTypeController::StopModels() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(state() == STOPPING || state() == NOT_RUNNING);
 
-  if (web_data_service_)
+  if (web_data_service_.get())
     web_data_service_->RemoveDBObserver(this);
 
   personal_data_->RemoveObserver(this);

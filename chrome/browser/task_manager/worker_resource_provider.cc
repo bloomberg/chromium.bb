@@ -141,7 +141,7 @@ void SharedWorkerResource::Inspect() const {
     return;
   scoped_refptr<DevToolsAgentHost> agent_host(
       DevToolsAgentHost::GetForWorker(process_id_, routing_id_));
-  DevToolsWindow::OpenDevToolsWindowForWorker(profile, agent_host);
+  DevToolsWindow::OpenDevToolsWindowForWorker(profile, agent_host.get());
 }
 
 bool SharedWorkerResource::SupportNetworkUsage() const {

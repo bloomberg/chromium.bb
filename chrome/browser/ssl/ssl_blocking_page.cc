@@ -205,9 +205,10 @@ SSLBlockingPage::~SSLBlockingPage() {
 std::string SSLBlockingPage::GetHTMLContents() {
   // Let's build the html error page.
   DictionaryValue strings;
-  SSLErrorInfo error_info = SSLErrorInfo::CreateError(
-      SSLErrorInfo::NetErrorToErrorType(cert_error_), ssl_info_.cert,
-      request_url_);
+  SSLErrorInfo error_info =
+      SSLErrorInfo::CreateError(SSLErrorInfo::NetErrorToErrorType(cert_error_),
+                                ssl_info_.cert.get(),
+                                request_url_);
 
   int resource_id = IDR_SSL_ROAD_BLOCK_HTML;
   strings.SetString("headLine", error_info.title());
@@ -277,7 +278,7 @@ std::string SSLBlockingPage::GetHTMLContents() {
 
 void SSLBlockingPage::OverrideEntry(NavigationEntry* entry) {
   int cert_id = content::CertStore::GetInstance()->StoreCert(
-      ssl_info_.cert, web_contents_->GetRenderProcessHost()->GetID());
+      ssl_info_.cert.get(), web_contents_->GetRenderProcessHost()->GetID());
 
   entry->GetSSL().security_style =
       content::SECURITY_STYLE_AUTHENTICATION_BROKEN;

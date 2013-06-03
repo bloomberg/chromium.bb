@@ -205,23 +205,17 @@ TEST_F(ProfileSigninConfirmationHelperTest, PromptForNewProfile_Extensions) {
   extensions->extension_prefs()->AddGrantedPermissions(
       webstore->id(),
       make_scoped_refptr(new extensions::PermissionSet));
-  extensions->AddExtension(webstore);
-  EXPECT_FALSE(
-      GetCallbackResult(
-          base::Bind(
-              &ui::CheckShouldPromptForNewProfile,
-              profile_.get())));
+  extensions->AddExtension(webstore.get());
+  EXPECT_FALSE(GetCallbackResult(
+      base::Bind(&ui::CheckShouldPromptForNewProfile, profile_.get())));
 
   scoped_refptr<extensions::Extension> extension =
       CreateExtension("foo", std::string());
   extensions->extension_prefs()->AddGrantedPermissions(
       extension->id(), make_scoped_refptr(new extensions::PermissionSet));
-  extensions->AddExtension(extension);
-  EXPECT_TRUE(
-      GetCallbackResult(
-          base::Bind(
-              &ui::CheckShouldPromptForNewProfile,
-              profile_.get())));
+  extensions->AddExtension(extension.get());
+  EXPECT_TRUE(GetCallbackResult(
+      base::Bind(&ui::CheckShouldPromptForNewProfile, profile_.get())));
 }
 
 TEST_F(ProfileSigninConfirmationHelperTest, PromptForNewProfile_History) {

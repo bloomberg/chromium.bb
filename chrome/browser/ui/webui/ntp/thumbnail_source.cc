@@ -59,7 +59,7 @@ void ThumbnailSource::StartDataRequest(
     // We have the thumbnail.
     callback.Run(data.get());
   } else {
-    callback.Run(default_thumbnail_);
+    callback.Run(default_thumbnail_.get());
   }
 }
 

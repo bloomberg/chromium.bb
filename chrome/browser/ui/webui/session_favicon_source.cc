@@ -48,7 +48,7 @@ bool SessionFaviconSource::HandleMissingResource(const IconRequest& request) {
   if (associator &&
       associator->GetSyncedFaviconForPageURL(request.request_path.spec(),
                                              &response)) {
-    request.callback.Run(response);
+    request.callback.Run(response.get());
     return true;
   }
   return false;

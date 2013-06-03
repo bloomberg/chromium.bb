@@ -1156,8 +1156,8 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, DISABLED_UnrelatedSiteInstance) {
   scoped_refptr<content::SiteInstance> second_site_instance =
       second_active_tab->GetSiteInstance();
   EXPECT_NE(first_site_instance, second_site_instance);
-  EXPECT_FALSE(first_site_instance->IsRelatedSiteInstance(
-      second_site_instance));
+  EXPECT_FALSE(
+      first_site_instance->IsRelatedSiteInstance(second_site_instance.get()));
 }
 
 // Tests that suggestions are sanity checked.

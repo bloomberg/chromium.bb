@@ -171,7 +171,7 @@ OAuth2TokenService::Fetcher::Fetcher(
       retry_number_(0),
       error_(GoogleServiceAuthError::SERVICE_UNAVAILABLE) {
   DCHECK(oauth2_token_service_);
-  DCHECK(getter_);
+  DCHECK(getter_.get());
   DCHECK(refresh_token_.length());
   waiting_requests_.push_back(waiting_request);
 }
@@ -183,7 +183,7 @@ OAuth2TokenService::Fetcher::~Fetcher() {
 }
 
 void OAuth2TokenService::Fetcher::Start() {
-  fetcher_.reset(new OAuth2AccessTokenFetcher(this, getter_));
+  fetcher_.reset(new OAuth2AccessTokenFetcher(this, getter_.get()));
   fetcher_->Start(GaiaUrls::GetInstance()->oauth2_chrome_client_id(),
                   GaiaUrls::GetInstance()->oauth2_chrome_client_secret(),
                   refresh_token_,
@@ -347,9 +347,12 @@ scoped_ptr<OAuth2TokenService::Request> OAuth2TokenService::StartRequest(
     iter->second->AddWaitingRequest(request->AsWeakPtr());
     return request.PassAs<Request>();
   }
-  pending_fetchers_[fetch_parameters] = Fetcher::CreateAndStart(
-      this, request_context_getter_, refresh_token, scopes,
-      request->AsWeakPtr());
+  pending_fetchers_[fetch_parameters] =
+      Fetcher::CreateAndStart(this,
+                              request_context_getter_.get(),
+                              refresh_token,
+                              scopes,
+                              request->AsWeakPtr());
   return request.PassAs<Request>();
 }
 

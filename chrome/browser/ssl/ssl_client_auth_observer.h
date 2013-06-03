@@ -43,7 +43,7 @@ class SSLClientAuthObserver : public content::NotificationObserver {
   void StopObserving();
 
   net::SSLCertRequestInfo* cert_request_info() const {
-    return cert_request_info_;
+    return cert_request_info_.get();
   }
 
  private:

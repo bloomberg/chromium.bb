@@ -964,7 +964,7 @@ class SafeBrowsingDatabaseManagerCookieTest : public InProcessBrowserTest {
 
   virtual void SetUpOnMainThread() OVERRIDE {
     sb_service_ = g_browser_process->safe_browsing_service();
-    ASSERT_TRUE(sb_service_ != NULL);
+    ASSERT_TRUE(sb_service_.get() != NULL);
   }
 
   virtual void CleanUpOnMainThread() OVERRIDE {
@@ -989,9 +989,10 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingDatabaseManagerCookieTest,
   content::WindowedNotificationObserver observer(
       chrome::NOTIFICATION_SAFE_BROWSING_UPDATE_COMPLETE,
       content::Source<SafeBrowsingDatabaseManager>(
-          sb_service_->database_manager()));
+          sb_service_->database_manager().get()));
   BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
+      BrowserThread::IO,
+      FROM_HERE,
       base::Bind(&SafeBrowsingDatabaseManagerCookieTest::ForceUpdate, this));
   observer.Wait();
 }

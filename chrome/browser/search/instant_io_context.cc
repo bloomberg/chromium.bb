@@ -51,7 +51,7 @@ void InstantIOContext::SetUserDataOnIO(
     scoped_refptr<InstantIOContext> instant_io_context) {
   resource_context->SetUserData(
       InstantIOContext::kInstantIOContextKeyName,
-      new base::UserDataAdapter<InstantIOContext>(instant_io_context));
+      new base::UserDataAdapter<InstantIOContext>(instant_io_context.get()));
 }
 
 // static

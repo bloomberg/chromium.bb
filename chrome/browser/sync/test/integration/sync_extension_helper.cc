@@ -61,13 +61,15 @@ void SyncExtensionHelper::SetupIfNecessary(SyncTest* test) {
 std::string SyncExtensionHelper::InstallExtension(
     Profile* profile, const std::string& name, Manifest::Type type) {
   scoped_refptr<Extension> extension = GetExtension(profile, name, type);
-  if (!extension) {
+  if (!extension.get()) {
     NOTREACHED() << "Could not install extension " << name;
     return std::string();
   }
-  profile->GetExtensionService()->OnExtensionInstalled(
-      extension, syncer::StringOrdinal(), false /* no requirement errors */,
-      false /* don't wait for idle to install */);
+  profile->GetExtensionService()
+      ->OnExtensionInstalled(extension.get(),
+                             syncer::StringOrdinal(),
+                             false /* no requirement errors */,
+                             false /* don't wait for idle to install */);
   return extension->id();
 }
 
@@ -321,7 +323,7 @@ scoped_refptr<Extension> CreateExtension(const base::FilePath& base_dir,
     ADD_FAILURE() << error;
     return NULL;
   }
-  if (!extension) {
+  if (!extension.get()) {
     ADD_FAILURE();
     return NULL;
   }
@@ -357,7 +359,7 @@ scoped_refptr<Extension> SyncExtensionHelper::GetExtension(
   scoped_refptr<Extension> extension =
       CreateExtension(profile->GetExtensionService()->install_directory(),
                       name, type);
-  if (!extension) {
+  if (!extension.get()) {
     ADD_FAILURE();
     return NULL;
   }

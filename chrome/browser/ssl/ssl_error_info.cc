@@ -284,7 +284,8 @@ int SSLErrorInfo::GetErrorsForCertStatus(int cert_id,
         DCHECK(r);
       }
       if (errors)
-        errors->push_back(SSLErrorInfo::CreateError(kErrorTypes[i], cert, url));
+        errors->push_back(
+            SSLErrorInfo::CreateError(kErrorTypes[i], cert.get(), url));
     }
   }
   return count;

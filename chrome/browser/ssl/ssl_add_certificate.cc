@@ -31,7 +31,7 @@ void SSLAddCertificate(
   // intentional here.
 
   // The handler will run the UI and delete itself when it's finished.
-  new SSLAddCertHandler(request, cert, render_process_id, render_view_id);
+  new SSLAddCertHandler(request, cert.get(), render_process_id, render_view_id);
 }
 
 }  // namespace chrome

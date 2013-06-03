@@ -243,7 +243,7 @@ TEST_F(SyncAutofillDataTypeControllerTest, StartWDSReady) {
     base::Bind(&SyncAutofillDataTypeControllerTest::OnLoadFinished,
                weak_ptr_factory_.GetWeakPtr()));
 
-  EXPECT_CALL(*change_processor_, Connect(_,_,_,_,_))
+  EXPECT_CALL(*change_processor_.get(), Connect(_, _, _, _, _))
       .WillOnce(Return(base::WeakPtr<syncer::SyncableService>()));
   autofill_dtc_->StartAssociating(
       base::Bind(&SyncAutofillDataTypeControllerTest::OnStartFinished,
@@ -273,7 +273,7 @@ TEST_F(SyncAutofillDataTypeControllerTest, StartWDSNotReady) {
         AutofillWebDataService::FromBrowserContext(&profile_).get());
   web_db->LoadDatabase();
 
-  EXPECT_CALL(*change_processor_, Connect(_,_,_,_,_))
+  EXPECT_CALL(*change_processor_.get(), Connect(_, _, _, _, _))
       .WillOnce(Return(base::WeakPtr<syncer::SyncableService>()));
   autofill_dtc_->StartAssociating(
       base::Bind(&SyncAutofillDataTypeControllerTest::OnStartFinished,
@@ -305,7 +305,7 @@ TEST_F(SyncAutofillDataTypeControllerTest, UpdateAutofillCullingSettings) {
 
   EXPECT_FALSE(web_db->CheckAutofillCullingValue());
 
-  EXPECT_CALL(*change_processor_, Connect(_,_,_,_,_))
+  EXPECT_CALL(*change_processor_.get(), Connect(_, _, _, _, _))
       .WillOnce(Return(base::WeakPtr<syncer::SyncableService>()));
   autofill_dtc_->StartAssociating(
       base::Bind(&SyncAutofillDataTypeControllerTest::OnStartFinished,

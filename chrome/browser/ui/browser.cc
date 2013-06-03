@@ -2196,12 +2196,12 @@ bool Browser::MaybeCreateBackgroundContents(int route_id,
       content::SiteInstance::Create(opener_web_contents->GetBrowserContext());
 
   // Passed all the checks, so this should be created as a BackgroundContents.
-  BackgroundContents* contents = service->CreateBackgroundContents(
-      site_instance,
-      route_id,
-      profile_,
-      frame_name,
-      ASCIIToUTF16(extension->id()));
+  BackgroundContents* contents =
+      service->CreateBackgroundContents(site_instance.get(),
+                                        route_id,
+                                        profile_,
+                                        frame_name,
+                                        ASCIIToUTF16(extension->id()));
 
   // When a separate process is used, the original renderer cannot access the
   // new window later, thus we need to navigate the window now.

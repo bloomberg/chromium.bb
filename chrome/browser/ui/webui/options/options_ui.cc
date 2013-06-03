@@ -162,7 +162,7 @@ void OptionsUIHTMLSource::StartDataRequest(
         LoadDataResourceBytes(IDR_OPTIONS_HTML);
   }
 
-  callback.Run(response_bytes);
+  callback.Run(response_bytes.get());
 }
 
 std::string OptionsUIHTMLSource::GetMimeType(const std::string& path) const {

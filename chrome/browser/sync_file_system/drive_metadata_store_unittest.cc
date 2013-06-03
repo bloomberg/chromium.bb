@@ -99,10 +99,13 @@ class DriveMetadataStoreTest : public testing::Test {
     bool created = false;
 
     drive_metadata_store_.reset(
-        new DriveMetadataStore(base_dir_.path(), file_task_runner_));
+        new DriveMetadataStore(base_dir_.path(), file_task_runner_.get()));
     drive_metadata_store_->Initialize(
         base::Bind(&DriveMetadataStoreTest::DidInitializeDatabase,
-                   base::Unretained(this), &done, &status, &created));
+                   base::Unretained(this),
+                   &done,
+                   &status,
+                   &created));
     message_loop_.Run();
 
     EXPECT_TRUE(done);

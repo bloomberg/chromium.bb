@@ -113,7 +113,7 @@ scoped_refptr<const extensions::Extension> AddTestExtension(
             .Set("version", "1.0"))
           .SetID(id)
       .Build();
-  extension_service->AddExtension(extension);
+  extension_service->AddExtension(extension.get());
   return extension;
 }
 

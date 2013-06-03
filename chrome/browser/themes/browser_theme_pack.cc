@@ -786,7 +786,7 @@ base::RefCountedMemory* BrowserThemePack::GetRawData(
     } else {
       RawImages::const_iterator it = image_memory_.find(raw_id);
       if (it != image_memory_.end()) {
-        memory = it->second;
+        memory = it->second.get();
       }
     }
   }

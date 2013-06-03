@@ -221,10 +221,13 @@ void LocalFileSyncService::PrepareForProcessRemoteChange(
     MaybeInitializeFileSystemContext(
         url.origin(),
         service_name,
-        file_system_context,
+        file_system_context.get(),
         base::Bind(&LocalFileSyncService::DidInitializeForRemoteSync,
-                   AsWeakPtr(), url, service_name,
-                   file_system_context, callback));
+                   AsWeakPtr(),
+                   url,
+                   service_name,
+                   file_system_context,
+                   callback));
     return;
   }
 

@@ -284,9 +284,12 @@ void ChromeResourceDispatcherHostDelegate::DownloadStarting(
 
   // If it's from the web, we don't trust it, so we push the throttle on.
   if (is_content_initiated) {
-    throttles->push_back(new DownloadResourceThrottle(
-        download_request_limiter_, child_id, route_id, request_id,
-        request->method()));
+    throttles->push_back(
+        new DownloadResourceThrottle(download_request_limiter_.get(),
+                                     child_id,
+                                     route_id,
+                                     request_id,
+                                     request->method()));
 #if defined(OS_ANDROID)
     throttles->push_back(
         new chrome::InterceptDownloadResourceThrottle(
@@ -390,8 +393,11 @@ void ChromeResourceDispatcherHostDelegate::AppendStandardResourceThrottles(
   if (io_data->safe_browsing_enabled()->GetValue()) {
     bool is_subresource_request = resource_type != ResourceType::MAIN_FRAME;
     content::ResourceThrottle* throttle =
-        SafeBrowsingResourceThrottleFactory::Create(request, child_id, route_id,
-            is_subresource_request, safe_browsing_);
+        SafeBrowsingResourceThrottleFactory::Create(request,
+                                                    child_id,
+                                                    route_id,
+                                                    is_subresource_request,
+                                                    safe_browsing_.get());
     if (throttle)
       throttles->push_back(throttle);
   }

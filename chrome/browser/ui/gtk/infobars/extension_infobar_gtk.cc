@@ -226,12 +226,12 @@ gboolean ExtensionInfoBarGtk::OnButtonPress(GtkWidget* widget,
   DCHECK(button_);
 
   context_menu_model_ = BuildMenuModel();
-  if (!context_menu_model_)
+  if (!context_menu_model_.get())
     return FALSE;
 
   gtk_chrome_button_set_paint_state(GTK_CHROME_BUTTON(widget),
                                     GTK_STATE_ACTIVE);
-  ShowMenuWithModel(widget, this, context_menu_model_);
+  ShowMenuWithModel(widget, this, context_menu_model_.get());
 
   return TRUE;
 }

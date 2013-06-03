@@ -332,7 +332,7 @@ void NewTabUI::NewTabHTMLSource::StartDataRequest(
             ResourceBundle::GetSharedInstance().LoadDataResourceBytes(
                 it->second.second) :
             new base::RefCountedStaticMemory);
-    callback.Run(resource_bytes);
+    callback.Run(resource_bytes.get());
     return;
   }
 
@@ -358,7 +358,7 @@ void NewTabUI::NewTabHTMLSource::StartDataRequest(
       NTPResourceCacheFactory::GetForProfile(profile_)->
       GetNewTabHTML(is_incognito));
 
-  callback.Run(html_bytes);
+  callback.Run(html_bytes.get());
 }
 
 std::string NewTabUI::NewTabHTMLSource::GetMimeType(const std::string& resource)

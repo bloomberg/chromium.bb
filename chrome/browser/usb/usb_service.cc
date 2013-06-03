@@ -200,5 +200,5 @@ UsbDevice* UsbService::LookupOrCreateDevice(PlatformUsbDevice device) {
     UsbDevice* wrapper = new UsbDevice(this, handle);
     devices_[device] = wrapper;
   }
-  return devices_[device];
+  return devices_[device].get();
 }

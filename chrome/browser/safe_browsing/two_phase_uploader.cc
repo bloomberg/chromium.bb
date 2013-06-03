@@ -162,7 +162,7 @@ void TwoPhaseUploaderImpl::UploadMetadata() {
   state_ = UPLOAD_METADATA;
   url_fetcher_.reset(net::URLFetcher::Create(base_url_, net::URLFetcher::POST,
                                              this));
-  url_fetcher_->SetRequestContext(url_request_context_getter_);
+  url_fetcher_->SetRequestContext(url_request_context_getter_.get());
   url_fetcher_->SetExtraRequestHeaders(kStartHeader);
   url_fetcher_->SetUploadData(kUploadContentType, metadata_);
   url_fetcher_->Start();
@@ -174,12 +174,9 @@ void TwoPhaseUploaderImpl::UploadFile() {
 
   url_fetcher_.reset(net::URLFetcher::Create(upload_url_, net::URLFetcher::PUT,
                                              this));
-  url_fetcher_->SetRequestContext(url_request_context_getter_);
-  url_fetcher_->SetUploadFilePath(kUploadContentType,
-                                  file_path_,
-                                  0,
-                                  kuint64max,
-                                  file_task_runner_);
+  url_fetcher_->SetRequestContext(url_request_context_getter_.get());
+  url_fetcher_->SetUploadFilePath(
+      kUploadContentType, file_path_, 0, kuint64max, file_task_runner_);
   url_fetcher_->Start();
 }
 

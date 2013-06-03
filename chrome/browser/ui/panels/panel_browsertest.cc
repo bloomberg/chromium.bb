@@ -1499,8 +1499,8 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest,
       content::Source<Panel>(panel1));
 
   // Send unload notification on the first extension.
-  extensions::UnloadedExtensionInfo details(extension,
-                                extension_misc::UNLOAD_REASON_UNINSTALL);
+  extensions::UnloadedExtensionInfo details(
+      extension.get(), extension_misc::UNLOAD_REASON_UNINSTALL);
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_EXTENSION_UNLOADED,
       content::Source<Profile>(browser()->profile()),

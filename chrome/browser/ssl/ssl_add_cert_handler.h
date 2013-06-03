@@ -22,7 +22,7 @@ class SSLAddCertHandler : public base::RefCountedThreadSafe<SSLAddCertHandler> {
   SSLAddCertHandler(net::URLRequest* request, net::X509Certificate* cert,
                     int render_process_host_id, int render_view_id);
 
-  net::X509Certificate* cert()  { return cert_; }
+  net::X509Certificate* cert() { return cert_.get(); }
 
   int network_request_id() const { return network_request_id_; }
 

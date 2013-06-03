@@ -30,7 +30,7 @@ class ThemeServiceTest : public ExtensionServiceTestBase {
         extensions::Extension::Create(
             path, extensions::Manifest::EXTERNAL_PREF_DOWNLOAD,
             source, extensions::Extension::NO_FLAGS, &error);
-    EXPECT_TRUE(extension);
+    EXPECT_TRUE(extension.get());
     EXPECT_EQ("", error);
     return extension;
   }
@@ -51,7 +51,7 @@ TEST_F(ThemeServiceTest, ThemeInstallUninstall) {
   theme_service->UseDefaultTheme();
   scoped_refptr<extensions::Extension> extension =
       MakeThemeExtension(temp_dir.path());
-  service_->FinishInstallationForTest(extension);
+  service_->FinishInstallationForTest(extension.get());
   // Let ThemeService finish creating the theme pack.
   base::MessageLoop::current()->RunUntilIdle();
   EXPECT_FALSE(theme_service->UsingDefaultTheme());
@@ -73,7 +73,7 @@ TEST_F(ThemeServiceTest, ThemeUpgrade) {
   theme_service->UseDefaultTheme();
   scoped_refptr<extensions::Extension> extension =
       MakeThemeExtension(temp_dir.path());
-  service_->FinishInstallationForTest(extension);
+  service_->FinishInstallationForTest(extension.get());
   // Let ThemeService finish creating the theme pack.
   base::MessageLoop::current()->RunUntilIdle();
   EXPECT_FALSE(theme_service->UsingDefaultTheme());

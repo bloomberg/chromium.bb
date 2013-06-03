@@ -221,7 +221,7 @@ string16 ToolbarModelImpl::GetEVCertName() const {
   // the security level would be NONE.
   content::CertStore::GetInstance()->RetrieveCert(
       GetNavigationController()->GetVisibleEntry()->GetSSL().cert_id, &cert);
-  return GetEVCertName(*cert);
+  return GetEVCertName(*cert.get());
 }
 
 // static

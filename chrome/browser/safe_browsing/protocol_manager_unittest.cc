@@ -298,7 +298,7 @@ void HandleAddChunks(
   delete chunks;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner(
       base::ThreadTaskRunnerHandle::Get());
-  if (!task_runner)
+  if (!task_runner.get())
     return;
   task_runner->PostTask(FROM_HERE, callback);
 }

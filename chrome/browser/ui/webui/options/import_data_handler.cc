@@ -34,7 +34,7 @@ ImportDataHandler::ImportDataHandler() : importer_host_(NULL),
 }
 
 ImportDataHandler::~ImportDataHandler() {
-  if (importer_list_)
+  if (importer_list_.get())
     importer_list_->SetObserver(NULL);
 
   if (importer_host_)

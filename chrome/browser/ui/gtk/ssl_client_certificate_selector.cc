@@ -241,7 +241,7 @@ net::X509Certificate* SSLClientCertificateSelector::GetSelectedCert() {
   if (selected >= 0 &&
       selected < static_cast<int>(
           cert_request_info()->client_certs.size()))
-    return cert_request_info()->client_certs[selected];
+    return cert_request_info()->client_certs[selected].get();
   return NULL;
 }
 

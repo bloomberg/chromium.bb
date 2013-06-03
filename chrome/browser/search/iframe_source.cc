@@ -73,7 +73,7 @@ void IframeSource::SendResource(
     const content::URLDataSource::GotDataCallback& callback) {
   scoped_refptr<base::RefCountedStaticMemory> response(
       ResourceBundle::GetSharedInstance().LoadDataResourceBytes(resource_id));
-  callback.Run(response);
+  callback.Run(response.get());
 }
 
 void IframeSource::SendJSWithOrigin(

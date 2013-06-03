@@ -306,7 +306,7 @@ TemplateURLService::TemplateURLService(const Initializer* initializers,
 }
 
 TemplateURLService::~TemplateURLService() {
-  if (service_)
+  if (service_.get())
     Shutdown();
   STLDeleteElements(&template_urls_);
 }

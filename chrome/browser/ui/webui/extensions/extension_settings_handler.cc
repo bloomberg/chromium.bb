@@ -107,7 +107,7 @@ ExtensionSettingsHandler::~ExtensionSettingsHandler() {
 
   // There may be pending file dialogs, we need to tell them that we've gone
   // away so they don't try and call back to us.
-  if (load_extension_dialog_)
+  if (load_extension_dialog_.get())
     load_extension_dialog_->ListenerDestroyed();
 }
 

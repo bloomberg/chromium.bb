@@ -226,8 +226,7 @@ SafeBrowsingBlockingPage::SafeBrowsingBlockingPage(
   // reports.
   if (unsafe_resources.size() == 1 &&
       unsafe_resources[0].threat_type == SB_THREAT_TYPE_URL_MALWARE &&
-      malware_details_ == NULL &&
-      CanShowMalwareDetailsOption()) {
+      malware_details_.get() == NULL && CanShowMalwareDetailsOption()) {
     malware_details_ = MalwareDetails::NewMalwareDetails(
         ui_manager_, web_contents, unsafe_resources[0]);
   }
@@ -702,7 +701,7 @@ void SafeBrowsingBlockingPage::RecordUserReactionTime(
 }
 
 void SafeBrowsingBlockingPage::FinishMalwareDetails(int64 delay_ms) {
-  if (malware_details_ == NULL)
+  if (malware_details_.get() == NULL)
     return;  // Not all interstitials have malware details (eg phishing).
 
   if (IsPrefEnabled(prefs::kSafeBrowsingReportingEnabled)) {

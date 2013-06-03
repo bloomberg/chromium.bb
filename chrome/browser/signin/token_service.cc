@@ -122,7 +122,7 @@ void TokenService::AddAuthTokenManually(const std::string& service,
     CHECK_GE(index, 0);
     // iOS fetches the service tokens outside of the TokenService.
     if (!fetchers_[index].get()) {
-      fetchers_[index].reset(new GaiaAuthFetcher(this, source_, getter_));
+      fetchers_[index].reset(new GaiaAuthFetcher(this, source_, getter_.get()));
     }
     fetchers_[index]->StartLsoForOAuthLoginTokenExchange(auth_token);
   }
@@ -227,10 +227,9 @@ void TokenService::StartFetchingTokens() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(AreCredentialsValid());
   for (size_t i = 0; i < arraysize(kServices); i++) {
-    fetchers_[i].reset(new GaiaAuthFetcher(this, source_, getter_));
-    fetchers_[i]->StartIssueAuthToken(credentials_.sid,
-                                      credentials_.lsid,
-                                      kServices[i]);
+    fetchers_[i].reset(new GaiaAuthFetcher(this, source_, getter_.get()));
+    fetchers_[i]->StartIssueAuthToken(
+        credentials_.sid, credentials_.lsid, kServices[i]);
   }
 }
 

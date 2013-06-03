@@ -736,7 +736,7 @@ void CertificateManagerHandler::ImportPersonalSlotUnlocked() {
   // for Chrome OS when the "Import and Bind" option is chosen.
   bool is_extractable = !use_hardware_backed_;
   int result = certificate_manager_model_->ImportFromPKCS12(
-      module_, file_data_, password_, is_extractable);
+      module_.get(), file_data_, password_, is_extractable);
   ImportExportCleanup();
   web_ui()->CallJavascriptFunction("CertificateRestoreOverlay.dismiss");
   int string_id;

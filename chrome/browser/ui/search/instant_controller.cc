@@ -126,7 +126,7 @@ void AddSessionStorageHistogram(bool extended_enabled,
              it2 = session_storage_map2.begin();
          it1 != session_storage_map1.end() && it2 != session_storage_map2.end();
          ++it1, ++it2) {
-      if (it1->first != it2->first || it1->second != it2->second) {
+      if (it1->first != it2->first || it1->second.get() != it2->second.get()) {
         is_session_storage_the_same = false;
         break;
       }

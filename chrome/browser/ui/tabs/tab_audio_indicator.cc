@@ -69,13 +69,13 @@ void TabAudioIndicator::SetIsPlayingAudio(bool is_playing_audio) {
     state_ = STATE_ANIMATING;
     animation_.reset(
         new ui::LinearAnimation(kAnimationCycleDurationMs, kFPS, this));
-    animation_->SetContainer(animation_container_);
+    animation_->SetContainer(animation_container_.get());
     animation_->Start();
   } else if (!is_playing_audio && state_ == STATE_ANIMATING) {
     state_ = STATE_ANIMATION_ENDING;
     animation_.reset(
         new ui::LinearAnimation(kAnimationEndingDurationMs, kFPS, this));
-    animation_->SetContainer(animation_container_);
+    animation_->SetContainer(animation_container_.get());
     animation_->Start();
   }
 }

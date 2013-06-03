@@ -109,7 +109,7 @@ void AppLauncherPageUI::HTMLSource::StartDataRequest(
   scoped_refptr<base::RefCountedMemory> html_bytes(
       resource->GetNewTabHTML(is_incognito));
 
-  callback.Run(html_bytes);
+  callback.Run(html_bytes.get());
 }
 
 std::string AppLauncherPageUI::HTMLSource::GetMimeType(

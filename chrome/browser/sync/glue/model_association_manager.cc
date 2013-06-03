@@ -167,12 +167,12 @@ void ModelAssociationManager::Initialize(syncer::ModelTypeSet desired_types) {
   // currently MODEL_STARTING, ASSOCIATING, RUNNING or DISABLED.
   for (DataTypeController::TypeMap::const_iterator it = controllers_->begin();
        it != controllers_->end(); ++it) {
-    DataTypeController* dtc = (*it).second;
-    if (!desired_types.Has(dtc->type()) && (
-            dtc->state() == DataTypeController::MODEL_STARTING ||
-            dtc->state() == DataTypeController::ASSOCIATING ||
-            dtc->state() == DataTypeController::RUNNING ||
-            dtc->state() == DataTypeController::DISABLED)) {
+    DataTypeController* dtc = (*it).second.get();
+    if (!desired_types.Has(dtc->type()) &&
+        (dtc->state() == DataTypeController::MODEL_STARTING ||
+         dtc->state() == DataTypeController::ASSOCIATING ||
+         dtc->state() == DataTypeController::RUNNING ||
+         dtc->state() == DataTypeController::DISABLED)) {
       needs_stop_.push_back(dtc);
       DVLOG(1) << "ModelTypeToString: Will stop " << dtc->name();
     }
@@ -254,7 +254,7 @@ void ModelAssociationManager::Stop() {
          state_ == INITIALIZED_TO_CONFIGURE);
   for (DataTypeController::TypeMap::const_iterator it = controllers_->begin();
        it != controllers_->end(); ++it) {
-    DataTypeController* dtc = (*it).second;
+    DataTypeController* dtc = (*it).second.get();
     if (dtc->state() != DataTypeController::NOT_RUNNING &&
         dtc->state() != DataTypeController::STOPPING) {
       dtc->Stop();

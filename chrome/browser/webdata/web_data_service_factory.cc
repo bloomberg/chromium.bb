@@ -50,15 +50,15 @@ void InitSyncableServicesOnDBThread(
   // Currently only Autocomplete and Autofill profiles use the new Sync API, but
   // all the database data should migrate to this API over time.
   AutocompleteSyncableService::CreateForWebDataServiceAndBackend(
-      autofill_web_data, autofill_backend);
-  AutocompleteSyncableService::FromWebDataService(
-      autofill_web_data)->InjectStartSyncFlare(
-          sync_start_util::GetFlareForSyncableService(profile_path));
+      autofill_web_data.get(), autofill_backend);
+  AutocompleteSyncableService::FromWebDataService(autofill_web_data.get())
+      ->InjectStartSyncFlare(
+            sync_start_util::GetFlareForSyncableService(profile_path));
   AutofillProfileSyncableService::CreateForWebDataServiceAndBackend(
-      autofill_web_data, autofill_backend, app_locale);
-  AutofillProfileSyncableService::FromWebDataService(
-      autofill_web_data)->InjectStartSyncFlare(
-          sync_start_util::GetFlareForSyncableService(profile_path));
+      autofill_web_data.get(), autofill_backend, app_locale);
+  AutofillProfileSyncableService::FromWebDataService(autofill_web_data.get())
+      ->InjectStartSyncFlare(
+            sync_start_util::GetFlareForSyncableService(profile_path));
 }
 
 }  // namespace

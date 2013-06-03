@@ -661,11 +661,9 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, DISABLED_TestWSSClientCert) {
   base::FilePath cert_path = net::GetTestCertsDirectory().Append(
       FILE_PATH_LITERAL("websocket_client_cert.p12"));
   EXPECT_TRUE(file_util::ReadFileToString(cert_path, &pkcs12_data));
-  EXPECT_EQ(net::OK, cert_db->ImportFromPKCS12(crypt_module,
-                                               pkcs12_data,
-                                               string16(),
-                                               true,
-                                               NULL));
+  EXPECT_EQ(net::OK,
+            cert_db->ImportFromPKCS12(
+                crypt_module.get(), pkcs12_data, string16(), true, NULL));
 
   // Start WebSocket test server with TLS and client cert authentication.
   net::SpawnedTestServer::SSLOptions options(

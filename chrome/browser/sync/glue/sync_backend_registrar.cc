@@ -79,9 +79,9 @@ SyncBackendRegistrar::SyncBackendRegistrar(
 
   scoped_refptr<PasswordStore> password_store =
       PasswordStoreFactory::GetForProfile(profile, Profile::IMPLICIT_ACCESS);
-  if (password_store) {
-    workers_[syncer::GROUP_PASSWORD] = new PasswordModelWorker(password_store,
-                                                               this);
+  if (password_store.get()) {
+    workers_[syncer::GROUP_PASSWORD] =
+        new PasswordModelWorker(password_store, this);
   }
 }
 
@@ -248,7 +248,7 @@ void SyncBackendRegistrar::GetWorkers(
   out->clear();
   for (WorkerMap::const_iterator it = workers_.begin();
        it != workers_.end(); ++it) {
-    out->push_back(it->second);
+    out->push_back(it->second.get());
   }
 }
 

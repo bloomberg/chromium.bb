@@ -100,7 +100,7 @@ void ServiceProcessControl::Launch(const base::Closure& success_task,
     connect_failure_tasks_.push_back(failure);
 
   // If we already in the process of launching, then we are done.
-  if (launcher_)
+  if (launcher_.get())
     return;
 
   // If the service process is already running then connects to it.

@@ -71,7 +71,8 @@ class OAuth2TokenServiceTest : public TokenServiceTestHarness {
     TokenServiceTestHarness::SetUp();
     io_thread_.reset(new content::TestBrowserThread(content::BrowserThread::IO,
                                                     &message_loop_));
-    oauth2_service_.reset(new TestOAuth2TokenService(request_context_getter_));
+    oauth2_service_.reset(
+        new TestOAuth2TokenService(request_context_getter_.get()));
   }
 
   virtual void TearDown() OVERRIDE {

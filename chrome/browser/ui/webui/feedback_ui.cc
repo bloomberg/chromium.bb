@@ -581,7 +581,7 @@ void FeedbackHandler::GetMostRecentScreenshotsDrive(
 
 
 void FeedbackHandler::HandleSendReport(const ListValue* list_value) {
-  if (!feedback_data_) {
+  if (!feedback_data_.get()) {
     LOG(ERROR) << "Bug report hasn't been intialized yet.";
     return;
   }

@@ -139,12 +139,12 @@ bool HandleRequestCallback(
         preview_ui_id, page_index, &data);
   }
   if (data.get()) {
-    callback.Run(data);
+    callback.Run(data.get());
     return true;
   }
   // Invalid request.
   scoped_refptr<base::RefCountedBytes> empty_bytes(new base::RefCountedBytes);
-  callback.Run(empty_bytes);
+  callback.Run(empty_bytes.get());
   return true;
 }
 

@@ -206,7 +206,7 @@ void ThumbnailTabHelper::UpdateThumbnailIfNecessary(
       ThumbnailServiceFactory::GetForProfile(profile);
 
   // Skip if we don't need to update the thumbnail.
-  if (thumbnail_service == NULL ||
+  if (thumbnail_service.get() == NULL ||
       !thumbnail_service->ShouldAcquirePageThumbnail(url)) {
     return;
   }
@@ -214,10 +214,8 @@ void ThumbnailTabHelper::UpdateThumbnailIfNecessary(
   scoped_refptr<thumbnails::ThumbnailingAlgorithm> algorithm(
       thumbnail_service->GetThumbnailingAlgorithm());
 
-  scoped_refptr<ThumbnailingContext> context(
-      new ThumbnailingContext(web_contents,
-                              thumbnail_service,
-                              load_interrupted_));
+  scoped_refptr<ThumbnailingContext> context(new ThumbnailingContext(
+      web_contents, thumbnail_service.get(), load_interrupted_));
   AsyncProcessThumbnail(web_contents, context, algorithm);
 }
 

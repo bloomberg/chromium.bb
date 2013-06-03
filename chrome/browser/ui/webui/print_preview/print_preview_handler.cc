@@ -550,7 +550,7 @@ void PrintPreviewHandler::HandlePrint(const ListValue* args) {
     UMA_HISTOGRAM_COUNTS("PrintPreview.PageCount.PrintToCloudPrint",
                          page_count);
     ReportUserActionHistogram(PRINT_WITH_CLOUD_PRINT);
-    SendCloudPrintJob(data);
+    SendCloudPrintJob(data.get());
   } else {
     UMA_HISTOGRAM_COUNTS("PrintPreview.PageCount.PrintToPrinter", page_count);
     ReportUserActionHistogram(PRINT_TO_PRINTER);
@@ -595,10 +595,9 @@ void PrintPreviewHandler::PrintToPdf() {
   if (print_to_pdf_path_.get()) {
     // User has already selected a path, no need to show the dialog again.
     PostPrintToPdfTask();
-  } else if (!select_file_dialog_ ||
-             !select_file_dialog_->IsRunning(
-                  platform_util::GetTopLevel(
-                      preview_web_contents()->GetView()->GetNativeView()))) {
+  } else if (!select_file_dialog_.get() ||
+             !select_file_dialog_->IsRunning(platform_util::GetTopLevel(
+                 preview_web_contents()->GetView()->GetNativeView()))) {
     PrintPreviewUI* print_preview_ui = static_cast<PrintPreviewUI*>(
         web_ui()->GetController());
     // Pre-populating select file dialog with print job title.
@@ -709,7 +708,7 @@ void PrintPreviewHandler::PrintWithCloudPrintDialog() {
   print_dialog_cloud::CreatePrintDialogForBytes(
       preview_web_contents()->GetBrowserContext(),
       modal_parent,
-      data,
+      data.get(),
       title,
       string16(),
       std::string("application/pdf"));
@@ -1079,7 +1078,7 @@ bool PrintPreviewHandler::GetPreviewDataAndTitle(
   print_preview_ui->GetPrintPreviewDataForIndex(
       printing::COMPLETE_PREVIEW_DOCUMENT_INDEX, &tmp_data);
 
-  if (!tmp_data) {
+  if (!tmp_data.get()) {
     // Nothing to print, no preview available.
     return false;
   }

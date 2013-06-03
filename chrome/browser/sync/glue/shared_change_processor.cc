@@ -31,7 +31,7 @@ SharedChangeProcessor::~SharedChangeProcessor() {
   // thread).  |generic_change_processor_|, if non-NULL, must be
   // deleted on |backend_loop_|.
   if (BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    if (backend_loop_) {
+    if (backend_loop_.get()) {
       if (!backend_loop_->DeleteSoon(FROM_HERE, generic_change_processor_)) {
         NOTREACHED();
       }

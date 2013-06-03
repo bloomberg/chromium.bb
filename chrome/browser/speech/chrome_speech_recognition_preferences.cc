@@ -97,7 +97,7 @@ ChromeSpeechRecognitionPreferences::Service::~Service() {
 }
 
 void ChromeSpeechRecognitionPreferences::Service::Shutdown() {
-  DCHECK(preferences_);
+  DCHECK(preferences_.get());
   preferences_->DetachFromProfile();
 }
 
@@ -115,7 +115,7 @@ ChromeSpeechRecognitionPreferences::GetForProfile(Profile* profile) {
     ret = Factory::GetInstance()->GetForProfile(profile);
   }
 
-  if (!ret) {
+  if (!ret.get()) {
     // Create a detached preferences object if no profile is provided.
     ret = new ChromeSpeechRecognitionPreferences(NULL);
   }

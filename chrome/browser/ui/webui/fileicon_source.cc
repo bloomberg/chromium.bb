@@ -107,7 +107,7 @@ void FileIconSource::FetchFileIcon(
         icon->ToImageSkia()->GetRepresentation(scale_factor).sk_bitmap(),
         false, &icon_data->data());
 
-    callback.Run(icon_data);
+    callback.Run(icon_data.get());
   } else {
     // Attach the ChromeURLDataManager request ID to the history request.
     IconRequestDetails details;
@@ -156,7 +156,7 @@ void FileIconSource::OnFileIconDataAvailable(const IconRequestDetails& details,
         false,
         &icon_data->data());
 
-    details.callback.Run(icon_data);
+    details.callback.Run(icon_data.get());
   } else {
     // TODO(glen): send a dummy icon.
     details.callback.Run(NULL);

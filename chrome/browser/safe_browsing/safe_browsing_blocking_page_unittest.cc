@@ -175,7 +175,7 @@ class SafeBrowsingBlockingPageTest : public ChromeRenderViewHostTestHarness {
   void ShowInterstitial(bool is_subresource, const char* url) {
     SafeBrowsingUIManager::UnsafeResource resource;
     InitResource(&resource, is_subresource, GURL(url));
-    SafeBrowsingBlockingPage::ShowBlockingPage(ui_manager_, resource);
+    SafeBrowsingBlockingPage::ShowBlockingPage(ui_manager_.get(), resource);
   }
 
   // Returns the SafeBrowsingBlockingPage currently showing or NULL if none is

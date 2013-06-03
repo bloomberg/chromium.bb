@@ -219,7 +219,7 @@ void SafeBrowsingUIManager::ReportSafeBrowsingHitOnIOThread(
 
   // The service may delete the ping manager (i.e. when user disabling service,
   // etc). This happens on the IO thread.
-  if (sb_service_ == NULL || sb_service_->ping_manager() == NULL)
+  if (sb_service_.get() == NULL || sb_service_->ping_manager() == NULL)
     return;
 
   DVLOG(1) << "ReportSafeBrowsingHit: " << malicious_url << " " << page_url
@@ -239,7 +239,7 @@ void SafeBrowsingUIManager::SendSerializedMalwareDetails(
 
   // The service may delete the ping manager (i.e. when user disabling service,
   // etc). This happens on the IO thread.
-  if (sb_service_ == NULL || sb_service_->ping_manager() == NULL)
+  if (sb_service_.get() == NULL || sb_service_->ping_manager() == NULL)
     return;
 
   if (!serialized.empty()) {

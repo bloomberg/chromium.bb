@@ -66,13 +66,13 @@ class TaskManagerTest : public testing::Test {
 
 TEST_F(TaskManagerTest, Basic) {
   TaskManager task_manager;
-  TaskManagerModel* model = task_manager.model_;
+  TaskManagerModel* model = task_manager.model_.get();
   EXPECT_EQ(0, model->ResourceCount());
 }
 
 TEST_F(TaskManagerTest, Resources) {
   TaskManager task_manager;
-  TaskManagerModel* model = task_manager.model_;
+  TaskManagerModel* model = task_manager.model_.get();
 
   TestResource resource1, resource2;
 
@@ -113,7 +113,7 @@ TEST_F(TaskManagerTest, Resources) {
 TEST_F(TaskManagerTest, RefreshCalled) {
   base::MessageLoop loop;
   TaskManager task_manager;
-  TaskManagerModel* model = task_manager.model_;
+  TaskManagerModel* model = task_manager.model_.get();
   TestResource resource;
 
   task_manager.AddResource(&resource);

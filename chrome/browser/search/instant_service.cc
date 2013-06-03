@@ -110,11 +110,12 @@ bool InstantService::IsInstantPath(const GURL& url) {
 void InstantService::AddInstantProcess(int process_id) {
   process_ids_.insert(process_id);
 
-  if (instant_io_context_) {
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
-        base::Bind(&InstantIOContext::AddInstantProcessOnIO,
-                   instant_io_context_, process_id));
+  if (instant_io_context_.get()) {
+    BrowserThread::PostTask(BrowserThread::IO,
+                            FROM_HERE,
+                            base::Bind(&InstantIOContext::AddInstantProcessOnIO,
+                                       instant_io_context_,
+                                       process_id));
   }
 }
 
@@ -127,7 +128,7 @@ void InstantService::AddMostVisitedItems(
   most_visited_item_cache_.AddItems(items);
 
   // Post task to the IO thread to copy the data.
-  if (instant_io_context_) {
+  if (instant_io_context_.get()) {
     std::vector<InstantMostVisitedItemIDPair> items;
     most_visited_item_cache_.GetCurrentItems(&items);
     BrowserThread::PostTask(
@@ -153,9 +154,10 @@ bool InstantService::GetMostVisitedItemForID(
 void InstantService::Shutdown() {
   process_ids_.clear();
 
-  if (instant_io_context_) {
+  if (instant_io_context_.get()) {
     BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
+        BrowserThread::IO,
+        FROM_HERE,
         base::Bind(&InstantIOContext::ClearInstantProcessesOnIO,
                    instant_io_context_));
   }
@@ -171,11 +173,13 @@ void InstantService::Observe(int type,
           content::Source<content::RenderProcessHost>(source)->GetID();
       process_ids_.erase(process_id);
 
-      if (instant_io_context_) {
+      if (instant_io_context_.get()) {
         BrowserThread::PostTask(
-            BrowserThread::IO, FROM_HERE,
+            BrowserThread::IO,
+            FROM_HERE,
             base::Bind(&InstantIOContext::RemoveInstantProcessOnIO,
-                       instant_io_context_, process_id));
+                       instant_io_context_,
+                       process_id));
       }
       break;
     }

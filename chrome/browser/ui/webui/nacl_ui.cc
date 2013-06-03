@@ -192,7 +192,7 @@ NaClDomHandler::NaClDomHandler()
 }
 
 NaClDomHandler::~NaClDomHandler() {
-  if (proxy_)
+  if (proxy_.get())
     proxy_->set_handler(NULL);
 }
 
@@ -349,7 +349,7 @@ void NaClDomHandler::MaybeRespondToPage() {
     return;
 
   if (!pnacl_path_validated_) {
-    DCHECK(proxy_);
+    DCHECK(proxy_.get());
     proxy_->ValidatePnaclPath();
     return;
   }

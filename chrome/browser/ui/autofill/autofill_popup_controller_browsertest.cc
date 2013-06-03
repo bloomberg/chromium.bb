@@ -37,7 +37,7 @@ class TestAutofillExternalDelegate : public AutofillExternalDelegate {
   virtual void OnPopupHidden(content::KeyboardListener* listener) OVERRIDE {
     popup_hidden_ = true;
 
-    if (message_loop_runner_)
+    if (message_loop_runner_.get())
       message_loop_runner_->Quit();
 
     AutofillExternalDelegate::OnPopupHidden(listener);

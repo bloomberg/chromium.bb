@@ -35,7 +35,7 @@ TEST(LoginPromptTest, GetSignonRealm) {
   };
 
   for (size_t i = 0; i < arraysize(url); i++) {
-    std::string key = GetSignonRealm(GURL(url[i]), *auth_info);
+    std::string key = GetSignonRealm(GURL(url[i]), *auth_info.get());
     EXPECT_EQ(expected[i], key);
   }
 }

@@ -29,7 +29,7 @@ ThumbnailServiceImpl::~ThumbnailServiceImpl() {
 bool ThumbnailServiceImpl::SetPageThumbnail(const ThumbnailingContext& context,
                                             const gfx::Image& thumbnail) {
   scoped_refptr<history::TopSites> local_ptr(top_sites_);
-  if (local_ptr == NULL)
+  if (local_ptr.get() == NULL)
     return false;
 
   return local_ptr->SetPageThumbnail(context.url, thumbnail, context.score);
@@ -39,7 +39,7 @@ bool ThumbnailServiceImpl::GetPageThumbnail(
     const GURL& url,
     scoped_refptr<base::RefCountedMemory>* bytes) {
   scoped_refptr<history::TopSites> local_ptr(top_sites_);
-  if (local_ptr == NULL)
+  if (local_ptr.get() == NULL)
     return false;
 
   return local_ptr->GetPageThumbnail(url, bytes);
@@ -53,7 +53,7 @@ ThumbnailingAlgorithm* ThumbnailServiceImpl::GetThumbnailingAlgorithm()
 bool ThumbnailServiceImpl::ShouldAcquirePageThumbnail(const GURL& url) {
   scoped_refptr<history::TopSites> local_ptr(top_sites_);
 
-  if (local_ptr == NULL)
+  if (local_ptr.get() == NULL)
     return false;
 
   // Skip if the given URL is not appropriate for history.

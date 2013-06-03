@@ -115,7 +115,7 @@ void LocalNtpSource::StartDataRequest(
       scoped_refptr<base::RefCountedStaticMemory> response(
           ResourceBundle::GetSharedInstance().LoadDataResourceBytes(
               kResources[i].identifier));
-      callback.Run(response);
+      callback.Run(response.get());
       return;
     }
   }

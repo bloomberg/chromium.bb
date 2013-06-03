@@ -107,7 +107,7 @@ TEST_F(PrintPreviewUIUnitTest, PrintPreviewData) {
   // This should not cause any memory leaks.
   dummy_data = new base::RefCountedBytes();
   preview_ui->SetPrintPreviewDataForIndex(printing::FIRST_PAGE_INDEX,
-                                          dummy_data);
+                                          dummy_data.get());
 
   // Clear the preview data.
   preview_ui->ClearAllPreviewData();

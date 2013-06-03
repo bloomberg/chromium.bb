@@ -181,7 +181,7 @@ bool ThemeService::HasCustomImage(int id) const {
   if (!Properties::IsThemeableImage(id))
     return false;
 
-  if (theme_pack_)
+  if (theme_pack_.get())
     return theme_pack_->HasCustomImage(id);
 
   return false;

@@ -60,7 +60,7 @@ class BaseSessionService : public CancelableRequestProvider {
   virtual ~BaseSessionService();
 
   // Returns the backend.
-  SessionBackend* backend() const { return backend_; }
+  SessionBackend* backend() const { return backend_.get(); }
 
   // Returns the set of commands that needed to be scheduled. The commands
   // in the vector are owned by BaseSessionService, until they are scheduled

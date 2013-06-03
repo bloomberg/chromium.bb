@@ -145,7 +145,7 @@ SafeBrowsingDatabaseManager::SafeBrowsingDatabaseManager(
       database_update_in_progress_(false),
       closing_database_(false),
       check_timeout_(base::TimeDelta::FromMilliseconds(kCheckTimeoutMs)) {
-  DCHECK(sb_service_ != NULL);
+  DCHECK(sb_service_.get() != NULL);
 
   CommandLine* cmdline = CommandLine::ForCurrentProcess();
   enable_download_protection_ =

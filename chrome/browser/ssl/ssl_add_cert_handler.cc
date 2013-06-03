@@ -38,7 +38,7 @@ SSLAddCertHandler::SSLAddCertHandler(net::URLRequest* request,
 SSLAddCertHandler::~SSLAddCertHandler() {}
 
 void SSLAddCertHandler::Run() {
-  int cert_error = net::CertDatabase::GetInstance()->CheckUserCert(cert_);
+  int cert_error = net::CertDatabase::GetInstance()->CheckUserCert(cert_.get());
   if (cert_error != net::OK) {
     LOG_IF(ERROR, cert_error == net::ERR_NO_PRIVATE_KEY_FOR_CERT)
         << "No corresponding private key in store for cert: "
@@ -70,7 +70,7 @@ void SSLAddCertHandler::AskToAddCert() {
 void SSLAddCertHandler::Finished(bool add_cert) {
   int cert_error = net::OK;
   if (add_cert)
-    cert_error = net::CertDatabase::GetInstance()->AddUserCert(cert_);
+    cert_error = net::CertDatabase::GetInstance()->AddUserCert(cert_.get());
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,

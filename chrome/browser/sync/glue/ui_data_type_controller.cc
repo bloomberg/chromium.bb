@@ -201,7 +201,7 @@ void UIDataTypeController::AbortModelLoad() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   state_ = NOT_RUNNING;
 
-  if (shared_change_processor_) {
+  if (shared_change_processor_.get()) {
     shared_change_processor_ = NULL;
   }
 
@@ -230,7 +230,7 @@ void UIDataTypeController::StartDone(
     }
     RecordStartFailure(start_result);
 
-    if (shared_change_processor_) {
+    if (shared_change_processor_.get()) {
       shared_change_processor_->Disconnect();
       shared_change_processor_ = NULL;
     }
@@ -251,7 +251,7 @@ void UIDataTypeController::Stop() {
   State prev_state = state_;
   state_ = STOPPING;
 
-  if (shared_change_processor_) {
+  if (shared_change_processor_.get()) {
     shared_change_processor_->Disconnect();
     shared_change_processor_ = NULL;
   }

@@ -18,7 +18,7 @@ PasswordModelWorker::PasswordModelWorker(
     syncer::WorkerLoopDestructionObserver* observer)
   : syncer::ModelSafeWorker(observer),
     password_store_(password_store) {
-  DCHECK(password_store);
+  DCHECK(password_store.get());
 }
 
 void PasswordModelWorker::RegisterForLoopDestruction() {

@@ -255,10 +255,13 @@ void DriveMetadataStore::Initialize(const InitializationCallback& callback) {
   DriveMetadataDBContents* contents = new DriveMetadataDBContents;
 
   base::PostTaskAndReplyWithResult(
-      file_task_runner_, FROM_HERE,
+      file_task_runner_.get(),
+      FROM_HERE,
       base::Bind(InitializeDBOnFileThread, db_.get(), contents),
-      base::Bind(&DriveMetadataStore::DidInitialize, AsWeakPtr(),
-                 callback, base::Owned(contents)));
+      base::Bind(&DriveMetadataStore::DidInitialize,
+                 AsWeakPtr(),
+                 callback,
+                 base::Owned(contents)));
 }
 
 void DriveMetadataStore::DidInitialize(const InitializationCallback& callback,
@@ -292,12 +295,14 @@ void DriveMetadataStore::RestoreSyncRootDirectory(
   DCHECK(CalledOnValidThread());
   std::string* sync_root_directory_resource_id = new std::string;
   base::PostTaskAndReplyWithResult(
-      file_task_runner_, FROM_HERE,
+      file_task_runner_.get(),
+      FROM_HERE,
       base::Bind(&DriveMetadataDB::GetSyncRootDirectory,
                  base::Unretained(db_.get()),
                  sync_root_directory_resource_id),
       base::Bind(&DriveMetadataStore::DidRestoreSyncRootDirectory,
-                 AsWeakPtr(), callback,
+                 AsWeakPtr(),
+                 callback,
                  base::Owned(sync_root_directory_resource_id)));
 }
 
@@ -324,13 +329,15 @@ void DriveMetadataStore::RestoreOrigins(
   ResourceIdByOrigin* incremental_sync_origins = new ResourceIdByOrigin;
   ResourceIdByOrigin* disabled_origins = new ResourceIdByOrigin;
   base::PostTaskAndReplyWithResult(
-      file_task_runner_, FROM_HERE,
+      file_task_runner_.get(),
+      FROM_HERE,
       base::Bind(&DriveMetadataDB::GetOrigins,
                  base::Unretained(db_.get()),
                  incremental_sync_origins,
                  disabled_origins),
       base::Bind(&DriveMetadataStore::DidRestoreOrigins,
-                 AsWeakPtr(), callback,
+                 AsWeakPtr(),
+                 callback,
                  base::Owned(incremental_sync_origins),
                  base::Owned(disabled_origins)));
 }
@@ -371,11 +378,14 @@ void DriveMetadataStore::SetLargestChangeStamp(
   DCHECK_EQ(SYNC_STATUS_OK, db_status_);
   largest_changestamp_ = largest_changestamp;
   base::PostTaskAndReplyWithResult(
-      file_task_runner_, FROM_HERE,
+      file_task_runner_.get(),
+      FROM_HERE,
       base::Bind(&DriveMetadataDB::SetLargestChangestamp,
-                 base::Unretained(db_.get()), largest_changestamp),
+                 base::Unretained(db_.get()),
+                 largest_changestamp),
       base::Bind(&DriveMetadataStore::UpdateDBStatusAndInvokeCallback,
-                 AsWeakPtr(), callback));
+                 AsWeakPtr(),
+                 callback));
 }
 
 int64 DriveMetadataStore::GetLargestChangeStamp() const {
@@ -398,11 +408,15 @@ void DriveMetadataStore::UpdateEntry(
     result.first->second = metadata;
 
   base::PostTaskAndReplyWithResult(
-      file_task_runner_, FROM_HERE,
-      base::Bind(&DriveMetadataDB::UpdateEntry, base::Unretained(db_.get()),
-                 url, metadata),
+      file_task_runner_.get(),
+      FROM_HERE,
+      base::Bind(&DriveMetadataDB::UpdateEntry,
+                 base::Unretained(db_.get()),
+                 url,
+                 metadata),
       base::Bind(&DriveMetadataStore::UpdateDBStatusAndInvokeCallback,
-                 AsWeakPtr(), callback));
+                 AsWeakPtr(),
+                 callback));
 }
 
 void DriveMetadataStore::DeleteEntry(
@@ -419,11 +433,13 @@ void DriveMetadataStore::DeleteEntry(
 
   if (found->second.erase(url.path()) == 1) {
     base::PostTaskAndReplyWithResult(
-        file_task_runner_, FROM_HERE,
-        base::Bind(&DriveMetadataDB::DeleteEntry,
-                   base::Unretained(db_.get()), url),
+        file_task_runner_.get(),
+        FROM_HERE,
+        base::Bind(
+            &DriveMetadataDB::DeleteEntry, base::Unretained(db_.get()), url),
         base::Bind(&DriveMetadataStore::UpdateDBStatusAndInvokeCallback,
-                   AsWeakPtr(), callback));
+                   AsWeakPtr(),
+                   callback));
     return;
   }
 
@@ -462,9 +478,12 @@ void DriveMetadataStore::AddIncrementalSyncOrigin(
 
   // Store a pair of |origin| and |resource_id| in the DB.
   base::PostTaskAndReplyWithResult(
-      file_task_runner_, FROM_HERE,
+      file_task_runner_.get(),
+      FROM_HERE,
       base::Bind(&DriveMetadataDB::UpdateOriginAsIncrementalSync,
-                 base::Unretained(db_.get()), origin, resource_id),
+                 base::Unretained(db_.get()),
+                 origin,
+                 resource_id),
       base::Bind(&DriveMetadataStore::UpdateDBStatus, AsWeakPtr()));
 }
 
@@ -475,9 +494,11 @@ void DriveMetadataStore::SetSyncRootDirectory(const std::string& resource_id) {
 
   // Set the resource ID for the sync root directory in the DB.
   base::PostTaskAndReplyWithResult(
-      file_task_runner_, FROM_HERE,
+      file_task_runner_.get(),
+      FROM_HERE,
       base::Bind(&DriveMetadataDB::SetSyncRootDirectory,
-                 base::Unretained(db_.get()), resource_id),
+                 base::Unretained(db_.get()),
+                 resource_id),
       base::Bind(&DriveMetadataStore::UpdateDBStatus, AsWeakPtr()));
 }
 
@@ -499,9 +520,13 @@ void DriveMetadataStore::SetOriginRootDirectory(
     return;
   }
   base::PostTaskAndReplyWithResult(
-      file_task_runner_, FROM_HERE,
+      file_task_runner_.get(),
+      FROM_HERE,
       base::Bind(&DriveMetadataDB::SetOriginRootDirectory,
-                 base::Unretained(db_.get()), origin, sync_type, resource_id),
+                 base::Unretained(db_.get()),
+                 origin,
+                 sync_type,
+                 resource_id),
       base::Bind(&DriveMetadataStore::UpdateDBStatus, AsWeakPtr()));
 }
 
@@ -541,9 +566,12 @@ void DriveMetadataStore::EnableOrigin(
 
   // Store a pair of |origin| and |resource_id| in the DB.
   base::PostTaskAndReplyWithResult(
-      file_task_runner_, FROM_HERE,
+      file_task_runner_.get(),
+      FROM_HERE,
       base::Bind(&DriveMetadataDB::EnableOrigin,
-                 base::Unretained(db_.get()), origin, resource_id),
+                 base::Unretained(db_.get()),
+                 origin,
+                 resource_id),
       base::Bind(&DriveMetadataStore::DidUpdateOrigin, AsWeakPtr(), callback));
 }
 
@@ -569,9 +597,12 @@ void DriveMetadataStore::DisableOrigin(
 
   // Store a pair of |origin| and |resource_id| in the DB.
   base::PostTaskAndReplyWithResult(
-      file_task_runner_, FROM_HERE,
+      file_task_runner_.get(),
+      FROM_HERE,
       base::Bind(&DriveMetadataDB::DisableOrigin,
-                 base::Unretained(db_.get()), origin, resource_id),
+                 base::Unretained(db_.get()),
+                 origin,
+                 resource_id),
       base::Bind(&DriveMetadataStore::DidUpdateOrigin, AsWeakPtr(), callback));
 }
 
@@ -589,9 +620,10 @@ void DriveMetadataStore::RemoveOrigin(
   }
 
   base::PostTaskAndReplyWithResult(
-      file_task_runner_, FROM_HERE,
-      base::Bind(&DriveMetadataDB::RemoveOrigin,
-                 base::Unretained(db_.get()), origin),
+      file_task_runner_.get(),
+      FROM_HERE,
+      base::Bind(
+          &DriveMetadataDB::RemoveOrigin, base::Unretained(db_.get()), origin),
       base::Bind(&DriveMetadataStore::DidUpdateOrigin, AsWeakPtr(), callback));
 }
 

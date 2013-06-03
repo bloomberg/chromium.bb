@@ -221,7 +221,7 @@ void RemoveKeys(int profile) {
 
 std::set<AutofillEntry> GetAllKeys(int profile) {
   scoped_refptr<AutofillWebDataService> wds = GetWebDataService(profile);
-  std::vector<AutofillEntry> all_entries = GetAllAutofillEntries(wds);
+  std::vector<AutofillEntry> all_entries = GetAllAutofillEntries(wds.get());
   std::set<AutofillEntry> all_keys;
   for (std::vector<AutofillEntry>::const_iterator it = all_entries.begin();
        it != all_entries.end(); ++it) {

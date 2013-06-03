@@ -170,7 +170,7 @@ class SafeBrowsingServerTest : public InProcessBrowserTest {
   }
 
   SafeBrowsingDatabaseManager* database_manager() {
-    return safe_browsing_service_->database_manager();
+    return safe_browsing_service_->database_manager().get();
   }
 
   bool is_checked_url_in_db() {

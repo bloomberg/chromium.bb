@@ -80,7 +80,7 @@ class ClientSideDetectionHost::ShouldClassifyUrlRequest
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     DCHECK(web_contents_);
     DCHECK(csd_service_);
-    DCHECK(database_manager_);
+    DCHECK(database_manager_.get());
     DCHECK(host_);
   }
 
@@ -166,7 +166,7 @@ class ClientSideDetectionHost::ShouldClassifyUrlRequest
 
   void CheckCsdWhitelist(const GURL& url) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-    if (!database_manager_ ||
+    if (!database_manager_.get() ||
         database_manager_->MatchCsdWhitelistUrl(url)) {
       // We're done.  There is no point in going back to the UI thread.
       VLOG(1) << "Skipping phishing classification for URL: " << url
@@ -264,7 +264,7 @@ ClientSideDetectionHost::ClientSideDetectionHost(WebContents* tab)
 
   scoped_refptr<SafeBrowsingService> sb_service =
       g_browser_process->safe_browsing_service();
-  if (sb_service) {
+  if (sb_service.get()) {
     ui_manager_ = sb_service->ui_manager();
     database_manager_ = sb_service->database_manager();
     ui_manager_->AddObserver(this);
@@ -279,7 +279,7 @@ ClientSideDetectionHost::ClientSideDetectionHost(WebContents* tab)
 }
 
 ClientSideDetectionHost::~ClientSideDetectionHost() {
-  if (ui_manager_)
+  if (ui_manager_.get())
     ui_manager_->RemoveObserver(this);
 }
 
@@ -332,11 +332,8 @@ void ClientSideDetectionHost::DidNavigateMainFrame(
   browse_info_->http_status_code = details.http_status_code;
 
   // Notify the renderer if it should classify this URL.
-  classification_request_ = new ShouldClassifyUrlRequest(params,
-                                                         web_contents(),
-                                                         csd_service_,
-                                                         database_manager_,
-                                                         this);
+  classification_request_ = new ShouldClassifyUrlRequest(
+      params, web_contents(), csd_service_, database_manager_.get(), this);
   classification_request_->Start();
 }
 
@@ -432,7 +429,7 @@ void ClientSideDetectionHost::MaybeShowPhishingWarning(GURL phishing_url,
           << " is_phishing:" << is_phishing;
   if (is_phishing) {
     DCHECK(web_contents());
-    if (ui_manager_) {
+    if (ui_manager_.get()) {
       SafeBrowsingUIManager::UnsafeResource resource;
       resource.url = phishing_url;
       resource.original_url = phishing_url;
@@ -542,7 +539,7 @@ void ClientSideDetectionHost::set_client_side_detection_service(
 void ClientSideDetectionHost::set_safe_browsing_managers(
     SafeBrowsingUIManager* ui_manager,
     SafeBrowsingDatabaseManager* database_manager) {
-  if (ui_manager_)
+  if (ui_manager_.get())
     ui_manager_->RemoveObserver(this);
 
   ui_manager_ = ui_manager;

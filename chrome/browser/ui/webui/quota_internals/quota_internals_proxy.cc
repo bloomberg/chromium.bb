@@ -23,7 +23,7 @@ QuotaInternalsProxy::QuotaInternalsProxy(QuotaInternalsHandler* handler)
 
 void QuotaInternalsProxy::RequestInfo(
     scoped_refptr<quota::QuotaManager> quota_manager) {
-  DCHECK(quota_manager);
+  DCHECK(quota_manager.get());
   if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
@@ -177,7 +177,7 @@ void QuotaInternalsProxy::DidGetHostUsage(const std::string& host,
 }
 
 void QuotaInternalsProxy::RequestPerOriginInfo(quota::StorageType type) {
-  DCHECK(quota_manager_);
+  DCHECK(quota_manager_.get());
 
   std::set<GURL> origins;
   quota_manager_->GetCachedOrigins(type, &origins);
@@ -217,11 +217,13 @@ void QuotaInternalsProxy::VisitHost(const std::string& host,
 
 void QuotaInternalsProxy::GetHostUsage(const std::string& host,
                                        quota::StorageType type) {
-  DCHECK(quota_manager_);
-  quota_manager_->GetHostUsage(
-      host, type,
-      base::Bind(&QuotaInternalsProxy::DidGetHostUsage,
-                 weak_factory_.GetWeakPtr(), host, type));
+  DCHECK(quota_manager_.get());
+  quota_manager_->GetHostUsage(host,
+                               type,
+                               base::Bind(&QuotaInternalsProxy::DidGetHostUsage,
+                                          weak_factory_.GetWeakPtr(),
+                                          host,
+                                          type));
 }
 
 }  // namespace quota_internals

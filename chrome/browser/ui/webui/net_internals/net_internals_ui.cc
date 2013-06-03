@@ -669,7 +669,7 @@ class NetInternalsMessageHandler::IOThreadImpl
 NetInternalsMessageHandler::NetInternalsMessageHandler() {}
 
 NetInternalsMessageHandler::~NetInternalsMessageHandler() {
-  if (proxy_) {
+  if (proxy_.get()) {
     proxy_.get()->OnWebUIDeleted();
     // Notify the handler on the IO thread that the renderer is gone.
     BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,

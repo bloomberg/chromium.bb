@@ -39,7 +39,7 @@ void SSLClientAuthObserver::CertificateSelected(
   StopObserving();
 
   CertDetails details;
-  details.first = cert_request_info_;
+  details.first = cert_request_info_.get();
   details.second = certificate;
   content::NotificationService* service =
       content::NotificationService::current();

@@ -117,7 +117,7 @@ class BundledDataSource : public content::URLDataSource {
     const ResourceBundle& rb = ResourceBundle::GetSharedInstance();
     scoped_refptr<base::RefCountedStaticMemory> bytes(rb.LoadDataResourceBytes(
         resource_id));
-    callback.Run(bytes);
+    callback.Run(bytes.get());
   }
 
   virtual std::string GetMimeType(const std::string& path) const OVERRIDE {
@@ -152,7 +152,7 @@ class RemoteDataSource : public content::URLDataSource {
 
     GURL url = GURL(kRemoteFrontendBase + path);
     CHECK_EQ(url.host(), kRemoteFrontendDomain);
-    new FetchRequest(request_context_, url, callback);
+    new FetchRequest(request_context_.get(), url, callback);
   }
 
   virtual std::string GetMimeType(const std::string& path) const OVERRIDE {

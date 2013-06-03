@@ -711,7 +711,7 @@ bool StartupBrowserCreator::CreateAutomationProvider(
 
   AutomationProviderList* list = g_browser_process->GetAutomationProviderList();
   DCHECK(list);
-  list->AddProvider(automation);
+  list->AddProvider(automation.get());
 #endif  // defined(ENABLE_AUTOMATION)
 
   return true;

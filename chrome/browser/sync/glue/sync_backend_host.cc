@@ -386,7 +386,7 @@ SyncBackendHost::SyncBackendHost(Profile* profile)
 }
 
 SyncBackendHost::~SyncBackendHost() {
-  DCHECK(!core_ && !frontend_) << "Must call Shutdown before destructor.";
+  DCHECK(!core_.get() && !frontend_) << "Must call Shutdown before destructor.";
   DCHECK(!android_invalidator_bridge_.get());
   DCHECK(!registrar_.get());
 }
@@ -399,7 +399,7 @@ scoped_ptr<syncer::HttpPostProviderFactory> MakeHttpBridgeFactory(
   chrome::VersionInfo version_info;
   return scoped_ptr<syncer::HttpPostProviderFactory>(
       new syncer::HttpBridgeFactory(
-          getter,
+          getter.get(),
           DeviceInfo::MakeUserAgentForSyncApi(version_info),
           update_callback));
 }

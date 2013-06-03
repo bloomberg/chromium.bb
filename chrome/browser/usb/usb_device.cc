@@ -260,7 +260,10 @@ void UsbDevice::ControlTransfer(const UsbEndpointDirection direction,
                             converted_type, request, value, index, length);
   libusb_fill_control_transfer(transfer, handle_, reinterpret_cast<uint8*>(
       resized_buffer->data()), HandleTransferCompletion, this, timeout);
-  SubmitTransfer(transfer, USB_TRANSFER_CONTROL, resized_buffer, resized_length,
+  SubmitTransfer(transfer,
+                 USB_TRANSFER_CONTROL,
+                 resized_buffer.get(),
+                 resized_length,
                  callback);
 }
 

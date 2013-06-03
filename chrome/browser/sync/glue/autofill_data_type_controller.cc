@@ -40,7 +40,7 @@ void AutofillDataTypeController::WebDatabaseLoaded() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK_EQ(MODEL_STARTING, state());
 
-  if (web_data_service_)
+  if (web_data_service_.get())
     web_data_service_->RemoveDBObserver(this);
 
   OnModelLoaded();
@@ -48,7 +48,7 @@ void AutofillDataTypeController::WebDatabaseLoaded() {
 
 AutofillDataTypeController::~AutofillDataTypeController() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (web_data_service_)
+  if (web_data_service_.get())
     web_data_service_->RemoveDBObserver(this);
 }
 
@@ -68,7 +68,7 @@ bool AutofillDataTypeController::StartModels() {
   if (web_data_service_->IsDatabaseLoaded()) {
     return true;
   } else {
-    if (web_data_service_)
+    if (web_data_service_.get())
       web_data_service_->AddDBObserver(this);
     return false;
   }
@@ -78,7 +78,7 @@ void AutofillDataTypeController::StopModels() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(state() == STOPPING || state() == NOT_RUNNING || state() == DISABLED);
   DVLOG(1) << "AutofillDataTypeController::StopModels() : State = " << state();
-  if (web_data_service_)
+  if (web_data_service_.get())
     web_data_service_->RemoveDBObserver(this);
 }
 
@@ -106,7 +106,7 @@ void AutofillDataTypeController::UpdateAutofillCullingSettings(
     bool cull_expired_entries) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
   AutocompleteSyncableService* service =
-      AutocompleteSyncableService::FromWebDataService(web_data_service_);
+      AutocompleteSyncableService::FromWebDataService(web_data_service_.get());
   if (!service) {
     DVLOG(1) << "Can't update culling, no AutocompleteSyncableService.";
     return;

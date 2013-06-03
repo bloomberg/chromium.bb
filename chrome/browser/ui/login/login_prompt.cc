@@ -87,7 +87,7 @@ LoginHandler::LoginHandler(net::AuthChallengeInfo* auth_info,
   // here. BuildViewForPasswordManager() will be invoked on the UI thread
   // later, so wait with loading the nib until then.
   DCHECK(request_) << "LoginHandler constructed with NULL request";
-  DCHECK(auth_info_) << "LoginHandler constructed with NULL auth info";
+  DCHECK(auth_info_.get()) << "LoginHandler constructed with NULL auth info";
 
   AddRef();  // matched by LoginHandler::ReleaseSoon().
 

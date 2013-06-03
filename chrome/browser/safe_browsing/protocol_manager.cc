@@ -185,7 +185,7 @@ void SafeBrowsingProtocolManager::GetFullHash(
   parser.FormatGetHash(prefixes, &get_hash);
 
   fetcher->SetLoadFlags(net::LOAD_DISABLE_CACHE);
-  fetcher->SetRequestContext(request_context_getter_);
+  fetcher->SetRequestContext(request_context_getter_.get());
   fetcher->SetUploadData("text/plain", get_hash);
   fetcher->Start();
 }
@@ -553,7 +553,7 @@ bool SafeBrowsingProtocolManager::IssueBackupUpdateRequest(
   request_.reset(net::URLFetcher::Create(
       url_fetcher_id_++, backup_update_url, net::URLFetcher::POST, this));
   request_->SetLoadFlags(net::LOAD_DISABLE_CACHE);
-  request_->SetRequestContext(request_context_getter_);
+  request_->SetRequestContext(request_context_getter_.get());
   request_->SetUploadData("text/plain", update_list_data_);
   request_->Start();
 
@@ -580,7 +580,7 @@ void SafeBrowsingProtocolManager::IssueChunkRequest() {
   request_.reset(net::URLFetcher::Create(
       url_fetcher_id_++, chunk_url, net::URLFetcher::GET, this));
   request_->SetLoadFlags(net::LOAD_DISABLE_CACHE);
-  request_->SetRequestContext(request_context_getter_);
+  request_->SetRequestContext(request_context_getter_.get());
   chunk_request_start_ = base::Time::Now();
   request_->Start();
 }
@@ -627,7 +627,7 @@ void SafeBrowsingProtocolManager::OnGetChunksComplete(
   request_.reset(net::URLFetcher::Create(
       url_fetcher_id_++, update_url, net::URLFetcher::POST, this));
   request_->SetLoadFlags(net::LOAD_DISABLE_CACHE);
-  request_->SetRequestContext(request_context_getter_);
+  request_->SetRequestContext(request_context_getter_.get());
   request_->SetUploadData("text/plain", update_list_data_);
   request_->Start();
 

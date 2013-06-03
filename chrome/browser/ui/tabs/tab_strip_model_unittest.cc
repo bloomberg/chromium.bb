@@ -1721,12 +1721,12 @@ TEST_F(TabStripModelTest, Apps) {
                         manifest, Extension::NO_FLAGS, &error));
   WebContents* contents1 = CreateWebContents();
   extensions::TabHelper::CreateForWebContents(contents1);
-  extensions::TabHelper::FromWebContents(contents1)->
-      SetExtensionApp(extension_app);
+  extensions::TabHelper::FromWebContents(contents1)
+      ->SetExtensionApp(extension_app.get());
   WebContents* contents2 = CreateWebContents();
   extensions::TabHelper::CreateForWebContents(contents2);
-  extensions::TabHelper::FromWebContents(contents2)->
-      SetExtensionApp(extension_app);
+  extensions::TabHelper::FromWebContents(contents2)
+      ->SetExtensionApp(extension_app.get());
   WebContents* contents3 = CreateWebContents();
 
   SetID(contents1, 1);

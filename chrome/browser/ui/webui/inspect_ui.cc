@@ -266,10 +266,10 @@ void InspectMessageHandler::HandleInspectCommand(const ListValue* args) {
     return;
   scoped_refptr<DevToolsAgentHost> agent_host(
       DevToolsAgentHost::GetForWorker(process_id, route_id));
-  if (!agent_host)
+  if (!agent_host.get())
     return;
 
-  DevToolsWindow::OpenDevToolsWindowForWorker(profile, agent_host);
+  DevToolsWindow::OpenDevToolsWindowForWorker(profile, agent_host.get());
 }
 
 static void TerminateWorker(int process_id, int route_id) {
@@ -407,7 +407,7 @@ void InspectUI::Observe(int type,
 
 void InspectUI::StopListeningNotifications()
 {
-  if (!observer_)
+  if (!observer_.get())
     return;
   adb_bridge_.reset();
   observer_->InspectUIDestroyed();

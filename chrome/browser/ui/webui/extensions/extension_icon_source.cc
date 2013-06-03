@@ -242,7 +242,7 @@ void ExtensionIconSource::OnFaviconDataAvailable(
   if (!request->grayscale) {
     // If we don't need a grayscale image, then we can bypass FinalizeImage
     // to avoid unnecessary conversions.
-    request->callback.Run(bitmap_result.bitmap_data);
+    request->callback.Run(bitmap_result.bitmap_data.get());
     ClearData(request_id);
   } else {
     FinalizeImage(ToBitmap(bitmap_result.bitmap_data->front(),

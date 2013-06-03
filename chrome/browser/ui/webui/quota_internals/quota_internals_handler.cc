@@ -23,7 +23,7 @@ namespace quota_internals {
 QuotaInternalsHandler::QuotaInternalsHandler() {}
 
 QuotaInternalsHandler::~QuotaInternalsHandler() {
-  if (proxy_)
+  if (proxy_.get())
     proxy_->handler_ = NULL;
 }
 
@@ -85,7 +85,7 @@ void QuotaInternalsHandler::SendMessage(const std::string& message,
 }
 
 void QuotaInternalsHandler::OnRequestInfo(const base::ListValue*) {
-  if (!proxy_)
+  if (!proxy_.get())
     proxy_ = new QuotaInternalsProxy(this);
   proxy_->RequestInfo(
       BrowserContext::GetDefaultStoragePartition(

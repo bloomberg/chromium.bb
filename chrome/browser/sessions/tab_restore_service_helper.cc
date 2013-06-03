@@ -234,15 +234,16 @@ void TabRestoreServiceHelper::RestoreEntryById(
                                                    window->app_name);
       for (size_t tab_i = 0; tab_i < window->tabs.size(); ++tab_i) {
         const Tab& tab = window->tabs[tab_i];
-        WebContents* restored_tab =
-            delegate->AddRestoredTab(tab.navigations, delegate->GetTabCount(),
-                                     tab.current_navigation_index,
-                                     tab.extension_app_id,
-                                     static_cast<int>(tab_i) ==
-                                         window->selected_tab_index,
-                                     tab.pinned, tab.from_last_session,
-                                     tab.session_storage_namespace,
-                                     tab.user_agent_override);
+        WebContents* restored_tab = delegate->AddRestoredTab(
+            tab.navigations,
+            delegate->GetTabCount(),
+            tab.current_navigation_index,
+            tab.extension_app_id,
+            static_cast<int>(tab_i) == window->selected_tab_index,
+            tab.pinned,
+            tab.from_last_session,
+            tab.session_storage_namespace.get(),
+            tab.user_agent_override);
         if (restored_tab) {
           restored_tab->GetController().LoadIfNecessary();
           RecordAppLaunch(profile_, tab);
@@ -439,7 +440,7 @@ TabRestoreServiceDelegate* TabRestoreServiceHelper::RestoreTab(
                                  tab.current_navigation_index,
                                  tab.from_last_session,
                                  tab.extension_app_id,
-                                 tab.session_storage_namespace,
+                                 tab.session_storage_namespace.get(),
                                  tab.user_agent_override);
   } else {
     // We only respsect the tab's original browser if there's no disposition.
@@ -469,16 +470,16 @@ TabRestoreServiceDelegate* TabRestoreServiceHelper::RestoreTab(
       tab_index = delegate->GetTabCount();
     }
 
-    WebContents* web_contents = delegate->AddRestoredTab(
-        tab.navigations,
-        tab_index,
-        tab.current_navigation_index,
-        tab.extension_app_id,
-        disposition != NEW_BACKGROUND_TAB,
-        tab.pinned,
-        tab.from_last_session,
-        tab.session_storage_namespace,
-        tab.user_agent_override);
+    WebContents* web_contents =
+        delegate->AddRestoredTab(tab.navigations,
+                                 tab_index,
+                                 tab.current_navigation_index,
+                                 tab.extension_app_id,
+                                 disposition != NEW_BACKGROUND_TAB,
+                                 tab.pinned,
+                                 tab.from_last_session,
+                                 tab.session_storage_namespace.get(),
+                                 tab.user_agent_override);
     web_contents->GetController().LoadIfNecessary();
   }
   RecordAppLaunch(profile_, tab);

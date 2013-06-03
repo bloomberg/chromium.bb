@@ -198,13 +198,11 @@ void SafeBrowsingService::Initialize() {
 #if defined(FULL_SAFE_BROWSING)
   if (!CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableClientSidePhishingDetection)) {
-    csd_service_.reset(
-        safe_browsing::ClientSideDetectionService::Create(
-            url_request_context_getter_));
+    csd_service_.reset(safe_browsing::ClientSideDetectionService::Create(
+        url_request_context_getter_.get()));
   }
   download_service_.reset(new safe_browsing::DownloadProtectionService(
-      this,
-      url_request_context_getter_));
+      this, url_request_context_getter_.get()));
 #endif
 
   // Track the safe browsing preference of existing profiles.
@@ -317,7 +315,7 @@ void SafeBrowsingService::InitURLRequestContextOnIOThread(
     url_request_context_->CopyFrom(
         system_url_request_context_getter->GetURLRequestContext());
   }
-  url_request_context_->set_cookie_store(cookie_store);
+  url_request_context_->set_cookie_store(cookie_store.get());
 }
 
 void SafeBrowsingService::DestroyURLRequestContextOnIOThread() {
@@ -368,21 +366,18 @@ void SafeBrowsingService::StartOnIOThread() {
   }
 
 #if defined(FULL_SAFE_BROWSING)
-  DCHECK(database_manager_);
+  DCHECK(database_manager_.get());
   database_manager_->StartOnIOThread();
 
   DCHECK(!protocol_manager_);
-  protocol_manager_ =
-      SafeBrowsingProtocolManager::Create(database_manager_,
-                                          url_request_context_getter_,
-                                          config);
+  protocol_manager_ = SafeBrowsingProtocolManager::Create(
+      database_manager_.get(), url_request_context_getter_.get(), config);
   protocol_manager_->Initialize();
 #endif
 
   DCHECK(!ping_manager_);
-  ping_manager_ =
-      SafeBrowsingPingManager::Create(url_request_context_getter_,
-                                      config);
+  ping_manager_ = SafeBrowsingPingManager::Create(
+      url_request_context_getter_.get(), config);
 }
 
 void SafeBrowsingService::StopOnIOThread(bool shutdown) {

@@ -189,7 +189,7 @@ class SyncNonUIDataTypeControllerTest : public testing::Test {
 
  protected:
   void SetStartExpectations() {
-    EXPECT_CALL(*dtc_mock_, StartModels()).WillOnce(Return(true));
+    EXPECT_CALL(*dtc_mock_.get(), StartModels()).WillOnce(Return(true));
     EXPECT_CALL(model_load_callback_, Run(_, _));
     EXPECT_CALL(*profile_sync_factory_,
                 CreateSharedChangeProcessor()).
@@ -197,17 +197,17 @@ class SyncNonUIDataTypeControllerTest : public testing::Test {
   }
 
   void SetAssociateExpectations() {
-    EXPECT_CALL(*change_processor_, Connect(_,_,_,_,_)).
-        WillOnce(GetWeakPtrToSyncableService(&syncable_service_));
-    EXPECT_CALL(*change_processor_, CryptoReadyIfNecessary()).
-        WillOnce(Return(true));
-    EXPECT_CALL(*change_processor_, ActivateDataType(_));
-    EXPECT_CALL(*change_processor_, SyncModelHasUserCreatedNodes(_)).
-        WillOnce(DoAll(SetArgumentPointee<0>(true), Return(true)));
-    EXPECT_CALL(*change_processor_, GetSyncData(_)).
-        WillOnce(Return(syncer::SyncError()));
-    EXPECT_CALL(*change_processor_, GetSyncCount()).WillOnce(Return(0));
-    EXPECT_CALL(*dtc_mock_, RecordAssociationTime(_));
+    EXPECT_CALL(*change_processor_.get(), Connect(_, _, _, _, _))
+        .WillOnce(GetWeakPtrToSyncableService(&syncable_service_));
+    EXPECT_CALL(*change_processor_.get(), CryptoReadyIfNecessary())
+        .WillOnce(Return(true));
+    EXPECT_CALL(*change_processor_.get(), ActivateDataType(_));
+    EXPECT_CALL(*change_processor_.get(), SyncModelHasUserCreatedNodes(_))
+        .WillOnce(DoAll(SetArgumentPointee<0>(true), Return(true)));
+    EXPECT_CALL(*change_processor_.get(), GetSyncData(_))
+        .WillOnce(Return(syncer::SyncError()));
+    EXPECT_CALL(*change_processor_.get(), GetSyncCount()).WillOnce(Return(0));
+    EXPECT_CALL(*dtc_mock_.get(), RecordAssociationTime(_));
   }
 
   void SetActivateExpectations(DataTypeController::StartResult result) {
@@ -215,17 +215,17 @@ class SyncNonUIDataTypeControllerTest : public testing::Test {
   }
 
   void SetStopExpectations() {
-    EXPECT_CALL(*dtc_mock_, StopModels());
-    EXPECT_CALL(*change_processor_, Disconnect()).WillOnce(Return(true));
+    EXPECT_CALL(*dtc_mock_.get(), StopModels());
+    EXPECT_CALL(*change_processor_.get(), Disconnect()).WillOnce(Return(true));
     EXPECT_CALL(service_, DeactivateDataType(_));
   }
 
   void SetStartFailExpectations(DataTypeController::StartResult result) {
-    EXPECT_CALL(*dtc_mock_, StopModels()).Times(AtLeast(1));
+    EXPECT_CALL(*dtc_mock_.get(), StopModels()).Times(AtLeast(1));
     if (DataTypeController::IsUnrecoverableResult(result))
-      EXPECT_CALL(*dtc_mock_, RecordUnrecoverableError(_, _));
-    EXPECT_CALL(*dtc_mock_, RecordStartFailure(result));
-    EXPECT_CALL(start_callback_, Run(result,_,_));
+      EXPECT_CALL(*dtc_mock_.get(), RecordUnrecoverableError(_, _));
+    EXPECT_CALL(*dtc_mock_.get(), RecordStartFailure(result));
+    EXPECT_CALL(start_callback_, Run(result, _, _));
   }
 
   void Start() {
@@ -269,15 +269,15 @@ TEST_F(SyncNonUIDataTypeControllerTest, StartOk) {
 
 TEST_F(SyncNonUIDataTypeControllerTest, StartFirstRun) {
   SetStartExpectations();
-  EXPECT_CALL(*change_processor_, Connect(_,_,_,_,_)).
-      WillOnce(GetWeakPtrToSyncableService(&syncable_service_));
-  EXPECT_CALL(*change_processor_, CryptoReadyIfNecessary()).
-      WillOnce(Return(true));
-  EXPECT_CALL(*change_processor_, SyncModelHasUserCreatedNodes(_)).
-      WillOnce(DoAll(SetArgumentPointee<0>(false), Return(true)));
-  EXPECT_CALL(*change_processor_, GetSyncData(_)).
-      WillOnce(Return(syncer::SyncError()));
-  EXPECT_CALL(*dtc_mock_, RecordAssociationTime(_));
+  EXPECT_CALL(*change_processor_.get(), Connect(_, _, _, _, _))
+      .WillOnce(GetWeakPtrToSyncableService(&syncable_service_));
+  EXPECT_CALL(*change_processor_.get(), CryptoReadyIfNecessary())
+      .WillOnce(Return(true));
+  EXPECT_CALL(*change_processor_.get(), SyncModelHasUserCreatedNodes(_))
+      .WillOnce(DoAll(SetArgumentPointee<0>(false), Return(true)));
+  EXPECT_CALL(*change_processor_.get(), GetSyncData(_))
+      .WillOnce(Return(syncer::SyncError()));
+  EXPECT_CALL(*dtc_mock_.get(), RecordAssociationTime(_));
   SetActivateExpectations(DataTypeController::OK_FIRST_RUN);
   EXPECT_EQ(DataTypeController::NOT_RUNNING, non_ui_dtc_->state());
   Start();
@@ -291,8 +291,8 @@ TEST_F(SyncNonUIDataTypeControllerTest, AbortDuringStartModels) {
   EXPECT_CALL(*profile_sync_factory_,
               CreateSharedChangeProcessor()).
       WillOnce(Return(change_processor_.get()));
-  EXPECT_CALL(*dtc_mock_, StartModels()).WillOnce(Return(false));
-  EXPECT_CALL(*dtc_mock_, StopModels());
+  EXPECT_CALL(*dtc_mock_.get(), StartModels()).WillOnce(Return(false));
+  EXPECT_CALL(*dtc_mock_.get(), StopModels());
   EXPECT_CALL(model_load_callback_, Run(_, _));
   EXPECT_EQ(DataTypeController::NOT_RUNNING, non_ui_dtc_->state());
   non_ui_dtc_->LoadModels(
@@ -309,15 +309,15 @@ TEST_F(SyncNonUIDataTypeControllerTest, AbortDuringStartModels) {
 // cleanly.
 TEST_F(SyncNonUIDataTypeControllerTest, StartAssociationFailed) {
   SetStartExpectations();
-  EXPECT_CALL(*change_processor_, Connect(_,_,_,_,_)).
-      WillOnce(GetWeakPtrToSyncableService(&syncable_service_));
-  EXPECT_CALL(*change_processor_, CryptoReadyIfNecessary()).
-      WillOnce(Return(true));
-  EXPECT_CALL(*change_processor_, SyncModelHasUserCreatedNodes(_)).
-      WillOnce(DoAll(SetArgumentPointee<0>(true), Return(true)));
-  EXPECT_CALL(*change_processor_, GetSyncData(_)).
-      WillOnce(Return(syncer::SyncError()));
-  EXPECT_CALL(*dtc_mock_, RecordAssociationTime(_));
+  EXPECT_CALL(*change_processor_.get(), Connect(_, _, _, _, _))
+      .WillOnce(GetWeakPtrToSyncableService(&syncable_service_));
+  EXPECT_CALL(*change_processor_.get(), CryptoReadyIfNecessary())
+      .WillOnce(Return(true));
+  EXPECT_CALL(*change_processor_.get(), SyncModelHasUserCreatedNodes(_))
+      .WillOnce(DoAll(SetArgumentPointee<0>(true), Return(true)));
+  EXPECT_CALL(*change_processor_.get(), GetSyncData(_))
+      .WillOnce(Return(syncer::SyncError()));
+  EXPECT_CALL(*dtc_mock_.get(), RecordAssociationTime(_));
   SetStartFailExpectations(DataTypeController::ASSOCIATION_FAILED);
   // Set up association to fail with an association failed error.
   EXPECT_EQ(DataTypeController::NOT_RUNNING, non_ui_dtc_->state());
@@ -336,12 +336,12 @@ TEST_F(SyncNonUIDataTypeControllerTest,
   SetStartExpectations();
   SetStartFailExpectations(DataTypeController::UNRECOVERABLE_ERROR);
   // Set up association to fail with an unrecoverable error.
-  EXPECT_CALL(*change_processor_, Connect(_,_,_,_,_)).
-      WillOnce(GetWeakPtrToSyncableService(&syncable_service_));
-  EXPECT_CALL(*change_processor_, CryptoReadyIfNecessary()).
-      WillRepeatedly(Return(true));
-  EXPECT_CALL(*change_processor_, SyncModelHasUserCreatedNodes(_)).
-      WillRepeatedly(DoAll(SetArgumentPointee<0>(false), Return(false)));
+  EXPECT_CALL(*change_processor_.get(), Connect(_, _, _, _, _))
+      .WillOnce(GetWeakPtrToSyncableService(&syncable_service_));
+  EXPECT_CALL(*change_processor_.get(), CryptoReadyIfNecessary())
+      .WillRepeatedly(Return(true));
+  EXPECT_CALL(*change_processor_.get(), SyncModelHasUserCreatedNodes(_))
+      .WillRepeatedly(DoAll(SetArgumentPointee<0>(false), Return(false)));
   EXPECT_EQ(DataTypeController::NOT_RUNNING, non_ui_dtc_->state());
   Start();
   WaitForDTC();
@@ -353,10 +353,10 @@ TEST_F(SyncNonUIDataTypeControllerTest,
   SetStartExpectations();
   SetStartFailExpectations(DataTypeController::NEEDS_CRYPTO);
   // Set up association to fail with a NEEDS_CRYPTO error.
-  EXPECT_CALL(*change_processor_, Connect(_,_,_,_,_)).
-      WillOnce(GetWeakPtrToSyncableService(&syncable_service_));
-  EXPECT_CALL(*change_processor_, CryptoReadyIfNecessary()).
-      WillRepeatedly(Return(false));
+  EXPECT_CALL(*change_processor_.get(), Connect(_, _, _, _, _))
+      .WillOnce(GetWeakPtrToSyncableService(&syncable_service_));
+  EXPECT_CALL(*change_processor_.get(), CryptoReadyIfNecessary())
+      .WillRepeatedly(Return(false));
   EXPECT_EQ(DataTypeController::NOT_RUNNING, non_ui_dtc_->state());
   Start();
   WaitForDTC();
@@ -371,22 +371,19 @@ TEST_F(SyncNonUIDataTypeControllerTest, AbortDuringAssociation) {
 
   SetStartExpectations();
   SetStartFailExpectations(DataTypeController::ABORTED);
-  EXPECT_CALL(*change_processor_, Connect(_,_,_,_,_)).
-      WillOnce(GetWeakPtrToSyncableService(&syncable_service_));
-  EXPECT_CALL(*change_processor_, CryptoReadyIfNecessary()).
-      WillOnce(Return(true));
-  EXPECT_CALL(*change_processor_, SyncModelHasUserCreatedNodes(_)).
-      WillOnce(DoAll(
-          SignalEvent(&wait_for_db_thread_pause),
-          WaitOnEvent(&pause_db_thread),
-          SetArgumentPointee<0>(true),
-          Return(true)));
-  EXPECT_CALL(*change_processor_, GetSyncData(_)).
-      WillOnce(
-          Return(
-              syncer::SyncError(FROM_HERE, "Disconnected.", AUTOFILL_PROFILE)));
-  EXPECT_CALL(*change_processor_, Disconnect()).
-      WillOnce(DoAll(SignalEvent(&pause_db_thread), Return(true)));
+  EXPECT_CALL(*change_processor_.get(), Connect(_, _, _, _, _))
+      .WillOnce(GetWeakPtrToSyncableService(&syncable_service_));
+  EXPECT_CALL(*change_processor_.get(), CryptoReadyIfNecessary())
+      .WillOnce(Return(true));
+  EXPECT_CALL(*change_processor_.get(), SyncModelHasUserCreatedNodes(_))
+      .WillOnce(DoAll(SignalEvent(&wait_for_db_thread_pause),
+                      WaitOnEvent(&pause_db_thread),
+                      SetArgumentPointee<0>(true),
+                      Return(true)));
+  EXPECT_CALL(*change_processor_.get(), GetSyncData(_)).WillOnce(
+      Return(syncer::SyncError(FROM_HERE, "Disconnected.", AUTOFILL_PROFILE)));
+  EXPECT_CALL(*change_processor_.get(), Disconnect())
+      .WillOnce(DoAll(SignalEvent(&pause_db_thread), Return(true)));
   EXPECT_CALL(service_, DeactivateDataType(_));
   EXPECT_EQ(DataTypeController::NOT_RUNNING, non_ui_dtc_->state());
   Start();
@@ -405,10 +402,11 @@ TEST_F(SyncNonUIDataTypeControllerTest, StartAfterSyncShutdown) {
   SetStartExpectations();
   // We don't expect StopSyncing to be called because local_service_ will never
   // have been set.
-  EXPECT_CALL(*change_processor_, Disconnect()).WillOnce(Return(true));
-  EXPECT_CALL(*dtc_mock_, StopModels());
+  EXPECT_CALL(*change_processor_.get(), Disconnect()).WillOnce(Return(true));
+  EXPECT_CALL(*dtc_mock_.get(), StopModels());
   EXPECT_CALL(service_, DeactivateDataType(_));
-  EXPECT_CALL(*dtc_mock_, RecordStartFailure(DataTypeController::ABORTED));
+  EXPECT_CALL(*dtc_mock_.get(),
+              RecordStartFailure(DataTypeController::ABORTED));
   EXPECT_CALL(start_callback_, Run(DataTypeController::ABORTED, _, _));
   EXPECT_EQ(DataTypeController::NOT_RUNNING, non_ui_dtc_->state());
   Start();
@@ -416,11 +414,11 @@ TEST_F(SyncNonUIDataTypeControllerTest, StartAfterSyncShutdown) {
   EXPECT_EQ(DataTypeController::NOT_RUNNING, non_ui_dtc_->state());
   Mock::VerifyAndClearExpectations(&profile_sync_factory_);
   Mock::VerifyAndClearExpectations(&service_);
-  Mock::VerifyAndClearExpectations(change_processor_);
-  Mock::VerifyAndClearExpectations(dtc_mock_);
+  Mock::VerifyAndClearExpectations(change_processor_.get());
+  Mock::VerifyAndClearExpectations(dtc_mock_.get());
 
-  EXPECT_CALL(*change_processor_, Connect(_,_,_,_,_)).
-      WillOnce(Return(base::WeakPtr<syncer::SyncableService>()));
+  EXPECT_CALL(*change_processor_.get(), Connect(_, _, _, _, _))
+      .WillOnce(Return(base::WeakPtr<syncer::SyncableService>()));
   non_ui_dtc_->UnblockBackendTasks();
   WaitForDTC();
 }
@@ -471,10 +469,9 @@ TEST_F(SyncNonUIDataTypeControllerTest,
   SetStartExpectations();
   SetAssociateExpectations();
   SetActivateExpectations(DataTypeController::OK);
-  EXPECT_CALL(*dtc_mock_, RecordUnrecoverableError(_, "Test"));
-  EXPECT_CALL(service_, DisableBrokenDatatype(_,_,_)).WillOnce(
-      InvokeWithoutArgs(non_ui_dtc_.get(),
-                        &NonUIDataTypeController::Stop));
+  EXPECT_CALL(*dtc_mock_.get(), RecordUnrecoverableError(_, "Test"));
+  EXPECT_CALL(service_, DisableBrokenDatatype(_, _, _)).WillOnce(
+      InvokeWithoutArgs(non_ui_dtc_.get(), &NonUIDataTypeController::Stop));
   SetStopExpectations();
   EXPECT_EQ(DataTypeController::NOT_RUNNING, non_ui_dtc_->state());
   Start();

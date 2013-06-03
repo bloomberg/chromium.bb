@@ -36,11 +36,11 @@ void SSLClientCertificateSelectorTestBase::SetUpInProcessBrowserTestFixture() {
   base::FilePath certs_dir = net::GetTestCertsDirectory();
 
   mit_davidben_cert_ = net::ImportCertFromFile(certs_dir, "mit.davidben.der");
-  ASSERT_TRUE(mit_davidben_cert_);
+  ASSERT_TRUE(mit_davidben_cert_.get());
 
   foaf_me_chromium_test_cert_ = net::ImportCertFromFile(
       certs_dir, "foaf.me.chromium-test-cert.der");
-  ASSERT_TRUE(foaf_me_chromium_test_cert_);
+  ASSERT_TRUE(foaf_me_chromium_test_cert_.get());
 
   cert_request_info_ = new net::SSLCertRequestInfo;
   cert_request_info_->host_and_port = "foo:123";
@@ -78,7 +78,7 @@ void SSLClientCertificateSelectorTestBase::CleanUpOnMainThread() {
 }
 
 void SSLClientCertificateSelectorTestBase::SetUpOnIOThread() {
-  url_request_ = MakeURLRequest(url_request_context_getter_);
+  url_request_ = MakeURLRequest(url_request_context_getter_.get());
 
   auth_requestor_ = new StrictMock<SSLClientAuthRequestorMock>(
       url_request_,

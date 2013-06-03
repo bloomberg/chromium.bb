@@ -398,7 +398,7 @@ void NonUIDataTypeController::ClearSharedChangeProcessor() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   // |shared_change_processor_| can already be NULL if Stop() is
   // called after StartDoneImpl(_, DISABLED, _).
-  if (shared_change_processor_) {
+  if (shared_change_processor_.get()) {
     shared_change_processor_->Disconnect();
     shared_change_processor_ = NULL;
   }
