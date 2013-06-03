@@ -125,9 +125,8 @@ void GaiaOAuthClient::Core::GetUserInfo(const std::string& oauth_access_token,
   request_.reset(net::URLFetcher::Create(
       0, GURL(GaiaUrls::GetInstance()->oauth_user_info_url()),
       net::URLFetcher::GET, this));
-  request_->SetRequestContext(request_context_getter_);
-  request_->AddExtraRequestHeader(
-      "Authorization: OAuth " + oauth_access_token);
+  request_->SetRequestContext(request_context_getter_.get());
+  request_->AddExtraRequestHeader("Authorization: OAuth " + oauth_access_token);
   request_->SetMaxRetriesOn5xx(max_retries);
   // Fetchers are sometimes cancelled because a network change was detected,
   // especially at startup and after sign-in on ChromeOS. Retrying once should
@@ -146,7 +145,7 @@ void GaiaOAuthClient::Core::MakeGaiaRequest(
   num_retries_ = 0;
   request_.reset(net::URLFetcher::Create(
       0, gaia_url_, net::URLFetcher::POST, this));
-  request_->SetRequestContext(request_context_getter_);
+  request_->SetRequestContext(request_context_getter_.get());
   request_->SetUploadData("application/x-www-form-urlencoded", post_body);
   request_->SetMaxRetriesOn5xx(max_retries);
   // See comment on SetAutomaticallyRetryOnNetworkChanges() above.
@@ -168,7 +167,7 @@ void GaiaOAuthClient::Core::OnURLFetchComplete(
     num_retries_++;
     // We must set our request_context_getter_ again because
     // URLFetcher::Core::RetryOrCompleteUrlFetch resets it to NULL...
-    request_->SetRequestContext(request_context_getter_);
+    request_->SetRequestContext(request_context_getter_.get());
     request_->Start();
   }
 }
