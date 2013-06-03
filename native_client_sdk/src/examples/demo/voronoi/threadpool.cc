@@ -9,7 +9,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-// TODO(nfullagar): Switch DecCounter to use atomic decrement.
+#include "utils/auto_lock.h"
 
 // Initializes mutex, semaphores and a pool of threads.  If 0 is passed for
 // num_threads, all work will be performed on the dispatch thread.
@@ -18,11 +18,6 @@ ThreadPool::ThreadPool(int num_threads)
       user_data_(NULL), user_work_function_(NULL) {
   if (num_threads_ > 0) {
     int status;
-    status = pthread_mutex_init(&mutex_, NULL);
-    if (0 != status) {
-      fprintf(stderr, "Failed to initialize mutex!\n");
-      exit(-1);
-    }
     status = sem_init(&work_sem_, 0, 0);
     if (-1 == status) {
       fprintf(stderr, "Failed to initialize semaphore!\n");
@@ -46,12 +41,11 @@ ThreadPool::ThreadPool(int num_threads)
 
 // Post exit request, wait for all threads to join, and cleanup.
 ThreadPool::~ThreadPool() {
-  if (num_threads_ > 1) {
+  if (num_threads_ > 0) {
     PostExitAndJoinAll();
     delete[] threads_;
     sem_destroy(&done_sem_);
     sem_destroy(&work_sem_);
-    pthread_mutex_destroy(&mutex_);
   }
 }
 
@@ -63,16 +57,18 @@ void ThreadPool::Setup(int counter, WorkFunction work, void *data) {
   user_data_ = data;
 }
 
-// Decrement and get the value of the mutex protected counter.  This function
+// Return decremented task counter.  This function
 // can be called from multiple threads at any given time.
 int ThreadPool::DecCounter() {
-  int v;
-  pthread_mutex_lock(&mutex_);
-  {
-    v = --counter_;
-  }
-  pthread_mutex_unlock(&mutex_);
-  return v;
+#if defined(__native_client__)
+  // Use fast atomic sub & fetch.
+  return __sync_sub_and_fetch(&counter_, 1);
+#else
+  // Fallback to a more platform independent pthread mutex via AutoLock.
+  static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+  AutoLock lock(&mutex);
+  return --counter_;
+#endif
 }
 
 // Set exit flag, post and join all the threads in the pool.  This function is

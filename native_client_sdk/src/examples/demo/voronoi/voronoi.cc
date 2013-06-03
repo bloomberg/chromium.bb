@@ -201,8 +201,8 @@ Voronoi::Voronoi(PP_Instance instance) : pp::Instance(instance),
   point_count_ = kStartPointCount;
   Reset();
 
-  // By default, do single threaded rendering.
-  num_threads_ = 1;
+  // By default, render from the dispatch thread.
+  num_threads_ = 0;
   workers_ = new ThreadPool(num_threads_);
 
   // Request PPAPI input events for mouse & keyboard.

@@ -38,7 +38,6 @@ class ThreadPool {
   bool exiting_;
   void* user_data_;
   WorkFunction user_work_function_;
-  pthread_mutex_t mutex_;
   sem_t work_sem_;
   sem_t done_sem_;
 };
