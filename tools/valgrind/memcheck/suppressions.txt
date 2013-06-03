@@ -7308,7 +7308,7 @@ fun:_ZN7content21RenderViewHostManager8NavigateERKNS_19NavigationEntryImplE
    fun:_ZN3IPC12ChannelProxy7Context15OnChannelClosedEv
 }
 {
-   bug_245828
+   bug_245828a
    Memcheck:Leak
    fun:_Znw*
    fun:_ZN4base8internal20PostTaskAndReplyImpl16PostTaskAndReplyERKN15tracked_objects8LocationERKNS_8CallbackIFvvEEESA_
@@ -7319,6 +7319,19 @@ fun:_ZN7content21RenderViewHostManager8NavigateERKNS_19NavigationEntryImplE
    fun:_ZN7content21ShellBrowserMainParts22PostMainMessageLoopRunEv
    fun:_ZN7content15BrowserMainLoop25ShutdownThreadsAndCleanUpEv
    fun:_ZN7content21BrowserMainRunnerImpl8ShutdownEv
+   fun:_Z16ShellBrowserMainRKN7content18MainFunctionParamsE
+   fun:_ZN7content17ShellMainDelegate10RunProcessERKSsRKNS_18MainFunctionParamsE
+   fun:_ZN7content23RunNamedProcessTypeMainERKSsRKNS_18MainFunctionParamsEPNS_19ContentMainDelegateE
+   fun:_ZN7content21ContentMainRunnerImpl3RunEv
+   fun:_ZN7content11ContentMainEiPPKcPNS_19ContentMainDelegateE
+}
+{
+   bug_245828b
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN7content21ShellBrowserMainParts21PreMainMessageLoopRunEv
+   fun:_ZN7content15BrowserMainLoop13CreateThreadsEv
+   fun:_ZN7content21BrowserMainRunnerImpl10InitializeERKNS_18MainFunctionParamsE
    fun:_Z16ShellBrowserMainRKN7content18MainFunctionParamsE
    fun:_ZN7content17ShellMainDelegate10RunProcessERKSsRKNS_18MainFunctionParamsE
    fun:_ZN7content23RunNamedProcessTypeMainERKSsRKNS_18MainFunctionParamsEPNS_19ContentMainDelegateE
