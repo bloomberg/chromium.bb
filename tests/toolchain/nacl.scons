@@ -367,3 +367,9 @@ if env.Bit('nacl_glibc'):
     AddAlignedCodeTest('aligned_code_lib',
                        env.NaClSharedLibrary('aligned_code_lib',
                                              ['aligned_code_lib.c']))
+
+nexe = env.ComponentProgram('method_pointer_repr', 'method_pointer_repr.cc',
+                            EXTRA_LIBS=['${NONIRT_LIBS}'])
+node = env.CommandSelLdrTestNacl('method_pointer_repr.out', nexe)
+env.AddNodeToTestSuite(node, ['toolchain_tests', 'small_tests'],
+                       'run_method_pointer_repr_test')
