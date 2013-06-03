@@ -1693,6 +1693,7 @@ crbug.com/235448 fast/loader/stateobjects/popstate-fires-on-history-traversal.ht
 crbug.com/235110 [ Mac ] virtual/softwarecompositing [ Skip ]
 crbug.com/240673 http/tests/security/filesystem-iframe-from-remote.html [ Failure Pass ]
 crbug.com/243231 [ Mac ] animations/suspend-transform-animation.html [ ImageOnlyFailure Pass ]
+crbug.com/246143 [ Win Debug ] animations/suspend-transform-animation.html [ ImageOnlyFailure Pass ]
 crbug.com/243242 [ Linux Win ] virtual/softwarecompositing/layer-creation/overlap-animation-container.html [ Failure Pass ]
 crbug.com/243243 virtual/gpu/fast/canvas/DrawImageSinglePixelStretch.html [ Pass Timeout ]
 webkit.org/b/106606 [ Release ] fast/canvas/webgl/context-release-upon-reload.html [ Slow ]
