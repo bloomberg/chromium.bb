@@ -127,6 +127,22 @@ class TestWebGraphicsContext3D : public FakeWebGraphicsContext3D {
                                   WebKit::WGC3Denum access);
   virtual WebKit::WGC3Dboolean unmapBufferCHROMIUM(WebKit::WGC3Denum target);
 
+  virtual void bindTexImage2DCHROMIUM(WebKit::WGC3Denum target,
+                                      WebKit::WGC3Dint image_id);
+  virtual WebKit::WGC3Duint createImageCHROMIUM(
+      WebKit::WGC3Dsizei width,
+      WebKit::WGC3Dsizei height,
+      WebKit::WGC3Denum internalformat);
+  virtual void destroyImageCHROMIUM(WebKit::WGC3Duint image_id);
+  virtual void getImageParameterivCHROMIUM(
+      WebKit::WGC3Duint image_id,
+      WebKit::WGC3Denum pname,
+      WebKit::WGC3Dint* params);
+  virtual void* mapImageCHROMIUM(
+      WebKit::WGC3Duint image_id,
+      WebKit::WGC3Denum access);
+  virtual void unmapImageCHROMIUM(WebKit::WGC3Duint image_id);
+
   // When set, MakeCurrent() will fail after this many times.
   void set_times_make_current_succeeds(int times) {
     times_make_current_succeeds_ = times;
@@ -166,6 +182,8 @@ class TestWebGraphicsContext3D : public FakeWebGraphicsContext3D {
 
   virtual WebKit::WebGLId NextBufferId();
 
+  virtual WebKit::WebGLId NextImageId();
+
  protected:
   TestWebGraphicsContext3D();
   TestWebGraphicsContext3D(
@@ -176,6 +194,7 @@ class TestWebGraphicsContext3D : public FakeWebGraphicsContext3D {
 
   unsigned context_id_;
   unsigned next_buffer_id_;
+  unsigned next_image_id_;
   unsigned next_texture_id_;
   Attributes attributes_;
   bool have_extension_io_surface_;
@@ -206,6 +225,16 @@ class TestWebGraphicsContext3D : public FakeWebGraphicsContext3D {
   };
   ScopedPtrHashMap<unsigned, Buffer> buffers_;
   unsigned bound_buffer_;
+  struct Image {
+    Image();
+    ~Image();
+
+    scoped_ptr<uint8[]> pixels;
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(Image);
+  };
+  ScopedPtrHashMap<unsigned, Image> images_;
   base::WeakPtrFactory<TestWebGraphicsContext3D> weak_ptr_factory_;
 };
 

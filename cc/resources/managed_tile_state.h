@@ -45,9 +45,9 @@ class CC_EXPORT ManagedTileState {
 
       ResourceProvider::ResourceId get_resource_id() const {
         DCHECK(mode_ == RESOURCE_MODE);
-        DCHECK(resource_);
+        DCHECK(resource_id_);
         DCHECK(memory_state_ == USING_RELEASABLE_MEMORY || forced_upload_);
-        return resource_->id();
+        return resource_id_;
       }
 
       SkColor get_solid_color() const {
@@ -66,6 +66,11 @@ class CC_EXPORT ManagedTileState {
       }
 
       size_t GPUMemoryUsageInBytes() const;
+
+      void SetResourceForTesting(scoped_ptr<ResourcePool::Resource> resource) {
+        resource_ = resource.Pass();
+        resource_id_ = resource_->id();
+      }
 
       scoped_ptr<ResourcePool::Resource>& GetResourceForTesting() {
         return resource_;
@@ -90,16 +95,22 @@ class CC_EXPORT ManagedTileState {
         mode_ = SOLID_COLOR_MODE;
         solid_color_ = color;
         memory_state_ = NOT_ALLOWED_TO_USE_MEMORY;
+        resource_id_ = 0;
       }
 
       void set_rasterize_on_demand() {
         mode_ = PICTURE_PILE_MODE;
         memory_state_ = NOT_ALLOWED_TO_USE_MEMORY;
+        resource_id_ = 0;
       }
 
       Mode mode_;
       SkColor solid_color_;
 
+      // TODO(reveman): Eliminate the need for both |resource_id_|
+      // and |resource| by re-factoring the "force upload"
+      // mechanism. crbug.com/245767
+      ResourceProvider::ResourceId resource_id_;
       scoped_ptr<ResourcePool::Resource> resource_;
       GLenum resource_format_;
       TileVersionMemoryState memory_state_;
@@ -116,7 +127,7 @@ class CC_EXPORT ManagedTileState {
   TileVersion tile_version;
   bool picture_pile_analyzed;
   PicturePileImpl::Analysis picture_pile_analysis;
-  RasterWorkerPool::Task raster_task;
+  RasterWorkerPool::RasterTask raster_task;
 
   // Ephemeral state, valid only during TileManager::ManageTiles.
   bool is_in_never_bin_on_both_trees() const {

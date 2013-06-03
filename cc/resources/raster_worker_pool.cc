@@ -1,4 +1,4 @@
-// Copyright 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,32 +10,57 @@ namespace cc {
 
 namespace {
 
-class RasterWorkerPoolContainerTaskImpl : public internal::WorkerPoolTask {
+void Noop() {}
+
+class WorkerPoolTaskImpl : public internal::WorkerPoolTask {
  public:
-  RasterWorkerPoolContainerTaskImpl(
-      internal::WorkerPoolTask::TaskVector* dependencies)
-      : internal::WorkerPoolTask(dependencies) {
-  }
-
-  // Overridden from internal::WorkerPoolTask:
-  virtual void RunOnThread(unsigned thread_index) OVERRIDE {}
-  virtual void DispatchCompletionCallback() OVERRIDE {}
-
- private:
-  virtual ~RasterWorkerPoolContainerTaskImpl() {}
-};
-
-class RasterWorkerPoolTaskImpl : public internal::WorkerPoolTask {
- public:
-  RasterWorkerPoolTaskImpl(const base::Closure& callback,
-                           const RasterWorkerPool::Task::Reply& reply)
+  WorkerPoolTaskImpl(const base::Closure& callback,
+                     const base::Closure& reply)
       : callback_(callback),
         reply_(reply) {
+  }
+  explicit WorkerPoolTaskImpl(
+      internal::WorkerPoolTask::TaskVector* dependencies)
+      : internal::WorkerPoolTask(dependencies),
+        callback_(base::Bind(&Noop)),
+        reply_(base::Bind(&Noop)) {
   }
 
   // Overridden from internal::WorkerPoolTask:
   virtual void RunOnThread(unsigned thread_index) OVERRIDE {
     callback_.Run();
+  }
+  virtual void DispatchCompletionCallback() OVERRIDE {
+    reply_.Run();
+  }
+
+ private:
+  virtual ~WorkerPoolTaskImpl() {}
+
+  const base::Closure callback_;
+  const base::Closure reply_;
+
+  DISALLOW_COPY_AND_ASSIGN(WorkerPoolTaskImpl);
+};
+
+class RasterWorkerPoolTaskImpl : public internal::RasterWorkerPoolTask {
+ public:
+  RasterWorkerPoolTaskImpl(
+      PicturePileImpl* picture_pile,
+      const Resource* resource,
+      const RasterWorkerPool::RasterTask::Callback& callback,
+      const RasterWorkerPool::RasterTask::Reply& reply,
+      internal::WorkerPoolTask::TaskVector* dependencies)
+      : internal::RasterWorkerPoolTask(resource, dependencies),
+        picture_pile_(picture_pile),
+        callback_(callback),
+        reply_(reply) {
+  }
+
+  // Overridden from internal::RasterWorkerPoolTask:
+  virtual bool RunOnThread(SkDevice* device, unsigned thread_index) OVERRIDE {
+    return callback_.Run(
+        device, picture_pile_->GetCloneForDrawingOnThread(thread_index));
   }
   virtual void DispatchCompletionCallback() OVERRIDE {
     reply_.Run(!HasFinishedRunning());
@@ -44,38 +69,11 @@ class RasterWorkerPoolTaskImpl : public internal::WorkerPoolTask {
  private:
   virtual ~RasterWorkerPoolTaskImpl() {}
 
-  const base::Closure callback_;
-  const RasterWorkerPool::Task::Reply reply_;
-};
-
-class RasterWorkerPoolPictureTaskImpl : public internal::WorkerPoolTask {
- public:
-  RasterWorkerPoolPictureTaskImpl(
-      PicturePileImpl* picture_pile,
-      const RasterWorkerPool::PictureTask::Callback& callback,
-      const RasterWorkerPool::Task::Reply& reply,
-      internal::WorkerPoolTask::TaskVector* dependencies)
-      : internal::WorkerPoolTask(dependencies),
-        picture_pile_(picture_pile),
-        callback_(callback),
-        reply_(reply) {
-    DCHECK(picture_pile_.get());
-  }
-
-  // Overridden from internal::WorkerPoolTask:
-  virtual void RunOnThread(unsigned thread_index) OVERRIDE {
-    callback_.Run(picture_pile_->GetCloneForDrawingOnThread(thread_index));
-  }
-  virtual void DispatchCompletionCallback() OVERRIDE {
-    reply_.Run(!HasFinishedRunning());
-  }
-
- private:
-  virtual ~RasterWorkerPoolPictureTaskImpl() {}
-
   scoped_refptr<PicturePileImpl> picture_pile_;
-  const RasterWorkerPool::PictureTask::Callback callback_;
-  const RasterWorkerPool::Task::Reply reply_;
+  const RasterWorkerPool::RasterTask::Callback callback_;
+  const RasterWorkerPool::RasterTask::Reply reply_;
+
+  DISALLOW_COPY_AND_ASSIGN(RasterWorkerPoolTaskImpl);
 };
 
 const char* kWorkerThreadNamePrefix = "CompositorRaster";
@@ -84,13 +82,47 @@ const int kCheckForCompletedTasksDelayMs = 6;
 
 }  // namespace
 
-RasterWorkerPool::Task::Queue::Queue() {
+namespace internal {
+
+RasterWorkerPoolTask::RasterWorkerPoolTask(
+    const Resource* resource,
+    WorkerPoolTask::TaskVector* dependencies)
+    : did_run_(false),
+      did_complete_(false),
+      resource_(resource) {
+  dependencies_.swap(*dependencies);
 }
 
-RasterWorkerPool::Task::Queue::~Queue() {
+RasterWorkerPoolTask::~RasterWorkerPoolTask() {
 }
 
-void RasterWorkerPool::Task::Queue::Append(const Task& task) {
+void RasterWorkerPoolTask::DidRun() {
+  DCHECK(!did_run_);
+  did_run_ = true;
+}
+
+bool RasterWorkerPoolTask::HasFinishedRunning() const {
+  return did_run_;
+}
+
+void RasterWorkerPoolTask::DidComplete() {
+  DCHECK(!did_complete_);
+  did_complete_ = true;
+}
+
+bool RasterWorkerPoolTask::HasCompleted() const {
+  return did_complete_;
+}
+
+}  // namespace internal
+
+RasterWorkerPool::Task::Set::Set() {
+}
+
+RasterWorkerPool::Task::Set::~Set() {
+}
+
+void RasterWorkerPool::Task::Set::Insert(const Task& task) {
   DCHECK(!task.is_null());
   tasks_.push_back(task.internal_);
 }
@@ -99,16 +131,8 @@ RasterWorkerPool::Task::Task() {
 }
 
 RasterWorkerPool::Task::Task(const base::Closure& callback,
-                             const Reply& reply)
-    : internal_(new RasterWorkerPoolTaskImpl(callback, reply)) {
-}
-
-RasterWorkerPool::Task::Task(Queue* dependencies)
-    : internal_(new RasterWorkerPoolContainerTaskImpl(&dependencies->tasks_)) {
-}
-
-RasterWorkerPool::Task::Task(scoped_refptr<internal::WorkerPoolTask> internal)
-    : internal_(internal) {
+                             const base::Closure& reply)
+    : internal_(new WorkerPoolTaskImpl(callback, reply)) {
 }
 
 RasterWorkerPool::Task::~Task() {
@@ -118,35 +142,73 @@ void RasterWorkerPool::Task::Reset() {
   internal_ = NULL;
 }
 
-RasterWorkerPool::PictureTask::PictureTask(PicturePileImpl* picture_pile,
-                                           const Callback& callback,
-                                           const Reply& reply,
-                                           Task::Queue* dependencies)
-    : RasterWorkerPool::Task(
-        new RasterWorkerPoolPictureTaskImpl(picture_pile,
-                                            callback,
-                                            reply,
-                                            &dependencies->tasks_)) {
+RasterWorkerPool::RasterTask::Queue::Queue() {
 }
 
-RasterWorkerPool::RasterWorkerPool(size_t num_threads) : WorkerPool(
-    num_threads,
-    base::TimeDelta::FromMilliseconds(kCheckForCompletedTasksDelayMs),
-    kWorkerThreadNamePrefix) {
+RasterWorkerPool::RasterTask::Queue::~Queue() {
+}
+
+void RasterWorkerPool::RasterTask::Queue::Append(const RasterTask& task) {
+  DCHECK(!task.is_null());
+  tasks_.push_back(task.internal_);
+}
+
+RasterWorkerPool::RasterTask::RasterTask() {
+}
+
+RasterWorkerPool::RasterTask::RasterTask(PicturePileImpl* picture_pile,
+                                         const Resource* resource,
+                                         const Callback& callback,
+                                         const Reply& reply,
+                                         Task::Set* dependencies)
+    : internal_(new RasterWorkerPoolTaskImpl(picture_pile,
+                                             resource,
+                                             callback,
+                                             reply,
+                                             &dependencies->tasks_)) {
+}
+
+void RasterWorkerPool::RasterTask::Reset() {
+  internal_ = NULL;
+}
+
+RasterWorkerPool::RasterTask::~RasterTask() {
+}
+
+RasterWorkerPool::RasterWorkerPool(ResourceProvider* resource_provider,
+                                   size_t num_threads)
+    : WorkerPool(
+        num_threads,
+        base::TimeDelta::FromMilliseconds(kCheckForCompletedTasksDelayMs),
+        kWorkerThreadNamePrefix),
+      resource_provider_(resource_provider) {
 }
 
 RasterWorkerPool::~RasterWorkerPool() {
 }
 
 void RasterWorkerPool::Shutdown() {
-  // Cancel all previously scheduled tasks.
-  WorkerPool::ScheduleTasks(NULL);
-
+  raster_tasks_.clear();
   WorkerPool::Shutdown();
 }
 
-void RasterWorkerPool::ScheduleTasks(Task* task) {
-  WorkerPool::ScheduleTasks(task ? task->internal_ : NULL);
+bool RasterWorkerPool::ForceUploadToComplete(const RasterTask& raster_task) {
+  return false;
+}
+
+void RasterWorkerPool::SetRasterTasks(RasterTask::Queue* queue) {
+  raster_tasks_.swap(queue->tasks_);
+}
+
+void RasterWorkerPool::ScheduleRasterTasks(
+    internal::WorkerPoolTask::TaskVector* raster_tasks) {
+  if (raster_tasks->empty()) {
+    WorkerPool::ScheduleTasks(NULL);
+    return;
+  }
+
+  scoped_refptr<WorkerPoolTaskImpl> root(new WorkerPoolTaskImpl(raster_tasks));
+  WorkerPool::ScheduleTasks(root);
 }
 
 }  // namespace cc

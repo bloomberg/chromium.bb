@@ -39,6 +39,7 @@ TestWebGraphicsContext3D::TestWebGraphicsContext3D()
     : FakeWebGraphicsContext3D(),
       context_id_(s_context_id++),
       next_buffer_id_(1),
+      next_image_id_(1),
       next_texture_id_(1),
       have_extension_io_surface_(false),
       have_extension_egl_image_(false),
@@ -60,6 +61,7 @@ TestWebGraphicsContext3D::TestWebGraphicsContext3D(
     : FakeWebGraphicsContext3D(),
       context_id_(s_context_id++),
       next_buffer_id_(1),
+      next_image_id_(1),
       next_texture_id_(1),
       attributes_(attributes),
       have_extension_io_surface_(false),
@@ -442,6 +444,50 @@ WebKit::WGC3Dboolean TestWebGraphicsContext3D::unmapBufferCHROMIUM(
   return true;
 }
 
+void TestWebGraphicsContext3D::bindTexImage2DCHROMIUM(
+    WebKit::WGC3Denum target,
+    WebKit::WGC3Dint image_id) {
+  DCHECK_GT(images_.count(image_id), 0u);
+}
+
+WebKit::WGC3Duint TestWebGraphicsContext3D::createImageCHROMIUM(
+      WebKit::WGC3Dsizei width, WebKit::WGC3Dsizei height,
+      WebKit::WGC3Denum internalformat) {
+  DCHECK_EQ(GL_RGBA8_OES, static_cast<int>(internalformat));
+  WebKit::WGC3Duint image_id = NextImageId();
+  images_.set(image_id, make_scoped_ptr(new Image).Pass());
+  images_.get(image_id)->pixels.reset(new uint8[width * height * 4]);
+  return image_id;
+}
+
+void TestWebGraphicsContext3D::destroyImageCHROMIUM(
+    WebKit::WGC3Duint id) {
+  unsigned context_id = id >> 17;
+  unsigned image_id = id & 0x1ffff;
+  DCHECK(image_id && image_id < next_image_id_);
+  DCHECK_EQ(context_id, context_id_);
+}
+
+void TestWebGraphicsContext3D::getImageParameterivCHROMIUM(
+    WebKit::WGC3Duint image_id,
+    WebKit::WGC3Denum pname,
+    WebKit::WGC3Dint* params) {
+  DCHECK_GT(images_.count(image_id), 0u);
+  DCHECK_EQ(GL_IMAGE_ROWBYTES_CHROMIUM, static_cast<int>(pname));
+  *params = 0;
+}
+
+void* TestWebGraphicsContext3D::mapImageCHROMIUM(WebKit::WGC3Duint image_id,
+                                                 WebKit::WGC3Denum access) {
+  DCHECK_GT(images_.count(image_id), 0u);
+  return images_.get(image_id)->pixels.get();
+}
+
+void TestWebGraphicsContext3D::unmapImageCHROMIUM(
+    WebKit::WGC3Duint image_id) {
+  DCHECK_GT(images_.count(image_id), 0u);
+}
+
 WebGLId TestWebGraphicsContext3D::NextTextureId() {
   WebGLId texture_id = next_texture_id_++;
   DCHECK(texture_id < (1 << 16));
@@ -456,8 +502,19 @@ WebGLId TestWebGraphicsContext3D::NextBufferId() {
   return buffer_id;
 }
 
+WebKit::WGC3Duint TestWebGraphicsContext3D::NextImageId() {
+  WebKit::WGC3Duint image_id = next_image_id_++;
+  DCHECK(image_id < (1 << 17));
+  image_id |= context_id_ << 17;
+  return image_id;
+}
+
 TestWebGraphicsContext3D::Buffer::Buffer() : target(0) {}
 
 TestWebGraphicsContext3D::Buffer::~Buffer() {}
+
+TestWebGraphicsContext3D::Image::Image() {}
+
+TestWebGraphicsContext3D::Image::~Image() {}
 
 }  // namespace cc

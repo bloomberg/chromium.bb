@@ -49,6 +49,7 @@ ManagedTileState::ManagedTileState()
 
 ManagedTileState::TileVersion::TileVersion()
     : mode_(RESOURCE_MODE),
+      resource_id_(0),
       resource_format_(GL_RGBA),
       memory_state_(NOT_ALLOWED_TO_USE_MEMORY),
       forced_upload_(false) {
@@ -62,10 +63,9 @@ ManagedTileState::TileVersion::~TileVersion() {
 bool ManagedTileState::TileVersion::IsReadyToDraw() const {
   switch (mode_) {
     case RESOURCE_MODE:
-      return resource_ &&
+      return resource_id_ &&
              (memory_state_ == USING_RELEASABLE_MEMORY ||
-              (memory_state_ == USING_UNRELEASABLE_MEMORY && forced_upload_)) &&
-             resource_->id();
+              (memory_state_ == USING_UNRELEASABLE_MEMORY && forced_upload_));
     case SOLID_COLOR_MODE:
     case PICTURE_PILE_MODE:
       return true;

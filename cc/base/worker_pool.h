@@ -79,7 +79,7 @@ class CC_EXPORT WorkerPool {
   }
 
   // Force a check for completed tasks.
-  void CheckForCompletedTasks();
+  virtual void CheckForCompletedTasks();
 
  protected:
   WorkerPool(size_t num_threads,

@@ -76,11 +76,11 @@ class PictureLayerTilingSetTestWithResources : public testing::Test {
       for (size_t i = 0; i < tiles.size(); ++i) {
         EXPECT_FALSE(tiles[i]->tile_version().GetResourceForTesting());
 
-        tiles[i]->tile_version().GetResourceForTesting() =
+        tiles[i]->tile_version().SetResourceForTesting(
             make_scoped_ptr(new ResourcePool::Resource(
                 resource_provider.get(),
                 gfx::Size(1, 1),
-                resource_provider->best_texture_format()));
+                resource_provider->best_texture_format())));
         tiles[i]->tile_version().SetMemoryStateForTesting(
             USING_RELEASABLE_MEMORY);
       }

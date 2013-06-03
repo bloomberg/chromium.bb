@@ -60,7 +60,7 @@ scoped_ptr<base::Value> TileManagerBinPriorityAsValue(
 // should no longer have any memory assigned to them. Tile objects are "owned"
 // by layers; they automatically register with the manager when they are
 // created, and unregister from the manager when they are deleted.
-class CC_EXPORT TileManager : public WorkerPoolClient {
+class CC_EXPORT TileManager {
  public:
   typedef base::hash_set<uint32_t> PixelRefSet;
 
@@ -80,7 +80,6 @@ class CC_EXPORT TileManager : public WorkerPoolClient {
 
   void ManageTiles();
   void CheckForCompletedTileUploads();
-  void AbortPendingTileUploads();
 
   scoped_ptr<base::Value> BasicStateAsValue() const;
   scoped_ptr<base::Value> AllTilesAsValue() const;
@@ -91,9 +90,6 @@ class CC_EXPORT TileManager : public WorkerPoolClient {
   const MemoryHistory::Entry& memory_stats_from_last_assign() const {
     return memory_stats_from_last_assign_;
   }
-
-  // Overridden from WorkerPoolClient:
-  virtual void DidFinishDispatchingWorkerPoolCompletionCallbacks() OVERRIDE;
 
   void WillModifyTilePriorities() {
     ScheduleManageTiles();
@@ -109,8 +105,7 @@ class CC_EXPORT TileManager : public WorkerPoolClient {
               scoped_ptr<RasterWorkerPool> raster_worker_pool,
               size_t num_raster_threads,
               bool use_color_estimator,
-              RenderingStatsInstrumentation* rendering_stats_instrumentation,
-              bool use_map_image);
+              RenderingStatsInstrumentation* rendering_stats_instrumentation);
 
   // Methods called by Tile
   friend class Tile;
@@ -135,7 +130,6 @@ class CC_EXPORT TileManager : public WorkerPoolClient {
   void SortTiles();
   void AssignGpuMemoryToTiles();
   void FreeResourcesForTile(Tile* tile);
-  void ForceTileUploadToComplete(Tile* tile);
   void ScheduleManageTiles() {
     if (manage_tiles_pending_)
       return;
@@ -146,10 +140,9 @@ class CC_EXPORT TileManager : public WorkerPoolClient {
       Tile* tile, skia::LazyPixelRef* pixel_ref);
   void OnImageDecodeTaskCompleted(
       scoped_refptr<Tile> tile,
-      uint32_t pixel_ref_id,
-      bool was_canceled);
+      uint32_t pixel_ref_id);
   RasterTaskMetadata GetRasterTaskMetadata(const Tile& tile) const;
-  RasterWorkerPool::Task CreateRasterTask(Tile* tile);
+  RasterWorkerPool::RasterTask CreateRasterTask(Tile* tile);
   void OnRasterTaskCompleted(
       scoped_refptr<Tile> tile,
       scoped_ptr<ResourcePool::Resource> resource,
@@ -166,9 +159,10 @@ class CC_EXPORT TileManager : public WorkerPoolClient {
       skia::LazyPixelRef* pixel_ref,
       int layer_id,
       RenderingStatsInstrumentation* stats_instrumentation);
-  static void RunAnalyzeAndRasterTask(
-      const RasterWorkerPool::PictureTask::Callback& analyze_task,
-      const RasterWorkerPool::PictureTask::Callback& raster_task,
+  static bool RunAnalyzeAndRasterTask(
+      const base::Callback<void(PicturePileImpl* picture_pile)>& analyze_task,
+      const RasterWorkerPool::RasterTask::Callback& raster_task,
+      SkDevice* device,
       PicturePileImpl* picture_pile);
   static void RunAnalyzeTask(
       PicturePileImpl::Analysis* analysis,
@@ -178,13 +172,13 @@ class CC_EXPORT TileManager : public WorkerPoolClient {
       const RasterTaskMetadata& metadata,
       RenderingStatsInstrumentation* stats_instrumentation,
       PicturePileImpl* picture_pile);
-  static void RunRasterTask(
-      uint8* buffer,
+  static bool RunRasterTask(
       PicturePileImpl::Analysis* analysis,
       gfx::Rect rect,
       float contents_scale,
       const RasterTaskMetadata& metadata,
       RenderingStatsInstrumentation* stats_instrumentation,
+      SkDevice* device,
       PicturePileImpl* picture_pile);
 
   TileManagerClient* client_;
@@ -203,10 +197,6 @@ class CC_EXPORT TileManager : public WorkerPoolClient {
   typedef base::hash_map<uint32_t, RasterWorkerPool::Task> PixelRefMap;
   PixelRefMap pending_decode_tasks_;
 
-  typedef std::queue<scoped_refptr<Tile> > TileQueue;
-  TileQueue tiles_with_pending_upload_;
-  size_t bytes_pending_upload_;
-  bool has_performed_uploads_since_last_flush_;
   bool ever_exceeded_memory_budget_;
   MemoryHistory::Entry memory_stats_from_last_assign_;
 
@@ -214,8 +204,6 @@ class CC_EXPORT TileManager : public WorkerPoolClient {
 
   bool use_color_estimator_;
   bool did_initialize_visible_tile_;
-
-  size_t max_pending_tasks_;
 
   DISALLOW_COPY_AND_ASSIGN(TileManager);
 };
