@@ -180,6 +180,8 @@ v8::Handle<v8::Value> V8TestEventTarget::namedPropertyGetter(v8::Local<v8::Strin
         return v8Undefined();
     if (info.Holder()->HasRealNamedCallbackProperty(name))
         return v8Undefined();
+    if (info.Holder()->HasRealNamedProperty(name))
+        return v8Undefined();
 
     ASSERT(V8DOMWrapper::maybeDOMWrapper(info.Holder()));
     TestEventTarget* collection = toNative(info.Holder());
@@ -195,6 +197,8 @@ v8::Handle<v8::Value> V8TestEventTarget::namedPropertySetter(v8::Local<v8::Strin
     if (!info.Holder()->GetRealNamedPropertyInPrototypeChain(name).IsEmpty())
         return v8Undefined();
     if (info.Holder()->HasRealNamedCallbackProperty(name))
+        return v8Undefined();
+    if (info.Holder()->HasRealNamedProperty(name))
         return v8Undefined();
     TestEventTarget* collection = toNative(info.Holder());
     V8TRYCATCH_FOR_V8STRINGRESOURCE(V8StringResource<>, propertyName, name);

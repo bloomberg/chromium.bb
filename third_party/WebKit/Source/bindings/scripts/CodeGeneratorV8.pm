@@ -3471,6 +3471,8 @@ sub GenerateImplementationNamedPropertyGetter
         $code .= "        return v8Undefined();\n";
         $code .= "    if (info.Holder()->HasRealNamedCallbackProperty(name))\n";
         $code .= "        return v8Undefined();\n";
+        $code .= "    if (info.Holder()->HasRealNamedProperty(name))\n";
+        $code .= "        return v8Undefined();\n";
     }
     $code .= "\n";
     $code .= "    ASSERT(V8DOMWrapper::maybeDOMWrapper(info.Holder()));\n";
@@ -3543,6 +3545,8 @@ sub GenerateImplementationNamedPropertySetter
         $code .= "    if (!info.Holder()->GetRealNamedPropertyInPrototypeChain(name).IsEmpty())\n";
         $code .= "        return v8Undefined();\n";
         $code .= "    if (info.Holder()->HasRealNamedCallbackProperty(name))\n";
+        $code .= "        return v8Undefined();\n";
+        $code .= "    if (info.Holder()->HasRealNamedProperty(name))\n";
         $code .= "        return v8Undefined();\n";
     }
     $code .= "    ${implClassName}* collection = toNative(info.Holder());\n";

@@ -4294,6 +4294,8 @@ v8::Handle<v8::Value> V8TestObject::namedPropertyGetter(v8::Local<v8::String> na
         return v8Undefined();
     if (info.Holder()->HasRealNamedCallbackProperty(name))
         return v8Undefined();
+    if (info.Holder()->HasRealNamedProperty(name))
+        return v8Undefined();
 
     ASSERT(V8DOMWrapper::maybeDOMWrapper(info.Holder()));
     TestObj* collection = toNative(info.Holder());
