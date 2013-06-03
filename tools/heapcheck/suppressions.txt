@@ -1897,3 +1897,19 @@
    fun:pnacl_cache::PNaClTranslationCacheWriteEntry::Cache
    fun:pnacl_cache::PNaClTranslationCache::StoreNexe
 }
+{
+   bug_245092c
+   Heapcheck:Leak
+   fun:std::basic_string::_Rep::_S_create
+   fun:std::basic_string::basic_string
+   fun:__gnu_cxx::__normal_iterator::base
+   fun:__gnu_cxx::operator!=
+}
+{
+   bug_245092d
+   Heapcheck:Leak
+   fun:std::basic_string::_Rep::_S_create
+   fun:std::basic_string::basic_string
+   fun:testing::TestResult::HasFatalFailure
+   fun:shadow_index
+}
