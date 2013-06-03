@@ -12,49 +12,58 @@ div#img-container {
 <script src="../../http/tests/inspector/timeline-test.js"></script>
 <script>
 
-function addImage(src, width, height, callback)
+function addImage(src, width, height)
 {
     var img = document.getElementById("img-container").firstElementChild;
     img.width = width;
     img.height = height;
-    img.onload = function()
-    {
-        if (window.testRunner)
-            testRunner.display();
-        callback();
-    }
     img.src = src;
-}
-
-function addImage1() { addImage("resources/test.bmp", "25", "25", addImage2); }
-function addImage2() { addImage("resources/test.gif", "25", "25", addImage3); }
-function addImage3() { addImage("resources/test.ico", "25", "25", addImage4); }
-function addImage4() { addImage("resources/test.jpg", "25", "25", addImage5); }
-function addImage5() { addImage("resources/test.png", "25", "25", addImage6); }
-function addImage6() { addImage("resources/test.webp", "25", "25", addImage7); }
-function addImage7() { addImage("resources/big.png", "150", "150", allImagesAdded); }
-
-function allImagesAdded()
-{
-    document.getElementById("img-container").style.display = "none";
-    testRunner.evaluateInWebInspector(0, "window.step2()");
 }
 
 function test()
 {
-    InspectorTest.startTimeline(step1);
+    var images = [
+        ["resources/test.bmp", "25", "25"],
+        ["resources/test.gif", "25", "25"],
+        ["resources/test.ico", "25", "25"],
+        ["resources/test.jpg", "25", "25"],
+        ["resources/test.png", "25", "25"],
+        ["resources/test.webp", "25", "25"],
+        ["resources/big.png", "150", "150"]
+    ];
+    var imageCount = 0;
+    WebInspector.timelineManager.addEventListener(WebInspector.TimelineManager.EventTypes.TimelineEventRecorded, recordSniffer);
+    InspectorTest.startTimeline(showImage);
 
-    function step1()
+    function showImage()
     {
-        InspectorTest.evaluateInPage("addImage1()");
+        if (imageCount >= images.length) {
+            allImagesShown();
+            return;
+        }
+        InspectorTest.evaluateInPage('addImage("' + images[imageCount].join('", "') + '");');
+        imageCount++;
     }
 
-    window.step2 = function()
+    function recordSniffer(event)
     {
-        InspectorTest.stopTimeline(step3);
+        processRecord(event.data);
     }
 
-    function step3(records)
+    function processRecord(record)
+    {
+        if (record.type === WebInspector.TimelineModel.RecordType.ResizeImage)
+            showImage();
+        (record.children || []).forEach(processRecord);
+    }
+
+    function allImagesShown()
+    {
+        WebInspector.timelineManager.removeEventListener(WebInspector.TimelineManager.EventTypes.TimelineEventRecorded, recordSniffer);
+        InspectorTest.stopTimeline(dumpRecords);
+    }
+
+    function dumpRecords(records)
     {
         for (var i = 0; i < records.length; ++i) {
             var record = records[i];

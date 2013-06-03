@@ -1,5 +1,6 @@
 Tests the Timeline API instrumentation of a DecodeImage and ResizeImage events
 
+
 DecodeImage Properties:
 {
     children : <object>
@@ -154,6 +155,18 @@ DecodeImage Properties:
     endTime : <number>
     startTime : <number>
     type : "DecodeImage"
+    usedHeapSize : <number>
+}
+ResizeImage Properties:
+{
+    children : <object>
+    counters : <object>
+    data : {
+        cached : true
+    }
+    endTime : <number>
+    startTime : <number>
+    type : "ResizeImage"
     usedHeapSize : <number>
 }
 
