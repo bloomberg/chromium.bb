@@ -5,18 +5,16 @@
 #ifndef MEDIA_AUDIO_AUDIO_MANAGER_BASE_H_
 #define MEDIA_AUDIO_AUDIO_MANAGER_BASE_H_
 
+#include <map>
 #include <string>
 #include <utility>
 
 #include "base/atomic_ref_count.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/scoped_vector.h"
 #include "base/observer_list.h"
 #include "base/synchronization/lock.h"
 #include "media/audio/audio_manager.h"
-
-#include "media/audio/audio_output_dispatcher.h"
 
 #if defined(OS_WIN)
 #include "base/win/scoped_com_initializer.h"
@@ -50,15 +48,13 @@ class MEDIA_EXPORT AudioManagerBase : public AudioManager {
       media::AudioDeviceNames* device_names) OVERRIDE;
 
   virtual AudioOutputStream* MakeAudioOutputStream(
-      const AudioParameters& params,
-      const std::string& input_device_id) OVERRIDE;
+      const AudioParameters& params) OVERRIDE;
 
   virtual AudioInputStream* MakeAudioInputStream(
       const AudioParameters& params, const std::string& device_id) OVERRIDE;
 
   virtual AudioOutputStream* MakeAudioOutputStreamProxy(
-      const AudioParameters& params,
-      const std::string& input_device_id) OVERRIDE;
+      const AudioParameters& params) OVERRIDE;
 
   virtual bool IsRecordingInProcess() OVERRIDE;
 
@@ -75,9 +71,8 @@ class MEDIA_EXPORT AudioManagerBase : public AudioManager {
       const AudioParameters& params) = 0;
 
   // Creates the output stream for the |AUDIO_PCM_LOW_LATENCY| format.
-  // |input_device_id| is used by unified IO to open the correct input device.
   virtual AudioOutputStream* MakeLowLatencyOutputStream(
-      const AudioParameters& params, const std::string& input_device_id) = 0;
+      const AudioParameters& params) = 0;
 
   // Creates the input stream for the |AUDIO_PCM_LINEAR| format. The legacy
   // name is also from |AUDIO_PCM_LINEAR|.
@@ -101,6 +96,12 @@ class MEDIA_EXPORT AudioManagerBase : public AudioManager {
  protected:
   AudioManagerBase();
 
+  // TODO(dalecurtis): This must change to map both input and output parameters
+  // to a single dispatcher, otherwise on a device state change we'll just get
+  // the exact same invalid dispatcher.
+  typedef std::map<std::pair<AudioParameters, AudioParameters>,
+                   scoped_refptr<AudioOutputDispatcher> >
+      AudioOutputDispatchersMap;
 
   // Shuts down the audio thread and releases all the audio output dispatchers
   // on the audio thread.  All audio streams should be freed before Shutdown()
@@ -123,16 +124,15 @@ class MEDIA_EXPORT AudioManagerBase : public AudioManager {
   virtual AudioParameters GetPreferredOutputStreamParameters(
       const AudioParameters& input_params) = 0;
 
+  // Map of cached AudioOutputDispatcher instances.  Must only be touched
+  // from the audio thread (no locking).
+  AudioOutputDispatchersMap output_dispatchers_;
+
   // Get number of input or output streams.
   int input_stream_count() { return num_input_streams_; }
   int output_stream_count() { return num_output_streams_; }
 
  private:
-  struct DispatcherParams;
-  typedef ScopedVector<DispatcherParams> AudioOutputDispatchers;
-
-  class CompareByParams;
-
   // Called by Shutdown().
   void ShutdownOnAudioThread();
 
@@ -164,10 +164,6 @@ class MEDIA_EXPORT AudioManagerBase : public AudioManager {
   // tasks which run on the audio thread even after Shutdown() has been started
   // and GetMessageLoop() starts returning NULL.
   scoped_refptr<base::MessageLoopProxy> message_loop_;
-
-  // Map of cached AudioOutputDispatcher instances.  Must only be touched
-  // from the audio thread (no locking).
-  AudioOutputDispatchers output_dispatchers_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioManagerBase);
 };

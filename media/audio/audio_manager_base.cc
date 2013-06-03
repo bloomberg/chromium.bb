@@ -32,44 +32,6 @@ static const int kMaxInputChannels = 2;
 const char AudioManagerBase::kDefaultDeviceName[] = "Default";
 const char AudioManagerBase::kDefaultDeviceId[] = "default";
 
-struct AudioManagerBase::DispatcherParams {
-  DispatcherParams(const AudioParameters& input,
-                   const AudioParameters& output,
-                   const std::string& device_id)
-      : input_params(input),
-        output_params(output),
-        input_device_id(device_id) {}
-  ~DispatcherParams() {}
-
-  const AudioParameters input_params;
-  const AudioParameters output_params;
-  const std::string input_device_id;
-  scoped_refptr<AudioOutputDispatcher> dispatcher;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(DispatcherParams);
-};
-
-class AudioManagerBase::CompareByParams {
- public:
-  explicit CompareByParams(const DispatcherParams* dispatcher)
-      : dispatcher_(dispatcher) {}
-  bool operator()(DispatcherParams* dispatcher_in) const {
-    // We will reuse the existing dispatcher when:
-    // 1) Unified IO is not used, input_params and output_params of the
-    //    existing dispatcher are the same as the requested dispatcher.
-    // 2) Unified IO is used, input_params, output_params and input_device_id
-    //    of the existing dispatcher are the same as the request dispatcher.
-    return (dispatcher_->input_params == dispatcher_in->input_params &&
-            dispatcher_->output_params == dispatcher_in->output_params &&
-            (!dispatcher_->input_params.input_channels() ||
-             dispatcher_->input_device_id == dispatcher_in->input_device_id));
-  }
-
- private:
-  const DispatcherParams* dispatcher_;
-};
-
 AudioManagerBase::AudioManagerBase()
     : num_active_input_streams_(0),
       max_num_output_streams_(kDefaultMaxOutputStreams),
@@ -115,8 +77,7 @@ scoped_refptr<base::MessageLoopProxy> AudioManagerBase::GetMessageLoop() {
 }
 
 AudioOutputStream* AudioManagerBase::MakeAudioOutputStream(
-    const AudioParameters& params,
-    const std::string& input_device_id) {
+    const AudioParameters& params) {
   // TODO(miu): Fix ~50 call points across several unit test modules to call
   // this method on the audio thread, then uncomment the following:
   // DCHECK(message_loop_->BelongsToCurrentThread());
@@ -144,7 +105,7 @@ AudioOutputStream* AudioManagerBase::MakeAudioOutputStream(
       stream = MakeLinearOutputStream(params);
       break;
     case AudioParameters::AUDIO_PCM_LOW_LATENCY:
-      stream = MakeLowLatencyOutputStream(params, input_device_id);
+      stream = MakeLowLatencyOutputStream(params);
       break;
     case AudioParameters::AUDIO_FAKE:
       stream = FakeAudioOutputStream::MakeFakeStream(this, params);
@@ -204,7 +165,7 @@ AudioInputStream* AudioManagerBase::MakeAudioInputStream(
 }
 
 AudioOutputStream* AudioManagerBase::MakeAudioOutputStreamProxy(
-    const AudioParameters& params, const std::string& input_device_id) {
+    const AudioParameters& params) {
 #if defined(OS_IOS)
   // IOS implements audio input only.
   NOTIMPLEMENTED();
@@ -238,33 +199,26 @@ AudioOutputStream* AudioManagerBase::MakeAudioOutputStreamProxy(
     }
   }
 
-  DispatcherParams* dispatcher_params =
-      new DispatcherParams(params, output_params, input_device_id);
-
-  AudioOutputDispatchers::iterator it =
-      std::find_if(output_dispatchers_.begin(), output_dispatchers_.end(),
-                   CompareByParams(dispatcher_params));
-  if (it != output_dispatchers_.end()) {
-    delete dispatcher_params;
-    return new AudioOutputProxy((*it)->dispatcher);
-  }
+  std::pair<AudioParameters, AudioParameters> dispatcher_key =
+      std::make_pair(params, output_params);
+  AudioOutputDispatchersMap::iterator it =
+      output_dispatchers_.find(dispatcher_key);
+  if (it != output_dispatchers_.end())
+    return new AudioOutputProxy(it->second.get());
 
   const base::TimeDelta kCloseDelay =
       base::TimeDelta::FromSeconds(kStreamCloseDelaySeconds);
 
   if (output_params.format() != AudioParameters::AUDIO_FAKE) {
     scoped_refptr<AudioOutputDispatcher> dispatcher =
-        new AudioOutputResampler(this, params, output_params, input_device_id,
-                                 kCloseDelay);
-    dispatcher_params->dispatcher = dispatcher;
+        new AudioOutputResampler(this, params, output_params, kCloseDelay);
+    output_dispatchers_[dispatcher_key] = dispatcher;
     return new AudioOutputProxy(dispatcher.get());
   }
 
   scoped_refptr<AudioOutputDispatcher> dispatcher =
-      new AudioOutputDispatcherImpl(this, output_params, input_device_id,
-                                    kCloseDelay);
-  dispatcher_params->dispatcher = dispatcher;
-  output_dispatchers_.push_back(dispatcher_params);
+      new AudioOutputDispatcherImpl(this, output_params, kCloseDelay);
+  output_dispatchers_[dispatcher_key] = dispatcher;
   return new AudioOutputProxy(dispatcher.get());
 #endif  // defined(OS_IOS)
 }
@@ -338,9 +292,9 @@ void AudioManagerBase::ShutdownOnAudioThread() {
   // the audio_thread_ member pointer when we get here, we can't verify exactly
   // what thread we're running on.  The method is not public though and only
   // called from one place, so we'll leave it at that.
-  AudioOutputDispatchers::iterator it = output_dispatchers_.begin();
+  AudioOutputDispatchersMap::iterator it = output_dispatchers_.begin();
   for (; it != output_dispatchers_.end(); ++it) {
-    scoped_refptr<AudioOutputDispatcher>& dispatcher = (*it)->dispatcher;
+    scoped_refptr<AudioOutputDispatcher>& dispatcher = (*it).second;
     if (dispatcher.get()) {
       dispatcher->Shutdown();
       // All AudioOutputProxies must have been freed before Shutdown is called.

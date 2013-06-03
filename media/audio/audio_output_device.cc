@@ -48,7 +48,6 @@ AudioOutputDevice::AudioOutputDevice(
       ipc_(ipc.Pass()),
       state_(IDLE),
       play_on_start_(true),
-      session_id_(-1),
       stopping_hack_(false) {
   CHECK(ipc_);
 
@@ -60,19 +59,12 @@ AudioOutputDevice::AudioOutputDevice(
   COMPILE_ASSERT(PAUSED < PLAYING, invalid_enum_value_assignment_3);
 }
 
-void AudioOutputDevice::InitializeUnifiedStream(const AudioParameters& params,
-                                                RenderCallback* callback,
-                                                int session_id) {
-  DCHECK(!callback_) << "Calling InitializeUnifiedStream() twice?";
+void AudioOutputDevice::Initialize(const AudioParameters& params,
+                                   RenderCallback* callback) {
+  DCHECK(!callback_) << "Calling Initialize() twice?";
   DCHECK(params.IsValid());
   audio_parameters_ = params;
   callback_ = callback;
-  session_id_ = session_id;
-}
-
-void AudioOutputDevice::Initialize(const AudioParameters& params,
-                                   RenderCallback* callback) {
-  InitializeUnifiedStream(params, callback, 0);
 }
 
 AudioOutputDevice::~AudioOutputDevice() {
@@ -125,7 +117,7 @@ void AudioOutputDevice::CreateStreamOnIOThread(const AudioParameters& params) {
   DCHECK(message_loop()->BelongsToCurrentThread());
   if (state_ == IDLE) {
     state_ = CREATING_STREAM;
-    ipc_->CreateStream(this, params, session_id_);
+    ipc_->CreateStream(this, params);
   }
 }
 

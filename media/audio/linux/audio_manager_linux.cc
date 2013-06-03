@@ -256,10 +256,8 @@ AudioOutputStream* AudioManagerLinux::MakeLinearOutputStream(
 }
 
 AudioOutputStream* AudioManagerLinux::MakeLowLatencyOutputStream(
-    const AudioParameters& params,
-    const std::string& input_device_id) {
+    const AudioParameters& params) {
   DCHECK_EQ(AudioParameters::AUDIO_PCM_LOW_LATENCY, params.format());
-  // TODO(xians): Use input_device_id for unified IO.
   return MakeOutputStream(params);
 }
 

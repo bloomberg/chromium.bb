@@ -61,7 +61,6 @@ namespace content {
 
 class AudioMirroringManager;
 class MediaInternals;
-class MediaStreamManager;
 class ResourceContext;
 
 class CONTENT_EXPORT AudioRendererHost : public BrowserMessageFilter {
@@ -70,8 +69,7 @@ class CONTENT_EXPORT AudioRendererHost : public BrowserMessageFilter {
   AudioRendererHost(int render_process_id,
                     media::AudioManager* audio_manager,
                     AudioMirroringManager* mirroring_manager,
-                    MediaInternals* media_internals,
-                    MediaStreamManager* media_stream_manager);
+                    MediaInternals* media_internals);
 
   // BrowserMessageFilter implementation.
   virtual void OnChannelClosing() OVERRIDE;
@@ -98,14 +96,10 @@ class CONTENT_EXPORT AudioRendererHost : public BrowserMessageFilter {
 
   // Creates an audio output stream with the specified format whose data is
   // produced by an entity in the render view referenced by |render_view_id|.
-  // |session_id| is used for unified IO to find out which input device to be
-  // opened for the stream. For clients that do not use unified IO,
-  // |session_id| will be ignored.
   // Upon success/failure, the peer is notified via the NotifyStreamCreated
   // message.
   void OnCreateStream(int stream_id,
                       int render_view_id,
-                      int session_id,
                       const media::AudioParameters& params);
 
   // Play the audio stream referenced by |stream_id|.
@@ -148,9 +142,6 @@ class CONTENT_EXPORT AudioRendererHost : public BrowserMessageFilter {
   media::AudioManager* const audio_manager_;
   AudioMirroringManager* const mirroring_manager_;
   MediaInternals* const media_internals_;
-
-  // Used to access to AudioInputDeviceManager.
-  MediaStreamManager* media_stream_manager_;
 
   // A map of stream IDs to audio sources.
   AudioEntryMap audio_entries_;

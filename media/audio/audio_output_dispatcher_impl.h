@@ -35,7 +35,6 @@ class MEDIA_EXPORT AudioOutputDispatcherImpl : public AudioOutputDispatcher {
   // the audio device is closed.
   AudioOutputDispatcherImpl(AudioManager* audio_manager,
                             const AudioParameters& params,
-                            const std::string& input_device_id,
                             const base::TimeDelta& close_delay);
 
   // Opens a new physical stream if there are no pending streams in

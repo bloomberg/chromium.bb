@@ -596,7 +596,7 @@ void RenderProcessHostImpl::CreateMessageFilters() {
                                                  media_stream_manager));
   channel_->AddFilter(new AudioRendererHost(
       GetID(), audio_manager, BrowserMainLoop::GetAudioMirroringManager(),
-      media_internals, media_stream_manager));
+      media_internals));
   channel_->AddFilter(new VideoCaptureHost());
   channel_->AddFilter(new AppCacheDispatcherHost(
       storage_partition_impl_->GetAppCacheService(),

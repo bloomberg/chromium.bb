@@ -84,8 +84,7 @@ class MEDIA_EXPORT WASAPIUnifiedStream
   // The ctor takes all the usual parameters, plus |manager| which is the
   // the audio manager who is creating this object.
   WASAPIUnifiedStream(AudioManagerWin* manager,
-                      const AudioParameters& params,
-                      const std::string& input_device_id);
+                      const AudioParameters& params);
 
   // The dtor is typically called by the AudioManager only and it is usually
   // triggered by calling AudioOutputStream::Close().
@@ -183,9 +182,6 @@ class MEDIA_EXPORT WASAPIUnifiedStream
   // For convenience, same as in params_.
   int input_channels_;
   int output_channels_;
-
-  // Unique ID of the input device to be opened.
-  const std::string input_device_id_;
 
   // The sharing mode for the streams.
   // Valid values are AUDCLNT_SHAREMODE_SHARED and AUDCLNT_SHAREMODE_EXCLUSIVE

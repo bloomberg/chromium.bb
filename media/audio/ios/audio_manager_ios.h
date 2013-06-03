@@ -21,8 +21,7 @@ class MEDIA_EXPORT AudioManagerIOS : public AudioManagerBase {
   virtual bool HasAudioOutputDevices() OVERRIDE;
   virtual bool HasAudioInputDevices() OVERRIDE;
   virtual AudioOutputStream* MakeAudioOutputStream(
-      const AudioParameters& params,
-      const std::string& input_device_id) OVERRIDE;
+      const AudioParameters& params) OVERRIDE;
   virtual AudioInputStream* MakeAudioInputStream(
       const AudioParameters& params, const std::string& device_id) OVERRIDE;
   virtual AudioParameters GetInputStreamParameters(
@@ -32,8 +31,7 @@ class MEDIA_EXPORT AudioManagerIOS : public AudioManagerBase {
   virtual AudioOutputStream* MakeLinearOutputStream(
       const AudioParameters& params) OVERRIDE;
   virtual AudioOutputStream* MakeLowLatencyOutputStream(
-      const AudioParameters& params,
-      const std::string& input_device_id) OVERRIDE;
+      const AudioParameters& params) OVERRIDE;
   virtual AudioInputStream* MakeLinearInputStream(
       const AudioParameters& params, const std::string& device_id) OVERRIDE;
   virtual AudioInputStream* MakeLowLatencyInputStream(
