@@ -254,7 +254,7 @@ def FindFile(search_names, search_dirs, acceptable_types):
             driver_tools.IsNative(path)):
           return path
         if (acceptable_types == LibraryTypes.BITCODE and
-            (driver_tools.IsBitcode(path) or
+            (driver_tools.IsLLVMBitcode(path) or
              driver_tools.IsBitcodeArchive(path))):
           return path
   return None

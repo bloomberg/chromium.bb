@@ -69,7 +69,7 @@ def main(argv):
       f_output = output
     else:
       f_output = f
-    if driver_tools.IsBitcode(f):
+    if driver_tools.IsLLVMBitcode(f):
       driver_tools.RunWithEnv('${RUN_OPT}', input=f, output=f_output)
     elif driver_tools.IsELF(f) or driver_tools.IsNativeArchive(f):
       driver_tools.RunWithEnv('${RUN_STRIP}', input=f, output=f_output)

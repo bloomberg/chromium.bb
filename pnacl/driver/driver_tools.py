@@ -32,6 +32,7 @@ from shelltools import shell
 
 LLVM_BITCODE_MAGIC = 'BC\xc0\xde'
 LLVM_WRAPPER_MAGIC = '\xde\xc0\x17\x0b'
+PNACL_BITCODE_MAGIC = 'PEXE'
 
 def ParseError(s, leftpos, rightpos, msg):
   Log.Error("Parse Error: %s", msg)
@@ -409,27 +410,34 @@ def IsBitcodeDSO(filename):
 def IsBitcodeObject(filename):
   return FileType(filename) == 'po'
 
-def IsBitcodeWrapperHeader(data):
+@SimpleCache
+def GetBitcodeMagic(filename):
+  fp = DriverOpen(filename, 'rb')
+  header = fp.read(4)
+  DriverClose(fp)
+  return header
+
+def IsLLVMBitcodeWrapperHeader(data):
   return data[:4] == LLVM_WRAPPER_MAGIC
 
 @SimpleCache
-def IsWrappedBitcode(filename):
-  fp = DriverOpen(filename, 'rb')
-  header = fp.read(4)
-  iswbc = IsBitcodeWrapperHeader(header)
-  DriverClose(fp)
-  return iswbc
+def IsLLVMWrappedBitcode(filename):
+  return IsLLVMBitcodeWrapperHeader(GetBitcodeMagic(filename))
+
+def IsPNaClBitcodeHeader(data):
+  return data[:4] == PNACL_BITCODE_MAGIC
 
 @SimpleCache
-def IsBitcode(filename):
-  fp = DriverOpen(filename, 'rb')
-  header = fp.read(4)
-  DriverClose(fp)
-  # Raw bitcode
-  if header == LLVM_BITCODE_MAGIC:
-    return True
-  # Wrapped bitcode
-  return IsBitcodeWrapperHeader(header)
+def IsPNaClBitcode(filename):
+  return IsPNaClBitcodeHeader(GetBitcodeMagic(filename))
+
+def IsLLVMRawBitcodeHeader(data):
+  return data[:4] == LLVM_BITCODE_MAGIC
+
+@SimpleCache
+def IsLLVMBitcode(filename):
+  header = GetBitcodeMagic(filename)
+  return IsLLVMRawBitcodeHeader(header) or IsLLVMBitcodeWrapperHeader(header)
 
 @SimpleCache
 def IsArchive(filename):
@@ -514,7 +522,7 @@ def DecodeLE(bytes):
 FORCED_METADATA = {}
 @SimpleCache
 def GetBitcodeMetadata(filename, assume_pexe):
-  assert(IsBitcode(filename))
+  assert(IsLLVMBitcode(filename))
   # The argument |assume_pexe| helps break a dependency on bitcode metadata,
   # as the shared library metadata is not finalized yet.
   if assume_pexe:
@@ -631,7 +639,7 @@ def FileType(filename):
   if IsELF(filename):
     return GetELFType(filename)
 
-  if IsBitcode(filename):
+  if IsLLVMBitcode(filename):
     return GetBitcodeType(filename, False)
 
   if (ext in ('o','so','a','po','pso','pa','x') and
@@ -660,7 +668,7 @@ def GetELFType(filename):
 @SimpleCache
 def GetBitcodeType(filename, assume_pexe):
   """ Bitcode type as determined by bitcode metadata """
-  assert(IsBitcode(filename))
+  assert(IsLLVMBitcode(filename))
   metadata = GetBitcodeMetadata(filename, assume_pexe)
   format_map = {
     'object': 'po',
@@ -674,7 +682,7 @@ def GetBasicHeaderData(data):
       Format is 4-bytes each of [ magic, version, bc offset, bc size, ...
       (documented at http://llvm.org/docs/BitCodeFormat.html)
   """
-  if not IsBitcodeWrapperHeader(data):
+  if not IsLLVMBitcodeWrapperHeader(data):
     raise ValueError('Data is not a bitcode wrapper')
   magic, llvm_bcversion, offset, size = struct.unpack('<IIII', data)
   if llvm_bcversion != 0:
@@ -687,7 +695,7 @@ def WrapBitcode(output):
   """
   fd = DriverOpen(output, 'rb')
   maybe_header = fd.read(16)
-  if IsBitcodeWrapperHeader(maybe_header):
+  if IsLLVMBitcodeWrapperHeader(maybe_header):
     offset, bytes_left = GetBasicHeaderData(maybe_header)
     fd.seek(offset)
   else:

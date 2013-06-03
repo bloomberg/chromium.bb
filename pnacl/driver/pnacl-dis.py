@@ -47,7 +47,7 @@ def main(argv):
     # to False to bypass the driver's line-by-line handling of stdout
     # which is extremely slow when you have a lot of output
 
-    if driver_tools.IsBitcode(infile):
+    if driver_tools.IsLLVMBitcode(infile):
       if output == '':
         # LLVM by default outputs to a file if -o is missing
         # Let's instead output to stdout

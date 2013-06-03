@@ -257,7 +257,8 @@ def main(argv):
 
   # Find the bitcode file on the command line.
   bcfiles = [f for f in inputs
-             if driver_tools.IsBitcode(f) or driver_tools.FileType(f) == 'll']
+             if driver_tools.IsLLVMBitcode(f)
+                or driver_tools.FileType(f) == 'll']
   if len(bcfiles) > 1:
     Log.Fatal('Expecting at most 1 bitcode file')
   elif len(bcfiles) == 1:
@@ -488,7 +489,7 @@ def RunLLCSandboxed():
   driver_tools.CheckTranslatorPrerequisites()
   infile = env.getone('input')
   outfile = env.getone('output')
-  if not driver_tools.IsBitcode(infile):
+  if not driver_tools.IsLLVMBitcode(infile):
     Log.Fatal('Input to sandboxed translator must be bitcode')
   script = MakeSelUniversalScriptForLLC(infile, outfile)
   command = ('${SEL_UNIVERSAL_PREFIX} ${SEL_UNIVERSAL} ${SEL_UNIVERSAL_FLAGS} '
