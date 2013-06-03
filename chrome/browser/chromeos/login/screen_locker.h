@@ -15,6 +15,7 @@
 #include "chrome/browser/chromeos/login/help_app_launcher.h"
 #include "chrome/browser/chromeos/login/login_status_consumer.h"
 #include "chrome/browser/chromeos/login/screen_locker_delegate.h"
+#include "chrome/browser/chromeos/login/user.h"
 #include "ui/base/accelerators/accelerator.h"
 
 namespace content {
@@ -25,8 +26,6 @@ namespace chromeos {
 
 class Authenticator;
 class LoginFailure;
-class User;
-struct UserContext;
 
 namespace test {
 class ScreenLockerTester;
@@ -39,7 +38,7 @@ class WebUIScreenLockerTester;
 // instance of itself which will be deleted when the system is unlocked.
 class ScreenLocker : public LoginStatusConsumer {
  public:
-  explicit ScreenLocker(const User& user);
+  explicit ScreenLocker(const UserList& users);
 
   // Returns the default instance if it has been created.
   static ScreenLocker* default_screen_locker() {
@@ -61,8 +60,13 @@ class ScreenLocker : public LoginStatusConsumer {
   // animations are done.
   void UnlockOnLoginSuccess();
 
-  // Authenticates the user with given |password| and authenticator.
-  void Authenticate(const string16& password);
+  // Authenticates the user with given |user_context|.
+  void Authenticate(const UserContext& user_context);
+
+  // Authenticates the only user with given |password|.
+  // Works only if there is only one logged in user in system.
+  // DEPRECATED: used only by tests.
+  void AuthenticateByPassword(const std::string& password);
 
   // Close message bubble to clear error messages.
   void ClearErrors();
@@ -83,8 +87,8 @@ class ScreenLocker : public LoginStatusConsumer {
   // Returns the screen locker's delegate.
   ScreenLockerDelegate* delegate() const { return delegate_.get(); }
 
-  // Returns the user to authenticate.
-  const User& user() const { return user_; }
+  // Returns the users to authenticate.
+  const UserList& users() const { return users_; }
 
   // Allow a LoginStatusConsumer to listen for
   // the same login events that ScreenLocker does.
@@ -132,18 +136,17 @@ class ScreenLocker : public LoginStatusConsumer {
   // Called when screen locker is safe to delete.
   static void ScheduleDeletion();
 
+  // Returns true if |username| is found among logged in users.
+  bool IsUserLoggedIn(const std::string& username);
+
   // ScreenLockerDelegate instance in use.
   scoped_ptr<ScreenLockerDelegate> delegate_;
 
-  // Logged in user.
-  const User& user_;
+  // Logged in users. First user in list is active user.
+  const UserList& users_;
 
   // Used to authenticate the user to unlock.
   scoped_refptr<Authenticator> authenticator_;
-
-  // Unlock the screen when it detects key/mouse event without asking
-  // password. True when chrome is in BWSI or auto login mode.
-  bool unlock_on_input_;
 
   // True if the screen is locked, or false otherwise.  This changes
   // from false to true, but will never change from true to

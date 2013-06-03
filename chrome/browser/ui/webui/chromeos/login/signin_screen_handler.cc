@@ -1222,7 +1222,6 @@ void SigninScreenHandler::FillUserDictionary(User* user,
       user->GetType() == User::USER_TYPE_PUBLIC_ACCOUNT;
   bool is_locally_managed_user =
       user->GetType() == User::USER_TYPE_LOCALLY_MANAGED;
-  bool signed_in = user == UserManager::Get()->GetLoggedInUser();
 
   user_dict->SetString(kKeyUsername, email);
   user_dict->SetString(kKeyEmailAddress, user->display_email());
@@ -1230,7 +1229,7 @@ void SigninScreenHandler::FillUserDictionary(User* user,
   user_dict->SetBoolean(kKeyPublicAccount, is_public_account);
   user_dict->SetBoolean(kKeyLocallyManagedUser, is_locally_managed_user);
   user_dict->SetInteger(kKeyOauthTokenStatus, user->oauth_token_status());
-  user_dict->SetBoolean(kKeySignedIn, signed_in);
+  user_dict->SetBoolean(kKeySignedIn, user->is_logged_in());
   user_dict->SetBoolean(kKeyIsOwner, is_owner);
 
   if (is_public_account) {
@@ -1265,10 +1264,6 @@ void SigninScreenHandler::SendUserList(bool animated) {
   bool single_user = users.size() == 1;
   for (UserList::const_iterator it = users.begin(); it != users.end(); ++it) {
     const std::string& email = (*it)->email();
-    if (is_signin_to_add && (*it)->is_logged_in()) {
-      // Skip all users that are already signed in.
-      continue;
-    }
 
     std::string owner;
     chromeos::CrosSettings::Get()->GetString(chromeos::kDeviceOwner, &owner);
@@ -1279,7 +1274,7 @@ void SigninScreenHandler::SendUserList(bool animated) {
       FillUserDictionary(*it, is_owner, user_dict);
       bool is_public_account =
           ((*it)->GetType() == User::USER_TYPE_PUBLIC_ACCOUNT);
-      bool signed_in = *it == UserManager::Get()->GetLoggedInUser();
+      bool signed_in = (*it)->is_logged_in();
       // Single user check here is necessary because owner info might not be
       // available when running into login screen on first boot.
       // See http://crosbug.com/12723

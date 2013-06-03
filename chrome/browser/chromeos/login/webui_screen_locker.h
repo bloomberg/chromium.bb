@@ -51,7 +51,7 @@ class WebUIScreenLocker : public WebUILoginView,
   explicit WebUIScreenLocker(ScreenLocker* screen_locker);
 
   // ScreenLockerDelegate implementation.
-  virtual void LockScreen(bool unlock_on_input) OVERRIDE;
+  virtual void LockScreen() OVERRIDE;
   virtual void ScreenLockReady() OVERRIDE;
   virtual void OnAuthenticate() OVERRIDE;
   virtual void SetInputEnabled(bool enabled) OVERRIDE;

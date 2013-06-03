@@ -54,7 +54,7 @@ WebUIScreenLocker::WebUIScreenLocker(ScreenLocker* screen_locker)
   DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(this);
 }
 
-void WebUIScreenLocker::LockScreen(bool unlock_on_input) {
+void WebUIScreenLocker::LockScreen() {
   gfx::Rect bounds(ash::Shell::GetScreen()->GetPrimaryDisplay().bounds());
 
   lock_time_ = base::TimeTicks::Now();
@@ -72,12 +72,10 @@ void WebUIScreenLocker::LockScreen(bool unlock_on_input) {
   // Subscribe to crash events.
   content::WebContentsObserver::Observe(GetWebContents());
 
-  // User list consisting of a single logged-in user.
-  UserList users(1, chromeos::UserManager::Get()->GetLoggedInUser());
   login_display_.reset(new WebUILoginDisplay(this));
   login_display_->set_background_bounds(bounds);
   login_display_->set_parent_window(GetNativeWindow());
-  login_display_->Init(users, false, true, false);
+  login_display_->Init(screen_locker()->users(), false, true, false);
 
   static_cast<OobeUI*>(GetWebUI()->GetController())->ShowSigninScreen(
       login_display_.get(), login_display_.get());
@@ -212,8 +210,7 @@ bool WebUIScreenLocker::IsSigninInProgress() const {
 }
 
 void WebUIScreenLocker::Login(const UserContext& user_context) {
-  chromeos::ScreenLocker::default_screen_locker()->Authenticate(
-      ASCIIToUTF16(user_context.password));
+  chromeos::ScreenLocker::default_screen_locker()->Authenticate(user_context);
 }
 
 void WebUIScreenLocker::LoginAsRetailModeUser() {

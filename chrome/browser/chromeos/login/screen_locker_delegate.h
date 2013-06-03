@@ -27,7 +27,7 @@ class ScreenLockerDelegate {
 
   // Initialize the screen locker delegate. This will call ScreenLockReady when
   // done to notify ScreenLocker.
-  virtual void LockScreen(bool unlock_on_input) = 0;
+  virtual void LockScreen() = 0;
 
   // Inform the screen locker that the screen has been locked
   virtual void ScreenLockReady();
@@ -59,6 +59,9 @@ class ScreenLockerDelegate {
   // Returns WebUI associated with screen locker implementation or NULL if
   // there isn't one.
   virtual content::WebUI* GetAssociatedWebUI();
+
+  // Returns screen locker associated with delegate.
+  ScreenLocker* screen_locker() { return screen_locker_; }
 
  protected:
   // ScreenLocker that owns this delegate.

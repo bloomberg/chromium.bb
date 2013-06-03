@@ -473,7 +473,7 @@ void TestingAutomationProvider::UnlockScreen(DictionaryValue* args,
   }
 
   new ScreenUnlockObserver(this, reply_message);
-  screen_locker->Authenticate(ASCIIToUTF16(password));
+  screen_locker->AuthenticateByPassword(password);
 }
 
 // Signing out could have undesirable side effects: session_manager is

@@ -19,7 +19,6 @@
 #include "base/metrics/histogram.h"
 #include "base/string_util.h"
 #include "base/timer.h"
-#include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/login/authenticator.h"
 #include "chrome/browser/chromeos/login/login_performer.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
@@ -152,11 +151,8 @@ ScreenLocker* ScreenLocker::screen_locker_ = NULL;
 //////////////////////////////////////////////////////////////////////////////
 // ScreenLocker, public:
 
-ScreenLocker::ScreenLocker(const User& user)
-    : user_(user),
-      // TODO(oshima): support auto login mode (this is not implemented yet)
-      // http://crosbug.com/1881
-      unlock_on_input_(user_.email().empty()),
+ScreenLocker::ScreenLocker(const UserList& users)
+    : users_(users),
       locked_(false),
       start_time_(base::Time::Now()),
       login_status_consumer_(NULL),
@@ -169,7 +165,7 @@ ScreenLocker::ScreenLocker(const User& user)
 void ScreenLocker::Init() {
   authenticator_ = LoginUtils::Get()->CreateAuthenticator(this);
   delegate_.reset(new WebUIScreenLocker(this));
-  delegate_->LockScreen(unlock_on_input_);
+  delegate_->LockScreen();
 }
 
 void ScreenLocker::OnLoginFailure(const LoginFailure& error) {
@@ -209,19 +205,30 @@ void ScreenLocker::OnLoginSuccess(
     UMA_HISTOGRAM_TIMES("ScreenLocker.AuthenticationSuccessTime", delta);
   }
 
-  Profile* profile = ProfileManager::GetDefaultProfile();
-  if (profile && !user_context.password.empty()) {
-    // We have a non-empty password, so notify listeners (such as the sync
-    // engine).
-    SigninManagerBase* signin = SigninManagerFactory::GetForProfile(profile);
-    DCHECK(signin);
-    GoogleServiceSigninSuccessDetails details(
-        signin->GetAuthenticatedUsername(),
-        user_context.password);
-    content::NotificationService::current()->Notify(
-        chrome::NOTIFICATION_GOOGLE_SIGNIN_SUCCESSFUL,
-        content::Source<Profile>(profile),
-        content::Details<const GoogleServiceSigninSuccessDetails>(&details));
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kMultiProfiles)) {
+    // TODO(dzhioev): It seems like this branch never executed and should be
+    // removed before multi-profile enabling.
+    Profile* profile = ProfileManager::GetDefaultProfile();
+    if (profile && !user_context.password.empty()) {
+      // We have a non-empty password, so notify listeners (such as the sync
+      // engine).
+      SigninManagerBase* signin = SigninManagerFactory::GetForProfile(profile);
+      DCHECK(signin);
+      GoogleServiceSigninSuccessDetails details(
+          signin->GetAuthenticatedUsername(),
+          user_context.password);
+      content::NotificationService::current()->Notify(
+          chrome::NOTIFICATION_GOOGLE_SIGNIN_SUCCESSFUL,
+          content::Source<Profile>(profile),
+          content::Details<const GoogleServiceSigninSuccessDetails>(&details));
+    }
+  }
+
+  if (const User* user = UserManager::Get()->FindUser(user_context.username)) {
+    if (!user->is_active())
+      UserManager::Get()->SwitchActiveUser(user_context.username);
+  } else {
+    NOTREACHED() << "Logged in user not found.";
   }
 
   authentication_capture_.reset(new AuthenticationParametersCapture());
@@ -267,28 +274,23 @@ void ScreenLocker::UnlockOnLoginSuccess() {
   weak_factory_.InvalidateWeakPtrs();
 }
 
-void ScreenLocker::Authenticate(const string16& password) {
+void ScreenLocker::Authenticate(const UserContext& user_context) {
+  LOG_ASSERT(IsUserLoggedIn(user_context.username))
+      << "Invalid user trying to unlock.";
   authentication_start_time_ = base::Time::Now();
   delegate_->SetInputEnabled(false);
   delegate_->OnAuthenticate();
 
-  // If LoginPerformer instance exists,
-  // initial online login phase is still active.
-  if (LoginPerformer::default_performer()) {
-    DVLOG(1) << "Delegating authentication to LoginPerformer.";
-    LoginPerformer::default_performer()->PerformLogin(
-        UserContext(user_.email(),
-                    UTF16ToUTF8(password),
-                    std::string()),  // auth_code
-        LoginPerformer::AUTH_MODE_INTERNAL);
-  } else {
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        base::Bind(&Authenticator::AuthenticateToUnlock, authenticator_.get(),
-                   UserContext(user_.email(),
-                               UTF16ToUTF8(password),
-                               std::string())));  // auth_code
-  }
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(&Authenticator::AuthenticateToUnlock,
+                 authenticator_.get(),
+                 user_context));
+}
+
+void ScreenLocker::AuthenticateByPassword(const std::string& password) {
+  LOG_ASSERT(users_.size() == 1);
+  Authenticate(UserContext(users_[0]->email(), password, ""));
 }
 
 void ScreenLocker::ClearErrors() {
@@ -330,8 +332,6 @@ void ScreenLocker::Show() {
   // Check whether the currently logged in user is a guest account and if so,
   // refuse to lock the screen (crosbug.com/23764).
   // For a demo user, we should never show the lock screen (crosbug.com/27647).
-  // TODO(flackr): We can allow lock screen for guest accounts when
-  // unlock_on_input is supported by the WebUI screen locker.
   if (UserManager::Get()->IsLoggedInAsGuest() ||
       UserManager::Get()->IsLoggedInAsDemoUser()) {
     VLOG(1) << "Refusing to lock screen for guest/demo account";
@@ -349,7 +349,7 @@ void ScreenLocker::Show() {
 
   if (!screen_locker_) {
     ScreenLocker* locker =
-        new ScreenLocker(*UserManager::Get()->GetLoggedInUser());
+        new ScreenLocker(UserManager::Get()->GetLRULoggedInUsers());
     VLOG(1) << "Created ScreenLocker " << locker;
     locker->Init();
   } else {
@@ -448,4 +448,13 @@ content::WebUI* ScreenLocker::GetAssociatedWebUI() {
   return delegate_->GetAssociatedWebUI();
 }
 
+bool ScreenLocker::IsUserLoggedIn(const std::string& username) {
+  for (UserList::const_iterator it = users_.begin(); it != users_.end(); ++it) {
+    if ((*it)->email() == username)
+      return true;
+  }
+  return false;
+}
+
 }  // namespace chromeos
+
