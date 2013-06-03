@@ -71,7 +71,7 @@ WebContentsScreenshotManager::~WebContentsScreenshotManager() {
 
 void WebContentsScreenshotManager::TakeScreenshot() {
   static bool overscroll_enabled = CommandLine::ForCurrentProcess()->
-      GetSwitchValueASCII(switches::kOverscrollHistoryNavigation) != "0";
+      GetSwitchValueASCII(switches::kOverscrollHistoryNavigation) == "1";
   if (!overscroll_enabled)
     return;
 
