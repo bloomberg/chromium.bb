@@ -29,6 +29,8 @@
 #include "modules/webaudio/WaveShaperDSPKernel.h"
 
 #include "modules/webaudio/WaveShaperProcessor.h"
+#include "wtf/MainThread.h"
+#include "wtf/Threading.h"
 #include <algorithm>
 
 const unsigned RenderingQuantum = 128;
