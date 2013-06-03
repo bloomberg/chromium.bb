@@ -71,14 +71,66 @@
     'extra_header': 'chromium/ffmpeg_stub_headers.fragment',
   },
   'conditions': [
-    ['OS != "win" and build_ffmpegsumo != 0', {
+    ['OS == "win" and clang == 0', {
+      # Convert the source code from c99 to c89 if we're on Windows and not
+      # using clang, which can compile c99 directly.  Clang support is
+      # experimental and unsupported.
       'variables': {
+        'converter_script': 'chromium/scripts/c99conv.py',
+        'converter_executable': 'chromium/binaries/c99conv.exe',
         # Path to platform configuration files.
         'platform_config_root': 'chromium/config/<(ffmpeg_branding)/<(os_config)/<(ffmpeg_config)',
       },
       'includes': [
         'ffmpeg_generated.gypi',
       ],
+      'targets': [{
+        'target_name': 'convert_ffmpeg_sources',
+        'type': 'none',
+        'sources': [
+          '<@(c_sources)',
+        ],
+        'rules': [
+          {
+            'rule_name': 'convert_c99_to_c89',
+            'extension': 'c',
+            'inputs': [
+              '<(converter_script)',
+              '<(converter_executable)',
+              # Since we don't know the dependency graph for header includes
+              # we need to list them all here to ensure a header change causes
+              # a recompilation.
+              '<(platform_config_root)/config.h',
+              '<(platform_config_root)/libavutil/avconfig.h',
+              '<@(c_headers)',
+            ],
+            # Argh!  Required so that the msvs generator will properly convert
+            # RULE_INPUT_DIRNAME to a relative path.
+            'msvs_external_rule': 1,
+            'outputs': [
+              '<(shared_generated_dir)/<(RULE_INPUT_DIRNAME)/<(RULE_INPUT_ROOT).c',
+            ],
+            'action': [
+              'python',
+              '<(converter_script)',
+              '<(RULE_INPUT_PATH)',
+              '<(shared_generated_dir)/<(RULE_INPUT_DIRNAME)/<(RULE_INPUT_ROOT).c',
+              '-I', '<(platform_config_root)',
+            ],
+            'message': 'Converting <(RULE_INPUT_PATH) from C99 to C89.',
+            'process_outputs_as_sources': 1,
+          },
+        ],
+      }],
+    }],
+    ['build_ffmpegsumo != 0', {
+      'includes': [
+        'ffmpeg_generated.gypi',
+      ],
+      'variables': {
+        # Path to platform configuration files.
+        'platform_config_root': 'chromium/config/<(ffmpeg_branding)/<(os_config)/<(ffmpeg_config)',
+      },
       'targets': [
         {
           'target_name': 'ffmpegsumo',
@@ -86,7 +138,6 @@
           'sources': [
             '<(platform_config_root)/config.h',
             '<(platform_config_root)/libavutil/avconfig.h',
-            '<@(c_sources)',
           ],
           'include_dirs': [
             '<(platform_config_root)',
@@ -296,122 +347,83 @@
                 ],
               },
             }],  # OS == "mac"
-          ],
-        },
-      ],
-    }],
-    ['OS == "win"', {
-      'variables': {
-        # Path to platform configuration files.
-        'platform_config_root': 'chromium/config/<(ffmpeg_branding)/<(os_config)/<(ffmpeg_config)',
-      },
-      'includes': [
-        'ffmpeg_generated.gypi',
-      ],
-      'targets': [
-        {
-          'target_name': 'convert_ffmpeg_sources',
-          'type': 'none',
-          'sources': [
-            '<@(c_sources)',
-          ],
-          'variables': {
-            'converter_script': 'chromium/scripts/c99conv.py',
-            'converter_executable': 'chromium/binaries/c99conv.exe',
-          },
-          'rules': [
-            {
-              'rule_name': 'convert_c99_to_c89',
-              'extension': 'c',
-              'inputs': [
-                '<(converter_script)',
-                '<(converter_executable)',
-                # Since we don't know the dependency graph for header includes
-                # we need to list them all here to ensure a header change causes
-                # a recompilation.
-                '<(platform_config_root)/config.h',
-                '<(platform_config_root)/libavutil/avconfig.h',
-                '<@(c_headers)',
+            ['OS == "win"', {
+              'sources': [
+                '<(shared_generated_dir)/ffmpegsumo.def',
               ],
-              # Argh!  Required so that the msvs generator will properly convert
-              # RULE_INPUT_DIRNAME to a relative path.
-              'msvs_external_rule': 1,
-              'outputs': [
-                '<(shared_generated_dir)/<(RULE_INPUT_DIRNAME)/<(RULE_INPUT_ROOT).c',
+              'include_dirs': [
+                'chromium/include/win',
               ],
-              'action': [
-                'python',
-                '<(converter_script)',
-                '<(RULE_INPUT_PATH)',
-                '<(shared_generated_dir)/<(RULE_INPUT_DIRNAME)/<(RULE_INPUT_ROOT).c',
-                '-I', '<(platform_config_root)',
+              # TODO(dalecurtis): We should fix these.  http://crbug.com/154421
+              'msvs_disabled_warnings': [
+                4996, 4018, 4090, 4305, 4133, 4146, 4554, 4028, 4334, 4101, 4102,
+                4116, 4307, 4273
               ],
-              'message': 'Converting <(RULE_INPUT_PATH) from C99 to C89.',
-              'process_outputs_as_sources': 1,
-            },
-          ],
-        },
-        {
-          'target_name': 'ffmpegsumo',
-          'type': 'loadable_module',
-          'dependencies': [
-            'convert_ffmpeg_sources',
-            'ffmpeg_yasm',
-          ],
-          'sources': [
-            '<(platform_config_root)/config.h',
-            '<(platform_config_root)/libavutil/avconfig.h',
-            '<@(converter_outputs)',
-            '<(shared_generated_dir)/ffmpegsumo.def',
-          ],
-          # TODO(dalecurtis): We should fix these.  http://crbug.com/154421
-          'msvs_disabled_warnings': [
-            4996, 4018, 4090, 4305, 4133, 4146, 4554, 4028, 4334, 4101, 4102,
-            4116, 4307, 4273
-          ],
-          # TODO(wolenetz): We should fix this.  http://crbug.com/171009
-          'conditions': [
-            ['target_arch == "x64"', {
-              'msvs_disabled_warnings' : [
-                4267
+              'conditions': [
+                ['clang', {
+                  # Compile the original C99 sources if we're using clang.  This
+                  # support is experimental and unsupported!
+                  'sources': ['<@(c_sources)'],
+                  'defines': [
+                    'inline=__inline',
+                    'strtoll=_strtoi64',
+                    '_ISOC99_SOURCE',
+                    '_LARGEFILE_SOURCE',
+                    'HAVE_AV_CONFIG_H',
+                    'strtod=avpriv_strtod',
+                    'snprintf=avpriv_snprintf',
+                    '_snprintf=avpriv_snprintf',
+                    'vsnprintf=avpriv_vsnprintf',
+                  ],
+                }, {
+                  # Otherwise, compile the translated C89 source code.
+                  'dependencies': ['convert_ffmpeg_sources'],
+                  'sources': ['<@(converter_outputs)'],
+                }],
+                ['target_arch == "x64"', {
+                  # TODO(wolenetz): We should fix this.  http://crbug.com/171009
+                  'msvs_disabled_warnings' : [
+                    4267
+                  ],
+                }],
+              ],
+              'msvs_settings': {
+                # This magical incantation is necessary because VC++ will compile
+                # object files to same directory... even if they have the same name!
+                'VCCLCompilerTool': {
+                  'ObjectFile': '$(IntDir)/%(RelativeDir)/',
+                },
+                # Ignore warnings about a local symbol being inefficiently imported,
+                # upstream is working on a fix.
+                'VCLinkerTool': {
+                  'AdditionalOptions': ['/ignore:4049', '/ignore:4217'],
+                }
+              },
+              'actions': [
+                {
+                  'action_name': 'generate_def',
+                  'inputs': [
+                    '<(generate_stubs_script)',
+                    '<@(sig_files)',
+                  ],
+                  'outputs': [
+                    '<(shared_generated_dir)/ffmpegsumo.def',
+                  ],
+                  'action': ['python',
+                             '<(generate_stubs_script)',
+                             '-i', '<(INTERMEDIATE_DIR)',
+                             '-o', '<(shared_generated_dir)',
+                             '-t', 'windows_def',
+                             '-m', 'ffmpegsumo.dll',
+                             '<@(_inputs)',
+                  ],
+                  'message': 'Generating FFmpeg export definitions.',
+                  'msvs_cygwin_shell': 1,
+                },
               ],
             }],
           ],
-          'msvs_settings': {
-            # This magical incantation is necessary because VC++ will compile
-            # object files to same directory... even if they have the same name!
-            'VCCLCompilerTool': {
-              'ObjectFile': '$(IntDir)/%(RelativeDir)/',
-            },
-            # Ignore warnings about a local symbol being inefficiently imported,
-            # upstream is working on a fix.
-            'VCLinkerTool': {
-              'AdditionalOptions': ['/ignore:4049', '/ignore:4217'],
-            }
-          },
-          'actions': [
-            {
-              'action_name': 'generate_def',
-              'inputs': [
-                '<(generate_stubs_script)',
-                '<@(sig_files)',
-              ],
-              'outputs': [
-                '<(shared_generated_dir)/ffmpegsumo.def',
-              ],
-              'action': ['python',
-                         '<(generate_stubs_script)',
-                         '-i', '<(INTERMEDIATE_DIR)',
-                         '-o', '<(shared_generated_dir)',
-                         '-t', 'windows_def',
-                         '-m', 'ffmpegsumo.dll',
-                         '<@(_inputs)',
-              ],
-              'message': 'Generating FFmpeg export definitions.',
-              'msvs_cygwin_shell': 1,
-            },
-          ],
-        }
+        },
       ],
     }],
   ],  # conditions
