@@ -1921,3 +1921,4 @@ crbug.com/169734 [ Win ] inspector-protocol/console-timestamp.html [ Failure Pas
 crbug.com/246072 fast/forms/post-popup-no-multiple-windows.html [ Pass Timeout ]
 
 crbug.com/246118 [ Debug ] inspector/timeline/timeline-decode-resize.html [ Crash Pass Slow ]
+crbug.com/231936 [ Release Mac ] inspector/timeline/timeline-decode-resize.html [ Failure Pass Slow ]
