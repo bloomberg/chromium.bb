@@ -1663,7 +1663,6 @@ crbug.com/231936 inspector/timeline/timeline-decode-resize.html [ Failure Pass T
 crbug.com/231937 inspector/timeline/timeline-network-resource.html [ Failure ]
 crbug.com/231940 storage/websql/sql-error-codes.html [ Failure ]
 crbug.com/231942 svg/dom/fuzz-path-parser.html [ Failure ]
-crbug.com/231944 [ Win Debug ] transitions/default-timing-function.html [ Failure ]
 crbug.com/231859 virtual/softwarecompositing/plugins/invalidate_rect.html [ Failure ]
 crbug.com/231946 virtual/threaded/compositing/webgl/webgl-background-color.html [ ImageOnlyFailure ]
 crbug.com/231946 virtual/threaded/compositing/webgl/webgl-no-alpha.html [ ImageOnlyFailure ]
