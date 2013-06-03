@@ -812,7 +812,8 @@ webkit.org/b/60131 [ Debug ] fast/css/visited-link-hang.html [ Slow ]
 
 webkit.org/b/56702 [ Win ] http/tests/navigation/ping-cross-origin-from-https.html [ Failure Pass Timeout ]
 
-crbug.com/86340 [ Win Debug ] fast/filesystem/file-writer-write-overlapped.html [ Failure Pass ]
+crbug.com/246067 fast/filesystem/file-writer-write-overlapped.html [ Crash Pass ]
+# crbug.com/86340 [ Win Debug ] fast/filesystem/file-writer-write-overlapped.html [ Failure Pass ]
 crbug.com/86340 [ Win Debug ] fast/filesystem/workers/file-writer-write-overlapped.html [ Failure Pass ]
 
 crbug.com/82281 fast/xpath/xpath-iterator-result-should-mark-its-nodeset.html [ Failure Timeout ]
@@ -1914,3 +1915,5 @@ crbug.com/245644 [ Win7 Linux Debug ] virtual/gpu/fast/canvas/2d.text.draw.fill.
 
 crbug.com/245670 [ Linux ] fast/forms/access-key-for-all-elements.html [ Failure Pass ]
 crbug.com/169734 [ Win ] inspector-protocol/console-timestamp.html [ Failure Pass ]
+crbug.com/246072 fast/forms/post-popup-no-multiple-windows.html [ Pass Timeout ]
+
