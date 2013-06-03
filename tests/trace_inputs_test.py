@@ -65,14 +65,16 @@ class TraceInputs(unittest.TestCase):
           trace_inputs.Dtrace.Context.process_escaped_arguments(actual))
 
   def test_variable_abs(self):
-    value = trace_inputs.Results.File(None, u'/foo/bar', False, False)
+    value = trace_inputs.Results.File(
+        None, u'/foo/bar', None, None, trace_inputs.Results.File.READ)
     actual = value.replace_variables({'$FOO': '/foo'})
     self.assertEqual('$FOO/bar', actual.path)
     self.assertEqual('$FOO/bar', actual.full_path)
     self.assertEqual(True, actual.tainted)
 
   def test_variable_rel(self):
-    value = trace_inputs.Results.File(u'/usr', u'foo/bar', False, False)
+    value = trace_inputs.Results.File(
+        u'/usr', u'foo/bar', None, None, trace_inputs.Results.File.READ)
     actual = value.replace_variables({'$FOO': 'foo'})
     self.assertEqual('$FOO/bar', actual.path)
     self.assertEqual(os.path.join('/usr', '$FOO/bar'), actual.full_path)
@@ -310,10 +312,12 @@ if sys.platform != 'win32':
       ]
       files = [
         {
+          'mode': trace_inputs.Results.File.READ,
           'path': u'/home/foo_bar_user/out/unittests',
           'size': -1,
         },
         {
+          'mode': trace_inputs.Results.File.WRITE,
           'path': u'/home/foo_bar_user/src/out/unittests.log',
           'size': -1,
         },
@@ -342,7 +346,23 @@ if sys.platform != 'win32':
       lines = [
           (self._ROOT_PID, 'chmod("temp/file", 0100644) = 0'),
       ]
-      self._test_lines(lines, u'/home/foo_bar_user/src', [])
+      expected = {
+        'root': {
+          'children': [],
+          'command': None,
+          'executable': None,
+          'files': [
+            {
+              'mode': trace_inputs.Results.File.WRITE,
+              'path': u'/home/foo_bar_user/src/temp/file',
+              'size': -1,
+            },
+          ],
+          'initial_cwd': u'/home/foo_bar_user/src',
+          'pid': self._ROOT_PID,
+        }
+      }
+      self.assertContext(lines, u'/home/foo_bar_user/src', expected, False)
 
     def test_close(self):
       lines = [
@@ -376,6 +396,7 @@ if sys.platform != 'win32':
                   'executable': None,
                   'files': [
                     {
+                      'mode': trace_inputs.Results.File.READ,
                       'path': FILE_PATH,
                       'size': size,
                     },
@@ -434,10 +455,12 @@ if sys.platform != 'win32':
                   'executable': '/home_foo_bar_user/out/unittests',
                   'files': [
                     {
+                      'mode': trace_inputs.Results.File.READ,
                       'path': u'/home_foo_bar_user/out/unittests',
                       'size': -1,
                     },
                     {
+                      'mode': trace_inputs.Results.File.READ,
                       'path': u'/home_foo_bar_user/path1/random.txt',
                       'size': -1,
                     },
@@ -461,6 +484,7 @@ if sys.platform != 'win32':
           'executable': join_norm(ROOT_DIR, '../out/unittests'),
           'files': [
             {
+              'mode': trace_inputs.Results.File.READ,
               'path': join_norm(ROOT_DIR, '../out/unittests'),
               'size': -1,
             },
@@ -481,7 +505,13 @@ if sys.platform != 'win32':
           'children': [],
           'command': None,
           'executable': None,
-          'files': [{'path': '/home_foo_bar_user/file', 'size': 0}],
+          'files': [
+            {
+              'mode': trace_inputs.Results.File.TOUCHED,
+              'path': u'/home_foo_bar_user/file',
+              'size': -1,
+            },
+          ],
           'initial_cwd': unicode(ROOT_DIR),
           'pid': self._ROOT_PID,
         },
@@ -602,10 +632,12 @@ if sys.platform != 'win32':
       ]
       files = [
         {
+          'mode': trace_inputs.Results.File.READ,
           'path': u'/home/foo_bar_user/out/unittests',
           'size': -1,
         },
         {
+          'mode': trace_inputs.Results.File.WRITE,
           'path': u'/home/foo_bar_user/src/out/unittests.log',
           'size': -1,
         },
@@ -624,10 +656,12 @@ if sys.platform != 'win32':
       ]
       files = [
         {
+          'mode': trace_inputs.Results.File.READ,
           'path': u'/home/foo_bar_user/out/unittests',
           'size': -1,
         },
         {
+          'mode': trace_inputs.Results.File.WRITE,
           'path': u'/home/foo_bar_user/src/out/unittests.log',
           'size': -1,
         },
@@ -644,10 +678,12 @@ if sys.platform != 'win32':
       ]
       files = [
         {
+          'mode': trace_inputs.Results.File.READ,
           'path': u'/home/foo_bar_user/file',
           'size': -1,
         },
         {
+          'mode': trace_inputs.Results.File.READ,
           'path': u'/home/foo_bar_user/out/unittests',
           'size': -1,
         },
@@ -703,6 +739,7 @@ if sys.platform != 'win32':
       ]
       files = [
         {
+          'mode': trace_inputs.Results.File.READ,
           'path': u'/home/foo_bar_user/out/unittests',
           'size': -1,
         },
@@ -719,10 +756,12 @@ if sys.platform != 'win32':
       ]
       files = [
         {
+          'mode': trace_inputs.Results.File.READ,
           'path': u'/home/foo_bar_user/out/unittests',
           'size': -1,
         },
         {
+          'mode': trace_inputs.Results.File.WRITE,
           'path': u'/home/foo_bar_user/src/file.exe',
           'size': -1,
         },
@@ -757,6 +796,8 @@ if sys.platform != 'win32':
 
 
 if __name__ == '__main__':
-  VERBOSE = '-v' in sys.argv
-  logging.basicConfig(level=logging.DEBUG if VERBOSE else logging.ERROR)
+  logging.basicConfig(
+      level=logging.DEBUG if '-v' in sys.argv else logging.ERROR)
+  if '-v' in sys.argv:
+    unittest.TestCase.maxDiff = None
   unittest.main()

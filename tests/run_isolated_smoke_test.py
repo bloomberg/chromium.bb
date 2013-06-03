@@ -192,7 +192,9 @@ class RunSwarmStep(unittest.TestCase):
                          (out_dir, [sys.executable, u'repeated_files.py'],
                           out_dir + os.path.sep))
       if not VERBOSE:
-        self.assertEqual('', err)
+        # On Windows, it'll warn that a symlink is ignored to stderr.
+        if sys.platform != 'win32':
+          self.assertEqual('', err)
         self.assertEqual(expected_output, out)
       self.assertEqual(0, returncode)
 

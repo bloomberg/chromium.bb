@@ -18,10 +18,17 @@ ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT_DIR)
 
 import run_test_cases
+import trace_inputs
 
 FILENAME = os.path.basename(__file__)
 REL_DATA = os.path.join(u'tests', 'trace_inputs')
 VERBOSE = False
+
+# TODO(maruel): Have the kernel tracer on Windows differentiate between file
+# read or file write.
+MODE_R = trace_inputs.Results.File.READ if sys.platform != 'win32' else None
+MODE_W = trace_inputs.Results.File.WRITE if sys.platform != 'win32' else None
+MODE_T = trace_inputs.Results.File.TOUCHED
 
 
 class CalledProcessError(subprocess.CalledProcessError):
@@ -71,13 +78,11 @@ class TraceInputsBase(unittest.TestCase):
         # So it'll look like /usr/bin/python2.7
         self.executable += suffix
 
-    import trace_inputs
     self.real_executable = trace_inputs.get_native_path_case(
         unicode(self.executable))
     self.tempdir = trace_inputs.get_native_path_case(
         unicode(tempfile.mkdtemp(prefix='trace_smoke_test')))
     self.log = os.path.join(self.tempdir, 'log')
-    trace_inputs = None
 
     # self.naked_executable will only be naked on Windows.
     self.naked_executable = unicode(sys.executable)
@@ -181,18 +186,22 @@ class TraceInputs(TraceInputsBase):
             u'executable': self.naked_executable,
             u'files': [
               {
+                'mode': MODE_R,
                 u'path': os.path.join(REL_DATA, 'child2.py'),
                 u'size': self._size(REL_DATA, 'child2.py'),
               },
               {
+                'mode': MODE_R,
                 u'path': os.path.join(REL_DATA, 'files1', 'bar'),
                 u'size': self._size(REL_DATA, 'files1', 'bar'),
               },
               {
+                'mode': MODE_R,
                 u'path': os.path.join(REL_DATA, 'files1', 'foo'),
                 u'size': self._size(REL_DATA, 'files1', 'foo'),
               },
               {
+                'mode': MODE_R,
                 u'path': os.path.join(REL_DATA, 'test_file.txt'),
                 u'size': self._size(REL_DATA, 'test_file.txt'),
               },
@@ -209,14 +218,17 @@ class TraceInputs(TraceInputsBase):
         u'executable': self.real_executable,
         u'files': [
           {
+            u'mode': MODE_R,
             u'path': os.path.join(REL_DATA, 'child1.py'),
             u'size': self._size(REL_DATA, 'child1.py'),
           },
           {
+            u'mode': MODE_R,
             u'path': os.path.join(u'tests', u'trace_inputs_smoke_test.py'),
             u'size': self._size('tests', 'trace_inputs_smoke_test.py'),
           },
           {
+            u'mode': MODE_R,
             u'path': u'trace_inputs.py',
             u'size': self._size('trace_inputs.py'),
           },
@@ -252,22 +264,14 @@ class TraceInputs(TraceInputsBase):
 
 
 class TraceInputsImport(TraceInputsBase):
-  def setUp(self):
-    super(TraceInputsImport, self).setUp()
-    import trace_inputs
-    self.trace_inputs = trace_inputs
-
-  def tearDown(self):
-    del self.trace_inputs
-    super(TraceInputsImport, self).tearDown()
 
   # Similar to TraceInputs test fixture except that it calls the function
   # directly, so the Results instance can be inspected.
   # Roughly, make sure the API is stable.
   def _execute_trace(self, command):
     # Similar to what trace_test_cases.py does.
-    api = self.trace_inputs.get_api()
-    _, _ = self.trace_inputs.trace(self.log, command, self.cwd, api, True)
+    api = trace_inputs.get_api()
+    _, _ = trace_inputs.trace(self.log, command, self.cwd, api, True)
     # TODO(maruel): Check
     #self.assertEqual(0, returncode)
     #self.assertEqual('', output)
@@ -313,18 +317,22 @@ class TraceInputsImport(TraceInputsBase):
             'executable': self.naked_executable,
             'files': [
               {
+                'mode': MODE_R,
                 'path': os.path.join(REL_DATA, 'child2.py'),
                 'size': self._size(REL_DATA, 'child2.py'),
               },
               {
+                'mode': MODE_R,
                 'path': os.path.join(REL_DATA, 'files1', 'bar'),
                 'size': self._size(REL_DATA, 'files1', 'bar'),
               },
               {
+                'mode': MODE_R,
                 'path': os.path.join(REL_DATA, 'files1', 'foo'),
                 'size': self._size(REL_DATA, 'files1', 'foo'),
               },
               {
+                'mode': MODE_R,
                 'path': os.path.join(REL_DATA, 'test_file.txt'),
                 'size': self._size(REL_DATA, 'test_file.txt'),
               },
@@ -340,14 +348,17 @@ class TraceInputsImport(TraceInputsBase):
         'executable': self.real_executable,
         'files': [
           {
+            'mode': MODE_R,
             'path': os.path.join(REL_DATA, 'child1.py'),
             'size': self._size(REL_DATA, 'child1.py'),
           },
           {
-            u'path': os.path.join(u'tests', u'trace_inputs_smoke_test.py'),
+            'mode': MODE_R,
+            'path': os.path.join(u'tests', u'trace_inputs_smoke_test.py'),
             'size': self._size('tests', 'trace_inputs_smoke_test.py'),
           },
           {
+            'mode': MODE_R,
             'path': u'trace_inputs.py',
             'size': self._size('trace_inputs.py'),
           },
@@ -365,22 +376,26 @@ class TraceInputsImport(TraceInputsBase):
         'children': [
           {
             'children': [],
-            'command': ['python', 'child2.py'],
+            'command': [u'python', u'child2.py'],
             'executable': self.naked_executable,
             'files': [
               {
+                'mode': MODE_R,
                 'path': os.path.join(REL_DATA, 'child2.py'),
                 'size': self._size(REL_DATA, 'child2.py'),
               },
               {
+                'mode': MODE_R,
                 'path': os.path.join(REL_DATA, 'files1', 'bar'),
                 'size': self._size(REL_DATA, 'files1', 'bar'),
               },
               {
+                'mode': MODE_R,
                 'path': os.path.join(REL_DATA, 'files1', 'foo'),
                 'size': self._size(REL_DATA, 'files1', 'foo'),
               },
               {
+                'mode': MODE_R,
                 'path': os.path.join(REL_DATA, 'test_file.txt'),
                 'size': self._size(REL_DATA, 'test_file.txt'),
               },
@@ -396,14 +411,17 @@ class TraceInputsImport(TraceInputsBase):
         'executable': self.real_executable,
         'files': [
           {
+            'mode': MODE_R,
             'path': os.path.join(REL_DATA, 'child1.py'),
             'size': self._size(REL_DATA, 'child1.py'),
           },
           {
+            'mode': MODE_R,
             'path': os.path.join(u'tests', u'trace_inputs_smoke_test.py'),
             'size': self._size('tests', 'trace_inputs_smoke_test.py'),
           },
           {
+            'mode': MODE_R,
             'path': u'trace_inputs.py',
             'size': self._size('trace_inputs.py'),
           },
@@ -439,8 +457,8 @@ class TraceInputsImport(TraceInputsBase):
     ]
     def blacklist(f):
       return f.endswith(('.pyc', 'do_not_care.txt', '.git', '.svn'))
-    simplified = self.trace_inputs.extract_directories(
-        self.trace_inputs.get_native_path_case(unicode(ROOT_DIR)),
+    simplified = trace_inputs.extract_directories(
+        trace_inputs.get_native_path_case(unicode(ROOT_DIR)),
         results.files,
         blacklist)
     self.assertEqual(files, [f.path for f in simplified])
@@ -457,7 +475,7 @@ class TraceInputsImport(TraceInputsBase):
 
     progress = FakeProgress()
     with run_test_cases.ThreadPool(progress, parallel, parallel, 0) as pool:
-      api = self.trace_inputs.get_api()
+      api = trace_inputs.get_api()
       with api.get_tracer(self.log) as tracer:
         pool.add_task(
             0, trace, tracer, self.get_child_command(False), ROOT_DIR, 'trace1')
@@ -533,14 +551,17 @@ class TraceInputsImport(TraceInputsBase):
           'executable': self.real_executable,
           'files': [
             {
+              'mode': MODE_R,
               'path': os.path.join(REL_DATA, 'files2', 'bar'),
               'size': self._size(REL_DATA, 'files2', 'bar'),
             },
             {
+              'mode': MODE_R,
               'path': os.path.join(REL_DATA, 'files2', 'foo'),
               'size': self._size(REL_DATA, 'files2', 'foo'),
             },
             {
+              'mode': MODE_R,
               'path': os.path.join(REL_DATA, 'symlink.py'),
               'size': self._size(REL_DATA, 'symlink.py'),
             },
@@ -560,7 +581,7 @@ class TraceInputsImport(TraceInputsBase):
       ]
       def blacklist(f):
         return f.endswith(('.pyc', '.svn', 'do_not_care.txt'))
-      simplified = self.trace_inputs.extract_directories(
+      simplified = trace_inputs.extract_directories(
           unicode(ROOT_DIR), results.files, blacklist)
       self.assertEqual(files, [f.path for f in simplified])
 
@@ -598,10 +619,12 @@ class TraceInputsImport(TraceInputsBase):
         'executable': self.real_executable,
         'files': [
           {
+            'mode': MODE_T,
             'path': os.path.join(REL_DATA, 'test_file.txt'),
-            'size': 0,
+            'size': self._size(REL_DATA, 'test_file.txt'),
           },
           {
+            'mode': MODE_R,
             'path': os.path.join(REL_DATA, 'touch_only.py'),
             'size': self._size(REL_DATA, 'touch_only.py'),
           },
@@ -649,10 +672,12 @@ class TraceInputsImport(TraceInputsBase):
         'executable': self.real_executable,
         'files': [
           {
+            'mode': MODE_W,
             'path':  filename,
             'size': long(len('Bingo!')),
           },
           {
+            'mode': MODE_R,
             'path': u'tricky_filename.py',
             'size': self._size(REL_DATA, 'tricky_filename.py'),
           },
@@ -661,8 +686,8 @@ class TraceInputsImport(TraceInputsBase):
       },
     }
 
-    api = self.trace_inputs.get_api()
-    returncode, output = self.trace_inputs.trace(
+    api = trace_inputs.get_api()
+    returncode, output = trace_inputs.trace(
         self.log, [exe], self.tempdir, api, True)
     self.assertEqual('', output)
     self.assertEqual(0, returncode)
@@ -675,7 +700,7 @@ class TraceInputsImport(TraceInputsBase):
     actual = data[0]['results'].strip_root(self.tempdir).flatten()
     self.assertTrue(actual['root'].pop('pid'))
     self.assertEqual(expected, actual)
-    self.trace_inputs.get_api().clean_trace(self.log)
+    trace_inputs.get_api().clean_trace(self.log)
     files = sorted(
         unicodedata.normalize('NFC', i)
         for i in os.listdir(unicode(self.tempdir)))
@@ -685,6 +710,8 @@ class TraceInputsImport(TraceInputsBase):
 if __name__ == '__main__':
   VERBOSE = '-v' in sys.argv
   logging.basicConfig(level=logging.DEBUG if VERBOSE else logging.ERROR)
+  if VERBOSE:
+    unittest.TestCase.maxDiff = None
   # Necessary for the dtrace logger to work around execve() hook. See
   # trace_inputs.py for more details.
   os.environ['TRACE_INPUTS_DTRACE_ENABLE_EXECVE'] = '1'

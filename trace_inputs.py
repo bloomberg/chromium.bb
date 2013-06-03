@@ -718,7 +718,9 @@ class Results(object):
       self.path = path
       self.tainted = tainted
       self.nb_files = nb_files
-      # Can be used as a cache or a default value, depending on context.
+      # Can be used as a cache or a default value, depending on context. In
+      # particular, once self.tainted is True, because the path was replaced
+      # with a variable, it is not possible to look up the file size.
       self._size = size
       # These are cache only.
       self._real_path = None
@@ -750,7 +752,11 @@ class Results(object):
 
     @property
     def size(self):
-      """File's size. -1 is not existent."""
+      """File's size. -1 is not existent.
+
+      Once tainted, it is not possible the retrieve the file size anymore since
+      the path is composed of variables.
+      """
       if self._size is None and not self.tainted:
         try:
           self._size = os.stat(self.full_path).st_size
@@ -807,12 +813,24 @@ class Results(object):
     If tainted is true, it means it is not a real path anymore as a variable
     replacement occured.
 
-    If only_touched is True, this means the file was probed for existence, and
-    it is existent, but was never _opened_. If only_touched is True, the file
-    must have existed.
+    |mode| can be one of None, TOUCHED, READ or WRITE.
     """
-    def __init__(self, root, path, tainted, size):
+    # Was probed for existence, and it is existent, but was never _opened_.
+    TOUCHED = 't'
+    # Opened for read only and guaranteed to not have been written to.
+    READ = 'r'
+    # Opened for write.
+    WRITE = 'w'
+
+    # They are listed in order of priority. E.g. if a file is traced as TOUCHED
+    # then as WRITE, only keep WRITE. None means no idea, which is a problem on
+    # Windows.
+    ACCEPTABLE_MODES = (None, TOUCHED, READ, WRITE)
+
+    def __init__(self, root, path, tainted, size, mode):
+      assert mode in self.ACCEPTABLE_MODES
       super(Results.File, self).__init__(root, path, tainted, size, 1)
+      self.mode = mode
 
     def _clone(self, new_root, new_path, tainted):
       """Clones itself keeping meta-data."""
@@ -820,22 +838,28 @@ class Results(object):
       # is also important when the file becomes tainted (with a variable instead
       # of the real path) since self.path is not an on-disk path anymore so
       # out._size cannot be updated.
-      out = self.__class__(new_root, new_path, tainted, self.size)
+      out = self.__class__(new_root, new_path, tainted, self.size, self.mode)
       out._real_path = self._real_path
       return out
 
+    def flatten(self):
+      out = super(Results.File, self).flatten()
+      out['mode'] = self.mode
+      return out
+
   class Directory(_TouchedObject):
-    """A directory of files. Must exist."""
+    """A directory of files. Must exist.
+
+    For a Directory instance, self.size is not a cache, it's an actual value
+    that is never modified and represents the total size of the files contained
+    in this directory. It is possible that the directory is empty so that
+    size==0; this happens if there's only an invalid symlink in it.
+    """
     def __init__(self, root, path, tainted, size, nb_files):
       """path='.' is a valid value and must be handled appropriately."""
       assert not path.endswith(os.path.sep), path
       super(Results.Directory, self).__init__(
           root, path + os.path.sep, tainted, size, nb_files)
-      # For a Directory instance, self.size is not a cache, it's an actual value
-      # that is never modified and represents the total size of the files
-      # contained in this directory. It is possible that the directory is empty
-      # so that size == 0; this happens if there's only an invalid symlink in
-      # it.
 
     def flatten(self):
       out = super(Results.Directory, self).flatten()
@@ -972,8 +996,7 @@ class ApiBase(object):
         self.children = []
         self.initial_cwd = initial_cwd
         self.cwd = None
-        self.files = set()
-        self.only_touched = set()
+        self.files = {}
         self.executable = None
         self.command = None
         self._blacklist = blacklist
@@ -999,7 +1022,8 @@ class ApiBase(object):
             x = get_native_path_case(x)
           return x
 
-        def fix_and_blacklist_path(x):
+        def fix_and_blacklist_path(x, m):
+          """Receives a tuple (filepath, mode) and processes filepath."""
           x = fix_path(x)
           if not x:
             return
@@ -1007,24 +1031,25 @@ class ApiBase(object):
           # influence blacklisting.
           if self._blacklist(x):
             return
-          return x
+          # Filters out directories. Some may have passed through.
+          if os.path.isdir(x):
+            return
+          return x, m
 
-        # Filters out directories. Some may have passed through.
-        files = set(f for f in map(fix_and_blacklist_path, self.files) if f)
-        only_touched = set(
-            f for f in map(fix_and_blacklist_path, self.only_touched) if f)
-        only_touched -= files
-
+        # Renders all the files as strings, as some could be RelativePath
+        # instances. It is important to do it first since there could still be
+        # multiple entries with the same path but different modes.
+        rendered = (
+            fix_and_blacklist_path(f, m) for f, m in self.files.iteritems())
+        files = sorted(
+          (f for f in rendered if f),
+          key=lambda x: (x[0], Results.File.ACCEPTABLE_MODES.index(x[1])))
+        # Then converting into a dict will automatically clean up lesser
+        # important values.
         files = [
-          Results.File(None, f, False, None) for f in files
-          if not os.path.isdir(f)
+          Results.File(None, f, False, None, m)
+          for f, m in dict(files).iteritems()
         ]
-        # Using 0 as size means the file's content is ignored since the file was
-        # never opened for I/O.
-        files.extend(
-          Results.File(None, f, False, 0) for f in only_touched
-          if not os.path.isdir(f)
-        )
         return Results.Process(
             self.pid,
             files,
@@ -1033,18 +1058,19 @@ class ApiBase(object):
             fix_path(self.initial_cwd),
             [c.to_results_process() for c in self.children])
 
-      def add_file(self, filepath, touch_only):
+      def add_file(self, filepath, mode):
         """Adds a file if it passes the blacklist."""
         if self._blacklist(render(filepath)):
           return
-        logging.debug('add_file(%d, %s, %s)' % (self.pid, filepath, touch_only))
-        # Note that filepath and not render(filepath) is added. It is
-        # because filepath could be something else than a string, like a
-        # RelativePath instance for dtrace logs.
-        if touch_only:
-          self.only_touched.add(filepath)
-        else:
-          self.files.add(filepath)
+        logging.debug('add_file(%d, %s, %s)', self.pid, filepath, mode)
+        # Note that filepath and not render(filepath) is added. It is because
+        # filepath could be something else than a string, like a RelativePath
+        # instance for dtrace logs.
+        modes = Results.File.ACCEPTABLE_MODES
+        old_mode = self.files.setdefault(filepath, mode)
+        if old_mode != mode and modes.index(old_mode) < modes.index(mode):
+          # Take the highest value.
+          self.files[filepath] = mode
 
     def __init__(self, blacklist):
       self.blacklist = blacklist
@@ -1411,7 +1437,7 @@ class Strace(ApiBase):
 
       @parse_args(r'^\"(.+?)\", [FKORWX_|]+$', True)
       def handle_access(self, args, _result):
-        self._handle_file(args[0], True)
+        self._handle_file(args[0], Results.File.TOUCHED)
 
       @parse_args(r'^\"(.+?)\"$', True)
       def handle_chdir(self, args, _result):
@@ -1419,8 +1445,10 @@ class Strace(ApiBase):
         self.cwd = self.RelativePath(self, args[0])
         logging.debug('handle_chdir(%d, %s)' % (self.pid, self.cwd))
 
-      def handle_chown(self, _args, result):
-        pass
+      @parse_args(r'^\"(.+?)\", (\d+), (\d+)$', False)
+      def handle_chown(self, args, _result):
+        # TODO(maruel): Look at result?
+        self._handle_file(args[0], Results.File.WRITE)
 
       def handle_clone(self, _args, result):
         self._handling_forking('clone', result)
@@ -1428,19 +1456,20 @@ class Strace(ApiBase):
       def handle_close(self, _args, _result):
         pass
 
-      def handle_chmod(self, _args, _result):
-        pass
+      @parse_args(r'^\"(.+?)\", (\d+)$', False)
+      def handle_chmod(self, args, _result):
+        self._handle_file(args[0], Results.File.WRITE)
 
-      def handle_creat(self, _args, _result):
-        # Ignore files created, since they didn't need to exist.
-        pass
+      @parse_args(r'^\"(.+?)\", (\d+)$', False)
+      def handle_creat(self, args, _result):
+        self._handle_file(args[0], Results.File.WRITE)
 
       @parse_args(r'^\"(.+?)\", \[(.+)\], \[\/\* \d+ vars? \*\/\]$', True)
       def handle_execve(self, args, _result):
         # Even if in practice execve() doesn't returns when it succeeds, strace
         # still prints '0' as the result.
         filepath = args[0]
-        self._handle_file(filepath, False)
+        self._handle_file(filepath, Results.File.READ)
         self.executable = self.RelativePath(self.get_cwd(), filepath)
         try:
           self.command = strace_process_quoted_arguments(args[1])
@@ -1456,7 +1485,7 @@ class Strace(ApiBase):
       @parse_args(r'^(\d+|AT_FDCWD), \"(.*?)\", ([A-Z\_\|]+)(|, \d+)$', True)
       def handle_faccessat(self, args, _results):
         if args[0] == 'AT_FDCWD':
-          self._handle_file(args[1], True)
+          self._handle_file(args[1], Results.File.TOUCHED)
         else:
           raise Exception('Relative faccess not implemented.')
 
@@ -1474,59 +1503,69 @@ class Strace(ApiBase):
 
       @parse_args(r'^\"(.+?)\", \"(.+?)\"$', True)
       def handle_link(self, args, _result):
-        self._handle_file(args[0], False)
-        self._handle_file(args[1], False)
+        self._handle_file(args[0], Results.File.READ)
+        self._handle_file(args[1], Results.File.WRITE)
 
       @parse_args(r'\"(.+?)\", \{.+?, \.\.\.\}', True)
       def handle_lstat(self, args, _result):
-        self._handle_file(args[0], True)
+        self._handle_file(args[0], Results.File.TOUCHED)
 
       def handle_mkdir(self, _args, _result):
+        # We track content, not directories.
         pass
 
       @parse_args(r'^\"(.*?)\", ([A-Z\_\|]+)(|, \d+)$', False)
       def handle_open(self, args, _result):
         if 'O_DIRECTORY' in args[1]:
           return
-        self._handle_file(args[0], False)
+        self._handle_file(
+            args[0],
+            Results.File.READ if 'O_RDONLY' in args[1] else Results.File.WRITE)
 
       @parse_args(r'^(\d+|AT_FDCWD), \"(.*?)\", ([A-Z\_\|]+)(|, \d+)$', False)
       def handle_openat(self, args, _result):
         if 'O_DIRECTORY' in args[2]:
           return
         if args[0] == 'AT_FDCWD':
-          self._handle_file(args[1], False)
+          self._handle_file(
+              args[1],
+              Results.File.READ if 'O_RDONLY' in args[2]
+                else Results.File.WRITE)
         else:
           # TODO(maruel): Implement relative open if necessary instead of the
           # AT_FDCWD flag, let's hope not since this means tracking all active
           # directory handles.
-          raise Exception('Relative open via openat not implemented.')
+          raise NotImplementedError('Relative open via openat not implemented.')
 
       @parse_args(r'^\"(.+?)\", \".+?\"(\.\.\.)?, \d+$', False)
       def handle_readlink(self, args, _result):
-        self._handle_file(args[0], False)
+        self._handle_file(args[0], Results.File.READ)
 
       @parse_args(r'^\"(.+?)\", \"(.+?)\"$', True)
       def handle_rename(self, args, _result):
-        self._handle_file(args[0], False)
-        self._handle_file(args[1], False)
+        self._handle_file(args[0], Results.File.READ)
+        self._handle_file(args[1], Results.File.WRITE)
 
       def handle_rmdir(self, _args, _result):
+        # We track content, not directories.
         pass
 
       def handle_setxattr(self, _args, _result):
+        # TODO(maruel): self._handle_file(args[0], Results.File.WRITE)
         pass
 
       @parse_args(r'\"(.+?)\", \{.+?, \.\.\.\}', True)
       def handle_stat(self, args, _result):
-        self._handle_file(args[0], True)
+        self._handle_file(args[0], Results.File.TOUCHED)
 
-      def handle_symlink(self, _args, _result):
-        pass
+      @parse_args(r'^\"(.+?)\", \"(.+?)\"$', True)
+      def handle_symlink(self, args, _result):
+        self._handle_file(args[0], Results.File.TOUCHED)
+        self._handle_file(args[1], Results.File.WRITE)
 
       @parse_args(r'^\"(.+?)\", \d+', True)
       def handle_truncate(self, args, _result):
-        self._handle_file(args[0], False)
+        self._handle_file(args[0], Results.File.WRITE)
 
       def handle_unlink(self, _args, _result):
         # In theory, the file had to be created anyway.
@@ -1572,10 +1611,9 @@ class Strace(ApiBase):
         # It is necessary because the logs are processed out of order.
         self.children.append(child)
 
-      def _handle_file(self, filepath, touch_only):
+      def _handle_file(self, filepath, mode):
         filepath = self.RelativePath(self.get_cwd(), filepath)
-        #assert not touch_only, render(filepath)
-        self.add_file(filepath, touch_only)
+        self.add_file(filepath, mode)
 
     def __init__(self, blacklist, root_pid, initial_cwd):
       """|root_pid| may be None when the root process is not known.
@@ -1865,7 +1903,9 @@ class Dtrace(ApiBase):
     RE_PROC_START = re.compile(r'^(\d+), \"(.+?)\", (\d+)$')
     RE_RENAME = re.compile(r'^\"(.+?)\", \"(.+?)\"$')
 
-    O_DIRECTORY = 0x100000
+    O_DIRECTORY = os.O_DIRECTORY
+    O_RDWR = os.O_RDWR
+    O_WRONLY = os.O_WRONLY
 
     class Process(ApiBase.Context.Process):
       def __init__(self, *args):
@@ -1995,6 +2035,7 @@ class Dtrace(ApiBase):
             None, None, None)
       proc = self._process_lookup[pid]
       proc.executable = match.group(1)
+      self._handle_file(pid, proc.executable, Results.File.READ)
       proc.command = self.process_escaped_arguments(match.group(3))
       if int(match.group(2)) != len(proc.command):
         raise TracingFailure(
@@ -2032,7 +2073,11 @@ class Dtrace(ApiBase):
       if self.O_DIRECTORY & flag == self.O_DIRECTORY:
         # Ignore directories.
         return
-      self._handle_file(pid, match.group(1))
+      self._handle_file(
+          pid,
+          match.group(1),
+          Results.File.READ if not ((self.O_RDWR | self.O_WRONLY) & flag)
+            else Results.File.WRITE)
 
     def handle_rename(self, pid, args):
       if pid not in self._process_lookup:
@@ -2043,10 +2088,10 @@ class Dtrace(ApiBase):
         raise TracingFailure(
             'Failed to parse arguments: %s' % args,
             None, None, None)
-      self._handle_file(pid, match.group(1))
-      self._handle_file(pid, match.group(2))
+      self._handle_file(pid, match.group(1), Results.File.READ)
+      self._handle_file(pid, match.group(2), Results.File.WRITE)
 
-    def _handle_file(self, pid, filepath):
+    def _handle_file(self, pid, filepath, mode):
       if not filepath.startswith('/'):
         filepath = os.path.join(self._process_lookup[pid].cwd, filepath)
       # We can get '..' in the path.
@@ -2055,7 +2100,7 @@ class Dtrace(ApiBase):
       # saw open_nocancel(".", 0, 0) = 0 lines.
       if os.path.isdir(filepath):
         return
-      self._process_lookup[pid].add_file(filepath, False)
+      self._process_lookup[pid].add_file(filepath, mode)
 
     def handle_ftruncate(self, pid, args):
       """Just used as a signal to kill dtrace, ignoring."""
@@ -2806,7 +2851,8 @@ class LogmanTrace(ApiBase):
         return
       file_object = line[FILE_OBJECT]
       if file_object in proc.file_objects:
-        proc.add_file(proc.file_objects.pop(file_object), False)
+        filepath, access_type = proc.file_objects.pop(file_object)
+        proc.add_file(filepath, access_type)
 
     def handle_FileIo_Create(self, line):
       """Handles a file open.
@@ -2827,7 +2873,7 @@ class LogmanTrace(ApiBase):
       FILE_OBJECT = self.USER_DATA + 2
       #CREATE_OPTIONS = self.USER_DATA + 3
       #FILE_ATTRIBUTES = self.USER_DATA + 4
-      #self.USER_DATA + SHARE_ACCESS = 5
+      #SHARE_ACCESS = self.USER_DATA + 5
       OPEN_PATH = self.USER_DATA + 6
 
       proc = self._thread_to_process(line[TTID])
@@ -2850,8 +2896,12 @@ class LogmanTrace(ApiBase):
         # FILE_FLAG_BACKUP_SEMANTICS but it's not exactly right either. So
         # simply discard directories are they are found.
         return
-      # Override any stale file object
-      proc.file_objects[file_object] = filepath
+      # Override any stale file object.
+      # TODO(maruel): Figure out a way to detect if the file was opened for
+      # reading or writting. Sadly CREATE_OPTIONS doesn't seem to be of any help
+      # here. For now mark as None to make it clear we have no idea what it is
+      # about.
+      proc.file_objects[file_object] = (filepath, None)
 
     def handle_FileIo_Rename(self, line):
       # TODO(maruel): Handle?
