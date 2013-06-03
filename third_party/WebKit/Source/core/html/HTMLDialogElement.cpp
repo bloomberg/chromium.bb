@@ -98,7 +98,7 @@ void HTMLDialogElement::positionAndReattach()
     m_topIsValid = true;
 
     // FIXME: It's inefficient to reattach here. We could do better by mutating style directly and forcing another layout.
-    lazyReattach();
+    reattach();
 }
 
 void HTMLDialogElement::show()

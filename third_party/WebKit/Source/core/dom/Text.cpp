@@ -294,13 +294,10 @@ void Text::recalcTextStyle(StyleChange change)
 
 void Text::updateTextRenderer(unsigned offsetOfReplacedData, unsigned lengthOfReplacedData)
 {
-    if (!attached() && !needsStyleRecalc())
+    if (!attached())
         return;
     RenderText* textRenderer = toRenderText(renderer());
     if (!textRenderer || !textRendererIsNeeded(NodeRenderingContext(this, textRenderer->style()))) {
-        // FIXME: Editing code expects that inserting a text node will produce a renderer
-        // immediately so it can inspect the style of the text nodes. We should fix this
-        // so we can lazyReattach here.
         reattach();
         return;
     }

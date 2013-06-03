@@ -1464,10 +1464,9 @@ void Element::recalcStyle(StyleChange change)
     if (shouldRecalcStyle(change, this))
         updatePseudoElement(AFTER, change);
 
-    setAttached();
     clearNeedsStyleRecalc();
     clearChildNeedsStyleRecalc();
-
+    
     if (hasCustomStyleCallbacks())
         didRecalcStyle(change);
     InspectorInstrumentation::didRecalculateStyleForElement(this);
