@@ -232,6 +232,9 @@ static struct sock_filter filter[] = {
   BPF_JUMP(BPF_JMP + BPF_JEQ + BPF_K, __NR_sched_yield, 0, 1),
   BPF_STMT(BPF_RET + BPF_K, SECCOMP_RET_ALLOW),
 
+  BPF_JUMP(BPF_JMP + BPF_JEQ + BPF_K, __NR_sched_getaffinity, 0, 1),
+  BPF_STMT(BPF_RET + BPF_K, SECCOMP_RET_ALLOW),
+
   /* for abort(), called as tgkill(pid,tid,SIGABORT) */
   BPF_JUMP(BPF_JMP + BPF_JEQ + BPF_K, __NR_tgkill, 0, 1),
   BPF_STMT(BPF_RET + BPF_K, SECCOMP_RET_ALLOW),
