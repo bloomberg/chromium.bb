@@ -204,7 +204,7 @@ AudioOutputStream* AudioManagerBase::MakeAudioOutputStreamProxy(
   AudioOutputDispatchersMap::iterator it =
       output_dispatchers_.find(dispatcher_key);
   if (it != output_dispatchers_.end())
-    return new AudioOutputProxy(it->second);
+    return new AudioOutputProxy(it->second.get());
 
   const base::TimeDelta kCloseDelay =
       base::TimeDelta::FromSeconds(kStreamCloseDelaySeconds);
@@ -213,13 +213,13 @@ AudioOutputStream* AudioManagerBase::MakeAudioOutputStreamProxy(
     scoped_refptr<AudioOutputDispatcher> dispatcher =
         new AudioOutputResampler(this, params, output_params, kCloseDelay);
     output_dispatchers_[dispatcher_key] = dispatcher;
-    return new AudioOutputProxy(dispatcher);
+    return new AudioOutputProxy(dispatcher.get());
   }
 
   scoped_refptr<AudioOutputDispatcher> dispatcher =
       new AudioOutputDispatcherImpl(this, output_params, kCloseDelay);
   output_dispatchers_[dispatcher_key] = dispatcher;
-  return new AudioOutputProxy(dispatcher);
+  return new AudioOutputProxy(dispatcher.get());
 #endif  // defined(OS_IOS)
 }
 
@@ -295,7 +295,7 @@ void AudioManagerBase::ShutdownOnAudioThread() {
   AudioOutputDispatchersMap::iterator it = output_dispatchers_.begin();
   for (; it != output_dispatchers_.end(); ++it) {
     scoped_refptr<AudioOutputDispatcher>& dispatcher = (*it).second;
-    if (dispatcher) {
+    if (dispatcher.get()) {
       dispatcher->Shutdown();
       // All AudioOutputProxies must have been freed before Shutdown is called.
       // If they still exist, things will go bad.  They have direct pointers to

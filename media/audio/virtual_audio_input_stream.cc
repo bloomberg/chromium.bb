@@ -60,7 +60,7 @@ VirtualAudioInputStream::VirtualAudioInputStream(
       num_attached_output_streams_(0),
       fake_consumer_(message_loop_, params_) {
   DCHECK(params_.IsValid());
-  DCHECK(message_loop_);
+  DCHECK(message_loop_.get());
 }
 
 VirtualAudioInputStream::~VirtualAudioInputStream() {

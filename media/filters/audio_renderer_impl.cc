@@ -147,7 +147,7 @@ void AudioRendererImpl::Stop(const base::Closure& callback) {
   // TODO(scherkus): Consider invalidating |weak_factory_| and replacing
   // task-running guards that check |state_| with DCHECK().
 
-  if (sink_) {
+  if (sink_.get()) {
     sink_->Stop();
     sink_ = NULL;
   }
@@ -212,7 +212,7 @@ void AudioRendererImpl::Initialize(DemuxerStream* stream,
   DCHECK(!disabled_cb.is_null());
   DCHECK(!error_cb.is_null());
   DCHECK_EQ(kUninitialized, state_);
-  DCHECK(sink_);
+  DCHECK(sink_.get());
 
   weak_this_ = weak_factory_.GetWeakPtr();
   init_cb_ = init_cb;
@@ -236,7 +236,7 @@ void AudioRendererImpl::OnDecoderSelected(
   scoped_ptr<AudioDecoderSelector> deleter(decoder_selector_.Pass());
 
   if (state_ == kStopped) {
-    DCHECK(!sink_);
+    DCHECK(!sink_.get());
     return;
   }
 
@@ -303,7 +303,7 @@ void AudioRendererImpl::ResumeAfterUnderflow(bool buffer_more_audio) {
 
 void AudioRendererImpl::SetVolume(float volume) {
   DCHECK(message_loop_->BelongsToCurrentThread());
-  DCHECK(sink_);
+  DCHECK(sink_.get());
   sink_->SetVolume(volume);
 }
 
@@ -330,7 +330,7 @@ void AudioRendererImpl::DecodedAudioReady(
   }
 
   DCHECK_EQ(status, AudioDecoder::kOk);
-  DCHECK(buffer);
+  DCHECK(buffer.get());
 
   if (!splicer_->AddInput(buffer)) {
     HandleAbortedReadOrDecodeError(true);
@@ -436,7 +436,7 @@ bool AudioRendererImpl::CanRead_Locked() {
 void AudioRendererImpl::SetPlaybackRate(float playback_rate) {
   DCHECK(message_loop_->BelongsToCurrentThread());
   DCHECK_GE(playback_rate, 0);
-  DCHECK(sink_);
+  DCHECK(sink_.get());
 
   // We have two cases here:
   // Play: current_playback_rate == 0 && playback_rate != 0
@@ -453,8 +453,8 @@ void AudioRendererImpl::SetPlaybackRate(float playback_rate) {
 
 bool AudioRendererImpl::IsBeforePrerollTime(
     const scoped_refptr<DataBuffer>& buffer) {
-  return (state_ == kPrerolling) && buffer && !buffer->IsEndOfStream() &&
-      (buffer->GetTimestamp() + buffer->GetDuration()) < preroll_timestamp_;
+  return (state_ == kPrerolling) && buffer.get() && !buffer->IsEndOfStream() &&
+         (buffer->GetTimestamp() + buffer->GetDuration()) < preroll_timestamp_;
 }
 
 int AudioRendererImpl::Render(AudioBus* audio_bus,

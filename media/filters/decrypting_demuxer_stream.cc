@@ -153,7 +153,7 @@ void DecryptingDemuxerStream::DecryptBuffer(
   DCHECK(message_loop_->BelongsToCurrentThread());
   DCHECK_EQ(state_, kPendingDemuxerRead) << state_;
   DCHECK(!read_cb_.is_null());
-  DCHECK_EQ(buffer != NULL, status == kOk) << status;
+  DCHECK_EQ(buffer.get() != NULL, status == kOk) << status;
 
   if (!reset_cb_.is_null()) {
     base::ResetAndReturn(&read_cb_).Run(kAborted, NULL);
@@ -210,7 +210,7 @@ void DecryptingDemuxerStream::DeliverBuffer(
   DCHECK_EQ(state_, kPendingDecrypt) << state_;
   DCHECK_NE(status, Decryptor::kNeedMoreData);
   DCHECK(!read_cb_.is_null());
-  DCHECK(pending_buffer_to_decrypt_);
+  DCHECK(pending_buffer_to_decrypt_.get());
 
   bool need_to_try_again_if_nokey = key_added_while_decrypt_pending_;
   key_added_while_decrypt_pending_ = false;

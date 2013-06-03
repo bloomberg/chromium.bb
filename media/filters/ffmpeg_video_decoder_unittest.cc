@@ -39,7 +39,7 @@ static const gfx::Rect kVisibleRect(320, 240);
 static const gfx::Size kNaturalSize(320, 240);
 
 ACTION_P(ReturnBuffer, buffer) {
-  arg0.Run(buffer ? DemuxerStream::kOk : DemuxerStream::kAborted, buffer);
+  arg0.Run(buffer.get() ? DemuxerStream::kOk : DemuxerStream::kAborted, buffer);
 }
 
 class FFmpegVideoDecoderTest : public testing::Test {
@@ -102,7 +102,7 @@ class FFmpegVideoDecoderTest : public testing::Test {
     DecodeSingleFrame(i_frame_buffer_, &status, &video_frame);
 
     EXPECT_EQ(VideoDecoder::kOk, status);
-    ASSERT_TRUE(video_frame);
+    ASSERT_TRUE(video_frame.get());
     EXPECT_FALSE(video_frame->IsEndOfStream());
   }
 
@@ -113,7 +113,7 @@ class FFmpegVideoDecoderTest : public testing::Test {
     VideoDecoder::Status status;
     Read(&status, &video_frame);
     EXPECT_EQ(VideoDecoder::kOk, status);
-    ASSERT_TRUE(video_frame);
+    ASSERT_TRUE(video_frame.get());
     EXPECT_TRUE(video_frame->IsEndOfStream());
   }
 
@@ -162,10 +162,10 @@ class FFmpegVideoDecoderTest : public testing::Test {
     gfx::Size original_size = kVisibleRect.size();
     EXPECT_EQ(VideoDecoder::kOk, status_a);
     EXPECT_EQ(VideoDecoder::kOk, status_b);
-    ASSERT_TRUE(video_frame_a);
-    ASSERT_TRUE(video_frame_b);
+    ASSERT_TRUE(video_frame_a.get());
+    ASSERT_TRUE(video_frame_b.get());
     EXPECT_EQ(original_size.width(),
-        video_frame_a->visible_rect().size().width());
+              video_frame_a->visible_rect().size().width());
     EXPECT_EQ(original_size.height(),
         video_frame_a->visible_rect().size().height());
     EXPECT_EQ(expected_width, video_frame_b->visible_rect().size().width());
@@ -320,7 +320,7 @@ TEST_F(FFmpegVideoDecoderTest, DecodeFrame_Normal) {
   DecodeSingleFrame(i_frame_buffer_, &status, &video_frame);
 
   EXPECT_EQ(VideoDecoder::kOk, status);
-  ASSERT_TRUE(video_frame);
+  ASSERT_TRUE(video_frame.get());
   EXPECT_FALSE(video_frame->IsEndOfStream());
 }
 
@@ -355,9 +355,9 @@ TEST_F(FFmpegVideoDecoderTest, DecodeFrame_0ByteFrame) {
   EXPECT_EQ(VideoDecoder::kOk, status_b);
   EXPECT_EQ(VideoDecoder::kOk, status_c);
 
-  ASSERT_TRUE(video_frame_a);
-  ASSERT_TRUE(video_frame_b);
-  ASSERT_TRUE(video_frame_c);
+  ASSERT_TRUE(video_frame_a.get());
+  ASSERT_TRUE(video_frame_b.get());
+  ASSERT_TRUE(video_frame_c.get());
 
   EXPECT_FALSE(video_frame_a->IsEndOfStream());
   EXPECT_FALSE(video_frame_b->IsEndOfStream());
@@ -382,12 +382,12 @@ TEST_F(FFmpegVideoDecoderTest, DecodeFrame_DecodeError) {
   scoped_refptr<VideoFrame> video_frame;
   Read(&status, &video_frame);
   EXPECT_EQ(VideoDecoder::kDecodeError, status);
-  EXPECT_FALSE(video_frame);
+  EXPECT_FALSE(video_frame.get());
 
   // After a decode error occurred, all following read will return kDecodeError.
   Read(&status, &video_frame);
   EXPECT_EQ(VideoDecoder::kDecodeError, status);
-  EXPECT_FALSE(video_frame);
+  EXPECT_FALSE(video_frame.get());
 }
 
 // Multi-threaded decoders have different behavior than single-threaded
@@ -403,7 +403,7 @@ TEST_F(FFmpegVideoDecoderTest, DecodeFrame_DecodeErrorAtEndOfStream) {
   DecodeSingleFrame(corrupt_i_frame_buffer_, &status, &video_frame);
 
   EXPECT_EQ(VideoDecoder::kOk, status);
-  ASSERT_TRUE(video_frame);
+  ASSERT_TRUE(video_frame.get());
   EXPECT_TRUE(video_frame->IsEndOfStream());
 }
 
@@ -523,7 +523,7 @@ TEST_F(FFmpegVideoDecoderTest, DemuxerRead_Aborted) {
   Read(&status, &video_frame);
 
   EXPECT_EQ(VideoDecoder::kOk, status);
-  EXPECT_FALSE(video_frame);
+  EXPECT_FALSE(video_frame.get());
 }
 
 // Test aborted read on the demuxer stream during pending reset.

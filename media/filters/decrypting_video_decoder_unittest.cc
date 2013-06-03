@@ -47,7 +47,7 @@ static scoped_refptr<DecoderBuffer> CreateFakeEncryptedBuffer() {
 namespace {
 
 ACTION_P(ReturnBuffer, buffer) {
-  arg0.Run(buffer ? DemuxerStream::kOk : DemuxerStream::kAborted, buffer);
+  arg0.Run(buffer.get() ? DemuxerStream::kOk : DemuxerStream::kAborted, buffer);
 }
 
 ACTION_P(RunCallbackIfNotNull, param) {
@@ -116,7 +116,7 @@ class DecryptingVideoDecoderTest : public testing::Test {
       const scoped_refptr<VideoFrame>& video_frame) {
     if (status != VideoDecoder::kOk)
       EXPECT_CALL(*this, FrameReady(status, IsNull()));
-    else if (video_frame && video_frame->IsEndOfStream())
+    else if (video_frame.get() && video_frame->IsEndOfStream())
       EXPECT_CALL(*this, FrameReady(status, IsEndOfStream()));
     else
       EXPECT_CALL(*this, FrameReady(status, video_frame));

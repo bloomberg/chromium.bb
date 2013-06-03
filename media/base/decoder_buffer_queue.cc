@@ -50,7 +50,7 @@ scoped_refptr<DecoderBuffer> DecoderBufferQueue::Pop() {
   queue_.pop_front();
 
   if (!in_order_queue_.empty() &&
-      in_order_queue_.front() == buffer) {
+      in_order_queue_.front().get() == buffer.get()) {
     in_order_queue_.pop_front();
   }
 

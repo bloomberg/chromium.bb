@@ -143,7 +143,7 @@ void StreamReader::OnReadDone(
     media::DemuxerStream::Status status,
     const scoped_refptr<media::DecoderBuffer>& buffer) {
   CHECK_EQ(status, media::DemuxerStream::kOk);
-  CHECK(buffer);
+  CHECK(buffer.get());
   *end_of_stream = buffer->IsEndOfStream();
   *timestamp = *end_of_stream ? media::kNoTimestamp() : buffer->GetTimestamp();
   message_loop->PostTask(FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());

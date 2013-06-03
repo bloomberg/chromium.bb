@@ -90,7 +90,7 @@ void Paint(base::MessageLoop* message_loop, const PaintCB& paint_cb,
     return;
   }
 
-  paint_cb.Run(video_frame);
+  paint_cb.Run(video_frame.get());
 }
 
 static void OnBufferingState(media::Pipeline::BufferingState buffering_state) {}

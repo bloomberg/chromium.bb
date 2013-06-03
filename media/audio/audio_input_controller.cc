@@ -44,7 +44,7 @@ AudioInputController::AudioInputController(EventHandler* handler,
       state_(kEmpty),
       sync_writer_(sync_writer),
       max_volume_(0.0) {
-  DCHECK(creator_loop_);
+  DCHECK(creator_loop_.get());
 }
 
 AudioInputController::~AudioInputController() {

@@ -300,7 +300,7 @@ FFmpegDemuxer::FFmpegDemuxer(
       url_protocol_(data_source, BindToLoop(message_loop_, base::Bind(
           &FFmpegDemuxer::OnDataSourceError, base::Unretained(this)))),
       need_key_cb_(need_key_cb) {
-  DCHECK(message_loop_);
+  DCHECK(message_loop_.get());
   DCHECK(data_source_);
 }
 

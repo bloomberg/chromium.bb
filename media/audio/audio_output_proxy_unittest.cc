@@ -483,94 +483,86 @@ class AudioOutputResamplerTest : public AudioOutputProxyTest {
 };
 
 TEST_F(AudioOutputProxyTest, CreateAndClose) {
-  AudioOutputProxy* proxy = new AudioOutputProxy(dispatcher_impl_);
+  AudioOutputProxy* proxy = new AudioOutputProxy(dispatcher_impl_.get());
   proxy->Close();
 }
 
 TEST_F(AudioOutputResamplerTest, CreateAndClose) {
-  AudioOutputProxy* proxy = new AudioOutputProxy(resampler_);
+  AudioOutputProxy* proxy = new AudioOutputProxy(resampler_.get());
   proxy->Close();
 }
 
 TEST_F(AudioOutputProxyTest, OpenAndClose) {
-  OpenAndClose(dispatcher_impl_);
+  OpenAndClose(dispatcher_impl_.get());
 }
 
 TEST_F(AudioOutputResamplerTest, OpenAndClose) {
-  OpenAndClose(resampler_);
+  OpenAndClose(resampler_.get());
 }
 
 // Create a stream, and verify that it is closed after kTestCloseDelayMs.
 // if it doesn't start playing.
 TEST_F(AudioOutputProxyTest, CreateAndWait) {
-  CreateAndWait(dispatcher_impl_);
+  CreateAndWait(dispatcher_impl_.get());
 }
 
 // Create a stream, and verify that it is closed after kTestCloseDelayMs.
 // if it doesn't start playing.
 TEST_F(AudioOutputResamplerTest, CreateAndWait) {
-  CreateAndWait(resampler_);
+  CreateAndWait(resampler_.get());
 }
 
 TEST_F(AudioOutputProxyTest, StartAndStop) {
-  StartAndStop(dispatcher_impl_);
+  StartAndStop(dispatcher_impl_.get());
 }
 
 TEST_F(AudioOutputResamplerTest, StartAndStop) {
-  StartAndStop(resampler_);
+  StartAndStop(resampler_.get());
 }
 
 TEST_F(AudioOutputProxyTest, CloseAfterStop) {
-  CloseAfterStop(dispatcher_impl_);
+  CloseAfterStop(dispatcher_impl_.get());
 }
 
 TEST_F(AudioOutputResamplerTest, CloseAfterStop) {
-  CloseAfterStop(resampler_);
+  CloseAfterStop(resampler_.get());
 }
 
-TEST_F(AudioOutputProxyTest, TwoStreams) {
-  TwoStreams(dispatcher_impl_);
-}
+TEST_F(AudioOutputProxyTest, TwoStreams) { TwoStreams(dispatcher_impl_.get()); }
 
-TEST_F(AudioOutputResamplerTest, TwoStreams) {
-  TwoStreams(resampler_);
-}
+TEST_F(AudioOutputResamplerTest, TwoStreams) { TwoStreams(resampler_.get()); }
 
 // Two streams: verify that second stream is allocated when the first
 // starts playing.
 TEST_F(AudioOutputProxyTest, TwoStreams_OnePlaying) {
   InitDispatcher(base::TimeDelta::FromSeconds(kTestBigCloseDelaySeconds));
-  TwoStreams_OnePlaying(dispatcher_impl_);
+  TwoStreams_OnePlaying(dispatcher_impl_.get());
 }
 
 TEST_F(AudioOutputResamplerTest, TwoStreams_OnePlaying) {
   InitDispatcher(base::TimeDelta::FromSeconds(kTestBigCloseDelaySeconds));
-  TwoStreams_OnePlaying(resampler_);
+  TwoStreams_OnePlaying(resampler_.get());
 }
 
 // Two streams, both are playing. Dispatcher should not open a third stream.
 TEST_F(AudioOutputProxyTest, TwoStreams_BothPlaying) {
   InitDispatcher(base::TimeDelta::FromSeconds(kTestBigCloseDelaySeconds));
-  TwoStreams_BothPlaying(dispatcher_impl_);
+  TwoStreams_BothPlaying(dispatcher_impl_.get());
 }
 
 TEST_F(AudioOutputResamplerTest, TwoStreams_BothPlaying) {
   InitDispatcher(base::TimeDelta::FromSeconds(kTestBigCloseDelaySeconds));
-  TwoStreams_BothPlaying(resampler_);
+  TwoStreams_BothPlaying(resampler_.get());
 }
 
-TEST_F(AudioOutputProxyTest, OpenFailed) {
-  OpenFailed(dispatcher_impl_);
-}
+TEST_F(AudioOutputProxyTest, OpenFailed) { OpenFailed(dispatcher_impl_.get()); }
 
 // Start() method failed.
 TEST_F(AudioOutputProxyTest, StartFailed) {
-  StartFailed(dispatcher_impl_);
+  StartFailed(dispatcher_impl_.get());
 }
 
-TEST_F(AudioOutputResamplerTest, StartFailed) {
-  StartFailed(resampler_);
-}
+TEST_F(AudioOutputResamplerTest, StartFailed) { StartFailed(resampler_.get()); }
 
 // Simulate AudioOutputStream::Create() failure with a low latency stream and
 // ensure AudioOutputResampler falls back to the high latency path.
@@ -585,7 +577,7 @@ TEST_F(AudioOutputResamplerTest, LowLatencyCreateFailedFallback) {
   EXPECT_CALL(stream, Close())
       .Times(1);
 
-  AudioOutputProxy* proxy = new AudioOutputProxy(resampler_);
+  AudioOutputProxy* proxy = new AudioOutputProxy(resampler_.get());
   EXPECT_TRUE(proxy->Open());
   proxy->Close();
   WaitForCloseTimer(kTestCloseDelayMs);
@@ -609,7 +601,7 @@ TEST_F(AudioOutputResamplerTest, LowLatencyOpenFailedFallback) {
   EXPECT_CALL(okay_stream, Close())
       .Times(1);
 
-  AudioOutputProxy* proxy = new AudioOutputProxy(resampler_);
+  AudioOutputProxy* proxy = new AudioOutputProxy(resampler_.get());
   EXPECT_TRUE(proxy->Open());
   proxy->Close();
   WaitForCloseTimer(kTestCloseDelayMs);
@@ -645,7 +637,7 @@ TEST_F(AudioOutputResamplerTest, HighLatencyFallbackFailed) {
   EXPECT_CALL(okay_stream, Close())
       .Times(1);
 
-  AudioOutputProxy* proxy = new AudioOutputProxy(resampler_);
+  AudioOutputProxy* proxy = new AudioOutputProxy(resampler_.get());
   EXPECT_TRUE(proxy->Open());
   proxy->Close();
   WaitForCloseTimer(kTestCloseDelayMs);
@@ -666,7 +658,7 @@ TEST_F(AudioOutputResamplerTest, AllFallbackFailed) {
       .Times(kFallbackCount)
       .WillRepeatedly(Return(static_cast<AudioOutputStream*>(NULL)));
 
-  AudioOutputProxy* proxy = new AudioOutputProxy(resampler_);
+  AudioOutputProxy* proxy = new AudioOutputProxy(resampler_.get());
   EXPECT_FALSE(proxy->Open());
   proxy->Close();
   WaitForCloseTimer(kTestCloseDelayMs);
@@ -710,19 +702,19 @@ TEST_F(AudioOutputResamplerTest, LowLatencyOpenEventuallyFails) {
       .Times(1);
 
   // Open and start the first proxy and stream.
-  AudioOutputProxy* proxy1 = new AudioOutputProxy(resampler_);
+  AudioOutputProxy* proxy1 = new AudioOutputProxy(resampler_.get());
   EXPECT_TRUE(proxy1->Open());
   proxy1->Start(&callback_);
   OnStart();
 
   // Open and start the second proxy and stream.
-  AudioOutputProxy* proxy2 = new AudioOutputProxy(resampler_);
+  AudioOutputProxy* proxy2 = new AudioOutputProxy(resampler_.get());
   EXPECT_TRUE(proxy2->Open());
   proxy2->Start(&callback_);
   OnStart();
 
   // Attempt to open the third stream which should fail.
-  AudioOutputProxy* proxy3 = new AudioOutputProxy(resampler_);
+  AudioOutputProxy* proxy3 = new AudioOutputProxy(resampler_.get());
   EXPECT_FALSE(proxy3->Open());
 
   // Perform the required Stop()/Close() shutdown dance for each proxy.  Under

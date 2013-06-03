@@ -125,7 +125,7 @@ scoped_refptr<VideoFrame> VideoFrame::CreateColorFrame(
   DCHECK(IsValidConfig(VideoFrame::YV12, size, gfx::Rect(size), size));
   scoped_refptr<VideoFrame> frame = VideoFrame::CreateFrame(
       VideoFrame::YV12, size, gfx::Rect(size), size, timestamp);
-  FillYUV(frame, y, u, v);
+  FillYUV(frame.get(), y, u, v);
   return frame;
 }
 

@@ -234,7 +234,7 @@ class VideoRendererBaseTest : public ::testing::Test {
 
   int GetCurrentTimestampInMs() {
     scoped_refptr<VideoFrame> frame = GetCurrentFrame();
-    if (!frame)
+    if (!frame.get())
       return -1;
     return frame->GetTimestamp().InMilliseconds();
   }

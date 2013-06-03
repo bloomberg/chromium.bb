@@ -88,7 +88,7 @@ class VideoFrameStreamTest : public testing::TestWithParam<bool> {
     DCHECK(pending_decoder_read_);
     ASSERT_EQ(VideoDecoder::kOk, status);
     frame_read_ = frame;
-    if (frame && !frame->IsEndOfStream())
+    if (frame.get() && !frame->IsEndOfStream())
       num_decoded_frames_++;
     pending_decoder_read_ = false;
   }
@@ -255,7 +255,7 @@ TEST_P(VideoFrameStreamTest, ReadAllFrames) {
   Initialize();
   do {
     ReadFrame();
-  } while (frame_read_ && !frame_read_->IsEndOfStream());
+  } while (frame_read_.get() && !frame_read_->IsEndOfStream());
 
   const int total_num_frames = kNumConfigs * kNumBuffersInOneConfig;
   DCHECK_EQ(num_decoded_frames_, total_num_frames);

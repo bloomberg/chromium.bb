@@ -144,16 +144,16 @@ void FFmpegAudioDecoder::BufferReady(
   DCHECK(message_loop_->BelongsToCurrentThread());
   DCHECK(!read_cb_.is_null());
   DCHECK(queued_audio_.empty());
-  DCHECK_EQ(status != DemuxerStream::kOk, !input) << status;
+  DCHECK_EQ(status != DemuxerStream::kOk, !input.get()) << status;
 
   if (status == DemuxerStream::kAborted) {
-    DCHECK(!input);
+    DCHECK(!input.get());
     base::ResetAndReturn(&read_cb_).Run(kAborted, NULL);
     return;
   }
 
   if (status == DemuxerStream::kConfigChanged) {
-    DCHECK(!input);
+    DCHECK(!input.get());
 
     // Send a "end of stream" buffer to the decode loop
     // to output any remaining data still in the decoder.
@@ -180,7 +180,7 @@ void FFmpegAudioDecoder::BufferReady(
   }
 
   DCHECK_EQ(status, DemuxerStream::kOk);
-  DCHECK(input);
+  DCHECK(input.get());
 
   // Make sure we are notified if http://crbug.com/49709 returns.  Issue also
   // occurs with some damaged files.
@@ -491,7 +491,7 @@ void FFmpegAudioDecoder::RunDecodeLoop(
       output = DataBuffer::CreateEOSBuffer();
     }
 
-    if (output) {
+    if (output.get()) {
       QueuedAudioBuffer queue_entry = { kOk, output };
       queued_audio_.push_back(queue_entry);
     }

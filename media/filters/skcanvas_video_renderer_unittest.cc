@@ -58,10 +58,10 @@ class SkCanvasVideoRendererTest : public testing::Test {
   void Paint(VideoFrame* video_frame, SkCanvas* canvas, Color color);
 
   // Getters for various frame sizes.
-  VideoFrame* natural_frame() { return natural_frame_; }
-  VideoFrame* larger_frame() { return larger_frame_; }
-  VideoFrame* smaller_frame() { return smaller_frame_; }
-  VideoFrame* cropped_frame() { return cropped_frame_; }
+  VideoFrame* natural_frame() { return natural_frame_.get(); }
+  VideoFrame* larger_frame() { return larger_frame_.get(); }
+  VideoFrame* smaller_frame() { return smaller_frame_.get(); }
+  VideoFrame* cropped_frame() { return cropped_frame_.get(); }
 
   // Getters for canvases that trigger the various painting paths.
   SkCanvas* fast_path_canvas() { return &fast_path_canvas_; }

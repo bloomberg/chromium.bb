@@ -61,26 +61,26 @@ class FakeDemuxerStreamTest : public testing::Test {
       case OK:
         EXPECT_FALSE(read_pending_);
         EXPECT_EQ(DemuxerStream::kOk, status_);
-        ASSERT_TRUE(buffer_);
+        ASSERT_TRUE(buffer_.get());
         EXPECT_FALSE(buffer_->IsEndOfStream());
         break;
 
       case ABORTED:
         EXPECT_FALSE(read_pending_);
         EXPECT_EQ(DemuxerStream::kAborted, status_);
-        EXPECT_FALSE(buffer_);
+        EXPECT_FALSE(buffer_.get());
         break;
 
       case CONFIG_CHANGED:
         EXPECT_FALSE(read_pending_);
         EXPECT_EQ(DemuxerStream::kConfigChanged, status_);
-        EXPECT_FALSE(buffer_);
+        EXPECT_FALSE(buffer_.get());
         break;
 
       case EOS:
         EXPECT_FALSE(read_pending_);
         EXPECT_EQ(DemuxerStream::kOk, status_);
-        ASSERT_TRUE(buffer_);
+        ASSERT_TRUE(buffer_.get());
         EXPECT_TRUE(buffer_->IsEndOfStream());
         break;
 

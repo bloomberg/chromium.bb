@@ -124,10 +124,10 @@ class AudioOutputControllerTest : public testing::Test {
     controller_ = AudioOutputController::Create(
         audio_manager_.get(), &mock_event_handler_, params_,
         &mock_sync_reader_);
-    if (controller_)
+    if (controller_.get())
       controller_->SetVolume(kTestVolume);
 
-    EXPECT_EQ(params_.IsValid(), controller_ != NULL);
+    EXPECT_EQ(params_.IsValid(), controller_.get() != NULL);
   }
 
   void Play() {

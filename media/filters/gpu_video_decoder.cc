@@ -172,7 +172,7 @@ GpuVideoDecoder::GpuVideoDecoder(
       next_picture_buffer_id_(0),
       next_bitstream_buffer_id_(0),
       available_pictures_(-1) {
-  DCHECK(factories_);
+  DCHECK(factories_.get());
 }
 
 void GpuVideoDecoder::Reset(const base::Closure& closure)  {
@@ -264,8 +264,8 @@ void GpuVideoDecoder::Initialize(DemuxerStream* stream,
   }
 
   client_proxy_ = new VDAClientProxy(this);
-  VideoDecodeAccelerator* vda =
-      factories_->CreateVideoDecodeAccelerator(config.profile(), client_proxy_);
+  VideoDecodeAccelerator* vda = factories_->CreateVideoDecodeAccelerator(
+      config.profile(), client_proxy_.get());
   if (!vda) {
     status_cb.Run(DECODER_ERROR_NOT_SUPPORTED);
     return;
@@ -277,7 +277,8 @@ void GpuVideoDecoder::Initialize(DemuxerStream* stream,
 
   DVLOG(1) << "GpuVideoDecoder::Initialize() succeeded.";
   PostTaskAndReplyWithResult(
-      vda_loop_proxy_, FROM_HERE,
+      vda_loop_proxy_.get(),
+      FROM_HERE,
       base::Bind(&VideoDecodeAccelerator::AsWeakPtr, base::Unretained(vda)),
       base::Bind(&GpuVideoDecoder::SetVDA, weak_this_, status_cb, vda));
 }
@@ -374,7 +375,7 @@ void GpuVideoDecoder::RequestBufferDecode(
     DemuxerStream::Status status,
     const scoped_refptr<DecoderBuffer>& buffer) {
   DCHECK(gvd_loop_proxy_->BelongsToCurrentThread());
-  DCHECK_EQ(status != DemuxerStream::kOk, !buffer) << status;
+  DCHECK_EQ(status != DemuxerStream::kOk, !buffer.get()) << status;
 
   demuxer_read_in_progress_ = false;
 
@@ -418,7 +419,7 @@ void GpuVideoDecoder::RequestBufferDecode(
   bool inserted = bitstream_buffers_in_decoder_.insert(std::make_pair(
       bitstream_buffer.id(), BufferPair(shm_buffer, buffer))).second;
   DCHECK(inserted);
-  RecordBufferData(bitstream_buffer, *buffer);
+  RecordBufferData(bitstream_buffer, *buffer.get());
 
   vda_loop_proxy_->PostTask(FROM_HERE, base::Bind(
       &VideoDecodeAccelerator::Decode, weak_vda_, bitstream_buffer));
@@ -570,7 +571,7 @@ void GpuVideoDecoder::EnqueueFrameAndTriggerFrameDelivery(
   if (!pending_reset_cb_.is_null())
     return;
 
-  if (frame)
+  if (frame.get())
     ready_video_frames_.push_back(frame);
   else
     DCHECK(!ready_video_frames_.empty());

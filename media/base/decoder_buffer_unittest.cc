@@ -16,7 +16,7 @@ TEST(DecoderBufferTest, Constructors) {
 
   const int kTestSize = 10;
   scoped_refptr<DecoderBuffer> buffer3(new DecoderBuffer(kTestSize));
-  ASSERT_TRUE(buffer3);
+  ASSERT_TRUE(buffer3.get());
   EXPECT_EQ(kTestSize, buffer3->GetDataSize());
 }
 
@@ -30,7 +30,7 @@ TEST(DecoderBufferTest, CopyFrom) {
   const int kDataSize = arraysize(kData);
   scoped_refptr<DecoderBuffer> buffer2(DecoderBuffer::CopyFrom(
       reinterpret_cast<const uint8*>(&kData), kDataSize));
-  ASSERT_TRUE(buffer2);
+  ASSERT_TRUE(buffer2.get());
   EXPECT_NE(kData, buffer2->GetData());
   EXPECT_EQ(buffer2->GetDataSize(), kDataSize);
   EXPECT_EQ(0, memcmp(buffer2->GetData(), kData, kDataSize));
@@ -38,7 +38,7 @@ TEST(DecoderBufferTest, CopyFrom) {
   scoped_refptr<DecoderBuffer> buffer3(DecoderBuffer::CopyFrom(
       reinterpret_cast<const uint8*>(&kData), kDataSize,
       reinterpret_cast<const uint8*>(&kData), kDataSize));
-  ASSERT_TRUE(buffer3);
+  ASSERT_TRUE(buffer3.get());
   EXPECT_NE(kData, buffer3->GetData());
   EXPECT_EQ(buffer3->GetDataSize(), kDataSize);
   EXPECT_EQ(0, memcmp(buffer3->GetData(), kData, kDataSize));
@@ -54,7 +54,7 @@ TEST(DecoderBufferTest, PaddingAlignment) {
   const int kDataSize = arraysize(kData);
   scoped_refptr<DecoderBuffer> buffer2(DecoderBuffer::CopyFrom(
       reinterpret_cast<const uint8*>(&kData), kDataSize));
-  ASSERT_TRUE(buffer2);
+  ASSERT_TRUE(buffer2.get());
 
   // Padding data should always be zeroed.
   for(int i = 0; i < DecoderBuffer::kPaddingSize; i++)
@@ -80,7 +80,7 @@ TEST(DecoderBufferTest, ReadingWriting) {
   const int kDataSize = arraysize(kData);
 
   scoped_refptr<DecoderBuffer> buffer(new DecoderBuffer(kDataSize));
-  ASSERT_TRUE(buffer);
+  ASSERT_TRUE(buffer.get());
 
   uint8* data = buffer->GetWritableData();
   ASSERT_TRUE(data);

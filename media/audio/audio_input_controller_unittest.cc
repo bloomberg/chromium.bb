@@ -90,7 +90,7 @@ TEST_F(AudioInputControllerTest, CreateAndClose) {
   message_loop_.Run();
 
   // Close the AudioInputController synchronously.
-  CloseAudioController(controller);
+  CloseAudioController(controller.get());
 }
 
 // Test a normal call sequence of create, record and close.
@@ -128,7 +128,7 @@ TEST_F(AudioInputControllerTest, RecordAndClose) {
   message_loop_.Run();
 
   // Close the AudioInputController synchronously.
-  CloseAudioController(controller);
+  CloseAudioController(controller.get());
 }
 
 // Test that the AudioInputController reports an error when the input stream
@@ -179,7 +179,7 @@ TEST_F(AudioInputControllerTest, RecordAndError) {
   message_loop_.Run();
 
   // Close the AudioInputController synchronously.
-  CloseAudioController(controller);
+  CloseAudioController(controller.get());
 }
 
 // Test that AudioInputController rejects insanely large packet sizes.
@@ -196,7 +196,7 @@ TEST_F(AudioInputControllerTest, SamplesPerPacketTooLarge) {
                          kSampleRate, kBitsPerSample, kSamplesPerPacket * 1000);
   scoped_refptr<AudioInputController> controller =
       AudioInputController::Create(audio_manager.get(), &event_handler, params);
-  ASSERT_FALSE(controller);
+  ASSERT_FALSE(controller.get());
 }
 
 // Test calling AudioInputController::Close multiple times.

@@ -55,7 +55,7 @@ AudioOutputController::AudioOutputController(AudioManager* audio_manager,
   DCHECK(audio_manager);
   DCHECK(handler_);
   DCHECK(sync_reader_);
-  DCHECK(message_loop_);
+  DCHECK(message_loop_.get());
 }
 
 AudioOutputController::~AudioOutputController() {

@@ -216,7 +216,7 @@ void VideoFrameStream::OnFrameReady(const VideoDecoder::Status status,
   DCHECK(!read_cb_.is_null());
 
   if (status != VideoDecoder::kOk) {
-    DCHECK(!frame);
+    DCHECK(!frame.get());
     state_ = STATE_ERROR;
     base::ResetAndReturn(&read_cb_).Run(status, NULL);
     return;
@@ -246,7 +246,7 @@ void VideoFrameStream::OnBufferReady(
   DCHECK(message_loop_->BelongsToCurrentThread());
   // VideoFrameStream reads from demuxer stream only when in NORMAL state.
   DCHECK_EQ(state_, STATE_NORMAL) << state_;
-  DCHECK_EQ(buffer != NULL, status == DemuxerStream::kOk) << status;
+  DCHECK_EQ(buffer.get() != NULL, status == DemuxerStream::kOk) << status;
 
   if (status == DemuxerStream::kConfigChanged) {
     DVLOG(2) << "OnBufferReady() - kConfigChanged";

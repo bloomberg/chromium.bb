@@ -132,10 +132,11 @@ class VirtualAudioInputStreamTest : public testing::Test {
 
   void CreateAndStartOneOutputStream() {
     ASSERT_TRUE(!!stream_);
-    AudioOutputStream* const output_stream =
-        new VirtualAudioOutputStream(
-            kParams, audio_message_loop_, stream_,
-            base::Bind(&base::DeletePointer<VirtualAudioOutputStream>));
+    AudioOutputStream* const output_stream = new VirtualAudioOutputStream(
+        kParams,
+        audio_message_loop_.get(),
+        stream_,
+        base::Bind(&base::DeletePointer<VirtualAudioOutputStream>));
     output_streams_.push_back(output_stream);
 
     output_stream->Open();

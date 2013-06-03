@@ -44,9 +44,11 @@ class VideoUtilTest : public testing::Test {
   }
 
   void CopyPlanes() {
-    CopyYPlane(y_plane_.get(), y_stride_, height_, destination_frame_);
-    CopyUPlane(u_plane_.get(), u_stride_, height_ / 2, destination_frame_);
-    CopyVPlane(v_plane_.get(), v_stride_, height_ / 2, destination_frame_);
+    CopyYPlane(y_plane_.get(), y_stride_, height_, destination_frame_.get());
+    CopyUPlane(
+        u_plane_.get(), u_stride_, height_ / 2, destination_frame_.get());
+    CopyVPlane(
+        v_plane_.get(), v_stride_, height_ / 2, destination_frame_.get());
   }
 
  private:

@@ -233,7 +233,7 @@ void FFmpegVideoDecoder::BufferReady(
   DCHECK(message_loop_->BelongsToCurrentThread());
   DCHECK_NE(state_, kDecodeFinished);
   DCHECK_NE(state_, kError);
-  DCHECK_EQ(status != DemuxerStream::kOk, !buffer) << status;
+  DCHECK_EQ(status != DemuxerStream::kOk, !buffer.get()) << status;
 
   if (state_ == kUninitialized)
     return;
@@ -264,7 +264,7 @@ void FFmpegVideoDecoder::DecodeBuffer(
   DCHECK_NE(state_, kError);
   DCHECK(reset_cb_.is_null());
   DCHECK(!read_cb_.is_null());
-  DCHECK(buffer);
+  DCHECK(buffer.get());
 
   // During decode, because reads are issued asynchronously, it is possible to
   // receive multiple end of stream buffers since each read is acked. When the
@@ -313,7 +313,7 @@ void FFmpegVideoDecoder::DecodeBuffer(
     statistics_cb_.Run(statistics);
   }
 
-  if (!video_frame) {
+  if (!video_frame.get()) {
     if (state_ == kFlushCodec) {
       DCHECK(buffer->IsEndOfStream());
       state_ = kDecodeFinished;

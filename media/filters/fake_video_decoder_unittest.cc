@@ -52,7 +52,7 @@ class FakeVideoDecoderTest : public testing::Test {
     is_read_pending_ = false;
     frame_read_ = frame;
 
-    if (frame && !frame->IsEndOfStream())
+    if (frame.get() && !frame->IsEndOfStream())
       num_decoded_frames_++;
   }
 
@@ -67,20 +67,20 @@ class FakeVideoDecoderTest : public testing::Test {
     switch (result) {
       case PENDING:
         EXPECT_TRUE(is_read_pending_);
-        ASSERT_FALSE(frame_read_);
+        ASSERT_FALSE(frame_read_.get());
         break;
       case OK:
         EXPECT_FALSE(is_read_pending_);
-        ASSERT_TRUE(frame_read_);
+        ASSERT_TRUE(frame_read_.get());
         EXPECT_FALSE(frame_read_->IsEndOfStream());
         break;
       case ABROTED:
         EXPECT_FALSE(is_read_pending_);
-        EXPECT_FALSE(frame_read_);
+        EXPECT_FALSE(frame_read_.get());
         break;
       case EOS:
         EXPECT_FALSE(is_read_pending_);
-        ASSERT_TRUE(frame_read_);
+        ASSERT_TRUE(frame_read_.get());
         EXPECT_TRUE(frame_read_->IsEndOfStream());
         break;
     }
@@ -97,7 +97,7 @@ class FakeVideoDecoderTest : public testing::Test {
   void ReadUntilEOS() {
     do {
       ReadOneFrame();
-    } while (frame_read_ && !frame_read_->IsEndOfStream());
+    } while (frame_read_.get() && !frame_read_->IsEndOfStream());
   }
 
   void EnterPendingReadState() {

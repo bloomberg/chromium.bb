@@ -253,8 +253,8 @@ void AesDecryptor::Decrypt(StreamType stream_type,
     }
 
     crypto::SymmetricKey* decryption_key = key->decryption_key();
-    decrypted = DecryptData(*encrypted, decryption_key);
-    if (!decrypted) {
+    decrypted = DecryptData(*encrypted.get(), decryption_key);
+    if (!decrypted.get()) {
       DVLOG(1) << "Decryption failed.";
       decrypt_cb.Run(kError, NULL);
       return;

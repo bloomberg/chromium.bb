@@ -85,10 +85,11 @@ TEST_F(VirtualAudioOutputStreamTest, StartStopStartStop) {
           base::IgnoreResult(&MockVirtualAudioInputStream::Open),
           base::Unretained(input_stream)));
 
-  VirtualAudioOutputStream* const output_stream =
-      new VirtualAudioOutputStream(
-          kParams, audio_message_loop(), input_stream,
-          base::Bind(&base::DeletePointer<VirtualAudioOutputStream>));
+  VirtualAudioOutputStream* const output_stream = new VirtualAudioOutputStream(
+      kParams,
+      audio_message_loop().get(),
+      input_stream,
+      base::Bind(&base::DeletePointer<VirtualAudioOutputStream>));
 
   EXPECT_CALL(*input_stream, AddOutputStream(output_stream, _))
       .Times(kCycles);

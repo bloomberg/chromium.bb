@@ -99,7 +99,7 @@ TEST(DataBufferTest, ReadingWriting) {
 
   // Create a DataBuffer.
   scoped_refptr<DataBuffer> buffer(new DataBuffer(kDataSize));
-  ASSERT_TRUE(buffer);
+  ASSERT_TRUE(buffer.get());
 
   uint8* data = buffer->GetWritableData();
   ASSERT_TRUE(data);

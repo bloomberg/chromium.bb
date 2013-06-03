@@ -341,7 +341,7 @@ void VideoRendererBase::FrameReady(VideoDecoder::Status status,
   pending_read_ = false;
 
   if (status != VideoDecoder::kOk) {
-    DCHECK(!frame);
+    DCHECK(!frame.get());
     PipelineStatus error = PIPELINE_ERROR_DECODE;
     if (status == VideoDecoder::kDecryptError)
       error = PIPELINE_ERROR_DECRYPT;
@@ -366,7 +366,7 @@ void VideoRendererBase::FrameReady(VideoDecoder::Status status,
     return;
   }
 
-  if (!frame) {
+  if (!frame.get()) {
     // Abort preroll early for a NULL frame because we won't get more frames.
     // A new preroll will be requested after this one completes so there is no
     // point trying to collect more frames.

@@ -257,10 +257,11 @@ PipelineIntegrationTestBase::CreateFilterCollection(
 
   AudioRendererImpl* audio_renderer_impl = new AudioRendererImpl(
       message_loop_.message_loop_proxy(),
-      audio_sink_,
+      audio_sink_.get(),
       audio_decoders.Pass(),
       base::Bind(&PipelineIntegrationTestBase::SetDecryptor,
-                 base::Unretained(this), decryptor));
+                 base::Unretained(this),
+                 decryptor));
   // Disable underflow if hashing is enabled.
   if (hashing_enabled_) {
     audio_sink_->StartAudioHashForTesting();

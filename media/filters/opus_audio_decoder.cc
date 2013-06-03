@@ -329,16 +329,16 @@ void OpusAudioDecoder::BufferReady(
     const scoped_refptr<DecoderBuffer>& input) {
   DCHECK(message_loop_->BelongsToCurrentThread());
   DCHECK(!read_cb_.is_null());
-  DCHECK_EQ(status != DemuxerStream::kOk, !input) << status;
+  DCHECK_EQ(status != DemuxerStream::kOk, !input.get()) << status;
 
   if (status == DemuxerStream::kAborted) {
-    DCHECK(!input);
+    DCHECK(!input.get());
     base::ResetAndReturn(&read_cb_).Run(kAborted, NULL);
     return;
   }
 
   if (status == DemuxerStream::kConfigChanged) {
-    DCHECK(!input);
+    DCHECK(!input.get());
     DVLOG(1) << "Config changed.";
 
     if (!ConfigureDecoder()) {
@@ -352,7 +352,7 @@ void OpusAudioDecoder::BufferReady(
   }
 
   DCHECK_EQ(status, DemuxerStream::kOk);
-  DCHECK(input);
+  DCHECK(input.get());
 
   // Libopus does not buffer output. Decoding is complete when an end of stream
   // input buffer is received.
@@ -390,7 +390,7 @@ void OpusAudioDecoder::BufferReady(
     return;
   }
 
-  if (output_buffer) {
+  if (output_buffer.get()) {
     // Execute callback to return the decoded audio.
     base::ResetAndReturn(&read_cb_).Run(kOk, output_buffer);
   } else {

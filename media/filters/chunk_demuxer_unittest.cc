@@ -88,13 +88,11 @@ static void WriteInt64(uint8* buffer, int64 number) {
 }
 
 MATCHER_P(HasTimestamp, timestamp_in_ms, "") {
-  return arg && !arg->IsEndOfStream() &&
-      arg->GetTimestamp().InMilliseconds() == timestamp_in_ms;
+  return arg.get() && !arg->IsEndOfStream() &&
+         arg->GetTimestamp().InMilliseconds() == timestamp_in_ms;
 }
 
-MATCHER(IsEndOfStream, "") {
-  return arg && arg->IsEndOfStream();
-}
+MATCHER(IsEndOfStream, "") { return arg.get() && arg->IsEndOfStream(); }
 
 static void OnReadDone(const base::TimeDelta& expected_time,
                        bool* called,

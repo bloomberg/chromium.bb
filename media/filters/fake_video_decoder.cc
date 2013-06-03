@@ -153,7 +153,7 @@ void FakeVideoDecoder::BufferReady(DemuxerStream::Status status,
   DCHECK(message_loop_->BelongsToCurrentThread());
   DCHECK_EQ(state_, NORMAL);
   DCHECK(!read_cb_.IsNull());
-  DCHECK_EQ(status != DemuxerStream::kOk, !buffer) << status;
+  DCHECK_EQ(status != DemuxerStream::kOk, !buffer.get()) << status;
 
   if (!stop_cb_.IsNull()) {
     read_cb_.RunOrHold(kOk, scoped_refptr<VideoFrame>());

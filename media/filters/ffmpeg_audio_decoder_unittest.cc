@@ -78,7 +78,7 @@ class FFmpegAudioDecoderTest : public testing::Test {
 
     scoped_refptr<DecoderBuffer> buffer(encoded_audio_.front());
     DemuxerStream::Status status =
-        buffer ? DemuxerStream::kOk : DemuxerStream::kAborted;
+        buffer.get() ? DemuxerStream::kOk : DemuxerStream::kAborted;
     encoded_audio_.pop_front();
     read_cb.Run(status, buffer);
   }

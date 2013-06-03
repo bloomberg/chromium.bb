@@ -225,7 +225,7 @@ void DecryptingVideoDecoder::DecryptAndDecodeBuffer(
 
   DCHECK_EQ(state_, kPendingDemuxerRead) << state_;
   DCHECK(!read_cb_.is_null());
-  DCHECK_EQ(buffer != NULL, status == DemuxerStream::kOk) << status;
+  DCHECK_EQ(buffer.get() != NULL, status == DemuxerStream::kOk) << status;
 
   if (!reset_cb_.is_null()) {
     base::ResetAndReturn(&read_cb_).Run(kOk, NULL);
@@ -277,7 +277,7 @@ void DecryptingVideoDecoder::DeliverFrame(
 
   DCHECK_EQ(state_, kPendingDecode) << state_;
   DCHECK(!read_cb_.is_null());
-  DCHECK(pending_buffer_to_decode_);
+  DCHECK(pending_buffer_to_decode_.get());
 
   bool need_to_try_again_if_nokey_is_returned = key_added_while_decode_pending_;
   key_added_while_decode_pending_ = false;
@@ -292,7 +292,7 @@ void DecryptingVideoDecoder::DeliverFrame(
     return;
   }
 
-  DCHECK_EQ(status == Decryptor::kSuccess, frame != NULL);
+  DCHECK_EQ(status == Decryptor::kSuccess, frame.get() != NULL);
 
   if (status == Decryptor::kError) {
     DVLOG(2) << "DeliverFrame() - kError";

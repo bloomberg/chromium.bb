@@ -64,22 +64,20 @@ class AudioDeviceThread::Thread
 AudioDeviceThread::AudioDeviceThread() {
 }
 
-AudioDeviceThread::~AudioDeviceThread() {
-  DCHECK(!thread_);
-}
+AudioDeviceThread::~AudioDeviceThread() { DCHECK(!thread_.get()); }
 
 void AudioDeviceThread::Start(AudioDeviceThread::Callback* callback,
                               base::SyncSocket::Handle socket,
                               const char* thread_name) {
   base::AutoLock auto_lock(thread_lock_);
-  CHECK(thread_ == NULL);
+  CHECK(thread_.get() == NULL);
   thread_ = new AudioDeviceThread::Thread(callback, socket, thread_name);
   thread_->Start();
 }
 
 void AudioDeviceThread::Stop(base::MessageLoop* loop_for_join) {
   base::AutoLock auto_lock(thread_lock_);
-  if (thread_) {
+  if (thread_.get()) {
     thread_->Stop(loop_for_join);
     thread_ = NULL;
   }
@@ -87,7 +85,7 @@ void AudioDeviceThread::Stop(base::MessageLoop* loop_for_join) {
 
 bool AudioDeviceThread::IsStopped() {
   base::AutoLock auto_lock(thread_lock_);
-  return thread_ == NULL;
+  return thread_.get() == NULL;
 }
 
 // AudioDeviceThread::Thread implementation

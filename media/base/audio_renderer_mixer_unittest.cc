@@ -52,8 +52,8 @@ class AudioRendererMixerTest
         std::tr1::get<1>(GetParam()), 16, kLowLatencyBufferSize);
 
     sink_ = new MockAudioRendererSink();
-    EXPECT_CALL(*sink_, Start());
-    EXPECT_CALL(*sink_, Stop());
+    EXPECT_CALL(*sink_.get(), Start());
+    EXPECT_CALL(*sink_.get(), Stop());
 
     mixer_.reset(new AudioRendererMixer(
         input_parameters_, output_parameters_, sink_));
@@ -415,8 +415,8 @@ TEST_P(AudioRendererMixerBehavioralTest, MixerPausesStream) {
   mixer_->set_pause_delay_for_testing(kPauseTime);
 
   base::WaitableEvent pause_event(true, false);
-  EXPECT_CALL(*sink_, Pause())
-      .Times(2).WillRepeatedly(SignalEvent(&pause_event));
+  EXPECT_CALL(*sink_.get(), Pause()).Times(2)
+      .WillRepeatedly(SignalEvent(&pause_event));
   InitializeInputs(1);
 
   // Ensure never playing the input results in a sink pause.
@@ -431,7 +431,7 @@ TEST_P(AudioRendererMixerBehavioralTest, MixerPausesStream) {
 
   // Playing the input for the first time should cause a sink play.
   mixer_inputs_[0]->Start();
-  EXPECT_CALL(*sink_, Play());
+  EXPECT_CALL(*sink_.get(), Play());
   mixer_inputs_[0]->Play();
   mixer_inputs_[0]->Pause();
 
