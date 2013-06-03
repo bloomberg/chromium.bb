@@ -125,7 +125,13 @@ class WebstoreProviderTest : public InProcessBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(WebstoreProviderTest);
 };
 
-IN_PROC_BROWSER_TEST_F(WebstoreProviderTest, Basic) {
+// Flaky on Windows: http://crbug.com/246136.
+#if defined(OS_WIN)
+#define MAYBE_Basic DISABLED_Basic
+#else
+#define MAYBE_Basic Basic
+#endif
+IN_PROC_BROWSER_TEST_F(WebstoreProviderTest, MAYBE_Basic) {
   const char kOneResult[] = "{"
       "\"search_url\": \"http://host/search\","
       "\"results\":["
