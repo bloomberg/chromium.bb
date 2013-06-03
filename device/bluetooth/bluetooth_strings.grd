@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <!--
-This file contains the strings for device_bluetooth.
+This file contains the strings for bluetooth.
 -->
 
 <grit base_dir="." latest_public_release="0" current_release="1"

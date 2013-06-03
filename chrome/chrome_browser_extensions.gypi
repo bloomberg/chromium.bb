@@ -28,7 +28,7 @@
         '../build/temp_gyp/googleurl.gyp:googleurl',
         '../content/content.gyp:content_browser',
         '../crypto/crypto.gyp:crypto',
-        '../device/device.gyp:device_bluetooth',
+        '../device/bluetooth/bluetooth.gyp:device_bluetooth',
         '../net/net.gyp:net',
         '../skia/skia.gyp:skia',
         '../sync/sync.gyp:sync',
@@ -858,7 +858,7 @@
             ['include', '^browser/extensions/api/web_request/web_request_time_tracker.cc'],
           ],
           'dependencies!': [
-            '../device/device.gyp:device_bluetooth',
+            '../device/bluetooth/bluetooth.gyp:device_bluetooth',
             '../third_party/libusb/libusb.gyp:libusb'
           ],
         }],

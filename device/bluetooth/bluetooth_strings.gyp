@@ -3,27 +3,26 @@
 # found in the LICENSE file.
 
 {
-  'variables': {
-    'grit_out_dir': '<(SHARED_INTERMEDIATE_DIR)/chrome',
-  },
-
   'targets': [
     {
       'target_name': 'device_bluetooth_strings',
       'type': 'none',
+      'variables': {
+        'grit_out_dir': '<(SHARED_INTERMEDIATE_DIR)/device/bluetooth',
+      },
       'actions': [
         {
           'action_name': 'device_bluetooth_strings',
           'variables': {
-            'grit_grd_file': 'device_bluetooth_strings.grd',
-            'grit_out_dir': '<(SHARED_INTERMEDIATE_DIR)/device_bluetooth_strings',
+            'grit_grd_file': 'bluetooth_strings.grd',
+            'grit_out_dir': '<(SHARED_INTERMEDIATE_DIR)/device/bluetooth/strings',
           },
-          'includes': [ '../build/grit_action.gypi' ],
+          'includes': [ '../../build/grit_action.gypi' ],
         },
       ],
       'direct_dependent_settings': {
         'include_dirs': [
-          '<(SHARED_INTERMEDIATE_DIR)/device_bluetooth_strings',
+          '<(SHARED_INTERMEDIATE_DIR)/device/bluetooth/strings',
         ],
       },
     },

@@ -45,7 +45,7 @@ class UsbIds {
   // such vendor exists.
   static const UsbVendor* FindVendor(uint16_t vendor_id);
 
-  // These fields are defined in a generated file. See device/device.gyp for
+  // These fields are defined in a generated file. See device/usb/usb.gyp for
   // more information on how they are generated.
   static const size_t vendor_size_;
   static const UsbVendor vendors_[];

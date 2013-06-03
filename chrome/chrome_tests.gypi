@@ -1159,7 +1159,7 @@
         '../base/base.gyp:test_support_base',
         '../components/components.gyp:autofill_risk_proto',
         '../components/components.gyp:autofill_test_util',
-        '../device/device.gyp:device_bluetooth_mocks',
+        '../device/bluetooth/bluetooth.gyp:device_bluetooth_mocks',
         '../net/net.gyp:net',
         '../net/net.gyp:net_test_support',
         '../skia/skia.gyp:skia',

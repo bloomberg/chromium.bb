@@ -53,7 +53,7 @@
         '../chromeos/ime/input_method.gyp:gencode',
         '../crypto/crypto.gyp:crypto',
         '../dbus/dbus.gyp:dbus',
-        '../device/device.gyp:device_bluetooth',
+        '../device/bluetooth/bluetooth.gyp:device_bluetooth',
         '../media/media.gyp:media',
         '../net/net.gyp:net',
         '../ppapi/ppapi_internal.gyp:ppapi_ipc',  # For PpapiMsg_LoadPlugin

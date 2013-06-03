@@ -35,7 +35,9 @@
           'dependencies': [
             '../cc/cc_tests.gyp:*',
             '../components/components.gyp:*',
+            '../device/bluetooth/bluetooth.gyp:*',
             '../device/device.gyp:*',
+            '../device/usb/usb.gyp:*',
             '../gpu/gpu.gyp:*',
             '../gpu/tools/tools.gyp:*',
             '../ipc/ipc.gyp:*',

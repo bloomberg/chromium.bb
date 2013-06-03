@@ -2351,7 +2351,7 @@
             'debugger',
             'installer_util',
             '../components/component_resources.gyp:component_resources',
-            '../device/device.gyp:device_bluetooth',
+            '../device/bluetooth/bluetooth.gyp:device_bluetooth',
             '../net/net.gyp:net_with_v8',
             '../printing/printing.gyp:printing',
             '../third_party/adobe/flash/flash_player.gyp:flapper_version_h',
