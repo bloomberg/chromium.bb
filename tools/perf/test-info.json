@@ -1,5 +1,12 @@
 {
   "_description": "This file contains info about our performance test suites, used by the perf dashboard (http://chromeperf.appspot.com).",
+  "blink_perf": {
+    "description": "Runs all enabled benchmarks in third_party/WebKit/PerformanceTests/",
+    "code": [
+      "chrome/src/tools/perf/perf_tools/blink_perf.py",
+      "third_party/WebKit/PerformanceTests/"
+    ]
+  },
   "bloat": {
     "description": "Load an image many times and ensure memory usage stays low.",
     "code": [
