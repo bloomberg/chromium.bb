@@ -110,12 +110,16 @@ class Stats(object):
 
   def finalize(self, first_day, last_day):
     if self.actually_reviewed:
+      assert self.actually_reviewed > 0
       self.percent_lgtm = (self.lgtms * 100. / self.actually_reviewed)
       self.percent_drive_by = (self.drive_by * 100. / self.actually_reviewed)
       self.percent_not_requested = (
           self.not_requested * 100. / self.actually_reviewed)
+    assert bool(first_day) == bool(last_day)
     if first_day and last_day:
+      assert first_day < last_day
       self.days = (to_datetime(last_day) - to_datetime(first_day)).days + 1
+      assert self.days > 0
 
 
 def _process_issue_lgtms(issue, reviewer, stats):
@@ -217,26 +221,26 @@ def print_reviews(reviewer, created_after, created_before, instance_url):
   # The stats we gather. Feel free to send me a CL to get more stats.
   stats = Stats()
 
-  last_issue = None
-  first_day = None
-  last_day = None
-
   # Column sizes need to match print_issue() output.
   print >> sys.stderr, (
       'Issue   Creation   Did         Latency Owner           Reviewers')
 
   # See def search() in rietveld.py to see all the filters you can use.
+  issues = []
   for issue in remote.search(
       reviewer=reviewer,
       created_after=created_after,
       created_before=created_before,
       with_messages=True):
-    last_issue = issue
-    if not first_day:
-      first_day = issue['created'][:10]
+    issues.append(issue)
     print_issue(issue, username(reviewer), stats)
-  if last_issue:
-    last_day = last_issue['created'][:10]
+
+  issues.sort(key=lambda x: x['created'])
+  first_day = None
+  last_day = None
+  if issues:
+    first_day = issues[0]['created'][:10]
+    last_day = issues[-1]['created'][:10]
   stats.finalize(first_day, last_day)
 
   print >> sys.stderr, (
