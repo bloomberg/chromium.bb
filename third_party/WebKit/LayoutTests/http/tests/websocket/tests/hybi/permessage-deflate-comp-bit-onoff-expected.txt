@@ -10,6 +10,10 @@ Sending message: "World"
 PASS event.data is 'World'
 Sending message: "EnableCompression"
 PASS event.data is 'EnableCompression'
+Sending message: ""
+PASS event.data is ''
+Sending message: ""
+PASS event.data is ''
 Sending message: "Goodbye"
 PASS event.data is 'Goodbye'
 onclose() was called.

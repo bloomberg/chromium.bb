@@ -71,6 +71,7 @@ private:
 
     int m_windowBits;
     ContextTakeOverMode m_contextTakeOverMode;
+    bool m_isBytesAdded;
     Vector<char> m_buffer;
     OwnPtr<z_stream> m_stream;
 };

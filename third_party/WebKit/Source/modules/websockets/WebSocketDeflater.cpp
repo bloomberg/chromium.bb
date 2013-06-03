@@ -53,6 +53,7 @@ PassOwnPtr<WebSocketDeflater> WebSocketDeflater::create(int windowBits, ContextT
 WebSocketDeflater::WebSocketDeflater(int windowBits, ContextTakeOverMode contextTakeOverMode)
     : m_windowBits(windowBits)
     , m_contextTakeOverMode(contextTakeOverMode)
+    , m_isBytesAdded(false)
 {
     ASSERT(m_windowBits >= 8);
     ASSERT(m_windowBits <= 15);
@@ -97,11 +98,19 @@ bool WebSocketDeflater::addBytes(const char* data, size_t length)
         m_buffer.shrink(writePosition + maxLength - m_stream->avail_out);
         maxLength *= 2;
     } while (m_stream->avail_in > 0);
+    m_isBytesAdded = true;
     return true;
 }
 
 bool WebSocketDeflater::finish()
 {
+    if (!m_isBytesAdded) {
+        // Since consecutive calls of deflate with Z_SYNC_FLUSH and no input lead to an error,
+        // we create and return the output for the empty input manually.
+        ASSERT(!m_buffer.size());
+        m_buffer.append("\x02\x00", 2);
+        return true;
+    }
     while (true) {
         size_t writePosition = m_buffer.size();
         m_buffer.grow(writePosition + bufferIncrementUnit);
@@ -118,12 +127,14 @@ bool WebSocketDeflater::finish()
     if (m_buffer.size() <= 4)
         return false;
     m_buffer.resize(m_buffer.size() - 4);
+    m_isBytesAdded = false;
     return true;
 }
 
 void WebSocketDeflater::reset()
 {
     m_buffer.clear();
+    m_isBytesAdded = false;
     if (m_contextTakeOverMode == DoNotTakeOverContext)
         deflateReset(m_stream.get());
 }

@@ -170,6 +170,51 @@ TEST(WebSocketPerMessageDeflateTest, TestDeflateEmptyFrame)
     EXPECT_FALSE(f2.compress);
 }
 
+TEST(WebSocketPerMessageDeflateTest, TestDeflateEmptyMessages)
+{
+    WebSocketPerMessageDeflate c;
+    c.enable(8, WebSocketDeflater::TakeOverContext);
+    WebSocketFrame::OpCode opcode = WebSocketFrame::OpCodeText;
+    WebSocketFrame f1(opcode, "", 0);
+    WebSocketFrame f2(opcode, "", 0, WebSocketFrame::Final);
+    WebSocketFrame f3(opcode, "", 0, WebSocketFrame::Final);
+    WebSocketFrame f4(opcode, "", 0, WebSocketFrame::Final);
+    WebSocketFrame f5(opcode, "Hello", 5, WebSocketFrame::Final);
+
+    ASSERT_TRUE(c.deflate(f1));
+    EXPECT_EQ(0u, f1.payloadLength);
+    EXPECT_FALSE(f1.final);
+    EXPECT_TRUE(f1.compress);
+
+    c.resetDeflateBuffer();
+    ASSERT_TRUE(c.deflate(f2));
+    EXPECT_EQ(2u, f2.payloadLength);
+    EXPECT_EQ(0, memcmp("\x02\x00", f2.payload, f2.payloadLength));
+    EXPECT_TRUE(f2.final);
+    EXPECT_FALSE(f2.compress);
+
+    c.resetDeflateBuffer();
+    ASSERT_TRUE(c.deflate(f3));
+    EXPECT_EQ(2u, f3.payloadLength);
+    EXPECT_EQ(0, memcmp("\x02\x00", f3.payload, f3.payloadLength));
+    EXPECT_TRUE(f3.final);
+    EXPECT_TRUE(f3.compress);
+
+    c.resetDeflateBuffer();
+    ASSERT_TRUE(c.deflate(f4));
+    EXPECT_EQ(2u, f4.payloadLength);
+    EXPECT_EQ(0, memcmp("\x02\x00", f4.payload, f4.payloadLength));
+    EXPECT_TRUE(f4.final);
+    EXPECT_TRUE(f4.compress);
+
+    c.resetDeflateBuffer();
+    ASSERT_TRUE(c.deflate(f5));
+    EXPECT_EQ(7u, f5.payloadLength);
+    EXPECT_EQ(0, memcmp("\xf2\x48\xcd\xc9\xc9\x07\x00", f5.payload, f5.payloadLength));
+    EXPECT_TRUE(f5.final);
+    EXPECT_TRUE(f5.compress);
+}
+
 TEST(WebSocketPerMessageDeflateTest, TestControlMessage)
 {
     WebSocketPerMessageDeflate c;
