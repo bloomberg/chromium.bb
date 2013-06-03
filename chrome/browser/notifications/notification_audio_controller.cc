@@ -88,7 +88,10 @@ class WavAudioHandler {
 };
 
 WavAudioHandler::WavAudioHandler(const base::StringPiece& data)
-    : cursor_(0) {
+    : cursor_(0),
+      num_channels_(0),
+      sample_rate_(0),
+      bits_per_sample_(0) {
   if (data.size() < kWavFileHeaderSize)
     return;
 
