@@ -282,7 +282,7 @@ deps = {
         "/trunk/jsoncpp/src/lib_json@" + Var("jsoncpp_revision"),
 
   "src/third_party/libyuv":
-    (Var("googlecode_url") % "libyuv") + "/trunk@711",
+    (Var("googlecode_url") % "libyuv") + "/trunk@715",
 
   "src/third_party/smhasher/src":
     (Var("googlecode_url") % "smhasher") + "/trunk@149",
