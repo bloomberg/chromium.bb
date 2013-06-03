@@ -445,8 +445,7 @@ def GypNinjaInstall(pepperdir, platform, toolchains):
   ninja_out_dir = os.path.join(OUT_DIR, build_dir, 'Release')
   tools_files = [
     ['sel_ldr', 'sel_ldr_x86_32'],
-    ['ncval_x86_32', 'ncval_x86_32'],
-    ['ncval_arm', 'ncval_arm'],
+    ['ncval_new', 'ncval'],
     ['irt_core_newlib_x32.nexe', 'irt_core_x86_32.nexe'],
     ['irt_core_newlib_x64.nexe', 'irt_core_x86_64.nexe'],
   ]
@@ -459,7 +458,6 @@ def GypNinjaInstall(pepperdir, platform, toolchains):
   if platform != 'mac':
     # Mac doesn't build 64-bit binaries.
     tools_files.append(['sel_ldr64', 'sel_ldr_x86_64'])
-    tools_files.append(['ncval_x86_64', 'ncval_x86_64'])
 
   if platform == 'linux':
     tools_files.append(['nacl_helper_bootstrap',
@@ -513,22 +511,18 @@ def GypNinjaBuild_NaCl(platform, rel_out_dir):
   out_dir_arm = MakeNinjaRelPath(rel_out_dir + '-arm')
   GypNinjaBuild('ia32', gyp_py, nacl_core_sdk_gyp, 'nacl_core_sdk', out_dir)
   GypNinjaBuild('arm', gyp_py, nacl_core_sdk_gyp, 'nacl_core_sdk', out_dir_arm)
-  GypNinjaBuild('ia32', gyp_py, all_gyp, 'ncval_x86_32', out_dir)
-  GypNinjaBuild(None, gyp_py, all_gyp, 'ncval_arm', out_dir)
+  GypNinjaBuild('ia32', gyp_py, all_gyp, 'ncval_new', out_dir)
 
   if platform == 'win':
     NinjaBuild('sel_ldr64', out_dir)
-    NinjaBuild('ncval_x86_64', out_dir)
   elif platform == 'linux':
     out_dir_64 = MakeNinjaRelPath(rel_out_dir + '-64')
     GypNinjaBuild('x64', gyp_py, nacl_core_sdk_gyp, 'sel_ldr', out_dir_64)
-    GypNinjaBuild('x64', gyp_py, all_gyp, 'ncval_x86_64', out_dir_64)
 
-    # We only need sel_ldr and ncval_x86_64 from the 64-bit out directory.
+    # We only need sel_ldr from the 64-bit out directory.
     # sel_ldr needs to be renamed, so we'll call it sel_ldr64.
     files_to_copy = [
       ('sel_ldr', 'sel_ldr64'),
-      ('ncval_x86_64', 'ncval_x86_64'),
       ('nacl_helper_bootstrap', 'nacl_helper_bootstrap64'),
     ]
 

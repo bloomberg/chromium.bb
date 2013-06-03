@@ -978,12 +978,8 @@ tools/nacl_gcc.mk
 [linux]tools/nacl_helper_bootstrap_x86_32
 [linux]tools/nacl_helper_bootstrap_x86_64
 tools/nacl_llvm.mk
-[linux,mac]tools/ncval_arm
-[win]tools/ncval_arm.exe
-[linux,mac]tools/ncval_x86_32
-[linux]tools/ncval_x86_64
-[win]tools/ncval_x86_32.exe
-[win]tools/ncval_x86_64.exe
+[linux,mac]tools/ncval
+[win]tools/ncval.exe
 tools/oshelpers.py
 tools/oshelpers.pyc
 tools/quote.py
