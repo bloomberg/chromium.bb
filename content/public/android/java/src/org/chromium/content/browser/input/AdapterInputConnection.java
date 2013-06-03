@@ -127,24 +127,23 @@ public class AdapterInputConnection extends BaseInputConnection {
         // Non-breaking spaces can cause the IME to get confused. Replace with normal spaces.
         text = text.replace('\u00A0', ' ');
 
-        Editable editable = getEditable();
-
-        int prevSelectionStart = Selection.getSelectionStart(editable);
-        int prevSelectionEnd = Selection.getSelectionEnd(editable);
-        int prevCompositionStart = getComposingSpanStart(editable);
-        int prevCompositionEnd = getComposingSpanEnd(editable);
-        String prevText = editable.toString();
-
         selectionStart = Math.min(selectionStart, text.length());
         selectionEnd = Math.min(selectionEnd, text.length());
         compositionStart = Math.min(compositionStart, text.length());
         compositionEnd = Math.min(compositionEnd, text.length());
 
+        Editable editable = getEditable();
+        String prevText = editable.toString();
         boolean textUnchanged = prevText.equals(text);
 
         if (!textUnchanged) {
             editable.replace(0, editable.length(), text);
         }
+
+        int prevSelectionStart = Selection.getSelectionStart(editable);
+        int prevSelectionEnd = Selection.getSelectionEnd(editable);
+        int prevCompositionStart = getComposingSpanStart(editable);
+        int prevCompositionEnd = getComposingSpanEnd(editable);
 
         if (prevSelectionStart == selectionStart && prevSelectionEnd == selectionEnd
                 && prevCompositionStart == compositionStart
