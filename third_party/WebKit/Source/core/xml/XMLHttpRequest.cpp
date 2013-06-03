@@ -779,6 +779,7 @@ void XMLHttpRequest::createRequest(ExceptionCode& ec)
             setPendingActivity(this);
         }
     } else {
+        request.setPriority(ResourceLoadPriorityVeryHigh);
         InspectorInstrumentation::willLoadXHRSynchronously(scriptExecutionContext());
         ThreadableLoader::loadResourceSynchronously(scriptExecutionContext(), request, *this, options);
         InspectorInstrumentation::didLoadXHRSynchronously(scriptExecutionContext());
