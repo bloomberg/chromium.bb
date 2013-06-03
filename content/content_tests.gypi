@@ -688,6 +688,11 @@
             '../testing/android/native_test.gyp:native_test_native_code',
           ],
         }],
+        ['enable_webrtc==1 and google_tv==1', {
+          'sources': [
+            'renderer/media/rtc_video_decoder_factory_tv_unittest.cc',
+          ],
+        }],
       ],
     },
   ],

@@ -27,9 +27,9 @@ using WebKit::WebString;
 
 namespace {
 
-// The size of the access unit to transfer in an IPC.
+// The size of the access unit to transfer in an IPC in case of MediaSource.
 // 16: approximately 250ms of content in 60 fps movies.
-const size_t kAccessUnitSize = 16;
+const size_t kAccessUnitSizeForMediaSource = 16;
 
 const uint8 kVorbisPadding[] = { 0xff, 0xff, 0xff, 0xff };
 
@@ -66,19 +66,22 @@ MediaSourceDelegate::MediaSourceDelegate(WebMediaPlayerProxyAndroid* proxy,
       proxy_(proxy),
       player_id_(player_id),
       media_log_(media_log),
+      demuxer_(NULL),
       audio_params_(new MediaPlayerHostMsg_ReadFromDemuxerAck_Params),
       video_params_(new MediaPlayerHostMsg_ReadFromDemuxerAck_Params),
-      seeking_(false) {
+      seeking_(false),
+      access_unit_size_(0) {
 }
 
 MediaSourceDelegate::~MediaSourceDelegate() {
   DVLOG(1) << "MediaSourceDelegate::~MediaSourceDelegate() : " << player_id_;
   DCHECK(!chunk_demuxer_);
+  DCHECK(!demuxer_);
 }
 
 void MediaSourceDelegate::Destroy() {
   DVLOG(1) << "MediaSourceDelegate::Destroy() : " << player_id_;
-  if (!chunk_demuxer_) {
+  if (!demuxer_) {
     delete this;
     return;
   }
@@ -87,11 +90,13 @@ void MediaSourceDelegate::Destroy() {
   media_source_.reset();
   proxy_ = NULL;
 
-  chunk_demuxer_->Stop(
-      BIND_TO_RENDER_LOOP(&MediaSourceDelegate::OnDemuxerStopDone));
+  demuxer_ = NULL;
+  if (chunk_demuxer_)
+    chunk_demuxer_->Stop(
+        BIND_TO_RENDER_LOOP(&MediaSourceDelegate::OnDemuxerStopDone));
 }
 
-void MediaSourceDelegate::Initialize(
+void MediaSourceDelegate::InitializeMediaSource(
     WebKit::WebMediaSource* media_source,
     const media::NeedKeyCB& need_key_cb,
     const UpdateNetworkStateCB& update_network_state_cb) {
@@ -108,7 +113,25 @@ void MediaSourceDelegate::Initialize(
       base::Bind(&LogMediaSourceError, media_log_)));
   chunk_demuxer_->Initialize(this,
       BIND_TO_RENDER_LOOP(&MediaSourceDelegate::OnDemuxerInitDone));
+  demuxer_ = chunk_demuxer_.get();
+  access_unit_size_ = kAccessUnitSizeForMediaSource;
 }
+
+#if defined(GOOGLE_TV)
+void MediaSourceDelegate::InitializeMediaStream(
+    media::Demuxer* demuxer,
+    const UpdateNetworkStateCB& update_network_state_cb) {
+  DCHECK(demuxer);
+  demuxer_ = demuxer;
+  update_network_state_cb_ = update_network_state_cb;
+
+  demuxer_->Initialize(this,
+      BIND_TO_RENDER_LOOP(&MediaSourceDelegate::OnDemuxerInitDone));
+  // When playing Media Stream, don't wait to accumulate multiple packets per
+  // IPC communication.
+  access_unit_size_ = 1;
+}
+#endif
 
 const WebKit::WebTimeRanges& MediaSourceDelegate::Buffered() {
   buffered_web_time_ranges_ =
@@ -136,11 +159,10 @@ void MediaSourceDelegate::Seek(base::TimeDelta time) {
   DVLOG(1) << "MediaSourceDelegate::Seek(" << time.InSecondsF() << ") : "
            << player_id_;
   seeking_ = true;
-  DCHECK(chunk_demuxer_);
-  if (!chunk_demuxer_)
-    return;
-  chunk_demuxer_->StartWaitingForSeek();
-  chunk_demuxer_->Seek(time,
+  DCHECK(demuxer_);
+  if (chunk_demuxer_)
+    chunk_demuxer_->StartWaitingForSeek();
+  demuxer_->Seek(time,
       BIND_TO_RENDER_LOOP(&MediaSourceDelegate::OnDemuxerError));
 }
 
@@ -175,11 +197,13 @@ void MediaSourceDelegate::OnReadFromDemuxer(media::DemuxerStream::Type type,
   seeking_ = false;
 
   DCHECK(type == DemuxerStream::AUDIO || type == DemuxerStream::VIDEO);
+  // The access unit size should have been initialized properly at this stage.
+  DCHECK_GT(access_unit_size_, 0u);
   MediaPlayerHostMsg_ReadFromDemuxerAck_Params* params =
       type == DemuxerStream::AUDIO ? audio_params_.get() : video_params_.get();
   params->type = type;
-  params->access_units.resize(kAccessUnitSize);
-  DemuxerStream* stream = chunk_demuxer_->GetStream(type);
+  params->access_units.resize(access_unit_size_);
+  DemuxerStream* stream = demuxer_->GetStream(type);
   DCHECK(stream != NULL);
   ReadFromDemuxerStream(stream, params, 0);
 }
@@ -311,7 +335,7 @@ void MediaSourceDelegate::OnDemuxerStopDone() {
 
 void MediaSourceDelegate::NotifyDemuxerReady(const std::string& key_system) {
   MediaPlayerHostMsg_DemuxerReady_Params params;
-  DemuxerStream* audio_stream = chunk_demuxer_->GetStream(DemuxerStream::AUDIO);
+  DemuxerStream* audio_stream = demuxer_->GetStream(DemuxerStream::AUDIO);
   if (audio_stream) {
     const media::AudioDecoderConfig& config =
         audio_stream->audio_decoder_config();
@@ -323,7 +347,7 @@ void MediaSourceDelegate::NotifyDemuxerReady(const std::string& key_system) {
     params.audio_extra_data = std::vector<uint8>(
         config.extra_data(), config.extra_data() + config.extra_data_size());
   }
-  DemuxerStream* video_stream = chunk_demuxer_->GetStream(DemuxerStream::VIDEO);
+  DemuxerStream* video_stream = demuxer_->GetStream(DemuxerStream::VIDEO);
   if (video_stream) {
     const media::VideoDecoderConfig& config =
         video_stream->video_decoder_config();
@@ -333,17 +357,26 @@ void MediaSourceDelegate::NotifyDemuxerReady(const std::string& key_system) {
     params.video_extra_data = std::vector<uint8>(
         config.extra_data(), config.extra_data() + config.extra_data_size());
   }
-  double duration_ms = chunk_demuxer_->GetDuration() * 1000;
-  DCHECK(duration_ms >= 0);
-  if (duration_ms > std::numeric_limits<int>::max())
-    duration_ms = std::numeric_limits<int>::max();
-  params.duration_ms = duration_ms;
+  params.duration_ms = GetDurationMs();
   params.key_system = key_system;
 
   bool ready_to_send = (!params.is_audio_encrypted &&
                         !params.is_video_encrypted) || !key_system.empty();
   if (proxy_ && ready_to_send)
     proxy_->DemuxerReady(player_id_, params);
+}
+
+int MediaSourceDelegate::GetDurationMs() {
+  if (!chunk_demuxer_)
+    return -1;
+
+  double duration_ms = chunk_demuxer_->GetDuration() * 1000;
+  if (duration_ms > std::numeric_limits<int>::max()) {
+    LOG(WARNING) << "Duration from ChunkDemuxer is too large; probably "
+                    "something has gone wrong.";
+    return std::numeric_limits<int>::max();
+  }
+  return duration_ms;
 }
 
 void MediaSourceDelegate::OnDemuxerOpened() {

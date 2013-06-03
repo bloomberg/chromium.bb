@@ -34,18 +34,24 @@ class MEDIA_EXPORT MediaPlayerAndroid {
     MEDIA_ERROR_INVALID_CODE,
   };
 
+  // Types of media source that this object will play.
+  enum SourceType {
+    SOURCE_TYPE_URL,
+    SOURCE_TYPE_MSE,     // W3C Media Source Extensions
+    SOURCE_TYPE_STREAM,  // W3C Media Stream, e.g. getUserMedia().
+  };
+
   // Construct a MediaPlayerAndroid object with all the needed media player
   // callbacks. This object needs to call |manager_|'s RequestMediaResources()
   // before decoding the media stream. This allows |manager_| to track
   // unused resources and free them when needed. On the other hand, it needs
   // to call ReleaseMediaResources() when it is done with decoding.
-  static MediaPlayerAndroid* Create(
-      int player_id,
-      const GURL& url,
-      bool is_media_source,
-      const GURL& first_party_for_cookies,
-      bool hide_url_log,
-      MediaPlayerManager* manager);
+  static MediaPlayerAndroid* Create(int player_id,
+                                    const GURL& url,
+                                    SourceType source_type,
+                                    const GURL& first_party_for_cookies,
+                                    bool hide_url_log,
+                                    MediaPlayerManager* manager);
 
   // Passing an external java surface object to the player.
   virtual void SetVideoSurface(gfx::ScopedJavaSurface surface) = 0;

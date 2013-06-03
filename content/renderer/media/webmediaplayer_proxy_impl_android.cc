@@ -52,11 +52,15 @@ bool WebMediaPlayerProxyImplAndroid::OnMessageReceived(
 }
 
 void WebMediaPlayerProxyImplAndroid::Initialize(
-    int player_id, const GURL& url,
-    bool is_media_source,
+    int player_id,
+    const GURL& url,
+    media::MediaPlayerAndroid::SourceType source_type,
     const GURL& first_party_for_cookies) {
-  Send(new MediaPlayerHostMsg_MediaPlayerInitialize(
-      routing_id(), player_id, url, is_media_source, first_party_for_cookies));
+  Send(new MediaPlayerHostMsg_MediaPlayerInitialize(routing_id(),
+                                                    player_id,
+                                                    url,
+                                                    source_type,
+                                                    first_party_for_cookies));
 }
 
 void WebMediaPlayerProxyImplAndroid::Start(int player_id) {
@@ -200,7 +204,9 @@ void WebMediaPlayerProxyImplAndroid::DidCommitCompositorFrame() {
 #endif
 
 void WebMediaPlayerProxyImplAndroid::OnReadFromDemuxer(
-    int player_id, media::DemuxerStream::Type type, bool seek_done) {
+    int player_id,
+    media::DemuxerStream::Type type,
+    bool seek_done) {
   webkit_media::WebMediaPlayerAndroid* player = GetWebMediaPlayer(player_id);
   if (player)
     player->OnReadFromDemuxer(type, seek_done);

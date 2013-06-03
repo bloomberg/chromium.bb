@@ -35,11 +35,11 @@ namespace media {
 MediaPlayerAndroid* MediaPlayerAndroid::Create(
     int player_id,
     const GURL& url,
-    bool is_media_source,
+    SourceType source_type,
     const GURL& first_party_for_cookies,
     bool hide_url_log,
     MediaPlayerManager* manager) {
-  if (!is_media_source) {
+  if (source_type == SOURCE_TYPE_URL) {
     MediaPlayerBridge* media_player_bridge = new MediaPlayerBridge(
         player_id,
         url,

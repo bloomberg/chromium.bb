@@ -35,9 +35,11 @@ class WebMediaPlayerProxyImplAndroid
   virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
 
   // Methods inherited from WebMediaPlayerProxyAndroid.
-  virtual void Initialize(int player_id, const GURL& url,
-                          bool is_media_source,
-                          const GURL& first_party_for_cookies) OVERRIDE;
+  virtual void Initialize(
+      int player_id,
+      const GURL& url,
+      media::MediaPlayerAndroid::SourceType source_type,
+      const GURL& first_party_for_cookies) OVERRIDE;
   virtual void Start(int player_id) OVERRIDE;
   virtual void Pause(int player_id) OVERRIDE;
   virtual void Seek(int player_id, base::TimeDelta time) OVERRIDE;

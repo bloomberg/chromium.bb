@@ -50,9 +50,15 @@ class MediaSourceDelegate : public media::DemuxerHost {
                       media::MediaLog* media_log);
   // Initialize the MediaSourceDelegate. |media_source| will be owned by
   // this object after this call.
-  void Initialize(WebKit::WebMediaSource* media_source,
-                  const media::NeedKeyCB& need_key_cb,
-                  const UpdateNetworkStateCB& update_network_state_cb);
+  void InitializeMediaSource(
+      WebKit::WebMediaSource* media_source,
+      const media::NeedKeyCB& need_key_cb,
+      const UpdateNetworkStateCB& update_network_state_cb);
+#if defined(GOOGLE_TV)
+  void InitializeMediaStream(
+      media::Demuxer* demuxer,
+      const UpdateNetworkStateCB& update_network_state_cb);
+#endif
 
   const WebKit::WebTimeRanges& Buffered();
   size_t DecodedFrameCount() const;
@@ -111,6 +117,9 @@ class MediaSourceDelegate : public media::DemuxerHost {
       media::DemuxerStream::Status status,
       const scoped_refptr<media::DecoderBuffer>& buffer);
 
+  // Helper function for calculating duration.
+  int GetDurationMs();
+
   base::WeakPtrFactory<MediaSourceDelegate> weak_this_;
 
   WebMediaPlayerProxyAndroid* proxy_;
@@ -121,6 +130,7 @@ class MediaSourceDelegate : public media::DemuxerHost {
 
   scoped_ptr<media::ChunkDemuxer> chunk_demuxer_;
   scoped_ptr<WebKit::WebMediaSource> media_source_;
+  media::Demuxer* demuxer_;
 
   media::PipelineStatistics statistics_;
   media::Ranges<base::TimeDelta> buffered_time_ranges_;
@@ -141,6 +151,7 @@ class MediaSourceDelegate : public media::DemuxerHost {
   scoped_ptr<media::MediaPlayerHostMsg_ReadFromDemuxerAck_Params> video_params_;
 
   bool seeking_;
+  size_t access_unit_size_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaSourceDelegate);
 };

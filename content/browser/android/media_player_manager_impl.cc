@@ -126,14 +126,15 @@ void MediaPlayerManagerImpl::SetVideoSurface(gfx::ScopedJavaSurface surface) {
 }
 
 void MediaPlayerManagerImpl::OnInitialize(
-    int player_id, const GURL& url,
-    bool is_media_source,
+    int player_id,
+    const GURL& url,
+    media::MediaPlayerAndroid::SourceType source_type,
     const GURL& first_party_for_cookies) {
   RemovePlayer(player_id);
 
   RenderProcessHost* host = render_view_host()->GetProcess();
   AddPlayer(media::MediaPlayerAndroid::Create(
-      player_id, url, is_media_source, first_party_for_cookies,
+      player_id, url, source_type, first_party_for_cookies,
       host->GetBrowserContext()->IsOffTheRecord(), this));
 }
 

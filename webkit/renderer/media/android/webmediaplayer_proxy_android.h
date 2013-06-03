@@ -10,6 +10,7 @@
 #include "base/time.h"
 #include "googleurl/src/gurl.h"
 #include "media/base/android/demuxer_stream_player_params.h"
+#include "media/base/android/media_player_android.h"
 
 namespace webkit_media {
 
@@ -22,9 +23,11 @@ class WebMediaPlayerProxyAndroid {
   virtual ~WebMediaPlayerProxyAndroid();
 
   // Initialize a MediaPlayerAndroid object in browser process
-  virtual void Initialize(int player_id, const GURL& url,
-                          bool is_media_source,
-                          const GURL& first_party_for_cookies) = 0;
+  virtual void Initialize(
+      int player_id,
+      const GURL& url,
+      media::MediaPlayerAndroid::SourceType source_type,
+      const GURL& first_party_for_cookies) = 0;
 
   // Start the player.
   virtual void Start(int player_id) = 0;

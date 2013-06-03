@@ -11,6 +11,7 @@
 #include "content/common/content_export.h"
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_message_macros.h"
+#include "media/base/android/media_player_android.h"
 #include "ui/gfx/rect_f.h"
 
 #undef IPC_MESSAGE_EXPORT
@@ -60,6 +61,8 @@ IPC_STRUCT_TRAITS_BEGIN(media::SubsampleEntry)
   IPC_STRUCT_TRAITS_MEMBER(clear_bytes)
   IPC_STRUCT_TRAITS_MEMBER(cypher_bytes)
 IPC_STRUCT_TRAITS_END()
+
+IPC_ENUM_TRAITS(media::MediaPlayerAndroid::SourceType)
 
 // Messages for notifying the render process of media playback status -------
 
@@ -143,11 +146,12 @@ IPC_MESSAGE_ROUTED1(MediaPlayerHostMsg_DestroyMediaPlayer,
 IPC_MESSAGE_ROUTED0(MediaPlayerHostMsg_DestroyAllMediaPlayers)
 
 // Initialize a media player object with the given player_id.
-IPC_MESSAGE_ROUTED4(MediaPlayerHostMsg_MediaPlayerInitialize,
-                    int /* player_id */,
-                    GURL /* url */,
-                    bool /* is_media_source */,
-                    GURL /* first_party_for_cookies */)
+IPC_MESSAGE_ROUTED4(
+    MediaPlayerHostMsg_MediaPlayerInitialize,
+    int /* player_id */,
+    GURL /* url */,
+    media::MediaPlayerAndroid::SourceType /* source_type */,
+    GURL /* first_party_for_cookies */)
 
 // Pause the player.
 IPC_MESSAGE_ROUTED1(MediaPlayerHostMsg_MediaPlayerPause,

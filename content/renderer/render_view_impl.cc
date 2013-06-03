@@ -232,6 +232,12 @@
 #include "ui/gfx/rect_f.h"
 #include "webkit/renderer/media/android/webmediaplayer_android.h"
 #include "webkit/renderer/media/android/webmediaplayer_manager_android.h"
+
+#if defined(GOOGLE_TV)
+#include "content/renderer/media/rtc_video_decoder_bridge_tv.h"
+#include "content/renderer/media/rtc_video_decoder_factory_tv.h"
+#endif
+
 #elif defined(OS_WIN)
 // TODO(port): these files are currently Windows only because they concern:
 //   * theming
@@ -2780,7 +2786,7 @@ WebMediaPlayer* RenderViewImpl::createMediaPlayer(
       RenderViewObserver, observers_, WillCreateMediaPlayer(frame, client));
 
   const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
-#if defined(ENABLE_WEBRTC)
+#if defined(ENABLE_WEBRTC) && !defined(GOOGLE_TV)
   if (MediaStreamImpl::CheckMediaStream(url)) {
 #if defined(OS_ANDROID) && defined(ARCH_CPU_ARMEL)
     bool found_neon =
@@ -2813,15 +2819,35 @@ WebMediaPlayer* RenderViewImpl::createMediaPlayer(
     media_player_proxy_ = new WebMediaPlayerProxyImplAndroid(
         this, media_player_manager_.get());
   }
-  return new webkit_media::WebMediaPlayerAndroid(
-      frame,
-      client,
-      media_player_manager_.get(),
-      media_player_proxy_,
-      new StreamTextureFactoryImpl(
-          context_provider->Context3d(), gpu_channel_host, routing_id_),
-      new RenderMediaLog());
-#endif
+  scoped_ptr<webkit_media::WebMediaPlayerAndroid> web_media_player_android(
+      new webkit_media::WebMediaPlayerAndroid(
+          frame,
+          client,
+          media_player_manager_.get(),
+          media_player_proxy_,
+          new StreamTextureFactoryImpl(
+              context_provider->Context3d(), gpu_channel_host, routing_id_),
+          new RenderMediaLog()));
+#if defined(ENABLE_WEBRTC) && defined(GOOGLE_TV)
+  if (MediaStreamImpl::CheckMediaStream(url)) {
+    EnsureMediaStreamImpl();
+    RTCVideoDecoderFactoryTv* factory = RenderThreadImpl::current()
+        ->GetMediaStreamDependencyFactory()->decoder_factory_tv();
+    // |media_stream_impl_| and |factory| outlives |web_media_player_android|.
+    if (!factory->AcquireDemuxer() ||
+        !web_media_player_android->InjectMediaStream(
+            media_stream_impl_,
+            factory,
+            base::Bind(
+                base::IgnoreResult(&RTCVideoDecoderFactoryTv::ReleaseDemuxer),
+                base::Unretained(factory)))) {
+      LOG(ERROR) << "Failed to inject media stream.";
+      return NULL;
+    }
+  }
+#endif  // defined(ENABLE_WEBRTC) && defined(GOOGLE_TV)
+  return web_media_player_android.release();
+#endif  // defined(OS_ANDROID)
 
   scoped_refptr<media::AudioRendererSink> sink;
   if (!cmd_line->HasSwitch(switches::kDisableAudio)) {

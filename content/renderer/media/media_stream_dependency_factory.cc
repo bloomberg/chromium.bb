@@ -39,6 +39,10 @@
 #include "net/socket/nss_ssl_util.h"
 #endif
 
+#if defined(GOOGLE_TV)
+#include "content/renderer/media/rtc_video_decoder_factory_tv.h"
+#endif
+
 namespace content {
 
 // The constraint key for the PeerConnection constructor for enabling diagnostic
@@ -212,6 +216,9 @@ MediaStreamDependencyFactory::MediaStreamDependencyFactory(
     VideoCaptureImplManager* vc_manager,
     P2PSocketDispatcher* p2p_socket_dispatcher)
     : network_manager_(NULL),
+#if defined(GOOGLE_TV)
+      decoder_factory_tv_(NULL),
+#endif
       vc_manager_(vc_manager),
       p2p_socket_dispatcher_(p2p_socket_dispatcher),
       signaling_thread_(NULL),
@@ -477,12 +484,20 @@ bool MediaStreamDependencyFactory::CreatePeerConnectionFactory() {
   if (!pc_factory_.get()) {
     DCHECK(!audio_device_.get());
     audio_device_ = new WebRtcAudioDeviceImpl();
+
+    cricket::WebRtcVideoDecoderFactory* decoder_factory = NULL;
+#if defined(GOOGLE_TV)
+    // PeerConnectionFactory will hold the ownership of this
+    // VideoDecoderFactory.
+    decoder_factory = decoder_factory_tv_ = new RTCVideoDecoderFactoryTv;
+#endif
+
     scoped_refptr<webrtc::PeerConnectionFactoryInterface> factory(
         webrtc::CreatePeerConnectionFactory(worker_thread_,
                                             signaling_thread_,
                                             audio_device_.get(),
                                             NULL,
-                                            NULL));
+                                            decoder_factory));
     if (factory.get())
       pc_factory_ = factory;
     else

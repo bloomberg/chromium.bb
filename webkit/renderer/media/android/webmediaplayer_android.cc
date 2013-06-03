@@ -29,6 +29,11 @@
 #include "webkit/renderer/media/crypto/key_systems.h"
 #include "webkit/renderer/media/webmediaplayer_util.h"
 
+#if defined(GOOGLE_TV)
+#include "webkit/renderer/media/media_stream_audio_renderer.h"
+#include "webkit/renderer/media/media_stream_client.h"
+#endif
+
 static const uint32 kGLTextureExternalOES = 0x8D65;
 
 using WebKit::WebMediaPlayer;
@@ -73,7 +78,8 @@ WebMediaPlayerAndroid::WebMediaPlayerAndroid(
       video_frame_provider_client_(NULL),
       proxy_(proxy),
       current_time_(0),
-      media_log_(media_log) {
+      media_log_(media_log),
+      media_stream_client_(NULL) {
   main_loop_->AddDestructionObserver(this);
   if (manager_)
     player_id_ = manager_->RegisterMediaPlayer(this);
@@ -96,6 +102,8 @@ WebMediaPlayerAndroid::WebMediaPlayerAndroid(
                    base::Unretained(this)),
         base::Bind(&WebMediaPlayerAndroid::OnNeedKey, base::Unretained(this))));
   }
+
+  demuxer_ = NULL;
 #endif  // defined(GOOGLE_TV)
 }
 
@@ -114,6 +122,12 @@ WebMediaPlayerAndroid::~WebMediaPlayerAndroid() {
 
   if (main_loop_)
     main_loop_->RemoveDestructionObserver(this);
+#if defined(GOOGLE_TV)
+  if (demuxer_ && !destroy_demuxer_cb_.is_null()) {
+    media_source_delegate_.reset();
+    destroy_demuxer_cb_.Run();
+  }
+#endif
 }
 
 void WebMediaPlayerAndroid::load(const WebURL& url, CORSMode cors_mode) {
@@ -126,21 +140,49 @@ void WebMediaPlayerAndroid::load(const WebURL& url,
   if (cors_mode != CORSModeUnspecified)
     NOTIMPLEMENTED() << "No CORS support";
 
-  if (media_source) {
+  MediaPlayerAndroid::SourceType source_type =
+      MediaPlayerAndroid::SOURCE_TYPE_URL;
+
+  if (media_source)
+    source_type = MediaPlayerAndroid::SOURCE_TYPE_MSE;
+#if defined(GOOGLE_TV)
+  if (media_stream_client_) {
+    DCHECK(!media_source);
+    source_type = MediaPlayerAndroid::SOURCE_TYPE_STREAM;
+  }
+#endif
+
+  if (source_type != MediaPlayerAndroid::SOURCE_TYPE_URL) {
     media_source_delegate_.reset(
         new MediaSourceDelegate(proxy_, player_id_, media_log_));
     // |media_source_delegate_| is owned, so Unretained() is safe here.
-    media_source_delegate_->Initialize(
-        media_source,
-        base::Bind(&WebMediaPlayerAndroid::OnNeedKey, base::Unretained(this)),
-        base::Bind(&WebMediaPlayerAndroid::UpdateNetworkState,
-                   base::Unretained(this)));
+    if (source_type == MediaPlayerAndroid::SOURCE_TYPE_MSE) {
+      media_source_delegate_->InitializeMediaSource(
+          media_source,
+          base::Bind(&WebMediaPlayerAndroid::OnNeedKey, base::Unretained(this)),
+          base::Bind(&WebMediaPlayerAndroid::UpdateNetworkState,
+                     base::Unretained(this)));
+    }
+#if defined(GOOGLE_TV)
+    if (source_type == MediaPlayerAndroid::SOURCE_TYPE_STREAM) {
+      media_source_delegate_->InitializeMediaStream(
+          demuxer_,
+          base::Bind(&WebMediaPlayerAndroid::UpdateNetworkState,
+                     base::Unretained(this)));
+    }
+#endif
   }
 
+  InitializeMediaPlayer(url, source_type);
+}
+
+void WebMediaPlayerAndroid::InitializeMediaPlayer(
+    const WebURL& url,
+    MediaPlayerAndroid::SourceType source_type) {
   url_ = url;
   GURL first_party_url = frame_->document().firstPartyForCookies();
   if (proxy_) {
-    proxy_->Initialize(player_id_, url_, media_source != NULL, first_party_url);
+    proxy_->Initialize(player_id_, url, source_type, first_party_url);
     if (manager_->IsInFullscreen(frame_))
       proxy_->EnterFullscreen(player_id_);
   }
@@ -918,6 +960,17 @@ void WebMediaPlayerAndroid::OnKeyMessage(const std::string& key_system,
                       reinterpret_cast<const uint8*>(message.data()),
                       message.size(),
                       default_url_gurl);
+}
+
+bool WebMediaPlayerAndroid::InjectMediaStream(
+    MediaStreamClient* media_stream_client,
+    media::Demuxer* demuxer,
+    const base::Closure& destroy_demuxer_cb) {
+  DCHECK(!demuxer);
+  media_stream_client_ = media_stream_client;
+  demuxer_ = demuxer;
+  destroy_demuxer_cb_ = destroy_demuxer_cb;
+  return true;
 }
 #endif  // defined(GOOGLE_TV)
 

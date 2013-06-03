@@ -13,6 +13,7 @@
 #include "base/message_loop.h"
 #include "base/time.h"
 #include "cc/layers/video_frame_provider.h"
+#include "media/base/android/media_player_android.h"
 #include "media/base/demuxer_stream.h"
 #include "media/base/media_keys.h"
 #include "third_party/WebKit/public/platform/WebGraphicsContext3D.h"
@@ -25,6 +26,7 @@
 #include "webkit/renderer/media/crypto/proxy_decryptor.h"
 
 namespace media {
+class Demuxer;
 class MediaLog;
 }
 
@@ -37,8 +39,14 @@ class WebLayerImpl;
 }
 
 namespace webkit_media {
+
+class MediaStreamClient;
 class WebMediaPlayerManagerAndroid;
 class WebMediaPlayerProxyAndroid;
+
+#if defined(GOOGLE_TV)
+class MediaStreamAudioRenderer;
+#endif
 
 // This class implements WebKit::WebMediaPlayer by keeping the android
 // media player in the browser process. It listens to all the status changes
@@ -211,6 +219,10 @@ class WebMediaPlayerAndroid
                     const std::string& session_id,
                     const std::string& message,
                     const std::string& default_url);
+
+  bool InjectMediaStream(MediaStreamClient* media_stream_client,
+                         media::Demuxer* demuxer,
+                         const base::Closure& destroy_demuxer_cb);
 #endif
 
   void OnNeedKey(const std::string& key_system,
@@ -236,6 +248,10 @@ class WebMediaPlayerAndroid
 
   // Requesting whether the surface texture peer needs to be reestablished.
   void SetNeedsEstablishPeer(bool needs_establish_peer);
+
+  void InitializeMediaPlayer(
+      const WebKit::WebURL& url,
+      media::MediaPlayerAndroid::SourceType source_type);
 
 #if defined(GOOGLE_TV)
   // Request external surface for out-of-band composition.
@@ -342,6 +358,10 @@ class WebMediaPlayerAndroid
   // A rectangle represents the geometry of video frame, when computed last
   // time.
   gfx::RectF last_computed_rect_;
+
+  // Media Stream related fields.
+  media::Demuxer* demuxer_;
+  base::Closure destroy_demuxer_cb_;
 #endif
 
   scoped_ptr<MediaSourceDelegate,
@@ -358,6 +378,7 @@ class WebMediaPlayerAndroid
   double current_time_;
 
   media::MediaLog* media_log_;
+  MediaStreamClient* media_stream_client_;
 
   // The currently selected key system. Empty string means that no key system
   // has been selected.

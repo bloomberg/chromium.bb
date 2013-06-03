@@ -95,7 +95,7 @@ class MediaPlayerManagerImpl
   virtual void OnInitialize(
       int player_id,
       const GURL& url,
-      bool is_media_source,
+      media::MediaPlayerAndroid::SourceType source_type,
       const GURL& first_party_for_cookies);
   virtual void OnStart(int player_id);
   virtual void OnSeek(int player_id, base::TimeDelta time);
