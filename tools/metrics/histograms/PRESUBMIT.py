@@ -26,7 +26,7 @@ def CheckChange(input_api, output_api):
           ['python', 'validate_format.py'], cwd=cwd)
       if exit_code != 0:
         return [output_api.PresubmitError(
-            'histograms.xml is not well formatted; run update_descriptions.py '
+            'histograms.xml is not well formatted; run validate_format.py '
             'and fix the reported errors')]
   return []
 
