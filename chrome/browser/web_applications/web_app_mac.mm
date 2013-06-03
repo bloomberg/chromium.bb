@@ -22,6 +22,7 @@
 #include "chrome/browser/ui/web_applications/web_app_ui.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/chrome_paths_internal.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/mac/app_mode_common.h"
 #include "content/public/browser/browser_thread.h"
 #include "grit/chromium_strings.h"
@@ -344,6 +345,9 @@ base::FilePath GetAppInstallPath(
 }
 
 void MaybeLaunchShortcut(const ShellIntegration::ShortcutInfo& shortcut_info) {
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableAppShims))
+    return;
+
   content::BrowserThread::PostTask(
       content::BrowserThread::FILE, FROM_HERE,
       base::Bind(&LaunchShimOnFileThread, shortcut_info));
