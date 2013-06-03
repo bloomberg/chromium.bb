@@ -1899,3 +1899,6 @@ crbug.com/246118 [ Debug ] inspector/timeline/timeline-decode-resize.html [ Cras
 
 # Crashes random following tests
 crbug.com/246193 fast/filesystem/workers [ Skip ]
+
+# New baseline might fail on Mac according to trybots.
+crbug.com/245520 [ Mac ] compositing/repaint/transform-style-change.html [ ImageOnlyFailure ]

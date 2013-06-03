@@ -559,10 +559,6 @@ void GraphicsLayer::updateNames()
     String debugName = "Layer for " + m_nameBase;
     m_layer->layer()->setDebugName(debugName);
 
-    if (m_transformLayer) {
-        String debugName = "TransformLayer for " + m_nameBase;
-        m_transformLayer->setDebugName(debugName);
-    }
     if (WebLayer* contentsLayer = contentsLayerIfRegistered()) {
         String debugName = "ContentsLayer for " + m_nameBase;
         contentsLayer->setDebugName(debugName);
@@ -575,15 +571,12 @@ void GraphicsLayer::updateNames()
 
 void GraphicsLayer::updateChildList()
 {
-    WebLayer* childHost = m_transformLayer ? m_transformLayer.get() : m_layer->layer();
+    WebLayer* childHost = m_layer->layer();
     childHost->removeAllChildren();
 
     clearContentsLayerIfUnregistered();
 
-    if (m_transformLayer) {
-        // Add the primary layer first. Even if we have negative z-order children, the primary layer always comes behind.
-        childHost->addChild(m_layer->layer());
-    } else if (m_contentsLayer) {
+    if (m_contentsLayer) {
         // FIXME: add the contents layer in the correct order with negative z-order children.
         // This does not cause visible rendering issues because currently contents layers are only used
         // for replaced elements that don't have children.
@@ -600,13 +593,6 @@ void GraphicsLayer::updateChildList()
 
     if (m_linkHighlight)
         childHost->addChild(m_linkHighlight->layer());
-
-    if (m_transformLayer && m_contentsLayer) {
-        // If we have a transform layer, then the contents layer is parented in the
-        // primary layer (which is itself a child of the transform layer).
-        m_layer->layer()->removeAllChildren();
-        m_layer->layer()->addChild(m_contentsLayer);
-    }
 }
 
 void GraphicsLayer::updateLayerPosition()
@@ -616,14 +602,7 @@ void GraphicsLayer::updateLayerPosition()
 
 void GraphicsLayer::updateLayerSize()
 {
-    IntSize layerSize(m_size.width(), m_size.height());
-    if (m_transformLayer) {
-        m_transformLayer->setBounds(layerSize);
-        m_layer->layer()->setPosition(FloatPoint());
-    }
-
-    m_layer->layer()->setBounds(layerSize);
-
+    m_layer->layer()->setBounds(flooredIntSize(m_size));
     // Note that we don't resize m_contentsLayer-> It's up the caller to do that.
 }
 
@@ -646,62 +625,6 @@ void GraphicsLayer::updateChildrenTransform()
 void GraphicsLayer::updateMasksToBounds()
 {
     m_layer->layer()->setMasksToBounds(m_masksToBounds);
-}
-
-void GraphicsLayer::updateLayerPreserves3D()
-{
-    if (m_preserves3D && !m_transformLayer) {
-        m_transformLayer = adoptPtr(Platform::current()->compositorSupport()->createLayer());
-        m_transformLayer->setPreserves3D(true);
-        m_transformLayer->setAnimationDelegate(this);
-        m_layer->layer()->transferAnimationsTo(m_transformLayer.get());
-
-        // Copy the position from this layer.
-        updateLayerPosition();
-        updateLayerSize();
-        updateAnchorPoint();
-        updateTransform();
-        updateChildrenTransform();
-
-        m_layer->layer()->setPosition(FloatPoint::zero());
-
-        m_layer->layer()->setAnchorPoint(FloatPoint(0.5f, 0.5f));
-        m_layer->layer()->setTransform(SkMatrix44::I());
-
-        // Set the old layer to opacity of 1. Further down we will set the opacity on the transform layer.
-        m_layer->layer()->setOpacity(1);
-
-        // Move this layer to be a child of the transform layer.
-        if (parent())
-            parent()->platformLayer()->replaceChild(m_layer->layer(), m_transformLayer.get());
-        m_transformLayer->addChild(m_layer->layer());
-
-        updateChildList();
-    } else if (!m_preserves3D && m_transformLayer) {
-        // Replace the transformLayer in the parent with this layer.
-        m_layer->layer()->removeFromParent();
-        if (parent())
-            parent()->platformLayer()->replaceChild(m_transformLayer.get(), m_layer->layer());
-
-        m_layer->layer()->setAnimationDelegate(this);
-        m_transformLayer->transferAnimationsTo(m_layer->layer());
-
-        // Release the transform layer.
-        m_transformLayer->setAnimationDelegate(0);
-        m_transformLayer.clear();
-
-        updateLayerPosition();
-        updateLayerSize();
-        updateAnchorPoint();
-        updateTransform();
-        updateChildrenTransform();
-
-        updateChildList();
-    }
-
-    m_layer->layer()->setPreserves3D(m_preserves3D);
-    platformLayer()->setOpacity(m_opacity);
-    updateNames();
 }
 
 void GraphicsLayer::updateLayerIsDrawable()
@@ -1053,7 +976,6 @@ void GraphicsLayer::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
     info.addMember(m_name, "name");
     info.addMember(m_nameBase, "nameBase");
     info.addMember(m_layer, "layer");
-    info.addMember(m_transformLayer, "transformLayer");
     info.addMember(m_imageLayer, "imageLayer");
     info.addMember(m_contentsLayer, "contentsLayer");
     info.addMember(m_linkHighlight, "linkHighlight");
@@ -1126,7 +1048,7 @@ void GraphicsLayer::setPreserves3D(bool preserves3D)
         return;
 
     m_preserves3D = preserves3D;
-    updateLayerPreserves3D();
+    m_layer->layer()->setPreserves3D(m_preserves3D);
 }
 
 void GraphicsLayer::setMasksToBounds(bool masksToBounds)
@@ -1324,7 +1246,7 @@ void GraphicsLayer::resumeAnimations()
 
 PlatformLayer* GraphicsLayer::platformLayer() const
 {
-    return m_transformLayer ? m_transformLayer.get() : m_layer->layer();
+    return m_layer->layer();
 }
 
 static bool copyWebCoreFilterOperationsToWebFilterOperations(const FilterOperations& filters, WebFilterOperations& webFilters)

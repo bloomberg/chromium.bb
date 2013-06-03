@@ -504,7 +504,6 @@ protected:
     void updateTransform();
     void updateChildrenTransform();
     void updateMasksToBounds();
-    void updateLayerPreserves3D();
     void updateLayerIsDrawable();
     void updateLayerBackgroundColor();
     void updateContentsRect();
@@ -566,7 +565,6 @@ protected:
     Color m_contentsSolidColor;
 
     OwnPtr<WebKit::WebContentLayer> m_layer;
-    OwnPtr<WebKit::WebLayer> m_transformLayer;
     OwnPtr<WebKit::WebImageLayer> m_imageLayer;
     OwnPtr<WebKit::WebSolidColorLayer> m_contentsSolidColorLayer;
     WebKit::WebLayer* m_contentsLayer;

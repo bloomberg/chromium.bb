@@ -168,7 +168,7 @@ public:
     virtual bool hasActiveAnimation() = 0;
 
     // Transfers all animations running on the current layer.
-    virtual void transferAnimationsTo(WebLayer*) = 0;
+    virtual void transferAnimationsTo(WebLayer*) { }
 
     // Scrolling
     virtual void setScrollPosition(WebPoint) = 0;
