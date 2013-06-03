@@ -65,6 +65,13 @@ void RulesRegistryService::RegisterDefaultRulesRegistries() {
 }
 
 void RulesRegistryService::Shutdown() {
+  // Release the references to all registries. This would happen soon during
+  // destruction of |*this|, but we need the ExtensionWebRequestEventRouter to
+  // be the last to reference the WebRequestRulesRegistry objects, so that
+  // the posted task below causes their destruction on the IO thread, not on UI
+  // where the destruction of |*this| takes place.
+  // TODO(vabr): Remove once http://crbug.com/218451#c6 gets addressed.
+  rule_registries_.clear();
   content::BrowserThread::PostTask(
       content::BrowserThread::IO, FROM_HERE,
       base::Bind(&RegisterToExtensionWebRequestEventRouterOnIO,
