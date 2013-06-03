@@ -281,7 +281,9 @@ void LocationBarView::Init() {
 
   // Initialize the inline autocomplete view which is visible only when IME is
   // turned on.  Use the same font with the omnibox and highlighted background.
-  ime_inline_autocomplete_view_ = new views::Label();
+  ime_inline_autocomplete_view_ = new views::Label(string16(), font);
+  ime_inline_autocomplete_view_->set_border(
+      views::Border::CreateEmptyBorder(font_y_offset, 0, 0, 0));
   ime_inline_autocomplete_view_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   ime_inline_autocomplete_view_->SetAutoColorReadabilityEnabled(false);
   ime_inline_autocomplete_view_->set_background(
@@ -290,7 +292,6 @@ void LocationBarView::Init() {
   ime_inline_autocomplete_view_->SetEnabledColor(
       GetNativeTheme()->GetSystemColor(
           ui::NativeTheme::kColorId_TextfieldSelectionColor));
-  ime_inline_autocomplete_view_->SetFont(font);
   ime_inline_autocomplete_view_->SetVisible(false);
   AddChildView(ime_inline_autocomplete_view_);
 
@@ -922,20 +923,16 @@ void LocationBarView::Layout() {
         ime_inline_autocomplete_view_->GetInsets().width();
     // All the target languages (IMEs) are LTR, and we do not need to support
     // RTL so far.  In other words, no testable RTL environment so far.
-    int x;
-    if (width > entry_width) {
+    int x = location_needed_width;
+    if (width > entry_width)
       x = 0;
-    } else if (location_needed_width + width > entry_width) {
+    else if (location_needed_width + width > entry_width)
       x = entry_width - width;
-    } else {
-      x = location_needed_width;
-    }
     location_bounds.set_width(x);
     ime_inline_autocomplete_view_->SetBounds(
-        location_bounds.right(),
-        location_bounds.y(),
+        location_bounds.right(), location_bounds.y(),
         std::min(width, entry_width),
-        location_bounds.height());
+        ime_inline_autocomplete_view_->GetPreferredSize().height());
   }
 
   location_entry_view_->SetBoundsRect(location_bounds);
