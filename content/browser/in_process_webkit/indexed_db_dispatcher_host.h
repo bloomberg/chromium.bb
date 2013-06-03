@@ -184,9 +184,6 @@ class IndexedDBDispatcherHost : public BrowserMessageFilter {
     void OnPrefetchReset(int32 ipc_cursor_id,
                          int used_prefetches,
                          int unused_prefetches);
-    void OnDelete(int32 ipc_object_store_id,
-                  int32 ipc_thread_id,
-                  int32 ipc_callbacks_id);
     void OnDestroyed(int32 ipc_cursor_id);
 
     IndexedDBDispatcherHost* parent_;

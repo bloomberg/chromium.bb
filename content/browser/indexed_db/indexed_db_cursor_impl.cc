@@ -67,12 +67,10 @@ IndexedDBCursorImpl::IndexedDBCursorImpl(
     scoped_ptr<IndexedDBBackingStore::Cursor> cursor,
     indexed_db::CursorType cursor_type,
     IndexedDBDatabase::TaskType task_type,
-    IndexedDBTransaction* transaction,
-    int64 object_store_id)
+    IndexedDBTransaction* transaction)
     : task_type_(task_type),
       cursor_type_(cursor_type),
       transaction_(transaction),
-      object_store_id_(object_store_id),
       cursor_(cursor.Pass()),
       closed_(false) {
   transaction_->RegisterOpenCursor(this);
@@ -124,16 +122,6 @@ void IndexedDBCursorImpl::CursorIterationOperation::Perform(
 
   callbacks_->OnSuccess(
       cursor_->key(), cursor_->primary_key(), cursor_->Value());
-}
-
-void IndexedDBCursorImpl::DeleteFunction(
-    scoped_refptr<IndexedDBCallbacksWrapper> callbacks) {
-  IDB_TRACE("IndexedDBCursorImpl::delete");
-  DCHECK_NE(transaction_->mode(), indexed_db::TRANSACTION_READ_ONLY);
-  scoped_ptr<IndexedDBKeyRange> key_range =
-      make_scoped_ptr(new IndexedDBKeyRange(cursor_->primary_key()));
-  transaction_->database()->DeleteRange(
-      transaction_->id(), object_store_id_, key_range.Pass(), callbacks);
 }
 
 void IndexedDBCursorImpl::PrefetchContinue(

@@ -404,12 +404,6 @@ IPC_MESSAGE_CONTROL3(IndexedDBHostMsg_CursorPrefetchReset,
                      int32, /* used_prefetches */
                      int32)  /* used_prefetches */
 
-// WebIDBCursor::delete() message.
-IPC_MESSAGE_CONTROL3(IndexedDBHostMsg_CursorDelete,
-                     int32, /* ipc_cursor_id */
-                     int32, /* ipc_thread_id */
-                     int32) /* ipc_callbacks_id */
-
 // WebIDBFactory::getDatabaseNames() message.
 IPC_MESSAGE_CONTROL1(IndexedDBHostMsg_FactoryGetDatabaseNames,
                      IndexedDBHostMsg_FactoryGetDatabaseNames_Params)

@@ -32,11 +32,6 @@ void WebIDBCursorImpl::continueFunction(const WebKit::WebIDBKey& key,
       IndexedDBCallbacksWrapper::Create(callbacks));
 }
 
-void WebIDBCursorImpl::deleteFunction(WebIDBCallbacks* callbacks) {
-  idb_cursor_backend_->DeleteFunction(
-      IndexedDBCallbacksWrapper::Create(callbacks));
-}
-
 void WebIDBCursorImpl::prefetchContinue(int number_to_fetch,
                                         WebKit::WebIDBCallbacks* callbacks) {
   idb_cursor_backend_->PrefetchContinue(

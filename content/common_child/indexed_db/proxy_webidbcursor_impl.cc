@@ -21,8 +21,7 @@ RendererWebIDBCursorImpl::RendererWebIDBCursorImpl(int32 ipc_cursor_id)
       continue_count_(0),
       used_prefetches_(0),
       pending_onsuccess_callbacks_(0),
-      prefetch_amount_(kMinPrefetchAmount) {
-}
+      prefetch_amount_(kMinPrefetchAmount) {}
 
 RendererWebIDBCursorImpl::~RendererWebIDBCursorImpl() {
   // It's not possible for there to be pending callbacks that address this
@@ -32,8 +31,8 @@ RendererWebIDBCursorImpl::~RendererWebIDBCursorImpl() {
 
   if (ipc_cursor_id_ != kInvalidCursorId) {
     // Invalid ID used in tests to avoid really sending this message.
-    IndexedDBDispatcher::Send(new IndexedDBHostMsg_CursorDestroyed(
-        ipc_cursor_id_));
+    IndexedDBDispatcher::Send(
+        new IndexedDBHostMsg_CursorDestroyed(ipc_cursor_id_));
   }
   IndexedDBDispatcher* dispatcher =
       IndexedDBDispatcher::ThreadSpecificInstance();
@@ -46,8 +45,8 @@ void RendererWebIDBCursorImpl::advance(unsigned long count,
       IndexedDBDispatcher::ThreadSpecificInstance();
   scoped_ptr<WebIDBCallbacks> callbacks(callbacks_ptr);
   ResetPrefetchCache();
-  dispatcher->RequestIDBCursorAdvance(count, callbacks.release(),
-                                      ipc_cursor_id_);
+  dispatcher->RequestIDBCursorAdvance(
+      count, callbacks.release(), ipc_cursor_id_);
 }
 
 void RendererWebIDBCursorImpl::continueFunction(
@@ -70,9 +69,8 @@ void RendererWebIDBCursorImpl::continueFunction(
     if (continue_count_ > kPrefetchContinueThreshold) {
       // Request pre-fetch.
       ++pending_onsuccess_callbacks_;
-      dispatcher->RequestIDBCursorPrefetch(prefetch_amount_,
-                                           callbacks.release(),
-                                           ipc_cursor_id_);
+      dispatcher->RequestIDBCursorPrefetch(
+          prefetch_amount_, callbacks.release(), ipc_cursor_id_);
 
       // Increase prefetch_amount_ exponentially.
       prefetch_amount_ *= 2;
@@ -86,15 +84,8 @@ void RendererWebIDBCursorImpl::continueFunction(
     ResetPrefetchCache();
   }
 
-  dispatcher->RequestIDBCursorContinue(IndexedDBKey(key),
-                                       callbacks.release(),
-                                       ipc_cursor_id_);
-}
-
-void RendererWebIDBCursorImpl::deleteFunction(WebIDBCallbacks* callbacks) {
-  IndexedDBDispatcher* dispatcher =
-      IndexedDBDispatcher::ThreadSpecificInstance();
-  dispatcher->RequestIDBCursorDelete(callbacks, ipc_cursor_id_);
+  dispatcher->RequestIDBCursorContinue(
+      IndexedDBKey(key), callbacks.release(), ipc_cursor_id_);
 }
 
 void RendererWebIDBCursorImpl::postSuccessHandlerCallback() {
@@ -154,9 +145,8 @@ void RendererWebIDBCursorImpl::ResetPrefetchCache() {
 
   IndexedDBDispatcher* dispatcher =
       IndexedDBDispatcher::ThreadSpecificInstance();
-  dispatcher->RequestIDBCursorPrefetchReset(used_prefetches_,
-                                            prefetch_keys_.size(),
-                                            ipc_cursor_id_);
+  dispatcher->RequestIDBCursorPrefetchReset(
+      used_prefetches_, prefetch_keys_.size(), ipc_cursor_id_);
   prefetch_keys_.clear();
   prefetch_primary_keys_.clear();
   prefetch_values_.clear();

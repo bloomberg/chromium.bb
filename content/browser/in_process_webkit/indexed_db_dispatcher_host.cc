@@ -49,7 +49,8 @@ using WebKit::WebVector;
 namespace content {
 namespace {
 
-template <class T> void DeleteOnWebKitThread(T* obj) {
+template <class T>
+void DeleteOnWebKitThread(T* obj) {
   if (!BrowserThread::DeleteSoon(
           BrowserThread::WEBKIT_DEPRECATED, FROM_HERE, obj))
     delete obj;
@@ -741,7 +742,6 @@ bool IndexedDBDispatcherHost::CursorDispatcherHost::OnMessageReceived(
   IPC_MESSAGE_HANDLER(IndexedDBHostMsg_CursorContinue, OnContinue)
   IPC_MESSAGE_HANDLER(IndexedDBHostMsg_CursorPrefetch, OnPrefetch)
   IPC_MESSAGE_HANDLER(IndexedDBHostMsg_CursorPrefetchReset, OnPrefetchReset)
-  IPC_MESSAGE_HANDLER(IndexedDBHostMsg_CursorDelete, OnDelete)
   IPC_MESSAGE_HANDLER(IndexedDBHostMsg_CursorDestroyed, OnDestroyed)
   IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
@@ -815,20 +815,6 @@ void IndexedDBDispatcherHost::CursorDispatcherHost::OnPrefetchReset(
     return;
 
   idb_cursor->prefetchReset(used_prefetches, unused_prefetches);
-}
-
-void IndexedDBDispatcherHost::CursorDispatcherHost::OnDelete(
-    int32 ipc_cursor_id,
-    int32 ipc_thread_id,
-    int32 ipc_callbacks_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT_DEPRECATED));
-  WebIDBCursor* idb_cursor =
-      parent_->GetOrTerminateProcess(&map_, ipc_cursor_id);
-  if (!idb_cursor)
-    return;
-
-  idb_cursor->deleteFunction(new IndexedDBCallbacks<WebData>(
-      parent_, ipc_thread_id, ipc_callbacks_id));
 }
 
 void IndexedDBDispatcherHost::CursorDispatcherHost::OnDestroyed(

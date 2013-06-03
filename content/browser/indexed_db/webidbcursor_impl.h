@@ -19,7 +19,6 @@ class WebIDBCursorImpl : public WebKit::WebIDBCursor {
   virtual void advance(unsigned long, WebKit::WebIDBCallbacks* callbacks);
   virtual void continueFunction(const WebKit::WebIDBKey& key,
                                 WebKit::WebIDBCallbacks* callbacks);
-  virtual void deleteFunction(WebKit::WebIDBCallbacks* callbacks);
   virtual void prefetchContinue(int number_to_fetch,
                                 WebKit::WebIDBCallbacks* callbacks);
   virtual void prefetchReset(int used_prefetches, int unused_prefetches);

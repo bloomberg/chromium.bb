@@ -26,17 +26,14 @@ class CONTENT_EXPORT RendererWebIDBCursorImpl
   explicit RendererWebIDBCursorImpl(int32 ipc_cursor_id);
   virtual ~RendererWebIDBCursorImpl();
 
-  virtual void advance(unsigned long count,
-                       WebKit::WebIDBCallbacks* callback);
+  virtual void advance(unsigned long count, WebKit::WebIDBCallbacks* callback);
   virtual void continueFunction(const WebKit::WebIDBKey& key,
                                 WebKit::WebIDBCallbacks* callback);
-  virtual void deleteFunction(WebKit::WebIDBCallbacks* callback);
   virtual void postSuccessHandlerCallback();
 
-  void SetPrefetchData(
-      const std::vector<IndexedDBKey>& keys,
-      const std::vector<IndexedDBKey>& primary_keys,
-      const std::vector<WebKit::WebData>& values);
+  void SetPrefetchData(const std::vector<IndexedDBKey>& keys,
+                       const std::vector<IndexedDBKey>& primary_keys,
+                       const std::vector<WebKit::WebData>& values);
 
   void CachedContinue(WebKit::WebIDBCallbacks* callbacks);
   void ResetPrefetchCache();

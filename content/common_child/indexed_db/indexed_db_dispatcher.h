@@ -60,9 +60,8 @@ class CONTENT_EXPORT IndexedDBDispatcher
   void OnMessageReceived(const IPC::Message& msg);
   static bool Send(IPC::Message* msg);
 
-  void RequestIDBFactoryGetDatabaseNames(
-      WebKit::WebIDBCallbacks* callbacks,
-      const string16& database_identifier);
+  void RequestIDBFactoryGetDatabaseNames(WebKit::WebIDBCallbacks* callbacks,
+                                         const string16& database_identifier);
 
   void RequestIDBFactoryOpen(
       const string16& name,
@@ -72,36 +71,28 @@ class CONTENT_EXPORT IndexedDBDispatcher
       WebKit::WebIDBDatabaseCallbacks* database_callbacks,
       const string16& database_identifier);
 
-  void RequestIDBFactoryDeleteDatabase(
-      const string16& name,
-      WebKit::WebIDBCallbacks* callbacks,
-      const string16& database_identifier);
+  void RequestIDBFactoryDeleteDatabase(const string16& name,
+                                       WebKit::WebIDBCallbacks* callbacks,
+                                       const string16& database_identifier);
 
-  void RequestIDBCursorAdvance(
-      unsigned long count,
-      WebKit::WebIDBCallbacks* callbacks_ptr,
-      int32 ipc_cursor_id);
+  void RequestIDBCursorAdvance(unsigned long count,
+                               WebKit::WebIDBCallbacks* callbacks_ptr,
+                               int32 ipc_cursor_id);
 
-  virtual void RequestIDBCursorContinue(
-      const IndexedDBKey& key,
-      WebKit::WebIDBCallbacks* callbacks_ptr,
-      int32 ipc_cursor_id);
+  virtual void RequestIDBCursorContinue(const IndexedDBKey& key,
+                                        WebKit::WebIDBCallbacks* callbacks_ptr,
+                                        int32 ipc_cursor_id);
 
-  virtual void RequestIDBCursorPrefetch(
-      int n,
-      WebKit::WebIDBCallbacks* callbacks_ptr,
-      int32 ipc_cursor_id);
+  virtual void RequestIDBCursorPrefetch(int n,
+                                        WebKit::WebIDBCallbacks* callbacks_ptr,
+                                        int32 ipc_cursor_id);
 
-  void RequestIDBCursorPrefetchReset(int used_prefetches, int unused_prefetches,
+  void RequestIDBCursorPrefetchReset(int used_prefetches,
+                                     int unused_prefetches,
                                      int32 ipc_cursor_id);
 
-  void RequestIDBCursorDelete(
-      WebKit::WebIDBCallbacks* callbacks_ptr,
-      int32 ipc_cursor_id);
-
-  void RequestIDBDatabaseClose(
-      int32 ipc_database_id,
-      int32 ipc_database_callbacks_id);
+  void RequestIDBDatabaseClose(int32 ipc_database_id,
+                               int32 ipc_database_callbacks_id);
 
   void RequestIDBDatabaseCreateTransaction(
       int32 ipc_database_id,
@@ -110,14 +101,13 @@ class CONTENT_EXPORT IndexedDBDispatcher
       WebKit::WebVector<long long> object_store_ids,
       unsigned short mode);
 
-  void RequestIDBDatabaseGet(
-      int32 ipc_database_id,
-      int64 transaction_id,
-      int64 object_store_id,
-      int64 index_id,
-      const IndexedDBKeyRange& key_range,
-      bool key_only,
-      WebKit::WebIDBCallbacks* callbacks);
+  void RequestIDBDatabaseGet(int32 ipc_database_id,
+                             int64 transaction_id,
+                             int64 object_store_id,
+                             int64 index_id,
+                             const IndexedDBKeyRange& key_range,
+                             bool key_only,
+                             WebKit::WebIDBCallbacks* callbacks);
 
   void RequestIDBDatabasePut(
       int32 ipc_database_id,
@@ -128,40 +118,36 @@ class CONTENT_EXPORT IndexedDBDispatcher
       WebKit::WebIDBDatabase::PutMode put_mode,
       WebKit::WebIDBCallbacks* callbacks,
       const WebKit::WebVector<long long>& index_ids,
-      const WebKit::WebVector<WebKit::WebVector<
-          WebKit::WebIDBKey> >& index_keys);
+      const WebKit::WebVector<WebKit::WebVector<WebKit::WebIDBKey> >&
+          index_keys);
 
-  void RequestIDBDatabaseOpenCursor(
-      int32 ipc_database_id,
-      int64 transaction_id,
-      int64 object_store_id,
-      int64 index_id,
-      const IndexedDBKeyRange& key_range,
-      unsigned short direction,
-      bool key_only,
-      WebKit::WebIDBDatabase::TaskType task_type,
-      WebKit::WebIDBCallbacks* callbacks);
+  void RequestIDBDatabaseOpenCursor(int32 ipc_database_id,
+                                    int64 transaction_id,
+                                    int64 object_store_id,
+                                    int64 index_id,
+                                    const IndexedDBKeyRange& key_range,
+                                    unsigned short direction,
+                                    bool key_only,
+                                    WebKit::WebIDBDatabase::TaskType task_type,
+                                    WebKit::WebIDBCallbacks* callbacks);
 
-  void RequestIDBDatabaseCount(
-      int32 ipc_database_id,
-      int64 transaction_id,
-      int64 object_store_id,
-      int64 index_id,
-      const IndexedDBKeyRange& key_range,
-      WebKit::WebIDBCallbacks* callbacks);
+  void RequestIDBDatabaseCount(int32 ipc_database_id,
+                               int64 transaction_id,
+                               int64 object_store_id,
+                               int64 index_id,
+                               const IndexedDBKeyRange& key_range,
+                               WebKit::WebIDBCallbacks* callbacks);
 
-  void RequestIDBDatabaseDeleteRange(
-      int32 ipc_database_id,
-      int64 transaction_id,
-      int64 object_store_id,
-      const IndexedDBKeyRange& key_range,
-      WebKit::WebIDBCallbacks* callbacks);
+  void RequestIDBDatabaseDeleteRange(int32 ipc_database_id,
+                                     int64 transaction_id,
+                                     int64 object_store_id,
+                                     const IndexedDBKeyRange& key_range,
+                                     WebKit::WebIDBCallbacks* callbacks);
 
-  void RequestIDBDatabaseClear(
-      int32 ipc_database_id,
-      int64 transaction_id,
-      int64 object_store_id,
-      WebKit::WebIDBCallbacks* callbacks);
+  void RequestIDBDatabaseClear(int32 ipc_database_id,
+                               int64 transaction_id,
+                               int64 object_store_id,
+                               WebKit::WebIDBCallbacks* callbacks);
 
   virtual void CursorDestroyed(int32 ipc_cursor_id);
   void DatabaseDestroyed(int32 ipc_database_id);
@@ -173,7 +159,7 @@ class CONTENT_EXPORT IndexedDBDispatcher
     return webkit_glue::WorkerTaskRunner::Instance()->CurrentWorkerId();
   }
 
-  template<typename T>
+  template <typename T>
   void init_params(T& params, WebKit::WebIDBCallbacks* callbacks_ptr) {
     scoped_ptr<WebKit::WebIDBCallbacks> callbacks(callbacks_ptr);
     params.ipc_thread_id = CurrentWorkerId();
@@ -199,23 +185,18 @@ class CONTENT_EXPORT IndexedDBDispatcher
   void OnSuccessStringList(int32 ipc_thread_id,
                            int32 ipc_callbacks_id,
                            const std::vector<string16>& value);
-  void OnSuccessValue(
-      int32 ipc_thread_id,
-      int32 ipc_callbacks_id,
-      const std::vector<char>& value);
-  void OnSuccessValueWithKey(
-      int32 ipc_thread_id,
-      int32 ipc_callbacks_id,
-      const std::vector<char>& value,
-      const IndexedDBKey& primary_key,
-      const IndexedDBKeyPath& key_path);
-  void OnSuccessInteger(
-      int32 ipc_thread_id,
-      int32 ipc_callbacks_id,
-      int64 value);
-  void OnSuccessUndefined(
-      int32 ipc_thread_id,
-      int32 ipc_callbacks_id);
+  void OnSuccessValue(int32 ipc_thread_id,
+                      int32 ipc_callbacks_id,
+                      const std::vector<char>& value);
+  void OnSuccessValueWithKey(int32 ipc_thread_id,
+                             int32 ipc_callbacks_id,
+                             const std::vector<char>& value,
+                             const IndexedDBKey& primary_key,
+                             const IndexedDBKeyPath& key_path);
+  void OnSuccessInteger(int32 ipc_thread_id,
+                        int32 ipc_callbacks_id,
+                        int64 value);
+  void OnSuccessUndefined(int32 ipc_thread_id, int32 ipc_callbacks_id);
   void OnError(int32 ipc_thread_id,
                int32 ipc_callbacks_id,
                int code,

@@ -25,23 +25,20 @@ class IndexedDBCursorImpl : public IndexedDBCursor {
   static scoped_refptr<IndexedDBCursorImpl> Create(
       scoped_ptr<IndexedDBBackingStore::Cursor> cursor,
       indexed_db::CursorType cursor_type,
-      IndexedDBTransaction* transaction,
-      int64 object_store_id) {
+      IndexedDBTransaction* transaction) {
     return make_scoped_refptr(
         new IndexedDBCursorImpl(cursor.Pass(),
                                 cursor_type,
                                 IndexedDBDatabase::NORMAL_TASK,
-                                transaction,
-                                object_store_id));
+                                transaction));
   }
   static scoped_refptr<IndexedDBCursorImpl> Create(
       scoped_ptr<IndexedDBBackingStore::Cursor> cursor,
       indexed_db::CursorType cursor_type,
       IndexedDBDatabase::TaskType task_type,
-      IndexedDBTransaction* transaction,
-      int64 object_store_id) {
+      IndexedDBTransaction* transaction) {
     return make_scoped_refptr(new IndexedDBCursorImpl(
-        cursor.Pass(), cursor_type, task_type, transaction, object_store_id));
+        cursor.Pass(), cursor_type, task_type, transaction));
   }
 
   // IndexedDBCursor
@@ -50,8 +47,6 @@ class IndexedDBCursorImpl : public IndexedDBCursor {
       OVERRIDE;
   virtual void ContinueFunction(
       scoped_ptr<IndexedDBKey> key,
-      scoped_refptr<IndexedDBCallbacksWrapper> callbacks) OVERRIDE;
-  virtual void DeleteFunction(
       scoped_refptr<IndexedDBCallbacksWrapper> callbacks) OVERRIDE;
   virtual void PrefetchContinue(
       int number_to_fetch,
@@ -72,8 +67,7 @@ class IndexedDBCursorImpl : public IndexedDBCursor {
   IndexedDBCursorImpl(scoped_ptr<IndexedDBBackingStore::Cursor> cursor,
                       indexed_db::CursorType cursor_type,
                       IndexedDBDatabase::TaskType task_type,
-                      IndexedDBTransaction* transaction,
-                      int64 object_store_id);
+                      IndexedDBTransaction* transaction);
   virtual ~IndexedDBCursorImpl();
 
   class CursorIterationOperation;
@@ -83,7 +77,6 @@ class IndexedDBCursorImpl : public IndexedDBCursor {
   IndexedDBDatabase::TaskType task_type_;
   indexed_db::CursorType cursor_type_;
   const scoped_refptr<IndexedDBTransaction> transaction_;
-  const int64 object_store_id_;
 
   // Must be destroyed before transaction_.
   scoped_ptr<IndexedDBBackingStore::Cursor> cursor_;

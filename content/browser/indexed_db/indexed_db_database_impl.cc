@@ -1237,12 +1237,8 @@ void OpenCursorOperation::Perform(IndexedDBTransaction* transaction) {
 
   IndexedDBDatabase::TaskType task_type(
       static_cast<IndexedDBDatabase::TaskType>(task_type_));
-  scoped_refptr<IndexedDBCursorImpl> cursor =
-      IndexedDBCursorImpl::Create(backing_store_cursor.Pass(),
-                                  cursor_type_,
-                                  task_type,
-                                  transaction,
-                                  object_store_id_);
+  scoped_refptr<IndexedDBCursorImpl> cursor = IndexedDBCursorImpl::Create(
+      backing_store_cursor.Pass(), cursor_type_, task_type, transaction);
   callbacks_->OnSuccess(
       cursor, cursor->key(), cursor->primary_key(), cursor->Value());
 }

@@ -19,8 +19,6 @@ class IndexedDBCursor : public base::RefCounted<IndexedDBCursor> {
   virtual void ContinueFunction(
       scoped_ptr<IndexedDBKey> key,
       scoped_refptr<IndexedDBCallbacksWrapper> callbacks) = 0;
-  virtual void DeleteFunction(
-      scoped_refptr<IndexedDBCallbacksWrapper> callbacks) = 0;
   virtual void PrefetchContinue(
       int number_to_fetch,
       scoped_refptr<IndexedDBCallbacksWrapper> callbacks) = 0;
