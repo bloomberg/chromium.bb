@@ -33,7 +33,7 @@ class PepperFileChooserHost::CompletionHandler
 
   virtual void didChooseFile(
       const WebKit::WebVector<WebKit::WebString>& file_names) {
-    if (host_) {
+    if (host_.get()) {
       std::vector<PepperFileChooserHost::ChosenFileInfo> files;
       for (size_t i = 0; i < file_names.size(); i++) {
         files.push_back(PepperFileChooserHost::ChosenFileInfo(
@@ -47,7 +47,7 @@ class PepperFileChooserHost::CompletionHandler
   }
   virtual void didChooseFile(
       const WebKit::WebVector<SelectedFileInfo>& file_names) {
-    if (host_) {
+    if (host_.get()) {
       std::vector<PepperFileChooserHost::ChosenFileInfo> files;
       for (size_t i = 0; i < file_names.size(); i++) {
         files.push_back(PepperFileChooserHost::ChosenFileInfo(

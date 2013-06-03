@@ -39,7 +39,7 @@ namespace {
 
 BrowserPluginBindings* GetBindings(NPObject* object) {
   return static_cast<BrowserPluginBindings::BrowserPluginNPObject*>(object)->
-      message_channel;
+      message_channel.get();
 }
 
 std::string StringFromNPVariant(const NPVariant& variant) {

@@ -136,7 +136,7 @@ bool PepperPlatformAudioInputImpl::Initialize(
     webkit::ppapi::PluginDelegate::PlatformAudioInputClient* client) {
   DCHECK(main_message_loop_proxy_->BelongsToCurrentThread());
 
-  if (!plugin_delegate || !client)
+  if (!plugin_delegate.get() || !client)
     return false;
 
   ipc_ = RenderThreadImpl::current()->audio_input_message_filter()->
@@ -208,7 +208,7 @@ void PepperPlatformAudioInputImpl::OnDeviceOpened(int request_id,
                                                   const std::string& label) {
   DCHECK(main_message_loop_proxy_->BelongsToCurrentThread());
 
-  if (succeeded && plugin_delegate_) {
+  if (succeeded && plugin_delegate_.get()) {
     DCHECK(!label.empty());
     label_ = label;
 
@@ -231,7 +231,7 @@ void PepperPlatformAudioInputImpl::OnDeviceOpened(int request_id,
 void PepperPlatformAudioInputImpl::CloseDevice() {
   DCHECK(main_message_loop_proxy_->BelongsToCurrentThread());
 
-  if (plugin_delegate_ && !label_.empty()) {
+  if (plugin_delegate_.get() && !label_.empty()) {
     plugin_delegate_->CloseDevice(label_);
     label_.clear();
   }

@@ -58,7 +58,7 @@ void InputHandlerManager::AddInputHandlerOnCompositorThread(
   DCHECK(message_loop_proxy_->BelongsToCurrentThread());
 
   // The handler could be gone by this point if the compositor has shut down.
-  if (!input_handler)
+  if (!input_handler.get())
     return;
 
   // The same handler may be registered for a route multiple times.

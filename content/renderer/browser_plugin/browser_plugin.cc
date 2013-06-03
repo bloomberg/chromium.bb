@@ -450,7 +450,7 @@ void BrowserPlugin::OnAddMessageToConsole(
 }
 
 void BrowserPlugin::OnAdvanceFocus(int guest_instance_id, bool reverse) {
-  DCHECK(render_view_);
+  DCHECK(render_view_.get());
   render_view_->GetWebView()->advanceFocus(reverse);
 }
 
@@ -936,7 +936,7 @@ void BrowserPlugin::ParseAttributes() {
 }
 
 float BrowserPlugin::GetDeviceScaleFactor() const {
-  if (!render_view_)
+  if (!render_view_.get())
     return 1.0f;
   return render_view_->GetWebView()->deviceScaleFactor();
 }
@@ -1036,7 +1036,7 @@ void BrowserPlugin::WeakCallbackForPersistObject(
 
   object->Dispose();
 
-  if (plugin) {
+  if (plugin.get()) {
     // Asynchronously remove item from |alive_v8_permission_request_objects_|.
     // Note that we are using weak pointer for the following PostTask, so we
     // don't need to worry about BrowserPlugin going away.
@@ -1109,7 +1109,7 @@ void BrowserPlugin::UpdateGuestFocusState() {
 
 bool BrowserPlugin::ShouldGuestBeFocused() const {
   bool embedder_focused = false;
-  if (render_view_)
+  if (render_view_.get())
     embedder_focused = render_view_->has_focus();
   return plugin_focused_ && embedder_focused;
 }
@@ -1219,7 +1219,7 @@ void BrowserPlugin::destroy() {
   if (compositing_helper_.get())
     compositing_helper_->OnContainerDestroy();
   // Will be a no-op if the mouse is not currently locked.
-  if (render_view_)
+  if (render_view_.get())
     render_view_->mouse_lock_dispatcher()->OnLockTargetDestroyed(this);
   base::MessageLoop::current()->DeleteSoon(FROM_HERE, this);
 }

@@ -50,7 +50,7 @@ bool PepperVideoSourceHost::FrameReceiver::GotFrame(
 
 void PepperVideoSourceHost::FrameReceiver::OnGotFrame(
     scoped_ptr<cricket::VideoFrame> frame) {
-  if (host_) {
+  if (host_.get()) {
     // Take ownership of the new frame, and possibly delete any unsent one.
     host_->last_frame_.swap(frame);
 

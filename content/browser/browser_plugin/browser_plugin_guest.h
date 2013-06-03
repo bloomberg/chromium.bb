@@ -133,7 +133,7 @@ class CONTENT_EXPORT BrowserPluginGuest
   bool visible() const { return guest_visible_; }
   void clear_damage_buffer() { damage_buffer_.reset(); }
 
-  BrowserPluginGuest* opener() const { return opener_; }
+  BrowserPluginGuest* opener() const { return opener_.get(); }
 
   void UpdateVisibility();
 

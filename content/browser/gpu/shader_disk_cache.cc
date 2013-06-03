@@ -152,7 +152,7 @@ ShaderDiskCacheEntry::~ShaderDiskCacheEntry() {
 
 void ShaderDiskCacheEntry::Cache() {
   DCHECK(CalledOnValidThread());
-  if (!cache_)
+  if (!cache_.get())
     return;
 
   int rv = cache_->backend()->OpenEntry(
@@ -165,7 +165,7 @@ void ShaderDiskCacheEntry::Cache() {
 
 void ShaderDiskCacheEntry::OnOpComplete(int rv) {
   DCHECK(CalledOnValidThread());
-  if (!cache_)
+  if (!cache_.get())
     return;
 
   do {
@@ -248,14 +248,14 @@ ShaderDiskReadHelper::ShaderDiskReadHelper(
 
 void ShaderDiskReadHelper::LoadCache() {
   DCHECK(CalledOnValidThread());
-  if (!cache_)
+  if (!cache_.get())
     return;
   OnOpComplete(net::OK);
 }
 
 void ShaderDiskReadHelper::OnOpComplete(int rv) {
   DCHECK(CalledOnValidThread());
-  if (!cache_)
+  if (!cache_.get())
     return;
 
   do {

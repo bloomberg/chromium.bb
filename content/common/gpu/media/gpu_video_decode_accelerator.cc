@@ -42,7 +42,7 @@ namespace content {
 
 static bool MakeDecoderContextCurrent(
     const base::WeakPtr<GpuCommandBufferStub> stub) {
-  if (!stub) {
+  if (!stub.get()) {
     DLOG(ERROR) << "Stub is gone; won't MakeCurrent().";
     return false;
   }

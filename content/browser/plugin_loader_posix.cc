@@ -58,7 +58,7 @@ void PluginLoaderPosix::OnProcessCrashed(int exit_code) {
 }
 
 bool PluginLoaderPosix::Send(IPC::Message* message) {
-  if (process_host_)
+  if (process_host_.get())
     return process_host_->Send(message);
   return false;
 }

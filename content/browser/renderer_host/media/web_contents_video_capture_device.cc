@@ -1123,9 +1123,9 @@ void WebContentsVideoCaptureDevice::Impl::Start() {
 void WebContentsVideoCaptureDevice::Impl::AssignCaptureMachine(
     base::WeakPtr<WebContentsVideoCaptureDevice::Impl> impl,
     scoped_ptr<CaptureMachine> capture_machine) {
-  DCHECK(!impl || impl->thread_checker_.CalledOnValidThread());
+  DCHECK(!impl.get() || impl->thread_checker_.CalledOnValidThread());
 
-  if (!impl) {
+  if (!impl.get()) {
     // If WCVD::Impl was destroyed before we got back on it's thread and
     // capture_machine is not NULL, then we need to return to the UI thread to
     // safely cleanup the CaptureMachine.

@@ -55,7 +55,7 @@ class CONTENT_EXPORT BrowserPluginManager
   BrowserPlugin* GetBrowserPlugin(int guest_instance_id) const;
   void UpdateDeviceScaleFactor(float device_scale_factor);
   void UpdateFocusState();
-  RenderViewImpl* render_view() const { return render_view_; }
+  RenderViewImpl* render_view() const { return render_view_.get(); }
 
   // RenderViewObserver implementation.
 

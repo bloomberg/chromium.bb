@@ -930,17 +930,17 @@ void PepperPluginDelegateImpl::OnPpapiBrokerPermissionResult(
   DCHECK(client_ptr.get());
   pending_permission_requests_.Remove(request_id);
   base::WeakPtr<webkit::ppapi::PPB_Broker_Impl> client = *client_ptr;
-  if (!client)
+  if (!client.get())
     return;
 
   webkit::ppapi::PluginModule* plugin_module =
-      webkit::ppapi::ResourceHelper::GetPluginModule(client);
+      webkit::ppapi::ResourceHelper::GetPluginModule(client.get());
   if (!plugin_module)
     return;
 
   PepperBrokerImpl* broker =
       static_cast<PepperBrokerImpl*>(plugin_module->GetBroker());
-  broker->OnBrokerPermissionResult(client, result);
+  broker->OnBrokerPermissionResult(client.get(), result);
 }
 
 bool PepperPluginDelegateImpl::AsyncOpenFile(

@@ -112,7 +112,7 @@ PepperBrokerImpl::PepperBrokerImpl(webkit::ppapi::PluginModule* plugin_module,
     : plugin_module_(plugin_module),
       delegate_(delegate->AsWeakPtr()) {
   DCHECK(plugin_module_);
-  DCHECK(delegate_);
+  DCHECK(delegate_.get());
 
   plugin_module_->SetBroker(this);
 }
@@ -161,7 +161,7 @@ void PepperBrokerImpl::Disconnect(webkit::ppapi::PPB_Broker_Impl* client) {
     // instance of this object.
     // This doesn't solve all potential problems, but it helps with the ones
     // we can influence.
-    if (delegate_) {
+    if (delegate_.get()) {
       bool stopped = delegate_->StopWaitingForBrokerConnection(this);
 
       // Verify the assumption that there are no references other than the one
@@ -197,8 +197,8 @@ void PepperBrokerImpl::OnBrokerChannelConnected(
       continue;
     }
 
-    if (weak_ptr)
-      ConnectPluginToBroker(weak_ptr);
+    if (weak_ptr.get())
+      ConnectPluginToBroker(weak_ptr.get());
 
     pending_connects_.erase(i++);
   }
@@ -211,7 +211,7 @@ void PepperBrokerImpl::OnBrokerPermissionResult(
   if (entry == pending_connects_.end())
     return;
 
-  if (!entry->second.client) {
+  if (!entry->second.client.get()) {
     // Client has gone away.
     pending_connects_.erase(entry);
     return;
@@ -251,7 +251,7 @@ void PepperBrokerImpl::ReportFailureToClients(int error_code) {
        i != pending_connects_.end(); ++i) {
     base::WeakPtr<webkit::ppapi::PPB_Broker_Impl>& weak_ptr =
         i->second.client;
-    if (weak_ptr) {
+    if (weak_ptr.get()) {
       weak_ptr->BrokerConnected(
           ppapi::PlatformFileToInt(base::kInvalidPlatformFileValue),
           error_code);

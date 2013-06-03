@@ -58,14 +58,12 @@ void SSLManager::OnSSLCertificateError(
     int render_view_id,
     const net::SSLInfo& ssl_info,
     bool fatal) {
-  DCHECK(delegate);
+  DCHECK(delegate.get());
   DVLOG(1) << "OnSSLCertificateError() cert_error: "
-           << net::MapCertStatusToNetError(ssl_info.cert_status)
-           << " id: " << id.child_id << "," << id.request_id
-           << " resource_type: " << resource_type
-           << " url: " << url.spec()
-           << " render_process_id: " << render_process_id
-           << " render_view_id: " << render_view_id
+           << net::MapCertStatusToNetError(ssl_info.cert_status) << " id: "
+           << id.child_id << "," << id.request_id << " resource_type: "
+           << resource_type << " url: " << url.spec() << " render_process_id: "
+           << render_process_id << " render_view_id: " << render_view_id
            << " cert_status: " << std::hex << ssl_info.cert_status;
 
   // A certificate error occurred.  Construct a SSLCertErrorHandler object and

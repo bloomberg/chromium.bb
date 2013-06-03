@@ -124,13 +124,13 @@ class TaskProxy : public base::RefCountedThreadSafe<TaskProxy> {
       : handler_(handler) {}
   void LoadTraceFileCompleteProxy(string16* file_contents,
                                   const base::FilePath& path) {
-    if (handler_)
+    if (handler_.get())
       handler_->LoadTraceFileComplete(file_contents, path);
     delete file_contents;
   }
 
   void SaveTraceFileCompleteProxy() {
-    if (handler_)
+    if (handler_.get())
       handler_->SaveTraceFileComplete();
   }
 

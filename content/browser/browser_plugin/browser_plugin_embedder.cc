@@ -48,7 +48,7 @@ void BrowserPluginEmbedder::DragEnteredGuest(BrowserPluginGuest* guest) {
 void BrowserPluginEmbedder::DragLeftGuest(BrowserPluginGuest* guest) {
   // Avoid race conditions in switching between guests being hovered over by
   // only un-setting if the caller is marked as the guest being dragged over.
-  if (guest_dragging_over_ == guest) {
+  if (guest_dragging_over_.get() == guest) {
     guest_dragging_over_.reset();
   }
 }
@@ -58,7 +58,7 @@ void BrowserPluginEmbedder::StartDrag(BrowserPluginGuest* guest) {
 }
 
 void BrowserPluginEmbedder::StopDrag(BrowserPluginGuest* guest) {
-  if (guest_started_drag_ == guest) {
+  if (guest_started_drag_.get() == guest) {
     guest_started_drag_.reset();
   }
 }
@@ -100,7 +100,7 @@ bool BrowserPluginEmbedder::OnMessageReceived(const IPC::Message& message) {
 
 void BrowserPluginEmbedder::DragSourceEndedAt(int client_x, int client_y,
     int screen_x, int screen_y, WebKit::WebDragOperation operation) {
-  if (guest_started_drag_) {
+  if (guest_started_drag_.get()) {
     gfx::Point guest_offset =
         guest_started_drag_->GetScreenCoordinates(gfx::Point());
     guest_started_drag_->DragSourceEndedAt(client_x - guest_offset.x(),
@@ -110,7 +110,7 @@ void BrowserPluginEmbedder::DragSourceEndedAt(int client_x, int client_y,
 
 void BrowserPluginEmbedder::DragSourceMovedTo(int client_x, int client_y,
                                               int screen_x, int screen_y) {
-  if (guest_started_drag_) {
+  if (guest_started_drag_.get()) {
     gfx::Point guest_offset =
         guest_started_drag_->GetScreenCoordinates(gfx::Point());
     guest_started_drag_->DragSourceMovedTo(client_x - guest_offset.x(),
@@ -119,14 +119,15 @@ void BrowserPluginEmbedder::DragSourceMovedTo(int client_x, int client_y,
 }
 
 void BrowserPluginEmbedder::SystemDragEnded() {
-  if (guest_started_drag_ && (guest_started_drag_ != guest_dragging_over_))
+  if (guest_started_drag_.get() &&
+      (guest_started_drag_.get() != guest_dragging_over_.get()))
     guest_started_drag_->EndSystemDrag();
   guest_started_drag_.reset();
   guest_dragging_over_.reset();
 }
 
 void BrowserPluginEmbedder::OnUpdateDragCursor(bool* handled) {
-  *handled = (guest_dragging_over_ != NULL);
+  *handled = (guest_dragging_over_.get() != NULL);
 }
 
 void BrowserPluginEmbedder::CleanUp() {

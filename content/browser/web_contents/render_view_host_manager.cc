@@ -677,7 +677,7 @@ void RenderViewHostManager::CommitPending() {
   DCHECK(!(pending_web_ui_.get() && pending_and_current_web_ui_.get()));
   if (pending_web_ui_)
     web_ui_.reset(pending_web_ui_.release());
-  else if (!pending_and_current_web_ui_)
+  else if (!pending_and_current_web_ui_.get())
     web_ui_.reset();
 
   // It's possible for the pending_render_view_host_ to be NULL when we aren't

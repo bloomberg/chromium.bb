@@ -49,7 +49,7 @@ void GetPermissionSettingsCallback(
   scoped_ptr<GetPermissionSettingsContext> context(
       reinterpret_cast<GetPermissionSettingsContext*>(user_data));
 
-  if (!context->dispatcher)
+  if (!context->dispatcher.get())
     return;
 
   ppapi::FlashSiteSettings site_vector;

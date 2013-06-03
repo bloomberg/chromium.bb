@@ -247,7 +247,7 @@ void WebPluginDelegateProxy::PluginDestroyed() {
   if (window_)
     WillDestroyWindow();
 
-  if (render_view_)
+  if (render_view_.get())
     render_view_->UnregisterPluginDelegate(this);
 
   if (channel_host_.get()) {
@@ -268,7 +268,7 @@ void WebPluginDelegateProxy::PluginDestroyed() {
     channel_host_ = NULL;
   }
 
-  if (window_script_object_) {
+  if (window_script_object_.get()) {
     // Release the window script object, if the plugin didn't already.
     // If we don't do this then it will linger until the last plugin instance is
     // destroyed.  In the meantime, though, the frame that it refers to may have

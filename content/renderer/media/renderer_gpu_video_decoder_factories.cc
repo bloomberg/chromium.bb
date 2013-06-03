@@ -49,7 +49,7 @@ RendererGpuVideoDecoderFactories::RendererGpuVideoDecoderFactories(
 void RendererGpuVideoDecoderFactories::AsyncGetContext(
     WebGraphicsContext3DCommandBufferImpl* context) {
   context_ = context->AsWeakPtr();
-  if (context_) {
+  if (context_.get()) {
     if (context_->makeContextCurrent()) {
       // Called once per media player, but is a no-op after the first one in
       // each renderer.
@@ -89,10 +89,9 @@ void RendererGpuVideoDecoderFactories::AsyncCreateVideoDecodeAccelerator(
       media::VideoDecodeAccelerator::Client* client) {
   DCHECK(message_loop_->BelongsToCurrentThread());
 
-  if (context_ && context_->GetCommandBufferProxy()) {
+  if (context_.get() && context_->GetCommandBufferProxy()) {
     vda_ = gpu_channel_host_->CreateVideoDecoder(
-        context_->GetCommandBufferProxy()->GetRouteID(),
-        profile, client);
+        context_->GetCommandBufferProxy()->GetRouteID(), profile, client);
   }
   compositor_loop_async_waiter_.Signal();
 }
@@ -119,7 +118,7 @@ void RendererGpuVideoDecoderFactories::AsyncCreateTextures(
   DCHECK(message_loop_->BelongsToCurrentThread());
   DCHECK(texture_target);
 
-  if (!context_) {
+  if (!context_.get()) {
     compositor_loop_async_waiter_.Signal();
     return;
   }
@@ -155,7 +154,7 @@ void RendererGpuVideoDecoderFactories::DeleteTexture(uint32 texture_id) {
 
 void RendererGpuVideoDecoderFactories::AsyncDeleteTexture(uint32 texture_id) {
   DCHECK(message_loop_->BelongsToCurrentThread());
-  if (!context_)
+  if (!context_.get())
     return;
 
   gpu::gles2::GLES2Implementation* gles2 = context_->GetImplementation();
@@ -189,7 +188,7 @@ void RendererGpuVideoDecoderFactories::ReadPixels(
 void RendererGpuVideoDecoderFactories::AsyncReadPixels(
     uint32 texture_id, uint32 texture_target, const gfx::Size& size) {
   DCHECK(message_loop_->BelongsToCurrentThread());
-  if (!context_) {
+  if (!context_.get()) {
     compositor_loop_async_waiter_.Signal();
     return;
   }

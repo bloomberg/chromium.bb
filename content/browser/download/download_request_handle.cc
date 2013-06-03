@@ -31,7 +31,7 @@ DownloadRequestHandle::DownloadRequestHandle(
       child_id_(child_id),
       render_view_id_(render_view_id),
       request_id_(request_id) {
-  DCHECK(handler_);
+  DCHECK(handler_.get());
 }
 
 WebContents* DownloadRequestHandle::GetWebContents() const {

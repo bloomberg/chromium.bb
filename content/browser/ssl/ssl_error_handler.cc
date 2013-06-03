@@ -33,7 +33,7 @@ SSLErrorHandler::SSLErrorHandler(const base::WeakPtr<Delegate>& delegate,
       resource_type_(resource_type),
       request_has_been_notified_(false) {
   DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(delegate);
+  DCHECK(delegate.get());
 
   // This makes sure we don't disappear on the IO thread until we've given an
   // answer to the net::URLRequest.
@@ -133,7 +133,7 @@ void SSLErrorHandler::CompleteCancelRequest(int error) {
   const SSLInfo* ssl_info = NULL;
   if (cert_error)
     ssl_info = &cert_error->ssl_info();
-  if (delegate_)
+  if (delegate_.get())
     delegate_->CancelSSLRequest(request_id_, error, ssl_info);
   request_has_been_notified_ = true;
 
@@ -151,7 +151,7 @@ void SSLErrorHandler::CompleteContinueRequest() {
   if (request_has_been_notified_)
     return;
 
-  if (delegate_)
+  if (delegate_.get())
     delegate_->ContinueSSLRequest(request_id_);
   request_has_been_notified_ = true;
 

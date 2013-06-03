@@ -164,7 +164,8 @@ void MediaStreamDispatcher::RemoveEnumerationRequest(
   EnumerationRequestList* requests = &state->requests;
   for (EnumerationRequestList::iterator it = requests->begin();
        it != requests->end(); ++it) {
-    if (it->request_id == request_id && it->handler == event_handler) {
+    if (it->request_id == request_id &&
+        it->handler.get() == event_handler.get()) {
       requests->erase(it);
       if (requests->empty() && state->cached_devices) {
         // No more request and has a label, try to stop the label
@@ -249,9 +250,9 @@ void MediaStreamDispatcher::OnStreamGenerated(
       new_stream.audio_array = audio_array;
       new_stream.video_array = video_array;
       label_stream_map_[label] = new_stream;
-      if (request.handler) {
-        request.handler->OnStreamGenerated(request.request_id, label,
-                                           audio_array, video_array);
+      if (request.handler.get()) {
+        request.handler->OnStreamGenerated(
+            request.request_id, label, audio_array, video_array);
         DVLOG(1) << "MediaStreamDispatcher::OnStreamGenerated("
                  << request.request_id << ", " << label << ")";
       }
@@ -267,7 +268,7 @@ void MediaStreamDispatcher::OnStreamGenerationFailed(int request_id) {
        it != requests_.end(); ++it) {
     Request& request = *it;
     if (request.ipc_request == request_id) {
-      if (request.handler) {
+      if (request.handler.get()) {
         request.handler->OnStreamGenerationFailed(request.request_id);
         DVLOG(1) << "MediaStreamDispatcher::OnStreamGenerationFailed("
                  << request.request_id << ")\n";
@@ -305,7 +306,7 @@ void MediaStreamDispatcher::OnDevicesEnumerated(
 
   for (EnumerationRequestList::iterator it = state->requests.begin();
        it != state->requests.end(); ++it) {
-    if (it->handler) {
+    if (it->handler.get()) {
       it->handler->OnDevicesEnumerated(it->request_id, device_array);
       DVLOG(1) << "MediaStreamDispatcher::OnDevicesEnumerated("
                << it->request_id << ")";
@@ -319,7 +320,7 @@ void MediaStreamDispatcher::OnDevicesEnumerationFailed(int request_id) {
        it != requests_.end(); ++it) {
     Request& request = *it;
     if (request.ipc_request == request_id) {
-      if (request.handler) {
+      if (request.handler.get()) {
         request.handler->OnDevicesEnumerationFailed(request.request_id);
         DVLOG(1) << "MediaStreamDispatcher::OnDevicesEnumerationFailed("
                  << request.request_id << ")\n";
@@ -349,9 +350,8 @@ void MediaStreamDispatcher::OnDeviceOpened(
         NOTREACHED();
       }
       label_stream_map_[label] = new_stream;
-      if (request.handler) {
-        request.handler->OnDeviceOpened(request.request_id, label,
-                                        device_info);
+      if (request.handler.get()) {
+        request.handler->OnDeviceOpened(request.request_id, label, device_info);
         DVLOG(1) << "MediaStreamDispatcher::OnDeviceOpened("
                  << request.request_id << ", " << label << ")";
       }
@@ -367,7 +367,7 @@ void MediaStreamDispatcher::OnDeviceOpenFailed(int request_id) {
        it != requests_.end(); ++it) {
     Request& request = *it;
     if (request.ipc_request == request_id) {
-      if (request.handler) {
+      if (request.handler.get()) {
         request.handler->OnDeviceOpenFailed(request.request_id);
         DVLOG(1) << "MediaStreamDispatcher::OnDeviceOpenFailed("
                  << request.request_id << ")\n";
