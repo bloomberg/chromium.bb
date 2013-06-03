@@ -27,6 +27,7 @@
 #define V8ValueCache_h
 
 #include "bindings/v8/ScopedPersistent.h"
+#include "bindings/v8/UnsafePersistent.h"
 #include <v8.h>
 #include "wtf/HashMap.h"
 #include "wtf/RefPtr.h"
@@ -50,10 +51,10 @@ public:
 
     v8::Handle<v8::String> v8ExternalString(StringImpl* stringImpl, ReturnHandleType handleType, v8::Isolate* isolate)
     {
-        if (m_lastStringImpl.get() == stringImpl && m_lastV8String.IsWeak(isolate)) {
+        if (m_lastStringImpl.get() == stringImpl && m_lastV8String.isWeak()) {
             if (handleType == ReturnUnsafeHandle)
-                return m_lastV8String;
-            return v8::Local<v8::String>::New(isolate, m_lastV8String);
+                return m_lastV8String.handle();
+            return m_lastV8String.newLocal(isolate);
         }
 
         return v8ExternalStringSlow(stringImpl, handleType, isolate);
@@ -62,7 +63,7 @@ public:
     void clearOnGC() 
     {
         m_lastStringImpl = 0;
-        m_lastV8String.Clear();
+        m_lastV8String.clear();
     }
 
     void remove(StringImpl*);
@@ -71,8 +72,8 @@ public:
 private:
     v8::Handle<v8::String> v8ExternalStringSlow(StringImpl*, ReturnHandleType, v8::Isolate*);
 
-    HashMap<StringImpl*, v8::Persistent<v8::String> > m_stringCache;
-    v8::Persistent<v8::String> m_lastV8String;
+    HashMap<StringImpl*, UnsafePersistent<v8::String> > m_stringCache;
+    UnsafePersistent<v8::String> m_lastV8String;
     // Note: RefPtr is a must as we cache by StringImpl* equality, not identity
     // hence lastStringImpl might be not a key of the cache (in sense of identity)
     // and hence it's not refed on addition.

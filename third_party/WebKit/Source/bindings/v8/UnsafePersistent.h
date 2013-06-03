@@ -69,7 +69,7 @@ public:
     }
 
     // FIXME: Remove this function, replace the usages with newLocal().
-    v8::Handle<v8::Object> handle()
+    v8::Handle<T> handle()
     {
         v8::Handle<T>* handle = reinterpret_cast<v8::Handle<T>*>(&m_value);
         return *handle;
@@ -81,6 +81,11 @@ public:
         m_value = 0;
     }
 
+    void clear()
+    {
+        m_value = 0;
+    }
+
     v8::Local<T> newLocal(v8::Isolate* isolate)
     {
         return v8::Local<T>::New(isolate, *persistent());
@@ -89,6 +94,11 @@ public:
     bool isEmpty() const
     {
         return !m_value;
+    }
+
+    bool isWeak()
+    {
+        return persistent()->IsWeak();
     }
 
 private:
