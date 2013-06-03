@@ -1014,6 +1014,16 @@ bool IsSystemVIpc(int sysno) {
 }
 #endif
 
+bool IsAnySystemV(int sysno) {
+#if defined(__x86_64__) || defined(__arm__)
+  return IsSystemVMessageQueue(sysno) ||
+         IsSystemVSemaphores(sysno) ||
+         IsSystemVSharedMemory(sysno);
+#elif defined(__i386__)
+  return IsSystemVIpc(sysno);
+#endif
+}
+
 bool IsAdvancedScheduler(int sysno) {
   switch (sysno) {
     case __NR_ioprio_get:  // IO scheduler.
@@ -1232,13 +1242,6 @@ bool IsBaselinePolicyWatched(int sysno) {
       IsSocketCall(sysno) ||  // We'll need to handle this properly to build
                               // a x86_32 policy.
 #endif
-#if defined(__x86_64__) || defined(__arm__)
-      IsSystemVMessageQueue(sysno) ||
-      IsSystemVSemaphores(sysno) ||
-      IsSystemVSharedMemory(sysno) ||
-#elif defined(__i386__)
-      IsSystemVIpc(sysno) ||
-#endif
 #if defined(__arm__)
       IsArmPciConfig(sysno) ||
 #endif
@@ -1414,6 +1417,10 @@ ErrorCode BaselinePolicy(Sandbox* sandbox, int sysno) {
     return ErrorCode(ENOENT);
   }
 
+  if (IsAnySystemV(sysno)) {
+    return ErrorCode(EPERM);
+  }
+
   if (IsUmask(sysno) || IsDeniedFileSystemAccessViaFd(sysno) ||
       IsDeniedGetOrModifySocket(sysno)) {
     return ErrorCode(EPERM);
@@ -1455,10 +1462,6 @@ ErrorCode GpuProcessPolicy(Sandbox* sandbox, int sysno,
     case __NR_openat:
       return sandbox->Trap(GpuSIGSYS_Handler, broker_process);
     default:
-#if defined(__x86_64__) || defined(__arm__)
-      if (IsSystemVSharedMemory(sysno))
-        return ErrorCode(EACCES);
-#endif
       if (IsEventFd(sysno))
         return ErrorCode(ErrorCode::ERR_ALLOWED);
 
