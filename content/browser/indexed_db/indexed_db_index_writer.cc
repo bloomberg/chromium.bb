@@ -5,7 +5,7 @@
 #include "content/browser/indexed_db/indexed_db_index_writer.h"
 
 #include "base/logging.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "content/browser/indexed_db/indexed_db_backing_store.h"
 #include "content/browser/indexed_db/indexed_db_tracing.h"
 #include "content/browser/indexed_db/indexed_db_transaction.h"

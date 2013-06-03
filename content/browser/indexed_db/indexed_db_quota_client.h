@@ -10,7 +10,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "base/message_loop_proxy.h"
+#include "base/message_loop/message_loop_proxy.h"
 #include "content/common/content_export.h"
 #include "webkit/browser/quota/quota_client.h"
 #include "webkit/browser/quota/quota_task.h"

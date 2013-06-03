@@ -9,7 +9,7 @@
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "content/browser/indexed_db/indexed_db_leveldb_coding.h"
 #include "content/browser/indexed_db/indexed_db_metadata.h"
 #include "content/browser/indexed_db/indexed_db_tracing.h"

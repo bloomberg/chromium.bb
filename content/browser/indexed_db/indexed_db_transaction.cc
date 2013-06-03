@@ -6,7 +6,7 @@
 
 #include <vector>
 #include "base/logging.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "content/browser/indexed_db/indexed_db_backing_store.h"
 #include "content/browser/indexed_db/indexed_db_cursor_impl.h"
 #include "content/browser/indexed_db/indexed_db_database_callbacks_wrapper.h"
