@@ -15,6 +15,7 @@
 
 #include "base/command_line.h"
 #include "base/debug/trace_event.h"
+#include "base/metrics/field_trial.h"
 #include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
@@ -206,32 +207,14 @@ bool IsLenovoDCuteInstalled() {
 // Determines whether D3D11 won't work, either because it is not supported on
 // the machine or because it is known it is likely to crash.
 bool D3D11ShouldWork(const GPUInfo& gpu_info) {
-  // Windows XP never supports D3D11.
-  if (base::win::GetVersion() <= base::win::VERSION_XP)
+  // Windows XP never supports D3D11. It seems to be less stable that D3D9 on
+  // Vista.
+  if (base::win::GetVersion() <= base::win::VERSION_VISTA)
     return false;
 
-  // Intel?
-  if (gpu_info.gpu.vendor_id == 0x8086) {
-    // 2nd Generation Core Processor Family Integrated Graphics Controller
-    // or Intel Ivy Bridge?
-    if (gpu_info.gpu.device_id == 0x0102 ||
-        gpu_info.gpu.device_id == 0x0106 ||
-        gpu_info.gpu.device_id == 0x0116 ||
-        gpu_info.gpu.device_id == 0x0126 ||
-        gpu_info.gpu.device_id == 0x0152 ||
-        gpu_info.gpu.device_id == 0x0156 ||
-        gpu_info.gpu.device_id == 0x015a ||
-        gpu_info.gpu.device_id == 0x0162 ||
-        gpu_info.gpu.device_id == 0x0166) {
-      // http://crbug.com/196373.
-      if (base::win::GetVersion() == base::win::VERSION_VISTA)
-        return false;
-
-      // http://crbug.com/175525.
-      if (gpu_info.display_link_version.IsValid())
-        return false;
-    }
-  }
+  // http://crbug.com/175525.
+  if (gpu_info.display_link_version.IsValid())
+    return false;
 
   return true;
 }
@@ -612,13 +595,24 @@ bool CollectBasicGraphicsInfo(GPUInfo* gpu_info) {
   if (!CollectDriverInfoD3D(id, gpu_info))
     return false;
 
-  // Collect basic information about supported D3D11 features. Delay for 45
-  // seconds so as not to regress performance tests.
-  if (D3D11ShouldWork(*gpu_info)) {
-    base::MessageLoop::current()->PostDelayedTask(
-        FROM_HERE,
-        base::Bind(&CollectD3D11Support),
-        base::TimeDelta::FromSeconds(45));
+  // This is on a field trial so we can turn it off easily if it blows up
+  // again in stable channel.
+  scoped_refptr<base::FieldTrial> trial(
+      base::FieldTrialList::FactoryGetFieldTrial("D3D11StatsExperiment", 100,
+                                                 "Disabled", 2015, 7, 8,
+                                                 NULL));
+  const int enabled_group =
+      trial->AppendGroup("Enabled", 0);
+
+  if (trial->group() == enabled_group) {
+    // Collect basic information about supported D3D11 features. Delay for 45
+    // seconds so as not to regress performance tests.
+    if (D3D11ShouldWork(*gpu_info)) {
+      base::MessageLoop::current()->PostDelayedTask(
+          FROM_HERE,
+          base::Bind(&CollectD3D11Support),
+          base::TimeDelta::FromSeconds(45));
+    }
   }
 
   return true;
