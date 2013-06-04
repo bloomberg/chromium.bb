@@ -162,15 +162,6 @@ def RunChromeDriverTests():
   RunCmd(['chrome/test/chromedriver/run_buildbot_steps.py',
           '--android-package=%s' % constants.CHROMIUM_TEST_SHELL_PACKAGE])
 
-
-def CheckInstall():
-  """Build bot step to see if adb install works on attached devices. """
-  buildbot_report.PrintNamedStep('Check device install')
-  # This step checks if apks can be installed on the devices.
-  args = ['--apk', 'build/android/CheckInstallApk-debug.apk']
-  RunCmd(['build/android/adb_install_apk.py'] + args, halt_on_failure=True)
-
-
 def InstallApk(options, test, print_step=False):
   """Install an apk to all phones.
 
@@ -285,9 +276,6 @@ def MainTestWrapper(options):
   buildbot_report.PrintNamedStep('provision_devices')
   target = options.factory_properties.get('target', 'Debug')
   RunCmd(['build/android/provision_devices.py', '-t', target])
-
-  # Check to see if devices can install apks.
-  CheckInstall()
 
   if options.install:
     test_obj = INSTRUMENTATION_TESTS[options.install]
