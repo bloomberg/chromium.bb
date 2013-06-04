@@ -102,8 +102,8 @@ HostWindowProxy::Core::Core(
 void HostWindowProxy::Core::Start(
     const base::WeakPtr<ClientSessionControl>& client_session_control) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
-  DCHECK(!client_session_control_);
-  DCHECK(client_session_control);
+  DCHECK(!client_session_control_.get());
+  DCHECK(client_session_control.get());
 
   client_session_control_ = client_session_control;
   ui_task_runner_->PostTask(
@@ -148,7 +148,7 @@ void HostWindowProxy::Core::DisconnectSession() {
     return;
   }
 
-  if (client_session_control_)
+  if (client_session_control_.get())
     client_session_control_->DisconnectSession();
 }
 
@@ -159,7 +159,7 @@ void HostWindowProxy::Core::OnLocalMouseMoved(const SkIPoint& position) {
     return;
   }
 
-  if (client_session_control_)
+  if (client_session_control_.get())
     client_session_control_->OnLocalMouseMoved(position);
 }
 
@@ -170,7 +170,7 @@ void HostWindowProxy::Core::SetDisableInputs(bool disable_inputs) {
     return;
   }
 
-  if (client_session_control_)
+  if (client_session_control_.get())
     client_session_control_->SetDisableInputs(disable_inputs);
 }
 

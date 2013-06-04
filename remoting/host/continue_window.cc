@@ -22,8 +22,8 @@ ContinueWindow::~ContinueWindow() {
 void ContinueWindow::Start(
     const base::WeakPtr<ClientSessionControl>& client_session_control) {
   DCHECK(CalledOnValidThread());
-  DCHECK(!client_session_control_);
-  DCHECK(client_session_control);
+  DCHECK(!client_session_control_.get());
+  DCHECK(client_session_control.get());
 
   client_session_control_ = client_session_control;
 
@@ -37,7 +37,7 @@ void ContinueWindow::ContinueSession() {
 
   disconnect_timer_.Stop();
 
-  if (!client_session_control_)
+  if (!client_session_control_.get())
     return;
 
   // Hide the Continue window and resume the session.
@@ -53,7 +53,7 @@ void ContinueWindow::DisconnectSession() {
   DCHECK(CalledOnValidThread());
 
   disconnect_timer_.Stop();
-  if (client_session_control_)
+  if (client_session_control_.get())
     client_session_control_->DisconnectSession();
 }
 
@@ -64,7 +64,7 @@ ContinueWindow::ContinueWindow(const UiStrings& ui_strings)
 void ContinueWindow::OnSessionExpired() {
   DCHECK(CalledOnValidThread());
 
-  if (!client_session_control_)
+  if (!client_session_control_.get())
     return;
 
   // Stop the remote input while the Continue window is shown.

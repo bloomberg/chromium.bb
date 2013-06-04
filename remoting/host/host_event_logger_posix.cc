@@ -61,7 +61,7 @@ HostEventLoggerPosix::HostEventLoggerPosix(
 }
 
 HostEventLoggerPosix::~HostEventLoggerPosix() {
-  if (monitor_)
+  if (monitor_.get())
     monitor_->RemoveStatusObserver(this);
   closelog();
 }

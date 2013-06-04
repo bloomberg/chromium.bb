@@ -483,7 +483,7 @@ void ChromotingInstance::FetchThirdPartyToken(
   // Once the Session object calls this function, it won't continue the
   // authentication until the callback is called (or connection is canceled).
   // So, it's impossible to reach this with a callback already registered.
-  DCHECK(!pepper_token_fetcher_);
+  DCHECK(!pepper_token_fetcher_.get());
   pepper_token_fetcher_ = pepper_token_fetcher;
   scoped_ptr<base::DictionaryValue> data(new base::DictionaryValue());
   data->SetString("tokenUrl", token_url.spec());
@@ -771,7 +771,7 @@ void ChromotingInstance::OnPinFetched(const std::string& pin) {
 void ChromotingInstance::OnThirdPartyTokenFetched(
     const std::string& token,
     const std::string& shared_secret) {
-  if (pepper_token_fetcher_) {
+  if (pepper_token_fetcher_.get()) {
     pepper_token_fetcher_->OnTokenFetched(token, shared_secret);
     pepper_token_fetcher_.reset();
   } else {

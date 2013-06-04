@@ -86,8 +86,8 @@ DisconnectWindowGtk::~DisconnectWindowGtk() {
 void DisconnectWindowGtk::Start(
     const base::WeakPtr<ClientSessionControl>& client_session_control) {
   DCHECK(CalledOnValidThread());
-  DCHECK(!client_session_control_);
-  DCHECK(client_session_control);
+  DCHECK(!client_session_control_.get());
+  DCHECK(client_session_control.get());
   DCHECK(!disconnect_window_);
 
   client_session_control_ = client_session_control;
@@ -172,7 +172,7 @@ void DisconnectWindowGtk::Start(
 void DisconnectWindowGtk::OnClicked(GtkWidget* button) {
   DCHECK(CalledOnValidThread());
 
-  if (client_session_control_)
+  if (client_session_control_.get())
     client_session_control_->DisconnectSession();
 }
 
@@ -180,7 +180,7 @@ gboolean DisconnectWindowGtk::OnDelete(GtkWidget* window,
                                        GdkEvent* event) {
   DCHECK(CalledOnValidThread());
 
-  if (client_session_control_)
+  if (client_session_control_.get())
     client_session_control_->DisconnectSession();
   return TRUE;
 }

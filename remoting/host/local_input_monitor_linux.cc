@@ -130,7 +130,7 @@ LocalInputMonitorLinux::Core::Core(
       x_record_display_(NULL),
       x_record_context_(0) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
-  DCHECK(client_session_control_);
+  DCHECK(client_session_control_.get());
 
   x_record_range_[0] = NULL;
   x_record_range_[1] = NULL;

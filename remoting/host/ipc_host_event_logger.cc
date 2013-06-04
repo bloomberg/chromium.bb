@@ -23,7 +23,7 @@ IpcHostEventLogger::IpcHostEventLogger(base::WeakPtr<HostStatusMonitor> monitor,
 IpcHostEventLogger::~IpcHostEventLogger() {
   DCHECK(CalledOnValidThread());
 
-  if (monitor_)
+  if (monitor_.get())
     monitor_->RemoveStatusObserver(this);
 }
 

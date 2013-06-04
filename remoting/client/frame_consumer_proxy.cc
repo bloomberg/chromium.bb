@@ -27,7 +27,7 @@ void FrameConsumerProxy::ApplyBuffer(const SkISize& view_size,
     return;
   }
 
-  if (frame_consumer_)
+  if (frame_consumer_.get())
     frame_consumer_->ApplyBuffer(view_size, clip_area, buffer, region);
 }
 
@@ -38,7 +38,7 @@ void FrameConsumerProxy::ReturnBuffer(pp::ImageData* buffer) {
     return;
   }
 
-  if (frame_consumer_)
+  if (frame_consumer_.get())
     frame_consumer_->ReturnBuffer(buffer);
 }
 
@@ -50,14 +50,14 @@ void FrameConsumerProxy::SetSourceSize(const SkISize& source_size,
     return;
   }
 
-  if (frame_consumer_)
+  if (frame_consumer_.get())
     frame_consumer_->SetSourceSize(source_size, source_dpi);
 }
 
 void FrameConsumerProxy::Attach(
     const base::WeakPtr<FrameConsumer>& frame_consumer) {
   DCHECK(task_runner_->BelongsToCurrentThread());
-  DCHECK(frame_consumer_ == NULL);
+  DCHECK(frame_consumer_.get() == NULL);
   frame_consumer_ = frame_consumer;
 }
 

@@ -22,7 +22,7 @@ void PepperTokenFetcher::FetchThirdPartyToken(
     const GURL& token_url,
     const std::string& scope,
     const TokenFetchedCallback& token_fetched_callback) {
-  if (plugin_) {
+  if (plugin_.get()) {
     token_fetched_callback_ = token_fetched_callback;
     plugin_->FetchThirdPartyToken(token_url, host_public_key_, scope,
                                   weak_factory_.GetWeakPtr());

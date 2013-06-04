@@ -51,7 +51,7 @@ void PepperXmppProxy::OnIq(const std::string& response_xml) {
     return;
   }
 
-  if (callback_)
+  if (callback_.get())
     callback_->OnIq(response_xml);
 }
 

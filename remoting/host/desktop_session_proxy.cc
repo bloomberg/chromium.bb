@@ -163,9 +163,9 @@ void DesktopSessionProxy::SetCapabilities(const std::string& capabilities) {
   // Connect to the desktop session.
   if (!is_desktop_session_connected_) {
     is_desktop_session_connected_ = true;
-    if (desktop_session_connector_) {
-      desktop_session_connector_->ConnectTerminal(this, screen_resolution_,
-                                                  virtual_terminal_);
+    if (desktop_session_connector_.get()) {
+      desktop_session_connector_->ConnectTerminal(
+          this, screen_resolution_, virtual_terminal_);
     }
   }
 }
@@ -216,7 +216,7 @@ bool DesktopSessionProxy::AttachToDesktop(
 
   // Ignore the attach notification if the client session has been disconnected
   // already.
-  if (!client_session_control_) {
+  if (!client_session_control_.get()) {
     base::CloseProcessHandle(desktop_process);
     return false;
   }
@@ -317,7 +317,7 @@ void DesktopSessionProxy::DisconnectSession() {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
   // Disconnect the client session if it hasn't been disconnected yet.
-  if (client_session_control_)
+  if (client_session_control_.get())
     client_session_control_->DisconnectSession();
 }
 
@@ -380,9 +380,9 @@ void DesktopSessionProxy::SetScreenResolution(
   // Connect to the desktop session if it is not done yet.
   if (!is_desktop_session_connected_) {
     is_desktop_session_connected_ = true;
-    if (desktop_session_connector_) {
-      desktop_session_connector_->ConnectTerminal(this, screen_resolution_,
-                                                  virtual_terminal_);
+    if (desktop_session_connector_.get()) {
+      desktop_session_connector_->ConnectTerminal(
+          this, screen_resolution_, virtual_terminal_);
     }
     return;
   }
@@ -391,7 +391,7 @@ void DesktopSessionProxy::SetScreenResolution(
   // Depending on the session kind the screen resolution can be set by either
   // the daemon (for example RDP sessions on Windows) or by the desktop session
   // agent (when sharing the physical console).
-  if (desktop_session_connector_)
+  if (desktop_session_connector_.get())
     desktop_session_connector_->SetScreenResolution(this, screen_resolution_);
   SendToDesktop(
       new ChromotingNetworkDesktopMsg_SetScreenResolution(screen_resolution_));
@@ -400,7 +400,7 @@ void DesktopSessionProxy::SetScreenResolution(
 DesktopSessionProxy::~DesktopSessionProxy() {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
-  if (desktop_session_connector_ && is_desktop_session_connected_)
+  if (desktop_session_connector_.get() && is_desktop_session_connected_)
     desktop_session_connector_->DisconnectTerminal(this);
 
   if (desktop_process_ != base::kNullProcessHandle) {
