@@ -8,6 +8,7 @@
 #include <map>
 
 #include "base/memory/weak_ptr.h"
+#include "content/port/common/input_event_ack_state.h"
 #include "content/renderer/render_view_impl.h"
 #include "ipc/ipc_channel_proxy.h"
 
@@ -55,8 +56,8 @@ class InputHandlerManager {
   void RemoveInputHandler(int routing_id);
 
   // Called from the compositor's thread.
-  void HandleInputEvent(int routing_id,
-                        const WebKit::WebInputEvent* input_event);
+  InputEventAckState HandleInputEvent(int routing_id,
+                                      const WebKit::WebInputEvent* input_event);
 
   // Called from the compositor's thread.
   InputEventFilter* filter() { return filter_.get(); }

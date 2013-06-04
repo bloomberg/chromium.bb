@@ -36,31 +36,6 @@ void InputEventFilter::RemoveRoute(int routing_id) {
   routes_.erase(routing_id);
 }
 
-void InputEventFilter::DidHandleInputEvent() {
-  DCHECK(target_loop_->BelongsToCurrentThread());
-
-  SendACK(messages_.front(), INPUT_EVENT_ACK_STATE_CONSUMED);
-  messages_.pop();
-}
-
-void InputEventFilter::DidNotHandleInputEvent(bool send_to_widget) {
-  DCHECK(target_loop_->BelongsToCurrentThread());
-
-  if (send_to_widget) {
-    // Forward to the renderer thread, and dispatch the message there.
-    TRACE_EVENT0("InputEventFilter::DidNotHandleInputEvent",
-                 "ForwardToRenderThread");
-    main_loop_->PostTask(
-        FROM_HERE,
-        base::Bind(&InputEventFilter::ForwardToMainListener,
-                   this, messages_.front()));
-  } else {
-    TRACE_EVENT0("InputEventFilter::DidNotHandleInputEvent", "LeaveUnhandled");
-    SendACK(messages_.front(), INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
-  }
-  messages_.pop();
-}
-
 void InputEventFilter::OnFilterAdded(IPC::Channel* channel) {
   io_loop_ = base::MessageLoopProxy::current();
   sender_ = channel;
@@ -128,15 +103,20 @@ void InputEventFilter::ForwardToHandler(const IPC::Message& message) {
     return;
   }
 
-  // Save this message for later, in case we need to bounce it back up to the
-  // main listener.
-  //
-  // TODO(darin): Change RenderWidgetHost to always require an ACK before
-  // sending the next input event.  This way we can nuke this queue.
-  //
-  messages_.push(message);
+  InputEventAckState ack = handler_.Run(message.routing_id(),
+                                        CrackMessage(message));
 
-  handler_.Run(message.routing_id(), CrackMessage(message));
+  if (ack == INPUT_EVENT_ACK_STATE_NOT_CONSUMED) {
+    TRACE_EVENT0("InputEventFilter::DidNotHandleInputEvent",
+                 "ForwardToRenderThread");
+    main_loop_->PostTask(
+        FROM_HERE,
+        base::Bind(&InputEventFilter::ForwardToMainListener,
+                   this, message));
+    return;
+  }
+
+  SendACK(message, ack);
 }
 
 void InputEventFilter::SendACK(const IPC::Message& message,

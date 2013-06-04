@@ -29,8 +29,6 @@ class InputHandlerWrapper
 
   // InputHandlerProxyClient implementation.
   virtual void WillShutdown() OVERRIDE;
-  virtual void DidHandleInputEvent() OVERRIDE;
-  virtual void DidNotHandleInputEvent(bool send_to_widget) OVERRIDE;
   virtual void TransferActiveWheelFlingAnimation(
       const WebKit::WebActiveWheelFlingParameters& params) OVERRIDE;
   virtual WebKit::WebGestureCurve* CreateFlingAnimationCurve(

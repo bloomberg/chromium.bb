@@ -15,6 +15,24 @@ using WebKit::WebInputEvent;
 
 namespace content {
 
+namespace {
+
+InputEventAckState InputEventDispositionToAck(
+    InputHandlerProxy::EventDisposition disposition) {
+  switch (disposition) {
+    case InputHandlerProxy::DID_HANDLE:
+      return INPUT_EVENT_ACK_STATE_CONSUMED;
+    case InputHandlerProxy::DID_NOT_HANDLE:
+      return INPUT_EVENT_ACK_STATE_NOT_CONSUMED;
+    case InputHandlerProxy::DROP_EVENT:
+      return INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS;
+  }
+  NOTREACHED();
+  return INPUT_EVENT_ACK_STATE_UNKNOWN;
+}
+
+} // namespace
+
 InputHandlerManager::InputHandlerManager(
     IPC::Listener* main_listener,
     const scoped_refptr<base::MessageLoopProxy>& message_loop_proxy)
@@ -81,7 +99,7 @@ void InputHandlerManager::RemoveInputHandler(int routing_id) {
   input_handlers_.erase(routing_id);
 }
 
-void InputHandlerManager::HandleInputEvent(
+InputEventAckState InputHandlerManager::HandleInputEvent(
     int routing_id,
     const WebInputEvent* input_event) {
   DCHECK(message_loop_proxy_->BelongsToCurrentThread());
@@ -91,11 +109,11 @@ void InputHandlerManager::HandleInputEvent(
     TRACE_EVENT0("InputHandlerManager::HandleInputEvent",
                  "NoInputHandlerFound");
     // Oops, we no longer have an interested input handler..
-    filter_->DidNotHandleInputEvent(true);
-    return;
+    return INPUT_EVENT_ACK_STATE_NOT_CONSUMED;
   }
 
-  it->second->input_handler_proxy()->HandleInputEvent(*input_event);
+  return InputEventDispositionToAck(
+      it->second->input_handler_proxy()->HandleInputEvent(*input_event));
 }
 
 }  // namespace content

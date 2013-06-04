@@ -45,15 +45,17 @@ class InputEventRecorder {
     records_.clear();
   }
 
-  void HandleInputEvent(int routing_id, const WebInputEvent* event) {
+  InputEventAckState HandleInputEvent(int routing_id,
+                                      const WebInputEvent* event) {
     DCHECK_EQ(kTestRoutingID, routing_id);
 
     records_.push_back(Record(event));
 
     if (handle_events_) {
-      filter_->DidHandleInputEvent();
+      return INPUT_EVENT_ACK_STATE_CONSUMED;
     } else {
-      filter_->DidNotHandleInputEvent(send_to_widget_);
+      return send_to_widget_ ? INPUT_EVENT_ACK_STATE_NOT_CONSUMED
+                             : INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS;
     }
   }
 

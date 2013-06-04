@@ -20,18 +20,6 @@ class InputHandlerProxyClient {
   // Called just before the InputHandlerProxy shuts down.
   virtual void WillShutdown() = 0;
 
-  // Exactly one of the following two callbacks will be invoked after every
-  // call to InputHandlerProxy::HandleInputEvent():
-
-  // Called when the InputHandlerProxy handled the input event and no
-  // further processing is required.
-  virtual void DidHandleInputEvent() = 0;
-
-  // Called when the InputHandlerProxy did not handle the input event.
-  // If send_to_widget is true, the input event should be forwarded to the
-  // WebWidget associated with this compositor for further processing.
-  virtual void DidNotHandleInputEvent(bool send_to_widget) = 0;
-
   // Transfers an active wheel fling animation initiated by a previously
   // handled input event out to the client.
   virtual void TransferActiveWheelFlingAnimation(

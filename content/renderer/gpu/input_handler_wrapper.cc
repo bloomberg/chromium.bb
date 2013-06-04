@@ -41,14 +41,6 @@ void InputHandlerWrapper::WillShutdown() {
   input_handler_manager_->RemoveInputHandler(routing_id_);
 }
 
-void InputHandlerWrapper::DidHandleInputEvent() {
-  input_handler_manager_->filter()->DidHandleInputEvent();
-}
-
-void InputHandlerWrapper::DidNotHandleInputEvent(bool send_to_widget) {
-  input_handler_manager_->filter()->DidNotHandleInputEvent(send_to_widget);
-}
-
 WebKit::WebGestureCurve* InputHandlerWrapper::CreateFlingAnimationCurve(
     int deviceSource,
     const WebKit::WebFloatPoint& velocity,

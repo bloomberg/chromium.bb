@@ -10,6 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "cc/input/input_handler.h"
 #include "content/common/content_export.h"
+#include "content/port/common/input_event_ack_state.h"
 #include "third_party/WebKit/public/platform/WebGestureCurve.h"
 #include "third_party/WebKit/public/platform/WebGestureCurveTarget.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebActiveWheelFlingParameters.h"
@@ -31,7 +32,13 @@ class CONTENT_EXPORT InputHandlerProxy
   virtual ~InputHandlerProxy();
 
   void SetClient(InputHandlerProxyClient* client);
-  void HandleInputEvent(const WebKit::WebInputEvent& event);
+
+  enum EventDisposition {
+    DID_HANDLE,
+    DID_NOT_HANDLE,
+    DROP_EVENT
+  };
+  EventDisposition HandleInputEvent(const WebKit::WebInputEvent& event);
 
   // cc::InputHandlerClient implementation.
   virtual void WillShutdown() OVERRIDE;
@@ -49,11 +56,6 @@ class CONTENT_EXPORT InputHandlerProxy
   }
 
  private:
-  enum EventDisposition {
-    DidHandle,
-    DidNotHandle,
-    DropEvent
-  };
   // This function processes the input event and determines the disposition, but
   // does not make any calls out to the InputHandlerProxyClient. Some input
   // types defer to helpers.
