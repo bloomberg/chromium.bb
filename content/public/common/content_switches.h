@@ -273,6 +273,7 @@ extern const char kEnableWebPInAcceptHeader[];
 
 CONTENT_EXPORT extern const char kOverscrollHistoryNavigation[];
 CONTENT_EXPORT extern const char kEnableOverscrollNotifications[];
+CONTENT_EXPORT extern const char kEnableWebGLDraftExtensions[];
 
 }  // namespace switches
 

@@ -814,6 +814,13 @@ TEST_F(FeatureInfoTest, InitializeVAOsWithClientSideArrays) {
   EXPECT_FALSE(info_->feature_flags().native_vertex_array_object);
 }
 
+TEST_F(FeatureInfoTest, InitializeEXT_frag_depth) {
+  SetupInitExpectations("GL_EXT_frag_depth");
+  info_->Initialize(NULL);
+  EXPECT_TRUE(info_->feature_flags().ext_frag_depth);
+  EXPECT_THAT(info_->extensions(), HasSubstr("GL_EXT_frag_depth"));
+}
+
 TEST_F(FeatureInfoTest, InitializeSamplersWithARBSamplerObjects) {
   SetupInitExpectationsWithGLVersion("GL_ARB_sampler_objects", "OpenGL 3.0");
   info_->Initialize(NULL);

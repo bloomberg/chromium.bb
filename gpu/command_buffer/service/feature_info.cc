@@ -115,7 +115,8 @@ FeatureInfo::FeatureFlags::FeatureFlags()
       native_vertex_array_object(false),
       enable_shader_name_hashing(false),
       enable_samplers(false),
-      ext_draw_buffers(false) {
+      ext_draw_buffers(false),
+      ext_frag_depth(false) {
 }
 
 FeatureInfo::Workarounds::Workarounds() :
@@ -614,6 +615,11 @@ void FeatureInfo::AddFeatures(const CommandLine& command_line) {
          ++i) {
       validators_.g_l_state.AddValue(i);
     }
+  }
+
+  if (extensions.Contains("GL_EXT_frag_depth") || gfx::HasDesktopGLFeatures()) {
+    AddExtensionString("GL_EXT_frag_depth");
+    feature_flags_.ext_frag_depth = true;
   }
 
   if (!disallowed_features_.swap_buffer_complete_callback)

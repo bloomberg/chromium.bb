@@ -728,6 +728,9 @@ static void AdjustRuntimeFeaturesFromArgs(const CommandLine& command_line) {
 
   if (command_line.HasSwitch(switches::kEnableSpeechSynthesis))
     WebRuntimeFeatures::enableSpeechSynthesis(true);
+
+  if (command_line.HasSwitch(switches::kEnableWebGLDraftExtensions))
+    WebRuntimeFeatures::enableWebGLDraftExtensions(true);
 }
 
 void RenderThreadImpl::EnsureWebKitInitialized() {

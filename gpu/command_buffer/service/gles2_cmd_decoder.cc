@@ -74,6 +74,7 @@ namespace gles2 {
 namespace {
 
 static const char kOESDerivativeExtension[] = "GL_OES_standard_derivatives";
+static const char kEXTFragDepthExtension[] = "GL_EXT_frag_depth";
 
 #if !defined(ANGLE_SH_VERSION) || ANGLE_SH_VERSION < 108
 khronos_uint64_t CityHashForAngle(const char* name, unsigned int len) {
@@ -1676,6 +1677,7 @@ class GLES2DecoderImpl : public GLES2Decoder {
   // WebGL semantics.
   bool force_webgl_glsl_validation_;
   bool derivatives_explicitly_enabled_;
+  bool frag_depth_explicitly_enabled_;
 
   bool compile_shader_always_succeeds_;
 
@@ -2130,6 +2132,7 @@ GLES2DecoderImpl::GLES2DecoderImpl(ContextGroup* group)
       reset_status_(GL_NO_ERROR),
       force_webgl_glsl_validation_(false),
       derivatives_explicitly_enabled_(false),
+      frag_depth_explicitly_enabled_(false),
       compile_shader_always_succeeds_(false),
       service_logging_(CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableGPUServiceLoggingGPU)),
@@ -2521,6 +2524,7 @@ bool GLES2DecoderImpl::InitializeShaderTranslator() {
 
   if (force_webgl_glsl_validation_) {
     resources.OES_standard_derivatives = derivatives_explicitly_enabled_;
+    resources.EXT_frag_depth = frag_depth_explicitly_enabled_;
   } else {
     resources.OES_standard_derivatives =
         features().oes_standard_derivatives ? 1 : 0;
@@ -2530,6 +2534,8 @@ bool GLES2DecoderImpl::InitializeShaderTranslator() {
         features().oes_egl_image_external ? 1 : 0;
     resources.EXT_draw_buffers =
         features().ext_draw_buffers ? 1 : 0;
+    resources.EXT_frag_depth =
+        features().ext_frag_depth ? 1 : 0;
   }
 
   ShShaderSpec shader_spec = force_webgl_glsl_validation_ ? SH_WEBGL_SPEC
@@ -7132,16 +7138,25 @@ error::Error GLES2DecoderImpl::HandleGetString(
       break;
     case GL_EXTENSIONS:
       {
-        // For WebGL contexts, strip out the OES derivatives extension if it has
-        // not been enabled.
-        if (force_webgl_glsl_validation_ &&
-            !derivatives_explicitly_enabled_) {
+        // For WebGL contexts, strip out the OES derivatives and
+        // EXT frag depth extensions if they have not been enabled.
+        if (force_webgl_glsl_validation_) {
           extensions = feature_info_->extensions();
-          size_t offset = extensions.find(kOESDerivativeExtension);
-          if (std::string::npos != offset) {
-            extensions.replace(offset,
-                               offset + arraysize(kOESDerivativeExtension),
-                               std::string());
+          if (!derivatives_explicitly_enabled_) {
+            size_t offset = extensions.find(kOESDerivativeExtension);
+            if (std::string::npos != offset) {
+              extensions.replace(offset,
+                                 offset + arraysize(kOESDerivativeExtension),
+                                 std::string());
+            }
+          }
+          if (!frag_depth_explicitly_enabled_) {
+            size_t offset = extensions.find(kEXTFragDepthExtension);
+            if (std::string::npos != offset) {
+              extensions.replace(offset,
+                                 offset + arraysize(kEXTFragDepthExtension),
+                                 std::string());
+            }
           }
         } else {
           extensions = feature_info_->extensions().c_str();
@@ -8866,15 +8881,20 @@ error::Error GLES2DecoderImpl::HandleRequestExtensionCHROMIUM(
   bool desire_webgl_glsl_validation =
       feature_str.find("GL_CHROMIUM_webglsl") != std::string::npos;
   bool desire_standard_derivatives = false;
+  bool desire_frag_depth = false;
   if (force_webgl_glsl_validation_) {
     desire_standard_derivatives =
         feature_str.find("GL_OES_standard_derivatives") != std::string::npos;
+    desire_frag_depth =
+        feature_str.find("GL_EXT_frag_depth") != std::string::npos;
   }
 
   if (desire_webgl_glsl_validation != force_webgl_glsl_validation_ ||
-      desire_standard_derivatives != derivatives_explicitly_enabled_) {
-    force_webgl_glsl_validation_ = desire_webgl_glsl_validation;
-    derivatives_explicitly_enabled_ = desire_standard_derivatives;
+      desire_standard_derivatives != derivatives_explicitly_enabled_ ||
+      desire_frag_depth != frag_depth_explicitly_enabled_) {
+    force_webgl_glsl_validation_ |= desire_webgl_glsl_validation;
+    derivatives_explicitly_enabled_ |= desire_standard_derivatives;
+    frag_depth_explicitly_enabled_ |= desire_frag_depth;
     InitializeShaderTranslator();
   }
 

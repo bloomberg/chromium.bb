@@ -209,7 +209,7 @@ bool ShaderTranslator::Translate(const char* shader) {
 
 std::string ShaderTranslator::GetStringForOptionsThatWouldEffectCompilation()
     const {
-  const size_t kNumIntFields = 15;
+  const size_t kNumIntFields = 16;
   const size_t kNumEnumFields = 1;
   const size_t kNumFunctionPointerFields = 1;
   struct MustMatchShBuiltInResource {
@@ -258,7 +258,9 @@ std::string ShaderTranslator::GetStringForOptionsThatWouldEffectCompilation()
       ":MaxExpressionComplexity:" +
       base::IntToString(compiler_options_.MaxExpressionComplexity) +
       ":MaxCallStackDepth:" +
-      base::IntToString(compiler_options_.MaxCallStackDepth));
+      base::IntToString(compiler_options_.MaxCallStackDepth) +
+      ":EXT_frag_depth:" +
+      base::IntToString(compiler_options_.EXT_frag_depth));
 }
 
 const char* ShaderTranslator::translated_shader() const {
