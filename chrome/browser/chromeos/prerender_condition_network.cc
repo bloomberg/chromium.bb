@@ -4,27 +4,27 @@
 
 #include "chrome/browser/chromeos/prerender_condition_network.h"
 
+#include "chromeos/network/network_state.h"
+#include "chromeos/network/network_state_handler.h"
+#include "third_party/cros_system_api/dbus/service_constants.h"
+
 namespace chromeos {
 
-PrerenderConditionNetwork::PrerenderConditionNetwork(
-    NetworkLibrary* network_library) : network_library_(network_library) {
-  DCHECK(network_library_);
+PrerenderConditionNetwork::PrerenderConditionNetwork() {
 }
 
 PrerenderConditionNetwork::~PrerenderConditionNetwork() {
 }
 
 bool PrerenderConditionNetwork::CanPrerender() const {
-  const Network* active_network = network_library_->active_network();
-  if (!active_network)
+  const NetworkState* default_network =
+      NetworkHandler::Get()->network_state_handler()->DefaultNetwork();
+  if (!default_network)
     return false;
-  switch (active_network->type()) {
-    case TYPE_ETHERNET:
-    case TYPE_WIFI:
-      return true;
-    default:
-      return false;
-  }
+  const std::string& type = default_network->type();
+  if (type == flimflam::kTypeEthernet || type == flimflam::kTypeWifi)
+    return true;
+  return false;
 }
 
 }  // namespace chromeos

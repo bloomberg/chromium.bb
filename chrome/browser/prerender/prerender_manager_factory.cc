@@ -15,8 +15,8 @@
 #include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/prerender_condition_network.h"
+#include "chromeos/network/network_handler.h"
 #endif
 
 namespace prerender {
@@ -55,11 +55,8 @@ BrowserContextKeyedService* PrerenderManagerFactory::BuildServiceInstanceFor(
   PrerenderManager* prerender_manager = new PrerenderManager(
       static_cast<Profile*>(profile), g_browser_process->prerender_tracker());
 #if defined(OS_CHROMEOS)
-  if (chromeos::CrosLibrary::Get()) {
-    prerender_manager->AddCondition(
-        new chromeos::PrerenderConditionNetwork(
-            chromeos::CrosLibrary::Get()->GetNetworkLibrary()));
-  }
+  if (chromeos::NetworkHandler::IsInitialized())
+    prerender_manager->AddCondition(new chromeos::PrerenderConditionNetwork);
 #endif
   return prerender_manager;
 }
