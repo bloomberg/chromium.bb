@@ -10,10 +10,7 @@ PREFIX=${PREFIX:-}
 VERIFY=${VERIFY:-yes}
 EMU_HACK=${EMU_HACK:-yes}
 
-
-rm -f  *.out chair.* materials spectra.dat  eon.dat pixel_*
-
-ln -s  data/ref/input/* .
+python ../prepare_input.py --config $(basename $(pwd)) ref
 
 LIST="pixels_out.cook  pixels_out.kajiya pixels_out.rushmeier"
 

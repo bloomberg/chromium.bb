@@ -16,5 +16,7 @@ src/caller-save.c  src/fold-const.c  src/local-alloc.c   src/reorg.c       src/x
 
 IT=gcc
 CFLAGS_EXTRA = -DHOST_WORDS_LITTLE_ENDIAN -std=gnu89
+EMCCFLAGS_EXTRA_TRAIN = --preload-file data/train/input
+EMCCFLAGS_EXTRA_REF = --preload-file data/ref/input
 
 include ../Makefile.common

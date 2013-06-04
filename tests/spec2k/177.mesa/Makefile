@@ -58,6 +58,8 @@ src/xform.c
 
 IT=mesa
 CFLAGS_EXTRA = -DSPEC_CPU2000
+EMCCFLAGS_EXTRA_TRAIN = --preload-file mesa.in --preload-file numbers
+EMCCFLAGS_EXTRA_REF = --preload-file mesa.in --preload-file numbers
 
 EXTRA_CLEAN= ref.* train.*
 

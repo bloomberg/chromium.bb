@@ -31,6 +31,9 @@ src/vnonbon.c
 
 IT=ammp
 CFLAGS_EXTRA = -DSPEC_CPU2000
+# TODO(stichnot): package up files once stdin problem is solved.
+EMCCFLAGS_EXTRA_TRAIN =
+EMCCFLAGS_EXTRA_REF =
 
 EXTRA_CLEAN= ref.* train.*
 

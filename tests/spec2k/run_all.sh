@@ -149,6 +149,16 @@ SetupGccX8664Opt() {
   SUFFIX=gcc.opt.x8664
 }
 
+#@
+#@ SetupEmcc
+#@   use Emscripten emcc compiler for Asm.js JavaScript generation
+SetupEmcc() {
+  PREFIX=../run_asmjs.sh
+  SUFFIX=emcc.html
+  DO_SIZE=false
+  VERIFY=no
+}
+
 ######################################################################
 
 SetupNaclX8632Common() {
@@ -642,6 +652,8 @@ BuildBenchmarks() {
   for i in ${list} ; do
     SubBanner "Building: $i"
     cd $i
+    # SPEC_COMPONENT is used for Asm.js builds in Makefile.common.
+    export SPEC_COMPONENT="${i}"
 
     make ${MAKEOPTS} measureit=${timeit} \
          PERF_LOGGER="${PERF_LOGGER}" \
@@ -661,9 +673,9 @@ BuildBenchmarks() {
 #@
 #@  Run the command under time and dump time data to file.
 TimedRunCmd() {
-  target=$1
+  target="$1"
   shift
-  /usr/bin/time -f "%U %S %e %C" --append -o ${target} "$@"
+  /usr/bin/time -f "%U %S %e %C" --append -o "${target}" "$@"
 }
 
 #@
@@ -683,6 +695,9 @@ RunBenchmarks() {
     cd $i
     target_file=./${i#*.}.${SUFFIX}
     gnu_size ${target_file}
+    # SCRIPTNAME is needed by run_asmjs.sh so that it knows
+    # which version of the prepackaged files to use.
+    export SCRIPTNAME="${script}"
     ${script} ${target_file}
     cd ..
   done
@@ -710,6 +725,9 @@ RunTimedBenchmarks() {
     local target_file=./${benchname}.${SUFFIX}
     local time_file=${target_file}.run_time
     gnu_size  ${target_file}
+    # SCRIPTNAME is needed by run_asmjs.sh so that it knows
+    # which version of the prepackaged files to use.
+    export SCRIPTNAME="${script}"
     # Clear out the previous times.
     rm -f "${time_file}"
     echo "Running benchmark ${SPEC_RUN_REPETITIONS} times"

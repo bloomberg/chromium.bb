@@ -14,5 +14,7 @@ src/treeup.c
 IT=mcf
 
 CFLAGS = -DWANT_STDC_PROTO
+EMCCFLAGS_EXTRA_TRAIN = --preload-file data/train/input
+EMCCFLAGS_EXTRA_REF = --preload-file data/ref/input
 include ../Makefile.common
 

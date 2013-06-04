@@ -130,6 +130,16 @@ src/myrand.cc
 
 IT=eon
 CFLAGS_EXTRA = -DNDEBUG -Isrc  -DUSE_STRERROR -DHAS_ERRLIST
+EMCCFLAGS_EXTRA_TRAIN = \
+--preload-file chair.camera \
+--preload-file chair.control.cook \
+--preload-file chair.control.kajiya \
+--preload-file chair.control.rushmeier \
+--preload-file chair.surfaces \
+--preload-file eon.dat \
+--preload-file materials \
+--preload-file spectra.dat
+EMCCFLAGS_EXTRA_REF = $(EMCCFLAGS_EXTRA_TRAIN)
 
 EXTRA_CLEAN= pixels* chair* materials spectra.dat
 include ../Makefile.common

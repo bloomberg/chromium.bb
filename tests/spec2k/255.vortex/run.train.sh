@@ -10,9 +10,7 @@ PREFIX=${PREFIX:-}
 VERIFY=${VERIFY:-yes}
 EMU_HACK=${EMU_HACK:-yes}
 
-
-rm -f  *.out *endian* persons.*
-ln -s  data/train/input/* .
+python ../prepare_input.py --config $(basename $(pwd)) train
 
 if [[ "${EMU_HACK}" != "no" ]] ; then
   touch  vortex.msg

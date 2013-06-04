@@ -10,10 +10,7 @@ PREFIX=${PREFIX:-}
 VERIFY=${VERIFY:-yes}
 EMU_HACK=${EMU_HACK:-yes}
 
-
-rm -f *.out all.new.ammp ammp.in new.tether ammp.out
-
-ln -s  data/train/input/* .
+python ../prepare_input.py --config $(basename $(pwd)) train
 
 ${PREFIX} $1 ${DASHDASH} <ammp.in  >ammp.out 2>stderr.out
 

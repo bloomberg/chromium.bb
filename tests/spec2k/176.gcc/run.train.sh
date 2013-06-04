@@ -11,7 +11,7 @@ VERIFY=${VERIFY:-yes}
 EMU_HACK=${EMU_HACK:-yes}
 
 
-rm -f  *.out *.s
+python ../prepare_input.py --config $(basename $(pwd)) train
 
 if [[ "${EMU_HACK}" != "no" ]] ; then
   touch cp-decl.s

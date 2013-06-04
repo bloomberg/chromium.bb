@@ -10,11 +10,7 @@ PREFIX=${PREFIX:-}
 VERIFY=${VERIFY:-yes}
 EMU_HACK=${EMU_HACK:-yes}
 
-
-rm -f *.out all.init.ammp ammp.in ammp.out
-rm -f init_cond.run.1 init_cond.run.2 init_cond.run.3
-
-ln -s  data/ref/input/* .
+python ../prepare_input.py --config $(basename $(pwd)) ref
 
 ${PREFIX} $1 ${DASHDASH} <ammp.in  >ammp.out 2>stderr.out
 

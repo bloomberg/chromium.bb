@@ -25,6 +25,8 @@ src/util.c
 IT=vpr
 
 CFLAGS_EXTRA = -DSPEC_CPU2000
+EMCCFLAGS_EXTRA_TRAIN = --preload-file arch.in --preload-file net.in --preload-file place.in
+EMCCFLAGS_EXTRA_REF = --preload-file arch.in --preload-file net.in --preload-file place.in
 
 EXTRA_CLEAN=*.in
 include ../Makefile.common

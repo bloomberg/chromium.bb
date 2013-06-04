@@ -10,10 +10,7 @@ PREFIX=${PREFIX:-}
 VERIFY=${VERIFY:-yes}
 EMU_HACK=${EMU_HACK:-yes}
 
-
-rm -f  mesa.log mesa.ppm mesa.in numbers
-
-ln -s  data/ref/input/* .
+python ../prepare_input.py --config $(basename $(pwd)) ref
 
 ${PREFIX} $1 ${DASHDASH} -frames 1000 -meshfile mesa.in -ppmfile mesa.ppm >mesa.out 2>mesa.err
 

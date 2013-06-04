@@ -35,6 +35,9 @@ src/word.c
 IT=gap
 
 CFLAGS_EXTRA = -DSYS_HAS_CALLOC_PROTO  -DSYS_IS_USG -DSYS_HAS_IOCTL_PROTO -DSYS_HAS_TIME_PROTO
+# TODO(stichnot): package up files once stdin problem is solved.
+EMCCFLAGS_EXTRA_TRAIN =
+EMCCFLAGS_EXTRA_REF =
 
 # 254.gap relies on signed arithmetic overflow being well-defined.
 CFLAGS_EXTRA += -fwrapv

@@ -69,5 +69,25 @@ src/vom.c
 
 IT=vortex
 CFLAGS_EXTRA=-fno-strict-aliasing
+EMCCFLAGS_EXTRA_TRAIN = --preload-file bendian.raw \
+--preload-file bendian.rnv \
+--preload-file bendian.wnv \
+--preload-file lendian.raw \
+--preload-file lendian.rnv \
+--preload-file lendian.wnv \
+--preload-file persons.250
+
+EMCCFLAGS_EXTRA_REF = --preload-file bendian1.raw \
+--preload-file bendian2.raw \
+--preload-file bendian3.raw \
+--preload-file bendian.rnv \
+--preload-file bendian.wnv \
+--preload-file lendian1.raw \
+--preload-file lendian2.raw \
+--preload-file lendian3.raw \
+--preload-file lendian.rnv \
+--preload-file lendian.wnv \
+--preload-file persons.1k
+
 EXTRA_CLEAN=persons.* lendian* bendian*
 include ../Makefile.common

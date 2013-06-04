@@ -10,13 +10,7 @@ PREFIX=${PREFIX:-}
 VERIFY=${VERIFY:-yes}
 EMU_HACK=${EMU_HACK:-yes}
 
-
-rm -f  *.out lib *.rc *enums dictionary
-
-ln -s  data/all/input/lib .
-ln -s  data/all/input/lenums lenums
-ln -s  data/train/input/dictionary .
-
+python ../prepare_input.py --config $(basename $(pwd)) train
 
 ${PREFIX} $1 ${DASHDASH} -I./lib data/all/input/diffmail.pl 2 350 15 24 23 150 \
     > stdout1.out 2> stderr1.out

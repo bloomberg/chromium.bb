@@ -10,7 +10,7 @@ PREFIX=${PREFIX:-}
 VERIFY=${VERIFY:-yes}
 EMU_HACK=${EMU_HACK:-yes}
 
-rm -f  *.out
+python ../prepare_input.py --config $(basename $(pwd)) ref
 
 LIST="input.source input.log input.graphic input.random input.program"
 

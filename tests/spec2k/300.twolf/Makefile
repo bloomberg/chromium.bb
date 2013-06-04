@@ -80,6 +80,23 @@ src/xpickint.c
 IT=twolf
 
 CFLAGS_EXTRA = -DSPEC_CPU2000 -DHAVE_SIGNED_CHAR -Wno-return-type
+EMCCFLAGS_EXTRA_TRAIN = \
+--preload-file train.blk \
+--preload-file train.cel \
+--preload-file train.net \
+--preload-file train.out \
+--preload-file train.par \
+--preload-file train.pin \
+--preload-file train.pl1 \
+--preload-file train.pl2 \
+--preload-file train.sav \
+--preload-file train.sv2 \
+--preload-file train.twf
+EMCCFLAGS_EXTRA_REF = \
+--preload-file ref.blk \
+--preload-file ref.cel \
+--preload-file ref.net \
+--preload-file ref.par
 
 EXTRA_CLEAN= ref.* train.*
 

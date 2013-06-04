@@ -37,6 +37,8 @@ IT=perlbmk
 
 CFLAGS_EXTRA = -DSPEC_CPU2000_LINUX -DHAS_DBL_DIG -DSPEC_CPU2000_NEED_TIME_H \
 -DSPEC_CPU2000_NEED_BOOL
+EMCCFLAGS_EXTRA_TRAIN = --preload-file lib --preload-file lenums --preload-file benums --preload-file dictionary
+EMCCFLAGS_EXTRA_REF = --preload-file lib --preload-file lenums --preload-file benums --preload-file dictionary --preload-file cpu2000_mhonarc.rc
 
 EXTRA_CLEAN= benums  cpu2000_mhonarc.rc lib dictionary
 

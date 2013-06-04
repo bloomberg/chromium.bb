@@ -11,9 +11,7 @@ VERIFY=${VERIFY:-yes}
 EMU_HACK=${EMU_HACK:-yes}
 
 
-rm -f *.out *.err a10.img c756hel.in hc.img
-
-ln -s  data/train/input/* .
+python ../prepare_input.py --config $(basename $(pwd)) train
 
 
 ${PREFIX} $1 ${DASHDASH} -scanfile c756hel.in\

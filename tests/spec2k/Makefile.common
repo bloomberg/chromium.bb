@@ -90,6 +90,7 @@ endif
 
 clean:
 	rm -f -- *.pexe *.bc *.o *.s *.x86 *.arm  *.c~ .h~ \
+              *.html *.data \
               $(IT) $(IT).* *.out src/*bc $(EXTRA_CLEAN)
 
 
@@ -110,6 +111,10 @@ all: pnacl_bin nacl_bin nosfi_bin
 ## NON-SANDBOXING TOOLCHAINS
 ######################################################################
 LOCAL_GCC=/usr/bin/gcc
+EMCCFLAGS=-s ASM_JS=1 -s TOTAL_MEMORY=268435456 $(CFLAGS_EXTRA)
+# Note: emcc should be in $PATH, or LOCAL_EMCC can be set to
+# the location of emcc.
+LOCAL_EMCC=emcc
 
 # straight x86-32 gcc
 $(IT).gcc.x8632: $(SRC) $(CPPSRC)
@@ -133,6 +138,23 @@ $(IT).gcc.opt.x8664: $(SRC) $(CPPSRC)
 	$(LOCAL_GCC) -O3 -m64 -DSPEC_CPU2000_LP64 $(CFLAGS) \
 	 	$^ -static -lstdc++ -lm  -o $@
 	@$(call LOG_ZIP_SIZE,$@,$(IT))
+
+# Emscripten javascript/html generation for Asm.js
+# Sadly, we have to build two versions -- one for "ref" and one for "train" --
+# due to the way Emscripten packages data files.
+# It will actually create .emcc.ref.html and .emcc.train.html files
+$(IT).emcc.html: $(SRC) $(CPPSRC)
+	../prepare_input.py -v --config $(SPEC_COMPONENT) train
+	$(LOCAL_EMCC) -O2 -m32 $(CFLAGS) \
+		$(EMCCFLAGS) $(EMCCFLAGS_EXTRA_TRAIN) $^ \
+		-static -lstdc++ -lm -o $@.train.html
+	../fixup_asmjs.py $@.train.html
+	../prepare_input.py -v --config $(SPEC_COMPONENT) ref
+	$(LOCAL_EMCC) -O2 -m32 $(CFLAGS) \
+		$(EMCCFLAGS) $(EMCCFLAGS_EXTRA_REF) $^ \
+		-static -lstdc++ -lm  -o $@.ref.html
+	../fixup_asmjs.py $@.ref.html
+	touch $@
 
 
 ######################################################################
