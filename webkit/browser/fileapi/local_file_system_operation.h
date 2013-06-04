@@ -170,7 +170,7 @@ class WEBKIT_STORAGE_EXPORT LocalFileSystemOperation
   }
 
   FileSystemOperationContext* operation_context() const {
-    if (parent_operation_)
+    if (parent_operation_.get())
       return parent_operation_->operation_context();
     return operation_context_.get();
   }

@@ -73,7 +73,7 @@ void SyncableFileSystemOperation::CreateFile(
     bool exclusive,
     const StatusCallback& callback) {
   DCHECK(CalledOnValidThread());
-  if (!operation_runner_) {
+  if (!operation_runner_.get()) {
     AbortOperation(callback, base::PLATFORM_FILE_ERROR_NOT_FOUND);
     return;
   }
@@ -95,7 +95,7 @@ void SyncableFileSystemOperation::CreateDirectory(
     bool recursive,
     const StatusCallback& callback) {
   DCHECK(CalledOnValidThread());
-  if (!operation_runner_) {
+  if (!operation_runner_.get()) {
     AbortOperation(callback, base::PLATFORM_FILE_ERROR_NOT_FOUND);
     return;
   }
@@ -120,7 +120,7 @@ void SyncableFileSystemOperation::Copy(
     const FileSystemURL& dest_url,
     const StatusCallback& callback) {
   DCHECK(CalledOnValidThread());
-  if (!operation_runner_) {
+  if (!operation_runner_.get()) {
     AbortOperation(callback, base::PLATFORM_FILE_ERROR_NOT_FOUND);
     return;
   }
@@ -141,7 +141,7 @@ void SyncableFileSystemOperation::Move(
     const FileSystemURL& dest_url,
     const StatusCallback& callback) {
   DCHECK(CalledOnValidThread());
-  if (!operation_runner_) {
+  if (!operation_runner_.get()) {
     AbortOperation(callback, base::PLATFORM_FILE_ERROR_NOT_FOUND);
     return;
   }
@@ -162,7 +162,7 @@ void SyncableFileSystemOperation::DirectoryExists(
     const FileSystemURL& url,
     const StatusCallback& callback) {
   DCHECK(CalledOnValidThread());
-  if (!operation_runner_) {
+  if (!operation_runner_.get()) {
     AbortOperation(callback, base::PLATFORM_FILE_ERROR_NOT_FOUND);
     return;
   }
@@ -174,7 +174,7 @@ void SyncableFileSystemOperation::FileExists(
     const FileSystemURL& url,
     const StatusCallback& callback) {
   DCHECK(CalledOnValidThread());
-  if (!operation_runner_) {
+  if (!operation_runner_.get()) {
     AbortOperation(callback, base::PLATFORM_FILE_ERROR_NOT_FOUND);
     return;
   }
@@ -186,9 +186,10 @@ void SyncableFileSystemOperation::GetMetadata(
     const FileSystemURL& url,
     const GetMetadataCallback& callback) {
   DCHECK(CalledOnValidThread());
-  if (!operation_runner_) {
+  if (!operation_runner_.get()) {
     callback.Run(base::PLATFORM_FILE_ERROR_NOT_FOUND,
-                 base::PlatformFileInfo(), base::FilePath());
+                 base::PlatformFileInfo(),
+                 base::FilePath());
     delete this;
     return;
   }
@@ -200,7 +201,7 @@ void SyncableFileSystemOperation::ReadDirectory(
     const FileSystemURL& url,
     const ReadDirectoryCallback& callback) {
   DCHECK(CalledOnValidThread());
-  if (!operation_runner_) {
+  if (!operation_runner_.get()) {
     callback.Run(base::PLATFORM_FILE_ERROR_NOT_FOUND, FileEntryList(), false);
     delete this;
     return;
@@ -216,7 +217,7 @@ void SyncableFileSystemOperation::Remove(
     const FileSystemURL& url, bool recursive,
     const StatusCallback& callback) {
   DCHECK(CalledOnValidThread());
-  if (!operation_runner_) {
+  if (!operation_runner_.get()) {
     AbortOperation(callback, base::PLATFORM_FILE_ERROR_NOT_FOUND);
     return;
   }
@@ -239,7 +240,7 @@ void SyncableFileSystemOperation::Write(
     int64 offset,
     const WriteCallback& callback) {
   DCHECK(CalledOnValidThread());
-  if (!operation_runner_) {
+  if (!operation_runner_.get()) {
     callback.Run(base::PLATFORM_FILE_ERROR_NOT_FOUND, 0, true);
     delete this;
     return;
@@ -259,7 +260,7 @@ void SyncableFileSystemOperation::Truncate(
     const FileSystemURL& url, int64 length,
     const StatusCallback& callback) {
   DCHECK(CalledOnValidThread());
-  if (!operation_runner_) {
+  if (!operation_runner_.get()) {
     AbortOperation(callback, base::PLATFORM_FILE_ERROR_NOT_FOUND);
     return;
   }
@@ -281,7 +282,7 @@ void SyncableFileSystemOperation::TouchFile(
     const base::Time& last_modified_time,
     const StatusCallback& callback) {
   DCHECK(CalledOnValidThread());
-  if (!operation_runner_) {
+  if (!operation_runner_.get()) {
     AbortOperation(callback, base::PLATFORM_FILE_ERROR_NOT_FOUND);
     return;
   }
@@ -311,9 +312,11 @@ void SyncableFileSystemOperation::CreateSnapshotFile(
     const FileSystemURL& path,
     const SnapshotFileCallback& callback) {
   DCHECK(CalledOnValidThread());
-  if (!operation_runner_) {
+  if (!operation_runner_.get()) {
     callback.Run(base::PLATFORM_FILE_ERROR_NOT_FOUND,
-                 base::PlatformFileInfo(), base::FilePath(), NULL);
+                 base::PlatformFileInfo(),
+                 base::FilePath(),
+                 NULL);
     delete this;
     return;
   }
@@ -326,7 +329,7 @@ void SyncableFileSystemOperation::CopyInForeignFile(
     const FileSystemURL& dest_url,
     const StatusCallback& callback) {
   DCHECK(CalledOnValidThread());
-  if (!operation_runner_) {
+  if (!operation_runner_.get()) {
     AbortOperation(callback, base::PLATFORM_FILE_ERROR_NOT_FOUND);
     return;
   }
@@ -371,7 +374,7 @@ LocalFileSystemOperation* SyncableFileSystemOperation::NewOperation() {
 void SyncableFileSystemOperation::DidFinish(base::PlatformFileError status) {
   DCHECK(CalledOnValidThread());
   DCHECK(!completion_callback_.is_null());
-  if (operation_runner_)
+  if (operation_runner_.get())
     operation_runner_->OnOperationCompleted(target_paths_);
   completion_callback_.Run(status);
 }
@@ -386,7 +389,7 @@ void SyncableFileSystemOperation::DidWrite(
     callback.Run(result, bytes, complete);
     return;
   }
-  if (operation_runner_)
+  if (operation_runner_.get())
     operation_runner_->OnOperationCompleted(target_paths_);
   callback.Run(result, bytes, complete);
 }

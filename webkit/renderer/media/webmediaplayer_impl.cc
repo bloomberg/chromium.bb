@@ -196,7 +196,7 @@ WebMediaPlayerImpl::~WebMediaPlayerImpl() {
   media_log_->AddEvent(
       media_log_->CreateEvent(media::MediaLogEvent::WEBMEDIAPLAYER_DESTROYED));
 
-  if (delegate_)
+  if (delegate_.get())
     delegate_->PlayerGone(this);
 
   Destroy();
@@ -300,7 +300,7 @@ void WebMediaPlayerImpl::play() {
 
   media_log_->AddEvent(media_log_->CreateEvent(media::MediaLogEvent::PLAY));
 
-  if (delegate_)
+  if (delegate_.get())
     delegate_->DidPlay(this);
 }
 
@@ -313,7 +313,7 @@ void WebMediaPlayerImpl::pause() {
 
   media_log_->AddEvent(media_log_->CreateEvent(media::MediaLogEvent::PAUSE));
 
-  if (delegate_)
+  if (delegate_.get())
     delegate_->DidPause(this);
 }
 

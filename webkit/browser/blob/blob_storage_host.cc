@@ -16,7 +16,7 @@ BlobStorageHost::BlobStorageHost(BlobStorageContext* context)
 }
 
 BlobStorageHost::~BlobStorageHost() {
-  if (!context_)
+  if (!context_.get())
     return;
   for (std::set<GURL>::iterator iter = public_blob_urls_.begin();
        iter != public_blob_urls_.end(); ++iter) {
@@ -30,7 +30,7 @@ BlobStorageHost::~BlobStorageHost() {
 }
 
 bool BlobStorageHost::StartBuildingBlob(const std::string& uuid) {
-  if (!context_ || uuid.empty() || context_->IsInUse(uuid))
+  if (!context_.get() || uuid.empty() || context_->IsInUse(uuid))
     return false;
   context_->StartBuildingBlob(uuid);
   blobs_inuse_map_[uuid] = 1;
@@ -39,14 +39,14 @@ bool BlobStorageHost::StartBuildingBlob(const std::string& uuid) {
 
 bool BlobStorageHost::AppendBlobDataItem(
     const std::string& uuid, const BlobData::Item& data_item) {
-  if (!context_ || !IsBeingBuiltInHost(uuid))
+  if (!context_.get() || !IsBeingBuiltInHost(uuid))
     return false;
   context_->AppendBlobDataItem(uuid, data_item);
   return true;
 }
 
 bool BlobStorageHost::CancelBuildingBlob(const std::string& uuid) {
-  if (!context_ || !IsBeingBuiltInHost(uuid))
+  if (!context_.get() || !IsBeingBuiltInHost(uuid))
     return false;
   blobs_inuse_map_.erase(uuid);
   context_->CancelBuildingBlob(uuid);
@@ -55,14 +55,15 @@ bool BlobStorageHost::CancelBuildingBlob(const std::string& uuid) {
 
 bool BlobStorageHost::FinishBuildingBlob(
     const std::string& uuid, const std::string& content_type) {
-  if (!context_ || !IsBeingBuiltInHost(uuid))
+  if (!context_.get() || !IsBeingBuiltInHost(uuid))
     return false;
   context_->FinishBuildingBlob(uuid, content_type);
   return true;
 }
 
 bool BlobStorageHost::IncrementBlobRefCount(const std::string& uuid) {
-  if (!context_ || !context_->IsInUse(uuid) || context_->IsBeingBuilt(uuid))
+  if (!context_.get() || !context_->IsInUse(uuid) ||
+      context_->IsBeingBuilt(uuid))
     return false;
   context_->IncrementBlobRefCount(uuid);
   blobs_inuse_map_[uuid] += 1;
@@ -70,7 +71,7 @@ bool BlobStorageHost::IncrementBlobRefCount(const std::string& uuid) {
 }
 
 bool BlobStorageHost::DecrementBlobRefCount(const std::string& uuid) {
-  if (!context_ || !IsInUseInHost(uuid))
+  if (!context_.get() || !IsInUseInHost(uuid))
     return false;
   context_->DecrementBlobRefCount(uuid);
   blobs_inuse_map_[uuid] -= 1;
@@ -81,7 +82,8 @@ bool BlobStorageHost::DecrementBlobRefCount(const std::string& uuid) {
 
 bool BlobStorageHost::RegisterPublicBlobURL(
     const GURL& blob_url, const std::string& uuid) {
-  if (!context_ || !IsInUseInHost(uuid) || context_->IsUrlRegistered(blob_url))
+  if (!context_.get() || !IsInUseInHost(uuid) ||
+      context_->IsUrlRegistered(blob_url))
     return false;
   context_->RegisterPublicBlobURL(blob_url, uuid);
   public_blob_urls_.insert(blob_url);
@@ -89,7 +91,7 @@ bool BlobStorageHost::RegisterPublicBlobURL(
 }
 
 bool BlobStorageHost::RevokePublicBlobURL(const GURL& blob_url) {
-  if (!context_ || !IsUrlRegisteredInHost(blob_url))
+  if (!context_.get() || !IsUrlRegisteredInHost(blob_url))
     return false;
   context_->RevokePublicBlobURL(blob_url);
   public_blob_urls_.erase(blob_url);

@@ -113,7 +113,7 @@ class SimpleFileWriter::IOThreadProxy
           base::Bind(&IOThreadProxy::DidSucceedOnMainThread, this));
       return;
     }
-    if (simple_writer_)
+    if (simple_writer_.get())
       simple_writer_->DidSucceed();
   }
 
@@ -124,7 +124,7 @@ class SimpleFileWriter::IOThreadProxy
           base::Bind(&IOThreadProxy::DidFailOnMainThread, this, error_code));
       return;
     }
-    if (simple_writer_)
+    if (simple_writer_.get())
       simple_writer_->DidFail(error_code);
   }
 
@@ -136,7 +136,7 @@ class SimpleFileWriter::IOThreadProxy
                      this, bytes, complete));
       return;
     }
-    if (simple_writer_)
+    if (simple_writer_.get())
       simple_writer_->DidWrite(bytes, complete);
   }
 

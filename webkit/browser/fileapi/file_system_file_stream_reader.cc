@@ -24,7 +24,7 @@ namespace {
 void ReadAdapter(base::WeakPtr<FileSystemFileStreamReader> reader,
                  net::IOBuffer* buf, int buf_len,
                  const net::CompletionCallback& callback) {
-  if (!reader)
+  if (!reader.get())
     return;
   int rv = reader->Read(buf, buf_len, callback);
   if (rv != net::ERR_IO_PENDING)
@@ -33,7 +33,7 @@ void ReadAdapter(base::WeakPtr<FileSystemFileStreamReader> reader,
 
 void GetLengthAdapter(base::WeakPtr<FileSystemFileStreamReader> reader,
                       const net::Int64CompletionCallback& callback) {
-  if (!reader)
+  if (!reader.get())
     return;
   int rv = reader->GetLength(callback);
   if (rv != net::ERR_IO_PENDING)

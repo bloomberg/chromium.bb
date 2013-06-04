@@ -87,7 +87,7 @@ WebMediaPlayerMS::~WebMediaPlayerMS() {
   media_log_->AddEvent(
       media_log_->CreateEvent(media::MediaLogEvent::WEBMEDIAPLAYER_DESTROYED));
 
-  if (delegate_)
+  if (delegate_.get())
     delegate_->PlayerGone(this);
 }
 
@@ -149,7 +149,7 @@ void WebMediaPlayerMS::play() {
     if (audio_renderer_.get())
       audio_renderer_->Play();
 
-    if (delegate_)
+    if (delegate_.get())
       delegate_->DidPlay(this);
   }
 
@@ -169,7 +169,7 @@ void WebMediaPlayerMS::pause() {
     if (audio_renderer_.get())
       audio_renderer_->Pause();
 
-    if (delegate_)
+    if (delegate_.get())
       delegate_->DidPause(this);
   }
 

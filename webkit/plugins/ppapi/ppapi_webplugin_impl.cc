@@ -84,12 +84,11 @@ WebKit::WebPluginContainer* WebPluginImpl::container() const {
 
 bool WebPluginImpl::initialize(WebPluginContainer* container) {
   // The plugin delegate may have gone away.
-  if (!init_data_->delegate)
+  if (!init_data_->delegate.get())
     return false;
 
-  instance_ = init_data_->module->CreateInstance(init_data_->delegate,
-                                                 container,
-                                                 init_data_->url);
+  instance_ = init_data_->module
+      ->CreateInstance(init_data_->delegate.get(), container, init_data_->url);
   if (!instance_.get())
     return false;
 

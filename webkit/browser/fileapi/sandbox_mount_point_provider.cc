@@ -98,7 +98,7 @@ void DidOpenFileSystem(
     base::WeakPtr<SandboxMountPointProvider> mount_point_provider,
     const FileSystemMountPointProvider::OpenFileSystemCallback& callback,
     base::PlatformFileError* error) {
-  if (mount_point_provider)
+  if (mount_point_provider.get())
     mount_point_provider.get()->CollectOpenFileSystemMetrics(*error);
   callback.Run(*error);
 }

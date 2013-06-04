@@ -851,7 +851,7 @@ base::PlatformFileError LocalFileSystemOperation::SetUp(
 
   // If this operation is created for recursive sub-operations (i.e.
   // it has the parent operation) we skip duplicated notifications.
-  if (parent_operation_)
+  if (parent_operation_.get())
     return base::PLATFORM_FILE_OK;
 
   switch (mode) {

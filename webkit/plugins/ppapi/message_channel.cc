@@ -50,7 +50,7 @@ const char kPostMessage[] = "postMessage";
 // NPObject*.
 MessageChannel* ToMessageChannel(NPObject* object) {
   return static_cast<MessageChannel::MessageChannelNPObject*>(object)->
-      message_channel;
+      message_channel.get();
 }
 
 NPObject* ToPassThroughObject(NPObject* object) {
