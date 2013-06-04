@@ -20,6 +20,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/api/managed_mode_private/managed_mode_handler.h"
+#include "chrome/common/extensions/background_info.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_file_util.h"
 #include "chrome/common/extensions/extension_l10n_util.h"
@@ -37,6 +38,8 @@ using extensions::Manifest;
 
 namespace errors = extension_manifest_errors;
 
+namespace extensions {
+
 namespace {
 
 // The following enumeration is used in histograms matching
@@ -47,6 +50,14 @@ enum ManifestReloadReason {
   UNPACKED_DIR,  // Unpacked directory.
   NEEDS_RELOCALIZATION,  // The locale has changed since we read this extension.
   NUM_MANIFEST_RELOAD_REASONS
+};
+
+// Used in histogram Extension.BackgroundPageType. Values may be added, as
+// long as existing values are not changed.
+enum BackgroundPageType {
+  NO_BACKGROUND_PAGE = 0,
+  BACKGROUND_PAGE_PERSISTENT = 1,
+  EVENT_PAGE = 2,
 };
 
 ManifestReloadReason ShouldReloadExtensionManifest(const ExtensionInfo& info) {
@@ -61,6 +72,14 @@ ManifestReloadReason ShouldReloadExtensionManifest(const ExtensionInfo& info) {
     return NEEDS_RELOCALIZATION;
 
   return NOT_NEEDED;
+}
+
+BackgroundPageType GetBackgroundPageType(const Extension* extension) {
+  if (!BackgroundInfo::HasBackgroundPage(extension))
+    return NO_BACKGROUND_PAGE;
+  if (BackgroundInfo::HasPersistentBackgroundPage(extension))
+    return BACKGROUND_PAGE_PERSISTENT;
+  return EVENT_PAGE;
 }
 
 void DispatchOnInstalledEvent(
@@ -79,8 +98,6 @@ void DispatchOnInstalledEvent(
 }
 
 }  // namespace
-
-namespace extensions {
 
 InstalledLoader::InstalledLoader(ExtensionService* extension_service)
     : extension_service_(extension_service),
@@ -280,6 +297,15 @@ void InstalledLoader::LoadAllExtensions() {
     // feature.
     if (Manifest::IsUnpackedLocation(location))
       continue;
+
+    UMA_HISTOGRAM_ENUMERATION("Extensions.ManifestVersion",
+                              (*ex)->manifest_version(), 10);
+
+    if (type == Manifest::TYPE_EXTENSION) {
+      BackgroundPageType background_page_type = GetBackgroundPageType(*ex);
+      UMA_HISTOGRAM_ENUMERATION("Extensions.BackgroundPageType",
+                                background_page_type, 10);
+    }
 
     // Using an enumeration shows us the total installed ratio across all users.
     // Using the totals per user at each startup tells us the distribution of
