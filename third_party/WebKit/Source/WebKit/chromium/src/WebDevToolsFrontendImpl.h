@@ -32,10 +32,12 @@
 #define WebDevToolsFrontendImpl_h
 
 #include "WebDevToolsFrontend.h"
-#include <wtf/Forward.h>
-#include <wtf/Noncopyable.h>
-#include <wtf/Vector.h>
-#include <wtf/text/WTFString.h>
+#include "core/platform/Timer.h"
+#include "wtf/Deque.h"
+#include "wtf/Forward.h"
+#include "wtf/Noncopyable.h"
+#include "wtf/Vector.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebKit {
 
@@ -58,11 +60,17 @@ public:
     virtual void dispatchOnInspectorFrontend(const WebString& message);
 
 private:
-    void doDispatchOnInspectorFrontend(const String& message);
+    class InspectorFrontendResumeObserver;
+    void resume();
+    void maybeDispatch(WebCore::Timer<WebDevToolsFrontendImpl>*);
+    void doDispatchOnInspectorFrontend(const WebString& message);
 
     WebKit::WebViewImpl* m_webViewImpl;
     WebKit::WebDevToolsFrontendClient* m_client;
     String m_applicationLocale;
+    OwnPtr<InspectorFrontendResumeObserver> m_inspectorFrontendResumeObserver;
+    Deque<WebString> m_messages;
+    WebCore::Timer<WebDevToolsFrontendImpl> m_inspectorFrontendDispatchTimer;
 };
 
 } // namespace WebKit

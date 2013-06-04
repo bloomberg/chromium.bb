@@ -31,9 +31,6 @@
 #include "config.h"
 #include "WebDevToolsFrontendImpl.h"
 
-#include <wtf/OwnPtr.h>
-#include <wtf/text/WTFString.h>
-#include <wtf/Vector.h>
 #include "InspectorFrontendClientImpl.h"
 #include "V8InspectorFrontendHost.h"
 #include "V8MouseEvent.h"
@@ -59,10 +56,37 @@
 #include "core/platform/ContextMenuItem.h"
 #include "core/platform/Pasteboard.h"
 #include "weborigin/SecurityOrigin.h"
+#include "wtf/OwnPtr.h"
+#include "wtf/Vector.h"
+#include "wtf/text/WTFString.h"
 
 using namespace WebCore;
 
 namespace WebKit {
+
+class WebDevToolsFrontendImpl::InspectorFrontendResumeObserver : public ActiveDOMObject {
+    WTF_MAKE_NONCOPYABLE(InspectorFrontendResumeObserver);
+public:
+    InspectorFrontendResumeObserver(WebDevToolsFrontendImpl* webDevToolsFrontendImpl, Document* document)
+        : ActiveDOMObject(document)
+        , m_webDevToolsFrontendImpl(webDevToolsFrontendImpl)
+    {
+        suspendIfNeeded();
+    }
+
+private:
+    virtual bool canSuspend() const OVERRIDE
+    {
+        return true;
+    }
+
+    virtual void resume() OVERRIDE
+    {
+        m_webDevToolsFrontendImpl->resume();
+    }
+
+    WebDevToolsFrontendImpl* m_webDevToolsFrontendImpl;
+};
 
 static v8::Local<v8::String> ToV8String(const String& s)
 {
@@ -90,6 +114,7 @@ WebDevToolsFrontendImpl::WebDevToolsFrontendImpl(
     : m_webViewImpl(webViewImpl)
     , m_client(client)
     , m_applicationLocale(applicationLocale)
+    , m_inspectorFrontendDispatchTimer(this, &WebDevToolsFrontendImpl::maybeDispatch)
 {
     InspectorController* ic = m_webViewImpl->page()->inspectorController();
     ic->setInspectorFrontendClient(adoptPtr(new InspectorFrontendClientImpl(m_webViewImpl->page(), m_client, this)));
@@ -104,6 +129,33 @@ WebDevToolsFrontendImpl::~WebDevToolsFrontendImpl()
 }
 
 void WebDevToolsFrontendImpl::dispatchOnInspectorFrontend(const WebString& message)
+{
+    m_messages.append(message);
+    maybeDispatch(0);
+}
+
+void WebDevToolsFrontendImpl::resume()
+{
+    // We should call maybeDispatch asynchronously here because we are not allowed to update activeDOMObjects list in
+    // resume (See ScriptExecutionContext::resumeActiveDOMObjects).
+    if (!m_inspectorFrontendDispatchTimer.isActive())
+        m_inspectorFrontendDispatchTimer.startOneShot(0);
+}
+
+void WebDevToolsFrontendImpl::maybeDispatch(WebCore::Timer<WebDevToolsFrontendImpl>*)
+{
+    while (!m_messages.isEmpty()) {
+        Document* document = m_webViewImpl->page()->mainFrame()->document();
+        if (document->activeDOMObjectsAreSuspended()) {
+            m_inspectorFrontendResumeObserver = adoptPtr(new InspectorFrontendResumeObserver(this, document));
+            return;
+        }
+        m_inspectorFrontendResumeObserver.clear();
+        doDispatchOnInspectorFrontend(m_messages.takeFirst());
+    }
+}
+
+void WebDevToolsFrontendImpl::doDispatchOnInspectorFrontend(const WebString& message)
 {
     WebFrameImpl* frame = m_webViewImpl->mainFrameImpl();
     v8::HandleScope scope;

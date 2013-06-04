@@ -67,7 +67,8 @@ void InspectorFrontendClientImpl::windowObjectCleared()
     v8::Handle<v8::Context> frameContext = m_frontendPage->mainFrame() ? m_frontendPage->mainFrame()->script()->currentWorldContext() : v8::Local<v8::Context>();
     v8::Context::Scope contextScope(frameContext);
 
-    ASSERT(!m_frontendHost);
+    if (m_frontendHost)
+        m_frontendHost->disconnectClient();
     m_frontendHost = InspectorFrontendHost::create(this, m_frontendPage);
     v8::Handle<v8::Value> frontendHostObj = toV8(m_frontendHost.get(), v8::Handle<v8::Object>(), frameContext->GetIsolate());
     v8::Handle<v8::Object> global = frameContext->Global();
