@@ -183,7 +183,7 @@ public:
     {
         return !(*this == cue);
     }
-    
+
     enum CueType {
         Generic,
         WebVTT

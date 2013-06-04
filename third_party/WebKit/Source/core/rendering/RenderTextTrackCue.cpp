@@ -43,6 +43,15 @@ void RenderTextTrackCue::layout()
     StackStats::LayoutCheckPoint layoutCheckPoint;
     RenderBlock::layout();
 
+#if ENABLE(WEBVTT_REGIONS)
+    // If WebVTT Regions are used, the regular WebVTT layout algorithm is no
+    // longer necessary, since cues having the region parameter set do not have
+    // any positioning parameters. Also, in this case, the regions themselves
+    // have positioning information.
+    if (!m_cue->regionId().isEmpty())
+        return;
+#endif
+
     LayoutStateMaintainer statePusher(view(), this, locationOffset(), hasTransform() || hasReflection() || style()->isFlippedBlocksWritingMode());
 
     if (m_cue->cueType()== TextTrackCue::WebVTT) {

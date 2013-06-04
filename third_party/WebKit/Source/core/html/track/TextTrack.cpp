@@ -37,7 +37,8 @@
 #include "core/html/HTMLMediaElement.h"
 #include "core/html/track/TextTrackCueList.h"
 #include "core/html/track/TextTrackList.h"
-#include "core/html/track/TrackBase.h"
+#include "core/html/track/TextTrackRegion.h"
+#include "core/html/track/TextTrackRegionList.h"
 
 namespace WebCore {
 
@@ -120,11 +121,14 @@ TextTrack::~TextTrack()
 
         for (size_t i = 0; i < m_cues->length(); ++i)
             m_cues->item(i)->setTrack(0);
+    }
+
 #if ENABLE(WEBVTT_REGIONS)
+    if (m_regions) {
         for (size_t i = 0; i < m_regions->length(); ++i)
             m_regions->item(i)->setTrack(0);
-#endif
     }
+#endif
     clearClient();
 }
 

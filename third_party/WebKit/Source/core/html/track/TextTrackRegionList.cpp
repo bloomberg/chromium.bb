@@ -50,10 +50,14 @@ TextTrackRegion* TextTrackRegionList::item(unsigned index) const
 
 TextTrackRegion* TextTrackRegionList::getRegionById(const String& id) const
 {
+    if (id.isEmpty())
+        return 0;
+
     for (size_t i = 0; i < m_list.size(); ++i) {
         if (m_list[i]->id() == id)
             return m_list[i].get();
     }
+
     return 0;
 }
 

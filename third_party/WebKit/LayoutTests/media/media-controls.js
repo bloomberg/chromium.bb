@@ -48,7 +48,7 @@ function mediaControlsButtonDimensions(element, id)
 function textTrackDisplayElement(parentElement, id, cueNumber)
 {
     var textTrackContainerID = "-webkit-media-text-track-container";
-    var containerElement = mediaControlsElement(internals.shadowRoot(parentElement).firstChild, "-webkit-media-text-track-container");
+    var containerElement = mediaControlsElement(internals.shadowRoot(parentElement).firstChild, textTrackContainerID);
 
     if (!containerElement)
         throw "Failed to find text track container element";

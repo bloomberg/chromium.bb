@@ -41,6 +41,7 @@
 #include "core/html/HTMLDivElement.h"
 #include "core/html/track/TextTrack.h"
 #include "core/html/track/TextTrackCueList.h"
+#include "core/html/track/TextTrackRegionList.h"
 #include "core/html/track/WebVTTElement.h"
 #include "core/html/track/WebVTTParser.h"
 #include "core/rendering/RenderTextTrackCue.h"
@@ -105,6 +106,12 @@ TextTrackCue* TextTrackCueBox::getCue() const
 void TextTrackCueBox::applyCSSProperties(const IntSize&)
 {
     // FIXME: Apply all the initial CSS positioning properties. http://wkb.ug/79916
+#if ENABLE(WEBVTT_REGIONS)
+    if (!m_cue->regionId().isEmpty()) {
+        setInlineStyleProperty(CSSPropertyPosition, CSSValueRelative);
+        return;
+    }
+#endif
 
     // 3.5.1 On the (root) List of WebVTT Node Objects:
 
@@ -215,7 +222,7 @@ TextTrackCue::TextTrackCue(ScriptExecutionContext* context, double start, double
 
 TextTrackCue::~TextTrackCue()
 {
-    removeDisplayTree();
+    displayTreeInternal()->remove(ASSERT_NO_EXCEPTION);
 }
 
 PassRefPtr<TextTrackCueBox> TextTrackCue::createDisplayTree()
@@ -551,10 +558,9 @@ void TextTrackCue::setIsActive(bool active)
 {
     m_isActive = active;
 
-    if (!active) {
-        // Remove the display tree as soon as the cue becomes inactive.
-        displayTreeInternal()->remove(ASSERT_NO_EXCEPTION);
-    }
+    // Remove the display tree as soon as the cue becomes inactive.
+    if (!active)
+        removeDisplayTree();
 }
 
 int TextTrackCue::calculateComputedLinePosition()
@@ -822,6 +828,13 @@ PassRefPtr<TextTrackCueBox> TextTrackCue::getDisplayTree(const IntSize& videoSiz
 
 void TextTrackCue::removeDisplayTree()
 {
+#if ENABLE(WEBVTT_REGIONS)
+    // The region needs to be informed about the cue removal.
+    TextTrackRegion* region = m_track->regions()->getRegionById(m_regionId);
+    if (region)
+        region->willRemoveTextTrackCueBox(m_displayTree.get());
+#endif
+
     displayTreeInternal()->remove(ASSERT_NO_EXCEPTION);
 }
 

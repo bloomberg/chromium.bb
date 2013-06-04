@@ -377,7 +377,7 @@ void WebVTTParser::createNewRegion()
     if (!m_currentHeaderValue.length())
         return;
 
-    RefPtr<TextTrackRegion> region = TextTrackRegion::create();
+    RefPtr<TextTrackRegion> region = TextTrackRegion::create(m_scriptExecutionContext);
     region->setRegionSettings(m_currentHeaderValue);
 
     // 15.5.10 If the text track list of regions regions contains a region

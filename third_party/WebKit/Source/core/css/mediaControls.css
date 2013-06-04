@@ -238,11 +238,36 @@ video::cue {
     padding: 2px 2px;
 }
 
+video::-webkit-media-text-track-region {
+    position: absolute;
+    line-height: 5.33vh;
+    writing-mode: horizontal-tb;
+    background: rgba(0, 0, 0, 0.8);
+    color: rgba(255, 255, 255, 1);
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    overflow: hidden;
+}
+
+video::-webkit-media-text-track-region-container {
+    position: relative;
+
+    display: -webkit-flex;
+    -webkit-flex-flow: column;
+    -webkit-flex-direction: column;
+}
+
+video::-webkit-media-text-track-region-container.scrolling {
+    -webkit-transition: top 433ms linear;
+}
+
+
 video::-webkit-media-text-track-display {
     position: absolute;
     overflow: hidden;
     white-space: pre-wrap;
     -webkit-box-sizing: border-box;
+    -webkit-flex: 0 0 auto;
 }
 
 video::cue(:future) {

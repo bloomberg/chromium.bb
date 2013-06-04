@@ -34,13 +34,21 @@
 
 #include "core/html/track/TextTrackRegion.h"
 
+#include "core/dom/ClientRect.h"
 #include "core/dom/ExceptionCodePlaceholder.h"
+#include "core/html/DOMTokenList.h"
+#include "core/html/HTMLDivElement.h"
 #include "core/html/track/WebVTTParser.h"
 #include "core/platform/Logging.h"
+#include "core/rendering/RenderInline.h"
+#include "core/rendering/RenderObject.h"
 #include <wtf/MathExtras.h>
 #include <wtf/text/StringBuilder.h>
 
 namespace WebCore {
+
+// The following values default values are defined within the WebVTT Regions Spec.
+// https://dvcs.w3.org/hg/text-tracks/raw-file/default/608toVTT/region.html
 
 // The region occupies by default 100% of the width of the video viewport.
 static const float defaultWidth = 100;
@@ -55,14 +63,25 @@ static const float defaultAnchorPointY = 100;
 // The region doesn't have scrolling text, by default.
 static const bool defaultScroll = false;
 
-TextTrackRegion::TextTrackRegion()
-    : m_id(emptyString())
+// Default region line-height (vh units)
+static const float lineHeight = 5.33;
+
+// Default scrolling animation time period (s).
+static const float scrollTime = 0.433;
+
+TextTrackRegion::TextTrackRegion(ScriptExecutionContext* context)
+    : ContextDestructionObserver(context)
+    , m_id(emptyString())
     , m_width(defaultWidth)
     , m_heightInLines(defaultHeightInLines)
     , m_regionAnchor(FloatPoint(defaultAnchorPointX, defaultAnchorPointY))
     , m_viewportAnchor(FloatPoint(defaultAnchorPointX, defaultAnchorPointY))
     , m_scroll(defaultScroll)
+    , m_regionDisplayTree(0)
+    , m_cueContainer(0)
     , m_track(0)
+    , m_currentTop(0)
+    , m_scrollTimer(this, &TextTrackRegion::scrollTimerFired)
 {
 }
 
@@ -309,6 +328,177 @@ void TextTrackRegion::parseSetting(const String& input, unsigned* position)
     String value = setting.substring(equalOffset + 1, setting.length() - 1);
 
     parseSettingValue(name, value);
+}
+
+const AtomicString& TextTrackRegion::textTrackCueContainerShadowPseudoId()
+{
+    DEFINE_STATIC_LOCAL(const AtomicString, trackRegionCueContainerPseudoId,
+        ("-webkit-media-text-track-region-container", AtomicString::ConstructFromLiteral));
+
+    return trackRegionCueContainerPseudoId;
+}
+
+const AtomicString& TextTrackRegion::textTrackCueContainerScrollingClass()
+{
+    DEFINE_STATIC_LOCAL(const AtomicString, trackRegionCueContainerScrollingClass,
+        ("scrolling", AtomicString::ConstructFromLiteral));
+
+    return trackRegionCueContainerScrollingClass;
+}
+
+const AtomicString& TextTrackRegion::textTrackRegionShadowPseudoId()
+{
+    DEFINE_STATIC_LOCAL(const AtomicString, trackRegionShadowPseudoId,
+        ("-webkit-media-text-track-region", AtomicString::ConstructFromLiteral));
+
+    return trackRegionShadowPseudoId;
+}
+
+PassRefPtr<HTMLDivElement> TextTrackRegion::getDisplayTree()
+{
+    if (!m_regionDisplayTree) {
+        m_regionDisplayTree = HTMLDivElement::create(ownerDocument());
+        prepareRegionDisplayTree();
+    }
+
+    return m_regionDisplayTree;
+}
+
+void TextTrackRegion::willRemoveTextTrackCueBox(TextTrackCueBox* box)
+{
+    LOG(Media, "TextTrackRegion::willRemoveTextTrackCueBox");
+    ASSERT(m_cueContainer->contains(box));
+
+    double boxHeight = box->getBoundingClientRect()->bottom() - box->getBoundingClientRect()->top();
+    float regionBottom = m_regionDisplayTree->getBoundingClientRect()->bottom();
+
+    m_cueContainer->classList()->remove(textTrackCueContainerScrollingClass(), IGNORE_EXCEPTION);
+
+    m_currentTop += boxHeight;
+    m_cueContainer->setInlineStyleProperty(CSSPropertyTop, m_currentTop, CSSPrimitiveValue::CSS_PX);
+}
+
+
+void TextTrackRegion::appendTextTrackCueBox(PassRefPtr<TextTrackCueBox> displayBox)
+{
+    if (m_cueContainer->contains(displayBox.get()))
+        return;
+
+    m_cueContainer->appendChild(displayBox, ASSERT_NO_EXCEPTION, AttachNow);
+    displayLastTextTrackCueBox();
+}
+
+void TextTrackRegion::displayLastTextTrackCueBox()
+{
+    LOG(Media, "TextTrackRegion::displayLastTextTrackCueBox");
+    ASSERT(m_cueContainer);
+
+    // The container needs to be rendered, if it is not empty and the region is not currently scrolling.
+    if (!m_cueContainer->renderer() || !m_cueContainer->childNodeCount() || m_scrollTimer.isActive())
+        return;
+
+    // If it's a scrolling region, add the scrolling class.
+    if (isScrollingRegion())
+        m_cueContainer->classList()->add(textTrackCueContainerScrollingClass(), IGNORE_EXCEPTION);
+
+    float regionBottom = m_regionDisplayTree->getBoundingClientRect()->bottom();
+
+    // Find first cue that is not entirely displayed and scroll it upwards.
+    for (int i = 0; i < m_cueContainer->childNodeCount() && !m_scrollTimer.isActive(); ++i) {
+        float childTop = static_cast<HTMLDivElement*>(m_cueContainer->childNode(i))->getBoundingClientRect()->top();
+        float childBottom = static_cast<HTMLDivElement*>(m_cueContainer->childNode(i))->getBoundingClientRect()->bottom();
+
+        if (regionBottom >= childBottom)
+            continue;
+
+        float height = childBottom - childTop;
+
+        m_currentTop -= std::min(height, childBottom - regionBottom);
+        m_cueContainer->setInlineStyleProperty(CSSPropertyTop, m_currentTop, CSSPrimitiveValue::CSS_PX);
+
+        startTimer();
+    }
+}
+
+void TextTrackRegion::prepareRegionDisplayTree()
+{
+    ASSERT(m_regionDisplayTree);
+
+    // 7.2 Prepare region CSS boxes
+
+    // FIXME: Change the code below to use viewport units when
+    // http://crbug/244618 is fixed.
+
+    // Let regionWidth be the text track region width.
+    // Let width be 'regionWidth vw' ('vw' is a CSS unit)
+    m_regionDisplayTree->setInlineStyleProperty(CSSPropertyWidth,
+        m_width, CSSPrimitiveValue::CSS_PERCENTAGE);
+
+    // Let lineHeight be '0.0533vh' ('vh' is a CSS unit) and regionHeight be
+    // the text track region height. Let height be 'lineHeight' multiplied
+    // by regionHeight.
+    double height = lineHeight * m_heightInLines;
+    m_regionDisplayTree->setInlineStyleProperty(CSSPropertyHeight,
+        height, CSSPrimitiveValue::CSS_VH);
+
+    // Let viewportAnchorX be the x dimension of the text track region viewport
+    // anchor and regionAnchorX be the x dimension of the text track region
+    // anchor. Let leftOffset be regionAnchorX multiplied by width divided by
+    // 100.0. Let left be leftOffset subtracted from 'viewportAnchorX vw'.
+    double leftOffset = m_regionAnchor.x() * m_width / 100;
+    m_regionDisplayTree->setInlineStyleProperty(CSSPropertyLeft,
+        m_viewportAnchor.x() - leftOffset,
+        CSSPrimitiveValue::CSS_PERCENTAGE);
+
+    // Let viewportAnchorY be the y dimension of the text track region viewport
+    // anchor and regionAnchorY be the y dimension of the text track region
+    // anchor. Let topOffset be regionAnchorY multiplied by height divided by
+    // 100.0. Let top be topOffset subtracted from 'viewportAnchorY vh'.
+    double topOffset = m_regionAnchor.y() * height / 100;
+    m_regionDisplayTree->setInlineStyleProperty(CSSPropertyTop,
+        m_viewportAnchor.y() - topOffset,
+        CSSPrimitiveValue::CSS_PERCENTAGE);
+
+
+    // The cue container is used to wrap the cues and it is the object which is
+    // gradually scrolled out as multiple cues are appended to the region.
+    m_cueContainer = HTMLDivElement::create(ownerDocument());
+    m_cueContainer->setInlineStyleProperty(CSSPropertyTop,
+        0.0f,
+        CSSPrimitiveValue::CSS_PX);
+
+    m_cueContainer->setPseudo(textTrackCueContainerShadowPseudoId());
+    m_regionDisplayTree->appendChild(m_cueContainer);
+
+    // 7.5 Every WebVTT region object is initialised with the following CSS
+    m_regionDisplayTree->setPseudo(textTrackRegionShadowPseudoId());
+}
+
+void TextTrackRegion::startTimer()
+{
+    LOG(Media, "TextTrackRegion::startTimer");
+
+    if (m_scrollTimer.isActive())
+        return;
+
+    double duration = isScrollingRegion() ? scrollTime : 0;
+    m_scrollTimer.startOneShot(duration);
+}
+
+void TextTrackRegion::stopTimer()
+{
+    LOG(Media, "TextTrackRegion::stopTimer");
+
+    if (m_scrollTimer.isActive())
+        m_scrollTimer.stop();
+}
+
+void TextTrackRegion::scrollTimerFired(Timer<TextTrackRegion>*)
+{
+    LOG(Media, "TextTrackRegion::scrollTimerFired");
+
+    stopTimer();
+    displayLastTextTrackCueBox();
 }
 
 } // namespace WebCore
