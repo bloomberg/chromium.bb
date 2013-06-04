@@ -700,7 +700,13 @@ void PlatformAppDevToolsBrowserTest::RunTestWithDevTools(
 
 }  // namespace
 
-IN_PROC_BROWSER_TEST_F(PlatformAppDevToolsBrowserTest, ReOpenedWithID) {
+// http://crbug.com/246634
+#if defined(OS_CHROMEOS)
+#define MAYBE_ReOpenedWithID DISABLED_ReOpenedWithID
+#else
+#define MAYBE_ReOpenedWithID ReOpenedWithID
+#endif
+IN_PROC_BROWSER_TEST_F(PlatformAppDevToolsBrowserTest, MAYBE_ReOpenedWithID) {
   RunTestWithDevTools("minimal_id", RELAUNCH | HAS_ID);
 }
 
