@@ -41,6 +41,17 @@ AC_SUBST(GCC_CFLAGS)
 
 AC_CHECK_FUNCS([accept4 mkostemp])
 
+AC_CHECK_DECL(SFD_CLOEXEC,[],
+	      [AC_MSG_ERROR("SFD_CLOEXEC is needed to compile weston")],
+	      [[#include <sys/signalfd.h>]])
+AC_CHECK_DECL(TFD_CLOEXEC,[],
+	      [AC_MSG_ERROR("TFD_CLOEXEC is needed to compile weston")],
+	      [[#include <sys/timerfd.h>]])
+AC_CHECK_DECL(CLOCK_MONOTONIC,[],
+	      [AC_MSG_ERROR("CLOCK_MONOTONIC is needed to compile weston")],
+	      [[#include <time.h>]])
+AC_CHECK_HEADERS([execinfo.h])
+
 AC_ARG_ENABLE([scanner],
               [AC_HELP_STRING([--disable-scanner],
                               [Disable compilation of wayland-scanner])],
