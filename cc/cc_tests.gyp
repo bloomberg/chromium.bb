@@ -63,6 +63,7 @@
       'resources/tile_priority_unittest.cc',
       'scheduler/delay_based_time_source_unittest.cc',
       'scheduler/frame_rate_controller_unittest.cc',
+      'scheduler/rolling_time_delta_history_unittest.cc',
       'scheduler/scheduler_state_machine_unittest.cc',
       'scheduler/scheduler_unittest.cc',
       'scheduler/texture_uploader_unittest.cc',
