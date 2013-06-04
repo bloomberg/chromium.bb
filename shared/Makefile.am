@@ -11,6 +11,7 @@ libshared_la_SOURCES =				\
 
 libshared_cairo_la_CFLAGS =			\
 	$(GCC_CFLAGS)				\
+	$(COMPOSITOR_CFLAGS)			\
 	$(PIXMAN_CFLAGS)			\
 	$(CAIRO_CFLAGS)				\
 	$(PNG_CFLAGS)				\
