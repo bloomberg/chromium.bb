@@ -1903,6 +1903,7 @@ crbug.com/246532 [ Debug ] editing/style/iframe-onload-crash-unix.html [ Crash ]
 crbug.com/246532 [ Debug ] editing/style/iframe-onload-crash-win.html [ Crash ]
 crbug.com/246532 [ Debug ] fast/frames/iframe-double-attach.html [ Crash ]
 crbug.com/246532 [ Debug ] fast/frames/iframe-set-inner-html.html [ Crash ]
+crbug.com/246549 http/tests/security/svg-image-leak.html [ Failure Pass ]
 
 # Crashes random following tests
 crbug.com/246193 fast/filesystem/workers [ Skip ]
