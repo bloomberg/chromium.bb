@@ -37,6 +37,9 @@ class SandboxingError(Exception):
   pass
 
 
+BUNDLE_SIZE = 32
+
+
 def ValidateDirectJump(instruction):
   # TODO(shcherbina): return offset for potential use in text-based ncval
 
