@@ -134,7 +134,12 @@ int main(int argc, char* argv[]) {
 #if (defined(OS_LINUX) || defined(OS_OPENBSD)) && !defined(OS_CHROMEOS)
   // Needed so ProxyConfigServiceLinux can use gconf.
   // Normally handled by BrowserMainLoop::InitializeToolkit().
+  // From glib version 2.36 onwards, g_type_init is implicitly called and it is
+  // deprecated.
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
   g_type_init();
+#pragma GCC diagnostic pop
 #endif
   base::AtExitManager exit_manager;
   CommandLine::Init(argc, argv);
