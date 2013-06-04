@@ -44,14 +44,11 @@ namespace WebCore {
         virtual String encoding() const;
         String mimeType() const;
 
-        virtual void destroyDecodedData();
         bool mimeTypeAllowedByNosniff() const;
 
         virtual void reportMemoryUsage(MemoryObjectInfo*) const OVERRIDE;
 
     private:
-        virtual PurgePriority purgePriority() const { return PurgeLast; }
-
         String m_script;
         RefPtr<TextResourceDecoder> m_decoder;
     };
