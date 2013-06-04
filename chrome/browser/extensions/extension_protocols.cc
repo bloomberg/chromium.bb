@@ -6,12 +6,16 @@
 
 #include <algorithm>
 
+#include "base/base64.h"
 #include "base/compiler_specific.h"
+#include "base/file_util.h"
 #include "base/files/file_path.h"
+#include "base/format_macros.h"
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
+#include "base/sha1.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "base/threading/thread_restrictions.h"
@@ -52,7 +56,8 @@ using extensions::SharedModuleInfo;
 namespace {
 
 net::HttpResponseHeaders* BuildHttpHeaders(
-    const std::string& content_security_policy, bool send_cors_header) {
+    const std::string& content_security_policy, bool send_cors_header,
+    const base::Time& last_modified_time) {
   std::string raw_headers;
   raw_headers.append("HTTP/1.1 200 OK");
   if (!content_security_policy.empty()) {
@@ -65,6 +70,25 @@ net::HttpResponseHeaders* BuildHttpHeaders(
     raw_headers.append(1, '\0');
     raw_headers.append("Access-Control-Allow-Origin: *");
   }
+
+  if (!last_modified_time.is_null()) {
+    // Hash the time and make an etag to avoid exposing the exact
+    // user installation time of the extension.
+    std::string hash = base::StringPrintf("%"PRId64"",
+                                          last_modified_time.ToInternalValue());
+    hash = base::SHA1HashString(hash);
+    std::string etag;
+    if (base::Base64Encode(hash, &etag)) {
+      raw_headers.append(1, '\0');
+      raw_headers.append("ETag: \"");
+      raw_headers.append(etag);
+      raw_headers.append("\"");
+      // Also force revalidation.
+      raw_headers.append(1, '\0');
+      raw_headers.append("cache-control: no-cache");
+    }
+  }
+
   raw_headers.append(2, '\0');
   return new net::HttpResponseHeaders(raw_headers);
 }
@@ -73,6 +97,15 @@ void ReadMimeTypeFromFile(const base::FilePath& filename,
                           std::string* mime_type,
                           bool* result) {
   *result = net::GetMimeTypeFromFile(filename, mime_type);
+}
+
+void GetLastModifiedTime(const base::FilePath& filename,
+                         base::Time* last_modified_time) {
+  if (file_util::PathExists(filename)) {
+    base::PlatformFileInfo info;
+    if (file_util::GetFileInfo(filename, &info))
+      *last_modified_time = info.last_modified;
+  }
 }
 
 class URLRequestResourceBundleJob : public net::URLRequestSimpleJob {
@@ -87,8 +120,10 @@ class URLRequestResourceBundleJob : public net::URLRequestSimpleJob {
         filename_(filename),
         resource_id_(resource_id),
         weak_factory_(this) {
+     // Leave cache headers out of resource bundle requests.
     response_info_.headers = BuildHttpHeaders(content_security_policy,
-                                              send_cors_header);
+                                              send_cors_header,
+                                              base::Time());
   }
 
   // Overridden from URLRequestSimpleJob:
@@ -162,8 +197,10 @@ class GeneratedBackgroundPageJob : public net::URLRequestSimpleJob {
       : net::URLRequestSimpleJob(request, network_delegate),
         extension_(extension) {
     const bool send_cors_headers = false;
+    // Leave cache headers out of generated background page jobs.
     response_info_.headers = BuildHttpHeaders(content_security_policy,
-                                              send_cors_headers);
+                                              send_cors_headers,
+                                              base::Time());
   }
 
   // Overridden from URLRequestSimpleJob:
@@ -197,9 +234,12 @@ class GeneratedBackgroundPageJob : public net::URLRequestSimpleJob {
   net::HttpResponseInfo response_info_;
 };
 
-void ReadResourceFilePath(const extensions::ExtensionResource& resource,
-                          base::FilePath* file_path) {
+void ReadResourceFilePathAndLastModifiedTime(
+    const extensions::ExtensionResource& resource,
+    base::FilePath* file_path,
+    base::Time* last_modified_time) {
   *file_path = resource.GetFilePath();
+  GetLastModifiedTime(*file_path, last_modified_time);
 }
 
 class URLRequestExtensionJob : public net::URLRequestFileJob {
@@ -215,9 +255,9 @@ class URLRequestExtensionJob : public net::URLRequestFileJob {
       // TODO(tc): Move all of these files into resources.pak so we don't break
       // when updating on Linux.
       resource_(extension_id, directory_path, relative_path),
+      content_security_policy_(content_security_policy),
+      send_cors_header_(send_cors_header),
       weak_factory_(this) {
-      response_info_.headers = BuildHttpHeaders(content_security_policy,
-                                                send_cors_header);
   }
 
   virtual void GetResponseInfo(net::HttpResponseInfo* info) OVERRIDE {
@@ -226,13 +266,16 @@ class URLRequestExtensionJob : public net::URLRequestFileJob {
 
   virtual void Start() OVERRIDE {
     base::FilePath* read_file_path = new base::FilePath;
+    base::Time* last_modified_time = new base::Time();
     bool posted = base::WorkerPool::PostTaskAndReply(
         FROM_HERE,
-        base::Bind(&ReadResourceFilePath, resource_,
-                   base::Unretained(read_file_path)),
-        base::Bind(&URLRequestExtensionJob::OnFilePathRead,
+        base::Bind(&ReadResourceFilePathAndLastModifiedTime, resource_,
+                   base::Unretained(read_file_path),
+                   base::Unretained(last_modified_time)),
+        base::Bind(&URLRequestExtensionJob::OnFilePathAndLastModifiedTimeRead,
                    weak_factory_.GetWeakPtr(),
-                   base::Owned(read_file_path)),
+                   base::Owned(read_file_path),
+                   base::Owned(last_modified_time)),
         true /* task is slow */);
     DCHECK(posted);
   }
@@ -240,13 +283,20 @@ class URLRequestExtensionJob : public net::URLRequestFileJob {
  private:
   virtual ~URLRequestExtensionJob() {}
 
-  void OnFilePathRead(base::FilePath* read_file_path) {
+  void OnFilePathAndLastModifiedTimeRead(base::FilePath* read_file_path,
+                                         base::Time* last_modified_time) {
     file_path_ = *read_file_path;
+    response_info_.headers = BuildHttpHeaders(
+        content_security_policy_,
+        send_cors_header_,
+        *last_modified_time);
     URLRequestFileJob::Start();
   }
 
   net::HttpResponseInfo response_info_;
   extensions::ExtensionResource resource_;
+  std::string content_security_policy_;
+  bool send_cors_header_;
   base::WeakPtrFactory<URLRequestExtensionJob> weak_factory_;
 };
 

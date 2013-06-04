@@ -6,6 +6,7 @@
 
 #include "base/file_util.h"
 #include "base/message_loop.h"
+#include "base/string_util.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_info_map.h"
 #include "chrome/browser/extensions/extension_protocols.h"
@@ -58,6 +59,27 @@ scoped_refptr<Extension> CreateWebStoreExtension() {
   std::string error;
   scoped_refptr<Extension> extension(
       Extension::Create(path, Manifest::COMPONENT, manifest,
+                        Extension::NO_FLAGS, &error));
+  EXPECT_TRUE(extension.get()) << error;
+  return extension;
+}
+
+scoped_refptr<Extension> CreateTestResponseHeaderExtension() {
+  DictionaryValue manifest;
+  manifest.SetString("name", "An extension with web-accessible resources");
+  manifest.SetString("version", "2");
+
+  ListValue* web_accessible_list = new ListValue();
+  web_accessible_list->AppendString("test.dat");
+  manifest.Set("web_accessible_resources", web_accessible_list);
+
+  base::FilePath path;
+  EXPECT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &path));
+  path = path.AppendASCII("extensions").AppendASCII("response_headers");
+
+  std::string error;
+  scoped_refptr<Extension> extension(
+      Extension::Create(path, Manifest::UNPACKED, manifest,
                         Extension::NO_FLAGS, &error));
   EXPECT_TRUE(extension.get()) << error;
   return extension;
@@ -212,6 +234,40 @@ TEST_F(ExtensionProtocolTest, ComponentResourceRequest) {
                             resource_context_.GetRequestContext());
     StartRequest(&request, ResourceType::MEDIA);
     EXPECT_EQ(net::URLRequestStatus::SUCCESS, request.status().status());
+  }
+}
+
+// Tests that a URL request for resource from an extension returns a few
+// expected response headers.
+TEST_F(ExtensionProtocolTest, ResourceRequestResponseHeaders) {
+  // Register a non-incognito extension protocol handler.
+  SetProtocolHandler(false);
+
+  scoped_refptr<Extension> extension = CreateTestResponseHeaderExtension();
+  extension_info_map_->AddExtension(extension, base::Time::Now(), false);
+
+  {
+    net::URLRequest request(extension->GetResourceURL("test.dat"),
+                            &test_delegate_,
+                            resource_context_.GetRequestContext());
+    StartRequest(&request, ResourceType::MEDIA);
+    EXPECT_EQ(net::URLRequestStatus::SUCCESS, request.status().status());
+
+    // Check that cache-related headers are set.
+    std::string etag;
+    request.GetResponseHeaderByName("ETag", &etag);
+    EXPECT_TRUE(StartsWithASCII(etag, "\"", false));
+    EXPECT_TRUE(EndsWith(etag, "\"", false));
+
+    std::string revalidation_header;
+    request.GetResponseHeaderByName("cache-control", &revalidation_header);
+    EXPECT_EQ("no-cache", revalidation_header);
+
+    // We set test.dat as web-accessible, so it should have a CORS header.
+    std::string access_control;
+    request.GetResponseHeaderByName("Access-Control-Allow-Origin",
+                                    &access_control);
+    EXPECT_EQ("*", access_control);
   }
 }
 
