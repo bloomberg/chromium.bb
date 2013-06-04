@@ -197,6 +197,6 @@ webkit/glue/multipart_response_delegate.h
 # been re-licensed under the Chromium license.
 webkit/support/webkit_support_gfx.cc
 # Copyright Apple, Inc, Graham Dennis and Eric Seidel; BSD license. Tool only
-webkit/tools/test_shell/mac/DumpRenderTreePasteboard.h
+webkit/support/mac/DumpRenderTreePasteboard.h
 # Copyright Apple, Inc, Graham Dennis and Eric Seidel; BSD license. Tool only
-webkit/tools/test_shell/mac/DumpRenderTreePasteboard.m
+webkit/support/mac/DumpRenderTreePasteboard.m

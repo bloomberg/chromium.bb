@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <vector>
+#include "webkit/support/simple_socket_stream_bridge.h"
 
-#include "webkit/tools/test_shell/simple_socket_stream_bridge.h"
+#include <vector>
 
 #include "base/atomicops.h"
 #include "base/bind.h"
@@ -13,8 +13,8 @@
 #include "base/utf_string_conversions.h"
 #include "googleurl/src/gurl.h"
 #include "net/socket_stream/socket_stream_job.h"
-#include "net/websockets/websocket_job.h"
 #include "net/url_request/url_request_context.h"
+#include "net/websockets/websocket_job.h"
 #include "third_party/WebKit/public/platform/WebSocketStreamHandle.h"
 #include "webkit/glue/websocketstreamhandle_bridge.h"
 #include "webkit/glue/websocketstreamhandle_delegate.h"

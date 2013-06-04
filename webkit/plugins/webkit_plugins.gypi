@@ -5,74 +5,6 @@
 {
   'targets': [
     {
-      'target_name': 'plugins_common',
-      'type': 'static_library',
-      'defines': [
-        'WEBKIT_PLUGINS_IMPLEMENTATION',
-      ],
-      'include_dirs': [
-        '<(INTERMEDIATE_DIR)',
-        '<(SHARED_INTERMEDIATE_DIR)/ui',
-      ],
-      'dependencies': [
-        '<(DEPTH)/base/base.gyp:base_i18n',
-        '<(DEPTH)/base/base.gyp:base',
-        '<(DEPTH)/base/base.gyp:base_static',
-        '<(DEPTH)/base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
-        '<(DEPTH)/net/net.gyp:net',
-        '<(DEPTH)/ui/ui.gyp:ui',
-        '<(DEPTH)/ui/ui.gyp:ui_resources',
-      ],
-      'sources': [
-        '../plugins/webplugininfo.cc',
-        '../plugins/webplugininfo.h',
-        '../plugins/plugin_constants.cc',
-        '../plugins/plugin_constants.h',
-        '../plugins/plugin_switches.cc',
-        '../plugins/plugin_switches.h',
-        '../plugins/npapi/plugin_constants_win.cc',
-        '../plugins/npapi/plugin_constants_win.h',
-        '../plugins/npapi/plugin_list.cc',
-        '../plugins/npapi/plugin_list.h',
-        '../plugins/npapi/plugin_list_mac.mm',
-        '../plugins/npapi/plugin_list_posix.cc',
-        '../plugins/npapi/plugin_list_win.cc',
-        '../plugins/npapi/plugin_utils.cc',
-        '../plugins/npapi/plugin_utils.h',
-        '../common/plugins/ppapi/ppapi_utils.cc',
-        '../common/plugins/ppapi/ppapi_utils.h',
-      ],
-      'conditions': [
-        ['toolkit_uses_gtk == 1', {
-          'dependencies': [
-            '<(DEPTH)/build/linux/system.gyp:gtk',
-          ],
-          'sources/': [['exclude', '_x11\\.cc$']],
-        }],
-        ['OS!="mac"', {
-          'sources/': [['exclude', '_mac\\.(cc|mm)$']],
-        }, {  # else: OS=="mac"
-          'sources/': [['exclude', 'plugin_list_posix\\.cc$']],
-          'link_settings': {
-            'libraries': [
-              '$(SDKROOT)/System/Library/Frameworks/QuartzCore.framework',
-            ],
-          },
-        }],
-        ['OS!="win"', {
-          'sources/': [['exclude', '_win\\.cc$']],
-        }, {  # else: OS=="win"
-          # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-          'msvs_disabled_warnings': [ 4800, 4267 ],
-          'sources/': [['exclude', '_posix\\.cc$']],
-          'include_dirs': [
-            '<(DEPTH)/third_party/wtl/include',
-          ],
-        }],
-      ],
-    },
-
-    {
       'target_name': 'plugins',
       'type': '<(component)',
       'defines': [
@@ -104,9 +36,9 @@
         '<(DEPTH)/v8/tools/gyp/v8.gyp:v8',
         '<(DEPTH)/third_party/WebKit/Source/WebKit/chromium/WebKit.gyp:webkit',
         '<(DEPTH)/webkit/common/user_agent/webkit_user_agent.gyp:user_agent',
+        '<(DEPTH)/webkit/plugins/webkit_plugins.gyp:plugins_common',
         '<(DEPTH)/webkit/renderer/compositor_bindings/compositor_bindings.gyp:webkit_compositor_support',
         'glue_common',
-        'plugins_common',
         'webkit_base',
         'webkit_common',
         'webkit_storage',
@@ -248,9 +180,6 @@
             '<(DEPTH)/build/linux/system.gyp:gtk',
           ],
           'sources/': [['exclude', '_x11\\.cc$']],
-          'sources!': [
-            'plugins/plugin_stubs.cc',
-          ],
         }],
         ['use_aura==1', {
           'sources/': [
@@ -287,11 +216,8 @@
           'include_dirs': [
             '<(DEPTH)/third_party/wtl/include',
           ],
-          'sources!': [
-            'plugins/plugin_stubs.cc',
-          ],
         }],
       ],
-    }
-  ],
+    },
+  ]
 }

@@ -5,7 +5,6 @@
 {
   'includes': [
     '../build/win_precompile.gypi',
-    'tools/test_shell/test_shell.gypi',
   ],
   'variables': {
     'chromium_code': 1,
@@ -25,5 +24,28 @@
         '../third_party/WebKit/Tools/DumpRenderTree/DumpRenderTree.gyp/DumpRenderTree.gyp:DumpRenderTree'
       ],
     },
-  ], # targets
+    {
+      'target_name': 'pull_in_copy_TestNetscapePlugIn',
+      'type': 'none',
+      'dependencies': [
+        '../third_party/WebKit/Tools/DumpRenderTree/DumpRenderTree.gyp/DumpRenderTree.gyp:copy_TestNetscapePlugIn'
+      ],
+    },
+  ],
+  'conditions': [
+    # Currently test_shell compiles only on Windows, Mac, and Gtk.
+    ['OS=="win" or OS=="mac" or toolkit_uses_gtk==1', {
+      'targets': [
+        {
+          # TODO(darin): Delete this dummy target once the build masters stop
+          # trying to build it.
+          'target_name': 'test_shell',
+          'type': 'static_library',
+          'sources': [
+            'support/test_shell_dummy.cc',
+          ],
+        },
+      ],
+    }],
+  ],
 }

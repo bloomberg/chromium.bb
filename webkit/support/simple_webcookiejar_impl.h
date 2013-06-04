@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_TOOLS_TEST_SHELL_SIMPLE_WEBCOOKIEJAR_IMPL_H_
-#define WEBKIT_TOOLS_TEST_SHELL_SIMPLE_WEBCOOKIEJAR_IMPL_H_
+#ifndef WEBKIT_SUPPORT_SIMPLE_WEBCOOKIEJAR_IMPL_H_
+#define WEBKIT_SUPPORT_SIMPLE_WEBCOOKIEJAR_IMPL_H_
 
 // TODO(darin): WebCookieJar.h is missing a WebString.h include!
 #include "third_party/WebKit/public/platform/WebCookieJar.h"
@@ -19,4 +19,4 @@ class SimpleWebCookieJarImpl : public WebKit::WebCookieJar {
       const WebKit::WebURL& url, const WebKit::WebURL& first_party_for_cookies);
 };
 
-#endif  // WEBKIT_TOOLS_TEST_SHELL_SIMPLE_WEBCOOKIEJAR_IMPL_H_
+#endif  // WEBKIT_SUPPORT_SIMPLE_WEBCOOKIEJAR_IMPL_H_

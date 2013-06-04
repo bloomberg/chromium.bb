@@ -1175,7 +1175,7 @@
         '../third_party/safe_browsing/safe_browsing.gyp:safe_browsing',
         '../ui/web_dialogs/web_dialogs.gyp:web_dialogs_test_support',
         '../v8/tools/gyp/v8.gyp:v8',
-        '../webkit/webkit.gyp:test_shell_test_support',
+        '../webkit/plugins/webkit_plugins.gyp:test_mock_plugin_list',
         # Runtime dependencies
         '../ppapi/ppapi_internal.gyp:ppapi_tests',
         '../third_party/mesa/mesa.gyp:osmesa',
@@ -2061,7 +2061,7 @@
           'dependencies': [
             # build time dependency.
             '../v8/tools/gyp/v8.gyp:v8_shell#host',
-            '../webkit/webkit.gyp:copy_npapi_test_plugin',
+            '../webkit/plugins/webkit_plugins.gyp:copy_npapi_test_plugin',
           ],
         }],
         ['enable_app_list==0', {

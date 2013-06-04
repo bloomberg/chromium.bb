@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_TOOLS_TEST_SHELL_SIMPLE_APPCACHE_SYSTEM_H_
-#define WEBKIT_TOOLS_TEST_SHELL_SIMPLE_APPCACHE_SYSTEM_H_
+#ifndef WEBKIT_SUPPORT_SIMPLE_APPCACHE_SYSTEM_H_
+#define WEBKIT_SUPPORT_SIMPLE_APPCACHE_SYSTEM_H_
 
 #include "base/files/file_path.h"
 #include "base/message_loop.h"
@@ -133,4 +133,4 @@ class SimpleAppCacheSystem {
   static SimpleAppCacheSystem* instance_;
 };
 
-#endif  // WEBKIT_TOOLS_TEST_SHELL_SIMPLE_APPCACHE_SYSTEM_H_
+#endif  // WEBKIT_SUPPORT_SIMPLE_APPCACHE_SYSTEM_H_

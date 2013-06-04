@@ -22,8 +22,8 @@
 #include "third_party/WebKit/Tools/DumpRenderTree/chromium/TestRunner/public/WebTestRunner.h"
 #include "v8/include/v8.h"
 #include "webkit/mocks/mock_webhyphenator.h"
-#include "webkit/tools/test_shell/mock_webclipboard_impl.h"
-#include "webkit/tools/test_shell/test_shell_webmimeregistry_impl.h"
+#include "webkit/support/mock_webclipboard_impl.h"
+#include "webkit/support/test_shell_webmimeregistry_impl.h"
 
 using WebKit::WebClipboard;
 using WebKit::WebFrame;

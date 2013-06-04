@@ -562,16 +562,16 @@
             '../third_party/libjingle/libjingle.gyp:libjingle',
             '../ui/gl/gl.gyp:gl',
             '../v8/tools/gyp/v8.gyp:v8',
+            '../webkit/plugins/webkit_plugins.gyp:plugins_common',
+            '../webkit/plugins/webkit_plugins.gyp:test_mock_plugin_list',
             '../webkit/support/webkit_support.gyp:glue',
             '../webkit/support/webkit_support.gyp:glue_common',
             '../webkit/support/webkit_support.gyp:glue_renderer',
             '../webkit/support/webkit_support.gyp:plugins',
-            '../webkit/support/webkit_support.gyp:plugins_common',
             '../webkit/support/webkit_support.gyp:webkit_base',
             '../webkit/support/webkit_support.gyp:webkit_common',
             '../webkit/support/webkit_support.gyp:webkit_media',
             '../webkit/support/webkit_support.gyp:webkit_storage',
-            '../webkit/webkit.gyp:test_shell_test_support',
           ],
         }],
         ['enable_plugins==0', {
@@ -931,7 +931,7 @@
               # npapi test plugin doesn't build on android or ios
               'dependencies': [
                 # Runtime dependencies
-                '../webkit/webkit.gyp:copy_npapi_test_plugin',
+                '../webkit/plugins/webkit_plugins.gyp:copy_npapi_test_plugin',
                 '../webkit/webkit.gyp:pull_in_copy_TestNetscapePlugIn',
               ],
             }],
