@@ -373,8 +373,23 @@ DirectoryItem.prototype.decorate = function(
  * a complex layout. This call is not necessary, so we are ignoring it.
  *
  * @param {boolean} unused Unused.
+ * @override
  */
 DirectoryItem.prototype.scrollIntoViewIfNeeded = function(unused) {
+};
+
+/**
+ * Removes the child node, but without selecting the parent item, to avoid
+ * unintended changing of directories. Removing is done externally, and other
+ * code will navigate to another directory.
+ *
+ * @param {!cr.ui.TreeItem} child The tree item child to remove.
+ * @override
+ */
+DirectoryItem.prototype.remove = function(child) {
+  this.lastElementChild.removeChild(child);
+  if (this.items.length == 0)
+    this.hasChildren = false;
 };
 
 /**

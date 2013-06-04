@@ -686,8 +686,13 @@ DirectoryModel.prototype.renameEntry = function(entry, newName,
   var currentDirPath = this.getCurrentDirPath();
   var onSuccess = function(newEntry) {
     this.currentDirContents_.prefetchMetadata([newEntry], function() {
-      // Do not change anything or call the callback if current
-      // directory changed.
+      // If the current directory is the old entry, then quietly change to the
+      // new one.
+      if (entry.fullPath == this.getCurrentDirPath())
+        this.changeDirectory(newEntry.fullPath);
+
+      // Update selection and call the success callback if still in the same
+      // directory as while started renaming.
       if (currentDirPath != this.getCurrentDirPath())
         return;
 

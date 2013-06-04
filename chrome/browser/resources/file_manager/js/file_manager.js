@@ -2632,7 +2632,7 @@ DialogType.isModal = function(type) {
           var onError = function(err) {
             this.alert.show(strf('ERROR_RENAMING', entry.name,
                                  util.getFileErrorString(err.code)));
-          };
+          }.bind(this);
           this.directoryModel_.renameEntry(entry, newName, onError.bind(this));
         } else {
           nameNode.textContent = entry.name;
