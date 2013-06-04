@@ -34,10 +34,6 @@
 #include "modules/encryptedmedia/MediaKeys.h"
 #include "wtf/text/WTFString.h"
 
-#if __MAC_OS_X_VERSION_MIN_REQUIRED >= 1090
-#include "modules/encryptedmedia/CDMPrivateAVFoundation.h"
-#endif
-
 namespace WebCore {
 
 struct CDMFactory {
@@ -61,10 +57,6 @@ static Vector<CDMFactory*>& installedCDMFactories()
         queriedCDMs = true;
 
         // FIXME: initialize specific UA CDMs. http://webkit.org/b/109318, http://webkit.org/b/109320
-#if __MAC_OS_X_VERSION_MIN_REQUIRED >= 1090
-        cdms.append(new CDMFactory(CDMPrivateAVFoundation::create, CDMPrivateAVFoundation::supportsKeySytem));
-#endif
-
     }
 
     return cdms;
