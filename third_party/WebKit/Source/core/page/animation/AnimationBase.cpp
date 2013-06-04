@@ -383,11 +383,7 @@ void AnimationBase::fireAnimationEventsIfNeeded()
         return;
     }
     
-    double elapsedDuration = beginAnimationUpdateTime() - m_startTime;
-    // FIXME: we need to ensure that elapsedDuration is never < 0. If it is, this suggests that
-    // we had a recalcStyle() outside of beginAnimationUpdate()/endAnimationUpdate().
-    // Also check in getTimeToNextEvent().
-    elapsedDuration = max(elapsedDuration, 0.0);
+    double elapsedDuration = getElapsedTime();
     
     // Check for end timeout
     if (m_totalDuration >= 0 && elapsedDuration >= m_totalDuration) {
@@ -490,14 +486,14 @@ double AnimationBase::progress(double scale, double offset, const TimingFunction
     if (preActive())
         return 0;
 
-    double elapsedTime = getElapsedTime();
-
     double dur = m_animation->duration();
     if (m_animation->iterationCount() > 0)
         dur *= m_animation->iterationCount();
 
     if (postActive() || !m_animation->duration())
         return 1.0;
+
+    double elapsedTime = getElapsedTime();
     if (m_animation->iterationCount() > 0 && elapsedTime >= dur) {
         const int integralIterationCount = static_cast<int>(m_animation->iterationCount());
         const bool iterationCountHasFractional = m_animation->iterationCount() - integralIterationCount;
@@ -514,8 +510,14 @@ double AnimationBase::progress(double scale, double offset, const TimingFunction
 
 void AnimationBase::getTimeToNextEvent(double& time, bool& isLooping) const
 {
+    if (postActive()) {
+        time = -1;
+        isLooping = false;
+        return;
+    }
+
     // Decide when the end or loop event needs to fire
-    const double elapsedDuration = max(beginAnimationUpdateTime() - m_startTime, 0.0);
+    const double elapsedDuration = getElapsedTime();
     double durationLeft = 0;
     double nextIterationTime = m_totalDuration;
 
@@ -552,7 +554,7 @@ void AnimationBase::freezeAtTime(double t)
     if (!m_startTime) {
         // If we haven't started yet, make it as if we started.
         m_animState = AnimationStateStartWaitResponse;
-        onAnimationStartResponse(currentTime());
+        onAnimationStartResponse(beginAnimationUpdateTime());
     }
 
     ASSERT(m_startTime);        // if m_startTime is zero, we haven't started yet, so we'll get a bad pause time.
@@ -575,12 +577,11 @@ double AnimationBase::beginAnimationUpdateTime() const
 
 double AnimationBase::getElapsedTime() const
 {
-    if (paused())    
+    ASSERT(!postActive());
+    if (paused())
         return m_pauseTime - m_startTime;
     if (m_startTime <= 0)
         return 0;
-    if (postActive())
-        return 1;
 
     return beginAnimationUpdateTime() - m_startTime;
 }
