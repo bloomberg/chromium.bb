@@ -236,6 +236,7 @@ if test x$enable_clients = xyes; then
   AC_DEFINE([BUILD_CLIENTS], [1], [Build the Wayland clients])
 
   PKG_CHECK_MODULES(CLIENT, [wayland-client cairo >= 1.10.0 xkbcommon wayland-cursor])
+  PKG_CHECK_MODULES(SERVER, [wayland-server])
   PKG_CHECK_MODULES(WESTON_INFO, [wayland-client])
 
   PKG_CHECK_MODULES(POPPLER, [poppler-glib glib-2.0 gobject-2.0 gio-2.0 ],
@@ -280,6 +281,9 @@ AM_CONDITIONAL(HAVE_GLU, test "x$have_glu" = "xyes")
 AM_CONDITIONAL(HAVE_POPPLER, test "x$have_poppler" = "xyes")
 
 AM_CONDITIONAL(HAVE_PANGO, test "x$have_pango" = "xyes")
+
+AM_CONDITIONAL(HAVE_CAIRO_GLESV2,
+	       [test "x$have_cairo_egl" = "xyes" -a "x$cairo_modules" = "xcairo-glesv2" -a "x$enable_egl" = "xyes"])
 
 AM_CONDITIONAL(BUILD_FULL_GL_CLIENTS,
 	       test x$cairo_modules = "xcairo-gl" -a "x$have_cairo_egl" = "xyes" -a "x$enable_egl" = "xyes")

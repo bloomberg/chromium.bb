@@ -60,15 +60,14 @@ clients_programs =				\
 	dnd					\
 	smoke					\
 	resizor					\
-	nested					\
-	nested-client				\
 	eventdemo				\
 	clickdot				\
 	transformed				\
 	fullscreen				\
 	calibrator				\
 	$(subsurfaces)				\
-	$(full_gl_client_programs)
+	$(full_gl_client_programs)		\
+	$(cairo_glesv2_programs)
 
 desktop_shell = weston-desktop-shell
 
@@ -123,11 +122,15 @@ smoke_LDADD = libtoytoolkit.la
 resizor_SOURCES = resizor.c
 resizor_LDADD = libtoytoolkit.la
 
+if HAVE_CAIRO_GLESV2
+cairo_glesv2_programs = nested nested-client
+
 nested_SOURCES = nested.c
-nested_LDADD = libtoytoolkit.la
+nested_LDADD = libtoytoolkit.la $(SERVER_LIBS)
 
 nested_client_SOURCES = nested-client.c
 nested_client_LDADD = $(SIMPLE_EGL_CLIENT_LIBS) -lm
+endif
 
 eventdemo_SOURCES = eventdemo.c
 eventdemo_LDADD = libtoytoolkit.la
