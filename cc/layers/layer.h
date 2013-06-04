@@ -94,6 +94,9 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
 
   virtual void SetBackgroundColor(SkColor background_color);
   SkColor background_color() const { return background_color_; }
+  // If contents_opaque(), return an opaque color else return a
+  // non-opaque color.  Tries to return background_color(), if possible.
+  SkColor SafeOpaqueBackgroundColor() const;
 
   // A layer's bounds are in logical, non-page-scaled pixels (however, the
   // root layer's bounds are in physical pixels).

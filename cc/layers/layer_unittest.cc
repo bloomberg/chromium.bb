@@ -976,5 +976,36 @@ TEST(LayerLayerTreeHostTest, ShouldNotAddAnimationWithoutAnimationRegistrar) {
   EXPECT_FALSE(AddTestAnimation(layer.get()));
 }
 
+TEST_F(LayerTest, SafeOpaqueBackgroundColor) {
+  LayerTreeHostFactory factory;
+  scoped_ptr<LayerTreeHost> layer_tree_host = factory.Create();
+
+  scoped_refptr<Layer> layer = Layer::Create();
+  layer_tree_host->SetRootLayer(layer);
+
+  for (int contents_opaque = 0; contents_opaque < 2; ++contents_opaque) {
+    for (int layer_opaque = 0; layer_opaque < 2; ++layer_opaque) {
+      for (int host_opaque = 0; host_opaque < 2; ++host_opaque) {
+        layer->SetContentsOpaque(!!contents_opaque);
+        layer->SetBackgroundColor(layer_opaque ? SK_ColorRED
+                                               : SK_ColorTRANSPARENT);
+        layer_tree_host->set_background_color(
+            host_opaque ? SK_ColorRED : SK_ColorTRANSPARENT);
+
+        SkColor safe_color = layer->SafeOpaqueBackgroundColor();
+        if (contents_opaque) {
+          EXPECT_EQ(SkColorGetA(safe_color), 255u)
+              << "Flags: " << contents_opaque << ", " << layer_opaque << ", "
+              << host_opaque << "\n";
+        } else {
+          EXPECT_NE(SkColorGetA(safe_color), 255u)
+              << "Flags: " << contents_opaque << ", " << layer_opaque << ", "
+              << host_opaque << "\n";
+        }
+      }
+    }
+  }
+}
+
 }  // namespace
 }  // namespace cc

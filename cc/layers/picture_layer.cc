@@ -92,7 +92,7 @@ void PictureLayer::Update(ResourceUpdateQueue*,
   devtools_instrumentation::ScopedLayerTask paint_layer(
       devtools_instrumentation::kPaintLayer, id());
   pile_->Update(client_,
-                background_color(),
+                SafeOpaqueBackgroundColor(),
                 pile_invalidation_,
                 visible_layer_rect,
                 stats);

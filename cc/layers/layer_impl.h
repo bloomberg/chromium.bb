@@ -144,6 +144,9 @@ class CC_EXPORT LayerImpl : LayerAnimationValueObserver {
 
   void SetBackgroundColor(SkColor background_color);
   SkColor background_color() const { return background_color_; }
+  // If contents_opaque(), return an opaque color else return a
+  // non-opaque color.  Tries to return background_color(), if possible.
+  SkColor SafeOpaqueBackgroundColor() const;
 
   void SetFilters(const WebKit::WebFilterOperations& filters);
   const WebKit::WebFilterOperations& filters() const { return filters_; }

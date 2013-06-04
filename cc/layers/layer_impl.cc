@@ -690,6 +690,25 @@ void LayerImpl::SetBackgroundColor(SkColor background_color) {
   NoteLayerPropertyChanged();
 }
 
+SkColor LayerImpl::SafeOpaqueBackgroundColor() const {
+  SkColor color = background_color();
+  if (SkColorGetA(color) == 255 && !contents_opaque()) {
+    color = SK_ColorTRANSPARENT;
+  } else if (SkColorGetA(color) != 255 && contents_opaque()) {
+    for (const LayerImpl* layer = parent(); layer;
+         layer = layer->parent()) {
+      color = layer->background_color();
+      if (SkColorGetA(color) == 255)
+        break;
+    }
+    if (SkColorGetA(color) != 255)
+      color = layer_tree_impl()->background_color();
+    if (SkColorGetA(color) != 255)
+      color = SkColorSetA(color, 255);
+  }
+  return color;
+}
+
 void LayerImpl::SetFilters(const WebKit::WebFilterOperations& filters) {
   if (filters_ == filters)
     return;
