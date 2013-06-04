@@ -70,6 +70,12 @@ void GeolocationArbitratorImpl::DoStartProviders() {
 }
 
 void GeolocationArbitratorImpl::StopProviders() {
+  // Reset the reference location state (provider+position)
+  // so that future starts use fresh locations from
+  // the newly constructed providers.
+  position_provider_ = NULL;
+  position_ = Geoposition();
+
   providers_.clear();
   is_running_ = false;
 }
