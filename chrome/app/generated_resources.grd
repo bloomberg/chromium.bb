@@ -2867,11 +2867,11 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
       <if expr="is_android">
         <message name="IDS_PROMPT_DANGEROUS_DOWNLOAD"
                  desc="Mobile: Message shown to the user to validate the download of a dangerous file.">
-          This type of file can harm your mobile device. Do you want to keep <ph name="FILE_NAME">$1<ex>malware.exe</ex></ph> anyway?
+          This type of file can harm your device. Do you want to keep <ph name="FILE_NAME">$1<ex>malware.exe</ex></ph> anyway?
         </message>
         <message name="IDS_PROMPT_DANGEROUS_DOWNLOAD_EXTENSION"
            desc="Mobile: Message shown to the user to validate the download of an extension file.">
-          Extensions, apps, and themes can harm your mobile device. Are you sure you want to continue?
+          Extensions, apps, and themes can harm your device. Are you sure you want to continue?
         </message>
       </if>
       <if expr="not is_android">
@@ -3297,7 +3297,7 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
       </message>
       <if expr="is_android or pp_ifdef('ios')">
         <message name="IDS_CERT_ERROR_EXTRA_INFO_1" desc="Mobile: 1st paragraph of extra information for any certificate error">
-          When you connect to a secure website, the server hosting that site presents your browser with something called a "certificate" to verify its identity. This certificate contains identity information, such as the address of the website, which is verified by a third party that your mobile device trusts. By checking that the address in the certificate matches the address of the website, it is possible to verify that you are securely communicating with the website you intended, and not a third party (such as an attacker on your network).
+          When you connect to a secure website, the server hosting that site presents your browser with something called a "certificate" to verify its identity. This certificate contains identity information, such as the address of the website, which is verified by a third party that your device trusts. By checking that the address in the certificate matches the address of the website, it is possible to verify that you are securely communicating with the website you intended, and not a third party (such as an attacker on your network).
         </message>
       </if>
       <if expr="not is_android and not pp_ifdef('ios')">
@@ -3340,12 +3340,12 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
       </message>
       <if expr="is_android or pp_ifdef('ios')">
         <message name="IDS_CERT_ERROR_AUTHORITY_INVALID_EXTRA_INFO_2" desc="Mobile: 2nd paragraph of extra information for a X509 certificate with an invalid authority">
-          In this case, the certificate has not been verified by a third party that your mobile device trusts. Anyone can create a certificate claiming to be whatever website they choose, which is why it must be verified by a trusted third party. Without that verification, the identity information in the certificate is meaningless. It is therefore not possible to verify that you are communicating with <ph name="DOMAIN">&lt;strong&gt;$1<ex>paypal.com</ex>&lt;/strong&gt;</ph> instead of an attacker who generated his own certificate claiming to be <ph name="DOMAIN2">&lt;strong&gt;$2<ex>paypal.com</ex>&lt;/strong&gt;</ph>. You should not proceed past this point.
+          In this case, the certificate has not been verified by a third party that your device trusts. Anyone can create a certificate claiming to be whatever website they choose, which is why it must be verified by a trusted third party. Without that verification, the identity information in the certificate is meaningless. It is therefore not possible to verify that you are communicating with <ph name="DOMAIN">&lt;strong&gt;$1<ex>paypal.com</ex>&lt;/strong&gt;</ph> instead of an attacker who generated his own certificate claiming to be <ph name="DOMAIN2">&lt;strong&gt;$2<ex>paypal.com</ex>&lt;/strong&gt;</ph>. You should not proceed past this point.
         </message>
       </if>
       <if expr="is_android">
         <message name="IDS_CERT_ERROR_AUTHORITY_INVALID_EXTRA_INFO_3" desc="Mobile: 3rd paragraph of extra information for a X509 certificate with an invalid authority">
-          If, however, you work in an organization that generates its own certificates, and you are trying to connect to an internal website of that organization using such a certificate, you may be able to solve this problem securely. You can import your organization's root certificate as a "root certificate", and then certificates issued or verified by your organization will be trusted and you will not see this error next time you try to connect to an internal website. Contact your organization's help staff for assistance in adding a new root certificate to your mobile device.
+          If, however, you work in an organization that generates its own certificates, and you are trying to connect to an internal website of that organization using such a certificate, you may be able to solve this problem securely. You can import your organization's root certificate as a "root certificate", and then certificates issued or verified by your organization will be trusted and you will not see this error next time you try to connect to an internal website. Contact your organization's help staff for assistance in adding a new root certificate to your device.
         </message>
       </if>
       <if expr="not is_android and not pp_ifdef('ios')">
@@ -5019,8 +5019,8 @@ Make sure you do not expose any sensitive information.
       </message>
 
       <if expr="is_android">
-        <message name="IDS_EXTENSION_PROMPT_WARNING_FULL_ACCESS" desc="Mobile: Permission string for full access to the mobile device and all websites.">
-          Access all data on your mobile device and the websites you visit
+        <message name="IDS_EXTENSION_PROMPT_WARNING_FULL_ACCESS" desc="Mobile: Permission string for full access to the device and all websites.">
+          Access all data on your device and the websites you visit
         </message>
       </if>
       <if expr="not is_android">
@@ -6086,14 +6086,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
           Machine
         </message>
       </if>
-      <if expr="pp_ifdef('chromeos')">
-        <message name="IDS_POLICY_SCOPE_DEVICE" desc="Mobile: Text displayed in the Applies to column when a policy applies to the entire Chrome OS device.">
+      <if expr="pp_ifdef('chromeos') or is_android">
+        <message name="IDS_POLICY_SCOPE_DEVICE" desc="Mobile: Text displayed in the Applies To column when a policy applies to everyone on the device.">
           Device
-        </message>
-      </if>
-      <if expr="is_android">
-        <message name="IDS_POLICY_SCOPE_DEVICE" desc="Mobile: Text displayed in the Applies To column when a policy applies to everyone on the mobile device.">
-          Mobile device
         </message>
       </if>
       <message name="IDS_POLICY_LEVEL_RECOMMENDED" desc="Text displayed in the Level column when a policy is recommended.">
@@ -6205,6 +6200,14 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_SAVE_PAGE_AS_MHTML_DESCRIPTION" desc="Description of the 'Save Page as MHTML' lab.">
         Disables saving pages as HTML-only or HTML Complete; enables saving pages only as MHTML: a single text file containing HTML and all sub-resources.
       </message>
+      <message name="IDS_FLAGS_CLOUD_PRINT_CONNECTOR_NAME" desc="Title of the Cloud Print Connector lab">
+        Cloud Print Connector
+      </message>
+      <if expr="is_android">
+        <message name="IDS_FLAGS_CLOUD_PRINT_CONNECTOR_DESCRIPTION" desc="Mobile: Description of the Cloud Print Connector lab">
+          Enables a background service that connects the Google Cloud Print service to any printers installed on this device. Once this lab is enabled, you can turn the Google Cloud Print Connector on by logging in with your Google account in the Under the Hood section of Settings.
+        </message>
+      </if>
       <if expr="not is_android">
         <message name="IDS_FLAGS_CLOUD_PRINT_CONNECTOR_DESCRIPTION" desc="Description of the Cloud Print Connector lab">
           Enables a background service that connects the Google Cloud Print service to any printers installed on this computer. Once this lab is enabled, you can turn the Google Cloud Print Connector on by logging in with your Google account in the Under the Hood section of Settings.
@@ -7446,7 +7449,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <!-- Pepper Broker Info bar -->
       <if expr="is_android">
         <message name="IDS_PEPPER_BROKER_MESSAGE" desc="Mobile: Message shown when a pepper plugin wants to launch its broker. This message is followed by a 'Learn more' link.">
-          <ph name="PEPPER_PLUGIN_NAME">$1<ex>Shockwave Flash</ex></ph> on <ph name="PEPPER_PLUGIN_DOMAIN">$2<ex>example.com</ex></ph> wants to access your mobile device.
+          <ph name="PEPPER_PLUGIN_NAME">$1<ex>Shockwave Flash</ex></ph> on <ph name="PEPPER_PLUGIN_DOMAIN">$2<ex>example.com</ex></ph> wants to access your device.
         </message>
       </if>
       <if expr="not is_android">
@@ -8710,7 +8713,7 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
       </message>
       <if expr="is_android">
         <message name="IDS_CLOUD_PRINT_SETUP_DONE" desc="Mobile: Message on completed set up of cloud print.">
-          <ph name="CLOUD_PRINT_NAME">$1<ex>Google Cloud Print</ex></ph> has registered the printers on this mobile device with &lt;b&gt;<ph name="EMAIL_ADDRESSES">$2<ex>foo@example.com</ex></ph>&lt;/b&gt;.  You can now print to your printers from any <ph name="CLOUD_PRINT_NAME">$1<ex>Google Cloud Print</ex></ph> enabled web or mobile app!
+          <ph name="CLOUD_PRINT_NAME">$1<ex>Google Cloud Print</ex></ph> has registered the printers on this device with &lt;b&gt;<ph name="EMAIL_ADDRESSES">$2<ex>foo@example.com</ex></ph>&lt;/b&gt;.  You can now print to your printers from any <ph name="CLOUD_PRINT_NAME">$1<ex>Google Cloud Print</ex></ph> enabled web or mobile app!
         </message>
       </if>
       <if expr="not is_android">
@@ -9131,13 +9134,13 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
       </if>
 
       <!-- Chrome To Mobile bubble messages -->
-      <message name="IDS_CHROME_TO_MOBILE_BUBBLE_SINGLE_TITLE" desc="Title of the bubble when a single mobile device is available.">
+      <message name="IDS_CHROME_TO_MOBILE_BUBBLE_SINGLE_TITLE" desc="Title of the bubble when a single device is available.">
         Send this page to <ph name="DEVICE_NAME">$1<ex>Galaxy Nexus</ex></ph>.
       </message>
-      <message name="IDS_CHROME_TO_MOBILE_BUBBLE_MULTI_TITLE" desc="Title of the bubble when multiple mobile devices are available.">
+      <message name="IDS_CHROME_TO_MOBILE_BUBBLE_MULTI_TITLE" desc="Title of the bubble when multiple devices are available.">
         Send this page to:
       </message>
-      <message name="IDS_CHROME_TO_MOBILE_BUBBLE_SEND_COPY" desc="Checkbox for optionally sending an offline copy of the page to the mobile device.">
+      <message name="IDS_CHROME_TO_MOBILE_BUBBLE_SEND_COPY" desc="Checkbox for optionally sending an offline copy of the page to the device.">
         Also send a copy for offline viewing (<ph name="PAGE_SIZE">$1<ex>111kB</ex></ph>)
       </message>
       <message name="IDS_CHROME_TO_MOBILE_BUBBLE_SEND_COPY_GENERATING" desc="Placeholder PAGE_SIZE text indicating that the offline copy is being generated.">
@@ -9146,7 +9149,7 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
       <message name="IDS_CHROME_TO_MOBILE_BUBBLE_SEND_COPY_FAILED" desc="Text indicating that the offline copy generation failed.">
         An error occurred while generating the offline copy
       </message>
-      <message name="IDS_CHROME_TO_MOBILE_BUBBLE_SEND" desc="Button to send the page to the target mobile device.">
+      <message name="IDS_CHROME_TO_MOBILE_BUBBLE_SEND" desc="Button to send the page to the target device.">
         Send
       </message>
       <message name="IDS_CHROME_TO_MOBILE_BUBBLE_SENDING_0" desc="First animated text step indicating that the page is being sent to the device.">
@@ -9171,7 +9174,7 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
         An error occurred while sending the page
       </message>
       <message name="IDS_CHROME_TO_MOBILE_BUBBLE_TOOLTIP" desc="The tooltip for the Chrome To Mobile button.">
-        Send this page to your mobile device
+        Send this page to your device
       </message>
 
       <!-- Application window menu -->
@@ -9390,10 +9393,10 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
           <ph name="LINE_BREAK">&lt;br /&gt;&lt;br /&gt;<ex>&lt;br /&gt;&lt;br /&gt;</ex></ph>
           This may be because your firewall or antivirus software wrongly thinks
           <ph name="PRODUCT_NAME">&lt;span jscontent="productName"&gt;&lt;/span&gt;<ex>Google Chrome</ex></ph>
-          is an intruder on your mobile device and is blocking it from connecting to the Internet.
+          is an intruder on your device and is blocking it from connecting to the Internet.
         </message>
         <message name="IDS_ERRORPAGES_SUMMARY_PROXY_CONNECTION_FAILED" desc="Mobile: Summary in the error page when the proxy server connection failed.">
-          A proxy server is a server that acts as an intermediary between your mobile device and other servers.  Right now, your system is configured to use a proxy, but
+          A proxy server is a server that acts as an intermediary between your device and other servers.  Right now, your system is configured to use a proxy, but
           <ph name="PRODUCT_NAME">&lt;span jscontent="productName"&gt;&lt;/span&gt;<ex>Google Chrome</ex></ph>
           can't connect to it.
         </message>
@@ -9494,8 +9497,8 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
         can also be a symptom of hardware starting to fail.
       </message>
       <if expr="is_android or pp_ifdef('ios')">
-        <message name="IDS_ERRORPAGES_SUMMARY_NETWORK_IO_SUSPENDED" desc="Mobile: Summary in the error page when a page load failed due to the mobile device entering sleep/suspend mode.">
-          Unable to load the webpage because your mobile device entered sleep or
+        <message name="IDS_ERRORPAGES_SUMMARY_NETWORK_IO_SUSPENDED" desc="Mobile: Summary in the error page when a page load failed due to the device entering sleep/suspend mode.">
+          Unable to load the webpage because your device entered sleep or
           hibernate mode.  When this happens, network connections are shut
           down and new network requests fail.  Reloading the page should
           resolve this.
@@ -9517,7 +9520,7 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
           The webpage at <ph name="URL">&lt;strong jscontent="failedUrl"&gt;&lt;/strong&gt;</ph> has resulted in
           too many redirects.  Clearing your cookies for this site or allowing third-party cookies may fix the problem.  If
           not, it is possibly a server configuration issue and not a problem with your
-          mobile device.
+          device.
         </message>
       </if>
       <if expr="not is_android and not pp_ifdef('ios')">
@@ -10405,7 +10408,7 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
       </message>
       <if expr="is_android">
         <message name="IDS_AUTOLAUNCH_TEXT" desc="Mobile: The text displayed in settings to explain whether Chrome is set to auto-launch on startup or not.">
-          Launch <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> automatically when I start my mobile device
+          Launch <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> automatically when I start my device
         </message>
       </if>
       <if expr="not is_android">
@@ -10770,7 +10773,7 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
 
       <if expr="is_android or pp_ifdef('ios')">
         <message name="IDS_OPTIONS_SYSTEM_PROXIES_LABEL" desc="Mobile: The info label for the 'Proxy settings' button when managed by the system.">
-          <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> is using your mobile device's system proxy settings to connect to the network.
+          <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> is using your device's system proxy settings to connect to the network.
         </message>
       </if>
       <if expr="not is_android and not pp_ifdef('ios')">
@@ -10790,7 +10793,7 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
       </message>
       <if expr="is_android">
         <message name="IDS_OPTIONS_CLOUD_PRINT_CONNECTOR_DISABLED_LABEL" desc="Mobile: The label of the cloud print setup button when it hasn't been set up yet.">
-          <ph name="CLOUD_PRINT_NAME">$1<ex>Google Cloud Print</ex></ph> lets you access this mobile device's printers from anywhere. Click to enable.
+          <ph name="CLOUD_PRINT_NAME">$1<ex>Google Cloud Print</ex></ph> lets you access this device's printers from anywhere. Click to enable.
         </message>
       </if>
       <if expr="not is_android">
@@ -11219,7 +11222,7 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
       <!-- New Tab -->
       <if expr="is_android">
         <message name="IDS_NEW_TAB_TITLE"
-            desc="Mobile: For mobile devices. Do not use title case. Title of the new tab page, this is only shown while loading, then the title comes from the page.">
+            desc="Mobile: For Android devices. Do not use title case. Title of the new tab page, this is only shown while loading, then the title comes from the page.">
           New tab
         </message>
       </if>
@@ -11301,7 +11304,7 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
                  desc="Mobile: Used when a person opens an OTR tab">
           <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>You've gone incognito.<ph name="END_BOLD">&lt;/strong&gt;</ph>
           <ph name="LINE_BREAK">&lt;br /&gt;&lt;br /&gt;<ex>&lt;br /&gt;&lt;br /&gt;</ex></ph>
-          Pages you view in this tab won't appear in your browser history or search history, and they won't leave other traces, like cookies, on your mobile device after you close <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>all<ph name="END_BOLD">&lt;/strong&gt;</ph> incognito tabs. Any files you download or bookmarks you create will be preserved, however.
+          Pages you view in this tab won't appear in your browser history or search history, and they won't leave other traces, like cookies, on your device after you close <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>all<ph name="END_BOLD">&lt;/strong&gt;</ph> incognito tabs. Any files you download or bookmarks you create will be preserved, however.
           <ph name="LINE_BREAK">&lt;br /&gt;&lt;br /&gt;<ex>&lt;br /&gt;&lt;br /&gt;</ex></ph>
           <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>Going incognito doesn't affect the behavior of other people, servers, or software.<ph name="END_BOLD">&lt;/strong&gt;</ph>
           Be wary of surveillance by secret agents or people standing behind you.
@@ -11310,7 +11313,7 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
         </message>
         <message name="IDS_NEW_TAB_OTR_MESSAGE"
                  desc="Mobile: Used when a person opens an OTR tab">
-          <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>You've gone incognito<ph name="END_BOLD">"&lt;/strong&gt;</ph>. Pages you view in this tab won't appear in your browser history or search history, and they won't leave other traces, like cookies, on your mobile device after you close <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>all<ph name="END_BOLD">&lt;/strong&gt;</ph> open incognito tabs. Any bookmarks you create will be preserved, however.
+          <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>You've gone incognito<ph name="END_BOLD">"&lt;/strong&gt;</ph>. Pages you view in this tab won't appear in your browser history or search history, and they won't leave other traces, like cookies, on your device after you close <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>all<ph name="END_BOLD">&lt;/strong&gt;</ph> open incognito tabs. Any bookmarks you create will be preserved, however.
           <ph name="LINE_BREAK">&lt;br /&gt;&lt;br /&gt;<ex>&lt;br /&gt;&lt;br /&gt;</ex></ph>
           <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>Going incognito doesn't affect the behavior of other people, servers, or software. Be wary of:<ph name="END_BOLD">&lt;/strong&gt;</ph>
           <ph name="BEGIN_LIST">&lt;ul&gt;</ph>
@@ -11346,7 +11349,7 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
       <if expr="is_android">
         <message name="IDS_NEW_TAB_GUEST_SESSION_MESSAGE"
             desc="Mobile: Used when a person enters Guest Session">
-            <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>You're browsing as a Guest<ph name="END_BOLD">&lt;/strong&gt;</ph>. Pages you view in this tab won't appear in the browser history or search history, and they won't leave other traces, like cookies, on the mobile device after you sign out. Files you download and bookmarks you create won't be preserved.
+            <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>You're browsing as a Guest<ph name="END_BOLD">&lt;/strong&gt;</ph>. Pages you view in this tab won't appear in the browser history or search history, and they won't leave other traces, like cookies, on the device after you sign out. Files you download and bookmarks you create won't be preserved.
           <ph name="LINE_BREAK">&lt;br /&gt;&lt;br /&gt;<ex>&lt;br /&gt;&lt;br /&gt;</ex></ph>
           <ph name="BEGIN_LINK">&lt;a href="$1"&gt;</ph>Learn more<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph> about Guest browsing.
         </message>
@@ -11711,7 +11714,7 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
       </message>
       <if expr="is_android">
         <message name="IDS_SYNC_USER_NAME_IN_USE_ERROR" desc="Mobile: An error message shown when a user tries to sign in to sync using a user name that's already in use by another profile.">
-          This account is already being used on this mobile device.
+          This account is already being used on this device.
         </message>
       </if>
       <if expr="not is_android">
@@ -11743,10 +11746,10 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
       </message>
       <if expr="is_android">
         <message name="IDS_SAFE_BROWSING_MALWARE_V2_DESCRIPTION2" desc="Mobile: SafeBrowsing Malware HTML v2 description, second line">
-          Even if you have visited this website safely in the past, visiting it now is very likely to infect your mobile device with malware.
+          Even if you have visited this website safely in the past, visiting it now is very likely to infect your device with malware.
         </message>
         <message name="IDS_SAFE_BROWSING_MALWARE_V2_DESCRIPTION2_SUBRESOURCE" desc="Mobile: SafeBrowsing Malware HTML v2 description, second line, when the malware is on a subresource of the page">
-          Content from <ph name="ELEMENTS_HOST_NAME">$1<ex>evil.com</ex></ph>, a known malware distributor, has been inserted into this web page. Visiting this page now is very likely to infect your mobile device with malware.
+          Content from <ph name="ELEMENTS_HOST_NAME">$1<ex>evil.com</ex></ph>, a known malware distributor, has been inserted into this web page. Visiting this page now is very likely to infect your device with malware.
         </message>
       </if>
       <if expr="is_macosx">
@@ -11830,7 +11833,7 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
       </message>
       <if expr="is_android">
         <message name="IDS_SAFE_BROWSING_MULTI_THREAT_DESCRIPTION1" desc="Mobile: SafeBrowsing multiple threat HTML description, first line">
-          The website at <ph name="HOST_NAME">&lt;strong&gt;$1<ex>www.malware.com</ex>&lt;/strong&gt;</ph> contains elements from sites which appear to host malware – software that can hurt your mobile device or otherwise operate without your consent.  Just visiting a site that hosts malware can infect your mobile device. The website also hosts contents from sites that have been reported as a “phishing” sites.  Phishing sites trick users into disclosing personal or financial information, often by pretending to represent trusted institutions, such as banks.
+          The website at <ph name="HOST_NAME">&lt;strong&gt;$1<ex>www.malware.com</ex>&lt;/strong&gt;</ph> contains elements from sites which appear to host malware – software that can hurt your device or otherwise operate without your consent.  Just visiting a site that hosts malware can infect your device. The website also hosts contents from sites that have been reported as a “phishing” sites.  Phishing sites trick users into disclosing personal or financial information, often by pretending to represent trusted institutions, such as banks.
         </message>
       </if>
       <if expr="not is_android">
@@ -11843,7 +11846,7 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
       </message>
       <if expr="is_android">
         <message name="IDS_SAFE_BROWSING_MULTI_MALWARE_DESCRIPTION1" desc="Mobile: SafeBrowsing Malware HTML description, first line for case of several malicious subresource">
-          The website at <ph name="HOST_NAME">&lt;strong&gt;$1<ex>www.goodsite.com</ex>&lt;/strong&gt;</ph> contains elements from sites which appear to host malware – software that can hurt your mobile device or otherwise operate without your consent.  Just visiting a site that contains malware can infect your mobile device.
+          The website at <ph name="HOST_NAME">&lt;strong&gt;$1<ex>www.goodsite.com</ex>&lt;/strong&gt;</ph> contains elements from sites which appear to host malware – software that can hurt your device or otherwise operate without your consent.  Just visiting a site that contains malware can infect your device.
         </message>
       </if>
       <if expr="not is_android">
@@ -11868,7 +11871,7 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
       </message>
       <if expr="is_android">
         <message name="IDS_SAFE_BROWSING_MULTI_MALWARE_DESCRIPTION_AGREE" desc="Mobile: SafeBrowsing Malware, agree checkbox text">
-          I understand that visiting this site may harm my mobile device.
+          I understand that visiting this site may harm my device.
         </message>
       </if>
       <if expr="not is_android">
@@ -13205,7 +13208,7 @@ Some features may be unavailable.  Please check that the profile exists and you 
       </message>
       <if expr="is_android">
         <message name="IDS_SYNC_OVERVIEW" desc="Mobile: The message that appears in the options dialog when sync has not been set up by the user.">
-          Sign in to <ph name="PRODUCT_NAME">$1<ex>Chrome</ex></ph> with your Google Account to save your personalized browser features to the web and access them from <ph name="PRODUCT_NAME">$1<ex>Chrome</ex></ph> on any mobile device. You'll also be automatically signed in to your favorite Google services.
+          Sign in to <ph name="PRODUCT_NAME">$1<ex>Chrome</ex></ph> with your Google Account to save your personalized browser features to the web and access them from <ph name="PRODUCT_NAME">$1<ex>Chrome</ex></ph> on any device. You'll also be automatically signed in to your favorite Google services.
         </message>
       </if>
       <if expr="not is_android and not pp_ifdef('chromeos')">
@@ -13328,7 +13331,7 @@ Some features may be unavailable.  Please check that the profile exists and you 
       </message>
       <if expr="is_android">
         <message name="IDS_SYNC_STOP_SYNCING_EXPLANATION_LABEL" desc="Mobile: The text to display below the 'Stop syncing this account' button on the options pane, explaining what the button does.">
-          By disconnecting your Google Account from <ph name="PRODUCT_NAME">$1<ex>Chrome</ex></ph>, your data will remain on this mobile device but changes will no longer be synced to your Google Account. Data already stored in your Google Account will remain there until you remove it using <ph name="BEGIN_LINK">&lt;a href="$2" target=&quot;_blank&quot;&gt;<ex>&lt;a href="$2" target=&quot;_blank&quot;&gt;</ex></ph>Google Dashboard<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>.
+          By disconnecting your Google Account from <ph name="PRODUCT_NAME">$1<ex>Chrome</ex></ph>, your data will remain on this device but changes will no longer be synced to your Google Account. Data already stored in your Google Account will remain there until you remove it using <ph name="BEGIN_LINK">&lt;a href="$2" target=&quot;_blank&quot;&gt;<ex>&lt;a href="$2" target=&quot;_blank&quot;&gt;</ex></ph>Google Dashboard<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>.
         </message>
       </if>
       <if expr="not is_android">
@@ -13556,7 +13559,7 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <!-- Login dialog strings -->
       <if expr="is_android">
         <message name="IDS_SYNC_LOGIN_INTRODUCTION" desc="Mobile: The message to display at the top of the login dialog">
-          <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> sync makes it easy to share your data (such as bookmarks and settings) between your computers and mobile devices.
+          <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> sync makes it easy to share your data (such as bookmarks and settings) between your computers and other devices.
           <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> synchronizes your data by storing it online with Google when you sign in with your Google Account.
         </message>
       </if>
@@ -13783,7 +13786,7 @@ Some features may be unavailable.  Please check that the profile exists and you 
       </message>
       <if expr="is_android">
         <message name="IDS_SYNC_PROMO_V_BACKUP_BODY" desc="Mobile: Verbose sync promo. Body of the backup message.">
-          All your <ph name="SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph> settings are safe in case anything happens to your mobile device.
+          All your <ph name="SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph> settings are safe in case anything happens to your device.
         </message>
       </if>
 
@@ -14445,7 +14448,7 @@ Some features may be unavailable.  Please check that the profile exists and you 
     <!-- File Selection Dialog Policy - Infobar -->
     <if expr="is_android">
       <message name="IDS_FILE_SELECTION_DIALOG_INFOBAR" desc="Mobile: Infobar message on disallowed file selection dialog.">
-        Access to local files on your mobile device is disabled by your administrator.
+        Access to local files on your device is disabled by your administrator.
       </message>
     </if>
     <if expr="not is_android">
@@ -14812,15 +14815,15 @@ Some features may be unavailable.  Please check that the profile exists and you 
 
     <!-- Quota messages -->
     <if expr="is_android">
-      <message name="IDS_REQUEST_QUOTA_INFOBAR_QUESTION" desc="Mobile: For mobile device. Question asked on the info bar whenever webapp requests new (larger) quota to persistently store data on the mobile device (e.g. for persistent-type filesystem).">
+      <message name="IDS_REQUEST_QUOTA_INFOBAR_QUESTION" desc="Mobile: For Android device. Question asked on the info bar whenever webapp requests new (larger) quota to persistently store data on the device (e.g. for persistent-type filesystem).">
         <ph name="URL">
           $1<ex>html5rocks.com</ex>
-        </ph> wants to permanently store data on your mobile device.
+        </ph> wants to permanently store data on your device.
       </message>
-      <message name="IDS_REQUEST_LARGE_QUOTA_INFOBAR_QUESTION" desc="Mobile: For mobile device. Question asked on the info bar whenever webapp requests new (larger) quota to persistently store large data on the user's mobile device (e.g. for persistent-type filesystem).">
+      <message name="IDS_REQUEST_LARGE_QUOTA_INFOBAR_QUESTION" desc="Mobile: For Android device. Question asked on the info bar whenever webapp requests new (larger) quota to persistently store large data on the user's device (e.g. for persistent-type filesystem).">
         <ph name="URL">
           $1<ex>html5rocks.com</ex>
-        </ph> wants to permanently store large data on your mobile device.
+        </ph> wants to permanently store large data on your device.
       </message>
     </if>
     <if expr="not is_android">
@@ -14859,7 +14862,7 @@ Some features may be unavailable.  Please check that the profile exists and you 
     </message>
     <if expr="is_android">
       <message name="IDS_PROFILES_DELETE_MESSAGE" desc="Mobile: Message explaining to the user what will happen if they delete this profile">
-        Are you sure you want to delete "<ph name="PROFILE_NAME">$1<ex>New User</ex></ph>" and all the data associated with it from this mobile device? This cannot be undone!
+        Are you sure you want to delete "<ph name="PROFILE_NAME">$1<ex>New User</ex></ph>" and all the data associated with it from this device? This cannot be undone!
       </message>
     </if>
     <if expr="not is_android">
