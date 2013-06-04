@@ -4,20 +4,18 @@
 #include "config.h"
 #include "core/css/resolver/StyleBuilder.h"
 
+#include "StyleBuilderFunctions.h"
 #include "core/css/CSSPrimitiveValueMappings.h"
 #include "core/css/resolver/StyleResolver.h"
 
 // FIXME: currently we're just generating a switch statement, but we should
 //   test other variations for performance once we have more properties here.
 
-namespace WebCore {
-
-class StyleBuilderImpl {
-public:
-
 {%- macro set_value(property) -%}
     styleResolver->style()->{{property.setter}}
 {%- endmacro %}
+
+namespace WebCore {
 
 {%- macro apply_value_length(property) -%}
     if (!value->isPrimitiveValue())
@@ -61,22 +59,26 @@ public:
         {{ set_value(property) }}(primitiveValue->viewportPercentageLength());
 {%- endmacro %}
 
-{%- for property in properties %}
+{%- for property_id, property in properties.items() %}
 {%- call wrap_with_condition(property.condition) %}
-{%- set property_id = property.property_id %}
 {%- set apply_type = property.apply_type %}
 
-static void applyInitial{{property_id}}(StyleResolver* styleResolver)
+{%- if not property.custom_initial %}
+void StyleBuilderFunctions::applyInitial{{property_id}}(StyleResolver* styleResolver)
 {
     {{ set_value(property) }}(RenderStyle::{{property.initial}}());
 }
+{% endif %}
 
-static void applyInherit{{property_id}}(StyleResolver* styleResolver)
+{%- if not property.custom_inherit %}
+void StyleBuilderFunctions::applyInherit{{property_id}}(StyleResolver* styleResolver)
 {
     {{ set_value(property) }}(styleResolver->parentStyle()->{{property.getter}}());
 }
+{% endif %}
 
-static void applyValue{{property_id}}(StyleResolver* styleResolver, CSSValue* value)
+{%- if not property.custom_value %}
+void StyleBuilderFunctions::applyValue{{property_id}}(StyleResolver* styleResolver, CSSValue* value)
 {
 {%- if apply_type == "length" %}
     {{ apply_value_length(property) }}
@@ -84,24 +86,22 @@ static void applyValue{{property_id}}(StyleResolver* styleResolver, CSSValue* va
     {{ set_value(property) }}(static_cast<{{property.type_name}}>(*toCSSPrimitiveValue(value)));
 {%- endif %}
 }
+{% endif %}
 
 {%- endcall %}
 {%- endfor %}
 
-};
-
 bool StyleBuilder::applyProperty(CSSPropertyID property, StyleResolver* styleResolver, CSSValue* value, bool isInitial, bool isInherit) {
     switch(property) {
-{%- for property in properties %}
+{%- for property_id, property in properties.items() %}
 {%- call wrap_with_condition(property.condition) %}
-{%- set property_id = property.property_id %}
-    case {{property_id}}:
+    case {{ property_id }}:
         if (isInitial)
-            StyleBuilderImpl::applyInitial{{property_id}}(styleResolver);
+            StyleBuilderFunctions::applyInitial{{ property_id }}(styleResolver);
         else if (isInherit)
-            StyleBuilderImpl::applyInherit{{property_id}}(styleResolver);
+            StyleBuilderFunctions::applyInherit{{ property_id }}(styleResolver);
         else
-            StyleBuilderImpl::applyValue{{property_id}}(styleResolver, value);
+            StyleBuilderFunctions::applyValue{{ property_id }}(styleResolver, value);
         return true;
 {%- endcall %}
 {% endfor %}
@@ -109,5 +109,6 @@ bool StyleBuilder::applyProperty(CSSPropertyID property, StyleResolver* styleRes
         return false;
     }
 }
-}
+
+} // namespace WebCore
 

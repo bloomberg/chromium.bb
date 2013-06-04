@@ -307,8 +307,9 @@
         '<(SHARED_INTERMEDIATE_DIR)/webkit/SVGElementFactory.cpp',
         '<(SHARED_INTERMEDIATE_DIR)/webkit/V8SVGElementWrapperFactory.cpp',
 
-        # Generated from StyleBuilder.in
+        # Generated from make_style_builder.py
         '<(SHARED_INTERMEDIATE_DIR)/webkit/StyleBuilder.cpp',
+        '<(SHARED_INTERMEDIATE_DIR)/webkit/StyleBuilderFunctions.cpp',
       ],
       'conditions': [
         ['OS=="win" and component=="shared_library"', {

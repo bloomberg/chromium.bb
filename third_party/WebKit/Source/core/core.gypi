@@ -731,6 +731,7 @@
             'css/resolver/FilterOperationResolver.h',
             'css/resolver/ScopedStyleResolver.cpp',
             'css/resolver/ScopedStyleResolver.h',
+            'css/resolver/StyleBuilderCustom.cpp',
             'css/resolver/StyleResolver.cpp',
             'css/resolver/StyleResolver.h',
             'css/resolver/StyleResolverState.cpp',

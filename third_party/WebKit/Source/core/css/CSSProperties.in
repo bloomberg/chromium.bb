@@ -55,6 +55,7 @@ width apply_type=length, initial=initialSize, use_auto, use_intrinsic
 word-break
 // UAs must treat 'word-wrap' as an alternate name for the 'overflow-wrap' property. So using the same handlers.
 word-wrap name_for_methods=OverflowWrap
+zoom custom_all
 
 -webkit-align-content
 -webkit-align-items
@@ -62,6 +63,7 @@ word-wrap name_for_methods=OverflowWrap
 -webkit-appearance type_name=ControlPart
 -webkit-backface-visibility
 -webkit-border-fit
+-webkit-border-image initial=initialNinePieceImage, custom_value
 -webkit-box-align type_name=EBoxAlignment
 -webkit-box-decoration-break
 -webkit-box-direction
@@ -85,6 +87,9 @@ word-wrap name_for_methods=OverflowWrap
 -webkit-flex-shrink type_name=float
 -webkit-flex-wrap
 -webkit-grid-auto-flow type_name=GridAutoFlow
+-webkit-hyphenate-limit-after type_name=short, name_for_methods=HyphenationLimitAfter, custom_value
+-webkit-hyphenate-limit-before type_name=short, name_for_methods=HyphenationLimitBefore, custom_value
+-webkit-hyphenate-limit-lines type_name=short, name_for_methods=HyphenationLimitLines, custom_value
 -webkit-hyphens type_name=Hyphens
 -webkit-justify-content
 -webkit-line-align type_name=LineAlign
@@ -96,7 +101,10 @@ word-wrap name_for_methods=OverflowWrap
 -webkit-margin-bottom-collapse type_name=EMarginCollapse, name_for_methods=MarginAfterCollapse
 -webkit-margin-top-collapse type_name=EMarginCollapse, name_for_methods=MarginBeforeCollapse
 -webkit-marquee-direction
+-webkit-marquee-increment custom_value
+-webkit-marquee-repetition type_name=int, name_for_methods=MarqueeLoopCount, custom_value
 -webkit-marquee-style name_for_methods=MarqueeBehavior
+-webkit-mask-box-image initial=initialNinePieceImage, custom_value
 -webkit-order type_name=int
 -webkit-perspective-origin-x apply_type=length
 -webkit-perspective-origin-y apply_type=length

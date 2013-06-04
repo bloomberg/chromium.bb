@@ -1,0 +1,94 @@
+{#
+    This file is for property handlers which use the templating engine to
+    reduce (handwritten) code duplication.
+
+    The `properties' dict can be used to access a property's parameters in
+    jinja2 templates (i.e. setter, getter, initial, type_name, condition)
+-#}
+
+#include "config.h"
+#include "StyleBuilderFunctions.h"
+
+#include "CSSValueKeywords.h"
+#include "core/css/resolver/StyleResolver.h"
+
+{%- macro apply_initial(property_id) -%}
+void StyleBuilderFunctions::applyInitial{{property_id}}(StyleResolver* styleResolver)
+{%- endmacro %}
+
+{%- macro apply_inherit(property_id) -%}
+void StyleBuilderFunctions::applyInherit{{property_id}}(StyleResolver* styleResolver)
+{%- endmacro %}
+
+{%- macro apply_value(property_id) -%}
+void StyleBuilderFunctions::applyValue{{property_id}}(StyleResolver* styleResolver, CSSValue* value)
+{%- endmacro %}
+
+{%- macro set_value(property) -%}
+    styleResolver->style()->{{property.setter}}
+{%- endmacro %}
+
+namespace WebCore {
+
+{%- macro apply_value_border_image(property_id) %}
+{{ apply_value(property_id) }}
+{
+    {%- set property = properties[property_id] %}
+    NinePieceImage image;
+    {%- if property_id == "CSSPropertyWebkitMaskBoxImage" %}
+    image.setMaskDefaults();
+    {%- endif %}
+    styleResolver->styleMap()->mapNinePieceImage({{property_id}}, value, image);
+    {{ set_value(property) }}(image);
+}
+{%- endmacro %}
+
+{{ apply_value_border_image("CSSPropertyWebkitBorderImage") }}
+{{ apply_value_border_image("CSSPropertyWebkitMaskBoxImage") }}
+
+{%- macro apply_value_number(property_id, id_for_minus_one) %}
+{{ apply_value(property_id) }}
+{
+    {%- set property = properties[property_id] %}
+    if (!value->isPrimitiveValue())
+        return;
+
+    CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
+    if (primitiveValue->getIdent() == {{id_for_minus_one}})
+        {{ set_value(property) }}(-1);
+    else
+        {{ set_value(property) }}(primitiveValue->getValue<{{property.type_name}}>(CSSPrimitiveValue::CSS_NUMBER));
+}
+{%- endmacro %}
+
+{{ apply_value_number("CSSPropertyWebkitHyphenateLimitAfter", "CSSValueAuto") }}
+{{ apply_value_number("CSSPropertyWebkitHyphenateLimitBefore", "CSSValueAuto") }}
+{{ apply_value_number("CSSPropertyWebkitHyphenateLimitLines", "CSSValueNoLimit") }}
+{{ apply_value_number("CSSPropertyWebkitMarqueeRepetition", "CSSValueInfinite") }}
+
+{{ apply_value("CSSPropertyWebkitMarqueeIncrement") }}
+{
+    if (!value->isPrimitiveValue())
+        return;
+
+    CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
+    if (primitiveValue->getIdent()) {
+        switch (primitiveValue->getIdent()) {
+        case CSSValueSmall:
+            styleResolver->style()->setMarqueeIncrement(Length(1, Fixed)); // 1px.
+            break;
+        case CSSValueNormal:
+            styleResolver->style()->setMarqueeIncrement(Length(6, Fixed)); // 6px. The WinIE default.
+            break;
+        case CSSValueLarge:
+            styleResolver->style()->setMarqueeIncrement(Length(36, Fixed)); // 36px.
+            break;
+        }
+    } else {
+        Length marqueeLength = styleResolver->convertToIntLength(primitiveValue, styleResolver->style(), styleResolver->rootElementStyle());
+        if (!marqueeLength.isUndefined())
+            styleResolver->style()->setMarqueeIncrement(marqueeLength);
+    }
+}
+
+} // namespace WebCore

@@ -224,9 +224,13 @@
             '../scripts/make_style_builder.py',
             '../css/CSSProperties.in',
             '../scripts/templates/StyleBuilder.cpp.tmpl',
+            '../scripts/templates/StyleBuilderFunctions.h.tmpl',
+            '../scripts/templates/StyleBuilderFunctions.cpp.tmpl',
           ],
           'outputs': [
             '<(SHARED_INTERMEDIATE_DIR)/webkit/StyleBuilder.cpp',
+            '<(SHARED_INTERMEDIATE_DIR)/webkit/StyleBuilderFunctions.h',
+            '<(SHARED_INTERMEDIATE_DIR)/webkit/StyleBuilderFunctions.cpp',
           ],
           'action': [
             'python',

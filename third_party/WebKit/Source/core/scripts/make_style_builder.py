@@ -42,6 +42,10 @@ class StyleBuilderWriter(in_generator.Writer):
         'use_none': [True, False],
         'use_intrinsic': [True, False],
         'use_auto': [True, False],
+        'custom_all': [True, False],
+        'custom_initial': [True, False],
+        'custom_inherit': [True, False],
+        'custom_value': [True, False],
     }
     defaults = {
         'condition': None,
@@ -52,7 +56,13 @@ class StyleBuilderWriter(in_generator.Writer):
         'getter': None,
         'setter': None,
         'initial': None,
-# For the length apply type
+# Setting these stops default handlers being generated
+# Setting custom_all is the same as setting the other three
+        'custom_all': False,
+        'custom_initial': False,
+        'custom_inherit': False,
+        'custom_value': False,
+# For the length apply type. Will get moved out to StyleBuilderFunctions.cpp.tmpl
         'use_none': False,
         'use_intrinsic': False,
         'use_auto': False,
@@ -60,7 +70,10 @@ class StyleBuilderWriter(in_generator.Writer):
 
     def __init__(self, in_files, enabled_conditions):
         super(StyleBuilderWriter, self).__init__(in_files, enabled_conditions)
-        self._outputs = {(self.class_name + ".cpp"): self.generate_style_builder}
+        self._outputs = {("StyleBuilderFunctions.h"): self.generate_style_builder_functions_h,
+                         ("StyleBuilderFunctions.cpp"): self.generate_style_builder_functions_cpp,
+                         ("StyleBuilder.cpp"): self.generate_style_builder,
+                        }
 
         self._properties = self.in_file.name_dictionaries
 
@@ -76,6 +89,12 @@ class StyleBuilderWriter(in_generator.Writer):
             set_if_none(property, "getter", self._lower_first(cc))
             set_if_none(property, "setter", "set" + cc)
             set_if_none(property, "initial", "initial" + cc)
+            if property["custom_all"]:
+                property["custom_initial"] = True
+                property["custom_inherit"] = True
+                property["custom_value"] = True
+
+        self._properties = dict((property["property_id"], property) for property in self._properties)
 
 # FIXME: some of these might be better in a utils file
     @staticmethod
@@ -89,6 +108,18 @@ class StyleBuilderWriter(in_generator.Writer):
     @staticmethod
     def _upper_first(s):
         return s[0].upper() + s[1:]
+
+    @template_expander.use_jinja("StyleBuilderFunctions.h.tmpl")
+    def generate_style_builder_functions_h(self):
+        return {
+            "properties": self._properties,
+        }
+
+    @template_expander.use_jinja("StyleBuilderFunctions.cpp.tmpl")
+    def generate_style_builder_functions_cpp(self):
+        return {
+            "properties": self._properties,
+        }
 
     @template_expander.use_jinja("StyleBuilder.cpp.tmpl")
     def generate_style_builder(self):
