@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/prefs/pref_service.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "components/user_prefs/pref_registry_syncable.h"
@@ -69,4 +70,20 @@ bool IncognitoModePrefs::ShouldLaunchIncognito(
   return incognito_avail != IncognitoModePrefs::DISABLED &&
          (command_line.HasSwitch(switches::kIncognito) ||
           incognito_avail == IncognitoModePrefs::FORCED);
+}
+
+// static
+bool IncognitoModePrefs::CanOpenBrowser(Profile* profile) {
+  switch (GetAvailability(profile->GetPrefs())) {
+    case IncognitoModePrefs::ENABLED:
+      return true;
+    case IncognitoModePrefs::DISABLED:
+      return !profile->IsOffTheRecord();
+    case IncognitoModePrefs::FORCED:
+      return profile->IsOffTheRecord();
+    case IncognitoModePrefs::AVAILABILITY_NUM_TYPES:
+      NOTREACHED();
+  }
+  NOTREACHED();
+  return false;
 }

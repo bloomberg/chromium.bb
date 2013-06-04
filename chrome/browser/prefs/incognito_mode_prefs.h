@@ -9,6 +9,7 @@
 
 class CommandLine;
 class PrefService;
+class Profile;
 
 namespace user_prefs {
 class PrefRegistrySyncable;
@@ -53,6 +54,11 @@ class IncognitoModePrefs {
   // Returns true if the browser should start in incognito mode.
   static bool ShouldLaunchIncognito(const CommandLine& command_line,
                                     const PrefService* prefs);
+
+  // Returns true if |profile| can open a new Browser. This checks the incognito
+  // availability policies and verifies if the |profile| type is allowed to
+  // open new windows.
+  static bool CanOpenBrowser(Profile* profile);
 
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(IncognitoModePrefs);
