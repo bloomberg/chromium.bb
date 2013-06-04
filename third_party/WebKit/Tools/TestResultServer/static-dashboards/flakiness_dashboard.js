@@ -227,6 +227,10 @@ var TestTrie = function(builders, resultsByBuilder)
     this._trie = {};
 
     for (var builder in builders) {
+        if (!resultsByBuilder[builder]) {
+            console.warn("No results for builder: ", builder)
+            continue;
+        }
         var testsForBuilder = resultsByBuilder[builder].tests;
         for (var test in testsForBuilder)
             this._addTest(test.split('/'), this._trie);
@@ -388,7 +392,7 @@ function processTestRunsForBuilder(builderName)
         g_perBuilderFailures[builderName] = [];
         return;
     }
-   
+
     var failures = [];
     var allTestsForThisBuilder = g_resultsByBuilder[builderName].tests;
 
@@ -637,7 +641,7 @@ function createBugHTML(test)
     var description = encodeURIComponent('The following layout test is ' + symptom + ' on ' +
         '[insert platform]\n\n' + test.test + '\n\nProbable cause:\n\n' +
         '[insert probable cause]');
-    
+
     url = 'https://code.google.com/p/chromium/issues/entry?template=Layout%20Test%20Failure&summary=' + title + '&comment=' + description;
     return '<a href="' + url + '">File new bug</a>';
 }
@@ -822,7 +826,7 @@ function htmlForIndividualTestOnAllBuilders(test)
     var testResults = g_testToResultsMap[test];
     if (!testResults)
         return '<div class="not-found">Test not found. Either it does not exist, is skipped or passes on all platforms.</div>';
-        
+
     var html = '';
     var shownBuilders = [];
     for (var j = 0; j < testResults.length; j++) {
@@ -938,7 +942,7 @@ function addExpectationItem(expectationsContainers, parentContainer, platform, p
     var fileExtension = parts[parts.length - 1];
     if (fileExtension == 'html')
         fileExtension = 'txt';
-    
+
     var container = getExpectationsContainer(expectationsContainers, parentContainer, fileExtension);
     var isImage = path.match(/\.png$/);
 
@@ -1265,7 +1269,7 @@ function loadExpectationsLayoutTests(test, expectationsContainer)
     revisionContainer.textContent = "Showing results for: "
     expectationsContainer.appendChild(revisionContainer);
     loadBaselinesForTest(expectationsContainers, expectationsContainer, test);
-        
+
     var testWithoutSuffix = test.substring(0, test.lastIndexOf('.'));
     var actualResultSuffixes = ['-actual.txt', '-actual.png', '-crash-log.txt', '-diff.txt', '-wdiff.html', '-diff.png'];
 

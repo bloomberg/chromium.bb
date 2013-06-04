@@ -70,8 +70,8 @@ test('results files loading', 11, function() {
         successCallback({responseText: '{"version":4,"' + builderName + '":{"failure_map":{"A":"AUDIO","C":"CRASH","F":"TEXT"},"secondsSinceEpoch":[' + Date.now() + '],"tests":{}}}'});
     }
 
-    loadBuildersList('@ToT - chromium.org', 'layout-tests');
- 
+    builders.loadBuildersList('@ToT - chromium.org', 'layout-tests');
+
     try {
         resourceLoader._loadResultsFiles();
     } finally {
@@ -81,8 +81,8 @@ test('results files loading', 11, function() {
 
 test('results file failing to load', 2, function() {
     resetGlobals();
-    loadBuildersList('@ToT - chromium.org', 'layout-tests');
-    
+    builders.loadBuildersList('@ToT - chromium.org', 'layout-tests');
+
     var resourceLoader = new loader.Loader();
     var resourceLoadCount = 0;
     resourceLoader._handleResourceLoad = function() {
@@ -104,11 +104,11 @@ test('results file failing to load', 2, function() {
 
 test('Default builder gets set.', 3, function() {
     resetGlobals();
-    loadBuildersList('@ToT - chromium.org', 'layout-tests');
-    
+    builders.loadBuildersList('@ToT - chromium.org', 'layout-tests');
+
     var defaultBuilder = currentBuilderGroup().defaultBuilder();
     ok(defaultBuilder, "Default builder should exist.");
-   
+
     // Simulate error loading the default builder data, then make sure
     // a new defaultBuilder is set, and isn't the now invalid one.
     var resourceLoader = new loader.Loader();

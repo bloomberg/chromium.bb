@@ -85,7 +85,6 @@ var TEST_TYPES = [
     'cc_unittests'
 ];
 
-
 // Enum for indexing into the run-length encoded results in the JSON files.
 // 0 is where the count is length is stored. 1 is the value.
 var RLE = {
@@ -106,36 +105,16 @@ function $(id)
     return document.getElementById(id);
 }
 
-function currentBuilderGroupCategory()
-{
-    switch (g_history.crossDashboardState.testType) {
-    case 'gl_tests':
-    case 'gpu_tests':
-        return CHROMIUM_GPU_TESTS_BUILDER_GROUPS;
-    case 'layout-tests':
-        return LAYOUT_TESTS_BUILDER_GROUPS;
-    case 'test_shell_tests':
-    case 'webkit_unit_tests':
-        return TEST_SHELL_TESTS_BUILDER_GROUPS;
-    case 'androidwebview_instrumentation_tests':
-    case 'chromiumtestshell_instrumentation_tests':
-    case 'contentshell_instrumentation_tests':
-        return CHROMIUM_INSTRUMENTATION_TESTS_BUILDER_GROUPS;
-    case 'cc_unittests':
-        return CC_UNITTEST_BUILDER_GROUPS;
-    default:
-        return CHROMIUM_GTESTS_BUILDER_GROUPS;
-    }
-}
-
+// Returns the name of the current group, or a valid (but perhaps arbitrary) default.
 function currentBuilderGroupName()
 {
-    return g_history.crossDashboardState.group || Object.keys(currentBuilderGroupCategory())[0];
+    return g_history.crossDashboardState.group ||
+        groupNamesForTestType(g_history.crossDashboardState.testType)[0];
 }
 
 function currentBuilderGroup()
 {
-    return currentBuilderGroupCategory()[currentBuilderGroupName()];
+    return builders.getBuilderGroup(currentBuilderGroupName(), g_history.crossDashboardState.testType);
 }
 
 function currentBuilders()

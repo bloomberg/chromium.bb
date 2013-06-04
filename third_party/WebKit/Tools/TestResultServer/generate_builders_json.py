@@ -65,6 +65,10 @@ def insert_builder_and_test_data(masters):
             cached_builds = build_data['cachedBuilds']
             current_builds = build_data['currentBuilds']
 
+            if len(cached_builds) == 0:
+                print 'warning: empty list of cached builds for', builder
+                continue
+
             latest_cached_build = cached_builds.pop()
             while latest_cached_build in current_builds and len(cached_builds):
                 latest_cached_build = cached_builds.pop()
@@ -97,16 +101,16 @@ def main():
     logging.getLogger().setLevel(logging.DEBUG if options.verbose else logging.INFO)
 
     masters = [
-        {'name': 'ChromiumWin', 'url': 'http://build.chromium.org/p/chromium.win'},
-        {'name': 'ChromiumMac', 'url': 'http://build.chromium.org/p/chromium.mac'},
-        {'name': 'ChromiumLinux', 'url': 'http://build.chromium.org/p/chromium.linux'},
-        {'name': 'ChromiumChromiumOS', 'url': 'http://build.chromium.org/p/chromium.chromiumos'},
-        {'name': 'ChromiumGPU', 'url': 'http://build.chromium.org/p/chromium.gpu'},
-        {'name': 'ChromiumGPUFYI', 'url': 'http://build.chromium.org/p/chromium.gpu.fyi'},
-        {'name': 'ChromiumPerfAv', 'url': 'http://build.chromium.org/p/chromium.perf_av'},
-        {'name': 'ChromiumWebkit', 'url': 'http://build.chromium.org/p/chromium.webkit'},
-        {'name': 'ChromiumFYI', 'url': 'http://build.chromium.org/p/chromium.fyi'},
-        {'name': 'webkit.org', 'url': 'http://build.webkit.org'},
+        {'name': 'ChromiumWin', 'url': 'http://build.chromium.org/p/chromium.win', 'groups': ['@DEPS - chromium.org']},
+        {'name': 'ChromiumMac', 'url': 'http://build.chromium.org/p/chromium.mac', 'groups': ['@DEPS - chromium.org']},
+        {'name': 'ChromiumLinux', 'url': 'http://build.chromium.org/p/chromium.linux', 'groups': ['@DEPS - chromium.org']},
+        {'name': 'ChromiumChromiumOS', 'url': 'http://build.chromium.org/p/chromium.chromiumos', 'groups': ['@DEPS CrOS - chromium.org']},
+        {'name': 'ChromiumGPU', 'url': 'http://build.chromium.org/p/chromium.gpu', 'groups': ['@DEPS - chromium.org']},
+        {'name': 'ChromiumGPUFYI', 'url': 'http://build.chromium.org/p/chromium.gpu.fyi', 'groups': ['@DEPS FYI - chromium.org']},
+        {'name': 'ChromiumPerfAv', 'url': 'http://build.chromium.org/p/chromium.perf_av', 'groups': ['@DEPS - chromium.org']},
+        {'name': 'ChromiumWebkit', 'url': 'http://build.chromium.org/p/chromium.webkit', 'groups': ['@DEPS - chromium.org', '@ToT - chromium.org', 'Content Shell @ToT - chromium.org']},
+        {'name': 'ChromiumFYI', 'url': 'http://build.chromium.org/p/chromium.fyi', 'groups': ['@DEPS FYI - chromium.org']},
+        {'name': 'webkit.org', 'url': 'http://build.webkit.org', 'groups': []},
     ]
 
     insert_builder_and_test_data(masters)
@@ -116,8 +120,10 @@ def main():
         'LOAD_BUILDBOT_DATA(')
     json_file_suffix = ');\n';
 
+    output_data = {'masters': masters}
+
     json_file = open(os.path.join('static-dashboards', 'builders.jsonp'), 'w')
-    json_file.write(json_file_prefix + json.dumps(masters, separators=(', ', ': '), indent=4, sort_keys=True) + json_file_suffix)
+    json_file.write(json_file_prefix + json.dumps(output_data, separators=(', ', ': '), indent=4, sort_keys=True) + json_file_suffix)
 
 
 if __name__ == "__main__":

@@ -70,8 +70,8 @@ ui.popup.show = function(target, html)
 ui.popup._handleMouseDown = function(e) {
     // Clear the open popup, unless the click was inside the popup.
     var popup = $('popup');
-    if (popup && e.target != popup && !(popup.compareDocumentPosition(e.target) & 16)) 
-        ui.popup.hide();    
+    if (popup && e.target != popup && !(popup.compareDocumentPosition(e.target) & 16))
+        ui.popup.hide();
 }
 
 ui.html = {};
@@ -119,8 +119,7 @@ ui.html.testTypeSwitcher = function(opt_noBuilderMenu, opt_extraHtml, opt_includ
         html += ui.html.select('Builder', 'builder', buildersForMenu);
     }
 
-    html += ui.html.select('Group', 'group',
-        Object.keys(currentBuilderGroupCategory()));
+    html += ui.html.select('Group', 'group', groupNamesForTestType(g_history.crossDashboardState.testType));
 
     if (!history.isTreeMap())
         html += ui.html.checkbox('showAllRuns', 'Show all runs', g_history.crossDashboardState.showAllRuns);

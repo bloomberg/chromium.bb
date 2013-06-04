@@ -95,7 +95,7 @@ loader.Loader.prototype = {
     {
         this._loadNext();
     },
-    showErrors: function() 
+    showErrors: function()
     {
         this._errors.show();
     },
@@ -111,7 +111,7 @@ loader.Loader.prototype = {
     },
     _loadBuildersList: function()
     {
-        loadBuildersList(currentBuilderGroupName(), this._history.crossDashboardState.testType);
+        builders.loadBuildersList(currentBuilderGroupName(), this._history.crossDashboardState.testType);
         this._loadNext();
     },
     _loadResultsFiles: function()
@@ -163,6 +163,8 @@ loader.Loader.prototype = {
     {
         var builds = JSON.parse(fileData);
 
+        if (builderName == 'version' || builderName == 'failure_map')
+             return;
         // If a test suite stops being run on a given builder, we don't want to show it.
         // Assume any builder without a run in two weeks for a given test suite isn't
         // running that suite anymore.
@@ -198,8 +200,8 @@ loader.Loader.prototype = {
     },
     _haveResultsFilesLoaded: function()
     {
-        for (var builder in currentBuilders()) {
-            if (!g_resultsByBuilder[builder])
+        for (var builderName in currentBuilders()) {
+            if (!g_resultsByBuilder[builderName] && this._buildersThatFailedToLoad.indexOf(builderName) < 0)
                 return false;
         }
         return true;

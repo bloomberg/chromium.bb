@@ -36,7 +36,7 @@ history.DEFAULT_CROSS_DASHBOARD_STATE_VALUES = {
     showAllRuns: false,
     testType: 'layout-tests',
     useTestData: false,
-}    
+}
 
 history.validateParameter = function(state, key, value, validateFn)
 {
@@ -163,7 +163,7 @@ history.History.prototype = {
         var oldDashboardSpecificState = this.dashboardSpecificState;
 
         this.parseCrossDashboardParameters();
-        
+
         // Some parameters require loading different JSON files when the value changes. Do a reload.
         if (Object.keys(oldCrossDashboardState).length) {
             for (var key in this.crossDashboardState) {
@@ -216,10 +216,7 @@ history.History.prototype = {
         case 'group':
             history.validateParameter(this.crossDashboardState, key, value,
                 function() {
-                  return value in LAYOUT_TESTS_BUILDER_GROUPS ||
-                      value in CHROMIUM_GPU_TESTS_BUILDER_GROUPS ||
-                      value in CHROMIUM_INSTRUMENTATION_TESTS_BUILDER_GROUPS ||
-                      value in CHROMIUM_GTESTS_BUILDER_GROUPS;
+                    return builders.getAllGroupNames().indexOf(value) != -1;
                 });
             return true;
 
@@ -235,7 +232,7 @@ history.History.prototype = {
     queryParameterValue: function(parameter)
     {
         return this.dashboardSpecificState[parameter] || this.crossDashboardState[parameter];
-    }, 
+    },
     // Sets the page state. Takes varargs of key, value pairs.
     setQueryParameter: function(var_args)
     {
@@ -280,7 +277,7 @@ history.History.prototype = {
                 state.push(key + '=' + encodeURIComponent(value));
         }
         return state.join('&');
-    }, 
+    },
     _permaLinkURLHash: function(opt_state)
     {
         var state = opt_state || this._combinedDashboardState();
@@ -291,7 +288,7 @@ history.History.prototype = {
         var combinedState = Object.create(this.dashboardSpecificState);
         for (var key in this.crossDashboardState)
             combinedState[key] = this.crossDashboardState[key];
-        return combinedState;    
+        return combinedState;
     },
     _defaultValue: function(key)
     {
