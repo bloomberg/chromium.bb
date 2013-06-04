@@ -610,10 +610,16 @@ def GetDefaultLibPath(config):
 
   osname = getos.GetPlatform()
   libpath = [
+    # Core toolchain libraries
     'toolchain/%s_x86_glibc/x86_64-nacl/lib' % osname,
     'toolchain/%s_x86_glibc/x86_64-nacl/lib32' % osname,
+    # naclports installed libraries
+    'toolchain/%s_x86_glibc/x86_64-nacl/usr/lib' % osname,
+    'toolchain/%s_x86_glibc/i686-nacl/usr/lib' % osname,
+    # SDK bundle libraries
     'lib/glibc_x86_32/%s' % config,
     'lib/glibc_x86_64/%s' % config,
+    # naclports bundle libraries
     'ports/lib/glibc_x86_32/%s' % config,
     'ports/lib/glibc_x86_64/%s' % config,
   ]
