@@ -459,6 +459,11 @@ class TabStripModel : public content::NotificationObserver {
     NOTIFY_USER_GESTURE,
   };
 
+  // Convenience for converting a vector of indices into a vector of
+  // WebContents.
+  std::vector<content::WebContents*> GetWebContentsFromIndices(
+      const std::vector<int>& indices) const;
+
   // Gets the set of tab indices whose domain matches the tab at |index|.
   void GetIndicesWithSameDomain(int index, std::vector<int>* indices);
 
