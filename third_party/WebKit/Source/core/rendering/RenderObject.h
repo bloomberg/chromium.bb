@@ -900,6 +900,11 @@ public:
         return isFlexibleBox() || isDeprecatedFlexibleBox();
     }
 
+    bool isFlexItem() const
+    {
+        return parent() && parent()->isFlexibleBox();
+    }
+
     virtual bool isCombineText() const { return false; }
 
     virtual int caretMinOffset() const;
