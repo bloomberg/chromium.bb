@@ -24,14 +24,18 @@ class PixelBufferWorkerPoolTaskImpl : public internal::WorkerPoolTask {
         task_(task),
         buffer_(buffer),
         reply_(reply),
-        needs_upload_(true) {
+        needs_upload_(false) {
   }
 
   // Overridden from internal::WorkerPoolTask:
   virtual void RunOnThread(unsigned thread_index) OVERRIDE {
     // |buffer_| can be NULL in lost context situations.
-    if (!buffer_)
+    if (!buffer_) {
+      // |needs_upload_| still needs to be true as task has not
+      // been canceled.
+      needs_upload_ = true;
       return;
+    }
     SkBitmap bitmap;
     bitmap.setConfig(SkBitmap::kARGB_8888_Config,
                      task_->resource()->size().width(),
@@ -41,7 +45,8 @@ class PixelBufferWorkerPoolTaskImpl : public internal::WorkerPoolTask {
     needs_upload_ = task_->RunOnThread(&device, thread_index);
   }
   virtual void DispatchCompletionCallback() OVERRIDE {
-    DCHECK(HasFinishedRunning() || !buffer_ || !needs_upload_);
+    // |needs_upload_| must be be false if task didn't run.
+    DCHECK(HasFinishedRunning() || !needs_upload_);
     reply_.Run(!HasFinishedRunning(), needs_upload_);
   }
 
