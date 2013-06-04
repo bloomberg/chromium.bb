@@ -1279,7 +1279,7 @@ protected:
     
     IntPoint m_cachedOverlayScrollbarOffset;
 
-    OwnPtr<RenderMarquee> m_marquee; // Used by layers with overflow:marquee
+    OwnPtr<RenderMarquee> m_marquee; // Used for <marquee>.
     
     // Cached normal flow values for absolute positioned elements with static left/top values.
     LayoutUnit m_staticInlinePosition;

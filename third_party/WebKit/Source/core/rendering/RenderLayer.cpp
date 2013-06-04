@@ -2126,7 +2126,7 @@ void RenderLayer::setScrollOffset(const IntPoint& newScrollOffset)
     if (!box)
         return;
 
-    if (box->style()->overflowX() != OMARQUEE) {
+    if (!box->isHTMLMarquee()) {
         // Ensure that the dimensions will be computed if they need to be (for overflow:hidden blocks).
         if (m_scrollDimensionsDirty)
             computeScrollDimensions();
@@ -3148,7 +3148,7 @@ void RenderLayer::updateScrollInfoAfterLayout()
 
     computeScrollDimensions();
 
-    if (box->style()->overflowX() != OMARQUEE) {
+    if (!box->isHTMLMarquee()) {
         // Layout may cause us to be at an invalid scroll position. In this case we need
         // to pull our scroll offsets back to the max (or push them up to the min).
         IntSize clampedScrollOffset = clampScrollOffset(adjustedScrollOffset());
@@ -6035,10 +6035,10 @@ void RenderLayer::styleChanged(StyleDifference, const RenderStyle* oldStyle)
 {
     updateIsNormalFlowOnly();
 
-    if (renderer()->style()->overflowX() == OMARQUEE && renderer()->style()->marqueeBehavior() != MNONE && renderer()->isBox()) {
+    if (renderer()->isHTMLMarquee() && renderer()->style()->marqueeBehavior() != MNONE && renderer()->isBox()) {
         if (!m_marquee)
             m_marquee = adoptPtr(new RenderMarquee(this));
-        UseCounter::count(renderer()->document(), renderer()->isHTMLMarquee() ? UseCounter::HTMLMarqueeElement : UseCounter::CSSOverflowMarquee);
+        UseCounter::count(renderer()->document(), UseCounter::HTMLMarqueeElement);
         m_marquee->updateMarqueeStyle();
     }
     else if (m_marquee) {

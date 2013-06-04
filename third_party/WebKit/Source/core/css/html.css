@@ -85,7 +85,6 @@ article, aside, footer, header, hgroup, main, nav, section {
 
 marquee {
     display: inline-block;
-    overflow: -webkit-marquee
 }
 
 address {

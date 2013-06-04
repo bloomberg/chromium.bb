@@ -113,7 +113,7 @@ public:
         StepAttribute,
         PageVisits,
         HTMLMarqueeElement,
-        CSSOverflowMarquee,
+        UnusedSlot02, // Removed, was tracking overflow: -webkit-marquee.
         Reflection,
         CursorVisibility, // Removed, was -webkit-cursor-visibility.
         StorageInfo,
