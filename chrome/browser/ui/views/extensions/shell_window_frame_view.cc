@@ -345,13 +345,14 @@ gfx::Size ShellWindowFrameView::GetMinimumSize() {
 
 gfx::Size ShellWindowFrameView::GetMaximumSize() {
   gfx::Size max_size = frame_->client_view()->GetMaximumSize();
-  if (window_->frameless())
-    return max_size;
 
-  if (!max_size.IsEmpty()) {
-    gfx::Rect client_bounds = GetBoundsForClientView();
-    max_size.Enlarge(0, client_bounds.y());
-  }
+  // Add to the client maximum size the height of any title bar and borders.
+  gfx::Size client_size = GetBoundsForClientView().size();
+  if (max_size.width())
+    max_size.Enlarge(width() - client_size.width(), 0);
+  if (max_size.height())
+    max_size.Enlarge(0, height() - client_size.height());
+
   return max_size;
 }
 
