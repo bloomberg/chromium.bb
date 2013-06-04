@@ -96,6 +96,10 @@ _ANDROID_NEGATIVE_FILTER['com.google.android.apps.chrome'] = (
         'ChromeDriverTest.testWindowSize',
         'ChromeDriverTest.testWindowMaximize',
         'ChromeLogPathCapabilityTest.testChromeLogPath',
+        # Don't enable perf testing on Android yet.
+        'PerfTest.testSessionStartTime',
+        'PerfTest.testSessionStopTime',
+        'PerfTest.testColdExecuteScript',
     ]
 )
 _ANDROID_NEGATIVE_FILTER['org.chromium.chrome.testshell'] = (
@@ -114,11 +118,13 @@ class ChromeDriverBaseTest(unittest.TestCase):
     for driver in self._drivers:
       try:
         driver.Quit()
-      except chromedriver.ChromeDriverException:
+      except:
         pass
 
-  def CreateDriver(self, **kwargs):
-    driver = chromedriver.ChromeDriver(_CHROMEDRIVER_SERVER_URL,
+  def CreateDriver(self, server_url=None, **kwargs):
+    if server_url is None:
+      server_url = _CHROMEDRIVER_SERVER_URL
+    driver = chromedriver.ChromeDriver(server_url,
                                        chrome_binary=_CHROME_BINARY,
                                        android_package=_ANDROID_PACKAGE,
                                        **kwargs)
@@ -608,11 +614,81 @@ class ChromeLogPathCapabilityTest(ChromeDriverBaseTest):
     self.assertTrue(self.LOG_MESSAGE in open(tmp_log_path.name).read())
 
 
+class PerfTest(ChromeDriverBaseTest):
+  """Tests for ChromeDriver perf."""
+  def setUp(self):
+    self.assertTrue(_REFERENCE_CHROMEDRIVER is not None,
+                    'must supply a reference-chromedriver arg')
+
+  def _RunDriverPerfTest(self, name, test_func):
+    """Runs a perf test comparing a reference and new ChromeDriver server.
+
+    Args:
+      name: The name of the perf test.
+      test_func: Called with the server url to perform the test action. Must
+                 return the time elapsed.
+    """
+    class Results(object):
+      ref = []
+      new = []
+
+    ref_server = chromedriver.Server(_REFERENCE_CHROMEDRIVER)
+    results = Results()
+    result_url_pairs = zip([results.new, results.ref],
+                           [_CHROMEDRIVER_SERVER_URL, ref_server.GetUrl()])
+    for iteration in range(30):
+      for result, url in result_url_pairs:
+        result += [test_func(url)]
+      # Reverse the order for the next run.
+      result_url_pairs = result_url_pairs[::-1]
+
+    def PrintResult(build, result):
+      mean = sum(result) / len(result)
+      avg_dev = sum([abs(sample - mean) for sample in result]) / len(result)
+      print 'perf result', build, name, mean, avg_dev, result
+      util.AddBuildStepText(u'%s %s: %.3f\u00b1%.3f' % (
+          build, name, mean, avg_dev))
+
+    # Discard first result, which may be off due to cold start.
+    PrintResult('new', results.new[1:])
+    PrintResult('ref', results.ref[1:])
+
+  def testSessionStartTime(self):
+    def Run(url):
+      start = time.time()
+      driver = self.CreateDriver(url)
+      end = time.time()
+      driver.Quit()
+      return end - start
+    self._RunDriverPerfTest('session start', Run)
+
+  def testSessionStopTime(self):
+    def Run(url):
+      driver = self.CreateDriver(url)
+      start = time.time()
+      driver.Quit()
+      end = time.time()
+      return end - start
+    self._RunDriverPerfTest('session stop', Run)
+
+  def testColdExecuteScript(self):
+    def Run(url):
+      driver = self.CreateDriver(url)
+      start = time.time()
+      driver.ExecuteScript('return 1')
+      end = time.time()
+      driver.Quit()
+      return end - start
+    self._RunDriverPerfTest('cold exe js', Run)
+
 if __name__ == '__main__':
   parser = optparse.OptionParser()
   parser.add_option(
       '', '--chromedriver',
       help='Path to chromedriver server (REQUIRED!)')
+  parser.add_option(
+      '', '--reference-chromedriver',
+      help='Path to the reference chromedriver server')
   parser.add_option(
       '', '--chrome', help='Path to a build of the chrome binary')
   parser.add_option(
@@ -633,6 +709,9 @@ if __name__ == '__main__':
   server = chromedriver.Server(os.path.abspath(options.chromedriver))
   global _CHROMEDRIVER_SERVER_URL
   _CHROMEDRIVER_SERVER_URL = server.GetUrl()
+
+  global _REFERENCE_CHROMEDRIVER
+  _REFERENCE_CHROMEDRIVER = options.reference_chromedriver
 
   global _CHROME_BINARY
   if options.chrome:
