@@ -26,6 +26,7 @@ class SequencedTaskRunner;
 
 namespace leveldb {
 class DB;
+class WriteBatch;
 }
 
 class GURL;
@@ -148,6 +149,9 @@ class DriveMetadataStore
 
  private:
   friend class DriveMetadataStoreTest;
+
+  void WriteToDB(scoped_ptr<leveldb::WriteBatch> batch,
+                 const SyncStatusCallback& callback);
 
   void UpdateDBStatus(SyncStatusCode status);
   void UpdateDBStatusAndInvokeCallback(const SyncStatusCallback& callback,

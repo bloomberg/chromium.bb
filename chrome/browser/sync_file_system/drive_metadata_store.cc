@@ -114,7 +114,6 @@ class DriveMetadataDB {
                                         const std::string& resource_id);
   SyncStatusCode UpdateEntry(const FileSystemURL& url,
                              DriveMetadata metadata);
-  SyncStatusCode DeleteEntry(const FileSystemURL& url);
 
   // TODO(calvinlo): consolidate these state transition functions for sync
   // origins like "UpdateOrigin(GURL, SyncStatusEnum)". And manage origins in
@@ -431,14 +430,9 @@ void DriveMetadataStore::DeleteEntry(
   }
 
   if (found->second.erase(url.path()) == 1) {
-    base::PostTaskAndReplyWithResult(
-        file_task_runner_.get(),
-        FROM_HERE,
-        base::Bind(
-            &DriveMetadataDB::DeleteEntry, base::Unretained(db_.get()), url),
-        base::Bind(&DriveMetadataStore::UpdateDBStatusAndInvokeCallback,
-                   AsWeakPtr(),
-                   callback));
+    scoped_ptr<leveldb::WriteBatch> batch(new leveldb::WriteBatch);
+    batch->Delete(FileSystemURLToMetadataKey(url));
+    WriteToDB(batch.Pass(), callback);
     return;
   }
 
@@ -631,6 +625,16 @@ void DriveMetadataStore::DidUpdateOrigin(
     SyncStatusCode status) {
   UpdateDBStatus(status);
   callback.Run(status);
+}
+
+void DriveMetadataStore::WriteToDB(scoped_ptr<leveldb::WriteBatch> batch,
+                                   const SyncStatusCallback& callback) {
+  base::PostTaskAndReplyWithResult(
+      file_task_runner_, FROM_HERE,
+      base::Bind(&DriveMetadataDB::WriteToDB,
+                 base::Unretained(db_.get()), base::Owned(batch.release())),
+      base::Bind(&DriveMetadataStore::UpdateDBStatusAndInvokeCallback,
+                 AsWeakPtr(), callback));
 }
 
 void DriveMetadataStore::UpdateDBStatus(SyncStatusCode status) {
@@ -933,16 +937,6 @@ SyncStatusCode DriveMetadataDB::UpdateEntry(const FileSystemURL& url,
 
   leveldb::WriteBatch batch;
   batch.Put(metadata_key, value);
-  return WriteToDB(&batch);
-}
-
-SyncStatusCode DriveMetadataDB::DeleteEntry(const FileSystemURL& url) {
-  DCHECK(CalledOnValidThread());
-  DCHECK(db_.get());
-
-  std::string metadata_key = FileSystemURLToMetadataKey(url);
-  leveldb::WriteBatch batch;
-  batch.Delete(metadata_key);
   return WriteToDB(&batch);
 }
 
