@@ -1107,12 +1107,25 @@ gboolean LocationBarViewGtk::HandleExpose(GtkWidget* widget,
   // of the background.
   if (!GtkThemeService::GetFrom(browser_->profile())->UsingNativeTheme()) {
     if (popup_window_mode_) {
-      NineBox(IDR_OMNIBOX_POPUP_BORDER_EDGE,
-              IDR_OMNIBOX_POPUP_BORDER_CENTER,
-              IDR_OMNIBOX_POPUP_BORDER_EDGE,
-              0, 0, 0, 0, 0, 0).RenderToWidget(widget);
+      NineBox(IDR_OMNIBOX_POPUP_BORDER_TOP_LEFT,
+              IDR_OMNIBOX_POPUP_BORDER_TOP,
+              IDR_OMNIBOX_POPUP_BORDER_TOP_RIGHT,
+              IDR_OMNIBOX_POPUP_BORDER_LEFT,
+              IDR_OMNIBOX_POPUP_BORDER_MIDDLE,
+              IDR_OMNIBOX_POPUP_BORDER_RIGHT,
+              IDR_OMNIBOX_POPUP_BORDER_BOTTOM_LEFT,
+              IDR_OMNIBOX_POPUP_BORDER_BOTTOM,
+              IDR_OMNIBOX_POPUP_BORDER_BOTTOM_RIGHT).RenderToWidget(widget);
     } else {
-      NineBox(IDR_OMNIBOX_BORDER, 5, 5, 4, 4).RenderToWidget(widget);
+      NineBox(IDR_OMNIBOX_BORDER_TOP_LEFT,
+              IDR_OMNIBOX_BORDER_TOP,
+              IDR_OMNIBOX_BORDER_TOP_RIGHT,
+              IDR_OMNIBOX_BORDER_LEFT,
+              IDR_OMNIBOX_BORDER_MIDDLE,
+              IDR_OMNIBOX_BORDER_RIGHT,
+              IDR_OMNIBOX_BORDER_BOTTOM_LEFT,
+              IDR_OMNIBOX_BORDER_BOTTOM,
+              IDR_OMNIBOX_BORDER_BOTTOM_RIGHT).RenderToWidget(widget);
     }
   }
 
