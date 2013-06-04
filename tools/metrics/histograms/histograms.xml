@@ -1882,6 +1882,13 @@ other types of suffix sets.
   <summary>Events in Google Now component extension.</summary>
 </histogram>
 
+<histogram name="HistoryPage.OtherSessionsMenu" enum="NtpOtherSessionsType">
+  <summary>
+    Histogram for usage of the section in the history page that allows the user
+    to access tabs from other devices.
+  </summary>
+</histogram>
+
 <histogram name="HttpCache.EntryLockWait" units="milliseconds">
   <summary>
     The time spent waiting for write lock on a disk cache entry.
@@ -13968,6 +13975,10 @@ other types of suffix sets.
   <int value="2" label="Link clicked"/>
   <int value="3" label="Link context menu shown"/>
   <int value="4" label="Device context menu shown"/>
+  <int value="5" label="Unused/previous device context menu shown"/>
+  <int value="6" label="Collapse Session"/>
+  <int value="7" label="Expand Session"/>
+  <int value="8" label="Open All"/>
 </enum>
 
 <enum name="NtpPaneType" type="int">
