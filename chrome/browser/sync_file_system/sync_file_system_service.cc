@@ -462,7 +462,7 @@ void SyncFileSystemService::Observe(
   // Update:          INSTALLED.
   // Uninstall:       UNLOADED(UNINSTALL).
   // Launch, Close:   No notification.
-  // Enable:          EABLED.
+  // Enable:          ENABLED.
   // Disable:         UNLOADED(DISABLE).
   // Reload, Restart: UNLOADED(DISABLE) -> INSTALLED -> ENABLED.
   //

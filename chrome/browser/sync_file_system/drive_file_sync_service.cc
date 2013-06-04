@@ -495,14 +495,16 @@ void DriveFileSyncService::DoUnregisterOriginForTrackingChanges(
 void DriveFileSyncService::DoEnableOriginForTrackingChanges(
     const GURL& origin,
     const SyncStatusCallback& callback) {
+  // If origin cannot be found in disabled list, then it's not a SyncFS app
+  // and should be ignored.
   if (!metadata_store_->IsOriginDisabled(origin)) {
     callback.Run(SYNC_STATUS_OK);
     return;
   }
 
-  metadata_store_->EnableOrigin(origin, callback);
   pending_batch_sync_origins_.insert(
       *metadata_store_->disabled_origins().find(origin));
+  metadata_store_->EnableOrigin(origin, callback);
 }
 
 void DriveFileSyncService::DoDisableOriginForTrackingChanges(

@@ -100,6 +100,8 @@ class RemoteFileSyncService {
       const GURL& origin,
       const SyncStatusCallback& callback) = 0;
 
+  // Re-enables |origin| that was previously disabled. If |origin| is not a
+  // SyncFS app, then the origin is effectively ignored.
   virtual void EnableOriginForTrackingChanges(
       const GURL& origin,
       const SyncStatusCallback& callback) = 0;

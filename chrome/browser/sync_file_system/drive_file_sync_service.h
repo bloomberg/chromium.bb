@@ -148,6 +148,7 @@ class DriveFileSyncService : public RemoteFileSyncService,
 
   friend class DriveFileSyncServiceMockTest;
   friend class DriveFileSyncServiceSyncTest;
+  friend class DriveFileSyncServiceTest;
   struct ApplyLocalChangeParam;
   struct ProcessRemoteChangeParam;
 
