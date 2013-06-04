@@ -35,6 +35,11 @@ class FakeAdb : public Adb {
     return Status(kOk);
   }
 
+  virtual Status CheckAppInstalled(const std::string& device_serial,
+                                   const std::string& package) OVERRIDE {
+    return Status(kOk);
+  }
+
   virtual Status ClearAppData(const std::string& device_serial,
                               const std::string& package) OVERRIDE {
     return Status(kOk);

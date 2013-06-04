@@ -19,6 +19,8 @@ class Adb {
                              int local_port,
                              const std::string& remote_abstract) = 0;
   virtual Status SetChromeFlags(const std::string& device_serial) = 0;
+  virtual Status CheckAppInstalled(const std::string& device_serial,
+                                   const std::string& package) = 0;
   virtual Status ClearAppData(const std::string& device_serial,
                               const std::string& package) = 0;
   virtual Status Launch(const std::string& device_serial,

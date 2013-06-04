@@ -45,10 +45,13 @@ Status Device::StartChrome(const std::string& package, int port) {
   if (!active_package_.empty())
     return Status(kUnknownError,
         active_package_ + " was launched and has not been quit");
-  Status status = adb_->SetChromeFlags(serial_);
+  Status status = adb_->CheckAppInstalled(serial_, package);
   if (!status.IsOk())
     return status;
   status = adb_->ClearAppData(serial_, package);
+  if (!status.IsOk())
+    return status;
+  status = adb_->SetChromeFlags(serial_);
   if (!status.IsOk())
     return status;
   status = adb_->Launch(serial_, package, GetActivityForPackage(package));

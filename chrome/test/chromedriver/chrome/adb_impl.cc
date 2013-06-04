@@ -77,7 +77,8 @@ Status AdbImpl::ForwardPort(
     return status;
   if (response == "OKAY")
     return Status(kOk);
-  return Status(kUnknownError, "Failed to forward ports: " + response);
+  return Status(kUnknownError, "Failed to forward ports to device " +
+                device_serial + ": " + response);
 }
 
 Status AdbImpl::SetChromeFlags(const std::string& device_serial) {
@@ -91,7 +92,21 @@ Status AdbImpl::SetChromeFlags(const std::string& device_serial) {
   if (!status.IsOk())
     return status;
   if (response.find("0") == std::string::npos)
-    return Status(kUnknownError, "Failed to set Chrome flags");
+    return Status(kUnknownError, "Failed to set Chrome flags on device " +
+                  device_serial);
+  return Status(kOk);
+}
+
+Status AdbImpl::CheckAppInstalled(
+    const std::string& device_serial, const std::string& package) {
+  std::string response;
+  std::string command = "pm path " + package;
+  Status status = ExecuteHostShellCommand(device_serial, command, &response);
+  if (!status.IsOk())
+    return status;
+  if (response.find("package") == std::string::npos)
+    return Status(kUnknownError, package + " is not installed on device " +
+                  device_serial);
   return Status(kOk);
 }
 
@@ -103,7 +118,8 @@ Status AdbImpl::ClearAppData(
   if (!status.IsOk())
     return status;
   if (response.find("Success") == std::string::npos)
-    return Status(kUnknownError, "Failed to clear app data: " + response);
+    return Status(kUnknownError, "Failed to clear data for " + package +
+                  " on device " + device_serial + ": " + response);
   return Status(kOk);
 }
 
@@ -120,7 +136,8 @@ Status AdbImpl::Launch(
     return status;
   if (response.find("Complete") == std::string::npos)
     return Status(kUnknownError,
-                  "Failed to start " + package + ": " + response);
+                  "Failed to start " + package + " on device " + device_serial +
+                  ": " + response);
   return Status(kOk);
 }
 
