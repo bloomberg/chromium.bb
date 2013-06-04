@@ -27,7 +27,6 @@ namespace content {
 
 using ppapi::FileIOStateManager;
 using ppapi::PPTimeToTime;
-using ppapi::TimeToPPTime;
 using ppapi::host::ReplyMessageContext;
 using ppapi::thunk::EnterResourceNoLock;
 using ppapi::thunk::PPB_FileRef_API;
@@ -493,15 +492,8 @@ void PepperFileIOHost::ExecutePlatformQueryCallback(
     base::PlatformFileError error_code,
     const base::PlatformFileInfo& file_info) {
   PP_FileInfo pp_info;
-  pp_info.size = file_info.size;
-  pp_info.creation_time = TimeToPPTime(file_info.creation_time);
-  pp_info.last_access_time = TimeToPPTime(file_info.last_accessed);
-  pp_info.last_modified_time = TimeToPPTime(file_info.last_modified);
-  pp_info.system_type = file_system_type_;
-  if (file_info.is_directory)
-    pp_info.type = PP_FILETYPE_DIRECTORY;
-  else
-    pp_info.type = PP_FILETYPE_REGULAR;
+  ppapi::PlatformFileInfoToPepperFileInfo(file_info, file_system_type_,
+                                          &pp_info);
 
   int32_t pp_error = ::ppapi::PlatformFileErrorToPepperError(error_code);
   reply_context.params.set_result(pp_error);

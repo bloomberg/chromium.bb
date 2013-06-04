@@ -4,8 +4,10 @@
 
 #include "ppapi/shared_impl/file_type_conversion.h"
 
+#include "base/logging.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/ppb_file_io.h"
+#include "ppapi/shared_impl/time_conversion.h"
 
 namespace ppapi {
 
@@ -71,6 +73,25 @@ bool PepperFileOpenFlagsToPlatformFileFlags(int32_t pp_open_flags,
 
   *flags_out = flags;
   return true;
+}
+
+void PlatformFileInfoToPepperFileInfo(const base::PlatformFileInfo& info,
+                                      PP_FileSystemType fs_type,
+                                      PP_FileInfo* info_out) {
+  DCHECK(info_out);
+  info_out->size = info.size;
+  info_out->creation_time = TimeToPPTime(info.creation_time);
+  info_out->last_access_time = TimeToPPTime(info.last_accessed);
+  info_out->last_modified_time = TimeToPPTime(info.last_modified);
+  info_out->system_type = fs_type;
+  if (info.is_directory) {
+    info_out->type = PP_FILETYPE_DIRECTORY;
+  } else if (info.is_symbolic_link) {
+    DCHECK_EQ(PP_FILESYSTEMTYPE_EXTERNAL, fs_type);
+    info_out->type = PP_FILETYPE_OTHER;
+  } else {
+    info_out->type = PP_FILETYPE_REGULAR;
+  }
 }
 
 }  // namespace ppapi

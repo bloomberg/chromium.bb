@@ -6,7 +6,9 @@
 #define PPAPI_SHARED_IMPL_FILE_TYPE_CONVERSION_H_
 
 #include "base/platform_file.h"
+#include "ppapi/c/pp_file_info.h"
 #include "ppapi/c/pp_stdint.h"
+#include "ppapi/c/ppb_file_system.h"
 #include "ppapi/shared_impl/ppapi_shared_export.h"
 
 namespace ppapi {
@@ -20,6 +22,11 @@ PPAPI_SHARED_EXPORT int PlatformFileErrorToPepperError(
 PPAPI_SHARED_EXPORT bool PepperFileOpenFlagsToPlatformFileFlags(
     int32_t pp_open_flags,
     int* flags_out);
+
+PPAPI_SHARED_EXPORT void PlatformFileInfoToPepperFileInfo(
+    const base::PlatformFileInfo& info,
+    PP_FileSystemType fs_type,
+    PP_FileInfo* info_out);
 
 }  // namespace ppapi
 

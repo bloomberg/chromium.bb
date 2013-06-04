@@ -97,22 +97,7 @@ void PlatformFileInfoToPPFileInfo(
     PP_FileSystemType file_system_type,
     PP_FileInfo* info) {
   DCHECK(info);
-
-  info->size = file_info.size;
-  info->system_type = file_system_type;
-  info->creation_time = ::ppapi::TimeToPPTime(file_info.creation_time);
-  info->last_access_time = ::ppapi::TimeToPPTime(file_info.last_accessed);
-  info->last_modified_time = ::ppapi::TimeToPPTime(file_info.last_modified);
-
-  if (file_info.is_symbolic_link) {
-    // Only external filesystem may have symbolic link files.
-    DCHECK_EQ(PP_FILESYSTEMTYPE_EXTERNAL, file_system_type);
-    info->type = PP_FILETYPE_OTHER;
-  } else if (file_info.is_directory) {
-    info->type = PP_FILETYPE_DIRECTORY;
-  } else {
-    info->type = PP_FILETYPE_REGULAR;
-  }
+  ::ppapi::PlatformFileInfoToPepperFileInfo(file_info, file_system_type, info);
 }
 
 void GetFileInfoCallback(
