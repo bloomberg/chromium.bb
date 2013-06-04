@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_BROWSER_FILEAPI_CROSS_OPERATION_DELEGATE_H_
-#define WEBKIT_BROWSER_FILEAPI_CROSS_OPERATION_DELEGATE_H_
+#ifndef WEBKIT_BROWSER_FILEAPI_COPY_OR_MOVE_OPERATION_DELEGATE_H_
+#define WEBKIT_BROWSER_FILEAPI_COPY_OR_MOVE_OPERATION_DELEGATE_H_
 
 #include <stack>
 
@@ -20,16 +20,16 @@ namespace fileapi {
 class CopyOrMoveFileValidator;
 
 // A delegate class for recursive copy or move operations.
-class CrossOperationDelegate
+class CopyOrMoveOperationDelegate
     : public RecursiveOperationDelegate,
-      public base::SupportsWeakPtr<CrossOperationDelegate> {
+      public base::SupportsWeakPtr<CopyOrMoveOperationDelegate> {
  public:
   enum OperationType {
     OPERATION_COPY,
     OPERATION_MOVE
   };
 
-  CrossOperationDelegate(
+  CopyOrMoveOperationDelegate(
       FileSystemContext* file_system_context,
       scoped_ptr<LocalFileSystemOperation> src_root_operation,
       LocalFileSystemOperation* dest_root_operation,
@@ -37,7 +37,7 @@ class CrossOperationDelegate
       const FileSystemURL& dest_root,
       OperationType operation_type,
       const StatusCallback& callback);
-  virtual ~CrossOperationDelegate();
+  virtual ~CopyOrMoveOperationDelegate();
 
   // RecursiveOperationDelegate overrides:
   virtual void Run() OVERRIDE;
@@ -47,7 +47,7 @@ class CrossOperationDelegate
   virtual void ProcessDirectory(const FileSystemURL& url,
                                 const StatusCallback& callback) OVERRIDE;
 
-  using base::SupportsWeakPtr<CrossOperationDelegate>::AsWeakPtr;
+  using base::SupportsWeakPtr<CopyOrMoveOperationDelegate>::AsWeakPtr;
 
  private:
   struct URLPair {
@@ -115,9 +115,9 @@ class CrossOperationDelegate
 
   scoped_ptr<CopyOrMoveFileValidator> validator_;
 
-  DISALLOW_COPY_AND_ASSIGN(CrossOperationDelegate);
+  DISALLOW_COPY_AND_ASSIGN(CopyOrMoveOperationDelegate);
 };
 
 }  // namespace fileapi
 
-#endif  // WEBKIT_BROWSER_FILEAPI_CROSS_OPERATION_DELEGATE_H_
+#endif  // WEBKIT_BROWSER_FILEAPI_COPY_OR_MOVE_OPERATION_DELEGATE_H_

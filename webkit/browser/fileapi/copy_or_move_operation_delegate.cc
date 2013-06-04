@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/browser/fileapi/cross_operation_delegate.h"
+#include "webkit/browser/fileapi/copy_or_move_operation_delegate.h"
 
 #include "base/bind.h"
 #include "base/files/file_path.h"
@@ -16,7 +16,7 @@
 
 namespace fileapi {
 
-CrossOperationDelegate::CrossOperationDelegate(
+CopyOrMoveOperationDelegate::CopyOrMoveOperationDelegate(
     FileSystemContext* file_system_context,
     scoped_ptr<LocalFileSystemOperation> src_root_operation,
     LocalFileSystemOperation* dest_root_operation,
@@ -33,15 +33,15 @@ CrossOperationDelegate::CrossOperationDelegate(
   same_file_system_ = src_root_.IsInSameFileSystem(dest_root_);
 }
 
-CrossOperationDelegate::~CrossOperationDelegate() {
+CopyOrMoveOperationDelegate::~CopyOrMoveOperationDelegate() {
 }
 
-void CrossOperationDelegate::Run() {
+void CopyOrMoveOperationDelegate::Run() {
   // Not supported; this should never be called.
   NOTREACHED();
 }
 
-void CrossOperationDelegate::RunRecursively() {
+void CopyOrMoveOperationDelegate::RunRecursively() {
   // Perform light-weight checks first.
 
   // It is an error to try to copy/move an entry into its child.
@@ -58,16 +58,16 @@ void CrossOperationDelegate::RunRecursively() {
 
   // First try to copy/move it as a file.
   CopyOrMoveFile(URLPair(src_root_, dest_root_),
-                 base::Bind(&CrossOperationDelegate::DidTryCopyOrMoveFile,
+                 base::Bind(&CopyOrMoveOperationDelegate::DidTryCopyOrMoveFile,
                             AsWeakPtr()));
 }
 
-void CrossOperationDelegate::ProcessFile(const FileSystemURL& src_url,
+void CopyOrMoveOperationDelegate::ProcessFile(const FileSystemURL& src_url,
                                          const StatusCallback& callback) {
   CopyOrMoveFile(URLPair(src_url, CreateDestURL(src_url)), callback);
 }
 
-void CrossOperationDelegate::ProcessDirectory(const FileSystemURL& src_url,
+void CopyOrMoveOperationDelegate::ProcessDirectory(const FileSystemURL& src_url,
                                               const StatusCallback& callback) {
   FileSystemURL dest_url = CreateDestURL(src_url);
 
@@ -79,7 +79,7 @@ void CrossOperationDelegate::ProcessDirectory(const FileSystemURL& src_url,
       dest_url, false /* exclusive */, false /* recursive */, callback);
 }
 
-void CrossOperationDelegate::DidTryCopyOrMoveFile(
+void CopyOrMoveOperationDelegate::DidTryCopyOrMoveFile(
     base::PlatformFileError error) {
   if (error == base::PLATFORM_FILE_OK ||
       error != base::PLATFORM_FILE_ERROR_NOT_A_FILE) {
@@ -91,11 +91,11 @@ void CrossOperationDelegate::DidTryCopyOrMoveFile(
   // Try removing the dest_root_ to see if it exists and/or it is an
   // empty directory.
   NewDestOperation()->RemoveDirectory(
-      dest_root_, base::Bind(&CrossOperationDelegate::DidTryRemoveDestRoot,
+      dest_root_, base::Bind(&CopyOrMoveOperationDelegate::DidTryRemoveDestRoot,
                              AsWeakPtr()));
 }
 
-void CrossOperationDelegate::DidTryRemoveDestRoot(
+void CopyOrMoveOperationDelegate::DidTryRemoveDestRoot(
     base::PlatformFileError error) {
   if (error == base::PLATFORM_FILE_ERROR_NOT_A_DIRECTORY) {
     callback_.Run(base::PLATFORM_FILE_ERROR_INVALID_OPERATION);
@@ -112,11 +112,11 @@ void CrossOperationDelegate::DidTryRemoveDestRoot(
   // and operation==MOVE case, probably we can just rename the root directory.
   // http://crbug.com/172187
   StartRecursiveOperation(
-      src_root_, base::Bind(&CrossOperationDelegate::DidFinishCopy,
+      src_root_, base::Bind(&CopyOrMoveOperationDelegate::DidFinishCopy,
                             AsWeakPtr(), src_root_, callback_));
 }
 
-void CrossOperationDelegate::CopyOrMoveFile(const URLPair& url_pair,
+void CopyOrMoveOperationDelegate::CopyOrMoveFile(const URLPair& url_pair,
                                             const StatusCallback& callback) {
   // Same filesystem case.
   if (same_file_system_) {
@@ -134,15 +134,15 @@ void CrossOperationDelegate::CopyOrMoveFile(const URLPair& url_pair,
   // Perform CreateSnapshotFile, CopyInForeignFile and then calls
   // copy_callback which removes the source file if operation_type == MOVE.
   StatusCallback copy_callback =
-      base::Bind(&CrossOperationDelegate::DidFinishCopy, AsWeakPtr(),
+      base::Bind(&CopyOrMoveOperationDelegate::DidFinishCopy, AsWeakPtr(),
                  url_pair.src, callback);
   NewSourceOperation()->CreateSnapshotFile(
       url_pair.src,
-      base::Bind(&CrossOperationDelegate::DidCreateSnapshot, AsWeakPtr(),
+      base::Bind(&CopyOrMoveOperationDelegate::DidCreateSnapshot, AsWeakPtr(),
                  url_pair, copy_callback));
 }
 
-void CrossOperationDelegate::DidCreateSnapshot(
+void CopyOrMoveOperationDelegate::DidCreateSnapshot(
     const URLPair& url_pair,
     const StatusCallback& callback,
     base::PlatformFileError error,
@@ -174,11 +174,11 @@ void CrossOperationDelegate::DidCreateSnapshot(
   validator_.reset(
       factory->CreateCopyOrMoveFileValidator(url_pair.src, platform_path));
   validator_->StartValidation(
-      base::Bind(&CrossOperationDelegate::DidValidateFile, AsWeakPtr(),
+      base::Bind(&CopyOrMoveOperationDelegate::DidValidateFile, AsWeakPtr(),
                  url_pair.dest, callback, file_info, platform_path));
 }
 
-void CrossOperationDelegate::DidValidateFile(
+void CopyOrMoveOperationDelegate::DidValidateFile(
     const FileSystemURL& dest,
     const StatusCallback& callback,
     const base::PlatformFileInfo& file_info,
@@ -192,7 +192,7 @@ void CrossOperationDelegate::DidValidateFile(
   NewDestOperation()->CopyInForeignFile(platform_path, dest, callback);
 }
 
-void CrossOperationDelegate::DidFinishCopy(
+void CopyOrMoveOperationDelegate::DidFinishCopy(
     const FileSystemURL& src,
     const StatusCallback& callback,
     base::PlatformFileError error) {
@@ -207,11 +207,11 @@ void CrossOperationDelegate::DidFinishCopy(
   // Remove the source for finalizing move operation.
   NewSourceOperation()->Remove(
       src, true /* recursive */,
-      base::Bind(&CrossOperationDelegate::DidRemoveSourceForMove,
+      base::Bind(&CopyOrMoveOperationDelegate::DidRemoveSourceForMove,
                  AsWeakPtr(), callback));
 }
 
-void CrossOperationDelegate::DidRemoveSourceForMove(
+void CopyOrMoveOperationDelegate::DidRemoveSourceForMove(
     const StatusCallback& callback,
     base::PlatformFileError error) {
   if (error == base::PLATFORM_FILE_ERROR_NOT_FOUND)
@@ -219,7 +219,7 @@ void CrossOperationDelegate::DidRemoveSourceForMove(
   callback.Run(error);
 }
 
-FileSystemURL CrossOperationDelegate::CreateDestURL(
+FileSystemURL CopyOrMoveOperationDelegate::CreateDestURL(
     const FileSystemURL& src_url) const {
   DCHECK_EQ(src_root_.type(), src_url.type());
   DCHECK_EQ(src_root_.origin(), src_url.origin());
@@ -233,11 +233,11 @@ FileSystemURL CrossOperationDelegate::CreateDestURL(
       relative);
 }
 
-LocalFileSystemOperation* CrossOperationDelegate::NewDestOperation() {
+LocalFileSystemOperation* CopyOrMoveOperationDelegate::NewDestOperation() {
   return NewNestedOperation();
 }
 
-LocalFileSystemOperation* CrossOperationDelegate::NewSourceOperation() {
+LocalFileSystemOperation* CopyOrMoveOperationDelegate::NewSourceOperation() {
   if (same_file_system_)
     return NewDestOperation();
   return src_root_operation_->CreateNestedOperation();

@@ -11,7 +11,7 @@
 #include "net/base/escape.h"
 #include "net/url_request/url_request_context.h"
 #include "webkit/browser/fileapi/async_file_util.h"
-#include "webkit/browser/fileapi/cross_operation_delegate.h"
+#include "webkit/browser/fileapi/copy_or_move_operation_delegate.h"
 #include "webkit/browser/fileapi/file_observers.h"
 #include "webkit/browser/fileapi/file_system_context.h"
 #include "webkit/browser/fileapi/file_system_file_util.h"
@@ -128,12 +128,12 @@ void LocalFileSystemOperation::Copy(const FileSystemURL& src_url,
 
   DCHECK(!recursive_operation_delegate_);
   recursive_operation_delegate_.reset(
-      new CrossOperationDelegate(
+      new CopyOrMoveOperationDelegate(
           file_system_context(),
           src_operation.Pass(),
           deleter.release(),
           src_url, dest_url,
-          CrossOperationDelegate::OPERATION_COPY,
+          CopyOrMoveOperationDelegate::OPERATION_COPY,
           base::Bind(&LocalFileSystemOperation::DidFinishDelegatedOperation,
                      base::Unretained(this), callback)));
   recursive_operation_delegate_->RunRecursively();
@@ -172,12 +172,12 @@ void LocalFileSystemOperation::Move(const FileSystemURL& src_url,
 
   DCHECK(!recursive_operation_delegate_);
   recursive_operation_delegate_.reset(
-      new CrossOperationDelegate(
+      new CopyOrMoveOperationDelegate(
           file_system_context(),
           src_operation.Pass(),
           deleter.release(),
           src_url, dest_url,
-          CrossOperationDelegate::OPERATION_MOVE,
+          CopyOrMoveOperationDelegate::OPERATION_MOVE,
           base::Bind(&LocalFileSystemOperation::DidFinishDelegatedOperation,
                      base::Unretained(this), callback)));
   recursive_operation_delegate_->RunRecursively();

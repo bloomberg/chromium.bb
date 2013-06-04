@@ -35,9 +35,9 @@ void ExpectOk(base::PlatformFileError error) {
 
 }  // namespace
 
-class CrossOperationTestHelper {
+class CopyOrMoveOperationTestHelper {
  public:
-  CrossOperationTestHelper(
+  CopyOrMoveOperationTestHelper(
       const GURL& origin,
       FileSystemType src_type,
       FileSystemType dest_type)
@@ -45,7 +45,7 @@ class CrossOperationTestHelper {
         src_type_(src_type),
         dest_type_(dest_type) {}
 
-  ~CrossOperationTestHelper() {
+  ~CopyOrMoveOperationTestHelper() {
     file_system_context_ = NULL;
     quota_manager_proxy_->SimulateQuotaManagerDestroyed();
     quota_manager_ = NULL;
@@ -232,13 +232,13 @@ class CrossOperationTestHelper {
   scoped_refptr<quota::MockQuotaManagerProxy> quota_manager_proxy_;
   scoped_refptr<quota::MockQuotaManager> quota_manager_;
 
-  DISALLOW_COPY_AND_ASSIGN(CrossOperationTestHelper);
+  DISALLOW_COPY_AND_ASSIGN(CopyOrMoveOperationTestHelper);
 };
 
-TEST(LocalFileSystemCrossOperationTest, CopySingleFile) {
-  CrossOperationTestHelper helper(GURL("http://foo"),
-                                  kFileSystemTypeTemporary,
-                                  kFileSystemTypePersistent);
+TEST(LocalFileSystemCopyOrMoveOperationTest, CopySingleFile) {
+  CopyOrMoveOperationTestHelper helper(GURL("http://foo"),
+                                       kFileSystemTypeTemporary,
+                                       kFileSystemTypePersistent);
   helper.SetUp();
 
   FileSystemURL src = helper.SourceURL("a");
@@ -264,10 +264,10 @@ TEST(LocalFileSystemCrossOperationTest, CopySingleFile) {
   ASSERT_EQ(src_increase, dest_increase);
 }
 
-TEST(LocalFileSystemCrossOperationTest, MoveSingleFile) {
-  CrossOperationTestHelper helper(GURL("http://foo"),
-                                  kFileSystemTypeTemporary,
-                                  kFileSystemTypePersistent);
+TEST(LocalFileSystemCopyOrMoveOperationTest, MoveSingleFile) {
+  CopyOrMoveOperationTestHelper helper(GURL("http://foo"),
+                                       kFileSystemTypeTemporary,
+                                       kFileSystemTypePersistent);
   helper.SetUp();
 
   FileSystemURL src = helper.SourceURL("a");
@@ -293,10 +293,10 @@ TEST(LocalFileSystemCrossOperationTest, MoveSingleFile) {
   ASSERT_EQ(src_increase, dest_increase);
 }
 
-TEST(LocalFileSystemCrossOperationTest, CopySingleDirectory) {
-  CrossOperationTestHelper helper(GURL("http://foo"),
-                                  kFileSystemTypeTemporary,
-                                  kFileSystemTypePersistent);
+TEST(LocalFileSystemCopyOrMoveOperationTest, CopySingleDirectory) {
+  CopyOrMoveOperationTestHelper helper(GURL("http://foo"),
+                                       kFileSystemTypeTemporary,
+                                       kFileSystemTypePersistent);
   helper.SetUp();
 
   FileSystemURL src = helper.SourceURL("a");
@@ -322,10 +322,10 @@ TEST(LocalFileSystemCrossOperationTest, CopySingleDirectory) {
   ASSERT_EQ(src_increase, dest_increase);
 }
 
-TEST(LocalFileSystemCrossOperationTest, MoveSingleDirectory) {
-  CrossOperationTestHelper helper(GURL("http://foo"),
-                                  kFileSystemTypeTemporary,
-                                  kFileSystemTypePersistent);
+TEST(LocalFileSystemCopyOrMoveOperationTest, MoveSingleDirectory) {
+  CopyOrMoveOperationTestHelper helper(GURL("http://foo"),
+                                       kFileSystemTypeTemporary,
+                                       kFileSystemTypePersistent);
   helper.SetUp();
 
   FileSystemURL src = helper.SourceURL("a");
@@ -351,10 +351,10 @@ TEST(LocalFileSystemCrossOperationTest, MoveSingleDirectory) {
   ASSERT_EQ(src_increase, dest_increase);
 }
 
-TEST(LocalFileSystemCrossOperationTest, CopyDirectory) {
-  CrossOperationTestHelper helper(GURL("http://foo"),
-                                  kFileSystemTypeTemporary,
-                                  kFileSystemTypePersistent);
+TEST(LocalFileSystemCopyOrMoveOperationTest, CopyDirectory) {
+  CopyOrMoveOperationTestHelper helper(GURL("http://foo"),
+                                       kFileSystemTypeTemporary,
+                                       kFileSystemTypePersistent);
   helper.SetUp();
 
   FileSystemURL src = helper.SourceURL("a");
@@ -388,10 +388,10 @@ TEST(LocalFileSystemCrossOperationTest, CopyDirectory) {
   ASSERT_EQ(src_increase, dest_increase);
 }
 
-TEST(LocalFileSystemCrossOperationTest, MoveDirectory) {
-  CrossOperationTestHelper helper(GURL("http://foo"),
-                                  kFileSystemTypeTemporary,
-                                  kFileSystemTypePersistent);
+TEST(LocalFileSystemCopyOrMoveOperationTest, MoveDirectory) {
+  CopyOrMoveOperationTestHelper helper(GURL("http://foo"),
+                                       kFileSystemTypeTemporary,
+                                       kFileSystemTypePersistent);
   helper.SetUp();
 
   FileSystemURL src = helper.SourceURL("a");
