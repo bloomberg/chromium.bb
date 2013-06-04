@@ -50,6 +50,8 @@ extern NPClass* npScriptObjectClass;
 // A V8NPObject is a NPObject which carries additional V8-specific information. It is allocated and deallocated by
 // AllocV8NPObject() and FreeV8NPObject() methods.
 struct V8NPObject {
+    WTF_MAKE_NONCOPYABLE(V8NPObject);
+public:
     NPObject object;
     v8::Persistent<v8::Object> v8Object;
     DOMWindow* rootObject;

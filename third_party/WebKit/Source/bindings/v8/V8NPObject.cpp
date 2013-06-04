@@ -414,21 +414,22 @@ v8::Local<v8::Object> createV8ObjectForNPObject(NPObject* object, NPObject* root
 
     ASSERT(v8::Context::InContext());
 
+    v8::Isolate* isolate = v8::Isolate::GetCurrent();
+
     // If this is a v8 object, just return it.
     if (object->_class == npScriptObjectClass) {
         V8NPObject* v8NPObject = reinterpret_cast<V8NPObject*>(object);
-        return v8::Local<v8::Object>::New(v8NPObject->v8Object);
+        return v8::Local<v8::Object>::New(isolate, v8NPObject->v8Object);
     }
 
     // If we've already wrapped this object, just return it.
     v8::Handle<v8::Object> wrapper = staticNPObjectMap().get(object);
     if (!wrapper.IsEmpty())
-        return v8::Local<v8::Object>::New(wrapper);
+        return v8::Local<v8::Object>::New(isolate, wrapper);
 
     // FIXME: we should create a Wrapper type as a subclass of JSObject. It has two internal fields, field 0 is the wrapped
     // pointer, and field 1 is the type. There should be an api function that returns unused type id. The same Wrapper type
     // can be used by DOM bindings.
-    v8::Isolate* isolate = v8::Isolate::GetCurrent();
     if (npObjectDesc.IsEmpty()) {
         npObjectDesc.Reset(isolate, v8::FunctionTemplate::New());
         npObjectDesc->InstanceTemplate()->SetInternalFieldCount(npObjectInternalFieldCount);

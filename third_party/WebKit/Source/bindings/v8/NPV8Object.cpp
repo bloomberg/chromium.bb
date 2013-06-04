@@ -76,11 +76,13 @@ static NPObject* allocV8NPObject(NPP, NPClass*)
 static void freeV8NPObject(NPObject* npObject)
 {
     V8NPObject* v8NpObject = reinterpret_cast<V8NPObject*>(npObject);
-    v8::HandleScope scope;
-    ASSERT(!v8NpObject->v8Object->CreationContext().IsEmpty());
-    if (V8PerContextData* perContextData = V8PerContextData::from(v8NpObject->v8Object->CreationContext())) {
+    v8::Isolate* isolate = v8::Isolate::GetCurrent();
+    v8::HandleScope scope(isolate);
+    v8::Handle<v8::Object> v8Object = v8::Local<v8::Object>::New(isolate, v8NpObject->v8Object);
+    ASSERT(!v8Object->CreationContext().IsEmpty());
+    if (V8PerContextData* perContextData = V8PerContextData::from(v8Object->CreationContext())) {
         V8NPObjectMap* v8NPObjectMap = perContextData->v8NPObjectMap();
-        int v8ObjectHash = v8NpObject->v8Object->GetIdentityHash();
+        int v8ObjectHash = v8Object->GetIdentityHash();
         ASSERT(v8ObjectHash);
         V8NPObjectMap::iterator iter = v8NPObjectMap->find(v8ObjectHash);
         if (iter != v8NPObjectMap->end()) {
@@ -95,7 +97,7 @@ static void freeV8NPObject(NPObject* npObject)
                 v8NPObjectMap->remove(v8ObjectHash);
         }
     }
-    v8NpObject->v8Object.Dispose(v8::Isolate::GetCurrent());
+    v8NpObject->v8Object.Dispose();
     v8NpObject->v8Object.Clear();
     free(v8NpObject);
 }
@@ -212,7 +214,7 @@ bool _NPN_Invoke(NPP npp, NPObject* npObject, NPIdentifier methodName, const NPV
         return _NPN_Evaluate(npp, npObject, const_cast<NPString*>(&arguments[0].value.stringValue), result);
     }
 
-    v8::HandleScope handleScope;
+    v8::HandleScope handleScope(isolate);
     // FIXME: should use the plugin's owner frame as the security context.
     v8::Handle<v8::Context> context = toV8Context(npp, npObject);
     if (context.IsEmpty())
@@ -221,7 +223,8 @@ bool _NPN_Invoke(NPP npp, NPObject* npObject, NPIdentifier methodName, const NPV
     v8::Context::Scope scope(context);
     ExceptionCatcher exceptionCatcher;
 
-    v8::Handle<v8::Value> functionObject = v8NpObject->v8Object->Get(v8::String::NewSymbol(identifier->value.string));
+    v8::Handle<v8::Object> v8Object = v8::Local<v8::Object>::New(isolate, v8NpObject->v8Object);
+    v8::Handle<v8::Value> functionObject = v8Object->Get(v8::String::NewSymbol(identifier->value.string));
     if (functionObject.IsEmpty() || functionObject->IsNull()) {
         NULL_TO_NPVARIANT(*result);
         return false;
@@ -237,7 +240,7 @@ bool _NPN_Invoke(NPP npp, NPObject* npObject, NPIdentifier methodName, const NPV
     // Call the function object.
     v8::Handle<v8::Function> function = v8::Handle<v8::Function>::Cast(functionObject);
     OwnArrayPtr<v8::Handle<v8::Value> > argv = createValueListFromVariantArgs(arguments, argumentCount, npObject, isolate);
-    v8::Local<v8::Value> resultObject = frame->script()->callFunction(function, v8NpObject->v8Object, argumentCount, argv.get());
+    v8::Local<v8::Value> resultObject = frame->script()->callFunction(function, v8Object, argumentCount, argv.get());
 
     // If we had an error, return false.  The spec is a little unclear here, but says "Returns true if the method was
     // successfully invoked".  If we get an error return value, was that successfully invoked?
@@ -358,7 +361,8 @@ bool _NPN_GetProperty(NPP npp, NPObject* npObject, NPIdentifier propertyName, NP
     if (npObject->_class == npScriptObjectClass) {
         V8NPObject* object = reinterpret_cast<V8NPObject*>(npObject);
 
-        v8::HandleScope handleScope;
+        v8::Isolate* isolate = v8::Isolate::GetCurrent();
+        v8::HandleScope handleScope(isolate);
         v8::Handle<v8::Context> context = toV8Context(npp, npObject);
         if (context.IsEmpty())
             return false;
@@ -366,7 +370,7 @@ bool _NPN_GetProperty(NPP npp, NPObject* npObject, NPIdentifier propertyName, NP
         v8::Context::Scope scope(context);
         ExceptionCatcher exceptionCatcher;
 
-        v8::Handle<v8::Object> obj(object->v8Object);
+        v8::Handle<v8::Object> obj = v8::Local<v8::Object>::New(isolate, object->v8Object);
         v8::Local<v8::Value> v8result = obj->Get(npIdentifierToV8Identifier(propertyName));
         
         if (v8result.IsEmpty())
@@ -393,7 +397,8 @@ bool _NPN_SetProperty(NPP npp, NPObject* npObject, NPIdentifier propertyName, co
     if (npObject->_class == npScriptObjectClass) {
         V8NPObject* object = reinterpret_cast<V8NPObject*>(npObject);
 
-        v8::HandleScope handleScope;
+        v8::Isolate* isolate = v8::Isolate::GetCurrent();
+        v8::HandleScope handleScope(isolate);
         v8::Handle<v8::Context> context = toV8Context(npp, npObject);
         if (context.IsEmpty())
             return false;
@@ -401,7 +406,7 @@ bool _NPN_SetProperty(NPP npp, NPObject* npObject, NPIdentifier propertyName, co
         v8::Context::Scope scope(context);
         ExceptionCatcher exceptionCatcher;
 
-        v8::Handle<v8::Object> obj(object->v8Object);
+        v8::Handle<v8::Object> obj = v8::Local<v8::Object>::New(isolate, object->v8Object);
         obj->Set(npIdentifierToV8Identifier(propertyName), convertNPVariantToV8Object(value, object->rootObject->frame()->script()->windowScriptNPObject(), context->GetIsolate()));
         return true;
     }
@@ -421,14 +426,15 @@ bool _NPN_RemoveProperty(NPP npp, NPObject* npObject, NPIdentifier propertyName)
 
     V8NPObject* object = reinterpret_cast<V8NPObject*>(npObject);
 
-    v8::HandleScope handleScope;
+    v8::Isolate* isolate = v8::Isolate::GetCurrent();
+    v8::HandleScope handleScope(isolate);
     v8::Handle<v8::Context> context = toV8Context(npp, npObject);
     if (context.IsEmpty())
         return false;
     v8::Context::Scope scope(context);
     ExceptionCatcher exceptionCatcher;
 
-    v8::Handle<v8::Object> obj(object->v8Object);
+    v8::Handle<v8::Object> obj = v8::Local<v8::Object>::New(isolate, object->v8Object);
     // FIXME: Verify that setting to undefined is right.
     obj->Set(npIdentifierToV8Identifier(propertyName), v8::Undefined());
     return true;
@@ -442,14 +448,15 @@ bool _NPN_HasProperty(NPP npp, NPObject* npObject, NPIdentifier propertyName)
     if (npObject->_class == npScriptObjectClass) {
         V8NPObject* object = reinterpret_cast<V8NPObject*>(npObject);
 
-        v8::HandleScope handleScope;
+        v8::Isolate* isolate = v8::Isolate::GetCurrent();
+        v8::HandleScope handleScope(isolate);
         v8::Handle<v8::Context> context = toV8Context(npp, npObject);
         if (context.IsEmpty())
             return false;
         v8::Context::Scope scope(context);
         ExceptionCatcher exceptionCatcher;
 
-        v8::Handle<v8::Object> obj(object->v8Object);
+        v8::Handle<v8::Object> obj = v8::Local<v8::Object>::New(isolate, object->v8Object);
         return obj->Has(npIdentifierToV8Identifier(propertyName));
     }
 
@@ -466,14 +473,15 @@ bool _NPN_HasMethod(NPP npp, NPObject* npObject, NPIdentifier methodName)
     if (npObject->_class == npScriptObjectClass) {
         V8NPObject* object = reinterpret_cast<V8NPObject*>(npObject);
 
-        v8::HandleScope handleScope;
+        v8::Isolate* isolate = v8::Isolate::GetCurrent();
+        v8::HandleScope handleScope(isolate);
         v8::Handle<v8::Context> context = toV8Context(npp, npObject);
         if (context.IsEmpty())
             return false;
         v8::Context::Scope scope(context);
         ExceptionCatcher exceptionCatcher;
 
-        v8::Handle<v8::Object> obj(object->v8Object);
+        v8::Handle<v8::Object> obj = v8::Local<v8::Object>::New(isolate, object->v8Object);
         v8::Handle<v8::Value> prop = obj->Get(npIdentifierToV8Identifier(methodName));
         return prop->IsFunction();
     }
@@ -510,14 +518,15 @@ bool _NPN_Enumerate(NPP npp, NPObject* npObject, NPIdentifier** identifier, uint
     if (npObject->_class == npScriptObjectClass) {
         V8NPObject* object = reinterpret_cast<V8NPObject*>(npObject);
 
-        v8::HandleScope handleScope;
+        v8::Isolate* isolate = v8::Isolate::GetCurrent();
+        v8::HandleScope handleScope(isolate);
         v8::Local<v8::Context> context = toV8Context(npp, npObject);
         if (context.IsEmpty())
             return false;
         v8::Context::Scope scope(context);
         ExceptionCatcher exceptionCatcher;
 
-        v8::Handle<v8::Object> obj(object->v8Object);
+        v8::Handle<v8::Object> obj = v8::Local<v8::Object>::New(isolate, object->v8Object);
 
         // FIXME: http://b/issue?id=1210340: Use a v8::Object::Keys() method when it exists, instead of evaluating javascript.
 
@@ -568,7 +577,7 @@ bool _NPN_Construct(NPP npp, NPObject* npObject, const NPVariant* arguments, uin
     if (npObject->_class == npScriptObjectClass) {
         V8NPObject* object = reinterpret_cast<V8NPObject*>(npObject);
 
-        v8::HandleScope handleScope;
+        v8::HandleScope handleScope(isolate);
         v8::Handle<v8::Context> context = toV8Context(npp, npObject);
         if (context.IsEmpty())
             return false;
@@ -576,7 +585,7 @@ bool _NPN_Construct(NPP npp, NPObject* npObject, const NPVariant* arguments, uin
         ExceptionCatcher exceptionCatcher;
 
         // Lookup the constructor function.
-        v8::Handle<v8::Object> ctorObj(object->v8Object);
+        v8::Handle<v8::Object> ctorObj = v8::Local<v8::Object>::New(isolate, object->v8Object);
         if (!ctorObj->IsFunction())
             return false;
 
