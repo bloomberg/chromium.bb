@@ -42,7 +42,6 @@
 #include "chrome/browser/chromeos/mobile_config.h"
 #include "chrome/browser/chromeos/policy/auto_enrollment_client.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
-#include "chrome/browser/chromeos/system/input_device_settings.h"
 #include "chrome/browser/chromeos/system/statistics_provider.h"
 #include "chrome/browser/chromeos/system/timezone_settings.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
@@ -848,13 +847,6 @@ void ShowLoginWizard(const std::string& first_screen_name) {
           manager->GetInputMethodUtil()->GetHardwareInputMethodId();
     }
     manager->EnableLayouts(locale, initial_input_method_id);
-
-    // Apply owner preferences for tap-to-click and mouse buttons swap for
-    // login screen.
-    system::mouse_settings::SetPrimaryButtonRight(
-        prefs->GetBoolean(prefs::kOwnerPrimaryMouseButtonRight));
-    system::touchpad_settings::SetTapToClick(
-        prefs->GetBoolean(prefs::kOwnerTapToClickEnabled));
   }
 
   ui::SetNaturalScroll(CommandLine::ForCurrentProcess()->HasSwitch(
