@@ -279,17 +279,26 @@ void ScriptProfiler::visitNodeWrappers(WrappedNodeVisitor* visitor)
         {
         }
 
+#ifdef V8_USE_OLD_STYLE_PERSISTENT_HANDLE_VISITORS
         virtual void VisitPersistentHandle(v8::Persistent<v8::Value> value, uint16_t classId) OVERRIDE
+        {
+            VisitPersistentHandle(&value, classId);
+        }
+
+        virtual void VisitPersistentHandle(v8::Persistent<v8::Value>* value, uint16_t classId)
+#else
+        virtual void VisitPersistentHandle(v8::Persistent<v8::Value>* value, uint16_t classId) OVERRIDE
+#endif
         {
             if (classId != v8DOMNodeClassId)
                 return;
             UNUSED_PARAM(m_isolate);
-            ASSERT(V8Node::HasInstance(value, m_isolate, worldType(m_isolate)));
-            ASSERT(value->IsObject());
+            ASSERT(V8Node::HasInstance(*value, m_isolate, worldType(m_isolate)));
+            ASSERT((*value)->IsObject());
 #ifdef V8_USE_UNSAFE_HANDLES
-            v8::Persistent<v8::Object> wrapper = v8::Persistent<v8::Object>::Cast(value);
+            v8::Persistent<v8::Object> wrapper = v8::Persistent<v8::Object>::Cast(*value);
 #else
-            v8::Persistent<v8::Object>& wrapper = v8::Persistent<v8::Object>::Cast(value);
+            v8::Persistent<v8::Object>& wrapper = v8::Persistent<v8::Object>::Cast(*value);
 #endif
             m_visitor->visitNode(V8Node::toNative(wrapper));
         }
@@ -316,15 +325,24 @@ void ScriptProfiler::visitExternalArrays(ExternalArrayVisitor* visitor)
         {
         }
 
+#ifdef V8_USE_OLD_STYLE_PERSISTENT_HANDLE_VISITORS
         virtual void VisitPersistentHandle(v8::Persistent<v8::Value> value, uint16_t classId) OVERRIDE
+        {
+            VisitPersistentHandle(&value, classId);
+        }
+
+        virtual void VisitPersistentHandle(v8::Persistent<v8::Value>* value, uint16_t classId)
+#else
+        virtual void VisitPersistentHandle(v8::Persistent<v8::Value>* value, uint16_t classId) OVERRIDE
+#endif
         {
             if (classId != v8DOMObjectClassId)
                 return;
-            ASSERT(value->IsObject());
+            ASSERT((*value)->IsObject());
 #ifdef V8_USE_UNSAFE_HANDLES
-            v8::Persistent<v8::Object> wrapper = v8::Persistent<v8::Object>::Cast(value);
+            v8::Persistent<v8::Object> wrapper = v8::Persistent<v8::Object>::Cast(*value);
 #else
-            v8::Persistent<v8::Object>& wrapper = v8::Persistent<v8::Object>::Cast(value);
+            v8::Persistent<v8::Object>& wrapper = v8::Persistent<v8::Object>::Cast(*value);
 #endif
             if (!toWrapperTypeInfo(wrapper)->isSubclass(&V8ArrayBufferView::info))
                 return;
