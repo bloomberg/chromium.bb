@@ -124,17 +124,19 @@ TEST_F(ExceptionHandlerDeathTest, InProcTest) {
   // the semantics of the exception handler being inherited/not
   // inherited across CreateProcess().
   ASSERT_TRUE(DoesPathExist(temp_path_));
-  google_breakpad::ExceptionHandler *exc =
-    new google_breakpad::ExceptionHandler(
-    temp_path_, NULL, &MinidumpWrittenCallback, NULL,
-    google_breakpad::ExceptionHandler::HANDLER_ALL);
+  scoped_ptr<google_breakpad::ExceptionHandler> exc(
+      new google_breakpad::ExceptionHandler(
+          temp_path_,
+          NULL,
+          &MinidumpWrittenCallback,
+          NULL,
+          google_breakpad::ExceptionHandler::HANDLER_ALL));
 
   // Disable GTest SEH handler
   testing::DisableExceptionHandlerInScope disable_exception_handler;
 
   int *i = NULL;
   ASSERT_DEATH((*i)++, kSuccessIndicator);
-  delete exc;
 }
 
 static bool gDumpCallbackCalled = false;
@@ -147,26 +149,24 @@ void clientDumpCallback(void *dump_context,
 
 void ExceptionHandlerDeathTest::DoCrashAccessViolation(
     const OutOfProcGuarantee out_of_proc_guarantee) {
-  google_breakpad::ExceptionHandler *exc = NULL;
+  scoped_ptr<google_breakpad::ExceptionHandler> exc;
 
   if (out_of_proc_guarantee == OUT_OF_PROC_GUARANTEED) {
-    google_breakpad::CrashGenerationClient *client = 
+    google_breakpad::CrashGenerationClient *client =
         new google_breakpad::CrashGenerationClient(kPipeName,
                                                    MiniDumpNormal,
                                                    NULL);  // custom_info
     ASSERT_TRUE(client->Register());
-    exc = new google_breakpad::ExceptionHandler(
+    exc.reset(new google_breakpad::ExceptionHandler(
         temp_path_,
         NULL,   // filter
         NULL,   // callback
         NULL,   // callback_context
         google_breakpad::ExceptionHandler::HANDLER_ALL,
-        MiniDumpNormal,
-        client,
-        NULL);  // custom_info
+        client));
   } else {
     ASSERT_TRUE(out_of_proc_guarantee == OUT_OF_PROC_BEST_EFFORT);
-    exc = new google_breakpad::ExceptionHandler(
+    exc.reset(new google_breakpad::ExceptionHandler(
         temp_path_,
         NULL,   // filter
         NULL,   // callback
@@ -174,7 +174,7 @@ void ExceptionHandlerDeathTest::DoCrashAccessViolation(
         google_breakpad::ExceptionHandler::HANDLER_ALL,
         MiniDumpNormal,
         kPipeName,
-        NULL);  // custom_info
+        NULL));  // custom_info
   }
 
   // Disable GTest SEH handler
@@ -302,17 +302,20 @@ wstring find_minidump_in_directory(const wstring &directory) {
       filename = directory + L"\\" + find_data.cFileName;
       break;
     }
-  } while(FindNextFile(find_handle, &find_data));
+  } while (FindNextFile(find_handle, &find_data));
   FindClose(find_handle);
   return filename;
 }
 
 TEST_F(ExceptionHandlerDeathTest, InstructionPointerMemory) {
   ASSERT_TRUE(DoesPathExist(temp_path_));
-  google_breakpad::ExceptionHandler *exc =
+  scoped_ptr<google_breakpad::ExceptionHandler> exc(
       new google_breakpad::ExceptionHandler(
-          temp_path_, NULL, NULL, NULL,
-          google_breakpad::ExceptionHandler::HANDLER_ALL);
+          temp_path_,
+          NULL,
+          NULL,
+          NULL,
+          google_breakpad::ExceptionHandler::HANDLER_ALL));
 
   // Disable GTest SEH handler
   testing::DisableExceptionHandlerInScope disable_exception_handler;
@@ -333,7 +336,7 @@ TEST_F(ExceptionHandlerDeathTest, InstructionPointerMemory) {
   // minidump should contain 128 bytes on either side of the
   // instruction pointer.
   memcpy(memory + kOffset, instructions, sizeof(instructions));
-  
+
   // Now execute the instructions, which should crash.
   typedef void (*void_function)(void);
   void_function memory_function =
@@ -382,11 +385,10 @@ TEST_F(ExceptionHandlerDeathTest, InstructionPointerMemory) {
     uint8_t suffix_bytes[kMemorySize - kOffset - sizeof(instructions)];
     memset(prefix_bytes, 0, sizeof(prefix_bytes));
     memset(suffix_bytes, 0, sizeof(suffix_bytes));
-    EXPECT_TRUE(memcmp(bytes, prefix_bytes, sizeof(prefix_bytes)) == 0);
-    EXPECT_TRUE(memcmp(bytes + kOffset, instructions,
-                       sizeof(instructions)) == 0);
-    EXPECT_TRUE(memcmp(bytes + kOffset + sizeof(instructions),
-                       suffix_bytes, sizeof(suffix_bytes)) == 0);
+    EXPECT_EQ(0, memcmp(bytes, prefix_bytes, sizeof(prefix_bytes)));
+    EXPECT_EQ(0, memcmp(bytes + kOffset, instructions, sizeof(instructions)));
+    EXPECT_EQ(0, memcmp(bytes + kOffset + sizeof(instructions),
+                        suffix_bytes, sizeof(suffix_bytes)));
   }
 
   DeleteFileW(minidump_filename_wide.c_str());
@@ -394,10 +396,13 @@ TEST_F(ExceptionHandlerDeathTest, InstructionPointerMemory) {
 
 TEST_F(ExceptionHandlerDeathTest, InstructionPointerMemoryMinBound) {
   ASSERT_TRUE(DoesPathExist(temp_path_));
-  google_breakpad::ExceptionHandler *exc =
+  scoped_ptr<google_breakpad::ExceptionHandler> exc(
       new google_breakpad::ExceptionHandler(
-          temp_path_, NULL, NULL, NULL,
-          google_breakpad::ExceptionHandler::HANDLER_ALL);
+          temp_path_,
+          NULL,
+          NULL,
+          NULL,
+          google_breakpad::ExceptionHandler::HANDLER_ALL));
 
   // Disable GTest SEH handler
   testing::DisableExceptionHandlerInScope disable_exception_handler;
@@ -426,7 +431,7 @@ TEST_F(ExceptionHandlerDeathTest, InstructionPointerMemoryMinBound) {
   // minidump should contain 128 bytes on either side of the
   // instruction pointer.
   memcpy(memory + kOffset, instructions, sizeof(instructions));
-  
+
   // Now execute the instructions, which should crash.
   typedef void (*void_function)(void);
   void_function memory_function =
@@ -484,10 +489,13 @@ TEST_F(ExceptionHandlerDeathTest, InstructionPointerMemoryMinBound) {
 
 TEST_F(ExceptionHandlerDeathTest, InstructionPointerMemoryMaxBound) {
   ASSERT_TRUE(DoesPathExist(temp_path_));
-  google_breakpad::ExceptionHandler *exc =
+  scoped_ptr<google_breakpad::ExceptionHandler> exc(
       new google_breakpad::ExceptionHandler(
-          temp_path_, NULL, NULL, NULL,
-          google_breakpad::ExceptionHandler::HANDLER_ALL);
+          temp_path_,
+          NULL,
+          NULL,
+          NULL,
+          google_breakpad::ExceptionHandler::HANDLER_ALL));
 
   // Disable GTest SEH handler
   testing::DisableExceptionHandlerInScope disable_exception_handler;
@@ -511,7 +519,7 @@ TEST_F(ExceptionHandlerDeathTest, InstructionPointerMemoryMaxBound) {
 
   // Write some instructions that will crash.
   memcpy(memory + kOffset, instructions, sizeof(instructions));
-  
+
   // Now execute the instructions, which should crash.
   typedef void (*void_function)(void);
   void_function memory_function =
@@ -559,9 +567,9 @@ TEST_F(ExceptionHandlerDeathTest, InstructionPointerMemoryMaxBound) {
 
     uint8_t prefix_bytes[kPrefixSize];
     memset(prefix_bytes, 0, sizeof(prefix_bytes));
-    EXPECT_TRUE(memcmp(bytes, prefix_bytes, sizeof(prefix_bytes)) == 0);
-    EXPECT_TRUE(memcmp(bytes + kPrefixSize,
-                       instructions, sizeof(instructions)) == 0);
+    EXPECT_EQ(0, memcmp(bytes, prefix_bytes, sizeof(prefix_bytes)));
+    EXPECT_EQ(0, memcmp(bytes + kPrefixSize,
+                        instructions, sizeof(instructions)));
   }
 
   DeleteFileW(minidump_filename_wide.c_str());

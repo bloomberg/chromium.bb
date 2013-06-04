@@ -507,7 +507,7 @@
             'msvs_disabled_warnings': [4800],
             'msvs_settings': {
               'VCCLCompilerTool': {
-                'WarnAsError': 'false',
+                'WarnAsError': 'true',
                 'Detect64BitPortabilityProblems': 'false',
               },
             },
@@ -1174,7 +1174,7 @@
           '$(VSInstallDir)/VC/atlmfc/include',
         ],
         'msvs_cygwin_dirs': ['<(DEPTH)/third_party/cygwin'],
-        'msvs_disabled_warnings': [4396, 4503, 4819],
+        'msvs_disabled_warnings': [4100, 4127, 4396, 4503, 4512, 4819, 4995],
         'msvs_settings': {
           'VCCLCompilerTool': {
             'MinimalRebuild': 'false',
@@ -1182,7 +1182,7 @@
             'BufferSecurityCheck': 'true',
             'EnableFunctionLevelLinking': 'true',
             'RuntimeTypeInfo': 'false',
-            'WarningLevel': '3',
+            'WarningLevel': '4',
             'WarnAsError': 'true',
             'DebugInformationFormat': '3',
             'conditions': [

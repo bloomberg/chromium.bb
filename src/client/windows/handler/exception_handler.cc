@@ -96,7 +96,7 @@ ExceptionHandler::ExceptionHandler(const wstring& dump_path,
              pipe_handle,
              NULL,  // crash_generation_client
              custom_info);
-}  
+}
 
 ExceptionHandler::ExceptionHandler(
     const wstring& dump_path,
@@ -104,19 +104,19 @@ ExceptionHandler::ExceptionHandler(
     MinidumpCallback callback,
     void* callback_context,
     int handler_types,
-    MINIDUMP_TYPE dump_type,
-    CrashGenerationClient* crash_generation_client,
-    const CustomClientInfo* custom_info) {
+    CrashGenerationClient* crash_generation_client) {
+  // The dump_type, pipe_name and custom_info that are passed in to Initialize()
+  // are not used.  The ones set in crash_generation_client are used instead.
   Initialize(dump_path,
              filter,
              callback,
              callback_context,
              handler_types,
-             MiniDumpNormal,
-             NULL,  // pipe_name
-             NULL,  // pipe_handle
+             MiniDumpNormal,           // dump_type - not used
+             NULL,                     // pipe_name - not used
+             NULL,                     // pipe_handle
              crash_generation_client,
-             custom_info);
+             NULL);                    // custom_info - not used
 }
 
 ExceptionHandler::ExceptionHandler(const wstring &dump_path,
@@ -875,7 +875,7 @@ BOOL CALLBACK ExceptionHandler::MinidumpWriteDumpCallback(
     callback_context->iter++;
     return TRUE;
   }
-    
+
     // Include all modules.
   case IncludeModuleCallback:
   case ModuleCallback:

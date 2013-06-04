@@ -61,9 +61,9 @@
 #include <DbgHelp.h>
 #include <rpc.h>
 
-#pragma warning( push )
+#pragma warning(push)
 // Disable exception handler warnings.
-#pragma warning( disable : 4530 )
+#pragma warning(disable:4530)
 
 #include <list>
 #include <string>
@@ -212,9 +212,7 @@ class ExceptionHandler {
                    MinidumpCallback callback,
                    void* callback_context,
                    int handler_types,
-                   MINIDUMP_TYPE dump_type,
-                   CrashGenerationClient* crash_generation_client,
-                   const CustomClientInfo* custom_info);
+                   CrashGenerationClient* crash_generation_client);
 
   ~ExceptionHandler();
 
@@ -497,7 +495,7 @@ class ExceptionHandler {
   static CRITICAL_SECTION handler_stack_critical_section_;
 
   // The number of instances of this class.
-  volatile static LONG instance_count_;
+  static volatile LONG instance_count_;
 
   // disallow copy ctor and operator=
   explicit ExceptionHandler(const ExceptionHandler &);
@@ -506,6 +504,6 @@ class ExceptionHandler {
 
 }  // namespace google_breakpad
 
-#pragma warning( pop )
+#pragma warning(pop)
 
 #endif  // CLIENT_WINDOWS_HANDLER_EXCEPTION_HANDLER_H__

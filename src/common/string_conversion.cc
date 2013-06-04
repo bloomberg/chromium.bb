@@ -140,7 +140,7 @@ string UTF16ToUTF8(const vector<uint16_t> &in, bool swap) {
   scoped_array<UTF8> target_buffer(new UTF8[target_capacity]);
   UTF8 *target_ptr = target_buffer.get();
   UTF8 *target_end_ptr = target_ptr + target_capacity;
-  ConversionResult result = ConvertUTF16toUTF8(&source_ptr, source_end_ptr, 
+  ConversionResult result = ConvertUTF16toUTF8(&source_ptr, source_end_ptr,
                                                &target_ptr, target_end_ptr,
                                                strictConversion);
 

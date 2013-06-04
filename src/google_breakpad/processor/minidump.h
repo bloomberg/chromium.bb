@@ -477,7 +477,7 @@ class MinidumpModule : public MinidumpObject,
   // True after a successful Read.  This is different from valid_, which is
   // not set true until ReadAuxiliaryData also completes successfully.
   // module_valid_ is only used by ReadAuxiliaryData and the functions it
-  // calls to determine whether the object is ready for auxiliary data to 
+  // calls to determine whether the object is ready for auxiliary data to
   // be read.
   bool              module_valid_;
 
@@ -821,7 +821,7 @@ class MinidumpMemoryInfo : public MinidumpObject {
   uint64_t GetBase() const { return valid_ ? memory_info_.base_address : 0; }
 
   // The size, in bytes, of the memory region.
-  uint32_t GetSize() const { return valid_ ? memory_info_.region_size : 0; }
+  uint64_t GetSize() const { return valid_ ? memory_info_.region_size : 0; }
 
   // Return true if the memory protection allows execution.
   bool IsExecutable() const;

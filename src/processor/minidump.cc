@@ -65,8 +65,6 @@
 #include "processor/basic_code_modules.h"
 #include "processor/logging.h"
 
-
-
 namespace google_breakpad {
 
 
@@ -226,19 +224,19 @@ static string* UTF16ToUTF8(const vector<uint16_t>& in,
     // Convert the Unicode code point (unichar) into its UTF-8 representation,
     // appending it to the out string.
     if (unichar < 0x80) {
-      (*out) += unichar;
+      (*out) += static_cast<char>(unichar);
     } else if (unichar < 0x800) {
-      (*out) += 0xc0 | (unichar >> 6);
-      (*out) += 0x80 | (unichar & 0x3f);
+      (*out) += 0xc0 | static_cast<char>(unichar >> 6);
+      (*out) += 0x80 | static_cast<char>(unichar & 0x3f);
     } else if (unichar < 0x10000) {
-      (*out) += 0xe0 | (unichar >> 12);
-      (*out) += 0x80 | ((unichar >> 6) & 0x3f);
-      (*out) += 0x80 | (unichar & 0x3f);
+      (*out) += 0xe0 | static_cast<char>(unichar >> 12);
+      (*out) += 0x80 | static_cast<char>((unichar >> 6) & 0x3f);
+      (*out) += 0x80 | static_cast<char>(unichar & 0x3f);
     } else if (unichar < 0x200000) {
-      (*out) += 0xf0 | (unichar >> 18);
-      (*out) += 0x80 | ((unichar >> 12) & 0x3f);
-      (*out) += 0x80 | ((unichar >> 6) & 0x3f);
-      (*out) += 0x80 | (unichar & 0x3f);
+      (*out) += 0xf0 | static_cast<char>(unichar >> 18);
+      (*out) += 0x80 | static_cast<char>((unichar >> 12) & 0x3f);
+      (*out) += 0x80 | static_cast<char>((unichar >> 6) & 0x3f);
+      (*out) += 0x80 | static_cast<char>(unichar & 0x3f);
     } else {
       BPLOG(ERROR) << "UTF16ToUTF8 cannot represent high value " <<
                       HexString(unichar) << " in UTF-8";
@@ -329,7 +327,7 @@ bool MinidumpContext::Read(uint32_t expected_size) {
     }
 
     if (cpu_type != MD_CONTEXT_AMD64) {
-      //TODO: fall through to switch below?
+      // TODO: fall through to switch below?
       // need a Tell method to be able to SeekSet back to beginning
       // http://code.google.com/p/google-breakpad/issues/detail?id=224
       BPLOG(ERROR) << "MinidumpContext not actually amd64 context";
@@ -388,7 +386,7 @@ bool MinidumpContext::Read(uint32_t expected_size) {
       Swap(&context_amd64->r14);
       Swap(&context_amd64->r15);
       Swap(&context_amd64->rip);
-      //FIXME: I'm not sure what actually determines
+      // FIXME: I'm not sure what actually determines
       // which member of the union {flt_save, sse_registers}
       // is valid.  We're not currently using either,
       // but it would be good to have them swapped properly.
@@ -408,10 +406,9 @@ bool MinidumpContext::Read(uint32_t expected_size) {
     context_flags_ = context_amd64->context_flags;
 
     context_.amd64 = context_amd64.release();
-  }
-  // |context_flags| of MDRawContextPPC64 is 64 bits, but other MDRawContext
-  // in the else case have 32 bits |context_flags|, so special case it here.
-  else if (expected_size == sizeof(MDRawContextPPC64)) {
+  } else if (expected_size == sizeof(MDRawContextPPC64)) {
+    // |context_flags| of MDRawContextPPC64 is 64 bits, but other MDRawContext
+    // in the else case have 32 bits |context_flags|, so special case it here.
     uint64_t context_flags;
     if (!minidump_->ReadBytes(&context_flags, sizeof(context_flags))) {
       BPLOG(ERROR) << "MinidumpContext could not read context flags";
@@ -421,8 +418,8 @@ bool MinidumpContext::Read(uint32_t expected_size) {
       Swap(&context_flags);
 
     uint32_t cpu_type = context_flags & MD_CONTEXT_CPU_MASK;
-
     scoped_ptr<MDRawContextPPC64> context_ppc64(new MDRawContextPPC64());
+
 
     // Set the context_flags member, which has already been read, and
     // read the rest of the structure beginning with the first member
@@ -477,11 +474,18 @@ bool MinidumpContext::Read(uint32_t expected_size) {
       Swap(&context_ppc64->vector_save.save_vrvalid);
     }
 
-    context_flags_ = context_ppc64->context_flags;
-    context_.ppc64 = context_ppc64.release();
-  }
+    context_flags_ = static_cast<uint32_t>(context_ppc64->context_flags);
 
-  else {
+    // Check for data loss when converting context flags from uint64_t into
+    // uint32_t
+    if (static_cast<uint64_t>(context_flags_) !=
+        context_ppc64->context_flags) {
+      BPLOG(ERROR) << "Data loss detected when converting PPC64 context_flags";
+      return false;
+    }
+
+    context_.ppc64 = context_ppc64.release();
+  } else {
     uint32_t context_flags;
     if (!minidump_->ReadBytes(&context_flags, sizeof(context_flags))) {
       BPLOG(ERROR) << "MinidumpContext could not read context flags";
@@ -1205,7 +1209,7 @@ void MinidumpContext::Print() {
       printf("  r14           = 0x%" PRIx64 "\n", context_amd64->r14);
       printf("  r15           = 0x%" PRIx64 "\n", context_amd64->r15);
       printf("  rip           = 0x%" PRIx64 "\n", context_amd64->rip);
-      //TODO: print xmm, vector, debug registers
+      // TODO: print xmm, vector, debug registers
       printf("\n");
       break;
     }
@@ -1673,7 +1677,8 @@ bool MinidumpThreadList::Read(uint32_t expected_size) {
                          thread_count * sizeof(MDRawThread)) {
       uint32_t useless;
       if (!minidump_->ReadBytes(&useless, 4)) {
-        BPLOG(ERROR) << "MinidumpThreadList cannot read threadlist padded bytes";
+        BPLOG(ERROR) << "MinidumpThreadList cannot read threadlist padded "
+                        "bytes";
         return false;
       }
     } else {
@@ -1950,7 +1955,7 @@ string MinidumpModule::code_identifier() const {
     case MD_OS_IOS:
     case MD_OS_SOLARIS:
     case MD_OS_ANDROID:
-    case MD_OS_LINUX: 
+    case MD_OS_LINUX:
     case MD_OS_PS3: {
       // TODO(mmentovai): support uuid extension if present, otherwise fall
       // back to version (from LC_ID_DYLIB?), otherwise fall back to something
@@ -2560,7 +2565,8 @@ bool MinidumpModuleList::Read(uint32_t expected_size) {
                          module_count * MD_MODULE_SIZE) {
       uint32_t useless;
       if (!minidump_->ReadBytes(&useless, 4)) {
-        BPLOG(ERROR) << "MinidumpModuleList cannot read modulelist padded bytes";
+        BPLOG(ERROR) << "MinidumpModuleList cannot read modulelist padded "
+                        "bytes";
         return false;
       }
     } else {
@@ -2806,12 +2812,13 @@ bool MinidumpMemoryList::Read(uint32_t expected_size) {
                          region_count * sizeof(MDMemoryDescriptor)) {
       uint32_t useless;
       if (!minidump_->ReadBytes(&useless, 4)) {
-        BPLOG(ERROR) << "MinidumpMemoryList cannot read memorylist padded bytes";
+        BPLOG(ERROR) << "MinidumpMemoryList cannot read memorylist padded "
+                        "bytes";
         return false;
       }
     } else {
       BPLOG(ERROR) << "MinidumpMemoryList size mismatch, " << expected_size <<
-                      " != " << sizeof(region_count) + 
+                      " != " << sizeof(region_count) +
                       region_count * sizeof(MDMemoryDescriptor);
       return false;
     }
@@ -3142,7 +3149,7 @@ bool MinidumpAssertion::Read(uint32_t expected_size) {
     if (new_expression.get())
       expression_ = *new_expression;
   }
-  
+
   // assertion
   word_length = UTF16codeunits(assertion_.function,
                                sizeof(assertion_.function));
@@ -3791,7 +3798,7 @@ bool MinidumpMemoryInfoList::Read(uint32_t expected_size) {
   }
 
   // Sanity check that the header is the expected size.
-  //TODO(ted): could possibly handle this more gracefully, assuming
+  // TODO(ted): could possibly handle this more gracefully, assuming
   // that future versions of the structs would be backwards-compatible.
   if (header.size_of_header != sizeof(MDRawMemoryInfoList)) {
     BPLOG(ERROR) << "MinidumpMemoryInfoList header size mismatch, " <<
@@ -3824,9 +3831,20 @@ bool MinidumpMemoryInfoList::Read(uint32_t expected_size) {
     return false;
   }
 
+  // Check for data loss when converting header.number_of_entries from
+  // uint64_t into MinidumpMemoryInfos::size_type (uint32_t)
+  MinidumpMemoryInfos::size_type header_number_of_entries =
+      static_cast<unsigned int>(header.number_of_entries);
+  if (static_cast<uint64_t>(header_number_of_entries) !=
+      header.number_of_entries) {
+    BPLOG(ERROR) << "Data loss detected when converting "
+                    "the header's number_of_entries";
+    return false;
+  }
+
   if (header.number_of_entries != 0) {
     scoped_ptr<MinidumpMemoryInfos> infos(
-        new MinidumpMemoryInfos(header.number_of_entries,
+        new MinidumpMemoryInfos(header_number_of_entries,
                                 MinidumpMemoryInfo(minidump_)));
 
     for (unsigned int index = 0;
@@ -3842,7 +3860,7 @@ bool MinidumpMemoryInfoList::Read(uint32_t expected_size) {
       }
 
       uint64_t base_address = info->GetBase();
-      uint32_t region_size = info->GetSize();
+      uint64_t region_size = info->GetSize();
 
       if (!range_map_->StoreRange(base_address, region_size, index)) {
         BPLOG(ERROR) << "MinidumpMemoryInfoList could not store"
@@ -3857,7 +3875,7 @@ bool MinidumpMemoryInfoList::Read(uint32_t expected_size) {
     infos_ = infos.release();
   }
 
-  info_count_ = header.number_of_entries;
+  info_count_ = header_number_of_entries;
 
   valid_ = true;
   return true;
@@ -4312,17 +4330,27 @@ bool Minidump::ReadBytes(void* bytes, size_t count) {
     return false;
   }
   stream_->read(static_cast<char*>(bytes), count);
-  size_t bytes_read = stream_->gcount();
-  if (bytes_read != count) {
-    if (bytes_read == size_t(-1)) {
-      string error_string;
-      int error_code = ErrnoString(&error_string);
-      BPLOG(ERROR) << "ReadBytes: error " << error_code << ": " << error_string;
-    } else {
-      BPLOG(ERROR) << "ReadBytes: read " << bytes_read << "/" << count;
-    }
+  std::streamsize bytes_read = stream_->gcount();
+  if (bytes_read == -1) {
+    string error_string;
+    int error_code = ErrnoString(&error_string);
+    BPLOG(ERROR) << "ReadBytes: error " << error_code << ": " << error_string;
     return false;
   }
+
+  // Convert to size_t and check for data loss
+  size_t bytes_read_converted = static_cast<size_t>(bytes_read);
+  if (static_cast<std::streamsize>(bytes_read_converted) != bytes_read) {
+    BPLOG(ERROR) << "ReadBytes: conversion data loss detected when converting "
+                 << bytes_read << " to " << bytes_read_converted;
+    return false;
+  }
+
+  if (bytes_read_converted != count) {
+    BPLOG(ERROR) << "ReadBytes: read " << bytes_read_converted << "/" << count;
+    return false;
+  }
+
   return true;
 }
 
@@ -4348,7 +4376,15 @@ off_t Minidump::Tell() {
     return (off_t)-1;
   }
 
-  return stream_->tellg();
+  // Check for conversion data loss
+  std::streamoff std_streamoff = stream_->tellg();
+  off_t rv = static_cast<off_t>(std_streamoff);
+  if (static_cast<std::streamoff>(rv) == std_streamoff) {
+    return rv;
+  } else {
+    BPLOG(ERROR) << "Data loss detected";
+    return (off_t)-1;
+  }
 }
 
 

@@ -161,7 +161,8 @@ bool HasFileInfo(const std::wstring& file_path) {
 }
 
 TEST_F(MinidumpTest, Version) {
-  API_VERSION* version = ::ImagehlpApiVersion();
+  // Loads DbgHelp.dll in process
+  ImagehlpApiVersion();
 
   HMODULE dbg_help = ::GetModuleHandle(L"dbghelp.dll");
   ASSERT_TRUE(dbg_help != NULL);
