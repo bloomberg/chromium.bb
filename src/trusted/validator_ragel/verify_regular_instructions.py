@@ -16,11 +16,13 @@ import re
 import subprocess
 import sys
 import tempfile
+import traceback
 
 import dfa_parser
 import dfa_traversal
 import objdump_parser
 import validator
+import spec
 
 
 FWAIT = 0x9b
@@ -234,9 +236,32 @@ def ValidateInstruction(instruction, disassembly, old_validator):
         ''.join(map(chr, bundle)),
         bitness=options.bitness)
 
+    # TODO(shcherbina): Remove comparison against old validator when
+    # text-based specification is complete.
     if result:
       old_validator.Validate(bundle, (disassembly, instruction))
+
+    dis = validator.DisassembleChunk(
+        ''.join(map(chr, instruction)),
+        bitness=options.bitness)
+    assert len(dis) == 1, (instruction, dis)
+    (dis,) = dis
+
+    try:
+      spec.ValidateDirectJump(dis)
+      if not result:
+        print 'warning: validator rejected', dis
+    except spec.SandboxingError as e:
+      if result:
+        print 'validator accepted instruction disallowed by specification'
+        raise
+    except spec.DoNotMatchError:
+      # TODO(shcherbina): When text-based specification is complete,
+      # it should raise.
+      pass
+
     return result
+
   else:
     result = validator.ValidateChunk(
         ''.join(map(chr, bundle)),
@@ -298,6 +323,8 @@ class WorkerState(object):
 
   def Finish(self):
     # Check instructions accumulated so far.
+    if len(self._instructions) == 0:
+      return
     try:
       raw_file = tempfile.NamedTemporaryFile(
           mode='wb',
@@ -370,6 +397,9 @@ def Worker((prefix, state_index)):
         final_callback=worker_state.ReceiveInstruction,
         prefix=prefix,
         anyfield=0)
+  except Exception as e:
+    traceback.print_exc() # because multiprocessing imap swallows traceback
+    raise
   finally:
     worker_state.Finish()
 

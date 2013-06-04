@@ -37,6 +37,36 @@ class SandboxingError(Exception):
   pass
 
 
+def ValidateDirectJump(instruction):
+  # TODO(shcherbina): return offset for potential use in text-based ncval
+
+  cond_jumps_re = re.compile(
+      r'(ja(e?)|jb(e?)|jg(e?)|jl(e?)|'
+      r'j(n?)e|j(n?)o|j(n?)p|j(n?)s)'
+      r' (0x[\da-f]+)$')
+  if cond_jumps_re.match(instruction.disasm):
+    # 16-bit conditional jump has the following form:
+    #   <optional branch hint (2e or 3e)>
+    #   <data16 (66)>
+    #   0f <cond jump opcode>
+    #   <2-byte offset>
+    # (branch hint and data16 can go in any order)
+    if instruction.bytes[0] == 0x66 or (
+        instruction.bytes[0] in [0x2e, 0x3e] and instruction.bytes[1] == 0x66):
+      raise SandboxingError(
+          '16-bit conditional jumps are disallowed', instruction)
+    return
+
+  jumps_re = re.compile(r'(jmp|call)(|w|q) (0x[\da-f]+)$')
+  m = jumps_re.match(instruction.disasm)
+  if m is not None:
+    if m.group(2) == 'w':
+      raise SandboxingError('16-bit jumps are disallowed', instruction)
+    return
+
+  raise DoNotMatchError(instruction)
+
+
 def ValidateSuperinstruction32(superinstruction):
   """Validate superinstruction with ia32 set of regexps.
 
@@ -53,8 +83,8 @@ def ValidateSuperinstruction32(superinstruction):
   """
 
   call_jmp = re.compile(
-      r'(call|jmp) ' # call or jmp
-      r'[*](?P<register>%e[a-z]+)$') # register name
+      r'(call|jmp) '  # call or jmp
+      r'[*](?P<register>%e[a-z]+)$')  # register name
 
   and_for_call_jmp = re.compile(
       r'and [$]0xffffffe0,(?P<register>%e[a-z]+)$')
