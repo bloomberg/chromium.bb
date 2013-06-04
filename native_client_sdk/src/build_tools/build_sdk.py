@@ -54,7 +54,7 @@ import oshelpers
 CYGTAR = os.path.join(NACL_DIR, 'build', 'cygtar.py')
 
 NACLPORTS_URL = 'https://naclports.googlecode.com/svn/trunk/src'
-NACLPORTS_REV = 757
+NACLPORTS_REV = 774
 
 # TODO(binji): horrible hack to make the Windows builders go green...
 # Windows has a path length limit of 255 characters, after joining cwd with a
