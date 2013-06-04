@@ -85,8 +85,6 @@ class BackgroundModeManager
                            ProfileInfoCacheStorage);
   FRIEND_TEST_ALL_PREFIXES(BackgroundModeManagerTest,
                            ProfileInfoCacheObserver);
-  FRIEND_TEST_ALL_PREFIXES(ExtensionServiceTest,
-                           ReloadBackroundExtension);
   class BackgroundModeData : public ui::SimpleMenuModel::Delegate {
    public:
     explicit BackgroundModeData(

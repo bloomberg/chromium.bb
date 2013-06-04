@@ -96,7 +96,7 @@ void SyncedNotification::Show(NotificationUIManager* notification_manager,
 
     // Deduce which notification template to use from the data.
     message_center::NotificationType notification_type =
-        message_center::NOTIFICATION_TYPE_SIMPLE;
+        message_center::NOTIFICATION_TYPE_BASE_FORMAT;
     if (!image_url.is_empty()) {
       notification_type = message_center::NOTIFICATION_TYPE_IMAGE;
     } else if (notification_count > 1) {

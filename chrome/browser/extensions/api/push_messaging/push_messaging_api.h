@@ -91,7 +91,7 @@ class PushMessagingGetChannelIdFunction
   scoped_ptr<ObfuscatedGaiaIdFetcher> fetcher_;
   bool interactive_;
 
-  // We use this to register for notifications if the logon attept succeeds.
+  // We use this to register for notifications if the login attempt succeeds.
   content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(PushMessagingGetChannelIdFunction);
