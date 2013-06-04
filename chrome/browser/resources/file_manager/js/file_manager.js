@@ -622,7 +622,7 @@ DialogType.isModal = function(type) {
 
   FileManager.prototype.onMaximize = function() {
     // Do not maximize when running via chrome://files in a browser.
-    if (!chrome.app.window.contentWindow)
+    if (util.platform.runningInBrowser())
       return;
 
     var appWindow = chrome.app.window.current();
@@ -634,7 +634,7 @@ DialogType.isModal = function(type) {
 
   FileManager.prototype.onClose = function() {
     // Do not close when running via chrome://files in a browser.
-    if (!chrome.app.window.contentWindow)
+    if (util.platform.runningInBrowser())
       return;
 
     window.close();
@@ -886,16 +886,11 @@ DialogType.isModal = function(type) {
     this.initDialogType_();
 
     // Show the window as soon as the UI pre-initialization is done.
-    if (this.dialogType == DialogType.FULL_PAGE && util.platform.v2()) {
-      // Do not call show() when running via chrome://files in a browser.
-      if (chrome.app.window.contentWindow) {
-        chrome.app.window.current().show();
-        setTimeout(callback, 100);  // Wait until the animation is finished.
-      } else {
-        console.info('Files.app window is not created yet. Maybe launched ' +
-                     'via chrome://files in a browser?');
-        callback();
-      }
+    if (this.dialogType == DialogType.FULL_PAGE &&
+        util.platform.v2() &&
+        !util.platform.runningInBrowser()) {
+      chrome.app.window.current().show();
+      setTimeout(callback, 100);  // Wait until the animation is finished.
     } else {
       callback();
     }

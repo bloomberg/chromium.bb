@@ -804,6 +804,13 @@ util.platform = {
   },
 
   /**
+   * @return {boolean} True if Files.app is running via "chrome://files".
+   */
+  runningInBrowser: function() {
+    return util.platform.v2() && !window.appID;
+  },
+
+  /**
    * @return {boolean} True for the new ui.
    */
   newUI: function() {
