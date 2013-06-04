@@ -45,7 +45,9 @@ class TestNetworkChangeNotifier : public net::NetworkChangeNotifier {
 // and issuing simulated notifications.
 class TestEulaAcceptedNotifier : public EulaAcceptedNotifier {
  public:
-  TestEulaAcceptedNotifier() : eula_accepted_(false) {
+  TestEulaAcceptedNotifier()
+      : EulaAcceptedNotifier(NULL),
+        eula_accepted_(false) {
   }
   virtual ~TestEulaAcceptedNotifier() {
   }

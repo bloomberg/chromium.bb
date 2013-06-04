@@ -471,11 +471,6 @@ void WizardController::OnEulaAccepted() {
   bool uma_enabled =
       OptionsUtil::ResolveMetricsReportingEnabled(usage_statistics_reporting_);
 
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_WIZARD_EULA_ACCEPTED,
-      content::NotificationSource(content::Source<WizardController>(this)),
-      content::NotificationService::NoDetails());
-
   CrosSettings::Get()->SetBoolean(kStatsReportingPref, uma_enabled);
   if (uma_enabled) {
 #if defined(USE_LINUX_BREAKPAD) && defined(GOOGLE_CHROME_BUILD)

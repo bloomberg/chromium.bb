@@ -934,6 +934,7 @@
         'browser/metrics/thread_watcher_unittest.cc',
         'browser/metrics/time_ticks_experiment_unittest.cc',
         'browser/metrics/variations/variations_service_unittest.cc',
+        'browser/metrics/variations/eula_accepted_notifier_unittest.cc',
         'browser/metrics/variations/resource_request_allowed_notifier_test_util.cc',
         'browser/metrics/variations/resource_request_allowed_notifier_test_util.h',
         'browser/metrics/variations/resource_request_allowed_notifier_unittest.cc',
