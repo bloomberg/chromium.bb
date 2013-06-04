@@ -665,7 +665,7 @@ base::SharedMemory* BrowserPluginGuest::GetDamageBufferFromEmbedder(
       new base::SharedMemory(params.damage_buffer_handle, false));
 #endif
   if (!shared_buf->Map(params.damage_buffer_size)) {
-    NOTREACHED();
+    LOG(WARNING) << "Unable to map the embedder's damage buffer.";
     return NULL;
   }
   return shared_buf.release();
@@ -676,7 +676,8 @@ void BrowserPluginGuest::SetDamageBuffer(
   damage_buffer_.reset(GetDamageBufferFromEmbedder(params));
   // Sanity check: Verify that we've correctly shared the damage buffer memory
   // between the embedder and browser processes.
-  DCHECK(*static_cast<unsigned int*>(damage_buffer_->memory()) == 0xdeadbeef);
+  DCHECK(!damage_buffer_ ||
+      *static_cast<unsigned int*>(damage_buffer_->memory()) == 0xdeadbeef);
   damage_buffer_sequence_id_ = params.damage_buffer_sequence_id;
   damage_buffer_size_ = params.damage_buffer_size;
   damage_view_size_ = params.view_rect.size();
