@@ -13,6 +13,7 @@
 #include "components/visitedlink/renderer/visitedlink_slave.h"
 #include "content/public/renderer/render_thread.h"
 #include "googleurl/src/gurl.h"
+#include "net/base/net_errors.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/platform/WebURLError.h"
@@ -68,9 +69,13 @@ void AwContentRendererClient::GetNavigationErrorStrings(
     std::string contents;
     if (err.empty()) {
       contents = AwResource::GetNoDomainPageContent();
+      if (error_description)
+        *error_description = ASCIIToUTF16(net::ErrorToString(error.reason));
     } else {
       contents = AwResource::GetLoadErrorPageContent();
       ReplaceSubstringsAfterOffset(&contents, 0, "%e", err);
+      if (error_description)
+        *error_description = error.localizedDescription;
     }
 
     ReplaceSubstringsAfterOffset(&contents, 0, "%s",
