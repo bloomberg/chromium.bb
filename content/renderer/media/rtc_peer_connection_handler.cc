@@ -578,6 +578,15 @@ void RTCPeerConnectionHandler::GetStats(
 }
 
 WebKit::WebRTCDataChannelHandler* RTCPeerConnectionHandler::createDataChannel(
+    const WebKit::WebString& label, const WebKit::WebRTCDataChannelInit& init) {
+  // TODO(jiayl): update reliable to
+  // (init.ordered && init.maxRetransmitTime == -1 && init.maxRetransmits == -1)
+  // once Libjingle is updated to ignore this field for RTP data channels.
+  bool reliable = false;
+  return createDataChannel(label, reliable);
+}
+
+WebKit::WebRTCDataChannelHandler* RTCPeerConnectionHandler::createDataChannel(
     const WebKit::WebString& label, bool reliable) {
   DVLOG(1) << "createDataChannel label " << UTF16ToUTF8(label);
 
