@@ -44,6 +44,10 @@
             }],
           ],
         }],
+        [ 'android_use_tcmalloc==1', {
+          'dependencies': [
+            '../base/allocator/allocator.gyp:allocator', ],
+        }],
       ],
     },
     {
