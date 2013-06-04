@@ -2269,7 +2269,7 @@ IPC_MESSAGE_ROUTED1(ViewHostMsg_ImeBatchStateChanged_ACK,
 IPC_MESSAGE_CONTROL3(ViewHostMsg_RunWebAudioMediaCodec,
                      base::SharedMemoryHandle /* encoded_data_handle */,
                      base::FileDescriptor /* pcm_output */,
-                     size_t /* data_size*/)
+                     uint32_t /* data_size*/)
 
 // Sent by renderer to request a ViewMsg_BeginFrame message for upcoming
 // display events. If |enabled| is true, the BeginFrame message will continue

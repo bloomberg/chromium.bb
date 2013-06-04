@@ -24,7 +24,7 @@ class MEDIA_EXPORT WebAudioMediaCodecBridge {
   // We also take ownership of |pcm_output|.
   WebAudioMediaCodecBridge(base::SharedMemoryHandle encoded_audio_handle,
                            base::FileDescriptor pcm_output,
-                           size_t data_size);
+                           uint32_t data_size);
   ~WebAudioMediaCodecBridge();
 
   // Inform JNI about this bridge. Returns true if registration
@@ -36,7 +36,7 @@ class MEDIA_EXPORT WebAudioMediaCodecBridge {
   static void RunWebAudioMediaCodec(
       base::SharedMemoryHandle encoded_audio_handle,
       base::FileDescriptor pcm_output,
-      size_t data_size);
+      uint32_t data_size);
 
   void OnChunkDecoded(JNIEnv* env,
                       jobject /*java object*/,
@@ -64,7 +64,7 @@ class MEDIA_EXPORT WebAudioMediaCodecBridge {
   int pcm_output_;
 
   // The length of the encoded data.
-  size_t data_size_;
+  uint32_t data_size_;
 
   DISALLOW_COPY_AND_ASSIGN(WebAudioMediaCodecBridge);
 };

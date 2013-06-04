@@ -1159,7 +1159,7 @@ void RenderMessageFilter::OnPreCacheFontCharacters(const LOGFONT& font,
 void RenderMessageFilter::OnWebAudioMediaCodec(
     base::SharedMemoryHandle encoded_data_handle,
     base::FileDescriptor pcm_output,
-    size_t data_size) {
+    uint32_t data_size) {
   // Let a WorkerPool handle this request since the WebAudio
   // MediaCodec bridge is slow and can block while sending the data to
   // the renderer.

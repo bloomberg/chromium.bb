@@ -264,7 +264,7 @@ class RenderMessageFilter : public BrowserMessageFilter {
 #if defined(OS_ANDROID)
   void OnWebAudioMediaCodec(base::SharedMemoryHandle encoded_data_handle,
                             base::FileDescriptor pcm_output,
-                            size_t data_size);
+                            uint32_t data_size);
 #endif
 
   // Cached resource request dispatcher host and plugin service, guaranteed to

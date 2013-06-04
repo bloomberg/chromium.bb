@@ -25,7 +25,7 @@ namespace media {
 void WebAudioMediaCodecBridge::RunWebAudioMediaCodec(
     base::SharedMemoryHandle encoded_audio_handle,
     base::FileDescriptor pcm_output,
-    size_t data_size) {
+    uint32_t data_size) {
   WebAudioMediaCodecBridge bridge(encoded_audio_handle, pcm_output, data_size);
 
   bridge.DecodeInMemoryAudioFile();
@@ -34,7 +34,7 @@ void WebAudioMediaCodecBridge::RunWebAudioMediaCodec(
 WebAudioMediaCodecBridge::WebAudioMediaCodecBridge(
     base::SharedMemoryHandle encoded_audio_handle,
     base::FileDescriptor pcm_output,
-    size_t data_size)
+    uint32_t data_size)
     : encoded_audio_handle_(encoded_audio_handle.fd),
       pcm_output_(pcm_output.fd),
       data_size_(data_size) {
