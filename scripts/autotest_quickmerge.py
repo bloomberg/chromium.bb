@@ -57,6 +57,9 @@ ItemizedChangeReport = namedtuple('ItemizedChangeReport',
                                   ['new_files', 'modified_files',
                                    'new_directories'])
 
+class PortagePackageAPIError(Exception):
+  """Exception thrown when unable to retrieve a portage package API."""
+
 
 def GetStalePackageNames(change_list, autotest_sysroot):
   """Given a rsync change report, returns the names of stale test packages.
@@ -141,12 +144,13 @@ def GetPackageAPI(portage_root, package_cp):
   matching_packages = vartree.dbapi.cp_list(package_cp)
 
   if not matching_packages:
-    raise ValueError('No matching package for %s in portage_root %s' % (
-                     package_cp, portage_root))
+    raise PortagePackageAPIError('No matching package for %s in portage_root '
+                                 '%s' % (package_cp, portage_root))
 
   if len(matching_packages) > 1:
-    raise ValueError('Too many matching packages for %s in portage_root '
-                     '%s' % (package_cp, portage_root))
+    raise PortagePackageAPIError('Too many matching packages for %s in '
+                                 'portage_root %s' % (package_cp,
+                                                      portage_root))
 
   # Convert string match to package dblink.
   package_cpv = matching_packages[0]
@@ -171,7 +175,13 @@ def DowngradePackageVersion(portage_root, package_cp,
   Returns:
     True on success. False on failure (nonzero return code from `mv` command).
   """
-  package, _ = GetPackageAPI(portage_root, package_cp)
+  try:
+    package, _ = GetPackageAPI(portage_root, package_cp)
+  except PortagePackageAPIError:
+    # Unable to fetch a corresponding portage package API for this
+    # package_cp (either no such package, or name ambigious and matches).
+    # So, just fail out.
+    return False
 
   source_directory = package.dbdir
   destination_path = os.path.join(
