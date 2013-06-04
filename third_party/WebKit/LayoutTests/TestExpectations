@@ -1621,6 +1621,11 @@ crbug.com/244118 [ Win Linux ] fast/forms/suggestion-picker/time-suggestion-pick
 crbug.com/244118 [ Win Linux ] fast/forms/time/time-appearance-basic.html [ ImageOnlyFailure Pass ]
 crbug.com/244118 [ Win Linux ] fast/forms/week/week-appearance-basic.html [ ImageOnlyFailure Pass ]
 
+# New virtual test suites. This needs to be updated with more specific
+# expectations once we have more data from running the tests on the bots.
+crbug.com/244266 virtual/threaded/animations [ Pass Failure ImageOnlyFailure Timeout Crash ]
+crbug.com/244266 virtual/threaded/transitions [ Pass Failure ImageOnlyFailure Timeout Crash ]
+
 # Copy of ContentShellTestExpectations
 crbug.com/178709 plugins/document-open.html [ Failure ]
 crbug.com/178719 plugins/reloadplugins-and-pages.html [ Timeout ]

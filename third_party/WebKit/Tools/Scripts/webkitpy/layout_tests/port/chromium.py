@@ -421,6 +421,12 @@ class ChromiumPort(Port):
             VirtualTestSuite('virtual/gpu/compositedscrolling/scrollbars',
                              'scrollbars',
                              ['--enable-accelerated-overflow-scroll']),
+            VirtualTestSuite('virtual/threaded/animations',
+                             'animations',
+                             ['--enable-threaded-compositing']),
+            VirtualTestSuite('virtual/threaded/transitions',
+                             'transitions',
+                             ['--enable-threaded-compositing']),
         ]
 
     #
