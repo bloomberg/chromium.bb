@@ -179,7 +179,7 @@ class PrefsTest(pyauto.PyUITest):
     The setting is enabled by default."""
     pref_list = [pyauto.kNetworkPredictionEnabled, pyauto.kSafeBrowsingEnabled,
                  pyauto.kAlternateErrorPagesEnabled,
-                 pyauto.kSearchSuggestEnabled, pyauto.kShowOmniboxSearchHint]
+                 pyauto.kSearchSuggestEnabled]
     for pref in pref_list:
       # Verify the default value
       self.assertEqual(self.GetPrefsInfo().Prefs(pref), True)

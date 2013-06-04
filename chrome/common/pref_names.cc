@@ -1055,10 +1055,6 @@ const char kShowUpdatePromotionInfoBar[] =
 // true, we draw a custom chrome frame (thicker title bar and blue border).
 const char kUseCustomChromeFrame[] = "browser.custom_chrome_frame";
 
-// Boolean that indicates whether the infobar explaining that search can be
-// done directly from the omnibox should be shown.
-const char kShowOmniboxSearchHint[] = "browser.show_omnibox_search_hint";
-
 // The preferred position (which corner of screen) for desktop notifications.
 const char kDesktopNotificationPosition[] =
     "browser.desktop_notification_position";

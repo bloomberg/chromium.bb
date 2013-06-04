@@ -1246,10 +1246,6 @@ const char kScriptBadges[]                  = "script-badges";
 // many extensions are running scripts on a page.
 const char kScriptBubble[]                  = "script-bubble";
 
-// Enables the showing of an info-bar instructing user they can search directly
-// from the omnibox.
-const char kSearchInOmniboxHint[]           = "search-in-omnibox-hint";
-
 // Causes the process to run as a service process.
 const char kServiceProcess[]                = "service";
 

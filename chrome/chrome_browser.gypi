@@ -1235,8 +1235,6 @@
         'browser/notifications/sync_notifier/notification_bitmap_fetcher.h',
         'browser/notifications/sync_notifier/synced_notification.cc',
         'browser/notifications/sync_notifier/synced_notification.h',
-        'browser/omnibox_search_hint.cc',
-        'browser/omnibox_search_hint.h',
         'browser/omnibox/omnibox_field_trial.cc',
         'browser/omnibox/omnibox_field_trial.h',
         'browser/omnibox/omnibox_log.cc',
@@ -2872,7 +2870,6 @@
 
             'browser/download/download_crx_util.cc',
             'browser/net/gaia/gaia_oauth_fetcher.cc',
-            'browser/omnibox_search_hint.cc',
             'browser/page_cycler/page_cycler.cc',
             'browser/page_cycler/page_cycler.h',
             'browser/sessions/persistent_tab_restore_service.cc',

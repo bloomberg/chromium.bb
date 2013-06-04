@@ -92,10 +92,6 @@ void RegisterBrowserUserPrefs(user_prefs::PrefRegistrySyncable* registry) {
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 #endif
   registry->RegisterBooleanPref(
-      prefs::kShowOmniboxSearchHint,
-      true,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterBooleanPref(
       prefs::kWebAppCreateOnDesktop,
       true,
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);

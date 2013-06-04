@@ -328,7 +328,6 @@ extern const char kSbDisableExtensionBlacklist[];
 extern const char kSbDisableSideEffectFreeWhitelist[];
 extern const char kScriptBadges[];
 extern const char kScriptBubble[];
-extern const char kSearchInOmniboxHint[];
 extern const char kServiceProcess[];
 extern const char kSilentLaunch[];
 extern const char kSetToken[];

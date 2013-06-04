@@ -15,7 +15,6 @@
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/net/load_time_stats.h"
 #include "chrome/browser/net/net_error_tab_helper.h"
-#include "chrome/browser/omnibox_search_hint.h"
 #include "chrome/browser/password_manager/password_generation_manager.h"
 #include "chrome/browser/password_manager/password_manager.h"
 #include "chrome/browser/password_manager/password_manager_delegate_impl.h"
@@ -138,8 +137,6 @@ void BrowserTabContents::AttachTabHelpers(WebContents* web_contents) {
   HungPluginTabHelper::CreateForWebContents(web_contents);
   InfoBarService::CreateForWebContents(web_contents);
   NavigationMetricsRecorder::CreateForWebContents(web_contents);
-  if (OmniboxSearchHint::IsEnabled(profile))
-    OmniboxSearchHint::CreateForWebContents(web_contents);
   PasswordGenerationManager::CreateForWebContents(web_contents);
   PasswordManagerDelegateImpl::CreateForWebContents(web_contents);
   PasswordManager::CreateForWebContentsAndDelegate(
