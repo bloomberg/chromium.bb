@@ -363,9 +363,20 @@ TEST_F(SigninTrackerTest, SigninFailedGoogleServiceAuthError) {
 
 TEST_F(SigninTrackerTest, SigninFailedWhenInitializing) {
   tracker_.reset();
-  // SigninFailed() should be called.
+  // SigninFailed() should be called because we are not signed in.
   GoogleServiceAuthError error(GoogleServiceAuthError::REQUEST_CANCELED);
   EXPECT_CALL(observer_, SigninFailed(error));
+  tracker_.reset(new SigninTracker(profile_.get(), &observer_,
+                                   SigninTracker::SERVICES_INITIALIZING));
+  tracker_->OnStateChanged();
+}
+
+TEST_F(SigninTrackerTest, ConnectionErrorWhenInitializing) {
+  // SigninFailed() should not be called for a CONNECTION_FAILED error.
+  GoogleServiceAuthError error(GoogleServiceAuthError::CONNECTION_FAILED);
+  ExpectSignedInSyncService(mock_pss_, mock_token_service_, error);
+  mock_signin_manager_->SetAuthenticatedUsername("username@gmail.com");
+  EXPECT_CALL(observer_, SigninFailed(_)).Times(0);
   tracker_.reset(new SigninTracker(profile_.get(), &observer_,
                                    SigninTracker::SERVICES_INITIALIZING));
   tracker_->OnStateChanged();

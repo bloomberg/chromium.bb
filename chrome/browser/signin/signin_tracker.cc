@@ -171,9 +171,14 @@ bool SigninTracker::AreServicesSignedIn(Profile* profile) {
     return true;
   ProfileSyncService* service =
       ProfileSyncServiceFactory::GetForProfile(profile);
+  // Check the sync service state - we ignore CONNECTION_FAILED errors here
+  // because they are transient and do not signify a failure of the signin
+  // process.
   return (service->IsSyncEnabledAndLoggedIn() &&
           service->IsSyncTokenAvailable() &&
-          service->GetAuthError().state() == GoogleServiceAuthError::NONE &&
+          (service->GetAuthError().state() == GoogleServiceAuthError::NONE ||
+           service->GetAuthError().state() ==
+               GoogleServiceAuthError::CONNECTION_FAILED) &&
           !service->HasUnrecoverableError());
 }
 

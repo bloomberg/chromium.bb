@@ -440,7 +440,15 @@ void SyncSetupHandler::DisplayConfigureSync(bool show_advanced,
 #endif
 
     service->UnsuppressAndStart();
-    DisplaySpinner();
+
+    // See if it's even possible to bring up the sync backend - if not
+    // (unrecoverable error?), don't bother displaying a spinner that will be
+    // immediately closed because this leads to some ugly infinite UI loop (see
+    // http://crbug.com/244769).
+    if (SigninTracker::GetSigninState(GetProfile(), NULL) !=
+        SigninTracker::WAITING_FOR_GAIA_VALIDATION) {
+      DisplaySpinner();
+    }
 
     // To listen to the token available notifications, start SigninTracker.
     signin_tracker_.reset(
