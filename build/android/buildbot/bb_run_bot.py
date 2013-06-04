@@ -83,8 +83,11 @@ def GetBotStepMap():
   std_test_steps = ['bb_extract_build']
   std_tests = ['ui', 'unit']
   flakiness_server = '--upload-to-flakiness-server'
+  extra_gyp = 'extra_gyp_defines'
 
-  B = BotConfig
+  def B(bot_id, bash_funs, test_obj=None, slave_props=None):
+    return BotConfig(bot_id, bash_funs, test_obj, slave_props)
+
   def T(tests, extra_args=None):
     return TestConfig(tests, extra_args)
 
@@ -92,39 +95,37 @@ def GetBotStepMap():
       # Main builders
       B('main-builder-dbg',
         ['bb_check_webview_licenses', 'bb_compile', 'bb_run_findbugs',
-         'bb_zip_build'], None, None),
-      B('main-builder-rel',
-        ['bb_compile', 'bb_zip_build'], None, None),
-      B('main-clang-builder', compile_step, None, None),
-      B('main-clobber', compile_step, None, None),
-      B('main-tests', std_test_steps, T(std_tests, [flakiness_server]),
-        None),
+         'bb_zip_build']),
+      B('main-builder-rel', ['bb_compile', 'bb_zip_build']),
+      B('main-clang-builder', compile_step, slave_props={extra_gyp: 'clang=1'}),
+      B('main-clobber', compile_step),
+      B('main-tests', std_test_steps, T(std_tests, [flakiness_server])),
 
       # Other waterfalls
       B('asan-builder-tests', compile_step + ['bb_asan_tests_setup'],
-        T(std_tests, ['--asan']), {'extra_gyp_defines': 'asan=1'}),
+        T(std_tests, ['--asan']), {extra_gyp: 'asan=1'}),
       B('chromedriver-fyi-tests-dbg', std_test_steps,
-        T(['chromedriver'], ['--install=ChromiumTestShell']), None),
+        T(['chromedriver'], ['--install=ChromiumTestShell'])),
       B('fyi-builder-dbg',
         ['bb_check_webview_licenses', 'bb_compile', 'bb_compile_experimental',
-         'bb_run_findbugs', 'bb_zip_build'], None, None),
+         'bb_run_findbugs', 'bb_zip_build']),
       B('fyi-builder-rel',
-        ['bb_compile', 'bb_compile_experimental', 'bb_zip_build'], None, None),
+        ['bb_compile', 'bb_compile_experimental', 'bb_zip_build']),
       B('fyi-tests-dbg-ics-gn', ['bb_compile', 'bb_compile_experimental'],
-        T(std_tests, ['--experimental', flakiness_server]), None),
+        T(std_tests, ['--experimental', flakiness_server])),
       B('fyi-tests', std_test_steps,
-        T(std_tests, ['--experimental', flakiness_server]), None),
+        T(std_tests, ['--experimental', flakiness_server])),
       B('fyi-component-builder-tests-dbg', compile_step,
-        T(std_tests, ['--experimental', flakiness_server]), None),
-      B('perf-tests-rel', std_test_steps,
-        T([], ['--install=ContentShell']),
-        None),
+        T(std_tests, ['--experimental', flakiness_server]),
+        {extra_gyp: 'component=shared_library'}),
+      B('perf-tests-rel', std_test_steps, T([], ['--install=ContentShell'])),
       B('webkit-latest-webkit-tests', std_test_steps,
-        T(['webkit_layout', 'webkit']), None),
-      B('webkit-latest-contentshell', compile_step, T(['webkit_layout']), None),
+        T(['webkit_layout', 'webkit'])),
+      B('webkit-latest-contentshell', compile_step, T(['webkit_layout'])),
+      B('builder-unit-tests', compile_step, T(['unit'])),
 
       # Generic builder config (for substring match).
-      B('builder', std_build_steps, None, None),
+      B('builder', std_build_steps),
   ]
 
   bot_map = dict((config.bot_id, config) for config in bot_configs)
