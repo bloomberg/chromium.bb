@@ -672,21 +672,6 @@ void WebViewHost::testFinished()
     m_shell->testFinished(this);
 }
 
-void WebViewHost::testTimedOut()
-{
-    m_shell->testTimedOut();
-}
-
-bool WebViewHost::isBeingDebugged()
-{
-    return webkit_support::BeingDebugged();
-}
-
-int WebViewHost::layoutTestTimeout()
-{
-    return m_shell->layoutTestTimeout();
-}
-
 void WebViewHost::closeRemainingWindows()
 {
     m_shell->closeRemainingWindows();

@@ -753,8 +753,6 @@ void TestRunner::showDevTools()
 
 void TestRunner::waitUntilDone(const CppArgumentList&, CppVariant* result)
 {
-    if (!m_delegate->isBeingDebugged())
-        m_delegate->postDelayedTask(new NotifyDoneTimedOutTask(this), m_delegate->layoutTestTimeout());
     m_waitUntilDone = true;
     result->setNull();
 }
@@ -764,18 +762,14 @@ void TestRunner::notifyDone(const CppArgumentList&, CppVariant* result)
     // Test didn't timeout. Kill the timeout timer.
     taskList()->revokeAll();
 
-    completeNotifyDone(false);
+    completeNotifyDone();
     result->setNull();
 }
 
-void TestRunner::completeNotifyDone(bool isTimeout)
+void TestRunner::completeNotifyDone()
 {
-    if (m_waitUntilDone && !topLoadingFrame() && m_workQueue.isEmpty()) {
-        if (isTimeout)
-            m_delegate->testTimedOut();
-        else
-            m_delegate->testFinished();
-    }
+    if (m_waitUntilDone && !topLoadingFrame() && m_workQueue.isEmpty())
+        m_delegate->testFinished();
     m_waitUntilDone = false;
 }
 

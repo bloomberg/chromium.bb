@@ -135,15 +135,15 @@ public:
     // Invoked when the test finished.
     virtual void testFinished() = 0;
 
-    // Invoked if the test timed out.
-    virtual void testTimedOut() = 0;
+    // DEPRECATED: Invoked if the test timed out.
+    virtual void testTimedOut() { };
 
-    // If true, never abort a test because of a timeout.
-    virtual bool isBeingDebugged() = 0;
+    // DEPRECATED: If true, never abort a test because of a timeout.
+    virtual bool isBeingDebugged() { return false; };
 
-    // The time in milliseconds after which a test is considered to have timed
+    // DEPRECATED: The time in milliseconds after which a test is considered to have timed
     // out.
-    virtual int layoutTestTimeout() = 0;
+    virtual int layoutTestTimeout() { return 0; };
 
     // Invoked when the embedder should close all but the main WebView.
     virtual void closeRemainingWindows() = 0;

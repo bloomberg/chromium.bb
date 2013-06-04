@@ -114,9 +114,6 @@ class WebViewHost : public WebKit::WebViewClient, public WebKit::WebFrameClient,
     virtual std::string pathToLocalResource(const std::string& url) OVERRIDE;
     virtual void setLocale(const std::string&) OVERRIDE;
     virtual void testFinished() OVERRIDE;
-    virtual void testTimedOut() OVERRIDE;
-    virtual bool isBeingDebugged() OVERRIDE;
-    virtual int layoutTestTimeout() OVERRIDE;
     virtual void closeRemainingWindows() OVERRIDE;
     virtual int navigationEntryCount() OVERRIDE;
     virtual void goToOffset(int) OVERRIDE;
