@@ -42,6 +42,8 @@ struct DeviceLocalAccount {
 std::string GenerateDeviceLocalAccountUserId(const std::string& account_id,
                                              DeviceLocalAccount::Type type);
 
+bool IsDeviceLocalAccountUser(const std::string& user_id);
+
 bool IsKioskAppUser(const std::string& user_id);
 
 // Stores a list of device-local accounts in |cros_settings|. The accounts are

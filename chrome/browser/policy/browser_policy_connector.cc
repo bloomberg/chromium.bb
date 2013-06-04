@@ -55,6 +55,7 @@
 #include "chrome/browser/chromeos/policy/app_pack_updater.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_store_chromeos.h"
+#include "chrome/browser/chromeos/policy/device_local_account.h"
 #include "chrome/browser/chromeos/policy/device_local_account_policy_service.h"
 #include "chrome/browser/chromeos/policy/device_status_collector.h"
 #include "chrome/browser/chromeos/policy/enterprise_install_attributes.h"
@@ -312,8 +313,9 @@ UserAffiliation BrowserPolicyConnector::GetUserAffiliation(
   if (user_name.empty() || user_name.find('@') == std::string::npos)
     return USER_AFFILIATION_NONE;
   if (install_attributes_ &&
-      gaia::ExtractDomainName(gaia::CanonicalizeEmail(user_name)) ==
-          install_attributes_->GetDomain()) {
+      (gaia::ExtractDomainName(gaia::CanonicalizeEmail(user_name)) ==
+           install_attributes_->GetDomain() ||
+       policy::IsDeviceLocalAccountUser(user_name))) {
     return USER_AFFILIATION_MANAGED;
   }
 #endif

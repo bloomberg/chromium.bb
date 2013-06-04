@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/string_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
@@ -54,6 +55,12 @@ std::string GenerateDeviceLocalAccountUserId(const std::string& account_id,
   }
   return base::HexEncode(account_id.c_str(), account_id.size()) + "@" +
       domain_prefix + kDeviceLocalAccountDomainSuffix;
+}
+
+bool IsDeviceLocalAccountUser(const std::string& user_id) {
+  return EndsWith(gaia::ExtractDomainName(user_id),
+                  kDeviceLocalAccountDomainSuffix,
+                  true);
 }
 
 bool IsKioskAppUser(const std::string& user_id) {
