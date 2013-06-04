@@ -71,7 +71,7 @@ void SpdyWriteQueue::RemovePendingWritesForStream(
         continue;
       for (std::deque<PendingWrite>::const_iterator it = queue_[i].begin();
            it != queue_[i].end(); ++it) {
-        DCHECK_NE(it->stream, stream);
+        DCHECK_NE(it->stream.get(), stream.get());
       }
     }
   }

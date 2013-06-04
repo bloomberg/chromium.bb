@@ -189,7 +189,7 @@ TEST(WeakPtrFactoryTest, Comparison) {
   WeakPtrFactory<int> factory(&data);
   WeakPtr<int> ptr = factory.GetWeakPtr();
   WeakPtr<int> ptr2 = ptr;
-  EXPECT_EQ(ptr, ptr2);
+  EXPECT_EQ(ptr.get(), ptr2.get());
 }
 
 TEST(WeakPtrFactoryTest, OutOfScope) {

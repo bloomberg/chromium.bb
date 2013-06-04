@@ -242,6 +242,19 @@ bool IsNull(const base::WeakPtr<gles2::GLES2Decoder>& decoder) {
   return !decoder.get();
 }
 
+template <typename T>
+class WeakPtrEquals {
+ public:
+  explicit WeakPtrEquals(T* t) : t_(t) {}
+
+  bool operator()(const base::WeakPtr<T>& t) {
+    return t.get() == t_;
+  }
+
+ private:
+  T* const t_;
+};
+
 }  // namespace anonymous
 
 bool ContextGroup::HaveContexts() {
@@ -251,8 +264,8 @@ bool ContextGroup::HaveContexts() {
 }
 
 void ContextGroup::Destroy(GLES2Decoder* decoder, bool have_context) {
-  decoders_.erase(std::remove(decoders_.begin(), decoders_.end(),
-                              decoder->AsWeakPtr()),
+  decoders_.erase(std::remove_if(decoders_.begin(), decoders_.end(),
+                                 WeakPtrEquals<gles2::GLES2Decoder>(decoder)),
                   decoders_.end());
   // If we still have contexts do nothing.
   if (HaveContexts()) {

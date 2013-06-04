@@ -5925,7 +5925,7 @@ TEST(HttpCache, SetPriority) {
   // Shouldn't crash, but doesn't do anything either.
   trans->SetPriority(net::LOW);
 
-  EXPECT_FALSE(cache.network_layer()->last_transaction());
+  EXPECT_FALSE(cache.network_layer()->last_transaction().get());
   EXPECT_EQ(net::DEFAULT_PRIORITY,
             cache.network_layer()->last_create_transaction_priority());
 
@@ -5935,7 +5935,7 @@ TEST(HttpCache, SetPriority) {
   EXPECT_EQ(net::ERR_IO_PENDING,
             trans->Start(&info, callback.callback(), net::BoundNetLog()));
 
-  ASSERT_TRUE(cache.network_layer()->last_transaction());
+  ASSERT_TRUE(cache.network_layer()->last_transaction().get());
   EXPECT_EQ(net::LOW,
             cache.network_layer()->last_create_transaction_priority());
   EXPECT_EQ(net::LOW,

@@ -97,7 +97,7 @@ TEST_F(WeakHandleTest, InitializedAfterDestroy) {
     h = b.AsWeakHandle();
   }
   EXPECT_TRUE(h.IsInitialized());
-  EXPECT_FALSE(h.Get());
+  EXPECT_FALSE(h.Get().get());
 }
 
 TEST_F(WeakHandleTest, InitializedAfterInvalidate) {
@@ -105,7 +105,7 @@ TEST_F(WeakHandleTest, InitializedAfterInvalidate) {
   WeakHandle<Base> h = b.AsWeakHandle();
   b.Kill();
   EXPECT_TRUE(h.IsInitialized());
-  EXPECT_FALSE(h.Get());
+  EXPECT_FALSE(h.Get().get());
 }
 
 TEST_F(WeakHandleTest, Call) {

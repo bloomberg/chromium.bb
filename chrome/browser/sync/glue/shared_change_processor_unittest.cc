@@ -109,7 +109,7 @@ class SyncSharedChangeProcessorTest : public testing::Test {
         &sync_service_,
         &error_handler_,
         syncer::AUTOFILL,
-        base::WeakPtr<syncer::SyncMergeResult>()));
+        base::WeakPtr<syncer::SyncMergeResult>()).get());
   }
 
   base::MessageLoopForUI ui_loop_;

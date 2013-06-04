@@ -709,7 +709,7 @@ class QuotaManager::GetModifiedSinceHelper {
                            const GetOriginsCallback& callback,
                            StorageType type,
                            bool success) {
-    if (!manager) {
+    if (!manager.get()) {
       // The operation was aborted.
       callback.Run(std::set<GURL>(), type);
       return;
@@ -734,7 +734,7 @@ class QuotaManager::DumpQuotaTableHelper {
   void DidDumpQuotaTable(const base::WeakPtr<QuotaManager>& manager,
                          const DumpQuotaTableCallback& callback,
                          bool success) {
-    if (!manager) {
+    if (!manager.get()) {
       // The operation was aborted.
       callback.Run(QuotaTableEntries());
       return;
@@ -766,7 +766,7 @@ class QuotaManager::DumpOriginInfoTableHelper {
   void DidDumpOriginInfoTable(const base::WeakPtr<QuotaManager>& manager,
                               const DumpOriginInfoTableCallback& callback,
                               bool success) {
-    if (!manager) {
+    if (!manager.get()) {
       // The operation was aborted.
       callback.Run(OriginInfoTableEntries());
       return;

@@ -162,11 +162,11 @@ TEST_F(URLRequestFtpJobPriorityTest, SetTransactionPriorityOnStart) {
       &req_, &ftp_factory_, &ftp_auth_cache_));
   job->SetPriority(LOW);
 
-  EXPECT_FALSE(network_layer_.last_transaction());
+  EXPECT_FALSE(network_layer_.last_transaction().get());
 
   job->Start();
 
-  ASSERT_TRUE(network_layer_.last_transaction());
+  ASSERT_TRUE(network_layer_.last_transaction().get());
   EXPECT_EQ(LOW, network_layer_.last_transaction()->priority());
 }
 
@@ -177,7 +177,7 @@ TEST_F(URLRequestFtpJobPriorityTest, SetTransactionPriority) {
       &req_, &ftp_factory_, &ftp_auth_cache_));
   job->SetPriority(LOW);
   job->Start();
-  ASSERT_TRUE(network_layer_.last_transaction());
+  ASSERT_TRUE(network_layer_.last_transaction().get());
   EXPECT_EQ(LOW, network_layer_.last_transaction()->priority());
 
   job->SetPriority(HIGHEST);
@@ -192,7 +192,7 @@ TEST_F(URLRequestFtpJobPriorityTest, SetSubsequentTransactionPriority) {
   job->Start();
 
   job->SetPriority(LOW);
-  ASSERT_TRUE(network_layer_.last_transaction());
+  ASSERT_TRUE(network_layer_.last_transaction().get());
   EXPECT_EQ(LOW, network_layer_.last_transaction()->priority());
 
   job->Kill();
@@ -200,7 +200,7 @@ TEST_F(URLRequestFtpJobPriorityTest, SetSubsequentTransactionPriority) {
 
   // Creates a second transaction.
   job->Start();
-  ASSERT_TRUE(network_layer_.last_transaction());
+  ASSERT_TRUE(network_layer_.last_transaction().get());
   EXPECT_EQ(LOW, network_layer_.last_transaction()->priority());
 }
 

@@ -75,11 +75,11 @@ TEST_F(URLRequestHttpJobTest, SetTransactionPriorityOnStart) {
   scoped_refptr<TestURLRequestHttpJob> job(new TestURLRequestHttpJob(&req_));
   job->SetPriority(LOW);
 
-  EXPECT_FALSE(network_layer_.last_transaction());
+  EXPECT_FALSE(network_layer_.last_transaction().get());
 
   job->Start();
 
-  ASSERT_TRUE(network_layer_.last_transaction());
+  ASSERT_TRUE(network_layer_.last_transaction().get());
   EXPECT_EQ(LOW, network_layer_.last_transaction()->priority());
 }
 
@@ -89,7 +89,7 @@ TEST_F(URLRequestHttpJobTest, SetTransactionPriority) {
   scoped_refptr<TestURLRequestHttpJob> job(new TestURLRequestHttpJob(&req_));
   job->SetPriority(LOW);
   job->Start();
-  ASSERT_TRUE(network_layer_.last_transaction());
+  ASSERT_TRUE(network_layer_.last_transaction().get());
   EXPECT_EQ(LOW, network_layer_.last_transaction()->priority());
 
   job->SetPriority(HIGHEST);
@@ -103,7 +103,7 @@ TEST_F(URLRequestHttpJobTest, SetSubsequentTransactionPriority) {
   job->Start();
 
   job->SetPriority(LOW);
-  ASSERT_TRUE(network_layer_.last_transaction());
+  ASSERT_TRUE(network_layer_.last_transaction().get());
   EXPECT_EQ(LOW, network_layer_.last_transaction()->priority());
 
   job->Kill();
@@ -111,7 +111,7 @@ TEST_F(URLRequestHttpJobTest, SetSubsequentTransactionPriority) {
 
   // Creates a second transaction.
   job->Start();
-  ASSERT_TRUE(network_layer_.last_transaction());
+  ASSERT_TRUE(network_layer_.last_transaction().get());
   EXPECT_EQ(LOW, network_layer_.last_transaction()->priority());
 }
 

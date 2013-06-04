@@ -208,7 +208,7 @@ class WeakHandleCore
   template <typename U>
   void DoCall0(void (U::*fn)(void)) const {
     CHECK(IsOnOwnerThread());
-    if (!Get()) {
+    if (!Get().get()) {
       return;
     }
     (Get().get()->*fn)();
@@ -218,7 +218,7 @@ class WeakHandleCore
   void DoCall1(void (U::*fn)(A1),
                typename ParamTraits<A1>::ForwardType a1) const {
     CHECK(IsOnOwnerThread());
-    if (!Get()) {
+    if (!Get().get()) {
       return;
     }
     (Get().get()->*fn)(a1);
@@ -229,7 +229,7 @@ class WeakHandleCore
                typename ParamTraits<A1>::ForwardType a1,
                typename ParamTraits<A2>::ForwardType a2) const {
     CHECK(IsOnOwnerThread());
-    if (!Get()) {
+    if (!Get().get()) {
       return;
     }
     (Get().get()->*fn)(a1, a2);
@@ -241,7 +241,7 @@ class WeakHandleCore
                typename ParamTraits<A2>::ForwardType a2,
                typename ParamTraits<A3>::ForwardType a3) const {
     CHECK(IsOnOwnerThread());
-    if (!Get()) {
+    if (!Get().get()) {
       return;
     }
     (Get().get()->*fn)(a1, a2, a3);
@@ -254,7 +254,7 @@ class WeakHandleCore
                typename ParamTraits<A3>::ForwardType a3,
                typename ParamTraits<A4>::ForwardType a4) const {
     CHECK(IsOnOwnerThread());
-    if (!Get()) {
+    if (!Get().get()) {
       return;
     }
     (Get().get()->*fn)(a1, a2, a3, a4);

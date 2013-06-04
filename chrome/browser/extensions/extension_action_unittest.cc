@@ -45,7 +45,7 @@ TEST(ExtensionActionTest, Visibility) {
   action.SetAppearance(100, ExtensionAction::ACTIVE);
   ASSERT_FALSE(action.GetIsVisible(1));
   ASSERT_TRUE(action.GetIsVisible(100));
-  EXPECT_FALSE(action.GetIconAnimation(100))
+  EXPECT_FALSE(action.GetIconAnimation(100).get())
       << "Page actions should not animate.";
 
   action.ClearAllValuesForTab(100);
@@ -63,22 +63,24 @@ TEST(ExtensionActionTest, ScriptBadgeAnimation) {
 
   ExtensionAction script_badge(
       std::string(), ActionInfo::TYPE_SCRIPT_BADGE, ActionInfo());
-  EXPECT_FALSE(script_badge.GetIconAnimation(ExtensionAction::kDefaultTabId));
+  EXPECT_FALSE(
+      script_badge.GetIconAnimation(ExtensionAction::kDefaultTabId).get());
   script_badge.SetAppearance(ExtensionAction::kDefaultTabId,
                              ExtensionAction::ACTIVE);
-  EXPECT_FALSE(script_badge.GetIconAnimation(ExtensionAction::kDefaultTabId))
+  EXPECT_FALSE(
+      script_badge.GetIconAnimation(ExtensionAction::kDefaultTabId).get())
       << "Showing the default tab should not animate script badges.";
 
   script_badge.SetAppearance(ExtensionAction::kDefaultTabId,
                              ExtensionAction::INVISIBLE);
-  EXPECT_FALSE(script_badge.GetIconAnimation(1))
+  EXPECT_FALSE(script_badge.GetIconAnimation(1).get())
       << "Making a script badge invisible should not show its animation.";
   script_badge.SetAppearance(1, ExtensionAction::ACTIVE);
-  EXPECT_TRUE(script_badge.GetIconAnimation(1))
+  EXPECT_TRUE(script_badge.GetIconAnimation(1).get())
       << "Making a script badge visible should show its animation.";
 
   script_badge.ClearAllValuesForTab(1);
-  EXPECT_FALSE(script_badge.GetIconAnimation(100));
+  EXPECT_FALSE(script_badge.GetIconAnimation(100).get());
 }
 
 TEST(ExtensionActionTest, GetAttention) {
@@ -88,18 +90,18 @@ TEST(ExtensionActionTest, GetAttention) {
   ExtensionAction script_badge(
       std::string(), ActionInfo::TYPE_SCRIPT_BADGE, ActionInfo());
   EXPECT_FALSE(script_badge.GetIsVisible(1));
-  EXPECT_FALSE(script_badge.GetIconAnimation(1));
+  EXPECT_FALSE(script_badge.GetIconAnimation(1).get());
   script_badge.SetAppearance(1, ExtensionAction::WANTS_ATTENTION);
   EXPECT_TRUE(script_badge.GetIsVisible(1));
-  EXPECT_TRUE(script_badge.GetIconAnimation(1));
+  EXPECT_TRUE(script_badge.GetIconAnimation(1).get());
 
   // Simulate waiting long enough for the animation to end.
   message_loop.reset();  // Can't have 2 MessageLoops alive at once.
   message_loop.reset(new base::MessageLoop);
-  EXPECT_FALSE(script_badge.GetIconAnimation(1));  // Sanity check.
+  EXPECT_FALSE(script_badge.GetIconAnimation(1).get());  // Sanity check.
 
   script_badge.SetAppearance(1, ExtensionAction::ACTIVE);
-  EXPECT_FALSE(script_badge.GetIconAnimation(1))
+  EXPECT_FALSE(script_badge.GetIconAnimation(1).get())
       << "The animation should not play again if the icon was already visible.";
 }
 
