@@ -224,8 +224,6 @@
             'autofill/browser/state_names.h',
             'autofill/browser/validation.cc',
             'autofill/browser/validation.h',
-            'autofill/browser/wallet/cart.cc',
-            'autofill/browser/wallet/cart.h',
             'autofill/browser/wallet/encryption_escrow_client.cc',
             'autofill/browser/wallet/encryption_escrow_client.h',
             'autofill/browser/wallet/encryption_escrow_client_observer.h',

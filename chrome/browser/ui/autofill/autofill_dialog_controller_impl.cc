@@ -42,7 +42,6 @@
 #include "components/autofill/browser/risk/fingerprint.h"
 #include "components/autofill/browser/risk/proto/fingerprint.pb.h"
 #include "components/autofill/browser/validation.h"
-#include "components/autofill/browser/wallet/cart.h"
 #include "components/autofill/browser/wallet/full_wallet.h"
 #include "components/autofill/browser/wallet/instrument.h"
 #include "components/autofill/browser/wallet/wallet_address.h"
@@ -79,15 +78,6 @@ namespace autofill {
 namespace {
 
 const bool kPayWithoutWalletDefault = false;
-
-// This is a pseudo-scientifically chosen maximum amount we want a fronting
-// (proxy) card to be able to charge. The current actual max is $2000. Using
-// only $1850 leaves some room for tax and shipping, etc. TODO(dbeam): send a
-// special value to the server to just ask for the maximum so we don't need to
-// hardcode it here (http://crbug.com/180731). TODO(dbeam): also maybe allow
-// users to give us this number via an <input> (http://crbug.com/180733).
-const int kCartMax = 1850;
-const char kCartCurrency[] = "USD";
 
 const char kAddNewItemKey[] = "add-new-item";
 const char kManageItemsKey[] = "manage-items";
@@ -1727,7 +1717,6 @@ void AutofillDialogControllerImpl::OnDidGetWalletItems(
   legal_document_link_ranges_.clear();
   has_accepted_legal_documents_ = false;
 
-  // TODO(dbeam): verify items support kCartCurrency? http://crbug.com/232952
   wallet_items_ = wallet_items.Pass();
   OnWalletOrSigninUpdate();
 }
@@ -2650,7 +2639,6 @@ void AutofillDialogControllerImpl::GetFullWallet() {
       active_instrument_id_,
       active_address_id_,
       source_url_,
-      wallet::Cart(base::IntToString(kCartMax), kCartCurrency),
       wallet_items_->google_transaction_id(),
       capabilities));
 }

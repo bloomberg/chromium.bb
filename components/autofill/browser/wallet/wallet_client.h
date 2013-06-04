@@ -15,7 +15,6 @@
 #include "base/values.h"
 #include "components/autofill/browser/autofill_manager_delegate.h"
 #include "components/autofill/browser/autofill_metrics.h"
-#include "components/autofill/browser/wallet/cart.h"
 #include "components/autofill/browser/wallet/encryption_escrow_client.h"
 #include "components/autofill/browser/wallet/encryption_escrow_client_observer.h"
 #include "components/autofill/browser/wallet/full_wallet.h"
@@ -102,7 +101,6 @@ class WalletClient
     FullWalletRequest(const std::string& instrument_id,
                       const std::string& address_id,
                       const GURL& source_url,
-                      const Cart& cart,
                       const std::string& google_transaction_id,
                       const std::vector<RiskCapability> risk_capabilities);
     ~FullWalletRequest();
@@ -117,9 +115,6 @@ class WalletClient
 
     // The URL that Online Wallet usage is being initiated on.
     GURL source_url;
-
-    // Cart information.
-    Cart cart;
 
     // The transaction ID from GetWalletItems.
     std::string google_transaction_id;

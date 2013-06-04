@@ -1772,7 +1772,6 @@
         '../components/autofill/browser/phone_number_unittest.cc',
         '../components/autofill/browser/phone_number_i18n_unittest.cc',
         '../components/autofill/browser/validation_unittest.cc',
-        '../components/autofill/browser/wallet/cart_unittest.cc',
         '../components/autofill/browser/wallet/encryption_escrow_client_unittest.cc',
         '../components/autofill/browser/wallet/full_wallet_unittest.cc',
         '../components/autofill/browser/wallet/instrument_unittest.cc',

@@ -178,7 +178,6 @@ AutofillMetrics::WalletRequiredActionMetric RequiredActionToUmaMetric(
 const char kAcceptedLegalDocumentKey[] = "accepted_legal_document";
 const char kApiKeyKey[] = "api_key";
 const char kAuthResultKey[] = "auth_result";
-const char kCartKey[] = "cart";
 const char kEncryptedOtpKey[] = "encrypted_otp";
 const char kErrorTypeKey[] = "wallet_error.error_type";
 const char kFeatureKey[] = "feature";
@@ -209,13 +208,11 @@ WalletClient::FullWalletRequest::FullWalletRequest(
     const std::string& instrument_id,
     const std::string& address_id,
     const GURL& source_url,
-    const Cart& cart,
     const std::string& google_transaction_id,
     const std::vector<RiskCapability> risk_capabilities)
     : instrument_id(instrument_id),
       address_id(address_id),
       source_url(source_url),
-      cart(cart),
       google_transaction_id(google_transaction_id),
       risk_capabilities(risk_capabilities) {}
 
@@ -306,8 +303,6 @@ void WalletClient::GetFullWallet(const FullWalletRequest& full_wallet_request) {
       full_wallet_request.source_url.GetWithEmptyPath().spec());
   pending_request_body_.SetString(kGoogleTransactionIdKey,
                                   full_wallet_request.google_transaction_id);
-  pending_request_body_.Set(kCartKey,
-                            full_wallet_request.cart.ToDictionary().release());
   pending_request_body_.SetString(
       kFeatureKey,
       DialogTypeToFeatureString(delegate_->GetDialogType()));

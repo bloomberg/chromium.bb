@@ -11,7 +11,6 @@
 #include "base/values.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/autofill/browser/autofill_metrics.h"
-#include "components/autofill/browser/wallet/cart.h"
 #include "components/autofill/browser/wallet/full_wallet.h"
 #include "components/autofill/browser/wallet/instrument.h"
 #include "components/autofill/browser/wallet/wallet_client.h"
@@ -294,11 +293,6 @@ const char kAuthenticateInstrumentValidRequest[] =
 
 const char kGetFullWalletValidRequest[] =
     "{"
-        "\"cart\":"
-        "{"
-            "\"currency_code\":\"currency_code\","
-            "\"total_price\":\"total_price\""
-        "},"
         "\"encrypted_otp\":\"encrypted_one_time_pad\","
         "\"feature\":\"REQUEST_AUTOCOMPLETE\","
         "\"google_transaction_id\":\"google_transaction_id\","
@@ -314,11 +308,6 @@ const char kGetFullWalletValidRequest[] =
 
 const char kGetFullWalletWithRiskCapabilitesValidRequest[] =
     "{"
-        "\"cart\":"
-        "{"
-            "\"currency_code\":\"currency_code\","
-            "\"total_price\":\"total_price\""
-        "},"
         "\"encrypted_otp\":\"encrypted_one_time_pad\","
         "\"feature\":\"REQUEST_AUTOCOMPLETE\","
         "\"google_transaction_id\":\"google_transaction_id\","
@@ -846,12 +835,10 @@ TEST_F(WalletClientTest, GetFullWalletSuccess) {
   delegate_.ExpectLogWalletApiCallDuration(AutofillMetrics::GET_FULL_WALLET, 1);
   delegate_.ExpectBaselineMetrics(HAS_ESCROW_REQUEST, HAS_WALLET_REQUEST);
 
-  Cart cart("total_price", "currency_code");
   WalletClient::FullWalletRequest full_wallet_request(
       "instrument_id",
       "shipping_address_id",
       GURL(kMerchantUrl),
-      cart,
       "google_transaction_id",
       std::vector<WalletClient::RiskCapability>());
   wallet_client_->GetFullWallet(full_wallet_request);
@@ -871,12 +858,10 @@ TEST_F(WalletClientTest, GetFullWalletWithRiskCapabilitesSuccess) {
 
   std::vector<WalletClient::RiskCapability> risk_capabilities;
   risk_capabilities.push_back(WalletClient::VERIFY_CVC);
-  Cart cart("total_price", "currency_code");
   WalletClient::FullWalletRequest full_wallet_request(
       "instrument_id",
       "shipping_address_id",
       GURL(kMerchantUrl),
-      cart,
       "google_transaction_id",
       risk_capabilities);
   wallet_client_->GetFullWallet(full_wallet_request);
@@ -897,12 +882,10 @@ TEST_F(WalletClientTest, GetFullWalletEncryptionDown) {
   delegate_.ExpectBaselineMetrics(HAS_ESCROW_REQUEST, NO_WALLET_REQUEST);
   delegate_.ExpectWalletErrorMetric(AutofillMetrics::WALLET_NETWORK_ERROR);
 
-  Cart cart("total_price", "currency_code");
   WalletClient::FullWalletRequest full_wallet_request(
       "instrument_id",
       "shipping_address_id",
       GURL(kMerchantUrl),
-      cart,
       "google_transaction_id",
       std::vector<WalletClient::RiskCapability>());
   wallet_client_->GetFullWallet(full_wallet_request);
@@ -918,12 +901,10 @@ TEST_F(WalletClientTest, GetFullWalletEncryptionMalformed) {
   delegate_.ExpectBaselineMetrics(HAS_ESCROW_REQUEST, NO_WALLET_REQUEST);
   delegate_.ExpectWalletErrorMetric(AutofillMetrics::WALLET_MALFORMED_RESPONSE);
 
-  Cart cart("total_price", "currency_code");
   WalletClient::FullWalletRequest full_wallet_request(
       "instrument_id",
       "shipping_address_id",
       GURL(kMerchantUrl),
-      cart,
       "google_transaction_id",
       std::vector<WalletClient::RiskCapability>());
   wallet_client_->GetFullWallet(full_wallet_request);
@@ -940,12 +921,10 @@ TEST_F(WalletClientTest, GetFullWalletMalformedResponse) {
   delegate_.ExpectBaselineMetrics(HAS_ESCROW_REQUEST, HAS_WALLET_REQUEST);
   delegate_.ExpectWalletErrorMetric(AutofillMetrics::WALLET_MALFORMED_RESPONSE);
 
-  Cart cart("total_price", "currency_code");
   WalletClient::FullWalletRequest full_wallet_request(
       "instrument_id",
       "shipping_address_id",
       GURL(kMerchantUrl),
-      cart,
       "google_transaction_id",
       std::vector<WalletClient::RiskCapability>());
   wallet_client_->GetFullWallet(full_wallet_request);
