@@ -37,6 +37,7 @@ class Rules(object):
     self.exact_filenames = set()
     self.filename = filename
     self.platform = platform
+    self.exe_ext = '.exe' if platform == 'win' else ''
 
     if platform not in VALID_PLATFORMS:
       raise ParseException(self.filename, 1, 'Unknown platform %s' % platform)
@@ -67,6 +68,7 @@ class Rules(object):
       pattern = match.group(2)
 
     pattern = pattern.replace('${PLATFORM}', self.platform)
+    pattern = pattern.replace('${EXE_EXT}', self.exe_ext)
 
     if '*' in pattern:
       # glob pattern

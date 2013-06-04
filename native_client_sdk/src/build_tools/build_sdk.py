@@ -746,9 +746,30 @@ def GenerateNotice(fileroot, output_filename='NOTICE', extra_files=None):
 
 def BuildStepVerifyFilelist(pepperdir, platform):
   buildbot_common.BuildStep('Verify SDK Files')
-  verify_filelist.Verify(platform, os.path.join(SCRIPT_DIR, 'sdk_files.list'),
-                         pepperdir)
-  print 'OK'
+  file_list_path = os.path.join(SCRIPT_DIR, 'sdk_files.list')
+  try:
+    verify_filelist.Verify(platform, file_list_path, pepperdir)
+    print 'OK'
+  except verify_filelist.ParseException, e:
+    buildbot_common.ErrorExit('Parsing sdk_files.list failed:\n\n%s' % e)
+  except verify_filelist.VerifyException, e:
+    file_list_rel = os.path.relpath(file_list_path)
+    verify_filelist_py = os.path.splitext(verify_filelist.__file__)[0] + '.py'
+    verify_filelist_py = os.path.relpath(verify_filelist_py)
+    pepperdir_rel = os.path.relpath(pepperdir)
+
+    msg = """\
+SDK verification failed:
+
+%s
+Add/remove files from %s to fix.
+
+Run:
+    ./%s %s %s
+to test.""" % (e, file_list_rel, verify_filelist_py, file_list_rel,
+               pepperdir_rel)
+    buildbot_common.ErrorExit(msg)
+
 
 
 def BuildStepTarBundle(pepper_ver, tarfile):
