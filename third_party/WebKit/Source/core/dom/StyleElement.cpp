@@ -57,7 +57,6 @@ StyleElement::StyleElement(Document* document, bool createdByParser)
 
 StyleElement::~StyleElement()
 {
-    ASSERT(!m_sheet);
     if (m_sheet)
         clearSheet();
 }
