@@ -17,6 +17,7 @@
 #include "chrome/browser/file_select_helper.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/media/media_capture_devices_dispatcher.h"
+#include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_id.h"
 #include "chrome/browser/ui/browser.h"
@@ -66,6 +67,23 @@ const int kPreferredIconSize = ash::kLauncherPreferredSize;
 #else
 const int kPreferredIconSize = extension_misc::EXTENSION_ICON_SMALL;
 #endif
+
+static bool disable_external_open_for_testing_ = false;
+
+class ShellWindowLinkDelegate : public content::WebContentsDelegate {
+ private:
+  virtual content::WebContents* OpenURLFromTab(
+      content::WebContents* source,
+      const content::OpenURLParams& params) OVERRIDE;
+};
+
+content::WebContents* ShellWindowLinkDelegate::OpenURLFromTab(
+    content::WebContents* source,
+    const content::OpenURLParams& params) {
+  platform_util::OpenExternal(params.url);
+  delete source;
+  return NULL;
+}
 
 }  // namespace
 
@@ -284,6 +302,20 @@ void ShellWindow::AddNewContents(WebContents* source,
                                  bool* was_blocked) {
   DCHECK(Profile::FromBrowserContext(new_contents->GetBrowserContext()) ==
       profile_);
+#if defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_WIN)
+  if (disable_external_open_for_testing_) {
+    Browser* browser =
+        chrome::FindOrCreateTabbedBrowser(profile_, chrome::GetActiveDesktop());
+    // Force all links to open in a new tab, even if they were trying to open a
+    // new window.
+    disposition =
+        disposition == NEW_BACKGROUND_TAB ? disposition : NEW_FOREGROUND_TAB;
+    chrome::AddWebContents(browser, NULL, new_contents, disposition,
+                           initial_pos, user_gesture, was_blocked);
+  } else {
+    new_contents->SetDelegate(new ShellWindowLinkDelegate());
+  }
+#else
   Browser* browser =
       chrome::FindOrCreateTabbedBrowser(profile_, chrome::GetActiveDesktop());
   // Force all links to open in a new tab, even if they were trying to open a
@@ -292,6 +324,7 @@ void ShellWindow::AddNewContents(WebContents* source,
       disposition == NEW_BACKGROUND_TAB ? disposition : NEW_FOREGROUND_TAB;
   chrome::AddWebContents(browser, NULL, new_contents, disposition, initial_pos,
                          user_gesture, was_blocked);
+#endif
 }
 
 void ShellWindow::HandleKeyboardEvent(
@@ -605,3 +638,8 @@ SkRegion* ShellWindow::RawDraggableRegionsToSkRegion(
   }
   return sk_region;
 }
+
+void ShellWindow::DisableExternalOpenForTesting() {
+  disable_external_open_for_testing_ = true;
+}
+

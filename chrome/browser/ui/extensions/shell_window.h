@@ -204,6 +204,8 @@ class ShellWindow : public content::NotificationObserver,
     return shell_window_contents_.get();
   }
 
+  static void DisableExternalOpenForTesting();
+
  protected:
   virtual ~ShellWindow();
 

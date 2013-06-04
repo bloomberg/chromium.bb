@@ -21,6 +21,8 @@ class Extension;
 
 class PlatformAppBrowserTest : public ExtensionApiTest {
  public:
+  PlatformAppBrowserTest();
+
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE;
 
  protected:

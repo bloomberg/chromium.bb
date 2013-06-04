@@ -22,6 +22,10 @@ namespace utils = extension_function_test_utils;
 
 namespace extensions {
 
+PlatformAppBrowserTest::PlatformAppBrowserTest() {
+  ShellWindow::DisableExternalOpenForTesting();
+}
+
 void PlatformAppBrowserTest::SetUpCommandLine(CommandLine* command_line) {
   // Skips ExtensionApiTest::SetUpCommandLine.
   ExtensionBrowserTest::SetUpCommandLine(command_line);
