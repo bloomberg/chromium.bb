@@ -1898,6 +1898,11 @@ crbug.com/169734 [ Win ] inspector-protocol/console-timestamp.html [ Failure Pas
 crbug.com/246072 fast/forms/post-popup-no-multiple-windows.html [ Pass Timeout ]
 
 crbug.com/246118 [ Debug ] inspector/timeline/timeline-decode-resize.html [ Crash Pass Slow ]
+crbug.com/246532 [ Debug ] editing/style/iframe-onload-crash-mac.html [ Crash ]
+crbug.com/246532 [ Debug ] editing/style/iframe-onload-crash-unix.html [ Crash ]
+crbug.com/246532 [ Debug ] editing/style/iframe-onload-crash-win.html [ Crash ]
+crbug.com/246532 [ Debug ] fast/frames/iframe-double-attach.html [ Crash ]
+crbug.com/246532 [ Debug ] fast/frames/iframe-set-inner-html.html [ Crash ]
 
 # Crashes random following tests
 crbug.com/246193 fast/filesystem/workers [ Skip ]
