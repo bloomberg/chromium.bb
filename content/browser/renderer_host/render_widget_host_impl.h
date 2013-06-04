@@ -486,6 +486,9 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
   // subsystem.
   int64 GetLatencyComponentId();
 
+  // Don't check whether we expected a resize ack during layout tests.
+  static void DisableResizeAckCheckForTesting();
+
  protected:
   virtual RenderWidgetHostImpl* AsRenderWidgetHostImpl() OVERRIDE;
 

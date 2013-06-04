@@ -19,6 +19,7 @@
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/common/content_paths.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/public/test/layouttest_support.h"
 #include "content/shell/common/shell_switches.h"
 #include "content/shell/shell.h"
 #include "content/shell/webkit_test_controller.h"
@@ -78,6 +79,8 @@ InProcessBrowserLayoutTest::~InProcessBrowserLayoutTest() {
 }
 
 void InProcessBrowserLayoutTest::SetUpInProcessBrowserTestFixture() {
+  EnableBrowserLayoutTestMode();
+
   base::FilePath src_dir;
   ASSERT_TRUE(PathService::Get(DIR_LAYOUT_TESTS, &src_dir));
   base::FilePath absolute_parent_dir = src_dir.Append(test_parent_dir_);

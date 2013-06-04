@@ -6,6 +6,7 @@
 
 #include "base/callback.h"
 #include "base/lazy_instance.h"
+#include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/common/gpu/image_transport_surface.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/render_view_impl.h"
@@ -69,6 +70,7 @@ void EnableBrowserLayoutTestMode() {
 #elif defined(OS_WIN) && !defined(USE_AURA)
   WebContentsDragWin::DisableDragDropForTesting();
 #endif
+  RenderWidgetHostImpl::DisableResizeAckCheckForTesting();
 }
 
 int GetLocalSessionHistoryLength(RenderView* render_view) {
