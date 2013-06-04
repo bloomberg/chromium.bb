@@ -108,7 +108,6 @@ class ChromotingInstance :
 
   // pp::Instance interface.
   virtual void DidChangeView(const pp::View& view) OVERRIDE;
-  virtual void DidChangeFocus(bool has_focus) OVERRIDE;
   virtual bool Init(uint32_t argc, const char* argn[],
                     const char* argv[]) OVERRIDE;
   virtual void HandleMessage(const pp::Var& message) OVERRIDE;

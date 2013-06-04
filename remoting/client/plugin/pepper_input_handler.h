@@ -23,19 +23,10 @@ class PepperInputHandler {
   explicit PepperInputHandler(protocol::InputStub* input_stub);
   virtual ~PepperInputHandler();
 
-  // Called by ChromotingInstance::DidChangeFocus when the instance
-  // goes in or out of focus. Sets or clears the has_focus_ flag
-  // which controls whether the client passes mouse and wheel
-  // events to the remoting server.
-  void OnFocusChanged(bool has_focus);
-
   bool HandleInputEvent(const pp::InputEvent& event);
 
  private:
   protocol::InputStub* input_stub_;
-
-  // Flag indicating whether the calling plugin has focus.
-  bool has_focus_;
 
   // Accumulated sub-pixel deltas from wheel events.
   float wheel_delta_x_;

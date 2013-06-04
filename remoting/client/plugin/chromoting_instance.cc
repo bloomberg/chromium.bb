@@ -446,12 +446,6 @@ void ChromotingInstance::DidChangeView(const pp::View& view) {
   }
 }
 
-void ChromotingInstance::DidChangeFocus(bool has_focus) {
-  DCHECK(plugin_task_runner_->BelongsToCurrentThread());
-
-  input_handler_.OnFocusChanged(has_focus);
-}
-
 bool ChromotingInstance::HandleInputEvent(const pp::InputEvent& event) {
   DCHECK(plugin_task_runner_->BelongsToCurrentThread());
 
