@@ -248,9 +248,6 @@ interface InspectorInstrumentation {
     [Resource]
     void markResourceAsCached(Page*, unsigned long identifier);
 
-    [Resource]
-    void didLoadResourceFromMemoryCache(Page*, DocumentLoader*, CachedResource*);
-
     [Timeline, Inline=FastReturn]
     InspectorInstrumentationCookie willReceiveResourceData([Keep] Frame*, unsigned long identifier, int length);
 

@@ -383,25 +383,6 @@ void InspectorResourceAgent::didFailLoading(unsigned long identifier, DocumentLo
     m_frontend->loadingFailed(requestId, currentTime(), error.localizedDescription(), canceled ? &canceled : 0);
 }
 
-void InspectorResourceAgent::didLoadResourceFromMemoryCache(DocumentLoader* loader, CachedResource* resource)
-{
-    String loaderId = m_pageAgent->loaderId(loader);
-    String frameId = m_pageAgent->frameId(loader->frame());
-    unsigned long identifier = createUniqueIdentifier();
-    String requestId = IdentifiersFactory::requestId(identifier);
-    m_resourcesData->resourceCreated(requestId, loaderId);
-    m_resourcesData->addCachedResource(requestId, resource);
-    if (resource->type() == CachedResource::RawResource) {
-        CachedRawResource* rawResource = static_cast<CachedRawResource*>(resource);
-        String rawRequestId = IdentifiersFactory::requestId(rawResource->identifier());
-        m_resourcesData->reuseXHRReplayData(requestId, rawRequestId);
-    }
-
-    RefPtr<TypeBuilder::Network::Initiator> initiatorObject = buildInitiatorObject(loader->frame() ? loader->frame()->document() : 0);
-
-    m_frontend->requestServedFromMemoryCache(requestId, frameId, loaderId, loader->url().string(), currentTime(), initiatorObject, buildObjectForCachedResource(*resource, loader));
-}
-
 void InspectorResourceAgent::scriptImported(unsigned long identifier, const String& sourceString)
 {
     m_resourcesData->setResourceContent(IdentifiersFactory::requestId(identifier), sourceString);

@@ -839,7 +839,7 @@ void CachedResourceLoader::performPostLoadActions()
 
 void CachedResourceLoader::notifyLoadedFromMemoryCache(CachedResource* resource)
 {
-    if (!resource || !frame() || resource->status() != CachedResource::Cached)
+    if (!frame() || resource->status() != CachedResource::Cached || m_validatedURLs.contains(resource->url()))
         return;
 
     // FIXME: If the WebKit client changes or cancels the request, WebCore does not respect this and continues the load.

@@ -687,8 +687,6 @@ void DocumentLoader::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
     info.addMember(m_response, "response");
     info.addMember(m_archiveResourceCollection, "archiveResourceCollection");
     info.addMember(m_archive, "archive");
-    info.addMember(m_resourcesClientKnowsAbout, "resourcesClientKnowsAbout");
-    info.addMember(m_resourcesLoadedFromMemoryCacheForClientNotification, "resourcesLoadedFromMemoryCacheForClientNotification");
     info.addMember(m_applicationCacheHost, "applicationCacheHost");
 }
 

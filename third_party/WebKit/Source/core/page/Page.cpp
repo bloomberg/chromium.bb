@@ -132,7 +132,6 @@ Page::Page(PageClients& pageClients)
     , m_tabKeyCyclesThroughElements(true)
     , m_defersLoading(false)
     , m_defersLoadingCallCount(0)
-    , m_areMemoryCacheClientCallsEnabled(true)
     , m_pageScaleFactor(1)
     , m_deviceScaleFactor(1)
     , m_didLoadUserStyleSheet(false)
@@ -566,19 +565,6 @@ StorageNamespace* Page::sessionStorage(bool optionalCreate)
 void Page::setSessionStorage(PassRefPtr<StorageNamespace> newStorage)
 {
     m_sessionStorage = newStorage;
-}
-
-void Page::setMemoryCacheClientCallsEnabled(bool enabled)
-{
-    if (m_areMemoryCacheClientCallsEnabled == enabled)
-        return;
-
-    m_areMemoryCacheClientCallsEnabled = enabled;
-    if (!enabled)
-        return;
-
-    for (RefPtr<Frame> frame = mainFrame(); frame; frame = frame->tree()->traverseNext())
-        frame->loader()->tellClientAboutPastMemoryCacheLoads();
 }
 
 void Page::setTimerAlignmentInterval(double interval)

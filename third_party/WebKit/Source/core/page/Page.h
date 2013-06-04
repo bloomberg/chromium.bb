@@ -214,9 +214,6 @@ public:
     StorageNamespace* sessionStorage(bool optionalCreate = true);
     void setSessionStorage(PassRefPtr<StorageNamespace>);
 
-    void setMemoryCacheClientCallsEnabled(bool);
-    bool areMemoryCacheClientCallsEnabled() const { return m_areMemoryCacheClientCallsEnabled; }
-
     // Don't allow more than a certain number of frames in a page.
     // This seems like a reasonable upper bound, and otherwise mutually
     // recursive frameset pages can quickly bring the program to its knees
@@ -300,8 +297,6 @@ private:
     bool m_tabKeyCyclesThroughElements;
     bool m_defersLoading;
     unsigned m_defersLoadingCallCount;
-
-    bool m_areMemoryCacheClientCallsEnabled;
 
     float m_pageScaleFactor;
     float m_deviceScaleFactor;

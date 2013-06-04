@@ -170,7 +170,6 @@ public:
     void didFirstLayout();
 
     void loadedResourceFromMemoryCache(CachedResource*);
-    void tellClientAboutPastMemoryCacheLoads();
 
     void checkLoadComplete();
     void detachFromParent();

@@ -2189,19 +2189,12 @@ void FrameLoader::loadedResourceFromMemoryCache(CachedResource* resource)
     if (!page)
         return;
 
-    if (!resource->shouldSendResourceLoadCallbacks() || m_documentLoader->haveToldClientAboutLoad(resource->url().string()))
+    if (!resource->shouldSendResourceLoadCallbacks())
         return;
 
     // Main resource delegate messages are synthesized in MainResourceLoader, so we must not send them here.
     if (resource->type() == CachedResource::MainResource)
         return;
-
-    if (!page->areMemoryCacheClientCallsEnabled()) {
-        InspectorInstrumentation::didLoadResourceFromMemoryCache(page, m_documentLoader.get(), resource);
-        m_documentLoader->recordMemoryCacheLoadForFutureClientNotification(resource->url());
-        m_documentLoader->didTellClientAboutLoad(resource->url());
-        return;
-    }
 
     ResourceRequest request(resource->url());
     m_client->dispatchDidLoadResourceFromMemoryCache(m_documentLoader.get(), request, resource->response(), resource->encodedSize());
@@ -2458,33 +2451,6 @@ void FrameLoader::dispatchDidCommitLoad()
     if (m_frame->page()->mainFrame() == m_frame)
         m_frame->page()->useCounter()->didCommitLoad();
 
-}
-
-void FrameLoader::tellClientAboutPastMemoryCacheLoads()
-{
-    ASSERT(m_frame->page());
-    ASSERT(m_frame->page()->areMemoryCacheClientCallsEnabled());
-
-    if (!m_documentLoader)
-        return;
-
-    Vector<String> pastLoads;
-    m_documentLoader->takeMemoryCacheLoadsForClientNotification(pastLoads);
-
-    size_t size = pastLoads.size();
-    for (size_t i = 0; i < size; ++i) {
-        CachedResource* resource = memoryCache()->resourceForURL(KURL(ParsedURLString, pastLoads[i]));
-
-        // FIXME: These loads, loaded from cache, but now gone from the cache by the time
-        // Page::setMemoryCacheClientCallsEnabled(true) is called, will not be seen by the client.
-        // Consider if there's some efficient way of remembering enough to deliver this client call.
-        // We have the URL, but not the rest of the response or the length.
-        if (!resource)
-            continue;
-
-        ResourceRequest request(resource->url());
-        m_client->dispatchDidLoadResourceFromMemoryCache(m_documentLoader.get(), request, resource->response(), resource->encodedSize());
-    }
 }
 
 void FrameLoader::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
