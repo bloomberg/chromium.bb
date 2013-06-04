@@ -345,6 +345,11 @@ Browser::Browser(const CreateParams& params)
       command_controller_(new chrome::BrowserCommandController(
           this, g_browser_process->profile_manager())),
       window_has_shown_(false) {
+  // If this causes a crash then a window is being opened using a profile type
+  // that is disallowed by policy. The crash prevents the disabled window type
+  // from opening at all, but the path that triggered it should be fixed.
+  CHECK(IncognitoModePrefs::CanOpenBrowser(profile_));
+
   if (!app_name_.empty())
     chrome::RegisterAppPrefs(app_name_, profile_);
   tab_strip_model_->AddObserver(this);
