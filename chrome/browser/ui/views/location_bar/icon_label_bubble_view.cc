@@ -22,8 +22,7 @@ IconLabelBubbleView::IconLabelBubbleView(const int background_images[],
                                          SkColor text_color,
                                          SkColor parent_background_color,
                                          bool elide_in_middle)
-    : background_painter_(
-          views::Painter::CreateImageGridPainter(background_images)),
+    : background_painter_(new views::HorizontalPainter(background_images)),
       image_(new views::ImageView()),
       label_(new views::Label()),
       is_extension_icon_(false) {
@@ -44,7 +43,7 @@ IconLabelBubbleView::IconLabelBubbleView(const int background_images[],
   // sit atop.
   const SkBitmap& bitmap(
       ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-          background_images[4])->GetRepresentation(
+          background_images[1])->GetRepresentation(
           ui::SCALE_FACTOR_100P).sk_bitmap());
   SkAutoLockPixels pixel_lock(bitmap);
   SkColor background_image_color =

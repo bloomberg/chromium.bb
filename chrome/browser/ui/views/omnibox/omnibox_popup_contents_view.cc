@@ -525,7 +525,8 @@ gfx::Rect OmniboxPopupContentsView::CalculateTargetBounds(int h) {
     // The normal location bar is drawn using a background graphic that includes
     // the border, so we inset by enough to make the edges line up, and the
     // bubble appear at the same height as the Star bubble.
-    location_bar_bounds.Inset(LocationBarView::kNormalEdgeThickness, 0);
+    location_bar_bounds.Inset(LocationBarView::kNormalHorizontalEdgeThickness,
+                              0);
   }
   gfx::Point location_bar_origin(location_bar_bounds.origin());
   views::View::ConvertPointToScreen(location_bar_, &location_bar_origin);

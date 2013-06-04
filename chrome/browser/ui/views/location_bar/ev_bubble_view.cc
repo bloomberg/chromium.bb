@@ -8,7 +8,11 @@
 
 
 namespace {
-const int kBackgroundImages[] = IMAGE_GRID(IDR_OMNIBOX_EV_BUBBLE);
+const int kBackgroundImages[] = {
+  IDR_OMNIBOX_EV_BUBBLE_LEFT,
+  IDR_OMNIBOX_EV_BUBBLE_CENTER,
+  IDR_OMNIBOX_EV_BUBBLE_RIGHT,
+};
 }
 
 

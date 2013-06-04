@@ -14,7 +14,14 @@ const bool kCanToggleSystemTitleBar = true;
 #endif
 #endif
 
-const int kOmniboxFontPixelSize = 16;
+#if defined(TOOLKIT_GTK)
+// 14px = 10.5pt @ 96dpi.
+const int kOmniboxFontPixelSize = 14;
+#else
+// Make the regular omnibox text two points larger than the nine-point font
+// used in the tab strip (11pt / 72pt/in * 96px/in = 14.667px).
+const int kOmniboxFontPixelSize = 15;
+#endif
 
 #if defined(TOOLKIT_VIEWS)
 // Windows and Chrome OS have bigger shadows in the tab art.
