@@ -241,10 +241,33 @@ bool NativeMessagingHost::ProcessStopDaemon(
 bool NativeMessagingHost::ProcessGetDaemonState(
     const base::DictionaryValue& message,
     scoped_ptr<base::DictionaryValue> response) {
-  // TODO(lambroslambrou): Send the state as a string instead of an integer,
-  // and update the web-app accordingly.
   DaemonController::State state = daemon_controller_->GetState();
-  response->SetInteger("state", state);
+  switch (state) {
+    case DaemonController::STATE_NOT_IMPLEMENTED:
+      response->SetString("state", "NOT_IMPLEMENTED");
+      break;
+    case DaemonController::STATE_NOT_INSTALLED:
+      response->SetString("state", "NOT_INSTALLED");
+      break;
+    case DaemonController::STATE_INSTALLING:
+      response->SetString("state", "INSTALLING");
+      break;
+    case DaemonController::STATE_STOPPED:
+      response->SetString("state", "STOPPED");
+      break;
+    case DaemonController::STATE_STARTING:
+      response->SetString("state", "STARTING");
+      break;
+    case DaemonController::STATE_STARTED:
+      response->SetString("state", "STARTED");
+      break;
+    case DaemonController::STATE_STOPPING:
+      response->SetString("state", "STOPPING");
+      break;
+    case DaemonController::STATE_UNKNOWN:
+      response->SetString("state", "UNKNOWN");
+      break;
+  }
   SendResponse(response.Pass());
   return true;
 }
@@ -283,9 +306,20 @@ void NativeMessagingHost::SendUsageStatsConsentResponse(
 void NativeMessagingHost::SendAsyncResult(
     scoped_ptr<base::DictionaryValue> response,
     DaemonController::AsyncResult result) {
-  // TODO(lambroslambrou): Send the result as a string instead of an integer,
-  // and update the web-app accordingly. See http://crbug.com/232135.
-  response->SetInteger("result", result);
+  switch (result) {
+    case DaemonController::RESULT_OK:
+      response->SetString("result", "OK");
+      break;
+    case DaemonController::RESULT_FAILED:
+      response->SetString("result", "FAILED");
+      break;
+    case DaemonController::RESULT_CANCELLED:
+      response->SetString("result", "CANCELLED");
+      break;
+    case DaemonController::RESULT_FAILED_DIRECTORY:
+      response->SetString("result", "FAILED_DIRECTORY");
+      break;
+  }
   SendResponse(response.Pass());
 }
 

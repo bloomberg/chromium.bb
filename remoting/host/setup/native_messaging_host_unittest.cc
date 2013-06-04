@@ -85,9 +85,8 @@ void VerifyStopDaemonResponse(const base::DictionaryValue* response) {
   std::string value;
   EXPECT_TRUE(response->GetString("type", &value));
   EXPECT_EQ("stopDaemonResponse", value);
-  int result;
-  EXPECT_TRUE(response->GetInteger("result", &result));
-  EXPECT_EQ(0, result);
+  EXPECT_TRUE(response->GetString("result", &value));
+  EXPECT_EQ("OK", value);
 }
 
 void VerifyGetDaemonStateResponse(const base::DictionaryValue* response) {
@@ -95,9 +94,8 @@ void VerifyGetDaemonStateResponse(const base::DictionaryValue* response) {
   std::string value;
   EXPECT_TRUE(response->GetString("type", &value));
   EXPECT_EQ("getDaemonStateResponse", value);
-  int result;
-  EXPECT_TRUE(response->GetInteger("state", &result));
-  EXPECT_EQ(4, result);
+  EXPECT_TRUE(response->GetString("state", &value));
+  EXPECT_EQ("STARTED", value);
 }
 
 void VerifyUpdateDaemonConfigResponse(const base::DictionaryValue* response) {
@@ -105,9 +103,8 @@ void VerifyUpdateDaemonConfigResponse(const base::DictionaryValue* response) {
   std::string value;
   EXPECT_TRUE(response->GetString("type", &value));
   EXPECT_EQ("updateDaemonConfigResponse", value);
-  int result;
-  EXPECT_TRUE(response->GetInteger("result", &result));
-  EXPECT_EQ(0, result);
+  EXPECT_TRUE(response->GetString("result", &value));
+  EXPECT_EQ("OK", value);
 }
 
 void VerifyStartDaemonResponse(const base::DictionaryValue* response) {
@@ -115,9 +112,8 @@ void VerifyStartDaemonResponse(const base::DictionaryValue* response) {
   std::string value;
   EXPECT_TRUE(response->GetString("type", &value));
   EXPECT_EQ("startDaemonResponse", value);
-  int result;
-  EXPECT_TRUE(response->GetInteger("result", &result));
-  EXPECT_EQ(0, result);
+  EXPECT_TRUE(response->GetString("result", &value));
+  EXPECT_EQ("OK", value);
 }
 
 }  // namespace

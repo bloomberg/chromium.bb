@@ -109,16 +109,14 @@ function checkType_(name, object, type) {
  * @return {remoting.HostController.AsyncResult?} Converted result.
  */
 function asAsyncResult_(result) {
-  if (!checkType_('result', result, 'number')) {
+  if (!checkType_('result', result, 'string')) {
     return null;
   }
-  for (var i in remoting.HostController.AsyncResult) {
-    if (remoting.HostController.AsyncResult[i] == result) {
-      return remoting.HostController.AsyncResult[i];
-    }
+  if (!remoting.HostController.AsyncResult.hasOwnProperty(result)) {
+    console.error('NativeMessaging: unexpected result code: ', result);
+    return null;
   }
-  console.error('NativeMessaging: unexpected result code: ', result);
-  return null;
+  return remoting.HostController.AsyncResult[result];
 }
 
 /**
@@ -129,16 +127,14 @@ function asAsyncResult_(result) {
  * @return {remoting.HostController.State?} Converted result.
  */
 function asHostState_(result) {
-  if (!checkType_('result', result, 'number')) {
+  if (!checkType_('result', result, 'string')) {
     return null;
   }
-  for (var i in remoting.HostController.State) {
-    if (remoting.HostController.State[i] == result) {
-      return remoting.HostController.State[i];
-    }
+  if (!remoting.HostController.State.hasOwnProperty(result)) {
+    console.error('NativeMessaging: unexpected result code: ', result);
+    return null;
   }
-  console.error('NativeMessaging: unexpected result code: ', result);
-  return null;
+  return remoting.HostController.State[result];
 }
 
 /**
