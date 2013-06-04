@@ -44,6 +44,7 @@ const int kBadDeviceId = -1;
 
 #if defined(OS_CHROMEOS)
 const char kNeo2LayoutId[] = "xkb:de:neo:ger";
+const char kCaMultixLayoutId[] = "xkb:ca:multix:fra";
 
 // A key code and a flag we should use when a key is remapped to |remap_to|.
 const struct ModifierRemapping {
@@ -124,8 +125,11 @@ bool IsMod3UsedByCurrentInputMethod() {
   // it's not possible to make both features work. For now, we don't remap
   // Mod3Mask when Neo2 is in use.
   // TODO(yusukes): Remove the restriction.
-  return chromeos::input_method::InputMethodManager::Get()
-      ->GetCurrentInputMethod().id() == kNeo2LayoutId;
+  chromeos::input_method::InputMethodManager* manager =
+      chromeos::input_method::InputMethodManager::Get();
+  return manager->GetCurrentInputMethod().id() == kNeo2LayoutId ||
+      manager->GetCurrentInputMethod().id() == kCaMultixLayoutId;
+
 }
 #endif
 
