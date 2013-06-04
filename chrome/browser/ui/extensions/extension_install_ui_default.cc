@@ -76,30 +76,6 @@ void ShowExtensionInstalledBubble(const extensions::Extension* extension,
     chrome::ShowExtensionInstalledBubble(extension, browser, icon);
 }
 
-void OnAppLauncherEnabledCompleted(const extensions::Extension* extension,
-                                   Profile* profile,
-                                   SkBitmap* icon,
-                                   bool use_bubble,
-                                   bool use_launcher) {
-  if (use_launcher) {
-    AppListService::Get()->ShowAppList(profile);
-
-    content::NotificationService::current()->Notify(
-        chrome::NOTIFICATION_APP_INSTALLED_TO_APPLIST,
-        content::Source<Profile>(profile),
-        content::Details<const std::string>(&extension->id()));
-    return;
-  }
-
-  if (use_bubble) {
-    ShowExtensionInstalledBubble(extension, profile, *icon);
-    return;
-  }
-
-  ExtensionInstallUI::OpenAppInstalledUI(profile, extension->id());
-}
-
-
 // ErrorInfobarDelegate -------------------------------------------------------
 
 // Helper class to put up an infobar when installation fails.
@@ -273,9 +249,22 @@ void ExtensionInstallUIDefault::OnInstallSuccess(const Extension* extension,
                   cmdline->HasSwitch(switches::kAppsNewInstallBubble));
 #endif
 
-    apps::GetIsAppLauncherEnabled(
-        base::Bind(&OnAppLauncherEnabledCompleted, extension, current_profile,
-                   icon, use_bubble));
+    if (apps::IsAppLauncherEnabled()) {
+      AppListService::Get()->ShowAppList(current_profile);
+
+      content::NotificationService::current()->Notify(
+          chrome::NOTIFICATION_APP_INSTALLED_TO_APPLIST,
+          content::Source<Profile>(current_profile),
+          content::Details<const std::string>(&extension->id()));
+      return;
+    }
+
+    if (use_bubble) {
+      ShowExtensionInstalledBubble(extension, current_profile, *icon);
+      return;
+    }
+
+    ExtensionInstallUI::OpenAppInstalledUI(current_profile, extension->id());
     return;
   }
 

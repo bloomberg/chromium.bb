@@ -373,9 +373,6 @@ class BookmarkBarView : public DetachableToolbarView,
   // Updates the visibility of the apps shortcut based on the pref value.
   void OnAppsPageShortcutVisibilityPrefChanged();
 
-  // Called when we know whether the app launcher is enabled.
-  void OnAppLauncherEnabledCompleted(bool app_launcher_enabled);
-
   // Needed to react to kShowAppsShortcutInBookmarkBar changes.
   PrefChangeRegistrar profile_pref_registrar_;
 

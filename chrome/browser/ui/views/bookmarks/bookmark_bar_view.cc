@@ -1298,11 +1298,6 @@ void BookmarkBarView::Init() {
     // else case: we'll receive notification back from the BookmarkModel when
     // done loading, then we'll populate the bar.
   }
-
-  // The first check for the app launcher is asynchronous, run it now.
-  apps::GetIsAppLauncherEnabled(
-      base::Bind(&BookmarkBarView::OnAppLauncherEnabledCompleted,
-                 base::Unretained(this)));
 }
 
 int BookmarkBarView::GetBookmarkButtonCount() {
@@ -1873,9 +1868,4 @@ void BookmarkBarView::OnAppsPageShortcutVisibilityPrefChanged() {
   apps_page_shortcut_->SetVisible(visible);
   UpdateBookmarksSeparatorVisibility();
   Layout();
-}
-
-void BookmarkBarView::OnAppLauncherEnabledCompleted(bool app_launcher_enabled) {
-  // Disregard |app_launcher_enabled|, use apps::WasAppLauncherEnable instead.
-  OnAppsPageShortcutVisibilityPrefChanged();
 }

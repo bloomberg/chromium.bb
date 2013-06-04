@@ -32,10 +32,7 @@ BookmarkBarBridge::BookmarkBarBridge(Profile* profile,
       base::Bind(&BookmarkBarBridge::OnAppsPageShortcutVisibilityPrefChanged,
                  base::Unretained(this)));
 
-  // The first check for the app launcher is asynchronous, run it now.
-  apps::GetIsAppLauncherEnabled(
-      base::Bind(&BookmarkBarBridge::OnAppLauncherEnabledCompleted,
-                 base::Unretained(this)));
+  [controller_ updateAppsPageShortcutButtonVisibility];
 }
 
 BookmarkBarBridge::~BookmarkBarBridge() {
@@ -105,10 +102,5 @@ void BookmarkBarBridge::ExtensiveBookmarkChangesEnded(BookmarkModel* model) {
 }
 
 void BookmarkBarBridge::OnAppsPageShortcutVisibilityPrefChanged() {
-  [controller_ updateAppsPageShortcutButtonVisibility];
-}
-
-void BookmarkBarBridge::OnAppLauncherEnabledCompleted(
-    bool app_launcher_enabled) {
   [controller_ updateAppsPageShortcutButtonVisibility];
 }

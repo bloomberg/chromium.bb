@@ -349,7 +349,7 @@ void NTPResourceCache::CreateNewTabHTML() {
   std::string app_launcher_promo_group_name =
       base::FieldTrialList::FindFullName(apps::kLauncherPromoTrialName);
   bool show_app_launcher_promo =
-      !apps::MaybeIsAppLauncherEnabled() &&
+      !apps::IsAppLauncherEnabled() &&
       local_state->GetBoolean(apps::prefs::kShowAppLauncherPromo) &&
       (app_launcher_promo_group_name == apps::kShowLauncherPromoOnceGroupName ||
        app_launcher_promo_group_name ==

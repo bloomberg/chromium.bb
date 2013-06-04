@@ -583,15 +583,8 @@ bool CompleteInstallFunction::RunImpl() {
 void CompleteInstallFunction::AfterMaybeInstallAppLauncher(bool ok) {
   if (!ok)
     LOG(ERROR) << "Error installing app launcher";
-  apps::GetIsAppLauncherEnabled(base::Bind(
-      &CompleteInstallFunction::OnGetAppLauncherEnabled, this,
-      approval_->extension_id));
-}
-
-void CompleteInstallFunction::OnGetAppLauncherEnabled(
-    std::string id,
-    bool app_launcher_enabled) {
-  if (app_launcher_enabled) {
+  std::string id = approval_->extension_id;
+  if (apps::IsAppLauncherEnabled()) {
     std::string name;
     if (!approval_->manifest->value()->GetString(extension_manifest_keys::kName,
                                                  &name)) {
@@ -717,14 +710,9 @@ void GetWebGLStatusFunction::OnFeatureCheck(bool feature_allowed) {
 }
 
 bool GetIsLauncherEnabledFunction::RunImpl() {
-  apps::GetIsAppLauncherEnabled(base::Bind(
-      &GetIsLauncherEnabledFunction::OnIsLauncherCheckCompleted, this));
-  return true;
-}
-
-void GetIsLauncherEnabledFunction::OnIsLauncherCheckCompleted(bool is_enabled) {
-  SetResult(Value::CreateBooleanValue(is_enabled));
+  SetResult(Value::CreateBooleanValue(apps::IsAppLauncherEnabled()));
   SendResponse(true);
+  return true;
 }
 
 }  // namespace extensions

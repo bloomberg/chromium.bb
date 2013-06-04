@@ -62,10 +62,6 @@ class BookmarkBarBridge : public BookmarkModelObserver {
   // Updates the visibility of the apps shortcut based on the pref value.
   void OnAppsPageShortcutVisibilityPrefChanged();
 
-  // Updates the visibility of the apps shortcut once we know if the app
-  // launcher is enabled.
-  void OnAppLauncherEnabledCompleted(bool app_launcher_enabled);
-
   DISALLOW_COPY_AND_ASSIGN(BookmarkBarBridge);
 };
 
