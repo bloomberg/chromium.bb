@@ -43,28 +43,6 @@ static v8::Handle<T> setDOMException(ExceptionCode ec, const v8::AccessorInfo& i
     return v8::Handle<T>();
 }
 
-// Get an array containing the names of indexed properties in a collection.
-v8::Handle<v8::Array> V8Storage::namedPropertyEnumerator(const v8::AccessorInfo& info)
-{
-    Storage* storage = V8Storage::toNative(info.Holder());
-    ExceptionCode ec = 0;
-    unsigned length = storage->length(ec);
-    if (ec)
-        return setDOMException<v8::Array>(ec, info);
-    v8::Handle<v8::Array> properties = v8::Array::New(length);
-    for (unsigned i = 0; i < length; ++i) {
-        String key = storage->key(i, ec);
-        if (ec)
-            return setDOMException<v8::Array>(ec, info);
-        ASSERT(!key.isNull());
-        String val = storage->getItem(key, ec);
-        if (ec)
-            return setDOMException<v8::Array>(ec, info);
-        properties->Set(v8Integer(i, info.GetIsolate()), v8String(key, info.GetIsolate()));
-    }
-    return properties;
-}
-
 v8::Handle<v8::Integer> V8Storage::namedPropertyQuery(v8::Local<v8::String> v8Name, const v8::AccessorInfo& info)
 {
     Storage* storage = V8Storage::toNative(info.Holder());

@@ -65,6 +65,10 @@ public:
         ec = 0;
         return result;
     }
+    void namedPropertyEnumerator(Vector<String>& names, ExceptionCode&)
+    {
+        getNames(names);
+    }
 
     virtual Element* element() = 0;
 

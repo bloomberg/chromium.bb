@@ -100,5 +100,22 @@ bool Storage::anonymousIndexedDeleter(unsigned index, ExceptionCode& ec)
     return anonymousNamedDeleter(String::number(index), ec);
 }
 
+void Storage::namedPropertyEnumerator(Vector<String>& names, ExceptionCode& ec)
+{
+    unsigned length = this->length(ec);
+    if (ec)
+        return;
+    names.resize(length);
+    for (unsigned i = 0; i < length; ++i) {
+        String key = this->key(i, ec);
+        if (ec)
+            return;
+        ASSERT(!key.isNull());
+        String val = getItem(key, ec);
+        if (ec)
+            return;
+        names[i] = key;
+    }
+}
 
 }

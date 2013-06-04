@@ -45,14 +45,4 @@ v8::Handle<v8::Integer> V8DOMStringMap::namedPropertyQuery(v8::Local<v8::String>
     return v8::Handle<v8::Integer>();
 }
 
-v8::Handle<v8::Array> V8DOMStringMap::namedPropertyEnumerator(const v8::AccessorInfo& info)
-{
-    Vector<String> names;
-    V8DOMStringMap::toNative(info.Holder())->getNames(names);
-    v8::Handle<v8::Array> properties = v8::Array::New(names.size());
-    for (size_t i = 0; i < names.size(); ++i)
-        properties->Set(v8Integer(i, info.GetIsolate()), v8String(names[i], info.GetIsolate()));
-    return properties;
-}
-
 } // namespace WebCore
