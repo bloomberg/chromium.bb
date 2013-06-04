@@ -102,7 +102,7 @@ class IndexedDBDatabase : public base::RefCounted<IndexedDBDatabase> {
       int64 transaction_id,
       int64 object_store_id,
       int64 index_id,
-      scoped_ptr<IndexedDBKeyRange> key_Range,
+      scoped_ptr<IndexedDBKeyRange> key_range,
       indexed_db::CursorDirection direction,
       bool key_only,
       TaskType task_type,

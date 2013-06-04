@@ -10,11 +10,12 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/string16.h"
 #include "content/browser/indexed_db/indexed_db_database_error.h"
+#include "content/common/content_export.h"
 #include "third_party/WebKit/public/platform/WebIDBDatabaseCallbacks.h"
 
 namespace content {
 
-class IndexedDBDatabaseCallbacksWrapper
+class CONTENT_EXPORT IndexedDBDatabaseCallbacksWrapper
     : public base::RefCounted<IndexedDBDatabaseCallbacksWrapper> {
  public:
   static scoped_refptr<IndexedDBDatabaseCallbacksWrapper> Create(
@@ -29,10 +30,12 @@ class IndexedDBDatabaseCallbacksWrapper
                        scoped_refptr<IndexedDBDatabaseError> error);
   virtual void OnComplete(int64 transaction_id);
 
- private:
+ protected:
   explicit IndexedDBDatabaseCallbacksWrapper(
       WebKit::WebIDBDatabaseCallbacks* callbacks);
   virtual ~IndexedDBDatabaseCallbacksWrapper();
+
+ private:
   friend class base::RefCounted<IndexedDBDatabaseCallbacksWrapper>;
 
   scoped_ptr<WebKit::WebIDBDatabaseCallbacks> callbacks_;

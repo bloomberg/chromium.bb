@@ -5,6 +5,7 @@
 #ifndef CONTENT_BROWSER_INDEXED_DB_INDEXED_DB_CALLBACKS_WRAPPER_H_
 #define CONTENT_BROWSER_INDEXED_DB_INDEXED_DB_CALLBACKS_WRAPPER_H_
 
+#include <string>
 #include <vector>
 
 #include "base/basictypes.h"
@@ -25,7 +26,7 @@ namespace content {
 class IndexedDBCursor;
 class WebIDBDatabaseImpl;
 
-class IndexedDBCallbacksWrapper
+class CONTENT_EXPORT IndexedDBCallbacksWrapper
     : public base::RefCounted<IndexedDBCallbacksWrapper> {
  public:
   static scoped_refptr<IndexedDBCallbacksWrapper> Create(
@@ -69,7 +70,7 @@ class IndexedDBCallbacksWrapper
       const std::vector<IndexedDBKey>& primary_keys,
       const std::vector<std::vector<char> >& values);
   // From IDBFactory.open()/deleteDatabase()
-  virtual void OnBlocked(int64 /* existing_version */);
+  virtual void OnBlocked(int64 existing_version);
   // From IDBFactory.open()
   virtual void OnUpgradeNeeded(int64 /* old_version */,
                                scoped_refptr<IndexedDBDatabase> db,
@@ -79,9 +80,11 @@ class IndexedDBCallbacksWrapper
   virtual void SetDatabaseCallbacks(
       scoped_refptr<IndexedDBDatabaseCallbacksWrapper> database_callbacks);
 
- private:
-  explicit IndexedDBCallbacksWrapper(WebKit::WebIDBCallbacks* callbacks);
+ protected:
   virtual ~IndexedDBCallbacksWrapper();
+  explicit IndexedDBCallbacksWrapper(WebKit::WebIDBCallbacks* callbacks);
+
+ private:
   friend class base::RefCounted<IndexedDBCallbacksWrapper>;
   scoped_ptr<WebIDBDatabaseImpl> web_database_impl_;
   scoped_ptr<WebKit::WebIDBCallbacks> callbacks_;

@@ -21,7 +21,8 @@ class IndexedDBDatabase;
 class IndexedDBDatabaseCallbacksWrapper;
 
 // See comment in WebIDBFactory for a high level overview these classes.
-class WebIDBDatabaseImpl : public WebKit::WebIDBDatabase {
+class CONTENT_EXPORT WebIDBDatabaseImpl
+    : NON_EXPORTED_BASE(public WebKit::WebIDBDatabase) {
  public:
   WebIDBDatabaseImpl(
       scoped_refptr<IndexedDBDatabase> db,

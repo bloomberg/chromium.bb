@@ -22,7 +22,8 @@ class IndexedDBDatabase;
 class IndexedDBFactoryImpl;
 class IndexedDBTransaction;
 
-class IndexedDBDatabaseImpl : public IndexedDBDatabase {
+class CONTENT_EXPORT IndexedDBDatabaseImpl
+    : NON_EXPORTED_BASE(public IndexedDBDatabase) {
  public:
   static scoped_refptr<IndexedDBDatabaseImpl> Create(
       const string16& name,

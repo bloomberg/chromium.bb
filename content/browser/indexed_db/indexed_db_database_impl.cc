@@ -891,7 +891,8 @@ static bool UpdateKeyGenerator(
     int64 object_store_id,
     const IndexedDBKey* key,
     bool check_current) {
-  DCHECK(key && key->type() == WebIDBKey::NumberType);
+  DCHECK(key);
+  DCHECK_EQ(WebIDBKey::NumberType, key->type());
   return backing_store->MaybeUpdateKeyGeneratorCurrentNumber(
       transaction->BackingStoreTransaction(),
       database_id,
