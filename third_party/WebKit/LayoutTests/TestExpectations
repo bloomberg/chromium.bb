@@ -1743,7 +1743,7 @@ crbug.com/243592 [ Win ] fast/dom/Window/window-screen-properties.html [ Failure
 crbug.com/243593 [ Win ] fast/media/color-does-not-include-alpha.html [ Failure ]
 crbug.com/243596 [ Win ] inspector-protocol/input/dispatchMouseEvent.html [ Failure ]
 crbug.com/243599 [ Release ] fast/loader/stateobjects/replacestate-in-onunload.html [ Crash Pass ]
-crbug.com/243599 [ Mac Debug ] http/tests/plugins/interrupted-get-url.html [ Crash Pass ]
+crbug.com/243599 [ Mac ] http/tests/plugins/interrupted-get-url.html [ Crash Pass ]
 crbug.com/243649 [ Mac ] transitions/cancel-transition.html [ Failure Pass ]
 crbug.com/243655 [ Win7 ] compositing/iframes/scroll-grandchild-iframe.html [ Timeout ]
 crbug.com/243658 [ Lion ] fast/writing-mode/vertical-font-vmtx-units-per-em.html [ Crash ]
