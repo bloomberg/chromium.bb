@@ -433,6 +433,7 @@
             'installer/setup/setup_unittests_resource.h',
             'installer/setup/setup_util.cc',
             'installer/setup/setup_util_unittest.cc',
+            'installer/setup/setup_util_unittest.h',
           ],
           'rules': [
             {

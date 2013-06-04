@@ -81,6 +81,11 @@ bool WillProductBePresentAfterSetup(
     const installer::InstallationState& machine_state,
     BrowserDistribution::Type type);
 
+// Drops the process down to background processing mode on supported OSes if it
+// was launched below the normal process priority. Returns true when background
+// procesing mode is entered.
+bool AdjustProcessPriority();
+
 // This class will enable the privilege defined by |privilege_name| on the
 // current process' token. The privilege will be disabled upon the
 // ScopedTokenPrivilege's destruction (unless it was already enabled when the

@@ -2,17 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/installer/setup/setup_util_unittest.h"
+
 #include <windows.h>
 
 #include <string>
 
+#include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
+#include "base/process_util.h"
 #include "base/threading/platform_thread.h"
 #include "base/time.h"
 #include "base/win/scoped_handle.h"
+#include "base/win/windows_version.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/installer/setup/setup_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -188,4 +193,87 @@ TEST(SetupUtilTest, ScopedTokenPrivilegeAlreadyEnabled) {
   }
 
   ASSERT_FALSE(CurrentProcessHasPrivilege(kTestedPrivilege));
+}
+
+const char kAdjustProcessPriority[] = "adjust-process-priority";
+
+PriorityClassChangeResult DoProcessPriorityAdjustment() {
+  return installer::AdjustProcessPriority() ? PCCR_CHANGED : PCCR_UNCHANGED;
+}
+
+namespace {
+
+// A scoper that sets/resets the current process's priority class.
+class ScopedPriorityClass {
+ public:
+  // Applies |priority_class|, returning an instance if a change was made.
+  // Otherwise, returns an empty scoped_ptr.
+  static scoped_ptr<ScopedPriorityClass> Create(DWORD priority_class);
+  ~ScopedPriorityClass();
+
+ private:
+  explicit ScopedPriorityClass(DWORD original_priority_class);
+  DWORD original_priority_class_;
+  DISALLOW_COPY_AND_ASSIGN(ScopedPriorityClass);
+};
+
+scoped_ptr<ScopedPriorityClass> ScopedPriorityClass::Create(
+    DWORD priority_class) {
+  HANDLE this_process = ::GetCurrentProcess();
+  DWORD original_priority_class = ::GetPriorityClass(this_process);
+  EXPECT_NE(0U, original_priority_class);
+  if (original_priority_class && original_priority_class != priority_class) {
+    BOOL result = ::SetPriorityClass(this_process, priority_class);
+    EXPECT_NE(FALSE, result);
+    if (result) {
+      return scoped_ptr<ScopedPriorityClass>(
+          new ScopedPriorityClass(original_priority_class));
+    }
+  }
+  return scoped_ptr<ScopedPriorityClass>();
+}
+
+ScopedPriorityClass::ScopedPriorityClass(DWORD original_priority_class)
+    : original_priority_class_(original_priority_class) {}
+
+ScopedPriorityClass::~ScopedPriorityClass() {
+  BOOL result = ::SetPriorityClass(::GetCurrentProcess(),
+                                   original_priority_class_);
+  EXPECT_NE(FALSE, result);
+}
+
+PriorityClassChangeResult RelaunchAndDoProcessPriorityAdjustment() {
+  CommandLine cmd_line(*CommandLine::ForCurrentProcess());
+  cmd_line.AppendSwitch(kAdjustProcessPriority);
+  base::ProcessHandle process_handle = NULL;
+  int exit_code = 0;
+  if (!base::LaunchProcess(cmd_line, base::LaunchOptions(),
+                           &process_handle)) {
+    ADD_FAILURE() << " to launch subprocess.";
+  } else if (!base::WaitForExitCode(process_handle, &exit_code)) {
+    ADD_FAILURE() << " to wait for subprocess to exit.";
+  } else {
+    return static_cast<PriorityClassChangeResult>(exit_code);
+  }
+  return PCCR_UNKNOWN;
+}
+
+}  // namespace
+
+// Launching a subprocess at normal priority class is a noop.
+TEST(SetupUtilTest, AdjustFromNormalPriority) {
+  ASSERT_EQ(NORMAL_PRIORITY_CLASS, ::GetPriorityClass(::GetCurrentProcess()));
+  EXPECT_EQ(PCCR_UNCHANGED, RelaunchAndDoProcessPriorityAdjustment());
+}
+
+// Launching a subprocess below normal priority class drops it to bg mode for
+// sufficiently recent operating systems.
+TEST(SetupUtilTest, AdjustFromBelowNormalPriority) {
+  scoped_ptr<ScopedPriorityClass> below_normal =
+      ScopedPriorityClass::Create(BELOW_NORMAL_PRIORITY_CLASS);
+  ASSERT_TRUE(below_normal);
+  if (base::win::GetVersion() > base::win::VERSION_SERVER_2003)
+    EXPECT_EQ(PCCR_CHANGED, RelaunchAndDoProcessPriorityAdjustment());
+  else
+    EXPECT_EQ(PCCR_UNCHANGED, RelaunchAndDoProcessPriorityAdjustment());
 }

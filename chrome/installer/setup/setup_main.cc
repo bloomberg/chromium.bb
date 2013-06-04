@@ -639,6 +639,11 @@ installer::InstallStatus InstallProductsHelper(
   const bool system_install = installer_state.system_install();
   installer::InstallStatus install_status = installer::UNKNOWN_STATUS;
 
+  // Drop to background processing mode if the process was started below the
+  // normal process priority class.
+  bool entered_background_mode = installer::AdjustProcessPriority();
+  VLOG_IF(1, entered_background_mode) << "Entered background processing mode.";
+
   // For install the default location for chrome.packed.7z is in current
   // folder, so get that value first.
   base::FilePath archive(cmd_line.GetProgram().DirName().Append(

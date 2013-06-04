@@ -15,6 +15,7 @@
 #include "base/process_util.h"
 #include "base/string_util.h"
 #include "base/version.h"
+#include "base/win/windows_version.h"
 #include "chrome/installer/util/copy_tree_work_item.h"
 #include "chrome/installer/util/installation_state.h"
 #include "chrome/installer/util/installer_state.h"
@@ -311,6 +312,22 @@ bool WillProductBePresentAfterSetup(
 
   // Decide among {(1),(2),(3),(4)}.
   return is_affected ? !is_uninstall : is_present;
+}
+
+bool AdjustProcessPriority() {
+  if (base::win::GetVersion() >= base::win::VERSION_VISTA) {
+    DWORD priority_class = ::GetPriorityClass(::GetCurrentProcess());
+    if (priority_class == 0) {
+      PLOG(WARNING) << "Failed to get the process's priority class.";
+    } else if (priority_class == BELOW_NORMAL_PRIORITY_CLASS ||
+               priority_class == IDLE_PRIORITY_CLASS) {
+      BOOL result = ::SetPriorityClass(::GetCurrentProcess(),
+                                       PROCESS_MODE_BACKGROUND_BEGIN);
+      PLOG_IF(WARNING, !result) << "Failed to enter background mode.";
+      return !!result;
+    }
+  }
+  return false;
 }
 
 ScopedTokenPrivilege::ScopedTokenPrivilege(const wchar_t* privilege_name)
