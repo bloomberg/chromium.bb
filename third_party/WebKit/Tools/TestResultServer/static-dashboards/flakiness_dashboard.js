@@ -410,12 +410,14 @@ function processTestRunsForBuilder(builderName)
         if (rawTest.bugs)
             resultsForTest.bugs = rawTest.bugs;
 
+        var failureMap = g_resultsByBuilder[builderName][FAILURE_MAP_KEY];
         // FIXME: Switch to resultsByBuild
         var times = resultsForTest.rawTimes;
         var numTimesSeen = 0;
         var numResultsSeen = 0;
         var resultsIndex = 0;
-        var currentResult;
+        var resultsMap = {}
+
         for (var i = 0; i < times.length; i++) {
             numTimesSeen += times[i][RLE.LENGTH];
 
@@ -424,13 +426,17 @@ function processTestRunsForBuilder(builderName)
                 resultsIndex++;
             }
 
-            if (rawResults && rawResults[resultsIndex])
-                currentResult = rawResults[resultsIndex][RLE.VALUE];
+            if (rawResults && rawResults[resultsIndex]) {
+                var result = rawResults[resultsIndex][RLE.VALUE];
+                resultsMap[failureMap[result]] = true;
+            }
 
             resultsForTest.slowestTime = Math.max(resultsForTest.slowestTime, times[i][RLE.VALUE]);
         }
 
-        determineFlakiness(g_resultsByBuilder[builderName][FAILURE_MAP_KEY], resultsForTest);
+        resultsForTest.actualResults = Object.keys(resultsMap);
+
+        determineFlakiness(failureMap, rawResults, resultsForTest);
         failures.push(resultsForTest);
 
         if (!g_testToResultsMap[test])
@@ -441,53 +447,28 @@ function processTestRunsForBuilder(builderName)
     g_perBuilderFailures[builderName] = failures;
 }
 
-function determineFlakiness(failureMap, resultsForTest)
+function determineFlakiness(failureMap, results, resultsForTest)
 {
-    // Heuristic for determining whether expectations apply to a given test:
-    // -If a test result happens < MIN_RUNS_FOR_FLAKE, then consider it a flaky
-    // result and include it in the list of expected results.
-    // -Otherwise, grab the first contiguous set of runs with the same result
-    // for >= MIN_RUNS_FOR_FLAKE and ignore all following runs >=
-    // MIN_RUNS_FOR_FLAKE.
-    // This lets us rule out common cases of a test changing expectations for
-    // a few runs, then being fixed or otherwise modified in a non-flaky way.
-    var rawResults = resultsForTest.rawResults;
+    // FIXME: Ideally this heuristic would be a bit smarter and not consider
+    // all passes, followed by a few consecutive failures, followed by all passes
+    // to be flakiness since that's more likely the test actually failing for a
+    // few runs due to a commit.
+    var FAILURE_TYPES_TO_IGNORE = ['NOTRUN', 'NO DATA', 'SKIP'];
+    var flipCount = 0;
+    var mostRecentNonIgnorableFailureType;
 
-    // Only consider flake if it doesn't happen twice in a row.
-    var MIN_RUNS_FOR_FLAKE = 2;
-    var resultsMap = {}
-    var numResultsSeen = 0;
-    var haveSeenNonFlakeResult = false;
-    var numRealResults = 0;
-
-    var seenResults = {};
-    for (var i = 0; i < rawResults.length; i++) {
-        var numResults = rawResults[i][RLE.LENGTH];
-        numResultsSeen += numResults;
-
-        var result = rawResults[i][RLE.VALUE];
-
-        var hasMinRuns = numResults >= MIN_RUNS_FOR_FLAKE;
-        if (haveSeenNonFlakeResult && hasMinRuns)
-            continue;
-        else if (hasMinRuns)
-            haveSeenNonFlakeResult = true;
-        else if (!seenResults[result]) {
-            // Only consider a short-lived result if we've seen it more than once.
-            // Otherwise, we include lots of false-positives due to tests that fail
-            // for a couple runs and then start passing.
-            seenResults[result] = true;
-            continue;
+    for (var i = 0; i < results.length; i++) {
+        var result = results[i][RLE.VALUE];
+        var failureType = failureMap[result];
+        if (failureType != mostRecentNonIgnorableFailureType && FAILURE_TYPES_TO_IGNORE.indexOf(failureType) == -1) {
+            if (mostRecentNonIgnorableFailureType)
+                flipCount++;
+            mostRecentNonIgnorableFailureType = failureType;
         }
-
-        var expectation = failureMap[result];
-        resultsMap[expectation] = true;
-        numRealResults++;
     }
 
-    resultsForTest.actualResults = Object.keys(resultsMap);
-    resultsForTest.flips = i - 1;
-    resultsForTest.isFlaky = numRealResults > 1;
+    resultsForTest.flipCount = flipCount;
+    resultsForTest.isFlaky = flipCount > 1;
 }
 
 function linkHTMLToOpenWindow(url, text)

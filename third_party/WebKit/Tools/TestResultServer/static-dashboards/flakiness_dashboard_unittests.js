@@ -475,3 +475,41 @@ test('testGroupNamesForTestType', 4, function() {
     equal(names.indexOf('@ToT - chromium.org') != -1, false, 'don\'t include interactive_ui_tests in ToT');
     equal(names.indexOf('@DEPS - chromium.org') != -1, true, 'include interactive_ui_tests in DEPS');
 });
+
+test('determineFlakiness', 10, function() {
+    var failureMap = {
+        'C': 'CRASH',
+        'P': 'PASS',
+        'I': 'IMAGE',
+        'T': 'TIMEOUT',
+        'N':'NO DATA',
+        'Y':'NOTRUN',
+        'X':'SKIP'
+    };
+    var out = {};
+
+    var inputResults = [[1, 'P']];
+    determineFlakiness(failureMap, inputResults, out);
+    equal(out.isFlaky, false);
+    equal(out.flipCount, 0);
+
+    inputResults = [[1, 'P'], [1, 'C']];
+    determineFlakiness(failureMap, inputResults, out);
+    equal(out.isFlaky, false);
+    equal(out.flipCount, 1);
+
+    inputResults = [[1, 'P'], [1, 'C'], [1, 'P']];
+    determineFlakiness(failureMap, inputResults, out);
+    equal(out.isFlaky, true);
+    equal(out.flipCount, 2);
+
+    inputResults = [[1, 'P'], [1, 'C'], [1, 'P'], [1, 'C']];
+    determineFlakiness(failureMap, inputResults, out);
+    equal(out.isFlaky, true);
+    equal(out.flipCount, 3);
+
+    inputResults = [[1, 'P'], [1, 'Y'], [1, 'N'], [1, 'X'], [1, 'P'], [1, 'Y'], [1, 'N'], [1, 'X'], [1, 'C']];
+    determineFlakiness(failureMap, inputResults, out);
+    equal(out.isFlaky, false);
+    equal(out.flipCount, 1);
+});
