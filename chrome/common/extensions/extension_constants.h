@@ -76,21 +76,6 @@ namespace extension_filenames {
   extern const char kModulesDir[];
 }
 
-// Keys in the dictionary returned by Extension::GetBasicInfo().
-namespace extension_info_keys {
-  extern const char kDescriptionKey[];
-  extern const char kEnabledKey[];
-  extern const char kHomepageUrlKey[];
-  extern const char kIdKey[];
-  extern const char kNameKey[];
-  extern const char kKioskEnabledKey[];
-  extern const char kOfflineEnabledKey[];
-  extern const char kOptionsUrlKey[];
-  extern const char kDetailsUrlKey[];
-  extern const char kVersionKey[];
-  extern const char kPackagedAppKey[];
-}
-
 namespace extension_misc {
   // Matches chrome.windows.WINDOW_ID_NONE.
   const int kUnknownWindowId = -1;

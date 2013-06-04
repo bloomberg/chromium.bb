@@ -31,8 +31,6 @@
 #include "chrome/common/extensions/incognito_handler.h"
 #include "chrome/common/extensions/manifest.h"
 #include "chrome/common/extensions/manifest_handler.h"
-#include "chrome/common/extensions/manifest_handlers/kiosk_enabled_info.h"
-#include "chrome/common/extensions/manifest_handlers/offline_enabled_info.h"
 #include "chrome/common/extensions/manifest_url_handler.h"
 #include "chrome/common/extensions/permissions/api_permission_set.h"
 #include "chrome/common/extensions/permissions/permission_set.h"
@@ -57,7 +55,6 @@
 namespace keys = extension_manifest_keys;
 namespace values = extension_manifest_values;
 namespace errors = extension_manifest_errors;
-namespace info_keys = extension_info_keys;
 
 namespace extensions {
 
@@ -230,26 +227,6 @@ bool Extension::IdIsValid(const std::string& id) {
 // static
 bool Extension::IsExtension(const base::FilePath& file_name) {
   return file_name.MatchesExtension(chrome::kExtensionFileExtension);
-}
-
-void Extension::GetBasicInfo(bool enabled,
-                             DictionaryValue* info) const {
-  info->SetString(info_keys::kIdKey, id());
-  info->SetString(info_keys::kNameKey, name());
-  info->SetBoolean(info_keys::kEnabledKey, enabled);
-  info->SetBoolean(info_keys::kKioskEnabledKey,
-                   KioskEnabledInfo::IsKioskEnabled(this));
-  info->SetBoolean(info_keys::kOfflineEnabledKey,
-                   OfflineEnabledInfo::IsOfflineEnabled(this));
-  info->SetString(info_keys::kVersionKey, VersionString());
-  info->SetString(info_keys::kDescriptionKey, description());
-  info->SetString(info_keys::kOptionsUrlKey,
-                  ManifestURL::GetOptionsPage(this).possibly_invalid_spec());
-  info->SetString(info_keys::kHomepageUrlKey,
-                  ManifestURL::GetHomepageURL(this).possibly_invalid_spec());
-  info->SetString(info_keys::kDetailsUrlKey,
-                  ManifestURL::GetDetailsURL(this).possibly_invalid_spec());
-  info->SetBoolean(info_keys::kPackagedAppKey, is_platform_app());
 }
 
 Manifest::Type Extension::GetType() const {

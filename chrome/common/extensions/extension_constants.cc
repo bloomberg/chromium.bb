@@ -108,22 +108,6 @@ const char kModulesDir[] = "_modules";
 
 }  // namespace extension_filenames
 
-// These must match the values expected by the chrome.management extension API.
-namespace extension_info_keys {
-  const char kDescriptionKey[] = "description";
-  const char kEnabledKey[] = "enabled";
-  const char kHomepageUrlKey[] = "homepageUrl";
-  const char kIdKey[] = "id";
-  const char kNameKey[] = "name";
-  const char kKioskEnabledKey[] = "kioskEnabled";
-  const char kOfflineEnabledKey[] = "offlineEnabled";
-  const char kOptionsUrlKey[] = "optionsUrl";
-  const char kDetailsUrlKey[] = "detailsUrl";
-  const char kVersionKey[] = "version";
-  const char kPackagedAppKey[] = "packagedApp";
-
-}  // namespace extension_filenames
-
 namespace extension_misc {
 
 const char kBookmarkManagerId[] = "eemcgdkfndhakfknompkggombfjjjeno";

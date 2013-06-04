@@ -42,6 +42,7 @@
 #include "chrome/browser/ui/chrome_select_file_policy.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/extensions/shell_window.h"
+#include "chrome/browser/ui/webui/extensions/extension_basic_info.h"
 #include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
@@ -136,7 +137,7 @@ DictionaryValue* ExtensionSettingsHandler::CreateExtensionDetailValue(
     const extensions::ExtensionWarningService* warning_service) {
   DictionaryValue* extension_data = new DictionaryValue();
   bool enabled = extension_service_->IsExtensionEnabled(extension->id());
-  extension->GetBasicInfo(enabled, extension_data);
+  extensions::GetExtensionBasicInfo(extension, enabled, extension_data);
 
   extension_data->SetBoolean(
       "userModifiable",

@@ -190,10 +190,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   // Returns true if the specified file is an extension.
   static bool IsExtension(const base::FilePath& file_name);
 
-  // Fills the |info| dictionary with basic information about the extension.
-  // |enabled| is injected for easier testing.
-  void GetBasicInfo(bool enabled, base::DictionaryValue* info) const;
-
   // See Type definition in Manifest.
   Manifest::Type GetType() const;
 

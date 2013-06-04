@@ -12,6 +12,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/webui/extensions/extension_basic_info.h"
 #include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -62,7 +63,7 @@ void ExtensionInfoUI::AddExtensionDataToSource(
     return;
 
   DictionaryValue extension_data;
-  extension->GetBasicInfo(true, &extension_data);
+  extensions::GetExtensionBasicInfo(extension, true, &extension_data);
   source_->AddLocalizedStrings(extension_data);
 
   // Set the icon URL.

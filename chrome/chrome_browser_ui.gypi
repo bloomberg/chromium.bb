@@ -2036,6 +2036,8 @@
         'browser/ui/webui/extensions/chromeos/kiosk_apps_handler.h',
         'browser/ui/webui/extensions/command_handler.cc',
         'browser/ui/webui/extensions/command_handler.h',
+        'browser/ui/webui/extensions/extension_basic_info.cc',
+        'browser/ui/webui/extensions/extension_basic_info.h',
         'browser/ui/webui/extensions/extension_icon_source.cc',
         'browser/ui/webui/extensions/extension_icon_source.h',
         'browser/ui/webui/extensions/extension_info_ui.cc',

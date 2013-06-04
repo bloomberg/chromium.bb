@@ -42,6 +42,7 @@
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/webui/extensions/extension_basic_info.h"
 #include "chrome/common/cancelable_task_tracker.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
@@ -908,7 +909,7 @@ void NetInternalsMessageHandler::OnGetExtensionInfo(const ListValue* list) {
            it != extensions->end(); ++it) {
         DictionaryValue* extension_info = new DictionaryValue();
         bool enabled = extension_service->IsExtensionEnabled((*it)->id());
-        (*it)->GetBasicInfo(enabled, extension_info);
+        extensions::GetExtensionBasicInfo(*it, enabled, extension_info);
         extension_list->Append(extension_info);
       }
     }
