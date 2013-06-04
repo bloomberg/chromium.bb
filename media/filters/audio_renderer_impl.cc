@@ -42,7 +42,8 @@ AudioRendererImpl::AudioRendererImpl(
     const scoped_refptr<base::MessageLoopProxy>& message_loop,
     media::AudioRendererSink* sink,
     ScopedVector<AudioDecoder> decoders,
-    const SetDecryptorReadyCB& set_decryptor_ready_cb)
+    const SetDecryptorReadyCB& set_decryptor_ready_cb,
+    bool increase_preroll_on_underflow)
     : message_loop_(message_loop),
       weak_factory_(this),
       sink_(sink),
@@ -57,6 +58,7 @@ AudioRendererImpl::AudioRendererImpl(
       audio_time_buffered_(kNoTimestamp()),
       current_time_(kNoTimestamp()),
       underflow_disabled_(false),
+      increase_preroll_on_underflow_(increase_preroll_on_underflow),
       preroll_aborted_(false),
       actual_frames_per_buffer_(0) {
 }
@@ -284,7 +286,7 @@ void AudioRendererImpl::OnDecoderSelected(
   base::ResetAndReturn(&init_cb_).Run(PIPELINE_OK);
 }
 
-void AudioRendererImpl::ResumeAfterUnderflow(bool buffer_more_audio) {
+void AudioRendererImpl::ResumeAfterUnderflow() {
   DCHECK(message_loop_->BelongsToCurrentThread());
   base::AutoLock auto_lock(lock_);
   if (state_ == kUnderflow) {
@@ -294,7 +296,7 @@ void AudioRendererImpl::ResumeAfterUnderflow(bool buffer_more_audio) {
     // number of bytes that need to be buffered for preroll to complete)
     // does not increase due to an aborted preroll.
     // TODO(vrk): Fix this bug correctly! (crbug.com/151352)
-    if (buffer_more_audio && !preroll_aborted_)
+    if (increase_preroll_on_underflow_ && !preroll_aborted_)
       algorithm_->IncreaseQueueCapacity();
 
     state_ = kRebuffering;

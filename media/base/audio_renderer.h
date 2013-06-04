@@ -81,10 +81,7 @@ class MEDIA_EXPORT AudioRenderer {
   virtual void SetVolume(float volume) = 0;
 
   // Resumes playback after underflow occurs.
-  //
-  // |buffer_more_audio| is set to true if you want to increase the size of the
-  // decoded audio buffer.
-  virtual void ResumeAfterUnderflow(bool buffer_more_audio) = 0;
+  virtual void ResumeAfterUnderflow() = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AudioRenderer);

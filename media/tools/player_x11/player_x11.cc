@@ -136,7 +136,8 @@ void InitPipeline(media::Pipeline* pipeline,
       message_loop,
       new media::NullAudioSink(message_loop),
       audio_decoders.Pass(),
-      media::SetDecryptorReadyCB()));
+      media::SetDecryptorReadyCB(),
+      true));
   collection->SetAudioRenderer(audio_renderer.Pass());
 
   base::WaitableEvent event(true, false);

@@ -149,7 +149,7 @@ class MockAudioRenderer : public AudioRenderer {
   MOCK_METHOD1(SetPlaybackRate, void(float playback_rate));
   MOCK_METHOD2(Preroll, void(base::TimeDelta time, const PipelineStatusCB& cb));
   MOCK_METHOD1(SetVolume, void(float volume));
-  MOCK_METHOD1(ResumeAfterUnderflow, void(bool buffer_more_audio));
+  MOCK_METHOD0(ResumeAfterUnderflow, void());
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockAudioRenderer);

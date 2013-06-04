@@ -1050,7 +1050,7 @@ void WebMediaPlayerImpl::NotifyDownloading(bool is_downloading) {
 
 void WebMediaPlayerImpl::StartPipeline(WebKit::WebMediaSource* media_source) {
   const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
-
+  bool increase_preroll_on_underflow = true;
 
   // Figure out which demuxer to use.
   if (!media_source) {
@@ -1076,6 +1076,12 @@ void WebMediaPlayerImpl::StartPipeline(WebKit::WebMediaSource* media_source) {
     // Disable GpuVideoDecoder creation until it supports codec config changes.
     // TODO(acolwell): Remove this once http://crbug.com/151045 is fixed.
     gpu_factories_ = NULL;
+
+    // Disable preroll increases on underflow since the web application has no
+    // way to detect that this is happening and runs the risk of triggering
+    // unwanted garbage collection if it is to aggressive about appending data.
+    // TODO(acolwell): Remove this once http://crbug.com/144683 is fixed.
+    increase_preroll_on_underflow = false;
   }
 
   scoped_ptr<media::FilterCollection> filter_collection(
@@ -1102,7 +1108,8 @@ void WebMediaPlayerImpl::StartPipeline(WebKit::WebMediaSource* media_source) {
       new media::AudioRendererImpl(media_thread_.message_loop_proxy(),
                                    audio_source_provider_.get(),
                                    audio_decoders.Pass(),
-                                   set_decryptor_ready_cb));
+                                   set_decryptor_ready_cb,
+                                   increase_preroll_on_underflow));
   filter_collection->SetAudioRenderer(audio_renderer.Pass());
 
   // Create our video decoders and renderer.

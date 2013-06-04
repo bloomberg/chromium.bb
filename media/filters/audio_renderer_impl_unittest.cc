@@ -63,7 +63,8 @@ class AudioRendererImplTest : public ::testing::Test {
         message_loop_.message_loop_proxy(),
         new NiceMock<MockAudioRendererSink>(),
         decoders.Pass(),
-        SetDecryptorReadyCB()));
+        SetDecryptorReadyCB(),
+        false));
 
     // Stub out time.
     renderer_->set_now_cb_for_testing(base::Bind(
@@ -279,7 +280,7 @@ class AudioRendererImplTest : public ::testing::Test {
   }
 
   void CallResumeAfterUnderflow() {
-    renderer_->ResumeAfterUnderflow(false);
+    renderer_->ResumeAfterUnderflow();
   }
 
   TimeDelta CalculatePlayTime(int bytes_filled) {
@@ -436,7 +437,7 @@ TEST_F(AudioRendererImplTest, Underflow) {
   EXPECT_CALL(*this, OnUnderflow());
   EXPECT_FALSE(ConsumeBufferedData(kDataSize, NULL));
 
-  renderer_->ResumeAfterUnderflow(false);
+  renderer_->ResumeAfterUnderflow();
 
   // Verify after resuming that we're still not getting data.
   bool muted = false;

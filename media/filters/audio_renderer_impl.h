@@ -52,10 +52,14 @@ class MEDIA_EXPORT AudioRendererImpl
   //
   // |set_decryptor_ready_cb| is fired when the audio decryptor is available
   // (only applicable if the stream is encrypted and we have a decryptor).
+  //
+  // |increase_preroll_on_underflow| Set to true if the preroll duration
+  // should be increased when ResumeAfterUnderflow() is called.
   AudioRendererImpl(const scoped_refptr<base::MessageLoopProxy>& message_loop,
                     AudioRendererSink* sink,
                     ScopedVector<AudioDecoder> decoders,
-                    const SetDecryptorReadyCB& set_decryptor_ready_cb);
+                    const SetDecryptorReadyCB& set_decryptor_ready_cb,
+                    bool increase_preroll_on_underflow);
   virtual ~AudioRendererImpl();
 
   // AudioRenderer implementation.
@@ -74,7 +78,7 @@ class MEDIA_EXPORT AudioRendererImpl
   virtual void SetPlaybackRate(float rate) OVERRIDE;
   virtual void Preroll(base::TimeDelta time,
                        const PipelineStatusCB& cb) OVERRIDE;
-  virtual void ResumeAfterUnderflow(bool buffer_more_audio) OVERRIDE;
+  virtual void ResumeAfterUnderflow() OVERRIDE;
   virtual void SetVolume(float volume) OVERRIDE;
 
   // Disables underflow support.  When used, |state_| will never transition to
@@ -256,6 +260,7 @@ class MEDIA_EXPORT AudioRendererImpl
   size_t total_frames_filled_;
 
   bool underflow_disabled_;
+  bool increase_preroll_on_underflow_;
 
   // True if the renderer receives a buffer with kAborted status during preroll,
   // false otherwise. This flag is cleared on the next Preroll() call.

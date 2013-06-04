@@ -928,7 +928,7 @@ void Pipeline::OnAudioUnderflow() {
     return;
 
   if (audio_renderer_)
-    audio_renderer_->ResumeAfterUnderflow(true);
+    audio_renderer_->ResumeAfterUnderflow();
 }
 
 void Pipeline::StartClockIfWaitingForTimeUpdate_Locked() {
