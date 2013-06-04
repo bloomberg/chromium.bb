@@ -1,3 +1,3 @@
 
-FAIL CSS Test: @viewport constrained - width 200% assert_equals: expected 1600 but got 800
+FAIL CSS Test: @viewport constrained - width 200% assert_equals: expected 640 but got 980
 
