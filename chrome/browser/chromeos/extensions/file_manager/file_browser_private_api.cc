@@ -454,105 +454,6 @@ std::string MakeWebAppTaskId(const std::string& app_id) {
 
 }  // namespace
 
-class RequestLocalFileSystemFunction::LocalFileSystemCallbackDispatcher {
- public:
-  static fileapi::FileSystemContext::OpenFileSystemCallback CreateCallback(
-      RequestLocalFileSystemFunction* function,
-      scoped_refptr<fileapi::FileSystemContext> file_system_context,
-      int child_id,
-      scoped_refptr<const Extension> extension) {
-    return base::Bind(
-        &LocalFileSystemCallbackDispatcher::DidOpenFileSystem,
-        base::Owned(new LocalFileSystemCallbackDispatcher(
-            function, file_system_context, child_id, extension)));
-  }
-
-  void DidOpenFileSystem(base::PlatformFileError result,
-                         const std::string& name,
-                         const GURL& root_path) {
-    if (result != base::PLATFORM_FILE_OK) {
-      DidFail(result);
-      return;
-    }
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-    // Set up file permission access.
-    if (!SetupFileSystemAccessPermissions()) {
-      DidFail(base::PLATFORM_FILE_ERROR_SECURITY);
-      return;
-    }
-
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        base::Bind(
-            &RequestLocalFileSystemFunction::RespondSuccessOnUIThread,
-            function_,
-            name,
-            root_path));
-  }
-
-  void DidFail(base::PlatformFileError error_code) {
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        base::Bind(
-            &RequestLocalFileSystemFunction::RespondFailedOnUIThread,
-            function_,
-            error_code));
-  }
-
- private:
-  LocalFileSystemCallbackDispatcher(
-      RequestLocalFileSystemFunction* function,
-      scoped_refptr<fileapi::FileSystemContext> file_system_context,
-      int child_id,
-      scoped_refptr<const Extension> extension)
-      : function_(function),
-        file_system_context_(file_system_context),
-        child_id_(child_id),
-        extension_(extension)  {
-    DCHECK(function_);
-  }
-
-  // Grants file system access permissions to file browser component.
-  bool SetupFileSystemAccessPermissions() {
-    if (!extension_.get())
-      return false;
-
-    // Make sure that only component extension can access the entire
-    // local file system.
-    if (extension_->location() != extensions::Manifest::COMPONENT) {
-      NOTREACHED() << "Private method access by non-component extension "
-                   << extension_->id();
-      return false;
-    }
-
-    fileapi::ExternalFileSystemMountPointProvider* provider =
-        file_system_context_->external_provider();
-    if (!provider)
-      return false;
-
-    // Grant full access to File API from this component extension.
-    provider->GrantFullAccessToExtension(extension_->id());
-
-    // Grant R/W file permissions to the renderer hosting component
-    // extension for all paths exposed by our local file system provider.
-    std::vector<base::FilePath> root_dirs = provider->GetRootDirectories();
-    for (size_t i = 0; i < root_dirs.size(); ++i) {
-      ChildProcessSecurityPolicy::GetInstance()->GrantPermissionsForFile(
-          child_id_, root_dirs[i],
-          file_handler_util::GetReadWritePermissions());
-    }
-    return true;
-  }
-
-  RequestLocalFileSystemFunction* function_;
-  scoped_refptr<fileapi::FileSystemContext> file_system_context_;
-  // Renderer process id.
-  int child_id_;
-  // Extension source URL.
-  scoped_refptr<const Extension> extension_;
-  DISALLOW_COPY_AND_ASSIGN(LocalFileSystemCallbackDispatcher);
-};
-
 FileBrowserPrivateAPI::FileBrowserPrivateAPI(Profile* profile)
     : event_router_(new FileManagerEventRouter(profile)) {
   (new FileBrowserHandlerParser)->Register();
@@ -610,23 +511,104 @@ FileBrowserPrivateAPI* FileBrowserPrivateAPI::Get(Profile* profile) {
   return FileBrowserPrivateAPIFactory::GetForProfile(profile);
 }
 
+bool LogoutUserFunction::RunImpl() {
+  chrome::AttemptUserExit();
+  return true;
+}
+
 void RequestLocalFileSystemFunction::RequestOnFileThread(
     scoped_refptr<fileapi::FileSystemContext> file_system_context,
     const GURL& source_url,
     int child_id) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+
   GURL origin_url = source_url.GetOrigin();
   file_system_context->OpenFileSystem(
-      origin_url, fileapi::kFileSystemTypeExternal,
+      origin_url,
+      fileapi::kFileSystemTypeExternal,
       fileapi::OPEN_FILE_SYSTEM_FAIL_IF_NONEXISTENT,
-      LocalFileSystemCallbackDispatcher::CreateCallback(
-          this,
-          file_system_context,
-          child_id,
-          GetExtension()));
+      base::Bind(&RequestLocalFileSystemFunction::DidOpenFileSystem,
+                 this,
+                 file_system_context,
+                 child_id,
+                 GetExtension()));
 }
 
-bool LogoutUserFunction::RunImpl() {
-  chrome::AttemptUserExit();
+void RequestLocalFileSystemFunction::DidOpenFileSystem(
+    scoped_refptr<fileapi::FileSystemContext> file_system_context,
+    int child_id,
+    scoped_refptr<const extensions::Extension> extension,
+    base::PlatformFileError result,
+    const std::string& name,
+    const GURL& root_path) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+
+  if (result != base::PLATFORM_FILE_OK) {
+    DidFail(result);
+    return;
+  }
+  // Set up file permission access.
+  if (!SetupFileSystemAccessPermissions(file_system_context,
+                                        child_id,
+                                        extension)) {
+    DidFail(base::PLATFORM_FILE_ERROR_SECURITY);
+    return;
+  }
+
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(
+          &RequestLocalFileSystemFunction::RespondSuccessOnUIThread,
+          this,
+          name,
+          root_path));
+}
+
+void RequestLocalFileSystemFunction::DidFail(
+    base::PlatformFileError error_code) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(
+          &RequestLocalFileSystemFunction::RespondFailedOnUIThread,
+          this,
+          error_code));
+}
+
+bool RequestLocalFileSystemFunction::SetupFileSystemAccessPermissions(
+    scoped_refptr<fileapi::FileSystemContext> file_system_context,
+    int child_id,
+    scoped_refptr<const extensions::Extension> extension) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+
+  if (!extension.get())
+    return false;
+
+  // Make sure that only component extension can access the entire
+  // local file system.
+  if (extension_->location() != extensions::Manifest::COMPONENT) {
+    NOTREACHED() << "Private method access by non-component extension "
+                 << extension->id();
+    return false;
+  }
+
+  fileapi::ExternalFileSystemMountPointProvider* provider =
+      file_system_context->external_provider();
+  if (!provider)
+    return false;
+
+  // Grant full access to File API from this component extension.
+  provider->GrantFullAccessToExtension(extension_->id());
+
+  // Grant R/W file permissions to the renderer hosting component
+  // extension for all paths exposed by our local file system provider.
+  std::vector<base::FilePath> root_dirs = provider->GetRootDirectories();
+  for (size_t i = 0; i < root_dirs.size(); ++i) {
+    ChildProcessSecurityPolicy::GetInstance()->GrantPermissionsForFile(
+        child_id, root_dirs[i],
+        file_handler_util::GetReadWritePermissions());
+  }
   return true;
 }
 
