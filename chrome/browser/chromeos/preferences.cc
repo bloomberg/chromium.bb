@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/preferences.h"
 
 #include "ash/magnifier/magnifier_constants.h"
+#include "ash/shell_delegate.h"
 #include "base/chromeos/chromeos_version.h"
 #include "base/command_line.h"
 #include "base/i18n/time_formatting.h"
@@ -59,10 +60,8 @@ Preferences::~Preferences() {
 
 // static
 void Preferences::RegisterPrefs(PrefRegistrySimple* registry) {
-  registry->RegisterBooleanPref(prefs::kHighContrastEnabled, false);
   registry->RegisterBooleanPref(prefs::kOwnerPrimaryMouseButtonRight, false);
   registry->RegisterBooleanPref(prefs::kOwnerTapToClickEnabled, true);
-  registry->RegisterBooleanPref(prefs::kSpokenFeedbackEnabled, false);
   registry->RegisterBooleanPref(prefs::kVirtualKeyboardEnabled, false);
 }
 
@@ -116,6 +115,14 @@ void Preferences::RegisterUserPrefs(
       false,
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
   registry->RegisterBooleanPref(
+      prefs::kSpokenFeedbackEnabled,
+      false,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+  registry->RegisterBooleanPref(
+      prefs::kHighContrastEnabled,
+      false,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+  registry->RegisterBooleanPref(
       prefs::kScreenMagnifierEnabled,
       false,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
@@ -130,7 +137,7 @@ void Preferences::RegisterUserPrefs(
   registry->RegisterBooleanPref(
       prefs::kShouldAlwaysShowAccessibilityMenu,
       false,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
   registry->RegisterIntegerPref(
       prefs::kMouseSensitivity,
       3,
@@ -404,10 +411,16 @@ void Preferences::InitUserPrefs(PrefServiceSyncable* prefs) {
   three_finger_swipe_enabled_.Init(prefs::kEnableTouchpadThreeFingerSwipe,
       prefs, callback);
   natural_scroll_.Init(prefs::kNaturalScroll, prefs, callback);
-  screen_magnifier_enabled_.Init(prefs::kScreenMagnifierEnabled,
-                                 prefs, callback);
-  screen_magnifier_type_.Init(prefs::kScreenMagnifierType, prefs, callback);
-  screen_magnifier_scale_.Init(prefs::kScreenMagnifierScale, prefs, callback);
+  a11y_spoken_feedback_enabled_.Init(prefs::kSpokenFeedbackEnabled,
+                                     prefs, callback);
+  a11y_high_contrast_enabled_.Init(prefs::kHighContrastEnabled,
+                                   prefs, callback);
+  a11y_screen_magnifier_enabled_.Init(prefs::kScreenMagnifierEnabled,
+                                      prefs, callback);
+  a11y_screen_magnifier_type_.Init(prefs::kScreenMagnifierType,
+                                   prefs, callback);
+  a11y_screen_magnifier_scale_.Init(prefs::kScreenMagnifierScale,
+                                    prefs, callback);
   mouse_sensitivity_.Init(prefs::kMouseSensitivity, prefs, callback);
   touchpad_sensitivity_.Init(prefs::kTouchpadSensitivity, prefs, callback);
   use_24hour_clock_.Init(prefs::kUse24HourClock, prefs, callback);

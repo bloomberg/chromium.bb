@@ -116,9 +116,11 @@ class Preferences : public PrefServiceSyncableObserver {
   BooleanPrefMember three_finger_swipe_enabled_;
   BooleanPrefMember natural_scroll_;
   BooleanPrefMember vert_edge_scroll_enabled_;
-  BooleanPrefMember screen_magnifier_enabled_;
-  IntegerPrefMember screen_magnifier_type_;
-  DoublePrefMember screen_magnifier_scale_;
+  BooleanPrefMember a11y_spoken_feedback_enabled_;
+  BooleanPrefMember a11y_high_contrast_enabled_;
+  BooleanPrefMember a11y_screen_magnifier_enabled_;
+  IntegerPrefMember a11y_screen_magnifier_type_;
+  DoublePrefMember a11y_screen_magnifier_scale_;
   IntegerPrefMember speed_factor_;
   IntegerPrefMember mouse_sensitivity_;
   IntegerPrefMember touchpad_sensitivity_;

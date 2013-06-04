@@ -17,6 +17,7 @@
 #include "chrome/browser/automation/automation_provider_observers.h"
 #include "chrome/browser/automation/automation_util.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_util.h"
 #include "chrome/browser/chromeos/audio/audio_handler.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
@@ -1116,7 +1117,7 @@ void TestingAutomationProvider::EnableSpokenFeedback(
   }
 
   if (user_manager->IsUserLoggedIn()) {
-    chromeos::accessibility::EnableSpokenFeedback(
+    chromeos::AccessibilityManager::Get()->EnableSpokenFeedback(
         enabled, NULL, ash::A11Y_NOTIFICATION_NONE);
   } else {
     ExistingUserController* controller =
@@ -1124,7 +1125,7 @@ void TestingAutomationProvider::EnableSpokenFeedback(
     chromeos::LoginDisplayHostImpl* webui_host =
         static_cast<chromeos::LoginDisplayHostImpl*>(
             controller->login_display_host());
-    chromeos::accessibility::EnableSpokenFeedback(
+    chromeos::AccessibilityManager::Get()->EnableSpokenFeedback(
         enabled,
         webui_host->GetOobeUI()->web_ui(),
         ash::A11Y_NOTIFICATION_NONE);
@@ -1137,8 +1138,9 @@ void TestingAutomationProvider::IsSpokenFeedbackEnabled(
     DictionaryValue* args, IPC::Message* reply_message) {
   AutomationJSONReply reply(this, reply_message);
   scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
-  return_value->SetBoolean("spoken_feedback",
-                           chromeos::accessibility::IsSpokenFeedbackEnabled());
+  return_value->SetBoolean(
+      "spoken_feedback",
+      chromeos::AccessibilityManager::Get()->IsSpokenFeedbackEnabled());
   reply.SendSuccess(return_value.get());
 }
 

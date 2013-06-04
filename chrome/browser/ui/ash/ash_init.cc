@@ -14,7 +14,7 @@
 #include "ash/wm/property_util.h"
 #include "base/command_line.h"
 #include "chrome/browser/browser_shutdown.h"
-#include "chrome/browser/chromeos/accessibility/accessibility_util.h"
+#include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/accessibility/magnification_manager.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/ui/ash/chrome_shell_delegate.h"
@@ -76,7 +76,7 @@ void OpenAsh() {
   shell->accelerator_controller()->SetImeControlDelegate(
       scoped_ptr<ash::ImeControlDelegate>(new ImeController).Pass());
   ash::Shell::GetInstance()->high_contrast_controller()->SetEnabled(
-      chromeos::accessibility::IsHighContrastEnabled());
+      chromeos::AccessibilityManager::Get()->IsHighContrastEnabled());
 
   DCHECK(chromeos::MagnificationManager::Get());
   bool magnifier_enabled =

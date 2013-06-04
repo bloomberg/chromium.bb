@@ -33,6 +33,7 @@
 #endif
 
 #if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
@@ -414,7 +415,8 @@ void ComponentLoader::AddDefaultComponentExtensionsWithBackgroundPages(
   }
 
   // Load ChromeVox extension now if spoken feedback is enabled.
-  if (local_state_->GetBoolean(prefs::kSpokenFeedbackEnabled)) {
+  if (chromeos::AccessibilityManager::Get() &&
+      chromeos::AccessibilityManager::Get()->IsSpokenFeedbackEnabled()) {
     base::FilePath path =
         base::FilePath(extension_misc::kChromeVoxExtensionPath);
     Add(IDR_CHROMEVOX_MANIFEST, path);

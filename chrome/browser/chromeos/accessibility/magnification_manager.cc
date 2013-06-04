@@ -7,11 +7,13 @@
 #include "ash/magnifier/magnification_controller.h"
 #include "ash/magnifier/partial_magnification_controller.h"
 #include "ash/shell.h"
+#include "ash/shell_delegate.h"
 #include "ash/system/tray/system_tray_notifier.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "base/prefs/pref_member.h"
 #include "base/prefs/pref_service.h"
+#include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -127,13 +129,12 @@ class MagnificationManagerImpl : public MagnificationManager,
 
  private:
   void NotifyMagnifierChanged() {
-      accessibility::AccessibilityStatusEventDetails details(
+      AccessibilityStatusEventDetails details(
           enabled_, type_, ash::A11Y_NOTIFICATION_NONE);
       content::NotificationService::current()->Notify(
           chrome::NOTIFICATION_CROS_ACCESSIBILITY_TOGGLE_SCREEN_MAGNIFIER,
           content::NotificationService::AllSources(),
-          content::Details<accessibility::AccessibilityStatusEventDetails>(
-              &details));
+          content::Details<AccessibilityStatusEventDetails>(&details));
   }
 
   bool IsMagnifierEnabledFromPref() {

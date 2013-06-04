@@ -41,9 +41,8 @@ class MockMagnificationObserver : public content::NotificationObserver {
                        const content::NotificationDetails& details) OVERRIDE {
     switch (type) {
       case chrome::NOTIFICATION_CROS_ACCESSIBILITY_TOGGLE_SCREEN_MAGNIFIER:
-        accessibility::AccessibilityStatusEventDetails* accessibility_status =
-            content::Details<accessibility::AccessibilityStatusEventDetails>(
-                details).ptr();
+        AccessibilityStatusEventDetails* accessibility_status =
+            content::Details<AccessibilityStatusEventDetails>(details).ptr();
 
         observed_ = true;
         observed_enabled_ = accessibility_status->enabled;

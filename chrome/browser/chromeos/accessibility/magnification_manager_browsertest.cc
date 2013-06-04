@@ -7,7 +7,7 @@
 #include "base/command_line.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/accessibility/accessibility_util.h"
+#include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/accessibility/magnification_manager.h"
 #include "chrome/browser/chromeos/cros/cros_in_process_browser_test.h"
 #include "chrome/browser/chromeos/login/helper.h"
@@ -110,9 +110,8 @@ class MagnificationManagerTest : public CrosInProcessBrowserTest,
                        const content::NotificationDetails& details) OVERRIDE {
     switch (type) {
       case chrome::NOTIFICATION_CROS_ACCESSIBILITY_TOGGLE_SCREEN_MAGNIFIER: {
-        accessibility::AccessibilityStatusEventDetails* accessibility_status =
-            content::Details<accessibility::AccessibilityStatusEventDetails>(
-                details).ptr();
+        AccessibilityStatusEventDetails* accessibility_status =
+            content::Details<AccessibilityStatusEventDetails>(details).ptr();
 
         observed_ = true;
         observed_enabled_ = accessibility_status->enabled;

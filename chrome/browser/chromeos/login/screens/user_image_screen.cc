@@ -6,7 +6,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/metrics/histogram.h"
-#include "chrome/browser/chromeos/accessibility/accessibility_util.h"
+#include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/camera_detector.h"
 #include "chrome/browser/chromeos/login/default_user_images.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
@@ -199,7 +199,7 @@ void UserImageScreen::Show() {
         DownloadProfileImage(kProfileDownloadReason);
   }
 
-  accessibility::MaybeSpeak(
+  AccessibilityManager::Get()->MaybeSpeak(
       l10n_util::GetStringUTF8(IDS_OPTIONS_CHANGE_PICTURE_DIALOG_TEXT));
 }
 

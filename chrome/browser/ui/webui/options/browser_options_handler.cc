@@ -596,14 +596,6 @@ void BrowserOptionsHandler::RegisterMessages() {
       base::Bind(&BrowserOptionsHandler::HandleOpenWallpaperManager,
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
-      "spokenFeedbackChange",
-      base::Bind(&BrowserOptionsHandler::SpokenFeedbackChangeCallback,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
-      "highContrastChange",
-      base::Bind(&BrowserOptionsHandler::HighContrastChangeCallback,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
       "virtualKeyboardChange",
       base::Bind(&BrowserOptionsHandler::VirtualKeyboardChangeCallback,
                  base::Unretained(this)));
@@ -1442,22 +1434,6 @@ void BrowserOptionsHandler::HandleOpenWallpaperManager(
   wallpaper_manager_util::OpenWallpaperManager();
 }
 
-void BrowserOptionsHandler::SpokenFeedbackChangeCallback(
-    const ListValue* args) {
-  bool enabled = false;
-  args->GetBoolean(0, &enabled);
-
-  chromeos::accessibility::EnableSpokenFeedback(
-      enabled, NULL, ash::A11Y_NOTIFICATION_NONE);
-}
-
-void BrowserOptionsHandler::HighContrastChangeCallback(const ListValue* args) {
-  bool enabled = false;
-  args->GetBoolean(0, &enabled);
-
-  chromeos::accessibility::EnableHighContrast(enabled);
-}
-
 void BrowserOptionsHandler::VirtualKeyboardChangeCallback(
     const ListValue* args) {
   bool enabled = false;
@@ -1485,16 +1461,6 @@ void BrowserOptionsHandler::PerformFactoryResetRestart(const ListValue* args) {
 
 void BrowserOptionsHandler::SetupAccessibilityFeatures() {
   PrefService* pref_service = g_browser_process->local_state();
-  base::FundamentalValue spoken_feedback_enabled(
-      pref_service->GetBoolean(prefs::kSpokenFeedbackEnabled));
-  web_ui()->CallJavascriptFunction(
-      "BrowserOptions.setSpokenFeedbackCheckboxState",
-      spoken_feedback_enabled);
-  base::FundamentalValue high_contrast_enabled(
-      pref_service->GetBoolean(prefs::kHighContrastEnabled));
-  web_ui()->CallJavascriptFunction(
-      "BrowserOptions.setHighContrastCheckboxState",
-      high_contrast_enabled);
   base::FundamentalValue virtual_keyboard_enabled(
       pref_service->GetBoolean(prefs::kVirtualKeyboardEnabled));
   web_ui()->CallJavascriptFunction(

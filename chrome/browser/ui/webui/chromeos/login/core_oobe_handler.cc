@@ -4,8 +4,9 @@
 
 #include "chrome/browser/ui/webui/chromeos/login/core_oobe_handler.h"
 
+#include "ash/magnifier/magnifier_constants.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/chromeos/accessibility/accessibility_util.h"
+#include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/accessibility/magnification_manager.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/system/statistics_provider.h"
@@ -113,7 +114,7 @@ void CoreOobeHandler::HandleUpdateCurrentScreen(const std::string& screen) {
 }
 
 void CoreOobeHandler::HandleEnableHighContrast(bool enabled) {
-  accessibility::EnableHighContrast(enabled);
+  AccessibilityManager::Get()->EnableHighContrast(enabled);
 }
 
 void CoreOobeHandler::HandleEnableScreenMagnifier(bool enabled) {
@@ -125,7 +126,8 @@ void CoreOobeHandler::HandleEnableScreenMagnifier(bool enabled) {
 void CoreOobeHandler::HandleEnableSpokenFeedback() {
   // Checkbox is initialized on page init and updates when spoken feedback
   // setting is changed so just toggle spoken feedback here.
-  accessibility::ToggleSpokenFeedback(web_ui(), ash::A11Y_NOTIFICATION_NONE);
+  AccessibilityManager::Get()->ToggleSpokenFeedback(
+      web_ui(), ash::A11Y_NOTIFICATION_NONE);
 }
 
 void CoreOobeHandler::ShowOobeUI(bool show) {
@@ -142,9 +144,9 @@ void CoreOobeHandler::UpdateA11yState() {
   DCHECK(MagnificationManager::Get());
   base::DictionaryValue a11y_info;
   a11y_info.SetBoolean("highContrastEnabled",
-                       accessibility::IsHighContrastEnabled());
+                       AccessibilityManager::Get()->IsHighContrastEnabled());
   a11y_info.SetBoolean("spokenFeedbackEnabled",
-                       accessibility::IsSpokenFeedbackEnabled());
+                       AccessibilityManager::Get()->IsSpokenFeedbackEnabled());
   a11y_info.SetBoolean("screenMagnifierEnabled",
                        MagnificationManager::Get()->IsMagnifierEnabled());
   CallJS("cr.ui.Oobe.refreshA11yInfo", a11y_info);

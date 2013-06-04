@@ -248,8 +248,6 @@ class BrowserOptionsHandler
   // Called when the accessibility checkbox values are changed.
   // |args| will contain the checkbox checked state as a string
   // ("true" or "false").
-  void SpokenFeedbackChangeCallback(const base::ListValue* args);
-  void HighContrastChangeCallback(const base::ListValue* args);
   void VirtualKeyboardChangeCallback(const base::ListValue* args);
 
   // Called when the user confirmed factory reset. Chrome will

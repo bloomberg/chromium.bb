@@ -43,7 +43,7 @@
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/accessibility/accessibility_util.h"
+#include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/accessibility/magnification_manager.h"
 #include "chrome/browser/chromeos/audio/audio_handler.h"
 #include "chrome/browser/chromeos/bluetooth/bluetooth_pairing_dialog.h"
@@ -882,7 +882,7 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
   }
 
   virtual void MaybeSpeak(const std::string& utterance) const OVERRIDE {
-    accessibility::MaybeSpeak(utterance);
+    AccessibilityManager::Get()->MaybeSpeak(utterance);
   }
 
  private:
@@ -1103,9 +1103,8 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
       case chrome::NOTIFICATION_CROS_ACCESSIBILITY_TOGGLE_SPOKEN_FEEDBACK:
       case chrome::NOTIFICATION_CROS_ACCESSIBILITY_TOGGLE_HIGH_CONTRAST_MODE:
       case chrome::NOTIFICATION_CROS_ACCESSIBILITY_TOGGLE_SCREEN_MAGNIFIER: {
-        accessibility::AccessibilityStatusEventDetails* accessibility_status =
-            content::Details<accessibility::AccessibilityStatusEventDetails>(
-                details).ptr();
+        AccessibilityStatusEventDetails* accessibility_status =
+            content::Details<AccessibilityStatusEventDetails>(details).ptr();
         OnAccessibilityModeChanged(accessibility_status->notify);
         break;
       }

@@ -107,6 +107,8 @@
       'sources': [
         # All .cc, .h, .m, and .mm files under browser/chromeos, except for tests
         # and mocks.
+        'browser/chromeos/accessibility/accessibility_manager.cc',
+        'browser/chromeos/accessibility/accessibility_manager.h',
         'browser/chromeos/accessibility/accessibility_util.cc',
         'browser/chromeos/accessibility/accessibility_util.h',
         'browser/chromeos/accessibility/magnification_manager.cc',

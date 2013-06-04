@@ -5,7 +5,7 @@
 #include "chrome/browser/chromeos/login/webui_login_display.h"
 
 #include "ash/wm/user_activity_detector.h"
-#include "chrome/browser/chromeos/accessibility/accessibility_util.h"
+#include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/login/login_display_host_impl.h"
 #include "chrome/browser/chromeos/login/screen_locker.h"
 #include "chrome/browser/chromeos/login/user_adding_screen.h"
@@ -184,7 +184,7 @@ void WebUILoginDisplay::ShowError(int error_msg_id,
 
   webui_handler_->ShowError(login_attempts, error_text, help_link,
                             help_topic_id);
-  accessibility::MaybeSpeak(error_text);
+  AccessibilityManager::Get()->MaybeSpeak(error_text);
 }
 
 void WebUILoginDisplay::ShowErrorScreen(LoginDisplay::SigninError error_id) {

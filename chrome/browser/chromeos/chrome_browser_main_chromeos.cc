@@ -25,7 +25,7 @@
 #include "base/time/tick_clock.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part_chromeos.h"
-#include "chrome/browser/chromeos/accessibility/accessibility_util.h"
+#include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/accessibility/magnification_manager.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_launch_error.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_launcher.h"
@@ -562,6 +562,7 @@ void ChromeBrowserMainPartsChromeos::PreProfileInit() {
 
   // Initialize magnification manager before ash tray is created. And this must
   // be placed after UserManager::SessionStarted();
+  AccessibilityManager::Initialize();
   MagnificationManager::Initialize();
 
   // Add observers for WallpaperManager. This depends on PowerManagerClient,
@@ -665,7 +666,6 @@ void ChromeBrowserMainPartsChromeos::PostProfileInit() {
         content::PowerSaveBlocker::kPowerSaveBlockPreventDisplaySleep,
         "Retail mode");
   }
-  chromeos::accessibility::Initialize();
 
   peripheral_battery_observer_.reset(new PeripheralBatteryObserver());
 
@@ -810,6 +810,7 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   contact_manager_.reset();
 
   MagnificationManager::Shutdown();
+  AccessibilityManager::Shutdown();
 
   // Let the UserManager and WallpaperManager unregister itself as an observer
   // of the CrosSettings singleton before it is destroyed.
