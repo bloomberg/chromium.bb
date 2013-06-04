@@ -109,10 +109,7 @@ WebIDBFactory* IndexedDBContextImpl::GetIDBFactory() {
     // Prime our cache of origins with existing databases so we can
     // detect when dbs are newly created.
     GetOriginSet();
-    if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kNewIndexedDB))
-      idb_factory_.reset(new content::WebIDBFactoryImpl());
-    else
-      idb_factory_.reset(WebIDBFactory::create());
+    idb_factory_.reset(new content::WebIDBFactoryImpl());
   }
   return idb_factory_.get();
 }
