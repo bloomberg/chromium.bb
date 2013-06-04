@@ -37,6 +37,13 @@
 #include "core/dom/WebCoreMemoryInstrumentation.h"
 #include <v8.h>
 
+// Helper to call webCoreInitializeScriptWrappableForInterface in the global namespace.
+template <class C> inline void initializeScriptWrappableHelper(C* object)
+{
+    void webCoreInitializeScriptWrappableForInterface(C*);
+    webCoreInitializeScriptWrappableForInterface(object);
+}
+
 namespace WebCore {
 
 class ScriptWrappable : public MemoryReporterTag {
@@ -52,8 +59,7 @@ public:
     // a cleaner solution someday.
     template <class C> static void init(C* object)
     {
-        void initializeScriptWrappableForInterface(C*);
-        initializeScriptWrappableForInterface(object);
+        initializeScriptWrappableHelper(object);
     }
 
     void setWrapper(v8::Handle<v8::Object> wrapper, v8::Isolate* isolate, const WrapperConfiguration& configuration)
