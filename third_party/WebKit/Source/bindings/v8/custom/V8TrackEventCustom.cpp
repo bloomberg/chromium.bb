@@ -38,13 +38,15 @@
 
 namespace WebCore {
 
-v8::Handle<v8::Value> V8TrackEvent::trackAttrGetterCustom(v8::Local<v8::String> name, const v8::AccessorInfo& info)
+void V8TrackEvent::trackAttrGetterCustom(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TrackEvent* trackEvent = V8TrackEvent::toNative(info.Holder());
     TrackBase* track = trackEvent->track();
     
-    if (!track)
-        return v8Null(info.GetIsolate());
+    if (!track) {
+        v8SetReturnValueNull(info);
+        return;
+    }
 
     switch (track->type()) {
     case TrackBase::BaseTrack:
@@ -53,8 +55,8 @@ v8::Handle<v8::Value> V8TrackEvent::trackAttrGetterCustom(v8::Local<v8::String> 
         break;
         
     case TrackBase::TextTrack:
-        return toV8Fast(static_cast<TextTrack*>(track), info, trackEvent);
-        break;
+        v8SetReturnValue(info, toV8Fast(static_cast<TextTrack*>(track), info, trackEvent));
+        return;
 
     case TrackBase::AudioTrack:
     case TrackBase::VideoTrack:
@@ -63,7 +65,7 @@ v8::Handle<v8::Value> V8TrackEvent::trackAttrGetterCustom(v8::Local<v8::String> 
         break;
     }
 
-    return v8Null(info.GetIsolate());
+    v8SetReturnValueNull(info);
 }
 
 } // namespace WebCore

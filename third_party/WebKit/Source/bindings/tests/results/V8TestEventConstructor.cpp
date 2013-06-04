@@ -35,50 +35,54 @@
 
 namespace WebCore {
 
-#if defined(OS_WIN)
-// In ScriptWrappable, the use of extern function prototypes inside templated static methods has an issue on windows.
-// These prototypes do not pick up the surrounding namespace, so drop out of WebCore as a workaround.
-} // namespace WebCore
-using WebCore::ScriptWrappable;
-using WebCore::V8TestEventConstructor;
-using WebCore::TestEventConstructor;
-#endif
-void initializeScriptWrappableForInterface(TestEventConstructor* object)
+static void initializeScriptWrappableForInterface(TestEventConstructor* object)
 {
     if (ScriptWrappable::wrapperCanBeStoredInObject(object))
         ScriptWrappable::setTypeInfoInObject(object, &V8TestEventConstructor::info);
     else
         ASSERT_NOT_REACHED();
 }
-#if defined(OS_WIN)
+
+} // namespace WebCore
+
+// In ScriptWrappable::init, the use of a local function declaration has an issue on Windows:
+// the local declaration does not pick up the surrounding namespace. Therefore, we provide this function
+// in the global namespace.
+// (More info on the MSVC bug here: http://connect.microsoft.com/VisualStudio/feedback/details/664619/the-namespace-of-local-function-declarations-in-c)
+void webCoreInitializeScriptWrappableForInterface(WebCore::TestEventConstructor* object)
+{
+    WebCore::initializeScriptWrappableForInterface(object);
+}
+
 namespace WebCore {
-#endif
 WrapperTypeInfo V8TestEventConstructor::info = { V8TestEventConstructor::GetTemplate, V8TestEventConstructor::derefObject, 0, 0, 0, V8TestEventConstructor::installPerContextPrototypeProperties, 0, WrapperTypeObjectPrototype };
 
 namespace TestEventConstructorV8Internal {
 
 template <typename T> void V8_USE(T) { }
 
-static v8::Handle<v8::Value> attr1AttrGetter(v8::Local<v8::String> name, const v8::AccessorInfo& info)
+static void attr1AttrGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestEventConstructor* imp = V8TestEventConstructor::toNative(info.Holder());
-    return v8String(imp->attr1(), info.GetIsolate(), ReturnUnsafeHandle);
+    v8SetReturnValue(info, v8String(imp->attr1(), info.GetIsolate(), ReturnUnsafeHandle));
+    return;
 }
 
-static v8::Handle<v8::Value> attr1AttrGetterCallback(v8::Local<v8::String> name, const v8::AccessorInfo& info)
+static void attr1AttrGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    return TestEventConstructorV8Internal::attr1AttrGetter(name, info);
+    TestEventConstructorV8Internal::attr1AttrGetter(name, info);
 }
 
-static v8::Handle<v8::Value> attr2AttrGetter(v8::Local<v8::String> name, const v8::AccessorInfo& info)
+static void attr2AttrGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestEventConstructor* imp = V8TestEventConstructor::toNative(info.Holder());
-    return v8String(imp->attr2(), info.GetIsolate(), ReturnUnsafeHandle);
+    v8SetReturnValue(info, v8String(imp->attr2(), info.GetIsolate(), ReturnUnsafeHandle));
+    return;
 }
 
-static v8::Handle<v8::Value> attr2AttrGetterCallback(v8::Local<v8::String> name, const v8::AccessorInfo& info)
+static void attr2AttrGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    return TestEventConstructorV8Internal::attr2AttrGetter(name, info);
+    TestEventConstructorV8Internal::attr2AttrGetter(name, info);
 }
 
 static void constructor(const v8::FunctionCallbackInfo<v8::Value>& args)

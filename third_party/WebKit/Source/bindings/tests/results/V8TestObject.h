@@ -43,8 +43,8 @@ public:
     static void customMethodWithArgsMethodCustom(const v8::FunctionCallbackInfo<v8::Value>&);
     static void classMethod2MethodCustom(const v8::FunctionCallbackInfo<v8::Value>&);
     static void constructorCallback(const v8::FunctionCallbackInfo<v8::Value>&);
-    static v8::Handle<v8::Value> customAttrAttrGetterCustom(v8::Local<v8::String> name, const v8::AccessorInfo&);
-    static void customAttrAttrSetterCustom(v8::Local<v8::String> name, v8::Local<v8::Value>, const v8::AccessorInfo&);
+    static void customAttrAttrGetterCustom(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>&);
+    static void customAttrAttrSetterCustom(v8::Local<v8::String> name, v8::Local<v8::Value>, const v8::PropertyCallbackInfo<void>&);
     static v8::Handle<v8::Value> indexedPropertyGetter(uint32_t, const v8::AccessorInfo&);
     static v8::Handle<v8::Value> namedPropertyGetter(v8::Local<v8::String>, const v8::AccessorInfo&);
     static v8::Handle<v8::Array> namedPropertyEnumerator(const v8::AccessorInfo&);

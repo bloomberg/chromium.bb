@@ -43,13 +43,15 @@
 
 namespace WebCore {
 
-v8::Handle<v8::Value> V8Clipboard::typesAttrGetterCustom(v8::Local<v8::String> name, const v8::AccessorInfo& info)
+void V8Clipboard::typesAttrGetterCustom(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     Clipboard* clipboard = V8Clipboard::toNative(info.Holder());
 
     ListHashSet<String> types = clipboard->types();
-    if (types.isEmpty())
-        return v8Null(info.GetIsolate());
+    if (types.isEmpty()) {
+        v8SetReturnValueNull(info);
+        return;
+    }
 
     v8::Local<v8::Array> result = v8::Array::New(types.size());
     ListHashSet<String>::const_iterator end = types.end();
@@ -57,7 +59,7 @@ v8::Handle<v8::Value> V8Clipboard::typesAttrGetterCustom(v8::Local<v8::String> n
     for (ListHashSet<String>::const_iterator it = types.begin(); it != end; ++it, ++index)
         result->Set(v8Integer(index, info.GetIsolate()), v8String(*it, info.GetIsolate()));
 
-    return result;
+    v8SetReturnValue(info, result);
 }
 
 void V8Clipboard::clearDataMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)

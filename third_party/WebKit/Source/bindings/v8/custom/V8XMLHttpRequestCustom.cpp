@@ -66,58 +66,68 @@ void V8XMLHttpRequest::constructorCustom(const v8::FunctionCallbackInfo<v8::Valu
     args.GetReturnValue().Set(wrapper);
 }
 
-v8::Handle<v8::Value> V8XMLHttpRequest::responseTextAttrGetterCustom(v8::Local<v8::String> name, const v8::AccessorInfo& info)
+void V8XMLHttpRequest::responseTextAttrGetterCustom(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     XMLHttpRequest* xmlHttpRequest = V8XMLHttpRequest::toNative(info.Holder());
     ExceptionCode ec = 0;
     const String& text = xmlHttpRequest->responseText(ec);
-    if (ec)
-        return setDOMException(ec, info.GetIsolate());
-    return v8String(text, info.GetIsolate());
+    if (ec) {
+        setDOMException(ec, info.GetIsolate());
+        return;
+    }
+    v8SetReturnValue(info, v8String(text, info.GetIsolate()));
 }
 
-v8::Handle<v8::Value> V8XMLHttpRequest::responseAttrGetterCustom(v8::Local<v8::String> name, const v8::AccessorInfo& info)
+void V8XMLHttpRequest::responseAttrGetterCustom(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     XMLHttpRequest* xmlHttpRequest = V8XMLHttpRequest::toNative(info.Holder());
 
     switch (xmlHttpRequest->responseTypeCode()) {
     case XMLHttpRequest::ResponseTypeDefault:
     case XMLHttpRequest::ResponseTypeText:
-        return responseTextAttrGetterCustom(name, info);
+        responseTextAttrGetterCustom(name, info);
+        return;
 
     case XMLHttpRequest::ResponseTypeDocument:
         {
             ExceptionCode ec = 0;
             Document* document = xmlHttpRequest->responseXML(ec);
-            if (ec)
-                return setDOMException(ec, info.GetIsolate());
-            return toV8Fast(document, info, xmlHttpRequest);
+            if (ec) {
+                setDOMException(ec, info.GetIsolate());
+                return;
+            }
+            v8SetReturnValue(info, toV8Fast(document, info, xmlHttpRequest));
+            return;
         }
 
     case XMLHttpRequest::ResponseTypeBlob:
         {
             ExceptionCode ec = 0;
             Blob* blob = xmlHttpRequest->responseBlob(ec);
-            if (ec)
-                return setDOMException(ec, info.GetIsolate());
-            return toV8Fast(blob, info, xmlHttpRequest);
+            if (ec) {
+                setDOMException(ec, info.GetIsolate());
+                return;
+            }
+            v8SetReturnValue(info, toV8Fast(blob, info, xmlHttpRequest));
+            return;
         }
 
     case XMLHttpRequest::ResponseTypeArrayBuffer:
         {
             ExceptionCode ec = 0;
             ArrayBuffer* arrayBuffer = xmlHttpRequest->responseArrayBuffer(ec);
-            if (ec)
-                return setDOMException(ec, info.GetIsolate());
+            if (ec) {
+                setDOMException(ec, info.GetIsolate());
+                return;
+            }
             if (arrayBuffer && !arrayBuffer->hasDeallocationObserver()) {
                 arrayBuffer->setDeallocationObserver(V8ArrayBufferDeallocationObserver::instance());
                 v8::V8::AdjustAmountOfExternalAllocatedMemory(arrayBuffer->byteLength());
             }
-            return toV8Fast(arrayBuffer, info, xmlHttpRequest);
+            v8SetReturnValue(info, toV8Fast(arrayBuffer, info, xmlHttpRequest));
+            return;
         }
     }
-
-    return v8::Undefined();
 }
 
 void V8XMLHttpRequest::openMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)

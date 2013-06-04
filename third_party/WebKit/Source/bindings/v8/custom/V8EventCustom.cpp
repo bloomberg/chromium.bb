@@ -42,14 +42,14 @@
 
 namespace WebCore {
 
-v8::Handle<v8::Value> V8Event::clipboardDataAttrGetterCustom(v8::Local<v8::String> name, const v8::AccessorInfo& info)
+void V8Event::clipboardDataAttrGetterCustom(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     Event* event = V8Event::toNative(info.Holder());
 
-    if (event->isClipboardEvent())
-        return toV8Fast(static_cast<ClipboardEvent*>(event)->clipboard(), info, event);
-
-    return v8::Undefined();
+    if (event->isClipboardEvent()) {
+        v8SetReturnValue(info, toV8Fast(static_cast<ClipboardEvent*>(event)->clipboard(), info, event));
+        return;
+    }
 }
 
 #define TRY_TO_WRAP_WITH_INTERFACE(interfaceName) \

@@ -44,24 +44,26 @@
 
 namespace WebCore {
 
-#if defined(OS_WIN)
-// In ScriptWrappable, the use of extern function prototypes inside templated static methods has an issue on windows.
-// These prototypes do not pick up the surrounding namespace, so drop out of WebCore as a workaround.
-} // namespace WebCore
-using WebCore::ScriptWrappable;
-using WebCore::V8TestInterface;
-using WebCore::TestInterface;
-#endif
-void initializeScriptWrappableForInterface(TestInterface* object)
+static void initializeScriptWrappableForInterface(TestInterface* object)
 {
     if (ScriptWrappable::wrapperCanBeStoredInObject(object))
         ScriptWrappable::setTypeInfoInObject(object, &V8TestInterface::info);
     else
         ASSERT_NOT_REACHED();
 }
-#if defined(OS_WIN)
+
+} // namespace WebCore
+
+// In ScriptWrappable::init, the use of a local function declaration has an issue on Windows:
+// the local declaration does not pick up the surrounding namespace. Therefore, we provide this function
+// in the global namespace.
+// (More info on the MSVC bug here: http://connect.microsoft.com/VisualStudio/feedback/details/664619/the-namespace-of-local-function-declarations-in-c)
+void webCoreInitializeScriptWrappableForInterface(WebCore::TestInterface* object)
+{
+    WebCore::initializeScriptWrappableForInterface(object);
+}
+
 namespace WebCore {
-#endif
 WrapperTypeInfo V8TestInterface::info = { V8TestInterface::GetTemplate, V8TestInterface::derefObject, V8TestInterface::toActiveDOMObject, 0, 0, V8TestInterface::installPerContextPrototypeProperties, 0, WrapperTypeObjectPrototype };
 
 namespace TestInterfaceV8Internal {
@@ -70,43 +72,45 @@ template <typename T> void V8_USE(T) { }
 
 #if ENABLE(Condition11) || ENABLE(Condition12)
 
-static v8::Handle<v8::Value> supplementalStaticReadOnlyAttrAttrGetter(v8::Local<v8::String> name, const v8::AccessorInfo& info)
+static void supplementalStaticReadOnlyAttrAttrGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    return v8Integer(TestPartialInterface::supplementalStaticReadOnlyAttr(), info.GetIsolate());
+    v8SetReturnValue(info, v8Integer(TestPartialInterface::supplementalStaticReadOnlyAttr(), info.GetIsolate()));
+    return;
 }
 
 #endif // ENABLE(Condition11) || ENABLE(Condition12)
 
 #if ENABLE(Condition11) || ENABLE(Condition12)
 
-static v8::Handle<v8::Value> supplementalStaticReadOnlyAttrAttrGetterCallback(v8::Local<v8::String> name, const v8::AccessorInfo& info)
+static void supplementalStaticReadOnlyAttrAttrGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    return TestInterfaceV8Internal::supplementalStaticReadOnlyAttrAttrGetter(name, info);
+    TestInterfaceV8Internal::supplementalStaticReadOnlyAttrAttrGetter(name, info);
 }
 
 #endif // ENABLE(Condition11) || ENABLE(Condition12)
 
 #if ENABLE(Condition11) || ENABLE(Condition12)
 
-static v8::Handle<v8::Value> supplementalStaticAttrAttrGetter(v8::Local<v8::String> name, const v8::AccessorInfo& info)
+static void supplementalStaticAttrAttrGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    return v8String(TestPartialInterface::supplementalStaticAttr(), info.GetIsolate(), ReturnUnsafeHandle);
+    v8SetReturnValue(info, v8String(TestPartialInterface::supplementalStaticAttr(), info.GetIsolate(), ReturnUnsafeHandle));
+    return;
 }
 
 #endif // ENABLE(Condition11) || ENABLE(Condition12)
 
 #if ENABLE(Condition11) || ENABLE(Condition12)
 
-static v8::Handle<v8::Value> supplementalStaticAttrAttrGetterCallback(v8::Local<v8::String> name, const v8::AccessorInfo& info)
+static void supplementalStaticAttrAttrGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    return TestInterfaceV8Internal::supplementalStaticAttrAttrGetter(name, info);
+    TestInterfaceV8Internal::supplementalStaticAttrAttrGetter(name, info);
 }
 
 #endif // ENABLE(Condition11) || ENABLE(Condition12)
 
 #if ENABLE(Condition11) || ENABLE(Condition12)
 
-static void supplementalStaticAttrAttrSetter(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::AccessorInfo& info)
+static void supplementalStaticAttrAttrSetter(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
 {
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, v, value);
     TestPartialInterface::setSupplementalStaticAttr(v);
@@ -117,7 +121,7 @@ static void supplementalStaticAttrAttrSetter(v8::Local<v8::String> name, v8::Loc
 
 #if ENABLE(Condition11) || ENABLE(Condition12)
 
-static void supplementalStaticAttrAttrSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::AccessorInfo& info)
+static void supplementalStaticAttrAttrSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
 {
     TestInterfaceV8Internal::supplementalStaticAttrAttrSetter(name, value, info);
 }
@@ -126,45 +130,47 @@ static void supplementalStaticAttrAttrSetterCallback(v8::Local<v8::String> name,
 
 #if ENABLE(Condition11) || ENABLE(Condition12)
 
-static v8::Handle<v8::Value> supplementalStr1AttrGetter(v8::Local<v8::String> name, const v8::AccessorInfo& info)
+static void supplementalStr1AttrGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestInterface* imp = V8TestInterface::toNative(info.Holder());
-    return v8String(TestPartialInterface::supplementalStr1(imp), info.GetIsolate(), ReturnUnsafeHandle);
+    v8SetReturnValue(info, v8String(TestPartialInterface::supplementalStr1(imp), info.GetIsolate(), ReturnUnsafeHandle));
+    return;
 }
 
 #endif // ENABLE(Condition11) || ENABLE(Condition12)
 
 #if ENABLE(Condition11) || ENABLE(Condition12)
 
-static v8::Handle<v8::Value> supplementalStr1AttrGetterCallback(v8::Local<v8::String> name, const v8::AccessorInfo& info)
+static void supplementalStr1AttrGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    return TestInterfaceV8Internal::supplementalStr1AttrGetter(name, info);
+    TestInterfaceV8Internal::supplementalStr1AttrGetter(name, info);
 }
 
 #endif // ENABLE(Condition11) || ENABLE(Condition12)
 
 #if ENABLE(Condition11) || ENABLE(Condition12)
 
-static v8::Handle<v8::Value> supplementalStr2AttrGetter(v8::Local<v8::String> name, const v8::AccessorInfo& info)
+static void supplementalStr2AttrGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestInterface* imp = V8TestInterface::toNative(info.Holder());
-    return v8String(TestPartialInterface::supplementalStr2(imp), info.GetIsolate(), ReturnUnsafeHandle);
+    v8SetReturnValue(info, v8String(TestPartialInterface::supplementalStr2(imp), info.GetIsolate(), ReturnUnsafeHandle));
+    return;
 }
 
 #endif // ENABLE(Condition11) || ENABLE(Condition12)
 
 #if ENABLE(Condition11) || ENABLE(Condition12)
 
-static v8::Handle<v8::Value> supplementalStr2AttrGetterCallback(v8::Local<v8::String> name, const v8::AccessorInfo& info)
+static void supplementalStr2AttrGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    return TestInterfaceV8Internal::supplementalStr2AttrGetter(name, info);
+    TestInterfaceV8Internal::supplementalStr2AttrGetter(name, info);
 }
 
 #endif // ENABLE(Condition11) || ENABLE(Condition12)
 
 #if ENABLE(Condition11) || ENABLE(Condition12)
 
-static void supplementalStr2AttrSetter(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::AccessorInfo& info)
+static void supplementalStr2AttrSetter(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
 {
     TestInterface* imp = V8TestInterface::toNative(info.Holder());
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, v, value);
@@ -176,7 +182,7 @@ static void supplementalStr2AttrSetter(v8::Local<v8::String> name, v8::Local<v8:
 
 #if ENABLE(Condition11) || ENABLE(Condition12)
 
-static void supplementalStr2AttrSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::AccessorInfo& info)
+static void supplementalStr2AttrSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
 {
     TestInterfaceV8Internal::supplementalStr2AttrSetter(name, value, info);
 }
@@ -185,16 +191,16 @@ static void supplementalStr2AttrSetterCallback(v8::Local<v8::String> name, v8::L
 
 #if ENABLE(Condition11) || ENABLE(Condition12)
 
-static v8::Handle<v8::Value> supplementalStr3AttrGetterCallback(v8::Local<v8::String> name, const v8::AccessorInfo& info)
+static void supplementalStr3AttrGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    return V8TestInterface::supplementalStr3AttrGetterCustom(name, info);
+    V8TestInterface::supplementalStr3AttrGetterCustom(name, info);
 }
 
 #endif // ENABLE(Condition11) || ENABLE(Condition12)
 
 #if ENABLE(Condition11) || ENABLE(Condition12)
 
-static void supplementalStr3AttrSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::AccessorInfo& info)
+static void supplementalStr3AttrSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
 {
     V8TestInterface::supplementalStr3AttrSetterCustom(name, value, info);
 }
@@ -203,26 +209,27 @@ static void supplementalStr3AttrSetterCallback(v8::Local<v8::String> name, v8::L
 
 #if ENABLE(Condition11) || ENABLE(Condition12)
 
-static v8::Handle<v8::Value> supplementalNodeAttrGetter(v8::Local<v8::String> name, const v8::AccessorInfo& info)
+static void supplementalNodeAttrGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestInterface* imp = V8TestInterface::toNative(info.Holder());
-    return toV8Fast(TestPartialInterface::supplementalNode(imp), info, imp);
+    v8SetReturnValue(info, toV8Fast(TestPartialInterface::supplementalNode(imp), info, imp));
+    return;
 }
 
 #endif // ENABLE(Condition11) || ENABLE(Condition12)
 
 #if ENABLE(Condition11) || ENABLE(Condition12)
 
-static v8::Handle<v8::Value> supplementalNodeAttrGetterCallback(v8::Local<v8::String> name, const v8::AccessorInfo& info)
+static void supplementalNodeAttrGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    return TestInterfaceV8Internal::supplementalNodeAttrGetter(name, info);
+    TestInterfaceV8Internal::supplementalNodeAttrGetter(name, info);
 }
 
 #endif // ENABLE(Condition11) || ENABLE(Condition12)
 
 #if ENABLE(Condition11) || ENABLE(Condition12)
 
-static void supplementalNodeAttrSetter(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::AccessorInfo& info)
+static void supplementalNodeAttrSetter(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
 {
     TestInterface* imp = V8TestInterface::toNative(info.Holder());
     V8TRYCATCH_VOID(Node*, v, V8Node::HasInstance(value, info.GetIsolate(), worldType(info.GetIsolate())) ? V8Node::toNative(v8::Handle<v8::Object>::Cast(value)) : 0);
@@ -234,7 +241,7 @@ static void supplementalNodeAttrSetter(v8::Local<v8::String> name, v8::Local<v8:
 
 #if ENABLE(Condition11) || ENABLE(Condition12)
 
-static void supplementalNodeAttrSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::AccessorInfo& info)
+static void supplementalNodeAttrSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
 {
     TestInterfaceV8Internal::supplementalNodeAttrSetter(name, value, info);
 }
@@ -243,26 +250,27 @@ static void supplementalNodeAttrSetterCallback(v8::Local<v8::String> name, v8::L
 
 #if ENABLE(Condition11) || ENABLE(Condition12)
 
-static v8::Handle<v8::Value> Node13AttrGetter(v8::Local<v8::String> name, const v8::AccessorInfo& info)
+static void Node13AttrGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestInterface* imp = V8TestInterface::toNative(info.Holder());
-    return toV8Fast(TestPartialInterface::node13(imp), info, imp);
+    v8SetReturnValue(info, toV8Fast(TestPartialInterface::node13(imp), info, imp));
+    return;
 }
 
 #endif // ENABLE(Condition11) || ENABLE(Condition12)
 
 #if ENABLE(Condition11) || ENABLE(Condition12)
 
-static v8::Handle<v8::Value> Node13AttrGetterCallback(v8::Local<v8::String> name, const v8::AccessorInfo& info)
+static void Node13AttrGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    return TestInterfaceV8Internal::Node13AttrGetter(name, info);
+    TestInterfaceV8Internal::Node13AttrGetter(name, info);
 }
 
 #endif // ENABLE(Condition11) || ENABLE(Condition12)
 
 #if ENABLE(Condition11) || ENABLE(Condition12)
 
-static void Node13AttrSetter(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::AccessorInfo& info)
+static void Node13AttrSetter(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
 {
     TestInterface* imp = V8TestInterface::toNative(info.Holder());
     V8TRYCATCH_VOID(Node*, v, V8Node::HasInstance(value, info.GetIsolate(), worldType(info.GetIsolate())) ? V8Node::toNative(v8::Handle<v8::Object>::Cast(value)) : 0);
@@ -274,7 +282,7 @@ static void Node13AttrSetter(v8::Local<v8::String> name, v8::Local<v8::Value> va
 
 #if ENABLE(Condition11) || ENABLE(Condition12)
 
-static void Node13AttrSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::AccessorInfo& info)
+static void Node13AttrSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
 {
     TestInterfaceV8Internal::Node13AttrSetter(name, value, info);
 }
@@ -283,26 +291,27 @@ static void Node13AttrSetterCallback(v8::Local<v8::String> name, v8::Local<v8::V
 
 #if ENABLE(Condition11) || ENABLE(Condition12)
 
-static v8::Handle<v8::Value> Node14AttrGetter(v8::Local<v8::String> name, const v8::AccessorInfo& info)
+static void Node14AttrGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestInterface* imp = V8TestInterface::toNative(info.Holder());
-    return toV8Fast(TestPartialInterface::node14(imp), info, imp);
+    v8SetReturnValue(info, toV8Fast(TestPartialInterface::node14(imp), info, imp));
+    return;
 }
 
 #endif // ENABLE(Condition11) || ENABLE(Condition12)
 
 #if ENABLE(Condition11) || ENABLE(Condition12)
 
-static v8::Handle<v8::Value> Node14AttrGetterCallback(v8::Local<v8::String> name, const v8::AccessorInfo& info)
+static void Node14AttrGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    return TestInterfaceV8Internal::Node14AttrGetter(name, info);
+    TestInterfaceV8Internal::Node14AttrGetter(name, info);
 }
 
 #endif // ENABLE(Condition11) || ENABLE(Condition12)
 
 #if ENABLE(Condition11) || ENABLE(Condition12)
 
-static void Node14AttrSetter(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::AccessorInfo& info)
+static void Node14AttrSetter(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
 {
     TestInterface* imp = V8TestInterface::toNative(info.Holder());
     V8TRYCATCH_VOID(Node*, v, V8Node::HasInstance(value, info.GetIsolate(), worldType(info.GetIsolate())) ? V8Node::toNative(v8::Handle<v8::Object>::Cast(value)) : 0);
@@ -314,7 +323,7 @@ static void Node14AttrSetter(v8::Local<v8::String> name, v8::Local<v8::Value> va
 
 #if ENABLE(Condition11) || ENABLE(Condition12)
 
-static void Node14AttrSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::AccessorInfo& info)
+static void Node14AttrSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
 {
     TestInterfaceV8Internal::Node14AttrSetter(name, value, info);
 }
@@ -323,26 +332,27 @@ static void Node14AttrSetterCallback(v8::Local<v8::String> name, v8::Local<v8::V
 
 #if ENABLE(Condition11) || ENABLE(Condition12)
 
-static v8::Handle<v8::Value> Node15AttrGetter(v8::Local<v8::String> name, const v8::AccessorInfo& info)
+static void Node15AttrGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestInterface* imp = V8TestInterface::toNative(info.Holder());
-    return toV8Fast(TestPartialInterface::node15(imp), info, imp);
+    v8SetReturnValue(info, toV8Fast(TestPartialInterface::node15(imp), info, imp));
+    return;
 }
 
 #endif // ENABLE(Condition11) || ENABLE(Condition12)
 
 #if ENABLE(Condition11) || ENABLE(Condition12)
 
-static v8::Handle<v8::Value> Node15AttrGetterCallback(v8::Local<v8::String> name, const v8::AccessorInfo& info)
+static void Node15AttrGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    return TestInterfaceV8Internal::Node15AttrGetter(name, info);
+    TestInterfaceV8Internal::Node15AttrGetter(name, info);
 }
 
 #endif // ENABLE(Condition11) || ENABLE(Condition12)
 
 #if ENABLE(Condition11) || ENABLE(Condition12)
 
-static void Node15AttrSetter(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::AccessorInfo& info)
+static void Node15AttrSetter(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
 {
     TestInterface* imp = V8TestInterface::toNative(info.Holder());
     V8TRYCATCH_VOID(Node*, v, V8Node::HasInstance(value, info.GetIsolate(), worldType(info.GetIsolate())) ? V8Node::toNative(v8::Handle<v8::Object>::Cast(value)) : 0);
@@ -354,7 +364,7 @@ static void Node15AttrSetter(v8::Local<v8::String> name, v8::Local<v8::Value> va
 
 #if ENABLE(Condition11) || ENABLE(Condition12)
 
-static void Node15AttrSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::AccessorInfo& info)
+static void Node15AttrSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
 {
     TestInterfaceV8Internal::Node15AttrSetter(name, value, info);
 }

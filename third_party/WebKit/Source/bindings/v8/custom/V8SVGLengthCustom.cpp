@@ -39,19 +39,21 @@
 
 namespace WebCore {
 
-v8::Handle<v8::Value> V8SVGLength::valueAttrGetterCustom(v8::Local<v8::String> name, const v8::AccessorInfo& info)
+void V8SVGLength::valueAttrGetterCustom(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     SVGPropertyTearOff<SVGLength>* wrapper = V8SVGLength::toNative(info.Holder());
     SVGLength& imp = wrapper->propertyReference();
     ExceptionCode ec = 0;
     SVGLengthContext lengthContext(wrapper->contextElement());
     float value = imp.value(lengthContext, ec);
-    if (UNLIKELY(ec))
-        return setDOMException(ec, info.GetIsolate());
-    return v8::Number::New(value);
+    if (UNLIKELY(ec)) {
+        setDOMException(ec, info.GetIsolate());
+        return;
+    }
+    v8SetReturnValue(info, value);
 }
 
-void V8SVGLength::valueAttrSetterCustom(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::AccessorInfo& info)
+void V8SVGLength::valueAttrSetterCustom(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
 {
     SVGPropertyTearOff<SVGLength>* wrapper = V8SVGLength::toNative(info.Holder());
     if (wrapper->isReadOnly()) {

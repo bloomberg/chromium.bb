@@ -58,10 +58,10 @@ void V8JavaScriptCallFrame::setVariableValueMethodCustom(const v8::FunctionCallb
     v8SetReturnValue(args, impl->setVariableValue(scopeIndex, variableName, newValue));
 }
 
-v8::Handle<v8::Value> V8JavaScriptCallFrame::scopeChainAttrGetterCustom(v8::Local<v8::String> name, const v8::AccessorInfo& info)
+void V8JavaScriptCallFrame::scopeChainAttrGetterCustom(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     JavaScriptCallFrame* impl = V8JavaScriptCallFrame::toNative(info.Holder());
-    return impl->scopeChain();
+    v8SetReturnValue(info, impl->scopeChain());
 }
 
 void V8JavaScriptCallFrame::scopeTypeMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
@@ -71,15 +71,15 @@ void V8JavaScriptCallFrame::scopeTypeMethodCustom(const v8::FunctionCallbackInfo
     v8SetReturnValue(args, impl->scopeType(scopeIndex));
 }
 
-v8::Handle<v8::Value> V8JavaScriptCallFrame::thisObjectAttrGetterCustom(v8::Local<v8::String> name, const v8::AccessorInfo& info)
+void V8JavaScriptCallFrame::thisObjectAttrGetterCustom(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     JavaScriptCallFrame* impl = V8JavaScriptCallFrame::toNative(info.Holder());
-    return impl->thisObject();
+    v8SetReturnValue(info, impl->thisObject());
 }
 
-v8::Handle<v8::Value> V8JavaScriptCallFrame::typeAttrGetterCustom(v8::Local<v8::String> name, const v8::AccessorInfo& info)
+void V8JavaScriptCallFrame::typeAttrGetterCustom(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    return v8::String::NewSymbol("function");
+    v8SetReturnValue(info, v8::String::NewSymbol("function"));
 }
 
 } // namespace WebCore

@@ -45,10 +45,10 @@ public:
     // instance or the prototype ObjectTemplate, based on |onPrototype|.
     struct BatchedAttribute {
         const char* const name;
-        v8::AccessorGetter getter;
-        v8::AccessorSetter setter;
-        v8::AccessorGetter getterForMainWorld;
-        v8::AccessorSetter setterForMainWorld;
+        v8::AccessorGetterCallback getter;
+        v8::AccessorSetterCallback setter;
+        v8::AccessorGetterCallback getterForMainWorld;
+        v8::AccessorSetterCallback setterForMainWorld;
         WrapperTypeInfo* data;
         v8::AccessControl settings;
         v8::PropertyAttribute attribute;
@@ -71,8 +71,8 @@ public:
     template<class ObjectOrTemplate>
     static inline void configureAttribute(v8::Handle<ObjectOrTemplate> instance, v8::Handle<ObjectOrTemplate> prototype, const BatchedAttribute& attribute, v8::Isolate*, WrapperWorldType currentWorldType)
     {
-        v8::AccessorGetter getter = attribute.getter;
-        v8::AccessorSetter setter = attribute.setter;
+        v8::AccessorGetterCallback getter = attribute.getter;
+        v8::AccessorSetterCallback setter = attribute.setter;
         if (currentWorldType == MainWorld) {
             if (attribute.getterForMainWorld)
                 getter = attribute.getterForMainWorld;

@@ -40,20 +40,22 @@
 
 namespace WebCore {
 
-v8::Handle<v8::Value> V8History::stateAttrGetterCustom(v8::Local<v8::String> name, const v8::AccessorInfo& info)
+void V8History::stateAttrGetterCustom(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     History* history = V8History::toNative(info.Holder());
 
     v8::Handle<v8::Value> value = info.Holder()->GetHiddenValue(V8HiddenPropertyName::state());
 
-    if (!value.IsEmpty() && !history->stateChanged())
-        return value;
+    if (!value.IsEmpty() && !history->stateChanged()) {
+        v8SetReturnValue(info, value);
+        return;
+    }
 
     RefPtr<SerializedScriptValue> serialized = history->state();
     value = serialized ? serialized->deserialize(info.GetIsolate()) : v8::Handle<v8::Value>(v8Null(info.GetIsolate()));
     info.Holder()->SetHiddenValue(V8HiddenPropertyName::state(), value);
 
-    return value;
+    v8SetReturnValue(info, value);
 }
 
 void V8History::pushStateMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)

@@ -33,39 +33,42 @@
 
 namespace WebCore {
 
-#if defined(OS_WIN)
-// In ScriptWrappable, the use of extern function prototypes inside templated static methods has an issue on windows.
-// These prototypes do not pick up the surrounding namespace, so drop out of WebCore as a workaround.
-} // namespace WebCore
-using WebCore::ScriptWrappable;
-using WebCore::V8TestException;
-using WebCore::TestException;
-#endif
-void initializeScriptWrappableForInterface(TestException* object)
+static void initializeScriptWrappableForInterface(TestException* object)
 {
     if (ScriptWrappable::wrapperCanBeStoredInObject(object))
         ScriptWrappable::setTypeInfoInObject(object, &V8TestException::info);
     else
         ASSERT_NOT_REACHED();
 }
-#if defined(OS_WIN)
+
+} // namespace WebCore
+
+// In ScriptWrappable::init, the use of a local function declaration has an issue on Windows:
+// the local declaration does not pick up the surrounding namespace. Therefore, we provide this function
+// in the global namespace.
+// (More info on the MSVC bug here: http://connect.microsoft.com/VisualStudio/feedback/details/664619/the-namespace-of-local-function-declarations-in-c)
+void webCoreInitializeScriptWrappableForInterface(WebCore::TestException* object)
+{
+    WebCore::initializeScriptWrappableForInterface(object);
+}
+
 namespace WebCore {
-#endif
 WrapperTypeInfo V8TestException::info = { V8TestException::GetTemplate, V8TestException::derefObject, 0, 0, 0, V8TestException::installPerContextPrototypeProperties, 0, WrapperTypeErrorPrototype };
 
 namespace TestExceptionV8Internal {
 
 template <typename T> void V8_USE(T) { }
 
-static v8::Handle<v8::Value> nameAttrGetter(v8::Local<v8::String> name, const v8::AccessorInfo& info)
+static void nameAttrGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestException* imp = V8TestException::toNative(info.Holder());
-    return v8String(imp->name(), info.GetIsolate(), ReturnUnsafeHandle);
+    v8SetReturnValue(info, v8String(imp->name(), info.GetIsolate(), ReturnUnsafeHandle));
+    return;
 }
 
-static v8::Handle<v8::Value> nameAttrGetterCallback(v8::Local<v8::String> name, const v8::AccessorInfo& info)
+static void nameAttrGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    return TestExceptionV8Internal::nameAttrGetter(name, info);
+    TestExceptionV8Internal::nameAttrGetter(name, info);
 }
 
 } // namespace TestExceptionV8Internal

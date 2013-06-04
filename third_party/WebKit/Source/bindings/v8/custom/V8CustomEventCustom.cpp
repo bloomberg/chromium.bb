@@ -45,7 +45,7 @@
 
 namespace WebCore {
 
-v8::Handle<v8::Value> V8CustomEvent::detailAttrGetterCustom(v8::Local<v8::String> name, const v8::AccessorInfo& info)
+void V8CustomEvent::detailAttrGetterCustom(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     CustomEvent* imp = V8CustomEvent::toNative(info.Holder());
     RefPtr<SerializedScriptValue> serialized = imp->serializedScriptValue();
@@ -55,9 +55,10 @@ v8::Handle<v8::Value> V8CustomEvent::detailAttrGetterCustom(v8::Local<v8::String
             value = serialized->deserialize();
             info.Holder()->SetHiddenValue(V8HiddenPropertyName::detail(), value);
         }
-        return value;
+        v8SetReturnValue(info, value);
+        return;
     }
-    return imp->detail().v8Value();
+    v8SetReturnValue(info, imp->detail().v8Value());
 }
 
 } // namespace WebCore

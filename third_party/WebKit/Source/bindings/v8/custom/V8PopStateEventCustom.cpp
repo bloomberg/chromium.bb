@@ -46,20 +46,26 @@ static v8::Handle<v8::Value> cacheState(v8::Handle<v8::Object> popStateEvent, v8
     return state;
 }
 
-v8::Handle<v8::Value> V8PopStateEvent::stateAttrGetterCustom(v8::Local<v8::String> name, const v8::AccessorInfo& info)
+void V8PopStateEvent::stateAttrGetterCustom(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     v8::Handle<v8::Value> result = info.Holder()->GetHiddenValue(V8HiddenPropertyName::state());
 
-    if (!result.IsEmpty())
-        return result;
+    if (!result.IsEmpty()) {
+        v8SetReturnValue(info, result);
+        return;
+    }
 
     PopStateEvent* event = V8PopStateEvent::toNative(info.Holder());
-    if (!event->state().hasNoValue())
-        return cacheState(info.Holder(), event->state().v8Value());
+    if (!event->state().hasNoValue()) {
+        v8SetReturnValue(info, cacheState(info.Holder(), event->state().v8Value()));
+        return;
+    }
 
     History* history = event->history();
-    if (!history || !event->serializedState())
-        return cacheState(info.Holder(), v8Null(info.GetIsolate()));
+    if (!history || !event->serializedState()) {
+        v8SetReturnValue(info, cacheState(info.Holder(), v8Null(info.GetIsolate())));
+        return;
+    }
 
     // There's no cached value from a previous invocation, nor a state value was provided by the
     // event, but there is a history object, so first we need to see if the state object has been
@@ -73,15 +79,17 @@ v8::Handle<v8::Value> V8PopStateEvent::stateAttrGetterCustom(v8::Local<v8::Strin
         v8::Handle<v8::Object> v8History = toV8Fast(history, info, event).As<v8::Object>();
         if (!history->stateChanged()) {
             result = v8History->GetHiddenValue(V8HiddenPropertyName::state());
-            if (!result.IsEmpty())
-                return cacheState(info.Holder(), result);
+            if (!result.IsEmpty()) {
+                v8SetReturnValue(info, cacheState(info.Holder(), result));
+                return;
+            }
         }
         result = event->serializedState()->deserialize(info.GetIsolate());
         v8History->SetHiddenValue(V8HiddenPropertyName::state(), result);
     } else
         result = event->serializedState()->deserialize(info.GetIsolate());
 
-    return cacheState(info.Holder(), result);
+    v8SetReturnValue(info, cacheState(info.Holder(), result));
 }
 
 } // namespace WebCore

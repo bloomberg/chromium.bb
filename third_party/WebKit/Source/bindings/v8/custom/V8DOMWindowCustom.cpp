@@ -148,29 +148,29 @@ void WindowSetTimeoutImpl(const v8::FunctionCallbackInfo<v8::Value>& args, bool 
     v8SetReturnValue(args, id);
 }
 
-v8::Handle<v8::Value> V8DOMWindow::eventAttrGetterCustom(v8::Local<v8::String> name, const v8::AccessorInfo& info)
+void V8DOMWindow::eventAttrGetterCustom(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     v8::Handle<v8::Object> holder = info.This()->FindInstanceInPrototypeChain(V8DOMWindow::GetTemplate(info.GetIsolate(), worldTypeInMainThread(info.GetIsolate())));
     if (holder.IsEmpty())
-        return v8::Undefined();
+        return;
 
     Frame* frame = V8DOMWindow::toNative(holder)->frame();
     if (!BindingSecurity::shouldAllowAccessToFrame(frame))
-        return v8::Undefined();
+        return;
 
     ASSERT(frame);
     v8::Local<v8::Context> context = frame->script()->currentWorldContext();
     if (context.IsEmpty())
-        return v8::Undefined();
+        return;
 
     v8::Handle<v8::String> eventSymbol = V8HiddenPropertyName::event();
     v8::Handle<v8::Value> jsEvent = context->Global()->GetHiddenValue(eventSymbol);
     if (jsEvent.IsEmpty())
-        return v8::Undefined();
-    return jsEvent;
+        return;
+    v8SetReturnValue(info, jsEvent);
 }
 
-void V8DOMWindow::eventAttrSetterCustom(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::AccessorInfo& info)
+void V8DOMWindow::eventAttrSetterCustom(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
 {
     v8::Handle<v8::Object> holder = info.This()->FindInstanceInPrototypeChain(V8DOMWindow::GetTemplate(info.GetIsolate(), worldTypeInMainThread(info.GetIsolate())));
     if (holder.IsEmpty())
@@ -189,7 +189,7 @@ void V8DOMWindow::eventAttrSetterCustom(v8::Local<v8::String> name, v8::Local<v8
     context->Global()->SetHiddenValue(eventSymbol, value);
 }
 
-void V8DOMWindow::locationAttrSetterCustom(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::AccessorInfo& info)
+void V8DOMWindow::locationAttrSetterCustom(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
 {
     DOMWindow* imp = V8DOMWindow::toNative(info.Holder());
 
@@ -205,7 +205,7 @@ void V8DOMWindow::locationAttrSetterCustom(v8::Local<v8::String> name, v8::Local
         location->setHref(active, first, toWebCoreString(value));
 }
 
-void V8DOMWindow::openerAttrSetterCustom(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::AccessorInfo& info)
+void V8DOMWindow::openerAttrSetterCustom(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
 {
     DOMWindow* imp = V8DOMWindow::toNative(info.Holder());
 
