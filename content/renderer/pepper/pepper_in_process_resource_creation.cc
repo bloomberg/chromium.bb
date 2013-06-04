@@ -131,15 +131,6 @@ PP_Resource PepperInProcessResourceCreation::CreateURLRequestInfo(
       instance, ::ppapi::URLRequestInfoData()))->GetReference();
 }
 
-PP_Resource PepperInProcessResourceCreation::CreateURLResponseInfo(
-    PP_Instance instance,
-    const ::ppapi::URLResponseInfoData& data,
-    PP_Resource file_ref_resource) {
-  return (new ppapi::proxy::URLResponseInfoResource(
-      host_impl_->in_process_router()->GetPluginConnection(),
-      instance, data, file_ref_resource))->GetReference();
-}
-
 PP_Resource PepperInProcessResourceCreation::CreateWebSocket(
     PP_Instance instance) {
   return (new ppapi::proxy::WebSocketResource(

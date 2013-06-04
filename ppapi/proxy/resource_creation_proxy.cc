@@ -179,15 +179,6 @@ PP_Resource ResourceCreationProxy::CreateURLRequestInfo(
       GetConnection(), instance, URLRequestInfoData()))->GetReference();
 }
 
-PP_Resource ResourceCreationProxy::CreateURLResponseInfo(
-    PP_Instance instance,
-    const URLResponseInfoData& data,
-    PP_Resource file_ref_resource) {
-  return (new URLResponseInfoResource(GetConnection(), instance,
-                                      data,
-                                      file_ref_resource))->GetReference();
-}
-
 PP_Resource ResourceCreationProxy::CreateWheelInputEvent(
     PP_Instance instance,
     PP_TimeTicks time_stamp,

@@ -65,10 +65,6 @@ class PepperInProcessResourceCreation
       PP_Instance instance) OVERRIDE;
   virtual PP_Resource CreateURLRequestInfo(
       PP_Instance instance) OVERRIDE;
-  virtual PP_Resource CreateURLResponseInfo(
-      PP_Instance instance,
-      const ::ppapi::URLResponseInfoData& data,
-      PP_Resource file_ref_resource) OVERRIDE;
   virtual PP_Resource CreateWebSocket(
       PP_Instance instance) OVERRIDE;
 
