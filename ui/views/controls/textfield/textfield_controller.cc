@@ -9,6 +9,11 @@
 
 namespace views {
 
+bool TextfieldController::HandleKeyEvent(Textfield* sender,
+                                         const ui::KeyEvent& key_event) {
+  return false;
+}
+
 bool TextfieldController::HandleMouseEvent(Textfield* sender,
                                            const ui::MouseEvent& mouse_event) {
   return false;

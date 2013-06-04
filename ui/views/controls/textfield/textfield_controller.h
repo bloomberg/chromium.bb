@@ -29,13 +29,13 @@ class VIEWS_EXPORT TextfieldController {
   // user. It won't be called if the text is changed by calling
   // Textfield::SetText() or Textfield::AppendText().
   virtual void ContentsChanged(Textfield* sender,
-                               const string16& new_contents) = 0;
+                               const string16& new_contents) {}
 
   // This method is called to get notified about keystrokes in the edit.
   // Returns true if the message was handled and should not be processed
   // further. If it returns false the processing continues.
   virtual bool HandleKeyEvent(Textfield* sender,
-                              const ui::KeyEvent& key_event) = 0;
+                              const ui::KeyEvent& key_event);
 
   // This method is called to get notified about mouse events in the edit.
   // Returns true if the message was handled and should not be processed
@@ -53,6 +53,9 @@ class VIEWS_EXPORT TextfieldController {
 
   // Called after performing a Cut or Copy operation.
   virtual void OnAfterCutOrCopy() {}
+
+  // Called after performing a Paste operation.
+  virtual void OnAfterPaste() {}
 
   // Called after the textfield has written drag data to give the controller a
   // chance to modify the drag data.

@@ -1063,6 +1063,8 @@ void NativeTextfieldWin::OnPaste() {
     textfield_->SyncText();
     text_before_change_.clear();
     ReplaceSel(collapsed.c_str(), true);
+    if (TextfieldController* controller = textfield_->GetController())
+      controller->OnAfterPaste();
   }
 }
 

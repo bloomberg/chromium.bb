@@ -1397,13 +1397,9 @@ bool NativeTextfieldViews::Paste() {
     string16 new_text = GetTextForDisplay(GetText());
     model_->SetText(new_text);
 
-    // Calls TextfieldController::ContentsChanged() explicitly if the paste
-    // action did not change the content at all. See http://crbug.com/79002
-    if (new_text == original_text) {
-      TextfieldController* controller = textfield_->GetController();
-      if (controller)
-        controller->ContentsChanged(textfield_, textfield_->text());
-    }
+    TextfieldController* controller = textfield_->GetController();
+    if (controller)
+      controller->OnAfterPaste();
   }
   return success;
 }

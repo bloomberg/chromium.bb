@@ -396,37 +396,12 @@ void FindBarView::ButtonPressed(
 
 void FindBarView::ContentsChanged(views::Textfield* sender,
                                   const string16& new_contents) {
-  FindBarController* controller = find_bar_host()->GetFindBarController();
-  DCHECK(controller);
-  content::WebContents* web_contents = controller->web_contents();
-  // We must guard against a NULL web_contents, which can happen if the text
-  // in the Find box is changed right after the tab is destroyed. Otherwise, it
-  // can lead to crashes, as exposed by automation testing in issue 8048.
-  if (!web_contents)
-    return;
-  FindTabHelper* find_tab_helper = FindTabHelper::FromWebContents(web_contents);
-
-  // When the user changes something in the text box we check the contents and
-  // if the textbox contains something we set it as the new search string and
-  // initiate search (even though old searches might be in progress).
-  if (!new_contents.empty()) {
-    // The last two params here are forward (true) and case sensitive (false).
-    find_tab_helper->StartFinding(new_contents, true, false);
-  } else {
-    find_tab_helper->StopFinding(FindBarController::kClearSelectionOnPage);
-    UpdateForResult(find_tab_helper->find_result(), string16());
-    find_bar_host()->MoveWindowIfNecessary(gfx::Rect(), false);
-
-    // Clearing the text box should clear the prepopulate state so that when
-    // we close and reopen the Find box it doesn't show the search we just
-    // deleted. We can't do this on ChromeOS yet because we get ContentsChanged
-    // sent for a lot more things than just the user nulling out the search
-    // terms. See http://crbug.com/45372.
-    Profile* profile =
-        Profile::FromBrowserContext(web_contents->GetBrowserContext());
-    FindBarState* find_bar_state = FindBarStateFactory::GetForProfile(profile);
-    find_bar_state->set_last_prepopulate_text(string16());
-  }
+  // TextfieldController::OnAfterUserAction() is supported only by Views
+  // implementation, and NativeTextfieldWin doesn't call OnAfterUserAction().
+  // Call Find() here.
+  // TODO(yukishiino): Remove this code after the migration to Views.
+  if (!views::Textfield::IsViewsTextfieldEnabled())
+    Find(new_contents);
 }
 
 bool FindBarView::HandleKeyEvent(views::Textfield* sender,
@@ -454,6 +429,60 @@ bool FindBarView::HandleKeyEvent(views::Textfield* sender,
   }
 
   return false;
+}
+
+void FindBarView::OnAfterUserAction(views::Textfield* sender) {
+  // The composition text wouldn't be what the user is really looking for.
+  // We delay the search until the user commits the composition text.
+  if (sender->IsIMEComposing() || sender->text() == last_searched_text_)
+    return;
+
+  // TODO(yukishiino): Remove this condition check after the migration to Views.
+  if (views::Textfield::IsViewsTextfieldEnabled())
+    Find(sender->text());
+}
+
+void FindBarView::OnAfterPaste() {
+  // Clear the last search text so we always search for the user input after
+  // a paste operation, even if the pasted text is the same as before.
+  // See http://crbug.com/79002
+  last_searched_text_.clear();
+}
+
+void FindBarView::Find(const string16& search_text) {
+  FindBarController* controller = find_bar_host()->GetFindBarController();
+  DCHECK(controller);
+  content::WebContents* web_contents = controller->web_contents();
+  // We must guard against a NULL web_contents, which can happen if the text
+  // in the Find box is changed right after the tab is destroyed. Otherwise, it
+  // can lead to crashes, as exposed by automation testing in issue 8048.
+  if (!web_contents)
+    return;
+  FindTabHelper* find_tab_helper = FindTabHelper::FromWebContents(web_contents);
+
+  last_searched_text_ = search_text;
+
+  // When the user changes something in the text box we check the contents and
+  // if the textbox contains something we set it as the new search string and
+  // initiate search (even though old searches might be in progress).
+  if (!search_text.empty()) {
+    // The last two params here are forward (true) and case sensitive (false).
+    find_tab_helper->StartFinding(search_text, true, false);
+  } else {
+    find_tab_helper->StopFinding(FindBarController::kClearSelectionOnPage);
+    UpdateForResult(find_tab_helper->find_result(), string16());
+    find_bar_host()->MoveWindowIfNecessary(gfx::Rect(), false);
+
+    // Clearing the text box should clear the prepopulate state so that when
+    // we close and reopen the Find box it doesn't show the search we just
+    // deleted. We can't do this on ChromeOS yet because we get ContentsChanged
+    // sent for a lot more things than just the user nulling out the search
+    // terms. See http://crbug.com/45372.
+    Profile* profile =
+        Profile::FromBrowserContext(web_contents->GetBrowserContext());
+    FindBarState* find_bar_state = FindBarStateFactory::GetForProfile(profile);
+    find_bar_state->set_last_prepopulate_text(string16());
+  }
 }
 
 void FindBarView::UpdateMatchCountAppearance(bool no_match) {

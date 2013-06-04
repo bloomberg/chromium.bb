@@ -80,9 +80,14 @@ class FindBarView : public DropdownBarView,
                                const string16& new_contents) OVERRIDE;
   virtual bool HandleKeyEvent(views::Textfield* sender,
                               const ui::KeyEvent& key_event) OVERRIDE;
+  virtual void OnAfterUserAction(views::Textfield* sender) OVERRIDE;
+  virtual void OnAfterPaste() OVERRIDE;
 
  private:
-  // Update the appearance for the match count label.
+  // Starts finding |search_text|.  If the text is empty, stops finding.
+  void Find(const string16& search_text);
+
+  // Updates the appearance for the match count label.
   void UpdateMatchCountAppearance(bool no_match);
 
   // views::View:
@@ -131,6 +136,10 @@ class FindBarView : public DropdownBarView,
   // Returns the OS-specific view for the find bar that acts as an intermediary
   // between us and the WebContentsView.
   FindBarHost* find_bar_host() const;
+
+  // Used to detect if the input text, not including the IME composition text,
+  // has changed or not.
+  string16 last_searched_text_;
 
   // The controls in the window.
   SearchTextfieldView* find_text_;
