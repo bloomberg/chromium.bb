@@ -79,9 +79,7 @@ const ui::ResourceBundle::FontStyle kAssociatedNetworkFontStyle =
 
 const int kInfoBarBorderPaddingVertical = 5;
 
-#if defined(OS_ANDROID)
-const bool kPasswordEchoEnabled = true;
-#else
+#if !defined(OS_ANDROID)
 const bool kPasswordEchoEnabled = false;
 #endif
 

@@ -122,6 +122,7 @@ const char* kPrefsToObserve[] = {
 #if defined(OS_ANDROID)
   prefs::kWebKitFontScaleFactor,
   prefs::kWebKitForceEnableZoom,
+  prefs::kWebKitPasswordEchoEnabled,
 #endif
   prefs::kWebKitJavascriptEnabled,
   prefs::kWebKitJavaEnabled,
@@ -555,6 +556,10 @@ void PrefsTabHelper::RegisterUserPrefs(
   registry->RegisterBooleanPref(
       prefs::kWebKitForceEnableZoom,
       pref_defaults.force_enable_zoom,
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterBooleanPref(
+      prefs::kWebKitPasswordEchoEnabled,
+      pref_defaults.password_echo_enabled,
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 #endif
   registry->RegisterLocalizedStringPref(

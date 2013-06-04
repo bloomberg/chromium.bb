@@ -145,6 +145,7 @@ extern const char kWebKitAllowRunningInsecureContent[];
 #if defined(OS_ANDROID)
 extern const char kWebKitFontScaleFactor[];
 extern const char kWebKitForceEnableZoom[];
+extern const char kWebKitPasswordEchoEnabled[];
 #endif
 extern const char kPasswordGenerationEnabled[];
 extern const char kPasswordManagerEnabled[];

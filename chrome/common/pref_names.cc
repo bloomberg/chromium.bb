@@ -273,6 +273,8 @@ const char kWebKitAllowRunningInsecureContent[] =
 #if defined(OS_ANDROID)
 const char kWebKitFontScaleFactor[] = "webkit.webprefs.font_scale_factor";
 const char kWebKitForceEnableZoom[] = "webkit.webprefs.force_enable_zoom";
+const char kWebKitPasswordEchoEnabled[] =
+    "webkit.webprefs.password_echo_enabled";
 #endif
 
 const char kWebKitCommonScript[] = "Zyyy";

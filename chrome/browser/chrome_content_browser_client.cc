@@ -1949,7 +1949,13 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
 #endif
 #endif
 
+#if defined(OS_ANDROID)
+  web_prefs->password_echo_enabled =
+      prefs->GetBoolean(prefs::kWebKitPasswordEchoEnabled);
+#else
   web_prefs->password_echo_enabled = browser_defaults::kPasswordEchoEnabled;
+#endif
+
 #if defined(OS_CHROMEOS)
   // Enable password echo during OOBE when keyboard driven flag is set.
   if (chromeos::UserManager::IsInitialized() &&
