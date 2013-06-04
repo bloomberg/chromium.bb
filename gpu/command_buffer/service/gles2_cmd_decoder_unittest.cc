@@ -10,6 +10,7 @@
 #include "gpu/command_buffer/common/id_allocator.h"
 #include "gpu/command_buffer/service/async_pixel_transfer_delegate_mock.h"
 #include "gpu/command_buffer/service/async_pixel_transfer_manager.h"
+#include "gpu/command_buffer/service/async_pixel_transfer_manager_test.h"
 #include "gpu/command_buffer/service/cmd_buffer_engine.h"
 #include "gpu/command_buffer/service/context_group.h"
 #include "gpu/command_buffer/service/gl_surface_mock.h"
@@ -8081,9 +8082,12 @@ TEST_F(GLES2DecoderManualInitTest, AsyncPixelTransfers) {
   Texture* texture = texture_ref->texture();
 
   // Set a mock Async delegate
+  gpu::AsyncPixelTransferManagerTest* manager =
+      new gpu::AsyncPixelTransferManagerTest;
+  manager->Initialize(group().texture_manager());
+  decoder_->SetAsyncPixelTransferManagerForTest(manager);
   StrictMock<gpu::MockAsyncPixelTransferDelegate>* delegate =
-      new StrictMock<gpu::MockAsyncPixelTransferDelegate>;
-  decoder_->SetAsyncPixelTransferDelegateForTest(delegate);
+      manager->GetMockDelegate();
   StrictMock<gpu::MockAsyncPixelTransferState>* state = NULL;
 
   // Tex(Sub)Image2D upload commands.
@@ -8244,10 +8248,6 @@ TEST_F(GLES2DecoderManualInitTest, AsyncPixelTransfers) {
     EXPECT_EQ(error::kNoError, ExecuteCmd(wait_cmd));
     EXPECT_EQ(GL_NO_ERROR, GetGLError());
   }
-
-  decoder_->SetAsyncPixelTransferDelegateForTest(NULL);
-  decoder_->GetAsyncPixelTransferManager()
-      ->ClearPixelTransferStateForTest(texture_ref);
 }
 
 TEST_F(GLES2DecoderManualInitTest, AsyncPixelTransferManager) {
@@ -8262,9 +8262,12 @@ TEST_F(GLES2DecoderManualInitTest, AsyncPixelTransferManager) {
   TextureRef* texture_ref = GetTexture(client_texture_id_);
 
   // Set a mock Async delegate.
+  gpu::AsyncPixelTransferManagerTest* manager =
+      new gpu::AsyncPixelTransferManagerTest;
+  manager->Initialize(group().texture_manager());
+  decoder_->SetAsyncPixelTransferManagerForTest(manager);
   StrictMock<gpu::MockAsyncPixelTransferDelegate>* delegate =
-      new StrictMock<gpu::MockAsyncPixelTransferDelegate>;
-  decoder_->SetAsyncPixelTransferDelegateForTest(delegate);
+      manager->GetMockDelegate();
   StrictMock<gpu::MockAsyncPixelTransferState>* state = NULL;
 
   AsyncTexImage2DCHROMIUM teximage_cmd;

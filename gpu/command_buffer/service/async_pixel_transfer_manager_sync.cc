@@ -1,8 +1,10 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "gpu/command_buffer/service/async_pixel_transfer_delegate_sync.h"
+#include "gpu/command_buffer/service/async_pixel_transfer_manager_sync.h"
+
+#include "gpu/command_buffer/service/async_pixel_transfer_delegate.h"
 
 namespace gpu {
 
@@ -22,6 +24,43 @@ class AsyncPixelTransferStateImpl : public AsyncPixelTransferState {
 };
 
 }  // namespace
+
+// Class which handles async pixel transfers synchronously.
+class AsyncPixelTransferDelegateSync : public AsyncPixelTransferDelegate {
+ public:
+  AsyncPixelTransferDelegateSync();
+  virtual ~AsyncPixelTransferDelegateSync();
+
+  // Implement AsyncPixelTransferDelegate:
+  virtual AsyncPixelTransferState* CreatePixelTransferState(
+      GLuint texture_id,
+      const AsyncTexImage2DParams& define_params) OVERRIDE;
+  virtual void BindCompletedAsyncTransfers() OVERRIDE;
+  virtual void AsyncNotifyCompletion(
+      const AsyncMemoryParams& mem_params,
+      const CompletionCallback& callback) OVERRIDE;
+  virtual void AsyncTexImage2D(
+      AsyncPixelTransferState* state,
+      const AsyncTexImage2DParams& tex_params,
+      const AsyncMemoryParams& mem_params,
+      const base::Closure& bind_callback) OVERRIDE;
+  virtual void AsyncTexSubImage2D(
+      AsyncPixelTransferState* transfer_state,
+      const AsyncTexSubImage2DParams& tex_params,
+      const AsyncMemoryParams& mem_params) OVERRIDE;
+  virtual void WaitForTransferCompletion(
+      AsyncPixelTransferState* state) OVERRIDE;
+  virtual uint32 GetTextureUploadCount() OVERRIDE;
+  virtual base::TimeDelta GetTotalTextureUploadTime() OVERRIDE;
+  virtual void ProcessMorePendingTransfers() OVERRIDE;
+  virtual bool NeedsProcessMorePendingTransfers() OVERRIDE;
+
+ private:
+  int texture_upload_count_;
+  base::TimeDelta total_texture_upload_time_;
+
+  DISALLOW_COPY_AND_ASSIGN(AsyncPixelTransferDelegateSync);
+};
 
 AsyncPixelTransferDelegateSync::AsyncPixelTransferDelegateSync()
     : texture_upload_count_(0) {
@@ -107,6 +146,16 @@ void AsyncPixelTransferDelegateSync::ProcessMorePendingTransfers() {
 
 bool AsyncPixelTransferDelegateSync::NeedsProcessMorePendingTransfers() {
   return false;
+}
+
+AsyncPixelTransferManagerSync::AsyncPixelTransferManagerSync()
+    : delegate_(new AsyncPixelTransferDelegateSync()) {}
+
+AsyncPixelTransferManagerSync::~AsyncPixelTransferManagerSync() {}
+
+AsyncPixelTransferDelegate*
+AsyncPixelTransferManagerSync::GetAsyncPixelTransferDelegate() {
+  return delegate_.get();
 }
 
 }  // namespace gpu

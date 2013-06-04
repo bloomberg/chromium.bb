@@ -2,12 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "gpu/command_buffer/service/async_pixel_transfer_delegate_share_group.h"
+#include "gpu/command_buffer/service/async_pixel_transfer_manager_share_group.h"
+
+#include <list>
 
 #include "base/bind.h"
 #include "base/debug/trace_event.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
+#include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "base/synchronization/cancellation_flag.h"
 #include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
@@ -321,6 +325,44 @@ class AsyncTransferStateImpl : public AsyncPixelTransferState {
   scoped_refptr<TransferStateInternal> internal_;
 };
 
+class AsyncPixelTransferDelegateShareGroup : public AsyncPixelTransferDelegate {
+ public:
+  explicit AsyncPixelTransferDelegateShareGroup(gfx::GLContext* context);
+  virtual ~AsyncPixelTransferDelegateShareGroup();
+
+  // Implement AsyncPixelTransferDelegate:
+  virtual AsyncPixelTransferState* CreatePixelTransferState(
+      GLuint texture_id,
+      const AsyncTexImage2DParams& define_params) OVERRIDE;
+  virtual void BindCompletedAsyncTransfers() OVERRIDE;
+  virtual void AsyncNotifyCompletion(
+      const AsyncMemoryParams& mem_params,
+      const CompletionCallback& callback) OVERRIDE;
+  virtual void AsyncTexImage2D(
+      AsyncPixelTransferState* state,
+      const AsyncTexImage2DParams& tex_params,
+      const AsyncMemoryParams& mem_params,
+      const base::Closure& bind_callback) OVERRIDE;
+  virtual void AsyncTexSubImage2D(
+      AsyncPixelTransferState* state,
+      const AsyncTexSubImage2DParams& tex_params,
+      const AsyncMemoryParams& mem_params) OVERRIDE;
+  virtual void WaitForTransferCompletion(
+      AsyncPixelTransferState* state) OVERRIDE;
+  virtual uint32 GetTextureUploadCount() OVERRIDE;
+  virtual base::TimeDelta GetTotalTextureUploadTime() OVERRIDE;
+  virtual void ProcessMorePendingTransfers() OVERRIDE;
+  virtual bool NeedsProcessMorePendingTransfers() OVERRIDE;
+
+ private:
+  typedef std::list<base::WeakPtr<AsyncPixelTransferState> > TransferQueue;
+  TransferQueue pending_allocations_;
+
+  scoped_refptr<AsyncPixelTransferUploadStats> texture_upload_stats_;
+
+  DISALLOW_COPY_AND_ASSIGN(AsyncPixelTransferDelegateShareGroup);
+};
+
 AsyncPixelTransferDelegateShareGroup::AsyncPixelTransferDelegateShareGroup(
       gfx::GLContext* context) {
   g_transfer_thread.Pointer()->InitializeOnMainThread(context);
@@ -499,6 +541,17 @@ void AsyncPixelTransferDelegateShareGroup::ProcessMorePendingTransfers() {
 
 bool AsyncPixelTransferDelegateShareGroup::NeedsProcessMorePendingTransfers() {
   return false;
+}
+
+AsyncPixelTransferManagerShareGroup::AsyncPixelTransferManagerShareGroup(
+    gfx::GLContext* context)
+    : delegate_(new AsyncPixelTransferDelegateShareGroup(context)) {}
+
+AsyncPixelTransferManagerShareGroup::~AsyncPixelTransferManagerShareGroup() {}
+
+AsyncPixelTransferDelegate*
+AsyncPixelTransferManagerShareGroup::GetAsyncPixelTransferDelegate() {
+  return delegate_.get();
 }
 
 }  // namespace gpu

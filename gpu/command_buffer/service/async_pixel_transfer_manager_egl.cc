@@ -1,9 +1,10 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "gpu/command_buffer/service/async_pixel_transfer_delegate_egl.h"
+#include "gpu/command_buffer/service/async_pixel_transfer_manager_egl.h"
 
+#include <list>
 #include <string>
 
 #include "base/bind.h"
@@ -13,6 +14,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
+#include "gpu/command_buffer/service/async_pixel_transfer_delegate.h"
 #include "gpu/command_buffer/service/safe_shared_memory_pool.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_surface_egl.h"
@@ -409,6 +411,66 @@ class AsyncTransferStateImpl : public AsyncPixelTransferState {
 
 }  // namespace
 
+// Class which handles async pixel transfers using EGLImageKHR and another
+// upload thread
+class AsyncPixelTransferDelegateEGL
+    : public AsyncPixelTransferDelegate,
+      public base::SupportsWeakPtr<AsyncPixelTransferDelegateEGL> {
+ public:
+  AsyncPixelTransferDelegateEGL();
+  virtual ~AsyncPixelTransferDelegateEGL();
+
+  // Implement AsyncPixelTransferDelegate:
+  virtual AsyncPixelTransferState* CreatePixelTransferState(
+      GLuint texture_id,
+      const AsyncTexImage2DParams& define_params) OVERRIDE;
+  virtual void BindCompletedAsyncTransfers() OVERRIDE;
+  virtual void AsyncNotifyCompletion(
+      const AsyncMemoryParams& mem_params,
+      const CompletionCallback& callback) OVERRIDE;
+  virtual void AsyncTexImage2D(
+      AsyncPixelTransferState* state,
+      const AsyncTexImage2DParams& tex_params,
+      const AsyncMemoryParams& mem_params,
+      const base::Closure& bind_callback) OVERRIDE;
+  virtual void AsyncTexSubImage2D(
+      AsyncPixelTransferState* state,
+      const AsyncTexSubImage2DParams& tex_params,
+      const AsyncMemoryParams& mem_params) OVERRIDE;
+  virtual void WaitForTransferCompletion(
+      AsyncPixelTransferState* state) OVERRIDE;
+  virtual uint32 GetTextureUploadCount() OVERRIDE;
+  virtual base::TimeDelta GetTotalTextureUploadTime() OVERRIDE;
+  virtual void ProcessMorePendingTransfers() OVERRIDE;
+  virtual bool NeedsProcessMorePendingTransfers() OVERRIDE;
+
+ private:
+  static void PerformNotifyCompletion(
+      AsyncMemoryParams mem_params,
+      ScopedSafeSharedMemory* safe_shared_memory,
+      const CompletionCallback& callback);
+
+  // Returns true if a work-around was used.
+  bool WorkAroundAsyncTexImage2D(
+      AsyncPixelTransferState* state,
+      const AsyncTexImage2DParams& tex_params,
+      const AsyncMemoryParams& mem_params,
+      const base::Closure& bind_callback);
+  bool WorkAroundAsyncTexSubImage2D(
+      AsyncPixelTransferState* state,
+      const AsyncTexSubImage2DParams& tex_params,
+      const AsyncMemoryParams& mem_params);
+
+  typedef std::list<base::WeakPtr<AsyncPixelTransferState> > TransferQueue;
+  TransferQueue pending_allocations_;
+
+  scoped_refptr<AsyncPixelTransferUploadStats> texture_upload_stats_;
+  bool is_imagination_;
+  bool is_qualcomm_;
+
+  DISALLOW_COPY_AND_ASSIGN(AsyncPixelTransferDelegateEGL);
+};
+
 AsyncPixelTransferDelegateEGL::AsyncPixelTransferDelegateEGL() {
   std::string vendor;
   vendor = reinterpret_cast<const char*>(glGetString(GL_VENDOR));
@@ -745,6 +807,16 @@ bool AsyncPixelTransferDelegateEGL::WorkAroundAsyncTexSubImage2D(
 
   DCHECK(CHECK_GL());
   return true;
+}
+
+AsyncPixelTransferManagerEGL::AsyncPixelTransferManagerEGL()
+    : delegate_(new AsyncPixelTransferDelegateEGL()) {}
+
+AsyncPixelTransferManagerEGL::~AsyncPixelTransferManagerEGL() {}
+
+AsyncPixelTransferDelegate*
+AsyncPixelTransferManagerEGL::GetAsyncPixelTransferDelegate() {
+  return delegate_.get();
 }
 
 }  // namespace gpu

@@ -36,18 +36,13 @@ struct AsyncTexImage2DParams;
 class GPU_EXPORT AsyncPixelTransferManager
     : public gles2::TextureManager::DestructionObserver {
  public:
-  AsyncPixelTransferManager(gles2::TextureManager* texture_manager_,
-                            gfx::GLContext* context);
+  static AsyncPixelTransferManager* Create(gfx::GLContext* context);
+
   virtual ~AsyncPixelTransferManager();
 
-  AsyncPixelTransferDelegate* GetAsyncPixelTransferDelegate() {
-    return delegate_.get();
-  }
+  void Initialize(gles2::TextureManager* texture_manager);
 
-  void SetAsyncPixelTransferDelegateForTest(
-      AsyncPixelTransferDelegate* delegate) {
-    delegate_ = make_scoped_ptr(delegate);
-  }
+  virtual AsyncPixelTransferDelegate* GetAsyncPixelTransferDelegate() = 0;
 
   AsyncPixelTransferState* CreatePixelTransferState(
       gles2::TextureRef* ref,
@@ -65,10 +60,11 @@ class GPU_EXPORT AsyncPixelTransferManager
       OVERRIDE;
   virtual void OnTextureRefDestroying(gles2::TextureRef* texture) OVERRIDE;
 
+ protected:
+  AsyncPixelTransferManager();
+
  private:
   gles2::TextureManager* manager_;
-
-  scoped_ptr<AsyncPixelTransferDelegate> delegate_;
 
   typedef base::hash_map<gles2::TextureRef*,
                          scoped_refptr<AsyncPixelTransferState> >

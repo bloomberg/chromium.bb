@@ -8,25 +8,25 @@
 
 namespace gpu {
 
-AsyncPixelTransferManager::AsyncPixelTransferManager(
-    gles2::TextureManager* manager,
-    gfx::GLContext* context)
-    : manager_(manager),
-      delegate_(AsyncPixelTransferDelegate::Create(context)) {
-  manager_->AddObserver(this);
-}
+AsyncPixelTransferManager::AsyncPixelTransferManager() {}
 
 AsyncPixelTransferManager::~AsyncPixelTransferManager() {
   if (manager_)
     manager_->RemoveObserver(this);
 }
 
+void AsyncPixelTransferManager::Initialize(gles2::TextureManager* manager) {
+  manager_ = manager;
+  manager_->AddObserver(this);
+}
+
 AsyncPixelTransferState* AsyncPixelTransferManager::CreatePixelTransferState(
     gles2::TextureRef* ref,
     const AsyncTexImage2DParams& define_params) {
   DCHECK(!GetPixelTransferState(ref));
-  AsyncPixelTransferState* state = delegate_->CreatePixelTransferState(
-      ref->texture()->service_id(), define_params);
+  AsyncPixelTransferState* state =
+      GetAsyncPixelTransferDelegate()->CreatePixelTransferState(
+          ref->texture()->service_id(), define_params);
   state_map_[ref] = state;
   return state;
 }

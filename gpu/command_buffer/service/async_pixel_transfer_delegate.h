@@ -96,8 +96,6 @@ class GPU_EXPORT AsyncPixelTransferDelegate {
  public:
   typedef base::Callback<void(const AsyncMemoryParams&)> CompletionCallback;
 
-  static AsyncPixelTransferDelegate* Create(gfx::GLContext* context);
-
   virtual ~AsyncPixelTransferDelegate();
 
   virtual AsyncPixelTransferState* CreatePixelTransferState(

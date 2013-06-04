@@ -576,11 +576,11 @@ class GLES2DecoderImpl : public GLES2Decoder {
 
   virtual AsyncPixelTransferDelegate*
       GetAsyncPixelTransferDelegate() OVERRIDE;
-  virtual void SetAsyncPixelTransferDelegateForTest(
-      AsyncPixelTransferDelegate* delegate) OVERRIDE;
   virtual AsyncPixelTransferManager*
       GetAsyncPixelTransferManager() OVERRIDE;
   virtual void ResetAsyncPixelTransferManagerForTest() OVERRIDE;
+  virtual void SetAsyncPixelTransferManagerForTest(
+      AsyncPixelTransferManager* manager) OVERRIDE;
   void ProcessFinishedAsyncTransfers();
 
   virtual bool GetServiceTextureId(uint32 client_texture_id,
@@ -2475,7 +2475,8 @@ bool GLES2DecoderImpl::Initialize(
     context_->SetSafeToForceGpuSwitch();
 
   async_pixel_transfer_manager_.reset(
-      new AsyncPixelTransferManager(texture_manager(), context.get()));
+      AsyncPixelTransferManager::Create(context.get()));
+  async_pixel_transfer_manager_->Initialize(texture_manager());
 
   return true;
 }
@@ -3061,11 +3062,6 @@ AsyncPixelTransferDelegate*
   return async_pixel_transfer_manager_->GetAsyncPixelTransferDelegate();
 }
 
-void GLES2DecoderImpl::SetAsyncPixelTransferDelegateForTest(
-    AsyncPixelTransferDelegate* delegate) {
-  async_pixel_transfer_manager_->SetAsyncPixelTransferDelegateForTest(delegate);
-}
-
 AsyncPixelTransferManager*
     GLES2DecoderImpl::GetAsyncPixelTransferManager() {
   return async_pixel_transfer_manager_.get();
@@ -3073,6 +3069,11 @@ AsyncPixelTransferManager*
 
 void GLES2DecoderImpl::ResetAsyncPixelTransferManagerForTest() {
   async_pixel_transfer_manager_.reset();
+}
+
+void GLES2DecoderImpl::SetAsyncPixelTransferManagerForTest(
+    AsyncPixelTransferManager* manager) {
+  async_pixel_transfer_manager_ = make_scoped_ptr(manager);
 }
 
 bool GLES2DecoderImpl::GetServiceTextureId(uint32 client_texture_id,

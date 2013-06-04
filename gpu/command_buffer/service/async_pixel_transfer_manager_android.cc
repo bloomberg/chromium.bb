@@ -1,13 +1,13 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "gpu/command_buffer/service/async_pixel_transfer_delegate.h"
+#include "gpu/command_buffer/service/async_pixel_transfer_manager.h"
 
 #include "base/debug/trace_event.h"
-#include "gpu/command_buffer/service/async_pixel_transfer_delegate_egl.h"
-#include "gpu/command_buffer/service/async_pixel_transfer_delegate_stub.h"
-#include "gpu/command_buffer/service/async_pixel_transfer_delegate_sync.h"
+#include "gpu/command_buffer/service/async_pixel_transfer_manager_egl.h"
+#include "gpu/command_buffer/service/async_pixel_transfer_manager_stub.h"
+#include "gpu/command_buffer/service/async_pixel_transfer_manager_sync.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_implementation.h"
 
@@ -27,9 +27,9 @@ bool IsBroadcom() {
 // - Create EGLImages out of OpenGL textures (EGL_KHR_gl_texture_2D_image)
 // - Bind EGLImages to OpenGL textures (GL_OES_EGL_image)
 // - Use fences (to test for upload completion).
-AsyncPixelTransferDelegate* AsyncPixelTransferDelegate::Create(
+AsyncPixelTransferManager* AsyncPixelTransferManager::Create(
     gfx::GLContext* context) {
-  TRACE_EVENT0("gpu", "AsyncPixelTransferDelegate::Create");
+  TRACE_EVENT0("gpu", "AsyncPixelTransferManager::Create");
   switch (gfx::GetGLImplementation()) {
     case gfx::kGLImplementationEGLGLES2:
       DCHECK(context);
@@ -39,12 +39,12 @@ AsyncPixelTransferDelegate* AsyncPixelTransferDelegate::Create(
           context->HasExtension("EGL_KHR_gl_texture_2D_image") &&
           context->HasExtension("GL_OES_EGL_image") &&
           !IsBroadcom()) {
-        return new AsyncPixelTransferDelegateEGL;
+        return new AsyncPixelTransferManagerEGL;
       }
       LOG(INFO) << "Async pixel transfers not supported";
-      return new AsyncPixelTransferDelegateSync;
+      return new AsyncPixelTransferManagerSync;
     case gfx::kGLImplementationMockGL:
-      return new AsyncPixelTransferDelegateStub;
+      return new AsyncPixelTransferManagerStub;
     default:
       NOTREACHED();
       return NULL;
