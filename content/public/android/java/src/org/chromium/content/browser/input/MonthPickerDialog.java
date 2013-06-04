@@ -44,11 +44,9 @@ public class MonthPickerDialog extends AlertDialog implements OnClickListener,
      * @param year The initial year of the dialog.
      * @param monthOfYear The initial month of the dialog.
      */
-    public MonthPickerDialog(Context context,
-            OnMonthSetListener callBack,
-            int year,
-            int monthOfYear) {
-        super(context, 0);
+    public MonthPickerDialog(Context context, OnMonthSetListener callBack,
+            int year, int monthOfYear, long minMonth, long maxMonth) {
+        super(context);
 
         mCallBack = callBack;
 
@@ -59,7 +57,7 @@ public class MonthPickerDialog extends AlertDialog implements OnClickListener,
         setIcon(0);
         setTitle(R.string.month_picker_dialog_title);
 
-        mMonthPicker = new MonthPicker(context);
+        mMonthPicker = new MonthPicker(context, minMonth, maxMonth);
         setView(mMonthPicker);
         mMonthPicker.init(year, monthOfYear, this);
     }
@@ -92,5 +90,14 @@ public class MonthPickerDialog extends AlertDialog implements OnClickListener,
     @Override
     public void onMonthChanged(MonthPicker view, int year, int month) {
         mMonthPicker.init(year, month, null);
+    }
+
+    /**
+     * Gets the {@link MonthPicker} contained in this dialog.
+     *
+     * @return The calendar view.
+     */
+    public MonthPicker getMonthPicker() {
+        return mMonthPicker;
     }
 }

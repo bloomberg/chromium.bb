@@ -9,7 +9,6 @@ import android.content.res.Configuration;
 import android.text.format.DateUtils;
 import android.view.LayoutInflater;
 import android.view.accessibility.AccessibilityEvent;
-import android.widget.DatePicker;
 import android.widget.FrameLayout;
 import android.widget.NumberPicker;
 import android.widget.NumberPicker.OnValueChangeListener;
@@ -22,23 +21,21 @@ import java.util.TimeZone;
 
 import org.chromium.content.R;
 
-// This class is heavily based on android.widget.DatePicker.
 public class MonthPicker extends FrameLayout {
-
     private static final int MONTHS_NUMBER = 12;
-
-    private static final int DEFAULT_START_YEAR = 1900;
-
-    private static final int DEFAULT_END_YEAR = 2100;
 
     private final NumberPicker mMonthSpinner;
 
     private final NumberPicker mYearSpinner;
 
+
     private OnMonthChangedListener mMonthChangedListener;
 
     private String[] mShortMonths;
 
+    // It'd be nice to use android.text.Time like in other Dialogs but
+    // it suffers from the 2038 effect so it would prevent us from
+    // having dates over 2038.
     private Calendar mMinDate;
 
     private Calendar mMaxDate;
@@ -61,16 +58,12 @@ public class MonthPicker extends FrameLayout {
         void onMonthChanged(MonthPicker view, int year, int month);
     }
 
-    public MonthPicker(Context context) {
+    public MonthPicker(Context context, long minMonth, long maxMonth) {
         super(context, null, android.R.attr.datePickerStyle);
-        Calendar minCal = Calendar.getInstance();
-        minCal.clear();
-        minCal.set(DEFAULT_START_YEAR, 0, 1);
-        mMinDate = minCal;
-        Calendar maxCal = Calendar.getInstance();
-        maxCal.clear();
-        maxCal.set(DEFAULT_END_YEAR, 0, 1);
-        mMaxDate = maxCal;
+
+        // initialization based on locale
+        mShortMonths =
+                DateFormatSymbols.getInstance(Locale.getDefault()).getShortMonths();
 
         LayoutInflater inflater = (LayoutInflater) context
                 .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
@@ -82,12 +75,12 @@ public class MonthPicker extends FrameLayout {
                 int month = mCurrentDate.get(Calendar.MONTH);
                 int year = mCurrentDate.get(Calendar.YEAR);
 
-                // take care of wrapping months to update greater fields
+                // take care of wrapping of days and months to update greater fields
                 if (picker == mMonthSpinner) {
                     month = newVal;
                     if (oldVal == (MONTHS_NUMBER - 1) && newVal == 0) {
                         year += 1;
-                    } else if (oldVal == 0 && newVal == (MONTHS_NUMBER - 1)) {
+                    } else if (oldVal == 0 && newVal == 11) {
                         year -=1;
                     }
                 } else if (picker == mYearSpinner) {
@@ -103,9 +96,6 @@ public class MonthPicker extends FrameLayout {
             }
         };
 
-        mShortMonths =
-                DateFormatSymbols.getInstance(Locale.getDefault()).getShortMonths();
-
         // month
         mMonthSpinner = (NumberPicker) findViewById(R.id.month);
         mMonthSpinner.setMinValue(0);
@@ -119,12 +109,36 @@ public class MonthPicker extends FrameLayout {
         mYearSpinner.setOnLongPressUpdateInterval(100);
         mYearSpinner.setOnValueChangedListener(onChangeListener);
 
+        mMinDate = monthsToCalendar(minMonth);
+        mMaxDate = monthsToCalendar(maxMonth);
+
         // initialize to current date
-        mCurrentDate = Calendar.getInstance();
-        init(mCurrentDate.get(Calendar.YEAR), mCurrentDate.get(Calendar.MONTH), null);
+        Calendar cal = Calendar.getInstance();
+        init(cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), null);
     }
 
+    private void setCurrentDate(int year, int month) {
+        if (mCurrentDate == null) {
+            mCurrentDate = Calendar.getInstance();
+        }
+        mCurrentDate.clear();
+        mCurrentDate.set(year, month, 1);
+        if (mCurrentDate.getTimeInMillis() < mMinDate.getTimeInMillis()) {
+            mCurrentDate = (Calendar) mMinDate.clone();
+        } else if (mCurrentDate.getTimeInMillis() > mMaxDate.getTimeInMillis()) {
+            mCurrentDate = (Calendar) mMaxDate.clone();
+        }
+        updateSpinners();
+    }
 
+    private static Calendar monthsToCalendar(long months) {
+        int year = (int)Math.min(months / 12 + 1970, Integer.MAX_VALUE);
+        int month = (int) (months % 12);
+        Calendar cal = Calendar.getInstance();
+        cal.clear();
+        cal.set(year, month, 1);
+        return cal;
+    }
 
     @Override
     public boolean dispatchPopulateAccessibilityEvent(AccessibilityEvent event) {
@@ -162,20 +176,9 @@ public class MonthPicker extends FrameLayout {
         mMonthChangedListener = onMonthChangedListener;
     }
 
-    private void setCurrentDate(int year, int month) {
-        if (mCurrentDate == null) {
-            mCurrentDate = Calendar.getInstance();
-        }
-        mCurrentDate.clear();
-        if (mCurrentDate.getTimeInMillis() < mMinDate.getTimeInMillis()) {
-            mCurrentDate.set(mMinDate.get(Calendar.YEAR), mMinDate.get(Calendar.MONTH),
-                    mMinDate.get(Calendar.DAY_OF_MONTH));
-        } else if (mCurrentDate.getTimeInMillis() > mMaxDate.getTimeInMillis()) {
-            mCurrentDate.set(mMaxDate.get(Calendar.YEAR), mMaxDate.get(Calendar.MONTH),
-                    mMaxDate.get(Calendar.DAY_OF_MONTH));
-        } else {
-            mCurrentDate.set(year, month, 1);
-        }
+    private boolean isNewDate(int year, int month) {
+        return (mCurrentDate.get(Calendar.YEAR) != year
+                || mCurrentDate.get(Calendar.MONTH) != month);
     }
 
     private void updateSpinners() {

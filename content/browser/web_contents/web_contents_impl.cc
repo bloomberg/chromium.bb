@@ -2408,7 +2408,7 @@ void WebContentsImpl::OnOpenDateTimeDialog(
   date_time_chooser_->ShowDialog(
       ContentViewCore::FromWebContents(this), GetRenderViewHost(),
       value.dialog_type, value.year, value.month, value.day, value.hour,
-      value.minute, value.second);
+      value.minute, value.second, value.minimum, value.maximum);
 }
 
 #endif

@@ -9,6 +9,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnClickListener;
 import android.os.Build;
+import android.text.format.Time;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.DatePicker;
@@ -31,6 +32,9 @@ class DateTimePickerDialog extends AlertDialog implements OnClickListener,
     private final DatePicker mDatePicker;
     private final TimePicker mTimePicker;
     private final OnDateTimeSetListener mCallBack;
+
+    private final long mMinTimeMillis;
+    private final long mMaxTimeMillis;
 
     /**
      * The callback used to indicate the user is done filling in the date.
@@ -63,8 +67,12 @@ class DateTimePickerDialog extends AlertDialog implements OnClickListener,
             int year,
             int monthOfYear,
             int dayOfMonth,
-            int hourOfDay, int minute, boolean is24HourView) {
+            int hourOfDay, int minute, boolean is24HourView,
+            long min, long max) {
         super(context, 0);
+
+        mMinTimeMillis = min;
+        mMaxTimeMillis = max;
 
         mCallBack = callBack;
 
@@ -80,13 +88,16 @@ class DateTimePickerDialog extends AlertDialog implements OnClickListener,
         View view = inflater.inflate(R.layout.date_time_picker_dialog, null);
         setView(view);
         mDatePicker = (DatePicker) view.findViewById(R.id.date_picker);
-        mDatePicker.init(year, monthOfYear, dayOfMonth, this);
+        DateDialogNormalizer.normalize(mDatePicker, this,
+                year, monthOfYear, dayOfMonth, hourOfDay, minute, min, max);
 
         mTimePicker = (TimePicker) view.findViewById(R.id.time_picker);
         mTimePicker.setIs24HourView(is24HourView);
         mTimePicker.setCurrentHour(hourOfDay);
         mTimePicker.setCurrentMinute(minute);
         mTimePicker.setOnTimeChangedListener(this);
+        onTimeChanged(mTimePicker, mTimePicker.getCurrentHour(),
+                mTimePicker.getCurrentMinute());
     }
 
     @Override
@@ -118,30 +129,27 @@ class DateTimePickerDialog extends AlertDialog implements OnClickListener,
     @Override
     public void onDateChanged(DatePicker view, int year,
             int month, int day) {
-        mDatePicker.init(year, month, day, null);
+        // Signal a time change so the max/min checks can be applied.
+        if (mTimePicker != null) {
+            onTimeChanged(mTimePicker, mTimePicker.getCurrentHour(),
+                    mTimePicker.getCurrentMinute());
+        }
     }
 
     @Override
     public void onTimeChanged(TimePicker view, int hourOfDay, int minute) {
-        /* do nothing */
-    }
+        Time time = new Time();
+        time.set(0, mTimePicker.getCurrentMinute(),
+                mTimePicker.getCurrentHour(), mDatePicker.getDayOfMonth(),
+                mDatePicker.getMonth(), mDatePicker.getYear());
 
-    /**
-     * Gets the {@link DatePicker} contained in this dialog.
-     *
-     * @return The DatePicker view.
-     */
-    public DatePicker getDatePicker() {
-        return mDatePicker;
-    }
-
-    /**
-     * Gets the {@link TimePicker} contained in this dialog.
-     *
-     * @return The TimePicker view.
-     */
-    public TimePicker getTimePicker() {
-        return mTimePicker;
+        if (time.toMillis(true) < mMinTimeMillis) {
+            time.set(mMinTimeMillis);
+        } else if (time.toMillis(true) > mMaxTimeMillis) {
+            time.set(mMaxTimeMillis);
+        }
+        mTimePicker.setCurrentHour(time.hour);
+        mTimePicker.setCurrentMinute(time.minute);
     }
 
     /**

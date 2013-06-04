@@ -25,7 +25,7 @@ class DateTimeChooserAndroid {
   void ShowDialog(ContentViewCore* content,
                   RenderViewHost* sender,
                   int type, int year, int month, int day,
-                  int hour, int minute, int second);
+                  int hour, int minute, int second, double min, double max);
 
   // Replaces the current value with the one passed the different fields
   void ReplaceDateTime(JNIEnv* env, jobject, jint dialog_type,
