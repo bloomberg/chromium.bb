@@ -4,6 +4,8 @@
 
 #include "chrome/browser/extensions/api/messaging/native_message_port.h"
 
+#include "base/bind.h"
+#include "base/json/json_writer.h"
 #include "chrome/browser/extensions/api/messaging/native_message_process_host.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -18,12 +20,20 @@ NativeMessagePort::~NativeMessagePort() {
       content::BrowserThread::IO, FROM_HERE, native_process_);
 }
 
-void NativeMessagePort::DispatchOnMessage(const std::string& message,
+void NativeMessagePort::DispatchOnMessage(scoped_ptr<base::ListValue> message,
                                           int target_port_id) {
+  std::string message_as_json;
+  if (!message->empty()) {
+    DCHECK_EQ(1u, message->GetSize());
+    base::Value* value = NULL;
+    message->Get(0, &value);
+    base::JSONWriter::Write(value, &message_as_json);
+  }
   content::BrowserThread::PostTask(
       content::BrowserThread::IO, FROM_HERE,
       base::Bind(&NativeMessageProcessHost::Send,
-                 base::Unretained(native_process_), message));
+                 base::Unretained(native_process_),
+                 message_as_json));
 }
 
 }  // namespace extensions

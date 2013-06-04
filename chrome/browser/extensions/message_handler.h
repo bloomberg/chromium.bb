@@ -9,6 +9,10 @@
 
 #include "content/public/browser/render_view_host_observer.h"
 
+namespace base {
+class ListValue;
+}
+
 namespace extensions {
 
 // Filters and dispatches extension-related IPC messages that arrive from
@@ -33,7 +37,7 @@ class MessageHandler : public content::RenderViewHostObserver {
 
  private:
   // Message handlers.
-  void OnPostMessage(int port_id, const std::string& message);
+  void OnPostMessage(int port_id, const base::ListValue& message);
 
   DISALLOW_COPY_AND_ASSIGN(MessageHandler);
 };
