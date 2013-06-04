@@ -6616,6 +6616,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ENABLE_WEBGL_DESCRIPTION" desc="Description for the flag to enable WebGL.">
         Enabling this option allows web applications to access the WebGL API.
       </message>
+      <message name="IDS_FLAGS_ENABLE_WEBGL_DRAFT_EXTENSIONS_NAME" desc="Name of the 'Enable WebGL Draft Extensions' flag.">
+        Enable WebGL Draft Extensions
+      </message>
+      <message name="IDS_FLAGS_ENABLE_WEBGL_DRAFT_EXTENSIONS_DESCRIPTION" desc="Description for the flag to enable WebGL Draft Extensions.">
+        Enabling this option allows web applications to access the WebGL Extensions that are still in draft status.
+      </message>
       <message name="IDS_FLAGS_DISABLE_WEBGL_NAME" desc="Name of the 'Disable WebGL' lab.">
         Disable WebGL
       </message>

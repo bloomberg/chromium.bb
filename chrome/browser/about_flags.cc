@@ -1516,6 +1516,13 @@ const Experiment kExperiments[] = {
     MULTI_VALUE_TYPE(kTabCaptureDownscaleQualityChoices)
   },
 #endif
+  {
+    "enable-webgl-draft-extensions",
+    IDS_FLAGS_ENABLE_WEBGL_DRAFT_EXTENSIONS_NAME,
+    IDS_FLAGS_ENABLE_WEBGL_DRAFT_EXTENSIONS_DESCRIPTION,
+    kOsAll,
+    SINGLE_VALUE_TYPE(switches::kEnableWebGLDraftExtensions)
+  },
 };
 
 const Experiment* experiments = kExperiments;
