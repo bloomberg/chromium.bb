@@ -37,7 +37,7 @@ void XmppPushClient::OnConnect(
   {
     // Owned by |base_task_|.
     PushNotificationsListenTask* listener =
-        new PushNotificationsListenTask(base_task_, this);
+        new PushNotificationsListenTask(base_task_.get(), this);
     listener->Start();
   }
 
@@ -45,7 +45,8 @@ void XmppPushClient::OnConnect(
   {
     // Owned by |base_task_|.
     PushNotificationsSubscribeTask* subscribe_task =
-        new PushNotificationsSubscribeTask(base_task_, subscriptions_, this);
+        new PushNotificationsSubscribeTask(
+            base_task_.get(), subscriptions_, this);
     subscribe_task->Start();
   }
 
@@ -147,7 +148,7 @@ void XmppPushClient::SendNotification(const Notification& notification) {
   }
   // Owned by |base_task_|.
   PushNotificationsSendUpdateTask* task =
-      new PushNotificationsSendUpdateTask(base_task_, notification);
+      new PushNotificationsSendUpdateTask(base_task_.get(), notification);
   task->Start();
 }
 
@@ -158,7 +159,7 @@ void XmppPushClient::SendPing() {
     return;
   }
   // Owned by |base_task_|.
-  SendPingTask* task = new SendPingTask(base_task_, this);
+  SendPingTask* task = new SendPingTask(base_task_.get(), this);
   task->Start();
 }
 

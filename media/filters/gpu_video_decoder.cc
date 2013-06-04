@@ -69,14 +69,14 @@ VDAClientProxy::VDAClientProxy(VideoDecodeAccelerator::Client* client)
     : client_loop_(base::MessageLoopProxy::current()),
       weak_client_factory_(client),
       weak_client_(weak_client_factory_.GetWeakPtr()) {
-  DCHECK(weak_client_);
+  DCHECK(weak_client_.get());
 }
 
 VDAClientProxy::~VDAClientProxy() {}
 
 void VDAClientProxy::Detach() {
   DCHECK(client_loop_->BelongsToCurrentThread());
-  DCHECK(weak_client_) << "Detach() already called";
+  DCHECK(weak_client_.get()) << "Detach() already called";
   weak_client_factory_.InvalidateWeakPtrs();
 }
 
@@ -306,9 +306,9 @@ void GpuVideoDecoder::DestroyTextures() {
 static void DestroyVDAWithClientProxy(
     const scoped_refptr<VDAClientProxy>& client_proxy,
     base::WeakPtr<VideoDecodeAccelerator> weak_vda) {
-  if (weak_vda) {
+  if (weak_vda.get()) {
     weak_vda->Destroy();
-    DCHECK(!weak_vda);  // Check VDA::Destroy() contract.
+    DCHECK(!weak_vda.get());  // Check VDA::Destroy() contract.
   }
 }
 

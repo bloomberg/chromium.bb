@@ -239,7 +239,7 @@ bool ContextGroup::Initialize(
 namespace {
 
 bool IsNull(const base::WeakPtr<gles2::GLES2Decoder>& decoder) {
-  return !decoder;
+  return !decoder.get();
 }
 
 }  // namespace anonymous
@@ -313,7 +313,7 @@ uint32 ContextGroup::GetMemRepresented() const {
 
 void ContextGroup::LoseContexts(GLenum reset_status) {
   for (size_t ii = 0; ii < decoders_.size(); ++ii) {
-    if (decoders_[ii]) {
+    if (decoders_[ii].get()) {
       decoders_[ii]->LoseContext(reset_status);
     }
   }

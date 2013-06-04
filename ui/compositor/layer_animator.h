@@ -209,7 +209,7 @@ class COMPOSITOR_EXPORT LayerAnimator
     RunningAnimation(const base::WeakPtr<LayerAnimationSequence>& sequence);
     ~RunningAnimation();
 
-    bool is_sequence_alive() const { return !!sequence_; }
+    bool is_sequence_alive() const { return !!sequence_.get(); }
     LayerAnimationSequence* sequence() const { return sequence_.get(); }
 
    private:

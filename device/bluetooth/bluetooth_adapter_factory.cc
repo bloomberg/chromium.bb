@@ -44,7 +44,7 @@ base::LazyInstance<AdapterCallbackList> adapter_callbacks =
 
 void RunAdapterCallbacks() {
   CHECK(default_adapter.Get().get());
-  scoped_refptr<BluetoothAdapter> adapter(default_adapter.Get());
+  scoped_refptr<BluetoothAdapter> adapter(default_adapter.Get().get());
   for (std::vector<BluetoothAdapterFactory::AdapterCallback>::const_iterator
            iter = adapter_callbacks.Get().begin();
        iter != adapter_callbacks.Get().end();
@@ -90,7 +90,7 @@ void BluetoothAdapterFactory::GetAdapter(const AdapterCallback& callback) {
   }
 
   if (default_adapter.Get()->IsInitialized()) {
-    callback.Run(scoped_refptr<BluetoothAdapter>(default_adapter.Get()));
+    callback.Run(scoped_refptr<BluetoothAdapter>(default_adapter.Get().get()));
   } else {
     adapter_callbacks.Get().push_back(callback);
   }
@@ -98,7 +98,7 @@ void BluetoothAdapterFactory::GetAdapter(const AdapterCallback& callback) {
 
 // static
 scoped_refptr<BluetoothAdapter> BluetoothAdapterFactory::MaybeGetAdapter() {
-  return scoped_refptr<BluetoothAdapter>(default_adapter.Get());
+  return scoped_refptr<BluetoothAdapter>(default_adapter.Get().get());
 }
 
 }  // namespace device

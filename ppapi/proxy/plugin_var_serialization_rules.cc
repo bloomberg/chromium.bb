@@ -33,9 +33,9 @@ PP_Var PluginVarSerializationRules::SendCallerOwned(const PP_Var& var) {
 
 PP_Var PluginVarSerializationRules::BeginReceiveCallerOwned(const PP_Var& var) {
   if (var.type == PP_VARTYPE_OBJECT) {
-    return dispatcher_ ?
-        var_tracker_->TrackObjectWithNoReference(var, dispatcher_) :
-        PP_MakeUndefined();
+    return dispatcher_.get() ? var_tracker_->TrackObjectWithNoReference(
+                                   var, dispatcher_.get())
+                             : PP_MakeUndefined();
   }
 
   return var;
@@ -68,9 +68,9 @@ PP_Var PluginVarSerializationRules::ReceivePassRef(const PP_Var& var) {
   // folded in to its set of refs it maintains (with one ref representing all
   // of them in the browser).
   if (var.type == PP_VARTYPE_OBJECT) {
-    return dispatcher_ ?
-        var_tracker_->ReceiveObjectPassRef(var, dispatcher_) :
-        PP_MakeUndefined();
+    return dispatcher_.get()
+               ? var_tracker_->ReceiveObjectPassRef(var, dispatcher_.get())
+               : PP_MakeUndefined();
   }
 
   // Other types are unchanged.
@@ -105,8 +105,8 @@ void PluginVarSerializationRules::EndSendPassRef(const PP_Var& var) {
   // by BeginSendPassRef. This means it's not a normal var valid in the plugin,
   // so we need to use the special ReleaseHostObject.
   if (var.type == PP_VARTYPE_OBJECT) {
-    if (dispatcher_)
-      var_tracker_->ReleaseHostObject(dispatcher_, var);
+    if (dispatcher_.get())
+      var_tracker_->ReleaseHostObject(dispatcher_.get(), var);
   } else if (var.type >= PP_VARTYPE_STRING) {
     var_tracker_->ReleaseVar(var);
   }

@@ -365,7 +365,7 @@ void VideoResourceUpdater::ReturnTexture(
     unsigned resource_id,
     unsigned sync_point,
     bool lost_resource) {
-  if (!updater) {
+  if (!updater.get()) {
     // Resource was already deleted.
     return;
   }
@@ -379,7 +379,7 @@ void VideoResourceUpdater::RecycleResource(
     RecycleResourceData data,
     unsigned sync_point,
     bool lost_resource) {
-  if (!updater) {
+  if (!updater.get()) {
     // Resource was already deleted.
     return;
   }

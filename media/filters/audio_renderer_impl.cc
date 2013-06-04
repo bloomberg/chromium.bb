@@ -274,7 +274,7 @@ void AudioRendererImpl::OnDecoderSelected(
 
   HistogramRendererEvent(INITIALIZED);
 
-  sink_->Initialize(audio_parameters_, weak_this_);
+  sink_->Initialize(audio_parameters_, weak_this_.get());
   sink_->Start();
 
   // Some sinks play on start...

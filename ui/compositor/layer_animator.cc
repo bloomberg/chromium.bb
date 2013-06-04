@@ -601,15 +601,16 @@ void LayerAnimator::RemoveAllAnimationsWithACommonProperty(
     sequences.push_back((*queue_iter)->AsWeakPtr());
 
   for (size_t i = 0; i < sequences.size(); ++i) {
-    if (!sequences[i] || !HasAnimation(sequences[i]))
+    if (!sequences[i].get() || !HasAnimation(sequences[i].get()))
       continue;
 
     if (sequences[i]->HasConflictingProperty(sequence->properties())) {
-      scoped_ptr<LayerAnimationSequence> removed(RemoveAnimation(sequences[i]));
+      scoped_ptr<LayerAnimationSequence> removed(
+          RemoveAnimation(sequences[i].get()));
       if (abort)
         sequences[i]->Abort(delegate());
       else
-        ProgressAnimationToEnd(sequences[i]);
+        ProgressAnimationToEnd(sequences[i].get());
     }
   }
 }
@@ -621,16 +622,16 @@ void LayerAnimator::ImmediatelySetNewTarget(LayerAnimationSequence* sequence) {
 
   const bool abort = false;
   RemoveAllAnimationsWithACommonProperty(sequence, abort);
-  if (!weak_sequence_ptr)
+  if (!weak_sequence_ptr.get())
     return;
 
   LayerAnimationSequence* removed = RemoveAnimation(sequence);
   DCHECK(removed == NULL || removed == sequence);
-  if (!weak_sequence_ptr)
+  if (!weak_sequence_ptr.get())
     return;
 
   ProgressAnimationToEnd(sequence);
-  if (!weak_sequence_ptr)
+  if (!weak_sequence_ptr.get())
     return;
 
   delete sequence;
@@ -644,11 +645,11 @@ void LayerAnimator::ImmediatelyAnimateToNewTarget(
 
   const bool abort = true;
   RemoveAllAnimationsWithACommonProperty(sequence, abort);
-  if (!weak_sequence_ptr)
+  if (!weak_sequence_ptr.get())
     return;
 
   AddToQueueIfNotPresent(sequence);
-  if (!weak_sequence_ptr)
+  if (!weak_sequence_ptr.get())
     return;
 
   StartSequenceImmediately(sequence);
@@ -672,7 +673,7 @@ void LayerAnimator::ReplaceQueuedAnimations(LayerAnimationSequence* sequence) {
   // animation_queue_.size() - i is always decreasing and we are always making
   // progress towards the loop terminating.
   for (size_t i = 0; i < animation_queue_.size();) {
-    if (!weak_sequence_ptr)
+    if (!weak_sequence_ptr.get())
       break;
 
     PurgeDeletedAnimations();
@@ -719,7 +720,7 @@ void LayerAnimator::ProcessQueue() {
       sequences.push_back((*queue_iter)->AsWeakPtr());
 
     for (size_t i = 0; i < sequences.size(); ++i) {
-      if (!sequences[i] || !HasAnimation(sequences[i]))
+      if (!sequences[i].get() || !HasAnimation(sequences[i].get()))
         continue;
 
       if (!sequences[i]->HasConflictingProperty(animated)) {

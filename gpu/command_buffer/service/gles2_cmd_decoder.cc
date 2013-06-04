@@ -2982,7 +2982,7 @@ GLenum GLES2DecoderImpl::GetBoundDrawFrameBufferInternalFormat() {
 }
 
 void GLES2DecoderImpl::UpdateParentTextureInfo() {
-  if (parent_) {
+  if (parent_.get()) {
     // Update the info about the offscreen saved color texture in the parent.
     // The reference to the parent is a weak pointer and will become null if the
     // parent is later destroyed.
@@ -3247,11 +3247,9 @@ bool GLES2DecoderImpl::SetParent(GLES2Decoder* new_parent,
   // Remove the saved frame buffer mapping from the parent decoder. The
   // parent pointer is a weak pointer so it will be null if the parent has
   // already been destroyed.
-  if (parent_) {
-    ChildList::iterator it = std::find(
-        parent_->children_.begin(),
-        parent_->children_.end(),
-        this);
+  if (parent_.get()) {
+    ChildList::iterator it =
+        std::find(parent_->children_.begin(), parent_->children_.end(), this);
     DCHECK(it != parent_->children_.end());
     parent_->children_.erase(it);
     // First check the texture has been mapped into the parent. This might not
@@ -9046,7 +9044,7 @@ void GLES2DecoderImpl::LoseContext(uint32 reset_status) {
   current_decoder_error_ = error::kLostContext;
 
   // Loses the parent's context.
-  if (parent_) {
+  if (parent_.get()) {
     parent_->LoseContext(reset_status);
   }
 
