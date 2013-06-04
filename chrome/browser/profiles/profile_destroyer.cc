@@ -55,8 +55,7 @@ void ProfileDestroyer::DestroyProfileWhenAppropriate(Profile* const profile) {
   } else {
     // The instance will destroy itself once all render process hosts referring
     // to it are properly terminated.
-    scoped_refptr<ProfileDestroyer> profile_destroyer(
-        new ProfileDestroyer(profile, hosts));
+    new ProfileDestroyer(profile, hosts);
   }
 }
 
@@ -87,7 +86,8 @@ ProfileDestroyer::ProfileDestroyer(
     const std::vector<content::RenderProcessHost*>& hosts)
     : timer_(false, false),
       num_hosts_(0),
-      profile_(profile) {
+      profile_(profile),
+      weak_ptr_factory_(this) {
   if (pending_destroyers_ == NULL)
     pending_destroyers_ = new std::vector<ProfileDestroyer*>;
   pending_destroyers_->push_back(this);
@@ -103,7 +103,8 @@ ProfileDestroyer::ProfileDestroyer(
   if (num_hosts_) {
     timer_.Start(FROM_HERE,
                  base::TimeDelta::FromSeconds(kTimerDelaySeconds),
-                 base::Bind(&ProfileDestroyer::DestroyProfile, this));
+                 base::Bind(&ProfileDestroyer::DestroyProfile,
+                            weak_ptr_factory_.GetWeakPtr()));
   }
 }
 
@@ -142,7 +143,8 @@ void ProfileDestroyer::Observe(int type,
     // Delay the destruction one step further in case other observers of this
     // notification need to look at the profile attached to the host.
     base::MessageLoop::current()->PostTask(
-        FROM_HERE, base::Bind(&ProfileDestroyer::DestroyProfile, this));
+        FROM_HERE, base::Bind(
+            &ProfileDestroyer::DestroyProfile, weak_ptr_factory_.GetWeakPtr()));
   }
 }
 
@@ -162,6 +164,8 @@ void ProfileDestroyer::DestroyProfile() {
 
   // And stop the timer so we can be released early too.
   timer_.Stop();
+
+  delete this;
 }
 
 // static

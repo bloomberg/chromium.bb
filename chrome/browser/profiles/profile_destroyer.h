@@ -20,8 +20,7 @@ class RenderProcessHost;
 // We use this class to destroy the off the record profile so that we can make
 // sure it gets done asynchronously after all render process hosts are gone.
 class ProfileDestroyer
-    : public content::NotificationObserver,
-      public base::RefCounted<ProfileDestroyer> {
+    : public content::NotificationObserver {
  public:
   static void DestroyProfileWhenAppropriate(Profile* const profile);
   static void DestroyOffTheRecordProfileNow(Profile* const profile);
@@ -60,6 +59,8 @@ class ProfileDestroyer
   uint32 num_hosts_;
 
   Profile* profile_;
+
+  base::WeakPtrFactory<ProfileDestroyer> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileDestroyer);
 };
