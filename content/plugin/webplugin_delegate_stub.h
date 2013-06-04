@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "base/memory/ref_counted.h"
-#include "content/common_child/npobject_stub.h"
+#include "content/child/npobject_stub.h"
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"

@@ -48,7 +48,7 @@
           'dependencies': [
             'content_app',
             'content_browser',
-            'content_common_child',
+            'content_child',
             'content_common',
           ],
           'conditions': [
@@ -100,7 +100,7 @@
             }],
             ['java_bridge==1', {
               'dependencies': [
-                'content_common_child',
+                'content_child',
               ]
             }]
           ],
@@ -123,11 +123,11 @@
           'msvs_disabled_warnings': [ 4267, ],
         },
         {
-          'target_name': 'content_common_child',
+          'target_name': 'content_child',
           'type': 'static_library',
           'variables': { 'enable_wexit_time_destructors': 1, },
           'includes': [
-            'content_common_child.gypi',
+            'content_child.gypi',
           ],
           'conditions': [
             ['OS != "ios"', {
@@ -163,7 +163,7 @@
                 'content_plugin.gypi',
               ],
               'dependencies': [
-                'content_common_child',
+                'content_child',
                 'content_common',
               ],
             },
@@ -185,7 +185,7 @@
                 'content_renderer.gypi',
               ],
               'dependencies': [
-                'content_common_child',
+                'content_child',
                 'content_common',
                 'content_resources.gyp:content_resources',
               ],
@@ -216,7 +216,7 @@
                 'content_worker.gypi',
               ],
               'dependencies': [
-                'content_common_child',
+                'content_child',
                 'content_common',
               ],
             },
@@ -248,7 +248,7 @@
           'includes': [
             'content_app.gypi',
             'content_browser.gypi',
-            'content_common_child.gypi',
+            'content_child.gypi',
             'content_common.gypi',
             'content_gpu.gypi',
             'content_plugin.gypi',
@@ -285,7 +285,7 @@
           'msvs_disabled_warnings': [ 4267, ],
         },
         {
-          'target_name': 'content_common_child',
+          'target_name': 'content_child',
           'type': 'none',
           'dependencies': ['content'],
         },

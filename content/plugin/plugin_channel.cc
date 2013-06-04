@@ -11,13 +11,13 @@
 #include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
 #include "build/build_config.h"
+#include "content/child/plugin_messages.h"
 #include "content/common/child_process.h"
 #include "content/common/plugin_process_messages.h"
-#include "content/common_child/plugin_messages.h"
-#include "content/public/common/content_switches.h"
 #include "content/plugin/plugin_thread.h"
 #include "content/plugin/webplugin_delegate_stub.h"
 #include "content/plugin/webplugin_proxy.h"
+#include "content/public/common/content_switches.h"
 #include "webkit/plugins/npapi/plugin_instance.h"
 
 #if defined(OS_POSIX)

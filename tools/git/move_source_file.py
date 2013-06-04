@@ -44,7 +44,8 @@ def MakeDestinationPath(from_path, to_path):
   checks.
   """
   if os.path.splitext(from_path)[1] not in HANDLED_EXTENSIONS:
-    raise Exception('Only intended to move individual source files.')
+    raise Exception('Only intended to move individual source files. (%s)' %
+                    from_path)
   dest_extension = os.path.splitext(to_path)[1]
   if dest_extension not in HANDLED_EXTENSIONS:
     if to_path.endswith('/') or to_path.endswith('\\'):
@@ -136,9 +137,9 @@ def UpdateIncludeGuard(old_path, new_path):
   # The file should now have three instances of the new guard: two at the top
   # of the file plus one at the bottom for the comment on the #endif.
   if new_contents.count(new_guard) != 3:
-    print ('WARNING: Could not not successfully update include guard; perhaps '
+    print ('WARNING: Could not successfully update include guard; perhaps '
            'old guard is not per style guide? You will have to update the '
-           'include guard manually.')
+           'include guard manually. (%s)' % new_path)
 
   with open(new_path, 'w') as f:
     f.write(new_contents)

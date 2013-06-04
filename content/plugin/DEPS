@@ -1,7 +1,7 @@
 include_rules = [
   "-chrome",
   "+content/public/plugin",
-  "+content/common_child",
+  "+content/child",
   "+sandbox/win/src",
   "+skia/ext",
   "+third_party/npapi",

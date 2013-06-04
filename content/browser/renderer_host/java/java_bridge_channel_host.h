@@ -5,7 +5,7 @@
 #ifndef CONTENT_BROWSER_RENDERER_HOST_JAVA_JAVA_BRIDGE_CHANNEL_HOST_H_
 #define CONTENT_BROWSER_RENDERER_HOST_JAVA_JAVA_BRIDGE_CHANNEL_HOST_H_
 
-#include "content/common_child/np_channel_base.h"
+#include "content/child/np_channel_base.h"
 
 namespace content {
 

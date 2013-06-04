@@ -1,6 +1,6 @@
 include_rules = [
   "+content/public/renderer",
-  "+content/common_child",
+  "+content/child",
   "+jingle/glue",
   "+media",  # For audio input/output and audio/video decoding.
   "+third_party/hyphen/hyphen.h",

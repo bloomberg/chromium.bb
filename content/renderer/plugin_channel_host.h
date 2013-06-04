@@ -6,7 +6,7 @@
 #define CONTENT_RENDERER_PLUGIN_CHANNEL_HOST_H_
 
 #include "base/hash_tables.h"
-#include "content/common_child/np_channel_base.h"
+#include "content/child/np_channel_base.h"
 #include "ipc/ipc_channel_handle.h"
 
 namespace content {

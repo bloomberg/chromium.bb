@@ -9,7 +9,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/string16.h"
-#include "content/common_child/npobject_stub.h"
+#include "content/child/npobject_stub.h"
 #include "content/public/browser/render_view_host_observer.h"
 
 class RouteIDGenerator;

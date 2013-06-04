@@ -8,7 +8,7 @@
 
 #if defined(ENABLE_JAVA_BRIDGE)
 
-#include "content/common_child/plugin_param_traits.h"
+#include "content/child/plugin_param_traits.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_message_macros.h"
 

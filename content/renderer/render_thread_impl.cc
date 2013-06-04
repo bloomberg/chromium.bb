@@ -25,6 +25,11 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
+#include "content/child/indexed_db/indexed_db_dispatcher.h"
+#include "content/child/indexed_db/indexed_db_message_filter.h"
+#include "content/child/npobject_util.h"
+#include "content/child/plugin_messages.h"
+#include "content/child/web_database_observer_impl.h"
 #include "content/common/appcache/appcache_dispatcher.h"
 #include "content/common/child_histogram_message_filter.h"
 #include "content/common/child_process_messages.h"
@@ -37,11 +42,6 @@
 #include "content/common/resource_dispatcher.h"
 #include "content/common/resource_messages.h"
 #include "content/common/view_messages.h"
-#include "content/common_child/indexed_db/indexed_db_dispatcher.h"
-#include "content/common_child/indexed_db/indexed_db_message_filter.h"
-#include "content/common_child/npobject_util.h"
-#include "content/common_child/plugin_messages.h"
-#include "content/common_child/web_database_observer_impl.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_paths.h"
 #include "content/public/common/content_switches.h"
@@ -80,7 +80,6 @@
 #include "media/base/media.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
-#include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebColorName.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDatabase.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
@@ -93,6 +92,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityPolicy.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSharedWorkerRepository.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
+#include "third_party/WebKit/public/platform/WebString.h"
 #include "ui/base/layout.h"
 #include "ui/base/ui_base_switches.h"
 #include "v8/include/v8.h"
@@ -105,7 +105,7 @@
 #else
 // TODO(port)
 #include "base/memory/scoped_handle.h"
-#include "content/common_child/np_channel_base.h"
+#include "content/child/np_channel_base.h"
 #endif
 
 #if defined(OS_POSIX)
