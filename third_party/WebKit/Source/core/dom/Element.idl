@@ -110,7 +110,6 @@
     [Reflect=pseudo, ImplementedAs=pseudo, PerWorldBindings] attribute DOMString webkitPseudo;
     [ImplementedAs=createShadowRoot, RaisesException] ShadowRoot webkitCreateShadowRoot();
     [ImplementedAs=shadowRoot, PerWorldBindings] readonly attribute ShadowRoot webkitShadowRoot;
-    [ImplementedAs=insertionParentForBinding, PerWorldBindings] readonly attribute Node webkitInsertionParent;
 
     // ChildNode interface API
     [PerWorldBindings] readonly attribute Element previousElementSibling;
@@ -206,4 +205,3 @@
     [NotEnumerable, PerWorldBindings] attribute EventListener onwebkitfullscreenchange;
     [NotEnumerable, PerWorldBindings] attribute EventListener onwebkitfullscreenerror;
 };
-

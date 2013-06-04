@@ -1281,14 +1281,6 @@ Element* Node::parentOrShadowHostElement() const
     return toElement(parent);
 }
 
-Node* Node::insertionParentForBinding() const
-{
-    Node* node = resolveReprojection(this);
-    while (node && node->containingShadowRoot() && node->containingShadowRoot()->type() == ShadowRoot::UserAgentShadowRoot)
-        node = resolveReprojection(node);
-    return node;
-}
-
 bool Node::needsShadowTreeWalkerSlow() const
 {
     return (isShadowRoot() || (isElementNode() && (isInsertionPoint() || isPseudoElement() || toElement(this)->hasPseudoElements() || toElement(this)->shadow())));
