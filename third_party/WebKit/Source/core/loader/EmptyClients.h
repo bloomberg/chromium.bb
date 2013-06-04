@@ -276,7 +276,7 @@ public:
     virtual void willReleaseScriptContext(v8::Handle<v8::Context>, int worldId) OVERRIDE { }
     virtual bool allowScriptExtension(const String& extensionName, int extensionGroup, int worldId) OVERRIDE { return false; }
 
-    virtual PassRefPtr<FrameNetworkingContext> createNetworkingContext() OVERRIDE;
+    virtual WebKit::WebCookieJar* cookieJar() const { return 0; }
 
     virtual void didRequestAutocomplete(PassRefPtr<FormState>) OVERRIDE;
 };

@@ -32,7 +32,6 @@
 #include "config.h"
 #include "FrameLoaderClientImpl.h"
 
-#include "FrameNetworkingContextImpl.h"
 #include "HTMLNames.h"
 #include "core/dom/Document.h"
 #include "core/dom/MessageEvent.h"
@@ -1297,9 +1296,11 @@ PassOwnPtr<WebPluginLoadObserver> FrameLoaderClientImpl::pluginLoadObserver()
     return ds->releasePluginLoadObserver();
 }
 
-PassRefPtr<FrameNetworkingContext> FrameLoaderClientImpl::createNetworkingContext()
+WebCookieJar* FrameLoaderClientImpl::cookieJar() const
 {
-    return FrameNetworkingContextImpl::create(m_webFrame->frame());
+    if (!m_webFrame->client())
+        return 0;
+    return m_webFrame->client()->cookieJar(m_webFrame);
 }
 
 bool FrameLoaderClientImpl::willCheckAndDispatchMessageEvent(

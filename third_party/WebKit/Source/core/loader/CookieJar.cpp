@@ -32,9 +32,9 @@
 #include "core/loader/CookieJar.h"
 
 #include "core/dom/Document.h"
+#include "core/loader/FrameLoaderClient.h"
 #include "core/page/Frame.h"
 #include "core/platform/Cookie.h"
-#include "core/platform/network/NetworkingContext.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebCookie.h"
 #include "public/platform/WebCookieJar.h"
@@ -47,7 +47,12 @@ static WebKit::WebCookieJar* toCookieJar(const Document* document)
 {
     if (!document || !document->frame())
         return 0;
-    return document->frame()->loader()->networkingContext()->cookieJar();
+    WebKit::WebCookieJar* cookieJar = document->frame()->loader()->client()->cookieJar();
+    // FIXME: DRT depends on being able to get a cookie jar from Platform rather than
+    // FrameLoaderClient. Delete this when DRT is deleted.
+    if (!cookieJar)
+        cookieJar = WebKit::Platform::current()->cookieJar();
+    return cookieJar;
 }
 
 String cookies(const Document* document, const KURL& url)

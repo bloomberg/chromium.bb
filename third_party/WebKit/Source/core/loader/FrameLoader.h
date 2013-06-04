@@ -58,9 +58,7 @@ class Event;
 class FormState;
 class FormSubmission;
 class FrameLoaderClient;
-class FrameNetworkingContext;
 class NavigationAction;
-class NetworkingContext;
 class Page;
 class ResourceError;
 class ResourceRequest;
@@ -257,8 +255,6 @@ public:
     };
     PageDismissalType pageDismissalEventBeingDispatched() const { return m_pageDismissalEventBeingDispatched; }
 
-    NetworkingContext* networkingContext() const;
-
     void reportMemoryUsage(MemoryObjectInfo*) const;
 
 private:
@@ -382,8 +378,6 @@ private:
     bool m_suppressOpenerInNewFrame;
 
     SandboxFlags m_forcedSandboxFlags;
-
-    RefPtr<FrameNetworkingContext> m_networkingContext;
 
     RefPtr<HistoryItem> m_requestedHistoryItem;
 };

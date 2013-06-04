@@ -125,7 +125,7 @@ PingLoader::PingLoader(Frame* frame, ResourceRequest& request, StoredCredentials
     : m_timeout(this, &PingLoader::timeout)
 {
     unsigned long identifier = createUniqueIdentifier();
-    m_handle = ResourceHandle::create(frame->loader()->networkingContext(), request, this, false, false, credentialsAllowed);
+    m_handle = ResourceHandle::create(request, this, false, false, credentialsAllowed);
 
     InspectorInstrumentation::continueAfterPingLoader(frame, identifier, frame->loader()->activeDocumentLoader(), request, ResourceResponse());
 

@@ -154,7 +154,7 @@ void ResourceLoader::start()
     }
 
     if (m_state != Terminated)
-        m_handle = ResourceHandle::create(m_frame->loader()->networkingContext(), m_request, this, m_defersLoading, m_options.sniffContent == SniffContent, m_options.allowCredentials);
+        m_handle = ResourceHandle::create(m_request, this, m_defersLoading, m_options.sniffContent == SniffContent, m_options.allowCredentials);
 }
 
 void ResourceLoader::setDefersLoading(bool defers)

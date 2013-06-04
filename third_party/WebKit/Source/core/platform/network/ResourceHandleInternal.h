@@ -39,13 +39,12 @@
 
 namespace WebCore {
 
-class NetworkingContext;
 class ResourceHandle;
 class ResourceHandleClient;
 
 class ResourceHandleInternal : public WebKit::WebURLLoaderClient {
 public:
-    ResourceHandleInternal(NetworkingContext*, const ResourceRequest&, ResourceHandleClient*);
+    ResourceHandleInternal(const ResourceRequest&, ResourceHandleClient*);
 
     virtual ~ResourceHandleInternal() { }
 
@@ -80,12 +79,10 @@ public:
     ResourceHandleClient* client() const { return m_client; }
     void setClient(ResourceHandleClient* client) { m_client = client; }
     WebKit::WebURLLoader* loader() const { return m_loader.get(); }
-    NetworkingContext* context() const { return m_context.get(); }
 
     static ResourceHandleInternal* FromResourceHandle(ResourceHandle*);
 
 private:
-    RefPtr<NetworkingContext> m_context;
     ResourceRequest m_request;
     ResourceHandle* m_owner;
     ResourceHandleClient* m_client;

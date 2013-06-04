@@ -73,7 +73,6 @@
 #include "core/loader/FormSubmission.h"
 #include "core/loader/FrameLoadRequest.h"
 #include "core/loader/FrameLoaderClient.h"
-#include "core/loader/FrameNetworkingContext.h"
 #include "core/loader/ProgressTracker.h"
 #include "core/loader/TextResourceDecoder.h"
 #include "core/loader/UniqueIdentifier.h"
@@ -213,9 +212,6 @@ FrameLoader::~FrameLoader()
         (*it)->loader()->m_opener = 0;
 
     m_client->frameLoaderDestroyed();
-
-    if (m_networkingContext)
-        m_networkingContext->invalidate();
 }
 
 void FrameLoader::init()
@@ -226,8 +222,6 @@ void FrameLoader::init()
     m_provisionalDocumentLoader->startLoadingMainResource();
     m_frame->document()->cancelParsing();
     m_stateMachine.advanceTo(FrameLoaderStateMachine::DisplayingInitialEmptyDocument);
-
-    m_networkingContext = m_client->createNetworkingContext();
     m_progressTracker = FrameProgressTracker::create(m_frame);
 }
 
@@ -1901,7 +1895,7 @@ unsigned long FrameLoader::loadResourceSynchronously(const ResourceRequest& requ
     if (error.isNull()) {
         ASSERT(!newRequest.isNull());
         documentLoader()->applicationCacheHost()->willStartLoadingSynchronously(newRequest);
-        ResourceHandle::loadResourceSynchronously(networkingContext(), newRequest, storedCredentials, error, response, data);
+        ResourceHandle::loadResourceSynchronously(newRequest, storedCredentials, error, response, data);
     }
     int encodedDataLength = response.resourceLoadInfo() ? static_cast<int>(response.resourceLoadInfo()->encodedDataLength) : -1;
     notifier()->sendRemainingDelegateMessages(m_documentLoader.get(), identifier, response, data.data(), data.size(), encodedDataLength, error);
@@ -2493,11 +2487,6 @@ void FrameLoader::tellClientAboutPastMemoryCacheLoads()
     }
 }
 
-NetworkingContext* FrameLoader::networkingContext() const
-{
-    return m_networkingContext.get();
-}
-
 void FrameLoader::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
 {
     MemoryClassInfo info(memoryObjectInfo, this, WebCoreMemoryTypes::Loader);
@@ -2512,7 +2501,6 @@ void FrameLoader::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
     info.addMember(m_opener, "opener");
     info.addMember(m_openedFrames, "openedFrames");
     info.addMember(m_outgoingReferrer, "outgoingReferrer");
-    info.addMember(m_networkingContext, "networkingContext");
     info.addMember(m_requestedHistoryItem, "requestedHistoryItem");
 }
 

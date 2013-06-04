@@ -161,7 +161,7 @@ public:
     virtual void didNotAllowScript();
     virtual void didNotAllowPlugins();
 
-    virtual PassRefPtr<WebCore::FrameNetworkingContext> createNetworkingContext();
+    virtual WebCookieJar* cookieJar() const;
     virtual bool willCheckAndDispatchMessageEvent(WebCore::SecurityOrigin* target, WebCore::MessageEvent*) const;
     virtual void didChangeName(const String&);
 

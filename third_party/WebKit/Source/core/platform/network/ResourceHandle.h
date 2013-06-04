@@ -35,7 +35,6 @@
 
 namespace WebCore {
 class KURL;
-class NetworkingContext;
 class ResourceError;
 class ResourceHandleClient;
 class ResourceHandleInternal;
@@ -46,8 +45,8 @@ template <typename T> class Timer;
 
 class ResourceHandle : public RefCounted<ResourceHandle> {
 public:
-    static PassRefPtr<ResourceHandle> create(NetworkingContext*, const ResourceRequest&, ResourceHandleClient*, bool defersLoading, bool shouldContentSniff, StoredCredentials);
-    static void loadResourceSynchronously(NetworkingContext*, const ResourceRequest&, StoredCredentials, ResourceError&, ResourceResponse&, Vector<char>& data);
+    static PassRefPtr<ResourceHandle> create(const ResourceRequest&, ResourceHandleClient*, bool defersLoading, bool shouldContentSniff, StoredCredentials);
+    static void loadResourceSynchronously(const ResourceRequest&, StoredCredentials, ResourceError&, ResourceResponse&, Vector<char>& data);
 
     static void cacheMetadata(const ResourceResponse&, const Vector<char>&);
 
@@ -65,19 +64,17 @@ public:
 
     ResourceRequest& firstRequest();
 
-    NetworkingContext* context() const;
-
     typedef PassRefPtr<ResourceHandle> (*BuiltinConstructor)(const ResourceRequest& request, ResourceHandleClient* client);
     static void registerBuiltinConstructor(const AtomicString& protocol, BuiltinConstructor);
 
-    typedef void (*BuiltinSynchronousLoader)(NetworkingContext*, const ResourceRequest&, StoredCredentials, ResourceError&, ResourceResponse&, Vector<char>& data);
+    typedef void (*BuiltinSynchronousLoader)(const ResourceRequest&, StoredCredentials, ResourceError&, ResourceResponse&, Vector<char>& data);
     static void registerBuiltinSynchronousLoader(const AtomicString& protocol, BuiltinSynchronousLoader);
 
 protected:
-    ResourceHandle(NetworkingContext*, const ResourceRequest&, ResourceHandleClient*, bool defersLoading, bool shouldContentSniff);
+    ResourceHandle(const ResourceRequest&, ResourceHandleClient*, bool defersLoading, bool shouldContentSniff);
 
 private:
-    bool start(StoredCredentials);
+    void start(StoredCredentials);
     friend class ResourceHandleInternal;
     OwnPtr<ResourceHandleInternal> d;
 };

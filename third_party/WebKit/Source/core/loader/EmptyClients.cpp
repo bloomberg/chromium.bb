@@ -31,7 +31,6 @@
 #include "core/html/HTMLFormElement.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FormState.h"
-#include "core/loader/FrameNetworkingContext.h"
 #include "core/page/Frame.h"
 #include "core/platform/DateTimeChooser.h"
 #include "core/platform/FileChooser.h"
@@ -128,11 +127,6 @@ PassRefPtr<Widget> EmptyFrameLoaderClient::createPlugin(const IntSize&, HTMLPlug
 PassRefPtr<Widget> EmptyFrameLoaderClient::createJavaAppletWidget(const IntSize&, HTMLAppletElement*, const KURL&, const Vector<String>&, const Vector<String>&)
 {
     return 0;
-}
-
-PassRefPtr<FrameNetworkingContext> EmptyFrameLoaderClient::createNetworkingContext()
-{
-    return PassRefPtr<FrameNetworkingContext>();
 }
 
 void EmptyTextCheckerClient::requestCheckingOfString(PassRefPtr<TextCheckingRequest>)
