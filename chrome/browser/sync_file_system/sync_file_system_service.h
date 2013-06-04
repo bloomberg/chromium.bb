@@ -50,7 +50,6 @@ class SyncFileSystemService
 
   void InitializeForApp(
       fileapi::FileSystemContext* file_system_context,
-      const std::string& service_name,
       const GURL& app_origin,
       const SyncStatusCallback& callback);
 

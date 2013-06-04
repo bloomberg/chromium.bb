@@ -65,7 +65,6 @@ class DriveFileSyncService : public RemoteFileSyncService,
 
   typedef base::Callback<void(const SyncStatusCallback& callback)> Task;
 
-  static const char kServiceName[];
   static ConflictResolutionPolicy kDefaultPolicy;
 
   virtual ~DriveFileSyncService();
@@ -110,7 +109,6 @@ class DriveFileSyncService : public RemoteFileSyncService,
   virtual LocalChangeProcessor* GetLocalChangeProcessor() OVERRIDE;
   virtual bool IsConflicting(const fileapi::FileSystemURL& url) OVERRIDE;
   virtual RemoteServiceState GetCurrentState() const OVERRIDE;
-  virtual const char* GetServiceName() const OVERRIDE;
   virtual void SetSyncEnabled(bool enabled) OVERRIDE;
   virtual SyncStatusCode SetConflictResolutionPolicy(
       ConflictResolutionPolicy resolution) OVERRIDE;

@@ -114,8 +114,7 @@ class SyncFileSystemRequestFileSystemFunction
   // Returns the file system context for this extension.
   fileapi::FileSystemContext* GetFileSystemContext();
 
-  void DidInitializeFileSystemContext(const std::string& service_name,
-                                      sync_file_system::SyncStatusCode status);
+  void DidInitializeFileSystemContext(sync_file_system::SyncStatusCode status);
   void DidOpenFileSystem(base::PlatformFileError error,
                          const std::string& file_system_name,
                          const GURL& root_url);

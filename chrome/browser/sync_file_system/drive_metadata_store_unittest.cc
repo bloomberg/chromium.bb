@@ -33,13 +33,12 @@ namespace sync_file_system {
 namespace {
 
 const char kOrigin[] = "chrome-extension://example";
-const char* const kServiceName = DriveFileSyncService::kServiceName;
 
 typedef DriveMetadataStore::ResourceIdByOrigin ResourceIdByOrigin;
 typedef DriveMetadataStore::OriginByResourceId OriginByResourceId;
 
 fileapi::FileSystemURL URL(const base::FilePath& path) {
-  return CreateSyncableFileSystemURL(GURL(kOrigin), kServiceName, path);
+  return CreateSyncableFileSystemURL(GURL(kOrigin), path);
 }
 
 std::string GetResourceID(const ResourceIdByOrigin& sync_origins,
@@ -79,11 +78,11 @@ class DriveMetadataStoreTest : public testing::Test {
     file_task_runner_ = file_thread_->message_loop_proxy();
 
     ASSERT_TRUE(base_dir_.CreateUniqueTempDir());
-    ASSERT_TRUE(RegisterSyncableFileSystem(kServiceName));
+    RegisterSyncableFileSystem();
   }
 
   virtual void TearDown() OVERRIDE {
-    EXPECT_TRUE(RevokeSyncableFileSystem(kServiceName));
+    RevokeSyncableFileSystem();
 
     DropDatabase();
     file_thread_->Stop();
@@ -515,17 +514,17 @@ TEST_F(DriveMetadataStoreTest, RemoveOrigin) {
   EXPECT_EQ(SYNC_STATUS_OK,
             UpdateEntry(
                 CreateSyncableFileSystemURL(
-                    kOrigin1, kServiceName, base::FilePath(FPL("guf"))),
+                    kOrigin1, base::FilePath(FPL("guf"))),
                 CreateMetadata("foo", "spam", false, false)));
   EXPECT_EQ(SYNC_STATUS_OK,
             UpdateEntry(
                 CreateSyncableFileSystemURL(
-                    kOrigin2, kServiceName, base::FilePath(FPL("mof"))),
+                    kOrigin2, base::FilePath(FPL("mof"))),
                 CreateMetadata("bar", "ham", false, false)));
   EXPECT_EQ(SYNC_STATUS_OK,
             UpdateEntry(
                 CreateSyncableFileSystemURL(
-                    kOrigin3, kServiceName, base::FilePath(FPL("waf"))),
+                    kOrigin3, base::FilePath(FPL("waf"))),
                 CreateMetadata("baz", "egg", false, false)));
 
   EXPECT_EQ(SYNC_STATUS_OK, RemoveOrigin(kOrigin2));

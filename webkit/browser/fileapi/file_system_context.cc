@@ -233,7 +233,6 @@ void FileSystemContext::OpenFileSystem(
 }
 
 void FileSystemContext::OpenSyncableFileSystem(
-    const std::string& mount_name,
     const GURL& origin_url,
     FileSystemType type,
     OpenFileSystemMode mode,
@@ -242,8 +241,7 @@ void FileSystemContext::OpenSyncableFileSystem(
 
   DCHECK(type == kFileSystemTypeSyncable);
 
-  GURL root_url = sync_file_system::GetSyncableFileSystemRootURI(
-      origin_url, mount_name);
+  GURL root_url = sync_file_system::GetSyncableFileSystemRootURI(origin_url);
   std::string name = GetFileSystemName(origin_url, kFileSystemTypeSyncable);
 
   FileSystemMountPointProvider* mount_point_provider =

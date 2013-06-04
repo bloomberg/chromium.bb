@@ -12,6 +12,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/leveldatabase/src/include/leveldb/db.h"
 #include "third_party/leveldatabase/src/include/leveldb/write_batch.h"
+#include "webkit/browser/fileapi/external_mount_points.h"
 #include "webkit/browser/fileapi/syncable/syncable_file_system_util.h"
 #include "webkit/common/fileapi/file_system_util.h"
 
@@ -21,28 +22,41 @@ namespace sync_file_system {
 namespace drive {
 
 namespace {
+
 const char kV0ServiceName[] = "drive";
+
+bool CreateV0SerializedSyncableFileSystemURL(
+    const GURL& origin,
+    const base::FilePath& path,
+    std::string* serialized_url) {
+  fileapi::ScopedExternalFileSystem scoped_fs(
+      kV0ServiceName, fileapi::kFileSystemTypeSyncable, base::FilePath());
+
+  fileapi::FileSystemURL url =
+      fileapi::ExternalMountPoints::GetSystemInstance()->
+          CreateExternalFileSystemURL(origin, kV0ServiceName, path);
+  if (!url.is_valid())
+    return false;
+  *serialized_url = fileapi::GetExternalFileSystemRootURIString(
+        origin, kV0ServiceName) + url.path().AsUTF8Unsafe();
+  return true;
 }
+
+}  // namespace
 
 TEST(DriveMetadataDBMigrationUtilTest, ParseV0FormatFileSystemURL) {
   const GURL kOrigin("chrome-extension://example");
   const base::FilePath kFile(FPL("foo bar"));
 
-  ASSERT_TRUE(RegisterSyncableFileSystem(kV0ServiceName));
-
-  fileapi::FileSystemURL url =
-      CreateSyncableFileSystemURL(kOrigin, kV0ServiceName, kFile);
-
   std::string serialized_url;
-  SerializeSyncableFileSystemURL(url, &serialized_url);
+  ASSERT_TRUE(CreateV0SerializedSyncableFileSystemURL(
+      kOrigin, kFile, &serialized_url));
 
   GURL origin;
   base::FilePath path;
   EXPECT_TRUE(ParseV0FormatFileSystemURL(GURL(serialized_url), &origin, &path));
   EXPECT_EQ(kOrigin, origin);
   EXPECT_EQ(kFile, path);
-
-  EXPECT_TRUE(RevokeSyncableFileSystem(kV0ServiceName));
 }
 
 TEST(DriveMetadataDBMigrationUtilTest, AddWapiIdPrefix) {
@@ -88,8 +102,6 @@ TEST(DriveMetadataDBMigrationUtilTest, MigrationFromV0) {
   const base::FilePath kFile(FPL("foo bar"));
   const std::string kFileMD5("file_md5");
 
-  ASSERT_TRUE(RegisterSyncableFileSystem(kV0ServiceName));
-
   base::ScopedTempDir base_dir;
   ASSERT_TRUE(base_dir.CreateUniqueTempDir());
 
@@ -108,9 +120,6 @@ TEST(DriveMetadataDBMigrationUtilTest, MigrationFromV0) {
   batch.Put(kChangeStampKey, "1");
   batch.Put(kSyncRootDirectoryKey, kSyncRootResourceId);
 
-  fileapi::FileSystemURL url =
-      CreateSyncableFileSystemURL(kOrigin1, kV0ServiceName, kFile);
-
   // Setup drive metadata.
   DriveMetadata drive_metadata;
   drive_metadata.set_resource_id(kFileResourceId);
@@ -119,7 +128,8 @@ TEST(DriveMetadataDBMigrationUtilTest, MigrationFromV0) {
   drive_metadata.set_to_be_fetched(false);
 
   std::string serialized_url;
-  SerializeSyncableFileSystemURL(url, &serialized_url);
+  ASSERT_TRUE(CreateV0SerializedSyncableFileSystemURL(
+      kOrigin1, kFile, &serialized_url));
   std::string metadata_string;
   drive_metadata.SerializeToString(&metadata_string);
   batch.Put(kDriveMetadataKeyPrefix + serialized_url, metadata_string);
@@ -131,7 +141,6 @@ TEST(DriveMetadataDBMigrationUtilTest, MigrationFromV0) {
 
   status = db->Write(leveldb::WriteOptions(), &batch);
   EXPECT_EQ(SYNC_STATUS_OK, LevelDBStatusToSyncStatusCode(status));
-  EXPECT_TRUE(RevokeSyncableFileSystem(kV0ServiceName));
 
   // Migrate the database.
   drive::MigrateDatabaseFromV0ToV1(db.get());
@@ -200,8 +209,7 @@ TEST(DriveMetadataDBMigrationUtilTest, MigrationFromV1) {
   const base::FilePath kFile(FPL("foo bar"));
   const std::string kFileMD5("file_md5");
 
-  const char kV1ServiceName[] = "syncfs";
-  ASSERT_TRUE(RegisterSyncableFileSystem(kV1ServiceName));
+  RegisterSyncableFileSystem();
 
   base::ScopedTempDir base_dir;
   ASSERT_TRUE(base_dir.CreateUniqueTempDir());
@@ -222,8 +230,7 @@ TEST(DriveMetadataDBMigrationUtilTest, MigrationFromV1) {
   batch.Put(kChangeStampKey, "1");
   batch.Put(kSyncRootDirectoryKey, kSyncRootResourceId);
 
-  fileapi::FileSystemURL url =
-      CreateSyncableFileSystemURL(kOrigin1, kV1ServiceName, kFile);
+  fileapi::FileSystemURL url = CreateSyncableFileSystemURL(kOrigin1, kFile);
 
   // Setup drive metadata.
   DriveMetadata drive_metadata;
@@ -245,7 +252,8 @@ TEST(DriveMetadataDBMigrationUtilTest, MigrationFromV1) {
 
   status = db->Write(leveldb::WriteOptions(), &batch);
   EXPECT_EQ(SYNC_STATUS_OK, LevelDBStatusToSyncStatusCode(status));
-  EXPECT_TRUE(RevokeSyncableFileSystem(kV1ServiceName));
+
+  RevokeSyncableFileSystem();
 
   // Migrate the database.
   drive::MigrateDatabaseFromV1ToV2(db.get());

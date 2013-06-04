@@ -40,10 +40,6 @@ namespace extensions {
 
 namespace {
 
-// This is the only supported cloud backend service for now.
-const char* const kDriveCloudService =
-    sync_file_system::DriveFileSyncService::kServiceName;
-
 // Error messages.
 const char kFileError[] = "File error %d.";
 const char kQuotaError[] = "Quota error %d.";
@@ -58,7 +54,7 @@ sync_file_system::SyncFileSystemService* GetSyncFileSystemService(
   ExtensionSyncEventObserver* observer =
       ExtensionSyncEventObserverFactory::GetForProfile(profile);
   DCHECK(observer);
-  observer->InitializeForService(service, kDriveCloudService);
+  observer->InitializeForService(service);
   return service;
 }
 
@@ -113,21 +109,13 @@ void SyncFileSystemDeleteFileSystemFunction::DidDeleteFileSystem(
 }
 
 bool SyncFileSystemRequestFileSystemFunction::RunImpl() {
-  // Please note that Google Drive is the only supported cloud backend at this
-  // time. However other functions which have already been written to
-  // accommodate different service names are being left as is to allow easier
-  // future support for other backend services. (http://crbug.com/172562).
-  const std::string service_name = sync_file_system::DriveFileSyncService::
-      kServiceName;
   // Initializes sync context for this extension and continue to open
   // a new file system.
   GetSyncFileSystemService(profile())->
       InitializeForApp(
           GetFileSystemContext(),
-          service_name,
           source_url().GetOrigin(),
-          base::Bind(&self::DidInitializeFileSystemContext, this,
-                     service_name));
+          base::Bind(&self::DidInitializeFileSystemContext, this));
   return true;
 }
 
@@ -140,7 +128,6 @@ SyncFileSystemRequestFileSystemFunction::GetFileSystemContext() {
 }
 
 void SyncFileSystemRequestFileSystemFunction::DidInitializeFileSystemContext(
-    const std::string& service_name,
     SyncStatusCode status) {
   if (status != sync_file_system::SYNC_STATUS_OK) {
     error_ = sync_file_system::SyncStatusCodeToString(status);
@@ -157,7 +144,6 @@ void SyncFileSystemRequestFileSystemFunction::DidInitializeFileSystemContext(
       BrowserThread::IO, FROM_HERE,
       Bind(&fileapi::FileSystemContext::OpenSyncableFileSystem,
            GetFileSystemContext(),
-           service_name,
            source_url().GetOrigin(),
            fileapi::kFileSystemTypeSyncable,
            fileapi::OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,

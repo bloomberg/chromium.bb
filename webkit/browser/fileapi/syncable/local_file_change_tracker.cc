@@ -250,7 +250,7 @@ SyncStatusCode LocalFileChangeTracker::CollectLastDirtyChanges(
         base::FilePath path_each;
         while (!(path_each = enumerator->Next()).empty()) {
           dirty_files.push(CreateSyncableFileSystemURL(
-              url.origin(), url.filesystem_id(), path_each));
+                  url.origin(), path_each));
         }
         break;
       }

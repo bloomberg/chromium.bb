@@ -167,7 +167,6 @@ class WEBKIT_STORAGE_EXPORT FileSystemContext
   // Currently only kFileSystemTypeSyncable type is supported.
   // TODO(kinuko): Deprecate this method. (http://crbug.com/177137)
   void OpenSyncableFileSystem(
-      const std::string& mount_name,
       const GURL& origin_url,
       FileSystemType type,
       OpenFileSystemMode mode,

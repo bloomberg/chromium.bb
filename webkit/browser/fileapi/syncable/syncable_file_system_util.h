@@ -19,30 +19,24 @@ class LocalFileSystemOperation;
 
 namespace sync_file_system {
 
-// Registers a syncable filesystem with the given |service_name|.
-WEBKIT_STORAGE_EXPORT bool RegisterSyncableFileSystem(
-    const std::string& service_name);
+// Registers a syncable filesystem.
+WEBKIT_STORAGE_EXPORT void RegisterSyncableFileSystem();
 
-// Revokes the syncable filesystem that was registered with |service_name|.
-WEBKIT_STORAGE_EXPORT bool RevokeSyncableFileSystem(
-    const std::string& service_name);
+// Revokes the syncable filesystem.
+WEBKIT_STORAGE_EXPORT void RevokeSyncableFileSystem();
 
-// Returns the root URI of the syncable filesystem that can be specified by a
-// pair of |origin| and |service_name|.
-WEBKIT_STORAGE_EXPORT GURL GetSyncableFileSystemRootURI(
-    const GURL& origin, const std::string& service_name);
+// Returns the root URI of the syncable filesystem for |origin|.
+WEBKIT_STORAGE_EXPORT GURL GetSyncableFileSystemRootURI(const GURL& origin);
 
-// Creates a FileSystem URL for the |path| in a syncable filesystem
-// identifiable by a pair of |origin| and |service_name|.
+// Creates a FileSystem URL for the |path| in a syncable filesystem for
+// |origin|.
 //
 // Example: Assume following arguments are given:
 //   origin: 'http://www.example.com/',
-//   service_name: 'service_name',
 //   path: '/foo/bar',
-// returns 'filesystem:http://www.example.com/external/service_name/foo/bar'
+// returns 'filesystem:http://www.example.com/external/syncfs/foo/bar'
 WEBKIT_STORAGE_EXPORT fileapi::FileSystemURL CreateSyncableFileSystemURL(
-    const GURL& origin, const std::string& service_name,
-    const base::FilePath& path);
+    const GURL& origin, const base::FilePath& path);
 
 // Serializes a given FileSystemURL |url| and sets the serialized string to
 // |serialized_url|. If the URL does not represent a syncable filesystem,
@@ -52,13 +46,13 @@ WEBKIT_STORAGE_EXPORT fileapi::FileSystemURL CreateSyncableFileSystemURL(
 // Example: Assume a following FileSystemURL object is given:
 //   origin() returns 'http://www.example.com/',
 //   type() returns the kFileSystemTypeSyncable,
-//   filesystem_id() returns 'service_name',
+//   filesystem_id() returns 'syncfs',
 //   path() returns '/foo/bar',
 // this URL will be serialized to
 // (on Windows)
-//   'filesystem:http://www.example.com/external/service_name/foo\\bar'
+//   'filesystem:http://www.example.com/external/syncfs/foo\\bar'
 // (on others)
-//   'filesystem:http://www.example.com/external/service_name/foo/bar'
+//   'filesystem:http://www.example.com/external/syncfs/foo/bar'
 WEBKIT_STORAGE_EXPORT bool SerializeSyncableFileSystemURL(
     const fileapi::FileSystemURL& url, std::string* serialized_url);
 

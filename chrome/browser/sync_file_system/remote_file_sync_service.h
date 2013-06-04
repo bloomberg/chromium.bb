@@ -136,9 +136,6 @@ class RemoteFileSyncService {
   // returned by the last OnRemoteServiceStateUpdated notification.
   virtual RemoteServiceState GetCurrentState() const = 0;
 
-  // Returns the service name that backs this remote_file_sync_service.
-  virtual const char* GetServiceName() const = 0;
-
   // Enables or disables the background sync.
   // Setting this to false should disable the synchronization (and make
   // the service state to REMOTE_SERVICE_DISABLED), while setting this to

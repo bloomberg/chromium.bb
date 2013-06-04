@@ -39,7 +39,7 @@ bool ParseV0FormatFileSystemURL(const GURL& url,
   if (!fileapi::FileSystemURL::ParseFileSystemSchemeURL(
           url, origin, &mount_type, &virtual_path) ||
       mount_type != fileapi::kFileSystemTypeExternal) {
-    NOTREACHED() << "Failed to parse filesystem scheme URL";
+    NOTREACHED() << "Failed to parse filesystem scheme URL " << url.spec();
     return false;
   }
 

@@ -55,7 +55,6 @@ class CannedSyncableFileSystem
   typedef base::Callback<void(int64)> WriteCallback;
 
   CannedSyncableFileSystem(const GURL& origin,
-                           const std::string& service,
                            base::SingleThreadTaskRunner* io_task_runner,
                            base::SingleThreadTaskRunner* file_task_runner);
   virtual ~CannedSyncableFileSystem();

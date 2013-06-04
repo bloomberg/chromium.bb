@@ -177,11 +177,10 @@ void EnsureLastTaskRuns(base::SingleThreadTaskRunner* runner) {
 }  // namespace
 
 CannedSyncableFileSystem::CannedSyncableFileSystem(
-    const GURL& origin, const std::string& service,
+    const GURL& origin,
     base::SingleThreadTaskRunner* io_task_runner,
     base::SingleThreadTaskRunner* file_task_runner)
-    : service_name_(service),
-      origin_(origin),
+    : origin_(origin),
       type_(fileapi::kFileSystemTypeSyncable),
       result_(base::PLATFORM_FILE_OK),
       sync_status_(sync_file_system::SYNC_STATUS_OK),
@@ -248,7 +247,7 @@ PlatformFileError CannedSyncableFileSystem::OpenFileSystem() {
   EXPECT_TRUE(is_filesystem_set_up_);
   EXPECT_FALSE(is_filesystem_opened_);
   file_system_context_->OpenSyncableFileSystem(
-      service_name_, origin_, type_,
+      origin_, type_,
       fileapi::OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
       base::Bind(&CannedSyncableFileSystem::DidOpenFileSystem,
                  base::Unretained(this)));
@@ -282,7 +281,6 @@ SyncStatusCode CannedSyncableFileSystem::MaybeInitializeFileSystemContext(
                        sync_context->io_task_runner_.get());
   sync_context->MaybeInitializeFileSystemContext(
       origin_,
-      service_name_,
       file_system_context_.get(),
       base::Bind(&CannedSyncableFileSystem::DidInitializeFileSystemContext,
                  base::Unretained(this)));

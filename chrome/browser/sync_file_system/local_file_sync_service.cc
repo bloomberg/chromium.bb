@@ -115,11 +115,10 @@ void LocalFileSyncService::Shutdown() {
 
 void LocalFileSyncService::MaybeInitializeFileSystemContext(
     const GURL& app_origin,
-    const std::string& service_name,
     fileapi::FileSystemContext* file_system_context,
     const SyncStatusCallback& callback) {
   sync_context_->MaybeInitializeFileSystemContext(
-      app_origin, service_name, file_system_context,
+      app_origin, file_system_context,
       base::Bind(&LocalFileSyncService::DidInitializeFileSystemContext,
                  AsWeakPtr(), app_origin,
                  make_scoped_refptr(file_system_context), callback));
@@ -189,7 +188,6 @@ void LocalFileSyncService::GetLocalFileMetadata(
 
 void LocalFileSyncService::PrepareForProcessRemoteChange(
     const FileSystemURL& url,
-    const std::string& service_name,
     const PrepareChangeCallback& callback) {
   if (!ContainsKey(origin_to_contexts_, url.origin())) {
     // This could happen if a remote sync is triggered for the app that hasn't
@@ -220,12 +218,10 @@ void LocalFileSyncService::PrepareForProcessRemoteChange(
             profile_, site_url)->GetFileSystemContext();
     MaybeInitializeFileSystemContext(
         url.origin(),
-        service_name,
         file_system_context.get(),
         base::Bind(&LocalFileSyncService::DidInitializeForRemoteSync,
                    AsWeakPtr(),
                    url,
-                   service_name,
                    file_system_context,
                    callback));
     return;
@@ -327,7 +323,6 @@ void LocalFileSyncService::DidInitializeFileSystemContext(
 
 void LocalFileSyncService::DidInitializeForRemoteSync(
     const FileSystemURL& url,
-    const std::string& service_name,
     fileapi::FileSystemContext* file_system_context,
     const PrepareChangeCallback& callback,
     SyncStatusCode status) {
@@ -339,7 +334,7 @@ void LocalFileSyncService::DidInitializeForRemoteSync(
     return;
   }
   origin_to_contexts_[url.origin()] = file_system_context;
-  PrepareForProcessRemoteChange(url, service_name, callback);
+  PrepareForProcessRemoteChange(url, callback);
 }
 
 void LocalFileSyncService::RunLocalSyncCallback(

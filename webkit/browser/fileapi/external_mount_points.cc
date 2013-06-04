@@ -257,6 +257,19 @@ base::FilePath ExternalMountPoints::CreateVirtualRootPath(
   return base::FilePath().AppendASCII(mount_name);
 }
 
+FileSystemURL ExternalMountPoints::CreateExternalFileSystemURL(
+    const GURL& origin,
+    const std::string& mount_name,
+    const base::FilePath& path) const {
+  return CreateCrackedFileSystemURL(
+      origin,
+      fileapi::kFileSystemTypeExternal,
+      // Avoid using FilePath::Append as path may be an absolute path.
+      base::FilePath(
+          CreateVirtualRootPath(mount_name).value() +
+          base::FilePath::kSeparators[0] + path.value()));
+}
+
 ExternalMountPoints::ExternalMountPoints() {}
 
 ExternalMountPoints::~ExternalMountPoints() {

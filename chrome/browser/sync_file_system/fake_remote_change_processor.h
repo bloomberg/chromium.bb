@@ -36,7 +36,6 @@ class FakeRemoteChangeProcessor : public RemoteChangeProcessor {
   // RemoteChangeProcessor overrides.
   virtual void PrepareForProcessRemoteChange(
       const fileapi::FileSystemURL& url,
-      const std::string& service_name,
       const PrepareChangeCallback& callback) OVERRIDE;
   virtual void ApplyRemoteChange(
       const FileChange& change,

@@ -18,8 +18,6 @@ using ::testing::Return;
 
 namespace sync_file_system {
 
-const char MockRemoteFileSyncService::kServiceName[] = "mock_sync_service";
-
 MockRemoteFileSyncService::MockRemoteFileSyncService()
     : conflict_resolution_policy_(CONFLICT_RESOLUTION_MANUAL) {
   typedef MockRemoteFileSyncService self;
@@ -43,8 +41,6 @@ MockRemoteFileSyncService::MockRemoteFileSyncService()
       .WillByDefault(Return(false));
   ON_CALL(*this, GetCurrentState())
       .WillByDefault(Return(REMOTE_SERVICE_OK));
-  ON_CALL(*this, GetServiceName())
-      .WillByDefault(Return(kServiceName));
   ON_CALL(*this, SetConflictResolutionPolicy(_))
       .WillByDefault(Invoke(this, &self::SetConflictResolutionPolicyStub));
   ON_CALL(*this, GetConflictResolutionPolicy())

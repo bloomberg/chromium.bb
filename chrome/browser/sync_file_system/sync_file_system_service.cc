@@ -122,7 +122,6 @@ SyncFileSystemService::~SyncFileSystemService() {
 
 void SyncFileSystemService::InitializeForApp(
     fileapi::FileSystemContext* file_system_context,
-    const std::string& service_name,
     const GURL& app_origin,
     const SyncStatusCallback& callback) {
   DCHECK(local_file_service_);
@@ -132,7 +131,7 @@ void SyncFileSystemService::InitializeForApp(
   DVLOG(1) << "InitializeForApp: " << app_origin.spec();
 
   local_file_service_->MaybeInitializeFileSystemContext(
-      app_origin, service_name, file_system_context,
+      app_origin, file_system_context,
       base::Bind(&SyncFileSystemService::DidInitializeFileSystem,
                  AsWeakPtr(), app_origin, callback));
 }

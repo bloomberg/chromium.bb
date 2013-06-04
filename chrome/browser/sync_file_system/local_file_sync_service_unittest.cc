@@ -38,7 +38,6 @@ namespace sync_file_system {
 namespace {
 
 const char kOrigin[] = "http://example.com";
-const char kServiceName[] = "test";
 
 void DidPrepareForProcessRemoteChange(const tracked_objects::Location& where,
                                       const base::Closure& oncompleted,
@@ -106,7 +105,7 @@ class LocalFileSyncServiceTest
     thread_helper_.SetUp();
 
     file_system_.reset(new CannedSyncableFileSystem(
-        GURL(kOrigin), kServiceName,
+        GURL(kOrigin),
         thread_helper_.io_task_runner(),
         thread_helper_.file_task_runner()));
 
@@ -117,7 +116,7 @@ class LocalFileSyncServiceTest
     base::RunLoop run_loop;
     SyncStatusCode status = SYNC_STATUS_UNKNOWN;
     local_service_->MaybeInitializeFileSystemContext(
-        GURL(kOrigin), kServiceName, file_system_->file_system_context(),
+        GURL(kOrigin), file_system_->file_system_context(),
         AssignAndQuitCallback(&run_loop, &status));
     run_loop.Run();
 
@@ -132,7 +131,7 @@ class LocalFileSyncServiceTest
   virtual void TearDown() OVERRIDE {
     local_service_->Shutdown();
     file_system_->TearDown();
-    RevokeSyncableFileSystem(kServiceName);
+    RevokeSyncableFileSystem();
 
     thread_helper_.TearDown();
   }
@@ -150,7 +149,6 @@ class LocalFileSyncServiceTest
     base::RunLoop run_loop;
     local_service_->PrepareForProcessRemoteChange(
         url,
-        kServiceName,
         base::Bind(&DidPrepareForProcessRemoteChange,
                    where,
                    run_loop.QuitClosure(),
@@ -279,7 +277,6 @@ TEST_F(LocalFileSyncServiceTest, LocalChangeObserver) {
 TEST_F(LocalFileSyncServiceTest, MAYBE_LocalChangeObserverMultipleContexts) {
   const char kOrigin2[] = "http://foo";
   CannedSyncableFileSystem file_system2(GURL(kOrigin2),
-                                        kServiceName,
                                         thread_helper_.io_task_runner(),
                                         thread_helper_.file_task_runner());
   file_system2.SetUp();
@@ -287,7 +284,7 @@ TEST_F(LocalFileSyncServiceTest, MAYBE_LocalChangeObserverMultipleContexts) {
   base::RunLoop run_loop;
   SyncStatusCode status = SYNC_STATUS_UNKNOWN;
   local_service_->MaybeInitializeFileSystemContext(
-      GURL(kOrigin2), kServiceName, file_system2.file_system_context(),
+      GURL(kOrigin2), file_system2.file_system_context(),
       AssignAndQuitCallback(&run_loop, &status));
   run_loop.Run();
 

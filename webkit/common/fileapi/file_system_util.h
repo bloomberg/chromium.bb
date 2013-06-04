@@ -144,6 +144,12 @@ WEBKIT_STORAGE_EXPORT std::string GetIsolatedFileSystemRootURIString(
     const std::string& filesystem_id,
     const std::string& optional_root_name);
 
+// Returns the root URI for an external filesystem for origin |origin_url|
+// and |mount_name|.
+WEBKIT_STORAGE_EXPORT std::string GetExternalFileSystemRootURIString(
+    const GURL& origin_url,
+    const std::string& mount_name);
+
 }  // namespace fileapi
 
 #endif  // WEBKIT_COMMON_FILEAPI_FILE_SYSTEM_UTIL_H_

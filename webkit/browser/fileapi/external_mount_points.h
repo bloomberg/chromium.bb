@@ -110,6 +110,11 @@ class WEBKIT_STORAGE_EXPORT ExternalMountPoints
   // Returns the virtual root path that looks like /<mount_name>.
   base::FilePath CreateVirtualRootPath(const std::string& mount_name) const;
 
+  FileSystemURL CreateExternalFileSystemURL(
+      const GURL& origin,
+      const std::string& mount_name,
+      const base::FilePath& path) const;
+
  private:
   friend class base::RefCountedThreadSafe<ExternalMountPoints>;
 

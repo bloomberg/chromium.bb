@@ -62,13 +62,12 @@ class WEBKIT_STORAGE_EXPORT LocalFileSyncContext
   LocalFileSyncContext(base::SingleThreadTaskRunner* ui_task_runner,
                        base::SingleThreadTaskRunner* io_task_runner);
 
-  // Initializes |file_system_context| for syncable file operations for
-  // |service_name| and registers the it into the internal map.
+  // Initializes |file_system_context| for syncable file operations
+  // and registers the it into the internal map.
   // Calling this multiple times for the same file_system_context is valid.
   // This method must be called on UI thread.
   void MaybeInitializeFileSystemContext(
       const GURL& source_url,
-      const std::string& service_name,
       fileapi::FileSystemContext* file_system_context,
       const SyncStatusCallback& callback);
 
@@ -190,7 +189,6 @@ class WEBKIT_STORAGE_EXPORT LocalFileSyncContext
   // Helper routines for MaybeInitializeFileSystemContext.
   void InitializeFileSystemContextOnIOThread(
       const GURL& source_url,
-      const std::string& service_name,
       fileapi::FileSystemContext* file_system_context);
   SyncStatusCode InitializeChangeTrackerOnFileThread(
       scoped_ptr<LocalFileChangeTracker>* tracker_ptr,
@@ -199,7 +197,6 @@ class WEBKIT_STORAGE_EXPORT LocalFileSyncContext
   void DidInitializeChangeTrackerOnIOThread(
       scoped_ptr<LocalFileChangeTracker>* tracker_ptr,
       const GURL& source_url,
-      const std::string& service_name,
       fileapi::FileSystemContext* file_system_context,
       std::set<GURL>* origins_with_changes,
       SyncStatusCode status);

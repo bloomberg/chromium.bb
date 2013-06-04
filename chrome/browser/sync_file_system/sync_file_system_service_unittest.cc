@@ -40,7 +40,6 @@ namespace sync_file_system {
 namespace {
 
 const char kOrigin[] = "http://example.com";
-const char kServiceName[] = "test";
 
 template <typename R> struct AssignTrait {
   typedef const R& ArgumentType;
@@ -120,7 +119,7 @@ class SyncFileSystemServiceTest : public testing::Test {
     thread_helper_.SetUp();
 
     file_system_.reset(new CannedSyncableFileSystem(
-        GURL(kOrigin), kServiceName,
+        GURL(kOrigin),
         thread_helper_.io_task_runner(),
         thread_helper_.file_task_runner()));
 
@@ -153,7 +152,7 @@ class SyncFileSystemServiceTest : public testing::Test {
     sync_service_->Shutdown();
 
     file_system_->TearDown();
-    RevokeSyncableFileSystem(kServiceName);
+    RevokeSyncableFileSystem();
     thread_helper_.TearDown();
   }
 
@@ -166,7 +165,7 @@ class SyncFileSystemServiceTest : public testing::Test {
 
     sync_service_->InitializeForApp(
         file_system_->file_system_context(),
-        kServiceName, GURL(kOrigin),
+        GURL(kOrigin),
         AssignAndQuitCallback(&run_loop, &status));
     run_loop.Run();
 
@@ -209,7 +208,7 @@ class SyncFileSystemServiceTest : public testing::Test {
     base::RunLoop run_loop;
     sync_service_->InitializeForApp(
         file_system_->file_system_context(),
-        kServiceName, GURL(kOrigin),
+        GURL(kOrigin),
         AssignAndQuitCallback(&run_loop, &actual_status));
     run_loop.Run();
 

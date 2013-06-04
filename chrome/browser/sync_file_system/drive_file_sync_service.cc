@@ -89,7 +89,6 @@ void SyncFileCallbackAdapter(
 
 }  // namespace
 
-const char DriveFileSyncService::kServiceName[] = "syncfs";
 ConflictResolutionPolicy DriveFileSyncService::kDefaultPolicy =
     CONFLICT_RESOLUTION_LAST_WRITE_WIN;
 
@@ -247,10 +246,6 @@ RemoteServiceState DriveFileSyncService::GetCurrentState() const {
   if (!sync_enabled_)
     return REMOTE_SERVICE_DISABLED;
   return state_;
-}
-
-const char* DriveFileSyncService::GetServiceName() const {
-  return kServiceName;
 }
 
 void DriveFileSyncService::SetSyncEnabled(bool enabled) {
@@ -586,7 +581,6 @@ void DriveFileSyncService::DoProcessRemoteChange(
       remote_change, callback));
   remote_change_processor_->PrepareForProcessRemoteChange(
       remote_change.url,
-      kServiceName,
       base::Bind(&DriveFileSyncService::DidPrepareForProcessRemoteChange,
                  AsWeakPtr(), base::Passed(&param)));
 }
@@ -776,7 +770,7 @@ void DriveFileSyncService::DidGetDirectoryContentForBatchSync(
 
     base::FilePath path = TitleToPath(entry.title());
     fileapi::FileSystemURL url(CreateSyncableFileSystemURL(
-        origin, kServiceName, path));
+        origin, path));
     // TODO(calvinlo): Write metadata and origin data as single batch command
     // so it's not possible for the DB to contain a DriveMetadata with an
     // unknown origin.
@@ -1291,8 +1285,7 @@ bool DriveFileSyncService::AppendRemoteChangeInternal(
     const base::Time& updated_time,
     SyncFileType file_type,
     RemoteChangeHandler::RemoteSyncType sync_type) {
-  fileapi::FileSystemURL url(
-      CreateSyncableFileSystemURL(origin, kServiceName, path));
+  fileapi::FileSystemURL url(CreateSyncableFileSystemURL(origin, path));
   DCHECK(url.is_valid());
 
   // Note that we create a normalized path from url.path() rather than

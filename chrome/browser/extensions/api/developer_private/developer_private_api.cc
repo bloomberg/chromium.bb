@@ -864,7 +864,6 @@ void DeveloperPrivateExportSyncfsFolderToLocalfsFunction::
       Extension::GetBaseURLFromExtensionId(extension_id()).spec());
   fileapi::FileSystemURL url(sync_file_system::CreateSyncableFileSystemURL(
       GURL(origin_url),
-      sync_file_system::DriveFileSyncService::kServiceName,
       project_path.BaseName()));
 
   base::PlatformFileError error_code;
@@ -907,7 +906,6 @@ void DeveloperPrivateExportSyncfsFolderToLocalfsFunction::
         Extension::GetBaseURLFromExtensionId(extension_id()).spec());
     fileapi::FileSystemURL url(sync_file_system::CreateSyncableFileSystemURL(
         GURL(origin_url),
-        sync_file_system::DriveFileSyncService::kServiceName,
         project_path.BaseName().Append(file_list[i].name)));
     base::FilePath target_path = project_path;
     target_path = target_path.Append(file_list[i].name);

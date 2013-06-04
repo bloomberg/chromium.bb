@@ -41,7 +41,6 @@ const base::FilePath::CharType DriveMetadataStore::kDatabaseName[] =
 
 namespace {
 
-const char* const kServiceName = DriveFileSyncService::kServiceName;
 const char kDatabaseVersionKey[] = "VERSION";
 const int64 kCurrentDatabaseVersion = 2;
 const char kChangeStampKey[] = "CHANGE_STAMP";
@@ -670,7 +669,7 @@ SyncStatusCode DriveMetadataStore::GetConflictURLs(
          ++itr) {
       if (itr->second.conflicted()) {
         urls->insert(CreateSyncableFileSystemURL(
-            origin_itr->first, kServiceName, itr->first));
+            origin_itr->first, itr->first));
       }
     }
   }
@@ -691,7 +690,7 @@ SyncStatusCode DriveMetadataStore::GetToBeFetchedFiles(
          ++itr) {
       if (itr->second.to_be_fetched()) {
         FileSystemURL url = CreateSyncableFileSystemURL(
-            origin_itr->first, kServiceName, itr->first);
+            origin_itr->first, itr->first);
         list->push_back(std::make_pair(url, itr->second));
       }
     }

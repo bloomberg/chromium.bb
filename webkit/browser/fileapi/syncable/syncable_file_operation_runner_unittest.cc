@@ -29,7 +29,6 @@ using base::PlatformFileError;
 namespace sync_file_system {
 
 namespace {
-const std::string kServiceName = "test";
 const std::string kParent = "foo";
 const std::string kFile   = "foo/file";
 const std::string kDir    = "foo/dir";
@@ -45,7 +44,7 @@ class SyncableFileOperationRunnerTest : public testing::Test {
   // operations in the tests.
   SyncableFileOperationRunnerTest()
     : message_loop_(base::MessageLoop::TYPE_IO),
-      file_system_(GURL("http://example.com"), kServiceName,
+      file_system_(GURL("http://example.com"),
                    base::MessageLoopProxy::current(),
                    base::MessageLoopProxy::current()),
       callback_count_(0),
@@ -76,7 +75,7 @@ class SyncableFileOperationRunnerTest : public testing::Test {
 
     file_system_.TearDown();
     message_loop_.RunUntilIdle();
-    RevokeSyncableFileSystem(kServiceName);
+    RevokeSyncableFileSystem();
   }
 
   FileSystemURL URL(const std::string& path) {

@@ -355,4 +355,16 @@ std::string GetIsolatedFileSystemRootURIString(
   return root;
 }
 
+std::string GetExternalFileSystemRootURIString(
+    const GURL& origin_url,
+    const std::string& mount_name) {
+  std::string root = GetFileSystemRootURI(origin_url,
+                                          kFileSystemTypeExternal).spec();
+  if (base::FilePath::FromUTF8Unsafe(mount_name).ReferencesParent())
+    return std::string();
+  root.append(mount_name);
+  root.append("/");
+  return root;
+}
+
 }  // namespace fileapi

@@ -22,7 +22,6 @@ FakeRemoteChangeProcessor::~FakeRemoteChangeProcessor() {
 
 void FakeRemoteChangeProcessor::PrepareForProcessRemoteChange(
     const fileapi::FileSystemURL& url,
-    const std::string& service_name,
     const PrepareChangeCallback& callback) {
   SyncFileMetadata local_metadata;
 

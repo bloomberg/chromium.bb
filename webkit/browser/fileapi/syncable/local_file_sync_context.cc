@@ -50,7 +50,6 @@ LocalFileSyncContext::LocalFileSyncContext(
 
 void LocalFileSyncContext::MaybeInitializeFileSystemContext(
     const GURL& source_url,
-    const std::string& service_name,
     FileSystemContext* file_system_context,
     const SyncStatusCallback& callback) {
   DCHECK(ui_task_runner_->RunsTasksOnCurrentThread());
@@ -72,7 +71,7 @@ void LocalFileSyncContext::MaybeInitializeFileSystemContext(
   io_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&LocalFileSyncContext::InitializeFileSystemContextOnIOThread,
-                 this, source_url, service_name,
+                 this, source_url,
                  make_scoped_refptr(file_system_context)));
 }
 
@@ -440,13 +439,12 @@ void LocalFileSyncContext::ShutdownOnIOThread() {
 
 void LocalFileSyncContext::InitializeFileSystemContextOnIOThread(
     const GURL& source_url,
-    const std::string& service_name,
     FileSystemContext* file_system_context) {
   DCHECK(io_task_runner_->RunsTasksOnCurrentThread());
   DCHECK(file_system_context);
   if (!file_system_context->change_tracker()) {
     // First registers the service name.
-    RegisterSyncableFileSystem(service_name);
+    RegisterSyncableFileSystem();
     // Create and initialize LocalFileChangeTracker and call back this method
     // later again.
     std::set<GURL>* origins_with_changes = new std::set<GURL>;
@@ -461,7 +459,7 @@ void LocalFileSyncContext::InitializeFileSystemContextOnIOThread(
                    origins_with_changes),
         base::Bind(&LocalFileSyncContext::DidInitializeChangeTrackerOnIOThread,
                    this, base::Owned(tracker_ptr),
-                   source_url, service_name,
+                   source_url,
                    make_scoped_refptr(file_system_context),
                    base::Owned(origins_with_changes)));
     return;
@@ -508,7 +506,6 @@ SyncStatusCode LocalFileSyncContext::InitializeChangeTrackerOnFileThread(
 void LocalFileSyncContext::DidInitializeChangeTrackerOnIOThread(
     scoped_ptr<LocalFileChangeTracker>* tracker_ptr,
     const GURL& source_url,
-    const std::string& service_name,
     FileSystemContext* file_system_context,
     std::set<GURL>* origins_with_changes,
     SyncStatusCode status) {
@@ -525,8 +522,7 @@ void LocalFileSyncContext::DidInitializeChangeTrackerOnIOThread(
                                        origins_with_changes->end());
   ScheduleNotifyChangesUpdatedOnIOThread();
 
-  InitializeFileSystemContextOnIOThread(source_url, service_name,
-                                        file_system_context);
+  InitializeFileSystemContextOnIOThread(source_url, file_system_context);
 }
 
 void LocalFileSyncContext::DidInitialize(

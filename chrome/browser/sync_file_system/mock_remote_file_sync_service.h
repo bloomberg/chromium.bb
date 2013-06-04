@@ -23,8 +23,6 @@ namespace sync_file_system {
 
 class MockRemoteFileSyncService : public RemoteFileSyncService {
  public:
-  static const char kServiceName[];
-
   MockRemoteFileSyncService();
   virtual ~MockRemoteFileSyncService();
 
@@ -51,7 +49,6 @@ class MockRemoteFileSyncService : public RemoteFileSyncService {
   MOCK_METHOD1(IsConflicting, bool(const fileapi::FileSystemURL& url));
   MOCK_CONST_METHOD0(GetCurrentState,
                      RemoteServiceState());
-  MOCK_CONST_METHOD0(GetServiceName, const char*());
   MOCK_METHOD1(SetSyncEnabled, void(bool));
   MOCK_METHOD1(SetConflictResolutionPolicy,
                SyncStatusCode(ConflictResolutionPolicy));

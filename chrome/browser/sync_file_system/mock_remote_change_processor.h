@@ -27,9 +27,8 @@ class MockRemoteChangeProcessor : public RemoteChangeProcessor {
   virtual ~MockRemoteChangeProcessor();
 
   // RemoteChangeProcessor overrides.
-  MOCK_METHOD3(PrepareForProcessRemoteChange,
+  MOCK_METHOD2(PrepareForProcessRemoteChange,
                void(const fileapi::FileSystemURL& url,
-                    const std::string& service_name,
                     const PrepareChangeCallback& callback));
   MOCK_METHOD4(ApplyRemoteChange,
                void(const FileChange& change,

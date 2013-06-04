@@ -59,11 +59,11 @@ class DriveFileSyncServiceSyncTest : public testing::Test {
 
   virtual void SetUp() OVERRIDE {
     SetEnableSyncFSDirectoryOperation(true);
-    RegisterSyncableFileSystem(DriveFileSyncService::kServiceName);
+    RegisterSyncableFileSystem();
   }
 
   virtual void TearDown() OVERRIDE {
-    RevokeSyncableFileSystem(DriveFileSyncService::kServiceName);
+    RevokeSyncableFileSystem();
     SetEnableSyncFSDirectoryOperation(false);
   }
 

@@ -17,7 +17,6 @@ namespace sync_file_system {
 
 namespace {
 
-const char* kServiceName = DriveFileSyncService::kServiceName;
 const char kSyncRootResourceId[] = "folder:sync_root_resource_id";
 
 void DidInitialize(bool* done, SyncStatusCode status, bool created) {
@@ -45,7 +44,7 @@ class DriveFileSyncServiceTest : public testing::Test {
         sync_service_(NULL) {}
 
   virtual void SetUp() OVERRIDE {
-    ASSERT_TRUE(RegisterSyncableFileSystem(kServiceName));
+    RegisterSyncableFileSystem();
     fake_api_util_ = new drive::FakeAPIUtil;
 
     ASSERT_TRUE(scoped_base_dir_.CreateUniqueTempDir());
@@ -73,7 +72,7 @@ class DriveFileSyncServiceTest : public testing::Test {
     message_loop_.RunUntilIdle();
 
     base_dir_ = base::FilePath();
-    ASSERT_TRUE(RevokeSyncableFileSystem(kServiceName));
+    RevokeSyncableFileSystem();
   }
 
   virtual ~DriveFileSyncServiceTest() {

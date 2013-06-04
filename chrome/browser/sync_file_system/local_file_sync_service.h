@@ -66,7 +66,6 @@ class LocalFileSyncService
 
   void MaybeInitializeFileSystemContext(
       const GURL& app_origin,
-      const std::string& service_name,
       fileapi::FileSystemContext* file_system_context,
       const SyncStatusCallback& callback);
 
@@ -109,7 +108,6 @@ class LocalFileSyncService
   // RemoteChangeProcessor overrides.
   virtual void PrepareForProcessRemoteChange(
       const fileapi::FileSystemURL& url,
-      const std::string& service_name,
       const PrepareChangeCallback& callback) OVERRIDE;
   virtual void ApplyRemoteChange(
       const FileChange& change,
@@ -171,7 +169,6 @@ class LocalFileSyncService
       SyncStatusCode status);
   void DidInitializeForRemoteSync(
       const fileapi::FileSystemURL& url,
-      const std::string& service_name,
       fileapi::FileSystemContext* file_system_context,
       const PrepareChangeCallback& callback,
       SyncStatusCode status);

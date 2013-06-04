@@ -43,7 +43,6 @@ namespace sync_file_system {
 namespace {
 const char kOrigin1[] = "http://example.com";
 const char kOrigin2[] = "http://chromium.org";
-const char kServiceName[] = "test";
 }
 
 class LocalFileSyncContextTest : public testing::Test {
@@ -55,7 +54,7 @@ class LocalFileSyncContextTest : public testing::Test {
         has_inflight_prepare_for_sync_(false) {}
 
   virtual void SetUp() OVERRIDE {
-    EXPECT_TRUE(RegisterSyncableFileSystem(kServiceName));
+    RegisterSyncableFileSystem();
 
     io_thread_.reset(new base::Thread("Thread_IO"));
     io_thread_->StartWithOptions(
@@ -70,7 +69,7 @@ class LocalFileSyncContextTest : public testing::Test {
   }
 
   virtual void TearDown() OVERRIDE {
-    EXPECT_TRUE(RevokeSyncableFileSystem(kServiceName));
+    RevokeSyncableFileSystem();
     io_thread_->Stop();
     file_thread_->Stop();
   }
@@ -214,7 +213,6 @@ TEST_F(LocalFileSyncContextTest, ConstructAndDestruct) {
 
 TEST_F(LocalFileSyncContextTest, InitializeFileSystemContext) {
   CannedSyncableFileSystem file_system(GURL(kOrigin1),
-                                       kServiceName,
                                        io_task_runner_.get(),
                                        file_task_runner_.get());
   file_system.SetUp();
@@ -258,11 +256,9 @@ TEST_F(LocalFileSyncContextTest, InitializeFileSystemContext) {
 
 TEST_F(LocalFileSyncContextTest, MultipleFileSystemContexts) {
   CannedSyncableFileSystem file_system1(GURL(kOrigin1),
-                                        kServiceName,
                                         io_task_runner_.get(),
                                         file_task_runner_.get());
   CannedSyncableFileSystem file_system2(GURL(kOrigin2),
-                                        kServiceName,
                                         io_task_runner_.get(),
                                         file_task_runner_.get());
   file_system1.SetUp();
@@ -349,7 +345,6 @@ TEST_F(LocalFileSyncContextTest, MultipleFileSystemContexts) {
 #endif
 TEST_F(LocalFileSyncContextTest, MAYBE_PrepareSyncWhileWriting) {
   CannedSyncableFileSystem file_system(GURL(kOrigin1),
-                                       kServiceName,
                                        io_task_runner_.get(),
                                        file_task_runner_.get());
   file_system.SetUp();
@@ -409,7 +404,6 @@ TEST_F(LocalFileSyncContextTest, MAYBE_PrepareSyncWhileWriting) {
 
 TEST_F(LocalFileSyncContextTest, ApplyRemoteChangeForDeletion) {
   CannedSyncableFileSystem file_system(GURL(kOrigin1),
-                                       kServiceName,
                                        io_task_runner_.get(),
                                        file_task_runner_.get());
   file_system.SetUp();
@@ -499,7 +493,6 @@ TEST_F(LocalFileSyncContextTest, ApplyRemoteChangeForAddOrUpdate) {
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
 
   CannedSyncableFileSystem file_system(GURL(kOrigin1),
-                                       kServiceName,
                                        io_task_runner_.get(),
                                        file_task_runner_.get());
   file_system.SetUp();
@@ -649,7 +642,6 @@ TEST_F(LocalFileSyncContextTest, ApplyRemoteChangeForAddOrUpdate_NoParent) {
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
 
   CannedSyncableFileSystem file_system(GURL(kOrigin1),
-                                       kServiceName,
                                        io_task_runner_.get(),
                                        file_task_runner_.get());
   file_system.SetUp();

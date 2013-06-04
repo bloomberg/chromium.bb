@@ -15,21 +15,19 @@
 
 using fileapi::ExternalMountPoints;
 using fileapi::FileSystemURL;
-using fileapi::ScopedExternalFileSystem;
 
 namespace sync_file_system {
 
 namespace {
 
 const char kSyncableFileSystemRootURI[] =
-    "filesystem:http://www.example.com/external/service/";
+    "filesystem:http://www.example.com/external/syncfs/";
 const char kNonRegisteredFileSystemRootURI[] =
     "filesystem:http://www.example.com/external/non_registered/";
 const char kNonSyncableFileSystemRootURI[] =
     "filesystem:http://www.example.com/temporary/";
 
 const char kOrigin[] = "http://www.example.com/";
-const char kServiceName[] = "service";
 const base::FilePath::CharType kPath[] = FILE_PATH_LITERAL("dir/file");
 
 FileSystemURL CreateFileSystemURL(const std::string& url) {
@@ -43,35 +41,34 @@ base::FilePath CreateNormalizedFilePath(const base::FilePath::CharType* path) {
 }  // namespace
 
 TEST(SyncableFileSystemUtilTest, GetSyncableFileSystemRootURI) {
-  const GURL root = GetSyncableFileSystemRootURI(GURL(kOrigin), kServiceName);
+  const GURL root = GetSyncableFileSystemRootURI(GURL(kOrigin));
   EXPECT_TRUE(root.is_valid());
   EXPECT_EQ(GURL(kSyncableFileSystemRootURI), root);
 }
 
 TEST(SyncableFileSystemUtilTest, CreateSyncableFileSystemURL) {
-  ScopedExternalFileSystem scoped_fs(
-      kServiceName, fileapi::kFileSystemTypeSyncable, base::FilePath());
+  RegisterSyncableFileSystem();
 
   const base::FilePath path(kPath);
   const FileSystemURL expected_url =
       CreateFileSystemURL(kSyncableFileSystemRootURI + path.AsUTF8Unsafe());
-  const FileSystemURL url =
-      CreateSyncableFileSystemURL(GURL(kOrigin), kServiceName, path);
+  const FileSystemURL url = CreateSyncableFileSystemURL(GURL(kOrigin), path);
 
   EXPECT_TRUE(url.is_valid());
   EXPECT_EQ(expected_url, url);
+
+  RevokeSyncableFileSystem();
 }
 
 TEST(SyncableFileSystemUtilTest,
        SerializeAndDesirializeSyncableFileSystemURL) {
-  ScopedExternalFileSystem scoped_fs(
-      kServiceName, fileapi::kFileSystemTypeSyncable, base::FilePath());
+  RegisterSyncableFileSystem();
 
   const std::string expected_url_str = kSyncableFileSystemRootURI +
       CreateNormalizedFilePath(kPath).AsUTF8Unsafe();
   const FileSystemURL expected_url = CreateFileSystemURL(expected_url_str);
   const FileSystemURL url = CreateSyncableFileSystemURL(
-      GURL(kOrigin), kServiceName, base::FilePath(kPath));
+      GURL(kOrigin), base::FilePath(kPath));
 
   std::string serialized;
   EXPECT_TRUE(SerializeSyncableFileSystemURL(url, &serialized));
@@ -81,12 +78,13 @@ TEST(SyncableFileSystemUtilTest,
   EXPECT_TRUE(DeserializeSyncableFileSystemURL(serialized, &deserialized));
   EXPECT_TRUE(deserialized.is_valid());
   EXPECT_EQ(expected_url, deserialized);
+
+  RevokeSyncableFileSystem();
 }
 
 TEST(SyncableFileSystemUtilTest,
      FailInSerializingAndDeserializingSyncableFileSystemURL) {
-  ScopedExternalFileSystem scoped_fs(
-      kServiceName, fileapi::kFileSystemTypeSyncable, base::FilePath());
+  RegisterSyncableFileSystem();
 
   const base::FilePath normalized_path = CreateNormalizedFilePath(kPath);
   const std::string non_registered_url =
@@ -109,6 +107,8 @@ TEST(SyncableFileSystemUtilTest,
       non_registered_url, &deserialized));
   EXPECT_FALSE(DeserializeSyncableFileSystemURL(
       non_syncable_url, &deserialized));
+
+  RevokeSyncableFileSystem();
 }
 
 TEST(SyncableFileSystemUtilTest, SerializeBeforeOpenFileSystem) {
@@ -118,7 +118,7 @@ TEST(SyncableFileSystemUtilTest, SerializeBeforeOpenFileSystem) {
   base::MessageLoop message_loop;
 
   // Setting up a full syncable filesystem environment.
-  CannedSyncableFileSystem file_system(GURL(kOrigin), kServiceName,
+  CannedSyncableFileSystem file_system(GURL(kOrigin),
                                        base::MessageLoopProxy::current(),
                                        base::MessageLoopProxy::current());
   file_system.SetUp();
@@ -141,22 +141,19 @@ TEST(SyncableFileSystemUtilTest, SerializeBeforeOpenFileSystem) {
 
   // Shutting down.
   file_system.TearDown();
-  RevokeSyncableFileSystem(kServiceName);
+  RevokeSyncableFileSystem();
   sync_context->ShutdownOnUIThread();
   sync_context = NULL;
   base::MessageLoop::current()->RunUntilIdle();
 }
 
 TEST(SyncableFileSystemUtilTest, SyncableFileSystemURL_IsParent) {
-  ScopedExternalFileSystem scoped1("foo", fileapi::kFileSystemTypeSyncable,
-                                   base::FilePath());
-  ScopedExternalFileSystem scoped2("bar", fileapi::kFileSystemTypeSyncable,
-                                   base::FilePath());
+  RegisterSyncableFileSystem();
 
   const std::string root1 = sync_file_system::GetSyncableFileSystemRootURI(
-      GURL("http://example.com"), "foo").spec();
+      GURL("http://foo.com")).spec();
   const std::string root2 = sync_file_system::GetSyncableFileSystemRootURI(
-      GURL("http://example.com"), "bar").spec();
+      GURL("http://bar.com")).spec();
 
   const std::string parent("dir");
   const std::string child("dir/child");
@@ -167,11 +164,13 @@ TEST(SyncableFileSystemUtilTest, SyncableFileSystemURL_IsParent) {
   EXPECT_TRUE(CreateFileSystemURL(root2 + parent).IsParent(
       CreateFileSystemURL(root2 + child)));
 
-  // False case: different filesystem ID.
+  // False case: different origin.
   EXPECT_FALSE(CreateFileSystemURL(root1 + parent).IsParent(
       CreateFileSystemURL(root2 + child)));
   EXPECT_FALSE(CreateFileSystemURL(root2 + parent).IsParent(
       CreateFileSystemURL(root1 + child)));
+
+  RevokeSyncableFileSystem();
 }
 
 }  // namespace sync_file_system

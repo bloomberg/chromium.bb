@@ -33,7 +33,7 @@ namespace sync_file_system {
 class SyncableFileSystemTest : public testing::Test {
  public:
   SyncableFileSystemTest()
-      : file_system_(GURL("http://example.com/"), "test",
+      : file_system_(GURL("http://example.com/"),
                      base::MessageLoopProxy::current(),
                      base::MessageLoopProxy::current()),
         weak_factory_(this) {}
@@ -58,7 +58,7 @@ class SyncableFileSystemTest : public testing::Test {
     // Make sure we don't leave the external filesystem.
     // (CannedSyncableFileSystem::TearDown does not do this as there may be
     // multiple syncable file systems registered for the name)
-    RevokeSyncableFileSystem("test");
+    RevokeSyncableFileSystem();
   }
 
  protected:

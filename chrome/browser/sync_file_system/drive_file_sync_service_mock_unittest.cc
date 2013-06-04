@@ -67,7 +67,6 @@ namespace sync_file_system {
 namespace {
 
 const char kRootResourceId[] = "folder:root";
-const char* kServiceName = DriveFileSyncService::kServiceName;
 
 base::FilePath::StringType ASCIIToFilePathString(const std::string& path) {
   return base::FilePath().AppendASCII(path).value();
@@ -177,7 +176,7 @@ ACTION_P2(InvokeGetResourceListCallback2, error, result) {
 ACTION(PrepareForRemoteChange_Busy) {
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE,
-      base::Bind(arg2,
+      base::Bind(arg1,
                  SYNC_STATUS_FILE_BUSY,
                  SyncFileMetadata(),
                  FileChangeList()));
@@ -186,7 +185,7 @@ ACTION(PrepareForRemoteChange_Busy) {
 ACTION(PrepareForRemoteChange_NotFound) {
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE,
-      base::Bind(arg2,
+      base::Bind(arg1,
                  SYNC_STATUS_OK,
                  SyncFileMetadata(SYNC_FILE_TYPE_UNKNOWN, 0, base::Time()),
                  FileChangeList()));
@@ -195,7 +194,7 @@ ACTION(PrepareForRemoteChange_NotFound) {
 ACTION(PrepareForRemoteChange_NotModified) {
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE,
-      base::Bind(arg2,
+      base::Bind(arg1,
                  SYNC_STATUS_OK,
                  SyncFileMetadata(SYNC_FILE_TYPE_FILE, 0, base::Time()),
                  FileChangeList()));
@@ -261,7 +260,7 @@ class DriveFileSyncServiceMockTest : public testing::Test {
     AddTestExtension(extension_service_, FPL("example1"));
     AddTestExtension(extension_service_, FPL("example2"));
 
-    ASSERT_TRUE(RegisterSyncableFileSystem(kServiceName));
+    RegisterSyncableFileSystem();
 
     mock_drive_service_ = new NiceMock<google_apis::MockDriveService>;
 
@@ -316,7 +315,7 @@ class DriveFileSyncServiceMockTest : public testing::Test {
     api_util_.reset();
     mock_drive_service_ = NULL;
 
-    EXPECT_TRUE(RevokeSyncableFileSystem(kServiceName));
+    RevokeSyncableFileSystem();
 
     extension_service_ = NULL;
     profile_.reset();
@@ -398,8 +397,7 @@ class DriveFileSyncServiceMockTest : public testing::Test {
 
   fileapi::FileSystemURL CreateURL(const GURL& origin,
                                    const base::FilePath::StringType& path) {
-    return CreateSyncableFileSystemURL(
-        origin, kServiceName, base::FilePath(path));
+    return CreateSyncableFileSystemURL(origin, base::FilePath(path));
   }
 
   void ProcessRemoteChange(SyncStatusCode expected_status,
@@ -807,8 +805,7 @@ TEST_F(DriveFileSyncServiceMockTest, RemoteChange_Busy) {
       .Times(AnyNumber());
 
   EXPECT_CALL(*mock_remote_processor(),
-              PrepareForProcessRemoteChange(CreateURL(kOrigin, kFileName),
-                                            kServiceName, _))
+              PrepareForProcessRemoteChange(CreateURL(kOrigin, kFileName), _))
       .WillOnce(PrepareForRemoteChange_Busy());
   EXPECT_CALL(*mock_remote_processor(),
               ClearLocalChanges(CreateURL(kOrigin, kFileName), _))
@@ -843,8 +840,7 @@ TEST_F(DriveFileSyncServiceMockTest, RemoteChange_NewFile) {
       .Times(AnyNumber());
 
   EXPECT_CALL(*mock_remote_processor(),
-              PrepareForProcessRemoteChange(CreateURL(kOrigin, kFileName),
-                                            kServiceName, _))
+              PrepareForProcessRemoteChange(CreateURL(kOrigin, kFileName), _))
       .WillOnce(PrepareForRemoteChange_NotFound());
   EXPECT_CALL(*mock_remote_processor(),
               ClearLocalChanges(CreateURL(kOrigin, kFileName), _))
@@ -885,8 +881,7 @@ TEST_F(DriveFileSyncServiceMockTest, RemoteChange_UpdateFile) {
       .Times(AnyNumber());
 
   EXPECT_CALL(*mock_remote_processor(),
-              PrepareForProcessRemoteChange(CreateURL(kOrigin, kFileName),
-                                            kServiceName, _))
+              PrepareForProcessRemoteChange(CreateURL(kOrigin, kFileName), _))
       .WillOnce(PrepareForRemoteChange_NotModified());
   EXPECT_CALL(*mock_remote_processor(),
               ClearLocalChanges(CreateURL(kOrigin, kFileName), _))

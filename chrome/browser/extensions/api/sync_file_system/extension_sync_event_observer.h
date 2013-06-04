@@ -29,8 +29,7 @@ class ExtensionSyncEventObserver
   virtual ~ExtensionSyncEventObserver();
 
   void InitializeForService(
-      sync_file_system::SyncFileSystemService* sync_service,
-      const std::string& service_name);
+      sync_file_system::SyncFileSystemService* sync_service);
 
   // BrowserContextKeyedService override.
   virtual void Shutdown() OVERRIDE;
@@ -56,7 +55,6 @@ class ExtensionSyncEventObserver
 
   // Not owned. If not null, then this is registered to SyncFileSystemService.
   sync_file_system::SyncFileSystemService* sync_service_;
-  std::string service_name_;
 
   void BroadcastOrDispatchEvent(const GURL& app_origin,
                                 const std::string& event_name,

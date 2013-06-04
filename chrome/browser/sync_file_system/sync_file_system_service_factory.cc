@@ -61,7 +61,7 @@ SyncFileSystemServiceFactory::BuildServiceInstanceFor(
   } else {
     // FileSystem needs to be registered before DriveFileSyncService runs
     // its initialization code.
-    RegisterSyncableFileSystem(DriveFileSyncService::kServiceName);
+    RegisterSyncableFileSystem();
     remote_file_service =
         DriveFileSyncService::Create(profile).PassAs<RemoteFileSyncService>();
   }

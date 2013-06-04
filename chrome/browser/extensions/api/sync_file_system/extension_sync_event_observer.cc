@@ -26,15 +26,13 @@ ExtensionSyncEventObserver::ExtensionSyncEventObserver(
       sync_service_(NULL) {}
 
 void ExtensionSyncEventObserver::InitializeForService(
-    sync_file_system::SyncFileSystemService* sync_service,
-    const std::string& service_name) {
+    sync_file_system::SyncFileSystemService* sync_service) {
   DCHECK(sync_service);
   if (sync_service_ != NULL) {
     DCHECK_EQ(sync_service_, sync_service);
     return;
   }
   sync_service_ = sync_service;
-  service_name_ = service_name;
   sync_service_->AddSyncEventObserver(this);
 }
 
