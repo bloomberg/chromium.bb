@@ -73,6 +73,14 @@ const int kBlacklistedPaths[] = {
   chrome::DIR_USER_DATA,
 };
 
+#if defined(OS_CHROMEOS)
+// On Chrome OS, the default downloads directory is a subdirectory of user data
+// directory, and should be whitelisted.
+const int kWhitelistedPaths[] = {
+  chrome::DIR_DEFAULT_DOWNLOADS_SAFE,
+};
+#endif
+
 #if defined(OS_MACOSX)
 // Retrieves the localized display name for the base name of the given path.
 // If the path is not localized, this will just return the base name.
@@ -211,11 +219,26 @@ bool DoCheckWritableFile(const base::FilePath& path,
   if (extension_directory == path || extension_directory.IsParent(path))
     return false;
 
-  for (size_t i = 0; i < arraysize(kBlacklistedPaths); i++) {
-    base::FilePath blacklisted_path;
-    if (PathService::Get(kBlacklistedPaths[i], &blacklisted_path) &&
-        (blacklisted_path == path || blacklisted_path.IsParent(path))) {
-      return false;
+  bool is_whitelisted_path = false;
+
+#if defined(OS_CHROMEOS)
+  for (size_t i = 0; i < arraysize(kWhitelistedPaths); i++) {
+    base::FilePath whitelisted_path;
+    if (PathService::Get(kWhitelistedPaths[i], &whitelisted_path) &&
+        (whitelisted_path == path || whitelisted_path.IsParent(path))) {
+      is_whitelisted_path = true;
+      break;
+    }
+  }
+#endif
+
+  if (!is_whitelisted_path) {
+    for (size_t i = 0; i < arraysize(kBlacklistedPaths); i++) {
+      base::FilePath blacklisted_path;
+      if (PathService::Get(kBlacklistedPaths[i], &blacklisted_path) &&
+          (blacklisted_path == path || blacklisted_path.IsParent(path))) {
+        return false;
+      }
     }
   }
 

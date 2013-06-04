@@ -454,6 +454,24 @@ IN_PROC_BROWSER_TEST_F(FileSystemApiTest,
       "api_test/file_system/open_writable_existing_non_writable")) << message_;
 }
 
+#if defined(OS_CHROMEOS)
+// In Chrome OS the download directory is whitelisted for write.
+IN_PROC_BROWSER_TEST_F(FileSystemApiTest,
+                       FileSystemApiOpenInDownloadDirForWrite) {
+  base::FilePath test_file =
+      base::MakeAbsoluteFilePath(TempFilePath("writable.txt", true));
+  ASSERT_FALSE(test_file.empty());
+  ASSERT_TRUE(PathService::OverrideAndCreateIfNeeded(
+      chrome::DIR_USER_DATA, test_file.DirName(), false));
+  ASSERT_TRUE(PathService::OverrideAndCreateIfNeeded(
+      chrome::DIR_DEFAULT_DOWNLOADS_SAFE, test_file.DirName(), false));
+  FileSystemChooseEntryFunction::SkipPickerAndAlwaysSelectPathForTest(
+      &test_file);
+  ASSERT_TRUE(RunPlatformAppTest(
+      "api_test/file_system/is_writable_file_entry")) << message_;
+}
+#endif
+
 IN_PROC_BROWSER_TEST_F(FileSystemApiTest,
                        FileSystemApiOpenInChromeDirForWrite) {
   base::FilePath test_file =
