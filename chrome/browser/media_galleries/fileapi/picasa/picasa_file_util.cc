@@ -9,7 +9,6 @@
 #include "base/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/media_galleries/fileapi/filtering_file_enumerator.h"
 #include "chrome/browser/media_galleries/fileapi/media_file_system_mount_point_provider.h"
 #include "chrome/browser/media_galleries/fileapi/picasa/picasa_album_table_reader.h"
 #include "chrome/browser/media_galleries/fileapi/picasa/picasa_data_provider.h"
@@ -26,97 +25,18 @@ namespace picasa {
 
 namespace {
 
-class DirectorySkippingFileEnumerator
-    : public fileapi::FileSystemFileUtil::AbstractFileEnumerator {
- public:
-  DirectorySkippingFileEnumerator(
-      scoped_ptr<fileapi::FileSystemFileUtil::AbstractFileEnumerator>
-          base_enumerator)
-      : base_enumerator_(base_enumerator.Pass()) {
-  }
-  virtual ~DirectorySkippingFileEnumerator() {}
-
-  virtual base::FilePath Next() OVERRIDE {
-    while (true) {
-      base::FilePath next = base_enumerator_->Next();
-      if (next.empty() || !base_enumerator_->IsDirectory())
-        return next;
-    }
-  }
-
-  virtual int64 Size() OVERRIDE {
-    return base_enumerator_->Size();
-  }
-
-  virtual base::Time LastModifiedTime() OVERRIDE {
-    return base_enumerator_->LastModifiedTime();
-  }
-
-  virtual bool IsDirectory() OVERRIDE {
-    DCHECK(!base_enumerator_->IsDirectory());
-    return base_enumerator_->IsDirectory();
-  }
-
- private:
-  // The file enumerator to be wrapped.
-  scoped_ptr<fileapi::FileSystemFileUtil::AbstractFileEnumerator>
-      base_enumerator_;
-};
-
-struct VirtualFile {
-  VirtualFile(const base::FilePath& path, int64 size,
-              const base::Time& last_modified_time, bool is_directory)
-      : path(path),
-        size(size),
-        last_modified_time(last_modified_time),
-        is_directory(is_directory) {}
-
-  base::FilePath path;
-  int64 size;
-  base::Time last_modified_time;
-  bool is_directory;
-};
-
-class VirtualFileEnumerator
-    : public fileapi::FileSystemFileUtil::AbstractFileEnumerator {
- public:
-  explicit VirtualFileEnumerator(const std::vector<VirtualFile>& files)
-      : files_(files), next_called_(false), index_(0) {}
-
-  virtual base::FilePath Next() OVERRIDE {
-    if (next_called_ && index_ < files_.size())
-      ++index_;
-
-    next_called_ = true;
-
-    if (index_ >= files_.size())
-      return FilePath();
-    return files_[index_].path;
-  }
-
-  virtual int64 Size() OVERRIDE {
-    if (index_ >= files_.size())
-      return 0;
-    return files_[index_].size;
-  }
-
-  virtual base::Time LastModifiedTime() OVERRIDE {
-    if (index_ >= files_.size())
-      return base::Time();
-    return files_[index_].last_modified_time;
-  }
-
-  virtual bool IsDirectory() OVERRIDE {
-    if (index_ >= files_.size())
-      return false;
-    return files_[index_].is_directory;
-  }
-
- private:
-  std::vector<VirtualFile> files_;
-  bool next_called_;
-  size_t index_;
-};
+fileapi::DirectoryEntry MakeDirectoryEntry(
+    const base::FilePath& path,
+    int64 size,
+    const base::Time& last_modified_time,
+    bool is_directory) {
+  fileapi::DirectoryEntry entry;
+  entry.name = path.BaseName().value();
+  entry.is_directory = is_directory;
+  entry.size = size;
+  entry.last_modified_time = last_modified_time;
+  return entry;
+}
 
 // |error| is only set when the method fails and the return is NULL.
 base::PlatformFileError FindAlbumInfo(const std::string& key,
@@ -173,7 +93,7 @@ PicasaFileUtil::PicasaFileUtil() {}
 
 PicasaFileUtil::~PicasaFileUtil() {}
 
-base::PlatformFileError PicasaFileUtil::GetFileInfo(
+base::PlatformFileError PicasaFileUtil::GetFileInfoSync(
     FileSystemOperationContext* context, const FileSystemURL& url,
     base::PlatformFileInfo* file_info, base::FilePath* platform_path) {
   DCHECK(context);
@@ -210,15 +130,15 @@ base::PlatformFileError PicasaFileUtil::GetFileInfo(
       }
 
       if (path_components[0] == kPicasaDirFolders) {
-        return NativeMediaFileUtil::GetFileInfo(context, url, file_info,
-                                                platform_path);
+        return NativeMediaFileUtil::GetFileInfoSync(context, url, file_info,
+                                                    platform_path);
       }
       break;
     case 3:
       // NativeMediaFileUtil::GetInfo calls into virtual function
       // PicasaFileUtil::GetLocalFilePath, and that will handle both
       // album contents and folder contents.
-      base::PlatformFileError result = NativeMediaFileUtil::GetFileInfo(
+      base::PlatformFileError result = NativeMediaFileUtil::GetFileInfoSync(
           context, url, file_info, platform_path);
 
       DCHECK(path_components[0] == kPicasaDirAlbums ||
@@ -231,33 +151,48 @@ base::PlatformFileError PicasaFileUtil::GetFileInfo(
   return base::PLATFORM_FILE_ERROR_NOT_FOUND;
 }
 
-scoped_ptr<fileapi::FileSystemFileUtil::AbstractFileEnumerator>
-PicasaFileUtil::CreateFileEnumerator(FileSystemOperationContext* context,
-                                     const FileSystemURL& url) {
+base::PlatformFileError PicasaFileUtil::ReadDirectorySync(
+    fileapi::FileSystemOperationContext* context,
+    const fileapi::FileSystemURL& url,
+    EntryList* file_list) {
   DCHECK(context);
+  DCHECK(file_list);
+  DCHECK(file_list->empty());
+
+  base::PlatformFileInfo file_info;
+  base::FilePath platform_directory_path;
+  base::PlatformFileError error = GetFileInfoSync(
+      context, url, &file_info, &platform_directory_path);
+
+  if (error != base::PLATFORM_FILE_OK)
+    return error;
+
+  if (!file_info.is_directory)
+    return base::PLATFORM_FILE_ERROR_NOT_A_DIRECTORY;
+
   std::vector<std::string> path_components = GetComponents(url);
 
-  std::vector<VirtualFile> files;
   FilePath folders_path = base::FilePath().AppendASCII(kPicasaDirFolders);
 
   switch (path_components.size()) {
     case 0: {
       // Root directory.
       FilePath albums_path = base::FilePath().AppendASCII(kPicasaDirAlbums);
-      files.push_back(VirtualFile(albums_path, 0, base::Time(), true));
-      files.push_back(VirtualFile(folders_path, 0, base::Time(), true));
+      file_list->push_back(
+          MakeDirectoryEntry(albums_path, 0, base::Time(), true));
+      file_list->push_back(
+          MakeDirectoryEntry(folders_path, 0, base::Time(), true));
       break;
     }
     case 1:
       if (path_components[0] == kPicasaDirAlbums) {
         scoped_ptr<AlbumMap> albums = DataProvider()->GetAlbums();
         if (!albums)
-          return scoped_ptr<AbstractFileEnumerator>(new EmptyFileEnumerator());
+          return base::PLATFORM_FILE_ERROR_NOT_FOUND;
 
-        // TODO(tommycli): Use AlbumMap enumerator to avoid copies.
         for (AlbumMap::const_iterator it = albums->begin();
              it != albums->end(); ++it) {
-          files.push_back(VirtualFile(
+          file_list->push_back(MakeDirectoryEntry(
               folders_path.Append(FilePath::FromUTF8Unsafe(it->first)),
               0,
               it->second.timestamp,
@@ -266,12 +201,11 @@ PicasaFileUtil::CreateFileEnumerator(FileSystemOperationContext* context,
       } else if (path_components[0] == kPicasaDirFolders) {
         scoped_ptr<AlbumMap> folders = DataProvider()->GetFolders();
         if (!folders)
-          return scoped_ptr<AbstractFileEnumerator>(new EmptyFileEnumerator());
+          return base::PLATFORM_FILE_ERROR_NOT_FOUND;
 
-        // TODO(tommycli): Use AlbumMap enumerator to avoid copies.
         for (AlbumMap::const_iterator it = folders->begin();
              it != folders->end(); ++it) {
-          files.push_back(VirtualFile(
+          file_list->push_back(MakeDirectoryEntry(
               folders_path.Append(FilePath::FromUTF8Unsafe(it->first)),
               0,
               it->second.timestamp,
@@ -284,14 +218,24 @@ PicasaFileUtil::CreateFileEnumerator(FileSystemOperationContext* context,
         // TODO(tommycli): Implement album contents.
       }
 
-      if (path_components[0] == kPicasaDirFolders)
-        return scoped_ptr<AbstractFileEnumerator>(
-            new DirectorySkippingFileEnumerator(
-                NativeMediaFileUtil::CreateFileEnumerator(context, url)));
+      if (path_components[0] == kPicasaDirFolders) {
+        EntryList super_list;
+        base::PlatformFileError error =
+            NativeMediaFileUtil::ReadDirectorySync(context, url, &super_list);
+        if (error != base::PLATFORM_FILE_OK)
+          return error;
+
+        for (EntryList::const_iterator it = super_list.begin();
+             it != super_list.end(); ++it) {
+          if (!it->is_directory)
+            file_list->push_back(*it);
+        }
+      }
+
       break;
   }
 
-  return scoped_ptr<AbstractFileEnumerator>(new VirtualFileEnumerator(files));
+  return base::PLATFORM_FILE_OK;
 }
 
 base::PlatformFileError PicasaFileUtil::GetLocalFilePath(

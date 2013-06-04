@@ -73,7 +73,7 @@ class MediaFileSystemMountPointProvider
   scoped_ptr<fileapi::CopyOrMoveFileValidatorFactory>
       media_copy_or_move_file_validator_factory_;
 
-  scoped_ptr<fileapi::AsyncFileUtilAdapter> native_media_file_util_;
+  scoped_ptr<fileapi::AsyncFileUtil> native_media_file_util_;
   scoped_ptr<DeviceMediaAsyncFileUtil> device_media_async_file_util_;
   scoped_ptr<fileapi::AsyncFileUtil> picasa_file_util_;
   scoped_ptr<fileapi::AsyncFileUtil> itunes_file_util_;

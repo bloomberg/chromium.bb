@@ -19,24 +19,24 @@ class PicasaFileUtil : public chrome::NativeMediaFileUtil {
   PicasaFileUtil();
   virtual ~PicasaFileUtil();
 
-  // Overrides from NativeMediaFileUtil
-  virtual base::PlatformFileError GetFileInfo(
+ private:
+  // TODO(tommycli): Eventually, all of the below methods will have to be
+  // overriding the async public methods instead.
+  // NativeMediaFileUtil overrides.
+  virtual base::PlatformFileError GetFileInfoSync(
       fileapi::FileSystemOperationContext* context,
       const fileapi::FileSystemURL& url,
       base::PlatformFileInfo* file_info,
       base::FilePath* platform_path) OVERRIDE;
-
-  // Paths are enumerated in lexicographical order.
-  virtual scoped_ptr<AbstractFileEnumerator> CreateFileEnumerator(
+  virtual base::PlatformFileError ReadDirectorySync(
       fileapi::FileSystemOperationContext* context,
-      const fileapi::FileSystemURL& url) OVERRIDE;
-
+      const fileapi::FileSystemURL& url,
+      EntryList* file_list) OVERRIDE;
   virtual base::PlatformFileError GetLocalFilePath(
       fileapi::FileSystemOperationContext* context,
       const fileapi::FileSystemURL& url,
       base::FilePath* local_file_path) OVERRIDE;
 
- private:
   virtual PicasaDataProvider* DataProvider();
 
   DISALLOW_COPY_AND_ASSIGN(PicasaFileUtil);

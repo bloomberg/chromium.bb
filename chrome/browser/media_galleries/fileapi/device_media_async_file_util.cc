@@ -8,7 +8,6 @@
 #include "base/file_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/task_runner_util.h"
-#include "chrome/browser/media_galleries/fileapi/filtering_file_enumerator.h"
 #include "chrome/browser/media_galleries/fileapi/media_file_system_mount_point_provider.h"
 #include "chrome/browser/media_galleries/fileapi/media_path_filter.h"
 #include "chrome/browser/media_galleries/fileapi/mtp_device_async_delegate.h"

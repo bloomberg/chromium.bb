@@ -976,8 +976,6 @@
         'browser/media/webrtc_log_uploader.h',
         'browser/media/webrtc_logging_handler_host.cc',
         'browser/media/webrtc_logging_handler_host.h',
-        'browser/media_galleries/fileapi/filtering_file_enumerator.cc',
-        'browser/media_galleries/fileapi/filtering_file_enumerator.h',
         'browser/media_galleries/fileapi/itunes_finder.cc',
         'browser/media_galleries/fileapi/itunes_finder.h',
         'browser/media_galleries/fileapi/itunes_finder_mac.h',

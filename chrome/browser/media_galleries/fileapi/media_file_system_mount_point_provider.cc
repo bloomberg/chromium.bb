@@ -48,14 +48,11 @@ MediaFileSystemMountPointProvider::MediaFileSystemMountPointProvider(
     : profile_path_(profile_path),
       media_path_filter_(new MediaPathFilter),
       media_copy_or_move_file_validator_factory_(new MediaFileValidatorFactory),
-      native_media_file_util_(
-          new fileapi::AsyncFileUtilAdapter(new NativeMediaFileUtil())),
+      native_media_file_util_(new NativeMediaFileUtil()),
       device_media_async_file_util_(
           DeviceMediaAsyncFileUtil::Create(profile_path_)),
-      picasa_file_util_(
-          new fileapi::AsyncFileUtilAdapter(new picasa::PicasaFileUtil())),
-      itunes_file_util_(new fileapi::AsyncFileUtilAdapter(
-          new itunes::ItunesFileUtil())) {
+      picasa_file_util_(new picasa::PicasaFileUtil()),
+      itunes_file_util_(new itunes::ItunesFileUtil()) {
 }
 
 MediaFileSystemMountPointProvider::~MediaFileSystemMountPointProvider() {
@@ -87,12 +84,7 @@ void MediaFileSystemMountPointProvider::OpenFileSystem(
 
 fileapi::FileSystemFileUtil* MediaFileSystemMountPointProvider::GetFileUtil(
     fileapi::FileSystemType type) {
-  switch (type) {
-    case fileapi::kFileSystemTypeNativeMedia:
-      return native_media_file_util_->sync_file_util();
-    default:
-      NOTREACHED();
-  }
+  NOTREACHED();
   return NULL;
 }
 

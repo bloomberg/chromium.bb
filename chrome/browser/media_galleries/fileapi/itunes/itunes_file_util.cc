@@ -15,7 +15,7 @@ ItunesFileUtil::ItunesFileUtil() {}
 
 ItunesFileUtil::~ItunesFileUtil() {}
 
-base::PlatformFileError ItunesFileUtil::GetFileInfo(
+base::PlatformFileError ItunesFileUtil::GetFileInfoSync(
     fileapi::FileSystemOperationContext* context,
     const fileapi::FileSystemURL& url,
     base::PlatformFileInfo* file_info,
@@ -23,14 +23,15 @@ base::PlatformFileError ItunesFileUtil::GetFileInfo(
   return base::PLATFORM_FILE_ERROR_NOT_FOUND;
 }
 
-scoped_ptr<fileapi::FileSystemFileUtil::AbstractFileEnumerator>
-ItunesFileUtil::CreateFileEnumerator(
+base::PlatformFileError ItunesFileUtil::ReadDirectorySync(
     fileapi::FileSystemOperationContext* context,
-    const fileapi::FileSystemURL& url) {
+    const fileapi::FileSystemURL& url,
+    EntryList* file_list) {
   DCHECK(context);
+  DCHECK(file_list);
+  DCHECK(file_list->empty());
 
-  return scoped_ptr<fileapi::FileSystemFileUtil::AbstractFileEnumerator>(
-    new fileapi::FileSystemFileUtil::EmptyFileEnumerator);
+  return base::PLATFORM_FILE_OK;
 }
 
 base::PlatformFileError ItunesFileUtil::GetLocalFilePath(
