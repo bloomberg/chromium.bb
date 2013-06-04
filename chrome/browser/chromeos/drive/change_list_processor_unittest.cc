@@ -466,7 +466,7 @@ TEST_F(ChangeListProcessorTest, DeltaAddAndDeleteFileFromExistingDirectory) {
 }
 
 TEST_F(ChangeListProcessorTest, DeltaAddFileToNewButDeletedDirectory) {
-  // This feed contains the following updates:
+  // This file contains the following updates:
   // 1) A new PDF file is added to a new directory
   // 2) but the new directory is marked "deleted" (i.e. moved to Trash)
   // Hence, the PDF file should be just ignored.

@@ -64,11 +64,7 @@ void AsyncInitializationCallback(
 class FileSystemTest : public testing::Test {
  protected:
   FileSystemTest()
-      : ui_thread_(content::BrowserThread::UI, &message_loop_),
-        // |root_feed_changestamp_| should be set to the largest changestamp in
-        // about resource feed. But we fake it by some non-zero positive
-        // increasing value.  See |LoadFeed()|.
-        root_feed_changestamp_(1) {
+      : ui_thread_(content::BrowserThread::UI, &message_loop_) {
   }
 
   virtual void SetUp() OVERRIDE {
@@ -139,8 +135,8 @@ class FileSystemTest : public testing::Test {
     profile_.reset(NULL);
   }
 
-  // Loads test json file as root ("/drive") element.
-  bool LoadRootFeedDocument() {
+  // Loads the full resource list via FakeDriveService.
+  bool LoadFullResourceList() {
     FileError error = FILE_ERROR_FAILED;
     file_system_->change_list_loader()->LoadIfNeeded(
         DirectoryFetchInfo(),
@@ -342,8 +338,6 @@ class FileSystemTest : public testing::Test {
   scoped_ptr<FakeFreeDiskSpaceGetter> fake_free_disk_space_getter_;
   scoped_ptr<StrictMock<MockCacheObserver> > mock_cache_observer_;
   scoped_ptr<StrictMock<MockDirectoryChangeObserver> > mock_directory_observer_;
-
-  int root_feed_changestamp_;
 };
 
 TEST_F(FileSystemTest, DuplicatedAsyncInitialization) {
@@ -551,14 +545,15 @@ TEST_F(FileSystemTest, ReadDirectoryByPath_NonRootDirectory) {
   EXPECT_EQ(3U, entries->size());
 }
 
-TEST_F(FileSystemTest, CachedFeedLoadingThenServerFeedLoading) {
+TEST_F(FileSystemTest, LoadFileSystemFromUpToDateCache) {
   ASSERT_TRUE(SetUpTestFileSystem(USE_SERVER_TIMESTAMP));
 
   // Kicks loading of cached file system and query for server update.
   EXPECT_TRUE(ReadDirectoryByPathSync(util::GetDriveMyDriveRootPath()));
 
-  // SetUpTestFileSystem and "account_metadata.json" have the same changestamp,
-  // so no request for new feeds (i.e., call to GetResourceList) should happen.
+  // SetUpTestFileSystem and "account_metadata.json" have the same
+  // changestamp (i.e. the local metadata is up-to-date), so no request for
+  // new resource list (i.e., call to GetResourceList) should happen.
   EXPECT_EQ(1, fake_drive_service_->about_resource_load_count());
   EXPECT_EQ(0, fake_drive_service_->resource_list_load_count());
 
@@ -570,11 +565,12 @@ TEST_F(FileSystemTest, CachedFeedLoadingThenServerFeedLoading) {
   EXPECT_EQ(2, fake_drive_service_->about_resource_load_count());
 }
 
-TEST_F(FileSystemTest, OfflineCachedFeedLoading) {
+TEST_F(FileSystemTest, LoadFileSystemFromCacheWhileOffline) {
   ASSERT_TRUE(SetUpTestFileSystem(USE_OLD_TIMESTAMP));
 
-  // Make GetResourceList fail for simulating offline situation. This will leave
-  // the file system "loaded from cache, but not synced with server" state.
+  // Make GetResourceList fail for simulating offline situation. This will
+  // leave the file system "loaded from cache, but not synced with server"
+  // state.
   fake_drive_service_->set_offline(true);
 
   // Kicks loading of cached file system and query for server update.
@@ -649,8 +645,8 @@ TEST_F(FileSystemTest, GetResourceEntryNonExistentWhileRefreshing) {
 }
 
 TEST_F(FileSystemTest, CreateDirectoryByImplicitLoad) {
-  // Intentionally *not* calling LoadRootFeedDocument(), for testing that
-  // CreateDirectory ensures feed loading before it runs.
+  // Intentionally *not* calling LoadFullResourceList(), for testing that
+  // CreateDirectory ensures the resource list is loaded before it runs.
 
   base::FilePath existing_directory(
       FILE_PATH_LITERAL("drive/root/Directory 1"));
@@ -667,7 +663,7 @@ TEST_F(FileSystemTest, CreateDirectoryByImplicitLoad) {
 }
 
 TEST_F(FileSystemTest, PinAndUnpin) {
-  ASSERT_TRUE(LoadRootFeedDocument());
+  ASSERT_TRUE(LoadFullResourceList());
 
   base::FilePath file_path(FILE_PATH_LITERAL("drive/root/File 1.txt"));
 
@@ -709,7 +705,7 @@ TEST_F(FileSystemTest, GetAvailableSpace) {
 }
 
 TEST_F(FileSystemTest, RefreshDirectory) {
-  ASSERT_TRUE(LoadRootFeedDocument());
+  ASSERT_TRUE(LoadFullResourceList());
 
   // We'll notify the directory change to the observer.
   EXPECT_CALL(*mock_directory_observer_,
@@ -724,7 +720,7 @@ TEST_F(FileSystemTest, RefreshDirectory) {
 }
 
 TEST_F(FileSystemTest, OpenAndCloseFile) {
-  ASSERT_TRUE(LoadRootFeedDocument());
+  ASSERT_TRUE(LoadFullResourceList());
 
   // The transfered file is cached and the change of "offline available"
   // attribute is notified.
@@ -816,7 +812,7 @@ TEST_F(FileSystemTest, OpenAndCloseFile) {
 
 TEST_F(FileSystemTest, MarkCacheFileAsMountedAndUnmounted) {
   fake_free_disk_space_getter_->set_fake_free_disk_space(kLotsOfSpace);
-  ASSERT_TRUE(LoadRootFeedDocument());
+  ASSERT_TRUE(LoadFullResourceList());
 
   base::FilePath file_in_root(FILE_PATH_LITERAL("drive/root/File 1.txt"));
   scoped_ptr<ResourceEntry> entry(GetResourceEntryByPathSync(file_in_root));

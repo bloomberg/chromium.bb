@@ -253,8 +253,8 @@ class FileSystem : public FileSystemInterface,
       google_apis::GDataErrorCode status,
       scoped_ptr<google_apis::AboutResource> about_resource);
 
-  // Callback for handling results of ReloadFeedFromServerIfNeeded() initiated
-  // from CheckForUpdates().
+  // Part of CheckForUpdates(). Called when
+  // ChangeListLoader::CheckForUpdates() is complete.
   void OnUpdateChecked(FileError error);
 
   // Changes state of hosted documents visibility, triggers directory refresh.
