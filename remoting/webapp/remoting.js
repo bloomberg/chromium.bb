@@ -164,7 +164,7 @@ remoting.initHomeScreenUi = function() {
   // Display the cached host list, then asynchronously update and re-display it.
   remoting.updateLocalHostState();
   remoting.hostList.refresh(remoting.updateLocalHostState);
-  remoting.initSurvey();
+  remoting.butterBar = new remoting.ButterBar();
 };
 
 /**

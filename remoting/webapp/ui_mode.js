@@ -50,6 +50,11 @@ remoting.AppMode = {
   IN_SESSION: 'in-session'
 };
 
+/** @const */
+remoting.kIT2MeVisitedStorageKey = 'it2me-visited';
+/** @const */
+remoting.kMe2MeVisitedStorageKey = 'me2me-visited';
+
 /**
  * @param {Element} element The element to check.
  * @param {string} attrName The attribute on the element to check.
@@ -152,32 +157,32 @@ remoting.showOrHideCallback = function(mode, items) {
 };
 
 remoting.showOrHideIT2MeUi = function() {
-  remoting.storage.local.get('it2me-visited',
+  remoting.storage.local.get(remoting.kIT2MeVisitedStorageKey,
                              remoting.showOrHideCallback.bind(null, 'it2me'));
 };
 
 remoting.showOrHideMe2MeUi = function() {
-  remoting.storage.local.get('me2me-visited',
+  remoting.storage.local.get(remoting.kMe2MeVisitedStorageKey,
                              remoting.showOrHideCallback.bind(null, 'me2me'));
 };
 
 remoting.showIT2MeUiAndSave = function() {
   var items = {};
-  items['it2me-visited'] = true;
+  items[remoting.kIT2MeVisitedStorageKey] = true;
   remoting.storage.local.set(items);
   remoting.showOrHideCallback('it2me', [true]);
 };
 
 remoting.showMe2MeUiAndSave = function() {
   var items = {};
-  items['me2me-visited'] = true;
+  items[remoting.kMe2MeVisitedStorageKey] = true;
   remoting.storage.local.set(items);
   remoting.showOrHideCallback('me2me', [true]);
 };
 
 remoting.resetInfographics = function() {
-  remoting.storage.local.remove('it2me-visited');
-  remoting.storage.local.remove('me2me-visited');
+  remoting.storage.local.remove(remoting.kIT2MeVisitedStorageKey);
+  remoting.storage.local.remove(remoting.kMe2MeVisitedStorageKey);
   remoting.showOrHideCallback('it2me', [false]);
   remoting.showOrHideCallback('me2me', [false]);
 }

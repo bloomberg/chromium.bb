@@ -15,6 +15,7 @@ found in the LICENSE file.
     <link rel="stylesheet" href="main.css">
     <link rel="stylesheet" href="menu_button.css">
     <link rel="stylesheet" href="toolbar.css">
+    <script src="butter_bar.js"></script>
     <script src="client_plugin.js"></script>
     <script src="client_plugin_async.js"></script>
     <script src="client_screen.js"></script>
@@ -41,11 +42,10 @@ found in the LICENSE file.
     <script src="oauth2.js"></script>
     <script src="plugin_settings.js"></script>
     <script src="remoting.js"></script>
-    <script src="session_connector.js"></script>
     <script src="server_log_entry.js"></script>
+    <script src="session_connector.js"></script>
     <script src="stats_accumulator.js"></script>
     <script src="storage.js"></script>
-    <script src="survey.js"></script>
     <script src="third_party_host_permissions.js"></script>
     <script src="third_party_token_fetcher.js"></script>
     <script src="toolbar.js"></script>
@@ -89,15 +89,11 @@ found in the LICENSE file.
       </div>
     </header>
 
-    <div id="survey-opt-in" class="butter-bar" hidden>
+    <div id="butter-bar" hidden>
       <p>
-        <span i18n-content="SURVEY_INVITATION"></span>
-        <a id="survey-accept"
-           href="http://goo.gl/njH2q"
-           target="_blank"
-           i18n-content="SIGN_ME_UP"></a>
-        <a id="survey-decline" href="#">
-          <img src="icon_cross.webp" class="close-icon"></img>
+        <span id="butter-bar-message"></span>
+        <a id="butter-bar-dismiss" href="#">
+          <img src="icon_cross.webp" class="close-icon">
         </a>
       </p>
     </div>

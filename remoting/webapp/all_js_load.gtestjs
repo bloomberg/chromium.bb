@@ -32,6 +32,7 @@ AllJsLoadTest.prototype = {
                                  // file's days are numbered, skip it for now.
     'error.js',
     'event_handlers.js',
+    'butter_bar.js',
     //'format_iq.js',  // Already covered by format_iq.gtestjs
     'host.js',
     'host_controller.js',
@@ -56,7 +57,6 @@ AllJsLoadTest.prototype = {
     'server_log_entry.js',
     'stats_accumulator.js',
     'storage.js',
-    'survey.js',
     'toolbar.js',
     'ui_mode.js',
     //'viewer_plugin_proto.js',  // Only used by jscompiler.
