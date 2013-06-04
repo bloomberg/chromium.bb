@@ -57,6 +57,9 @@ StyleElement::StyleElement(Document* document, bool createdByParser)
 
 StyleElement::~StyleElement()
 {
+    ASSERT(!m_sheet);
+    if (m_sheet)
+        clearSheet();
 }
 
 void StyleElement::insertedIntoDocument(Document* document, Element* element)
