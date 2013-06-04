@@ -27,17 +27,6 @@ namespace drive {
 namespace internal {
 namespace {
 
-struct PathToVerify {
-  PathToVerify(const base::FilePath& in_path_to_scan,
-               const base::FilePath& in_expected_existing_path) :
-      path_to_scan(in_path_to_scan),
-      expected_existing_path(in_expected_existing_path) {
-  }
-
-  base::FilePath path_to_scan;
-  base::FilePath expected_existing_path;
-};
-
 // Copies results from Iterate().
 void OnIterate(std::vector<std::string>* out_resource_ids,
                std::vector<FileCacheEntry>* out_cache_entries,
@@ -169,6 +158,19 @@ class FileCacheTest : public testing::Test {
     VerifyRemoveFromCache(error, resource_id, "");
   }
 
+  // Returns number of files matching to |path_pattern|.
+  int CountFilesWithPathPattern(const base::FilePath& path_pattern) {
+    int result = 0;
+    file_util::FileEnumerator enumerator(
+        path_pattern.DirName(), false /* not recursive*/,
+        file_util::FileEnumerator::FILES,
+        path_pattern.BaseName().value());
+    for (base::FilePath current = enumerator.Next(); !current.empty();
+         current = enumerator.Next())
+      ++result;
+    return result;
+  }
+
   void VerifyRemoveFromCache(FileError error,
                              const std::string& resource_id,
                              const std::string& md5) {
@@ -183,53 +185,27 @@ class FileCacheTest : public testing::Test {
 
     // If entry doesn't exist, verify that no files with "<resource_id>.*"
     // exist in persistent and tmp dirs.
-    std::vector<PathToVerify> paths_to_verify;
-    paths_to_verify.push_back(  // Index 0: CACHE_TYPE_TMP.
-        PathToVerify(cache_->GetCacheFilePath(resource_id, "*",
-                     FileCache::CACHE_TYPE_TMP,
-                     FileCache::CACHED_FILE_FROM_SERVER), base::FilePath()));
-    paths_to_verify.push_back(  // Index 1: CACHE_TYPE_PERSISTENT.
-        PathToVerify(cache_->GetCacheFilePath(resource_id, "*",
-                     FileCache::CACHE_TYPE_PERSISTENT,
-                     FileCache::CACHED_FILE_FROM_SERVER), base::FilePath()));
-    if (!cache_entry_found) {
-      for (size_t i = 0; i < paths_to_verify.size(); ++i) {
-        file_util::FileEnumerator enumerator(
-            paths_to_verify[i].path_to_scan.DirName(), false /* not recursive*/,
-            file_util::FileEnumerator::FILES,
-            paths_to_verify[i].path_to_scan.BaseName().value());
-        EXPECT_TRUE(enumerator.Next().empty());
-      }
-    } else {
-      // Entry is dirty, verify that:
-      // - no files with "<resource_id>.*" exist in tmp dir
-      // - only 1 "<resource_id>.local" exists in persistent dir
-      // - if entry is pinned, only 1 <resource_id> exists in pinned dir.
+    const base::FilePath path_pattern_tmp =
+        cache_->GetCacheFilePath(resource_id, "*",
+                                 FileCache::CACHE_TYPE_TMP,
+                                 FileCache::CACHED_FILE_FROM_SERVER);
+    const base::FilePath path_pattern_persistent =
+        cache_->GetCacheFilePath(resource_id, "*",
+                                 FileCache::CACHE_TYPE_PERSISTENT,
+                                 FileCache::CACHED_FILE_FROM_SERVER);
 
-      // Change expected_existing_path of CACHE_TYPE_PERSISTENT (index 1).
-      paths_to_verify[1].expected_existing_path =
+    EXPECT_EQ(0, CountFilesWithPathPattern(path_pattern_tmp));
+    if (!cache_entry_found) {
+      EXPECT_EQ(0, CountFilesWithPathPattern(path_pattern_persistent));
+    } else {
+      // Entry is dirty, verify that only 1 "<resource_id>.local" exists in
+      // persistent dir.
+      EXPECT_EQ(1, CountFilesWithPathPattern(path_pattern_persistent));
+      EXPECT_TRUE(file_util::PathExists(
           GetCacheFilePath(resource_id,
                            std::string(),
                            FileCache::CACHE_TYPE_PERSISTENT,
-                           FileCache::CACHED_FILE_LOCALLY_MODIFIED);
-
-      for (size_t i = 0; i < paths_to_verify.size(); ++i) {
-        const struct PathToVerify& verify = paths_to_verify[i];
-        file_util::FileEnumerator enumerator(
-            verify.path_to_scan.DirName(), false /* not recursive */,
-            file_util::FileEnumerator::FILES,
-            verify.path_to_scan.BaseName().value());
-        size_t num_files_found = 0;
-        for (base::FilePath current = enumerator.Next(); !current.empty();
-             current = enumerator.Next()) {
-          ++num_files_found;
-          EXPECT_EQ(verify.expected_existing_path, current);
-        }
-        if (verify.expected_existing_path.empty())
-          EXPECT_EQ(0U, num_files_found);
-        else
-          EXPECT_EQ(1U, num_files_found);
-      }
+                           FileCache::CACHED_FILE_LOCALLY_MODIFIED)));
     }
   }
 
