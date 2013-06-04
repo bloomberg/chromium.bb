@@ -413,32 +413,6 @@ void MemoryCache::insertInLRUList(CachedResource* resource)
 
 }
 
-void MemoryCache::removeResourcesWithOrigin(SecurityOrigin* origin)
-{
-    Vector<CachedResource*> resourcesWithOrigin;
-
-    CachedResourceMap::iterator e = m_resources.end();
-
-    for (CachedResourceMap::iterator it = m_resources.begin(); it != e; ++it) {
-        CachedResource* resource = it->value;
-        RefPtr<SecurityOrigin> resourceOrigin = SecurityOrigin::createFromString(resource->url());
-        if (!resourceOrigin)
-            continue;
-        if (resourceOrigin->equal(origin))
-            resourcesWithOrigin.append(resource);
-    }
-
-    for (size_t i = 0; i < resourcesWithOrigin.size(); ++i)
-        remove(resourcesWithOrigin[i]);
-}
-
-void MemoryCache::getOriginsWithCache(SecurityOriginSet& origins)
-{
-    CachedResourceMap::iterator e = m_resources.end();
-    for (CachedResourceMap::iterator it = m_resources.begin(); it != e; ++it)
-        origins.add(SecurityOrigin::createFromString(it->value->url()));
-}
-
 void MemoryCache::removeFromLiveDecodedResourcesList(CachedResource* resource)
 {
     // If we've never been accessed, then we're brand new and not in any list.

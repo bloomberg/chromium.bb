@@ -133,10 +133,6 @@ public:
     // Function to collect cache statistics for the caches window in the Safari Debug menu.
     Statistics getStatistics();
 
-    typedef HashSet<RefPtr<SecurityOrigin> > SecurityOriginSet;
-    void removeResourcesWithOrigin(SecurityOrigin*);
-    void getOriginsWithCache(SecurityOriginSet& origins);
-
     unsigned minDeadCapacity() const { return m_minDeadCapacity; }
     unsigned maxDeadCapacity() const { return m_maxDeadCapacity; }
     unsigned capacity() const { return m_capacity; }
