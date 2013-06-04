@@ -44,6 +44,8 @@ def print_options():
     return [
         optparse.make_option('-q', '--quiet', action='store_true', default=False,
                              help='run quietly (errors, warnings, and progress only)'),
+        optparse.make_option('--timing', action='store_true', default=False,
+                             help='display per-test execution time (implies --verbose)'),
         optparse.make_option('-v', '--verbose', action='store_true', default=False,
                              help='print a summarized result for every test (one line per test)'),
         optparse.make_option('--details', action='store_true', default=False,
@@ -61,6 +63,8 @@ class Printer(object):
         self.num_tests = 0
         self._port = port
         self._options = options
+        if self._options.timing or self._options.debug_rwt_logging:
+            self._options.verbose = True
         self._meter = MeteredStream(regular_output, options.debug_rwt_logging, logger=logger,
                                     number_of_columns=self._port.host.platform.terminal_width())
         self._running_tests = []
@@ -269,7 +273,7 @@ class Printer(object):
             self._print_default("")
             incomplete_str = " (%d didn't run)" % incomplete
 
-        if self._options.verbose or self._options.debug_rwt_logging or unexpected:
+        if self._options.verbose or unexpected:
             self.writeln("")
 
         summary = ''
@@ -319,7 +323,8 @@ class Printer(object):
         self.num_completed += 1
         test_name = result.test_name
 
-        result_message = self._result_message(result.type, result.failures, expected, self._options.verbose)
+        result_message = self._result_message(result.type, result.failures, expected, self._options.verbose,
+                                              self._options.timing, result.test_run_time)
 
         if self._options.details:
             self._print_test_trace(result, exp_str, got_str)
@@ -338,13 +343,13 @@ class Printer(object):
             self._completed_tests = []
         self._running_tests.remove(test_name)
 
-    def _result_message(self, result_type, failures, expected, verbose):
+    def _result_message(self, result_type, failures, expected, verbose, timing, test_run_time):
         exp_string = ' unexpectedly' if not expected else ''
+        timing_string = ' %.4fs' % test_run_time if timing else ''
         if result_type == test_expectations.PASS:
-            return ' passed%s' % exp_string
+            return ' passed%s%s' % (exp_string, timing_string)
         else:
-            return ' failed%s (%s)' % (exp_string, ', '.join(failure.message() for failure in failures))
-
+            return ' failed%s (%s)%s' % (exp_string, ', '.join(failure.message() for failure in failures), timing_string)
 
     def _print_test_trace(self, result, exp_str, got_str):
         test_name = result.test_name
