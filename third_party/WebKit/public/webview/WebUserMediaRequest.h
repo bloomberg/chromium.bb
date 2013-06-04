@@ -31,9 +31,10 @@
 #ifndef WebUserMediaRequest_h
 #define WebUserMediaRequest_h
 
-#include "../platform/WebCommon.h"
-#include "../platform/WebPrivatePtr.h"
 #include "WebSecurityOrigin.h"
+#include "public/platform/WebCommon.h"
+#include "public/platform/WebPrivatePtr.h"
+#include "public/platform/WebString.h"
 
 namespace WebCore {
 class UserMediaRequest;
@@ -44,7 +45,6 @@ class WebDocument;
 class WebMediaConstraints;
 class WebMediaStream;
 class WebMediaStreamSource;
-class WebString;
 template <typename T> class WebVector;
 
 class WebUserMediaRequest {
@@ -74,7 +74,8 @@ public:
 
     WEBKIT_EXPORT void requestSucceeded(const WebMediaStream&);
 
-    WEBKIT_EXPORT void requestFailed();
+    WEBKIT_EXPORT void requestFailed(const WebString& description = WebString());
+    WEBKIT_EXPORT void requestFailedConstraint(const WebString& constraintName, const WebString& description = WebString());
 
 #if WEBKIT_IMPLEMENTATION
     WebUserMediaRequest(const PassRefPtr<WebCore::UserMediaRequest>&);

@@ -103,10 +103,16 @@ void WebUserMediaRequest::requestSucceeded(const WebMediaStream& streamDescripto
     m_private->succeed(streamDescriptor);
 }
 
-void WebUserMediaRequest::requestFailed()
+void WebUserMediaRequest::requestFailed(const WebString& description)
 {
     ASSERT(!isNull());
-    m_private->fail();
+    m_private->fail(description);
+}
+
+void WebUserMediaRequest::requestFailedConstraint(const WebString& constraintName, const WebString& description)
+{
+    ASSERT(!isNull());
+    m_private->failConstraint(constraintName, description);
 }
 
 bool WebUserMediaRequest::equals(const WebUserMediaRequest& other) const
