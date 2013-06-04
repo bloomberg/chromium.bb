@@ -13,11 +13,10 @@
 
 namespace ui {
 
-class SelectFileDialogImpl : public ui::SelectFileDialog {
+class SelectFileDialogImpl : public SelectFileDialog {
  public:
-  static SelectFileDialogImpl* Create(
-      Listener* listener,
-      ui::SelectFilePolicy* policy);
+  static SelectFileDialogImpl* Create(Listener* listener,
+                                      SelectFilePolicy* policy);
 
   void OnFileSelected(JNIEnv* env, jobject java_object, jstring filepath);
   void OnFileNotSelected(JNIEnv* env, jobject java_object);
@@ -27,13 +26,13 @@ class SelectFileDialogImpl : public ui::SelectFileDialog {
   virtual void ListenerDestroyed() OVERRIDE;
 
   // Called when it is time to display the file picker.
-  // params is expected to be a Vector<string16> with accept_types first and
+  // params is expected to be a vector<string16> with accept_types first and
   // the capture value as the last element of the vector.
   virtual void SelectFileImpl(
-      ui::SelectFileDialog::Type type,
-      const string16& title,
+      SelectFileDialog::Type type,
+      const base::string16& title,
       const base::FilePath& default_path,
-      const ui::SelectFileDialog::FileTypeInfo* file_types,
+      const SelectFileDialog::FileTypeInfo* file_types,
       int file_type_index,
       const std::string& default_extension,
       gfx::NativeWindow owning_window,
@@ -45,7 +44,7 @@ class SelectFileDialogImpl : public ui::SelectFileDialog {
   virtual ~SelectFileDialogImpl();
 
  private:
-  SelectFileDialogImpl(Listener* listener,  ui::SelectFilePolicy* policy);
+  SelectFileDialogImpl(Listener* listener,  SelectFilePolicy* policy);
 
   virtual bool HasMultipleFileTypeChoicesImpl() OVERRIDE;
 

@@ -19,7 +19,7 @@ namespace ui {
 
 // static
 SelectFileDialogImpl* SelectFileDialogImpl::Create(Listener* listener,
-                                           ui::SelectFilePolicy* policy) {
+                                                   SelectFilePolicy* policy) {
   return new SelectFileDialogImpl(listener, policy);
 }
 
@@ -52,8 +52,8 @@ void SelectFileDialogImpl::ListenerDestroyed() {
 }
 
 void SelectFileDialogImpl::SelectFileImpl(
-    ui::SelectFileDialog::Type type,
-    const string16& title,
+    SelectFileDialog::Type type,
+    const base::string16& title,
     const base::FilePath& default_path,
     const SelectFileDialog::FileTypeInfo* file_types,
     int file_type_index,
@@ -63,9 +63,9 @@ void SelectFileDialogImpl::SelectFileImpl(
   JNIEnv* env = base::android::AttachCurrentThread();
 
   ScopedJavaLocalRef<jstring> capture_value;
-  std::vector<string16> accept_types;
+  std::vector<base::string16> accept_types;
   if (params) {
-    accept_types = *(reinterpret_cast<std::vector<string16>*>(params));
+    accept_types = *(reinterpret_cast<std::vector<base::string16>*>(params));
 
     // The last string in params is expected to be the string
     // with capture value.
@@ -96,9 +96,8 @@ SelectFileDialogImpl::~SelectFileDialogImpl() {
 }
 
 SelectFileDialogImpl::SelectFileDialogImpl(Listener* listener,
-                                           ui::SelectFilePolicy* policy)
-    : ui::SelectFileDialog(listener, policy),
-      is_running_(false) {
+                                           SelectFilePolicy* policy)
+    : SelectFileDialog(listener, policy), is_running_(false) {
   JNIEnv* env = base::android::AttachCurrentThread();
   java_object_.Reset(
       Java_SelectFileDialog_create(env, reinterpret_cast<jint>(this)));

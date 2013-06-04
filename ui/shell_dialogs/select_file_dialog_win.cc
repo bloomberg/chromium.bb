@@ -421,7 +421,7 @@ class SelectFileDialogImpl : public ui::SelectFileDialog,
   // SelectFileDialog implementation:
   virtual void SelectFileImpl(
       Type type,
-      const string16& title,
+      const base::string16& title,
       const base::FilePath& default_path,
       const FileTypeInfo* file_types,
       int file_type_index,
@@ -516,7 +516,7 @@ class SelectFileDialogImpl : public ui::SelectFileDialog,
 
   // Returns the filter to be used while displaying the open/save file dialog.
   // This is computed from the extensions for the file types being opened.
-  string16 GetFilterForFileTypes(const FileTypeInfo& file_types);
+  base::string16 GetFilterForFileTypes(const FileTypeInfo& file_types);
 
   bool has_multiple_file_type_choices_;
 
@@ -535,7 +535,7 @@ SelectFileDialogImpl::~SelectFileDialogImpl() {
 
 void SelectFileDialogImpl::SelectFileImpl(
     Type type,
-    const string16& title,
+    const base::string16& title,
     const base::FilePath& default_path,
     const FileTypeInfo* file_types,
     int file_type_index,
@@ -619,7 +619,7 @@ void SelectFileDialogImpl::ListenerDestroyed() {
 
 void SelectFileDialogImpl::ExecuteSelectFile(
     const ExecuteSelectParams& params) {
-  string16 filter = GetFilterForFileTypes(params.file_types);
+  base::string16 filter = GetFilterForFileTypes(params.file_types);
 
   base::FilePath path = params.default_path;
   bool success = false;
@@ -855,12 +855,12 @@ bool SelectFileDialogImpl::RunOpenMultiFileDialog(
   return success;
 }
 
-string16 SelectFileDialogImpl::GetFilterForFileTypes(
+base::string16 SelectFileDialogImpl::GetFilterForFileTypes(
     const FileTypeInfo& file_types) {
-  std::vector<string16> exts;
+  std::vector<base::string16> exts;
   for (size_t i = 0; i < file_types.extensions.size(); ++i) {
-    const std::vector<string16>& inner_exts = file_types.extensions[i];
-    string16 ext_string;
+    const std::vector<base::string16>& inner_exts = file_types.extensions[i];
+    base::string16 ext_string;
     for (size_t j = 0; j < inner_exts.size(); ++j) {
       if (!ext_string.empty())
         ext_string.push_back(L';');

@@ -101,7 +101,7 @@ scoped_refptr<SelectFileDialog> SelectFileDialog::Create(
 
 void SelectFileDialog::SelectFile(
     Type type,
-    const string16& title,
+    const base::string16& title,
     const base::FilePath& default_path,
     const FileTypeInfo* file_types,
     int file_type_index,
