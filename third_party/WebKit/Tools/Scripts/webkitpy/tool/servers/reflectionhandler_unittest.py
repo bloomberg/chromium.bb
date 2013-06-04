@@ -71,6 +71,9 @@ class TestReflectionHandlerServeXML(ReflectionHandler):
     def serve_xml(self, data):
         self._serve_xml(data)
 
+    def log_message(self, _format, *_args):
+        pass
+
 
 class ReflectionHandlerTest(unittest.TestCase):
     def assert_handler_response(self, requests, expected_static_files, expected_errors, expected_functions):
