@@ -243,8 +243,13 @@ void DownloadControllerAndroidImpl::OnDownloadStarted(
   if (view.is_null())
     return;
 
+  ScopedJavaLocalRef<jstring> jmime_type =
+      ConvertUTF8ToJavaString(env, download_item->GetMimeType());
+  ScopedJavaLocalRef<jstring> jfilename = ConvertUTF8ToJavaString(
+      env, download_item->GetTargetFilePath().BaseName().value());
   Java_DownloadController_onDownloadStarted(
-      env, GetJavaObject()->Controller(env).obj(), view.obj());
+      env, GetJavaObject()->Controller(env).obj(), view.obj(), jfilename.obj(),
+      jmime_type.obj());
 }
 
 void DownloadControllerAndroidImpl::OnDownloadUpdated(DownloadItem* item) {
@@ -259,28 +264,21 @@ void DownloadControllerAndroidImpl::OnDownloadUpdated(DownloadItem* item) {
   // is in the COMPLETE state. Only handle one.
   item->RemoveObserver(this);
 
-  ScopedJavaLocalRef<jobject> view_core = GetContentViewCoreFromWebContents(
-      item->GetWebContents());
-  if (view_core.is_null()) {
-    // We can get NULL WebContents from the DownloadItem.
-    return;
-  }
-
-  // Call onHttpPostDownloadCompleted
+  // Call onDownloadCompleted
   JNIEnv* env = base::android::AttachCurrentThread();
   ScopedJavaLocalRef<jstring> jurl =
       ConvertUTF8ToJavaString(env, item->GetURL().spec());
-  ScopedJavaLocalRef<jstring> jcontent_disposition =
-      ConvertUTF8ToJavaString(env, item->GetContentDisposition());
   ScopedJavaLocalRef<jstring> jmime_type =
       ConvertUTF8ToJavaString(env, item->GetMimeType());
   ScopedJavaLocalRef<jstring> jpath =
       ConvertUTF8ToJavaString(env, item->GetTargetFilePath().value());
+  ScopedJavaLocalRef<jstring> jfilename = ConvertUTF8ToJavaString(
+      env, item->GetTargetFilePath().BaseName().value());
 
-  Java_DownloadController_onDownloadCompleted(env,
-      GetJavaObject()->Controller(env).obj(), view_core.obj(), jurl.obj(),
-      jcontent_disposition.obj(), jmime_type.obj(), jpath.obj(),
-      item->GetReceivedBytes(), true);
+  Java_DownloadController_onDownloadCompleted(
+      env, GetJavaObject()->Controller(env).obj(),
+      base::android::GetApplicationContext(), jurl.obj(), jmime_type.obj(),
+      jfilename.obj(), jpath.obj(), item->GetReceivedBytes(), true);
 }
 
 void DownloadControllerAndroidImpl::OnDangerousDownload(DownloadItem* item) {
