@@ -14,53 +14,13 @@
 #include "base/path_service.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/media_galleries/fileapi/itunes_xml_utils.h"
 #include "chrome/common/chrome_paths.h"
 #include "third_party/libxml/chromium/libxml_utils.h"
 
 namespace itunes {
 
 namespace {
-
-// Traverse |reader| looking for a node named |name| at the current depth
-// of |reader|.
-bool SeekToNodeAtCurrentDepth(XmlReader* reader, const std::string& name) {
-  int depth = reader->Depth();
-  do {
-    if (!reader->SkipToElement()) {
-      // SkipToElement returns false if the current node is an end element,
-      // try to advance to the next element and then try again.
-      if (!reader->Read() || !reader->SkipToElement())
-        return false;
-    }
-    DCHECK_EQ(depth, reader->Depth());
-    if (reader->NodeName() == name)
-      return true;
-  } while (reader->Next());
-
-  return false;
-}
-
-// Search within the dict for |key|.
-bool SeekInDict(XmlReader* reader, const std::string& key) {
-  DCHECK_EQ("dict", reader->NodeName());
-
-  int dict_content_depth = reader->Depth() + 1;
-  // Advance past the dict node and into the body of the dictionary.
-  if (!reader->Read())
-    return false;
-
-  while (reader->Depth() >= dict_content_depth) {
-    if (!SeekToNodeAtCurrentDepth(reader, "key"))
-      return false;
-    std::string found_key;
-    if (!reader->ReadElementContent(&found_key))
-      return false;
-    DCHECK_EQ(dict_content_depth, reader->Depth());
-    if (found_key == key)
-      return true;
-  }
-  return false;
-}
 
 // Read the iTunes preferences from |pref_file| and then try to extract the
 // library XML location from the XML file. Return it if found. The minimal
