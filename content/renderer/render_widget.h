@@ -16,6 +16,7 @@
 #include "base/time.h"
 #include "base/timer.h"
 #include "cc/debug/rendering_stats.h"
+#include "content/common/browser_rendering_stats.h"
 #include "content/common/content_export.h"
 #include "content/common/gpu/client/webgraphicscontext3d_command_buffer_impl.h"
 #include "content/renderer/paint_aggregator.h"
@@ -174,6 +175,8 @@ class CONTENT_EXPORT RenderWidget
   // This call is relatively expensive as it blocks on the GPU process
   bool GetGpuRenderingStats(GpuRenderingStats*) const;
 
+  void GetBrowserRenderingStats(BrowserRenderingStats* stats);
+
   RenderWidgetCompositor* compositor() const;
 
   virtual scoped_ptr<cc::OutputSurface> CreateOutputSurface();
@@ -331,6 +334,7 @@ class CONTENT_EXPORT RenderWidget
   void OnShowImeIfNeeded();
 #endif
   void OnSnapshot(const gfx::Rect& src_subrect);
+  void OnSetBrowserRenderingStats(const BrowserRenderingStats& stats);
 
   // Notify the compositor about a change in viewport size. This should be
   // used only with auto resize mode WebWidgets, as normal WebWidgets should
@@ -707,6 +711,10 @@ class CONTENT_EXPORT RenderWidget
 
   // Specifies whether overscroll notifications are forwarded to the host.
   bool overscroll_notifications_enabled_;
+
+  // The last set of rendering stats received from the browser. This is only
+  // received when using the --enable-gpu-benchmarking flag.
+  BrowserRenderingStats browser_rendering_stats_;
 
   base::WeakPtrFactory<RenderWidget> weak_ptr_factory_;
 

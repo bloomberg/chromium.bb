@@ -137,6 +137,19 @@ def CalcAnalysisResults(rendering_stats_deltas, results):
               averageAnalysisTimeMS,
               data_type='unimportant')
 
+def CalcLatencyResults(rendering_stats_deltas, results):
+  inputEventCount = rendering_stats_deltas.get(
+      'inputEventCount', 0)
+  totalInputLatencyInSeconds = rendering_stats_deltas.get(
+      'totalInputLatency', 0)
+
+  averageLatency = DivideIfPossibleOrZero(
+      (totalInputLatencyInSeconds * 1000), inputEventCount)
+
+  results.Add('average_latency', 'ms', averageLatency,
+              data_type='unimportant')
+
+
 class SmoothnessMeasurement(page_measurement.PageMeasurement):
   def __init__(self):
     super(SmoothnessMeasurement, self).__init__('smoothness')
@@ -195,6 +208,7 @@ class SmoothnessMeasurement(page_measurement.PageMeasurement):
     CalcTextureUploadResults(rendering_stats_deltas, results)
     CalcImageDecodingResults(rendering_stats_deltas, results)
     CalcAnalysisResults(rendering_stats_deltas, results)
+    CalcLatencyResults(rendering_stats_deltas, results)
 
     if self.options.report_all_results:
       for k, v in rendering_stats_deltas.iteritems():

@@ -343,6 +343,8 @@ bool RenderWidget::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_ShowImeIfNeeded, OnShowImeIfNeeded)
 #endif
     IPC_MESSAGE_HANDLER(ViewMsg_Snapshot, OnSnapshot)
+    IPC_MESSAGE_HANDLER(ViewMsg_SetBrowserRenderingStats,
+                        OnSetBrowserRenderingStats)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -2320,6 +2322,15 @@ bool RenderWidget::GetGpuRenderingStats(GpuRenderingStats* stats) const {
 
 RenderWidgetCompositor* RenderWidget::compositor() const {
   return compositor_.get();
+}
+
+void RenderWidget::OnSetBrowserRenderingStats(
+    const BrowserRenderingStats& stats) {
+  browser_rendering_stats_ = stats;
+}
+
+void RenderWidget::GetBrowserRenderingStats(BrowserRenderingStats* stats) {
+  *stats = browser_rendering_stats_;
 }
 
 void RenderWidget::BeginSmoothScroll(

@@ -10,6 +10,7 @@
 #include "base/string16.h"
 #include "cc/output/compositor_frame.h"
 #include "cc/output/compositor_frame_ack.h"
+#include "content/common/browser_rendering_stats.h"
 #include "content/common/content_export.h"
 #include "content/common/content_param_traits.h"
 #include "content/common/navigation_gesture.h"
@@ -293,6 +294,11 @@ IPC_STRUCT_TRAITS_BEGIN(ui::SelectedFileInfo)
   IPC_STRUCT_TRAITS_MEMBER(file_path)
   IPC_STRUCT_TRAITS_MEMBER(local_path)
   IPC_STRUCT_TRAITS_MEMBER(display_name)
+IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(content::BrowserRenderingStats)
+  IPC_STRUCT_TRAITS_MEMBER(input_event_count)
+  IPC_STRUCT_TRAITS_MEMBER(total_input_latency)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_BEGIN(ViewHostMsg_CreateWindow_Params)
@@ -910,6 +916,11 @@ IPC_MESSAGE_ROUTED3(ViewMsg_Find,
 // window (and what action to take regarding the selection).
 IPC_MESSAGE_ROUTED1(ViewMsg_StopFinding,
                     content::StopFindAction /* action */)
+
+// Informs the renderer about various statistics the browser has (e.g.
+// latency) regarding the frames that have been displayed.
+IPC_MESSAGE_ROUTED1(ViewMsg_SetBrowserRenderingStats,
+                    content::BrowserRenderingStats /* stats */)
 
 // Replaces a date time input field.
 IPC_MESSAGE_ROUTED1(ViewMsg_ReplaceDateTime,

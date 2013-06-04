@@ -2507,6 +2507,20 @@ void RenderWidgetHostImpl::DetachDelegate() {
 }
 
 void RenderWidgetHostImpl::FrameSwapped(const ui::LatencyInfo& latency_info) {
+  ui::LatencyInfo::LatencyMap::const_iterator l =
+      latency_info.latency_components.find(std::make_pair(
+          ui::INPUT_EVENT_LATENCY_COMPONENT, GetLatencyComponentId()));
+  if (l == latency_info.latency_components.end())
+    return;
+
+  rendering_stats_.input_event_count += l->second.event_count;
+  rendering_stats_.total_input_latency +=
+      l->second.event_count *
+      (latency_info.swap_timestamp - l->second.event_time);
+
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableGpuBenchmarking))
+    Send(new ViewMsg_SetBrowserRenderingStats(routing_id_, rendering_stats_));
 }
 
 }  // namespace content

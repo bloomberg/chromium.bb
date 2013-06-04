@@ -11,6 +11,7 @@
 #include "base/files/file_path.h"
 #include "base/memory/scoped_vector.h"
 #include "base/string_number_conversions.h"
+#include "content/common/browser_rendering_stats.h"
 #include "content/common/gpu/gpu_rendering_stats.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/renderer/all_rendering_benchmarks.h"
@@ -260,11 +261,14 @@ class GpuBenchmarkingWrapper : public v8::Extension {
 
     content::GpuRenderingStats gpu_stats;
     render_view_impl->GetGpuRenderingStats(&gpu_stats);
+    BrowserRenderingStats browser_stats;
+    render_view_impl->GetBrowserRenderingStats(&browser_stats);
     v8::Handle<v8::Object> stats_object = v8::Object::New();
 
     RenderingStatsEnumerator enumerator(stats_object);
     stats.rendering_stats.EnumerateFields(&enumerator);
     gpu_stats.EnumerateFields(&enumerator);
+    browser_stats.EnumerateFields(&enumerator);
 
     return stats_object;
   }

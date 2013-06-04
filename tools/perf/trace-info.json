@@ -438,6 +438,9 @@
   "load_time_by_url": {
     "description": ""
   },
+  "average_latency": {
+    "description": "The average latency between input event and corresponding swap to screen."
+  },
 
   "Score": {
     "description": "SUITE"

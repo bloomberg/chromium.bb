@@ -128,6 +128,8 @@
     'common/browser_plugin/browser_plugin_constants.h',
     'common/browser_plugin/browser_plugin_message_enums.h',
     'common/browser_plugin/browser_plugin_messages.h',
+    'common/browser_rendering_stats.cc',
+    'common/browser_rendering_stats.h',
     'common/cc_messages.cc',
     'common/cc_messages.h',
     'common/child_histogram_message_filter.cc',
