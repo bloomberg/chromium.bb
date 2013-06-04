@@ -176,9 +176,22 @@ class RulesRegistryWithCache : public RulesRegistry {
   typedef std::pair<ExtensionId, RuleId> RulesDictionaryKey;
   typedef std::map<RulesDictionaryKey, linked_ptr<RulesRegistry::Rule> >
       RulesDictionary;
+  enum ProcessChangedRulesState {
+    // ProcessChangedRules can never be called, |storage_on_ui_| is NULL.
+    NEVER_PROCESS,
+    // A task to call ProcessChangedRules is scheduled for future execution.
+    SCHEDULED_FOR_PROCESSING,
+    // No task to call ProcessChangedRules is scheduled yet, but it is possible
+    // to schedule one.
+    NOT_SCHEDULED_FOR_PROCESSING
+  };
 
   // Common processing after extension's rules have changed.
   void ProcessChangedRules(const std::string& extension_id);
+
+  // Calls ProcessChangedRules if |process_changed_rules_requested_| ==
+  // NOT_SCHEDULED_FOR_PROCESSING.
+  void MaybeProcessChangedRules(const std::string& extension_id);
 
   // Process the callbacks once the registry gets ready.
   void MarkReady(base::Time storage_init_time);
@@ -206,6 +219,8 @@ class RulesRegistryWithCache : public RulesRegistry {
   // destroyed on its thread, the use of the |storage_on_ui_| would not be
   // safe. The registry only ever associates with one RuleStorageOnUI instance.
   const base::WeakPtr<RuleStorageOnUI> storage_on_ui_;
+
+  ProcessChangedRulesState process_changed_rules_requested_;
 
   DISALLOW_COPY_AND_ASSIGN(RulesRegistryWithCache);
 };
