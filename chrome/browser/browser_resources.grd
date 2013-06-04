@@ -360,6 +360,7 @@
       <include name="IDR_PROFILE_SIGNIN_CONFIRMATION_CSS" file="resources\profile_signin_confirmation.css" type="BINDATA" />
 
       <include name="IDR_RECENTLY_CLOSED_WINDOW" file="resources\ntp4\images\closed_window.png" type="BINDATA" />
+      <include name="IDR_NOTIFICATIONS_SOUND_DEFAULT" file="resources\notifications\default-notification.wav" type="BINDATA" />
     </includes>
   </release>
 </grit>
