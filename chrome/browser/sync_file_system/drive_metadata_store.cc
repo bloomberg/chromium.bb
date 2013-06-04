@@ -51,6 +51,11 @@ const char kDriveIncrementalSyncOriginKeyPrefix[] = "ISYNC_ORIGIN: ";
 const char kDriveDisabledOriginKeyPrefix[] = "DISABLED_ORIGIN: ";
 const size_t kDriveMetadataKeyPrefixLength = arraysize(kDriveMetadataKeyPrefix);
 
+enum OriginSyncType {
+  INCREMENTAL_SYNC_ORIGIN,
+  DISABLED_ORIGIN
+};
+
 std::string RemovePrefix(const std::string& str, const std::string& prefix) {
   if (StartsWithASCII(str, prefix, true))
     return str.substr(prefix.size());
@@ -90,11 +95,6 @@ bool UpdateResourceIdMap(ResourceIdByOrigin* map,
 
 class DriveMetadataDB {
  public:
-  enum OriginSyncType {
-    INCREMENTAL_SYNC_ORIGIN,
-    DISABLED_ORIGIN
-  };
-
   typedef DriveMetadataStore::MetadataMap MetadataMap;
 
   DriveMetadataDB(const base::FilePath& base_dir,
@@ -106,23 +106,8 @@ class DriveMetadataDB {
 
   SyncStatusCode MigrateDatabaseIfNeeded();
 
-  SyncStatusCode SetLargestChangestamp(int64 largest_changestamp);
-  SyncStatusCode SetSyncRootDirectory(const std::string& resource_id);
   SyncStatusCode GetSyncRootDirectory(std::string* resource_id);
-  SyncStatusCode SetOriginRootDirectory(const GURL& origin,
-                                        OriginSyncType sync_type,
-                                        const std::string& resource_id);
-  SyncStatusCode UpdateEntry(const FileSystemURL& url,
-                             DriveMetadata metadata);
 
-  // TODO(calvinlo): consolidate these state transition functions for sync
-  // origins like "UpdateOrigin(GURL, SyncStatusEnum)". And manage origins in
-  // just one map like "Map<SyncStatusEnum, ResourceIDMap>".
-  // http://crbug.com/211600
-  SyncStatusCode UpdateOriginAsIncrementalSync(const GURL& origin,
-                                               const std::string& resource_id);
-  SyncStatusCode EnableOrigin(const GURL& origin,
-                              const std::string& resource_id);
   SyncStatusCode DisableOrigin(const GURL& origin,
                                const std::string& resource_id);
   SyncStatusCode RemoveOrigin(const GURL& origin);
@@ -192,12 +177,12 @@ SyncStatusCode InitializeDBOnFileThread(DriveMetadataDB* db,
 // For example, when |origin| is "http://www.example.com" and |sync_type| is
 // BATCH_SYNC_ORIGIN, returns "BSYNC_ORIGIN: http://www.example.com".
 std::string CreateKeyForOriginRoot(const GURL& origin,
-                                   DriveMetadataDB::OriginSyncType sync_type) {
+                                   OriginSyncType sync_type) {
   DCHECK(origin.is_valid());
   switch (sync_type) {
-    case DriveMetadataDB::INCREMENTAL_SYNC_ORIGIN:
+    case INCREMENTAL_SYNC_ORIGIN:
       return kDriveIncrementalSyncOriginKeyPrefix + origin.spec();
-    case DriveMetadataDB::DISABLED_ORIGIN:
+    case DISABLED_ORIGIN:
       return kDriveDisabledOriginKeyPrefix + origin.spec();
   }
   NOTREACHED();
@@ -375,15 +360,10 @@ void DriveMetadataStore::SetLargestChangeStamp(
   DCHECK(CalledOnValidThread());
   DCHECK_EQ(SYNC_STATUS_OK, db_status_);
   largest_changestamp_ = largest_changestamp;
-  base::PostTaskAndReplyWithResult(
-      file_task_runner_.get(),
-      FROM_HERE,
-      base::Bind(&DriveMetadataDB::SetLargestChangestamp,
-                 base::Unretained(db_.get()),
-                 largest_changestamp),
-      base::Bind(&DriveMetadataStore::UpdateDBStatusAndInvokeCallback,
-                 AsWeakPtr(),
-                 callback));
+
+  scoped_ptr<leveldb::WriteBatch> batch(new leveldb::WriteBatch);
+  batch->Put(kChangeStampKey, base::Int64ToString(largest_changestamp));
+  return WriteToDB(batch.Pass(), callback);
 }
 
 int64 DriveMetadataStore::GetLargestChangeStamp() const {
@@ -405,16 +385,21 @@ void DriveMetadataStore::UpdateEntry(
   if (!result.second)
     result.first->second = metadata;
 
-  base::PostTaskAndReplyWithResult(
-      file_task_runner_.get(),
-      FROM_HERE,
-      base::Bind(&DriveMetadataDB::UpdateEntry,
-                 base::Unretained(db_.get()),
-                 url,
-                 metadata),
-      base::Bind(&DriveMetadataStore::UpdateDBStatusAndInvokeCallback,
-                 AsWeakPtr(),
-                 callback));
+  std::string value;
+  if (!IsDriveAPIEnabled()) {
+    DriveMetadata metadata_in_db(metadata);
+    metadata_in_db.set_resource_id(
+        drive::RemoveWapiIdPrefix(metadata.resource_id()));
+    bool success = metadata_in_db.SerializeToString(&value);
+    DCHECK(success);
+  } else {
+    bool success = metadata.SerializeToString(&value);
+    DCHECK(success);
+  }
+
+  scoped_ptr<leveldb::WriteBatch> batch(new leveldb::WriteBatch);
+  batch->Put(FileSystemURLToMetadataKey(url), value);
+  WriteToDB(batch.Pass(), callback);
 }
 
 void DriveMetadataStore::DeleteEntry(
@@ -469,15 +454,12 @@ void DriveMetadataStore::AddIncrementalSyncOrigin(
   incremental_sync_origins_.insert(std::make_pair(origin, resource_id));
   origin_by_resource_id_.insert(std::make_pair(resource_id, origin));
 
-  // Store a pair of |origin| and |resource_id| in the DB.
-  base::PostTaskAndReplyWithResult(
-      file_task_runner_.get(),
-      FROM_HERE,
-      base::Bind(&DriveMetadataDB::UpdateOriginAsIncrementalSync,
-                 base::Unretained(db_.get()),
-                 origin,
-                 resource_id),
-      base::Bind(&DriveMetadataStore::UpdateDBStatus, AsWeakPtr()));
+  scoped_ptr<leveldb::WriteBatch> batch(new leveldb::WriteBatch);
+  batch->Delete(CreateKeyForOriginRoot(origin, DISABLED_ORIGIN));
+  batch->Put(CreateKeyForOriginRoot(origin, INCREMENTAL_SYNC_ORIGIN),
+             drive::RemoveWapiIdPrefix(resource_id));
+  WriteToDB(batch.Pass(),
+            base::Bind(&DriveMetadataStore::UpdateDBStatus, AsWeakPtr()));
 }
 
 void DriveMetadataStore::SetSyncRootDirectory(const std::string& resource_id) {
@@ -485,14 +467,11 @@ void DriveMetadataStore::SetSyncRootDirectory(const std::string& resource_id) {
 
   sync_root_directory_resource_id_ = resource_id;
 
-  // Set the resource ID for the sync root directory in the DB.
-  base::PostTaskAndReplyWithResult(
-      file_task_runner_.get(),
-      FROM_HERE,
-      base::Bind(&DriveMetadataDB::SetSyncRootDirectory,
-                 base::Unretained(db_.get()),
-                 resource_id),
-      base::Bind(&DriveMetadataStore::UpdateDBStatus, AsWeakPtr()));
+  scoped_ptr<leveldb::WriteBatch> batch(new leveldb::WriteBatch);
+  batch->Put(kSyncRootDirectoryKey, drive::RemoveWapiIdPrefix(resource_id));
+  return WriteToDB(batch.Pass(),
+                   base::Bind(&DriveMetadataStore::UpdateDBStatus,
+                              AsWeakPtr()));
 }
 
 void DriveMetadataStore::SetOriginRootDirectory(
@@ -501,26 +480,25 @@ void DriveMetadataStore::SetOriginRootDirectory(
   DCHECK(CalledOnValidThread());
   DCHECK(IsKnownOrigin(origin));
 
-  DriveMetadataDB::OriginSyncType sync_type;
+  OriginSyncType sync_type;
   if (UpdateResourceIdMap(
       &incremental_sync_origins_, &origin_by_resource_id_,
       origin, resource_id)) {
-    sync_type = DriveMetadataDB::INCREMENTAL_SYNC_ORIGIN;
+    sync_type = INCREMENTAL_SYNC_ORIGIN;
   } else if (UpdateResourceIdMap(&disabled_origins_, &origin_by_resource_id_,
                                  origin, resource_id)) {
-    sync_type = DriveMetadataDB::DISABLED_ORIGIN;
+    sync_type = DISABLED_ORIGIN;
   } else {
     return;
   }
-  base::PostTaskAndReplyWithResult(
-      file_task_runner_.get(),
-      FROM_HERE,
-      base::Bind(&DriveMetadataDB::SetOriginRootDirectory,
-                 base::Unretained(db_.get()),
-                 origin,
-                 sync_type,
-                 resource_id),
-      base::Bind(&DriveMetadataStore::UpdateDBStatus, AsWeakPtr()));
+
+  std::string key = CreateKeyForOriginRoot(origin, sync_type);
+  DCHECK(!key.empty());
+
+  scoped_ptr<leveldb::WriteBatch> batch(new leveldb::WriteBatch);
+  batch->Put(key, drive::RemoveWapiIdPrefix(resource_id));
+  WriteToDB(batch.Pass(),
+            base::Bind(&DriveMetadataStore::UpdateDBStatus, AsWeakPtr()));
 }
 
 bool DriveMetadataStore::IsKnownOrigin(const GURL& origin) const {
@@ -557,15 +535,10 @@ void DriveMetadataStore::EnableOrigin(
   if (found != incremental_sync_origins_.end())
     incremental_sync_origins_.erase(found);
 
-  // Store a pair of |origin| and |resource_id| in the DB.
-  base::PostTaskAndReplyWithResult(
-      file_task_runner_.get(),
-      FROM_HERE,
-      base::Bind(&DriveMetadataDB::EnableOrigin,
-                 base::Unretained(db_.get()),
-                 origin,
-                 resource_id),
-      base::Bind(&DriveMetadataStore::DidUpdateOrigin, AsWeakPtr(), callback));
+  scoped_ptr<leveldb::WriteBatch> batch(new leveldb::WriteBatch);
+  batch->Delete(CreateKeyForOriginRoot(origin, INCREMENTAL_SYNC_ORIGIN));
+  batch->Delete(CreateKeyForOriginRoot(origin, DISABLED_ORIGIN));
+  WriteToDB(batch.Pass(), callback);
 }
 
 void DriveMetadataStore::DisableOrigin(
@@ -871,42 +844,6 @@ SyncStatusCode DriveMetadataDB::MigrateDatabaseIfNeeded() {
   return SYNC_DATABASE_ERROR_FAILED;
 }
 
-SyncStatusCode DriveMetadataDB::SetLargestChangestamp(
-    int64 largest_changestamp) {
-  DCHECK(CalledOnValidThread());
-  DCHECK(db_.get());
-
-  leveldb::WriteBatch batch;
-  batch.Put(kChangeStampKey, base::Int64ToString(largest_changestamp));
-  return WriteToDB(&batch);
-}
-
-SyncStatusCode DriveMetadataDB::SetSyncRootDirectory(
-    const std::string& resource_id) {
-  DCHECK(CalledOnValidThread());
-  DCHECK(db_.get());
-
-  leveldb::WriteBatch batch;
-  batch.Put(kSyncRootDirectoryKey, drive::RemoveWapiIdPrefix(resource_id));
-  return WriteToDB(&batch);
-}
-
-SyncStatusCode DriveMetadataDB::SetOriginRootDirectory(
-    const GURL& origin,
-    OriginSyncType sync_type,
-    const std::string& resource_id) {
-  DCHECK(CalledOnValidThread());
-  DCHECK(db_.get());
-
-  std::string key = CreateKeyForOriginRoot(origin, sync_type);
-  if (key.empty())
-    return SYNC_DATABASE_ERROR_FAILED;
-
-  leveldb::WriteBatch batch;
-  batch.Put(key, drive::RemoveWapiIdPrefix(resource_id));
-  return WriteToDB(&batch);
-}
-
 SyncStatusCode DriveMetadataDB::GetSyncRootDirectory(std::string* resource_id) {
   DCHECK(CalledOnValidThread());
   DCHECK(db_.get());
@@ -918,52 +855,6 @@ SyncStatusCode DriveMetadataDB::GetSyncRootDirectory(std::string* resource_id) {
     *resource_id = drive::AddWapiFolderPrefix(*resource_id);
 
   return LevelDBStatusToSyncStatusCode(status);
-}
-
-SyncStatusCode DriveMetadataDB::UpdateEntry(const FileSystemURL& url,
-                                            DriveMetadata metadata) {
-  DCHECK(CalledOnValidThread());
-  DCHECK(db_.get());
-
-  if (!IsDriveAPIEnabled()) {
-    metadata.set_resource_id(
-        drive::RemoveWapiIdPrefix(metadata.resource_id()));
-  }
-
-  std::string metadata_key = FileSystemURLToMetadataKey(url);
-  std::string value;
-  bool success = metadata.SerializeToString(&value);
-  DCHECK(success);
-
-  leveldb::WriteBatch batch;
-  batch.Put(metadata_key, value);
-  return WriteToDB(&batch);
-}
-
-SyncStatusCode DriveMetadataDB::UpdateOriginAsIncrementalSync(
-    const GURL& origin, const std::string& resource_id) {
-  DCHECK(CalledOnValidThread());
-  DCHECK(db_.get());
-
-  leveldb::WriteBatch batch;
-  batch.Delete(CreateKeyForOriginRoot(origin, DISABLED_ORIGIN));
-  batch.Put(CreateKeyForOriginRoot(origin, INCREMENTAL_SYNC_ORIGIN),
-            drive::RemoveWapiIdPrefix(resource_id));
-  return WriteToDB(&batch);
-}
-
-SyncStatusCode DriveMetadataDB::EnableOrigin(
-    const GURL& origin, const std::string& resource_id) {
-  DCHECK(CalledOnValidThread());
-  DCHECK(db_.get());
-
-  // No DB entry as enabled origins go back to
-  // DriveFileSyncService::pending_batch_sync_origins only.
-  leveldb::WriteBatch batch;
-  batch.Delete(CreateKeyForOriginRoot(origin, INCREMENTAL_SYNC_ORIGIN));
-  batch.Delete(CreateKeyForOriginRoot(origin, DISABLED_ORIGIN));
-
-  return WriteToDB(&batch);
 }
 
 SyncStatusCode DriveMetadataDB::DisableOrigin(
