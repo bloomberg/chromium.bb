@@ -37,6 +37,8 @@ _REVISION_NEGATIVE_FILTER['HEAD'] = [
     'CorrectEventFiringTest.testShouldFireEventsInTheRightOrder',
     'CorrectEventFiringTest.testShouldFireFocusEventWhenClicking',
     'DragAndDropTest.testDragTooFar',
+    # Flaky: https://code.google.com/p/chromedriver/issues/detail?id=374
+    'ElementFindingTest.testShouldNotBeAbleToFindAnElementOnABlankPage',
     'ExecutingAsyncJavascriptTest.includesAlertTextInUnhandledAlertException',
     'ExecutingAsyncJavascriptTest.shouldCatchErrorsWithMessageAndStacktraceWhenExecutingInitialScript',
     'ExecutingAsyncJavascriptTest.throwsIfAlertHappensDuringScript',
@@ -93,6 +95,8 @@ _OS_NEGATIVE_FILTER = {}
 _OS_NEGATIVE_FILTER['win'] = [
     # Flaky: https://code.google.com/p/chromedriver/issues/detail?id=282
     'PageLoadingTest.testShouldNotHangIfDocumentOpenCallIsNeverFollowedByDocumentCloseCall',
+    # Flaky: https://code.google.com/p/chromedriver/issues/detail?id=373
+    'RenderedWebElementTest.testHoverPersists',
 ]
 _OS_NEGATIVE_FILTER['linux'] = []
 _OS_NEGATIVE_FILTER['mac'] = [
@@ -102,6 +106,8 @@ _OS_NEGATIVE_FILTER['mac'] = [
     'FormHandlingTest.handleFormWithJavascriptAction',
     # Flaky: https://code.google.com/p/chromedriver/issues/detail?id=354
     'AlertsTest.testShouldAllowUsersToAcceptAnAlertInAFrame',
+    # Flaky: https://code.google.com/p/chromedriver/issues/detail?id=375
+    'PageLoadingTest.testShouldBeAbleToNavigateBackInTheBrowserHistoryInPresenceOfIframes',
 ]
 _OS_NEGATIVE_FILTER['android'] = [
     'AlertsTest.*',
