@@ -373,13 +373,9 @@ void RenderWidget::Resize(const gfx::Size& new_size,
                           const gfx::Rect& resizer_rect,
                           bool is_fullscreen,
                           ResizeAck resize_ack) {
-  if (!RenderThreadImpl::current() ||  // Will be NULL during unit tests.
-      !RenderThreadImpl::current()->layout_test_mode()) {
-    // A resize ack shouldn't be requested if we have not ACK'd the previous
-    // one.
-    DCHECK(resize_ack != SEND_RESIZE_ACK || !next_paint_is_resize_ack());
-    DCHECK(resize_ack == SEND_RESIZE_ACK || resize_ack == NO_RESIZE_ACK);
-  }
+  // A resize ack shouldn't be requested if we have not ACK'd the previous one.
+  DCHECK(resize_ack != SEND_RESIZE_ACK || !next_paint_is_resize_ack());
+  DCHECK(resize_ack == SEND_RESIZE_ACK || resize_ack == NO_RESIZE_ACK);
 
   // Ignore this during shutdown.
   if (!webwidget_)
@@ -416,8 +412,7 @@ void RenderWidget::Resize(const gfx::Size& new_size,
     // Resize should have caused an invalidation of the entire view.
     DCHECK(new_size.IsEmpty() || is_accelerated_compositing_active_ ||
            paint_aggregator_.HasPendingUpdate());
-  } else if (!RenderThreadImpl::current() ||  // Will be NULL during unit tests.
-             !RenderThreadImpl::current()->layout_test_mode()) {
+  } else if (size_browser_expects_ == new_size) {
     resize_ack = NO_RESIZE_ACK;
   }
 
@@ -474,6 +469,7 @@ void RenderWidget::OnResize(const ViewMsg_Resize_Params& params) {
   Resize(params.new_size, params.physical_backing_size,
          params.overdraw_bottom_height, params.resizer_rect,
          params.is_fullscreen, SEND_RESIZE_ACK);
+  size_browser_expects_ = params.new_size;
 }
 
 void RenderWidget::OnChangeResizeRect(const gfx::Rect& resizer_rect) {
@@ -543,6 +539,7 @@ void RenderWidget::OnUpdateRectAck() {
   TRACE_EVENT0("renderer", "RenderWidget::OnUpdateRectAck");
   DCHECK(update_reply_pending_);
   update_reply_pending_ = false;
+  size_browser_expects_ = size_;
 
   // If we sent an UpdateRect message with a zero-sized bitmap, then we should
   // have no current paint buffer.

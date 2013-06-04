@@ -534,6 +534,12 @@ class CONTENT_EXPORT RenderWidget
   // The size of the RenderWidget.
   gfx::Size size_;
 
+  // When short-circuiting size updates, the browser might not know about the
+  // current size of the RenderWidget. To be able to correctly predict when the
+  // browser expects a resize ack, keep track of the size the browser thinks
+  // this RenderWidget should have.
+  gfx::Size size_browser_expects_;
+
   // The TransportDIB that is being used to transfer an image to the browser.
   TransportDIB* current_paint_buf_;
 
