@@ -362,6 +362,9 @@
         'VCLinkerTool': {
           'SubSystem': '2',  # Set /SUBSYSTEM:WINDOWS
         },
+        'VCManifestTool': {
+          'AdditionalManifestFiles': 'shell/app/shell.exe.manifest',
+        },
       },
       'conditions': [
         ['OS=="win" and win_use_allocator_shim==1', {
