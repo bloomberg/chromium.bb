@@ -29,7 +29,6 @@
 
 #include "HTMLNames.h"
 #include "core/dom/Text.h"
-#include "core/editing/TextIterator.h"
 #include "core/editing/VisiblePosition.h"
 #include "core/editing/VisibleUnits.h"
 #include "core/editing/htmlediting.h"

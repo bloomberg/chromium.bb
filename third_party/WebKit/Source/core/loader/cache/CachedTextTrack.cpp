@@ -27,11 +27,8 @@
 
 #include "core/loader/cache/CachedTextTrack.h"
 
-#include "core/loader/TextResourceDecoder.h"
 #include "core/loader/cache/CachedResourceClient.h"
 #include "core/loader/cache/CachedResourceClientWalker.h"
-#include "core/loader/cache/CachedResourceLoader.h"
-#include "core/platform/SharedBuffer.h"
 #include <wtf/Vector.h>
 
 namespace WebCore {

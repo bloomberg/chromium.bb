@@ -28,7 +28,6 @@
 #include "core/editing/ReplaceSelectionCommand.h"
 
 #include "CSSPropertyNames.h"
-#include "CSSValueKeywords.h"
 #include "HTMLNames.h"
 #include "core/css/CSSStyleDeclaration.h"
 #include "core/css/StylePropertySet.h"
@@ -38,8 +37,6 @@
 #include "core/dom/Element.h"
 #include "core/dom/EventNames.h"
 #include "core/dom/ExceptionCodePlaceholder.h"
-#include "core/dom/NodeList.h"
-#include "core/dom/NodeRenderStyle.h"
 #include "core/dom/NodeTraversal.h"
 #include "core/dom/Text.h"
 #include "core/editing/ApplyStyleCommand.h"
@@ -55,7 +52,6 @@
 #include "core/html/HTMLElement.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/page/Frame.h"
-#include "core/rendering/RenderInline.h"
 #include "core/rendering/RenderObject.h"
 #include "core/rendering/RenderText.h"
 #include <wtf/StdLibExtras.h>

@@ -21,16 +21,12 @@
 
 #include "core/page/TouchAdjustment.h"
 
-#include "HTMLNames.h"
 #include "core/dom/ContainerNode.h"
 #include "core/dom/Node.h"
 #include "core/dom/NodeRenderStyle.h"
 #include "core/dom/Text.h"
-#include "core/dom/shadow/ShadowRoot.h"
 #include "core/editing/Editor.h"
 #include "core/html/HTMLFrameOwnerElement.h"
-#include "core/html/HTMLInputElement.h"
-#include "core/html/HTMLLabelElement.h"
 #include "core/page/FrameView.h"
 #include "core/platform/graphics/FloatPoint.h"
 #include "core/platform/graphics/FloatQuad.h"

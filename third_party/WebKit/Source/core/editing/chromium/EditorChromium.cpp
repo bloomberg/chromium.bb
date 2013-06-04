@@ -31,7 +31,6 @@
 #include "config.h"
 #include "core/editing/Editor.h"
 
-#include "core/page/Frame.h"
 #include "core/platform/chromium/ChromiumDataObject.h"
 #include "core/platform/chromium/ClipboardChromium.h"
 

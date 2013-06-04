@@ -34,7 +34,6 @@
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/dom/Text.h"
-#include "core/page/Frame.h"
 #include <wtf/text/WTFString.h>
 
 namespace WebCore {

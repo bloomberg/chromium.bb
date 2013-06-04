@@ -42,11 +42,9 @@
 #include "core/loader/FormState.h"
 #include "core/loader/FrameLoadRequest.h"
 #include "core/loader/FrameLoader.h"
-#include "core/page/Frame.h"
 #include "core/platform/network/FormData.h"
 #include "core/platform/network/FormDataBuilder.h"
 #include "wtf/CurrentTime.h"
-#include "wtf/RandomNumber.h"
 #include "wtf/text/TextEncoding.h"
 
 namespace WebCore {

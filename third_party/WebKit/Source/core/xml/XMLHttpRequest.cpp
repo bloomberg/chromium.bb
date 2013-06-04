@@ -29,11 +29,9 @@
 #include <wtf/StdLibExtras.h>
 #include <wtf/text/CString.h>
 #include <wtf/UnusedParam.h>
-#include "bindings/v8/ScriptController.h"
 #include "core/dom/ContextFeatures.h"
 #include "core/dom/DOMImplementation.h"
 #include "core/dom/Event.h"
-#include "core/dom/EventException.h"
 #include "core/dom/EventListener.h"
 #include "core/dom/EventNames.h"
 #include "core/dom/ExceptionCode.h"
@@ -44,13 +42,10 @@
 #include "core/html/DOMFormData.h"
 #include "core/html/HTMLDocument.h"
 #include "core/inspector/InspectorInstrumentation.h"
-#include "core/inspector/ScriptCallStack.h"
-#include "core/inspector/ScriptProfile.h"
 #include "core/loader/CrossOriginAccessControl.h"
 #include "core/loader/TextResourceDecoder.h"
 #include "core/loader/ThreadableLoader.h"
 #include "core/loader/cache/CachedResourceRequestInitiators.h"
-#include "core/loader/cache/MemoryCache.h"
 #include "core/page/ContentSecurityPolicy.h"
 #include "core/page/Settings.h"
 #include "core/platform/HistogramSupport.h"

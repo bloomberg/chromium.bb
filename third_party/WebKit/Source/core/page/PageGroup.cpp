@@ -31,7 +31,6 @@
 #include "core/page/Frame.h"
 #include "core/page/GroupSettings.h"
 #include "core/page/Page.h"
-#include "core/page/Settings.h"
 #include "core/storage/StorageNamespace.h"
 
 namespace WebCore {

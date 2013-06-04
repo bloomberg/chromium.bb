@@ -32,17 +32,13 @@
 
 #include "core/fileapi/BlobBuilder.h"
 
-#include "core/dom/Document.h"
-#include "core/dom/ExceptionCode.h"
 #include "core/fileapi/Blob.h"
 #include "core/fileapi/File.h"
-#include "core/inspector/ScriptCallStack.h"
 #include "core/platform/text/LineEnding.h"
 #include "wtf/ArrayBuffer.h"
 #include "wtf/ArrayBufferView.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/Vector.h"
-#include "wtf/text/AtomicString.h"
 #include "wtf/text/CString.h"
 #include "wtf/text/TextEncoding.h"
 

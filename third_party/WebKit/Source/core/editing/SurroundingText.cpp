@@ -35,7 +35,6 @@
 #include "core/dom/Range.h"
 #include "core/editing/TextIterator.h"
 #include "core/editing/VisiblePosition.h"
-#include "core/editing/VisibleSelection.h"
 #include "core/editing/VisibleUnits.h"
 
 namespace WebCore {

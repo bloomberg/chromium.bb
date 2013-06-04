@@ -29,20 +29,13 @@
 #include "core/dom/Document.h"
 #include "core/dom/DocumentMarkerController.h"
 #include "core/dom/Node.h"
-#include "core/dom/PositionIterator.h"
 #include "core/dom/Range.h"
 #include "core/editing/Editor.h"
-#include "core/editing/TextCheckingHelper.h"
-#include "core/editing/TextIterator.h"
-#include "core/editing/htmlediting.h"
-#include "core/html/HTMLInputElement.h"
-#include "core/html/HTMLTextAreaElement.h"
 #include "core/page/EditorClient.h"
 #include "core/page/Frame.h"
 #include "core/page/Page.h"
 #include "core/page/Settings.h"
 #include "core/platform/text/TextCheckerClient.h"
-#include "core/rendering/RenderObject.h"
 
 namespace WebCore {
 

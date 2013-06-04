@@ -34,7 +34,6 @@
 #include "core/dom/Position.h"
 #include "core/editing/VisiblePosition.h"
 #include "core/rendering/InlineBox.h"
-#include "core/rendering/InlineTextBox.h"
 
 namespace WebCore {
 

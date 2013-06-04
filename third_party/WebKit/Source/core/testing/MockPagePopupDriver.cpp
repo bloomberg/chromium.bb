@@ -28,7 +28,6 @@
 
 #include "CSSPropertyNames.h"
 #include "CSSValueKeywords.h"
-#include "WebCoreTestSupport.h"
 #include "core/html/HTMLIFrameElement.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/DocumentWriter.h"

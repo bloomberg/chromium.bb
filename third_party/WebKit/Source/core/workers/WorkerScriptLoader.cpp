@@ -29,14 +29,12 @@
 
 #include "core/workers/WorkerScriptLoader.h"
 
-#include "core/dom/CrossThreadTask.h"
 #include "core/dom/ScriptExecutionContext.h"
 #include "core/loader/TextResourceDecoder.h"
 #include "core/loader/WorkerThreadableLoader.h"
 #include "core/platform/network/ResourceResponse.h"
 #include "core/workers/WorkerContext.h"
 #include "core/workers/WorkerScriptLoaderClient.h"
-#include "weborigin/SecurityOrigin.h"
 
 #include <wtf/OwnPtr.h>
 #include <wtf/RefPtr.h>

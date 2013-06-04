@@ -21,7 +21,6 @@
 #include "core/page/MouseEventWithHitTestResults.h"
 
 #include "core/dom/Element.h"
-#include "core/dom/Node.h"
 
 // Would TargetedMouseEvent be a better name?
 

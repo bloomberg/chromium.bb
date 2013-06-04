@@ -34,7 +34,6 @@
 #include "core/page/animation/CSSPropertyAnimation.h"
 #include "core/page/animation/ImplicitAnimation.h"
 #include "core/page/animation/KeyframeAnimation.h"
-#include "core/rendering/RenderObject.h"
 #include "core/rendering/style/RenderStyle.h"
 
 namespace WebCore {

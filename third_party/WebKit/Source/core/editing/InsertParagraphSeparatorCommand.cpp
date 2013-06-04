@@ -26,7 +26,6 @@
 #include "config.h"
 #include "core/editing/InsertParagraphSeparatorCommand.h"
 
-#include "CSSPropertyNames.h"
 #include "HTMLNames.h"
 #include "core/dom/Document.h"
 #include "core/dom/NodeTraversal.h"

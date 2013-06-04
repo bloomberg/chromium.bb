@@ -28,15 +28,10 @@
 #include "InternalSettings.h"
 
 #include "RuntimeEnabledFeatures.h"
-#include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
-#include "core/page/Frame.h"
-#include "core/page/FrameView.h"
 #include "core/page/Page.h"
 #include "core/page/Settings.h"
-#include "core/platform/Language.h"
 #include "core/platform/Supplementable.h"
-#include "core/platform/graphics/TextRun.h"
 #include "core/platform/text/LocaleToScriptMapping.h"
 
 #if ENABLE(INPUT_TYPE_COLOR)

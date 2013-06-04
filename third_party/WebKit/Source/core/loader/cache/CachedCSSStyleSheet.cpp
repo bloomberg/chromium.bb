@@ -27,7 +27,6 @@
 #include "config.h"
 #include "core/loader/cache/CachedCSSStyleSheet.h"
 
-#include "core/css/CSSStyleSheet.h"
 #include "core/css/StyleSheetContents.h"
 #include "core/dom/WebCoreMemoryInstrumentation.h"
 #include "core/loader/TextResourceDecoder.h"

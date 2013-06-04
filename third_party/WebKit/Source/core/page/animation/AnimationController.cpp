@@ -29,7 +29,6 @@
 #include "config.h"
 #include "core/page/animation/AnimationController.h"
 
-#include "core/css/CSSParser.h"
 #include "core/dom/AnimationEvent.h"
 #include "core/dom/EventNames.h"
 #include "core/dom/PseudoElement.h"

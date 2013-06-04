@@ -26,7 +26,6 @@
 #include "config.h"
 #include "core/loader/cache/CachedResourceRequest.h"
 
-#include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/loader/cache/CachedResourceLoader.h"
 

@@ -30,27 +30,18 @@
 #include "core/page/PageConsole.h"
 
 #include <stdio.h>
-#include "DOMWindow.h"
-#include "bindings/v8/ScriptCallStackFactory.h"
-#include "bindings/v8/ScriptValue.h"
 #include "core/dom/Document.h"
 #include "core/dom/ScriptableDocumentParser.h"
 #include "core/inspector/ConsoleAPITypes.h"
 #include "core/inspector/InspectorConsoleInstrumentation.h"
-#include "core/inspector/InspectorController.h"
-#include "core/inspector/ScriptArguments.h"
 #include "core/inspector/ScriptCallStack.h"
 #include "core/page/Chrome.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/ConsoleTypes.h"
-#include "core/page/Frame.h"
 #include "core/page/Page.h"
-#include "core/page/Settings.h"
 #include <wtf/text/CString.h>
 #include <wtf/text/WTFString.h>
 #include <wtf/UnusedParam.h>
-
-#include "core/platform/chromium/TraceEvent.h"
 
 namespace WebCore {
 

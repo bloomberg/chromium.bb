@@ -32,13 +32,9 @@
 #include "core/dom/Document.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
-#include "core/page/Console.h"
-#include "core/page/DOMWindow.h"
 #include "core/page/Frame.h"
 #include "core/page/Settings.h"
-#include "weborigin/SchemeRegistry.h"
 #include "weborigin/SecurityOrigin.h"
-#include "wtf/text/CString.h"
 #include "wtf/text/WTFString.h"
 
 namespace WebCore {

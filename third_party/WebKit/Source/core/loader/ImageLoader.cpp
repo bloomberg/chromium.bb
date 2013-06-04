@@ -30,7 +30,6 @@
 #include "core/dom/WebCoreMemoryInstrumentation.h"
 #include "core/html/HTMLObjectElement.h"
 #include "core/html/parser/HTMLParserIdioms.h"
-#include "core/inspector/ScriptCallStack.h"
 #include "core/loader/CrossOriginAccessControl.h"
 #include "core/loader/cache/CachedImage.h"
 #include "core/loader/cache/CachedResourceLoader.h"

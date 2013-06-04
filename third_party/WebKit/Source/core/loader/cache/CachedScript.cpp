@@ -29,8 +29,6 @@
 
 #include "core/dom/WebCoreMemoryInstrumentation.h"
 #include "core/loader/TextResourceDecoder.h"
-#include "core/loader/cache/CachedResourceClient.h"
-#include "core/loader/cache/CachedResourceClientWalker.h"
 #include "core/loader/cache/MemoryCache.h"
 #include "core/platform/MIMETypeRegistry.h"
 #include "core/platform/SharedBuffer.h"

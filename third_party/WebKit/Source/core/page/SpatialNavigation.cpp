@@ -33,14 +33,12 @@
 #include "core/dom/Node.h"
 #include "core/html/HTMLAreaElement.h"
 #include "core/html/HTMLImageElement.h"
-#include "core/html/HTMLMapElement.h"
 #include "core/page/Frame.h"
 #include "core/page/FrameTree.h"
 #include "core/page/FrameView.h"
 #include "core/page/Page.h"
 #include "core/page/Settings.h"
 #include "core/platform/graphics/IntRect.h"
-#include "core/rendering/RenderInline.h"
 #include "core/rendering/RenderLayer.h"
 
 namespace WebCore {

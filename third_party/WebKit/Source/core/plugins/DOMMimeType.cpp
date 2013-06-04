@@ -20,10 +20,8 @@
 #include "core/plugins/DOMMimeType.h"
 
 #include "core/loader/FrameLoader.h"
-#include "core/loader/FrameLoaderClient.h"
 #include "core/page/Frame.h"
 #include "core/page/Page.h"
-#include "core/page/Settings.h"
 #include "core/plugins/DOMPlugin.h"
 #include "core/plugins/PluginData.h"
 #include <wtf/text/StringBuilder.h>

@@ -29,7 +29,6 @@
 
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
-#include "core/dom/Node.h"
 #include "core/xml/XPathEvaluator.h"
 #include "core/xml/XPathException.h"
 

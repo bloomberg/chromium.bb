@@ -28,7 +28,6 @@
 #include "core/xml/XPathValue.h"
 
 #include <limits>
-#include "core/dom/Node.h"
 #include "core/xml/XPathExpressionNode.h"
 #include "core/xml/XPathUtil.h"
 #include <wtf/MathExtras.h>

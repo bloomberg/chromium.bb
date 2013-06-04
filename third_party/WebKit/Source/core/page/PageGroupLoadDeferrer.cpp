@@ -22,8 +22,6 @@
 #include "core/page/PageGroupLoadDeferrer.h"
 
 #include "core/dom/Document.h"
-#include "core/dom/DocumentParser.h"
-#include "core/dom/ScriptRunner.h"
 #include "core/page/Frame.h"
 #include "core/page/Page.h"
 #include "core/page/PageGroup.h"

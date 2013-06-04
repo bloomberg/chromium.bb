@@ -29,7 +29,6 @@
 #include "core/xml/XPathPredicate.h"
 
 #include <math.h>
-#include "core/dom/Node.h"
 #include "core/xml/XPathFunctions.h"
 #include "core/xml/XPathUtil.h"
 #include "core/xml/XPathValue.h"

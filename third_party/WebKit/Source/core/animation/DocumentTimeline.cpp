@@ -31,7 +31,6 @@
 #include "config.h"
 #include "core/animation/DocumentTimeline.h"
 
-#include "RuntimeEnabledFeatures.h"
 #include "core/animation/Player.h"
 #include "core/dom/Document.h"
 #include "core/page/FrameView.h"

@@ -29,9 +29,7 @@
 #include "core/dom/ContextDestructionObserver.h"
 #include "core/dom/DOMStringList.h"
 #include "core/dom/ScriptExecutionContext.h"
-#include "core/inspector/ScriptCallStack.h"
 #include "core/page/ContentSecurityPolicy.h"
-#include "core/page/Frame.h"
 #include <wtf/text/TextPosition.h>
 #include <wtf/text/WTFString.h>
 

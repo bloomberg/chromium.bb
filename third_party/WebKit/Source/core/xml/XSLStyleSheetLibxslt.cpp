@@ -25,13 +25,10 @@
 #include "core/dom/Document.h"
 #include "core/dom/Node.h"
 #include "core/dom/TransformSource.h"
-#include "core/loader/cache/CachedResourceLoader.h"
 #include "core/page/Frame.h"
 #include "core/page/Page.h"
-#include "core/page/PageConsole.h"
 #include "core/xml/XSLImportRule.h"
 #include "core/xml/XSLTProcessor.h"
-#include "core/xml/parser/XMLDocumentParser.h"
 #include "core/xml/parser/XMLDocumentParserScope.h"
 #include <wtf/text/CString.h>
 

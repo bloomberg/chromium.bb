@@ -40,7 +40,6 @@
 #include "core/page/PerformanceResourceTiming.h"
 #include "core/page/PerformanceTiming.h"
 #include "core/page/PerformanceUserTiming.h"
-#include "core/platform/network/ResourceResponse.h"
 #include <wtf/CurrentTime.h>
 
 #include "core/page/Frame.h"

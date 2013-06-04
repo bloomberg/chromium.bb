@@ -28,7 +28,6 @@
 
 #include "HTMLElementFactory.h"
 #include "HTMLNames.h"
-#include "core/accessibility/AXObjectCache.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCodePlaceholder.h"
 #include "core/dom/NodeTraversal.h"
@@ -46,9 +45,7 @@
 #include "core/html/HTMLDivElement.h"
 #include "core/html/HTMLLIElement.h"
 #include "core/html/HTMLOListElement.h"
-#include "core/html/HTMLObjectElement.h"
 #include "core/html/HTMLParagraphElement.h"
-#include "core/html/HTMLTextFormControlElement.h"
 #include "core/html/HTMLUListElement.h"
 #include "core/page/Frame.h"
 #include "core/rendering/RenderObject.h"

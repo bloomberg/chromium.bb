@@ -19,7 +19,6 @@
 #include "config.h"
 #include "core/plugins/DOMPlugin.h"
 
-#include "core/page/Frame.h"
 #include "core/plugins/PluginData.h"
 #include <wtf/text/AtomicString.h>
 

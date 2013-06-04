@@ -27,7 +27,6 @@
 #include "config.h"
 #include "core/xml/XPathExpression.h"
 
-#include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/xml/XPathException.h"
 #include "core/xml/XPathExpressionNode.h"

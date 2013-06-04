@@ -41,7 +41,6 @@
 #include "core/page/Page.h"
 #include "core/page/PageConsole.h"
 #include "core/platform/network/ResourceError.h"
-#include "core/platform/network/ResourceHandle.h"
 #include "core/platform/network/ResourceRequest.h"
 #include "core/platform/network/ResourceResponse.h"
 #include "core/xml/XSLStyleSheet.h"

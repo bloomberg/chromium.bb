@@ -34,8 +34,6 @@
 #include "core/dom/Element.h"
 #include "core/dom/Event.h"
 #include "core/dom/EventNames.h"
-#include "core/dom/ExceptionCode.h"
-#include "core/dom/KeyboardEvent.h"
 #include "core/dom/NodeRenderingTraversal.h"
 #include "core/dom/NodeTraversal.h"
 #include "core/dom/Range.h"
@@ -55,11 +53,7 @@
 #include "core/page/Page.h"
 #include "core/page/Settings.h"
 #include "core/page/SpatialNavigation.h"
-#include "core/platform/ScrollAnimator.h"
-#include "core/platform/Widget.h"
 #include "core/rendering/HitTestResult.h"
-#include "core/rendering/RenderObject.h"
-#include "core/rendering/RenderWidget.h"
 
 namespace WebCore {
 

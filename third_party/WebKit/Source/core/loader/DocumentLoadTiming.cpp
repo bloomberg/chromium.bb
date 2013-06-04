@@ -28,10 +28,6 @@
 
 #include <wtf/CurrentTime.h>
 #include <wtf/RefPtr.h>
-#include "core/dom/Document.h"
-#include "core/loader/DocumentLoader.h"
-#include "core/page/Frame.h"
-#include "core/page/Page.h"
 #include "weborigin/SecurityOrigin.h"
 
 namespace WebCore {

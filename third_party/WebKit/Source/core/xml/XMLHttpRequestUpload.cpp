@@ -27,7 +27,6 @@
 #include "core/xml/XMLHttpRequestUpload.h"
 
 #include "core/dom/Event.h"
-#include "core/dom/EventException.h"
 #include "core/dom/EventNames.h"
 #include "core/xml/XMLHttpRequest.h"
 #include "core/xml/XMLHttpRequestProgressEvent.h"

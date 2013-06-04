@@ -33,7 +33,6 @@
 #include "core/fileapi/FileReaderSync.h"
 
 #include "core/fileapi/Blob.h"
-#include "core/fileapi/BlobURL.h"
 #include "core/fileapi/FileException.h"
 #include "core/fileapi/FileReaderLoader.h"
 #include <wtf/ArrayBuffer.h>

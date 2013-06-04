@@ -47,7 +47,6 @@
 #include "core/editing/Editor.h"
 #include "core/editing/FrameSelection.h"
 #include "core/editing/HTMLInterchange.h"
-#include "core/editing/VisibleUnits.h"
 #include "core/editing/htmlediting.h"
 #include "core/html/HTMLFontElement.h"
 #include "core/page/Frame.h"

@@ -32,7 +32,6 @@
 
 #include "core/workers/DedicatedWorkerContext.h"
 
-#include "core/dom/MessageEvent.h"
 #include "core/page/DOMWindow.h"
 #include "core/workers/DedicatedWorkerThread.h"
 #include "core/workers/WorkerObjectProxy.h"
