@@ -564,6 +564,22 @@ v8::Handle<v8::Value> V8TestInterface::namedPropertyGetter(v8::Local<v8::String>
     return v8Undefined();
 }
 
+v8::Handle<v8::Array> V8TestInterface::namedPropertyEnumerator(const v8::AccessorInfo& info)
+{
+    ExceptionCode ec = 0;
+    TestInterface* collection = toNative(info.Holder());
+    Vector<String> names;
+    collection->namedPropertyEnumerator(names, ec);
+    if (ec) {
+        setDOMException(ec, info.GetIsolate());
+        return v8::Handle<v8::Array>();
+    }
+    v8::Handle<v8::Array> v8names = v8::Array::New(names.size());
+    for (size_t i = 0; i < names.size(); ++i)
+        v8names->Set(v8Integer(i, info.GetIsolate()), v8String(names[i], info.GetIsolate()));
+    return v8names;
+}
+
 static v8::Handle<v8::FunctionTemplate> ConfigureV8TestInterfaceTemplate(v8::Handle<v8::FunctionTemplate> desc, v8::Isolate* isolate, WrapperWorldType currentWorldType)
 {
     desc->ReadOnlyPrototype();
@@ -589,7 +605,7 @@ static v8::Handle<v8::FunctionTemplate> ConfigureV8TestInterfaceTemplate(v8::Han
     }
 
 #endif // ENABLE(Condition11) || ENABLE(Condition12)
-    desc->InstanceTemplate()->SetNamedPropertyHandler(V8TestInterface::namedPropertyGetter, V8TestInterface::namedPropertySetter, 0, 0, 0);
+    desc->InstanceTemplate()->SetNamedPropertyHandler(V8TestInterface::namedPropertyGetter, V8TestInterface::namedPropertySetter, V8TestInterface::namedPropertyQuery, 0, V8TestInterface::namedPropertyEnumerator);
 
     // Custom Signature 'supplementalMethod2'
     const int supplementalMethod2Argc = 2;

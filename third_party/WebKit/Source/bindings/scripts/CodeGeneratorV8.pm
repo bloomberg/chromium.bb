@@ -1000,7 +1000,9 @@ sub GenerateHeaderNamedAndIndexedPropertyAccessors
     my $namedDeleterFunction = GetNamedDeleterFunction($interface);
     my $hasCustomNamedDeleter = $namedDeleterFunction ? $namedDeleterFunction->signature->extendedAttributes->{"Custom"} : 0;
 
-    my $hasCustomEnumerator = $interface->extendedAttributes->{"CustomEnumerateProperty"};
+    my $namedEnumeratorFunction = $namedGetterFunction;
+    $namedEnumeratorFunction = 0 if $namedGetterFunction && $namedGetterFunction->signature->extendedAttributes->{"NotEnumerable"};
+    my $hasCustomNamedEnumerator = 1 if $namedGetterFunction && $namedGetterFunction->signature->extendedAttributes->{"CustomEnumerateProperty"};
 
     if ($indexedGetterFunction) {
         $header{classPublic}->add(<<END);
@@ -1033,7 +1035,7 @@ END
     static v8::Handle<v8::Boolean> namedPropertyDeleter(v8::Local<v8::String>, const v8::AccessorInfo&);
 END
     }
-    if ($hasCustomEnumerator) {
+    if ($namedEnumeratorFunction) {
         $header{classPublic}->add(<<END);
     static v8::Handle<v8::Array> namedPropertyEnumerator(const v8::AccessorInfo&);
     static v8::Handle<v8::Integer> namedPropertyQuery(v8::Local<v8::String>, const v8::AccessorInfo&);
@@ -3170,21 +3172,13 @@ sub GenerateImplementationIndexedPropertyAccessors
         GenerateImplementationIndexedPropertyDeleter($interface, $indexedDeleterFunction);
     }
 
-    # FIXME: Support generated named enumerator bindings.
-    my $hasEnumerator = $indexedGetterFunction;
-    # FIXME: Remove the special cases. Interfaces that have indexedPropertyGetter should have indexedPropertyEnumerator.
-    $hasEnumerator = 0 if $interfaceName eq "CSSKeyframesRule";
-    $hasEnumerator = 0 if $interfaceName eq "HTMLAppletElement";
-    $hasEnumerator = 0 if $interfaceName eq "HTMLEmbedElement";
-    $hasEnumerator = 0 if $interfaceName eq "HTMLObjectElement";
-    $hasEnumerator = 0 if $interfaceName eq "DOMWindow";
-    $hasEnumerator = 0 if $interfaceName eq "Storage";
-
+    my $indexedEnumeratorFunction = $indexedGetterFunction;
+    $indexedEnumeratorFunction = 0 if $indexedGetterFunction && $indexedGetterFunction->signature->extendedAttributes->{"NotEnumerable"};
 
     # FIXME: Support generated named query bindings.
     my $indexedQueryFunction = 0;
     # If there is an enumerator, there MUST be a query method to properly communicate property attributes.
-    my $hasQuery = $indexedQueryFunction || $hasEnumerator;
+    my $hasQuery = $indexedQueryFunction || $indexedEnumeratorFunction;
 
     my $setOn = "Instance";
 
@@ -3197,12 +3191,12 @@ sub GenerateImplementationIndexedPropertyAccessors
     }
 
     my $code = "";
-    if ($indexedGetterFunction || $indexedSetterFunction || $indexedDeleterFunction || $hasEnumerator || $hasQuery) {
+    if ($indexedGetterFunction || $indexedSetterFunction || $indexedDeleterFunction || $indexedEnumeratorFunction || $hasQuery) {
         $code .= "    desc->${setOn}Template()->SetIndexedPropertyHandler(${v8ClassName}::indexedPropertyGetter";
         $code .= $indexedSetterFunction ? ", ${v8ClassName}::indexedPropertySetter" : ", 0";
         $code .= ", 0"; # IndexedPropertyQuery -- not being used at the moment.
         $code .= $indexedDeleterFunction ? ", ${v8ClassName}::indexedPropertyDeleter" : ", 0";
-        $code .= ", nodeCollectionIndexedPropertyEnumerator<${implClassName}>" if $hasEnumerator;
+        $code .= ", nodeCollectionIndexedPropertyEnumerator<${implClassName}>" if $indexedEnumeratorFunction;
         $code .= ");\n";
     }
 
@@ -3328,18 +3322,20 @@ sub GenerateImplementationNamedPropertyAccessors
     }
     my $hasDeleter = $namedDeleterFunction;
 
-    # FIXME: Support generated named enumerator bindings.
-    my $namedEnumeratorFunction = 0;
-    my $hasCustomNamedEnumerator = $interface->extendedAttributes->{"CustomEnumerateProperty"};
-    my $hasEnumerator = $namedEnumeratorFunction || $hasCustomNamedEnumerator;
+    my $namedEnumeratorFunction = $namedGetterFunction;
+    $namedEnumeratorFunction = 0 if $namedGetterFunction && $namedGetterFunction->signature->extendedAttributes->{"NotEnumerable"};
+    my $hasCustomNamedEnumerator = 1 if $namedGetterFunction && $namedGetterFunction->signature->extendedAttributes->{"CustomEnumerateProperty"};
+    if ($namedEnumeratorFunction && !$hasCustomNamedEnumerator) {
+        GenerateImplementationNamedPropertyEnumerator($interface);
+    }
 
     # FIXME: Support generated named query bindings.
     my $namedQueryFunction = 0;
     # If there is an enumerator, there MUST be a query method to properly communicate property attributes.
-    my $hasQuery = $namedQueryFunction || $hasEnumerator;
+    my $hasQuery = $namedQueryFunction || $namedEnumeratorFunction;
 
     my $subCode = "";
-    if ($namedGetterFunction || $namedSetterFunction || $namedDeleterFunction || $hasEnumerator || $hasQuery) {
+    if ($namedGetterFunction || $namedSetterFunction || $namedDeleterFunction || $namedEnumeratorFunction || $hasQuery) {
         my $setOn = "Instance";
 
         # V8 has access-check callback API (see ObjectTemplate::SetAccessCheckCallbacks) and it's used on DOMWindow
@@ -3355,7 +3351,7 @@ sub GenerateImplementationNamedPropertyAccessors
         $subCode .= $namedSetterFunction ? "${v8ClassName}::namedPropertySetter, " : "0, ";
         $subCode .= $hasQuery ? "${v8ClassName}::namedPropertyQuery, " : "0, ";
         $subCode .= $hasDeleter ? "${v8ClassName}::namedPropertyDeleter, " : "0, ";
-        $subCode .= $hasEnumerator ? "${v8ClassName}::namedPropertyEnumerator" : "0";
+        $subCode .= $namedEnumeratorFunction ? "${v8ClassName}::namedPropertyEnumerator" : "0";
         $subCode .= ");\n";
     }
 
@@ -3593,6 +3589,32 @@ sub GenerateImplementationNamedPropertyDeleter
     $code .= "    return v8Boolean(result);\n";
     $code .= "}\n\n";
     $implementation{nameSpaceWebCore}->add($code);
+}
+
+sub GenerateImplementationNamedPropertyEnumerator
+{
+    my $interface = shift;
+    my $implClassName = GetImplName($interface);
+    my $v8ClassName = GetV8ClassName($interface);
+
+    $implementation{nameSpaceWebCore}->add(<<END);
+v8::Handle<v8::Array> ${v8ClassName}::namedPropertyEnumerator(const v8::AccessorInfo& info)
+{
+    ExceptionCode ec = 0;
+    ${implClassName}* collection = toNative(info.Holder());
+    Vector<String> names;
+    collection->namedPropertyEnumerator(names, ec);
+    if (ec) {
+        setDOMException(ec, info.GetIsolate());
+        return v8::Handle<v8::Array>();
+    }
+    v8::Handle<v8::Array> v8names = v8::Array::New(names.size());
+    for (size_t i = 0; i < names.size(); ++i)
+        v8names->Set(v8Integer(i, info.GetIsolate()), v8String(names[i], info.GetIsolate()));
+    return v8names;
+}
+
+END
 }
 
 sub GenerateImplementationLegacyCall

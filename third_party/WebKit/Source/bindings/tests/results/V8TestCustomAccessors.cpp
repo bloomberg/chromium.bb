@@ -96,7 +96,7 @@ static v8::Handle<v8::FunctionTemplate> ConfigureV8TestCustomAccessorsTemplate(v
     v8::Local<v8::ObjectTemplate> proto = desc->PrototypeTemplate();
     UNUSED_PARAM(instance); // In some cases, it will not be used.
     UNUSED_PARAM(proto); // In some cases, it will not be used.
-    desc->InstanceTemplate()->SetIndexedPropertyHandler(V8TestCustomAccessors::indexedPropertyGetter, V8TestCustomAccessors::indexedPropertySetter, 0, V8TestCustomAccessors::indexedPropertyDeleter, nodeCollectionIndexedPropertyEnumerator<TestCustomAccessors>);
+    desc->InstanceTemplate()->SetIndexedPropertyHandler(V8TestCustomAccessors::indexedPropertyGetter, V8TestCustomAccessors::indexedPropertySetter, 0, V8TestCustomAccessors::indexedPropertyDeleter);
     desc->InstanceTemplate()->SetNamedPropertyHandler(V8TestCustomAccessors::namedPropertyGetter, V8TestCustomAccessors::namedPropertySetter, V8TestCustomAccessors::namedPropertyQuery, V8TestCustomAccessors::namedPropertyDeleter, V8TestCustomAccessors::namedPropertyEnumerator);
 
     // Custom toString template

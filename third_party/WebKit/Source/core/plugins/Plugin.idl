@@ -26,6 +26,7 @@
     readonly attribute DOMString description;
     readonly attribute unsigned long length;
     getter MimeType item([Default=Undefined] optional unsigned long index);
-    getter MimeType namedItem([Default=Undefined] optional DOMString name);
+    MimeType namedItem([Default=Undefined] optional DOMString name);
+    [NotEnumerable, ImplementedAs=namedItem] getter MimeType ([Default=Undefined] optional DOMString name);
 };
 

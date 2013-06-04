@@ -331,7 +331,7 @@
     // window.toString() requires special handling in V8
     [DoNotCheckSignature, DoNotCheckSecurity, Custom, NotEnumerable] DOMString toString();
 
-    [ImplementedAs=anonymousIndexedGetter] getter DOMWindow(unsigned long index);
-    [Custom] getter DOMWindow (DOMString name);
+    [ImplementedAs=anonymousIndexedGetter, NotEnumerable] getter DOMWindow(unsigned long index);
+    [Custom, NotEnumerable] getter DOMWindow (DOMString name);
 };
 

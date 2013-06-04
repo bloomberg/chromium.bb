@@ -235,6 +235,22 @@ v8::Handle<v8::Boolean> V8TestEventTarget::namedPropertyDeleter(v8::Local<v8::St
     return v8Boolean(result);
 }
 
+v8::Handle<v8::Array> V8TestEventTarget::namedPropertyEnumerator(const v8::AccessorInfo& info)
+{
+    ExceptionCode ec = 0;
+    TestEventTarget* collection = toNative(info.Holder());
+    Vector<String> names;
+    collection->namedPropertyEnumerator(names, ec);
+    if (ec) {
+        setDOMException(ec, info.GetIsolate());
+        return v8::Handle<v8::Array>();
+    }
+    v8::Handle<v8::Array> v8names = v8::Array::New(names.size());
+    for (size_t i = 0; i < names.size(); ++i)
+        v8names->Set(v8Integer(i, info.GetIsolate()), v8String(names[i], info.GetIsolate()));
+    return v8names;
+}
+
 static v8::Handle<v8::FunctionTemplate> ConfigureV8TestEventTargetTemplate(v8::Handle<v8::FunctionTemplate> desc, v8::Isolate* isolate, WrapperWorldType currentWorldType)
 {
     desc->ReadOnlyPrototype();
@@ -249,7 +265,7 @@ static v8::Handle<v8::FunctionTemplate> ConfigureV8TestEventTargetTemplate(v8::H
     UNUSED_PARAM(instance); // In some cases, it will not be used.
     UNUSED_PARAM(proto); // In some cases, it will not be used.
     desc->InstanceTemplate()->SetIndexedPropertyHandler(V8TestEventTarget::indexedPropertyGetter, 0, 0, V8TestEventTarget::indexedPropertyDeleter, nodeCollectionIndexedPropertyEnumerator<TestEventTarget>);
-    desc->InstanceTemplate()->SetNamedPropertyHandler(V8TestEventTarget::namedPropertyGetter, V8TestEventTarget::namedPropertySetter, 0, V8TestEventTarget::namedPropertyDeleter, 0);
+    desc->InstanceTemplate()->SetNamedPropertyHandler(V8TestEventTarget::namedPropertyGetter, V8TestEventTarget::namedPropertySetter, V8TestEventTarget::namedPropertyQuery, V8TestEventTarget::namedPropertyDeleter, V8TestEventTarget::namedPropertyEnumerator);
     desc->InstanceTemplate()->MarkAsUndetectable();
 
     // Custom Signature 'dispatchEvent'

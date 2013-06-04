@@ -24,7 +24,7 @@
 ] interface NodeList {
 
     getter Node item([IsIndex,Default=Undefined] optional unsigned long index);
-    [ImplementedAs=anonymousNamedGetter, OverrideBuiltins] getter (Node or unsigned long) (DOMString name);
+    [ImplementedAs=anonymousNamedGetter, OverrideBuiltins, NotEnumerable] getter (Node or unsigned long) (DOMString name);
 
     readonly attribute unsigned long length;
 

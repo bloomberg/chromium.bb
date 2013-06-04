@@ -26,5 +26,6 @@
     NoInterfaceObject
 ] interface RTCStatsResponse {
     sequence<RTCStatsReport> result();
-    getter RTCStatsReport namedItem([Default=Undefined] optional DOMString name);
+    RTCStatsReport namedItem([Default=Undefined] optional DOMString name);
+    [NotEnumerable, ImplementedAs=namedItem] getter RTCStatsReport ([Default=Undefined] optional DOMString name);
 };

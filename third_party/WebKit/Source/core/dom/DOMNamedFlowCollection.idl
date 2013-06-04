@@ -34,5 +34,6 @@
 ] interface DOMNamedFlowCollection {
     readonly attribute unsigned long length;
     getter NamedFlow item(unsigned long index);
-    getter NamedFlow namedItem(DOMString name);
+    NamedFlow namedItem(DOMString name);
+    [NotEnumerable, ImplementedAs=namedItem] getter NamedFlow (DOMString name);
 };

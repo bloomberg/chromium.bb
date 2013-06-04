@@ -22,7 +22,8 @@
     GenerateIsReachable=element
 ] interface NamedNodeMap {
 
-    getter Node getNamedItem([Default=Undefined] optional DOMString name);
+    Node getNamedItem([Default=Undefined] optional DOMString name);
+    [NotEnumerable, ImplementedAs=getNamedItem] getter Node ([Default=Undefined] optional DOMString name);
 
     [RaisesException] Node setNamedItem([Default=Undefined] optional Node node);
 

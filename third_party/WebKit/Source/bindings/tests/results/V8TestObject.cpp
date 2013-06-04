@@ -4721,6 +4721,22 @@ v8::Handle<v8::Value> V8TestObject::namedPropertyGetter(v8::Local<v8::String> na
     return v8String(element, info.GetIsolate());
 }
 
+v8::Handle<v8::Array> V8TestObject::namedPropertyEnumerator(const v8::AccessorInfo& info)
+{
+    ExceptionCode ec = 0;
+    TestObj* collection = toNative(info.Holder());
+    Vector<String> names;
+    collection->namedPropertyEnumerator(names, ec);
+    if (ec) {
+        setDOMException(ec, info.GetIsolate());
+        return v8::Handle<v8::Array>();
+    }
+    v8::Handle<v8::Array> v8names = v8::Array::New(names.size());
+    for (size_t i = 0; i < names.size(); ++i)
+        v8names->Set(v8Integer(i, info.GetIsolate()), v8String(names[i], info.GetIsolate()));
+    return v8names;
+}
+
 static v8::Handle<v8::FunctionTemplate> ConfigureV8TestObjectTemplate(v8::Handle<v8::FunctionTemplate> desc, v8::Isolate* isolate, WrapperWorldType currentWorldType)
 {
     desc->ReadOnlyPrototype();
@@ -4749,7 +4765,7 @@ static v8::Handle<v8::FunctionTemplate> ConfigureV8TestObjectTemplate(v8::Handle
         V8DOMConfiguration::configureAttribute(instance, proto, attrData, isolate, currentWorldType);
     }
     desc->InstanceTemplate()->SetIndexedPropertyHandler(V8TestObject::indexedPropertyGetter, 0, 0, 0, nodeCollectionIndexedPropertyEnumerator<TestObj>);
-    desc->InstanceTemplate()->SetNamedPropertyHandler(V8TestObject::namedPropertyGetter, 0, 0, 0, 0);
+    desc->InstanceTemplate()->SetNamedPropertyHandler(V8TestObject::namedPropertyGetter, 0, V8TestObject::namedPropertyQuery, 0, V8TestObject::namedPropertyEnumerator);
 
     // Custom Signature 'voidMethodWithArgs'
     const int voidMethodWithArgsArgc = 3;

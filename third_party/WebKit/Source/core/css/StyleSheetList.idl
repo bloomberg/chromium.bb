@@ -24,6 +24,6 @@
 ] interface StyleSheetList {
     readonly attribute unsigned long    length;
     getter StyleSheet         item([Default=Undefined] optional unsigned long index);
-    [ImplementedAs=anonymousNamedGetter] getter CSSStyleSheet (DOMString name);
+    [ImplementedAs=anonymousNamedGetter, NotEnumerable] getter CSSStyleSheet (DOMString name);
 };
 
