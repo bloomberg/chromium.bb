@@ -56,12 +56,7 @@ CYGTAR = os.path.join(NACL_DIR, 'build', 'cygtar.py')
 NACLPORTS_URL = 'https://naclports.googlecode.com/svn/trunk/src'
 NACLPORTS_REV = 774
 
-# TODO(binji): horrible hack to make the Windows builders go green...
-# Windows has a path length limit of 255 characters, after joining cwd with a
-# relative path. Some of the Windows builders are over by just a little bit, so
-# we'll temporarily use a shorter build directory name to make it all work.
-# See http://crbug.com/245453
-GYPBUILD_DIR = 'gb'  # Was 'gypbuild'
+GYPBUILD_DIR = 'gypbuild'
 
 options = None
 

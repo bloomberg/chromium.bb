@@ -14,9 +14,12 @@ run.
 
 import buildbot_common
 import os
+import subprocess
 import sys
+
 from buildbot_common import Run
-from build_paths import SDK_SRC_DIR, SCRIPT_DIR
+from build_paths import SRC_DIR, SDK_SRC_DIR, SCRIPT_DIR
+import getos
 
 
 def StepRunUnittests():
@@ -33,7 +36,25 @@ def StepRunUnittests():
 
 
 def StepBuildSDK(args):
-  Run([sys.executable, 'build_sdk.py'] + args, cwd=SCRIPT_DIR)
+  is_win = getos.GetPlatform() == 'win'
+
+  # Windows has a path length limit of 255 characters, after joining cwd with a
+  # relative path. Use subst before building to keep the path lengths short.
+  if is_win:
+    subst_drive = 'S:'
+    root_dir = os.path.dirname(SRC_DIR)
+    new_root_dir = subst_drive + '\\'
+    subprocess.check_call(['subst', subst_drive, root_dir])
+    new_script_dir = os.path.join(new_root_dir,
+                                  os.path.relpath(SCRIPT_DIR, root_dir))
+  else:
+    new_script_dir = SCRIPT_DIR
+
+  try:
+    Run([sys.executable, 'build_sdk.py'] + args, cwd=new_script_dir)
+  finally:
+    if is_win:
+      subprocess.check_call(['subst', '/D', subst_drive])
 
 
 def StepTestSDK():
