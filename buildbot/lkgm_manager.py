@@ -508,7 +508,7 @@ def GenerateBlameList(source_repo, lkgm_path, only_print_chumps=False):
                                          cwd=src_path)
     except cros_build_lib.RunCommandError as ex:
       # Git returns 128 when the revision does not exist.
-      if ex.returncode != 128:
+      if ex.result.returncode != 128:
         raise
       cros_build_lib.Warning('Detected branch removed from local checkout.')
       cros_build_lib.PrintBuildbotStepWarnings()
