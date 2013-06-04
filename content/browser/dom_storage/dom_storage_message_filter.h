@@ -8,8 +8,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/public/browser/browser_message_filter.h"
-#include "webkit/dom_storage/dom_storage_context.h"
-#include "webkit/dom_storage/dom_storage_types.h"
+#include "webkit/browser/dom_storage/dom_storage_context.h"
+#include "webkit/common/dom_storage/dom_storage_types.h"
 
 class GURL;
 class NullableString16;

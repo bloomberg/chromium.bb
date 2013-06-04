@@ -12,7 +12,7 @@
 #include "content/renderer/dom_storage/dom_storage_dispatcher.h"
 #include "content/renderer/render_thread_impl.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
-#include "webkit/dom_storage/dom_storage_cached_area.h"
+#include "webkit/renderer/dom_storage/dom_storage_cached_area.h"
 
 using dom_storage::DomStorageCachedArea;
 using WebKit::WebString;

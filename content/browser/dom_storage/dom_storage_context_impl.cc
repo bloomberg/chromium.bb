@@ -10,9 +10,9 @@
 #include "base/message_loop_proxy.h"
 #include "content/browser/dom_storage/session_storage_namespace_impl.h"
 #include "content/public/browser/browser_thread.h"
-#include "webkit/dom_storage/dom_storage_area.h"
-#include "webkit/dom_storage/dom_storage_context.h"
-#include "webkit/dom_storage/dom_storage_task_runner.h"
+#include "webkit/browser/dom_storage/dom_storage_area.h"
+#include "webkit/browser/dom_storage/dom_storage_context.h"
+#include "webkit/browser/dom_storage/dom_storage_task_runner.h"
 
 using dom_storage::DomStorageArea;
 using dom_storage::DomStorageContext;

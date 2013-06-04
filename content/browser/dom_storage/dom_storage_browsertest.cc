@@ -10,7 +10,7 @@
 #include "content/test/content_browser_test.h"
 #include "content/test/content_browser_test_utils.h"
 #include "net/base/net_util.h"
-#include "webkit/dom_storage/dom_storage_types.h"
+#include "webkit/common/dom_storage/dom_storage_types.h"
 
 namespace content {
 

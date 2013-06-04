@@ -6,6 +6,7 @@
   'includes': [
     '../common/blob/webkit_common_blob.gypi',
     '../common/database/webkit_common_database.gypi',
+    '../common/dom_storage/webkit_common_dom_storage.gypi',
     '../common/fileapi/webkit_common_fileapi.gypi',
     '../common/quota/webkit_common_quota.gypi',
   ],
@@ -15,6 +16,7 @@
     'webkit_common_storage_sources': [
       '<@(webkit_common_blob_sources)',
       '<@(webkit_common_database_sources)',
+      '<@(webkit_common_dom_storage_sources)',
       '<@(webkit_common_fileapi_sources)',
       '<@(webkit_common_quota_sources)',
     ],

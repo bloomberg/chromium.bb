@@ -5,7 +5,6 @@
 {
   'includes': [
     '../appcache/webkit_appcache.gypi',
-    '../dom_storage/webkit_dom_storage.gypi',
 
     # TODO(kinuko): Deprecate this when we have a new target for
     # webkit_browser.  crbug.com/239710
@@ -33,12 +32,14 @@
       'sources': [
         '../storage/webkit_storage_export.h',
         '<@(webkit_appcache_sources)',
-        '<@(webkit_dom_storage_sources)',
 
         # TODO(kinuko): Deprecate them when we have new targets for
         # browser|common|renderer.  crbug.com/239710
         '<@(webkit_browser_storage_sources)',
         '<@(webkit_common_storage_sources)',
+        '../renderer/dom_storage/dom_storage_cached_area.cc',
+        '../renderer/dom_storage/dom_storage_cached_area.h',
+        '../renderer/dom_storage/dom_storage_proxy.h',
         '../renderer/fileapi/webfilewriter_base.cc',
         '../renderer/fileapi/webfilewriter_base.h',
       ],

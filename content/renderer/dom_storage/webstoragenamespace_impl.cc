@@ -8,7 +8,7 @@
 #include "content/renderer/dom_storage/webstoragearea_impl.h"
 #include "googleurl/src/gurl.h"
 #include "third_party/WebKit/public/platform/WebString.h"
-#include "webkit/dom_storage/dom_storage_types.h"
+#include "webkit/common/dom_storage/dom_storage_types.h"
 
 using WebKit::WebStorageArea;
 using WebKit::WebStorageNamespace;

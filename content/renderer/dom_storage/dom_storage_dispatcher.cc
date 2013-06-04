@@ -16,9 +16,9 @@
 #include "third_party/WebKit/public/platform/Platform.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebKit.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebStorageEventDispatcher.h"
-#include "webkit/dom_storage/dom_storage_cached_area.h"
-#include "webkit/dom_storage/dom_storage_proxy.h"
-#include "webkit/dom_storage/dom_storage_types.h"
+#include "webkit/common/dom_storage/dom_storage_types.h"
+#include "webkit/renderer/dom_storage/dom_storage_cached_area.h"
+#include "webkit/renderer/dom_storage/dom_storage_proxy.h"
 
 using dom_storage::DomStorageCachedArea;
 using dom_storage::DomStorageProxy;

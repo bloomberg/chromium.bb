@@ -11,8 +11,8 @@
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebStorageEventDispatcher.h"
 #include "webkit/browser/database/database_util.h"
-#include "webkit/dom_storage/dom_storage_area.h"
-#include "webkit/dom_storage/dom_storage_host.h"
+#include "webkit/browser/dom_storage/dom_storage_area.h"
+#include "webkit/browser/dom_storage/dom_storage_host.h"
 
 using dom_storage::DomStorageContext;
 using dom_storage::DomStorageHost;

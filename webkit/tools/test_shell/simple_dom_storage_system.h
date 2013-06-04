@@ -7,7 +7,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "webkit/dom_storage/dom_storage_context.h"
+#include "webkit/browser/dom_storage/dom_storage_context.h"
 
 namespace dom_storage {
 class DomStorageHost;

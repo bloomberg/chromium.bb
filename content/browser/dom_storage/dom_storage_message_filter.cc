@@ -13,9 +13,9 @@
 #include "content/browser/dom_storage/dom_storage_context_impl.h"
 #include "content/common/dom_storage_messages.h"
 #include "googleurl/src/gurl.h"
-#include "webkit/dom_storage/dom_storage_area.h"
-#include "webkit/dom_storage/dom_storage_host.h"
-#include "webkit/dom_storage/dom_storage_task_runner.h"
+#include "webkit/browser/dom_storage/dom_storage_area.h"
+#include "webkit/browser/dom_storage/dom_storage_host.h"
+#include "webkit/browser/dom_storage/dom_storage_task_runner.h"
 
 namespace content {
 

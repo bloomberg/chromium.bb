@@ -5,7 +5,7 @@
 #include "content/browser/dom_storage/session_storage_namespace_impl.h"
 
 #include "content/browser/dom_storage/dom_storage_context_impl.h"
-#include "webkit/dom_storage/dom_storage_session.h"
+#include "webkit/browser/dom_storage/dom_storage_session.h"
 
 using dom_storage::DomStorageContext;
 using dom_storage::DomStorageSession;
