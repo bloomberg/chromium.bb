@@ -54,6 +54,9 @@ void PopulateResourceResponse(net::URLRequest* request,
       request,
       &response->head.appcache_id,
       &response->head.appcache_manifest_url);
+  // TODO(mmenke):  Figure out if LOAD_ENABLE_LOAD_TIMING is safe to remove.
+  if (request->load_flags() & net::LOAD_ENABLE_LOAD_TIMING)
+    request->GetLoadTimingInfo(&response->head.load_timing);
 }
 
 }  // namespace

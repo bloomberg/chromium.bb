@@ -503,10 +503,6 @@ void ChromeResourceDispatcherHostDelegate::OnResponseStarted(
     content::ResourceContext* resource_context,
     content::ResourceResponse* response,
     IPC::Sender* sender) {
-  // TODO(mmenke):  Figure out if LOAD_ENABLE_LOAD_TIMING is safe to remove.
-  if (request->load_flags() & net::LOAD_ENABLE_LOAD_TIMING)
-    request->GetLoadTimingInfo(&response->head.load_timing);
-
   const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request);
 
   if (request->url().SchemeIsSecure()) {
@@ -564,10 +560,6 @@ void ChromeResourceDispatcherHostDelegate::OnRequestRedirected(
     net::URLRequest* request,
     content::ResourceContext* resource_context,
     content::ResourceResponse* response) {
-  // TODO(mmenke):  Figure out if LOAD_ENABLE_LOAD_TIMING is safe to remove.
-  if (request->load_flags() & net::LOAD_ENABLE_LOAD_TIMING)
-    request->GetLoadTimingInfo(&response->head.load_timing);
-
   ProfileIOData* io_data = ProfileIOData::FromResourceContext(resource_context);
 
 #if defined(ENABLE_ONE_CLICK_SIGNIN)
