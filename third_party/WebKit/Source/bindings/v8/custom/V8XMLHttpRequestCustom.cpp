@@ -120,7 +120,7 @@ v8::Handle<v8::Value> V8XMLHttpRequest::responseAttrGetterCustom(v8::Local<v8::S
     return v8::Undefined();
 }
 
-v8::Handle<v8::Value> V8XMLHttpRequest::openMethodCustom(const v8::Arguments& args)
+void V8XMLHttpRequest::openMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     // Four cases:
     // open(method, url)
@@ -128,8 +128,10 @@ v8::Handle<v8::Value> V8XMLHttpRequest::openMethodCustom(const v8::Arguments& ar
     // open(method, url, async, user)
     // open(method, url, async, user, passwd)
 
-    if (args.Length() < 2)
-        return throwNotEnoughArgumentsError(args.GetIsolate());
+    if (args.Length() < 2) {
+        throwNotEnoughArgumentsError(args.GetIsolate());
+        return;
+    }
 
     XMLHttpRequest* xmlHttpRequest = V8XMLHttpRequest::toNative(args.Holder());
 
@@ -157,10 +159,9 @@ v8::Handle<v8::Value> V8XMLHttpRequest::openMethodCustom(const v8::Arguments& ar
     } else
         xmlHttpRequest->open(method, url, ec);
 
-    if (ec)
-        return setDOMException(ec, args.GetIsolate());
-
-    return v8::Undefined();
+    if (!ec)
+        return;
+    setDOMException(ec, args.GetIsolate());
 }
 
 static bool isDocumentType(v8::Handle<v8::Value> value, v8::Isolate* isolate, WrapperWorldType currentWorldType)
@@ -169,7 +170,7 @@ static bool isDocumentType(v8::Handle<v8::Value> value, v8::Isolate* isolate, Wr
     return V8Document::HasInstance(value, isolate, currentWorldType) || V8HTMLDocument::HasInstance(value, isolate, currentWorldType);
 }
 
-v8::Handle<v8::Value> V8XMLHttpRequest::sendMethodCustom(const v8::Arguments& args)
+void V8XMLHttpRequest::sendMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     XMLHttpRequest* xmlHttpRequest = V8XMLHttpRequest::toNative(args.Holder());
 
@@ -212,10 +213,10 @@ v8::Handle<v8::Value> V8XMLHttpRequest::sendMethodCustom(const v8::Arguments& ar
             xmlHttpRequest->send(toWebCoreStringWithNullCheck(arg), ec);
     }
 
-    if (ec)
-        return setDOMException(ec, args.GetIsolate());
+    if (!ec)
+        return;
 
-    return v8::Undefined();
+    setDOMException(ec, args.GetIsolate());
 }
 
 } // namespace WebCore

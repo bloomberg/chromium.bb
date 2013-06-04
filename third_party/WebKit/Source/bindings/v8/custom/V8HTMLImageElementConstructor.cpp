@@ -46,13 +46,17 @@ namespace WebCore {
 
 WrapperTypeInfo V8HTMLImageElementConstructor::info = { V8HTMLImageElementConstructor::GetTemplate, V8HTMLImageElement::derefObject, 0, V8HTMLImageElement::toEventTarget, 0, V8HTMLImageElement::installPerContextPrototypeProperties, 0, WrapperTypeObjectPrototype };
 
-static v8::Handle<v8::Value> v8HTMLImageElementConstructorMethodCustom(const v8::Arguments& args)
+static void v8HTMLImageElementConstructorMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
-    if (!args.IsConstructCall())
-        return throwTypeError("DOM object constructor cannot be called as a function.", args.GetIsolate());
+    if (!args.IsConstructCall()) {
+        throwTypeError("DOM object constructor cannot be called as a function.", args.GetIsolate());
+        return;
+    }
 
-    if (ConstructorMode::current() == ConstructorMode::WrapExistingObject)
-        return args.Holder();
+    if (ConstructorMode::current() == ConstructorMode::WrapExistingObject) {
+        v8SetReturnValue(args, args.Holder());
+        return;
+    }
 
     Document* document = currentDocument();
 
@@ -79,7 +83,7 @@ static v8::Handle<v8::Value> v8HTMLImageElementConstructorMethodCustom(const v8:
     RefPtr<HTMLImageElement> image = HTMLImageElement::createForJSConstructor(document, optionalWidth, optionalHeight);
     v8::Handle<v8::Object> wrapper = args.Holder();
     V8DOMWrapper::associateObjectWithWrapper(image.release(), &V8HTMLImageElementConstructor::info, wrapper, args.GetIsolate(), WrapperConfiguration::Dependent);
-    return wrapper;
+    v8SetReturnValue(args, wrapper);
 }
 
 v8::Handle<v8::FunctionTemplate> V8HTMLImageElementConstructor::GetTemplate(v8::Isolate* isolate, WrapperWorldType worldType)

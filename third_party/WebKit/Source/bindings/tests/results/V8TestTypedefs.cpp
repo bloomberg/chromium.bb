@@ -243,165 +243,208 @@ static void TestTypedefsReplaceableAttrSetterCallback(v8::Local<v8::String> name
     return TestTypedefsV8Internal::TestTypedefsReplaceableAttrSetter(name, value, info);
 }
 
-static v8::Handle<v8::Value> funcMethod(const v8::Arguments& args)
+static void funcMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     TestTypedefs* imp = V8TestTypedefs::toNative(args.Holder());
     if (args.Length() <= 0) {
         imp->func();
-        return v8Undefined();
+
+        v8SetReturnValue(args, v8Undefined());
+        return;
     }
-    V8TRYCATCH(Vector<int>, x, toNativeArray<int>(args[0]));
+    V8TRYCATCH_VOID(Vector<int>, x, toNativeArray<int>(args[0]));
     imp->func(x);
-    return v8Undefined();
+
+    v8SetReturnValue(args, v8Undefined());
+    return;
 }
 
-static v8::Handle<v8::Value> funcMethodCallback(const v8::Arguments& args)
+static void funcMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
-    return TestTypedefsV8Internal::funcMethod(args);
+    TestTypedefsV8Internal::funcMethod(args);
 }
 
-static v8::Handle<v8::Value> setShadowMethod(const v8::Arguments& args)
+static void setShadowMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
-    if (args.Length() < 3)
-        return throwNotEnoughArgumentsError(args.GetIsolate());
+    if (args.Length() < 3) {
+        throwNotEnoughArgumentsError(args.GetIsolate());
+        return;
+    }
     TestTypedefs* imp = V8TestTypedefs::toNative(args.Holder());
-    V8TRYCATCH(float, width, static_cast<float>(args[0]->NumberValue()));
-    V8TRYCATCH(float, height, static_cast<float>(args[1]->NumberValue()));
-    V8TRYCATCH(float, blur, static_cast<float>(args[2]->NumberValue()));
+    V8TRYCATCH_VOID(float, width, static_cast<float>(args[0]->NumberValue()));
+    V8TRYCATCH_VOID(float, height, static_cast<float>(args[1]->NumberValue()));
+    V8TRYCATCH_VOID(float, blur, static_cast<float>(args[2]->NumberValue()));
     if (args.Length() <= 3) {
         imp->setShadow(width, height, blur);
-        return v8Undefined();
+
+        v8SetReturnValue(args, v8Undefined());
+        return;
     }
-    V8TRYCATCH_FOR_V8STRINGRESOURCE(V8StringResource<>, color, args[3]);
+    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, color, args[3]);
     if (args.Length() <= 4) {
         imp->setShadow(width, height, blur, color);
-        return v8Undefined();
+
+        v8SetReturnValue(args, v8Undefined());
+        return;
     }
-    V8TRYCATCH(float, alpha, static_cast<float>(args[4]->NumberValue()));
+    V8TRYCATCH_VOID(float, alpha, static_cast<float>(args[4]->NumberValue()));
     imp->setShadow(width, height, blur, color, alpha);
-    return v8Undefined();
+
+    v8SetReturnValue(args, v8Undefined());
+    return;
 }
 
-static v8::Handle<v8::Value> setShadowMethodCallback(const v8::Arguments& args)
+static void setShadowMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
-    return TestTypedefsV8Internal::setShadowMethod(args);
+    TestTypedefsV8Internal::setShadowMethod(args);
 }
 
-static v8::Handle<v8::Value> methodWithSequenceArgMethod(const v8::Arguments& args)
+static void methodWithSequenceArgMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
-    if (args.Length() < 1)
-        return throwNotEnoughArgumentsError(args.GetIsolate());
+    if (args.Length() < 1) {
+        throwNotEnoughArgumentsError(args.GetIsolate());
+        return;
+    }
     TestTypedefs* imp = V8TestTypedefs::toNative(args.Holder());
-    V8TRYCATCH(Vector<RefPtr<SerializedScriptValue> >, sequenceArg, (toRefPtrNativeArray<SerializedScriptValue, V8SerializedScriptValue>(args[0], args.GetIsolate())));
-    return v8::Number::New(static_cast<double>(imp->methodWithSequenceArg(sequenceArg)));
+    V8TRYCATCH_VOID(Vector<RefPtr<SerializedScriptValue> >, sequenceArg, (toRefPtrNativeArray<SerializedScriptValue, V8SerializedScriptValue>(args[0], args.GetIsolate())));
+
+    v8SetReturnValue(args, v8::Number::New(static_cast<double>(imp->methodWithSequenceArg(sequenceArg))));
+    return;
 }
 
-static v8::Handle<v8::Value> methodWithSequenceArgMethodCallback(const v8::Arguments& args)
+static void methodWithSequenceArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
-    return TestTypedefsV8Internal::methodWithSequenceArgMethod(args);
+    TestTypedefsV8Internal::methodWithSequenceArgMethod(args);
 }
 
-static v8::Handle<v8::Value> nullableArrayArgMethod(const v8::Arguments& args)
+static void nullableArrayArgMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
-    if (args.Length() < 1)
-        return throwNotEnoughArgumentsError(args.GetIsolate());
+    if (args.Length() < 1) {
+        throwNotEnoughArgumentsError(args.GetIsolate());
+        return;
+    }
     TestTypedefs* imp = V8TestTypedefs::toNative(args.Holder());
-    V8TRYCATCH(Vector<String>, arrayArg, toNativeArray<String>(args[0]));
+    V8TRYCATCH_VOID(Vector<String>, arrayArg, toNativeArray<String>(args[0]));
     imp->nullableArrayArg(arrayArg);
-    return v8Undefined();
+
+    v8SetReturnValue(args, v8Undefined());
+    return;
 }
 
-static v8::Handle<v8::Value> nullableArrayArgMethodCallback(const v8::Arguments& args)
+static void nullableArrayArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
-    return TestTypedefsV8Internal::nullableArrayArgMethod(args);
+    TestTypedefsV8Internal::nullableArrayArgMethod(args);
 }
 
-static v8::Handle<v8::Value> funcWithClampMethod(const v8::Arguments& args)
+static void funcWithClampMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
-    if (args.Length() < 1)
-        return throwNotEnoughArgumentsError(args.GetIsolate());
+    if (args.Length() < 1) {
+        throwNotEnoughArgumentsError(args.GetIsolate());
+        return;
+    }
     TestTypedefs* imp = V8TestTypedefs::toNative(args.Holder());
     unsigned long long arg1 = 0;
-    V8TRYCATCH(double, arg1NativeValue, args[0]->NumberValue());
+    V8TRYCATCH_VOID(double, arg1NativeValue, args[0]->NumberValue());
     if (!std::isnan(arg1NativeValue))
         arg1 = clampTo<unsigned long long>(arg1NativeValue);
     if (args.Length() <= 1) {
         imp->funcWithClamp(arg1);
-        return v8Undefined();
+
+        v8SetReturnValue(args, v8Undefined());
+        return;
     }
     unsigned long long arg2 = 0;
-    V8TRYCATCH(double, arg2NativeValue, args[1]->NumberValue());
+    V8TRYCATCH_VOID(double, arg2NativeValue, args[1]->NumberValue());
     if (!std::isnan(arg2NativeValue))
         arg2 = clampTo<unsigned long long>(arg2NativeValue);
     imp->funcWithClamp(arg1, arg2);
-    return v8Undefined();
+
+    v8SetReturnValue(args, v8Undefined());
+    return;
 }
 
-static v8::Handle<v8::Value> funcWithClampMethodCallback(const v8::Arguments& args)
+static void funcWithClampMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
-    return TestTypedefsV8Internal::funcWithClampMethod(args);
+    TestTypedefsV8Internal::funcWithClampMethod(args);
 }
 
-static v8::Handle<v8::Value> immutablePointFunctionMethod(const v8::Arguments& args)
+static void immutablePointFunctionMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     TestTypedefs* imp = V8TestTypedefs::toNative(args.Holder());
-    return toV8(WTF::getPtr(SVGPropertyTearOff<FloatPoint>::create(imp->immutablePointFunction())), args.Holder(), args.GetIsolate());
+    v8SetReturnValue(args, toV8(WTF::getPtr(SVGPropertyTearOff<FloatPoint>::create(imp->immutablePointFunction())), args.Holder(), args.GetIsolate()));
+    return;
 }
 
-static v8::Handle<v8::Value> immutablePointFunctionMethodCallback(const v8::Arguments& args)
+static void immutablePointFunctionMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
-    return TestTypedefsV8Internal::immutablePointFunctionMethod(args);
+    TestTypedefsV8Internal::immutablePointFunctionMethod(args);
 }
 
-static v8::Handle<v8::Value> stringArrayFunctionMethod(const v8::Arguments& args)
+static void stringArrayFunctionMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
-    if (args.Length() < 1)
-        return throwNotEnoughArgumentsError(args.GetIsolate());
+    if (args.Length() < 1) {
+        throwNotEnoughArgumentsError(args.GetIsolate());
+        return;
+    }
     TestTypedefs* imp = V8TestTypedefs::toNative(args.Holder());
     ExceptionCode ec = 0;
-    V8TRYCATCH(Vector<String>, values, toNativeArray<String>(args[0]));
+    V8TRYCATCH_VOID(Vector<String>, values, toNativeArray<String>(args[0]));
     Vector<String> result = imp->stringArrayFunction(values, ec);
-    if (UNLIKELY(ec))
-        return setDOMException(ec, args.GetIsolate());
-    return v8Array(result, args.GetIsolate());
+    if (UNLIKELY(ec)) {
+        setDOMException(ec, args.GetIsolate());
+        return;
+    }
+
+    v8SetReturnValue(args, v8Array(result, args.GetIsolate()));
+    return;
 }
 
-static v8::Handle<v8::Value> stringArrayFunctionMethodCallback(const v8::Arguments& args)
+static void stringArrayFunctionMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
-    return TestTypedefsV8Internal::stringArrayFunctionMethod(args);
+    TestTypedefsV8Internal::stringArrayFunctionMethod(args);
 }
 
-static v8::Handle<v8::Value> stringArrayFunction2Method(const v8::Arguments& args)
+static void stringArrayFunction2Method(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
-    if (args.Length() < 1)
-        return throwNotEnoughArgumentsError(args.GetIsolate());
+    if (args.Length() < 1) {
+        throwNotEnoughArgumentsError(args.GetIsolate());
+        return;
+    }
     TestTypedefs* imp = V8TestTypedefs::toNative(args.Holder());
     ExceptionCode ec = 0;
-    V8TRYCATCH(Vector<String>, values, toNativeArray<String>(args[0]));
+    V8TRYCATCH_VOID(Vector<String>, values, toNativeArray<String>(args[0]));
     Vector<String> result = imp->stringArrayFunction2(values, ec);
-    if (UNLIKELY(ec))
-        return setDOMException(ec, args.GetIsolate());
-    return v8Array(result, args.GetIsolate());
+    if (UNLIKELY(ec)) {
+        setDOMException(ec, args.GetIsolate());
+        return;
+    }
+
+    v8SetReturnValue(args, v8Array(result, args.GetIsolate()));
+    return;
 }
 
-static v8::Handle<v8::Value> stringArrayFunction2MethodCallback(const v8::Arguments& args)
+static void stringArrayFunction2MethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
-    return TestTypedefsV8Internal::stringArrayFunction2Method(args);
+    TestTypedefsV8Internal::stringArrayFunction2Method(args);
 }
 
-static v8::Handle<v8::Value> methodWithExceptionMethod(const v8::Arguments& args)
+static void methodWithExceptionMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     TestTypedefs* imp = V8TestTypedefs::toNative(args.Holder());
     ExceptionCode ec = 0;
     imp->methodWithException(ec);
-    if (UNLIKELY(ec))
-        return setDOMException(ec, args.GetIsolate());
-    return v8Undefined();
+    if (UNLIKELY(ec)) {
+        setDOMException(ec, args.GetIsolate());
+        return;
+    }
+
+    v8SetReturnValue(args, v8Undefined());
+    return;
 }
 
-static v8::Handle<v8::Value> methodWithExceptionMethodCallback(const v8::Arguments& args)
+static void methodWithExceptionMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
-    return TestTypedefsV8Internal::methodWithExceptionMethod(args);
+    TestTypedefsV8Internal::methodWithExceptionMethod(args);
 }
 
 static void constructor(const v8::FunctionCallbackInfo<v8::Value>& args)

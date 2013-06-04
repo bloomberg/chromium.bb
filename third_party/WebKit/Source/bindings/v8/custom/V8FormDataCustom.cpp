@@ -51,10 +51,12 @@ void V8FormData::constructorCustom(const v8::FunctionCallbackInfo<v8::Value>& ar
     args.GetReturnValue().Set(wrapper);
 }
 
-v8::Handle<v8::Value> V8FormData::appendMethodCustom(const v8::Arguments& args)
+void V8FormData::appendMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
-    if (args.Length() < 2)
-        return throwError(v8SyntaxError, "Not enough arguments", args.GetIsolate());
+    if (args.Length() < 2) {
+        throwError(v8SyntaxError, "Not enough arguments", args.GetIsolate());
+        return;
+    }
 
     DOMFormData* domFormData = V8FormData::toNative(args.Holder());
 
@@ -73,8 +75,6 @@ v8::Handle<v8::Value> V8FormData::appendMethodCustom(const v8::Arguments& args)
         domFormData->append(name, blob, filename);
     } else
         domFormData->append(name, toWebCoreStringWithNullCheck(arg));
-
-    return v8::Undefined();
 }
 
 } // namespace WebCore

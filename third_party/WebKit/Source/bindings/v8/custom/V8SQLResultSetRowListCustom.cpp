@@ -37,19 +37,25 @@
 
 namespace WebCore {
 
-v8::Handle<v8::Value> V8SQLResultSetRowList::itemMethodCustom(const v8::Arguments& args)
+void V8SQLResultSetRowList::itemMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
-    if (!args.Length())
-        return throwError(v8SyntaxError, "Item index is required.", args.GetIsolate());
+    if (!args.Length()) {
+        throwError(v8SyntaxError, "Item index is required.", args.GetIsolate());
+        return;
+    }
 
-    if (!args[0]->IsNumber())
-        return throwTypeError("Item index must be a number.", args.GetIsolate());
+    if (!args[0]->IsNumber()) {
+        throwTypeError("Item index must be a number.", args.GetIsolate());
+        return;
+    }
 
     SQLResultSetRowList* rowList = V8SQLResultSetRowList::toNative(args.Holder());
 
     unsigned long index = args[0]->IntegerValue();
-    if (index >= rowList->length())
-        return throwError(v8RangeError, "Item index is out of range.", args.GetIsolate());
+    if (index >= rowList->length()) {
+        throwError(v8RangeError, "Item index is out of range.", args.GetIsolate());
+        return;
+    }
 
     v8::Local<v8::Object> item = v8::Object::New();
     unsigned numColumns = rowList->columnNames().size();
@@ -75,7 +81,7 @@ v8::Handle<v8::Value> V8SQLResultSetRowList::itemMethodCustom(const v8::Argument
         item->Set(v8String(rowList->columnNames()[i], args.GetIsolate()), value, static_cast<v8::PropertyAttribute>(v8::DontDelete | v8::ReadOnly));
     }
 
-    return item;
+    v8SetReturnValue(args, item);
 }
 
 } // namespace WebCore

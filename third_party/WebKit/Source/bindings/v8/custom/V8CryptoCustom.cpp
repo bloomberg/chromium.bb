@@ -35,14 +35,18 @@
 
 namespace WebCore {
 
-v8::Handle<v8::Value> V8Crypto::getRandomValuesMethodCustom(const v8::Arguments& args)
+void V8Crypto::getRandomValuesMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
-    if (args.Length() < 1)
-        return throwNotEnoughArgumentsError(args.GetIsolate());
+    if (args.Length() < 1) {
+        throwNotEnoughArgumentsError(args.GetIsolate());
+        return;
+    }
 
     v8::Handle<v8::Value> buffer = args[0];
-    if (!V8ArrayBufferView::HasInstance(buffer, args.GetIsolate(), worldType(args.GetIsolate())))
-        return throwTypeError("First argument is not an ArrayBufferView", args.GetIsolate());
+    if (!V8ArrayBufferView::HasInstance(buffer, args.GetIsolate(), worldType(args.GetIsolate()))) {
+        throwTypeError("First argument is not an ArrayBufferView", args.GetIsolate());
+        return;
+    }
 
     ArrayBufferView* arrayBufferView = V8ArrayBufferView::toNative(v8::Handle<v8::Object>::Cast(buffer));
     ASSERT(arrayBufferView);
@@ -51,10 +55,12 @@ v8::Handle<v8::Value> V8Crypto::getRandomValuesMethodCustom(const v8::Arguments&
     ExceptionCode ec = 0;
     crypto->getRandomValues(arrayBufferView, ec);
 
-    if (ec)
-        return setDOMException(ec, args.GetIsolate());
+    if (ec) {
+        setDOMException(ec, args.GetIsolate());
+        return;
+    }
 
-    return buffer;    
+    v8SetReturnValue(args, buffer);
 }
 
 } // namespace WebCore

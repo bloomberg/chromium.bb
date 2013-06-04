@@ -83,36 +83,44 @@ bool namedSecurityCheck(v8::Local<v8::Object> host, v8::Local<v8::Value> key, v8
     return BindingSecurity::shouldAllowAccessToFrame(imp->frame(), DoNotReportSecurityError);
 }
 
-static v8::Handle<v8::Value> excitingFunctionMethod(const v8::Arguments& args)
+static void excitingFunctionMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
-    if (args.Length() < 1)
-        return throwNotEnoughArgumentsError(args.GetIsolate());
+    if (args.Length() < 1) {
+        throwNotEnoughArgumentsError(args.GetIsolate());
+        return;
+    }
     TestActiveDOMObject* imp = V8TestActiveDOMObject::toNative(args.Holder());
     if (!BindingSecurity::shouldAllowAccessToFrame(imp->frame()))
-        return v8Undefined();
-    V8TRYCATCH(Node*, nextChild, V8Node::HasInstance(args[0], args.GetIsolate(), worldType(args.GetIsolate())) ? V8Node::toNative(v8::Handle<v8::Object>::Cast(args[0])) : 0);
+        return;
+    V8TRYCATCH_VOID(Node*, nextChild, V8Node::HasInstance(args[0], args.GetIsolate(), worldType(args.GetIsolate())) ? V8Node::toNative(v8::Handle<v8::Object>::Cast(args[0])) : 0);
     imp->excitingFunction(nextChild);
-    return v8Undefined();
+
+    v8SetReturnValue(args, v8Undefined());
+    return;
 }
 
-static v8::Handle<v8::Value> excitingFunctionMethodCallback(const v8::Arguments& args)
+static void excitingFunctionMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
-    return TestActiveDOMObjectV8Internal::excitingFunctionMethod(args);
+    TestActiveDOMObjectV8Internal::excitingFunctionMethod(args);
 }
 
-static v8::Handle<v8::Value> postMessageMethod(const v8::Arguments& args)
+static void postMessageMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
-    if (args.Length() < 1)
-        return throwNotEnoughArgumentsError(args.GetIsolate());
+    if (args.Length() < 1) {
+        throwNotEnoughArgumentsError(args.GetIsolate());
+        return;
+    }
     TestActiveDOMObject* imp = V8TestActiveDOMObject::toNative(args.Holder());
-    V8TRYCATCH_FOR_V8STRINGRESOURCE(V8StringResource<>, message, args[0]);
+    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, message, args[0]);
     imp->postMessage(message);
-    return v8Undefined();
+
+    v8SetReturnValue(args, v8Undefined());
+    return;
 }
 
-static v8::Handle<v8::Value> postMessageMethodCallback(const v8::Arguments& args)
+static void postMessageMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
-    return TestActiveDOMObjectV8Internal::postMessageMethod(args);
+    TestActiveDOMObjectV8Internal::postMessageMethod(args);
 }
 
 static v8::Handle<v8::Value> postMessageAttrGetter(v8::Local<v8::String> name, const v8::AccessorInfo& info)

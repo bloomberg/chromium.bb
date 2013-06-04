@@ -46,13 +46,13 @@
 
 namespace WebCore {
 
-v8::Handle<v8::Value> SetTimeoutOrInterval(const v8::Arguments& args, bool singleShot)
+void SetTimeoutOrInterval(const v8::FunctionCallbackInfo<v8::Value>& args, bool singleShot)
 {
     WorkerContext* workerContext = V8WorkerContext::toNative(args.Holder());
 
     int argumentCount = args.Length();
     if (argumentCount < 1)
-        return v8::Undefined();
+        return;
 
     v8::Handle<v8::Value> function = args[0];
     int32_t timeout = argumentCount >= 2 ? args[1]->Int32Value() : 0;
@@ -60,13 +60,15 @@ v8::Handle<v8::Value> SetTimeoutOrInterval(const v8::Arguments& args, bool singl
 
     WorkerScriptController* script = workerContext->script();
     if (!script)
-        return v8::Undefined();
+        return;
 
     v8::Handle<v8::Context> v8Context = script->context();
     if (function->IsString()) {
         if (ContentSecurityPolicy* policy = workerContext->contentSecurityPolicy()) {
-            if (!policy->allowEval())
-                return v8Integer(0, args.GetIsolate());
+            if (!policy->allowEval()) {
+                v8SetReturnValue(args, 0);
+                return;
+            }
         }
         WTF::String stringFunction = toWebCoreString(function);
         timerId = DOMTimer::install(workerContext, adoptPtr(new ScheduledAction(v8Context, stringFunction, workerContext->url(), args.GetIsolate())), timeout, singleShot);
@@ -84,21 +86,21 @@ v8::Handle<v8::Value> SetTimeoutOrInterval(const v8::Arguments& args, bool singl
         delete [] params;
         timerId = DOMTimer::install(workerContext, action.release(), timeout, singleShot);
     } else
-        return v8::Undefined();
+        return;
 
-    return v8Integer(timerId, args.GetIsolate());
+    v8SetReturnValue(args, timerId);
 }
 
-v8::Handle<v8::Value> V8WorkerContext::importScriptsMethodCustom(const v8::Arguments& args)
+void V8WorkerContext::importScriptsMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     if (!args.Length())
-        return v8::Undefined();
+        return;
 
     Vector<String> urls;
     for (int i = 0; i < args.Length(); i++) {
-        V8TRYCATCH(v8::Handle<v8::String>, scriptUrl, args[i]->ToString());
+        V8TRYCATCH_VOID(v8::Handle<v8::String>, scriptUrl, args[i]->ToString());
         if (scriptUrl.IsEmpty())
-            return v8::Undefined();
+            return;
         urls.append(toWebCoreString(scriptUrl));
     }
 
@@ -107,18 +109,17 @@ v8::Handle<v8::Value> V8WorkerContext::importScriptsMethodCustom(const v8::Argum
     ExceptionCode ec = 0;
     workerContext->importScripts(urls, ec);
 
-    if (ec)
-        return setDOMException(ec, args.GetIsolate());
-
-    return v8::Undefined();
+    if (!ec)
+        return;
+    setDOMException(ec, args.GetIsolate());
 }
 
-v8::Handle<v8::Value> V8WorkerContext::setTimeoutMethodCustom(const v8::Arguments& args)
+void V8WorkerContext::setTimeoutMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     return SetTimeoutOrInterval(args, true);
 }
 
-v8::Handle<v8::Value> V8WorkerContext::setIntervalMethodCustom(const v8::Arguments& args)
+void V8WorkerContext::setIntervalMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     return SetTimeoutOrInterval(args, false);
 }

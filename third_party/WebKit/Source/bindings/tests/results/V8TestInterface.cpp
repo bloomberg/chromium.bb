@@ -363,76 +363,86 @@ static void Node15AttrSetterCallback(v8::Local<v8::String> name, v8::Local<v8::V
 
 #if ENABLE(Condition11) || ENABLE(Condition12)
 
-static v8::Handle<v8::Value> supplementalMethod1Method(const v8::Arguments& args)
+static void supplementalMethod1Method(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     TestInterface* imp = V8TestInterface::toNative(args.Holder());
     TestPartialInterface::supplementalMethod1(imp);
-    return v8Undefined();
+
+    v8SetReturnValue(args, v8Undefined());
+    return;
 }
 
 #endif // ENABLE(Condition11) || ENABLE(Condition12)
 
 #if ENABLE(Condition11) || ENABLE(Condition12)
 
-static v8::Handle<v8::Value> supplementalMethod1MethodCallback(const v8::Arguments& args)
+static void supplementalMethod1MethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
-    return TestInterfaceV8Internal::supplementalMethod1Method(args);
+    TestInterfaceV8Internal::supplementalMethod1Method(args);
 }
 
 #endif // ENABLE(Condition11) || ENABLE(Condition12)
 
 #if ENABLE(Condition11) || ENABLE(Condition12)
 
-static v8::Handle<v8::Value> supplementalMethod2Method(const v8::Arguments& args)
+static void supplementalMethod2Method(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
-    if (args.Length() < 2)
-        return throwNotEnoughArgumentsError(args.GetIsolate());
+    if (args.Length() < 2) {
+        throwNotEnoughArgumentsError(args.GetIsolate());
+        return;
+    }
     TestInterface* imp = V8TestInterface::toNative(args.Holder());
     ExceptionCode ec = 0;
-    V8TRYCATCH_FOR_V8STRINGRESOURCE(V8StringResource<>, strArg, args[0]);
-    V8TRYCATCH(TestObj*, objArg, V8TestObject::HasInstance(args[1], args.GetIsolate(), worldType(args.GetIsolate())) ? V8TestObject::toNative(v8::Handle<v8::Object>::Cast(args[1])) : 0);
+    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, strArg, args[0]);
+    V8TRYCATCH_VOID(TestObj*, objArg, V8TestObject::HasInstance(args[1], args.GetIsolate(), worldType(args.GetIsolate())) ? V8TestObject::toNative(v8::Handle<v8::Object>::Cast(args[1])) : 0);
     ScriptExecutionContext* scriptContext = getScriptExecutionContext();
     RefPtr<TestObj> result = TestPartialInterface::supplementalMethod2(scriptContext, imp, strArg, objArg, ec);
-    if (UNLIKELY(ec))
-        return setDOMException(ec, args.GetIsolate());
-    return toV8(result.release(), args.Holder(), args.GetIsolate());
+    if (UNLIKELY(ec)) {
+        setDOMException(ec, args.GetIsolate());
+        return;
+    }
+
+    v8SetReturnValue(args, toV8(result.release(), args.Holder(), args.GetIsolate()));
+    return;
 }
 
 #endif // ENABLE(Condition11) || ENABLE(Condition12)
 
 #if ENABLE(Condition11) || ENABLE(Condition12)
 
-static v8::Handle<v8::Value> supplementalMethod2MethodCallback(const v8::Arguments& args)
+static void supplementalMethod2MethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
-    return TestInterfaceV8Internal::supplementalMethod2Method(args);
+    TestInterfaceV8Internal::supplementalMethod2Method(args);
 }
 
 #endif // ENABLE(Condition11) || ENABLE(Condition12)
 
 #if ENABLE(Condition11) || ENABLE(Condition12)
 
-static v8::Handle<v8::Value> supplementalMethod3MethodCallback(const v8::Arguments& args)
+static void supplementalMethod3MethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
-    return V8TestInterface::supplementalMethod3MethodCustom(args);
+    V8TestInterface::supplementalMethod3MethodCustom(args);
 }
 
 #endif // ENABLE(Condition11) || ENABLE(Condition12)
 
 #if ENABLE(Condition11) || ENABLE(Condition12)
 
-static v8::Handle<v8::Value> supplementalMethod4Method(const v8::Arguments& args)
+static void supplementalMethod4Method(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     TestPartialInterface::supplementalMethod4();
-    return v8Undefined();
+
+    v8SetReturnValue(args, v8Undefined());
+    return;
 }
 
 #endif // ENABLE(Condition11) || ENABLE(Condition12)
 
 #if ENABLE(Condition11) || ENABLE(Condition12)
 
-static v8::Handle<v8::Value> supplementalMethod4MethodCallback(const v8::Arguments& args)
+static void supplementalMethod4MethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
-    return TestInterfaceV8Internal::supplementalMethod4Method(args);
+    TestInterfaceV8Internal::supplementalMethod4Method(args);
 }
 
 #endif // ENABLE(Condition11) || ENABLE(Condition12)

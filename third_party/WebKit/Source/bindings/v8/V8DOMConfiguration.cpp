@@ -51,7 +51,7 @@ void V8DOMConfiguration::batchConfigureConstants(v8::Handle<v8::FunctionTemplate
 void V8DOMConfiguration::batchConfigureCallbacks(v8::Handle<v8::ObjectTemplate> prototype, v8::Handle<v8::Signature> signature, v8::PropertyAttribute attributes, const BatchedMethod* callbacks, size_t callbackCount, v8::Isolate*, WrapperWorldType currentWorldType)
 {
     for (size_t i = 0; i < callbackCount; ++i) {
-        v8::InvocationCallback callback = callbacks[i].callback;
+        v8::FunctionCallback callback = callbacks[i].callback;
         if (currentWorldType == MainWorld && callbacks[i].callbackForMainWorld)
             callback = callbacks[i].callbackForMainWorld;
         prototype->Set(v8::String::NewSymbol(callbacks[i].name), v8::FunctionTemplate::New(callback, v8Undefined(), signature, callbacks[i].length), attributes);

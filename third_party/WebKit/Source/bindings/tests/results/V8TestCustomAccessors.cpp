@@ -58,19 +58,23 @@ namespace TestCustomAccessorsV8Internal {
 
 template <typename T> void V8_USE(T) { }
 
-static v8::Handle<v8::Value> anotherFunctionMethod(const v8::Arguments& args)
+static void anotherFunctionMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
-    if (args.Length() < 1)
-        return throwNotEnoughArgumentsError(args.GetIsolate());
+    if (args.Length() < 1) {
+        throwNotEnoughArgumentsError(args.GetIsolate());
+        return;
+    }
     TestCustomAccessors* imp = V8TestCustomAccessors::toNative(args.Holder());
-    V8TRYCATCH_FOR_V8STRINGRESOURCE(V8StringResource<>, str, args[0]);
+    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, str, args[0]);
     imp->anotherFunction(str);
-    return v8Undefined();
+
+    v8SetReturnValue(args, v8Undefined());
+    return;
 }
 
-static v8::Handle<v8::Value> anotherFunctionMethodCallback(const v8::Arguments& args)
+static void anotherFunctionMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
-    return TestCustomAccessorsV8Internal::anotherFunctionMethod(args);
+    TestCustomAccessorsV8Internal::anotherFunctionMethod(args);
 }
 
 } // namespace TestCustomAccessorsV8Internal

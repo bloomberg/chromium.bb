@@ -74,43 +74,47 @@ static v8::Handle<v8::Value> getItem(HTMLAllCollection* collection, v8::Handle<v
     return toV8Fast(result.release(), holder, collection);
 }
 
-v8::Handle<v8::Value> V8HTMLAllCollection::itemMethodCustom(const v8::Arguments& args)
+void V8HTMLAllCollection::itemMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     HTMLAllCollection* imp = V8HTMLAllCollection::toNative(args.Holder());
-    return getItem(imp, args[0], args);
+    v8SetReturnValue(args, getItem(imp, args[0], args));
 }
 
-v8::Handle<v8::Value> V8HTMLAllCollection::namedItemMethodCustom(const v8::Arguments& args)
+void V8HTMLAllCollection::namedItemMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     HTMLAllCollection* imp = V8HTMLAllCollection::toNative(args.Holder());
     v8::Handle<v8::Value> result = getNamedItems(imp, toWebCoreString(args[0]), args);
 
-    if (result.IsEmpty())
-        return v8Null(args.GetIsolate());
+    if (result.IsEmpty()) {
+        v8SetReturnValueNull(args);
+        return;
+    }
 
-    return result;
+    v8SetReturnValue(args, result);
 }
 
-v8::Handle<v8::Value> V8HTMLAllCollection::legacyCallCustom(const v8::Arguments& args)
+void V8HTMLAllCollection::legacyCallCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     if (args.Length() < 1)
-        return v8::Undefined();
+        return;
 
     HTMLAllCollection* imp = V8HTMLAllCollection::toNative(args.Holder());
 
-    if (args.Length() == 1)
-        return getItem(imp, args[0], args);
+    if (args.Length() == 1) {
+        v8SetReturnValue(args, getItem(imp, args[0], args));
+        return;
+    }
 
     // If there is a second argument it is the index of the item we want.
     String name = toWebCoreString(args[0]);
     v8::Local<v8::Uint32> index = args[1]->ToArrayIndex();
     if (index.IsEmpty())
-        return v8::Undefined();
+        return;
 
-    if (Node* node = imp->namedItemWithIndex(name, index->Uint32Value()))
-        return toV8Fast(node, args, imp);
-
-    return v8::Undefined();
+    if (Node* node = imp->namedItemWithIndex(name, index->Uint32Value())) {
+        v8SetReturnValue(args, toV8Fast(node, args, imp));
+        return;
+    }
 }
 
 } // namespace WebCore

@@ -92,6 +92,18 @@ namespace WebCore {
         return isolate ? v8Null(isolate) : v8::Handle<v8::Value>(v8::Null());
     }
 
+    template<typename T, typename V>
+    inline void v8SetReturnValue(const T& args, V v)
+    {
+        args.GetReturnValue().Set(v);
+    }
+
+    template<typename T>
+    inline void v8SetReturnValueNull(const T& args)
+    {
+        args.GetReturnValue().SetNull();
+    }
+
     // Convert v8 types to a WTF::String. If the V8 string is not already
     // an external string then it is transformed into an external string at this
     // point to avoid repeated conversions.
@@ -380,7 +392,7 @@ namespace WebCore {
     }
 
     template <class T>
-    Vector<T> toNativeArguments(const v8::Arguments& args, int startIndex)
+    Vector<T> toNativeArguments(const v8::FunctionCallbackInfo<v8::Value>& args, int startIndex)
     {
         ASSERT(startIndex <= args.Length());
         Vector<T> result;
@@ -391,7 +403,7 @@ namespace WebCore {
         return result;
     }
 
-    Vector<v8::Handle<v8::Value> > toVectorOfArguments(const v8::Arguments& args);
+    Vector<v8::Handle<v8::Value> > toVectorOfArguments(const v8::FunctionCallbackInfo<v8::Value>& args);
 
     // Validates that the passed object is a sequence type per WebIDL spec
     // http://www.w3.org/TR/2012/WD-WebIDL-20120207/#es-sequence

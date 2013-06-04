@@ -33,14 +33,14 @@
 
 namespace WebCore {
 
-v8::Handle<v8::Value> V8Location::valueOfMethodCustom(const v8::Arguments& args)
+void V8Location::valueOfMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     // Just return the this object the way the normal valueOf function
     // on the Object prototype would.  The valueOf function is only
     // added to make sure that it cannot be overwritten on location
     // objects, since that would provide a hook to change the string
     // conversion behavior of location objects.
-    return args.This();
+    v8SetReturnValue(args, args.This());
 }
 
 }  // namespace WebCore

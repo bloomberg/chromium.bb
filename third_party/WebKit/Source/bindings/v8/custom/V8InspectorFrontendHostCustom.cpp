@@ -42,28 +42,27 @@
 
 namespace WebCore {
 
-v8::Handle<v8::Value> V8InspectorFrontendHost::platformMethodCustom(const v8::Arguments& args)
+void V8InspectorFrontendHost::platformMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
 #if defined(OS_MACOSX)
-    return v8::String::NewSymbol("mac");
+    v8SetReturnValue(args, v8::String::NewSymbol("mac"));
 #elif defined(OS_LINUX)
-    return v8::String::NewSymbol("linux");
+    v8SetReturnValue(args, v8::String::NewSymbol("linux"));
 #elif defined(OS_FREEBSD)
-    return v8::String::NewSymbol("freebsd");
+    v8SetReturnValue(args, v8::String::NewSymbol("freebsd"));
 #elif defined(OS_OPENBSD)
-    return v8::String::NewSymbol("openbsd");
+    v8SetReturnValue(args, v8::String::NewSymbol("openbsd"));
 #elif defined(OS_SOLARIS)
-    return v8::String::NewSymbol("solaris");
+    v8SetReturnValue(args, v8::String::NewSymbol("solaris"));
 #elif defined(OS_WIN)
-    return v8::String::NewSymbol("windows");
+    v8SetReturnValue(args, v8::String::NewSymbol("windows"));
 #else
-    return v8::String::NewSymbol("unknown");
+    v8SetReturnValue(args, v8::String::NewSymbol("unknown"));
 #endif
 }
 
-v8::Handle<v8::Value> V8InspectorFrontendHost::portMethodCustom(const v8::Arguments&)
+void V8InspectorFrontendHost::portMethodCustom(const v8::FunctionCallbackInfo<v8::Value>&)
 {
-    return v8::Undefined();
 }
 
 static void populateContextMenuItems(v8::Local<v8::Array>& itemArray, ContextMenu& menu)
@@ -105,18 +104,18 @@ static void populateContextMenuItems(v8::Local<v8::Array>& itemArray, ContextMen
     }
 }
 
-v8::Handle<v8::Value> V8InspectorFrontendHost::showContextMenuMethodCustom(const v8::Arguments& args)
+void V8InspectorFrontendHost::showContextMenuMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     if (args.Length() < 2)
-        return v8::Undefined();
+        return;
 
     v8::Local<v8::Object> eventWrapper = v8::Local<v8::Object>::Cast(args[0]);
     if (!V8MouseEvent::info.equals(toWrapperTypeInfo(eventWrapper)))
-        return v8::Undefined();
+        return;
 
     Event* event = V8Event::toNative(eventWrapper);
     if (!args[1]->IsArray())
-        return v8::Undefined();
+        return;
 
     v8::Local<v8::Array> array = v8::Local<v8::Array>::Cast(args[1]);
     ContextMenu menu;
@@ -125,35 +124,31 @@ v8::Handle<v8::Value> V8InspectorFrontendHost::showContextMenuMethodCustom(const
     InspectorFrontendHost* frontendHost = V8InspectorFrontendHost::toNative(args.Holder());
     Vector<ContextMenuItem> items = menu.items();
     frontendHost->showContextMenu(event, items);
-
-    return v8::Undefined();
 }
 
-static v8::Handle<v8::Value> histogramEnumeration(const char* name, const v8::Arguments& args, int boundaryValue)
+static void histogramEnumeration(const char* name, const v8::FunctionCallbackInfo<v8::Value>& args, int boundaryValue)
 {
     if (args.Length() < 1 || !args[0]->IsInt32())
-        return v8::Undefined();
+        return;
 
     int sample = args[0]->ToInt32()->Value();
     if (sample < boundaryValue)
         HistogramSupport::histogramEnumeration(name, sample, boundaryValue);
-
-    return v8::Undefined();
 }
 
-v8::Handle<v8::Value> V8InspectorFrontendHost::recordActionTakenMethodCustom(const v8::Arguments& args)
+void V8InspectorFrontendHost::recordActionTakenMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
-    return histogramEnumeration("DevTools.ActionTaken", args, 100);
+    histogramEnumeration("DevTools.ActionTaken", args, 100);
 }
 
-v8::Handle<v8::Value> V8InspectorFrontendHost::recordPanelShownMethodCustom(const v8::Arguments& args)
+void V8InspectorFrontendHost::recordPanelShownMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
-    return histogramEnumeration("DevTools.PanelShown", args, 20);
+    histogramEnumeration("DevTools.PanelShown", args, 20);
 }
 
-v8::Handle<v8::Value> V8InspectorFrontendHost::recordSettingChangedMethodCustom(const v8::Arguments& args)
+void V8InspectorFrontendHost::recordSettingChangedMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
-    return histogramEnumeration("DevTools.SettingChanged", args, 100);
+    histogramEnumeration("DevTools.SettingChanged", args, 100);
 }
 
 } // namespace WebCore

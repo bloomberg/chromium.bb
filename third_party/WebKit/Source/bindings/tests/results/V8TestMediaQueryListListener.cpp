@@ -59,19 +59,23 @@ namespace TestMediaQueryListListenerV8Internal {
 
 template <typename T> void V8_USE(T) { }
 
-static v8::Handle<v8::Value> methodMethod(const v8::Arguments& args)
+static void methodMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
-    if (args.Length() < 1)
-        return throwNotEnoughArgumentsError(args.GetIsolate());
+    if (args.Length() < 1) {
+        throwNotEnoughArgumentsError(args.GetIsolate());
+        return;
+    }
     TestMediaQueryListListener* imp = V8TestMediaQueryListListener::toNative(args.Holder());
-    V8TRYCATCH(RefPtr<MediaQueryListListener>, listener, MediaQueryListListener::create(args[0]));
+    V8TRYCATCH_VOID(RefPtr<MediaQueryListListener>, listener, MediaQueryListListener::create(args[0]));
     imp->method(listener);
-    return v8Undefined();
+
+    v8SetReturnValue(args, v8Undefined());
+    return;
 }
 
-static v8::Handle<v8::Value> methodMethodCallback(const v8::Arguments& args)
+static void methodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
-    return TestMediaQueryListListenerV8Internal::methodMethod(args);
+    TestMediaQueryListListenerV8Internal::methodMethod(args);
 }
 
 } // namespace TestMediaQueryListListenerV8Internal

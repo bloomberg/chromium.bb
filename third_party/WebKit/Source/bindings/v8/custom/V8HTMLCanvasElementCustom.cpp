@@ -46,7 +46,7 @@
 
 namespace WebCore {
 
-v8::Handle<v8::Value> V8HTMLCanvasElement::getContextMethodCustom(const v8::Arguments& args)
+void V8HTMLCanvasElement::getContextMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     v8::Handle<v8::Object> holder = args.Holder();
     HTMLCanvasElement* imp = V8HTMLCanvasElement::toNative(holder);
@@ -87,35 +87,43 @@ v8::Handle<v8::Value> V8HTMLCanvasElement::getContextMethodCustom(const v8::Argu
         attrs = canvas2DAttrs;
     }
     CanvasRenderingContext* result = imp->getContext(contextId, attrs.get());
-    if (!result)
-        return v8Null(args.GetIsolate());
-    else if (result->is2d()) {
+    if (!result) {
+        v8SetReturnValueNull(args);
+        return;
+    }
+    if (result->is2d()) {
         v8::Handle<v8::Value> v8Result = toV8Fast(static_cast<CanvasRenderingContext2D*>(result), args, imp);
         if (InspectorInstrumentation::canvasAgentEnabled(imp->document())) {
             ScriptState* scriptState = ScriptState::forContext(v8::Context::GetCurrent());
             ScriptObject context(scriptState, v8::Handle<v8::Object>::Cast(v8Result));
             ScriptObject wrapped = InspectorInstrumentation::wrapCanvas2DRenderingContextForInstrumentation(imp->document(), context);
-            if (!wrapped.hasNoValue())
-                return wrapped.v8Value();
+            if (!wrapped.hasNoValue()) {
+                v8SetReturnValue(args, wrapped.v8Value());
+                return;
+            }
         }
-        return v8Result;
+        v8SetReturnValue(args, v8Result);
+        return;
     }
-    else if (result->is3d()) {
+    if (result->is3d()) {
         v8::Handle<v8::Value> v8Result = toV8Fast(static_cast<WebGLRenderingContext*>(result), args, imp);
         if (InspectorInstrumentation::canvasAgentEnabled(imp->document())) {
             ScriptState* scriptState = ScriptState::forContext(v8::Context::GetCurrent());
             ScriptObject glContext(scriptState, v8::Handle<v8::Object>::Cast(v8Result));
             ScriptObject wrapped = InspectorInstrumentation::wrapWebGLRenderingContextForInstrumentation(imp->document(), glContext);
-            if (!wrapped.hasNoValue())
-                return wrapped.v8Value();
+            if (!wrapped.hasNoValue()) {
+                v8SetReturnValue(args, wrapped.v8Value());
+                return;
+            }
         }
-        return v8Result;
+        v8SetReturnValue(args, v8Result);
+        return;
     }
     ASSERT_NOT_REACHED();
-    return v8Null(args.GetIsolate());
+    v8SetReturnValueNull(args);
 }
 
-v8::Handle<v8::Value> V8HTMLCanvasElement::toDataURLMethodCustom(const v8::Arguments& args)
+void V8HTMLCanvasElement::toDataURLMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     v8::Handle<v8::Object> holder = args.Holder();
     HTMLCanvasElement* canvas = V8HTMLCanvasElement::toNative(holder);
@@ -131,7 +139,7 @@ v8::Handle<v8::Value> V8HTMLCanvasElement::toDataURLMethodCustom(const v8::Argum
 
     String result = canvas->toDataURL(type, qualityPtr, ec);
     setDOMException(ec, args.GetIsolate());
-    return v8StringOrUndefined(result, args.GetIsolate());
+    v8SetReturnValue(args, v8StringOrUndefined(result, args.GetIsolate()));
 }
 
 } // namespace WebCore

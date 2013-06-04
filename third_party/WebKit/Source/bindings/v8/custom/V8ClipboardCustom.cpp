@@ -60,32 +60,35 @@ v8::Handle<v8::Value> V8Clipboard::typesAttrGetterCustom(v8::Local<v8::String> n
     return result;
 }
 
-v8::Handle<v8::Value> V8Clipboard::clearDataMethodCustom(const v8::Arguments& args)
+void V8Clipboard::clearDataMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     Clipboard* clipboard = V8Clipboard::toNative(args.Holder());
 
     if (!args.Length()) {
         clipboard->clearAllData();
-        return v8::Undefined();
+        return;
     }
 
-    if (args.Length() != 1)
-        return throwError(v8SyntaxError, "clearData: Invalid number of arguments", args.GetIsolate());
+    if (args.Length() != 1) {
+        throwError(v8SyntaxError, "clearData: Invalid number of arguments", args.GetIsolate());
+        return;
+    }
 
     String type = toWebCoreString(args[0]);
     clipboard->clearData(type);
-    return v8::Undefined();
 }
 
-v8::Handle<v8::Value> V8Clipboard::setDragImageMethodCustom(const v8::Arguments& args)
+void V8Clipboard::setDragImageMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     Clipboard* clipboard = V8Clipboard::toNative(args.Holder());
 
     if (!clipboard->isForDragAndDrop())
-        return v8::Undefined();
+        return;
 
-    if (args.Length() != 3)
-        return throwError(v8SyntaxError, "setDragImage: Invalid number of arguments", args.GetIsolate());
+    if (args.Length() != 3) {
+        throwError(v8SyntaxError, "setDragImage: Invalid number of arguments", args.GetIsolate());
+        return;
+    }
 
     int x = toInt32(args[1]);
     int y = toInt32(args[2]);
@@ -94,15 +97,15 @@ v8::Handle<v8::Value> V8Clipboard::setDragImageMethodCustom(const v8::Arguments&
     if (V8Node::HasInstance(args[0], args.GetIsolate(), worldType(args.GetIsolate())))
         node = V8Node::toNative(v8::Handle<v8::Object>::Cast(args[0]));
 
-    if (!node || !node->isElementNode())
-        return throwTypeError("setDragImageFromElement: Invalid first argument", args.GetIsolate());
+    if (!node || !node->isElementNode()) {
+        throwTypeError("setDragImageFromElement: Invalid first argument", args.GetIsolate());
+        return;
+    }
 
     if (toElement(node)->hasTagName(HTMLNames::imgTag) && !node->inDocument())
         clipboard->setDragImage(static_cast<HTMLImageElement*>(node)->cachedImage(), IntPoint(x, y));
     else
         clipboard->setDragImageElement(node, IntPoint(x, y));
-
-    return v8::Undefined();
 }
 
 } // namespace WebCore

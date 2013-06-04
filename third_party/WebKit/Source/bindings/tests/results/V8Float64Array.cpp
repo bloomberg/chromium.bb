@@ -65,28 +65,32 @@ namespace Float64ArrayV8Internal {
 
 template <typename T> void V8_USE(T) { }
 
-static v8::Handle<v8::Value> fooMethod(const v8::Arguments& args)
+static void fooMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
-    if (args.Length() < 1)
-        return throwNotEnoughArgumentsError(args.GetIsolate());
+    if (args.Length() < 1) {
+        throwNotEnoughArgumentsError(args.GetIsolate());
+        return;
+    }
     Float64Array* imp = V8Float64Array::toNative(args.Holder());
-    V8TRYCATCH(Float32Array*, array, V8Float32Array::HasInstance(args[0], args.GetIsolate(), worldType(args.GetIsolate())) ? V8Float32Array::toNative(v8::Handle<v8::Object>::Cast(args[0])) : 0);
-    return toV8(imp->foo(array), args.Holder(), args.GetIsolate());
+    V8TRYCATCH_VOID(Float32Array*, array, V8Float32Array::HasInstance(args[0], args.GetIsolate(), worldType(args.GetIsolate())) ? V8Float32Array::toNative(v8::Handle<v8::Object>::Cast(args[0])) : 0);
+
+    v8SetReturnValue(args, toV8(imp->foo(array), args.Holder(), args.GetIsolate()));
+    return;
 }
 
-static v8::Handle<v8::Value> fooMethodCallback(const v8::Arguments& args)
+static void fooMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
-    return Float64ArrayV8Internal::fooMethod(args);
+    Float64ArrayV8Internal::fooMethod(args);
 }
 
-static v8::Handle<v8::Value> setMethod(const v8::Arguments& args)
+static void setMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
-    return setWebGLArrayHelper<Float64Array, V8Float64Array>(args);
+    setWebGLArrayHelper<Float64Array, V8Float64Array>(args);
 }
 
-static v8::Handle<v8::Value> setMethodCallback(const v8::Arguments& args)
+static void setMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
-    return Float64ArrayV8Internal::setMethod(args);
+    Float64ArrayV8Internal::setMethod(args);
 }
 
 static void constructor(const v8::FunctionCallbackInfo<v8::Value>& args)

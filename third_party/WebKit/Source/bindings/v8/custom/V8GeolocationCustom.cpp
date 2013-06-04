@@ -126,52 +126,51 @@ static PassRefPtr<PositionOptions> createPositionOptions(v8::Local<v8::Value> va
     return options.release();
 }
 
-v8::Handle<v8::Value> V8Geolocation::getCurrentPositionMethodCustom(const v8::Arguments& args)
+void V8Geolocation::getCurrentPositionMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     bool succeeded = false;
 
     RefPtr<PositionCallback> positionCallback = createFunctionOnlyCallback<V8PositionCallback>(args[0], succeeded, args.GetIsolate());
     if (!succeeded)
-        return v8::Undefined();
+        return;
     ASSERT(positionCallback);
 
     // Argument is optional (hence undefined is allowed), and null is allowed.
     RefPtr<PositionErrorCallback> positionErrorCallback = createFunctionOnlyCallback<V8PositionErrorCallback>(args[1], succeeded, args.GetIsolate(), CallbackAllowUndefined | CallbackAllowNull);
     if (!succeeded)
-        return v8::Undefined();
+        return;
 
     RefPtr<PositionOptions> positionOptions = createPositionOptions(args[2], succeeded);
     if (!succeeded)
-        return v8::Undefined();
+        return;
     ASSERT(positionOptions);
 
     Geolocation* geolocation = V8Geolocation::toNative(args.Holder());
     geolocation->getCurrentPosition(positionCallback.release(), positionErrorCallback.release(), positionOptions.release());
-    return v8::Undefined();
 }
 
-v8::Handle<v8::Value> V8Geolocation::watchPositionMethodCustom(const v8::Arguments& args)
+void V8Geolocation::watchPositionMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     bool succeeded = false;
 
     RefPtr<PositionCallback> positionCallback = createFunctionOnlyCallback<V8PositionCallback>(args[0], succeeded, args.GetIsolate());
     if (!succeeded)
-        return v8::Undefined();
+        return;
     ASSERT(positionCallback);
 
     // Argument is optional (hence undefined is allowed), and null is allowed.
     RefPtr<PositionErrorCallback> positionErrorCallback = createFunctionOnlyCallback<V8PositionErrorCallback>(args[1], succeeded, args.GetIsolate(), CallbackAllowUndefined | CallbackAllowNull);
     if (!succeeded)
-        return v8::Undefined();
+        return;
 
     RefPtr<PositionOptions> positionOptions = createPositionOptions(args[2], succeeded);
     if (!succeeded)
-        return v8::Undefined();
+        return;
     ASSERT(positionOptions);
 
     Geolocation* geolocation = V8Geolocation::toNative(args.Holder());
     int watchId = geolocation->watchPosition(positionCallback.release(), positionErrorCallback.release(), positionOptions.release());
-    return v8::Number::New(watchId);
+    v8SetReturnValue(args, watchId);
 }
 
 } // namespace WebCore

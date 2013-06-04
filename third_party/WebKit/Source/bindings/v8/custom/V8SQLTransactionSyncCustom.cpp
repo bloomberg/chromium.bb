@@ -44,22 +44,26 @@ using namespace WTF;
 
 namespace WebCore {
 
-v8::Handle<v8::Value> V8SQLTransactionSync::executeSqlMethodCustom(const v8::Arguments& args)
+void V8SQLTransactionSync::executeSqlMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
-    if (!args.Length())
-        return setDOMException(SYNTAX_ERR, args.GetIsolate());
+    if (!args.Length()) {
+        setDOMException(SYNTAX_ERR, args.GetIsolate());
+        return;
+    }
 
-    V8TRYCATCH_FOR_V8STRINGRESOURCE(V8StringResource<>, statement, args[0]);
+    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, statement, args[0]);
 
     Vector<SQLValue> sqlValues;
 
     if (args.Length() > 1 && !isUndefinedOrNull(args[1])) {
-        if (!args[1]->IsObject())
-            return setDOMException(TYPE_MISMATCH_ERR, args.GetIsolate());
+        if (!args[1]->IsObject()) {
+            setDOMException(TYPE_MISMATCH_ERR, args.GetIsolate());
+            return;
+        }
 
         uint32_t sqlArgsLength = 0;
         v8::Local<v8::Object> sqlArgsObject = args[1]->ToObject();
-        V8TRYCATCH(v8::Local<v8::Value>, length, sqlArgsObject->Get(v8::String::New("length")));
+        V8TRYCATCH_VOID(v8::Local<v8::Value>, length, sqlArgsObject->Get(v8::String::New("length")));
 
         if (isUndefinedOrNull(length))
             sqlArgsLength = sqlArgsObject->GetPropertyNames()->Length();
@@ -68,15 +72,15 @@ v8::Handle<v8::Value> V8SQLTransactionSync::executeSqlMethodCustom(const v8::Arg
 
         for (unsigned int i = 0; i < sqlArgsLength; ++i) {
             v8::Handle<v8::Integer> key = v8Integer(i, args.GetIsolate());
-            V8TRYCATCH(v8::Local<v8::Value>, value, sqlArgsObject->Get(key));
+            V8TRYCATCH_VOID(v8::Local<v8::Value>, value, sqlArgsObject->Get(key));
 
             if (value.IsEmpty() || value->IsNull())
                 sqlValues.append(SQLValue());
             else if (value->IsNumber()) {
-                V8TRYCATCH(double, sqlValue, value->NumberValue());
+                V8TRYCATCH_VOID(double, sqlValue, value->NumberValue());
                 sqlValues.append(SQLValue(sqlValue));
             } else {
-                V8TRYCATCH_FOR_V8STRINGRESOURCE(V8StringResource<>, sqlValue, value);
+                V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, sqlValue, value);
                 sqlValues.append(SQLValue(sqlValue));
             }
         }
@@ -88,7 +92,7 @@ v8::Handle<v8::Value> V8SQLTransactionSync::executeSqlMethodCustom(const v8::Arg
     v8::Handle<v8::Value> result = toV8Fast(transaction->executeSQL(statement, sqlValues, ec), args, transaction);
     setDOMException(ec, args.GetIsolate());
 
-    return result;
+    v8SetReturnValue(args, result);
 }
 
 } // namespace WebCore

@@ -101,10 +101,10 @@ RefPtr<DeviceMotionData::RotationRate> readRotationRateArgument(v8::Local<v8::Va
 
 } // namespace
 
-v8::Handle<v8::Value> V8DeviceMotionEvent::initDeviceMotionEventMethodCustom(const v8::Arguments& args)
+void V8DeviceMotionEvent::initDeviceMotionEventMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     DeviceMotionEvent* imp = V8DeviceMotionEvent::toNative(args.Holder());
-    V8TRYCATCH_FOR_V8STRINGRESOURCE(V8StringResource<>, type, args[0]);
+    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, type, args[0]);
     bool bubbles = args[1]->BooleanValue();
     bool cancelable = args[2]->BooleanValue();
     RefPtr<DeviceMotionData::Acceleration> acceleration = readAccelerationArgument(args[3]);
@@ -114,7 +114,6 @@ v8::Handle<v8::Value> V8DeviceMotionEvent::initDeviceMotionEventMethodCustom(con
     double interval = args[6]->NumberValue();
     RefPtr<DeviceMotionData> deviceMotionData = DeviceMotionData::create(acceleration, accelerationIncludingGravity, rotationRate, intervalProvided, interval);
     imp->initDeviceMotionEvent(type, bubbles, cancelable, deviceMotionData.get());
-    return v8Undefined();
 }
 
 } // namespace WebCore

@@ -33,10 +33,10 @@
 
 namespace WebCore {
 
-v8::Handle<v8::Value> V8DeviceOrientationEvent::initDeviceOrientationEventMethodCustom(const v8::Arguments& args)
+void V8DeviceOrientationEvent::initDeviceOrientationEventMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     DeviceOrientationEvent* imp = V8DeviceOrientationEvent::toNative(args.Holder());
-    V8TRYCATCH_FOR_V8STRINGRESOURCE(V8StringResource<>, type, args[0]);
+    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, type, args[0]);
     bool bubbles = args[1]->BooleanValue();
     bool cancelable = args[2]->BooleanValue();
     // If alpha, beta, gamma or absolute are null or undefined, mark them as not provided.
@@ -51,7 +51,6 @@ v8::Handle<v8::Value> V8DeviceOrientationEvent::initDeviceOrientationEventMethod
     bool absolute = args[6]->BooleanValue();
     RefPtr<DeviceOrientationData> orientation = DeviceOrientationData::create(alphaProvided, alpha, betaProvided, beta, gammaProvided, gamma, absoluteProvided, absolute);
     imp->initDeviceOrientationEvent(type, bubbles, cancelable, orientation.get());
-    return v8Undefined();
 }
 
 } // namespace WebCore

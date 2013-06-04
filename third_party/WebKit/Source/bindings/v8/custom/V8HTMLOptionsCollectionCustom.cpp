@@ -46,42 +46,43 @@
 namespace WebCore {
 
 template<typename HolderContainer>
-static v8::Handle<v8::Value> getNamedItems(HTMLOptionsCollection* collection, const AtomicString& name, const HolderContainer& holder)
+static void getNamedItems(HTMLOptionsCollection* collection, const AtomicString& name, const HolderContainer& holder)
 {
     Vector<RefPtr<Node> > namedItems;
     collection->namedItems(name, namedItems);
 
-    if (!namedItems.size())
-        return v8Undefined();
+    if (!namedItems.size()) {
+        v8SetReturnValueNull(holder);
+        return;
+    }
 
-    if (namedItems.size() == 1)
-        return toV8Fast(namedItems.at(0).release(), holder, collection);
+    if (namedItems.size() == 1) {
+        v8SetReturnValue(holder, toV8Fast(namedItems.at(0).release(), holder, collection));
+        return;
+    }
 
-    return toV8Fast(NamedNodesCollection::create(namedItems), holder, collection);
+    v8SetReturnValue(holder, toV8Fast(NamedNodesCollection::create(namedItems), holder, collection));
 }
 
-v8::Handle<v8::Value> V8HTMLOptionsCollection::namedItemMethodCustom(const v8::Arguments& args)
+void V8HTMLOptionsCollection::namedItemMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     HTMLOptionsCollection* imp = V8HTMLOptionsCollection::toNative(args.Holder());
-    v8::Handle<v8::Value> result = getNamedItems(imp, toWebCoreString(args[0]), args);
-
-    if (result.IsEmpty())
-        return v8Null(args.GetIsolate());
-
-    return result;
+    getNamedItems(imp, toWebCoreString(args[0]), args);
 }
 
-v8::Handle<v8::Value> V8HTMLOptionsCollection::removeMethodCustom(const v8::Arguments& args)
+void V8HTMLOptionsCollection::removeMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     HTMLOptionsCollection* imp = V8HTMLOptionsCollection::toNative(args.Holder());
     HTMLSelectElement* base = toHTMLSelectElement(imp->ownerNode());
-    return removeElement(base, args);
+    removeElement(base, args);
 }
 
-v8::Handle<v8::Value> V8HTMLOptionsCollection::addMethodCustom(const v8::Arguments& args)
+void V8HTMLOptionsCollection::addMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
-    if (!V8HTMLOptionElement::HasInstance(args[0], args.GetIsolate(), worldType(args.GetIsolate())))
-        return setDOMException(TYPE_MISMATCH_ERR, args.GetIsolate());
+    if (!V8HTMLOptionElement::HasInstance(args[0], args.GetIsolate(), worldType(args.GetIsolate()))) {
+        setDOMException(TYPE_MISMATCH_ERR, args.GetIsolate());
+        return;
+    }
     HTMLOptionsCollection* imp = V8HTMLOptionsCollection::toNative(args.Holder());
     HTMLOptionElement* option = V8HTMLOptionElement::toNative(v8::Handle<v8::Object>(v8::Handle<v8::Object>::Cast(args[0])));
 
@@ -90,17 +91,16 @@ v8::Handle<v8::Value> V8HTMLOptionsCollection::addMethodCustom(const v8::Argumen
         imp->add(option, ec);
     else {
         bool ok;
-        V8TRYCATCH(int, index, toInt32(args[1], ok));
+        V8TRYCATCH_VOID(int, index, toInt32(args[1], ok));
         if (!ok)
             ec = TYPE_MISMATCH_ERR;
         else
             imp->add(option, index, ec);
     }
 
-    if (ec)
-        return setDOMException(ec, args.GetIsolate());
-
-    return v8::Undefined();
+    if (!ec)
+        return;
+    setDOMException(ec, args.GetIsolate());
 }
 
 void V8HTMLOptionsCollection::lengthAttrSetterCustom(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::AccessorInfo& info)

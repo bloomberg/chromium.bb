@@ -40,22 +40,26 @@
 
 namespace WebCore {
 
-v8::Handle<v8::Value> V8CustomElementConstructor::legacyCallCustom(const v8::Arguments& args)
+void V8CustomElementConstructor::legacyCallCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
-    if (!args.IsConstructCall())
-        return throwTypeError("DOM object constructor cannot be called as a function.", args.GetIsolate());
-    if (ConstructorMode::current() == ConstructorMode::WrapExistingObject)
-        return args.Holder();
+    if (!args.IsConstructCall()) {
+        throwTypeError("DOM object constructor cannot be called as a function.", args.GetIsolate());
+        return;
+    }
+    if (ConstructorMode::current() == ConstructorMode::WrapExistingObject) {
+        v8SetReturnValue(args, args.Holder());
+        return;
+    }
 
     CustomElementConstructor* impl = toNative(args.Holder());
     ExceptionCode ec = 0;
     RefPtr<Element> element = impl->createElement(ec);
     if (ec) {
         setDOMException(ec, args.GetIsolate());
-        return v8Undefined();
+        return;
     }
 
-    return toV8(element.get(), args.Holder(), args.GetIsolate());
+    v8SetReturnValue(args, toV8(element.get(), args.Holder(), args.GetIsolate()));
 }
 
 } // namespace WebCore

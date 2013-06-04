@@ -109,32 +109,40 @@ static void bAttrSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value>
     RealClassV8Internal::bAttrSetter(name, value, info);
 }
 
-static v8::Handle<v8::Value> func1Method(const v8::Arguments& args)
+static void func1Method(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
-    if (args.Length() < 1)
-        return throwNotEnoughArgumentsError(args.GetIsolate());
+    if (args.Length() < 1) {
+        throwNotEnoughArgumentsError(args.GetIsolate());
+        return;
+    }
     RealClass* imp = V8TestInterfaceImplementedAs::toNative(args.Holder());
-    V8TRYCATCH_FOR_V8STRINGRESOURCE(V8StringResource<>, a, args[0]);
-    return v8String(imp->func1(a), args.GetIsolate(), ReturnUnsafeHandle);
+    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, a, args[0]);
+
+    v8SetReturnValue(args, v8String(imp->func1(a), args.GetIsolate(), ReturnUnsafeHandle));
+    return;
 }
 
-static v8::Handle<v8::Value> func1MethodCallback(const v8::Arguments& args)
+static void func1MethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
-    return RealClassV8Internal::func1Method(args);
+    RealClassV8Internal::func1Method(args);
 }
 
-static v8::Handle<v8::Value> funcTestInterfaceImplementedAsParamMethod(const v8::Arguments& args)
+static void funcTestInterfaceImplementedAsParamMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
-    if (args.Length() < 1)
-        return throwNotEnoughArgumentsError(args.GetIsolate());
+    if (args.Length() < 1) {
+        throwNotEnoughArgumentsError(args.GetIsolate());
+        return;
+    }
     RealClass* imp = V8TestInterfaceImplementedAs::toNative(args.Holder());
-    V8TRYCATCH(RealClass*, orange, V8TestInterfaceImplementedAs::HasInstance(args[0], args.GetIsolate(), worldType(args.GetIsolate())) ? V8TestInterfaceImplementedAs::toNative(v8::Handle<v8::Object>::Cast(args[0])) : 0);
-    return v8String(imp->funcTestInterfaceImplementedAsParam(orange), args.GetIsolate(), ReturnUnsafeHandle);
+    V8TRYCATCH_VOID(RealClass*, orange, V8TestInterfaceImplementedAs::HasInstance(args[0], args.GetIsolate(), worldType(args.GetIsolate())) ? V8TestInterfaceImplementedAs::toNative(v8::Handle<v8::Object>::Cast(args[0])) : 0);
+
+    v8SetReturnValue(args, v8String(imp->funcTestInterfaceImplementedAsParam(orange), args.GetIsolate(), ReturnUnsafeHandle));
+    return;
 }
 
-static v8::Handle<v8::Value> funcTestInterfaceImplementedAsParamMethodCallback(const v8::Arguments& args)
+static void funcTestInterfaceImplementedAsParamMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
-    return RealClassV8Internal::funcTestInterfaceImplementedAsParamMethod(args);
+    RealClassV8Internal::funcTestInterfaceImplementedAsParamMethod(args);
 }
 
 } // namespace RealClassV8Internal

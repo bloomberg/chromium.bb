@@ -74,25 +74,30 @@ void V8SVGLength::valueAttrSetterCustom(v8::Local<v8::String> name, v8::Local<v8
         wrapper->commitChange();
 }
 
-v8::Handle<v8::Value> V8SVGLength::convertToSpecifiedUnitsMethodCustom(const v8::Arguments& args)
+void V8SVGLength::convertToSpecifiedUnitsMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     SVGPropertyTearOff<SVGLength>* wrapper = V8SVGLength::toNative(args.Holder());
-    if (wrapper->isReadOnly())
-        return setDOMException(NO_MODIFICATION_ALLOWED_ERR, args.GetIsolate());
+    if (wrapper->isReadOnly()) {
+        setDOMException(NO_MODIFICATION_ALLOWED_ERR, args.GetIsolate());
+        return;
+    }
 
-    if (args.Length() < 1)
-        return throwNotEnoughArgumentsError(args.GetIsolate());
+    if (args.Length() < 1) {
+        throwNotEnoughArgumentsError(args.GetIsolate());
+        return;
+    }
 
     SVGLength& imp = wrapper->propertyReference();
     ExceptionCode ec = 0;
-    V8TRYCATCH(int, unitType, toUInt32(args[0]));
+    V8TRYCATCH_VOID(int, unitType, toUInt32(args[0]));
     SVGLengthContext lengthContext(wrapper->contextElement());
     imp.convertToSpecifiedUnits(unitType, lengthContext, ec);
-    if (UNLIKELY(ec))
-        return setDOMException(ec, args.GetIsolate());
+    if (UNLIKELY(ec)) {
+        setDOMException(ec, args.GetIsolate());
+        return;
+    }
 
     wrapper->commitChange();
-    return v8Undefined();
 }
 
 } // namespace WebCore

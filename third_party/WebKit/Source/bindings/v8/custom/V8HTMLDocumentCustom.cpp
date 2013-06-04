@@ -57,7 +57,7 @@ namespace WebCore {
 // Firefox/Safari/IE support non-standard arguments to document.write, ex:
 //   document.write("a", "b", "c") --> document.write("abc")
 //   document.write() --> document.write("")
-static String writeHelperGetString(const v8::Arguments& args)
+static String writeHelperGetString(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     StringBuilder builder;
     for (int i = 0; i < args.Length(); ++i)
@@ -65,21 +65,19 @@ static String writeHelperGetString(const v8::Arguments& args)
     return builder.toString();
 }
 
-v8::Handle<v8::Value> V8HTMLDocument::writeMethodCustom(const v8::Arguments& args)
+void V8HTMLDocument::writeMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     HTMLDocument* htmlDocument = V8HTMLDocument::toNative(args.Holder());
     htmlDocument->write(writeHelperGetString(args), activeDOMWindow()->document());
-    return v8::Undefined();
 }
 
-v8::Handle<v8::Value> V8HTMLDocument::writelnMethodCustom(const v8::Arguments& args)
+void V8HTMLDocument::writelnMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     HTMLDocument* htmlDocument = V8HTMLDocument::toNative(args.Holder());
     htmlDocument->writeln(writeHelperGetString(args), activeDOMWindow()->document());
-    return v8::Undefined();
 }
 
-v8::Handle<v8::Value> V8HTMLDocument::openMethodCustom(const v8::Arguments& args)
+void V8HTMLDocument::openMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     HTMLDocument* htmlDocument = V8HTMLDocument::toNative(args.Holder());
 
@@ -89,24 +87,27 @@ v8::Handle<v8::Value> V8HTMLDocument::openMethodCustom(const v8::Arguments& args
             v8::Local<v8::Context> context = frame->script()->currentWorldContext();
             // Bail out if we cannot get the context.
             if (context.IsEmpty())
-                return v8::Undefined();
+                return;
             v8::Local<v8::Object> global = context->Global();
             // Get the open property of the global object.
             v8::Local<v8::Value> function = global->Get(v8::String::NewSymbol("open"));
             // If the open property is not a function throw a type error.
-            if (!function->IsFunction())
-                return throwTypeError("open is not a function", args.GetIsolate());
+            if (!function->IsFunction()) {
+                throwTypeError("open is not a function", args.GetIsolate());
+                return;
+            }
             // Wrap up the arguments and call the function.
             OwnArrayPtr<v8::Local<v8::Value> > params = adoptArrayPtr(new v8::Local<v8::Value>[args.Length()]);
             for (int i = 0; i < args.Length(); i++)
                 params[i] = args[i];
 
-            return frame->script()->callFunction(v8::Local<v8::Function>::Cast(function), global, args.Length(), params.get());
+            v8SetReturnValue(args, frame->script()->callFunction(v8::Local<v8::Function>::Cast(function), global, args.Length(), params.get()));
+            return;
         }
     }
 
     htmlDocument->open(activeDOMWindow()->document());
-    return args.Holder();
+    v8SetReturnValue(args, args.Holder());
 }
 
 v8::Handle<v8::Object> wrap(HTMLDocument* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)

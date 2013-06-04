@@ -57,62 +57,76 @@ v8::Handle<v8::Object> wrap(DataView* impl, v8::Handle<v8::Object> creationConte
     return V8DataView::createWrapper(impl, creationContext, isolate);
 }
 
-v8::Handle<v8::Value> V8DataView::getInt8MethodCustom(const v8::Arguments& args)
+void V8DataView::getInt8MethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
-    if (args.Length() < 1)
-        return throwNotEnoughArgumentsError(args.GetIsolate());
+    if (args.Length() < 1) {
+        throwNotEnoughArgumentsError(args.GetIsolate());
+        return;
+    }
 
     DataView* imp = V8DataView::toNative(args.Holder());
     ExceptionCode ec = 0;
-    V8TRYCATCH(unsigned, byteOffset, toUInt32(args[0]));
+    V8TRYCATCH_VOID(unsigned, byteOffset, toUInt32(args[0]));
     int8_t result = imp->getInt8(byteOffset, ec);
-    if (UNLIKELY(ec))
-        return setDOMException(ec, args.GetIsolate());
-    return v8Integer(result, args.GetIsolate());
+    if (UNLIKELY(ec)) {
+        setDOMException(ec, args.GetIsolate());
+        return;
+    }
+    v8SetReturnValue(args, result);
 }
 
-v8::Handle<v8::Value> V8DataView::getUint8MethodCustom(const v8::Arguments& args)
+void V8DataView::getUint8MethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
-    if (args.Length() < 1)
-        return throwNotEnoughArgumentsError(args.GetIsolate());
+    if (args.Length() < 1) {
+        throwNotEnoughArgumentsError(args.GetIsolate());
+        return;
+    }
 
     DataView* imp = V8DataView::toNative(args.Holder());
     ExceptionCode ec = 0;
-    V8TRYCATCH(unsigned, byteOffset, toUInt32(args[0]));
+    V8TRYCATCH_VOID(unsigned, byteOffset, toUInt32(args[0]));
     uint8_t result = imp->getUint8(byteOffset, ec);
-    if (UNLIKELY(ec))
-        return setDOMException(ec, args.GetIsolate());
-    return v8Integer(result, args.GetIsolate());
+    if (UNLIKELY(ec)) {
+        setDOMException(ec, args.GetIsolate());
+        return;
+    }
+    v8SetReturnValue(args, result);
 }
 
-v8::Handle<v8::Value> V8DataView::setInt8MethodCustom(const v8::Arguments& args)
+void V8DataView::setInt8MethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
-    if (args.Length() < 2)
-        return throwNotEnoughArgumentsError(args.GetIsolate());
+    if (args.Length() < 2) {
+        throwNotEnoughArgumentsError(args.GetIsolate());
+        return;
+    }
 
     DataView* imp = V8DataView::toNative(args.Holder());
     ExceptionCode ec = 0;
-    V8TRYCATCH(unsigned, byteOffset, toUInt32(args[0]));
-    V8TRYCATCH(int, value, toInt32(args[1]));
+    V8TRYCATCH_VOID(unsigned, byteOffset, toUInt32(args[0]));
+    V8TRYCATCH_VOID(int, value, toInt32(args[1]));
     imp->setInt8(byteOffset, static_cast<int8_t>(value), ec);
-    if (UNLIKELY(ec))
-        return setDOMException(ec, args.GetIsolate());
-    return v8Undefined();
+    if (UNLIKELY(ec)) {
+        setDOMException(ec, args.GetIsolate());
+        return;
+    }
 }
 
-v8::Handle<v8::Value> V8DataView::setUint8MethodCustom(const v8::Arguments& args)
+void V8DataView::setUint8MethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
-    if (args.Length() < 2)
-        return throwNotEnoughArgumentsError(args.GetIsolate());
+    if (args.Length() < 2) {
+        throwNotEnoughArgumentsError(args.GetIsolate());
+        return;
+    }
 
     DataView* imp = V8DataView::toNative(args.Holder());
     ExceptionCode ec = 0;
-    V8TRYCATCH(unsigned, byteOffset, toUInt32(args[0]));
-    V8TRYCATCH(int, value, toInt32(args[1]));
+    V8TRYCATCH_VOID(unsigned, byteOffset, toUInt32(args[0]));
+    V8TRYCATCH_VOID(int, value, toInt32(args[1]));
     imp->setUint8(byteOffset, static_cast<uint8_t>(value), ec);
-    if (UNLIKELY(ec))
-        return setDOMException(ec, args.GetIsolate());
-    return v8Undefined();
+    if (UNLIKELY(ec)) {
+        setDOMException(ec, args.GetIsolate());
+        return;
+    }
 }
 
 } // namespace WebCore

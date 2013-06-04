@@ -103,19 +103,19 @@ v8::Handle<v8::Value> V8HTMLObjectElement::namedPropertySetter(v8::Local<v8::Str
     return npObjectNamedSetter<V8HTMLObjectElement>(name, value, info);
 }
 
-v8::Handle<v8::Value> V8HTMLAppletElement::legacyCallCustom(const v8::Arguments& args)
+void V8HTMLAppletElement::legacyCallCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
-    return npObjectInvokeDefaultHandler(args);
+    v8SetReturnValue(args, npObjectInvokeDefaultHandler(*reinterpret_cast<const v8::Arguments*>(&args)));
 }
 
-v8::Handle<v8::Value> V8HTMLEmbedElement::legacyCallCustom(const v8::Arguments& args)
+void V8HTMLEmbedElement::legacyCallCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
-    return npObjectInvokeDefaultHandler(args);
+    v8SetReturnValue(args, npObjectInvokeDefaultHandler(*reinterpret_cast<const v8::Arguments*>(&args)));
 }
 
-v8::Handle<v8::Value> V8HTMLObjectElement::legacyCallCustom(const v8::Arguments& args)
+void V8HTMLObjectElement::legacyCallCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
-    return npObjectInvokeDefaultHandler(args);
+    v8SetReturnValue(args, npObjectInvokeDefaultHandler(*reinterpret_cast<const v8::Arguments*>(&args)));
 }
 
 template <class C>

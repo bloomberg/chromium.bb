@@ -261,10 +261,12 @@ void constructWebGLArray(const v8::FunctionCallbackInfo<v8::Value>& args, Wrappe
 }
 
 template <class CPlusPlusArrayType, class JavaScriptWrapperArrayType>
-v8::Handle<v8::Value> setWebGLArrayHelper(const v8::Arguments& args)
+void setWebGLArrayHelper(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
-    if (args.Length() < 1)
-        return throwNotEnoughArgumentsError(args.GetIsolate());
+    if (args.Length() < 1) {
+        throwNotEnoughArgumentsError(args.GetIsolate());
+        return;
+    }
 
     CPlusPlusArrayType* impl = JavaScriptWrapperArrayType::toNative(args.Holder());
 
@@ -274,9 +276,11 @@ v8::Handle<v8::Value> setWebGLArrayHelper(const v8::Arguments& args)
         uint32_t offset = 0;
         if (args.Length() == 2)
             offset = toUInt32(args[1]);
-        if (!impl->set(src, offset))
-            return throwError(v8RangeError, outOfRangeLengthAndOffset, args.GetIsolate());
-        return v8::Undefined();
+        if (!impl->set(src, offset)) {
+            throwError(v8RangeError, outOfRangeLengthAndOffset, args.GetIsolate());
+            return;
+        }
+        return;
     }
 
     if (args[0]->IsObject()) {
@@ -286,17 +290,19 @@ v8::Handle<v8::Value> setWebGLArrayHelper(const v8::Arguments& args)
         if (args.Length() == 2)
             offset = toUInt32(args[1]);
         uint32_t length = toUInt32(array->Get(v8::String::NewSymbol("length")));
-        if (!impl->checkInboundData(offset, length))
-            return throwError(v8RangeError, outOfRangeLengthAndOffset, args.GetIsolate());
+        if (!impl->checkInboundData(offset, length)) {
+            throwError(v8RangeError, outOfRangeLengthAndOffset, args.GetIsolate());
+            return;
+        }
         bool copied = copyElements(args.Holder(), array, length, offset, args.GetIsolate());
         if (!copied) {
             for (uint32_t i = 0; i < length; i++)
                 impl->set(offset + i, array->Get(i)->NumberValue());
         }
-        return v8::Undefined();
+        return;
     }
 
-    return throwTypeError("Invalid argument", args.GetIsolate());
+    throwTypeError("Invalid argument", args.GetIsolate());
 }
 
 }

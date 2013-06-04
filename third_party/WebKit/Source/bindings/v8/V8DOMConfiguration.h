@@ -100,8 +100,8 @@ public:
     // BatchedMethod translates into calls to Set() on the prototype ObjectTemplate.
     struct BatchedMethod {
         const char* const name;
-        v8::InvocationCallback callback;
-        v8::InvocationCallback callbackForMainWorld;
+        v8::FunctionCallback callback;
+        v8::FunctionCallback callbackForMainWorld;
         int length;
     };
 

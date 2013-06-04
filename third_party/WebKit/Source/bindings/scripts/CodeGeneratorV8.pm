@@ -708,7 +708,7 @@ END
             my $conditionalString = GenerateConditionalString($function->signature);
             $header{classPublic}->add("#if ${conditionalString}\n") if $conditionalString;
             $header{classPublic}->add(<<END);
-    static v8::Handle<v8::Value> ${name}MethodCustom(const v8::Arguments&);
+    static void ${name}MethodCustom(const v8::FunctionCallbackInfo<v8::Value>&);
 END
             $header{classPublic}->add("#endif // ${conditionalString}\n") if $conditionalString;
         }
@@ -1046,7 +1046,7 @@ sub GenerateHeaderLegacyCall
     my $interface = shift;
 
     if ($interface->extendedAttributes->{"CustomLegacyCall"}) {
-        $header{classPublic}->add("    static v8::Handle<v8::Value> legacyCallCustom(const v8::Arguments&);\n");
+        $header{classPublic}->add("    static void legacyCallCustom(const v8::FunctionCallbackInfo<v8::Value>&);\n");
     }
 }
 
@@ -2028,7 +2028,7 @@ sub GenerateOverloadedFunction
     my $code = "";
     $code .= "#if ${conditionalString}\n\n" if $conditionalString;
     $code .= <<END;
-static v8::Handle<v8::Value> ${name}Method${forMainWorldSuffix}(const v8::Arguments& args)
+static void ${name}Method${forMainWorldSuffix}(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
 END
     $code .= GenerateFeatureObservation($function->signature->extendedAttributes->{"MeasureAs"});
@@ -2037,16 +2037,20 @@ END
     foreach my $overload (@{$function->{overloads}}) {
         my ($numMandatoryParams, $parametersCheck) = GenerateFunctionParametersCheck($overload);
         $leastNumMandatoryParams = $numMandatoryParams if ($numMandatoryParams < $leastNumMandatoryParams);
-        $code .= "    if ($parametersCheck)\n";
+        $code .= "    if ($parametersCheck) {\n";
         my $overloadedIndexString = $overload->{overloadIndex};
-        $code .= "        return ${name}${overloadedIndexString}Method${forMainWorldSuffix}(args);\n";
+        $code .= "        ${name}${overloadedIndexString}Method${forMainWorldSuffix}(args);\n";
+        $code .= "        return;\n";
+        $code .= "    }\n";
     }
     if ($leastNumMandatoryParams >= 1) {
-        $code .= "    if (args.Length() < $leastNumMandatoryParams)\n";
-        $code .= "        return throwNotEnoughArgumentsError(args.GetIsolate());\n";
+        $code .= "    if (args.Length() < $leastNumMandatoryParams) {\n";
+        $code .= "        throwNotEnoughArgumentsError(args.GetIsolate());\n";
+        $code .= "        return;\n";
+        $code .= "    }\n";
     }
     $code .= <<END;
-    return throwTypeError(0, args.GetIsolate());
+    throwTypeError(0, args.GetIsolate());
 END
     $code .= "}\n\n";
     $code .= "#endif // ${conditionalString}\n\n" if $conditionalString;
@@ -2071,7 +2075,7 @@ sub GenerateFunctionCallback
     my $code = "";
     $code .= "#if ${conditionalString}\n\n" if $conditionalString;
     $code .= <<END;
-static v8::Handle<v8::Value> ${name}MethodCallback${forMainWorldSuffix}(const v8::Arguments& args)
+static void ${name}MethodCallback${forMainWorldSuffix}(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
 END
     $code .= GenerateFeatureObservation($function->signature->extendedAttributes->{"MeasureAs"});
@@ -2080,9 +2084,9 @@ END
         $code .= GenerateActivityLogging("Method", $interface, "${name}");
     }
     if (HasCustomMethod($function->signature->extendedAttributes)) {
-        $code .= "    return ${v8ClassName}::${name}MethodCustom(args);\n";
+        $code .= "    ${v8ClassName}::${name}MethodCustom(args);\n";
     } else {
-        $code .= "    return ${implClassName}V8Internal::${name}Method${forMainWorldSuffix}(args);\n";
+        $code .= "    ${implClassName}V8Internal::${name}Method${forMainWorldSuffix}(args);\n";
     }
     $code .= "}\n\n";
     $code .= "#endif // ${conditionalString}\n\n" if $conditionalString;
@@ -2114,7 +2118,7 @@ sub GenerateFunction
     my $conditionalString = GenerateConditionalString($function->signature);
     my $code = "";
     $code .= "#if ${conditionalString}\n\n" if $conditionalString;
-    $code .= "static v8::Handle<v8::Value> ${name}Method${forMainWorldSuffix}(const v8::Arguments& args)\n";
+    $code .= "static void ${name}Method${forMainWorldSuffix}(const v8::FunctionCallbackInfo<v8::Value>& args)\n";
     $code .= "{\n";
 
     if ($name eq "addEventListener" || $name eq "removeEventListener") {
@@ -2126,7 +2130,7 @@ sub GenerateFunction
         $code .= <<END;
     RefPtr<EventListener> listener = V8EventListenerList::getEventListener(args[1], false, ListenerFind${lookupType});
     if (listener) {
-        V8TRYCATCH_FOR_V8STRINGRESOURCE(V8StringResource<WithNullCheck>, stringResource, args[0]);
+        V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<WithNullCheck>, stringResource, args[0]);
         ${v8ClassName}::toNative(args.Holder())->${implName}(stringResource, listener${passRefPtrHandling}, args[2]->BooleanValue());
 END
         if (!InheritsInterface($interface, "Node")) {
@@ -2136,7 +2140,6 @@ END
         }
         $code .= <<END;
     }
-    return v8Undefined();
 }
 
 END
@@ -2145,12 +2148,12 @@ END
         return;
     }
 
-    $code .= GenerateArgumentsCountCheckOldStyle($function, $interface);
+    $code .= GenerateArgumentsCountCheck($function, $interface);
 
     if ($name eq "set" and IsConstructorTemplate($interface, "TypedArray")) {
         AddToImplIncludes("bindings/v8/custom/V8ArrayBufferViewCustom.h");
         $code .= <<END;
-    return setWebGLArrayHelper<$implClassName, ${v8ClassName}>(args);
+    setWebGLArrayHelper<$implClassName, ${v8ClassName}>(args);
 }
 
 END
@@ -2167,8 +2170,10 @@ END
         } else {
             AddToImplIncludes("core/dom/ExceptionCode.h");
             $code .= "    $nativeClassName wrapper = ${v8ClassName}::toNative(args.Holder());\n";
-            $code .= "    if (wrapper->isReadOnly())\n";
-            $code .= "        return setDOMException(NO_MODIFICATION_ALLOWED_ERR, args.GetIsolate());\n";
+            $code .= "    if (wrapper->isReadOnly()) {\n";
+            $code .= "        setDOMException(NO_MODIFICATION_ALLOWED_ERR, args.GetIsolate());\n";
+            $code .= "        return;\n";
+            $code .= "    }\n";
             my $svgWrappedNativeType = GetSVGWrappedTypeNeedingTearOff($interfaceName);
             $code .= "    $svgWrappedNativeType& impInstance = wrapper->propertyReference();\n";
             $code .= "    $svgWrappedNativeType* imp = &impInstance;\n";
@@ -2188,7 +2193,7 @@ END
         AddToImplIncludes("bindings/v8/BindingSecurity.h");
         $code .= <<END;
     if (!BindingSecurity::shouldAllowAccessToFrame(imp->frame()))
-        return v8Undefined();
+        return;
 END
     }
 
@@ -2208,12 +2213,14 @@ END
 
     if ($function->signature->extendedAttributes->{"CheckSecurityForNode"}) {
         AddToImplIncludes("bindings/v8/BindingSecurity.h");
-        $code .= "    if (!BindingSecurity::shouldAllowAccessToNode(imp->" . GetImplName($function->signature) . "(ec)))\n";
-        $code .= "        return v8::Handle<v8::Value>(v8Null(args.GetIsolate()));\n";
+        $code .= "    if (!BindingSecurity::shouldAllowAccessToNode(imp->" . GetImplName($function->signature) . "(ec))) {\n";
+        $code .= "        v8SetReturnValueNull(args);\n";
+        $code .= "        return;\n";
+        $code .= "    }\n";
 END
     }
 
-    my ($parameterCheckString, $paramIndex, %replacements) = GenerateParametersCheckOldStyle($function, $interface, $forMainWorldSuffix);
+    my ($parameterCheckString, $paramIndex, %replacements) = GenerateParametersCheck($function, $interface, $forMainWorldSuffix);
     $code .= $parameterCheckString;
 
     # Build the function call string.
@@ -2298,26 +2305,12 @@ sub GenerateArgumentsCountCheck
     return $argumentsCountCheckString;
 }
 
-sub GenerateParametersCheckOldStyle
-{
-    my $function = shift;
-    my $interface = shift;
-    my $forMainWorldSuffix = shift;
-    GenerateParametersCheck($function, $interface, $forMainWorldSuffix, "old");
-}
-
 sub GenerateParametersCheck
 {
     my $function = shift;
     my $interface = shift;
     my $forMainWorldSuffix = shift;
     my $style = shift || "new";
-
-    my $isOld = $style eq "old";
-    my $trySuffix = "_VOID";
-    if ($isOld) {
-        $trySuffix = "";
-    }
 
     my $parameterCheckString = "";
     my $paramIndex = 0;
@@ -2352,48 +2345,32 @@ sub GenerateParametersCheck
             if ($parameter->isOptional) {
                 $parameterCheckString .= "    RefPtr<" . $parameter->type . "> $parameterName;\n";
                 $parameterCheckString .= "    if (args.Length() > $paramIndex && !args[$paramIndex]->IsNull() && !args[$paramIndex]->IsUndefined()) {\n";
-                if ($isOld) {
-                    $parameterCheckString .= "        if (!args[$paramIndex]->IsFunction())\n";
-                    $parameterCheckString .= "            return throwTypeError(0, args.GetIsolate());\n";
-                } else {
-                    $parameterCheckString .= "        if (!args[$paramIndex]->IsFunction()) {\n";
-                    $parameterCheckString .= "            throwTypeError(0, args.GetIsolate());\n";
-                    $parameterCheckString .= "            return;\n";
-                    $parameterCheckString .= "        }\n";
-                }
+                $parameterCheckString .= "        if (!args[$paramIndex]->IsFunction()) {\n";
+                $parameterCheckString .= "            throwTypeError(0, args.GetIsolate());\n";
+                $parameterCheckString .= "            return;\n";
+                $parameterCheckString .= "        }\n";
                 $parameterCheckString .= "        $parameterName = ${v8ClassName}::create(args[$paramIndex], getScriptExecutionContext());\n";
                 $parameterCheckString .= "    }\n";
             } else {
-                if ($isOld) {
-                    $parameterCheckString .= "    if (args.Length() <= $paramIndex || !args[$paramIndex]->IsFunction())\n";
-                    $parameterCheckString .= "        return throwTypeError(0, args.GetIsolate());\n";
-                } else {
-                    $parameterCheckString .= "    if (args.Length() <= $paramIndex || !args[$paramIndex]->IsFunction()) {\n";
-                    $parameterCheckString .= "        throwTypeError(0, args.GetIsolate());\n";
-                    $parameterCheckString .= "        return;\n";
-                    $parameterCheckString .= "    }\n";
-                }
+                $parameterCheckString .= "    if (args.Length() <= $paramIndex || !args[$paramIndex]->IsFunction()) {\n";
+                $parameterCheckString .= "        throwTypeError(0, args.GetIsolate());\n";
+                $parameterCheckString .= "        return;\n";
+                $parameterCheckString .= "    }\n";
                 $parameterCheckString .= "    RefPtr<" . $parameter->type . "> $parameterName = ${v8ClassName}::create(args[$paramIndex], getScriptExecutionContext());\n";
             }
         } elsif ($parameter->extendedAttributes->{"Clamp"}) {
                 my $nativeValue = "${parameterName}NativeValue";
                 my $paramType = $parameter->type;
                 $parameterCheckString .= "    $paramType $parameterName = 0;\n";
-                $parameterCheckString .= "    V8TRYCATCH$trySuffix(double, $nativeValue, args[$paramIndex]->NumberValue());\n";
+                $parameterCheckString .= "    V8TRYCATCH_VOID(double, $nativeValue, args[$paramIndex]->NumberValue());\n";
                 $parameterCheckString .= "    if (!std::isnan($nativeValue))\n";
                 $parameterCheckString .= "        $parameterName = clampTo<$paramType>($nativeValue);\n";
         } elsif ($parameter->type eq "SerializedScriptValue") {
             AddToImplIncludes("bindings/v8/SerializedScriptValue.h");
             $parameterCheckString .= "    bool ${parameterName}DidThrow = false;\n";
             $parameterCheckString .= "    $nativeType $parameterName = SerializedScriptValue::create(args[$paramIndex], 0, 0, ${parameterName}DidThrow, args.GetIsolate());\n";
-            if ($isOld) {
-                $parameterCheckString .= "    if (${parameterName}DidThrow)\n";
-                $parameterCheckString .= "        return v8Undefined();\n";
-            } else {
-                $parameterCheckString .= "    if (${parameterName}DidThrow) {\n";
-                $parameterCheckString .= "        return;\n";
-                $parameterCheckString .= "    }\n";
-            }
+            $parameterCheckString .= "    if (${parameterName}DidThrow)\n";
+            $parameterCheckString .= "        return;\n";
         } elsif ($parameter->isVariadic) {
             my $nativeElementType = GetNativeType($parameter->type);
             if ($nativeElementType =~ />$/) {
@@ -2404,25 +2381,19 @@ sub GenerateParametersCheck
             if (IsWrapperType($argType)) {
                 $parameterCheckString .= "    Vector<$nativeElementType> $parameterName;\n";
                 $parameterCheckString .= "    for (int i = $paramIndex; i < args.Length(); ++i) {\n";
-                if ($isOld) {
-                    $parameterCheckString .= "        if (!V8${argType}::HasInstance(args[i], args.GetIsolate(), worldType(args.GetIsolate())))\n";
-                    $parameterCheckString .= "            return throwTypeError(0, args.GetIsolate());\n";
-                } else {
-                    $parameterCheckString .= "        if (!V8${argType}::HasInstance(args[i], args.GetIsolate(), worldType(args.GetIsolate()))) {\n";
-                    $parameterCheckString .= "            throwTypeError(0, args.GetIsolate());\n";
-                    $parameterCheckString .= "            return;\n";
-                    $parameterCheckString .= "        }\n";
-                }
+                $parameterCheckString .= "        if (!V8${argType}::HasInstance(args[i], args.GetIsolate(), worldType(args.GetIsolate()))) {\n";
+                $parameterCheckString .= "            throwTypeError(0, args.GetIsolate());\n";
+                $parameterCheckString .= "            return;\n";
+                $parameterCheckString .= "        }\n";
                 $parameterCheckString .= "        $parameterName.append(V8${argType}::toNative(v8::Handle<v8::Object>::Cast(args[i])));\n";
                 $parameterCheckString .= "    }\n";
             } else {
-                $parameterCheckString .= "    V8TRYCATCH$trySuffix(Vector<$nativeElementType>, $parameterName, toNativeArguments<$nativeElementType>(args, $paramIndex));\n";
+                $parameterCheckString .= "    V8TRYCATCH_VOID(Vector<$nativeElementType>, $parameterName, toNativeArguments<$nativeElementType>(args, $paramIndex));\n";
             }
         } elsif ($nativeType =~ /^V8StringResource/) {
             my $default = defined $parameter->extendedAttributes->{"Default"} ? $parameter->extendedAttributes->{"Default"} : "";
             my $value = JSValueToNative($parameter->type, $parameter->extendedAttributes, $parameter->isOptional && $default eq "NullString" ? "argumentOrNull(args, $paramIndex)" : "args[$paramIndex]", "args.GetIsolate()");
-            my $suffix = $isOld ? "" : "VOID";
-            $parameterCheckString .= "    " . ConvertToV8StringResource($parameter, $nativeType, $parameterName, $value, $suffix) . "\n";
+            $parameterCheckString .= "    " . ConvertToV8StringResource($parameter, $nativeType, $parameterName, $value, "VOID") . "\n";
             if (IsEnumType($parameter->type)) {
                 my @enumValues = ValidEnumValues($parameter->type);
                 my @validEqualities = ();
@@ -2431,15 +2402,10 @@ sub GenerateParametersCheck
                 }
                 my $enumValidationExpression = join(" || ", @validEqualities);
                 $parameterCheckString .=  "    String string = $parameterName;\n";
-                if ($isOld) {
-                    $parameterCheckString .=  "    if (!($enumValidationExpression))\n";
-                    $parameterCheckString .= "        return throwTypeError(0, args.GetIsolate());\n";
-                } else {
-                    $parameterCheckString .= "    if (!($enumValidationExpression)) {\n";
-                    $parameterCheckString .= "        throwTypeError(0, args.GetIsolate());\n";
-                    $parameterCheckString .= "        return;\n";
-                    $parameterCheckString .= "    }\n";
-                }
+                $parameterCheckString .= "    if (!($enumValidationExpression)) {\n";
+                $parameterCheckString .= "        throwTypeError(0, args.GetIsolate());\n";
+                $parameterCheckString .= "        return;\n";
+                $parameterCheckString .= "    }\n";
             }
         } else {
             # If the "StrictTypeChecking" extended attribute is present, and the argument's type is an
@@ -2452,47 +2418,32 @@ sub GenerateParametersCheck
                 my $argValue = "args[$paramIndex]";
                 my $argType = $parameter->type;
                 if (IsWrapperType($argType)) {
-                    if ($isOld) {
-                        $parameterCheckString .= "    if (args.Length() > $paramIndex && !isUndefinedOrNull($argValue) && !V8${argType}::HasInstance($argValue, args.GetIsolate(), worldType(args.GetIsolate())))\n";
-                        $parameterCheckString .= "        return throwTypeError(0, args.GetIsolate());\n";
-                    } else {
-                        $parameterCheckString .= "    if (args.Length() > $paramIndex && !isUndefinedOrNull($argValue) && !V8${argType}::HasInstance($argValue, args.GetIsolate(), worldType(args.GetIsolate()))) {\n";
-                        $parameterCheckString .= "        throwTypeError(0, args.GetIsolate());\n";
-                        $parameterCheckString .= "        return;\n";
-                        $parameterCheckString .= "    }\n";
-                    }
+                    $parameterCheckString .= "    if (args.Length() > $paramIndex && !isUndefinedOrNull($argValue) && !V8${argType}::HasInstance($argValue, args.GetIsolate(), worldType(args.GetIsolate()))) {\n";
+                    $parameterCheckString .= "        throwTypeError(0, args.GetIsolate());\n";
+                    $parameterCheckString .= "        return;\n";
+                    $parameterCheckString .= "    }\n";
                 }
             }
             my $default = defined $parameter->extendedAttributes->{"Default"} ? $parameter->extendedAttributes->{"Default"} : "";
             my $value = JSValueToNative($parameter->type, $parameter->extendedAttributes, $parameter->isOptional && $default eq "NullString" ? "argumentOrNull(args, $paramIndex)" : "args[$paramIndex]", "args.GetIsolate()");
             if ($parameter->extendedAttributes->{"EnforceRange"}) {
-                $parameterCheckString .= "    V8TRYCATCH_WITH_TYPECHECK$trySuffix($nativeType, $parameterName, $value, args.GetIsolate());\n";
+                $parameterCheckString .= "    V8TRYCATCH_WITH_TYPECHECK_VOID($nativeType, $parameterName, $value, args.GetIsolate());\n";
             } else {
-                $parameterCheckString .= "    V8TRYCATCH$trySuffix($nativeType, $parameterName, $value);\n";
+                $parameterCheckString .= "    V8TRYCATCH_VOID($nativeType, $parameterName, $value);\n";
             }
             if ($nativeType eq 'Dictionary') {
-                if ($isOld) {
-                    $parameterCheckString .= "    if (!$parameterName.isUndefinedOrNull() && !$parameterName.isObject())\n";
-                    $parameterCheckString .= "        return throwTypeError(\"Not an object.\", args.GetIsolate());\n";
-                } else {
-                    $parameterCheckString .= "    if (!$parameterName.isUndefinedOrNull() && !$parameterName.isObject()) {\n";
-                    $parameterCheckString .= "        throwTypeError(\"Not an object.\", args.GetIsolate());\n";
-                    $parameterCheckString .= "        return;\n";
-                    $parameterCheckString .= "    }\n";
-                }
+                $parameterCheckString .= "    if (!$parameterName.isUndefinedOrNull() && !$parameterName.isObject()) {\n";
+                $parameterCheckString .= "        throwTypeError(\"Not an object.\", args.GetIsolate());\n";
+                $parameterCheckString .= "        return;\n";
+                $parameterCheckString .= "    }\n";
             }
         }
 
         if ($parameter->extendedAttributes->{"IsIndex"}) {
-            if ($isOld) {
-                $parameterCheckString .= "    if (UNLIKELY($parameterName < 0))\n";
-                $parameterCheckString .= "        return setDOMException(INDEX_SIZE_ERR, args.GetIsolate());\n";
-            } else {
-                $parameterCheckString .= "    if (UNLIKELY($parameterName < 0)) {\n";
-                $parameterCheckString .= "        setDOMException(INDEX_SIZE_ERR, args.GetIsolate());\n";
-                $parameterCheckString .= "        return;\n";
-                $parameterCheckString .= "    }\n";
-            }
+            $parameterCheckString .= "    if (UNLIKELY($parameterName < 0)) {\n";
+            $parameterCheckString .= "        setDOMException(INDEX_SIZE_ERR, args.GetIsolate());\n";
+            $parameterCheckString .= "        return;\n";
+            $parameterCheckString .= "    }\n";
         }
 
         $paramIndex++;
@@ -4655,7 +4606,7 @@ sub GenerateFunctionCallString
     }
 
     my $callWith = $function->signature->extendedAttributes->{"CallWith"};
-    my ($callWithArgs, $subCode) = GenerateCallWith($callWith, $indent, 0, $function);
+    my ($callWithArgs, $subCode) = GenerateCallWith($callWith, $indent, 1, $function);
     $code .= $subCode;
     unshift(@arguments, @$callWithArgs);
     $index += @$callWithArgs;
@@ -4674,8 +4625,10 @@ sub GenerateFunctionCallString
             push @arguments, "$paramName.get()";
         } elsif (IsSVGTypeNeedingTearOff($parameter->type) and not $interfaceName =~ /List$/) {
             push @arguments, "$paramName->propertyReference()";
-            $code .= $indent . "if (!$paramName)\n";
-            $code .= $indent . "    return setDOMException(WebCore::TYPE_MISMATCH_ERR, args.GetIsolate());\n";
+            $code .= $indent . "if (!$paramName) {\n";
+            $code .= $indent . "    setDOMException(WebCore::TYPE_MISMATCH_ERR, args.GetIsolate());\n";
+            $code .= $indent . "    return;\n";
+            $code .= $indent . "}\n";
         } elsif ($parameter->type eq "SVGMatrix" and $interfaceName eq "SVGTransformList") {
             push @arguments, "$paramName.get()";
         } else {
@@ -4708,15 +4661,18 @@ sub GenerateFunctionCallString
     }
 
     if ($function->signature->extendedAttributes->{"RaisesException"}) {
-        $code .= $indent . "if (UNLIKELY(ec))\n";
-        $code .= $indent . "    return setDOMException(ec, args.GetIsolate());\n";
+        $code .= $indent . "if (UNLIKELY(ec)) {\n";
+        $code .= $indent . "    setDOMException(ec, args.GetIsolate());\n";
+        $code .= $indent . "    return;\n";
+        $code .= $indent . "}\n";
     }
 
     if (ExtendedAttributeContains($callWith, "ScriptState")) {
         $code .= $indent . "if (state.hadException()) {\n";
         $code .= $indent . "    v8::Local<v8::Value> exception = state.exception();\n";
         $code .= $indent . "    state.clearException();\n";
-        $code .= $indent . "    return throwError(exception, args.GetIsolate());\n";
+        $code .= $indent . "    throwError(exception, args.GetIsolate());\n";
+        $code .= $indent . "    return;\n";
         $code .= $indent . "}\n";
     }
 
@@ -4726,10 +4682,11 @@ sub GenerateFunctionCallString
         my $svgNativeType = GetSVGTypeNeedingTearOff($returnType);
         # FIXME: Update for all ScriptWrappables.
         if (IsDOMNodeType($interfaceName)) {
-            $code .= $indent . "return toV8Fast${forMainWorldSuffix}(WTF::getPtr(${svgNativeType}::create($return)), args, imp);\n";
+            $code .= $indent . "v8SetReturnValue(args, toV8Fast${forMainWorldSuffix}(WTF::getPtr(${svgNativeType}::create($return)), args, imp));\n";
         } else {
-            $code .= $indent . "return toV8${forMainWorldSuffix}(WTF::getPtr(${svgNativeType}::create($return)), args.Holder(), args.GetIsolate());\n";
+            $code .= $indent . "v8SetReturnValue(args, toV8${forMainWorldSuffix}(WTF::getPtr(${svgNativeType}::create($return)), args.Holder(), args.GetIsolate()));\n";
         }
+        $code .= $indent . "return;\n";
         return $code;
     }
 
@@ -4743,12 +4700,19 @@ sub GenerateFunctionCallString
     my $nativeValue;
     # FIXME: Update for all ScriptWrappables.
     if (IsDOMNodeType($interfaceName)) {
-        $nativeValue = NativeToJSValue($function->signature->type, $function->signature->extendedAttributes, $return, $indent, "return", "args.Holder()", "args.GetIsolate()", "args", "imp", "ReturnUnsafeHandle", $forMainWorldSuffix);
+        $nativeValue = NativeToJSValue($function->signature->type, $function->signature->extendedAttributes, $return, "", "", "args.Holder()", "args.GetIsolate()", "args", "imp", "ReturnUnsafeHandle", $forMainWorldSuffix);
     } else {
-        $nativeValue = NativeToJSValue($function->signature->type, $function->signature->extendedAttributes, $return, $indent, "return", "args.Holder()", "args.GetIsolate()", 0, 0, "ReturnUnsafeHandle", $forMainWorldSuffix);
+        $nativeValue = NativeToJSValue($function->signature->type, $function->signature->extendedAttributes, $return, "", "", "args.Holder()", "args.GetIsolate()", 0, 0, "ReturnUnsafeHandle", $forMainWorldSuffix);
     }
 
-    $code .= $nativeValue . "\n";
+    # FIXME: NativeToJSValue needs to be heavily modified to support fast return values.
+    # this strips a trailing ';' character
+    $nativeValue = substr($nativeValue, 0, length($nativeValue)-1);
+    # strip leading whitespace
+    $nativeValue =~ s/^\s+//;
+    $code .= "\n";
+    $code .= $indent . "v8SetReturnValue(args, ". $nativeValue . ");\n";
+    $code .= $indent . "return;\n";
 
     return $code;
 }

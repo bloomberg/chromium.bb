@@ -62,85 +62,99 @@ namespace TestEventTargetV8Internal {
 
 template <typename T> void V8_USE(T) { }
 
-static v8::Handle<v8::Value> itemMethod(const v8::Arguments& args)
+static void itemMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
-    if (args.Length() < 1)
-        return throwNotEnoughArgumentsError(args.GetIsolate());
+    if (args.Length() < 1) {
+        throwNotEnoughArgumentsError(args.GetIsolate());
+        return;
+    }
     TestEventTarget* imp = V8TestEventTarget::toNative(args.Holder());
     ExceptionCode ec = 0;
-    V8TRYCATCH(int, index, toUInt32(args[0]));
-    if (UNLIKELY(index < 0))
-        return setDOMException(INDEX_SIZE_ERR, args.GetIsolate());
-    return toV8(imp->item(index), args.Holder(), args.GetIsolate());
+    V8TRYCATCH_VOID(int, index, toUInt32(args[0]));
+    if (UNLIKELY(index < 0)) {
+        setDOMException(INDEX_SIZE_ERR, args.GetIsolate());
+        return;
+    }
+
+    v8SetReturnValue(args, toV8(imp->item(index), args.Holder(), args.GetIsolate()));
+    return;
 }
 
-static v8::Handle<v8::Value> itemMethodCallback(const v8::Arguments& args)
+static void itemMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
-    return TestEventTargetV8Internal::itemMethod(args);
+    TestEventTargetV8Internal::itemMethod(args);
 }
 
-static v8::Handle<v8::Value> namedItemMethod(const v8::Arguments& args)
+static void namedItemMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
-    if (args.Length() < 1)
-        return throwNotEnoughArgumentsError(args.GetIsolate());
+    if (args.Length() < 1) {
+        throwNotEnoughArgumentsError(args.GetIsolate());
+        return;
+    }
     TestEventTarget* imp = V8TestEventTarget::toNative(args.Holder());
-    V8TRYCATCH_FOR_V8STRINGRESOURCE(V8StringResource<>, name, args[0]);
-    return toV8(imp->namedItem(name), args.Holder(), args.GetIsolate());
+    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, name, args[0]);
+
+    v8SetReturnValue(args, toV8(imp->namedItem(name), args.Holder(), args.GetIsolate()));
+    return;
 }
 
-static v8::Handle<v8::Value> namedItemMethodCallback(const v8::Arguments& args)
+static void namedItemMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
-    return TestEventTargetV8Internal::namedItemMethod(args);
+    TestEventTargetV8Internal::namedItemMethod(args);
 }
 
-static v8::Handle<v8::Value> addEventListenerMethod(const v8::Arguments& args)
+static void addEventListenerMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     RefPtr<EventListener> listener = V8EventListenerList::getEventListener(args[1], false, ListenerFindOrCreate);
     if (listener) {
-        V8TRYCATCH_FOR_V8STRINGRESOURCE(V8StringResource<WithNullCheck>, stringResource, args[0]);
+        V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<WithNullCheck>, stringResource, args[0]);
         V8TestEventTarget::toNative(args.Holder())->addEventListener(stringResource, listener, args[2]->BooleanValue());
         createHiddenDependency(args.Holder(), args[1], V8TestEventTarget::eventListenerCacheIndex, args.GetIsolate());
     }
-    return v8Undefined();
 }
 
-static v8::Handle<v8::Value> addEventListenerMethodCallback(const v8::Arguments& args)
+static void addEventListenerMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
-    return TestEventTargetV8Internal::addEventListenerMethod(args);
+    TestEventTargetV8Internal::addEventListenerMethod(args);
 }
 
-static v8::Handle<v8::Value> removeEventListenerMethod(const v8::Arguments& args)
+static void removeEventListenerMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     RefPtr<EventListener> listener = V8EventListenerList::getEventListener(args[1], false, ListenerFindOnly);
     if (listener) {
-        V8TRYCATCH_FOR_V8STRINGRESOURCE(V8StringResource<WithNullCheck>, stringResource, args[0]);
+        V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<WithNullCheck>, stringResource, args[0]);
         V8TestEventTarget::toNative(args.Holder())->removeEventListener(stringResource, listener.get(), args[2]->BooleanValue());
         removeHiddenDependency(args.Holder(), args[1], V8TestEventTarget::eventListenerCacheIndex, args.GetIsolate());
     }
-    return v8Undefined();
 }
 
-static v8::Handle<v8::Value> removeEventListenerMethodCallback(const v8::Arguments& args)
+static void removeEventListenerMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
-    return TestEventTargetV8Internal::removeEventListenerMethod(args);
+    TestEventTargetV8Internal::removeEventListenerMethod(args);
 }
 
-static v8::Handle<v8::Value> dispatchEventMethod(const v8::Arguments& args)
+static void dispatchEventMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
-    if (args.Length() < 1)
-        return throwNotEnoughArgumentsError(args.GetIsolate());
+    if (args.Length() < 1) {
+        throwNotEnoughArgumentsError(args.GetIsolate());
+        return;
+    }
     TestEventTarget* imp = V8TestEventTarget::toNative(args.Holder());
     ExceptionCode ec = 0;
-    V8TRYCATCH(Event*, evt, V8Event::HasInstance(args[0], args.GetIsolate(), worldType(args.GetIsolate())) ? V8Event::toNative(v8::Handle<v8::Object>::Cast(args[0])) : 0);
+    V8TRYCATCH_VOID(Event*, evt, V8Event::HasInstance(args[0], args.GetIsolate(), worldType(args.GetIsolate())) ? V8Event::toNative(v8::Handle<v8::Object>::Cast(args[0])) : 0);
     bool result = imp->dispatchEvent(evt, ec);
-    if (UNLIKELY(ec))
-        return setDOMException(ec, args.GetIsolate());
-    return v8Boolean(result, args.GetIsolate());
+    if (UNLIKELY(ec)) {
+        setDOMException(ec, args.GetIsolate());
+        return;
+    }
+
+    v8SetReturnValue(args, v8Boolean(result, args.GetIsolate()));
+    return;
 }
 
-static v8::Handle<v8::Value> dispatchEventMethodCallback(const v8::Arguments& args)
+static void dispatchEventMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
-    return TestEventTargetV8Internal::dispatchEventMethod(args);
+    TestEventTargetV8Internal::dispatchEventMethod(args);
 }
 
 } // namespace TestEventTargetV8Internal

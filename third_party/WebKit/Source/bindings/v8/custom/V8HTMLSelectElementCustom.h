@@ -38,7 +38,7 @@ namespace WebCore {
 
     class HTMLSelectElement;
 
-    v8::Handle<v8::Value> removeElement(HTMLSelectElement*, const v8::Arguments&);
+    void removeElement(HTMLSelectElement*, const v8::FunctionCallbackInfo<v8::Value>&);
 
 } // namespace WebCore
 

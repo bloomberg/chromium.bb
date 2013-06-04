@@ -40,14 +40,14 @@
 
 namespace WebCore {
 
-v8::Handle<v8::Value> V8DedicatedWorkerContext::postMessageMethodCustom(const v8::Arguments& args)
+void V8DedicatedWorkerContext::postMessageMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     DedicatedWorkerContext* workerContext = V8DedicatedWorkerContext::toNative(args.Holder());
     MessagePortArray ports;
     ArrayBufferArray arrayBuffers;
     if (args.Length() > 1) {
         if (!extractTransferables(args[1], ports, arrayBuffers, args.GetIsolate()))
-            return v8::Undefined();
+            return;
     }
     bool didThrow = false;
     RefPtr<SerializedScriptValue> message =
@@ -57,10 +57,10 @@ v8::Handle<v8::Value> V8DedicatedWorkerContext::postMessageMethodCustom(const v8
                                       didThrow,
                                       args.GetIsolate());
     if (didThrow)
-        return v8::Undefined();
+        return;
     ExceptionCode ec = 0;
     workerContext->postMessage(message.release(), &ports, ec);
-    return setDOMException(ec, args.GetIsolate());
+    setDOMException(ec, args.GetIsolate());
 }
 
 } // namespace WebCore

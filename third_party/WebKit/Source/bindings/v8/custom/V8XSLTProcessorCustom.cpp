@@ -46,10 +46,10 @@
 
 namespace WebCore {
 
-v8::Handle<v8::Value> V8XSLTProcessor::setParameterMethodCustom(const v8::Arguments& args)
+void V8XSLTProcessor::setParameterMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     if (isUndefinedOrNull(args[1]) || isUndefinedOrNull(args[2]))
-        return v8::Undefined();
+        return;
 
     XSLTProcessor* imp = V8XSLTProcessor::toNative(args.Holder());
 
@@ -57,14 +57,12 @@ v8::Handle<v8::Value> V8XSLTProcessor::setParameterMethodCustom(const v8::Argume
     String localName = toWebCoreString(args[1]);
     String value = toWebCoreString(args[2]);
     imp->setParameter(namespaceURI, localName, value);
-
-    return v8::Undefined();
 }
 
-v8::Handle<v8::Value> V8XSLTProcessor::getParameterMethodCustom(const v8::Arguments& args)
+void V8XSLTProcessor::getParameterMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     if (isUndefinedOrNull(args[1]))
-        return v8::Undefined();
+        return;
 
     XSLTProcessor* imp = V8XSLTProcessor::toNative(args.Holder());
 
@@ -72,22 +70,21 @@ v8::Handle<v8::Value> V8XSLTProcessor::getParameterMethodCustom(const v8::Argume
     String localName = toWebCoreString(args[1]);
     String result = imp->getParameter(namespaceURI, localName);
     if (result.isNull())
-        return v8::Undefined();
+        return;
 
-    return v8String(result, args.GetIsolate());
+    v8SetReturnValue(args, v8String(result, args.GetIsolate()));
 }
 
-v8::Handle<v8::Value> V8XSLTProcessor::removeParameterMethodCustom(const v8::Arguments& args)
+void V8XSLTProcessor::removeParameterMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     if (isUndefinedOrNull(args[1]))
-        return v8::Undefined();
+        return;
 
     XSLTProcessor* imp = V8XSLTProcessor::toNative(args.Holder());
 
     String namespaceURI = toWebCoreString(args[0]);
     String localName = toWebCoreString(args[1]);
     imp->removeParameter(namespaceURI, localName);
-    return v8::Undefined();
 }
 
 } // namespace WebCore

@@ -136,7 +136,7 @@ bool V8PerIsolateData::hasPrivateTemplate(WrapperWorldType currentWorldType, voi
     return m_templatesForNonMainWorld.find(privatePointer) != m_templatesForNonMainWorld.end();
 }
 
-v8::Handle<v8::FunctionTemplate> V8PerIsolateData::privateTemplate(WrapperWorldType currentWorldType, void* privatePointer, v8::InvocationCallback callback, v8::Handle<v8::Value> data, v8::Handle<v8::Signature> signature, int length)
+v8::Handle<v8::FunctionTemplate> V8PerIsolateData::privateTemplate(WrapperWorldType currentWorldType, void* privatePointer, v8::FunctionCallback callback, v8::Handle<v8::Value> data, v8::Handle<v8::Signature> signature, int length)
 {
     v8::Persistent<v8::FunctionTemplate> privateTemplate;
     TemplateMap& templates = templateMap(currentWorldType);

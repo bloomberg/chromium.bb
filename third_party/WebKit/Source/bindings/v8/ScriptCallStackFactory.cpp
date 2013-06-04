@@ -126,7 +126,7 @@ PassRefPtr<ScriptCallStack> createScriptCallStack(ScriptState*, size_t maxStackS
     return createScriptCallStackForConsole(maxStackSize);
 }
 
-PassRefPtr<ScriptArguments> createScriptArguments(const v8::Arguments& v8arguments, unsigned skipArgumentCount)
+PassRefPtr<ScriptArguments> createScriptArguments(const v8::FunctionCallbackInfo<v8::Value>& v8arguments, unsigned skipArgumentCount)
 {
     v8::HandleScope scope;
     v8::Local<v8::Context> context = v8::Context::GetCurrent();
