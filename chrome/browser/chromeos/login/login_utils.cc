@@ -447,8 +447,9 @@ void LoginUtilsImpl::OnProfileCreated(
     case Profile::CREATE_STATUS_CREATED:
       InitProfilePreferences(user_profile);
       break;
-    case Profile::CREATE_STATUS_FAIL:
-    default:
+    case Profile::CREATE_STATUS_LOCAL_FAIL:
+    case Profile::CREATE_STATUS_REMOTE_FAIL:
+    case Profile::MAX_CREATE_STATUS:
       NOTREACHED();
       break;
   }

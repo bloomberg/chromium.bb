@@ -13,6 +13,7 @@
 #include "base/string16.h"
 #include "chrome/browser/extensions/management_policy.h"
 #include "chrome/browser/managed_mode/managed_mode_url_filter.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "components/browser_context_keyed_service/browser_context_keyed_service.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -121,7 +122,8 @@ class ManagedUserService : public BrowserContextKeyedService,
   // Note that |registration_service| should belong to the custodian's profile,
   // not this one.
   void RegisterAndInitSync(
-      ManagedUserRegistrationService* registration_service);
+      ManagedUserRegistrationService* registration_service,
+      const ProfileManager::CreateCallback& callback);
 
   // Returns a pseudo-email address for systems that expect well-formed email
   // addresses (like Sync), even though we're not signed in.
@@ -176,7 +178,8 @@ class ManagedUserService : public BrowserContextKeyedService,
     DISALLOW_COPY_AND_ASSIGN(URLFilterContext);
   };
 
-  void OnManagedUserRegistered(const GoogleServiceAuthError& auth_error,
+  void OnManagedUserRegistered(const ProfileManager::CreateCallback& callback,
+                               const GoogleServiceAuthError& auth_error,
                                const std::string& token);
 
   // Internal implementation for ExtensionManagementPolicy::Delegate methods.

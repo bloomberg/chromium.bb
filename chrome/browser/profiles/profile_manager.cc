@@ -501,7 +501,7 @@ void ProfileManager::CreateProfileAsync(
   if (std::find(ProfilesToDelete().begin(), ProfilesToDelete().end(),
       profile_path) != ProfilesToDelete().end()) {
     if (!callback.is_null())
-      callback.Run(NULL, Profile::CREATE_STATUS_FAIL);
+      callback.Run(NULL, Profile::CREATE_STATUS_LOCAL_FAIL);
     return;
   }
 
@@ -885,7 +885,7 @@ void ProfileManager::OnProfileCreated(Profile* profile,
   // Invoke INITIALIZED or FAIL for all profiles.
   RunCallbacks(callbacks, profile,
                profile ? Profile::CREATE_STATUS_INITIALIZED :
-                         Profile::CREATE_STATUS_FAIL);
+                         Profile::CREATE_STATUS_LOCAL_FAIL);
 }
 
 base::FilePath ProfileManager::GenerateNextProfileDirectoryPath() {

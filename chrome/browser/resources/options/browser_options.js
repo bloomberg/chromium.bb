@@ -1070,6 +1070,15 @@ cr.define('options', function() {
     },
 
     /**
+    * Reports a remote error (e.g., a network error during limited-user
+    * registration) to the "create" overlay during profile creation.
+    * @private
+    */
+    showCreateProfileRemoteError_: function() {
+      CreateProfileOverlay.onRemoteError();
+    },
+
+    /**
     * Reports successful profile creation to the "create" overlay.
      * @param {Object} profileInfo An object of the form:
      *     profileInfo = {
@@ -1464,6 +1473,7 @@ cr.define('options', function() {
     'setupProxySettingsSection',
     'showBluetoothSettings',
     'showCreateProfileLocalError',
+    'showCreateProfileRemoteError',
     'showCreateProfileSuccess',
     'showMouseControls',
     'showTouchpadControls',

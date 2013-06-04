@@ -12,6 +12,7 @@
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/memory/singleton.h"
+#include "base/metrics/histogram.h"
 #include "base/path_service.h"
 #include "base/prefs/pref_service.h"
 #include "base/stl_util.h"
@@ -32,8 +33,10 @@
 #include "chrome/browser/printing/cloud_print/cloud_print_proxy_service_factory.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_setup_flow.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_url.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_info_util.h"
+#include "chrome/browser/profiles/profile_metrics.h"
 #include "chrome/browser/profiles/profile_shortcut_manager.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/search_engines/template_url.h"
@@ -144,6 +147,31 @@ void CreateDesktopShortcutForProfile(Profile* profile,
       g_browser_process->profile_manager()->profile_shortcut_manager();
   if (shortcut_manager)
     shortcut_manager->CreateProfileShortcut(profile->GetPath());
+}
+
+void RunProfileCreationCallbacks(
+    const std::vector<ProfileManager::CreateCallback>& callbacks,
+    Profile* profile,
+    Profile::CreateStatus status) {
+  std::vector<ProfileManager::CreateCallback>::const_iterator it;
+  for (it = callbacks.begin(); it != callbacks.end(); ++it) {
+    it->Run(profile, status);
+  }
+}
+
+void OpenNewWindowForProfile(
+    chrome::HostDesktopType desktop_type,
+    Profile* profile,
+    Profile::CreateStatus status) {
+  if (status != Profile::CREATE_STATUS_INITIALIZED)
+    return;
+
+  ProfileManager::FindOrCreateNewWindowForProfile(
+    profile,
+    chrome::startup::IS_PROCESS_STARTUP,
+    chrome::startup::IS_FIRST_RUN,
+    desktop_type,
+    false);
 }
 
 }  // namespace
@@ -485,9 +513,8 @@ void BrowserOptionsHandler::GetLocalizedValues(DictionaryValue* values) {
     values->Set("profilesInfo", GetProfilesInfoList().release());
 
 #if defined(ENABLE_MANAGED_USERS)
-  ManagedUserService* service =
-      ManagedUserServiceFactory::GetForProfile(Profile::FromWebUI(web_ui()));
-  values->SetBoolean("profileIsManaged", service->ProfileIsManaged());
+  values->SetBoolean("profileIsManaged",
+      ManagedUserService::ProfileIsManaged(Profile::FromWebUI(web_ui())));
 #endif
 
 #if !defined(OS_CHROMEOS)
@@ -537,6 +564,10 @@ void BrowserOptionsHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "createProfile",
       base::Bind(&BrowserOptionsHandler::CreateProfile,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "deleteProfile",
+      base::Bind(&BrowserOptionsHandler::DeleteProfile,
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "themesReset",
@@ -1064,9 +1095,7 @@ void BrowserOptionsHandler::CreateProfile(const ListValue* args) {
   // This handler could have been called in managed mode, for example because
   // the user fiddled with the web inspector. Silently return in this case.
   Profile* profile = Profile::FromWebUI(web_ui());
-  ManagedUserService* service =
-      ManagedUserServiceFactory::GetForProfile(profile);
-  if (service->ProfileIsManaged())
+  if (ManagedUserService::ProfileIsManaged(profile))
     return;
 #endif
 
@@ -1081,7 +1110,6 @@ void BrowserOptionsHandler::CreateProfile(const ListValue* args) {
 
   string16 name;
   string16 icon;
-  std::vector<ProfileManager::CreateCallback> callbacks;
   bool create_shortcut = false;
   bool managed_user = false;
   if (args->GetString(0, &name) && args->GetString(1, &icon)) {
@@ -1091,41 +1119,71 @@ void BrowserOptionsHandler::CreateProfile(const ListValue* args) {
     }
   }
 
+  std::vector<ProfileManager::CreateCallback> callbacks;
   if (create_shortcut)
     callbacks.push_back(base::Bind(&CreateDesktopShortcutForProfile));
 
+  ProfileManager::CreateCallback show_user_feedback =
+      base::Bind(&BrowserOptionsHandler::ShowProfileCreationFeedback,
+                 weak_ptr_factory_.GetWeakPtr(), desktop_type, managed_user);
+
   if (managed_user && ManagedUserService::AreManagedUsersEnabled()) {
 #if defined(ENABLE_MANAGED_USERS)
-    ManagedUserRegistrationService* registration_service =
-        ManagedUserRegistrationServiceFactory::GetForProfile(profile);
-    callbacks.push_back(registration_service->GetRegistrationAndInitCallback());
+    callbacks.push_back(
+        base::Bind(&BrowserOptionsHandler::RegisterNewManagedUser,
+                   weak_ptr_factory_.GetWeakPtr(), show_user_feedback));
 #else
     NOTREACHED();
 #endif
+  } else {
+    callbacks.push_back(show_user_feedback);
   }
 
+  ProfileMetrics::LogProfileAddNewUser(ProfileMetrics::ADD_NEW_USER_DIALOG);
+
   ProfileManager::CreateMultiProfileAsync(
-      name, icon, base::Bind(&BrowserOptionsHandler::OnProfileCreated,
-                             weak_ptr_factory_.GetWeakPtr(),
-                             desktop_type, managed_user, callbacks),
+      name, icon, base::Bind(&RunProfileCreationCallbacks, callbacks),
       managed_user);
 }
 
-void BrowserOptionsHandler::OnProfileCreated(
-    chrome::HostDesktopType desktop_type,
-    bool is_managed,
-    const std::vector<ProfileManager::CreateCallback>& callbacks,
+void BrowserOptionsHandler::RegisterNewManagedUser(
+    const ProfileManager::CreateCallback& callback,
     Profile* profile,
     Profile::CreateStatus status) {
-  std::vector<ProfileManager::CreateCallback>::const_iterator it;
-  for (it = callbacks.begin(); it != callbacks.end(); ++it) {
-    it->Run(profile, status);
+  if (status != Profile::CREATE_STATUS_INITIALIZED)
+    return;
+
+  ManagedUserService* managed_user_service =
+      ManagedUserServiceFactory::GetForProfile(profile);
+  DCHECK(managed_user_service->ProfileIsManaged());
+  ManagedUserRegistrationService* registration_service =
+      ManagedUserRegistrationServiceFactory::GetForProfile(profile);
+
+  managed_user_service->RegisterAndInitSync(registration_service, callback);
+}
+
+void BrowserOptionsHandler::ShowProfileCreationFeedback(
+    chrome::HostDesktopType desktop_type,
+    bool is_managed,
+    Profile* profile,
+    Profile::CreateStatus status) {
+  if (status != Profile::CREATE_STATUS_CREATED) {
+    UMA_HISTOGRAM_ENUMERATION("Profile.CreateResult",
+                              status,
+                              Profile::MAX_CREATE_STATUS);
   }
 
   switch (status) {
-    case Profile::CREATE_STATUS_FAIL: {
+    case Profile::CREATE_STATUS_LOCAL_FAIL: {
       web_ui()->CallJavascriptFunction(
           "BrowserOptions.showCreateProfileLocalError");
+      DeleteProfileAtPath(profile->GetPath());
+      break;
+    }
+    case Profile::CREATE_STATUS_REMOTE_FAIL: {
+      web_ui()->CallJavascriptFunction(
+          "BrowserOptions.showCreateProfileRemoteError");
+      DeleteProfileAtPath(profile->GetPath());
       break;
     }
     case Profile::CREATE_STATUS_CREATED: {
@@ -1147,16 +1205,53 @@ void BrowserOptionsHandler::OnProfileCreated(
       if (!is_managed) {
         // Opening the new window must be the last action, after all callbacks
         // have been run, to give them a chance to initialize the profile.
-        ProfileManager::FindOrCreateNewWindowForProfile(
-            profile,
-            chrome::startup::IS_PROCESS_STARTUP,
-            chrome::startup::IS_FIRST_RUN,
-            desktop_type,
-            false);
+        OpenNewWindowForProfile(desktop_type,
+                                profile,
+                                Profile::CREATE_STATUS_INITIALIZED);
       }
       break;
     }
+    case Profile::MAX_CREATE_STATUS: {
+      NOTREACHED();
+      break;
+    }
   }
+}
+
+void BrowserOptionsHandler::DeleteProfile(const ListValue* args) {
+  DCHECK(args);
+  const Value* file_path_value;
+  if (!args->Get(0, &file_path_value))
+    return;
+
+  base::FilePath file_path;
+  if (!base::GetValueAsFilePath(*file_path_value, &file_path))
+    return;
+  DeleteProfileAtPath(file_path);
+}
+
+void BrowserOptionsHandler::DeleteProfileAtPath(base::FilePath file_path) {
+#if defined(ENABLE_MANAGED_USERS)
+  // This handler could have been called in managed mode, for example because
+  // the user fiddled with the web inspector. Silently return in this case.
+  if (ManagedUserService::ProfileIsManaged(Profile::FromWebUI(web_ui())))
+    return;
+#endif
+
+  if (!ProfileManager::IsMultipleProfilesEnabled())
+    return;
+
+  ProfileMetrics::LogProfileDeleteUser(ProfileMetrics::PROFILE_DELETED);
+
+  Browser* browser =
+      chrome::FindBrowserWithWebContents(web_ui()->GetWebContents());
+  chrome::HostDesktopType desktop_type = chrome::HOST_DESKTOP_TYPE_NATIVE;
+  if (browser)
+    desktop_type = browser->host_desktop_type();
+
+  g_browser_process->profile_manager()->ScheduleProfileForDeletion(
+      file_path,
+      base::Bind(&OpenNewWindowForProfile, desktop_type));
 }
 
 void BrowserOptionsHandler::ObserveThemeChanged() {

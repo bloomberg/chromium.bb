@@ -103,6 +103,7 @@ void ManageProfileHandler::GetLocalizedValues(
     { "createProfileInstructions", IDS_PROFILES_CREATE_INSTRUCTIONS },
     { "createProfileConfirm", IDS_PROFILES_CREATE_CONFIRM },
     { "createProfileLocalError", IDS_PROFILES_CREATE_LOCAL_ERROR },
+    { "createProfileRemoteError", IDS_PROFILES_CREATE_REMOTE_ERROR },
     { "createProfileShortcut", IDS_PROFILES_CREATE_SHORTCUT },
     { "removeProfileShortcut", IDS_PROFILES_REMOVE_SHORTCUT },
   };
@@ -131,9 +132,6 @@ void ManageProfileHandler::InitializePage() {
 void ManageProfileHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback("setProfileNameAndIcon",
       base::Bind(&ManageProfileHandler::SetProfileNameAndIcon,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("deleteProfile",
-      base::Bind(&ManageProfileHandler::DeleteProfile,
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback("requestDefaultProfileIcons",
       base::Bind(&ManageProfileHandler::RequestDefaultProfileIcons,
@@ -313,37 +311,6 @@ void ManageProfileHandler::SetProfileNameAndIcon(const ListValue* args) {
     cache.SetIsUsingGAIAPictureOfProfileAtIndex(profile_index, false);
   }
   ProfileMetrics::LogProfileUpdate(profile_file_path);
-}
-
-void ManageProfileHandler::DeleteProfile(const ListValue* args) {
-  DCHECK(args);
-#if defined(ENABLE_MANAGED_USERS)
-  // This handler could have been called in managed mode, for example because
-  // the user fiddled with the web inspector. Silently return in this case.
-  ManagedUserService* service =
-      ManagedUserServiceFactory::GetForProfile(Profile::FromWebUI(web_ui()));
-  if (service->ProfileIsManaged())
-    return;
-#endif
-
-  if (!ProfileManager::IsMultipleProfilesEnabled())
-    return;
-
-  ProfileMetrics::LogProfileDeleteUser(ProfileMetrics::PROFILE_DELETED);
-
-  base::FilePath profile_file_path;
-  if (!GetProfilePathFromArgs(args, &profile_file_path))
-    return;
-
-  Browser* browser =
-      chrome::FindBrowserWithWebContents(web_ui()->GetWebContents());
-  chrome::HostDesktopType desktop_type = chrome::HOST_DESKTOP_TYPE_NATIVE;
-  if (browser)
-    desktop_type = browser->host_desktop_type();
-
-  g_browser_process->profile_manager()->ScheduleProfileForDeletion(
-      profile_file_path,
-      base::Bind(&OnNewDefaultProfileCreated, desktop_type));
 }
 
 #if defined(ENABLE_SETTINGS_APP)

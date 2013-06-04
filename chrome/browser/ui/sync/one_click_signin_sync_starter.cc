@@ -214,49 +214,60 @@ void OneClickSigninSyncStarter::CompleteInitForNewProfile(
     Profile* new_profile,
     Profile::CreateStatus status) {
   DCHECK_NE(profile_, new_profile);
-  if (status == Profile::CREATE_STATUS_FAIL) {
-    // TODO(atwilson): On error, unregister the client to release the DMToken
-    // and surface a better error for the user.
-    NOTREACHED() << "Error creating new profile";
-    CancelSigninAndDelete();
-    return;
-  }
 
-  // Wait until the profile is initialized before we transfer credentials.
-  if (status == Profile::CREATE_STATUS_INITIALIZED) {
-    SigninManager* old_signin_manager =
-        SigninManagerFactory::GetForProfile(profile_);
-    SigninManager* new_signin_manager =
-        SigninManagerFactory::GetForProfile(new_profile);
-    DCHECK(!old_signin_manager->GetUsernameForAuthInProgress().empty());
-    DCHECK(old_signin_manager->GetAuthenticatedUsername().empty());
-    DCHECK(new_signin_manager->GetAuthenticatedUsername().empty());
-    DCHECK(policy_client_);
+  // TODO(atwilson): On error, unregister the client to release the DMToken
+  // and surface a better error for the user.
+  switch (status) {
+    case Profile::CREATE_STATUS_LOCAL_FAIL: {
+      NOTREACHED() << "Error creating new profile";
+      CancelSigninAndDelete();
+      return;
+    }
+    case Profile::CREATE_STATUS_CREATED: {
+      break;
+    }
+    case Profile::CREATE_STATUS_INITIALIZED: {
+      // Wait until the profile is initialized before we transfer credentials.
+      SigninManager* old_signin_manager =
+          SigninManagerFactory::GetForProfile(profile_);
+      SigninManager* new_signin_manager =
+          SigninManagerFactory::GetForProfile(new_profile);
+      DCHECK(!old_signin_manager->GetUsernameForAuthInProgress().empty());
+      DCHECK(old_signin_manager->GetAuthenticatedUsername().empty());
+      DCHECK(new_signin_manager->GetAuthenticatedUsername().empty());
+      DCHECK(policy_client_);
 
-    // Copy credentials from the old profile to the just-created profile,
-    // and switch over to tracking that profile.
-    new_signin_manager->CopyCredentialsFrom(*old_signin_manager);
-    FinishProfileSyncServiceSetup();
-    Initialize(new_profile, NULL);
-    DCHECK_EQ(profile_, new_profile);
+      // Copy credentials from the old profile to the just-created profile,
+      // and switch over to tracking that profile.
+      new_signin_manager->CopyCredentialsFrom(*old_signin_manager);
+      FinishProfileSyncServiceSetup();
+      Initialize(new_profile, NULL);
+      DCHECK_EQ(profile_, new_profile);
 
-    // We've transferred our credentials to the new profile - notify that
-    // the signin for the original profile was cancelled (must do this after
-    // we have called Initialize() with the new profile, as otherwise this
-    // object will get freed when the signin on the old profile is cancelled.
-    old_signin_manager->SignOut();
+      // We've transferred our credentials to the new profile - notify that
+      // the signin for the original profile was cancelled (must do this after
+      // we have called Initialize() with the new profile, as otherwise this
+      // object will get freed when the signin on the old profile is cancelled.
+      old_signin_manager->SignOut();
 
-    // Load policy for the just-created profile - once policy has finished
-    // loading the signin process will complete.
-    LoadPolicyWithCachedClient();
+      // Load policy for the just-created profile - once policy has finished
+      // loading the signin process will complete.
+      LoadPolicyWithCachedClient();
 
-    // Open the profile's first window, after all initialization.
-    ProfileManager::FindOrCreateNewWindowForProfile(
-      new_profile,
-      chrome::startup::IS_PROCESS_STARTUP,
-      chrome::startup::IS_FIRST_RUN,
-      desktop_type,
-      false);
+      // Open the profile's first window, after all initialization.
+      ProfileManager::FindOrCreateNewWindowForProfile(
+        new_profile,
+        chrome::startup::IS_PROCESS_STARTUP,
+        chrome::startup::IS_FIRST_RUN,
+        desktop_type,
+        false);
+    }
+    case Profile::CREATE_STATUS_REMOTE_FAIL:
+    case Profile::MAX_CREATE_STATUS: {
+      NOTREACHED() << "Invalid profile creation status";
+      CancelSigninAndDelete();
+      return;
+    }
   }
 }
 #endif

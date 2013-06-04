@@ -23,6 +23,7 @@ class ProfileMetrics {
   enum ProfileAdd {
     ADD_NEW_USER_ICON = 0,    // User adds new user from icon menu
     ADD_NEW_USER_MENU,        // User adds new user from menu bar
+    ADD_NEW_USER_DIALOG,      // User adds new user from create-profile dialog
     NUM_PROFILE_ADD_METRICS
   };
 

@@ -55,15 +55,6 @@ class ManagedUserRegistrationService : public BrowserContextKeyedService,
   // registration.
   void Register(const string16& name, const RegistrationCallback& callback);
 
-  // Convenience method that registers a new managed user with the server and
-  // initializes it locally. The callback allows it to be run after a new
-  // profile has been created:
-  //   ProfileManager::CreateMultiProfileAsync(
-  //       name, icon,
-  //       managed_user_registration_service->GetRegistrationAndInitCallback(),
-  //       managed_user);
-  ProfileManager::CreateCallback GetRegistrationAndInitCallback();
-
   // ProfileKeyedService implementation:
   virtual void Shutdown() OVERRIDE;
 
@@ -102,8 +93,6 @@ class ManagedUserRegistrationService : public BrowserContextKeyedService,
   // Dispatches the callback with the saved token (which may be empty) and the
   // given |error|.
   void DispatchCallback(const GoogleServiceAuthError& error);
-
-  void OnProfileCreated(Profile* profile, Profile::CreateStatus status);
 
   base::WeakPtrFactory<ManagedUserRegistrationService> weak_ptr_factory_;
   PrefService* prefs_;

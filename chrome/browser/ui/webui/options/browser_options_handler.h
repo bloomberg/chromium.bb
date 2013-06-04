@@ -144,7 +144,7 @@ class BrowserOptionsHandler
   // Sends an array of Profile objects to javascript.
   void SendProfilesInfo();
 
-  // Asynchronously opens a new browser window to create a new profile.
+  // Asynchronously creates and initializes a new profile.
   // The arguments are as follows:
   //   0: name (string)
   //   1: icon (string)
@@ -153,14 +153,28 @@ class BrowserOptionsHandler
   //   3: a flag stating whether the user should be managed (optional, boolean)
   void CreateProfile(const base::ListValue* args);
 
-  // Handles final tasks when a new profile has been created, running any queued
-  // callbacks and updating the UI.
-  void OnProfileCreated(
+  // After a new managed-user profile has been created, registers the user with
+  // the management server. This is a class method to ensure that the
+  // registration service (on the custodian's profile, along with this WebUI
+  // class) still exists after the new managed profile has been created
+  // asynchronously.
+  void RegisterNewManagedUser(const ProfileManager::CreateCallback& callback,
+                              Profile* profile,
+                              Profile::CreateStatus status);
+
+  // Updates the UI as the final task after a new profile has been created.
+  void ShowProfileCreationFeedback(
       chrome::HostDesktopType desktop_type,
       bool is_managed,
-      const std::vector<ProfileManager::CreateCallback>& callbacks,
       Profile* profile,
       Profile::CreateStatus status);
+
+  // Deletes the given profile. Expects one argument:
+  //   0: profile file path (string)
+  void DeleteProfile(const base::ListValue* args);
+
+  // Deletes the profile at the given |file_path|.
+  void DeleteProfileAtPath(base::FilePath file_path);
 
   void ObserveThemeChanged();
   void ThemesReset(const base::ListValue* args);

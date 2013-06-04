@@ -51,8 +51,8 @@ cr.define('options', function() {
       // Override the create-profile-ok handler, to avoid closing the overlay
       // until we finish creating the profile.
       $('create-profile-ok').onclick = function(event) {
+        CreateProfileOverlay.updateCreateInProgress(true);
         ManageProfileOverlay.getInstance().hideErrorBubble_('create');
-        $('create-profile-ok').disabled = true;
         self.submitCreateProfile_();
       };
 
@@ -433,6 +433,7 @@ cr.define('options', function() {
       $('create-profile-instructions').textContent =
          loadTimeData.getStringF('createProfileInstructions');
       this.hideErrorBubble_();
+      this.updateCreateInProgress_(false);
 
       var shortcutsEnabled = loadTimeData.getBoolean('profileShortcutsEnabled');
       $('create-shortcut-container').hidden = !shortcutsEnabled;
@@ -456,14 +457,36 @@ cr.define('options', function() {
     },
 
     /**
+     * Updates the UI when a profile create step begins or ends.
+     * @param {boolean} inProgress True if the UI should be updated to show that
+     *    profile creation is now in progress.
+     * @private
+     */
+    updateCreateInProgress_: function(inProgress) {
+      $('create-profile-ok').disabled = inProgress;
+      $('create-profile-throbber').hidden = !inProgress;
+    },
+
+    /**
      * Shows an error message describing a local error (most likely a disk
      * error) when creating a new profile. Called by BrowserOptions via the
      * BrowserOptionsHandler.
      * @private
      */
     onLocalError_: function() {
-      $('create-profile-ok').disabled = false;
+      this.updateCreateInProgress_(false);
       this.showErrorBubble_('createProfileLocalError');
+    },
+
+    /**
+     * Shows an error message describing a remote error (most likely a network
+     * error) when creating a new profile. Called by BrowserOptions via the
+     * BrowserOptionsHandler.
+     * @private
+     */
+    onRemoteError_: function() {
+      this.updateCreateInProgress_(false);
+      this.showErrorBubble_('createProfileRemoteError');
     },
 
     /**
@@ -478,8 +501,8 @@ cr.define('options', function() {
      * @private
      */
     onSuccess_: function(profileInfo) {
+      this.updateCreateInProgress_(false);
       OptionsPage.closeOverlay();
-      $('create-profile-ok').disabled = false;
       if (profileInfo.isManaged) {
         ManagedUserCreateConfirmOverlay.setProfileInfo(profileInfo);
         OptionsPage.navigateToPage('managedUserCreateConfirm');
@@ -506,7 +529,9 @@ cr.define('options', function() {
   // Forward public APIs to private implementations.
   [
     'onLocalError',
+    'onRemoteError',
     'onSuccess',
+    'updateCreateInProgress',
     'updateSignedInStatus',
   ].forEach(function(name) {
     CreateProfileOverlay[name] = function() {

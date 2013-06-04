@@ -14888,7 +14888,10 @@ Some features may be unavailable.  Please check that the profile exists and you 
       Create
     </message>
     <message name="IDS_PROFILES_CREATE_LOCAL_ERROR" desc="Message shown when a local error (for example, a disk error) occurs during profile creation.">
-      Oops! The new profile couldn't be created. Check your hard drive space and permissions and try again.
+      Oops! The new profile couldn't be created. Please check your hard drive space and permissions and try again.
+    </message>
+    <message name="IDS_PROFILES_CREATE_REMOTE_ERROR" desc="Message shown when a remote error (for example, a network error) occurs during profile creation.">
+      Oops! The new profile couldn't be created. Please check your network connection and try again later.
     </message>
     <message name="IDS_PROFILES_CREATE_LIMITED_SIGNED_IN_LABEL" desc="Label for the 'Limited user' checkbox in the create-profile dialog when the current user is signed in. This will be followed by a 'Learn more' link.">
       This is a limited user managed by <ph name="CUSTODIAN_EMAIL">$1<ex>user@gmail.com</ex>.</ph>

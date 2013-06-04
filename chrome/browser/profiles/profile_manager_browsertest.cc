@@ -27,7 +27,8 @@ void OnUnblockOnProfileCreation(Profile* profile,
 }
 
 void ProfileCreationComplete(Profile* profile, Profile::CreateStatus status) {
-  ASSERT_NE(status, Profile::CREATE_STATUS_FAIL);
+  ASSERT_NE(status, Profile::CREATE_STATUS_LOCAL_FAIL);
+  ASSERT_NE(status, Profile::CREATE_STATUS_REMOTE_FAIL);
   // No browser should have been created for this profile yet.
   EXPECT_EQ(chrome::GetTotalBrowserCountForProfile(profile), 0U);
   EXPECT_EQ(chrome::GetTotalBrowserCount(), 1U);

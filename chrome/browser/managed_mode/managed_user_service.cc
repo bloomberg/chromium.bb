@@ -520,24 +520,29 @@ void ManagedUserService::Init() {
 }
 
 void ManagedUserService::RegisterAndInitSync(
-    ManagedUserRegistrationService* registration_service) {
-  string16 name = UTF8ToUTF16(profile_->GetProfileName());
+    ManagedUserRegistrationService* registration_service,
+    const ProfileManager::CreateCallback& callback) {
+  string16 name = UTF8ToUTF16(
+      profile_->GetPrefs()->GetString(prefs::kProfileName));
   registration_service->Register(
       name,
       base::Bind(&ManagedUserService::OnManagedUserRegistered,
-                 weak_ptr_factory_.GetWeakPtr()));
+                 weak_ptr_factory_.GetWeakPtr(), callback));
 }
 
 void ManagedUserService::OnManagedUserRegistered(
+    const ProfileManager::CreateCallback& callback,
     const GoogleServiceAuthError& auth_error,
     const std::string& token) {
   if (auth_error.state() != GoogleServiceAuthError::NONE) {
     LOG(ERROR) << "Managed user OAuth error: " << auth_error.ToString();
     DCHECK_EQ(std::string(), token);
+    callback.Run(profile_, Profile::CREATE_STATUS_REMOTE_FAIL);
     return;
   }
 
   InitSync(token);
+  callback.Run(profile_, Profile::CREATE_STATUS_INITIALIZED);
 }
 
 void ManagedUserService::UpdateManualHosts() {

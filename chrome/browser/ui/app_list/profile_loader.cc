@@ -59,8 +59,12 @@ void ProfileLoader::OnProfileLoaded(int profile_load_sequence_id,
         callback.Run(profile);
       DecrementPendingProfileLoads();
       break;
-    case Profile::CREATE_STATUS_FAIL:
+    case Profile::CREATE_STATUS_LOCAL_FAIL:
+    case Profile::CREATE_STATUS_REMOTE_FAIL:
       DecrementPendingProfileLoads();
+      break;
+    case Profile::MAX_CREATE_STATUS:
+      NOTREACHED();
       break;
   }
 }

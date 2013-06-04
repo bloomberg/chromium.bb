@@ -113,12 +113,6 @@ void ManagedUserRegistrationService::Register(
                  weak_ptr_factory_.GetWeakPtr(), name));
 }
 
-ProfileManager::CreateCallback
-ManagedUserRegistrationService::GetRegistrationAndInitCallback() {
-  return base::Bind(&ManagedUserRegistrationService::OnProfileCreated,
-                    weak_ptr_factory_.GetWeakPtr());
-}
-
 void ManagedUserRegistrationService::Shutdown() {
   CancelPendingRegistration();
 }
@@ -330,19 +324,4 @@ void ManagedUserRegistrationService::DispatchCallback(
   pending_managed_user_token_.clear();
   pending_managed_user_id_.clear();
   pending_managed_user_acknowledged_ = false;
-}
-
-void ManagedUserRegistrationService::OnProfileCreated(
-    Profile* profile,
-    Profile::CreateStatus status) {
-  // We're being called back twice: once after the profile has been created on
-  // disk, and once after all the profile services (including the
-  // ManagedUserService) have been initialized. Ignore the first one.
-  if (status != Profile::CREATE_STATUS_INITIALIZED)
-    return;
-
-  ManagedUserService* managed_user_service =
-      ManagedUserServiceFactory::GetForProfile(profile);
-  DCHECK(managed_user_service->ProfileIsManaged());
-  managed_user_service->RegisterAndInitSync(this);
 }
