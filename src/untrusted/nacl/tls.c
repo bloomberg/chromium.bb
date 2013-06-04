@@ -60,6 +60,14 @@ extern uint32_t __tls_template_alignment __attribute__((weak));
 /* @IGNORE_LINES_FOR_CODE_HYGIENE[1] */
 extern const Elf32_Ehdr __ehdr_start __attribute__((weak));
 
+static size_t aligned_size(size_t size, size_t alignment) {
+  return (size + alignment - 1) & -alignment;
+}
+
+static char *aligned_addr(void *start, size_t alignment) {
+  return (void *) aligned_size((size_t) start, alignment);
+}
+
 /*
  * Collect information about the TLS initializer data here.
  * The first call to get_tls_info() fills in all the data,
@@ -72,6 +80,41 @@ struct tls_info {
   size_t tbss_size;         /* Size of .tbss (zero-fill space after .tdata) */
   size_t tls_alignment;     /* Alignment required for TLS segment */
 };
+
+#if defined(__arm__)
+
+/*
+ * On ARM, the linker might not optimize GD-model TLS accesses into the
+ * simpler forms that don't use a helper function.  __tls_get_addr is
+ * called with the address of a two-word GOT entry: the first word is the
+ * module ID, which is immaterial for static linking; the second word is
+ * the offset within the (only) module's TLS data.  The TLS data always
+ * starts at 8 bytes past the thread pointer, plus alignment.
+ */
+
+static size_t tp_tls_offset;
+
+static void finish_info_cache(const struct tls_info *info) {
+  /*
+   * Cache this calculation at startup so it doesn't need to be repeated.
+   */
+  tp_tls_offset = aligned_size(8, info->tls_alignment);
+}
+
+void *__tls_get_addr(uintptr_t *entry) {
+  /*
+   * This is never called before finish_info_cache has been called.
+   */
+  return (char *) __builtin_thread_pointer() + tp_tls_offset + entry[1];
+}
+
+#else  /* !defined(__arm__) */
+
+static void finish_info_cache(
+    const struct tls_info *info __attribute__((unused))) {
+}
+
+#endif  /* defined(__arm__) */
 
 static const struct tls_info *get_tls_info(void) {
   static struct tls_info cached_tls_info;
@@ -120,16 +163,10 @@ static const struct tls_info *get_tls_info(void) {
       cached_tls_info.tbss_size = (&__tls_template_end -
                                    &__tls_template_tdata_end);
     }
+
+    finish_info_cache(&cached_tls_info);
   }
   return &cached_tls_info;
-}
-
-static size_t aligned_size(size_t size, size_t alignment) {
-  return (size + alignment - 1) & -alignment;
-}
-
-static char *aligned_addr(void *start, size_t alignment) {
-  return (void *) aligned_size((size_t) start, alignment);
 }
 
 static inline void simple_abort(void) {
