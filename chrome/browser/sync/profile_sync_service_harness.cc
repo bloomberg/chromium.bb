@@ -845,8 +845,8 @@ bool ProfileSyncServiceHarness::MatchesOtherClient(
   // Only look for a match if we have at least one enabled datatype in
   // common with the partner client.
   const syncer::ModelTypeSet common_types =
-      Intersection(service()->GetPreferredDataTypes(),
-                   partner->service()->GetPreferredDataTypes());
+      Intersection(service()->GetActiveDataTypes(),
+                   partner->service()->GetActiveDataTypes());
 
   DVLOG(2) << profile_debug_name_ << ", " << partner->profile_debug_name_
            << ": common types are "

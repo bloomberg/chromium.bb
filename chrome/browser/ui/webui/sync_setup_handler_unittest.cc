@@ -378,6 +378,8 @@ class SyncSetupHandlerTest : public testing::TestWithParam<bool> {
         WillRepeatedly(Return(GetAllTypes()));
     EXPECT_CALL(*mock_pss_, GetPreferredDataTypes()).
         WillRepeatedly(Return(GetAllTypes()));
+    EXPECT_CALL(*mock_pss_, GetActiveDataTypes()).
+        WillRepeatedly(Return(GetAllTypes()));
     EXPECT_CALL(*mock_pss_, EncryptEverythingEnabled()).
         WillRepeatedly(Return(false));
   }

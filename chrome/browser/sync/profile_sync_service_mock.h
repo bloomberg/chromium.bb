@@ -75,6 +75,7 @@ class ProfileSyncServiceMock : public ProfileSyncService {
 
   MOCK_METHOD1(ChangePreferredDataTypes,
                void(syncer::ModelTypeSet preferred_types));
+  MOCK_CONST_METHOD0(GetActiveDataTypes, syncer::ModelTypeSet());
   MOCK_CONST_METHOD0(GetPreferredDataTypes, syncer::ModelTypeSet());
   MOCK_CONST_METHOD0(GetRegisteredDataTypes, syncer::ModelTypeSet());
   MOCK_CONST_METHOD0(GetLastSessionSnapshot,

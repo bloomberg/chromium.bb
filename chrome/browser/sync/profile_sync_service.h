@@ -126,6 +126,7 @@ class EncryptedData;
 //   Additionally, the current sync configuration can be fetched by calling
 //    * GetRegisteredDataTypes()
 //    * GetPreferredDataTypes()
+//    * GetActiveDataTypes()
 //    * IsUsingSecondaryPassphrase()
 //    * EncryptEverythingEnabled()
 //    * IsPassphraseRequired()/IsPassphraseRequiredForDecryption()
@@ -233,7 +234,7 @@ class ProfileSyncService : public ProfileSyncServiceBase,
   // ProfileSyncServiceBase implementation.
   virtual bool HasSyncSetupCompleted() const OVERRIDE;
   virtual bool ShouldPushChanges() OVERRIDE;
-  virtual syncer::ModelTypeSet GetPreferredDataTypes() const OVERRIDE;
+  virtual syncer::ModelTypeSet GetActiveDataTypes() const OVERRIDE;
   virtual void AddObserver(Observer* observer) OVERRIDE;
   virtual void RemoveObserver(Observer* observer) OVERRIDE;
   virtual bool HasObserver(Observer* observer) const OVERRIDE;
@@ -498,6 +499,10 @@ class ProfileSyncService : public ProfileSyncServiceBase,
   // class comment for more on what it means for a datatype to be Preferred.
   virtual void ChangePreferredDataTypes(
       syncer::ModelTypeSet preferred_types);
+
+  // Returns the set of types which are preferred for enabling. This is a
+  // superset of the active types (see GetActiveTypes()).
+  virtual syncer::ModelTypeSet GetPreferredDataTypes() const;
 
   // Gets the set of all data types that could be allowed (the set that
   // should be advertised to the user).  These will typically only change
