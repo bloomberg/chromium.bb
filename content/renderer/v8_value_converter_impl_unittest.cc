@@ -447,49 +447,6 @@ TEST_F(V8ValueConverterImplTest, RecursiveObjects) {
   EXPECT_TRUE(IsNull(list_result.get(), 1));
 }
 
-// Do not try and convert any named callbacks including getters.
-TEST_F(V8ValueConverterImplTest, ObjectGetters) {
-  v8::Context::Scope context_scope(context_);
-  v8::HandleScope handle_scope;
-
-  const char* source = "(function() {"
-      "var a = {};"
-      "a.__defineGetter__('foo', function() { return 'bar'; });"
-      "return a;"
-      "})();";
-
-  v8::Handle<v8::Script> script(v8::Script::New(v8::String::New(source)));
-  v8::Handle<v8::Object> object = script->Run().As<v8::Object>();
-  ASSERT_FALSE(object.IsEmpty());
-
-  V8ValueConverterImpl converter;
-  scoped_ptr<base::DictionaryValue> result(
-      static_cast<base::DictionaryValue*>(
-          converter.FromV8Value(object, context_)));
-  ASSERT_TRUE(result.get());
-  EXPECT_EQ(0u, result->size());
-}
-
-// Do not try and convert any named callbacks including getters.
-TEST_F(V8ValueConverterImplTest, ObjectWithInternalFieldsGetters) {
-  v8::Context::Scope context_scope(context_);
-  v8::HandleScope handle_scope;
-
-  v8::Handle<v8::ObjectTemplate> object_template = v8::ObjectTemplate::New();
-  object_template->SetInternalFieldCount(1);
-  object_template->SetAccessor(v8::String::New("foo"), NamedCallbackGetter);
-  v8::Handle<v8::Object> object = object_template->NewInstance();
-  ASSERT_FALSE(object.IsEmpty());
-  object->Set(v8::String::New("a"), v8::String::New("b"));
-
-  V8ValueConverterImpl converter;
-  scoped_ptr<base::DictionaryValue> result(
-      static_cast<base::DictionaryValue*>(
-          converter.FromV8Value(object, context_)));
-  ASSERT_TRUE(result.get());
-  EXPECT_EQ(1u, result->size());
-}
-
 TEST_F(V8ValueConverterImplTest, WeirdProperties) {
   v8::Context::Scope context_scope(context_);
   v8::HandleScope handle_scope;
@@ -648,6 +605,42 @@ TEST_F(V8ValueConverterImplTest, DetectCycles) {
   ASSERT_TRUE(actual_dictionary.get());
 
   EXPECT_TRUE(expected_dictionary.Equals(actual_dictionary.get()));
+}
+
+TEST_F(V8ValueConverterImplTest, MaxRecursionDepth) {
+  v8::Context::Scope context_scope(context_);
+  v8::HandleScope handle_scope;
+
+  // Must larger than kMaxRecursionDepth in v8_value_converter_impl.cc.
+  int kDepth = 100;
+  const char kKey[] = "key";
+
+  v8::Local<v8::Object> deep_object = v8::Object::New();
+
+  v8::Local<v8::Object> leaf = deep_object;
+  for (int i = 0; i < kDepth; ++i) {
+    v8::Local<v8::Object> new_object = v8::Object::New();
+    leaf->Set(v8::String::New(kKey), new_object);
+    leaf = new_object;
+  }
+
+  V8ValueConverterImpl converter;
+  scoped_ptr<base::Value> value(converter.FromV8Value(deep_object, context_));
+  ASSERT_TRUE(value);
+
+  // Expected depth is kMaxRecursionDepth in v8_value_converter_impl.cc.
+  int kExpectedDepth = 10;
+
+  base::Value* current = value.get();
+  for (int i = 1; i < kExpectedDepth; ++i) {
+    base::DictionaryValue* current_as_object = NULL;
+    ASSERT_TRUE(current->GetAsDictionary(&current_as_object)) << i;
+    ASSERT_TRUE(current_as_object->Get(kKey, &current)) << i;
+  }
+
+  // The leaf node shouldn't have any properties.
+  base::DictionaryValue empty;
+  EXPECT_TRUE(Value::Equals(&empty, current)) << *current;
 }
 
 }  // namespace content

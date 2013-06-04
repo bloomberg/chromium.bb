@@ -86,7 +86,7 @@ chrome.test.getConfig(function(config) {
         });
       },
 
-      // Non-pure ojbects (like DOM nodes) will get converted as best they can.
+      // Non-pure object (like DOM nodes) will get converted as best they can.
       function executeCallbackDOMObjShouldSucceed() {
         var scriptDetails = {};
         scriptDetails.code = 'var a = document.getElementById("testDiv"); a;';
