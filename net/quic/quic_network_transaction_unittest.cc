@@ -327,7 +327,8 @@ class QuicNetworkTransactionTest : public PlatformTest {
 };
 
 TEST_F(QuicNetworkTransactionTest, ForceQuic) {
-  params_.origin_port_to_force_quic_on = 80;
+  params_.origin_to_force_quic_on =
+      HostPortPair::FromString("www.google.com:80");
 
   QuicStreamId stream_id = 3;
   scoped_ptr<QuicEncryptedPacket> req(
@@ -400,7 +401,8 @@ TEST_F(QuicNetworkTransactionTest, ForceQuic) {
 }
 
 TEST_F(QuicNetworkTransactionTest, ForceQuicWithErrorConnecting) {
-  params_.origin_port_to_force_quic_on = 80;
+  params_.origin_to_force_quic_on =
+      HostPortPair::FromString("www.google.com:80");
 
   MockRead quic_reads[] = {
     MockRead(ASYNC, ERR_SOCKET_NOT_CONNECTED),
@@ -421,7 +423,8 @@ TEST_F(QuicNetworkTransactionTest, ForceQuicWithErrorConnecting) {
 
 TEST_F(QuicNetworkTransactionTest, DoNotForceQuicForHttps) {
   // Attempt to "force" quic on 443, which will not be honored.
-  params_.origin_port_to_force_quic_on = 443;
+  params_.origin_to_force_quic_on =
+      HostPortPair::FromString("www.google.com:443");
 
   MockRead http_reads[] = {
     MockRead("HTTP/1.1 200 OK\r\n\r\n"),

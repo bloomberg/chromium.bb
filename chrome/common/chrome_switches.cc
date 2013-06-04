@@ -1041,8 +1041,8 @@ const char kOpenInNewWindow[]               = "new-window";
 // Simulates an organic Chrome install.
 const char kOrganicInstall[]                = "organic";
 
-// Force use of QUIC for requests over the specified port.
-const char kOriginPortToForceQuicOn[]       = "origin-port-to-force-quic-on";
+// Force use of QUIC for requests to the specified origin.
+const char kOriginToForceQuicOn[]           = "origin-to-force-quic-on";
 
 // The time that a new chrome process which is delegating to an already running
 // chrome process started. (See ProcessSingleton for more details.)

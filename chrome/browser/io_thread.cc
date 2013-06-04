@@ -536,10 +536,13 @@ void IOThread::Init() {
         GetSwitchValueAsInt(command_line, switches::kTestingFixedHttpsPort);
   }
   globals_->enable_quic.set(ShouldEnableQuic(command_line));
-  if (command_line.HasSwitch(switches::kOriginPortToForceQuicOn)) {
-    globals_->origin_port_to_force_quic_on.set(
-        GetSwitchValueAsInt(command_line,
-                            switches::kOriginPortToForceQuicOn));
+  if (command_line.HasSwitch(switches::kOriginToForceQuicOn)) {
+    net::HostPortPair quic_origin =
+        net::HostPortPair::FromString(
+            command_line.GetSwitchValueASCII(switches::kOriginToForceQuicOn));
+    if (!quic_origin.IsEmpty()) {
+      globals_->origin_to_force_quic_on.set(quic_origin);
+    }
   }
   if (command_line.HasSwitch(
           switches::kEnableUserAlternateProtocolPorts)) {
@@ -868,8 +871,8 @@ void IOThread::InitializeNetworkSessionParams(
   globals_->spdy_default_protocol.CopyToIfSet(
       &params->spdy_default_protocol);
   globals_->enable_quic.CopyToIfSet(&params->enable_quic);
-  globals_->origin_port_to_force_quic_on.CopyToIfSet(
-      &params->origin_port_to_force_quic_on);
+  globals_->origin_to_force_quic_on.CopyToIfSet(
+      &params->origin_to_force_quic_on);
   params->enable_user_alternate_protocol_ports =
       globals_->enable_user_alternate_protocol_ports;
 }
