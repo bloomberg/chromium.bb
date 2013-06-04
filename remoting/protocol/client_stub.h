@@ -30,9 +30,7 @@ class ClientStub : public ClipboardStub,
   virtual void SetCapabilities(const Capabilities& capabilities) = 0;
 
   // Passes a pairing response message to the client.
-  // TODO(jamiewalch): Make this pure virtual once the PIN-less authentication
-  // implementation CLs have landed.
-  virtual void SetPairingResponse(const PairingResponse& pairing_response) {}
+  virtual void SetPairingResponse(const PairingResponse& pairing_response) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ClientStub);

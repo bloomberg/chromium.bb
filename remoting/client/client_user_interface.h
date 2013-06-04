@@ -17,6 +17,7 @@ namespace remoting {
 namespace protocol {
 class ClipboardStub;
 class CursorShapeStub;
+class PairingResponse;
 }  // namespace protocol
 
 // ClientUserInterface is an interface that must be implemented by
@@ -36,6 +37,10 @@ class ClientUserInterface {
   // Passes the final set of capabilities negotiated between the client and host
   // to the application.
   virtual void SetCapabilities(const std::string& capabilities) = 0;
+
+  // Passes a pairing response message to the client.
+  virtual void SetPairingResponse(
+      const protocol::PairingResponse& pairing_response) = 0;
 
   // Get the view's ClipboardStub implementation.
   virtual protocol::ClipboardStub* GetClipboardStub() = 0;

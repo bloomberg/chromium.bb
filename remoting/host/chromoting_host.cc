@@ -298,7 +298,8 @@ void ChromotingHost::OnIncomingSession(
       ui_task_runner_,
       connection.Pass(),
       desktop_environment_factory_,
-      max_session_duration_);
+      max_session_duration_,
+      pairing_registry_);
   clients_.push_back(client);
 }
 

@@ -64,7 +64,8 @@ remoting.ClientPluginAsync = function(plugin) {
   this.helloReceived_ = false;
   /** @type {function(boolean)|null} */
   this.onInitializedCallback_ = null;
-
+  /** @type {function(string, string):void} */
+  this.onPairingComplete_ = function(clientId, sharedSecret) {};
   /** @type {remoting.ClientSession.PerfStats} */
   this.perfStats_ = new remoting.ClientSession.PerfStats();
 
@@ -298,6 +299,14 @@ remoting.ClientPluginAsync.prototype.handleMessage_ = function(messageStr) {
         /** @type {string} */ message.data['hostPublicKey'];
     var scope = /** @type {string} */ message.data['scope'];
     this.fetchThirdPartyTokenHandler(tokenUrl, hostPublicKey, scope);
+  } else if (message.method == 'pairingResponse') {
+    var clientId = /** @type {string} */ message.data['clientId'];
+    var sharedSecret = /** @type {string} */ message.data['sharedSecret'];
+    if (typeof clientId != 'string' || typeof sharedSecret != 'string') {
+      console.error('Received incorrect pairingResponse message.');
+      return;
+    }
+    this.onPairingComplete_(clientId, sharedSecret);
   }
 };
 
@@ -385,10 +394,15 @@ remoting.ClientPluginAsync.prototype.onIncomingIq = function(iq) {
  *     authentication methods the client should attempt to use.
  * @param {string} authenticationTag A host-specific tag to mix into
  *     authentication hashes.
+ * @param {string} clientPairingId For paired Me2Me connections, the
+ *     pairing id for this client, as issued by the host.
+ * @param {string} clientPairedSecret For paired Me2Me connections, the
+ *     paired secret for this client, as issued by the host.
  */
 remoting.ClientPluginAsync.prototype.connect = function(
     hostJid, hostPublicKey, localJid, sharedSecret,
-    authenticationMethods, authenticationTag) {
+    authenticationMethods, authenticationTag,
+    clientPairingId, clientPairedSecret) {
   this.plugin.postMessage(JSON.stringify(
     { method: 'connect', data: {
         hostJid: hostJid,
@@ -397,7 +411,9 @@ remoting.ClientPluginAsync.prototype.connect = function(
         sharedSecret: sharedSecret,
         authenticationMethods: authenticationMethods,
         authenticationTag: authenticationTag,
-        capabilities: this.capabilities_.join(" ")
+        capabilities: this.capabilities_.join(" "),
+        clientPairingId: clientPairingId,
+        clientPairedSecret: clientPairedSecret
       }
     }));
 };
@@ -565,6 +581,23 @@ remoting.ClientPluginAsync.prototype.onThirdPartyTokenFetched = function(
   this.plugin.postMessage(JSON.stringify(
     { method: 'onThirdPartyTokenFetched',
       data: { token: token, sharedSecret: sharedSecret}}));
+};
+
+/**
+ * Request pairing with the host for PIN-less authentication.
+ *
+ * @param {string} clientName The human-readable name of the client.
+ * @param {function(string, string):void} onDone, Callback to receive the
+ *     client id and shared secret when they are available.
+ */
+remoting.ClientPluginAsync.prototype.requestPairing =
+    function(clientName, onDone) {
+  if (!this.hasFeature(remoting.ClientPlugin.Feature.PINLESS_AUTH)) {
+    return;
+  }
+  this.onPairingComplete_ = onDone;
+  this.plugin.postMessage(JSON.stringify(
+      { method: 'requestPairing', data: { clientName: clientName } }));
 };
 
 /**

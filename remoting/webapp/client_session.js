@@ -41,12 +41,17 @@ var remoting = remoting || {};
  *     Mixed into authentication hashes for some authentication methods.
  * @param {remoting.ClientSession.Mode} mode The mode of this connection.
  * @param {string} hostDisplayName The name of the host for display purposes.
+ * @param {string} clientPairingId For paired Me2Me connections, the
+ *     pairing id for this client, as issued by the host.
+ * @param {string} clientPairedSecret For paired Me2Me connections, the
+ *     paired secret for this client, as issued by the host.
  * @constructor
  */
 remoting.ClientSession = function(hostJid, clientJid, hostPublicKey, accessCode,
                                   fetchPin, fetchThirdPartyToken,
                                   authenticationMethods, hostId,
-                                  mode, hostDisplayName) {
+                                  mode, hostDisplayName,
+                                  clientPairingId, clientPairedSecret) {
   this.state = remoting.ClientSession.State.CREATED;
 
   this.hostJid = hostJid;
@@ -59,11 +64,16 @@ remoting.ClientSession = function(hostJid, clientJid, hostPublicKey, accessCode,
   /** @private */
   this.fetchThirdPartyToken_ = fetchThirdPartyToken;
   this.authenticationMethods = authenticationMethods;
+  /** @type {string} */
   this.hostId = hostId;
   /** @type {string} */
   this.hostDisplayName = hostDisplayName;
   /** @type {remoting.ClientSession.Mode} */
   this.mode = mode;
+  /** @private */
+  this.clientPairingId_ = clientPairingId;
+  /** @private */
+  this.clientPairedSecret_ = clientPairedSecret
   this.sessionId = '';
   /** @type {remoting.ClientPlugin} */
   this.plugin = null;
@@ -768,8 +778,8 @@ remoting.ClientSession.prototype.connectPluginToWcs_ = function() {
  */
 remoting.ClientSession.prototype.connectToHost_ = function(sharedSecret) {
   this.plugin.connect(this.hostJid, this.hostPublicKey, this.clientJid,
-                      sharedSecret, this.authenticationMethods,
-                      this.hostId);
+                      sharedSecret, this.authenticationMethods, this.hostId,
+                      this.clientPairingId_, this.clientPairedSecret_);
 };
 
 /**
@@ -1055,6 +1065,19 @@ remoting.ClientSession.prototype.logStatistics = function(stats) {
  */
 remoting.ClientSession.prototype.logHostOfflineErrors = function(enable) {
   this.logHostOfflineErrors_ = enable;
+};
+
+/**
+ * Request pairing with the host for PIN-less authentication.
+ *
+ * @param {string} clientName The human-readable name of the client.
+ * @param {function(string, string):void} onDone Callback to receive the
+ *     client id and shared secret when they are available.
+ */
+remoting.ClientSession.prototype.requestPairing = function(clientName, onDone) {
+  if (this.plugin) {
+    this.plugin.requestPairing(clientName, onDone);
+  }
 };
 
 /**

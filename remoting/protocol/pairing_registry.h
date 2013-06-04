@@ -61,10 +61,6 @@ class PairingRegistry : public base::RefCountedThreadSafe<PairingRegistry>,
 
   virtual ~PairingRegistry();
 
-  // Callback for the Delegate::Load method. Invoked when the stored pairings
-  // have been loaded.
-  void OnLoad(const PairedClients& paired_clients);
-
   scoped_ptr<Delegate> delegate_;
   PairedClients paired_clients_;
 

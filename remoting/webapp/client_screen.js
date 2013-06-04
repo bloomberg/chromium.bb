@@ -274,6 +274,10 @@ remoting.connectMe2MeHostVersionAcknowledged_ = function(host) {
     var pinForm = document.getElementById('pin-form');
     /** @type {Element} */
     var pinCancel = document.getElementById('cancel-pin-entry-button');
+    /** @type {Element} */
+    var rememberPin = document.getElementById('remember-pin');
+    /** @type {Element} */
+    var rememberPinCheckbox = document.getElementById('remember-pin-checkbox');
     /**
      * Event handler for both the 'submit' and 'cancel' actions. Using
      * a single handler for both greatly simplifies the task of making
@@ -292,23 +296,38 @@ remoting.connectMe2MeHostVersionAcknowledged_ = function(host) {
         event.preventDefault();
         remoting.setMode(remoting.AppMode.CLIENT_CONNECTING);
         onPinFetched(pin);
+        if (/** @type {boolean} */(rememberPinCheckbox.checked)) {
+          remoting.connector.pairingRequested = true;
+        }
       } else {
         remoting.setMode(remoting.AppMode.HOME);
       }
     };
     pinForm.addEventListener('submit', onSubmitOrCancel, false);
     pinCancel.addEventListener('click', onSubmitOrCancel, false);
-
-    var rememberPin = document.getElementById('remember-pin');
     rememberPin.hidden = !supportsPairing;
-    var checkbox = /** @type {HTMLInputElement} */
-        document.getElementById('remember-pin-checkbox');
-    checkbox.checked = false;
+    rememberPinCheckbox.checked = false;
     var message = document.getElementById('pin-message');
     l10n.localizeElement(message, host.hostName);
     remoting.setMode(remoting.AppMode.CLIENT_PIN_PROMPT);
   };
-  remoting.connector.connectMe2Me(host, requestPin, fetchThirdPartyToken);
+
+  /** @param {Object} settings */
+  var connectMe2MeHostSettingsRetrieved = function(settings) {
+    /** @type {string} */
+    var clientId = '';
+    /** @type {string} */
+    var sharedSecret = '';
+    var pairingInfo = /** @type {Object} */ (settings['pairingInfo']);
+    if (pairingInfo) {
+      clientId = /** @type {string} */ (pairingInfo['clientId']);
+      sharedSecret = /** @type {string} */ (pairingInfo['sharedSecret']);
+    }
+    remoting.connector.connectMe2Me(host, requestPin, fetchThirdPartyToken,
+                                    clientId, sharedSecret);
+  }
+
+  remoting.HostSettings.load(host.hostId, connectMe2MeHostSettingsRetrieved);
 };
 
 /** @param {remoting.ClientSession} clientSession */
@@ -323,4 +342,22 @@ remoting.onConnected = function(clientSession) {
   remoting.toolbar.preview();
   remoting.clipboard.startSession();
   updateStatistics_();
+  if (remoting.connector.pairingRequested) {
+    /**
+     * @param {string} clientId
+     * @param {string} sharedSecret
+     */
+    var onPairingComplete = function(clientId, sharedSecret) {
+      var pairingInfo = {
+        pairingInfo: {
+          clientId: clientId,
+          sharedSecret: sharedSecret
+        }
+      };
+      remoting.HostSettings.save(clientSession.hostId, pairingInfo);
+    };
+    // TODO(jamiewalch): Since we can't get a descriptive name for the local
+    // computer from Javascript, pass the empty string for now.
+    clientSession.requestPairing('', onPairingComplete);
+  }
 };

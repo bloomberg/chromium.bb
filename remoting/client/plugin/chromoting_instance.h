@@ -119,6 +119,8 @@ class ChromotingInstance :
                                  protocol::ErrorCode error) OVERRIDE;
   virtual void OnConnectionReady(bool ready) OVERRIDE;
   virtual void SetCapabilities(const std::string& capabilities) OVERRIDE;
+  virtual void SetPairingResponse(
+      const protocol::PairingResponse& pairing_response) OVERRIDE;
   virtual protocol::ClipboardStub* GetClipboardStub() OVERRIDE;
   virtual protocol::CursorShapeStub* GetCursorShapeStub() OVERRIDE;
   virtual scoped_ptr<protocol::ThirdPartyClientAuthenticator::TokenFetcher>
@@ -195,6 +197,7 @@ class ChromotingInstance :
   void OnPinFetched(const std::string& pin);
   void OnThirdPartyTokenFetched(const std::string& token,
                                 const std::string& shared_secret);
+  void RequestPairing(const std::string& client_name);
 
   // Helper method to post messages to the webapp.
   void PostChromotingMessage(const std::string& method,

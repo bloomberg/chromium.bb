@@ -36,7 +36,10 @@ const PairingRegistry::Pairing& PairingRegistry::CreatePairing(
   // Create a random shared secret to authenticate this client.
   char buffer[kKeySize];
   crypto::RandBytes(buffer, arraysize(buffer));
-  result.shared_secret = std::string(buffer, buffer+arraysize(buffer));
+  if (!base::Base64Encode(base::StringPiece(buffer, arraysize(buffer)),
+                          &result.shared_secret)) {
+    LOG(FATAL) << "Base64Encode failed.";
+  }
 
   // Save the result via the Delegate and return it to the caller.
   paired_clients_[result.client_id] = result;
@@ -59,7 +62,7 @@ std::string PairingRegistry::GetSecret(const std::string& client_id) const {
 void NotImplementedPairingRegistryDelegate::Save(
     const PairingRegistry::PairedClients& paired_clients) {
   NOTIMPLEMENTED();
-};
+}
 
 }  // namespace protocol
 }  // namespace remoting

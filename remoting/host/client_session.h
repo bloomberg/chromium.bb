@@ -24,6 +24,7 @@
 #include "remoting/protocol/input_event_tracker.h"
 #include "remoting/protocol/input_filter.h"
 #include "remoting/protocol/input_stub.h"
+#include "remoting/protocol/pairing_registry.h"
 #include "third_party/skia/include/core/SkPoint.h"
 #include "third_party/skia/include/core/SkSize.h"
 
@@ -95,7 +96,8 @@ class ClientSession
       scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
       scoped_ptr<protocol::ConnectionToClient> connection,
       DesktopEnvironmentFactory* desktop_environment_factory,
-      const base::TimeDelta& max_duration);
+      const base::TimeDelta& max_duration,
+      scoped_refptr<protocol::PairingRegistry> pairing_registry);
   virtual ~ClientSession();
 
   // protocol::HostStub interface.
@@ -107,6 +109,8 @@ class ClientSession
       const protocol::AudioControl& audio_control) OVERRIDE;
   virtual void SetCapabilities(
       const protocol::Capabilities& capabilities) OVERRIDE;
+  virtual void RequestPairing(
+      const remoting::protocol::PairingRequest& pairing_request) OVERRIDE;
 
   // protocol::ConnectionToClient::EventHandler interface.
   virtual void OnConnectionAuthenticated(
@@ -223,6 +227,9 @@ class ClientSession
 
   // Used to apply client-requested changes in screen resolution.
   scoped_ptr<ScreenControls> screen_controls_;
+
+  // The pairing registry for PIN-less authentication.
+  scoped_refptr<protocol::PairingRegistry> pairing_registry_;
 
   DISALLOW_COPY_AND_ASSIGN(ClientSession);
 };

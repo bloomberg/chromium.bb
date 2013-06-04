@@ -19,8 +19,9 @@
 #include "remoting/host/host_status_monitor.h"
 #include "remoting/host/host_status_observer.h"
 #include "remoting/protocol/authenticator.h"
-#include "remoting/protocol/session_manager.h"
 #include "remoting/protocol/connection_to_client.h"
+#include "remoting/protocol/pairing_registry.h"
+#include "remoting/protocol/session_manager.h"
 #include "third_party/skia/include/core/SkSize.h"
 
 namespace base {
@@ -139,6 +140,16 @@ class ChromotingHost : public base::NonThreadSafe,
     return weak_factory_.GetWeakPtr();
   }
 
+  // The host uses a pairing registry to generate and store pairing information
+  // for clients for PIN-less authentication.
+  scoped_refptr<protocol::PairingRegistry> pairing_registry() const {
+    return pairing_registry_;
+  }
+  void set_pairing_registry(
+      scoped_refptr<protocol::PairingRegistry> pairing_registry) {
+    pairing_registry_ = pairing_registry;
+  }
+
  private:
   friend class ChromotingHostTest;
 
@@ -189,6 +200,9 @@ class ChromotingHost : public base::NonThreadSafe,
 
   // The maximum duration of any session.
   base::TimeDelta max_session_duration_;
+
+  // The pairing registry for PIN-less authentication.
+  scoped_refptr<protocol::PairingRegistry> pairing_registry_;
 
   base::WeakPtrFactory<ChromotingHost> weak_factory_;
 

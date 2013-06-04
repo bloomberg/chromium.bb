@@ -55,13 +55,12 @@ void ChromotingClient::Start(
     scoped_ptr<protocol::TransportFactory> transport_factory) {
   DCHECK(task_runner_->BelongsToCurrentThread());
 
-  // TODO(jamiewalch): Add the plumbing required to get the client id and
-  // shared secret from the web-app.
-  std::string client_id, shared_secret;
   scoped_ptr<protocol::Authenticator> authenticator(
       new protocol::NegotiatingClientAuthenticator(
-          client_id, shared_secret,
-          config_.authentication_tag, config_.fetch_secret_callback,
+          config_.client_pairing_id,
+          config_.client_paired_secret,
+          config_.authentication_tag,
+          config_.fetch_secret_callback,
           user_interface_->GetTokenFetcher(config_.host_public_key),
           config_.authentication_methods));
 
@@ -121,6 +120,13 @@ void ChromotingClient::SetCapabilities(
   // it to the webapp.
   user_interface_->SetCapabilities(
       IntersectCapabilities(config_.capabilities, host_capabilities_));
+}
+
+void ChromotingClient::SetPairingResponse(
+    const protocol::PairingResponse& pairing_response) {
+  DCHECK(task_runner_->BelongsToCurrentThread());
+
+  user_interface_->SetPairingResponse(pairing_response);
 }
 
 void ChromotingClient::InjectClipboardEvent(

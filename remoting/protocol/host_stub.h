@@ -41,9 +41,7 @@ class HostStub {
   virtual void SetCapabilities(const Capabilities& capabilities) = 0;
 
   // Requests pairing between the host and client for PIN-less authentication.
-  // TODO(jamiewalch): Make this pure virtual once the PIN-less authentication
-  // implementation CLs have landed.
-  virtual void RequestPairing(const PairingRequest& pairing_request) {}
+  virtual void RequestPairing(const PairingRequest& pairing_request) = 0;
 
  protected:
   virtual ~HostStub() {}

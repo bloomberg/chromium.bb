@@ -27,6 +27,7 @@
 #include "remoting/proto/event.pb.h"
 #include "remoting/protocol/client_stub.h"
 #include "remoting/protocol/clipboard_thread_proxy.h"
+#include "remoting/protocol/pairing_registry.h"
 
 // Default DPI to assume for old clients that use notifyClientDimensions.
 const int kDefaultDPI = 96;
@@ -43,7 +44,8 @@ ClientSession::ClientSession(
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
     scoped_ptr<protocol::ConnectionToClient> connection,
     DesktopEnvironmentFactory* desktop_environment_factory,
-    const base::TimeDelta& max_duration)
+    const base::TimeDelta& max_duration,
+    scoped_refptr<protocol::PairingRegistry> pairing_registry)
     : event_handler_(event_handler),
       connection_(connection.Pass()),
       client_jid_(connection_->session()->jid()),
@@ -63,7 +65,8 @@ ClientSession::ClientSession(
       video_capture_task_runner_(video_capture_task_runner),
       video_encode_task_runner_(video_encode_task_runner),
       network_task_runner_(network_task_runner),
-      ui_task_runner_(ui_task_runner) {
+      ui_task_runner_(ui_task_runner),
+      pairing_registry_(pairing_registry) {
   connection_->SetEventHandler(this);
 
   // TODO(sergeyu): Currently ConnectionToClient expects stubs to be
@@ -170,6 +173,18 @@ void ClientSession::SetCapabilities(
   // pass it to the desktop environment if it is available.
   desktop_environment_->SetCapabilities(
       IntersectCapabilities(*client_capabilities_, host_capabilities_));
+}
+
+void ClientSession::RequestPairing(
+    const protocol::PairingRequest& pairing_request) {
+  if (pairing_request.has_client_name()) {
+    protocol::PairingRegistry::Pairing pairing =
+        pairing_registry_->CreatePairing(pairing_request.client_name());
+    protocol::PairingResponse pairing_response;
+    pairing_response.set_client_id(pairing.client_id);
+    pairing_response.set_shared_secret(pairing.shared_secret);
+    connection_->client_stub()->SetPairingResponse(pairing_response);
+  }
 }
 
 void ClientSession::OnConnectionAuthenticated(

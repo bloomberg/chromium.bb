@@ -141,7 +141,7 @@ logging::LogMessageHandlerFunction g_logging_old_handler = NULL;
 const char ChromotingInstance::kApiFeatures[] =
     "highQualityScaling injectKeyEvent sendClipboardItem remapKey trapKey "
     "notifyClientDimensions notifyClientResolution pauseVideo pauseAudio "
-    "asyncPin thirdPartyAuth";
+    "asyncPin thirdPartyAuth pinlessAuth";
 
 const char ChromotingInstance::kRequestedCapabilities[] = "";
 const char ChromotingInstance::kSupportedCapabilities[] = "";
@@ -289,6 +289,8 @@ void ChromotingInstance::HandleMessage(const pp::Var& message) {
       LOG(ERROR) << "Invalid connect() data.";
       return;
     }
+    data->GetString("clientPairingId", &config.client_pairing_id);
+    data->GetString("clientPairedSecret", &config.client_paired_secret);
     if (use_async_pin_dialog_) {
       config.fetch_secret_callback =
           base::Bind(&ChromotingInstance::FetchSecretFromDialog,
@@ -424,6 +426,13 @@ void ChromotingInstance::HandleMessage(const pp::Var& message) {
       return;
     }
     OnThirdPartyTokenFetched(token, shared_secret);
+  } else if (method == "requestPairing") {
+    std::string client_name;
+    if (!data->GetString("clientName", &client_name)) {
+      LOG(ERROR) << "Invalid requestPairing";
+      return;
+    }
+    RequestPairing(client_name);
   }
 }
 
@@ -502,6 +511,14 @@ void ChromotingInstance::SetCapabilities(const std::string& capabilities) {
   scoped_ptr<base::DictionaryValue> data(new base::DictionaryValue());
   data->SetString("capabilities", capabilities);
   PostChromotingMessage("setCapabilities", data.Pass());
+}
+
+void ChromotingInstance::SetPairingResponse(
+    const protocol::PairingResponse& pairing_response) {
+  scoped_ptr<base::DictionaryValue> data(new base::DictionaryValue());
+  data->SetString("clientId", pairing_response.client_id());
+  data->SetString("sharedSecret", pairing_response.shared_secret());
+  PostChromotingMessage("pairingResponse", data.Pass());
 }
 
 void ChromotingInstance::FetchSecretFromDialog(
@@ -777,6 +794,15 @@ void ChromotingInstance::OnThirdPartyTokenFetched(
   } else {
     LOG(WARNING) << "Ignored OnThirdPartyTokenFetched without a pending fetch.";
   }
+}
+
+void ChromotingInstance::RequestPairing(const std::string& client_name) {
+  if (!IsConnected()) {
+    return;
+  }
+  protocol::PairingRequest pairing_request;
+  pairing_request.set_client_name(client_name);
+  host_connection_->host_stub()->RequestPairing(pairing_request);
 }
 
 ChromotingStats* ChromotingInstance::GetStats() {

@@ -164,7 +164,8 @@ void ClientSessionTest::SetUp() {
       ui_task_runner, // UI thread.
       connection.PassAs<protocol::ConnectionToClient>(),
       desktop_environment_factory_.get(),
-      base::TimeDelta()));
+      base::TimeDelta(),
+      NULL));
 }
 
 void ClientSessionTest::TearDown() {

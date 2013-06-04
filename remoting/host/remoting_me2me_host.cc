@@ -19,7 +19,6 @@
 #include "base/single_thread_task_runner.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
-#include "base/string_util.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
 #include "base/utf_string_conversions.h"
@@ -462,12 +461,19 @@ void HostProcess::CreateAuthenticatorFactory() {
     ShutdownHost(kInitializationFailed);
     return;
   }
+
+  // TODO(jamiewalch): Add a pairing registry here once all the code
+  // is committed.
+  scoped_refptr<remoting::protocol::PairingRegistry> pairing_registry;
+  //scoped_refptr<protocol::PairingRegistry> pairing_registry(
+  //    new protocol::PairingRegistry(
+  //        scoped_ptr<protocol::PairingRegistry::Delegate>(
+  //            new protocol::NotImplementedPairingRegistryDelegate),
+  //        protocol::PairingRegistry::PairedClients()));
+
   scoped_ptr<protocol::AuthenticatorFactory> factory;
 
   if (token_url_.is_empty() && token_validation_url_.is_empty()) {
-    // TODO(jamiewalch): Add a pairing registry here once all the code
-    // is committed.
-    scoped_refptr<remoting::protocol::PairingRegistry> pairing_registry;
     factory = protocol::Me2MeHostAuthenticatorFactory::CreateWithSharedSecret(
         local_certificate, key_pair_, host_secret_hash_, pairing_registry);
 
@@ -495,6 +501,8 @@ void HostProcess::CreateAuthenticatorFactory() {
   factory.reset(new PamAuthorizationFactory(factory.Pass()));
 #endif
   host_->SetAuthenticatorFactory(factory.Pass());
+
+  host_->set_pairing_registry(pairing_registry);
 }
 
 // IPC::Listener implementation.

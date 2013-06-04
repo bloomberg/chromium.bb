@@ -191,7 +191,8 @@ class ChromotingHostTest : public testing::Test {
         task_runner_, // UI
         connection.Pass(),
         desktop_environment_factory_.get(),
-        base::TimeDelta()));
+        base::TimeDelta(),
+        NULL));
 
     connection_ptr->set_host_stub(client.get());
 

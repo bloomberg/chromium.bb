@@ -66,7 +66,8 @@ remoting.ClientPlugin.Feature = {
   REMAP_KEY: 'remapKey',
   SEND_CLIPBOARD_ITEM: 'sendClipboardItem',
   THIRD_PARTY_AUTH: 'thirdPartyAuth',
-  TRAP_KEY: 'trapKey'
+  TRAP_KEY: 'trapKey',
+  PINLESS_AUTH: 'pinlessAuth'
 };
 
 /**
@@ -102,10 +103,15 @@ remoting.ClientPlugin.prototype.onIncomingIq = function(iq) {};
  *     authentication methods the client should attempt to use.
  * @param {string} authenticationTag A host-specific tag to mix into
  *     authentication hashes.
+ * @param {string} clientPairingId For paired Me2Me connections, the
+ *     pairing id for this client, as issued by the host.
+ * @param {string} clientPairedSecret For paired Me2Me connections, the
+ *     paired secret for this client, as issued by the host.
  */
 remoting.ClientPlugin.prototype.connect = function(
     hostJid, hostPublicKey, localJid, sharedSecret,
-    authenticationMethods, authenticationTag) {};
+    authenticationMethods, authenticationTag,
+    clientPairingId, clientPairedSecret) {};
 
 /**
  * Release all currently pressed keys.
@@ -199,3 +205,13 @@ remoting.ClientPlugin.prototype.useAsyncPinDialog = function() {};
  */
 remoting.ClientPlugin.prototype.onThirdPartyTokenFetched =
     function(token, sharedSecret) {};
+
+/**
+ * Request pairing with the host for PIN-less authentication.
+ *
+ * @param {string} clientName The human-readable name of the client.
+ * @param {function(string, string):void} onDone, Callback to receive the
+ *     client id and shared secret when they are available.
+ */
+remoting.ClientPlugin.prototype.requestPairing = function(
+    clientName, onDone) {};

@@ -70,6 +70,14 @@ remoting.SessionConnector = function(pluginParent, onOk, onError) {
  */
 remoting.SessionConnector.prototype.reset = function() {
   /**
+   * Set to true to indicate that the user requested pairing when entering
+   * their PIN for a Me2Me connection.
+   *
+   * @type {boolean}
+   */
+  this.pairingRequested = false;
+
+  /**
    * String used to identify the host to which to connect. For IT2Me, this is
    * the first 7 digits of the access code; for Me2Me it is the host identifier.
    *
@@ -77,6 +85,23 @@ remoting.SessionConnector.prototype.reset = function() {
    * @private
    */
   this.hostId_ = '';
+
+  /**
+   * For paired connections, the client id of this device, issued by the host.
+   *
+   * @type {string}
+   * @private
+   */
+  this.clientPairingId_ = '';
+
+  /**
+   * For paired connections, the paired secret for this device, issued by the
+   * host.
+   *
+   * @type {string}
+   * @private
+   */
+  this.clientPairedSecret_ = '';
 
   /**
    * String used to authenticate to the host on connection. For IT2Me, this is
@@ -153,14 +178,21 @@ remoting.SessionConnector.prototype.reset = function() {
  *                  function(string, string): void): void}
  *     fetchThirdPartyToken Function to obtain a token from a third party
  *     authenticaiton server.
+ * @param {string} clientPairingId The client id issued by the host when
+ *     this device was paired, if it is already paired.
+ * @param {string} clientPairedSecret The shared secret issued by the host when
+ *     this device was paired, if it is already paired.
  * @return {void} Nothing.
  */
-remoting.SessionConnector.prototype.connectMe2Me = function(
-    host, fetchPin, fetchThirdPartyToken) {
+remoting.SessionConnector.prototype.connectMe2Me =
+    function(host, fetchPin, fetchThirdPartyToken,
+             clientPairingId, clientPairedSecret) {
   // Cancel any existing connect operation.
   this.cancel();
 
   this.hostId_ = host.hostId;
+  this.clientPairingId_ = clientPairingId;
+  this.clientPairedSecret_ = clientPairedSecret;
   this.hostJid_ = host.jabberId;
   this.hostPublicKey_ = host.publicKey;
   this.fetchPin_ = fetchPin;
@@ -318,7 +350,8 @@ remoting.SessionConnector.prototype.createSessionIfReady_ = function() {
   this.clientSession_ = new remoting.ClientSession(
       this.hostJid_, this.clientJid_, this.hostPublicKey_, this.passPhrase_,
       this.fetchPin_, this.fetchThirdPartyToken_, securityTypes, this.hostId_,
-      this.connectionMode_, this.hostDisplayName_);
+      this.connectionMode_, this.hostDisplayName_, this.clientPairingId_,
+      this.clientPairedSecret_);
   this.clientSession_.logHostOfflineErrors(!this.refreshHostJidIfOffline_);
   this.clientSession_.setOnStateChange(this.onStateChange_.bind(this));
   this.clientSession_.createPluginAndConnect(this.pluginParent_);
@@ -408,7 +441,8 @@ remoting.SessionConnector.prototype.onHostListRefresh_ = function(success) {
   if (success) {
     var host = remoting.hostList.getHostForId(this.hostId_);
     if (host) {
-      this.connectMe2Me(host, this.fetchPin_, this.fetchThirdPartyToken_);
+      this.connectMe2Me(host, this.fetchPin_, this.fetchThirdPartyToken_,
+                        this.clientPairingId_, this.clientPairedSecret_);
       return;
     }
   }
