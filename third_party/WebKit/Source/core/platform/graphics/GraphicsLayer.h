@@ -498,14 +498,7 @@ protected:
     // Helper functions used by settors to keep layer's the state consistent.
     void updateNames();
     void updateChildList();
-    void updateLayerPosition();
-    void updateLayerSize();
-    void updateAnchorPoint();
-    void updateTransform();
-    void updateChildrenTransform();
-    void updateMasksToBounds();
     void updateLayerIsDrawable();
-    void updateLayerBackgroundColor();
     void updateContentsRect();
 
     void setContentsTo(ContentsLayerPurpose, WebKit::WebLayer*);

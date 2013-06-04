@@ -595,38 +595,6 @@ void GraphicsLayer::updateChildList()
         childHost->addChild(m_linkHighlight->layer());
 }
 
-void GraphicsLayer::updateLayerPosition()
-{
-    platformLayer()->setPosition(m_position);
-}
-
-void GraphicsLayer::updateLayerSize()
-{
-    m_layer->layer()->setBounds(flooredIntSize(m_size));
-    // Note that we don't resize m_contentsLayer-> It's up the caller to do that.
-}
-
-void GraphicsLayer::updateAnchorPoint()
-{
-    platformLayer()->setAnchorPoint(FloatPoint(m_anchorPoint.x(), m_anchorPoint.y()));
-    platformLayer()->setAnchorPointZ(m_anchorPoint.z());
-}
-
-void GraphicsLayer::updateTransform()
-{
-    platformLayer()->setTransform(TransformSkMatrix44Conversions::convert(m_transform));
-}
-
-void GraphicsLayer::updateChildrenTransform()
-{
-    platformLayer()->setSublayerTransform(TransformSkMatrix44Conversions::convert(m_childrenTransform));
-}
-
-void GraphicsLayer::updateMasksToBounds()
-{
-    m_layer->layer()->setMasksToBounds(m_masksToBounds);
-}
-
 void GraphicsLayer::updateLayerIsDrawable()
 {
     // For the rest of the accelerated compositor code, there is no reason to make a
@@ -643,11 +611,6 @@ void GraphicsLayer::updateLayerIsDrawable()
         if (m_linkHighlight)
             m_linkHighlight->invalidate();
     }
-}
-
-void GraphicsLayer::updateLayerBackgroundColor()
-{
-    m_layer->layer()->setBackgroundColor(m_backgroundColor.rgb());
 }
 
 void GraphicsLayer::updateContentsRect()
@@ -1005,13 +968,14 @@ void GraphicsLayer::setCompositingReasons(WebKit::WebCompositingReasons reasons)
 void GraphicsLayer::setPosition(const FloatPoint& point)
 {
     m_position = point;
-    updateLayerPosition();
+    platformLayer()->setPosition(m_position);
 }
 
 void GraphicsLayer::setAnchorPoint(const FloatPoint3D& point)
 {
     m_anchorPoint = point;
-    updateAnchorPoint();
+    platformLayer()->setAnchorPoint(FloatPoint(m_anchorPoint.x(), m_anchorPoint.y()));
+    platformLayer()->setAnchorPointZ(m_anchorPoint.z());
 }
 
 void GraphicsLayer::setSize(const FloatSize& size)
@@ -1027,19 +991,21 @@ void GraphicsLayer::setSize(const FloatSize& size)
         return;
 
     m_size = clampedSize;
-    updateLayerSize();
+
+    m_layer->layer()->setBounds(flooredIntSize(m_size));
+    // Note that we don't resize m_contentsLayer. It's up the caller to do that.
 }
 
 void GraphicsLayer::setTransform(const TransformationMatrix& transform)
 {
     m_transform = transform;
-    updateTransform();
+    platformLayer()->setTransform(TransformSkMatrix44Conversions::convert(m_transform));
 }
 
 void GraphicsLayer::setChildrenTransform(const TransformationMatrix& transform)
 {
     m_childrenTransform = transform;
-    updateChildrenTransform();
+    platformLayer()->setSublayerTransform(TransformSkMatrix44Conversions::convert(m_childrenTransform));
 }
 
 void GraphicsLayer::setPreserves3D(bool preserves3D)
@@ -1054,7 +1020,7 @@ void GraphicsLayer::setPreserves3D(bool preserves3D)
 void GraphicsLayer::setMasksToBounds(bool masksToBounds)
 {
     m_masksToBounds = masksToBounds;
-    updateMasksToBounds();
+    m_layer->layer()->setMasksToBounds(m_masksToBounds);
 }
 
 void GraphicsLayer::setDrawsContent(bool drawsContent)
@@ -1085,7 +1051,7 @@ void GraphicsLayer::setBackgroundColor(const Color& color)
         return;
 
     m_backgroundColor = color;
-    updateLayerBackgroundColor();
+    m_layer->layer()->setBackgroundColor(m_backgroundColor.rgb());
 }
 
 void GraphicsLayer::setContentsOpaque(bool opaque)
