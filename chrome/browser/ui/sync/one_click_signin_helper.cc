@@ -1184,7 +1184,7 @@ void OneClickSigninHelper::DidStopLoading(
       std::string last_email =
           profile->GetPrefs()->GetString(prefs::kGoogleServicesLastUsername);
 
-      if (!last_email.empty() && last_email != email_) {
+      if (!last_email.empty() && !gaia::AreEmailsSame(last_email, email_)) {
         // If the new email address is different from the email address that
         // just signed in, show a confirmation dialog.
 
