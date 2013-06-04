@@ -389,5 +389,52 @@ TEST_F(DownloadOperationTest, EnsureFileDownloadedByResourceId_FromCache) {
   EXPECT_FALSE(entry->file_specific_info().is_hosted_document());
 }
 
+TEST_F(DownloadOperationTest, EnsureFileDownloadedByPath_DirtyCache) {
+  base::FilePath file_in_root(FILE_PATH_LITERAL("drive/root/File 1.txt"));
+  ResourceEntry src_entry;
+  ASSERT_EQ(FILE_ERROR_OK, GetLocalResourceEntry(file_in_root, &src_entry));
+
+  // Prepare a dirty file to store to cache that has a different size than
+  // stored in resource metadata.
+  base::FilePath dirty_file = temp_dir().AppendASCII("dirty.txt");
+  size_t dirty_size = src_entry.file_info().size() + 10;
+  google_apis::test_util::WriteStringToFile(dirty_file,
+                                            std::string(dirty_size, 'x'));
+
+  // Store the file as a cache, marking it to be dirty.
+  FileError error = FILE_ERROR_FAILED;
+  cache()->StoreLocallyModifiedOnUIThread(
+      src_entry.resource_id(),
+      src_entry.file_specific_info().file_md5(),
+      dirty_file,
+      internal::FileCache::FILE_OPERATION_COPY,
+      google_apis::test_util::CreateCopyResultCallback(&error));
+  google_apis::test_util::RunBlockingPoolTask();
+  EXPECT_EQ(FILE_ERROR_OK, error);
+
+  // Record values passed to GetFileContentInitializedCallback().
+  FileError init_error;
+  base::FilePath init_path;
+  scoped_ptr<ResourceEntry> init_entry;
+  base::Closure cancel_callback;
+
+  base::FilePath file_path;
+  scoped_ptr<ResourceEntry> entry;
+  operation_->EnsureFileDownloadedByPath(
+      file_in_root,
+      ClientContext(USER_INITIATED),
+      google_apis::test_util::CreateCopyResultCallback(
+          &init_error, &init_entry, &init_path, &cancel_callback),
+      google_apis::GetContentCallback(),
+      google_apis::test_util::CreateCopyResultCallback(
+          &error, &file_path, &entry));
+  google_apis::test_util::RunBlockingPoolTask();
+
+  EXPECT_EQ(FILE_ERROR_OK, error);
+  // Check that the result of local modification is propagated.
+  EXPECT_EQ(static_cast<int64>(dirty_size), init_entry->file_info().size());
+  EXPECT_EQ(static_cast<int64>(dirty_size), entry->file_info().size());
+}
+
 }  // namespace file_system
 }  // namespace drive

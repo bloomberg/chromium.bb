@@ -37,31 +37,31 @@ namespace {
 FileError CheckPreConditionForEnsureFileDownloaded(
     internal::ResourceMetadata* metadata,
     internal::FileCache* cache,
-    const ResourceEntry& entry,
+    ResourceEntry* entry,
     base::FilePath* cache_file_path) {
   DCHECK(metadata);
   DCHECK(cache);
   DCHECK(cache_file_path);
 
-  if (entry.file_info().is_directory())
+  if (entry->file_info().is_directory())
     return FILE_ERROR_NOT_A_FILE;
 
   // The file's entry should have its file specific info.
-  DCHECK(entry.has_file_specific_info());
+  DCHECK(entry->has_file_specific_info());
 
   // For a hosted document, we create a special JSON file to represent the
   // document instead of fetching the document content in one of the exported
   // formats. The JSON file contains the edit URL and resource ID of the
   // document.
-  if (entry.file_specific_info().is_hosted_document()) {
+  if (entry->file_specific_info().is_hosted_document()) {
     base::FilePath gdoc_file_path;
     if (!file_util::CreateTemporaryFileInDir(
             cache->GetCacheDirectoryPath(
                 internal::FileCache::CACHE_TYPE_TMP_DOCUMENTS),
             &gdoc_file_path) ||
         !util::CreateGDocFile(gdoc_file_path,
-                              GURL(entry.file_specific_info().alternate_url()),
-                              entry.resource_id()))
+                              GURL(entry->file_specific_info().alternate_url()),
+                              entry->resource_id()))
       return FILE_ERROR_FAILED;
 
     *cache_file_path = gdoc_file_path;
@@ -69,9 +69,31 @@ FileError CheckPreConditionForEnsureFileDownloaded(
   }
 
   // Get the cache file path if available.
-  cache->GetFile(entry.resource_id(),
-                 entry.file_specific_info().file_md5(),
+  cache->GetFile(entry->resource_id(),
+                 entry->file_specific_info().file_md5(),
                  cache_file_path);
+
+  // If the cache file is available and dirty, the modified file info needs to
+  // be stored in |entry|.
+  // TODO(kinaba): crbug.com/246469. The logic below is a duplicate of that in
+  // drive::FileSystem::CheckLocalModificationAndRun. We should merge them once
+  // the drive::FS side is also converted to run fully on blocking pool.
+  if (!cache_file_path->empty()) {
+    FileCacheEntry cache_entry;
+    if (cache->GetCacheEntry(entry->resource_id(),
+                             entry->file_specific_info().file_md5(),
+                             &cache_entry) &&
+        cache_entry.is_dirty()) {
+      base::PlatformFileInfo file_info;
+      if (file_util::GetFileInfo(*cache_file_path, &file_info)) {
+        PlatformFileInfoProto entry_file_info;
+        util::ConvertPlatformFileInfoToResourceEntry(file_info,
+                                                     &entry_file_info);
+        *entry->mutable_file_info() = entry_file_info;
+      }
+    }
+  }
+
   return FILE_ERROR_OK;
 }
 
@@ -87,7 +109,7 @@ FileError CheckPreConditionForEnsureFileDownloadedByResourceId(
   if (error != FILE_ERROR_OK)
     return error;
   return CheckPreConditionForEnsureFileDownloaded(
-      metadata, cache, *entry, cache_file_path);
+      metadata, cache, entry, cache_file_path);
 }
 
 // Calls CheckPreConditionForEnsureFileDownloaded() with the entry specified by
@@ -102,7 +124,7 @@ FileError CheckPreConditionForEnsureFileDownloadedByPath(
   if (error != FILE_ERROR_OK)
     return error;
   return CheckPreConditionForEnsureFileDownloaded(
-      metadata, cache, *entry, cache_file_path);
+      metadata, cache, entry, cache_file_path);
 }
 
 // Creates a file with unique name in |dir| and stores the path to |temp_file|.
