@@ -5,11 +5,12 @@
  */
 
 #include <errno.h>
+#include <fcntl.h>
 #include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <fcntl.h>
+#include <unistd.h>
 
 #include "native_client/src/public/imc_syscalls.h"
 #include "native_client/src/public/name_service.h"
