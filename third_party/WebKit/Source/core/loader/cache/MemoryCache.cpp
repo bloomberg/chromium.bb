@@ -73,7 +73,14 @@ MemoryCache::MemoryCache()
     , m_deadDecodedDataDeletionInterval(cDefaultDecodedDataDeletionInterval)
     , m_liveSize(0)
     , m_deadSize(0)
+#ifdef MEMORY_CACHE_STATS
+    , m_statsTimer(this, &MemoryCache::dumpStats)
+#endif
 {
+#ifdef MEMORY_CACHE_STATS
+    const double statsIntervalInSeconds = 15;
+    m_statsTimer.startRepeating(statsIntervalInSeconds);
+#endif
 }
 
 KURL MemoryCache::removeFragmentIdentifierIfNeeded(const KURL& originalURL)
@@ -621,8 +628,9 @@ void MemoryCache::pruneToPercentage(float targetPercentLive)
 }
 
 
-#ifndef NDEBUG
-void MemoryCache::dumpStats()
+#ifdef MEMORY_CACHE_STATS
+
+void MemoryCache::dumpStats(Timer<MemoryCache>*)
 {
     Statistics s = getStatistics();
     printf("%-13s %-13s %-13s %-13s %-13s %-13s %-13s\n", "", "Count", "Size", "LiveSize", "DecodedSize", "PurgeableSize", "PurgedSize");
@@ -652,6 +660,7 @@ void MemoryCache::dumpLRULists(bool includeLive) const
         }
     }
 }
-#endif
+
+#endif // MEMORY_CACHE_STATS
 
 } // namespace WebCore

@@ -57,6 +57,9 @@ struct SecurityOriginHash;
 // -------|-----+++++++++++++++|
 // -------|-----+++++++++++++++|+++++
 
+// Enable this macro to periodically log information about the memory cache.
+#undef MEMORY_CACHE_STATS
+
 class MemoryCache {
     WTF_MAKE_NONCOPYABLE(MemoryCache); WTF_MAKE_FAST_ALLOCATED;
 public:
@@ -147,8 +150,9 @@ private:
     ~MemoryCache(); // Not implemented to make sure nobody accidentally calls delete -- WebCore does not delete singletons.
        
     LRUList* lruListFor(CachedResource*);
-#ifndef NDEBUG
-    void dumpStats();
+
+#ifdef MEMORY_CACHE_STATS
+    void dumpStats(Timer<MemoryCache>*);
     void dumpLRULists(bool includeLive) const;
 #endif
 
@@ -189,6 +193,10 @@ private:
     // A URL-based map of all resources that are in the cache (including the freshest version of objects that are currently being 
     // referenced by a Web page).
     HashMap<String, CachedResource*> m_resources;
+
+#ifdef MEMORY_CACHE_STATS
+    Timer<MemoryCache> m_statsTimer;
+#endif
 };
 
 // Function to obtain the global cache.
