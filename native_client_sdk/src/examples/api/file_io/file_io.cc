@@ -11,6 +11,7 @@
 
 #include "ppapi/c/pp_stdint.h"
 #include "ppapi/c/ppb_file_io.h"
+#include "ppapi/cpp/directory_entry.h"
 #include "ppapi/cpp/file_io.h"
 #include "ppapi/cpp/file_ref.h"
 #include "ppapi/cpp/file_system.h"
@@ -39,6 +40,7 @@ namespace {
 const char* const kLoadPrefix = "ld";
 const char* const kSavePrefix = "sv";
 const char* const kDeletePrefix = "de";
+const char* const kListPrefix = "ls";
 }
 
 /// The Instance class.  One of these exists for each instance of your NaCl
@@ -131,6 +133,13 @@ class FileIoInstance : public pp::Instance {
     if (instruction.compare(kDeletePrefix) == 0) {
       file_thread_.message_loop().PostWork(
           callback_factory_.NewCallback(&FileIoInstance::Delete, file_name));
+      return;
+    }
+
+    if (instruction.compare(kListPrefix) == 0) {
+      const std::string& dir_name = file_name;
+      file_thread_.message_loop().PostWork(
+          callback_factory_.NewCallback(&FileIoInstance::List, dir_name));
       return;
     }
   }
@@ -265,6 +274,35 @@ class FileIoInstance : public pp::Instance {
       return;
     }
     ShowStatusMessage("File deleted");
+  }
+
+  void List(int32_t /* result */, const std::string& dir_name) {
+    if (!file_system_ready_) {
+      ShowErrorMessage("File system is not open", PP_ERROR_FAILED);
+      return;
+    }
+    pp::FileRef ref(file_system_, dir_name.c_str());
+
+    // Pass ref along to keep it alive.
+    ref.ReadDirectoryEntries(callback_factory_.NewCallbackWithOutput(
+        &FileIoInstance::ListCallback, ref));
+  }
+
+  void ListCallback(int32_t result,
+                    const std::vector<pp::DirectoryEntry>& entries,
+                    pp::FileRef /* unused_ref */) {
+    if (result != PP_OK) {
+      ShowErrorMessage("List failed", result);
+      return;
+    }
+
+    std::string buffer = "File list:";
+    for (size_t i = 0; i < entries.size(); ++i) {
+      pp::Var name = entries[i].file_ref().GetName();
+      if (name.is_string())
+        buffer += " " + name.AsString();
+    }
+    ShowStatusMessage(buffer);
   }
 
   /// Encapsulates our simple javascript communication protocol

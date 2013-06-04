@@ -18,6 +18,7 @@
           'audio.cc',
           'audio_config.cc',
           'core.cc',
+          'directory_entry.cc',
           'file_io.cc',
           'file_ref.cc',
           'file_system.cc',

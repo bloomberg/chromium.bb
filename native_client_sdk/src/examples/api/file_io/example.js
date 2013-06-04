@@ -19,6 +19,7 @@ function attachListeners() {
   document.getElementById('saveButton').addEventListener('click', saveFile);
   document.getElementById('loadButton').addEventListener('click', loadFile);
   document.getElementById('deleteButton').addEventListener('click', deleteFile);
+  document.getElementById('listButton').addEventListener('click', listDir);
 }
 
 function loadFile() {
@@ -51,6 +52,17 @@ function deleteFile() {
     // Package a message using a simple protocol containing:
     // instruction file_name_length file_name
     var msg = "de " + fileName.length + " " + fileName;
+    common.naclModule.postMessage(msg);
+  }
+}
+
+function listDir() {
+  if (common.naclModule) {
+    var dirName = document.getElementById('dirName').value;
+
+    // Package a message using a simple protocol containing:
+    // instruction file_name_length file_name
+    var msg = "ls " + dirName.length + " " + dirName;
     common.naclModule.postMessage(msg);
   }
 }

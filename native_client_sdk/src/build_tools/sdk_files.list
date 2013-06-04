@@ -658,6 +658,7 @@ src/ppapi_cpp/array_output.cc
 src/ppapi_cpp/audio.cc
 src/ppapi_cpp/audio_config.cc
 src/ppapi_cpp/core.cc
+src/ppapi_cpp/directory_entry.cc
 src/ppapi_cpp/file_io.cc
 src/ppapi_cpp/file_ref.cc
 src/ppapi_cpp/file_system.cc
