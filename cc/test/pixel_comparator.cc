@@ -31,8 +31,8 @@ bool ExactPixelComparator::Compare(const SkBitmap& actual_bmp,
       SkColor actual_color = actual_bmp.getColor(x, y);
       SkColor expected_color = expected_bmp.getColor(x, y);
       if (discard_alpha_) {
-        SkColorSetA(actual_color, 0);
-        SkColorSetA(expected_color, 0);
+        actual_color = SkColorSetA(actual_color, 0);
+        expected_color = SkColorSetA(expected_color, 0);
       }
 
       if (actual_color != expected_color) {
@@ -107,8 +107,8 @@ bool FuzzyPixelComparator::Compare(const SkBitmap& actual_bmp,
       SkColor actual_color = actual_bmp.getColor(x, y);
       SkColor expected_color = expected_bmp.getColor(x, y);
       if (discard_alpha_) {
-        SkColorSetA(actual_color, 0);
-        SkColorSetA(expected_color, 0);
+        actual_color = SkColorSetA(actual_color, 0);
+        expected_color = SkColorSetA(expected_color, 0);
       }
 
       if (actual_color != expected_color) {
@@ -198,8 +198,8 @@ bool FuzzyPixelComparator::Compare(const SkBitmap& actual_bmp,
           SkColor actual_color = actual_bmp.getColor(x, y);
           SkColor expected_color = expected_bmp.getColor(x, y);
           if (discard_alpha_) {
-            SkColorSetA(actual_color, 0);
-            SkColorSetA(expected_color, 0);
+            actual_color = SkColorSetA(actual_color, 0);
+            expected_color = SkColorSetA(expected_color, 0);
           }
           if (actual_color != expected_color) {
             LOG(ERROR) << "Pixel error at x=" << x << " y=" << y << "; "
