@@ -33,12 +33,18 @@ login.createScreen('LocallyManagedUserCreationScreen',
                             this.handleMouseDown_.bind(this));
       var screen = $('managed-user-creation-flow');
       var managerPod = this;
-      this.passwordElement.addEventListener('keydown', function(e) {
+      var hideManagerPasswordError = function(element) {
         managerPod.passwordErrorElement.hidden = true;
-      });
-      this.passwordElement.addEventListener('keyup', function(e) {
-        screen.updateNextButtonForManager_();
-      });
+      };
+
+      screen.configureTextInput(
+          this.passwordElement,
+          screen.updateNextButtonForManager_.bind(screen),
+          screen.validIfNotEmpty_.bind(screen),
+          function(element) {
+            screen.getScreenButton('next').focus();
+          },
+          hideManagerPasswordError);
     },
 
     /**
@@ -228,50 +234,32 @@ login.createScreen('LocallyManagedUserCreationScreen',
 
       var creationScreen = this;
 
-      userNameField.addEventListener('keydown', function(e) {
-        if (e.keyIdentifier == 'Enter') {
-          if (userNameField.value.length > 0)
-            passwordField.focus();
-          e.stopPropagation();
-          return;
-        }
-        creationScreen.clearUserNameError_();
-      });
-
-      userNameField.addEventListener('keyup', function(e) {
-        creationScreen.checkUserName_();
-      });
-
-      passwordField.addEventListener('keydown', function(e) {
+      var hideUserPasswordError = function(element) {
         creationScreen.passwordErrorVisible = false;
-        if (e.keyIdentifier == 'Enter') {
-          if (passwordField.value.length > 0) {
-            password2Field.focus();
-            creationScreen.updateNextButtonForUser_();
-          }
-          e.stopPropagation();
-        }
-      });
+      };
 
-      password2Field.addEventListener('keydown', function(e) {
-        creationScreen.passwordErrorVisible = false;
-        if (e.keyIdentifier == 'Enter') {
-          if (passwordField.value.length > 0) {
-            if (creationScreen.managerList_.selectedPod_)
-              creationScreen.managerList_.selectedPod_.focusInput();
-            creationScreen.updateNextButtonForUser_();
-          }
-          e.stopPropagation();
-        }
-      });
+      this.configureTextInput(userNameField,
+                              this.checkUserName_.bind(this),
+                              this.validIfNotEmpty_.bind(this),
+                              function(element) {
+                                passwordField.focus();
+                              },
+                              this.clearUserNameError_.bind(this));
 
-      password2Field.addEventListener('keyup', function(e) {
-        creationScreen.updateNextButtonForUser_();
-      });
-
-      passwordField.addEventListener('keyup', function(e) {
-        creationScreen.updateNextButtonForUser_();
-      });
+      this.configureTextInput(passwordField,
+                              this.updateNextButtonForUser_.bind(this),
+                              this.validIfNotEmpty_.bind(this),
+                              function(element) {
+                                password2Field.focus();
+                              },
+                              hideUserPasswordError);
+      this.configureTextInput(password2Field,
+                              this.updateNextButtonForUser_.bind(this),
+                              this.validIfNotEmpty_.bind(this),
+                              function(element) {
+                                creationScreen.getScreenButton('next').focus();
+                              },
+                              hideUserPasswordError);
     },
 
     buttonIds: [],
@@ -301,6 +289,58 @@ login.createScreen('LocallyManagedUserCreationScreen',
       });
       result.pages = pages;
       return result;
+    },
+
+    /**
+     * Simple validator for |configureTextInput|.
+     * Element is considered valid if it has any text.
+     * @param {Element} element - element to be validated.
+     * @return {boolean} - true, if element has any text.
+     */
+    validIfNotEmpty_: function(element) {
+      return (element.value.length > 0);
+    },
+
+    /**
+     * Configure text-input |element|.
+     * @param {Element} element - element to be configured.
+     * @param {function(element)} inputChangeListener - function that will be
+     *    called upon any button press/release.
+     * @param {function(element)} validator - function that will be called when
+     *    Enter is pressed. If it returns |true| then advance to next element.
+     * @param {function(element)} moveFocus - function that will determine next
+     *    element and move focus to it.
+     * @param {function(element)} errorHider - function that is called upon
+     *    every button press, so that any associated error can be hidden.
+     */
+    configureTextInput: function(element,
+                                 inputChangeListener,
+                                 validator,
+                                 moveFocus,
+                                 errorHider) {
+      element.addEventListener('keydown', function(e) {
+        if (e.keyIdentifier == 'Enter') {
+          var dataValid = true;
+          if (validator)
+            dataValid = validator(element);
+          if (!dataValid) {
+            element.focus();
+          } else {
+            if (moveFocus)
+              moveFocus(element);
+          }
+          e.stopPropagation();
+          return;
+        }
+        if (errorHider)
+          errorHider(element);
+        if (inputChangeListener)
+          inputChangeListener(element);
+      });
+      element.addEventListener('keyup', function(e) {
+        if (inputChangeListener)
+          inputChangeListener(element);
+      });
     },
 
     /**
@@ -581,6 +621,9 @@ login.createScreen('LocallyManagedUserCreationScreen',
                        'username',
                        'error',
                        'tutorial'];
+      var pageButtons = {'intro' : 'start',
+                         'error' : 'handleError',
+                         'tutorial' : 'finish'};
       this.hideStatus_();
       for (i in pageNames) {
         var pageName = pageNames[i];
@@ -600,6 +643,9 @@ login.createScreen('LocallyManagedUserCreationScreen',
       var cancelButton = $('cancel-add-user-button');
       cancelButton.hidden = pagesWithCancel.indexOf(visiblePage) < 0;
       cancelButton.disabled = false;
+
+      if (pageButtons[visiblePage])
+        this.getScreenButton(pageButtons[visiblePage]).focus();
 
       this.currentPage_ = visiblePage;
     },
