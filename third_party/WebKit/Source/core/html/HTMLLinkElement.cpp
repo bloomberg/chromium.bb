@@ -419,7 +419,7 @@ void LinkStyle::setCSSStyleSheet(const String& href, const KURL& baseURL, const 
     RefPtr<StyleSheetContents> styleSheet = StyleSheetContents::create(href, parserContext);
 
     m_sheet = CSSStyleSheet::create(styleSheet, m_owner);
-    m_sheet->setMediaQueries(MediaQuerySet::createAllowingDescriptionSyntax(m_owner->media()));
+    m_sheet->setMediaQueries(MediaQuerySet::create(m_owner->media()));
     m_sheet->setTitle(m_owner->title());
 
     styleSheet->parseAuthorStyleSheet(cachedStyleSheet, m_owner->document()->securityOrigin());
@@ -573,7 +573,7 @@ void LinkStyle::process()
         bool mediaQueryMatches = true;
         if (!m_owner->media().isEmpty()) {
             RefPtr<RenderStyle> documentStyle = StyleResolver::styleForDocument(document());
-            RefPtr<MediaQuerySet> media = MediaQuerySet::createAllowingDescriptionSyntax(m_owner->media());
+            RefPtr<MediaQuerySet> media = MediaQuerySet::create(m_owner->media());
             MediaQueryEvaluator evaluator(document()->frame()->view()->mediaType(), document()->frame(), documentStyle.get());
             mediaQueryMatches = evaluator.eval(media.get());
         }

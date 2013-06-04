@@ -160,11 +160,7 @@ void StyleElement::createSheet(Element* e, const String& text)
     // If type is empty or CSS, this is a CSS style sheet.
     const AtomicString& type = this->type();
     if (document->contentSecurityPolicy()->allowInlineStyle(e->document()->url(), m_startPosition.m_line) && isCSS(e, type)) {
-        RefPtr<MediaQuerySet> mediaQueries;
-        if (e->isHTMLElement())
-            mediaQueries = MediaQuerySet::createAllowingDescriptionSyntax(media());
-        else
-            mediaQueries = MediaQuerySet::create(media());
+        RefPtr<MediaQuerySet> mediaQueries = MediaQuerySet::create(media());
 
         MediaQueryEvaluator screenEval("screen", true);
         MediaQueryEvaluator printEval("print", true);

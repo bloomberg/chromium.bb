@@ -38,28 +38,20 @@ namespace WebCore {
  *
  * Media Queries, Media Types and Media Descriptors.
  *
- * Slight problem with syntax error handling:
- * CSS 2.1 Spec (http://www.w3.org/TR/CSS21/media.html)
- * specifies that failing media type parsing is a syntax error
- * CSS 3 Media Queries Spec (http://www.w3.org/TR/css3-mediaqueries/)
- * specifies that failing media query is a syntax error
- * HTML 4.01 spec (http://www.w3.org/TR/REC-html40/present/styles.html#adef-media)
- * specifies that Media Descriptors should be parsed with forward-compatible syntax
- * DOM Level 2 Style Sheet spec (http://www.w3.org/TR/DOM-Level-2-Style/)
- * talks about MediaList.mediaText and refers
- *   -  to Media Descriptors of HTML 4.0 in context of StyleSheet
- *   -  to Media Types of CSS 2.0 in context of CSSMediaRule and CSSImportRule
+ * Media queries, as described in the Media Queries Level 3 specification, build on
+ * the mechanism outlined in HTML4. The syntax of media queries fit into the media
+ * type syntax reserved in HTML4. The media attribute of HTML4 also exists in XHTML
+ * and generic XML. The same syntax can also be used inside the @media and @import
+ * rules of CSS.
  *
- * These facts create situation where same (illegal) media specification may result in
- * different parses depending on whether it is media attr of style element or part of
- * css @media rule.
- * <style media="screen and resolution > 40dpi"> ..</style> will be enabled on screen devices where as
- * @media screen and resolution > 40dpi {..} will not.
- * This gets more counter-intuitive in JavaScript:
- * document.styleSheets[0].media.mediaText = "screen and resolution > 40dpi" will be ok and
- * enabled, while
- * document.styleSheets[0].cssRules[0].media.mediaText = "screen and resolution > 40dpi" will
- * throw SYNTAX_ERR exception.
+ * However, the parsing rules for media queries are incompatible with those of HTML4
+ * and are consistent with those of media queries used in CSS.
+ *
+ * HTML5 (at the moment of writing still work in progress) references the Media Queries
+ * specification directly and thus updates the rules for HTML.
+ *
+ * CSS 2.1 Spec (http://www.w3.org/TR/CSS21/media.html)
+ * CSS 3 Media Queries Spec (http://www.w3.org/TR/css3-mediaqueries/)
  */
 
 MediaQuerySet::MediaQuerySet()
@@ -89,22 +81,6 @@ MediaQuerySet::~MediaQuerySet()
 {
 }
 
-static String parseMediaDescriptor(const String& string)
-{
-    // http://www.w3.org/TR/REC-html40/types.html#type-media-descriptors
-    // "Each entry is truncated just before the first character that isn't a
-    // US ASCII letter [a-zA-Z] (ISO 10646 hex 41-5a, 61-7a), digit [0-9] (hex 30-39),
-    // or hyphen (hex 2d)."
-    unsigned length = string.length();
-    unsigned i = 0;
-    for (; i < length; ++i) {
-        unsigned short c = string[i];
-        if (!((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '1' && c <= '9') || (c == '-')))
-            break;
-    }
-    return string.left(i);
-}
-
 PassOwnPtr<MediaQuery> MediaQuerySet::parseMediaQuery(const String& queryString, MediaQueryParserMode mode)
 {
     CSSParser parser(CSSStrictMode);
@@ -114,12 +90,6 @@ PassOwnPtr<MediaQuery> MediaQuerySet::parseMediaQuery(const String& queryString,
         return parsedQuery.release();
 
     switch (mode) {
-    case MediaQueryForwardCompatibleSyntaxMode: {
-        String medium = parseMediaDescriptor(queryString);
-        if (!medium.isNull())
-            return adoptPtr(new MediaQuery(MediaQuery::None, medium, nullptr));
-        // Fall through.
-    }
     case MediaQueryNormalMode:
         return adoptPtr(new MediaQuery(MediaQuery::None, "not all", nullptr));
     case MediaQueryStrictMode:

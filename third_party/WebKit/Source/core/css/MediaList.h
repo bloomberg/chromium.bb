@@ -38,7 +38,6 @@ class MediaQuery;
 
 enum MediaQueryParserMode {
     MediaQueryNormalMode,
-    MediaQueryForwardCompatibleSyntaxMode,
     MediaQueryStrictMode,
 };
 
@@ -51,10 +50,6 @@ public:
     static PassRefPtr<MediaQuerySet> create(const String& mediaString)
     {
         return adoptRef(new MediaQuerySet(mediaString, MediaQueryNormalMode));
-    }
-    static PassRefPtr<MediaQuerySet> createAllowingDescriptionSyntax(const String& mediaString)
-    {
-        return adoptRef(new MediaQuerySet(mediaString, MediaQueryForwardCompatibleSyntaxMode));
     }
     ~MediaQuerySet();
 

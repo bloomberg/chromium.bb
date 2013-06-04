@@ -1,8 +1,9 @@
 <html>
 <head>
 <title>CSS3 media query test: syntactically invalid media query inside css rule should eval to false (,,,,). Using style element, css import rule.</title>
-<link rel="help" href="http://www.w3.org/TR/css3-mediaqueries/" />
-<!-- this test shows slight disconnect between css media queries and html4 media descriptors -->
+<link rel="help" href="http://www.w3.org/TR/css3-mediaqueries/">
+
+<!-- this test shows that there is no disconnect between CSS media queries and HTML5 media descriptors -->
 <style type="text/css" media=",,,,,,">
 p { color: green }
 </styl>
@@ -12,6 +13,6 @@ p { color: green }
 </style>
 </head>
 <body>
-<p> This text should be green.</p>
+<p> This text should be neither green nor red.</p>
 </body>
 </html>
