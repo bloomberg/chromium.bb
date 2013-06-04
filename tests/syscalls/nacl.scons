@@ -80,6 +80,11 @@ env.AddNodeToTestSuite(node,
                        ['small_tests', 'sel_ldr_tests'],
                        'run_raw_getpid_test')
 
+getpid_disabled_is_broken = (
+    'TRUSTED_ENV' in env and
+    env['TRUSTED_ENV'].Bit('coverage_enabled') and
+    env.Bit('host_mac')) or getpid_is_broken
+
 getpid_disabled_test_nexe = env.ComponentProgram(
     'getpid_disabled_test', ['getpid_disabled_test.c'],
     EXTRA_LIBS=['${NONIRT_LIBS}'])
@@ -88,7 +93,7 @@ node = env.CommandSelLdrTestNacl('getpid_disabled_test.out',
 env.AddNodeToTestSuite(node,
                        ['small_tests', 'sel_ldr_tests'],
                        'run_getpid_disabled_test',
-                       is_broken=getpid_is_broken)
+                       is_broken=getpid_disabled_is_broken)
 
 # The next few tests test the exit syscall.
 # The first one checks for exit success.
