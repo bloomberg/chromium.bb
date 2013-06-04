@@ -36,15 +36,15 @@ public:
 
     // DOM interface
     const AtomicString& glyphRef() const;
-    void setGlyphRef(const AtomicString&, ExceptionCode&);
+    void setGlyphRef(const AtomicString&);
     float x() const { return m_x; }
-    void setX(float, ExceptionCode&);
+    void setX(float);
     float y() const { return m_y; }
-    void setY(float, ExceptionCode&);
+    void setY(float);
     float dx() const { return m_dx; }
-    void setDx(float, ExceptionCode&);
+    void setDx(float);
     float dy() const { return m_dy; }
-    void setDy(float, ExceptionCode&);
+    void setDy(float);
 
 private:
     SVGGlyphRefElement(const QualifiedName&, Document*);

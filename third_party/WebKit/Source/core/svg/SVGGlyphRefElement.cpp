@@ -90,34 +90,34 @@ const AtomicString& SVGGlyphRefElement::glyphRef() const
     return fastGetAttribute(SVGNames::glyphRefAttr);
 }
 
-void SVGGlyphRefElement::setGlyphRef(const AtomicString&, ExceptionCode&)
+void SVGGlyphRefElement::setGlyphRef(const AtomicString&)
 {
     // FIXME: Set and honor attribute change.
     // https://bugs.webkit.org/show_bug.cgi?id=64787
 }
 
-void SVGGlyphRefElement::setX(float x, ExceptionCode&)
+void SVGGlyphRefElement::setX(float x)
 {
     // FIXME: Honor attribute change.
     // https://bugs.webkit.org/show_bug.cgi?id=64787
     m_x = x;
 }
 
-void SVGGlyphRefElement::setY(float y , ExceptionCode&)
+void SVGGlyphRefElement::setY(float y)
 {
     // FIXME: Honor attribute change.
     // https://bugs.webkit.org/show_bug.cgi?id=64787
     m_y = y;
 }
 
-void SVGGlyphRefElement::setDx(float dx, ExceptionCode&)
+void SVGGlyphRefElement::setDx(float dx)
 {
     // FIXME: Honor attribute change.
     // https://bugs.webkit.org/show_bug.cgi?id=64787
     m_dx = dx;
 }
 
-void SVGGlyphRefElement::setDy(float dy, ExceptionCode&)
+void SVGGlyphRefElement::setDy(float dy)
 {
     // FIXME: Honor attribute change.
     // https://bugs.webkit.org/show_bug.cgi?id=64787
