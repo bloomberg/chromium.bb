@@ -116,26 +116,31 @@ cr.define('options.search_engines', function() {
 
       // And the URL column.
       var urlEl = this.createEditableTextCell(engine.url);
-      var urlWithButtonEl = this.ownerDocument.createElement('div');
-      urlWithButtonEl.appendChild(urlEl);
-      urlWithButtonEl.className = 'url-column';
-      urlWithButtonEl.classList.add('weakrtl');
-      this.contentElement.appendChild(urlWithButtonEl);
-      // Add the Make Default button. Temporary until drag-and-drop re-ordering
-      // is implemented. When this is removed, remove the extra div above.
-      if (engine.canBeDefault) {
-        var makeDefaultButtonEl = this.ownerDocument.createElement('button');
-        makeDefaultButtonEl.className = 'custom-appearance list-inline-button';
-        makeDefaultButtonEl.textContent =
-            loadTimeData.getString('makeDefaultSearchEngineButton');
-        makeDefaultButtonEl.onclick = function(e) {
-          chrome.send('managerSetDefaultSearchEngine', [engine.modelIndex]);
-        };
-        // Don't select the row when clicking the button.
-        makeDefaultButtonEl.onmousedown = function(e) {
-          e.stopPropagation();
-        };
-        urlWithButtonEl.appendChild(makeDefaultButtonEl);
+      // Extensions should not display a URL column.
+      if (!engine.isExtension) {
+        var urlWithButtonEl = this.ownerDocument.createElement('div');
+        urlWithButtonEl.appendChild(urlEl);
+        urlWithButtonEl.className = 'url-column';
+        urlWithButtonEl.classList.add('weakrtl');
+        this.contentElement.appendChild(urlWithButtonEl);
+        // Add the Make Default button. Temporary until drag-and-drop
+        // re-ordering is implemented. When this is removed, remove the extra
+        // div above.
+        if (engine.canBeDefault) {
+          var makeDefaultButtonEl = this.ownerDocument.createElement('button');
+          makeDefaultButtonEl.className =
+              'custom-appearance list-inline-button';
+          makeDefaultButtonEl.textContent =
+              loadTimeData.getString('makeDefaultSearchEngineButton');
+          makeDefaultButtonEl.onclick = function(e) {
+            chrome.send('managerSetDefaultSearchEngine', [engine.modelIndex]);
+          };
+          // Don't select the row when clicking the button.
+          makeDefaultButtonEl.onmousedown = function(e) {
+            e.stopPropagation();
+          };
+          urlWithButtonEl.appendChild(makeDefaultButtonEl);
+        }
       }
 
       // Do final adjustment to the input fields.
@@ -147,6 +152,9 @@ cr.define('options.search_engines', function() {
 
       if (engine.urlLocked)
         this.urlField_.disabled = true;
+
+      if (engine.isExtension)
+        this.nameField_.disabled = true;
 
       if (this.isPlaceholder) {
         this.nameField_.placeholder =

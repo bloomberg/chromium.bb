@@ -39,12 +39,7 @@ int KeywordEditorController::AddTemplateURL(const string16& title,
 
   content::RecordAction(UserMetricsAction("KeywordEditor_AddKeyword"));
 
-  // There's a bug (1090726) in TableView with groups enabled such that newly
-  // added items in groups ALWAYS appear at the end, regardless of the index
-  // passed in. Worse yet, the selected rows get messed up when this happens
-  // causing other problems. As a work around we always add the item to the end
-  // of the list.
-  const int new_index = table_model_->RowCount();
+  const int new_index = table_model_->last_other_engine_index();
   table_model_->Add(new_index, title, keyword, url);
 
   return new_index;

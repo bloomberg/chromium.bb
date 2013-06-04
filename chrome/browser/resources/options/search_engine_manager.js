@@ -37,7 +37,8 @@ cr.define('options', function() {
     /**
      * List for extension keywords.
      * @private
-    extensionList_ : null,
+     */
+    extensionList_: null,
 
     /** inheritDoc */
     initializePage: function() {
@@ -112,11 +113,12 @@ cr.define('options', function() {
   };
 
   SearchEngineManager.validityCheckCallback = function(validity, modelIndex) {
-    // Forward to both lists; the one without a matching modelIndex will ignore
-    // it.
+    // Forward to all lists; those without a matching modelIndex will ignore it.
     SearchEngineManager.getInstance().defaultsList_.validationComplete(
         validity, modelIndex);
     SearchEngineManager.getInstance().othersList_.validationComplete(
+        validity, modelIndex);
+    SearchEngineManager.getInstance().extensionList_.validationComplete(
         validity, modelIndex);
   };
 

@@ -27,7 +27,6 @@ void SearchHostToURLsMap::Add(TemplateURL* template_url,
                               const SearchTermsData& search_terms_data) {
   DCHECK(initialized_);
   DCHECK(template_url);
-  DCHECK(!template_url->IsExtensionKeyword());
 
   const GURL url(TemplateURLService::GenerateSearchURLUsingTermsData(
       template_url, search_terms_data));
@@ -41,7 +40,6 @@ void SearchHostToURLsMap::Remove(TemplateURL* template_url,
                                  const SearchTermsData& search_terms_data) {
   DCHECK(initialized_);
   DCHECK(template_url);
-  DCHECK(!template_url->IsExtensionKeyword());
 
   const GURL url(TemplateURLService::GenerateSearchURLUsingTermsData(
       template_url, search_terms_data));

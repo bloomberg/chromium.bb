@@ -126,29 +126,28 @@ void SearchEngineManagerHandler::OnModelChanged() {
   int last_default_engine_index =
       list_controller_->table_model()->last_search_engine_index();
   for (int i = 0; i < last_default_engine_index; ++i) {
-    defaults_list.Append(CreateDictionaryForEngine(i, i == default_index));
+    // Third argument is false, as the engine is not from an extension.
+    defaults_list.Append(CreateDictionaryForEngine(
+        i, i == default_index, false));
   }
 
   // Build the second list (other search templates).
   ListValue others_list;
+  int last_other_engine_index =
+      list_controller_->table_model()->last_other_engine_index();
   if (last_default_engine_index < 0)
     last_default_engine_index = 0;
-  int engine_count = list_controller_->table_model()->RowCount();
-  for (int i = last_default_engine_index; i < engine_count; ++i) {
-    others_list.Append(CreateDictionaryForEngine(i, i == default_index));
+  for (int i = last_default_engine_index; i < last_other_engine_index; ++i) {
+    others_list.Append(CreateDictionaryForEngine(i, i == default_index, false));
   }
 
   // Build the extension keywords list.
   ListValue keyword_list;
-  ExtensionService* extension_service =
-      Profile::FromWebUI(web_ui())->GetExtensionService();
-  if (extension_service) {
-    const ExtensionSet* extensions = extension_service->extensions();
-    for (ExtensionSet::const_iterator it = extensions->begin();
-         it != extensions->end(); ++it) {
-      if (extensions::OmniboxInfo::GetKeyword(*it).size() > 0)
-        keyword_list.Append(CreateDictionaryForExtension(*(*it)));
-    }
+  if (last_other_engine_index < 0)
+    last_other_engine_index = 0;
+  int engine_count = list_controller_->table_model()->RowCount();
+  for (int i = last_other_engine_index; i < engine_count; ++i) {
+    keyword_list.Append(CreateDictionaryForEngine(i, i == default_index, true));
   }
 
   web_ui()->CallJavascriptFunction("SearchEngineManager.updateSearchEngineList",
@@ -167,22 +166,8 @@ void SearchEngineManagerHandler::OnItemsRemoved(int start, int length) {
   OnModelChanged();
 }
 
-base::DictionaryValue* SearchEngineManagerHandler::CreateDictionaryForExtension(
-    const extensions::Extension& extension) {
-  base::DictionaryValue* dict = new base::DictionaryValue();
-  dict->SetString("name",  extension.name());
-  dict->SetString("displayName", extension.name());
-  dict->SetString("keyword",
-                  extensions::OmniboxInfo::GetKeyword(&extension));
-  GURL icon = extensions::IconsInfo::GetIconURL(
-      &extension, 16, ExtensionIconSet::MATCH_BIGGER);
-  dict->SetString("iconURL", icon.spec());
-  dict->SetString("url", string16());
-  return dict;
-}
-
 base::DictionaryValue* SearchEngineManagerHandler::CreateDictionaryForEngine(
-    int index, bool is_default) {
+    int index, bool is_default, bool is_extension) {
   TemplateURLTableModel* table_model = list_controller_->table_model();
   const TemplateURL* template_url = list_controller_->GetTemplateURL(index);
 
@@ -199,14 +184,13 @@ base::DictionaryValue* SearchEngineManagerHandler::CreateDictionaryForEngine(
     dict->SetString("iconURL", icon_url.spec());
   dict->SetString("modelIndex", base::IntToString(index));
 
-  if (list_controller_->CanRemove(template_url))
-    dict->SetString("canBeRemoved", "1");
-  if (list_controller_->CanMakeDefault(template_url))
-    dict->SetString("canBeDefault", "1");
-  if (is_default)
-    dict->SetString("default", "1");
-  if (list_controller_->CanEdit(template_url))
-    dict->SetString("canBeEdited", "1");
+  dict->SetBoolean("canBeRemoved",
+      list_controller_->CanRemove(template_url) && !is_extension);
+  dict->SetBoolean("canBeDefault",
+      list_controller_->CanMakeDefault(template_url) && !is_extension);
+  dict->SetBoolean("default", is_default);
+  dict->SetBoolean("canBeEdited", list_controller_->CanEdit(template_url));
+  dict->SetBoolean("isExtension", is_extension);
 
   return dict;
 }
@@ -310,6 +294,7 @@ void SearchEngineManagerHandler::EditCompleted(const ListValue* args) {
     NOTREACHED();
     return;
   }
+
   // Recheck validity.  It's possible to get here with invalid input if e.g. the
   // user calls the right JS functions directly from the web inspector.
   if (edit_controller_->IsTitleValid(name) &&

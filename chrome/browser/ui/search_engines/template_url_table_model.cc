@@ -28,6 +28,7 @@
 // Group IDs used by TemplateURLTableModel.
 static const int kMainGroupID = 0;
 static const int kOtherGroupID = 1;
+static const int kExtensionGroupID = 2;
 
 // ModelEntry ----------------------------------------------------
 
@@ -143,6 +144,7 @@ void TemplateURLTableModel::Reload() {
   TemplateURLService::TemplateURLVector urls =
       template_url_service_->GetTemplateURLs();
 
+  std::vector<ModelEntry*> default_entries, other_entries, extension_entries;
   // Keywords that can be made the default first.
   for (TemplateURLService::TemplateURLVector::iterator i = urls.begin();
        i != urls.end(); ++i) {
@@ -150,22 +152,28 @@ void TemplateURLTableModel::Reload() {
     // NOTE: we don't use ShowInDefaultList here to avoid items bouncing around
     // the lists while editing.
     if (template_url->show_in_default_list())
-      entries_.push_back(new ModelEntry(this, template_url));
+      default_entries.push_back(new ModelEntry(this, template_url));
+    else if (template_url->IsExtensionKeyword())
+      extension_entries.push_back(new ModelEntry(this, template_url));
+    else
+      other_entries.push_back(new ModelEntry(this, template_url));
   }
 
-  last_search_engine_index_ = static_cast<int>(entries_.size());
+  last_search_engine_index_ = static_cast<int>(default_entries.size());
+  last_other_engine_index_ = last_search_engine_index_ +
+      static_cast<int>(other_entries.size());
 
-  // Then the rest.
-  for (TemplateURLService::TemplateURLVector::iterator i = urls.begin();
-       i != urls.end(); ++i) {
-    TemplateURL* template_url = *i;
-    // NOTE: we don't use ShowInDefaultList here to avoid things bouncing
-    // the lists while editing.
-    if (!template_url->show_in_default_list() &&
-        !template_url->IsExtensionKeyword()) {
-      entries_.push_back(new ModelEntry(this, template_url));
-    }
-  }
+  entries_.insert(entries_.end(),
+                  default_entries.begin(),
+                  default_entries.end());
+
+  entries_.insert(entries_.end(),
+                  other_entries.begin(),
+                  other_entries.end());
+
+  entries_.insert(entries_.end(),
+                  extension_entries.begin(),
+                  extension_entries.end());
 
   if (observer_)
     observer_->OnModelChanged();
@@ -222,12 +230,20 @@ TemplateURLTableModel::Groups TemplateURLTableModel::GetGroups() {
   other_group.id = kOtherGroupID;
   groups.push_back(other_group);
 
+  Group extension_group;
+  extension_group.title =
+      l10n_util::GetStringUTF16(IDS_SEARCH_ENGINES_EDITOR_EXTENSIONS_SEPARATOR);
+  extension_group.id = kExtensionGroupID;
+  groups.push_back(extension_group);
+
   return groups;
 }
 
 int TemplateURLTableModel::GetGroupID(int row) {
   DCHECK(row >= 0 && row < RowCount());
-  return row < last_search_engine_index_ ? kMainGroupID : kOtherGroupID;
+  if (row < last_search_engine_index_)
+    return kMainGroupID;
+  return row < last_other_engine_index_ ? kOtherGroupID : kExtensionGroupID;
 }
 
 void TemplateURLTableModel::Remove(int index) {
@@ -239,7 +255,9 @@ void TemplateURLTableModel::Remove(int index) {
   scoped_ptr<ModelEntry> entry(entries_[index]);
   entries_.erase(entries_.begin() + index);
   if (index < last_search_engine_index_)
-    last_search_engine_index_--;
+    --last_search_engine_index_;
+  if (index < last_other_engine_index_)
+    --last_other_engine_index_;
   if (observer_)
     observer_->OnItemsRemoved(index, 1);
 
@@ -265,6 +283,8 @@ void TemplateURLTableModel::Add(int index,
   ModelEntry* entry = new ModelEntry(this, turl);
   template_url_service_->AddObserver(this);
   entries_.insert(entries_.begin() + index, entry);
+  if (index <= last_other_engine_index_)
+    ++last_other_engine_index_;
   if (observer_)
     observer_->OnItemsAdded(index, 1);
 }

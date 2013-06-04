@@ -506,6 +506,8 @@ TEST_F(TemplateURLServiceTest, AddSameKeyword) {
 }
 
 TEST_F(TemplateURLServiceTest, AddExtensionKeyword) {
+  test_util_.VerifyLoad();
+
   TemplateURL* original1 = AddKeywordWithDate(
       "replaceable", "keyword1", "http://test1", std::string(), std::string(),
       std::string(), true, "UTF-8", Time(), Time());
@@ -525,24 +527,20 @@ TEST_F(TemplateURLServiceTest, AddExtensionKeyword) {
   data.SetURL(std::string(extensions::kExtensionScheme) + "://test4");
   data.safe_for_autoreplace = false;
 
-  // Extension keywords should override replaceable keywords.
+  // Both replaceable and non-replaceable keywords should be uniquified.
   TemplateURL* extension1 = new TemplateURL(test_util_.profile(), data);
   model()->Add(extension1);
   ASSERT_EQ(extension1,
             model()->GetTemplateURLForKeyword(ASCIIToUTF16("keyword1")));
-  model()->Remove(extension1);
   EXPECT_EQ(original1,
-            model()->GetTemplateURLForKeyword(ASCIIToUTF16("keyword1")));
-
-  // They should not override non-replaceable keywords.
+            model()->GetTemplateURLForKeyword(ASCIIToUTF16("test1")));
   data.SetKeyword(ASCIIToUTF16("keyword2"));
   TemplateURL* extension2 = new TemplateURL(test_util_.profile(), data);
   model()->Add(extension2);
-  ASSERT_EQ(original2,
+  ASSERT_EQ(extension2,
             model()->GetTemplateURLForKeyword(ASCIIToUTF16("keyword2")));
-  model()->Remove(original2);
-  EXPECT_EQ(extension2,
-            model()->GetTemplateURLForKeyword(ASCIIToUTF16("keyword2")));
+  EXPECT_EQ(original2,
+            model()->GetTemplateURLForKeyword(ASCIIToUTF16("test2")));
 
   // They should override extension keywords added earlier.
   data.SetKeyword(ASCIIToUTF16("keyword3"));
@@ -550,9 +548,8 @@ TEST_F(TemplateURLServiceTest, AddExtensionKeyword) {
   model()->Add(extension3);
   ASSERT_EQ(extension3,
             model()->GetTemplateURLForKeyword(ASCIIToUTF16("keyword3")));
-  model()->Remove(extension3);
   EXPECT_EQ(original3,
-            model()->GetTemplateURLForKeyword(ASCIIToUTF16("keyword3")));
+            model()->GetTemplateURLForKeyword(ASCIIToUTF16("keyword3_")));
 }
 
 TEST_F(TemplateURLServiceTest, AddSameKeywordWithExtensionPresent) {
@@ -561,16 +558,18 @@ TEST_F(TemplateURLServiceTest, AddSameKeywordWithExtensionPresent) {
   // Similar to the AddSameKeyword test, but with an extension keyword masking a
   // replaceable TemplateURL.  We should still do correct conflict resolution
   // between the non-template URLs.
-  AddKeywordWithDate(
-      "replaceable", "keyword", "http://test1", std::string(),  std::string(),
-      std::string(), true, "UTF-8", Time(), Time());
   TemplateURL* extension = AddKeywordWithDate(
       "extension", "keyword",
       std::string(extensions::kExtensionScheme) + "://test2", std::string(),
       std::string(), std::string(), false, "UTF-8", Time(), Time());
+  // Adding a keyword that matches the extension should cause the extension
+  // to uniquify.
+  AddKeywordWithDate(
+      "replaceable", "keyword", "http://test1", std::string(),  std::string(),
+      std::string(), true, "UTF-8", Time(), Time());
 
   // Adding another replaceable keyword should remove the existing one, but
-  // leave the extension as the associated URL for this keyword.
+  // leave the extension as is.
   TemplateURLData data;
   data.short_name = ASCIIToUTF16("name1");
   data.SetKeyword(ASCIIToUTF16("keyword"));
@@ -579,13 +578,12 @@ TEST_F(TemplateURLServiceTest, AddSameKeywordWithExtensionPresent) {
   TemplateURL* t_url = new TemplateURL(test_util_.profile(), data);
   model()->Add(t_url);
   EXPECT_EQ(extension,
-            model()->GetTemplateURLForKeyword(ASCIIToUTF16("keyword")));
+            model()->GetTemplateURLForKeyword(ASCIIToUTF16("keyword_")));
   EXPECT_TRUE(model()->GetTemplateURLForHost("test1") == NULL);
   EXPECT_EQ(t_url, model()->GetTemplateURLForHost("test3"));
 
   // Adding a nonreplaceable keyword should remove the existing replaceable
-  // keyword and replace the extension as the associated URL for this keyword,
-  // but not evict the extension from the service entirely.
+  // keyword.
   data.short_name = ASCIIToUTF16("name2");
   data.SetURL("http://test4");
   data.safe_for_autoreplace = false;
@@ -594,15 +592,8 @@ TEST_F(TemplateURLServiceTest, AddSameKeywordWithExtensionPresent) {
   EXPECT_EQ(t_url2,
             model()->GetTemplateURLForKeyword(ASCIIToUTF16("keyword")));
   EXPECT_TRUE(model()->GetTemplateURLForHost("test3") == NULL);
-  // Note that extensions don't use host-based keywords, so we can't check that
-  // the extension is still in the model using GetTemplateURLForHost(); and we
-  // have to create a full-fledged Extension to use
-  // GetTemplateURLForExtension(), which is annoying, so just grab all the URLs
-  // from the model and search for |extension| within them.
-  TemplateURLService::TemplateURLVector template_urls(
-      model()->GetTemplateURLs());
-  EXPECT_FALSE(std::find(template_urls.begin(), template_urls.end(),
-                         extension) == template_urls.end());
+  EXPECT_EQ(extension,
+            model()->GetTemplateURLForKeyword(ASCIIToUTF16("keyword_")));
 }
 
 TEST_F(TemplateURLServiceTest, GenerateKeyword) {
@@ -947,14 +938,14 @@ TEST_F(TemplateURLServiceTest, ResetNonExtensionURLs) {
   EXPECT_TRUE(model()->GetTemplateURLForKeyword(ASCIIToUTF16("ext_keyword")));
   EXPECT_FALSE(model()->GetTemplateURLForKeyword(ASCIIToUTF16("keyword")));
 
-  // Reload URLs. Result should be the same except that extension keywords
-  // aren't persisted.
+  // Reload URLs. Result should be the same, as extension keywords are now
+  // persisted.
   test_util_.ResetModel(true);
   default_provider = model()->GetDefaultSearchProvider();
   ASSERT_TRUE(default_provider);
   EXPECT_EQ(SEARCH_ENGINE_GOOGLE,
       TemplateURLPrepopulateData::GetEngineType(default_provider->url()));
-  EXPECT_FALSE(model()->GetTemplateURLForKeyword(ASCIIToUTF16("ext_keyword")));
+  EXPECT_TRUE(model()->GetTemplateURLForKeyword(ASCIIToUTF16("ext_keyword")));
   EXPECT_FALSE(model()->GetTemplateURLForKeyword(ASCIIToUTF16("keyword")));
 }
 

@@ -72,7 +72,8 @@ class SearchEngineManagerHandler : public OptionsPageUIHandler,
   void EditCompleted(const base::ListValue* args);
 
   // Returns a dictionary to pass to WebUI representing the given search engine.
-  base::DictionaryValue* CreateDictionaryForEngine(int index, bool is_default);
+  base::DictionaryValue* CreateDictionaryForEngine(
+      int index, bool is_default, bool is_extension);
 
   // Returns a dictionary to pass to WebUI representing the extension.
   base::DictionaryValue* CreateDictionaryForExtension(

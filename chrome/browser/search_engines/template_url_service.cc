@@ -369,7 +369,6 @@ GURL TemplateURLService::GenerateSearchURLUsingTermsData(
     const TemplateURL* t_url,
     const SearchTermsData& search_terms_data) {
   DCHECK(t_url);
-  DCHECK(!t_url->IsExtensionKeyword());
 
   const TemplateURLRef& search_ref = t_url->url_ref();
   if (!search_ref.IsValidUsingTermsData(search_terms_data))
@@ -584,10 +583,7 @@ void TemplateURLService::IncrementUsageCount(TemplateURL* url) {
       template_urls_.end())
     return;
   ++url->data_.usage_count;
-  // Extension keywords are not persisted.
-  // TODO(mpcomplete): If we allow editing extension keywords, then those should
-  // be persisted to disk and synced.
-  if (service_.get() && !url->IsExtensionKeyword())
+  if (service_.get())
     service_.get()->UpdateKeyword(url->data());
 }
 
@@ -707,6 +703,13 @@ void TemplateURLService::ResetNonExtensionURLs() {
                                        &default_search_provider,
                                        &new_resource_keyword_version,
                                        &pre_sync_deletes_);
+  for (TemplateURLVector::iterator i = entries_to_process.begin();
+       i != entries_to_process.end();) {
+    if ((*i)->IsExtensionKeyword())
+      i = entries_to_process.erase(i);
+    else
+      ++i;
+  }
   // Setup search engines and a default one.
   AddTemplateURLsAndSetupDefaultEngine(&entries_to_process,
                                        default_search_provider);
@@ -867,11 +870,6 @@ syncer::SyncDataList TemplateURLService::GetAllSyncData(
   syncer::SyncDataList current_data;
   for (TemplateURLVector::const_iterator iter = template_urls_.begin();
       iter != template_urls_.end(); ++iter) {
-    // We don't sync extension keywords.
-    // TODO(mpcomplete): If we allow editing extension keywords, then those
-    // should be persisted to disk and synced.
-    if ((*iter)->IsExtensionKeyword())
-      continue;
     // We don't sync keywords managed by policy.
     if ((*iter)->created_by_policy())
       continue;
@@ -1182,12 +1180,6 @@ void TemplateURLService::ProcessTemplateURLChange(
   if (processing_syncer_changes_)
     return;  // These are changes originating from us. Ignore.
 
-  // Avoid syncing Extension keywords.
-  // TODO(mpcomplete): If we allow editing extension keywords, then those should
-  // be persisted to disk and synced.
-  if (turl->IsExtensionKeyword())
-    return;
-
   // Avoid syncing keywords managed by policy.
   if (turl->created_by_policy())
     return;
@@ -1296,7 +1288,6 @@ TemplateURL* TemplateURLService::CreateTemplateURLFromTemplateURLAndSyncData(
   // possible that sync is trying to modify fields that should not be touched.
   // Revert these fields to the built-in values.
   UpdateTemplateURLIfPrepopulated(turl, profile);
-  DCHECK(!turl->IsExtensionKeyword());
   if (reset_keyword || deduped) {
     if (reset_keyword)
       turl->ResetKeywordIfNecessary(true);
@@ -1438,13 +1429,6 @@ void TemplateURLService::RemoveFromMaps(TemplateURL* template_url) {
       keyword_to_template_map_.erase(keyword);
   }
 
-  // If the keyword we're removing is from an extension, we're now done, since
-  // it won't be synced or stored in the provider map.
-  // TODO(mpcomplete): If we allow editing extension keywords, then those should
-  // be synced.
-  if (template_url->IsExtensionKeyword())
-    return;
-
   if (!template_url->sync_guid().empty())
     guid_to_template_map_.erase(template_url->sync_guid());
   if (loaded_) {
@@ -1486,14 +1470,6 @@ void TemplateURLService::AddToMaps(TemplateURL* template_url) {
         !CanReplace(template_url) : CanReplace(existing_url))
       keyword_to_template_map_[keyword] = template_url;
   }
-
-  // Extension keywords are not synced, so they don't go into the GUID map,
-  // and do not use host-based search URLs, so they don't go into the provider
-  // map, so at this point we're done.
-  // TODO(mpcomplete): If we allow editing extension keywords, then those should
-  // be persisted to disk and synced.
-  if (template_extension)
-    return;
 
   if (!template_url->sync_guid().empty())
     guid_to_template_map_[template_url->sync_guid()] = template_url;
@@ -1731,11 +1707,6 @@ bool TemplateURLService::UpdateNoNotify(
       template_urls_.end())
     return false;
 
-  // TODO(mpcomplete): If we allow editing extension keywords, then those should
-  // be persisted to disk and synced.  In this case this DCHECK should be
-  // removed.
-  DCHECK(!existing_turl->IsExtensionKeyword());
-
   string16 old_keyword(existing_turl->keyword());
   keyword_to_template_map_.erase(old_keyword);
   if (!existing_turl->sync_guid().empty())
@@ -1762,7 +1733,6 @@ bool TemplateURLService::UpdateNoNotify(
     //     at load time causes it to conflict with an existing keyword.  In this
     //     case we delete the existing keyword if it's replaceable, or else undo
     //     the change in keyword for |existing_turl|.
-    DCHECK(!existing_turl->IsExtensionKeyword());
     TemplateURL* existing_keyword_turl = i->second;
     if (existing_keyword_turl->IsExtensionKeyword()) {
       if (!CanReplace(existing_turl))
@@ -2098,35 +2068,33 @@ bool TemplateURLService::AddNoNotify(TemplateURL* template_url,
   }
 
   template_url->ResetKeywordIfNecessary(false);
-  if (!template_url->IsExtensionKeyword()) {
-    // Check whether |template_url|'s keyword conflicts with any already in the
-    // model.
-    TemplateURL* existing_keyword_turl =
-        FindNonExtensionTemplateURLForKeyword(template_url->keyword());
-    if (existing_keyword_turl != NULL) {
-      DCHECK_NE(existing_keyword_turl, template_url);
-      if (CanReplace(existing_keyword_turl)) {
-        RemoveNoNotify(existing_keyword_turl);
-      } else if (CanReplace(template_url)) {
-        delete template_url;
-        return false;
-      } else {
-        string16 new_keyword = UniquifyKeyword(*existing_keyword_turl, false);
-        ResetTemplateURL(existing_keyword_turl,
-                         existing_keyword_turl->short_name(), new_keyword,
-                         existing_keyword_turl->url());
-      }
+  // Check whether |template_url|'s keyword conflicts with any already in the
+  // model.
+  TemplateURL* existing_keyword_turl =
+      GetTemplateURLForKeyword(template_url->keyword());
+  if (existing_keyword_turl != NULL) {
+    DCHECK_NE(existing_keyword_turl, template_url);
+    // Only replace one of the TemplateURLs if they are either both extensions,
+    // or both not extensions.
+    bool are_same_type = existing_keyword_turl->IsExtensionKeyword() ==
+        template_url->IsExtensionKeyword();
+    if (CanReplace(existing_keyword_turl) && are_same_type) {
+      RemoveNoNotify(existing_keyword_turl);
+    } else if (CanReplace(template_url) && are_same_type) {
+      delete template_url;
+      return false;
+    } else {
+      string16 new_keyword = UniquifyKeyword(*existing_keyword_turl, false);
+      ResetTemplateURL(existing_keyword_turl,
+                       existing_keyword_turl->short_name(), new_keyword,
+                       existing_keyword_turl->url());
     }
   }
   template_urls_.push_back(template_url);
   AddToMaps(template_url);
 
   if (newly_adding) {
-    // Don't persist extension keywords to disk.  They'll get re-added on each
-    // launch as the extensions are loaded.
-    // TODO(mpcomplete): If we allow editing extension keywords, then those
-    // should be persisted to disk and synced.
-    if (service_.get() && !template_url->IsExtensionKeyword())
+    if (service_.get())
       service_->AddKeyword(template_url->data());
 
     // Inform sync of the addition. Note that this will assign a GUID to
@@ -2156,10 +2124,7 @@ void TemplateURLService::RemoveNoNotify(TemplateURL* template_url) {
   // Remove it from the vector containing all TemplateURLs.
   template_urls_.erase(i);
 
-  // Extension keywords are not persisted.
-  // TODO(mpcomplete): If we allow editing extension keywords, then those should
-  // be persisted to disk and synced.
-  if (service_.get() && !template_url->IsExtensionKeyword())
+  if (service_.get())
     service_->RemoveKeyword(template_url->id());
 
   // Inform sync of the deletion.
@@ -2228,10 +2193,7 @@ void TemplateURLService::RemoveProvidersCreatedByPolicy(
         *default_search_provider = NULL;
 
       i = template_urls->erase(i);
-      // Extension keywords are not persisted.
-      // TODO(mpcomplete): If we allow editing extension keywords, then those
-      // should be persisted to disk and synced.
-      if (service_.get() && !template_url->IsExtensionKeyword())
+      if (service_.get())
         service_->RemoveKeyword(template_url->id());
       delete template_url;
     } else {
@@ -2259,9 +2221,10 @@ string16 TemplateURLService::UniquifyKeyword(const TemplateURL& turl,
     if (!GetTemplateURLForKeyword(turl.keyword()))
       return turl.keyword();
 
-    // First, try to return the generated keyword for the TemplateURL.
+    // First, try to return the generated keyword for the TemplateURL (except
+    // for extensions, as their keywords are not associated with their URLs).
     GURL gurl(turl.url());
-    if (gurl.is_valid()) {
+    if (gurl.is_valid() && !turl.IsExtensionKeyword()) {
       string16 keyword_candidate = GenerateKeyword(gurl);
       if (!GetTemplateURLForKeyword(keyword_candidate))
         return keyword_candidate;
@@ -2297,7 +2260,6 @@ void TemplateURLService::ResolveSyncKeywordConflict(
   DCHECK(applied_sync_turl);
   DCHECK(change_list);
   DCHECK_EQ(applied_sync_turl->keyword(), unapplied_sync_turl->keyword());
-  DCHECK(!applied_sync_turl->IsExtensionKeyword());
 
   // Both |unapplied_sync_turl| and |applied_sync_turl| are known to Sync, so
   // don't delete either of them. Instead, determine which is "better" and
@@ -2449,11 +2411,7 @@ void TemplateURLService::PatchMissingSyncGUIDs(
        i != template_urls->end(); ++i) {
     TemplateURL* template_url = *i;
     DCHECK(template_url);
-    // Extension keywords are never synced.
-    // TODO(mpcomplete): If we allow editing extension keywords, then those
-    // should be persisted to disk and synced.
-    if (template_url->sync_guid().empty() &&
-        !template_url->IsExtensionKeyword()) {
+    if (template_url->sync_guid().empty()) {
       template_url->data_.sync_guid = base::GenerateGUID();
       if (service_.get())
         service_->UpdateKeyword(template_url->data());
