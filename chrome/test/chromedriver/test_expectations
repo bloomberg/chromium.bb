@@ -69,6 +69,7 @@ _REVISION_NEGATIVE_FILTER['HEAD'] = [
     'SqlDatabaseTest.*',
     'SvgDocumentTest.testClickOnSvgElement',
     'TakesScreenshotTest.testShouldCaptureScreenshot',
+    'TakesScreenshotTest.testShouldCaptureScreenshotAtIFramePage',
     'TakesScreenshotTest.testShouldCaptureScreenshotWithLongX',
     'TakesScreenshotTest.testShouldCaptureScreenshotWithLongY',
     'TakesScreenshotTest.testShouldCaptureScreenshotWithTooLong',
