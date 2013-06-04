@@ -64,7 +64,6 @@ var DISMISS_RETENTION_TIME_MS = 20 * 60 * 1000;  // 20 minutes
  */
 var UPDATE_CARDS_TASK_NAME = 'update-cards';
 var DISMISS_CARD_TASK_NAME = 'dismiss-card';
-var CARD_CLICKED_TASK_NAME = 'card-clicked';
 var RETRY_DISMISS_TASK_NAME = 'retry-dismiss';
 
 var LOCATION_WATCH_NAME = 'location-watch';
@@ -102,6 +101,7 @@ var tasks = buildTaskManager(areTasksConflicting);
 tasks.instrumentApiFunction(chrome.location.onLocationUpdate, 'addListener', 0);
 tasks.instrumentApiFunction(chrome.notifications, 'create', 2);
 tasks.instrumentApiFunction(chrome.notifications, 'update', 2);
+tasks.instrumentApiFunction(chrome.notifications, 'getAll', 0);
 tasks.instrumentApiFunction(
     chrome.notifications.onButtonClicked, 'addListener', 0);
 tasks.instrumentApiFunction(chrome.notifications.onClicked, 'addListener', 0);
@@ -160,20 +160,20 @@ function recordEvent(event) {
  *     showing a Chrome notification.
  * @param {Object} notificationsData Map from notification id to the data
  *     associated with a notification.
- * @param {number} previousVersion The version of the shown card with this id,
- *     if it exists, undefined otherwise.
+ * @param {number=} opt_previousVersion The version of the shown card with this
+ *     id, if it exists, undefined otherwise.
  */
-function showNotification(card, notificationsData, previousVersion) {
+function showNotification(card, notificationsData, opt_previousVersion) {
   console.log('showNotification ' + JSON.stringify(card) + ' ' +
-             previousVersion);
+             opt_previousVersion);
 
   if (typeof card.version != 'number') {
     console.error('card.version is not a number');
     // Fix card version.
-    card.version = previousVersion !== undefined ? previousVersion : 0;
+    card.version = opt_previousVersion !== undefined ? opt_previousVersion : 0;
   }
 
-  if (previousVersion !== card.version) {
+  if (opt_previousVersion !== card.version) {
     try {
       // Delete a notification with the specified id if it already exists, and
       // then create a notification.
@@ -245,66 +245,75 @@ function parseAndShowNotificationCards(response, callback) {
   }
 
   tasks.debugSetStepName('parseAndShowNotificationCards-storage-get');
-  storage.get(['activeNotifications', 'recentDismissals'], function(items) {
+  storage.get(['notificationsData', 'recentDismissals'], function(items) {
     console.log('parseAndShowNotificationCards-get ' + JSON.stringify(items));
-    items.activeNotifications = items.activeNotifications || {};
+    items.notificationsData = items.notificationsData || {};
     items.recentDismissals = items.recentDismissals || {};
 
-    // Build a set of non-expired recent dismissals. It will be used for
-    // client-side filtering of cards.
-    var updatedRecentDismissals = {};
-    var currentTimeMs = Date.now();
-    for (var notificationId in items.recentDismissals) {
-      if (currentTimeMs - items.recentDismissals[notificationId] <
-          DISMISS_RETENTION_TIME_MS) {
-        updatedRecentDismissals[notificationId] =
-            items.recentDismissals[notificationId];
+    tasks.debugSetStepName(
+        'parseAndShowNotificationCards-notifications-getAll');
+    chrome.notifications.getAll(function(notifications) {
+      console.log('parseAndShowNotificationCards-getAll ' +
+          JSON.stringify(notifications));
+      // Build a set of non-expired recent dismissals. It will be used for
+      // client-side filtering of cards.
+      var updatedRecentDismissals = {};
+      var currentTimeMs = Date.now();
+      for (var notificationId in items.recentDismissals) {
+        if (currentTimeMs - items.recentDismissals[notificationId] <
+            DISMISS_RETENTION_TIME_MS) {
+          updatedRecentDismissals[notificationId] =
+              items.recentDismissals[notificationId];
+        }
       }
-    }
 
-    // Mark existing notifications that received an update in this server
-    // response.
-    for (var i = 0; i < cards.length; ++i) {
-      var notificationId = cards[i].notificationId;
-      if (!(notificationId in updatedRecentDismissals) &&
-          notificationId in items.activeNotifications) {
-        items.activeNotifications[notificationId].hasUpdate = true;
+      // Mark existing notifications that received an update in this server
+      // response.
+      var updatedNotifications = {};
+
+      for (var i = 0; i < cards.length; ++i) {
+        var notificationId = cards[i].notificationId;
+        if (!(notificationId in updatedRecentDismissals) &&
+            notificationId in notifications) {
+          updatedNotifications[notificationId] = true;
+        }
       }
-    }
 
-    // Delete notifications that didn't receive an update.
-    for (var notificationId in items.activeNotifications) {
-      console.log('parseAndShowNotificationCards-delete-check ' +
-                  notificationId);
-      if (!items.activeNotifications[notificationId].hasUpdate) {
-        console.log('parseAndShowNotificationCards-delete ' + notificationId);
-        chrome.notifications.clear(
-            notificationId,
-            function() {});
+      // Delete notifications that didn't receive an update.
+      for (var notificationId in notifications) {
+        console.log('parseAndShowNotificationCards-delete-check ' +
+                    notificationId);
+        if (!(notificationId in updatedNotifications)) {
+          console.log('parseAndShowNotificationCards-delete ' + notificationId);
+          chrome.notifications.clear(
+              notificationId,
+              function() {});
+        }
       }
-    }
 
-    recordEvent(DiagnosticEvent.CARDS_PARSE_SUCCESS);
+      recordEvent(DiagnosticEvent.CARDS_PARSE_SUCCESS);
 
-    // Create/update notifications and store their new properties.
-    var notificationsData = {};
-    for (var i = 0; i < cards.length; ++i) {
-      var card = cards[i];
-      if (!(card.notificationId in updatedRecentDismissals)) {
-        var activeNotification = items.activeNotifications[card.notificationId];
-        showNotification(card,
-                         notificationsData,
-                         activeNotification && activeNotification.version);
+      // Create/update notifications and store their new properties.
+      var newNotificationsData = {};
+      for (var i = 0; i < cards.length; ++i) {
+        var card = cards[i];
+        if (!(card.notificationId in updatedRecentDismissals)) {
+          var notificationData = items.notificationsData[card.notificationId];
+          var previousVersion = notifications[card.notificationId] &&
+                                notificationData &&
+                                notificationData.previousVersion;
+          showNotification(card, newNotificationsData, previousVersion);
+        }
       }
-    }
 
-    updateCardsAttempts.start(parsedResponse.expiration_timestamp_seconds);
+      updateCardsAttempts.start(parsedResponse.expiration_timestamp_seconds);
 
-    storage.set({
-      activeNotifications: notificationsData,
-      recentDismissals: updatedRecentDismissals
+      storage.set({
+        notificationsData: newNotificationsData,
+        recentDismissals: updatedRecentDismissals
+      });
+      callback();
     });
-    callback();
   });
 }
 
@@ -480,29 +489,30 @@ function retryPendingDismissals() {
  *     the clicked area from the button action URLs info.
  */
 function onNotificationClicked(notificationId, selector) {
-  tasks.add(CARD_CLICKED_TASK_NAME, function(callback) {
-    tasks.debugSetStepName('onNotificationClicked-get-activeNotifications');
-    storage.get('activeNotifications', function(items) {
-      items.activeNotifications = items.activeNotifications || {};
+  storage.get('notificationsData', function(items) {
+    items.notificationsData = items.notificationsData || {};
 
-      var actionUrls = items.activeNotifications[notificationId].actionUrls;
-      if (typeof actionUrls != 'object') {
-        callback();
-        return;
-      }
+    var notificationData = items.notificationsData[notificationId];
 
-      var url = selector(actionUrls);
+    if (!notificationData) {
+      // 'notificationsData' in storage may not match the actual list of
+      // notifications.
+      return;
+    }
 
-      if (typeof url != 'string') {
-        callback();
-        return;
-      }
+    var actionUrls = notificationData.actionUrls;
+    if (typeof actionUrls != 'object') {
+      return;
+    }
 
-      chrome.tabs.create({url: url}, function(tab) {
-        if (!tab)
-          chrome.windows.create({url: url});
-      });
-      callback();
+    var url = selector(actionUrls);
+
+    if (typeof url != 'string')
+      return;
+
+    chrome.tabs.create({url: url}, function(tab) {
+      if (!tab)
+        chrome.windows.create({url: url});
     });
   });
 }
@@ -549,11 +559,6 @@ function initialize() {
   // Create an update timer for a case when for some reason location request
   // gets stuck.
   updateCardsAttempts.start(MAXIMUM_POLLING_PERIOD_SECONDS);
-
-  var initialStorage = {
-    activeNotifications: {}
-  };
-  storage.set(initialStorage);
 
   requestLocation();
 }
