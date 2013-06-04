@@ -1,0 +1,17 @@
+@hex:
+  # See https://code.google.com/p/nativeclient/issues/detail?id=3356
+  # crc32w %ax,%eax
+  66 f2 0f 38 f1 c0
+@dis:
+  0000000000000000: 66 f2 0f 38 f1 c0                            crc32 %eax, %ax
+@rdfa_output:
+  0: [0] unrecognized instruction
+  return code: 1
+----------------------------------------------------------------------
+@hex:
+  # crc32w %eax,%eax
+  f2 0f 38 f1 c0
+@dis:
+  0000000000000000: f2 0f 38 f1 c0                               crc32 %eax, %eax
+@rdfa_output:
+  return code: 0

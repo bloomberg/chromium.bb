@@ -1,0 +1,10 @@
+@hex:
+  # Test if we disallow bsf to zero-extend (i.e. mask) a memory reference.
+  0f bc c3
+  49 89 14 07
+@dis:
+  0000000000000000: 0f bc c3                                     bsf %eax, %ebx
+  0000000000000003: 49 89 14 07                                  mov [%r15+%rax*1], %rdx
+@rdfa_output:
+  3: [0] improper memory address - bad index
+  return code: 1

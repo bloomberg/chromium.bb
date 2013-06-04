@@ -1,0 +1,8 @@
+@hex:
+  # Test that we don't allow the 'ret' instruction.
+  c3
+@dis:
+  00000000: c3                                           ret
+@rdfa_output:
+  0: [0] unrecognized instruction
+  return code: 1

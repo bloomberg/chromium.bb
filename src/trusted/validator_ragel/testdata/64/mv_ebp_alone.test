@@ -1,0 +1,9 @@
+@hex:
+  # Test that we don't accept "mov %ebp, %r11d" if not followed by an "add %rbp %r15"
+  44 89 dd
+  
+@dis:
+  0000000000000000: 44 89 dd                                     mov %ebp, %r11d
+@rdfa_output:
+  3: [0] improper %rbp sandboxing
+  return code: 1

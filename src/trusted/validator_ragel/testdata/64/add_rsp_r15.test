@@ -1,0 +1,9 @@
+@hex:
+  # Show that "add %rsp, %r15" doesn't work without proper previous instruction.
+  # See test lea-add-rsp.dis for an example of a proper previous instruction.
+  4c 01 fc
+@dis:
+  0000000000000000: 4c 01 fc                                     add %rsp, %r15
+@rdfa_output:
+  0: [0] improper %rsp sandboxing
+  return code: 1

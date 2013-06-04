@@ -1,0 +1,22 @@
+@hex:
+  # Model case where the call is not aligned so that the return address
+  # is aligned (32 bytes).
+  90
+  90
+  90
+  90
+  90
+  90
+  e8 00 00 00 00
+  90
+@dis:
+  0000000000000000: 90                                           nop
+  0000000000000001: 90                                           nop
+  0000000000000002: 90                                           nop
+  0000000000000003: 90                                           nop
+  0000000000000004: 90                                           nop
+  0000000000000005: 90                                           nop
+  0000000000000006: e8 00 00 00 00                               call 0xb
+  000000000000000b: 90                                           nop
+@rdfa_output:
+  return code: 0

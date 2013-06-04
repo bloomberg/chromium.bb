@@ -1,0 +1,7 @@
+@hex:
+  # cpuid
+  0F A2
+@dis:
+  0000000000000000: 0f a2                                        cpuid
+@rdfa_output:
+  return code: 0

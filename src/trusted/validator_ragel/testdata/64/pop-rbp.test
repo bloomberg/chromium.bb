@@ -1,0 +1,8 @@
+@hex:
+  # Test that we catch the assignment to rbp in a pop.
+  5D
+@dis:
+  0000000000000000: 5d                                           pop %rbp
+@rdfa_output:
+  0: [0] error - %bpl or %bp is changed
+  return code: 1

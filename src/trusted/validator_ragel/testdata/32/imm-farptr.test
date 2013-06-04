@@ -1,0 +1,9 @@
+@hex:
+  # Example instruction using a 48-bit far pointer.
+  9a 01 02 03 04 05 06
+  
+@dis:
+  00000000: 9a 01 02 03 04 05 06                         call 0x60504030201
+@rdfa_output:
+  0: [0] unrecognized instruction
+  return code: 1

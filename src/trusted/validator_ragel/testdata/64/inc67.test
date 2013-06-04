@@ -1,0 +1,9 @@
+@hex:
+  # Show that we don't accept the 67 prefix (i.e. 16 bit addressing).
+  # Uses case of rip relative addressing.
+  67 ff 05 a4 76 39 00
+@dis:
+  0000000000000000: 67 ff 05 a4 76 39 00                         inc [%rip+0x3976a4]
+@rdfa_output:
+  0: [0] unrecognized instruction
+  return code: 1

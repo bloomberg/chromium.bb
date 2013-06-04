@@ -1,0 +1,13 @@
+@hex:
+  # Show example of:
+  #   mov %esp, %r13d
+  #   add %rsp, %r15
+  # Should be legal since the mov zero extends a 32-bit address for a legal value for the corresponding
+  # rsp.
+  44 89 ec \\
+  4c 01 fc
+@dis:
+  0000000000000000: 44 89 ec                                     mov %esp, %r13d
+  0000000000000003: 4c 01 fc                                     add %rsp, %r15
+@rdfa_output:
+  return code: 0

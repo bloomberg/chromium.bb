@@ -1,0 +1,7 @@
+@hex:
+  # Test if we recognize lzcnt as a bsr with REP prefix.
+  f3 0f bd c3
+@dis:
+  0000000000000000: f3 0f bd c3                                  lzcnt %eax, %ebx
+@rdfa_output:
+  return code: 0

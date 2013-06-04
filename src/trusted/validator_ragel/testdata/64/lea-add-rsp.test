@@ -1,0 +1,11 @@
+@hex:
+  # Sample sequence for enter (nativeclient issue 259), part 2.
+  # lea %esp, [%rbp-0x20]
+  8d 65 e0 \\
+  # add %rsp, %r15
+  4c 01 fc
+@dis:
+  0000000000000000: 8d 65 e0                                     lea %esp, [%rbp-0x20]
+  0000000000000003: 4c 01 fc                                     add %rsp, %r15
+@rdfa_output:
+  return code: 0

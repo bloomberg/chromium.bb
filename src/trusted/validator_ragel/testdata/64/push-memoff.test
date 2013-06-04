@@ -1,0 +1,11 @@
+@hex:
+  # Verify that the validator doesn't report a set for a push (nativeclient issue 369).
+  # mov %edi, %edi
+  89 ff \\
+  # push [%r15+%rdi*1+0x20]
+  41 ff 74 3f 20
+@dis:
+  0000000000000000: 89 ff                                        mov %edi, %edi
+  0000000000000002: 41 ff 74 3f 20                               push [%r15+%rdi*1+0x20]
+@rdfa_output:
+  return code: 0

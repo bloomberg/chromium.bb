@@ -1,0 +1,14 @@
+@hex:
+  # Bad example of using lea solution (instead of add) to update rbp.
+  # That is where we use rsp in address instead of rbp.
+  #    mov %ebp, %ecx
+  #    lea %rbp, [%rsp+%r15*1]
+  89 cd
+  4a 8d 2c 3c
+@dis:
+  0000000000000000: 89 cd                                        mov %ebp, %ecx
+  0000000000000002: 4a 8d 2c 3c                                  lea %rbp, [%rsp+%r15*1]
+@rdfa_output:
+  2: [0] improper %rbp sandboxing
+  2: [0] error - %bpl or %bp is changed
+  return code: 1

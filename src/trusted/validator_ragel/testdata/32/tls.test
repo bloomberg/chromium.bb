@@ -1,0 +1,91 @@
+@hex:
+  # Test valid TLS access commands.
+  # mov %gs:0, %eax
+  65 a1 00 00 00 00
+  # mov %gs:4, %eax
+  65 a1 04 00 00 00
+@dis:
+  00000000: 65 a1 00 00 00 00                            mov %eax, %gs:[0x0]
+  00000006: 65 a1 04 00 00 00                            mov %eax, %gs:[0x4]
+@rdfa_output:
+  return code: 0
+----------------------------------------------------------------------
+@hex:
+  # Access with something besides 'mov'
+  # add %gs:0, %eax
+  65 03 05 00 00 00 00
+@dis:
+  00000000: 65 03 05 00 00 00 00                         add %eax, 0x0
+@rdfa_output:
+  0: [0] unrecognized instruction
+  return code: 1
+----------------------------------------------------------------------
+@hex:
+  # Forbidden forms
+  # mov %gs:0, %ax
+  65 66 a1 00 00 00 00
+  # mov %ax, %gs:0
+  65 66 a3 00 00 00 00
+  # lock add %gs:0x0,%eax
+  65 F0 03 05 00 00 00 00
+@dis:
+  00000000: 65 66 a1 00 00 00 00                         mov %ax, %gs:[0x0]
+  00000007: 65 66 a3 00 00 00 00                         mov %gs:[0x0], %ax
+  0000000e: 65 f0 03 05 00 00 00 00                      invalid %eax, 0x0
+@rdfa_output:
+  0: [0] unrecognized instruction
+  7: [1] unrecognized instruction
+  e: [2] unrecognized instruction
+  return code: 1
+----------------------------------------------------------------------
+@hex:
+  # Access through fs.
+  # mov %fs:0, %eax
+  64 a1 00 00 00 00
+  # mov %eax, %fs:0
+  64 a3 00 00 00 00
+  # mov %fs:0, %ax
+  64 66 a1 00 00 00 00
+  # mov %ax, %fs:0
+  64 66 a3 00 00 00 00
+@dis:
+  00000000: 64 a1 00 00 00 00                            mov %eax, %fs:[0x0]
+  00000006: 64 a3 00 00 00 00                            mov %fs:[0x0], %eax
+  0000000c: 64 66 a1 00 00 00 00                         mov %ax, %fs:[0x0]
+  00000013: 64 66 a3 00 00 00 00                         mov %fs:[0x0], %ax
+@rdfa_output:
+  0: [0] unrecognized instruction
+  6: [1] unrecognized instruction
+  c: [2] unrecognized instruction
+  13: [3] unrecognized instruction
+  return code: 1
+----------------------------------------------------------------------
+@hex:
+  # Can we write to gs segment?
+  # mov %eax, %gs:0
+  65 a3 00 00 00 00
+@dis:
+  00000000: 65 a3 00 00 00 00                            mov %gs:[0x0], %eax
+@rdfa_output:
+  0: [0] unrecognized instruction
+  return code: 1
+----------------------------------------------------------------------
+@hex:
+  # Fixed offsets besides 0 and 4
+  # mov %gs:3, %eax
+  65 a1 03 00 00 00
+  # mov %gs:8, %eax
+  65 a1 08 00 00 00
+  
+  # Can we read from arbitrary offset?
+  # mov %gs:%eax, %eax
+  65 8B 00
+@dis:
+  00000000: 65 a1 03 00 00 00                            mov %eax, %gs:[0x3]
+  00000006: 65 a1 08 00 00 00                            mov %eax, %gs:[0x8]
+  0000000c: 65 8b 00                                     mov %eax, %gs:[%eax]
+@rdfa_output:
+  0: [0] unrecognized instruction
+  6: [1] unrecognized instruction
+  c: [2] unrecognized instruction
+  return code: 1

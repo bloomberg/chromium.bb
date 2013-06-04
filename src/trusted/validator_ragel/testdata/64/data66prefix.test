@@ -1,0 +1,20 @@
+@hex:
+  # Example showing that we don't default to non-66 prefix, when there non-66
+  # prefix form doesn't allow opt-in 66 prefix.
+  #
+  #  pslldq without 66 prefix.
+  0f 73 ff 00
+@dis:
+  0000000000000000: 0f 73 ff                                     invalid
+  0000000000000003: 00                                           invalid
+@rdfa_output:
+  0: [0] unrecognized instruction
+  return code: 1
+----------------------------------------------------------------------
+@hex:
+  #  pslldq with proper 66 prefix.
+  66 0f 73 ff 00
+@dis:
+  0000000000000000: 66 0f 73 ff 00                               pslldq %xmm7, 0x0
+@rdfa_output:
+  return code: 0

@@ -1,0 +1,8 @@
+@hex:
+  # An example of a RIP relative address.
+  #   mov [%rip+0x3a7fe5], 0x1
+  C6 05 E5 7F 3A 00 01
+@dis:
+  0000000000000000: c6 05 e5 7f 3a 00 01                         mov [%rip+0x3a7fe5], 0x1
+@rdfa_output:
+  return code: 0

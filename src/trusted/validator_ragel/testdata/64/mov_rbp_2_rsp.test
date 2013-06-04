@@ -1,0 +1,7 @@
+@hex:
+  # Check that we accept "mov %rsp, %rbp".
+  48 89 ec
+@dis:
+  0000000000000000: 48 89 ec                                     mov %rsp, %rbp
+@rdfa_output:
+  return code: 0

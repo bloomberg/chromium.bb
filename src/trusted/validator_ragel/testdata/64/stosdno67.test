@@ -1,0 +1,8 @@
+@hex:
+  # Example of a 64-bit segment address assignment.
+  ab
+@dis:
+  0000000000000000: ab                                           stosd [%rdi]
+@rdfa_output:
+  0: [0] unrecognized instruction
+  return code: 1

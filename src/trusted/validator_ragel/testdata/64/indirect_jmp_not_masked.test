@@ -1,0 +1,13 @@
+@hex:
+  # Model a case where an indirect jump is inproperly masked (mask wrong value).
+  83 e2 f0
+  4D 8D 0C 17
+  41 FF E1
+  
+@dis:
+  0000000000000000: 83 e2 f0                                     and %edx, 0xf0
+  0000000000000003: 4d 8d 0c 17                                  lea %r9, [%r15+%rdx*1]
+  0000000000000007: 41 ff e1                                     jmp %r9
+@rdfa_output:
+  7: [0] unrecognized instruction
+  return code: 1

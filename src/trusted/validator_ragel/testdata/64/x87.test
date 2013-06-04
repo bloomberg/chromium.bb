@@ -1,0 +1,8 @@
+@hex:
+  # Sample x87 instruction
+  # dc c1                                        fadd %st1, %st0
+  dc c1
+@dis:
+  0000000000000000: dc c1                                        fadd %st1, %st0
+@rdfa_output:
+  return code: 0

@@ -1,0 +1,9 @@
+@hex:
+  # Example of an instruction marked illegal by native client.
+  #    ret
+  c3
+@dis:
+  0000000000000000: c3                                           ret
+@rdfa_output:
+  0: [0] unrecognized instruction
+  return code: 1

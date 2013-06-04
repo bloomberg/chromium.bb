@@ -1,0 +1,9 @@
+@hex:
+  # test 8: five byte move.
+  c6 44 05 d6 00
+  f4
+@dis:
+  00000000: c6 44 05 d6 00                               mov %ss:[%ebp+%eax*1-0x2a], 0x0
+  00000005: f4                                           hlt
+@rdfa_output:
+  return code: 0

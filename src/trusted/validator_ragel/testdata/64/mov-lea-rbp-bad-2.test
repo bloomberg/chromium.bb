@@ -1,0 +1,14 @@
+@hex:
+  # Bad example of using lea solution (instead of add) to update rbp.
+  # That is where we use r14 instead of r15 for the base register.
+  #    mov %ebp, %ecx
+  #    lea %rbp, [%rbp+%r14*1]
+  89 cd
+  4a 8d 6c 35 00
+@dis:
+  0000000000000000: 89 cd                                        mov %ebp, %ecx
+  0000000000000002: 4a 8d 6c 35 00                               lea %rbp, [%rbp+%r14*1]
+@rdfa_output:
+  2: [0] improper %rbp sandboxing
+  2: [0] error - %bpl or %bp is changed
+  return code: 1

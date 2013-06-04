@@ -1,0 +1,7 @@
+@hex:
+  #  Show that we do accept the case of rip relative addressing, if 64 bit address.
+  ff 05 a4 76 39 00
+@dis:
+  0000000000000000: ff 05 a4 76 39 00                            inc [%rip+0x3976a4]
+@rdfa_output:
+  return code: 0

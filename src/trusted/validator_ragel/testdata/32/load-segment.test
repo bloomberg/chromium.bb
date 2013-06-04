@@ -1,0 +1,27 @@
+@hex:
+  # lds    (%eax),%eax
+  C5 00
+  # les    (%eax),%eax
+  C4 00
+  # lfs    (%eax),%eax
+  0F B4 00
+  # lgs    (%eax),%eax
+  0F B5 00
+  # lss    (%eax),%eax
+  0F B2 00
+  # lfs    (%eax),%ebx
+  0F B4 18
+  # lgs    (%eax),%ebx
+  0F B5 18
+  # lss    (%eax),%ebx
+  0F B2 18
+@rdfa_output:
+  0: [0] unrecognized instruction
+  2: [1] unrecognized instruction
+  4: [2] unrecognized instruction
+  7: [3] unrecognized instruction
+  a: [4] unrecognized instruction
+  d: [5] unrecognized instruction
+  10: [6] unrecognized instruction
+  13: [7] unrecognized instruction
+  return code: 1

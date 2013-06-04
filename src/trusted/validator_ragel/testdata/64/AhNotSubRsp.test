@@ -1,0 +1,7 @@
+@hex:
+  # Make sure we recognize instruction "and %ah, 0xf7" as an and.
+  80 e4 f7
+@dis:
+  0000000000000000: 80 e4 f7                                     and %ah, 0xf7
+@rdfa_output:
+  return code: 0

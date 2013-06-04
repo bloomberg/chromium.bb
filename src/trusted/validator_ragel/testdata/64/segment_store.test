@@ -1,0 +1,9 @@
+@hex:
+  # Example of an illegal segment store:
+  #   insd
+  6d
+@dis:
+  0000000000000000: 6d                                           insd
+@rdfa_output:
+  0: [0] unrecognized instruction
+  return code: 1

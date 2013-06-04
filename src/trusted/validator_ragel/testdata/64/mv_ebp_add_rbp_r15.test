@@ -1,0 +1,15 @@
+@hex:
+  # Check that we handle sequence when not crossing block boundaries:
+  #   mov %ebp, %r11d
+  #   add %rbp, %r15"
+  # Note: Instruction sequence used in mv_ebp_add_crossing.hex to show problems
+  # when crossing block boundaries.
+  44 89 dd 4c 01 fd
+  
+  
+  
+@dis:
+  0000000000000000: 44 89 dd                                     mov %ebp, %r11d
+  0000000000000003: 4c 01 fd                                     add %rbp, %r15
+@rdfa_output:
+  return code: 0

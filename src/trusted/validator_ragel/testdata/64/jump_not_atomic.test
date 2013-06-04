@@ -1,0 +1,14 @@
+@hex:
+  # Models a jump into the middle of an atomic instruction sequence.
+  EB 03
+  83 e2 e0
+  4c 01 fa
+  ff e2
+@dis:
+  0000000000000000: eb 03                                        jmp 0x5
+  0000000000000002: 83 e2 e0                                     and %edx, 0xe0
+  0000000000000005: 4c 01 fa                                     add %rdx, %r15
+  0000000000000008: ff e2                                        jmp %rdx
+@rdfa_output:
+  0: [0] bad jump target
+  return code: 1

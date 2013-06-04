@@ -1,0 +1,98 @@
+@hex:
+  # Legacy instructions which are invalid in 64-bit mode
+  # nops (90) are used to reconsile disassembler
+  # aaa
+  37
+  # aad
+  D5 0A
+@dis:
+  0000000000000000: 37                                           invalid
+  0000000000000001: d5                                           invalid
+  0000000000000002: 0a                                           invalid
+@rdfa_output:
+  0: [0] unrecognized instruction
+  1: [1] unrecognized instruction
+  return code: 1
+----------------------------------------------------------------------
+@hex:
+  # aam
+  D4 0A
+@dis:
+  0000000000000000: d4                                           invalid
+  0000000000000001: 0a                                           invalid
+@rdfa_output:
+  0: [0] unrecognized instruction
+  return code: 1
+----------------------------------------------------------------------
+@hex:
+  # aas
+  3F
+  # bound %eax, (%eax)
+  62 00
+@dis:
+  0000000000000000: 3f                                           invalid
+  0000000000000001: 62                                           invalid
+  0000000000000002: 00                                           invalid
+@rdfa_output:
+  0: [0] unrecognized instruction
+  1: [1] unrecognized instruction
+  return code: 1
+----------------------------------------------------------------------
+@hex:
+  # daa
+  27
+  # das
+  2F
+  # pusha
+  60
+@dis:
+  0000000000000000: 27                                           invalid
+  0000000000000001: 2f                                           invalid
+  0000000000000002: 60                                           invalid
+@rdfa_output:
+  0: [0] unrecognized instruction
+  1: [1] unrecognized instruction
+  2: [2] unrecognized instruction
+  return code: 1
+----------------------------------------------------------------------
+@hex:
+  # Some undocumented instructions
+  # icebp
+  F1
+  # salc
+  D6
+@dis:
+  0000000000000000: f1                                           int1
+  0000000000000001: d6                                           invalid
+@rdfa_output:
+  0: [0] unrecognized instruction
+  1: [1] unrecognized instruction
+  return code: 1
+----------------------------------------------------------------------
+@hex:
+  # Instruction below could be valid in 64-bit code and could be not valid
+  # depending on CPUID return values.
+  # lahf
+  9F
+  # sahf
+  9E
+@dis:
+  0000000000000000: 9f                                           lahf
+  0000000000000001: 9e                                           sahf
+@rdfa_output:
+  return code: 0
+----------------------------------------------------------------------
+@hex:
+  # Legacy instructions which are valid in 64-bit mode
+  # xlat (%ebx,%al)
+  D7
+  
+  # xlat (%rbx,%al)
+  48 D7
+@dis:
+  0000000000000000: d7                                           xlat
+  0000000000000001: 48 d7                                        xlat
+@rdfa_output:
+  0: [0] unrecognized instruction
+  1: [1] unrecognized instruction
+  return code: 1

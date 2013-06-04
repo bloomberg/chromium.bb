@@ -1,0 +1,8 @@
+@hex:
+  # Show that we report wrmsr as an illegal instruction.
+  0f 30
+@dis:
+  0000000000000000: 0f 30                                        wrmsr
+@rdfa_output:
+  0: [0] unrecognized instruction
+  return code: 1

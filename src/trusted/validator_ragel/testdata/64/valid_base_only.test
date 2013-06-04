@@ -1,0 +1,9 @@
+@hex:
+  # Example of a valid store which only uses a base register.
+  #   mov [%rsp+0x36], %rax
+  48 89 44 24 36
+  
+@dis:
+  0000000000000000: 48 89 44 24 36                               mov [%rsp+0x36], %rax
+@rdfa_output:
+  return code: 0

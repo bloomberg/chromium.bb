@@ -1,0 +1,29 @@
+@hex:
+  # mov %esi, %ecx
+  89 f1
+  # mov %rbp, %rsp
+  48 89 ec
+  # mov (%rsp, %rcx), %ebx
+  8b 1c 0c
+@dis:
+  0000000000000000: 89 f1                                        mov %ecx, %esi
+  0000000000000002: 48 89 ec                                     mov %rsp, %rbp
+  0000000000000005: 8b 1c 0c                                     mov %ebx, [%rsp+%rcx*1]
+@rdfa_output:
+  5: [0] improper memory address - bad index
+  return code: 1
+----------------------------------------------------------------------
+@hex:
+  # mov %esi, %ecx
+  89 f1
+  # mov %rsp, %rbp
+  48 89 e5
+  # mov (%rsp, %rcx), %ebx
+  8b 1c 0c
+@dis:
+  0000000000000000: 89 f1                                        mov %ecx, %esi
+  0000000000000002: 48 89 e5                                     mov %rbp, %rsp
+  0000000000000005: 8b 1c 0c                                     mov %ebx, [%rsp+%rcx*1]
+@rdfa_output:
+  5: [0] improper memory address - bad index
+  return code: 1

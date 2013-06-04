@@ -1,0 +1,10 @@
+@hex:
+  # We should disallow a two-byte instruction with a cs prefix.
+  0f 1f 84 00 00 00 00 00
+  2e 0f 1f 84 00 00 00 00 00
+@dis:
+  00000000: 0f 1f 84 00 00 00 00 00                      nop
+  00000008: 2e 0f 1f 84 00 00 00 00 00                   nop
+@rdfa_output:
+  8: [0] unrecognized instruction
+  return code: 1

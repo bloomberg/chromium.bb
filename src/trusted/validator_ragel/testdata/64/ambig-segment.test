@@ -1,0 +1,8 @@
+@hex:
+  # Specify ambiguous segment prefixes.
+  64 65 00 c0
+@dis:
+  0000000000000000: 64 65 00 c0                                  add %al, %al
+@rdfa_output:
+  0: [0] unrecognized instruction
+  return code: 1

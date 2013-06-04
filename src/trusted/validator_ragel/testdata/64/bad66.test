@@ -1,0 +1,9 @@
+@hex:
+  # An example of a valid add instruction for which NACL doesn't allow a 66 prefix.
+  #    add %al, %al
+  66 00 c0
+@dis:
+  0000000000000000: 66 00 c0                                     add %al, %al
+@rdfa_output:
+  0: [0] unrecognized instruction
+  return code: 1
