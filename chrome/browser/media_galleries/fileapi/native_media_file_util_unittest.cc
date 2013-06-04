@@ -255,19 +255,19 @@ TEST_F(NativeMediaFileUtilTest, CreateDirectoryFiltering) {
   // pre-existing. Though the result should be the same.
   for (int loop_count = 0; loop_count < 2; ++loop_count) {
     for (size_t i = 0; i < arraysize(kFilteringTestCases); ++i) {
-      FileSystemURL root_url = CreateURL(FPL(""));
-      FileSystemOperation* operation = NewOperation(root_url);
-
-      FileSystemURL url = CreateURL(kFilteringTestCases[i].path);
-
-      std::string test_name = base::StringPrintf(
-          "CreateFileAndCreateDirectoryFiltering run %d, test %" PRIuS,
-          loop_count, i);
-      base::PlatformFileError expectation =
-          kFilteringTestCases[i].visible ?
-          base::PLATFORM_FILE_OK :
-          base::PLATFORM_FILE_ERROR_SECURITY;
       if (kFilteringTestCases[i].is_directory) {
+        FileSystemURL root_url = CreateURL(FPL(""));
+        FileSystemOperation* operation = NewOperation(root_url);
+
+        FileSystemURL url = CreateURL(kFilteringTestCases[i].path);
+
+        std::string test_name = base::StringPrintf(
+            "CreateFileAndCreateDirectoryFiltering run %d, test %" PRIuS,
+            loop_count, i);
+        base::PlatformFileError expectation =
+            kFilteringTestCases[i].visible ?
+            base::PLATFORM_FILE_OK :
+            base::PLATFORM_FILE_ERROR_SECURITY;
         operation->CreateDirectory(
             url, false, false,
             base::Bind(&ExpectEqHelper, test_name, expectation));
