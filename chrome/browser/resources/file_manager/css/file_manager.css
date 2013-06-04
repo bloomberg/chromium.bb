@@ -1017,6 +1017,17 @@ body[new-ui] .main-panel #detail-table > list {
   padding-bottom: 52px;  /* height of the preview panel */
 }
 
+body[new-ui] .main-panel #detail-table > list > .drag-selection-border {
+  -webkit-box-sizing: border-box;
+  background-color: rgba(255, 255, 255, 0.3);
+  border: 2px solid rgba(255, 255, 255, 0.6);
+  border-radius: 0; /* Override the style of cr.ui.List */
+  outline: 1px solid rgba(0, 0, 0, 0.1);
+  padding: 0; /* Override the style of cr.ui.List */
+  position: absolute;
+  z-index: 2;
+}
+
 .spinner {
   background-image: url('../images/common/spinner.svg');
   background-size: 100%;
