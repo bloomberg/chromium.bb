@@ -189,7 +189,7 @@ QuicSession* QuicDispatcher::CreateQuicSession(
       new QuicEpollConnectionHelper(this, epoll_server);
   QuicServerSession* session = new QuicServerSession(
        config_, new QuicConnection(guid, client_address, helper, true), this);
-  session->InitializeSession(crypto_config_);
+  session->Initialize(crypto_config_);
   return session;
 }
 

@@ -30,7 +30,6 @@ QuicPacketCreator::QuicPacketCreator(QuicGuid guid,
       send_version_in_packet_(!is_server),
       packet_size_(GetPacketHeaderSize(options_.send_guid_length,
                                        send_version_in_packet_,
-                                       options_.send_sequence_number_length,
                                        NOT_IN_FEC_GROUP)) {
   framer_->set_fec_builder(this);
 }
@@ -59,7 +58,6 @@ void QuicPacketCreator::MaybeStartFEC() {
     fec_group_.reset(new QuicFecGroup());
     packet_size_ = GetPacketHeaderSize(options_.send_guid_length,
                                        send_version_in_packet_,
-                                       options_.send_sequence_number_length,
                                        IN_FEC_GROUP);
     DCHECK_LE(packet_size_, options_.max_packet_length);
   }
@@ -86,10 +84,8 @@ size_t QuicPacketCreator::StreamFramePacketOverhead(
     int num_frames,
     QuicGuidLength guid_length,
     bool include_version,
-    QuicSequenceNumberLength sequence_number_length,
     InFecGroup is_in_fec_group) {
-  return GetPacketHeaderSize(guid_length, include_version,
-                             sequence_number_length, is_in_fec_group) +
+  return GetPacketHeaderSize(guid_length, include_version, is_in_fec_group) +
       QuicFramer::GetMinStreamFrameSize() * num_frames;
 }
 
@@ -100,8 +96,7 @@ size_t QuicPacketCreator::CreateStreamFrame(QuicStreamId id,
                                             QuicFrame* frame) {
   DCHECK_GT(options_.max_packet_length,
             StreamFramePacketOverhead(
-                1, PACKET_8BYTE_GUID, kIncludeVersion,
-                PACKET_6BYTE_SEQUENCE_NUMBER, IN_FEC_GROUP));
+                1, PACKET_8BYTE_GUID, kIncludeVersion, IN_FEC_GROUP));
   DCHECK(HasRoomForStreamFrame());
 
   const size_t free_bytes = BytesFree();
@@ -165,7 +160,6 @@ SerializedPacket QuicPacketCreator::SerializePacket() {
   queued_frames_.clear();
   packet_size_ = GetPacketHeaderSize(options_.send_guid_length,
                                      send_version_in_packet_,
-                                     options_.send_sequence_number_length,
                                      fec_group_.get() != NULL ?
                                          IN_FEC_GROUP : NOT_IN_FEC_GROUP);
   serialized.retransmittable_frames = queued_retransmittable_frames_.release();
@@ -187,7 +181,6 @@ SerializedPacket QuicPacketCreator::SerializeFec() {
   // Reset packet_size_, since the next packet may not have an FEC group.
   packet_size_ = GetPacketHeaderSize(options_.send_guid_length,
                                      send_version_in_packet_,
-                                     options_.send_sequence_number_length,
                                      NOT_IN_FEC_GROUP);
   DCHECK(serialized.packet);
   DCHECK_GE(options_.max_packet_length, serialized.packet->length());

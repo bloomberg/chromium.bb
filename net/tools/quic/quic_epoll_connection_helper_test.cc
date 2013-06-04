@@ -124,8 +124,8 @@ TEST_F(QuicConnectionHelperTest, DISABLED_TestRetransmission) {
 
   const char buffer[] = "foo";
   const size_t packet_size =
-      GetPacketHeaderSize(PACKET_8BYTE_GUID, kIncludeVersion,
-                          PACKET_6BYTE_SEQUENCE_NUMBER, NOT_IN_FEC_GROUP) +
+      GetPacketHeaderSize(
+          PACKET_8BYTE_GUID, kIncludeVersion, NOT_IN_FEC_GROUP) +
       QuicFramer::GetMinStreamFrameSize() + arraysize(buffer) - 1;
   EXPECT_CALL(*send_algorithm_,
               SentPacket(_, 1, packet_size, NOT_RETRANSMISSION));

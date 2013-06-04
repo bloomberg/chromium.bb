@@ -248,8 +248,7 @@ class NET_EXPORT_PRIVATE QuicFramer {
   static base::StringPiece GetAssociatedDataFromEncryptedPacket(
       const QuicEncryptedPacket& encrypted,
       QuicGuidLength guid_length,
-      bool includes_version,
-      QuicSequenceNumberLength sequence_number_length);
+      bool includes_version);
 
   // Returns a SerializedPacket whose |packet| member is owned by the caller,
   // and is populated with the fields in |header| and |frames|, or is NULL if
@@ -343,9 +342,7 @@ class NET_EXPORT_PRIVATE QuicFramer {
   bool ProcessPacketHeader(QuicPacketHeader* header,
                            const QuicEncryptedPacket& packet);
 
-  bool ProcessPacketSequenceNumber(
-      QuicSequenceNumberLength sequence_number_length,
-      QuicPacketSequenceNumber* sequence_number);
+  bool ProcessPacketSequenceNumber(QuicPacketSequenceNumber* sequence_number);
   bool ProcessFrameData();
   bool ProcessStreamFrame(QuicStreamFrame* frame);
   bool ProcessAckFrame(QuicAckFrame* frame);
@@ -357,20 +354,20 @@ class NET_EXPORT_PRIVATE QuicFramer {
   bool ProcessConnectionCloseFrame(QuicConnectionCloseFrame* frame);
   bool ProcessGoAwayFrame(QuicGoAwayFrame* frame);
 
-  bool DecryptPayload(const QuicPacketHeader& header,
+  bool DecryptPayload(QuicPacketSequenceNumber packet_sequence_number,
+                      QuicGuidLength guid_length,
+                      bool version_flag,
                       const QuicEncryptedPacket& packet);
 
   // Returns the full packet sequence number from the truncated
   // wire format version and the last seen packet sequence number.
   QuicPacketSequenceNumber CalculatePacketSequenceNumberFromWire(
-      QuicSequenceNumberLength sequence_number_length,
       QuicPacketSequenceNumber packet_sequence_number) const;
 
   // Computes the wire size in bytes of the payload of |frame|.
   size_t ComputeFrameLength(const QuicFrame& frame);
 
   static bool AppendPacketSequenceNumber(
-      QuicSequenceNumberLength sequence_number_length,
       QuicPacketSequenceNumber packet_sequence_number,
       QuicDataWriter* writer);
 

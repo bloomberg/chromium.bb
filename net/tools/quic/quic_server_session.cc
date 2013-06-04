@@ -22,7 +22,7 @@ QuicServerSession::QuicServerSession(
 QuicServerSession::~QuicServerSession() {
 }
 
-void QuicServerSession::InitializeSession(
+void QuicServerSession::Initialize(
     const QuicCryptoServerConfig& crypto_config) {
   crypto_stream_.reset(CreateQuicCryptoServerStream(crypto_config));
 }

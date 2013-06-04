@@ -246,7 +246,6 @@ TEST_P(QuicPacketCreatorTest, AddFrameAndSerialize) {
             GetPacketHeaderSize(
                 creator_.options()->send_guid_length,
                 QuicPacketCreatorPeer::SendVersionInPacket(&creator_),
-                PACKET_6BYTE_SEQUENCE_NUMBER,
                 NOT_IN_FEC_GROUP),
             creator_.BytesFree());
 
@@ -290,7 +289,6 @@ TEST_P(QuicPacketCreatorTest, AddFrameAndSerialize) {
             GetPacketHeaderSize(
                 creator_.options()->send_guid_length,
                 QuicPacketCreatorPeer::SendVersionInPacket(&creator_),
-                PACKET_6BYTE_SEQUENCE_NUMBER,
                 NOT_IN_FEC_GROUP),
             creator_.BytesFree());
 }

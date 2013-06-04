@@ -528,7 +528,8 @@ TEST_F(QuicHttpStreamTest, SendChunkedPostRequest) {
 TEST_F(QuicHttpStreamTest, DestroyedEarly) {
   SetRequestString("GET", "/");
   AddWrite(SYNCHRONOUS, ConstructDataPacket(1, true, kFin, 0, request_data_));
-  AddWrite(SYNCHRONOUS, ConstructAckPacket(2, 2, 1));
+  AddWrite(SYNCHRONOUS, ConstructRstPacket(2, 3));
+  AddWrite(SYNCHRONOUS, ConstructAckPacket(3, 2, 1));
   use_closing_stream_ = true;
   Initialize();
 

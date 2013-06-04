@@ -170,12 +170,14 @@ void QuicServer::OnEvent(int fd, EpollEvent* event) {
     }
   }
   if (event->in_events & EPOLLOUT) {
+    LOG(INFO) << "Epollout";
     bool can_write_more = dispatcher_->OnCanWrite();
     if (can_write_more) {
       event->out_ready_mask |= EPOLLOUT;
     }
   }
   if (event->in_events & EPOLLERR) {
+    LOG(INFO) << "Epollerr";
   }
 }
 

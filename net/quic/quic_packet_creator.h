@@ -33,8 +33,7 @@ class NET_EXPORT_PRIVATE QuicPacketCreator : public QuicFecBuilderInterface {
         : max_packet_length(kMaxPacketSize),
           random_reorder(false),
           max_packets_per_fec_group(0),
-          send_guid_length(PACKET_8BYTE_GUID),
-          send_sequence_number_length(PACKET_6BYTE_SEQUENCE_NUMBER) {
+          send_guid_length(PACKET_8BYTE_GUID) {
     }
 
     size_t max_packet_length;
@@ -43,7 +42,6 @@ class NET_EXPORT_PRIVATE QuicPacketCreator : public QuicFecBuilderInterface {
     size_t max_packets_per_fec_group;
     // Length of guid to send over the wire.
     QuicGuidLength send_guid_length;
-    QuicSequenceNumberLength send_sequence_number_length;
   };
 
   // QuicRandom* required for packet entropy.
@@ -70,12 +68,10 @@ class NET_EXPORT_PRIVATE QuicPacketCreator : public QuicFecBuilderInterface {
   void StopSendingVersion();
 
   // The overhead the framing will add for a packet with num_frames frames.
-  static size_t StreamFramePacketOverhead(
-      int num_frames,
-      QuicGuidLength guid_length,
-      bool include_version,
-      QuicSequenceNumberLength sequence_number_length,
-      InFecGroup is_in_fec_group);
+  static size_t StreamFramePacketOverhead(int num_frames,
+                                          QuicGuidLength guid_length,
+                                          bool include_version,
+                                          InFecGroup is_in_fec_group);
 
   bool HasRoomForStreamFrame() const;
 

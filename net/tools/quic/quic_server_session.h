@@ -46,7 +46,7 @@ class QuicServerSession : public QuicSession {
 
   virtual ~QuicServerSession();
 
-  virtual void InitializeSession(const QuicCryptoServerConfig& crypto_config);
+  virtual void Initialize(const QuicCryptoServerConfig& crypto_config);
 
  protected:
   // QuicSession methods:

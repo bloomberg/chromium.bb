@@ -386,13 +386,11 @@ size_t GetPacketLengthForOneStream(
   // TODO(wtc): the hardcoded use of NullEncrypter here seems wrong.
   size_t packet_length = NullEncrypter().GetCiphertextSize(payload) +
       QuicPacketCreator::StreamFramePacketOverhead(
-          1, PACKET_8BYTE_GUID, include_version,
-          PACKET_6BYTE_SEQUENCE_NUMBER, is_in_fec_group);
+          1, PACKET_8BYTE_GUID, include_version, is_in_fec_group);
 
   size_t ack_length = NullEncrypter().GetCiphertextSize(
       QuicFramer::GetMinAckFrameSize()) +
-      GetPacketHeaderSize(PACKET_8BYTE_GUID, include_version,
-                          PACKET_6BYTE_SEQUENCE_NUMBER, is_in_fec_group);
+      GetPacketHeaderSize(PACKET_8BYTE_GUID, include_version, is_in_fec_group);
   // Make sure that if we change the size of the packet length for one stream
   // or the ack frame; that all our test are configured correctly.
   DCHECK_GE(packet_length, ack_length);
