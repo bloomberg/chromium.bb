@@ -991,6 +991,36 @@ int64 ObfuscatedFileUtil::ComputeFilePathCost(const base::FilePath& path) {
   return UsageForPath(VirtualPath::BaseName(path).value().size());
 }
 
+void ObfuscatedFileUtil::MaybePrepopulateDatabase() {
+  base::FilePath isolated_origin_dir = file_system_directory_.Append(
+      SandboxIsolatedOriginDatabase::kOriginDirectory);
+  if (!file_util::DirectoryExists(isolated_origin_dir))
+    return;
+
+  const FileSystemType kPrepopulateTypes[] = {
+    kFileSystemTypePersistent, kFileSystemTypeTemporary
+  };
+
+  // Prepulate the directory database(s) if and only if this instance is
+  // initialized for isolated storage dedicated for a single origin.
+  for (size_t i = 0; i < arraysize(kPrepopulateTypes); ++i) {
+    const FileSystemType type = kPrepopulateTypes[i];
+    base::FilePath::StringType type_string = GetDirectoryNameForType(type);
+    DCHECK(!type_string.empty());
+    base::FilePath path = isolated_origin_dir.Append(type_string);
+    if (!file_util::DirectoryExists(path))
+      continue;
+    scoped_ptr<SandboxDirectoryDatabase> db(new SandboxDirectoryDatabase(path));
+    if (db->Init(SandboxDirectoryDatabase::FAIL_ON_CORRUPTION)) {
+      directories_[GetFileSystemTypeString(type)] = db.release();
+      MarkUsed();
+      // Don't populate more than one database, as it may rather hurt
+      // performance.
+      break;
+    }
+  }
+}
+
 PlatformFileError ObfuscatedFileUtil::GetFileInfoInternal(
     SandboxDirectoryDatabase* db,
     FileSystemOperationContext* context,
@@ -1132,20 +1162,32 @@ base::FilePath ObfuscatedFileUtil::DataPathToLocalPath(
   return root.Append(data_path);
 }
 
+std::string ObfuscatedFileUtil::GetDirectoryDatabaseKey(
+    const GURL& origin, FileSystemType type) {
+  std::string type_string = GetFileSystemTypeString(type);
+  if (type_string.empty()) {
+    LOG(WARNING) << "Unknown filesystem type requested:" << type;
+    return std::string();
+  }
+  // For isolated origin we just use a type string as a key.
+  if (special_storage_policy_ &&
+      special_storage_policy_->HasIsolatedStorage(origin)) {
+    return type_string;
+  }
+  return UTF16ToUTF8(webkit_base::GetOriginIdentifierFromURL(origin)) +
+      type_string;
+}
+
 // TODO(ericu): How to do the whole validation-without-creation thing?
 // We may not have quota even to create the database.
 // Ah, in that case don't even get here?
 // Still doesn't answer the quota issue, though.
 SandboxDirectoryDatabase* ObfuscatedFileUtil::GetDirectoryDatabase(
     const GURL& origin, FileSystemType type, bool create) {
-  std::string type_string = GetFileSystemTypeString(type);
-  if (type_string.empty()) {
-    LOG(WARNING) << "Unknown filesystem type requested:" << type;
+  std::string key = GetDirectoryDatabaseKey(origin, type);
+  if (key.empty())
     return NULL;
-  }
-  std::string key =
-      UTF16ToUTF8(webkit_base::GetOriginIdentifierFromURL(origin)) +
-      type_string;
+
   DirectoryMap::iterator iter = directories_.find(key);
   if (iter != directories_.end()) {
     MarkUsed();
@@ -1169,10 +1211,10 @@ base::FilePath ObfuscatedFileUtil::GetDirectoryForOrigin(
     const GURL& origin, bool create, base::PlatformFileError* error_code) {
   if (special_storage_policy_.get() &&
       special_storage_policy_->HasIsolatedStorage(origin)) {
-    CHECK(isolated_origin_.is_empty() || isolated_origin_ == origin)
-        << "multiple origins for an isolated site: "
-        << isolated_origin_.spec() << " vs " << origin.spec();
-    isolated_origin_ = origin;
+    if (isolated_origin_.is_empty())
+      isolated_origin_ = origin;
+    CHECK_EQ(isolated_origin_.spec(), origin.spec())
+        << "multiple origins for an isolated site";
   }
 
   if (!InitOriginDatabase(create)) {

@@ -11,7 +11,8 @@
 namespace fileapi {
 
 // Special directory name for isolated origin.
-const base::FilePath::CharType kOriginDirectory[] = FILE_PATH_LITERAL("iso");
+const base::FilePath::CharType
+SandboxIsolatedOriginDatabase::kOriginDirectory[] = FILE_PATH_LITERAL("iso");
 
 SandboxIsolatedOriginDatabase::SandboxIsolatedOriginDatabase(
     const std::string& origin,

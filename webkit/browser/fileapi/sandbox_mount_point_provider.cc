@@ -179,6 +179,15 @@ SandboxMountPointProvider::SandboxMountPointProvider(
   update_observers_ = UpdateObserverList(update_observers_src);
   access_observers_ = AccessObserverList(access_observers_src);
   syncable_update_observers_ = UpdateObserverList(update_observers_src);
+
+  if (!file_task_runner_->RunsTasksOnCurrentThread()) {
+    // Post prepopulate task only if it's not already running on
+    // file_task_runner (which implies running in tests).
+    file_task_runner_->PostTask(
+        FROM_HERE,
+        base::Bind(&ObfuscatedFileUtil::MaybePrepopulateDatabase,
+                  base::Unretained(sandbox_sync_file_util())));
+  }
 }
 
 SandboxMountPointProvider::~SandboxMountPointProvider() {

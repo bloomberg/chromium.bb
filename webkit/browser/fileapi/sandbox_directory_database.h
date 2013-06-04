@@ -99,6 +99,7 @@ class WEBKIT_STORAGE_EXPORT_PRIVATE SandboxDirectoryDatabase {
     FAIL_ON_CORRUPTION,
   };
 
+  friend class ObfuscatedFileUtil;
   friend class SandboxDirectoryDatabaseTest;
 
   bool Init(RecoveryOption recovery_option);

@@ -12,6 +12,8 @@ namespace fileapi {
 class WEBKIT_STORAGE_EXPORT_PRIVATE SandboxIsolatedOriginDatabase
     : public SandboxOriginDatabaseInterface {
  public:
+  static const base::FilePath::CharType kOriginDirectory[];
+
   explicit SandboxIsolatedOriginDatabase(
       const std::string& origin,
       const base::FilePath& file_system_directory);

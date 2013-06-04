@@ -176,6 +176,8 @@ class WEBKIT_STORAGE_EXPORT_PRIVATE ObfuscatedFileUtil
   // on each path segment and add the results.
   static int64 ComputeFilePathCost(const base::FilePath& path);
 
+  void MaybePrepopulateDatabase();
+
  private:
   typedef SandboxDirectoryDatabase::FileId FileId;
   typedef SandboxDirectoryDatabase::FileInfo FileInfo;
@@ -220,6 +222,8 @@ class WEBKIT_STORAGE_EXPORT_PRIVATE ObfuscatedFileUtil
       FileSystemType type,
       const base::FilePath& data_file_path);
 
+  std::string GetDirectoryDatabaseKey(const GURL& origin, FileSystemType type);
+
   // This returns NULL if |create| flag is false and a filesystem does not
   // exist for the given |origin_url| and |type|.
   // For read operations |create| should be false.
@@ -261,7 +265,7 @@ class WEBKIT_STORAGE_EXPORT_PRIVATE ObfuscatedFileUtil
   base::FilePath file_system_directory_;
   base::OneShotTimer<ObfuscatedFileUtil> timer_;
 
-  // If this instance is initialized for an isolated origin, this should
+  // If this instance is initialized for an isolated partition, this should
   // only see a single origin.
   GURL isolated_origin_;
 
