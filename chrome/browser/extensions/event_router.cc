@@ -111,25 +111,8 @@ void EventRouter::LogExtensionEventMessage(void* profile_id,
     Profile* profile = reinterpret_cast<Profile*>(profile_id);
     if (!g_browser_process->profile_manager()->IsValidProfile(profile))
       return;
-
-    // An ExtensionService might not be running during unit tests, or an
-    // extension might have been unloaded by the time we get to logging it.  In
-    // those cases log a warning.
-    ExtensionService* extension_service =
-        ExtensionSystem::Get(profile)->extension_service();
-    if (!extension_service) {
-      LOG(WARNING) << "ExtensionService does not seem to be available "
-                   << "(this may be normal for unit tests)";
-    } else {
-      const Extension* extension =
-          extension_service->extensions()->GetByID(extension_id);
-      if (!extension) {
-        LOG(WARNING) << "Extension " << extension_id << " not found!";
-      } else {
-        ActivityLog::GetInstance(profile)->LogEventAction(
-            extension, event_name, event_args.get(), std::string());
-      }
-    }
+    ActivityLog::GetInstance(profile)->LogEventAction(
+        extension_id, event_name, event_args.get(), std::string());
   }
 }
 
