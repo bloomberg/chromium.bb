@@ -30,7 +30,9 @@
 #include "ui/aura/window.h"
 #include "ui/base/events/event.h"
 #include "ui/base/events/event_constants.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/compositor/layer.h"
+#include "ui/views/view_model.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 
@@ -385,6 +387,50 @@ class LauncherViewTest : public AshTestBase {
  private:
   DISALLOW_COPY_AND_ASSIGN(LauncherViewTest);
 };
+
+class LauncherViewTextDirectionTest
+    : public LauncherViewTest,
+      public testing::WithParamInterface<bool> {
+ public:
+  LauncherViewTextDirectionTest() : is_rtl_(GetParam()) {}
+  virtual ~LauncherViewTextDirectionTest() {}
+
+  virtual void SetUp() OVERRIDE {
+    LauncherViewTest::SetUp();
+    original_locale_ = l10n_util::GetApplicationLocale(std::string());
+    if (is_rtl_)
+      base::i18n::SetICUDefaultLocale("he");
+    ASSERT_EQ(is_rtl_, base::i18n::IsRTL());
+  }
+
+  virtual void TearDown() OVERRIDE {
+    if (is_rtl_)
+      base::i18n::SetICUDefaultLocale(original_locale_);
+    LauncherViewTest::TearDown();
+  }
+
+ private:
+  bool is_rtl_;
+  std::string original_locale_;
+
+  DISALLOW_COPY_AND_ASSIGN(LauncherViewTextDirectionTest);
+};
+
+// Checks that the ideal item icon bounds match the view's bounds in the screen
+// in both LTR and RTL.
+TEST_P(LauncherViewTextDirectionTest, IdealBoundsOfItemIcon) {
+  LauncherID id = AddTabbedBrowser();
+  internal::LauncherButton* button = GetButtonByID(id);
+  gfx::Rect item_bounds = button->GetBoundsInScreen();
+  gfx::Point icon_offset = button->GetIconBounds().origin();
+  item_bounds.Offset(icon_offset.OffsetFromOrigin());
+  gfx::Rect ideal_bounds = launcher_view_->GetIdealBoundsOfItemIcon(id);
+  gfx::Point screen_origin;
+  views::View::ConvertPointToScreen(launcher_view_, &screen_origin);
+  ideal_bounds.Offset(screen_origin.x(), screen_origin.y());
+  EXPECT_EQ(item_bounds.x(), ideal_bounds.x());
+  EXPECT_EQ(item_bounds.y(), ideal_bounds.y());
+}
 
 // Adds browser button until overflow and verifies that the last added browser
 // button is hidden.
@@ -920,6 +966,8 @@ TEST_F(LauncherViewTest, CheckFittsLaw) {
   gfx::Rect ideal_bounds_1 = test_api_->GetIdealBoundsByIndex(1);
   EXPECT_GT(ideal_bounds_0.width(), ideal_bounds_1.width());
 }
+
+INSTANTIATE_TEST_CASE_P(LtrRtl, LauncherViewTextDirectionTest, testing::Bool());
 
 }  // namespace test
 }  // namespace ash

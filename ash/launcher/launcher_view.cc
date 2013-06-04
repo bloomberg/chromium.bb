@@ -472,7 +472,8 @@ gfx::Rect LauncherView::GetIdealBoundsOfItemIcon(LauncherID id) {
   LauncherButton* button =
       static_cast<LauncherButton*>(view_model_->view_at(index));
   gfx::Rect icon_bounds = button->GetIconBounds();
-  return gfx::Rect(ideal_bounds.x() + icon_bounds.x(),
+  return gfx::Rect(GetMirroredXWithWidthInView(
+                       ideal_bounds.x() + icon_bounds.x(), icon_bounds.width()),
                    ideal_bounds.y() + icon_bounds.y(),
                    icon_bounds.width(),
                    icon_bounds.height());
@@ -485,19 +486,21 @@ void LauncherView::UpdatePanelIconPosition(LauncherID id,
   if (current_index < first_panel_index)
     return;
 
+  gfx::Point midpoint_in_view(GetMirroredXInView(midpoint.x()),
+                              midpoint.y());
   ShelfLayoutManager* shelf = tooltip_->shelf_layout_manager();
   int target_index = current_index;
   while (target_index > first_panel_index &&
          shelf->PrimaryAxisValue(view_model_->ideal_bounds(target_index).x(),
                                  view_model_->ideal_bounds(target_index).y()) >
-         shelf->PrimaryAxisValue(midpoint.x(), midpoint.y())) {
+         shelf->PrimaryAxisValue(midpoint_in_view.x(), midpoint_in_view.y())) {
     --target_index;
   }
   while (target_index < view_model_->view_size() - 1 &&
          shelf->PrimaryAxisValue(
              view_model_->ideal_bounds(target_index).right(),
              view_model_->ideal_bounds(target_index).bottom()) <
-         shelf->PrimaryAxisValue(midpoint.x(), midpoint.y())) {
+         shelf->PrimaryAxisValue(midpoint_in_view.x(), midpoint_in_view.y())) {
     ++target_index;
   }
   if (current_index != target_index)

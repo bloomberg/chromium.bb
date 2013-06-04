@@ -24,12 +24,14 @@
 #include "base/basictypes.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
+#include "base/i18n/rtl.h"
 #include "base/run_loop.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/test/event_generator.h"
 #include "ui/aura/test/test_windows.h"
 #include "ui/aura/window.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/views/corewm/corewm_switches.h"
 #include "ui/views/widget/widget.h"
 
@@ -268,13 +270,41 @@ class PanelLayoutManagerTest : public test::AshTestBase {
   DISALLOW_COPY_AND_ASSIGN(PanelLayoutManagerTest);
 };
 
-// Tests that a created panel window is successfully added to the panel
-// layout manager.
-TEST_F(PanelLayoutManagerTest, AddOnePanel) {
+class PanelLayoutManagerTextDirectionTest
+    : public PanelLayoutManagerTest,
+      public testing::WithParamInterface<bool> {
+ public:
+  PanelLayoutManagerTextDirectionTest() : is_rtl_(GetParam()) {}
+  virtual ~PanelLayoutManagerTextDirectionTest() {}
+
+  virtual void SetUp() OVERRIDE {
+    original_locale = l10n_util::GetApplicationLocale(std::string());
+    if (is_rtl_)
+      base::i18n::SetICUDefaultLocale("he");
+    PanelLayoutManagerTest::SetUp();
+    ASSERT_EQ(is_rtl_, base::i18n::IsRTL());
+  }
+
+  virtual void TearDown() OVERRIDE {
+    if (is_rtl_)
+      base::i18n::SetICUDefaultLocale(original_locale);
+    PanelLayoutManagerTest::TearDown();
+  }
+
+ private:
+  bool is_rtl_;
+  std::string original_locale;
+
+  DISALLOW_COPY_AND_ASSIGN(PanelLayoutManagerTextDirectionTest);
+};
+
+// Tests that a created panel window is above the launcher icon in LTR and RTL.
+TEST_P(PanelLayoutManagerTextDirectionTest, AddOnePanel) {
   gfx::Rect bounds(0, 0, 201, 201);
   scoped_ptr<aura::Window> window(CreatePanelWindow(bounds));
   EXPECT_EQ(GetPanelContainer(window.get()), window->parent());
   EXPECT_NO_FATAL_FAILURE(IsPanelAboveLauncherIcon(window.get()));
+  EXPECT_NO_FATAL_FAILURE(IsCalloutAboveLauncherIcon(window.get()));
 }
 
 // Tests that a created panel window is successfully aligned over a hidden
@@ -681,6 +711,9 @@ TEST_F(PanelLayoutManagerTest, PanelsHideAndRestoreWithShelf) {
   EXPECT_FALSE(w2->IsVisible());
   EXPECT_TRUE(w3->IsVisible());
 }
+
+INSTANTIATE_TEST_CASE_P(LtrRtl, PanelLayoutManagerTextDirectionTest,
+                        testing::Bool());
 
 }  // namespace internal
 }  // namespace ash

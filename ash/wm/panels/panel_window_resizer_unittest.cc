@@ -22,6 +22,7 @@
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/root_window.h"
 #include "ui/base/hit_test.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/views/widget/widget.h"
 
@@ -192,6 +193,34 @@ class PanelWindowResizerTest : public test::AshTestBase {
   LauncherModel* model_;
 
   DISALLOW_COPY_AND_ASSIGN(PanelWindowResizerTest);
+};
+
+class PanelWindowResizerTextDirectionTest
+    : public PanelWindowResizerTest,
+      public testing::WithParamInterface<bool> {
+ public:
+  PanelWindowResizerTextDirectionTest() : is_rtl_(GetParam()) {}
+  virtual ~PanelWindowResizerTextDirectionTest() {}
+
+  virtual void SetUp() OVERRIDE {
+    original_locale = l10n_util::GetApplicationLocale(std::string());
+    if (is_rtl_)
+      base::i18n::SetICUDefaultLocale("he");
+    PanelWindowResizerTest::SetUp();
+    ASSERT_EQ(is_rtl_, base::i18n::IsRTL());
+  }
+
+  virtual void TearDown() OVERRIDE {
+    if (is_rtl_)
+      base::i18n::SetICUDefaultLocale(original_locale);
+    PanelWindowResizerTest::TearDown();
+  }
+
+ private:
+  bool is_rtl_;
+  std::string original_locale;
+
+  DISALLOW_COPY_AND_ASSIGN(PanelWindowResizerTextDirectionTest);
 };
 
 // Verifies a window can be dragged from the panel and detached and then
@@ -411,8 +440,8 @@ TEST_F(PanelWindowResizerTest, DragMovesToPanelLayer) {
             window->parent()->id());
 }
 
-TEST_F(PanelWindowResizerTest, DragReordersPanelsHorizontal) {
-  DragAlongShelfReorder(-1, 0);
+TEST_P(PanelWindowResizerTextDirectionTest, DragReordersPanelsHorizontal) {
+  DragAlongShelfReorder(base::i18n::IsRTL() ? 1 : -1, 0);
 }
 
 TEST_F(PanelWindowResizerTest, DragReordersPanelsVertical) {
@@ -420,6 +449,9 @@ TEST_F(PanelWindowResizerTest, DragReordersPanelsVertical) {
   shell->SetShelfAlignment(SHELF_ALIGNMENT_LEFT, shell->GetPrimaryRootWindow());
   DragAlongShelfReorder(0, -1);
 }
+
+INSTANTIATE_TEST_CASE_P(LtrRtl, PanelWindowResizerTextDirectionTest,
+                        testing::Bool());
 
 }  // namespace internal
 }  // namespace ash
