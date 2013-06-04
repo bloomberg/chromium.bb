@@ -5,13 +5,6 @@
 // systeminfo.cpu api test
 // browser_tests.exe --gtest_filter=SystemInfoCpuApiTest.*
 
-var userStep = 3;
-var kernelStep = 2;
-var idleStep = 1;
-function calculateUsage(count) {
-  return (100 - idleStep * 100/(userStep + kernelStep + idleStep));
-}
-
 chrome.test.runTests([
   function testGet() {
     for(var i = 0; i < 20; ++i) {
@@ -21,22 +14,6 @@ chrome.test.runTests([
         chrome.test.assertEq("unknown", result.modelName);
       }));
     }
-  },
-
-  function testUpdatedEvent() {
-    var numOfUpdatedEvent = 0;
-    var doneUpdatedEvent = chrome.test.listenForever(
-      chrome.systemInfo.cpu.onUpdated,
-      function listener(updateInfo) {
-        var expectedUsage = calculateUsage(numOfUpdatedEvent);
-        chrome.test.assertEq(updateInfo.averageUsage, expectedUsage);
-
-        chrome.test.assertEq(updateInfo.usagePerProcessor.length, 4);
-        for (var i = 0; i < updateInfo.usagePerProcessor.length; ++i)
-          chrome.test.assertEq(updateInfo.usagePerProcessor[i], expectedUsage);
-        if (++numOfUpdatedEvent > 5)
-          doneUpdatedEvent();
-      });
   }
 ]);
 

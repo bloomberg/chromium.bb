@@ -14,12 +14,10 @@
 #include "base/string_util.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/extensions/api/system_info_cpu/cpu_info_provider.h"
 #include "chrome/browser/extensions/api/system_info_storage/storage_info_provider.h"
 #include "chrome/browser/extensions/event_names.h"
 #include "chrome/browser/extensions/event_router_forwarder.h"
 #include "chrome/common/extensions/api/experimental_system_info_storage.h"
-#include "chrome/common/extensions/api/system_info_cpu.h"
 #include "ui/gfx/display_observer.h"
 
 #if defined(USE_ASH)
@@ -29,7 +27,6 @@
 
 namespace extensions {
 
-using api::system_info_cpu::CpuUpdateInfo;
 using api::experimental_system_info_storage::StorageUnitInfo;
 using api::experimental_system_info_storage::StorageUnitType;
 using api::experimental_system_info_storage::StorageChangeInfo;
@@ -39,7 +36,7 @@ namespace {
 
 // The display events use the "systemInfo" prefix.
 const char kSystemInfoEventPrefix[] = "systemInfo";
-// The storage and cpu events still use the "experimental.systemInfo" prefix.
+// The storage events still use the "experimental.systemInfo" prefix.
 const char kExperimentalSystemInfoEventPrefix[] = "experimental.systemInfo";
 
 bool IsDisplayChangedEvent(const std::string& event_name) {
@@ -48,10 +45,6 @@ bool IsDisplayChangedEvent(const std::string& event_name) {
 
 bool IsAvailableCapacityChangedEvent(const std::string& event_name) {
   return event_name == event_names::kOnStorageAvailableCapacityChanged;
-}
-
-bool IsCpuUpdatedEvent(const std::string& event_name) {
-  return event_name == event_names::kOnCpuUpdated;
 }
 
 // Event router for systemInfo API. It is a singleton instance shared by
@@ -97,10 +90,6 @@ class SystemInfoEventRouter
   // storages. Called from UI thread.
   void StartWatchingStorages(const StorageInfo& info, bool success);
   void StopWatchingStorages(const StorageInfo& info, bool success);
-
-  // The callback for CPU sampling cycle. Called from FILE thread.
-  void OnNextCpuSampling(
-      scoped_ptr<api::system_info_cpu::CpuUpdateInfo> info);
 
   // Called to dispatch the systemInfo.display.onDisplayChanged event.
   void OnDisplayChanged();
@@ -165,14 +154,6 @@ void SystemInfoEventRouter::AddEventListener(const std::string& event_name) {
     return;
   }
 
-  // For systemInfo.cpu event.
-  if (IsCpuUpdatedEvent(event_name)) {
-    CpuInfoProvider::Get()->StartSampling(
-        base::Bind(&SystemInfoEventRouter::OnNextCpuSampling,
-                   base::Unretained(this)));
-    return;
-  }
-
   // For systemInfo.display event.
   if (IsDisplayChangedEvent(event_name)) {
 #if defined(USE_ASH)
@@ -199,10 +180,6 @@ void SystemInfoEventRouter::RemoveEventListener(
     StorageInfoProvider::Get()->StartQueryInfo(
         base::Bind(&SystemInfoEventRouter::StopWatchingStorages,
                    base::Unretained(this)));
-  }
-
-  if (IsCpuUpdatedEvent(event_name)) {
-    CpuInfoProvider::Get()->StopSampling();
   }
 
   if (IsDisplayChangedEvent(event_name)) {
@@ -280,13 +257,6 @@ void SystemInfoEventRouter::DispatchEvent(const std::string& event_name,
       BroadcastEventToRenderers(event_name, args.Pass(), GURL());
 }
 
-void SystemInfoEventRouter::OnNextCpuSampling(scoped_ptr<CpuUpdateInfo> info) {
-  scoped_ptr<base::ListValue> args(new base::ListValue());
-  args->Append(info->ToValue().release());
-
-  DispatchEvent(event_names::kOnCpuUpdated, args.Pass());
-}
-
 }  // namespace
 
 static base::LazyInstance<ProfileKeyedAPIFactory<SystemInfoAPI> >
@@ -298,8 +268,6 @@ ProfileKeyedAPIFactory<SystemInfoAPI>* SystemInfoAPI::GetFactoryInstance() {
 }
 
 SystemInfoAPI::SystemInfoAPI(Profile* profile) : profile_(profile) {
-  ExtensionSystem::Get(profile_)->event_router()->RegisterObserver(
-      this, event_names::kOnCpuUpdated);
   ExtensionSystem::Get(profile_)->event_router()->RegisterObserver(
       this, event_names::kOnStorageAvailableCapacityChanged);
   ExtensionSystem::Get(profile_)->event_router()->RegisterObserver(

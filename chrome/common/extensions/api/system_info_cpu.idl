@@ -14,24 +14,10 @@ namespace systemInfo.cpu {
     DOMString modelName;
   };
 
-  dictionary CpuUpdateInfo {
-    // The average usage percent of all processors, as a number 
-    // between 0 and 100.
-    double averageUsage;
-    // The CPU usage array for each logic processor.
-    double[] usagePerProcessor;
-  };
-
   callback CpuInfoCallback = void (CpuInfo info);
   
   interface Functions {
     // Queries basic CPU information of the system.
     static void get(CpuInfoCallback callback);
-  };
-
-  interface Events {
-    // Fired periodically to report CPU history usage information. The default
-    // period interval is 1 seconds.
-    static void onUpdated(CpuUpdateInfo info);
   };
 };

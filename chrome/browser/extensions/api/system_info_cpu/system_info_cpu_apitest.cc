@@ -2,10 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 #include "base/command_line.h"
-#include "base/message_loop.h"
 #include "chrome/browser/extensions/api/system_info_cpu/cpu_info_provider.h"
 #include "chrome/browser/extensions/extension_apitest.h"
-#include "chrome/browser/extensions/extension_test_message_listener.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
 
@@ -17,15 +15,12 @@ const char kExtensionId[] = "lfakdgdkbaleijdcpbfbngfphpmgfdfn";
 
 class MockCpuInfoProviderImpl : public CpuInfoProvider {
  public:
-  MockCpuInfoProviderImpl() : num_of_processors_(4) {
-    // Set sampling interval to 200ms for testing.
-    sampling_interval_ = 200;
-  }
+  MockCpuInfoProviderImpl() {}
 
   virtual bool QueryInfo(CpuInfo* info) OVERRIDE {
     if (!info) return false;
 
-    info->num_of_processors = num_of_processors_;
+    info->num_of_processors = 4;
     info->arch_name = "x86";
     info->model_name = "unknown";
 
@@ -34,28 +29,6 @@ class MockCpuInfoProviderImpl : public CpuInfoProvider {
 
  private:
   virtual ~MockCpuInfoProviderImpl() {}
-
-  virtual bool QueryCpuTimePerProcessor(std::vector<CpuTime>* times) OVERRIDE {
-    DCHECK(times);
-
-    times->clear();
-    static int user_step = 3;
-    static int kernel_step = 2;
-    static int idle_step = 1;
-    static int count = 0;
-    for (int i = 0; i < num_of_processors_; i++) {
-      CpuTime time;
-      time.user += user_step * count;
-      time.kernel += kernel_step * count;
-      time.idle += idle_step * count;
-      times->push_back(time);
-
-      count++;
-    }
-    return true;
-  }
-
-  int num_of_processors_;
 };
 
 class SystemInfoCpuApiTest: public ExtensionApiTest {
@@ -71,11 +44,7 @@ class SystemInfoCpuApiTest: public ExtensionApiTest {
 
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
     ExtensionApiTest::SetUpInProcessBrowserTestFixture();
-    message_loop_.reset(new base::MessageLoop(base::MessageLoop::TYPE_UI));
   }
-
- private:
-  scoped_ptr<base::MessageLoop> message_loop_;
 };
 
 IN_PROC_BROWSER_TEST_F(SystemInfoCpuApiTest, Cpu) {

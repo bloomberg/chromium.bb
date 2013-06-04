@@ -84,7 +84,6 @@ extern const char kBluetoothOnDeviceSearchResult[];
 extern const char kOnPushMessage[];
 
 // systemInfo event names.
-extern const char kOnCpuUpdated[];
 extern const char kOnDisplayChanged[];
 extern const char kOnStorageAvailableCapacityChanged[];
 extern const char kOnStorageAttached[];
