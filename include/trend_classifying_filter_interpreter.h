@@ -88,7 +88,7 @@ protected:
   virtual void SyncInterpretImpl(HardwareState* hwstate, stime_t* timeout);
 
 private:
-  struct KState : public MemoryManaged<KState> {
+  struct KState {
     KState() { Init(); }
     KState(const FingerState& fs) { Init(fs); }
 
@@ -155,13 +155,7 @@ private:
     KState* prev_;
   };
 
-  // Extend the List class with memory management capability.
-  template<typename T>
-  class ManagedList: public List<T, MemoryManagedDeallocator<T>>,
-                     public MemoryManaged<ManagedList<T>> {
-  };
-
-  typedef ManagedList<KState> FingerHistory;
+  typedef MemoryManagedList<KState> FingerHistory;
 
   // Trend types for internal use
   enum TrendType {
@@ -293,6 +287,10 @@ private:
   // 0.10    |   1.6448536269514722
   // 0.20    |   1.2815515655446004
   DoubleProperty z_threshold_;
+
+  // memory managers to prevent malloc during interrupt calls
+  MemoryManager<FingerHistory> history_mm_;
+  MemoryManager<KState> kstate_mm_;
 };
 
 }

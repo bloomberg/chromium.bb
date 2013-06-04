@@ -20,14 +20,13 @@ MetricsFilterInterpreter::MetricsFilterInterpreter(PropRegistry* prop_reg,
                                                        Interpreter* next,
                                                        Tracer* tracer)
     : FilterInterpreter(NULL, next, tracer, false),
+      history_mm_(kMaxFingers),
+      mstate_mm_(kMaxFingers * MState::kHistorySize),
       noisy_ground_distance_threshold_(
           prop_reg, "Metrics Noisy Ground Distance", 10.0),
       noisy_ground_time_threshold_(
           prop_reg, "Metrics Noisy Ground Time", 0.1) {
   InitName();
-
-  MState::InitMemoryManager(kMaxFingers * MState::kHistorySize);
-  FingerHistory::InitMemoryManager(kMaxFingers);
 }
 
 void MetricsFilterInterpreter::SyncInterpretImpl(HardwareState* hwstate,
@@ -41,16 +40,15 @@ void MetricsFilterInterpreter::AddNewStateToBuffer(
     const HardwareState& hwstate) {
   // The history buffer is already full, pop one
   if (history->size() == static_cast<size_t>(MState::kHistorySize))
-    MState::Free(history->PopFront());
+    history->DeleteFront();
 
   // Push the new finger state to the back of buffer
-  MState* current = MState::Allocate();
+  MState* current = history->PushNewEltBack();
   if (!current) {
     Err("MState buffer out of space");
     return;
   }
   current->Init(fs, hwstate);
-  history->PushBack(current);
 }
 
 void MetricsFilterInterpreter::UpdateFingerState(
@@ -58,8 +56,10 @@ void MetricsFilterInterpreter::UpdateFingerState(
   FingerHistoryMap removed;
   RemoveMissingIdsFromMap(&histories_, hwstate, &removed);
   for (FingerHistoryMap::const_iterator it =
-       removed.begin(); it != removed.end(); ++it)
-    FingerHistory::Free(it->second);
+       removed.begin(); it != removed.end(); ++it) {
+    it->second->DeleteAll();
+    history_mm_.Free(it->second);
+}
 
   FingerState *fs = hwstate.fingers;
   for (short i = 0; i < hwstate.finger_cnt; i++) {
@@ -67,12 +67,12 @@ void MetricsFilterInterpreter::UpdateFingerState(
 
     // Update the map if the contact is new
     if (!MapContainsKey(histories_, fs[i].tracking_id)) {
-      hp = FingerHistory::Allocate();
+      hp = history_mm_.Allocate();
       if (!hp) {
         Err("FingerHistory out of space");
         continue;
       }
-      hp->Init();
+      hp->Init(&mstate_mm_);
       histories_[fs[i].tracking_id] = hp;
     } else {
       hp = histories_[fs[i].tracking_id];

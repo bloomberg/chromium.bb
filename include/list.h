@@ -6,26 +6,15 @@
 #define GESTURES_LIST_H__
 
 #include "gestures/include/logging.h"
+#include "gestures/include/memory_manager.h"
 
 namespace gestures {
-
-// A default Deallocator class which performs the delete operator on
-// the element to remove. One may provide a customized version, which
-// for example, remove the element from a memory manager instead.
-
-template<typename Elt>
-class DefaultDeallocator {
- public:
-  void Deallocate(Elt* elt) {
-    delete elt;
-  }
-};
 
 // Elt must have the following members:
 // Elt* next_;
 // Elt* prev_;
 
-template<typename Elt, class Deallocator = DefaultDeallocator<Elt>>
+template<typename Elt>
 class List {
  public:
   List() { Init(); }
@@ -58,9 +47,9 @@ class List {
   void PushBack(Elt* elt) { InsertBefore(&sentinel_, elt); }
   Elt* PopBack() { return Unlink(sentinel_.prev_); }
 
-  void DeleteAll() {
+  virtual void DeleteAll() {
     while (!Empty())
-      deallocator_.Deallocate(PopFront());
+      PopFront();
   }
 
   Elt* Head() const { return sentinel_.next_; }
@@ -72,7 +61,6 @@ class List {
   Elt* Begin() const { return Head(); }
   Elt* End() const { return const_cast<Elt*>(&sentinel_); }
 
- protected:
   void Init() {
     size_ = 0;
     sentinel_.next_ = sentinel_.prev_ = &sentinel_;
@@ -83,8 +71,67 @@ class List {
   Elt sentinel_;
 
   size_t size_;
-  Deallocator deallocator_;
 };
+
+
+template<typename Elt>
+class MemoryManagedList : public List<Elt> {
+ public:
+  using List<Elt>::Empty;
+  using List<Elt>::PopBack;
+  using List<Elt>::PopFront;
+  using List<Elt>::PushBack;
+  using List<Elt>::PushFront;
+
+  MemoryManagedList() { };
+  ~MemoryManagedList() { DeleteAll(); }
+
+  void Init(MemoryManager<Elt>* memory_manager) {
+    memory_manager_ = memory_manager;
+    List<Elt>::Init();
+  }
+
+  Elt* NewElt() {
+    Elt* elt = memory_manager_->Allocate();
+    AssertWithReturnValue(elt, NULL);
+    elt->next_ = elt->prev_ = NULL;
+    return elt;
+  }
+
+  Elt* PushNewEltBack() {
+    AssertWithReturnValue(memory_manager_, NULL);
+    Elt* elt = NewElt();
+    AssertWithReturnValue(elt, NULL);
+    PushBack(elt);
+    return elt;
+  }
+
+  Elt* PushNewEltFront() {
+    AssertWithReturnValue(memory_manager_, NULL);
+    Elt* elt = NewElt();
+    AssertWithReturnValue(elt, NULL);
+    PushFront(elt);
+    return elt;
+  }
+
+  void DeleteFront() {
+    AssertWithReturn(memory_manager_);
+    memory_manager_->Free(PopFront());
+  }
+
+  void DeleteBack() {
+    AssertWithReturn(memory_manager_);
+    memory_manager_->Free(PopBack());
+  }
+
+  virtual void DeleteAll() {
+    while (!Empty())
+      DeleteFront();
+  }
+ private:
+  MemoryManager<Elt>* memory_manager_;
+};
+
 
 }  // namespace gestures
 

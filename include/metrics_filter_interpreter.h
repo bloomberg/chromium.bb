@@ -35,7 +35,7 @@ class MetricsFilterInterpreter : public FilterInterpreter {
 
  private:
   // struct for one finger's data of one frame
-  struct MState: public MemoryManaged<MState> {
+  struct MState {
     MState() {}
     MState(const FingerState& fs, const HardwareState& hwstate) {
       Init(fs, hwstate);
@@ -44,7 +44,6 @@ class MetricsFilterInterpreter : public FilterInterpreter {
     void Init(const FingerState& fs, const HardwareState& hwstate) {
       timestamp = hwstate.timestamp;
       data = fs;
-      next_ = NULL, prev_ = NULL;
     }
 
     static const size_t kHistorySize = 3;
@@ -55,15 +54,7 @@ class MetricsFilterInterpreter : public FilterInterpreter {
     MState* prev_;
   };
 
-  // Extend the List class with memory management capability.
-  template<typename T>
-  class ManagedList: public List<T, MemoryManagedDeallocator<T>>,
-                     public MemoryManaged<ManagedList<T>> {
-   public:
-    void Init() { List<T, MemoryManagedDeallocator<T>>::Init(); }
-  };
-
-  typedef ManagedList<MState> FingerHistory;
+  typedef MemoryManagedList<MState> FingerHistory;
 
   // Update the class with new finger data, check if there is any interesting
   // pattern
@@ -80,6 +71,10 @@ class MetricsFilterInterpreter : public FilterInterpreter {
   // A map to store each finger's past data
   typedef map<short, FingerHistory*, kMaxFingers> FingerHistoryMap;
   FingerHistoryMap histories_;
+
+  // memory managers to prevent malloc during interrupt calls
+  MemoryManager<FingerHistory> history_mm_;
+  MemoryManager<MState> mstate_mm_;
 
   // Threshold values for detecting movements caused by the noisy ground
   DoubleProperty noisy_ground_distance_threshold_;

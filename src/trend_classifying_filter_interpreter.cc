@@ -36,11 +36,10 @@ TrendClassifyingFilterInterpreter::TrendClassifyingFilterInterpreter(
       num_of_samples_(
           prop_reg, "Trend Classifying Num of Samples", 20),
       z_threshold_(
-          prop_reg, "Trend Classifying Z Threshold", 2.5758293035489004) {
+          prop_reg, "Trend Classifying Z Threshold", 2.5758293035489004),
+      history_mm_(kMaxFingers),
+      kstate_mm_(kMaxFingers * num_of_samples_.val_) {
   InitName();
-
-  KState::InitMemoryManager(kMaxFingers * num_of_samples_.val_);
-  FingerHistory::InitMemoryManager(kMaxFingers);
 }
 
 void TrendClassifyingFilterInterpreter::SyncInterpretImpl(
@@ -73,17 +72,16 @@ void TrendClassifyingFilterInterpreter::AddNewStateToBuffer(
     FingerHistory* history, const FingerState& fs) {
   // The history buffer is already full, pop one
   if (history->size() == static_cast<size_t>(num_of_samples_.val_))
-    KState::Free(history->PopFront());
+    history->DeleteFront();
 
   // Push the new finger state to the back of buffer
-  KState* current = KState::Allocate();
+  KState* previous_end = history->Tail();
+  KState* current = history->PushNewEltBack();
   if (!current) {
     Err("KState buffer out of space");
     return;
   }
   current->Init(fs);
-  KState* previous_end = history->Tail();
-  history->PushBack(current);
   if (history->size() == 1)
     return;
 
@@ -134,8 +132,10 @@ void TrendClassifyingFilterInterpreter::UpdateFingerState(
   FingerHistoryMap removed;
   RemoveMissingIdsFromMap(&histories_, hwstate, &removed);
   for (FingerHistoryMap::const_iterator it =
-       removed.begin(); it != removed.end(); ++it)
-    FingerHistory::Free(it->second);
+       removed.begin(); it != removed.end(); ++it) {
+    it->second->DeleteAll();
+    history_mm_.Free(it->second);
+}
 
   FingerState *fs = hwstate.fingers;
   for (short i = 0; i < hwstate.finger_cnt; i++) {
@@ -143,13 +143,12 @@ void TrendClassifyingFilterInterpreter::UpdateFingerState(
 
     // Update the map if the contact is new
     if (!MapContainsKey(histories_, fs[i].tracking_id)) {
-      hp = FingerHistory::Allocate();
+      hp = history_mm_.Allocate();
       if (!hp) {
         Err("FingerHistory out of space");
         continue;
       }
-      // placement new
-      new (hp) FingerHistory();
+      hp->Init(&kstate_mm_);
       histories_[fs[i].tracking_id] = hp;
     } else {
       hp = histories_[fs[i].tracking_id];
@@ -172,7 +171,6 @@ void TrendClassifyingFilterInterpreter::UpdateFingerState(
 void TrendClassifyingFilterInterpreter::KState::Init() {
   for (size_t i = 0; i < KState::n_axes_; i++)
     axes_[i].Init();
-  next_ = NULL, prev_ = NULL;
 }
 
 void TrendClassifyingFilterInterpreter::KState::Init(const FingerState& fs) {
