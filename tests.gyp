@@ -30,12 +30,39 @@
         'tests/hello_world/hello_world.c',
       ],
     },
+
   ],
   'conditions': [
-    # Only build the tests on arm, but don't try to run them
     ['target_arch!="arm"', {
       'targets': [
-
+        # Build simple_thread_test to verify that __thread linkage works
+        # correctly with gyp-built libraries:
+        # https://code.google.com/p/chromium/issues/detail?id=3461
+        # TODO(mcgrathr): This test should compile on ARM but currently
+        # doesn't: https://code.google.com/p/nativeclient/issues/detail?id=3470
+        {
+          'target_name': 'simple_thread_test',
+          'type': 'none',
+          'dependencies': [
+            'tools.gyp:prep_toolchain',
+            'src/untrusted/nacl/nacl.gyp:nacl_lib',
+            'src/untrusted/irt/irt.gyp:irt_core_nexe'
+          ],
+          'link_flags': ['-lpthread'],
+          # Bug 3461 only occurs when linking -fPIC objects so we use
+          # -fPIC here even though it isn't strictly necessary.
+          'compile_flags': ['-fPIC'],
+          'variables': {
+            'nexe_target': 'simple_thread_test',
+            'build_glibc': 0,
+            'build_newlib': 1,
+            'build_pnacl_newlib': 0,
+          },
+          'sources': [
+            'tests/threads/simple_thread_test.c',
+          ],
+        },
+        # Only build the tests on arm, but don't try to run them
         {
           'target_name': 'test_hello_world_nexe',
           'type': 'none',

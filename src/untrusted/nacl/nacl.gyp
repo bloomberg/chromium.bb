@@ -27,6 +27,7 @@
       'nanosleep.c',
       'nacl_interface_query.c',
       'nacl_read_tp.c',
+      'nacl_add_tp.c',
       'open.c',
       'read.c',
       'pthread_initialize_minimal.c',
