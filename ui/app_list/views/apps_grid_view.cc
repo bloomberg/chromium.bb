@@ -192,6 +192,7 @@ void AppsGridView::EnsureViewVisible(const views::View* view) {
 void AppsGridView::InitiateDrag(AppListItemView* view,
                                 Pointer pointer,
                                 const ui::LocatedEvent& event) {
+  DCHECK(view);
   if (drag_view_ || pulsing_blocks_model_.view_size())
     return;
 
@@ -222,8 +223,11 @@ void AppsGridView::InitiateDrag(AppListItemView* view,
 void AppsGridView::UpdateDrag(AppListItemView* view,
                               Pointer pointer,
                               const ui::LocatedEvent& event) {
-  if (!dragging() && drag_view_ &&
-      ExceededDragThreshold(event.location() - drag_start_)) {
+  // EndDrag was called before if |drag_view_| is NULL.
+  if (!drag_view_)
+    return;
+
+  if (!dragging() && ExceededDragThreshold(event.location() - drag_start_)) {
     drag_pointer_ = pointer;
     // Move the view to the front so that it appears on top of other views.
     ReorderChildView(drag_view_, -1);
@@ -258,10 +262,14 @@ void AppsGridView::UpdateDrag(AppListItemView* view,
 }
 
 void AppsGridView::EndDrag(bool cancel) {
+  // EndDrag was called before if |drag_view_| is NULL.
+  if (!drag_view_)
+    return;
+
   if (forward_events_to_drag_and_drop_host_) {
     forward_events_to_drag_and_drop_host_ = false;
     drag_and_drop_host_->EndDrag(cancel);
-  } else if (!cancel && dragging() && drag_view_) {
+  } else if (!cancel && dragging()) {
     CalculateDropTarget(last_drag_point_, true);
     if (IsValidIndex(drop_target_))
       MoveItemInModel(drag_view_, drop_target_);
@@ -276,10 +284,8 @@ void AppsGridView::EndDrag(bool cancel) {
 
   drag_pointer_ = NONE;
   drop_target_ = Index();
-  if (drag_view_) {
-    drag_view_ = NULL;
-    AnimateToIdealBounds();
-  }
+  drag_view_ = NULL;
+  AnimateToIdealBounds();
 
   page_flip_timer_.Stop();
   page_flip_target_ = -1;
