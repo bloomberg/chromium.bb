@@ -135,6 +135,8 @@ class NET_EXPORT_PRIVATE SimpleIndex
 
   void PostponeWritingToDisk();
 
+  void UpdateEntryIteratorSize(EntrySet::iterator* it, uint64 entry_size);
+
   // Using the mtime of the file and its mtime, detects if the index file is
   // stale.
   static bool IsIndexFileStale(const base::FilePath& index_filename);
@@ -190,7 +192,9 @@ class NET_EXPORT_PRIVATE SimpleIndex
   // PostponeWritingToDisk() may give up postponing and allow the write if it
   // has been a while since last time we wrote.
   base::TimeTicks last_write_to_disk_;
+
   base::OneShotTimer<SimpleIndex> write_to_disk_timer_;
+  base::Closure write_to_disk_cb_;
 
   typedef std::list<net::CompletionCallback> CallbackList;
   CallbackList to_run_when_initialized_;

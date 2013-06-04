@@ -152,8 +152,10 @@ SimpleIndex::SimpleIndex(base::SingleThreadTaskRunner* cache_thread,
       index_filename_(path.AppendASCII("the-real-index")),
       cache_thread_(cache_thread),
       io_thread_(io_thread),
-      app_on_background_(false) {
-}
+      // Creating the callback once so it is reused every time
+      // write_to_disk_timer_.Start() is called.
+      write_to_disk_cb_(base::Bind(&SimpleIndex::WriteToDisk, AsWeakPtr())),
+      app_on_background_(false) {}
 
 SimpleIndex::~SimpleIndex() {
   DCHECK(io_thread_checker_.CalledOnValidThread());
@@ -248,9 +250,12 @@ void SimpleIndex::Insert(const std::string& key) {
 
 void SimpleIndex::Remove(const std::string& key) {
   DCHECK(io_thread_checker_.CalledOnValidThread());
-  UpdateEntrySize(key, 0);
   const uint64 hash_key = simple_util::GetEntryHashKey(key);
-  entries_set_.erase(hash_key);
+  EntrySet::iterator it = entries_set_.find(hash_key);
+  if (it != entries_set_.end()) {
+    UpdateEntryIteratorSize(&it, 0);
+    entries_set_.erase(it);
+  }
 
   if (!initialized_)
     removed_entries_.insert(hash_key);
@@ -261,7 +266,7 @@ bool SimpleIndex::Has(const std::string& key) const {
   DCHECK(io_thread_checker_.CalledOnValidThread());
   // If not initialized, always return true, forcing it to go to the disk.
   return !initialized_ ||
-      entries_set_.count(simple_util::GetEntryHashKey(key)) != 0;
+         entries_set_.count(simple_util::GetEntryHashKey(key)) > 0;
 }
 
 bool SimpleIndex::UseIfExists(const std::string& key) {
@@ -332,11 +337,7 @@ bool SimpleIndex::UpdateEntrySize(const std::string& key, uint64 entry_size) {
   if (it == entries_set_.end())
     return false;
 
-  // Update the total cache size with the new entry size.
-  DCHECK(cache_size_ - it->second.GetEntrySize() <= cache_size_);
-  cache_size_ -= it->second.GetEntrySize();
-  cache_size_ += entry_size;
-  it->second.SetEntrySize(entry_size);
+  UpdateEntryIteratorSize(&it, entry_size);
   PostponeWritingToDisk();
   StartEvictionIfNeeded();
   return true;
@@ -370,9 +371,17 @@ void SimpleIndex::PostponeWritingToDisk() {
                                        : kWriteToDiskDelayMSecs;
   // If the timer is already active, Start() will just Reset it, postponing it.
   write_to_disk_timer_.Start(
-      FROM_HERE,
-      base::TimeDelta::FromMilliseconds(delay),
-      base::Bind(&SimpleIndex::WriteToDisk, AsWeakPtr()));
+      FROM_HERE, base::TimeDelta::FromMilliseconds(delay), write_to_disk_cb_);
+}
+
+void SimpleIndex::UpdateEntryIteratorSize(EntrySet::iterator* it,
+                                          uint64 entry_size) {
+  // Update the total cache size with the new entry size.
+  DCHECK(io_thread_checker_.CalledOnValidThread());
+  DCHECK_GE(cache_size_, (*it)->second.GetEntrySize());
+  cache_size_ -= (*it)->second.GetEntrySize();
+  cache_size_ += entry_size;
+  (*it)->second.SetEntrySize(entry_size);
 }
 
 // static
@@ -465,7 +474,7 @@ scoped_ptr<SimpleIndex::EntrySet> SimpleIndex::RestoreFromDisk(
   COMPILE_ASSERT(kSimpleEntryFileCount == 3,
                  file_pattern_must_match_file_count);
 
-  const int kFileSuffixLenght = std::string("_0").size();
+  const int kFileSuffixLength = sizeof("_0") - 1;
   const base::FilePath::StringType file_pattern = FILE_PATH_LITERAL("*_[0-2]");
   FileEnumerator enumerator(index_filename.DirName(),
                             false /* recursive */,
@@ -476,14 +485,13 @@ scoped_ptr<SimpleIndex::EntrySet> SimpleIndex::RestoreFromDisk(
     const base::FilePath::StringType base_name = file_path.BaseName().value();
     // Converting to std::string is OK since we never use UTF8 wide chars in our
     // file names.
-    const std::string hash_name(base_name.begin(), base_name.end());
-    const std::string hash_key_string =
-        hash_name.substr(0, hash_name.size() - kFileSuffixLenght);
+    const std::string hash_key_string(base_name.begin(),
+                                      base_name.end() - kFileSuffixLength);
     uint64 hash_key = 0;
     if (!simple_util::GetEntryHashKeyFromHexString(
             hash_key_string, &hash_key)) {
       LOG(WARNING) << "Invalid Entry Hash Key filename while restoring "
-                   << "Simple Index from disk: " << hash_name;
+                   << "Simple Index from disk: " << base_name;
       // TODO(felipeg): Should we delete the invalid file here ?
       continue;
     }

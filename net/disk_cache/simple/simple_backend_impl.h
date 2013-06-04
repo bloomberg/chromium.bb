@@ -5,13 +5,13 @@
 #ifndef NET_DISK_CACHE_SIMPLE_SIMPLE_BACKEND_IMPL_H_
 #define NET_DISK_CACHE_SIMPLE_SIMPLE_BACKEND_IMPL_H_
 
-#include <map>
 #include <string>
 #include <utility>
 #include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
+#include "base/hash_tables.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -84,7 +84,7 @@ class NET_EXPORT_PRIVATE SimpleBackendImpl : public Backend,
   virtual void OnExternalCacheHit(const std::string& key) OVERRIDE;
 
  private:
-  typedef std::map<uint64, base::WeakPtr<SimpleEntryImpl> > EntryMap;
+  typedef base::hash_map<uint64, base::WeakPtr<SimpleEntryImpl> > EntryMap;
 
   typedef base::Callback<void(uint64 max_size, int result)>
       InitializeIndexCallback;
