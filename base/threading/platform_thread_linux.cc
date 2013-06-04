@@ -75,7 +75,20 @@ void PlatformThread::SetName(const char* name) {
 // static
 void PlatformThread::SetThreadPriority(PlatformThreadHandle handle,
                                        ThreadPriority priority) {
-#ifndef OS_NACL
+#if !defined(OS_NACL)
+  if (priority == kThreadPriority_RealtimeAudio) {
+    const int kRealTimePrio = 8;
+
+    struct sched_param sched_param;
+    memset(&sched_param, 0, sizeof(sched_param));
+    sched_param.sched_priority = kRealTimePrio;
+
+    if (pthread_setschedparam(pthread_self(), SCHED_RR, &sched_param) == 0) {
+      // Got real time priority, no need to set nice level.
+      return;
+    }
+  }
+
   // setpriority(2) will set a thread's priority if it is passed a tid as
   // the 'process identifier', not affecting the rest of the threads in the
   // process. Setting this priority will only succeed if the user has been
@@ -84,7 +97,7 @@ void PlatformThread::SetThreadPriority(PlatformThreadHandle handle,
   int kNiceSetting = ThreadNiceValue(priority);
   if (setpriority(PRIO_PROCESS, handle.id_, kNiceSetting))
     LOG(ERROR) << "Failed to set nice value of thread to " << kNiceSetting;
-#endif
+#endif  // !OS_NACL
 }
 
 void InitThreading() {
