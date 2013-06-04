@@ -501,10 +501,18 @@ def GenerateBlameList(source_repo, lkgm_path, only_print_chumps=False):
       continue
 
     revision = handler.projects[project]['revision']
-    result = cros_build_lib.RunCommand(['git', 'log', '--pretty=full',
-                                        '%s..HEAD' % revision],
-                                       print_cmd=False, redirect_stdout=True,
-                                       cwd=src_path)
+    try:
+      result = cros_build_lib.RunCommand(['git', 'log', '--pretty=full',
+                                          '%s..HEAD' % revision],
+                                         print_cmd=False, redirect_stdout=True,
+                                         cwd=src_path)
+    except cros_build_lib.RunCommandError as ex:
+      # Git returns 128 when the revision does not exist.
+      if ex.returncode != 128:
+        raise
+      cros_build_lib.Warning('Detected branch removed from local checkout.')
+      cros_build_lib.PrintBuildbotStepWarnings()
+      return
     current_author = None
     current_committer = None
     for line in unicode(result.output, 'ascii', 'ignore').splitlines():
