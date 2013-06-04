@@ -56,7 +56,7 @@ class BookmarkBubbleGtk : public BubbleDelegateGtk,
                     bool newly_bookmarked);
   virtual ~BookmarkBubbleGtk();
 
-  // Notified when |content_| is destroyed so we can delete our instance.
+  // Notified when the content is destroyed so we can delete our instance.
   CHROMEGTK_CALLBACK_0(BookmarkBubbleGtk, void, OnDestroy);
   CHROMEGTK_CALLBACK_0(BookmarkBubbleGtk, void, OnNameActivate);
   CHROMEGTK_CALLBACK_0(BookmarkBubbleGtk, void, OnFolderChanged);
@@ -89,10 +89,6 @@ class BookmarkBubbleGtk : public BubbleDelegateGtk,
 
   // The widget relative to which we are positioned.
   GtkWidget* anchor_;
-
-  // We let the BubbleGtk own our content, and then we delete ourself
-  // when the widget is destroyed (when the BubbleGtk is destroyed).
-  GtkWidget* content_;
 
   // The button that removes the bookmark.
   GtkWidget* remove_button_;
