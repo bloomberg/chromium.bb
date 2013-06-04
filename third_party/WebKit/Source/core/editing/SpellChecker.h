@@ -83,6 +83,7 @@ public:
     bool isCheckable(Range*) const;
 
     void requestCheckingFor(PassRefPtr<SpellCheckRequest>);
+    void cancelCheck();
 
     int lastRequestSequence() const
     {

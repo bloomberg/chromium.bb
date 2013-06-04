@@ -3091,6 +3091,68 @@ TEST_F(WebFrameTest, MarkerHashIdentifiers) {
     m_webView = 0;
 }
 
+class StubbornSpellCheckClient : public WebSpellCheckClient {
+public:
+    StubbornSpellCheckClient() : m_completion(0) { }
+    virtual ~StubbornSpellCheckClient() { }
+
+    virtual void requestCheckingOfText(
+        const WebKit::WebString&,
+        const WebKit::WebVector<uint32_t>&,
+        const WebKit::WebVector<unsigned>&,
+        WebKit::WebTextCheckingCompletion* completion) OVERRIDE
+    {
+        m_completion = completion;
+    }
+
+    void kick()
+    {
+        if (!m_completion)
+            return;
+        Vector<WebTextCheckingResult> results;
+        const int misspellingStartOffset = 1;
+        const int misspellingLength = 8;
+        results.append(WebTextCheckingResult(WebTextCheckingTypeSpelling, misspellingStartOffset, misspellingLength));
+        m_completion->didFinishCheckingText(results);
+        m_completion = 0;
+    }
+
+private:
+    WebKit::WebTextCheckingCompletion* m_completion;
+};
+
+TEST_F(WebFrameTest, SlowSpellcheckMarkerPosition)
+{
+    registerMockedHttpURLLoad("spell.html");
+    m_webView = FrameTestHelpers::createWebViewAndLoad(m_baseURL + "spell.html");
+
+    StubbornSpellCheckClient spellcheck;
+    m_webView->setSpellCheckClient(&spellcheck);
+
+    WebFrameImpl* frame = static_cast<WebFrameImpl*>(m_webView->mainFrame());
+    WebInputElement webInputElement = frame->document().getElementById("data").to<WebInputElement>();
+    Document* document = frame->frame()->document();
+    Element* element = document->getElementById("data");
+
+    m_webView->settings()->setAsynchronousSpellCheckingEnabled(true);
+    m_webView->settings()->setUnifiedTextCheckerEnabled(true);
+    m_webView->settings()->setEditingBehavior(WebSettings::EditingBehaviorWin);
+
+    element->focus();
+    document->execCommand("InsertText", false, "wellcome ");
+    webInputElement.setSelectionRange(0, 0);
+    document->execCommand("InsertText", false, "he");
+
+    spellcheck.kick();
+
+    WebVector<uint32_t> documentMarkers;
+    m_webView->spellingMarkers(&documentMarkers);
+    EXPECT_EQ(0U, documentMarkers.size());
+
+    m_webView->close();
+    m_webView = 0;
+}
+
 class TestAccessInitialDocumentWebFrameClient : public WebFrameClient {
 public:
     TestAccessInitialDocumentWebFrameClient() : m_didAccessInitialDocument(false)

@@ -127,6 +127,8 @@ void SpellCheckClient::requestCheckingOfText(
 
 void SpellCheckClient::finishLastTextCheck()
 {
+    if (!m_lastRequestedTextCheckingCompletion)
+        return;
     vector<WebTextCheckingResult> results;
     int offset = 0;
     string16 text = m_lastRequestedTextCheckString;
