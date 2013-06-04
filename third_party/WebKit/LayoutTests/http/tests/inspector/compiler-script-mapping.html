@@ -153,7 +153,6 @@ function test()
                 defaultScriptMapping.addScript(script);
                 resourceScriptMapping.addScript(script);
                 mapping.addScript(script);
-                afterScriptAdded();
             }
 
             function originalUISourceCodeAdded(uiSourceCode)
@@ -173,7 +172,10 @@ function test()
                 InspectorTest.waitForWorkspaceUISourceCodeAddedEvent(secondUISourceCodeAdded);
             }
 
-            function secondUISourceCodeAdded(uiSourceCode) { }
+            function secondUISourceCodeAdded(uiSourceCode)
+            {
+                afterScriptAdded();
+            }
 
             function afterScriptAdded(uiSourceCode)
             {
@@ -220,20 +222,25 @@ function test()
                 script.sourceMapURL = "http://localhost:8000/inspector/resources/source-map.json";
                 defaultScriptMapping.addScript(script);
                 resourceScriptMapping.addScript(script);
-                InspectorTest.waitForWorkspaceUISourceCodeAddedEvent(firstUISourceCodeAdded);
                 mapping.addScript(script);
                 InspectorTest.waitForWorkspaceUISourceCodeAddedEvent(originalResourceUISourceCodeAdded);
                 InspectorTest.addMockUISourceCodeToWorkspace("compiled.js", WebInspector.resourceTypes.Script, "");
-                afterScriptAdded();
+                InspectorTest.waitForWorkspaceUISourceCodeAddedEvent(firstUISourceCodeAdded);
             }
 
-            function originalResourceUISourceCodeAdded(uiSourceCode) {
+            function originalResourceUISourceCodeAdded(uiSourceCode)
+            {
                 originalUISourceCode = uiSourceCode;
             }
 
             function firstUISourceCodeAdded(uiSourceCode)
             {
-                InspectorTest.waitForWorkspaceUISourceCodeAddedEvent(function() { });
+                InspectorTest.waitForWorkspaceUISourceCodeAddedEvent(secondUISourceCodeAdded);
+            }
+
+            function secondUISourceCodeAdded(uiSourceCode)
+            {
+                afterScriptAdded();
             }
 
             function afterScriptAdded(uiSourceCode)
@@ -279,29 +286,29 @@ function test()
             };
             script.sourceMapURL = "data:application/json;base64," + btoa(JSON.stringify(sourceMap));
             InspectorTest.waitForWorkspaceUISourceCodeAddedEvent(compiledUISourceCodeAdded);
+            defaultScriptMapping.addScript(script);
+            resourceScriptMapping.addScript(script);
+            mapping.addScript(script);
 
             function compiledUISourceCodeAdded(uiSourceCode)
             {
                 InspectorTest.waitForWorkspaceUISourceCodeAddedEvent(originalUISourceCodeAdded);
             }
 
-            function originalUISourceCodeAdded(uiSourceCode) { }
-            
-            defaultScriptMapping.addScript(script);
-            resourceScriptMapping.addScript(script);
-            mapping.addScript(script);
-
-            var uiSourceCode = InspectorTest.testWorkspace.uiSourceCodeForOriginURL("http://example.com/source.js");
-
-            InspectorTest.checkUILocation(uiSourceCode, 2, 4, mapping.rawLocationToUILocation(WebInspector.debuggerModel.createRawLocation(script, 0, 18)));
-            InspectorTest.checkRawLocation(script, 0, 18, mapping.uiLocationToRawLocation(uiSourceCode, 2, 4));
-
-            uiSourceCode.requestContent(didRequestContent);
-
-            function didRequestContent(content, contentEncoded, mimeType)
+            function originalUISourceCodeAdded(uiSourceCode)
             {
-                InspectorTest.addResult("<source content> === " + content);
-                next();
+                var uiSourceCode = InspectorTest.testWorkspace.uiSourceCodeForOriginURL("http://example.com/source.js");
+
+                InspectorTest.checkUILocation(uiSourceCode, 2, 4, mapping.rawLocationToUILocation(WebInspector.debuggerModel.createRawLocation(script, 0, 18)));
+                InspectorTest.checkRawLocation(script, 0, 18, mapping.uiLocationToRawLocation(uiSourceCode, 2, 4));
+
+                uiSourceCode.requestContent(didRequestContent);
+
+                function didRequestContent(content, contentEncoded, mimeType)
+                {
+                    InspectorTest.addResult("<source content> === " + content);
+                    next();
+                }
             }
         },
 

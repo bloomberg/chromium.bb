@@ -1548,7 +1548,6 @@ crbug.com/234278 storage/indexeddb/transaction-error.html [ Failure Pass ]
 
 crbug.com/241481 http/tests/w3c/webperf/approved/navigation-timing/html/test_timing_attributes_order.html [ Failure Pass ]
 
-crbug.com/241577 http/tests/inspector/compiler-script-mapping.html [ Failure Pass Timeout ]
 
 crbug.com/241665 fast/events/touch/emulate-touch-events.html [ Failure Pass ]
 

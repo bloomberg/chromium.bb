@@ -19,7 +19,6 @@ function test()
     InspectorTest.addMockUISourceCodeToWorkspace(styleSheetURL, WebInspector.resourceTypes.Stylesheet, "");
 
     cssModel._styleSheetAdded(createMockStyleSheetHeader(styleSheetURL, sourceMapURL));
-    afterStyleSheetAdded();
 
     function createMockStyleSheetHeader(url, sourceMapURL)
     {
@@ -55,6 +54,7 @@ function test()
 
     function scssUISourceCodeAdded(uiSourceCode)
     {
+        afterStyleSheetAdded();
     }
 
     function rawLocationToUILocation(line, column)
