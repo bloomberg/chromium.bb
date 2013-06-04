@@ -115,21 +115,11 @@ define i32 @main() {
           self.platform,
           [],
           expected_triple_cpu)
-      # Test that the default StreamInit is used, when no flags are given.
-      # Temporarily not true for ARM, due to
-      # https://code.google.com/p/nativeclient/issues/detail?id=3437
-      if self.platform == 'arm':
-        self.checkLLCTranslateFlags(
-            pexe,
-            self.platform,
-            ['--pnacl-sb'],
-            ['StreamInitWithOverrides.*global-merge=0'])
-      else:
-        self.checkLLCTranslateFlags(
-            pexe,
-            self.platform,
-            ['--pnacl-sb'],
-            ['StreamInit h'])
+      self.checkLLCTranslateFlags(
+          pexe,
+          self.platform,
+          ['--pnacl-sb'],
+          ['StreamInit h'])
 
   def test_overrideO0(self):
     if driver_test_utils.CanRunHost():
