@@ -19,7 +19,8 @@ namespace {
 
 class FakeDevToolsClient : public StubDevToolsClient {
  public:
-  explicit FakeDevToolsClient(const std::string& id) : id_(id) {}
+  explicit FakeDevToolsClient(const std::string& id)
+      : id_(id), listener_(NULL) {}
   virtual ~FakeDevToolsClient() {}
 
   std::string PopSentCommand() {
@@ -50,6 +51,7 @@ class FakeDevToolsClient : public StubDevToolsClient {
   }
 
   virtual void AddListener(DevToolsEventListener* listener) OVERRIDE {
+    CHECK(!listener_);
     listener_ = listener;
   }
 
@@ -58,9 +60,9 @@ class FakeDevToolsClient : public StubDevToolsClient {
   }
 
  private:
-  const std::string id_;
-  std::list<std::string> sent_command_queue_;
-  DevToolsEventListener* listener_;
+  const std::string id_;  // WebView id.
+  std::list<std::string> sent_command_queue_;  // Commands that were sent.
+  DevToolsEventListener* listener_;  // The fake allows only one event listener.
 };
 
 struct LogEntry {
@@ -76,29 +78,34 @@ struct LogEntry {
 
 class FakeLog : public Log {
  public:
-  virtual void AddEntry(const base::Time& time,
+  virtual void AddEntryTimestamped(const base::Time& timestamp,
                         Level level,
                         const std::string& message) OVERRIDE;
 
-  ScopedVector<LogEntry> entries;
+  const ScopedVector<LogEntry>& GetEntries() {
+    return entries_;
+  }
+
+ private:
+  ScopedVector<LogEntry> entries_;
 };
 
-void FakeLog::AddEntry(
-    const base::Time& time, Level level, const std::string& message) {
-  entries.push_back(new LogEntry(time, level, message));
+void FakeLog::AddEntryTimestamped(
+    const base::Time& timestamp, Level level, const std::string& message) {
+  entries_.push_back(new LogEntry(timestamp, level, message));
 }
 
 scoped_ptr<DictionaryValue> ParseDictionary(const std::string& json) {
   std::string error;
   scoped_ptr<Value> value(base::JSONReader::ReadAndReturnError(
       json, base::JSON_PARSE_RFC, NULL, &error));
-  if (NULL == value) {
+  if (value == NULL) {
     SCOPED_TRACE(json.c_str());
     SCOPED_TRACE(error.c_str());
     ADD_FAILURE();
     return scoped_ptr<DictionaryValue>(NULL);
   }
-  DictionaryValue* dict = 0;
+  DictionaryValue* dict = NULL;
   if (!value->GetAsDictionary(&dict)) {
     SCOPED_TRACE("JSON object is not a dictionary");
     ADD_FAILURE();
@@ -107,29 +114,29 @@ scoped_ptr<DictionaryValue> ParseDictionary(const std::string& json) {
   return scoped_ptr<DictionaryValue>(dict->DeepCopy());
 }
 
-void ValidateLogEntry(LogEntry *entry,
-                      const char* expect_webview,
-                      const char* expect_method) {
+void ValidateLogEntry(const LogEntry *entry,
+                      const std::string& expected_webview,
+                      const std::string& expected_method) {
   EXPECT_EQ(Log::kLog, entry->level);
   EXPECT_LT(0, entry->timestamp.ToTimeT());
 
   scoped_ptr<base::DictionaryValue> message(ParseDictionary(entry->message));
   std::string webview;
   EXPECT_TRUE(message->GetString("webview", &webview));
-  EXPECT_STREQ(expect_webview, webview.c_str());
+  EXPECT_EQ(expected_webview, webview);
   std::string method;
   EXPECT_TRUE(message->GetString("message.method", &method));
-  EXPECT_STREQ(expect_method, method.c_str());
+  EXPECT_EQ(expected_method, method);
   DictionaryValue* params;
   EXPECT_TRUE(message->GetDictionary("message.params", &params));
   EXPECT_EQ(0u, params->size());
 }
 
 void ExpectEnableDomains(FakeDevToolsClient& client) {
-  EXPECT_STREQ("Network.enable", client.PopSentCommand().c_str());
-  EXPECT_STREQ("Page.enable", client.PopSentCommand().c_str());
-  EXPECT_STREQ("Timeline.start", client.PopSentCommand().c_str());
-  EXPECT_STREQ("", client.PopSentCommand().c_str());
+  EXPECT_EQ("Network.enable", client.PopSentCommand());
+  EXPECT_EQ("Page.enable", client.PopSentCommand());
+  EXPECT_EQ("Timeline.start", client.PopSentCommand());
+  EXPECT_TRUE(client.PopSentCommand().empty());
 }
 
 }  // namespace
@@ -147,9 +154,9 @@ TEST(PerformanceLogger, OneWebView) {
   // Ignore -- different domain.
   ASSERT_EQ(kOk, client.TriggerEvent("Console.bad").code());
 
-  ASSERT_EQ(2u, log.entries.size());
-  ValidateLogEntry(log.entries[0], "webview-1", "Network.gaga");
-  ValidateLogEntry(log.entries[1], "webview-1", "Page.ulala");
+  ASSERT_EQ(2u, log.GetEntries().size());
+  ValidateLogEntry(log.GetEntries()[0], "webview-1", "Network.gaga");
+  ValidateLogEntry(log.GetEntries()[1], "webview-1", "Page.ulala");
 }
 
 TEST(PerformanceLogger, TwoWebViews) {
@@ -167,12 +174,12 @@ TEST(PerformanceLogger, TwoWebViews) {
   // OnConnected sends the enable command only to that client, not others.
   client1.ConnectIfNecessary();
   ExpectEnableDomains(client1);
-  EXPECT_STREQ("", client2.PopSentCommand().c_str());
+  EXPECT_TRUE(client2.PopSentCommand().empty());;
 
   ASSERT_EQ(kOk, client1.TriggerEvent("Page.gaga1").code());
   ASSERT_EQ(kOk, client2.TriggerEvent("Timeline.gaga2").code());
 
-  ASSERT_EQ(2u, log.entries.size());
-  ValidateLogEntry(log.entries[0], "webview-1", "Page.gaga1");
-  ValidateLogEntry(log.entries[1], "webview-2", "Timeline.gaga2");
+  ASSERT_EQ(2u, log.GetEntries().size());
+  ValidateLogEntry(log.GetEntries()[0], "webview-1", "Page.gaga1");
+  ValidateLogEntry(log.GetEntries()[1], "webview-2", "Timeline.gaga2");
 }

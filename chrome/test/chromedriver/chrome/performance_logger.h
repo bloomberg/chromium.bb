@@ -20,15 +20,19 @@ class Log;
 // }
 class PerformanceLogger : public DevToolsEventListener {
  public:
+  // Creates a PerformanceLogger that creates entries in the given Log object.
+  // The log is owned elsewhere and must not be null.
   explicit PerformanceLogger(Log* log);
 
+  // Enables Page,Network,Timeline events for client, which must not be null.
   virtual Status OnConnected(DevToolsClient* client) OVERRIDE;
+  // Translates an event into a log entry.
   virtual Status OnEvent(DevToolsClient* client,
                          const std::string& method,
                          const base::DictionaryValue& params) OVERRIDE;
 
  private:
-  Log* log_;
+  Log* log_;  // The log where to create entries.
 
   DISALLOW_COPY_AND_ASSIGN(PerformanceLogger);
 };

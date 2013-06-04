@@ -78,8 +78,8 @@ std::string ConvertForDisplay(const std::string& input) {
 
 }  // namespace
 
-void Log::AddEntry(Log::Level level, const std::string& message) {
-  return AddEntry(base::Time::Now(), level, message);
+void Log::AddEntry(Level level, const std::string& message) {
+ AddEntryTimestamped(base::Time::Now(), level, message);
 }
 
 Logger::Logger() : min_log_level_(kLog), start_(base::Time::Now()) {}
@@ -89,9 +89,9 @@ Logger::Logger(Level min_log_level)
 
 Logger::~Logger() {}
 
-void Logger::AddEntry(const base::Time& time,
-                      Level level,
-                      const std::string& message) {
+void Logger::AddEntryTimestamped(const base::Time& timestamp,
+                                 Level level,
+                                 const std::string& message) {
   if (level < min_log_level_)
     return;
 
@@ -114,7 +114,7 @@ void Logger::AddEntry(const base::Time& time,
   }
   std::string entry =
       base::StringPrintf("[%.3lf][%s]: %s",
-                         base::TimeDelta(time - start_).InSecondsF(),
+                         base::TimeDelta(timestamp - start_).InSecondsF(),
                          level_name,
                          ConvertForDisplay(message).c_str());
   const char* format = "%s\n";

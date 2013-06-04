@@ -14,16 +14,16 @@
 namespace {
 
 // DevTools event domain prefixes to intercept.
-const char* kDomains[] = {"Network.", "Page.", "Timeline."};
+const char* const kDomains[] = {"Network.", "Page.", "Timeline."};
 
-const char* kDomainEnableCommands[] = {
+const char* const kDomainEnableCommands[] = {
     "Network.enable", "Page.enable", "Timeline.start"
 };
 
 // Returns whether the event belongs to one of kDomains.
 bool ShouldLogEvent(const std::string& method) {
   for (size_t i_domain = 0; i_domain < arraysize(kDomains); ++i_domain) {
-    if (StartsWithASCII(method, kDomains[i_domain], true))
+    if (StartsWithASCII(method, kDomains[i_domain], true /* case_sensitive */))
       return true;
   }
   return false;

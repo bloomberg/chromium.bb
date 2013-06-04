@@ -12,7 +12,7 @@
 
 namespace {
 
-static const char* kAllWdLevels[] = {
+const char* const kAllWdLevels[] = {
   "ALL", "DEBUG", "INFO", "WARNING", "SEVERE", "OFF"
 };
 
@@ -46,16 +46,16 @@ namespace {
 
 void ValidateLogEntry(base::ListValue *entries,
                       int index,
-                      const char* expect_level,
-                      const char* expect_message) {
+                      const std::string& expected_level,
+                      const std::string& expected_message) {
   const base::DictionaryValue *entry;
   ASSERT_TRUE(entries->GetDictionary(index, &entry));
   std::string level;
   EXPECT_TRUE(entry->GetString("level", &level));
-  EXPECT_STREQ(expect_level, level.c_str());
+  EXPECT_EQ(expected_level, level);
   std::string message;
   ASSERT_TRUE(entry->GetString("message", &message));
-  EXPECT_STREQ(expect_message, message.c_str());
+  EXPECT_EQ(expected_message, message);
   double timestamp = 0;
   EXPECT_TRUE(entry->GetDouble("timestamp", &timestamp));
   EXPECT_LT(0, timestamp);
@@ -109,8 +109,8 @@ TEST(Logging, CreatePerformanceLog) {
   ASSERT_TRUE(status.IsOk());
   ASSERT_EQ(2u, logs.size());
   ASSERT_EQ(2u, listeners.size());
-  ASSERT_STREQ("performance", logs[0]->GetType().c_str());
-  ASSERT_STREQ("browser", logs[1]->GetType().c_str());  // Always created.
+  ASSERT_EQ("performance", logs[0]->GetType());
+  ASSERT_EQ("browser", logs[1]->GetType());  // Always created.
 }
 
 TEST(Logging, CreateBrowserLogOff) {
@@ -124,7 +124,7 @@ TEST(Logging, CreateBrowserLogOff) {
   ASSERT_TRUE(status.IsOk());
   ASSERT_EQ(1u, logs.size());
   ASSERT_EQ(0u, listeners.size());
-  ASSERT_STREQ("browser", logs[0]->GetType().c_str());
+  ASSERT_EQ("browser", logs[0]->GetType());
 
   // Verify the created log is "OFF" -- drops all messages.
   logs[0]->AddEntry(Log::kError, "drop even errors");
@@ -143,7 +143,7 @@ TEST(Logging, IgnoreUnknownLogType) {
   EXPECT_TRUE(status.IsOk());
   ASSERT_EQ(1u, logs.size());
   ASSERT_EQ(1u, listeners.size());
-  ASSERT_STREQ("browser", logs[0]->GetType().c_str());
+  ASSERT_EQ("browser", logs[0]->GetType());
 }
 
 TEST(Logging, BrowserLogCreatedWithoutLoggingPrefs) {
@@ -155,7 +155,7 @@ TEST(Logging, BrowserLogCreatedWithoutLoggingPrefs) {
   EXPECT_TRUE(status.IsOk());
   ASSERT_EQ(1u, logs.size());
   ASSERT_EQ(1u, listeners.size());
-  ASSERT_STREQ("browser", logs[0]->GetType().c_str());
+  ASSERT_EQ("browser", logs[0]->GetType());
 
   // Verify the created "browser" log is "INFO" level.
   logs[0]->AddEntry(Log::kLog, "info message");

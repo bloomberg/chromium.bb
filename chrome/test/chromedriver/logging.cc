@@ -17,7 +17,7 @@ namespace {
 
 // Map between WebDriverLog::WebDriverLevel and its name in WD wire protocol.
 // Array indices are the WebDriverLog::WebDriverLevel enum values.
-const char* kWebDriverLevelNames[] = {
+const char* const kWebDriverLevelNames[] = {
   "ALL", "DEBUG", "INFO", "WARNING", "SEVERE", "OFF"
 };
 
@@ -30,18 +30,20 @@ WebDriverLog::WebDriverLevel kLogLevelToWebDriverLevels[] = {
   WebDriverLog::kWdSevere  // kError
 };
 
+// Translates Log::Level to WebDriverLog::WebDriverLevel.
 WebDriverLog::WebDriverLevel LogLevelToWebDriverLevel(Log::Level level) {
   const int index = level - Log::kDebug;
-  CHECK(index >= 0);
-  CHECK(static_cast<size_t>(index) < arraysize(kLogLevelToWebDriverLevels));
+  CHECK_GE(index, 0);
+  CHECK_LT(static_cast<size_t>(index), arraysize(kLogLevelToWebDriverLevels));
   return kLogLevelToWebDriverLevels[index];
 }
 
+// Returns WD wire protocol level name for a WebDriverLog::WebDriverLevel.
 std::string GetWebDriverLevelName(
     const WebDriverLog::WebDriverLevel level) {
   const int index = level - WebDriverLog::kWdAll;
-  CHECK(index >= 0);
-  CHECK(static_cast<size_t>(index) < arraysize(kWebDriverLevelNames));
+  CHECK_GE(index, 0);
+  CHECK_LT(static_cast<size_t>(index), arraysize(kWebDriverLevelNames));
   return kWebDriverLevelNames[index];
 }
 
@@ -51,7 +53,8 @@ bool WebDriverLog::NameToLevel(
     const std::string& name, WebDriverLog::WebDriverLevel* out_level) {
   for (size_t i = 0; i < arraysize(kWebDriverLevelNames); ++i) {
     if (name == kWebDriverLevelNames[i]) {
-      CHECK(WebDriverLog::kWdAll + i <= WebDriverLog::kWdOff);
+      CHECK_LE(WebDriverLog::kWdAll + i,
+               static_cast<size_t>(WebDriverLog::kWdOff));
       *out_level =
           static_cast<WebDriverLog::WebDriverLevel>(WebDriverLog::kWdAll + i);
       return true;
@@ -70,21 +73,22 @@ WebDriverLog::WebDriverLog(
 
 WebDriverLog::~WebDriverLog() {
   VLOG(1) << "Log type '" << type_ << "' lost "
-      << entries_->GetSize() << " entries on destruction";
+          << entries_->GetSize() << " entries on destruction";
 }
 
 const std::string& WebDriverLog::GetType() {
   return type_;
 }
 
-void WebDriverLog::AddEntry(const base::Time& time,
-                            Log::Level level,
-                            const std::string& message) {
+void WebDriverLog::AddEntryTimestamped(const base::Time& timestamp,
+                                       Log::Level level,
+                                       const std::string& message) {
   const WebDriverLog::WebDriverLevel wd_level = LogLevelToWebDriverLevel(level);
   if (wd_level < min_wd_level_)
     return;
   scoped_ptr<base::DictionaryValue> log_entry_dict(new base::DictionaryValue());
-  log_entry_dict->SetDouble("timestamp", static_cast<int64>(time.ToJsTime()));
+  log_entry_dict->SetDouble("timestamp",
+                            static_cast<int64>(timestamp.ToJsTime()));
   log_entry_dict->SetString("level", GetWebDriverLevelName(wd_level));
   log_entry_dict->SetString("message", message);
   entries_->Append(log_entry_dict.release());

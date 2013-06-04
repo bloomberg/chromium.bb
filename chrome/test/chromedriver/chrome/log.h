@@ -10,9 +10,10 @@
 #include "base/compiler_specific.h"
 #include "base/time.h"
 
-// Accepts log entries that have a level, timestamp, and a string message.
+// Abstract class for logging entries with a level, timestamp, string message.
 class Log {
  public:
+  // Log entry severity level.
   enum Level {
     kDebug,
     kLog,
@@ -22,12 +23,12 @@ class Log {
 
   virtual ~Log() {}
 
-  // Log a message with an explicit timestamp.
-  virtual void AddEntry(const base::Time& time,
-                        Level level,
-                        const std::string& message) = 0;
+  // Adds an entry to the log.
+  virtual void AddEntryTimestamped(const base::Time& timestamp,
+                                   Level level,
+                                   const std::string& message) = 0;
 
-  // Implicit timestamp, default to current time.
+  // Adds an entry to the log, timestamped with the current time.
   void AddEntry(Level level, const std::string& message);
 };
 
@@ -39,9 +40,9 @@ class Logger : public Log {
   explicit Logger(Level min_log_level);
   virtual ~Logger();
 
-  virtual void AddEntry(const base::Time& time,
-                        Level level,
-                        const std::string& message) OVERRIDE;
+  virtual void AddEntryTimestamped(const base::Time& timestamp,
+                                   Level level,
+                                   const std::string& message) OVERRIDE;
 
  private:
   Level min_log_level_;

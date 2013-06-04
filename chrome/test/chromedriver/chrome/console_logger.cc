@@ -4,10 +4,9 @@
 
 #include "chrome/test/chromedriver/chrome/console_logger.h"
 
-#include <sstream>
-
 #include "base/json/json_writer.h"
-#include "base/string_util.h"
+#include "base/logging.h"
+#include "base/stringprintf.h"
 #include "base/values.h"
 #include "chrome/test/chromedriver/chrome/devtools_client.h"
 #include "chrome/test/chromedriver/chrome/log.h"
@@ -15,14 +14,15 @@
 
 namespace {
 
+// Translates Console.messageAdded.message.level into Log::Level.
 bool ConsoleLevelToLogLevel(const std::string& name, Log::Level *out_level) {
-  const char* kConsoleLevelNames[] = {
+  const char* const kConsoleLevelNames[] = {
     "debug", "log", "warning", "error"
   };
 
   for (size_t i = 0; i < arraysize(kConsoleLevelNames); ++i) {
     if (name == kConsoleLevelNames[i]) {
-      CHECK(Log::kDebug + i <= Log::kError);
+      CHECK_LE(Log::kDebug + i, static_cast<size_t>(Log::kError));
       *out_level = static_cast<Log::Level>(Log::kDebug + i);
       return true;
     }
@@ -40,51 +40,52 @@ Status ConsoleLogger::OnConnected(DevToolsClient* client) {
   return client->SendCommand("Console.enable", params);
 }
 
-Status ConsoleLogger::OnEvent(DevToolsClient* client,
-                              const std::string& method,
-                              const base::DictionaryValue& params) {
-  if (!StartsWithASCII(method, "Console.messageAdded", true))
+Status ConsoleLogger::OnEvent(
+    DevToolsClient* client,
+    const std::string& method,
+    const base::DictionaryValue& params) {
+  if (method != "Console.messageAdded")
     return Status(kOk);
 
   // If the event has proper structure and fields, log formatted.
   // Else it's a weird message that we don't know how to format, log full JSON.
   const base::DictionaryValue *message_dict = NULL;
   if (params.GetDictionary("message", &message_dict)) {
-    std::ostringstream message;
-    std::string origin;
-    if (message_dict->GetString("url", &origin) && !origin.empty()) {
-      message << origin;
-    } else if (message_dict->GetString("source", &origin) && !origin.empty()) {
-      message << origin;
-    } else {
-      message << "unknown";
-    }
-
-    int line = -1;
-    if (message_dict->GetInteger("line", &line)) {
-      message << " " << line;
-      int column = -1;
-      if (message_dict->GetInteger("column", &column)) {
-        message << ":" << column;
-      }
-    } else {
-      // No line number, but print anyway, just to maintain the number of
-      // fields in the formatted message in case someone wants to parse it.
-      message << " -";
-    }
-
     std::string text;
-    if (message_dict->GetString("text", &text)) {
-      message << " " << text;
+    std::string level_name;
+    Log::Level level = Log::kLog;
+    if (message_dict->GetString("text", &text) && !text.empty() &&
+        message_dict->GetString("level", &level_name) &&
+        ConsoleLevelToLogLevel(level_name, &level)) {
 
-      std::string level_name;
-      Log::Level level = Log::kLog;
-      if (message_dict->GetString("level", &level_name)) {
-        if (ConsoleLevelToLogLevel(level_name, &level)) {
-          log_->AddEntry(level, message.str());  // Found all expected fields.
-          return Status(kOk);
-        }
+      const char* origin_cstr = "unknown";
+      std::string origin;
+      if ((message_dict->GetString("url", &origin) && !origin.empty()) ||
+          (message_dict->GetString("source", &origin) && !origin.empty())) {
+        origin_cstr = origin.c_str();
       }
+
+      std::string line_column;
+      int line = -1;
+      if (message_dict->GetInteger("line", &line)) {
+        int column = -1;
+        if (message_dict->GetInteger("column", &column)) {
+          base::SStringPrintf(&line_column, "%d:%d", line, column);
+        } else {
+          base::SStringPrintf(&line_column, "%d", line);
+        }
+      } else {
+        // No line number, but print anyway, just to maintain the number of
+        // fields in the formatted message in case someone wants to parse it.
+        line_column = "-";
+      }
+
+      log_->AddEntry(level,
+                     base::StringPrintf("%s %s %s",
+                                        origin_cstr,
+                                        line_column.c_str(),
+                                        text.c_str()));
+      return Status(kOk);
     }
   }
 

@@ -18,7 +18,8 @@ namespace {
 
 class FakeDevToolsClient : public StubDevToolsClient {
  public:
-  explicit FakeDevToolsClient(const std::string& id) : id_(id) {}
+  explicit FakeDevToolsClient(const std::string& id)
+      : id_(id), listener_(NULL) {}
   virtual ~FakeDevToolsClient() {}
 
   std::string PopSentCommand() {
@@ -49,6 +50,7 @@ class FakeDevToolsClient : public StubDevToolsClient {
   }
 
   virtual void AddListener(DevToolsEventListener* listener) OVERRIDE {
+    CHECK(!listener_);
     listener_ = listener;
   }
 
@@ -57,9 +59,9 @@ class FakeDevToolsClient : public StubDevToolsClient {
   }
 
  private:
-  const std::string id_;
-  std::list<std::string> sent_command_queue_;
-  DevToolsEventListener* listener_;
+  const std::string id_;  // WebView id.
+  std::list<std::string> sent_command_queue_;  // Commands that were sent.
+  DevToolsEventListener* listener_;  // The fake allows only one event listener.
 };
 
 struct LogEntry {
@@ -75,24 +77,29 @@ struct LogEntry {
 
 class FakeLog : public Log {
  public:
-  virtual void AddEntry(const base::Time& time,
-                        Level level,
-                        const std::string& message) OVERRIDE;
+  virtual void AddEntryTimestamped(const base::Time& timestamp,
+                                   Level level,
+                                   const std::string& message) OVERRIDE;
 
-  ScopedVector<LogEntry> entries;
+  const ScopedVector<LogEntry>& GetEntries() {
+    return entries_;
+  }
+
+private:
+  ScopedVector<LogEntry> entries_;
 };
 
-void FakeLog::AddEntry(
-    const base::Time& time, Level level, const std::string& message) {
-  entries.push_back(new LogEntry(time, level, message));
+void FakeLog::AddEntryTimestamped(
+    const base::Time& timestamp, Level level, const std::string& message) {
+  entries_.push_back(new LogEntry(timestamp, level, message));
 }
 
-void ValidateLogEntry(LogEntry *entry,
-                      Log::Level expect_level,
-                      const char* expect_message) {
-  EXPECT_EQ(expect_level, entry->level);
+void ValidateLogEntry(const LogEntry *entry,
+                      Log::Level expected_level,
+                      const std::string& expected_message) {
+  EXPECT_EQ(expected_level, entry->level);
   EXPECT_LT(0, entry->timestamp.ToTimeT());
-  EXPECT_STREQ(expect_message, entry->message.c_str());
+  EXPECT_EQ(expected_message, entry->message);
 }
 
 void ConsoleLogParams(base::DictionaryValue* out_params,
@@ -102,17 +109,17 @@ void ConsoleLogParams(base::DictionaryValue* out_params,
                       int line,
                       int column,
                       const char* text) {
-  if (NULL != source)
+  if (source != NULL)
     out_params->SetString("message.source", source);
-  if (NULL != url)
+  if (url != NULL)
     out_params->SetString("message.url", url);
-  if (NULL != level)
+  if (level != NULL)
     out_params->SetString("message.level", level);
-  if (-1 != line)
+  if (line != -1)
     out_params->SetInteger("message.line", line);
-  if (-1 != column)
+  if (column != -1)
     out_params->SetInteger("message.column", column);
-  if (NULL != text)
+  if (text != NULL)
     out_params->SetString("message.text", text);
 }
 
@@ -125,8 +132,8 @@ TEST(ConsoleLogger, ConsoleMessages) {
 
   client.AddListener(&logger);
   logger.OnConnected(&client);
-  EXPECT_STREQ("Console.enable", client.PopSentCommand().c_str());
-  EXPECT_STREQ("", client.PopSentCommand().c_str());
+  EXPECT_EQ("Console.enable", client.PopSentCommand());
+  EXPECT_TRUE(client.PopSentCommand().empty());
 
   base::DictionaryValue params1;  // All fields are set.
   ConsoleLogParams(&params1, "source1", "url1", "debug", 10, 1, "text1");
@@ -162,24 +169,24 @@ TEST(ConsoleLogger, ConsoleMessages) {
   params8.SetInteger("gaga", 8);
   ASSERT_EQ(kOk, client.TriggerEvent("Console.messageAdded", params8).code());
 
-  EXPECT_STREQ("", client.PopSentCommand().c_str());  // No other commands sent.
+  EXPECT_TRUE(client.PopSentCommand().empty());  // No other commands sent.
 
-  ASSERT_EQ(8u, log.entries.size());
-  ValidateLogEntry(log.entries[0], Log::kDebug, "url1 10:1 text1");
-  ValidateLogEntry(log.entries[1], Log::kLog, "source2 - text2");
-  ValidateLogEntry(log.entries[2], Log::kWarning, "url3 30 text3");
-  ValidateLogEntry(log.entries[3], Log::kError, "url4 - text4");
+  ASSERT_EQ(8u, log.GetEntries().size());
+  ValidateLogEntry(log.GetEntries()[0], Log::kDebug, "url1 10:1 text1");
+  ValidateLogEntry(log.GetEntries()[1], Log::kLog, "source2 - text2");
+  ValidateLogEntry(log.GetEntries()[2], Log::kWarning, "url3 30 text3");
+  ValidateLogEntry(log.GetEntries()[3], Log::kError, "url4 - text4");
   ValidateLogEntry(
-      log.entries[4], Log::kWarning,
+      log.GetEntries()[4], Log::kWarning,
       "{\"message\":{\"column\":5,\"level\":\"gaga\",\"line\":50,"
       "\"source\":\"source5\",\"text\":\"ulala\",\"url\":\"url5\"}}");
   ValidateLogEntry(
-      log.entries[5], Log::kWarning,
+      log.GetEntries()[5], Log::kWarning,
       "{\"message\":{\"column\":6,\"line\":60,"
       "\"source\":\"source6\",\"url\":\"url6\"}}");
   ValidateLogEntry(
-      log.entries[6], Log::kWarning,
+      log.GetEntries()[6], Log::kWarning,
       "{\"message\":{\"level\":\"log\","
       "\"source\":\"source7\",\"url\":\"url7\"}}");
-  ValidateLogEntry(log.entries[7], Log::kWarning, "{\"gaga\":8}");
+  ValidateLogEntry(log.GetEntries()[7], Log::kWarning, "{\"gaga\":8}");
 }
