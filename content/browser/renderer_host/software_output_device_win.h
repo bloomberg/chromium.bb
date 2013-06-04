@@ -5,9 +5,14 @@
 #ifndef CONTENT_BROWSER_RENDERER_HOST_SOFTWARE_OUTPUT_DEVICE_WIN_H_
 #define CONTENT_BROWSER_RENDERER_HOST_SOFTWARE_OUTPUT_DEVICE_WIN_H_
 
+#include "base/memory/scoped_ptr.h"
 #include "cc/output/software_output_device.h"
 
 #include <windows.h>
+
+namespace gfx {
+class Canvas;
+}
 
 namespace ui {
 class Compositor;
@@ -18,17 +23,17 @@ namespace content {
 class SoftwareOutputDeviceWin : public cc::SoftwareOutputDevice {
  public:
   explicit SoftwareOutputDeviceWin(ui::Compositor* compositor);
-
   virtual ~SoftwareOutputDeviceWin();
 
   virtual void Resize(gfx::Size viewport_size) OVERRIDE;
-
+  virtual SkCanvas* BeginPaint(gfx::Rect damage_rect) OVERRIDE;
   virtual void EndPaint(cc::SoftwareFrameData* frame_data) OVERRIDE;
 
  private:
-  ui::Compositor* compositor_;
   HWND hwnd_;
   BITMAPINFO bitmap_info_;
+  scoped_ptr<gfx::Canvas> contents_;
+  bool is_hwnd_composited_;
 };
 
 }  // namespace content
