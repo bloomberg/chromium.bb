@@ -1,0 +1,21 @@
+Tests that JS sourcemapping for inline scripts followed by inline stylesheets does not break.
+
+Debugger was enabled.
+
+Running: testSetBreakpoint
+Script source was shown.
+Set timer for test function.
+Script execution paused.
+Call stack:
+    0) testFunction (js-with-inline-stylesheets.html:10)
+
+Dump breakpoint sidebar pane:
+
+    js-with-inline-stylesheets.html:10
+    var x = Math.sqrt(10);
+
+Dump breakpoint sidebar pane:
+
+Script execution resumed.
+Debugger was disabled.
+
