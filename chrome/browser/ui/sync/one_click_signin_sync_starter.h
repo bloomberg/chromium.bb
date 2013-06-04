@@ -10,6 +10,7 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/signin_tracker.h"
+#include "chrome/browser/ui/browser_list_observer.h"
 #include "chrome/browser/ui/host_desktop.h"
 
 class Browser;
@@ -22,7 +23,8 @@ class CloudPolicyClient;
 // Waits for successful singin notification from the signin manager and then
 // starts the sync machine.  Instances of this class delete themselves once
 // the job is done.
-class OneClickSigninSyncStarter : public SigninTracker::Observer {
+class OneClickSigninSyncStarter : public SigninTracker::Observer,
+                                  public chrome::BrowserListObserver {
  public:
   enum StartSyncMode {
     // Starts the process of signing the user in with the SigninManager, and
@@ -63,6 +65,9 @@ class OneClickSigninSyncStarter : public SigninTracker::Observer {
                             StartSyncMode start_mode,
                             bool force_same_tab_navigation,
                             ConfirmationRequired display_confirmation);
+
+  // chrome::BrowserListObserver override.
+  virtual void OnBrowserRemoved(Browser* browser) OVERRIDE;
 
  private:
   virtual ~OneClickSigninSyncStarter();

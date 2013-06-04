@@ -25,7 +25,9 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_navigator.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -52,6 +54,8 @@ OneClickSigninSyncStarter::OneClickSigninSyncStarter(
       confirmation_required_(confirmation_required),
       weak_pointer_factory_(this) {
   DCHECK(profile);
+  BrowserList::AddObserver(this);
+
   Initialize(profile, browser);
 
   // Start the signin process using the cookies in the cookie jar.
@@ -64,7 +68,13 @@ OneClickSigninSyncStarter::OneClickSigninSyncStarter(
   manager->StartSignInWithCredentials(session_index, email, password, callback);
 }
 
+void OneClickSigninSyncStarter::OnBrowserRemoved(Browser* browser) {
+  if (browser == browser_)
+    browser_ = NULL;
+}
+
 OneClickSigninSyncStarter::~OneClickSigninSyncStarter() {
+  BrowserList::RemoveObserver(this);
 }
 
 void OneClickSigninSyncStarter::Initialize(Profile* profile, Browser* browser) {
@@ -274,8 +284,8 @@ void OneClickSigninSyncStarter::CompleteInitForNewProfile(
 
 void OneClickSigninSyncStarter::ConfirmAndSignin() {
   SigninManager* signin = SigninManagerFactory::GetForProfile(profile_);
-  // browser_ can be null for unit tests.
-  if (browser_ && confirmation_required_ == CONFIRM_UNTRUSTED_SIGNIN) {
+  if (confirmation_required_ == CONFIRM_UNTRUSTED_SIGNIN) {
+    EnsureBrowser();
     // Display a confirmation dialog to the user.
     browser_->window()->ShowOneClickSigninBubble(
         BrowserWindow::ONE_CLICK_SIGNIN_BUBBLE_TYPE_SAML_MODAL_DIALOG,
@@ -368,13 +378,14 @@ void OneClickSigninSyncStarter::DisplayFinalConfirmationBubble(
 
 void OneClickSigninSyncStarter::EnsureBrowser() {
   if (!browser_) {
-    // The user just created a new profile so we need to figure out what
-    // browser to use to display settings. Grab the most recently active
-    // browser or else create a new one.
+    // The user just created a new profile or has closed the browser that
+    // we used previously. Grab the most recently active browser or else
+    // create a new one.
     browser_ = chrome::FindLastActiveWithProfile(profile_, desktop_type_);
     if (!browser_) {
       browser_ = new Browser(Browser::CreateParams(profile_,
                                                    desktop_type_));
+      chrome::AddBlankTabAt(browser_, -1, true);
     }
     browser_->window()->Show();
   }
