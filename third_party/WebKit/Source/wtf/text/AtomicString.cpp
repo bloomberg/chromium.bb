@@ -417,7 +417,13 @@ AtomicStringImpl* AtomicString::find(const StringImpl* stringImpl)
 
 void AtomicString::remove(StringImpl* r)
 {
-    stringTable().remove(r);
+    HashSet<StringImpl*>::iterator iterator;
+    if (r->is8Bit())
+        iterator = findString<LChar>(r);
+    else
+        iterator = findString<UChar>(r);
+    RELEASE_ASSERT(iterator != stringTable().end());
+    stringTable().remove(iterator);
 }
 
 AtomicString AtomicString::lower() const
