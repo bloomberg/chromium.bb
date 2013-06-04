@@ -11,7 +11,7 @@
 #include "chrome/common/content_settings.h"
 #include "ipc/ipc_message_macros.h"
 
-IPC_ENUM_TRAITS(ContentSetting)
-IPC_ENUM_TRAITS(ContentSettingsType)
+IPC_ENUM_TRAITS_MAX_VALUE(ContentSetting, CONTENT_SETTING_NUM_SETTINGS - 1)
+IPC_ENUM_TRAITS_MAX_VALUE(ContentSettingsType, CONTENT_SETTINGS_NUM_TYPES - 1)
 
 #endif  // CHROME_COMMON_COMMON_PARAM_TRAITS_MACROS_H_

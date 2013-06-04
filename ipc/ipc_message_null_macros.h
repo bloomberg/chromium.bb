@@ -6,7 +6,6 @@
 
 // NULL out all the macros that need NULLing, so that multiple includes of
 // the XXXX_messages_internal.h files will not generate noise.
-#undef IPC_STRUCT_BEGIN
 #undef IPC_STRUCT_BEGIN_WITH_PARENT
 #undef IPC_STRUCT_MEMBER
 #undef IPC_STRUCT_END
@@ -14,10 +13,9 @@
 #undef IPC_STRUCT_TRAITS_MEMBER
 #undef IPC_STRUCT_TRAITS_PARENT
 #undef IPC_STRUCT_TRAITS_END
-#undef IPC_ENUM_TRAITS
+#undef IPC_ENUM_TRAITS_VALIDATE
 #undef IPC_MESSAGE_DECL
 
-#define IPC_STRUCT_BEGIN(struct_name)
 #define IPC_STRUCT_BEGIN_WITH_PARENT(struct_name, parent)
 #define IPC_STRUCT_MEMBER(type, name, ...)
 #define IPC_STRUCT_END()
@@ -25,7 +23,7 @@
 #define IPC_STRUCT_TRAITS_MEMBER(name)
 #define IPC_STRUCT_TRAITS_PARENT(type)
 #define IPC_STRUCT_TRAITS_END()
-#define IPC_ENUM_TRAITS(enum_name)
+#define IPC_ENUM_TRAITS_VALIDATE(enum_name, validation_expression)
 #define IPC_MESSAGE_DECL(sync, kind, msg_class, \
                          in_cnt, out_cnt, in_list, out_list)
 

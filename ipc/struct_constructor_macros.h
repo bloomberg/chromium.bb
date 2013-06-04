@@ -9,11 +9,9 @@
 #include "ipc/ipc_message_null_macros.h"
 
 // Set up so next include will generate constructors.
-#undef IPC_STRUCT_BEGIN
 #undef IPC_STRUCT_BEGIN_WITH_PARENT
 #undef IPC_STRUCT_MEMBER
 #undef IPC_STRUCT_END
-#define IPC_STRUCT_BEGIN(struct_name) struct_name::struct_name() : NoParams()
 #define IPC_STRUCT_BEGIN_WITH_PARENT(struct_name, parent) \
   struct_name::struct_name() : parent()
 #define IPC_STRUCT_MEMBER(type, name, ...) , name(__VA_ARGS__)

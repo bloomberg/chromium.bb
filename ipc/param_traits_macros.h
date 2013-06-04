@@ -23,8 +23,27 @@
 #define IPC_STRUCT_TRAITS_PARENT(type)
 #define IPC_STRUCT_TRAITS_END()
 
-// Traits generation for enums.
-#define IPC_ENUM_TRAITS(enum_name) \
+// Convenience macro for defining enumerated type traits for types which are
+// not range-checked by the IPC system. The author of the message handlers
+// is responsible for all validation. This macro should not need to be
+// subsequently redefined.
+#define IPC_ENUM_TRAITS(type) \
+  IPC_ENUM_TRAITS_VALIDATE(type, true)
+
+// Convenience macro for defining enumerated type traits for types which are
+// range-checked by the IPC system to be in the range of 0..maxvalue inclusive.
+// This macro should not need to be subsequently redefined.
+#define IPC_ENUM_TRAITS_MAX_VALUE(type, maxvalue) \
+  IPC_ENUM_TRAITS_MIN_MAX_VALUE(type, 0, maxvalue)
+
+// Convenience macro for defining enumerated type traits for types which are
+// range-checked by the IPC system to be in the range of minvalue..maxvalue
+// inclusive. This macro should not need to be subsequently redefined.
+#define IPC_ENUM_TRAITS_MIN_MAX_VALUE(type, minvalue, maxvalue)  \
+  IPC_ENUM_TRAITS_VALIDATE(type, (value >= (minvalue) && value <= (maxvalue)))
+
+// Traits generation for enums. This macro may be redefined later.
+#define IPC_ENUM_TRAITS_VALIDATE(enum_name, validation_expression) \
   namespace IPC { \
     template <> \
     struct IPC_MESSAGE_EXPORT ParamTraits<enum_name> { \

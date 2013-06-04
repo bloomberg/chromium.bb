@@ -9,13 +9,11 @@
 #include "ipc/ipc_message_null_macros.h"
 
 // STRUCT declarations cause corresponding STRUCT_TRAITS declarations to occur.
-#undef IPC_STRUCT_BEGIN
 #undef IPC_STRUCT_BEGIN_WITH_PARENT
 #undef IPC_STRUCT_MEMBER
 #undef IPC_STRUCT_END
 #define IPC_STRUCT_BEGIN_WITH_PARENT(struct_name, parent) \
-  IPC_STRUCT_BEGIN(struct_name)
-#define IPC_STRUCT_BEGIN(struct_name) IPC_STRUCT_TRAITS_BEGIN(struct_name)
+  IPC_STRUCT_TRAITS_BEGIN(struct_name)
 #define IPC_STRUCT_MEMBER(type, name, ...) IPC_STRUCT_TRAITS_MEMBER(name)
 #define IPC_STRUCT_END() IPC_STRUCT_TRAITS_END()
 
@@ -32,14 +30,16 @@
 #define IPC_STRUCT_TRAITS_PARENT(type) ParamTraits<type>::Read(m, iter, p) &&
 #define IPC_STRUCT_TRAITS_END() 1; }
 
-#undef IPC_ENUM_TRAITS
-#define IPC_ENUM_TRAITS(enum_name) \
+#undef IPC_ENUM_TRAITS_VALIDATE
+#define IPC_ENUM_TRAITS_VALIDATE(enum_name, validation_expression)    \
   bool ParamTraits<enum_name>:: \
       Read(const Message* m, PickleIterator* iter, param_type* p) { \
-    int type; \
-    if (!m->ReadInt(iter, &type)) \
+    int value; \
+    if (!m->ReadInt(iter, &value)) \
       return false; \
-    *p = static_cast<param_type>(type); \
+    if (!(validation_expression)) \
+      return false; \
+    *p = static_cast<param_type>(value); \
     return true; \
   }
 
