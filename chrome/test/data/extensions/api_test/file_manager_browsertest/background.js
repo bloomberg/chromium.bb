@@ -35,7 +35,7 @@ function callRemoteTestUtil(func, appId, args, callback) {
 function StepsRunner() {
   /**
    * List of steps.
-   * @type {Array.function>}
+   * @type {Array.<function>}
    * @private
    */
   this.steps_ = [];
@@ -54,7 +54,7 @@ StepsRunner.prototype = {
    * @return {function} The next closure.
    */
   get next() {
-    return this.steps_.shift();
+    return this.steps_[0];
   }
 };
 
@@ -70,7 +70,10 @@ StepsRunner.prototype.run_ = function(steps) {
   this.steps_.push(function() {});
 
   this.steps_ = this.steps_.map(function(f) {
-    return chrome.test.callbackPass(f.bind(this));
+    return chrome.test.callbackPass(function() {
+      this.steps_.shift();
+      f.apply(this, arguments);
+    }.bind(this));
   }.bind(this));
 
   this.next();
