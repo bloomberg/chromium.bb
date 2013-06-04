@@ -978,7 +978,13 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
         self.WriteLn('%s: obj := $(abs_obj)' % outputs[0])
         self.WriteLn('%s: builddir := $(abs_builddir)' % outputs[0])
         self.WriteMakeRule(outputs, inputs + ['FORCE_DO_CMD'], actions)
+        # Spaces in rule filenames are not supported, but rule variables have
+        # spaces in them (e.g. RULE_INPUT_PATH expands to '$(abspath $<)').
+        # The spaces within the variables are valid, so remove the variables
+        # before checking.
+        variables_with_spaces = re.compile(r'\$\([^ ]* \$<\)')
         for output in outputs:
+          output = re.sub(variables_with_spaces, '', output)
           assert ' ' not in output, (
               "Spaces in rule filenames not yet supported (%s)"  % output)
         self.WriteLn('all_deps += %s' % ' '.join(outputs))

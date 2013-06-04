@@ -2383,6 +2383,8 @@ def ValidateRulesInTarget(target, target_dict, extra_sources_for_rules):
     rule_names[rule_name] = rule
 
     rule_extension = rule['extension']
+    if rule_extension.startswith('.'):
+      rule_extension = rule_extension[1:]
     if rule_extension in rule_extensions:
       raise GypError(('extension %s associated with multiple rules, ' +
                       'target %s rules %s and %s') %
@@ -2397,7 +2399,6 @@ def ValidateRulesInTarget(target, target_dict, extra_sources_for_rules):
       raise GypError(
             'rule_sources must not exist in input, target %s rule %s' %
             (target, rule_name))
-    extension = rule['extension']
 
     rule_sources = []
     source_keys = ['sources']
@@ -2407,7 +2408,7 @@ def ValidateRulesInTarget(target, target_dict, extra_sources_for_rules):
         (source_root, source_extension) = os.path.splitext(source)
         if source_extension.startswith('.'):
           source_extension = source_extension[1:]
-        if source_extension == extension:
+        if source_extension == rule_extension:
           rule_sources.append(source)
 
     if len(rule_sources) > 0:

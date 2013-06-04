@@ -463,8 +463,7 @@ def _FindRuleTriggerFiles(rule, sources):
   Returns:
     The list of sources that trigger a particular rule.
   """
-  rule_ext = rule['extension']
-  return [s for s in sources if s.endswith('.' + rule_ext)]
+  return rule.get('rule_sources', [])
 
 
 def _RuleInputsAndOutputs(rule, trigger_file):
