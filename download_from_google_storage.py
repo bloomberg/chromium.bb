@@ -81,9 +81,8 @@ def check_bucket_permissions(bucket, gsutil):
 
   code, _, ls_err = gsutil.check_call('ls', base_url)
   if code == 403:
-    code, _, _ = gsutil.call('config')
-    if code != 0:
-      print >> sys.stderr, 'Error while authenticating to %s.' % base_url
+    print >> sys.stderr, 'Got error 403 while authenticating to %s.' % base_url
+    print >> sys.stderr, 'Try running "gsutil config".'
   elif code == 404:
     print >> sys.stderr, '%s not found.' % base_url
   elif code != 0:

@@ -82,7 +82,7 @@ class GstoolsUnitTests(unittest.TestCase):
     self.assertEqual(err_lines[0], 'gsutil version 3.25')
     self.assertEqual(
         err_lines[1],
-        'checksum ce71ac982f1148315e7fa65cff2f83e8 (OK)')
+        'checksum 010822c61d38d70ac23600bc955fccf5 (OK)')
 
   def test_get_sha1(self):
     lorem_ipsum = os.path.join(self.base_path, 'lorem_ipsum.txt')
