@@ -124,12 +124,6 @@ struct GPU_EXPORT ContextState {
 
   EnableFlags enable_flags;
 
-  // pack alignment as last set by glPixelStorei
-  GLint pack_alignment;
-
-  // unpack alignment as last set by glPixelStorei
-  GLint unpack_alignment;
-
   // Current active texture by 0 - n index.
   // In other words, if we call glActiveTexture(GL_TEXTURE2) this value would
   // be 2.

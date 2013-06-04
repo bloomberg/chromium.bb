@@ -36,9 +36,7 @@ TextureUnit::~TextureUnit() {
 }
 
 ContextState::ContextState(FeatureInfo* feature_info, Logger* logger)
-    : pack_alignment(4),
-      unpack_alignment(4),
-      active_texture_unit(0),
+    : active_texture_unit(0),
       pack_reverse_row_order(false),
       fbo_binding_for_scissor_workaround_dirty_(false),
       feature_info_(feature_info),
@@ -139,9 +137,6 @@ void ContextState::RestoreAttribute(GLuint attrib_index) const {
 void ContextState::RestoreGlobalState() const {
   InitCapabilities();
   InitState();
-
-  glPixelStorei(GL_PACK_ALIGNMENT, pack_alignment);
-  glPixelStorei(GL_UNPACK_ALIGNMENT, unpack_alignment);
 }
 
 void ContextState::RestoreState() const {

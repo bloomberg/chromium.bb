@@ -65,6 +65,12 @@ void GLES2DecoderTestBase::SetupInitStateExpectations() {
   EXPECT_CALL(*gl_, LineWidth(1.0f))
       .Times(1)
       .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, PixelStorei(GL_PACK_ALIGNMENT, 4))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, PixelStorei(GL_UNPACK_ALIGNMENT, 4))
+      .Times(1)
+      .RetiresOnSaturation();
   EXPECT_CALL(*gl_, PolygonOffset(0.0f, 0.0f))
       .Times(1)
       .RetiresOnSaturation();

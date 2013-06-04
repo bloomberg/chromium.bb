@@ -361,10 +361,26 @@ _STATES = {
       }
     ],
   },
+  'PixelStore': {
+    'type': 'NamedParameter',
+    'func': 'PixelStorei',
+    'states': [
+      {
+        'name': 'pack_alignment',
+        'type': 'GLint',
+        'enum': 'GL_PACK_ALIGNMENT',
+        'default': '4'
+      },
+      {
+        'name': 'unpack_alignment',
+        'type': 'GLint',
+        'enum': 'GL_UNPACK_ALIGNMENT',
+        'default': '4'
+      }
+    ],
+  },
   # TODO: Consider implemenenting these states
-  # GL_ACTIVE_TEXTURE,
-  # GL_PACK_ALIGNMENT,
-  # GL_UNPACK_ALIGNMENT
+  # GL_ACTIVE_TEXTURE
   'LineWidth': {
     'type': 'Normal',
     'func': 'LineWidth',
@@ -7031,7 +7047,7 @@ bool %s::GetStateAs%s(
     GLenum pname, %s* params, GLsizei* num_written) const {
   switch (pname) {
 """ % (class_name, gl_type, gl_type))
-      for state_name in _STATES.keys():
+      for state_name in sorted(_STATES.keys()):
         state = _STATES[state_name]
         if 'enum' in state:
           file.Write("    case %s:\n" % state['enum'])

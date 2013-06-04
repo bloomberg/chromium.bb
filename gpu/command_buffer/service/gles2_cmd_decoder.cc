@@ -2450,9 +2450,6 @@ bool GLES2DecoderImpl::Initialize(
   state_.InitCapabilities();
   state_.InitState();
   glActiveTexture(GL_TEXTURE0 + state_.active_texture_unit);
-  glHint(GL_GENERATE_MIPMAP_HINT, state_.hint_generate_mipmap);
-  glPixelStorei(GL_PACK_ALIGNMENT, state_.pack_alignment);
-  glPixelStorei(GL_UNPACK_ALIGNMENT, state_.unpack_alignment);
 
   DoBindBuffer(GL_ARRAY_BUFFER, 0);
   DoBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);

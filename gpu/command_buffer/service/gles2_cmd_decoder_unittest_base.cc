@@ -211,15 +211,6 @@ void GLES2DecoderTestBase::InitDecoder(
   EXPECT_CALL(*gl_, ActiveTexture(GL_TEXTURE0))
       .Times(1)
       .RetiresOnSaturation();
-  EXPECT_CALL(*gl_, Hint(GL_GENERATE_MIPMAP_HINT, GL_DONT_CARE))
-      .Times(1)
-      .RetiresOnSaturation();
-  EXPECT_CALL(*gl_, PixelStorei(GL_PACK_ALIGNMENT, 4))
-      .Times(1)
-      .RetiresOnSaturation();
-  EXPECT_CALL(*gl_, PixelStorei(GL_UNPACK_ALIGNMENT, 4))
-      .Times(1)
-      .RetiresOnSaturation();
 
   EXPECT_CALL(*gl_, BindBuffer(GL_ARRAY_BUFFER, 0))
       .Times(1)
