@@ -55,23 +55,6 @@ builders._GROUP_NAMES = [
     'Content Shell @ToT - chromium.org',
 ]
 
-builders._loadScript = function(url, success, error)
-{
-    var script = document.createElement('script');
-    script.src = url;
-    script.onload = success;
-    script.onerror = error;
-    document.head.appendChild(script);
-}
-
-builders._requestBuilders = function()
-{
-    var buildersUrl = 'builders.jsonp';
-    builders._loadScript(buildersUrl, function() {}, function() {
-        console.error('Could not load ' + buildersUrl);
-    });
-}
-
 builders.getBuilderGroup = function(groupName, testType)
 {
     if (!builders in builders._currentBuilderGroup) {
@@ -132,8 +115,6 @@ builders.BuilderMaster.prototype = {
         return this.basePath + '/json/builders';
     },
 }
-
-builders._requestBuilders();
 
 })();
 

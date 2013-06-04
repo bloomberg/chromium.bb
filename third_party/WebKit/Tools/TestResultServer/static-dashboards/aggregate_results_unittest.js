@@ -37,15 +37,21 @@ function setupAggregateResultsData()
         historyInstance.crossDashboardState[key] = history.DEFAULT_CROSS_DASHBOARD_STATE_VALUES[key];
 
     var builderName = 'Blink Linux';
-    LOAD_BUILDBOT_DATA([{
-        name: 'ChromiumWebkit',
-        url: 'dummyurl',
-        tests: {'layout-tests': {'builders': [builderName]}}
-    }]);
-    for (var group in LAYOUT_TESTS_BUILDER_GROUPS)
-        LAYOUT_TESTS_BUILDER_GROUPS[group] = null;
-
-    loadBuildersList('@ToT - chromium.org', 'layout-tests');
+    LOAD_BUILDBOT_DATA({
+        "masters": [
+            {
+                "groups": [ "@ToT - chromium.org" ],
+                "name": "ChromiumWebkit",
+                "tests": {
+                    "layout-tests": {
+                        "builders": [builderName]
+                    }
+                },
+                "url": "http://build.chromium.org/p/chromium.win"
+            }
+        ]
+    });
+    builders.loadBuildersList('@ToT - chromium.org', 'layout-tests');
 
     g_resultsByBuilder[builderName] = {
         "num_failures_by_type": {

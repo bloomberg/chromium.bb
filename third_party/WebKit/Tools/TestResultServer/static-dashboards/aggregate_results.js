@@ -101,7 +101,7 @@ function chartHTML(builder)
 {
     var results = g_resultsByBuilder[builder];
     var totalFailingTests = totalFailureCountFor(builder).totalFailingTests;
-    var shouldShowBlinkRevisions = isTipOfTreeWebKitBuilder();
+    var shouldShowBlinkRevisions = currentBuilderGroup().isToTBlink;
     var revisionKey = shouldShowBlinkRevisions ? BLINK_REVISIONS_KEY : CHROME_REVISIONS_KEY;
     var startRevision = results[revisionKey][totalFailingTests.length - 1];
     var endRevision = results[revisionKey][0];

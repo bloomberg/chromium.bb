@@ -113,7 +113,7 @@ function initCurrentBuilderTestResults()
 
 function shouldShowBlinkRevisionsOnly()
 {
-    return isTipOfTreeWebKitBuilder();
+    return currentBuilderGroup().isToTBlink;
 }
 
 function updateTimelineForBuilder()

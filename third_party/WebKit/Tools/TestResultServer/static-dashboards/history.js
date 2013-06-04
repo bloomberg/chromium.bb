@@ -71,10 +71,10 @@ history.queryHashAsMap = function()
     // FIXME: remove support for mapping from the master parameter to the group
     // one once the waterfall starts to pass in the builder name instead.
     if (paramsMap.master) {
-        paramsMap.group = LEGACY_BUILDER_MASTERS_TO_GROUPS[paramsMap.master];
+        paramsMap.group = builders.masters[paramsMap.master].groups[0];
         if (!paramsMap.group)
             console.log('ERROR: Unknown master name: ' + paramsMap.master);
-        window.location.hash = window.location.hash.replace('master=' + paramsMap.master, 'group=' + paramsMap.group);
+        window.location.hash = window.location.hash.replace('master=' + paramsMap.master, 'group=' + encodeURIComponent(paramsMap.group));
         delete paramsMap.master;
     }
 

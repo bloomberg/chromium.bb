@@ -122,11 +122,6 @@ function currentBuilders()
     return currentBuilderGroup().builders;
 }
 
-function isTipOfTreeWebKitBuilder()
-{
-    return currentBuilderGroup().isToTWebKit;
-}
-
 var g_resultsByBuilder = {};
 
 // Create a new function with some of its arguements
