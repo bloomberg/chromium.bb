@@ -57,8 +57,6 @@ class MailboxOutputSurface : public CompositorOutputSurface {
     uint32 sync_point;
   };
 
-  void ConsumeTexture(const TransferableFrame& frame);
-
   TransferableFrame current_backing_;
   std::deque<TransferableFrame> pending_textures_;
   std::queue<TransferableFrame> returned_textures_;

@@ -47,12 +47,10 @@ void MailboxOutputSurface::EnsureBackbuffer() {
       TransferableFrame& texture = returned_textures_.front();
       if (texture.size == size_) {
         current_backing_ = texture;
-        ConsumeTexture(texture);
         returned_textures_.pop();
         break;
       }
 
-      ConsumeTexture(texture);
       context3d_->deleteTexture(texture.texture_id);
       returned_textures_.pop();
     }
@@ -60,7 +58,6 @@ void MailboxOutputSurface::EnsureBackbuffer() {
     if (!current_backing_.texture_id) {
       current_backing_.texture_id = context3d_->createTexture();
       current_backing_.size = size_;
-      context3d_->genMailboxCHROMIUM(current_backing_.mailbox.name);
       context3d_->bindTexture(GL_TEXTURE_2D, current_backing_.texture_id);
       context3d_->texParameteri(
           GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -73,6 +70,9 @@ void MailboxOutputSurface::EnsureBackbuffer() {
       context3d_->texImage2D(
           GL_TEXTURE_2D, 0, GL_RGBA, size_.width(), size_.height(), 0,
           GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+      context3d_->genMailboxCHROMIUM(current_backing_.mailbox.name);
+      context3d_->produceTextureCHROMIUM(
+          GL_TEXTURE_2D, current_backing_.mailbox.name);
     }
   }
 }
@@ -87,7 +87,6 @@ void MailboxOutputSurface::DiscardBackbuffer() {
 
   while (!returned_textures_.empty()) {
     const TransferableFrame& frame = returned_textures_.front();
-    ConsumeTexture(frame);
     context3d_->deleteTexture(frame.texture_id);
     returned_textures_.pop();
   }
@@ -128,12 +127,6 @@ void MailboxOutputSurface::SendFrameToParentCompositor(
   DCHECK(size_ == current_backing_.size);
   DCHECK(!current_backing_.mailbox.IsZero());
 
-  context3d_->framebufferTexture2D(
-      GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, 0, 0);
-  context3d_->bindFramebuffer(GL_FRAMEBUFFER, 0);
-  context3d_->bindTexture(GL_TEXTURE_2D, current_backing_.texture_id);
-  context3d_->produceTextureCHROMIUM(
-      GL_TEXTURE_2D, current_backing_.mailbox.name);
   frame->gl_frame_data->mailbox = current_backing_.mailbox;
   frame->gl_frame_data->size = current_backing_.size;
   context3d_->flush();
@@ -165,7 +158,6 @@ void MailboxOutputSurface::OnSwapAck(const cc::CompositorFrameAck& ack) {
     if (!is_backbuffer_discarded_) {
       returned_textures_.push(*it);
     } else {
-      ConsumeTexture(*it);
       context3d_->deleteTexture(it->texture_id);
     }
 
@@ -193,15 +185,6 @@ void MailboxOutputSurface::PostSubBuffer(gfx::Rect rect,
 
   // The browser only copies damage correctly for two buffers in use.
   DCHECK(GetNumAcksPending() < 2);
-}
-
-void MailboxOutputSurface::ConsumeTexture(const TransferableFrame& frame) {
-  DCHECK(!frame.mailbox.IsZero());
-  if (frame.sync_point)
-    context3d_->waitSyncPoint(frame.sync_point);
-
-  context3d_->bindTexture(GL_TEXTURE_2D, frame.texture_id);
-  context3d_->consumeTextureCHROMIUM(GL_TEXTURE_2D, frame.mailbox.name);
 }
 
 size_t MailboxOutputSurface::GetNumAcksPending() {
