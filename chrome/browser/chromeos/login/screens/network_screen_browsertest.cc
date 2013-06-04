@@ -3,9 +3,6 @@
 // found in the LICENSE file.
 
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/chromeos/cros/cros_library.h"
-#include "chrome/browser/chromeos/cros/mock_network_library.h"
-#include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/login/screens/mock_screen_observer.h"
 #include "chrome/browser/chromeos/login/screens/network_screen.h"
 #include "chrome/browser/chromeos/login/screens/wizard_screen.h"
@@ -38,7 +35,6 @@ class DummyButtonListener : public views::ButtonListener {
 class NetworkScreenTest : public WizardInProcessBrowserTest {
  public:
   NetworkScreenTest(): WizardInProcessBrowserTest("network"),
-                       mock_network_library_(NULL),
                        fake_session_manager_client_(NULL) {
   }
 
@@ -55,24 +51,14 @@ class NetworkScreenTest : public WizardInProcessBrowserTest {
     SetDefaultMockConnectivityStateHelperExpectations();
 
     cros_mock_->InitStatusAreaMocks();
-    mock_network_library_ = cros_mock_->mock_network_library();
     cellular_.reset(new NetworkDevice("cellular"));
 
     // Minimal set of expectations needed on NetworkScreen initialization.
     // Status bar expectations are defined with RetiresOnSaturation() so
-    // these mocks will be active once status bar is initialized.
-    EXPECT_CALL(*mock_network_library_, AddUserActionObserver(_))
-        .Times(AnyNumber());
     EXPECT_CALL(*mock_connectivity_state_helper_,
                 IsConnectedType(flimflam::kTypeWifi))
         .Times(1)
         .WillRepeatedly(Return(false));
-    EXPECT_CALL(*mock_network_library_, FindWifiDevice())
-        .Times(AnyNumber());
-    EXPECT_CALL(*mock_network_library_, FindEthernetDevice())
-        .Times(AnyNumber());
-    EXPECT_CALL(*mock_network_library_, LoadOncNetworks(_, _))
-        .Times(AnyNumber());
 
     cros_mock_->SetStatusAreaMocksExpectations();
   }
@@ -131,7 +117,6 @@ class NetworkScreenTest : public WizardInProcessBrowserTest {
 
   scoped_ptr<MockScreenObserver> mock_screen_observer_;
   scoped_ptr<MockConnectivityStateHelper> mock_connectivity_state_helper_;
-  MockNetworkLibrary* mock_network_library_;
   scoped_ptr<NetworkDevice> cellular_;
   NetworkScreen* network_screen_;
   FakeSessionManagerClient* fake_session_manager_client_;
@@ -189,13 +174,6 @@ IN_PROC_BROWSER_TEST_F(NetworkScreenTest, Wifi) {
   EXPECT_CALL(*mock_connectivity_state_helper_,
               IsConnectingType(flimflam::kTypeWifi))
       .WillOnce((Return(true)));
-  scoped_ptr<WifiNetwork> wifi(new WifiNetwork("wifi"));
-  WifiNetworkVector wifi_networks;
-  wifi_networks.push_back(wifi.get());
-  EXPECT_CALL(*mock_network_library_, wifi_network())
-      .WillRepeatedly(Return(wifi.get()));
-  EXPECT_CALL(*mock_network_library_, wifi_networks())
-      .WillRepeatedly(ReturnRef(wifi_networks));
   // EXPECT_FALSE(actor_->IsContinueEnabled());
   network_screen_->NetworkManagerChanged();
 
@@ -235,9 +213,6 @@ IN_PROC_BROWSER_TEST_F(NetworkScreenTest, Cellular) {
   EXPECT_CALL(*mock_connectivity_state_helper_,
               IsConnectingType(flimflam::kTypeCellular))
       .WillOnce((Return(true)));
-  scoped_ptr<CellularNetwork> cellular(new CellularNetwork("cellular"));
-  EXPECT_CALL(*mock_network_library_, cellular_network())
-      .WillRepeatedly(Return(cellular.get()));
   // EXPECT_FALSE(actor_->IsContinueEnabled());
   network_screen_->NetworkManagerChanged();
 
@@ -274,9 +249,6 @@ IN_PROC_BROWSER_TEST_F(NetworkScreenTest, Timeout) {
   EXPECT_CALL(*mock_connectivity_state_helper_,
               IsConnectingType(flimflam::kTypeWifi))
       .WillOnce((Return(true)));
-  scoped_ptr<WifiNetwork> wifi(new WifiNetwork("wifi"));
-  EXPECT_CALL(*mock_network_library_, wifi_network())
-      .WillRepeatedly(Return(wifi.get()));
   // EXPECT_FALSE(actor_->IsContinueEnabled());
   network_screen_->NetworkManagerChanged();
 

@@ -8,7 +8,6 @@
 #include "chrome/browser/chrome_browser_main_extra_parts.h"
 #include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/chromeos/cros/cros_in_process_browser_test.h"
-#include "chrome/browser/chromeos/cros/mock_network_library.h"
 #include "chrome/browser/chromeos/login/login_display_host_impl.h"
 #include "chrome/browser/chromeos/login/login_wizard.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
@@ -38,8 +37,7 @@ namespace {
 class LoginTestBase : public chromeos::CrosInProcessBrowserTest {
  public:
   LoginTestBase()
-    : mock_cryptohome_library_(NULL),
-      mock_network_library_(NULL) {
+    : mock_cryptohome_library_(NULL) {
   }
 
  protected:
@@ -47,19 +45,13 @@ class LoginTestBase : public chromeos::CrosInProcessBrowserTest {
     mock_cryptohome_library_.reset(new chromeos::MockCryptohomeLibrary());
     cros_mock_->InitStatusAreaMocks();
     cros_mock_->SetStatusAreaMocksExpectations();
-    mock_network_library_ = cros_mock_->mock_network_library();
     EXPECT_CALL(*(mock_cryptohome_library_.get()), GetSystemSalt())
         .WillRepeatedly(Return(std::string("stub_system_salt")));
     EXPECT_CALL(*(mock_cryptohome_library_.get()), InstallAttributesIsReady())
         .WillRepeatedly(Return(false));
-    EXPECT_CALL(*mock_network_library_, AddUserActionObserver(_))
-        .Times(AnyNumber());
-    EXPECT_CALL(*mock_network_library_, LoadOncNetworks(_, _))
-        .Times(AnyNumber());
   }
 
   scoped_ptr<chromeos::MockCryptohomeLibrary> mock_cryptohome_library_;
-  chromeos::MockNetworkLibrary* mock_network_library_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(LoginTestBase);

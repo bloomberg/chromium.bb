@@ -4,7 +4,6 @@
 
 #include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/chromeos/cros/mock_network_library.h"
 #include "chrome/browser/chromeos/login/screens/mock_error_screen.h"
 #include "chrome/browser/chromeos/login/screens/mock_screen_observer.h"
 #include "chrome/browser/chromeos/login/screens/update_screen.h"
@@ -38,7 +37,6 @@ class UpdateScreenTest : public WizardInProcessBrowserTest {
  public:
   UpdateScreenTest() : WizardInProcessBrowserTest("update"),
                        fake_update_engine_client_(NULL),
-                       mock_network_library_(NULL),
                        network_portal_detector_stub_(NULL) {
   }
 
@@ -53,10 +51,6 @@ class UpdateScreenTest : public WizardInProcessBrowserTest {
 
     fake_update_engine_client_
         = mock_dbus_thread_manager->fake_update_engine_client();
-
-    mock_network_library_ = cros_mock_->mock_network_library();
-    EXPECT_CALL(*mock_network_library_, LoadOncNetworks(_, _))
-        .Times(AnyNumber());
 
     // Setup network portal detector to return online state for both
     // ethernet and wifi networks. Ethernet is an active network by
@@ -119,7 +113,6 @@ class UpdateScreenTest : public WizardInProcessBrowserTest {
   }
 
   FakeUpdateEngineClient* fake_update_engine_client_;
-  MockNetworkLibrary* mock_network_library_;
   scoped_ptr<MockScreenObserver> mock_screen_observer_;
   scoped_ptr<MockErrorScreenActor> mock_error_screen_actor_;
   scoped_ptr<MockErrorScreen> mock_error_screen_;

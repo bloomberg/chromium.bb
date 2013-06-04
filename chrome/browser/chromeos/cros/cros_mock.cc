@@ -153,6 +153,10 @@ void CrosMock::SetNetworkLibraryStatusAreaExpectations() {
   EXPECT_CALL(*mock_network_library_, cellular_initializing())
       .Times(AnyNumber())
       .WillRepeatedly((Return(false)));
+  EXPECT_CALL(*mock_network_library_, AddUserActionObserver(_))
+        .Times(AnyNumber());
+  EXPECT_CALL(*mock_network_library_, LoadOncNetworks(_, _))
+        .Times(AnyNumber());
 
   // Set specific expectations for interesting functions:
 

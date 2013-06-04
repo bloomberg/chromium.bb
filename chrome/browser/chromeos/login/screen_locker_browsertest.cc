@@ -6,7 +6,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "chrome/browser/chromeos/cros/cros_in_process_browser_test.h"
-#include "chrome/browser/chromeos/cros/mock_network_library.h"
 #include "chrome/browser/chromeos/login/mock_authenticator.h"
 #include "chrome/browser/chromeos/login/screen_locker.h"
 #include "chrome/browser/chromeos/login/screen_locker_tester.h"
@@ -125,12 +124,6 @@ class ScreenLockerTest : public CrosInProcessBrowserTest {
     cros_mock_->InitStatusAreaMocks();
     // Expectations for the status are on the screen lock window.
     cros_mock_->SetStatusAreaMocksExpectations();
-    MockNetworkLibrary* mock_network_library =
-        cros_mock_->mock_network_library();
-    EXPECT_CALL(*mock_network_library, AddUserActionObserver(_))
-        .Times(AnyNumber());
-    EXPECT_CALL(*mock_network_library, LoadOncNetworks(_, _))
-        .Times(AnyNumber());
     zero_duration_mode_.reset(new ui::ScopedAnimationDurationScaleMode(
         ui::ScopedAnimationDurationScaleMode::ZERO_DURATION));
   }

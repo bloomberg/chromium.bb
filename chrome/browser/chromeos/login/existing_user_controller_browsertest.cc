@@ -11,7 +11,6 @@
 #include "base/location.h"
 #include "base/run_loop.h"
 #include "chrome/browser/chromeos/cros/cros_mock.h"
-#include "chrome/browser/chromeos/cros/mock_network_library.h"
 #include "chrome/browser/chromeos/login/authenticator.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
 #include "chrome/browser/chromeos/login/helper.h"
@@ -123,8 +122,7 @@ class ExistingUserControllerTest : public policy::DevicePolicyCrosBrowserTest,
                                    public testing::WithParamInterface<bool> {
  protected:
   ExistingUserControllerTest()
-      : mock_network_library_(NULL),
-        mock_login_display_(NULL),
+     :  mock_login_display_(NULL),
         mock_user_manager_(NULL),
         testing_profile_(NULL) {
   }
@@ -143,12 +141,6 @@ class ExistingUserControllerTest : public policy::DevicePolicyCrosBrowserTest,
     DevicePolicyCrosBrowserTest::SetUpInProcessBrowserTestFixture();
     cros_mock_->InitStatusAreaMocks();
     cros_mock_->SetStatusAreaMocksExpectations();
-
-    mock_network_library_ = cros_mock_->mock_network_library();
-    EXPECT_CALL(*mock_network_library_, AddUserActionObserver(_))
-        .Times(AnyNumber());
-    EXPECT_CALL(*mock_network_library_, LoadOncNetworks(_, _))
-        .Times(AnyNumber());
 
     mock_login_utils_ = new MockLoginUtils();
     LoginUtils::Set(mock_login_utils_);
@@ -262,9 +254,6 @@ class ExistingUserControllerTest : public policy::DevicePolicyCrosBrowserTest,
   }
 
   scoped_ptr<ExistingUserController> existing_user_controller_;
-
-  // These mocks are owned by CrosLibrary class.
-  MockNetworkLibrary* mock_network_library_;
 
   // |mock_login_display_| is owned by the ExistingUserController, which calls
   // CreateLoginDisplay() on the |mock_login_display_host_| to get it.
