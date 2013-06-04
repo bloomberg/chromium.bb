@@ -22,8 +22,6 @@
 static const quota::StorageType kTemp = quota::kStorageTypeTemporary;
 static const quota::StorageType kPerm = quota::kStorageTypePersistent;
 
-using namespace webkit_database;
-
 namespace content {
 
 // Base class for our test fixtures.

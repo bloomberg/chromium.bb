@@ -170,7 +170,6 @@ void LevelDBTransaction::TreeIterator::Next() {
     DCHECK(transaction_->comparator_->Compare(LevelDBSlice((*iterator_)->key),
                                               LevelDBSlice(key_)) >
            0);
-    (void) transaction_;
     key_ = (*iterator_)->key;
   }
 }
@@ -349,7 +348,6 @@ void LevelDBTransaction::TransactionIterator::RefreshTreeIterator() const {
   }
 
   if (db_iterator_->IsValid()) {
-
     // There could be new nodes in the tree that we should iterate over.
 
     if (direction_ == FORWARD) {

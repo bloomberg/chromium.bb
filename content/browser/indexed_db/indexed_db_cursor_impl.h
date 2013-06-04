@@ -42,7 +42,7 @@ class IndexedDBCursorImpl : public IndexedDBCursor {
   }
 
   // IndexedDBCursor
-  virtual void Advance(unsigned long,
+  virtual void Advance(uint32 count,
                        scoped_refptr<IndexedDBCallbacksWrapper> callbacks)
       OVERRIDE;
   virtual void ContinueFunction(

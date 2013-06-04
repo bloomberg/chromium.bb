@@ -34,14 +34,14 @@ class IndexedDBCursorImpl::CursorAdvanceOperation
     : public IndexedDBTransaction::Operation {
  public:
   CursorAdvanceOperation(scoped_refptr<IndexedDBCursorImpl> cursor,
-                         unsigned long count,
+                         uint32 count,
                          scoped_refptr<IndexedDBCallbacksWrapper> callbacks)
       : cursor_(cursor), count_(count), callbacks_(callbacks) {}
   virtual void Perform(IndexedDBTransaction* transaction) OVERRIDE;
 
  private:
   scoped_refptr<IndexedDBCursorImpl> cursor_;
-  unsigned long count_;
+  uint32 count_;
   scoped_refptr<IndexedDBCallbacksWrapper> callbacks_;
 };
 
@@ -90,7 +90,7 @@ void IndexedDBCursorImpl::ContinueFunction(
 }
 
 void IndexedDBCursorImpl::Advance(
-    unsigned long count,
+    uint32 count,
     scoped_refptr<IndexedDBCallbacksWrapper> callbacks) {
   IDB_TRACE("IndexedDBCursorImpl::advance");
 

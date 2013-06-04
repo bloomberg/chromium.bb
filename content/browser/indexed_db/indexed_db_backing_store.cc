@@ -1797,7 +1797,7 @@ bool IndexedDBBackingStore::Cursor::FirstSeek() {
   return ContinueFunction(0, READY);
 }
 
-bool IndexedDBBackingStore::Cursor::Advance(unsigned long count) {
+bool IndexedDBBackingStore::Cursor::Advance(uint32 count) {
   while (count--) {
     if (!ContinueFunction())
       return false;

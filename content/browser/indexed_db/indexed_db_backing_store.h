@@ -28,6 +28,7 @@ class LevelDBDatabase;
 
 class LevelDBFactory {
  public:
+  virtual ~LevelDBFactory() {}
   virtual scoped_ptr<LevelDBDatabase> OpenLevelDB(
       const base::FilePath& file_name,
       const LevelDBComparator* comparator) = 0;
@@ -207,7 +208,7 @@ class CONTENT_EXPORT IndexedDBBackingStore
 
     const IndexedDBKey& key() const { return *current_key_; }
     bool ContinueFunction(const IndexedDBKey* = 0, IteratorState = SEEK);
-    bool Advance(unsigned long);
+    bool Advance(uint32 count);
     bool FirstSeek();
 
     virtual Cursor* Clone() = 0;

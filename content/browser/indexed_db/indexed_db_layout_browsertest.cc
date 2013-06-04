@@ -35,7 +35,7 @@ static const char* kBasicTests[] = {
 static const char* kComplexTests[] = {
   "prefetch-bugfix-108071.html",
   // Flaky: http://crbug.com/226256
-  //"pending-version-change-stuck.html",
+  // "pending-version-change-stuck.html",
   "pending-version-change-stuck-works-with-terminate.html",
   "pending-version-change-on-exit.html",
   NULL
@@ -110,7 +110,7 @@ const char* kIntVersionTests2[] = {
   NULL
 };
 
-}
+}  // namespace
 
 IN_PROC_BROWSER_TEST_F(IndexedDBLayoutTest, BasicTests) {
   RunLayoutTests(kBasicTests);

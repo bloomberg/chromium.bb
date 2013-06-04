@@ -293,7 +293,7 @@ class IteratorImpl : public LevelDBIterator {
 
  private:
   friend class content::LevelDBDatabase;
-  IteratorImpl(scoped_ptr<leveldb::Iterator> iterator);
+  explicit IteratorImpl(scoped_ptr<leveldb::Iterator> iterator);
   void CheckStatus();
 
   scoped_ptr<leveldb::Iterator> iterator_;

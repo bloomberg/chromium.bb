@@ -379,22 +379,22 @@ TEST(IndexedDBFactoryTest, MemoryBackingStoreLifetime) {
   scoped_refptr<MockIDBFactory> factory = MockIDBFactory::Create();
   scoped_refptr<IndexedDBBackingStore> mem_store1 =
       factory->TestOpenBackingStore(origin1, base::FilePath());
-  EXPECT_FALSE(mem_store1->HasOneRef()); // mem_store1 and factory
+  EXPECT_FALSE(mem_store1->HasOneRef());  // mem_store1 and factory
 
   scoped_refptr<IndexedDBBackingStore> mem_store2 =
       factory->TestOpenBackingStore(origin1, base::FilePath());
   EXPECT_EQ(mem_store1.get(), mem_store2.get());
-  EXPECT_FALSE(mem_store1->HasOneRef()); // mem_store1, 2 and factory
-  EXPECT_FALSE(mem_store2->HasOneRef()); // mem_store1, 2 and factory
+  EXPECT_FALSE(mem_store1->HasOneRef());  // mem_store1, 2 and factory
+  EXPECT_FALSE(mem_store2->HasOneRef());  // mem_store1, 2 and factory
 
   scoped_refptr<IndexedDBBackingStore> mem_store3 =
       factory->TestOpenBackingStore(origin2, base::FilePath());
-  EXPECT_FALSE(mem_store1->HasOneRef()); // mem_store1, 2 and factory
-  EXPECT_FALSE(mem_store3->HasOneRef()); // mem_store3 and factory
+  EXPECT_FALSE(mem_store1->HasOneRef());  // mem_store1, 2 and factory
+  EXPECT_FALSE(mem_store3->HasOneRef());  // mem_store3 and factory
 
   factory = NULL;
-  EXPECT_FALSE(mem_store1->HasOneRef()); // mem_store1 and 2
-  EXPECT_FALSE(mem_store2->HasOneRef()); // mem_store1 and 2
+  EXPECT_FALSE(mem_store1->HasOneRef());  // mem_store1 and 2
+  EXPECT_FALSE(mem_store2->HasOneRef());  // mem_store1 and 2
   EXPECT_TRUE(mem_store3->HasOneRef());
 
   mem_store2 = NULL;

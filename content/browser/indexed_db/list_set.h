@@ -70,12 +70,12 @@ class list_set {
     typedef std::bidirectional_iterator_tag iterator_category;
     typedef std::ptrdiff_t difference_type;
 
-    inline iterator(typename std::list<T>::iterator it) : it_(it) {}
+    explicit inline iterator(typename std::list<T>::iterator it) : it_(it) {}
     inline self_type& operator++() {
       ++it_;
       return *this;
     }
-    inline self_type operator++(int) {
+    inline self_type operator++(int /*ignored*/) {
       self_type result(*this);
       ++(*this);
       return result;
@@ -84,7 +84,7 @@ class list_set {
       --it_;
       return *this;
     }
-    inline self_type operator--(int) {
+    inline self_type operator--(int /*ignored*/) {
       self_type result(*this);
       --(*this);
       return result;
@@ -109,12 +109,13 @@ class list_set {
     typedef std::bidirectional_iterator_tag iterator_category;
     typedef std::ptrdiff_t difference_type;
 
-    inline const_iterator(typename std::list<T>::const_iterator it) : it_(it) {}
+    explicit inline const_iterator(typename std::list<T>::const_iterator it)
+        : it_(it) {}
     inline self_type& operator++() {
       ++it_;
       return *this;
     }
-    inline self_type operator++(int) {
+    inline self_type operator++(int ignored) {
       self_type result(*this);
       ++(*this);
       return result;
@@ -123,7 +124,7 @@ class list_set {
       --it_;
       return *this;
     }
-    inline self_type operator--(int) {
+    inline self_type operator--(int ignored) {
       self_type result(*this);
       --(*this);
       return result;

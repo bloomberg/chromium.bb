@@ -128,7 +128,7 @@ TEST_F(IndexedDBTest, SetForceKeepSessionState) {
 
 class MockWebIDBDatabase : public WebKit::WebIDBDatabase {
  public:
-  MockWebIDBDatabase(bool expect_force_close)
+  explicit MockWebIDBDatabase(bool expect_force_close)
       : expect_force_close_(expect_force_close), force_close_called_(false) {}
 
   virtual ~MockWebIDBDatabase() {

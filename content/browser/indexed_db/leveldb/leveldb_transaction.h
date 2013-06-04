@@ -34,7 +34,7 @@ class CONTENT_EXPORT LevelDBTransaction
   scoped_ptr<LevelDBIterator> CreateIterator();
 
  private:
-  LevelDBTransaction(LevelDBDatabase* db);
+  explicit LevelDBTransaction(LevelDBDatabase* db);
   virtual ~LevelDBTransaction();
   friend class base::RefCounted<LevelDBTransaction>;
 
@@ -97,7 +97,7 @@ class CONTENT_EXPORT LevelDBTransaction
     void Reset();
 
    private:
-    TreeIterator(LevelDBTransaction* transaction);
+    explicit TreeIterator(LevelDBTransaction* transaction);
     mutable TreeType::Iterator iterator_;  // Dereferencing this is non-const.
     TreeType* tree_;
     LevelDBTransaction* transaction_;
@@ -120,7 +120,7 @@ class CONTENT_EXPORT LevelDBTransaction
     void TreeChanged();
 
    private:
-    TransactionIterator(scoped_refptr<LevelDBTransaction> transaction);
+    explicit TransactionIterator(scoped_refptr<LevelDBTransaction> transaction);
     void HandleConflictsAndDeletes();
     void SetCurrentIteratorToSmallestKey();
     void SetCurrentIteratorToLargestKey();
@@ -167,7 +167,7 @@ class LevelDBWriteOnlyTransaction {
   bool Commit();
 
  private:
-  LevelDBWriteOnlyTransaction(LevelDBDatabase* db);
+  explicit LevelDBWriteOnlyTransaction(LevelDBDatabase* db);
 
   LevelDBDatabase* db_;
   scoped_ptr<LevelDBWriteBatch> write_batch_;

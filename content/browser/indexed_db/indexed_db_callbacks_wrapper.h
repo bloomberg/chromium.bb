@@ -72,7 +72,7 @@ class CONTENT_EXPORT IndexedDBCallbacksWrapper
   // From IDBFactory.open()/deleteDatabase()
   virtual void OnBlocked(int64 existing_version);
   // From IDBFactory.open()
-  virtual void OnUpgradeNeeded(int64 /* old_version */,
+  virtual void OnUpgradeNeeded(int64 old_version,
                                scoped_refptr<IndexedDBDatabase> db,
                                const IndexedDBDatabaseMetadata& metadata);
   virtual void OnSuccess(scoped_refptr<IndexedDBDatabase> db,

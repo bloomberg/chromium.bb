@@ -5,6 +5,7 @@
 #ifndef CONTENT_BROWSER_INDEXED_DB_INDEXED_DB_CURSOR_H_
 #define CONTENT_BROWSER_INDEXED_DB_INDEXED_DB_CURSOR_H_
 
+#include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "content/common/indexed_db/indexed_db_key.h"
 
@@ -14,7 +15,7 @@ class IndexedDBCallbacksWrapper;
 
 class IndexedDBCursor : public base::RefCounted<IndexedDBCursor> {
  public:
-  virtual void Advance(unsigned long count,
+  virtual void Advance(uint32 count,
                        scoped_refptr<IndexedDBCallbacksWrapper> callbacks) = 0;
   virtual void ContinueFunction(
       scoped_ptr<IndexedDBKey> key,

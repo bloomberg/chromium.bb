@@ -101,7 +101,7 @@ bool IndexedDBTransactionCoordinator::CanRunTransaction(
   DCHECK(queued_transactions_.has(transaction));
   switch (transaction->mode()) {
     case indexed_db::TRANSACTION_VERSION_CHANGE:
-      DCHECK(queued_transactions_.size() == 1);
+      DCHECK_EQ(static_cast<size_t>(1), queued_transactions_.size());
       DCHECK(started_transactions_.empty());
       return true;
 
