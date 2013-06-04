@@ -754,9 +754,9 @@
             'message_pump_glib_unittest.cc',
           ]
         }],
-        # This is needed to trigger the dll copy step on windows.
-        # TODO(mark): This should not be necessary.
         ['OS == "win"', {
+          # This is needed to trigger the dll copy step on windows.
+          # TODO(mark): This should not be necessary.
           'dependencies': [
             '../third_party/icu/icu.gyp:icudata',
           ],
@@ -769,6 +769,18 @@
           # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
           'msvs_disabled_warnings': [
             4267,
+          ],
+          # This is needed so base_unittests uses the allocator shim, as
+          # SecurityTest.MemoryAllocationRestriction* tests are dependent
+          # on tcmalloc.
+          # TODO(wfh): crbug.com/246278 Move tcmalloc specific tests into
+          # their own test suite.
+          'conditions': [
+            ['win_use_allocator_shim==1', {
+              'dependencies': [
+                'allocator/allocator.gyp:allocator',
+              ],
+            }],
           ],
         }, {  # OS != "win"
           'dependencies': [
