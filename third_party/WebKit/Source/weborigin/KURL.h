@@ -60,6 +60,9 @@ public:
     KURL(ParsedURLStringTag, const String&);
     explicit KURL(WTF::HashTableDeletedValueType);
 
+    // Creates an isolated URL object suitable for sending to another thread.
+    static KURL createIsolated(ParsedURLStringTag, const String&);
+
     bool isHashTableDeletedValue() const { return string().isHashTableDeletedValue(); }
 
     // Resolves the relative URL with the given base URL. If provided, the

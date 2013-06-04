@@ -73,7 +73,7 @@ KURL BlobURL::createBlobURL(const String& originString)
 {
     ASSERT(!originString.isEmpty());
     String urlString = "blob:" + encodeWithURLEscapeSequences(originString) + '/' + createCanonicalUUIDString();
-    return KURL(ParsedURLString, urlString);
+    return KURL::createIsolated(ParsedURLString, urlString);
 }
 
 } // namespace WebCore

@@ -187,6 +187,13 @@ KURL::KURL(ParsedURLStringTag, const String& url)
     }
 }
 
+KURL KURL::createIsolated(ParsedURLStringTag, const String& url)
+{
+    // FIXME: We should be able to skip this extra copy and created an
+    // isolated KURL more efficiently.
+    return KURL(ParsedURLString, url).copy();
+}
+
 // Constructs a new URL given a base URL and a possibly relative input URL.
 // This assumes UTF-8 encoding.
 KURL::KURL(const KURL& base, const String& relative)
