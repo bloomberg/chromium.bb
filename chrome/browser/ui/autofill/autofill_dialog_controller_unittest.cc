@@ -4,6 +4,7 @@
 
 #include <map>
 
+#include "base/command_line.h"
 #include "base/guid.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
@@ -21,7 +22,9 @@
 #include "components/autofill/browser/wallet/instrument.h"
 #include "components/autofill/browser/wallet/wallet_address.h"
 #include "components/autofill/browser/wallet/wallet_client.h"
+#include "components/autofill/browser/wallet/wallet_service_url.h"
 #include "components/autofill/browser/wallet/wallet_test_util.h"
+#include "components/autofill/common/autofill_switches.h"
 #include "components/autofill/common/form_data.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/test_browser_thread.h"
@@ -1888,6 +1891,20 @@ TEST_F(AutofillDialogControllerTest, ShippingSectionCanBeHidden) {
   FillCreditCardInputs();
   controller()->OnAccept();
   EXPECT_TRUE(form_structure());
+}
+
+TEST_F(AutofillDialogControllerTest, NotProdNotification) {
+  // To make IsPayingWithWallet() true.
+  controller()->OnDidGetWalletItems(wallet::GetTestWalletItems());
+
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  ASSERT_FALSE(command_line->HasSwitch(switches::kWalletServiceUseProd));
+  EXPECT_FALSE(
+      NotificationsOfType(DialogNotification::DEVELOPER_WARNING).empty());
+
+  command_line->AppendSwitch(switches::kWalletServiceUseProd);
+  EXPECT_TRUE(
+      NotificationsOfType(DialogNotification::DEVELOPER_WARNING).empty());
 }
 
 }  // namespace autofill

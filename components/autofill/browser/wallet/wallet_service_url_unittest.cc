@@ -2,7 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/command_line.h"
 #include "components/autofill/browser/wallet/wallet_service_url.h"
+#include "components/autofill/common/autofill_switches.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -42,6 +44,21 @@ TEST(WalletServiceUrl, CheckDefaultUrls) {
   EXPECT_EQ("https://wallet-web.sandbox.google.com/checkout/dehEfe?"
             "s7e=cardNumber%3Bcvv",
             GetEscrowUrl().spec());
+}
+
+TEST(WalletServiceUrl, IsUsingProd) {
+  // The sandbox servers are the default (for now). Update if this changes.
+  EXPECT_FALSE(IsUsingProd());
+
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  command_line->AppendSwitch(switches::kWalletServiceUseProd);
+  EXPECT_TRUE(IsUsingProd());
+
+  const GURL prod_get_items_url = GetGetWalletItemsUrl();
+  command_line->AppendSwitchASCII(switches::kWalletServiceUrl, "http://goo.gl");
+  EXPECT_FALSE(IsUsingProd());
+
+  ASSERT_NE(prod_get_items_url, GetGetWalletItemsUrl());
 }
 
 }  // namespace wallet

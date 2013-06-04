@@ -148,5 +148,9 @@ bool IsSignInContinueUrl(const GURL& url) {
          url.path() == final_url.path();
 }
 
+bool IsUsingProd() {
+  return GetWalletHostUrl() == GURL(kProdWalletServiceUrl);
+}
+
 }  // namespace wallet
 }  // namespace autofill

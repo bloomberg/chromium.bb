@@ -26,6 +26,7 @@ SkColor DialogNotification::GetBackgroundColor() const {
     case DialogNotification::WALLET_ERROR:
     case DialogNotification::AUTOCHECKOUT_ERROR:
       return SkColorSetRGB(0xfc, 0xf3, 0xbf);
+    case DialogNotification::DEVELOPER_WARNING:
     case DialogNotification::SECURITY_WARNING:
     case DialogNotification::VALIDATION_ERROR:
       return kWarningColor;
@@ -45,6 +46,7 @@ SkColor DialogNotification::GetTextColor() const {
     case DialogNotification::WALLET_ERROR:
     case DialogNotification::AUTOCHECKOUT_ERROR:
       return SK_ColorBLACK;
+    case DialogNotification::DEVELOPER_WARNING:
     case DialogNotification::EXPLANATORY_MESSAGE:
     case DialogNotification::WALLET_SIGNIN_PROMO:
     case DialogNotification::WALLET_USAGE_CONFIRMATION:

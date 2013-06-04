@@ -1445,6 +1445,12 @@ std::vector<DialogNotification>
         ASCIIToUTF16("New data failed validation on server side")));
   }
 
+  if (IsPayingWithWallet() && !wallet::IsUsingProd()) {
+    notifications.push_back(DialogNotification(
+        DialogNotification::DEVELOPER_WARNING,
+        l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_NOT_PROD_WARNING)));
+  }
+
   return notifications;
 }
 

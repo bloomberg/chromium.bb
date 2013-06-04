@@ -33,6 +33,10 @@ GURL GetSignInContinueUrl();
 // url.  Can be used for detection of navigation to the continue url.
 bool IsSignInContinueUrl(const GURL& url);
 
+// Whether calls to Online Wallet are hitting the production server rather than
+// a sandbox or some malicious endpoint.
+bool IsUsingProd();
+
 }  // namespace wallet
 }  // namespace autofill
 
