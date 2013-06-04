@@ -1,3 +1,4 @@
+CONSOLE MESSAGE: "/*@ sourceURL=" source URL declaration is deprecated, "/*# sourceURL=" declaration should be used instead.
 Tests that stylesheets with sourceURL comment are shown in the Sources panel.
 
 
@@ -5,9 +6,13 @@ Running: testSourceURLCommentInInlineScript
 
 Running: testSourceURLComment
 body { color: black; }
-/*@ sourceURL=css/addedInlineStylesheet.css */
+/*# sourceURL=css/addedInlineStylesheet.css */
+
+Running: testDeprecatedSourceURLComment
+body { color: black; }
+/*@ sourceURL=css/addedInlineStylesheetDeprecated.css */
 
 Running: testNonRelativeURL
 body { color: red; }
-/*@ sourceURL=/css/nonRelativeInlineStylesheet.css */
+/*# sourceURL=/css/nonRelativeInlineStylesheet.css */
 

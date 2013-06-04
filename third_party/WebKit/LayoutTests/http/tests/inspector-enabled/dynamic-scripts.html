@@ -16,7 +16,7 @@ function appendDynamicScriptElement(src, content)
 
 function loadScripts()
 {
-    var sourceURLComment = "\n //@ sourceURL=";
+    var sourceURLComment = "\n //# sourceURL=";
     window.eval("function fooEval() {}");
     window.eval("function fooEvalSourceURL() {}" + sourceURLComment + "evalSourceURL.js");
     appendDynamicScriptElement("", "function fooScriptElementContent1() {}");

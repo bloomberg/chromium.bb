@@ -17,7 +17,7 @@ Stylesheet added:
 .inline-style-added-by-parser-with-source-url {
    color: green;
 }
-/*@ sourceURL=inlineStyleAddedByParser.css*/
+/*# sourceURL=inlineStyleAddedByParser.css*/
 
 Stylesheet added:
   - isInline: false
@@ -36,7 +36,7 @@ Stylesheet added:
 .inline-style-added-by-document-write-with-source-url {
    color: yellow;
 }
-/*@ sourceURL=inlineStyleAddedByDocumentWrite.css*/
+/*# sourceURL=inlineStyleAddedByDocumentWrite.css*/
 
 Stylesheet added:
   - isInline: false
@@ -52,7 +52,7 @@ Stylesheet added:
   - contents: .inline-style-created-by-script-with-source-url {
    color: grey;
 }
-/*@ sourceURL=inlineStyleCreatedByScript.css*/
+/*# sourceURL=inlineStyleCreatedByScript.css*/
 Page reloaded.
 [expanded] 
 element.style  { ()

@@ -143,4 +143,10 @@ void WorkerDebuggerAgent::unmuteConsole()
     // We don't need to mute console for workers.
 }
 
+void WorkerDebuggerAgent::addConsoleMessage(MessageSource source, MessageLevel level, const String& message, const String& sourceURL)
+{
+    ScriptExecutionContext* context = m_inspectedWorkerContext;
+    context->addConsoleMessage(source, level, message, sourceURL, 0);
+}
+
 } // namespace WebCore

@@ -92,7 +92,7 @@ function test()
         {
             var originalFileContent = "<foo content>";
             var scriptURL = "http://localhost/html/foo.js";
-            var scriptContent = originalFileContent + "\n  //@ sourceURL=" + scriptURL + "  \n ";
+            var scriptContent = originalFileContent + "\n  //# sourceURL=" + scriptURL + "  \n ";
             function uiSourceCodeAdded(uiSourceCode) { }
 
             function unloadScript()

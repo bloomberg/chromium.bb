@@ -66,6 +66,7 @@
 #include "core/page/Frame.h"
 #include "core/page/FrameView.h"
 #include "core/page/Page.h"
+#include "core/page/PageConsole.h"
 #include "core/page/Settings.h"
 #include "core/platform/Cookie.h"
 #include "core/platform/text/RegularExpression.h"
@@ -908,6 +909,26 @@ Frame* InspectorPageAgent::assertFrame(ErrorString* errorString, const String& f
     if (!frame)
         *errorString = "No frame for given id found";
     return frame;
+}
+
+String InspectorPageAgent::resourceSourceMapURL(const String& url)
+{
+    DEFINE_STATIC_LOCAL(String, sourceMapHttpHeader, (ASCIILiteral("SourceMap")));
+    DEFINE_STATIC_LOCAL(String, deprecatedSourceMapHttpHeader, (ASCIILiteral("X-SourceMap")));
+    if (url.isEmpty())
+        return String();
+    Frame* frame = mainFrame();
+    if (!frame)
+        return String();
+    CachedResource* resource = cachedResource(frame, KURL(ParsedURLString, url));
+    if (!resource)
+        return String();
+    String deprecatedHeaderSourceMapURL = resource->response().httpHeaderField(deprecatedSourceMapHttpHeader);
+    if (!deprecatedHeaderSourceMapURL.isEmpty()) {
+        m_page->console()->addMessage(NetworkMessageSource, WarningMessageLevel, "Resource is served with deprecated header X-SourceMap, SourceMap should be used instead.", url, 0);
+        return deprecatedHeaderSourceMapURL;
+    }
+    return resource->response().httpHeaderField(sourceMapHttpHeader);
 }
 
 // static

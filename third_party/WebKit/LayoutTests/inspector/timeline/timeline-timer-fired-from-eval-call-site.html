@@ -10,7 +10,7 @@ function performActions()
         "var fn2 = function() {console.markTimeline(\"Script evaluated\");};\\n" +
         "var fn1 = function() {window.setTimeout(fn2, 1);};\\n" +
         "window.setTimeout(fn1, 1);\\n"
-    content = "eval('" + content + "//@ sourceURL=fromEval.js" + "');";
+    content = "eval('" + content + "//# sourceURL=fromEval.js" + "');";
     var scriptElement = document.createElement('script');
     var contentNode = document.createTextNode(content);
     scriptElement.appendChild(contentNode);

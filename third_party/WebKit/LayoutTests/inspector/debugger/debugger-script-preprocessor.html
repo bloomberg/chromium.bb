@@ -16,18 +16,18 @@ function test()
     function preprocessor(script, name)
     {
         if (script.indexOf("dynamic" + "Script1") !== -1)
-            return script + "//@ sourceURL=dynamicScript1";
+            return script + "//# sourceURL=dynamicScript1";
         if (script.indexOf("dynamic" + "Script2") !== -1) {
             try {
                 var w = eval("window");
-                return script + "//@ sourceURL=FAIL_window_should_not_be_there";
+                return script + "//# sourceURL=FAIL_window_should_not_be_there";
             } catch (e) {
-                return script + "//@ sourceURL=dynamicScript2";
+                return script + "//# sourceURL=dynamicScript2";
             }
         }
         // Verify that the |name| argument is correct. Note: if name is not passed in
         // the results will be a script with a sourceURL equal to the original file name.
-        return script + "//@ sourceURL=" + name + ".js"; 
+        return script + "//# sourceURL=" + name + ".js"; 
     }
 
     InspectorTest.startDebuggerTest(step1);

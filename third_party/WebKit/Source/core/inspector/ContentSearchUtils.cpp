@@ -162,25 +162,36 @@ PassRefPtr<TypeBuilder::Array<TypeBuilder::Page::SearchMatch> > searchInTextByLi
     return result;
 }
 
-String findMagicComment(const String& content, const String& name, MagicCommentType commentType)
+static String findMagicComment(const String& content, const String& name, MagicCommentType commentType, bool* deprecated = 0)
 {
     ASSERT(name.find("=") == notFound);
+    if (deprecated)
+        *deprecated = false;
     String pattern;
+    String deprecatedPattern;
     switch (commentType) {
     case JavaScriptMagicComment:
-        pattern= "//@[\040\t]" + createSearchRegexSource(name) + "=[\040\t]*([^\\s\'\"]*)[\040\t]*$";
+        pattern = "//#[\040\t]" + createSearchRegexSource(name) + "=[\040\t]*([^\\s\'\"]*)[\040\t]*$";
+        deprecatedPattern = "//@[\040\t]" + createSearchRegexSource(name) + "=[\040\t]*([^\\s\'\"]*)[\040\t]*$";
         break;
     case CSSMagicComment:
-        pattern= "/\\*@[\040\t]" + createSearchRegexSource(name) + "=[\040\t]*([^\\s]*)[\040\t]*\\*/[\040\t]*$";
+        pattern = "/\\*#[\040\t]" + createSearchRegexSource(name) + "=[\040\t]*([^\\s]*)[\040\t]*\\*/[\040\t]*$";
+        deprecatedPattern = "/\\*@[\040\t]" + createSearchRegexSource(name) + "=[\040\t]*([^\\s]*)[\040\t]*\\*/[\040\t]*$";
         break;
     default:
         ASSERT_NOT_REACHED();
         return String();
     }
     RegularExpression regex(pattern, TextCaseSensitive, MultilineEnabled);
+    RegularExpression deprecatedRegex(deprecatedPattern, TextCaseSensitive, MultilineEnabled);
 
     int matchLength;
     int offset = regex.match(content, 0, &matchLength);
+    if (offset == -1) {
+        offset = deprecatedRegex.match(content, 0, &matchLength);
+        if (offset != -1 && deprecated)
+            *deprecated = true;
+    }
     if (offset == -1)
         return String();
 
@@ -203,14 +214,14 @@ String findMagicComment(const String& content, const String& name, MagicCommentT
     }
 }
 
-String findSourceURL(const String& content, MagicCommentType commentType)
+String findSourceURL(const String& content, MagicCommentType commentType, bool* deprecated)
 {
-    return findMagicComment(content, "sourceURL", commentType);
+    return findMagicComment(content, "sourceURL", commentType, deprecated);
 }
 
-String findSourceMapURL(const String& content, MagicCommentType commentType)
+String findSourceMapURL(const String& content, MagicCommentType commentType, bool* deprecated)
 {
-    return findMagicComment(content, "sourceMappingURL", commentType);
+    return findMagicComment(content, "sourceMappingURL", commentType, deprecated);
 }
 
 } // namespace ContentSearchUtils

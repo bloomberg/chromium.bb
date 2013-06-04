@@ -170,6 +170,7 @@ public:
     Frame* findFrameWithSecurityOrigin(const String& originRawString);
     Frame* assertFrame(ErrorString*, const String& frameId);
     String scriptPreprocessor() { return m_scriptPreprocessor; }
+    String resourceSourceMapURL(const String& url);
     static DocumentLoader* assertDocumentLoader(ErrorString*, Frame*);
 
 private:

@@ -635,11 +635,13 @@ PassRefPtr<Array<TypeBuilder::Debugger::CallFrame> > InspectorDebuggerAgent::cur
 
 String InspectorDebuggerAgent::sourceMapURLForScript(const Script& script)
 {
-    DEFINE_STATIC_LOCAL(String, sourceMapHttpHeader, (ASCIILiteral("X-SourceMap")));
-
-    String sourceMapURL = ContentSearchUtils::findSourceMapURL(script.source, ContentSearchUtils::JavaScriptMagicComment);
-    if (!sourceMapURL.isEmpty())
+    bool deprecated;
+    String sourceMapURL = ContentSearchUtils::findSourceMapURL(script.source, ContentSearchUtils::JavaScriptMagicComment, &deprecated);
+    if (!sourceMapURL.isEmpty()) {
+        if (deprecated)
+            addConsoleMessage(NetworkMessageSource, WarningMessageLevel, "\"//@ sourceMapURL=\" source mapping URL declaration is deprecated, \"//# sourceMapURL=\" declaration should be used instead.", script.url);
         return sourceMapURL;
+    }
 
     if (script.url.isEmpty())
         return String();
@@ -647,11 +649,7 @@ String InspectorDebuggerAgent::sourceMapURLForScript(const Script& script)
     InspectorPageAgent* pageAgent = m_instrumentingAgents->inspectorPageAgent();
     if (!pageAgent)
         return String();
-
-    CachedResource* resource = pageAgent->cachedResource(pageAgent->mainFrame(), KURL(ParsedURLString, script.url));
-    if (resource)
-        return resource->response().httpHeaderField(sourceMapHttpHeader);
-    return String();
+    return pageAgent->resourceSourceMapURL(script.url);
 }
 
 // JavaScriptDebugListener functions
@@ -663,8 +661,12 @@ void InspectorDebuggerAgent::didParseSource(const String& scriptId, const Script
     String sourceMapURL = sourceMapURLForScript(script);
     String* sourceMapURLParam = sourceMapURL.isNull() ? 0 : &sourceMapURL;
     String sourceURL;
-    if (!script.startLine && !script.startColumn)
-        sourceURL = ContentSearchUtils::findSourceURL(script.source, ContentSearchUtils::JavaScriptMagicComment);
+    if (!script.startLine && !script.startColumn) {
+        bool deprecated;
+        sourceURL = ContentSearchUtils::findSourceURL(script.source, ContentSearchUtils::JavaScriptMagicComment, &deprecated);
+        if (deprecated)
+            addConsoleMessage(NetworkMessageSource, WarningMessageLevel, "\"//@ sourceURL=\" source URL declaration is deprecated, \"//# sourceURL=\" declaration should be used instead.", script.url);
+    }
     bool hasSourceURL = !sourceURL.isEmpty();
     String scriptURL = hasSourceURL ? sourceURL : script.url;
     bool* hasSourceURLParam = hasSourceURL ? &hasSourceURL : 0;

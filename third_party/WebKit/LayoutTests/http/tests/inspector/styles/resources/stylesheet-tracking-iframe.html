@@ -18,7 +18,7 @@ function handleMessage(event)
     switch (event.data) {
     case "addStyleSheets":
         addStyleSheet("body { background-color: yellow; }");
-        addStyleSheet("body { background-color: yellow; }\n/*@ sourceURL=stylesheet-added-in-iframe.css */");
+        addStyleSheet("body { background-color: yellow; }\n/*# sourceURL=stylesheet-added-in-iframe.css */");
         break;
     case "removeStyleSheets":
         for (var i = 0; i < styleElements.length; ++i)

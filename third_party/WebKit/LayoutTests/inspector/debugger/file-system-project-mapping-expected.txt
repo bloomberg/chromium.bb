@@ -23,7 +23,7 @@ Adding file system.
 Dumping uiSourceCode and script content:
     uiSourceCode: <foo content>
     script: <foo content>
-  //@ sourceURL=http://localhost/html/foo.js  
+  //# sourceURL=http://localhost/html/foo.js  
  
  - hasDivergedFromVM: false
  - sourceFrame._muted: false
@@ -34,7 +34,7 @@ Committing uiSourceCode with live edit failure:
 Dumping uiSourceCode and script content:
     uiSourceCode: <foo content edited>
     script: <foo content>
-  //@ sourceURL=http://localhost/html/foo.js  
+  //# sourceURL=http://localhost/html/foo.js  
  
  - hasDivergedFromVM: true
  - sourceFrame._muted: true
@@ -43,7 +43,7 @@ Loading script.
 Dumping uiSourceCode and script content:
     uiSourceCode: <foo content edited>
     script: <foo content>
-  //@ sourceURL=http://localhost/html/foo.js  
+  //# sourceURL=http://localhost/html/foo.js  
  
  - hasDivergedFromVM: true
  - sourceFrame._muted: true
@@ -54,7 +54,7 @@ Committing uiSourceCode again (with live edit success now):
 Dumping uiSourceCode and script content:
     uiSourceCode: <foo content edited again>
     script: <foo content edited again>
- //@ sourceURL=http://localhost/html/foo.js
+ //# sourceURL=http://localhost/html/foo.js
  - hasDivergedFromVM: false
  - sourceFrame._muted: false
 Reloading page:

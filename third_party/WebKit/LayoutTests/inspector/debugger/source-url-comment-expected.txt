@@ -1,3 +1,4 @@
+CONSOLE MESSAGE: "//@ sourceURL=" source URL declaration is deprecated, "//# sourceURL=" declaration should be used instead.
 Tests that evals with sourceURL comment are shown in scripts panel.
 
 Debugger was enabled.
@@ -6,14 +7,18 @@ Running: testSourceURLCommentInInlineScript
 
 Running: testSourceURLComment
 function keepAlive() {}
-//@ sourceURL=evalURL.js
+//# sourceURL=evalURL.js
+
+Running: testDeprecatedSourceURLComment
+function keepAlive() {}
+//@ sourceURL=deprecatedEvalURL.js
 
 Running: testSourceURLCommentInDynamicScript
 function keepAliveInDynamicScript() {}
-//@ sourceURL=dynamicScriptURL.js
+//# sourceURL=dynamicScriptURL.js
 
 Running: testNonRelativeURL
 function relativeURLScript() {}
-//@ sourceURL=/js/nonRelativeURL.js
+//# sourceURL=/js/nonRelativeURL.js
 Debugger was disabled.
 

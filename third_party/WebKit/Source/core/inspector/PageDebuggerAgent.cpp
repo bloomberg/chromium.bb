@@ -36,6 +36,7 @@
 #include "core/inspector/InspectorOverlay.h"
 #include "core/inspector/InspectorPageAgent.h"
 #include "core/inspector/InstrumentingAgents.h"
+#include "core/page/Page.h"
 #include "core/page/PageConsole.h"
 
 namespace WebCore {
@@ -91,6 +92,11 @@ void PageDebuggerAgent::muteConsole()
 void PageDebuggerAgent::unmuteConsole()
 {
     PageConsole::unmute();
+}
+
+void PageDebuggerAgent::addConsoleMessage(MessageSource source, MessageLevel level, const String& message, const String& sourceURL)
+{
+    m_pageAgent->page()->console()->addMessage(source, level, message, sourceURL, 0);
 }
 
 InjectedScript PageDebuggerAgent::injectedScriptForEval(ErrorString* errorString, const int* executionContextId)

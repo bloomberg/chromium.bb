@@ -1,0 +1,45 @@
+<html>
+<head>
+<style>
+#inspected
+{
+  color: green;
+}
+</style>
+<link rel="stylesheet" href="resources/selector-line-deprecated.css" />
+<script src="../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../http/tests/inspector/elements-test.js"></script>
+<script>
+
+function test()
+{
+    WebInspector.experimentsSettings.sass.isEnabled = function() { return true; }
+    InspectorTest.reloadPage(step1);
+
+    function step1()
+    {
+        WebInspector.showPanel("elements");
+        InspectorTest.selectNodeAndWaitForStyles("inspected", step2);
+    }
+
+    function step2()
+    {
+        InspectorTest.dumpSelectedElementStyles(true);
+        InspectorTest.completeTest();
+    }
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+Tests that selector line is computed correctly regardless of its start column. <a href="https://bugs.webkit.org/show_bug.cgi?id=110732">Bug 110732</a>.
+</p>
+
+<div id="container">
+    <div id="inspected">Text</div>
+</div>
+
+</body>
+</html>

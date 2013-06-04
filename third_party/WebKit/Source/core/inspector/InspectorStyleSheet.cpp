@@ -50,6 +50,8 @@
 #include "core/inspector/InspectorCSSAgent.h"
 #include "core/inspector/InspectorPageAgent.h"
 #include "core/inspector/InspectorValues.h"
+#include "core/page/Page.h"
+#include "core/page/PageConsole.h"
 #include "core/platform/text/RegularExpression.h"
 
 #include <wtf/OwnPtr.h>
@@ -1478,10 +1480,13 @@ String InspectorStyleSheet::sourceURL() const
     String styleSheetText;
     bool success = getText(&styleSheetText);
     if (success) {
-        String commentValue = ContentSearchUtils::findSourceURL(styleSheetText, ContentSearchUtils::CSSMagicComment);
+        bool deprecated;
+        String commentValue = ContentSearchUtils::findSourceURL(styleSheetText, ContentSearchUtils::CSSMagicComment, &deprecated);
         if (!commentValue.isEmpty()) {
+            if (deprecated)
+                m_pageAgent->page()->console()->addMessage(NetworkMessageSource, WarningMessageLevel, "\"/*@ sourceURL=\" source URL declaration is deprecated, \"/*# sourceURL=\" declaration should be used instead.", finalURL(), 0);
             m_sourceURL = commentValue;
-            return m_sourceURL;
+            return commentValue;
         }
     }
     m_sourceURL = "";
@@ -1523,26 +1528,21 @@ bool InspectorStyleSheet::startsAtZero() const
 
 String InspectorStyleSheet::sourceMapURL() const
 {
-    DEFINE_STATIC_LOCAL(String, sourceMapHttpHeader, (ASCIILiteral("X-SourceMap")));
-
     if (m_origin != TypeBuilder::CSS::StyleSheetOrigin::Regular)
         return String();
 
     String styleSheetText;
     bool success = getText(&styleSheetText);
     if (success) {
-        String commentValue = ContentSearchUtils::findSourceMapURL(styleSheetText, ContentSearchUtils::CSSMagicComment);
-        if (!commentValue.isEmpty())
+        bool deprecated;
+        String commentValue = ContentSearchUtils::findSourceMapURL(styleSheetText, ContentSearchUtils::CSSMagicComment, &deprecated);
+        if (!commentValue.isEmpty()) {
+            if (deprecated)
+                m_pageAgent->page()->console()->addMessage(NetworkMessageSource, WarningMessageLevel, "\"/*@ sourceMapURL=\" source mapping URL declaration is deprecated, \"/*# sourceMapURL=\" declaration should be used instead.", finalURL(), 0);
             return commentValue;
+        }
     }
-
-    if (finalURL().isEmpty())
-        return String();
-
-    CachedResource* resource = m_pageAgent->cachedResource(m_pageAgent->mainFrame(), KURL(ParsedURLString, finalURL()));
-    if (resource)
-        return resource->response().httpHeaderField(sourceMapHttpHeader);
-    return String();
+    return m_pageAgent->resourceSourceMapURL(finalURL());
 }
 
 InspectorCSSId InspectorStyleSheet::ruleOrStyleId(CSSStyleDeclaration* style) const
