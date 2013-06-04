@@ -547,29 +547,6 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         _, regular_output, _ = logging_run(['failures/unexpected/checksum-with-matching-image.html'], tests_included=True, host=host)
         self.assertTrue(host.filesystem.read_text_file('/tmp/layout-test-results/full_results.json').find('"num_regressions":0') != -1)
 
-    def test_crash_log(self):
-        # FIXME: Need to rewrite these tests to not be mac-specific, or move them elsewhere.
-        # Currently CrashLog uploading only works on Darwin.
-        if not self._platform.is_mac():
-            return
-        mock_crash_report = make_mock_crash_report_darwin('DumpRenderTree', 12345)
-        host = MockHost()
-        host.filesystem.write_text_file('/Users/mock/Library/Logs/DiagnosticReports/DumpRenderTree_2011-06-13-150719_quadzen.crash', mock_crash_report)
-        _, regular_output, _ = logging_run(['failures/unexpected/crash-with-stderr.html'], tests_included=True, host=host)
-        expected_crash_log = mock_crash_report
-        self.assertEqual(host.filesystem.read_text_file('/tmp/layout-test-results/failures/unexpected/crash-with-stderr-crash-log.txt'), expected_crash_log)
-
-    def test_web_process_crash_log(self):
-        # FIXME: Need to rewrite these tests to not be mac-specific, or move them elsewhere.
-        # Currently CrashLog uploading only works on Darwin.
-        if not self._platform.is_mac():
-            return
-        mock_crash_report = make_mock_crash_report_darwin('WebProcess', 12345)
-        host = MockHost()
-        host.filesystem.write_text_file('/Users/mock/Library/Logs/DiagnosticReports/WebProcess_2011-06-13-150719_quadzen.crash', mock_crash_report)
-        logging_run(['failures/unexpected/web-process-crash-with-stderr.html'], tests_included=True, host=host)
-        self.assertEqual(host.filesystem.read_text_file('/tmp/layout-test-results/failures/unexpected/web-process-crash-with-stderr-crash-log.txt'), mock_crash_report)
-
     def test_exit_after_n_failures_upload(self):
         host = MockHost()
         details, regular_output, user = logging_run(
