@@ -62,8 +62,8 @@ void UpdateThumbnail(const ThumbnailingContext& context,
           << context.score.ToString();
 }
 
-void ProcessCapturedBitmap(ThumbnailingContext* context,
-                           ThumbnailingAlgorithm* algorithm,
+void ProcessCapturedBitmap(scoped_refptr<ThumbnailingContext> context,
+                           scoped_refptr<ThumbnailingAlgorithm> algorithm,
                            bool succeeded,
                            const SkBitmap& bitmap) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
@@ -115,11 +115,11 @@ void AsyncProcessThumbnail(content::WebContents* web_contents,
       copy_rect.size(),
       ui::GetScaleFactorForNativeView(view->GetNativeView()),
       &copy_rect,
-      &copy_size);
+      &context->requested_copy_size);
 
   render_widget_host->CopyFromBackingStore(
       copy_rect,
-      copy_size,
+      context->requested_copy_size,
       base::Bind(&ProcessCapturedBitmap, context, algorithm));
 }
 
@@ -241,4 +241,3 @@ void ThumbnailTabHelper::WidgetHidden(RenderWidgetHost* widget) {
     return;
   UpdateThumbnailIfNecessary(web_contents());
 }
-

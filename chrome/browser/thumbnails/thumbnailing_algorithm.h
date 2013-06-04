@@ -41,7 +41,7 @@ class ThumbnailingAlgorithm
   // information on the source, including if and how it was clipped.
   // The function shall invoke |callback| once done, passing in fully populated
   // |context| along with resulting thumbnail bitmap.
-  virtual void ProcessBitmap(ThumbnailingContext* context,
+  virtual void ProcessBitmap(scoped_refptr<ThumbnailingContext> context,
                              const ConsumerCallback& callback,
                              const SkBitmap& bitmap) = 0;
 

@@ -72,7 +72,7 @@ void ApplyGaussianGradientMagnitudeFilter(SkBitmap* input_bitmap,
                                           float kernel_sigma) {
   // The purpose of this function is to highlight salient
   // (attention-attracting?) features of the image for use in image
-  // retargetting.
+  // retargeting.
   SkAutoLockPixels source_lock(*input_bitmap);
   DCHECK(input_bitmap);
   DCHECK(input_bitmap->getPixels());
@@ -424,7 +424,7 @@ SkBitmap ComputeDecimatedImage(const SkBitmap& bitmap,
   return target;
 }
 
-SkBitmap CreateRetargettedThumbnailImage(
+SkBitmap CreateRetargetedThumbnailImage(
     const SkBitmap& source_bitmap,
     const gfx::Size& target_size,
     float kernel_sigma) {
@@ -441,7 +441,7 @@ SkBitmap CreateRetargettedThumbnailImage(
     if (!color_utils::ApplyColorReduction(
             source_bitmap, transform, true, &reduced_color)) {
       DLOG(WARNING) << "Failed to compute luminance image from a screenshot. "
-                    << "Cannot compute retargetted thumbnail.";
+                    << "Cannot compute retargeted thumbnail.";
       return SkBitmap();
     }
     DLOG(WARNING) << "Could not compute principal color image for a thumbnail. "

@@ -19,6 +19,10 @@ ThumbnailingContext::ThumbnailingContext(content::WebContents* web_contents,
   score.load_completed = !web_contents->IsLoading() && !load_interrupted;
 }
 
+ThumbnailingContext::ThumbnailingContext()
+  : clip_result(CLIP_RESULT_UNPROCESSED) {
+}
+
 ThumbnailingContext::~ThumbnailingContext() {
 }
 

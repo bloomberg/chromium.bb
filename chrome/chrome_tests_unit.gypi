@@ -1266,6 +1266,7 @@
         'browser/themes/theme_service_unittest.cc',
         'browser/themes/theme_syncable_service_unittest.cc',
         'browser/thumbnails/content_analysis_unittest.cc',
+        'browser/thumbnails/content_based_thumbnailing_algorithm_unittest.cc',
         'browser/thumbnails/render_widget_snapshot_taker_unittest.cc',
         'browser/thumbnails/simple_thumbnail_crop_unittest.cc',
         'browser/thumbnails/thumbnail_service_unittest.cc',

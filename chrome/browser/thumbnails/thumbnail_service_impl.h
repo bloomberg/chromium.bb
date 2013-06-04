@@ -38,6 +38,7 @@ class ThumbnailServiceImpl : public ThumbnailService {
   virtual ~ThumbnailServiceImpl();
 
   scoped_refptr<history::TopSites> top_sites_;
+  bool use_thumbnail_retargeting_;
 
   DISALLOW_COPY_AND_ASSIGN(ThumbnailServiceImpl);
 };

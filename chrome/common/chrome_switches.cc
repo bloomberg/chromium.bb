@@ -683,6 +683,10 @@ const char kEnableSyncSyncedNotifications[] =
 // Enables context menu for selecting groups of tabs.
 const char kEnableTabGroupsContextMenu[]    = "enable-tab-groups-context-menu";
 
+// Enables fanciful thumbnail processing. Used with NTP for
+// instant-extended-api, where thumbnails are generally smaller.
+const char kEnableThumbnailRetargeting[]   = "enable-thumbnail-retargeting";
+
 // Enables Chrome Translate for "alpha languages", that may have less-reliable
 // translation quality than supported languages.
 const char kEnableTranslateAlphaLanguages[] =

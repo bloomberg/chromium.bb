@@ -389,7 +389,7 @@ TEST_F(ThumbnailContentAnalysisTest, ComputeDecimatedImage) {
                                     gfx::Point(0, 0)));
 }
 
-TEST_F(ThumbnailContentAnalysisTest, CreateRetargettedThumbnailImage) {
+TEST_F(ThumbnailContentAnalysisTest, CreateRetargetedThumbnailImage) {
   gfx::Size image_size(1200, 1300);
   gfx::Canvas canvas(image_size, ui::SCALE_FACTOR_100P, true);
 
@@ -475,7 +475,7 @@ TEST_F(ThumbnailContentAnalysisTest, CreateRetargettedThumbnailImage) {
   SkBitmap source =
       skia::GetTopDevice(*canvas.sk_canvas())->accessBitmap(false);
 
-  SkBitmap result = CreateRetargettedThumbnailImage(
+  SkBitmap result = CreateRetargetedThumbnailImage(
       source, gfx::Size(424, 264), 2.5);
   EXPECT_FALSE(result.empty());
 

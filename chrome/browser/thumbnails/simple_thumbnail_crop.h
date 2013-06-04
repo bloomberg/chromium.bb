@@ -23,7 +23,7 @@ class SimpleThumbnailCrop : public ThumbnailingAlgorithm {
                                        gfx::Rect* clipping_rect,
                                        gfx::Size* target_size) const OVERRIDE;
 
-  virtual void ProcessBitmap(ThumbnailingContext* context,
+  virtual void ProcessBitmap(scoped_refptr<ThumbnailingContext> context,
                              const ConsumerCallback& callback,
                              const SkBitmap& bitmap) OVERRIDE;
 
@@ -46,15 +46,20 @@ class SimpleThumbnailCrop : public ThumbnailingAlgorithm {
                                    thumbnails::ClipResult* clip_result);
   static gfx::Size GetCopySizeForThumbnail(ui::ScaleFactor scale_factor,
                                            const gfx::Size& thumbnail_size);
+  static gfx::Rect GetClippingRect(const gfx::Size& source_size,
+                                   const gfx::Size& desired_size,
+                                   ClipResult* clip_result);
+
+  // Computes the size of a thumbnail that should be stored in the database from
+  // |given_size| (expected to be the thumbnail size we would normally want to
+  // see). The returned size is expressed in pixels and is determined by
+  // bumping the resolution up to the maximum scale factor.
+  static gfx::Size ComputeTargetSizeAtMaximumScale(const gfx::Size& given_size);
 
  protected:
   virtual ~SimpleThumbnailCrop();
 
  private:
-  gfx::Size GetThumbnailSizeInPixel() const;
-  static gfx::Rect GetClippingRect(const gfx::Size& source_size,
-                                   const gfx::Size& desired_size,
-                                   ClipResult* clip_result);
   static SkBitmap CreateThumbnail(const SkBitmap& bitmap,
                                   const gfx::Size& desired_size,
                                   ClipResult* clip_result);

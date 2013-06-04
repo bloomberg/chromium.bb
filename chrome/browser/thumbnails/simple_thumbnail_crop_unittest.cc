@@ -196,3 +196,37 @@ TEST_F(SimpleThumbnailCropTest, GetCanvasCopyInfo) {
   EXPECT_EQ(thumbnails::CLIP_RESULT_SOURCE_IS_SMALLER, clip_result);
   EXPECT_EQ(thumbnail_size, target_size_result);
 }
+
+TEST_F(SimpleThumbnailCropTest, GetClippingRect) {
+  const gfx::Size desired_size(300, 200);
+  thumbnails::ClipResult clip_result;
+  // Try out 'microsource'.
+  gfx::Rect clip_rect = SimpleThumbnailCrop::GetClippingRect(
+      gfx::Size(300, 199), desired_size, &clip_result);
+  EXPECT_EQ(thumbnails::CLIP_RESULT_SOURCE_IS_SMALLER, clip_result);
+  EXPECT_EQ(gfx::Point(0, 0).ToString(), clip_rect.origin().ToString());
+  EXPECT_EQ(desired_size.ToString(), clip_rect.size().ToString());
+
+  // Portrait source.
+  clip_rect = SimpleThumbnailCrop::GetClippingRect(
+      gfx::Size(500, 1200), desired_size, &clip_result);
+  EXPECT_EQ(thumbnails::CLIP_RESULT_TALLER_THAN_WIDE, clip_result);
+  EXPECT_EQ(gfx::Point(0, 0).ToString(), clip_rect.origin().ToString());
+  EXPECT_EQ(500, clip_rect.width());
+  EXPECT_GE(1200, clip_rect.height());
+
+  clip_rect = SimpleThumbnailCrop::GetClippingRect(
+      gfx::Size(2000, 800), desired_size, &clip_result);
+  EXPECT_TRUE(clip_result == thumbnails::CLIP_RESULT_WIDER_THAN_TALL ||
+              clip_result == thumbnails::CLIP_RESULT_MUCH_WIDER_THAN_TALL);
+  EXPECT_EQ(0, clip_rect.y());
+  EXPECT_LT(0, clip_rect.x());
+  EXPECT_GE(2000, clip_rect.width());
+  EXPECT_EQ(800, clip_rect.height());
+
+  clip_rect = SimpleThumbnailCrop::GetClippingRect(
+      gfx::Size(900, 600), desired_size, &clip_result);
+  EXPECT_EQ(thumbnails::CLIP_RESULT_NOT_CLIPPED, clip_result);
+  EXPECT_EQ(gfx::Point(0, 0).ToString(), clip_rect.origin().ToString());
+  EXPECT_EQ(gfx::Size(900, 600).ToString(), clip_rect.size().ToString());
+}

@@ -57,9 +57,9 @@ SkBitmap ComputeDecimatedImage(const SkBitmap& bitmap,
 // |kernel_sigma| defines the degree of image smoothing in gradient computation.
 // For a natural-sized (not shrunk) screenshot at 96 DPI and regular font size
 // 5.0 was determined to be a good value.
-SkBitmap CreateRetargettedThumbnailImage(const SkBitmap& source_bitmap,
-                                         const gfx::Size& target_size,
-                                         float kernel_sigma);
+SkBitmap CreateRetargetedThumbnailImage(const SkBitmap& source_bitmap,
+                                        const gfx::Size& target_size,
+                                        float kernel_sigma);
 
 }  // namespace thumbnailing_utils
 
