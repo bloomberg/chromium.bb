@@ -47,7 +47,7 @@ class MockIDBCallbacks : public IndexedDBCallbacksWrapper {
   static scoped_refptr<MockIDBCallbacks> Create() {
     return make_scoped_refptr(new MockIDBCallbacks());
   }
-  virtual void OnError(scoped_refptr<IndexedDBDatabaseError>) OVERRIDE {}
+  virtual void OnError(const IndexedDBDatabaseError& error) OVERRIDE {}
   virtual void OnSuccess(const std::vector<string16>&) OVERRIDE {}
   virtual void OnSuccess(scoped_refptr<IndexedDBCursor> cursor,
                          const IndexedDBKey&,
@@ -87,7 +87,7 @@ class FakeIDBDatabaseCallbacks : public IndexedDBDatabaseCallbacksWrapper {
   virtual void OnVersionChange(int64 old_version, int64 new_version) OVERRIDE {}
   virtual void OnForcedClose() OVERRIDE {}
   virtual void OnAbort(int64 transaction_id,
-                       scoped_refptr<IndexedDBDatabaseError> error) OVERRIDE {}
+                       const IndexedDBDatabaseError& error) OVERRIDE {}
   virtual void OnComplete(int64 transaction_id) OVERRIDE {}
 
  private:
@@ -151,7 +151,7 @@ class MockIDBDatabaseCallbacks : public IndexedDBDatabaseCallbacksWrapper {
   virtual void OnVersionChange(int64 old_version, int64 new_version) OVERRIDE {}
   virtual void OnForcedClose() OVERRIDE {}
   virtual void OnAbort(int64 transaction_id,
-                       scoped_refptr<IndexedDBDatabaseError> error) OVERRIDE {
+                       const IndexedDBDatabaseError& error) OVERRIDE {
     was_abort_called_ = true;
   }
   virtual void OnComplete(int64 transaction_id) OVERRIDE {}
@@ -176,7 +176,7 @@ class WebIDBDatabaseCallbacksImpl : public WebIDBDatabaseCallbacks {
   }
   virtual void onAbort(long long transaction_id,
                        const WebIDBDatabaseError& error) {
-    callbacks_->OnAbort(transaction_id, IndexedDBDatabaseError::Create(error));
+    callbacks_->OnAbort(transaction_id, IndexedDBDatabaseError(error));
   }
   virtual void onComplete(long long transaction_id) {
     callbacks_->OnComplete(transaction_id);

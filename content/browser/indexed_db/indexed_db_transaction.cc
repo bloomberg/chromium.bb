@@ -114,12 +114,11 @@ void IndexedDBTransaction::ScheduleTask(IndexedDBDatabase::TaskType type,
 }
 
 void IndexedDBTransaction::Abort() {
-  Abort(IndexedDBDatabaseError::Create(
-      WebKit::WebIDBDatabaseExceptionUnknownError,
-      ASCIIToUTF16("Internal error (unknown cause)")));
+  Abort(IndexedDBDatabaseError(WebKit::WebIDBDatabaseExceptionUnknownError,
+                               "Internal error (unknown cause)"));
 }
 
-void IndexedDBTransaction::Abort(scoped_refptr<IndexedDBDatabaseError> error) {
+void IndexedDBTransaction::Abort(const IndexedDBDatabaseError& error) {
   IDB_TRACE("IndexedDBTransaction::abort");
   if (state_ == FINISHED)
     return;
@@ -255,9 +254,9 @@ void IndexedDBTransaction::Commit() {
   } else {
     callbacks_->OnAbort(
         id_,
-        IndexedDBDatabaseError::Create(
+        IndexedDBDatabaseError(
             WebKit::WebIDBDatabaseExceptionUnknownError,
-            ASCIIToUTF16("Internal error committing transaction.")));
+            "Internal error committing transaction."));
     database_->TransactionFinishedAndAbortFired(this);
   }
 

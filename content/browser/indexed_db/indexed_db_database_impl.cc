@@ -549,14 +549,10 @@ void CreateObjectStoreOperation::Perform(IndexedDBTransaction* transaction) {
           object_store_metadata_.name,
           object_store_metadata_.key_path,
           object_store_metadata_.auto_increment)) {
-    string16 error_string =
+    transaction->Abort(IndexedDBDatabaseError(
+        WebKit::WebIDBDatabaseExceptionUnknownError,
         ASCIIToUTF16("Internal error creating object store '") +
-        object_store_metadata_.name + ASCIIToUTF16("'.");
-
-    scoped_refptr<IndexedDBDatabaseError> error =
-        IndexedDBDatabaseError::Create(
-            WebKit::WebIDBDatabaseExceptionUnknownError, error_string);
-    transaction->Abort(error);
+        object_store_metadata_.name + ASCIIToUTF16("'.")));
     return;
   }
 }
@@ -625,7 +621,7 @@ void CreateIndexOperation::Perform(IndexedDBTransaction* transaction) {
                                    index_metadata_.multi_entry)) {
     string16 error_string = ASCIIToUTF16("Internal error creating index '") +
                             index_metadata_.name + ASCIIToUTF16("'.");
-    transaction->Abort(IndexedDBDatabaseError::Create(
+    transaction->Abort(IndexedDBDatabaseError(
         WebKit::WebIDBDatabaseExceptionUnknownError, error_string));
     return;
   }
@@ -672,10 +668,8 @@ void DeleteIndexOperation::Perform(IndexedDBTransaction* transaction) {
   if (!ok) {
     string16 error_string = ASCIIToUTF16("Internal error deleting index '") +
                             index_metadata_.name + ASCIIToUTF16("'.");
-    scoped_refptr<IndexedDBDatabaseError> error =
-        IndexedDBDatabaseError::Create(
-            WebKit::WebIDBDatabaseExceptionUnknownError, error_string);
-    transaction->Abort(error);
+    transaction->Abort(IndexedDBDatabaseError(
+        WebKit::WebIDBDatabaseExceptionUnknownError, error_string));
   }
 }
 
@@ -703,7 +697,7 @@ void IndexedDBDatabaseImpl::Abort(int64 transaction_id) {
 }
 
 void IndexedDBDatabaseImpl::Abort(int64 transaction_id,
-                                  scoped_refptr<IndexedDBDatabaseError> error) {
+                                  const IndexedDBDatabaseError& error) {
   // If the transaction is unknown, then it has already been aborted by the
   // backend before this call so it is safe to ignore it.
   if (transactions_.find(transaction_id) != transactions_.end())
@@ -791,9 +785,9 @@ void GetOperation::Perform(IndexedDBTransaction* transaction) {
                                    *key,
                                    value);
     if (!ok) {
-      callbacks_->OnError(IndexedDBDatabaseError::Create(
+      callbacks_->OnError(IndexedDBDatabaseError(
           WebKit::WebIDBDatabaseExceptionUnknownError,
-          ASCIIToUTF16("Internal error in get_record.")));
+          "Internal error in get_record."));
       return;
     }
 
@@ -820,9 +814,9 @@ void GetOperation::Perform(IndexedDBTransaction* transaction) {
       *key,
       &primary_key);
   if (!ok) {
-    callbacks_->OnError(IndexedDBDatabaseError::Create(
+    callbacks_->OnError(IndexedDBDatabaseError(
         WebKit::WebIDBDatabaseExceptionUnknownError,
-        ASCIIToUTF16("Internal error in get_primary_key_via_index.")));
+        "Internal error in get_primary_key_via_index."));
     return;
   }
   if (!primary_key) {
@@ -843,9 +837,9 @@ void GetOperation::Perform(IndexedDBTransaction* transaction) {
                                  *primary_key,
                                  value);
   if (!ok) {
-    callbacks_->OnError(IndexedDBDatabaseError::Create(
-        WebKit::WebIDBDatabaseExceptionUnknownError,
-        ASCIIToUTF16("Internal error in get_record.")));
+    callbacks_->OnError(
+        IndexedDBDatabaseError(WebKit::WebIDBDatabaseExceptionUnknownError,
+                               "Internal error in get_record."));
     return;
   }
 
@@ -947,9 +941,9 @@ void PutOperation::Perform(IndexedDBTransaction* transaction) {
         backing_store_, transaction, database_id_, object_store_.id);
     key_was_generated = true;
     if (!auto_inc_key->IsValid()) {
-      callbacks_->OnError(IndexedDBDatabaseError::Create(
+      callbacks_->OnError(IndexedDBDatabaseError(
           WebKit::WebIDBDatabaseExceptionConstraintError,
-          ASCIIToUTF16("Maximum key generator value reached.")));
+          "Maximum key generator value reached."));
       return;
     }
     key = auto_inc_key.Pass();
@@ -970,15 +964,15 @@ void PutOperation::Perform(IndexedDBTransaction* transaction) {
         &record_identifier,
         found);
     if (!ok) {
-      callbacks_->OnError(IndexedDBDatabaseError::Create(
+      callbacks_->OnError(IndexedDBDatabaseError(
           WebKit::WebIDBDatabaseExceptionUnknownError,
-          ASCIIToUTF16("Internal error checking key existence.")));
+          "Internal error checking key existence."));
       return;
     }
     if (found) {
-      callbacks_->OnError(IndexedDBDatabaseError::Create(
+      callbacks_->OnError(IndexedDBDatabaseError(
           WebKit::WebIDBDatabaseExceptionConstraintError,
-          ASCIIToUTF16("Key already exists in the object store.")));
+          "Key already exists in the object store."));
       return;
     }
   }
@@ -999,14 +993,13 @@ void PutOperation::Perform(IndexedDBTransaction* transaction) {
                                                  &error_message,
                                                  &obeys_constraints);
   if (!backing_store_success) {
-    callbacks_->OnError(IndexedDBDatabaseError::Create(
+    callbacks_->OnError(IndexedDBDatabaseError(
         WebKit::WebIDBDatabaseExceptionUnknownError,
-        ASCIIToUTF16(
-            "Internal error: backing store error updating index keys.")));
+        "Internal error: backing store error updating index keys."));
     return;
   }
   if (!obeys_constraints) {
-    callbacks_->OnError(IndexedDBDatabaseError::Create(
+    callbacks_->OnError(IndexedDBDatabaseError(
         WebKit::WebIDBDatabaseExceptionConstraintError, error_message));
     return;
   }
@@ -1021,10 +1014,9 @@ void PutOperation::Perform(IndexedDBTransaction* transaction) {
                                 value_,
                                 &record_identifier);
   if (!backing_store_success) {
-    callbacks_->OnError(IndexedDBDatabaseError::Create(
+    callbacks_->OnError(IndexedDBDatabaseError(
         WebKit::WebIDBDatabaseExceptionUnknownError,
-        ASCIIToUTF16(
-            "Internal error: backing store error performing put/add.")));
+        "Internal error: backing store error performing put/add."));
     return;
   }
 
@@ -1047,9 +1039,9 @@ void PutOperation::Perform(IndexedDBTransaction* transaction) {
                                  key.get(),
                                  !key_was_generated);
     if (!ok) {
-      callbacks_->OnError(IndexedDBDatabaseError::Create(
+      callbacks_->OnError(IndexedDBDatabaseError(
           WebKit::WebIDBDatabaseExceptionUnknownError,
-          ASCIIToUTF16("Internal error updating key generator.")));
+          "Internal error updating key generator."));
       return;
     }
   }
@@ -1084,18 +1076,15 @@ void IndexedDBDatabaseImpl::SetIndexKeys(
                                     &record_identifier,
                                     found);
   if (!ok) {
-    transaction->Abort(IndexedDBDatabaseError::Create(
+    transaction->Abort(IndexedDBDatabaseError(
         WebKit::WebIDBDatabaseExceptionUnknownError,
-        ASCIIToUTF16("Internal error setting index keys.")));
+        "Internal error setting index keys."));
     return;
   }
   if (!found) {
-    scoped_refptr<IndexedDBDatabaseError> error =
-        IndexedDBDatabaseError::Create(
-            WebKit::WebIDBDatabaseExceptionUnknownError,
-            ASCIIToUTF16(
-                "Internal error setting index keys for object store."));
-    transaction->Abort(error);
+    transaction->Abort(IndexedDBDatabaseError(
+        WebKit::WebIDBDatabaseExceptionUnknownError,
+        "Internal error setting index keys for object store."));
     return;
   }
 
@@ -1119,14 +1108,13 @@ void IndexedDBDatabaseImpl::SetIndexKeys(
                                                  &error_message,
                                                  &obeys_constraints);
   if (!backing_store_success) {
-    transaction->Abort(IndexedDBDatabaseError::Create(
+    transaction->Abort(IndexedDBDatabaseError(
         WebKit::WebIDBDatabaseExceptionUnknownError,
-        ASCIIToUTF16(
-            "Internal error: backing store error updating index keys.")));
+        "Internal error: backing store error updating index keys."));
     return;
   }
   if (!obeys_constraints) {
-    transaction->Abort(IndexedDBDatabaseError::Create(
+    transaction->Abort(IndexedDBDatabaseError(
         WebKit::WebIDBDatabaseExceptionConstraintError, error_message));
     return;
   }
@@ -1332,9 +1320,9 @@ void DeleteRangeOperation::Perform(IndexedDBTransaction* transaction) {
               database_id_,
               object_store_id_,
               backing_store_cursor->record_identifier())) {
-        callbacks_->OnError(IndexedDBDatabaseError::Create(
+        callbacks_->OnError(IndexedDBDatabaseError(
             WebKit::WebIDBDatabaseExceptionUnknownError,
-            ASCIIToUTF16("Internal error deleting data in range")));
+            "Internal error deleting data in range"));
         return;
       }
     } while (backing_store_cursor->ContinueFunction(0));
@@ -1364,9 +1352,9 @@ void ClearOperation::Perform(IndexedDBTransaction* transaction) {
   if (!backing_store_->ClearObjectStore(transaction->BackingStoreTransaction(),
                                         database_id_,
                                         object_store_id_)) {
-    callbacks_->OnError(IndexedDBDatabaseError::Create(
+    callbacks_->OnError(IndexedDBDatabaseError(
         WebKit::WebIDBDatabaseExceptionUnknownError,
-        ASCIIToUTF16("Internal error clearing object store")));
+        "Internal error clearing object store"));
     return;
   }
   callbacks_->OnSuccess();
@@ -1382,10 +1370,8 @@ void DeleteObjectStoreOperation::Perform(IndexedDBTransaction* transaction) {
     string16 error_string =
         ASCIIToUTF16("Internal error deleting object store '") +
         object_store_metadata_.name + ASCIIToUTF16("'.");
-    scoped_refptr<IndexedDBDatabaseError> error =
-        IndexedDBDatabaseError::Create(
-            WebKit::WebIDBDatabaseExceptionUnknownError, error_string);
-    transaction->Abort(error);
+    transaction->Abort(IndexedDBDatabaseError(
+        WebKit::WebIDBDatabaseExceptionUnknownError, error_string));
   }
 }
 
@@ -1400,11 +1386,10 @@ void IndexedDBDatabaseImpl::VersionChangeOperation::Perform(
           transaction->BackingStoreTransaction(),
           database_id,
           database_->metadata_.int_version)) {
-    scoped_refptr<IndexedDBDatabaseError> error =
-        IndexedDBDatabaseError::Create(
-            WebKit::WebIDBDatabaseExceptionUnknownError,
-            ASCIIToUTF16("Internal error writing data to stable storage when "
-                         "updating version."));
+    IndexedDBDatabaseError error(
+        WebKit::WebIDBDatabaseExceptionUnknownError,
+        ASCIIToUTF16("Internal error writing data to stable storage when "
+                     "updating version."));
     callbacks_->OnError(error);
     transaction->Abort(error);
     return;
@@ -1440,11 +1425,10 @@ void IndexedDBDatabaseImpl::TransactionFinishedAndAbortFired(
     IndexedDBTransaction* transaction) {
   if (transaction->mode() == indexed_db::TRANSACTION_VERSION_CHANGE) {
     if (pending_second_half_open_) {
-      pending_second_half_open_->Callbacks()
-          ->OnError(IndexedDBDatabaseError::Create(
-                WebKit::WebIDBDatabaseExceptionAbortError,
-                ASCIIToUTF16("Version change transaction was aborted in "
-                             "upgradeneeded event handler.")));
+      pending_second_half_open_->Callbacks()->OnError(IndexedDBDatabaseError(
+          WebKit::WebIDBDatabaseExceptionAbortError,
+          "Version change transaction was aborted in "
+                       "upgradeneeded event handler."));
       pending_second_half_open_.reset();
     }
     ProcessPendingCalls();
@@ -1575,7 +1559,6 @@ void IndexedDBDatabaseImpl::OpenConnection(
                 IndexedDBDatabaseMetadata::NO_INT_VERSION);
     } else {
       string16 message;
-      scoped_refptr<IndexedDBDatabaseError> error;
       if (version == IndexedDBDatabaseMetadata::NO_INT_VERSION)
         message = ASCIIToUTF16(
             "Internal error opening database with no version specified.");
@@ -1583,7 +1566,7 @@ void IndexedDBDatabaseImpl::OpenConnection(
         message =
             ASCIIToUTF16("Internal error opening database with version ") +
             Int64ToString16(version);
-      callbacks->OnError(IndexedDBDatabaseError::Create(
+      callbacks->OnError(IndexedDBDatabaseError(
           WebKit::WebIDBDatabaseExceptionUnknownError, message));
       return;
     }
@@ -1623,7 +1606,7 @@ void IndexedDBDatabaseImpl::OpenConnection(
     return;
   }
   if (version < metadata_.int_version) {
-    callbacks->OnError(IndexedDBDatabaseError::Create(
+    callbacks->OnError(IndexedDBDatabaseError(
         WebKit::WebIDBDatabaseExceptionVersionError,
         ASCIIToUTF16("The requested version (") + Int64ToString16(version) +
             ASCIIToUTF16(") is less than the existing version (") +
@@ -1725,9 +1708,9 @@ void IndexedDBDatabaseImpl::DeleteDatabaseFinal(
   DCHECK(!IsDeleteDatabaseBlocked());
   DCHECK(backing_store_);
   if (!backing_store_->DeleteDatabase(metadata_.name)) {
-    callbacks->OnError(IndexedDBDatabaseError::Create(
+    callbacks->OnError(IndexedDBDatabaseError(
         WebKit::WebIDBDatabaseExceptionUnknownError,
-        ASCIIToUTF16("Internal error deleting database.")));
+        "Internal error deleting database."));
     return;
   }
   metadata_.version = kNoStringVersion;
@@ -1754,19 +1737,18 @@ void IndexedDBDatabaseImpl::Close(
          it != end;
          ++it) {
       if (it->second->connection() == callbacks)
-        it->second->Abort(IndexedDBDatabaseError::Create(
-            WebKit::WebIDBDatabaseExceptionUnknownError,
-            ASCIIToUTF16("Connection is closing.")));
+        it->second->Abort(
+            IndexedDBDatabaseError(WebKit::WebIDBDatabaseExceptionUnknownError,
+                                   "Connection is closing."));
     }
   }
 
   database_callbacks_set_.erase(callbacks);
   if (pending_second_half_open_ &&
       pending_second_half_open_->DatabaseCallbacks() == callbacks) {
-    pending_second_half_open_->Callbacks()
-        ->OnError(IndexedDBDatabaseError::Create(
-              WebKit::WebIDBDatabaseExceptionAbortError,
-              ASCIIToUTF16("The connection was closed.")));
+    pending_second_half_open_->Callbacks()->OnError(
+        IndexedDBDatabaseError(WebKit::WebIDBDatabaseExceptionAbortError,
+                               "The connection was closed."));
     pending_second_half_open_.reset();
   }
 

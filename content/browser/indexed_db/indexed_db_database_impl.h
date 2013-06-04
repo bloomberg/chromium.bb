@@ -68,8 +68,8 @@ class CONTENT_EXPORT IndexedDBDatabaseImpl
 
   virtual void Commit(int64 transaction_id) OVERRIDE;
   virtual void Abort(int64 transaction_id) OVERRIDE;
-  virtual void Abort(int64 transaction_id,
-                     scoped_refptr<IndexedDBDatabaseError> error) OVERRIDE;
+  virtual void Abort(int64 transaction_id, const IndexedDBDatabaseError& error)
+      OVERRIDE;
 
   virtual void CreateIndex(int64 transaction_id,
                            int64 object_store_id,

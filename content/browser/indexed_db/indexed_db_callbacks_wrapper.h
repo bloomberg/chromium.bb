@@ -34,7 +34,7 @@ class CONTENT_EXPORT IndexedDBCallbacksWrapper
     return make_scoped_refptr(new IndexedDBCallbacksWrapper(callbacks));
   }
 
-  virtual void OnError(scoped_refptr<IndexedDBDatabaseError> error);
+  virtual void OnError(const IndexedDBDatabaseError& error);
   // From IDBFactory.webkitGetDatabaseNames()
   virtual void OnSuccess(const std::vector<string16>& string);
   // From IDBObjectStore/IDBIndex.openCursor(),

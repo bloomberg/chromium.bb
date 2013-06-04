@@ -97,8 +97,7 @@ void WebIDBDatabaseImpl::abort(long long transaction_id) {
 void WebIDBDatabaseImpl::abort(long long transaction_id,
                                const WebIDBDatabaseError& error) {
   if (database_backend_)
-    database_backend_->Abort(transaction_id,
-                             IndexedDBDatabaseError::Create(error));
+    database_backend_->Abort(transaction_id, IndexedDBDatabaseError(error));
 }
 
 void WebIDBDatabaseImpl::commit(long long transaction_id) {

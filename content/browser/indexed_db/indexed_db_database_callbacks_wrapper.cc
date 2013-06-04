@@ -26,12 +26,12 @@ void IndexedDBDatabaseCallbacksWrapper::OnVersionChange(int64 old_version,
 
 void IndexedDBDatabaseCallbacksWrapper::OnAbort(
     int64 transaction_id,
-    scoped_refptr<IndexedDBDatabaseError> error) {
+    const IndexedDBDatabaseError& error) {
   if (!callbacks_)
     return;
   callbacks_->onAbort(
       transaction_id,
-      WebKit::WebIDBDatabaseError(error->code(), error->message()));
+      WebKit::WebIDBDatabaseError(error.code(), error.message()));
 }
 void IndexedDBDatabaseCallbacksWrapper::OnComplete(int64 transaction_id) {
   if (!callbacks_)

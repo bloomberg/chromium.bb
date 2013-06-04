@@ -47,7 +47,7 @@ class IndexedDBDatabase : public base::RefCounted<IndexedDBDatabase> {
   virtual void Commit(int64 transaction_id) = 0;
   virtual void Abort(int64 transaction_id) = 0;
   virtual void Abort(int64 transaction_id,
-                     scoped_refptr<IndexedDBDatabaseError> error) = 0;
+                     const IndexedDBDatabaseError& error) = 0;
 
   virtual void CreateIndex(int64 transaction_id,
                            int64 object_store_id,

@@ -58,10 +58,10 @@ void IndexedDBFactoryImpl::GetDatabaseNames(
   scoped_refptr<IndexedDBBackingStore> backing_store =
       OpenBackingStore(database_identifier, data_directory);
   if (!backing_store) {
-    callbacks->OnError(IndexedDBDatabaseError::Create(
+    callbacks->OnError(IndexedDBDatabaseError(
         WebKit::WebIDBDatabaseExceptionUnknownError,
-        ASCIIToUTF16("Internal error opening backing store for "
-                     "indexed_db.webkit_get_database_names.")));
+        "Internal error opening backing store for "
+        "indexed_db.webkit_get_database_names."));
     return;
   }
 
@@ -90,7 +90,7 @@ void IndexedDBFactoryImpl::DeleteDatabase(
   scoped_refptr<IndexedDBBackingStore> backing_store =
       OpenBackingStore(database_identifier, data_directory);
   if (!backing_store) {
-    callbacks->OnError(IndexedDBDatabaseError::Create(
+    callbacks->OnError(IndexedDBDatabaseError(
         WebKit::WebIDBDatabaseExceptionUnknownError,
         ASCIIToUTF16("Internal error opening backing store "
                      "for indexed_db.delete_database.")));
@@ -101,7 +101,7 @@ void IndexedDBFactoryImpl::DeleteDatabase(
       IndexedDBDatabaseImpl::Create(
           name, backing_store.get(), this, unique_identifier);
   if (!database_backend) {
-    callbacks->OnError(IndexedDBDatabaseError::Create(
+    callbacks->OnError(IndexedDBDatabaseError(
         WebKit::WebIDBDatabaseExceptionUnknownError,
         ASCIIToUTF16("Internal error creating database backend for "
                      "indexed_db.delete_database.")));
@@ -168,7 +168,7 @@ void IndexedDBFactoryImpl::Open(
     scoped_refptr<IndexedDBBackingStore> backing_store =
         OpenBackingStore(database_identifier, data_directory);
     if (!backing_store) {
-      callbacks->OnError(IndexedDBDatabaseError::Create(
+      callbacks->OnError(IndexedDBDatabaseError(
           WebKit::WebIDBDatabaseExceptionUnknownError,
           ASCIIToUTF16(
               "Internal error opening backing store for indexedDB.open.")));
@@ -178,7 +178,7 @@ void IndexedDBFactoryImpl::Open(
     database_backend = IndexedDBDatabaseImpl::Create(
         name, backing_store.get(), this, unique_identifier);
     if (!database_backend) {
-      callbacks->OnError(IndexedDBDatabaseError::Create(
+      callbacks->OnError(IndexedDBDatabaseError(
           WebKit::WebIDBDatabaseExceptionUnknownError,
           ASCIIToUTF16(
               "Internal error creating database backend for indexedDB.open.")));

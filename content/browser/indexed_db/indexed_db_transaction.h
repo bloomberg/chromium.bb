@@ -43,7 +43,7 @@ class IndexedDBTransaction : public base::RefCounted<IndexedDBTransaction> {
     virtual void Perform(IndexedDBTransaction* transaction) = 0;
   };
 
-  void Abort(scoped_refptr<IndexedDBDatabaseError> error);
+  void Abort(const IndexedDBDatabaseError& error);
   void Run();
   indexed_db::TransactionMode mode() const { return mode_; }
   const std::set<int64>& scope() const { return object_store_ids_; }

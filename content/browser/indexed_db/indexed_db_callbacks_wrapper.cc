@@ -29,11 +29,10 @@ IndexedDBCallbacksWrapper::IndexedDBCallbacksWrapper(
 
 IndexedDBCallbacksWrapper::~IndexedDBCallbacksWrapper() {}
 
-void IndexedDBCallbacksWrapper::OnError(
-    scoped_refptr<IndexedDBDatabaseError> error) {
+void IndexedDBCallbacksWrapper::OnError(const IndexedDBDatabaseError& error) {
   DCHECK(callbacks_);
   callbacks_->onError(
-      WebKit::WebIDBDatabaseError(error->code(), error->message()));
+      WebKit::WebIDBDatabaseError(error.code(), error.message()));
   callbacks_.reset();
 }
 

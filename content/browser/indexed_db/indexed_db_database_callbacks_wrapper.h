@@ -27,7 +27,7 @@ class CONTENT_EXPORT IndexedDBDatabaseCallbacksWrapper
   virtual void OnVersionChange(int64 old_version, int64 new_version);
 
   virtual void OnAbort(int64 transaction_id,
-                       scoped_refptr<IndexedDBDatabaseError> error);
+                       const IndexedDBDatabaseError& error);
   virtual void OnComplete(int64 transaction_id);
 
  protected:
