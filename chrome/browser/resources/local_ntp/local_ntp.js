@@ -443,11 +443,27 @@ function createTile(page, position) {
     var usingCustomTheme = document.body.classList.contains(
         CLASSES.CUSTOM_THEME);
 
+    // Why iframes have IDs:
+    //
+    // On navigating back to the NTP we see several onmostvisitedchange() events
+    // in series with incrementing RIDs. After the first event, a set of iframes
+    // begins loading RIDs n, n+1, ..., n+k-1; after the second event, these get
+    // destroyed and a new set begins loading RIDs n+k, n+k+1, ..., n+2k-1.
+    // Now due to crbug.com/68841, Chrome incorrectly loads the content for the
+    // first set of iframes into the most recent set of iframes.
+    //
+    // Giving iframes distinct ids seems to cause some invalidation and prevent
+    // associating the incorrect data.
+    //
+    // TODO(jered): Find and fix the root (probably Blink) bug.
+
     titleElement.src = getMostVisitedIframeUrl(
         MOST_VISITED_TITLE_IFRAME, rid,
         usingCustomTheme ? MOST_VISITED_THEME_TITLE_COLOR : MOST_VISITED_COLOR,
         MOST_VISITED_FONT_FAMILY, MOST_VISITED_FONT_SIZE, usingCustomTheme,
         position);
+    // Keep this id here. See comment above.
+    titleElement.id = 'title-' + rid;
     titleElement.hidden = true;
     titleElement.onload = function() { titleElement.hidden = false; };
     titleElement.className = CLASSES.TITLE;
@@ -459,6 +475,8 @@ function createTile(page, position) {
     thumbnailElement.src = getMostVisitedIframeUrl(
         MOST_VISITED_THUMBNAIL_IFRAME, rid, MOST_VISITED_COLOR,
         MOST_VISITED_FONT_FAMILY, MOST_VISITED_FONT_SIZE, false, position);
+    // Keep this id here. See comment above.
+    thumbnailElement.id = 'thumb-' + rid;
     thumbnailElement.hidden = true;
     thumbnailElement.onload = function() {
       thumbnailElement.hidden = false;
