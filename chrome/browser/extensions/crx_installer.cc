@@ -41,6 +41,7 @@
 #include "chrome/common/extensions/manifest.h"
 #include "chrome/common/extensions/manifest_handlers/icons_handler.h"
 #include "chrome/common/extensions/manifest_handlers/shared_module_info.h"
+#include "chrome/common/extensions/manifest_url_handler.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/resource_dispatcher_host.h"
@@ -309,7 +310,7 @@ CrxInstallerError CrxInstaller::AllowInstall(const Extension* extension) {
       // For apps with a gallery update URL, require that they be installed
       // from the gallery.
       // TODO(erikkay) Apply this rule for paid extensions and themes as well.
-      if (extension->UpdatesFromGallery()) {
+      if (ManifestURL::UpdatesFromGallery(extension)) {
         return CrxInstallerError(
             l10n_util::GetStringFUTF16(
                 IDS_EXTENSION_DISALLOW_NON_DOWNLOADED_GALLERY_INSTALLS,

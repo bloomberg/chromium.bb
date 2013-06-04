@@ -55,7 +55,7 @@ const GURL ManifestURL::GetHomepageURL(const Extension* extension) {
   const GURL& homepage_url = GetManifestURL(extension, keys::kHomepageURL);
   if (homepage_url.is_valid())
     return homepage_url;
-  return extension->UpdatesFromGallery() ?
+  return UpdatesFromGallery(extension) ?
       GURL(extension_urls::GetWebstoreItemDetailURLPrefix() + extension->id()) :
       GURL::EmptyGURL();
 }
@@ -63,6 +63,11 @@ const GURL ManifestURL::GetHomepageURL(const Extension* extension) {
 // static
 const GURL& ManifestURL::GetUpdateURL(const Extension* extension) {
   return GetManifestURL(extension, keys::kUpdateURL);
+}
+
+// static
+bool ManifestURL::UpdatesFromGallery(const Extension* extension) {
+  return extension_urls::IsWebstoreUpdateUrl(GetUpdateURL(extension));
 }
 
 // static

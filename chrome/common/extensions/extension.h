@@ -253,10 +253,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   // Gets the fully resolved absolute launch URL.
   GURL GetFullLaunchURL() const;
 
-  // Returns true if this extension updates itself using the extension
-  // gallery.
-  bool UpdatesFromGallery() const;
-
   // Returns true if this extension or app includes areas within |origin|.
   bool OverlapsWithOrigin(const GURL& origin) const;
 

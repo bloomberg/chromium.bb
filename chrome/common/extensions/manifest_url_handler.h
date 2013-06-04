@@ -29,6 +29,9 @@ struct ManifestURL : public Extension::ManifestData {
   // Returns the Update URL for this extension.
   static const GURL& GetUpdateURL(const Extension* extension);
 
+  // Returns true if this extension's update URL is the extension gallery.
+  static bool UpdatesFromGallery(const Extension* extension);
+
   // Returns the Options Page for this extension.
   static const GURL& GetOptionsPage(const Extension* extension);
 

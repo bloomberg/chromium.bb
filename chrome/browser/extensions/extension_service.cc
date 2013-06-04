@@ -642,7 +642,7 @@ bool ExtensionService::UpdateExtension(const std::string& id,
   // which are newer.
   int creation_flags = Extension::NO_FLAGS;
   if ((extension && extension->from_webstore()) ||
-      (extension && extension->UpdatesFromGallery()) ||
+      (extension && extensions::ManifestURL::UpdatesFromGallery(extension)) ||
       (!extension && extension_urls::IsWebstoreUpdateUrl(
            pending_extension_info->update_url()))) {
     creation_flags |= Extension::FROM_WEBSTORE;

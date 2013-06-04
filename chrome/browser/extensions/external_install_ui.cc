@@ -28,6 +28,7 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
+#include "chrome/common/extensions/manifest_url_handler.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -46,7 +47,7 @@ namespace {
 
 // Whether the external extension can use the streamlined bubble install flow.
 bool UseBubbleInstall(const Extension* extension, bool is_new_profile) {
-  return extension->UpdatesFromGallery() && !is_new_profile;
+  return ManifestURL::UpdatesFromGallery(extension) && !is_new_profile;
 }
 
 }  // namespace

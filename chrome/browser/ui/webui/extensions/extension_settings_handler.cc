@@ -170,7 +170,7 @@ DictionaryValue* ExtensionSettingsHandler::CreateExtensionDetailValue(
 
   string16 location_text;
   if (extension->location() == Manifest::INTERNAL &&
-      !extension->UpdatesFromGallery()) {
+      !extensions::ManifestURL::UpdatesFromGallery(extension)) {
     location_text = l10n_util::GetStringUTF16(
         IDS_OPTIONS_INSTALL_LOCATION_UNKNOWN);
   } else if (extension->location() == Manifest::EXTERNAL_REGISTRY) {

@@ -197,7 +197,7 @@ bool ExtensionDownloader::AddExtension(const Extension& extension,
   // data.  At the moment there is no extra data that an extension can
   // communicate to the the gallery update servers.
   std::string update_url_data;
-  if (!extension.UpdatesFromGallery())
+  if (!ManifestURL::UpdatesFromGallery(&extension))
     update_url_data = delegate_->GetUpdateUrlData(extension.id());
 
   return AddExtensionData(extension.id(), *extension.version(),

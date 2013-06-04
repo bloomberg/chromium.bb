@@ -424,10 +424,6 @@ GURL Extension::GetFullLaunchURL() const {
                                        url().Resolve(launch_local_path());
 }
 
-bool Extension::UpdatesFromGallery() const {
-  return extension_urls::IsWebstoreUpdateUrl(ManifestURL::GetUpdateURL(this));
-}
-
 bool Extension::OverlapsWithOrigin(const GURL& origin) const {
   if (url() == origin)
     return true;
@@ -458,7 +454,8 @@ Extension::SyncType Extension::GetSyncType() const {
   //
   // TODO(akalin): Relax this restriction once we've put in UI to
   // approve synced extensions.
-  if (!ManifestURL::GetUpdateURL(this).is_empty() && !UpdatesFromGallery())
+  if (!ManifestURL::GetUpdateURL(this).is_empty() &&
+      !ManifestURL::UpdatesFromGallery(this))
     return SYNC_TYPE_NONE;
 
   // Disallow extensions with native code plugins.
@@ -474,7 +471,7 @@ Extension::SyncType Extension::GetSyncType() const {
 
     case Manifest::TYPE_USER_SCRIPT:
       // We only want to sync user scripts with gallery update URLs.
-      if (UpdatesFromGallery())
+      if (ManifestURL::UpdatesFromGallery(this))
         return SYNC_TYPE_EXTENSION;
       else
         return SYNC_TYPE_NONE;
