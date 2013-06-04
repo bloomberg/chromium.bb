@@ -62,6 +62,7 @@ std::vector<StorageInfo> StorageMonitor::GetAttachedStorage() const {
 }
 
 void StorageMonitor::Initialize(base::Closure callback) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   if (initialized_) {
     if (!callback.is_null())
       callback.Run();
@@ -72,6 +73,10 @@ void StorageMonitor::Initialize(base::Closure callback) {
     on_initialize_callbacks_.push_back(callback);
   }
 
+  if (initializing_)
+    return;
+
+  initializing_ = true;
   Init();
 }
 
@@ -108,6 +113,7 @@ void StorageMonitor::EjectDevice(
 
 StorageMonitor::StorageMonitor()
     : observer_list_(new ObserverListThreadSafe<RemovableStorageObserver>()),
+      initializing_(false),
       initialized_(false),
       transient_device_ids_(new TransientDeviceIds) {
   receiver_.reset(new ReceiverImpl(this));

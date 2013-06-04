@@ -25,7 +25,6 @@ class ChromeBrowserMainPartsLinux : public ChromeBrowserMainPartsPosix {
 
   // ChromeBrowserMainParts overrides.
   virtual void PreProfileInit() OVERRIDE;
-  virtual void PostProfileInit() OVERRIDE;
   virtual void PostMainMessageLoopRun() OVERRIDE;
 
  private:

@@ -98,10 +98,19 @@ MediaGalleriesDialogController::MediaGalleriesDialogController(
       : web_contents_(web_contents),
         extension_(&extension),
         on_finish_(on_finish) {
+  // Passing unretained pointer is safe, since the dialog controller
+  // is self-deleting, and so won't be deleted until it can be shown
+  // and then closed.
+  StorageMonitor::GetInstance()->Initialize(base::Bind(
+      &MediaGalleriesDialogController::OnStorageMonitorInitialized,
+      base::Unretained(this)));
+}
+
+void MediaGalleriesDialogController::OnStorageMonitorInitialized() {
   MediaFileSystemRegistry* registry =
       g_browser_process->media_file_system_registry();
   preferences_ = registry->GetPreferences(
-      Profile::FromBrowserContext(web_contents->GetBrowserContext()));
+      Profile::FromBrowserContext(web_contents_->GetBrowserContext()));
   InitializePermissions();
 
   dialog_.reset(MediaGalleriesDialog::Create(this));

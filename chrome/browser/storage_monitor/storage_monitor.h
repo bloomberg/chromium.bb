@@ -39,7 +39,15 @@ class TransientDeviceIds;
 // implementations before the profile is initialized, so listeners can be
 // created during profile construction. The platform-specific initialization,
 // which can lead to calling registered listeners with notifications of
-// attached volumes, will happen after profile construction.
+// attached volumes, are done lazily at first use through the async
+// |Initialize()| method. That must be done before any of the registered
+// listeners will receive updates or calls to other API methods return
+// meaningful results.
+// A post-initialization |GetAttachedStorage()| call coupled with a
+// registered listener will receive a complete set, albeit potentially with
+// duplicates. This is because there's no tracking between when listeners were
+// registered and the state of initialization, and the fact that platforms
+// behave differently in how these notifications are provided.
 class StorageMonitor {
  public:
   // This interface is provided to generators of storage notifications.
@@ -153,6 +161,10 @@ class StorageMonitor {
   scoped_refptr<ObserverListThreadSafe<RemovableStorageObserver> >
       observer_list_;
 
+  // Used to make sure we call initialize from the same thread as creation.
+  base::ThreadChecker thread_checker_;
+
+  bool initializing_;
   bool initialized_;
   std::vector<base::Closure> on_initialize_callbacks_;
 

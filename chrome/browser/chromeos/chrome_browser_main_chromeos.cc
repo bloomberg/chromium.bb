@@ -669,8 +669,6 @@ void ChromeBrowserMainPartsChromeos::PostProfileInit() {
 
   peripheral_battery_observer_.reset(new PeripheralBatteryObserver());
 
-  storage_monitor_->Init();
-
   // Initialize the network portal detector for Chrome OS. The network
   // portal detector starts to listen for notifications from
   // NetworkLibrary about changes in the NetworkManager and initiates

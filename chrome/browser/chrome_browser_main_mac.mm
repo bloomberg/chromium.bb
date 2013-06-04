@@ -286,12 +286,6 @@ void ChromeBrowserMainPartsMac::PreProfileInit() {
   ChromeBrowserMainPartsPosix::PreProfileInit();
 }
 
-void ChromeBrowserMainPartsMac::PostProfileInit() {
-  storage_monitor_->Init();
-
-  ChromeBrowserMainPartsPosix::PostProfileInit();
-}
-
 void ChromeBrowserMainPartsMac::DidEndMainMessageLoop() {
   AppController* appController = [NSApp delegate];
   [appController didEndMainMessageLoop];

@@ -125,6 +125,10 @@ class MediaGalleriesDialogController
   typedef std::map<MediaGalleryPrefId, GalleryPermission>
       KnownGalleryPermissions;
 
+  // Bottom half of constructor -- called when the storage monitor
+  // is initialized.
+  void OnStorageMonitorInitialized();
+
   // SelectFileDialog::Listener implementation:
   virtual void FileSelected(const base::FilePath& path,
                             int index,

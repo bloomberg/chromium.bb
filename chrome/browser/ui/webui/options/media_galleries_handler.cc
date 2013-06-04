@@ -11,6 +11,7 @@
 #include "chrome/browser/media_galleries/media_file_system_registry.h"
 #include "chrome/browser/media_galleries/media_galleries_preferences.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/storage_monitor/storage_monitor.h"
 #include "chrome/browser/ui/chrome_select_file_policy.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
@@ -26,7 +27,8 @@ using chrome::MediaGalleriesPreferences;
 using chrome::MediaGalleriesPrefInfoMap;
 using chrome::MediaGalleryPrefInfo;
 
-MediaGalleriesHandler::MediaGalleriesHandler() {
+MediaGalleriesHandler::MediaGalleriesHandler()
+    : weak_ptr_factory_(this) {
 }
 
 MediaGalleriesHandler::~MediaGalleriesHandler() {
@@ -49,6 +51,12 @@ void MediaGalleriesHandler::GetLocalizedValues(DictionaryValue* values) {
 }
 
 void MediaGalleriesHandler::InitializePage() {
+  chrome::StorageMonitor::GetInstance()->Initialize(
+      base::Bind(&MediaGalleriesHandler::InitializeOnStorageMonitorInit,
+                 weak_ptr_factory_.GetWeakPtr()));
+}
+
+void MediaGalleriesHandler::InitializeOnStorageMonitorInit() {
   Profile* profile = Profile::FromWebUI(web_ui());
   if (!chrome::MediaGalleriesPreferences::APIHasBeenUsed(profile))
     return;
@@ -65,6 +73,12 @@ void MediaGalleriesHandler::InitializePage() {
 }
 
 void MediaGalleriesHandler::RegisterMessages() {
+  chrome::StorageMonitor::GetInstance()->Initialize(
+      base::Bind(&MediaGalleriesHandler::RegisterOnStorageMonitorInit,
+                 weak_ptr_factory_.GetWeakPtr()));
+}
+
+void MediaGalleriesHandler::RegisterOnStorageMonitorInit() {
   web_ui()->RegisterMessageCallback(
       "addNewGallery",
       base::Bind(&MediaGalleriesHandler::HandleAddNewGallery,
@@ -76,6 +90,7 @@ void MediaGalleriesHandler::RegisterMessages() {
 }
 
 void MediaGalleriesHandler::OnGalleriesChanged() {
+  DCHECK(chrome::StorageMonitor::GetInstance()->IsInitialized());
   Profile* profile = Profile::FromWebUI(web_ui());
   chrome::MediaGalleriesPreferences* preferences =
       g_browser_process->media_file_system_registry()->GetPreferences(profile);
@@ -123,19 +138,21 @@ void MediaGalleriesHandler::HandleForgetGallery(const base::ListValue* args) {
     return;
   }
 
-  chrome::MediaGalleriesPreferences* prefs =
+  DCHECK(chrome::StorageMonitor::GetInstance()->IsInitialized());
+  chrome::MediaGalleriesPreferences* preferences =
       g_browser_process->media_file_system_registry()->GetPreferences(
           Profile::FromWebUI(web_ui()));
-  prefs->ForgetGalleryById(id);
+  preferences->ForgetGalleryById(id);
 }
 
 void MediaGalleriesHandler::FileSelected(const base::FilePath& path,
                                          int index,
                                          void* params) {
-  chrome::MediaGalleriesPreferences* prefs =
+  DCHECK(chrome::StorageMonitor::GetInstance()->IsInitialized());
+  chrome::MediaGalleriesPreferences* preferences =
       g_browser_process->media_file_system_registry()->GetPreferences(
           Profile::FromWebUI(web_ui()));
-  prefs->AddGalleryByPath(path);
+  preferences->AddGalleryByPath(path);
 }
 
 }  // namespace options

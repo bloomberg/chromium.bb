@@ -12,6 +12,9 @@
 
 #include "chrome/browser/extensions/extension_function.h"
 #include "chrome/browser/media_galleries/media_file_system_registry.h"
+#include "chrome/common/extensions/api/media_galleries.h"
+
+namespace MediaGalleries = extensions::api::media_galleries;
 
 namespace extensions {
 
@@ -26,6 +29,10 @@ class MediaGalleriesGetMediaFileSystemsFunction
   virtual bool RunImpl() OVERRIDE;
 
  private:
+  // Bottom half for RunImpl, invoked after the storage monitor is initialized.
+  void OnStorageMonitorInit(
+    MediaGalleries::GetMediaFileSystemsInteractivity interactive);
+
   // Always show the dialog.
   void AlwaysShowDialog(
       const std::vector<chrome::MediaFileSystemInfo>& filesystems);

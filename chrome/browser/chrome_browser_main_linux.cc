@@ -133,14 +133,6 @@ void ChromeBrowserMainPartsLinux::PreProfileInit() {
   ChromeBrowserMainPartsPosix::PreProfileInit();
 }
 
-void ChromeBrowserMainPartsLinux::PostProfileInit() {
-#if !defined(OS_CHROMEOS)
-  storage_monitor_->Init();
-#endif
-
-  ChromeBrowserMainPartsPosix::PostProfileInit();
-}
-
 void ChromeBrowserMainPartsLinux::PostMainMessageLoopRun() {
   ChromeBrowserMainPartsPosix::PostMainMessageLoopRun();
 

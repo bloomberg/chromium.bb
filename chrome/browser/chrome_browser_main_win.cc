@@ -205,12 +205,6 @@ void ChromeBrowserMainPartsWin::PreProfileInit() {
   ChromeBrowserMainParts::PreProfileInit();
 }
 
-void ChromeBrowserMainPartsWin::PostProfileInit() {
-  storage_monitor_->Init();
-
-  ChromeBrowserMainParts::PostProfileInit();
-}
-
 void ChromeBrowserMainPartsWin::ShowMissingLocaleMessageBox() {
   ui::MessageBox(NULL, ASCIIToUTF16(chrome_browser::kMissingLocaleDataMessage),
                  ASCIIToUTF16(chrome_browser::kMissingLocaleDataTitle),

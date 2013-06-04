@@ -82,6 +82,8 @@ class MediaFileSystemRegistry : public RemovableStorageObserver {
   // MediaGalleriesPreferences directly because this method also ensures that
   // currently attached removable devices are added to the preferences.
   // Called on the UI thread.
+  // Note: Caller must ensure that the storage monitor is initialized before
+  // calling this method.
   MediaGalleriesPreferences* GetPreferences(Profile* profile);
 
   // RemovableStorageObserver implementation.

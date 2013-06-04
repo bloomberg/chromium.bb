@@ -465,6 +465,7 @@ MediaGalleriesPreferences* MediaFileSystemRegistry::GetPreferences(
 
   // TODO(gbillock): Move this stanza to MediaGalleriesPreferences init code.
   StorageMonitor* monitor = StorageMonitor::GetInstance();
+  DCHECK(monitor->IsInitialized());
   std::vector<StorageInfo> existing_devices = monitor->GetAttachedStorage();
   for (size_t i = 0; i < existing_devices.size(); i++) {
     if (!StorageInfo::IsMediaDevice(existing_devices[i].device_id()))

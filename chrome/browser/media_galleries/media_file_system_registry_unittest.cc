@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <set>
 
+#include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/files/scoped_temp_dir.h"
@@ -285,6 +286,8 @@ class MediaFileSystemRegistryTest : public ChromeRenderViewHostTestHarness {
   void CreateProfileState(size_t profile_count);
 
   ProfileState* GetProfileState(size_t i);
+
+  MediaGalleriesPreferences* GetPreferences(Profile* profile);
 
   base::FilePath empty_dir() {
     return empty_dir_;
@@ -591,6 +594,11 @@ ProfileState* MediaFileSystemRegistryTest::GetProfileState(size_t i) {
   return profile_states_[i];
 }
 
+MediaGalleriesPreferences* MediaFileSystemRegistryTest::GetPreferences(
+    Profile* profile) {
+  return registry()->GetPreferences(profile);
+}
+
 std::string MediaFileSystemRegistryTest::AddUserGallery(
     StorageInfo::Type type,
     const std::string& unique_id,
@@ -739,7 +747,7 @@ void MediaFileSystemRegistryTest::SetUp() {
   portable_device_watcher->set_use_dummy_mtp_storage_info(true);
   monitor_.reset(new test::TestStorageMonitorWin(
       mount_watcher, portable_device_watcher));
-  monitor_->Init();
+  monitor_->Initialize(base::Bind(&base::DoNothing));
   // TODO(gbillock): Replace this with the correct event notification
   // on the storage monitor finishing the startup scan when that exists.
   base::RunLoop().RunUntilIdle();
@@ -749,7 +757,9 @@ void MediaFileSystemRegistryTest::SetUp() {
   base::RunLoop().RunUntilIdle();
 #else
   monitor_.reset(new test::TestStorageMonitor());
-  monitor_->Init();
+  monitor_->Initialize(base::Bind(&base::DoNothing));
+  monitor_->MarkInitialized();
+  base::RunLoop().RunUntilIdle();
 #endif
 
   ChromeRenderViewHostTestHarness::SetUp();
@@ -864,8 +874,7 @@ TEST_F(MediaFileSystemRegistryTest,
 
   // Forget the device.
   bool forget_gallery = false;
-  MediaGalleriesPreferences* prefs =
-      registry()->GetPreferences(profile_state->profile());
+  MediaGalleriesPreferences* prefs = GetPreferences(profile_state->profile());
   const MediaGalleriesPrefInfoMap& galleries = prefs->known_galleries();
   for (MediaGalleriesPrefInfoMap::const_iterator it = galleries.begin();
        it != galleries.end(); ++it) {
@@ -880,7 +889,7 @@ TEST_F(MediaFileSystemRegistryTest,
   EXPECT_EQ(gallery_count, GetAutoAddedGalleries(profile_state).size());
 
   // Call GetPreferences() and the gallery count should not change.
-  registry()->GetPreferences(profile_state->profile());
+  prefs = GetPreferences(profile_state->profile());
   EXPECT_EQ(gallery_count, GetAutoAddedGalleries(profile_state).size());
 }
 
@@ -898,7 +907,7 @@ TEST_F(MediaFileSystemRegistryTest, GalleryNameDefault) {
 
 // TODO(gbillock): Put the platform-specific parts of this test in tests
 // for those classes, not here. This test, internally, ends up creating an
-// MTP delegate.
+// MTP delegate. (Probably ./win/mtp_device_delegate_impl_win_unittest)
 #if !defined(OS_MACOSX)
 TEST_F(MediaFileSystemRegistryTest, GalleryNameMTP) {
   FSInfoMap galleries_info;

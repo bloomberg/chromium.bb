@@ -19,7 +19,7 @@ class TestStorageMonitor : public chrome::StorageMonitor {
 
   virtual void Init() OVERRIDE;
 
-  virtual void MarkInitialized();
+  void MarkInitialized();
 
   // Will create a new testing implementation for browser tests,
   // taking care to deal with the existing singleton correctly.

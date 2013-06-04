@@ -81,6 +81,7 @@ class MediaGalleriesPrivateEjectApiTest : public ExtensionApiTest {
   }
 
   void Attach() {
+    DCHECK(chrome::StorageMonitor::GetInstance()->IsInitialized());
     chrome::StorageInfo info(device_id_, ASCIIToUTF16(kDeviceName), kDevicePath,
                              string16(), string16(), string16(), 0);
     chrome::StorageMonitor::GetInstance()->receiver()->ProcessAttach(info);
@@ -88,6 +89,7 @@ class MediaGalleriesPrivateEjectApiTest : public ExtensionApiTest {
   }
 
   void Detach() {
+    DCHECK(chrome::StorageMonitor::GetInstance()->IsInitialized());
     chrome::StorageMonitor::GetInstance()->receiver()->ProcessDetach(
         device_id_);
     content::RunAllPendingInMessageLoop();
@@ -113,6 +115,8 @@ class MediaGalleriesPrivateEjectApiTest : public ExtensionApiTest {
 IN_PROC_BROWSER_TEST_F(MediaGalleriesPrivateEjectApiTest, EjectTest) {
   scoped_ptr<chrome::test::TestStorageMonitor> monitor(
       chrome::test::TestStorageMonitor::CreateForBrowserTests());
+  monitor->Init();
+  monitor->MarkInitialized();
 
   content::RenderViewHost* host = GetHost();
   ExecuteCmdAndCheckReply(host, kAddAttachListenerCmd, kAddAttachListenerOk);
@@ -134,6 +138,8 @@ IN_PROC_BROWSER_TEST_F(MediaGalleriesPrivateEjectApiTest, EjectTest) {
 IN_PROC_BROWSER_TEST_F(MediaGalleriesPrivateEjectApiTest, EjectBadDeviceTest) {
   scoped_ptr<chrome::test::TestStorageMonitor> monitor(
       chrome::test::TestStorageMonitor::CreateForBrowserTests());
+  monitor->Init();
+  monitor->MarkInitialized();
 
   ExecuteCmdAndCheckReply(GetHost(), kEjectFailTestCmd, kEjectFailListenerOk);
 

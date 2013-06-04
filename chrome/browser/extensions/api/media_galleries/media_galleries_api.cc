@@ -19,6 +19,7 @@
 #include "chrome/browser/extensions/shell_window_registry.h"
 #include "chrome/browser/media_galleries/media_file_system_registry.h"
 #include "chrome/browser/media_galleries/media_galleries_dialog_controller.h"
+#include "chrome/browser/storage_monitor/storage_monitor.h"
 #include "chrome/browser/ui/chrome_select_file_policy.h"
 #include "chrome/browser/ui/extensions/shell_window.h"
 #include "chrome/common/extensions/api/experimental_media_galleries.h"
@@ -92,6 +93,15 @@ bool MediaGalleriesGetMediaFileSystemsFunction::RunImpl() {
     interactive = params->details->interactive;
   }
 
+  chrome::StorageMonitor::GetInstance()->Initialize(base::Bind(
+      &MediaGalleriesGetMediaFileSystemsFunction::OnStorageMonitorInit,
+      this,
+      interactive));
+  return true;
+}
+
+void MediaGalleriesGetMediaFileSystemsFunction::OnStorageMonitorInit(
+    MediaGalleries::GetMediaFileSystemsInteractivity interactive) {
   switch (interactive) {
     case MediaGalleries::GET_MEDIA_FILE_SYSTEMS_INTERACTIVITY_YES: {
       // The MediaFileSystemRegistry only updates preferences for extensions
@@ -101,22 +111,21 @@ bool MediaGalleriesGetMediaFileSystemsFunction::RunImpl() {
       // MediaFileSystemRegistry will send preference changes.
       GetMediaFileSystemsForExtension(base::Bind(
           &MediaGalleriesGetMediaFileSystemsFunction::AlwaysShowDialog, this));
-      return true;
+      return;
     }
     case MediaGalleries::GET_MEDIA_FILE_SYSTEMS_INTERACTIVITY_IF_NEEDED: {
       GetMediaFileSystemsForExtension(base::Bind(
           &MediaGalleriesGetMediaFileSystemsFunction::ShowDialogIfNoGalleries,
           this));
-      return true;
+      return;
     }
     case MediaGalleries::GET_MEDIA_FILE_SYSTEMS_INTERACTIVITY_NO:
       GetAndReturnGalleries();
-      return true;
+      return;
     case MediaGalleries::GET_MEDIA_FILE_SYSTEMS_INTERACTIVITY_NONE:
       NOTREACHED();
   }
-  NOTREACHED();
-  return false;
+  SendResponse(false);
 }
 
 void MediaGalleriesGetMediaFileSystemsFunction::AlwaysShowDialog(
@@ -224,6 +233,7 @@ void MediaGalleriesGetMediaFileSystemsFunction::GetMediaFileSystemsForExtension(
     return;
   }
 
+  DCHECK(chrome::StorageMonitor::GetInstance()->IsInitialized());
   MediaFileSystemRegistry* registry =
       g_browser_process->media_file_system_registry();
   registry->GetMediaFileSystemsForExtension(
