@@ -60,9 +60,6 @@ void MediaPlayer::setMediaEngineCreateFunction(CreateMediaEnginePlayer createFun
 MediaPlayer::MediaPlayer(MediaPlayerClient* client)
     : m_mediaPlayerClient(client)
     , m_preload(Auto)
-    , m_rate(1.0f)
-    , m_volume(1.0f)
-    , m_muted(false)
     , m_inDestructor(false)
 {
     ASSERT(s_createMediaEngineFunction);
@@ -247,40 +244,25 @@ MediaPlayer::ReadyState MediaPlayer::readyState() const
     return m_private ? m_private->readyState() : HaveNothing;
 }
 
-double MediaPlayer::volume() const
-{
-    return m_volume;
-}
-
 void MediaPlayer::setVolume(double volume)
 {
-    m_volume = volume;
-
-    if (m_private && !m_muted)
+    if (m_private)
         m_private->setVolume(volume);
-}
-
-bool MediaPlayer::muted() const
-{
-    return m_muted;
 }
 
 void MediaPlayer::setMuted(bool muted)
 {
-    m_muted = muted;
-
     if (m_private)
-        m_private->setVolume(muted ? 0 : m_volume);
+        m_private->setMuted(muted);
 }
 
 double MediaPlayer::rate() const
 {
-    return m_rate;
+    return m_private ? m_private->rate() : 1.0;
 }
 
 void MediaPlayer::setRate(double rate)
 {
-    m_rate = rate;
     if (m_private)
         m_private->setRate(rate);
 }
@@ -406,20 +388,6 @@ unsigned MediaPlayer::videoDecodedByteCount() const
 }
 
 // Client callbacks.
-void MediaPlayer::volumeChanged(double newVolume)
-{
-    m_volume = newVolume;
-    if (m_mediaPlayerClient)
-        m_mediaPlayerClient->mediaPlayerVolumeChanged();
-}
-
-void MediaPlayer::muteChanged(bool newMuted)
-{
-    m_muted = newMuted;
-    if (m_mediaPlayerClient)
-        m_mediaPlayerClient->mediaPlayerMuteChanged();
-}
-
 void MediaPlayer::setNeedsStyleRecalc()
 {
     // FIXME: This m_inDestructor check retains legacy behavior, but it's probably unnecessary.

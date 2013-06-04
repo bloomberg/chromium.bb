@@ -65,28 +65,14 @@ public:
     // the ready state has changed
     virtual void mediaPlayerReadyStateChanged() = 0;
 
-    // the volume state has changed
-    virtual void mediaPlayerVolumeChanged() = 0;
-
-    // the mute state has changed
-    virtual void mediaPlayerMuteChanged() = 0;
-
     // time has jumped, eg. not as a result of normal playback
     virtual void mediaPlayerTimeChanged() = 0;
 
     // the media file duration has changed, or is now known
     virtual void mediaPlayerDurationChanged() = 0;
 
-    // the playback rate has changed
-    virtual void mediaPlayerRateChanged() = 0;
-
     // the play/pause status changed
     virtual void mediaPlayerPlaybackStateChanged() = 0;
-
-    // The MediaPlayer has found potentially problematic media content.
-    // This is used internally to trigger swapping from a <video>
-    // element to an <embed> in standalone documents
-    virtual void mediaPlayerSawUnsupportedTracks() = 0;
 
     // The MediaPlayer could not discover an engine which supports the requested resource.
     virtual void mediaPlayerResourceNotSupported() = 0;
@@ -174,10 +160,7 @@ public:
 
     bool didLoadingProgress();
 
-    double volume() const;
     void setVolume(double);
-
-    bool muted() const;
     void setMuted(bool);
 
     void paint(GraphicsContext*, const IntRect&);
@@ -210,9 +193,6 @@ public:
     enum Preload { None, MetaData, Auto };
     Preload preload() const;
     void setPreload(Preload);
-
-    void volumeChanged(double);
-    void muteChanged(bool);
 
     MediaPlayerClient* mediaPlayerClient() const { return m_mediaPlayerClient; }
 
@@ -258,9 +238,6 @@ private:
     MediaPlayerClient* m_mediaPlayerClient;
     OwnPtr<MediaPlayerPrivateInterface> m_private;
     Preload m_preload;
-    double m_rate;
-    double m_volume;
-    bool m_muted;
     bool m_inDestructor;
 };
 

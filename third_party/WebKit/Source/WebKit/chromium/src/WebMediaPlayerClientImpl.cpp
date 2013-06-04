@@ -95,18 +95,6 @@ void WebMediaPlayerClientImpl::readyStateChanged()
     m_mediaPlayer->mediaPlayerClient()->mediaPlayerReadyStateChanged();
 }
 
-void WebMediaPlayerClientImpl::volumeChanged(double newVolume)
-{
-    ASSERT(m_mediaPlayer);
-    m_mediaPlayer->volumeChanged(newVolume);
-}
-
-void WebMediaPlayerClientImpl::muteChanged(bool newMute)
-{
-    ASSERT(m_mediaPlayer);
-    m_mediaPlayer->muteChanged(newMute);
-}
-
 void WebMediaPlayerClientImpl::timeChanged()
 {
     ASSERT(m_mediaPlayer);
@@ -127,12 +115,6 @@ void WebMediaPlayerClientImpl::durationChanged()
     m_mediaPlayer->mediaPlayerClient()->mediaPlayerDurationChanged();
 }
 
-void WebMediaPlayerClientImpl::rateChanged()
-{
-    ASSERT(m_mediaPlayer);
-    m_mediaPlayer->mediaPlayerClient()->mediaPlayerRateChanged();
-}
-
 void WebMediaPlayerClientImpl::sizeChanged()
 {
     ASSERT(m_mediaPlayer);
@@ -146,17 +128,9 @@ void WebMediaPlayerClientImpl::setOpaque(bool opaque)
         m_videoLayer->setOpaque(m_opaque);
 }
 
-void WebMediaPlayerClientImpl::sawUnsupportedTracks()
-{
-    ASSERT(m_mediaPlayer);
-    m_mediaPlayer->mediaPlayerClient()->mediaPlayerSawUnsupportedTracks();
-}
-
 double WebMediaPlayerClientImpl::volume() const
 {
-    if (m_mediaPlayer)
-        return m_mediaPlayer->volume();
-    return 0.0;
+    return m_volume;
 }
 
 void WebMediaPlayerClientImpl::playbackStateChanged()
@@ -437,8 +411,14 @@ bool WebMediaPlayerClientImpl::seeking() const
     return false;
 }
 
+double WebMediaPlayerClientImpl::rate() const
+{
+    return m_rate;
+}
+
 void WebMediaPlayerClientImpl::setRate(double rate)
 {
+    m_rate = rate;
     if (m_webMediaPlayer)
         m_webMediaPlayer->setRate(rate);
 }
@@ -466,8 +446,16 @@ bool WebMediaPlayerClientImpl::supportsSave() const
 
 void WebMediaPlayerClientImpl::setVolume(double volume)
 {
-    if (m_webMediaPlayer)
+    m_volume = volume;
+    if (m_webMediaPlayer && !m_muted)
         m_webMediaPlayer->setVolume(volume);
+}
+
+void WebMediaPlayerClientImpl::setMuted(bool muted)
+{
+    m_muted = muted;
+    if (m_webMediaPlayer)
+        m_webMediaPlayer->setVolume(muted ? 0 : m_volume);
 }
 
 MediaPlayer::NetworkState WebMediaPlayerClientImpl::networkState() const
@@ -746,6 +734,9 @@ WebMediaPlayerClientImpl::WebMediaPlayerClientImpl()
     , m_videoLayer(0)
     , m_opaque(false)
     , m_needsWebLayerForVideo(false)
+    , m_volume(1.0)
+    , m_muted(false)
+    , m_rate(1.0)
 {
 }
 

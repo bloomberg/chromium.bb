@@ -66,15 +66,11 @@ public:
     virtual ~WebMediaPlayerClientImpl();
     virtual void networkStateChanged();
     virtual void readyStateChanged();
-    virtual void volumeChanged(double);
-    virtual void muteChanged(bool);
     virtual void timeChanged();
     virtual void repaint();
     virtual void durationChanged();
-    virtual void rateChanged();
     virtual void sizeChanged();
     virtual void setOpaque(bool);
-    virtual void sawUnsupportedTracks();
     virtual double volume() const;
     virtual void playbackStateChanged();
     virtual WebMediaPlayer::Preload preload() const;
@@ -107,9 +103,11 @@ public:
     virtual double currentTime() const;
     virtual void seek(double time);
     virtual bool seeking() const;
+    virtual double rate() const;
     virtual void setRate(double);
     virtual bool paused() const;
     virtual void setVolume(double);
+    virtual void setMuted(bool);
     virtual WebCore::MediaPlayer::NetworkState networkState() const;
     virtual WebCore::MediaPlayer::ReadyState readyState() const;
     virtual double maxTimeSeekable() const;
@@ -175,7 +173,9 @@ private:
     WebLayer* m_videoLayer;
     bool m_opaque;
     bool m_needsWebLayerForVideo;
-    static bool m_isEnabled;
+    double m_volume;
+    bool m_muted;
+    double m_rate;
 
 #if ENABLE(WEB_AUDIO)
     // AudioClientImpl wraps an AudioSourceProviderClient.

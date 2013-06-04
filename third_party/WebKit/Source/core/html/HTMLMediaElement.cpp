@@ -237,7 +237,6 @@ HTMLMediaElement::HTMLMediaElement(const QualifiedName& tagName, Document* docum
     , m_restrictions(RequireUserGestureForFullscreenRestriction | RequirePageConsentToLoadMediaRestriction)
     , m_preload(MediaPlayer::Auto)
     , m_displayMode(Unknown)
-    , m_processingMediaPlayerCallback(0)
     , m_cachedTime(MediaPlayer::invalidTime())
     , m_cachedTimeWallClockUpdateTime(0)
     , m_minimumWallClockTimeToCacheMediaTime(0)
@@ -1411,9 +1410,7 @@ void HTMLMediaElement::cancelPendingEventsAndCallbacks()
 
 void HTMLMediaElement::mediaPlayerNetworkStateChanged()
 {
-    beginProcessingMediaPlayerCallback();
     setNetworkState(m_player->networkState());
-    endProcessingMediaPlayerCallback();
 }
 
 void HTMLMediaElement::mediaLoadingFailed(MediaPlayer::NetworkState error)
@@ -1509,11 +1506,7 @@ void HTMLMediaElement::changeNetworkStateFromLoadingToIdle()
 
 void HTMLMediaElement::mediaPlayerReadyStateChanged()
 {
-    beginProcessingMediaPlayerCallback();
-
     setReadyState(m_player->readyState());
-
-    endProcessingMediaPlayerCallback();
 }
 
 void HTMLMediaElement::setReadyState(MediaPlayer::ReadyState state)
@@ -2347,13 +2340,10 @@ void HTMLMediaElement::setMuted(bool muted)
 
     if (m_muted != muted) {
         m_muted = muted;
-        // Avoid recursion when the player reports volume changes.
-        if (!processingMediaPlayerCallback()) {
-            if (m_player) {
-                m_player->setMuted(m_muted);
-                if (hasMediaControls())
-                    mediaControls()->changedMute();
-            }
+        if (m_player) {
+            m_player->setMuted(m_muted);
+            if (hasMediaControls())
+                mediaControls()->changedMute();
         }
         scheduleEvent(eventNames().volumechangeEvent);
     }
@@ -3057,8 +3047,6 @@ void HTMLMediaElement::mediaPlayerTimeChanged()
     if (RuntimeEnabledFeatures::videoTrackEnabled())
         updateActiveTextTrackCues(currentTime());
 
-    beginProcessingMediaPlayerCallback();
-
     invalidateCachedTime();
 
     // 4.8.10.9 step 14 & 15.  Needed if no ReadyState change is associated with the seek.
@@ -3104,40 +3092,11 @@ void HTMLMediaElement::mediaPlayerTimeChanged()
         m_sentEndEvent = false;
 
     updatePlayState();
-    endProcessingMediaPlayerCallback();
-}
-
-void HTMLMediaElement::mediaPlayerVolumeChanged()
-{
-    LOG(Media, "HTMLMediaElement::mediaPlayerVolumeChanged");
-
-    beginProcessingMediaPlayerCallback();
-    if (m_player) {
-        double vol = m_player->volume();
-        if (vol != m_volume) {
-            m_volume = vol;
-            updateVolume();
-            scheduleEvent(eventNames().volumechangeEvent);
-        }
-    }
-    endProcessingMediaPlayerCallback();
-}
-
-void HTMLMediaElement::mediaPlayerMuteChanged()
-{
-    LOG(Media, "HTMLMediaElement::mediaPlayerMuteChanged");
-
-    beginProcessingMediaPlayerCallback();
-    if (m_player)
-        setMuted(m_player->muted());
-    endProcessingMediaPlayerCallback();
 }
 
 void HTMLMediaElement::mediaPlayerDurationChanged()
 {
     LOG(Media, "HTMLMediaElement::mediaPlayerDurationChanged");
-
-    beginProcessingMediaPlayerCallback();
 
     scheduleEvent(eventNames().durationchangeEvent);
 
@@ -3150,23 +3109,6 @@ void HTMLMediaElement::mediaPlayerDurationChanged()
     double dur = duration();
     if (now > dur)
         seek(dur, IGNORE_EXCEPTION);
-
-    endProcessingMediaPlayerCallback();
-}
-
-void HTMLMediaElement::mediaPlayerRateChanged()
-{
-    LOG(Media, "HTMLMediaElement::mediaPlayerRateChanged");
-
-    beginProcessingMediaPlayerCallback();
-
-    // Stash the rate in case the one we tried to set isn't what the engine is
-    // using (eg. it can't handle the rate we set)
-    m_playbackRate = m_player->rate();
-    if (m_playing)
-        invalidateCachedTime();
-
-    endProcessingMediaPlayerCallback();
 }
 
 void HTMLMediaElement::mediaPlayerPlaybackStateChanged()
@@ -3176,25 +3118,10 @@ void HTMLMediaElement::mediaPlayerPlaybackStateChanged()
     if (!m_player || m_pausedInternal)
         return;
 
-    beginProcessingMediaPlayerCallback();
     if (m_player->paused())
         pauseInternal();
     else
         playInternal();
-    endProcessingMediaPlayerCallback();
-}
-
-void HTMLMediaElement::mediaPlayerSawUnsupportedTracks()
-{
-    LOG(Media, "HTMLMediaElement::mediaPlayerSawUnsupportedTracks");
-
-    // The MediaPlayer came across content it cannot completely handle.
-    // This is normally acceptable except when we are in a standalone
-    // MediaDocument. If so, tell the document what has happened.
-    if (ownerDocument()->isMediaDocument()) {
-        MediaDocument* mediaDocument = toMediaDocument(ownerDocument());
-        mediaDocument->mediaElementSawUnsupportedTracks();
-    }
 }
 
 void HTMLMediaElement::mediaPlayerResourceNotSupported()
@@ -3208,30 +3135,24 @@ void HTMLMediaElement::mediaPlayerResourceNotSupported()
 // MediaPlayerPresentation methods
 void HTMLMediaElement::mediaPlayerRepaint()
 {
-    beginProcessingMediaPlayerCallback();
     updateDisplayState();
     if (renderer())
         renderer()->repaint();
-    endProcessingMediaPlayerCallback();
 }
 
 void HTMLMediaElement::mediaPlayerSizeChanged()
 {
     LOG(Media, "HTMLMediaElement::mediaPlayerSizeChanged");
 
-    beginProcessingMediaPlayerCallback();
     if (renderer())
         renderer()->updateFromElement();
-    endProcessingMediaPlayerCallback();
 }
 
 void HTMLMediaElement::mediaPlayerEngineUpdated()
 {
     LOG(Media, "HTMLMediaElement::mediaPlayerEngineUpdated");
-    beginProcessingMediaPlayerCallback();
     if (renderer())
         renderer()->updateFromElement();
-    endProcessingMediaPlayerCallback();
 }
 
 PassRefPtr<TimeRanges> HTMLMediaElement::buffered() const
@@ -3335,19 +3256,16 @@ void HTMLMediaElement::updateVolume()
     if (!m_player)
         return;
 
-    // Avoid recursion when the player reports volume changes.
-    if (!processingMediaPlayerCallback()) {
-        double volumeMultiplier = 1;
-        bool shouldMute = m_muted;
+    double volumeMultiplier = 1;
+    bool shouldMute = m_muted;
 
-        if (m_mediaController) {
-            volumeMultiplier *= m_mediaController->volume();
-            shouldMute = m_mediaController->muted();
-        }
-
-        m_player->setMuted(shouldMute);
-        m_player->setVolume(m_volume * volumeMultiplier);
+    if (m_mediaController) {
+        volumeMultiplier *= m_mediaController->volume();
+        shouldMute = m_mediaController->muted();
     }
+
+    m_player->setMuted(shouldMute);
+    m_player->setVolume(m_volume * volumeMultiplier);
 
     if (hasMediaControls())
         mediaControls()->changedVolume();

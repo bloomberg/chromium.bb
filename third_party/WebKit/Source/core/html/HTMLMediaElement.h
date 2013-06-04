@@ -360,12 +360,8 @@ private:
     virtual void mediaPlayerNetworkStateChanged() OVERRIDE;
     virtual void mediaPlayerReadyStateChanged() OVERRIDE;
     virtual void mediaPlayerTimeChanged() OVERRIDE;
-    virtual void mediaPlayerVolumeChanged() OVERRIDE;
-    virtual void mediaPlayerMuteChanged() OVERRIDE;
     virtual void mediaPlayerDurationChanged() OVERRIDE;
-    virtual void mediaPlayerRateChanged() OVERRIDE;
     virtual void mediaPlayerPlaybackStateChanged() OVERRIDE;
-    virtual void mediaPlayerSawUnsupportedTracks() OVERRIDE;
     virtual void mediaPlayerResourceNotSupported() OVERRIDE;
     virtual void mediaPlayerRepaint() OVERRIDE;
     virtual void mediaPlayerSizeChanged() OVERRIDE;
@@ -429,10 +425,6 @@ private:
 
     void prepareForLoad();
     void allowVideoRendering();
-
-    bool processingMediaPlayerCallback() const { return m_processingMediaPlayerCallback > 0; }
-    void beginProcessingMediaPlayerCallback() { ++m_processingMediaPlayerCallback; }
-    void endProcessingMediaPlayerCallback() { ASSERT(m_processingMediaPlayerCallback); --m_processingMediaPlayerCallback; }
 
     void updateVolume();
     void updatePlayState();
@@ -515,10 +507,6 @@ private:
     MediaPlayer::Preload m_preload;
 
     DisplayMode m_displayMode;
-
-    // Counter incremented while processing a callback from the media player, so we can avoid
-    // calling the media engine recursively.
-    int m_processingMediaPlayerCallback;
 
     RefPtr<WebKitMediaSource> m_mediaSource;
 

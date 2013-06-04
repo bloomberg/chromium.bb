@@ -33,7 +33,6 @@
 #include "core/dom/KeyboardEvent.h"
 #include "core/dom/NodeList.h"
 #include "core/dom/RawDataDocumentParser.h"
-#include "core/html/HTMLEmbedElement.h"
 #include "core/html/HTMLHtmlElement.h"
 #include "core/html/HTMLSourceElement.h"
 #include "core/html/HTMLVideoElement.h"
@@ -116,15 +115,9 @@ void MediaDocumentParser::appendBytes(DocumentWriter*, const char*, size_t)
     
 MediaDocument::MediaDocument(Frame* frame, const KURL& url)
     : HTMLDocument(frame, url, MediaDocumentClass)
-    , m_replaceMediaElementTimer(this, &MediaDocument::replaceMediaElementTimerFired)
 {
     setCompatibilityMode(QuirksMode);
     lockCompatibilityMode();
-}
-
-MediaDocument::~MediaDocument()
-{
-    ASSERT(!m_replaceMediaElementTimer.isActive());
 }
 
 PassRefPtr<DocumentParser> MediaDocument::createParser()
@@ -145,14 +138,6 @@ static inline HTMLVideoElement* descendentVideoElement(Node* node)
         return static_cast<HTMLVideoElement*>(nodeList.get()->item(0));
 
     return 0;
-}
-
-static inline HTMLVideoElement* ancestorVideoElement(Node* node)
-{
-    while (node && !node->hasTagName(videoTag))
-        node = node->parentOrShadowHostNode();
-
-    return static_cast<HTMLVideoElement*>(node);
 }
 
 void MediaDocument::defaultEventHandler(Event* event)
@@ -177,44 +162,6 @@ void MediaDocument::defaultEventHandler(Event* event)
                 video->pause();
             event->setDefaultHandled();
         }
-    }
-}
-
-void MediaDocument::mediaElementSawUnsupportedTracks()
-{
-    // The HTMLMediaElement was told it has something that the underlying 
-    // MediaPlayer cannot handle so we should switch from <video> to <embed> 
-    // and let the plugin handle this. Don't do it immediately as this 
-    // function may be called directly from a media engine callback, and 
-    // replaceChild will destroy the element, media player, and media engine.
-    m_replaceMediaElementTimer.startOneShot(0);
-}
-
-void MediaDocument::replaceMediaElementTimerFired(Timer<MediaDocument>*)
-{
-    HTMLElement* htmlBody = body();
-    if (!htmlBody)
-        return;
-
-    // Set body margin width and height to 0 as that is what a PluginDocument uses.
-    htmlBody->setAttribute(marginwidthAttr, "0");
-    htmlBody->setAttribute(marginheightAttr, "0");
-
-    if (HTMLVideoElement* videoElement = descendentVideoElement(htmlBody)) {
-        RefPtr<Element> element = Document::createElement(embedTag, false);
-        HTMLEmbedElement* embedElement = static_cast<HTMLEmbedElement*>(element.get());
-
-        embedElement->setAttribute(widthAttr, "100%");
-        embedElement->setAttribute(heightAttr, "100%");
-        embedElement->setAttribute(nameAttr, "plugin");
-        embedElement->setAttribute(srcAttr, url().string());
-
-        DocumentLoader* documentLoader = loader();
-        ASSERT(documentLoader);
-        if (documentLoader)
-            embedElement->setAttribute(typeAttr, documentLoader->writer()->mimeType());
-
-        videoElement->parentNode()->replaceChild(embedElement, videoElement, IGNORE_EXCEPTION);
     }
 }
 

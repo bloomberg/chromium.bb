@@ -67,11 +67,13 @@ public:
 
     virtual bool seeking() const = 0;
 
+    virtual double rate() const = 0;
     virtual void setRate(double) = 0;
 
     virtual bool paused() const = 0;
 
     virtual void setVolume(double) = 0;
+    virtual void setMuted(bool) = 0;
 
     virtual MediaPlayer::NetworkState networkState() const = 0;
     virtual MediaPlayer::ReadyState readyState() const = 0;
