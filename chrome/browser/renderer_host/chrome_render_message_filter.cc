@@ -64,7 +64,7 @@ enum ActivityLogCallType {
 void AddAPIActionToExtensionActivityLog(
     Profile* profile,
     const ActivityLogCallType call_type,
-    const std::string& extension_id,
+    const extensions::Extension* extension,
     const std::string& api_call,
     scoped_ptr<ListValue> args,
     const std::string& extra) {
@@ -76,7 +76,7 @@ void AddAPIActionToExtensionActivityLog(
                             base::Bind(&AddAPIActionToExtensionActivityLog,
                                        profile,
                                        call_type,
-                                       extension_id,
+                                       extension,
                                        api_call,
                                        base::Passed(&args),
                                        extra));
@@ -85,36 +85,30 @@ void AddAPIActionToExtensionActivityLog(
         extensions::ActivityLog::GetInstance(profile);
     if (activity_log->IsLogEnabled()) {
       if (call_type == ACTIVITYAPI)
-        activity_log->LogAPIAction(extension_id,
-                                   api_call,
-                                   args.get(),
-                                   extra);
+        activity_log->LogAPIAction(extension, api_call, args.get(), extra);
       else if (call_type == ACTIVITYEVENT)
-        activity_log->LogEventAction(extension_id,
-                                     api_call,
-                                     args.get(),
-                                     extra);
+        activity_log->LogEventAction(extension, api_call, args.get(), extra);
     }
   }
 }
 
 void AddBlockedActionToExtensionActivityLog(
     Profile* profile,
-    const std::string& extension_id,
+    const extensions::Extension* extension,
     const std::string& api_call) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     BrowserThread::PostTask(BrowserThread::UI,
                             FROM_HERE,
                             base::Bind(&AddBlockedActionToExtensionActivityLog,
                                        profile,
-                                       extension_id,
+                                       extension,
                                        api_call));
   } else {
     extensions::ActivityLog* activity_log =
         extensions::ActivityLog::GetInstance(profile);
     if (activity_log->IsLogEnabled()) {
       scoped_ptr<ListValue> empty_args(new ListValue());
-      activity_log->LogBlockedAction(extension_id,
+      activity_log->LogBlockedAction(extension,
                                      api_call,
                                      empty_args.get(),
                                      extensions::BlockedAction::ACCESS_DENIED,
@@ -125,7 +119,7 @@ void AddBlockedActionToExtensionActivityLog(
 
 void AddDOMActionToExtensionActivityLog(
     Profile* profile,
-    const std::string& extension_id,
+    const extensions::Extension* extension,
     const GURL& url,
     const string16& url_title,
     const std::string& api_call,
@@ -138,7 +132,7 @@ void AddDOMActionToExtensionActivityLog(
                             FROM_HERE,
                             base::Bind(&AddDOMActionToExtensionActivityLog,
                                        profile,
-                                       extension_id,
+                                       extension,
                                        url,
                                        url_title,
                                        api_call,
@@ -149,7 +143,7 @@ void AddDOMActionToExtensionActivityLog(
         extensions::ActivityLog::GetInstance(profile);
     if (activity_log->IsLogEnabled())
       activity_log->LogDOMAction(
-          extension_id, url, url_title, api_call, args.get(),
+          extension, url, url_title, api_call, args.get(),
           static_cast<extensions::DomActionType::Type>(call_type), "");
   }
 }
@@ -655,10 +649,12 @@ void ChromeRenderMessageFilter::OnExtensionResumeRequests(int route_id) {
 void ChromeRenderMessageFilter::OnAddAPIActionToExtensionActivityLog(
     const std::string& extension_id,
     const ExtensionHostMsg_APIActionOrEvent_Params& params) {
+  const extensions::Extension* extension =
+      extension_info_map_->extensions().GetByID(extension_id);
   scoped_ptr<ListValue> args(params.arguments.DeepCopy());
   // The activity is recorded as an API action in the extension
   // activity log.
-  AddAPIActionToExtensionActivityLog(profile_, ACTIVITYAPI, extension_id,
+  AddAPIActionToExtensionActivityLog(profile_, ACTIVITYAPI, extension,
                                      params.api_call, args.Pass(),
                                      params.extra);
 }
@@ -666,10 +662,12 @@ void ChromeRenderMessageFilter::OnAddAPIActionToExtensionActivityLog(
 void ChromeRenderMessageFilter::OnAddDOMActionToExtensionActivityLog(
     const std::string& extension_id,
     const ExtensionHostMsg_DOMAction_Params& params) {
+  const extensions::Extension* extension =
+      extension_info_map_->extensions().GetByID(extension_id);
   scoped_ptr<ListValue> args(params.arguments.DeepCopy());
   // The activity is recorded as a DOM action on the extension
   // activity log.
-  AddDOMActionToExtensionActivityLog(profile_, extension_id,
+  AddDOMActionToExtensionActivityLog(profile_, extension,
                                      params.url, params.url_title,
                                      params.api_call, args.Pass(),
                                      params.call_type);
@@ -678,10 +676,12 @@ void ChromeRenderMessageFilter::OnAddDOMActionToExtensionActivityLog(
 void ChromeRenderMessageFilter::OnAddEventToExtensionActivityLog(
     const std::string& extension_id,
     const ExtensionHostMsg_APIActionOrEvent_Params& params) {
+  const extensions::Extension* extension =
+      extension_info_map_->extensions().GetByID(extension_id);
   scoped_ptr<ListValue> args(params.arguments.DeepCopy());
   // The activity is recorded as an event in the extension
   // activity log.
-  AddAPIActionToExtensionActivityLog(profile_, ACTIVITYEVENT, extension_id,
+  AddAPIActionToExtensionActivityLog(profile_, ACTIVITYEVENT, extension,
                                      params.api_call, args.Pass(),
                                      params.extra);
 }
@@ -689,8 +689,10 @@ void ChromeRenderMessageFilter::OnAddEventToExtensionActivityLog(
 void ChromeRenderMessageFilter::OnAddBlockedCallToExtensionActivityLog(
     const std::string& extension_id,
     const std::string& function_name) {
+  const extensions::Extension* extension =
+      extension_info_map_->extensions().GetByID(extension_id);
   AddBlockedActionToExtensionActivityLog(profile_,
-                                         extension_id,
+                                         extension,
                                          function_name);
 }
 
