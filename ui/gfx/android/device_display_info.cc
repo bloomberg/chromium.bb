@@ -58,13 +58,6 @@ double DeviceDisplayInfo::GetDIPScale() {
   return static_cast<double>(result);
 }
 
-double DeviceDisplayInfo::GetRefreshRate() {
-  JNIEnv* env = AttachCurrentThread();
-  jdouble result =
-      Java_DeviceDisplayInfo_getRefreshRate(env, j_device_info_.obj());
-  return static_cast<double>(result);
-}
-
 // static
 bool DeviceDisplayInfo::RegisterDeviceDisplayInfo(JNIEnv* env) {
   return RegisterNativesImpl(env);

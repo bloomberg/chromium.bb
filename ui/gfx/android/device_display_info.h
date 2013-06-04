@@ -37,9 +37,6 @@ class UI_EXPORT DeviceDisplayInfo {
   // (1.0 is 160dpi, 0.75 is 120dpi, 2.0 is 320dpi).
   double GetDIPScale();
 
-  // Returns display refresh rate in number of frames per second.
-  double GetRefreshRate();
-
   // Registers methods with JNI and returns true if succeeded.
   static bool RegisterDeviceDisplayInfo(JNIEnv* env);
 
