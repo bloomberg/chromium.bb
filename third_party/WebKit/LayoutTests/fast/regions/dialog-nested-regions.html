@@ -1,0 +1,58 @@
+<html>
+    <head>
+        <style>
+            #content {
+                width: 20px;
+                height: 20px;
+                background-color: green;
+                position: relative;
+                display: block;
+                margin: 10px;
+                -webkit-flow-into: first;
+            }
+            #region1 {
+                height: 80px;
+                background-color: orange;
+                border-style: solid;
+                border-width: thin;
+                -webkit-flow-from: first;
+                -webkit-flow-into: second;
+            }
+            #region2 {
+                width: 100px;
+                height: 100px;
+                background-color: gray;
+                border-style: solid;
+                border-width: thin;
+                -webkit-flow-from: second;
+            }
+            .red {
+                width: 100%;
+                height: 100%;
+                background-color: red;
+            }
+        </style>
+    </head>
+    <body>
+        <p>
+            The green box is a dialog element that is flowed into a nested named flow.
+        </p>
+        <ol>
+            <li>Test passes if you see a green square inside an orange square inside a gray square.</li>
+            <li>You shouldn't see any red.</li>
+        </ol>
+        <dialog id="content"></dialog>
+        <div id="region1">
+            <div class="red"></div>
+        </div>
+        <div id="region2">
+            <div class="red"></div>
+        </div>
+    </body>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            var dialog = document.getElementsByTagName('dialog')[0];
+            dialog.show();
+        });
+    </script>
+</html>

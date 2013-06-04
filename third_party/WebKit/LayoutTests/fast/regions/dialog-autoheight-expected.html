@@ -1,0 +1,35 @@
+<!doctype html>
+<html>
+    <head>
+        <style>
+            .flowContent { -webkit-font-smoothing: none; font-size: 50px; color: green; font-family: Ahem; }
+
+            .regionSize { margin: 0; padding: 0; width: 260px; border: none; }
+            #region { margin-left: 8px; top: 150px; }
+            #region2 { top: 150px; left: 300px; }
+            #region3 { top: 150px; left: 600px; }
+
+            .redBox { position: absolute; height: 50px; background-color: red; }
+            #red { top: 200px; }
+            #red1 { top: 200px; left: 600px; }
+            #red2 { top: 200px; left: 300px; }
+        </style>
+    </head>
+    <body>
+        <p>The three regions in the region chain all have auto-height. Their height is computed taking regions breaks into account.</p>
+        <p>On success, you should see 3 horizontal green lines.</p>
+        <div id="red" class="redBox regionSize"></div>
+        <div id="red1" class="redBox regionSize"></div>
+        <div id="red2" class="redBox regionSize"></div>
+
+        <dialog open id="region" class="regionSize">
+            <p class="flowContent">aaaaa</p>
+        </dialog>
+        <dialog open id="region2" class="regionSize">
+            <p class="flowContent">aaaaa</p>
+        </dialog>
+        <dialog open id="region3" class="regionSize">
+            <p class="flowContent">aaaaa</p>
+        </dialog>
+    </body>
+</html>

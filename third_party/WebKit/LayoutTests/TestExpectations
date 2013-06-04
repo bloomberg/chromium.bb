@@ -852,6 +852,9 @@ webkit.org/b/49142 fast/regions/style-scoped-in-flow-override-region-styling-mul
 
 webkit.org/b/92131 inspector/styles/region-style-crash.html [ Failure Pass Timeout ]
 
+# CSS Regions tests for <dialog>
+crbug.com/244792 fast/regions/dialog-fragmentation.html [ ImageOnlyFailure ]
+
 webkit.org/b/62754 [ Mac Debug ] http/tests/misc/object-embedding-svg-delayed-size-negotiation-2.htm [ Failure ]
 webkit.org/b/62754 [ Linux Release ] http/tests/misc/object-embedding-svg-delayed-size-negotiation-2.htm [ Timeout ]
 webkit.org/b/62754 [ Linux Debug ] http/tests/misc/object-embedding-svg-delayed-size-negotiation-2.htm [ Slow ]

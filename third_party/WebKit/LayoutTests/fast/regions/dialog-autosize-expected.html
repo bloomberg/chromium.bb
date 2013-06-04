@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <style>
+            .content {
+                font-family: Ahem;
+                font-size: 20px;
+                line-height: 1em;
+                color: green;
+                -webkit-font-smoothing: none;
+            }
+
+            #region1 {
+                float: left;
+                min-height: 120px;
+                min-width: 60px;
+            }
+
+            #region2 {
+                float: left;
+                margin-left: 8px;
+            }
+
+            .dialog {
+                position: static;
+                display: block;
+                width: auto;
+                height: auto;
+                border: none;
+                padding: 0px;
+                margin: 0px;
+            }
+        </style>
+    </head>
+    <body>
+        <p>
+            Test whether dialog elements with auto width/height are flowed correctly
+            inside a named flow. You should see two green rectangles.<br>
+            Test fails if you can see any red.
+        </p>
+        <div id="region1">
+            <dialog class="dialog" id="d1">
+                <div class="content">
+                    <p id="p1">
+                        xxxxx<br>
+                        xxxxx<br>
+                        xxxxx
+                    </p>
+                </div>
+            </dialog>
+        </div>
+        <div id="region2">
+            <dialog class="dialog" id="d2">
+                <div class="content">
+                    <p id="p2">
+                        xxxxx<br>
+                        xxxxx<br>
+                        xxxxx
+                    </p>
+                </div>
+            </dialog>
+        </div>
+    </body>
+</html>
