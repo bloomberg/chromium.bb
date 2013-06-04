@@ -1,9 +1,0 @@
-*.pyc
-\#*#
-.#*
-*.swp
-*~
-.DS_Store
-app/chromeapp.js
-app/model_view.js
-app/model_view.css
