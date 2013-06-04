@@ -174,6 +174,13 @@ class AutofillManager : public content::WebContentsObserver,
       const base::TimeTicks& interaction_time,
       const base::TimeTicks& submission_time);
 
+  // Shows the Autocheckout bubble if conditions are right. See comments for
+  // AutocheckoutManager::MaybeShowAutocheckoutBubble. Input element requesting
+  // bubble belongs to |form|. |bounding_box| is the bounding box of the input
+  // field in focus.
+  virtual void OnMaybeShowAutocheckoutBubble(const FormData& form,
+                                             const gfx::RectF& bounding_box);
+
   // Maps GUIDs to and from IDs that are used to identify profiles and credit
   // cards sent to and from the renderer process.
   virtual int GUIDToID(const PersonalDataManager::GUIDPair& guid) const;
@@ -262,14 +269,6 @@ class AutofillManager : public content::WebContentsObserver,
   // Called to signal clicking an element failed in some way during an
   // Autocheckout flow.
   void OnClickFailed(autofill::AutocheckoutStatus status);
-
-  // Shows the Autocheckout bubble if conditions are right. See comments for
-  // AutocheckoutManager::MaybeShowAutocheckoutBubble. |source_url| is the site
-  // Autocheckout is being offered on. |ssl_status| is the SSL status of the
-  // page. |bounding_box| is the bounding box of the input field in focus.
-  void OnMaybeShowAutocheckoutBubble(const GURL& source_url,
-                                     const content::SSLStatus& ssl_status,
-                                     const gfx::RectF& bounding_box);
 
   // Returns the matched whitelist URL prefix for the current tab's url.
   virtual std::string GetAutocheckoutURLPrefix() const;

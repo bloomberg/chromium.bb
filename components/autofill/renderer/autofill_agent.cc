@@ -152,7 +152,6 @@ AutofillAgent::AutofillAgent(content::RenderView* render_view,
       autocheckout_click_in_progress_(false),
       is_autocheckout_supported_(false),
       has_new_forms_for_browser_(false),
-      try_to_show_autocheckout_bubble_(false),
       ignore_text_changes_(false),
       weak_ptr_factory_(this) {
   render_view->GetWebView()->setAutofillClient(this);
@@ -229,7 +228,6 @@ void AutofillAgent::DidFinishDocumentLoad(WebFrame* frame) {
 void AutofillAgent::DidStartProvisionalLoad(WebFrame* frame) {
   if (!frame->parent()) {
     is_autocheckout_supported_ = false;
-    try_to_show_autocheckout_bubble_ = false;
     topmost_frame_ = NULL;
     if (click_timer_.IsRunning()) {
       click_timer_.Stop();
@@ -305,8 +303,7 @@ void AutofillAgent::FocusedNodeChanged(const WebKit::WebNode& node) {
 }
 
 void AutofillAgent::MaybeShowAutocheckoutBubble() {
-  if (!try_to_show_autocheckout_bubble_ || element_.isNull() ||
-      !element_.focused())
+  if (element_.isNull() || !element_.focused())
     return;
 
   FormData form;
@@ -315,17 +312,13 @@ void AutofillAgent::MaybeShowAutocheckoutBubble() {
   if (!FindFormAndFieldForInputElement(element_, &form, &field, REQUIRE_NONE))
     return;
 
-  content::SSLStatus ssl_status = render_view()->GetSSLStatusOfFrame(
+  form.ssl_status = render_view()->GetSSLStatusOfFrame(
       element_.document().frame());
 
   Send(new AutofillHostMsg_MaybeShowAutocheckoutBubble(
       routing_id(),
-      form.origin,
-      ssl_status,
+      form,
       GetScaledBoundingBox(web_view_->pageScaleFactor(), &element_)));
-
-  // We should only try once.
-  try_to_show_autocheckout_bubble_ = false;
 }
 
 void AutofillAgent::DidChangeScrollOffset(WebKit::WebFrame*) {
@@ -791,7 +784,6 @@ void AutofillAgent::OnFillFormsAndClick(
 
 void AutofillAgent::OnAutocheckoutSupported() {
   is_autocheckout_supported_ = true;
-  try_to_show_autocheckout_bubble_ = true;
   if (has_new_forms_for_browser_)
     MaybeSendDynamicFormsSeen();
   MaybeShowAutocheckoutBubble();

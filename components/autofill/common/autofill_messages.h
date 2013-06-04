@@ -213,9 +213,8 @@ IPC_MESSAGE_ROUTED3(AutofillHostMsg_TextFieldDidChange,
                     base::TimeTicks /* timestamp */)
 
 // Shows the Autocheckout bubble if the conditions are right.
-IPC_MESSAGE_ROUTED3(AutofillHostMsg_MaybeShowAutocheckoutBubble,
-                    GURL /* source_url */,
-                    content::SSLStatus /* ssl_status */,
+IPC_MESSAGE_ROUTED2(AutofillHostMsg_MaybeShowAutocheckoutBubble,
+                    autofill::FormData /* form */,
                     gfx::RectF /* bounding_box */)
 
 // Queries the browser for Autofill suggestions for a form input field.

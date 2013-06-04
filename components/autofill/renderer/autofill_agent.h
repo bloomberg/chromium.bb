@@ -268,10 +268,6 @@ class AutofillAgent : public content::RenderViewObserver,
   // since the last loaded forms were sent to the browser process.
   bool has_new_forms_for_browser_;
 
-  // Whether or not we should try to offer the user Autocheckout functionality
-  // by sending |AutofillHostMsg_MaybeShowAutocheckoutBubble| to the browser.
-  bool try_to_show_autocheckout_bubble_;
-
   // Whether or not to ignore text changes.  Useful for when we're committing
   // a composition when we are defocusing the WebView and we don't want to
   // trigger an autofill popup to show.
