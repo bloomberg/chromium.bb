@@ -1926,3 +1926,19 @@
    fun:net::ProxyResolverV8Tracing::Job::ExecuteProxyResolver
    fun:net::ProxyResolverV8Tracing::Job::ExecuteBlocking
 }
+{
+   bug_246825d
+   Heapcheck:Leak
+   ...
+   fun:LogExtensionActivity
+   fun:ExtensionWebRequestEventRouter::DecrementBlockCount
+   fun:ExtensionWebRequestEventRouter::OnEventHandled
+   fun:EventHandledOnIOThread
+}
+{
+   bug_246825e
+   Heapcheck:Leak
+   fun:sqlite3MemMalloc
+   ...
+   fun:extensions::ActivityDatabase::Init
+}
