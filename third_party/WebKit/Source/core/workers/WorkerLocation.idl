@@ -27,7 +27,7 @@
  */
 
 [
-    NoInterfaceObject
+    GlobalContext=WorkerOnly
 ] interface WorkerLocation {
     readonly attribute DOMString href;
     readonly attribute DOMString protocol;

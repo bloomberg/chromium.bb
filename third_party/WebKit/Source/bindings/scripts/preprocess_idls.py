@@ -38,6 +38,7 @@ def parse_options():
     parser.add_option('--idl-files-list', help='file listing all IDLs')
     parser.add_option('--supplemental-dependency-file', help='output file')
     parser.add_option('--window-constructors-file', help='output file')
+    parser.add_option('--workercontext-constructors-file', help='output file')
     parser.add_option('--write-file-only-if-changed', type='int')
     options, args = parser.parse_args()
     if options.supplemental_dependency_file is None:
@@ -125,20 +126,21 @@ def generate_constructor_attribute_list(interface_name, extended_attributes):
     return attributes_list
 
 
-def generate_dom_window_constructors_partial_interface(window_constructors_filename, constructor_attributes_list):
-    with open(window_constructors_filename, 'w') as window_constructors_file:
-        window_constructors_file.write('partial interface DOMWindow {\n')
+def generate_global_constructors_partial_interface(interface_name, destination_filename, constructor_attributes_list):
+    with open(destination_filename, 'w') as destination_file:
+        destination_file.write('partial interface %s {\n' % interface_name)
         for constructor_attribute in constructor_attributes_list:
-            window_constructors_file.write('    %s;\n' % constructor_attribute)
-        window_constructors_file.write('};\n')
+            destination_file.write('    %s;\n' % constructor_attribute)
+        destination_file.write('};\n')
 
 
-def parse_idl_files(idl_files, window_constructors_filename):
+def parse_idl_files(idl_files, window_constructors_filename, workercontext_constructors_filename):
     interface_name_to_idl_file = {}
     idl_file_to_interface_name = {}
     supplemental_dependencies = {}
     supplementals = {}
-    constructor_attributes_list = []
+    window_constructor_attributes_list = []
+    workercontext_constructor_attributes_list = []
 
     for idl_file_name in idl_files:
         full_path = os.path.realpath(idl_file_name)
@@ -151,14 +153,24 @@ def parse_idl_files(idl_files, window_constructors_filename):
         if not is_callback_interface_from_idl(idl_file_contents):
             extended_attributes = get_interface_extended_attributes_from_idl(idl_file_contents)
             if 'NoInterfaceObject' not in extended_attributes:
-                constructor_attributes_list.extend(generate_constructor_attribute_list(interface_name, extended_attributes))
+                global_context = extended_attributes.get("GlobalContext", "WindowOnly")
+                constructor_list = generate_constructor_attribute_list(interface_name, extended_attributes)
+                if global_context != "WorkerOnly":
+                    window_constructor_attributes_list.extend(constructor_list)
+                if global_context != "WindowOnly":
+                    workercontext_constructor_attributes_list.extend(constructor_list)
         interface_name_to_idl_file[interface_name] = full_path
         idl_file_to_interface_name[full_path] = interface_name
         supplementals[full_path] = []
 
-    generate_dom_window_constructors_partial_interface(window_constructors_filename, constructor_attributes_list)
+    # Generate Global constructors
+    generate_global_constructors_partial_interface("DOMWindow", window_constructors_filename, window_constructor_attributes_list)
     if 'DOMWindow' in interface_name_to_idl_file:
         supplemental_dependencies[window_constructors_filename] = 'DOMWindow'
+    generate_global_constructors_partial_interface("WorkerContext", workercontext_constructors_filename, workercontext_constructor_attributes_list)
+    if 'WorkerContext' in interface_name_to_idl_file:
+        supplemental_dependencies[workercontext_constructors_filename] = 'WorkerContext'
+
     # Resolve partial interfaces dependencies
     for idl_file, base_file in supplemental_dependencies.iteritems():
         target_idl_file = interface_name_to_idl_file[base_file]
@@ -205,7 +217,7 @@ def main():
     with open(options.idl_files_list) as idl_files_list_file:
         for line in idl_files_list_file:
             idl_files.append(string.rstrip(line, '\n'))
-    resolved_supplementals = parse_idl_files(idl_files, options.window_constructors_file)
+    resolved_supplementals = parse_idl_files(idl_files, options.window_constructors_file, options.workercontext_constructors_file)
     write_dependency_file(options.supplemental_dependency_file, resolved_supplementals, only_if_changed=options.write_file_only_if_changed)
 
 

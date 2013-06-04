@@ -30,6 +30,7 @@
  */
 
 [
+    GlobalContext=WindowAndWorker,
     ActiveDOMObject,
     Constructor,
     CallWith=ScriptExecutionContext,

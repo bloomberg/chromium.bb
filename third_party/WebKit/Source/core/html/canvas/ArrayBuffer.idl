@@ -24,6 +24,7 @@
  */
 
 [
+    GlobalContext=WindowAndWorker,
     CustomConstructor(unsigned long length)
 ] interface ArrayBuffer {
     readonly attribute unsigned long byteLength;

@@ -25,6 +25,7 @@
  */
 
 [
+    GlobalContext=WindowAndWorker,
     ConstructorTemplate=TypedArray,
     CustomToV8,
     DoNotCheckConstants
