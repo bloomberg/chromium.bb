@@ -1933,7 +1933,8 @@ class Dtrace(ApiBase):
     RE_PROC_START = re.compile(r'^(\d+), \"(.+?)\", (\d+)$')
     RE_RENAME = re.compile(r'^\"(.+?)\", \"(.+?)\"$')
 
-    O_DIRECTORY = os.O_DIRECTORY
+    # O_DIRECTORY is not defined on Windows and dtrace doesn't exist on Windows.
+    O_DIRECTORY = os.O_DIRECTORY if hasattr(os, 'O_DIRECTORY') else None
     O_RDWR = os.O_RDWR
     O_WRONLY = os.O_WRONLY
 
