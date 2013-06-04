@@ -348,11 +348,6 @@ crbug.com/78376 http/tests/media/video-play-stall-seek.html [ Timeout ]
 # Test is intentionally SLOW as we're waiting for a connection timeout.
 crbug.com/73609 http/tests/media/video-play-stall.html [ Failure Slow ]
 
-# We haven't implemented reverse audio/video playback.
-crbug.com/33099 [ Win Linux Mac Release ] media/video-reverse-play-duration.html [ Timeout ]
-crbug.com/33099 [ Win Linux Debug ] media/video-reverse-play-duration.html [ Timeout ]
-crbug.com/33099 media/video-timeupdate-reverse-play.html [ Timeout ]
-
 crbug.com/100798 [ Mac Debug ] fullscreen/full-screen-iframe-allowed.html [ Failure Pass ]
 crbug.com/100798 [ Win7 Mac Debug ] fullscreen/full-screen-iframe-allowed-prefixed.html [ Failure Pass ]
 
@@ -1705,7 +1700,6 @@ crbug.com/243314 [ Mac Debug ] css2.1/20110323/background-intrinsic-008.htm [ Pa
 crbug.com/243314 [ Mac Debug ] editing/style/font-face-unquote.html [ Pass Crash ]
 crbug.com/243314 [ Mac Debug ] fast/dom/node-move-to-new-document-crash-main.html [ Pass Crash ]
 crbug.com/243314 [ Mac Debug ] fast/forms/text/text-set-selection-crash.html [ Pass Crash ]
-crbug.com/243314 [ Mac Debug ] media/video-reverse-play-duration.html [ Crash Timeout ]
 crbug.com/243314 [ Mac Debug ] svg/custom/js-late-clipPath-and-object-creation.svg [ Pass Crash ]
 crbug.com/243314 [ Mac Debug ] virtual/gpu/compositedscrolling/overflow/build-paint-order-list-where-opt-in-decisions-can-affect-each-other.html [ Pass Crash ]
 
