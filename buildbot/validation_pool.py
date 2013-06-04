@@ -817,7 +817,7 @@ class PatchSeries(object):
 class _ManifestShim(object):
   """Class used in conjunction with PatchSeries to support standalone git repos.
 
-  This works via duck typing; we match the 3 necessary methods that PatchSeries
+  This works via duck typing; we match the 4 necessary methods that PatchSeries
   uses."""
 
   def __init__(self, path, tracking_branch, remote='origin',
@@ -832,6 +832,9 @@ class _ManifestShim(object):
 
   def GetProjectPath(self, _project, _absolute=False):
     return self.path
+
+  def ProjectExists(self, _project):
+    return True
 
   def ProjectIsContentMerging(self, _project):
     return self.content_merging
