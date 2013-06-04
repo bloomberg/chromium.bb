@@ -117,6 +117,9 @@ class TestTextInputClient : public ui::TextInputClient {
   virtual void ClearCompositionText() OVERRIDE {}
   virtual void InsertText(const string16& text) OVERRIDE {}
   virtual void InsertChar(char16 ch, int flags) OVERRIDE {}
+  virtual gfx::NativeWindow GetAttachedWindow() const OVERRIDE {
+    return static_cast<gfx::NativeWindow>(NULL);
+  }
   virtual ui::TextInputType GetTextInputType() const OVERRIDE {
     return type_;
   }

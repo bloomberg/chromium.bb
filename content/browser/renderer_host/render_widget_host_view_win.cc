@@ -1037,6 +1037,10 @@ void RenderWidgetHostViewWin::InsertChar(char16 ch, int flags) {
   NOTIMPLEMENTED();
 }
 
+gfx::NativeWindow RenderWidgetHostViewWin::GetAttachedWindow() const {
+  return m_hWnd;
+}
+
 ui::TextInputType RenderWidgetHostViewWin::GetTextInputType() const {
   if (!base::win::IsTSFAwareRequired()) {
     NOTREACHED();

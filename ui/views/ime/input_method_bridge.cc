@@ -117,6 +117,12 @@ void InputMethodBridge::InsertChar(char16 ch, int flags) {
     client->InsertChar(ch, flags);
 }
 
+gfx::NativeWindow InputMethodBridge::GetAttachedWindow() const {
+  TextInputClient* client = GetTextInputClient();
+  return client ?
+      client->GetAttachedWindow() : static_cast<gfx::NativeWindow>(NULL);
+}
+
 ui::TextInputType InputMethodBridge::GetTextInputType() const {
   TextInputClient* client = GetTextInputClient();
   return client ? client->GetTextInputType() : ui::TEXT_INPUT_TYPE_NONE;

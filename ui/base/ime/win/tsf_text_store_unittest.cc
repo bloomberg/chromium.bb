@@ -26,6 +26,7 @@ class MockTextInputClient : public TextInputClient {
   MOCK_METHOD0(ClearCompositionText, void());
   MOCK_METHOD1(InsertText, void(const string16&));
   MOCK_METHOD2(InsertChar, void(char16, int));
+  MOCK_CONST_METHOD0(GetAttachedWindow, gfx::NativeWindow());
   MOCK_CONST_METHOD0(GetTextInputType, ui::TextInputType());
   MOCK_CONST_METHOD0(CanComposeInline, bool());
   MOCK_METHOD0(GetCaretBounds, gfx::Rect());

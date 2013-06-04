@@ -8,6 +8,7 @@
 #include "ui/base/ime/text_input_type.h"
 #include "ui/base/range/range.h"
 #include "ui/views/controls/tree/tree_view.h"
+#include "ui/views/widget/widget.h"
 
 namespace views {
 
@@ -52,6 +53,10 @@ void TreeViewSelector::InsertText(const string16& text) {
 
 void TreeViewSelector::InsertChar(char16 ch, int flags) {
   OnTextInput(string16(1, ch));
+}
+
+gfx::NativeWindow TreeViewSelector::GetAttachedWindow() const {
+  return tree_->GetWidget()->GetNativeWindow();
 }
 
 ui::TextInputType TreeViewSelector::GetTextInputType() const {

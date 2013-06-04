@@ -954,6 +954,10 @@ void NativeTextfieldViews::InsertChar(char16 ch, int flags) {
   OnAfterUserAction();
 }
 
+gfx::NativeWindow NativeTextfieldViews::GetAttachedWindow() const {
+  return GetWidget()->GetNativeWindow();
+}
+
 ui::TextInputType NativeTextfieldViews::GetTextInputType() const {
   return textfield_->GetTextInputType();
 }

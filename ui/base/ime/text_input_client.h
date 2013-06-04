@@ -12,6 +12,7 @@
 #include "ui/base/ime/text_input_type.h"
 #include "ui/base/range/range.h"
 #include "ui/base/ui_export.h"
+#include "ui/gfx/native_widget_types.h"
 
 namespace gfx {
 class Rect;
@@ -54,6 +55,9 @@ class UI_EXPORT TextInputClient {
   virtual void InsertChar(char16 ch, int flags) = 0;
 
   // Input context information -------------------------------------------------
+
+  // Returns native window to which input context is bound.
+  virtual gfx::NativeWindow GetAttachedWindow() const = 0;
 
   // Returns current text input type. It could be changed and even becomes
   // TEXT_INPUT_TYPE_NONE at runtime.

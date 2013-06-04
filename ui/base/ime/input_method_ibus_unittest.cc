@@ -400,6 +400,9 @@ class InputMethodIBusTest : public internal::InputMethodDelegate,
     inserted_char_ = ch;
     inserted_char_flags_ = flags;
   }
+  virtual gfx::NativeWindow GetAttachedWindow() const OVERRIDE {
+    return static_cast<gfx::NativeWindow>(NULL);
+  }
   virtual TextInputType GetTextInputType() const OVERRIDE {
     return input_type_;
   }
