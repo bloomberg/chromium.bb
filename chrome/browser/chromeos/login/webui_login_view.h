@@ -101,12 +101,12 @@ class WebUILoginView : public views::View,
 
   void set_is_hidden(bool hidden) { is_hidden_ = hidden; }
 
- protected:
-  // Let non-login derived classes suppress emission of this signal.
+  // Let suppress emission of this signal.
   void set_should_emit_login_prompt_visible(bool emit) {
     should_emit_login_prompt_visible_ = emit;
   }
 
+ protected:
   // Overridden from views::View:
   virtual void Layout() OVERRIDE;
   virtual void OnLocaleChanged() OVERRIDE;

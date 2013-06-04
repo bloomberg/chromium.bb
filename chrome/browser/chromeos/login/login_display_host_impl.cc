@@ -408,6 +408,8 @@ void LoginDisplayHostImpl::StartUserAdding(
   LOG(INFO) << "Login WebUI >> user adding";
   if (!login_window_)
     LoadURL(GURL(kUserAddingURL));
+  // We should emit this signal only at login screen (after reboot or sign out).
+  login_view_->set_should_emit_login_prompt_visible(false);
 
   // Lock container can be transparent after lock screen animation.
   aura::Window* lock_container = ash::Shell::GetContainer(
