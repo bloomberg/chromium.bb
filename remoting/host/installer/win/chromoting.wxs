@@ -36,7 +36,7 @@
   <?define ControllerProgid =
       "ChromotingElevatedController.ElevatedController" ?>
 
-  <?define IRdpDesktopSessionId = "{126c22bc-34ef-4cfb-83ef-9b8ada3391e8}" ?>
+  <?define IRdpDesktopSessionId = "{1d68cef0-dbc0-4745-9755-055b28d9e5cc}" ?>
   <?define IRdpDesktopSessionEventHandlerId =
       "{987bca97-9d40-42fc-a00d-e6a701261af5}" ?>
 

@@ -41,6 +41,12 @@ STDMETHODIMP RdpDesktopSession::ChangeResolution(long width, long height) {
   return E_NOTIMPL;
 }
 
+STDMETHODIMP RdpDesktopSession::InjectSas() {
+  if (client_)
+    client_->InjectSas();
+  return S_OK;
+}
+
 void RdpDesktopSession::OnRdpConnected(const net::IPEndPoint& client_endpoint) {
   net::SockaddrStorage sockaddr;
   CHECK(client_endpoint.ToSockAddr(sockaddr.addr, &sockaddr.addr_len));

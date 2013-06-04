@@ -287,9 +287,7 @@ void RdpSession::SetScreenResolution(const ScreenResolution& resolution) {
 void RdpSession::InjectSas() {
   DCHECK(caller_task_runner()->BelongsToCurrentThread());
 
-  // TODO(alexeypa): implement SAS injection for RDP sessions here.
-  // See http://crbug.com/137696.
-  NOTIMPLEMENTED();
+  rdp_desktop_session_->InjectSas();
 }
 
 RdpSession::EventHandler::EventHandler(

@@ -47,6 +47,7 @@ class __declspec(uuid(RDP_DESKTOP_SESSION_CLSID)) RdpDesktopSession
                      IRdpDesktopSessionEventHandler* event_handler);
   STDMETHOD(Disconnect)();
   STDMETHOD(ChangeResolution)(long width, long height);
+  STDMETHOD(InjectSas)();
 
   DECLARE_NO_REGISTRY()
 

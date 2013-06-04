@@ -77,6 +77,10 @@ class RdpClientWindow
   // until it receives OnDisconnected() notification.
   void Disconnect();
 
+  // Emulates pressing Ctrl+Alt+End combination that is translated to Secure
+  // Attention Sequence by the ActiveX control.
+  void InjectSas();
+
  private:
   typedef IDispEventImpl<1, RdpClientWindow,
                          &__uuidof(mstsc::IMsTscAxEvents),

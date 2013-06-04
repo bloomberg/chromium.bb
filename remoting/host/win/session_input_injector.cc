@@ -143,7 +143,7 @@ void SessionInputInjectorWin::Core::InjectKeyEvent(const KeyEvent& event) {
       // Simulate secure attention sequence if Ctrl-Alt-Del was just pressed.
       if (event.usb_keycode() == kUsbDelete &&
           CheckCtrlAndAltArePressed(pressed_keys_)) {
-        VLOG(3) << "Sending Secure Attention Sequence to console";
+        VLOG(3) << "Sending Secure Attention Sequence to the session";
 
         if (base::win::GetVersion() < base::win::VERSION_VISTA) {
           if (!sas_injector_)

@@ -56,6 +56,9 @@ class RdpClient::Core
   // Initiates a graceful shutdown of the RDP connection.
   void Disconnect();
 
+  // Sends Secure Attention Sequence to the session.
+  void InjectSas();
+
   // RdpClientWindow::EventHandler interface.
   virtual void OnConnected() OVERRIDE;
   virtual void OnDisconnected() OVERRIDE;
@@ -127,6 +130,12 @@ RdpClient::~RdpClient() {
   DCHECK(CalledOnValidThread());
 
   core_->Disconnect();
+}
+
+void RdpClient::InjectSas() {
+  DCHECK(CalledOnValidThread());
+
+  core_->InjectSas();
 }
 
 RdpClient::Core::Core(
@@ -205,6 +214,16 @@ void RdpClient::Core::Disconnect() {
     self_ = this;
     rdp_client_window_->Disconnect();
   }
+}
+
+void RdpClient::Core::InjectSas() {
+  if (!ui_task_runner_->BelongsToCurrentThread()) {
+    ui_task_runner_->PostTask(FROM_HERE, base::Bind(&Core::InjectSas, this));
+    return;
+  }
+
+  if (rdp_client_window_)
+    rdp_client_window_->InjectSas();
 }
 
 void RdpClient::Core::OnConnected() {

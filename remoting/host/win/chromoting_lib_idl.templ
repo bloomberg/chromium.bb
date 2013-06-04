@@ -88,7 +88,7 @@ interface IRdpDesktopSessionEventHandler : IUnknown {
 
 [
   object,
-  uuid(126c22bc-34ef-4cfb-83ef-9b8ada3391e8),
+  uuid(1d68cef0-dbc0-4745-9755-055b28d9e5cc),
   nonextensible,
   helpstring("IRdpDesktopSession Interface"),
   pointer_default(unique)
@@ -105,6 +105,9 @@ interface IRdpDesktopSession : IUnknown {
 
   [ id(3), helpstring("Changes the screen resolution.") ]
   HRESULT ChangeResolution([in] long width, [in] long height);
+
+  [ id(4), helpstring("Sends Secure Attention Sequence to the session.") ]
+  HRESULT InjectSas();
 };
 
 [

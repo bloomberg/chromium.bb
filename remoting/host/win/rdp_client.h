@@ -43,6 +43,9 @@ class RdpClient : public base::NonThreadSafe {
       EventHandler* event_handler);
   virtual ~RdpClient();
 
+  // Sends Secure Attention Sequence to the session.
+  void InjectSas();
+
  private:
   // The actual implementation resides in Core class.
   class Core;
