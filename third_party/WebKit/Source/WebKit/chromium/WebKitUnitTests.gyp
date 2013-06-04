@@ -43,7 +43,7 @@
             'variables': { 'enable_wexit_time_destructors': 1, },
             'msvs_guid': '7CEFE800-8403-418A-AD6A-2D52C6FC3EAD',
             'dependencies': [
-                'WebKit.gyp:webkit',
+                '../../../public/blink.gyp:blink',
                 '../../../Tools/DumpRenderTree/DumpRenderTree.gyp/DumpRenderTree.gyp:DumpRenderTree_resources',
                 '<(DEPTH)/base/base.gyp:base',
                 '<(DEPTH)/base/base.gyp:base_i18n',

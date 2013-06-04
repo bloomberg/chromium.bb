@@ -77,7 +77,7 @@
             ],
             'dependencies': [
                 'TestRunner_resources',
-                '<(source_dir)/WebKit/chromium/WebKit.gyp:webkit',
+                '../../../public/blink.gyp:blink',
                 '<(source_dir)/WebKit/chromium/WebKit.gyp:webkit_test_support',
             ],
             'include_dirs': [
@@ -233,8 +233,8 @@
             'dependencies': [
                 'TestRunner',
                 'DumpRenderTree_resources',
+                '../../../public/blink.gyp:blink',
                 '<(source_dir)/devtools/devtools.gyp:devtools_frontend_resources',
-                '<(source_dir)/WebKit/chromium/WebKit.gyp:webkit',
                 '<(source_dir)/wtf/wtf.gyp:wtf',
                 '<(DEPTH)/base/base.gyp:test_support_base',
                 '<(DEPTH)/build/temp_gyp/googleurl.gyp:googleurl',
