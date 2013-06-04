@@ -678,6 +678,22 @@
       } \
     } while (0)
 
+// Macro to efficiently determine, through polling, if a new trace has begun.
+#define TRACE_EVENT_IS_NEW_TRACE(ret) \
+    do { \
+      static int INTERNAL_TRACE_EVENT_UID(lastRecordingNumber) = 0; \
+      int num_traces_recorded = TRACE_EVENT_API_GET_NUM_TRACES_RECORDED(); \
+      if (num_traces_recorded != -1 && \
+          num_traces_recorded != \
+          INTERNAL_TRACE_EVENT_UID(lastRecordingNumber)) { \
+        INTERNAL_TRACE_EVENT_UID(lastRecordingNumber) = \
+            num_traces_recorded; \
+        *ret = true; \
+      } else { \
+        *ret = false; \
+      } \
+    } while (0)
+
 ////////////////////////////////////////////////////////////////////////////////
 // Implementation specific tracing API definitions.
 
@@ -693,6 +709,12 @@
 //     TRACE_EVENT_API_GET_CATEGORY_GROUP_ENABLED(const char* category_group)
 #define TRACE_EVENT_API_GET_CATEGORY_GROUP_ENABLED \
     base::debug::TraceLog::GetCategoryGroupEnabled
+
+// Get the number of times traces have been recorded. This is used to implement
+// the TRACE_EVENT_IS_NEW_TRACE facility.
+// unsigned int TRACE_EVENT_API_GET_NUM_TRACES_RECORDED()
+#define TRACE_EVENT_API_GET_NUM_TRACES_RECORDED \
+    base::debug::TraceLog::GetInstance()->GetNumTracesRecorded
 
 // Add a trace event to the platform tracing system.
 // void TRACE_EVENT_API_ADD_TRACE_EVENT(

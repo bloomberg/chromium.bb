@@ -41,6 +41,7 @@ class CC_EXPORT PictureLayerImpl
   virtual void DumpLayerProperties(std::string* str, int indent) const OVERRIDE;
   virtual void UpdateTilePriorities() OVERRIDE;
   virtual void DidBecomeActive() OVERRIDE;
+  virtual void DidBeginTracing() OVERRIDE;
   virtual void DidLoseOutputSurface() OVERRIDE;
   virtual void CalculateContentsScale(float ideal_contents_scale,
                                       float device_scale_factor,

@@ -109,6 +109,8 @@ class CC_EXPORT PicturePileImpl : public PicturePileBase {
     PictureList::const_iterator picture_list_iterator_;
   };
 
+  void DidBeginTracing();
+
  protected:
   friend class PicturePile;
   friend class PixelRefIterator;

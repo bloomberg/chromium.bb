@@ -394,6 +394,8 @@ class CC_EXPORT LayerImpl : LayerAnimationValueObserver {
 
   virtual void DidBecomeActive();
 
+  virtual void DidBeginTracing();
+
   // Indicates that the surface previously used to render this layer
   // was lost and that a new one has been created. Won't be called
   // until the new surface has been created successfully.

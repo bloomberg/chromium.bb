@@ -905,6 +905,37 @@ TEST_F(TraceEventTestFixture, EnabledObserverFiresOnDisable) {
   TraceLog::GetInstance()->RemoveEnabledStateObserver(&observer);
 }
 
+bool IsNewTrace() {
+  bool is_new_trace;
+  TRACE_EVENT_IS_NEW_TRACE(&is_new_trace);
+  return is_new_trace;
+}
+
+TEST_F(TraceEventTestFixture, NewTraceRecording) {
+  ManualTestSetUp();
+  ASSERT_FALSE(IsNewTrace());
+  TraceLog::GetInstance()->SetEnabled(CategoryFilter("*"),
+                                      TraceLog::RECORD_UNTIL_FULL);
+  // First call to IsNewTrace() should succeed. But, the second shouldn't.
+  ASSERT_TRUE(IsNewTrace());
+  ASSERT_FALSE(IsNewTrace());
+  EndTraceAndFlush();
+
+  // IsNewTrace() should definitely be false now.
+  ASSERT_FALSE(IsNewTrace());
+
+  // Start another trace. IsNewTrace() should become true again, briefly, as
+  // before.
+  TraceLog::GetInstance()->SetEnabled(CategoryFilter("*"),
+                                      TraceLog::RECORD_UNTIL_FULL);
+  ASSERT_TRUE(IsNewTrace());
+  ASSERT_FALSE(IsNewTrace());
+
+  // Cleanup.
+  EndTraceAndFlush();
+}
+
+
 // Test that categories work.
 TEST_F(TraceEventTestFixture, Categories) {
   ManualTestSetUp();

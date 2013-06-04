@@ -376,4 +376,18 @@ void PicturePileImpl::PixelRefIterator::AdvanceToPictureWithPixelRefs() {
   } while (AdvanceToTileWithPictures());
 }
 
+void PicturePileImpl::DidBeginTracing() {
+  gfx::Rect layer_rect(tiling_.total_size());
+  for (PictureListMap::iterator pli = picture_list_map_.begin();
+       pli != picture_list_map_.end();
+       pli++) {
+    PictureList& picture_list = (*pli).second;
+    for (PictureList::iterator picture = picture_list.begin();
+         picture != picture_list.end();
+         picture++) {
+      (*picture)->EmitTraceSnapshot();
+    }
+  }
+}
+
 }  // namespace cc

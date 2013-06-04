@@ -773,6 +773,7 @@ TraceLog::Options TraceLog::TraceOptionsFromString(const std::string& options) {
 
 TraceLog::TraceLog()
     : enable_count_(0),
+      num_traces_recorded_(0),
       logged_events_(NULL),
       dispatching_to_observer_list_(false),
       watch_category_(NULL),
@@ -933,6 +934,8 @@ void TraceLog::SetEnabled(const CategoryFilter& category_filter,
     return;
   }
 
+  num_traces_recorded_++;
+
   dispatching_to_observer_list_ = true;
   FOR_EACH_OBSERVER(EnabledStateChangedObserver, enabled_state_observer_list_,
                     OnTraceLogWillEnable());
@@ -1005,6 +1008,13 @@ void TraceLog::SetDisabled() {
   for (int i = 0; i < g_category_index; i++)
     SetCategoryGroupEnabled(i, false);
   AddThreadNameMetadataEvents();
+}
+
+int TraceLog::GetNumTracesRecorded() {
+  AutoLock lock(lock_);
+  if (enable_count_ == 0)
+    return -1;
+  return num_traces_recorded_;
 }
 
 void TraceLog::AddEnabledStateObserver(EnabledStateChangedObserver* listener) {
@@ -1517,4 +1527,3 @@ ScopedTrace::~ScopedTrace() {
 }
 
 }  // namespace trace_event_internal
-

@@ -943,6 +943,8 @@ Region LayerImpl::VisibleContentOpaqueRegion() const {
   return Region();
 }
 
+void LayerImpl::DidBeginTracing() {}
+
 void LayerImpl::DidLoseOutputSurface() {}
 
 void LayerImpl::SetMaxScrollOffset(gfx::Vector2d max_scroll_offset) {

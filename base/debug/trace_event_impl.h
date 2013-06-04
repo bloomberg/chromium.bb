@@ -317,6 +317,13 @@ class BASE_EXPORT TraceLog {
   void SetDisabled();
   bool IsEnabled() { return !!enable_count_; }
 
+  // The number of times we have begun recording traces. If tracing is off,
+  // returns -1. If tracing is on, then it returns the number of times we have
+  // recorded a trace. By watching for this number to increment, you can
+  // passively discover when a new trace has begun. This is then used to
+  // implement the TRACE_EVENT_IS_NEW_TRACE() primitive.
+  int GetNumTracesRecorded();
+
 #if defined(OS_ANDROID)
   void StartATrace();
   void StopATrace();
@@ -526,6 +533,7 @@ class BASE_EXPORT TraceLog {
   // This lock protects TraceLog member accesses from arbitrary threads.
   Lock lock_;
   int enable_count_;
+  int num_traces_recorded_;
   NotificationCallback notification_callback_;
   scoped_ptr<TraceBuffer> logged_events_;
   EventCallback event_callback_;

@@ -225,11 +225,7 @@ void Picture::CloneForDrawing(int num_threads) {
                     pixel_refs_));
     clones_.push_back(clone);
 
-    TRACE_EVENT_OBJECT_SNAPSHOT_WITH_ID(
-        TRACE_DISABLED_BY_DEFAULT("cc.debug"),
-        "cc::Picture",
-        clone.get(),
-        TracedPicture::AsTraceablePicture(clone.get()));
+    clone->EmitTraceSnapshot();
   }
 }
 
@@ -276,8 +272,7 @@ void Picture::Record(ContentLayerClient* painter,
 
   opaque_rect_ = gfx::ToEnclosedRect(opaque_layer_rect);
 
-    TRACE_EVENT_OBJECT_SNAPSHOT_WITH_ID(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
-      "cc::Picture", this, TracedPicture::AsTraceablePicture(this));
+  EmitTraceSnapshot();
 }
 
 void Picture::GatherPixelRefs(
@@ -389,6 +384,11 @@ scoped_ptr<Value> Picture::AsValue() const {
                      &b64_picture);
   res->SetString("skp64", b64_picture);
   return res.PassAs<base::Value>();
+}
+
+void Picture::EmitTraceSnapshot() {
+  TRACE_EVENT_OBJECT_SNAPSHOT_WITH_ID(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
+      "cc::Picture", this, TracedPicture::AsTraceablePicture(this));
 }
 
 base::LazyInstance<Picture::PixelRefs>

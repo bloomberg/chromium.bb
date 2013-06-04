@@ -1107,6 +1107,13 @@ bool LayerTreeHostImpl::AllowPartialSwap() const {
   return !debug_state_.ShowHudRects();
 }
 
+class DidBeginTracingFunctor {
+ public:
+  void operator()(LayerImpl* layer) {
+    layer->DidBeginTracing();
+  }
+};
+
 void LayerTreeHostImpl::DrawLayers(FrameData* frame,
                                    base::TimeTicks frame_begin_time) {
   TRACE_EVENT0("cc", "LayerTreeHostImpl::DrawLayers");
@@ -1142,6 +1149,18 @@ void LayerTreeHostImpl::DrawLayers(FrameData* frame,
     const RenderingStats& stats =
         rendering_stats_instrumentation_->GetRenderingStats();
     paint_time_counter_->SavePaintTime(stats.total_paint_time);
+  }
+
+  bool is_new_trace;
+  TRACE_EVENT_IS_NEW_TRACE(&is_new_trace);
+  if (is_new_trace) {
+    if (pending_tree_)
+      LayerTreeHostCommon::CallFunctionForSubtree<
+          DidBeginTracingFunctor, LayerImpl>(
+              pending_tree_->root_layer());
+    LayerTreeHostCommon::CallFunctionForSubtree<
+        DidBeginTracingFunctor, LayerImpl>(
+            active_tree_->root_layer());
   }
 
   TRACE_EVENT_OBJECT_SNAPSHOT_WITH_ID(

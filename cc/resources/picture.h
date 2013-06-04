@@ -112,6 +112,8 @@ class CC_EXPORT Picture
     int current_y_;
   };
 
+  void EmitTraceSnapshot();
+
  private:
   explicit Picture(gfx::Rect layer_rect);
   Picture(const base::Value*, bool* success);

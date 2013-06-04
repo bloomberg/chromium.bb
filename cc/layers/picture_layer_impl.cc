@@ -376,6 +376,10 @@ void PictureLayerImpl::DidBecomeActive() {
   tilings_->DidBecomeActive();
 }
 
+void PictureLayerImpl::DidBeginTracing() {
+  pile_->DidBeginTracing();
+}
+
 void PictureLayerImpl::DidLoseOutputSurface() {
   if (tilings_)
     tilings_->RemoveAllTilings();
