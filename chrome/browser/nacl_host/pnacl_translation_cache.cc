@@ -224,7 +224,9 @@ void PNaClTranslationCache::WriteComplete(
 PNaClTranslationCache::PNaClTranslationCache()
     : disk_cache_(NULL), in_memory_(false) {}
 
-PNaClTranslationCache::~PNaClTranslationCache() {}
+PNaClTranslationCache::~PNaClTranslationCache() {
+  delete disk_cache_;
+}
 
 int PNaClTranslationCache::InitWithDiskBackend(
     const base::FilePath& cache_dir,

@@ -7353,26 +7353,6 @@ fun:_ZN7content21RenderViewHostManager8NavigateERKNS_19NavigationEntryImplE
    fun:_ZN7content11ContentMainEiPPKcPNS_19ContentMainDelegateE
 }
 {
-   bug_245092a
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN10disk_cache14Mem*
-   ...
-   fun:_ZN11pnacl_cache31PNaClTranslationCacheWriteEntry12DispatchNextEi
-   fun:_ZN11pnacl_cache31PNaClTranslationCacheWriteEntry9OpenEntryEv
-   fun:_ZN11pnacl_cache31PNaClTranslationCacheWriteEntry5CacheEv
-   fun:_ZN11pnacl_cache21PNaClTranslationCache9StoreNexeERKSsS2_RKN4base8CallbackIFviEEE
-}
-{
-   bug_245092b
-   Memcheck:Leak
-   ...
-   fun:_ZN10disk_cache18CreateCacheBackendEN3net9CacheTypeENS0_11BackendTypeERKN4base8FilePathEibPNS3_16MessageLoopProxyEPNS0_6NetLogEPPNS_7BackendERKNS3_8CallbackIFviEEE
-   fun:_ZN11pnacl_cache21PNaClTranslationCache4InitEN3net9CacheTypeERKN4base8FilePathEiRKNS3_8CallbackIFviEEE
-   ...
-   fun:_ZN11pnacl_cache21PNaClTranslationCache9InitCacheERKN4base8FilePathEbRKNS1_8CallbackIFviEEE
-}
-{
    bug_246148
    Memcheck:Leak
    fun:_Znw*

@@ -7,6 +7,7 @@
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/message_loop.h"
+#include "base/run_loop.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread.h"
 #include "net/base/test_completion_callback.h"
@@ -23,7 +24,15 @@ class PNaClTranslationCacheTest : public testing::Test {
         io_thread_(BrowserThread::IO, &message_loop_) {}
   virtual ~PNaClTranslationCacheTest() {}
   virtual void SetUp() { cache_ = new PNaClTranslationCache(); }
-  virtual void TearDown() { delete cache_; }
+  virtual void TearDown() {
+    // The destructor of PNaClTranslationCacheWriteEntry posts a task to the IO
+    // thread to close the backend cache entry. We want to make sure the entries
+    // are closed before we delete the backend (and in particular the destructor
+    // for the memory backend has a DCHECK to verify this), so we run the loop
+    // here to ensure the task gets processed.
+    base::RunLoop().RunUntilIdle();
+    delete cache_;
+  }
 
  protected:
   PNaClTranslationCache* cache_;
@@ -71,6 +80,8 @@ TEST_F(PNaClTranslationCacheTest, InMemSizeLimit) {
   net::TestCompletionCallback store_cb;
   cache_->StoreNexe("1", large_buffer, store_cb.callback());
   EXPECT_EQ(net::ERR_FAILED, store_cb.GetResult(net::ERR_IO_PENDING));
+  base::RunLoop().RunUntilIdle(); // Ensure the entry is closed.
+  EXPECT_EQ(0, cache_->Size());
 }
 
 }  // namespace nacl_cache
