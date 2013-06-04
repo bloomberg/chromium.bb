@@ -117,10 +117,8 @@ class UI_EXPORT RectBase {
   // is the smallest rectangle containing both rectangles.
   void Union(const Class& rect);
 
-  // Computes the rectangle resulting from subtracting |rect| from |this|.  If
-  // |rect| does not intersect completely in either the x- or y-direction, then
-  // |*this| does not change.  If |rect| contains |this|, then an empty Rect is
-  // the result.
+  // Computes the rectangle resulting from subtracting |rect| from |*this|,
+  // i.e. the bounding rect of |Region(*this) - Region(rect)|.
   void Subtract(const Class& rect);
 
   // Fits as much of the receiving rectangle into the supplied rectangle as

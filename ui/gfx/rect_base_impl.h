@@ -224,14 +224,14 @@ void RectBase<Class, PointClass, SizeClass, InsetsClass, VectorClass, Type>::
     // complete intersection in the y-direction
     if (rect.x() <= x()) {
       rx = rect.right();
-    } else {
+    } else if (rect.right() >= right()) {
       rr = rect.x();
     }
   } else if (rect.x() <= x() && rect.right() >= right()) {
     // complete intersection in the x-direction
     if (rect.y() <= y()) {
       ry = rect.bottom();
-    } else {
+    } else if (rect.bottom() >= bottom()) {
       rb = rect.y();
     }
   }
