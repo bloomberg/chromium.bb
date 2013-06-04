@@ -84,42 +84,6 @@ void BrowserPluginCompositingHelper::CheckSizeAndAdjustLayerBounds(
   }
 }
 
-// If we have a mailbox that was freed up from the compositor,
-// but we are not expected to return it to the guest renderer
-// via an ACK, we should free it because we now own it.
-// To free the mailbox memory, we need a context to consume it
-// into a texture ID and then delete this texture ID.
-// We use a shared graphics context accessible from the main
-// thread to do it.
-void BrowserPluginCompositingHelper::FreeMailboxMemory(
-    const std::string& mailbox_name,
-    unsigned sync_point) {
-  if (mailbox_name.empty())
-    return;
-
-  scoped_refptr<cc::ContextProvider> context_provider =
-      RenderThreadImpl::current()->OffscreenContextProviderForMainThread();
-  if (!context_provider.get())
-    return;
-
-  WebKit::WebGraphicsContext3D *context = context_provider->Context3d();
-  // When a buffer is released from the compositor, we also get a
-  // sync point that specifies when in the command buffer
-  // it's safe to use it again.
-  // If the sync point is non-zero, we need to tell our context
-  // to wait until this sync point is reached before we can safely
-  // delete the buffer.
-  if (sync_point)
-    context->waitSyncPoint(sync_point);
-
-  unsigned texture_id = context->createTexture();
-  context->bindTexture(GL_TEXTURE_2D, texture_id);
-  context->consumeTextureCHROMIUM(
-      GL_TEXTURE_2D,
-      reinterpret_cast<const int8*>(mailbox_name.data()));
-  context->deleteTexture(texture_id);
-}
-
 void BrowserPluginCompositingHelper::MailboxReleased(
     const std::string& mailbox_name,
     int gpu_route_id,
@@ -142,9 +106,7 @@ void BrowserPluginCompositingHelper::MailboxReleased(
   // Either ACK the last buffer, so texture transport could
   // be destroyed of delete the mailbox if nobody wants it back.
   if (last_route_id_ != gpu_route_id) {
-    if (!ack_pending_for_crashed_guest_) {
-      FreeMailboxMemory(mailbox_name, sync_point);
-    } else {
+    if (ack_pending_for_crashed_guest_) {
       ack_pending_for_crashed_guest_ = false;
       browser_plugin_manager_->Send(
           new BrowserPluginHostMsg_BuffersSwappedACK(
@@ -163,7 +125,6 @@ void BrowserPluginCompositingHelper::MailboxReleased(
   // the compositor in cases like switching back to SW mode without a new
   // buffer arriving, no ACK is needed and we destroy this buffer.
   if (!ack_pending_) {
-    FreeMailboxMemory(mailbox_name, sync_point);
     last_mailbox_valid_ = false;
     return;
   }

@@ -56,8 +56,6 @@ class CONTENT_EXPORT BrowserPluginCompositingHelper :
   void CheckSizeAndAdjustLayerBounds(const gfx::Size& new_size,
                                      float device_scale_factor,
                                      cc::Layer* layer);
-  void FreeMailboxMemory(const std::string& mailbox_name,
-                         unsigned sync_point);
   void MailboxReleased(const std::string& mailbox_name,
                        int gpu_route_id,
                        int gpu_host_id,
