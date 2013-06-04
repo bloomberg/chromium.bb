@@ -7326,19 +7326,6 @@ fun:_ZN7content21RenderViewHostManager8NavigateERKNS_19NavigationEntryImplE
    fun:_ZN7content11ContentMainEiPPKcPNS_19ContentMainDelegateE
 }
 {
-   bug_246359
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN7content21ShellBrowserMainParts21PreMainMessageLoopRunEv
-   fun:_ZN7content15BrowserMainLoop13CreateThreadsEv
-   fun:_ZN7content21BrowserMainRunnerImpl10InitializeERKNS_18MainFunctionParamsE
-   fun:_Z16ShellBrowserMainRKN7content18MainFunctionParamsE
-   fun:_ZN7content17ShellMainDelegate10RunProcessERKSsRKNS_18MainFunctionParamsE
-   fun:_ZN7content23RunNamedProcessTypeMainERKSsRKNS_18MainFunctionParamsEPNS_19ContentMainDelegateE
-   fun:_ZN7content21ContentMainRunnerImpl3RunEv
-   fun:_ZN7content11ContentMainEiPPKcPNS_19ContentMainDelegateE
-}
-{
    bug_245866
    Memcheck:Leak
    fun:_Znw*

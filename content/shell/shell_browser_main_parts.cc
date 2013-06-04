@@ -122,7 +122,7 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
   Shell::Initialize();
   net::NetModule::SetResourceProvider(PlatformResourceProvider);
 
-  devtools_delegate_ = new ShellDevToolsDelegate(browser_context_.get());
+  devtools_delegate_.reset(new ShellDevToolsDelegate(browser_context_.get()));
 
   if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kDumpRenderTree)) {
     Shell::CreateNewWindow(browser_context_.get(),

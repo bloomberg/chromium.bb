@@ -33,7 +33,9 @@ class ShellBrowserMainParts : public BrowserMainParts {
   virtual bool MainMessageLoopRun(int* result_code) OVERRIDE;
   virtual void PostMainMessageLoopRun() OVERRIDE;
 
-  ShellDevToolsDelegate* devtools_delegate() { return devtools_delegate_; }
+  ShellDevToolsDelegate* devtools_delegate() {
+    return devtools_delegate_.get();
+  }
 
   ShellBrowserContext* browser_context() { return browser_context_.get(); }
   ShellBrowserContext* off_the_record_browser_context() {
@@ -48,7 +50,7 @@ class ShellBrowserMainParts : public BrowserMainParts {
   const MainFunctionParams& parameters_;
   bool run_message_loop_;
 
-  ShellDevToolsDelegate* devtools_delegate_;
+  scoped_ptr<ShellDevToolsDelegate> devtools_delegate_;
 #if defined(ENABLE_PLUGINS)
   scoped_ptr<ShellPluginServiceFilter> plugin_service_filter_;
 #endif
