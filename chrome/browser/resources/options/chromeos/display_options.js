@@ -839,7 +839,7 @@ cr.define('options', function() {
       if (this.mirroring_)
         this.focusedIndex_ = null;
       else if (this.displays_.length != displays.length)
-        this.focusedIndex_ = 1;
+        this.focusedIndex_ = 0;
 
       this.displays_ = displays;
 
