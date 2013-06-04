@@ -1734,7 +1734,7 @@ template <ExclusionShapeValue* (RenderStyle::*getterFunction)() const, void (Ren
 class ApplyPropertyExclusionShape {
 public:
     static void setValue(RenderStyle* style, PassRefPtr<ExclusionShapeValue> value) { (style->*setterFunction)(value); }
-    static void applyValue(CSSPropertyID, StyleResolver* styleResolver, CSSValue* value)
+    static void applyValue(CSSPropertyID property, StyleResolver* styleResolver, CSSValue* value)
     {
         if (value->isPrimitiveValue()) {
             CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
@@ -1747,6 +1747,9 @@ public:
                 RefPtr<ExclusionShapeValue> shape = ExclusionShapeValue::createShapeValue(basicShapeForValue(styleResolver, primitiveValue->getShapeValue()));
                 setValue(styleResolver->style(), shape.release());
             }
+        } else if (value->isImageValue()) {
+            RefPtr<ExclusionShapeValue> shape = ExclusionShapeValue::createImageValue(styleResolver->styleImage(property, value));
+            setValue(styleResolver->style(), shape.release());
         }
     }
     static PropertyHandler createHandler()

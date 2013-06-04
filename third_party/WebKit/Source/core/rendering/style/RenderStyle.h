@@ -1372,7 +1372,7 @@ public:
     ExclusionShapeValue* resolvedShapeInside() const
     {
         ExclusionShapeValue* shapeInside = this->shapeInside();
-        if (shapeInside && shapeInside->type() == ExclusionShapeValue::OUTSIDE)
+        if (shapeInside && shapeInside->type() == ExclusionShapeValue::Outside)
             return shapeOutside();
         return shapeInside;
     }

@@ -30,8 +30,8 @@
 #include "config.h"
 #include "core/rendering/exclusions/ExclusionShapeInfo.h"
 
-#include "core/rendering/exclusions/ExclusionShape.h"
 #include "core/rendering/RenderRegion.h"
+#include "core/rendering/exclusions/ExclusionShape.h"
 #include "core/rendering/style/RenderStyle.h"
 
 namespace WebCore {
@@ -42,7 +42,7 @@ const ExclusionShape* ExclusionShapeInfo<RenderType, shapeGetter, intervalGetter
         return exclusionShape;
 
     ExclusionShapeValue* shapeValue = (m_renderer->style()->*shapeGetter)();
-    BasicShape* shape = (shapeValue && shapeValue->type() == ExclusionShapeValue::SHAPE) ? shapeValue->shape() : 0;
+    BasicShape* shape = (shapeValue && shapeValue->type() == ExclusionShapeValue::Shape) ? shapeValue->shape() : 0;
 
     ASSERT(shape);
 
