@@ -233,6 +233,16 @@ size_t GpuDataManagerImpl::GetBlacklistedFeatureCount() const {
   return private_->GetBlacklistedFeatureCount();
 }
 
+void GpuDataManagerImpl::SetDisplayCount(unsigned int display_count) {
+  base::AutoLock auto_lock(lock_);
+  private_->SetDisplayCount(display_count);
+}
+
+unsigned int GpuDataManagerImpl::GetDisplayCount() const {
+  base::AutoLock auto_lock(lock_);
+  return private_->GetDisplayCount();
+}
+
 void GpuDataManagerImpl::Notify3DAPIBlocked(const GURL& url,
                                             int render_process_id,
                                             int render_view_id,

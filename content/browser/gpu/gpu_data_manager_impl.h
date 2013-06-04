@@ -169,6 +169,9 @@ class CONTENT_EXPORT GpuDataManagerImpl
   // Get number of features being blacklisted.
   size_t GetBlacklistedFeatureCount() const;
 
+  void SetDisplayCount(unsigned int display_count);
+  unsigned int GetDisplayCount() const;
+
  private:
   friend class GpuDataManagerImplPrivate;
   friend class GpuDataManagerImplPrivateTest;

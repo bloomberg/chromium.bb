@@ -16,7 +16,7 @@ namespace content {
 
 // Observers can register themselves via GpuDataManager::AddObserver, and
 // can un-register with GpuDataManager::RemoveObserver.
-class GpuDataManagerObserver {
+class CONTENT_EXPORT GpuDataManagerObserver {
  public:
   // Called for any observers whenever there is a GPU info update.
   virtual void OnGpuInfoUpdate() {}

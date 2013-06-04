@@ -396,7 +396,8 @@ RenderProcessHostImpl::RenderProcessHostImpl(
           dummy_shutdown_event_(false, false),
 #endif
           supports_browser_plugin_(supports_browser_plugin),
-          is_guest_(is_guest) {
+          is_guest_(is_guest),
+          gpu_observer_registered_(false) {
   widget_helper_ = new RenderWidgetHelper();
 
   ChildProcessSecurityPolicyImpl::GetInstance()->Add(GetID());
@@ -424,6 +425,11 @@ RenderProcessHostImpl::RenderProcessHostImpl(
 RenderProcessHostImpl::~RenderProcessHostImpl() {
   DCHECK(!run_renderer_in_process());
   ChildProcessSecurityPolicyImpl::GetInstance()->Remove(GetID());
+
+  if (gpu_observer_registered_) {
+    GpuDataManagerImpl::GetInstance()->RemoveObserver(this);
+    gpu_observer_registered_ = false;
+  }
 
   // We may have some unsent messages at this point, but that's OK.
   channel_.reset();
@@ -546,6 +552,11 @@ bool RenderProcessHostImpl::Init() {
         this));
 
     fast_shutdown_started_ = false;
+  }
+
+  if (!gpu_observer_registered_) {
+    gpu_observer_registered_ = true;
+    GpuDataManagerImpl::GetInstance()->AddObserver(this);
   }
 
   is_initialized_ = true;
@@ -1772,6 +1783,22 @@ void RenderProcessHostImpl::OnCompositorSurfaceBuffersSwappedNoHost(
   RenderWidgetHostImpl::AcknowledgeBufferPresent(params.route_id,
                                                  params.gpu_process_host_id,
                                                  ack_params);
+}
+
+void RenderProcessHostImpl::OnGpuSwitching() {
+  for (RenderWidgetHostsIterator iter = GetRenderWidgetHostsIterator();
+       !iter.IsAtEnd();
+       iter.Advance()) {
+    const RenderWidgetHost* widget = iter.GetCurrentValue();
+    DCHECK(widget);
+    if (!widget || !widget->IsRenderView())
+      continue;
+
+    RenderViewHost* rvh =
+        RenderViewHost::From(const_cast<RenderWidgetHost*>(widget));
+
+    rvh->UpdateWebkitPreferences(rvh->GetWebkitPreferences());
+  }
 }
 
 }  // namespace content

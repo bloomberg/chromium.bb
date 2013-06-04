@@ -105,6 +105,9 @@ class CONTENT_EXPORT GpuDataManagerImplPrivate {
 
   size_t GetBlacklistedFeatureCount() const;
 
+  void SetDisplayCount(unsigned int display_count);
+  unsigned int GetDisplayCount() const;
+
   virtual ~GpuDataManagerImplPrivate();
 
  private:
@@ -232,6 +235,8 @@ class CONTENT_EXPORT GpuDataManagerImplPrivate {
   bool domain_blocking_enabled_;
 
   GpuDataManagerImpl* owner_;
+
+  unsigned int display_count_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuDataManagerImplPrivate);
 };

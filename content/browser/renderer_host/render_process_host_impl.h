@@ -15,6 +15,7 @@
 #include "base/timer.h"
 #include "content/browser/child_process_launcher.h"
 #include "content/common/content_export.h"
+#include "content/public/browser/gpu_data_manager_observer.h"
 #include "content/public/browser/render_process_host.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "ui/surface/transport_dib.h"
@@ -62,7 +63,8 @@ class StoragePartitionImpl;
 // to access the partition they are assigned to.
 class CONTENT_EXPORT RenderProcessHostImpl
     : public RenderProcessHost,
-      public ChildProcessLauncher::Client {
+      public ChildProcessLauncher::Client,
+      public GpuDataManagerObserver {
  public:
   RenderProcessHostImpl(BrowserContext* browser_context,
                         StoragePartitionImpl* storage_partition_impl,
@@ -235,6 +237,8 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // Handle termination of our process.
   void ProcessDied(bool already_dead);
 
+  virtual void OnGpuSwitching() OVERRIDE;
+
   // The count of currently visible widgets.  Since the host can be a container
   // for multiple widgets, it uses this count to determine when it should be
   // backgrounded.
@@ -326,6 +330,10 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // Forwards messages between WebRTCInternals in the browser process
   // and PeerConnectionTracker in the renderer process.
   scoped_refptr<PeerConnectionTrackerHost> peer_connection_tracker_host_;
+
+  // Prevents the class from being added as a GpuDataManagerImpl observer more
+  // than once.
+  bool gpu_observer_registered_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderProcessHostImpl);
 };
