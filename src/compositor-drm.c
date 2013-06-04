@@ -145,6 +145,7 @@ struct drm_output {
 	uint32_t connector_id;
 	drmModeCrtcPtr original_crtc;
 	struct drm_edid edid;
+	drmModePropertyPtr dpms_prop;
 
 	int vblank_pending;
 	int page_flip_pending;
@@ -1054,6 +1055,8 @@ drm_output_destroy(struct weston_output *output_base)
 	if (output->backlight)
 		backlight_destroy(output->backlight);
 
+	drmModeFreeProperty(output->dpms_prop);
+
 	/* Turn off hardware cursor */
 	drmModeSetCursor(c->drm.fd, output->crtc_id, 0, 0, 0);
 
@@ -1365,23 +1368,12 @@ drm_set_dpms(struct weston_output *output_base, enum dpms_enum level)
 	struct drm_output *output = (struct drm_output *) output_base;
 	struct weston_compositor *ec = output_base->compositor;
 	struct drm_compositor *c = (struct drm_compositor *) ec;
-	drmModeConnectorPtr connector;
-	drmModePropertyPtr prop;
 
-	connector = drmModeGetConnector(c->drm.fd, output->connector_id);
-	if (!connector)
+	if (!output->dpms_prop)
 		return;
 
-	prop = drm_get_prop(c->drm.fd, connector, "DPMS");
-	if (!prop) {
-		drmModeFreeConnector(connector);
-		return;
-	}
-
-	drmModeConnectorSetProperty(c->drm.fd, connector->connector_id,
-				    prop->prop_id, level);
-	drmModeFreeProperty(prop);
-	drmModeFreeConnector(connector);
+	drmModeConnectorSetProperty(c->drm.fd, output->connector_id,
+				    output->dpms_prop->prop_id, level);
 }
 
 static const char *connector_type_names[] = {
@@ -1813,6 +1805,7 @@ create_output_for_connector(struct drm_compositor *ec,
 	ec->connector_allocator |= (1 << output->connector_id);
 
 	output->original_crtc = drmModeGetCrtc(ec->drm.fd, output->crtc_id);
+	output->dpms_prop = drm_get_prop(ec->drm.fd, connector, "DPMS");
 
 	/* Get the current mode on the crtc that's currently driving
 	 * this connector. */
