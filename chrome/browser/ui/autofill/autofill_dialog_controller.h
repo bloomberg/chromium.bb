@@ -37,11 +37,6 @@ namespace autofill {
 // This class defines the interface to the controller that the dialog view sees.
 class AutofillDialogController {
  public:
-  enum ValidationType {
-    VALIDATE_EDIT,   // validate user edits. Allow for empty fields.
-    VALIDATE_FINAL,  // Full form validation. Mandatory fields can't be empty.
-  };
-
   // Strings -------------------------------------------------------------------
 
   virtual string16 DialogTitle() const = 0;

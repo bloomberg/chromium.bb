@@ -154,6 +154,11 @@ struct SuggestionState {
   bool editable;
 };
 
+enum ValidationType {
+  VALIDATE_EDIT,   // Validate user edits. Allow for empty fields.
+  VALIDATE_FINAL,  // Full form validation. Required fields can't be empty.
+};
+
 typedef std::vector<DetailInput> DetailInputs;
 typedef std::map<const DetailInput*, string16> DetailOutputMap;
 

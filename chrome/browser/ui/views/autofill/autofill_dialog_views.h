@@ -498,8 +498,7 @@ class AutofillDialogViews : public AutofillDialogView,
 
   // Checks all manual inputs in |group| for validity. Decorates the invalid
   // ones and returns true if all were valid.
-  bool ValidateGroup(const DetailsGroup& group,
-                     AutofillDialogController::ValidationType type);
+  bool ValidateGroup(const DetailsGroup& group, ValidationType type);
 
   // Checks all manual inputs in the form for validity. Decorates the invalid
   // ones and returns true if all were valid.

@@ -459,57 +459,49 @@ TEST_F(AutofillDialogControllerTest, PhoneNumberValidation) {
 
   // Existing data should have no errors.
   ValidityData validity_data =
-      controller()->InputsAreValid(outputs,
-                                   AutofillDialogController::VALIDATE_FINAL);
+      controller()->InputsAreValid(outputs, VALIDATE_FINAL);
   EXPECT_EQ(0U, validity_data.count(PHONE_HOME_WHOLE_NUMBER));
 
   // Input an empty phone number with VALIDATE_FINAL.
   SetOutputValue(inputs, &outputs, PHONE_HOME_WHOLE_NUMBER, "");
   validity_data =
-      controller()->InputsAreValid(outputs,
-                                   AutofillDialogController::VALIDATE_FINAL);
+      controller()->InputsAreValid(outputs, VALIDATE_FINAL);
   EXPECT_EQ(1U, validity_data.count(PHONE_HOME_WHOLE_NUMBER));
 
   // Input an empty phone number with VALIDATE_EDIT.
   validity_data =
-      controller()->InputsAreValid(outputs,
-                                   AutofillDialogController::VALIDATE_EDIT);
+      controller()->InputsAreValid(outputs, VALIDATE_EDIT);
   EXPECT_EQ(0U, validity_data.count(PHONE_HOME_WHOLE_NUMBER));
 
   // Input an invalid phone number.
   SetOutputValue(inputs, &outputs, PHONE_HOME_WHOLE_NUMBER, "ABC");
   validity_data =
-      controller()->InputsAreValid(outputs,
-                                   AutofillDialogController::VALIDATE_EDIT);
+      controller()->InputsAreValid(outputs, VALIDATE_EDIT);
   EXPECT_EQ(1U, validity_data.count(PHONE_HOME_WHOLE_NUMBER));
 
   // Input a local phone number.
   SetOutputValue(inputs, &outputs, PHONE_HOME_WHOLE_NUMBER, "2155546699");
   validity_data =
-      controller()->InputsAreValid(outputs,
-                                   AutofillDialogController::VALIDATE_EDIT);
+      controller()->InputsAreValid(outputs, VALIDATE_EDIT);
   EXPECT_EQ(0U, validity_data.count(PHONE_HOME_WHOLE_NUMBER));
 
   // Input an invalid local phone number.
   SetOutputValue(inputs, &outputs, PHONE_HOME_WHOLE_NUMBER, "215554669");
   validity_data =
-      controller()->InputsAreValid(outputs,
-                                   AutofillDialogController::VALIDATE_EDIT);
+      controller()->InputsAreValid(outputs, VALIDATE_EDIT);
   EXPECT_EQ(1U, validity_data.count(PHONE_HOME_WHOLE_NUMBER));
 
   // Input an international phone number.
   SetOutputValue(inputs, &outputs, PHONE_HOME_WHOLE_NUMBER, "+33 892 70 12 39");
   validity_data =
-      controller()->InputsAreValid(outputs,
-                                   AutofillDialogController::VALIDATE_EDIT);
+      controller()->InputsAreValid(outputs, VALIDATE_EDIT);
   EXPECT_EQ(0U, validity_data.count(PHONE_HOME_WHOLE_NUMBER));
 
   // Input an invalid international phone number.
   SetOutputValue(inputs, &outputs, PHONE_HOME_WHOLE_NUMBER,
                  "+112333 892 70 12 39");
   validity_data =
-      controller()->InputsAreValid(outputs,
-                                   AutofillDialogController::VALIDATE_EDIT);
+      controller()->InputsAreValid(outputs, VALIDATE_EDIT);
   EXPECT_EQ(1U, validity_data.count(PHONE_HOME_WHOLE_NUMBER));
 }
 
@@ -528,21 +520,18 @@ TEST_F(AutofillDialogControllerTest, CardHolderNameValidation) {
   // Input an empty card holder name with VALIDATE_FINAL.
   SetOutputValue(inputs, &outputs, CREDIT_CARD_NAME, "");
   ValidityData validity_data =
-      controller()->InputsAreValid(outputs,
-                                   AutofillDialogController::VALIDATE_FINAL);
+      controller()->InputsAreValid(outputs, VALIDATE_FINAL);
   EXPECT_EQ(1U, validity_data.count(CREDIT_CARD_NAME));
 
   // Input an empty card holder name with VALIDATE_EDIT.
   validity_data =
-      controller()->InputsAreValid(outputs,
-                                   AutofillDialogController::VALIDATE_EDIT);
+      controller()->InputsAreValid(outputs, VALIDATE_EDIT);
   EXPECT_EQ(0U, validity_data.count(CREDIT_CARD_NAME));
 
   // Input a non-empty card holder name.
   SetOutputValue(inputs, &outputs, CREDIT_CARD_NAME, "Bob");
   validity_data =
-      controller()->InputsAreValid(outputs,
-                                   AutofillDialogController::VALIDATE_FINAL);
+      controller()->InputsAreValid(outputs, VALIDATE_FINAL);
   EXPECT_EQ(0U, validity_data.count(CREDIT_CARD_NAME));
 
   // Switch to Wallet which only considers names with with at least two names to
@@ -565,46 +554,40 @@ TEST_F(AutofillDialogControllerTest, CardHolderNameValidation) {
   // change this behavior.
   SetOutputValue(wallet_inputs, &wallet_outputs, CREDIT_CARD_NAME, "");
   validity_data =
-      controller()->InputsAreValid(wallet_outputs,
-                                   AutofillDialogController::VALIDATE_FINAL);
+      controller()->InputsAreValid(wallet_outputs, VALIDATE_FINAL);
   EXPECT_EQ(1U, validity_data.count(CREDIT_CARD_NAME));
 
   // Input an empty card holder name with VALIDATE_EDIT. Data source should not
   // change this behavior.
   validity_data =
-      controller()->InputsAreValid(wallet_outputs,
-                                   AutofillDialogController::VALIDATE_EDIT);
+      controller()->InputsAreValid(wallet_outputs, VALIDATE_EDIT);
   EXPECT_EQ(0U, validity_data.count(CREDIT_CARD_NAME));
 
   // Input a one name card holder name. Wallet does not currently support this.
   SetOutputValue(wallet_inputs, &wallet_outputs, CREDIT_CARD_NAME, "Bob");
   validity_data =
-      controller()->InputsAreValid(wallet_outputs,
-                                   AutofillDialogController::VALIDATE_FINAL);
+      controller()->InputsAreValid(wallet_outputs, VALIDATE_FINAL);
   EXPECT_EQ(1U, validity_data.count(CREDIT_CARD_NAME));
 
   // Input a two name card holder name.
   SetOutputValue(wallet_inputs, &wallet_outputs, CREDIT_CARD_NAME,
                  "Bob Barker");
   validity_data =
-      controller()->InputsAreValid(wallet_outputs,
-                                   AutofillDialogController::VALIDATE_FINAL);
+      controller()->InputsAreValid(wallet_outputs, VALIDATE_FINAL);
   EXPECT_EQ(0U, validity_data.count(CREDIT_CARD_NAME));
 
   // Input a more than two name card holder name.
   SetOutputValue(wallet_inputs, &wallet_outputs, CREDIT_CARD_NAME,
                  "John Jacob Jingleheimer Schmidt");
   validity_data =
-      controller()->InputsAreValid(wallet_outputs,
-                                   AutofillDialogController::VALIDATE_FINAL);
+      controller()->InputsAreValid(wallet_outputs, VALIDATE_FINAL);
   EXPECT_EQ(0U, validity_data.count(CREDIT_CARD_NAME));
 
   // Input a card holder name with lots of crazy whitespace.
   SetOutputValue(wallet_inputs, &wallet_outputs, CREDIT_CARD_NAME,
                  "     \\n\\r John \\n  Jacob Jingleheimer \\t Schmidt  ");
   validity_data =
-      controller()->InputsAreValid(wallet_outputs,
-                                   AutofillDialogController::VALIDATE_FINAL);
+      controller()->InputsAreValid(wallet_outputs, VALIDATE_FINAL);
   EXPECT_EQ(0U, validity_data.count(CREDIT_CARD_NAME));
 }
 
@@ -1905,6 +1888,40 @@ TEST_F(AutofillDialogControllerTest, NotProdNotification) {
   command_line->AppendSwitch(switches::kWalletServiceUseProd);
   EXPECT_TRUE(
       NotificationsOfType(DialogNotification::DEVELOPER_WARNING).empty());
+}
+
+// Ensure Wallet instruments marked expired by the server are shown as invalid.
+TEST_F(AutofillDialogControllerTest, WalletExpiredCard) {
+  scoped_ptr<wallet::WalletItems> wallet_items = wallet::GetTestWalletItems();
+  wallet_items->AddInstrument(wallet::GetTestMaskedInstrumentExpired());
+  controller()->OnDidGetWalletItems(wallet_items.Pass());
+
+  EXPECT_TRUE(controller()->IsEditingExistingData(SECTION_CC_BILLING));
+
+  // Use |SetOutputValue()| to put the right AutofillFieldTypes into the map.
+  const DetailInputs& inputs =
+      controller()->RequestedFieldsForSection(SECTION_CC_BILLING);
+  DetailOutputMap outputs;
+  SetOutputValue(inputs, &outputs, COMPANY_NAME, "Bluth Company");
+
+  ValidityData validity_data =
+      controller()->InputsAreValid(outputs, VALIDATE_EDIT);
+  EXPECT_EQ(1U, validity_data.count(CREDIT_CARD_EXP_MONTH));
+  EXPECT_EQ(1U, validity_data.count(CREDIT_CARD_EXP_4_DIGIT_YEAR));
+
+  // Make the local input year differ from the instrument.
+  SetOutputValue(inputs, &outputs, CREDIT_CARD_EXP_4_DIGIT_YEAR, "3002");
+
+  validity_data = controller()->InputsAreValid(outputs, VALIDATE_EDIT);
+  EXPECT_EQ(0U, validity_data.count(CREDIT_CARD_EXP_MONTH));
+  EXPECT_EQ(0U, validity_data.count(CREDIT_CARD_EXP_4_DIGIT_YEAR));
+
+  // Make the local input month differ from the instrument.
+  SetOutputValue(inputs, &outputs, CREDIT_CARD_EXP_MONTH, "06");
+
+  validity_data = controller()->InputsAreValid(outputs, VALIDATE_EDIT);
+  EXPECT_EQ(0U, validity_data.count(CREDIT_CARD_EXP_MONTH));
+  EXPECT_EQ(0U, validity_data.count(CREDIT_CARD_EXP_4_DIGIT_YEAR));
 }
 
 }  // namespace autofill

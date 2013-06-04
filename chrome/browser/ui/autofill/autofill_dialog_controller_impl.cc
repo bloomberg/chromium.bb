@@ -999,6 +999,48 @@ string16 AutofillDialogControllerImpl::ExtraSuggestionTextForSection(
   return string16();
 }
 
+const wallet::WalletItems::MaskedInstrument* AutofillDialogControllerImpl::
+    ActiveInstrument() const {
+  if (!IsPayingWithWallet())
+    return NULL;
+
+  const SuggestionsMenuModel* model =
+      SuggestionsMenuModelForSection(SECTION_CC_BILLING);
+  const std::string item_key = model->GetItemKeyForCheckedItem();
+  if (!IsASuggestionItemKey(item_key))
+    return NULL;
+
+  int index;
+  if (!base::StringToInt(item_key, &index) || index < 0 ||
+      static_cast<size_t>(index) >= wallet_items_->instruments().size()) {
+    NOTREACHED();
+    return NULL;
+  }
+
+  return wallet_items_->instruments()[index];
+}
+
+const wallet::Address* AutofillDialogControllerImpl::
+    ActiveShippingAddress() const {
+  if (!IsPayingWithWallet())
+    return NULL;
+
+  const SuggestionsMenuModel* model =
+      SuggestionsMenuModelForSection(SECTION_SHIPPING);
+  const std::string item_key = model->GetItemKeyForCheckedItem();
+  if (!IsASuggestionItemKey(item_key))
+    return NULL;
+
+  int index;
+  if (!base::StringToInt(item_key, &index) || index < 0 ||
+      static_cast<size_t>(index) >= wallet_items_->addresses().size()) {
+    NOTREACHED();
+    return NULL;
+  }
+
+  return wallet_items_->addresses()[index];
+}
+
 scoped_ptr<DataModelWrapper> AutofillDialogControllerImpl::CreateWrapper(
     DialogSection section) {
   if (IsPayingWithWallet() && full_wallet_ &&
@@ -1019,18 +1061,14 @@ scoped_ptr<DataModelWrapper> AutofillDialogControllerImpl::CreateWrapper(
     return scoped_ptr<DataModelWrapper>();
 
   if (IsPayingWithWallet()) {
-    int index;
-    bool success = base::StringToInt(item_key, &index);
-    DCHECK(success);
-
     if (section == SECTION_CC_BILLING) {
       return scoped_ptr<DataModelWrapper>(
-          new WalletInstrumentWrapper(wallet_items_->instruments()[index]));
+          new WalletInstrumentWrapper(ActiveInstrument()));
     }
 
     if (section == SECTION_SHIPPING) {
       return scoped_ptr<DataModelWrapper>(
-          new WalletAddressWrapper(wallet_items_->addresses()[index]));
+          new WalletAddressWrapper(ActiveShippingAddress()));
     }
 
     return scoped_ptr<DataModelWrapper>();
@@ -1232,30 +1270,26 @@ ValidityData AutofillDialogControllerImpl::InputsAreValid(
 
   // Validate the date formed by month and year field. (Autofill dialog is
   // never supposed to have 2-digit years, so not checked).
-  if (field_values.count(CREDIT_CARD_EXP_MONTH) &&
-      field_values.count(CREDIT_CARD_EXP_4_DIGIT_YEAR)) {
-    if (!autofill::IsValidCreditCardExpirationDate(
-            field_values[CREDIT_CARD_EXP_4_DIGIT_YEAR],
-            field_values[CREDIT_CARD_EXP_MONTH],
-            base::Time::Now())) {
-      invalid_messages[CREDIT_CARD_EXP_MONTH] =
-          ASCIIToUTF16("more complicated message");
-      invalid_messages[CREDIT_CARD_EXP_4_DIGIT_YEAR] =
-          ASCIIToUTF16("more complicated message");
-    }
+  if (field_values.count(CREDIT_CARD_EXP_4_DIGIT_YEAR) &&
+      field_values.count(CREDIT_CARD_EXP_MONTH) &&
+      !IsCreditCardExpirationValid(field_values[CREDIT_CARD_EXP_4_DIGIT_YEAR],
+                                   field_values[CREDIT_CARD_EXP_MONTH])) {
+    invalid_messages[CREDIT_CARD_EXP_4_DIGIT_YEAR] =
+        ASCIIToUTF16("more complicated message");
+    invalid_messages[CREDIT_CARD_EXP_MONTH] =
+        ASCIIToUTF16("more complicated message");
   }
 
   // If there is a credit card number and a CVC, validate them together.
   if (field_values.count(CREDIT_CARD_NUMBER) &&
       field_values.count(CREDIT_CARD_VERIFICATION_CODE) &&
       InputValidityMessage(CREDIT_CARD_NUMBER,
-                           field_values[CREDIT_CARD_NUMBER]).empty()) {
-    if (!autofill::IsValidCreditCardSecurityCode(
-            field_values[CREDIT_CARD_VERIFICATION_CODE],
-            field_values[CREDIT_CARD_NUMBER])) {
-      invalid_messages[CREDIT_CARD_VERIFICATION_CODE] =
-          ASCIIToUTF16("CVC doesn't match card type!");
-    }
+                           field_values[CREDIT_CARD_NUMBER]).empty() &&
+      !autofill::IsValidCreditCardSecurityCode(
+          field_values[CREDIT_CARD_VERIFICATION_CODE],
+          field_values[CREDIT_CARD_NUMBER])) {
+    invalid_messages[CREDIT_CARD_VERIFICATION_CODE] =
+        ASCIIToUTF16("CVC doesn't match card type!");
   }
 
   // Validate the phone number against the country code of the address.
@@ -2393,7 +2427,7 @@ bool AutofillDialogControllerImpl::IsManuallyEditingSection(
 }
 
 bool AutofillDialogControllerImpl::IsASuggestionItemKey(
-    const std::string& key) {
+    const std::string& key) const {
   return !key.empty() &&
       key != kAddNewItemKey &&
       key != kManageItemsKey &&
@@ -2436,6 +2470,33 @@ bool AutofillDialogControllerImpl::SectionIsValid(
   DetailOutputMap detail_outputs;
   view_->GetUserInput(section, &detail_outputs);
   return InputsAreValid(detail_outputs, VALIDATE_EDIT).empty();
+}
+
+bool AutofillDialogControllerImpl::IsCreditCardExpirationValid(
+    const base::string16& year,
+    const base::string16& month) const {
+  // If the expiration is in the past as per the local clock, it's invalid.
+  base::Time now = base::Time::Now();
+  if (!autofill::IsValidCreditCardExpirationDate(year, month, now))
+    return false;
+
+  if (IsPayingWithWallet() && IsEditingExistingData(SECTION_CC_BILLING)) {
+    const wallet::WalletItems::MaskedInstrument* instrument =
+        ActiveInstrument();
+    const std::string& locale = g_browser_process->GetApplicationLocale();
+    int month_int;
+    if (base::StringToInt(month, &month_int) &&
+        instrument->status() ==
+            wallet::WalletItems::MaskedInstrument::EXPIRED &&
+        year == instrument->GetInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR, locale) &&
+        month_int == instrument->expiration_month()) {
+      // Otherwise, if the user is editing an instrument that's deemed expired
+      // by the Online Wallet server, mark it invalid on selection.
+      return false;
+    }
+  }
+
+  return true;
 }
 
 bool AutofillDialogControllerImpl::ShouldUseBillingForShipping() {
@@ -2489,26 +2550,17 @@ void AutofillDialogControllerImpl::SubmitWithWallet() {
   if (AreLegalDocumentsCurrent())
     LoadRiskFingerprintData();
 
-  SuggestionsMenuModel* billing =
-      SuggestionsMenuModelForSection(SECTION_CC_BILLING);
-  int instrument_index = -1;
-  base::StringToInt(billing->GetItemKeyForCheckedItem(), &instrument_index);
-
+  const wallet::WalletItems::MaskedInstrument* active_instrument =
+      ActiveInstrument();
   if (!IsManuallyEditingSection(SECTION_CC_BILLING)) {
-    active_instrument_id_ =
-        wallet_items_->instruments()[instrument_index]->object_id();
+    active_instrument_id_ = active_instrument->object_id();
     DCHECK(!active_instrument_id_.empty());
   }
 
-  SuggestionsMenuModel* shipping =
-      SuggestionsMenuModelForSection(SECTION_SHIPPING);
-  int address_index = -1;
-  base::StringToInt(shipping->GetItemKeyForCheckedItem(), &address_index);
-
+  const wallet::Address* active_address = ActiveShippingAddress();
   if (!IsManuallyEditingSection(SECTION_SHIPPING) &&
       !ShouldUseBillingForShipping()) {
-    active_address_id_ =
-        wallet_items_->addresses()[address_index]->object_id();
+    active_address_id_ = active_address->object_id();
     DCHECK(!active_address_id_.empty());
   }
 
@@ -2518,14 +2570,13 @@ void AutofillDialogControllerImpl::SubmitWithWallet() {
       CreateUpdateInstrumentRequest(
           inputted_instrument.get(),
           !IsEditingExistingData(SECTION_CC_BILLING) ? std::string() :
-              wallet_items_->instruments()[instrument_index]->object_id());
+              active_instrument->object_id());
 
   scoped_ptr<wallet::Address> inputted_address;
   if (active_address_id_.empty()) {
     if (ShouldUseBillingForShipping()) {
       const wallet::Address& address = inputted_instrument ?
-          inputted_instrument->address() :
-          wallet_items_->instruments()[instrument_index]->address();
+          inputted_instrument->address() : active_instrument->address();
       // Try to find an exact matched shipping address and use it for shipping,
       // otherwise save it as a new shipping address. http://crbug.com/225442
       const wallet::Address* duplicated_address =
@@ -2540,8 +2591,7 @@ void AutofillDialogControllerImpl::SubmitWithWallet() {
     } else {
       inputted_address = CreateTransientAddress();
       if (IsEditingExistingData(SECTION_SHIPPING)) {
-        inputted_address->set_object_id(
-            wallet_items_->addresses()[address_index]->object_id());
+        inputted_address->set_object_id(active_address->object_id());
         DCHECK(!inputted_address->object_id().empty());
       }
     }

@@ -113,8 +113,7 @@ class AutofillDialogViewAndroid : public AutofillDialogView {
 
   // Returns the list of available user accounts.
   std::vector<std::string> GetAvailableUserAccounts();
-  bool ValidateSection(DialogSection section,
-                       AutofillDialogController::ValidationType type);
+  bool ValidateSection(DialogSection section, ValidationType type);
 
   // Starts an automatic sign-in attempt for a given account.
   bool StartAutomaticSignIn(const std::string& username);

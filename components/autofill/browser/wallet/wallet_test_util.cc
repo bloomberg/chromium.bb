@@ -114,6 +114,14 @@ scoped_ptr<WalletItems::MaskedInstrument> GetTestMaskedInstrument() {
   return GetTestMaskedInstrumentWithId("default_instrument_id");
 }
 
+scoped_ptr<WalletItems::MaskedInstrument> GetTestMaskedInstrumentExpired() {
+  return GetTestMaskedInstrumentWithDetails(
+      "default_instrument_id",
+      GetTestAddress(),
+      WalletItems::MaskedInstrument::VISA,
+      WalletItems::MaskedInstrument::EXPIRED);
+}
+
 scoped_ptr<WalletItems::MaskedInstrument> GetTestMaskedInstrumentInvalid() {
   return GetTestMaskedInstrumentWithDetails(
       "default_instrument_id",

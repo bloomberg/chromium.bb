@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_UI_AUTOFILL_AUTOFILL_DIALOG_VIEW_H_
 #define CHROME_BROWSER_UI_AUTOFILL_AUTOFILL_DIALOG_VIEW_H_
 
-#include "chrome/browser/ui/autofill/autofill_dialog_controller.h"
+#include "chrome/browser/ui/autofill/autofill_dialog_types.h"
 
 namespace content {
 class NavigationController;
@@ -17,6 +17,7 @@ class Size;
 
 namespace autofill {
 
+class AutofillDialogController;
 class TestableAutofillDialogView;
 
 // An interface for the dialog that appears when a site initiates an Autofill

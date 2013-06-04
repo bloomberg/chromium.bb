@@ -349,7 +349,7 @@ jboolean AutofillDialogViewAndroid::EditingComplete(JNIEnv* env,
                                                     jint jsection) {
   // Unfortunately, edits are not sent to the models, http://crbug.com/223919.
   const DialogSection section = static_cast<DialogSection>(jsection);
-  if (ValidateSection(section, AutofillDialogController::VALIDATE_FINAL)) {
+  if (ValidateSection(section, VALIDATE_FINAL)) {
     UpdateOrFillSectionToJava(section, false, UNKNOWN_TYPE);
     return true;
   }
@@ -396,8 +396,7 @@ ScopedJavaLocalRef<jstring> AutofillDialogViewAndroid::ValidateField(
 void AutofillDialogViewAndroid::ValidateSection(JNIEnv* env,
                                                 jobject obj,
                                                 jint section) {
-  ValidateSection(static_cast<DialogSection>(section),
-                  AutofillDialogController::VALIDATE_EDIT);
+  ValidateSection(static_cast<DialogSection>(section), VALIDATE_EDIT);
 }
 
 void AutofillDialogViewAndroid::DialogSubmit(JNIEnv* env, jobject obj) {
@@ -458,8 +457,8 @@ bool AutofillDialogViewAndroid::RegisterAutofillDialogViewAndroid(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }
 
-bool AutofillDialogViewAndroid::ValidateSection(
-    DialogSection section, AutofillDialogController::ValidationType type) {
+bool AutofillDialogViewAndroid::ValidateSection(DialogSection section,
+                                                ValidationType type) {
   DetailOutputMap detail_outputs;
   GetUserInput(section, &detail_outputs);
   ValidityData invalid_inputs =

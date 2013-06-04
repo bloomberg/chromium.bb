@@ -6,6 +6,7 @@
 
 #include "base/mac/bundle_locations.h"
 #include "base/memory/scoped_nsobject.h"
+#include "chrome/browser/ui/autofill/autofill_dialog_controller.h"
 #include "chrome/browser/ui/chrome_style.h"
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_button.h"
 #include "chrome/browser/ui/chrome_style.h"

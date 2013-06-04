@@ -28,6 +28,7 @@
 #include "components/autofill/browser/personal_data_manager_observer.h"
 #include "components/autofill/browser/wallet/wallet_client.h"
 #include "components/autofill/browser/wallet/wallet_client_delegate.h"
+#include "components/autofill/browser/wallet/wallet_items.h"
 #include "components/autofill/browser/wallet/wallet_signin_helper_delegate.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -321,6 +322,12 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
   // data or Wallet data, depending on whether Wallet is currently enabled.
   scoped_ptr<DataModelWrapper> CreateWrapper(DialogSection section);
 
+  // Helper to return the current Wallet instrument or address. If the dialog
+  // isn't using Wallet or the user is adding a new instrument or address, NULL
+  // will be returned.
+  const wallet::WalletItems::MaskedInstrument* ActiveInstrument() const;
+  const wallet::Address* ActiveShippingAddress() const;
+
   // Fills in |section|-related fields in |output_| according to the state of
   // |view_|.
   void FillOutputForSection(DialogSection section);
@@ -418,9 +425,13 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
   // the dialog have valid contents.
   bool SectionIsValid(DialogSection section) const;
 
+  // Whether the currently active credit card expiration date is valid.
+  bool IsCreditCardExpirationValid(const base::string16& year,
+                                   const base::string16& month) const;
+
   // Returns true if |key| refers to a suggestion, as opposed to some control
   // menu item.
-  bool IsASuggestionItemKey(const std::string& key);
+  bool IsASuggestionItemKey(const std::string& key) const;
 
   // Whether the billing section should be used to fill in the shipping details.
   bool ShouldUseBillingForShipping();
