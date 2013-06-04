@@ -167,11 +167,6 @@ class WEBKIT_STORAGE_EXPORT SandboxMountPointProvider
   void AddSyncableFileChangeObserver(FileChangeObserver* observer,
                                      base::SequencedTaskRunner* task_runner);
 
-  // Returns a LocalFileSystemOperation that can be used to apply changes
-  // to the syncable filesystem.
-  LocalFileSystemOperation* CreateFileSystemOperationForSync(
-      FileSystemContext* file_system_context);
-
   void set_enable_temporary_file_system_in_incognito(bool enable) {
     enable_temporary_file_system_in_incognito_ = enable;
   }

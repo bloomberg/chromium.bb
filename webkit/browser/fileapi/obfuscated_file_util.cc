@@ -343,7 +343,8 @@ PlatformFileError ObfuscatedFileUtil::CreateDirectory(
   // TODO(kinuko): Remove this dirty hack when we fully support directory
   // operations or clean up the code if we decided not to support directory
   // operations. (http://crbug.com/161442)
-  if (url.type() == kFileSystemTypeSyncable &&
+  if ((url.type() == kFileSystemTypeSyncable ||
+       url.type() == kFileSystemTypeSyncableForInternalSync) &&
       !sync_file_system::IsSyncFSDirectoryOperationEnabled()) {
     return base::PLATFORM_FILE_ERROR_INVALID_OPERATION;
   }
@@ -915,6 +916,7 @@ bool ObfuscatedFileUtil::DeleteDirectoryForOriginAndType(
     other_types.push_back(kFileSystemTypePersistent);
   if (type != kFileSystemTypeSyncable)
     other_types.push_back(kFileSystemTypeSyncable);
+  DCHECK(type != kFileSystemTypeSyncableForInternalSync);
 
   for (size_t i = 0; i < other_types.size(); ++i) {
     if (file_util::DirectoryExists(
@@ -945,6 +947,7 @@ base::FilePath::StringType ObfuscatedFileUtil::GetDirectoryNameForType(
     case kFileSystemTypePersistent:
       return kPersistentDirectoryName;
     case kFileSystemTypeSyncable:
+    case kFileSystemTypeSyncableForInternalSync:
       return kSyncableDirectoryName;
     case kFileSystemTypeUnknown:
     default:

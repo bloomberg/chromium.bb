@@ -89,6 +89,13 @@ enum FileSystemType {
   // cloud storage service.
   kFileSystemTypeSyncable,
 
+  // Indicates a special filesystem type for internal file sync operation
+  // for Syncable sandboxed filesystems. The file system is overlayed, i.e.
+  // points to the same sandboxed filesystem as that of kFileSystemTypeSyncable,
+  // but the changes made with this filesystem type are not recorded for
+  // further sync.
+  kFileSystemTypeSyncableForInternalSync,
+
   // Indicates an external filesystem accessible by file paths from platform
   // Apps. As of writing, on non Chrome OS platform, this is merely a
   // kFileSystemTypeNativeLocal. On Chrome OS, the path is parsed by

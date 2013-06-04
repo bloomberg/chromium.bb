@@ -137,7 +137,8 @@ SandboxMountPointProvider::kFileSystemDirectory[] =
 bool SandboxMountPointProvider::IsSandboxType(FileSystemType type) {
   return type == kFileSystemTypeTemporary ||
          type == kFileSystemTypePersistent ||
-         type == kFileSystemTypeSyncable;
+         type == kFileSystemTypeSyncable ||
+         type == kFileSystemTypeSyncableForInternalSync;
 }
 
 SandboxMountPointProvider::SandboxMountPointProvider(
@@ -585,17 +586,6 @@ void SandboxMountPointProvider::AddSyncableFileChangeObserver(
       syncable_change_observers_.source();
   observer_source.AddObserver(observer, task_runner);
   syncable_change_observers_ = ChangeObserverList(observer_source);
-}
-
-LocalFileSystemOperation*
-SandboxMountPointProvider::CreateFileSystemOperationForSync(
-    FileSystemContext* file_system_context) {
-  scoped_ptr<FileSystemOperationContext> operation_context(
-      new FileSystemOperationContext(file_system_context));
-  operation_context->set_update_observers(update_observers_);
-  operation_context->set_access_observers(access_observers_);
-  return new LocalFileSystemOperation(file_system_context,
-                                      operation_context.Pass());
 }
 
 base::FilePath SandboxMountPointProvider::GetUsageCachePathForOriginAndType(

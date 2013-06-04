@@ -180,6 +180,7 @@ quota::StorageType FileSystemTypeToQuotaStorageType(FileSystemType type) {
     case kFileSystemTypePersistent:
       return quota::kStorageTypePersistent;
     case kFileSystemTypeSyncable:
+    case kFileSystemTypeSyncableForInternalSync:
       return quota::kStorageTypeSyncable;
     default:
       return quota::kStorageTypeUnknown;
@@ -215,6 +216,7 @@ std::string GetFileSystemTypeString(FileSystemType type) {
     case kFileSystemTypeDrive:
       return "Drive";
     case kFileSystemTypeSyncable:
+    case kFileSystemTypeSyncableForInternalSync:
       return "Syncable";
     case kFileSystemTypeNativeForPlatformApp:
       return "NativeForPlatformApp";

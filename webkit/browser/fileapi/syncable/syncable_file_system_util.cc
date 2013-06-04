@@ -27,6 +27,7 @@ const char kEnableSyncFSDirectoryOperation[] =
     "enable-syncfs-directory-operation";
 
 const char kSyncableMountName[] = "syncfs";
+const char kSyncableMountNameForInternalSync[] = "syncfs-internal";
 
 bool is_directory_operation_enabled = false;
 
@@ -37,11 +38,17 @@ void RegisterSyncableFileSystem() {
       kSyncableMountName,
       fileapi::kFileSystemTypeSyncable,
       base::FilePath());
+  ExternalMountPoints::GetSystemInstance()->RegisterFileSystem(
+      kSyncableMountNameForInternalSync,
+      fileapi::kFileSystemTypeSyncableForInternalSync,
+      base::FilePath());
 }
 
 void RevokeSyncableFileSystem() {
   ExternalMountPoints::GetSystemInstance()->RevokeFileSystem(
       kSyncableMountName);
+  ExternalMountPoints::GetSystemInstance()->RevokeFileSystem(
+      kSyncableMountNameForInternalSync);
 }
 
 GURL GetSyncableFileSystemRootURI(const GURL& origin) {
@@ -53,6 +60,15 @@ FileSystemURL CreateSyncableFileSystemURL(const GURL& origin,
                                           const base::FilePath& path) {
   return ExternalMountPoints::GetSystemInstance()->CreateExternalFileSystemURL(
       origin, kSyncableMountName, path);
+}
+
+FileSystemURL CreateSyncableFileSystemURLForSync(
+    fileapi::FileSystemContext* file_system_context,
+    const FileSystemURL& syncable_url) {
+  return ExternalMountPoints::GetSystemInstance()->CreateExternalFileSystemURL(
+      syncable_url.origin(),
+      kSyncableMountNameForInternalSync,
+      syncable_url.path());
 }
 
 bool SerializeSyncableFileSystemURL(const FileSystemURL& url,
@@ -80,13 +96,6 @@ bool DeserializeSyncableFileSystemURL(
 
   *url = deserialized;
   return true;
-}
-
-LocalFileSystemOperation* CreateFileSystemOperationForSync(
-    FileSystemContext* file_system_context) {
-  DCHECK(file_system_context);
-  return file_system_context->sandbox_provider()->
-      CreateFileSystemOperationForSync(file_system_context);
 }
 
 void SetEnableSyncFSDirectoryOperation(bool flag) {

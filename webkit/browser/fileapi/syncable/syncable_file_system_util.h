@@ -38,6 +38,11 @@ WEBKIT_STORAGE_EXPORT GURL GetSyncableFileSystemRootURI(const GURL& origin);
 WEBKIT_STORAGE_EXPORT fileapi::FileSystemURL CreateSyncableFileSystemURL(
     const GURL& origin, const base::FilePath& path);
 
+// Creates a special filesystem URL for synchronizing |syncable_url|.
+WEBKIT_STORAGE_EXPORT fileapi::FileSystemURL CreateSyncableFileSystemURLForSync(
+    fileapi::FileSystemContext* file_system_context,
+    const fileapi::FileSystemURL& syncable_url);
+
 // Serializes a given FileSystemURL |url| and sets the serialized string to
 // |serialized_url|. If the URL does not represent a syncable filesystem,
 // |serialized_url| is not filled in, and returns false. Separators of the
@@ -68,16 +73,6 @@ WEBKIT_STORAGE_EXPORT bool SerializeSyncableFileSystemURL(
 // See the comment of SerializeSyncableFileSystemURL() for more details.
 WEBKIT_STORAGE_EXPORT bool DeserializeSyncableFileSystemURL(
     const std::string& serialized_url, fileapi::FileSystemURL* url);
-
-// Returns a new FileSystemOperation that can be used to apply changes
-// for sync.  The operation returned by this method:
-// * does NOT notify the file change tracker, but
-// * notifies the regular sandboxed quota observer
-// therefore quota will be updated appropriately without bothering the
-// change tracker.
-WEBKIT_STORAGE_EXPORT fileapi::LocalFileSystemOperation*
-    CreateFileSystemOperationForSync(
-        fileapi::FileSystemContext* file_system_context);
 
 // Enables or disables directory operations in Sync FileSystem API.
 // TODO(nhiroki): This method should be used only for testing and should go
