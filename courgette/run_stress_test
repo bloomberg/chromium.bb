@@ -1,0 +1,149 @@
+#!/bin/bash
+
+# Copyright 2013 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+# Stress test and size measurement for courgette patches.
+
+error() {
+  echo "error: ${@}" >&2
+}
+
+outdir_prefix="stress_test_"
+
+if [ $# -lt 2 ]; then
+  cat <<EOF
+
+USAGE: $(basename ${0}) dir1 dir2 [outdir]
+
+Stress test courgette by generating and applying patches for two given
+directories, dir1 and dir2.  The test will use files with the same
+name and relative path in the two directories, which makes it easy to
+compare two extracted ChromeOS images.  It also compares the unzipped
+and bzipped patches against the likewise bsdiff patches.  If outdir is
+not specified, the name will be "${outdir_prefix}" concatenated with
+the current date and time.
+
+EOF
+  exit 1
+fi
+
+dir1="${1}"
+if [ ! -e "${dir1}" ]; then
+  error "\"${dir1}\" not found"
+  exit 1
+fi
+
+dir2="${2}"
+if [ ! -e "${dir2}" ]; then
+  error "\"${dir2}\" not found"
+  exit 1
+fi
+
+out_dir="${3:-${outdir_prefix}$(date +%Y%m%d_%H%M%S)}"
+if [ -e "${out_dir}" ]; then
+  error "\"${out_dir}\" already exists"
+  exit 1
+fi
+
+mkdir -p "${out_dir}" || exit 1
+
+patches_dir="${out_dir}/patches"
+applied_dir="${out_dir}/applied"
+bsdiff="${out_dir}/bsdiff"
+log="${out_dir}/log"
+results="${out_dir}/results"
+
+echo "${0} ${@}" > "${log}"
+date >> "${log}"
+
+run_test() {
+  if [[ ! -z "${1}" && ! -z "${2}" ]]; then
+    local file1="${1}"
+    local file2="${2}"
+    local patch="${patches_dir}/${file1}.patch"
+    local apply="${applied_dir}/${file2}.applied"
+    mkdir -p "$(dirname "${patch}")"
+    mkdir -p "$(dirname "${apply}")"
+    courgette -gen "${file1}" "${file2}" "${patch}"
+    courgette -apply "${file1}" "${patch}" "${apply}"
+    cmp -s "${file2}" "${apply}"
+    if [ "${?}" -ne 0 ]; then
+      echo "FAIL ${file1}"
+    else
+      echo "PASS ${file1}"
+      local bsdiff_patch="${patches_dir}/${file1}.bsdiff_patch"
+      local bsdiff_apply="${applied_dir}/${file2}.bsdiff_applied"
+      bsdiff "${file1}" "${file2}" "${bsdiff_patch}"
+      bspatch "${file1}" "${bsdiff_apply}" "${bsdiff_patch}"
+      cmp -s "${file2}" "${bsdiff_apply}"
+      if [ "${?}" -ne 0 ]; then
+        echo "FAIL_BSDIFF ${file1}"
+      else
+        echo "PASS_BSDIFF ${file1}"
+        local patch_size="$(du -b "${patch}" | cut -f1)"
+        local bsdiff_patch_size="$(du -b "${bsdiff_patch}" | cut -f1)"
+        echo "SIZE courgette=${patch_size} bsdiff=${bsdiff_patch_size} ${file1}"
+        if [ "${patch_size}" -eq "${bsdiff_patch_size}" ]; then
+          echo "TIE ${file1}"
+        elif [ "${patch_size}" -lt "${bsdiff_patch_size}" ]; then
+          echo "COURGETTE ${file1}"
+        elif [ "${patch_size}" -gt "${bsdiff_patch_size}" ]; then
+          echo "BSDIFF ${file1}"
+        fi
+        bzip2 -k -9 "${patch}"
+        bzip2 -k -9 "${bsdiff_patch}"
+        local patch_size_bz2="$(du -b "${patch}.bz2" | cut -f1)"
+        local bsdiff_patch_size_bz2="$(du -b "${bsdiff_patch}.bz2" | cut -f1)"
+        echo "SIZE_BZ2 courgette=${patch_size_bz2}" \
+          "bsdiff=${bsdiff_patch_size_bz2} ${file1}"
+        if [ "${patch_size_bz2}" -eq "${bsdiff_patch_size_bz2}" ]; then
+          echo "TIE_BZ2 ${file1}"
+        elif [ "${patch_size_bz2}" -lt "${bsdiff_patch_size_bz2}" ]; then
+          echo "COURGETTE_BZ2 ${file1}"
+        elif [ "${patch_size_bz2}" -gt "${bsdiff_patch_size_bz2}" ]; then
+          echo "BSDIFF_BZ2 ${file1}"
+        fi
+      fi
+    fi
+  fi
+}
+
+# Use diff to find the files that appear in both directories.
+time diff -qr "${dir1}" "${dir2}" 2>/dev/null \
+  | grep "^Files" \
+  | awk '{print $2,$4}' \
+  | while read file; do
+  # Use awk to separate the two filenames.  May break if filenames
+  # contain spaces.
+  file1="$(echo "${file}" | awk '{print $1}')"
+  file2="$(echo "${file}" | awk '{print $2}')"
+  run_test "${file1}" "${file2}"
+done 2>&1 | tee -a "${log}"
+
+date >> "${log}"
+
+count_result() {
+  if [ ! -z "${1}" ]; then
+    echo $(cat "${log}" | grep "^${1} " | wc -l)    
+  else
+    echo 0
+  fi
+}
+
+cat <<EOF | tee -a "${log}"
+$(count_result "PASS") successful courgette patches
+$(count_result "FAIL") failed courgette patches (search log for "^FAIL ")
+$(count_result "PASS_BSDIFF") succesful bsdiff patches
+$(count_result "FAIL_BSDIFF") failed bsdiff patches
+$(count_result "COURGETTE") patch(es) where courgette is smaller
+$(count_result "BSDIFF") patch(es) where bsdiff is smaller
+$(count_result "TIE") patch(es) where both are the same size
+$(count_result "COURGETTE_BZ2") patch(es) where courgette is smaller after \
+compression
+$(count_result "BSDIFF_BZ2") patch(es) where bsdiff is smaller after \
+compression
+$(count_result "TIE_BZ2") patch(es) where both are the same size after \
+compression
+EOF
