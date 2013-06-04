@@ -68,6 +68,7 @@ const AtomicString& SpeechRecognitionEvent::interfaceName() const
 SpeechRecognitionEvent::SpeechRecognitionEvent()
     : m_resultIndex(0)
 {
+    ScriptWrappable::init(this);
 }
 
 SpeechRecognitionEvent::SpeechRecognitionEvent(const AtomicString& eventName, const SpeechRecognitionEventInit& initializer)
