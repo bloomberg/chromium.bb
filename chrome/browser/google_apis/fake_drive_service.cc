@@ -346,9 +346,13 @@ void FakeDriveService::ContinueGetResourceList(
       if (parameters[i].first == "changestamp") {
         base::StringToInt64(parameters[i].second, &start_changestamp);
       } else if (parameters[i].first == "q") {
-        search_query = parameters[i].second;
+        search_query =
+            net::UnescapeURLComponent(parameters[i].second,
+                                      net::UnescapeRule::URL_SPECIAL_CHARS);
       } else if (parameters[i].first == "parent") {
-        directory_resource_id = parameters[i].second;
+        directory_resource_id =
+            net::UnescapeURLComponent(parameters[i].second,
+                                      net::UnescapeRule::URL_SPECIAL_CHARS);
       } else if (parameters[i].first == "start-offset") {
         base::StringToInt(parameters[i].second, &start_offset);
       } else if (parameters[i].first == "max-results") {
