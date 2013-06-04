@@ -36,7 +36,7 @@ class FileCacheMetadataTest : public testing::Test {
 
   // Sets up the FileCacheMetadata object.
   void SetUpCacheMetadata() {
-    metadata_ = FileCacheMetadata::CreateCacheMetadata(NULL);
+    metadata_.reset(new FileCacheMetadata(NULL));
     ASSERT_TRUE(metadata_->Initialize(cache_paths_));
   }
 
@@ -63,23 +63,6 @@ class FileCacheMetadataTest : public testing::Test {
   }
 
  protected:
-  // Helper function to insert an item with key |resource_id| into |cache_map|.
-  // |md5| and |cache_state| are used to create the value FileCacheEntry.
-  void InsertIntoMap(FileCacheMetadata::CacheMap* cache_map,
-                     const std::string& resource_id,
-                     const FileCacheEntry& cache_entry) {
-    cache_map->insert(std::make_pair(
-        resource_id, cache_entry));
-  }
-
-  // Adds all entries in |cache_map| to the metadata storage.
-  void AddAllMapEntries(const FileCacheMetadata::CacheMap& cache_map) {
-    for (FileCacheMetadata::CacheMap::const_iterator iter = cache_map.begin();
-         iter != cache_map.end(); ++iter) {
-      metadata_->AddOrUpdateCacheEntry(iter->first, iter->second);
-    }
-  }
-
   base::ScopedTempDir temp_dir_;
   scoped_ptr<FileCacheMetadata> metadata_;
   std::vector<base::FilePath> cache_paths_;
@@ -253,35 +236,33 @@ TEST_F(FileCacheMetadataTest, CorruptDB) {
 TEST_F(FileCacheMetadataTest, RemoveTemporaryFiles) {
   SetUpCacheMetadata();
 
-  FileCacheMetadata::CacheMap cache_map;
   {
     FileCacheEntry cache_entry;
     cache_entry.set_md5("<md5>");
     cache_entry.set_is_present(true);
-    InsertIntoMap(&cache_map, "<resource_id_1>", cache_entry);
+    metadata_->AddOrUpdateCacheEntry("<resource_id_1>", cache_entry);
   }
   {
     FileCacheEntry cache_entry;
     cache_entry.set_md5("<md5>");
     cache_entry.set_is_present(true);
     cache_entry.set_is_persistent(true);
-    InsertIntoMap(&cache_map, "<resource_id_2>", cache_entry);
+    metadata_->AddOrUpdateCacheEntry("<resource_id_2>", cache_entry);
   }
   {
     FileCacheEntry cache_entry;
     cache_entry.set_md5("<md5>");
     cache_entry.set_is_present(true);
     cache_entry.set_is_persistent(true);
-    InsertIntoMap(&cache_map, "<resource_id_3>", cache_entry);
+    metadata_->AddOrUpdateCacheEntry("<resource_id_3>", cache_entry);
   }
   {
     FileCacheEntry cache_entry;
     cache_entry.set_md5("<md5>");
     cache_entry.set_is_present(true);
-    InsertIntoMap(&cache_map, "<resource_id_4>", cache_entry);
+    metadata_->AddOrUpdateCacheEntry("<resource_id_4>", cache_entry);
   }
 
-  AddAllMapEntries(cache_map);
   metadata_->RemoveTemporaryFiles();
   // resource 1 and 4 should be gone, as these are temporary.
   FileCacheEntry cache_entry;
@@ -299,8 +280,7 @@ TEST(FileCacheMetadataExtraTest, CannotOpenDB) {
       FileCache::GetCachePaths(
           base::FilePath::FromUTF8Unsafe("/somewhere/nonexistent"));
 
-  scoped_ptr<FileCacheMetadata> metadata =
-      FileCacheMetadata::CreateCacheMetadata(NULL);
+  scoped_ptr<FileCacheMetadata> metadata(new FileCacheMetadata(NULL));
   EXPECT_FALSE(metadata->Initialize(cache_paths));
 }
 

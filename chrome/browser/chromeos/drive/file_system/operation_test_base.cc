@@ -73,8 +73,11 @@ void OperationTestBase::SetUp() {
   cache_.reset(new internal::FileCache(temp_dir_.path(),
                                        blocking_task_runner_,
                                        fake_free_disk_space_getter_.get()));
-  cache_->RequestInitializeForTesting();
+  bool success = false;
+  cache_->RequestInitialize(
+      google_apis::test_util::CreateCopyResultCallback(&success));
   google_apis::test_util::RunBlockingPoolTask();
+  ASSERT_TRUE(success);
 
   // Makes sure the FakeDriveService's content is loaded to the metadata_.
   internal::ChangeListLoader change_list_loader(

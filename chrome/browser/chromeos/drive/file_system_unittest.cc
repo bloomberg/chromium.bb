@@ -100,8 +100,11 @@ class FileSystemTest : public testing::Test {
 
     mock_directory_observer_.reset(new StrictMock<MockDirectoryChangeObserver>);
 
-    cache_->RequestInitializeForTesting();
+    bool success = false;
+    cache_->RequestInitialize(
+        google_apis::test_util::CreateCopyResultCallback(&success));
     google_apis::test_util::RunBlockingPoolTask();
+    ASSERT_TRUE(success);
 
     SetUpResourceMetadataAndFileSystem();
   }

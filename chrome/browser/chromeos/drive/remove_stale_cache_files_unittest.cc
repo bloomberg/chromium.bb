@@ -44,8 +44,11 @@ class RemoveStaleCacheFilesTest : public testing::Test {
         cache_->GetCacheDirectoryPath(FileCache::CACHE_TYPE_META),
         message_loop_.message_loop_proxy()));
 
-    cache_->RequestInitializeForTesting();
+    bool success = false;
+    cache_->RequestInitialize(
+        google_apis::test_util::CreateCopyResultCallback(&success));
     message_loop_.RunUntilIdle();
+    ASSERT_TRUE(success);
 
     FileError error = FILE_ERROR_FAILED;
     resource_metadata_->Initialize(

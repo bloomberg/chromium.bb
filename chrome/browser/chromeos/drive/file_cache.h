@@ -276,9 +276,6 @@ class FileCache {
   // |callback| must not be null.
   void RequestInitialize(const InitializeCacheCallback& callback);
 
-  // Utility method to call InitializeForTesting on UI thread.
-  void RequestInitializeForTesting();
-
   // Destroys this cache. This function posts a task to the blocking task
   // runner to safely delete the object.
   // Must be called on the UI thread.
@@ -327,10 +324,6 @@ class FileCache {
 
   // Initializes the cache. Returns true on success.
   bool InitializeOnBlockingPool();
-
-  // Initializes the cache with in-memory cache for testing.
-  // The in-memory cache is used since it's faster than the db.
-  void InitializeOnBlockingPoolForTesting();
 
   // Destroys the cache on the blocking pool.
   void DestroyOnBlockingPool();

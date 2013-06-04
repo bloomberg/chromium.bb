@@ -680,15 +680,6 @@ void FileCache::RequestInitialize(const InitializeCacheCallback& callback) {
       callback);
 }
 
-void FileCache::RequestInitializeForTesting() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  blocking_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&FileCache::InitializeOnBlockingPoolForTesting,
-                 base::Unretained(this)));
-}
-
 void FileCache::Destroy() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -709,18 +700,8 @@ bool FileCache::InitializeOnBlockingPool() {
   if (!InitCachePaths(cache_paths_))
     return false;
 
-  metadata_ = FileCacheMetadata::CreateCacheMetadata(
-      blocking_task_runner_);
+  metadata_.reset(new FileCacheMetadata(blocking_task_runner_));
   return metadata_->Initialize(cache_paths_);
-}
-
-void FileCache::InitializeOnBlockingPoolForTesting() {
-  AssertOnSequencedWorkerPool();
-
-  InitCachePaths(cache_paths_);
-  metadata_ = FileCacheMetadata::CreateCacheMetadataForTesting(
-      blocking_task_runner_);
-  metadata_->Initialize(cache_paths_);
 }
 
 void FileCache::DestroyOnBlockingPool() {

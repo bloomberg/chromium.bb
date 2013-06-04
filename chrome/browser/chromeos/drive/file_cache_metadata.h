@@ -5,7 +5,6 @@
 #ifndef CHROME_BROWSER_CHROMEOS_DRIVE_FILE_CACHE_METADATA_H_
 #define CHROME_BROWSER_CHROMEOS_DRIVE_FILE_CACHE_METADATA_H_
 
-#include <map>
 #include <string>
 #include <vector>
 
@@ -15,10 +14,12 @@
 #include "base/memory/scoped_ptr.h"
 
 namespace base {
-
 class SequencedTaskRunner;
-
 }  // namespace base
+
+namespace leveldb {
+class DB;
+}  // namespace leveldb
 
 namespace drive {
 
@@ -31,62 +32,50 @@ typedef base::Callback<void(const std::string& resource_id,
 
 namespace internal {
 
-// FileCacheMetadata is interface to maintain metadata of FileCache's cached
-// files. This class only manages metadata. File operations are done by
-// FileCache.
+// FileCacheMetadata maintains metadata of FileCache's cached files.
+// This class only manages metadata. File operations are done by FileCache.
 // All member access including ctor and dtor must be made on the blocking pool.
 class FileCacheMetadata {
  public:
-  // A map table of cache file's resource id to its FileCacheEntry* entry.
-  typedef std::map<std::string, FileCacheEntry> CacheMap;
-
   // Database path.
   static const base::FilePath::CharType* kCacheMetadataDBPath;
 
-  virtual ~FileCacheMetadata();
+  // Tests are allowed to pass NULL as |blocking_task_runner|.
+  explicit FileCacheMetadata(base::SequencedTaskRunner* blocking_task_runner);
 
-  // Creates FileCacheMetadata instance.
-  static scoped_ptr<FileCacheMetadata> CreateCacheMetadata(
-      base::SequencedTaskRunner* blocking_task_runner);
-
-  // Creates FileCacheMetadata instance. This uses FakeCacheMetadata,
-  // which is an in-memory implementation and faster than FileCacheMetadataDB.
-  static scoped_ptr<FileCacheMetadata> CreateCacheMetadataForTesting(
-      base::SequencedTaskRunner* blocking_task_runner);
+  ~FileCacheMetadata();
 
   // Initialize the cache metadata store. Returns true on success.
-  virtual bool Initialize(const std::vector<base::FilePath>& cache_paths) = 0;
+  bool Initialize(const std::vector<base::FilePath>& cache_paths);
   // Adds a new cache entry corresponding to |resource_id| if it doesn't
   // exist, otherwise update the existing entry.
-  virtual void AddOrUpdateCacheEntry(const std::string& resource_id,
-                                     const FileCacheEntry& cache_entry) = 0;
+  void AddOrUpdateCacheEntry(const std::string& resource_id,
+                             const FileCacheEntry& cache_entry);
 
   // Removes entry corresponding to |resource_id| from cache map.
-  virtual void RemoveCacheEntry(const std::string& resource_id) = 0;
+  void RemoveCacheEntry(const std::string& resource_id);
 
   // Gets the cache entry for file corresponding to |resource_id| and |md5|
   // and returns true if entry exists in cache map.  Otherwise, returns false.
   // |md5| can be empty if only matching |resource_id| is desired.
-  virtual bool GetCacheEntry(const std::string& resource_id,
-                             const std::string& md5,
-                             FileCacheEntry* entry) = 0;
+  bool GetCacheEntry(const std::string& resource_id,
+                     const std::string& md5,
+                     FileCacheEntry* entry);
 
   // Removes temporary files (files in CACHE_TYPE_TMP) from the cache map.
-  virtual void RemoveTemporaryFiles() = 0;
+  void RemoveTemporaryFiles();
 
   // Iterates over all the cache entries synchronously. |callback| is called
   // on each cache entry.
-  virtual void Iterate(const CacheIterateCallback& callback) = 0;
+  void Iterate(const CacheIterateCallback& callback);
 
- protected:
-  explicit FileCacheMetadata(base::SequencedTaskRunner* blocking_task_runner);
-
+ private:
   // Checks whether the current thread is on the right sequenced worker pool
   // with the right sequence ID. If not, DCHECK will fail.
   void AssertOnSequencedWorkerPool();
 
- private:
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
+  scoped_ptr<leveldb::DB> level_db_;
 
   DISALLOW_COPY_AND_ASSIGN(FileCacheMetadata);
 };
