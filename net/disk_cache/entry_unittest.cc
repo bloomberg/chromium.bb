@@ -2853,6 +2853,7 @@ TEST_F(DiskCacheEntryTest, SimpleCacheOptimisticWriteReleases) {
   const int kWriteSize = 512;
   scoped_refptr<net::IOBuffer> buffer1(new net::IOBuffer(kWriteSize));
   EXPECT_TRUE(buffer1->HasOneRef());
+  CacheTestFillBuffer(buffer1->data(), kWriteSize, false);
 
   // An optimistic write happens only when there is an empty queue of pending
   // operations. To ensure the queue is empty, we issue a write and wait until

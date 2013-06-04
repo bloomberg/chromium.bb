@@ -7353,21 +7353,6 @@ fun:_ZN7content21RenderViewHostManager8NavigateERKNS_19NavigationEntryImplE
    fun:_ZN7content11ContentMainEiPPKcPNS_19ContentMainDelegateE
 }
 {
-   bug_245952a
-   Memcheck:Uninitialized
-   fun:crc32_little
-   fun:MOZ_Z_crc32
-   fun:_ZN10disk_cache15SimpleEntryImpl17WriteDataInternalEiiPN3net8IOBufferEiRKN4base8CallbackIFviEEEb
-}
-{
-   bug_245952b
-   Memcheck:Param
-   pwrite64(buf)
-   obj:/lib/x86_64-linux-gnu/libpthread-2.15.so
-   fun:_ZN4base17WritePlatformFileEilPKci
-   fun:_ZN10disk_cache22SimpleSynchronousEntry9WriteDataEiiPN3net8IOBufferEibPi
-}
-{
    bug_245092a
    Memcheck:Leak
    fun:_Znw*
