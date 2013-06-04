@@ -6,7 +6,6 @@
 
 #include <set>
 
-#include "base/command_line.h"
 #include "base/json/json_reader.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
@@ -14,7 +13,6 @@
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/translate/translate_url_util.h"
-#include "chrome/common/chrome_switches.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/load_flags.h"
 #include "net/base/url_util.h"
@@ -157,13 +155,14 @@ void SetSupportedLanguages(const std::string& language_list,
   }
 }
 
-net::URLFetcher* CreateAndStartFetch(const GURL& url,
+net::URLFetcher* CreateAndStartFetch(int id,
+                                     const GURL& url,
                                      net::URLFetcherDelegate* delegate) {
   DCHECK(delegate);
   VLOG(9) << "Fetch supporting language list from: " << url.spec().c_str();
 
   scoped_ptr<net::URLFetcher> fetcher;
-  fetcher.reset(net::URLFetcher::Create(1,
+  fetcher.reset(net::URLFetcher::Create(id,
                                         url,
                                         net::URLFetcher::GET,
                                         delegate));
@@ -262,12 +261,7 @@ void TranslateLanguageList::RequestLanguageList() {
       TranslateURLUtil::AddApiKeyToUrl(language_list_fetch_url);
 
   language_list_fetcher_.reset(
-      CreateAndStartFetch(language_list_fetch_url, this));
-
-  // TODO(toyoshim): Make it enabled by default. http://crbug.com/242178
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  if (!command_line.HasSwitch(switches::kEnableTranslateAlphaLanguages))
-    return;
+      CreateAndStartFetch(1, language_list_fetch_url, this));
 
   // Fetch the alpha language list.
   language_list_fetch_url = net::AppendQueryParameter(
@@ -276,7 +270,7 @@ void TranslateLanguageList::RequestLanguageList() {
       kAlphaLanguageQueryValue);
 
   alpha_language_list_fetcher_.reset(
-      CreateAndStartFetch(language_list_fetch_url, this));
+      CreateAndStartFetch(2, language_list_fetch_url, this));
 }
 
 void TranslateLanguageList::UpdateSupportedLanguages() {

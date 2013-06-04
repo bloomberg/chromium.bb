@@ -687,11 +687,6 @@ const char kEnableTabGroupsContextMenu[]    = "enable-tab-groups-context-menu";
 // instant-extended-api, where thumbnails are generally smaller.
 const char kEnableThumbnailRetargeting[]   = "enable-thumbnail-retargeting";
 
-// Enables Chrome Translate for "alpha languages", that may have less-reliable
-// translation quality than supported languages.
-const char kEnableTranslateAlphaLanguages[] =
-    "enable-translate-alpha-languages";
-
 // Enables unrestricted SSL 3.0 fallback.
 // With this switch, SSL 3.0 fallback will be enabled for all sites.
 // Without this switch, SSL 3.0 fallback will be disabled for a site

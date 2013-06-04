@@ -275,8 +275,6 @@ class TranslateManagerBrowserTest : public ChromeRenderViewHostTestHarness,
 
   void SimulateSupportedLanguagesURLFetch(
       bool success, const std::vector<std::string>& languages) {
-    net::TestURLFetcher* fetcher = url_fetcher_factory_.GetFetcherByID(1);
-    ASSERT_TRUE(fetcher);
     net::URLRequestStatus status;
     status.set_status(success ? net::URLRequestStatus::SUCCESS :
                                 net::URLRequestStatus::FAILED);
@@ -296,11 +294,15 @@ class TranslateManagerBrowserTest : public ChromeRenderViewHostTestHarness,
       }
       data += "}})";
     }
-    fetcher->set_url(fetcher->GetOriginalURL());
-    fetcher->set_status(status);
-    fetcher->set_response_code(success ? 200 : 500);
-    fetcher->SetResponseString(data);
-    fetcher->delegate()->OnURLFetchComplete(fetcher);
+    for (int id = 1; id <= 2; ++id) {
+      net::TestURLFetcher* fetcher = url_fetcher_factory_.GetFetcherByID(id);
+      ASSERT_TRUE(fetcher);
+      fetcher->set_url(fetcher->GetOriginalURL());
+      fetcher->set_status(status);
+      fetcher->set_response_code(success ? 200 : 500);
+      fetcher->SetResponseString(data);
+      fetcher->delegate()->OnURLFetchComplete(fetcher);
+    }
   }
 
   void SetPrefObserverExpectation(const char* path) {

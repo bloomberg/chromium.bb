@@ -15032,16 +15032,6 @@ To configure restrictions for this limited user, please sign into your account a
       Reads from web resources when the source is unavailable will be satisfied from available stale cache entries.
     </message>
 
-    <message name="IDS_FLAGS_ENABLE_TRANSLATE_ALPHA_LANGUAGES_NAME"
-             desc="Name of about:flag option to turn on Translate alpha languages support">
-      Enable Translate support on "alpha languages"
-    </message>
-    <message name="IDS_FLAGS_ENABLE_TRANSLATE_ALPHA_LANGUAGES_DESCRIPTION"
-             desc="Description of about:flags option to turn on Translate support on alpha languages">
-      When enabled, will support Translate on pages written in "alpha languages", that may have less-reliable translation quality than supported languages.
-      See, also http://translate.google.com/about/ .
-    </message>
-
     <message name="IDS_FLAGS_ENABLE_VIRTUAL_KEYBOARD_NAME" desc="Name of about:flags option to turn on the virtual keyboard">
       Virtual Keyboard
     </message>

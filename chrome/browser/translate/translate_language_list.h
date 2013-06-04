@@ -28,18 +28,15 @@ class TranslateLanguageList : public net::URLFetcherDelegate {
   virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
 
   // Fills |languages| with the list of languages that the translate server can
-  // translate to and from. If alpha language support is enabled, it fills
-  // |languages| with the list of all supporting languages including alpha
-  // languages.
+  // translate to and from. |languages| will include alpha languages.
   void GetSupportedLanguages(std::vector<std::string>* languages);
 
   // Returns the language code that can be used with the Translate method for a
   // specified |chrome_locale|.
   std::string GetLanguageCode(const std::string& chrome_locale);
 
-  // Returns true if |language| is supported by the translation server. If alpha
-  // language support is enabled, also returns true if |language| is in alpha
-  // language list.
+  // Returns true if |language| is supported by the translation server. It also
+  // returns true against alpha languages.
   bool IsSupportedLanguage(const std::string& language);
 
   // Returns true if |language| is supported by the translation server as a
