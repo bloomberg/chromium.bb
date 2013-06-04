@@ -109,7 +109,16 @@ public:
         UNUSED_PARAM(m_isolate);
     }
 
+#ifdef V8_USE_OLD_STYLE_PERSISTENT_HANDLE_VISITORS
     virtual void VisitPersistentHandle(v8::Persistent<v8::Value> value, uint16_t classId) OVERRIDE
+    {
+        VisitPersistentHandle(&value, classId);
+    }
+
+    virtual void VisitPersistentHandle(v8::Persistent<v8::Value>* value, uint16_t classId)
+#else
+    virtual void VisitPersistentHandle(v8::Persistent<v8::Value>* value, uint16_t classId) OVERRIDE
+#endif
     {
         // A minor DOM GC can collect only Nodes.
         if (classId != v8DOMNodeClassId)
@@ -126,13 +135,13 @@ public:
         if (m_nodesInNewSpace.size() >= wrappersHandledByEachMinorGC)
             return;
 
-        ASSERT(value->IsObject());
+        ASSERT((*value)->IsObject());
 #ifdef V8_USE_UNSAFE_HANDLES
-        v8::Persistent<v8::Object> wrapper = v8::Persistent<v8::Object>::Cast(value);
+        v8::Persistent<v8::Object> wrapper = v8::Persistent<v8::Object>::Cast(*value);
 #else
-        v8::Persistent<v8::Object>& wrapper = v8::Persistent<v8::Object>::Cast(value);
+        v8::Persistent<v8::Object>& wrapper = v8::Persistent<v8::Object>::Cast(*value);
 #endif
-        ASSERT(V8DOMWrapper::maybeDOMWrapper(value));
+        ASSERT(V8DOMWrapper::maybeDOMWrapper(*value));
         ASSERT(V8Node::HasInstanceInAnyWorld(wrapper, m_isolate));
         Node* node = V8Node::toNative(wrapper);
         // A minor DOM GC can handle only node wrappers in the main world.
@@ -238,21 +247,30 @@ public:
     {
     }
 
+#ifdef V8_USE_OLD_STYLE_PERSISTENT_HANDLE_VISITORS
     virtual void VisitPersistentHandle(v8::Persistent<v8::Value> value, uint16_t classId) OVERRIDE
     {
-        ASSERT(value->IsObject());
-#ifdef V8_USE_UNSAFE_HANDLES
-        v8::Persistent<v8::Object> wrapper = v8::Persistent<v8::Object>::Cast(value);
+        VisitPersistentHandle(&value, classId);
+    }
+
+    virtual void VisitPersistentHandle(v8::Persistent<v8::Value>* value, uint16_t classId)
 #else
-        v8::Persistent<v8::Object>& wrapper = v8::Persistent<v8::Object>::Cast(value);
+    virtual void VisitPersistentHandle(v8::Persistent<v8::Value>* value, uint16_t classId) OVERRIDE
+#endif
+    {
+        ASSERT((*value)->IsObject());
+#ifdef V8_USE_UNSAFE_HANDLES
+        v8::Persistent<v8::Object> wrapper = v8::Persistent<v8::Object>::Cast(*value);
+#else
+        v8::Persistent<v8::Object>& wrapper = v8::Persistent<v8::Object>::Cast(*value);
 #endif
 
         if (classId != v8DOMNodeClassId && classId != v8DOMObjectClassId)
             return;
 
-        ASSERT(V8DOMWrapper::maybeDOMWrapper(value));
+        ASSERT(V8DOMWrapper::maybeDOMWrapper(*value));
 
-        if (value.IsIndependent(m_isolate))
+        if (value->IsIndependent(m_isolate))
             return;
 
         WrapperTypeInfo* type = toWrapperTypeInfo(wrapper);
