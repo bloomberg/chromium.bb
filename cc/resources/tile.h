@@ -82,8 +82,12 @@ class CC_EXPORT Tile : public base::RefCounted<Tile> {
     picture_pile_ = pile;
   }
 
-  bool IsAssignedGpuMemory() const {
-    return tile_version().memory_state_ != NOT_ALLOWED_TO_USE_MEMORY;
+  // For test only methods.
+  bool HasRasterTaskForTesting() const {
+    return !managed_state().raster_task.is_null();
+  }
+  void ResetRasterTaskForTesting() {
+    managed_state().raster_task.Reset();
   }
 
  private:

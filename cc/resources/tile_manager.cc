@@ -307,7 +307,6 @@ void TileManager::CheckForCompletedTileUploads() {
        ++it) {
     Tile* tile = *it;
     if (!tile->managed_state().raster_task.is_null() &&
-        tile->tile_version().memory_state_ == USING_UNRELEASABLE_MEMORY &&
         !tile->tile_version().forced_upload_) {
       if (!raster_worker_pool_->ForceUploadToComplete(
               tile->managed_state().raster_task))
@@ -334,7 +333,7 @@ void TileManager::GetMemoryStats(
     size_t* memory_used_bytes) const {
   *memory_required_bytes = 0;
   *memory_nice_to_have_bytes = 0;
-  *memory_used_bytes = 0;
+  *memory_used_bytes = resource_pool_->acquired_memory_usage_bytes();
   for (TileVector::const_iterator it = tiles_.begin();
        it != tiles_.end();
        ++it) {
@@ -348,8 +347,6 @@ void TileManager::GetMemoryStats(
       *memory_required_bytes += tile_bytes;
     if (mts.gpu_memmgr_stats_bin != NEVER_BIN)
       *memory_nice_to_have_bytes += tile_bytes;
-    if (tile->tile_version().memory_state_ != NOT_ALLOWED_TO_USE_MEMORY)
-      *memory_used_bytes += tile_bytes;
   }
 }
 
@@ -398,31 +395,30 @@ void TileManager::AddRequiredTileForActivation(Tile* tile) {
 
 void TileManager::AssignGpuMemoryToTiles() {
   TRACE_EVENT0("cc", "TileManager::AssignGpuMemoryToTiles");
-  size_t unreleasable_bytes = 0;
 
   // Now give memory out to the tiles until we're out, and build
   // the needs-to-be-rasterized queue.
   tiles_that_need_to_be_rasterized_.clear();
   tiles_that_need_to_be_initialized_for_activation_.clear();
 
-  // By clearing the tiles_that_need_to_be_rasterized_ vector list
-  // above we move all tiles currently waiting for raster to idle state.
-  // Some memory cannot be released. We figure out how much in this
-  // loop.
+  size_t bytes_releasable = 0;
   for (TileVector::const_iterator it = tiles_.begin();
        it != tiles_.end();
        ++it) {
     const Tile* tile = *it;
-    if (tile->tile_version().memory_state_ == USING_UNRELEASABLE_MEMORY)
-      unreleasable_bytes += tile->bytes_consumed_if_allocated();
+    if (tile->tile_version().resource_)
+      bytes_releasable += tile->bytes_consumed_if_allocated();
   }
 
-  // Global state's memory limit can decrease, causing
-  // it to be less than unreleasable_bytes
+  // Cast to prevent overflow.
+  int64 bytes_available =
+      static_cast<int64>(bytes_releasable) +
+      static_cast<int64>(global_state_.memory_limit_in_bytes) -
+      static_cast<int64>(resource_pool_->acquired_memory_usage_bytes());
+
   size_t bytes_allocatable =
-      global_state_.memory_limit_in_bytes > unreleasable_bytes ?
-      global_state_.memory_limit_in_bytes - unreleasable_bytes :
-      0;
+      std::max(static_cast<int64>(0), bytes_available);
+
   size_t bytes_that_exceeded_memory_budget_in_now_bin = 0;
   size_t bytes_left = bytes_allocatable;
   size_t bytes_oom_in_now_bin_on_pending_tree = 0;
@@ -439,21 +435,23 @@ void TileManager::AssignGpuMemoryToTiles() {
     if (!tile_version.requires_resource())
       continue;
 
-    size_t tile_bytes = tile->bytes_consumed_if_allocated();
-    // Memory is already reserved for tile with unreleasable memory
-    // so adding it to |tiles_that_need_to_be_rasterized_| doesn't
-    // affect bytes_allocatable.
-    if (tile_version.memory_state_ == USING_UNRELEASABLE_MEMORY)
-      tile_bytes = 0;
-
     // If the tile is not needed, free it up.
     if (mts.is_in_never_bin_on_both_trees()) {
-      if (tile_version.memory_state_ != USING_UNRELEASABLE_MEMORY) {
-        FreeResourcesForTile(tile);
-        tile_version.memory_state_ = NOT_ALLOWED_TO_USE_MEMORY;
-      }
+      FreeResourcesForTile(tile);
       continue;
     }
+
+    size_t tile_bytes = 0;
+
+    // It costs to maintain a resource.
+    if (tile_version.resource_)
+      tile_bytes += tile->bytes_consumed_if_allocated();
+
+    // It will cost to allocate a resource.
+    // Note that this is separate from the above condition,
+    // so that it's clear why we're adding memory.
+    if (!tile_version.resource_ && mts.raster_task.is_null())
+      tile_bytes += tile->bytes_consumed_if_allocated();
 
     // Tile is OOM.
     if (tile_bytes > bytes_left) {
@@ -494,8 +492,7 @@ void TileManager::AssignGpuMemoryToTiles() {
       Tile* tile = *it;
       ManagedTileState& mts = tile->managed_state();
       ManagedTileState::TileVersion& tile_version = tile->tile_version();
-      if ((tile_version.memory_state_ == CAN_USE_MEMORY ||
-           tile_version.memory_state_ == USING_RELEASABLE_MEMORY) &&
+      if (tile_version.resource_ &&
           mts.tree_bin[PENDING_TREE] == NEVER_BIN &&
           mts.tree_bin[ACTIVE_TREE] != NOW_BIN) {
         DCHECK(!tile->required_for_activation());
@@ -539,18 +536,17 @@ void TileManager::AssignGpuMemoryToTiles() {
       global_state_.memory_limit_in_bytes;
   memory_stats_from_last_assign_.bytes_allocated =
       bytes_allocatable - bytes_left;
-  memory_stats_from_last_assign_.bytes_unreleasable = unreleasable_bytes;
+  memory_stats_from_last_assign_.bytes_unreleasable =
+      bytes_allocatable - bytes_releasable;
   memory_stats_from_last_assign_.bytes_over =
       bytes_that_exceeded_memory_budget_in_now_bin;
 }
 
 void TileManager::FreeResourcesForTile(Tile* tile) {
-  DCHECK_NE(USING_UNRELEASABLE_MEMORY, tile->tile_version().memory_state_);
   if (tile->tile_version().resource_) {
     resource_pool_->ReleaseResource(
         tile->tile_version().resource_.Pass());
   }
-  tile->tile_version().memory_state_ = NOT_ALLOWED_TO_USE_MEMORY;
 }
 
 void TileManager::ScheduleTasks() {
@@ -627,8 +623,6 @@ RasterWorkerPool::RasterTask TileManager::CreateRasterTask(Tile* tile) {
           tile->tile_version().resource_format_);
   const Resource* const_resource = resource.get();
 
-  DCHECK_EQ(CAN_USE_MEMORY, tile->tile_version().memory_state_);
-  tile->tile_version().memory_state_ = USING_UNRELEASABLE_MEMORY;
   tile->tile_version().resource_id_ = resource->id();
 
   PicturePileImpl::Analysis* analysis = new PicturePileImpl::Analysis;
@@ -699,11 +693,7 @@ void TileManager::OnRasterTaskCompleted(
   DCHECK(!mts.raster_task.is_null());
   mts.raster_task.Reset();
 
-  // Tile resources can't be freed until task has completed.
-  DCHECK_EQ(USING_UNRELEASABLE_MEMORY, tile->tile_version().memory_state_);
-
   if (was_canceled) {
-    tile->tile_version().memory_state_ = CAN_USE_MEMORY;
     resource_pool_->ReleaseResource(resource.Pass());
     return;
   }
@@ -715,7 +705,6 @@ void TileManager::OnRasterTaskCompleted(
     tile->tile_version().set_solid_color(analysis->solid_color);
     resource_pool_->ReleaseResource(resource.Pass());
   } else {
-    tile->tile_version().memory_state_ = USING_RELEASABLE_MEMORY;
     tile->tile_version().resource_ = resource.Pass();
   }
 

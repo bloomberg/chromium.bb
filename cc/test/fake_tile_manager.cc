@@ -26,4 +26,13 @@ FakeTileManager::FakeTileManager(TileManagerClient* client)
                   1,
                   false,
                   NULL) {}
+
+FakeTileManager::FakeTileManager(TileManagerClient* client,
+                                 ResourceProvider* resource_provider)
+    : TileManager(client,
+                  resource_provider,
+                  make_scoped_ptr<RasterWorkerPool>(new FakeRasterWorkerPool),
+                  1,
+                  false,
+                  NULL) {}
 }

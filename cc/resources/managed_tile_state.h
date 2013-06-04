@@ -14,13 +14,6 @@
 
 namespace cc {
 
-enum TileVersionMemoryState {
-  NOT_ALLOWED_TO_USE_MEMORY,
-  CAN_USE_MEMORY,
-  USING_UNRELEASABLE_MEMORY,
-  USING_RELEASABLE_MEMORY
-};
-
 // This is state that is specific to a tile that is
 // managed by the TileManager.
 class CC_EXPORT ManagedTileState {
@@ -45,8 +38,14 @@ class CC_EXPORT ManagedTileState {
 
       ResourceProvider::ResourceId get_resource_id() const {
         DCHECK(mode_ == RESOURCE_MODE);
+
+        // We have to have a resource ID here.
         DCHECK(resource_id_);
-        DCHECK(memory_state_ == USING_RELEASABLE_MEMORY || forced_upload_);
+        // If we have a resource, it implies IDs are equal.
+        DCHECK(!resource_ || (resource_id_ == resource_->id()));
+        // If we don't have a resource, it implies that we're in forced upload.
+        DCHECK(resource_ || (resource_id_ && forced_upload_));
+
         return resource_id_;
       }
 
@@ -76,10 +75,6 @@ class CC_EXPORT ManagedTileState {
         return resource_;
       }
 
-      void SetMemoryStateForTesting(TileVersionMemoryState state) {
-        memory_state_ = state;
-      }
-
     private:
       friend class TileManager;
       friend class Tile;
@@ -87,20 +82,16 @@ class CC_EXPORT ManagedTileState {
 
       void set_use_resource() {
         mode_ = RESOURCE_MODE;
-        if (memory_state_ == NOT_ALLOWED_TO_USE_MEMORY)
-          memory_state_ = CAN_USE_MEMORY;
       }
 
       void set_solid_color(const SkColor& color) {
         mode_ = SOLID_COLOR_MODE;
         solid_color_ = color;
-        memory_state_ = NOT_ALLOWED_TO_USE_MEMORY;
         resource_id_ = 0;
       }
 
       void set_rasterize_on_demand() {
         mode_ = PICTURE_PILE_MODE;
-        memory_state_ = NOT_ALLOWED_TO_USE_MEMORY;
         resource_id_ = 0;
       }
 
@@ -113,7 +104,6 @@ class CC_EXPORT ManagedTileState {
       ResourceProvider::ResourceId resource_id_;
       scoped_ptr<ResourcePool::Resource> resource_;
       GLenum resource_format_;
-      TileVersionMemoryState memory_state_;
       bool forced_upload_;
   };
 

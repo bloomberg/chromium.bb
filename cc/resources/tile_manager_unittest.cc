@@ -4,6 +4,7 @@
 
 #include "cc/resources/tile.h"
 #include "cc/resources/tile_priority.h"
+#include "cc/test/fake_output_surface.h"
 #include "cc/test/fake_tile_manager.h"
 #include "cc/test/fake_tile_manager_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -55,7 +56,10 @@ class TileManagerTest : public testing::Test {
   void Initialize(int max_memory_tiles,
                   TileMemoryLimitPolicy memory_limit_policy,
                   TreePriority tree_priority) {
-    tile_manager_ = make_scoped_ptr(new FakeTileManager(&tile_manager_client_));
+    output_surface_ = FakeOutputSurface::Create3d();
+    resource_provider_ = ResourceProvider::Create(output_surface_.get(), 0);
+    tile_manager_ = make_scoped_ptr(
+        new FakeTileManager(&tile_manager_client_, resource_provider_.get()));
 
     GlobalStateThatImpactsTilePriority state;
     gfx::Size tile_size = settings_.default_tile_size;
@@ -105,8 +109,9 @@ class TileManagerTest : public testing::Test {
     for (TileVector::const_iterator it = tiles.begin();
          it != tiles.end();
          ++it) {
-      if ((*it)->IsAssignedGpuMemory())
+      if ((*it)->HasRasterTaskForTesting())
         ++has_memory_count;
+      (*it)->ResetRasterTaskForTesting();
     }
     return has_memory_count;
   }
@@ -116,6 +121,8 @@ class TileManagerTest : public testing::Test {
   LayerTreeSettings settings_;
   scoped_ptr<FakeTileManager> tile_manager_;
   scoped_refptr<FakePicturePileImpl> picture_pile_;
+  scoped_ptr<FakeOutputSurface> output_surface_;
+  scoped_ptr<ResourceProvider> resource_provider_;
 };
 
 TEST_F(TileManagerTest, EnoughMemoryAllowAnything) {
@@ -141,6 +148,7 @@ TEST_F(TileManagerTest, EnoughMemoryAllowAnything) {
   pending_now.clear();
   active_pending_soon.clear();
   never_bin.clear();
+
   TearDown();
 }
 

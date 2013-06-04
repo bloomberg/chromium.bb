@@ -81,8 +81,6 @@ class PictureLayerTilingSetTestWithResources : public testing::Test {
                 resource_provider.get(),
                 gfx::Size(1, 1),
                 resource_provider->best_texture_format())));
-        tiles[i]->tile_version().SetMemoryStateForTesting(
-            USING_RELEASABLE_MEMORY);
       }
     }
 

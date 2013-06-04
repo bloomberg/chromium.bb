@@ -12,12 +12,10 @@ namespace cc {
 class FakeTileManager : public TileManager {
  public:
   explicit FakeTileManager(TileManagerClient* client);
+  FakeTileManager(TileManagerClient* client,
+                  ResourceProvider* resource_provider);
 
   virtual ~FakeTileManager() { }
-
-  protected:
-  // Do nothing
-  virtual void ScheduleTasks() OVERRIDE { }
 };
 
 }  // namespace cc
