@@ -41,7 +41,8 @@ AutofillQueryXmlParser::AutofillQueryXmlParser(
     : field_infos_(field_infos),
       upload_required_(upload_required),
       experiment_id_(experiment_id),
-      page_meta_data_(page_meta_data) {
+      page_meta_data_(page_meta_data),
+      current_click_element_(NULL) {
   DCHECK(upload_required_);
   DCHECK(experiment_id_);
   DCHECK(page_meta_data_);
@@ -121,30 +122,49 @@ void AutofillQueryXmlParser::StartElement(buzz::XmlParseContext* context,
       ++attrs;
     }
   } else if (element.compare("page_advance_button") == 0) {
-    // |attrs| is a NULL-terminated list of (attribute, value) pairs.
-    // If both id and css_selector are set, the first one to appear will take
-    // precedence.
-    while (*attrs) {
-      buzz::QName attribute_qname = context->ResolveQName(*attrs, true);
-      ++attrs;
-      const std::string& attribute_name = attribute_qname.LocalPart();
-      buzz::QName value_qname = context->ResolveQName(*attrs, true);
-      ++attrs;
-      const std::string& attribute_value = value_qname.LocalPart();
-      if (attribute_name.compare("id") == 0 && !attribute_value.empty()) {
-        page_meta_data_->proceed_element_descriptor.retrieval_method =
-            autofill::WebElementDescriptor::ID;
-        page_meta_data_->proceed_element_descriptor.descriptor =
-            attribute_value;
-        break;
-      } else if (attribute_name.compare("css_selector") == 0 &&
-                 !attribute_value.empty()) {
-        page_meta_data_->proceed_element_descriptor.retrieval_method =
-            autofill::WebElementDescriptor::CSS_SELECTOR;
-        page_meta_data_->proceed_element_descriptor.descriptor =
-            attribute_value;
-        break;
-      }
+    page_meta_data_->proceed_element_descriptor = WebElementDescriptor();
+    ParseElementDescriptor(context,
+                           attrs,
+                           &page_meta_data_->proceed_element_descriptor);
+  } else if (element.compare("click_elements_before_formfill") == 0) {
+    page_meta_data_->click_elements_before_form_fill.push_back(
+        WebElementDescriptor());
+    current_click_element_ = &page_meta_data_->click_elements_before_form_fill.
+        back();
+  } else if (element.compare("click_elements_after_formfill") == 0) {
+    page_meta_data_->click_elements_after_form_fill.push_back(
+        WebElementDescriptor());
+    current_click_element_ = &page_meta_data_->click_elements_after_form_fill.
+        back();
+  } else if (element.compare("web_element") == 0) {
+    ParseElementDescriptor(context, attrs, current_click_element_);
+  }
+}
+
+void AutofillQueryXmlParser::ParseElementDescriptor(
+    buzz::XmlParseContext* context,
+    const char* const* attrs,
+    WebElementDescriptor* element_descriptor) {
+  // If both id and css_selector are set, the first one to appear will take
+  // precedence.
+  // |attrs| is a NULL-terminated list of (attribute, value) pairs.
+  while (*attrs) {
+    buzz::QName attribute_qname = context->ResolveQName(*attrs, true);
+    ++attrs;
+    const std::string& attribute_name = attribute_qname.LocalPart();
+    buzz::QName value_qname = context->ResolveQName(*attrs, true);
+    ++attrs;
+    const std::string& attribute_value = value_qname.LocalPart();
+    if (attribute_name.compare("id") == 0 && !attribute_value.empty()) {
+      element_descriptor->retrieval_method = autofill::WebElementDescriptor::ID;
+      element_descriptor->descriptor = attribute_value;
+      break;
+    } else if (attribute_name.compare("css_selector") == 0 &&
+               !attribute_value.empty()) {
+      element_descriptor->retrieval_method =
+          autofill::WebElementDescriptor::CSS_SELECTOR;
+      element_descriptor->descriptor = attribute_value;
+      break;
     }
   }
 }

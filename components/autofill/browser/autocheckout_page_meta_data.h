@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_AUTOFILL_BROWSER_AUTOCHECKOUT_PAGE_META_DATA_H_
 #define COMPONENTS_AUTOFILL_BROWSER_AUTOCHECKOUT_PAGE_META_DATA_H_
 
+#include <vector>
+
 #include "base/basictypes.h"
 #include "components/autofill/common/web_element_descriptor.h"
 
@@ -36,8 +38,23 @@ struct AutocheckoutPageMetaData {
   // belong to any autofill flow, it is set to -1.
   int total_pages;
 
+  // A list of elements to click before filling form fields. Elements have to be
+  // clicked in order.
+  std::vector<WebElementDescriptor> click_elements_before_form_fill;
+
+  // A list of elements to click after filling form fields, and before clicking
+  // page_advance_button. Elements have to be clicked in order.
+  std::vector<WebElementDescriptor> click_elements_after_form_fill;
+
   // The proceed element of the multipage Autofill flow. It can be empty
   // if current page is the last page of a flow or isn't a member of a flow.
+  //
+  // We do expect page navigation when click on |proceed_element_descriptor|,
+  // and report an error if it doesn't. Oppositely, we do not expect page
+  // navigation when click elements in |click_elements_before_form_fill| and
+  // |click_elements_after_form_fill|. Because of this behavior difference and
+  // |proceed_element_descriptor| is optional, we separate it from
+  // |click_elements_after_form_fill|.
   WebElementDescriptor proceed_element_descriptor;
 
  private:

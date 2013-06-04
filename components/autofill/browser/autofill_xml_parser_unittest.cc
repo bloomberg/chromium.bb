@@ -225,6 +225,58 @@ TEST_F(AutofillQueryXmlParserTest, ParseAutofillFlow) {
             page_meta_data_.proceed_element_descriptor.descriptor);
   EXPECT_EQ(autofill::WebElementDescriptor::CSS_SELECTOR,
             page_meta_data_.proceed_element_descriptor.retrieval_method);
+
+  // Clear |field_infos_| for the next test;
+  field_infos_.clear();
+
+  // Test parsing click_elements_before_formfill correctly.
+  xml = "<autofillqueryresponse>"
+        "<field autofilltype=\"55\"/>"
+        "<autofill_flow page_no=\"1\" total_pages=\"10\">"
+        "<click_elements_before_formfill>"
+        "<web_element id=\"btn1\" /></click_elements_before_formfill>"
+        "<click_elements_before_formfill>"
+        "<web_element css_selector=\"[name=&quot;btn2&quot;]\"/>"
+        "</click_elements_before_formfill>"
+        "</autofill_flow>"
+        "</autofillqueryresponse>";
+
+  ParseQueryXML(xml, true);
+
+  EXPECT_EQ(1U, field_infos_.size());
+  EXPECT_EQ(1, page_meta_data_.current_page_number);
+  EXPECT_EQ(10, page_meta_data_.total_pages);
+  ASSERT_EQ(2U, page_meta_data_.click_elements_before_form_fill.size());
+  autofill::WebElementDescriptor& click_elment =
+      page_meta_data_.click_elements_before_form_fill[0];
+  EXPECT_EQ("btn1", click_elment.descriptor);
+  EXPECT_EQ(autofill::WebElementDescriptor::ID, click_elment.retrieval_method);
+  click_elment = page_meta_data_.click_elements_before_form_fill[1];
+  EXPECT_EQ("[name=\"btn2\"]", click_elment.descriptor);
+  EXPECT_EQ(autofill::WebElementDescriptor::CSS_SELECTOR,
+            click_elment.retrieval_method);
+
+  // Clear |field_infos_| for the next test;
+  field_infos_.clear();
+
+  // Test parsing click_elements_after_formfill correctly.
+  xml = "<autofillqueryresponse>"
+        "<field autofilltype=\"55\"/>"
+        "<autofill_flow page_no=\"1\" total_pages=\"10\">"
+        "<click_elements_after_formfill>"
+        "<web_element id=\"btn1\" /></click_elements_after_formfill>"
+        "</autofill_flow>"
+        "</autofillqueryresponse>";
+
+  ParseQueryXML(xml, true);
+
+  EXPECT_EQ(1U, field_infos_.size());
+  EXPECT_EQ(1, page_meta_data_.current_page_number);
+  EXPECT_EQ(10, page_meta_data_.total_pages);
+  ASSERT_EQ(1U, page_meta_data_.click_elements_after_form_fill.size());
+  click_elment = page_meta_data_.click_elements_after_form_fill[0];
+  EXPECT_EQ("btn1", click_elment.descriptor);
+  EXPECT_EQ(autofill::WebElementDescriptor::ID, click_elment.retrieval_method);
 }
 
 // Test badly formed XML queries.

@@ -89,6 +89,14 @@ class AutofillQueryXmlParser : public AutofillXmlParser {
                             const char* name,
                             const char** attrs) OVERRIDE;
 
+  // A helper function to parse a |WebElementDescriptor|.
+  // |context| is the current parsing context.
+  // |attrs| is the list of attributes (names and values) for the element.
+  // |element_descriptor| will be populated by this function.
+  void ParseElementDescriptor(buzz::XmlParseContext* context,
+                              const char* const* attrs,
+                              WebElementDescriptor* element_descriptor);
+
   // A helper function to retrieve integer values from strings.  Raises an
   // XML parse error if it fails.
   // |context| is the current parsing context.
@@ -108,6 +116,9 @@ class AutofillQueryXmlParser : public AutofillXmlParser {
 
   // Page metadata for multipage autofill flow.
   AutocheckoutPageMetaData* page_meta_data_;
+
+  // The click element the parser is currently processing.
+  WebElementDescriptor* current_click_element_;
 
   DISALLOW_COPY_AND_ASSIGN(AutofillQueryXmlParser);
 };
