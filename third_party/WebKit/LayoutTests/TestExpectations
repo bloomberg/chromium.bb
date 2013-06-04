@@ -1873,6 +1873,9 @@ crbug.com/229120 virtual/deferred/fast/images/rgb-png-with-cmyk-color-profile.ht
 crbug.com/229120 virtual/deferred/fast/images/webp-color-profile-lossy.html [ ImageOnlyFailure ]
 crbug.com/229120 virtual/deferred/fast/images/ycbcr-with-cmyk-color-profile.html [ ImageOnlyFailure ]
 
+crbug.com/246748 http/tests/inspector/styles/selector-line-sourcemap-header-deprecated.html [ Failure ]
+crbug.com/246749 [ Debug ] inspector/extensions/extensions-panel.html [ Timeout Failure ]
+
 # DCHECK in SkFixed.h
 crbug.com/243309 [ Mac Debug ] accessibility/content-changed-notification-causes-crash.html [ Crash Pass ]
 crbug.com/243309 [ Mac Debug ] fast/css/font-size-nan.svg [ Crash Pass ]
