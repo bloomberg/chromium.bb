@@ -55,7 +55,7 @@ int g_next_install_id = 0;
 
 WebstoreBindings::WebstoreBindings(Dispatcher* dispatcher,
                                    ChromeV8Context* context)
-    : ChromeV8Extension(dispatcher, context->v8_context()),
+    : ChromeV8Extension(dispatcher, context),
       ChromeV8ExtensionHandler(context) {
   RouteFunction("Install",
                 base::Bind(&WebstoreBindings::Install, base::Unretained(this)));
@@ -63,7 +63,7 @@ WebstoreBindings::WebstoreBindings(Dispatcher* dispatcher,
 
 v8::Handle<v8::Value> WebstoreBindings::Install(
     const v8::Arguments& args) {
-  WebFrame* frame = WebFrame::frameForContext(v8_context());
+  WebFrame* frame = WebFrame::frameForContext(context()->v8_context());
   if (!frame || !frame->view())
     return v8::Undefined();
 
@@ -212,12 +212,12 @@ void WebstoreBindings::OnInlineWebstoreInstallResponse(
     bool success,
     const std::string& error) {
   v8::HandleScope handle_scope;
-  v8::Context::Scope context_scope(context_->v8_context());
+  v8::Context::Scope context_scope(context()->v8_context());
   v8::Handle<v8::Value> argv[3];
   argv[0] = v8::Integer::New(install_id);
   argv[1] = v8::Boolean::New(success);
   argv[2] = v8::String::New(error.c_str());
-  context_->CallChromeHiddenMethod("webstore.onInstallResponse",
+  context()->CallChromeHiddenMethod("webstore.onInstallResponse",
                                    arraysize(argv), argv, NULL);
 }
 

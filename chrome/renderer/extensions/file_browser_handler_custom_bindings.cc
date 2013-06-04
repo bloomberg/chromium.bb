@@ -8,6 +8,7 @@
 
 #include "base/basictypes.h"
 #include "base/logging.h"
+#include "chrome/renderer/extensions/chrome_v8_context.h"
 #include "grit/renderer_resources.h"
 #include "third_party/WebKit/public/platform/WebFileSystem.h"
 #include "third_party/WebKit/public/platform/WebFileSystemType.h"
@@ -17,7 +18,7 @@
 namespace extensions {
 
 FileBrowserHandlerCustomBindings::FileBrowserHandlerCustomBindings(
-    Dispatcher* dispatcher, v8::Handle<v8::Context> context)
+    Dispatcher* dispatcher, ChromeV8Context* context)
     : ChromeV8Extension(dispatcher, context) {
   RouteFunction(
       "GetExternalFileEntry",
@@ -45,7 +46,7 @@ v8::Handle<v8::Value> FileBrowserHandlerCustomBindings::GetExternalFileEntry(
     bool is_directory =
         file_def->Get(v8::String::New("fileIsDirectory"))->ToBoolean()->Value();
     WebKit::WebFrame* webframe =
-        WebKit::WebFrame::frameForContext(v8_context());
+        WebKit::WebFrame::frameForContext(context()->v8_context());
     return webframe->createFileEntry(
         WebKit::WebFileSystemTypeExternal,
         WebKit::WebString::fromUTF8(file_system_name.c_str()),

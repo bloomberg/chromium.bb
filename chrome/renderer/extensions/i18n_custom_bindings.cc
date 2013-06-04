@@ -14,7 +14,7 @@
 namespace extensions {
 
 I18NCustomBindings::I18NCustomBindings(Dispatcher* dispatcher,
-                                       v8::Handle<v8::Context> context)
+                                       ChromeV8Context* context)
     : ChromeV8Extension(dispatcher, context) {
   RouteFunction("GetL10nMessage",
       base::Bind(&I18NCustomBindings::GetL10nMessage, base::Unretained(this)));

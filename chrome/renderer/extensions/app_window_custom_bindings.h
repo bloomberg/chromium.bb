@@ -13,8 +13,7 @@ class Dispatcher;
 // Implements custom bindings for the app.window API.
 class AppWindowCustomBindings : public ChromeV8Extension {
  public:
-  AppWindowCustomBindings(Dispatcher* dispatcher,
-                          v8::Handle<v8::Context> context);
+  AppWindowCustomBindings(Dispatcher* dispatcher, ChromeV8Context* context);
 
  private:
   v8::Handle<v8::Value> GetView(const v8::Arguments& args);

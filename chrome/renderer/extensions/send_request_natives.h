@@ -34,8 +34,6 @@ class SendRequestNatives : public ChromeV8Extension {
 
   RequestSender* request_sender_;
 
-  ChromeV8Context* context_;
-
   DISALLOW_COPY_AND_ASSIGN(SendRequestNatives);
 };
 

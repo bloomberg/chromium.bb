@@ -14,7 +14,7 @@ class Dispatcher;
 class PageActionsCustomBindings : public ChromeV8Extension {
  public:
   PageActionsCustomBindings(Dispatcher* extension_dispatcher,
-                            v8::Handle<v8::Context> v8_context);
+                            ChromeV8Context* context);
 
  private:
   v8::Handle<v8::Value> GetCurrentPageActions(const v8::Arguments& args);

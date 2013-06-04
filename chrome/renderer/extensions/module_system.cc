@@ -69,7 +69,7 @@ void DumpException(const v8::TryCatch& try_catch) {
 
 } // namespace
 
-ModuleSystem::ModuleSystem(v8::Handle<v8::Context> context,
+ModuleSystem::ModuleSystem(ChromeV8Context* context,
                            SourceMap* source_map)
     : ObjectBackedNativeHandler(context),
       source_map_(source_map),
@@ -79,7 +79,7 @@ ModuleSystem::ModuleSystem(v8::Handle<v8::Context> context,
   RouteFunction("requireNative",
       base::Bind(&ModuleSystem::RequireNative, base::Unretained(this)));
 
-  v8::Handle<v8::Object> global(context->Global());
+  v8::Handle<v8::Object> global(context->v8_context()->Global());
   global->SetHiddenValue(v8::String::New(kModulesField), v8::Object::New());
   global->SetHiddenValue(v8::String::New(kModuleSystem),
                          v8::External::New(this));
@@ -97,7 +97,7 @@ void ModuleSystem::Invalidate() {
   // and we use this as a signal in lazy handlers that we no longer exist.
   {
     v8::HandleScope scope;
-    v8::Handle<v8::Object> global = v8_context()->Global();
+    v8::Handle<v8::Object> global = context()->v8_context()->Global();
     global->DeleteHiddenValue(v8::String::New(kModulesField));
     global->DeleteHiddenValue(v8::String::New(kModuleSystem));
   }
@@ -144,9 +144,9 @@ v8::Handle<v8::Value> ModuleSystem::RequireForJs(const v8::Arguments& args) {
 v8::Handle<v8::Value> ModuleSystem::RequireForJsInner(
     v8::Handle<v8::String> module_name) {
   v8::HandleScope handle_scope;
-  v8::Context::Scope context_scope(v8_context());
+  v8::Context::Scope context_scope(context()->v8_context());
 
-  v8::Handle<v8::Object> global(v8_context()->Global());
+  v8::Handle<v8::Object> global(context()->v8_context()->Global());
 
   // The module system might have been deleted. This can happen if a different
   // context keeps a reference to us, but our frame is destroyed (e.g.
@@ -236,7 +236,7 @@ v8::Local<v8::Value> ModuleSystem::CallModuleMethod(
 
   v8::Handle<v8::Function> func =
       v8::Handle<v8::Function>::Cast(value);
-  v8::Handle<v8::Object> global(v8_context()->Global());
+  v8::Handle<v8::Object> global(context()->v8_context()->Global());
   v8::Local<v8::Value> result;
   {
     WebKit::WebScopedMicrotaskSuppression suppression;
@@ -287,7 +287,7 @@ v8::Handle<v8::Value> ModuleSystem::LazyFieldGetterInner(
   CHECK(info.Data()->IsObject());
   v8::HandleScope handle_scope;
   v8::Handle<v8::Object> parameters = v8::Handle<v8::Object>::Cast(info.Data());
-  // This context should be the same as v8_context().
+  // This context should be the same as context()->v8_context().
   v8::Handle<v8::Context> context = parameters->CreationContext();
   v8::Handle<v8::Object> global(context->Global());
   v8::Handle<v8::Value> module_system_value =

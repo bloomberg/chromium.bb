@@ -16,7 +16,7 @@ namespace extensions {
 
 PageCaptureCustomBindings::PageCaptureCustomBindings(
     Dispatcher* dispatcher,
-    v8::Handle<v8::Context> context)
+    ChromeV8Context* context)
     : ChromeV8Extension(dispatcher, context) {
   RouteFunction("CreateBlob",
       base::Bind(&PageCaptureCustomBindings::CreateBlob,

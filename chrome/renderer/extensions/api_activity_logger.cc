@@ -15,8 +15,8 @@ using content::V8ValueConverter;
 namespace extensions {
 
 APIActivityLogger::APIActivityLogger(
-    Dispatcher* dispatcher, v8::Handle<v8::Context> v8_context)
-    : ChromeV8Extension(dispatcher, v8_context) {
+    Dispatcher* dispatcher, ChromeV8Context* context)
+    : ChromeV8Extension(dispatcher, context) {
   RouteFunction("LogEvent", base::Bind(&APIActivityLogger::LogEvent));
   RouteFunction("LogAPICall", base::Bind(&APIActivityLogger::LogAPICall));
 }
@@ -81,4 +81,3 @@ void APIActivityLogger::LogBlockedCall(const std::string& extension_id,
 
 
 }  // namespace extensions
-

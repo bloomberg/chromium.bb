@@ -13,7 +13,7 @@ namespace extensions {
 // Custom bindings for the nativeFileSystem API.
 class FileSystemNatives : public ObjectBackedNativeHandler {
  public:
-  explicit FileSystemNatives(v8::Handle<v8::Context> context);
+  explicit FileSystemNatives(ChromeV8Context* context);
 
  private:
   v8::Handle<v8::Value> GetFileEntry(const v8::Arguments& args);

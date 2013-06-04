@@ -7,6 +7,7 @@
 #include <string>
 
 #include "chrome/common/extensions/extension_constants.h"
+#include "chrome/renderer/extensions/chrome_v8_context.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "v8/include/v8.h"
 #include "webkit/common/fileapi/file_system_util.h"
@@ -14,8 +15,8 @@
 namespace extensions {
 
 SyncFileSystemCustomBindings::SyncFileSystemCustomBindings(
-    Dispatcher* dispatcher, v8::Handle<v8::Context> v8_context)
-    : ChromeV8Extension(dispatcher, v8_context) {
+    Dispatcher* dispatcher, ChromeV8Context* context)
+    : ChromeV8Extension(dispatcher, context) {
   RouteFunction(
       "GetSyncFileSystemObject",
       base::Bind(&SyncFileSystemCustomBindings::GetSyncFileSystemObject,
@@ -49,7 +50,7 @@ v8::Handle<v8::Value> SyncFileSystemCustomBindings::GetSyncFileSystemObject(
   }
 
   WebKit::WebFrame* webframe =
-      WebKit::WebFrame::frameForContext(v8_context());
+      WebKit::WebFrame::frameForContext(context()->v8_context());
   return webframe->createFileSystem(
                                     WebKit::WebFileSystemTypeExternal,
                                     WebKit::WebString::fromUTF8(name),

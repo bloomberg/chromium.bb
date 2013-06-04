@@ -14,8 +14,8 @@
 namespace extensions {
 
 WebRequestCustomBindings::WebRequestCustomBindings(
-    Dispatcher* dispatcher, v8::Handle<v8::Context> v8_context)
-    : ChromeV8Extension(dispatcher, v8_context) {
+    Dispatcher* dispatcher, ChromeV8Context* context)
+    : ChromeV8Extension(dispatcher, context) {
   RouteFunction("GetUniqueSubEventName",
       base::Bind(&WebRequestCustomBindings::GetUniqueSubEventName,
                  base::Unretained(this)));
@@ -34,4 +34,3 @@ v8::Handle<v8::Value> WebRequestCustomBindings::GetUniqueSubEventName(
 }
 
 }  // extensions
-

@@ -13,7 +13,7 @@ using extensions::ObjectBackedNativeHandler;
 
 class CounterNatives : public ObjectBackedNativeHandler {
  public:
-  explicit CounterNatives(v8::Handle<v8::Context> context)
+  explicit CounterNatives(extensions::ChromeV8Context* context)
       : ObjectBackedNativeHandler(context), counter_(0) {
     RouteFunction("Get", base::Bind(&CounterNatives::Get,
         base::Unretained(this)));
@@ -175,7 +175,7 @@ TEST_F(ModuleSystemTest, TestLazyFieldIsOnlyEvaledOnce) {
   ModuleSystem::NativesEnabledScope natives_enabled_scope(module_system_.get());
   module_system_->RegisterNativeHandler(
       "counter",
-      scoped_ptr<NativeHandler>(new CounterNatives(v8::Context::GetCurrent())));
+      scoped_ptr<NativeHandler>(new CounterNatives(context_.get())));
   RegisterModule("lazy",
       "requireNative('counter').Increment();"
       "exports.x = 5;");
@@ -229,7 +229,7 @@ TEST_F(ModuleSystemTest, TestModulesOnlyGetEvaledOnce) {
   ModuleSystem::NativesEnabledScope natives_enabled_scope(module_system_.get());
   module_system_->RegisterNativeHandler(
       "counter",
-      scoped_ptr<NativeHandler>(new CounterNatives(v8::Context::GetCurrent())));
+      scoped_ptr<NativeHandler>(new CounterNatives(context_.get())));
 
   RegisterModule("incrementsWhenEvaled",
       "requireNative('counter').Increment();");

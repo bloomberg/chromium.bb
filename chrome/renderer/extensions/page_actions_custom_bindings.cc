@@ -16,8 +16,8 @@
 namespace extensions {
 
 PageActionsCustomBindings::PageActionsCustomBindings(
-    Dispatcher* dispatcher, v8::Handle<v8::Context> v8_context)
-    : ChromeV8Extension(dispatcher, v8_context) {
+    Dispatcher* dispatcher, ChromeV8Context* context)
+    : ChromeV8Extension(dispatcher, context) {
   RouteFunction("GetCurrentPageActions",
       base::Bind(&PageActionsCustomBindings::GetCurrentPageActions,
                  base::Unretained(this)));

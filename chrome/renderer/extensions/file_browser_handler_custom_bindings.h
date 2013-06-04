@@ -14,7 +14,7 @@ namespace extensions {
 class FileBrowserHandlerCustomBindings : public ChromeV8Extension {
  public:
   FileBrowserHandlerCustomBindings(Dispatcher* dispatcher,
-                                   v8::Handle<v8::Context> context);
+                                   ChromeV8Context* context);
 
  private:
   v8::Handle<v8::Value> GetExternalFileEntry(const v8::Arguments& args);

@@ -20,7 +20,7 @@ using extensions::ObjectBackedNativeHandler;
 // Native JS functions for doing asserts.
 class AssertNatives : public ObjectBackedNativeHandler {
  public:
-  explicit AssertNatives(v8::Handle<v8::Context> context)
+  explicit AssertNatives(extensions::ChromeV8Context* context)
       : ObjectBackedNativeHandler(context),
         assertion_made_(false),
         failed_(false) {
@@ -87,10 +87,15 @@ class FailsOnException : public ModuleSystem::ExceptionHandler {
 ModuleSystemTest::ModuleSystemTest()
     : isolate_(v8::Isolate::GetCurrent()),
       handle_scope_(isolate_),
-      context_(v8::Context::New(isolate_)),
+      context_(
+          new extensions::ChromeV8Context(
+              v8::Context::New(isolate_),
+              reinterpret_cast<WebKit::WebFrame*>(1),
+              NULL,
+              extensions::Feature::UNSPECIFIED_CONTEXT)),
       source_map_(new StringSourceMap()),
       should_assertions_be_made_(true) {
-  context_->Enter();
+  context_->v8_context()->Enter();
   assert_natives_ = new AssertNatives(context_.get());
   module_system_.reset(new ModuleSystem(context_.get(), source_map_.get()));
   module_system_->RegisterNativeHandler("assert", scoped_ptr<NativeHandler>(
@@ -101,7 +106,7 @@ ModuleSystemTest::ModuleSystemTest()
 
 ModuleSystemTest::~ModuleSystemTest() {
   module_system_.reset();
-  context_->Exit();
+  context_->v8_context()->Exit();
 }
 
 void ModuleSystemTest::RegisterModule(const std::string& name,

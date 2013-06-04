@@ -15,7 +15,7 @@
 namespace extensions {
 
 TabsCustomBindings::TabsCustomBindings(Dispatcher* dispatcher,
-                                       v8::Handle<v8::Context> context)
+                                       ChromeV8Context* context)
     : ChromeV8Extension(dispatcher, context) {
   RouteFunction("OpenChannelToTab",
       base::Bind(&TabsCustomBindings::OpenChannelToTab,

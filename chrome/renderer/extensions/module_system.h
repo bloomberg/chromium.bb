@@ -8,6 +8,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
+#include "chrome/renderer/extensions/native_handler.h"
 #include "chrome/renderer/extensions/object_backed_native_handler.h"
 #include "v8/include/v8.h"
 
@@ -61,7 +62,7 @@ class ModuleSystem : public ObjectBackedNativeHandler {
   };
 
   // |source_map| is a weak pointer.
-  ModuleSystem(v8::Handle<v8::Context> context, SourceMap* source_map);
+  ModuleSystem(ChromeV8Context* context, SourceMap* source_map);
   virtual ~ModuleSystem();
 
   // Require the specified module. This is the equivalent of calling

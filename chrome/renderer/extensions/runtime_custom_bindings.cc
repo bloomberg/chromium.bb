@@ -24,8 +24,7 @@ namespace extensions {
 
 RuntimeCustomBindings::RuntimeCustomBindings(Dispatcher* dispatcher,
                                              ChromeV8Context* context)
-    : ChromeV8Extension(dispatcher, context->v8_context()),
-      context_(context) {
+    : ChromeV8Extension(dispatcher, context) {
   RouteFunction("GetManifest",
                 base::Bind(&RuntimeCustomBindings::GetManifest,
                            base::Unretained(this)));
@@ -68,7 +67,7 @@ v8::Handle<v8::Value> RuntimeCustomBindings::OpenChannelToNativeApp(
     const v8::Arguments& args) {
   // Verify that the extension has permission to use native messaging.
   if (!dispatcher()->CheckContextAccessToExtensionAPI(
-          "nativeMessaging", context_)) {
+          "nativeMessaging", context())) {
     return v8::Undefined();
   }
 
@@ -97,11 +96,11 @@ v8::Handle<v8::Value> RuntimeCustomBindings::OpenChannelToNativeApp(
 
 v8::Handle<v8::Value> RuntimeCustomBindings::GetManifest(
     const v8::Arguments& args) {
-  CHECK(context_->extension());
+  CHECK(context()->extension());
 
   scoped_ptr<V8ValueConverter> converter(V8ValueConverter::create());
-  return converter->ToV8Value(context_->extension()->manifest()->value(),
-                              context_->v8_context());
+  return converter->ToV8Value(context()->extension()->manifest()->value(),
+                              context()->v8_context());
 }
 
 }  // extensions

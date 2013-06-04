@@ -8,6 +8,7 @@
 
 #include "base/basictypes.h"
 #include "base/logging.h"
+#include "chrome/renderer/extensions/chrome_v8_context.h"
 #include "grit/renderer_resources.h"
 #include "third_party/WebKit/public/platform/WebFileSystem.h"
 #include "third_party/WebKit/public/platform/WebFileSystemType.h"
@@ -17,7 +18,7 @@
 namespace extensions {
 
 FileBrowserPrivateCustomBindings::FileBrowserPrivateCustomBindings(
-    Dispatcher* dispatcher, v8::Handle<v8::Context> context)
+    Dispatcher* dispatcher, ChromeV8Context* context)
     : ChromeV8Extension(dispatcher, context) {
   RouteFunction(
       "GetLocalFileSystem",
@@ -33,7 +34,8 @@ v8::Handle<v8::Value> FileBrowserPrivateCustomBindings::GetLocalFileSystem(
   std::string name(*v8::String::Utf8Value(args[0]));
   std::string path(*v8::String::Utf8Value(args[1]));
 
-  WebKit::WebFrame* webframe = WebKit::WebFrame::frameForContext(v8_context());
+  WebKit::WebFrame* webframe =
+      WebKit::WebFrame::frameForContext(context()->v8_context());
   DCHECK(webframe);
   return webframe->createFileSystem(
       WebKit::WebFileSystemTypeExternal,

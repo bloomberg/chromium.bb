@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/memory/linked_ptr.h"
+#include "chrome/renderer/extensions/chrome_v8_context.h"
 #include "chrome/renderer/extensions/console.h"
 #include "chrome/renderer/extensions/module_system.h"
 #include "v8/include/v8.h"
@@ -18,8 +19,8 @@ const char* kHandlerFunction = "handler_function";
 }  // namespace
 
 ObjectBackedNativeHandler::ObjectBackedNativeHandler(
-    v8::Handle<v8::Context> context)
-    : v8_context_(context),
+    ChromeV8Context* context)
+    : context_(context),
       object_template_(v8::ObjectTemplate::New()) {
 }
 
@@ -55,9 +56,10 @@ void ObjectBackedNativeHandler::RouteFunction(
     const std::string& name,
     const HandlerFunction& handler_function) {
   v8::HandleScope handle_scope;
-  v8::Context::Scope context_scope(v8_context_.get());
+  v8::Context::Scope context_scope(context_->v8_context());
 
-  v8::Persistent<v8::Object> data(v8_context_->GetIsolate(), v8::Object::New());
+  v8::Persistent<v8::Object> data(context_->v8_context()->GetIsolate(),
+                                  v8::Object::New());
   data->Set(v8::String::New(kHandlerFunction),
             v8::External::New(new HandlerFunction(handler_function)));
   router_data_.push_back(data);
@@ -70,7 +72,7 @@ void ObjectBackedNativeHandler::Invalidate() {
   if (!is_valid())
     return;
   v8::HandleScope handle_scope;
-  v8::Context::Scope context_scope(v8_context_.get());
+  v8::Context::Scope context_scope(context_->v8_context());
 
   for (RouterData::iterator it = router_data_.begin();
        it != router_data_.end(); ++it) {
@@ -81,10 +83,10 @@ void ObjectBackedNativeHandler::Invalidate() {
     delete static_cast<HandlerFunction*>(
         handler_function_value.As<v8::External>()->Value());
     data->Delete(v8::String::New(kHandlerFunction));
-    data.Dispose(v8_context_->GetIsolate());
+    data.Dispose(context_->v8_context()->GetIsolate());
   }
   object_template_.reset();
-  v8_context_.reset();
+  context_ = NULL;
   NativeHandler::Invalidate();
 }
 

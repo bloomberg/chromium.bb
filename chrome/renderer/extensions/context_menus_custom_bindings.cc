@@ -24,8 +24,8 @@ v8::Handle<v8::Value> GetNextContextMenuId(const v8::Arguments& args) {
 namespace extensions {
 
 ContextMenusCustomBindings::ContextMenusCustomBindings(
-    Dispatcher* dispatcher, v8::Handle<v8::Context> v8_context)
-    : ChromeV8Extension(dispatcher, v8_context) {
+    Dispatcher* dispatcher, ChromeV8Context* context)
+    : ChromeV8Extension(dispatcher, context) {
   RouteFunction("GetNextContextMenuId", base::Bind(&GetNextContextMenuId));
 }
 

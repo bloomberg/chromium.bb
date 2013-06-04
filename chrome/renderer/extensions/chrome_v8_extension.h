@@ -35,12 +35,10 @@ class Extension;
 //               Custom bindings should extend ObjectBackedNativeHandler.
 class ChromeV8Extension : public ObjectBackedNativeHandler {
  public:
-  ChromeV8Extension(Dispatcher* dispatcher, v8::Handle<v8::Context> context);
+  ChromeV8Extension(Dispatcher* dispatcher, ChromeV8Context* context);
   virtual ~ChromeV8Extension();
 
   Dispatcher* dispatcher() { return dispatcher_; }
-
-  ChromeV8Context* GetContext();
 
   // Shortcuts through to the context's render view and extension.
   content::RenderView* GetRenderView();

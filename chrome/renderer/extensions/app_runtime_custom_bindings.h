@@ -13,7 +13,7 @@ namespace extensions {
 class AppRuntimeCustomBindings : public ChromeV8Extension {
  public:
   AppRuntimeCustomBindings(Dispatcher* dispatcher,
-                           v8::Handle<v8::Context> context);
+                           ChromeV8Context* context);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AppRuntimeCustomBindings);

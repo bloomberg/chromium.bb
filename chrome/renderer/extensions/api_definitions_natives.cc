@@ -16,8 +16,7 @@ namespace extensions {
 
 ApiDefinitionsNatives::ApiDefinitionsNatives(Dispatcher* dispatcher,
                                              ChromeV8Context* context)
-    : ChromeV8Extension(dispatcher, context->v8_context()),
-      context_(context) {
+    : ChromeV8Extension(dispatcher, context) {
   RouteFunction("GetExtensionAPIDefinitions",
                 base::Bind(&ApiDefinitionsNatives::GetExtensionAPIDefinitions,
                            base::Unretained(this)));

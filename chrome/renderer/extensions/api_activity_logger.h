@@ -17,7 +17,7 @@ namespace extensions {
 // recording and display.
 class APIActivityLogger : public ChromeV8Extension {
  public:
-  APIActivityLogger(Dispatcher* dispatcher, v8::Handle<v8::Context> v8_context);
+  APIActivityLogger(Dispatcher* dispatcher, ChromeV8Context* context);
 
   // This is ultimately invoked in schema_generated_bindings.js with
   // JavaScript arguments. Logged as an APIAction.
@@ -57,4 +57,3 @@ class APIActivityLogger : public ChromeV8Extension {
 }  // namespace extensions
 
 #endif  // CHROME_RENDERER_EXTENSIONS_API_ACTIVITY_LOGGER_H_
-

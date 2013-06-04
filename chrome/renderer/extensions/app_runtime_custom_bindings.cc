@@ -58,7 +58,7 @@ namespace extensions {
 
 AppRuntimeCustomBindings::AppRuntimeCustomBindings(
     Dispatcher* dispatcher,
-    v8::Handle<v8::Context> context) : ChromeV8Extension(dispatcher, context) {
+    ChromeV8Context* context) : ChromeV8Extension(dispatcher, context) {
   RouteFunction("DeserializeString", base::Bind(&DeserializeString));
   RouteFunction("SerializeToString", base::Bind(&SerializeToString));
   RouteFunction("CreateBlob", base::Bind(&CreateBlob));

@@ -26,9 +26,8 @@ namespace extensions {
 SetIconNatives::SetIconNatives(Dispatcher* dispatcher,
                                RequestSender* request_sender,
                                ChromeV8Context* context)
-    : ChromeV8Extension(dispatcher, context->v8_context()),
-      request_sender_(request_sender),
-      context_(context) {
+    : ChromeV8Extension(dispatcher, context),
+      request_sender_(request_sender) {
   RouteFunction(
       "SetIconCommon",
       base::Bind(&SetIconNatives::SetIconCommon, base::Unretained(this)));
@@ -138,7 +137,7 @@ v8::Handle<v8::Value> SetIconNatives::SetIconCommon(
   bool has_callback = args[3]->BooleanValue();
   bool for_io_thread = args[4]->BooleanValue();
 
-  request_sender_->StartRequest(context_,
+  request_sender_->StartRequest(context(),
                                 name,
                                 request_id,
                                 has_callback,

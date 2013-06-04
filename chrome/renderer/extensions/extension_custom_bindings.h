@@ -14,7 +14,7 @@ class Dispatcher;
 class ExtensionCustomBindings : public ChromeV8Extension {
  public:
   explicit ExtensionCustomBindings(Dispatcher* dispatcher,
-                                   v8::Handle<v8::Context> context);
+                                   ChromeV8Context* context);
 
  private:
   v8::Handle<v8::Value> GetExtensionViews(const v8::Arguments& args);

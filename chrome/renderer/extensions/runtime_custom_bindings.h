@@ -29,8 +29,6 @@ class RuntimeCustomBindings : public ChromeV8Extension {
 
  private:
   v8::Handle<v8::Value> GetManifest(const v8::Arguments& args);
-
-  ChromeV8Context* context_;
 };
 
 }  // extensions

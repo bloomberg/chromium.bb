@@ -15,9 +15,8 @@ namespace extensions {
 SendRequestNatives::SendRequestNatives(Dispatcher* dispatcher,
                                        RequestSender* request_sender,
                                        ChromeV8Context* context)
-    : ChromeV8Extension(dispatcher, context->v8_context()),
-      request_sender_(request_sender),
-      context_(context) {
+    : ChromeV8Extension(dispatcher, context),
+      request_sender_(request_sender) {
   RouteFunction("GetNextRequestId",
                 base::Bind(&SendRequestNatives::GetNextRequestId,
                            base::Unretained(this)));
@@ -53,14 +52,15 @@ v8::Handle<v8::Value> SendRequestNatives::StartRequest(
   if (!preserve_null_in_objects)
     converter->SetStripNullFromObjects(true);
 
-  scoped_ptr<Value> value_args(converter->FromV8Value(args[1], v8_context()));
+  scoped_ptr<Value> value_args(
+      converter->FromV8Value(args[1], context()->v8_context()));
   if (!value_args.get() || !value_args->IsType(Value::TYPE_LIST)) {
     NOTREACHED() << "Unable to convert args passed to StartRequest";
     return v8::Undefined();
   }
 
   request_sender_->StartRequest(
-      context_, name, request_id, has_callback, for_io_thread,
+      context(), name, request_id, has_callback, for_io_thread,
       static_cast<ListValue*>(value_args.get()));
   return v8::Undefined();
 }

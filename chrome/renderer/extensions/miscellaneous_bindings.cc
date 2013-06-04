@@ -73,7 +73,7 @@ const char kReceivingEndDoesntExistError[] =
 class ExtensionImpl : public extensions::ChromeV8Extension {
  public:
   explicit ExtensionImpl(extensions::Dispatcher* dispatcher,
-                         v8::Handle<v8::Context> context)
+                         extensions::ChromeV8Context* context)
       : extensions::ChromeV8Extension(dispatcher, context) {
     RouteFunction("CloseChannel",
         base::Bind(&ExtensionImpl::CloseChannel, base::Unretained(this)));
@@ -194,7 +194,7 @@ namespace extensions {
 
 ChromeV8Extension* MiscellaneousBindings::Get(
     Dispatcher* dispatcher,
-    v8::Handle<v8::Context> context) {
+    ChromeV8Context* context) {
   return new ExtensionImpl(dispatcher, context);
 }
 

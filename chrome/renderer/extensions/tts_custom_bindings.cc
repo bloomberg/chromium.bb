@@ -13,8 +13,8 @@
 namespace extensions {
 
 TTSCustomBindings::TTSCustomBindings(
-    Dispatcher* dispatcher, v8::Handle<v8::Context> v8_context)
-    : ChromeV8Extension(dispatcher, v8_context) {
+    Dispatcher* dispatcher, ChromeV8Context* context)
+    : ChromeV8Extension(dispatcher, context) {
   RouteFunction("GetNextTTSEventId",
       base::Bind(&TTSCustomBindings::GetNextTTSEventId,
                  base::Unretained(this)));

@@ -26,7 +26,7 @@ using WebKit::WebView;
 namespace extensions {
 
 ChromeV8Extension::ChromeV8Extension(Dispatcher* dispatcher,
-                                     v8::Handle<v8::Context> context)
+                                     ChromeV8Context* context)
     : ObjectBackedNativeHandler(context),
       dispatcher_(dispatcher) {
   CHECK(dispatcher);
@@ -35,18 +35,12 @@ ChromeV8Extension::ChromeV8Extension(Dispatcher* dispatcher,
 ChromeV8Extension::~ChromeV8Extension() {
 }
 
-ChromeV8Context* ChromeV8Extension::GetContext() {
-  return dispatcher_->v8_context_set().GetByV8Context(v8_context());
-}
-
 content::RenderView* ChromeV8Extension::GetRenderView() {
-  ChromeV8Context* context = GetContext();
-  return context ? context->GetRenderView() : NULL;
+  return context() ? context()->GetRenderView() : NULL;
 }
 
 const Extension* ChromeV8Extension::GetExtensionForRenderView() {
-  ChromeV8Context* context = GetContext();
-  return context ? context->extension() : NULL;
+  return context() ? context()->extension() : NULL;
 }
 
 }  // namespace extensions

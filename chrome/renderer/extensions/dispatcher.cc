@@ -119,7 +119,7 @@ static v8::Handle<v8::Object> GetOrCreateChrome(
 
 class TestFeaturesNativeHandler : public ObjectBackedNativeHandler {
  public:
-  explicit TestFeaturesNativeHandler(v8::Handle<v8::Context> context)
+  explicit TestFeaturesNativeHandler(ChromeV8Context* context)
       : ObjectBackedNativeHandler(context) {
     RouteFunction("GetAPIFeatures",
         base::Bind(&TestFeaturesNativeHandler::GetAPIFeatures,
@@ -133,14 +133,14 @@ class TestFeaturesNativeHandler : public ObjectBackedNativeHandler {
             IDR_EXTENSION_API_FEATURES).as_string());
     scoped_ptr<content::V8ValueConverter> converter(
         content::V8ValueConverter::create());
-    return converter->ToV8Value(value, v8_context());
+    return converter->ToV8Value(value, context()->v8_context());
   }
 };
 
 class SchemaRegistryNativeHandler : public ObjectBackedNativeHandler {
  public:
   SchemaRegistryNativeHandler(V8SchemaRegistry* registry,
-                              v8::Handle<v8::Context> context)
+                              ChromeV8Context* context)
       : ObjectBackedNativeHandler(context),
         registry_(registry) {
     RouteFunction("GetSchema",
@@ -159,7 +159,7 @@ class SchemaRegistryNativeHandler : public ObjectBackedNativeHandler {
 class V8ContextNativeHandler : public ObjectBackedNativeHandler {
  public:
   V8ContextNativeHandler(ChromeV8Context* context, Dispatcher* dispatcher)
-      : ObjectBackedNativeHandler(context->v8_context()),
+      : ObjectBackedNativeHandler(context),
         context_(context),
         dispatcher_(dispatcher) {
     RouteFunction("GetAvailability",
@@ -200,7 +200,7 @@ class V8ContextNativeHandler : public ObjectBackedNativeHandler {
 
 class ChromeHiddenNativeHandler : public ObjectBackedNativeHandler {
  public:
-  explicit ChromeHiddenNativeHandler(v8::Handle<v8::Context> context)
+  explicit ChromeHiddenNativeHandler(ChromeV8Context* context)
       : ObjectBackedNativeHandler(context) {
     RouteFunction("GetChromeHidden",
         base::Bind(&ChromeHiddenNativeHandler::GetChromeHidden,
@@ -208,26 +208,26 @@ class ChromeHiddenNativeHandler : public ObjectBackedNativeHandler {
   }
 
   v8::Handle<v8::Value> GetChromeHidden(const v8::Arguments& args) {
-    return ChromeV8Context::GetOrCreateChromeHidden(v8_context());
+    return ChromeV8Context::GetOrCreateChromeHidden(context()->v8_context());
   }
 };
 
 class ChromeNativeHandler : public ObjectBackedNativeHandler {
  public:
-  explicit ChromeNativeHandler(v8::Handle<v8::Context> context)
+  explicit ChromeNativeHandler(ChromeV8Context* context)
       : ObjectBackedNativeHandler(context) {
     RouteFunction("GetChrome",
         base::Bind(&ChromeNativeHandler::GetChrome, base::Unretained(this)));
   }
 
   v8::Handle<v8::Value> GetChrome(const v8::Arguments& args) {
-    return GetOrCreateChrome(v8_context());
+    return GetOrCreateChrome(context()->v8_context());
   }
 };
 
 class PrintNativeHandler : public ObjectBackedNativeHandler {
  public:
-  explicit PrintNativeHandler(v8::Handle<v8::Context> context)
+  explicit PrintNativeHandler(ChromeV8Context* context)
       : ObjectBackedNativeHandler(context) {
     RouteFunction("Print",
         base::Bind(&PrintNativeHandler::Print,
@@ -250,7 +250,7 @@ class PrintNativeHandler : public ObjectBackedNativeHandler {
 class LazyBackgroundPageNativeHandler : public ChromeV8Extension {
  public:
   LazyBackgroundPageNativeHandler(Dispatcher* dispatcher,
-                                  v8::Handle<v8::Context> context)
+                                  ChromeV8Context* context)
       : ChromeV8Extension(dispatcher, context) {
     RouteFunction("IncrementKeepaliveCount",
         base::Bind(&LazyBackgroundPageNativeHandler::IncrementKeepaliveCount,
@@ -261,12 +261,10 @@ class LazyBackgroundPageNativeHandler : public ChromeV8Extension {
   }
 
   v8::Handle<v8::Value> IncrementKeepaliveCount(const v8::Arguments& args) {
-    ChromeV8Context* context =
-        dispatcher()->v8_context_set().GetByV8Context(v8_context());
-    if (!context)
+    if (!context())
       return v8::Undefined();
-    RenderView* render_view = context->GetRenderView();
-    if (IsContextLazyBackgroundPage(render_view, context->extension())) {
+    RenderView* render_view = context()->GetRenderView();
+    if (IsContextLazyBackgroundPage(render_view, context()->extension())) {
       render_view->Send(new ExtensionHostMsg_IncrementLazyKeepaliveCount(
           render_view->GetRoutingID()));
     }
@@ -274,12 +272,10 @@ class LazyBackgroundPageNativeHandler : public ChromeV8Extension {
   }
 
   v8::Handle<v8::Value> DecrementKeepaliveCount(const v8::Arguments& args) {
-    ChromeV8Context* context =
-        dispatcher()->v8_context_set().GetByV8Context(v8_context());
-    if (!context)
+    if (!context())
       return v8::Undefined();
-    RenderView* render_view = context->GetRenderView();
-    if (IsContextLazyBackgroundPage(render_view, context->extension())) {
+    RenderView* render_view = context()->GetRenderView();
+    if (IsContextLazyBackgroundPage(render_view, context()->extension())) {
       render_view->Send(new ExtensionHostMsg_DecrementLazyKeepaliveCount(
           render_view->GetRoutingID()));
     }
@@ -301,7 +297,7 @@ class LazyBackgroundPageNativeHandler : public ChromeV8Extension {
 class ProcessInfoNativeHandler : public ChromeV8Extension {
  public:
   ProcessInfoNativeHandler(Dispatcher* dispatcher,
-                           v8::Handle<v8::Context> context,
+                           ChromeV8Context* context,
                            const std::string& extension_id,
                            const std::string& context_type,
                            bool is_incognito_context,
@@ -365,7 +361,7 @@ class ProcessInfoNativeHandler : public ChromeV8Extension {
 
 class LoggingNativeHandler : public ObjectBackedNativeHandler {
  public:
-  explicit LoggingNativeHandler(v8::Handle<v8::Context> context)
+  explicit LoggingNativeHandler(ChromeV8Context* context)
       : ObjectBackedNativeHandler(context) {
     RouteFunction("DCHECK",
         base::Bind(&LoggingNativeHandler::Dcheck, base::Unretained(this)));
@@ -789,12 +785,10 @@ void Dispatcher::RegisterSchemaGeneratedBindings(
 
 void Dispatcher::RegisterNativeHandlers(ModuleSystem* module_system,
                                         ChromeV8Context* context) {
-  v8::Handle<v8::Context> v8_context = context->v8_context();
-
   module_system->RegisterNativeHandler("event_bindings",
-      scoped_ptr<NativeHandler>(EventBindings::Create(this, v8_context)));
+      scoped_ptr<NativeHandler>(EventBindings::Create(this, context)));
   module_system->RegisterNativeHandler("miscellaneous_bindings",
-      scoped_ptr<NativeHandler>(MiscellaneousBindings::Get(this, v8_context)));
+      scoped_ptr<NativeHandler>(MiscellaneousBindings::Get(this, context)));
   module_system->RegisterNativeHandler("apiDefinitions",
       scoped_ptr<NativeHandler>(new ApiDefinitionsNatives(this, context)));
   module_system->RegisterNativeHandler("sendRequest",
@@ -805,59 +799,59 @@ void Dispatcher::RegisterNativeHandlers(ModuleSystem* module_system,
           new SetIconNatives(this, request_sender_.get(), context)));
   module_system->RegisterNativeHandler(
       "contentWatcherNative",
-      content_watcher_->MakeNatives(v8_context));
+      content_watcher_->MakeNatives(context));
   module_system->RegisterNativeHandler("activityLogger",
-      scoped_ptr<NativeHandler>(new APIActivityLogger(this, v8_context)));
+      scoped_ptr<NativeHandler>(new APIActivityLogger(this, context)));
 
   // Natives used by multiple APIs.
   module_system->RegisterNativeHandler("file_system_natives",
-      scoped_ptr<NativeHandler>(new FileSystemNatives(v8_context)));
+      scoped_ptr<NativeHandler>(new FileSystemNatives(context)));
 
   // Custom bindings.
   module_system->RegisterNativeHandler("app",
       scoped_ptr<NativeHandler>(new AppBindings(this, context)));
   module_system->RegisterNativeHandler("app_runtime",
       scoped_ptr<NativeHandler>(
-          new AppRuntimeCustomBindings(this, v8_context)));
+          new AppRuntimeCustomBindings(this, context)));
   module_system->RegisterNativeHandler("app_window",
       scoped_ptr<NativeHandler>(
-          new AppWindowCustomBindings(this, v8_context)));
+          new AppWindowCustomBindings(this, context)));
   module_system->RegisterNativeHandler("context_menus",
       scoped_ptr<NativeHandler>(
-          new ContextMenusCustomBindings(this, v8_context)));
+          new ContextMenusCustomBindings(this, context)));
   module_system->RegisterNativeHandler("extension",
       scoped_ptr<NativeHandler>(
-          new ExtensionCustomBindings(this, v8_context)));
+          new ExtensionCustomBindings(this, context)));
   module_system->RegisterNativeHandler("sync_file_system",
       scoped_ptr<NativeHandler>(
-          new SyncFileSystemCustomBindings(this, v8_context)));
+          new SyncFileSystemCustomBindings(this, context)));
   module_system->RegisterNativeHandler("file_browser_handler",
       scoped_ptr<NativeHandler>(new FileBrowserHandlerCustomBindings(
-          this, v8_context)));
+          this, context)));
   module_system->RegisterNativeHandler("file_browser_private",
       scoped_ptr<NativeHandler>(new FileBrowserPrivateCustomBindings(
-          this, v8_context)));
+          this, context)));
   module_system->RegisterNativeHandler("i18n",
       scoped_ptr<NativeHandler>(
-          new I18NCustomBindings(this, v8_context)));
+          new I18NCustomBindings(this, context)));
   module_system->RegisterNativeHandler("mediaGalleries",
       scoped_ptr<NativeHandler>(
-          new MediaGalleriesCustomBindings(this, v8_context)));
+          new MediaGalleriesCustomBindings(this, context)));
   module_system->RegisterNativeHandler("page_actions",
       scoped_ptr<NativeHandler>(
-          new PageActionsCustomBindings(this, v8_context)));
+          new PageActionsCustomBindings(this, context)));
   module_system->RegisterNativeHandler("page_capture",
       scoped_ptr<NativeHandler>(
-          new PageCaptureCustomBindings(this, v8_context)));
+          new PageCaptureCustomBindings(this, context)));
   module_system->RegisterNativeHandler("runtime",
       scoped_ptr<NativeHandler>(new RuntimeCustomBindings(this, context)));
   module_system->RegisterNativeHandler("tabs",
-      scoped_ptr<NativeHandler>(new TabsCustomBindings(this, v8_context)));
+      scoped_ptr<NativeHandler>(new TabsCustomBindings(this, context)));
   module_system->RegisterNativeHandler("tts",
-      scoped_ptr<NativeHandler>(new TTSCustomBindings(this, v8_context)));
+      scoped_ptr<NativeHandler>(new TTSCustomBindings(this, context)));
   module_system->RegisterNativeHandler("web_request",
       scoped_ptr<NativeHandler>(
-          new WebRequestCustomBindings(this, v8_context)));
+          new WebRequestCustomBindings(this, context)));
   module_system->RegisterNativeHandler("webstore",
       scoped_ptr<NativeHandler>(new WebstoreBindings(this, context)));
 }
@@ -1018,7 +1012,7 @@ void Dispatcher::DidCreateScriptContext(
       new ChromeV8Context(v8_context, frame, extension, context_type);
   v8_context_set_.Add(context);
 
-  scoped_ptr<ModuleSystem> module_system(new ModuleSystem(v8_context,
+  scoped_ptr<ModuleSystem> module_system(new ModuleSystem(context,
                                                           &source_map_));
   // Enable natives in startup.
   ModuleSystem::NativesEnabledScope natives_enabled_scope(module_system.get());
@@ -1026,23 +1020,23 @@ void Dispatcher::DidCreateScriptContext(
   RegisterNativeHandlers(module_system.get(), context);
 
   module_system->RegisterNativeHandler("chrome",
-      scoped_ptr<NativeHandler>(new ChromeNativeHandler(v8_context)));
+      scoped_ptr<NativeHandler>(new ChromeNativeHandler(context)));
   module_system->RegisterNativeHandler("chrome_hidden",
-      scoped_ptr<NativeHandler>(new ChromeHiddenNativeHandler(v8_context)));
+      scoped_ptr<NativeHandler>(new ChromeHiddenNativeHandler(context)));
   module_system->RegisterNativeHandler("print",
-      scoped_ptr<NativeHandler>(new PrintNativeHandler(v8_context)));
+      scoped_ptr<NativeHandler>(new PrintNativeHandler(context)));
   module_system->RegisterNativeHandler("lazy_background_page",
       scoped_ptr<NativeHandler>(
-          new LazyBackgroundPageNativeHandler(this, v8_context)));
+          new LazyBackgroundPageNativeHandler(this, context)));
   module_system->RegisterNativeHandler("logging",
-      scoped_ptr<NativeHandler>(new LoggingNativeHandler(v8_context)));
+      scoped_ptr<NativeHandler>(new LoggingNativeHandler(context)));
   module_system->RegisterNativeHandler("schema_registry",
       scoped_ptr<NativeHandler>(
-          new SchemaRegistryNativeHandler(v8_schema_registry(), v8_context)));
+          new SchemaRegistryNativeHandler(v8_schema_registry(), context)));
   module_system->RegisterNativeHandler("v8_context",
       scoped_ptr<NativeHandler>(new V8ContextNativeHandler(context, this)));
   module_system->RegisterNativeHandler("test_features",
-      scoped_ptr<NativeHandler>(new TestFeaturesNativeHandler(v8_context)));
+      scoped_ptr<NativeHandler>(new TestFeaturesNativeHandler(context)));
 
   int manifest_version = extension ? extension->manifest_version() : 1;
   bool send_request_disabled =
@@ -1050,7 +1044,7 @@ void Dispatcher::DidCreateScriptContext(
        BackgroundInfo::HasLazyBackgroundPage(extension));
   module_system->RegisterNativeHandler("process",
       scoped_ptr<NativeHandler>(new ProcessInfoNativeHandler(
-          this, v8_context, context->GetExtensionID(),
+          this, context, context->GetExtensionID(),
           context->GetContextTypeDescription(),
           ChromeRenderProcessObserver::is_incognito_process(),
           manifest_version, send_request_disabled)));

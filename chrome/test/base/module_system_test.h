@@ -5,6 +5,7 @@
 #ifndef CHROME_TEST_BASE_MODULE_SYSTEM_TEST_H_
 #define CHROME_TEST_BASE_MODULE_SYSTEM_TEST_H_
 
+#include "chrome/renderer/extensions/chrome_v8_context.h"
 #include "chrome/renderer/extensions/module_system.h"
 #include "chrome/renderer/extensions/scoped_persistent.h"
 #include "v8/include/v8.h"
@@ -53,7 +54,7 @@ class ModuleSystemTest : public testing::Test {
 
   v8::Isolate* isolate_;
   v8::HandleScope handle_scope_;
-  extensions::ScopedPersistent<v8::Context> context_;
+  scoped_ptr<extensions::ChromeV8Context> context_;
   AssertNatives* assert_natives_;
   scoped_ptr<StringSourceMap> source_map_;
   scoped_ptr<extensions::ModuleSystem> module_system_;

@@ -15,13 +15,14 @@
 #include "v8/include/v8.h"
 
 namespace extensions {
+class ChromeV8Context;
 
 // An ObjectBackedNativeHandler is a factory for JS objects with functions on
 // them that map to native C++ functions. Subclasses should call RouteFunction()
 // in their constructor to define functions on the created JS objects.
 class ObjectBackedNativeHandler : public NativeHandler {
  public:
-  explicit ObjectBackedNativeHandler(v8::Handle<v8::Context> context);
+  explicit ObjectBackedNativeHandler(ChromeV8Context* context);
   virtual ~ObjectBackedNativeHandler();
 
   // Create an object with bindings to the native functions defined through
@@ -38,7 +39,7 @@ class ObjectBackedNativeHandler : public NativeHandler {
   void RouteFunction(const std::string& name,
                      const HandlerFunction& handler_function);
 
-  v8::Handle<v8::Context> v8_context() { return v8_context_.get(); }
+  ChromeV8Context* context() { return context_; }
 
   virtual void Invalidate() OVERRIDE;
 
@@ -63,9 +64,7 @@ class ObjectBackedNativeHandler : public NativeHandler {
   typedef std::vector<v8::Persistent<v8::Object> > RouterData;
   RouterData router_data_;
 
-  // TODO(kalman): Just pass around a ChromeV8Context. It already has a
-  // persistent handle to this context.
-  ScopedPersistent<v8::Context> v8_context_;
+  ChromeV8Context* context_;
 
   ScopedPersistent<v8::ObjectTemplate> object_template_;
 

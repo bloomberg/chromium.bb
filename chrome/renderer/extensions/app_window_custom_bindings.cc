@@ -52,7 +52,7 @@ class DidCreateDocumentElementObserver : public content::RenderViewObserver {
 
 AppWindowCustomBindings::AppWindowCustomBindings(
     Dispatcher* dispatcher,
-    v8::Handle<v8::Context> context) : ChromeV8Extension(dispatcher, context) {
+    ChromeV8Context* context) : ChromeV8Extension(dispatcher, context) {
   RouteFunction("GetView",
       base::Bind(&AppWindowCustomBindings::GetView,
                  base::Unretained(this)));

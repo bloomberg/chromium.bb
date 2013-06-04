@@ -13,7 +13,7 @@ namespace extensions {
 class MediaGalleriesCustomBindings : public ChromeV8Extension {
  public:
   MediaGalleriesCustomBindings(Dispatcher* dispatcher,
-                               v8::Handle<v8::Context> context);
+                               ChromeV8Context* context);
 
  private:
   // FileSystemObject GetMediaFileSystem(string file_system_url): construct
@@ -31,4 +31,3 @@ class MediaGalleriesCustomBindings : public ChromeV8Extension {
 }  // extensions
 
 #endif  // CHROME_RENDERER_EXTENSIONS_MEDIA_GALLERIES_CUSTOM_BINDINGS_H_
-

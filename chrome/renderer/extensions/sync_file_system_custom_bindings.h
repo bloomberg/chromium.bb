@@ -14,7 +14,7 @@ namespace extensions {
 class SyncFileSystemCustomBindings : public ChromeV8Extension {
  public:
   SyncFileSystemCustomBindings(Dispatcher* dispatcher,
-                               v8::Handle<v8::Context> v8_context);
+                               ChromeV8Context* context);
 
  private:
   // FileSystemObject GetSyncFileSystemObject(string name, string root_url):

@@ -27,9 +27,8 @@ namespace {
 
 }  // namespace
 
-ExtensionCustomBindings::ExtensionCustomBindings(
-    Dispatcher* dispatcher,
-    v8::Handle<v8::Context> context)
+ExtensionCustomBindings::ExtensionCustomBindings(Dispatcher* dispatcher,
+                                                 ChromeV8Context* context)
     : ChromeV8Extension(dispatcher, context) {
   RouteFunction("GetExtensionViews",
       base::Bind(&ExtensionCustomBindings::GetExtensionViews,
