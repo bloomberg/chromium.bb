@@ -6,18 +6,6 @@
 -->
 
 <resources>
-    <!-- Favicon dimensions. Used to create bookmark shortcut images. -->
-    <dimen name="favicon_size">16dp</dimen>
-    <dimen name="favicon_colorstrip_width">32dp</dimen>
-    <dimen name="favicon_colorstrip_height">2dp</dimen>
-    <dimen name="favicon_colorstrip_padding">6dp</dimen>
-    <dimen name="favicon_colorstrip_corner_radii">1dp</dimen>
-    <dimen name="favicon_fold_size">8dp</dimen>
-    <dimen name="favicon_fold_corner_radii">1dp</dimen>
-    <dimen name="favicon_fold_shadow">2dp</dimen>
-    <dimen name="favicon_fold_border">1px</dimen>
-    <dimen name="touchicon_border_radii">10dp</dimen>
-
     <!-- Certificate Viewer Dimensions -->
     <dimen name="certificate_viewer_padding">20dp</dimen>
 
