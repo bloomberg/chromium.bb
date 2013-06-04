@@ -4,6 +4,7 @@
 
 #include "chrome/browser/prefs/pref_service_syncable_builder.h"
 
+#include "base/debug/trace_event.h"
 #include "base/prefs/default_pref_store.h"
 #include "base/prefs/pref_notifier_impl.h"
 #include "base/prefs/pref_value_store.h"
@@ -43,6 +44,7 @@ PrefServiceSyncableBuilder::WithCommandLine(CommandLine* command_line) {
 
 PrefServiceSyncable* PrefServiceSyncableBuilder::CreateSyncable(
     user_prefs::PrefRegistrySyncable* pref_registry) {
+  TRACE_EVENT0("browser", "PrefServiceSyncableBuilder::CreateSyncable");
   PrefNotifierImpl* pref_notifier = new PrefNotifierImpl();
   PrefServiceSyncable* pref_service = new PrefServiceSyncable(
       pref_notifier,

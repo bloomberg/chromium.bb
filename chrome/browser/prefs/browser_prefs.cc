@@ -5,6 +5,7 @@
 #include "chrome/browser/prefs/browser_prefs.h"
 
 #include "apps/prefs.h"
+#include "base/debug/trace_event.h"
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/about_flags.h"
@@ -278,6 +279,7 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
 }
 
 void RegisterUserPrefs(user_prefs::PrefRegistrySyncable* registry) {
+  TRACE_EVENT0("browser", "chrome::RegisterUserPrefs");
   // User prefs. Please keep this list alphabetized.
   AlternateErrorPageTabObserver::RegisterUserPrefs(registry);
   autofill::AutofillDialogControllerImpl::RegisterUserPrefs(registry);

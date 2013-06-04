@@ -5,6 +5,7 @@
 #include "chrome/browser/prefs/chrome_pref_service_factory.h"
 
 #include "base/bind.h"
+#include "base/debug/trace_event.h"
 #include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/metrics/histogram.h"
@@ -118,6 +119,7 @@ PrefServiceSyncable* CreateProfilePrefs(
     const scoped_refptr<PrefStore>& extension_prefs,
     const scoped_refptr<user_prefs::PrefRegistrySyncable>& pref_registry,
     bool async) {
+  TRACE_EVENT0("browser", "chrome_prefs::CreateProfilePrefs");
   PrefServiceSyncableBuilder builder;
   PrepareBuilder(&builder,
                  pref_filename,
