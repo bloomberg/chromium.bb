@@ -40,6 +40,9 @@ FileGrid.decorate = function(self, metadataCache) {
     FileGrid.Item.decorate(item, entry, self);
     return item;
   };
+
+  self.relayoutAggregation_ =
+      new AsyncUtil.Aggregation(self.relayoutImmediately_.bind(self));
 };
 
 /**
@@ -64,18 +67,19 @@ FileGrid.prototype.updateListItemsMetadata = function(type, props) {
  * Redraws the UI. Skips multiple consecutive calls.
  */
 FileGrid.prototype.relayout = function() {
-  if (this.resizeGridTimer_) {
-    clearTimeout(this.resizeGridTimer_);
-    this.resizeGridTimer_ = null;
-  }
-  this.resizeGridTimer_ = setTimeout(function() {
-    this.startBatchUpdates();
-    this.columns = 0;
-    this.redraw();
-    cr.dispatchSimpleEvent(this, 'relayout');
-    this.endBatchUpdates();
-    this.resizeGridTimer_ = null;
-  }.bind(this), 100);
+  this.relayoutAggregation_.run();
+};
+
+/**
+ * Redraws the UI immediately.
+ * @private
+ */
+FileGrid.prototype.relayoutImmediately_ = function() {
+  this.startBatchUpdates();
+  this.columns = 0;
+  this.redraw();
+  this.endBatchUpdates();
+  cr.dispatchSimpleEvent(this, 'relayout');
 };
 
 /**

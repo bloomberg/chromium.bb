@@ -287,6 +287,9 @@ FileTable.decorate = function(self, metadataCache, fullPage) {
       self.updateSelectAllCheckboxState_(selectAll);
   };
 
+  self.relayoutAggregation_ =
+      new AsyncUtil.Aggregation(self.relayoutImmediately_.bind(self));
+
   Object.defineProperty(self.list_, 'selectionModel', {
     get: function() {
       return this.selectionModel_;
@@ -805,19 +808,20 @@ FileTable.prototype.renderIconType_ = function(entry, columnId, table) {
  * Redraws the UI. Skips multiple consecutive calls.
  */
 FileTable.prototype.relayout = function() {
-  if (this.resizeTableTimer_) {
-    clearTimeout(this.resizeTableTimer_);
-    this.resizeTableTimer_ = null;
+  this.relayoutAggregation_.run();
+};
+
+/**
+ * Redraws the UI immediately.
+ * @private
+ */
+FileTable.prototype.relayoutImmediately_ = function() {
+  if (util.platform.newUI()) {
+    if (this.clientWidth > 0)
+      this.normalizeColumns();
   }
-  this.resizeTableTimer_ = setTimeout(function() {
-    if (util.platform.newUI()) {
-      if (this.clientWidth > 0)
-        this.normalizeColumns();
-    }
-    this.redraw();
-    cr.dispatchSimpleEvent(this.list, 'relayout');
-    this.resizeTableTimer_ = null;
-  }.bind(this), 100);
+  this.redraw();
+  cr.dispatchSimpleEvent(this.list, 'relayout');
 };
 
 /**

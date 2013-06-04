@@ -1617,8 +1617,10 @@ DialogType.isModal = function(type) {
    * @private
    */
   FileManager.prototype.onResize_ = function() {
-    this.table_.relayout();
-    this.grid_.relayout();
+    if (this.listType_ == FileManager.ListType.THUMBNAIL)
+      this.grid_.relayout();
+    else
+      this.table_.relayout();
     this.directoryTree_.relayout();
 
     if (!util.platform.newUI()) {
