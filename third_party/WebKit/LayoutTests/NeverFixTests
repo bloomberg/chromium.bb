@@ -70,6 +70,7 @@ fast/harness/sample-fail-mismatch-reftest.html [ WontFix ImageOnlyFailure ]
 [ Linux Mac ] fast/events/panScroll-in-iframe.html [ WontFix ]
 [ Linux Mac ] fast/events/panScroll-nested-divs.html [ WontFix ]
 [ Linux Mac ] fast/events/panScroll-panIcon.html [ WontFix ]
+[ Linux Mac ] fast/events/panScroll-nested-divs-forbidden.html [ WontFix ]
 
 # These tests are specific to Windows and Linux.
 [ Mac ] fast/forms/calendar-picker/date-open-picker-with-f4-key.html [ WontFix ]
