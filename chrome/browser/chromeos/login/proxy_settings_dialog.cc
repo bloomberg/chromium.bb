@@ -8,6 +8,7 @@
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/proxy_config_service_impl.h"
+#include "chrome/browser/chromeos/ui_proxy_config_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/url_constants.h"
@@ -59,10 +60,11 @@ ProxySettingsDialog::ProxySettingsDialog(LoginWebDialog::Delegate* delegate,
 
   // Get network name for dialog title.
   Profile* profile = ProfileHelper::GetSigninProfile();
-  PrefProxyConfigTracker* proxy_tracker = profile->GetProxyConfigTracker();
-  proxy_tracker->UIMakeActiveNetworkCurrent();
+  UIProxyConfigService& proxy_config_service =
+      profile->GetProxyConfigTracker()->GetUIService();
+  proxy_config_service.MakeActiveNetworkCurrent();
   std::string network_name;
-  proxy_tracker->UIGetCurrentNetworkName(&network_name);
+  proxy_config_service.GetCurrentNetworkName(&network_name);
   SetDialogTitle(l10n_util::GetStringFUTF16(IDS_PROXY_PAGE_TITLE_FORMAT,
                                             ASCIIToUTF16(network_name)));
 }

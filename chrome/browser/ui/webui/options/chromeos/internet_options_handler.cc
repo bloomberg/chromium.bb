@@ -38,6 +38,7 @@
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/sim_dialog_delegate.h"
 #include "chrome/browser/chromeos/status/network_menu_icon.h"
+#include "chrome/browser/chromeos/ui_proxy_config_service.h"
 #include "chrome/browser/net/pref_proxy_config_tracker.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -1240,8 +1241,8 @@ void InternetOptionsHandler::PopulateIPConfigsCallback(
   if (!network)
     return;
 
-  Profile::FromWebUI(web_ui())->GetProxyConfigTracker()->UISetCurrentNetwork(
-      service_path);
+  Profile::FromWebUI(web_ui())->
+      GetProxyConfigTracker()->GetUIService().SetCurrentNetwork(service_path);
 
   const chromeos::NetworkUIData& ui_data = network->ui_data();
   const chromeos::NetworkPropertyUIData property_ui_data(ui_data.onc_source());

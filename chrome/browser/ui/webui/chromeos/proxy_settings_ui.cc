@@ -11,6 +11,7 @@
 #include "chrome/browser/chromeos/proxy_config_service_impl.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/system/statistics_provider.h"
+#include "chrome/browser/chromeos/ui_proxy_config_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/options/chromeos/core_chromeos_options_handler.h"
 #include "chrome/browser/ui/webui/options/chromeos/proxy_handler.h"
@@ -126,10 +127,11 @@ void ProxySettingsUI::InitializeHandlers() {
   core_handler_->InitializePage();
   proxy_handler_->InitializePage();
   Profile* profile = Profile::FromWebUI(web_ui());
-  PrefProxyConfigTracker* proxy_tracker = profile->GetProxyConfigTracker();
-  proxy_tracker->UIMakeActiveNetworkCurrent();
+  UIProxyConfigService& proxy_config_service =
+      profile->GetProxyConfigTracker()->GetUIService();
+  proxy_config_service.MakeActiveNetworkCurrent();
   std::string network_name;
-  proxy_tracker->UIGetCurrentNetworkName(&network_name);
+  proxy_config_service.GetCurrentNetworkName(&network_name);
 }
 
 }  // namespace chromeos

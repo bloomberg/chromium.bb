@@ -129,7 +129,7 @@ PrefProxyConfigTrackerImpl::PrefProxyConfigTrackerImpl(
     : pref_service_(pref_service),
       chrome_proxy_config_service_(NULL),
       update_pending_(true) {
-  config_state_ = ReadPrefConfig(&pref_config_);
+  config_state_ = ReadPrefConfig(pref_service_, &pref_config_);
   proxy_prefs_.Init(pref_service);
   proxy_prefs_.Add(prefs::kProxy,
                    base::Bind(&PrefProxyConfigTrackerImpl::OnProxyPrefChanged,
@@ -210,6 +210,40 @@ void PrefProxyConfigTrackerImpl::RegisterUserPrefs(
       prefs::kProxy,
       default_settings,
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+}
+
+// static
+ProxyPrefs::ConfigState PrefProxyConfigTrackerImpl::ReadPrefConfig(
+    const PrefService* pref_service,
+    net::ProxyConfig* config) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  // Clear the configuration and source.
+  *config = net::ProxyConfig();
+  ProxyPrefs::ConfigState config_state = ProxyPrefs::CONFIG_UNSET;
+
+  const PrefService::Preference* pref =
+      pref_service->FindPreference(prefs::kProxy);
+  DCHECK(pref);
+
+  const DictionaryValue* dict = pref_service->GetDictionary(prefs::kProxy);
+  DCHECK(dict);
+  ProxyConfigDictionary proxy_dict(dict);
+
+  if (PrefConfigToNetConfig(proxy_dict, config)) {
+    if (!pref->IsUserModifiable() || pref->HasUserSetting()) {
+      if (pref->IsManaged())
+        config_state = ProxyPrefs::CONFIG_POLICY;
+      else if (pref->IsExtensionControlled())
+        config_state = ProxyPrefs::CONFIG_EXTENSION;
+      else
+        config_state = ProxyPrefs::CONFIG_OTHER_PRECEDE;
+    } else  {
+      config_state = ProxyPrefs::CONFIG_FALLBACK;
+    }
+  }
+
+  return config_state;
 }
 
 ProxyPrefs::ConfigState PrefProxyConfigTrackerImpl::GetProxyConfig(
@@ -301,7 +335,8 @@ bool PrefProxyConfigTrackerImpl::PrefConfigToNetConfig(
 void PrefProxyConfigTrackerImpl::OnProxyPrefChanged() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   net::ProxyConfig new_config;
-  ProxyPrefs::ConfigState config_state = ReadPrefConfig(&new_config);
+  ProxyPrefs::ConfigState config_state = ReadPrefConfig(pref_service_,
+                                                        &new_config);
   if (config_state_ != config_state ||
       (config_state_ != ProxyPrefs::CONFIG_UNSET &&
        !pref_config_.Equals(new_config))) {
@@ -312,36 +347,4 @@ void PrefProxyConfigTrackerImpl::OnProxyPrefChanged() {
   }
   if (update_pending_)
     OnProxyConfigChanged(config_state, new_config);
-}
-
-ProxyPrefs::ConfigState PrefProxyConfigTrackerImpl::ReadPrefConfig(
-    net::ProxyConfig* config) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  // Clear the configuration and source.
-  *config = net::ProxyConfig();
-  ProxyPrefs::ConfigState config_state = ProxyPrefs::CONFIG_UNSET;
-
-  const PrefService::Preference* pref =
-      pref_service_->FindPreference(prefs::kProxy);
-  DCHECK(pref);
-
-  const DictionaryValue* dict = pref_service_->GetDictionary(prefs::kProxy);
-  DCHECK(dict);
-  ProxyConfigDictionary proxy_dict(dict);
-
-  if (PrefConfigToNetConfig(proxy_dict, config)) {
-    if (!pref->IsUserModifiable() || pref->HasUserSetting()) {
-      if (pref->IsManaged())
-        config_state = ProxyPrefs::CONFIG_POLICY;
-      else if (pref->IsExtensionControlled())
-        config_state = ProxyPrefs::CONFIG_EXTENSION;
-      else
-        config_state = ProxyPrefs::CONFIG_OTHER_PRECEDE;
-    } else  {
-      config_state = ProxyPrefs::CONFIG_FALLBACK;
-    }
-  }
-
-  return config_state;
 }

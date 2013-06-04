@@ -218,7 +218,7 @@ void ProxyConfig::ClearAutomaticSettings() {
   pac_url_ = GURL();
 }
 
-base::Value* ProxyConfig::ToValue() const {
+base::DictionaryValue* ProxyConfig::ToValue() const {
   base::DictionaryValue* dict = new base::DictionaryValue();
 
   // Output the automatic settings.

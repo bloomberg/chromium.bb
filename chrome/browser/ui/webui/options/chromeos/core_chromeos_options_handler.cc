@@ -16,6 +16,7 @@
 #include "chrome/browser/chromeos/proxy_config_service_impl.h"
 #include "chrome/browser/chromeos/proxy_cros_settings_parser.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
+#include "chrome/browser/chromeos/ui_proxy_config_service.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chromeos/ui_account_tweaks.h"
@@ -94,7 +95,7 @@ CoreChromeOSOptionsHandler::CoreChromeOSOptionsHandler()
 CoreChromeOSOptionsHandler::~CoreChromeOSOptionsHandler() {
   PrefProxyConfigTracker* proxy_tracker =
       Profile::FromWebUI(web_ui())->GetProxyConfigTracker();
-  proxy_tracker->RemoveNotificationCallback(
+  proxy_tracker->GetUIService().RemoveNotificationCallback(
       base::Bind(&CoreChromeOSOptionsHandler::NotifyProxyPrefsChanged,
                  pointer_factory_.GetWeakPtr()));
 }
@@ -111,7 +112,7 @@ void CoreChromeOSOptionsHandler::InitializeHandler() {
   // Observe the chromeos::ProxyConfigServiceImpl for changes from the UI.
   PrefProxyConfigTracker* proxy_tracker =
       Profile::FromWebUI(web_ui())->GetProxyConfigTracker();
-  proxy_tracker->AddNotificationCallback(
+  proxy_tracker->GetUIService().AddNotificationCallback(
       base::Bind(&CoreChromeOSOptionsHandler::NotifyProxyPrefsChanged,
                  pointer_factory_.GetWeakPtr()));
 }

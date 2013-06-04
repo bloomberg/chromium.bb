@@ -51,6 +51,7 @@
 #include "chromeos/disks/disk_mount_manager.h"
 #include "chromeos/disks/mock_disk_mount_manager.h"
 #include "chromeos/login/login_state.h"
+#include "chromeos/network/network_handler.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread.h"
 #include "content/public/test/test_utils.h"
@@ -216,6 +217,8 @@ class LoginUtilsTest : public testing::Test,
     CryptohomeLibrary::Initialize();
     LoginState::Initialize();
     ConnectivityStateHelper::SetForTest(&mock_connectivity_state_helper_);
+    EXPECT_CALL(mock_connectivity_state_helper_, DefaultNetworkOnline())
+        .WillRepeatedly(Return(false));
 
     mock_input_method_manager_ = new input_method::MockInputMethodManager();
     input_method::InitializeForTesting(mock_input_method_manager_);
@@ -275,6 +278,10 @@ class LoginUtilsTest : public testing::Test,
     connector_ = browser_process_->browser_policy_connector();
     connector_->Init(local_state_.Get(),
                      browser_process_->system_request_context());
+
+    // IOThread creates ProxyConfigServiceImpl which in turn needs
+    // NetworkHandler. Thus initialize it here before creating IOThread.
+    NetworkHandler::Initialize();
 
     io_thread_state_.reset(new IOThread(local_state_.Get(),
                                         browser_process_->policy_service(),

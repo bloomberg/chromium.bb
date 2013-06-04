@@ -7,6 +7,8 @@
 #include "base/string_util.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/proxy_config_service_impl.h"
+#include "chrome/browser/chromeos/ui_proxy_config.h"
+#include "chrome/browser/chromeos/ui_proxy_config_service.h"
 #include "chrome/browser/profiles/profile.h"
 
 namespace chromeos {
@@ -55,15 +57,13 @@ const size_t kProxySettingsCount = arraysize(kProxySettings);
 
 namespace {
 
-base::Value* CreateServerHostValue(
-    const ProxyConfigServiceImpl::ProxyConfig::ManualProxy& proxy) {
+base::Value* CreateServerHostValue(const UIProxyConfig::ManualProxy& proxy) {
   return proxy.server.is_valid() ?
          new base::StringValue(proxy.server.host_port_pair().host()) :
          NULL;
 }
 
-base::Value* CreateServerPortValue(
-    const ProxyConfigServiceImpl::ProxyConfig::ManualProxy& proxy) {
+base::Value* CreateServerPortValue(const UIProxyConfig::ManualProxy& proxy) {
   return proxy.server.is_valid() ?
          base::Value::CreateIntegerValue(proxy.server.host_port_pair().port()) :
          NULL;
@@ -91,7 +91,7 @@ net::ProxyServer CreateProxyServer(std::string host,
 
 net::ProxyServer CreateProxyServerFromHost(
     const std::string& host,
-    const ProxyConfigServiceImpl::ProxyConfig::ManualProxy& proxy,
+    const UIProxyConfig::ManualProxy& proxy,
     net::ProxyServer::Scheme scheme) {
   uint16 port = 0;
   if (proxy.server.is_valid())
@@ -101,7 +101,7 @@ net::ProxyServer CreateProxyServerFromHost(
 
 net::ProxyServer CreateProxyServerFromPort(
     uint16 port,
-    const ProxyConfigServiceImpl::ProxyConfig::ManualProxy& proxy,
+    const UIProxyConfig::ManualProxy& proxy,
     net::ProxyServer::Scheme scheme) {
   std::string host;
   if (proxy.server.is_valid())
@@ -125,59 +125,59 @@ void SetProxyPrefValue(Profile* profile,
     return;
   }
 
-  chromeos::ProxyConfigServiceImpl* config_service =
-      profile->GetProxyConfigTracker();
+  UIProxyConfigService* config_service =
+      &profile->GetProxyConfigTracker()->GetUIService();
   // Retrieve proxy config.
-  chromeos::ProxyConfigServiceImpl::ProxyConfig config;
-  config_service->UIGetProxyConfig(&config);
+  UIProxyConfig config;
+  config_service->GetProxyConfig(&config);
 
   if (path == kProxyPacUrl) {
     std::string val;
     if (in_value->GetAsString(&val)) {
       GURL url(val);
       if (url.is_valid())
-        config_service->UISetProxyConfigToPACScript(url);
+        config.SetPacUrl(url);
       else
-        config_service->UISetProxyConfigToAutoDetect();
+        config.mode = UIProxyConfig::MODE_AUTO_DETECT;
     }
   } else if (path == kProxySingleHttp) {
     std::string val;
     if (in_value->GetAsString(&val)) {
-      config_service->UISetProxyConfigToSingleProxy(CreateProxyServerFromHost(
+      config.SetSingleProxy(CreateProxyServerFromHost(
           val, config.single_proxy, net::ProxyServer::SCHEME_HTTP));
     }
   } else if (path == kProxySingleHttpPort) {
     int val;
     if (in_value->GetAsInteger(&val)) {
-      config_service->UISetProxyConfigToSingleProxy(CreateProxyServerFromPort(
+      config.SetSingleProxy(CreateProxyServerFromPort(
           val, config.single_proxy, net::ProxyServer::SCHEME_HTTP));
     }
   } else if (path == kProxyHttpUrl) {
     std::string val;
     if (in_value->GetAsString(&val)) {
-      config_service->UISetProxyConfigToProxyPerScheme("http",
-          CreateProxyServerFromHost(
+      config.SetProxyForScheme(
+          "http", CreateProxyServerFromHost(
               val, config.http_proxy, net::ProxyServer::SCHEME_HTTP));
     }
   } else if (path == kProxyHttpPort) {
     int val;
     if (in_value->GetAsInteger(&val)) {
-      config_service->UISetProxyConfigToProxyPerScheme("http",
-          CreateProxyServerFromPort(
+      config.SetProxyForScheme(
+          "http", CreateProxyServerFromPort(
               val, config.http_proxy, net::ProxyServer::SCHEME_HTTP));
     }
   } else if (path == kProxyHttpsUrl) {
     std::string val;
     if (in_value->GetAsString(&val)) {
-      config_service->UISetProxyConfigToProxyPerScheme("https",
-          CreateProxyServerFromHost(
+      config.SetProxyForScheme(
+          "https", CreateProxyServerFromHost(
               val, config.https_proxy, net::ProxyServer::SCHEME_HTTP));
     }
   } else if (path == kProxyHttpsPort) {
     int val;
     if (in_value->GetAsInteger(&val)) {
-      config_service->UISetProxyConfigToProxyPerScheme("https",
-          CreateProxyServerFromPort(
+      config.SetProxyForScheme(
+          "https", CreateProxyServerFromPort(
               val, config.https_proxy, net::ProxyServer::SCHEME_HTTP));
     }
   } else if (path == kProxyType) {
@@ -185,97 +185,89 @@ void SetProxyPrefValue(Profile* profile,
     if (in_value->GetAsInteger(&val)) {
       if (val == 3) {
         if (config.automatic_proxy.pac_url.is_valid())
-          config_service->UISetProxyConfigToPACScript(
-              config.automatic_proxy.pac_url);
+          config.SetPacUrl(config.automatic_proxy.pac_url);
         else
-          config_service->UISetProxyConfigToAutoDetect();
+          config.mode = UIProxyConfig::MODE_AUTO_DETECT;
       } else if (val == 2) {
         if (config.single_proxy.server.is_valid()) {
-          config_service->UISetProxyConfigToSingleProxy(
-              config.single_proxy.server);
+          config.SetSingleProxy(config.single_proxy.server);
         } else {
           bool set_config = false;
           if (config.http_proxy.server.is_valid()) {
-            config_service->UISetProxyConfigToProxyPerScheme("http",
-                config.http_proxy.server);
+            config.SetProxyForScheme("http", config.http_proxy.server);
             set_config = true;
           }
           if (config.https_proxy.server.is_valid()) {
-            config_service->UISetProxyConfigToProxyPerScheme("https",
-                config.https_proxy.server);
+            config.SetProxyForScheme("https", config.https_proxy.server);
             set_config = true;
           }
           if (config.ftp_proxy.server.is_valid()) {
-            config_service->UISetProxyConfigToProxyPerScheme("ftp",
-                config.ftp_proxy.server);
+            config.SetProxyForScheme("ftp", config.ftp_proxy.server);
             set_config = true;
           }
           if (config.socks_proxy.server.is_valid()) {
-            config_service->UISetProxyConfigToProxyPerScheme("socks",
-                config.socks_proxy.server);
+            config.SetProxyForScheme("socks", config.socks_proxy.server);
             set_config = true;
           }
-          if (!set_config) {
-            config_service->UISetProxyConfigToProxyPerScheme("http",
-                net::ProxyServer());
-          }
+          if (!set_config)
+            config.SetProxyForScheme("http", net::ProxyServer());
         }
       } else {
-        config_service->UISetProxyConfigToDirect();
+        config.mode = UIProxyConfig::MODE_DIRECT;
       }
     }
   } else if (path == kProxySingle) {
     bool val;
     if (in_value->GetAsBoolean(&val)) {
       if (val)
-        config_service->UISetProxyConfigToSingleProxy(
-            config.single_proxy.server);
+        config.SetSingleProxy(config.single_proxy.server);
       else
-        config_service->UISetProxyConfigToProxyPerScheme("http",
-            config.http_proxy.server);
+        config.SetProxyForScheme("http", config.http_proxy.server);
     }
   } else if (path == kProxyUsePacUrl) {
     bool use_pac_url;
     if (in_value->GetAsBoolean(&use_pac_url)) {
-      if (use_pac_url && config.automatic_proxy.pac_url.is_valid()) {
-        config_service->UISetProxyConfigToPACScript(
-            config.automatic_proxy.pac_url);
-      } else {
-        config_service->UISetProxyConfigToAutoDetect();
-      }
+      if (use_pac_url && config.automatic_proxy.pac_url.is_valid())
+        config.SetPacUrl(config.automatic_proxy.pac_url);
+      else
+        config.mode = UIProxyConfig::MODE_AUTO_DETECT;
     }
   } else if (path == kProxyFtpUrl) {
     std::string val;
     if (in_value->GetAsString(&val)) {
-      config_service->UISetProxyConfigToProxyPerScheme("ftp",
-          CreateProxyServerFromHost(
+      config.SetProxyForScheme(
+          "ftp", CreateProxyServerFromHost(
               val, config.ftp_proxy, net::ProxyServer::SCHEME_HTTP));
     }
   } else if (path == kProxyFtpPort) {
     int val;
     if (in_value->GetAsInteger(&val)) {
-      config_service->UISetProxyConfigToProxyPerScheme("ftp",
-          CreateProxyServerFromPort(
+      config.SetProxyForScheme(
+          "ftp", CreateProxyServerFromPort(
               val, config.ftp_proxy, net::ProxyServer::SCHEME_HTTP));
     }
   } else if (path == kProxySocks) {
     std::string val;
     if (in_value->GetAsString(&val)) {
-      config_service->UISetProxyConfigToProxyPerScheme("socks",
-          CreateProxyServerFromHost(val, config.socks_proxy,
-                                    StartsWithASCII(val, "socks5://", false) ?
-                                        net::ProxyServer::SCHEME_SOCKS5 :
-                                        net::ProxyServer::SCHEME_SOCKS4));
+      config.SetProxyForScheme(
+          "socks", CreateProxyServerFromHost(
+              val,
+              config.socks_proxy,
+              StartsWithASCII(val, "socks5://", false) ?
+              net::ProxyServer::SCHEME_SOCKS5 :
+              net::ProxyServer::SCHEME_SOCKS4));
     }
   } else if (path == kProxySocksPort) {
     int val;
     if (in_value->GetAsInteger(&val)) {
       std::string host = config.socks_proxy.server.host_port_pair().host();
-      config_service->UISetProxyConfigToProxyPerScheme("socks",
-          CreateProxyServerFromPort(val, config.socks_proxy,
-                                    StartsWithASCII(host, "socks5://", false) ?
-                                        net::ProxyServer::SCHEME_SOCKS5 :
-                                        net::ProxyServer::SCHEME_SOCKS4));
+      config.SetProxyForScheme(
+          "socks", CreateProxyServerFromPort(
+              val,
+              config.socks_proxy,
+              StartsWithASCII(host, "socks5://", false) ?
+              net::ProxyServer::SCHEME_SOCKS5 :
+              net::ProxyServer::SCHEME_SOCKS4));
     }
   } else if (path == kProxyIgnoreList) {
     net::ProxyBypassRules bypass_rules;
@@ -283,13 +275,17 @@ void SetProxyPrefValue(Profile* profile,
       const ListValue* list_value = static_cast<const ListValue*>(in_value);
       for (size_t x = 0; x < list_value->GetSize(); x++) {
         std::string val;
-        if (list_value->GetString(x, &val)) {
+        if (list_value->GetString(x, &val))
           bypass_rules.AddRuleFromString(val);
-        }
       }
-      config_service->UISetProxyConfigBypassRules(bypass_rules);
+      config.SetBypassRules(bypass_rules);
     }
+  } else {
+    LOG(WARNING) << "Unknown proxy settings path " << path;
+    return;
   }
+
+  config_service->SetProxyConfig(config);
 }
 
 bool GetProxyPrefValue(Profile* profile,
@@ -297,15 +293,14 @@ bool GetProxyPrefValue(Profile* profile,
                        base::Value** out_value) {
   std::string controlled_by;
   base::Value* data = NULL;
-  chromeos::ProxyConfigServiceImpl* config_service =
-      profile->GetProxyConfigTracker();
-  chromeos::ProxyConfigServiceImpl::ProxyConfig config;
-  config_service->UIGetProxyConfig(&config);
+  UIProxyConfigService& config_service =
+      profile->GetProxyConfigTracker()->GetUIService();
+  UIProxyConfig config;
+  config_service.GetProxyConfig(&config);
 
   if (path == kProxyPacUrl) {
     // Only show pacurl for pac-script mode.
-    if (config.mode ==
-            chromeos::ProxyConfigServiceImpl::ProxyConfig::MODE_PAC_SCRIPT &&
+    if (config.mode == UIProxyConfig::MODE_PAC_SCRIPT &&
         config.automatic_proxy.pac_url.is_valid()) {
       data = new base::StringValue(config.automatic_proxy.pac_url.spec());
     }
@@ -318,15 +313,11 @@ bool GetProxyPrefValue(Profile* profile,
   } else if (path == kProxyHttpsUrl) {
     data = CreateServerHostValue(config.https_proxy);
   } else if (path == kProxyType) {
-    if (config.mode ==
-        chromeos::ProxyConfigServiceImpl::ProxyConfig::MODE_AUTO_DETECT ||
-        config.mode ==
-        chromeos::ProxyConfigServiceImpl::ProxyConfig::MODE_PAC_SCRIPT) {
+    if (config.mode == UIProxyConfig::MODE_AUTO_DETECT ||
+        config.mode == UIProxyConfig::MODE_PAC_SCRIPT) {
       data = base::Value::CreateIntegerValue(3);
-    } else if (config.mode ==
-        chromeos::ProxyConfigServiceImpl::ProxyConfig::MODE_SINGLE_PROXY ||
-        config.mode ==
-        chromeos::ProxyConfigServiceImpl::ProxyConfig::MODE_PROXY_PER_SCHEME) {
+    } else if (config.mode == UIProxyConfig::MODE_SINGLE_PROXY ||
+               config.mode == UIProxyConfig::MODE_PROXY_PER_SCHEME) {
       data = base::Value::CreateIntegerValue(2);
     } else {
       data = base::Value::CreateIntegerValue(1);
@@ -347,11 +338,11 @@ bool GetProxyPrefValue(Profile* profile,
         break;
     }
   } else if (path == kProxySingle) {
-    data = base::Value::CreateBooleanValue(config.mode ==
-        chromeos::ProxyConfigServiceImpl::ProxyConfig::MODE_SINGLE_PROXY);
+    data = base::Value::CreateBooleanValue(
+        config.mode == UIProxyConfig::MODE_SINGLE_PROXY);
   } else if (path == kProxyUsePacUrl) {
-    data = base::Value::CreateBooleanValue(config.mode ==
-        chromeos::ProxyConfigServiceImpl::ProxyConfig::MODE_PAC_SCRIPT);
+    data = base::Value::CreateBooleanValue(
+        config.mode == UIProxyConfig::MODE_PAC_SCRIPT);
   } else if (path == kProxyFtpUrl) {
     data = CreateServerHostValue(config.ftp_proxy);
   } else if (path == kProxySocks) {
@@ -367,9 +358,8 @@ bool GetProxyPrefValue(Profile* profile,
   } else if (path == kProxyIgnoreList) {
     ListValue* list =  new ListValue();
     net::ProxyBypassRules::RuleList bypass_rules = config.bypass_rules.rules();
-    for (size_t x = 0; x < bypass_rules.size(); x++) {
+    for (size_t x = 0; x < bypass_rules.size(); x++)
       list->Append(new base::StringValue(bypass_rules[x]->ToString()));
-    }
     data = list;
   } else {
     *out_value = NULL;

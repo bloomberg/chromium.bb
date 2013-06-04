@@ -63,6 +63,7 @@ bool IntToProxyMode(int in_value, ProxyMode* out_value);
 bool StringToProxyMode(const std::string& in_value, ProxyMode* out_value);
 // Ownership of the return value is NOT passed to the caller.
 const char* ProxyModeToString(ProxyMode mode);
+std::string ConfigStateToDebugString(ConfigState state);
 
 }  // namespace ProxyPrefs
 

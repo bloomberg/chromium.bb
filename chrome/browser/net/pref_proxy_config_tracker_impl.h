@@ -125,6 +125,12 @@ class PrefProxyConfigTrackerImpl {
   static void RegisterPrefs(PrefRegistrySimple* registry);
   static void RegisterUserPrefs(user_prefs::PrefRegistrySyncable* registry);
 
+  // Creates a proxy configuration from proxy-related preferences of
+  // |pref_service|. Configuration is stored in |config|, return value indicates
+  // whether the configuration is valid.
+  static ProxyPrefs::ConfigState ReadPrefConfig(const PrefService* pref_service,
+                                                net::ProxyConfig* config);
+
  protected:
   // Get the proxy configuration currently defined by preferences.
   // Status is indicated in the return value.
@@ -143,11 +149,6 @@ class PrefProxyConfigTrackerImpl {
   bool update_pending() const { return update_pending_; }
 
  private:
-  // Creates a proxy configuration from proxy-related preferences. Configuration
-  // is stored in |config|, return value indicates whether the configuration is
-  // valid.
-  ProxyPrefs::ConfigState ReadPrefConfig(net::ProxyConfig* config);
-
   // Tracks configuration state. |pref_config_| is valid only if |config_state_|
   // is not CONFIG_UNSET.
   ProxyPrefs::ConfigState config_state_;

@@ -170,7 +170,7 @@ class NET_EXPORT ProxyConfig {
 
   // Creates a Value dump of this configuration. The caller is responsible for
   // deleting the returned value.
-  base::Value* ToValue() const;
+  base::DictionaryValue* ToValue() const;
 
   ProxyRules& proxy_rules() {
     return proxy_rules_;

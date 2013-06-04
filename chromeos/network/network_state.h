@@ -10,6 +10,7 @@
 
 #include "base/values.h"
 #include "chromeos/network/managed_state.h"
+#include "chromeos/network/onc/onc_constants.h"
 
 namespace chromeos {
 
@@ -48,6 +49,7 @@ class CHROMEOS_EXPORT NetworkState : public ManagedState {
   bool favorite() const { return favorite_; }
   int priority() const { return priority_; }
   const base::DictionaryValue& proxy_config() const { return proxy_config_; }
+  onc::ONCSource onc_source() const { return onc_source_; }
   // Wireless property accessors
   int signal_strength() const { return signal_strength_; }
   bool connectable() const { return connectable_; }
@@ -102,9 +104,10 @@ class CHROMEOS_EXPORT NetworkState : public ManagedState {
   bool auto_connect_;
   bool favorite_;
   int priority_;
-  // TODO(pneubeck): Remove this property once NetworkConfigurationHandler
-  // provides proxy configuration. crbug/241775
+  // TODO(pneubeck): Remove ProxyConfig and ONCSource once
+  // NetworkConfigurationHandler provides proxy configuration. crbug/241775
   base::DictionaryValue proxy_config_;
+  onc::ONCSource onc_source_;
   // IPConfig properties.
   // Note: These do not correspond to actual Shill.Service properties
   // but are derived from the service's corresponding IPConfig object.

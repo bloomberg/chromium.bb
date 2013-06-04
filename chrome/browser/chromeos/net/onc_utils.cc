@@ -4,11 +4,14 @@
 
 #include "chrome/browser/chromeos/net/onc_utils.h"
 
+#include "base/logging.h"
 #include "base/values.h"
-#include "chrome/browser/chromeos/proxy_config_service_impl.h"
+#include "chrome/browser/chromeos/ui_proxy_config.h"
 #include "chrome/browser/prefs/proxy_config_dictionary.h"
 #include "chromeos/network/onc/onc_utils.h"
 #include "googleurl/src/gurl.h"
+#include "net/base/host_port_pair.h"
+#include "net/proxy/proxy_bypass_rules.h"
 #include "net/proxy/proxy_server.h"
 
 namespace chromeos {
@@ -62,8 +65,7 @@ void AppendProxyServerForScheme(
   net::ProxyServer proxy_server = ConvertOncProxyLocationToHostPort(
       default_proxy_scheme, *onc_proxy_location);
 
-  ProxyConfigServiceImpl::ProxyConfig::EncodeAndAppendProxyServer(
-      url_scheme, proxy_server, spec);
+  UIProxyConfig::EncodeAndAppendProxyServer(url_scheme, proxy_server, spec);
 }
 
 net::ProxyBypassRules ConvertOncExcludeDomainsToBypassRules(

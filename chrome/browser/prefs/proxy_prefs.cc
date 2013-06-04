@@ -7,22 +7,22 @@
 #include "base/basictypes.h"
 #include "base/logging.h"
 
+namespace ProxyPrefs {
+
 namespace {
 
 // These names are exposed to the proxy extension API. They must be in sync
 // with the constants of ProxyPrefs.
-const char* kProxyModeNames[] = { ProxyPrefs::kDirectProxyModeName,
-                                  ProxyPrefs::kAutoDetectProxyModeName,
-                                  ProxyPrefs::kPacScriptProxyModeName,
-                                  ProxyPrefs::kFixedServersProxyModeName,
-                                  ProxyPrefs::kSystemProxyModeName };
+const char* kProxyModeNames[] = { kDirectProxyModeName,
+                                  kAutoDetectProxyModeName,
+                                  kPacScriptProxyModeName,
+                                  kFixedServersProxyModeName,
+                                  kSystemProxyModeName };
 
-COMPILE_ASSERT(arraysize(kProxyModeNames) == ProxyPrefs::kModeCount,
+COMPILE_ASSERT(arraysize(kProxyModeNames) == kModeCount,
                kProxyModeNames_must_have_size_of_NUM_MODES);
 
 }  // namespace
-
-namespace ProxyPrefs {
 
 const char kDirectProxyModeName[] = "direct";
 const char kAutoDetectProxyModeName[] = "auto_detect";
@@ -49,6 +49,25 @@ bool StringToProxyMode(const std::string& in_value, ProxyMode* out_value) {
 
 const char* ProxyModeToString(ProxyMode mode) {
   return kProxyModeNames[mode];
+}
+
+std::string ConfigStateToDebugString(ConfigState state) {
+  switch (state) {
+    case CONFIG_POLICY:
+      return "config_policy";
+    case CONFIG_EXTENSION:
+      return "config_extension";
+    case CONFIG_OTHER_PRECEDE:
+      return "config_other_precede";
+    case CONFIG_SYSTEM:
+      return "config_system";
+    case CONFIG_FALLBACK:
+      return "config_fallback";
+    case CONFIG_UNSET:
+      return "config_unset";
+  }
+  NOTREACHED();
+  return "";
 }
 
 }  // namespace ProxyPrefs

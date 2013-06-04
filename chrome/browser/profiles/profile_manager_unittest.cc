@@ -40,7 +40,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/login/mock_user_manager.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
@@ -101,12 +100,7 @@ class ProfileManagerTest : public testing::Test {
         extension_event_router_forwarder_(new extensions::EventRouterForwarder),
         ui_thread_(BrowserThread::UI, &message_loop_),
         db_thread_(BrowserThread::DB, &message_loop_),
-        file_thread_(BrowserThread::FILE, &message_loop_),
-        io_thread_(local_state_.Get(),
-                   g_browser_process->policy_service(),
-                   NULL,
-                   extension_event_router_forwarder_.get()) {
-    TestingBrowserProcess::GetGlobal()->SetIOThread(&io_thread_);
+        file_thread_(BrowserThread::FILE, &message_loop_) {
   }
 
   virtual void SetUp() {
@@ -127,10 +121,6 @@ class ProfileManagerTest : public testing::Test {
   }
 
 #if defined(OS_CHROMEOS)
-  // Do not change order of stub_cros_enabler_, which needs to be constructed
-  // before io_thread_ which requires CrosLibrary to be initialized to construct
-  // its data member pref_proxy_config_tracker_ on ChromeOS.
-  chromeos::ScopedStubCrosEnabler stub_cros_enabler_;
   chromeos::ScopedTestDeviceSettingsService test_device_settings_service_;
   chromeos::ScopedTestCrosSettings test_cros_settings_;
 #endif
@@ -145,8 +135,6 @@ class ProfileManagerTest : public testing::Test {
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread db_thread_;
   content::TestBrowserThread file_thread_;
-  // IOThread is necessary for the creation of some services below.
-  IOThread io_thread_;
 
 #if defined(OS_CHROMEOS)
   chromeos::ScopedTestUserManager test_user_manager_;

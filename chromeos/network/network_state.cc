@@ -11,6 +11,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversion_utils.h"
 #include "chromeos/network/network_event_log.h"
+#include "chromeos/network/network_ui_data.h"
 #include "chromeos/network/onc/onc_utils.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
@@ -56,6 +57,7 @@ NetworkState::NetworkState(const std::string& path)
       auto_connect_(false),
       favorite_(false),
       priority_(0),
+      onc_source_(onc::ONC_SOURCE_NONE),
       signal_strength_(0),
       connectable_(false),
       passphrase_required_(false),
@@ -117,7 +119,7 @@ bool NetworkState::PropertyChanged(const std::string& key,
     scoped_ptr<base::DictionaryValue> proxy_config_dict(
         onc::ReadDictionaryFromJson(proxy_config_str));
     if (proxy_config_dict) {
-      // Warning: The DictionaryValue return from
+      // Warning: The DictionaryValue returned from
       // ReadDictionaryFromJson/JSONParser is an optimized derived class that
       // doesn't allow releasing ownership of nested values. A Swap in the wrong
       // order leads to memory access errors.
@@ -125,6 +127,24 @@ bool NetworkState::PropertyChanged(const std::string& key,
     } else {
       LOG(WARNING) << "Failed to parse dictionary value for: " << key;
     }
+    return true;
+  } else if (key == flimflam::kUIDataProperty) {
+    std::string ui_data_str;
+    if (!value.GetAsString(&ui_data_str)) {
+      LOG(WARNING) << "Failed to parse string value for:" << key;
+      return false;
+    }
+
+    onc_source_ = onc::ONC_SOURCE_NONE;
+    if (ui_data_str.empty())
+      return true;
+
+    scoped_ptr<base::DictionaryValue> ui_data_dict(
+        onc::ReadDictionaryFromJson(ui_data_str));
+    if (ui_data_dict)
+      onc_source_ = NetworkUIData(*ui_data_dict).onc_source();
+    else
+      LOG(WARNING) << "Failed to parse dictionary value for: " << key;
     return true;
   } else if (key == flimflam::kNetworkTechnologyProperty) {
     return GetStringValue(key, value, &technology_);
@@ -192,8 +212,8 @@ void NetworkState::GetProperties(base::DictionaryValue* dictionary) const {
                                              favorite_);
   dictionary->SetIntegerWithoutPathExpansion(flimflam::kPriorityProperty,
                                              priority_);
-  // Proxy config is intentionally omitted: This property is
-  // placed in NetworkState to transition proxy configuration from
+  // Proxy config and ONC source are intentionally omitted: These properties are
+  // placed in NetworkState to transition ProxyConfigServiceImpl from
   // NetworkLibrary to the new network stack. The networking extension API
   // shouldn't depend on this member. Once ManagedNetworkConfigurationHandler
   // is used instead of NetworkLibrary, we can remove them again.
