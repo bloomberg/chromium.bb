@@ -31,12 +31,35 @@ namespace experimental.systemInfo.storage {
     double availableCapacity;
   };
 
+  // A dictionary that describes the add particular storage device watch
+  // request results.
+  dictionary AddWatchResult {
+    DOMString id;
+    boolean success;
+  };
+
   callback StorageInfoCallback = void (StorageUnitInfo[] info);
+
+  callback AddWatchCallback = void (AddWatchResult info);
+
+  callback GetAllWatchCallback = void (DOMString[] storageIds);
 
   interface Functions {
     // Get the storage information from the system. The argument passed to the
     // callback is an array of StorageUnitInfo objects.
     static void get(StorageInfoCallback callback);
+
+    // Monitor a particular storage device available change capacity.
+    static void addWatch(DOMString id, AddWatchCallback callback);
+
+    // Remove the monitor of a particular device.
+    static void removeWatch(DOMString id);
+
+    // Get all the watched storage devices.
+    static void getAllWatch(GetAllWatchCallback callback);
+
+    // Remove all the storage devices monitors.
+    static void removeAllWatch();
   };
 
   interface Events {

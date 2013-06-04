@@ -33,4 +33,50 @@ void SystemInfoStorageGetFunction::OnGetStorageInfoCompleted(
   SendResponse(success);
 }
 
+SystemInfoStorageAddWatchFunction::SystemInfoStorageAddWatchFunction() {
+}
+
+SystemInfoStorageAddWatchFunction::~SystemInfoStorageAddWatchFunction() {
+}
+
+bool SystemInfoStorageAddWatchFunction::RunImpl() {
+  // TODO(Haojian): Implement the addWatch api.
+  return false;
+}
+
+SystemInfoStorageRemoveWatchFunction::SystemInfoStorageRemoveWatchFunction() {
+}
+
+SystemInfoStorageRemoveWatchFunction::~SystemInfoStorageRemoveWatchFunction() {
+}
+
+bool SystemInfoStorageRemoveWatchFunction::RunImpl() {
+  // TODO(Haojian): Implement the removeWatch api.
+  return false;
+}
+
+SystemInfoStorageGetAllWatchFunction::SystemInfoStorageGetAllWatchFunction() {
+}
+
+SystemInfoStorageGetAllWatchFunction::~SystemInfoStorageGetAllWatchFunction() {
+}
+
+bool SystemInfoStorageGetAllWatchFunction::RunImpl() {
+  // TODO(Haojian): Implement the getAllWatch api.
+  return false;
+}
+
+SystemInfoStorageRemoveAllWatchFunction::
+SystemInfoStorageRemoveAllWatchFunction() {
+}
+
+SystemInfoStorageRemoveAllWatchFunction::
+~SystemInfoStorageRemoveAllWatchFunction() {
+}
+
+bool SystemInfoStorageRemoveAllWatchFunction::RunImpl() {
+  // TODO(Haojian): Implement the removeAllWatch api.
+  return false;
+}
+
 }  // namespace extensions
