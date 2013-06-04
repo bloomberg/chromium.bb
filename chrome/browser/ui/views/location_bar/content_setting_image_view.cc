@@ -20,11 +20,7 @@
 
 
 namespace {
-const int kBackgroundImages[] = {
-  IDR_OMNIBOX_CONTENT_SETTING_BUBBLE_LEFT,
-  IDR_OMNIBOX_CONTENT_SETTING_BUBBLE_CENTER,
-  IDR_OMNIBOX_CONTENT_SETTING_BUBBLE_RIGHT,
-};
+const int kBackgroundImages[] = IMAGE_GRID(IDR_OMNIBOX_CONTENT_SETTING_BUBBLE);
 const int kStayOpenTimeMS = 3200;  // Time spent with animation fully open.
 }
 
@@ -45,7 +41,8 @@ ContentSettingImageView::ContentSettingImageView(
       content_setting_image_model_(
           ContentSettingImageModel::CreateContentSettingImageModel(
               content_type)),
-      background_painter_(new views::HorizontalPainter(kBackgroundImages)),
+      background_painter_(
+          views::Painter::CreateImageGridPainter(kBackgroundImages)),
       icon_(new views::ImageView),
       text_label_(new views::Label),
       slide_animator_(this),
@@ -69,7 +66,7 @@ ContentSettingImageView::ContentSettingImageView(
   // sit atop.
   const SkBitmap& bitmap(
       ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-          kBackgroundImages[1])->GetRepresentation(
+          kBackgroundImages[4])->GetRepresentation(
           ui::SCALE_FACTOR_100P).sk_bitmap());
   SkAutoLockPixels pixel_lock(bitmap);
   SkColor background_image_color =
