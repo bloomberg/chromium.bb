@@ -124,6 +124,8 @@ private:
         HashSet<Page*>::const_iterator end =  page->group().pages().end();
         for (HashSet<Page*>::const_iterator it =  page->group().pages().begin(); it != end; ++it) {
             WebViewImpl* view = WebViewImpl::fromPage(*it);
+            if (!view)
+                continue;
             m_frozenViews.add(view);
             views.append(view);
             view->setIgnoreInputEvents(true);

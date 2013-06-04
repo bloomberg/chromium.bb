@@ -331,6 +331,9 @@ void Page::setGroupType(PageGroupType type)
     clearPageGroup();
 
     switch (type) {
+    case InspectorPageGroup:
+        m_group = PageGroup::inspectorGroup();
+        break;
     case PrivatePageGroup:
         m_group = PageGroup::create();
         break;

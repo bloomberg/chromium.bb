@@ -51,6 +51,12 @@ PageGroup* PageGroup::sharedGroup()
     return staticSharedGroup;
 }
 
+PageGroup* PageGroup::inspectorGroup()
+{
+    static PageGroup* staticInspectorGroup = create().leakRef();
+    return staticInspectorGroup;
+}
+
 void PageGroup::addPage(Page* page)
 {
     ASSERT(page);

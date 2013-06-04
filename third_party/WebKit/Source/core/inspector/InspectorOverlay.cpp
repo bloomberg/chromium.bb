@@ -450,6 +450,7 @@ Page* InspectorOverlay::overlayPage()
     Page::PageClients pageClients;
     fillWithEmptyClients(pageClients);
     m_overlayPage = adoptPtr(new Page(pageClients));
+    m_overlayPage->setGroupType(Page::InspectorPageGroup);
 
     Settings* settings = m_page->settings();
     Settings* overlaySettings = m_overlayPage->settings();

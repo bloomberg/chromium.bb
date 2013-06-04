@@ -142,7 +142,8 @@ public:
 
     void goToItem(HistoryItem*);
 
-    enum PageGroupType { PrivatePageGroup, SharedPageGroup };
+    // FIXME: InspectorPageGroup is only needed to support single process debugger layout tests, it should be removed when DumpRenderTree is gone.
+    enum PageGroupType { InspectorPageGroup, PrivatePageGroup, SharedPageGroup };
     void setGroupType(PageGroupType);
     void clearPageGroup();
     PageGroup& group()

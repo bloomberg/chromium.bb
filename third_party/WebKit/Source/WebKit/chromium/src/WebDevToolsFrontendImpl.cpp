@@ -96,7 +96,7 @@ WebDevToolsFrontendImpl::WebDevToolsFrontendImpl(
 
     // Put each DevTools frontend Page into a private group so that it's not
     // deferred along with the inspected page.
-    m_webViewImpl->page()->setGroupType(Page::PrivatePageGroup);
+    m_webViewImpl->page()->setGroupType(Page::InspectorPageGroup);
 }
 
 WebDevToolsFrontendImpl::~WebDevToolsFrontendImpl()
