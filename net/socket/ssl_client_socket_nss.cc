@@ -1313,7 +1313,7 @@ SECStatus SSLClientSocketNSS::Core::PlatformClientAuthHandler(
       BOOL must_free = FALSE;
       DWORD flags = 0;
       if (base::win::GetVersion() >= base::win::VERSION_VISTA)
-        flags |= CRYPT_ACQUIRE_ALLOW_NCRYPT_KEY_FLAG;
+        flags |= CRYPT_ACQUIRE_PREFER_NCRYPT_KEY_FLAG;
 
       BOOL acquired_key = CryptAcquireCertificatePrivateKey(
           cert_context, flags, NULL, &crypt_prov, &key_spec, &must_free);
