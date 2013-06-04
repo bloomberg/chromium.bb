@@ -86,7 +86,7 @@ int WebCursor::GetCursorType() const {
     case WebCursorInfo::TypeNorthEastSouthWestResize:
     case WebCursorInfo::TypeNorthWestSouthEastResize:
       // There isn't really a useful cursor available for these.
-      NOTIMPLEMENTED(); return GDK_LAST_CURSOR;
+      return GDK_LAST_CURSOR;
     case WebCursorInfo::TypeColumnResize:
       return GDK_SB_H_DOUBLE_ARROW;  // TODO(evanm): is this correct?
     case WebCursorInfo::TypeRowResize:
@@ -112,23 +112,23 @@ int WebCursor::GetCursorType() const {
     case WebCursorInfo::TypeMove:
       return GDK_FLEUR;
     case WebCursorInfo::TypeVerticalText:
-      NOTIMPLEMENTED(); return GDK_LAST_CURSOR;
+      return GDK_LAST_CURSOR;
     case WebCursorInfo::TypeCell:
-      NOTIMPLEMENTED(); return GDK_LAST_CURSOR;
+      return GDK_LAST_CURSOR;
     case WebCursorInfo::TypeContextMenu:
-      NOTIMPLEMENTED(); return GDK_LAST_CURSOR;
+      return GDK_LAST_CURSOR;
     case WebCursorInfo::TypeAlias:
-      NOTIMPLEMENTED(); return GDK_LAST_CURSOR;
+      return GDK_LAST_CURSOR;
     case WebCursorInfo::TypeProgress:
       return GDK_WATCH;
     case WebCursorInfo::TypeNoDrop:
-      NOTIMPLEMENTED(); return GDK_LAST_CURSOR;
+      return GDK_LAST_CURSOR;
     case WebCursorInfo::TypeCopy:
-      NOTIMPLEMENTED(); return GDK_LAST_CURSOR;
+      return GDK_LAST_CURSOR;
     case WebCursorInfo::TypeNone:
       return GDK_BLANK_CURSOR;
     case WebCursorInfo::TypeNotAllowed:
-      NOTIMPLEMENTED(); return GDK_LAST_CURSOR;
+      return GDK_LAST_CURSOR;
     case WebCursorInfo::TypeZoomIn:
     case WebCursorInfo::TypeZoomOut:
     case WebCursorInfo::TypeGrab:
