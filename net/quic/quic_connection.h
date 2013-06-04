@@ -431,15 +431,6 @@ class NET_EXPORT_PRIVATE QuicConnection
   // Make sure an ack we got from our peer is sane.
   bool ValidateAckFrame(const QuicAckFrame& incoming_ack);
 
-  // These two are called by OnAckFrame to update the appropriate internal
-  // state.
-  //
-  // Updates internal state based on incoming_ack.received_info
-  void UpdatePacketInformationReceivedByPeer(
-      const QuicAckFrame& incoming_ack);
-  // Updates internal state based in incoming_ack.sent_info
-  void UpdatePacketInformationSentByPeer(const QuicAckFrame& incoming_ack);
-
   QuicConnectionHelperInterface* helper() { return helper_.get(); }
 
  protected:
@@ -470,21 +461,32 @@ class NET_EXPORT_PRIVATE QuicConnection
   struct RetransmissionInfo {
     explicit RetransmissionInfo(QuicPacketSequenceNumber sequence_number)
         : sequence_number(sequence_number),
-          scheduled_time(QuicTime::Zero()),
           number_nacks(0),
           number_retransmissions(0) {
     }
 
     QuicPacketSequenceNumber sequence_number;
-    QuicTime scheduled_time;
     size_t number_nacks;
     size_t number_retransmissions;
   };
 
-  class RetransmissionInfoComparator {
+  struct RetransmissionTime {
+    RetransmissionTime(QuicPacketSequenceNumber sequence_number,
+                       const QuicTime& scheduled_time,
+                       bool for_fec)
+        : sequence_number(sequence_number),
+          scheduled_time(scheduled_time),
+          for_fec(for_fec) { }
+
+    QuicPacketSequenceNumber sequence_number;
+    QuicTime scheduled_time;
+    bool for_fec;
+  };
+
+  class RetransmissionTimeComparator {
    public:
-    bool operator()(const RetransmissionInfo& lhs,
-                    const RetransmissionInfo& rhs) const {
+    bool operator()(const RetransmissionTime& lhs,
+                    const RetransmissionTime& rhs) const {
       DCHECK(lhs.scheduled_time.IsInitialized() &&
              rhs.scheduled_time.IsInitialized());
       return lhs.scheduled_time > rhs.scheduled_time;
@@ -497,9 +499,9 @@ class NET_EXPORT_PRIVATE QuicConnection
   typedef std::map<QuicFecGroupNumber, QuicFecGroup*> FecGroupMap;
   typedef base::hash_map<QuicPacketSequenceNumber,
                          RetransmissionInfo> RetransmissionMap;
-  typedef std::priority_queue<RetransmissionInfo,
-                              std::vector<RetransmissionInfo>,
-                              RetransmissionInfoComparator>
+  typedef std::priority_queue<RetransmissionTime,
+                              std::vector<RetransmissionTime>,
+                              RetransmissionTimeComparator>
       RetransmissionTimeouts;
 
   // Selects and updates the version of the protocol being used by selecting a
@@ -509,8 +511,10 @@ class NET_EXPORT_PRIVATE QuicConnection
   // Sends a version negotiation packet to the peer.
   void SendVersionNegotiationPacket();
 
-  void MaybeSetupRetransmission(QuicPacketSequenceNumber sequence_number);
+  void SetupRetransmission(QuicPacketSequenceNumber sequence_number);
   bool IsRetransmission(QuicPacketSequenceNumber sequence_number);
+
+  void SetupAbandonFecTimer(QuicPacketSequenceNumber sequence_number);
 
   // Drop packet corresponding to |sequence_number| by deleting entries from
   // |unacked_packets_| and |retransmission_map_|, if present. We need to drop
@@ -526,9 +530,24 @@ class NET_EXPORT_PRIVATE QuicConnection
   // revive and process the packet.
   void MaybeProcessRevivedPacket();
 
+  void HandleAckForSentPackets(const QuicAckFrame& incoming_ack,
+                               SequenceNumberSet* acked_packets);
+  void HandleAckForSentFecPackets(const QuicAckFrame& incoming_ack,
+                                  SequenceNumberSet* acked_packets);
+
+  // These two are called by OnAckFrame.
+  //
+  // Updates internal state based on incoming_ack.received_info
+  void UpdatePacketInformationReceivedByPeer(
+      const QuicAckFrame& incoming_ack);
+  // Updates internal state based on incoming_ack.sent_info
+  void UpdatePacketInformationSentByPeer(const QuicAckFrame& incoming_ack);
+
   void UpdateOutgoingAck();
 
   void MaybeSendAckInResponseToPacket();
+
+  void MaybeAbandonFecPacket(QuicPacketSequenceNumber sequence_number);
 
   // Get the FEC group associate with the last processed packet or NULL, if the
   // group has already been deleted.
@@ -571,6 +590,12 @@ class NET_EXPORT_PRIVATE QuicConnection
   // When new packets are created which may be retransmitted, they are added
   // to this map, which contains owning pointers to the contained frames.
   UnackedPacketMap unacked_packets_;
+
+  // Pending fec packets that have not been acked yet. These packets need to be
+  // cleared out of the cgst_window after a timeout since FEC packets are never
+  // retransmitted.
+  // Ask: What should be the timeout for these packets?
+  UnackedPacketMap unacked_fec_packets_;
 
   // Heap of packets that we might need to retransmit, and the time at
   // which we should retransmit them. Every time a packet is sent it is added

@@ -140,6 +140,21 @@ class NET_EXPORT_PRIVATE QuicCryptoServerConfig {
   // source-address token will be valid for.
   void set_source_address_token_lifetime_secs(uint32 lifetime_secs);
 
+  // set_server_nonce_strike_register_max_entries sets the number of entries in
+  // the server-nonce strike-register. This is used to record that server nonce
+  // values have been used. If the number of entries is too small then clients
+  // which are depending on server nonces may fail to handshake because their
+  // nonce has expired in the amount of time it took to go from the server to
+  // the client and back.
+  void set_server_nonce_strike_register_max_entries(uint32 max_entries);
+
+  // set_server_nonce_strike_register_window_secs sets the number of seconds
+  // around the current time that the server-nonce strike-register will accept
+  // nonces from. Setting a larger value allows for clients to delay follow-up
+  // client hellos for longer and still use server nonces as proofs of
+  // uniqueness.
+  void set_server_nonce_strike_register_window_secs(uint32 window_secs);
+
  private:
   friend class test::QuicCryptoServerConfigPeer;
 
