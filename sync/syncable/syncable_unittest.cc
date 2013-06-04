@@ -472,11 +472,11 @@ class SyncableDirectoryTest : public testing::Test {
   }
 
   bool IsInDirtyMetahandles(int64 metahandle) {
-    return 1 == dir_->kernel_->dirty_metahandles->count(metahandle);
+    return 1 == dir_->kernel_->dirty_metahandles.count(metahandle);
   }
 
   bool IsInMetahandlesToPurge(int64 metahandle) {
-    return 1 == dir_->kernel_->metahandles_to_purge->count(metahandle);
+    return 1 == dir_->kernel_->metahandles_to_purge.count(metahandle);
   }
 
   void CheckPurgeEntriesWithTypeInSucceeded(ModelTypeSet types_to_purge,
@@ -488,7 +488,7 @@ class SyncableDirectoryTest : public testing::Test {
       dir_->GetAllMetaHandles(&trans, &all_set);
       EXPECT_EQ(4U, all_set.size());
       if (before_reload)
-        EXPECT_EQ(6U, dir_->kernel_->metahandles_to_purge->size());
+        EXPECT_EQ(6U, dir_->kernel_->metahandles_to_purge.size());
       for (MetahandleSet::iterator iter = all_set.begin();
            iter != all_set.end(); ++iter) {
         Entry e(&trans, GET_BY_HANDLE, *iter);

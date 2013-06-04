@@ -25,7 +25,7 @@ class SYNC_EXPORT_PRIVATE InMemoryDirectoryBackingStore
  public:
   explicit InMemoryDirectoryBackingStore(const std::string& dir_name);
   virtual DirOpenResult Load(
-      MetahandlesIndex* entry_bucket,
+      Directory::MetahandlesMap* handles_map,
       JournalIndex* delete_journals,
       Directory::KernelLoadInfo* kernel_load_info) OVERRIDE;
 

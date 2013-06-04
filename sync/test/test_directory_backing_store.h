@@ -26,7 +26,7 @@ class TestDirectoryBackingStore : public DirectoryBackingStore {
                             sql::Connection* connection);
   virtual ~TestDirectoryBackingStore();
   virtual DirOpenResult Load(
-      MetahandlesIndex* entry_bucket,
+      Directory::MetahandlesMap* handles_map,
       JournalIndex* delete_journals,
       Directory::KernelLoadInfo* kernel_load_info) OVERRIDE;
 

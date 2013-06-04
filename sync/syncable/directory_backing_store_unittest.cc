@@ -46,11 +46,12 @@ class MigrationTest : public testing::TestWithParam<int> {
   }
 
   static bool LoadAndIgnoreReturnedData(DirectoryBackingStore *dbs) {
-    MetahandlesIndex metas;
-    JournalIndex  delete_journals;;
-    STLElementDeleter<MetahandlesIndex> index_deleter(&metas);
+    Directory::MetahandlesMap tmp_handles_map;
+    JournalIndex  delete_journals;
+    STLValueDeleter<Directory::MetahandlesMap> deleter(&tmp_handles_map);
     Directory::KernelLoadInfo kernel_load_info;
-    return dbs->Load(&metas, &delete_journals, &kernel_load_info) == OPENED;
+    return dbs->Load(&tmp_handles_map, &delete_journals, &kernel_load_info) ==
+        OPENED;
   }
 
   void SetUpVersion67Database(sql::Connection* connection);
@@ -360,13 +361,13 @@ void ExpectTime(const EntryKernel& entry_kernel,
                       expected_time, entry_kernel.ref(SERVER_MTIME));
 }
 
-// Expect that all the entries in |index| have times matching those in
+// Expect that all the entries in |entries| have times matching those in
 // the given map (from metahandle to expect time).
-void ExpectTimes(const MetahandlesIndex& index,
+void ExpectTimes(const Directory::MetahandlesMap& handles_map,
                  const std::map<int64, base::Time>& expected_times) {
-  for (MetahandlesIndex::const_iterator it = index.begin();
-       it != index.end(); ++it) {
-    int64 meta_handle = (*it)->ref(META_HANDLE);
+  for (Directory::MetahandlesMap::const_iterator it = handles_map.begin();
+       it != handles_map.end(); ++it) {
+    int64 meta_handle = it->first;
     SCOPED_TRACE(meta_handle);
     std::map<int64, base::Time>::const_iterator it2 =
         expected_times.find(meta_handle);
@@ -374,7 +375,7 @@ void ExpectTimes(const MetahandlesIndex& index,
       ADD_FAILURE() << "Could not find expected time for " << meta_handle;
       continue;
     }
-    ExpectTime(**it, it2->second);
+    ExpectTime(*it->second, it2->second);
   }
 }
 
@@ -2838,13 +2839,13 @@ TEST_F(DirectoryBackingStoreTest, MigrateVersion78To79) {
   ASSERT_FALSE(dbs->needs_column_refresh_);
 
   // Ensure the next_id has been incremented.
-  MetahandlesIndex entry_bucket;
+  Directory::MetahandlesMap handles_map;
   JournalIndex  delete_journals;;
-  STLElementDeleter<MetahandlesIndex> deleter(&entry_bucket);
+  STLValueDeleter<Directory::MetahandlesMap> deleter(&handles_map);
   Directory::KernelLoadInfo load_info;
 
   s.Clear();
-  ASSERT_TRUE(dbs->Load(&entry_bucket, &delete_journals, &load_info));
+  ASSERT_TRUE(dbs->Load(&handles_map, &delete_journals, &load_info));
   EXPECT_LE(load_info.kernel_info.next_id, kInitialNextId - 65536);
 }
 
@@ -2861,12 +2862,12 @@ TEST_F(DirectoryBackingStoreTest, MigrateVersion79To80) {
   ASSERT_FALSE(dbs->needs_column_refresh_);
 
   // Ensure the bag_of_chips has been set.
-  MetahandlesIndex entry_bucket;
+  Directory::MetahandlesMap handles_map;
   JournalIndex  delete_journals;;
-  STLElementDeleter<MetahandlesIndex> deleter(&entry_bucket);
+  STLValueDeleter<Directory::MetahandlesMap> deleter(&handles_map);
   Directory::KernelLoadInfo load_info;
 
-  ASSERT_TRUE(dbs->Load(&entry_bucket, &delete_journals, &load_info));
+  ASSERT_TRUE(dbs->Load(&handles_map, &delete_journals, &load_info));
   // Check that the initial value is the serialization of an empty ChipBag.
   sync_pb::ChipBag chip_bag;
   std::string serialized_chip_bag;
@@ -2985,17 +2986,14 @@ TEST_F(DirectoryBackingStoreTest, MigrateVersion85To86) {
   EXPECT_FALSE(connection.DoesColumnExist("metas", "server_ordinal_in_parent"));
 
   {
-    MetahandlesIndex metas;
-    STLElementDeleter<MetahandlesIndex> deleter(&metas);
-    dbs->LoadEntries(&metas);
-
-    EntryKernel needle;
+    Directory::MetahandlesMap handles_map;
+    STLValueDeleter<Directory::MetahandlesMap> deleter(&handles_map);
+    dbs->LoadEntries(&handles_map);
 
     // Grab a bookmark and examine it.
-    needle.put(META_HANDLE, 5);
-    MetahandlesIndex::iterator i = metas.find(&needle);
-    ASSERT_FALSE(i == metas.end());
-    EntryKernel* bm = *i;
+    Directory::MetahandlesMap::iterator i = handles_map.find(5);
+    ASSERT_FALSE(i == handles_map.end());
+    EntryKernel* bm = i->second;
     ASSERT_EQ(bm->ref(ID).value(), "s_ID_5");
 
     EXPECT_TRUE(bm->ref(UNIQUE_POSITION).IsValid());
@@ -3004,10 +3002,10 @@ TEST_F(DirectoryBackingStoreTest, MigrateVersion85To86) {
               bm->ref(UNIQUE_BOOKMARK_TAG).length());
 
     // Grab a non-bookmark and examine it.
-    needle.put(META_HANDLE, 1);
-    MetahandlesIndex::iterator j = metas.find(&needle);
-    ASSERT_FALSE(j == metas.end());
-    EntryKernel* root = *j;
+    Directory::MetahandlesMap::iterator j = handles_map.find(1);
+
+    ASSERT_FALSE(j == handles_map.end());
+    EntryKernel* root = j->second;
     ASSERT_EQ(root->ref(ID).value(), "r");
 
     EXPECT_FALSE(root->ref(UNIQUE_POSITION).IsValid());
@@ -3015,10 +3013,9 @@ TEST_F(DirectoryBackingStoreTest, MigrateVersion85To86) {
     EXPECT_TRUE(root->ref(UNIQUE_BOOKMARK_TAG).empty());
 
     // Make sure we didn't mistake the bookmark root node for a real bookmark.
-    needle.put(META_HANDLE, 8);
-    MetahandlesIndex::iterator k = metas.find(&needle);
-    ASSERT_FALSE(k == metas.end());
-    EntryKernel* bm_root = *k;
+    Directory::MetahandlesMap::iterator k = handles_map.find(8);
+    ASSERT_FALSE(k == handles_map.end());
+    EntryKernel* bm_root = k->second;
     ASSERT_EQ(bm_root->ref(ID).value(), "s_ID_8");
     ASSERT_EQ(bm_root->ref(UNIQUE_SERVER_TAG), "google_chrome_bookmarks");
 
@@ -3027,10 +3024,9 @@ TEST_F(DirectoryBackingStoreTest, MigrateVersion85To86) {
     EXPECT_TRUE(bm_root->ref(UNIQUE_BOOKMARK_TAG).empty());
 
     // Make sure we didn't assign positions to server-created folders, either.
-    needle.put(META_HANDLE, 10);
-    MetahandlesIndex::iterator l = metas.find(&needle);
-    ASSERT_FALSE(l == metas.end());
-    EntryKernel* perm_folder = *l;
+    Directory::MetahandlesMap::iterator l = handles_map.find(10);
+    ASSERT_FALSE(l == handles_map.end());
+    EntryKernel* perm_folder = l->second;
     ASSERT_EQ(perm_folder->ref(ID).value(), "s_ID_10");
     ASSERT_EQ(perm_folder->ref(UNIQUE_SERVER_TAG), "other_bookmarks");
 
@@ -3042,17 +3038,17 @@ TEST_F(DirectoryBackingStoreTest, MigrateVersion85To86) {
     // which items should or should not have unique position values.  This test
     // may become obsolete if the directory's definition of that function
     // changes, but, until then, this is a useful test.
-    for (MetahandlesIndex::iterator it = metas.begin();
-         it != metas.end(); it++) {
-      SCOPED_TRACE((*it)->ref(ID));
-      if ((*it)->ShouldMaintainPosition()) {
-        EXPECT_TRUE((*it)->ref(UNIQUE_POSITION).IsValid());
-        EXPECT_TRUE((*it)->ref(SERVER_UNIQUE_POSITION).IsValid());
-        EXPECT_FALSE((*it)->ref(UNIQUE_BOOKMARK_TAG).empty());
+    for (Directory::MetahandlesMap::iterator it = handles_map.begin();
+         it != handles_map.end(); it++) {
+      SCOPED_TRACE(it->second->ref(ID));
+      if (it->second->ShouldMaintainPosition()) {
+        EXPECT_TRUE(it->second->ref(UNIQUE_POSITION).IsValid());
+        EXPECT_TRUE(it->second->ref(SERVER_UNIQUE_POSITION).IsValid());
+        EXPECT_FALSE(it->second->ref(UNIQUE_BOOKMARK_TAG).empty());
       } else {
-        EXPECT_FALSE((*it)->ref(UNIQUE_POSITION).IsValid());
-        EXPECT_FALSE((*it)->ref(SERVER_UNIQUE_POSITION).IsValid());
-        EXPECT_TRUE((*it)->ref(UNIQUE_BOOKMARK_TAG).empty());
+        EXPECT_FALSE(it->second->ref(UNIQUE_POSITION).IsValid());
+        EXPECT_FALSE(it->second->ref(SERVER_UNIQUE_POSITION).IsValid());
+        EXPECT_TRUE(it->second->ref(UNIQUE_BOOKMARK_TAG).empty());
       }
     }
   }
@@ -3076,12 +3072,12 @@ TEST_F(DirectoryBackingStoreTest, DetectInvalidPosition) {
   ASSERT_TRUE(s.Run());
 
   // Trying to unpack this entry should signal that the DB is corrupted.
-  MetahandlesIndex entry_bucket;
+  Directory::MetahandlesMap handles_map;
   JournalIndex  delete_journals;;
-  STLElementDeleter<MetahandlesIndex> deleter(&entry_bucket);
+  STLValueDeleter<Directory::MetahandlesMap> deleter(&handles_map);
   Directory::KernelLoadInfo kernel_load_info;
   ASSERT_EQ(FAILED_DATABASE_CORRUPT,
-            dbs->Load(&entry_bucket, &delete_journals, &kernel_load_info));
+            dbs->Load(&handles_map, &delete_journals, &kernel_load_info));
 }
 
 TEST_P(MigrationTest, ToCurrentVersion) {
@@ -3169,14 +3165,14 @@ TEST_P(MigrationTest, ToCurrentVersion) {
   }
 
   syncable::Directory::KernelLoadInfo dir_info;
-  MetahandlesIndex index;
+  Directory::MetahandlesMap handles_map;
   JournalIndex  delete_journals;;
-  STLElementDeleter<MetahandlesIndex> index_deleter(&index);
+  STLValueDeleter<Directory::MetahandlesMap> index_deleter(&handles_map);
 
   {
     scoped_ptr<TestDirectoryBackingStore> dbs(
         new TestDirectoryBackingStore(GetUsername(), &connection));
-    ASSERT_EQ(OPENED, dbs->Load(&index, &delete_journals, &dir_info));
+    ASSERT_EQ(OPENED, dbs->Load(&handles_map, &delete_journals, &dir_info));
     ASSERT_FALSE(dbs->needs_column_refresh_);
     ASSERT_EQ(kCurrentDBVersion, dbs->GetVersion());
   }
@@ -3266,99 +3262,100 @@ TEST_P(MigrationTest, ToCurrentVersion) {
   // Check metas
   EXPECT_EQ(GetExpectedMetaProtoTimes(DONT_INCLUDE_DELETED_ITEMS),
             GetMetaProtoTimes(&connection));
-  ExpectTimes(index, GetExpectedMetaTimes());
+  ExpectTimes(handles_map, GetExpectedMetaTimes());
 
-  MetahandlesIndex::iterator it = index.begin();
-  ASSERT_TRUE(it != index.end());
-  ASSERT_EQ(1, (*it)->ref(META_HANDLE));
-  EXPECT_TRUE((*it)->ref(ID).IsRoot());
+  Directory::MetahandlesMap::iterator it = handles_map.find(1);
+  ASSERT_TRUE(it != handles_map.end());
+  ASSERT_EQ(1, it->second->ref(META_HANDLE));
+  EXPECT_TRUE(it->second->ref(ID).IsRoot());
 
-  ASSERT_TRUE(++it != index.end());
-  ASSERT_EQ(6, (*it)->ref(META_HANDLE));
-  EXPECT_TRUE((*it)->ref(IS_DIR));
-  EXPECT_TRUE((*it)->ref(SERVER_IS_DIR));
+  it = handles_map.find(6);
+  ASSERT_EQ(6, it->second->ref(META_HANDLE));
+  EXPECT_TRUE(it->second->ref(IS_DIR));
+  EXPECT_TRUE(it->second->ref(SERVER_IS_DIR));
   EXPECT_FALSE(
-      (*it)->ref(SPECIFICS).bookmark().has_url());
+      it->second->ref(SPECIFICS).bookmark().has_url());
   EXPECT_FALSE(
-      (*it)->ref(SERVER_SPECIFICS).bookmark().has_url());
+      it->second->ref(SERVER_SPECIFICS).bookmark().has_url());
   EXPECT_FALSE(
-      (*it)->ref(SPECIFICS).bookmark().has_favicon());
-  EXPECT_FALSE((*it)->ref(SERVER_SPECIFICS).bookmark().has_favicon());
+      it->second->ref(SPECIFICS).bookmark().has_favicon());
+  EXPECT_FALSE(it->second->ref(SERVER_SPECIFICS).bookmark().has_favicon());
 
-  ASSERT_TRUE(++it != index.end());
-  ASSERT_EQ(7, (*it)->ref(META_HANDLE));
-  EXPECT_EQ("google_chrome", (*it)->ref(UNIQUE_SERVER_TAG));
-  EXPECT_FALSE((*it)->ref(SPECIFICS).has_bookmark());
-  EXPECT_FALSE((*it)->ref(SERVER_SPECIFICS).has_bookmark());
+  it = handles_map.find(7);
+  ASSERT_EQ(7, it->second->ref(META_HANDLE));
+  EXPECT_EQ("google_chrome", it->second->ref(UNIQUE_SERVER_TAG));
+  EXPECT_FALSE(it->second->ref(SPECIFICS).has_bookmark());
+  EXPECT_FALSE(it->second->ref(SERVER_SPECIFICS).has_bookmark());
 
-  ASSERT_TRUE(++it != index.end());
-  ASSERT_EQ(8, (*it)->ref(META_HANDLE));
-  EXPECT_EQ("google_chrome_bookmarks", (*it)->ref(UNIQUE_SERVER_TAG));
-  EXPECT_TRUE((*it)->ref(SPECIFICS).has_bookmark());
-  EXPECT_TRUE((*it)->ref(SERVER_SPECIFICS).has_bookmark());
+  it = handles_map.find(8);
+  ASSERT_EQ(8, it->second->ref(META_HANDLE));
+  EXPECT_EQ("google_chrome_bookmarks", it->second->ref(UNIQUE_SERVER_TAG));
+  EXPECT_TRUE(it->second->ref(SPECIFICS).has_bookmark());
+  EXPECT_TRUE(it->second->ref(SERVER_SPECIFICS).has_bookmark());
 
-  ASSERT_TRUE(++it != index.end());
-  ASSERT_EQ(9, (*it)->ref(META_HANDLE));
-  EXPECT_EQ("bookmark_bar", (*it)->ref(UNIQUE_SERVER_TAG));
-  EXPECT_TRUE((*it)->ref(SPECIFICS).has_bookmark());
-  EXPECT_TRUE((*it)->ref(SERVER_SPECIFICS).has_bookmark());
+  it = handles_map.find(9);
+  ASSERT_EQ(9, it->second->ref(META_HANDLE));
+  EXPECT_EQ("bookmark_bar", it->second->ref(UNIQUE_SERVER_TAG));
+  EXPECT_TRUE(it->second->ref(SPECIFICS).has_bookmark());
+  EXPECT_TRUE(it->second->ref(SERVER_SPECIFICS).has_bookmark());
 
-  ASSERT_TRUE(++it != index.end());
-  ASSERT_EQ(10, (*it)->ref(META_HANDLE));
-  EXPECT_FALSE((*it)->ref(IS_DEL));
-  EXPECT_TRUE((*it)->ref(SPECIFICS).has_bookmark());
-  EXPECT_TRUE((*it)->ref(SERVER_SPECIFICS).has_bookmark());
-  EXPECT_FALSE((*it)->ref(SPECIFICS).bookmark().has_url());
+  it = handles_map.find(10);
+  ASSERT_EQ(10, it->second->ref(META_HANDLE));
+  EXPECT_FALSE(it->second->ref(IS_DEL));
+  EXPECT_TRUE(it->second->ref(SPECIFICS).has_bookmark());
+  EXPECT_TRUE(it->second->ref(SERVER_SPECIFICS).has_bookmark());
+  EXPECT_FALSE(it->second->ref(SPECIFICS).bookmark().has_url());
   EXPECT_FALSE(
-      (*it)->ref(SPECIFICS).bookmark().has_favicon());
+      it->second->ref(SPECIFICS).bookmark().has_favicon());
   EXPECT_FALSE(
-      (*it)->ref(SERVER_SPECIFICS).bookmark().has_url());
-  EXPECT_FALSE((*it)->ref(SERVER_SPECIFICS).bookmark().has_favicon());
-  EXPECT_EQ("other_bookmarks", (*it)->ref(UNIQUE_SERVER_TAG));
-  EXPECT_EQ("Other Bookmarks", (*it)->ref(NON_UNIQUE_NAME));
-  EXPECT_EQ("Other Bookmarks", (*it)->ref(SERVER_NON_UNIQUE_NAME));
+      it->second->ref(SERVER_SPECIFICS).bookmark().has_url());
+  EXPECT_FALSE(it->second->ref(SERVER_SPECIFICS).bookmark().has_favicon());
+  EXPECT_EQ("other_bookmarks", it->second->ref(UNIQUE_SERVER_TAG));
+  EXPECT_EQ("Other Bookmarks", it->second->ref(NON_UNIQUE_NAME));
+  EXPECT_EQ("Other Bookmarks", it->second->ref(SERVER_NON_UNIQUE_NAME));
 
-  ASSERT_TRUE(++it != index.end());
-  ASSERT_EQ(11, (*it)->ref(META_HANDLE));
-  EXPECT_FALSE((*it)->ref(IS_DEL));
-  EXPECT_FALSE((*it)->ref(IS_DIR));
-  EXPECT_TRUE((*it)->ref(SPECIFICS).has_bookmark());
-  EXPECT_TRUE((*it)->ref(SERVER_SPECIFICS).has_bookmark());
+  it = handles_map.find(11);
+  ASSERT_EQ(11, it->second->ref(META_HANDLE));
+  EXPECT_FALSE(it->second->ref(IS_DEL));
+  EXPECT_FALSE(it->second->ref(IS_DIR));
+  EXPECT_TRUE(it->second->ref(SPECIFICS).has_bookmark());
+  EXPECT_TRUE(it->second->ref(SERVER_SPECIFICS).has_bookmark());
   EXPECT_EQ("http://dev.chromium.org/",
-      (*it)->ref(SPECIFICS).bookmark().url());
+      it->second->ref(SPECIFICS).bookmark().url());
   EXPECT_EQ("AGATWA",
-      (*it)->ref(SPECIFICS).bookmark().favicon());
+      it->second->ref(SPECIFICS).bookmark().favicon());
   EXPECT_EQ("http://dev.chromium.org/other",
-      (*it)->ref(SERVER_SPECIFICS).bookmark().url());
+      it->second->ref(SERVER_SPECIFICS).bookmark().url());
   EXPECT_EQ("AFAGVASF",
-      (*it)->ref(SERVER_SPECIFICS).bookmark().favicon());
-  EXPECT_EQ("", (*it)->ref(UNIQUE_SERVER_TAG));
-  EXPECT_EQ("Home (The Chromium Projects)", (*it)->ref(NON_UNIQUE_NAME));
-  EXPECT_EQ("Home (The Chromium Projects)", (*it)->ref(SERVER_NON_UNIQUE_NAME));
+      it->second->ref(SERVER_SPECIFICS).bookmark().favicon());
+  EXPECT_EQ("", it->second->ref(UNIQUE_SERVER_TAG));
+  EXPECT_EQ("Home (The Chromium Projects)", it->second->ref(NON_UNIQUE_NAME));
+  EXPECT_EQ("Home (The Chromium Projects)",
+            it->second->ref(SERVER_NON_UNIQUE_NAME));
 
-  ASSERT_TRUE(++it != index.end());
-  ASSERT_EQ(12, (*it)->ref(META_HANDLE));
-  EXPECT_FALSE((*it)->ref(IS_DEL));
-  EXPECT_TRUE((*it)->ref(IS_DIR));
-  EXPECT_EQ("Extra Bookmarks", (*it)->ref(NON_UNIQUE_NAME));
-  EXPECT_EQ("Extra Bookmarks", (*it)->ref(SERVER_NON_UNIQUE_NAME));
-  EXPECT_TRUE((*it)->ref(SPECIFICS).has_bookmark());
-  EXPECT_TRUE((*it)->ref(SERVER_SPECIFICS).has_bookmark());
+  it = handles_map.find(12);
+  ASSERT_EQ(12, it->second->ref(META_HANDLE));
+  EXPECT_FALSE(it->second->ref(IS_DEL));
+  EXPECT_TRUE(it->second->ref(IS_DIR));
+  EXPECT_EQ("Extra Bookmarks", it->second->ref(NON_UNIQUE_NAME));
+  EXPECT_EQ("Extra Bookmarks", it->second->ref(SERVER_NON_UNIQUE_NAME));
+  EXPECT_TRUE(it->second->ref(SPECIFICS).has_bookmark());
+  EXPECT_TRUE(it->second->ref(SERVER_SPECIFICS).has_bookmark());
   EXPECT_FALSE(
-      (*it)->ref(SPECIFICS).bookmark().has_url());
+      it->second->ref(SPECIFICS).bookmark().has_url());
   EXPECT_FALSE(
-      (*it)->ref(SERVER_SPECIFICS).bookmark().has_url());
+      it->second->ref(SERVER_SPECIFICS).bookmark().has_url());
   EXPECT_FALSE(
-      (*it)->ref(SPECIFICS).bookmark().has_favicon());
-  EXPECT_FALSE((*it)->ref(SERVER_SPECIFICS).bookmark().has_favicon());
+      it->second->ref(SPECIFICS).bookmark().has_favicon());
+  EXPECT_FALSE(it->second->ref(SERVER_SPECIFICS).bookmark().has_favicon());
 
-  ASSERT_TRUE(++it != index.end());
-  ASSERT_EQ(13, (*it)->ref(META_HANDLE));
+  it = handles_map.find(13);
+  ASSERT_EQ(13, it->second->ref(META_HANDLE));
 
-  ASSERT_TRUE(++it != index.end());
-  ASSERT_EQ(14, (*it)->ref(META_HANDLE));
+  it = handles_map.find(14);
+  ASSERT_EQ(14, it->second->ref(META_HANDLE));
 
-  ASSERT_TRUE(++it == index.end());
+  ASSERT_EQ(static_cast<size_t>(10), handles_map.size());
 }
 
 INSTANTIATE_TEST_CASE_P(DirectoryBackingStore, MigrationTest,
@@ -3449,28 +3446,28 @@ TEST_F(DirectoryBackingStoreTest, DeleteEntries) {
   SetUpCurrentDatabaseAndCheckVersion(&connection);
   scoped_ptr<TestDirectoryBackingStore> dbs(
       new TestDirectoryBackingStore(GetUsername(), &connection));
-  MetahandlesIndex index;
+  Directory::MetahandlesMap handles_map;
   JournalIndex  delete_journals;
   Directory::KernelLoadInfo kernel_load_info;
-  STLElementDeleter<MetahandlesIndex> index_deleter(&index);
+  STLValueDeleter<Directory::MetahandlesMap> index_deleter(&handles_map);
 
-  dbs->Load(&index, &delete_journals, &kernel_load_info);
-  size_t initial_size = index.size();
-  ASSERT_LT(0U, initial_size) << "Test requires entries to delete.";
-  int64 first_to_die = (*index.begin())->ref(META_HANDLE);
+  dbs->Load(&handles_map, &delete_journals, &kernel_load_info);
+  size_t initial_size = handles_map.size();
+  ASSERT_LT(0U, initial_size) << "Test requires handles_map to delete.";
+  int64 first_to_die = handles_map.begin()->second->ref(META_HANDLE);
   MetahandleSet to_delete;
   to_delete.insert(first_to_die);
   EXPECT_TRUE(dbs->DeleteEntries(TestDirectoryBackingStore::METAS_TABLE,
                                  to_delete));
 
-  STLDeleteElements(&index);
-  dbs->LoadEntries(&index);
+  STLDeleteValues(&handles_map);
+  dbs->LoadEntries(&handles_map);
 
-  EXPECT_EQ(initial_size - 1, index.size());
+  EXPECT_EQ(initial_size - 1, handles_map.size());
   bool delete_failed = false;
-  for (MetahandlesIndex::iterator it = index.begin(); it != index.end();
-       ++it) {
-    if ((*it)->ref(META_HANDLE) == first_to_die) {
+  for (Directory::MetahandlesMap::iterator it = handles_map.begin();
+       it != handles_map.end(); ++it) {
+    if (it->first == first_to_die) {
       delete_failed = true;
       break;
     }
@@ -3478,17 +3475,17 @@ TEST_F(DirectoryBackingStoreTest, DeleteEntries) {
   EXPECT_FALSE(delete_failed);
 
   to_delete.clear();
-  for (MetahandlesIndex::iterator it = index.begin(); it != index.end();
-       ++it) {
-    to_delete.insert((*it)->ref(META_HANDLE));
+  for (Directory::MetahandlesMap::iterator it = handles_map.begin();
+       it != handles_map.end(); ++it) {
+    to_delete.insert(it->first);
   }
 
   EXPECT_TRUE(dbs->DeleteEntries(TestDirectoryBackingStore::METAS_TABLE,
                                  to_delete));
 
-  STLDeleteElements(&index);
-  dbs->LoadEntries(&index);
-  EXPECT_EQ(0U, index.size());
+  STLDeleteValues(&handles_map);
+  dbs->LoadEntries(&handles_map);
+  EXPECT_EQ(0U, handles_map.size());
 }
 
 TEST_F(DirectoryBackingStoreTest, GenerateCacheGUID) {

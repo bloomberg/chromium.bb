@@ -11,6 +11,7 @@
 
 #include "base/file_util.h"
 #include "base/gtest_prod_util.h"
+#include "base/hash_tables.h"
 #include "sync/base/sync_export.h"
 #include "sync/internal_api/public/util/report_unrecoverable_error_function.h"
 #include "sync/internal_api/public/util/weak_handle.h"
@@ -36,63 +37,6 @@ class NigoriHandler;
 class ScopedKernelLock;
 class TransactionObserver;
 class WriteTransaction;
-
-// How syncable indices & Indexers work.
-//
-// The syncable Directory maintains several indices on the Entries it tracks.
-// The indices follow a common pattern:
-//   (a) The index allows efficient lookup of an Entry* with particular
-//       field values.  This is done by use of a std::set<> and a custom
-//       comparator.
-//   (b) There may be conditions for inclusion in the index -- for example,
-//       deleted items might not be indexed.
-//   (c) Because the index set contains only Entry*, one must be careful
-//       to remove Entries from the set before updating the value of
-//       an indexed field.
-// The traits of an index are a Comparator (to define the set ordering) and a
-// ShouldInclude function (to define the conditions for inclusion).  For each
-// index, the traits are grouped into a class called an Indexer which
-// can be used as a template type parameter.
-
-template <typename FieldType, FieldType field_index> class LessField;
-
-// Traits type for metahandle index.
-struct MetahandleIndexer {
-  // This index is of the metahandle field values.
-  typedef LessField<MetahandleField, META_HANDLE> Comparator;
-
-  // This index includes all entries.
-  inline static bool ShouldInclude(const EntryKernel* a) {
-    return true;
-  }
-};
-
-// Traits type for ID field index.
-struct IdIndexer {
-  // This index is of the ID field values.
-  typedef LessField<IdField, ID> Comparator;
-
-  // This index includes all entries.
-  inline static bool ShouldInclude(const EntryKernel* a) {
-    return true;
-  }
-};
-
-// Traits type for unique client tag index.
-struct ClientTagIndexer {
-  // This index is of the client-tag values.
-  typedef LessField<StringField, UNIQUE_CLIENT_TAG> Comparator;
-
-  // Items are only in this index if they have a non-empty client tag value.
-  static bool ShouldInclude(const EntryKernel* a);
-};
-
-// Given an Indexer providing the semantics of an index, defines the
-// set type used to actually contain the index.
-template <typename Indexer>
-struct Index {
-  typedef std::set<EntryKernel*, typename Indexer::Comparator> Set;
-};
 
 enum InvariantCheckLevel {
   OFF = 0,            // No checking.
@@ -183,6 +127,21 @@ class SYNC_EXPORT Directory {
     EntryKernelSet delete_journals;
     MetahandleSet delete_journals_to_purge;
   };
+
+  typedef std::vector<int64> ChildHandles;
+
+  // Be careful when using these hash_map containers.  According to the spec,
+  // inserting into them may invalidate all iterators.
+  //
+  // It gets worse, though.  The Anroid STL library has a bug that means it may
+  // invalidate all iterators when you erase from the map, too.  That means that
+  // you can't iterate while erasing.  STLDeleteElements(), std::remove_if(),
+  // and other similar functions are off-limits too, until this bug is fixed.
+  //
+  // See http://sourceforge.net/p/stlport/bugs/239/.
+  typedef base::hash_map<int64, EntryKernel*> MetahandlesMap;
+  typedef base::hash_map<std::string, EntryKernel*> IdsMap;
+  typedef base::hash_map<std::string, EntryKernel*> TagsMap;
 
   // Does not take ownership of |encryptor|.
   // |report_unrecoverable_error_function| may be NULL.
@@ -307,8 +266,6 @@ class SYNC_EXPORT Directory {
   EntryKernel* GetEntryById(const Id& id, ScopedKernelLock* const lock);
 
  public:
-  typedef std::vector<int64> ChildHandles;
-
   // Returns the child meta handles (even those for deleted/unlinked
   // nodes) for given parent id.  Clears |result| if there are no
   // children.
@@ -429,9 +386,11 @@ class SYNC_EXPORT Directory {
   bool CheckTreeInvariants(syncable::BaseTransaction* trans,
                            const MetahandleSet& handles);
 
-  // Helper to prime ids_index, parent_id_and_names_index, unsynced_metahandles
-  // and unapplied_metahandles from metahandles_index.
-  void InitializeIndices();
+  // Helper to prime metahandles_map, ids_map, parent_child_index,
+  // unsynced_metahandles, unapplied_update_metahandles, server_tags_map and
+  // client_tags_map from metahandles_index.  The input |handles_map| will be
+  // cleared during the initialization process.
+  void InitializeIndices(MetahandlesMap* handles_map);
 
   // Constructs a consistent snapshot of the current Directory state and
   // indices (by deep copy) under a ReadTransaction for use in |snapshot|.
@@ -464,17 +423,6 @@ class SYNC_EXPORT Directory {
       std::deque<const OrderedChildSet*>* child_sets) const;
 
   Directory& operator = (const Directory&);
-
- public:
-  // These contain all items, including IS_DEL items.
-  typedef Index<MetahandleIndexer>::Set MetahandlesIndex;
-  typedef Index<IdIndexer>::Set IdsIndex;
-
-  // Contains both deleted and existing entries with tags.
-  // We can't store only existing tags because the client would create
-  // items that had a duplicated ID in the end, resulting in a DB key
-  // violation. ID reassociation would fail after an attempted commit.
-  typedef Index<ClientTagIndexer>::Set ClientTagIndex;
 
  protected:
   // Used by tests. |delegate| must not be NULL.
@@ -511,31 +459,40 @@ class SYNC_EXPORT Directory {
     // Never hold the mutex and do anything with the database or any
     // other buffered IO.  Violating this rule will result in deadlock.
     base::Lock mutex;
-    // Entries indexed by metahandle
-    MetahandlesIndex* metahandles_index;
+
+    // Entries indexed by metahandle.  This container is considered to be the
+    // owner of all EntryKernels, which may be referened by the other
+    // containers.  If you remove an EntryKernel from this map, you probably
+    // want to remove it from all other containers and delete it, too.
+    MetahandlesMap metahandles_map;
+
     // Entries indexed by id
-    IdsIndex* ids_index;
+    IdsMap ids_map;
+
+    // Entries indexed by server tag.
+    // This map does not include any entries with non-existent server tags.
+    TagsMap server_tags_map;
+
+    // Entries indexed by client tag.
+    // This map does not include any entries with non-existent client tags.
+    // IS_DEL items are included.
+    TagsMap client_tags_map;
 
     // Contains non-deleted items, indexed according to parent and position
     // within parent.  Protected by the ScopedKernelLock.
-    ParentChildIndex* parent_child_index;
-
-    ClientTagIndex* client_tag_index;
-    // So we don't have to create an EntryKernel every time we want to
-    // look something up in an index.  Needle in haystack metaphor.
-    EntryKernel needle;
+    ParentChildIndex parent_child_index;
 
     // 3 in-memory indices on bits used extremely frequently by the syncer.
     // |unapplied_update_metahandles| is keyed by the server model type.
     MetahandleSet unapplied_update_metahandles[MODEL_TYPE_COUNT];
-    MetahandleSet* const unsynced_metahandles;
+    MetahandleSet unsynced_metahandles;
     // Contains metahandles that are most likely dirty (though not
     // necessarily).  Dirtyness is confirmed in TakeSnapshotForSaveChanges().
-    MetahandleSet* const dirty_metahandles;
+    MetahandleSet dirty_metahandles;
 
     // When a purge takes place, we remove items from all our indices and stash
     // them in here so that SaveChanges can persist their permanent deletion.
-    MetahandleSet* const metahandles_to_purge;
+    MetahandleSet metahandles_to_purge;
 
     KernelShareInfoStatus info_status;
 

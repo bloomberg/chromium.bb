@@ -492,13 +492,46 @@ bool DirectoryBackingStore::RefreshColumns() {
   return true;
 }
 
-bool DirectoryBackingStore::LoadEntries(MetahandlesIndex* entry_bucket) {
-  return LoadEntriesInternal("metas", entry_bucket);
+bool DirectoryBackingStore::LoadEntries(
+    Directory::MetahandlesMap* handles_map) {
+  string select;
+  select.reserve(kUpdateStatementBufferSize);
+  select.append("SELECT ");
+  AppendColumnList(&select);
+  select.append(" FROM metas");
+
+  sql::Statement s(db_->GetUniqueStatement(select.c_str()));
+
+  while (s.Step()) {
+    scoped_ptr<EntryKernel> kernel = UnpackEntry(&s);
+    // A null kernel is evidence of external data corruption.
+    if (!kernel)
+      return false;
+
+    int64 handle = kernel->ref(META_HANDLE);
+    (*handles_map)[handle] = kernel.release();
+  }
+  return s.Succeeded();
 }
 
 bool DirectoryBackingStore::LoadDeleteJournals(
     JournalIndex* delete_journals) {
-  return LoadEntriesInternal("deleted_metas", delete_journals);
+  string select;
+  select.reserve(kUpdateStatementBufferSize);
+  select.append("SELECT ");
+  AppendColumnList(&select);
+  select.append(" FROM deleted_metas");
+
+  sql::Statement s(db_->GetUniqueStatement(select.c_str()));
+
+  while (s.Step()) {
+    scoped_ptr<EntryKernel> kernel = UnpackEntry(&s);
+    // A null kernel is evidence of external data corruption.
+    if (!kernel)
+      return false;
+    delete_journals->insert(kernel.release());
+  }
+  return s.Succeeded();
 }
 
 bool DirectoryBackingStore::LoadInfo(Directory::KernelLoadInfo* info) {
@@ -1402,7 +1435,7 @@ bool DirectoryBackingStore::CreateShareInfoTableVersion71(
 // whose PARENT_ID values refer to ID values that do not actually exist.
 // Returns true on success.
 bool DirectoryBackingStore::VerifyReferenceIntegrity(
-    const syncable::MetahandlesIndex &index) {
+    const Directory::MetahandlesMap* handles_map) {
   TRACE_EVENT0("sync", "SyncDatabaseIntegrityCheck");
   using namespace syncable;
   typedef base::hash_set<std::string> IdsSet;
@@ -1410,44 +1443,23 @@ bool DirectoryBackingStore::VerifyReferenceIntegrity(
   IdsSet ids_set;
   bool is_ok = true;
 
-  for (MetahandlesIndex::const_iterator it = index.begin();
-       it != index.end(); ++it) {
-    EntryKernel* entry = *it;
+  for (Directory::MetahandlesMap::const_iterator it = handles_map->begin();
+       it != handles_map->end(); ++it) {
+    EntryKernel* entry = it->second;
     bool is_duplicate_id = !(ids_set.insert(entry->ref(ID).value()).second);
     is_ok = is_ok && !is_duplicate_id;
   }
 
   IdsSet::iterator end = ids_set.end();
-  for (MetahandlesIndex::const_iterator it = index.begin();
-       it != index.end(); ++it) {
-    EntryKernel* entry = *it;
+  for (Directory::MetahandlesMap::const_iterator it = handles_map->begin();
+       it != handles_map->end(); ++it) {
+    EntryKernel* entry = it->second;
     bool parent_exists = (ids_set.find(entry->ref(PARENT_ID).value()) != end);
     if (!parent_exists) {
       return false;
     }
   }
   return is_ok;
-}
-
-template<class T>
-bool DirectoryBackingStore::LoadEntriesInternal(const std::string& table,
-                                                T* bucket) {
-  string select;
-  select.reserve(kUpdateStatementBufferSize);
-  select.append("SELECT ");
-  AppendColumnList(&select);
-  select.append(" FROM " + table);
-
-  sql::Statement s(db_->GetUniqueStatement(select.c_str()));
-
-  while (s.Step()) {
-    scoped_ptr<EntryKernel> kernel = UnpackEntry(&s);
-    // A null kernel is evidence of external data corruption.
-    if (!kernel)
-      return false;
-    bucket->insert(kernel.release());
-  }
-  return s.Succeeded();
 }
 
 void DirectoryBackingStore::PrepareSaveEntryStatement(

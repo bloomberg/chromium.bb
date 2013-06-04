@@ -7,7 +7,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "sync/internal_api/public/base/unique_position.h"
 #include "sync/syncable/directory.h"
-#include "sync/syncable/scoped_index_updater.h"
 #include "sync/syncable/scoped_kernel_lock.h"
 #include "sync/syncable/scoped_parent_child_index_updater.h"
 #include "sync/syncable/syncable-inl.h"
@@ -29,7 +28,7 @@ void MutableEntry::Init(WriteTransaction* trans,
 
   kernel->put(ID, trans->directory_->NextId());
   kernel->put(META_HANDLE, trans->directory_->NextMetahandle());
-  kernel->mark_dirty(trans->directory_->kernel_->dirty_metahandles);
+  kernel->mark_dirty(&trans->directory_->kernel_->dirty_metahandles);
   kernel->put(PARENT_ID, parent_id);
   kernel->put(NON_UNIQUE_NAME, name);
   const base::Time& now = base::Time::Now();
@@ -90,7 +89,7 @@ MutableEntry::MutableEntry(WriteTransaction* trans, CreateNewUpdateItem,
 
   kernel->put(ID, id);
   kernel->put(META_HANDLE, trans->directory_->NextMetahandle());
-  kernel->mark_dirty(trans->directory_->kernel_->dirty_metahandles);
+  kernel->mark_dirty(&trans->directory_->kernel_->dirty_metahandles);
   kernel->put(IS_DEL, true);
   // We match the database defaults here
   kernel->put(BASE_VERSION, CHANGES_VERSION);
@@ -146,10 +145,10 @@ bool MutableEntry::PutIsDel(bool is_del) {
     // Some indices don't include deleted items and must be updated
     // upon a value change.
     ScopedParentChildIndexUpdater updater(lock, kernel_,
-        dir()->kernel_->parent_child_index);
+        &dir()->kernel_->parent_child_index);
 
     kernel_->put(IS_DEL, is_del);
-    kernel_->mark_dirty(dir()->kernel_->dirty_metahandles);
+    kernel_->mark_dirty(&dir()->kernel_->dirty_metahandles);
   }
 
   return true;
@@ -165,7 +164,7 @@ bool MutableEntry::Put(Int64Field field, const int64& value) {
   if (kernel_->ref(field) != value) {
     ScopedKernelLock lock(dir());
     kernel_->put(field, value);
-    kernel_->mark_dirty(dir()->kernel_->dirty_metahandles);
+    kernel_->mark_dirty(&dir()->kernel_->dirty_metahandles);
   }
   return true;
 }
@@ -175,7 +174,7 @@ bool MutableEntry::Put(TimeField field, const base::Time& value) {
   write_transaction_->SaveOriginal(kernel_);
   if (kernel_->ref(field) != value) {
     kernel_->put(field, value);
-    kernel_->mark_dirty(dir()->kernel_->dirty_metahandles);
+    kernel_->mark_dirty(&dir()->kernel_->dirty_metahandles);
   }
   return true;
 }
@@ -198,7 +197,7 @@ bool MutableEntry::Put(IdField field, const Id& value) {
     } else {
       kernel_->put(field, value);
     }
-    kernel_->mark_dirty(dir()->kernel_->dirty_metahandles);
+    kernel_->mark_dirty(&dir()->kernel_->dirty_metahandles);
   }
   return true;
 }
@@ -212,12 +211,12 @@ bool MutableEntry::Put(UniquePositionField field, const UniquePosition& value) {
     ScopedKernelLock lock(dir());
     if (UNIQUE_POSITION == field) {
       ScopedParentChildIndexUpdater updater(
-          lock, kernel_, dir()->kernel_->parent_child_index);
+          lock, kernel_, &dir()->kernel_->parent_child_index);
       kernel_->put(field, value);
     } else {
       kernel_->put(field, value);
     }
-    kernel_->mark_dirty(dir()->kernel_->dirty_metahandles);
+    kernel_->mark_dirty(&dir()->kernel_->dirty_metahandles);
   }
   return true;
 }
@@ -225,7 +224,7 @@ bool MutableEntry::Put(UniquePositionField field, const UniquePosition& value) {
 void MutableEntry::PutParentIdPropertyOnly(const Id& parent_id) {
   write_transaction_->SaveOriginal(kernel_);
   dir()->ReindexParentId(write_transaction(), kernel_, parent_id);
-  kernel_->mark_dirty(dir()->kernel_->dirty_metahandles);
+  kernel_->mark_dirty(&dir()->kernel_->dirty_metahandles);
 }
 
 bool MutableEntry::Put(BaseVersion field, int64 value) {
@@ -233,7 +232,7 @@ bool MutableEntry::Put(BaseVersion field, int64 value) {
   write_transaction_->SaveOriginal(kernel_);
   if (kernel_->ref(field) != value) {
     kernel_->put(field, value);
-    kernel_->mark_dirty(dir()->kernel_->dirty_metahandles);
+    kernel_->mark_dirty(&dir()->kernel_->dirty_metahandles);
   }
   return true;
 }
@@ -245,9 +244,16 @@ bool MutableEntry::Put(StringField field, const string& value) {
     return PutUniqueClientTag(value);
   }
 
+  if (field == UNIQUE_SERVER_TAG) {
+    return PutUniqueServerTag(value);
+  }
+
+  DCHECK_NE(UNIQUE_BOOKMARK_TAG, field)
+      << "Should use PutUniqueBookmarkTag instead of Put(UNIQUE_BOOKMARK_TAG)";
+
   if (kernel_->ref(field) != value) {
     kernel_->put(field, value);
-    kernel_->mark_dirty(dir()->kernel_->dirty_metahandles);
+    kernel_->mark_dirty(&dir()->kernel_->dirty_metahandles);
   }
   return true;
 }
@@ -273,7 +279,7 @@ bool MutableEntry::Put(ProtoField field,
     }
 
     kernel_->put(field, value);
-    kernel_->mark_dirty(dir()->kernel_->dirty_metahandles);
+    kernel_->mark_dirty(&dir()->kernel_->dirty_metahandles);
 
     if (update_unapplied_updates_index) {
       // Add ourselves back into unapplied_update_metahandles with our
@@ -310,35 +316,54 @@ bool MutableEntry::Put(BitField field, bool value) {
 }
 
 MetahandleSet* MutableEntry::GetDirtyIndexHelper() {
-  return dir()->kernel_->dirty_metahandles;
+  return &dir()->kernel_->dirty_metahandles;
 }
 
 bool MutableEntry::PutUniqueClientTag(const string& new_tag) {
-  write_transaction_->SaveOriginal(kernel_);
-  // There is no SERVER_UNIQUE_CLIENT_TAG. This field is similar to ID.
-  string old_tag = kernel_->ref(UNIQUE_CLIENT_TAG);
-  if (old_tag == new_tag) {
+  if (new_tag == kernel_->ref(UNIQUE_CLIENT_TAG)) {
     return true;
   }
 
+  write_transaction_->SaveOriginal(kernel_);
   ScopedKernelLock lock(dir());
+  // Make sure your new value is not in there already.
+  if (dir()->kernel_->client_tags_map.find(new_tag) !=
+      dir()->kernel_->client_tags_map.end()) {
+    DVLOG(1) << "Detected duplicate client tag";
+    return false;
+  }
+  dir()->kernel_->client_tags_map.erase(
+      kernel_->ref(UNIQUE_CLIENT_TAG));
+  kernel_->put(UNIQUE_CLIENT_TAG, new_tag);
+  kernel_->mark_dirty(&dir()->kernel_->dirty_metahandles);
   if (!new_tag.empty()) {
-    // Make sure your new value is not in there already.
-    EntryKernel lookup_kernel_ = *kernel_;
-    lookup_kernel_.put(UNIQUE_CLIENT_TAG, new_tag);
-    bool new_tag_conflicts =
-        (dir()->kernel_->client_tag_index->count(&lookup_kernel_) > 0);
-    if (new_tag_conflicts) {
-      return false;
-    }
+    dir()->kernel_->client_tags_map[new_tag] = kernel_;
   }
 
-  {
-    ScopedIndexUpdater<ClientTagIndexer> index_updater(lock, kernel_,
-        dir()->kernel_->client_tag_index);
-    kernel_->put(UNIQUE_CLIENT_TAG, new_tag);
-    kernel_->mark_dirty(dir()->kernel_->dirty_metahandles);
+  return true;
+}
+
+bool MutableEntry::PutUniqueServerTag(const string& new_tag) {
+  if (new_tag == kernel_->ref(UNIQUE_SERVER_TAG)) {
+    return true;
   }
+
+  write_transaction_->SaveOriginal(kernel_);
+  ScopedKernelLock lock(dir());
+  // Make sure your new value is not in there already.
+  if (dir()->kernel_->server_tags_map.find(new_tag) !=
+      dir()->kernel_->server_tags_map.end()) {
+    DVLOG(1) << "Detected duplicate server tag";
+    return false;
+  }
+  dir()->kernel_->server_tags_map.erase(
+      kernel_->ref(UNIQUE_SERVER_TAG));
+  kernel_->put(UNIQUE_SERVER_TAG, new_tag);
+  kernel_->mark_dirty(&dir()->kernel_->dirty_metahandles);
+  if (!new_tag.empty()) {
+    dir()->kernel_->server_tags_map[new_tag] = kernel_;
+  }
+
   return true;
 }
 
@@ -348,7 +373,7 @@ bool MutableEntry::Put(IndexedBitField field, bool value) {
   if (kernel_->ref(field) != value) {
     MetahandleSet* index;
     if (IS_UNSYNCED == field) {
-      index = dir()->kernel_->unsynced_metahandles;
+      index = &dir()->kernel_->unsynced_metahandles;
     } else {
       // Use kernel_->GetServerModelType() instead of
       // GetServerModelType() as we may trigger some DCHECKs in the
@@ -375,7 +400,7 @@ bool MutableEntry::Put(IndexedBitField field, bool value) {
       }
     }
     kernel_->put(field, value);
-    kernel_->mark_dirty(dir()->kernel_->dirty_metahandles);
+    kernel_->mark_dirty(&dir()->kernel_->dirty_metahandles);
   }
   return true;
 }
@@ -400,7 +425,7 @@ void MutableEntry::PutUniqueBookmarkTag(const std::string& tag) {
   }
 
   kernel_->put(UNIQUE_BOOKMARK_TAG, tag);
-  kernel_->mark_dirty(dir()->kernel_->dirty_metahandles);
+  kernel_->mark_dirty(&dir()->kernel_->dirty_metahandles);
 }
 
 bool MutableEntry::PutPredecessor(const Id& predecessor_id) {
@@ -420,7 +445,7 @@ bool MutableEntry::Put(BitTemp field, bool value) {
 void MutableEntry::UpdateTransactionVersion(int64 value) {
   ScopedKernelLock lock(dir());
   kernel_->put(TRANSACTION_VERSION, value);
-  kernel_->mark_dirty(dir()->kernel_->dirty_metahandles);
+  kernel_->mark_dirty(&(dir()->kernel_->dirty_metahandles));
 }
 
 // This function sets only the flags needed to get this entry to sync.

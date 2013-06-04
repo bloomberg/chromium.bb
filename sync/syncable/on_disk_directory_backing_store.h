@@ -21,14 +21,14 @@ class SYNC_EXPORT_PRIVATE OnDiskDirectoryBackingStore
                               const base::FilePath& backing_filepath);
   virtual ~OnDiskDirectoryBackingStore();
   virtual DirOpenResult Load(
-      MetahandlesIndex* entry_bucket,
+      Directory::MetahandlesMap* handles_map,
       JournalIndex* delete_journals,
       Directory::KernelLoadInfo* kernel_load_info) OVERRIDE;
 
   // A helper function that will make one attempt to load the directory.
   // Unlike Load(), it does not attempt to recover from failure.
   DirOpenResult TryLoad(
-      MetahandlesIndex* entry_bucket,
+      Directory::MetahandlesMap* handles_map,
       JournalIndex* delete_journals,
       Directory::KernelLoadInfo* kernel_load_info);
 

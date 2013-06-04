@@ -18,7 +18,7 @@ class SYNC_EXPORT_PRIVATE InvalidDirectoryBackingStore
   InvalidDirectoryBackingStore();
   virtual ~InvalidDirectoryBackingStore();
   virtual DirOpenResult Load(
-      MetahandlesIndex* entry_bucket,
+      Directory::MetahandlesMap* handles_map,
       JournalIndex* delete_journals,
       Directory::KernelLoadInfo* kernel_load_info) OVERRIDE;
  private:

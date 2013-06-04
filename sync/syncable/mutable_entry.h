@@ -104,6 +104,7 @@ class SYNC_EXPORT_PRIVATE MutableEntry : public Entry {
   void* operator new(size_t size) { return (::operator new)(size); }
 
   bool PutUniqueClientTag(const std::string& value);
+  bool PutUniqueServerTag(const std::string& value);
 
   // Adjusts the successor and predecessor entries so that they no longer
   // refer to this entry.

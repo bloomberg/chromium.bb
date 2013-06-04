@@ -27,7 +27,6 @@ namespace syncable {
 SYNC_EXPORT_PRIVATE extern const int32 kCurrentDBVersion;
 
 struct ColumnSpec;
-typedef Directory::MetahandlesIndex MetahandlesIndex;
 
 // Interface that provides persistence for a syncable::Directory object. You can
 // load all the persisted data to prime a syncable::Directory on startup by
@@ -49,7 +48,7 @@ class SYNC_EXPORT_PRIVATE DirectoryBackingStore : public base::NonThreadSafe {
   explicit DirectoryBackingStore(const std::string& dir_name);
   virtual ~DirectoryBackingStore();
 
-  // Loads and drops all currently persisted meta entries into |entry_bucket|
+  // Loads and drops all currently persisted meta entries into |handles_map|
   // and loads appropriate persisted kernel info into |info_bucket|.
   //
   // This function can perform some cleanup tasks behind the scenes.  It will
@@ -58,7 +57,7 @@ class SYNC_EXPORT_PRIVATE DirectoryBackingStore : public base::NonThreadSafe {
   //
   // NOTE: On success (return value of OPENED), the buckets are populated with
   // newly allocated items, meaning ownership is bestowed upon the caller.
-  virtual DirOpenResult Load(MetahandlesIndex* entry_bucket,
+  virtual DirOpenResult Load(Directory::MetahandlesMap* handles_map,
                              JournalIndex* delete_journals,
                              Directory::KernelLoadInfo* kernel_load_info) = 0;
 
@@ -97,7 +96,7 @@ class SYNC_EXPORT_PRIVATE DirectoryBackingStore : public base::NonThreadSafe {
   bool SafeDropTable(const char* table_name);
 
   // Load helpers for entries and attributes.
-  bool LoadEntries(MetahandlesIndex* entry_bucket);
+  bool LoadEntries(Directory::MetahandlesMap* handles_map);
   bool LoadDeleteJournals(JournalIndex* delete_journals);
   bool LoadInfo(Directory::KernelLoadInfo* info);
 
@@ -106,9 +105,6 @@ class SYNC_EXPORT_PRIVATE DirectoryBackingStore : public base::NonThreadSafe {
                             const EntryKernel& entry);
   bool SaveNewEntryToDB(const EntryKernel& entry);
   bool UpdateEntryToDB(const EntryKernel& entry);
-
-  DirOpenResult DoLoad(MetahandlesIndex* entry_bucket,
-      Directory::KernelLoadInfo* kernel_load_info);
 
   // Close save_dbhandle_.  Broken out for testing.
   void EndSave();
@@ -139,7 +135,8 @@ class SYNC_EXPORT_PRIVATE DirectoryBackingStore : public base::NonThreadSafe {
   bool CheckIntegrity(sqlite3* handle, std::string* error) const;
 
   // Checks that the references between sync nodes is consistent.
-  static bool VerifyReferenceIntegrity(const MetahandlesIndex& entries);
+  static bool VerifyReferenceIntegrity(
+      const Directory::MetahandlesMap* handles_map);
 
   // Migration utilities.
   bool RefreshColumns();
@@ -184,10 +181,6 @@ class SYNC_EXPORT_PRIVATE DirectoryBackingStore : public base::NonThreadSafe {
   bool needs_column_refresh_;
 
  private:
-  // Helper function for loading entries from specified table.
-  template<class T>
-  bool LoadEntriesInternal(const std::string& table, T* bucket);
-
   // Prepares |save_statement| for saving entries in |table|.
   void PrepareSaveEntryStatement(EntryTable table,
                                  sql::Statement* save_statement);

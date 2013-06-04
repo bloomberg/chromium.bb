@@ -22,7 +22,7 @@ TestDirectoryBackingStore::~TestDirectoryBackingStore() {
 }
 
 DirOpenResult TestDirectoryBackingStore::Load(
-    MetahandlesIndex* entry_bucket,
+    Directory::MetahandlesMap* handles_map,
     JournalIndex* delete_journals,
     Directory::KernelLoadInfo* kernel_load_info) {
   DCHECK(db_->is_open());
@@ -32,13 +32,13 @@ DirOpenResult TestDirectoryBackingStore::Load(
 
   if (!DropDeletedEntries())
     return FAILED_DATABASE_CORRUPT;
-  if (!LoadEntries(entry_bucket))
+  if (!LoadEntries(handles_map))
     return FAILED_DATABASE_CORRUPT;
   if (!LoadDeleteJournals(delete_journals))
     return FAILED_DATABASE_CORRUPT;
   if (!LoadInfo(kernel_load_info))
     return FAILED_DATABASE_CORRUPT;
-  if (!VerifyReferenceIntegrity(*entry_bucket))
+  if (!VerifyReferenceIntegrity(handles_map))
     return FAILED_DATABASE_CORRUPT;
 
   return OPENED;
