@@ -46,7 +46,7 @@ using WebKit::WebSecurityOrigin;
 
 namespace {
 
-void LogSuccess(const Extension* extension,
+void LogSuccess(const std::string& extension_id,
                 const std::string& api_name,
                 scoped_ptr<ListValue> args,
                 Profile* profile) {
@@ -56,18 +56,19 @@ void LogSuccess(const Extension* extension,
     BrowserThread::PostTask(BrowserThread::UI,
                             FROM_HERE,
                             base::Bind(&LogSuccess,
-                                       extension,
+                                       extension_id,
                                        api_name,
                                        base::Passed(&args),
                                        profile));
   } else {
     extensions::ActivityLog* activity_log =
         extensions::ActivityLog::GetInstance(profile);
-    activity_log->LogAPIAction(extension, api_name, args.get(), std::string());
+    activity_log->LogAPIAction(
+        extension_id, api_name, args.get(), std::string());
   }
 }
 
-void LogFailure(const Extension* extension,
+void LogFailure(const std::string& extension_id,
                 const std::string& api_name,
                 scoped_ptr<ListValue> args,
                 extensions::BlockedAction::Reason reason,
@@ -78,7 +79,7 @@ void LogFailure(const Extension* extension,
     BrowserThread::PostTask(BrowserThread::UI,
                             FROM_HERE,
                             base::Bind(&LogFailure,
-                                       extension,
+                                       extension_id,
                                        api_name,
                                        base::Passed(&args),
                                        reason,
@@ -87,7 +88,7 @@ void LogFailure(const Extension* extension,
     extensions::ActivityLog* activity_log =
         extensions::ActivityLog::GetInstance(profile);
     activity_log->LogBlockedAction(
-        extension, api_name, args.get(), reason, std::string());
+        extension_id, api_name, args.get(), reason, std::string());
   }
 }
 
@@ -264,7 +265,7 @@ void ExtensionFunctionDispatcher::DispatchOnIOThread(
   scoped_ptr<ListValue> args(params.arguments.DeepCopy());
 
   if (!function.get()) {
-    LogFailure(extension,
+    LogFailure(extension->id(),
                params.name,
                args.Pass(),
                extensions::BlockedAction::ACCESS_DENIED,
@@ -284,7 +285,7 @@ void ExtensionFunctionDispatcher::DispatchOnIOThread(
       extension_info_map->IsIncognitoEnabled(extension->id()));
 
   if (!CheckPermissions(function.get(), extension, params, callback)) {
-    LogFailure(extension,
+    LogFailure(extension->id(),
                params.name,
                args.Pass(),
                extensions::BlockedAction::ACCESS_DENIED,
@@ -298,13 +299,13 @@ void ExtensionFunctionDispatcher::DispatchOnIOThread(
                                               &params.arguments,
                                               base::TimeTicks::Now());
   if (violation_error.empty()) {
-    LogSuccess(extension,
+    LogSuccess(extension->id(),
                params.name,
                args.Pass(),
                profile_cast);
     function->Run();
   } else {
-    LogFailure(extension,
+    LogFailure(extension->id(),
                params.name,
                args.Pass(),
                extensions::BlockedAction::QUOTA_EXCEEDED,
@@ -369,7 +370,7 @@ void ExtensionFunctionDispatcher::DispatchWithCallback(
   scoped_ptr<ListValue> args(params.arguments.DeepCopy());
 
   if (!function.get()) {
-    LogFailure(extension,
+    LogFailure(extension->id(),
                params.name,
                args.Pass(),
                extensions::BlockedAction::ACCESS_DENIED,
@@ -389,7 +390,7 @@ void ExtensionFunctionDispatcher::DispatchWithCallback(
   function->set_include_incognito(service->CanCrossIncognito(extension));
 
   if (!CheckPermissions(function.get(), extension, params, callback)) {
-    LogFailure(extension,
+    LogFailure(extension->id(),
                params.name,
                args.Pass(),
                extensions::BlockedAction::ACCESS_DENIED,
@@ -405,10 +406,10 @@ void ExtensionFunctionDispatcher::DispatchWithCallback(
   if (violation_error.empty()) {
     // See crbug.com/39178.
     ExternalProtocolHandler::PermitLaunchUrl();
-    LogSuccess(extension, params.name, args.Pass(), profile());
+    LogSuccess(extension->id(), params.name, args.Pass(), profile());
     function->Run();
   } else {
-    LogFailure(extension,
+    LogFailure(extension->id(),
                params.name,
                args.Pass(),
                extensions::BlockedAction::QUOTA_EXCEEDED,

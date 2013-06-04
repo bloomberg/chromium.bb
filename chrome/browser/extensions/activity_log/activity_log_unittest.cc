@@ -4,16 +4,14 @@
 
 #include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/message_loop.h"
+#include "base/run_loop.h"
 #include "base/synchronization/waitable_event.h"
 #include "chrome/browser/extensions/activity_log/activity_log.h"
 #include "chrome/browser/extensions/activity_log/dom_actions.h"
-#include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/dom_action_types.h"
-#include "chrome/common/extensions/extension_builder.h"
-#include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread.h"
@@ -26,23 +24,26 @@
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
 #endif
 
+namespace {
+
+const char kExtensionId[] = "abc";
+
+}  // namespace
+
 namespace extensions {
 
-class ActivityLogTest : public ChromeRenderViewHostTestHarness {
+class ActivityLogTest : public testing::Test {
  public:
   ActivityLogTest()
-      : ui_thread_(BrowserThread::UI, base::MessageLoop::current()),
-        db_thread_(BrowserThread::DB, base::MessageLoop::current()),
-        file_thread_(BrowserThread::FILE, base::MessageLoop::current()) {}
+      : message_loop_(base::MessageLoop::TYPE_IO),
+        ui_thread_(BrowserThread::UI, &message_loop_),
+        db_thread_(BrowserThread::DB, &message_loop_),
+        file_thread_(BrowserThread::FILE, &message_loop_),
+        io_thread_(BrowserThread::IO, &message_loop_) {}
 
   virtual void SetUp() OVERRIDE {
-    ChromeRenderViewHostTestHarness::SetUp();
     CommandLine command_line(CommandLine::NO_PROGRAM);
-    profile_ =
-        Profile::FromBrowserContext(web_contents()->GetBrowserContext());
-    extension_service_ = static_cast<TestExtensionSystem*>(
-        ExtensionSystem::Get(profile_))->CreateExtensionService(
-            &command_line, base::FilePath(), false);
+    profile_.reset(new TestingProfile());
     CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kEnableExtensionActivityLogging);
     CommandLine::ForCurrentProcess()->AppendSwitch(
@@ -50,10 +51,14 @@ class ActivityLogTest : public ChromeRenderViewHostTestHarness {
     ActivityLog::RecomputeLoggingIsEnabled();
   }
 
-  virtual ~ActivityLogTest() {
-    base::MessageLoop::current()->PostTask(FROM_HERE,
-                                           base::MessageLoop::QuitClosure());
-    base::MessageLoop::current()->Run();
+  virtual void TearDown() OVERRIDE {
+    base::RunLoop().RunUntilIdle();
+    profile_.reset(NULL);
+    base::MessageLoop::current()->PostDelayedTask(
+        FROM_HERE,
+        base::MessageLoop::QuitClosure(),
+        base::TimeDelta::FromSeconds(4));   // Don't hang on failure.
+    base::RunLoop().RunUntilIdle();
   }
 
   static void RetrieveActions_LogAndFetchActions(
@@ -64,7 +69,8 @@ class ActivityLogTest : public ChromeRenderViewHostTestHarness {
   static void Arguments_Missing(
       scoped_ptr<std::vector<scoped_refptr<Action> > > i) {
     scoped_refptr<Action> last = i->front();
-    std::string noargs = "ID: odlameecjipmbmbejkplpemijjgpljce, CATEGORY: "
+    std::string id(kExtensionId);
+    std::string noargs = "ID: " + id + ", CATEGORY: "
       "CALL, API: tabs.testMethod, ARGS: ";
     ASSERT_EQ(noargs, last->PrintForDebug());
   }
@@ -72,19 +78,21 @@ class ActivityLogTest : public ChromeRenderViewHostTestHarness {
   static void Arguments_Present(
       scoped_ptr<std::vector<scoped_refptr<Action> > > i) {
     scoped_refptr<Action> last = i->front();
-    std::string args = "ID: odlameecjipmbmbejkplpemijjgpljce, CATEGORY: "
+    std::string id(kExtensionId);
+    std::string args = "ID: " + id + ", CATEGORY: "
       "CALL, API: extension.connect, ARGS: \"hello\", \"world\"";
     ASSERT_EQ(args, last->PrintForDebug());
   }
 
  protected:
-  ExtensionService* extension_service_;
-  Profile* profile_;
+  scoped_ptr<TestingProfile> profile_;
 
  private:
+  base::MessageLoop message_loop_;
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread db_thread_;
   content::TestBrowserThread file_thread_;
+  content::TestBrowserThread io_thread_;
 
 #if defined OS_CHROMEOS
   chromeos::ScopedTestDeviceSettingsService test_device_settings_service_;
@@ -98,38 +106,22 @@ TEST_F(ActivityLogTest, Enabled) {
 }
 
 TEST_F(ActivityLogTest, Construct) {
-  ActivityLog* activity_log = ActivityLog::GetInstance(profile_);
-  scoped_refptr<const Extension> extension =
-      ExtensionBuilder()
-          .SetManifest(DictionaryBuilder()
-                       .Set("name", "Test extension")
-                       .Set("version", "1.0.0")
-                       .Set("manifest_version", 2))
-          .Build();
-  extension_service_->AddExtension(extension);
+  ActivityLog* activity_log = ActivityLog::GetInstance(profile_.get());
   scoped_ptr<ListValue> args(new ListValue());
   ASSERT_TRUE(ActivityLog::IsLogEnabled());
   activity_log->LogAPIAction(
-      extension, std::string("tabs.testMethod"), args.get(), std::string());
+      kExtensionId, std::string("tabs.testMethod"), args.get(), std::string());
 }
 
 TEST_F(ActivityLogTest, LogAndFetchActions) {
-  ActivityLog* activity_log = ActivityLog::GetInstance(profile_);
-  scoped_refptr<const Extension> extension =
-      ExtensionBuilder()
-          .SetManifest(DictionaryBuilder()
-                       .Set("name", "Test extension")
-                       .Set("version", "1.0.0")
-                       .Set("manifest_version", 2))
-          .Build();
-  extension_service_->AddExtension(extension);
+  ActivityLog* activity_log = ActivityLog::GetInstance(profile_.get());
   scoped_ptr<ListValue> args(new ListValue());
   ASSERT_TRUE(ActivityLog::IsLogEnabled());
 
   // Write some API calls
   activity_log->LogAPIAction(
-      extension, std::string("tabs.testMethod"), args.get(), std::string());
-  activity_log->LogDOMAction(extension,
+      kExtensionId, std::string("tabs.testMethod"), args.get(), std::string());
+  activity_log->LogDOMAction(kExtensionId,
                              GURL("http://www.google.com"),
                              string16(),
                              std::string("document.write"),
@@ -137,52 +129,38 @@ TEST_F(ActivityLogTest, LogAndFetchActions) {
                              DomActionType::METHOD,
                              std::string("extra"));
   activity_log->GetActions(
-      extension->id(),
+      kExtensionId,
       0,
       base::Bind(ActivityLogTest::RetrieveActions_LogAndFetchActions));
 }
 
 TEST_F(ActivityLogTest, LogWithoutArguments) {
-  ActivityLog* activity_log = ActivityLog::GetInstance(profile_);
+  ActivityLog* activity_log = ActivityLog::GetInstance(profile_.get());
   activity_log->SetArgumentLoggingForTesting(false);
-  scoped_refptr<const Extension> extension =
-      ExtensionBuilder()
-          .SetManifest(DictionaryBuilder()
-                       .Set("name", "Test extension")
-                       .Set("version", "1.0.0")
-                       .Set("manifest_version", 2))
-          .Build();
-  extension_service_->AddExtension(extension);
   ASSERT_TRUE(ActivityLog::IsLogEnabled());
 
   scoped_ptr<ListValue> args(new ListValue());
   args->Set(0, new base::StringValue("hello"));
   args->Set(1, new base::StringValue("world"));
   activity_log->LogAPIAction(
-      extension, std::string("tabs.testMethod"), args.get(), std::string());
+      kExtensionId, std::string("tabs.testMethod"), args.get(), std::string());
   activity_log->GetActions(
-      extension->id(), 0, base::Bind(ActivityLogTest::Arguments_Missing));
+      kExtensionId, 0, base::Bind(ActivityLogTest::Arguments_Missing));
 }
 
 TEST_F(ActivityLogTest, LogWithArguments) {
-  ActivityLog* activity_log = ActivityLog::GetInstance(profile_);
-  scoped_refptr<const Extension> extension =
-      ExtensionBuilder()
-          .SetManifest(DictionaryBuilder()
-                       .Set("name", "Test extension")
-                       .Set("version", "1.0.0")
-                       .Set("manifest_version", 2))
-          .Build();
-  extension_service_->AddExtension(extension);
+  ActivityLog* activity_log = ActivityLog::GetInstance(profile_.get());
   ASSERT_TRUE(ActivityLog::IsLogEnabled());
 
   scoped_ptr<ListValue> args(new ListValue());
   args->Set(0, new base::StringValue("hello"));
   args->Set(1, new base::StringValue("world"));
-  activity_log->LogAPIAction(
-      extension, std::string("extension.connect"), args.get(), std::string());
+  activity_log->LogAPIAction(kExtensionId,
+                             std::string("extension.connect"),
+                             args.get(),
+                             std::string());
   activity_log->GetActions(
-      extension->id(), 0, base::Bind(ActivityLogTest::Arguments_Present));
+      kExtensionId, 0, base::Bind(ActivityLogTest::Arguments_Present));
 }
 
 }  // namespace extensions

@@ -1602,28 +1602,12 @@ void LogExtensionActivity(Profile* profile,
                                        api_call,
                                        details.release()));
   } else {
-    // An ExtensionService might not be running during unit tests, or an
-    // extension might have been unloadd by the time we get to logging it.  In
-    // those cases log a warning.
-    ExtensionService* extension_service =
-        extensions::ExtensionSystem::Get(profile)->extension_service();
-    if (!extension_service) {
-      LOG(WARNING) << "ExtensionService does not seem to be available "
-                   << "(this may be normal for unit tests)";
-    } else {
-      const Extension* extension =
-          extension_service->extensions()->GetByID(extension_id);
-      if (!extension) {
-        LOG(WARNING) << "Extension " << extension_id << " not found!";
-      } else {
-        extensions::ActivityLog::GetInstance(profile)->LogWebRequestAction(
-            extension,
-            url,
-            api_call,
-            details.Pass(),
-            "");
-      }
-    }
+    extensions::ActivityLog::GetInstance(profile)->LogWebRequestAction(
+        extension_id,
+        url,
+        api_call,
+        details.Pass(),
+        "");
   }
 }
 
