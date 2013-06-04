@@ -70,7 +70,7 @@ class AnimatedIconImageSource : public gfx::ImageSkiaSource {
 
   virtual gfx::ImageSkiaRep GetImageForScale(ui::ScaleFactor scale) OVERRIDE {
     gfx::ImageSkiaRep original_rep = image_.GetRepresentation(scale);
-    if (!animation_)
+    if (!animation_.get())
       return original_rep;
 
     // Original representation's scale factor may be different from scale
@@ -149,12 +149,12 @@ ExtensionAction::IconAnimation::ScopedObserver::ScopedObserver(
     Observer* observer)
     : icon_animation_(icon_animation),
       observer_(observer) {
-  if (icon_animation)
+  if (icon_animation.get())
     icon_animation->AddObserver(observer);
 }
 
 ExtensionAction::IconAnimation::ScopedObserver::~ScopedObserver() {
-  if (icon_animation_)
+  if (icon_animation_.get())
     icon_animation_->RemoveObserver(observer_);
 }
 
@@ -354,14 +354,14 @@ base::WeakPtr<ExtensionAction::IconAnimation> ExtensionAction::GetIconAnimation(
       icon_animation_.find(tab_id);
   if (it == icon_animation_.end())
     return base::WeakPtr<ExtensionAction::IconAnimation>();
-  if (it->second)
+  if (it->second.get())
     return it->second;
 
   // Take this opportunity to remove all the NULL IconAnimations from
   // icon_animation_.
   icon_animation_.erase(it);
   for (it = icon_animation_.begin(); it != icon_animation_.end();) {
-    if (it->second) {
+    if (it->second.get()) {
       ++it;
     } else {
       // The WeakPtr is null; remove it from the map.
@@ -375,7 +375,7 @@ gfx::ImageSkia ExtensionAction::ApplyIconAnimation(
     int tab_id,
     const gfx::ImageSkia& icon) const {
   base::WeakPtr<IconAnimation> animation = GetIconAnimation(tab_id);
-  if (animation == NULL)
+  if (animation.get() == NULL)
     return icon;
 
   return gfx::ImageSkia(new AnimatedIconImageSource(icon, animation),

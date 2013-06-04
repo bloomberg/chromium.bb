@@ -186,7 +186,7 @@ class MediaStreamCaptureIndicator::UIDelegate
   }
 
   virtual ~UIDelegate() {
-    if (started_ && device_usage_)
+    if (started_ && device_usage_.get())
       device_usage_->RemoveDevices(devices_);
   }
 
@@ -195,7 +195,7 @@ class MediaStreamCaptureIndicator::UIDelegate
   virtual void OnStarted(const base::Closure& close_callback) OVERRIDE {
     DCHECK(!started_);
     started_ = true;
-    if (device_usage_)
+    if (device_usage_.get())
       device_usage_->AddDevices(devices_, close_callback);
   }
 

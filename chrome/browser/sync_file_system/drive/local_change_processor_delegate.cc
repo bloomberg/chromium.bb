@@ -32,7 +32,7 @@ LocalChangeProcessorDelegate::LocalChangeProcessorDelegate(
 LocalChangeProcessorDelegate::~LocalChangeProcessorDelegate() {}
 
 void LocalChangeProcessorDelegate::Run(const SyncStatusCallback& callback) {
-  if (!sync_service_)
+  if (!sync_service_.get())
     return;
 
   // TODO(nhiroki): support directory operations (http://crbug.com/161442).
@@ -55,7 +55,7 @@ void LocalChangeProcessorDelegate::DidGetOriginRoot(
     const SyncStatusCallback& callback,
     SyncStatusCode status,
     const std::string& origin_resource_id) {
-  if (!sync_service_)
+  if (!sync_service_.get())
     return;
 
   if (status != SYNC_STATUS_OK) {
@@ -123,7 +123,7 @@ void LocalChangeProcessorDelegate::DidGetOriginRoot(
 
 void LocalChangeProcessorDelegate::UploadNewFile(
     const SyncStatusCallback& callback) {
-  if (!sync_service_)
+  if (!sync_service_.get())
     return;
 
   api_util()->UploadNewFile(
@@ -139,7 +139,7 @@ void LocalChangeProcessorDelegate::DidUploadNewFile(
     google_apis::GDataErrorCode error,
     const std::string& resource_id,
     const std::string& md5) {
-  if (!sync_service_)
+  if (!sync_service_.get())
     return;
 
   switch (error) {
@@ -165,7 +165,7 @@ void LocalChangeProcessorDelegate::DidUploadNewFile(
 
 void LocalChangeProcessorDelegate::CreateDirectory(
     const SyncStatusCallback& callback) {
-  if (!sync_service_)
+  if (!sync_service_.get())
     return;
 
   DCHECK(IsSyncFSDirectoryOperationEnabled());
@@ -180,7 +180,7 @@ void LocalChangeProcessorDelegate::DidCreateDirectory(
     const SyncStatusCallback& callback,
     google_apis::GDataErrorCode error,
     const std::string& resource_id) {
-  if (!sync_service_)
+  if (!sync_service_.get())
     return;
 
   switch (error) {
@@ -210,7 +210,7 @@ void LocalChangeProcessorDelegate::DidCreateDirectory(
 
 void LocalChangeProcessorDelegate::UploadExistingFile(
     const SyncStatusCallback& callback) {
-  if (!sync_service_)
+  if (!sync_service_.get())
     return;
 
   DCHECK(has_drive_metadata_);
@@ -227,7 +227,7 @@ void LocalChangeProcessorDelegate::DidUploadExistingFile(
     google_apis::GDataErrorCode error,
     const std::string& resource_id,
     const std::string& md5) {
-  if (!sync_service_)
+  if (!sync_service_.get())
     return;
 
   DCHECK(has_drive_metadata_);
@@ -268,7 +268,7 @@ void LocalChangeProcessorDelegate::DidUploadExistingFile(
 
 void LocalChangeProcessorDelegate::DeleteFile(
     const SyncStatusCallback& callback) {
-  if (!sync_service_)
+  if (!sync_service_.get())
     return;
 
   DCHECK(has_drive_metadata_);
@@ -281,7 +281,7 @@ void LocalChangeProcessorDelegate::DeleteFile(
 
 void LocalChangeProcessorDelegate::DeleteDirectory(
     const SyncStatusCallback& callback) {
-  if (!sync_service_)
+  if (!sync_service_.get())
     return;
 
   DCHECK(IsSyncFSDirectoryOperationEnabled());
@@ -298,7 +298,7 @@ void LocalChangeProcessorDelegate::DeleteDirectory(
 void LocalChangeProcessorDelegate::DidDeleteFile(
     const SyncStatusCallback& callback,
     google_apis::GDataErrorCode error) {
-  if (!sync_service_)
+  if (!sync_service_.get())
     return;
 
   DCHECK(has_drive_metadata_);
@@ -338,7 +338,7 @@ void LocalChangeProcessorDelegate::DidDeleteFile(
 
 void LocalChangeProcessorDelegate::ResolveToLocal(
     const SyncStatusCallback& callback) {
-  if (!sync_service_)
+  if (!sync_service_.get())
     return;
 
   api_util()->DeleteFile(
@@ -352,7 +352,7 @@ void LocalChangeProcessorDelegate::ResolveToLocal(
 void LocalChangeProcessorDelegate::DidDeleteFileToResolveToLocal(
     const SyncStatusCallback& callback,
     google_apis::GDataErrorCode error) {
-  if (!sync_service_)
+  if (!sync_service_.get())
     return;
 
   if (error != google_apis::HTTP_SUCCESS &&
@@ -375,7 +375,7 @@ void LocalChangeProcessorDelegate::DidDeleteFileToResolveToLocal(
 
 void LocalChangeProcessorDelegate::ResolveToRemote(
     const SyncStatusCallback& callback) {
-  if (!sync_service_)
+  if (!sync_service_.get())
     return;
 
   // Mark the file as to-be-fetched.
@@ -393,7 +393,7 @@ void LocalChangeProcessorDelegate::ResolveToRemote(
 void LocalChangeProcessorDelegate::DidResolveToRemote(
     const SyncStatusCallback& callback,
     SyncStatusCode status) {
-  if (!sync_service_)
+  if (!sync_service_.get())
     return;
 
   DCHECK(has_drive_metadata_);
@@ -414,7 +414,7 @@ void LocalChangeProcessorDelegate::DidApplyLocalChange(
     const SyncStatusCallback& callback,
     const google_apis::GDataErrorCode error,
     SyncStatusCode status) {
-  if (!sync_service_)
+  if (!sync_service_.get())
     return;
 
   if (status == SYNC_STATUS_OK) {
@@ -429,7 +429,7 @@ void LocalChangeProcessorDelegate::UpdateMetadata(
     const std::string& md5,
     DriveMetadata::ResourceType type,
     const SyncStatusCallback& callback) {
-  if (!sync_service_)
+  if (!sync_service_.get())
     return;
 
   drive_metadata_.set_resource_id(resource_id);
@@ -442,7 +442,7 @@ void LocalChangeProcessorDelegate::UpdateMetadata(
 
 void LocalChangeProcessorDelegate::ResetMetadataMD5(
     const SyncStatusCallback& callback) {
-  if (!sync_service_)
+  if (!sync_service_.get())
     return;
 
   drive_metadata_.set_md5_checksum(std::string());
@@ -452,7 +452,7 @@ void LocalChangeProcessorDelegate::ResetMetadataMD5(
 void LocalChangeProcessorDelegate::SetMetadataToBeFetched(
     DriveMetadata::ResourceType type,
     const SyncStatusCallback& callback) {
-  if (!sync_service_)
+  if (!sync_service_.get())
     return;
 
   drive_metadata_.set_md5_checksum(std::string());
@@ -464,7 +464,7 @@ void LocalChangeProcessorDelegate::SetMetadataToBeFetched(
 
 void LocalChangeProcessorDelegate::SetMetadataConflict(
     const SyncStatusCallback& callback) {
-  if (!sync_service_)
+  if (!sync_service_.get())
     return;
 
   drive_metadata_.set_conflicted(true);
@@ -481,7 +481,7 @@ void LocalChangeProcessorDelegate::HandleCreationConflict(
     const std::string& resource_id,
     DriveMetadata::ResourceType type,
     const SyncStatusCallback& callback) {
-  if (!sync_service_)
+  if (!sync_service_.get())
     return;
 
   // File-file conflict is found.
@@ -502,7 +502,7 @@ void LocalChangeProcessorDelegate::HandleCreationConflict(
 
 void LocalChangeProcessorDelegate::HandleConflict(
     const SyncStatusCallback& callback) {
-  if (!sync_service_)
+  if (!sync_service_.get())
     return;
 
   DCHECK(!drive_metadata_.resource_id().empty());
@@ -517,7 +517,7 @@ void LocalChangeProcessorDelegate::DidGetEntryForConflictResolution(
     const SyncStatusCallback& callback,
     google_apis::GDataErrorCode error,
     scoped_ptr<google_apis::ResourceEntry> entry) {
-  if (!sync_service_)
+  if (!sync_service_.get())
     return;
 
   SyncFileType local_file_type = local_metadata_.file_type;

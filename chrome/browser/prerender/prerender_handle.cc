@@ -18,7 +18,7 @@ PrerenderHandle::Observer::~Observer() {
 }
 
 PrerenderHandle::~PrerenderHandle() {
-  if (prerender_data_) {
+  if (prerender_data_.get()) {
     prerender_data_->contents()->RemoveObserver(this);
   }
 }
@@ -30,24 +30,24 @@ void PrerenderHandle::SetObserver(Observer* observer) {
 
 void PrerenderHandle::OnNavigateAway() {
   DCHECK(CalledOnValidThread());
-  if (prerender_data_)
+  if (prerender_data_.get())
     prerender_data_->OnHandleNavigatedAway(this);
 }
 
 void PrerenderHandle::OnCancel() {
   DCHECK(CalledOnValidThread());
-  if (prerender_data_)
+  if (prerender_data_.get())
     prerender_data_->OnHandleCanceled(this);
 }
 
 bool PrerenderHandle::IsPrerendering() const {
   DCHECK(CalledOnValidThread());
-  return prerender_data_ != NULL;
+  return prerender_data_.get() != NULL;
 }
 
 bool PrerenderHandle::IsFinishedLoading() const {
   DCHECK(CalledOnValidThread());
-  if (!prerender_data_)
+  if (!prerender_data_.get())
     return false;
   return prerender_data_->contents()->has_finished_loading();
 }
@@ -56,7 +56,7 @@ bool PrerenderHandle::Matches(
     const GURL& url,
     const content::SessionStorageNamespace* session_storage_namespace) const {
   DCHECK(CalledOnValidThread());
-  if (!prerender_data_)
+  if (!prerender_data_.get())
     return false;
   return prerender_data_->contents()->Matches(url, session_storage_namespace);
 }
@@ -74,7 +74,7 @@ PrerenderHandle::PrerenderHandle(
 void PrerenderHandle::AdoptPrerenderDataFrom(PrerenderHandle* other_handle) {
   DCHECK_EQ(static_cast<PrerenderManager::PrerenderData*>(NULL),
             prerender_data_);
-  if (other_handle->prerender_data_ &&
+  if (other_handle->prerender_data_.get() &&
       other_handle->prerender_data_->contents()) {
     other_handle->prerender_data_->contents()->RemoveObserver(other_handle);
   }
@@ -82,7 +82,7 @@ void PrerenderHandle::AdoptPrerenderDataFrom(PrerenderHandle* other_handle) {
   prerender_data_ = other_handle->prerender_data_;
   other_handle->prerender_data_.reset();
 
-  if (prerender_data_) {
+  if (prerender_data_.get()) {
     DCHECK_NE(static_cast<PrerenderContents*>(NULL),
               prerender_data_->contents());
     prerender_data_->contents()->AddObserver(this);
@@ -94,7 +94,7 @@ void PrerenderHandle::AdoptPrerenderDataFrom(PrerenderHandle* other_handle) {
 
 void PrerenderHandle::OnPrerenderStart(PrerenderContents* prerender_contents) {
   DCHECK(CalledOnValidThread());
-  DCHECK(prerender_data_);
+  DCHECK(prerender_data_.get());
   DCHECK_EQ(prerender_data_->contents(), prerender_contents);
   if (observer_)
     observer_->OnPrerenderStart(this);
@@ -103,7 +103,7 @@ void PrerenderHandle::OnPrerenderStart(PrerenderContents* prerender_contents) {
 void PrerenderHandle::OnPrerenderStopLoading(
     PrerenderContents* prerender_contents) {
   DCHECK(CalledOnValidThread());
-  DCHECK(prerender_data_);
+  DCHECK(prerender_data_.get());
   DCHECK_EQ(prerender_data_->contents(), prerender_contents);
   if (observer_)
     observer_->OnPrerenderStopLoading(this);

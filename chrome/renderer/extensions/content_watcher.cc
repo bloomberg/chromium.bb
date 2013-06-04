@@ -31,7 +31,7 @@ class MutationHandler : public ChromeV8Extension {
 
  private:
   v8::Handle<v8::Value> FrameMutated(const v8::Arguments& args) {
-    if (content_watcher_) {
+    if (content_watcher_.get()) {
       content_watcher_->ScanAndNotify(
           WebKit::WebFrame::frameForContext(v8_context()));
     }

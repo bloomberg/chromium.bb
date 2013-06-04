@@ -171,7 +171,7 @@ static void CreateExternalInstallGlobalError(
   ExternalInstallDialogDelegate* delegate =
       static_cast<ExternalInstallDialogDelegate*>(prompt_delegate);
   ExternalInstallGlobalError* error_bubble = new ExternalInstallGlobalError(
-      service, extension, delegate, prompt);
+      service.get(), extension, delegate, prompt);
   error_service->AddGlobalError(error_bubble);
   // Show bubble immediately if possible.
   if (delegate->browser())

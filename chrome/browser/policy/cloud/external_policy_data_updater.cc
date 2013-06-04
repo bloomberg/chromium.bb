@@ -386,7 +386,7 @@ void ExternalPolicyDataUpdater::StartNextJobs() {
     return;
 
   while (running_jobs_ < max_parallel_jobs_ && !job_queue_.empty()) {
-    FetchJob* job = job_queue_.front();
+    FetchJob* job = job_queue_.front().get();
     job_queue_.pop();
 
     // Some of the jobs may have been invalidated, and have to be skipped.

@@ -117,7 +117,7 @@ void TabAutofillManagerDelegate::ShowAutocheckoutBubble(
 }
 
 void TabAutofillManagerDelegate::HideAutocheckoutBubble() {
-  if (autocheckout_bubble_)
+  if (autocheckout_bubble_.get())
     autocheckout_bubble_->HideBubble();
 }
 
@@ -161,7 +161,7 @@ void TabAutofillManagerDelegate::ShowAutofillPopup(
 }
 
 void TabAutofillManagerDelegate::HideAutofillPopup() {
-  if (popup_controller_)
+  if (popup_controller_.get())
     popup_controller_->Hide();
 }
 
@@ -172,7 +172,7 @@ void TabAutofillManagerDelegate::UpdateProgressBar(double value) {
 }
 
 void TabAutofillManagerDelegate::HideRequestAutocompleteDialog() {
-  if (dialog_controller_)
+  if (dialog_controller_.get())
     dialog_controller_->Hide();
 }
 
@@ -183,7 +183,7 @@ void TabAutofillManagerDelegate::DidNavigateMainFrame(
   // the dialog.
   bool was_redirect = details.entry &&
       content::PageTransitionIsRedirect(details.entry->GetTransitionType());
-  if (dialog_controller_ &&
+  if (dialog_controller_.get() &&
       (dialog_controller_->dialog_type() == DIALOG_TYPE_REQUEST_AUTOCOMPLETE ||
        (!dialog_controller_->AutocheckoutIsRunning() && !was_redirect))) {
     HideRequestAutocompleteDialog();

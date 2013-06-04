@@ -747,7 +747,7 @@ void ChromeToMobileService::HandleSubmitResponse(
   // Check if the observer is waiting on a second response (url or snapshot).
   for (RequestObserverMap::iterator other = request_observer_map_.begin();
        observer.get() && (other != request_observer_map_.end()); ++other) {
-    if (other->second == observer) {
+    if (other->second.get() == observer.get()) {
       // Delay reporting success until the second response is received.
       if (success)
         return;

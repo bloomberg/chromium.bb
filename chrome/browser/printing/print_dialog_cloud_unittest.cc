@@ -312,7 +312,7 @@ class CloudPrintWebDialogDelegateTest : public testing::Test {
 
   virtual void TearDown() {
     delegate_.reset();
-    if (mock_flow_handler_)
+    if (mock_flow_handler_.get())
       delete mock_flow_handler_.get();
   }
 

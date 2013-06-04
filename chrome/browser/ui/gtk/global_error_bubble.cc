@@ -38,7 +38,7 @@ GlobalErrorBubble::GlobalErrorBubble(Browser* browser,
       error_(error),
       message_width_(kMinMessageLabelWidth) {
   DCHECK(browser_);
-  DCHECK(error_);
+  DCHECK(error_.get());
   GtkWidget* content = gtk_vbox_new(FALSE, ui::kControlSpacing);
   gtk_container_set_border_width(GTK_CONTAINER(content),
                                  ui::kContentAreaBorder);
@@ -122,7 +122,7 @@ GlobalErrorBubble::~GlobalErrorBubble() {
 
 void GlobalErrorBubble::BubbleClosing(BubbleGtk* bubble,
                                       bool closed_by_escape) {
-  if (error_)
+  if (error_.get())
     error_->BubbleViewDidClose(browser_);
 }
 
@@ -131,13 +131,13 @@ void GlobalErrorBubble::OnDestroy(GtkWidget* sender) {
 }
 
 void GlobalErrorBubble::OnAcceptButton(GtkWidget* sender) {
-  if (error_)
+  if (error_.get())
     error_->BubbleViewAcceptButtonPressed(browser_);
   bubble_->Close();
 }
 
 void GlobalErrorBubble::OnCancelButton(GtkWidget* sender) {
-  if (error_)
+  if (error_.get())
     error_->BubbleViewCancelButtonPressed(browser_);
   bubble_->Close();
 }

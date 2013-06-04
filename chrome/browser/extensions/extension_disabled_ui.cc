@@ -352,9 +352,9 @@ void AddExtensionDisabledErrorWithIcon(base::WeakPtr<ExtensionService> service,
     return;
   const Extension* extension = service->GetInstalledExtension(extension_id);
   if (extension) {
-    GlobalErrorServiceFactory::GetForProfile(service->profile())->
-        AddGlobalError(new ExtensionDisabledGlobalError(
-            service, extension, icon));
+    GlobalErrorServiceFactory::GetForProfile(service->profile())
+        ->AddGlobalError(
+              new ExtensionDisabledGlobalError(service.get(), extension, icon));
   }
 }
 

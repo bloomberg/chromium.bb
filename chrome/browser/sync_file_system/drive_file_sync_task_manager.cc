@@ -33,9 +33,9 @@ class DriveFileSyncTaskManager::TaskToken {
     // it must return the token to DriveFileSyncService.
     // Destroying a token with valid |sync_service_| indicates the token was
     // dropped by a task without returning.
-    if (manager_ && manager_->service_.get()) {
-      NOTREACHED() << "Unexpected TaskToken deletion from: "
-                   << location_.ToString();
+    if (manager_.get() && manager_->service_.get()) {
+      NOTREACHED()
+          << "Unexpected TaskToken deletion from: " << location_.ToString();
 
       // Reinitializes the token.
       manager_->NotifyTaskDone(

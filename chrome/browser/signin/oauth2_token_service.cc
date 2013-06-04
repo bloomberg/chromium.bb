@@ -255,7 +255,7 @@ void OAuth2TokenService::Fetcher::InformWaitingRequests() {
       waiting_requests_.begin();
   for (; iter != waiting_requests_.end(); ++iter) {
     base::WeakPtr<RequestImpl> waiting_request = *iter;
-    if (waiting_request)
+    if (waiting_request.get())
       waiting_request->InformConsumer(error_, access_token_, expiration_date_);
   }
   waiting_requests_.clear();

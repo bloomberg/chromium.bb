@@ -398,7 +398,7 @@ void CrxInstaller::OnUnpackSuccess(const base::FilePath& temp_dir,
 
 void CrxInstaller::CheckImportsAndRequirements() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  ExtensionService* service = service_weak_;
+  ExtensionService* service = service_weak_.get();
   if (!service || service->browser_terminating())
     return;
 
@@ -449,7 +449,7 @@ void CrxInstaller::OnRequirementsChecked(
 
 void CrxInstaller::ConfirmInstall() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  ExtensionService* service = service_weak_;
+  ExtensionService* service = service_weak_.get();
   if (!service || service->browser_terminating())
     return;
 
@@ -497,7 +497,7 @@ void CrxInstaller::ConfirmInstall() {
 void CrxInstaller::InstallUIProceed() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  ExtensionService* service = service_weak_;
+  ExtensionService* service = service_weak_.get();
   if (!service || service->browser_terminating())
     return;
 
@@ -658,7 +658,7 @@ void CrxInstaller::ReportSuccessFromFileThread() {
 void CrxInstaller::ReportSuccessFromUIThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (!service_weak_ || service_weak_->browser_terminating())
+  if (!service_weak_.get() || service_weak_->browser_terminating())
     return;
 
   if (!update_from_settings_page_) {
@@ -756,7 +756,7 @@ void CrxInstaller::CleanupTempFiles() {
 void CrxInstaller::CheckUpdateFromSettingsPage() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  ExtensionService* service = service_weak_;
+  ExtensionService* service = service_weak_.get();
   if (!service || service->browser_terminating())
     return;
 
@@ -777,7 +777,7 @@ void CrxInstaller::CheckUpdateFromSettingsPage() {
 void CrxInstaller::ConfirmReEnable() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  ExtensionService* service = service_weak_;
+  ExtensionService* service = service_weak_.get();
   if (!service || service->browser_terminating())
     return;
 

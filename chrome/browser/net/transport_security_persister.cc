@@ -101,7 +101,7 @@ class TransportSecurityPersister::Loader {
     // Make sure we're deleted.
     scoped_ptr<Loader> deleter(this);
 
-    if (!persister_ || !state_valid_)
+    if (!persister_.get() || !state_valid_)
       return;
     persister_->CompleteLoad(state_);
   }

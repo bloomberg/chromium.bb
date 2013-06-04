@@ -132,7 +132,7 @@ void MockProfileOAuth2TokenService::SetExpectation(bool success,
 // static
 void MockProfileOAuth2TokenService::InformConsumer(
     base::WeakPtr<MockProfileOAuth2TokenService::Request> request) {
-  if (request)
+  if (request.get())
     request->InformConsumer();
 }
 

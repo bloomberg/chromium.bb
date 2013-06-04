@@ -195,7 +195,7 @@ namespace {
 // Helper to reply asynchronously if |automation| is still valid.
 void SendSuccessReply(base::WeakPtr<AutomationProvider> automation,
                       IPC::Message* reply_message) {
-  if (automation)
+  if (automation.get())
     AutomationJSONReply(automation.get(), reply_message).SendSuccess(NULL);
 }
 
@@ -208,9 +208,9 @@ void DidEnablePlugin(base::WeakPtr<AutomationProvider> automation,
   if (did_enable) {
     SendSuccessReply(automation, reply_message);
   } else {
-    if (automation) {
-      AutomationJSONReply(automation.get(), reply_message).SendError(
-          base::StringPrintf(error_msg.c_str(), path.c_str()));
+    if (automation.get()) {
+      AutomationJSONReply(automation.get(), reply_message)
+          .SendError(base::StringPrintf(error_msg.c_str(), path.c_str()));
     }
   }
 }
@@ -4040,7 +4040,7 @@ namespace {
 void SendSuccessIfAlive(
     base::WeakPtr<AutomationProvider> provider,
     IPC::Message* reply_message) {
-  if (provider)
+  if (provider.get())
     AutomationJSONReply(provider.get(), reply_message).SendSuccess(NULL);
 }
 

@@ -203,7 +203,7 @@ DictionaryValue* InitialLoadObserver::GetTimingInformation() const {
 
 void InitialLoadObserver::ConditionMet() {
   registrar_.RemoveAll();
-  if (automation_)
+  if (automation_.get())
     automation_->OnInitialTabLoadsComplete();
 }
 
@@ -222,7 +222,7 @@ void NewTabUILoadObserver::Observe(int type,
                                    const content::NotificationDetails& details) {
   if (type == chrome::NOTIFICATION_INITIAL_NEW_TAB_UI_LOAD) {
     content::Details<int> load_time(details);
-    if (automation_) {
+    if (automation_.get()) {
       automation_->Send(
           new AutomationMsg_InitialNewTabUILoadComplete(*load_time.ptr()));
     }
@@ -264,8 +264,8 @@ bool NavigationControllerRestoredObserver::FinishedRestoring() {
 }
 
 void NavigationControllerRestoredObserver::SendDone() {
-  if (automation_) {
-    AutomationJSONReply(automation_, reply_message_.release())
+  if (automation_.get()) {
+    AutomationJSONReply(automation_.get(), reply_message_.release())
         .SendSuccess(NULL);
   }
   delete this;
@@ -309,7 +309,7 @@ NavigationNotificationObserver::~NavigationNotificationObserver() {
 void NavigationNotificationObserver::Observe(
     int type, const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  if (!automation_) {
+  if (!automation_.get()) {
     delete this;
     return;
   }
@@ -348,17 +348,17 @@ void NavigationNotificationObserver::Observe(
 
 void NavigationNotificationObserver::ConditionMet(
     AutomationMsg_NavigationResponseValues navigation_result) {
-  if (automation_) {
+  if (automation_.get()) {
     if (use_json_interface_) {
       if (navigation_result == AUTOMATION_MSG_NAVIGATION_SUCCESS) {
         DictionaryValue dict;
         dict.SetInteger("result", navigation_result);
-        AutomationJSONReply(automation_, reply_message_.release()).SendSuccess(
-            &dict);
+        AutomationJSONReply(automation_.get(), reply_message_.release())
+            .SendSuccess(&dict);
       } else {
-        AutomationJSONReply(automation_, reply_message_.release()).SendError(
-            base::StringPrintf("Navigation failed with error code=%d.",
-                               navigation_result));
+        AutomationJSONReply(automation_.get(), reply_message_.release())
+            .SendError(base::StringPrintf(
+                 "Navigation failed with error code=%d.", navigation_result));
       }
     } else {
       IPC::ParamTraits<int>::Write(
@@ -412,7 +412,7 @@ TabAppendedNotificationObserver::~TabAppendedNotificationObserver() {}
 
 void TabAppendedNotificationObserver::ObserveTab(
     NavigationController* controller) {
-  if (!automation_ || !reply_message_.get())
+  if (!automation_.get() || !reply_message_.get())
     return;
 
   if (automation_->GetIndexForNavigationController(controller, parent_) ==
@@ -421,9 +421,12 @@ void TabAppendedNotificationObserver::ObserveTab(
     return;
   }
 
-  new NavigationNotificationObserver(controller, automation_,
+  new NavigationNotificationObserver(controller,
+                                     automation_.get(),
                                      reply_message_.release(),
-                                     1, false, use_json_interface_);
+                                     1,
+                                     false,
+                                     use_json_interface_);
 }
 
 IPC::Message* TabAppendedNotificationObserver::ReleaseReply() {
@@ -447,12 +450,12 @@ TabClosedNotificationObserver::~TabClosedNotificationObserver() {}
 
 void TabClosedNotificationObserver::ObserveTab(
     NavigationController* controller) {
-  if (!automation_)
+  if (!automation_.get())
     return;
 
   if (use_json_interface_) {
-    AutomationJSONReply(automation_,
-                        reply_message_.release()).SendSuccess(NULL);
+    AutomationJSONReply(automation_.get(), reply_message_.release())
+        .SendSuccess(NULL);
   } else {
     if (for_browser_command_) {
       AutomationMsg_WindowExecuteCommand::WriteReplyParams(reply_message_.get(),
@@ -497,7 +500,7 @@ void TabCountChangeObserver::TabDetachedAt(WebContents* contents,
 }
 
 void TabCountChangeObserver::TabStripModelDeleted() {
-  if (automation_) {
+  if (automation_.get()) {
     AutomationMsg_WaitForTabCountToBecome::WriteReplyParams(
         reply_message_.get(), false);
     automation_->Send(reply_message_.release());
@@ -510,7 +513,7 @@ void TabCountChangeObserver::CheckTabCount() {
   if (tab_strip_model_->count() != target_tab_count_)
     return;
 
-  if (automation_) {
+  if (automation_.get()) {
     AutomationMsg_WaitForTabCountToBecome::WriteReplyParams(
         reply_message_.get(), true);
     automation_->Send(reply_message_.release());
@@ -550,7 +553,7 @@ void ExtensionUninstallObserver::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  if (!automation_) {
+  if (!automation_.get()) {
     delete this;
     return;
   }
@@ -560,7 +563,7 @@ void ExtensionUninstallObserver::Observe(
       if (id_ == content::Details<extensions::Extension>(details).ptr()->id()) {
         scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
         return_value->SetBoolean("success", true);
-        AutomationJSONReply(automation_, reply_message_.release())
+        AutomationJSONReply(automation_.get(), reply_message_.release())
             .SendSuccess(return_value.get());
         delete this;
         return;
@@ -574,7 +577,7 @@ void ExtensionUninstallObserver::Observe(
       if (id_ == extension->id()) {
         scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
         return_value->SetBoolean("success", false);
-        AutomationJSONReply(automation_, reply_message_.release())
+        AutomationJSONReply(automation_.get(), reply_message_.release())
             .SendSuccess(return_value.get());
         delete this;
         return;
@@ -617,7 +620,7 @@ void ExtensionReadyNotificationObserver::Init() {
 void ExtensionReadyNotificationObserver::Observe(
     int type, const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  if (!automation_) {
+  if (!automation_.get()) {
     delete this;
     return;
   }
@@ -657,7 +660,7 @@ void ExtensionReadyNotificationObserver::Observe(
       break;
   }
 
-  AutomationJSONReply reply(automation_, reply_message_.release());
+  AutomationJSONReply reply(automation_.get(), reply_message_.release());
   if (extension_) {
     DictionaryValue dict;
     dict.SetString("id", extension_->id());
@@ -702,7 +705,7 @@ ExtensionsUpdatedObserver::~ExtensionsUpdatedObserver() {
 void ExtensionsUpdatedObserver::Observe(
     int type, const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  if (!automation_) {
+  if (!automation_.get()) {
     delete this;
     return;
   }
@@ -712,7 +715,7 @@ void ExtensionsUpdatedObserver::Observe(
 }
 
 void ExtensionsUpdatedObserver::UpdateCheckFinished() {
-  if (!automation_) {
+  if (!automation_.get()) {
     delete this;
     return;
   }
@@ -726,7 +729,7 @@ void ExtensionsUpdatedObserver::MaybeReply() {
   // Send the reply if (1) the extension updater has finished updating all
   // extensions; and (2) all extension views have stopped loading.
   if (updater_finished_ && DidExtensionViewsStopLoading(manager_)) {
-    AutomationJSONReply reply(automation_, reply_message_.release());
+    AutomationJSONReply reply(automation_.get(), reply_message_.release());
     reply.SendSuccess(NULL);
     delete this;
   }
@@ -754,7 +757,7 @@ void BrowserOpenedNotificationObserver::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  if (!automation_) {
+  if (!automation_.get()) {
     delete this;
     return;
   }
@@ -775,8 +778,8 @@ void BrowserOpenedNotificationObserver::Observe(
                                        : -1;
     if (window_id == new_window_id_) {
       if (use_json_interface_) {
-        AutomationJSONReply(automation_,
-                            reply_message_.release()).SendSuccess(NULL);
+        AutomationJSONReply(automation_.get(), reply_message_.release())
+            .SendSuccess(NULL);
       } else {
         if (for_browser_command_) {
           AutomationMsg_WindowExecuteCommand::WriteReplyParams(
@@ -815,7 +818,7 @@ void BrowserClosedNotificationObserver::Observe(
     const content::NotificationDetails& details) {
   DCHECK_EQ(chrome::NOTIFICATION_BROWSER_CLOSED, type);
 
-  if (!automation_) {
+  if (!automation_.get()) {
     delete this;
     return;
   }
@@ -827,8 +830,8 @@ void BrowserClosedNotificationObserver::Observe(
   bool app_closing = browser_count == 1;
 
   if (use_json_interface_) {
-    AutomationJSONReply(automation_,
-                        reply_message_.release()).SendSuccess(NULL);
+    AutomationJSONReply(automation_.get(), reply_message_.release())
+        .SendSuccess(NULL);
   } else {
     if (for_browser_command_) {
       AutomationMsg_WindowExecuteCommand::WriteReplyParams(reply_message_.get(),
@@ -880,7 +883,7 @@ void BrowserCountChangeNotificationObserver::Observe(
     current_count--;
   }
 
-  if (!automation_) {
+  if (!automation_.get()) {
     delete this;
     return;
   }
@@ -985,10 +988,10 @@ void ExecuteBrowserCommandObserver::Observe(
     int type, const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   if (type == notification_type_) {
-    if (automation_) {
+    if (automation_.get()) {
       if (use_json_interface_) {
-        AutomationJSONReply(automation_,
-                            reply_message_.release()).SendSuccess(NULL);
+        AutomationJSONReply(automation_.get(), reply_message_.release())
+            .SendSuccess(NULL);
       } else {
         AutomationMsg_WindowExecuteCommand::WriteReplyParams(
             reply_message_.get(), true);
@@ -1061,7 +1064,7 @@ void FindInPageNotificationObserver::Observe(
     return;
   }
 
-  if (!automation_) {
+  if (!automation_.get()) {
     delete this;
     return;
   }
@@ -1083,7 +1086,7 @@ void FindInPageNotificationObserver::Observe(
         return_value->SetInteger("match_right", rect.right());
         return_value->SetInteger("match_bottom", rect.bottom());
       }
-      AutomationJSONReply(automation_, reply_message_.release())
+      AutomationJSONReply(automation_.get(), reply_message_.release())
           .SendSuccess(return_value.get());
       delete this;
     } else {
@@ -1149,11 +1152,11 @@ DomOperationMessageSender::~DomOperationMessageSender() {}
 
 void DomOperationMessageSender::OnDomOperationCompleted(
     const std::string& json) {
-  if (automation_) {
+  if (automation_.get()) {
     if (use_json_interface_) {
       DictionaryValue dict;
       dict.SetString("result", json);
-      AutomationJSONReply(automation_, reply_message_.release())
+      AutomationJSONReply(automation_.get(), reply_message_.release())
           .SendSuccess(&dict);
     } else {
       AutomationMsg_DomOperation::WriteReplyParams(reply_message_.get(), json);
@@ -1164,16 +1167,16 @@ void DomOperationMessageSender::OnDomOperationCompleted(
 }
 
 void DomOperationMessageSender::OnModalDialogShown() {
-  if (automation_ && use_json_interface_) {
-    AutomationJSONReply(automation_, reply_message_.release())
+  if (automation_.get() && use_json_interface_) {
+    AutomationJSONReply(automation_.get(), reply_message_.release())
         .SendErrorCode(automation::kBlockedByModalDialog);
     delete this;
   }
 }
 
 void DomOperationMessageSender::OnJavascriptBlocked() {
-  if (automation_ && use_json_interface_) {
-    AutomationJSONReply(automation_, reply_message_.release())
+  if (automation_.get() && use_json_interface_) {
+    AutomationJSONReply(automation_.get(), reply_message_.release())
         .SendError("Javascript execution was blocked");
     delete this;
   }
@@ -1242,7 +1245,7 @@ void InfoBarCountObserver::CheckCount() {
   if (infobar_service->infobar_count() != target_count_)
     return;
 
-  if (automation_) {
+  if (automation_.get()) {
     AutomationMsg_WaitForInfoBarCount::WriteReplyParams(reply_message_.get(),
                                                         true);
     automation_->Send(reply_message_.release());
@@ -1283,10 +1286,10 @@ IPC::Message* AutomationProviderBookmarkModelObserver::ReleaseReply() {
 }
 
 void AutomationProviderBookmarkModelObserver::ReplyAndDelete(bool success) {
-  if (automation_provider_) {
+  if (automation_provider_.get()) {
     if (use_json_interface_) {
-      AutomationJSONReply(automation_provider_,
-                          reply_message_.release()).SendSuccess(NULL);
+      AutomationJSONReply(automation_provider_.get(), reply_message_.release())
+          .SendSuccess(NULL);
     } else {
       AutomationMsg_WaitForBookmarkModelToLoad::WriteReplyParams(
           reply_message_.get(), success);
@@ -1320,11 +1323,11 @@ void AutomationProviderDownloadUpdatedObserver::OnDownloadUpdated(
 
   download->RemoveObserver(this);
 
-  if (provider_) {
+  if (provider_.get()) {
     scoped_ptr<DictionaryValue> return_value(
         provider_->GetDictionaryFromDownloadItem(download, incognito_));
-    AutomationJSONReply(provider_, reply_message_.release()).SendSuccess(
-        return_value.get());
+    AutomationJSONReply(provider_.get(), reply_message_.release())
+        .SendSuccess(return_value.get());
   }
   delete this;
 }
@@ -1333,11 +1336,11 @@ void AutomationProviderDownloadUpdatedObserver::OnDownloadOpened(
     DownloadItem* download) {
   download->RemoveObserver(this);
 
-  if (provider_) {
+  if (provider_.get()) {
     scoped_ptr<DictionaryValue> return_value(
         provider_->GetDictionaryFromDownloadItem(download, incognito_));
-    AutomationJSONReply(provider_, reply_message_.release()).SendSuccess(
-        return_value.get());
+    AutomationJSONReply(provider_.get(), reply_message_.release())
+        .SendSuccess(return_value.get());
   }
   delete this;
 }
@@ -1356,8 +1359,9 @@ AutomationProviderDownloadModelChangedObserver::
     ~AutomationProviderDownloadModelChangedObserver() {}
 
 void AutomationProviderDownloadModelChangedObserver::ModelChanged() {
-  if (provider_)
-    AutomationJSONReply(provider_, reply_message_.release()).SendSuccess(NULL);
+  if (provider_.get())
+    AutomationJSONReply(provider_.get(), reply_message_.release())
+        .SendSuccess(NULL);
   delete this;
 }
 
@@ -1385,7 +1389,7 @@ AllDownloadsCompleteObserver::AllDownloadsCompleteObserver(
     if ((*it)->GetAsInteger(&val)) {
       pre_download_ids_.insert(val);
     } else {
-      AutomationJSONReply(provider_, reply_message_.release())
+      AutomationJSONReply(provider_.get(), reply_message_.release())
           .SendError("Cannot convert ID of prior download to integer.");
       delete this;
       return;
@@ -1444,8 +1448,9 @@ void AllDownloadsCompleteObserver::ReplyIfNecessary() {
     return;
 
   download_manager_->RemoveObserver(this);
-  if (provider_)
-    AutomationJSONReply(provider_, reply_message_.release()).SendSuccess(NULL);
+  if (provider_.get())
+    AutomationJSONReply(provider_.get(), reply_message_.release())
+        .SendSuccess(NULL);
   delete this;
 }
 
@@ -1462,11 +1467,12 @@ AutomationProviderSearchEngineObserver::
     ~AutomationProviderSearchEngineObserver() {}
 
 void AutomationProviderSearchEngineObserver::OnTemplateURLServiceChanged() {
-  if (provider_) {
+  if (provider_.get()) {
     TemplateURLService* url_service =
         TemplateURLServiceFactory::GetForProfile(profile_);
     url_service->RemoveObserver(this);
-    AutomationJSONReply(provider_, reply_message_.release()).SendSuccess(NULL);
+    AutomationJSONReply(provider_.get(), reply_message_.release())
+        .SendSuccess(NULL);
   }
   delete this;
 }
@@ -1483,7 +1489,7 @@ AutomationProviderHistoryObserver::~AutomationProviderHistoryObserver() {}
 void AutomationProviderHistoryObserver::HistoryQueryComplete(
     HistoryService::Handle request_handle,
     history::QueryResults* results) {
-  if (!provider_) {
+  if (!provider_.get()) {
     delete this;
     return;
   }
@@ -1508,7 +1514,7 @@ void AutomationProviderHistoryObserver::HistoryQueryComplete(
 
   return_value->Set("history", history_list);
   // Return history info.
-  AutomationJSONReply reply(provider_, reply_message_.release());
+  AutomationJSONReply reply(provider_.get(), reply_message_.release());
   reply.SendSuccess(return_value.get());
   delete this;
 }
@@ -1536,8 +1542,9 @@ void AutomationProviderImportSettingsObserver::ImportItemEnded(
 }
 
 void AutomationProviderImportSettingsObserver::ImportEnded() {
-  if (provider_)
-    AutomationJSONReply(provider_, reply_message_.release()).SendSuccess(NULL);
+  if (provider_.get())
+    AutomationJSONReply(provider_.get(), reply_message_.release())
+        .SendSuccess(NULL);
   delete this;
 }
 
@@ -1554,7 +1561,7 @@ AutomationProviderGetPasswordsObserver::
 void AutomationProviderGetPasswordsObserver::OnPasswordStoreRequestDone(
     CancelableRequestProvider::Handle handle,
     const std::vector<content::PasswordForm*>& result) {
-  if (!provider_) {
+  if (!provider_.get()) {
     delete this;
     return;
   }
@@ -1583,8 +1590,8 @@ void AutomationProviderGetPasswordsObserver::OnPasswordStoreRequestDone(
   }
 
   return_value->Set("passwords", passwords);
-  AutomationJSONReply(provider_, reply_message_.release()).SendSuccess(
-      return_value.get());
+  AutomationJSONReply(provider_.get(), reply_message_.release())
+      .SendSuccess(return_value.get());
   delete this;
 }
 
@@ -1660,14 +1667,14 @@ void PasswordStoreLoginsChangedObserver::Observe(
 
 void PasswordStoreLoginsChangedObserver::IndicateDone() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (automation_) {
+  if (automation_.get()) {
     if (result_key_.empty()) {
-      AutomationJSONReply(automation_, reply_message_.release())
+      AutomationJSONReply(automation_.get(), reply_message_.release())
           .SendSuccess(NULL);
     } else {
       scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
       return_value->SetBoolean(result_key_, true);
-      AutomationJSONReply(automation_, reply_message_.release())
+      AutomationJSONReply(automation_.get(), reply_message_.release())
           .SendSuccess(return_value.get());
     }
   }
@@ -1677,8 +1684,9 @@ void PasswordStoreLoginsChangedObserver::IndicateDone() {
 void PasswordStoreLoginsChangedObserver::IndicateError(
     const std::string& error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (automation_)
-    AutomationJSONReply(automation_, reply_message_.release()).SendError(error);
+  if (automation_.get())
+    AutomationJSONReply(automation_.get(), reply_message_.release())
+        .SendError(error);
   Release();
 }
 
@@ -1704,9 +1712,9 @@ void OmniboxAcceptNotificationObserver::Observe(
     const content::NotificationDetails& details) {
   if (type == content::NOTIFICATION_LOAD_STOP ||
       type == chrome::NOTIFICATION_AUTH_NEEDED) {
-    if (automation_) {
-      AutomationJSONReply(automation_,
-                          reply_message_.release()).SendSuccess(NULL);
+    if (automation_.get()) {
+      AutomationJSONReply(automation_.get(), reply_message_.release())
+          .SendSuccess(NULL);
     }
     delete this;
   } else {
@@ -1730,9 +1738,9 @@ SavePackageNotificationObserver::~SavePackageNotificationObserver() {
 
 void SavePackageNotificationObserver::OnSavePackageSuccessfullyFinished(
     content::DownloadManager* manager, content::DownloadItem* item) {
-  if (automation_) {
-    AutomationJSONReply(automation_,
-                        reply_message_.release()).SendSuccess(NULL);
+  if (automation_.get()) {
+    AutomationJSONReply(automation_.get(), reply_message_.release())
+        .SendSuccess(NULL);
   }
   delete this;
 }
@@ -1796,14 +1804,14 @@ NTPInfoObserver::NTPInfoObserver(AutomationProvider* automation,
       ntp_info_(new DictionaryValue) {
   top_sites_ = automation_->profile()->GetTopSites();
   if (!top_sites_) {
-    AutomationJSONReply(automation_, reply_message_.release())
+    AutomationJSONReply(automation_.get(), reply_message_.release())
         .SendError("Profile does not have service for querying the top sites.");
     return;
   }
   TabRestoreService* service =
       TabRestoreServiceFactory::GetForProfile(automation_->profile());
   if (!service) {
-    AutomationJSONReply(automation_, reply_message_.release())
+    AutomationJSONReply(automation_.get(), reply_message_.release())
         .SendError("No TabRestoreService.");
     return;
   }
@@ -1812,7 +1820,7 @@ NTPInfoObserver::NTPInfoObserver(AutomationProvider* automation,
   ExtensionService* ext_service = extensions::ExtensionSystem::Get(
       automation_->profile())->extension_service();
   if (!ext_service) {
-    AutomationJSONReply(automation_, reply_message_.release())
+    AutomationJSONReply(automation_.get(), reply_message_.release())
         .SendError("No ExtensionService.");
     return;
   }
@@ -1899,7 +1907,7 @@ void NTPInfoObserver::OnTopSitesLoaded() {
 
 void NTPInfoObserver::OnTopSitesReceived(
     const history::MostVisitedURLList& visited_list) {
-  if (!automation_) {
+  if (!automation_.get()) {
     delete this;
     return;
   }
@@ -1915,8 +1923,8 @@ void NTPInfoObserver::OnTopSitesReceived(
     list_value->Append(dict);
   }
   ntp_info_->Set("most_visited", list_value);
-  AutomationJSONReply(automation_,
-                      reply_message_.release()).SendSuccess(ntp_info_.get());
+  AutomationJSONReply(automation_.get(), reply_message_.release())
+      .SendSuccess(ntp_info_.get());
   delete this;
 }
 
@@ -1960,9 +1968,9 @@ void AppLaunchObserver::Observe(int type,
   if ((launch_container_ == extension_misc::LAUNCH_TAB) ||
       (session_tab_helper &&
           (session_tab_helper->window_id().id() == new_window_id_))) {
-    if (automation_) {
-      AutomationJSONReply(automation_,
-                          reply_message_.release()).SendSuccess(NULL);
+    if (automation_.get()) {
+      AutomationJSONReply(automation_.get(), reply_message_.release())
+          .SendSuccess(NULL);
     }
     delete this;
   }
@@ -2006,7 +2014,7 @@ void GetAllNotificationsObserver::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  if (!automation_) {
+  if (!automation_.get()) {
     delete this;
     return;
   }
@@ -2052,8 +2060,8 @@ void GetAllNotificationsObserver::SendMessage() {
        ++queued_iter) {
     list->Append(NotificationToJson(*queued_iter));
   }
-  AutomationJSONReply(automation_,
-                      reply_message_.release()).SendSuccess(&return_value);
+  AutomationJSONReply(automation_.get(), reply_message_.release())
+      .SendSuccess(&return_value);
   delete this;
 }
 
@@ -2072,9 +2080,9 @@ void NewNotificationBalloonObserver::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  if (automation_) {
-    AutomationJSONReply(automation_,
-                        reply_message_.release()).SendSuccess(NULL);
+  if (automation_.get()) {
+    AutomationJSONReply(automation_.get(), reply_message_.release())
+        .SendSuccess(NULL);
   }
   delete this;
 }
@@ -2110,12 +2118,12 @@ void OnNotificationBalloonCountObserver::CheckBalloonCount() {
   bool balloon_count_met = AreActiveNotificationProcessesReady() &&
       static_cast<int>(collection_->GetActiveBalloons().size()) == count_;
 
-  if (balloon_count_met && automation_) {
-    AutomationJSONReply(automation_,
-                        reply_message_.release()).SendSuccess(NULL);
+  if (balloon_count_met && automation_.get()) {
+    AutomationJSONReply(automation_.get(), reply_message_.release())
+        .SendSuccess(NULL);
   }
 
-  if (balloon_count_met || !automation_) {
+  if (balloon_count_met || !automation_.get()) {
     collection_->set_on_collection_changed_callback(base::Closure());
     delete this;
   }
@@ -2136,9 +2144,9 @@ void RendererProcessClosedObserver::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  if (automation_) {
-    AutomationJSONReply(automation_,
-                        reply_message_.release()).SendSuccess(NULL);
+  if (automation_.get()) {
+    AutomationJSONReply(automation_.get(), reply_message_.release())
+        .SendSuccess(NULL);
   }
   delete this;
 }
@@ -2170,8 +2178,8 @@ void InputEventAckNotificationObserver::Observe(
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   if (type == chrome::NOTIFICATION_APP_MODAL_DIALOG_SHOWN) {
-    AutomationJSONReply(automation_,
-                        reply_message_.release()).SendSuccess(NULL);
+    AutomationJSONReply(automation_.get(), reply_message_.release())
+        .SendSuccess(NULL);
     delete this;
     return;
   }
@@ -2179,9 +2187,9 @@ void InputEventAckNotificationObserver::Observe(
   content::Details<int> request_details(details);
   // If the event type matches for |count_| times, replies with a JSON message.
   if (event_type_ == *request_details.ptr()) {
-    if (--count_ == 0 && automation_) {
-      AutomationJSONReply(automation_,
-                          reply_message_.release()).SendSuccess(NULL);
+    if (--count_ == 0 && automation_.get()) {
+      AutomationJSONReply(automation_.get(), reply_message_.release())
+          .SendSuccess(NULL);
       delete this;
     }
   } else {
@@ -2209,7 +2217,7 @@ void NewTabObserver::Observe(int type,
   DCHECK_EQ(chrome::NOTIFICATION_TAB_PARENTED, type);
   NavigationController* controller =
       &(content::Source<content::WebContents>(source).ptr()->GetController());
-  if (automation_) {
+  if (automation_.get()) {
     // TODO(phajdan.jr): Clean up this hack. We write the correct return type
     // here, but don't send the message. NavigationNotificationObserver
     // will wait properly for the load to finish, and send the message,
@@ -2217,9 +2225,12 @@ void NewTabObserver::Observe(int type,
     if (!use_json_interface_)
       AutomationMsg_WindowExecuteCommand::WriteReplyParams(reply_message_.get(),
                                                            true);
-    new NavigationNotificationObserver(controller, automation_,
+    new NavigationNotificationObserver(controller,
+                                       automation_.get(),
                                        reply_message_.release(),
-                                       1, false, use_json_interface_);
+                                       1,
+                                       false,
+                                       use_json_interface_);
   }
   delete this;
 }
@@ -2268,7 +2279,7 @@ RunOnProcessLauncherThread2() {
 
 void WaitForProcessLauncherThreadToGoIdleObserver::RunOnUIThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (automation_)
+  if (automation_.get())
     automation_->Send(reply_message_.release());
   Release();
 }
@@ -2295,9 +2306,9 @@ void DragTargetDropAckNotificationObserver::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  if (automation_) {
-    AutomationJSONReply(automation_,
-                        reply_message_.release()).SendSuccess(NULL);
+  if (automation_.get()) {
+    AutomationJSONReply(automation_.get(), reply_message_.release())
+        .SendSuccess(NULL);
   }
   delete this;
 }
@@ -2380,8 +2391,8 @@ void ProcessInfoObserver::OnDetailsAvailable() {
   }
   return_value->Set("browsers", browser_proc_list);
 
-  if (automation_) {
-    AutomationJSONReply(automation_, reply_message_.release())
+  if (automation_.get()) {
+    AutomationJSONReply(automation_.get(), reply_message_.release())
         .SendSuccess(return_value.get());
   }
 }
@@ -2423,8 +2434,8 @@ void V8HeapStatsObserver::Observe(
   return_value->SetInteger("v8_memory_used",
                            v8_heap_details->v8_memory_used());
 
-  if (automation_) {
-    AutomationJSONReply(automation_, reply_message_.release())
+  if (automation_.get()) {
+    AutomationJSONReply(automation_.get(), reply_message_.release())
         .SendSuccess(return_value.get());
   }
   delete this;
@@ -2470,8 +2481,8 @@ void FPSObserver::Observe(
   return_value->SetInteger("renderer_id", updated_renderer_id);
   return_value->SetInteger("routing_id", fps_details->routing_id());
   return_value->SetDouble("fps", fps_details->fps());
-  if (automation_) {
-    AutomationJSONReply(automation_, reply_message_.release())
+  if (automation_.get()) {
+    AutomationJSONReply(automation_.get(), reply_message_.release())
         .SendSuccess(return_value.get());
   }
   delete this;
@@ -2500,7 +2511,7 @@ void BrowserOpenedWithNewProfileNotificationObserver::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  if (!automation_) {
+  if (!automation_.get()) {
     delete this;
     return;
   }
@@ -2510,8 +2521,8 @@ void BrowserOpenedWithNewProfileNotificationObserver::Observe(
     // automatically be opened.
     Profile* profile = content::Source<Profile>(source).ptr();
     if (!profile) {
-      AutomationJSONReply(automation_,
-          reply_message_.release()).SendError("Profile could not be created.");
+      AutomationJSONReply(automation_.get(), reply_message_.release())
+          .SendError("Profile could not be created.");
       return;
     }
   } else if (type == chrome::NOTIFICATION_BROWSER_OPENED) {
@@ -2529,8 +2540,8 @@ void BrowserOpenedWithNewProfileNotificationObserver::Observe(
     int window_id = session_tab_helper ? session_tab_helper->window_id().id()
                                        : -1;
     if (window_id == new_window_id_) {
-      if (automation_) {
-        AutomationJSONReply(automation_, reply_message_.release())
+      if (automation_.get()) {
+        AutomationJSONReply(automation_.get(), reply_message_.release())
             .SendSuccess(NULL);
       }
       delete this;
@@ -2556,7 +2567,7 @@ void ExtensionPopupObserver::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  if (!automation_) {
+  if (!automation_.get()) {
     delete this;
     return;
   }
@@ -2565,7 +2576,7 @@ void ExtensionPopupObserver::Observe(
       content::Details<extensions::ExtensionHost>(details).ptr();
   if (host->extension_id() == extension_id_ &&
       host->extension_host_type() == extensions::VIEW_TYPE_EXTENSION_POPUP) {
-    AutomationJSONReply(automation_, reply_message_.release())
+    AutomationJSONReply(automation_.get(), reply_message_.release())
         .SendSuccess(NULL);
     delete this;
   }
@@ -2589,8 +2600,8 @@ void WindowMaximizedObserver::Observe(
     const content::NotificationDetails& details) {
   DCHECK_EQ(chrome::NOTIFICATION_BROWSER_WINDOW_MAXIMIZED, type);
 
-  if (automation_) {
-    AutomationJSONReply(automation_, reply_message_.release())
+  if (automation_.get()) {
+    AutomationJSONReply(automation_.get(), reply_message_.release())
         .SendSuccess(NULL);
   }
   delete this;
@@ -2620,7 +2631,7 @@ void BrowserOpenedWithExistingProfileNotificationObserver::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  if (!automation_) {
+  if (!automation_.get()) {
     delete this;
     return;
   }
@@ -2638,8 +2649,8 @@ void BrowserOpenedWithExistingProfileNotificationObserver::Observe(
     int window_id = session_tab_helper ? session_tab_helper->window_id().id()
                                        : -1;
     if (window_id == new_window_id_ && --num_loads_ == 0) {
-      if (automation_) {
-        AutomationJSONReply(automation_, reply_message_.release())
+      if (automation_.get()) {
+        AutomationJSONReply(automation_.get(), reply_message_.release())
             .SendSuccess(NULL);
       }
       delete this;

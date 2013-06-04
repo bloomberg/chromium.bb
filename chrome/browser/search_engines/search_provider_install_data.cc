@@ -88,7 +88,7 @@ GoogleURLChangeNotifier::GoogleURLChangeNotifier(
 
 void GoogleURLChangeNotifier::OnChange(const std::string& google_base_url) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  if (install_data_)
+  if (install_data_.get())
     install_data_->OnGoogleURLChange(google_base_url);
 }
 

@@ -132,7 +132,7 @@ class TrackingSynchronizer::RequestContext {
     bool received_process_group_count = request->received_process_group_count_;
     int unresponsive_processes = request->processes_pending_;
 
-    if (request->callback_object_)
+    if (request->callback_object_.get())
       request->callback_object_->FinishedReceivingProfilerData();
 
     delete request;
@@ -274,9 +274,9 @@ void TrackingSynchronizer::DecrementPendingProcessesAndSendData(
   if (!request)
     return;
 
-  if (request->callback_object_) {
-    request->callback_object_->ReceivedProfilerData(profiler_data,
-                                                    process_type);
+  if (request->callback_object_.get()) {
+    request->callback_object_
+        ->ReceivedProfilerData(profiler_data, process_type);
   }
 
   // Delete request if we have heard back from all child processes.

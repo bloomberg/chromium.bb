@@ -63,7 +63,7 @@ void PrintSystemTaskProxy::GetDefaultPrinter() {
 void PrintSystemTaskProxy::SendDefaultPrinter(
     const std::string& default_printer,
     const std::string& cloud_print_data) {
-  if (handler_)
+  if (handler_.get())
     handler_->SendInitialSettings(default_printer, cloud_print_data);
 }
 
@@ -104,7 +104,7 @@ void PrintSystemTaskProxy::EnumeratePrinters() {
 }
 
 void PrintSystemTaskProxy::SetupPrinterList(ListValue* printers) {
-  if (handler_)
+  if (handler_.get())
     handler_->SetupPrinterList(*printers);
   delete printers;
 }
@@ -162,13 +162,13 @@ void PrintSystemTaskProxy::GetPrinterCapabilities(
 
 void PrintSystemTaskProxy::SendPrinterCapabilities(
     DictionaryValue* settings_info) {
-  if (handler_)
+  if (handler_.get())
     handler_->SendPrinterCapabilities(*settings_info);
   delete settings_info;
 }
 
 void PrintSystemTaskProxy::SendFailedToGetPrinterCapabilities(
     const std::string& printer_name) {
-  if (handler_)
+  if (handler_.get())
     handler_->SendFailedToGetPrinterCapabilities(printer_name);
 }

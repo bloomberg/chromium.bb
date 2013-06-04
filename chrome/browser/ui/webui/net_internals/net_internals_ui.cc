@@ -1751,7 +1751,7 @@ void NetInternalsMessageHandler::IOThreadImpl::SendJavascriptCommand(
     const std::string& command,
     Value* arg) {
   if (BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    if (handler_ && !was_webui_deleted_) {
+    if (handler_.get() && !was_webui_deleted_) {
       // We check |handler_| in case it was deleted on the UI thread earlier
       // while we were running on the IO thread.
       handler_->SendJavascriptCommand(command, arg);

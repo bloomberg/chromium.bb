@@ -172,7 +172,7 @@ void CloudPrintSetupFlow::OnDialogClosed(const std::string& json_retval) {
   if (authenticator_.get())
     authenticator_->CancelRequest();
 
-  if (delegate_)
+  if (delegate_.get())
     delegate_->OnDialogClosed();
   delete this;
 }

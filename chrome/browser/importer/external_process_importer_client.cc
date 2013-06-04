@@ -249,7 +249,7 @@ void ExternalProcessImporterClient::Cleanup() {
 }
 
 void ExternalProcessImporterClient::CancelImportProcessOnIOThread() {
-  if (utility_process_host_)
+  if (utility_process_host_.get())
     utility_process_host_->Send(new ProfileImportProcessMsg_CancelImport());
 }
 

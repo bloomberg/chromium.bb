@@ -66,12 +66,12 @@ void OperationRunner::OnAccessTokenFetched(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // Do nothing if the operation is canceled during authentication.
-  if (!operation)
+  if (!operation.get())
     return;
 
   if (code == HTTP_SUCCESS) {
     DCHECK(auth_service_->HasAccessToken());
-    StartOperationWithRetry(operation);
+    StartOperationWithRetry(operation.get());
   } else {
     operation->OnAuthFailed(code);
   }

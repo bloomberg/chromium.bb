@@ -308,7 +308,7 @@ class AutofillDialogControllerTest : public testing::Test {
   }
 
   virtual void TearDown() OVERRIDE {
-    if (controller_)
+    if (controller_.get())
       controller_->ViewClosed();
   }
 
@@ -324,7 +324,7 @@ class AutofillDialogControllerTest : public testing::Test {
   }
 
   void SetUpControllerWithFormData(const FormData& form_data) {
-    if (controller_)
+    if (controller_.get())
       controller_->ViewClosed();
 
     base::Callback<void(const FormStructure*, const std::string&)> callback =
@@ -382,7 +382,7 @@ class AutofillDialogControllerTest : public testing::Test {
     controller()->MenuModelForSection(SECTION_SHIPPING)->ActivatedAt(0);
   }
 
-  TestAutofillDialogController* controller() { return controller_; }
+  TestAutofillDialogController* controller() { return controller_.get(); }
 
   TestingProfile* profile() { return &profile_; }
 

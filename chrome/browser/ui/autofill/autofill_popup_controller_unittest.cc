@@ -365,14 +365,14 @@ TEST_F(AutofillPopupControllerUnitTest, GetOrCreate) {
       AutofillPopupControllerImpl::GetOrCreate(
           WeakPtr<AutofillPopupControllerImpl>(), delegate.GetWeakPtr(), NULL,
           gfx::Rect());
-  EXPECT_TRUE(controller);
+  EXPECT_TRUE(controller.get());
 
   controller->Hide();
 
   controller = AutofillPopupControllerImpl::GetOrCreate(
       WeakPtr<AutofillPopupControllerImpl>(), delegate.GetWeakPtr(), NULL,
       gfx::Rect());
-  EXPECT_TRUE(controller);
+  EXPECT_TRUE(controller.get());
 
   WeakPtr<AutofillPopupControllerImpl> controller2 =
       AutofillPopupControllerImpl::GetOrCreate(controller,

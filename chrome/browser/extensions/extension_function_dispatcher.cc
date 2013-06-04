@@ -149,11 +149,16 @@ void IOThreadResponseCallback(
     ExtensionFunction::ResponseType type,
     const base::ListValue& results,
     const std::string& error) {
-  if (!ipc_sender)
+  if (!ipc_sender.get())
     return;
 
-  CommonResponseCallback(ipc_sender, routing_id, ipc_sender->peer_handle(),
-                         request_id, type, results, error);
+  CommonResponseCallback(ipc_sender.get(),
+                         routing_id,
+                         ipc_sender->peer_handle(),
+                         request_id,
+                         type,
+                         results,
+                         error);
 }
 
 }  // namespace
@@ -176,9 +181,9 @@ class ExtensionFunctionDispatcher::UIThreadResponseCallbackWrapper
   virtual void RenderViewHostDestroyed(
       RenderViewHost* render_view_host) OVERRIDE {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-    if (dispatcher_) {
-      dispatcher_->ui_thread_response_callback_wrappers_.erase(
-          render_view_host);
+    if (dispatcher_.get()) {
+      dispatcher_->ui_thread_response_callback_wrappers_
+          .erase(render_view_host);
     }
 
     // This call will delete |this|.

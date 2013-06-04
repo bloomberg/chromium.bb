@@ -340,7 +340,7 @@ bool IsCardHolderNameValidForWallet(const string16& name) {
 AutofillDialogController::~AutofillDialogController() {}
 
 AutofillDialogControllerImpl::~AutofillDialogControllerImpl() {
-  if (popup_controller_)
+  if (popup_controller_.get())
     popup_controller_->Hide();
 
   GetMetricLogger().LogDialogInitialUserState(
@@ -1299,7 +1299,7 @@ void AutofillDialogControllerImpl::UserEditedOrActivatedInput(
 
   // If the user clicks while the popup is already showing, be sure to hide
   // it.
-  if (!was_edit && popup_controller_) {
+  if (!was_edit && popup_controller_.get()) {
     HidePopup();
     return;
   }
@@ -1828,7 +1828,7 @@ void AutofillDialogControllerImpl::UpdateAccountChooserView() {
 
 bool AutofillDialogControllerImpl::HandleKeyPressEventInInput(
     const content::NativeWebKeyboardEvent& event) {
-  if (popup_controller_)
+  if (popup_controller_.get())
     return popup_controller_->HandleKeyPressEvent(event);
 
   return false;
@@ -2372,7 +2372,7 @@ DetailInputs* AutofillDialogControllerImpl::MutableRequestedFieldsForSection(
 }
 
 void AutofillDialogControllerImpl::HidePopup() {
-  if (popup_controller_)
+  if (popup_controller_.get())
     popup_controller_->Hide();
   input_showing_popup_ = NULL;
 }

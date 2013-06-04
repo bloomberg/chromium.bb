@@ -112,7 +112,7 @@ void WebstoreInstallHelper::OnURLFetchComplete(
 
 void WebstoreInstallHelper::StartFetchedImageDecode() {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  CHECK(utility_host_);
+  CHECK(utility_host_.get());
   utility_host_->Send(new ChromeUtilityMsg_DecodeImage(fetched_icon_data_));
 }
 
@@ -180,7 +180,7 @@ void WebstoreInstallHelper::ReportResultsIfComplete() {
     return;
 
   // The utility_host_ will take care of deleting itself after this call.
-  if (utility_host_) {
+  if (utility_host_.get()) {
     utility_host_->EndBatchMode();
     utility_host_.reset();
   }

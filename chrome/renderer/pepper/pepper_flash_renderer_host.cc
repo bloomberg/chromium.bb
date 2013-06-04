@@ -223,7 +223,7 @@ int32_t PepperFlashRendererHost::OnNavigate(
   plugin_instance->Navigate(data, target.c_str(), from_user_action);
   // This object might have been destroyed by this point. If it is destroyed
   // the reply will be sent in the destructor. Otherwise send the reply here.
-  if (weak_ptr) {
+  if (weak_ptr.get()) {
     SendReply(navigate_replies_.back(), IPC::Message());
     navigate_replies_.pop_back();
   }

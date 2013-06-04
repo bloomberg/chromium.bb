@@ -13,7 +13,7 @@ DownloadRequestInfoBarDelegate::FakeCreateCallback*
   DownloadRequestInfoBarDelegate::callback_ = NULL;
 
 DownloadRequestInfoBarDelegate::~DownloadRequestInfoBarDelegate() {
-  if (host_)
+  if (host_.get())
     host_->Cancel();
 }
 
@@ -68,11 +68,11 @@ string16 DownloadRequestInfoBarDelegate::GetButtonLabel(
 }
 
 bool DownloadRequestInfoBarDelegate::Accept() {
-  if (host_) {
+  if (host_.get()) {
     // Accept() call will invalidate host_ weak pointer if no further
     // prompts are required.
     host_->Accept();
   }
 
-  return !host_;
+  return !host_.get();
 }

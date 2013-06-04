@@ -81,7 +81,7 @@ void GenericChangeProcessor::CommitChangesFromSyncModel() {
   DCHECK(CalledOnValidThread());
   if (syncer_changes_.empty())
     return;
-  if (!local_service_) {
+  if (!local_service_.get()) {
     syncer::ModelType type = syncer_changes_[0].sync_data().GetDataType();
     syncer::SyncError error(FROM_HERE, "Local service destroyed.", type);
     error_handler()->OnSingleDatatypeUnrecoverableError(error.location(),
@@ -285,7 +285,7 @@ syncer::SyncError GenericChangeProcessor::ProcessSyncChanges(
         NOTREACHED();
         return error;
       }
-      if (merge_result_) {
+      if (merge_result_.get()) {
         merge_result_->set_num_items_deleted(
             merge_result_->num_items_deleted() + 1);
       }
@@ -359,9 +359,9 @@ syncer::SyncError GenericChangeProcessor::ProcessSyncChanges(
       }
       sync_node.SetTitle(UTF8ToWide(change.sync_data().GetTitle()));
       sync_node.SetEntitySpecifics(change.sync_data().GetSpecifics());
-      if (merge_result_) {
-        merge_result_->set_num_items_added(
-            merge_result_->num_items_added() + 1);
+      if (merge_result_.get()) {
+        merge_result_->set_num_items_added(merge_result_->num_items_added() +
+                                           1);
       }
     } else if (change.change_type() == syncer::SyncChange::ACTION_UPDATE) {
       // TODO(zea): consider having this logic for all possible changes?
@@ -452,7 +452,7 @@ syncer::SyncError GenericChangeProcessor::ProcessSyncChanges(
 
       sync_node.SetTitle(UTF8ToWide(change.sync_data().GetTitle()));
       sync_node.SetEntitySpecifics(change.sync_data().GetSpecifics());
-      if (merge_result_) {
+      if (merge_result_.get()) {
         merge_result_->set_num_items_modified(
             merge_result_->num_items_modified() + 1);
       }

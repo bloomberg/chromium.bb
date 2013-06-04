@@ -41,7 +41,7 @@ TestDelegate::TestDelegate(base::WeakPtr<content::DownloadItem*> receiver)
 }
 
 void TestDelegate::NotifyDownloadStarting(content::DownloadItem* item) {
-  if (receiver_)
+  if (receiver_.get())
     *receiver_ = item;
 }
 

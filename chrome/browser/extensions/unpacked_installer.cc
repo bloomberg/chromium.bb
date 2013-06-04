@@ -118,7 +118,7 @@ bool UnpackedInstaller::LoadFromCommandLine(const base::FilePath& path_in,
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(extension_path_.empty());
 
-  if (!service_weak_)
+  if (!service_weak_.get())
     return false;
   // Load extensions from the command line synchronously to avoid a race
   // between extension loading and loading an URL from the command line.
@@ -151,7 +151,7 @@ bool UnpackedInstaller::LoadFromCommandLine(const base::FilePath& path_in,
 
 void UnpackedInstaller::ShowInstallPrompt() {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (!service_weak_)
+  if (!service_weak_.get())
     return;
 
   const ExtensionSet* disabled_extensions =
@@ -205,7 +205,7 @@ int UnpackedInstaller::GetFlags() {
 }
 
 bool UnpackedInstaller::IsLoadingUnpackedAllowed() const {
-  if (!service_weak_)
+  if (!service_weak_.get())
     return true;
   // If there is a "*" in the extension blacklist, then no extensions should be
   // allowed at all (except explicitly whitelisted extensions).
@@ -225,7 +225,7 @@ void UnpackedInstaller::GetAbsolutePath() {
 
 void UnpackedInstaller::CheckExtensionFileAccess() {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (!service_weak_)
+  if (!service_weak_.get())
     return;
 
   if (!IsLoadingUnpackedAllowed()) {
@@ -265,7 +265,7 @@ void UnpackedInstaller::LoadWithFileAccess(int flags) {
 
 void UnpackedInstaller::ReportExtensionLoadError(const std::string &error) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (!service_weak_)
+  if (!service_weak_.get())
     return;
   service_weak_->ReportExtensionLoadError(extension_path_, error, true);
 }

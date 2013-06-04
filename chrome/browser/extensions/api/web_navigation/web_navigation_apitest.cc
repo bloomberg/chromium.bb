@@ -96,7 +96,7 @@ class TestNavigationListener
     }
     WeakThrottleList::const_iterator it;
     for (it = throttles_.begin(); it != throttles_.end(); ++it) {
-      if (*it)
+      if (it->get())
         (*it)->Resume();
     }
     throttles_.clear();
