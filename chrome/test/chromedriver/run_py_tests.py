@@ -646,7 +646,7 @@ class PerfTest(ChromeDriverBaseTest):
       mean = sum(result) / len(result)
       avg_dev = sum([abs(sample - mean) for sample in result]) / len(result)
       print 'perf result', build, name, mean, avg_dev, result
-      util.AddBuildStepText(u'%s %s: %.3f\u00b1%.3f' % (
+      util.AddBuildStepText('%s %s: %.3f+-%.3f' % (
           build, name, mean, avg_dev))
 
     # Discard first result, which may be off due to cold start.
