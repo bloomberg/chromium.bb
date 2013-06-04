@@ -98,13 +98,15 @@ void SearchBox::NavigateToURL(const GURL& url,
 void SearchBox::DeleteMostVisitedItem(
     InstantRestrictedID most_visited_item_id) {
   render_view()->Send(new ChromeViewHostMsg_SearchBoxDeleteMostVisitedItem(
-      render_view()->GetRoutingID(), most_visited_item_id));
+      render_view()->GetRoutingID(),
+      GetURLForMostVisitedItem(most_visited_item_id)));
 }
 
 void SearchBox::UndoMostVisitedDeletion(
     InstantRestrictedID most_visited_item_id) {
   render_view()->Send(new ChromeViewHostMsg_SearchBoxUndoMostVisitedDeletion(
-      render_view()->GetRoutingID(), most_visited_item_id));
+      render_view()->GetRoutingID(),
+      GetURLForMostVisitedItem(most_visited_item_id)));
 }
 
 void SearchBox::UndoAllMostVisitedDeletions() {
@@ -422,4 +424,9 @@ bool SearchBox::GetMostVisitedItemWithID(
     InstantMostVisitedItem* item) const {
   return most_visited_items_cache_.GetItemWithRestrictedID(most_visited_item_id,
                                                            item);
+}
+
+GURL SearchBox::GetURLForMostVisitedItem(InstantRestrictedID item_id) const {
+  InstantMostVisitedItem item;
+  return GetMostVisitedItemWithID(item_id, &item) ? item.url : GURL();
 }

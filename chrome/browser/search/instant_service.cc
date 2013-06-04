@@ -4,14 +4,24 @@
 
 #include "chrome/browser/search/instant_service.h"
 
+#include <vector>
+
+#include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
+#include "build/build_config.h"
 #include "chrome/browser/history/history_notifications.h"
+#include "chrome/browser/history/top_sites.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/instant_io_context.h"
 #include "chrome/browser/search/instant_service_factory.h"
 #include "chrome/browser/search/local_ntp_source.h"
 #include "chrome/browser/search/most_visited_iframe_source.h"
 #include "chrome/browser/search/suggestion_iframe_source.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_instant_controller.h"
+#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/host_desktop.h"
+#include "chrome/browser/ui/search/instant_controller.h"
 #include "chrome/browser/ui/webui/favicon_source.h"
 #include "chrome/browser/ui/webui/ntp/thumbnail_source.h"
 #include "chrome/browser/ui/webui/theme_source.h"
@@ -28,7 +38,8 @@ using content::BrowserThread;
 
 InstantService::InstantService(Profile* profile)
     : profile_(profile),
-      most_visited_item_cache_(kMaxInstantMostVisitedItemCacheSize) {
+      most_visited_item_cache_(kMaxInstantMostVisitedItemCacheSize),
+      weak_ptr_factory_(this) {
   // Stub for unit tests.
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI))
     return;
@@ -37,6 +48,12 @@ InstantService::InstantService(Profile* profile)
                  content::NOTIFICATION_RENDERER_PROCESS_TERMINATED,
                  content::NotificationService::AllSources());
 
+  history::TopSites* top_sites = profile_->GetTopSites();
+  if (top_sites) {
+    registrar_.Add(this,
+                   chrome::NOTIFICATION_TOP_SITES_CHANGED,
+                   content::Source<history::TopSites>(top_sites));
+  }
   instant_io_context_ = new InstantIOContext();
 
   if (profile_ && profile_->GetResourceContext()) {
@@ -139,16 +156,33 @@ void InstantService::AddMostVisitedItems(
   }
 }
 
+void InstantService::DeleteMostVisitedItem(const GURL& url) {
+  history::TopSites* top_sites = profile_->GetTopSites();
+  if (!top_sites)
+    return;
+
+  top_sites->AddBlacklistedURL(url);
+}
+
+void InstantService::UndoMostVisitedDeletion(const GURL& url) {
+  history::TopSites* top_sites = profile_->GetTopSites();
+  if (!top_sites)
+    return;
+
+  top_sites->RemoveBlacklistedURL(url);
+}
+
+void InstantService::UndoAllMostVisitedDeletions() {
+  history::TopSites* top_sites = profile_->GetTopSites();
+  if (!top_sites)
+    return;
+
+  top_sites->ClearBlacklistedURLs();
+}
+
 void InstantService::GetCurrentMostVisitedItems(
     std::vector<InstantMostVisitedItemIDPair>* items) const {
   most_visited_item_cache_.GetCurrentItems(items);
-}
-
-bool InstantService::GetMostVisitedItemForID(
-    InstantRestrictedID most_visited_item_id,
-    InstantMostVisitedItem* item) const {
-  return most_visited_item_cache_.GetItemWithRestrictedID(
-      most_visited_item_id, item);
 }
 
 void InstantService::Shutdown() {
@@ -183,7 +217,58 @@ void InstantService::Observe(int type,
       }
       break;
     }
+    case chrome::NOTIFICATION_TOP_SITES_CHANGED: {
+      history::TopSites* top_sites = profile_->GetTopSites();
+      if (top_sites) {
+        top_sites->GetMostVisitedURLs(
+            base::Bind(&InstantService::OnMostVisitedItemsReceived,
+                       weak_ptr_factory_.GetWeakPtr()));
+      }
+      break;
+    }
     default:
       NOTREACHED() << "Unexpected notification type in InstantService.";
   }
+}
+
+bool InstantService::GetMostVisitedItemForID(
+    InstantRestrictedID most_visited_item_id,
+    InstantMostVisitedItem* item) const {
+  return most_visited_item_cache_.GetItemWithRestrictedID(
+      most_visited_item_id, item);
+}
+
+void InstantService::OnMostVisitedItemsReceived(
+    const history::MostVisitedURLList& data) {
+  // Android doesn't use Browser/BrowserList. Do nothing for Android platform.
+#if !defined(OS_ANDROID)
+  history::MostVisitedURLList reordered_data(data);
+  history::TopSites::MaybeShuffle(&reordered_data);
+
+  std::vector<InstantMostVisitedItem> most_visited_items;
+  for (size_t i = 0; i < reordered_data.size(); i++) {
+    const history::MostVisitedURL& url = reordered_data[i];
+    InstantMostVisitedItem item;
+    item.url = url.url;
+    item.title = url.title;
+    most_visited_items.push_back(item);
+  }
+  AddMostVisitedItems(most_visited_items);
+
+  const BrowserList* browser_list =
+      BrowserList::GetInstance(chrome::GetActiveDesktop());
+  for (BrowserList::const_iterator it = browser_list->begin();
+       it != browser_list->end(); ++it) {
+    if ((*it)->profile() != profile_ || !((*it)->instant_controller()))
+      continue;
+
+    InstantController* controller = (*it)->instant_controller()->instant();
+    if (!controller)
+      continue;
+    // TODO(kmadhusu): It would be cleaner to have each InstantController
+    // register itself as an InstantServiceObserver and push out updates that
+    // way. Refer to crbug.com/246355 for more details.
+    controller->UpdateMostVisitedItems();
+  }
+#endif
 }

@@ -291,12 +291,12 @@ void InstantPage::OnSearchBoxNavigate(int page_id,
   }
 }
 
-void InstantPage::OnDeleteMostVisitedItem(InstantRestrictedID restricted_id) {
-  delegate_->DeleteMostVisitedItem(restricted_id);
+void InstantPage::OnDeleteMostVisitedItem(const GURL& url) {
+  delegate_->DeleteMostVisitedItem(url);
 }
 
-void InstantPage::OnUndoMostVisitedDeletion(InstantRestrictedID restricted_id) {
-  delegate_->UndoMostVisitedDeletion(restricted_id);
+void InstantPage::OnUndoMostVisitedDeletion(const GURL& url) {
+  delegate_->UndoMostVisitedDeletion(url);
 }
 
 void InstantPage::OnUndoAllMostVisitedDeletions() {

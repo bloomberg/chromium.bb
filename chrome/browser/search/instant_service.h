@@ -12,6 +12,8 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
+#include "chrome/browser/history/history_types.h"
 #include "chrome/common/instant_restricted_id_cache.h"
 #include "components/browser_context_keyed_service/browser_context_keyed_service.h"
 #include "content/public/browser/notification_observer.h"
@@ -62,16 +64,23 @@ class InstantService : public BrowserContextKeyedService,
   // the process.
   void AddMostVisitedItems(const std::vector<InstantMostVisitedItem>& items);
 
+  // Invoked by the InstantController when the Instant page wants to delete a
+  // Most Visited item.
+  void DeleteMostVisitedItem(const GURL& url);
+
+  // Invoked by the InstantController when the Instant page wants to undo the
+  // blacklist action.
+  void UndoMostVisitedDeletion(const GURL& url);
+
+  // Invoked by the InstantController when the Instant page wants to undo all
+  // Most Visited deletions.
+  void UndoAllMostVisitedDeletions();
+
   // Returns the last added InstantMostVisitedItems. After the call to
   // |AddMostVisitedItems|, the caller should call this to get the items with
   // the assigned IDs.
   void GetCurrentMostVisitedItems(
       std::vector<InstantMostVisitedItemIDPair>* items) const;
-
-  // If the |most_visited_item_id| is found in the cache, sets the |item| to it
-  // and returns true.
-  bool GetMostVisitedItemForID(InstantRestrictedID most_visited_item_id,
-                               InstantMostVisitedItem* item) const;
 
  private:
   // Overridden from BrowserContextKeyedService:
@@ -81,6 +90,16 @@ class InstantService : public BrowserContextKeyedService,
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
+
+  // If the |most_visited_item_id| is found in the cache, sets the |item| to it
+  // and returns true.
+  bool GetMostVisitedItemForID(InstantRestrictedID most_visited_item_id,
+                               InstantMostVisitedItem* item) const;
+
+  // Called when we get new most visited items from TopSites, registered as an
+  // async callback. Parses them and sends them to the renderer via
+  // SendMostVisitedItems.
+  void OnMostVisitedItemsReceived(const history::MostVisitedURLList& data);
 
   Profile* const profile_;
 
@@ -93,6 +112,9 @@ class InstantService : public BrowserContextKeyedService,
   content::NotificationRegistrar registrar_;
 
   scoped_refptr<InstantIOContext> instant_io_context_;
+
+  // Used for Top Sites async retrieval.
+  base::WeakPtrFactory<InstantService> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(InstantService);
 };

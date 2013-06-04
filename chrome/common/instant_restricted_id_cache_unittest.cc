@@ -392,3 +392,32 @@ TEST_F(InstantRestrictedIDCacheTest, AddEmptySet) {
   cache.GetCurrentItems(&output);
   EXPECT_TRUE(output.empty());
 }
+
+TEST_F(InstantRestrictedIDCacheTest, AddItemsWithRestrictedID) {
+  InstantRestrictedIDCache<TestData> cache(29);
+  EXPECT_EQ(0u, cache.cache_.size());
+  EXPECT_EQ(0, cache.last_restricted_id_);
+
+  std::vector<ItemIDPair> input1;
+  input1.push_back(std::make_pair(10, TestData("A")));
+  input1.push_back(std::make_pair(11, TestData("B")));
+  input1.push_back(std::make_pair(12, TestData("C")));
+  cache.AddItemsWithRestrictedID(input1);
+  EXPECT_EQ(3u, cache.cache_.size());
+  EXPECT_EQ(12, cache.last_restricted_id_);
+  EXPECT_EQ(10, cache.last_add_start_->first);
+
+  std::vector<ItemIDPair> output;
+  cache.GetCurrentItems(&output);
+  EXPECT_EQ(3u, output.size());
+
+  // Add the same items again.
+  cache.AddItemsWithRestrictedID(input1);
+
+  // Make sure |cache.last_add_start_| is still valid.
+  cache.GetCurrentItems(&output);
+  EXPECT_EQ(3u, output.size());
+  EXPECT_EQ(3u, cache.cache_.size());
+  EXPECT_EQ(12, cache.last_restricted_id_);
+  EXPECT_EQ(10, cache.last_add_start_->first);
+}

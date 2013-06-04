@@ -155,6 +155,9 @@ class SearchBox : public content::RenderViewObserver,
   // Sets the query to a new value.
   void SetQuery(const string16& query, bool verbatim);
 
+  // Returns the URL of the Most Visited item specified by the |item_id|.
+  GURL GetURLForMostVisitedItem(InstantRestrictedID item_id) const;
+
   string16 query_;
   bool verbatim_;
   bool query_is_restricted_;

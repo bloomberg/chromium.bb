@@ -49,10 +49,8 @@ class FakePageDelegate : public InstantPage::Delegate {
                     content::PageTransition transition,
                     WindowOpenDisposition disposition,
                     bool is_search_type));
-  MOCK_METHOD1(DeleteMostVisitedItem,
-               void(InstantRestrictedID most_visited_item_id));
-  MOCK_METHOD1(UndoMostVisitedDeletion,
-               void(InstantRestrictedID most_visited_item_id));
+  MOCK_METHOD1(DeleteMostVisitedItem, void(const GURL& url));
+  MOCK_METHOD1(UndoMostVisitedDeletion, void(const GURL& url));
   MOCK_METHOD0(UndoAllMostVisitedDeletions, void());
   MOCK_METHOD1(InstantPageLoadFailed, void(content::WebContents* contents));
 };
@@ -112,4 +110,33 @@ TEST_F(InstantPageTest, DetermineIfPageSupportsInstant_NonLocal) {
       ChromeViewMsg_DetermineIfPageSupportsInstant::ID);
   ASSERT_TRUE(message != NULL);
   EXPECT_EQ(web_contents()->GetRoutingID(), message->routing_id());
+}
+
+TEST_F(InstantPageTest, DispatchRequestToDeleteMostVisitedItem) {
+  page.reset(new FakePage(&delegate, ""));
+  page->SetContents(web_contents());
+  GURL item_url("www.foo.com");
+  EXPECT_CALL(delegate, DeleteMostVisitedItem(item_url)).Times(1);
+  EXPECT_TRUE(page->OnMessageReceived(
+      ChromeViewHostMsg_SearchBoxDeleteMostVisitedItem(rvh()->GetRoutingID(),
+                                                       item_url)));
+}
+
+TEST_F(InstantPageTest, DispatchRequestToUndoMostVisitedDeletion) {
+  page.reset(new FakePage(&delegate, ""));
+  page->SetContents(web_contents());
+  GURL item_url("www.foo.com");
+  EXPECT_CALL(delegate, UndoMostVisitedDeletion(item_url)).Times(1);
+  EXPECT_TRUE(page->OnMessageReceived(
+      ChromeViewHostMsg_SearchBoxUndoMostVisitedDeletion(rvh()->GetRoutingID(),
+                                                         item_url)));
+}
+
+TEST_F(InstantPageTest, DispatchRequestToUndoAllMostVisitedDeletions) {
+  page.reset(new FakePage(&delegate, ""));
+  page->SetContents(web_contents());
+  EXPECT_CALL(delegate, UndoAllMostVisitedDeletions()).Times(1);
+  EXPECT_TRUE(page->OnMessageReceived(
+      ChromeViewHostMsg_SearchBoxUndoAllMostVisitedDeletions(
+          rvh()->GetRoutingID())));
 }

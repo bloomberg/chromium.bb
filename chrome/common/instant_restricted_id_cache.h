@@ -69,6 +69,8 @@ class InstantRestrictedIDCache {
   FRIEND_TEST_ALL_PREFIXES(InstantRestrictedIDCacheTest, ManualIDGeneration);
   FRIEND_TEST_ALL_PREFIXES(InstantRestrictedIDCacheTest, MixIDGeneration);
   FRIEND_TEST_ALL_PREFIXES(InstantRestrictedIDCacheTest, AddEmptySet);
+  FRIEND_TEST_ALL_PREFIXES(InstantRestrictedIDCacheTest,
+                           AddItemsWithRestrictedID);
 
   typedef base::MRUCache<InstantRestrictedID, T> CacheImpl;
 
@@ -126,10 +128,15 @@ void InstantRestrictedIDCache<T>::AddItemsWithRestrictedID(
     ids_added.insert(item_id.first);
 
     cache_.Put(item_id.first, item_id.second);
-    if (i == 0)
-      last_add_start_ = --cache_.rend();
     last_restricted_id_ = std::max(item_id.first, last_restricted_id_);
   }
+
+  // cache_.Put() can invalidate the iterator |last_add_start_| is pointing to.
+  // Therefore, update |last_add_start_| after adding all the items to the
+  // |cache_|.
+  last_add_start_ = cache_.rend();
+  for (size_t i = 0; i < items.size(); ++i)
+    --last_add_start_;
 }
 
 template <typename T>

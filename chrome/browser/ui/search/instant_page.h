@@ -9,6 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/gtest_prod_util.h"
 #include "base/string16.h"
 #include "chrome/common/instant_types.h"
 #include "chrome/common/omnibox_focus_state.h"
@@ -88,12 +89,10 @@ class InstantPage : public content::WebContentsObserver {
                                bool is_search_type) = 0;
 
     // Called when the SearchBox wants to delete a Most Visited item.
-    virtual void DeleteMostVisitedItem(
-        InstantRestrictedID most_visited_item_id) = 0;
+    virtual void DeleteMostVisitedItem(const GURL& url) = 0;
 
     // Called when the SearchBox wants to undo a Most Visited deletion.
-    virtual void UndoMostVisitedDeletion(
-        InstantRestrictedID most_visited_item_id) = 0;
+    virtual void UndoMostVisitedDeletion(const GURL& url) = 0;
 
     // Called when the SearchBox wants to undo all Most Visited deletions.
     virtual void UndoAllMostVisitedDeletions() = 0;
@@ -218,6 +217,13 @@ class InstantPage : public content::WebContentsObserver {
   virtual bool ShouldProcessNavigateToURL();
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(InstantPageTest,
+                           DispatchRequestToDeleteMostVisitedItem);
+  FRIEND_TEST_ALL_PREFIXES(InstantPageTest,
+                           DispatchRequestToUndoMostVisitedDeletion);
+  FRIEND_TEST_ALL_PREFIXES(InstantPageTest,
+                           DispatchRequestToUndoAllMostVisitedDeletions);
+
   // Overridden from content::WebContentsObserver:
   virtual void RenderViewCreated(
       content::RenderViewHost* render_view_host) OVERRIDE;
@@ -257,8 +263,8 @@ class InstantPage : public content::WebContentsObserver {
                            content::PageTransition transition,
                            WindowOpenDisposition disposition,
                            bool is_search_type);
-  void OnDeleteMostVisitedItem(InstantRestrictedID most_visited_item_id);
-  void OnUndoMostVisitedDeletion(InstantRestrictedID most_visited_item_id);
+  void OnDeleteMostVisitedItem(const GURL& url);
+  void OnUndoMostVisitedDeletion(const GURL& url);
   void OnUndoAllMostVisitedDeletions();
 
   Delegate* const delegate_;

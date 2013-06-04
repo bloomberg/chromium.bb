@@ -16,7 +16,6 @@
 #include "base/string16.h"
 #include "base/time.h"
 #include "base/timer.h"
-#include "chrome/browser/history/history_types.h"
 #include "chrome/browser/ui/omnibox/omnibox_edit_model.h"
 #include "chrome/browser/ui/search/instant_commit_type.h"
 #include "chrome/browser/ui/search/instant_overlay_model.h"
@@ -24,8 +23,6 @@
 #include "chrome/common/instant_types.h"
 #include "chrome/common/omnibox_focus_state.h"
 #include "chrome/common/search_types.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 #include "content/public/common/page_transition_types.h"
 #include "googleurl/src/gurl.h"
 #include "ui/base/window_open_disposition.h"
@@ -69,8 +66,7 @@ class WebContents;
 // only an InstantOverlay instance is kept.
 //
 // InstantController is owned by Browser via BrowserInstantController.
-class InstantController : public InstantPage::Delegate,
-                          public content::NotificationObserver {
+class InstantController : public InstantPage::Delegate {
  public:
   // For reporting fallbacks to local overlay.
   enum InstantFallbackReason {
@@ -232,6 +228,10 @@ class InstantController : public InstantPage::Delegate,
   // happen through the InstantController interface.
   InstantOverlayModel* model() { return &model_; }
 
+  // Gets the Most Visited items info from InstantService and forwards them to
+  // the Instant page renderer via the appropriate InstantPage subclass.
+  void UpdateMostVisitedItems();
+
  protected:
   // Accessors are made protected for testing purposes.
   virtual bool extended_enabled() const;
@@ -301,11 +301,6 @@ class InstantController : public InstantPage::Delegate,
 
   Profile* profile() const;
 
-  // Overridden from content::NotificationObserver:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
-
   // Overridden from InstantPage::Delegate:
   // TODO(shishir): We assume that the WebContent's current RenderViewHost is
   // the RenderViewHost being created which is not always true. Fix this.
@@ -339,13 +334,11 @@ class InstantController : public InstantPage::Delegate,
 
   // Invoked by the InstantLoader when the Instant page wants to delete a
   // Most Visited item.
-  virtual void DeleteMostVisitedItem(InstantRestrictedID most_visited_item_id)
-      OVERRIDE;
+  virtual void DeleteMostVisitedItem(const GURL& url) OVERRIDE;
 
   // Invoked by the InstantLoader when the Instant page wants to undo a
   // Most Visited deletion.
-  virtual void UndoMostVisitedDeletion(InstantRestrictedID most_visited_item_id)
-      OVERRIDE;
+  virtual void UndoMostVisitedDeletion(const GURL& url) OVERRIDE;
 
   // Invoked by the InstantLoader when the Instant page wants to undo all
   // Most Visited deletions.
@@ -404,22 +397,7 @@ class InstantController : public InstantPage::Delegate,
   // Send the omnibox popup bounds to the page.
   void SendPopupBoundsToPage();
 
-  // Begin listening to change notifications from TopSites and fire off an
-  // initial request for most visited items.
-  void StartListeningToMostVisitedChanges();
 
-  // Fire off an async request for most visited items to the TopNav code.
-  void RequestMostVisitedItems();
-
-  // Called when we get new most visited items from the TopNav code,
-  // registered as an async callback.  Parses them and sends them to the
-  // renderer via SendMostVisitedItems.
-  void OnMostVisitedItemsReceived(const history::MostVisitedURLList& data);
-
-  // Sends a collection of MostVisitedItems to the renderer process via
-  // the appropriate InstantPage subclass.
-  void SendMostVisitedItems(
-      const std::vector<InstantMostVisitedItemIDPair>& items);
 
   // If possible, tries to mutate |suggestion| to a valid suggestion. Returns
   // true if successful. (Note that |suggestion| may be modified even if this
@@ -545,12 +523,6 @@ class InstantController : public InstantPage::Delegate,
 
   // List of events and their timestamps, useful in debugging Instant behaviour.
   mutable std::list<std::pair<int64, std::string> > debug_events_;
-
-  // Used for Top Sites async retrieval.
-  base::WeakPtrFactory<InstantController> weak_ptr_factory_;
-
-  // Used to get notifications about Most Visted changes.
-  content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(InstantController);
 };

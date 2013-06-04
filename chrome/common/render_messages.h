@@ -371,10 +371,10 @@ IPC_MESSAGE_ROUTED1(ChromeViewMsg_SearchBoxMostVisitedItemsChanged,
                     std::vector<InstantMostVisitedItemIDPair> /* items */)
 
 IPC_MESSAGE_ROUTED1(ChromeViewHostMsg_SearchBoxDeleteMostVisitedItem,
-                    InstantRestrictedID /* most_visited_item_id */)
+                    GURL /* url */)
 
 IPC_MESSAGE_ROUTED1(ChromeViewHostMsg_SearchBoxUndoMostVisitedDeletion,
-                    InstantRestrictedID /* most_visited_item_id */)
+                    GURL /* url */)
 
 IPC_MESSAGE_ROUTED0(ChromeViewHostMsg_SearchBoxUndoAllMostVisitedDeletions)
 
