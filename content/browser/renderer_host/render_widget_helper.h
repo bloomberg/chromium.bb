@@ -163,7 +163,7 @@ class RenderWidgetHelper
   // browser, and it is the caller's repsonsibility to call
   // FreeTransportDIB().  In all cases, the caller is responsible for deleting
   // the resulting TransportDIB.
-  void AllocTransportDIB(size_t size,
+  void AllocTransportDIB(uint32 size,
                          bool cache_in_browser,
                          TransportDIB::Handle* result);
 

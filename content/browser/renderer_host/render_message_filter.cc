@@ -872,7 +872,7 @@ net::URLRequestContext* RenderMessageFilter::GetRequestContextForURL(
 
 #if defined(OS_POSIX) && !defined(TOOLKIT_GTK) && !defined(OS_ANDROID)
 void RenderMessageFilter::OnAllocTransportDIB(
-    size_t size, bool cache_in_browser, TransportDIB::Handle* handle) {
+    uint32 size, bool cache_in_browser, TransportDIB::Handle* handle) {
   render_widget_helper_->AllocTransportDIB(size, cache_in_browser, handle);
 }
 

@@ -355,8 +355,9 @@ TransportDIB* RenderWidgetHelper::MapTransportDIB(TransportDIB::Id dib_id) {
   return TransportDIB::Map(fd);
 }
 
-void RenderWidgetHelper::AllocTransportDIB(
-    size_t size, bool cache_in_browser, TransportDIB::Handle* result) {
+void RenderWidgetHelper::AllocTransportDIB(uint32 size,
+                                           bool cache_in_browser,
+                                           TransportDIB::Handle* result) {
   scoped_ptr<base::SharedMemory> shared_memory(new base::SharedMemory());
   if (!shared_memory->CreateAnonymous(size)) {
     result->fd = -1;

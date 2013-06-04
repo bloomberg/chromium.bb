@@ -2312,7 +2312,7 @@ IPC_SYNC_MESSAGE_CONTROL2_0(ViewHostMsg_PreCacheFontCharacters,
 // In all cases, the caller is responsible for deleting the resulting
 // TransportDIB.
 IPC_SYNC_MESSAGE_CONTROL2_1(ViewHostMsg_AllocTransportDIB,
-                            size_t, /* bytes requested */
+                            uint32_t, /* bytes requested */
                             bool, /* cache in the browser */
                             TransportDIB::Handle /* DIB */)
 
