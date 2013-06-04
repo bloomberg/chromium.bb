@@ -12,8 +12,6 @@ Works great with tools/git/for-all-touched-files.py.
 import optparse
 import os
 import sys
-import termios
-import tty
 
 
 def YesNo(prompt):
@@ -21,14 +19,20 @@ def YesNo(prompt):
   print prompt,
   sys.stdout.flush()
   # http://code.activestate.com/recipes/134892/
-  fd = sys.stdin.fileno()
-  old_settings = termios.tcgetattr(fd)
-  ch = 'n'
-  try:
-    tty.setraw(sys.stdin.fileno())
-    ch = sys.stdin.read(1)
-  finally:
-    termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
+  if sys.platform == 'win32':
+    import msvcrt
+    ch = msvcrt.getch()
+  else:
+    import termios
+    import tty
+    fd = sys.stdin.fileno()
+    old_settings = termios.tcgetattr(fd)
+    ch = 'n'
+    try:
+      tty.setraw(sys.stdin.fileno())
+      ch = sys.stdin.read(1)
+    finally:
+      termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
   print ch
   return ch in ('Y', 'y')
 
@@ -91,14 +95,16 @@ def FixFileWithConfirmFunction(filename, confirm_function):
   false to not use it.
   """
   fixfilename = filename + '.new'
-  infile = open(filename, 'r')
-  outfile = open(fixfilename, 'w')
+  infile = open(filename, 'rb')
+  outfile = open(fixfilename, 'wb')
   SortHeader(infile, outfile)
   infile.close()
   outfile.close()  # Important so the below diff gets the updated contents.
 
   try:
     if confirm_function(filename, fixfilename):
+      if sys.platform == 'win32':
+        os.unlink(filename)
       os.rename(fixfilename, filename)
   finally:
     try:
@@ -116,7 +122,9 @@ def DiffAndConfirm(filename, should_confirm):
   """
   def ConfirmFunction(filename, fixfilename):
     diff = os.system('diff -u %s %s' % (filename, fixfilename))
-    if diff >> 8 == 0:  # Check exit code.
+    if sys.platform != 'win32':
+      diff >>= 8
+    if diff == 0:  # Check exit code.
       print '%s: no change' % filename
       return False
 
