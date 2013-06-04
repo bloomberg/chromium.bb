@@ -74,67 +74,18 @@ MediaPlayer::~MediaPlayer()
     m_private.clear();
 }
 
-bool MediaPlayer::load(const KURL& url, const ContentType& contentType, const String& keySystem)
+void MediaPlayer::load(const KURL& url)
 {
-    DEFINE_STATIC_LOCAL(const String, codecs, (ASCIILiteral("codecs")));
-
-    String contentMIMEType = contentType.type().lower();
-    String contentTypeCodecs = contentType.parameter(codecs);
-    bool contentMIMETypeWasInferredFromExtension = false;
-
-    // If the MIME type is missing or is not meaningful, try to figure it out from the URL.
-    if (contentMIMEType.isEmpty() || contentMIMEType == "application/octet-stream" || contentMIMEType == "text/plain") {
-        if (url.protocolIsData())
-            contentMIMEType = mimeTypeFromDataURL(url.string());
-        else {
-            String lastPathComponent = url.lastPathComponent();
-            size_t pos = lastPathComponent.reverseFind('.');
-            if (pos != notFound) {
-                String extension = lastPathComponent.substring(pos + 1);
-                String mediaType = MIMETypeRegistry::getMediaMIMETypeForExtension(extension);
-                if (!mediaType.isEmpty()) {
-                    contentMIMEType = mediaType;
-                    contentMIMETypeWasInferredFromExtension = true;
-                }
-            }
-        }
-    }
-
-    bool canCreateMediaEngine = false;
-
-    // 4.8.10.3 MIME types - In the absence of a specification to the contrary, the MIME type "application/octet-stream"
-    // when used with parameters, e.g. "application/octet-stream;codecs=theora", is a type that the user agent knows
-    // it cannot render.
-    if (!contentMIMEType.isEmpty() && (contentMIMEType != "application/octet-stream" || contentTypeCodecs.isEmpty())) {
-        WebMimeRegistry::SupportsType supported = WebKit::Platform::current()->mimeRegistry()->supportsMediaMIMEType(contentMIMEType, contentTypeCodecs, keySystem.lower());
-        canCreateMediaEngine = (supported > WebMimeRegistry::IsNotSupported);
-    }
-
-    // If no MIME type is specified or the type was inferred from the file extension, always create the engine.
-    if (contentMIMEType.isEmpty() || contentMIMETypeWasInferredFromExtension)
-        canCreateMediaEngine = true;
-
-    // Don't delete and recreate the player if it's already present.
-    if (!canCreateMediaEngine) {
-        LOG(Media, "MediaPlayer::load - no media engine found for type \"%s\"", contentMIMEType.utf8().data());
-        m_private = nullptr;
-        m_mediaPlayerClient->mediaPlayerEngineUpdated();
-        m_mediaPlayerClient->mediaPlayerResourceNotSupported();
-    } else if (!m_private)
+    if (!m_private)
         initializeMediaPlayerPrivate();
-
-    if (m_private)
-        m_private->load(url.string());
-
-    return m_private;
+    m_private->load(url.string());
 }
 
-bool MediaPlayer::load(const KURL& url, PassRefPtr<WebKitMediaSource> mediaSource)
+void MediaPlayer::load(const KURL& url, PassRefPtr<WebKitMediaSource> mediaSource)
 {
     if (!m_private)
         initializeMediaPlayerPrivate();
     m_private->load(url.string(), mediaSource);
-    return true;
 }
 
 void MediaPlayer::initializeMediaPlayerPrivate()

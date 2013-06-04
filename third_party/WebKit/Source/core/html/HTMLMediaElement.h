@@ -362,7 +362,6 @@ private:
     virtual void mediaPlayerTimeChanged() OVERRIDE;
     virtual void mediaPlayerDurationChanged() OVERRIDE;
     virtual void mediaPlayerPlaybackStateChanged() OVERRIDE;
-    virtual void mediaPlayerResourceNotSupported() OVERRIDE;
     virtual void mediaPlayerRepaint() OVERRIDE;
     virtual void mediaPlayerSizeChanged() OVERRIDE;
     virtual void mediaPlayerEngineUpdated() OVERRIDE;

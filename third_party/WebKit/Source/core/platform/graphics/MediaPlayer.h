@@ -74,9 +74,6 @@ public:
     // the play/pause status changed
     virtual void mediaPlayerPlaybackStateChanged() = 0;
 
-    // The MediaPlayer could not discover an engine which supports the requested resource.
-    virtual void mediaPlayerResourceNotSupported() = 0;
-
 // Presentation-related methods
     // a new frame of video is available
     virtual void mediaPlayerRepaint() = 0;
@@ -127,8 +124,8 @@ public:
 
     void setSize(const IntSize& size);
 
-    bool load(const KURL&, const ContentType&, const String& keySystem);
-    bool load(const KURL&, PassRefPtr<WebKitMediaSource>);
+    void load(const KURL&);
+    void load(const KURL&, PassRefPtr<WebKitMediaSource>);
 
     void setVisible(bool);
 

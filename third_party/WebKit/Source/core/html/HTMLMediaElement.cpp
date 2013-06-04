@@ -71,6 +71,7 @@
 #include "core/platform/Language.h"
 #include "core/platform/Logging.h"
 #include "core/platform/MIMETypeFromURL.h"
+#include "core/platform/MIMETypeRegistry.h"
 #include "core/platform/NotImplemented.h"
 #include "core/platform/graphics/InbandTextTrackPrivate.h"
 #include "core/platform/graphics/MediaPlayer.h"
@@ -189,6 +190,44 @@ public:
 private:
     HTMLMediaElement* m_mediaElement;
 };
+
+static bool canLoadURL(const KURL& url, const ContentType& contentType, const String& keySystem)
+{
+    DEFINE_STATIC_LOCAL(const String, codecs, (ASCIILiteral("codecs")));
+
+    String contentMIMEType = contentType.type().lower();
+    String contentTypeCodecs = contentType.parameter(codecs);
+
+    // If the MIME type is missing or is not meaningful, try to figure it out from the URL.
+    if (contentMIMEType.isEmpty() || contentMIMEType == "application/octet-stream" || contentMIMEType == "text/plain") {
+        if (url.protocolIsData())
+            contentMIMEType = mimeTypeFromDataURL(url.string());
+        else {
+            String lastPathComponent = url.lastPathComponent();
+            size_t pos = lastPathComponent.reverseFind('.');
+            if (pos != notFound) {
+                String extension = lastPathComponent.substring(pos + 1);
+                String mediaType = MIMETypeRegistry::getMediaMIMETypeForExtension(extension);
+                if (!mediaType.isEmpty())
+                    return true;
+            }
+        }
+    }
+
+    // If no MIME type is specified, always attempt to load.
+    if (contentMIMEType.isEmpty())
+        return true;
+
+    // 4.8.10.3 MIME types - In the absence of a specification to the contrary, the MIME type "application/octet-stream"
+    // when used with parameters, e.g. "application/octet-stream;codecs=theora", is a type that the user agent knows
+    // it cannot render.
+    if (contentMIMEType != "application/octet-stream" || contentTypeCodecs.isEmpty()) {
+        WebMimeRegistry::SupportsType supported = WebKit::Platform::current()->mimeRegistry()->supportsMediaMIMEType(contentMIMEType, contentTypeCodecs, keySystem.lower());
+        return supported > WebMimeRegistry::IsNotSupported;
+    }
+
+    return false;
+}
 
 WebMimeRegistry::SupportsType HTMLMediaElement::supportsType(const ContentType& contentType, const String& keySystem)
 {
@@ -862,12 +901,12 @@ void HTMLMediaElement::loadResource(const KURL& initialURL, ContentType& content
     if (url.protocolIs(mediaSourceBlobProtocol))
         m_mediaSource = MediaSourceRegistry::registry().lookupMediaSource(url.string());
 
-    if (m_mediaSource) {
-        if (!m_player->load(url, m_mediaSource))
-            mediaLoadingFailed(MediaPlayer::FormatError);
-    } else if (!m_player->load(url, contentType, keySystem)) {
+    if (m_mediaSource)
+        m_player->load(url, m_mediaSource);
+    else if (canLoadURL(url, contentType, keySystem))
+        m_player->load(url);
+    else
         mediaLoadingFailed(MediaPlayer::FormatError);
-    }
 
     // If there is no poster to display, allow the media engine to render video frames as soon as
     // they are available.
@@ -3122,14 +3161,6 @@ void HTMLMediaElement::mediaPlayerPlaybackStateChanged()
         pauseInternal();
     else
         playInternal();
-}
-
-void HTMLMediaElement::mediaPlayerResourceNotSupported()
-{
-    LOG(Media, "HTMLMediaElement::mediaPlayerResourceNotSupported");
-
-    // The MediaPlayer came across content which no installed engine supports.
-    mediaLoadingFailed(MediaPlayer::FormatError);
 }
 
 // MediaPlayerPresentation methods
