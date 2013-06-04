@@ -1594,6 +1594,7 @@ def main(argv=None):
     with open(options.compare, 'rb') as f:
       original = convert(json.load(f))
 
+    my_config = json.loads(json.dumps(my_config, cls=_JSONEncoder))
     for key in sorted(set(my_config.keys() + original.keys())):
       obj1, obj2 = original.get(key), my_config.get(key)
       if obj1 == obj2:
