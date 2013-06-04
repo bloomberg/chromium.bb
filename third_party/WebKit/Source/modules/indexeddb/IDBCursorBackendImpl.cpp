@@ -154,14 +154,6 @@ void IDBCursorBackendImpl::CursorIterationOperation::perform(IDBTransactionBacke
     m_callbacks->onSuccess(m_cursor->key(), m_cursor->primaryKey(), m_cursor->value());
 }
 
-void IDBCursorBackendImpl::deleteFunction(PassRefPtr<IDBCallbacks> prpCallbacks)
-{
-    IDB_TRACE("IDBCursorBackendImpl::delete");
-    ASSERT(m_transaction->mode() != IndexedDB::TransactionReadOnly);
-    RefPtr<IDBKeyRange> keyRange = IDBKeyRange::create(m_cursor->primaryKey());
-    m_database->deleteRange(m_transaction->id(), m_objectStoreId, keyRange.release(), prpCallbacks);
-}
-
 void IDBCursorBackendImpl::prefetchContinue(int numberToFetch, PassRefPtr<IDBCallbacks> prpCallbacks)
 {
     IDB_TRACE("IDBCursorBackendImpl::prefetchContinue");

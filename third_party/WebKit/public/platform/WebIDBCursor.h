@@ -47,7 +47,6 @@ public:
 
     virtual void advance(unsigned long, WebIDBCallbacks*) { WEBKIT_ASSERT_NOT_REACHED(); }
     virtual void continueFunction(const WebIDBKey&, WebIDBCallbacks*) { WEBKIT_ASSERT_NOT_REACHED(); }
-    virtual void deleteFunction(WebIDBCallbacks*) { WEBKIT_ASSERT_NOT_REACHED(); }
     virtual void prefetchContinue(int numberToFetch, WebIDBCallbacks*) { WEBKIT_ASSERT_NOT_REACHED(); }
     virtual void prefetchReset(int usedPrefetches, int unusedPrefetches) { WEBKIT_ASSERT_NOT_REACHED(); }
     virtual void postSuccessHandlerCallback() { } // Only used in frontend.

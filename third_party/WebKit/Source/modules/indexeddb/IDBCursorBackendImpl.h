@@ -55,7 +55,6 @@ public:
     // IDBCursorBackendInterface
     virtual void advance(unsigned long, PassRefPtr<IDBCallbacks>);
     virtual void continueFunction(PassRefPtr<IDBKey>, PassRefPtr<IDBCallbacks>);
-    virtual void deleteFunction(PassRefPtr<IDBCallbacks>);
     virtual void prefetchContinue(int numberToFetch, PassRefPtr<IDBCallbacks>);
     virtual void prefetchReset(int usedPrefetches, int unusedPrefetches);
     virtual void postSuccessHandlerCallback() { }
