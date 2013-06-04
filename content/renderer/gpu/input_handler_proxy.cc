@@ -29,7 +29,9 @@ InputHandlerProxy::InputHandlerProxy(cc::InputHandler* input_handler)
 #endif
       gesture_scroll_on_impl_thread_(false),
       gesture_pinch_on_impl_thread_(false),
-      fling_may_be_active_on_main_thread_(false) {
+      fling_may_be_active_on_main_thread_(false),
+      fling_overscrolled_horizontally_(false),
+      fling_overscrolled_vertically_(false) {
   input_handler_->BindToClient(this);
 }
 
@@ -222,6 +224,8 @@ InputHandlerProxy::HandleGestureFling(
           WebFloatPoint(gesture_event.data.flingStart.velocityX,
                         gesture_event.data.flingStart.velocityY),
           WebKit::WebSize()));
+      fling_overscrolled_horizontally_ = false;
+      fling_overscrolled_vertically_ = false;
       TRACE_EVENT_ASYNC_BEGIN0(
           "renderer",
           "InputHandlerProxy::HandleGestureFling::started",
@@ -291,6 +295,14 @@ void InputHandlerProxy::MainThreadHasStoppedFlinging() {
 void InputHandlerProxy::DidOverscroll(gfx::Vector2dF accumulated_overscroll,
                                       gfx::Vector2dF current_fling_velocity) {
   DCHECK(client_);
+  if (fling_curve_) {
+    static const int kFlingOverscrollThreshold = 1;
+    fling_overscrolled_horizontally_ |=
+        std::abs(accumulated_overscroll.x()) >= kFlingOverscrollThreshold;
+    fling_overscrolled_vertically_ |=
+        std::abs(accumulated_overscroll.y()) >= kFlingOverscrollThreshold;
+  }
+
   client_->DidOverscroll(accumulated_overscroll, current_fling_velocity);
 }
 
@@ -360,31 +372,38 @@ static gfx::Vector2dF ToClientScrollIncrement(const WebFloatSize& increment) {
 }
 
 void InputHandlerProxy::scrollBy(const WebFloatSize& increment) {
-  if (increment == WebFloatSize())
+  WebFloatSize clipped_increment;
+  if (!fling_overscrolled_horizontally_)
+    clipped_increment.width = increment.width;
+  if (!fling_overscrolled_vertically_)
+    clipped_increment.height = increment.height;
+
+  if (clipped_increment == WebFloatSize())
     return;
 
   TRACE_EVENT2("renderer",
                "InputHandlerProxy::scrollBy",
                "x",
-               increment.width,
+               clipped_increment.width,
                "y",
-               increment.height);
+               clipped_increment.height);
 
   bool did_scroll = false;
 
   switch (fling_parameters_.sourceDevice) {
     case WebGestureEvent::Touchpad:
-      did_scroll = TouchpadFlingScroll(increment);
+      did_scroll = TouchpadFlingScroll(clipped_increment);
       break;
     case WebGestureEvent::Touchscreen:
+      clipped_increment = ToClientScrollIncrement(clipped_increment);
       did_scroll = input_handler_->ScrollBy(fling_parameters_.point,
-                                            ToClientScrollIncrement(increment));
+                                            clipped_increment);
       break;
   }
 
   if (did_scroll) {
-    fling_parameters_.cumulativeScroll.width += increment.width;
-    fling_parameters_.cumulativeScroll.height += increment.height;
+    fling_parameters_.cumulativeScroll.width += clipped_increment.width;
+    fling_parameters_.cumulativeScroll.height += clipped_increment.height;
   }
 }
 
