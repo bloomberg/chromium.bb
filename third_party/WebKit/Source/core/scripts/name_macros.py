@@ -79,6 +79,9 @@ class Writer(in_generator.Writer):
         self._entries_by_conditional = {}
         self._unconditional_entries = []
         self._sort_entries_by_conditional()
+        self._outputs = {(self.class_name + "Headers.h"): self.generate_headers_header,
+                         (self.class_name + "Interfaces.h"): self.generate_interfaces_header,
+                        }
 
     def _sort_entries_by_conditional(self):
         unconditional_names = set()

@@ -31,6 +31,7 @@ import re
 import sys
 
 import in_generator
+import template_expander
 
 
 class StyleBuilderWriter(in_generator.Writer):
@@ -59,6 +60,8 @@ class StyleBuilderWriter(in_generator.Writer):
 
     def __init__(self, in_files, enabled_conditions):
         super(StyleBuilderWriter, self).__init__(in_files, enabled_conditions)
+        self._outputs = {(self.class_name + ".cpp"): self.generate_style_builder}
+
         self._properties = self.in_file.name_dictionaries
 
         def set_if_none(property, key, value):
@@ -87,7 +90,8 @@ class StyleBuilderWriter(in_generator.Writer):
     def _upper_first(s):
         return s[0].upper() + s[1:]
 
-    def generate_implementation(self):
+    @template_expander.use_jinja("StyleBuilder.cpp.tmpl")
+    def generate_style_builder(self):
         return {
             "properties": self._properties,
         }

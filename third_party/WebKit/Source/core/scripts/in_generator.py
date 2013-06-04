@@ -32,7 +32,6 @@ import shutil
 import optparse
 
 from in_file import InFile
-import template_expander
 
 
 class Writer(object):
@@ -47,26 +46,7 @@ class Writer(object):
             in_files = [in_files]
         self.in_file = InFile.load_from_files(in_files, self.defaults, self.valid_values, self.default_parameters)
         self._enabled_conditions = enabled_conditions
-
-    # Subclasses should override.
-    def generate_header(self):
-        return ''
-
-    # Subclasses should override.
-    def generate_interfaces_header(self):
-        return ''
-
-    # Subclasses should override.
-    def generate_headers_header(self):
-        return ''
-
-    # Subclasses should override.
-    def generate_implementation(self):
-        return ''
-
-    # Subclasses should override.
-    def generate_idl(self):
-        return ''
+        self._outputs = {}  # file_name -> generator
 
     def wrap_with_condition(self, string, condition):
         if not condition:
@@ -88,29 +68,13 @@ class Writer(object):
         with open(file_path, "w") as file_to_write:
             file_to_write.write(contents)
 
-    def _write_file(self, output_dir, generator, file_name):
-        contents = generator()
-        if type(contents) is dict:
-            contents = template_expander.apply_template(file_name + ".tmpl", contents)
-        if not contents:
-            return
+    def _write_file(self, output_dir, contents, file_name):
         path = os.path.join(output_dir, file_name)
         self._forcibly_create_text_file_at_path_with_contents(path, contents)
 
-    def write_header(self, output_dir):
-        self._write_file(output_dir, self.generate_header, self.class_name + '.h')
-
-    def write_headers_header(self, output_dir):
-        self._write_file(output_dir, self.generate_headers_header, self.class_name + 'Headers.h')
-
-    def write_interfaces_header(self, output_dir):
-        self._write_file(output_dir, self.generate_interfaces_header, self.class_name + 'Interfaces.h')
-
-    def write_implmentation(self, output_dir):
-        self._write_file(output_dir, self.generate_implementation, self.class_name + '.cpp')
-
-    def write_idl(self, output_dir):
-        self._write_file(output_dir, self.generate_idl, self.class_name + '.idl')
+    def write_files(self, output_dir):
+        for file_name, generator in self._outputs.items():
+            self._write_file(output_dir, generator(), file_name)
 
 
 class Maker(object):
@@ -152,8 +116,4 @@ class Maker(object):
         enabled_conditions = self._enabled_conditions_from_defines(options.defines)
 
         writer = self._writer_class(args, enabled_conditions)
-        writer.write_header(options.output_dir)
-        writer.write_headers_header(options.output_dir)
-        writer.write_interfaces_header(options.output_dir)
-        writer.write_implmentation(options.output_dir)
-        writer.write_idl(options.output_dir)
+        writer.write_files(options.output_dir)

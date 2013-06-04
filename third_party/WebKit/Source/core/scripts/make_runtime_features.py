@@ -32,6 +32,7 @@ import sys
 
 from in_file import InFile
 import in_generator
+import template_expander
 
 
 class RuntimeFeatureWriter(in_generator.Writer):
@@ -50,6 +51,10 @@ class RuntimeFeatureWriter(in_generator.Writer):
 
     def __init__(self, in_file_path, enabled_conditions):
         super(RuntimeFeatureWriter, self).__init__(in_file_path, enabled_conditions)
+        self._outputs = {(self.class_name + ".h"): self.generate_header,
+                         (self.class_name + ".cpp"): self.generate_implementation,
+                        }
+
         self._features = self.in_file.name_dictionaries
         # Make sure the resulting dictionaries have all the keys we expect.
         for feature in self._features:
@@ -74,12 +79,14 @@ class RuntimeFeatureWriter(in_generator.Writer):
         # which is how we're referring to them in this generator.
         return self.valid_values['status']
 
+    @template_expander.use_jinja(class_name + ".h.tmpl")
     def generate_header(self):
         return {
             'features': self._features,
             'feature_sets': self._feature_sets(),
         }
 
+    @template_expander.use_jinja(class_name + ".cpp.tmpl")
     def generate_implementation(self):
         return {
             'features': self._features,

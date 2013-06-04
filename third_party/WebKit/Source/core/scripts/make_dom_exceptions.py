@@ -122,6 +122,11 @@ class ExceptionCodeDescriptionWriter(name_macros.Writer):
         'namespace': '',
     }
 
+    def __init__(self, in_file_path, enabled_conditions):
+        super(ExceptionCodeDescriptionWriter, self).__init__(in_file_path, enabled_conditions)
+        self._outputs[(self.class_name + ".cpp")] = self.generate_implementation
+        self._outputs[(self.class_name + ".h")] = self.generate_header
+
     def _exceptions(self):
         return self.in_file.name_dictionaries
 

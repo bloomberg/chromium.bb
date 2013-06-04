@@ -65,6 +65,10 @@ class EventFactoryWriter(name_macros.Writer):
         'namespace': '',
     }
 
+    def __init__(self, in_file_path, enabled_conditions):
+        super(EventFactoryWriter, self).__init__(in_file_path, enabled_conditions)
+        self._outputs[(self.class_name + ".cpp")] = self.generate_implementation
+
     def _events(self):
         return self.in_file.name_dictionaries
 

@@ -171,6 +171,9 @@ class CSSPropertiesWriter(in_generator.Writer):
 
     def __init__(self, file_paths, enabled_conditions):
         in_generator.Writer.__init__(self, file_paths, enabled_conditions)
+        self._outputs = {(self.class_name + ".h"): self.generate_header,
+                         (self.class_name + ".cpp"): self.generate_implementation,
+                        }
 
         all_properties = self.in_file.name_dictionaries
         self._aliases = filter(lambda property: property['alias_for'], all_properties)

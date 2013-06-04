@@ -41,3 +41,13 @@ def apply_template(path_to_template, params):
     jinja_env = jinja2.Environment(loader=jinja2.FileSystemLoader([dirname, path_to_templates]))
     template = jinja_env.get_template(basename)
     return template.render(params)
+
+
+def use_jinja(template_file_name):
+    def real_decorator(generator):
+        def generator_internal(*args, **kwargs):
+            parameters = generator(*args, **kwargs)
+            return apply_template(template_file_name, parameters)
+        generator_internal.func_name = generator.func_name
+        return generator_internal
+    return real_decorator
