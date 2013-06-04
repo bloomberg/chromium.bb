@@ -72,7 +72,7 @@ SpellcheckService::SpellcheckService(Profile* profile)
   custom_dictionary_->AddObserver(this);
   custom_dictionary_->Load();
 
-  registrar_.Add(weak_ptr_factory_.GetWeakPtr(),
+  registrar_.Add(this,
                  content::NOTIFICATION_RENDERER_PROCESS_CREATED,
                  content::NotificationService::AllSources());
 }

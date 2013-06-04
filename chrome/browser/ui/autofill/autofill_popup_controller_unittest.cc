@@ -388,7 +388,7 @@ TEST_F(AutofillPopupControllerUnitTest, GetOrCreate) {
   EXPECT_CALL(*test_controller, Hide());
 
   gfx::RectF bounds(0.f, 0.f, 1.f, 2.f);
-  AutofillPopupControllerImpl* controller3 =
+  base::WeakPtr<AutofillPopupControllerImpl> controller3 =
       AutofillPopupControllerImpl::GetOrCreate(
           test_controller->GetWeakPtr(),
           delegate.GetWeakPtr(),
@@ -396,7 +396,8 @@ TEST_F(AutofillPopupControllerUnitTest, GetOrCreate) {
           bounds);
   EXPECT_EQ(
       bounds,
-      static_cast<AutofillPopupController*>(controller3)->element_bounds());
+      static_cast<AutofillPopupController*>(controller3.get())->
+          element_bounds());
   controller3->Hide();
 
   // Hide the test_controller to delete it.

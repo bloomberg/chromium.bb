@@ -251,7 +251,8 @@ bool ContextGroup::HaveContexts() {
 }
 
 void ContextGroup::Destroy(GLES2Decoder* decoder, bool have_context) {
-  decoders_.erase(std::remove(decoders_.begin(), decoders_.end(), decoder),
+  decoders_.erase(std::remove(decoders_.begin(), decoders_.end(),
+                              decoder->AsWeakPtr()),
                   decoders_.end());
   // If we still have contexts do nothing.
   if (HaveContexts()) {

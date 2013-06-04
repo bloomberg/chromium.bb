@@ -282,18 +282,19 @@ void DestroyCertificates(CERTCertificate** certs, size_t len) {
 
 // Helper functions to make it possible to log events from within the
 // SSLClientSocketNSS::Core.
-void AddLogEvent(BoundNetLog* net_log, NetLog::EventType event_type) {
-  if (!net_log)
+void AddLogEvent(const base::WeakPtr<BoundNetLog>& net_log,
+                 NetLog::EventType event_type) {
+  if (!net_log.get())
     return;
   net_log->AddEvent(event_type);
 }
 
 // Helper function to make it possible to log events from within the
 // SSLClientSocketNSS::Core.
-void AddLogEventWithCallback(BoundNetLog* net_log,
+void AddLogEventWithCallback(const base::WeakPtr<BoundNetLog>& net_log,
                              NetLog::EventType event_type,
                              const NetLog::ParametersCallback& callback) {
-  if (!net_log)
+  if (!net_log.get())
     return;
   net_log->AddEvent(event_type, callback);
 }
@@ -308,9 +309,10 @@ void AddLogEventWithCallback(BoundNetLog* net_log,
 // Instead, provide a signature that accepts an IOBuffer*, so that a reference
 // to the owning IOBuffer can be bound to the Callback. This ensures that the
 // IOBuffer will stay alive long enough to cross threads if needed.
-void LogByteTransferEvent(BoundNetLog* net_log, NetLog::EventType event_type,
-                          int len, IOBuffer* buffer) {
-  if (!net_log)
+void LogByteTransferEvent(
+    const base::WeakPtr<BoundNetLog>& net_log, NetLog::EventType event_type,
+    int len, IOBuffer* buffer) {
+  if (!net_log.get())
     return;
   net_log->AddByteTransferEvent(event_type, len, buffer->data());
 }

@@ -301,8 +301,7 @@ void SpellcheckHunspellDictionary::DownloadDictionary(GURL url) {
   download_status_ = DOWNLOAD_IN_PROGRESS;
   FOR_EACH_OBSERVER(Observer, observers_, OnHunspellDictionaryDownloadBegin());
 
-  fetcher_.reset(net::URLFetcher::Create(url, net::URLFetcher::GET,
-                                         weak_ptr_factory_.GetWeakPtr()));
+  fetcher_.reset(net::URLFetcher::Create(url, net::URLFetcher::GET, this));
   fetcher_->SetRequestContext(request_context_getter_);
   fetcher_->SetLoadFlags(
       net::LOAD_DO_NOT_SEND_COOKIES | net::LOAD_DO_NOT_SAVE_COOKIES);

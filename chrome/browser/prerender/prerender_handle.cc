@@ -73,7 +73,7 @@ PrerenderHandle::PrerenderHandle(
 
 void PrerenderHandle::AdoptPrerenderDataFrom(PrerenderHandle* other_handle) {
   DCHECK_EQ(static_cast<PrerenderManager::PrerenderData*>(NULL),
-            prerender_data_);
+            prerender_data_.get());
   if (other_handle->prerender_data_.get() &&
       other_handle->prerender_data_->contents()) {
     other_handle->prerender_data_->contents()->RemoveObserver(other_handle);

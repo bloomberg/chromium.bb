@@ -321,7 +321,8 @@ TEST_F(ProfileSyncServiceTest, JsControllerHandlersBasic) {
   EXPECT_TRUE(harness_.service->sync_initialized());
   EXPECT_TRUE(harness_.service->GetBackendForTest() != NULL);
 
-  syncer::JsController* js_controller = harness_.service->GetJsController();
+  base::WeakPtr<syncer::JsController> js_controller =
+      harness_.service->GetJsController();
   StrictMock<syncer::MockJsEventHandler> event_handler;
   js_controller->AddJsEventHandler(&event_handler);
   js_controller->RemoveJsEventHandler(&event_handler);
@@ -338,7 +339,8 @@ TEST_F(ProfileSyncServiceTest,
   EXPECT_EQ(NULL, harness_.service->GetBackendForTest());
   EXPECT_FALSE(harness_.service->sync_initialized());
 
-  syncer::JsController* js_controller = harness_.service->GetJsController();
+  base::WeakPtr<syncer::JsController> js_controller =
+      harness_.service->GetJsController();
   js_controller->AddJsEventHandler(&event_handler);
   // Since we're doing synchronous initialization, backend should be
   // initialized by this call.
@@ -359,7 +361,8 @@ TEST_F(ProfileSyncServiceTest, JsControllerProcessJsMessageBasic) {
               HandleJsReply("getNotificationState", HasArgs(args1)));
 
   {
-    syncer::JsController* js_controller = harness_.service->GetJsController();
+    base::WeakPtr<syncer::JsController> js_controller =
+        harness_.service->GetJsController();
     js_controller->ProcessJsMessage("getNotificationState", args1,
                                     reply_handler.AsWeakHandle());
   }
@@ -382,7 +385,8 @@ TEST_F(ProfileSyncServiceTest,
               HandleJsReply("getNotificationState", HasArgs(args1)));
 
   {
-    syncer::JsController* js_controller = harness_.service->GetJsController();
+    base::WeakPtr<syncer::JsController> js_controller =
+        harness_.service->GetJsController();
     js_controller->ProcessJsMessage("getNotificationState",
                                     args1, reply_handler.AsWeakHandle());
   }

@@ -253,8 +253,7 @@ int QuicStreamFactory::Create(const HostPortProxyPair& host_port_proxy_pair,
     return ERR_IO_PENDING;
   }
 
-  Job* job = new Job(weak_factory_.GetWeakPtr(), host_resolver_,
-                     host_port_proxy_pair, net_log);
+  Job* job = new Job(this, host_resolver_, host_port_proxy_pair, net_log);
   int rv = job->Run(base::Bind(&QuicStreamFactory::OnJobComplete,
                                base::Unretained(this), job));
 

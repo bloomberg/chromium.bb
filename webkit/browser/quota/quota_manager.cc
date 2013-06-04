@@ -705,7 +705,7 @@ class QuotaManager::GetModifiedSinceHelper {
     return database->GetOriginsModifiedSince(type, &origins_, modified_since);
   }
 
-  void DidGetModifiedSince(QuotaManager* manager,
+  void DidGetModifiedSince(const base::WeakPtr<QuotaManager>& manager,
                            const GetOriginsCallback& callback,
                            StorageType type,
                            bool success) {
@@ -731,7 +731,7 @@ class QuotaManager::DumpQuotaTableHelper {
                                      base::Unretained(this))));
   }
 
-  void DidDumpQuotaTable(QuotaManager* manager,
+  void DidDumpQuotaTable(const base::WeakPtr<QuotaManager>& manager,
                          const DumpQuotaTableCallback& callback,
                          bool success) {
     if (!manager) {
@@ -763,7 +763,7 @@ class QuotaManager::DumpOriginInfoTableHelper {
                                      base::Unretained(this))));
   }
 
-  void DidDumpOriginInfoTable(QuotaManager* manager,
+  void DidDumpOriginInfoTable(const base::WeakPtr<QuotaManager>& manager,
                               const DumpOriginInfoTableCallback& callback,
                               bool success) {
     if (!manager) {

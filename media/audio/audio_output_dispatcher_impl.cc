@@ -29,7 +29,7 @@ AudioOutputDispatcherImpl::AudioOutputDispatcherImpl(
       weak_this_(this),
       close_timer_(FROM_HERE,
                    close_delay,
-                   weak_this_.GetWeakPtr(),
+                   this,
                    &AudioOutputDispatcherImpl::ClosePendingStreams) {
 }
 

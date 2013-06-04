@@ -389,7 +389,7 @@ TEST(WeakPtrTest, MainThreadRefOutlivesBackgroundThreadRef) {
 
   Arrow* arrow_copy;
   background.CreateArrowFromArrow(&arrow_copy, &arrow);
-  EXPECT_EQ(arrow_copy->target, &target);
+  EXPECT_EQ(arrow_copy->target.get(), &target);
   background.DeleteArrow(arrow_copy);
 }
 
@@ -408,7 +408,7 @@ TEST(WeakPtrTest, BackgroundThreadRefOutlivesMainThreadRef) {
     arrow.target = target.AsWeakPtr();
     background.CreateArrowFromArrow(&arrow_copy, &arrow);
   }
-  EXPECT_EQ(arrow_copy->target, &target);
+  EXPECT_EQ(arrow_copy->target.get(), &target);
   background.DeleteArrow(arrow_copy);
 }
 

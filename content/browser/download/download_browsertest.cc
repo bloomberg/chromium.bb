@@ -120,7 +120,7 @@ class DownloadFileWithDelay : public DownloadFileImpl {
 
  private:
   static void RenameCallbackWrapper(
-      DownloadFileWithDelayFactory* factory,
+      const base::WeakPtr<DownloadFileWithDelayFactory>& factory,
       const RenameCompletionCallback& original_callback,
       DownloadInterruptReason reason,
       const base::FilePath& path);
@@ -204,11 +204,13 @@ void DownloadFileWithDelay::RenameAndAnnotate(
 
 // static
 void DownloadFileWithDelay::RenameCallbackWrapper(
-    DownloadFileWithDelayFactory* factory,
+    const base::WeakPtr<DownloadFileWithDelayFactory>& factory,
     const RenameCompletionCallback& original_callback,
     DownloadInterruptReason reason,
     const base::FilePath& path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  if (!factory.get())
+    return;
   factory->AddRenameCallback(base::Bind(original_callback, reason, path));
 }
 
