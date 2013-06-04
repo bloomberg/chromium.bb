@@ -34,6 +34,8 @@
 #include "core/dom/NodeRenderingContext.h"
 #include "core/html/HTMLCollection.h"
 #include "core/html/HTMLFrameElement.h"
+#include "core/loader/FrameLoaderClient.h"
+#include "core/page/Frame.h"
 #include "core/platform/Length.h"
 #include "core/rendering/RenderFrameSet.h"
 
@@ -195,6 +197,15 @@ void HTMLFrameSetElement::defaultEventHandler(Event* evt)
         }
     }
     HTMLElement::defaultEventHandler(evt);
+}
+
+Node::InsertionNotificationRequest HTMLFrameSetElement::insertedInto(ContainerNode* insertionPoint)
+{
+    if (insertionPoint->inDocument() && document()->frame()) {
+        // A document using <frameset> likely won't literally have a body, but as far as the client is concerned, the frameset is effectively the body.
+        document()->frame()->loader()->client()->dispatchWillInsertBody();
+    }
+    return HTMLElement::insertedInto(insertionPoint);
 }
 
 void HTMLFrameSetElement::willRecalcStyle(StyleChange)

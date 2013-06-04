@@ -76,9 +76,10 @@ private:
     virtual void attach();
     virtual bool rendererIsNeeded(const NodeRenderingContext&);
     virtual RenderObject* createRenderer(RenderArena*, RenderStyle*);
-    
+
     virtual void defaultEventHandler(Event*);
 
+    virtual InsertionNotificationRequest insertedInto(ContainerNode*) OVERRIDE;
     virtual void willRecalcStyle(StyleChange) OVERRIDE;
 
     OwnArrayPtr<Length> m_rowLengths;
@@ -86,7 +87,7 @@ private:
 
     int m_totalRows;
     int m_totalCols;
-    
+
     int m_border;
     bool m_borderSet;
     
