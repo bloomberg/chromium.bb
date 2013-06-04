@@ -152,6 +152,9 @@ ScrollBar.prototype.onMouseMove_ = function(event) {
 
   var buttonPosition = this.buttonPressedPosition_ +
       (event.screenY - this.buttonPressedEvent_.screenY);
+  // Ensures the scrollbar is in the view.
+  buttonPosition =
+      Math.max(0, Math.min(buttonPosition, clientSize - buttonSize));
   var scrollPosition = totalSize * (buttonPosition / clientSize);
 
   this.scrollTop_ = scrollPosition;
