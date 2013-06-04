@@ -2580,9 +2580,9 @@
         ['OS=="linux"', {
           'dependencies': [
             '../build/linux/system.gyp:udev',
-            '../device/device.gyp:mtp_file_entry_proto',
-            '../device/device.gyp:mtp_storage_info_proto',
-            '../device/device.gyp:device_media_transfer_protocol',
+            '../device/media_transfer_protocol/media_transfer_protocol.gyp:mtp_file_entry_proto',
+            '../device/media_transfer_protocol/media_transfer_protocol.gyp:mtp_storage_info_proto',
+            '../device/media_transfer_protocol/media_transfer_protocol.gyp:device_media_transfer_protocol',
           ],
         }],
         ['OS=="linux" and chromeos==0', {
