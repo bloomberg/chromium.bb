@@ -1,150 +1,166 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
 <head>
 <script src="../../js/resources/js-test-pre.js"></script>
+<script src="../../dom/shadow/resources/shadow-dom.js"></script>
 <script>
-if (window.testRunner)
-    testRunner.dumpAsText();
-
 shouldBeDefined("window.internals");
 
-function dumpComputedStyle(node)
+var borderColor;
+
+function borderColorShouldBe(node, color)
 {
-    debug(node.id + ": " + document.defaultView.getComputedStyle(node, null).getPropertyValue('border-color'));
+    borderColor = document.defaultView.getComputedStyle(node, null).getPropertyValue('border-color');
+    shouldBeEqualToString('borderColor', color);
+}
+
+function cleanUp()
+{
+    document.getElementById('sandbox').innerHTML = '';
 }
 
 function testBasic()
 {
     debug('test a scoped style in document is applied to a node in shadow dom subtree when apply-author-styles is true.');
-    var div = document.createElement('div');
-    div.innerHTML = '<div><style scoped>div { border: 1px solid red; }</style><div id="host"></div></div>';
-    document.body.appendChild(div);
-
-    var shadow = document.getElementById("host").webkitCreateShadowRoot();
-    shadow.innerHTML = '<div id="target">target</div>';
-    document.body.appendChild(div);
+    document.getElementById('sandbox').appendChild(
+        createDOM('div', {},
+            createDOM('style', {'scoped': 'scoped'},
+                document.createTextNode('div { border: 1px solid red; }')),
+            createDOM('div', {'id': 'host'},
+                createShadowRoot(
+                    createDOM('div', {'id': 'target'})))));
 
     // before
-    shadow.applyAuthorStyles = false;
-    dumpComputedStyle(shadow.getElementById("target"));
+    getNodeInShadowTreeStack('host/').applyAuthorStyles = false;
+    borderColorShouldBe(getNodeInShadowTreeStack('host/target'), 'rgb(0, 0, 0)');
 
     // after
-    shadow.applyAuthorStyles = true;
-    dumpComputedStyle(shadow.getElementById("target"));
+    getNodeInShadowTreeStack('host/').applyAuthorStyles = true;
+    borderColorShouldBe(getNodeInShadowTreeStack('host/target'), 'rgb(255, 0, 0)');
 
-    document.body.removeChild(div);
+    cleanUp();
 }
 
 function testEnclosingShadow()
 {
     debug('test a style in an enclosing shadow dom tree is applied to a node in shadow subtree when apply-author-styles is true.');
-
-    var div = document.createElement('div');
-    document.body.appendChild(div);
-
-    var outerShadow = div.webkitCreateShadowRoot();
-    outerShadow.innerHTML = '<style>div { border: 1px solid red; }</style><div id="outer">outer</div>';
-    var shadow = outerShadow.getElementById("outer").webkitCreateShadowRoot();
-    shadow.innerHTML = '<div id="target">target</div>';
-
+    document.getElementById('sandbox').appendChild(
+        createDOM('div', {'id': 'host'},
+            createShadowRoot(
+                createDOM('style', {},
+                    document.createTextNode('div { border: 1px solid red; }')),
+                createDOM('div', {'id': 'enclosed'},
+                    createShadowRoot(
+                        createDOM('div', {'id': 'target'}))))));
+                
     // before
-    shadow.applyAuthorStyles = false;
-    dumpComputedStyle(shadow.getElementById("target"));
+    getNodeInShadowTreeStack('host/enclosed/').applyAuthorStyles = false;
+    borderColorShouldBe(getNodeInShadowTreeStack('host/enclosed/target'), 'rgb(0, 0, 0)');
 
     // after
-    shadow.applyAuthorStyles = true;
-    dumpComputedStyle(shadow.getElementById("target"));
-    document.body.removeChild(div);   
+    getNodeInShadowTreeStack('host/enclosed/').applyAuthorStyles = true;
+    borderColorShouldBe(getNodeInShadowTreeStack('host/enclosed/target'), 'rgb(255, 0, 0)');
+
+    cleanUp();
 }
 
 function testEnclosingShadowWithScoped()
 {
     debug('test a scoped style in an enclosing shadow dom tree is applied to a node in shadow subtree when apply-author-styles is true and the node is in the scope.');
+    document.getElementById('sandbox').appendChild(
+        createDOM('div', {'id': 'host'},
+            createShadowRoot(
+                createDOM('div', {},
+                    createDOM('style', {'scoped': 'scoped'},
+                        document.createTextNode('div { border: 1px solid red; }')),
+                    createDOM('div', {'id': 'outerInScope'},
+                        createShadowRoot(
+                            createDOM('div', {'id': 'targetInScope'})))),
+                createDOM('div', {'id': 'outerOutOfScope'},
+                        createShadowRoot(
+                            createDOM('div', {'id': 'targetOutOfScope'}))))));
 
-    var div = document.createElement('div');
-    document.body.appendChild(div);
-
-    var outerShadow = div.webkitCreateShadowRoot();
-    outerShadow.innerHTML = '<div><style scoped>div { border: 1px solid red; }</style><div id="outerInScope">outerInScope</div></div><div id="outerOutOfScope">outerOutOfScope</div>';
-
-    var shadow1 = outerShadow.getElementById("outerInScope").webkitCreateShadowRoot();
-    shadow1.innerHTML = '<div id="targetInScope">targetInScope</div>';
-    var shadow2 = outerShadow.getElementById("outerOutOfScope").webkitCreateShadowRoot();
-    shadow2.innerHTML = '<div id="targetOutOfScope">targetOutOfScope</div>';
 
     // before
-    shadow1.applyAuthorStyles = false;
-    shadow2.applyAuthorStyles = false;
-    dumpComputedStyle(shadow1.getElementById("targetInScope"));
-    dumpComputedStyle(shadow2.getElementById("targetOutOfScope"));
+    getNodeInShadowTreeStack('host/outerInScope/').applyAuthorStyles = false;
+    getNodeInShadowTreeStack('host/outerOutOfScope/').applyAuthorStyles = false;
+    
+    borderColorShouldBe(getNodeInShadowTreeStack('host/outerInScope/targetInScope'), 'rgb(0, 0, 0)');
+    borderColorShouldBe(getNodeInShadowTreeStack('host/outerOutOfScope/targetOutOfScope'), 'rgb(0, 0, 0)');
 
     // after
-    shadow1.applyAuthorStyles = true;
-    shadow2.applyAuthorStyles = true;
-    dumpComputedStyle(shadow1.getElementById("targetInScope"));
-    dumpComputedStyle(shadow2.getElementById("targetOutOfScope"));
+    getNodeInShadowTreeStack('host/outerInScope/').applyAuthorStyles = true;
+    getNodeInShadowTreeStack('host/outerOutOfScope/').applyAuthorStyles = true;
+    borderColorShouldBe(getNodeInShadowTreeStack('host/outerInScope/targetInScope'), 'rgb(255, 0, 0)');
+    borderColorShouldBe(getNodeInShadowTreeStack('host/outerOutOfScope/targetOutOfScope'), 'rgb(0, 0, 0)');
 
-    document.body.removeChild(div);   
+    cleanUp();
 }
 
 function testNestedShadow()
 {
-    debug('test a style in a shadow subtree is applied to a node in its descendant shadow subtree when all apply-author-styles in shadow subtrees between the shadow subtree and the descendant are true.');
+    debug('test styles declared in enclosing shadow trees should be applied to an enclosed shadow tree whose apply-atur-styles is true.');
+    document.getElementById('sandbox').appendChild(
+        createDOM('div',
+            createDOM('style', {'scoped': 'scoped'},
+                document.createTextNode('div { border: 1px solid red; }')),
+            createDOM('div', {'id': 'host'},
+                createShadowRoot(
+                    createDOM('style', {},
+                        document.createTextNode('div { border: 1px solid blue; }')),
+                    createDOM('div', {'id': 'outerMost'},
+                        createShadowRoot(
+                            createDOM('div', {'id': 'outer'},
+                                createShadowRoot(
+                                    createDOM('div', {'id': 'target'})))))))));
 
-    var div = document.createElement('div');
-    div.innerHTML = '<style scoped>div { border: 1px solid red }</style><div id="host"></div>';
-    document.body.appendChild(div);
-
-    var outerMostShadow = document.getElementById("host").webkitCreateShadowRoot();
-    outerMostShadow.innerHTML = '<style>div { border: 1px solid blue; }</style><div id="outerMost">outerMost</div>';
-    outerMostShadow.applyAuthorStyles = false;
-
-    var outerShadow = outerMostShadow.getElementById("outerMost").webkitCreateShadowRoot();
-    outerShadow.innerHTML = '<div id="outer">outer</div>';
-    outerShadow.applyAuthorStyles = false;
-
-    var shadow = outerShadow.getElementById("outer").webkitCreateShadowRoot();
-    shadow.innerHTML = '<div id="target">target</div>';
-    shadow.applyAuthorStyles = false;
+    getNodeInShadowTreeStack('host/').applyAuthorStyles = false;
+    getNodeInShadowTreeStack('host/outerMost/').applyAuthorStyles = false;
+    getNodeInShadowTreeStack('host/outerMost/outer/').applyAuthorStyles = false;
 
     // No styles should be applied.
-    dumpComputedStyle(shadow.getElementById("target"));
+    borderColorShouldBe(getNodeInShadowTreeStack('host/outerMost/outer/target'), 'rgb(0, 0, 0)');
 
-    shadow.applyAuthorStyles = true;
+    getNodeInShadowTreeStack('host/outerMost/outer/').applyAuthorStyles = true;
     // A style in document should be applied.
-    dumpComputedStyle(shadow.getElementById("target"));
+    borderColorShouldBe(getNodeInShadowTreeStack('host/outerMost/outer/target'), 'rgb(0, 0, 255)');
 
-    outerShadow.applyAuthorStyles = true
-    // A style in 'outerMost' shadow should be applied.
-    dumpComputedStyle(shadow.getElementById("target"));
+    getNodeInShadowTreeStack('host/outerMost/').applyAuthorStyles = true;
+    // Not depend on apply-author-styles flags of parent shadow trees.
+    borderColorShouldBe(getNodeInShadowTreeStack('host/outerMost/outer/target'), 'rgb(0, 0, 255)');
 
-    document.body.removeChild(div);   
+    cleanUp();
 }
 
 function testMultipleShadow()
 {
     debug('test a style in document is applied to nodes in multiple shadow subtrees when apply-author-styles is true.');
+    document.getElementById('sandbox').appendChild(
+        createDOM('div', {'id': 'host'},
+            createShadowRoot(
+                createDOM('shadow', {}),
+                createDOM('div', {'id': 'oldestShadow'})),
+            createShadowRoot(
+                createDOM('style', {'scoped': 'scoped'},
+                    document.createTextNode('div { border: 1px solid blue }')),
+                createDOM('shadow', {}),
+                createDOM('div', {'id': 'olderShadow'})),
+            createShadowRoot(
+                createDOM('shadow', {}),
+                createDOM('div', {'id': 'target'})),
 
-    var div = document.createElement('div');
-    div.innerHTML = '<style scoped>div { border: 1px solid red }</style><div>test</div>';
-    document.body.appendChild(div);
+            createDOM('style', {'scoped': 'scoped'},
+                document.createTextNode('div { border: 1px solid red; }')),
+            createDOM('div', {})));
 
-    var oldestShadow = div.webkitCreateShadowRoot();
-    oldestShadow.innerHTML = '<shadow></shadow><div id="oldestShadow">oldestShadow</div>';
-    oldestShadow.applyAuthorStyles = false;
-
-    var olderShadow =  div.webkitCreateShadowRoot();
-    olderShadow.innerHTML = '<style scoped>div { border: 1px solid blue }</style><shadow></shadow><div id="olderShadow">olderShadow</div>';
-    olderShadow.applyAuthorStyles = false;
-
-    var shadow = div.webkitCreateShadowRoot();
-    shadow.innerHTML = '<shadow></shadow><div id="target">shadow</div>';
-    shadow.applyAuthorStyles = false;
+    getNodeInShadowTreeStack('host/').applyAuthorStyles = false;
+    getNodeInShadowTreeStack('host//').applyAuthorStyles = false;
+    getNodeInShadowTreeStack('host///').applyAuthorStyles = false;
 
     // before
-    dumpComputedStyle(oldestShadow.getElementById("oldestShadow"));
-    dumpComputedStyle(olderShadow.getElementById("olderShadow"));
-    dumpComputedStyle(shadow.getElementById("target"));
+    borderColorShouldBe(getNodeInShadowTreeStack('host/oldestShadow'), 'rgb(0, 0, 0)');
+    borderColorShouldBe(getNodeInShadowTreeStack('host//olderShadow'), 'rgb(0, 0, 255)');
+    borderColorShouldBe(getNodeInShadowTreeStack('host///target'), 'rgb(0, 0, 0)');
 
     // document ---+--- oldestShadow
     //             |
@@ -153,56 +169,62 @@ function testMultipleShadow()
     //             +--- shadow
 
     // apply-author-styles affects between shadow and document.
-    shadow.applyAuthorStyles = true;
-    dumpComputedStyle(oldestShadow.getElementById("oldestShadow"));
-    dumpComputedStyle(olderShadow.getElementById("olderShadow"));
-    dumpComputedStyle(shadow.getElementById("target"));
+    getNodeInShadowTreeStack('host///').applyAuthorStyles = true;
+    borderColorShouldBe(getNodeInShadowTreeStack('host/oldestShadow'), 'rgb(0, 0, 0)');
+    borderColorShouldBe(getNodeInShadowTreeStack('host//olderShadow'), 'rgb(0, 0, 255)');
+    borderColorShouldBe(getNodeInShadowTreeStack('host///target'), 'rgb(255, 0, 0)');
 
     // apply-author-styles affects between older shadow and document.
-    shadow.applyAuthorStyles = false;
-    olderShadow.applyAuthorStyles = true;
-    dumpComputedStyle(oldestShadow.getElementById("oldestShadow"));
-    dumpComputedStyle(olderShadow.getElementById("olderShadow"));
-    dumpComputedStyle(shadow.getElementById("target"));
+    getNodeInShadowTreeStack('host///').applyAuthorStyles = false;
+    getNodeInShadowTreeStack('host//').applyAuthorStyles = true;
+    borderColorShouldBe(getNodeInShadowTreeStack('host/oldestShadow'), 'rgb(0, 0, 0)');
+    borderColorShouldBe(getNodeInShadowTreeStack('host//olderShadow'), 'rgb(0, 0, 255)');
+    borderColorShouldBe(getNodeInShadowTreeStack('host///target'), 'rgb(0, 0, 0)');
 
     // apply-author-styles affects between oldest shadow and document.
-    olderShadow.applyAuthorStyles = false;
-    oldestShadow.applyAuthorStyles = true;
-    dumpComputedStyle(oldestShadow.getElementById("oldestShadow"));
-    dumpComputedStyle(olderShadow.getElementById("olderShadow"));
-    dumpComputedStyle(shadow.getElementById("target"));
+    getNodeInShadowTreeStack('host//').applyAuthorStyles = false;
+    getNodeInShadowTreeStack('host/').applyAuthorStyles = true;
+    borderColorShouldBe(getNodeInShadowTreeStack('host/oldestShadow'), 'rgb(255, 0, 0)');
+    borderColorShouldBe(getNodeInShadowTreeStack('host//olderShadow'), 'rgb(0, 0, 255)');
+    borderColorShouldBe(getNodeInShadowTreeStack('host///target'), 'rgb(0, 0, 0)');
 
-    document.body.removeChild(div);
+    cleanUp();
 }
 
 function testOrderOfApplyStyle()
 {
     debug('test a style is applied in document order.');
 
-    var div = document.createElement('div');
-    div.innerHTML = '<style scoped>div { border: 1px solid red }</style><div id="host"></div>';
-    document.body.appendChild(div);
-
-    var outerMostShadow = document.getElementById("host").webkitCreateShadowRoot();
-    outerMostShadow.innerHTML = '<style>div { border: 1px solid blue; }</style><div id="outerMost">outerMost</div>';
-    outerMostShadow.applyAuthorStyles = true;
-
-    var outerShadow = outerMostShadow.getElementById("outerMost").webkitCreateShadowRoot();
-    outerShadow.innerHTML = '<style>div { border: 1px solid green; }</style><div id="outer">outer</div>';
-    outerShadow.applyAuthorStyles = true;
-
-    var shadow = outerShadow.getElementById("outer").webkitCreateShadowRoot();
-    shadow.innerHTML = '<style>div { border: 1px solid yellow; }</style><div id="target">target</div>';
-    shadow.applyAuthorStyles = true;
+    document.getElementById('sandbox').appendChild(
+        createDOM('div', {},
+            createDOM('style', {'scoped': 'scoped'},
+                document.createTextNode('div { border: 1px solid red }')),
+            createDOM('div', {'id': 'host'},
+                createShadowRoot(
+                    createDOM('style', {},
+                        document.createTextNode('div { border: 1px solid blue; }')),
+                    createDOM('div', {'id': 'outerMost'},
+                        createShadowRoot(
+                            createDOM('style', {},
+                                document.createTextNode('div { border: 1px solid green; }')),
+                            createDOM('div', {'id': 'outer'},
+                                createShadowRoot(
+                                    createDOM('style', {},
+                                        document.createTextNode('div { border: 1px solid yellow; }')),
+                                    createDOM('div', {'id': 'target'})))))))));
+  
+    getNodeInShadowTreeStack('host/').applyAuthorStyles = true;
+    getNodeInShadowTreeStack('host/outerMost/').applyAuthorStyles = true;
+    getNodeInShadowTreeStack('host/outerMost/outer/').applyAuthorStyles = true;
 
     // The last scoped style should be applied.
-    dumpComputedStyle(shadow.getElementById("target"));
+    borderColorShouldBe(getNodeInShadowTreeStack('host/outerMost/outer/target'), 'rgb(255, 255, 0)');
 
-    shadow.innerHTML = '<div id="target">target</div>';
+    getNodeInShadowTreeStack('host/outerMost/outer/').innerHTML = '<div id="target">target</div>';
     // The outer's scoped style should be applied.
-    dumpComputedStyle(shadow.getElementById("target"));
+    borderColorShouldBe(getNodeInShadowTreeStack('host/outerMost/outer/target'), 'rgb(0, 128, 0)');
 
-    document.body.removeChild(div);   
+    cleanUp();
 }
 
 function runTests() {
@@ -213,10 +235,10 @@ function runTests() {
     testMultipleShadow();
     testOrderOfApplyStyle();
 }
-
 </script>
 </head>
 <body onload="runTests()">
-  <script src="../../js/resources/js-test-post.js"></script>
+  <div id='sandbox'></div>
 </body>
+<script src="../../js/resources/js-test-post.js"></script>
 </html>

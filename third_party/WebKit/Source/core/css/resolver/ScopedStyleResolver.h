@@ -119,7 +119,7 @@ public:
     bool hasOnlyScopeResolverForDocument() const { return m_scopeResolverForDocument && m_authorStyles.size() == 1; }
     ScopedStyleResolver* scopedStyleResolverForDocument() { return m_scopeResolverForDocument; }
 
-    void resolveScopeStyles(const Element*, Vector<std::pair<ScopedStyleResolver*, bool>, 8>& resolvers);
+    void resolveScopeStyles(const Element*, Vector<ScopedStyleResolver*, 8>&);
     ScopedStyleResolver* scopedResolverFor(const Element*);
 
     void pushStyleCache(const ContainerNode* scope, const ContainerNode* parent);
@@ -133,7 +133,7 @@ private:
 
     bool cacheIsValid(const ContainerNode* parent) const { return parent && parent == m_cache.nodeForScopeStyles; }
     void resolveStyleCache(const ContainerNode* scope);
-    ScopedStyleResolver* enclosingScopedStyleResolverFor(const ContainerNode* scope, int& authorStyleBoundsIndex);
+    ScopedStyleResolver* enclosingScopedStyleResolverFor(const ContainerNode* scope);
 
 private:
     HashMap<const ContainerNode*, OwnPtr<ScopedStyleResolver> > m_authorStyles;
@@ -141,16 +141,12 @@ private:
 
     struct ScopeStyleCache {
         ScopedStyleResolver* scopeResolver;
-        int scopeResolverBoundsIndex;
         const ContainerNode* nodeForScopeStyles;
-        int authorStyleBoundsIndex;
 
         void clear()
         {
             scopeResolver = 0;
-            scopeResolverBoundsIndex = 0;
             nodeForScopeStyles = 0;
-            authorStyleBoundsIndex = 0;
         }
     };
     ScopeStyleCache m_cache;

@@ -452,17 +452,16 @@ void StyleResolver::matchScopedAuthorRules(ElementRuleCollector& collector, bool
         return;
     }
 
-    Vector<std::pair<ScopedStyleResolver*, bool>, 8> stack;
+    Vector<ScopedStyleResolver*, 8> stack;
     m_styleTree.resolveScopeStyles(m_state.element(), stack);
     if (stack.isEmpty())
         return;
 
-    for (int i = stack.size() - 1; i >= 0; --i) {
-        ScopedStyleResolver* scopeResolver = stack.at(i).first;
-        bool applyAuthorStyles = stack.at(i).second;
-        scopeResolver->matchAuthorRules(collector, includeEmptyRules, applyAuthorStyles);
-    }
-    matchHostRules(stack.first().first, collector, includeEmptyRules);
+    bool applyAuthorStyles = m_state.element()->treeScope()->applyAuthorStyles();
+    for (int i = stack.size() - 1; i >= 0; --i)
+        stack.at(i)->matchAuthorRules(collector, includeEmptyRules, applyAuthorStyles);
+
+    matchHostRules(stack.first(), collector, includeEmptyRules);
 }
 
 void StyleResolver::matchAuthorRules(ElementRuleCollector& collector, bool includeEmptyRules)

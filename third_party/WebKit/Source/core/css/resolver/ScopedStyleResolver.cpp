@@ -93,7 +93,7 @@ void ScopedStyleTree::setupScopeStylesTree(ScopedStyleResolver* target)
             target->setParent(scopeResolver);
             break;
         }
-        if (e->isShadowRoot() || e->isDocumentNode()) {
+        if (e->isDocumentNode()) {
             bool dummy;
             ScopedStyleResolver* scopeResolver = addScopedStyleResolver(e, dummy);
             target->setParent(scopeResolver);
@@ -110,44 +110,24 @@ void ScopedStyleTree::clear()
     m_cache.clear();
 }
 
-void ScopedStyleTree::resolveScopeStyles(const Element* element, Vector<std::pair<ScopedStyleResolver*, bool>, 8>& resolvers)
+void ScopedStyleTree::resolveScopeStyles(const Element* element, Vector<ScopedStyleResolver*, 8>& resolvers)
 {
-    ScopedStyleResolver* scopeResolver = scopedResolverFor(element);
-    if (!scopeResolver)
-        return;
-
-    bool applyAuthorStylesOfElementTreeScope = element->treeScope()->applyAuthorStyles();
-    bool applyAuthorStyles = m_cache.authorStyleBoundsIndex == m_cache.scopeResolverBoundsIndex ? applyAuthorStylesOfElementTreeScope : false;
-
-    for ( ; scopeResolver; scopeResolver = scopeResolver->parent()) {
-        resolvers.append(std::pair<ScopedStyleResolver*, bool>(scopeResolver, applyAuthorStyles));
-        if (scopeResolver->scope()->isShadowRoot()) {
-            if (scopeResolver->parent()->scope()->isInShadowTree())
-                applyAuthorStyles = applyAuthorStyles && toShadowRoot(scopeResolver->scope())->applyAuthorStyles();
-            else
-                applyAuthorStyles = applyAuthorStylesOfElementTreeScope;
-        }
-    }
+    for (ScopedStyleResolver* scopeResolver = scopedResolverFor(element); scopeResolver; scopeResolver = scopeResolver->parent())
+        resolvers.append(scopeResolver);
 }
 
-inline ScopedStyleResolver* ScopedStyleTree::enclosingScopedStyleResolverFor(const ContainerNode* scope, int& authorStyleBoundsIndex)
+inline ScopedStyleResolver* ScopedStyleTree::enclosingScopedStyleResolverFor(const ContainerNode* scope)
 {
-    for (; scope; scope = scope->parentOrShadowHostNode()) {
+    for (; scope; scope = scope->parentOrShadowHostNode())
         if (ScopedStyleResolver* scopeStyleResolver = scopedStyleResolverFor(scope))
             return scopeStyleResolver;
-        if (scope->isShadowRoot() && !toShadowRoot(scope)->applyAuthorStyles())
-            --authorStyleBoundsIndex;
-    }
     return 0;
 }
 
 void ScopedStyleTree::resolveStyleCache(const ContainerNode* scope)
 {
-    int authorStyleBoundsIndex = 0;
-    m_cache.scopeResolver = enclosingScopedStyleResolverFor(scope, authorStyleBoundsIndex);
-    m_cache.scopeResolverBoundsIndex = authorStyleBoundsIndex;
+    m_cache.scopeResolver = enclosingScopedStyleResolverFor(scope);
     m_cache.nodeForScopeStyles = scope;
-    m_cache.authorStyleBoundsIndex = 0;
 }
 
 void ScopedStyleTree::pushStyleCache(const ContainerNode* scope, const ContainerNode* parent)
@@ -160,31 +140,20 @@ void ScopedStyleTree::pushStyleCache(const ContainerNode* scope, const Container
         return;
     }
 
-    if (scope->isShadowRoot() && !toShadowRoot(scope)->applyAuthorStyles())
-        ++m_cache.authorStyleBoundsIndex;
-
     ScopedStyleResolver* scopeResolver = scopedStyleResolverFor(scope);
-    if (scopeResolver) {
+    if (scopeResolver)
         m_cache.scopeResolver = scopeResolver;
-        m_cache.scopeResolverBoundsIndex = m_cache.authorStyleBoundsIndex;
-    }
     m_cache.nodeForScopeStyles = scope;
 }
 
 void ScopedStyleTree::popStyleCache(const ContainerNode* scope)
 {
-    if (cacheIsValid(scope)) {
-        bool needUpdateBoundsIndex = scope->isShadowRoot() && !toShadowRoot(scope)->applyAuthorStyles();
+    if (!cacheIsValid(scope))
+        return;
 
-        if (m_cache.scopeResolver && m_cache.scopeResolver->scope() == scope) {
-            m_cache.scopeResolver = m_cache.scopeResolver->parent();
-            if (needUpdateBoundsIndex)
-                --m_cache.scopeResolverBoundsIndex;
-        }
-        if (needUpdateBoundsIndex)
-            --m_cache.authorStyleBoundsIndex;
-        m_cache.nodeForScopeStyles = scope->parentOrShadowHostNode();
-    }
+    if (m_cache.scopeResolver && m_cache.scopeResolver->scope() == scope)
+        m_cache.scopeResolver = m_cache.scopeResolver->parent();
+    m_cache.nodeForScopeStyles = scope->parentOrShadowHostNode();
 }
 
 void ScopedStyleTree::collectFeaturesTo(RuleFeatureSet& features)
