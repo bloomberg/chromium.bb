@@ -1347,6 +1347,8 @@ void ResourceProvider::BindImage(ResourceId id) {
   DCHECK(resource->image_id);
   DCHECK(resource->gl_id);
 
+  resource->allocated = true;
+
   WebGraphicsContext3D* context3d = output_surface_->context3d();
   DCHECK(context3d);
   context3d->bindTexture(GL_TEXTURE_2D, resource->gl_id);
