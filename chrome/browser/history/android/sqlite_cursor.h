@@ -136,6 +136,10 @@ class SQLiteCursor {
 
   virtual ~SQLiteCursor();
 
+  // Destory SQLiteCursor object on UI thread. All cleanup need finish in UI
+  // thread.
+  void DestroyOnUIThread();
+
   // This method is for testing only.
   void set_test_observer(TestObserver* test_observer) {
     test_observer_ = test_observer;
@@ -154,9 +158,6 @@ class SQLiteCursor {
 
   // The callback function of MoveTo().
   void OnMoved(AndroidHistoryProviderService::Handle handle, int pos);
-
-  // Used to cancel all request on the UI thread during shutdown.
-  void CancelAllRequests(base::WaitableEvent* finished);
 
   JavaColumnType GetColumnTypeInternal(int column);
 

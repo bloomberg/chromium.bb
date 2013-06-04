@@ -197,28 +197,25 @@ TEST_F(SQLiteCursorTest, Run) {
 
   FaviconService* favicon_service = new FaviconService(hs_);
 
-  // Wraps cursor in a block, so the destructor will be called after that.
-  {
-    SQLiteCursor cursor(column_names, statement, service_.get(),
-                        favicon_service);
-    cursor.set_test_observer(this);
-    JNIEnv* env = base::android::AttachCurrentThread();
-    EXPECT_EQ(1, cursor.GetCount(env, NULL));
-    EXPECT_EQ(0, cursor.MoveTo(env, NULL, 0));
-    EXPECT_EQ(row.url().spec(), base::android::ConvertJavaStringToUTF8(
-        cursor.GetString(env, NULL, 0)).c_str());
-    EXPECT_EQ(history::ToDatabaseTime(row.last_visit_time()),
-              cursor.GetLong(env, NULL, 1));
-    EXPECT_EQ(row.visit_count(), cursor.GetInt(env, NULL, 2));
-    base::android::ScopedJavaLocalRef<jbyteArray> data =
-        cursor.GetBlob(env, NULL, 3);
-    std::vector<uint8> out;
-    base::android::JavaByteArrayToByteVector(env, data.obj(), &out);
-    EXPECT_EQ(data_bytes->data().size(), out.size());
-    EXPECT_EQ(data_bytes->data()[0], out[0]);
-  }
-
-  // Cursor's destructor post the task in UI thread, run Message loop to release
-  // the statement etc.
+  SQLiteCursor* cursor = new SQLiteCursor(column_names, statement,
+      service_.get(), favicon_service);
+  cursor->set_test_observer(this);
+  JNIEnv* env = base::android::AttachCurrentThread();
+  EXPECT_EQ(1, cursor->GetCount(env, NULL));
+  EXPECT_EQ(0, cursor->MoveTo(env, NULL, 0));
+  EXPECT_EQ(row.url().spec(), base::android::ConvertJavaStringToUTF8(
+      cursor->GetString(env, NULL, 0)).c_str());
+  EXPECT_EQ(history::ToDatabaseTime(row.last_visit_time()),
+      cursor->GetLong(env, NULL, 1));
+  EXPECT_EQ(row.visit_count(), cursor->GetInt(env, NULL, 2));
+  base::android::ScopedJavaLocalRef<jbyteArray> data =
+      cursor->GetBlob(env, NULL, 3);
+  std::vector<uint8> out;
+  base::android::JavaByteArrayToByteVector(env, data.obj(), &out);
+  EXPECT_EQ(data_bytes->data().size(), out.size());
+  EXPECT_EQ(data_bytes->data()[0], out[0]);
+  cursor->Destroy(env, NULL);
+  // Cursor::Destroy posts the task in UI thread, run Message loop to release
+  // the statement, delete SQLiteCursor itself etc.
   content::RunAllPendingInMessageLoop();
 }
