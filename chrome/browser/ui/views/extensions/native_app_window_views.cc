@@ -589,14 +589,15 @@ bool NativeAppWindowViews::ShouldDescendIntoChildForEventHandling(
     gfx::NativeView child,
     const gfx::Point& location) {
 #if defined(USE_AURA)
-  DCHECK_EQ(child, web_view_->web_contents()->GetView()->GetNativeView());
-  // Shell window should claim mouse events that fall within the draggable
-  // region.
-  return !draggable_region_.get() ||
-         !draggable_region_->contains(location.x(), location.y());
-#else
-  return true;
+  if (child == web_view_->web_contents()->GetView()->GetNativeView()) {
+    // Shell window should claim mouse events that fall within the draggable
+    // region.
+    return !draggable_region_.get() ||
+           !draggable_region_->contains(location.x(), location.y());
+  }
 #endif
+
+  return true;
 }
 
 // WidgetObserver implementation.
