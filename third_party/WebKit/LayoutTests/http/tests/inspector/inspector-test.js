@@ -441,7 +441,7 @@ function openFrontendAndIncrement()
 {
     frontendReopeningCount++;
     testRunner.showWebInspector();
-    runTest();
+    setTimeout(runTest, 0);
 }
 
 function runAfterIframeIsLoaded()
