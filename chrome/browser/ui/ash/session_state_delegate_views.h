@@ -2,12 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_ASH_SESSION_STATE_DELEGATE_H_
-#define CHROME_BROWSER_UI_ASH_SESSION_STATE_DELEGATE_H_
+#ifndef CHROME_BROWSER_UI_ASH_SESSION_STATE_DELEGATE_VIEWS_H_
+#define CHROME_BROWSER_UI_ASH_SESSION_STATE_DELEGATE_VIEWS_H_
 
 #include "ash/session_state_delegate.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/observer_list.h"
+
+namespace ash {
+class SessionStateObserver;
+}  // namespace ash
 
 class SessionStateDelegate : public ash::SessionStateDelegate {
  public:
@@ -28,11 +33,15 @@ class SessionStateDelegate : public ash::SessionStateDelegate {
       ash::MultiProfileIndex index) const OVERRIDE;
   virtual const gfx::ImageSkia& GetUserImage(
       ash::MultiProfileIndex index) const OVERRIDE;
-  virtual void GetLoggedInUsers(ash::UserEmailList* users) OVERRIDE;
-  virtual void SwitchActiveUser(const std::string& email) OVERRIDE;
+  virtual void GetLoggedInUsers(ash::UserIdList* users) OVERRIDE;
+  virtual void SwitchActiveUser(const std::string& user_id) OVERRIDE;
+  virtual void AddSessionStateObserver(
+      ash::SessionStateObserver* observer) OVERRIDE;
+  virtual void RemoveSessionStateObserver(
+      ash::SessionStateObserver* observer) OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SessionStateDelegate);
 };
 
-#endif  // CHROME_BROWSER_UI_ASH_SESSION_STATE_DELEGATE_H_
+#endif  // CHROME_BROWSER_UI_ASH_SESSION_STATE_DELEGATE_VIEWS_H_

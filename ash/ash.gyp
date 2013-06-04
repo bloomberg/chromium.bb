@@ -173,6 +173,7 @@
         'screensaver/screensaver_view.h',
         'screenshot_delegate.h',
         'session_state_delegate.h',
+        'session_state_observer.h',
         'shelf/background_animator.cc',
         'shelf/background_animator.h',
         'shelf/shelf_layout_manager.cc',

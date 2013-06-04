@@ -80,8 +80,6 @@ class UserSessionRestoreObserver :
   }
   virtual ~UserSessionRestoreObserver() {}
 
-  virtual void ActiveUserHashChanged(const std::string& hash) OVERRIDE {
-  }
   virtual void PendingUserSessionsRestoreFinished() OVERRIDE {
     user_sessions_restored_ = true;
     UserManager::Get()->RemoveSessionStateObserver(this);

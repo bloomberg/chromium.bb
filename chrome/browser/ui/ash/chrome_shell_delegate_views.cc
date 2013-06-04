@@ -9,6 +9,7 @@
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/caps_lock_delegate_views.h"
+#include "chrome/browser/ui/ash/session_state_delegate_views.h"
 #include "chrome/browser/ui/ash/window_positioner.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -73,6 +74,10 @@ ash::MagnifierType ChromeShellDelegate::GetMagnifierType() const {
 
 ash::CapsLockDelegate* ChromeShellDelegate::CreateCapsLockDelegate() {
   return new CapsLockDelegate();
+}
+
+ash::SessionStateDelegate* ChromeShellDelegate::CreateSessionStateDelegate() {
+  return new SessionStateDelegate;
 }
 
 void ChromeShellDelegate::SaveScreenMagnifierScale(double scale) {

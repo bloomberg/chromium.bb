@@ -63,11 +63,18 @@ const gfx::ImageSkia& SessionStateDelegateStub::GetUserImage(
   return null_image_;
 }
 
-void SessionStateDelegateStub::GetLoggedInUsers(
-    UserEmailList* users) {
+void SessionStateDelegateStub::GetLoggedInUsers(UserIdList* users) {
 }
 
-void SessionStateDelegateStub::SwitchActiveUser(const std::string& email) {
+void SessionStateDelegateStub::SwitchActiveUser(const std::string& user_id) {
+}
+
+void SessionStateDelegateStub::AddSessionStateObserver(
+    ash::SessionStateObserver* observer) {
+}
+
+void SessionStateDelegateStub::RemoveSessionStateObserver(
+    ash::SessionStateObserver* observer) {
 }
 
 }  // namespace ash

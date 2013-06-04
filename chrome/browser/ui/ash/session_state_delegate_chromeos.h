@@ -2,23 +2,27 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_SESSION_STATE_DELEGATE_STUB_H_
-#define ASH_SESSION_STATE_DELEGATE_STUB_H_
+#ifndef CHROME_BROWSER_UI_ASH_SESSION_STATE_DELEGATE_CHROMEOS_H_
+#define CHROME_BROWSER_UI_ASH_SESSION_STATE_DELEGATE_CHROMEOS_H_
 
 #include "ash/session_state_delegate.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "ui/gfx/image/image_skia.h"
+#include "base/observer_list.h"
+#include "chrome/browser/chromeos/login/user_manager.h"
 
 namespace ash {
+class SessionStateObserver;
+}  // namespace ash
 
-// Stub implementation of SessionStateDelegate for testing.
-class SessionStateDelegateStub : public SessionStateDelegate {
+class SessionStateDelegateChromeos
+    : public ash::SessionStateDelegate,
+      public chromeos::UserManager::UserSessionStateObserver {
  public:
-  SessionStateDelegateStub();
-  virtual ~SessionStateDelegateStub();
+  SessionStateDelegateChromeos();
+  virtual ~SessionStateDelegateChromeos();
 
-  // SessionStateDelegate:
+  // ash::SessionStateDelegate:
   virtual int GetMaximumNumberOfLoggedInUsers() const OVERRIDE;
   virtual int NumberOfLoggedInUsers() const OVERRIDE;
   virtual bool IsActiveUserSessionStarted() const OVERRIDE;
@@ -32,22 +36,21 @@ class SessionStateDelegateStub : public SessionStateDelegate {
       ash::MultiProfileIndex index) const OVERRIDE;
   virtual const gfx::ImageSkia& GetUserImage(
       ash::MultiProfileIndex index) const OVERRIDE;
-  virtual void GetLoggedInUsers(UserIdList* users) OVERRIDE;
+  virtual void GetLoggedInUsers(ash::UserIdList* users) OVERRIDE;
   virtual void SwitchActiveUser(const std::string& user_id) OVERRIDE;
   virtual void AddSessionStateObserver(
       ash::SessionStateObserver* observer) OVERRIDE;
   virtual void RemoveSessionStateObserver(
       ash::SessionStateObserver* observer) OVERRIDE;
 
+  // UserManager::UserSessionStateObserver:
+  virtual void ActiveUserChanged(const chromeos::User* active_user) OVERRIDE;
+
  private:
-  bool screen_locked_;
+  // List of observers is only used on Chrome OS for now.
+  ObserverList<ash::SessionStateObserver> session_state_observer_list_;
 
-  // A pseudo user image.
-  gfx::ImageSkia null_image_;
-
-  DISALLOW_COPY_AND_ASSIGN(SessionStateDelegateStub);
+  DISALLOW_COPY_AND_ASSIGN(SessionStateDelegateChromeos);
 };
 
-}  // namespace ash
-
-#endif  // ASH_SESSION_STATE_DELEGATE_STUB_H_
+#endif  // CHROME_BROWSER_UI_ASH_SESSION_STATE_DELEGATE_CHROMEOS_H_

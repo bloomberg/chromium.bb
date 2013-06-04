@@ -369,13 +369,7 @@ void UserManagerImpl::SwitchActiveUser(const std::string& email) {
   SetLRUUser(active_user_);
 
   NotifyActiveUserHashChanged(active_user_->username_hash());
-
-  // TODO(nkostylev): Notify session_manager on active user change.
-  // http://crbug.com/230857
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_ACTIVE_USER_CHANGED,
-      content::Source<UserManager>(this),
-      content::Details<const User>(active_user_));
+  NotifyActiveUserChanged(active_user_);
 }
 
 void UserManagerImpl::RestoreActiveSessions() {
@@ -1254,8 +1248,11 @@ void UserManagerImpl::RetailModeUserLoggedIn() {
 void UserManagerImpl::NotifyOnLogin() {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   NotifyActiveUserHashChanged(active_user_->username_hash());
+  NotifyActiveUserChanged(active_user_);
 
   UpdateLoginState();
+  // TODO(nkostylev): Deprecate this notification in favor of
+  // ActiveUserChanged() observer call.
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_LOGIN_USER_CHANGED,
       content::Source<UserManager>(this),
@@ -1602,6 +1599,13 @@ void UserManagerImpl::NotifyMergeSessionStateChanged() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   FOR_EACH_OBSERVER(UserManager::Observer, observer_list_,
                     MergeSessionStateChanged(merge_session_state_));
+}
+
+void UserManagerImpl::NotifyActiveUserChanged(const User* active_user) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  FOR_EACH_OBSERVER(UserManager::UserSessionStateObserver,
+                    session_state_observer_list_,
+                    ActiveUserChanged(active_user));
 }
 
 void UserManagerImpl::NotifyActiveUserHashChanged(const std::string& hash) {

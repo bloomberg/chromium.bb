@@ -124,10 +124,12 @@ class ASH_EXPORT SystemTray : public internal::TrayBackgroundView,
   // Returns true if the mouse is inside the notification bubble.
   bool IsMouseInNotificationBubble() const;
 
+  // Closes system bubble and returns true if it did exist.
+  bool CloseSystemBubble() const;
+
   // Accessors for testing.
 
   // Returns true if the bubble exists.
-  bool CloseSystemBubbleForTest() const;
   bool CloseNotificationBubbleForTest() const;
 
   // Overridden from TrayBackgroundView.

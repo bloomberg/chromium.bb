@@ -11,6 +11,8 @@
 
 #include "ash/ash_switches.h"
 #include "ash/desktop_background/desktop_background_controller.h"
+#include "ash/session_state_delegate.h"
+#include "ash/session_state_observer.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
 #include "ash/shell_window_ids.h"
@@ -235,7 +237,8 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
                            public device::BluetoothAdapter::Observer,
                            public SystemKeyEventListener::CapsLockObserver,
                            public ash::NetworkTrayDelegate,
-                           public policy::CloudPolicyStore::Observer {
+                           public policy::CloudPolicyStore::Observer,
+                           public ash::SessionStateObserver {
  public:
   SystemTrayDelegate()
       : ui_weak_ptr_factory_(
@@ -309,6 +312,9 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     device::BluetoothAdapterFactory::GetAdapter(
         base::Bind(&SystemTrayDelegate::InitializeOnAdapterReady,
                    ui_weak_ptr_factory_->GetWeakPtr()));
+
+    ash::Shell::GetInstance()->session_state_delegate()->
+        AddSessionStateObserver(this);
   }
 
   virtual void Shutdown() OVERRIDE {
@@ -368,6 +374,8 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     if (SystemKeyEventListener::GetInstance())
       SystemKeyEventListener::GetInstance()->RemoveCapsLockObserver(this);
     bluetooth_adapter_->RemoveObserver(this);
+    ash::Shell::GetInstance()->session_state_delegate()->
+        RemoveSessionStateObserver(this);
 
     // Stop observing gdata operations.
     DriveIntegrationService* integration_service =
@@ -1271,6 +1279,11 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
 
   virtual void OnStoreError(policy::CloudPolicyStore* store) OVERRIDE {
     UpdateEnterpriseDomain();
+  }
+
+  // Overridden from ash::SessionStateObserver
+  virtual void ActiveUserChanged(const std::string& user_id) OVERRIDE {
+    GetSystemTrayNotifier()->NotifyUserUpdate();
   }
 
   void UpdateCellular() {

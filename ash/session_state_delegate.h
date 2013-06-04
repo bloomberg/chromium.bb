@@ -17,12 +17,14 @@ class ImageSkia;
 
 namespace ash {
 
+class SessionStateObserver;
+
 // The index for the multi-profile item to use. The list is always LRU sorted
 // So that the index #0 is the currently active user.
 typedef int MultiProfileIndex;
 
-// A list of email addresses.
-typedef std::vector<std::string> UserEmailList;
+// A list of user_id.
+typedef std::vector<std::string> UserIdList;
 
 // Delegate for checking and modifying the session state.
 class ASH_EXPORT SessionStateDelegate {
@@ -68,10 +70,14 @@ class ASH_EXPORT SessionStateDelegate {
   virtual const gfx::ImageSkia& GetUserImage(MultiProfileIndex index) const = 0;
 
   // Returns a list of all logged in users.
-  virtual void GetLoggedInUsers(UserEmailList* users) = 0;
+  virtual void GetLoggedInUsers(UserIdList* users) = 0;
 
   // Switches to another active user (if that user has already signed in).
-  virtual void SwitchActiveUser(const std::string& email) = 0;
+  virtual void SwitchActiveUser(const std::string& user_id) = 0;
+
+  // Adds or removes sessions state observer.
+  virtual void AddSessionStateObserver(SessionStateObserver* observer) = 0;
+  virtual void RemoveSessionStateObserver(SessionStateObserver* observer) = 0;
 };
 
 }  // namespace ash

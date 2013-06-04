@@ -321,7 +321,7 @@ bool SystemTray::IsMouseInNotificationBubble() const {
       Shell::GetScreen()->GetCursorScreenPoint());
 }
 
-bool SystemTray::CloseSystemBubbleForTest() const {
+bool SystemTray::CloseSystemBubble() const {
   if (!system_bubble_)
     return false;
   system_bubble_->bubble()->Close();

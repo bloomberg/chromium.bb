@@ -140,7 +140,7 @@ TEST_F(TrayUserTest, SingleUserModeDoesNotAllowAddingUser) {
                        ash::internal::TrayUser::HIDDEN,
               tray_user(i)->GetStateForTest());
 
-  tray()->CloseSystemBubbleForTest();
+  tray()->CloseSystemBubble();
 }
 
 // Make sure that in multi user mode the user panel can be activated and there
@@ -207,7 +207,7 @@ TEST_F(TrayUserTest, MutiUserModeDoesNotAllowToAddUser) {
               tray_user(0)->GetStateForTest());
 
     // Close and check that everything is deleted.
-    tray()->CloseSystemBubbleForTest();
+    tray()->CloseSystemBubble();
     EXPECT_FALSE(tray()->IsAnyBubbleVisible());
     for (int i = 0; i < delegate()->GetMaximumNumberOfLoggedInUsers(); i++)
       EXPECT_EQ(ash::internal::TrayUser::HIDDEN,
@@ -226,7 +226,7 @@ TEST_F(TrayUserTest, MutiUserModeButtonClicks) {
   ClickUserItem(&generator, 1);
 
   EXPECT_EQ(delegate()->get_activated_user(), delegate()->GetUserEmail(1));
-  tray()->CloseSystemBubbleForTest();
+  tray()->CloseSystemBubble();
 }
 
 }  // namespace internal

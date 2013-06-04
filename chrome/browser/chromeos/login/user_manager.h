@@ -46,15 +46,20 @@ class UserManager {
     virtual ~Observer();
   };
 
-  // TODO(nkostylev): Merge with session state refactoring CL.
+  // TODO(nkostylev): Refactor and move this observer out of UserManager.
+  // Observer interface that defines methods used to notify on user session /
+  // active user state changes. Default implementation is empty.
   class UserSessionStateObserver {
    public:
+    // Called when active user has changed.
+    virtual void ActiveUserChanged(const User* active_user);
+
     // Called right before notifying on user change so that those who rely
     // on user_id hash would be accessing up-to-date value.
-    virtual void ActiveUserHashChanged(const std::string& hash) = 0;
+    virtual void ActiveUserHashChanged(const std::string& hash);
 
     // Called when UserManager finishes restoring user sessions after crash.
-    virtual void PendingUserSessionsRestoreFinished() = 0;
+    virtual void PendingUserSessionsRestoreFinished();
 
    protected:
     virtual ~UserSessionStateObserver();

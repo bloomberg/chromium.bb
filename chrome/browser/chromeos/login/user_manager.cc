@@ -28,6 +28,18 @@ static UserManager* g_user_manager = NULL;
 UserManager::Observer::~Observer() {
 }
 
+void UserManager::UserSessionStateObserver::ActiveUserChanged(
+    const User* active_user) {
+}
+
+void UserManager::UserSessionStateObserver::ActiveUserHashChanged(
+    const std::string& hash) {
+}
+
+void UserManager::UserSessionStateObserver::
+PendingUserSessionsRestoreFinished() {
+}
+
 UserManager::UserSessionStateObserver::~UserSessionStateObserver() {
 }
 

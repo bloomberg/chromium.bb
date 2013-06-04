@@ -262,6 +262,9 @@ class UserManagerImpl
   // Notifies observers that merge session state had changed.
   void NotifyMergeSessionStateChanged();
 
+  // Notifies observers that active user has changed.
+  void NotifyActiveUserChanged(const User* active_user);
+
   // Notifies observers that active user_id hash has changed.
   void NotifyActiveUserHashChanged(const std::string& hash);
 

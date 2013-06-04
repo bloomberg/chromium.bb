@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/ash/session_state_delegate.h"
+#include "chrome/browser/ui/ash/session_state_delegate_views.h"
 
 #include "base/logging.h"
 #include "base/string16.h"
@@ -65,11 +65,20 @@ const gfx::ImageSkia& SessionStateDelegate::GetUserImage(
   return null_image;
 }
 
-void SessionStateDelegate::GetLoggedInUsers(
-    ash::UserEmailList* users) {
+void SessionStateDelegate::GetLoggedInUsers(ash::UserIdList* users) {
   NOTIMPLEMENTED();
 }
 
-void SessionStateDelegate::SwitchActiveUser(const std::string& email) {
+void SessionStateDelegate::SwitchActiveUser(const std::string& user_id) {
+  NOTIMPLEMENTED();
+}
+
+void SessionStateDelegate::AddSessionStateObserver(
+    ash::SessionStateObserver* observer) {
+  NOTIMPLEMENTED();
+}
+
+void SessionStateDelegate::RemoveSessionStateObserver(
+    ash::SessionStateObserver* observer) {
   NOTIMPLEMENTED();
 }

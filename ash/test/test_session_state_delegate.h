@@ -35,8 +35,12 @@ class TestSessionStateDelegate : public SessionStateDelegate {
       ash::MultiProfileIndex index) const OVERRIDE;
   virtual const gfx::ImageSkia& GetUserImage(
       ash::MultiProfileIndex index) const OVERRIDE;
-  virtual void GetLoggedInUsers(UserEmailList* users) OVERRIDE;
+  virtual void GetLoggedInUsers(UserIdList* users) OVERRIDE;
   virtual void SwitchActiveUser(const std::string& email) OVERRIDE;
+  virtual void AddSessionStateObserver(
+      ash::SessionStateObserver* observer) OVERRIDE;
+  virtual void RemoveSessionStateObserver(
+      ash::SessionStateObserver* observer) OVERRIDE;
 
   // Updates the internal state that indicates whether a session is in progress
   // and there is an active user. If |has_active_user| is |false|,

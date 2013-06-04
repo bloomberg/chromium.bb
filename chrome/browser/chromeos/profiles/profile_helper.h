@@ -77,7 +77,6 @@ class ProfileHelper : public BrowsingDataRemover::Observer,
 
   // UserManager::UserSessionStateObserver implementation:
   virtual void ActiveUserHashChanged(const std::string& hash) OVERRIDE;
-  virtual void PendingUserSessionsRestoreFinished() OVERRIDE;
 
   // BrowsingDataRemover::Observer implementation:
   virtual void OnBrowsingDataRemoverDone() OVERRIDE;

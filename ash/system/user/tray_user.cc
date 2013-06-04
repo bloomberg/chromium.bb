@@ -273,6 +273,9 @@ class UserView : public views::View,
   // The view of the user card.
   views::View* user_card_view_;
 
+  // This is the owner system tray item of this view.
+  SystemTrayItem* owner_;
+
   // True if |user_card_view_| is a |UserView| - otherwise it is only a
   // |views::View|.
   bool is_user_card_;
@@ -595,6 +598,7 @@ UserView::UserView(SystemTrayItem* owner,
                    MultiProfileIndex index)
     : multiprofile_index_(index),
       user_card_view_(NULL),
+      owner_(owner),
       is_user_card_(false),
       logout_button_(NULL),
       add_user_visible_but_disabled_(false) {
@@ -710,6 +714,9 @@ void UserView::ButtonPressed(views::Button* sender, const ui::Event& event) {
       ash::SessionStateDelegate* delegate =
           ash::Shell::GetInstance()->session_state_delegate();
       delegate->SwitchActiveUser(delegate->GetUserEmail(multiprofile_index_));
+      // Since the user list is about to change the system menu should get
+      // closed.
+      owner_->system_tray()->CloseSystemBubble();
     }
   } else if (add_menu_option_.get() &&
              sender == add_menu_option_->GetContentsView()) {

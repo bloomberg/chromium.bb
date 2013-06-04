@@ -2,42 +2,45 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/ash/session_state_delegate.h"
+#include "chrome/browser/ui/ash/session_state_delegate_chromeos.h"
 
+#include "ash/session_state_observer.h"
 #include "base/logging.h"
 #include "chrome/browser/chromeos/login/screen_locker.h"
+#include "chrome/browser/chromeos/login/user.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager_client.h"
 
-SessionStateDelegate::SessionStateDelegate() {
+SessionStateDelegateChromeos::SessionStateDelegateChromeos() {
+  chromeos::UserManager::Get()->AddSessionStateObserver(this);
 }
 
-SessionStateDelegate::~SessionStateDelegate() {
+SessionStateDelegateChromeos::~SessionStateDelegateChromeos() {
 }
 
-int SessionStateDelegate::GetMaximumNumberOfLoggedInUsers() const {
+int SessionStateDelegateChromeos::GetMaximumNumberOfLoggedInUsers() const {
   return 3;
 }
 
-int SessionStateDelegate::NumberOfLoggedInUsers() const {
+int SessionStateDelegateChromeos::NumberOfLoggedInUsers() const {
   return chromeos::UserManager::Get()->GetLoggedInUsers().size();
 }
 
-bool SessionStateDelegate::IsActiveUserSessionStarted() const {
+bool SessionStateDelegateChromeos::IsActiveUserSessionStarted() const {
   return chromeos::UserManager::Get()->IsSessionStarted();
 }
 
-bool SessionStateDelegate::CanLockScreen() const {
+bool SessionStateDelegateChromeos::CanLockScreen() const {
   return chromeos::UserManager::Get()->CanCurrentUserLock();
 }
 
-bool SessionStateDelegate::IsScreenLocked() const {
+bool SessionStateDelegateChromeos::IsScreenLocked() const {
   return chromeos::ScreenLocker::default_screen_locker() &&
          chromeos::ScreenLocker::default_screen_locker()->locked();
 }
 
-void SessionStateDelegate::LockScreen() {
+void SessionStateDelegateChromeos::LockScreen() {
   if (!CanLockScreen())
     return;
 
@@ -47,33 +50,32 @@ void SessionStateDelegate::LockScreen() {
       RequestLockScreen();
 }
 
-void SessionStateDelegate::UnlockScreen() {
+void SessionStateDelegateChromeos::UnlockScreen() {
   // This is used only for testing thus far.
   NOTIMPLEMENTED();
 }
 
-const base::string16 SessionStateDelegate::GetUserDisplayName(
+const base::string16 SessionStateDelegateChromeos::GetUserDisplayName(
     ash::MultiProfileIndex index) const {
   DCHECK_LT(index, NumberOfLoggedInUsers());
   return chromeos::UserManager::Get()->
              GetLRULoggedInUsers()[index]->display_name();
 }
 
-const std::string SessionStateDelegate::GetUserEmail(
+const std::string SessionStateDelegateChromeos::GetUserEmail(
     ash::MultiProfileIndex index) const {
   DCHECK_LT(index, NumberOfLoggedInUsers());
   return chromeos::UserManager::Get()->
              GetLRULoggedInUsers()[index]->display_email();
 }
 
-const gfx::ImageSkia& SessionStateDelegate::GetUserImage(
+const gfx::ImageSkia& SessionStateDelegateChromeos::GetUserImage(
     ash::MultiProfileIndex index) const {
   DCHECK_LT(index, NumberOfLoggedInUsers());
   return chromeos::UserManager::Get()->GetLRULoggedInUsers()[index]->image();
 }
 
-void SessionStateDelegate::GetLoggedInUsers(
-    ash::UserEmailList* users) {
+void SessionStateDelegateChromeos::GetLoggedInUsers(ash::UserIdList* users) {
   const chromeos::UserList& logged_in_users =
       chromeos::UserManager::Get()->GetLoggedInUsers();
   for (chromeos::UserList::const_iterator it = logged_in_users.begin();
@@ -83,6 +85,24 @@ void SessionStateDelegate::GetLoggedInUsers(
   }
 }
 
-void SessionStateDelegate::SwitchActiveUser(const std::string& email) {
-  chromeos::UserManager::Get()->SwitchActiveUser(email);
+void SessionStateDelegateChromeos::SwitchActiveUser(
+    const std::string& user_id) {
+  chromeos::UserManager::Get()->SwitchActiveUser(user_id);
+}
+
+void SessionStateDelegateChromeos::AddSessionStateObserver(
+    ash::SessionStateObserver* observer) {
+  session_state_observer_list_.AddObserver(observer);
+}
+
+void SessionStateDelegateChromeos::RemoveSessionStateObserver(
+    ash::SessionStateObserver* observer) {
+  session_state_observer_list_.RemoveObserver(observer);
+}
+
+void SessionStateDelegateChromeos::ActiveUserChanged(
+    const chromeos::User* active_user) {
+  FOR_EACH_OBSERVER(ash::SessionStateObserver,
+                    session_state_observer_list_,
+                    ActiveUserChanged(active_user->email()));
 }

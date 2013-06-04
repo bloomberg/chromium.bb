@@ -890,12 +890,6 @@ enum NotificationType {
   // The details are a chromeos::User object.
   NOTIFICATION_LOGIN_USER_CHANGED,
 
-  // Sent when a chromium os active user has changed.
-  // The details are a chromeos::User object.
-  // This notification is _not_ sent when user logs in to a new or existing
-  // session because NOTIFICATION_LOGIN_USER_CHANGED is sent instead.
-  NOTIFICATION_ACTIVE_USER_CHANGED,
-
   // Sent immediately after the logged-in user's profile is ready.
   // The details are a Profile object.
   NOTIFICATION_LOGIN_USER_PROFILE_PREPARED,

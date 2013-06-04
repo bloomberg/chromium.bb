@@ -24,6 +24,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/speech/tts_controller.h"
 #include "chrome/browser/ui/ash/caps_lock_delegate_chromeos.h"
+#include "chrome/browser/ui/ash/session_state_delegate_chromeos.h"
 #include "chrome/browser/ui/ash/window_positioner.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -184,6 +185,10 @@ ash::CapsLockDelegate* ChromeShellDelegate::CreateCapsLockDelegate() {
   chromeos::input_method::XKeyboard* xkeyboard =
       chromeos::input_method::InputMethodManager::Get()->GetXKeyboard();
   return new CapsLockDelegate(xkeyboard);
+}
+
+ash::SessionStateDelegate* ChromeShellDelegate::CreateSessionStateDelegate() {
+  return new SessionStateDelegateChromeos;
 }
 
 void ChromeShellDelegate::ShowKeyboardOverlay() {
