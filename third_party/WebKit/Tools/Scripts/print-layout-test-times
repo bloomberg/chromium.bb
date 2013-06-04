@@ -1,0 +1,37 @@
+#!/usr/bin/python
+import json
+import optparse
+import os
+import sys
+
+from webkitpy.common.host import Host
+
+def main(argv):
+    parser = optparse.OptionParser(usage='%prog [times_ms.json]')
+    options, args = parser.parse_args(argv)
+    host = Host()
+    times_ms_path = args[0] if args and args[0] else host.filesystem.join(host.port_factory.get().results_directory(), 'times_ms.json')
+    with open(times_ms_path, 'r') as fp:
+         times_trie = json.load(fp)
+
+    times = convert_trie_to_flat_paths(times_trie)
+    for test_name in sorted(times):
+        print "%s %d" % (test_name, times[test_name])
+
+def convert_trie_to_flat_paths(trie, prefix=None):
+    # Cloned from webkitpy.layout_tests.layout_package.json_results_generator
+    # so that this code can stand alone.
+    result = {}
+    for name, data in trie.iteritems():
+        if prefix:
+            name = prefix + "/" + name
+        if isinstance(data, int):
+            result[name] = data
+        else:
+            result.update(convert_trie_to_flat_paths(data, name))
+
+    return result
+
+
+if __name__ ==  '__main__':
+    sys.exit(main(sys.argv[1:]))
