@@ -432,6 +432,22 @@ TEST(TransformOperationTest, BlendRotationFromIdentity) {
 
     EXPECT_TRANSFORMATION_MATRIX_EQ(
         expected, operations.Blend(*identity_operations[i], progress));
+
+    progress = -0.5;
+
+    expected.MakeIdentity();
+    expected.RotateAbout(gfx::Vector3dF(0, 0, 1), -180);
+
+    EXPECT_TRANSFORMATION_MATRIX_EQ(
+        expected, operations.Blend(*identity_operations[i], progress));
+
+    progress = 1.5;
+
+    expected.MakeIdentity();
+    expected.RotateAbout(gfx::Vector3dF(0, 0, 1), 540);
+
+    EXPECT_TRANSFORMATION_MATRIX_EQ(
+        expected, operations.Blend(*identity_operations[i], progress));
   }
 }
 
@@ -447,6 +463,22 @@ TEST(TransformOperationTest, BlendTranslationFromIdentity) {
 
     gfx::Transform expected;
     expected.Translate3d(1, 1, 1);
+
+    EXPECT_TRANSFORMATION_MATRIX_EQ(
+        expected, operations.Blend(*identity_operations[i], progress));
+
+    progress = -0.5;
+
+    expected.MakeIdentity();
+    expected.Translate3d(-1, -1, -1);
+
+    EXPECT_TRANSFORMATION_MATRIX_EQ(
+        expected, operations.Blend(*identity_operations[i], progress));
+
+    progress = 1.5;
+
+    expected.MakeIdentity();
+    expected.Translate3d(3, 3, 3);
 
     EXPECT_TRANSFORMATION_MATRIX_EQ(
         expected, operations.Blend(*identity_operations[i], progress));
@@ -468,6 +500,22 @@ TEST(TransformOperationTest, BlendScaleFromIdentity) {
 
     EXPECT_TRANSFORMATION_MATRIX_EQ(
         expected, operations.Blend(*identity_operations[i], progress));
+
+    progress = -0.5;
+
+    expected.MakeIdentity();
+    expected.Scale3d(0, 0, 0);
+
+    EXPECT_TRANSFORMATION_MATRIX_EQ(
+        expected, operations.Blend(*identity_operations[i], progress));
+
+    progress = 1.5;
+
+    expected.MakeIdentity();
+    expected.Scale3d(4, 4, 4);
+
+    EXPECT_TRANSFORMATION_MATRIX_EQ(
+        expected, operations.Blend(*identity_operations[i], progress));
   }
 }
 
@@ -484,6 +532,24 @@ TEST(TransformOperationTest, BlendSkewFromIdentity) {
     gfx::Transform expected;
     expected.SkewX(1);
     expected.SkewY(1);
+
+    EXPECT_TRANSFORMATION_MATRIX_EQ(
+        expected, operations.Blend(*identity_operations[i], progress));
+
+    progress = -0.5;
+
+    expected.MakeIdentity();
+    expected.SkewX(-1);
+    expected.SkewY(-1);
+
+    EXPECT_TRANSFORMATION_MATRIX_EQ(
+        expected, operations.Blend(*identity_operations[i], progress));
+
+    progress = 1.5;
+
+    expected.MakeIdentity();
+    expected.SkewX(3);
+    expected.SkewY(3);
 
     EXPECT_TRANSFORMATION_MATRIX_EQ(
         expected, operations.Blend(*identity_operations[i], progress));
@@ -599,6 +665,46 @@ TEST(TransformOperationTest, BlendPerspectiveToIdentity) {
     EXPECT_TRANSFORMATION_MATRIX_EQ(
         expected, identity_operations[i]->Blend(operations, progress));
   }
+}
+
+TEST(TransformOperationTest, ExtrapolatePerspectiveBlending) {
+  TransformOperations operations1;
+  operations1.AppendPerspective(1000);
+
+  TransformOperations operations2;
+  operations2.AppendPerspective(500);
+
+  gfx::Transform expected;
+  expected.ApplyPerspectiveDepth(250);
+
+  EXPECT_TRANSFORMATION_MATRIX_EQ(
+      expected, operations1.Blend(operations2, -0.5));
+
+  expected.MakeIdentity();
+  expected.ApplyPerspectiveDepth(1250);
+
+  EXPECT_TRANSFORMATION_MATRIX_EQ(
+      expected, operations1.Blend(operations2, 1.5));
+}
+
+TEST(TransformOperationTest, ExtrapolateMatrixBlending) {
+  gfx::Transform transform1;
+  transform1.Translate3d(1, 1, 1);
+  TransformOperations operations1;
+  operations1.AppendMatrix(transform1);
+
+  gfx::Transform transform2;
+  transform2.Translate3d(3, 3, 3);
+  TransformOperations operations2;
+  operations2.AppendMatrix(transform2);
+
+  gfx::Transform expected;
+  EXPECT_TRANSFORMATION_MATRIX_EQ(
+      expected, operations1.Blend(operations2, 1.5));
+
+  expected.Translate3d(4, 4, 4);
+  EXPECT_TRANSFORMATION_MATRIX_EQ(
+      expected, operations1.Blend(operations2, -0.5));
 }
 
 }  // namespace

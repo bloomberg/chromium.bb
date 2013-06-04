@@ -74,12 +74,6 @@ static bool ShareSameAxis(const TransformOperation* from,
 }
 
 static double BlendDoubles(double from, double to, double progress) {
-  if (progress <= 0.0)
-    return from;
-
-  if (progress >= 1.0)
-    return to;
-
   return from * (1 - progress) + to * progress;
 }
 

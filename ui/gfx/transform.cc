@@ -365,14 +365,6 @@ bool Transform::TransformRectReverse(RectF* rect) const {
 }
 
 bool Transform::Blend(const Transform& from, double progress) {
-  if (progress <= 0.0) {
-    *this = from;
-    return true;
-  }
-
-  if (progress >= 1.0)
-    return true;
-
   DecomposedTransform to_decomp;
   DecomposedTransform from_decomp;
   if (!DecomposeTransform(&to_decomp, *this) ||

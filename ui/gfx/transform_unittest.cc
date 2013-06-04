@@ -12,6 +12,7 @@
 #include <limits>
 
 #include "base/basictypes.h"
+#include "base/logging.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/point3_f.h"
@@ -654,7 +655,7 @@ TEST(XFormTest, SetRotate2D) {
 
 TEST(XFormTest, BlendTranslate) {
   Transform from;
-  for (int i = 0; i < 10; ++i) {
+  for (int i = -5; i < 15; ++i) {
     Transform to;
     to.Translate3d(1, 1, 1);
     double t = i / 9.0;
@@ -674,7 +675,7 @@ TEST(XFormTest, BlendRotate) {
   };
   Transform from;
   for (size_t index = 0; index < ARRAYSIZE_UNSAFE(axes); ++index) {
-    for (int i = 0; i < 10; ++i) {
+    for (int i = -5; i < 15; ++i) {
       Transform to;
       to.RotateAbout(axes[index], 90);
       double t = i / 9.0;
@@ -698,7 +699,7 @@ TEST(XFormTest, BlendRotateFollowsShortestPath) {
     Vector3dF(1, 1, 1)
   };
   for (size_t index = 0; index < ARRAYSIZE_UNSAFE(axes); ++index) {
-    for (int i = 0; i < 10; ++i) {
+    for (int i = -5; i < 15; ++i) {
       Transform from1;
       from1.RotateAbout(axes[index], 130.0);
       Transform to1;
@@ -734,7 +735,7 @@ TEST(XFormTest, CanBlend180DegreeRotation) {
   };
   Transform from;
   for (size_t index = 0; index < ARRAYSIZE_UNSAFE(axes); ++index) {
-    for (int i = 0; i < 10; ++i) {
+    for (int i = -5; i < 15; ++i) {
       Transform to;
       to.RotateAbout(axes[index], 180);
       double t = i / 9.0;
@@ -750,7 +751,7 @@ TEST(XFormTest, CanBlend180DegreeRotation) {
 
 TEST(XFormTest, BlendScale) {
   Transform from;
-  for (int i = 0; i < 10; ++i) {
+  for (int i = -5; i < 15; ++i) {
     Transform to;
     to.Scale3d(5, 4, 3);
     double t = i / 9.0;
@@ -776,15 +777,29 @@ TEST(XFormTest, BlendSkew) {
   }
 }
 
+TEST(XFormTest, ExtrapolateSkew) {
+  Transform from;
+  for (int i = -1; i < 2; ++i) {
+    Transform to;
+    to.SkewX(20);
+    double t = i;
+    Transform expected;
+    expected.SkewX(t * 20);
+    EXPECT_TRUE(to.Blend(from, t));
+    EXPECT_TRUE(MatricesAreNearlyEqual(expected, to));
+  }
+}
+
 TEST(XFormTest, BlendPerspective) {
   Transform from;
   from.ApplyPerspectiveDepth(200);
-  for (int i = 0; i < 2; ++i) {
+  for (int i = -1; i < 3; ++i) {
     Transform to;
     to.ApplyPerspectiveDepth(800);
     double t = i;
+    double depth = 1.0 / ((1.0 / 200) * (1.0 - t) + (1.0 / 800) * t);
     Transform expected;
-    expected.ApplyPerspectiveDepth(t * 600 + 200);
+    expected.ApplyPerspectiveDepth(depth);
     EXPECT_TRUE(to.Blend(from, t));
     EXPECT_TRUE(MatricesAreNearlyEqual(expected, to));
   }

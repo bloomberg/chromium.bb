@@ -164,16 +164,6 @@ bool TransformOperations::BlendInternal(const TransformOperations& from,
     return true;
   }
 
-  if (progress <= 0.0) {
-    *result = from.Apply();
-    return true;
-  }
-
-  if (progress >= 1.0) {
-    *result = Apply();
-    return true;
-  }
-
   if (!ComputeDecomposedTransform() || !from.ComputeDecomposedTransform())
     return false;
 
