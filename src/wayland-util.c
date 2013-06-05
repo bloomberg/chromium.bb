@@ -211,14 +211,8 @@ wl_map_insert_at(struct wl_map *map, uint32_t flags, uint32_t i, void *data)
 	struct wl_array *entries;
 
 	if (i < WL_SERVER_ID_START) {
-		if (map->side == WL_MAP_CLIENT_SIDE)
-			return -1;
-
 		entries = &map->client_entries;
 	} else {
-		if (map->side == WL_MAP_SERVER_SIDE)
-			return -1;
-
 		entries = &map->server_entries;
 		i -= WL_SERVER_ID_START;
 	}
