@@ -3114,6 +3114,13 @@ void Document::hoveredNodeDetached(Node* node)
     m_hoverNode = node->parentNode();
     while (m_hoverNode && !m_hoverNode->renderer())
         m_hoverNode = m_hoverNode->parentNode();
+
+    // If the mouse cursor is not visible, do not clear existing
+    // hover effects on the ancestors of |node| and do not invoke
+    // new hover effects on any other element.
+    if (!page()->isCursorVisible())
+        return;
+
     if (frame())
         frame()->eventHandler()->scheduleHoverStateUpdate();
 }
