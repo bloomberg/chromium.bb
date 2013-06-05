@@ -133,6 +133,7 @@ private:
 
     // Element function.
     virtual PassRefPtr<RenderStyle> customStyleForRenderer() OVERRIDE;
+    virtual bool isDateTimeEditElement() const OVERRIDE;
 
     // DateTimeFieldElement::FieldOwner functions.
     virtual void didBlurFromField() OVERRIDE FINAL;
@@ -147,6 +148,12 @@ private:
     Vector<DateTimeFieldElement*, maximumNumberOfFields> m_fields;
     EditControlOwner* m_editControlOwner;
 };
+
+inline DateTimeEditElement* toDateTimeEditElement(Element* element)
+{
+    ASSERT_WITH_SECURITY_IMPLICATION(!element || element->isDateTimeEditElement());
+    return static_cast<DateTimeEditElement*>(element);
+}
 
 } // namespace WebCore
 

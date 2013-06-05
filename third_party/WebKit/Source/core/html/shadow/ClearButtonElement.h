@@ -50,10 +50,17 @@ private:
     virtual void detach();
     virtual bool isMouseFocusable() const { return false; }
     virtual void defaultEventHandler(Event*);
+    virtual bool isClearButtonElement() const OVERRIDE;
 
     ClearButtonOwner* m_clearButtonOwner;
     bool m_capturing;
 };
+
+inline ClearButtonElement* toClearButtonElement(Element* element)
+{
+    ASSERT_WITH_SECURITY_IMPLICATION(!element || element->isClearButtonElement());
+    return static_cast<ClearButtonElement*>(element);
+}
 
 } // namespace
 

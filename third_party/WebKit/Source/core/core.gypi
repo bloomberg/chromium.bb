@@ -2407,6 +2407,8 @@
             'html/shadow/MeterShadowElement.h',
             'html/shadow/ProgressShadowElement.cpp',
             'html/shadow/ProgressShadowElement.h',
+            'html/shadow/ShadowElementNames.cpp',
+            'html/shadow/ShadowElementNames.h',
             'html/shadow/SliderThumbElement.cpp',
             'html/shadow/SliderThumbElement.h',
             'html/shadow/SpinButtonElement.cpp',

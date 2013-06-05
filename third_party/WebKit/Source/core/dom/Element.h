@@ -516,7 +516,9 @@ public:
     virtual bool isInputFieldSpeechButtonElement() const { return false; }
 #endif
 #if ENABLE(INPUT_MULTIPLE_FIELDS_UI)
+    virtual bool isDateTimeEditElement() const;
     virtual bool isDateTimeFieldElement() const;
+    virtual bool isPickerIndicatorElement() const;
 #endif
 
     virtual bool isFormControlElement() const { return false; }
@@ -531,6 +533,7 @@ public:
     virtual bool isOutOfRange() const { return false; }
     virtual bool isFrameElementBase() const { return false; }
     virtual bool isTextFieldDecoration() const { return false; }
+    virtual bool isClearButtonElement() const;
 
     virtual bool canContainRangeEndPoint() const { return true; }
 

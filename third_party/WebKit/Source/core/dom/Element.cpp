@@ -1141,11 +1141,26 @@ RenderObject* Element::createRenderer(RenderArena*, RenderStyle* style)
 }
 
 #if ENABLE(INPUT_MULTIPLE_FIELDS_UI)
+bool Element::isDateTimeEditElement() const
+{
+    return false;
+}
+
 bool Element::isDateTimeFieldElement() const
 {
     return false;
 }
+
+bool Element::isPickerIndicatorElement() const
+{
+    return false;
+}
 #endif
+
+bool Element::isClearButtonElement() const
+{
+    return false;
+}
 
 bool Element::wasChangedSinceLastFormControlChangeEvent() const
 {

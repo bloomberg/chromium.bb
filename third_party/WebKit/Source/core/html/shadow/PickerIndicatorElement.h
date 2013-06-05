@@ -70,12 +70,19 @@ private:
     virtual RenderObject* createRenderer(RenderArena*, RenderStyle*) OVERRIDE;
     virtual void defaultEventHandler(Event*) OVERRIDE;
     virtual void detach() OVERRIDE;
+    virtual bool isPickerIndicatorElement() const OVERRIDE;
 
     HTMLInputElement* hostInput();
 
     PickerIndicatorOwner* m_pickerIndicatorOwner;
     RefPtr<DateTimeChooser> m_chooser;
 };
+
+inline PickerIndicatorElement* toPickerIndicatorElement(Element* element)
+{
+    ASSERT_WITH_SECURITY_IMPLICATION(!element || element->isPickerIndicatorElement());
+    return static_cast<PickerIndicatorElement*>(element);
+}
 
 }
 #endif

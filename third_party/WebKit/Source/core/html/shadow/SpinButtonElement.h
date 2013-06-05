@@ -92,6 +92,12 @@ private:
     Timer<SpinButtonElement> m_repeatingTimer;
 };
 
+inline SpinButtonElement* toSpinButtonElement(Element* element)
+{
+    ASSERT_WITH_SECURITY_IMPLICATION(!element || element->isSpinButtonElement());
+    return static_cast<SpinButtonElement*>(element);
+}
+
 } // namespace
 
 #endif

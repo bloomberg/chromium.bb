@@ -31,6 +31,7 @@
 #include "core/dom/EventNames.h"
 #include "core/dom/MouseEvent.h"
 #include "core/dom/WheelEvent.h"
+#include "core/html/shadow/ShadowElementNames.h"
 #include "core/page/Chrome.h"
 #include "core/page/EventHandler.h"
 #include "core/page/Frame.h"
@@ -50,6 +51,7 @@ inline SpinButtonElement::SpinButtonElement(Document* document, SpinButtonOwner&
     , m_pressStartingState(Indeterminate)
     , m_repeatingTimer(this, &SpinButtonElement::repeatingTimerFired)
 {
+    setAttribute(idAttr, ShadowElementNames::spinButton());
 }
 
 PassRefPtr<SpinButtonElement> SpinButtonElement::create(Document* document, SpinButtonOwner& spinButtonOwner)

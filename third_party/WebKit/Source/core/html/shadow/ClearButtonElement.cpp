@@ -27,6 +27,7 @@
 #include "core/html/shadow/ClearButtonElement.h"
 
 #include "core/dom/MouseEvent.h"
+#include "core/html/shadow/ShadowElementNames.h"
 #include "core/page/EventHandler.h"
 #include "core/page/Frame.h"
 #include "core/rendering/RenderView.h"
@@ -41,6 +42,7 @@ inline ClearButtonElement::ClearButtonElement(Document* document, ClearButtonOwn
     , m_capturing(false)
 {
     setPseudo(AtomicString("-webkit-clear-button", AtomicString::ConstructFromLiteral));
+    setAttribute(idAttr, ShadowElementNames::clearButton());
 }
 
 PassRefPtr<ClearButtonElement> ClearButtonElement::create(Document* document, ClearButtonOwner& clearButtonOwner)
@@ -107,6 +109,11 @@ void ClearButtonElement::defaultEventHandler(Event* event)
 
     if (!event->defaultHandled())
         HTMLDivElement::defaultEventHandler(event);
+}
+
+bool ClearButtonElement::isClearButtonElement() const
+{
+    return true;
 }
 
 }

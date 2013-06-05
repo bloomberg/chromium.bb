@@ -34,6 +34,7 @@
 #include "core/html/DateTimeFieldsState.h"
 #include "core/html/shadow/DateTimeFieldElements.h"
 #include "core/html/shadow/DateTimeSymbolicFieldElement.h"
+#include "core/html/shadow/ShadowElementNames.h"
 #include "core/page/EventHandler.h"
 #include "core/platform/DateComponents.h"
 #include "core/platform/graphics/FontCache.h"
@@ -448,6 +449,7 @@ DateTimeEditElement::DateTimeEditElement(Document* document, EditControlOwner& e
 {
     DEFINE_STATIC_LOCAL(AtomicString, dateTimeEditPseudoId, ("-webkit-datetime-edit", AtomicString::ConstructFromLiteral));
     setPseudo(dateTimeEditPseudoId);
+    setAttribute(idAttr, ShadowElementNames::dateTimeEdit());
     setHasCustomStyleCallbacks();
 }
 
@@ -622,6 +624,11 @@ bool DateTimeEditElement::focusOnPreviousField(const DateTimeFieldElement& field
         }
     }
     return false;
+}
+
+bool DateTimeEditElement::isDateTimeEditElement() const
+{
+    return true;
 }
 
 bool DateTimeEditElement::isDisabled() const

@@ -33,6 +33,7 @@
 #include "core/html/shadow/PickerIndicatorElement.h"
 
 #include "core/dom/Event.h"
+#include "core/html/shadow/ShadowElementNames.h"
 #include "core/page/Chrome.h"
 #include "core/page/Page.h"
 #include "core/rendering/RenderDetailsMarker.h"
@@ -48,6 +49,7 @@ inline PickerIndicatorElement::PickerIndicatorElement(Document* document, Picker
     , m_pickerIndicatorOwner(&pickerIndicatorOwner)
 {
     setPseudo(AtomicString("-webkit-calendar-picker-indicator", AtomicString::ConstructFromLiteral));
+    setAttribute(idAttr, ShadowElementNames::pickerIndicator());
 }
 
 PassRefPtr<PickerIndicatorElement> PickerIndicatorElement::create(Document* document, PickerIndicatorOwner& pickerIndicatorOwner)
@@ -127,6 +129,11 @@ void PickerIndicatorElement::detach()
 {
     closePopup();
     HTMLDivElement::detach();
+}
+
+bool PickerIndicatorElement::isPickerIndicatorElement() const
+{
+    return true;
 }
 
 }
