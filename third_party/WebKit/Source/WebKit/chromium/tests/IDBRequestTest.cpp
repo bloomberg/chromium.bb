@@ -40,7 +40,6 @@
 #include "modules/indexeddb/IDBDatabaseCallbacksImpl.h"
 #include "modules/indexeddb/IDBKeyRange.h"
 #include "modules/indexeddb/IDBOpenDBRequest.h"
-#include "modules/indexeddb/IDBTransactionCoordinator.h"
 
 #include <gtest/gtest.h>
 

@@ -39,7 +39,6 @@
 #include "bindings/v8/ScriptController.h"
 #include "core/dom/Document.h"
 #include "modules/indexeddb/IDBDatabase.h"
-#include "modules/indexeddb/IDBDatabaseBackendImpl.h"
 #include "modules/indexeddb/IDBDatabaseCallbacks.h"
 #include "modules/indexeddb/IDBPendingTransactionMonitor.h"
 #include "modules/indexeddb/IDBTransaction.h"

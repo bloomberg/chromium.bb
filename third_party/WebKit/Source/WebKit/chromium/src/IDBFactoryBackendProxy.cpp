@@ -59,10 +59,6 @@ using namespace WebCore;
 
 namespace WebKit {
 
-void setIDBFactory(WebIDBFactory* factory)
-{
-}
-
 PassRefPtr<IDBFactoryBackendInterface> IDBFactoryBackendProxy::create()
 {
     return adoptRef(new IDBFactoryBackendProxy());

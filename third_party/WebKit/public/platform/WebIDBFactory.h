@@ -45,8 +45,6 @@ class WebIDBDatabaseCallbacks;
 // http://dev.w3.org/2006/webapi/WebSimpleDB/
 class WebIDBFactory {
 public:
-    WEBKIT_EXPORT static WebIDBFactory* create();
-
     virtual ~WebIDBFactory() { }
 
     virtual void getDatabaseNames(WebIDBCallbacks* callbacks, const WebString& databaseIdentifier, const WebString& dataDir) { }
@@ -55,9 +53,6 @@ public:
 
     virtual void deleteDatabase(const WebString& name, WebIDBCallbacks* callbacks, const WebString& databaseIdentifier, const WebString& dataDir) { WEBKIT_ASSERT_NOT_REACHED(); }
 };
-
-// Initializes IndexedDB support.
-WEBKIT_EXPORT void setIDBFactory(WebIDBFactory*);
 
 } // namespace WebKit
 
