@@ -16,6 +16,7 @@
 #include "base/platform_file.h"
 #include "base/shared_memory.h"
 #include "content/public/browser/browser_message_filter.h"
+#include "webkit/browser/fileapi/file_system_operation_runner.h"
 #include "webkit/common/blob/blob_data.h"
 #include "webkit/common/fileapi/file_system_types.h"
 #include "webkit/common/quota/quota_types.h"
@@ -30,7 +31,6 @@ class Time;
 namespace fileapi {
 class FileSystemURL;
 class FileSystemContext;
-class FileSystemOperation;
 struct DirectoryEntry;
 }
 
@@ -70,14 +70,14 @@ class FileAPIMessageFilter : public BrowserMessageFilter {
   virtual bool OnMessageReceived(const IPC::Message& message,
                                  bool* message_was_ok) OVERRIDE;
 
-  void UnregisterOperation(int request_id);
-
  protected:
   virtual ~FileAPIMessageFilter();
 
   virtual void BadMessageReceived() OVERRIDE;
 
  private:
+  typedef fileapi::FileSystemOperationRunner::OperationID OperationID;
+
   void OnOpen(int request_id,
               const GURL& origin_url,
               fileapi::FileSystemType type,
@@ -170,17 +170,15 @@ class FileAPIMessageFilter : public BrowserMessageFilter {
                              int permissions,
                              base::PlatformFileError* error);
 
-  // Creates a new FileSystemOperation based on |target_url|.
-  fileapi::FileSystemOperation* GetNewOperation(
-      const fileapi::FileSystemURL& target_url,
-      int request_id);
+  fileapi::FileSystemOperationRunner* operation_runner();
 
   int process_id_;
 
   fileapi::FileSystemContext* context_;
 
-  // Keeps ongoing file system operations.
-  typedef IDMap<fileapi::FileSystemOperation> OperationsMap;
+  // Keeps map from request_id to OperationID for ongoing operations.
+  // (Primarily for Cancel operation)
+  typedef std::map<int, OperationID> OperationsMap;
   OperationsMap operations_;
 
   // The getter holds the context until Init() can be called from the

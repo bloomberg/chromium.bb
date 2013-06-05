@@ -54,6 +54,7 @@ class FileStreamWriter;
 class FileSystemFileUtil;
 class FileSystemMountPointProvider;
 class FileSystemOperation;
+class FileSystemOperationRunner;
 class FileSystemOptions;
 class FileSystemQuotaUtil;
 class FileSystemTaskRunners;
@@ -179,6 +180,7 @@ class WEBKIT_STORAGE_EXPORT FileSystemContext
       FileSystemType type,
       const DeleteFileSystemCallback& callback);
 
+  // TODO(kinuko): Make this private to FileSystemOperationRunner.
   // Creates a new FileSystemOperation instance by getting an appropriate
   // MountPointProvider for |url| and calling the provider's corresponding
   // CreateFileSystemOperation method.
@@ -210,6 +212,10 @@ class WEBKIT_STORAGE_EXPORT FileSystemContext
       int64 offset);
 
   FileSystemTaskRunners* task_runners() { return task_runners_.get(); }
+
+  FileSystemOperationRunner* operation_runner() {
+    return operation_runner_.get();
+  }
 
   sync_file_system::LocalFileChangeTracker* change_tracker() {
     return change_tracker_.get();
@@ -295,6 +301,8 @@ class WEBKIT_STORAGE_EXPORT FileSystemContext
   // For syncable file systems.
   scoped_ptr<sync_file_system::LocalFileChangeTracker> change_tracker_;
   scoped_refptr<sync_file_system::LocalFileSyncContext> sync_context_;
+
+  scoped_ptr<FileSystemOperationRunner> operation_runner_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(FileSystemContext);
 };

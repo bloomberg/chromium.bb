@@ -14,6 +14,7 @@
 #include "webkit/browser/fileapi/file_stream_writer.h"
 #include "webkit/browser/fileapi/file_system_file_util.h"
 #include "webkit/browser/fileapi/file_system_operation.h"
+#include "webkit/browser/fileapi/file_system_operation_runner.h"
 #include "webkit/browser/fileapi/file_system_options.h"
 #include "webkit/browser/fileapi/file_system_quota_client.h"
 #include "webkit/browser/fileapi/file_system_task_runners.h"
@@ -76,7 +77,8 @@ FileSystemContext::FileSystemContext(
       isolated_provider_(new IsolatedMountPointProvider()),
       additional_providers_(additional_providers.Pass()),
       external_mount_points_(external_mount_points),
-      partition_path_(partition_path) {
+      partition_path_(partition_path),
+      operation_runner_(new FileSystemOperationRunner(this)) {
   DCHECK(task_runners_.get());
 
   if (quota_manager_proxy) {

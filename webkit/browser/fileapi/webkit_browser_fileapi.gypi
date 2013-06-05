@@ -27,6 +27,8 @@
       '../browser/fileapi/file_system_file_util.h',
       '../browser/fileapi/file_system_mount_point_provider.h',
       '../browser/fileapi/file_system_operation.h',
+      '../browser/fileapi/file_system_operation_runner.cc',
+      '../browser/fileapi/file_system_operation_runner.h',
       '../browser/fileapi/file_system_operation_context.cc',
       '../browser/fileapi/file_system_operation_context.h',
       '../browser/fileapi/file_system_options.cc',
