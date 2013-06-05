@@ -558,6 +558,11 @@ body[new-ui] .dialog-header #close-button {
     url('../images/files/ui/new-ui/2x/topbar_button_close.png') 2x);
 }
 
+body[new-ui]:not([type='full-page']) .dialog-header #close-button,
+body[new-ui]:not([type='full-page']) .dialog-header #maximize-button {
+  display: none;
+}
+
 body[maximized][type='full-page'] .dialog-header {
   -webkit-padding-end: 75px;
 }
