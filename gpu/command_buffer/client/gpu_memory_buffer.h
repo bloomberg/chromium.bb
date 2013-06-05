@@ -47,7 +47,7 @@ class GLES2_IMPL_EXPORT GpuMemoryBuffer {
   // Returns the native pointer for the buffer.
   virtual void* GetNativeBuffer() = 0;
 
-  // Returns the stride in pixels for the buffer.
+  // Returns the stride in bytes for the buffer.
   virtual uint32 GetStride() = 0;
 };
 
