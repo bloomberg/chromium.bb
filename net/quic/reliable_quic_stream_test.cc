@@ -9,6 +9,7 @@
 #include "net/quic/quic_spdy_decompressor.h"
 #include "net/quic/quic_utils.h"
 #include "net/quic/spdy_utils.h"
+#include "net/quic/test_tools/quic_session_peer.h"
 #include "net/quic/test_tools/quic_test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -78,6 +79,8 @@ class ReliableQuicStreamTest : public ::testing::TestWithParam<bool> {
                                  stream_should_process_data));
     compressor_.reset(new QuicSpdyCompressor());
     decompressor_.reset(new QuicSpdyDecompressor);
+    write_blocked_list_ =
+        QuicSessionPeer::GetWriteblockedStreams(session_.get());
   }
 
  protected:
@@ -88,6 +91,7 @@ class ReliableQuicStreamTest : public ::testing::TestWithParam<bool> {
   scoped_ptr<QuicSpdyCompressor> compressor_;
   scoped_ptr<QuicSpdyDecompressor> decompressor_;
   SpdyHeaderBlock headers_;
+  BlockedList<QuicStreamId>* write_blocked_list_;
 };
 
 TEST_F(ReliableQuicStreamTest, WriteAllData) {
@@ -95,26 +99,83 @@ TEST_F(ReliableQuicStreamTest, WriteAllData) {
 
   connection_->options()->max_packet_length =
       1 + QuicPacketCreator::StreamFramePacketOverhead(
-          1, PACKET_8BYTE_GUID, !kIncludeVersion, NOT_IN_FEC_GROUP);
+          1, PACKET_8BYTE_GUID, !kIncludeVersion,
+          PACKET_6BYTE_SEQUENCE_NUMBER, NOT_IN_FEC_GROUP);
   // TODO(rch): figure out how to get StrEq working here.
   //EXPECT_CALL(*session_, WriteData(kStreamId, StrEq(kData1), _, _)).WillOnce(
   EXPECT_CALL(*session_, WriteData(kStreamId, _, _, _)).WillOnce(
       Return(QuicConsumedData(kDataLen, true)));
   EXPECT_EQ(kDataLen, stream_->WriteData(kData1, false).bytes_consumed);
+  EXPECT_TRUE(write_blocked_list_->IsEmpty());
+}
+
+// TODO(rtenneti): Death tests crash on OS_ANDROID.
+#if GTEST_HAS_DEATH_TEST && !defined(NDEBUG) && !defined(OS_ANDROID)
+TEST_F(ReliableQuicStreamTest, NoBlockingIfNoDataOrFin) {
+  Initialize(kShouldProcessData);
+
+  // Write no data and no fin.  If we consume nothing we should not be write
+  // blocked.
+  EXPECT_DEBUG_DEATH({
+    EXPECT_CALL(*session_, WriteData(kStreamId, _, _, _)).WillOnce(
+        Return(QuicConsumedData(0, false)));
+    stream_->WriteData(StringPiece(), false);
+  EXPECT_TRUE(write_blocked_list_->IsEmpty());
+  }, "");
+}
+#endif  // GTEST_HAS_DEATH_TEST && !defined(NDEBUG) && !defined(OS_ANDROID)
+
+TEST_F(ReliableQuicStreamTest, BlockIfOnlySomeDataConsumed) {
+  Initialize(kShouldProcessData);
+
+  // Write some data and no fin.  If we consume some but not all of the data,
+  // we should be write blocked a not all the data was consumed.
+  EXPECT_CALL(*session_, WriteData(kStreamId, _, _, _)).WillOnce(
+      Return(QuicConsumedData(1, false)));
+  stream_->WriteData(StringPiece(kData1, 2), false);
+  ASSERT_EQ(1, write_blocked_list_->NumObjects());
+}
+
+
+TEST_F(ReliableQuicStreamTest, BlockIfFinNotConsumedWithData) {
+  Initialize(kShouldProcessData);
+
+  // Write some data and no fin.  If we consume all the data but not the fin,
+  // we should be write blocked because the fin was not consumed.
+  // (This should never actually happen as the fin should be sent out with the
+  // last data)
+  EXPECT_CALL(*session_, WriteData(kStreamId, _, _, _)).WillOnce(
+      Return(QuicConsumedData(2, false)));
+  stream_->WriteData(StringPiece(kData1, 2), true);
+  ASSERT_EQ(1, write_blocked_list_->NumObjects());
+}
+
+TEST_F(ReliableQuicStreamTest, BlockIfSoloFinNotConsumed) {
+  Initialize(kShouldProcessData);
+
+  // Write no data and a fin.  If we consume nothing we should be write blocked,
+  // as the fin was not consumed.
+  EXPECT_CALL(*session_, WriteData(kStreamId, _, _, _)).WillOnce(
+      Return(QuicConsumedData(0, false)));
+  stream_->WriteData(StringPiece(), true);
+  ASSERT_EQ(1, write_blocked_list_->NumObjects());
 }
 
 TEST_F(ReliableQuicStreamTest, WriteData) {
   Initialize(kShouldProcessData);
 
+  EXPECT_TRUE(write_blocked_list_->IsEmpty());
   connection_->options()->max_packet_length =
       1 + QuicPacketCreator::StreamFramePacketOverhead(
-          1, PACKET_8BYTE_GUID, !kIncludeVersion, NOT_IN_FEC_GROUP);
+          1, PACKET_8BYTE_GUID, !kIncludeVersion,
+          PACKET_6BYTE_SEQUENCE_NUMBER, NOT_IN_FEC_GROUP);
   // TODO(rch): figure out how to get StrEq working here.
   //EXPECT_CALL(*session_, WriteData(_, StrEq(kData1), _, _)).WillOnce(
   EXPECT_CALL(*session_, WriteData(_, _, _, _)).WillOnce(
       Return(QuicConsumedData(kDataLen - 1, false)));
   // The return will be kDataLen, because the last byte gets buffered.
   EXPECT_EQ(kDataLen, stream_->WriteData(kData1, false).bytes_consumed);
+  EXPECT_FALSE(write_blocked_list_->IsEmpty());
 
   // Queue a bytes_consumed write.
   EXPECT_EQ(kDataLen, stream_->WriteData(kData2, false).bytes_consumed);

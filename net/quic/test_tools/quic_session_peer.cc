@@ -5,6 +5,7 @@
 #include "net/quic/test_tools/quic_session_peer.h"
 
 #include "net/quic/quic_session.h"
+#include "net/quic/reliable_quic_stream.h"
 
 namespace net {
 namespace test {
@@ -18,6 +19,18 @@ void QuicSessionPeer::SetNextStreamId(QuicSession* session, QuicStreamId id) {
 void QuicSessionPeer::SetMaxOpenStreams(QuicSession* session,
                                         uint32 max_streams) {
   session->max_open_streams_ = max_streams;
+}
+
+// static
+ReliableQuicStream* QuicSessionPeer::CreateIncomingReliableStream(
+    QuicSession* session, QuicStreamId id) {
+  return session->CreateIncomingReliableStream(id);
+}
+
+// static
+BlockedList<QuicStreamId>* QuicSessionPeer::GetWriteblockedStreams(
+    QuicSession* session) {
+  return &session->write_blocked_streams_;
 }
 
 }  // namespace test

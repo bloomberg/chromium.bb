@@ -114,6 +114,7 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
   bool IsClosedStream(QuicStreamId id);
 
   QuicConnection* connection() { return connection_.get(); }
+  const QuicConnection* connection() const { return connection_.get(); }
   size_t num_active_requests() const { return stream_map_.size(); }
   const IPEndPoint& peer_address() const {
     return connection_->peer_address();
@@ -143,6 +144,8 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
 
   QuicSpdyDecompressor* decompressor() { return &decompressor_; }
   QuicSpdyCompressor* compressor() { return &compressor_; }
+
+  QuicErrorCode error() const { return error_; }
 
  protected:
   // Creates a new stream, owned by the caller, to handle a peer-initiated
@@ -174,6 +177,11 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
   base::hash_map<QuicStreamId, ReliableQuicStream*>* streams() {
     return &stream_map_;
   }
+
+  const base::hash_map<QuicStreamId, ReliableQuicStream*>* streams() const {
+    return &stream_map_;
+  }
+
   std::vector<ReliableQuicStream*>* closed_streams() {
     return &closed_streams_;
   }
@@ -227,6 +235,9 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
   map<uint32, QuicStreamId> decompression_blocked_streams_;
 
   QuicStreamId largest_peer_created_stream_id_;
+
+  // The latched error with which the connection was closed.
+  QuicErrorCode error_;
 
   // Whether a GoAway has been received.
   bool goaway_received_;

@@ -62,6 +62,7 @@ void QuicCongestionManager::AbandoningPacket(
     QuicPacketSequenceNumber sequence_number) {
   PendingPacketsMap::iterator it = pending_packets_.find(sequence_number);
   if (it != pending_packets_.end()) {
+    // Shouldn't this report loss as well? (decrease cgst window).
     send_algorithm_->AbandoningPacket(sequence_number, it->second);
     pending_packets_.erase(it);
   }

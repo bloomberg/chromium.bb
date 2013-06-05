@@ -95,7 +95,12 @@ void ReliableQuicStream::TerminateFromPeer(bool half_close) {
 
 void ReliableQuicStream::Close(QuicRstStreamErrorCode error) {
   stream_error_ = error;
-  session()->SendRstStream(id(), error);
+  if (error != QUIC_STREAM_NO_ERROR)  {
+    // Sending a RstStream results in calling CloseStream.
+    session()->SendRstStream(id(), error);
+  } else {
+    session_->CloseStream(id());
+  }
 }
 
 int ReliableQuicStream::Readv(const struct iovec* iov, size_t iov_len) {
@@ -155,6 +160,7 @@ QuicSpdyCompressor* ReliableQuicStream::compressor() {
 }
 
 QuicConsumedData ReliableQuicStream::WriteData(StringPiece data, bool fin) {
+  DCHECK(data.size() > 0 || fin);
   return WriteOrBuffer(data, fin);
 }
 
@@ -212,6 +218,8 @@ QuicConsumedData ReliableQuicStream::WriteDataInternal(
     if (fin && consumed_data.fin_consumed) {
       fin_sent_ = true;
       CloseWriteSide();
+    } else if (fin && !consumed_data.fin_consumed) {
+      session_->MarkWriteBlocked(id());
     }
   } else {
     session_->MarkWriteBlocked(id());

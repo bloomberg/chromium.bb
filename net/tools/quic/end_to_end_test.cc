@@ -333,7 +333,7 @@ TEST_F(EndToEndTest, RequestOverMultiplePackets) {
   // TODO(satyashekhar): Fix this when versioning is implemented.
   client_->options()->max_packet_length =
       GetPacketHeaderSize(PACKET_8BYTE_GUID, !kIncludeVersion,
-                          NOT_IN_FEC_GROUP) +
+                          PACKET_6BYTE_SEQUENCE_NUMBER, NOT_IN_FEC_GROUP) +
       ciphertext_size;
 
   // Make sure our request is too large to fit in one packet.
@@ -365,7 +365,7 @@ TEST_F(EndToEndTest, MultipleFramesRandomOrder) {
   // TODO(satyashekhar): Fix this when versioning is implemented.
   client_->options()->max_packet_length =
       GetPacketHeaderSize(PACKET_8BYTE_GUID, !kIncludeVersion,
-                          NOT_IN_FEC_GROUP) +
+                          PACKET_6BYTE_SEQUENCE_NUMBER, NOT_IN_FEC_GROUP) +
       ciphertext_size;
   client_->options()->random_reorder = true;
 

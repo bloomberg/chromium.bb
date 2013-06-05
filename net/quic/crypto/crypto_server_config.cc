@@ -631,6 +631,18 @@ void QuicCryptoServerConfig::set_source_address_token_lifetime_secs(
   source_address_token_lifetime_secs_ = lifetime_secs;
 }
 
+void QuicCryptoServerConfig::set_server_nonce_strike_register_max_entries(
+    uint32 max_entries) {
+  DCHECK(!server_nonce_strike_register_.get());
+  server_nonce_strike_register_max_entries_ = max_entries;
+}
+
+void QuicCryptoServerConfig::set_server_nonce_strike_register_window_secs(
+    uint32 window_secs) {
+  DCHECK(!server_nonce_strike_register_.get());
+  server_nonce_strike_register_window_secs_ = window_secs;
+}
+
 string QuicCryptoServerConfig::NewSourceAddressToken(
     const IPEndPoint& ip,
     QuicRandom* rand,
