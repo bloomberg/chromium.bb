@@ -38,10 +38,14 @@ def ReadDumpTxtFile(filename):
 
 
 def StartCrashService(browser_path, dumps_dir, windows_pipe_name,
-                      cleanup_funcs, crash_service_exe):
+                      cleanup_funcs, crash_service_exe,
+                      skip_if_missing=False):
   # Find crash_service.exe relative to chrome.exe.  This is a bit icky.
   browser_dir = os.path.dirname(browser_path)
-  proc = subprocess.Popen([os.path.join(browser_dir, crash_service_exe),
+  crash_service_path = os.path.join(browser_dir, crash_service_exe)
+  if skip_if_missing and not os.path.exists(crash_service_path):
+    return
+  proc = subprocess.Popen([crash_service_path,
                            '--v=1',  # Verbose output for debugging failures
                            '--dumps-dir=%s' % dumps_dir,
                            '--pipe-name=%s' % windows_pipe_name])
@@ -123,8 +127,11 @@ def Main(cleanup_funcs):
     if options.win64:
       # Launch the x86-64 crash service so that we can handle crashes
       # in the NaCl loader process (nacl64.exe).
+      # Skip if missing, since in win64 builds crash_service.exe is 64-bit
+      # and crash_service64.exe does not exist.
       StartCrashService(options.browser_path, dumps_dir, windows_pipe_name,
-                        cleanup_funcs, 'crash_service64.exe')
+                        cleanup_funcs, 'crash_service64.exe',
+                        skip_if_missing=True)
     # We add a delay because there is probably a race condition:
     # crash_service.exe might not have finished doing
     # CreateNamedPipe() before NaCl does a crash dump and tries to
