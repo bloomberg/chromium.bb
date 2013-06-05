@@ -11,6 +11,7 @@
 #include "base/hash.h"
 #include "base/json/json_writer.h"
 #include "base/stl_util.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/spellchecker/word_trimmer.h"
 #include "chrome/common/chrome_switches.h"
@@ -29,6 +30,9 @@ namespace {
 
 // The default URL where feedback data is sent.
 const char kFeedbackServiceURL[] = "https://www.googleapis.com/rpc";
+
+// The minimum number of seconds between sending batches of feedback.
+const int kMinIntervalSeconds = 5;
 
 // Returns a hash of |session_start|, the current timestamp, and
 // |suggestion_index|.
@@ -117,9 +121,21 @@ FeedbackSender::FeedbackSender(net::URLRequestContextGetter* request_context,
             switches::kSpellingServiceFeedbackUrl));
   }
 
+  int interval_seconds = chrome::spellcheck_common::kFeedbackIntervalSeconds;
+  // This command-line switch is for testing and temporary.
+  // TODO(rouslan): Remove the command-line switch when testing is complete by
+  // August 2013.
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kSpellingServiceFeedbackIntervalSeconds)) {
+    base::StringToInt(CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+                          switches::kSpellingServiceFeedbackIntervalSeconds),
+                      &interval_seconds);
+    if (interval_seconds < kMinIntervalSeconds)
+      interval_seconds = kMinIntervalSeconds;
+  }
+
   timer_.Start(FROM_HERE,
-               base::TimeDelta::FromSeconds(
-                   chrome::spellcheck_common::kFeedbackIntervalSeconds),
+               base::TimeDelta::FromSeconds(interval_seconds),
                this,
                &FeedbackSender::RequestDocumentMarkers);
 }

@@ -1307,6 +1307,14 @@ const char kSpeculativeResourcePrefetchingEnabled[] = "enabled";
 // August 2013.
 const char kSpellingServiceFeedbackUrl[] = "spelling-service-feedback-url";
 
+// Specifies the number of seconds between sending batches of feedback to
+// spelling service. The default is 30 minutes. The mininum is 5 seconds. This
+// switch is for temporary testing only.
+// TODO(rouslan): Remove this flag when feedback testing is complete. Revisit by
+// August 2013.
+const char kSpellingServiceFeedbackIntervalSeconds[] =
+    "spelling-service-feedback-interval-seconds";
+
 // Specifies the maximum SSL/TLS version ("ssl3", "tls1", "tls1.1", or
 // "tls1.2").
 const char kSSLVersionMax[]                 = "ssl-version-max";
