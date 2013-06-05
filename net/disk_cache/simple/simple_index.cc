@@ -14,7 +14,6 @@
 #include "base/metrics/histogram.h"
 #include "base/pickle.h"
 #include "base/task_runner.h"
-#include "base/threading/thread_restrictions.h"
 #include "base/threading/worker_pool.h"
 #include "base/time.h"
 #include "net/base/net_errors.h"
@@ -63,45 +62,6 @@ bool CompareHashesForTimestamp::operator()(uint64 hash1, uint64 hash2) {
   return it1->second.GetLastUsedTime() < it2->second.GetLastUsedTime();
 }
 
-bool GetNanoSecsFromStat(const struct stat& st, long* out_sec, long* out_nsec) {
-#if defined(OS_ANDROID)
-  *out_sec = st.st_mtime;
-  *out_nsec = st.st_mtime_nsec;
-#elif defined(OS_LINUX)
-  *out_sec = st.st_mtim.tv_sec;
-  *out_nsec = st.st_mtim.tv_nsec;
-#elif defined(OS_MACOSX) || defined(OS_IOS) || defined(OS_BSD)
-  *out_sec = st.st_mtimespec.tv_sec;
-  *out_nsec = st.st_mtimespec.tv_nsec;
-#else
-  return false;
-#endif
-  return true;
-}
-
-bool GetMTime(const base::FilePath& path, base::Time* out_mtime) {
-  DCHECK(out_mtime);
-#if defined(OS_POSIX)
-  base::ThreadRestrictions::AssertIOAllowed();
-  struct stat file_stat;
-  if (stat(path.value().c_str(), &file_stat) != 0)
-    return false;
-  long sec;
-  long nsec;
-  if (GetNanoSecsFromStat(file_stat, &sec, &nsec)) {
-    int64 usec = (nsec / base::Time::kNanosecondsPerMicrosecond);
-    *out_mtime = base::Time::FromTimeT(implicit_cast<time_t>(sec))
-        + base::TimeDelta::FromMicroseconds(usec);
-    return true;
-  }
-#endif
-  base::PlatformFileInfo file_info;
-  if (!file_util::GetFileInfo(path, &file_info))
-    return false;
-  *out_mtime = file_info.last_modified;
-  return true;
-}
-
 }  // namespace
 
 namespace disk_cache {
@@ -133,24 +93,17 @@ bool EntryMetadata::Deserialize(PickleIterator* it) {
   return it->ReadInt64(&last_used_time_) && it->ReadUInt64(&entry_size_);
 }
 
-void EntryMetadata::MergeWith(const EntryMetadata& from) {
-  if (last_used_time_ == 0)
-    last_used_time_ = from.last_used_time_;
-  if (entry_size_ == 0)
-    entry_size_ = from.entry_size_;
-}
-
-SimpleIndex::SimpleIndex(base::SingleThreadTaskRunner* cache_thread,
-                         base::SingleThreadTaskRunner* io_thread,
-                         const base::FilePath& path)
+SimpleIndex::SimpleIndex(base::SingleThreadTaskRunner* io_thread,
+                         const base::FilePath& cache_directory,
+                         scoped_ptr<SimpleIndexFile> index_file)
     : cache_size_(0),
       max_size_(0),
       high_watermark_(0),
       low_watermark_(0),
       eviction_in_progress_(false),
       initialized_(false),
-      index_filename_(path.AppendASCII("the-real-index")),
-      cache_thread_(cache_thread),
+      cache_directory_(cache_directory),
+      index_file_(index_file.Pass()),
       io_thread_(io_thread),
       // Creating the callback once so it is reused every time
       // write_to_disk_timer_.Start() is called.
@@ -175,14 +128,8 @@ void SimpleIndex::Initialize() {
       base::Bind(&SimpleIndex::OnActivityStateChange, AsWeakPtr())));
 #endif
 
-  IndexCompletionCallback merge_callback =
-      base::Bind(&SimpleIndex::MergeInitializingSet, AsWeakPtr());
-  base::WorkerPool::PostTask(FROM_HERE,
-                             base::Bind(&SimpleIndex::InitializeInternal,
-                                        index_filename_,
-                                        io_thread_,
-                                        merge_callback),
-                             true);
+  index_file_->LoadIndexEntries(
+      io_thread_, base::Bind(&SimpleIndex::MergeInitializingSet, AsWeakPtr()));
 }
 
 bool SimpleIndex::SetMaxSize(int max_bytes) {
@@ -322,13 +269,9 @@ void SimpleIndex::StartEvictionIfNeeded() {
   UMA_HISTOGRAM_COUNTS("SimpleCache.Eviction.SizeOfEvicted",
                        evicted_so_far_size);
 
-  scoped_ptr<int> result(new int());
-  base::Closure task = base::Bind(&SimpleSynchronousEntry::DoomEntrySet,
-                                  base::Passed(&entry_hashes),
-                                  index_filename_.DirName(), result.get());
-  base::Closure reply = base::Bind(&SimpleIndex::EvictionDone, AsWeakPtr(),
-                                   base::Passed(&result));
-  base::WorkerPool::PostTaskAndReply(FROM_HERE, task, reply, true);
+  index_file_->DoomEntrySet(
+      entry_hashes.Pass(),
+      base::Bind(&SimpleIndex::EvictionDone, AsWeakPtr()));
 }
 
 bool SimpleIndex::UpdateEntrySize(const std::string& key, uint64 entry_size) {
@@ -343,13 +286,12 @@ bool SimpleIndex::UpdateEntrySize(const std::string& key, uint64 entry_size) {
   return true;
 }
 
-void SimpleIndex::EvictionDone(scoped_ptr<int> result) {
+void SimpleIndex::EvictionDone(int result) {
   DCHECK(io_thread_checker_.CalledOnValidThread());
-  DCHECK(result);
 
   // Ignore the result of eviction. We did our best.
   eviction_in_progress_ = false;
-  UMA_HISTOGRAM_BOOLEAN("SimpleCache.Eviction.Result", *result == net::OK);
+  UMA_HISTOGRAM_BOOLEAN("SimpleCache.Eviction.Result", result == net::OK);
   UMA_HISTOGRAM_TIMES("SimpleCache.Eviction.TimeToDone",
                       base::TimeTicks::Now() - eviction_start_time_);
   UMA_HISTOGRAM_COUNTS("SimpleCache.Eviction.SizeWhenDone", cache_size_);
@@ -384,156 +326,6 @@ void SimpleIndex::UpdateEntryIteratorSize(EntrySet::iterator* it,
   (*it)->second.SetEntrySize(entry_size);
 }
 
-// static
-bool SimpleIndex::IsIndexFileStale(const base::FilePath& index_filename) {
-  base::Time index_mtime;
-  base::Time dir_mtime;
-  if (!GetMTime(index_filename.DirName(), &dir_mtime))
-    return true;
-  if (!GetMTime(index_filename, &index_mtime))
-    return true;
-  // Index file last_modified must be equal to the directory last_modified since
-  // the last operation we do is ReplaceFile in the
-  // SimpleIndexFile::WriteToDisk().
-  // If not true, we need to restore the index.
-  return index_mtime < dir_mtime;
-}
-
-// static
-void SimpleIndex::InitializeInternal(
-    const base::FilePath& index_filename,
-    base::SingleThreadTaskRunner* io_thread,
-    const IndexCompletionCallback& completion_callback) {
-  // TODO(felipeg): probably could load a stale index and use it for something.
-  scoped_ptr<EntrySet> index_file_entries;
-
-  const bool index_file_exists = file_util::PathExists(index_filename);
-
-  // Only load if the index is not stale.
-  const bool index_stale = SimpleIndex::IsIndexFileStale(index_filename);
-  if (!index_stale) {
-    const base::TimeTicks start = base::TimeTicks::Now();
-    index_file_entries = SimpleIndexFile::LoadFromDisk(index_filename);
-    UMA_HISTOGRAM_TIMES("SimpleCache.IndexLoadTime",
-                        (base::TimeTicks::Now() - start));
-  }
-
-  UMA_HISTOGRAM_BOOLEAN("SimpleCache.IndexStale", index_stale);
-
-  bool force_index_flush = false;
-  if (!index_file_entries) {
-    const base::TimeTicks start = base::TimeTicks::Now();
-    index_file_entries = SimpleIndex::RestoreFromDisk(index_filename);
-    UMA_HISTOGRAM_TIMES("SimpleCache.IndexRestoreTime",
-                        (base::TimeTicks::Now() - start));
-
-    // When we restore from disk we write the merged index file to disk right
-    // away, this might save us from having to restore again next time.
-    force_index_flush = true;
-  }
-  UMA_HISTOGRAM_BOOLEAN("SimpleCache.IndexCorrupt",
-                        (!index_stale && force_index_flush));
-
-  // Used in histograms. Please only add new values at the end.
-  enum {
-    INITIALIZE_METHOD_RECOVERED = 0,
-    INITIALIZE_METHOD_LOADED = 1,
-    INITIALIZE_METHOD_NEWCACHE = 2,
-    INITIALIZE_METHOD_MAX = 3,
-  };
-  int initialize_method;
-  if (index_file_exists) {
-    if (force_index_flush)
-      initialize_method = INITIALIZE_METHOD_RECOVERED;
-    else
-      initialize_method = INITIALIZE_METHOD_LOADED;
-  } else {
-    UMA_HISTOGRAM_COUNTS("SimpleCache.IndexCreatedEntryCount",
-                         index_file_entries->size());
-    initialize_method = INITIALIZE_METHOD_NEWCACHE;
-  }
-
-  UMA_HISTOGRAM_ENUMERATION("SimpleCache.IndexInitializeMethod",
-                            initialize_method, INITIALIZE_METHOD_MAX);
-  io_thread->PostTask(FROM_HERE,
-                      base::Bind(completion_callback,
-                                 base::Passed(&index_file_entries),
-                                 force_index_flush));
-}
-
-// static
-scoped_ptr<SimpleIndex::EntrySet> SimpleIndex::RestoreFromDisk(
-    const base::FilePath& index_filename) {
-  using file_util::FileEnumerator;
-  LOG(INFO) << "Simple Cache Index is being restored from disk.";
-
-  file_util::Delete(index_filename, /* recursive = */ false);
-  scoped_ptr<EntrySet> index_file_entries(new EntrySet());
-
-  // TODO(felipeg,gavinp): Fix this once we have a one-file per entry format.
-  COMPILE_ASSERT(kSimpleEntryFileCount == 3,
-                 file_pattern_must_match_file_count);
-
-  const int kFileSuffixLength = sizeof("_0") - 1;
-  const base::FilePath::StringType file_pattern = FILE_PATH_LITERAL("*_[0-2]");
-  FileEnumerator enumerator(index_filename.DirName(),
-                            false /* recursive */,
-                            FileEnumerator::FILES,
-                            file_pattern);
-  for (base::FilePath file_path = enumerator.Next(); !file_path.empty();
-       file_path = enumerator.Next()) {
-    const base::FilePath::StringType base_name = file_path.BaseName().value();
-    // Converting to std::string is OK since we never use UTF8 wide chars in our
-    // file names.
-    const std::string hash_key_string(base_name.begin(),
-                                      base_name.end() - kFileSuffixLength);
-    uint64 hash_key = 0;
-    if (!simple_util::GetEntryHashKeyFromHexString(
-            hash_key_string, &hash_key)) {
-      LOG(WARNING) << "Invalid Entry Hash Key filename while restoring "
-                   << "Simple Index from disk: " << base_name;
-      // TODO(felipeg): Should we delete the invalid file here ?
-      continue;
-    }
-
-    FileEnumerator::FindInfo find_info = {};
-    enumerator.GetFindInfo(&find_info);
-    base::Time last_used_time;
-#if defined(OS_POSIX)
-    // For POSIX systems, a last access time is available. However, it's not
-    // guaranteed to be more accurate than mtime. It is no worse though.
-    last_used_time = base::Time::FromTimeT(find_info.stat.st_atime);
-#endif
-    if (last_used_time.is_null())
-      last_used_time = FileEnumerator::GetLastModifiedTime(find_info);
-
-    int64 file_size = FileEnumerator::GetFilesize(find_info);
-    std::pair<EntrySet::iterator, bool> ret = index_file_entries->insert(
-        std::make_pair(hash_key, EntryMetadata(last_used_time, file_size)));
-    if (ret.second == false) {
-      EntryMetadata* current_entry = &ret.first->second;
-      current_entry->SetEntrySize(current_entry->GetEntrySize() + file_size);
-    }
-  }
-  return index_file_entries.Pass();
-}
-
-
-// static
-void SimpleIndex::WriteToDiskInternal(const base::FilePath& index_filename,
-                                      scoped_ptr<Pickle> pickle,
-                                      const base::TimeTicks& start_time,
-                                      bool app_on_background) {
-  SimpleIndexFile::WriteToDisk(index_filename, *pickle);
-  if (app_on_background) {
-    UMA_HISTOGRAM_TIMES("SimpleCache.IndexWriteToDiskTime.Background",
-                        (base::TimeTicks::Now() - start_time));
-  } else {
-    UMA_HISTOGRAM_TIMES("SimpleCache.IndexWriteToDiskTime.Foreground",
-                        (base::TimeTicks::Now() - start_time));
-  }
-}
-
 void SimpleIndex::MergeInitializingSet(scoped_ptr<EntrySet> index_file_entries,
                                        bool force_index_flush) {
   DCHECK(io_thread_checker_.CalledOnValidThread());
@@ -549,14 +341,14 @@ void SimpleIndex::MergeInitializingSet(scoped_ptr<EntrySet> index_file_entries,
   // Recalculate the cache size while merging the two sets.
   for (EntrySet::const_iterator it = index_file_entries->begin();
        it != index_file_entries->end(); ++it) {
-    std::pair<EntrySet::iterator, bool> ret = entries_set_.insert(*it);
-    EntryMetadata& current_entry = ret.first->second;
-    if (ret.second == false) {
-      // When Merging, existing valid data in the |current_entry| will prevail.
-      cache_size_ -= current_entry.GetEntrySize();
-      current_entry.MergeWith(it->second);
+    // If there is already an entry in the current entries_set_, we need to
+    // merge the new data there with the data loaded in the initialization.
+    EntrySet::iterator current_entry = entries_set_.find(it->first);
+    // When Merging, existing data in the |current_entry| will prevail.
+    if (current_entry == entries_set_.end()) {
+      InsertInEntrySet(it->first, it->second, &entries_set_);
+      cache_size_ += it->second.GetEntrySize();
     }
-    cache_size_ += current_entry.GetEntrySize();
   }
   initialized_ = true;
   removed_entries_.clear();
@@ -610,16 +402,8 @@ void SimpleIndex::WriteToDisk() {
   }
   last_write_to_disk_ = start;
 
-  SimpleIndexFile::IndexMetadata index_metadata(entries_set_.size(),
-                                                cache_size_);
-  scoped_ptr<Pickle> pickle = SimpleIndexFile::Serialize(index_metadata,
-                                                         entries_set_);
-  cache_thread_->PostTask(FROM_HERE, base::Bind(
-      &SimpleIndex::WriteToDiskInternal,
-      index_filename_,
-      base::Passed(&pickle),
-      start,
-      app_on_background_));
+  index_file_->WriteToDisk(entries_set_, cache_size_,
+                           start, app_on_background_);
 }
 
 }  // namespace disk_cache

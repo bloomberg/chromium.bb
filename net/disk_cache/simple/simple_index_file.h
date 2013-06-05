@@ -28,6 +28,11 @@ const uint64 kSimpleIndexMagicNumber = GG_UINT64_C(0x656e74657220796f);
 // repeated |number_of_entries| amount of times.  To know more about the format,
 // see SimpleIndexFile::Serialize() and SeeSimpleIndexFile::LoadFromDisk()
 // methods.
+//
+// The non-static methods must run on the IO thread.  All the real
+// work is done in the static methods, which are run on the cache thread
+// or in worker threads.  Synchronization between methods is the
+// responsibility of the caller.
 class NET_EXPORT_PRIVATE SimpleIndexFile {
  public:
   class NET_EXPORT_PRIVATE IndexMetadata {
@@ -52,6 +57,37 @@ class NET_EXPORT_PRIVATE SimpleIndexFile {
     uint64 cache_size_;  // Total cache storage size in bytes.
   };
 
+  typedef base::Callback<void(
+      scoped_ptr<SimpleIndex::EntrySet>, bool force_index_flush)>
+      IndexCompletionCallback;
+
+  explicit SimpleIndexFile(base::SingleThreadTaskRunner* cache_thread,
+                           const base::FilePath& index_file_directory);
+  virtual ~SimpleIndexFile();
+
+  // Get index entries based on current disk context.
+  virtual void LoadIndexEntries(
+      scoped_refptr<base::SingleThreadTaskRunner> response_thread,
+      const SimpleIndexFile::IndexCompletionCallback& completion_callback);
+
+  // Write the specified set of entries to disk.
+  virtual void WriteToDisk(const SimpleIndex::EntrySet& entry_set,
+                           uint64 cache_size,
+                           const base::TimeTicks& start,
+                           bool app_on_background);
+
+  // Doom the entries specified in |entry_hashes|, calling |reply_callback|
+  // with the result on the current thread when done.
+  virtual void DoomEntrySet(scoped_ptr<std::vector<uint64> > entry_hashes,
+                            const base::Callback<void(int)>& reply_callback);
+
+ private:
+  FRIEND_TEST_ALL_PREFIXES(SimpleIndexFileTest, IsIndexFileStale);
+
+  // Using the mtime of the file and its mtime, detects if the index file is
+  // stale.
+  static bool IsIndexFileStale(const base::FilePath& index_filename);
+
   // Load the index file from disk, deserializing it and returning the
   // corresponding EntrySet in a scoped_ptr<>, if successful.
   // Uppon failure, the scoped_ptr<> will contain NULL.
@@ -64,20 +100,26 @@ class NET_EXPORT_PRIVATE SimpleIndexFile {
       const SimpleIndexFile::IndexMetadata& index_metadata,
       const SimpleIndex::EntrySet& entries);
 
-  // Write the serialized data from |pickle| into the index file.
-  static void WriteToDisk(const base::FilePath& index_filename,
-                          const Pickle& pickle);
+  static void LoadIndexEntriesInternal(
+      const base::FilePath& index_file_path,
+      scoped_refptr<base::SingleThreadTaskRunner> response_thread,
+      const SimpleIndexFile::IndexCompletionCallback& completion_callback);
 
- private:
   FRIEND_TEST_ALL_PREFIXES(SimpleIndexFileTest, Serialize);
 
   // Deserialize() is separate from LoadFromDisk() for easier testing.
   static scoped_ptr<SimpleIndex::EntrySet> Deserialize(const char* data,
                                                        int data_len);
 
+  static scoped_ptr<SimpleIndex::EntrySet> RestoreFromDisk(
+      const base::FilePath& index_file_path);
+
   struct PickleHeader : public Pickle::Header {
     uint32 crc;
   };
+
+  scoped_refptr<base::SingleThreadTaskRunner> cache_thread_;
+  const base::FilePath index_file_path_;
 
   DISALLOW_COPY_AND_ASSIGN(SimpleIndexFile);
 };

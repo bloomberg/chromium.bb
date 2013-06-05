@@ -18,6 +18,7 @@
 #include "net/disk_cache/simple/simple_entry_format.h"
 #include "net/disk_cache/simple/simple_entry_impl.h"
 #include "net/disk_cache/simple/simple_index.h"
+#include "net/disk_cache/simple/simple_index_file.h"
 #include "net/disk_cache/simple/simple_synchronous_entry.h"
 #include "net/disk_cache/simple/simple_util.h"
 
@@ -139,9 +140,10 @@ SimpleBackendImpl::SimpleBackendImpl(
     base::SingleThreadTaskRunner* cache_thread,
     net::NetLog* net_log)
     : path_(path),
-      index_(new SimpleIndex(cache_thread,
-                             MessageLoopProxy::current(),  // io_thread
-                             path)),
+      index_(new SimpleIndex(MessageLoopProxy::current(),  // io_thread
+                             path,
+                             scoped_ptr<SimpleIndexFile>(
+                                 new SimpleIndexFile(cache_thread, path)))),
       cache_thread_(cache_thread),
       orig_max_size_(max_bytes) {
   index_->ExecuteWhenReady(base::Bind(&RecordIndexLoad,

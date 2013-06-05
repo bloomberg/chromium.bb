@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/file_util.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/hash.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
@@ -88,6 +90,35 @@ TEST_F(SimpleIndexFileTest, Serialize) {
     EXPECT_TRUE(new_entries->end() != it);
     EXPECT_TRUE(CompareTwoEntryMetadata(it->second, metadata_entries[i]));
   }
+}
+
+TEST_F(SimpleIndexFileTest, IsIndexFileStale) {
+  base::ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+
+  const std::string kIndexFileName = "simple-index";
+  const base::FilePath index_path =
+      temp_dir.path().AppendASCII(kIndexFileName);
+  EXPECT_TRUE(SimpleIndexFile::IsIndexFileStale(index_path));
+  const std::string kDummyData = "nothing to be seen here";
+  EXPECT_EQ(static_cast<int>(kDummyData.size()),
+            file_util::WriteFile(index_path,
+                                 kDummyData.data(),
+                                 kDummyData.size()));
+  EXPECT_FALSE(SimpleIndexFile::IsIndexFileStale(index_path));
+
+  const base::Time past_time = base::Time::Now() -
+      base::TimeDelta::FromSeconds(10);
+  EXPECT_TRUE(file_util::TouchFile(index_path, past_time, past_time));
+  EXPECT_TRUE(file_util::TouchFile(temp_dir.path(), past_time, past_time));
+  EXPECT_FALSE(SimpleIndexFile::IsIndexFileStale(index_path));
+
+  EXPECT_EQ(static_cast<int>(kDummyData.size()),
+            file_util::WriteFile(temp_dir.path().AppendASCII("other_file"),
+                                 kDummyData.data(),
+                                 kDummyData.size()));
+
+  EXPECT_TRUE(SimpleIndexFile::IsIndexFileStale(index_path));
 }
 
 }
