@@ -654,7 +654,6 @@ TEST(PermissionsTest, PermissionMessages) {
   // These are warned as part of host permission checks.
   skip.insert(APIPermission::kDeclarativeContent);
   skip.insert(APIPermission::kDeclarativeWebRequest);
-  skip.insert(APIPermission::kNativeMessaging);
   skip.insert(APIPermission::kPageCapture);
   skip.insert(APIPermission::kProxy);
   skip.insert(APIPermission::kTabCapture);
