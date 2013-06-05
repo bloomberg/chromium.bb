@@ -373,7 +373,7 @@ body[new-ui] #volume-list .volume-icon {
 
 body[new-ui] #directory-tree {
   border-right: 1px solid rgb(212, 212, 212);
-  padding-bottom: 52px;  /* height of the preview panel */
+  padding-bottom: 0;  /* For the preview panel. Will be overridden by JS. */
 }
 
 #directory-tree .tree-row {
@@ -1024,7 +1024,7 @@ body:not([new-ui]) button#detail-view:not([disabled]) {
 }
 
 body[new-ui] .main-panel #detail-table > list {
-  padding-bottom: 52px;  /* height of the preview panel */
+  padding-bottom: 0;  /* For the preview panel. Will be overridden by JS. */
 }
 
 body[new-ui] .main-panel #detail-table > list > .drag-selection-border {
@@ -1155,7 +1155,7 @@ body[new-ui] .main-panel #detail-table > list > .drag-selection-border {
 }
 
 body[new-ui] .thumbnail-grid {
-  padding-bottom: 52px;  /* height of the preview panel */
+  padding-bottom: 0;  /* For the preview panel. Will be overridden by JS. */
 }
 
 body[type='full-page'] .thumbnail-frame > .img-container {

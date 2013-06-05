@@ -123,6 +123,12 @@ DialogType.isModal = function(type) {
       type == DialogType.SELECT_OPEN_MULTI_FILE;
 };
 
+/**
+ * Bottom magrin of the list and tree for transparent preview panel.
+ * @const
+ */
+var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
+
 // Anonymous "namespace".
 (function() {
 
@@ -1200,6 +1206,10 @@ DialogType.isModal = function(type) {
     this.directoryModel_.start();
 
     this.selectionHandler_ = new FileSelectionHandler(this);
+    this.selectionHandler_.addEventListener('show-preview-panel',
+        this.onPreviewPanelVisibilityChanged_.bind(this, true));
+    this.selectionHandler_.addEventListener('hide-preview-panel',
+        this.onPreviewPanelVisibilityChanged_.bind(this, false));
 
     this.fileWatcher_ = new FileManager.MetadataFileWatcher(this);
     this.fileWatcher_.start();
@@ -1636,6 +1646,37 @@ DialogType.isModal = function(type) {
     this.searchBreadcrumbs_.truncate();
 
     this.updateWindowState_();
+  };
+
+  /**
+   * Resize details and thumb views to fit the new window size.
+   * @private
+   */
+  FileManager.prototype.onPreviewPanelVisibilityChanged_ = function(visible) {
+    if (!util.platform.newUI())
+      return;
+
+    var panelHeight = visible ? this.getPreviewPanelHeight_() : 0;
+
+    if (this.listType_ == FileManager.ListType.THUMBNAIL)
+      this.grid_.setBottomMarginForPanel(panelHeight);
+    else
+      this.table_.setBottomMarginForPanel(panelHeight);
+    this.directoryTree_.setBottomMarginForPanel(panelHeight);
+  };
+
+  /**
+   * Gets height of the preview panel, using cached value if available. This
+   * returns the value even when the preview panel is hidden.
+   *
+   * @return {number} Height of the preview panel. If failure, returns 0.
+   */
+  FileManager.prototype.getPreviewPanelHeight_ = function() {
+    if (!this.cachedPreviewPanelHeight_) {
+      var previewPanel = this.dialogDom_.querySelector('.preview-panel');
+      this.cachedPreviewPanelHeight_ = previewPanel.clientHeight;
+    }
+    return this.cachedPreviewPanelHeight_;
   };
 
   /**

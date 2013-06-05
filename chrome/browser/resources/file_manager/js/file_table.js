@@ -273,7 +273,8 @@ FileTable.decorate = function(self, metadataCache, fullPage) {
       self.getRenderFunction()));
 
   if (util.platform.newUI()) {
-    ScrollBar.createVertical(self, self.list);
+    self.scrollBar_ = MainPanelScrollBar();
+    self.scrollBar_.initialize(self, self.list);
     // Keep focus on the file list when clicking on the header.
     self.header.addEventListener('mousedown', function(e) {
       self.list.focus();
@@ -802,6 +803,18 @@ FileTable.prototype.renderIconType_ = function(entry, columnId, table) {
   icon.className = 'detail-icon';
   icon.setAttribute('file-type-icon', FileType.getIcon(entry));
   return icon;
+};
+
+/**
+ * Sets the margin height for the transparent preview panel at the bottom.
+ * @param {number} margin Margin to be set in px.
+ */
+FileTable.prototype.setBottomMarginForPanel = function(margin) {
+  if (!util.platform.newUI())
+    return;
+
+  this.list_.style.paddingBottom = margin + 'px';
+  this.scrollBar_.setBottomMarginForPanel(margin);
 };
 
 /**

@@ -147,6 +147,7 @@ FileSelection.prototype.cancelComputing_ = function() {
  * This object encapsulates everything related to current selection.
  *
  * @param {FileManager} fileManager File manager instance.
+ * @extends {cr.EventTarget}
  * @constructor
  */
 function FileSelectionHandler(fileManager) {
@@ -169,6 +170,11 @@ function FileSelectionHandler(fileManager) {
 
   this.animationTimeout_ = null;
 }
+
+/**
+ * FileSelectionHandler extends cr.EventTarget.
+ */
+FileSelectionHandler.prototype.__proto__ = cr.EventTarget.prototype;
 
 /**
  * Maximum amount of thumbnails in the preview pane.
@@ -321,26 +327,27 @@ FileSelectionHandler.prototype.updatePreviewPanelVisibility_ = function() {
     mustBeVisible = (this.selection.totalCount > 0 ||
         !PathUtil.isRootPath(this.fileManager_.getCurrentDirectory()));
   }
-  var self = this;
 
   var stopHidingAndShow = function() {
-    clearTimeout(self.hidingTimeout_);
-    self.hidingTimeout_ = 0;
+    clearTimeout(this.hidingTimeout_);
+    this.hidingTimeout_ = 0;
     setVisibility('visible');
-  };
+  }.bind(this);
 
   var startHiding = function() {
     setVisibility('hiding');
-    self.hidingTimeout_ = setTimeout(function() {
-        self.hidingTimeout_ = 0;
+    this.hidingTimeout_ = setTimeout(function() {
+        this.hidingTimeout_ = 0;
         setVisibility('hidden');
-      }, 250);
-  };
+        cr.dispatchSimpleEvent(this, 'hide-preview-panel');
+      }.bind(this), 250);
+  }.bind(this);
 
   var show = function() {
     setVisibility('visible');
-    self.previewThumbnails_.textContent = '';
-  };
+    this.previewThumbnails_.textContent = '';
+    cr.dispatchSimpleEvent(this, 'show-preview-panel');
+  }.bind(this);
 
   var setVisibility = function(visibility) {
     panel.setAttribute('visibility', visibility);

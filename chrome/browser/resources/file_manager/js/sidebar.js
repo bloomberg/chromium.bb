@@ -567,8 +567,10 @@ DirectoryTree.prototype.decorate = function(directoryModel) {
   chrome.fileBrowserPrivate.onDirectoryChanged.addListener(
       this.privateOnDirectoryChangedBound_);
 
-  if (util.platform.newUI())
-    ScrollBar.createVertical(this.parentNode, this);
+  if (util.platform.newUI()) {
+    this.scrollBar_ = MainPanelScrollBar();
+    this.scrollBar_.initialize(this.parentNode, this);
+  }
 
   if (!util.platform.newUI())
     this.onRootsListChanged_();
@@ -782,6 +784,18 @@ DirectoryTree.prototype.clearTree_ = function(redraw) {
     this.redraw(false);
     cr.dispatchSimpleEvent(this, 'content-updated');
   }
+};
+
+/**
+ * Sets the margin height for the transparent preview panel at the bottom.
+ * @param {number} margin Margin to be set in px.
+ */
+DirectoryTree.prototype.setBottomMarginForPanel = function(margin) {
+  if (!util.platform.newUI())
+    return;
+
+  this.style.paddingBottom = margin + 'px';
+  this.scrollBar_.setBottomMarginForPanel(margin);
 };
 
 /**
