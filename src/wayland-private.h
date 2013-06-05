@@ -34,12 +34,13 @@
 	const __typeof__( ((type *)0)->member ) *__mptr = (ptr);	\
 	(type *)( (char *)__mptr - offsetof(type,member) );})
 
-#define WL_ZOMBIE_OBJECT ((void *) 2)
-
 #define WL_MAP_SERVER_SIDE 0
 #define WL_MAP_CLIENT_SIDE 1
 #define WL_SERVER_ID_START 0xff000000
 #define WL_CLOSURE_MAX_ARGS 20
+
+extern struct wl_object global_zombie_object;
+#define WL_ZOMBIE_OBJECT ((void*)&global_zombie_object)
 
 /* Flags for wl_map_insert_new and wl_map_insert_at.  Flags can be queried with
  * wl_map_lookup_flags.  The current implementation has room for 1 bit worth of

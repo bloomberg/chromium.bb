@@ -29,6 +29,8 @@
 #include "wayland-util.h"
 #include "wayland-private.h"
 
+struct wl_object global_zombie_object;
+
 WL_EXPORT void
 wl_list_init(struct wl_list *list)
 {
