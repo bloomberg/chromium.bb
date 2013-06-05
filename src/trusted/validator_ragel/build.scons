@@ -372,7 +372,8 @@ if ragel_involved:
 
     env.Alias('dfacheckvalidator', calculate_hash_sums)
 
-# Spec_val test. Implemented not as test, but as alias, because for now it's not
+# Targeted tests: RDFA validator test and spec_val test.
+# spec_val is implemented not as test, but as alias, because for now it's not
 # ready to run on bots.
 
 for bits in ['32', '64']:
@@ -384,11 +385,39 @@ for bits in ['32', '64']:
   else:
     update_option = []
 
+  if env.Bit('target_x86'):
+    # In principle we can run these tests on ARM too, but first, there is no
+    # reason to, and second, there are problems with those bots that build
+    # on one machine and run tests on another (build machine does not recognize
+    # than new ncval is needed, so it's not copied to the test machine).
+    rdfaval = '$STAGING_DIR/ncval_new$PROGSUFFIX'
+    rdfa_targeted_test = env.AutoDepsCommand(
+        'run_rdfa_targeted_tests_%s.out' % bits,
+        ['${PYTHON}',
+         env.File('run_rdfa_validator_tests.py'),
+         '--rdfaval', env.File(rdfaval),
+         '--bits', bits,
+         tests_mask] + update_option)
+
+    env.AddNodeToTestSuite(
+        rdfa_targeted_test,
+        ['small_tests', 'validator_tests'],
+        node_name='run_rdfa_targeted_tests_%s' % bits)
+
+    if env.Bit('regenerate_golden'):
+      # Don't want these tests run in parallel because they write
+      # to .test files.
+      SideEffect(tests_mask, rdfa_targeted_test)
+
   spec_test = env.AutoDepsCommand(
       'run_spec_val_test_%s.out' % bits,
       ['${PYTHON}',
        env.File('spec_val_test.py'),
        '--bits', bits,
        tests_mask] + update_option)
-
   env.Alias('run_spec_val_test', spec_test)
+
+  if env.Bit('regenerate_golden'):
+    # Don't want these tests run in parallel because they write
+    # to .test files.
+    SideEffect(tests_mask, spec_test)
