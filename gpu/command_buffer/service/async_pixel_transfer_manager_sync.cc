@@ -35,10 +35,6 @@ class AsyncPixelTransferDelegateSync : public AsyncPixelTransferDelegate {
   virtual AsyncPixelTransferState* CreatePixelTransferState(
       GLuint texture_id,
       const AsyncTexImage2DParams& define_params) OVERRIDE;
-  virtual void BindCompletedAsyncTransfers() OVERRIDE;
-  virtual void AsyncNotifyCompletion(
-      const AsyncMemoryParams& mem_params,
-      const CompletionCallback& callback) OVERRIDE;
   virtual void AsyncTexImage2D(
       AsyncPixelTransferState* state,
       const AsyncTexImage2DParams& tex_params,
@@ -50,10 +46,8 @@ class AsyncPixelTransferDelegateSync : public AsyncPixelTransferDelegate {
       const AsyncMemoryParams& mem_params) OVERRIDE;
   virtual void WaitForTransferCompletion(
       AsyncPixelTransferState* state) OVERRIDE;
-  virtual uint32 GetTextureUploadCount() OVERRIDE;
-  virtual base::TimeDelta GetTotalTextureUploadTime() OVERRIDE;
-  virtual void ProcessMorePendingTransfers() OVERRIDE;
-  virtual bool NeedsProcessMorePendingTransfers() OVERRIDE;
+  uint32 GetTextureUploadCount();
+  base::TimeDelta GetTotalTextureUploadTime();
 
  private:
   int texture_upload_count_;
@@ -72,16 +66,6 @@ AsyncPixelTransferState* AsyncPixelTransferDelegateSync::
     CreatePixelTransferState(GLuint texture_id,
                              const AsyncTexImage2DParams& define_params) {
   return new AsyncPixelTransferStateImpl;
-}
-
-void AsyncPixelTransferDelegateSync::BindCompletedAsyncTransfers() {
-  // Everything is already bound.
-}
-
-void AsyncPixelTransferDelegateSync::AsyncNotifyCompletion(
-    const AsyncMemoryParams& mem_params,
-    const CompletionCallback& callback) {
-  callback.Run(mem_params);
 }
 
 void AsyncPixelTransferDelegateSync::AsyncTexImage2D(
@@ -141,17 +125,35 @@ base::TimeDelta AsyncPixelTransferDelegateSync::GetTotalTextureUploadTime() {
   return total_texture_upload_time_;
 }
 
-void AsyncPixelTransferDelegateSync::ProcessMorePendingTransfers() {
-}
-
-bool AsyncPixelTransferDelegateSync::NeedsProcessMorePendingTransfers() {
-  return false;
-}
-
 AsyncPixelTransferManagerSync::AsyncPixelTransferManagerSync()
     : delegate_(new AsyncPixelTransferDelegateSync()) {}
 
 AsyncPixelTransferManagerSync::~AsyncPixelTransferManagerSync() {}
+
+void AsyncPixelTransferManagerSync::BindCompletedAsyncTransfers() {
+  // Everything is already bound.
+}
+
+void AsyncPixelTransferManagerSync::AsyncNotifyCompletion(
+    const AsyncMemoryParams& mem_params,
+    const CompletionCallback& callback) {
+  callback.Run(mem_params);
+}
+
+uint32 AsyncPixelTransferManagerSync::GetTextureUploadCount() {
+  return delegate_->GetTextureUploadCount();
+}
+
+base::TimeDelta AsyncPixelTransferManagerSync::GetTotalTextureUploadTime() {
+  return delegate_->GetTotalTextureUploadTime();
+}
+
+void AsyncPixelTransferManagerSync::ProcessMorePendingTransfers() {
+}
+
+bool AsyncPixelTransferManagerSync::NeedsProcessMorePendingTransfers() {
+  return false;
+}
 
 AsyncPixelTransferDelegate*
 AsyncPixelTransferManagerSync::GetAsyncPixelTransferDelegate() {

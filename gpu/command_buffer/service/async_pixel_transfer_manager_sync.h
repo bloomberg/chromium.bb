@@ -16,6 +16,14 @@ class AsyncPixelTransferManagerSync : public AsyncPixelTransferManager {
   virtual ~AsyncPixelTransferManagerSync();
 
   // AsyncPixelTransferManager implementation:
+  virtual void BindCompletedAsyncTransfers() OVERRIDE;
+  virtual void AsyncNotifyCompletion(
+      const AsyncMemoryParams& mem_params,
+      const CompletionCallback& callback) OVERRIDE;
+  virtual uint32 GetTextureUploadCount() OVERRIDE;
+  virtual base::TimeDelta GetTotalTextureUploadTime() OVERRIDE;
+  virtual void ProcessMorePendingTransfers() OVERRIDE;
+  virtual bool NeedsProcessMorePendingTransfers() OVERRIDE;
   virtual AsyncPixelTransferDelegate* GetAsyncPixelTransferDelegate() OVERRIDE;
 
  private:

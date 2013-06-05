@@ -2788,7 +2788,7 @@ void GLES2DecoderImpl::ProcessFinishedAsyncTransfers() {
   // from the client, as the client may have recieved an async
   // completion while issuing those commands.
   // "DidFlushStart" would be ideal if we had such a callback.
-  GetAsyncPixelTransferDelegate()->BindCompletedAsyncTransfers();
+  async_pixel_transfer_manager_->BindCompletedAsyncTransfers();
 }
 
 void GLES2DecoderImpl::ReleaseCurrent() {
@@ -3075,12 +3075,12 @@ bool GLES2DecoderImpl::GetServiceTextureId(uint32 client_texture_id,
 
 uint32 GLES2DecoderImpl::GetTextureUploadCount() {
   return texture_upload_count_ +
-         GetAsyncPixelTransferDelegate()->GetTextureUploadCount();
+         async_pixel_transfer_manager_->GetTextureUploadCount();
 }
 
 base::TimeDelta GLES2DecoderImpl::GetTotalTextureUploadTime() {
   return total_texture_upload_time_ +
-         GetAsyncPixelTransferDelegate()->GetTotalTextureUploadTime();
+         async_pixel_transfer_manager_->GetTotalTextureUploadTime();
 }
 
 base::TimeDelta GLES2DecoderImpl::GetTotalProcessingCommandsTime() {
@@ -9053,13 +9053,13 @@ bool GLES2DecoderImpl::ProcessPendingQueries() {
 }
 
 bool GLES2DecoderImpl::HasMoreIdleWork() {
-  return GetAsyncPixelTransferDelegate()->NeedsProcessMorePendingTransfers();
+  return async_pixel_transfer_manager_->NeedsProcessMorePendingTransfers();
 }
 
 void GLES2DecoderImpl::PerformIdleWork() {
-  if (!GetAsyncPixelTransferDelegate()->NeedsProcessMorePendingTransfers())
+  if (!async_pixel_transfer_manager_->NeedsProcessMorePendingTransfers())
     return;
-  GetAsyncPixelTransferDelegate()->ProcessMorePendingTransfers();
+  async_pixel_transfer_manager_->ProcessMorePendingTransfers();
   ProcessFinishedAsyncTransfers();
 }
 

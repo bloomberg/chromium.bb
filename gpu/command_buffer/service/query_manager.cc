@@ -10,7 +10,7 @@
 #include "base/shared_memory.h"
 #include "base/time.h"
 #include "gpu/command_buffer/common/gles2_cmd_format.h"
-#include "gpu/command_buffer/service/async_pixel_transfer_delegate.h"
+#include "gpu/command_buffer/service/async_pixel_transfer_manager.h"
 #include "gpu/command_buffer/service/error_state.h"
 #include "gpu/command_buffer/service/feature_info.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
@@ -221,7 +221,7 @@ bool AsyncPixelTransfersCompletedQuery::End(uint32 submit_count) {
   // Ask AsyncPixelTransferDelegate to run completion callback after all
   // previous async transfers are done. No guarantee that callback is run
   // on the current thread.
-  manager()->decoder()->GetAsyncPixelTransferDelegate()->AsyncNotifyCompletion(
+  manager()->decoder()->GetAsyncPixelTransferManager()->AsyncNotifyCompletion(
       mem_params,
       base::Bind(AsyncPixelTransfersCompletedQuery::MarkAsCompletedThreadSafe,
                  submit_count));

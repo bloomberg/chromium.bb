@@ -8,6 +8,7 @@
 #include <set>
 
 #include "base/basictypes.h"
+#include "base/callback.h"
 #include "base/hash_tables.h"
 #include "base/memory/ref_counted.h"
 #include "gpu/command_buffer/service/texture_manager.h"
@@ -31,16 +32,37 @@ class GLContext;
 namespace gpu {
 class AsyncPixelTransferDelegate;
 class AsyncPixelTransferState;
+struct AsyncMemoryParams;
 struct AsyncTexImage2DParams;
 
 class GPU_EXPORT AsyncPixelTransferManager
     : public gles2::TextureManager::DestructionObserver {
  public:
+  typedef base::Callback<void(const AsyncMemoryParams&)> CompletionCallback;
+
   static AsyncPixelTransferManager* Create(gfx::GLContext* context);
 
   virtual ~AsyncPixelTransferManager();
 
   void Initialize(gles2::TextureManager* texture_manager);
+
+  virtual void BindCompletedAsyncTransfers() = 0;
+
+  // There's no guarantee that callback will run on the caller thread.
+  virtual void AsyncNotifyCompletion(
+      const AsyncMemoryParams& mem_params,
+      const CompletionCallback& callback) = 0;
+
+  virtual uint32 GetTextureUploadCount() = 0;
+  virtual base::TimeDelta GetTotalTextureUploadTime() = 0;
+
+  // ProcessMorePendingTransfers() will be called at a good time
+  // to process a small amount of pending transfer work while
+  // NeedsProcessMorePendingTransfers() returns true. Implementations
+  // that can't dispatch work to separate threads should use
+  // this to avoid blocking the caller thread inappropriately.
+  virtual void ProcessMorePendingTransfers() = 0;
+  virtual bool NeedsProcessMorePendingTransfers() = 0;
 
   virtual AsyncPixelTransferDelegate* GetAsyncPixelTransferDelegate() = 0;
 

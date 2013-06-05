@@ -71,14 +71,19 @@ class AsyncPixelTransferDelegateIdle : public AsyncPixelTransferDelegate,
   AsyncPixelTransferDelegateIdle();
   virtual ~AsyncPixelTransferDelegateIdle();
 
-  // implement AsyncPixelTransferDelegate:
+  void BindCompletedAsyncTransfers();
+  void AsyncNotifyCompletion(
+      const AsyncMemoryParams& mem_params,
+      const AsyncPixelTransferManager::CompletionCallback& callback);
+  uint32 GetTextureUploadCount();
+  base::TimeDelta GetTotalTextureUploadTime();
+  void ProcessMorePendingTransfers();
+  bool NeedsProcessMorePendingTransfers();
+
+  // Implement AsyncPixelTransferDelegate:
   virtual AsyncPixelTransferState* CreatePixelTransferState(
       GLuint texture_id,
       const AsyncTexImage2DParams& define_params) OVERRIDE;
-  virtual void BindCompletedAsyncTransfers() OVERRIDE;
-  virtual void AsyncNotifyCompletion(
-      const AsyncMemoryParams& mem_params,
-      const CompletionCallback& callback) OVERRIDE;
   virtual void AsyncTexImage2D(
       AsyncPixelTransferState* transfer_state,
       const AsyncTexImage2DParams& tex_params,
@@ -90,10 +95,6 @@ class AsyncPixelTransferDelegateIdle : public AsyncPixelTransferDelegate,
       const AsyncMemoryParams& mem_params) OVERRIDE;
   virtual void WaitForTransferCompletion(
       AsyncPixelTransferState* transfer_state) OVERRIDE;
-  virtual uint32 GetTextureUploadCount() OVERRIDE;
-  virtual base::TimeDelta GetTotalTextureUploadTime() OVERRIDE;
-  virtual void ProcessMorePendingTransfers() OVERRIDE;
-  virtual bool NeedsProcessMorePendingTransfers() OVERRIDE;
 
  private:
   struct Task {
@@ -111,7 +112,7 @@ class AsyncPixelTransferDelegateIdle : public AsyncPixelTransferDelegate,
   void PerformNotifyCompletion(
       AsyncMemoryParams mem_params,
       ScopedSafeSharedMemory* safe_shared_memory,
-      const CompletionCallback& callback);
+      const AsyncPixelTransferManager::CompletionCallback& callback);
   void PerformAsyncTexImage2D(
       AsyncTexImage2DParams tex_params,
       AsyncMemoryParams mem_params,
@@ -158,7 +159,7 @@ void AsyncPixelTransferDelegateIdle::BindCompletedAsyncTransfers() {
 
 void AsyncPixelTransferDelegateIdle::AsyncNotifyCompletion(
     const AsyncMemoryParams& mem_params,
-    const CompletionCallback& callback) {
+    const AsyncPixelTransferManager::CompletionCallback& callback) {
   if (tasks_.empty()) {
     callback.Run(mem_params);
     return;
@@ -296,7 +297,7 @@ void AsyncPixelTransferDelegateIdle::ProcessNotificationTasks() {
 void AsyncPixelTransferDelegateIdle::PerformNotifyCompletion(
     AsyncMemoryParams mem_params,
     ScopedSafeSharedMemory* safe_shared_memory,
-    const CompletionCallback& callback) {
+    const AsyncPixelTransferManager::CompletionCallback& callback) {
   TRACE_EVENT0("gpu", "PerformNotifyCompletion");
   AsyncMemoryParams safe_mem_params = mem_params;
   safe_mem_params.shared_memory = safe_shared_memory->shared_memory();
@@ -371,6 +372,32 @@ AsyncPixelTransferManagerIdle::AsyncPixelTransferManagerIdle()
     : delegate_(new AsyncPixelTransferDelegateIdle()) {}
 
 AsyncPixelTransferManagerIdle::~AsyncPixelTransferManagerIdle() {}
+
+void AsyncPixelTransferManagerIdle::BindCompletedAsyncTransfers() {
+  delegate_->BindCompletedAsyncTransfers();
+}
+
+void AsyncPixelTransferManagerIdle::AsyncNotifyCompletion(
+    const AsyncMemoryParams& mem_params,
+    const CompletionCallback& callback) {
+  delegate_->AsyncNotifyCompletion(mem_params, callback);
+}
+
+uint32 AsyncPixelTransferManagerIdle::GetTextureUploadCount() {
+  return delegate_->GetTextureUploadCount();
+}
+
+base::TimeDelta AsyncPixelTransferManagerIdle::GetTotalTextureUploadTime() {
+  return delegate_->GetTotalTextureUploadTime();
+}
+
+void AsyncPixelTransferManagerIdle::ProcessMorePendingTransfers() {
+  delegate_->ProcessMorePendingTransfers();
+}
+
+bool AsyncPixelTransferManagerIdle::NeedsProcessMorePendingTransfers() {
+  return delegate_->NeedsProcessMorePendingTransfers();
+}
 
 AsyncPixelTransferDelegate*
 AsyncPixelTransferManagerIdle::GetAsyncPixelTransferDelegate() {

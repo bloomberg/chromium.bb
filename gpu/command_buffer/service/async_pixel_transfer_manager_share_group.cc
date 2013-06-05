@@ -30,6 +30,16 @@ namespace {
 
 const char kAsyncTransferThreadName[] = "AsyncTransferThread";
 
+void PerformNotifyCompletion(
+    AsyncMemoryParams mem_params,
+    ScopedSafeSharedMemory* safe_shared_memory,
+    const AsyncPixelTransferManager::CompletionCallback& callback) {
+  TRACE_EVENT0("gpu", "PerformNotifyCompletion");
+  AsyncMemoryParams safe_mem_params = mem_params;
+  safe_mem_params.shared_memory = safe_shared_memory->shared_memory();
+  callback.Run(safe_mem_params);
+}
+
 // TODO(backer): Factor out common thread scheduling logic from the EGL and
 // ShareGroup implementations. http://crbug.com/239889
 class TransferThread : public base::Thread {
@@ -289,16 +299,6 @@ class TransferStateInternal
   base::Closure bind_callback_;
 };
 
-void PerformNotifyCompletion(
-    AsyncMemoryParams mem_params,
-    ScopedSafeSharedMemory* safe_shared_memory,
-    const AsyncPixelTransferDelegate::CompletionCallback& callback) {
-  TRACE_EVENT0("gpu", "PerformNotifyCompletion");
-  AsyncMemoryParams safe_mem_params = mem_params;
-  safe_mem_params.shared_memory = safe_shared_memory->shared_memory();
-  callback.Run(safe_mem_params);
-}
-
 }  // namespace
 
 // ShareGroup needs thread-safe ref-counting, so this just wraps
@@ -327,17 +327,16 @@ class AsyncTransferStateImpl : public AsyncPixelTransferState {
 
 class AsyncPixelTransferDelegateShareGroup : public AsyncPixelTransferDelegate {
  public:
-  explicit AsyncPixelTransferDelegateShareGroup(gfx::GLContext* context);
+  AsyncPixelTransferDelegateShareGroup(gfx::GLContext* context,
+                                       AsyncPixelTransferUploadStats* stats);
   virtual ~AsyncPixelTransferDelegateShareGroup();
+
+  void BindCompletedAsyncTransfers();
 
   // Implement AsyncPixelTransferDelegate:
   virtual AsyncPixelTransferState* CreatePixelTransferState(
       GLuint texture_id,
       const AsyncTexImage2DParams& define_params) OVERRIDE;
-  virtual void BindCompletedAsyncTransfers() OVERRIDE;
-  virtual void AsyncNotifyCompletion(
-      const AsyncMemoryParams& mem_params,
-      const CompletionCallback& callback) OVERRIDE;
   virtual void AsyncTexImage2D(
       AsyncPixelTransferState* state,
       const AsyncTexImage2DParams& tex_params,
@@ -349,10 +348,6 @@ class AsyncPixelTransferDelegateShareGroup : public AsyncPixelTransferDelegate {
       const AsyncMemoryParams& mem_params) OVERRIDE;
   virtual void WaitForTransferCompletion(
       AsyncPixelTransferState* state) OVERRIDE;
-  virtual uint32 GetTextureUploadCount() OVERRIDE;
-  virtual base::TimeDelta GetTotalTextureUploadTime() OVERRIDE;
-  virtual void ProcessMorePendingTransfers() OVERRIDE;
-  virtual bool NeedsProcessMorePendingTransfers() OVERRIDE;
 
  private:
   typedef std::list<base::WeakPtr<AsyncPixelTransferState> > TransferQueue;
@@ -364,11 +359,10 @@ class AsyncPixelTransferDelegateShareGroup : public AsyncPixelTransferDelegate {
 };
 
 AsyncPixelTransferDelegateShareGroup::AsyncPixelTransferDelegateShareGroup(
-      gfx::GLContext* context) {
+    gfx::GLContext* context,
+    AsyncPixelTransferUploadStats* stats)
+    : texture_upload_stats_(stats) {
   g_transfer_thread.Pointer()->InitializeOnMainThread(context);
-
-  // TODO(reveman): Skip this if --enable-gpu-benchmarking is not present.
-  texture_upload_stats_ = make_scoped_refptr(new AsyncPixelTransferUploadStats);
 }
 
 AsyncPixelTransferDelegateShareGroup::~AsyncPixelTransferDelegateShareGroup() {
@@ -407,25 +401,6 @@ void AsyncPixelTransferDelegateShareGroup::BindCompletedAsyncTransfers() {
 
     pending_allocations_.pop_front();
   }
-}
-
-void AsyncPixelTransferDelegateShareGroup::AsyncNotifyCompletion(
-    const AsyncMemoryParams& mem_params,
-    const CompletionCallback& callback) {
-  DCHECK(mem_params.shared_memory);
-  DCHECK_LE(mem_params.shm_data_offset + mem_params.shm_data_size,
-            mem_params.shm_size);
-  // Post a PerformNotifyCompletion task to the upload thread. This task
-  // will run after all async transfers are complete.
-  transfer_message_loop_proxy()->PostTask(
-      FROM_HERE,
-      base::Bind(&PerformNotifyCompletion,
-                 mem_params,
-                 base::Owned(
-                     new ScopedSafeSharedMemory(safe_shared_memory_pool(),
-                                                mem_params.shared_memory,
-                                                mem_params.shm_size)),
-                 callback));
 }
 
 void AsyncPixelTransferDelegateShareGroup::WaitForTransferCompletion(
@@ -523,31 +498,56 @@ void AsyncPixelTransferDelegateShareGroup::AsyncTexSubImage2D(
           texture_upload_stats_));
 }
 
-uint32 AsyncPixelTransferDelegateShareGroup::GetTextureUploadCount() {
-  DCHECK(texture_upload_stats_.get());
+AsyncPixelTransferManagerShareGroup::AsyncPixelTransferManagerShareGroup(
+    gfx::GLContext* context)
+    // TODO(reveman): Skip this if --enable-gpu-benchmarking is not present.
+    : texture_upload_stats_(new AsyncPixelTransferUploadStats),
+      delegate_(
+          new AsyncPixelTransferDelegateShareGroup(context,
+                                                   texture_upload_stats_)) {}
+
+AsyncPixelTransferManagerShareGroup::~AsyncPixelTransferManagerShareGroup() {}
+
+void AsyncPixelTransferManagerShareGroup::BindCompletedAsyncTransfers() {
+  delegate_->BindCompletedAsyncTransfers();
+}
+
+void AsyncPixelTransferManagerShareGroup::AsyncNotifyCompletion(
+    const AsyncMemoryParams& mem_params,
+    const CompletionCallback& callback) {
+  DCHECK(mem_params.shared_memory);
+  DCHECK_LE(mem_params.shm_data_offset + mem_params.shm_data_size,
+            mem_params.shm_size);
+  // Post a PerformNotifyCompletion task to the upload thread. This task
+  // will run after all async transfers are complete.
+  transfer_message_loop_proxy()->PostTask(
+      FROM_HERE,
+      base::Bind(&PerformNotifyCompletion,
+                 mem_params,
+                 base::Owned(
+                     new ScopedSafeSharedMemory(safe_shared_memory_pool(),
+                                                mem_params.shared_memory,
+                                                mem_params.shm_size)),
+                 callback));
+}
+
+uint32 AsyncPixelTransferManagerShareGroup::GetTextureUploadCount() {
   return texture_upload_stats_->GetStats(NULL);
 }
 
 base::TimeDelta
-    AsyncPixelTransferDelegateShareGroup::GetTotalTextureUploadTime() {
-  DCHECK(texture_upload_stats_.get());
+AsyncPixelTransferManagerShareGroup::GetTotalTextureUploadTime() {
   base::TimeDelta total_texture_upload_time;
   texture_upload_stats_->GetStats(&total_texture_upload_time);
   return total_texture_upload_time;
 }
 
-void AsyncPixelTransferDelegateShareGroup::ProcessMorePendingTransfers() {
+void AsyncPixelTransferManagerShareGroup::ProcessMorePendingTransfers() {
 }
 
-bool AsyncPixelTransferDelegateShareGroup::NeedsProcessMorePendingTransfers() {
+bool AsyncPixelTransferManagerShareGroup::NeedsProcessMorePendingTransfers() {
   return false;
 }
-
-AsyncPixelTransferManagerShareGroup::AsyncPixelTransferManagerShareGroup(
-    gfx::GLContext* context)
-    : delegate_(new AsyncPixelTransferDelegateShareGroup(context)) {}
-
-AsyncPixelTransferManagerShareGroup::~AsyncPixelTransferManagerShareGroup() {}
 
 AsyncPixelTransferDelegate*
 AsyncPixelTransferManagerShareGroup::GetAsyncPixelTransferDelegate() {

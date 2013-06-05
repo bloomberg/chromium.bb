@@ -34,10 +34,6 @@ class AsyncPixelTransferDelegateStub : public AsyncPixelTransferDelegate {
   virtual AsyncPixelTransferState* CreatePixelTransferState(
       GLuint texture_id,
       const AsyncTexImage2DParams& define_params) OVERRIDE;
-  virtual void BindCompletedAsyncTransfers() OVERRIDE;
-  virtual void AsyncNotifyCompletion(
-      const AsyncMemoryParams& mem_params,
-      const CompletionCallback& callback) OVERRIDE;
   virtual void AsyncTexImage2D(
       AsyncPixelTransferState* state,
       const AsyncTexImage2DParams& tex_params,
@@ -49,10 +45,6 @@ class AsyncPixelTransferDelegateStub : public AsyncPixelTransferDelegate {
       const AsyncMemoryParams& mem_params) OVERRIDE;
   virtual void WaitForTransferCompletion(
       AsyncPixelTransferState* state) OVERRIDE;
-  virtual uint32 GetTextureUploadCount() OVERRIDE;
-  virtual base::TimeDelta GetTotalTextureUploadTime() OVERRIDE;
-  virtual void ProcessMorePendingTransfers() OVERRIDE;
-  virtual bool NeedsProcessMorePendingTransfers() OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AsyncPixelTransferDelegateStub);
@@ -66,15 +58,6 @@ AsyncPixelTransferState* AsyncPixelTransferDelegateStub::
     CreatePixelTransferState(GLuint texture_id,
                              const AsyncTexImage2DParams& define_params) {
   return new AsyncPixelTransferStateImpl;
-}
-
-void AsyncPixelTransferDelegateStub::BindCompletedAsyncTransfers() {
-}
-
-void AsyncPixelTransferDelegateStub::AsyncNotifyCompletion(
-    const AsyncMemoryParams& mem_params,
-    const CompletionCallback& callback) {
-  callback.Run(mem_params);
 }
 
 void AsyncPixelTransferDelegateStub::AsyncTexImage2D(
@@ -95,25 +78,34 @@ void AsyncPixelTransferDelegateStub::WaitForTransferCompletion(
     AsyncPixelTransferState* state) {
 }
 
-uint32 AsyncPixelTransferDelegateStub::GetTextureUploadCount() {
-  return 0;
-}
-
-base::TimeDelta AsyncPixelTransferDelegateStub::GetTotalTextureUploadTime() {
-  return base::TimeDelta();
-}
-
-void AsyncPixelTransferDelegateStub::ProcessMorePendingTransfers() {
-}
-
-bool AsyncPixelTransferDelegateStub::NeedsProcessMorePendingTransfers() {
-  return false;
-}
-
 AsyncPixelTransferManagerStub::AsyncPixelTransferManagerStub()
     : delegate_(new AsyncPixelTransferDelegateStub()) {}
 
 AsyncPixelTransferManagerStub::~AsyncPixelTransferManagerStub() {}
+
+void AsyncPixelTransferManagerStub::BindCompletedAsyncTransfers() {
+}
+
+void AsyncPixelTransferManagerStub::AsyncNotifyCompletion(
+    const AsyncMemoryParams& mem_params,
+    const CompletionCallback& callback) {
+  callback.Run(mem_params);
+}
+
+uint32 AsyncPixelTransferManagerStub::GetTextureUploadCount() {
+  return 0;
+}
+
+base::TimeDelta AsyncPixelTransferManagerStub::GetTotalTextureUploadTime() {
+  return base::TimeDelta();
+}
+
+void AsyncPixelTransferManagerStub::ProcessMorePendingTransfers() {
+}
+
+bool AsyncPixelTransferManagerStub::NeedsProcessMorePendingTransfers() {
+  return false;
+}
 
 AsyncPixelTransferDelegate*
 AsyncPixelTransferManagerStub::GetAsyncPixelTransferDelegate() {

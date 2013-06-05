@@ -94,20 +94,11 @@ class GPU_EXPORT AsyncPixelTransferState
 
 class GPU_EXPORT AsyncPixelTransferDelegate {
  public:
-  typedef base::Callback<void(const AsyncMemoryParams&)> CompletionCallback;
-
   virtual ~AsyncPixelTransferDelegate();
 
   virtual AsyncPixelTransferState* CreatePixelTransferState(
       GLuint texture_id,
       const AsyncTexImage2DParams& define_params) = 0;
-
-  virtual void BindCompletedAsyncTransfers() = 0;
-
-  // There's no guarantee that callback will run on the caller thread.
-  virtual void AsyncNotifyCompletion(
-      const AsyncMemoryParams& mem_params,
-      const CompletionCallback& callback) = 0;
 
   // The callback occurs on the caller thread, once the texture is
   // safe/ready to be used.
@@ -125,17 +116,6 @@ class GPU_EXPORT AsyncPixelTransferDelegate {
   // Block until the specified transfer completes.
   virtual void WaitForTransferCompletion(
       AsyncPixelTransferState* state) = 0;
-
-  virtual uint32 GetTextureUploadCount() = 0;
-  virtual base::TimeDelta GetTotalTextureUploadTime() = 0;
-
-  // ProcessMorePendingTransfers() will be called at a good time
-  // to process a small amount of pending transfer work while
-  // NeedsProcessMorePendingTransfers() returns true. Implementations
-  // that can't dispatch work to separate threads should use
-  // this to avoid blocking the caller thread inappropriately.
-  virtual void ProcessMorePendingTransfers() = 0;
-  virtual bool NeedsProcessMorePendingTransfers() = 0;
 
   // Gets the address of the data from shared memory.
   static void* GetAddress(const AsyncMemoryParams& mem_params);

@@ -7,9 +7,12 @@
 
 #include "gpu/command_buffer/service/async_pixel_transfer_manager.h"
 
-namespace gpu {
+#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 
+namespace gpu {
 class AsyncPixelTransferDelegateEGL;
+class AsyncPixelTransferUploadStats;
 
 class AsyncPixelTransferManagerEGL : public AsyncPixelTransferManager {
  public:
@@ -17,9 +20,18 @@ class AsyncPixelTransferManagerEGL : public AsyncPixelTransferManager {
   virtual ~AsyncPixelTransferManagerEGL();
 
   // AsyncPixelTransferManager implementation:
+  virtual void BindCompletedAsyncTransfers() OVERRIDE;
+  virtual void AsyncNotifyCompletion(
+      const AsyncMemoryParams& mem_params,
+      const CompletionCallback& callback) OVERRIDE;
+  virtual uint32 GetTextureUploadCount() OVERRIDE;
+  virtual base::TimeDelta GetTotalTextureUploadTime() OVERRIDE;
+  virtual void ProcessMorePendingTransfers() OVERRIDE;
+  virtual bool NeedsProcessMorePendingTransfers() OVERRIDE;
   virtual AsyncPixelTransferDelegate* GetAsyncPixelTransferDelegate() OVERRIDE;
 
  private:
+  scoped_refptr<AsyncPixelTransferUploadStats> texture_upload_stats_;
   scoped_ptr<AsyncPixelTransferDelegateEGL> delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(AsyncPixelTransferManagerEGL);
