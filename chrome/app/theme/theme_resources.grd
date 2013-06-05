@@ -914,6 +914,7 @@
         <structure type="chrome_scaled_image" name="IDR_UPDATE_BADGE4" file="update_badge4.png" />
       </if>
       <structure type="chrome_scaled_image" name="IDR_UPDATE_FAIL" file="common/update_fail.png" />
+      <structure type="chrome_scaled_image" name="IDR_UPDATE_FAILED" file="common/update_failed.png" />
       <structure type="chrome_scaled_image" name="IDR_UPDATE_MENU_SEVERITY_LOW" file="common/update_menu_severity_low.png" />
       <structure type="chrome_scaled_image" name="IDR_UPDATE_MENU_SEVERITY_MEDIUM" file="common/update_menu_severity_medium.png" />
       <structure type="chrome_scaled_image" name="IDR_UPDATE_MENU_SEVERITY_HIGH" file="common/update_menu_severity_high.png" />
