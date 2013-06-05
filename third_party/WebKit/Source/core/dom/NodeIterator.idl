@@ -19,9 +19,7 @@
  */
 
 // Introduced in DOM Level 2:
-[
-    NoInterfaceObject
-] interface NodeIterator {
+interface NodeIterator {
     readonly attribute Node root;
     readonly attribute unsigned long whatToShow;
     readonly attribute NodeFilter filter;
