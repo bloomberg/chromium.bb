@@ -8,10 +8,12 @@
  * This test program creates two NaCl sandboxes within the same host process.
  */
 
-#include "native_client/src/shared/gio/gio.h"
 #include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/shared/platform/nacl_exit.h"
 #include "native_client/src/shared/platform/nacl_log.h"
+#include "native_client/src/trusted/desc/nacl_desc_base.h"
+#include "native_client/src/trusted/desc/nacl_desc_io.h"
+#include "native_client/src/trusted/service_runtime/include/sys/fcntl.h"
 #include "native_client/src/trusted/service_runtime/nacl_all_modules.h"
 #include "native_client/src/trusted/service_runtime/nacl_app.h"
 #include "native_client/src/trusted/service_runtime/nacl_signal.h"
@@ -25,7 +27,7 @@
 
 int main(int argc, char **argv) {
   struct NaClApp app[2];
-  struct GioMemoryFileSnapshot gio_file;
+  struct NaClDesc *nd;
   NaClHandle handle_pair[2];
   int i;
   char *domain1_args[] = {"prog", "domain1"};
@@ -41,7 +43,8 @@ int main(int argc, char **argv) {
   NaClSignalHandlerInit();
 
   NaClFileNameForValgrind(argv[1]);
-  CHECK(GioMemoryFileSnapshotCtor(&gio_file, argv[1]));
+  nd = (struct NaClDesc *) NaClDescIoDescOpen(argv[1], NACL_ABI_O_RDONLY, 0);
+  CHECK(NULL != nd);
 
   for (i = 0; i < 2; i++) {
     CHECK(NaClAppCtor(&app[i]));
@@ -64,7 +67,7 @@ int main(int argc, char **argv) {
      * find another contiguous 512MB region for the second NaCl
      * module.
      */
-    CHECK(NaClAppLoadFileAslr((struct Gio *) &gio_file, &app[i],
+    CHECK(NaClAppLoadFileAslr(nd, &app[i],
                               NACL_DISABLE_ASLR) == LOAD_OK);
     NaClAppInitialDescriptorHookup(&app[i]);
     CHECK(NaClAppPrepareToLaunch(&app[i]) == LOAD_OK);

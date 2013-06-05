@@ -17,7 +17,8 @@ struct Gio;
 
 uintptr_t NaClElfImageGetEntryPoint(struct NaClElfImage *image);
 
-struct NaClElfImage *NaClElfImageNew(struct Gio *gp, NaClErrorCode *err_code);
+struct NaClElfImage *NaClElfImageNew(struct NaClDesc *gp,
+                                     NaClErrorCode *err_code);
 
 NaClErrorCode NaClElfImageValidateElfHeader(struct NaClElfImage *image);
 
@@ -40,9 +41,9 @@ NaClErrorCode NaClElfImageValidateProgramHeaders(
  * protections have been set up by NaClMemoryProtection().
  */
 NaClErrorCode NaClElfImageLoad(struct NaClElfImage *image,
-                               struct Gio          *gp,
-                               uint8_t             addr_bits,
-                               uintptr_t           mem_start);
+                               struct NaClDesc *ndp,
+                               uint8_t addr_bits,
+                               uintptr_t mem_start);
 
 /*
  * Loads an ELF object after NaClMemoryProtection() has been called.
@@ -50,7 +51,7 @@ NaClErrorCode NaClElfImageLoad(struct NaClElfImage *image,
 NaClErrorCode NaClElfImageLoadDynamically(
     struct NaClElfImage *image,
     struct NaClApp *nap,
-    struct Gio *gfile,
+    struct NaClDesc *gfile,
     struct NaClValidationMetadata *metadata);
 
 void NaClElfImageDelete(struct NaClElfImage *image);

@@ -189,8 +189,9 @@ void NaClLogAddressSpaceLayout(struct NaClApp *nap) {
   NaClLog(2, "nap->bundle_size        = 0x%x\n", nap->bundle_size);
 }
 
-NaClErrorCode NaClAppLoadFileAslr(struct Gio        *gp,
-                                  struct NaClApp    *nap,
+
+NaClErrorCode NaClAppLoadFileAslr(struct NaClDesc *ndp,
+                                  struct NaClApp *nap,
                                   enum NaClAslrMode aslr_mode) {
   NaClErrorCode       ret = LOAD_INTERNAL;
   NaClErrorCode       subret = LOAD_INTERNAL;
@@ -212,7 +213,7 @@ NaClErrorCode NaClAppLoadFileAslr(struct Gio        *gp,
   nap->stack_size = NaClRoundAllocPage(nap->stack_size);
 
   /* temporay object will be deleted at end of function */
-  image = NaClElfImageNew(gp, &subret);
+  image = NaClElfImageNew(ndp, &subret);
   if (NULL == image || LOAD_OK != subret) {
     ret = subret;
     goto done;
@@ -319,7 +320,7 @@ NaClErrorCode NaClAppLoadFileAslr(struct Gio        *gp,
             "Error code 0x%x\n",
             ret);
   }
-  subret = NaClElfImageLoad(image, gp, nap->addr_bits, nap->mem_start);
+  subret = NaClElfImageLoad(image, ndp, nap->addr_bits, nap->mem_start);
   if (LOAD_OK != subret) {
     ret = subret;
     goto done;
@@ -405,23 +406,23 @@ done:
   return ret;
 }
 
-NaClErrorCode NaClAppLoadFile(struct Gio       *gp,
-                              struct NaClApp   *nap) {
-  return NaClAppLoadFileAslr(gp, nap, NACL_ENABLE_ASLR);
+NaClErrorCode NaClAppLoadFile(struct NaClDesc *ndp,
+                              struct NaClApp *nap) {
+  return NaClAppLoadFileAslr(ndp, nap, NACL_ENABLE_ASLR);
 }
 
 NaClErrorCode NaClAppLoadFileDynamically(
     struct NaClApp *nap,
-    struct Gio     *gio_file,
+    struct NaClDesc *ndp,
     struct NaClValidationMetadata *metadata) {
   struct NaClElfImage *image = NULL;
   NaClErrorCode ret = LOAD_INTERNAL;
 
-  image = NaClElfImageNew((struct Gio *) gio_file, &ret);
+  image = NaClElfImageNew(ndp, &ret);
   if (NULL == image || LOAD_OK != ret) {
     goto done;
   }
-  ret = NaClElfImageLoadDynamically(image, nap, gio_file, metadata);
+  ret = NaClElfImageLoadDynamically(image, nap, ndp, metadata);
   if (LOAD_OK != ret) {
     goto done;
   }

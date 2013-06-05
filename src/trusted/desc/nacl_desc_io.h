@@ -70,12 +70,20 @@ struct NaClDesc *NaClDescIoDescMakeFromHandle(NaClHandle handle);
  * NACL_ABI_O_WRONLY possibly bitwise ORed with NACL_ABI_O_APPEND.
  */
 struct NaClDesc *NaClDescIoDescFromHandleAllocCtor(NaClHandle handle,
-                                                   int flags);
+                                                   int flags) NACL_WUR;
+/*
+ * NaClDescIoDescFromDescAllocCtor is essentially the same as
+ * NaClDescIoDescFromHandleAllocCtor, except that instead of
+ * NaClHandle (which is HANDLE on Windows), we always use a Posix
+ * I/O descriptor.
+ */
+struct NaClDesc *NaClDescIoDescFromDescAllocCtor(int desc,
+                                                 int flags) NACL_WUR;
 
 /* a simple factory */
-struct NaClDescIoDesc *NaClDescIoDescOpen(char  *path,
-                                          int   mode,
-                                          int   perms);
+struct NaClDescIoDesc *NaClDescIoDescOpen(char const *path,
+                                          int mode,
+                                          int perms) NACL_WUR;
 
 uintptr_t NaClDescIoDescMapAnon(struct NaClDescEffector *effp,
                                 void                    *start_addr,

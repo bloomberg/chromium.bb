@@ -31,6 +31,8 @@
 #include "native_client/src/shared/platform/nacl_sync_checked.h"
 #include "native_client/src/shared/srpc/nacl_srpc.h"
 
+#include "native_client/src/trusted/desc/nacl_desc_base.h"
+#include "native_client/src/trusted/desc/nacl_desc_io.h"
 #include "native_client/src/trusted/fault_injection/fault_injection.h"
 #include "native_client/src/trusted/fault_injection/test_injection.h"
 #include "native_client/src/trusted/perf_counter/nacl_perf_counter.h"
@@ -193,7 +195,7 @@ int NaClSelLdrMain(int argc, char **argv) {
 
   struct GioFile                gout;
   NaClErrorCode                 errcode = LOAD_INTERNAL;
-  struct GioMemoryFileSnapshot  blob_file;
+  struct NaClDesc               *blob_file = NULL;
 
   int                           ret_code;
   struct DynArray               env_vars;
@@ -552,7 +554,9 @@ int NaClSelLdrMain(int argc, char **argv) {
    */
   if (NULL != blob_library_file) {
     NaClFileNameForValgrind(blob_library_file);
-    if (0 == GioMemoryFileSnapshotCtor(&blob_file, blob_library_file)) {
+    blob_file = (struct NaClDesc *) NaClDescIoDescOpen(blob_library_file,
+                                                       NACL_ABI_O_RDONLY, 0);
+    if (NULL == blob_file) {
       perror("sel_main");
       fprintf(stderr, "Cannot open \"%s\".\n", blob_library_file);
       exit(1);
@@ -722,7 +726,7 @@ int NaClSelLdrMain(int argc, char **argv) {
       NaClLog(LOG_INFO, "IRT loaded via command channel; ignoring -B irt\n");
     } else if (LOAD_OK == errcode) {
       NaClLog(2, "Loading blob file %s\n", blob_library_file);
-      errcode = NaClAppLoadFileDynamically(nap, (struct Gio *) &blob_file,
+      errcode = NaClAppLoadFileDynamically(nap, blob_file,
                                            NULL);
       if (LOAD_OK == errcode) {
         nap->irt_loaded = 1;
@@ -735,11 +739,7 @@ int NaClSelLdrMain(int argc, char **argv) {
       NaClPerfCounterIntervalLast(&time_all_main);
     }
 
-    if (-1 == (*((struct Gio *) &blob_file)->vtbl->Close)((struct Gio *)
-                                                          &blob_file)) {
-      fprintf(stderr, "Error while closing \"%s\".\n", blob_library_file);
-    }
-    (*((struct Gio *) &blob_file)->vtbl->Dtor)((struct Gio *) &blob_file);
+    NaClDescUnref(blob_file);
     if (verbosity) {
       gprintf((struct Gio *) &gout, "printing post-IRT NaClApp details\n");
       NaClAppPrintDetails(nap, (struct Gio *) &gout);

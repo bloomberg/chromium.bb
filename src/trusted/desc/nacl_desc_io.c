@@ -119,8 +119,6 @@ struct NaClDesc *NaClDescIoDescMakeFromHandle(NaClHandle handle) {
 struct NaClDesc *NaClDescIoDescFromHandleAllocCtor(NaClHandle handle,
                                                    int flags) {
   int posix_d;
-  struct NaClHostDesc *nhdp;
-  struct NaClDescIoDesc *desc;
 
 #if NACL_WINDOWS
   int win_flags = 0;
@@ -146,7 +144,14 @@ struct NaClDesc *NaClDescIoDescFromHandleAllocCtor(NaClHandle handle,
 #else
   posix_d = handle;
 #endif
-  nhdp = NaClHostDescPosixMake(posix_d, flags);
+  return NaClDescIoDescFromDescAllocCtor(posix_d, flags);
+}
+
+struct NaClDesc *NaClDescIoDescFromDescAllocCtor(int desc,
+                                                 int flags) {
+  struct NaClHostDesc *nhdp;
+
+  nhdp = NaClHostDescPosixMake(desc, flags);
   if (NULL == nhdp) {
     /*
      * BUG: In Windows, we leak posix_d representation in the POSIX
@@ -156,13 +161,12 @@ struct NaClDesc *NaClDescIoDescFromHandleAllocCtor(NaClHandle handle,
      */
     return NULL;
   }
-  desc = NaClDescIoDescMake(nhdp);
-  return &desc->base;
+  return (struct NaClDesc *) NaClDescIoDescMake(nhdp);
 }
 
-struct NaClDescIoDesc *NaClDescIoDescOpen(char  *path,
-                                          int   mode,
-                                          int   perms) {
+struct NaClDescIoDesc *NaClDescIoDescOpen(char const *path,
+                                          int mode,
+                                          int perms) {
   struct NaClHostDesc *nhdp;
 
   nhdp = malloc(sizeof *nhdp);
@@ -170,8 +174,10 @@ struct NaClDescIoDesc *NaClDescIoDescOpen(char  *path,
     NaClLog(LOG_FATAL, "NaClDescIoDescOpen: no memory for %s\n", path);
   }
   if (0 != NaClHostDescOpen(nhdp, path, mode, perms)) {
-    NaClLog(LOG_FATAL, "NaClDescIoDescOpen: NaClHostDescOpen failed for %s\n",
+    NaClLog(4,
+            "NaClDescIoDescOpen: NaClHostDescOpen failed for %s\n",
             path);
+    return NULL;
   }
   return NaClDescIoDescMake(nhdp);
 }

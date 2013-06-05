@@ -476,20 +476,20 @@ int NaClAppCtor(struct NaClApp  *nap) NACL_WUR;
  * self-modifying code / data writes and automatically invalidate the
  * cache lines.
  */
-NaClErrorCode NaClAppLoadFile(struct Gio      *gp,
-                              struct NaClApp  *nap) NACL_WUR;
+NaClErrorCode NaClAppLoadFile(struct NaClDesc *ndp,
+                              struct NaClApp *nap) NACL_WUR;
 
 /*
  * Just like NaClAppLoadFile, but allow control over ASLR.
  */
-NaClErrorCode NaClAppLoadFileAslr(struct Gio        *gp,
-                                  struct NaClApp    *nap,
+NaClErrorCode NaClAppLoadFileAslr(struct NaClDesc *ndp,
+                                  struct NaClApp *nap,
                                   enum NaClAslrMode aslr_mode) NACL_WUR;
 
 
 NaClErrorCode NaClAppLoadFileDynamically(
     struct NaClApp *nap,
-    struct Gio *gio_file,
+    struct NaClDesc *ndp,
     struct NaClValidationMetadata *metadata) NACL_WUR;
 
 void  NaClAppPrintDetails(struct NaClApp  *nap,

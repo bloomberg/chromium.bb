@@ -6,30 +6,32 @@
 
 #include "native_client/src/trusted/service_runtime/load_file.h"
 
-#include "native_client/src/shared/gio/gio.h"
+#include "native_client/src/trusted/desc/nacl_desc_base.h"
+#include "native_client/src/trusted/desc/nacl_desc_io.h"
+#include "native_client/src/trusted/service_runtime/include/sys/fcntl.h"
 #include "native_client/src/trusted/service_runtime/nacl_valgrind_hooks.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
 
 
 NaClErrorCode NaClAppLoadFileFromFilename(struct NaClApp *nap,
                                           const char *filename) {
-  struct GioMemoryFileSnapshot gio_file;
-  struct Gio *gio;
+  struct NaClDesc *nd;
   NaClErrorCode err;
 
   NaClFileNameForValgrind(filename);
 
-  if (!GioMemoryFileSnapshotCtor(&gio_file, filename)) {
+  nd = (struct NaClDesc *) NaClDescIoDescOpen(filename, NACL_ABI_O_RDONLY,
+                                              0666);
+  if (NULL == nd) {
     return LOAD_OPEN_ERROR;
   }
-  gio = &gio_file.base.base;
-  err = NaClAppLoadFile(gio, nap);
+
+  err = NaClAppLoadFile(nd, nap);
+  NaClDescUnref(nd);
+
   if (err != LOAD_OK) {
     return err;
   }
-  if (gio->vtbl->Close(gio) != 0) {
-    err = LOAD_INTERNAL;
-  }
-  gio->vtbl->Dtor(gio);
+
   return err;
 }

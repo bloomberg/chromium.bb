@@ -948,98 +948,6 @@ static void NaClSecureChannelShutdownRpc(
   /* Return is never reached, so no need to invoke (*done->Run)(done). */
 }
 
-static int NaClLoadDesc(struct NaClDesc *desc, struct Gio **out_src) {
-  struct NaClGioShm       *gio_shm;
-  struct NaClGioNaClDesc  *gio_desc;
-  struct nacl_abi_stat    stbuf;
-  size_t                  rounded_size;
-
-  switch (NACL_VTBL(NaClDesc, desc)->typeTag) {
-    case NACL_DESC_SHM:
-      /*
-       * We don't know the actual size of the binary, but it should not
-       * matter.  The shared memory object's size is rounded up to at
-       * least 4K, and we can map it in with uninitialized data (should be
-       * zero filled) at the end.
-       */
-      NaClLog(4, "NaClLoadDesc: finding shm size\n");
-
-      if (0 != (*NACL_VTBL(NaClDesc, desc)->Fstat)(desc, &stbuf)) {
-        return 0;
-      }
-
-      rounded_size = (size_t) stbuf.nacl_abi_st_size;
-
-      NaClLog(4, "NaClLoadDesc: shm size 0x%"NACL_PRIxS"\n", rounded_size);
-
-      gio_shm = malloc(sizeof *gio_shm);
-      if (NULL == gio_shm){
-        NaClLog(LOG_ERROR, "NaClLoadDesc: malloc failed\n");
-        return 0;
-      }
-      if (!NaClGioShmCtor(gio_shm, desc, rounded_size)) {
-        NaClLog(LOG_ERROR, "NaClLoadDesc: NaClGioShmCtor failed\n");
-        free(gio_shm);
-        return 0;
-      }
-      *out_src = (struct Gio *) gio_shm;
-      break;
-
-    case NACL_DESC_HOST_IO:
-      NaClLog(4, "NaClLoadDesc: creating Gio from NaClDescHostDesc\n");
-
-      gio_desc = malloc(sizeof *gio_desc);
-      if (NULL == gio_desc){
-        NaClLog(LOG_ERROR, "NaClLoadDesc: malloc failed\n");
-        return 0;
-      }
-      if (!NaClGioNaClDescCtor(gio_desc, desc)) {
-        NaClLog(LOG_ERROR, "NaClLoadDesc: NaClGioNaClDescCtor failed\n");
-        free(gio_desc);
-        return 0;
-      }
-      *out_src = (struct Gio *) gio_desc;
-      break;
-
-    case NACL_DESC_INVALID:
-    case NACL_DESC_DIR:
-    case NACL_DESC_CONN_CAP:
-    case NACL_DESC_CONN_CAP_FD:
-    case NACL_DESC_BOUND_SOCKET:
-    case NACL_DESC_CONNECTED_SOCKET:
-    case NACL_DESC_SYSV_SHM:
-    case NACL_DESC_MUTEX:
-    case NACL_DESC_CONDVAR:
-    case NACL_DESC_SEMAPHORE:
-    case NACL_DESC_SYNC_SOCKET:
-    case NACL_DESC_TRANSFERABLE_DATA_SOCKET:
-    case NACL_DESC_IMC_SOCKET:
-    case NACL_DESC_QUOTA:
-    case NACL_DESC_DEVICE_RNG:
-    case NACL_DESC_DEVICE_POSTMESSAGE:
-    case NACL_DESC_CUSTOM:
-    case NACL_DESC_NULL:
-      NaClLog(LOG_ERROR,
-              "NaClLoadDesc: cannot load from desc of type=%d\n",
-              NACL_VTBL(NaClDesc, desc)->typeTag);
-      return 0;
-  }
-
-  /*
-   * Do not use default case label, to make sure that the compiler
-   * will generate a warning with -Wswitch-enum for new entries in
-   * NaClDescTypeTag introduced in nacl_desc_base.h for which there is no
-   * corresponding entry here. Instead, we pretend that fall-through
-   * from the switch is possible.
-   */
-  if (NACL_FI_ERROR_COND("NaClLoadDesc__typeTag", NULL == *out_src)) {
-    NaClLog(LOG_FATAL, "desc's typeTag has unsupported value: %d\n",
-            NACL_VTBL(NaClDesc, desc)->typeTag);
-  }
-
-  return 1;
-}
-
 /*
  * This RPC is invoked by the plugin when the nexe is downloaded as a
  * stream and not as a file. The only arguments are a handle to a
@@ -1052,7 +960,6 @@ static void NaClLoadModuleRpc(struct NaClSrpcRpc      *rpc,
   struct NaClApp          *nap =
       (struct NaClApp *) rpc->channel->server_instance_data;
   struct NaClDesc         *nexe_binary = in_args[0]->u.hval;
-  struct Gio              *load_src = NULL;
   char                    *aux;
   NaClErrorCode           suberr = LOAD_INTERNAL;
 
@@ -1068,12 +975,6 @@ static void NaClLoadModuleRpc(struct NaClSrpcRpc      *rpc,
     goto cleanup;
   }
   NaClLog(4, "Received aux_info: %s\n", aux);
-
-  if (!NaClLoadDesc(nexe_binary, &load_src)) {
-    NaClLog(4, "NaClLoadModuleRpc: failed to load descriptor\n");
-    rpc->result = NACL_SRPC_RESULT_APP_ERROR;
-    goto cleanup;
-  }
 
   /*
    * TODO(bsy): consider doing the processing below after sending the
@@ -1100,8 +1001,7 @@ static void NaClLoadModuleRpc(struct NaClSrpcRpc      *rpc,
   nap->aux_info = aux;
 
   suberr = NACL_FI_VAL("load_module", NaClErrorCode,
-                       NaClAppLoadFile(load_src, nap));
-  (*NACL_VTBL(Gio, load_src)->Close)(load_src);
+                       NaClAppLoadFile(nexe_binary, nap));
 
   if (LOAD_OK != suberr) {
     nap->module_load_status = suberr;
@@ -1138,9 +1038,6 @@ static void NaClLoadModuleRpc(struct NaClSrpcRpc      *rpc,
   NaClGdbHook(nap);
 
  cleanup:
-  (*NACL_VTBL(Gio, load_src)->Dtor)(load_src);
-  free(load_src);
-  load_src = NULL;
   NaClDescUnref(nexe_binary);
   nexe_binary = NULL;
   (*done->Run)(done);
@@ -1158,7 +1055,6 @@ static void NaClLoadIrtRpc(struct NaClSrpcRpc      *rpc,
   struct NaClApp          *nap =
       (struct NaClApp *) rpc->channel->server_instance_data;
   struct NaClDesc         *irt_binary = in_args[0]->u.hval;
-  struct Gio              *load_src = NULL;
   NaClErrorCode           suberr = LOAD_INTERNAL;
 
   UNREFERENCED_PARAMETER(out_args);
@@ -1185,12 +1081,6 @@ static void NaClLoadIrtRpc(struct NaClSrpcRpc      *rpc,
     goto cleanup;
   }
 
-  if (!NaClLoadDesc(irt_binary, &load_src)) {
-    NaClLog(4, "NaClLoadIrtRpc: failed to load descriptor\n");
-    rpc->result = NACL_SRPC_RESULT_APP_ERROR;
-    goto cleanup;
-  }
-
   /*
    * We cannot take the nap->mu lock, since NaClAppLoadFileDynamically
    * invokes NaClElfImageLoadDynamically which in turn invokes
@@ -1202,8 +1092,7 @@ static void NaClLoadIrtRpc(struct NaClSrpcRpc      *rpc,
    */
 
   suberr = NACL_FI_VAL("load_irt", NaClErrorCode,
-                       NaClAppLoadFileDynamically(nap, load_src, NULL));
-  (*NACL_VTBL(Gio, load_src)->Close)(load_src);
+                       NaClAppLoadFileDynamically(nap, irt_binary, NULL));
 
   if (LOAD_OK != suberr) {
     NaClLog(LOG_FATAL,
@@ -1214,9 +1103,6 @@ static void NaClLoadIrtRpc(struct NaClSrpcRpc      *rpc,
   rpc->result = NACL_SRPC_RESULT_OK;
 
  cleanup:
-  (*NACL_VTBL(Gio, load_src)->Dtor)(load_src);
-  free(load_src);
-  load_src = NULL;
   NaClDescUnref(irt_binary);
   irt_binary = NULL;
   NaClLog(4, "NaClLoadIrtRpc: leaving\n");

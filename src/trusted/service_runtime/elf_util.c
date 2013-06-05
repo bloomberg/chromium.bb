@@ -23,6 +23,7 @@
 #include "native_client/src/include/nacl_platform.h"
 
 #include "native_client/src/shared/gio/gio.h"
+#include "native_client/src/shared/platform/nacl_host_desc.h"
 #include "native_client/src/shared/platform/nacl_log.h"
 
 #include "native_client/src/trusted/service_runtime/elf_util.h"
@@ -128,7 +129,7 @@ static void NaClDumpElfHeader(int loglevel, Elf_Ehdr *elf_hdr) {
 
 
 static void NaClDumpElfProgramHeader(int     loglevel,
-                                    Elf_Phdr *phdr) {
+                                     Elf_Phdr *phdr) {
 #define DUMP(mem, f) do {                                \
     NaClLog(loglevel, "%s: %" f "\n", #mem, phdr->mem);  \
   } while (0)
@@ -341,8 +342,10 @@ NaClErrorCode NaClElfImageValidateProgramHeaders(
 }
 
 
-struct NaClElfImage *NaClElfImageNew(struct Gio     *gp,
-                                     NaClErrorCode  *err_code) {
+
+struct NaClElfImage *NaClElfImageNew(struct NaClDesc *ndp,
+                                     NaClErrorCode *err_code) {
+  ssize_t read_ret;
   struct NaClElfImage *result;
   struct NaClElfImage image;
   union {
@@ -351,24 +354,17 @@ struct NaClElfImage *NaClElfImageNew(struct Gio     *gp,
     Elf64_Ehdr ehdr64;
 #endif
   } ehdr;
-  int                 cur_ph;
+  int cur_ph;
 
   memset(image.loadable, 0, sizeof image.loadable);
-  if (-1 == (*gp->vtbl->Seek)(gp, 0, 0)) {
-    NaClLog(2, "could not seek to beginning of Gio object containing nexe\n");
-    *err_code = LOAD_READ_ERROR;
-    return 0;
-  }
 
   /*
    * We read the larger size of an ELFCLASS64 header even if it turns out
    * we're reading an ELFCLASS32 file.  No usable ELFCLASS32 binary could
    * be so small that it's not larger than Elf64_Ehdr anyway.
    */
-  if ((*gp->vtbl->Read)(gp,
-                        &ehdr,
-                        sizeof ehdr)
-      != sizeof ehdr) {
+  read_ret = (*NACL_VTBL(NaClDesc, ndp)->PRead)(ndp, &ehdr, sizeof ehdr, 0);
+  if (NaClSSizeIsNegErrno(&read_ret) || (size_t) read_ret != sizeof ehdr) {
     *err_code = LOAD_READ_ERROR;
     NaClLog(2, "could not load elf headers\n");
     return 0;
@@ -427,14 +423,6 @@ struct NaClElfImage *NaClElfImageNew(struct Gio     *gp,
     return 0;
   }
 
-  if ((*gp->vtbl->Seek)(gp,
-                        (off_t) image.ehdr.e_phoff,
-                        SEEK_SET) == (off_t) -1) {
-    *err_code = LOAD_READ_ERROR;
-    NaClLog(2, "cannot seek tp prog headers\n");
-    return 0;
-  }
-
 #if NACL_TARGET_SUBARCH == 64
   if (ELFCLASS64 == ehdr.ehdr64.e_ident[EI_CLASS]) {
     /*
@@ -456,10 +444,13 @@ struct NaClElfImage *NaClElfImageNew(struct Gio     *gp,
      * We know the multiplication won't overflow since we rejected
      * e_phnum values larger than the small constant NACL_MAX_PROGRAM_HEADERS.
      */
-    if ((size_t) (*gp->vtbl->Read)(gp,
-                                   &phdr64[0],
-                                   image.ehdr.e_phnum * sizeof phdr64[0])
-        != (image.ehdr.e_phnum * sizeof phdr64[0])) {
+    read_ret = (*NACL_VTBL(NaClDesc, ndp)->
+                PRead)(ndp,
+                       &phdr64[0],
+                       image.ehdr.e_phnum * sizeof phdr64[0],
+                       (nacl_off64_t) image.ehdr.e_phoff);
+    if (NaClSSizeIsNegErrno(&read_ret) ||
+        (size_t) read_ret != image.ehdr.e_phnum * sizeof phdr64[0]) {
       *err_code = LOAD_READ_ERROR;
       NaClLog(2, "cannot load tp prog headers\n");
       return 0;
@@ -498,10 +489,13 @@ struct NaClElfImage *NaClElfImageNew(struct Gio     *gp,
       return 0;
     }
 
-    if ((size_t) (*gp->vtbl->Read)(gp,
-                                   &image.phdrs[0],
-                                   image.ehdr.e_phnum * sizeof image.phdrs[0])
-        != (image.ehdr.e_phnum * sizeof image.phdrs[0])) {
+    read_ret = (*NACL_VTBL(NaClDesc, ndp)->
+                PRead)(ndp,
+                       &image.phdrs[0],
+                       image.ehdr.e_phnum * sizeof image.phdrs[0],
+                       (nacl_off64_t) image.ehdr.e_phoff);
+    if (NaClSSizeIsNegErrno(&read_ret) ||
+        (size_t) read_ret != image.ehdr.e_phnum * sizeof image.phdrs[0]) {
       *err_code = LOAD_READ_ERROR;
       NaClLog(2, "cannot load tp prog headers\n");
       return 0;
@@ -529,12 +523,13 @@ struct NaClElfImage *NaClElfImageNew(struct Gio     *gp,
 
 
 NaClErrorCode NaClElfImageLoad(struct NaClElfImage *image,
-                               struct Gio          *gp,
-                               uint8_t             addr_bits,
-                               uintptr_t           mem_start) {
-  int               segnum;
-  uintptr_t         paddr;
-  uintptr_t         end_vaddr;
+                               struct NaClDesc *ndp,
+                               uint8_t addr_bits,
+                               uintptr_t mem_start) {
+  int segnum;
+  uintptr_t paddr;
+  uintptr_t end_vaddr;
+  ssize_t read_ret;
 
   for (segnum = 0; segnum < image->ehdr.e_phnum; ++segnum) {
     const Elf_Phdr *php = &image->phdrs[segnum];
@@ -570,24 +565,12 @@ NaClErrorCode NaClElfImageLoad(struct NaClElfImage *image,
     paddr = mem_start + NaClTruncAllocPage(php->p_vaddr);
 
     NaClLog(4,
-            "Seek to position %"NACL_PRIdElf_Off" (0x%"NACL_PRIxElf_Off").\n",
-            offset,
-            offset);
-
-    /*
-     * NB: php->p_offset may not be a valid off_t on 64-bit systems, but
-     * in that case Seek() will error out.
-     */
-    if ((*gp->vtbl->Seek)(gp, (off_t) offset, SEEK_SET) == (off_t) -1) {
-      NaClLog(LOG_ERROR, "seek failure segment %d", segnum);
-      return LOAD_SEGMENT_BAD_PARAM;
-    }
-    NaClLog(4,
-            "Reading %"NACL_PRIdElf_Xword" (0x%"NACL_PRIxElf_Xword") bytes to"
-            " address 0x%"NACL_PRIxPTR"\n",
-            filesz,
-            filesz,
-            paddr);
+            "PReading %"NACL_PRIdElf_Xword" (0x%"NACL_PRIxElf_Xword") bytes to"
+            " address 0x%"NACL_PRIxPTR", position %"
+            NACL_PRIdElf_Off" (0x%"NACL_PRIxElf_Off"\n",
+            filesz, filesz,
+            paddr,
+            offset, offset);
 
     /*
      * Tell valgrind that this memory is accessible and undefined. For more
@@ -596,7 +579,9 @@ NaClErrorCode NaClElfImageLoad(struct NaClElfImage *image,
      */
     NACL_MAKE_MEM_UNDEFINED((void *) paddr, filesz);
 
-    if ((Elf_Word) (*gp->vtbl->Read)(gp, (void *) paddr, filesz) != filesz) {
+    read_ret = (*NACL_VTBL(NaClDesc, ndp)->
+                PRead)(ndp, (void *) paddr, filesz, (nacl_off64_t) offset);
+    if (NaClSSizeIsNegErrno(&read_ret) || (size_t) read_ret != filesz) {
       NaClLog(LOG_ERROR, "load failure segment %d", segnum);
       return LOAD_SEGMENT_BAD_PARAM;
     }
@@ -613,8 +598,9 @@ NaClErrorCode NaClElfImageLoad(struct NaClElfImage *image,
 NaClErrorCode NaClElfImageLoadDynamically(
     struct NaClElfImage *image,
     struct NaClApp *nap,
-    struct Gio *gfile,
+    struct NaClDesc *ndp,
     struct NaClValidationMetadata *metadata) {
+  ssize_t read_ret;
   int segnum;
   for (segnum = 0; segnum < image->ehdr.e_phnum; ++segnum) {
     const Elf_Phdr *php = &image->phdrs[segnum];
@@ -636,18 +622,6 @@ NaClErrorCode NaClElfImageLoadDynamically(
       continue;
     }
 
-    /*
-     * Ideally, Gio would have a Pread() method which we would use
-     * instead of Seek().  In practice, though, there is no
-     * Seek()/Read() race condition here because both
-     * GioMemoryFileSnapshot and NaClGioShm use a seek position that
-     * is local and not shared between processes.
-     */
-    if ((*gfile->vtbl->Seek)(gfile, (off_t) offset, SEEK_SET) == (off_t) -1) {
-      NaClLog(LOG_ERROR, "NaClElfImageLoadDynamically: seek failed\n");
-      return LOAD_READ_ERROR;
-    }
-
     if (0 != (php->p_flags & PF_X)) {
       /* Load code segment. */
       /*
@@ -661,7 +635,10 @@ NaClErrorCode NaClElfImageLoadDynamically(
         NaClLog(LOG_ERROR, "NaClElfImageLoadDynamically: malloc failed\n");
         return LOAD_NO_MEMORY;
       }
-      if ((Elf_Word) (*gfile->vtbl->Read)(gfile, code_copy, filesz) != filesz) {
+      read_ret = (*NACL_VTBL(NaClDesc, ndp)->
+                  PRead)(ndp, code_copy, filesz, (nacl_off64_t) offset);
+      if (NaClSSizeIsNegErrno(&read_ret) ||
+          (size_t) read_ret != filesz) {
         free(code_copy);
         NaClLog(LOG_ERROR, "NaClElfImageLoadDynamically: "
                 "failed to read code segment\n");
@@ -700,7 +677,10 @@ NaClErrorCode NaClElfImageLoadDynamically(
                 "failed to map data segment\n");
         return LOAD_UNLOADABLE;
       }
-      if ((Elf_Word) (*gfile->vtbl->Read)(gfile, paddr, filesz) != filesz) {
+      read_ret = (*NACL_VTBL(NaClDesc, ndp)->
+                  PRead)(ndp, paddr, filesz, (nacl_off64_t) offset);
+      if (NaClSSizeIsNegErrno(&read_ret) ||
+          (size_t) read_ret != filesz) {
         NaClLog(LOG_ERROR, "NaClElfImageLoadDynamically: "
                 "failed to read data segment\n");
         return LOAD_READ_ERROR;
@@ -732,7 +712,6 @@ NaClErrorCode NaClElfImageLoadDynamically(
   }
   return LOAD_OK;
 }
-
 
 void NaClElfImageDelete(struct NaClElfImage *image) {
   free(image);

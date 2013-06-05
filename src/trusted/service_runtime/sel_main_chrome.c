@@ -84,8 +84,7 @@ static char kFakeIrtName[] = "\0IRT";
 
 static void NaClLoadIrt(struct NaClApp *nap, int irt_fd) {
   int file_desc;
-  struct GioPio gio_pio;
-  struct Gio *gio_desc;
+  struct NaClDesc *nd;
   struct NaClValidationMetadata metadata;
   NaClErrorCode errcode;
 
@@ -105,16 +104,14 @@ static void NaClLoadIrt(struct NaClApp *nap, int irt_fd) {
   /* TODO(ncbray) plumb the real filename in from Chrome. */
   MetadataFromFDCtor(&metadata, file_desc, kFakeIrtName, sizeof(kFakeIrtName));
 
-  /*
-   * The GioPio type is safe to use when this file descriptor is shared
-   * with other processes, because it does not use the shared file position.
-   */
-  if (!GioPioCtor(&gio_pio, file_desc)) {
-    NaClLog(LOG_FATAL, "NaClLoadIrt: Failed to create Gio wrapper\n");
+  nd = NaClDescIoDescFromDescAllocCtor(file_desc, NACL_ABI_O_RDONLY);
+  if (NULL == nd) {
+    NaClLog(LOG_FATAL,
+            "NaClLoadIrt: failed to construct NaClDesc object from"
+            " descriptor\n");
   }
-  gio_desc = (struct Gio *) &gio_pio;
 
-  errcode = NaClAppLoadFileDynamically(nap, gio_desc, &metadata);
+  errcode = NaClAppLoadFileDynamically(nap, nd, &metadata);
   if (errcode != LOAD_OK) {
     NaClLog(LOG_FATAL,
             "NaClLoadIrt: Failed to load the integrated runtime (IRT): %s\n",
@@ -122,9 +119,7 @@ static void NaClLoadIrt(struct NaClApp *nap, int irt_fd) {
   }
 
   MetadataDtor(&metadata);
-
-  (*NACL_VTBL(Gio, gio_desc)->Close)(gio_desc);
-  (*NACL_VTBL(Gio, gio_desc)->Dtor)(gio_desc);
+  NaClDescUnref(nd);
 }
 
 void NaClChromeMainStart(struct NaClChromeMainArgs *args) {
