@@ -30,7 +30,7 @@ void LatencyInfo::AddLatencyNumber(LatencyComponentType component,
                                    int64 id,
                                    int64 component_sequence_number) {
   AddLatencyNumberWithTimestamp(component, id, component_sequence_number,
-                                base::TimeTicks::Now(), 1);
+                                base::TimeTicks::HighResNow(), 1);
 }
 
 void LatencyInfo::AddLatencyNumberWithTimestamp(LatencyComponentType component,
