@@ -94,7 +94,6 @@ class CC_EXPORT WorkerPool {
 
   typedef std::deque<scoped_refptr<internal::WorkerPoolTask> > TaskDeque;
 
-  void OnIdle(TaskDeque* completed_tasks);
   void ScheduleCheckForCompletedTasks();
   void DispatchCompletionCallbacks(TaskDeque* completed_tasks);
 

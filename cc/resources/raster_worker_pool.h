@@ -167,6 +167,20 @@ class CC_EXPORT RasterWorkerPool : public WorkerPool {
   virtual bool ForceUploadToComplete(const RasterTask& raster_task);
 
  protected:
+  class RootTask {
+   public:
+    RootTask();
+    explicit RootTask(internal::WorkerPoolTask::TaskVector* dependencies);
+    RootTask(const base::Closure& callback,
+             internal::WorkerPoolTask::TaskVector* dependencies);
+    ~RootTask();
+
+   protected:
+    friend class RasterWorkerPool;
+
+    scoped_refptr<internal::WorkerPoolTask> internal_;
+  };
+
   typedef internal::RasterWorkerPoolTask* TaskMapKey;
   typedef base::hash_map<TaskMapKey,
                          scoped_refptr<internal::WorkerPoolTask> > TaskMap;
@@ -174,8 +188,14 @@ class CC_EXPORT RasterWorkerPool : public WorkerPool {
   RasterWorkerPool(ResourceProvider* resource_provider, size_t num_threads);
 
   void SetRasterTasks(RasterTask::Queue* queue);
-  void ScheduleRasterTasks(internal::WorkerPoolTask::TaskVector* raster_tasks);
+  void ScheduleRasterTasks(const RootTask& root);
 
+  ResourceProvider* resource_provider() const { return resource_provider_; }
+  const RasterTask::Queue::TaskVector& raster_tasks() const {
+    return raster_tasks_;
+  }
+
+ private:
   ResourceProvider* resource_provider_;
   RasterTask::Queue::TaskVector raster_tasks_;
 };

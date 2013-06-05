@@ -71,27 +71,28 @@ ImageRasterWorkerPool::~ImageRasterWorkerPool() {
 void ImageRasterWorkerPool::ScheduleTasks(RasterTask::Queue* queue) {
   TRACE_EVENT0("cc", "ImageRasterWorkerPool::ScheduleTasks");
 
-  internal::WorkerPoolTask::TaskVector raster_tasks;
+  internal::WorkerPoolTask::TaskVector tasks;
 
   RasterWorkerPool::SetRasterTasks(queue);
 
-  for (RasterTask::Queue::TaskVector::iterator it = raster_tasks_.begin();
-       it != raster_tasks_.end(); ++it) {
+  for (RasterTask::Queue::TaskVector::const_iterator it =
+           raster_tasks().begin();
+       it != raster_tasks().end(); ++it) {
     internal::RasterWorkerPoolTask* task = *it;
 
     TaskMap::iterator image_it = image_tasks_.find(task);
     if (image_it != image_tasks_.end()) {
       internal::WorkerPoolTask* image_task = image_it->second;
-      raster_tasks.push_back(image_task);
+      tasks.push_back(image_task);
       continue;
     }
 
     // Acquire image for resource.
-    resource_provider_->AcquireImage(task->resource()->id());
+    resource_provider()->AcquireImage(task->resource()->id());
 
     // Map image for raster.
-    uint8* buffer = resource_provider_->MapImage(task->resource()->id());
-    int stride = resource_provider_->GetImageStride(task->resource()->id());
+    uint8* buffer = resource_provider()->MapImage(task->resource()->id());
+    int stride = resource_provider()->GetImageStride(task->resource()->id());
 
     // TODO(reveman): Avoid having to make a copy of dependencies.
     internal::WorkerPoolTask::TaskVector dependencies = task->dependencies();
@@ -106,10 +107,16 @@ void ImageRasterWorkerPool::ScheduleTasks(RasterTask::Queue* queue) {
                        make_scoped_refptr(task))));
 
     image_tasks_[task] = image_task;
-    raster_tasks.push_back(image_task);
+    tasks.push_back(image_task);
   }
 
-  ScheduleRasterTasks(&raster_tasks);
+  if (tasks.empty()) {
+    ScheduleRasterTasks(RootTask());
+    return;
+  }
+
+  RootTask root(&tasks);
+  ScheduleRasterTasks(root);
 }
 
 void ImageRasterWorkerPool::OnRasterTaskCompleted(
@@ -121,19 +128,19 @@ void ImageRasterWorkerPool::OnRasterTaskCompleted(
   DCHECK(image_tasks_.find(task) != image_tasks_.end());
 
   // Balanced with MapImage() call in ScheduleTasks().
-  resource_provider_->UnmapImage(task->resource()->id());
+  resource_provider()->UnmapImage(task->resource()->id());
 
   // Bind image to resource.
-  resource_provider_->BindImage(task->resource()->id());
+  resource_provider()->BindImage(task->resource()->id());
 
   if (!was_canceled)
     task->DidRun();
 
-  DidFinishRasterTask(task);
+  DidCompleteRasterTask(task);
   image_tasks_.erase(task);
 }
 
-void ImageRasterWorkerPool::DidFinishRasterTask(
+void ImageRasterWorkerPool::DidCompleteRasterTask(
     internal::RasterWorkerPoolTask* task) {
   task->DidComplete();
   task->DispatchCompletionCallback();

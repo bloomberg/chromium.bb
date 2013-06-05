@@ -32,7 +32,7 @@ class CC_EXPORT ImageRasterWorkerPool : public RasterWorkerPool,
 
   void OnRasterTaskCompleted(
       scoped_refptr<internal::RasterWorkerPoolTask> task, bool was_canceled);
-  void DidFinishRasterTask(internal::RasterWorkerPoolTask* task);
+  void DidCompleteRasterTask(internal::RasterWorkerPoolTask* task);
 
   TaskMap image_tasks_;
 

@@ -83,7 +83,9 @@ PixelBufferRasterWorkerPool::PixelBufferRasterWorkerPool(
     ResourceProvider* resource_provider,
     size_t num_threads) : RasterWorkerPool(resource_provider, num_threads),
                           bytes_pending_upload_(0),
-                          has_performed_uploads_since_last_flush_(false) {
+                          has_performed_uploads_since_last_flush_(false),
+                          weak_ptr_factory_(this),
+                          schedule_more_tasks_count_(0) {
   // TODO(reveman): Remove WorkerPool client interface.
   WorkerPool::SetClient(this);
 }
@@ -102,9 +104,11 @@ void PixelBufferRasterWorkerPool::Shutdown() {
     DCHECK(!it->second);
 
     // Everything else has been canceled.
-    DidFinishRasterTask(task);
+    DidCompleteRasterTask(task);
   }
   pixel_buffer_tasks_.clear();
+  // Cancel any pending OnRasterFinished callback.
+  weak_ptr_factory_.InvalidateWeakPtrs();
 }
 
 void PixelBufferRasterWorkerPool::ScheduleTasks(RasterTask::Queue* queue) {
@@ -114,8 +118,9 @@ void PixelBufferRasterWorkerPool::ScheduleTasks(RasterTask::Queue* queue) {
 
   // Build new pixel buffer task set.
   TaskMap new_pixel_buffer_tasks;
-  for (RasterTask::Queue::TaskVector::iterator it = raster_tasks_.begin();
-       it != raster_tasks_.end(); ++it) {
+  for (RasterTask::Queue::TaskVector::const_iterator it =
+           raster_tasks().begin();
+       it != raster_tasks().end(); ++it) {
     internal::RasterWorkerPoolTask* task = *it;
     DCHECK(new_pixel_buffer_tasks.find(task) == new_pixel_buffer_tasks.end());
     DCHECK(!task->HasCompleted());
@@ -144,7 +149,7 @@ void PixelBufferRasterWorkerPool::ScheduleTasks(RasterTask::Queue* queue) {
     }
 
     // Everything else can be canceled.
-    DidFinishRasterTask(task);
+    DidCompleteRasterTask(task);
   }
 
   pixel_buffer_tasks_.swap(new_pixel_buffer_tasks);
@@ -161,16 +166,16 @@ void PixelBufferRasterWorkerPool::CheckForCompletedTasks() {
     internal::RasterWorkerPoolTask* task = tasks_with_pending_upload_.front();
 
     // Uploads complete in the order they are issued.
-    if (!resource_provider_->DidSetPixelsComplete(task->resource()->id()))
+    if (!resource_provider()->DidSetPixelsComplete(task->resource()->id()))
       break;
 
     // It's now safe to release the pixel buffer and the shared memory.
-    resource_provider_->ReleasePixelBuffer(task->resource()->id());
+    resource_provider()->ReleasePixelBuffer(task->resource()->id());
 
     bytes_pending_upload_ -= task->resource()->bytes();
 
     task->DidRun();
-    DidFinishRasterTask(task);
+    DidCompleteRasterTask(task);
     pixel_buffer_tasks_.erase(task);
 
     tasks_with_pending_upload_.pop_front();
@@ -185,7 +190,7 @@ bool PixelBufferRasterWorkerPool::ForceUploadToComplete(
        it != tasks_with_pending_upload_.end(); ++it) {
     internal::RasterWorkerPoolTask* task = *it;
     if (task == raster_task.internal_) {
-      resource_provider_->ForceSetPixelsToComplete(task->resource()->id());
+      resource_provider()->ForceSetPixelsToComplete(task->resource()->id());
       return true;
     }
   }
@@ -197,7 +202,7 @@ void PixelBufferRasterWorkerPool::
     DidFinishDispatchingWorkerPoolCompletionCallbacks() {
   // If a flush is needed, do it now before starting to dispatch more tasks.
   if (has_performed_uploads_since_last_flush_) {
-    resource_provider_->ShallowFlushIfSupported();
+    resource_provider()->ShallowFlushIfSupported();
     has_performed_uploads_since_last_flush_ = false;
   }
 }
@@ -214,10 +219,11 @@ bool PixelBufferRasterWorkerPool::CanScheduleRasterTask(
 void PixelBufferRasterWorkerPool::ScheduleMoreTasks() {
   TRACE_EVENT0("cc", "PixelBufferRasterWorkerPool::ScheduleMoreTasks");
 
-  internal::WorkerPoolTask::TaskVector raster_tasks;
+  internal::WorkerPoolTask::TaskVector tasks;
 
-  for (RasterTask::Queue::TaskVector::iterator it = raster_tasks_.begin();
-       it != raster_tasks_.end(); ++it) {
+  for (RasterTask::Queue::TaskVector::const_iterator it =
+           raster_tasks().begin();
+       it != raster_tasks().end(); ++it) {
     internal::RasterWorkerPoolTask* task = *it;
 
     TaskMap::iterator pixel_buffer_it = pixel_buffer_tasks_.find(task);
@@ -228,7 +234,7 @@ void PixelBufferRasterWorkerPool::ScheduleMoreTasks() {
         pixel_buffer_it->second);
     if (pixel_buffer_task) {
       if (!pixel_buffer_task->HasCompleted())
-        raster_tasks.push_back(pixel_buffer_task);
+        tasks.push_back(pixel_buffer_task);
       continue;
     }
 
@@ -236,12 +242,13 @@ void PixelBufferRasterWorkerPool::ScheduleMoreTasks() {
       break;
 
     // Request a pixel buffer. This will reserve shared memory.
-    resource_provider_->AcquirePixelBuffer(task->resource()->id());
+    resource_provider()->AcquirePixelBuffer(task->resource()->id());
 
     // MapPixelBuffer() returns NULL if context was lost at the time
     // AcquirePixelBuffer() was called. For simplicity we still post
     // a raster task that is essentially a noop in these situations.
-    uint8* buffer = resource_provider_->MapPixelBuffer(task->resource()->id());
+    uint8* buffer = resource_provider()->MapPixelBuffer(
+        task->resource()->id());
 
     // TODO(reveman): Avoid having to make a copy of dependencies.
     internal::WorkerPoolTask::TaskVector dependencies = task->dependencies();
@@ -255,10 +262,24 @@ void PixelBufferRasterWorkerPool::ScheduleMoreTasks() {
                        make_scoped_refptr(task))));
 
     pixel_buffer_tasks_[task] = pixel_buffer_task;
-    raster_tasks.push_back(pixel_buffer_task);
+    tasks.push_back(pixel_buffer_task);
   }
 
-  ScheduleRasterTasks(&raster_tasks);
+  ++schedule_more_tasks_count_;
+
+  if (tasks.empty()) {
+    ScheduleRasterTasks(RootTask());
+    return;
+  }
+
+  RootTask root(
+      base::Bind(&PixelBufferRasterWorkerPool::RunRasterFinishedTask,
+                 base::MessageLoopProxy::current(),
+                 base::Bind(&PixelBufferRasterWorkerPool::OnRasterFinished,
+                            weak_ptr_factory_.GetWeakPtr(),
+                            schedule_more_tasks_count_)),
+                &tasks);
+  ScheduleRasterTasks(root);
 }
 
 void PixelBufferRasterWorkerPool::OnRasterTaskCompleted(
@@ -272,20 +293,20 @@ void PixelBufferRasterWorkerPool::OnRasterTaskCompleted(
   DCHECK(pixel_buffer_tasks_.find(task) != pixel_buffer_tasks_.end());
 
   // Balanced with MapPixelBuffer() call in ScheduleMoreTasks().
-  resource_provider_->UnmapPixelBuffer(task->resource()->id());
+  resource_provider()->UnmapPixelBuffer(task->resource()->id());
 
   if (!needs_upload) {
-    resource_provider_->ReleasePixelBuffer(task->resource()->id());
+    resource_provider()->ReleasePixelBuffer(task->resource()->id());
     // No upload needed. Dispatch completion callback.
     if (!was_canceled)
       task->DidRun();
 
-    DidFinishRasterTask(task);
+    DidCompleteRasterTask(task);
     pixel_buffer_tasks_.erase(task);
     return;
   }
 
-  resource_provider_->BeginSetPixels(task->resource()->id());
+  resource_provider()->BeginSetPixels(task->resource()->id());
   has_performed_uploads_since_last_flush_ = true;
 
   bytes_pending_upload_ += task->resource()->bytes();
@@ -296,23 +317,44 @@ void PixelBufferRasterWorkerPool::AbortPendingUploads() {
   while (!tasks_with_pending_upload_.empty()) {
     internal::RasterWorkerPoolTask* task = tasks_with_pending_upload_.front();
 
-    resource_provider_->AbortSetPixels(task->resource()->id());
-    resource_provider_->ReleasePixelBuffer(task->resource()->id());
+    resource_provider()->AbortSetPixels(task->resource()->id());
+    resource_provider()->ReleasePixelBuffer(task->resource()->id());
 
     bytes_pending_upload_ -= task->resource()->bytes();
 
     // Need to run the reply callback even though task was aborted.
-    DidFinishRasterTask(task);
+    DidCompleteRasterTask(task);
     pixel_buffer_tasks_.erase(task);
 
     tasks_with_pending_upload_.pop_front();
   }
 }
 
-void PixelBufferRasterWorkerPool::DidFinishRasterTask(
+void PixelBufferRasterWorkerPool::DidCompleteRasterTask(
     internal::RasterWorkerPoolTask* task) {
   task->DidComplete();
   task->DispatchCompletionCallback();
+}
+
+void PixelBufferRasterWorkerPool::OnRasterFinished(
+    int64 schedule_more_tasks_count) {
+  TRACE_EVENT1("cc",
+               "PixelBufferRasterWorkerPool::OnRasterFinishedTasks",
+               "schedule_more_tasks_count", schedule_more_tasks_count);
+  DCHECK_GE(schedule_more_tasks_count_, schedule_more_tasks_count);
+  // Call CheckForCompletedTasks() when we've finished running all raster
+  // tasks needed since last time ScheduleMoreTasks() was called. This
+  // reduces latency when processing only a small number of raster tasks.
+  if (schedule_more_tasks_count_ == schedule_more_tasks_count)
+    CheckForCompletedTasks();
+}
+
+// static
+void PixelBufferRasterWorkerPool::RunRasterFinishedTask(
+    scoped_refptr<base::MessageLoopProxy> origin_loop,
+    const base::Closure& on_raster_finished_callback) {
+  TRACE_EVENT0("cc", "RasterWorkerPool::RunRasterFinishedTask");
+  origin_loop->PostTask(FROM_HERE, on_raster_finished_callback);
 }
 
 }  // namespace cc

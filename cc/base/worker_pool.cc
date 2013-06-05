@@ -153,17 +153,8 @@ class WorkerPool::Inner : public base::DelegateSimpleThread::Delegate {
   // before calling this function. Returns true if idle.
   bool CollectCompletedTasksWithLockAcquired(TaskDeque* completed_tasks);
 
-  // Schedule an OnIdleOnOriginThread callback if not already pending.
-  // Lock must already be acquired before calling this function.
-  void ScheduleOnIdleWithLockAcquired();
-  void OnIdleOnOriginThread();
-
   // Overridden from base::DelegateSimpleThread:
   virtual void Run() OVERRIDE;
-
-  // Pointer to worker pool. Can only be used on origin thread.
-  // Not guarded by |lock_|.
-  WorkerPool* worker_pool_on_origin_thread_;
 
   // This lock protects all members of this class except
   // |worker_pool_on_origin_thread_|. Do not read or modify anything
@@ -173,15 +164,6 @@ class WorkerPool::Inner : public base::DelegateSimpleThread::Delegate {
   // Condition variable that is waited on by worker threads until new
   // tasks are ready to run or shutdown starts.
   base::ConditionVariable has_ready_to_run_tasks_cv_;
-
-  // Target message loop used for posting callbacks.
-  scoped_refptr<base::MessageLoopProxy> origin_loop_;
-
-  base::WeakPtrFactory<Inner> weak_ptr_factory_;
-
-  const base::Closure on_idle_callback_;
-  // Set when a OnIdleOnOriginThread() callback is pending.
-  bool on_idle_pending_;
 
   // Provides each running thread loop with a unique index. First thread
   // loop index is 0.
@@ -216,14 +198,8 @@ class WorkerPool::Inner : public base::DelegateSimpleThread::Delegate {
 WorkerPool::Inner::Inner(WorkerPool* worker_pool,
                          size_t num_threads,
                          const std::string& thread_name_prefix)
-    : worker_pool_on_origin_thread_(worker_pool),
-      lock_(),
+    : lock_(),
       has_ready_to_run_tasks_cv_(&lock_),
-      origin_loop_(base::MessageLoopProxy::current()),
-      weak_ptr_factory_(this),
-      on_idle_callback_(base::Bind(&WorkerPool::Inner::OnIdleOnOriginThread,
-                                   weak_ptr_factory_.GetWeakPtr())),
-      on_idle_pending_(false),
       next_thread_index_(0),
       shutdown_(false) {
   base::AutoLock lock(lock_);
@@ -271,9 +247,6 @@ void WorkerPool::Inner::Shutdown() {
     base::ThreadRestrictions::ScopedAllowIO allow_io;
     worker->Join();
   }
-
-  // Cancel any pending OnIdle callback.
-  weak_ptr_factory_.InvalidateWeakPtrs();
 }
 
 void WorkerPool::Inner::ScheduleTasks(internal::WorkerPoolTask* root) {
@@ -367,34 +340,6 @@ bool WorkerPool::Inner::CollectCompletedTasksWithLockAcquired(
   return running_tasks_.empty() && pending_tasks_.empty();
 }
 
-void WorkerPool::Inner::ScheduleOnIdleWithLockAcquired() {
-  lock_.AssertAcquired();
-
-  if (on_idle_pending_)
-    return;
-  origin_loop_->PostTask(FROM_HERE, on_idle_callback_);
-  on_idle_pending_ = true;
-}
-
-void WorkerPool::Inner::OnIdleOnOriginThread() {
-  TaskDeque completed_tasks;
-
-  {
-    base::AutoLock lock(lock_);
-
-    DCHECK(on_idle_pending_);
-    on_idle_pending_ = false;
-
-    // Early out if no longer idle.
-    if (!running_tasks_.empty() || !pending_tasks_.empty())
-      return;
-
-    CollectCompletedTasksWithLockAcquired(&completed_tasks);
-  }
-
-  worker_pool_on_origin_thread_->OnIdle(&completed_tasks);
-}
-
 void WorkerPool::Inner::Run() {
 #if defined(OS_ANDROID)
   base::PlatformThread::SetThreadPriority(
@@ -409,15 +354,9 @@ void WorkerPool::Inner::Run() {
 
   while (true) {
     if (ready_to_run_tasks_.empty()) {
-      if (pending_tasks_.empty()) {
-        // Exit when shutdown is set and no more tasks are pending.
-        if (shutdown_)
-          break;
-
-        // Schedule an idle callback if no tasks are running.
-        if (running_tasks_.empty())
-          ScheduleOnIdleWithLockAcquired();
-      }
+      // Exit when shutdown is set and no more tasks are pending.
+      if (shutdown_ && pending_tasks_.empty())
+        break;
 
       // Wait for more tasks.
       has_ready_to_run_tasks_cv_.Wait();
@@ -563,18 +502,6 @@ void WorkerPool::Shutdown() {
   TaskDeque completed_tasks;
   inner_->CollectCompletedTasks(&completed_tasks);
   DispatchCompletionCallbacks(&completed_tasks);
-}
-
-void WorkerPool::OnIdle(TaskDeque* completed_tasks) {
-  TRACE_EVENT0("cc", "WorkerPool::OnIdle");
-
-  DCHECK(!in_dispatch_completion_callbacks_);
-
-  DispatchCompletionCallbacks(completed_tasks);
-
-  // Cancel any pending check for completed tasks.
-  check_for_completed_tasks_callback_.Cancel();
-  check_for_completed_tasks_pending_ = false;
 }
 
 void WorkerPool::ScheduleCheckForCompletedTasks() {

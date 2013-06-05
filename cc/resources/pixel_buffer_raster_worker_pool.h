@@ -44,7 +44,12 @@ class CC_EXPORT PixelBufferRasterWorkerPool : public RasterWorkerPool,
       bool was_canceled,
       bool needs_upload);
   void AbortPendingUploads();
-  void DidFinishRasterTask(internal::RasterWorkerPoolTask* task);
+  void DidCompleteRasterTask(internal::RasterWorkerPoolTask* task);
+  void OnRasterFinished(int64 schedule_more_tasks_count);
+
+  static void RunRasterFinishedTask(
+      scoped_refptr<base::MessageLoopProxy> origin_loop,
+      const base::Closure& on_raster_finished_callback);
 
   TaskMap pixel_buffer_tasks_;
 
@@ -54,6 +59,9 @@ class CC_EXPORT PixelBufferRasterWorkerPool : public RasterWorkerPool,
   size_t bytes_pending_upload_;
   bool has_performed_uploads_since_last_flush_;
   bool did_dispatch_completion_callback_;
+
+  base::WeakPtrFactory<PixelBufferRasterWorkerPool> weak_ptr_factory_;
+  int64 schedule_more_tasks_count_;
 
   DISALLOW_COPY_AND_ASSIGN(PixelBufferRasterWorkerPool);
 };

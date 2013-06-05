@@ -25,6 +25,12 @@ class WorkerPoolTaskImpl : public internal::WorkerPoolTask {
         callback_(base::Bind(&Noop)),
         reply_(base::Bind(&Noop)) {
   }
+  WorkerPoolTaskImpl(const base::Closure& callback,
+                     internal::WorkerPoolTask::TaskVector* dependencies)
+      : internal::WorkerPoolTask(dependencies),
+        callback_(callback),
+        reply_(base::Bind(&Noop)) {
+  }
 
   // Overridden from internal::WorkerPoolTask:
   virtual void RunOnThread(unsigned thread_index) OVERRIDE {
@@ -175,6 +181,23 @@ void RasterWorkerPool::RasterTask::Reset() {
 RasterWorkerPool::RasterTask::~RasterTask() {
 }
 
+RasterWorkerPool::RootTask::RootTask() {
+}
+
+RasterWorkerPool::RootTask::RootTask(
+    internal::WorkerPoolTask::TaskVector* dependencies)
+    : internal_(new WorkerPoolTaskImpl(dependencies)) {
+}
+
+RasterWorkerPool::RootTask::RootTask(
+    const base::Closure& callback,
+    internal::WorkerPoolTask::TaskVector* dependencies)
+    : internal_(new WorkerPoolTaskImpl(callback, dependencies)) {
+}
+
+RasterWorkerPool::RootTask::~RootTask() {
+}
+
 RasterWorkerPool::RasterWorkerPool(ResourceProvider* resource_provider,
                                    size_t num_threads)
     : WorkerPool(
@@ -200,15 +223,8 @@ void RasterWorkerPool::SetRasterTasks(RasterTask::Queue* queue) {
   raster_tasks_.swap(queue->tasks_);
 }
 
-void RasterWorkerPool::ScheduleRasterTasks(
-    internal::WorkerPoolTask::TaskVector* raster_tasks) {
-  if (raster_tasks->empty()) {
-    WorkerPool::ScheduleTasks(NULL);
-    return;
-  }
-
-  scoped_refptr<WorkerPoolTaskImpl> root(new WorkerPoolTaskImpl(raster_tasks));
-  WorkerPool::ScheduleTasks(root);
+void RasterWorkerPool::ScheduleRasterTasks(const RootTask& root) {
+  WorkerPool::ScheduleTasks(root.internal_);
 }
 
 }  // namespace cc
