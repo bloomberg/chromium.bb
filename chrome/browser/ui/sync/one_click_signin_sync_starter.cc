@@ -296,6 +296,7 @@ void OneClickSigninSyncStarter::CompleteInitForNewProfile(
       break;
     }
     case Profile::CREATE_STATUS_REMOTE_FAIL:
+    case Profile::CREATE_STATUS_CANCELED:
     case Profile::MAX_CREATE_STATUS: {
       NOTREACHED() << "Invalid profile creation status";
       CancelSigninAndDelete();

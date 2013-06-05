@@ -61,6 +61,7 @@ void ProfileLoader::OnProfileLoaded(int profile_load_sequence_id,
       break;
     case Profile::CREATE_STATUS_LOCAL_FAIL:
     case Profile::CREATE_STATUS_REMOTE_FAIL:
+    case Profile::CREATE_STATUS_CANCELED:
       DecrementPendingProfileLoads();
       break;
     case Profile::MAX_CREATE_STATUS:

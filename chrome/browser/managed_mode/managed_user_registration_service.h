@@ -12,6 +12,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/prefs/pref_change_registrar.h"
 #include "base/string16.h"
+#include "base/timer.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "components/browser_context_keyed_service/browser_context_keyed_service.h"
 #include "sync/api/syncable_service.h"
@@ -51,9 +52,11 @@ class ManagedUserRegistrationService : public BrowserContextKeyedService,
 
   // Registers a new managed user with the server. |name| is the display name of
   // the user. |callback| is called with the result of the registration.
-  // TODO(bauerb): There should be a way to cancel a pending managed user
-  // registration.
   void Register(const string16& name, const RegistrationCallback& callback);
+
+  // Cancels any registration currently in progress and calls the callback with
+  // an appropriate error.
+  void CancelPendingRegistration();
 
   // ProfileKeyedService implementation:
   virtual void Shutdown() OVERRIDE;
@@ -88,7 +91,9 @@ class ManagedUserRegistrationService : public BrowserContextKeyedService,
   // Dispatches the callback if all the conditions have been met.
   void DispatchCallbackIfReady();
 
-  void CancelPendingRegistration();
+  // Cancels any registration currently in progress and calls the callback
+  // specified when Register was called with the given error.
+  void CancelPendingRegistrationImpl(const GoogleServiceAuthError& error);
 
   // Dispatches the callback with the saved token (which may be empty) and the
   // given |error|.
@@ -101,6 +106,9 @@ class ManagedUserRegistrationService : public BrowserContextKeyedService,
 
   scoped_ptr<syncer::SyncChangeProcessor> sync_processor_;
   scoped_ptr<syncer::SyncErrorFactory> error_handler_;
+
+  // Provides a timeout during profile creation.
+  base::OneShotTimer<ManagedUserRegistrationService> registration_timer_;
 
   std::string pending_managed_user_id_;
   std::string pending_managed_user_token_;

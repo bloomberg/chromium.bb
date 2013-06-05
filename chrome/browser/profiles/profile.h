@@ -104,6 +104,8 @@ class Profile : public content::BrowserContext {
     CREATE_STATUS_CREATED,
     // Profile is created, extensions and promo resources are initialized.
     CREATE_STATUS_INITIALIZED,
+    // Profile creation (managed-user registration, generally) was canceled.
+    CREATE_STATUS_CANCELED,
     MAX_CREATE_STATUS  // For histogram display.
   };
 

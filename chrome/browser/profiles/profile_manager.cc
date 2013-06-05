@@ -909,7 +909,7 @@ base::FilePath ProfileManager::GenerateNextProfileDirectoryPath() {
 }
 
 // static
-void ProfileManager::CreateMultiProfileAsync(
+base::FilePath ProfileManager::CreateMultiProfileAsync(
     const string16& name,
     const string16& icon_url,
     const CreateCallback& callback,
@@ -925,6 +925,7 @@ void ProfileManager::CreateMultiProfileAsync(
                                       name,
                                       icon_url,
                                       is_managed);
+  return new_path;
 }
 
 // static

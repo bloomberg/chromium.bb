@@ -194,8 +194,9 @@ class ProfileManager : public base::NonThreadSafe,
   // that at some point the list of numbered profiles is not continuous.)
   // |callback| may be invoked multiple times (for CREATE_STATUS_INITIALIZED
   // and CREATE_STATUS_CREATED) so binding parameters with bind::Passed() is
-  // prohibited.
-  static void CreateMultiProfileAsync(
+  // prohibited. Returns the file path to the profile that will be created
+  // asynchronously.
+  static base::FilePath CreateMultiProfileAsync(
       const string16& name,
       const string16& icon_url,
       const CreateCallback& callback,

@@ -198,6 +198,7 @@ BrowserOptionsHandler::BrowserOptionsHandler()
 }
 
 BrowserOptionsHandler::~BrowserOptionsHandler() {
+  CancelProfileCreation();
   ProfileSyncService* sync_service(ProfileSyncServiceFactory::
       GetInstance()->GetForProfile(Profile::FromWebUI(web_ui())));
   if (sync_service)
@@ -568,6 +569,10 @@ void BrowserOptionsHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "deleteProfile",
       base::Bind(&BrowserOptionsHandler::DeleteProfile,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "cancelCreateProfile",
+      base::Bind(&BrowserOptionsHandler::HandleCancelProfileCreation,
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "themesReset",
@@ -1094,13 +1099,15 @@ void BrowserOptionsHandler::CreateProfile(const ListValue* args) {
 #if defined(ENABLE_MANAGED_USERS)
   // This handler could have been called in managed mode, for example because
   // the user fiddled with the web inspector. Silently return in this case.
-  Profile* profile = Profile::FromWebUI(web_ui());
-  if (ManagedUserService::ProfileIsManaged(profile))
+  Profile* current_profile = Profile::FromWebUI(web_ui());
+  if (ManagedUserService::ProfileIsManaged(current_profile))
     return;
 #endif
 
   if (!ProfileManager::IsMultipleProfilesEnabled())
     return;
+
+  DCHECK(profile_path_being_created_.empty());
 
   Browser* browser =
       chrome::FindBrowserWithWebContents(web_ui()->GetWebContents());
@@ -1141,7 +1148,7 @@ void BrowserOptionsHandler::CreateProfile(const ListValue* args) {
 
   ProfileMetrics::LogProfileAddNewUser(ProfileMetrics::ADD_NEW_USER_DIALOG);
 
-  ProfileManager::CreateMultiProfileAsync(
+  profile_path_being_created_ = ProfileManager::CreateMultiProfileAsync(
       name, icon, base::Bind(&RunProfileCreationCallbacks, callbacks),
       managed_user);
 }
@@ -1150,6 +1157,7 @@ void BrowserOptionsHandler::RegisterNewManagedUser(
     const ProfileManager::CreateCallback& callback,
     Profile* profile,
     Profile::CreateStatus status) {
+  DCHECK(profile_path_being_created_ == profile->GetPath());
   if (status != Profile::CREATE_STATUS_INITIALIZED)
     return;
 
@@ -1157,7 +1165,8 @@ void BrowserOptionsHandler::RegisterNewManagedUser(
       ManagedUserServiceFactory::GetForProfile(profile);
   DCHECK(managed_user_service->ProfileIsManaged());
   ManagedUserRegistrationService* registration_service =
-      ManagedUserRegistrationServiceFactory::GetForProfile(profile);
+      ManagedUserRegistrationServiceFactory::GetForProfile(
+          Profile::FromWebUI(web_ui()));
 
   managed_user_service->RegisterAndInitSync(registration_service, callback);
 }
@@ -1167,6 +1176,7 @@ void BrowserOptionsHandler::ShowProfileCreationFeedback(
     bool is_managed,
     Profile* profile,
     Profile::CreateStatus status) {
+  DCHECK(profile_path_being_created_ == profile->GetPath());
   if (status != Profile::CREATE_STATUS_CREATED) {
     UMA_HISTOGRAM_ENUMERATION("Profile.CreateResult",
                               status,
@@ -1175,12 +1185,14 @@ void BrowserOptionsHandler::ShowProfileCreationFeedback(
 
   switch (status) {
     case Profile::CREATE_STATUS_LOCAL_FAIL: {
+      profile_path_being_created_.clear();
       web_ui()->CallJavascriptFunction(
           "BrowserOptions.showCreateProfileLocalError");
       DeleteProfileAtPath(profile->GetPath());
       break;
     }
     case Profile::CREATE_STATUS_REMOTE_FAIL: {
+      profile_path_being_created_.clear();
       web_ui()->CallJavascriptFunction(
           "BrowserOptions.showCreateProfileRemoteError");
       DeleteProfileAtPath(profile->GetPath());
@@ -1191,6 +1203,7 @@ void BrowserOptionsHandler::ShowProfileCreationFeedback(
       break;
     }
     case Profile::CREATE_STATUS_INITIALIZED: {
+      profile_path_being_created_.clear();
       DictionaryValue dict;
       dict.SetString("name",
                      profile->GetPrefs()->GetString(prefs::kProfileName));
@@ -1209,6 +1222,11 @@ void BrowserOptionsHandler::ShowProfileCreationFeedback(
                                 profile,
                                 Profile::CREATE_STATUS_INITIALIZED);
       }
+      break;
+    }
+    case Profile::CREATE_STATUS_CANCELED: {
+      profile_path_being_created_.clear();
+      DeleteProfileAtPath(profile->GetPath());
       break;
     }
     case Profile::MAX_CREATE_STATUS: {
@@ -1252,6 +1270,35 @@ void BrowserOptionsHandler::DeleteProfileAtPath(base::FilePath file_path) {
   g_browser_process->profile_manager()->ScheduleProfileForDeletion(
       file_path,
       base::Bind(&OpenNewWindowForProfile, desktop_type));
+}
+
+void BrowserOptionsHandler::HandleCancelProfileCreation(const ListValue* args) {
+  CancelProfileCreation();
+}
+
+void BrowserOptionsHandler::CancelProfileCreation() {
+  // UI code may call this any time "Cancel" is clicked in the dialog,
+  // whether profile creation is in progress or not.
+  if (profile_path_being_created_.empty())
+    return;
+
+  ProfileManager* manager = g_browser_process->profile_manager();
+  Profile* new_profile = manager->GetProfileByPath(profile_path_being_created_);
+  if (!new_profile)
+    return;
+
+  // Non-managed user creation cannot be cancelled. (Creating a non-managed
+  // profile shouldn't take significant time, and it can easily be deleted
+  // afterward.)
+  if (!ManagedUserService::ProfileIsManaged(new_profile))
+    return;
+
+  ManagedUserRegistrationService* registration_service =
+      ManagedUserRegistrationServiceFactory::GetForProfile(
+          Profile::FromWebUI(web_ui()));
+  // The ManagedUserRegistrationService will send a cancellation error to the
+  // callback provided in CreateProfile, i.e. to ShowProfileCreationFeedback.
+  registration_service->CancelPendingRegistration();
 }
 
 void BrowserOptionsHandler::ObserveThemeChanged() {

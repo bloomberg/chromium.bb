@@ -176,6 +176,18 @@ class BrowserOptionsHandler
   // Deletes the profile at the given |file_path|.
   void DeleteProfileAtPath(base::FilePath file_path);
 
+  // Cancels creation of a managed-user profile currently in progress, as
+  // indicated by profile_path_being_created_, removing the object and files
+  // and canceling managed-user registration. This should be called from JS, to
+  // ensure that the profile-creation dialog is properly updated. |args| is not
+  // used.
+  // TODO(pamg): Move all the profile-handling methods into a more appropriate
+  // class.
+  void HandleCancelProfileCreation(const base::ListValue* args);
+
+  // Internal implementation.
+  void CancelProfileCreation();
+
   void ObserveThemeChanged();
   void ThemesReset(const base::ListValue* args);
 #if defined(TOOLKIT_GTK)
@@ -304,6 +316,11 @@ class BrowserOptionsHandler
   BooleanPrefMember default_browser_policy_;
 
   TemplateURLService* template_url_service_;  // Weak.
+
+  // Used to allow cancelling a profile creation (particularly a managed-user
+  // registration) in progress. Set when profile creation is begun, and
+  // cleared when all the callbacks have been run and creation is complete.
+  base::FilePath profile_path_being_created_;
 
   // Used to get WeakPtr to self for use on the UI thread.
   base::WeakPtrFactory<BrowserOptionsHandler> weak_ptr_factory_;
