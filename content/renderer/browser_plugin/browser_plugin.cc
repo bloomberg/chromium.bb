@@ -119,8 +119,6 @@ BrowserPlugin::BrowserPlugin(
       sad_guest_(NULL),
       guest_crashed_(false),
       auto_size_ack_pending_(false),
-      guest_process_id_(-1),
-      guest_route_id_(-1),
       persist_storage_(false),
       valid_partition_id_(true),
       content_window_routing_id_(MSG_ROUTING_NONE),
@@ -572,8 +570,6 @@ void BrowserPlugin::OnLoadCommit(
   if (params.is_top_level)
     UpdateDOMAttribute(browser_plugin::kAttributeSrc, params.url.spec());
 
-  guest_process_id_ = params.process_id;
-  guest_route_id_ = params.route_id;
   current_nav_entry_index_ = params.current_entry_index;
   nav_entry_count_ = params.entry_count;
 

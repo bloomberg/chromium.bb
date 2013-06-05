@@ -26,9 +26,7 @@ class WebviewExecuteCodeFunction : public extensions::ExecuteCodeFunction {
   // specified in JSON arguments.
   extensions::ExtensionResource resource_;
 
-  int process_id_;
-
-  int route_id_;
+  int guest_instance_id_;
 };
 
 class WebviewExecuteScriptFunction : public WebviewExecuteCodeFunction {

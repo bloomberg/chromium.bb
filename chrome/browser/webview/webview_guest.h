@@ -5,7 +5,13 @@
 #ifndef CHROME_BROWSER_WEBVIEW_WEBVIEW_GUEST_H_
 #define CHROME_BROWSER_WEBVIEW_WEBVIEW_GUEST_H_
 
+#include "base/observer_list.h"
+#include "chrome/browser/extensions/tab_helper.h"
 #include "content/public/browser/web_contents_observer.h"
+
+namespace extensions {
+class ScriptExecutor;
+}  // namespace extensions
 
 namespace chrome {
 
@@ -35,6 +41,10 @@ class WebViewGuest : public content::WebContentsObserver {
 
   int instance_id() const { return webview_instance_id_; }
 
+  extensions::ScriptExecutor* script_executor() {
+    return script_executor_.get();
+  }
+
  private:
   virtual ~WebViewGuest();
   virtual void WebContentsDestroyed(
@@ -55,7 +65,12 @@ class WebViewGuest : public content::WebContentsObserver {
   const int guest_instance_id_;
   // |webview_instance_id_| is an identifier that's unique within a particular
   // embedder RenderView for a particular <webview> instance.
-  int webview_instance_id_;
+  const int webview_instance_id_;
+
+  ObserverList<extensions::TabHelper::ScriptExecutionObserver>
+      script_observers_;
+  scoped_ptr<extensions::ScriptExecutor> script_executor_;
+
 
   DISALLOW_COPY_AND_ASSIGN(WebViewGuest);
 };

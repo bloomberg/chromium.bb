@@ -14,13 +14,8 @@
         "parameters": [
           {
             "type": "integer",
-            "name": "processId",
-            "description": "The process ID of the guest <webview> process."
-          },
-          {
-            "type": "integer",
-            "name": "routeId",
-            "description": "The route ID of the guest <webview> renderer."
+            "name": "instanceId",
+            "description": "The instance ID of the guest <webview> process."
           },
           {
             "$ref": "tabs.InjectDetails",
@@ -51,13 +46,8 @@
         "parameters": [
           {
             "type": "integer",
-            "name": "processId",
-            "description": "The process ID of the guest <webview> process."
-          },
-          {
-            "type": "integer",
-            "name": "routeId",
-            "description": "The route ID of the guest <webview> renderer."
+            "name": "instanceId",
+            "description": "The instance ID of the guest <webview> process."
           },
           {
             "$ref": "tabs.InjectDetails",

@@ -338,40 +338,24 @@ class BrowserPluginBindingGetInstanceID : public BrowserPluginMethodBinding {
 
 // Note: This is a method that is used internally by the <webview> shim only.
 // This should not be exposed to developers.
-class BrowserPluginBindingGetRouteID : public BrowserPluginMethodBinding {
+class BrowserPluginBindingGetGuestInstanceID :
+    public BrowserPluginMethodBinding {
  public:
-  BrowserPluginBindingGetRouteID()
-      : BrowserPluginMethodBinding(browser_plugin::kMethodGetRouteId, 0) {
+  BrowserPluginBindingGetGuestInstanceID()
+      : BrowserPluginMethodBinding(
+          browser_plugin::kMethodGetGuestInstanceId, 0) {
   }
 
   virtual bool Invoke(BrowserPluginBindings* bindings,
                       const NPVariant* args,
                       NPVariant* result) OVERRIDE {
-    int route_id = bindings->instance()->guest_route_id();
-    INT32_TO_NPVARIANT(route_id, *result);
+    int guest_instance_id = bindings->instance()->guest_instance_id();
+    INT32_TO_NPVARIANT(guest_instance_id, *result);
     return true;
   }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(BrowserPluginBindingGetRouteID);
-};
-
-class BrowserPluginBindingGetProcessID : public BrowserPluginMethodBinding {
- public:
-  BrowserPluginBindingGetProcessID()
-      : BrowserPluginMethodBinding(browser_plugin::kMethodGetProcessId, 0) {
-  }
-
-  virtual bool Invoke(BrowserPluginBindings* bindings,
-                      const NPVariant* args,
-                      NPVariant* result) OVERRIDE {
-    int process_id = bindings->instance()->guest_process_id();
-    INT32_TO_NPVARIANT(process_id, *result);
-    return true;
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(BrowserPluginBindingGetProcessID);
+  DISALLOW_COPY_AND_ASSIGN(BrowserPluginBindingGetGuestInstanceID);
 };
 
 class BrowserPluginBindingGo : public BrowserPluginMethodBinding {
@@ -848,8 +832,7 @@ BrowserPluginBindings::BrowserPluginBindings(BrowserPlugin* instance)
   method_bindings_.push_back(new BrowserPluginBindingCanGoForward);
   method_bindings_.push_back(new BrowserPluginBindingForward);
   method_bindings_.push_back(new BrowserPluginBindingGetInstanceID);
-  method_bindings_.push_back(new BrowserPluginBindingGetProcessID);
-  method_bindings_.push_back(new BrowserPluginBindingGetRouteID);
+  method_bindings_.push_back(new BrowserPluginBindingGetGuestInstanceID);
   method_bindings_.push_back(new BrowserPluginBindingGo);
   method_bindings_.push_back(new BrowserPluginBindingPersistRequestObject);
   method_bindings_.push_back(new BrowserPluginBindingReload);

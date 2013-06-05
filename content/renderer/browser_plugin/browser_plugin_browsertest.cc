@@ -476,8 +476,6 @@ TEST_F(BrowserPluginTest, CustomEvents) {
   const char* kRemoveEventListener =
     "document.getElementById('browserplugin')."
     "    removeEventListener('-internal-loadcommit', nav);";
-  const char* kGetProcessID =
-      "document.getElementById('browserplugin').getProcessId()";
   const char* kGetSrc =
       "document.getElementById('browserplugin').src";
   const char* kGoogleURL = "http://www.google.com/";
@@ -503,19 +501,16 @@ TEST_F(BrowserPluginTest, CustomEvents) {
     BrowserPluginMsg_LoadCommit_Params navigate_params;
     navigate_params.is_top_level = true;
     navigate_params.url = GURL(kGoogleURL);
-    navigate_params.process_id = 1337;
     BrowserPluginMsg_LoadCommit msg(instance_id, navigate_params);
     browser_plugin->OnMessageReceived(msg);
     EXPECT_EQ(kGoogleURL, ExecuteScriptAndReturnString("url"));
     EXPECT_EQ(kGoogleURL, ExecuteScriptAndReturnString(kGetSrc));
-    EXPECT_EQ(1337, ExecuteScriptAndReturnInt(kGetProcessID));
   }
   ExecuteJavaScript(kRemoveEventListener);
   {
     BrowserPluginMsg_LoadCommit_Params navigate_params;
     navigate_params.is_top_level = false;
     navigate_params.url = GURL(kGoogleNewsURL);
-    navigate_params.process_id = 42;
     BrowserPluginMsg_LoadCommit msg(instance_id, navigate_params);
     browser_plugin->OnMessageReceived(msg);
     // The URL variable should not change because we've removed the event
@@ -523,7 +518,6 @@ TEST_F(BrowserPluginTest, CustomEvents) {
     EXPECT_EQ(kGoogleURL, ExecuteScriptAndReturnString("url"));
     // The src attribute should not change if this is a top-level navigation.
     EXPECT_EQ(kGoogleURL, ExecuteScriptAndReturnString(kGetSrc));
-    EXPECT_EQ(42, ExecuteScriptAndReturnInt(kGetProcessID));
   }
 }
 
@@ -704,8 +698,6 @@ TEST_F(BrowserPluginTest, RemoveEventListenerInEventListener) {
     "    addEventListener('-internal-loadcommit', nav);";
   const char* kGoogleURL = "http://www.google.com/";
   const char* kGoogleNewsURL = "http://news.google.com/";
-  const char* kGetProcessID =
-      "document.getElementById('browserplugin').getProcessId()";
 
   LoadHTML(GetHTMLForBrowserPluginObject().c_str());
   ExecuteJavaScript(kAddEventListener);
@@ -726,22 +718,18 @@ TEST_F(BrowserPluginTest, RemoveEventListenerInEventListener) {
   {
     BrowserPluginMsg_LoadCommit_Params navigate_params;
     navigate_params.url = GURL(kGoogleURL);
-    navigate_params.process_id = 1337;
     BrowserPluginMsg_LoadCommit msg(instance_id, navigate_params);
     browser_plugin->OnMessageReceived(msg);
     EXPECT_EQ(kGoogleURL, ExecuteScriptAndReturnString("url"));
-    EXPECT_EQ(1337, ExecuteScriptAndReturnInt(kGetProcessID));
   }
   {
     BrowserPluginMsg_LoadCommit_Params navigate_params;
     navigate_params.url = GURL(kGoogleNewsURL);
-    navigate_params.process_id = 42;
     BrowserPluginMsg_LoadCommit msg(instance_id, navigate_params);
     browser_plugin->OnMessageReceived(msg);
     // The URL variable should not change because we've removed the event
     // listener.
     EXPECT_EQ(kGoogleURL, ExecuteScriptAndReturnString("url"));
-    EXPECT_EQ(42, ExecuteScriptAndReturnInt(kGetProcessID));
   }
 }
 
@@ -761,8 +749,6 @@ TEST_F(BrowserPluginTest, MultipleEventListeners) {
     "document.getElementById('browserplugin')."
     "    addEventListener('-internal-loadcommit', navb);";
   const char* kGoogleURL = "http://www.google.com/";
-  const char* kGetProcessID =
-      "document.getElementById('browserplugin').getProcessId()";
 
   LoadHTML(GetHTMLForBrowserPluginObject().c_str());
   ExecuteJavaScript(kAddEventListener);
@@ -783,11 +769,9 @@ TEST_F(BrowserPluginTest, MultipleEventListeners) {
   {
     BrowserPluginMsg_LoadCommit_Params navigate_params;
     navigate_params.url = GURL(kGoogleURL);
-    navigate_params.process_id = 1337;
     BrowserPluginMsg_LoadCommit msg(instance_id, navigate_params);
     browser_plugin->OnMessageReceived(msg);
     EXPECT_EQ(2, ExecuteScriptAndReturnInt("count"));
-    EXPECT_EQ(1337, ExecuteScriptAndReturnInt(kGetProcessID));
   }
 }
 

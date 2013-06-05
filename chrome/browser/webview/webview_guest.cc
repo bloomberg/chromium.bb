@@ -7,6 +7,7 @@
 #include "base/lazy_instance.h"
 #include "chrome/browser/extensions/api/web_request/web_request_api.h"
 #include "chrome/browser/extensions/extension_renderer_state.h"
+#include "chrome/browser/extensions/script_executor.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/site_instance.h"
@@ -46,7 +47,9 @@ WebViewGuest::WebViewGuest(WebContents* guest_web_contents,
           embedder_web_contents->GetRenderProcessHost()->GetID()),
       profile_(guest_web_contents->GetBrowserContext()),
       guest_instance_id_(guest_web_contents->GetEmbeddedInstanceID()),
-      webview_instance_id_(webview_instance_id) {
+      webview_instance_id_(webview_instance_id),
+      script_executor_(new extensions::ScriptExecutor(guest_web_contents,
+                                                      &script_observers_)) {
   webview_profile_map.Get()[profile_].insert(
       std::make_pair(guest_instance_id_, this));
 

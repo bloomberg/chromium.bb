@@ -114,14 +114,12 @@ WebView.prototype.setupPermissionEvent_ = function() {
 WebView.prototype.setupExecuteCodeAPI_ = function() {
   var self = this;
   this.webviewNode_['executeScript'] = function(var_args) {
-    var args = [self.browserPluginNode_.getProcessId(),
-                self.browserPluginNode_.getRouteId()].concat(
+    var args = [self.browserPluginNode_.getGuestInstanceId()].concat(
                     Array.prototype.slice.call(arguments));
     chrome.webview.executeScript.apply(null, args);
   }
   this.webviewNode_['insertCSS'] = function(var_args) {
-    var args = [self.browserPluginNode_.getProcessId(),
-                self.browserPluginNode_.getRouteId()].concat(
+    var args = [self.browserPluginNode_.getGuestInstanceId()].concat(
                     Array.prototype.slice.call(arguments));
     chrome.webview.insertCSS.apply(null, args);
   }

@@ -85,10 +85,6 @@ IPC_STRUCT_BEGIN(BrowserPluginMsg_LoadCommit_Params)
   IPC_STRUCT_MEMBER(GURL, url)
   // Indicates whether the navigation was on the top-level frame.
   IPC_STRUCT_MEMBER(bool, is_top_level)
-  // The browser's process ID for the guest.
-  IPC_STRUCT_MEMBER(int, process_id)
-  // The browser's routing ID for the guest's RenderView.
-  IPC_STRUCT_MEMBER(int, route_id)
   // The index of the current navigation entry after this navigation was
   // committed.
   IPC_STRUCT_MEMBER(int, current_entry_index)

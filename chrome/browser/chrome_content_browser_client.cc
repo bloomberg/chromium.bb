@@ -696,9 +696,6 @@ void ChromeContentBrowserClient::GuestWebContentsAttached(
   std::vector<ExtensionMsg_Loaded_Params> extensions;
   extensions.push_back(ExtensionMsg_Loaded_Params(extension));
   guest_web_contents->Send(new ExtensionMsg_Loaded(extensions));
-  // TODO(fsamuel): This should be replaced with WebViewGuest or AdViewGuest
-  // once they are ready.
-  extensions::TabHelper::CreateForWebContents(guest_web_contents);
   new WebViewGuest(guest_web_contents,
                    embedder_web_contents,
                    extension->id(),

@@ -94,10 +94,6 @@ class CONTENT_EXPORT BrowserPlugin :
   // Get the guest's DOMWindow proxy.
   NPObject* GetContentWindow() const;
 
-  // Returns Chrome's process ID for the current guest.
-  int guest_process_id() const { return guest_process_id_; }
-  // Returns Chrome's route ID for the current guest.
-  int guest_route_id() const { return guest_route_id_; }
   // Returns whether the guest process has crashed.
   bool guest_crashed() const { return guest_crashed_; }
   // Returns whether this BrowserPlugin has requested an instance ID.
@@ -407,8 +403,6 @@ class CONTENT_EXPORT BrowserPlugin :
   bool guest_crashed_;
   scoped_ptr<BrowserPluginHostMsg_ResizeGuest_Params> pending_resize_params_;
   bool auto_size_ack_pending_;
-  int guest_process_id_;
-  int guest_route_id_;
   std::string storage_partition_id_;
   bool persist_storage_;
   bool valid_partition_id_;

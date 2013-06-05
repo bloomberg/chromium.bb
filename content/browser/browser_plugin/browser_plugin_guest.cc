@@ -878,8 +878,6 @@ void BrowserPluginGuest::DidCommitProvisionalLoadForFrame(
   BrowserPluginMsg_LoadCommit_Params params;
   params.url = url;
   params.is_top_level = is_main_frame;
-  params.process_id = render_view_host->GetProcess()->GetID();
-  params.route_id = render_view_host->GetRoutingID();
   params.current_entry_index =
       GetWebContents()->GetController().GetCurrentEntryIndex();
   params.entry_count =
