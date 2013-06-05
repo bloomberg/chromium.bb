@@ -8,11 +8,13 @@
 #include "base/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/managed_mode/managed_user_refresh_token_fetcher.h"
 #include "chrome/browser/managed_mode/managed_user_registration_service.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_pref_service_syncable.h"
+#include "content/public/browser/browser_thread.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "sync/api/sync_change.h"
 #include "sync/api/sync_error_factory_mock.h"
@@ -155,6 +157,7 @@ ManagedUserRegistrationServiceTest::~ManagedUserRegistrationServiceTest() {
 }
 
 void ManagedUserRegistrationServiceTest::TearDown() {
+  content::BrowserThread::GetBlockingPool()->FlushForTesting();
   base::RunLoop().RunUntilIdle();
 }
 
