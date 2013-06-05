@@ -1247,6 +1247,10 @@ void BackendImpl::GetStats(StatsItems* stats) {
   item.second = base::StringPrintf("%d", data_->header.num_bytes);
   stats->push_back(item);
 
+  item.first = "Cache type";
+  item.second = "Blockfile Cache";
+  stats->push_back(item);
+
   stats_.GetItems(stats);
 }
 

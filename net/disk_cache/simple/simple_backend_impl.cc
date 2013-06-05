@@ -279,7 +279,10 @@ void SimpleBackendImpl::EndEnumeration(void** iter) {
 
 void SimpleBackendImpl::GetStats(
     std::vector<std::pair<std::string, std::string> >* stats) {
-  NOTIMPLEMENTED();
+  std::pair<std::string, std::string> item;
+  item.first = "Cache type";
+  item.second = "Simple Cache";
+  stats->push_back(item);
 }
 
 void SimpleBackendImpl::OnExternalCacheHit(const std::string& key) {
