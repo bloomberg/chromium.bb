@@ -188,6 +188,8 @@
         'controls/scrollbar/native_scroll_bar_wrapper.h',
         'controls/scrollbar/native_scroll_bar.cc',
         'controls/scrollbar/native_scroll_bar.h',
+        'controls/scrollbar/overlay_scroll_bar.cc',
+        'controls/scrollbar/overlay_scroll_bar.h',
         'controls/scrollbar/scroll_bar.cc',
         'controls/scrollbar/scroll_bar.h',
         'controls/separator.cc',
