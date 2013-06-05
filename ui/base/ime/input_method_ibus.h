@@ -64,8 +64,6 @@ class UI_EXPORT InputMethodIBus
 
   // Process a key returned from the input method.
   virtual void ProcessKeyEventPostIME(const base::NativeEvent& native_key_event,
-                                      uint32 ibus_keyval,
-                                      uint32 ibus_keycode,
                                       uint32 ibus_state,
                                       bool handled);
 
@@ -119,20 +117,10 @@ class UI_EXPORT InputMethodIBus
 
   // Processes a key event that was not filtered by the input method.
   void ProcessUnfilteredKeyPressEvent(const base::NativeEvent& native_key_event,
-                                      uint32 ibus_keyval,
-                                      uint32 ibus_keycode,
                                       uint32 ibus_state);
   void ProcessUnfilteredFabricatedKeyPressEvent(EventType type,
                                                 KeyboardCode key_code,
-                                                int event_flags,
-                                                uint32 ibus_keyval,
-                                                uint32 ibus_keycode);
-
-  // Processes an unfiltered key press event with character composer.
-  // This method returns true if the key press is filtered by the composer.
-  bool ProcessUnfilteredKeyPressEventWithCharacterComposer(uint32 ibus_keyval,
-                                                           uint32 ibus_keycode,
-                                                           int event_flags);
+                                                int event_flags);
 
   // Sends input method result caused by the given key event to the focused text
   // input client.
@@ -163,6 +151,12 @@ class UI_EXPORT InputMethodIBus
 
   // Returns true if the input context is ready to use.
   bool IsContextReady();
+
+  // Passes keyevent and executes character composition if necessary. Returns
+  // true if character composer comsumes key event.
+  bool ExecuteCharacterComposer(uint32 ibus_keyval,
+                                uint32 ibus_keycode,
+                                uint32 ibus_state);
 
   // chromeos::IBusInputContextHandlerInterface overrides:
   virtual void CommitText(const chromeos::IBusText& text) OVERRIDE;
