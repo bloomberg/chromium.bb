@@ -549,7 +549,7 @@
                  'dbeam+watch-autofill@chromium.org',
                  'estade+watch@chromium.org', 'ahutter@chromium.org',
                  'dgwallinga@chromium.org', 'ramankk@chromium.org',
-                 'benquan@chromium.org'],
+                 'benquan@chromium.org', 'rouslan+autofillwatch@chromium.org'],
     'automation': ['kkania@chromium.org',
                    'robertshield@chromium.org'],
     'base': ['erikwright+watch@chromium.org'],
