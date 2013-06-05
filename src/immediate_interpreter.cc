@@ -396,9 +396,9 @@ bool ScrollManager::StationaryFingerPressureChangingSignificantly(
 
       duration = local_duration;
       const FingerState* fs = state.GetFingerState(current.tracking_id);
-      // If the finger just appeared, there's no history to look at.
+      // If the finger just appeared, skip to check pressure change then
       if (!fs)
-        return false;
+        break;
 
       float pressure_difference = prev->pressure - fs->pressure;
       if (pressure_difference) {
