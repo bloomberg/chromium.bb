@@ -29,7 +29,7 @@
     [Reflect] attribute DOMString height;
     [Reflect] attribute DOMString hspace;
     [Reflect] attribute DOMString name;
-    [Reflect] attribute DOMString object;
+    [Reflect] attribute DOMString _object;  // "object" is a reserved word
     [Reflect] attribute DOMString vspace;
     [Reflect] attribute DOMString width;
     [Custom, NotEnumerable] getter boolean (unsigned long index);

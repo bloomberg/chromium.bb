@@ -276,7 +276,8 @@ sub getTokenInternal
     }
     if ($self->{DocumentContent} =~ /$identifierTokenPattern/) {
         $token->type(IdentifierToken);
-        $token->value($1);
+        (my $value = $1) =~ s/^_//;  # strip leading underscore, used to strope reserved words
+        $token->value($value);
         $self->{DocumentContent} =~ s/$identifierTokenPattern//;
         return $token;
     }
