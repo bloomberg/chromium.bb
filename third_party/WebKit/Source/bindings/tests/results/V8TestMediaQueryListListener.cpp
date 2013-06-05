@@ -71,7 +71,6 @@ static void methodMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
     V8TRYCATCH_VOID(RefPtr<MediaQueryListListener>, listener, MediaQueryListListener::create(args[0]));
     imp->method(listener);
 
-    v8SetReturnValue(args, v8Undefined());
     return;
 }
 

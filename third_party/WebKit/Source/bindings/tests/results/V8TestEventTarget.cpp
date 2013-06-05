@@ -77,7 +77,6 @@ static void itemMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
         setDOMException(INDEX_SIZE_ERR, args.GetIsolate());
         return;
     }
-
     v8SetReturnValue(args, toV8(imp->item(index), args.Holder(), args.GetIsolate()));
     return;
 }
@@ -95,7 +94,6 @@ static void namedItemMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
     }
     TestEventTarget* imp = V8TestEventTarget::toNative(args.Holder());
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, name, args[0]);
-
     v8SetReturnValue(args, toV8(imp->namedItem(name), args.Holder(), args.GetIsolate()));
     return;
 }
@@ -149,8 +147,7 @@ static void dispatchEventMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
         setDOMException(ec, args.GetIsolate());
         return;
     }
-
-    v8SetReturnValue(args, v8Boolean(result, args.GetIsolate()));
+    v8SetReturnValueBool(args, result);
     return;
 }
 

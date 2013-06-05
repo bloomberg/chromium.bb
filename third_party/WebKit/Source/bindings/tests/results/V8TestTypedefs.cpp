@@ -71,7 +71,7 @@ template <typename T> void V8_USE(T) { }
 static void unsignedLongLongAttrAttrGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestTypedefs* imp = V8TestTypedefs::toNative(info.Holder());
-    v8SetReturnValue(info, v8::Number::New(static_cast<double>(imp->unsignedLongLongAttr())));
+    v8SetReturnValue(info, static_cast<double>(imp->unsignedLongLongAttr()));
     return;
 }
 
@@ -127,7 +127,7 @@ static void attrWithGetterExceptionAttrGetter(v8::Local<v8::String> name, const 
         setDOMException(ec, info.GetIsolate());
         return;
     };
-    v8SetReturnValue(info, v8Integer(v, info.GetIsolate()));
+    v8SetReturnValueInt(info, v);
     return;
 }
 
@@ -152,7 +152,7 @@ static void attrWithGetterExceptionAttrSetterCallback(v8::Local<v8::String> name
 static void attrWithSetterExceptionAttrGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestTypedefs* imp = V8TestTypedefs::toNative(info.Holder());
-    v8SetReturnValue(info, v8Integer(imp->attrWithSetterException(), info.GetIsolate()));
+    v8SetReturnValueInt(info, imp->attrWithSetterException());
     return;
 }
 
@@ -261,13 +261,11 @@ static void funcMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
     if (args.Length() <= 0) {
         imp->func();
 
-        v8SetReturnValue(args, v8Undefined());
         return;
     }
     V8TRYCATCH_VOID(Vector<int>, x, toNativeArray<int>(args[0]));
     imp->func(x);
 
-    v8SetReturnValue(args, v8Undefined());
     return;
 }
 
@@ -289,20 +287,17 @@ static void setShadowMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
     if (args.Length() <= 3) {
         imp->setShadow(width, height, blur);
 
-        v8SetReturnValue(args, v8Undefined());
         return;
     }
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, color, args[3]);
     if (args.Length() <= 4) {
         imp->setShadow(width, height, blur, color);
 
-        v8SetReturnValue(args, v8Undefined());
         return;
     }
     V8TRYCATCH_VOID(float, alpha, static_cast<float>(args[4]->NumberValue()));
     imp->setShadow(width, height, blur, color, alpha);
 
-    v8SetReturnValue(args, v8Undefined());
     return;
 }
 
@@ -319,8 +314,7 @@ static void methodWithSequenceArgMethod(const v8::FunctionCallbackInfo<v8::Value
     }
     TestTypedefs* imp = V8TestTypedefs::toNative(args.Holder());
     V8TRYCATCH_VOID(Vector<RefPtr<SerializedScriptValue> >, sequenceArg, (toRefPtrNativeArray<SerializedScriptValue, V8SerializedScriptValue>(args[0], args.GetIsolate())));
-
-    v8SetReturnValue(args, v8::Number::New(static_cast<double>(imp->methodWithSequenceArg(sequenceArg))));
+    v8SetReturnValue(args, static_cast<double>(imp->methodWithSequenceArg(sequenceArg)));
     return;
 }
 
@@ -339,7 +333,6 @@ static void nullableArrayArgMethod(const v8::FunctionCallbackInfo<v8::Value>& ar
     V8TRYCATCH_VOID(Vector<String>, arrayArg, toNativeArray<String>(args[0]));
     imp->nullableArrayArg(arrayArg);
 
-    v8SetReturnValue(args, v8Undefined());
     return;
 }
 
@@ -362,7 +355,6 @@ static void funcWithClampMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
     if (args.Length() <= 1) {
         imp->funcWithClamp(arg1);
 
-        v8SetReturnValue(args, v8Undefined());
         return;
     }
     unsigned long long arg2 = 0;
@@ -371,7 +363,6 @@ static void funcWithClampMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
         arg2 = clampTo<unsigned long long>(arg2NativeValue);
     imp->funcWithClamp(arg1, arg2);
 
-    v8SetReturnValue(args, v8Undefined());
     return;
 }
 
@@ -406,7 +397,6 @@ static void stringArrayFunctionMethod(const v8::FunctionCallbackInfo<v8::Value>&
         setDOMException(ec, args.GetIsolate());
         return;
     }
-
     v8SetReturnValue(args, v8Array(result, args.GetIsolate()));
     return;
 }
@@ -430,7 +420,6 @@ static void stringArrayFunction2Method(const v8::FunctionCallbackInfo<v8::Value>
         setDOMException(ec, args.GetIsolate());
         return;
     }
-
     v8SetReturnValue(args, v8Array(result, args.GetIsolate()));
     return;
 }
@@ -450,7 +439,6 @@ static void methodWithExceptionMethod(const v8::FunctionCallbackInfo<v8::Value>&
         return;
     }
 
-    v8SetReturnValue(args, v8Undefined());
     return;
 }
 

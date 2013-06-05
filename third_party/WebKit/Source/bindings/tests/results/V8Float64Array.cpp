@@ -76,7 +76,6 @@ static void fooMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
     }
     Float64Array* imp = V8Float64Array::toNative(args.Holder());
     V8TRYCATCH_VOID(Float32Array*, array, V8Float32Array::HasInstance(args[0], args.GetIsolate(), worldType(args.GetIsolate())) ? V8Float32Array::toNative(v8::Handle<v8::Object>::Cast(args[0])) : 0);
-
     v8SetReturnValue(args, toV8(imp->foo(array), args.Holder(), args.GetIsolate()));
     return;
 }

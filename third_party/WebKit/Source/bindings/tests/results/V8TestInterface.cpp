@@ -74,7 +74,7 @@ template <typename T> void V8_USE(T) { }
 
 static void supplementalStaticReadOnlyAttrAttrGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    v8SetReturnValue(info, v8Integer(TestPartialInterface::supplementalStaticReadOnlyAttr(), info.GetIsolate()));
+    v8SetReturnValueInt(info, TestPartialInterface::supplementalStaticReadOnlyAttr());
     return;
 }
 
@@ -378,7 +378,6 @@ static void supplementalMethod1Method(const v8::FunctionCallbackInfo<v8::Value>&
     TestInterface* imp = V8TestInterface::toNative(args.Holder());
     TestPartialInterface::supplementalMethod1(imp);
 
-    v8SetReturnValue(args, v8Undefined());
     return;
 }
 
@@ -411,7 +410,6 @@ static void supplementalMethod2Method(const v8::FunctionCallbackInfo<v8::Value>&
         setDOMException(ec, args.GetIsolate());
         return;
     }
-
     v8SetReturnValue(args, toV8(result.release(), args.Holder(), args.GetIsolate()));
     return;
 }
@@ -442,7 +440,6 @@ static void supplementalMethod4Method(const v8::FunctionCallbackInfo<v8::Value>&
 {
     TestPartialInterface::supplementalMethod4();
 
-    v8SetReturnValue(args, v8Undefined());
     return;
 }
 

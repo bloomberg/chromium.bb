@@ -99,6 +99,29 @@ namespace WebCore {
     }
 
     template<typename T>
+    inline void v8SetReturnValueBool(const T& args, bool v)
+    {
+        args.GetReturnValue().Set(v);
+    }
+
+    template<typename T>
+    inline void v8SetReturnValueInt(const T& args, int v)
+    {
+        args.GetReturnValue().Set(v);
+    }
+
+    template<typename T>
+    inline void v8SetReturnValueUnsigned(const T& args, unsigned v)
+    {
+        // FIXME: this is temporary workaround to a v8 bug
+        if (V8_LIKELY((v & (1 << 31)) == 0)) {
+            args.GetReturnValue().Set(static_cast<int32_t>(v));
+            return;
+        }
+        args.GetReturnValue().Set(v8::Integer::NewFromUnsigned(v, args.GetReturnValue().GetIsolate()));
+    }
+
+    template<typename T>
     inline void v8SetReturnValueNull(const T& args)
     {
         args.GetReturnValue().SetNull();

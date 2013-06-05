@@ -65,7 +65,7 @@ template <typename T> void V8_USE(T) { }
 static void excitingAttrAttrGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestActiveDOMObject* imp = V8TestActiveDOMObject::toNative(info.Holder());
-    v8SetReturnValue(info, v8Integer(imp->excitingAttr(), info.GetIsolate()));
+    v8SetReturnValueInt(info, imp->excitingAttr());
     return;
 }
 
@@ -98,7 +98,6 @@ static void excitingFunctionMethod(const v8::FunctionCallbackInfo<v8::Value>& ar
     V8TRYCATCH_VOID(Node*, nextChild, V8Node::HasInstance(args[0], args.GetIsolate(), worldType(args.GetIsolate())) ? V8Node::toNative(v8::Handle<v8::Object>::Cast(args[0])) : 0);
     imp->excitingFunction(nextChild);
 
-    v8SetReturnValue(args, v8Undefined());
     return;
 }
 
@@ -117,7 +116,6 @@ static void postMessageMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, message, args[0]);
     imp->postMessage(message);
 
-    v8SetReturnValue(args, v8Undefined());
     return;
 }
 

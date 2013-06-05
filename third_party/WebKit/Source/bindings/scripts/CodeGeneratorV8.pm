@@ -1597,14 +1597,8 @@ END
     return;
 END
     } else {
-        my $nativeValue = NativeToJSValue($attribute->signature->type, $attribute->signature->extendedAttributes, $expression, "", "", "info.Holder()", "info.GetIsolate()", "info", "imp", "ReturnUnsafeHandle", $forMainWorldSuffix);
-
-        # FIXME: NativeToJSValue needs to be heavily modified to support fast return values.
-        # this strips a trailing ';' character
-        $nativeValue = substr($nativeValue, 0, length($nativeValue)-1);
-        # strip leading whitespace
-        $nativeValue =~ s/^\s+//;
-        $code .= "    v8SetReturnValue(info, ". $nativeValue . ");\n";
+        my $nativeValue = NativeToJSValue($attribute->signature->type, $attribute->signature->extendedAttributes, $expression, "    ", "", "info.Holder()", "info.GetIsolate()", "info", "imp", "ReturnUnsafeHandle", $forMainWorldSuffix, "return");
+        $code .= "${nativeValue}\n";
         $code .= "    return;\n";
     }
 
@@ -4751,18 +4745,12 @@ sub GenerateFunctionCallString
     my $nativeValue;
     # FIXME: Update for all ScriptWrappables.
     if (IsDOMNodeType($interfaceName)) {
-        $nativeValue = NativeToJSValue($function->signature->type, $function->signature->extendedAttributes, $return, "", "", "args.Holder()", "args.GetIsolate()", "args", "imp", "ReturnUnsafeHandle", $forMainWorldSuffix);
+        $nativeValue = NativeToJSValue($function->signature->type, $function->signature->extendedAttributes, $return, $indent, "", "args.Holder()", "args.GetIsolate()", "args", "imp", "ReturnUnsafeHandle", $forMainWorldSuffix, "return");
     } else {
-        $nativeValue = NativeToJSValue($function->signature->type, $function->signature->extendedAttributes, $return, "", "", "args.Holder()", "args.GetIsolate()", 0, 0, "ReturnUnsafeHandle", $forMainWorldSuffix);
+        $nativeValue = NativeToJSValue($function->signature->type, $function->signature->extendedAttributes, $return, $indent, "", "args.Holder()", "args.GetIsolate()", "args", 0, "ReturnUnsafeHandle", $forMainWorldSuffix, "return");
     }
 
-    # FIXME: NativeToJSValue needs to be heavily modified to support fast return values.
-    # this strips a trailing ';' character
-    $nativeValue = substr($nativeValue, 0, length($nativeValue)-1);
-    # strip leading whitespace
-    $nativeValue =~ s/^\s+//;
-    $code .= "\n";
-    $code .= $indent . "v8SetReturnValue(args, ". $nativeValue . ");\n";
+    $code .= $nativeValue . "\n";
     $code .= $indent . "return;\n";
 
     return $code;
@@ -5119,6 +5107,8 @@ sub NativeToJSValue
     my $returnHandleType = shift || "";
     my $returnHandleTypeArg = $returnHandleType ? ", $returnHandleType" : "";
     my $forMainWorldSuffix = shift || "";
+    my $isReturnValue = shift || 0;
+    $isReturnValue = $isReturnValue eq "return";
 
     if (IsUnionType($type)) {
         my $types = $type->unionMemberTypes;
@@ -5130,47 +5120,93 @@ sub NativeToJSValue
             my $unionMemberEnabledVariable = $nativeValue . $i . "Enabled";
             my $unionMemberNativeValue = $unionMemberVariable;
             $unionMemberNativeValue .= ".release()" if (IsRefPtrType($unionMemberType));
-            my $returnJSValueCode = NativeToJSValue($unionMemberType, $extendedAttributes, $unionMemberNativeValue, $indent . "    ", $receiver, $getCreationContext, $getIsolate, $getHolderContainer, $getScriptWrappable, $returnHandleType, $forMainWorldSuffix);
+            my $returnJSValueCode = NativeToJSValue($unionMemberType, $extendedAttributes, $unionMemberNativeValue, $indent . "    ", $receiver, $getCreationContext, $getIsolate, $getHolderContainer, $getScriptWrappable, $returnHandleType, $forMainWorldSuffix, $isReturnValue);
             my $code = "";
-            $code .= "${indent}if (${unionMemberEnabledVariable})\n";
-            $code .= "${returnJSValueCode}";
+            if ($isReturnValue) {
+              $code .= "${indent}if (${unionMemberEnabledVariable}) {\n";
+              $code .= "${returnJSValueCode}\n";
+              $code .= "${indent}    return;\n";
+              $code .= "${indent}}\n";
+            } else {
+              $code .= "${indent}if (${unionMemberEnabledVariable})\n";
+              $code .= "${returnJSValueCode}";
+            }
             push @codes, $code;
         }
         return join "\n", @codes;
     }
 
-    return "$indent$receiver v8Boolean($nativeValue, $getIsolate);" if $type eq "boolean";
-    return "$indent$receiver v8Undefined();" if $type eq "void";     # equivalent to v8Undefined()
+    if ($type eq "boolean") {
+        return "${indent}v8SetReturnValueBool(${getHolderContainer}, ${nativeValue});" if $isReturnValue;
+        return "$indent$receiver v8Boolean($nativeValue, $getIsolate);";
+    }
+
+    if ($type eq "void") { # equivalent to v8Undefined()
+        return "" if $isReturnValue;
+        return "$indent$receiver v8Undefined();"
+    }
 
     # HTML5 says that unsigned reflected attributes should be in the range
     # [0, 2^31). When a value isn't in this range, a default value (or 0)
     # should be returned instead.
     if ($extendedAttributes->{"Reflect"} and ($type eq "unsigned long" or $type eq "unsigned short")) {
         $nativeValue =~ s/getUnsignedIntegralAttribute/getIntegralAttribute/g;
+        return "${indent}v8SetReturnValueUnsigned(${getHolderContainer}, std::max(0, ${nativeValue}));" if $isReturnValue;
         return "$indent$receiver v8UnsignedInteger(std::max(0, " . $nativeValue . "), $getIsolate);";
     }
 
     # For all the types where we use 'int' as the representation type,
     # we use v8Integer() which has a fast small integer conversion check.
     my $nativeType = GetNativeType($type);
-    return "$indent$receiver v8Integer($nativeValue, $getIsolate);" if $nativeType eq "int";
-    return "$indent$receiver v8UnsignedInteger($nativeValue, $getIsolate);" if $nativeType eq "unsigned";
+    if ($nativeType eq "int") {
+        return "${indent}v8SetReturnValueInt(${getHolderContainer}, ${nativeValue});" if $isReturnValue;
+        return "$indent$receiver v8Integer($nativeValue, $getIsolate);";
+    }
 
-    return "$indent$receiver v8DateOrNull($nativeValue, $getIsolate);" if $type eq "Date";
+    if ($nativeType eq "unsigned") {
+        return "${indent}v8SetReturnValueUnsigned(${getHolderContainer}, ${nativeValue});" if $isReturnValue;
+        return "$indent$receiver v8UnsignedInteger($nativeValue, $getIsolate);";
+    }
+
+    if ($type eq "Date") {
+        return "${indent}v8SetReturnValue(${getHolderContainer}, v8DateOrNull($nativeValue, $getIsolate));" if $isReturnValue;
+        return "$indent$receiver v8DateOrNull($nativeValue, $getIsolate);"
+    }
+
     # long long and unsigned long long are not representable in ECMAScript.
-    return "$indent$receiver v8::Number::New(static_cast<double>($nativeValue));" if $type eq "long long" or $type eq "unsigned long long" or $type eq "DOMTimeStamp";
-    return "$indent$receiver v8::Number::New($nativeValue);" if IsPrimitiveType($type);
-    return "$indent$receiver $nativeValue.v8Value();" if $nativeType eq "ScriptValue";
+    if ($type eq "long long" or $type eq "unsigned long long" or $type eq "DOMTimeStamp") {
+        return "${indent}v8SetReturnValue(${getHolderContainer}, static_cast<double>($nativeValue));" if $isReturnValue;
+        return "$indent$receiver v8::Number::New(static_cast<double>($nativeValue));";
+    }
+
+    if (IsPrimitiveType($type)) {
+        die "unexpected type $type" if not ($type eq "float" or $type eq "double");
+        return "${indent}v8SetReturnValue(${getHolderContainer}, ${nativeValue});" if $isReturnValue;
+        return "$indent$receiver v8::Number::New($nativeValue);";
+    }
+
+    if ($nativeType eq "ScriptValue") {
+        return "${indent}v8SetReturnValue(${getHolderContainer}, ${nativeValue}.v8Value());" if $isReturnValue;
+        return "$indent$receiver $nativeValue.v8Value();";
+    }
 
     if ($type eq "DOMString" or IsEnumType($type)) {
         my $conv = $extendedAttributes->{"TreatReturnedNullStringAs"};
+        my $returnValue = "";
         if (defined $conv) {
-            return "$indent$receiver v8StringOrNull($nativeValue, $getIsolate$returnHandleTypeArg);" if $conv eq "Null";
-            return "$indent$receiver v8StringOrUndefined($nativeValue, $getIsolate$returnHandleTypeArg);" if $conv eq "Undefined";
-
-            die "Unknown value for TreatReturnedNullStringAs extended attribute";
+            if ($conv eq "Null") {
+                $returnValue = "v8StringOrNull($nativeValue, $getIsolate$returnHandleTypeArg)";
+            } elsif ($conv eq "Undefined") {
+                $returnValue = "v8StringOrUndefined($nativeValue, $getIsolate$returnHandleTypeArg)";
+            } else {
+                die "Unknown value for TreatReturnedNullStringAs extended attribute";
+            }
+        } else {
+            $returnValue = "v8String($nativeValue, $getIsolate$returnHandleTypeArg)";
         }
-        return "$indent$receiver v8String($nativeValue, $getIsolate$returnHandleTypeArg);";
+        # FIXME: Use safe handles
+        return "${indent}v8SetReturnValue(${getHolderContainer}, $returnValue);" if $isReturnValue;
+        return "$indent$receiver $returnValue;";
     }
 
     my $arrayType = GetArrayType($type);
@@ -5181,6 +5217,7 @@ sub NativeToJSValue
         if (IsRefPtrType($arrayOrSequenceType)) {
             AddIncludesForType($arrayOrSequenceType);
         }
+        return "${indent}v8SetReturnValue(${getHolderContainer}, v8Array($nativeValue, $getIsolate));" if $isReturnValue;
         return "$indent$receiver v8Array($nativeValue, $getIsolate);";
     }
 
@@ -5188,19 +5225,27 @@ sub NativeToJSValue
 
     if (IsDOMNodeType($type) || $type eq "EventTarget") {
       if ($getScriptWrappable) {
+          # FIXME: Use safe handles
+          return "${indent}v8SetReturnValue(${getHolderContainer}, toV8Fast${forMainWorldSuffix}($nativeValue$getHolderContainerArg$getScriptWrappableArg));" if $isReturnValue;
           return "$indent$receiver toV8Fast${forMainWorldSuffix}($nativeValue$getHolderContainerArg$getScriptWrappableArg);";
       }
+      # FIXME: Use safe handles
+      return "${indent}v8SetReturnValue(${getHolderContainer}, toV8($nativeValue, $getCreationContext, $getIsolate));" if $isReturnValue;
       return "$indent$receiver toV8($nativeValue, $getCreationContext, $getIsolate);";
     }
 
     if ($type eq "EventListener") {
         AddToImplIncludes("bindings/v8/V8AbstractEventListener.h");
-        return "$indent$receiver $nativeValue ? v8::Handle<v8::Value>(static_cast<V8AbstractEventListener*>(${nativeValue})->getListenerObject(imp->scriptExecutionContext())) : v8::Handle<v8::Value>(v8Null($getIsolate));";
+        my $returnValue = "$nativeValue ? v8::Handle<v8::Value>(static_cast<V8AbstractEventListener*>(${nativeValue})->getListenerObject(imp->scriptExecutionContext())) : v8::Handle<v8::Value>(v8Null($getIsolate))";
+        return "${indent}v8SetReturnValue(${getHolderContainer}, $returnValue);" if $isReturnValue;
+        return "$indent$receiver $returnValue;";
     }
 
     if ($type eq "SerializedScriptValue") {
         AddToImplIncludes("$type.h");
-        return "$indent$receiver $nativeValue ? $nativeValue->deserialize() : v8::Handle<v8::Value>(v8Null($getIsolate));";
+        my $returnValue = "$nativeValue ? $nativeValue->deserialize() : v8::Handle<v8::Value>(v8Null($getIsolate))";
+        return "${indent}v8SetReturnValue(${getHolderContainer}, $returnValue);" if $isReturnValue;
+        return "$indent$receiver $returnValue;";
     }
 
     AddToImplIncludes("wtf/RefCounted.h");
@@ -5208,8 +5253,12 @@ sub NativeToJSValue
     AddToImplIncludes("wtf/GetPtr.h");
 
     if ($getScriptWrappable) {
-          return "$indent$receiver toV8Fast$forMainWorldSuffix($nativeValue$getHolderContainerArg$getScriptWrappableArg);";
+        # FIXME: Use safe handles
+        return "${indent}v8SetReturnValue(${getHolderContainer}, toV8Fast${forMainWorldSuffix}($nativeValue$getHolderContainerArg$getScriptWrappableArg));" if $isReturnValue;
+        return "$indent$receiver toV8Fast${forMainWorldSuffix}($nativeValue$getHolderContainerArg$getScriptWrappableArg);";
     }
+    # FIXME: Use safe handles
+    return "${indent}v8SetReturnValue(${getHolderContainer}, toV8($nativeValue, $getCreationContext, $getIsolate));" if $isReturnValue;
     return "$indent$receiver toV8($nativeValue, $getCreationContext, $getIsolate);";
 }
 
