@@ -48,40 +48,40 @@ using usb::UsageType;
 
 namespace {
 
-static const char* kDataKey = "data";
-static const char* kResultCodeKey = "resultCode";
+static const char kDataKey[] = "data";
+static const char kResultCodeKey[] = "resultCode";
 
-static const char* kErrorCancelled = "Transfer was cancelled.";
-static const char* kErrorDisconnect = "Device disconnected.";
-static const char* kErrorGeneric = "Transfer failed.";
-static const char* kErrorOverflow = "Inbound transfer overflow.";
-static const char* kErrorStalled = "Transfer stalled.";
-static const char* kErrorTimeout = "Transfer timed out.";
-static const char* kErrorTransferLength = "Transfer length is insufficient.";
+static const char kErrorCancelled[] = "Transfer was cancelled.";
+static const char kErrorDisconnect[] = "Device disconnected.";
+static const char kErrorGeneric[] = "Transfer failed.";
+static const char kErrorOverflow[] = "Inbound transfer overflow.";
+static const char kErrorStalled[] = "Transfer stalled.";
+static const char kErrorTimeout[] = "Transfer timed out.";
+static const char kErrorTransferLength[] = "Transfer length is insufficient.";
 
-static const char* kErrorCannotListInterfaces = "Error listing interfaces.";
-static const char* kErrorCannotClaimInterface = "Error claiming interface.";
-static const char* kErrorCannotReleaseInterface = "Error releasing interface.";
-static const char* kErrorCannotSetInterfaceAlternateSetting =
+static const char kErrorCannotListInterfaces[] = "Error listing interfaces.";
+static const char kErrorCannotClaimInterface[] = "Error claiming interface.";
+static const char kErrorCannotReleaseInterface[] = "Error releasing interface.";
+static const char kErrorCannotSetInterfaceAlternateSetting[] =
     "Error setting alternate interface setting.";
-static const char* kErrorConvertDirection = "Invalid transfer direction.";
-static const char* kErrorConvertRecipient = "Invalid transfer recipient.";
-static const char* kErrorConvertRequestType = "Invalid request type.";
-static const char* kErrorConvertSynchronizationType =
+static const char kErrorConvertDirection[] = "Invalid transfer direction.";
+static const char kErrorConvertRecipient[] = "Invalid transfer recipient.";
+static const char kErrorConvertRequestType[] = "Invalid request type.";
+static const char kErrorConvertSynchronizationType[] =
     "Invalid synchronization type";
-static const char* kErrorConvertTransferType = "Invalid endpoint type.";
-static const char* kErrorConvertUsageType = "Invalid usage type.";
-static const char* kErrorMalformedParameters = "Error parsing parameters.";
-static const char* kErrorNoDevice = "No such device.";
-static const char* kErrorPermissionDenied =
+static const char kErrorConvertTransferType[] = "Invalid endpoint type.";
+static const char kErrorConvertUsageType[] = "Invalid usage type.";
+static const char kErrorMalformedParameters[] = "Error parsing parameters.";
+static const char kErrorNoDevice[] = "No such device.";
+static const char kErrorPermissionDenied[] =
     "Permission to access device was denied";
-static const char* kErrorInvalidTransferLength = "Transfer length must be a "
+static const char kErrorInvalidTransferLength[] = "Transfer length must be a "
     "positive number less than 104,857,600.";
-static const char* kErrorInvalidNumberOfPackets = "Number of packets must be a "
-    "positive number less than 4,194,304.";
-static const char* kErrorInvalidPacketLength = "Packet length must be a "
+static const char kErrorInvalidNumberOfPackets[] = "Number of packets must be "
+    "a positive number less than 4,194,304.";
+static const char kErrorInvalidPacketLength[] = "Packet length must be a "
     "positive number less than 65,536.";
-static const char* kErrorResetDevice =
+static const char kErrorResetDevice[] =
     "Error resetting the device. The device has been closed.";
 
 static const size_t kMaxTransferLength = 100 * 1024 * 1024;
