@@ -12,8 +12,9 @@ import smtplib
 import sys
 import re
 
-from pylib import buildbot_report
 from pylib import android_commands
+from pylib import buildbot_report
+from pylib import constants
 from pylib.cmd_helper import GetCmdOutput
 
 
@@ -39,8 +40,9 @@ def DeviceInfo(serial):
   setup_wizard_disabled = AdbShellCmd(
       'getprop ro.setupwizard.mode') == 'DISABLED'
   battery = AdbShellCmd('dumpsys battery')
-  install_output = GetCmdOutput(['build/android/adb_install_apk.py', '--apk',
-                                 'build/android/CheckInstallApk-debug.apk'])
+  install_output = GetCmdOutput(
+    ['%s/build/android/adb_install_apk.py' % constants.CHROME_DIR, '--apk',
+     '%s/build/android/CheckInstallApk-debug.apk' % constants.CHROME_DIR])
   install_speed_found = re.findall('(\d+) KB/s', install_output)
   if install_speed_found:
     install_speed = int(install_speed_found[0])
@@ -183,6 +185,7 @@ def main():
     parser.error('Unknown options %s' % args)
   devices = android_commands.GetAttachedDevices()
   types, builds, reports, errors = [], [], [], []
+  fail_step_lst = []
   if devices:
     types, builds, reports, errors, fail_step_lst = zip(*[DeviceInfo(dev)
                                                           for dev in devices])
