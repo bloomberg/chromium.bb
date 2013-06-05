@@ -214,7 +214,7 @@ LocalInputMonitorMac::Core::Core(
       ui_task_runner_(ui_task_runner),
       manager_(nil),
       client_session_control_(client_session_control) {
-  DCHECK(client_session_control_);
+  DCHECK(client_session_control_.get());
 }
 
 void LocalInputMonitorMac::Core::Start() {

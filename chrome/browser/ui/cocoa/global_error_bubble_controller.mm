@@ -80,7 +80,7 @@ class Bridge : public GlobalErrorBubbleViewBase {
 - (void)awakeFromNib {
   [super awakeFromNib];
 
-  DCHECK(error_);
+  DCHECK(error_.get());
 
   gfx::Image image = error_->GetBubbleViewIcon();
   DCHECK(!image.IsEmpty());
@@ -138,7 +138,7 @@ class Bridge : public GlobalErrorBubbleViewBase {
 }
 
 - (void)close {
-  if (error_)
+  if (error_.get())
     error_->BubbleViewDidClose(browser_);
   bridge_.reset();
   BrowserWindowController* bwc = [BrowserWindowController
@@ -148,13 +148,13 @@ class Bridge : public GlobalErrorBubbleViewBase {
 }
 
 - (IBAction)onAccept:(id)sender {
-  if (error_)
+  if (error_.get())
     error_->BubbleViewAcceptButtonPressed(browser_);
   [self close];
 }
 
 - (IBAction)onCancel:(id)sender {
-  if (error_)
+  if (error_.get())
     error_->BubbleViewCancelButtonPressed(browser_);
   [self close];
 }

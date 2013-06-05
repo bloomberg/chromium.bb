@@ -232,7 +232,7 @@ WebPluginDelegateProxy::SharedBitmap::~SharedBitmap() {}
 void WebPluginDelegateProxy::PluginDestroyed() {
 #if defined(OS_MACOSX) || defined(OS_WIN)
   // Ensure that the renderer doesn't think the plugin still has focus.
-  if (render_view_)
+  if (render_view_.get())
     render_view_->PluginFocusChanged(false, instance_id_);
 #endif
 
@@ -492,7 +492,7 @@ void WebPluginDelegateProxy::OnChannelError() {
 
 #if defined(OS_MACOSX) || defined(OS_WIN)
   // Ensure that the renderer doesn't think the plugin still has focus.
-  if (render_view_)
+  if (render_view_.get())
     render_view_->PluginFocusChanged(false, instance_id_);
 #endif
 }
@@ -1129,12 +1129,12 @@ WebPluginDelegateProxy::CreateSeekableResourceClient(
 
 #if defined(OS_MACOSX)
 void WebPluginDelegateProxy::OnFocusChanged(bool focused) {
-  if (render_view_)
+  if (render_view_.get())
     render_view_->PluginFocusChanged(focused, instance_id_);
 }
 
 void WebPluginDelegateProxy::OnStartIme() {
-  if (render_view_)
+  if (render_view_.get())
     render_view_->StartPluginIme();
 }
 #endif

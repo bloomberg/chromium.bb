@@ -205,7 +205,7 @@ void SessionWatcher::DisconnectSession() {
     return;
   }
 
-  if (client_session_control_)
+  if (client_session_control_.get())
     client_session_control_->DisconnectSession();
 }
 

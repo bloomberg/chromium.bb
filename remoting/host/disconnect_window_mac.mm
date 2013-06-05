@@ -60,7 +60,7 @@ DisconnectWindowMac::~DisconnectWindowMac() {
 void DisconnectWindowMac::Start(
     const base::WeakPtr<ClientSessionControl>& client_session_control) {
   DCHECK(CalledOnValidThread());
-  DCHECK(client_session_control);
+  DCHECK(client_session_control.get());
   DCHECK(window_controller_ == nil);
 
   // Create the window.
