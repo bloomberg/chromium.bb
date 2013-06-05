@@ -57,10 +57,6 @@ media::AudioInputStream* MockAudioManager::MakeAudioInputStream(
   return NULL;
 }
 
-bool MockAudioManager::IsRecordingInProcess() {
-  return false;
-}
-
 scoped_refptr<base::MessageLoopProxy> MockAudioManager::GetMessageLoop() {
   return message_loop_proxy_;
 }

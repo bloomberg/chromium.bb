@@ -74,8 +74,7 @@ class AudioManagerBase::CompareByParams {
 };
 
 AudioManagerBase::AudioManagerBase()
-    : num_active_input_streams_(0),
-      max_num_output_streams_(kDefaultMaxOutputStreams),
+    : max_num_output_streams_(kDefaultMaxOutputStreams),
       max_num_input_streams_(kDefaultMaxInputStreams),
       num_output_streams_(0),
       num_input_streams_(0),
@@ -309,19 +308,6 @@ void AudioManagerBase::ReleaseInputStream(AudioInputStream* stream) {
   // TODO(xians) : Have a clearer destruction path for the AudioInputStream.
   --num_input_streams_;
   delete stream;
-}
-
-void AudioManagerBase::IncreaseActiveInputStreamCount() {
-  base::AtomicRefCountInc(&num_active_input_streams_);
-}
-
-void AudioManagerBase::DecreaseActiveInputStreamCount() {
-  DCHECK(IsRecordingInProcess());
-  base::AtomicRefCountDec(&num_active_input_streams_);
-}
-
-bool AudioManagerBase::IsRecordingInProcess() {
-  return !base::AtomicRefCountIsZero(&num_active_input_streams_);
 }
 
 void AudioManagerBase::Shutdown() {

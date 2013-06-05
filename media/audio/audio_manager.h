@@ -106,9 +106,6 @@ class MEDIA_EXPORT AudioManager {
   virtual AudioInputStream* MakeAudioInputStream(
       const AudioParameters& params, const std::string& device_id) = 0;
 
-  // Used to determine if something else is currently making use of audio input.
-  virtual bool IsRecordingInProcess() = 0;
-
   // Returns message loop used for audio IO.
   virtual scoped_refptr<base::MessageLoopProxy> GetMessageLoop() = 0;
 

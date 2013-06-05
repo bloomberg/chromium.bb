@@ -655,10 +655,6 @@ bool SpeechRecognitionManagerImpl::HasAudioInputDevices() {
   return BrowserMainLoop::GetAudioManager()->HasAudioInputDevices();
 }
 
-bool SpeechRecognitionManagerImpl::IsCapturingAudio() {
-  return BrowserMainLoop::GetAudioManager()->IsRecordingInProcess();
-}
-
 string16 SpeechRecognitionManagerImpl::GetAudioInputDeviceModel() {
   return BrowserMainLoop::GetAudioManager()->GetAudioInputDeviceModel();
 }

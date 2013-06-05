@@ -133,8 +133,6 @@ void PCMWaveInAudioInputStream::Start(AudioInputCallback* callback) {
     HandleError(result);
     state_ = kStateReady;
     callback_ = NULL;
-  } else {
-    manager_->IncreaseActiveInputStreamCount();
   }
 }
 
@@ -170,7 +168,6 @@ void PCMWaveInAudioInputStream::Stop() {
   DCHECK_EQ(res, static_cast<MMRESULT>(MMSYSERR_NOERROR));
 
   state_ = kStateReady;
-  manager_->DecreaseActiveInputStreamCount();
 }
 
 void PCMWaveInAudioInputStream::Close() {

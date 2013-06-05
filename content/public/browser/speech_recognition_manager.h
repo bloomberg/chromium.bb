@@ -78,9 +78,6 @@ class SpeechRecognitionManager {
   // Returns true if the OS reports existence of audio recording devices.
   virtual bool HasAudioInputDevices() = 0;
 
-  // Used to determine if something else is currently making use of audio input.
-  virtual bool IsCapturingAudio() = 0;
-
   // Returns a human readable string for the model/make of the active audio
   // input device for this computer.
   virtual string16 GetAudioInputDeviceModel() = 0;

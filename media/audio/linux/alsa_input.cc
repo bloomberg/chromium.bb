@@ -124,8 +124,6 @@ void AlsaPcmInputStream::Start(AudioInputCallback* callback) {
         FROM_HERE,
         base::Bind(&AlsaPcmInputStream::ReadAudio, weak_factory_.GetWeakPtr()),
         delay);
-
-    audio_manager_->IncreaseActiveInputStreamCount();
   }
 }
 
@@ -242,10 +240,6 @@ void AlsaPcmInputStream::Stop() {
     return;
 
   StopAgc();
-
-  // Stop is always called before Close. In case of error, this will be
-  // also called when closing the input controller.
-  audio_manager_->DecreaseActiveInputStreamCount();
 
   weak_factory_.InvalidateWeakPtrs();  // Cancel the next scheduled read.
   int error = wrapper_->PcmDrop(device_handle_);

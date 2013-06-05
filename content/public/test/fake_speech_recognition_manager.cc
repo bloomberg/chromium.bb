@@ -98,8 +98,6 @@ void FakeSpeechRecognitionManager::AbortAllSessionsForRenderView(
 
 bool FakeSpeechRecognitionManager::HasAudioInputDevices() { return true; }
 
-bool FakeSpeechRecognitionManager::IsCapturingAudio() { return true; }
-
 string16 FakeSpeechRecognitionManager::GetAudioInputDeviceModel() {
   return string16();
 }

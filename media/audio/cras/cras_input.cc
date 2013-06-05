@@ -150,9 +150,7 @@ void CrasInputStream::Start(AudioInputCallback* callback) {
   bytes_per_frame_ = cras_client_format_bytes_per_frame(audio_format);
 
   // Adding the stream will start the audio callbacks.
-  if (cras_client_add_stream(client_, &stream_id_, stream_params) == 0) {
-    audio_manager_->IncreaseActiveInputStreamCount();
-  } else {
+  if (cras_client_add_stream(client_, &stream_id_, stream_params)) {
     DLOG(WARNING) << "Failed to add the stream.";
     callback_->OnError(this);
     callback_ = NULL;
@@ -175,8 +173,6 @@ void CrasInputStream::Stop() {
 
   // Removing the stream from the client stops audio.
   cras_client_rm_stream(client_, stream_id_);
-
-  audio_manager_->DecreaseActiveInputStreamCount();
 
   started_ = false;
 }

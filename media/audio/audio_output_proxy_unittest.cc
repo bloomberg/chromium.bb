@@ -105,7 +105,6 @@ class MockAudioManager : public AudioManagerBase {
   MOCK_METHOD0(GetMessageLoop, scoped_refptr<base::MessageLoopProxy>());
   MOCK_METHOD1(GetAudioInputDeviceNames, void(
       media::AudioDeviceNames* device_name));
-  MOCK_METHOD0(IsRecordingInProcess, bool());
 
   MOCK_METHOD1(MakeLinearOutputStream, AudioOutputStream*(
       const AudioParameters& params));

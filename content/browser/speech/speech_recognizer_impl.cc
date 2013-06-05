@@ -403,11 +403,6 @@ SpeechRecognizerImpl::StartRecording(const FSMEventArgs&) {
                                         SPEECH_AUDIO_ERROR_DETAILS_NO_MIC));
   }
 
-  if (audio_manager->IsRecordingInProcess()) {
-    return Abort(SpeechRecognitionError(SPEECH_RECOGNITION_ERROR_AUDIO,
-                                        SPEECH_AUDIO_ERROR_DETAILS_IN_USE));
-  }
-
   const int samples_per_packet = (kAudioSampleRate *
       recognition_engine_->GetDesiredAudioChunkDurationMs()) / 1000;
   AudioParameters params(AudioParameters::AUDIO_PCM_LINEAR, kChannelLayout,

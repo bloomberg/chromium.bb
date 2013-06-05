@@ -73,17 +73,12 @@ void PCMQueueInAudioInputStream::Start(AudioInputCallback* callback) {
     HandleError(err);
   } else {
     started_ = true;
-    manager_->IncreaseActiveInputStreamCount();
   }
 }
 
 void PCMQueueInAudioInputStream::Stop() {
   if (!audio_queue_ || !started_)
     return;
-
-  // Stop is always called before Close. In case of error, this will be
-  // also called when closing the input controller.
-  manager_->DecreaseActiveInputStreamCount();
 
   // We request a synchronous stop, so the next call can take some time. In
   // the windows implementation we block here as well.

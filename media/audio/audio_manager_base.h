@@ -8,7 +8,6 @@
 #include <string>
 #include <utility>
 
-#include "base/atomic_ref_count.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
@@ -61,14 +60,9 @@ class MEDIA_EXPORT AudioManagerBase : public AudioManager {
       const AudioParameters& params,
       const std::string& input_device_id) OVERRIDE;
 
-  virtual bool IsRecordingInProcess() OVERRIDE;
-
   // Called internally by the audio stream when it has been closed.
   virtual void ReleaseOutputStream(AudioOutputStream* stream);
   virtual void ReleaseInputStream(AudioInputStream* stream);
-
-  void IncreaseActiveInputStreamCount();
-  void DecreaseActiveInputStreamCount();
 
   // Creates the output stream for the |AUDIO_PCM_LINEAR| format. The legacy
   // name is also from |AUDIO_PCM_LINEAR|.
@@ -136,10 +130,6 @@ class MEDIA_EXPORT AudioManagerBase : public AudioManager {
 
   // Called by Shutdown().
   void ShutdownOnAudioThread();
-
-  // Counts the number of active input streams to find out if something else
-  // is currently recording in Chrome.
-  base::AtomicRefCount num_active_input_streams_;
 
   // Max number of open output streams, modified by
   // SetMaxOutputStreamsAllowed().

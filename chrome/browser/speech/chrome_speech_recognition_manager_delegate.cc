@@ -417,9 +417,6 @@ void ChromeSpeechRecognitionManagerDelegate::OnRecognitionError(
         case content::SPEECH_AUDIO_ERROR_DETAILS_NO_MIC:
           error_message_id = IDS_SPEECH_INPUT_NO_MIC;
           break;
-        case content::SPEECH_AUDIO_ERROR_DETAILS_IN_USE:
-          error_message_id = IDS_SPEECH_INPUT_MIC_IN_USE;
-          break;
         default:
           error_message_id = IDS_SPEECH_INPUT_MIC_ERROR;
           break;

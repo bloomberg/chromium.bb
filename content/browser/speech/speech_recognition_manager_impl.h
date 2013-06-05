@@ -69,7 +69,6 @@ class CONTENT_EXPORT SpeechRecognitionManagerImpl :
                          int render_view_id,
                          int request_id) const OVERRIDE;
   virtual bool HasAudioInputDevices() OVERRIDE;
-  virtual bool IsCapturingAudio() OVERRIDE;
   virtual string16 GetAudioInputDeviceModel() OVERRIDE;
   virtual void ShowAudioInputSettings() OVERRIDE;
 
