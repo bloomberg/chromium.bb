@@ -1713,7 +1713,7 @@ crbug.com/243353 [ Win Linux ] animations/suspend-resume-animation.html [ Failur
 crbug.com/243353 [ Win Linux ] animations/animation-direction-normal.html [ ImageOnlyFailure Pass ]
 crbug.com/243353 [ Win Linux ] animations/animation-direction-reverse.html [ Failure Pass ]
 crbug.com/243353 [ Mac ] animations/play-state-paused.html [ Timeout ]
-crbug.com/243353 [ Win Linux ] animations/play-state-paused.html [ ImageOnlyFailure Pass ]
+crbug.com/243353 [ Win Linux ] animations/play-state-paused.html [ ImageOnlyFailure Pass Timeout ]
 crbug.com/243360 [ Mac ] fast/repaint/fixed-move-after-keyboard-scroll.html [ Failure ]
 crbug.com/243362 [ Mac ] plugins/destroy-plugin-from-callback.html [ Crash Pass ]
 crbug.com/243366 [ Mac ] editing/input/reveal-contenteditable-on-input-vertically.html [ Timeout ]
