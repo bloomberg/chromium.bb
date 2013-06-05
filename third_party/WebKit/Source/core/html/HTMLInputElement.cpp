@@ -50,6 +50,7 @@
 #include "core/editing/Editor.h"
 #include "core/editing/FrameSelection.h"
 #include "core/fileapi/FileList.h"
+#include "core/html/ColorInputType.h"
 #include "core/html/FileInputType.h"
 #include "core/html/FormController.h"
 #include "core/html/HTMLCollection.h"
@@ -72,10 +73,6 @@
 #include "core/rendering/RenderTheme.h"
 #include <wtf/MathExtras.h>
 #include <wtf/StdLibExtras.h>
-
-#if ENABLE(INPUT_TYPE_COLOR)
-#include "core/html/ColorInputType.h"
-#endif
 
 using namespace std;
 
@@ -1534,14 +1531,12 @@ void HTMLInputElement::requiredAttributeChanged()
     m_inputType->requiredAttributeChanged();
 }
 
-#if ENABLE(INPUT_TYPE_COLOR)
 void HTMLInputElement::selectColorInColorChooser(const Color& color)
 {
     if (!m_inputType->isColorControl())
         return;
     static_cast<ColorInputType*>(m_inputType.get())->didChooseColor(color);
 }
-#endif
 
 HTMLElement* HTMLInputElement::list() const
 {
@@ -1628,12 +1623,10 @@ bool HTMLInputElement::isRangeControl() const
     return m_inputType->isRangeControl();
 }
 
-#if ENABLE(INPUT_TYPE_COLOR)
 bool HTMLInputElement::isColorControl() const
 {
     return m_inputType->isColorControl();
 }
-#endif
 
 bool HTMLInputElement::isText() const
 {

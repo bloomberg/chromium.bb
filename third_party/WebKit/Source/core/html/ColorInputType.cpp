@@ -29,7 +29,6 @@
  */
 
 #include "config.h"
-#if ENABLE(INPUT_TYPE_COLOR)
 #include "core/html/ColorInputType.h"
 
 #include "CSSPropertyNames.h"
@@ -247,5 +246,3 @@ Vector<Color> ColorInputType::suggestions() const
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(INPUT_TYPE_COLOR)

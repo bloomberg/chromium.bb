@@ -22,10 +22,10 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
 #ifndef ColorChooserPopupUIController_h
 #define ColorChooserPopupUIController_h
 
-#if ENABLE(INPUT_TYPE_COLOR)
 #include "ColorChooserUIController.h"
 #include "core/page/PagePopupClient.h"
 #include <wtf/OwnPtr.h>
@@ -67,7 +67,5 @@ private:
     OwnPtr<WebCore::Locale> m_locale;
 };
 }
-
-#endif // ENABLE(INPUT_TYPE_COLOR)
 
 #endif // ColorChooserPopupUIController_h

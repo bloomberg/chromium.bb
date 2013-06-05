@@ -193,11 +193,9 @@ AccessibilityRole AccessibilityNodeObject::determineAccessibilityRole()
         if (input->isRangeControl())
             return SliderRole;
 
-#if ENABLE(INPUT_TYPE_COLOR)
         const AtomicString& type = input->getAttribute(typeAttr);
         if (equalIgnoringCase(type, "color"))
             return ColorWellRole;
-#endif
 
         return TextFieldRole;
     }

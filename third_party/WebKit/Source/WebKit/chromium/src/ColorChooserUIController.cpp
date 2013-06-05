@@ -26,7 +26,6 @@
 #include "config.h"
 #include "ColorChooserUIController.h"
 
-#if ENABLE(INPUT_TYPE_COLOR)
 #include "ChromeClientImpl.h"
 #include "WebColorChooser.h"
 #include "core/platform/ColorChooserClient.h"
@@ -85,5 +84,3 @@ void ColorChooserUIController::openColorChooser()
 }
 
 } // namespace WebKit
-
-#endif // ENABLE(INPUT_TYPE_COLOR)

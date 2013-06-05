@@ -31,12 +31,9 @@
 #include "core/dom/ExceptionCode.h"
 #include "core/page/Page.h"
 #include "core/page/Settings.h"
+#include "core/platform/ColorChooser.h"
 #include "core/platform/Supplementable.h"
 #include "core/platform/text/LocaleToScriptMapping.h"
-
-#if ENABLE(INPUT_TYPE_COLOR)
-#include "core/platform/ColorChooser.h"
-#endif
 
 #define InternalSettingsGuardForSettingsReturn(returnValue) \
     if (!settings()) { \

@@ -91,9 +91,8 @@ static PassOwnPtr<InputTypeFactoryMap> createInputTypeFactoryMap()
     OwnPtr<InputTypeFactoryMap> map = adoptPtr(new InputTypeFactoryMap);
     map->add(InputTypeNames::button(), ButtonInputType::create);
     map->add(InputTypeNames::checkbox(), CheckboxInputType::create);
-#if ENABLE(INPUT_TYPE_COLOR)
-    map->add(InputTypeNames::color(), ColorInputType::create);
-#endif
+    if (RuntimeEnabledFeatures::inputTypeColorEnabled())
+        map->add(InputTypeNames::color(), ColorInputType::create);
     map->add(InputTypeNames::date(), DateInputType::create);
     map->add(InputTypeNames::datetimelocal(), DateTimeLocalInputType::create);
     map->add(InputTypeNames::email(), EmailInputType::create);
@@ -834,12 +833,10 @@ bool InputType::isSteppable() const
     return false;
 }
 
-#if ENABLE(INPUT_TYPE_COLOR)
 bool InputType::isColorControl() const
 {
     return false;
 }
-#endif
 
 bool InputType::shouldRespectHeightAndWidthAttributes()
 {

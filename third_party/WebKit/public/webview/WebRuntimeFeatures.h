@@ -205,6 +205,9 @@ public:
     WEBKIT_EXPORT static void enableDataListElement(bool);
     WEBKIT_EXPORT static bool isDataListElementEnabled();
 
+    WEBKIT_EXPORT static void enableInputTypeColor(bool);
+    WEBKIT_EXPORT static bool isInputTypeColorEnabled();
+
 private:
     WebRuntimeFeatures();
 };

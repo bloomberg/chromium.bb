@@ -145,9 +145,7 @@ public:
 
     virtual void enumerateChosenDirectory(FileChooser*) OVERRIDE { }
 
-#if ENABLE(INPUT_TYPE_COLOR)
     virtual PassOwnPtr<ColorChooser> createColorChooser(ColorChooserClient*, const Color&) OVERRIDE;
-#endif
 
     virtual PassRefPtr<DateTimeChooser> openDateTimeChooser(DateTimeChooserClient*, const DateTimeChooserParameters&) OVERRIDE;
 

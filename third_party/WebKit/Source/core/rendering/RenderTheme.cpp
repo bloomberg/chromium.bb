@@ -485,11 +485,12 @@ String RenderTheme::extraDefaultStyleSheet()
 
     if (RuntimeEnabledFeatures::dataListElementEnabled()) {
         runtimeCSS.appendLiteral("datalist {display: none ;}");
-#if ENABLE(INPUT_TYPE_COLOR)
-        runtimeCSS.appendLiteral("input[type=\"color\"][list] { -webkit-appearance: menulist; width: 88px; height: 23px;}");
-        runtimeCSS.appendLiteral("input[type=\"color\"][list]::-webkit-color-swatch-wrapper { padding-left: 8px; padding-right: 24px;}");
-        runtimeCSS.appendLiteral("input[type=\"color\"][list]::-webkit-color-swatch { border-color: #000000;}");
-#endif
+
+        if (RuntimeEnabledFeatures::inputTypeColorEnabled()) {
+            runtimeCSS.appendLiteral("input[type=\"color\"][list] { -webkit-appearance: menulist; width: 88px; height: 23px;}");
+            runtimeCSS.appendLiteral("input[type=\"color\"][list]::-webkit-color-swatch-wrapper { padding-left: 8px; padding-right: 24px;}");
+            runtimeCSS.appendLiteral("input[type=\"color\"][list]::-webkit-color-swatch { border-color: #000000;}");
+        }
     }
     if (RuntimeEnabledFeatures::dialogElementEnabled()) {
         runtimeCSS.appendLiteral("dialog:not([open]) { display: none; }");
@@ -1245,9 +1246,7 @@ bool RenderTheme::supportsDataListUI(const AtomicString& type) const
 {
     return type == InputTypeNames::text() || type == InputTypeNames::search() || type == InputTypeNames::url()
         || type == InputTypeNames::telephone() || type == InputTypeNames::email() || type == InputTypeNames::number()
-#if ENABLE(INPUT_TYPE_COLOR)
         || type == InputTypeNames::color()
-#endif
         || type == InputTypeNames::date()
         || type == InputTypeNames::datetime()
         || type == InputTypeNames::datetimelocal()

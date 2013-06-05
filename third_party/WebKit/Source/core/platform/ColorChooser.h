@@ -30,8 +30,6 @@
 #ifndef ColorChooser_h
 #define ColorChooser_h
 
-#if ENABLE(INPUT_TYPE_COLOR)
-
 namespace WebCore {
 
 class Color;
@@ -45,7 +43,5 @@ public:
 };
 
 } // namespace WebCore
-
-#endif // ENABLE(INPUT_TYPE_COLOR)
 
 #endif // ColorChooser_h

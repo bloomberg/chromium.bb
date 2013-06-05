@@ -600,4 +600,14 @@ bool WebRuntimeFeatures::isDataListElementEnabled()
     return RuntimeEnabledFeatures::dataListElementEnabled();
 }
 
+void WebRuntimeFeatures::enableInputTypeColor(bool enable)
+{
+    RuntimeEnabledFeatures::setInputTypeColorEnabled(enable);
+}
+
+bool WebRuntimeFeatures::isInputTypeColorEnabled()
+{
+    return RuntimeEnabledFeatures::inputTypeColorEnabled();
+}
+
 } // namespace WebKit

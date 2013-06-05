@@ -129,9 +129,7 @@ public:
 
     void print(Frame*);
 
-#if ENABLE(INPUT_TYPE_COLOR)
     PassOwnPtr<ColorChooser> createColorChooser(ColorChooserClient*, const Color& initialColor);
-#endif
     PassRefPtr<DateTimeChooser> openDateTimeChooser(DateTimeChooserClient*, const DateTimeChooserParameters&);
 
     void runOpenPanel(Frame*, PassRefPtr<FileChooser>);

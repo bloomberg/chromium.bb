@@ -41,6 +41,7 @@ Geolocation status=stable
 HTMLImports status=test
 IMEAPI status=test
 IndexedDB status=stable
+InputTypeColor status=stable
 InputTypeWeek status=stable
 JavaScriptI18NAPI status=stable
 LangAttributeAwareFormControlUI

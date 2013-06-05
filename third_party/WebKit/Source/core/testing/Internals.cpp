@@ -90,6 +90,7 @@
 #include "core/page/Settings.h"
 #include "core/page/animation/AnimationController.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
+#include "core/platform/ColorChooser.h"
 #include "core/platform/Cursor.h"
 #include "core/platform/Language.h"
 #include "core/platform/graphics/IntRect.h"
@@ -101,10 +102,6 @@
 #include "weborigin/SchemeRegistry.h"
 #include "wtf/dtoa.h"
 #include "wtf/text/StringBuffer.h"
-
-#if ENABLE(INPUT_TYPE_COLOR)
-#include "core/platform/ColorChooser.h"
-#endif
 
 #if ENABLE(BATTERY_STATUS)
 #include "modules/battery/BatteryController.h"
@@ -683,7 +680,6 @@ String Internals::visiblePlaceholder(Element* element)
     return String();
 }
 
-#if ENABLE(INPUT_TYPE_COLOR)
 void Internals::selectColorInColorChooser(Element* element, const String& colorValue)
 {
     if (!element->hasTagName(inputTag))
@@ -693,7 +689,6 @@ void Internals::selectColorInColorChooser(Element* element, const String& colorV
         return;
     inputElement->selectColorInColorChooser(Color(colorValue));
 }
-#endif
 
 Vector<String> Internals::formControlStateOfPreviousHistoryItem(ExceptionCode& ec)
 {

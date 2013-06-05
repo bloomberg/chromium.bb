@@ -491,7 +491,6 @@
           'action': [
             'python',
             '../scripts/make-file-arrays.py',
-            '--condition=ENABLE(CALENDAR_PICKER) OR ENABLE(INPUT_TYPE_COLOR)',
             '--out-h=<(SHARED_INTERMEDIATE_DIR)/webkit/PickerCommon.h',
             '--out-cpp=<(SHARED_INTERMEDIATE_DIR)/webkit/PickerCommon.cpp',
             '<@(_inputs)',
@@ -533,7 +532,6 @@
           'action': [
             'python',
             '../scripts/make-file-arrays.py',
-            '--condition=ENABLE(INPUT_TYPE_COLOR)',
             '--out-h=<(SHARED_INTERMEDIATE_DIR)/webkit/ColorSuggestionPicker.h',
             '--out-cpp=<(SHARED_INTERMEDIATE_DIR)/webkit/ColorSuggestionPicker.cpp',
             '<@(_inputs)',

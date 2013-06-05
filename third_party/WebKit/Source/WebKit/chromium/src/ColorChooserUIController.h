@@ -26,8 +26,6 @@
 #ifndef ColorChooserUIController_h
 #define ColorChooserUIController_h
 
-#if ENABLE(INPUT_TYPE_COLOR)
-
 #include "WebColorChooserClient.h"
 #include "core/platform/ColorChooser.h"
 #include "core/platform/text/PlatformLocale.h"
@@ -68,7 +66,5 @@ private:
 };
 
 }
-
-#endif // ENABLE(INPUT_TYPE_COLOR)
 
 #endif // ColorChooserUIController_h

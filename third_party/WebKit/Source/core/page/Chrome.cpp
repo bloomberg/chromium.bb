@@ -37,16 +37,13 @@
 #include "core/page/Page.h"
 #include "core/page/PageGroupLoadDeferrer.h"
 #include "core/page/PopupOpeningObserver.h"
+#include "core/platform/ColorChooser.h"
 #include "core/platform/DateTimeChooser.h"
 #include "core/platform/FileChooser.h"
 #include "core/platform/graphics/FloatRect.h"
 #include "core/platform/network/DNS.h"
 #include "core/rendering/HitTestResult.h"
 #include "core/storage/StorageNamespace.h"
-
-#if ENABLE(INPUT_TYPE_COLOR)
-#include "core/platform/ColorChooser.h"
-#endif
 
 namespace WebCore {
 
@@ -387,13 +384,11 @@ void Chrome::enumerateChosenDirectory(FileChooser* fileChooser)
     m_client->enumerateChosenDirectory(fileChooser);
 }
 
-#if ENABLE(INPUT_TYPE_COLOR)
 PassOwnPtr<ColorChooser> Chrome::createColorChooser(ColorChooserClient* client, const Color& initialColor)
 {
     notifyPopupOpeningObservers();
     return m_client->createColorChooser(client, initialColor);
 }
-#endif
 
 PassRefPtr<DateTimeChooser> Chrome::openDateTimeChooser(DateTimeChooserClient* client, const DateTimeChooserParameters& parameters)
 {
