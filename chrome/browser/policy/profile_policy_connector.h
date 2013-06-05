@@ -62,6 +62,8 @@ class ProfilePolicyConnector : public BrowserContextKeyedService {
 #if defined(ENABLE_CONFIGURATION_POLICY)
 
 #if defined(OS_CHROMEOS)
+  class PolicyInitializationObserver;
+
   void InitializeDeviceLocalAccountPolicyProvider(const std::string& username);
 
   // Callback for CryptohomeClient::GetSanitizedUsername() that initializes the
@@ -84,6 +86,8 @@ class ProfilePolicyConnector : public BrowserContextKeyedService {
 
   scoped_ptr<DeviceLocalAccountPolicyProvider>
       device_local_account_policy_provider_;
+
+  scoped_ptr<PolicyInitializationObserver> user_policy_init_observer_;
 #endif
 
 #if defined(ENABLE_MANAGED_USERS) && defined(ENABLE_CONFIGURATION_POLICY)
