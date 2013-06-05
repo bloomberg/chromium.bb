@@ -3851,11 +3851,11 @@ void GLES2Implementation::GetImageParameterivCHROMIUM(
     GLuint image_id, GLenum pname, GLint* params) {
   GPU_CLIENT_SINGLE_THREAD_CHECK();
   GPU_CLIENT_VALIDATE_DESTINATION_INITALIZATION(GLint, params);
-  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glMapImageCHROMIUM("
+  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glImageParameterivCHROMIUM("
       << image_id << ", "
       << GLES2Util::GetStringBufferParameter(pname) << ", "
       << static_cast<const void*>(params) << ")");
-  GetImageParameterivCHROMIUM(image_id, pname, params);
+  GetImageParameterivCHROMIUMHelper(image_id, pname, params);
   CheckGLError();
 }
 
