@@ -1,4 +1,4 @@
-description("Tests that when a Geolocation request is made from a remote frame, and that frame's script context goes away before the Geolocation callback is made, the callback is not made. If the callback is attempted, a crash will occur.");
+description("Tests that when a Geolocation request is made from a remote frame, and that frame's script context goes away before the Geolocation callback is made, the callback is made as usual.");
 
 function onFirstIframeLoaded() {
     iframe.src = 'resources/callback-to-deleted-context-inner2.html';

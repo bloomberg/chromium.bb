@@ -1,4 +1,4 @@
-description("Tests that when a request is made on a Geolocation object and its Frame is disconnected before a callback is made, the error callback is invoked with the correct error message.");
+description("Tests that when a request is made on a Geolocation object and its Frame is disconnected before a callback is made, no callbacks are made.");
 
 if (window.testRunner) {
     testRunner.setGeolocationPermission(true);

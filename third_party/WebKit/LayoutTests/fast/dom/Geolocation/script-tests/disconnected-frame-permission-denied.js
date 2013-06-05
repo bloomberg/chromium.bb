@@ -1,4 +1,4 @@
-description("Tests that when a request is made on a Geolocation object, permission is denied and its Frame is disconnected before a callback is made, the error callback is invoked with PERMISSION_DENIED.");
+description("Tests that when a request is made on a Geolocation object, permission is denied and its Frame is disconnected before a callback is made, no callbacks are made.");
 
 // Prime the Geolocation instance by denying permission. This makes sure that we execute the
 // same code path for both preemptive and non-preemtive permissions policies.
