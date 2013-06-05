@@ -1927,6 +1927,30 @@
    fun:net::ProxyResolverV8Tracing::Job::ExecuteBlocking
 }
 {
+   bug_246825a
+   Heapcheck:Leak
+   ...
+   fun:sql::Connection::GetCachedStatement
+   ...
+   fun:extensions::ActivityDatabase::Init
+}
+{
+   bug_246825b
+   Heapcheck:Leak
+   fun:__gnu_cxx::new_allocator::allocate
+   fun:std::_Vector_base::_M_allocate
+   fun:std::vector::_M_insert_aux
+   fun:std::vector::push_back
+   fun:extensions::ActivityDatabase::RecordAction
+}
+{
+   bug_246825c
+   Heapcheck:Leak
+   fun:base::Bind
+   fun:base::BaseTimerMethodPointer::Start
+   fun:extensions::ActivityDatabase::Init
+}
+{
    bug_246825d
    Heapcheck:Leak
    ...
