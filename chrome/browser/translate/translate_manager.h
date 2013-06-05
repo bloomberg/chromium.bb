@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_TRANSLATE_TRANSLATE_MANAGER_H_
 
 #include <map>
-#include <set>
 #include <string>
 #include <vector>
 
@@ -14,7 +13,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
-#include "base/prefs/pref_change_registrar.h"
 #include "base/time.h"
 #include "chrome/common/translate_errors.h"
 #include "content/public/browser/notification_observer.h"
@@ -27,6 +25,7 @@ struct LanguageDetectionDetails;
 struct PageTranslatedDetails;
 class PrefService;
 struct ShortcutConfiguration;
+class TranslateAcceptLanguages;
 struct TranslateErrorDetails;
 class TranslateInfoBarDelegate;
 class TranslateLanguageList;
@@ -169,15 +168,6 @@ class TranslateManager : public content::NotificationObserver,
   void PageTranslated(content::WebContents* web_contents,
                       PageTranslatedDetails* details);
 
-  // Returns true if the passed language has been configured by the user as an
-  // accept language.
-  bool IsAcceptLanguage(content::WebContents* web_contents,
-                        const std::string& language);
-
-  // Initializes the |accept_languages_| language table based on the associated
-  // preference in |prefs|.
-  void InitAcceptLanguages(PrefService* prefs);
-
   // Fetches the JS translate script (the script that is injected in the page
   // to translate it).
   void RequestTranslateScript();
@@ -201,16 +191,6 @@ class TranslateManager : public content::NotificationObserver,
   static ShortcutConfiguration ShortcutConfig();
 
   content::NotificationRegistrar notification_registrar_;
-
-  // Each PrefChangeRegistrar only tracks a single PrefService, so a map from
-  // each PrefService used to its registrar is needed.
-  typedef std::map<PrefService*, PrefChangeRegistrar*> PrefServiceRegistrarMap;
-  PrefServiceRegistrarMap pref_change_registrars_;
-
-  // A map that associates a profile with its parsed "accept languages".
-  typedef std::set<std::string> LanguageSet;
-  typedef std::map<PrefService*, LanguageSet> PrefServiceLanguagesMap;
-  PrefServiceLanguagesMap accept_languages_;
 
   base::WeakPtrFactory<TranslateManager> weak_method_factory_;
 
@@ -237,6 +217,10 @@ class TranslateManager : public content::NotificationObserver,
 
   // An instance of TranslateLanguageList which manages supported language list.
   scoped_ptr<TranslateLanguageList> language_list_;
+
+  // An instance of TranslateAcceptLanguages which manages Accept languages of
+  // each profiles.
+  scoped_ptr<TranslateAcceptLanguages> accept_languages_;
 
   DISALLOW_COPY_AND_ASSIGN(TranslateManager);
 };
