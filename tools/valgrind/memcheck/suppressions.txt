@@ -7407,11 +7407,11 @@ fun:_ZN7content21RenderViewHostManager8NavigateERKNS_19NavigationEntryImplE
    fun:_ZN10extensions16ActivityDatabase4InitERKN4base8FilePathE
 }
 {
-  bug_246870
-  Memcheck:Leak
-  fun:_Znw*
-  fun:_ZN6webrtc13DesktopRegionaSERKS0_
-  fun:_ZN5media12_GLOBAL__N_119ScreenCapturerLinux7CaptureERKN6webrtc13DesktopRegionE
-  fun:_ZN5media19ScreenCaptureDevice4Core9DoCaptureEv
-  fun:_ZN5media19ScreenCaptureDevice4Core10DoAllocateEi
+   bug_246870
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN6webrtc13DesktopRegionaSERKS0_
+   fun:_ZN5media12_GLOBAL__N_119ScreenCapturerLinux7CaptureERKN6webrtc13DesktopRegionE
+   fun:_ZN5media19ScreenCaptureDevice4Core9DoCaptureEv
+   fun:_ZN5media19ScreenCaptureDevice4Core*
 }
