@@ -31,8 +31,8 @@ var test = function()
             {
                 currentSourceFrame = sourceFrame;
                 InspectorTest.addResult("Script source was shown.");
-                InspectorTest.setBreakpoint(currentSourceFrame, 16, "", true);
-                InspectorTest.runTestFunctionAndWaitUntilPaused(didPause);
+                setBreakpointAndWaitUntilPaused(currentSourceFrame, 16, didPause);
+                InspectorTest.runTestFunction();
             }
 
             function didPause(callFrames)
@@ -64,8 +64,7 @@ var test = function()
             function didShowScriptSource(sourceFrame)
             {
                 currentSourceFrame = sourceFrame;
-                InspectorTest.setBreakpoint(currentSourceFrame, 6, "", true);
-                InspectorTest.waitUntilPaused(didPause);
+                setBreakpointAndWaitUntilPaused(currentSourceFrame, 6, didPause);
                 InspectorTest.evaluateInPage("setTimeout(oneLineTestFunction, 0)");
             }
 
@@ -123,6 +122,28 @@ var test = function()
         InspectorTest.addResult("");
         InspectorTest.addResult("Dump breakpoint sidebar pane:");
         InspectorTest.addResult(InspectorTest.textContentWithLineBreaks(paneElement));
+    }
+
+    function setBreakpointAndWaitUntilPaused(sourceFrame, lineNumber, pausedCallback)
+    {
+        var expectedBreakpointId;
+        InspectorTest.addSniffer(WebInspector.BreakpointManager.Breakpoint.prototype, "_didSetBreakpointInDebugger", didSetBreakpointInDebugger);
+        InspectorTest.setBreakpoint(sourceFrame, lineNumber, "", true);
+
+        function didSetBreakpointInDebugger(breakpointId)
+        {
+            expectedBreakpointId = breakpointId;
+            InspectorTest.waitUntilPaused(didPause);
+        }
+
+        function didPause(callFrames, reason, breakpointIds)
+        {
+            InspectorTest.assertEquals(breakpointIds.length, 1);
+            InspectorTest.assertEquals(breakpointIds[0], expectedBreakpointId);
+            InspectorTest.assertEquals(reason, "other");
+
+            pausedCallback(callFrames);
+        }
     }
 }
 

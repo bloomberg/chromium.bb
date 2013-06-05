@@ -295,8 +295,10 @@ void InspectorDebuggerAgent::removeBreakpoint(ErrorString*, const String& breakp
     BreakpointIdToDebugServerBreakpointIdsMap::iterator debugServerBreakpointIdsIterator = m_breakpointIdToDebugServerBreakpointIds.find(breakpointId);
     if (debugServerBreakpointIdsIterator == m_breakpointIdToDebugServerBreakpointIds.end())
         return;
-    for (size_t i = 0; i < debugServerBreakpointIdsIterator->value.size(); ++i)
+    for (size_t i = 0; i < debugServerBreakpointIdsIterator->value.size(); ++i) {
         scriptDebugServer().removeBreakpoint(debugServerBreakpointIdsIterator->value[i]);
+        m_serverBreakpointIdToBreakpointId.remove(debugServerBreakpointIdsIterator->value[i]);
+    }
     m_breakpointIdToDebugServerBreakpointIds.remove(debugServerBreakpointIdsIterator);
 }
 
@@ -333,6 +335,8 @@ PassRefPtr<TypeBuilder::Debugger::Location> InspectorDebuggerAgent::resolveBreak
     String debugServerBreakpointId = scriptDebugServer().setBreakpoint(scriptId, breakpoint, &actualLineNumber, &actualColumnNumber);
     if (debugServerBreakpointId.isEmpty())
         return 0;
+
+    m_serverBreakpointIdToBreakpointId.set(debugServerBreakpointId, breakpointId);
 
     BreakpointIdToDebugServerBreakpointIdsMap::iterator debugServerBreakpointIdsIterator = m_breakpointIdToDebugServerBreakpointIds.find(breakpointId);
     if (debugServerBreakpointIdsIterator == m_breakpointIdToDebugServerBreakpointIds.end())
@@ -701,7 +705,7 @@ void InspectorDebuggerAgent::failedToParseSource(const String& url, const String
     m_frontend->scriptFailedToParse(url, data, firstLine, errorLine, errorMessage);
 }
 
-void InspectorDebuggerAgent::didPause(ScriptState* scriptState, const ScriptValue& callFrames, const ScriptValue& exception)
+void InspectorDebuggerAgent::didPause(ScriptState* scriptState, const ScriptValue& callFrames, const ScriptValue& exception, const Vector<String>& hitBreakpoints)
 {
     ASSERT(scriptState && !m_pausedScriptState);
     m_pausedScriptState = scriptState;
@@ -716,7 +720,15 @@ void InspectorDebuggerAgent::didPause(ScriptState* scriptState, const ScriptValu
         }
     }
 
-    m_frontend->paused(currentCallFrames(), m_breakReason, m_breakAuxData);
+    RefPtr<Array<String> > hitBreakpointIds = Array<String>::create();
+
+    for (Vector<String>::const_iterator i = hitBreakpoints.begin(); i != hitBreakpoints.end(); ++i) {
+        DebugServerBreakpointIdToBreakpointIdMap::iterator breakpointIterator = m_serverBreakpointIdToBreakpointId.find(*i);
+        if (breakpointIterator != m_serverBreakpointIdToBreakpointId.end())
+            hitBreakpointIds->addItem(breakpointIterator->value);
+    }
+
+    m_frontend->paused(currentCallFrames(), m_breakReason, m_breakAuxData, hitBreakpointIds);
     m_javaScriptPauseScheduled = false;
 
     if (!m_continueToLocationBreakpointId.isEmpty()) {

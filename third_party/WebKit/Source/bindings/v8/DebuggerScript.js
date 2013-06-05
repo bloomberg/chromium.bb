@@ -271,6 +271,21 @@ DebuggerScript.getScriptName = function(eventData)
     return eventData.script().script_.nameOrSourceURL();
 }
 
+DebuggerScript.getBreakpointNumbers = function(eventData)
+{
+    var breakpoints = eventData.breakPointsHit();
+    var numbers = [];
+    if (!breakpoints)
+        return numbers;
+
+    for (var i = 0; i < breakpoints.length; i++) {
+        var breakpoint = breakpoints[i];
+        var scriptBreakPoint = breakpoint.script_break_point();
+        numbers.push(scriptBreakPoint ? scriptBreakPoint.number() : breakpoint.number());
+    }
+    return numbers;
+}
+
 DebuggerScript._frameMirrorToJSCallFrame = function(frameMirror, callerFrame)
 {
     // Get function name.

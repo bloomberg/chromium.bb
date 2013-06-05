@@ -71,10 +71,15 @@ InspectorTest.runDebuggerTestSuite = function(testSuite)
     InspectorTest.startDebuggerTest(runner);
 }
 
-InspectorTest.runTestFunctionAndWaitUntilPaused = function(callback)
+InspectorTest.runTestFunction = function()
 {
     InspectorTest.evaluateInConsole("setTimeout(testFunction, 0)");
     InspectorTest.addResult("Set timer for test function.");
+}
+
+InspectorTest.runTestFunctionAndWaitUntilPaused = function(callback)
+{
+    InspectorTest.runTestFunction();
     InspectorTest.waitUntilPaused(callback);
 };
 
@@ -82,8 +87,8 @@ InspectorTest.waitUntilPaused = function(callback)
 {
     callback = InspectorTest.safeWrap(callback);
 
-    if (InspectorTest._callFrames)
-        callback(InspectorTest._callFrames);
+    if (InspectorTest._pausedScriptArguments)
+        callback.apply(callback, InspectorTest._pausedScriptArguments);
     else
         InspectorTest._waitUntilPausedCallback = callback;
 };
@@ -92,7 +97,7 @@ InspectorTest.waitUntilResumed = function(callback)
 {
     callback = InspectorTest.safeWrap(callback);
 
-    if (!InspectorTest._callFrames)
+    if (!InspectorTest._pausedScriptArguments)
         callback();
     else
         InspectorTest._waitUntilResumedCallback = callback;
@@ -134,15 +139,15 @@ InspectorTest.dumpSourceFrameContents = function(sourceFrame)
     InspectorTest.addResult("==Source frame contents end==");
 };
 
-InspectorTest._pausedScript = function(callFrames, reason, auxData)
+InspectorTest._pausedScript = function(callFrames, reason, auxData, breakpointIds)
 {
     if (!InspectorTest._quiet)
         InspectorTest.addResult("Script execution paused.");
-    InspectorTest._callFrames = callFrames;
+    InspectorTest._pausedScriptArguments = [callFrames, reason, breakpointIds];
     if (InspectorTest._waitUntilPausedCallback) {
         var callback = InspectorTest._waitUntilPausedCallback;
         delete InspectorTest._waitUntilPausedCallback;
-        callback(InspectorTest._callFrames);
+        callback.apply(callback, InspectorTest._pausedScriptArguments);
     }
 }
 
@@ -150,7 +155,7 @@ InspectorTest._resumedScript = function()
 {
     if (!InspectorTest._quiet)
         InspectorTest.addResult("Script execution resumed.");
-    delete InspectorTest._callFrames;
+    delete InspectorTest._pausedScriptArguments;
     if (InspectorTest._waitUntilResumedCallback) {
         var callback = InspectorTest._waitUntilResumedCallback;
         delete InspectorTest._waitUntilResumedCallback;

@@ -32,8 +32,9 @@
 
 
 #include "bindings/v8/ScriptState.h"
-#include <wtf/Forward.h>
-#include <wtf/text/WTFString.h>
+#include "wtf/Forward.h"
+#include "wtf/Vector.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 class ScriptValue;
@@ -67,7 +68,7 @@ public:
 
     virtual void didParseSource(const String& scriptId, const Script&) = 0;
     virtual void failedToParseSource(const String& url, const String& data, int firstLine, int errorLine, const String& errorMessage) = 0;
-    virtual void didPause(ScriptState*, const ScriptValue& callFrames, const ScriptValue& exception) = 0;
+    virtual void didPause(ScriptState*, const ScriptValue& callFrames, const ScriptValue& exception, const Vector<String>& hitBreakpoints) = 0;
     virtual void didContinue() = 0;
 };
 

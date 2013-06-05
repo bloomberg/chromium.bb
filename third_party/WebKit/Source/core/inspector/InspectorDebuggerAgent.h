@@ -148,7 +148,7 @@ protected:
 
     virtual void enable();
     virtual void disable();
-    virtual void didPause(ScriptState*, const ScriptValue& callFrames, const ScriptValue& exception);
+    virtual void didPause(ScriptState*, const ScriptValue& callFrames, const ScriptValue& exception, const Vector<String>& hitBreakpoints);
     virtual void didContinue();
     void reset();
 
@@ -174,6 +174,7 @@ private:
 
     typedef HashMap<String, Script> ScriptsMap;
     typedef HashMap<String, Vector<String> > BreakpointIdToDebugServerBreakpointIdsMap;
+    typedef HashMap<String, String> DebugServerBreakpointIdToBreakpointIdMap;
 
     InjectedScriptManager* m_injectedScriptManager;
     InspectorFrontend::Debugger* m_frontend;
@@ -181,6 +182,7 @@ private:
     ScriptValue m_currentCallStack;
     ScriptsMap m_scripts;
     BreakpointIdToDebugServerBreakpointIdsMap m_breakpointIdToDebugServerBreakpointIds;
+    DebugServerBreakpointIdToBreakpointIdMap m_serverBreakpointIdToBreakpointId;
     String m_continueToLocationBreakpointId;
     InspectorFrontend::Debugger::Reason::Enum m_breakReason;
     RefPtr<InspectorObject> m_breakAuxData;

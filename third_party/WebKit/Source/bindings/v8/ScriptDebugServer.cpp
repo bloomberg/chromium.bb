@@ -43,6 +43,7 @@
 #include "core/inspector/ScriptDebugListener.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/Vector.h"
+#include "wtf/dtoa/utils.h"
 
 namespace WebCore {
 
@@ -382,11 +383,12 @@ v8::Handle<v8::Value> ScriptDebugServer::breakProgramCallback(const v8::Argument
     
     ScriptDebugServer* thisPtr = toScriptDebugServer(args.Data());
     v8::Handle<v8::Value> exception;
-    thisPtr->breakProgram(v8::Handle<v8::Object>::Cast(args[0]), exception);
+    v8::Handle<v8::Array> hitBreakpoints;
+    thisPtr->breakProgram(v8::Handle<v8::Object>::Cast(args[0]), exception, hitBreakpoints);
     return v8::Undefined();
 }
 
-void ScriptDebugServer::breakProgram(v8::Handle<v8::Object> executionState, v8::Handle<v8::Value> exception)
+void ScriptDebugServer::breakProgram(v8::Handle<v8::Object> executionState, v8::Handle<v8::Value> exception, v8::Handle<v8::Array> hitBreakpointNumbers)
 {
     // Don't allow nested breaks.
     if (isPaused())
@@ -396,13 +398,27 @@ void ScriptDebugServer::breakProgram(v8::Handle<v8::Object> executionState, v8::
     if (!listener)
         return;
 
+    Vector<String> breakpointIds;
+    if (!hitBreakpointNumbers.IsEmpty()) {
+        breakpointIds.resize(hitBreakpointNumbers->Length());
+        for (size_t i = 0; i < hitBreakpointNumbers->Length(); i++)
+            breakpointIds[i] = toWebCoreStringWithUndefinedOrNullCheck(hitBreakpointNumbers->Get(i));
+    }
+
     m_executionState.set(m_isolate, executionState);
     ScriptState* currentCallFrameState = ScriptState::forContext(m_pausedContext);
-    listener->didPause(currentCallFrameState, currentCallFrame(), ScriptValue(exception));
+    listener->didPause(currentCallFrameState, currentCallFrame(), ScriptValue(exception), breakpointIds);
 
     m_runningNestedMessageLoop = true;
     runMessageLoopOnPause(m_pausedContext);
     m_runningNestedMessageLoop = false;
+}
+
+void ScriptDebugServer::breakProgram(const v8::Debug::EventDetails& eventDetails, v8::Handle<v8::Value> exception, v8::Handle<v8::Array> hitBreakpointNumbers)
+{
+    m_pausedContext = *eventDetails.GetEventContext();
+    breakProgram(eventDetails.GetExecutionState(), exception, hitBreakpointNumbers);
+    m_pausedContext.Clear();
 }
 
 void ScriptDebugServer::v8DebugEventCallback(const v8::Debug::EventDetails& eventDetails)
@@ -454,30 +470,32 @@ void ScriptDebugServer::handleV8DebugEvent(const v8::Debug::EventDetails& eventD
             m_scriptPreprocessor = preprocessor.release();
         } else if (event == v8::AfterCompile) {
             v8::Context::Scope contextScope(v8::Debug::GetDebugContext());
-            v8::Handle<v8::Function> onAfterCompileFunction = v8::Local<v8::Function>::Cast(m_debuggerScript.get()->Get(v8::String::NewSymbol("getAfterCompileScript")));
+            v8::Handle<v8::Function> getAfterCompileScript = v8::Local<v8::Function>::Cast(m_debuggerScript.get()->Get(v8::String::NewSymbol("getAfterCompileScript")));
             v8::Handle<v8::Value> argv[] = { eventDetails.GetEventData() };
-            v8::Handle<v8::Value> value = onAfterCompileFunction->Call(m_debuggerScript.get(), 1, argv);
+            v8::Handle<v8::Value> value = getAfterCompileScript->Call(m_debuggerScript.get(), 1, argv);
             ASSERT(value->IsObject());
             v8::Handle<v8::Object> object = v8::Handle<v8::Object>::Cast(value);
             dispatchDidParseSource(listener, object);
-        } else if (event == v8::Break || event == v8::Exception) {
-            v8::Handle<v8::Value> exception;
-            if (event == v8::Exception) {
-                v8::Local<v8::StackTrace> stackTrace = v8::StackTrace::CurrentStackTrace(1);
-                // Stack trace is empty in case of syntax error. Silently continue execution in such cases.
-                if (!stackTrace->GetFrameCount())
-                    return;
-                v8::Handle<v8::Object> eventData = eventDetails.GetEventData();
-                v8::Handle<v8::Value> exceptionGetterValue = eventData->Get(v8::String::NewSymbol("exception"));
-                ASSERT(!exceptionGetterValue.IsEmpty() && exceptionGetterValue->IsFunction());
-                v8::Handle<v8::Value> argv[] = { v8Undefined() };
-                V8RecursionScope::MicrotaskSuppression scope;
-                exception = v8::Handle<v8::Function>::Cast(exceptionGetterValue)->Call(eventData, 0, argv);
-            }
+        } else if (event == v8::Exception) {
+            v8::Local<v8::StackTrace> stackTrace = v8::StackTrace::CurrentStackTrace(1);
+            // Stack trace is empty in case of syntax error. Silently continue execution in such cases.
+            if (!stackTrace->GetFrameCount())
+                return;
+            v8::Handle<v8::Object> eventData = eventDetails.GetEventData();
+            v8::Handle<v8::Value> exceptionGetterValue = eventData->Get(v8::String::NewSymbol("exception"));
+            ASSERT(!exceptionGetterValue.IsEmpty() && exceptionGetterValue->IsFunction());
+            v8::Handle<v8::Value> argv[] = { v8Undefined() };
+            V8RecursionScope::MicrotaskSuppression scope;
+            v8::Handle<v8::Value> exception = v8::Handle<v8::Function>::Cast(exceptionGetterValue)->Call(eventData, 0, argv);
 
-            m_pausedContext = *eventContext;
-            breakProgram(eventDetails.GetExecutionState(), exception);
-            m_pausedContext.Clear();
+            breakProgram(eventDetails, exception, v8::Handle<v8::Array>());
+        } else if (event == v8::Break) {
+            v8::Handle<v8::Function> getBreakpointNumbersFunction = v8::Local<v8::Function>::Cast(m_debuggerScript.get()->Get(v8::String::NewSymbol("getBreakpointNumbers")));
+            v8::Handle<v8::Value> argv[] = { eventDetails.GetEventData() };
+            v8::Handle<v8::Value> hitBreakpoints = getBreakpointNumbersFunction->Call(m_debuggerScript.get(), ARRAY_SIZE(argv), argv);
+            ASSERT(hitBreakpoints->IsArray());
+
+            breakProgram(eventDetails, v8::Handle<v8::Value>(), hitBreakpoints.As<v8::Array>());
         }
     }
 }
