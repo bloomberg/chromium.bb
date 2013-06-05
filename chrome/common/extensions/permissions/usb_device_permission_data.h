@@ -23,8 +23,17 @@ namespace extensions {
 // productId are decimal strings representing uint16 values.
 class UsbDevicePermissionData {
  public:
+  enum SpecialInterfaces {
+    // A special interface id for stating permissions for an entire USB device,
+    // no specific interface. This value must match value of Rule::ANY_INTERFACE
+    // from ChromeOS permission_broker project.
+    ANY_INTERFACE = -1
+  };
+
   UsbDevicePermissionData();
-  UsbDevicePermissionData(uint16 vendor_id, uint16 product_id);
+  UsbDevicePermissionData(uint16 vendor_id,
+                          uint16 product_id,
+                          int interface_id);
 
   // Check if |param| (which must be a UsbDevicePermissionData::CheckParam)
   // matches the vendor and product IDs associated with |this|.
@@ -50,6 +59,7 @@ class UsbDevicePermissionData {
  private:
   uint16 vendor_id_;
   uint16 product_id_;
+  int interface_id_;
 };
 
 }  // namespace extensions

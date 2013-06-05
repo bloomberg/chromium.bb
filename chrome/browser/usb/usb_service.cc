@@ -71,6 +71,7 @@ void UsbService::Cleanup() {
 
 void UsbService::FindDevices(const uint16 vendor_id,
                              const uint16 product_id,
+                             int interface_id,
                              vector<scoped_refptr<UsbDevice> >* devices,
                              const base::Callback<void()>& callback) {
   DCHECK(event_handler_) << "FindDevices called after event handler stopped.";
@@ -88,6 +89,7 @@ void UsbService::FindDevices(const uint16 vendor_id,
 
     client->RequestUsbAccess(vendor_id,
                              product_id,
+                             interface_id,
                              base::Bind(&UsbService::FindDevicesImpl,
                                         base::Unretained(this),
                                         vendor_id,

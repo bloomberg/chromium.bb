@@ -19,18 +19,22 @@ namespace {
 
 const char* kProductIdKey = "productId";
 const char* kVendorIdKey = "vendorId";
+const char* kInterfaceIdKey = "interfaceId";
 
 }  // namespace
 
 namespace extensions {
 
 UsbDevicePermissionData::UsbDevicePermissionData()
-  : vendor_id_(0), product_id_(0) {
+  : vendor_id_(0), product_id_(0), interface_id_(ANY_INTERFACE) {
 }
 
 UsbDevicePermissionData::UsbDevicePermissionData(uint16 vendor_id,
-                                                 uint16 product_id)
-  : vendor_id_(vendor_id), product_id_(product_id) {
+                                                 uint16 product_id,
+                                                 int interface_id)
+  : vendor_id_(vendor_id),
+    product_id_(product_id),
+    interface_id_(interface_id) {
 }
 
 bool UsbDevicePermissionData::Check(
@@ -40,13 +44,15 @@ bool UsbDevicePermissionData::Check(
   const UsbDevicePermission::CheckParam& specific_param =
       *static_cast<const UsbDevicePermission::CheckParam*>(param);
   return vendor_id_ == specific_param.vendor_id &&
-      product_id_ == specific_param.product_id;
+      product_id_ == specific_param.product_id &&
+      interface_id_ == specific_param.interface_id;
 }
 
 scoped_ptr<base::Value> UsbDevicePermissionData::ToValue() const {
   base::DictionaryValue* result = new base::DictionaryValue();
   result->SetInteger(kVendorIdKey, vendor_id_);
   result->SetInteger(kProductIdKey, product_id_);
+  result->SetInteger(kInterfaceIdKey, interface_id_);
   return scoped_ptr<base::Value>(result);
 }
 
@@ -71,19 +77,30 @@ bool UsbDevicePermissionData::FromValue(const base::Value* value) {
     return false;
   product_id_ = temp;
 
+  if (!dict_value->GetInteger(kInterfaceIdKey, &temp))
+    interface_id_ = ANY_INTERFACE;
+  else
+    interface_id_ = temp;
+
   return true;
 }
 
 bool UsbDevicePermissionData::operator<(
     const UsbDevicePermissionData& rhs) const {
-  if (vendor_id_ == rhs.vendor_id_)
+  if (vendor_id_ == rhs.vendor_id_) {
+    if (product_id_ == rhs.product_id_)
+      return interface_id_ < rhs.interface_id_;
+
     return product_id_ < rhs.product_id_;
+  }
   return vendor_id_ < rhs.vendor_id_;
 }
 
 bool UsbDevicePermissionData::operator==(
     const UsbDevicePermissionData& rhs) const {
-  return vendor_id_ == rhs.vendor_id_ && product_id_ == rhs.product_id_;
+  return vendor_id_ == rhs.vendor_id_ &&
+      product_id_ == rhs.product_id_ &&
+      interface_id_ == rhs.interface_id_;
 }
 
 }  // namespace extensions

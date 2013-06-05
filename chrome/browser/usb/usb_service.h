@@ -36,6 +36,7 @@ class UsbService : public BrowserContextKeyedService {
   // |devices| before use. Calls |callback| once |devices| is populated.
   void FindDevices(const uint16 vendor_id,
                    const uint16 product_id,
+                   int interface_id,
                    std::vector<scoped_refptr<UsbDevice> >* devices,
                    const base::Callback<void()>& callback);
 

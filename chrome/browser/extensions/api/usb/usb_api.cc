@@ -428,7 +428,10 @@ void UsbFindDevicesFunction::AsyncWorkStart() {
 
   const uint16_t vendor_id = parameters_->options.vendor_id;
   const uint16_t product_id = parameters_->options.product_id;
-  UsbDevicePermission::CheckParam param(vendor_id, product_id);
+  int interface_id = parameters_->options.interface_id.get() ?
+      *parameters_->options.interface_id.get() :
+      UsbDevicePermissionData::ANY_INTERFACE;
+  UsbDevicePermission::CheckParam param(vendor_id, product_id, interface_id);
   if (!PermissionsData::CheckAPIPermissionWithParam(
           GetExtension(), APIPermission::kUsbDevice, &param)) {
     LOG(WARNING) << "Insufficient permissions to access device.";
@@ -444,8 +447,8 @@ void UsbFindDevicesFunction::AsyncWorkStart() {
     return;
   }
 
-  service->FindDevices(vendor_id, product_id, &devices_, base::Bind(
-      &UsbFindDevicesFunction::OnCompleted, this));
+  service->FindDevices(vendor_id, product_id, interface_id, &devices_,
+                       base::Bind(&UsbFindDevicesFunction::OnCompleted, this));
 }
 
 void UsbFindDevicesFunction::OnCompleted() {

@@ -19,10 +19,12 @@
 namespace extensions {
 
 TEST(USBDevicePermissionTest, PermissionDataOrder) {
-  EXPECT_LT(UsbDevicePermissionData(0x02ad, 0x138c),
-            UsbDevicePermissionData(0x02ad, 0x138d));
-  ASSERT_LT(UsbDevicePermissionData(0x02ad, 0x138d),
-            UsbDevicePermissionData(0x02ae, 0x138c));
+  EXPECT_LT(UsbDevicePermissionData(0x02ad, 0x138c, -1),
+            UsbDevicePermissionData(0x02ad, 0x138d, -1));
+  ASSERT_LT(UsbDevicePermissionData(0x02ad, 0x138d, -1),
+            UsbDevicePermissionData(0x02ae, 0x138c, -1));
+  EXPECT_LT(UsbDevicePermissionData(0x02ad, 0x138c, -1),
+            UsbDevicePermissionData(0x02ad, 0x138c, 0));
 }
 
 #if defined(ENABLE_EXTENSIONS)
@@ -41,11 +43,11 @@ TEST(USBDevicePermissionTest, MAYBE_PermissionMessage) {
   // Prepare data set
   scoped_ptr<base::ListValue> permission_list(new base::ListValue());
   permission_list->Append(
-      UsbDevicePermissionData(0x02ad, 0x138c).ToValue()->DeepCopy());
+      UsbDevicePermissionData(0x02ad, 0x138c, -1).ToValue()->DeepCopy());
   permission_list->Append(
-      UsbDevicePermissionData(0x02ad, 0x138d).ToValue()->DeepCopy());
+      UsbDevicePermissionData(0x02ad, 0x138d, -1).ToValue()->DeepCopy());
   permission_list->Append(
-      UsbDevicePermissionData(0x02ae, 0x138d).ToValue()->DeepCopy());
+      UsbDevicePermissionData(0x02ae, 0x138d, -1).ToValue()->DeepCopy());
 
   UsbDevicePermission permission(
       PermissionsInfo::GetInstance()->GetByID(APIPermission::kUsbDevice));

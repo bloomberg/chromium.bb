@@ -28,11 +28,13 @@ class PermissionBrokerClientImpl : public PermissionBrokerClient {
         weak_ptr_factory_(this) {}
 
   virtual void RequestPathAccess(const std::string& path,
+                                 const int interface_id,
                                  const ResultCallback& callback) OVERRIDE {
     dbus::MethodCall method_call(kPermissionBrokerInterface,
                                  kRequestPathAccess);
     dbus::MessageWriter writer(&method_call);
     writer.AppendString(path);
+    writer.AppendInt32(interface_id);
     proxy_->CallMethod(&method_call,
                        dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
                        base::Bind(&PermissionBrokerClientImpl::OnResponse,
@@ -41,11 +43,13 @@ class PermissionBrokerClientImpl : public PermissionBrokerClient {
 
   virtual void RequestUsbAccess(const uint16_t vendor_id,
                                 const uint16_t product_id,
+                                const int interface_id,
                                 const ResultCallback& callback) OVERRIDE {
     dbus::MethodCall method_call(kPermissionBrokerInterface, kRequestUsbAccess);
     dbus::MessageWriter writer(&method_call);
     writer.AppendUint16(vendor_id);
     writer.AppendUint16(product_id);
+    writer.AppendInt32(interface_id);
     proxy_->CallMethod(&method_call,
                        dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
                        base::Bind(&PermissionBrokerClientImpl::OnResponse,
@@ -85,12 +89,14 @@ class PermissionBrokerClientStubImpl : public PermissionBrokerClient {
   virtual ~PermissionBrokerClientStubImpl() {}
 
   virtual void RequestPathAccess(const std::string& path,
+                                 int interface_id,
                                  const ResultCallback& callback) OVERRIDE {
     callback.Run(false);
   }
 
   virtual void RequestUsbAccess(const uint16_t vendor_id,
                                 const uint16_t product_id,
+                                int interface_id,
                                 const ResultCallback& callback) OVERRIDE {
     callback.Run(false);
   }

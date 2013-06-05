@@ -38,16 +38,25 @@ class CHROMEOS_EXPORT PermissionBrokerClient {
                                         dbus::Bus* bus);
 
   // RequestPathAccess requests access to a single device node identified by
-  // |path|.
+  // |path|. If |interface_id| value is passed (different than
+  // UsbDevicePermissionData::ANY_INTERFACE), the request will check if a
+  // specific interface is claimed while requesting access.
+  // This allows devices with multiple interfaces to be accessed even if
+  // some of them are already claimed by kernel.
   virtual void RequestPathAccess(const std::string& path,
+                                 int interface_id,
                                  const ResultCallback& callback) = 0;
 
   // RequestUsbAccess attempts to request access to _all_ USB devices attached
-  // to the system that match |vendor_id| and |product_id|. This call makes no
-  // attempt to guarantee atomicity, and partial failure is indistinguishable
-  // from complete failure.
+  // to the system that match |vendor_id| and |product_id|. If |interface_id| is
+  // passed (not -1), the request will check if a specific interface is claimed
+  // while requesting access. This allows devices with multiple interfaces to be
+  // accessed even if some of them are already claimed by kernel.
+  // This call makes no attempt to guarantee atomicity, and partial failure is
+  // indistinguishable from complete failure.
   virtual void RequestUsbAccess(uint16_t vendor_id,
                                 uint16_t product_id,
+                                int interface_id,
                                 const ResultCallback& callback) = 0;
 
  protected:

@@ -17,10 +17,13 @@ class UsbDevicePermission
                                     UsbDevicePermission> {
  public:
   struct CheckParam : public APIPermission::CheckParam {
-    CheckParam(uint16 vendor_id, uint16 product_id)
-      : vendor_id(vendor_id), product_id(product_id) {}
+    CheckParam(uint16 vendor_id, uint16 product_id, int interface_id)
+      : vendor_id(vendor_id),
+        product_id(product_id),
+        interface_id(interface_id) {}
     const uint16 vendor_id;
     const uint16 product_id;
+    const int interface_id;
   };
 
   explicit UsbDevicePermission(const APIPermissionInfo* info);
