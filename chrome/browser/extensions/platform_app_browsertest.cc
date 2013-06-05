@@ -710,7 +710,13 @@ IN_PROC_BROWSER_TEST_F(PlatformAppDevToolsBrowserTest, MAYBE_ReOpenedWithID) {
   RunTestWithDevTools("minimal_id", RELAUNCH | HAS_ID);
 }
 
-IN_PROC_BROWSER_TEST_F(PlatformAppDevToolsBrowserTest, ReOpenedWithURL) {
+// http://crbug.com/246999
+#if defined(OS_CHROMEOS)
+#define MAYBE_ReOpenedWithURL DISABLED_ReOpenedWithURL
+#else
+#define MAYBE_ReOpenedWithURL ReOpenedWithURL
+#endif
+IN_PROC_BROWSER_TEST_F(PlatformAppDevToolsBrowserTest, MAYBE_ReOpenedWithURL) {
   RunTestWithDevTools("minimal", RELAUNCH);
 }
 
