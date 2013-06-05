@@ -40,6 +40,9 @@ def ParseLine(line):
   address, bytes, disasm = line.strip().split('\t')
   assert disasm.strip() != ''
 
+  assert address.endswith(':')
+  address = int(address[:-1], 16)
+
   return Instruction(address, [int(byte, 16) for byte in bytes.split()], disasm)
 
 

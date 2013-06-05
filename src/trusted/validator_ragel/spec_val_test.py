@@ -7,6 +7,8 @@ import glob
 import optparse
 import sys
 
+import spec
+import spec_val
 import test_format
 
 
@@ -16,11 +18,28 @@ def AssertEquals(actual, expected):
                          % (expected, actual))
 
 
+def GetSpecValOutput(options, hex_content):
+    validator_cls = {32: spec_val.Validator32}[options.bits]
+
+    data = ''.join(test_format.ParseHex(hex_content))
+    data += '\x90' * (-len(data) % spec.BUNDLE_SIZE)
+
+    val = validator_cls(data)
+    val.Validate()
+
+    if val.messages == []:
+      return 'SAFE\n'
+
+    return ''.join(
+        '%x: %s\n' % (offset, message) for offset, message in val.messages)
+
+
 def Test(options, items_list):
   info = dict(items_list)
 
   if 'spec' in info:
-    content = 'TODO(shcherbina): produce actual output\n'
+    content = GetSpecValOutput(options, info['hex'])
+
     print '  Checking spec field...'
     if options.update:
       if content != info['spec']:

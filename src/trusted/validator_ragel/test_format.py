@@ -107,3 +107,39 @@ def SaveTestFile(tests, filename):
       first = False
       for line in UnparseTest(test):
         file_out.write(line)
+
+
+def ParseHex(hex_content):
+  """Parse content of @hex section and return binary data
+
+  Args:
+    hex_content: Content of @hex section as a string.
+
+  Yields:
+    Chunks of binary data corresponding to lines of given @hex section (as
+    strings). If line ends with r'\\', chunk is continued on the following line.
+  """
+
+  bytes = []
+  for line in hex_content.split('\n'):
+    line, sep, comment = line.partition('#')
+    line = line.strip()
+    if line == '':
+      continue
+
+    if line.endswith(r'\\'):
+      line = line[:-2]
+      continuation = True
+    else:
+      continuation = False
+
+    for byte in line.split():
+      assert len(byte) == 2
+      bytes.append(chr(int(byte, 16)))
+
+    if not continuation:
+      assert len(bytes) > 0
+      yield ''.join(bytes)
+      bytes = []
+
+  assert bytes == [], r'r"\\" should not appear on the last line'
