@@ -21,14 +21,14 @@ diff --git a/remoting/webapp/host_controller.js b/remoting/webapp/host_controlle
 index 83c9844..98f63c3 100644
 --- a/host_controller.js
 +++ b/host_controller.js
-@@ -356,7 +356,7 @@ remoting.HostController.prototype.getLocalHostStateAndId = function(onDone) {
-     onDone(hostId);
+@@ -31,7 +31,7 @@ remoting.HostController.prototype.getLocalHostStateAndId = function(onDone) {
    };
+
    try {
 -    this.hostDispatcher_.getDaemonVersion(printVersion);
 +    onConfig('{}');
    } catch (err) {
-     onDone(null);
+     console.log('Host version not available.');
    }
 diff --git a/remoting/webapp/main.html b/remoting/webapp/main.html
 index 061caeb..f61e532 100644
@@ -135,9 +135,9 @@ index f89072a..2fadd83 100644
    remoting.stats = new remoting.ConnectionStats(
        document.getElementById('statistics'));
    remoting.formatIq = new remoting.FormatIq();
-@@ -133,9 +130,6 @@ remoting.initHomeScreenUi = function () {
-   document.getElementById('share-button').disabled =
-       !remoting.hostController.isPluginSupported();
+@@ -156,9 +151,6 @@ remoting.initHomeScreenUi = function () {
+   remoting.hostController = new remoting.HostController();
+   document.getElementById('share-button').disabled = !isIT2MeSupported_();
    remoting.setMode(remoting.AppMode.HOME);
 -  if (!remoting.oauth2.isAuthenticated()) {
 -    document.getElementById('auth-dialog').hidden = false;

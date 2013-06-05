@@ -177,7 +177,7 @@ def buildWebApp(buildtype, version, mimetype, destination, zip_path, plugin,
   for patch in patches:
     patchfile = os.path.join(os.getcwd(), patch)
     if subprocess.call(['patch', '-d', destination, '-i', patchfile,
-                        '-p1']) != 0:
+                        '-p1', '-F0']) != 0:
       print 'Patch ' + patch + ' failed to apply.'
       return 1
 
