@@ -13,7 +13,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
-#include "chrome/browser/chromeos/drive/file_cache_metadata.h"
 #include "chrome/browser/chromeos/drive/file_errors.h"
 
 class Profile;
@@ -34,6 +33,11 @@ class FileCacheEntry;
 // set to TEST_CACHE_STATE_NONE.
 typedef base::Callback<void(bool success, const FileCacheEntry& cache_entry)>
     GetCacheEntryCallback;
+
+// Callback for Iterate().
+typedef base::Callback<void(const std::string& resource_id,
+                            const FileCacheEntry& cache_entry)>
+    CacheIterateCallback;
 
 namespace internal {
 

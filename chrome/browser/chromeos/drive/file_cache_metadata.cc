@@ -8,6 +8,7 @@
 #include "base/file_util.h"
 #include "base/metrics/histogram.h"
 #include "base/sequenced_task_runner.h"
+#include "base/threading/thread_restrictions.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/file_cache.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
@@ -164,6 +165,58 @@ bool CheckIfMd5Matches(const std::string& md5,
 const base::FilePath::CharType* FileCacheMetadata::kCacheMetadataDBPath =
     FILE_PATH_LITERAL("cache_metadata.db");
 
+FileCacheMetadata::Iterator::Iterator(scoped_ptr<leveldb::Iterator> it)
+    : it_(it.Pass()) {
+  base::ThreadRestrictions::AssertIOAllowed();
+  DCHECK(it_);
+
+  it_->SeekToFirst();
+  AdvanceInternal();
+}
+
+FileCacheMetadata::Iterator::~Iterator() {
+  base::ThreadRestrictions::AssertIOAllowed();
+}
+
+bool FileCacheMetadata::Iterator::IsAtEnd() const {
+  base::ThreadRestrictions::AssertIOAllowed();
+  return !it_->Valid();
+}
+
+std::string FileCacheMetadata::Iterator::GetKey() const {
+  base::ThreadRestrictions::AssertIOAllowed();
+  DCHECK(!IsAtEnd());
+  return it_->key().ToString();
+}
+
+const FileCacheEntry& FileCacheMetadata::Iterator::GetValue() const {
+  base::ThreadRestrictions::AssertIOAllowed();
+  DCHECK(!IsAtEnd());
+  return entry_;
+}
+
+void FileCacheMetadata::Iterator::Advance() {
+  base::ThreadRestrictions::AssertIOAllowed();
+  DCHECK(!IsAtEnd());
+
+  it_->Next();
+  AdvanceInternal();
+}
+
+bool FileCacheMetadata::Iterator::HasError() const {
+  base::ThreadRestrictions::AssertIOAllowed();
+  return !it_->status().ok();
+}
+
+void FileCacheMetadata::Iterator::AdvanceInternal() {
+  for (; it_->Valid(); it_->Next()) {
+    // Skip unparsable broken entries.
+    // TODO(hashimoto): Broken entries should be cleaned up at some point.
+    if (entry_.ParseFromArray(it_->value().data(), it_->value().size()))
+      break;
+  }
+}
+
 FileCacheMetadata::FileCacheMetadata(
     base::SequencedTaskRunner* blocking_task_runner)
     : blocking_task_runner_(blocking_task_runner) {
@@ -295,18 +348,12 @@ void FileCacheMetadata::RemoveTemporaryFiles() {
   }
 }
 
-void FileCacheMetadata::Iterate(const CacheIterateCallback& callback) {
+scoped_ptr<FileCacheMetadata::Iterator> FileCacheMetadata::GetIterator() {
   AssertOnSequencedWorkerPool();
 
   scoped_ptr<leveldb::Iterator> iter(level_db_->NewIterator(
       leveldb::ReadOptions()));
-  for (iter->SeekToFirst(); iter->Valid(); iter->Next()) {
-    FileCacheEntry cache_entry;
-    const bool ok = cache_entry.ParseFromArray(iter->value().data(),
-                                               iter->value().size());
-    if (ok)
-      callback.Run(iter->key().ToString(), cache_entry);
-  }
+  return make_scoped_ptr(new Iterator(iter.Pass()));
 }
 
 void FileCacheMetadata::AssertOnSequencedWorkerPool() {

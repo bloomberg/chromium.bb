@@ -268,7 +268,10 @@ void FileCache::Iterate(const CacheIterateCallback& iteration_callback) {
   AssertOnSequencedWorkerPool();
   DCHECK(!iteration_callback.is_null());
 
-  metadata_->Iterate(iteration_callback);
+  scoped_ptr<FileCacheMetadata::Iterator> it = metadata_->GetIterator();
+  for (; !it->IsAtEnd(); it->Advance())
+    iteration_callback.Run(it->GetKey(), it->GetValue());
+  DCHECK(!it->HasError());
 }
 
 void FileCache::FreeDiskSpaceIfNeededForOnUIThread(

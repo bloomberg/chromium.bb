@@ -8,10 +8,10 @@
 #include <string>
 #include <vector>
 
-#include "base/callback_forward.h"
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "chrome/browser/chromeos/drive/drive.pb.h"
 
 namespace base {
 class SequencedTaskRunner;
@@ -19,17 +19,10 @@ class SequencedTaskRunner;
 
 namespace leveldb {
 class DB;
+class Iterator;
 }  // namespace leveldb
 
 namespace drive {
-
-class FileCacheEntry;
-
-// Callback for Iterate().
-typedef base::Callback<void(const std::string& resource_id,
-                            const FileCacheEntry& cache_entry)>
-    CacheIterateCallback;
-
 namespace internal {
 
 // FileCacheMetadata maintains metadata of FileCache's cached files.
@@ -39,6 +32,39 @@ class FileCacheMetadata {
  public:
   // Database path.
   static const base::FilePath::CharType* kCacheMetadataDBPath;
+
+  // Object to iterate over entries stored in the cache metadata.
+  class Iterator {
+   public:
+    explicit Iterator(scoped_ptr<leveldb::Iterator> it);
+    ~Iterator();
+
+    // Returns true if this iterator cannot advance any more and does not point
+    // to a valid entry. GetKey(), GetValue() and Advance() should not be called
+    // in such cases.
+    bool IsAtEnd() const;
+
+    // Returns the key of the entry currently pointed by this object.
+    std::string GetKey() const;
+
+    // Returns the value of the entry currently pointed by this object.
+    const FileCacheEntry& GetValue() const;
+
+    // Advances to the next entry.
+    void Advance();
+
+    // Returns true if this object has encountered any error.
+    bool HasError() const;
+
+   private:
+    // Used to implement Advance().
+    void AdvanceInternal();
+
+    scoped_ptr<leveldb::Iterator> it_;
+    FileCacheEntry entry_;
+
+    DISALLOW_COPY_AND_ASSIGN(Iterator);
+  };
 
   // Tests are allowed to pass NULL as |blocking_task_runner|.
   explicit FileCacheMetadata(base::SequencedTaskRunner* blocking_task_runner);
@@ -65,9 +91,8 @@ class FileCacheMetadata {
   // Removes temporary files (files in CACHE_TYPE_TMP) from the cache map.
   void RemoveTemporaryFiles();
 
-  // Iterates over all the cache entries synchronously. |callback| is called
-  // on each cache entry.
-  void Iterate(const CacheIterateCallback& callback);
+  // Returns an object to iterate over entries.
+  scoped_ptr<Iterator> GetIterator();
 
  private:
   // Checks whether the current thread is on the right sequenced worker pool
