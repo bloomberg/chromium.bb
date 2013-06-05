@@ -12,6 +12,7 @@
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
+#include "base/debug/alias.h"
 #include "base/debug/trace_event.h"
 #include "base/json/json_writer.h"
 #include "base/lazy_instance.h"
@@ -439,6 +440,40 @@ NOINLINE static void CrashIntentionally() {
   *zero = 0;
 }
 
+#if defined(ADDRESS_SANITIZER)
+NOINLINE static void MaybeTriggerAsanError(const GURL& url) {
+  // NOTE(rogerm): We intentionally perform an invalid heap access here in
+  //     order to trigger an Address Sanitizer (ASAN) error report.
+  static const char kCrashDomain[] = "crash";
+  static const char kHeapOverflow[] = "/heap-overflow";
+  static const char kHeapUnderflow[] = "/heap-underflow";
+  static const char kUseAfterFree[] = "/use-after-free";
+  static const int kArraySize = 5;
+
+  if (!url.DomainIs(kCrashDomain, sizeof(kCrashDomain) - 1))
+    return;
+
+  if (!url.has_path())
+    return;
+
+  scoped_ptr<int[]> array(new int[kArraySize]);
+  std::string crash_type(url.path());
+  int dummy = 0;
+  if (crash_type == kHeapOverflow) {
+    dummy = array[kArraySize];
+  } else if (crash_type == kHeapUnderflow ) {
+    dummy = array[-1];
+  } else if (crash_type == kUseAfterFree) {
+    int* dangling = array.get();
+    array.reset();
+    dummy = dangling[kArraySize / 2];
+  }
+
+  // Make sure the assignments to the dummy value aren't optimized away.
+  base::debug::Alias(&dummy);
+}
+#endif  // ADDRESS_SANITIZER
+
 static void MaybeHandleDebugURL(const GURL& url) {
   if (!url.SchemeIs(chrome::kChromeUIScheme))
     return;
@@ -453,6 +488,10 @@ static void MaybeHandleDebugURL(const GURL& url) {
   } else if (url == GURL(kChromeUIShorthangURL)) {
     base::PlatformThread::Sleep(base::TimeDelta::FromSeconds(20));
   }
+
+#if defined(ADDRESS_SANITIZER)
+  MaybeTriggerAsanError(url);
+#endif  // ADDRESS_SANITIZER
 }
 
 // Returns false unless this is a top-level navigation.
