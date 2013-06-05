@@ -63,3 +63,21 @@ race:skia::BeginPlatformPaint
 
 # http://crbug.com/244385
 race:unixTempFileDir
+
+# http://crbug.com/244774
+race:webrtc::RTPReceiver::ProcessBitrate
+race:webrtc::RTPSender::ProcessBitrate
+race:webrtc::VideoCodingModuleImpl::Decode
+race:webrtc::RTPSender::SendOutgoingData
+race:webrtc::VP8EncoderImpl::GetEncodedPartitions
+race:webrtc::VP8EncoderImpl::Encode
+race:webrtc::ViEEncoder::DeliverFrame
+
+# http://crbug.com/246968
+race:webrtc::VideoCodingModuleImpl::RegisterPacketRequestCallback
+
+# http://crbug.com/246970
+race:webrtc::EventPosix::StartTimer
+
+# http://crbug.com/246974
+race:content::GpuWatchdogThread::CheckArmed
