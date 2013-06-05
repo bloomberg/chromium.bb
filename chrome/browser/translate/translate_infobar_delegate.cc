@@ -91,14 +91,14 @@ void TranslateInfoBarDelegate::Translate() {
                                                  original_language_code(),
                                                  target_language_code());
 
-  UMA_HISTOGRAM_COUNTS(kPerformTranslate, 1);
+  UMA_HISTOGRAM_BOOLEAN(kPerformTranslate, true);
 }
 
 void TranslateInfoBarDelegate::RevertTranslation() {
   TranslateManager::GetInstance()->RevertTranslation(web_contents());
   RemoveSelf();
 
-  UMA_HISTOGRAM_COUNTS(kRevertTranslation, 1);
+  UMA_HISTOGRAM_BOOLEAN(kRevertTranslation, true);
 }
 
 void TranslateInfoBarDelegate::ReportLanguageDetectionError() {
@@ -121,7 +121,7 @@ void TranslateInfoBarDelegate::TranslationDeclined() {
       TranslateTabHelper::FromWebContents(web_contents());
   translate_tab_helper->language_state().set_translation_declined(true);
 
-  UMA_HISTOGRAM_COUNTS(kDeclineTranslate, 1);
+  UMA_HISTOGRAM_BOOLEAN(kDeclineTranslate, true);
 }
 
 bool TranslateInfoBarDelegate::InTranslateNavigation() {
@@ -397,7 +397,7 @@ void TranslateInfoBarDelegate::InfoBarDismissed() {
 
   // The user closed the infobar without clicking the translate button.
   TranslationDeclined();
-  UMA_HISTOGRAM_COUNTS(kCloseInfobar, 1);
+  UMA_HISTOGRAM_BOOLEAN(kCloseInfobar, true);
 }
 
 int TranslateInfoBarDelegate::GetIconID() const {

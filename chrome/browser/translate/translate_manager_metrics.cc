@@ -59,11 +59,11 @@ void ReportInitiationStatus(InitiationStatusType type) {
 }
 
 void ReportLanguageDetectionError() {
-  UMA_HISTOGRAM_COUNTS(kTranslateReportLanguageDetectionError, 1);
+  UMA_HISTOGRAM_BOOLEAN(kTranslateReportLanguageDetectionError, true);
 }
 
 void ReportUnsupportedLanguage() {
-  UMA_HISTOGRAM_COUNTS(kTranslateServerReportedUnsupportedLanguage, 1);
+  UMA_HISTOGRAM_BOOLEAN(kTranslateServerReportedUnsupportedLanguage, true);
 }
 
 void ReportUnsupportedLanguageAtInitiation(const std::string& language) {

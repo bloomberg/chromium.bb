@@ -48,10 +48,10 @@ void TranslateLanguageMenuModel::ExecuteCommand(int command_id,
                                                 int event_flags) {
   size_t command_id_size_t = static_cast<size_t>(command_id);
   if (language_type_ == ORIGINAL) {
-    UMA_HISTOGRAM_COUNTS("Translate.ModifyOriginalLang", 1);
+    UMA_HISTOGRAM_BOOLEAN("Translate.ModifyOriginalLang", true);
     infobar_delegate_->set_original_language_index(command_id_size_t);
   } else {
-    UMA_HISTOGRAM_COUNTS("Translate.ModifyTargetLang", 1);
+    UMA_HISTOGRAM_BOOLEAN("Translate.ModifyTargetLang", true);
     infobar_delegate_->set_target_language_index(command_id_size_t);
   }
   infobar_->UpdateLanguageButtonText(button_,
