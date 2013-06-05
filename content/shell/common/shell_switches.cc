@@ -31,9 +31,6 @@ const char kEnableAccelerated2DCanvas[] = "enable-accelerated-2d-canvas";
 // Alias for kEnableSoftwareCompositingGLAdapter.
 const char kEnableSoftwareCompositing[] = "enable-software-compositing";
 
-// Disables the timeout for layout tests.
-const char kNoTimeout[] = "no-timeout";
-
 // Save results when layout-as-browser tests fail.
 const char kOutputLayoutTestDifferences[] = "output-layout-test-differences";
 

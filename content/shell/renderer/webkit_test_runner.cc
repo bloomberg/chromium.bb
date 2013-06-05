@@ -453,23 +453,6 @@ void WebKitTestRunner::testFinished() {
   }
 }
 
-void WebKitTestRunner::testTimedOut() {
-  if (!is_main_window_)
-    return;
-  WebTestInterfaces* interfaces =
-      ShellRenderProcessObserver::GetInstance()->test_interfaces();
-  interfaces->setTestIsRunning(false);
-  Send(new ShellViewHostMsg_TestFinished(routing_id(), true));
-}
-
-bool WebKitTestRunner::isBeingDebugged() {
-  return base::debug::BeingDebugged();
-}
-
-int WebKitTestRunner::layoutTestTimeout() {
-  return test_config_.layout_test_timeout;
-}
-
 void WebKitTestRunner::closeRemainingWindows() {
   NavigateAwayVisitor visitor(render_view());
   RenderView::ForEach(&visitor);
@@ -671,7 +654,7 @@ void WebKitTestRunner::CaptureDump() {
       FROM_HERE,
       base::Bind(base::IgnoreResult(&WebKitTestRunner::Send),
                  base::Unretained(this),
-                 new ShellViewHostMsg_TestFinished(routing_id(), false)));
+                 new ShellViewHostMsg_TestFinished(routing_id())));
 }
 
 void WebKitTestRunner::OnSetTestConfiguration(

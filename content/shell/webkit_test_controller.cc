@@ -33,10 +33,6 @@
 
 namespace content {
 
-const int kTestTimeoutMilliseconds = 30 * 1000;
-// 0x20000000ms is big enough for the purpose to avoid timeout in debugging.
-const int kCloseEnoughToInfinity = 0x20000000;
-
 const int kTestSVGWindowWidthDip = 480;
 const int kTestSVGWindowHeightDip = 360;
 
@@ -246,14 +242,6 @@ bool WebKitTestController::PrepareForLayoutTest(
   }
   main_window_->web_contents()->GetRenderViewHost()->SetActive(true);
   main_window_->web_contents()->GetRenderViewHost()->Focus();
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kNoTimeout)) {
-    watchdog_.Reset(base::Bind(&WebKitTestController::TimeoutHandler,
-                               base::Unretained(this)));
-    base::MessageLoop::current()->PostDelayedTask(
-        FROM_HERE,
-        watchdog_.callback(),
-        base::TimeDelta::FromMilliseconds(kTestTimeoutMilliseconds + 1000));
-  }
   return true;
 }
 
@@ -269,7 +257,6 @@ bool WebKitTestController::ResetAfterLayoutTest() {
   test_url_ = GURL();
   prefs_ = WebPreferences();
   should_override_prefs_ = false;
-  watchdog_.Cancel();
   return true;
 }
 
@@ -446,10 +433,6 @@ void WebKitTestController::SendTestConfiguration() {
   params.temp_path = temp_path_;
   params.test_url = test_url_;
   params.enable_pixel_dumping = enable_pixel_dumping_;
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kNoTimeout))
-    params.layout_test_timeout = kCloseEnoughToInfinity;
-  else
-    params.layout_test_timeout = kTestTimeoutMilliseconds;
   params.allow_external_pages = CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kAllowExternalPages);
   params.expected_pixel_hash = expected_pixel_hash_;
@@ -458,14 +441,7 @@ void WebKitTestController::SendTestConfiguration() {
       render_view_host->GetRoutingID(), params));
 }
 
-void WebKitTestController::OnTestFinished(bool did_timeout) {
-  watchdog_.Cancel();
-  if (did_timeout) {
-    printer_->AddErrorMessage(
-        "FAIL: Timed out waiting for notifyDone to be called");
-    DiscardMainWindow();
-    return;
-  }
+void WebKitTestController::OnTestFinished() {
   test_phase_ = CLEAN_UP;
   if (!printer_->output_finished())
     printer_->PrintImageFooter();

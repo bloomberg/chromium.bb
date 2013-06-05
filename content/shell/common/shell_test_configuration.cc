@@ -8,7 +8,6 @@ namespace content {
 
 ShellTestConfiguration::ShellTestConfiguration()
     : enable_pixel_dumping(true),
-      layout_test_timeout(30 * 1000),
       allow_external_pages(false) {}
 
 ShellTestConfiguration::~ShellTestConfiguration() {}

@@ -20,7 +20,6 @@ IPC_STRUCT_TRAITS_MEMBER(current_working_directory)
 IPC_STRUCT_TRAITS_MEMBER(temp_path)
 IPC_STRUCT_TRAITS_MEMBER(test_url)
 IPC_STRUCT_TRAITS_MEMBER(enable_pixel_dumping)
-IPC_STRUCT_TRAITS_MEMBER(layout_test_timeout)
 IPC_STRUCT_TRAITS_MEMBER(allow_external_pages)
 IPC_STRUCT_TRAITS_MEMBER(expected_pixel_hash)
 IPC_STRUCT_TRAITS_MEMBER(initial_size)
@@ -68,8 +67,7 @@ IPC_MESSAGE_ROUTED2(ShellViewHostMsg_ImageDump,
 IPC_MESSAGE_ROUTED1(ShellViewHostMsg_AudioDump,
                     std::vector<unsigned char> /* audio data */)
 
-IPC_MESSAGE_ROUTED1(ShellViewHostMsg_TestFinished,
-                    bool /* did_timeout */)
+IPC_MESSAGE_ROUTED0(ShellViewHostMsg_TestFinished)
 
 IPC_MESSAGE_ROUTED0(ShellViewHostMsg_ResetDone)
 

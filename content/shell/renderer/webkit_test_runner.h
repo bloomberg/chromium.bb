@@ -86,9 +86,6 @@ class WebKitTestRunner : public RenderViewObserver,
   virtual std::string pathToLocalResource(const std::string& resource);
   virtual void setLocale(const std::string& locale);
   virtual void testFinished();
-  virtual void testTimedOut();
-  virtual bool isBeingDebugged();
-  virtual int layoutTestTimeout();
   virtual void closeRemainingWindows();
   virtual int navigationEntryCount();
   virtual void goToOffset(int offset);

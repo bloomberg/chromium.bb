@@ -29,9 +29,6 @@ struct ShellTestConfiguration {
   // True if pixel tests are enabled.
   bool enable_pixel_dumping;
 
-  // The layout test timeout in milliseconds.
-  int layout_test_timeout;
-
   // True if tests can open external URLs
   bool allow_external_pages;
 
