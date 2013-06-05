@@ -5,6 +5,8 @@
 """Defines a set of constants shared by test runners and other scripts."""
 
 import os
+import subprocess
+import sys
 
 
 CHROME_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__),
@@ -77,3 +79,20 @@ ANDROID_SDK_ROOT = os.path.join(CHROME_DIR, 'third_party/android_tools/sdk')
 ANDROID_NDK_ROOT = os.path.join(CHROME_DIR, 'third_party/android_tools/ndk')
 
 UPSTREAM_FLAKINESS_SERVER = 'test-results.appspot.com'
+
+
+def _GetADBPath():
+  if os.environ.get('ANDROID_SDK_ROOT'):
+    return 'adb'
+  # If envsetup.sh hasn't been sourced and there's no adb in the path,
+  # set it here.
+  try:
+    with file(os.devnull, 'w') as devnull:
+      subprocess.call(['adb', 'version'], stdout=devnull, stderr=devnull)
+    return 'adb'
+  except OSError:
+    print 'No adb found in $PATH, fallback to checked in binary.'
+    return os.path.join(ANDROID_SDK_ROOT, 'platform-tools', 'adb')
+
+
+ADB_PATH = _GetADBPath()

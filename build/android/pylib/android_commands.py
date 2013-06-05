@@ -78,7 +78,8 @@ def GetEmulators():
     emulator-5558   device
   """
   re_device = re.compile('^emulator-[0-9]+', re.MULTILINE)
-  devices = re_device.findall(cmd_helper.GetCmdOutput(['adb', 'devices']))
+  devices = re_device.findall(cmd_helper.GetCmdOutput([constants.ADB_PATH,
+                                                       'devices']))
   return devices
 
 
@@ -104,7 +105,8 @@ def GetAttachedDevices():
     emulator-5554   offline
   """
   re_device = re.compile('^([a-zA-Z0-9_:.-]+)\tdevice$', re.MULTILINE)
-  devices = re_device.findall(cmd_helper.GetCmdOutput(['adb', 'devices']))
+  devices = re_device.findall(cmd_helper.GetCmdOutput([constants.ADB_PATH,
+                                                       'devices']))
   preferred_device = os.environ.get('ANDROID_SERIAL')
   if preferred_device in devices:
     devices.remove(preferred_device)
@@ -205,6 +207,10 @@ class AndroidCommands(object):
   """
 
   def __init__(self, device=None):
+    adb_dir = os.path.dirname(constants.ADB_PATH)
+    if adb_dir and adb_dir not in os.environ['PATH'].split(os.pathsep):
+      # Required by third_party/android_testrunner to call directly 'adb'.
+      os.environ['PATH'] += os.pathsep + adb_dir
     self._adb = adb_interface.AdbInterface()
     if device:
       self._adb.SetTargetSerial(device)
@@ -409,12 +415,12 @@ class AndroidCommands(object):
 
   def KillAdbServer(self):
     """Kill adb server."""
-    adb_cmd = ['adb', 'kill-server']
+    adb_cmd = [constants.ADB_PATH, 'kill-server']
     return cmd_helper.RunCmd(adb_cmd)
 
   def StartAdbServer(self):
     """Start adb server."""
-    adb_cmd = ['adb', 'start-server']
+    adb_cmd = [constants.ADB_PATH, 'start-server']
     return cmd_helper.RunCmd(adb_cmd)
 
   def WaitForSystemBootCompleted(self, wait_time):
@@ -922,7 +928,8 @@ class AndroidCommands(object):
 
     # Spawn logcat and syncronize with it.
     for _ in range(4):
-      self._logcat = pexpect.spawn('adb', args, timeout=10, logfile=logfile)
+      self._logcat = pexpect.spawn(constants.ADB_PATH, args, timeout=10,
+                                   logfile=logfile)
       self.RunShellCommand('log startup_sync')
       if self._logcat.expect(['startup_sync', pexpect.EOF,
                               pexpect.TIMEOUT]) == 0:
@@ -991,7 +998,7 @@ class AndroidCommands(object):
         logging.critical('Found EOF in adb logcat. Restarting...')
         # Rerun spawn with original arguments. Note that self._logcat.args[0] is
         # the path of adb, so we don't want it in the arguments.
-        self._logcat = pexpect.spawn('adb',
+        self._logcat = pexpect.spawn(constants.ADB_PATH,
                                      self._logcat.args[1:],
                                      timeout=self._logcat.timeout,
                                      logfile=self._logcat.logfile)
