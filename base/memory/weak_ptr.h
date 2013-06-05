@@ -210,6 +210,7 @@ class WeakPtr : public internal::WeakPtrBase {
   }
 
   T* get() const { return ref_.is_valid() ? ptr_ : NULL; }
+  operator T*() const { return get(); }
 
   T& operator*() const {
     DCHECK(get() != NULL);
