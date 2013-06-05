@@ -18,6 +18,7 @@
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "chrome/common/extensions/manifest_handlers/icons_handler.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
@@ -417,7 +418,7 @@ void UpdateShortcutInfoForApp(const extensions::Extension& app,
                               ShellIntegration::ShortcutInfo* shortcut_info) {
   shortcut_info->extension_id = app.id();
   shortcut_info->is_platform_app = app.is_platform_app();
-  shortcut_info->url = GURL(app.launch_web_url());
+  shortcut_info->url = extensions::AppLaunchInfo::GetLaunchWebURL(&app);
   shortcut_info->title = UTF8ToUTF16(app.name());
   shortcut_info->description = UTF8ToUTF16(app.description());
   shortcut_info->extension_path = app.path();

@@ -45,6 +45,7 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "chrome/common/extensions/manifest_handlers/icons_handler.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -81,7 +82,8 @@ class AppShortcutLauncherItemController : public LauncherItemController {
     if (app_id == "apdfllckaahabafndbhieahigkjlhalf") {
       const Extension* extension =
           launcher_controller()->GetExtensionForAppID(app_id);
-      refocus_url_ = GURL(extension->launch_web_url() + "*");
+      refocus_url_ = GURL(
+          extensions::AppLaunchInfo::GetLaunchWebURL(extension).spec() + "*");
     }
   }
 

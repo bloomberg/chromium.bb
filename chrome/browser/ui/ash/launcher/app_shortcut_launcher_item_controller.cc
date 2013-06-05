@@ -18,6 +18,7 @@
 #include "chrome/browser/ui/extensions/native_app_window.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/aura/window.h"
 #include "ui/base/events/event.h"
@@ -37,9 +38,11 @@ AppShortcutLauncherItemController::AppShortcutLauncherItemController(
   // used URL. This will also work with applications like Google Drive.
   const Extension* extension =
       launcher_controller()->GetExtensionForAppID(app_id);
-  // Some unit tests have no real extension and will set their
-  if (extension)
-    set_refocus_url(GURL(extension->launch_web_url() + "*"));
+  // Some unit tests have no real extension.
+  if (extension) {
+    set_refocus_url(GURL(
+        extensions::AppLaunchInfo::GetLaunchWebURL(extension).spec() + "*"));
+  }
 }
 
 AppShortcutLauncherItemController::~AppShortcutLauncherItemController() {

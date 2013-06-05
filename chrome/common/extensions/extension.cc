@@ -107,30 +107,6 @@ class ExtensionConfig {
   Extension::ScriptingWhitelist scripting_whitelist_;
 };
 
-bool ReadLaunchDimension(const extensions::Manifest* manifest,
-                         const char* key,
-                         int* target,
-                         bool is_valid_container,
-                         string16* error) {
-  const Value* temp = NULL;
-  if (manifest->Get(key, &temp)) {
-    if (!is_valid_container) {
-      *error = ErrorUtils::FormatErrorMessageUTF16(
-          errors::kInvalidLaunchValueContainer,
-          key);
-      return false;
-    }
-    if (!temp->GetAsInteger(target) || *target < 0) {
-      *target = 0;
-      *error = ErrorUtils::FormatErrorMessageUTF16(
-          errors::kInvalidLaunchValue,
-          key);
-      return false;
-    }
-  }
-  return true;
-}
-
 }  // namespace
 
 #if defined(OS_WIN)
@@ -396,11 +372,6 @@ bool Extension::ShowConfigureContextMenus() const {
   return location() != Manifest::COMPONENT;
 }
 
-GURL Extension::GetFullLaunchURL() const {
-  return launch_local_path().empty() ? GURL(launch_web_url()) :
-                                       url().Resolve(launch_local_path());
-}
-
 bool Extension::OverlapsWithOrigin(const GURL& origin) const {
   if (url() == origin)
     return true;
@@ -640,9 +611,6 @@ Extension::Extension(const base::FilePath& path,
       converted_from_user_script_(false),
       manifest_(manifest.release()),
       finished_parsing_manifest_(false),
-      launch_container_(extension_misc::LAUNCH_TAB),
-      launch_width_(0),
-      launch_height_(0),
       display_in_launcher_(true),
       display_in_new_tab_page_(true),
       wants_file_access_(false),
@@ -737,9 +705,7 @@ bool Extension::LoadVersion(string16* error) {
 
 bool Extension::LoadAppFeatures(string16* error) {
   if (!LoadExtent(keys::kWebURLs, &extent_,
-                  errors::kInvalidWebURLs, errors::kInvalidWebURL, error) ||
-      !LoadLaunchURL(error) ||
-      !LoadLaunchContainer(error)) {
+                  errors::kInvalidWebURLs, errors::kInvalidWebURL, error)) {
     return false;
   }
   if (manifest_->HasKey(keys::kDisplayInLauncher) &&
@@ -834,163 +800,6 @@ bool Extension::LoadExtent(const char* key,
   return true;
 }
 
-bool Extension::LoadLaunchContainer(string16* error) {
-  const Value* tmp_launcher_container = NULL;
-  if (!manifest_->Get(keys::kLaunchContainer, &tmp_launcher_container))
-    return true;
-
-  std::string launch_container_string;
-  if (!tmp_launcher_container->GetAsString(&launch_container_string)) {
-    *error = ASCIIToUTF16(errors::kInvalidLaunchContainer);
-    return false;
-  }
-
-  if (launch_container_string == values::kLaunchContainerPanel) {
-    launch_container_ = extension_misc::LAUNCH_PANEL;
-  } else if (launch_container_string == values::kLaunchContainerTab) {
-    launch_container_ = extension_misc::LAUNCH_TAB;
-  } else {
-    *error = ASCIIToUTF16(errors::kInvalidLaunchContainer);
-    return false;
-  }
-
-  bool can_specify_initial_size =
-      launch_container_ == extension_misc::LAUNCH_PANEL ||
-      launch_container_ == extension_misc::LAUNCH_WINDOW;
-
-  // Validate the container width if present.
-  if (!ReadLaunchDimension(manifest_.get(),
-                           keys::kLaunchWidth,
-                           &launch_width_,
-                           can_specify_initial_size,
-                           error)) {
-      return false;
-  }
-
-  // Validate container height if present.
-  if (!ReadLaunchDimension(manifest_.get(),
-                           keys::kLaunchHeight,
-                           &launch_height_,
-                           can_specify_initial_size,
-                           error)) {
-      return false;
-  }
-
-  return true;
-}
-
-bool Extension::LoadLaunchURL(string16* error) {
-  const Value* temp = NULL;
-
-  // launch URL can be either local (to chrome-extension:// root) or an absolute
-  // web URL.
-  if (manifest_->Get(keys::kLaunchLocalPath, &temp)) {
-    if (manifest_->Get(keys::kLaunchWebURL, NULL)) {
-      *error = ASCIIToUTF16(errors::kLaunchPathAndURLAreExclusive);
-      return false;
-    }
-
-    if (manifest_->Get(keys::kWebURLs, NULL)) {
-      *error = ASCIIToUTF16(errors::kLaunchPathAndExtentAreExclusive);
-      return false;
-    }
-
-    std::string launch_path;
-    if (!temp->GetAsString(&launch_path)) {
-      *error = ErrorUtils::FormatErrorMessageUTF16(
-          errors::kInvalidLaunchValue,
-          keys::kLaunchLocalPath);
-      return false;
-    }
-
-    // Ensure the launch path is a valid relative URL.
-    GURL resolved = url().Resolve(launch_path);
-    if (!resolved.is_valid() || resolved.GetOrigin() != url()) {
-      *error = ErrorUtils::FormatErrorMessageUTF16(
-          errors::kInvalidLaunchValue,
-          keys::kLaunchLocalPath);
-      return false;
-    }
-
-    launch_local_path_ = launch_path;
-  } else if (manifest_->Get(keys::kLaunchWebURL, &temp)) {
-    std::string launch_url;
-    if (!temp->GetAsString(&launch_url)) {
-      *error = ErrorUtils::FormatErrorMessageUTF16(
-          errors::kInvalidLaunchValue,
-          keys::kLaunchWebURL);
-      return false;
-    }
-
-    // Ensure the launch URL is a valid absolute URL and web extent scheme.
-    GURL url(launch_url);
-    URLPattern pattern(kValidWebExtentSchemes);
-    if (!url.is_valid() || !pattern.SetScheme(url.scheme())) {
-      *error = ErrorUtils::FormatErrorMessageUTF16(
-          errors::kInvalidLaunchValue,
-          keys::kLaunchWebURL);
-      return false;
-    }
-
-    launch_web_url_ = launch_url;
-  } else if (is_legacy_packaged_app() || is_hosted_app()) {
-    *error = ASCIIToUTF16(errors::kLaunchURLRequired);
-    return false;
-  }
-
-  // If there is no extent, we default the extent based on the launch URL.
-  if (web_extent().is_empty() && !launch_web_url().empty()) {
-    GURL launch_url(launch_web_url());
-    URLPattern pattern(kValidWebExtentSchemes);
-    if (!pattern.SetScheme("*")) {
-      *error = ErrorUtils::FormatErrorMessageUTF16(
-          errors::kInvalidLaunchValue,
-          keys::kLaunchWebURL);
-      return false;
-    }
-    pattern.SetHost(launch_url.host());
-    pattern.SetPath("/*");
-    extent_.AddPattern(pattern);
-  }
-
-  // In order for the --apps-gallery-url switch to work with the gallery
-  // process isolation, we must insert any provided value into the component
-  // app's launch url and web extent.
-  if (id() == extension_misc::kWebStoreAppId) {
-    std::string gallery_url_str = CommandLine::ForCurrentProcess()->
-        GetSwitchValueASCII(switches::kAppsGalleryURL);
-
-    // Empty string means option was not used.
-    if (!gallery_url_str.empty()) {
-      GURL gallery_url(gallery_url_str);
-      OverrideLaunchUrl(gallery_url);
-    }
-  } else if (id() == extension_misc::kCloudPrintAppId) {
-    // In order for the --cloud-print-service switch to work, we must update
-    // the launch URL and web extent.
-    // TODO(sanjeevr): Ideally we want to use CloudPrintURL here but that is
-    // currently under chrome/browser.
-    const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-    GURL cloud_print_service_url = GURL(command_line.GetSwitchValueASCII(
-        switches::kCloudPrintServiceURL));
-    if (!cloud_print_service_url.is_empty()) {
-      std::string path(
-          cloud_print_service_url.path() + "/enable_chrome_connector");
-      GURL::Replacements replacements;
-      replacements.SetPathStr(path);
-      GURL cloud_print_enable_connector_url =
-          cloud_print_service_url.ReplaceComponents(replacements);
-      OverrideLaunchUrl(cloud_print_enable_connector_url);
-    }
-  } else if (id() == extension_misc::kChromeAppId) {
-    // Override launch url to new tab.
-    launch_web_url_ = chrome::kChromeUINewTabURL;
-    extent_.ClearPatterns();
-  }
-
-  return true;
-}
-
 bool Extension::LoadSharedFeatures(string16* error) {
   if (!LoadDescription(error) ||
       !ManifestHandler::ParseExtension(this, error))
@@ -1032,30 +841,6 @@ bool Extension::LoadManifestVersion(string16* error) {
   }
 
   return true;
-}
-
-void Extension::OverrideLaunchUrl(const GURL& override_url) {
-  GURL new_url(override_url);
-  if (!new_url.is_valid()) {
-    DLOG(WARNING) << "Invalid override url given for " << name();
-  } else {
-    if (new_url.has_port()) {
-      DLOG(WARNING) << "Override URL passed for " << name()
-                    << " should not contain a port.  Removing it.";
-
-      GURL::Replacements remove_port;
-      remove_port.ClearPort();
-      new_url = new_url.ReplaceComponents(remove_port);
-    }
-
-    launch_web_url_ = new_url.spec();
-
-    URLPattern pattern(kValidWebExtentSchemes);
-    URLPattern::ParseResult result = pattern.Parse(new_url.spec());
-    DCHECK_EQ(result, URLPattern::PARSE_SUCCESS);
-    pattern.SetPath(pattern.path() + '*');
-    extent_.AddPattern(pattern);
-  }
 }
 
 bool Extension::CheckMinimumChromeVersion(string16* error) const {

@@ -14,6 +14,7 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "chrome/common/pref_names.h"
 #include "components/user_prefs/pref_registry_syncable.h"
 #include "content/public/browser/navigation_entry.h"
@@ -62,7 +63,8 @@ static void EncodePinnedTab(TabStripModel* model,
     // For apps we use the launch url. We do this because the user is
     // effectively restarting the app, so returning them to the app's launch
     // page seems closest to what they expect.
-    value->SetString(kURL, extension->GetFullLaunchURL().spec());
+    value->SetString(
+        kURL, extensions::AppLaunchInfo::GetFullLaunchURL(extension).spec());
     values->Append(value.release());
   } else {
     NavigationEntry* entry = web_contents->GetController().GetActiveEntry();

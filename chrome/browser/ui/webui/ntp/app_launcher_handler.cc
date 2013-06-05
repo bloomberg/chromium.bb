@@ -40,6 +40,7 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_icon_set.h"
+#include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/common/web_application_info.h"
@@ -100,7 +101,8 @@ void AppLauncherHandler::CreateAppInfo(
   // impede our ability to determine directionality.
   string16 name = UTF8ToUTF16(extension->name());
   base::i18n::UnadjustStringForLocaleDirection(&name);
-  NewTabUI::SetUrlTitleAndDirection(value, name, extension->GetFullLaunchURL());
+  NewTabUI::SetUrlTitleAndDirection(
+      value, name, extensions::AppLaunchInfo::GetFullLaunchURL(extension));
 
   bool enabled = service->IsExtensionEnabled(extension->id()) &&
       !service->GetTerminatedExtension(extension->id());
@@ -127,7 +129,8 @@ void AppLauncherHandler::CreateAppInfo(
                                       false, &icon_small_exists);
   value->SetString("icon_small", icon_small.spec());
   value->SetBoolean("icon_small_exists", icon_small_exists);
-  value->SetInteger("launch_container", extension->launch_container());
+  value->SetInteger("launch_container",
+                    extensions::AppLaunchInfo::GetLaunchContainer(extension));
   ExtensionPrefs* prefs = service->extension_prefs();
   value->SetInteger("launch_type",
       prefs->GetLaunchType(extension,

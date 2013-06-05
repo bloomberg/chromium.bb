@@ -19,6 +19,7 @@
 #include "chrome/browser/ui/webui/ntp/app_launcher_handler.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "content/public/browser/notification_source.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -164,8 +165,8 @@ void ExtensionAppProvider::RefreshAppList() {
         !extension_service->CanLoadInIncognito(app))
       continue;
 
-    GURL launch_url =
-        app->is_platform_app() ? app->url() : app->GetFullLaunchURL();
+    GURL launch_url = app->is_platform_app() ?
+        app->url() : extensions::AppLaunchInfo::GetFullLaunchURL(app);
     DCHECK(launch_url.is_valid());
 
     ExtensionApp extension_app = {

@@ -15,6 +15,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager_client.h"
 #include "content/public/browser/notification_service.h"
@@ -134,7 +135,8 @@ void ScreensaverController::IdleNotify(int64 threshold) {
   const extensions::Extension* screensaver_extension =
       service->GetExtensionById(screensaver_extension_id_,
                                 ExtensionService::INCLUDE_ENABLED);
-  ash::ShowScreensaver(screensaver_extension->GetFullLaunchURL());
+  ash::ShowScreensaver(
+      extensions::AppLaunchInfo::GetFullLaunchURL(screensaver_extension));
 
   if (!ash::Shell::GetInstance()->user_activity_detector()->HasObserver(this))
     ash::Shell::GetInstance()->user_activity_detector()->AddObserver(this);

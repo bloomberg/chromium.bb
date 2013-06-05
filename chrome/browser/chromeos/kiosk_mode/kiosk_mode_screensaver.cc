@@ -24,6 +24,7 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_file_util.h"
+#include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "chromeos/login/login_state.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
@@ -222,7 +223,8 @@ void KioskModeScreensaver::SetupScreensaver(
   if (default_profile) {
     extensions::ExtensionSystem::Get(default_profile)->extension_service()->
         AddExtension(extension);
-    ash::ShowScreensaver(extension->GetFullLaunchURL());
+    ash::ShowScreensaver(
+        extensions::AppLaunchInfo::GetFullLaunchURL(extension));
   } else {
     LOG(ERROR) << "Couldn't get default profile. Unable to load screensaver!";
     ShutdownKioskModeScreensaver();

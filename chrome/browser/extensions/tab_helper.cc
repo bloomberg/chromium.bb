@@ -31,6 +31,7 @@
 #include "chrome/common/extensions/extension_icon_set.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/extensions/feature_switch.h"
+#include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "chrome/common/extensions/manifest_handlers/icons_handler.h"
 #include "content/public/browser/invalidate_type.h"
 #include "content/public/browser/navigation_controller.h"
@@ -156,7 +157,7 @@ bool TabHelper::CanCreateApplicationShortcuts() const {
 }
 
 void TabHelper::SetExtensionApp(const Extension* extension) {
-  DCHECK(!extension || extension->GetFullLaunchURL().is_valid());
+  DCHECK(!extension || AppLaunchInfo::GetFullLaunchURL(extension).is_valid());
   extension_app_ = extension;
 
   UpdateExtensionAppIcon(extension_app_);

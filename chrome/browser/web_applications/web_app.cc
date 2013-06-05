@@ -14,6 +14,7 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/common/constants.h"
@@ -109,7 +110,9 @@ base::FilePath GetWebAppDataDirectory(const base::FilePath& profile_path,
 base::FilePath GetWebAppDataDirectory(const base::FilePath& profile_path,
                                       const extensions::Extension& extension) {
   return GetWebAppDataDirectory(
-      profile_path, extension.id(), GURL(extension.launch_web_url()));
+      profile_path,
+      extension.id(),
+      GURL(extensions::AppLaunchInfo::GetLaunchWebURL(&extension)));
 }
 
 std::string GenerateApplicationNameFromInfo(

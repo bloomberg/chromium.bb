@@ -73,10 +73,6 @@ namespace extension_manifest_keys {
   extern const char kLaunchContainer[];
   extern const char kLaunchHeight[];
   extern const char kLaunchLocalPath[];
-  extern const char kLaunchMaxHeight[];
-  extern const char kLaunchMaxWidth[];
-  extern const char kLaunchMinHeight[];
-  extern const char kLaunchMinWidth[];
   extern const char kLaunchWebURL[];
   extern const char kLaunchWidth[];
   extern const char kLayouts[];

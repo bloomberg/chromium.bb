@@ -21,6 +21,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/feature_switch.h"
 #include "chrome/common/extensions/manifest.h"
+#include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "chrome/common/extensions/permissions/permission_set.h"
 #include "chrome/common/extensions/permissions/permissions_info.h"
 #include "chrome/common/pref_names.h"
@@ -1128,7 +1129,7 @@ extension_misc::LaunchContainer ExtensionPrefs::GetLaunchContainer(
     const Extension* extension,
     ExtensionPrefs::LaunchType default_pref_value) {
   extension_misc::LaunchContainer manifest_launch_container =
-      extension->launch_container();
+      AppLaunchInfo::GetLaunchContainer(extension);
 
   const extension_misc::LaunchContainer kInvalidLaunchContainer =
       static_cast<extension_misc::LaunchContainer>(-1);

@@ -246,9 +246,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   // Whether context menu should be shown for page and browser actions.
   bool ShowConfigureContextMenus() const;
 
-  // Gets the fully resolved absolute launch URL.
-  GURL GetFullLaunchURL() const;
-
   // Returns true if this extension or app includes areas within |origin|.
   bool OverlapsWithOrigin(const GURL& origin) const;
 
@@ -335,15 +332,9 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   bool is_legacy_packaged_app() const;
   bool is_extension() const;
   bool can_be_incognito_enabled() const;
+
   void AddWebExtentPattern(const URLPattern& pattern);
   const URLPatternSet& web_extent() const { return extent_; }
-  const std::string& launch_local_path() const { return launch_local_path_; }
-  const std::string& launch_web_url() const { return launch_web_url_; }
-  extension_misc::LaunchContainer launch_container() const {
-    return launch_container_;
-  }
-  int launch_width() const { return launch_width_; }
-  int launch_height() const { return launch_height_; }
 
   // Theme-related.
   bool is_theme() const;
@@ -386,16 +377,10 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
                   const char* list_error,
                   const char* value_error,
                   string16* error);
-  bool LoadLaunchContainer(string16* error);
-  bool LoadLaunchURL(string16* error);
 
   bool LoadSharedFeatures(string16* error);
   bool LoadDescription(string16* error);
   bool LoadManifestVersion(string16* error);
-
-  // Updates the launch URL and extents for the extension using the given
-  // |override_url|.
-  void OverrideLaunchUrl(const GURL& override_url);
 
   bool CheckMinimumChromeVersion(string16* error) const;
 
@@ -463,25 +448,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   // initialization happens from the same thread (this can happen when certain
   // parts of the initialization process need information from previous parts).
   base::ThreadChecker thread_checker_;
-
-  // The local path inside the extension to use with the launcher.
-  std::string launch_local_path_;
-
-  // A web url to use with the launcher. Note that this might be relative or
-  // absolute. If relative, it is relative to web_origin.
-  std::string launch_web_url_;
-
-  // The window type that an app's manifest specifies to launch into.
-  // This is not always the window type an app will open into, because
-  // users can override the way each app launches.  See
-  // ExtensionPrefs::GetLaunchContainer(), which looks at a per-app pref
-  // to decide what container an app will launch in.
-  extension_misc::LaunchContainer launch_container_;
-
-  // The default size of the container when launching. Only respected for
-  // containers like panels and windows.
-  int launch_width_;
-  int launch_height_;
 
   // Should this app be shown in the app launcher.
   bool display_in_launcher_;

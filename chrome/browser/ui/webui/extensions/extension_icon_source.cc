@@ -21,6 +21,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
+#include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "chrome/common/extensions/manifest_handlers/icons_handler.h"
 #include "chrome/common/url_constants.h"
 #include "extensions/common/extension_resource.h"
@@ -218,7 +219,8 @@ void ExtensionIconSource::LoadFaviconImage(int request_id) {
     return;
   }
 
-  GURL favicon_url = GetData(request_id)->extension->GetFullLaunchURL();
+  GURL favicon_url = extensions::AppLaunchInfo::GetFullLaunchURL(
+      GetData(request_id)->extension);
   favicon_service->GetRawFaviconForURL(
       FaviconService::FaviconForURLParams(
           profile_, favicon_url, chrome::FAVICON, gfx::kFaviconSize),

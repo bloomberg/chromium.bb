@@ -12,6 +12,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_icon_set.h"
+#include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "chrome/common/extensions/manifest_handlers/icons_handler.h"
 #include "chrome/common/extensions/permissions/permission_set.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -81,9 +82,10 @@ IN_PROC_BROWSER_TEST_F(ExtensionFromWebAppTest, MAYBE_Basic) {
   EXPECT_TRUE(installed_extension_->is_hosted_app());
   EXPECT_EQ("Test application", installed_extension_->name());
   EXPECT_EQ("", installed_extension_->description());
-  EXPECT_EQ("http://www.example.com/", installed_extension_->launch_web_url());
+  EXPECT_EQ(GURL("http://www.example.com/"),
+            AppLaunchInfo::GetLaunchWebURL(installed_extension_));
   EXPECT_EQ(extension_misc::LAUNCH_TAB,
-            installed_extension_->launch_container());
+            AppLaunchInfo::GetLaunchContainer(installed_extension_));
   EXPECT_EQ(0u, installed_extension_->GetActivePermissions()->apis().size());
   EXPECT_EQ(0u, IconsInfo::GetIcons(installed_extension_).map().size());
 }

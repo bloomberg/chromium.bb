@@ -47,6 +47,7 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "chrome/common/language_detection_details.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -1239,7 +1240,8 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, OpenAppWindowLikeNtp) {
   ASSERT_TRUE(extensions::TabHelper::FromWebContents(app_window));
   EXPECT_FALSE(
       extensions::TabHelper::FromWebContents(app_window)->extension_app());
-  EXPECT_EQ(extension_app->GetFullLaunchURL(), app_window->GetURL());
+  EXPECT_EQ(extensions::AppLaunchInfo::GetFullLaunchURL(extension_app),
+            app_window->GetURL());
 
   // The launch should have created a new browser.
   ASSERT_EQ(2u, chrome::GetBrowserCount(browser()->profile(),

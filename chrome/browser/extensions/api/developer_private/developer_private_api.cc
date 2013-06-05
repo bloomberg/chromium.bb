@@ -35,6 +35,7 @@
 #include "chrome/common/extensions/background_info.h"
 #include "chrome/common/extensions/extension_icon_set.h"
 #include "chrome/common/extensions/incognito_handler.h"
+#include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "chrome/common/extensions/manifest_handlers/icons_handler.h"
 #include "chrome/common/extensions/manifest_handlers/offline_enabled_info.h"
 #include "chrome/common/extensions/manifest_url_handler.h"
@@ -234,7 +235,7 @@ scoped_ptr<developer::ItemInfo>
 
   if (item.is_app()) {
     info->app_launch_url.reset(new std::string(
-        item.GetFullLaunchURL().spec()));
+        extensions::AppLaunchInfo::GetFullLaunchURL(&item).spec()));
   }
 
   info->may_disable = system->management_policy()->

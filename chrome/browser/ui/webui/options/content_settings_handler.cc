@@ -31,6 +31,7 @@
 #include "chrome/common/content_settings.h"
 #include "chrome/common/content_settings_pattern.h"
 #include "chrome/common/extensions/extension_set.h"
+#include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "chrome/common/extensions/permissions/api_permission.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -224,7 +225,8 @@ void AddExceptionsGrantedByHostedApps(
 
   for (ExtensionSet::const_iterator extension = extensions->begin();
        extension != extensions->end(); ++extension) {
-    if (!app_filter(**extension, profile)) continue;
+    if (!app_filter(**extension, profile))
+      continue;
 
     extensions::URLPatternSet web_extent = (*extension)->web_extent();
     // Add patterns from web extent.
@@ -234,11 +236,11 @@ void AddExceptionsGrantedByHostedApps(
       AddExceptionForHostedApp(url_pattern, **extension, exceptions);
     }
     // Retrieve the launch URL.
-    std::string launch_url_string = (*extension)->launch_web_url();
-    GURL launch_url(launch_url_string);
+    GURL launch_url = extensions::AppLaunchInfo::GetLaunchWebURL(*extension);
     // Skip adding the launch URL if it is part of the web extent.
-    if (web_extent.MatchesURL(launch_url)) continue;
-    AddExceptionForHostedApp(launch_url_string, **extension, exceptions);
+    if (web_extent.MatchesURL(launch_url))
+      continue;
+    AddExceptionForHostedApp(launch_url.spec(), **extension, exceptions);
   }
 }
 

@@ -84,6 +84,7 @@
 #include "chrome/common/extensions/incognito_handler.h"
 #include "chrome/common/extensions/manifest.h"
 #include "chrome/common/extensions/manifest_handlers/app_isolation_info.h"
+#include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "chrome/common/extensions/manifest_url_handler.h"
 #include "chrome/common/extensions/permissions/permissions_data.h"
 #include "chrome/common/pref_names.h"
@@ -797,8 +798,8 @@ bool ExtensionService::UninstallExtension(
       NOTREACHED();
   }
 
-  GURL launch_web_url_origin(extension->launch_web_url());
-  launch_web_url_origin = launch_web_url_origin.GetOrigin();
+  GURL launch_web_url_origin(
+      extensions::AppLaunchInfo::GetLaunchWebURL(extension).GetOrigin());
   bool is_storage_isolated =
       extensions::AppIsolationInfo::HasIsolatedStorage(extension.get());
 

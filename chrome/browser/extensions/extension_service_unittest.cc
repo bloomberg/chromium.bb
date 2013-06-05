@@ -67,6 +67,7 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_l10n_util.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
+#include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "chrome/common/extensions/manifest_handlers/content_scripts_handler.h"
 #include "chrome/common/extensions/manifest_url_handler.h"
 #include "chrome/common/extensions/permissions/permission_set.h"
@@ -2414,8 +2415,9 @@ TEST_F(ExtensionServiceTest, InstallAppsWithUnlimitedStorage) {
   EXPECT_TRUE(extension->HasAPIPermission(
       APIPermission::kUnlimitedStorage));
   EXPECT_TRUE(extension->web_extent().MatchesURL(
-                  extension->GetFullLaunchURL()));
-  const GURL origin1(extension->GetFullLaunchURL().GetOrigin());
+      extensions::AppLaunchInfo::GetFullLaunchURL(extension)));
+  const GURL origin1(
+      extensions::AppLaunchInfo::GetFullLaunchURL(extension).GetOrigin());
   EXPECT_TRUE(profile_->GetExtensionSpecialStoragePolicy()->
       IsStorageUnlimited(origin1));
 
@@ -2427,8 +2429,9 @@ TEST_F(ExtensionServiceTest, InstallAppsWithUnlimitedStorage) {
   EXPECT_TRUE(extension->HasAPIPermission(
       APIPermission::kUnlimitedStorage));
   EXPECT_TRUE(extension->web_extent().MatchesURL(
-                  extension->GetFullLaunchURL()));
-  const GURL origin2(extension->GetFullLaunchURL().GetOrigin());
+      extensions::AppLaunchInfo::GetFullLaunchURL(extension)));
+  const GURL origin2(
+      extensions::AppLaunchInfo::GetFullLaunchURL(extension).GetOrigin());
   EXPECT_EQ(origin1, origin2);
   EXPECT_TRUE(profile_->GetExtensionSpecialStoragePolicy()->
       IsStorageUnlimited(origin2));
@@ -2461,7 +2464,8 @@ TEST_F(ExtensionServiceTest, InstallAppsAndCheckStorageProtection) {
   ASSERT_EQ(1u, service_->extensions()->size());
   EXPECT_TRUE(extension->is_app());
   const std::string id1 = extension->id();
-  const GURL origin1(extension->GetFullLaunchURL().GetOrigin());
+  const GURL origin1(
+      extensions::AppLaunchInfo::GetFullLaunchURL(extension).GetOrigin());
   EXPECT_TRUE(profile_->GetExtensionSpecialStoragePolicy()->
       IsStorageProtected(origin1));
 
@@ -2470,7 +2474,8 @@ TEST_F(ExtensionServiceTest, InstallAppsAndCheckStorageProtection) {
   ValidatePrefKeyCount(++pref_count);
   ASSERT_EQ(2u, service_->extensions()->size());
   const std::string id2 = extension->id();
-  const GURL origin2(extension->GetFullLaunchURL().GetOrigin());
+  const GURL origin2(
+      extensions::AppLaunchInfo::GetFullLaunchURL(extension).GetOrigin());
   ASSERT_NE(origin1, origin2);
   EXPECT_TRUE(profile_->GetExtensionSpecialStoragePolicy()->
       IsStorageProtected(origin2));
@@ -3975,7 +3980,8 @@ TEST_F(ExtensionServiceTest, ClearAppData) {
   const std::string id1 = extension->id();
   EXPECT_TRUE(extension->HasAPIPermission(
       APIPermission::kUnlimitedStorage));
-  const GURL origin1(extension->GetFullLaunchURL().GetOrigin());
+  const GURL origin1(
+      extensions::AppLaunchInfo::GetFullLaunchURL(extension).GetOrigin());
   EXPECT_TRUE(profile_->GetExtensionSpecialStoragePolicy()->
       IsStorageUnlimited(origin1));
   base::string16 origin_id = webkit_base::GetOriginIdentifierFromURL(origin1);
@@ -3988,8 +3994,9 @@ TEST_F(ExtensionServiceTest, ClearAppData) {
   EXPECT_TRUE(extension->HasAPIPermission(
       APIPermission::kUnlimitedStorage));
   EXPECT_TRUE(extension->web_extent().MatchesURL(
-                  extension->GetFullLaunchURL()));
-  const GURL origin2(extension->GetFullLaunchURL().GetOrigin());
+      extensions::AppLaunchInfo::GetFullLaunchURL(extension)));
+  const GURL origin2(
+      extensions::AppLaunchInfo::GetFullLaunchURL(extension).GetOrigin());
   EXPECT_EQ(origin1, origin2);
   EXPECT_TRUE(profile_->GetExtensionSpecialStoragePolicy()->
       IsStorageUnlimited(origin2));
