@@ -17,6 +17,7 @@
 #include "third_party/webrtc/modules/desktop_capture/desktop_frame.h"
 
 using webrtc::DesktopRect;
+using webrtc::DesktopRegion;
 using webrtc::DesktopSize;
 
 namespace {
@@ -56,7 +57,6 @@ class VideoEncoderMessageTester {
       : begin_rect_(0),
         rect_data_(0),
         end_rect_(0),
-        added_rects_(0),
         state_(kWaitingForBeginRect),
         strict_(false) {
   }
@@ -66,7 +66,7 @@ class VideoEncoderMessageTester {
     EXPECT_GT(begin_rect_, 0);
     EXPECT_EQ(kWaitingForBeginRect, state_);
     if (strict_) {
-      EXPECT_EQ(added_rects_, begin_rect_);
+      EXPECT_TRUE(region_.Equals(received_region_));
     }
   }
 
@@ -78,12 +78,9 @@ class VideoEncoderMessageTester {
       ++begin_rect_;
 
       if (strict_) {
-        DesktopRect rect = rects_.front();
-        rects_.pop_front();
-        EXPECT_EQ(rect.left(), packet->format().x());
-        EXPECT_EQ(rect.top(), packet->format().y());
-        EXPECT_EQ(rect.width(), packet->format().width());
-        EXPECT_EQ(rect.height(), packet->format().height());
+        received_region_.AddRect(webrtc::DesktopRect::MakeXYWH(
+            packet->format().x(), packet->format().y(),
+            packet->format().width(), packet->format().height()));
       }
     } else {
       EXPECT_FALSE((packet->flags() & VideoPacket::FIRST_PACKET) != 0);
@@ -114,8 +111,7 @@ class VideoEncoderMessageTester {
   }
 
   void AddRects(const DesktopRect* rects, int count) {
-    rects_.insert(rects_.begin() + rects_.size(), rects, rects + count);
-    added_rects_ += count;
+    region_.AddRects(rects, count);
   }
 
  private:
@@ -127,11 +123,11 @@ class VideoEncoderMessageTester {
   int begin_rect_;
   int rect_data_;
   int end_rect_;
-  int added_rects_;
   State state_;
   bool strict_;
 
-  std::deque<DesktopRect> rects_;
+  DesktopRegion region_;
+  DesktopRegion received_region_;
 
   DISALLOW_COPY_AND_ASSIGN(VideoEncoderMessageTester);
 };

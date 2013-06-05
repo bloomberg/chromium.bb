@@ -558,10 +558,10 @@ TEST_F(DifferTest, MergeBlocks_MultiRect) {
 
   // +---+---+---+---+      +---+---+---+
   // |   |   | X | _ |      |   |   | 0 |
-  // +---+---+---+---+      +---+---+   +
-  // | X | X | X | _ |      | 1   1 | 0 |
-  // +---+---+---+---+  =>  +       |   +
-  // | X | X | X | _ |      | 1   1 | 0 |
+  // +---+---+---+---+      +---+---+---+
+  // | X | X | X | _ |      | 1   1   1 |
+  // +---+---+---+---+  =>  +           +
+  // | X | X | X | _ |      | 1   1   1 |
   // +---+---+---+---+      +---+---+---+
   // | _ | _ | _ | _ |
   // +---+---+---+---+
@@ -573,15 +573,15 @@ TEST_F(DifferTest, MergeBlocks_MultiRect) {
   MergeBlocks(&dirty);
 
   ASSERT_EQ(2, RegionRectCount(dirty));
-  ASSERT_TRUE(CheckDirtyRegionContainsRect(dirty, 2, 0, 1, 3));
-  ASSERT_TRUE(CheckDirtyRegionContainsRect(dirty, 0, 1, 2, 2));
+  ASSERT_TRUE(CheckDirtyRegionContainsRect(dirty, 2, 0, 1, 1));
+  ASSERT_TRUE(CheckDirtyRegionContainsRect(dirty, 0, 1, 3, 2));
 
   // +---+---+---+---+      +---+---+---+
   // |   |   |   | _ |      |   |   |   |
   // +---+---+---+---+      +---+---+---+
   // | X |   | X | _ |      | 0 |   | 1 |
-  // +---+---+---+---+  =>  +   +---+   +
-  // | X | X | X | _ |      | 0 | 2 | 1 |
+  // +---+---+---+---+  =>  +---+---+---+
+  // | X | X | X | _ |      | 2   2   2 |
   // +---+---+---+---+      +---+---+---+
   // | _ | _ | _ | _ |
   // +---+---+---+---+
@@ -594,16 +594,16 @@ TEST_F(DifferTest, MergeBlocks_MultiRect) {
   MergeBlocks(&dirty);
 
   ASSERT_EQ(3, RegionRectCount(dirty));
-  ASSERT_TRUE(CheckDirtyRegionContainsRect(dirty, 0, 1, 1, 2));
-  ASSERT_TRUE(CheckDirtyRegionContainsRect(dirty, 2, 1, 1, 2));
-  ASSERT_TRUE(CheckDirtyRegionContainsRect(dirty, 1, 2, 1, 1));
+  ASSERT_TRUE(CheckDirtyRegionContainsRect(dirty, 0, 1, 1, 1));
+  ASSERT_TRUE(CheckDirtyRegionContainsRect(dirty, 2, 1, 1, 1));
+  ASSERT_TRUE(CheckDirtyRegionContainsRect(dirty, 0, 2, 3, 1));
 
   // +---+---+---+---+      +---+---+---+
   // | X | X | X | _ |      | 0   0   0 |
   // +---+---+---+---+      +---+---+---+
   // | X |   | X | _ |      | 1 |   | 2 |
-  // +---+---+---+---+  =>  +   +---+   +
-  // | X | X | X | _ |      | 1 | 3 | 2 |
+  // +---+---+---+---+  =>  +---+---+---+
+  // | X | X | X | _ |      | 3   3   3 |
   // +---+---+---+---+      +---+---+---+
   // | _ | _ | _ | _ |
   // +---+---+---+---+
@@ -618,9 +618,9 @@ TEST_F(DifferTest, MergeBlocks_MultiRect) {
 
   ASSERT_EQ(4, RegionRectCount(dirty));
   ASSERT_TRUE(CheckDirtyRegionContainsRect(dirty, 0, 0, 3, 1));
-  ASSERT_TRUE(CheckDirtyRegionContainsRect(dirty, 0, 1, 1, 2));
-  ASSERT_TRUE(CheckDirtyRegionContainsRect(dirty, 2, 1, 1, 2));
-  ASSERT_TRUE(CheckDirtyRegionContainsRect(dirty, 1, 2, 1, 1));
+  ASSERT_TRUE(CheckDirtyRegionContainsRect(dirty, 0, 1, 1, 1));
+  ASSERT_TRUE(CheckDirtyRegionContainsRect(dirty, 2, 1, 1, 1));
+  ASSERT_TRUE(CheckDirtyRegionContainsRect(dirty, 0, 2, 3, 1));
 
   // +---+---+---+---+      +---+---+---+
   // | X | X |   | _ |      | 0   0 |   |
