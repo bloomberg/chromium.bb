@@ -1434,12 +1434,11 @@ bool BrowserThemePack::GetScaleFactorFromManifestKey(
   int percent = 0;
   if (base::StringToInt(key, &percent)) {
     float scale = static_cast<float>(percent) / 100.0f;
-    ui::ScaleFactor factor = ui::GetScaleFactorFromScale(scale);
-    // To be valid the scale factor must be in use.
-    if (std::find(scale_factors_.begin(), scale_factors_.end(), factor)
-        != scale_factors_.end()) {
-      *scale_factor = factor;
-      return true;
+    for (size_t i = 0; i < scale_factors_.size(); ++i) {
+      if (fabs(ui::GetScaleFactorScale(scale_factors_[i]) - scale) < 0.001) {
+        *scale_factor = scale_factors_[i];
+        return true;
+      }
     }
   }
   return false;
