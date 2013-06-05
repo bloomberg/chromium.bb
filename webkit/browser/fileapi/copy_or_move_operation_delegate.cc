@@ -75,7 +75,7 @@ void CopyOrMoveOperationDelegate::ProcessDirectory(const FileSystemURL& src_url,
   // restore directory timestamps in the end, though it may have
   // negative performance impact.
   // See http://crbug.com/171284 for more details.
-  NewDestOperation()->CreateDirectory(
+  NewOperation(dest_url)->CreateDirectory(
       dest_url, false /* exclusive */, false /* recursive */, callback);
 }
 
@@ -90,9 +90,10 @@ void CopyOrMoveOperationDelegate::DidTryCopyOrMoveFile(
   // The src_root_ looks to be a directory.
   // Try removing the dest_root_ to see if it exists and/or it is an
   // empty directory.
-  NewDestOperation()->RemoveDirectory(
-      dest_root_, base::Bind(&CopyOrMoveOperationDelegate::DidTryRemoveDestRoot,
-                             AsWeakPtr()));
+  NewOperation(dest_root_)->RemoveDirectory(
+      dest_root_,
+      base::Bind(&CopyOrMoveOperationDelegate::DidTryRemoveDestRoot,
+                 AsWeakPtr()));
 }
 
 void CopyOrMoveOperationDelegate::DidTryRemoveDestRoot(
@@ -121,11 +122,11 @@ void CopyOrMoveOperationDelegate::CopyOrMoveFile(const URLPair& url_pair,
   // Same filesystem case.
   if (same_file_system_) {
     if (operation_type_ == OPERATION_MOVE) {
-      NewSourceOperation()->MoveFileLocal(url_pair.src, url_pair.dest,
-                                          callback);
+      NewOperation(url_pair.src)->MoveFileLocal(
+          url_pair.src, url_pair.dest, callback);
     } else {
-      NewSourceOperation()->CopyFileLocal(url_pair.src, url_pair.dest,
-                                          callback);
+      NewOperation(url_pair.src)->CopyFileLocal(
+          url_pair.src, url_pair.dest, callback);
     }
     return;
   }
@@ -136,7 +137,7 @@ void CopyOrMoveOperationDelegate::CopyOrMoveFile(const URLPair& url_pair,
   StatusCallback copy_callback =
       base::Bind(&CopyOrMoveOperationDelegate::DidFinishCopy, AsWeakPtr(),
                  url_pair.src, callback);
-  NewSourceOperation()->CreateSnapshotFile(
+  NewOperation(url_pair.src)->CreateSnapshotFile(
       url_pair.src,
       base::Bind(&CopyOrMoveOperationDelegate::DidCreateSnapshot, AsWeakPtr(),
                  url_pair, copy_callback));
@@ -189,7 +190,7 @@ void CopyOrMoveOperationDelegate::DidValidateFile(
     return;
   }
 
-  NewDestOperation()->CopyInForeignFile(platform_path, dest, callback);
+  NewOperation(dest)->CopyInForeignFile(platform_path, dest, callback);
 }
 
 void CopyOrMoveOperationDelegate::DidFinishCopy(
@@ -205,7 +206,7 @@ void CopyOrMoveOperationDelegate::DidFinishCopy(
   DCHECK_EQ(OPERATION_MOVE, operation_type_);
 
   // Remove the source for finalizing move operation.
-  NewSourceOperation()->Remove(
+  NewOperation(src)->Remove(
       src, true /* recursive */,
       base::Bind(&CopyOrMoveOperationDelegate::DidRemoveSourceForMove,
                  AsWeakPtr(), callback));
@@ -231,16 +232,6 @@ FileSystemURL CopyOrMoveOperationDelegate::CreateDestURL(
       dest_root_.origin(),
       dest_root_.mount_type(),
       relative);
-}
-
-LocalFileSystemOperation* CopyOrMoveOperationDelegate::NewDestOperation() {
-  return NewNestedOperation();
-}
-
-LocalFileSystemOperation* CopyOrMoveOperationDelegate::NewSourceOperation() {
-  if (same_file_system_)
-    return NewDestOperation();
-  return src_root_operation_->CreateNestedOperation();
 }
 
 }  // namespace fileapi

@@ -324,10 +324,12 @@ void FileSystemContext::SetLocalFileChangeTracker(
   DCHECK(!change_tracker_.get());
   DCHECK(tracker.get());
   change_tracker_ = tracker.Pass();
-  sandbox_provider_->AddSyncableFileUpdateObserver(
+  sandbox_provider_->AddFileUpdateObserver(
+      kFileSystemTypeSyncable,
       change_tracker_.get(),
       task_runners_->file_task_runner());
-  sandbox_provider_->AddSyncableFileChangeObserver(
+  sandbox_provider_->AddFileChangeObserver(
+      kFileSystemTypeSyncable,
       change_tracker_.get(),
       task_runners_->file_task_runner());
 }

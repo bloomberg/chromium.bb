@@ -326,6 +326,7 @@ FileSystemOperation* SandboxMountPointProvider::CreateFileSystemOperation(
 
   // For regular sandboxed types.
   operation_context->set_update_observers(update_observers_);
+  operation_context->set_change_observers(change_observers_);
   operation_context->set_access_observers(access_observers_);
 
   if (special_storage_policy_.get() &&
@@ -570,22 +571,29 @@ const UpdateObserverList* SandboxMountPointProvider::GetUpdateObservers(
   return &update_observers_;
 }
 
-void SandboxMountPointProvider::AddSyncableFileUpdateObserver(
+void SandboxMountPointProvider::AddFileUpdateObserver(
+    FileSystemType type,
     FileUpdateObserver* observer,
     base::SequencedTaskRunner* task_runner) {
-  UpdateObserverList::Source observer_source =
-      syncable_update_observers_.source();
+  DCHECK(CanHandleType(type));
+  UpdateObserverList* list = &update_observers_;
+  if (type == kFileSystemTypeSyncable)
+    list = &syncable_update_observers_;
+  UpdateObserverList::Source observer_source = list->source();
   observer_source.AddObserver(observer, task_runner);
-  syncable_update_observers_ = UpdateObserverList(observer_source);
+  *list = UpdateObserverList(observer_source);
 }
 
-void SandboxMountPointProvider::AddSyncableFileChangeObserver(
+void SandboxMountPointProvider::AddFileChangeObserver(
+    FileSystemType type,
     FileChangeObserver* observer,
     base::SequencedTaskRunner* task_runner) {
-  ChangeObserverList::Source observer_source =
-      syncable_change_observers_.source();
+  ChangeObserverList* list = &change_observers_;
+  if (type == kFileSystemTypeSyncable)
+    list = &syncable_change_observers_;
+  ChangeObserverList::Source observer_source = list->source();
   observer_source.AddObserver(observer, task_runner);
-  syncable_change_observers_ = ChangeObserverList(observer_source);
+  *list = ChangeObserverList(observer_source);
 }
 
 base::FilePath SandboxMountPointProvider::GetUsageCachePathForOriginAndType(

@@ -66,8 +66,8 @@ class RecursiveOperationDelegate
   void StartRecursiveOperation(const FileSystemURL& root,
                                const StatusCallback& callback);
 
-  // Returns new nested sub-operation.
-  LocalFileSystemOperation* NewNestedOperation();
+  // Returns new operation.
+  LocalFileSystemOperation* NewOperation(const FileSystemURL& url);
 
   FileSystemContext* file_system_context() { return file_system_context_; }
   const FileSystemContext* file_system_context() const {

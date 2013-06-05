@@ -24,7 +24,7 @@ RemoveOperationDelegate::RemoveOperationDelegate(
 RemoveOperationDelegate::~RemoveOperationDelegate() {}
 
 void RemoveOperationDelegate::Run() {
-  NewNestedOperation()->RemoveFile(url_, base::Bind(
+  NewOperation(url_)->RemoveFile(url_, base::Bind(
       &RemoveOperationDelegate::DidTryRemoveFile, AsWeakPtr()));
 }
 
@@ -41,7 +41,7 @@ void RemoveOperationDelegate::ProcessFile(const FileSystemURL& url,
     // We seem to have been re-directed from ProcessDirectory.
     to_remove_directories_.pop();
   }
-  NewNestedOperation()->RemoveFile(url, base::Bind(
+  NewOperation(url)->RemoveFile(url, base::Bind(
       &RemoveOperationDelegate::DidRemoveFile, AsWeakPtr(), callback));
 }
 
@@ -58,7 +58,7 @@ void RemoveOperationDelegate::DidTryRemoveFile(
     callback_.Run(error);
     return;
   }
-  NewNestedOperation()->RemoveDirectory(url_, callback_);
+  NewOperation(url_)->RemoveDirectory(url_, callback_);
 }
 
 void RemoveOperationDelegate::DidRemoveFile(const StatusCallback& callback,
@@ -79,7 +79,7 @@ void RemoveOperationDelegate::RemoveNextDirectory(
   }
   FileSystemURL url = to_remove_directories_.top();
   to_remove_directories_.pop();
-  NewNestedOperation()->RemoveDirectory(url, base::Bind(
+  NewOperation(url)->RemoveDirectory(url, base::Bind(
       &RemoveOperationDelegate::RemoveNextDirectory,
       AsWeakPtr()));
 }

@@ -162,10 +162,12 @@ class WEBKIT_STORAGE_EXPORT SandboxMountPointProvider
   // Returns update observers for the given type.
   const UpdateObserverList* GetUpdateObservers(FileSystemType type) const;
 
-  void AddSyncableFileUpdateObserver(FileUpdateObserver* observer,
-                                     base::SequencedTaskRunner* task_runner);
-  void AddSyncableFileChangeObserver(FileChangeObserver* observer,
-                                     base::SequencedTaskRunner* task_runner);
+  void AddFileUpdateObserver(FileSystemType type,
+                             FileUpdateObserver* observer,
+                             base::SequencedTaskRunner* task_runner);
+  void AddFileChangeObserver(FileSystemType type,
+                             FileChangeObserver* observer,
+                             base::SequencedTaskRunner* task_runner);
 
   void set_enable_temporary_file_system_in_incognito(bool enable) {
     enable_temporary_file_system_in_incognito_ = enable;
@@ -227,6 +229,7 @@ class WEBKIT_STORAGE_EXPORT SandboxMountPointProvider
 
   // Observers.
   UpdateObserverList update_observers_;
+  ChangeObserverList change_observers_;
   AccessObserverList access_observers_;
 
   // Observers for syncable file systems.

@@ -20,6 +20,7 @@
 #include "webkit/browser/fileapi/file_system_operation_context.h"
 #include "webkit/browser/fileapi/mock_file_change_observer.h"
 #include "webkit/browser/fileapi/sandbox_file_system_test_helper.h"
+#include "webkit/browser/fileapi/sandbox_mount_point_provider.h"
 #include "webkit/browser/quota/mock_quota_manager.h"
 #include "webkit/browser/quota/quota_manager.h"
 #include "webkit/common/blob/shareable_file_reference.h"
@@ -66,6 +67,10 @@ class LocalFileSystemOperationTest
         quota_manager(),
         base::MessageLoopProxy::current());
     sandbox_file_system_.SetUp(base_dir, quota_manager_proxy_.get());
+    sandbox_file_system_.file_system_context()->sandbox_provider()->
+        AddFileChangeObserver(sandbox_file_system_.type(),
+                              &change_observer_,
+                              NULL);
   }
 
   virtual void TearDown() OVERRIDE {
@@ -77,9 +82,7 @@ class LocalFileSystemOperationTest
   }
 
   LocalFileSystemOperation* NewOperation() {
-    LocalFileSystemOperation* operation = sandbox_file_system_.NewOperation();
-    operation->operation_context()->set_change_observers(change_observers());
-    return operation;
+    return sandbox_file_system_.NewOperation();
   }
 
   int status() const { return status_; }
@@ -104,10 +107,6 @@ class LocalFileSystemOperationTest
 
  FileSystemFileUtil* file_util() {
     return sandbox_file_system_.file_util();
-  }
-
- const ChangeObserverList& change_observers() const {
-    return change_observers_;
   }
 
   MockFileChangeObserver* change_observer() {
@@ -567,7 +566,7 @@ TEST_F(LocalFileSystemOperationTest, TestCopySuccessSrcDirAndOverwrite) {
   // Make sure we've overwritten but not copied the source under the |dest_dir|.
   EXPECT_TRUE(DirectoryExists("dest"));
   EXPECT_FALSE(DirectoryExists("dest/src"));
-  EXPECT_EQ(3, quota_manager_proxy()->notify_storage_accessed_count());
+  EXPECT_GE(quota_manager_proxy()->notify_storage_accessed_count(), 3);
 
   EXPECT_EQ(1, change_observer()->get_and_reset_remove_directory_count());
   EXPECT_EQ(1, change_observer()->get_and_reset_create_directory_count());
@@ -582,7 +581,7 @@ TEST_F(LocalFileSystemOperationTest, TestCopySuccessSrcDirAndNew) {
   base::MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(base::PLATFORM_FILE_OK, status());
   EXPECT_TRUE(DirectoryExists("dest"));
-  EXPECT_EQ(2, quota_manager_proxy()->notify_storage_accessed_count());
+  EXPECT_GE(quota_manager_proxy()->notify_storage_accessed_count(), 2);
 
   EXPECT_EQ(1, change_observer()->get_and_reset_create_directory_count());
   EXPECT_TRUE(change_observer()->HasNoChange());

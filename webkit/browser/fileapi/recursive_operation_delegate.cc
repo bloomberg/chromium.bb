@@ -35,8 +35,10 @@ void RecursiveOperationDelegate::StartRecursiveOperation(
   ProcessNextDirectory();
 }
 
-LocalFileSystemOperation* RecursiveOperationDelegate::NewNestedOperation() {
-  return operation_->CreateNestedOperation();
+LocalFileSystemOperation* RecursiveOperationDelegate::NewOperation(
+    const FileSystemURL& url) {
+  return file_system_context_->CreateFileSystemOperation(
+      url, NULL)->AsLocalFileSystemOperation();
 }
 
 void RecursiveOperationDelegate::ProcessNextDirectory() {
@@ -91,7 +93,7 @@ void RecursiveOperationDelegate::DidProcessDirectory(
     callback_.Run(error);
     return;
   }
-  NewNestedOperation()->ReadDirectory(
+  NewOperation(url)->ReadDirectory(
       url, base::Bind(&RecursiveOperationDelegate::DidReadDirectory,
                       AsWeakPtr(), url));
 }

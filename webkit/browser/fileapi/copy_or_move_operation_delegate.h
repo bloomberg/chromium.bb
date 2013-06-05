@@ -87,22 +87,6 @@ class CopyOrMoveOperationDelegate
 
   FileSystemURL CreateDestURL(const FileSystemURL& src_url) const;
 
-  // Create nested operations for recursive task.
-  // When the creation fails it fires callback_ with the
-  // error code and returns NULL.
-  //
-  // - NewDestOperation is basically a thin wrapper of
-  //   RecursiveOperationDelegate::NewOperation().
-  // - NewSourceOperation also redirects the request to
-  //   RecursiveOperationDelegate::NewOperation() **iff** same_file_system_
-  //   is true.
-  //   Otherwise it's for cross-filesystem operation and it needs a
-  //   separate FileSystemOperationContext, so it creates a new operation
-  //   which inherits context from src_root_operation_.
-  //
-  LocalFileSystemOperation* NewDestOperation();
-  LocalFileSystemOperation* NewSourceOperation();
-
   FileSystemURL src_root_;
   FileSystemURL dest_root_;
   bool same_file_system_;
