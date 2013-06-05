@@ -39,11 +39,11 @@
 #include "chrome/browser/ui/webui/options/managed_user_learn_more_handler.h"
 #include "chrome/browser/ui/webui/options/media_devices_selection_handler.h"
 #include "chrome/browser/ui/webui/options/media_galleries_handler.h"
-#include "chrome/browser/ui/webui/options/options_sync_setup_handler.h"
 #include "chrome/browser/ui/webui/options/password_manager_handler.h"
 #include "chrome/browser/ui/webui/options/reset_profile_settings_handler.h"
 #include "chrome/browser/ui/webui/options/search_engine_manager_handler.h"
 #include "chrome/browser/ui/webui/options/startup_pages_handler.h"
+#include "chrome/browser/ui/webui/sync_setup_handler.h"
 #include "chrome/browser/ui/webui/theme_source.h"
 #include "chrome/common/time_format.h"
 #include "chrome/common/url_constants.h"
@@ -277,7 +277,7 @@ OptionsUI::OptionsUI(content::WebUI* web_ui)
   AddOptionsPageUIHandler(localized_strings, new SearchEngineManagerHandler());
   AddOptionsPageUIHandler(localized_strings, new ImportDataHandler());
   AddOptionsPageUIHandler(localized_strings, new StartupPagesHandler());
-  AddOptionsPageUIHandler(localized_strings, new OptionsSyncSetupHandler(
+  AddOptionsPageUIHandler(localized_strings, new SyncSetupHandler(
       g_browser_process->profile_manager()));
 #if defined(OS_CHROMEOS)
   AddOptionsPageUIHandler(localized_strings,

@@ -1150,6 +1150,14 @@ void SyncSetupHandler::HandleCloseTimeout(const ListValue* args) {
 }
 
 void SyncSetupHandler::CloseSyncSetup() {
+  // Stop a timer to handle timeout in waiting for checking network connection.
+  backend_start_timer_.reset();
+
+  // Clear the signin tracker before canceling sync setup, as it may incorrectly
+  // flag a signin failure.
+  bool was_signing_in = (signin_tracker_.get() != NULL);
+  signin_tracker_.reset();
+
   // TODO(atwilson): Move UMA tracking of signin events out of sync module.
   ProfileSyncService* sync_service = GetSyncService();
   if (IsActiveLogin()) {
@@ -1157,7 +1165,8 @@ void SyncSetupHandler::CloseSyncSetup() {
     // automatically closed due to an auth error.
     if (!sync_service || (!sync_service->HasSyncSetupCompleted() &&
         sync_service->GetAuthError().state() == GoogleServiceAuthError::NONE)) {
-      if (signin_tracker_.get()) {
+      if (was_signing_in) {
+        // TODO(rsimha): Remove this. Sync should not be logging sign in events.
         ProfileSyncService::SyncEvent(
             ProfileSyncService::CANCEL_DURING_SIGNON);
       } else if (configuring_sync_) {
@@ -1203,10 +1212,6 @@ void SyncSetupHandler::CloseSyncSetup() {
 #endif
 
   configuring_sync_ = false;
-  signin_tracker_.reset();
-
-  // Stop a timer to handle timeout in waiting for checking network connection.
-  backend_start_timer_.reset();
 }
 
 void SyncSetupHandler::OpenSyncSetup() {
@@ -1233,8 +1238,6 @@ void SyncSetupHandler::OpenSyncSetup() {
     // User is not logged in, or login has been specially requested - need to
     // display login UI (cases 1-3).
     DisplayGaiaLogin(false);
-    if (!SyncPromoUI::UseWebBasedSigninFlow())
-      ShowSetupUI();
     return;
   }
 #endif
@@ -1249,7 +1252,6 @@ void SyncSetupHandler::OpenSyncSetup() {
   // via the "Advanced..." button or through One-Click signin (cases 4-6), or
   // they are re-enabling sync after having disabled it (case 7).
   DisplayConfigureSync(true, false);
-  ShowSetupUI();
 }
 
 void SyncSetupHandler::OpenConfigureSync() {
@@ -1257,7 +1259,6 @@ void SyncSetupHandler::OpenConfigureSync() {
     return;
 
   DisplayConfigureSync(true, false);
-  ShowSetupUI();
 }
 
 void SyncSetupHandler::FocusUI() {

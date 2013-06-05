@@ -189,9 +189,6 @@ void SyncPromoHandler::Observe(int type,
   }
 }
 
-void SyncPromoHandler::ShowSetupUI() {
-}
-
 void SyncPromoHandler::HandleCloseSyncPromo(const base::ListValue* args) {
   CloseSyncSetup();
 

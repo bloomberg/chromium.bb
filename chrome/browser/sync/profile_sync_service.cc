@@ -1404,13 +1404,13 @@ bool ProfileSyncService::FirstSetupInProgress() const {
 }
 
 void ProfileSyncService::SetSetupInProgress(bool setup_in_progress) {
-  bool was_in_progress = setup_in_progress_;
+  // This method is a no-op if |setup_in_progress_| remains unchanged.
+  if (setup_in_progress_ == setup_in_progress)
+    return;
+
   setup_in_progress_ = setup_in_progress;
-  if (!setup_in_progress && was_in_progress) {
-    if (sync_initialized()) {
-      ReconfigureDatatypeManager();
-    }
-  }
+  if (!setup_in_progress && sync_initialized())
+    ReconfigureDatatypeManager();
   NotifyObservers();
 }
 

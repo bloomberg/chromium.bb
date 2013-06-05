@@ -309,7 +309,6 @@ class TestingSyncSetupHandler : public SyncSetupHandler {
     set_web_ui(NULL);
   }
 
-  virtual void ShowSetupUI() OVERRIDE {}
   virtual void FocusUI() OVERRIDE {}
 
   virtual Profile* GetProfile() const OVERRIDE { return profile_; }

@@ -41,8 +41,6 @@ class SyncPromoHandler : public SyncSetupHandler {
   virtual void CloseUI() OVERRIDE;
 
  protected:
-  virtual void ShowSetupUI() OVERRIDE;
-
   virtual void RecordSignin() OVERRIDE;
 
  private:

@@ -97,10 +97,6 @@ class SyncSetupHandler : public options::OptionsPageUIHandler,
   bool is_configuring_sync() const { return configuring_sync_; }
   bool have_signin_tracker() const { return signin_tracker_; }
 
-  // Subclasses must implement this to show the setup UI that's appropriate
-  // for the page this is contained in.
-  virtual void ShowSetupUI() = 0;
-
   // Overridden by subclasses (like SyncPromoHandler) to log stats about the
   // user's signin activity.
   virtual void RecordSignin();

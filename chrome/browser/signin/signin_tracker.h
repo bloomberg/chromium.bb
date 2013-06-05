@@ -27,9 +27,7 @@ class Profile;
 // the web UI for performing system login and sync configuration. Receives
 // callbacks from the UI when the user wishes to initiate a login, and
 // translates system state (login errors, etc) into the appropriate calls into
-// the UI to reflect this status to the user. Various subclasses
-// (OptionsSyncSetupHandler and SyncPromoHandler provide different UIs to the
-// user, but the core logic lies in the base SyncSetupHandler class).
+// the UI to reflect this status to the user.
 //
 // LoginUIService - Our desktop UI flows rely on having only a single login flow
 // visible to the user at once. This is achieved via LoginUIService

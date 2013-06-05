@@ -2221,8 +2221,6 @@
         'browser/ui/webui/options/media_devices_selection_handler.h',
         'browser/ui/webui/options/media_galleries_handler.cc',
         'browser/ui/webui/options/media_galleries_handler.h',
-        'browser/ui/webui/options/options_sync_setup_handler.cc',
-        'browser/ui/webui/options/options_sync_setup_handler.h',
         'browser/ui/webui/options/options_ui.cc',
         'browser/ui/webui/options/options_ui.h',
         'browser/ui/webui/options/password_manager_handler.cc',
