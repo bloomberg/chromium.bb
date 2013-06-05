@@ -25,7 +25,6 @@
 
 [
     NoInterfaceObject,
-    Conditional=WEBGL,
     DoNotCheckConstants
 ] interface WebGLCompressedTextureATC {
     /* Compressed Texture Formats */

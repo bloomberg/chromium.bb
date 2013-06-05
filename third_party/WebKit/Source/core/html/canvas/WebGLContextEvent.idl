@@ -24,7 +24,6 @@
  */
 
 [
-    Conditional=WEBGL,
     ConstructorTemplate=Event
 ] interface WebGLContextEvent : Event {
     [InitializedByEventConstructor] readonly attribute DOMString statusMessage;

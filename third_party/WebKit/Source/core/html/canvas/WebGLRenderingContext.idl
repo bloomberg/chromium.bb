@@ -39,7 +39,6 @@ typedef /*unrestricted*/ float GLfloat;
 typedef /*unrestricted*/ float GLclampf;
 
 [
-    Conditional=WEBGL,
     DoNotCheckConstants
 ] interface WebGLRenderingContext : CanvasRenderingContext {
 

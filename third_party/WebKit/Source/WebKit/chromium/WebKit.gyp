@@ -698,6 +698,12 @@
                     'include_dirs': [
                         'public/mac',
                     ],
+                    'link_settings': {
+                        'libraries': [
+                            '$(SDKROOT)/System/Library/Frameworks/Accelerate.framework',
+                            '$(SDKROOT)/System/Library/Frameworks/OpenGL.framework',
+                        ],
+                    },
                 }, { # else: OS!="mac"
                     'sources/': [
                         ['exclude', '/mac/'],
@@ -713,18 +719,6 @@
                         # FIXME: Turn on warnings on Windows.
                         'chromium_code': 1,
                     }
-                }],
-                ['"ENABLE_WEBGL=1" in feature_defines', {
-                    'conditions': [
-                        ['OS=="mac"', {
-                            'link_settings': {
-                                'libraries': [
-                                    '$(SDKROOT)/System/Library/Frameworks/Accelerate.framework',
-                                    '$(SDKROOT)/System/Library/Frameworks/OpenGL.framework',
-                                ],
-                            },
-                        }],
-                    ],
                 }],
                 ['use_default_render_theme==1', {
                     'include_dirs': [

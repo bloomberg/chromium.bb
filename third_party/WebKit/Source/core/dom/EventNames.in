@@ -41,7 +41,7 @@ core/page/SpeechInputEvent conditional=INPUT_SPEECH
 modules/speech/SpeechRecognitionError
 modules/speech/SpeechRecognitionEvent
 modules/speech/SpeechSynthesisEvent
-core/html/canvas/WebGLContextEvent conditional=WEBGL
+core/html/canvas/WebGLContextEvent
 core/storage/StorageEvent
 core/svg/SVGEvents interfaceName=Event
 core/svg/SVGZoomEvent
