@@ -84,9 +84,19 @@ var dataConversionConfig = {
 var statsNameBlackList = {
   'ssrc': true,
   'googTrackId': true,
+  'googComponent': true,
+  'googLocalAddress': true,
+  'googRemoteAddress': true,
 };
 
 var graphViews = {};
+
+// Returns number parsed from |value|, or NaN if the stats name is black-listed.
+function getNumberFromValue(name, value) {
+  if (statsNameBlackList[name])
+    return NaN;
+  return parseFloat(value);
+}
 
 // Adds the stats report |report| to the timeline graph for the given
 // |peerConnectionElement|.
@@ -99,13 +109,16 @@ function drawSingleReport(peerConnectionElement, report) {
 
   for (var i = 0; i < stats.values.length - 1; i = i + 2) {
     var rawLabel = stats.values[i];
-    if (statsNameBlackList[rawLabel])
-      continue;
-    var rawValue = parseFloat(stats.values[i + 1]);
-    if (isNaN(rawValue))
-      continue;
-
     var rawDataSeriesId = reportId + '-' + rawLabel;
+    var rawValue = getNumberFromValue(rawLabel, stats.values[i + 1]);
+    if (isNaN(rawValue)) {
+      // We do not draw non-numerical values, but still want to record it in the
+      // data series.
+      addDataSeriesPoint(peerConnectionElement,
+                         rawDataSeriesId, stats.timestamp,
+                         rawLabel, stats.values[i + 1]);
+      continue;
+    }
 
     var finalDataSeriesId = rawDataSeriesId;
     var finalLabel = rawLabel;

@@ -54,7 +54,7 @@ var DumpCreator = (function() {
     var content = document.createElement('pre');
     this.root_.appendChild(content);
 
-    content.innerHTML = '<button></button> Status: <span></span>' +
+    content.innerHTML = '<button disabled></button> Status: <span></span>' +
         '<div><form><button>' +
         'Download the PeerConnection updates and stats data' +
         '</button></form></div>';
