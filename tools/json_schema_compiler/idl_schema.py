@@ -146,6 +146,8 @@ class Dictionary(object):
               'type': 'object'}
     if self.node.GetProperty('inline_doc'):
       result['inline_doc'] = True
+    elif self.node.GetProperty('noinline_doc'):
+      result['noinline_doc'] = True
     return result
 
 

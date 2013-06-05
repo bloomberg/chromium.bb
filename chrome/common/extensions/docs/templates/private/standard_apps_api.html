@@ -6,7 +6,7 @@
     {{+partials.title}}
   </head>
   <body>
-    {{+partials.header_body title:apps_title platform:app}}
+    {{+partials.header_body title:strings.apps_title platform:strings.app}}
     <div id="gc-container">
       {{+partials.sidenav items:sidenavs.apps}}
       <div id="gc-pagecontent">
@@ -19,19 +19,19 @@
                                       has_toc:true
                                       api:api
                                       samples_list:api.samples.apps
-                                      title:apps_title}}
+                                      title:strings.apps_title}}
         {{:intro.apps_toc}}
         {{+partials.table_of_contents has_toc:false
                                       api:api
                                       samples_list:api.samples.apps
-                                      title:apps_title}}
+                                      title:strings.apps_title}}
         {{/intro.apps_toc}}
 {{- This is unindented because it contains <pre> tags -}}
 {{?intro}}
 {{+intro is_apps:true}}
 {{/intro}}
         {{+partials.api_reference samples_list:api.samples.apps
-                                  title:apps_title}}
+                                  title:strings.apps_title}}
       </div>
     </div>
   </body>

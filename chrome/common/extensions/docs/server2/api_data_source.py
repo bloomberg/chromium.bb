@@ -35,7 +35,7 @@ def _DetectInlineableTypes(schema):
   if not schema.get('types'):
     return
 
-  banned = frozenset(('value', 'choices', 'items', 'returns'))
+  ignore = frozenset(('value', 'choices'))
   refcounts = defaultdict(int)
   # Use an explicit stack instead of recursion.
   stack = [schema]
@@ -47,10 +47,10 @@ def _DetectInlineableTypes(schema):
     elif isinstance(node, Mapping):
       if '$ref' in node:
         refcounts[node['$ref']] += 1
-      stack.extend(v for k, v in node.iteritems() if k not in banned)
+      stack.extend(v for k, v in node.iteritems() if k not in ignore)
 
   for type_ in schema['types']:
-    if not 'enum' in type_:
+    if not 'noinline_doc' in type_:
       if refcounts[type_['id']] == 1:
         type_['inline_doc'] = True
 

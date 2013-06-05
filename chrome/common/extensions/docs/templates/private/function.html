@@ -1,6 +1,6 @@
 <div>
   <h4 id="{{id}}">{{name}}</h4>
-  <div class="summary{{^returns}} lower{{/}}">
+  <div class="summary{{^returns}} uncapitalize{{/}}">
     <span>{{?returns}}{{+partials.variable_type}} {{/}}{{?parent_name}}{{parent_name}}{{:}}chrome.{{api.name}}{{/}}.{{name}}</span>({{#parameters}}{{+partials.parameter_item}}{{^last}}, {{/}}{{/}})
   </div>
   <div class="description">
@@ -20,5 +20,9 @@
     {{?callback}}
       {{+partials.callback}}
     {{/callback}}
+    {{?returns.is_object}}
+      <h4>Properties of return type</h4>
+      {{+partials.type @:returns api:api}}
+    {{/returns.is_object}}
   </div>
 </div>

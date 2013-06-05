@@ -1,35 +1,41 @@
 <div>
-  <h3 id="{{id}}">{{name}}</h3>
+  {{?display_name}}
+  <h3 id="{{id}}">{{display_name}}</h3>
+  {{/display_name}}
   <div>
-    {{^is_object}}<dd>
+    {{^is_object}}
+    {{?enum_values}}
+    <dd>enum of
+      {{#enum_values}}
+      {{?last}}or {{/}}<code>"{{name}}"</code>{{^last}}, {{/}}
+      {{/enum_values}}
+    </dd>
+    {{:enum_values}}
+    <dd>
       {{+partials.variable_type}}
-    </dd>{{/is_object}}
-    {{?description}}<dd>
-      {{{description}}}
-    </dd>{{/description}}
+    </dd>
+    {{/enum_values}}
+    {{/is_object}}
+    {{?description}}
+    <dd>{{{description}}}</dd>
+    {{/description}}
     {{?properties}}
-    <h4 id="{{type.name}}-properties">
-      Properties of <a href="#type-{{type.name}}">{{type.name}}</a>
-    </h4>
-    <dd><dl>{{#properties}}
-      {{+partials.parameter_full}}
-    {{/}}</dl></dd>
+      {{+partials.type_item title:strings.properties
+                            display_name:display_name
+                            items:properties
+                            item_partial:partials.parameter_full}}
     {{/properties}}
     {{?functions}}
-    <h4 id="{{type.name}}-methods">
-      Methods of <a href="#type-{{type.name}}">{{type.name}}</a>
-    </h4>
-    <dd><dl>{{#functions}}
-      {{+partials.function api:api}}
-    {{/}}</dl></dd>
+      {{+partials.type_item title:strings.functions
+                            display_name:display_name
+                            items:functions
+                            item_partial:partials.function}}
     {{/functions}}
     {{?events}}
-    <h4 id="{{type.name}}-events">
-      Events of <a href="#type-{{type.name}}">{{type.name}}</a>
-    </h4>
-    <dd><dl>{{#events}}
-      {{+partials.event api:api}}
-    {{/}}</dl></dd>
+      {{+partials.type_item title:strings.events
+                            display_name:display_name
+                            items:events
+                            item_partial:partials.event}}
     {{/events}}
   </div>
 </div>

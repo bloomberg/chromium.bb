@@ -5,7 +5,7 @@
     <title>{{article.title}} - Google Chrome</title>
   </head>
   <body>
-    {{+partials.header_body title:extensions_title platform:extension}}
+    {{+partials.header_body title:strings.extensions_title platform:strings.extension}}
     <div id="gc-container">
       {{+partials.sidenav items:sidenavs.extensions}}
       <div id="gc-pagecontent">
@@ -13,7 +13,7 @@
         {{?article.extensions_toc}}
         {{+partials.table_of_contents toc_items:article.extensions_toc
                                       has_toc:true
-                                      title:extensions_title}}
+                                      title:strings.extensions_title}}
         {{/article.extensions_toc}}
 {{- This may contain <pre> tags so it is not indented -}}
 {{+article.intro is_apps:false}}

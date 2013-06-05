@@ -1,0 +1,10 @@
+{{?display_name}}
+<h4 id="{{display_name}}-{{title}}" class="capitalize">
+  {{title}} of <a href="#type-{{display_name}}">{{display_name}}</a>
+</h4>
+{{/display_name}}
+<dd>
+  <dl>
+    {{#items +item_partial /}}
+  </dl>
+</dd>

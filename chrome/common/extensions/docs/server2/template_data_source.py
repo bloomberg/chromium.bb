@@ -3,16 +3,24 @@
 # found in the LICENSE file.
 
 import logging
-import os
 
 from branch_utility import BranchUtility
-import compiled_file_system as compiled_fs
 from docs_server_utils import FormatKey
 from file_system import FileNotFoundError
 from third_party.handlebar import Handlebar
 import url_constants
 
-EXTENSIONS_URL = '/chrome/extensions'
+_EXTENSIONS_URL = '/chrome/extensions'
+
+_STRING_CONSTANTS = {
+  'app': 'app',
+  'apps_title': 'Apps',
+  'extension': 'extension',
+  'extensions_title': 'Extensions',
+  'events': 'events',
+  'functions': 'functions',
+  'properties': 'properties',
+  }
 
 def _MakeChannelDict(channel_name):
   channel_dict = {
@@ -123,10 +131,6 @@ class TemplateDataSource(object):
       'partials': self,
       'samples': self._samples_data_source,
       'static': self._static_resources,
-      'app': 'app',
-      'extension': 'extension',
-      'apps_title': 'Apps',
-      'extensions_title': 'Extensions',
       'apps_samples_url': url_constants.GITHUB_BASE,
       # TODO(kalman): this is wrong, it's always getting from trunk, but meh
       # it hardly ever shows up (only in the "cannot fetch samples" message).
@@ -134,6 +138,7 @@ class TemplateDataSource(object):
       # being persisent. In any case, when the channel distinctions are gone
       # this can go away, so, double meh.
       'extensions_samples_url': url_constants.EXTENSIONS_SAMPLES,
+      'strings': _STRING_CONSTANTS,
       'true': True,
       'false': False
     })
