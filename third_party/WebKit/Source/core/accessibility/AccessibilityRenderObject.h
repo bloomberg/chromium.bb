@@ -67,9 +67,6 @@ public:
     virtual RenderObject* renderer() const { return m_renderer; }
     virtual LayoutRect elementRect() const;
 
-    // DEPRECATED - investigate and remove.
-    virtual int layoutCount() const;
-
     void setRenderer(RenderObject*);
     RenderBoxModelObject* renderBoxModelObject() const;
     RenderView* topRenderer() const;

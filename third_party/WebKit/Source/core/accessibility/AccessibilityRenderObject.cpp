@@ -256,13 +256,6 @@ LayoutRect AccessibilityRenderObject::elementRect() const
     return m_cachedElementRect;
 }
 
-int AccessibilityRenderObject::layoutCount() const
-{
-    if (!m_renderer->isRenderView())
-        return 0;
-    return toRenderView(m_renderer)->frameView()->layoutCount();
-}
-
 void AccessibilityRenderObject::setRenderer(RenderObject* renderer)
 {
     m_renderer = renderer;
