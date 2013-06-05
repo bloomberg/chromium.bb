@@ -20,6 +20,7 @@
 #include "content/renderer/rendering_benchmark.h"
 #include "content/renderer/skia_benchmarking_extension.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebImageCache.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebViewBenchmarkSupport.h"
 #include "third_party/skia/include/core/SkData.h"
@@ -33,6 +34,7 @@
 
 using WebKit::WebCanvas;
 using WebKit::WebFrame;
+using WebKit::WebImageCache;
 using WebKit::WebPrivatePtr;
 using WebKit::WebRenderingStatsImpl;
 using WebKit::WebSize;
@@ -174,6 +176,10 @@ class GpuBenchmarkingWrapper : public v8::Extension {
           "chrome.gpuBenchmarking.beginWindowSnapshotPNG = function(callback) {"
           "  native function BeginWindowSnapshotPNG();"
           "  BeginWindowSnapshotPNG(callback);"
+          "};"
+          "chrome.gpuBenchmarking.clearImageCache = function() {"
+          "  native function ClearImageCache();"
+          "  ClearImageCache();"
           "};") {}
 
   virtual v8::Handle<v8::FunctionTemplate> GetNativeFunction(
@@ -192,6 +198,8 @@ class GpuBenchmarkingWrapper : public v8::Extension {
       return v8::FunctionTemplate::New(RunRenderingBenchmarks);
     if (name->Equals(v8::String::New("BeginWindowSnapshotPNG")))
       return v8::FunctionTemplate::New(BeginWindowSnapshotPNG);
+    if (name->Equals(v8::String::New("ClearImageCache")))
+      return v8::FunctionTemplate::New(ClearImageCache);
 
     return v8::Handle<v8::FunctionTemplate>();
   }
@@ -515,6 +523,13 @@ class GpuBenchmarkingWrapper : public v8::Extension {
 
     render_view_impl->GetWindowSnapshot(
         base::Bind(&OnSnapshotCompleted, callback, context));
+
+    return v8::Undefined();
+  }
+
+  static v8::Handle<v8::Value> ClearImageCache(
+      const v8::Arguments& args) {
+    WebImageCache::clear();
 
     return v8::Undefined();
   }
