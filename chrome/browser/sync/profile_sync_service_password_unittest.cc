@@ -238,7 +238,7 @@ class ProfileSyncServicePasswordTest : public AbstractProfileSyncServiceTest {
         EXPECT_CALL(*components, CreatePasswordSyncComponents(_, _, _))
             .Times(0);
       }
-      EXPECT_CALL(*components, CreateDataTypeManager(_, _, _, _, _)).
+      EXPECT_CALL(*components, CreateDataTypeManager(_, _, _, _, _, _)).
           WillOnce(ReturnNewDataTypeManager());
 
       // We need tokens to get the tests going
@@ -371,7 +371,7 @@ TEST_F(ProfileSyncServicePasswordTest, MAYBE_FailPasswordStoreLoad) {
   StartSyncService(base::Closure(), base::Closure());
   EXPECT_FALSE(sync_service_->HasUnrecoverableError());
   syncer::ModelTypeSet failed_types =
-      sync_service_->failed_datatypes_handler().GetFailedTypes();
+      sync_service_->failed_data_types_handler().GetFailedTypes();
   EXPECT_TRUE(failed_types.Equals(syncer::ModelTypeSet(syncer::PASSWORDS)));
 }
 

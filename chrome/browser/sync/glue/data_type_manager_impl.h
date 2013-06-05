@@ -18,8 +18,6 @@
 #include "chrome/browser/sync/glue/backend_data_type_configurer.h"
 #include "chrome/browser/sync/glue/model_association_manager.h"
 
-class FailedDatatypesHandler;
-
 namespace syncer {
 class DataTypeDebugInfoListener;
 template <typename T> class WeakHandle;
@@ -28,7 +26,9 @@ template <typename T> class WeakHandle;
 namespace browser_sync {
 
 class DataTypeController;
+class DataTypeEncryptionHandler;
 class DataTypeManagerObserver;
+class FailedDataTypesHandler;
 
 // List of data types grouped by priority and ordered from high priority to
 // low priority.
@@ -40,19 +40,20 @@ class DataTypeManagerImpl : public DataTypeManager,
   DataTypeManagerImpl(
       const syncer::WeakHandle<syncer::DataTypeDebugInfoListener>&
           debug_info_listener,
-      BackendDataTypeConfigurer* configurer,
       const DataTypeController::TypeMap* controllers,
+      const DataTypeEncryptionHandler* encryption_handler,
+      BackendDataTypeConfigurer* configurer,
       DataTypeManagerObserver* observer,
-      const FailedDatatypesHandler* failed_datatypes_handler);
+      FailedDataTypesHandler* failed_data_types_handler);
   virtual ~DataTypeManagerImpl();
 
   // DataTypeManager interface.
-  virtual void Configure(TypeSet desired_types,
+  virtual void Configure(syncer::ModelTypeSet desired_types,
                          syncer::ConfigureReason reason) OVERRIDE;
 
   // Needed only for backend migration.
   virtual void PurgeForMigration(
-      TypeSet undesired_types,
+      syncer::ModelTypeSet undesired_types,
       syncer::ConfigureReason reason) OVERRIDE;
 
   virtual void Stop() OVERRIDE;
@@ -103,7 +104,8 @@ class DataTypeManagerImpl : public DataTypeManager,
   // Restart().
   void AddToConfigureTime();
 
-  void ConfigureImpl(TypeSet desired_types, syncer::ConfigureReason reason);
+  void ConfigureImpl(syncer::ModelTypeSet desired_types,
+                     syncer::ConfigureReason reason);
 
   BackendDataTypeConfigurer::DataTypeConfigStateMap
   BuildDataTypeConfigStateMap(
@@ -121,7 +123,7 @@ class DataTypeManagerImpl : public DataTypeManager,
   const DataTypeController::TypeMap* controllers_;
   State state_;
   std::map<syncer::ModelType, int> start_order_;
-  TypeSet last_requested_types_;
+  syncer::ModelTypeSet last_requested_types_;
 
   // Whether an attempt to reconfigure was made while we were busy configuring.
   // The |last_requested_types_| will reflect the newest set of requested types.
@@ -145,6 +147,7 @@ class DataTypeManagerImpl : public DataTypeManager,
   const syncer::WeakHandle<syncer::DataTypeDebugInfoListener>
       debug_info_listener_;
 
+  // The manager that handles the model association of the individual types.
   ModelAssociationManager model_association_manager_;
 
   // DataTypeManager must have only one observer -- the ProfileSyncService that
@@ -153,7 +156,7 @@ class DataTypeManagerImpl : public DataTypeManager,
 
   // For querying failed data types (having unrecoverable error) when
   // configuring backend.
-  const FailedDatatypesHandler* failed_datatypes_handler_;
+  browser_sync::FailedDataTypesHandler* failed_data_types_handler_;
 
   // Types waiting to be downloaded.
   TypeSetPriorityList download_types_queue_;

@@ -15,6 +15,8 @@
 namespace browser_sync {
 class AssociatorInterface;
 class ChangeProcessor;
+class DataTypeEncryptionHandler;
+class FailedDataTypesHandler;
 }
 
 class ProfileSyncComponentsFactoryMock : public ProfileSyncComponentsFactory {
@@ -26,13 +28,15 @@ class ProfileSyncComponentsFactoryMock : public ProfileSyncComponentsFactory {
   virtual ~ProfileSyncComponentsFactoryMock();
 
   MOCK_METHOD1(RegisterDataTypes, void(ProfileSyncService*));
-  MOCK_METHOD5(CreateDataTypeManager,
+  MOCK_METHOD6(CreateDataTypeManager,
                browser_sync::DataTypeManager*(
                    const syncer::WeakHandle<syncer::DataTypeDebugInfoListener>&,
-                   browser_sync::SyncBackendHost*,
                    const browser_sync::DataTypeController::TypeMap*,
+                   const browser_sync::DataTypeEncryptionHandler*,
+                   browser_sync::SyncBackendHost*,
                    browser_sync::DataTypeManagerObserver* observer,
-                   const FailedDatatypesHandler* failed_datatypes_handler));
+                   browser_sync::FailedDataTypesHandler*
+                       failed_datatypes_handler));
   MOCK_METHOD4(CreateGenericChangeProcessor,
       browser_sync::GenericChangeProcessor*(
           ProfileSyncService* profile_sync_service,

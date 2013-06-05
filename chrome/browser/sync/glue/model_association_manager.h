@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_SYNC_GLUE_MODEL_ASSOCIATION_MANAGER_H__
 #define CHROME_BROWSER_SYNC_GLUE_MODEL_ASSOCIATION_MANAGER_H__
 
-#include <list>
+#include <map>
 
 #include "base/memory/weak_ptr.h"
 #include "base/timer.h"
@@ -130,7 +130,11 @@ class ModelAssociationManager {
   // Data types currently being associated.
   syncer::ModelTypeSet associating_types_;
 
-  std::list<syncer::SyncError> failed_datatypes_info_;
+  // Collects the list of errors resulting from failing to start a type. This
+  // would eventually be sent to the listeners after all the types have
+  // been given a chance to start.
+  std::map<syncer::ModelType, syncer::SyncError> failed_data_types_info_;
+
   std::map<syncer::ModelType, int> start_order_;
 
   // This illustration explains the movement of one DTC through various lists.

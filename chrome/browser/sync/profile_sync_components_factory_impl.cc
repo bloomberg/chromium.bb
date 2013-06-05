@@ -294,15 +294,17 @@ void ProfileSyncComponentsFactoryImpl::RegisterDesktopDataTypes(
 DataTypeManager* ProfileSyncComponentsFactoryImpl::CreateDataTypeManager(
     const syncer::WeakHandle<syncer::DataTypeDebugInfoListener>&
         debug_info_listener,
-    SyncBackendHost* backend,
     const DataTypeController::TypeMap* controllers,
+    const browser_sync::DataTypeEncryptionHandler* encryption_handler,
+    SyncBackendHost* backend,
     DataTypeManagerObserver* observer,
-    const FailedDatatypesHandler* failed_datatypes_handler) {
+    browser_sync::FailedDataTypesHandler* failed_data_types_handler) {
   return new DataTypeManagerImpl(debug_info_listener,
-                                 backend,
                                  controllers,
+                                 encryption_handler,
+                                 backend,
                                  observer,
-                                 failed_datatypes_handler);
+                                 failed_data_types_handler);
 }
 
 browser_sync::GenericChangeProcessor*

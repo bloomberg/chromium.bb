@@ -14,7 +14,6 @@
 #include "sync/internal_api/public/util/unrecoverable_error_handler.h"
 #include "sync/internal_api/public/util/weak_handle.h"
 
-class FailedDatatypesHandler;
 class PasswordStore;
 class ProfileSyncService;
 class WebDataService;
@@ -22,8 +21,10 @@ class WebDataService;
 namespace browser_sync {
 class AssociatorInterface;
 class ChangeProcessor;
+class DataTypeEncryptionHandler;
 class DataTypeManager;
 class DataTypeManagerObserver;
+class FailedDataTypesHandler;
 class GenericChangeProcessor;
 class SharedChangeProcessor;
 class SyncBackendHost;
@@ -75,10 +76,11 @@ class ProfileSyncComponentsFactory {
   virtual browser_sync::DataTypeManager* CreateDataTypeManager(
       const syncer::WeakHandle<syncer::DataTypeDebugInfoListener>&
           debug_info_listener,
-      browser_sync::SyncBackendHost* backend,
       const browser_sync::DataTypeController::TypeMap* controllers,
+      const browser_sync::DataTypeEncryptionHandler* encryption_handler,
+      browser_sync::SyncBackendHost* backend,
       browser_sync::DataTypeManagerObserver* observer,
-      const FailedDatatypesHandler* failed_datatypes_handler) = 0;
+      browser_sync::FailedDataTypesHandler* failed_data_types_handler) = 0;
 
   // Creating this in the factory helps us mock it out in testing.
   virtual browser_sync::GenericChangeProcessor* CreateGenericChangeProcessor(

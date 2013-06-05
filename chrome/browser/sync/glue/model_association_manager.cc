@@ -141,7 +141,7 @@ void ModelAssociationManager::Initialize(syncer::ModelTypeSet desired_types) {
   CHECK_EQ(state_, IDLE);
   needs_start_.clear();
   needs_stop_.clear();
-  failed_datatypes_info_.clear();
+  failed_data_types_info_.clear();
   associating_types_.Clear();
   state_ = INITIALIZED_TO_CONFIGURE;
 
@@ -206,7 +206,7 @@ void ModelAssociationManager::ResetForReconfiguration() {
   DVLOG(1) << "ModelAssociationManager: Reseting for reconfiguration";
   needs_start_.clear();
   needs_stop_.clear();
-  failed_datatypes_info_.clear();
+  failed_data_types_info_.clear();
 }
 
 void ModelAssociationManager::StopDisabledTypes() {
@@ -266,12 +266,12 @@ void ModelAssociationManager::Stop() {
     DVLOG(1) << "ModelAssociationManager: Calling OnModelAssociationDone";
     DataTypeManager::ConfigureResult result(DataTypeManager::ABORTED,
                                             associating_types_,
-                                            failed_datatypes_info_,
+                                            failed_data_types_info_,
                                             syncer::ModelTypeSet());
     result_processor_->OnModelAssociationDone(result);
   }
 
-  failed_datatypes_info_.clear();
+  failed_data_types_info_.clear();
 }
 
 bool ModelAssociationManager::GetControllersNeedingStart(
@@ -303,7 +303,7 @@ bool ModelAssociationManager::GetControllersNeedingStart(
 void ModelAssociationManager::AppendToFailedDatatypesAndLogError(
     DataTypeController::StartResult result,
     const syncer::SyncError& error) {
-  failed_datatypes_info_.push_back(error);
+  failed_data_types_info_[error.type()] = error;
   LOG(ERROR) << "Failed to associate models for "
              << syncer::ModelTypeToString(error.type());
   UMA_HISTOGRAM_ENUMERATION("Sync.ConfigureFailed",
@@ -390,8 +390,8 @@ void ModelAssociationManager::TypeStartCallback(
       break;
   }
 
-  std::list<syncer::SyncError> errors;
-  errors.push_back(local_merge_result.error());
+  std::map<syncer::ModelType, syncer::SyncError> errors;
+  errors[local_merge_result.model_type()] = local_merge_result.error();
 
   // Put our state to idle.
   state_ = IDLE;
@@ -526,7 +526,7 @@ void ModelAssociationManager::StartAssociatingNextType() {
     DataTypeManager::ConfigureResult configure_result(
         DataTypeManager::CONFIGURE_BLOCKED,
         associating_types_,
-        failed_datatypes_info_,
+        failed_data_types_info_,
         syncer::ModelTypeSet());
     state_ = IDLE;
     result_processor_->OnModelAssociationDone(configure_result);
@@ -535,7 +535,7 @@ void ModelAssociationManager::StartAssociatingNextType() {
 
   DataTypeManager::ConfigureStatus configure_status = DataTypeManager::OK;
 
-  if (!failed_datatypes_info_.empty() ||
+  if (!failed_data_types_info_.empty() ||
       !GetTypesWaitingToLoad().Empty()) {
     // We have not configured all types that we have been asked to configure.
     // Either we have failed types or types that have not completed loading
@@ -546,7 +546,7 @@ void ModelAssociationManager::StartAssociatingNextType() {
 
   DataTypeManager::ConfigureResult result(configure_status,
                                           associating_types_,
-                                          failed_datatypes_info_,
+                                          failed_data_types_info_,
                                           GetTypesWaitingToLoad());
   result_processor_->OnModelAssociationDone(result);
   return;

@@ -221,7 +221,7 @@ class ProfileSyncServiceTypedUrlTest : public AbstractProfileSyncServiceTest {
                                               data_type_controller,
                                               &error_handler_,
                                               &model_associator));
-      EXPECT_CALL(*components, CreateDataTypeManager(_, _, _, _, _)).
+      EXPECT_CALL(*components, CreateDataTypeManager(_, _, _, _, _, _)).
           WillOnce(ReturnNewDataTypeManager());
 
       token_service_->IssueAuthTokenForTest(
@@ -908,7 +908,7 @@ TEST_F(ProfileSyncServiceTypedUrlTest, FailWriteToHistoryBackend) {
   // Errors writing to the DB should be recorded, but should not cause an
   // unrecoverable error.
   ASSERT_FALSE(
-      sync_service_->failed_datatypes_handler().GetFailedTypes().Has(
+      sync_service_->failed_data_types_handler().GetFailedTypes().Has(
           syncer::TYPED_URLS));
   // Some calls should have succeeded, so the error percentage should be
   // somewhere > 0 and < 100.
@@ -940,10 +940,10 @@ TEST_F(ProfileSyncServiceTypedUrlTest, FailToGetTypedURLs) {
   // Errors getting typed URLs will cause an unrecoverable error (since we can
   // do *nothing* in that case).
   ASSERT_TRUE(
-      sync_service_->failed_datatypes_handler().GetFailedTypes().Has(
+      sync_service_->failed_data_types_handler().GetFailedTypes().Has(
           syncer::TYPED_URLS));
   ASSERT_EQ(
-      1u, sync_service_->failed_datatypes_handler().GetFailedTypes().Size());
+      1u, sync_service_->failed_data_types_handler().GetFailedTypes().Size());
   // Can't check GetErrorPercentage(), because generating an unrecoverable
   // error will free the model associator.
 }

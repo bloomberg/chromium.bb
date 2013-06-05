@@ -16,10 +16,11 @@
 #include "base/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/stringprintf.h"
-#include "chrome/browser/sync/failed_datatypes_handler.h"
 #include "chrome/browser/sync/glue/chrome_report_unrecoverable_error.h"
 #include "chrome/browser/sync/glue/data_type_controller.h"
+#include "chrome/browser/sync/glue/data_type_encryption_handler.h"
 #include "chrome/browser/sync/glue/data_type_manager_observer.h"
+#include "chrome/browser/sync/glue/failed_data_types_handler.h"
 #include "content/public/browser/browser_thread.h"
 #include "sync/internal_api/public/data_type_debug_info_listener.h"
 
@@ -33,10 +34,11 @@ DataTypeManagerImpl::AssociationTypesInfo::~AssociationTypesInfo() {}
 DataTypeManagerImpl::DataTypeManagerImpl(
     const syncer::WeakHandle<syncer::DataTypeDebugInfoListener>&
         debug_info_listener,
-    BackendDataTypeConfigurer* configurer,
     const DataTypeController::TypeMap* controllers,
+    const browser_sync::DataTypeEncryptionHandler* encryption_handler,
+    BackendDataTypeConfigurer* configurer,
     DataTypeManagerObserver* observer,
-    const FailedDatatypesHandler* failed_datatypes_handler)
+    browser_sync::FailedDataTypesHandler* failed_data_types_handler)
     : configurer_(configurer),
       controllers_(controllers),
       state_(DataTypeManager::STOPPED),
@@ -46,28 +48,29 @@ DataTypeManagerImpl::DataTypeManagerImpl(
       debug_info_listener_(debug_info_listener),
       model_association_manager_(controllers, this),
       observer_(observer),
-      failed_datatypes_handler_(failed_datatypes_handler) {
+      failed_data_types_handler_(failed_data_types_handler) {
   DCHECK(configurer_);
   DCHECK(observer_);
 }
 
 DataTypeManagerImpl::~DataTypeManagerImpl() {}
 
-void DataTypeManagerImpl::Configure(TypeSet desired_types,
+void DataTypeManagerImpl::Configure(syncer::ModelTypeSet desired_types,
                                     syncer::ConfigureReason reason) {
   desired_types.PutAll(syncer::ControlTypes());
   ConfigureImpl(desired_types, reason);
 }
 
 void DataTypeManagerImpl::PurgeForMigration(
-    TypeSet undesired_types,
+    syncer::ModelTypeSet undesired_types,
     syncer::ConfigureReason reason) {
-  TypeSet remainder = Difference(last_requested_types_, undesired_types);
+  syncer::ModelTypeSet remainder = Difference(last_requested_types_,
+                                              undesired_types);
   ConfigureImpl(remainder, reason);
 }
 
 void DataTypeManagerImpl::ConfigureImpl(
-    TypeSet desired_types,
+    syncer::ModelTypeSet desired_types,
     syncer::ConfigureReason reason) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK_NE(reason, syncer::CONFIGURE_REASON_UNKNOWN);
@@ -108,7 +111,7 @@ DataTypeManagerImpl::BuildDataTypeConfigStateMap(
   // 1. Add last_requested_types_ as CONFIGURE_INACTIVE.
   // 2. Flip |types_being_configured| to CONFIGURE_ACTIVE.
   // 3. Set other types as DISABLED.
-  // 4. Overwrite state of failed types according to failed_datatypes_handler_.
+  // 4. Overwrite state of failed types according to failed_data_types_handler_.
   BackendDataTypeConfigurer::DataTypeConfigStateMap config_state_map;
   BackendDataTypeConfigurer::SetDataTypesState(
       BackendDataTypeConfigurer::CONFIGURE_INACTIVE, last_requested_types_,
@@ -124,10 +127,10 @@ DataTypeManagerImpl::BuildDataTypeConfigStateMap(
       BackendDataTypeConfigurer::DISABLED,
       syncer::Difference(syncer::ControlTypes(), last_requested_types_),
       &config_state_map);
-  if (failed_datatypes_handler_) {
+  if (failed_data_types_handler_) {
     BackendDataTypeConfigurer::SetDataTypesState(
         BackendDataTypeConfigurer::FAILED,
-        failed_datatypes_handler_->GetFailedTypes(),
+        failed_data_types_handler_->GetFailedTypes(),
         &config_state_map);
   }
   return config_state_map;
@@ -333,7 +336,7 @@ void DataTypeManagerImpl::OnModelAssociationDone(
 
   if (result.status == ABORTED || result.status == UNRECOVERABLE_ERROR) {
     Abort(result.status, result.failed_data_types.size() >= 1 ?
-                         result.failed_data_types.front() :
+                         result.failed_data_types.begin()->second :
                          syncer::SyncError());
     return;
   }
@@ -349,7 +352,6 @@ void DataTypeManagerImpl::OnModelAssociationDone(
     configure_result_.status = PARTIAL_SUCCESS;
   configure_result_.requested_types.PutAll(result.requested_types);
   configure_result_.failed_data_types.insert(
-      configure_result_.failed_data_types.end(),
       result.failed_data_types.begin(),
       result.failed_data_types.end());
   configure_result_.waiting_to_start.PutAll(result.waiting_to_start);
@@ -385,7 +387,7 @@ void DataTypeManagerImpl::Stop() {
   if (need_to_notify) {
     ConfigureResult result(ABORTED,
                            last_requested_types_,
-                           std::list<syncer::SyncError>(),
+                           std::map<syncer::ModelType, syncer::SyncError>(),
                            syncer::ModelTypeSet());
     NotifyDone(result);
   }
@@ -398,12 +400,12 @@ void DataTypeManagerImpl::Abort(ConfigureStatus status,
   StopImpl();
 
   DCHECK_NE(OK, status);
-  std::list<syncer::SyncError> error_list;
+  std::map<syncer::ModelType, syncer::SyncError> errors;
   if (error.IsSet())
-    error_list.push_back(error);
+    errors[error.type()] = error;
   ConfigureResult result(status,
                          last_requested_types_,
-                         error_list,
+                         errors,
                          syncer::ModelTypeSet());
   NotifyDone(result);
 }

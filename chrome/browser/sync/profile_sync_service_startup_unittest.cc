@@ -127,7 +127,7 @@ class ProfileSyncServiceStartupTest : public testing::Test {
   DataTypeManagerMock* SetUpDataTypeManager() {
     DataTypeManagerMock* data_type_manager = new DataTypeManagerMock();
     EXPECT_CALL(*sync_->components_factory_mock(),
-                CreateDataTypeManager(_, _, _, _, _)).
+                CreateDataTypeManager(_, _, _, _, _, _)).
         WillOnce(Return(data_type_manager));
     return data_type_manager;
   }
@@ -326,7 +326,7 @@ TEST_F(ProfileSyncServiceStartupTest, StartInvalidCredentials) {
 
 TEST_F(ProfileSyncServiceStartupCrosTest, StartCrosNoCredentials) {
   EXPECT_CALL(*sync_->components_factory_mock(),
-              CreateDataTypeManager(_, _, _, _, _)).Times(0);
+              CreateDataTypeManager(_, _, _, _, _, _)).Times(0);
   profile_->GetPrefs()->ClearPref(prefs::kSyncHasSetupCompleted);
   EXPECT_CALL(observer_, OnStateChanged()).Times(AnyNumber());
   TokenService* token_service = static_cast<TokenService*>(
@@ -448,7 +448,7 @@ TEST_F(ProfileSyncServiceStartupTest, ManagedStartup) {
   // Disable sync through policy.
   profile_->GetPrefs()->SetBoolean(prefs::kSyncManaged, true);
   EXPECT_CALL(*sync_->components_factory_mock(),
-              CreateDataTypeManager(_, _, _, _, _)).Times(0);
+              CreateDataTypeManager(_, _, _, _, _, _)).Times(0);
   EXPECT_CALL(observer_, OnStateChanged()).Times(AnyNumber());
 
   TokenServiceFactory::GetForProfile(profile_.get())->IssueAuthTokenForTest(
@@ -480,7 +480,7 @@ TEST_F(ProfileSyncServiceStartupTest, SwitchManaged) {
   // should not start up automatically (kSyncSetupCompleted will be false).
   Mock::VerifyAndClearExpectations(data_type_manager);
   EXPECT_CALL(*sync_->components_factory_mock(),
-              CreateDataTypeManager(_, _, _, _, _)).Times(0);
+              CreateDataTypeManager(_, _, _, _, _, _)).Times(0);
   EXPECT_CALL(observer_, OnStateChanged()).Times(AnyNumber());
   profile_->GetPrefs()->ClearPref(prefs::kSyncManaged);
 }
@@ -494,8 +494,8 @@ TEST_F(ProfileSyncServiceStartupTest, StartFailure) {
   DataTypeManager::ConfigureStatus status = DataTypeManager::ABORTED;
   syncer::SyncError error(
       FROM_HERE, "Association failed.", syncer::BOOKMARKS);
-  std::list<syncer::SyncError> errors;
-  errors.push_back(error);
+  std::map<syncer::ModelType, syncer::SyncError> errors;
+  errors[syncer::BOOKMARKS] = error;
   DataTypeManager::ConfigureResult result(
       status,
       syncer::ModelTypeSet(),

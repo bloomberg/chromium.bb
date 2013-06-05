@@ -9,6 +9,7 @@
 #include "chrome/browser/sync/glue/backend_data_type_configurer.h"
 #include "chrome/browser/sync/glue/data_type_controller.h"
 #include "chrome/browser/sync/glue/data_type_manager_observer.h"
+#include "chrome/browser/sync/glue/failed_data_types_handler.h"
 #include "chrome/browser/sync/glue/fake_data_type_controller.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/test/test_browser_thread.h"
@@ -97,9 +98,13 @@ class TestDataTypeManager : public DataTypeManagerImpl {
       BackendDataTypeConfigurer* configurer,
       const DataTypeController::TypeMap* controllers,
       DataTypeManagerObserver* observer,
-      const FailedDatatypesHandler* failed_datatypes_handler)
-      : DataTypeManagerImpl(debug_info_listener, configurer, controllers,
-                            observer, failed_datatypes_handler) {}
+      FailedDataTypesHandler* failed_data_types_handler)
+      : DataTypeManagerImpl(debug_info_listener,
+                            controllers,
+                            NULL,
+                            configurer,
+                            observer,
+                            failed_data_types_handler) {}
 
   void set_priority_list(const TypeSetPriorityList& list) {
     priority_list_ = list;
@@ -139,7 +144,7 @@ class SyncDataTypeManagerImplTest : public testing::Test {
            &configurer_,
            &controllers_,
            &observer_,
-           NULL));
+           &failed_data_types_handler_));
   }
 
   void SetConfigureStartExpectation() {
@@ -156,7 +161,7 @@ class SyncDataTypeManagerImplTest : public testing::Test {
 
   // Configure the given DTM with the given desired types.
   void Configure(DataTypeManagerImpl* dtm,
-                 const DataTypeManager::TypeSet& desired_types) {
+                 const syncer::ModelTypeSet& desired_types) {
     dtm->Configure(desired_types, syncer::CONFIGURE_REASON_RECONFIGURATION);
   }
 
@@ -198,6 +203,7 @@ class SyncDataTypeManagerImplTest : public testing::Test {
   FakeBackendDataTypeConfigurer configurer_;
   DataTypeManagerObserverMock observer_;
   scoped_ptr<TestDataTypeManager> dtm_;
+  FailedDataTypesHandler failed_data_types_handler_;
 };
 
 // Set up a DTM with no controllers, configure it, finish downloading,

@@ -88,6 +88,7 @@
 using browser_sync::ChangeProcessor;
 using browser_sync::DataTypeController;
 using browser_sync::DataTypeManager;
+using browser_sync::FailedDataTypesHandler;
 using browser_sync::SyncBackendHost;
 using syncer::ModelType;
 using syncer::ModelTypeSet;
@@ -160,7 +161,6 @@ ProfileSyncService::ProfileSyncService(ProfileSyncComponentsFactory* factory,
       encrypt_everything_(false),
       encryption_pending_(false),
       auto_start_enabled_(start_behavior == AUTO_START),
-      failed_datatypes_handler_(this),
       configure_status_(DataTypeManager::UNKNOWN),
       setup_in_progress_(false),
       invalidator_state_(syncer::DEFAULT_INVALIDATION_ERROR) {
@@ -489,8 +489,9 @@ bool ProfileSyncService::IsEncryptedDatatypeEnabled() const {
 
 void ProfileSyncService::OnSyncConfigureDone(
     DataTypeManager::ConfigureResult result) {
-  if (failed_datatypes_handler_.UpdateFailedDatatypes(result.failed_data_types,
-          FailedDatatypesHandler::STARTUP)) {
+  if (failed_data_types_handler_.UpdateFailedDataTypes(
+          result.failed_data_types,
+          FailedDataTypesHandler::STARTUP)) {
     ReconfigureDatatypeManager();
   }
 }
@@ -787,7 +788,7 @@ void ProfileSyncService::ClearStaleErrors() {
   ClearUnrecoverableError();
   last_actionable_error_ = SyncProtocolError();
   // Clear the data type errors as well.
-  failed_datatypes_handler_.OnUserChoseDatatypes();
+  failed_data_types_handler_.Reset();
 }
 
 void ProfileSyncService::ClearUnrecoverableError() {
@@ -855,13 +856,14 @@ void ProfileSyncService::DisableBrokenDatatype(
 
   syncer::SyncError error(from_here, message, type);
 
-  std::list<syncer::SyncError> errors;
-  errors.push_back(error);
+  std::map<syncer::ModelType, syncer::SyncError> errors;
+  errors[type] = error;
 
   // Update this before posting a task. So if a configure happens before
   // the task that we are going to post, this type would still be disabled.
-  failed_datatypes_handler_.UpdateFailedDatatypes(errors,
-      FailedDatatypesHandler::RUNTIME);
+  failed_data_types_handler_.UpdateFailedDataTypes(
+      errors,
+      FailedDataTypesHandler::RUNTIME);
 
   base::MessageLoop::current()->PostTask(FROM_HERE,
       base::Bind(&ProfileSyncService::ReconfigureDatatypeManager,
@@ -1134,10 +1136,10 @@ void ProfileSyncService::OnPassphraseAccepted() {
 
 #if defined(OS_ANDROID)
   // Re-enable passwords if we have disabled them.
-  if (failed_datatypes_handler_.GetFailedTypes().Has(syncer::PASSWORDS) &&
+  if (failed_data_types_handler_.GetFailedTypes().Has(syncer::PASSWORDS) &&
       ShouldEnablePasswordSyncForAndroid()) {
     // Clear the data type errors.
-    failed_datatypes_handler_.OnUserChoseDatatypes();
+    failed_data_types_handler_.Reset();
   }
 #endif
 
@@ -1289,15 +1291,14 @@ void ProfileSyncService::OnConfigureDone(
     // error representing it.
     DCHECK_EQ(result.failed_data_types.size(),
               static_cast<unsigned int>(1));
-    syncer::SyncError error = result.failed_data_types.front();
+    syncer::SyncError error = result.failed_data_types.begin()->second;
     DCHECK(error.IsSet());
     std::string message =
         "Sync configuration failed with status " +
         DataTypeManager::ConfigureStatusToString(configure_status_) +
         " during " + syncer::ModelTypeToString(error.type()) +
         ": " + error.message();
-    LOG(ERROR) << "ProfileSyncService error: "
-               << message;
+    LOG(ERROR) << "ProfileSyncService error: " << message;
     OnInternalUnrecoverableError(error.location(),
                                  message,
                                  true,
@@ -1306,7 +1307,8 @@ void ProfileSyncService::OnConfigureDone(
   }
 
   // Now handle partial success and full success.
-  base::MessageLoop::current()->PostTask(FROM_HERE,
+  base::MessageLoop::current()->PostTask(
+      FROM_HERE,
       base::Bind(&ProfileSyncService::OnSyncConfigureDone,
                  weak_factory_.GetWeakPtr(), result));
 
@@ -1528,7 +1530,7 @@ void ProfileSyncService::OnUserChoseDatatypes(
   UpdateSelectedTypesHistogram(sync_everything, chosen_types);
   sync_prefs_.SetKeepEverythingSynced(sync_everything);
 
-  failed_datatypes_handler_.OnUserChoseDatatypes();
+  failed_data_types_handler_.Reset();
   ChangePreferredDataTypes(chosen_types);
   AcknowledgeSyncedTypes();
   NotifyObservers();
@@ -1551,7 +1553,7 @@ void ProfileSyncService::ChangePreferredDataTypes(
 syncer::ModelTypeSet ProfileSyncService::GetActiveDataTypes() const {
   const syncer::ModelTypeSet preferred_types = GetPreferredDataTypes();
   const syncer::ModelTypeSet failed_types =
-      failed_datatypes_handler_.GetFailedTypes();
+      failed_data_types_handler_.GetFailedTypes();
   return Difference(preferred_types, failed_types);
 }
 
@@ -1624,10 +1626,11 @@ void ProfileSyncService::ConfigureDataTypeManager() {
     restart = true;
     data_type_manager_.reset(
         factory_->CreateDataTypeManager(debug_info_listener_,
-                                        backend_.get(),
                                         &data_type_controllers_,
                                         this,
-                                        &failed_datatypes_handler_));
+                                        backend_.get(),
+                                        this,
+                                        &failed_data_types_handler_));
 
     // We create the migrator at the same time.
     migrator_.reset(
@@ -1722,13 +1725,8 @@ Value* ProfileSyncService::GetTypeStatusMap() const {
     return result.release();
   }
 
-  std::vector<syncer::SyncError> errors =
-      failed_datatypes_handler_.GetAllErrors();
-  std::map<ModelType, syncer::SyncError> error_map;
-  for (std::vector<syncer::SyncError>::iterator it = errors.begin();
-       it != errors.end(); ++it) {
-    error_map[it->type()] = *it;
-  }
+  FailedDataTypesHandler::TypeErrorMap error_map =
+      failed_data_types_handler_.GetAllErrors();
 
   ModelTypeSet active_types;
   ModelTypeSet passive_types;
@@ -2082,9 +2080,9 @@ void ProfileSyncService::ReconfigureDatatypeManager() {
   }
 }
 
-const FailedDatatypesHandler& ProfileSyncService::failed_datatypes_handler()
+const FailedDataTypesHandler& ProfileSyncService::failed_data_types_handler()
     const {
-  return failed_datatypes_handler_;
+  return failed_data_types_handler_;
 }
 
 void ProfileSyncService::OnInternalUnrecoverableError(
