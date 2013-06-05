@@ -14,7 +14,8 @@
 // hide the versions implemented with heavy use of MMX intrinsics.
 // TODO(wolenetz): Use MMX intrinsics when compiling win64 with Visual
 // Studio 2012? http://crbug.com/173450
-#if !(defined(ARCH_CPU_X86_64) && defined(COMPILER_MSVC))
+#if defined(ARCH_CPU_X86_FAMILY) && \
+    !(defined(ARCH_CPU_X86_64) && defined(COMPILER_MSVC))
 #define MEDIA_MMX_INTRINSICS_AVAILABLE
 #endif
 
@@ -47,6 +48,8 @@ enum ScaleFilter {
   FILTER_BILINEAR_V = 2,  // Bilinear vertical filter.
   FILTER_BILINEAR = 3,    // Bilinear filter.
 };
+
+MEDIA_EXPORT void InitializeCPUSpecificYUVConversions();
 
 // Convert a frame of YUV to 32 bit ARGB.
 // Pass in YV16/YV12 depending on source format

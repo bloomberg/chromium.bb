@@ -11,6 +11,7 @@
 #include "build/build_config.h"
 #include "media/base/sinc_resampler.h"
 #include "media/base/vector_math.h"
+#include "media/base/yuv_convert.h"
 
 namespace media {
 
@@ -47,6 +48,7 @@ class MediaInitializer {
     vector_math::Initialize();
 #if !defined(OS_IOS)
     SincResampler::InitializeCPUSpecificFeatures();
+    InitializeCPUSpecificYUVConversions();
 #endif
   }
 
