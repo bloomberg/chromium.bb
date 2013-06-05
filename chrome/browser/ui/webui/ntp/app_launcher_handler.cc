@@ -284,7 +284,8 @@ void AppLauncherHandler::Observe(int type,
           content::Details<const std::string>(details).ptr();
       if (id) {
         const Extension* extension =
-            extension_service_->GetExtensionById(*id, false);
+            extension_service_->GetInstalledExtension(*id);
+        DCHECK(extension) << "Could not find extension with id " << *id;
         DictionaryValue app_info;
         CreateAppInfo(extension,
                       extension_service_,
