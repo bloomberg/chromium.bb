@@ -25,7 +25,6 @@
 #include "chrome/common/chrome_version_info.h"
 // TODO(rdevlin.cronin): Remove these once all references have been removed as
 // part of crbug.com/159265.
-#include "chrome/common/extensions/api/plugins/plugins_handler.h"
 #include "chrome/common/extensions/background_info.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/incognito_handler.h"
@@ -390,62 +389,6 @@ bool Extension::OverlapsWithOrigin(const GURL& origin) const {
   origin_only_pattern_list.AddPattern(origin_only_pattern);
 
   return web_extent().OverlapsWith(origin_only_pattern_list);
-}
-
-Extension::SyncType Extension::GetSyncType() const {
-  if (!IsSyncable()) {
-    // We have a non-standard location.
-    return SYNC_TYPE_NONE;
-  }
-
-  // Disallow extensions with non-gallery auto-update URLs for now.
-  //
-  // TODO(akalin): Relax this restriction once we've put in UI to
-  // approve synced extensions.
-  if (!ManifestURL::GetUpdateURL(this).is_empty() &&
-      !ManifestURL::UpdatesFromGallery(this))
-    return SYNC_TYPE_NONE;
-
-  // Disallow extensions with native code plugins.
-  //
-  // TODO(akalin): Relax this restriction once we've put in UI to
-  // approve synced extensions.
-  if (PluginInfo::HasPlugins(this))
-    return SYNC_TYPE_NONE;
-
-  switch (GetType()) {
-    case Manifest::TYPE_EXTENSION:
-      return SYNC_TYPE_EXTENSION;
-
-    case Manifest::TYPE_USER_SCRIPT:
-      // We only want to sync user scripts with gallery update URLs.
-      if (ManifestURL::UpdatesFromGallery(this))
-        return SYNC_TYPE_EXTENSION;
-      else
-        return SYNC_TYPE_NONE;
-
-    case Manifest::TYPE_HOSTED_APP:
-    case Manifest::TYPE_LEGACY_PACKAGED_APP:
-    case Manifest::TYPE_PLATFORM_APP:
-        return SYNC_TYPE_APP;
-
-    default:
-      return SYNC_TYPE_NONE;
-  }
-}
-
-bool Extension::IsSyncable() const {
-  // TODO(akalin): Figure out if we need to allow some other types.
-
-  // Default apps are not synced because otherwise they will pollute profiles
-  // that don't already have them. Specially, if a user doesn't have default
-  // apps, creates a new profile (which get default apps) and then enables sync
-  // for it, then their profile everywhere gets the default apps.
-  bool is_syncable = (location() == Manifest::INTERNAL &&
-      !was_installed_by_default());
-  // Sync the chrome web store to maintain its position on the new tab page.
-  is_syncable |= (id() ==  extension_misc::kWebStoreAppId);
-  return is_syncable;
 }
 
 bool Extension::RequiresSortOrdinal() const {

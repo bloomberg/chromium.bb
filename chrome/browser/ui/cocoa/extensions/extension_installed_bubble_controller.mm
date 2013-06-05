@@ -35,6 +35,7 @@
 #include "chrome/common/extensions/api/extension_action/action_info.h"
 #include "chrome/common/extensions/api/omnibox/omnibox_handler.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/sync_helper.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_registrar.h"
@@ -166,7 +167,7 @@ class ExtensionLoadedNotificationObserver
 
 // Returns YES if the sync promo should be shown in the bubble.
 - (BOOL)showSyncPromo {
-  return extension_->GetSyncType() == Extension::SYNC_TYPE_EXTENSION &&
+  return extensions::sync_helper::IsSyncableExtension(extension_) &&
          SyncPromoUI::ShouldShowSyncPromo(browser_->profile());
 }
 

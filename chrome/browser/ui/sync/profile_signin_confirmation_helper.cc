@@ -21,6 +21,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_set.h"
+#include "chrome/common/extensions/sync_helper.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/native_theme/native_theme.h"
 
@@ -77,7 +78,7 @@ bool HasSyncedExtensions(Profile* profile) {
       // The webstore is synced so that it stays put on the new tab
       // page, but since it's installed by default we don't want to
       // consider it when determining if the profile is dirty.
-      if ((*iter)->IsSyncable() &&
+      if (extensions::sync_helper::IsSyncable(*iter) &&
           (*iter)->id() != extension_misc::kWebStoreAppId) {
         VLOG(1) << "ProfileSigninConfirmationHelper: "
                 << "profile contains a synced extension: " << (*iter)->id();

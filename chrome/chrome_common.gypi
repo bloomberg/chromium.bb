@@ -315,6 +315,8 @@
         'common/extensions/permissions/usb_device_permission.h',
         'common/extensions/permissions/usb_device_permission_data.cc',
         'common/extensions/permissions/usb_device_permission_data.h',
+        'common/extensions/sync_helper.cc',
+        'common/extensions/sync_helper.h',
         'common/extensions/unpacker.cc',
         'common/extensions/unpacker.h',
         'common/extensions/update_manifest.cc',

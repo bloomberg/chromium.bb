@@ -9,6 +9,7 @@
 #include "chrome/browser/extensions/extension_sorting.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_set.h"
+#include "chrome/common/extensions/sync_helper.h"
 #include "sync/api/sync_change_processor.h"
 #include "sync/api/sync_error_factory.h"
 
@@ -120,8 +121,7 @@ void AppSyncBundle::AddPendingApp(const std::string& id,
 }
 
 bool AppSyncBundle::HandlesApp(const Extension& extension) const {
-  return sync_processor_ != NULL &&
-      extension.GetSyncType() == Extension::SYNC_TYPE_APP;
+  return sync_processor_ != NULL && sync_helper::IsSyncableApp(&extension);
 }
 
 std::vector<AppSyncData> AppSyncBundle::GetPendingData() const {

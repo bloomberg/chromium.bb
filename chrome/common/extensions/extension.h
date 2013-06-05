@@ -102,12 +102,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
     NEW_INSTALL
   };
 
-  enum SyncType {
-    SYNC_TYPE_NONE = 0,
-    SYNC_TYPE_EXTENSION,
-    SYNC_TYPE_APP
-  };
-
   // A base class for parsed manifest data that APIs want to store on
   // the extension. Related to base::SupportsUserData, but with an immutable
   // thread-safe interface to match Extension.
@@ -248,12 +242,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
 
   // Returns true if this extension or app includes areas within |origin|.
   bool OverlapsWithOrigin(const GURL& origin) const;
-
-  // Returns the sync bucket to use for this extension.
-  SyncType GetSyncType() const;
-
-  // Returns true if the extension should be synced.
-  bool IsSyncable() const;
 
   // Returns true if the extension requires a valid ordinal for sorting, e.g.,
   // for displaying in a launcher or new tab page.

@@ -17,7 +17,7 @@ using content::BrowserThread;
 namespace {
 
 // Install predicate used by AddFromExternalUpdateUrl().
-bool AlwaysInstall(const extensions::Extension& extension) {
+bool AlwaysInstall(const extensions::Extension* extension) {
   return true;
 }
 

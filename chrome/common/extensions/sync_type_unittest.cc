@@ -1,4 +1,4 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,6 +6,7 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/manifest.h"
+#include "chrome/common/extensions/sync_helper.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -77,15 +78,15 @@ TEST_F(ExtensionSyncTypeTest, NormalExtensionNoUpdateUrl) {
       MakeSyncTestExtension(EXTENSION, GURL(), GURL(),
                             Manifest::INTERNAL, 0, base::FilePath(),
                             Extension::NO_FLAGS));
-  EXPECT_NE(extension->GetSyncType(), Extension::SYNC_TYPE_NONE);
+  EXPECT_TRUE(sync_helper::IsSyncableExtension(extension));
 }
 
-TEST_F(ExtensionSyncTypeTest, GetSyncTypeUserScriptValidUpdateUrl) {
+TEST_F(ExtensionSyncTypeTest, UserScriptValidUpdateUrl) {
   scoped_refptr<Extension> extension(
       MakeSyncTestExtension(USER_SCRIPT, GURL(kValidUpdateUrl1), GURL(),
                             Manifest::INTERNAL, 0, base::FilePath(),
                             Extension::NO_FLAGS));
-  EXPECT_NE(extension->GetSyncType(), Extension::SYNC_TYPE_NONE);
+  EXPECT_TRUE(sync_helper::IsSyncableExtension(extension));
 }
 
 TEST_F(ExtensionSyncTypeTest, UserScriptNoUpdateUrl) {
@@ -93,7 +94,7 @@ TEST_F(ExtensionSyncTypeTest, UserScriptNoUpdateUrl) {
       MakeSyncTestExtension(USER_SCRIPT, GURL(), GURL(),
                             Manifest::INTERNAL, 0, base::FilePath(),
                             Extension::NO_FLAGS));
-  EXPECT_EQ(extension->GetSyncType(), Extension::SYNC_TYPE_NONE);
+  EXPECT_FALSE(sync_helper::IsSyncableExtension(extension));
 }
 
 TEST_F(ExtensionSyncTypeTest, ThemeNoUpdateUrl) {
@@ -101,15 +102,16 @@ TEST_F(ExtensionSyncTypeTest, ThemeNoUpdateUrl) {
       MakeSyncTestExtension(THEME, GURL(), GURL(),
                             Manifest::INTERNAL, 0, base::FilePath(),
                             Extension::NO_FLAGS));
-  EXPECT_EQ(extension->GetSyncType(), Extension::SYNC_TYPE_NONE);
+  EXPECT_FALSE(sync_helper::IsSyncableExtension(extension));
+  EXPECT_FALSE(sync_helper::IsSyncableApp(extension));
 }
 
-TEST_F(ExtensionSyncTypeTest, ExtensionWithLaunchUrl) {
+TEST_F(ExtensionSyncTypeTest, AppWithLaunchUrl) {
   scoped_refptr<Extension> extension(
       MakeSyncTestExtension(EXTENSION, GURL(), GURL("http://www.google.com"),
                             Manifest::INTERNAL, 0, base::FilePath(),
                             Extension::NO_FLAGS));
-  EXPECT_NE(extension->GetSyncType(), Extension::SYNC_TYPE_NONE);
+  EXPECT_TRUE(sync_helper::IsSyncableApp(extension));
 }
 
 TEST_F(ExtensionSyncTypeTest, ExtensionExternal) {
@@ -117,8 +119,7 @@ TEST_F(ExtensionSyncTypeTest, ExtensionExternal) {
       MakeSyncTestExtension(EXTENSION, GURL(), GURL(),
                             Manifest::EXTERNAL_PREF, 0, base::FilePath(),
                             Extension::NO_FLAGS));
-
-  EXPECT_EQ(extension->GetSyncType(), Extension::SYNC_TYPE_NONE);
+  EXPECT_FALSE(sync_helper::IsSyncableExtension(extension));
 }
 
 TEST_F(ExtensionSyncTypeTest, UserScriptThirdPartyUpdateUrl) {
@@ -126,7 +127,7 @@ TEST_F(ExtensionSyncTypeTest, UserScriptThirdPartyUpdateUrl) {
       MakeSyncTestExtension(
           USER_SCRIPT, GURL("http://third-party.update_url.com"), GURL(),
           Manifest::INTERNAL, 0, base::FilePath(), Extension::NO_FLAGS));
-  EXPECT_EQ(extension->GetSyncType(), Extension::SYNC_TYPE_NONE);
+  EXPECT_FALSE(sync_helper::IsSyncableExtension(extension));
 }
 
 TEST_F(ExtensionSyncTypeTest, OnlyDisplayAppsInLauncher) {
@@ -200,13 +201,13 @@ TEST_F(ExtensionSyncTypeTest, OnlySyncInternal) {
       MakeSyncTestExtension(EXTENSION, GURL(), GURL(),
                             Manifest::INTERNAL, 0, base::FilePath(),
                             Extension::NO_FLAGS));
-  EXPECT_TRUE(extension_internal->IsSyncable());
+  EXPECT_TRUE(sync_helper::IsSyncable(extension_internal));
 
   scoped_refptr<Extension> extension_noninternal(
       MakeSyncTestExtension(EXTENSION, GURL(), GURL(),
                             Manifest::COMPONENT, 0, base::FilePath(),
                             Extension::NO_FLAGS));
-  EXPECT_FALSE(extension_noninternal->IsSyncable());
+  EXPECT_FALSE(sync_helper::IsSyncable(extension_noninternal));
 }
 
 TEST_F(ExtensionSyncTypeTest, DontSyncDefault) {
@@ -214,7 +215,7 @@ TEST_F(ExtensionSyncTypeTest, DontSyncDefault) {
       MakeSyncTestExtension(EXTENSION, GURL(), GURL(),
                             Manifest::INTERNAL, 0, base::FilePath(),
                             Extension::WAS_INSTALLED_BY_DEFAULT));
-  EXPECT_FALSE(extension_default->IsSyncable());
+  EXPECT_FALSE(sync_helper::IsSyncable(extension_default));
 }
 
 // These last 2 tests don't make sense on Chrome OS, where extension plugins
@@ -226,7 +227,7 @@ TEST_F(ExtensionSyncTypeTest, ExtensionWithPlugin) {
                             Manifest::INTERNAL, 1, base::FilePath(),
                             Extension::NO_FLAGS));
   if (extension.get())
-    EXPECT_EQ(extension->GetSyncType(), Extension::SYNC_TYPE_NONE);
+    EXPECT_FALSE(sync_helper::IsSyncableExtension(extension));
 }
 
 TEST_F(ExtensionSyncTypeTest, ExtensionWithTwoPlugins) {
@@ -235,7 +236,7 @@ TEST_F(ExtensionSyncTypeTest, ExtensionWithTwoPlugins) {
                             Manifest::INTERNAL, 2, base::FilePath(),
                             Extension::NO_FLAGS));
   if (extension.get())
-    EXPECT_EQ(extension->GetSyncType(), Extension::SYNC_TYPE_NONE);
+    EXPECT_FALSE(sync_helper::IsSyncableExtension(extension));
 }
 #endif // !defined(OS_CHROMEOS)
 

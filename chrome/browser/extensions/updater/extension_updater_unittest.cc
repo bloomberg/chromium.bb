@@ -267,15 +267,15 @@ class MockService : public TestExtensionService {
 };
 
 
-bool ShouldInstallExtensionsOnly(const Extension& extension) {
-  return extension.GetType() == Manifest::TYPE_EXTENSION;
+bool ShouldInstallExtensionsOnly(const Extension* extension) {
+  return extension->GetType() == Manifest::TYPE_EXTENSION;
 }
 
-bool ShouldInstallThemesOnly(const Extension& extension) {
-  return extension.is_theme();
+bool ShouldInstallThemesOnly(const Extension* extension) {
+  return extension->is_theme();
 }
 
-bool ShouldAlwaysInstall(const Extension& extension) {
+bool ShouldAlwaysInstall(const Extension* extension) {
   return true;
 }
 

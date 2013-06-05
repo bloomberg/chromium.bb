@@ -2834,8 +2834,8 @@ TEST_F(ExtensionServiceTest, LoadExtensionsWithPlugins) {
 
 namespace {
 
-bool IsExtension(const Extension& extension) {
-  return extension.GetType() == Manifest::TYPE_EXTENSION;
+bool IsExtension(const Extension* extension) {
+  return extension->GetType() == Manifest::TYPE_EXTENSION;
 }
 
 }  // namespace
@@ -2886,8 +2886,8 @@ TEST_F(ExtensionServiceTest, UpdatePendingExtension) {
 
 namespace {
 
-bool IsTheme(const Extension& extension) {
-  return extension.is_theme();
+bool IsTheme(const Extension* extension) {
+  return extension->is_theme();
 }
 
 }  // namespace

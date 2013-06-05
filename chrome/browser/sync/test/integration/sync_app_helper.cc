@@ -11,6 +11,7 @@
 #include "chrome/browser/sync/test/integration/extensions_helper.h"
 #include "chrome/browser/sync/test/integration/sync_datatype_helper.h"
 #include "chrome/browser/sync/test/integration/sync_extension_helper.h"
+#include "chrome/common/extensions/sync_helper.h"
 #include "extensions/common/id_util.h"
 
 namespace {
@@ -60,7 +61,7 @@ AppStateMap GetAppStates(Profile* profile) {
       extension_service->GenerateInstalledExtensionsSet());
   for (ExtensionSet::const_iterator it = extensions->begin();
        it != extensions->end(); ++it) {
-    if ((*it)->GetSyncType() == extensions::Extension::SYNC_TYPE_APP) {
+    if (extensions::sync_helper::IsSyncableApp(*it)) {
       const std::string& id = (*it)->id();
       LoadApp(extension_service, id, &(app_state_map[id]));
     }

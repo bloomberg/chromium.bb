@@ -87,6 +87,7 @@
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "chrome/common/extensions/manifest_url_handler.h"
 #include "chrome/common/extensions/permissions/permissions_data.h"
+#include "chrome/common/extensions/sync_helper.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/startup_metric_utils.h"
 #include "chrome/common/url_constants.h"
@@ -150,14 +151,6 @@ static const int kUpdateIdleDelay = 5;
 
 // Wait this many seconds before trying to garbage collect extensions again.
 static const int kGarbageCollectRetryDelay = 30;
-
-static bool IsSyncableExtension(const Extension& extension) {
-  return extension.GetSyncType() == Extension::SYNC_TYPE_EXTENSION;
-}
-
-static bool IsSyncableApp(const Extension& extension) {
-  return extension.GetSyncType() == Extension::SYNC_TYPE_APP;
-}
 
 }  // namespace
 
@@ -1381,12 +1374,12 @@ bool ExtensionService::ProcessAppSyncData(
 bool ExtensionService::IsCorrectSyncType(const Extension& extension,
                                          syncer::ModelType type) const {
   if (type == syncer::EXTENSIONS &&
-      extension.GetSyncType() == Extension::SYNC_TYPE_EXTENSION) {
+      extensions::sync_helper::IsSyncableExtension(&extension)) {
     return true;
   }
 
   if (type == syncer::APPS &&
-      extension.GetSyncType() == Extension::SYNC_TYPE_APP) {
+      extensions::sync_helper::IsSyncableApp(&extension)) {
     return true;
   }
 
@@ -1454,8 +1447,9 @@ bool ExtensionService::ProcessExtensionSyncDataHelper(
     const bool kInstallSilently = true;
 
     CHECK(type == syncer::EXTENSIONS || type == syncer::APPS);
-    ExtensionFilter filter =
-        (type == syncer::APPS) ? IsSyncableApp : IsSyncableExtension;
+    extensions::PendingExtensionInfo::ShouldAllowInstallPredicate filter =
+        (type == syncer::APPS) ? extensions::sync_helper::IsSyncableApp :
+                                 extensions::sync_helper::IsSyncableExtension;
 
     if (!pending_extension_manager()->AddFromSync(
             id,
@@ -1497,7 +1491,7 @@ void ExtensionService::SetIsIncognitoEnabled(
   if (extension && extension->location() == Manifest::COMPONENT) {
     // This shouldn't be called for component extensions unless they are
     // syncable.
-    DCHECK(extension->IsSyncable());
+    DCHECK(extensions::sync_helper::IsSyncable(extension));
 
     // If we are here, make sure the we aren't trying to change the value.
     DCHECK_EQ(enabled, IsIncognitoEnabled(extension_id));
@@ -2193,7 +2187,7 @@ void ExtensionService::OnExtensionInstalled(
   bool initial_enable = ShouldEnableOnInstall(extension);
   const extensions::PendingExtensionInfo* pending_extension_info = NULL;
   if ((pending_extension_info = pending_extension_manager()->GetById(id))) {
-    if (!pending_extension_info->ShouldAllowInstall(*extension)) {
+    if (!pending_extension_info->ShouldAllowInstall(extension)) {
       pending_extension_manager()->Remove(id);
 
       LOG(WARNING) << "ShouldAllowInstall() returned false for "

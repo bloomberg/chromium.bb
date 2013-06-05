@@ -76,11 +76,6 @@ class SyncErrorFactory;
 // various classes have on ExtensionService. This allows easy mocking.
 class ExtensionServiceInterface : public syncer::SyncableService {
  public:
-  // A function that returns true if the given extension should be
-  // included and false if it should be filtered out.  Identical to
-  // PendingExtensionInfo::ShouldAllowInstallPredicate.
-  typedef bool (*ExtensionFilter)(const extensions::Extension&);
-
   virtual ~ExtensionServiceInterface() {}
   virtual const ExtensionSet* extensions() const = 0;
   virtual const ExtensionSet* disabled_extensions() const = 0;

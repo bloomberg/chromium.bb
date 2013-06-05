@@ -30,6 +30,7 @@
 #include "chrome/common/extensions/api/extension_action/action_info.h"
 #include "chrome/common/extensions/api/omnibox/omnibox_handler.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/sync_helper.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
@@ -132,7 +133,7 @@ class InstalledBubbleContent : public views::View,
     bool has_keybinding = GetKeybinding(&command);
     string16 key;  // Keyboard shortcut or keyword to display in the bubble.
 
-    if (extension->GetSyncType() == Extension::SYNC_TYPE_EXTENSION &&
+    if (extensions::sync_helper::IsSyncableExtension(extension) &&
         SyncPromoUI::ShouldShowSyncPromo(browser->profile()))
       flavors_ |= SIGN_IN_PROMO;
 
