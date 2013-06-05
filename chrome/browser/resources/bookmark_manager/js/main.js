@@ -399,23 +399,33 @@ function notNewNode(node) {
  * commands.
  * @param {!cr.ui.CanExecuteEvent} e The event fired by the command system.
  * @param {!cr.ui.Command} command The command we are currently processing.
+ * @param {string} singularId The string id of singular form of the menu label.
+ * @param {string} pluralId The string id of menu label if the singular form is
+       not used.
+ * @param {boolean} commandDisabled Whether the menu item should be disabled
+       no matter what bookmarks are selected.
  */
 function updateOpenCommand(e, command, singularId, pluralId, commandDisabled) {
-  // The command label reflects the selection which might not reflect
-  // how many bookmarks will be opened. For example if you right click an empty
-  // area in a folder with 1 bookmark the text should still say "all".
-  var selectedNodes = getSelectedBookmarkNodes(e.target).filter(notNewNode);
-  var singular = selectedNodes.length == 1 && !bmm.isFolder(selectedNodes[0]);
+  if (singularId) {
+    // The command label reflects the selection which might not reflect
+    // how many bookmarks will be opened. For example if you right click an
+    // empty area in a folder with 1 bookmark the text should still say "all".
+    var selectedNodes = getSelectedBookmarkNodes(e.target).filter(notNewNode);
+    var singular = selectedNodes.length == 1 && !bmm.isFolder(selectedNodes[0]);
+    command.label = loadTimeData.getString(singular ? singularId : pluralId);
+  }
 
-  var urlsP = getUrlsForOpenCommands(e.target);
-  urlsP.addListener(function(urls) {
-    var enabled = urls.length && !commandDisabled;
-    command.disabled = !enabled;
-    if (singularId)
-      command.label = loadTimeData.getString(singular ? singularId : pluralId);
+  if (commandDisabled) {
+    command.disabled = true;
+    e.canExecute = false;
+    return;
+  }
+
+  getUrlsForOpenCommands(e.target).addListener(function(urls) {
+    var disabled = !urls.length;
+    command.disabled = disabled;
+    e.canExecute = !disabled;
   });
-
-  e.canExecute = !commandDisabled;
 }
 
 /**
