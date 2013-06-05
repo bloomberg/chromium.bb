@@ -362,6 +362,7 @@ class WebMediaPlayerAndroid
   // Media Stream related fields.
   media::Demuxer* demuxer_;
   base::Closure destroy_demuxer_cb_;
+  scoped_refptr<MediaStreamAudioRenderer> audio_renderer_;
 #endif
 
   scoped_ptr<MediaSourceDelegate,

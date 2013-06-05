@@ -123,6 +123,17 @@ WebMediaPlayerAndroid::~WebMediaPlayerAndroid() {
   if (main_loop_)
     main_loop_->RemoveDestructionObserver(this);
 #if defined(GOOGLE_TV)
+  if (audio_renderer_) {
+    if (audio_renderer_->IsLocalRenderer()) {
+      audio_renderer_->Stop();
+    } else if (!paused()) {
+      // The |audio_renderer_| can be shared by multiple remote streams, and
+      // it will be stopped when WebRtcAudioDeviceImpl goes away. So we simply
+      // pause the |audio_renderer_| here to avoid re-creating the
+      // |audio_renderer_|.
+      audio_renderer_->Pause();
+    }
+  }
   if (demuxer_ && !destroy_demuxer_cb_.is_null()) {
     media_source_delegate_.reset();
     destroy_demuxer_cb_.Run();
@@ -169,6 +180,9 @@ void WebMediaPlayerAndroid::load(const WebURL& url,
           demuxer_,
           base::Bind(&WebMediaPlayerAndroid::UpdateNetworkState,
                      base::Unretained(this)));
+      audio_renderer_ = media_stream_client_->GetAudioRenderer(url);
+      if (audio_renderer_)
+        audio_renderer_->Start();
     }
 #endif
   }
@@ -202,6 +216,8 @@ void WebMediaPlayerAndroid::play() {
     if (proxy_)
       proxy_->RequestExternalSurface(player_id_, last_computed_rect_);
   }
+  if (audio_renderer_ && paused())
+    audio_renderer_->Play();
 #endif
   if (hasVideo() && needs_establish_peer_)
     EstablishSurfaceTexturePeer();
@@ -212,6 +228,10 @@ void WebMediaPlayerAndroid::play() {
 }
 
 void WebMediaPlayerAndroid::pause() {
+#if defined(GOOGLE_TV)
+  if (audio_renderer_ && !paused())
+    audio_renderer_->Pause();
+#endif
   if (proxy_)
     proxy_->Pause(player_id_);
   is_playing_ = false;
