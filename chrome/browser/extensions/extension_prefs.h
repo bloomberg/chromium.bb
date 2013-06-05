@@ -425,12 +425,6 @@ class ExtensionPrefs : public ContentSettingsStore::Observer,
   // launcher by drag and dropping it.
   void SetAppDraggedByUser(const std::string& extension_id);
 
-  // The extension's uninstall URL. If not empty, ExtensionService will
-  // load the URL when the extension is uninstalled.
-  void SetUninstallUrl(const std::string& extension_id,
-                       const std::string& url_string);
-  std::string GetUninstallUrl(const std::string& extension_id);
-
   // Sets a preference value that is controlled by the extension. In other
   // words, this is not a pref value *about* the extension but something
   // global the extension wants to override.

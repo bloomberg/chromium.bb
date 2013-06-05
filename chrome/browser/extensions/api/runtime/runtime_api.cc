@@ -49,6 +49,9 @@ const char kUpdateFound[] = "update_available";
 const char kUpdateNotFound[] = "no_update";
 const char kUpdateThrottled[] = "throttled";
 
+// A preference key storing the url loaded when an extension is uninstalled.
+const char kUninstallUrl[] = "uninstall_url";
+
 static void DispatchOnStartupEventImpl(
     Profile* profile,
     const std::string& extension_id,
@@ -89,6 +92,21 @@ static void DispatchOnStartupEventImpl(
   scoped_ptr<base::ListValue> event_args(new ListValue());
   scoped_ptr<Event> event(new Event(kOnStartupEvent, event_args.Pass()));
   system->event_router()->DispatchEventToExtension(extension_id, event.Pass());
+}
+
+void SetUninstallUrl(ExtensionPrefs* prefs,
+                     const std::string& extension_id,
+                     const std::string& url_string) {
+  prefs->UpdateExtensionPref(extension_id,
+                             kUninstallUrl,
+                             base::Value::CreateStringValue(url_string));
+}
+
+std::string GetUninstallUrl(ExtensionPrefs* prefs,
+                            const std::string& extension_id) {
+  std::string url_string;
+  prefs->ReadPrefAsString(extension_id, kUninstallUrl, &url_string);
+  return url_string;
 }
 
 }  // namespace
@@ -168,8 +186,8 @@ void RuntimeEventRouter::OnExtensionUninstalled(
     Profile *profile,
     const std::string& extension_id) {
 #if defined(ENABLE_EXTENSIONS)
-  GURL uninstall_url(profile->GetExtensionService()->extension_prefs()->
-      GetUninstallUrl(extension_id));
+  GURL uninstall_url(GetUninstallUrl(ExtensionPrefs::Get(profile),
+                                     extension_id));
 
   if (uninstall_url.is_empty())
     return;
@@ -226,8 +244,7 @@ bool RuntimeSetUninstallUrlFunction::RunImpl() {
     return false;
   }
 
-  profile()->GetExtensionService()->extension_prefs()->
-      SetUninstallUrl(extension_id(), url_string);
+  SetUninstallUrl(ExtensionPrefs::Get(profile()), extension_id(), url_string);
   return true;
 }
 
