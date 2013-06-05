@@ -1927,6 +1927,14 @@
    fun:net::ProxyResolverV8Tracing::Job::ExecuteBlocking
 }
 {
+   bug_246567c
+   Heapcheck:Leak
+   fun:v8::internal::PerThreadAssertScopeBase::AssertData
+   fun:v8::internal::PerThreadAssertScope::IsAllowed
+   fun:v8::internal::HandleScope::CreateHandle
+   fun:Handle
+}
+{
    bug_246825a
    Heapcheck:Leak
    ...

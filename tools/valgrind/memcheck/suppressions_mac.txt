@@ -2390,3 +2390,12 @@
    fun:_ZN3net22ProxyResolverV8Tracing3Job20ExecuteProxyResolverEv
    fun:_ZN3net22ProxyResolverV8Tracing3Job15ExecuteBlockingEv
 }
+{
+   bug_246567b
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN2v88internal24PerThreadAssertScopeBase10AssertDataEv
+   fun:_ZN2v88internal20PerThreadAssertScopeILNS0_19PerThreadAssertTypeE1ELb1EE9IsAllowedEv
+   fun:_ZN2v88internal11HandleScope12CreateHandleINS0*
+   fun:_ZN2v88internal6Handle*
+}
