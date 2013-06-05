@@ -30,7 +30,6 @@ def main():
                              'chrome',
                              'installer',
                              'linux',
-                             'internal',
                              'sysroot_scripts',
                              'install-debian.wheezy.sysroot.py')
   if os.path.exists(SCRIPT_FILE):
