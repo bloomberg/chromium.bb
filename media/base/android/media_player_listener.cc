@@ -26,7 +26,7 @@ MediaPlayerListener::MediaPlayerListener(
     : message_loop_(message_loop),
       media_player_(media_player) {
   DCHECK(message_loop_);
-  DCHECK(media_player_);
+  DCHECK(media_player_.get());
 }
 
 MediaPlayerListener::~MediaPlayerListener() {}

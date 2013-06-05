@@ -104,7 +104,7 @@ LocalInputMonitorWin::Core::Core(
     : caller_task_runner_(caller_task_runner),
       ui_task_runner_(ui_task_runner),
       client_session_control_(client_session_control) {
-  DCHECK(client_session_control_);
+  DCHECK(client_session_control_.get());
 }
 
 void LocalInputMonitorWin::Core::Start() {

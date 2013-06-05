@@ -591,7 +591,7 @@ class ManagedNetworkConfigurationHandler::PolicyApplicator
   friend class base::RefCounted<PolicyApplicator>;
 
   void GetProfileProperties(const base::DictionaryValue& profile_properties) {
-    if (!handler_) {
+    if (!handler_.get()) {
       LOG(WARNING) << "Handler destructed during policy application to profile "
                    << profile_.ToDebugString();
       return;
@@ -623,7 +623,7 @@ class ManagedNetworkConfigurationHandler::PolicyApplicator
 
   void GetEntry(const std::string& entry,
                 const base::DictionaryValue& entry_properties) {
-    if (!handler_) {
+    if (!handler_.get()) {
       LOG(WARNING) << "Handler destructed during policy application to profile "
                    << profile_.ToDebugString();
       return;
@@ -736,7 +736,7 @@ class ManagedNetworkConfigurationHandler::PolicyApplicator
   }
 
   virtual ~PolicyApplicator() {
-    if (!handler_) {
+    if (!handler_.get()) {
       LOG(WARNING) << "Handler destructed during policy application to profile "
                    << profile_.ToDebugString();
       return;

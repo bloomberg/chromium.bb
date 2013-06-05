@@ -103,8 +103,8 @@ DisconnectWindowWin::~DisconnectWindowWin() {
 void DisconnectWindowWin::Start(
     const base::WeakPtr<ClientSessionControl>& client_session_control) {
   DCHECK(CalledOnValidThread());
-  DCHECK(!client_session_control_);
-  DCHECK(client_session_control);
+  DCHECK(!client_session_control_.get());
+  DCHECK(client_session_control.get());
 
   client_session_control_ = client_session_control;
 
@@ -274,7 +274,7 @@ void DisconnectWindowWin::EndDialog() {
     hwnd_ = NULL;
   }
 
-  if (client_session_control_)
+  if (client_session_control_.get())
     client_session_control_->DisconnectSession();
 }
 
