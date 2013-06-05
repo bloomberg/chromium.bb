@@ -179,9 +179,7 @@ bool WebRuntimeFeatures::isDirectoryUploadEnabled()
 
 void WebRuntimeFeatures::enableEncryptedMedia(bool enable)
 {
-    // FIXME: Change to setEncryptedMediaEnabled() once Chromium
-    // starts calling enableLegacyEncryptedMedia().
-    RuntimeEnabledFeatures::setLegacyEncryptedMediaEnabled(enable);
+    RuntimeEnabledFeatures::setEncryptedMediaEnabled(enable);
     // FIXME: Hack to allow MediaKeyError to be enabled for either version.
     RuntimeEnabledFeatures::setEncryptedMediaAnyVersionEnabled(
         RuntimeEnabledFeatures::encryptedMediaEnabled()
@@ -190,9 +188,7 @@ void WebRuntimeFeatures::enableEncryptedMedia(bool enable)
 
 bool WebRuntimeFeatures::isEncryptedMediaEnabled()
 {
-    // FIXME: Change to encryptedMediaEnabled() once Chromium
-    // starts calling isLegacyEncryptedMediaEnabled()
-    return RuntimeEnabledFeatures::legacyEncryptedMediaEnabled();
+    return RuntimeEnabledFeatures::encryptedMediaEnabled();
 }
 
 void WebRuntimeFeatures::enableLegacyEncryptedMedia(bool enable)
@@ -372,16 +368,12 @@ bool WebRuntimeFeatures::isMediaPlayerEnabled()
 
 void WebRuntimeFeatures::enableMediaSource(bool enable)
 {
-    // FIXME: Change to setMediaSourceEnabled() once Chromium
-    // starts calling enableWebKitMediaSource().
-    RuntimeEnabledFeatures::setWebKitMediaSourceEnabled(enable);
+    RuntimeEnabledFeatures::setMediaSourceEnabled(enable);
 }
 
 bool WebRuntimeFeatures::isMediaSourceEnabled()
 {
-    // FIXME: Change to mediaSourceEnabled() once Chromium
-    // starts calling isWebKitMediaSourceEnabled()
-    return RuntimeEnabledFeatures::webKitMediaSourceEnabled();
+    return RuntimeEnabledFeatures::mediaSourceEnabled();
 }
 
 void WebRuntimeFeatures::enableWebKitMediaSource(bool enable)

@@ -50,6 +50,7 @@ LazyLayout
 LegacyEncryptedMedia status=stable
 LocalStorage status=stable
 Media status=stable
+MediaSource status=experimental
 MediaStream status=stable
 Notifications status=stable
 PagePopup status=stable
