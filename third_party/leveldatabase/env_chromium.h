@@ -5,7 +5,10 @@
 #ifndef THIRD_PARTY_LEVELDATABASE_ENV_CHROMIUM_H_
 #define THIRD_PARTY_LEVELDATABASE_ENV_CHROMIUM_H_
 
+#include "base/metrics/histogram.h"
 #include "base/platform_file.h"
+#include "base/synchronization/condition_variable.h"
+#include "leveldb/env.h"
 #include "leveldb/slice.h"
 #include "leveldb/status.h"
 
@@ -47,6 +50,116 @@ leveldb::Status MakeIOError(leveldb::Slice filename,
                             MethodID method);
 
 bool ParseMethodAndError(const char* string, int* method, int* error);
+
+class UMALogger {
+ public:
+  virtual void RecordErrorAt(MethodID method) const = 0;
+  virtual void RecordOSError(MethodID method, int saved_errno) const = 0;
+  virtual void RecordOSError(MethodID method,
+                             base::PlatformFileError error) const = 0;
+};
+
+class RetrierProvider {
+ public:
+  virtual int MaxRetryTimeMillis() const = 0;
+  virtual base::HistogramBase* GetRetryTimeHistogram(MethodID method) const = 0;
+  virtual base::HistogramBase* GetRecoveredFromErrorHistogram(
+      MethodID method) const = 0;
+};
+
+class ChromiumWritableFile : public leveldb::WritableFile {
+ public:
+  ChromiumWritableFile(const std::string& fname,
+                       FILE* f,
+                       const UMALogger* uma_logger);
+  virtual ~ChromiumWritableFile();
+  virtual leveldb::Status Append(const leveldb::Slice& data);
+  virtual leveldb::Status Close();
+  virtual leveldb::Status Flush();
+  virtual leveldb::Status Sync();
+
+ private:
+  std::string filename_;
+  FILE* file_;
+  const UMALogger* uma_logger_;
+};
+
+class ChromiumEnv : public leveldb::Env,
+                    public UMALogger,
+                    public RetrierProvider {
+ public:
+  ChromiumEnv();
+  virtual ~ChromiumEnv();
+
+  virtual leveldb::Status NewSequentialFile(const std::string& fname,
+                                            leveldb::SequentialFile** result);
+  virtual leveldb::Status NewRandomAccessFile(
+      const std::string& fname,
+      leveldb::RandomAccessFile** result);
+  virtual leveldb::Status NewWritableFile(const std::string& fname,
+                                          leveldb::WritableFile** result);
+  virtual bool FileExists(const std::string& fname);
+  virtual leveldb::Status GetChildren(const std::string& dir,
+                                      std::vector<std::string>* result);
+  virtual leveldb::Status DeleteFile(const std::string& fname);
+  virtual leveldb::Status CreateDir(const std::string& name);
+  virtual leveldb::Status DeleteDir(const std::string& name);
+  virtual leveldb::Status GetFileSize(const std::string& fname, uint64_t* size);
+  virtual leveldb::Status RenameFile(const std::string& src,
+                                     const std::string& dst);
+  virtual leveldb::Status LockFile(const std::string& fname,
+                                   leveldb::FileLock** lock);
+  virtual leveldb::Status UnlockFile(leveldb::FileLock* lock);
+  virtual void Schedule(void (*function)(void*), void* arg);
+  virtual void StartThread(void (*function)(void* arg), void* arg);
+  virtual leveldb::Status GetTestDirectory(std::string* path);
+  virtual leveldb::Status NewLogger(const std::string& fname,
+                                    leveldb::Logger** result);
+  virtual uint64_t NowMicros();
+  virtual void SleepForMicroseconds(int micros);
+
+ protected:
+  std::string name_;
+
+ private:
+  const int kMaxRetryTimeMillis;
+  // BGThread() is the body of the background thread
+  void BGThread();
+  static void BGThreadWrapper(void* arg) {
+    reinterpret_cast<ChromiumEnv*>(arg)->BGThread();
+  }
+
+  virtual void RecordErrorAt(MethodID method) const;
+  virtual void RecordOSError(MethodID method, int saved_errno) const;
+  virtual void RecordOSError(MethodID method,
+                             base::PlatformFileError error) const;
+  void RecordOpenFilesLimit(const std::string& type);
+  void RecordLockFileAncestors(int num_missing_ancestors) const;
+  base::HistogramBase* GetOSErrorHistogram(MethodID method, int limit) const;
+  base::HistogramBase* GetMethodIOErrorHistogram() const;
+  base::HistogramBase* GetMaxFDHistogram(const std::string& type) const;
+  base::HistogramBase* GetLockFileAncestorHistogram() const;
+
+  // RetrierProvider implementation.
+  virtual int MaxRetryTimeMillis() const { return kMaxRetryTimeMillis; }
+  virtual base::HistogramBase* GetRetryTimeHistogram(MethodID method) const;
+  virtual base::HistogramBase* GetRecoveredFromErrorHistogram(
+      MethodID method) const;
+
+  base::FilePath test_directory_;
+
+  ::base::Lock mu_;
+  ::base::ConditionVariable bgsignal_;
+  bool started_bgthread_;
+
+  // Entry per Schedule() call
+  struct BGItem {
+    void* arg;
+    void (*function)(void*);
+  };
+  typedef std::deque<BGItem> BGQueue;
+  BGQueue queue_;
+};
 
 }  // namespace leveldb_env
 

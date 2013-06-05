@@ -198,22 +198,6 @@ const char* MethodIDToString(MethodID method) {
   return "Unknown";
 }
 
-class UMALogger {
- public:
-  virtual void RecordErrorAt(MethodID method) const = 0;
-  virtual void RecordOSError(MethodID method, int saved_errno) const = 0;
-  virtual void RecordOSError(MethodID method, base::PlatformFileError error)
-      const = 0;
-};
-
-class RetrierProvider {
- public:
-  virtual int MaxRetryTimeMillis() const = 0;
-  virtual base::HistogramBase* GetRetryTimeHistogram(MethodID method) const = 0;
-  virtual base::HistogramBase* GetRecoveredFromErrorHistogram(
-      MethodID method) const = 0;
-};
-
 static const base::FilePath::CharType kLevelDBTestDirectoryPrefix[]
     = FILE_PATH_LITERAL("leveldb-test-");
 
@@ -325,449 +309,186 @@ class ChromiumRandomAccessFile: public RandomAccessFile {
   }
 };
 
-class ChromiumWritableFile : public WritableFile {
- private:
-  std::string filename_;
-  FILE* file_;
-  const UMALogger* uma_logger_;
-
- public:
-  ChromiumWritableFile(const std::string& fname, FILE* f,
-                       const UMALogger* uma_logger)
-      : filename_(fname), file_(f), uma_logger_(uma_logger) { }
-
-  ~ChromiumWritableFile() {
-    if (file_ != NULL) {
-      // Ignoring any potential errors
-      fclose(file_);
-    }
-  }
-
-  virtual Status Append(const Slice& data) {
-    size_t r = fwrite_wrapper(data.data(), 1, data.size(), file_);
-    Status result;
-    if (r != data.size()) {
-      uma_logger_->RecordOSError(kWritableFileAppend, errno);
-      result =
-          MakeIOError(filename_, strerror(errno), kWritableFileAppend, errno);
-    }
-    return result;
-  }
-
-  virtual Status Close() {
-    Status result;
-    if (fclose(file_) != 0) {
-      result =
-          MakeIOError(filename_, strerror(errno), kWritableFileClose, errno);
-      uma_logger_->RecordErrorAt(kWritableFileClose);
-    }
-    file_ = NULL;
-    return result;
-  }
-
-  virtual Status Flush() {
-    Status result;
-    if (HANDLE_EINTR(fflush_wrapper(file_))) {
-      int saved_errno = errno;
-      result = MakeIOError(
-          filename_, strerror(saved_errno), kWritableFileFlush, saved_errno);
-      uma_logger_->RecordOSError(kWritableFileFlush, saved_errno);
-    }
-    return result;
-  }
-
-  virtual Status Sync() {
-    TRACE_EVENT0("leveldb", "ChromiumEnv::Sync");
-    Status result;
-    int error = 0;
-
-    if (HANDLE_EINTR(fflush_wrapper(file_)))
-      error = errno;
-    // Sync even if fflush gave an error; perhaps the data actually got out,
-    // even though something went wrong.
-    if (fdatasync(fileno(file_)) && !error)
-      error = errno;
-    // Report the first error we found.
-    if (error) {
-      result =
-          MakeIOError(filename_, strerror(error), kWritableFileSync, error);
-      uma_logger_->RecordErrorAt(kWritableFileSync);
-    }
-    return result;
-  }
-};
-
 class ChromiumFileLock : public FileLock {
  public:
   ::base::PlatformFile file_;
 };
 
-class ChromiumEnv : public Env, public UMALogger, public RetrierProvider {
+class Retrier {
  public:
-  ChromiumEnv();
-  virtual ~ChromiumEnv() {
-    NOTREACHED();
-  }
-
-  virtual Status NewSequentialFile(const std::string& fname,
-                                   SequentialFile** result) {
-    FILE* f = fopen_internal(fname.c_str(), "rb");
-    if (f == NULL) {
-      *result = NULL;
-      int saved_errno = errno;
-      RecordOSError(kNewSequentialFile, saved_errno);
-      return MakeIOError(
-          fname, strerror(saved_errno), kNewSequentialFile, saved_errno);
-    } else {
-      *result = new ChromiumSequentialFile(fname, f, this);
-      return Status::OK();
-    }
-  }
-
-  void RecordOpenFilesLimit(const std::string& type) {
-#if defined(OS_POSIX)
-    struct rlimit nofile;
-    if (getrlimit(RLIMIT_NOFILE, &nofile))
-      return;
-    GetMaxFDHistogram(type)->Add(nofile.rlim_cur);
-#endif
-  }
-
-  virtual Status NewRandomAccessFile(const std::string& fname,
-                                     RandomAccessFile** result) {
-    int flags = ::base::PLATFORM_FILE_READ | ::base::PLATFORM_FILE_OPEN;
-    bool created;
-    ::base::PlatformFileError error_code;
-    ::base::PlatformFile file = ::base::CreatePlatformFile(
-        CreateFilePath(fname), flags, &created, &error_code);
-    if (error_code == ::base::PLATFORM_FILE_OK) {
-      *result = new ChromiumRandomAccessFile(fname, file, this);
-      RecordOpenFilesLimit("Success");
-      return Status::OK();
-    }
-    if (error_code == ::base::PLATFORM_FILE_ERROR_TOO_MANY_OPENED)
-      RecordOpenFilesLimit("TooManyOpened");
-    else
-      RecordOpenFilesLimit("OtherError");
-    *result = NULL;
-    RecordOSError(kNewRandomAccessFile, error_code);
-    return MakeIOError(fname,
-                       PlatformFileErrorString(error_code),
-                       kNewRandomAccessFile,
-                       error_code);
-  }
-
-  virtual Status NewWritableFile(const std::string& fname,
-                                 WritableFile** result) {
-    *result = NULL;
-    FILE* f = fopen_internal(fname.c_str(), "wb");
-    if (f == NULL) {
-      RecordErrorAt(kNewWritableFile);
-      return MakeIOError(fname, strerror(errno), kNewWritableFile, errno);
-    } else {
-      if (!sync_parent(fname)) {
-        fclose(f);
-        RecordErrorAt(kNewWritableFile);
-        return MakeIOError(fname, strerror(errno), kNewWritableFile, errno);
-      }
-      *result = new ChromiumWritableFile(fname, f, this);
-      return Status::OK();
-    }
-  }
-
-  virtual bool FileExists(const std::string& fname) {
-    return ::file_util::PathExists(CreateFilePath(fname));
-  }
-
-  virtual Status GetChildren(const std::string& dir,
-                             std::vector<std::string>* result) {
-    result->clear();
-    ::file_util::FileEnumerator iter(
-        CreateFilePath(dir), false, ::file_util::FileEnumerator::FILES);
-    base::FilePath current = iter.Next();
-    while (!current.empty()) {
-      result->push_back(FilePathToString(current.BaseName()));
-      current = iter.Next();
-    }
-    // TODO(jorlow): Unfortunately, the FileEnumerator swallows errors, so
-    //               we'll always return OK. Maybe manually check for error
-    //               conditions like the file not existing?
-    return Status::OK();
-  }
-
-  virtual Status DeleteFile(const std::string& fname) {
-    Status result;
-    // TODO(jorlow): Should we assert this is a file?
-    if (!::file_util::Delete(CreateFilePath(fname), false)) {
-      result = MakeIOError(fname, "Could not delete file.", kDeleteFile);
-      RecordErrorAt(kDeleteFile);
-    }
-    return result;
-  };
-
-  virtual Status CreateDir(const std::string& name) {
-    Status result;
-    if (!::file_util::CreateDirectory(CreateFilePath(name))) {
-      result = MakeIOError(name, "Could not create directory.", kCreateDir);
-      RecordErrorAt(kCreateDir);
-    }
-    return result;
-  };
-
-  virtual Status DeleteDir(const std::string& name) {
-    Status result;
-    // TODO(jorlow): Should we assert this is a directory?
-    if (!::file_util::Delete(CreateFilePath(name), false)) {
-      result = MakeIOError(name, "Could not delete directory.", kDeleteDir);
-      RecordErrorAt(kDeleteDir);
-    }
-    return result;
-  };
-
-  virtual Status GetFileSize(const std::string& fname, uint64_t* size) {
-    Status s;
-    int64_t signed_size;
-    if (!::file_util::GetFileSize(CreateFilePath(fname), &signed_size)) {
-      *size = 0;
-      s = MakeIOError(fname, "Could not determine file size.", kGetFileSize);
-      RecordErrorAt(kGetFileSize);
-    } else {
-      *size = static_cast<uint64_t>(signed_size);
-    }
-    return s;
-  }
-
-  class Retrier {
-   public:
-    Retrier(MethodID method, RetrierProvider* provider)
-        : start_(base::TimeTicks::Now()),
-          limit_(start_ + base::TimeDelta::FromMilliseconds(
-                              provider->MaxRetryTimeMillis())),
-          last_(start_),
-          time_to_sleep_(base::TimeDelta::FromMilliseconds(10)),
-          success_(true),
-          method_(method),
-          last_error_(base::PLATFORM_FILE_OK),
-          provider_(provider) {}
-    ~Retrier() {
-      if (success_) {
-        provider_->GetRetryTimeHistogram(method_)->AddTime(last_ - start_);
-        if (last_error_ != base::PLATFORM_FILE_OK) {
-          DCHECK(last_error_ < 0);
-          provider_->GetRecoveredFromErrorHistogram(method_)->Add(-last_error_);
-        }
+  Retrier(MethodID method, RetrierProvider* provider)
+      : start_(base::TimeTicks::Now()),
+        limit_(start_ + base::TimeDelta::FromMilliseconds(
+                            provider->MaxRetryTimeMillis())),
+        last_(start_),
+        time_to_sleep_(base::TimeDelta::FromMilliseconds(10)),
+        success_(true),
+        method_(method),
+        last_error_(base::PLATFORM_FILE_OK),
+        provider_(provider) {}
+  ~Retrier() {
+    if (success_) {
+      provider_->GetRetryTimeHistogram(method_)->AddTime(last_ - start_);
+      if (last_error_ != base::PLATFORM_FILE_OK) {
+        DCHECK(last_error_ < 0);
+        provider_->GetRecoveredFromErrorHistogram(method_)->Add(-last_error_);
       }
     }
-    bool ShouldKeepTrying(base::PlatformFileError last_error) {
-      DCHECK_NE(last_error, base::PLATFORM_FILE_OK);
-      last_error_ = last_error;
-      if (last_ < limit_) {
-        base::PlatformThread::Sleep(time_to_sleep_);
-        last_ = base::TimeTicks::Now();
-        return true;
-      }
-      success_ = false;
-      return false;
+  }
+  bool ShouldKeepTrying(base::PlatformFileError last_error) {
+    DCHECK_NE(last_error, base::PLATFORM_FILE_OK);
+    last_error_ = last_error;
+    if (last_ < limit_) {
+      base::PlatformThread::Sleep(time_to_sleep_);
+      last_ = base::TimeTicks::Now();
+      return true;
     }
-   private:
-    base::TimeTicks start_;
-    base::TimeTicks limit_;
-    base::TimeTicks last_;
-    base::TimeDelta time_to_sleep_;
-    bool success_;
-    MethodID method_;
-    base::PlatformFileError last_error_;
-    RetrierProvider* provider_;
-  };
-
-  virtual Status RenameFile(const std::string& src, const std::string& dst) {
-    Status result;
-    base::FilePath src_file_path = CreateFilePath(src);
-    if (!::file_util::PathExists(src_file_path))
-      return result;
-    base::FilePath destination = CreateFilePath(dst);
-
-    Retrier retrier(kRenameFile, this);
-    base::PlatformFileError error = base::PLATFORM_FILE_OK;
-    do {
-      if (::file_util::ReplaceFileAndGetError(
-              src_file_path, destination, &error)) {
-        sync_parent(dst);
-        if (src_file_path.DirName() != destination.DirName()) {
-          // As leveldb is implemented now this branch will never be taken, but
-          // this is future-proof.
-          sync_parent(src);
-        }
-        return result;
-      }
-    } while (retrier.ShouldKeepTrying(error));
-
-    DCHECK(error != base::PLATFORM_FILE_OK);
-    RecordOSError(kRenameFile, error);
-    char buf[100];
-    snprintf(buf, sizeof(buf), "Could not rename file: %s",
-             PlatformFileErrorString(error));
-    return MakeIOError(src, buf, kRenameFile, error);
+    success_ = false;
+    return false;
   }
-
-  virtual Status LockFile(const std::string& fname, FileLock** lock) {
-    *lock = NULL;
-    Status result;
-    int flags = ::base::PLATFORM_FILE_OPEN_ALWAYS |
-                ::base::PLATFORM_FILE_READ |
-                ::base::PLATFORM_FILE_WRITE |
-                ::base::PLATFORM_FILE_EXCLUSIVE_READ |
-                ::base::PLATFORM_FILE_EXCLUSIVE_WRITE;
-    bool created;
-    ::base::PlatformFileError error_code;
-    ::base::PlatformFile file;
-    Retrier retrier(kLockFile, this);
-    do {
-      file = ::base::CreatePlatformFile(
-          CreateFilePath(fname), flags, &created, &error_code);
-    } while (error_code != ::base::PLATFORM_FILE_OK &&
-             retrier.ShouldKeepTrying(error_code));
-
-    if (error_code == ::base::PLATFORM_FILE_ERROR_NOT_FOUND) {
-      ::base::FilePath parent = CreateFilePath(fname).DirName();
-      ::base::FilePath last_parent;
-      int num_missing_ancestors = 0;
-      do {
-        if (file_util::DirectoryExists(parent))
-          break;
-        ++num_missing_ancestors;
-        last_parent = parent;
-        parent = parent.DirName();
-      } while (parent != last_parent);
-      RecordLockFileAncestors(num_missing_ancestors);
-    }
-
-    if (error_code != ::base::PLATFORM_FILE_OK) {
-      result = MakeIOError(
-          fname, PlatformFileErrorString(error_code), kLockFile, error_code);
-      RecordOSError(kLockFile, error_code);
-    } else {
-      ChromiumFileLock* my_lock = new ChromiumFileLock;
-      my_lock->file_ = file;
-      *lock = my_lock;
-    }
-    return result;
-  }
-
-  virtual Status UnlockFile(FileLock* lock) {
-    ChromiumFileLock* my_lock = reinterpret_cast<ChromiumFileLock*>(lock);
-    Status result;
-    if (!::base::ClosePlatformFile(my_lock->file_)) {
-      result = MakeIOError("Could not close lock file.", "", kUnlockFile);
-      RecordErrorAt(kUnlockFile);
-    }
-    delete my_lock;
-    return result;
-  }
-
-  virtual void Schedule(void (*function)(void*), void* arg);
-
-  virtual void StartThread(void (*function)(void* arg), void* arg);
-
-  virtual Status GetTestDirectory(std::string* path) {
-    mu_.Acquire();
-    if (test_directory_.empty()) {
-      if (!::file_util::CreateNewTempDirectory(kLevelDBTestDirectoryPrefix,
-                                               &test_directory_)) {
-        mu_.Release();
-        RecordErrorAt(kGetTestDirectory);
-        return MakeIOError("Could not create temp directory.",
-                           "",
-                           kGetTestDirectory);
-      }
-    }
-    *path = FilePathToString(test_directory_);
-    mu_.Release();
-    return Status::OK();
-  }
-
-  virtual Status NewLogger(const std::string& fname, Logger** result) {
-    FILE* f = fopen_internal(fname.c_str(), "w");
-    if (f == NULL) {
-      *result = NULL;
-      int saved_errno = errno;
-      RecordOSError(kNewLogger, saved_errno);
-      return MakeIOError(fname, strerror(saved_errno), kNewLogger, saved_errno);
-    } else {
-      if (!sync_parent(fname)) {
-        fclose(f);
-        return MakeIOError(fname, strerror(errno), kNewLogger, errno);
-      }
-      *result = new ChromiumLogger(f);
-      return Status::OK();
-    }
-  }
-
-  virtual uint64_t NowMicros() {
-    return ::base::TimeTicks::Now().ToInternalValue();
-  }
-
-  virtual void SleepForMicroseconds(int micros) {
-    // Round up to the next millisecond.
-    ::base::PlatformThread::Sleep(::base::TimeDelta::FromMicroseconds(micros));
-  }
-
-  void RecordErrorAt(MethodID method) const {
-    GetMethodIOErrorHistogram()->Add(method);
-  }
-
-  void RecordLockFileAncestors(int num_missing_ancestors) const {
-    GetLockFileAncestorHistogram()->Add(num_missing_ancestors);
-  }
-
-  void RecordOSError(MethodID method, base::PlatformFileError error) const {
-    DCHECK(error < 0);
-    RecordErrorAt(method);
-    GetOSErrorHistogram(method, -base::PLATFORM_FILE_ERROR_MAX)->
-        Add(-error);
-  }
-
-  void RecordOSError(MethodID method, int error) const {
-    DCHECK(error > 0);
-    RecordErrorAt(method);
-    GetOSErrorHistogram(method, ERANGE + 1)->Add(error);
-  }
-
- protected:
-  std::string name_;
 
  private:
-  const int kMaxRetryTimeMillis;
-  // BGThread() is the body of the background thread
-  void BGThread();
-  static void BGThreadWrapper(void* arg) {
-    reinterpret_cast<ChromiumEnv*>(arg)->BGThread();
-  }
-
-  base::HistogramBase* GetOSErrorHistogram(MethodID method, int limit) const;
-  base::HistogramBase* GetMethodIOErrorHistogram() const;
-  base::HistogramBase* GetMaxFDHistogram(const std::string& type) const;
-  base::HistogramBase* GetLockFileAncestorHistogram() const;
-
-  // RetrierProvider implementation.
-  virtual int MaxRetryTimeMillis() const {
-    return kMaxRetryTimeMillis;
-  }
-  virtual base::HistogramBase* GetRetryTimeHistogram(MethodID method) const;
-  virtual base::HistogramBase* GetRecoveredFromErrorHistogram(
-      MethodID method) const;
-
-  base::FilePath test_directory_;
-
-  ::base::Lock mu_;
-  ::base::ConditionVariable bgsignal_;
-  bool started_bgthread_;
-
-  // Entry per Schedule() call
-  struct BGItem { void* arg; void (*function)(void*); };
-  typedef std::deque<BGItem> BGQueue;
-  BGQueue queue_;
+  base::TimeTicks start_;
+  base::TimeTicks limit_;
+  base::TimeTicks last_;
+  base::TimeDelta time_to_sleep_;
+  bool success_;
+  MethodID method_;
+  base::PlatformFileError last_error_;
+  RetrierProvider* provider_;
 };
+
+class IDBEnv : public ChromiumEnv {
+ public:
+  IDBEnv() : ChromiumEnv() { name_ = "LevelDBEnv.IDB"; }
+};
+
+::base::LazyInstance<IDBEnv>::Leaky idb_env = LAZY_INSTANCE_INITIALIZER;
+
+::base::LazyInstance<ChromiumEnv>::Leaky default_env =
+    LAZY_INSTANCE_INITIALIZER;
+
+}  // unnamed namespace
+
+Status MakeIOError(Slice filename,
+                   const char* message,
+                   MethodID method,
+                   int saved_errno) {
+  char buf[512];
+  snprintf(buf,
+           sizeof(buf),
+           "%s (ChromeMethodErrno: %d::%s::%d)",
+           message,
+           method,
+           MethodIDToString(method),
+           saved_errno);
+  return Status::IOError(filename, buf);
+}
+
+Status MakeIOError(Slice filename,
+                   const char* message,
+                   MethodID method,
+                   base::PlatformFileError error) {
+  DCHECK(error < 0);
+  char buf[512];
+  snprintf(buf,
+           sizeof(buf),
+           "%s (ChromeMethodPFE: %d::%s::%d)",
+           message,
+           method,
+           MethodIDToString(method),
+           -error);
+  return Status::IOError(filename, buf);
+}
+
+Status MakeIOError(Slice filename, const char* message, MethodID method) {
+  char buf[512];
+  snprintf(buf,
+           sizeof(buf),
+           "%s (ChromeMethodOnly: %d::%s)",
+           message,
+           method,
+           MethodIDToString(method));
+  return Status::IOError(filename, buf);
+}
+
+bool ParseMethodAndError(const char* string, int* method, int* error) {
+  if (RE2::PartialMatch(string, "ChromeMethodOnly: (\\d+)", method))
+    return true;
+  if (RE2::PartialMatch(
+          string, "ChromeMethodPFE: (\\d+)::.*::(\\d+)", method, error)) {
+    *error = -*error;
+    return true;
+  }
+  if (RE2::PartialMatch(
+          string, "ChromeMethodErrno: (\\d+)::.*::(\\d+)", method, error)) {
+    return true;
+  }
+  return false;
+}
+
+ChromiumWritableFile::ChromiumWritableFile(const std::string& fname,
+                                           FILE* f,
+                                           const UMALogger* uma_logger)
+    : filename_(fname), file_(f), uma_logger_(uma_logger) {}
+
+ChromiumWritableFile::~ChromiumWritableFile() {
+  if (file_ != NULL) {
+    // Ignoring any potential errors
+    fclose(file_);
+  }
+}
+
+Status ChromiumWritableFile::Append(const Slice& data) {
+  size_t r = fwrite_wrapper(data.data(), 1, data.size(), file_);
+  Status result;
+  if (r != data.size()) {
+    uma_logger_->RecordOSError(kWritableFileAppend, errno);
+    result =
+        MakeIOError(filename_, strerror(errno), kWritableFileAppend, errno);
+  }
+  return result;
+}
+
+Status ChromiumWritableFile::Close() {
+  Status result;
+  if (fclose(file_) != 0) {
+    result = MakeIOError(filename_, strerror(errno), kWritableFileClose, errno);
+    uma_logger_->RecordErrorAt(kWritableFileClose);
+  }
+  file_ = NULL;
+  return result;
+}
+
+Status ChromiumWritableFile::Flush() {
+  Status result;
+  if (HANDLE_EINTR(fflush_wrapper(file_))) {
+    int saved_errno = errno;
+    result = MakeIOError(
+        filename_, strerror(saved_errno), kWritableFileFlush, saved_errno);
+    uma_logger_->RecordOSError(kWritableFileFlush, saved_errno);
+  }
+  return result;
+}
+
+Status ChromiumWritableFile::Sync() {
+  TRACE_EVENT0("leveldb", "ChromiumEnv::Sync");
+  Status result;
+  int error = 0;
+
+  if (HANDLE_EINTR(fflush_wrapper(file_)))
+    error = errno;
+  // Sync even if fflush gave an error; perhaps the data actually got out,
+  // even though something went wrong.
+  if (fdatasync(fileno(file_)) && !error)
+    error = errno;
+  // Report the first error we found.
+  if (error) {
+    result = MakeIOError(filename_, strerror(error), kWritableFileSync, error);
+    uma_logger_->RecordErrorAt(kWritableFileSync);
+  }
+  return result;
+}
 
 ChromiumEnv::ChromiumEnv()
     : name_("LevelDBEnv"),
@@ -776,8 +497,288 @@ ChromiumEnv::ChromiumEnv()
       kMaxRetryTimeMillis(1000) {
 }
 
+ChromiumEnv::~ChromiumEnv() { NOTREACHED(); }
+
+Status ChromiumEnv::NewSequentialFile(const std::string& fname,
+                                      SequentialFile** result) {
+  FILE* f = fopen_internal(fname.c_str(), "rb");
+  if (f == NULL) {
+    *result = NULL;
+    int saved_errno = errno;
+    RecordOSError(kNewSequentialFile, saved_errno);
+    return MakeIOError(
+        fname, strerror(saved_errno), kNewSequentialFile, saved_errno);
+  } else {
+    *result = new ChromiumSequentialFile(fname, f, this);
+    return Status::OK();
+  }
+}
+
+void ChromiumEnv::RecordOpenFilesLimit(const std::string& type) {
+#if defined(OS_POSIX)
+  struct rlimit nofile;
+  if (getrlimit(RLIMIT_NOFILE, &nofile))
+    return;
+  GetMaxFDHistogram(type)->Add(nofile.rlim_cur);
+#endif
+}
+
+Status ChromiumEnv::NewRandomAccessFile(const std::string& fname,
+                                        RandomAccessFile** result) {
+  int flags = ::base::PLATFORM_FILE_READ | ::base::PLATFORM_FILE_OPEN;
+  bool created;
+  ::base::PlatformFileError error_code;
+  ::base::PlatformFile file = ::base::CreatePlatformFile(
+      CreateFilePath(fname), flags, &created, &error_code);
+  if (error_code == ::base::PLATFORM_FILE_OK) {
+    *result = new ChromiumRandomAccessFile(fname, file, this);
+    RecordOpenFilesLimit("Success");
+    return Status::OK();
+  }
+  if (error_code == ::base::PLATFORM_FILE_ERROR_TOO_MANY_OPENED)
+    RecordOpenFilesLimit("TooManyOpened");
+  else
+    RecordOpenFilesLimit("OtherError");
+  *result = NULL;
+  RecordOSError(kNewRandomAccessFile, error_code);
+  return MakeIOError(fname,
+                     PlatformFileErrorString(error_code),
+                     kNewRandomAccessFile,
+                     error_code);
+}
+
+Status ChromiumEnv::NewWritableFile(const std::string& fname,
+                                    WritableFile** result) {
+  *result = NULL;
+  FILE* f = fopen_internal(fname.c_str(), "wb");
+  if (f == NULL) {
+    RecordErrorAt(kNewWritableFile);
+    return MakeIOError(fname, strerror(errno), kNewWritableFile, errno);
+  } else {
+    if (!sync_parent(fname)) {
+      fclose(f);
+      RecordErrorAt(kNewWritableFile);
+      return MakeIOError(fname, strerror(errno), kNewWritableFile, errno);
+    }
+    *result = new ChromiumWritableFile(fname, f, this);
+    return Status::OK();
+  }
+}
+
+bool ChromiumEnv::FileExists(const std::string& fname) {
+  return ::file_util::PathExists(CreateFilePath(fname));
+}
+
+Status ChromiumEnv::GetChildren(const std::string& dir,
+                                std::vector<std::string>* result) {
+  result->clear();
+  ::file_util::FileEnumerator iter(
+      CreateFilePath(dir), false, ::file_util::FileEnumerator::FILES);
+  base::FilePath current = iter.Next();
+  while (!current.empty()) {
+    result->push_back(FilePathToString(current.BaseName()));
+    current = iter.Next();
+  }
+  // TODO(jorlow): Unfortunately, the FileEnumerator swallows errors, so
+  //               we'll always return OK. Maybe manually check for error
+  //               conditions like the file not existing?
+  return Status::OK();
+}
+
+Status ChromiumEnv::DeleteFile(const std::string& fname) {
+  Status result;
+  // TODO(jorlow): Should we assert this is a file?
+  if (!::file_util::Delete(CreateFilePath(fname), false)) {
+    result = MakeIOError(fname, "Could not delete file.", kDeleteFile);
+    RecordErrorAt(kDeleteFile);
+  }
+  return result;
+}
+
+Status ChromiumEnv::CreateDir(const std::string& name) {
+  Status result;
+  if (!::file_util::CreateDirectory(CreateFilePath(name))) {
+    result = MakeIOError(name, "Could not create directory.", kCreateDir);
+    RecordErrorAt(kCreateDir);
+  }
+  return result;
+}
+
+Status ChromiumEnv::DeleteDir(const std::string& name) {
+  Status result;
+  // TODO(jorlow): Should we assert this is a directory?
+  if (!::file_util::Delete(CreateFilePath(name), false)) {
+    result = MakeIOError(name, "Could not delete directory.", kDeleteDir);
+    RecordErrorAt(kDeleteDir);
+  }
+  return result;
+}
+
+Status ChromiumEnv::GetFileSize(const std::string& fname, uint64_t* size) {
+  Status s;
+  int64_t signed_size;
+  if (!::file_util::GetFileSize(CreateFilePath(fname), &signed_size)) {
+    *size = 0;
+    s = MakeIOError(fname, "Could not determine file size.", kGetFileSize);
+    RecordErrorAt(kGetFileSize);
+  } else {
+    *size = static_cast<uint64_t>(signed_size);
+  }
+  return s;
+}
+
+Status ChromiumEnv::RenameFile(const std::string& src, const std::string& dst) {
+  Status result;
+  base::FilePath src_file_path = CreateFilePath(src);
+  if (!::file_util::PathExists(src_file_path))
+    return result;
+  base::FilePath destination = CreateFilePath(dst);
+
+  Retrier retrier(kRenameFile, this);
+  base::PlatformFileError error = base::PLATFORM_FILE_OK;
+  do {
+    if (::file_util::ReplaceFileAndGetError(
+            src_file_path, destination, &error)) {
+      sync_parent(dst);
+      if (src_file_path.DirName() != destination.DirName()) {
+        // As leveldb is implemented now this branch will never be taken, but
+        // this is future-proof.
+        sync_parent(src);
+      }
+      return result;
+    }
+  } while (retrier.ShouldKeepTrying(error));
+
+  DCHECK(error != base::PLATFORM_FILE_OK);
+  RecordOSError(kRenameFile, error);
+  char buf[100];
+  snprintf(buf,
+           sizeof(buf),
+           "Could not rename file: %s",
+           PlatformFileErrorString(error));
+  return MakeIOError(src, buf, kRenameFile, error);
+}
+
+Status ChromiumEnv::LockFile(const std::string& fname, FileLock** lock) {
+  *lock = NULL;
+  Status result;
+  int flags = ::base::PLATFORM_FILE_OPEN_ALWAYS |
+              ::base::PLATFORM_FILE_READ |
+              ::base::PLATFORM_FILE_WRITE |
+              ::base::PLATFORM_FILE_EXCLUSIVE_READ |
+              ::base::PLATFORM_FILE_EXCLUSIVE_WRITE;
+  bool created;
+  ::base::PlatformFileError error_code;
+  ::base::PlatformFile file;
+  Retrier retrier(kLockFile, this);
+  do {
+    file = ::base::CreatePlatformFile(
+        CreateFilePath(fname), flags, &created, &error_code);
+  } while (error_code != ::base::PLATFORM_FILE_OK &&
+           retrier.ShouldKeepTrying(error_code));
+
+  if (error_code == ::base::PLATFORM_FILE_ERROR_NOT_FOUND) {
+    ::base::FilePath parent = CreateFilePath(fname).DirName();
+    ::base::FilePath last_parent;
+    int num_missing_ancestors = 0;
+    do {
+      if (file_util::DirectoryExists(parent))
+        break;
+      ++num_missing_ancestors;
+      last_parent = parent;
+      parent = parent.DirName();
+    } while (parent != last_parent);
+    RecordLockFileAncestors(num_missing_ancestors);
+  }
+
+  if (error_code != ::base::PLATFORM_FILE_OK) {
+    result = MakeIOError(
+        fname, PlatformFileErrorString(error_code), kLockFile, error_code);
+    RecordOSError(kLockFile, error_code);
+  } else {
+    ChromiumFileLock* my_lock = new ChromiumFileLock;
+    my_lock->file_ = file;
+    *lock = my_lock;
+  }
+  return result;
+}
+
+Status ChromiumEnv::UnlockFile(FileLock* lock) {
+  ChromiumFileLock* my_lock = reinterpret_cast<ChromiumFileLock*>(lock);
+  Status result;
+  if (!::base::ClosePlatformFile(my_lock->file_)) {
+    result = MakeIOError("Could not close lock file.", "", kUnlockFile);
+    RecordErrorAt(kUnlockFile);
+  }
+  delete my_lock;
+  return result;
+}
+
+Status ChromiumEnv::GetTestDirectory(std::string* path) {
+  mu_.Acquire();
+  if (test_directory_.empty()) {
+    if (!::file_util::CreateNewTempDirectory(kLevelDBTestDirectoryPrefix,
+                                             &test_directory_)) {
+      mu_.Release();
+      RecordErrorAt(kGetTestDirectory);
+      return MakeIOError(
+          "Could not create temp directory.", "", kGetTestDirectory);
+    }
+  }
+  *path = FilePathToString(test_directory_);
+  mu_.Release();
+  return Status::OK();
+}
+
+Status ChromiumEnv::NewLogger(const std::string& fname, Logger** result) {
+  FILE* f = fopen_internal(fname.c_str(), "w");
+  if (f == NULL) {
+    *result = NULL;
+    int saved_errno = errno;
+    RecordOSError(kNewLogger, saved_errno);
+    return MakeIOError(fname, strerror(saved_errno), kNewLogger, saved_errno);
+  } else {
+    if (!sync_parent(fname)) {
+      fclose(f);
+      return MakeIOError(fname, strerror(errno), kNewLogger, errno);
+    }
+    *result = new ChromiumLogger(f);
+    return Status::OK();
+  }
+}
+
+uint64_t ChromiumEnv::NowMicros() {
+  return ::base::TimeTicks::Now().ToInternalValue();
+}
+
+void ChromiumEnv::SleepForMicroseconds(int micros) {
+  // Round up to the next millisecond.
+  ::base::PlatformThread::Sleep(::base::TimeDelta::FromMicroseconds(micros));
+}
+
+void ChromiumEnv::RecordErrorAt(MethodID method) const {
+  GetMethodIOErrorHistogram()->Add(method);
+}
+
+void ChromiumEnv::RecordLockFileAncestors(int num_missing_ancestors) const {
+  GetLockFileAncestorHistogram()->Add(num_missing_ancestors);
+}
+
+void ChromiumEnv::RecordOSError(MethodID method,
+                                base::PlatformFileError error) const {
+  DCHECK(error < 0);
+  RecordErrorAt(method);
+  GetOSErrorHistogram(method, -base::PLATFORM_FILE_ERROR_MAX)->Add(-error);
+}
+
+void ChromiumEnv::RecordOSError(MethodID method, int error) const {
+  DCHECK(error > 0);
+  RecordErrorAt(method);
+  GetOSErrorHistogram(method, ERANGE + 1)->Add(error);
+}
+
 base::HistogramBase* ChromiumEnv::GetOSErrorHistogram(MethodID method,
-                                                            int limit) const {
+                                                      int limit) const {
   std::string uma_name(name_);
   // TODO(dgrogan): This is probably not the best way to concatenate strings.
   uma_name.append(".IOError.").append(MethodIDToString(method));
@@ -904,82 +905,6 @@ void ChromiumEnv::BGThread() {
 
 void ChromiumEnv::StartThread(void (*function)(void* arg), void* arg) {
   new Thread(function, arg); // Will self-delete.
-}
-
-class IDBEnv : public ChromiumEnv {
- public:
-  IDBEnv() : ChromiumEnv() {
-    name_ = "LevelDBEnv.IDB";
-  }
-};
-
-::base::LazyInstance<IDBEnv>::Leaky
-    idb_env = LAZY_INSTANCE_INITIALIZER;
-
-::base::LazyInstance<ChromiumEnv>::Leaky
-    default_env = LAZY_INSTANCE_INITIALIZER;
-
-}  // unnamed namespace
-
-Status MakeIOError(Slice filename,
-                   const char* message,
-                   MethodID method,
-                   int saved_errno) {
-  char buf[512];
-  snprintf(buf,
-           sizeof(buf),
-           "%s (ChromeMethodErrno: %d::%s::%d)",
-           message,
-           method,
-           MethodIDToString(method),
-           saved_errno);
-  return Status::IOError(filename, buf);
-}
-
-Status MakeIOError(Slice filename,
-                   const char* message,
-                   MethodID method,
-                   base::PlatformFileError error) {
-  DCHECK(error < 0);
-  char buf[512];
-  snprintf(buf,
-           sizeof(buf),
-           "%s (ChromeMethodPFE: %d::%s::%d)",
-           message,
-           method,
-           MethodIDToString(method),
-           -error);
-  return Status::IOError(filename, buf);
-}
-
-Status MakeIOError(Slice filename, const char* message, MethodID method) {
-  char buf[512];
-  snprintf(buf,
-           sizeof(buf),
-           "%s (ChromeMethodOnly: %d::%s)",
-           message,
-           method,
-           MethodIDToString(method));
-  return Status::IOError(filename, buf);
-}
-
-bool ParseMethodAndError(const char* string, int* method, int* error) {
-  if (RE2::PartialMatch(string, "ChromeMethodOnly: (\\d+)", method))
-    return true;
-  if (RE2::PartialMatch(string,
-                        "ChromeMethodPFE: (\\d+)::.*::(\\d+)",
-                        method,
-                        error)) {
-    *error = -*error;
-    return true;
-  }
-  if (RE2::PartialMatch(string,
-                        "ChromeMethodErrno: (\\d+)::.*::(\\d+)",
-                        method,
-                        error)) {
-    return true;
-  }
-  return false;
 }
 
 }  // namespace leveldb_env
