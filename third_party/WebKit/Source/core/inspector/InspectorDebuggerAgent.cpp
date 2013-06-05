@@ -639,7 +639,7 @@ String InspectorDebuggerAgent::sourceMapURLForScript(const Script& script)
     String sourceMapURL = ContentSearchUtils::findSourceMapURL(script.source, ContentSearchUtils::JavaScriptMagicComment, &deprecated);
     if (!sourceMapURL.isEmpty()) {
         if (deprecated)
-            addConsoleMessage(NetworkMessageSource, WarningMessageLevel, "\"//@ sourceMapURL=\" source mapping URL declaration is deprecated, \"//# sourceMapURL=\" declaration should be used instead.", script.url);
+            addConsoleMessage(NetworkMessageSource, WarningMessageLevel, "\"//@ sourceMappingURL=\" source mapping URL declaration is deprecated, \"//# sourceMappingURL=\" declaration should be used instead.", script.url);
         return sourceMapURL;
     }
 

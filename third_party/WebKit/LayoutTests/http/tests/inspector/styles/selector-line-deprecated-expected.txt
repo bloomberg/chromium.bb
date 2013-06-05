@@ -1,9 +1,7 @@
-CONSOLE MESSAGE: "/*@ sourceMapURL=" source mapping URL declaration is deprecated, "/*# sourceMapURL=" declaration should be used instead.
-CONSOLE MESSAGE: "/*@ sourceMapURL=" source mapping URL declaration is deprecated, "/*# sourceMapURL=" declaration should be used instead.
+CONSOLE MESSAGE: "/*@ sourceMappingURL=" source mapping URL declaration is deprecated, "/*# sourceMappingURL=" declaration should be used instead.
 Tests that selector line is computed correctly regardless of its start column. Bug 110732.
 
 Text
-Page reloaded.
 [expanded] 
 element.style  { ()
 

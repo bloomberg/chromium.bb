@@ -1538,7 +1538,7 @@ String InspectorStyleSheet::sourceMapURL() const
         String commentValue = ContentSearchUtils::findSourceMapURL(styleSheetText, ContentSearchUtils::CSSMagicComment, &deprecated);
         if (!commentValue.isEmpty()) {
             if (deprecated)
-                m_pageAgent->page()->console()->addMessage(NetworkMessageSource, WarningMessageLevel, "\"/*@ sourceMapURL=\" source mapping URL declaration is deprecated, \"/*# sourceMapURL=\" declaration should be used instead.", finalURL(), 0);
+                m_pageAgent->page()->console()->addMessage(NetworkMessageSource, WarningMessageLevel, "\"/*@ sourceMappingURL=\" source mapping URL declaration is deprecated, \"/*# sourceMappingURL=\" declaration should be used instead.", finalURL(), 0);
             return commentValue;
         }
     }

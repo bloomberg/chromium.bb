@@ -1,9 +1,7 @@
 CONSOLE MESSAGE: Resource is served with deprecated header X-SourceMap, SourceMap should be used instead.
-CONSOLE MESSAGE: Resource is served with deprecated header X-SourceMap, SourceMap should be used instead.
 Tests that sourcemap is applied correctly when specified by the respective HTTP header.
 
 Text
-Page reloaded.
 [expanded] 
 element.style  { ()
 

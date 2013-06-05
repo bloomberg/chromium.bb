@@ -6,15 +6,23 @@
   color: green;
 }
 </style>
-<link rel="stylesheet" href="resources/selector-line-deprecated.css" />
 <script src="../inspector-test.js"></script>
 <script src="../elements-test.js"></script>
 <script>
 
+function addStylesheet()
+{
+    var linkElement = document.createElement("link");
+    linkElement.rel = "stylesheet";
+    linkElement.href = "resources/selector-line-deprecated.css";
+    document.head.appendChild(linkElement);
+}
+
 function test()
 {
     WebInspector.experimentsSettings.sass.isEnabled = function() { return true; }
-    InspectorTest.reloadPage(step1);
+    InspectorTest.addConsoleSniffer(step1);
+    InspectorTest.evaluateInPage("addStylesheet()");
 
     function step1()
     {
