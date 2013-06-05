@@ -537,6 +537,10 @@ body[new-ui] .search-box-wrapper {
   height: 100%;
 }
 
+body[new-ui] .search-box-wrapper.too-short {
+  visibility: hidden;
+}
+
 body[new-ui] .dialog-header #search-box,
 body[new-ui] .dialog-header #autocomplete-list,
 body[new-ui] .dialog-header #search-icon,
@@ -943,6 +947,10 @@ body[new-ui] #search-clear-button {
 
 body[new-ui] .search-box-wrapper.has-text + #search-clear-button {
   display: block;
+}
+
+body[new-ui] .search-box-wrapper.too-short + #search-clear-button {
+  display: none;
 }
 
 body[new-ui] #search-clear-button:hover {

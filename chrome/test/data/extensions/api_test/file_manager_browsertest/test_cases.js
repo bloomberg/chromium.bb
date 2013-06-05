@@ -907,3 +907,35 @@ testcase.transferFromOfflineToDrive = function() {
                                            'drive',
                                            EXPECTED_FILES_BEFORE_DRIVE);
 };
+
+/**
+ * Tests hiding the search box.
+ */
+testcase.hideSearchBox = function() {
+  var appId;
+  StepsRunner.run([
+    // Set up File Manager.
+    function() {
+      setupAndWaitUntilReady('/Downloads', this.next);
+    },
+    // Resize the window.
+    function(inAppId, inFileListBefore) {
+      appId = inAppId;
+      callRemoteTestUtil('resizeWindow', appId, [100, 100], this.next);
+    },
+    // Get the computed style.
+    function(result) {
+      chrome.test.assertTrue(result);
+      callRemoteTestUtil('getComputedStyles',
+                         appId,
+                         [['.search-box-wrapper', '#search-clear-button']],
+                         this.next);
+    },
+    // Check the styles
+    function(styles) {
+      chrome.test.assertTrue(styles[0].visibility == 'hidden');
+      chrome.test.assertTrue(styles[1].display == 'none');
+      checkIfNoErrorsOccured(this.next);
+    }
+  ]);
+};

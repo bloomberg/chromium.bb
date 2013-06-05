@@ -536,6 +536,20 @@ test.util.deleteFile = function(contentWindow, filename) {
 };
 
 /**
+ * Obtains computed styles of the elements specified by |queries|.
+ *
+ * @param {Window} contentWindow Window to be tested.
+ * @param {Array.<string>>} queries List of elements to be computed styles.
+ * @return {Array.<CSSStyleDeclaration>} List of computed styles.
+ */
+test.util.getComputedStyles = function(contentWindow, queries) {
+  return queries.map(function(query) {
+    var element = contentWindow.document.querySelector(query);
+    return contentWindow.getComputedStyle(element);
+  });
+};
+
+/**
  * Registers message listener, which runs test utility functions.
  */
 test.util.registerRemoteTestUtils = function() {
@@ -637,6 +651,10 @@ test.util.registerRemoteTestUtils = function() {
           return true;
         case 'execCommand':
           sendResponse(contentWindow.document.execCommand(request.args[0]));
+          return false;
+        case 'getComputedStyles':
+          sendResponse(test.util.getComputedStyles(contentWindow,
+                                                   request.args[0]));
           return false;
         default:
           console.error('Window function ' + request.func + ' not found.');

@@ -1652,8 +1652,11 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     }
 
     // Hide the search box if there is not enough space.
-    if (util.platform.newUI())
-      this.searchBox_.hidden = this.searchBoxWrapper_.clientWidth < 100;
+    if (util.platform.newUI()) {
+      this.searchBoxWrapper_.classList.toggle(
+          'too-short',
+          this.searchBoxWrapper_.clientWidth < 100);
+    }
 
     this.searchBreadcrumbs_.truncate();
 

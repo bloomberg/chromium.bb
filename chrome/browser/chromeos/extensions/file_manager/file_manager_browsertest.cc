@@ -500,4 +500,9 @@ INSTANTIATE_TEST_CASE_P(
                       TestParameter(NOT_IN_GUEST_MODE,
                                     "transferFromOfflineToDrive")));
 
+INSTANTIATE_TEST_CASE_P(
+    HideSearchBox,
+    FileManagerBrowserSimpleTest,
+    ::testing::Values(TestParameter(IN_GUEST_MODE, "hideSearchBox"),
+                      TestParameter(NOT_IN_GUEST_MODE, "hideSearchBox")));
 }  // namespace
