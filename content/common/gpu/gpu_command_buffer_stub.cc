@@ -24,6 +24,7 @@
 #include "content/public/common/content_switches.h"
 #include "gpu/command_buffer/common/constants.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
+#include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/command_buffer/service/gl_context_virtual.h"
 #include "gpu/command_buffer/service/gl_state_restorer_impl.h"
 #include "gpu/command_buffer/service/logger.h"
@@ -181,8 +182,8 @@ bool GpuCommandBufferStub::OnMessageReceived(const IPC::Message& message) {
                                     OnInitialize);
     IPC_MESSAGE_HANDLER_DELAY_REPLY(GpuCommandBufferMsg_SetGetBuffer,
                                     OnSetGetBuffer);
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(GpuCommandBufferMsg_SetParent,
-                                    OnSetParent);
+    IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_ProduceFrontBuffer,
+                        OnProduceFrontBuffer);
     IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_Echo, OnEcho);
     IPC_MESSAGE_HANDLER_DELAY_REPLY(GpuCommandBufferMsg_GetState, OnGetState);
     IPC_MESSAGE_HANDLER_DELAY_REPLY(GpuCommandBufferMsg_GetStateFast,
@@ -578,23 +579,13 @@ void GpuCommandBufferStub::OnSetGetBuffer(int32 shm_id,
   Send(reply_message);
 }
 
-void GpuCommandBufferStub::OnSetParent(int32 parent_route_id,
-                                       uint32 parent_texture_id,
-                                       IPC::Message* reply_message) {
-  TRACE_EVENT0("gpu", "GpuCommandBufferStub::OnSetParent");
-  GpuCommandBufferStub* parent_stub = NULL;
-  if (parent_route_id != MSG_ROUTING_NONE) {
-    parent_stub = channel_->LookupCommandBuffer(parent_route_id);
-  }
+void GpuCommandBufferStub::OnProduceFrontBuffer(const gpu::Mailbox& mailbox) {
+  TRACE_EVENT0("gpu", "GpuCommandBufferStub::OnProduceFrontBuffer");
+  if (!decoder_)
+    LOG(ERROR) << "Can't produce front buffer before initialization.";
 
-  bool result = false;
-  if (scheduler_) {
-    gpu::gles2::GLES2Decoder* parent_decoder =
-        parent_stub ? parent_stub->decoder_.get() : NULL;
-    result = decoder_->SetParent(parent_decoder, parent_texture_id);
-  }
-  GpuCommandBufferMsg_SetParent::WriteReplyParams(reply_message, result);
-  Send(reply_message);
+  if (!decoder_->ProduceFrontBuffer(mailbox))
+    LOG(ERROR) << "Failed to produce front buffer.";
 }
 
 void GpuCommandBufferStub::OnGetState(IPC::Message* reply_message) {

@@ -29,6 +29,7 @@
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
 #include "gpu/command_buffer/common/debug_marker_manager.h"
 #include "gpu/command_buffer/common/id_allocator.h"
+#include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/command_buffer/service/buffer_manager.h"
 #include "gpu/command_buffer/service/cmd_buffer_engine.h"
 #include "gpu/command_buffer/service/context_group.h"
@@ -513,8 +514,7 @@ class GLES2DecoderImpl : public GLES2Decoder {
   virtual void Destroy(bool have_context) OVERRIDE;
   virtual void SetSurface(
       const scoped_refptr<gfx::GLSurface>& surface) OVERRIDE;
-  virtual bool SetParent(GLES2Decoder* parent_decoder,
-                         uint32 parent_texture_id) OVERRIDE;
+  virtual bool ProduceFrontBuffer(const Mailbox& mailbox) OVERRIDE;
   virtual bool ResizeOffscreenFrameBuffer(const gfx::Size& size) OVERRIDE;
   void UpdateParentTextureInfo();
   virtual bool MakeCurrent() OVERRIDE;
@@ -1557,10 +1557,6 @@ class GLES2DecoderImpl : public GLES2Decoder {
   // All the state for this context.
   ContextState state_;
 
-  // A parent decoder can access this decoders saved offscreen frame buffer.
-  // The parent pointer is reset if the parent is destroyed.
-  base::WeakPtr<GLES2DecoderImpl> parent_;
-
   // Current width and height of the offscreen frame buffer.
   gfx::Size offscreen_size_;
 
@@ -1688,9 +1684,6 @@ class GLES2DecoderImpl : public GLES2Decoder {
   typedef std::map<GLuint, CFTypeRef> TextureToIOSurfaceMap;
   TextureToIOSurfaceMap texture_to_io_surface_map_;
 #endif
-
-  typedef std::vector<GLES2DecoderImpl*> ChildList;
-  ChildList children_;
 
   scoped_ptr<CopyTextureCHROMIUMResourceManager> copy_texture_CHROMIUM_;
 
@@ -2980,54 +2973,48 @@ GLenum GLES2DecoderImpl::GetBoundDrawFrameBufferInternalFormat() {
 }
 
 void GLES2DecoderImpl::UpdateParentTextureInfo() {
-  if (parent_.get()) {
-    // Update the info about the offscreen saved color texture in the parent.
-    // The reference to the parent is a weak pointer and will become null if the
-    // parent is later destroyed.
-    GLenum target = offscreen_saved_color_texture_info_->texture()->target();
-    TextureManager* parent_texture_manager = parent_->texture_manager();
-    glBindTexture(target, offscreen_saved_color_texture_info_->service_id());
-    parent_texture_manager->SetLevelInfo(
-        offscreen_saved_color_texture_info_.get(),
-        GL_TEXTURE_2D,
-        0,  // level
-        GL_RGBA,
-        offscreen_size_.width(),
-        offscreen_size_.height(),
-        1,  // depth
-        0,  // border
-        GL_RGBA,
-        GL_UNSIGNED_BYTE,
-        true);
-    parent_texture_manager->SetParameter(
-        "UpdateParentTextureInfo",
-        GetErrorState(),
-        offscreen_saved_color_texture_info_.get(),
-        GL_TEXTURE_MAG_FILTER,
-        GL_NEAREST);
-    parent_texture_manager->SetParameter(
-        "UpdateParentTextureInfo",
-        GetErrorState(),
-        offscreen_saved_color_texture_info_.get(),
-        GL_TEXTURE_MIN_FILTER,
-        GL_NEAREST);
-    parent_texture_manager->SetParameter(
-        "UpdateParentTextureInfo",
-        GetErrorState(),
-        offscreen_saved_color_texture_info_.get(),
-        GL_TEXTURE_WRAP_S,
-        GL_CLAMP_TO_EDGE);
-    parent_texture_manager->SetParameter(
-        "UpdateParentTextureInfo",
-        GetErrorState(),
-        offscreen_saved_color_texture_info_.get(),
-        GL_TEXTURE_WRAP_T,
-        GL_CLAMP_TO_EDGE);
-    TextureRef* texture_ref = GetTextureInfoForTarget(target);
-    glBindTexture(target, texture_ref ? texture_ref->service_id() : 0);
-  } else {
-    offscreen_saved_color_texture_info_ = NULL;
-  }
+  if (!offscreen_saved_color_texture_info_.get())
+    return;
+  GLenum target = offscreen_saved_color_texture_info_->texture()->target();
+  glBindTexture(target, offscreen_saved_color_texture_info_->service_id());
+  texture_manager()->SetLevelInfo(
+      offscreen_saved_color_texture_info_.get(),
+      GL_TEXTURE_2D,
+      0,  // level
+      GL_RGBA,
+      offscreen_size_.width(),
+      offscreen_size_.height(),
+      1,  // depth
+      0,  // border
+      GL_RGBA,
+      GL_UNSIGNED_BYTE,
+      true);
+  texture_manager()->SetParameter(
+      "UpdateParentTextureInfo",
+      GetErrorState(),
+      offscreen_saved_color_texture_info_.get(),
+      GL_TEXTURE_MAG_FILTER,
+      GL_NEAREST);
+  texture_manager()->SetParameter(
+      "UpdateParentTextureInfo",
+      GetErrorState(),
+      offscreen_saved_color_texture_info_.get(),
+      GL_TEXTURE_MIN_FILTER,
+      GL_NEAREST);
+  texture_manager()->SetParameter(
+      "UpdateParentTextureInfo",
+      GetErrorState(),
+      offscreen_saved_color_texture_info_.get(),
+      GL_TEXTURE_WRAP_S,
+      GL_CLAMP_TO_EDGE);
+  texture_manager()->SetParameter(
+      "UpdateParentTextureInfo",
+      GetErrorState(),
+      offscreen_saved_color_texture_info_.get(),
+      GL_TEXTURE_WRAP_T,
+      GL_CLAMP_TO_EDGE);
+  TextureRef* texture_ref = GetTextureInfoForTarget(target);
+  glBindTexture(target, texture_ref ? texture_ref->service_id() : 0);
 }
 
 void GLES2DecoderImpl::SetResizeCallback(
@@ -3110,12 +3097,6 @@ void GLES2DecoderImpl::Destroy(bool have_context) {
 
   DCHECK(!have_context || context_->IsCurrent(NULL));
 
-  ChildList children = children_;
-  for (ChildList::iterator it = children.begin(); it != children.end(); ++it)
-    (*it)->SetParent(NULL, 0);
-  DCHECK(children_.empty());
-  SetParent(NULL, 0);
-
   // Unbind everything.
   state_.vertex_attrib_manager = NULL;
   default_vertex_attrib_manager_ = NULL;
@@ -3127,6 +3108,13 @@ void GLES2DecoderImpl::Destroy(bool have_context) {
   state_.bound_draw_framebuffer = NULL;
   state_.bound_renderbuffer = NULL;
 
+  if (offscreen_saved_color_texture_info_) {
+    DCHECK(offscreen_target_color_texture_);
+    DCHECK_EQ(offscreen_saved_color_texture_info_->service_id(),
+              offscreen_saved_color_texture_->id());
+    offscreen_saved_color_texture_->Invalidate();
+    offscreen_saved_color_texture_info_ = NULL;
+  }
   if (have_context) {
     if (copy_texture_CHROMIUM_.get()) {
       copy_texture_CHROMIUM_->Destroy();
@@ -3237,64 +3225,20 @@ void GLES2DecoderImpl::SetSurface(
   RestoreCurrentFramebufferBindings();
 }
 
-bool GLES2DecoderImpl::SetParent(GLES2Decoder* new_parent,
-                                 uint32 new_parent_texture_id) {
+bool GLES2DecoderImpl::ProduceFrontBuffer(const Mailbox& mailbox) {
   if (!offscreen_saved_color_texture_.get())
     return false;
-
-  // Remove the saved frame buffer mapping from the parent decoder. The
-  // parent pointer is a weak pointer so it will be null if the parent has
-  // already been destroyed.
-  if (parent_.get()) {
-    ChildList::iterator it =
-        std::find(parent_->children_.begin(), parent_->children_.end(), this);
-    DCHECK(it != parent_->children_.end());
-    parent_->children_.erase(it);
-    // First check the texture has been mapped into the parent. This might not
-    // be the case if initialization failed midway through.
-    if (offscreen_saved_color_texture_info_.get() &&
-        offscreen_saved_color_texture_info_->client_id()) {
-      parent_->texture_manager()->RemoveTexture(
-          offscreen_saved_color_texture_info_->client_id());
-    }
-  }
-
-  GLES2DecoderImpl* new_parent_impl = static_cast<GLES2DecoderImpl*>(
-      new_parent);
-  if (new_parent_impl) {
-#ifndef NDEBUG
-    ChildList::iterator it = std::find(
-        new_parent_impl->children_.begin(),
-        new_parent_impl->children_.end(),
-        this);
-    DCHECK(it == new_parent_impl->children_.end());
-#endif
-    new_parent_impl->children_.push_back(this);
-    // Map the ID of the saved offscreen texture into the parent so that
-    // it can reference it.
+  if (!offscreen_saved_color_texture_info_.get()) {
     GLuint service_id = offscreen_saved_color_texture_->id();
-
-    // Replace texture info when ID is already in use by parent.
-    if (new_parent_impl->texture_manager()->GetTexture(
-        new_parent_texture_id))
-      new_parent_impl->texture_manager()->RemoveTexture(
-          new_parent_texture_id);
-
-    offscreen_saved_color_texture_info_ =
-        new_parent_impl->CreateTexture(new_parent_texture_id, service_id);
-    offscreen_saved_color_texture_info_->texture()->SetNotOwned();
-    new_parent_impl->texture_manager()
-        ->SetTarget(offscreen_saved_color_texture_info_.get(), GL_TEXTURE_2D);
-
-    parent_ = base::AsWeakPtr<GLES2DecoderImpl>(new_parent_impl);
-
+    offscreen_saved_color_texture_info_ = CreateTexture(0, service_id);
+    texture_manager()->SetTarget(offscreen_saved_color_texture_info_.get(),
+                                 GL_TEXTURE_2D);
     UpdateParentTextureInfo();
-  } else {
-    parent_.reset();
-    offscreen_saved_color_texture_info_ = NULL;
   }
-
-  return true;
+  gpu::gles2::MailboxName name;
+  memcpy(name.key, mailbox.name, sizeof(mailbox.name));
+  return mailbox_manager()->ProduceTexture(
+      GL_TEXTURE_2D, name, offscreen_saved_color_texture_info_->texture());
 }
 
 size_t GLES2DecoderImpl::GetBackbufferMemoryTotal() {
@@ -9040,18 +8984,6 @@ void GLES2DecoderImpl::LoseContext(uint32 reset_status) {
   // Marks this context as lost.
   reset_status_ = reset_status;
   current_decoder_error_ = error::kLostContext;
-
-  // Loses the parent's context.
-  if (parent_.get()) {
-    parent_->LoseContext(reset_status);
-  }
-
-  // Loses any child contexts.
-  for (ChildList::iterator it = children_.begin();
-       it != children_.end();
-       ++it) {
-    (*it)->LoseContext(reset_status);
-  }
 }
 
 error::Error GLES2DecoderImpl::HandleLoseContextCHROMIUM(

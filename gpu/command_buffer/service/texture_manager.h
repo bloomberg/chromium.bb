@@ -81,6 +81,7 @@ class GPU_EXPORT Texture {
   }
 
   void SetServiceId(GLuint service_id) {
+    DCHECK(service_id);
     service_id_ = service_id;
   }
 
@@ -122,10 +123,6 @@ class GPU_EXPORT Texture {
 
   bool IsValid() const {
     return !!target();
-  }
-
-  void SetNotOwned() {
-    owned_ = false;
   }
 
   bool IsAttachedToFramebuffer() const {
@@ -367,10 +364,6 @@ class GPU_EXPORT Texture {
 
   // The number of framebuffers this texture is attached to.
   int framebuffer_attachment_count_;
-
-  // Whether the associated context group owns this texture and should delete
-  // it.
-  bool owned_;
 
   // Whether this is a special streaming texture.
   bool stream_texture_;

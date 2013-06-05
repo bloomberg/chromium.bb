@@ -249,6 +249,7 @@ void GLManager::Destroy() {
   if (decoder_.get()) {
     decoder_->MakeCurrent();
     decoder_->Destroy(true);
+    decoder_.reset();
   }
 }
 

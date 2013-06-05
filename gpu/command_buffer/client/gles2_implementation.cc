@@ -279,17 +279,6 @@ GLES2CmdHelper* GLES2Implementation::helper() const {
   return helper_;
 }
 
-GLuint GLES2Implementation::MakeTextureId() {
-  GLuint id;
-  GetIdHandler(id_namespaces::kTextures)->MakeIds(this, 0, 1, &id);
-  return id;
-}
-
-void GLES2Implementation::FreeTextureId(GLuint id) {
-  GetIdHandler(id_namespaces::kTextures)->FreeIds(
-      this, 1, &id, &GLES2Implementation::DeleteTexturesStub);
-}
-
 IdHandlerInterface* GLES2Implementation::GetIdHandler(int namespace_id) const {
   return share_group_->GetIdHandler(namespace_id);
 }

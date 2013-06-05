@@ -114,7 +114,6 @@ Texture::Texture(GLuint service_id)
       npot_(false),
       has_been_bound_(false),
       framebuffer_attachment_count_(0),
-      owned_(true),
       stream_texture_(false),
       immutable_(false),
       estimated_size_(0),
@@ -143,7 +142,7 @@ void Texture::RemoveTextureRef(TextureRef* ref, bool have_context) {
   size_t result = refs_.erase(ref);
   DCHECK_EQ(result, 1u);
   if (refs_.empty()) {
-    if (owned_ && have_context) {
+    if (have_context) {
       GLuint id = service_id();
       glDeleteTextures(1, &id);
     }
@@ -1042,10 +1041,7 @@ void TextureManager::SetLevelInfo(
 
 Texture* TextureManager::Produce(TextureRef* ref) {
   DCHECK(ref);
-  Texture* texture = ref->texture();
-  if (!texture->owned_)
-    return NULL;
-  return texture;
+  return ref->texture();
 }
 
 TextureRef* TextureManager::Consume(

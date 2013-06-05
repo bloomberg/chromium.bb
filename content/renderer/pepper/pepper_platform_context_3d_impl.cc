@@ -108,6 +108,13 @@ bool PlatformContext3DImpl::Init(const int32* attrib_list,
     return false;
   if (!command_buffer_->Initialize())
     return false;
+  std::vector<gpu::Mailbox> names;
+  if (!command_buffer_->GenerateMailboxNames(1, &names))
+    return false;
+  DCHECK_EQ(names.size(), 1u);
+  mailbox_ = names[0];
+  if (!command_buffer_->ProduceFrontBuffer(mailbox_))
+    return false;
 
   command_buffer_->SetChannelErrorCallback(
       base::Bind(&PlatformContext3DImpl::OnContextLost,
@@ -130,18 +137,12 @@ bool PlatformContext3DImpl::SetParentAndCreateBackingTextureIfNeeded() {
   if (!parent_context_provider_.get())
     return false;
 
-  // Flush any remaining commands in the parent context to make sure the
-  // texture id accounting stays consistent.
   gpu::gles2::GLES2Implementation* parent_gles2 =
       parent_context_provider_->Context3d()->GetImplementation();
-  parent_gles2->helper()->CommandBufferHelper::Finish();
-  parent_texture_id_ = parent_gles2->MakeTextureId();
-
-  CommandBufferProxyImpl* parent_command_buffer =
-      parent_context_provider_->Context3d()->GetCommandBufferProxy();
-  if (!command_buffer_->SetParent(parent_command_buffer, parent_texture_id_))
-    return false;
-
+  parent_gles2->GenTextures(1, &parent_texture_id_);
+  parent_gles2->BindTexture(GL_TEXTURE_2D, parent_texture_id_);
+  parent_gles2->ConsumeTextureCHROMIUM(GL_TEXTURE_2D, mailbox_.name);
+  parent_gles2->ShallowFlushCHROMIUM();
   return true;
 }
 
@@ -150,12 +151,10 @@ void PlatformContext3DImpl::DestroyParentContextProviderAndBackingTexture() {
     return;
 
   if (parent_texture_id_) {
-    // Flush any remaining commands in the parent context to make sure the
-    // texture id accounting stays consistent.
     gpu::gles2::GLES2Implementation* parent_gles2 =
         parent_context_provider_->Context3d()->GetImplementation();
-    parent_gles2->helper()->CommandBufferHelper::Finish();
-    parent_gles2->FreeTextureId(parent_texture_id_);
+    parent_gles2->DeleteTextures(1, &parent_texture_id_);
+    parent_gles2->ShallowFlushCHROMIUM();
     parent_texture_id_ = 0;
   }
 

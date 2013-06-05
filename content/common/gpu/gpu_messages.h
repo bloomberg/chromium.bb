@@ -18,6 +18,7 @@
 #include "content/public/common/gpu_memory_stats.h"
 #include "gpu/command_buffer/common/command_buffer.h"
 #include "gpu/command_buffer/common/constants.h"
+#include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/config/gpu_info.h"
 #include "gpu/ipc/gpu_command_buffer_traits.h"
 #include "ipc/ipc_channel_handle.h"
@@ -495,12 +496,10 @@ IPC_SYNC_MESSAGE_ROUTED1_1(GpuCommandBufferMsg_Initialize,
 IPC_SYNC_MESSAGE_ROUTED1_0(GpuCommandBufferMsg_SetGetBuffer,
                            int32 /* shm_id */)
 
-// Sets the parent command buffer. This allows the parent and child to share
-// textures.
-IPC_SYNC_MESSAGE_ROUTED2_1(GpuCommandBufferMsg_SetParent,
-                           int32 /* parent_route_id */,
-                           uint32 /* parent_texture_id */,
-                           bool /* result */)
+// Produces the front buffer into a mailbox. This allows another context to draw
+// the output of this context.
+IPC_MESSAGE_ROUTED1(GpuCommandBufferMsg_ProduceFrontBuffer,
+                    gpu::Mailbox /* mailbox */)
 
 // Get the current state of the command buffer.
 IPC_SYNC_MESSAGE_ROUTED0_1(GpuCommandBufferMsg_GetState,

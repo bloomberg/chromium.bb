@@ -32,8 +32,7 @@ class PPAPI_PROXY_EXPORT PpapiCommandBufferProxy : public CommandBufferProxy {
   // CommandBufferProxy implementation:
   virtual int GetRouteID() const OVERRIDE;
   virtual bool Echo(const base::Closure& callback) OVERRIDE;
-  virtual bool SetParent(CommandBufferProxy* parent_command_buffer,
-                         uint32 parent_texture_id) OVERRIDE;
+  virtual bool ProduceFrontBuffer(const gpu::Mailbox& mailbox) OVERRIDE;
   virtual void SetChannelErrorCallback(const base::Closure& callback) OVERRIDE;
 
   // gpu::CommandBuffer implementation:

@@ -6,6 +6,9 @@
 #include <GLES2/gl2ext.h>
 #include <GLES2/gl2extchromium.h>
 
+#include "gpu/command_buffer/client/gles2_lib.h"
+#include "gpu/command_buffer/common/mailbox.h"
+#include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
 #include "gpu/command_buffer/tests/gl_manager.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -37,7 +40,7 @@ uint32 ReadTexel(GLuint id, GLint x, GLint y) {
   EXPECT_EQ(static_cast<GLenum>(GL_FRAMEBUFFER_COMPLETE),
             glCheckFramebufferStatus(GL_FRAMEBUFFER));
 
-  uint32 texel;
+  uint32 texel = 0;
   glReadPixels(x, y, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, &texel);
 
   glBindFramebuffer(GL_FRAMEBUFFER, old_fbo);
@@ -264,6 +267,55 @@ TEST_F(GLTextureMailboxTest, SharedTextures) {
   EXPECT_EQ(static_cast<GLenum>(GL_INVALID_OPERATION), glGetError());
   glDeleteTextures(1, &tex2);
   EXPECT_EQ(static_cast<GLenum>(GL_NO_ERROR), glGetError());
+}
+
+TEST_F(GLTextureMailboxTest, ProduceFrontBuffer) {
+  gl1_.MakeCurrent();
+  Mailbox mailbox;
+  glGenMailboxCHROMIUM(mailbox.name);
+
+  gl2_.MakeCurrent();
+  gl2_.decoder()->ProduceFrontBuffer(mailbox);
+
+  gl1_.MakeCurrent();
+  GLuint tex1;
+  glGenTextures(1, &tex1);
+  glBindTexture(GL_TEXTURE_2D, tex1);
+  glConsumeTextureCHROMIUM(GL_TEXTURE_2D, mailbox.name);
+  EXPECT_EQ(static_cast<GLenum>(GL_NO_ERROR), glGetError());
+
+  gl2_.MakeCurrent();
+  glResizeCHROMIUM(10, 10, 1);
+  glClearColor(1, 0, 0, 1);
+  glClear(GL_COLOR_BUFFER_BIT);
+  ::gles2::GetGLContext()->SwapBuffers();
+
+  gl1_.MakeCurrent();
+  EXPECT_EQ(0xFF0000FFu, ReadTexel(tex1, 0, 0));
+  EXPECT_EQ(0xFF0000FFu, ReadTexel(tex1, 9, 9));
+  EXPECT_EQ(static_cast<GLenum>(GL_NO_ERROR), glGetError());
+
+  gl2_.MakeCurrent();
+  glClearColor(0, 1, 0, 1);
+  glClear(GL_COLOR_BUFFER_BIT);
+  glFlush();
+
+  gl1_.MakeCurrent();
+  EXPECT_EQ(0xFF0000FFu, ReadTexel(tex1, 0, 0));
+
+  gl2_.MakeCurrent();
+  ::gles2::GetGLContext()->SwapBuffers();
+
+  gl1_.MakeCurrent();
+  EXPECT_EQ(0xFF00FF00u, ReadTexel(tex1, 0, 0));
+
+  gl2_.MakeCurrent();
+  gl2_.Destroy();
+
+  gl1_.MakeCurrent();
+  EXPECT_EQ(0xFF00FF00u, ReadTexel(tex1, 0, 0));
+  EXPECT_EQ(static_cast<GLenum>(GL_NO_ERROR), glGetError());
+  glDeleteTextures(1, &tex1);
 }
 
 }  // namespace gpu

@@ -205,29 +205,6 @@ TEST_F(TextureManagerTest, Destroy) {
   ASSERT_TRUE(texture == NULL);
 }
 
-TEST_F(TextureManagerTest, DestroyUnowned) {
-  const GLuint kClient1Id = 1;
-  const GLuint kService1Id = 11;
-  TestHelper::SetupTextureManagerInitExpectations(gl_.get(), "");
-  TextureManager manager(
-      NULL, feature_info_.get(), kMaxTextureSize, kMaxCubeMapTextureSize);
-  manager.Initialize();
-  // Check we can create texture.
-  TextureRef* created_texture =
-      manager.CreateTexture(kClient1Id, kService1Id);
-  created_texture->texture()->SetNotOwned();
-
-  // Check texture got created.
-  TextureRef* texture = manager.GetTexture(kClient1Id);
-  ASSERT_TRUE(texture != NULL);
-
-  // Check that it is not freed if it is not owned.
-  TestHelper::SetupTextureManagerDestructionExpectations(gl_.get(), "");
-  manager.Destroy(true);
-  texture = manager.GetTexture(kClient1Id);
-  ASSERT_TRUE(texture == NULL);
-}
-
 TEST_F(TextureManagerTest, MaxValues) {
   // Check we get the right values for the max sizes.
   EXPECT_EQ(kMax2dLevels, manager_->MaxLevelsForTarget(GL_TEXTURE_2D));

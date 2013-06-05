@@ -67,6 +67,10 @@ class GLManager {
 
   void SetSurface(gfx::GLSurface* surface);
 
+  gles2::GLES2Decoder* decoder() const {
+    return decoder_.get();
+  }
+
   gles2::MailboxManager* mailbox_manager() const {
     return mailbox_manager_.get();
   }

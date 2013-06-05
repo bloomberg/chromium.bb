@@ -216,9 +216,6 @@ class GLES2_IMPL_EXPORT GLES2Implementation : public GLES2Interface {
       GLuint program, GLuint index, GLsizei bufsize, GLsizei* length,
       GLint* size, GLenum* type, char* name);
 
-  GLuint MakeTextureId();
-  void FreeTextureId(GLuint id);
-
   void SetSharedMemoryChunkSizeMultiple(unsigned int multiple);
 
   void FreeUnusedSharedMemory();

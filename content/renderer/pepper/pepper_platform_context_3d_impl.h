@@ -51,6 +51,7 @@ class PlatformContext3DImpl
 
   scoped_refptr<ContextProviderCommandBuffer> parent_context_provider_;
   scoped_refptr<GpuChannelHost> channel_;
+  gpu::Mailbox mailbox_;
   unsigned int parent_texture_id_;
   bool has_alpha_;
   CommandBufferProxyImpl* command_buffer_;

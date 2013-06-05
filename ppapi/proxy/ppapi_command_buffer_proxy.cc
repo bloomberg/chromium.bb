@@ -45,11 +45,7 @@ bool PpapiCommandBufferProxy::Echo(const base::Closure& callback) {
   return false;
 }
 
-bool PpapiCommandBufferProxy::SetParent(
-    CommandBufferProxy* parent_command_buffer,
-    uint32 parent_texture_id) {
-  // TODO(fsamuel): Need a proper implementation of this to support offscreen
-  // contexts in the guest renderer (WebGL, canvas, etc).
+bool PpapiCommandBufferProxy::ProduceFrontBuffer(const gpu::Mailbox& mailbox) {
   NOTIMPLEMENTED();
   return false;
 }

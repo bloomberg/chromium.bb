@@ -10,6 +10,7 @@
 #include "base/callback.h"
 #include "gpu/command_buffer/common/command_buffer.h"
 #include "gpu/command_buffer/common/command_buffer_shared.h"
+#include "gpu/command_buffer/common/mailbox.h"
 
 // Client side proxy that forwards messages synchronously to a
 // CommandBufferStub.
@@ -28,12 +29,9 @@ class GPU_EXPORT CommandBufferProxy : public gpu::CommandBuffer {
   // the task whether the echo succeeds or not.
   virtual bool Echo(const base::Closure& callback) = 0;
 
-  // Reparent a command buffer. TODO(apatrick): going forward, the notion of
-  // the parent / child relationship between command buffers is going away in
-  // favor of the notion of surfaces that can be drawn to in one command buffer
-  // and bound as a texture in any other.
-  virtual bool SetParent(CommandBufferProxy* parent_command_buffer,
-                         uint32 parent_texture_id) = 0;
+  // For offscreen contexts, produces the front buffer into a newly created
+  // mailbox.
+  virtual bool ProduceFrontBuffer(const gpu::Mailbox& mailbox) = 0;
 
   virtual void SetChannelErrorCallback(const base::Closure& callback) = 0;
 
