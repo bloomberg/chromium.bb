@@ -2066,6 +2066,20 @@ class CppStyleTest(CppStyleTestBase):
             '    };\n'
             '};',
             '')
+        self.assert_multi_line_lint(
+            'if (true) {\n'
+            '    myFunction(reallyLongParam1, reallyLongParam2,\n'
+            '               reallyLongParam3);\n'
+            '}\n',
+            'Weird number of spaces at line-start.  Are you using a 4-space indent?  [whitespace/indent] [3]')
+
+        self.assert_multi_line_lint(
+            'if (true) {\n'
+            '    myFunction(reallyLongParam1, reallyLongParam2,\n'
+            '            reallyLongParam3);\n'
+            '}\n',
+            'When wrapping a line, only indent 4 spaces.  [whitespace/indent] [3]')
+
 
     def test_not_alabel(self):
         self.assert_lint('MyVeryLongNamespace::MyVeryLongClassName::', '')
@@ -4007,9 +4021,9 @@ class WebKitStyleTest(CppStyleTestBase):
             '    doSomethingElse();\n',
             '')
         self.assert_multi_line_lint(
-            'if (condition)\n'
+            'if (condition) {\n'
             '    doSomething();\n'
-            'else {\n'
+            '} else {\n'
             '    doSomethingElse();\n'
             '    doSomethingElseAgain();\n'
             '}\n',
@@ -4047,22 +4061,7 @@ class WebKitStyleTest(CppStyleTestBase):
             '    doSomethingElse();\n'
             '}\n',
             ['More than one command on the same line in if  [whitespace/parens] [4]',
-             'One line control clauses should not use braces.  [whitespace/braces] [4]'])
-        self.assert_multi_line_lint(
-            'if (condition)\n'
-            '    doSomething();\n'
-            'else {\n'
-            '    doSomethingElse();\n'
-            '}\n',
-            'One line control clauses should not use braces.  [whitespace/braces] [4]')
-        self.assert_multi_line_lint(
-            'if (condition) {\n'
-            '    doSomething1();\n'
-            '    doSomething2();\n'
-            '} else {\n'
-            '    doSomethingElse();\n'
-            '}\n',
-            'One line control clauses should not use braces.  [whitespace/braces] [4]')
+             'If one part of an if-else statement uses curly braces, the other part must too.  [whitespace/braces] [4]'])
         self.assert_multi_line_lint(
             'void func()\n'
             '{\n'
@@ -4084,8 +4083,9 @@ class WebKitStyleTest(CppStyleTestBase):
             'if (motivated) {\n'
             '    if (liquid)\n'
             '        return money;\n'
-            '} else if (tired)\n'
-            '    break;\n',
+            '} else if (tired) {\n'
+            '    break;\n'
+            '}',
             '')
         self.assert_multi_line_lint(
             'if (condition)\n'
@@ -4138,9 +4138,10 @@ class WebKitStyleTest(CppStyleTestBase):
             '        goto infiniteLoop;\n'
             '    } else if (evil)\n'
             '        goto hell;\n',
-            'An else if statement should be written as an if statement when the '
-            'prior "if" concludes with a return, break, continue or goto statement.'
-            '  [readability/control_flow] [4]')
+            ['If one part of an if-else statement uses curly braces, the other part must too.  [whitespace/braces] [4]',
+             'An else if statement should be written as an if statement when the '
+             'prior "if" concludes with a return, break, continue or goto statement.'
+             '  [readability/control_flow] [4]'])
         self.assert_multi_line_lint(
             'if (liquid)\n'
             '{\n'
@@ -4149,11 +4150,12 @@ class WebKitStyleTest(CppStyleTestBase):
             '}\n'
             'else if (greedy)\n'
             '    keep();\n',
-            ['This { should be at the end of the previous line  [whitespace/braces] [4]',
-            'An else should appear on the same line as the preceding }  [whitespace/newline] [4]',
-            'An else if statement should be written as an if statement when the '
-            'prior "if" concludes with a return, break, continue or goto statement.'
-            '  [readability/control_flow] [4]'])
+            ['If one part of an if-else statement uses curly braces, the other part must too.  [whitespace/braces] [4]',
+             'This { should be at the end of the previous line  [whitespace/braces] [4]',
+             'An else should appear on the same line as the preceding }  [whitespace/newline] [4]',
+             'An else if statement should be written as an if statement when the '
+             'prior "if" concludes with a return, break, continue or goto statement.'
+             '  [readability/control_flow] [4]'])
         self.assert_multi_line_lint(
             'if (gone)\n'
             '    return;\n'
@@ -4188,9 +4190,10 @@ class WebKitStyleTest(CppStyleTestBase):
             '    prepare();\n'
             '    continue;\n'
             '}\n',
-            'An else statement can be removed when the prior "if" concludes '
-            'with a return, break, continue or goto statement.'
-            '  [readability/control_flow] [4]')
+            ['If one part of an if-else statement uses curly braces, the other part must too.  [whitespace/braces] [4]',
+             'An else statement can be removed when the prior "if" concludes '
+             'with a return, break, continue or goto statement.'
+             '  [readability/control_flow] [4]'])
 
     def test_braces(self):
         # 1. Function definitions: place each brace on its own line.
@@ -4290,70 +4293,241 @@ class WebKitStyleTest(CppStyleTestBase):
             '}\n',
             'This { should be at the end of the previous line  [whitespace/braces] [4]')
 
-        # 3. One-line control clauses should not use braces unless
-        #    comments are included or a single statement spans multiple
-        #    lines.
+        # 3. Curly braces are not required for single-line conditionals and
+        #    loop bodies, but are required for single-statement bodies that
+        #    span multiple lines.
+
+        #
+        # Positive tests
+        #
         self.assert_multi_line_lint(
-            'if (true) {\n'
-            '    int foo;\n'
-            '}\n',
-            'One line control clauses should not use braces.  [whitespace/braces] [4]')
+            'if (condition1)\n'
+            '    statement1();\n'
+            'else\n'
+            '    statement2();\n',
+            '')
+
+        self.assert_multi_line_lint(
+            'if (condition1)\n'
+            '    statement1();\n'
+            'else if (condition2)\n'
+            '    statement2();\n',
+            '')
+
+        self.assert_multi_line_lint(
+            'if (condition1)\n'
+            '    statement1();\n'
+            'else if (condition2)\n'
+            '    statement2();\n'
+            'else\n'
+            '    statement3();\n',
+            '')
+
+        self.assert_multi_line_lint(
+            'for (; foo; bar)\n'
+            '    int foo;\n',
+            '')
 
         self.assert_multi_line_lint(
             'for (; foo; bar) {\n'
             '    int foo;\n'
             '}\n',
-            'One line control clauses should not use braces.  [whitespace/braces] [4]')
+            '')
 
         self.assert_multi_line_lint(
             'foreach (foo, foos) {\n'
             '    int bar;\n'
             '}\n',
-            'One line control clauses should not use braces.  [whitespace/braces] [4]')
+            '')
+
+        self.assert_multi_line_lint(
+            'foreach (foo, foos)\n'
+            '    int bar;\n',
+            '')
 
         self.assert_multi_line_lint(
             'while (true) {\n'
             '    int foo;\n'
             '}\n',
-            'One line control clauses should not use braces.  [whitespace/braces] [4]')
+            '')
 
         self.assert_multi_line_lint(
-            'if (true)\n'
-            '    int foo;\n'
-            'else {\n'
-            '    int foo;\n'
-            '}\n',
-            'One line control clauses should not use braces.  [whitespace/braces] [4]')
-
-        self.assert_multi_line_lint(
-            'if (true) {\n'
-            '    int foo;\n'
-            '} else\n'
+            'while (true)\n'
             '    int foo;\n',
-            'One line control clauses should not use braces.  [whitespace/braces] [4]')
+            '')
 
         self.assert_multi_line_lint(
-            'if (true) {\n'
-            '    // Some comment\n'
-            '    int foo;\n'
+            'if (condition1) {\n'
+            '    statement1();\n'
+            '} else {\n'
+            '    statement2();\n'
             '}\n',
             '')
 
         self.assert_multi_line_lint(
-            'if (true) {\n'
-            '    myFunction(reallyLongParam1, reallyLongParam2,\n'
-            '               reallyLongParam3);\n'
+            'if (condition1) {\n'
+            '    statement1();\n'
+            '} else if (condition2) {\n'
+            '    statement2();\n'
             '}\n',
-            'Weird number of spaces at line-start.  Are you using a 4-space indent?  [whitespace/indent] [3]')
+            '')
 
         self.assert_multi_line_lint(
-            'if (true) {\n'
-            '    myFunction(reallyLongParam1, reallyLongParam2,\n'
-            '            reallyLongParam3);\n'
+            'if (condition1) {\n'
+            '    statement1();\n'
+            '} else if (condition2) {\n'
+            '    statement2();\n'
+            '} else {\n'
+            '    statement3();\n'
             '}\n',
-            'When wrapping a line, only indent 4 spaces.  [whitespace/indent] [3]')
+            '')
 
-        # 4. Control clauses without a body should use empty braces.
+        self.assert_multi_line_lint(
+            'if (condition1) {\n'
+            '    statement1();\n'
+            '    statement1_2();\n'
+            '} else if (condition2) {\n'
+            '    statement2();\n'
+            '    statement2_2();\n'
+            '}\n',
+            '')
+
+        self.assert_multi_line_lint(
+            'if (condition1) {\n'
+            '    statement1();\n'
+            '    statement1_2();\n'
+            '} else if (condition2) {\n'
+            '    statement2();\n'
+            '    statement2_2();\n'
+            '} else {\n'
+            '    statement3();\n'
+            '    statement3_2();\n'
+            '}\n',
+            '')
+
+        #
+        # Negative tests
+        #
+
+        self.assert_multi_line_lint(
+            'if (condition)\n'
+            '    doSomething(\n'
+            '        spanningMultipleLines);\n',
+            'A conditional or loop body must use braces if the statement is more than one line long.  [whitespace/braces] [4]')
+
+        self.assert_multi_line_lint(
+            'if (condition)\n'
+            '    // Single-line comment\n'
+            '    doSomething();\n',
+            'A conditional or loop body must use braces if the statement is more than one line long.  [whitespace/braces] [4]')
+
+        self.assert_multi_line_lint(
+            'if (condition1)\n'
+            '    statement1();\n'
+            'else if (condition2)\n'
+            '    // Single-line comment\n'
+            '    statement2();\n',
+            'A conditional or loop body must use braces if the statement is more than one line long.  [whitespace/braces] [4]')
+
+        self.assert_multi_line_lint(
+            'if (condition1)\n'
+            '    statement1();\n'
+            'else if (condition2)\n'
+            '    statement2();\n'
+            'else\n'
+            '    // Single-line comment\n'
+            '    statement3();\n',
+            'A conditional or loop body must use braces if the statement is more than one line long.  [whitespace/braces] [4]')
+
+        self.assert_multi_line_lint(
+            'for (; foo; bar)\n'
+            '    // Single-line comment\n'
+            '    int foo;\n',
+            'A conditional or loop body must use braces if the statement is more than one line long.  [whitespace/braces] [4]')
+
+        self.assert_multi_line_lint(
+            'foreach (foo, foos)\n'
+            '    // Single-line comment\n'
+            '    int bar;\n',
+            'A conditional or loop body must use braces if the statement is more than one line long.  [whitespace/braces] [4]')
+
+        self.assert_multi_line_lint(
+            'while (true)\n'
+            '    // Single-line comment\n'
+            '    int foo;\n'
+            '\n',
+            'A conditional or loop body must use braces if the statement is more than one line long.  [whitespace/braces] [4]')
+
+        # 4. If one part of an if-else statement uses curly braces, the
+        #    other part must too.
+
+        self.assert_multi_line_lint(
+            'if (condition1) {\n'
+            '    doSomething1();\n'
+            '    doSomething1_2();\n'
+            '} else if (condition2)\n'
+            '    doSomething2();\n'
+            'else\n'
+            '    doSomething3();\n',
+            'If one part of an if-else statement uses curly braces, the other part must too.  [whitespace/braces] [4]')
+
+        self.assert_multi_line_lint(
+            'if (condition1)\n'
+            '    doSomething1();\n'
+            'else if (condition2) {\n'
+            '    doSomething2();\n'
+            '    doSomething2_2();\n'
+            '} else\n'
+            '    doSomething3();\n',
+            'If one part of an if-else statement uses curly braces, the other part must too.  [whitespace/braces] [4]')
+
+        self.assert_multi_line_lint(
+            'if (condition1) {\n'
+            '    doSomething1();\n'
+            '} else if (condition2) {\n'
+            '    doSomething2();\n'
+            '    doSomething2_2();\n'
+            '} else\n'
+            '    doSomething3();\n',
+            'If one part of an if-else statement uses curly braces, the other part must too.  [whitespace/braces] [4]')
+
+        self.assert_multi_line_lint(
+            'if (condition1)\n'
+            '    doSomething1();\n'
+            'else if (condition2)\n'
+            '    doSomething2();\n'
+            'else {\n'
+            '    doSomething3();\n'
+            '    doSomething3_2();\n'
+            '}\n',
+            'If one part of an if-else statement uses curly braces, the other part must too.  [whitespace/braces] [4]')
+
+        self.assert_multi_line_lint(
+            'if (condition1) {\n'
+            '    doSomething1();\n'
+            '    doSomething1_2();\n'
+            '} else if (condition2)\n'
+            '    doSomething2();\n'
+            'else {\n'
+            '    doSomething3();\n'
+            '    doSomething3_2();\n'
+            '}\n',
+            'If one part of an if-else statement uses curly braces, the other part must too.  [whitespace/braces] [4]')
+
+        self.assert_multi_line_lint(
+            'if (condition1)\n'
+            '    doSomething1();\n'
+            'else if (condition2) {\n'
+            '    doSomething2();\n'
+            '    doSomething2_2();\n'
+            '} else {\n'
+            '    doSomething3();\n'
+            '    doSomething3_2();\n'
+            '}\n',
+            'If one part of an if-else statement uses curly braces, the other part must too.  [whitespace/braces] [4]')
+
+
+        # 5. Control clauses without a body should use empty braces.
         self.assert_multi_line_lint(
             'for ( ; current; current = current->next) { }\n',
             '')

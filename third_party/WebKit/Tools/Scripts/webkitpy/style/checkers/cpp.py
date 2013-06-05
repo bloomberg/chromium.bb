@@ -193,6 +193,29 @@ def iteratively_replace_matches_with_char(pattern, char_replacement, s):
         s = s[:start_match_index] + char_replacement * match_length + s[end_match_index:]
 
 
+def _find_in_lines(regex, lines, start_position, not_found_position):
+    """Does a find starting at start position and going forward until
+    a match is found.
+
+    Returns the position where the regex started.
+    """
+    current_row = start_position.row
+
+    # Start with the given row and trim off everything before what should be matched.
+    current_line = lines[start_position.row][start_position.column:]
+    starting_offset = start_position.column
+    while True:
+        found_match = search(regex, current_line)
+        if found_match:
+            return Position(current_row, starting_offset + found_match.start())
+
+        # A match was not found so continue forward.
+        current_row += 1
+        starting_offset = 0
+        if current_row >= len(lines):
+            return not_found_position
+        current_line = lines[current_row]
+
 def _rfind_in_lines(regex, lines, start_position, not_found_position):
     """Does a reverse find starting at start position and going backwards until
     a match is found.
@@ -2361,16 +2384,6 @@ def check_braces(clean_lines, line_number, error):
         error(line_number, 'whitespace/braces', 4,
               'Place brace on its own line for function definitions.')
 
-    if (match(r'\s*}\s*(else\s*({\s*)?)?$', line) and line_number > 1):
-        # We check if a closed brace has started a line to see if a
-        # one line control statement was previous.
-        previous_line = clean_lines.elided[line_number - 2]
-        last_open_brace = previous_line.rfind('{')
-        if (last_open_brace != -1 and previous_line.find('}', last_open_brace) == -1
-            and search(r'\b(if|for|foreach|while|else)\b', previous_line)):
-            error(line_number, 'whitespace/braces', 4,
-                  'One line control clauses should not use braces.')
-
     # An else clause should be on the same line as the preceding closing brace.
     if match(r'\s*else\s*', line):
         previous_line = get_previous_non_blank_line(clean_lines, line_number)[0]
@@ -2630,6 +2643,128 @@ def get_line_width(line):
         return width
     return len(line)
 
+
+def check_conditional_and_loop_bodies_for_brace_violations(clean_lines, line_number, error):
+    """Scans the bodies of conditionals and loops, and in particular
+    all the arms of conditionals, for violations in the use of braces.
+
+    Specifically:
+
+    (1) If an arm omits braces, then the following statement must be on one
+    physical line.
+    (2) If any arm uses braces, all arms must use them.
+
+    These checks are only done here if we find the start of an
+    'if/for/foreach/while' statement, because this function fails fast
+    if it encounters constructs it doesn't understand. Checks
+    elsewhere validate other constraints, such as requiring '}' and
+    'else' to be on the same line.
+
+    Args:
+      clean_lines: A CleansedLines instance containing the file.
+      line_number: The number of the line to check.
+      error: The function to call with any errors found.
+    """
+
+    # We work with the elided lines. Comments have been removed, but line
+    # numbers are preserved, so we can still find situations where
+    # single-expression control clauses span multiple lines, or when a
+    # comment preceded the expression.
+    lines = clean_lines.elided
+    line = lines[line_number]
+
+    # Match control structures.
+    control_match = match(r'\s*(if|foreach|for|while)\s*\(', line)
+    if not control_match:
+        return
+
+    # Found the start of a conditional or loop.
+
+    # The following loop handles all potential arms of the control clause.
+    # The initial conditions are the following:
+    #   - We start on the opening paren '(' of the condition, *unless* we are
+    #     handling an 'else' block, in which case there is no condition.
+    #   - In the latter case, we start at the position just beyond the 'else'
+    #     token.
+    expect_conditional_expression = True
+    know_whether_using_braces = False
+    using_braces = False
+    search_for_else_clause = control_match.group(1) == "if"
+    current_pos = Position(line_number, control_match.end() - 1)
+
+    while True:
+        if expect_conditional_expression:
+            # Try to find the end of the conditional expression,
+            # potentially spanning multiple lines.
+            open_paren_pos = current_pos
+            close_paren_pos = close_expression(lines, open_paren_pos)
+            if close_paren_pos.column < 0:
+                return
+            current_pos = close_paren_pos
+
+        end_line_of_conditional = current_pos.row
+
+        # Find the start of the body.
+        current_pos = _find_in_lines(r'\S', lines, current_pos, None)
+        if not current_pos:
+            return
+
+        current_arm_uses_brace = False
+        if lines[current_pos.row][current_pos.column] == '{':
+            current_arm_uses_brace = True
+        if know_whether_using_braces:
+            if using_braces != current_arm_uses_brace:
+                error(current_pos.row, 'whitespace/braces', 4,
+                      'If one part of an if-else statement uses curly braces, the other part must too.')
+                return
+        know_whether_using_braces = True
+        using_braces = current_arm_uses_brace
+
+        if using_braces:
+            # Skip over the entire arm.
+            current_pos = close_expression(lines, current_pos)
+            if current_pos.column < 0:
+                return
+        else:
+            # Skip over the current expression.
+            current_line_number = current_pos.row
+            current_pos = _find_in_lines(r';', lines, current_pos, None)
+            if not current_pos:
+                return
+            # If the end of the expression is beyond the line just after
+            # the close parenthesis or control clause, we've found a
+            # single-expression arm that spans multiple lines. (We don't
+            # fire this error for expressions ending on the same line; that
+            # is a different error, handled elsewhere.)
+            if current_pos.row > 1 + end_line_of_conditional:
+                error(current_pos.row, 'whitespace/braces', 4,
+                      'A conditional or loop body must use braces if the statement is more than one line long.')
+                return
+            current_pos = Position(current_pos.row, 1 + current_pos.column)
+
+        # At this point current_pos points just past the end of the last
+        # arm. If we just handled the last control clause, we're done.
+        if not search_for_else_clause:
+            return
+
+        # Scan forward for the next non-whitespace character, and see
+        # whether we are continuing a conditional (with an 'else' or
+        # 'else if'), or are done.
+        current_pos = _find_in_lines(r'\S', lines, current_pos, None)
+        if not current_pos:
+            return
+        next_nonspace_string = lines[current_pos.row][current_pos.column:]
+        next_conditional = match(r'(else\s*if|else)', next_nonspace_string)
+        if not next_conditional:
+            # Done processing this 'if' and all arms.
+            return
+        if next_conditional.group(1) == "else if":
+            current_pos = _find_in_lines(r'\(', lines, current_pos, None)
+        else:
+            current_pos.column += 4  # skip 'else'
+            expect_conditional_expression = False
+            search_for_else_clause = False
+    # End while loop
 
 def check_style(clean_lines, line_number, file_extension, class_state, file_state, enum_state, error):
     """Checks rules from the 'C++ style rules' section of cppguide.html.
@@ -3614,7 +3749,7 @@ def process_line(filename, file_extension,
     check_for_non_standard_constructs(clean_lines, line, class_state, error)
     check_posix_threading(clean_lines, line, error)
     check_invalid_increment(clean_lines, line, error)
-
+    check_conditional_and_loop_bodies_for_brace_violations(clean_lines, line, error)
 
 def _process_lines(filename, file_extension, lines, error, min_confidence):
     """Performs lint checks and reports any errors to the given error function.
