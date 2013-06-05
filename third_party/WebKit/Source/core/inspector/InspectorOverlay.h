@@ -43,12 +43,16 @@
 namespace WebCore {
 
 class Color;
+class EmptyChromeClient;
 class GraphicsContext;
 class InspectorClient;
+class InspectorOverlayHost;
 class InspectorValue;
 class IntRect;
 class Node;
 class Page;
+class PlatformMouseEvent;
+class PlatformTouchEvent;
 
 struct HighlightConfig {
     WTF_MAKE_FAST_ALLOCATED;
@@ -115,6 +119,8 @@ public:
     void drawOutline(GraphicsContext*, const LayoutRect&, const Color&);
     void getHighlight(Highlight*) const;
     void resize(const IntSize&);
+    bool handleMouseEvent(const PlatformMouseEvent&);
+    bool handleTouchEvent(const PlatformTouchEvent&);
 
     void setPausedInDebuggerMessage(const String*);
 
@@ -128,8 +134,15 @@ public:
     void reportMemoryUsage(MemoryObjectInfo*) const;
 
     void freePage();
+
+    InspectorOverlayHost* overlayHost() const { return m_overlayHost.get(); }
+
+    // Methods supporting underlying overlay page.
+    void invalidate();
 private:
     InspectorOverlay(Page*, InspectorClient*);
+
+    bool isEmpty();
 
     void drawGutter();
     void drawNodeHighlight();
@@ -151,6 +164,8 @@ private:
     HighlightConfig m_nodeHighlightConfig;
     OwnPtr<FloatQuad> m_highlightQuad;
     OwnPtr<Page> m_overlayPage;
+    OwnPtr<EmptyChromeClient> m_overlayChromeClient;
+    OwnPtr<InspectorOverlayHost> m_overlayHost;
     HighlightConfig m_quadHighlightConfig;
     IntSize m_size;
     bool m_drawViewSize;

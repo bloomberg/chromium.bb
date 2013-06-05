@@ -328,6 +328,9 @@ Node* InspectorController::highlightedNode() const
 
 bool InspectorController::handleMouseEvent(Frame* frame, const PlatformMouseEvent& event)
 {
+    // Overlay should not consume events.
+    m_overlay->handleMouseEvent(event);
+
     if (event.type() == PlatformEvent::MouseMoved) {
         m_domAgent->handleMouseMove(frame, event);
         return false;
@@ -339,6 +342,8 @@ bool InspectorController::handleMouseEvent(Frame* frame, const PlatformMouseEven
 
 bool InspectorController::handleTouchEvent(Frame* frame, const PlatformTouchEvent& event)
 {
+    // Overlay should not consume events.
+    m_overlay->handleTouchEvent(event);
     return m_domAgent->handleTouchEvent(frame, event);
 }
 

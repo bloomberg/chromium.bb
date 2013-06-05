@@ -33,6 +33,7 @@
 
 #include "bindings/v8/PageScriptDebugServer.h"
 #include "core/inspector/InspectorDebuggerAgent.h"
+#include "core/inspector/InspectorOverlayHost.h"
 
 namespace WebCore {
 
@@ -41,7 +42,9 @@ class InspectorPageAgent;
 class Page;
 class PageScriptDebugServer;
 
-class PageDebuggerAgent : public InspectorDebuggerAgent {
+class PageDebuggerAgent :
+    public InspectorDebuggerAgent,
+    public InspectorOverlayHost::Listener {
     WTF_MAKE_NONCOPYABLE(PageDebuggerAgent);
     WTF_MAKE_FAST_ALLOCATED;
 public:
@@ -61,6 +64,10 @@ private:
     virtual void muteConsole();
     virtual void unmuteConsole();
     virtual void addConsoleMessage(MessageSource, MessageLevel, const String& message, const String& sourceURL);
+
+    // InspectorOverlayHost::Listener implementation.
+    virtual void overlayResumed();
+    virtual void overlaySteppedOver();
 
     virtual InjectedScript injectedScriptForEval(ErrorString*, const int* executionContextId);
     virtual void setOverlayMessage(ErrorString*, const String*);
