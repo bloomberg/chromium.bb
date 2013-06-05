@@ -109,14 +109,14 @@ test('htmlForTestTypeSwitcherGroup', 6, function() {
 test('htmlForIndividualTestOnAllBuilders', 1, function() {
     resetGlobals();
     builders.loadBuildersList('@ToT - chromium.org', 'layout-tests');
-    equal(htmlForIndividualTestOnAllBuilders('foo/nonexistant.html'), '<div class="not-found">Test not found. Either it does not exist, is skipped or passes on all platforms.</div>');
+    equal(htmlForIndividualTestOnAllBuilders('foo/nonexistant.html'), '<div class="not-found">Test not found. Either it does not exist, is skipped or passes on all recorded runs.</div>');
 });
 
 test('htmlForIndividualTestOnAllBuildersWithResultsLinksNonexistant', 1, function() {
     resetGlobals();
     builders.loadBuildersList('@ToT - chromium.org', 'layout-tests');
     equal(htmlForIndividualTestOnAllBuildersWithResultsLinks('foo/nonexistant.html'),
-        '<div class="not-found">Test not found. Either it does not exist, is skipped or passes on all platforms.</div>' +
+        '<div class="not-found">Test not found. Either it does not exist, is skipped or passes on all recorded runs.</div>' +
         '<div class=expectations test=foo/nonexistant.html>' +
             '<div>' +
                 '<span class=link onclick="g_history.setQueryParameter(\'showExpectations\', true)">Show results</span> | ' +
@@ -157,7 +157,7 @@ test('htmlForIndividualTestOnAllBuildersWithResultsLinks', 1, function() {
                 '<td title="NO DATA. Click for more info." class="results NODATA" onclick=\'showPopupForBuild(event, "WebKit Linux",1,"dummytest.html")\'>&nbsp;' +
             '</tbody>' +
         '</table>' +
-        '<div>The following builders either don\'t run this test (e.g. it\'s skipped) or all runs passed:</div>' +
+        '<div>The following builders either don\'t run this test (e.g. it\'s skipped) or all recorded runs passed:</div>' +
         '<div class=skipped-builder-list>' +
             '<div class=skipped-builder>WebKit Linux (dbg)</div><div class=skipped-builder>WebKit Mac10.7</div><div class=skipped-builder>WebKit Win</div><div class=skipped-builder>WebKit Win (dbg)</div>' +
         '</div>' +
