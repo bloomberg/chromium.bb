@@ -10,9 +10,11 @@
 #include "base/synchronization/lock.h"
 #include "content/renderer/media/audio_device_factory.h"
 #include "content/renderer/media/webrtc_audio_capturer.h"
+#include "content/renderer/render_thread_impl.h"
 #include "media/audio/audio_output_device.h"
 #include "media/base/audio_bus.h"
 #include "media/base/audio_fifo.h"
+#include "media/base/audio_hardware_config.h"
 
 namespace content {
 
@@ -125,11 +127,25 @@ void WebRtcLocalAudioRenderer::Start() {
   loopback_fifo_.reset(new media::AudioFifo(
       audio_params_.channels(), 10 * audio_params_.frames_per_buffer()));
 
+#if defined(OS_ANDROID)
+  media::AudioHardwareConfig* hardware_config =
+      RenderThreadImpl::current()->GetAudioHardwareConfig();
+#endif
+
   media::AudioParameters sink_params(audio_params_.format(),
                                      audio_params_.channel_layout(),
                                      audio_params_.sample_rate(),
                                      audio_params_.bits_per_sample(),
-                                     2 * audio_params_.frames_per_buffer());
+#if defined(OS_ANDROID)
+  // On Android, input and output are using same sampling rate. In order to
+  // achieve low latency mode, we need use buffer size suggested by
+  // AudioManager for the sink paramters which will be used to decide
+  // buffer size for shared memory buffer.
+                                     hardware_config->GetOutputBufferSize()
+#else
+                                     2 * audio_params_.frames_per_buffer()
+#endif
+                                    );
   sink_ = AudioDeviceFactory::NewOutputDevice(source_render_view_id_);
 
   // TODO(henrika): we could utilize the unified audio here instead and do
