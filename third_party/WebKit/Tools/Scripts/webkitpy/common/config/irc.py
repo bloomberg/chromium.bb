@@ -26,7 +26,7 @@
 server = "irc.freenode.net"
 port = 6667
 channel = "#blink"
-nickname = "blinkybot"
+nickname = "commit-bot"
 
 update_wait_seconds = 10
 retry_attempts = 8
