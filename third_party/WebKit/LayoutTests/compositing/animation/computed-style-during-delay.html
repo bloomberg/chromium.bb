@@ -30,22 +30,32 @@
             to   { -webkit-transform: translateX(400px); }
         }
     </style>
-    <script src="../../animations/resources/animation-test-helpers.js" type="text/javascript" charset="utf-8"></script>
     <script type="text/javascript" charset="utf-8">
-
-        const expectedValues = [
-          // [time, element-id, property, expected-value, tolerance]
-          [0.1, 'testbox', '-webkit-transform.4', 0, 0],
-          [0.1, 'changedbox', '-webkit-transform.4', 50, 0],
-          [0.1, 'filledbox', '-webkit-transform.4', 100, 0],
-        ];
-
-        function setupTest()
-        {
-          document.getElementById('movers').className = 'moved';
+        if (window.testRunner) {
+            testRunner.dumpAsText();
+            testRunner.waitUntilDone();
         }
 
-        runTransitionTest(expectedValues, setupTest, false /* use pause API */);
+        var results = [];
+        function check(message, expected, actual) {
+            if (expected == actual) {
+                results.push('PASS - ' + message);
+            } else {
+                results.push('FAIL - ' + actual);
+            }
+        }
+
+        onload = function() {
+            document.getElementById('movers').className = 'moved';
+            document.body.offsetTop;
+            check('default', 'matrix(1, 0, 0, 1, 0, 0)', getComputedStyle(document.querySelector('#testbox')).webkitTransform);
+            check('changed style', 'matrix(1, 0, 0, 1, 50, 0)', getComputedStyle(document.querySelector('#changedbox')).webkitTransform);
+            check('backwards fill', 'matrix(1, 0, 0, 1, 100, 0)', getComputedStyle(document.querySelector('#filledbox')).webkitTransform);
+            document.body.innerHTML = results.join('<br>');
+            if (window.testRunner)
+                testRunner.notifyDone();
+        }
+
     </script>
 </head>
 <body>
