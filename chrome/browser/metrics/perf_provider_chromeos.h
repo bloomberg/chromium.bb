@@ -38,12 +38,17 @@ class PerfProvider : public base::NonThreadSafe {
     READY_TO_UPLOAD,
   };
 
-  // Starts an internal timer to start collecting perf data.
-  void ScheduleCollection();
+  // Starts an internal timer to start collecting perf data. The timer is set to
+  // trigger |interval| after this function call.
+  void ScheduleCollection(const base::TimeDelta& interval);
 
   // Collects perf data if it has not been consumed by calling GetPerfData()
   // (see above).
   void CollectIfNecessary();
+
+  // Collects perf data by calling CollectIfNecessary() and reschedules it to be
+  // collected again.
+  void CollectIfNecessaryAndReschedule();
 
   // Parses a protobuf from the |data| passed in only if the
   // |incognito_observer| indicates that no incognito window had been opened
@@ -59,7 +64,7 @@ class PerfProvider : public base::NonThreadSafe {
   PerfDataProto perf_data_proto_;
 
   // For scheduling collection of perf data.
-  base::RepeatingTimer<PerfProvider> timer_;
+  base::OneShotTimer<PerfProvider> timer_;
 
   // To pass around the "this" pointer across threads safely.
   base::WeakPtrFactory<PerfProvider> weak_factory_;
