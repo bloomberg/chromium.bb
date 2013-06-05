@@ -16,5 +16,12 @@
         'adb_reboot/adb_reboot.gyp:adb_reboot',
       ],
     },
+    {
+      'target_name': 'memdump',
+      'type': 'none',
+      'dependencies': [
+        'memdump/memdump.gyp:memdump',
+      ],
+    }
   ],
 }
