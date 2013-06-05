@@ -252,6 +252,7 @@ cr.define('bmm', function() {
         var newArray = [];
         for (var i = 0; i < reorderInfo.childIds.length; i++) {
           newArray[i] = items[reorderInfo.childIds[i]];
+          newArray[i].index = i;
         }
 
         this.dataModel = new BookmarksArrayDataModel(newArray);
@@ -259,9 +260,8 @@ cr.define('bmm', function() {
     },
 
     handleCreated: function(id, bookmarkNode) {
-      if (this.parentId == bookmarkNode.parentId) {
+      if (this.parentId == bookmarkNode.parentId)
         this.dataModel.splice(bookmarkNode.index, 0, bookmarkNode);
-      }
     },
 
     handleMoved: function(id, moveInfo) {
