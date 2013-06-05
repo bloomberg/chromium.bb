@@ -437,6 +437,7 @@ extern const char kOverlappedRead[];
 extern const char kPrintRaster[];
 extern const char kRelaunchShortcut[];
 extern const char kWaitForMutex[];
+extern const char kWindows8Search[];
 #endif
 
 #ifndef NDEBUG

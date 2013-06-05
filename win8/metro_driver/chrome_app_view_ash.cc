@@ -6,6 +6,7 @@
 #include "win8/metro_driver/chrome_app_view_ash.h"
 
 #include <corewindow.h>
+#include <shellapi.h>
 #include <windows.foundation.h>
 
 #include "base/bind.h"
@@ -294,7 +295,9 @@ uint32 GetKeyboardEventFlags() {
 ChromeAppViewAsh::ChromeAppViewAsh()
     : mouse_down_flags_(ui::EF_NONE),
       ui_channel_(nullptr),
-      core_window_hwnd_(NULL) {
+      core_window_hwnd_(NULL),
+      ui_loop_(base::MessageLoop::TYPE_UI) {
+  DVLOG(1) << __FUNCTION__;
   globals.previous_state =
       winapp::Activation::ApplicationExecutionState_NotRunning;
 }
@@ -414,9 +417,6 @@ ChromeAppViewAsh::Run() {
     return hr;
   }
 
-  // Create a message loop to allow message passing into this thread.
-  base::MessageLoop msg_loop(base::MessageLoop::TYPE_UI);
-
   // Create the IPC channel IO thread. It needs to out-live the ChannelProxy.
   base::Thread io_thread("metro_IO_thread");
   base::Thread::Options options;
@@ -435,7 +435,7 @@ ChromeAppViewAsh::Run() {
 
   // In Aura mode we create an IPC channel to the browser, then ask it to
   // connect to us.
-  ChromeChannelListener ui_channel_listener(&msg_loop, this);
+  ChromeChannelListener ui_channel_listener(&ui_loop_, this);
   IPC::ChannelProxy ui_channel(ipc_channel_name,
                                IPC::Channel::MODE_NAMED_CLIENT,
                                &ui_channel_listener,
@@ -449,8 +449,8 @@ ChromeAppViewAsh::Run() {
   DVLOG(1) << "ICoreWindow sent " << core_window_hwnd_;
 
   // And post the task that'll do the inner Metro message pumping to it.
-  msg_loop.PostTask(FROM_HERE, base::Bind(&RunMessageLoop, dispatcher.Get()));
-  msg_loop.Run();
+  ui_loop_.PostTask(FROM_HERE, base::Bind(&RunMessageLoop, dispatcher.Get()));
+  ui_loop_.Run();
 
   DVLOG(0) << "ProcessEvents done, hr=" << hr;
   return hr;
@@ -603,6 +603,18 @@ HRESULT ChromeAppViewAsh::OnActivate(
   args->get_PreviousExecutionState(&globals.previous_state);
   DVLOG(1) << "Previous Execution State: " << globals.previous_state;
 
+  winapp::Activation::ActivationKind activation_kind;
+  CheckHR(args->get_Kind(&activation_kind));
+  if (activation_kind == winapp::Activation::ActivationKind_Search)
+    HandleSearchRequest(args);
+  else if (activation_kind == winapp::Activation::ActivationKind_Protocol)
+    HandleProtocolRequest(args);
+  // We call ICoreWindow::Activate after the handling for the search/protocol
+  // requests because Chrome can be launched to handle a search request which
+  // in turn launches the chrome browser process in desktop mode via
+  // ShellExecute. If we call ICoreWindow::Activate before this, then
+  // Windows kills the metro chrome process when it calls ShellExecute. Seems
+  // to be a bug.
   window_->Activate();
   return S_OK;
 }
@@ -828,6 +840,75 @@ HRESULT ChromeAppViewAsh::OnWindowActivated(
   ui_channel_->Send(new MetroViewerHostMsg_WindowActivated(
       state != winui::Core::CoreWindowActivationState_Deactivated));
   return S_OK;
+}
+
+HRESULT ChromeAppViewAsh::HandleSearchRequest(
+    winapp::Activation::IActivatedEventArgs* args) {
+  mswr::ComPtr<winapp::Activation::ISearchActivatedEventArgs> search_args;
+  CheckHR(args->QueryInterface(
+          winapp::Activation::IID_ISearchActivatedEventArgs, &search_args));
+
+  if (!ui_channel_) {
+    DVLOG(1) << "Launched to handle search request";
+    base::FilePath chrome_exe_path;
+
+    if (!PathService::Get(base::FILE_EXE, &chrome_exe_path))
+      return E_FAIL;
+
+    SHELLEXECUTEINFO sei = { sizeof(sei) };
+    sei.nShow = SW_SHOWNORMAL;
+    sei.lpFile = chrome_exe_path.value().c_str();
+    sei.lpDirectory = L"";
+    sei.lpParameters =
+        L"--silent-launch --viewer-connection=viewer --windows8-search";
+    ::ShellExecuteEx(&sei);
+  }
+
+  mswrw::HString search_string;
+  CheckHR(search_args->get_QueryText(search_string.GetAddressOf()));
+  string16 search_text(MakeStdWString(search_string.Get()));
+
+  ui_loop_.PostTask(FROM_HERE,
+                    base::Bind(&ChromeAppViewAsh::OnSearchRequest,
+                    base::Unretained(this),
+                    search_text));
+  return S_OK;
+}
+
+HRESULT ChromeAppViewAsh::HandleProtocolRequest(
+    winapp::Activation::IActivatedEventArgs* args) {
+  DVLOG(1) << __FUNCTION__;
+  if (!ui_channel_)
+    DVLOG(1) << "Launched to handle url request";
+
+  mswr::ComPtr<winapp::Activation::IProtocolActivatedEventArgs>
+      protocol_args;
+  CheckHR(args->QueryInterface(
+          winapp::Activation::IID_IProtocolActivatedEventArgs,
+          &protocol_args));
+
+  mswr::ComPtr<winfoundtn::IUriRuntimeClass> uri;
+  protocol_args->get_Uri(&uri);
+  mswrw::HString url;
+  uri->get_AbsoluteUri(url.GetAddressOf());
+  string16 actual_url(MakeStdWString(url.Get()));
+  DVLOG(1) << "Received url request: " << actual_url;
+
+  ui_loop_.PostTask(FROM_HERE,
+                    base::Bind(&ChromeAppViewAsh::OnNavigateToUrl,
+                               base::Unretained(this),
+                               actual_url));
+  return S_OK;
+}
+
+void ChromeAppViewAsh::OnSearchRequest(const string16& search_string) {
+  DCHECK(ui_channel_);
+  ui_channel_->Send(new MetroViewerHostMsg_SearchRequest(search_string));
+}
+
+void ChromeAppViewAsh::OnNavigateToUrl(const string16& url) {
+  DCHECK(ui_channel_);
+ ui_channel_->Send(new MetroViewerHostMsg_OpenURL(url));
 }
 
 

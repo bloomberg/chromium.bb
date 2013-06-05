@@ -12,6 +12,7 @@
 
 #include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/message_loop.h"
 #include "base/string16.h"
 #include "ui/base/events/event_constants.h"
 #include "win8/metro_driver/direct3d_helper.h"
@@ -111,6 +112,16 @@ class ChromeAppViewAsh
   HRESULT OnWindowActivated(winui::Core::ICoreWindow* sender,
                             winui::Core::IWindowActivatedEventArgs* args);
 
+  // Helper to handle search requests received via the search charm in ASH.
+  HRESULT HandleSearchRequest(winapp::Activation::IActivatedEventArgs* args);
+  // Helper to handle http/https url requests in ASH.
+  HRESULT HandleProtocolRequest(winapp::Activation::IActivatedEventArgs* args);
+
+  // Tasks posted to the UI thread to initiate the search/url navigation
+  // requests.
+  void OnSearchRequest(const string16& search_string);
+  void OnNavigateToUrl(const string16& url);
+
   mswr::ComPtr<winui::Core::ICoreWindow> window_;
   mswr::ComPtr<winapp::Core::ICoreApplicationView> view_;
   EventRegistrationToken activated_token_;
@@ -138,6 +149,9 @@ class ChromeAppViewAsh
 
   // The actual window behind the view surface.
   HWND core_window_hwnd_;
+
+  // UI message loop to allow message passing into this thread.
+  base::MessageLoop ui_loop_;
 };
 
 #endif  // WIN8_METRO_DRIVER_CHROME_APP_VIEW_ASH_H_

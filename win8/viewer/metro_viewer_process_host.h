@@ -65,6 +65,15 @@ class MetroViewerProcessHost : public IPC::Listener,
   // drawing to |target_surface|.
   virtual void OnSetTargetSurface(gfx::NativeViewId target_surface) = 0;
 
+  // Called over IPC by the viewer process to request that the url passed in be
+  // opened.
+  virtual void OnOpenURL(const string16& url) = 0;
+
+  // Called over IPC by the viewer process to request that the search string
+  // passed in is passed to the default search provider and a URL navigation be
+  // performed.
+  virtual void OnHandleSearchRequest(const string16& search_string) = 0;
+
   void NotifyChannelConnected();
 
   // Inner message filter used to handle connection event on the IPC channel

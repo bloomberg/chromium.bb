@@ -8,8 +8,13 @@
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part_aurawin.h"
+#include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/search_engines/template_url.h"
+#include "chrome/browser/search_engines/template_url_service.h"
+#include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/ash/ash_init.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/host_desktop.h"
@@ -17,7 +22,9 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/page_navigator.h"
 #include "content/public/browser/web_contents.h"
+#include "googleurl/src/gurl.h"
 #include "ui/aura/remote_root_window_host_win.h"
 #include "ui/surface/accelerated_surface_win.h"
 
@@ -37,6 +44,15 @@ void CloseOpenAshBrowsers() {
         delete browser->tab_strip_model()->GetWebContentsAt(0);
     }
   }
+}
+
+void OpenURL(const GURL& url) {
+  Browser* browser = chrome::FindOrCreateTabbedBrowser(
+      ProfileManager::GetDefaultProfileOrOffTheRecord(),
+      chrome::HOST_DESKTOP_TYPE_ASH);
+  browser->OpenURL(content::OpenURLParams(
+    GURL(url), content::Referrer(), NEW_FOREGROUND_TAB,
+    content::PAGE_TRANSITION_TYPED, false));
 }
 
 }  // namespace
@@ -83,4 +99,23 @@ void ChromeMetroViewerProcessHost::OnSetTargetSurface(
       chrome::NOTIFICATION_ASH_SESSION_STARTED,
       content::NotificationService::AllSources(),
       content::NotificationService::NoDetails());
+}
+
+void ChromeMetroViewerProcessHost::OnOpenURL(const string16& url) {
+  OpenURL(GURL(url));
+}
+
+void ChromeMetroViewerProcessHost::OnHandleSearchRequest(
+    const string16& search_string) {
+  const TemplateURL* default_provider =
+      TemplateURLServiceFactory::GetForProfile(
+          ProfileManager::GetDefaultProfileOrOffTheRecord())->
+              GetDefaultSearchProvider();
+  if (default_provider) {
+    const TemplateURLRef& search_url = default_provider->url_ref();
+    DCHECK(search_url.SupportsReplacement());
+    GURL request_url = GURL(search_url.ReplaceSearchTerms(
+        TemplateURLRef::SearchTermsArgs(search_string)));
+    OpenURL(request_url);
+  }
 }

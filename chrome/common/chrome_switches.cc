@@ -1566,6 +1566,10 @@ const char kRelaunchShortcut[]              = "relaunch-shortcut";
 // Waits for the given handle to be signaled before relaunching metro Chrome on
 // Windows 8 and higher.
 const char kWaitForMutex[]                  = "wait-for-mutex";
+
+// Indicates that chrome was launched to service a search request in Windows 8.
+const char kWindows8Search[]           = "windows8-search";
+
 #endif
 
 #ifndef NDEBUG

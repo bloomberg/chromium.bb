@@ -145,3 +145,9 @@ IPC_MESSAGE_CONTROL2(MetroViewerHostMsg_SetCursorPos,
 // Ack sent by the viewer process indicating that the SetCursorPos operation
 // was completed.
 IPC_MESSAGE_CONTROL0(MetroViewerHostMsg_SetCursorPosAck)
+
+IPC_MESSAGE_CONTROL1(MetroViewerHostMsg_OpenURL,
+                     string16)  /* url */
+
+IPC_MESSAGE_CONTROL1(MetroViewerHostMsg_SearchRequest,
+                     string16)  /* search_string */

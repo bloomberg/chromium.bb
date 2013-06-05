@@ -51,5 +51,12 @@ void TestMetroViewerProcessHost::OnSetTargetSurface(
   aura::RemoteRootWindowHostWin::Instance()->Connected(this);
 }
 
+void TestMetroViewerProcessHost::OnOpenURL(const string16& url) {
+}
+
+void TestMetroViewerProcessHost::OnHandleSearchRequest(
+    const string16& search_string) {
+}
+
 }  // namespace test
 }  // namespace ash
