@@ -1849,7 +1849,7 @@ crbug.com/229120 virtual/deferred/fast/images/ycbcr-with-cmyk-color-profile.html
 
 crbug.com/246749 [ Debug ] inspector/extensions/extensions-panel.html [ Timeout Failure ]
 
-crbug.com/226256 storage/indexeddb/pending-version-change-stuck.html [ Timeout ]
+crbug.com/226256 storage/indexeddb/pending-version-change-stuck.html [ Timeout Pass ]
 
 # DCHECK in SkFixed.h
 crbug.com/243309 [ Mac Debug ] accessibility/content-changed-notification-causes-crash.html [ Crash Pass ]
