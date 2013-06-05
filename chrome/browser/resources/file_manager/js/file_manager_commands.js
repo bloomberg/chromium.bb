@@ -396,11 +396,23 @@ Commands.openWithCommand = {
  * Focuses search input box.
  */
 Commands.searchCommand = {
-  execute: function(event, fileManager, elmnt) {
-    elmnt.focus();
+  execute: function(event, fileManager, element) {
+    element.focus();
   },
   canExecute: function(event, fileManager) {
     event.canExecute = !fileManager.isRenamingInProgress();
+  }
+};
+
+/**
+ * Activates the n-th volume.
+ */
+Commands.volumeSwitchCommand = {
+  execute: function(event, volumeList, index) {
+    volumeList.selectByIndex(index - 1);
+  },
+  canExecute: function(event, volumeList, index) {
+    event.canExecute = index > 0 && index <= volumeList.dataModel.length;
   }
 };
 

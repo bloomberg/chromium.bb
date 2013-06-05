@@ -150,6 +150,24 @@ VolumeList.prototype.setContextMenu = function(menu) {
 };
 
 /**
+ * Selects the n-th volume from the list.
+ * @param {number} index Volume index.
+ * @return {boolean} True for success, otherwise false.
+ */
+VolumeList.prototype.selectByIndex = function(index) {
+  if (index < 0 || index > this.dataModel.length - 1)
+    return false;
+
+  var newRootDir = this.dataModel.item(index);
+  if (!newRootDir || this.currentVolume_ == newRootDir.fullPath)
+    return false;
+
+  this.currentVolume_ = newRootDir.fullPath;
+  this.directoryModel_.changeDirectory(this.currentVolume_);
+  return true;
+};
+
+/**
  * Handler before root item change.
  * @param {Event} event The event.
  * @private
@@ -165,11 +183,7 @@ VolumeList.prototype.onBeforeSelectionChange_ = function(event) {
  * @private
  */
 VolumeList.prototype.onSelectionChange_ = function(event) {
-  var newRootDir = this.dataModel.item(this.selectionModel.selectedIndex);
-  if (newRootDir && this.currentVolume_ != newRootDir.fullPath) {
-    this.currentVolume_ = newRootDir.fullPath;
-    this.directoryModel_.changeDirectory(this.currentVolume_);
-  }
+  this.selectByIndex(this.selectionModel.selectedIndex);
 };
 
 /**
@@ -188,7 +202,6 @@ VolumeList.prototype.onCurrentDirectoryChanged_ = function(event) {
   for (var i = 0; i < this.dataModel.length; i++) {
     var item = this.dataModel.item(i);
     if (PathUtil.getRootPath(item.fullPath) == newRootPath) {
-
       this.selectionModel.selectedIndex = i;
       return;
     }

@@ -734,7 +734,19 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
         Commands.zipSelectionCommand, this, this.directoryModel_);
 
     CommandUtil.registerCommand(doc, 'search', Commands.searchCommand, this,
-            this.dialogDom_.querySelector('#search-box'));
+        this.dialogDom_.querySelector('#search-box'));
+
+    if (util.platform.newUI()) {
+      // Register commands with CTRL-1..9 shortcuts for switching between
+      // volumes.
+      for (var i = 1; i <= 9; i++) {
+        CommandUtil.registerCommand(doc,
+                                    'volume-switch-' + i,
+                                    Commands.volumeSwitchCommand,
+                                    this.volumeList_,
+                                    i);
+      }
+    }
 
     CommandUtil.registerCommand(doc, 'cut', Commands.defaultCommand, doc);
     CommandUtil.registerCommand(doc, 'copy', Commands.defaultCommand, doc);
