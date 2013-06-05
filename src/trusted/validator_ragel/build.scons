@@ -371,3 +371,24 @@ if ragel_involved:
     env.Depends(calculate_hash_sums, dfacheckvalidator_tests)
 
     env.Alias('dfacheckvalidator', calculate_hash_sums)
+
+# Spec_val test. Implemented not as test, but as alias, because for now it's not
+# ready to run on bots.
+
+for bits in ['32', '64']:
+  tests_mask = (
+      '${MAIN_DIR}/src/trusted/validator_ragel/testdata/%s/*.test' % bits)
+
+  if env.Bit('regenerate_golden'):
+    update_option = ['--update']
+  else:
+    update_option = []
+
+  spec_test = env.AutoDepsCommand(
+      'run_spec_val_test_%s.out' % bits,
+      ['${PYTHON}',
+       env.File('spec_val_test.py'),
+       '--bits', bits,
+       tests_mask] + update_option)
+
+  env.Alias('run_spec_val_test', spec_test)
