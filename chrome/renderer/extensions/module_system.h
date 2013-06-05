@@ -19,6 +19,8 @@
 
 namespace extensions {
 
+class ChromeV8Context;
+
 // A module system for JS similar to node.js' require() function.
 // Each module has three variables in the global scope:
 //   - exports, an object returned to dependencies who require() this
@@ -47,7 +49,11 @@ class ModuleSystem : public ObjectBackedNativeHandler {
   class ExceptionHandler {
    public:
     virtual ~ExceptionHandler() {}
-    virtual void HandleUncaughtException() = 0;
+    virtual void HandleUncaughtException(const v8::TryCatch& try_catch) = 0;
+
+   protected:
+    // Formats |try_catch| as a nice string.
+    std::string CreateExceptionString(const v8::TryCatch& try_catch);
   };
 
   // Enables native bindings for the duration of its lifetime.
@@ -74,13 +80,15 @@ class ModuleSystem : public ObjectBackedNativeHandler {
   // equivalent to calling require('module_name').method_name() from JS.
   v8::Local<v8::Value> CallModuleMethod(const std::string& module_name,
                                         const std::string& method_name);
-
-  // Calls the specified method exported by the specified module. This is
-  // equivalent to calling require('module_name').method_name(args) from JS.
   v8::Local<v8::Value> CallModuleMethod(
       const std::string& module_name,
       const std::string& method_name,
       std::vector<v8::Handle<v8::Value> >* args);
+  v8::Local<v8::Value> CallModuleMethod(
+      const std::string& module_name,
+      const std::string& method_name,
+      int argc,
+      v8::Handle<v8::Value> argv[]);
 
   // Register |native_handler| as a potential target for requireNative(), so
   // calls to requireNative(|name|) from JS will return a new object created by
@@ -178,6 +186,8 @@ class ModuleSystem : public ObjectBackedNativeHandler {
   // Wraps |source| in a (function(require, requireNative, exports) {...}).
   v8::Handle<v8::String> WrapSource(v8::Handle<v8::String> source);
 
+  ChromeV8Context* context_;
+
   // A map from module names to the JS source for that module. GetSource()
   // performs a lookup on this map.
   SourceMap* source_map_;
@@ -189,8 +199,8 @@ class ModuleSystem : public ObjectBackedNativeHandler {
   // pinned natives as enabled.
   int natives_enabled_;
 
-  // Called when an exception is thrown but not caught in JS.
-  // Non-NULL in tests only.
+  // Called when an exception is thrown but not caught in JS. Overridable by
+  // tests.
   scoped_ptr<ExceptionHandler> exception_handler_;
 
   std::set<std::string> overridden_native_handlers_;

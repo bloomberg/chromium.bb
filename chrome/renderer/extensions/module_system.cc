@@ -5,6 +5,7 @@
 #include "chrome/renderer/extensions/module_system.h"
 
 #include "base/bind.h"
+#include "base/debug/trace_event.h"
 #include "base/stl_util.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
@@ -12,6 +13,7 @@
 #include "chrome/renderer/extensions/chrome_v8_context.h"
 #include "chrome/renderer/extensions/console.h"
 #include "content/public/renderer/render_view.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebScopedMicrotaskSuppression.h"
 
 namespace extensions {
@@ -23,8 +25,31 @@ const char* kModuleName = "module_name";
 const char* kModuleField = "module_field";
 const char* kModulesField = "modules";
 
-// Formats |try_catch| as a nice string.
-std::string CreateExceptionString(const v8::TryCatch& try_catch) {
+// Default exception handler which logs the exception.
+class DefaultExceptionHandler : public ModuleSystem::ExceptionHandler {
+ public:
+  // Fatally dumps the debug info from |try_catch| to the console.
+  // Make sure this is never used for exceptions that originate in external
+  // code!
+  virtual void HandleUncaughtException(const v8::TryCatch& try_catch) OVERRIDE {
+    v8::HandleScope handle_scope;
+    std::string stack_trace = "<stack trace unavailable>";
+    if (!try_catch.StackTrace().IsEmpty()) {
+      v8::String::Utf8Value stack_value(try_catch.StackTrace());
+      if (*stack_value)
+        stack_trace.assign(*stack_value, stack_value.length());
+      else
+        stack_trace = "<could not convert stack trace to string>";
+    }
+    console::Fatal(v8::Context::GetCalling(),
+                   CreateExceptionString(try_catch) + "{" + stack_trace + "}");
+  }
+};
+
+} // namespace
+
+std::string ModuleSystem::ExceptionHandler::CreateExceptionString(
+    const v8::TryCatch& try_catch) {
   v8::Handle<v8::Message> message(try_catch.Message());
   if (message.IsEmpty()) {
     return "try_catch has no message";
@@ -49,31 +74,13 @@ std::string CreateExceptionString(const v8::TryCatch& try_catch) {
                             error_message.c_str());
 }
 
-// Fatally dumps the debug info from |try_catch| to the console.
-// Don't use this for logging exceptions that might originate in external code!
-void DumpException(const v8::TryCatch& try_catch) {
-  v8::HandleScope handle_scope;
-
-  std::string stack_trace = "<stack trace unavailable>";
-  if (!try_catch.StackTrace().IsEmpty()) {
-    v8::String::Utf8Value stack_value(try_catch.StackTrace());
-    if (*stack_value)
-      stack_trace.assign(*stack_value, stack_value.length());
-    else
-      stack_trace = "<could not convert stack trace to string>";
-  }
-
-  console::Fatal(v8::Context::GetCalling(),
-                 CreateExceptionString(try_catch) + "{" + stack_trace + "}");
-}
-
-} // namespace
-
 ModuleSystem::ModuleSystem(ChromeV8Context* context,
                            SourceMap* source_map)
     : ObjectBackedNativeHandler(context),
+      context_(context),
       source_map_(source_map),
-      natives_enabled_(0) {
+      natives_enabled_(0),
+      exception_handler_(new DefaultExceptionHandler()) {
   RouteFunction("require",
       base::Bind(&ModuleSystem::RequireForJs, base::Unretained(this)));
   RouteFunction("requireNative",
@@ -123,10 +130,7 @@ ModuleSystem::NativesEnabledScope::~NativesEnabledScope() {
 }
 
 void ModuleSystem::HandleException(const v8::TryCatch& try_catch) {
-  if (exception_handler_)
-    exception_handler_->HandleUncaughtException();
-  else
-    DumpException(try_catch);
+  exception_handler_->HandleUncaughtException(try_catch);
 }
 
 v8::Handle<v8::Value> ModuleSystem::Require(const std::string& module_name) {
@@ -190,10 +194,9 @@ v8::Handle<v8::Value> ModuleSystem::RequireForJsInner(
     exports,
   };
   {
-    WebKit::WebScopedMicrotaskSuppression suppression;
     v8::TryCatch try_catch;
     try_catch.SetCaptureMessage(true);
-    func->Call(global, 3, args);
+    context_->CallFunction(func, arraysize(args), args);
     if (try_catch.HasCaught()) {
       HandleException(try_catch);
       return v8::Undefined();
@@ -206,18 +209,38 @@ v8::Handle<v8::Value> ModuleSystem::RequireForJsInner(
 v8::Local<v8::Value> ModuleSystem::CallModuleMethod(
     const std::string& module_name,
     const std::string& method_name) {
-  std::vector<v8::Handle<v8::Value> > args;
-  return CallModuleMethod(module_name, method_name, &args);
+  v8::HandleScope handle_scope;
+  v8::Handle<v8::Value> no_args;
+  return CallModuleMethod(module_name, method_name, 0, &no_args);
 }
 
 v8::Local<v8::Value> ModuleSystem::CallModuleMethod(
     const std::string& module_name,
     const std::string& method_name,
     std::vector<v8::Handle<v8::Value> >* args) {
+  return CallModuleMethod(
+      module_name, method_name, args->size(), vector_as_array(args));
+}
+
+v8::Local<v8::Value> ModuleSystem::CallModuleMethod(
+    const std::string& module_name,
+    const std::string& method_name,
+    int argc,
+    v8::Handle<v8::Value> argv[]) {
+  TRACE_EVENT2("v8", "v8.callModuleMethod",
+               "module_name", module_name,
+               "method_name", method_name);
+
   v8::HandleScope handle_scope;
-  v8::Local<v8::Value> module =
-      v8::Local<v8::Value>::New(
-          RequireForJsInner(v8::String::New(module_name.c_str())));
+  v8::Context::Scope context_scope(context()->v8_context());
+
+  v8::Local<v8::Value> module;
+  {
+    NativesEnabledScope natives_enabled(this);
+    module = v8::Local<v8::Value>::New(
+        RequireForJsInner(v8::String::New(module_name.c_str())));
+  }
+
   if (module.IsEmpty() || !module->IsObject()) {
     console::Error(
         v8::Context::GetCalling(),
@@ -234,15 +257,12 @@ v8::Local<v8::Value> ModuleSystem::CallModuleMethod(
     return handle_scope.Close(v8::Undefined());
   }
 
-  v8::Handle<v8::Function> func =
-      v8::Handle<v8::Function>::Cast(value);
-  v8::Handle<v8::Object> global(context()->v8_context()->Global());
+  v8::Handle<v8::Function> func = v8::Handle<v8::Function>::Cast(value);
   v8::Local<v8::Value> result;
   {
-    WebKit::WebScopedMicrotaskSuppression suppression;
     v8::TryCatch try_catch;
     try_catch.SetCaptureMessage(true);
-    result = func->Call(global, args->size(), vector_as_array(args));
+    result = context_->CallFunction(func, argc, argv);
     if (try_catch.HasCaught())
       HandleException(try_catch);
   }
@@ -388,6 +408,7 @@ void ModuleSystem::SetNativeLazyField(v8::Handle<v8::Object> object,
 v8::Handle<v8::Value> ModuleSystem::RunString(v8::Handle<v8::String> code,
                                               v8::Handle<v8::String> name) {
   v8::HandleScope handle_scope;
+  v8::Context::Scope context_scope(context()->v8_context());
 
   WebKit::WebScopedMicrotaskSuppression suppression;
   v8::TryCatch try_catch;

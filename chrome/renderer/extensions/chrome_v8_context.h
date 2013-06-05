@@ -85,18 +85,16 @@ class ChromeV8Context : public RequestSender::Source {
   // context is in the process of being destroyed.
   content::RenderView* GetRenderView() const;
 
+  // Runs |function| with appropriate scopes. Doesn't catch exceptions, callers
+  // must do that if they want.
+  //
+  // USE THIS METHOD RATHER THAN v8::Function::Call WHEREVER POSSIBLE.
+  v8::Local<v8::Value> CallFunction(v8::Handle<v8::Function> function,
+                                    int argc,
+                                    v8::Handle<v8::Value> argv[]) const;
+
   // Fires the onunload event on the chromeHidden object.
   void DispatchOnUnloadEvent();
-
-  // Call the named method of the chromeHidden object in this context.
-  // The function can be a sub-property like "Port.dispatchOnMessage". Returns
-  // the result of the function call in |result| if |result| is non-NULL. If the
-  // named method does not exist, returns false.
-  bool CallChromeHiddenMethod(
-      const std::string& function_name,
-      int argc,
-      v8::Handle<v8::Value>* argv,
-      v8::Handle<v8::Value>* result) const;
 
   // Returns the availability of the API |api_name|.
   Feature::Availability GetAvailability(const std::string& api_name);
@@ -118,6 +116,8 @@ class ChromeV8Context : public RequestSender::Source {
                                   const std::string& error) OVERRIDE;
 
  private:
+  bool is_valid() const;
+
   // The v8 context the bindings are accessible to.
   ScopedPersistent<v8::Context> v8_context_;
 

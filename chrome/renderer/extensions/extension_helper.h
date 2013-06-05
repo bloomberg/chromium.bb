@@ -71,6 +71,7 @@ class ExtensionHelper
                            const base::ListValue& response,
                            const std::string& error);
   void OnExtensionMessageInvoke(const std::string& extension_id,
+                                const std::string& module_name,
                                 const std::string& function_name,
                                 const base::ListValue& args,
                                 bool user_gesture);

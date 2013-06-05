@@ -13,7 +13,6 @@
 #include "chrome/renderer/extensions/chrome_v8_context.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/render_view.h"
-#include "content/public/renderer/v8_value_converter.h"
 #include "extensions/common/constants.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
@@ -23,7 +22,6 @@
 #include "v8/include/v8.h"
 
 using content::RenderThread;
-using content::V8ValueConverter;
 
 namespace extensions {
 
@@ -79,23 +77,16 @@ ChromeV8Context* ChromeV8ContextSet::GetByV8Context(
   return NULL;
 }
 
-void ChromeV8ContextSet::DispatchChromeHiddenMethod(
+void ChromeV8ContextSet::ForEach(
     const std::string& extension_id,
-    const std::string& method_name,
-    const base::ListValue& arguments,
-    content::RenderView* render_view) const {
-  v8::HandleScope handle_scope;
-
+    content::RenderView* render_view,
+    const base::Callback<void(ChromeV8Context*)>& callback) const {
   // We copy the context list, because calling into javascript may modify it
   // out from under us.
   ContextSet contexts = GetAll();
 
-  scoped_ptr<V8ValueConverter> converter(V8ValueConverter::create());
   for (ContextSet::iterator it = contexts.begin(); it != contexts.end();
        ++it) {
-    if ((*it)->v8_context().IsEmpty())
-      continue;
-
     if (!extension_id.empty()) {
       const Extension* extension = (*it)->extension();
       if (!extension || (extension_id != extension->id()))
@@ -109,17 +100,7 @@ void ChromeV8ContextSet::DispatchChromeHiddenMethod(
     if (render_view && render_view != context_render_view)
       continue;
 
-    v8::Local<v8::Context> context(*((*it)->v8_context()));
-    std::vector<v8::Handle<v8::Value> > v8_arguments;
-    for (size_t i = 0; i < arguments.GetSize(); ++i) {
-      const base::Value* item = NULL;
-      CHECK(arguments.Get(i, &item));
-      v8_arguments.push_back(converter->ToV8Value(item, context));
-    }
-
-    v8::Handle<v8::Value> retval;
-    (*it)->CallChromeHiddenMethod(
-        method_name, v8_arguments.size(), &v8_arguments[0], &retval);
+    callback.Run(*it);
   }
 }
 

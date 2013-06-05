@@ -213,12 +213,13 @@ void WebstoreBindings::OnInlineWebstoreInstallResponse(
     const std::string& error) {
   v8::HandleScope handle_scope;
   v8::Context::Scope context_scope(context()->v8_context());
-  v8::Handle<v8::Value> argv[3];
-  argv[0] = v8::Integer::New(install_id);
-  argv[1] = v8::Boolean::New(success);
-  argv[2] = v8::String::New(error.c_str());
-  context()->CallChromeHiddenMethod("webstore.onInstallResponse",
-                                   arraysize(argv), argv, NULL);
+  v8::Handle<v8::Value> argv[] = {
+    v8::Integer::New(install_id),
+    v8::Boolean::New(success),
+    v8::String::New(error.c_str())
+  };
+  context()->module_system()->CallModuleMethod(
+      "webstore", "onInstallResponse", arraysize(argv), argv);
 }
 
 }  // namespace extensions

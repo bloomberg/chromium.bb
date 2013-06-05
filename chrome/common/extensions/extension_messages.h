@@ -290,15 +290,17 @@ IPC_MESSAGE_ROUTED4(ExtensionMsg_Response,
                     ListValue /* response wrapper (see comment above) */,
                     std::string /* error */)
 
-// This message is optionally routed.  If used as a control message, it
-// will call a javascript function in every registered context in the
-// target process.  If routed, it will be restricted to the contexts that
-// are part of the target RenderView.
+// This message is optionally routed.  If used as a control message, it will
+// call a javascript function |function_name| from module |module_name| in
+// every registered context in the target process.  If routed, it will be
+// restricted to the contexts that are part of the target RenderView.
+//
 // If |extension_id| is non-empty, the function will be invoked only in
 // contexts owned by the extension. |args| is a list of primitive Value types
 // that are passed to the function.
-IPC_MESSAGE_ROUTED4(ExtensionMsg_MessageInvoke,
+IPC_MESSAGE_ROUTED5(ExtensionMsg_MessageInvoke,
                     std::string /* extension_id */,
+                    std::string /* module_name */,
                     std::string /* function_name */,
                     ListValue /* args */,
                     bool /* delivered as part of a user gesture */)

@@ -76,12 +76,6 @@ appWindow.registerCustomHook(function(bindingsAPI) {
     return chromeHidden.currentAppWindow;
   });
 
-  chromeHidden.OnAppWindowClosed = function() {
-    if (!chromeHidden.currentAppWindow)
-      return;
-    chromeHidden.currentAppWindow.onClosed.dispatch();
-  };
-
   // This is an internal function, but needs to be bound with setHandleRequest
   // because it is called from a different JS context.
   apiFunctions.setHandleRequest('initializeAppWindow', function(params) {
@@ -137,7 +131,7 @@ function boundsEqual(bounds1, bounds2) {
           bounds1.width == bounds2.width && bounds1.height == bounds2.height);
 }
 
-chromeHidden.updateAppWindowProperties = function(update) {
+function updateAppWindowProperties(update) {
   if (!chromeHidden.appWindowData)
     return;
   var oldData = chromeHidden.appWindowData;
@@ -162,4 +156,12 @@ chromeHidden.updateAppWindowProperties = function(update) {
     currentWindow["onRestored"].dispatch();
 };
 
+function onAppWindowClosed() {
+  if (!chromeHidden.currentAppWindow)
+    return;
+  chromeHidden.currentAppWindow.onClosed.dispatch();
+}
+
 exports.binding = appWindow.generate();
+exports.onAppWindowClosed = onAppWindowClosed;
+exports.updateAppWindowProperties = updateAppWindowProperties;

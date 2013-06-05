@@ -6,14 +6,10 @@
 
 var binding = require('binding').Binding.create('runtime');
 
-var runtimeNatives = requireNative('runtime');
 var extensionNatives = requireNative('extension');
-var GetExtensionViews = extensionNatives.GetExtensionViews;
-var OpenChannelToExtension = runtimeNatives.OpenChannelToExtension;
-var OpenChannelToNativeApp = runtimeNatives.OpenChannelToNativeApp;
-var chromeHidden = requireNative('chrome_hidden').GetChromeHidden();
-var sendMessageUpdateArguments =
-    require('miscellaneous_bindings').sendMessageUpdateArguments;
+var miscBindings = require('miscellaneous_bindings');
+var runtimeNatives = requireNative('runtime');
+var unloadEvent = require('unload_event');
 
 binding.registerCustomHook(function(binding, id, contextType) {
   var apiFunctions = binding.apiFunctions;
@@ -36,6 +32,7 @@ binding.registerCustomHook(function(binding, id, contextType) {
     return 'chrome-extension://' + id + path;
   });
 
+  var sendMessageUpdateArguments = miscBindings.sendMessageUpdateArguments;
   apiFunctions.setUpdateArgumentsPreValidate('sendMessage',
       sendMessageUpdateArguments.bind(null, 'sendMessage'));
   apiFunctions.setUpdateArgumentsPreValidate('sendNativeMessage',
@@ -44,14 +41,14 @@ binding.registerCustomHook(function(binding, id, contextType) {
   apiFunctions.setHandleRequest('sendMessage',
                                 function(targetId, message, responseCallback) {
     var port = runtime.connect(targetId || runtime.id,
-        {name: chromeHidden.kMessageChannel});
-    chromeHidden.Port.sendMessageImpl(port, message, responseCallback);
+        {name: miscBindings.kMessageChannel});
+    miscBindings.sendMessageImpl(port, message, responseCallback);
   });
 
   apiFunctions.setHandleRequest('sendNativeMessage',
                                 function(targetId, message, responseCallback) {
     var port = runtime.connectNative(targetId);
-    chromeHidden.Port.sendMessageImpl(port, message, responseCallback);
+    miscBindings.sendMessageImpl(port, message, responseCallback);
   });
 
   apiFunctions.setUpdateArgumentsPreValidate('connect', function() {
@@ -93,10 +90,12 @@ binding.registerCustomHook(function(binding, id, contextType) {
 
     // Don't let orphaned content scripts communicate with their extension.
     // http://crbug.com/168263
-    if (!chromeHidden.wasUnloaded) {
-      var portId = OpenChannelToExtension(runtime.id, targetId, name);
+    if (!unloadEvent.wasDispatched) {
+      var portId = runtimeNatives.OpenChannelToExtension(runtime.id,
+                                                         targetId,
+                                                         name);
       if (portId >= 0)
-        return chromeHidden.Port.createPort(portId, name);
+        return miscBindings.createPort(portId, name);
     }
     throw new Error('Error connecting to extension ' + targetId);
   });
@@ -109,10 +108,11 @@ binding.registerCustomHook(function(binding, id, contextType) {
 
   apiFunctions.setHandleRequest('connectNative',
                                 function(nativeAppName) {
-    if (!chromeHidden.wasUnloaded) {
-      var portId = OpenChannelToNativeApp(runtime.id, nativeAppName);
+    if (!unloadEvent.wasDispatched) {
+      var portId = runtimeNatives.OpenChannelToNativeApp(runtime.id,
+                                                         nativeAppName);
       if (portId >= 0)
-        return chromeHidden.Port.createPort(portId, '');
+        return miscBindings.createPort(portId, '');
     }
     throw new Error('Error connecting to native app: ' + nativeAppName);
   });
@@ -120,7 +120,7 @@ binding.registerCustomHook(function(binding, id, contextType) {
   apiFunctions.setCustomCallback('getBackgroundPage',
                                  function(name, request, response) {
     if (request.callback) {
-      var bg = GetExtensionViews(-1, 'BACKGROUND')[0] || null;
+      var bg = extensionNatives.GetExtensionViews(-1, 'BACKGROUND')[0] || null;
       request.callback(bg);
     }
     request.callback = null;

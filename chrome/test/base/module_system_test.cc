@@ -7,6 +7,7 @@
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_piece.h"
+#include "chrome/renderer/extensions/chrome_v8_context.h"
 #include "chrome/renderer/extensions/object_backed_native_handler.h"
 #include "ui/base/resource/resource_bundle.h"
 
@@ -69,7 +70,7 @@ class StringSourceMap : public ModuleSystem::SourceMap {
   }
 
   void RegisterModule(const std::string& name, const std::string& source) {
-    CHECK_EQ(0u, source_map_.count(name));
+    CHECK_EQ(0u, source_map_.count(name)) << "Module " << name << " not found";
     source_map_[name] = source;
   }
 
@@ -79,8 +80,8 @@ class StringSourceMap : public ModuleSystem::SourceMap {
 
 class FailsOnException : public ModuleSystem::ExceptionHandler {
  public:
-  virtual void HandleUncaughtException() OVERRIDE {
-    FAIL();
+  virtual void HandleUncaughtException(const v8::TryCatch& try_catch) OVERRIDE {
+    FAIL() << "Uncaught exception: " << CreateExceptionString(try_catch);
   }
 };
 
@@ -90,8 +91,8 @@ ModuleSystemTest::ModuleSystemTest()
       context_(
           new extensions::ChromeV8Context(
               v8::Context::New(isolate_),
-              reinterpret_cast<WebKit::WebFrame*>(1),
-              NULL,
+              NULL,  // WebFrame
+              NULL,  // Extension
               extensions::Feature::UNSPECIFIED_CONTEXT)),
       source_map_(new StringSourceMap()),
       should_assertions_be_made_(true) {

@@ -120,9 +120,9 @@ void GetPartOfMessageArguments(IPC::Message* message,
                                ExtensionMsg_MessageInvoke::Param* param) {
   ASSERT_EQ(ExtensionMsg_MessageInvoke::ID, message->type());
   ASSERT_TRUE(ExtensionMsg_MessageInvoke::Read(message, param));
-  ASSERT_GE(param->c.GetSize(), 2u);
+  ASSERT_GE(param->d.GetSize(), 2u);
   const Value* value = NULL;
-  ASSERT_TRUE(param->c.Get(1, &value));
+  ASSERT_TRUE(param->d.Get(1, &value));
   const ListValue* list = NULL;
   ASSERT_TRUE(value->GetAsList(&list));
   ASSERT_EQ(1u, list->GetSize());
@@ -916,7 +916,7 @@ TEST_P(ExtensionWebRequestHeaderModificationTest, TestModifications) {
       continue;
     ExtensionMsg_MessageInvoke::Param message_tuple;
     ExtensionMsg_MessageInvoke::Read(message, &message_tuple);
-    ListValue& args = message_tuple.c;
+    ListValue& args = message_tuple.d;
 
     std::string event_name;
     if (!args.GetString(0, &event_name) ||

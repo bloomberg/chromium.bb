@@ -910,7 +910,7 @@ void ExtensionTaskExecutor::SetupPermissionsAndDispatchEvent(
   DictionaryValue* details = new DictionaryValue();
   event_args->Append(details);
   // Get file definitions. These will be replaced with Entry instances by
-  // chromeHidden.Event.dispatchEvent() method from event_binding.js.
+  // dispatchEvent() method from event_binding.js.
   ListValue* files_urls = new ListValue();
   details->Set("entries", files_urls);
   for (FileDefinitionList::const_iterator iter = file_list.begin();

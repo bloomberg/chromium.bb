@@ -250,16 +250,13 @@ void ExtensionHelper::OnExtensionResponse(int request_id,
 }
 
 void ExtensionHelper::OnExtensionMessageInvoke(const std::string& extension_id,
+                                               const std::string& module_name,
                                                const std::string& function_name,
                                                const base::ListValue& args,
                                                bool user_gesture) {
-  scoped_ptr<WebScopedUserGesture> web_user_gesture;
-  if (user_gesture) {
-    web_user_gesture.reset(new WebScopedUserGesture);
-  }
-
-  dispatcher_->v8_context_set().DispatchChromeHiddenMethod(
-      extension_id, function_name, args, render_view());
+  dispatcher_->InvokeModuleSystemMethod(
+      render_view(), extension_id, module_name, function_name, args,
+      user_gesture);
 }
 
 void ExtensionHelper::OnExtensionDispatchOnConnect(
@@ -364,7 +361,8 @@ void ExtensionHelper::OnAppWindowClosed() {
       dispatcher_->v8_context_set().GetByV8Context(script_context);
   if (!chrome_v8_context)
     return;
-  chrome_v8_context->CallChromeHiddenMethod("OnAppWindowClosed", 0, NULL, NULL);
+  chrome_v8_context->module_system()->CallModuleMethod(
+      "app.window", "onAppWindowClosed");
 }
 
 }  // namespace extensions

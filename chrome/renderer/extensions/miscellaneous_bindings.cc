@@ -240,6 +240,7 @@ void MiscellaneousBindings::DispatchOnConnect(
   bool port_created = false;
   std::string source_url_spec = source_url.spec();
 
+  // TODO(kalman): pass in the full ChromeV8ContextSet; call ForEach.
   for (ChromeV8ContextSet::ContextSet::const_iterator it = contexts.begin();
        it != contexts.end(); ++it) {
     if (restrict_to_render_view &&
@@ -264,27 +265,18 @@ void MiscellaneousBindings::DispatchOnConnect(
       v8::String::New(source_url_spec.c_str(), source_url_spec.size())
     };
 
-    v8::Handle<v8::Value> retval;
-    v8::TryCatch try_catch;
-    if (!(*it)->CallChromeHiddenMethod("Port.dispatchOnConnect",
-                                      arraysize(arguments), arguments,
-                                      &retval)) {
-      continue;
-    }
-
-    if (try_catch.HasCaught()) {
-      LOG(ERROR) << "Exception caught when calling Port.dispatchOnConnect.";
-      continue;
-    }
+    v8::Handle<v8::Value> retval = (*it)->module_system()->CallModuleMethod(
+        "miscellaneous_bindings",
+        "dispatchOnConnect",
+        arraysize(arguments), arguments);
 
     if (retval.IsEmpty()) {
-      LOG(ERROR) << "Empty return value from Port.dispatchOnConnect.";
+      LOG(ERROR) << "Empty return value from dispatchOnConnect.";
       continue;
     }
 
     CHECK(retval->IsBoolean());
-    if (retval->BooleanValue())
-      port_created = true;
+    port_created |= retval->BooleanValue();
   }
 
   // If we didn't create a port, notify the other end of the channel (treat it
@@ -304,6 +296,7 @@ void MiscellaneousBindings::DeliverMessage(
     content::RenderView* restrict_to_render_view) {
   v8::HandleScope handle_scope;
 
+  // TODO(kalman): pass in the full ChromeV8ContextSet; call ForEach.
   for (ChromeV8ContextSet::ContextSet::const_iterator it = contexts.begin();
        it != contexts.end(); ++it) {
     if (restrict_to_render_view &&
@@ -321,17 +314,10 @@ void MiscellaneousBindings::DeliverMessage(
     // Check to see whether the context has this port before bothering to create
     // the message.
     v8::Handle<v8::Value> port_id_handle = v8::Integer::New(target_port_id);
-    v8::Handle<v8::Value> has_port;
-    v8::TryCatch try_catch;
-    if (!(*it)->CallChromeHiddenMethod("Port.hasPort", 1, &port_id_handle,
-                                       &has_port)) {
-      continue;
-    }
-
-    if (try_catch.HasCaught()) {
-      LOG(ERROR) << "Exception caught when calling Port.hasPort.";
-      continue;
-    }
+    v8::Handle<v8::Value> has_port = (*it)->module_system()->CallModuleMethod(
+        "miscellaneous_bindings",
+        "hasPort",
+        1, &port_id_handle);
 
     CHECK(!has_port.IsEmpty());
     if (!has_port->BooleanValue())
@@ -352,10 +338,9 @@ void MiscellaneousBindings::DeliverMessage(
     }
 
     arguments.push_back(port_id_handle);
-    CHECK((*it)->CallChromeHiddenMethod("Port.dispatchOnMessage",
-                                        arguments.size(),
-                                        &arguments[0],
-                                        NULL));
+    (*it)->module_system()->CallModuleMethod("miscellaneous_bindings",
+                                             "dispatchOnMessage",
+                                             &arguments);
   }
 }
 
@@ -367,6 +352,7 @@ void MiscellaneousBindings::DispatchOnDisconnect(
     content::RenderView* restrict_to_render_view) {
   v8::HandleScope handle_scope;
 
+  // TODO(kalman): pass in the full ChromeV8ContextSet; call ForEach.
   for (ChromeV8ContextSet::ContextSet::const_iterator it = contexts.begin();
        it != contexts.end(); ++it) {
     if (restrict_to_render_view &&
@@ -385,9 +371,9 @@ void MiscellaneousBindings::DispatchOnDisconnect(
     } else {
       arguments.push_back(v8::Null());
     }
-    (*it)->CallChromeHiddenMethod("Port.dispatchOnDisconnect",
-                                  arguments.size(), &arguments[0],
-                                  NULL);
+    (*it)->module_system()->CallModuleMethod("miscellaneous_bindings",
+                                             "dispatchOnDisconnect",
+                                             &arguments);
   }
 }
 

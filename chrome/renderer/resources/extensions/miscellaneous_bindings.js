@@ -7,35 +7,25 @@
 // background pages. See user_script_slave.cc for script that is loaded by
 // content scripts only.
 
-  require('json_schema');
-  var lastError = require('lastError');
-  var miscNatives = requireNative('miscellaneous_bindings');
   var chrome = requireNative('chrome').GetChrome();
-  var CloseChannel = miscNatives.CloseChannel;
-  var PortAddRef = miscNatives.PortAddRef;
-  var PortRelease = miscNatives.PortRelease;
-  var PostMessage = miscNatives.PostMessage;
-  var BindToGC = miscNatives.BindToGC;
-
-  var chromeHidden = requireNative('chrome_hidden').GetChromeHidden();
-
-  var processNatives = requireNative('process');
-  var manifestVersion = processNatives.GetManifestVersion();
-  var extensionId = processNatives.GetExtensionId();
-
+  require('event_bindings');
+  var lastError = require('lastError');
   var logActivity = requireNative('activityLogger');
+  var miscNatives = requireNative('miscellaneous_bindings');
+  var unloadEvent = require('unload_event');
+  var processNatives = requireNative('process');
 
-  // The reserved channel name for the sendRequest/sendMessage APIs.
+  // The reserved channel name for the sendRequest/send(Native)Message APIs.
   // Note: sendRequest is deprecated.
-  chromeHidden.kRequestChannel = "chrome.extension.sendRequest";
-  chromeHidden.kMessageChannel = "chrome.runtime.sendMessage";
-  chromeHidden.kNativeMessageChannel = "chrome.runtime.sendNativeMessage";
+  var kRequestChannel = "chrome.extension.sendRequest";
+  var kMessageChannel = "chrome.runtime.sendMessage";
+  var kNativeMessageChannel = "chrome.runtime.sendNativeMessage";
 
   // Map of port IDs to port object.
   var ports = {};
 
-  // Map of port IDs to chromeHidden.onUnload listeners. Keep track of these
-  // to free the onUnload listeners when ports are closed.
+  // Map of port IDs to unloadEvent listeners. Keep track of these to free the
+  // unloadEvent listeners when ports are closed.
   var portReleasers = {};
 
   // Change even to odd and vice versa, to get the other side of a given
@@ -44,7 +34,7 @@
 
   // Port object.  Represents a connection to another script context through
   // which messages can be passed.
-  function PortImpl(portId, opt_name) {
+  function Port(portId, opt_name) {
     this.portId_ = portId;
     this.name = opt_name;
     this.onDisconnect = new chrome.Event();
@@ -53,50 +43,46 @@
 
   // Sends a message asynchronously to the context on the other end of this
   // port.
-  PortImpl.prototype.postMessage = function(msg) {
-    PostMessage(this.portId_, msg);
+  Port.prototype.postMessage = function(msg) {
+    miscNatives.PostMessage(this.portId_, msg);
   };
 
   // Disconnects the port from the other end.
-  PortImpl.prototype.disconnect = function() {
-    CloseChannel(this.portId_, true);
+  Port.prototype.disconnect = function() {
+    miscNatives.CloseChannel(this.portId_, true);
     this.destroy_();
   };
 
-  PortImpl.prototype.destroy_ = function() {
+  Port.prototype.destroy_ = function() {
     var portId = this.portId_;
 
     this.onDisconnect.destroy_();
     this.onMessage.destroy_();
 
-    PortRelease(portId);
-    chromeHidden.onUnload.removeListener(portReleasers[portId]);
+    miscNatives.PortRelease(portId);
+    unloadEvent.removeListener(portReleasers[portId]);
 
     delete ports[portId];
     delete portReleasers[portId];
   };
 
-  chromeHidden.Port = {};
-
   // Returns true if the specified port id is in this context. This is used by
   // the C++ to avoid creating the javascript message for all the contexts that
   // don't care about a particular message.
-  chromeHidden.Port.hasPort = function(portId) {
+  function hasPort(portId) {
     return portId in ports;
   };
 
   // Hidden port creation function.  We don't want to expose an API that lets
   // people add arbitrary port IDs to the port list.
-  chromeHidden.Port.createPort = function(portId, opt_name) {
-    if (ports[portId]) {
+  function createPort(portId, opt_name) {
+    if (ports[portId])
       throw new Error("Port '" + portId + "' already exists.");
-    }
-    var port = new PortImpl(portId, opt_name);
+    var port = new Port(portId, opt_name);
     ports[portId] = port;
-    portReleasers[portId] = PortRelease.bind(this, portId);
-    chromeHidden.onUnload.addListener(portReleasers[portId]);
-
-    PortAddRef(portId);
+    portReleasers[portId] = miscNatives.PortRelease.bind(this, portId);
+    unloadEvent.addListener(portReleasers[portId]);
+    miscNatives.PortAddRef(portId);
     return port;
   };
 
@@ -129,78 +115,79 @@
   function dispatchOnRequest(portId, channelName, sender,
                              sourceExtensionId, targetExtensionId, sourceUrl,
                              isExternal) {
-    var isSendMessage = channelName == chromeHidden.kMessageChannel;
+    var isSendMessage = channelName == kMessageChannel;
     var requestEvent = (isSendMessage ?
         (isExternal ?
             chrome.runtime.onMessageExternal : chrome.runtime.onMessage) :
         (isExternal ?
             chrome.extension.onRequestExternal : chrome.extension.onRequest));
-    if (requestEvent.hasListeners()) {
-      var port = chromeHidden.Port.createPort(portId, channelName);
-      port.onMessage.addListener(function(request) {
-        var responseCallbackPreserved = false;
-        var responseCallback = function(response) {
-          if (port) {
-            port.postMessage(response);
-            port.destroy_();
-            port = null;
-          } else {
-            // We nulled out port when sending the response, and now the page
-            // is trying to send another response for the same request.
-            handleSendRequestError(isSendMessage, responseCallbackPreserved,
-                                   sourceExtensionId, targetExtensionId);
-          }
-        };
-        // In case the extension never invokes the responseCallback, and also
-        // doesn't keep a reference to it, we need to clean up the port. Do
-        // so by attaching to the garbage collection of the responseCallback
-        // using some native hackery.
-        BindToGC(responseCallback, function() {
-          if (port) {
-            port.destroy_();
-            port = null;
-          }
-        });
-        if (!isSendMessage) {
-          requestEvent.dispatch(request, sender, responseCallback);
+    if (!requestEvent.hasListeners())
+      return false;
+    var port = createPort(portId, channelName);
+    port.onMessage.addListener(function(request) {
+      var responseCallbackPreserved = false;
+      var responseCallback = function(response) {
+        if (port) {
+          port.postMessage(response);
+          port.destroy_();
+          port = null;
         } else {
-          var rv = requestEvent.dispatch(request, sender, responseCallback);
-          responseCallbackPreserved =
-              rv && rv.results && rv.results.indexOf(true) > -1;
-          if (!responseCallbackPreserved && port) {
-            // If they didn't access the response callback, they're not
-            // going to send a response, so clean up the port immediately.
-            port.destroy_();
-            port = null;
-          }
+          // We nulled out port when sending the response, and now the page
+          // is trying to send another response for the same request.
+          handleSendRequestError(isSendMessage, responseCallbackPreserved,
+                                 sourceExtensionId, targetExtensionId);
+        }
+      };
+      // In case the extension never invokes the responseCallback, and also
+      // doesn't keep a reference to it, we need to clean up the port. Do
+      // so by attaching to the garbage collection of the responseCallback
+      // using some native hackery.
+      miscNatives.BindToGC(responseCallback, function() {
+        if (port) {
+          port.destroy_();
+          port = null;
         }
       });
-      var eventName = (isSendMessage ?
-            (isExternal ?
-                "runtime.onMessageExternal" : "runtime.onMessage") :
-            (isExternal ?
-                "extension.onRequestExternal" : "extension.onRequest"));
-      logActivity.LogEvent(targetExtensionId,
-                           eventName,
-                           [sourceExtensionId, sourceUrl]);
-      return true;
-    }
-    return false;
+      if (!isSendMessage) {
+        requestEvent.dispatch(request, sender, responseCallback);
+      } else {
+        var rv = requestEvent.dispatch(request, sender, responseCallback);
+        responseCallbackPreserved =
+            rv && rv.results && rv.results.indexOf(true) > -1;
+        if (!responseCallbackPreserved && port) {
+          // If they didn't access the response callback, they're not
+          // going to send a response, so clean up the port immediately.
+          port.destroy_();
+          port = null;
+        }
+      }
+    });
+    var eventName = (isSendMessage ?
+          (isExternal ?
+              "runtime.onMessageExternal" : "runtime.onMessage") :
+          (isExternal ?
+              "extension.onRequestExternal" : "extension.onRequest"));
+    logActivity.LogEvent(targetExtensionId,
+                         eventName,
+                         [sourceExtensionId, sourceUrl]);
+    return true;
   }
 
   // Called by native code when a channel has been opened to this context.
-  chromeHidden.Port.dispatchOnConnect = function(portId,
-                                                 channelName,
-                                                 sourceTab,
-                                                 sourceExtensionId,
-                                                 targetExtensionId,
-                                                 sourceUrl) {
+  function dispatchOnConnect(portId,
+                             channelName,
+                             sourceTab,
+                             sourceExtensionId,
+                             targetExtensionId,
+                             sourceUrl) {
     // Only create a new Port if someone is actually listening for a connection.
     // In addition to being an optimization, this also fixes a bug where if 2
     // channels were opened to and from the same process, closing one would
     // close both.
+    var extensionId = processNatives.GetExtensionId();
     if (targetExtensionId != extensionId)
       return false;  // not for us
+
     if (ports[getOppositePortId(portId)])
       return false;  // this channel was opened by us, so ignore it
 
@@ -215,8 +202,7 @@
       sender.tab = sourceTab;
 
     // Special case for sendRequest/onRequest and sendMessage/onMessage.
-    if (channelName == chromeHidden.kRequestChannel ||
-        channelName == chromeHidden.kMessageChannel) {
+    if (channelName == kRequestChannel || channelName == kMessageChannel) {
       return dispatchOnRequest(portId, channelName, sender,
                                sourceExtensionId, targetExtensionId, sourceUrl,
                                isExternal);
@@ -224,30 +210,31 @@
 
     var connectEvent = (isExternal ?
         chrome.runtime.onConnectExternal : chrome.runtime.onConnect);
-    if (connectEvent.hasListeners()) {
-      var port = chromeHidden.Port.createPort(portId, channelName);
-      port.sender = sender;
-      if (manifestVersion < 2)
-        port.tab = port.sender.tab;
+    if (!connectEvent)
+      return false;
+    if (!connectEvent.hasListeners())
+      return false;
 
-      var eventName = (isExternal ?
-          "runtime.onConnectExternal" : "runtime.onConnect");
-      connectEvent.dispatch(port);
-      logActivity.LogEvent(targetExtensionId,
-                           eventName,
-                           [sourceExtensionId]);
-      return true;
-    }
-    return false;
+    var port = createPort(portId, channelName);
+    port.sender = sender;
+    if (processNatives.manifestVersion < 2)
+      port.tab = port.sender.tab;
+
+    var eventName = (isExternal ?
+        "runtime.onConnectExternal" : "runtime.onConnect");
+    connectEvent.dispatch(port);
+    logActivity.LogEvent(targetExtensionId,
+                         eventName,
+                         [sourceExtensionId]);
+    return true;
   };
 
   // Called by native code when a channel has been closed.
-  chromeHidden.Port.dispatchOnDisconnect = function(
-      portId, errorMessage) {
+  function dispatchOnDisconnect(portId, errorMessage) {
     var port = ports[portId];
     if (port) {
       // Update the renderer's port bookkeeping, without notifying the browser.
-      CloseChannel(portId, false);
+      miscNatives.CloseChannel(portId, false);
       if (errorMessage)
         lastError.set('Port', errorMessage, null, chrome);
       try {
@@ -260,19 +247,18 @@
   };
 
   // Called by native code when a message has been sent to the given port.
-  chromeHidden.Port.dispatchOnMessage = function(msg, portId) {
+  function dispatchOnMessage(msg, portId) {
     var port = ports[portId];
     if (port)
       port.onMessage.dispatch(msg, port);
   };
 
   // Shared implementation used by tabs.sendMessage and runtime.sendMessage.
-  chromeHidden.Port.sendMessageImpl = function(port, request,
-                                               responseCallback) {
-    if (port.name != chromeHidden.kNativeMessageChannel)
+  function sendMessageImpl(port, request, responseCallback) {
+    if (port.name != kNativeMessageChannel)
       port.postMessage(request);
 
-    if (port.name == chromeHidden.kMessageChannel && !responseCallback) {
+    if (port.name == kMessageChannel && !responseCallback) {
       // TODO(mpcomplete): Do this for the old sendRequest API too, after
       // verifying it doesn't break anything.
       // Go ahead and disconnect immediately if the sender is not expecting
@@ -286,7 +272,7 @@
       responseCallback = function() {};
 
     port.onDisconnect.addListener(function() {
-      // For onDisconnects, we only notify the callback if there was an error
+      // For onDisconnects, we only notify the callback if there was an error.
       try {
         if (chrome.runtime.lastError)
           responseCallback();
@@ -330,4 +316,16 @@
     return [targetId, request, responseCallback];
   }
 
+exports.kRequestChannel = kRequestChannel;
+exports.kMessageChannel = kMessageChannel;
+exports.kNativeMessageChannel = kNativeMessageChannel;
+exports.Port = Port;
+exports.createPort = createPort;
+exports.sendMessageImpl = sendMessageImpl;
 exports.sendMessageUpdateArguments = sendMessageUpdateArguments;
+
+// For C++ code to call.
+exports.hasPort = hasPort;
+exports.dispatchOnConnect = dispatchOnConnect;
+exports.dispatchOnDisconnect = dispatchOnDisconnect;
+exports.dispatchOnMessage = dispatchOnMessage;

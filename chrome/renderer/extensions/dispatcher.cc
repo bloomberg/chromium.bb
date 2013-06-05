@@ -99,7 +99,8 @@ namespace {
 
 static const int64 kInitialExtensionIdleHandlerDelayMs = 5*1000;
 static const int64 kMaxExtensionIdleHandlerDelayMs = 5*60*1000;
-static const char kEventDispatchFunction[] = "Event.dispatchEvent";
+static const char kEventModule[] = "event_bindings";
+static const char kEventDispatchFunction[] = "dispatchEvent";
 static const char kOnSuspendEvent[] = "runtime.onSuspend";
 static const char kOnSuspendCanceledEvent[] = "runtime.onSuspendCanceled";
 
@@ -367,6 +368,8 @@ class LoggingNativeHandler : public ObjectBackedNativeHandler {
         base::Bind(&LoggingNativeHandler::Dcheck, base::Unretained(this)));
     RouteFunction("CHECK",
         base::Bind(&LoggingNativeHandler::Check, base::Unretained(this)));
+    RouteFunction("DCHECK_IS_ON",
+        base::Bind(&LoggingNativeHandler::DcheckIsOn, base::Unretained(this)));
   }
 
   v8::Handle<v8::Value> Check(const v8::Arguments& args) {
@@ -383,6 +386,10 @@ class LoggingNativeHandler : public ObjectBackedNativeHandler {
     ParseArgs(args, &check_value, &error_message);
     DCHECK(check_value) << error_message;
     return v8::Undefined();
+  }
+
+  v8::Handle<v8::Value> DcheckIsOn(const v8::Arguments& args) {
+    return v8::Boolean::New(DCHECK_IS_ON());
   }
 
  private:
@@ -425,8 +432,6 @@ void InstallAppBindings(ModuleSystem* module_system,
                         v8::Handle<v8::Object> chrome,
                         v8::Handle<v8::Object> chrome_hidden) {
   module_system->SetLazyField(chrome, "app", "app", "chromeApp");
-  module_system->SetLazyField(chrome_hidden, "app", "app",
-                              "chromeHiddenApp");
 }
 
 void InstallWebstoreBindings(ModuleSystem* module_system,
@@ -435,6 +440,29 @@ void InstallWebstoreBindings(ModuleSystem* module_system,
   module_system->SetLazyField(chrome, "webstore", "webstore", "chromeWebstore");
   module_system->SetLazyField(chrome_hidden, "webstore", "webstore",
                               "chromeHiddenWebstore");
+}
+
+// Calls a method |method_name| in a module |module_name| belonging to the
+// module system from |context|. Intended as a callback target from
+// ChromeV8ContextSet::ForEach.
+void CallModuleMethod(const std::string& module_name,
+                      const std::string& method_name,
+                      const base::ListValue* args,
+                      ChromeV8Context* context) {
+  v8::HandleScope handle_scope;
+  v8::Context::Scope context_scope(context->v8_context());
+
+  scoped_ptr<content::V8ValueConverter> converter(
+      content::V8ValueConverter::create());
+
+  std::vector<v8::Handle<v8::Value> > arguments;
+  for (base::ListValue::const_iterator it = args->begin(); it != args->end();
+       ++it) {
+    arguments.push_back(converter->ToV8Value(*it, context->v8_context()));
+  }
+
+  context->module_system()->CallModuleMethod(
+      module_name, method_name, &arguments);
 }
 
 }  // namespace
@@ -546,36 +574,12 @@ void Dispatcher::OnSetChannel(int channel) {
 }
 
 void Dispatcher::OnMessageInvoke(const std::string& extension_id,
+                                 const std::string& module_name,
                                  const std::string& function_name,
                                  const base::ListValue& args,
                                  bool user_gesture) {
-  scoped_ptr<WebScopedUserGesture> web_user_gesture;
-  if (user_gesture) {
-    web_user_gesture.reset(new WebScopedUserGesture);
-  }
-
-  v8_context_set_.DispatchChromeHiddenMethod(
-      extension_id, function_name, args, NULL);
-
-  // Reset the idle handler each time there's any activity like event or message
-  // dispatch, for which Invoke is the chokepoint.
-  if (is_extension_process_) {
-    RenderThread::Get()->ScheduleIdleHandler(
-        kInitialExtensionIdleHandlerDelayMs);
-  }
-
-  // Tell the browser process when an event has been dispatched with a lazy
-  // background page active.
-  const Extension* extension = extensions_.GetByID(extension_id);
-  if (extension && BackgroundInfo::HasLazyBackgroundPage(extension) &&
-      function_name == kEventDispatchFunction) {
-    RenderView* background_view =
-        ExtensionHelper::GetBackgroundPage(extension_id);
-    if (background_view) {
-      background_view->Send(new ExtensionHostMsg_EventAck(
-          background_view->GetRoutingID()));
-    }
-  }
+  InvokeModuleSystemMethod(
+      NULL, extension_id, module_name, function_name, args, user_gesture);
 }
 
 void Dispatcher::OnDispatchOnConnect(
@@ -871,6 +875,7 @@ void Dispatcher::PopulateSourceMap() {
   source_map_.RegisterSource("schemaUtils", IDR_SCHEMA_UTILS_JS);
   source_map_.RegisterSource("sendRequest", IDR_SEND_REQUEST_JS);
   source_map_.RegisterSource("setIcon", IDR_SET_ICON_JS);
+  source_map_.RegisterSource("unload_event", IDR_UNLOAD_EVENT_JS);
   source_map_.RegisterSource("utils", IDR_UTILS_JS);
   source_map_.RegisterSource("entryIdManager", IDR_ENTRY_ID_MANAGER);
 
@@ -1063,8 +1068,6 @@ void Dispatcher::DidCreateScriptContext(
     case Feature::BLESSED_EXTENSION_CONTEXT:
     case Feature::UNBLESSED_EXTENSION_CONTEXT:
     case Feature::CONTENT_SCRIPT_CONTEXT:
-      if (extension && !extension->is_platform_app())
-        module_system->Require("miscellaneous_bindings");
       module_system->Require("json");  // see paranoid comment in json.js
 
       // TODO(kalman): move this code back out of the switch and execute it
@@ -1349,21 +1352,12 @@ void Dispatcher::OnSuspend(const std::string& extension_id) {
   // the browser know when we are starting and stopping the event dispatch, so
   // that it still considers the extension idle despite any activity the suspend
   // event creates.
-  base::ListValue args;
-  args.Set(0, new base::StringValue(kOnSuspendEvent));
-  args.Set(1, new base::ListValue());
-  v8_context_set_.DispatchChromeHiddenMethod(
-      extension_id, kEventDispatchFunction, args, NULL);
-
+  DispatchEvent(extension_id, kOnSuspendEvent);
   RenderThread::Get()->Send(new ExtensionHostMsg_SuspendAck(extension_id));
 }
 
 void Dispatcher::OnCancelSuspend(const std::string& extension_id) {
-  base::ListValue args;
-  args.Set(0, new base::StringValue(kOnSuspendCanceledEvent));
-  args.Set(1, new base::ListValue());
-  v8_context_set_.DispatchChromeHiddenMethod(
-      extension_id, kEventDispatchFunction, args, NULL);
+  DispatchEvent(extension_id, kOnSuspendCanceledEvent);
 }
 
 Feature::Context Dispatcher::ClassifyJavaScriptContext(
@@ -1457,6 +1451,58 @@ bool Dispatcher::CheckContextAccessToExtensionAPI(
   }
 
   return true;
+}
+
+void Dispatcher::DispatchEvent(const std::string& extension_id,
+                               const std::string& event_name) const {
+  base::ListValue args;
+  args.Set(0, new base::StringValue(event_name));
+  args.Set(1, new base::ListValue());
+  v8_context_set_.ForEach(
+      extension_id,
+      NULL,  // all render views
+      base::Bind(&CallModuleMethod,
+                 kEventModule,
+                 kEventDispatchFunction,
+                 &args));
+}
+
+void Dispatcher::InvokeModuleSystemMethod(
+      content::RenderView* render_view,
+      const std::string& extension_id,
+      const std::string& module_name,
+      const std::string& function_name,
+      const base::ListValue& args,
+      bool user_gesture) {
+  scoped_ptr<WebScopedUserGesture> web_user_gesture;
+  if (user_gesture)
+    web_user_gesture.reset(new WebScopedUserGesture);
+
+  v8_context_set_.ForEach(
+      extension_id,
+      render_view,
+      base::Bind(&CallModuleMethod, module_name, function_name, &args));
+
+  // Reset the idle handler each time there's any activity like event or message
+  // dispatch, for which Invoke is the chokepoint.
+  if (is_extension_process_) {
+    RenderThread::Get()->ScheduleIdleHandler(
+        kInitialExtensionIdleHandlerDelayMs);
+  }
+
+  // Tell the browser process when an event has been dispatched with a lazy
+  // background page active.
+  const Extension* extension = extensions_.GetByID(extension_id);
+  if (extension && BackgroundInfo::HasLazyBackgroundPage(extension) &&
+      module_name == kEventModule &&
+      function_name == kEventDispatchFunction) {
+    RenderView* background_view =
+        ExtensionHelper::GetBackgroundPage(extension_id);
+    if (background_view) {
+      background_view->Send(new ExtensionHostMsg_EventAck(
+          background_view->GetRoutingID()));
+    }
+  }
 }
 
 }  // namespace extensions

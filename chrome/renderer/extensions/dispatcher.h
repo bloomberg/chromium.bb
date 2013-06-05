@@ -129,6 +129,19 @@ class Dispatcher : public content::RenderProcessObserver {
   bool CheckContextAccessToExtensionAPI(
       const std::string& function_name, ChromeV8Context* context) const;
 
+  // Dispatches the event named |event_name| to all render views.
+  void DispatchEvent(const std::string& extension_id,
+                     const std::string& event_name) const;
+
+  // Shared implementation of the various MessageInvoke IPCs.
+  void InvokeModuleSystemMethod(
+      content::RenderView* render_view,
+      const std::string& extension_id,
+      const std::string& module_name,
+      const std::string& function_name,
+      const base::ListValue& args,
+      bool user_gesture);
+
  private:
   friend class RenderViewTest;
   FRIEND_TEST_ALL_PREFIXES(RendererPermissionsPolicyDelegateTest,
@@ -144,6 +157,7 @@ class Dispatcher : public content::RenderProcessObserver {
 
   void OnSetChannel(int channel);
   void OnMessageInvoke(const std::string& extension_id,
+                       const std::string& module_name,
                        const std::string& function_name,
                        const base::ListValue& args,
                        bool user_gesture);

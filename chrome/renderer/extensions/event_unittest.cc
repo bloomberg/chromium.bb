@@ -18,6 +18,7 @@ class EventUnittest : public ModuleSystemTest {
     RegisterModule("schemaUtils", IDR_SCHEMA_UTILS_JS);
     RegisterModule("utils", IDR_UTILS_JS);
     RegisterModule("json_schema", IDR_JSON_SCHEMA_JS);
+    RegisterModule("unload_event", IDR_UNLOAD_EVENT_JS);
 
     // Mock out the native handler for event_bindings. These mocks will fail if
     // any invariants maintained by the real event_bindings are broken.
@@ -113,7 +114,7 @@ TEST_F(EventUnittest, OnUnloadDetachesAllListeners) {
       "var cb2 = function() {};"
       "myEvent.addListener(cb1);"
       "myEvent.addListener(cb2);"
-      "chromeHidden.dispatchOnUnload();"
+      "require('unload_event').dispatch();"
       "assert.AssertFalse(!!eventBindings.attachedListeners['named-event']);");
   module_system_->Require("test");
 }
@@ -130,7 +131,7 @@ TEST_F(EventUnittest, OnUnloadDetachesAllListenersEvenDupes) {
       "var cb1 = function() {};"
       "myEvent.addListener(cb1);"
       "myEvent.addListener(cb1);"
-      "chromeHidden.dispatchOnUnload();"
+      "require('unload_event').dispatch();"
       "assert.AssertFalse(!!eventBindings.attachedListeners['named-event']);");
   module_system_->Require("test");
 }
@@ -155,14 +156,14 @@ TEST_F(EventUnittest, EventsThatSupportRulesMustHaveAName) {
 TEST_F(EventUnittest, NamedEventDispatch) {
   ModuleSystem::NativesEnabledScope natives_enabled_scope(module_system_.get());
   RegisterModule("test",
-      "require('event');"
+      "var event = require('event');"
       "var Event = requireNative('chrome').GetChrome().Event;"
       "var chromeHidden = requireNative('chrome_hidden').GetChromeHidden();"
       "var assert = requireNative('assert');"
       "var e = new Event('myevent');"
       "var called = false;"
       "e.addListener(function() { called = true; });"
-      "chromeHidden.Event.dispatchEvent('myevent', []);"
+      "event.dispatchEvent('myevent', []);"
       "assert.AssertTrue(called);");
   module_system_->Require("test");
 }

@@ -45,8 +45,6 @@ namespace extensions {
 
 namespace {
 
-const char kDispatchEvent[] = "Event.dispatchEvent";
-
 void NotifyEventListenerRemovedOnIOThread(
     void* profile,
     const std::string& extension_id,
@@ -136,7 +134,8 @@ void EventRouter::DispatchExtensionMessage(IPC::Sender* ipc_sender,
   ipc_sender->Send(new ExtensionMsg_MessageInvoke(
       MSG_ROUTING_CONTROL,
       extension_id,
-      kDispatchEvent,
+      "event_bindings",
+      "dispatchEvent",
       args,
       user_gesture == USER_GESTURE_ENABLED));
 

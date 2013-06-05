@@ -15,6 +15,7 @@
   var sendRequest = require('sendRequest').sendRequest;
   var utils = require('utils');
   var validate = require('schemaUtils').validate;
+  var unloadEvent = require('unload_event');
 
   var chromeHidden = requireNative('chrome_hidden').GetChromeHidden();
   var chrome = requireNative('chrome').GetChrome();
@@ -200,7 +201,7 @@
 
   // Dispatches a named event with the given argument array. The args array is
   // the list of arguments that will be sent to the event callback.
-  chromeHidden.Event.dispatchEvent = function(name, args, filteringInfo) {
+  function dispatchEvent(name, args, filteringInfo) {
     var listenerIDs = null;
 
     if (filteringInfo)
@@ -221,13 +222,7 @@
       eventArgumentMassagers[name](args, dispatchArgs);
     else
       dispatchArgs(args);
-  };
-
-  // Test if a named event has any listeners.
-  chromeHidden.Event.hasListener = function(name) {
-    return (attachedNamedEvents[name] &&
-            attachedNamedEvents[name].listeners_.length > 0);
-  };
+  }
 
   // Registers a callback to be called when this event is dispatched.
   Event.prototype.addListener = function(cb, filters) {
@@ -450,20 +445,13 @@
                 ruleFunctionSchemas.getRules.parameters);
   }
 
-  // Special load events: we don't use the DOM unload because that slows
-  // down tab shutdown.  On the other hand, onUnload might not always fire,
-  // since Chrome will terminate renderers on shutdown (SuddenTermination).
-  chromeHidden.onUnload = new Event();
-
-  chromeHidden.dispatchOnUnload = function() {
-    chromeHidden.onUnload.dispatch();
-    chromeHidden.wasUnloaded = true;
-
+  unloadEvent.addListener(function() {
     for (var i = 0; i < allAttachedEvents.length; ++i) {
       var event = allAttachedEvents[i];
       if (event)
         event.detach_();
     }
-  };
+  });
 
   chrome.Event = Event;
+  exports.dispatchEvent = dispatchEvent;

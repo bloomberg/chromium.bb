@@ -3,10 +3,10 @@
 // found in the LICENSE file.
 
 var chromeHidden = requireNative('chrome_hidden').GetChromeHidden();
-var DCHECK = requireNative('logging').DCHECK;
 var forEach = require('utils').forEach;
 var json = require('json');
 var lastError = require('lastError');
+var logging = requireNative('logging');
 var natives = requireNative('sendRequest');
 var validate = require('schemaUtils').validate;
 
@@ -18,8 +18,7 @@ var requests = {};
 var calledSendRequest = false;
 
 // Callback handling.
-chromeHidden.handleResponse = function(requestId, name,
-                                       success, responseList, error) {
+function handleResponse(requestId, name, success, responseList, error) {
   // The chrome objects we will set lastError on. Really we should only be
   // setting this on the callback's chrome object, but set on ours too since
   // it's conceivable that something relies on that.
@@ -27,7 +26,7 @@ chromeHidden.handleResponse = function(requestId, name,
 
   try {
     var request = requests[requestId];
-    DCHECK(request != null);
+    logging.DCHECK(request != null);
 
     // lastError needs to be set on the caller's chrome object no matter what,
     // though chances are it's the same as ours (it will be different when
@@ -57,7 +56,7 @@ chromeHidden.handleResponse = function(requestId, name,
       // caller has provided a callback. Implementations of api
       // calls may not return data if they observe the caller
       // has not provided a callback.
-      if (chromeHidden.validateCallbacks && !error) {
+      if (logging.DCHECK_IS_ON() && !error) {
         try {
           if (!request.callbackSchema.parameters) {
             throw new Error("No callback schemas defined");
@@ -70,7 +69,14 @@ chromeHidden.handleResponse = function(requestId, name,
         }
       }
 
-      request.callback.apply(request, responseList);
+      try {
+        request.callback.apply(request, responseList);
+      } catch (e) {
+        var errorMessage = "Error in response to " + name + ": " + e;
+        if (request.stack && request.stack != '')
+          errorMessage += "\n" + request.stack;
+        console.error(errorMessage);
+      }
     }
   } finally {
     delete requests[requestId];
@@ -167,3 +173,6 @@ function clearCalledSendRequest() {
 exports.sendRequest = sendRequest;
 exports.getCalledSendRequest = getCalledSendRequest;
 exports.clearCalledSendRequest = clearCalledSendRequest;
+
+// Called by C++.
+exports.handleResponse = handleResponse;

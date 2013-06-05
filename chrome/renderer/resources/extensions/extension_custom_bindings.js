@@ -9,13 +9,11 @@ var binding = require('binding').Binding.create('extension');
 var extensionNatives = requireNative('extension');
 var forEach = require('utils').forEach;
 var GetExtensionViews = extensionNatives.GetExtensionViews;
+var miscBindings = require('miscellaneous_bindings');
 var runtimeNatives = requireNative('runtime');
 var OpenChannelToExtension = runtimeNatives.OpenChannelToExtension;
 var OpenChannelToNativeApp = runtimeNatives.OpenChannelToNativeApp;
-var chromeHidden = requireNative('chrome_hidden').GetChromeHidden();
 var chrome = requireNative('chrome').GetChrome();
-var sendMessageUpdateArguments =
-    require('miscellaneous_bindings').sendMessageUpdateArguments;
 
 var inIncognitoContext = requireNative('process').InIncognitoContext();
 var sendRequestIsDisabled = requireNative('process').IsSendRequestDisabled();
@@ -89,15 +87,15 @@ binding.registerCustomHook(function(bindingsAPI, extensionId) {
   });
 
   apiFunctions.setUpdateArgumentsPreValidate('sendRequest',
-      sendMessageUpdateArguments.bind(null, 'sendRequest'));
+      miscBindings.sendMessageUpdateArguments.bind(null, 'sendRequest'));
 
   apiFunctions.setHandleRequest('sendRequest',
                                 function(targetId, request, responseCallback) {
     if (sendRequestIsDisabled)
       throw new Error(sendRequestIsDisabled);
     var port = chrome.runtime.connect(targetId || extensionId,
-                                      {name: chromeHidden.kRequestChannel});
-    chromeHidden.Port.sendMessageImpl(port, request, responseCallback);
+                                      {name: miscBindings.kRequestChannel});
+    miscBindings.sendMessageImpl(port, request, responseCallback);
   });
 
   if (sendRequestIsDisabled) {

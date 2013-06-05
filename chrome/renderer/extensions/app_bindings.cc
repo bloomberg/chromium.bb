@@ -200,11 +200,12 @@ void AppBindings::OnAppInstallStateResponse(
     const std::string& state, int callback_id) {
   v8::HandleScope handle_scope;
   v8::Context::Scope context_scope(context()->v8_context());
-  v8::Handle<v8::Value> argv[2];
-  argv[0] = v8::String::New(state.c_str());
-  argv[1] = v8::Integer::New(callback_id);
-  CHECK(context()->CallChromeHiddenMethod(
-      "app.onInstallStateResponse", arraysize(argv), argv, NULL));
+  v8::Handle<v8::Value> argv[] = {
+    v8::String::New(state.c_str()),
+    v8::Integer::New(callback_id)
+  };
+  context()->module_system()->CallModuleMethod(
+      "app", "onInstallStateResponse", arraysize(argv), argv);
 }
 
 }  // namespace extensions

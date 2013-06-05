@@ -50,13 +50,11 @@ var chromeWebstore = {
 };
 
 // Called by webstore_binding.cc.
-var chromeHiddenWebstore = {
-  onInstallResponse: function(installId, success, error) {
-    installer.onInstallResponse(installId, success, error);
-  }
-};
+function onInstallResponse(installId, success, error) {
+  installer.onInstallResponse(installId, success, error);
+}
 
 // These must match the names in InstallWebstorebinding in
 // chrome/renderer/extensions/dispatcher.cc.
 exports.chromeWebstore = chromeWebstore;
-exports.chromeHiddenWebstore = chromeHiddenWebstore;
+exports.onInstallResponse = onInstallResponse;
