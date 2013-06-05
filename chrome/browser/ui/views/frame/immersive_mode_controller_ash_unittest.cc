@@ -70,6 +70,7 @@ class ImmersiveModeControllerAshTest : public ash::test::AshTestBase {
     widget_->GetContentsView()->AddChildView(top_container_);
 
     controller_->Init(delegate_.get(), widget_, top_container_);
+    controller_->DisableAnimationsForTest();
   }
 
  private:

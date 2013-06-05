@@ -38,6 +38,11 @@ bool ImmersiveModeControllerStub::IsRevealed() const {
   return false;
 }
 
+int ImmersiveModeControllerStub::GetTopContainerVerticalOffset(
+    const gfx::Size& top_container_size) const {
+  return 0;
+}
+
 void ImmersiveModeControllerStub::MaybeStackViewAtTop() {
 }
 

@@ -11,8 +11,8 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "ui/aura/window_observer.h"
+#include "ui/base/animation/animation_delegate.h"
 #include "ui/base/events/event_handler.h"
-#include "ui/compositor/layer_animation_observer.h"
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/widget/widget_observer.h"
 
@@ -30,6 +30,7 @@ class Transform;
 
 namespace ui {
 class Layer;
+class SlideAnimation;
 }
 
 namespace views {
@@ -38,8 +39,8 @@ class View;
 
 class ImmersiveModeControllerAsh : public ImmersiveModeController,
                                    public content::NotificationObserver,
+                                   public ui::AnimationDelegate,
                                    public ui::EventHandler,
-                                   public ui::ImplicitAnimationObserver,
                                    public views::FocusChangeListener,
                                    public views::WidgetObserver,
                                    public aura::WindowObserver {
@@ -54,9 +55,6 @@ class ImmersiveModeControllerAsh : public ImmersiveModeController,
   void LockRevealedState(AnimateReveal animate_reveal);
   void UnlockRevealedState();
 
-  // Shows the reveal view without any animations if immersive mode is enabled.
-  void MaybeRevealWithoutAnimation();
-
   // ImmersiveModeController overrides:
   virtual void Init(Delegate* delegate,
                     views::Widget* widget,
@@ -66,6 +64,8 @@ class ImmersiveModeControllerAsh : public ImmersiveModeController,
   virtual bool ShouldHideTabIndicators() const OVERRIDE;
   virtual bool ShouldHideTopViews() const OVERRIDE;
   virtual bool IsRevealed() const OVERRIDE;
+  virtual int GetTopContainerVerticalOffset(
+      const gfx::Size& top_container_size) const OVERRIDE;
   virtual void MaybeStackViewAtTop() OVERRIDE;
   virtual ImmersiveRevealedLock* GetRevealedLock(
       AnimateReveal animate_reveal) OVERRIDE WARN_UNUSED_RESULT;
@@ -94,8 +94,9 @@ class ImmersiveModeControllerAsh : public ImmersiveModeController,
   virtual void OnWidgetActivationChanged(views::Widget* widget,
                                          bool active) OVERRIDE;
 
-  // ui::ImplicitAnimationObserver override:
-  virtual void OnImplicitAnimationsCompleted() OVERRIDE;
+  // ui::AnimationDelegate overrides:
+  virtual void AnimationEnded(const ui::Animation* animation) OVERRIDE;
+  virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE;
 
   // aura::WindowObserver overrides:
   virtual void OnWindowPropertyChanged(aura::Window* window,
@@ -108,6 +109,7 @@ class ImmersiveModeControllerAsh : public ImmersiveModeController,
   void SetForceHideTabIndicatorsForTest(bool force);
   void StartRevealForTest(bool hovered);
   void SetMouseHoveredForTest(bool hovered);
+  void DisableAnimationsForTest();
 
  private:
   friend class ImmersiveModeControllerAshTest;
@@ -182,7 +184,7 @@ class ImmersiveModeControllerAsh : public ImmersiveModeController,
 
   // Called when the animation to slide open the top-of-window views has
   // completed.
-  void OnSlideOpenAnimationCompleted();
+  void OnSlideOpenAnimationCompleted(Layout layout);
 
   // Hides the top-of-window views if immersive mode is enabled and nothing is
   // keeping them revealed. Optionally animates.
@@ -191,17 +193,6 @@ class ImmersiveModeControllerAsh : public ImmersiveModeController,
   // Called when the animation to slide out the top-of-window views has
   // completed.
   void OnSlideClosedAnimationCompleted();
-
-  // Starts an animation for the top-of-window views and any anchored widgets
-  // of |duration_ms| to |target_transform|.
-  void DoAnimation(const gfx::Transform& target_transform, int duration_ms);
-
-  // Starts an animation for |layer| of |duration_ms| to |target_transform|.
-  // If non-NULL, sets |observer| to be notified when the animation completes.
-  void DoLayerAnimation(ui::Layer* layer,
-                        const gfx::Transform& target_transform,
-                        int duration_ms,
-                        ui::ImplicitAnimationObserver* observer);
 
   // Returns the type of swipe given |event|.
   SwipeType GetSwipeType(ui::GestureEvent* event) const;
@@ -255,6 +246,12 @@ class ImmersiveModeControllerAsh : public ImmersiveModeController,
 
   // Native window for the browser.
   aura::Window* native_window_;
+
+  // The animation which controls sliding the top-of-window views in and out.
+  scoped_ptr<ui::SlideAnimation> animation_;
+
+  // Whether the animations are disabled for testing.
+  bool animations_disabled_for_test_;
 
   // Manages widgets which are anchored to the top-of-window views.
   class AnchoredWidgetManager;

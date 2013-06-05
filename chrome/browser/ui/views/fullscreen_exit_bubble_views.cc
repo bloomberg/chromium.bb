@@ -460,7 +460,7 @@ gfx::Rect FullscreenExitBubbleViews::GetPopupRect(
     // revealed. When revealed, the top container has the same height as before
     // entering fullscreen.
     top_container_bottom =
-        browser_view_->top_container()->GetTargetBoundsInScreen().bottom();
+        browser_view_->top_container()->GetBoundsInScreen().bottom();
   }
   int y = top_container_bottom + kPopupTopPx;
 

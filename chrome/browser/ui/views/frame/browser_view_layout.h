@@ -129,6 +129,10 @@ class BrowserViewLayout : public views::LayoutManager {
   // Layout the |overlay_container_| view below the toolbar.
   void LayoutOverlayContainer();
 
+  // Updates |top_container_|'s bounds. The new bounds depend on the size of
+  // the bookmark bar and the toolbar.
+  void UpdateTopContainerBounds();
+
   // Returns the vertical offset for the web contents to account for a
   // detached bookmarks bar.
   int GetContentsOffsetForBookmarkBar();

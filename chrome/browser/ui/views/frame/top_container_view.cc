@@ -15,24 +15,6 @@ TopContainerView::TopContainerView(BrowserView* browser_view)
 TopContainerView::~TopContainerView() {
 }
 
-gfx::Rect TopContainerView::GetTargetBoundsInScreen() const {
-  if (!parent())
-    return bounds();
-
-  // Compute transform relative to parent.
-  gfx::Transform transform;
-  if (layer())
-    transform = layer()->GetTargetTransform();
-  gfx::Transform translation;
-  translation.Translate(static_cast<float>(GetMirroredX()),
-                        static_cast<float>(y()));
-  transform.ConcatTransform(translation);
-
-  gfx::Point origin(parent()->GetBoundsInScreen().origin());
-  transform.TransformPoint(origin);
-  return gfx::Rect(origin, size());
-}
-
 gfx::Size TopContainerView::GetPreferredSize() {
   // The view wants to be as wide as its parent and tall enough to fully show
   // all its children. In particular, the bottom of the bookmark bar can be

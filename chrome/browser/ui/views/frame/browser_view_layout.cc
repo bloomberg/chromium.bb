@@ -343,8 +343,8 @@ void BrowserViewLayout::Layout(views::View* browser_view) {
 
   top = LayoutBookmarkAndInfoBars(top, browser_view->y());
 
-  // Top container requires updated toolbar and bookmark bar to compute size.
-  top_container_->SetSize(top_container_->GetPreferredSize());
+  // Top container requires updated toolbar and bookmark bar to compute bounds.
+  UpdateTopContainerBounds();
 
   int bottom = LayoutDownloadShelf(browser_view->height());
   // Treat a detached bookmark bar as if the web contents container is shifted
@@ -539,6 +539,17 @@ void BrowserViewLayout::LayoutOverlayContainer() {
   if (!full_height && preferred_height < rect.height())
     rect.set_height(preferred_height);
   overlay_container_->SetBoundsRect(rect);
+}
+
+void BrowserViewLayout::UpdateTopContainerBounds() {
+  gfx::Rect top_container_bounds(top_container_->GetPreferredSize());
+
+  // If the immersive mode controller is animating the top-of-window views,
+  // part of the top container may be offscreen.
+  top_container_bounds.set_y(
+      immersive_mode_controller_->GetTopContainerVerticalOffset(
+          top_container_bounds.size()));
+  top_container_->SetBoundsRect(top_container_bounds);
 }
 
 int BrowserViewLayout::GetContentsOffsetForBookmarkBar() {

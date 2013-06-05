@@ -11,6 +11,10 @@ class BookmarkBarView;
 class FullscreenController;
 class TopContainerView;
 
+namespace gfx {
+class Size;
+}
+
 namespace views {
 class Widget;
 }
@@ -76,6 +80,15 @@ class ImmersiveModeController {
 
   // True when the top views are fully or partially visible.
   virtual bool IsRevealed() const = 0;
+
+  // Returns the top container's vertical offset relative to its parent. When
+  // revealing or closing the top-of-window views, part of the top container is
+  // offscreen.
+  // This method takes in the top container's size because it is called as part
+  // of computing the new bounds for the top container in
+  // BrowserViewLayout::UpdateTopContainerBounds().
+  virtual int GetTopContainerVerticalOffset(
+      const gfx::Size& top_container_size) const = 0;
 
   // If the controller is temporarily revealing the top views ensures that
   // the reveal view's layer is on top and hence visible over web contents.

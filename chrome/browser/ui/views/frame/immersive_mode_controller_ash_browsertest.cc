@@ -84,6 +84,7 @@ class ImmersiveModeControllerAshTest : public InProcessBrowserTest {
     browser_view_ = static_cast<BrowserView*>(browser()->window());
     controller_ = static_cast<ImmersiveModeControllerAsh*>(
         browser_view_->immersive_mode_controller());
+    controller_->DisableAnimationsForTest();
     zero_duration_mode_.reset(new ScopedAnimationDurationScaleMode(
         ScopedAnimationDurationScaleMode::ZERO_DURATION));
   }
