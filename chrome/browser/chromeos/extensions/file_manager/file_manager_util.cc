@@ -546,22 +546,26 @@ GURL GetActionChoiceUrl(const base::FilePath& virtual_path,
   return GURL(url);
 }
 
+GURL ConvertRelativePathToFileSystemUrl(const base::FilePath& relative_path,
+                                        const std::string& extension_id) {
+  GURL base_url = fileapi::GetFileSystemRootURI(
+      Extension::GetBaseURLFromExtensionId(extension_id),
+      fileapi::kFileSystemTypeExternal);
+  return GURL(base_url.spec() +
+              net::EscapeUrlEncodedData(relative_path.AsUTF8Unsafe(),
+                                        false));  // Space to %20 instead of +.
+}
+
 bool ConvertFileToFileSystemUrl(Profile* profile,
                                 const base::FilePath& full_file_path,
                                 const std::string& extension_id,
                                 GURL* url) {
-  GURL origin_url = Extension::GetBaseURLFromExtensionId(extension_id);
-  base::FilePath virtual_path;
+  base::FilePath relative_path;
   if (!ConvertFileToRelativeFileSystemPath(profile, extension_id,
-           full_file_path, &virtual_path)) {
+           full_file_path, &relative_path)) {
     return false;
   }
-
-  GURL base_url = fileapi::GetFileSystemRootURI(origin_url,
-      fileapi::kFileSystemTypeExternal);
-  *url = GURL(base_url.spec() +
-              net::EscapeUrlEncodedData(virtual_path.value(),
-                                        false));  // Space to %20 instead of +.
+  *url = ConvertRelativePathToFileSystemUrl(relative_path, extension_id);
   return true;
 }
 
@@ -576,7 +580,7 @@ bool ConvertFileToRelativeFileSystemPath(
   if (!service)
     return false;
 
-  // File browser APIs are ment to be used only from extension context, so the
+  // File browser APIs are meant to be used only from extension context, so the
   // extension's site is the one in whose file system context the virtual path
   // should be found.
   GURL site = service->GetSiteForExtensionId(extension_id);

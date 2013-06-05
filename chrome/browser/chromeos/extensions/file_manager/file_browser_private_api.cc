@@ -2622,13 +2622,9 @@ bool CancelFileTransfersFunction::RunImpl() {
         job_list->CancelJob(it->second[i]);
     }
     result->SetBoolean("canceled", it != path_to_id_map.end());
-    GURL file_url;
-    if (file_manager_util::ConvertFileToFileSystemUrl(profile_,
-            drive::util::GetSpecialRemoteRootPath().Append(file_path),
-            extension_->id(),
-            &file_url)) {
-      result->SetString("fileUrl", file_url.spec());
-    }
+    // TODO(kinaba): simplify cancelFileTransfer() to take single URL each time,
+    // and eliminate this field; it is just returning a copy of the argument.
+    result->SetString("fileUrl", url_as_string);
     responses->Append(result.release());
   }
   SetResult(responses.release());

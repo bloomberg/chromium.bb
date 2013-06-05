@@ -38,8 +38,6 @@ namespace util {
 
 namespace {
 
-const char kDriveSpecialRootPath[] = "/special";
-
 const char kDriveMountPointPath[] = "/special/drive";
 
 const char kDriveMyDriveMountPointPath[] = "/special/drive/root";
@@ -147,12 +145,6 @@ const std::string& GetDriveMountPointPathAsString() {
   CR_DEFINE_STATIC_LOCAL(std::string, drive_mount_path_string,
       (kDriveMountPointPath));
   return drive_mount_path_string;
-}
-
-const base::FilePath& GetSpecialRemoteRootPath() {
-  CR_DEFINE_STATIC_LOCAL(base::FilePath, drive_mount_path,
-      (base::FilePath::FromUTF8Unsafe(kDriveSpecialRootPath)));
-  return drive_mount_path;
 }
 
 const base::FilePath& GetDriveMyDriveMountPointPath() {

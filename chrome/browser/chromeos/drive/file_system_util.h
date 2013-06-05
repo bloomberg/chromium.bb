@@ -89,9 +89,6 @@ ResourceEntry CreateOtherDirEntry();
 // Returns the Drive mount path as string.
 const std::string& GetDriveMountPointPathAsString();
 
-// Returns the 'local' root of remote file system as "/special".
-const base::FilePath& GetSpecialRemoteRootPath();
-
 // Returns the gdata file resource url formatted as "drive:<path>"
 GURL FilePathToDriveURL(const base::FilePath& path);
 
