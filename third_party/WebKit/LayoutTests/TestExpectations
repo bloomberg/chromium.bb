@@ -1906,8 +1906,11 @@ crbug.com/246532 [ Debug ] fast/frames/iframe-double-attach.html [ Crash ]
 crbug.com/246532 [ Debug ] fast/frames/iframe-set-inner-html.html [ Crash ]
 crbug.com/246549 http/tests/security/svg-image-leak.html [ Failure Pass ]
 
+crbug.com/246855 http/tests/inspector/compiler-source-mapping-debug.html [ Crash ]
+
 # Needs new pixel baselines on other platforms
 Bug(jamesr) compositing/video/video-controls-layer-creation.html [ ImageOnlyFailure Pass ]
+Bug(jamesr) virtual/softwarecompositing/video/video-controls-layer-creation.html [ ImageOnlyFailure Pass ]
 
 # New baseline might fail on Mac according to trybots.
 crbug.com/245520 [ Mac ] compositing/repaint/transform-style-change.html [ ImageOnlyFailure ]
