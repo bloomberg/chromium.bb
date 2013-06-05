@@ -1363,7 +1363,7 @@ PassOwnPtr<MediaQuery> CSSParser::parseMediaQuery(const String& string)
     ASSERT(!m_mediaQuery);
 
     // can't use { because tokenizer state switches from mediaquery to initial state when it sees { token.
-    // instead insert one " " (which is WHITESPACE in CSSGrammar.y)
+    // instead insert one " " (which is caught by maybe_space in CSSGrammar.y)
     setupParser("@-webkit-mediaquery ", string, "} ");
     cssyyparse(this);
 
@@ -10326,7 +10326,8 @@ restartAfterComment:
                     // ... and(max-width: 480px) ... looks like a function, but in fact it is not,
                     // so run more detection code in the MediaQueryMode.
                     detectMediaQueryToken<SrcCharacterType>(result - tokenStart<SrcCharacterType>());
-                    shouldSkipParenthesis = false;
+                    if (m_token == MEDIA_AND)
+                        shouldSkipParenthesis = false;
                 }
             }
 
@@ -10796,6 +10797,11 @@ MediaQuery* CSSParser::createFloatingMediaQuery(MediaQuery::Restrictor restricto
 MediaQuery* CSSParser::createFloatingMediaQuery(PassOwnPtr<Vector<OwnPtr<MediaQueryExp> > > expressions)
 {
     return createFloatingMediaQuery(MediaQuery::None, "all", expressions);
+}
+
+MediaQuery* CSSParser::createFloatingNotAllQuery()
+{
+    return createFloatingMediaQuery(MediaQuery::Not, "all", sinkFloatingMediaQueryExpList(createFloatingMediaQueryExpList()));
 }
 
 PassOwnPtr<MediaQuery> CSSParser::sinkFloatingMediaQuery(MediaQuery* query)

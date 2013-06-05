@@ -319,6 +319,7 @@ public:
     PassOwnPtr<Vector<OwnPtr<MediaQueryExp> > > sinkFloatingMediaQueryExpList(Vector<OwnPtr<MediaQueryExp> >*);
     MediaQuery* createFloatingMediaQuery(MediaQuery::Restrictor, const String&, PassOwnPtr<Vector<OwnPtr<MediaQueryExp> > >);
     MediaQuery* createFloatingMediaQuery(PassOwnPtr<Vector<OwnPtr<MediaQueryExp> > >);
+    MediaQuery* createFloatingNotAllQuery();
     PassOwnPtr<MediaQuery> sinkFloatingMediaQuery(MediaQuery*);
 
     Vector<RefPtr<StyleKeyframe> >* createFloatingKeyframeVector();

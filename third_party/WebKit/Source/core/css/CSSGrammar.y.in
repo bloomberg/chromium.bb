@@ -87,7 +87,7 @@ static inline bool isCSSTokenAString(int yytype)
 
 %}
 
-%expect 11
+%expect 3
 
 %nonassoc LOWEST_PREC
 
@@ -248,10 +248,11 @@ static inline bool isCSSTokenAString(int yytype)
 %type <string> medium
 %type <marginBox> margin_sym
 
-%type <string> media_feature
 %type <mediaList> media_list
 %type <mediaList> maybe_media_list
+%type <mediaList> mq_list
 %type <mediaQuery> media_query
+%type <mediaQuery> valid_media_query
 %type <mediaQueryRestrictor> maybe_media_restrictor
 %type <valueList> maybe_media_value
 %type <mediaQueryExp> media_query_exp
@@ -364,8 +365,8 @@ internal_value:
 ;
 
 webkit_mediaquery:
-     WEBKIT_MEDIAQUERY_SYM WHITESPACE maybe_space media_query '}' {
-         parser->m_mediaQuery = parser->sinkFloatingMediaQuery($4);
+     WEBKIT_MEDIAQUERY_SYM maybe_space valid_media_query '}' {
+         parser->m_mediaQuery = parser->sinkFloatingMediaQuery($3);
      }
 ;
 
@@ -574,12 +575,6 @@ STRING
 | URI
 ;
 
-media_feature:
-    IDENT maybe_space {
-        $$ = $1;
-    }
-    ;
-
 maybe_media_value:
     /*empty*/ {
         $$ = 0;
@@ -590,17 +585,11 @@ maybe_media_value:
     ;
 
 media_query_exp:
-    maybe_media_restrictor maybe_space '(' maybe_space media_feature maybe_space maybe_media_value ')' maybe_space {
-        // If restrictor is specified, media query expression is invalid.
-        // Create empty media query expression and continue parsing media query.
-        if ($1 != MediaQuery::None)
-            $$ = parser->createFloatingMediaQueryExp("", 0);
-        else {
-            parser->tokenToLowerCase($5);
-            $$ = parser->createFloatingMediaQueryExp($5, $7);
-        }
+    '(' maybe_space IDENT maybe_space maybe_media_value closing_parenthesis maybe_space {
+        parser->tokenToLowerCase($3);
+        $$ = parser->createFloatingMediaQueryExp($3, $5);
     }
-    | maybe_media_restrictor maybe_space '(' error error_recovery ')' {
+    | '(' error error_recovery closing_parenthesis {
         YYERROR;
     }
     ;
@@ -610,9 +599,9 @@ media_query_exp_list:
         $$ = parser->createFloatingMediaQueryExpList();
         $$->append(parser->sinkFloatingMediaQueryExp($1));
     }
-    | media_query_exp_list maybe_space MEDIA_AND maybe_space media_query_exp {
+    | media_query_exp_list MEDIA_AND maybe_space media_query_exp {
         $$ = $1;
-        $$->append(parser->sinkFloatingMediaQueryExp($5));
+        $$->append(parser->sinkFloatingMediaQueryExp($4));
     }
     ;
 
@@ -629,31 +618,37 @@ maybe_media_restrictor:
     /*empty*/ {
         $$ = MediaQuery::None;
     }
-    | MEDIA_ONLY {
+    | MEDIA_ONLY maybe_space {
         $$ = MediaQuery::Only;
     }
-    | MEDIA_NOT {
+    | MEDIA_NOT maybe_space {
         $$ = MediaQuery::Not;
     }
     ;
 
-media_query:
+valid_media_query:
     media_query_exp_list {
         $$ = parser->createFloatingMediaQuery(parser->sinkFloatingMediaQueryExpList($1));
     }
-    |
-    maybe_media_restrictor maybe_space medium maybe_and_media_query_exp_list {
-        parser->tokenToLowerCase($3);
-        $$ = parser->createFloatingMediaQuery($1, $3, parser->sinkFloatingMediaQueryExpList($4));
+    | maybe_media_restrictor medium maybe_and_media_query_exp_list {
+        parser->tokenToLowerCase($2);
+        $$ = parser->createFloatingMediaQuery($1, $2, parser->sinkFloatingMediaQueryExpList($3));
+    }
+    ;
+
+media_query:
+    valid_media_query
+    | error rule_error_recovery {
+        $$ = parser->createFloatingNotAllQuery();
     }
     ;
 
 maybe_media_list:
-     /* empty */ {
+    /* empty */ {
         $$ = parser->createMediaQuerySet();
-     }
-     | media_list
-     ;
+    }
+    | media_list
+    ;
 
 media_list:
     media_query {
@@ -661,15 +656,26 @@ media_list:
         $$->addMediaQuery(parser->sinkFloatingMediaQuery($1));
         parser->updateLastMediaLine($$);
     }
-    | media_list ',' maybe_space media_query {
+    | mq_list media_query {
         $$ = $1;
-        if ($$) {
-            $$->addMediaQuery(parser->sinkFloatingMediaQuery($4));
-            parser->updateLastMediaLine($$);
-        }
+        $$->addMediaQuery(parser->sinkFloatingMediaQuery($2));
+        parser->updateLastMediaLine($$);
     }
-    | media_list error {
-        $$ = 0;
+    | mq_list {
+        $$ = $1;
+        $$->addMediaQuery(parser->sinkFloatingMediaQuery(parser->createFloatingNotAllQuery()));
+        parser->updateLastMediaLine($$);
+    }
+    ;
+
+mq_list:
+    media_query ',' maybe_space {
+        $$ = parser->createMediaQuerySet();
+        $$->addMediaQuery(parser->sinkFloatingMediaQuery($1));
+    }
+    | mq_list media_query ',' maybe_space {
+        $$ = $1;
+        $$->addMediaQuery(parser->sinkFloatingMediaQuery($2));
     }
     ;
 
@@ -697,6 +703,10 @@ media:
     }
     | before_media_rule MEDIA_SYM at_rule_header_end_maybe_space '{' at_rule_body_start maybe_space block_rule_body closing_brace {
         $$ = parser->createMediaRule(0, $7);
+    }
+    | before_media_rule MEDIA_SYM maybe_space media_list ';' {
+        $$ = 0;
+        parser->endRuleBody(true);
     }
     | before_media_rule MEDIA_SYM at_rule_recovery {
         $$ = 0;
