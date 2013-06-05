@@ -17,7 +17,8 @@ class DefaultFocusManagerFactory : public FocusManagerFactory {
   virtual ~DefaultFocusManagerFactory() {}
 
  protected:
-  virtual FocusManager* CreateFocusManager(Widget* widget) OVERRIDE {
+  virtual FocusManager* CreateFocusManager(Widget* widget,
+                                           bool desktop_widget) OVERRIDE {
     return new FocusManager(widget, NULL /* delegate */);
   }
 
@@ -36,10 +37,11 @@ FocusManagerFactory::~FocusManagerFactory() {
 }
 
 // static
-FocusManager* FocusManagerFactory::Create(Widget* widget) {
+FocusManager* FocusManagerFactory::Create(Widget* widget,
+                                          bool desktop_widget) {
   if (!focus_manager_factory)
     focus_manager_factory = new DefaultFocusManagerFactory();
-  return focus_manager_factory->CreateFocusManager(widget);
+  return focus_manager_factory->CreateFocusManager(widget, desktop_widget);
 }
 
 // static

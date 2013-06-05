@@ -240,7 +240,7 @@ aura::RootWindow* DesktopRootWindowHostX11::InitRootWindow(
   if (!params.child && params.parent)
     parent->AddTransientChild(content_window_);
 
-  native_widget_delegate_->OnNativeWidgetCreated();
+  native_widget_delegate_->OnNativeWidgetCreated(true);
 
   capture_client_.reset(new views::DesktopCaptureClient(root_window_));
   aura::client::SetCaptureClient(root_window_, capture_client_.get());

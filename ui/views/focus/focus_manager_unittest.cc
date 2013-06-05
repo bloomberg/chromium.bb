@@ -525,7 +525,8 @@ class FocusManagerDtorTest : public FocusManagerTest {
         : dtor_tracker_(dtor_tracker) {
     }
 
-    virtual FocusManager* CreateFocusManager(Widget* widget) OVERRIDE {
+    virtual FocusManager* CreateFocusManager(Widget* widget,
+                                             bool desktop_widget) OVERRIDE {
       return new FocusManagerDtorTracked(widget, dtor_tracker_);
     }
 

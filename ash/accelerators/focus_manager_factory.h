@@ -22,7 +22,8 @@ class AshFocusManagerFactory : public views::FocusManagerFactory {
  protected:
   // views::FocusManagerFactory overrides:
   virtual views::FocusManager* CreateFocusManager(
-      views::Widget* widget) OVERRIDE;
+      views::Widget* widget,
+      bool desktop_widget) OVERRIDE;
 
  private:
   class Delegate : public views::FocusManagerDelegate {

@@ -643,7 +643,7 @@ void NativeWidgetWin::HandleCreate() {
     tooltip_manager_.reset();
   }
 
-  delegate_->OnNativeWidgetCreated();
+  delegate_->OnNativeWidgetCreated(true);
 }
 
 void NativeWidgetWin::HandleDestroying() {

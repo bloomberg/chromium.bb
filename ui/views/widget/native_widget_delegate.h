@@ -65,7 +65,9 @@ class VIEWS_EXPORT NativeWidgetDelegate {
   virtual void OnNativeWidgetVisibilityChanged(bool visible) = 0;
 
   // Called when the native widget is created.
-  virtual void OnNativeWidgetCreated() = 0;
+  // The |desktop_widget| bool is true for widgets created in the desktop and
+  // false for widgets created in the shell.
+  virtual void OnNativeWidgetCreated(bool desktop_widget) = 0;
 
   // Called just before the native widget is destroyed. This is the delegate's
   // last chance to do anything with the native widget handle.

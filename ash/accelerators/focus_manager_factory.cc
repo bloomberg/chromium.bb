@@ -14,8 +14,9 @@ AshFocusManagerFactory::AshFocusManagerFactory() {}
 AshFocusManagerFactory::~AshFocusManagerFactory() {}
 
 views::FocusManager* AshFocusManagerFactory::CreateFocusManager(
-    views::Widget* widget) {
-  return new views::FocusManager(widget, new Delegate);
+    views::Widget* widget,
+    bool desktop_widget) {
+  return new views::FocusManager(widget, desktop_widget ? NULL : new Delegate);
 }
 
 bool AshFocusManagerFactory::Delegate::ProcessAccelerator(
