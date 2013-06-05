@@ -67,17 +67,11 @@ const base::FilePath::CharType kDriveOtherDirName[] =
 const base::FilePath::CharType kDriveMyDriveRootPath[] =
     FILE_PATH_LITERAL("drive/root");
 
-const base::FilePath::CharType kDriveOtherDirPath[] =
-    FILE_PATH_LITERAL("drive/other");
-
 // Returns the path of the top root of the pseudo tree.
 const base::FilePath& GetDriveGrandRootPath();
 
 // Returns the path of the directory representing "My Drive".
 const base::FilePath& GetDriveMyDriveRootPath();
-
-// Returns the path of the directory representing entries other than "My Drive".
-const base::FilePath& GetDriveOtherDirPath();
 
 // Returns the Drive mount point path, which looks like "/special/drive".
 const base::FilePath& GetDriveMountPointPath();

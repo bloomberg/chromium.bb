@@ -45,7 +45,9 @@ const char kDriveMountPointPath[] = "/special/drive";
 const char kDriveMyDriveMountPointPath[] = "/special/drive/root";
 
 const base::FilePath::CharType* kDriveMountPointPathComponents[] = {
-  "/", "special", "drive"
+    FILE_PATH_LITERAL("/"),
+    FILE_PATH_LITERAL("special"),
+    FILE_PATH_LITERAL("drive")
 };
 
 const base::FilePath::CharType kFileCacheVersionDir[] =
@@ -53,11 +55,6 @@ const base::FilePath::CharType kFileCacheVersionDir[] =
 
 const char kSlash[] = "/";
 const char kEscapedSlash[] = "\xE2\x88\x95";
-
-const int kReadOnlyFilePermissions = base::PLATFORM_FILE_OPEN |
-                                     base::PLATFORM_FILE_READ |
-                                     base::PLATFORM_FILE_EXCLUSIVE_READ |
-                                     base::PLATFORM_FILE_ASYNC;
 
 FileSystemInterface* GetFileSystem(Profile* profile) {
   DriveIntegrationService* integration_service =
@@ -85,7 +82,7 @@ std::string ReadStringFromGDocFile(const base::FilePath& file_path,
   std::string error_message;
   scoped_ptr<base::Value> root_value(reader.Deserialize(NULL, &error_message));
   if (!root_value) {
-    DLOG(INFO) << "Failed to parse " << file_path.value() << "as JSON."
+    DLOG(INFO) << "Failed to parse " << file_path.value() << " as JSON."
                << " error = " << error_message;
     return std::string();
   }
@@ -115,12 +112,6 @@ const base::FilePath& GetDriveMyDriveRootPath() {
   CR_DEFINE_STATIC_LOCAL(base::FilePath, drive_root_path,
       (base::FilePath::FromUTF8Unsafe(util::kDriveMyDriveRootPath)));
   return drive_root_path;
-}
-
-const base::FilePath& GetDriveOtherDirPath() {
-  CR_DEFINE_STATIC_LOCAL(base::FilePath, other_root_path,
-      (base::FilePath::FromUTF8Unsafe(util::kDriveOtherDirPath)));
-  return other_root_path;
 }
 
 const base::FilePath& GetDriveMountPointPath() {
@@ -354,8 +345,7 @@ void PrepareWritableFileAndRun(Profile* profile,
 void EnsureDirectoryExists(Profile* profile,
                            const base::FilePath& directory,
                            const FileOperationCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI) ||
-         BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
   if (IsUnderDriveMountPoint(directory)) {
     FileSystemInterface* file_system = GetFileSystem(profile);

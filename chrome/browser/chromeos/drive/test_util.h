@@ -92,8 +92,8 @@ int ReadAllData(Reader* reader, std::string* content) {
   }
 }
 
-// Adds test cache |resources| to |cache|. Returnes whether the operation
-// succeeeded or not.
+// Adds test cache |resources| to |cache|. Returns whether the operation
+// succeeded or not.
 bool PrepareTestCacheResources(
     internal::FileCache* cache,
     const std::vector<TestCacheResource>& resources);
