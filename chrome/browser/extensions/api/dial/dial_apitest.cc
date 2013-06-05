@@ -33,8 +33,14 @@ class DialAPITest : public ExtensionApiTest {
 
 }  // namespace
 
+// http://crbug.com/177163
+#if defined(OS_WIN) && !defined(NDEBUG)
+#define MAYBE_DeviceListEvents DISABLED_DeviceListEvents
+#else
+#define MAYBE_DeviceListEvents DeviceListEvents
+#endif
 // Test receiving DIAL API events.
-IN_PROC_BROWSER_TEST_F(DialAPITest, DeviceListEvents) {
+IN_PROC_BROWSER_TEST_F(DialAPITest, MAYBE_DeviceListEvents) {
   // Setup the test.
   ASSERT_TRUE(RunExtensionSubtest("dial/experimental", "device_list.html"));
 

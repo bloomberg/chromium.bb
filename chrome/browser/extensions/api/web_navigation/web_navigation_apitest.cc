@@ -414,8 +414,9 @@ IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, ServerRedirect) {
           << message_;
 }
 
-// http://crbug.com/235171
-#if defined(OS_CHROMEOS) || (defined(OS_LINUX) && defined(USE_AURA))
+// http://crbug.com/235171 and http://crbug.com/177163
+#if (defined(OS_WIN) && !defined(NDEBUG)) || \
+    (defined(OS_CHROMEOS) || (defined(OS_LINUX) && defined(USE_AURA)))
 #define MAYBE_ServerRedirectSingleProcess DISABLED_ServerRedirectSingleProcess
 #else
 #define MAYBE_ServerRedirectSingleProcess ServerRedirectSingleProcess
@@ -539,7 +540,13 @@ IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, MAYBE_UserAction) {
   ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
 
-IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, RequestOpenTab) {
+// http://crbug.com/177163
+#if defined(OS_WIN) && !defined(NDEBUG)
+#define MAYBE_RequestOpenTab DISABLED_RequestOpenTab
+#else
+#define MAYBE_RequestOpenTab RequestOpenTab
+#endif
+IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, MAYBE_RequestOpenTab) {
   // Wait for the extension to set itself up and return control to us.
   ASSERT_TRUE(RunExtensionSubtest("webnavigation", "test_requestOpenTab.html"))
       << message_;
@@ -608,7 +615,13 @@ IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, MAYBE_TargetBlank) {
   ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
 
-IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, TargetBlankIncognito) {
+// http://crbug.com/177163
+#if defined(OS_WIN) && !defined(NDEBUG)
+#define MAYBE_TargetBlankIncognito DISABLED_TargetBlankIncognito
+#else
+#define MAYBE_TargetBlankIncognito TargetBlankIncognito
+#endif
+IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, MAYBE_TargetBlankIncognito) {
   // Wait for the extension to set itself up and return control to us.
   ASSERT_TRUE(RunExtensionSubtest(
       "webnavigation", "test_targetBlank.html",
@@ -730,7 +743,13 @@ IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, CrossProcessHistory) {
           << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, Crash) {
+// http://crbug.com/177163
+#if defined(OS_WIN) && !defined(NDEBUG)
+#define MAYBE_Crash DISABLED_Crash
+#else
+#define MAYBE_Crash Crash
+#endif
+IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, MAYBE_Crash) {
   // Wait for the extension to set itself up and return control to us.
   ASSERT_TRUE(RunExtensionSubtest("webnavigation", "test_crash.html"))
       << message_;
