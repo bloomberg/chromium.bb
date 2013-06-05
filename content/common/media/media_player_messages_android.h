@@ -12,6 +12,7 @@
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_message_macros.h"
 #include "media/base/android/media_player_android.h"
+#include "media/base/media_keys.h"
 #include "ui/gfx/rect_f.h"
 
 #undef IPC_MESSAGE_EXPORT
@@ -23,6 +24,7 @@
 IPC_ENUM_TRAITS(media::AudioCodec)
 IPC_ENUM_TRAITS(media::DemuxerStream::Status)
 IPC_ENUM_TRAITS(media::DemuxerStream::Type)
+IPC_ENUM_TRAITS(media::MediaKeys::KeyError)
 IPC_ENUM_TRAITS(media::VideoCodec)
 
 IPC_STRUCT_TRAITS_BEGIN(media::MediaPlayerHostMsg_DemuxerReady_Params)
@@ -200,3 +202,44 @@ IPC_MESSAGE_ROUTED3(MediaPlayerHostMsg_NotifyExternalSurface,
                     gfx::RectF /* rect */)
 
 #endif
+
+// Messages for encrypted media extensions API ------------------------------
+
+IPC_MESSAGE_ROUTED4(MediaPlayerHostMsg_GenerateKeyRequest,
+                    int /* player_id */,
+                    std::string /* key_system */,
+                    std::string /* type */,
+                    std::vector<uint8> /* init_data */)
+
+IPC_MESSAGE_ROUTED5(MediaPlayerHostMsg_AddKey,
+                    int /* player_id */,
+                    std::string /* key_system */,
+                    std::vector<uint8> /* key */,
+                    std::vector<uint8> /* init_data */,
+                    std::string /* session_id */)
+
+IPC_MESSAGE_ROUTED3(MediaPlayerHostMsg_CancelKeyRequest,
+                    int /* player_id */,
+                    std::string /* key_system */,
+                    std::string /* session_id */)
+
+IPC_MESSAGE_ROUTED3(MediaPlayerMsg_KeyAdded,
+                    int /* player_id */,
+                    std::string /* key_system */,
+                    std::string /* session_id */)
+
+IPC_MESSAGE_ROUTED5(MediaPlayerMsg_KeyError,
+                    int /* player_id */,
+                    std::string /* key_system */,
+                    std::string /* session_id */,
+                    media::MediaKeys::KeyError /* error_code */,
+                    int /* system_code */)
+
+IPC_MESSAGE_ROUTED5(MediaPlayerMsg_KeyMessage,
+                    int /* player_id */,
+                    std::string /* key_system */,
+                    std::string /* session_id */,
+                    std::string /* message */,
+                    std::string /* destination_url */)
+
+// NeedKey is fired and handled in the renderer. Hence no message is needed.

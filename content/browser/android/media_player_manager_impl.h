@@ -75,6 +75,19 @@ class MediaPlayerManagerImpl
   virtual void DestroyAllMediaPlayers() OVERRIDE;
   virtual void OnMediaSeekRequest(int player_id, base::TimeDelta time_to_seek,
                                   bool request_surface) OVERRIDE;
+  virtual void OnKeyAdded(int player_id,
+                          const std::string& key_system,
+                          const std::string& session_id) OVERRIDE;
+  virtual void OnKeyError(int player_id,
+                          const std::string& key_system,
+                          const std::string& session_id,
+                          media::MediaKeys::KeyError error_code,
+                          int system_code) OVERRIDE;
+  virtual void OnKeyMessage(int player_id,
+                            const std::string& key_system,
+                            const std::string& session_id,
+                            const std::string& message,
+                            const std::string& destination_url) OVERRIDE;
 
 #if defined(GOOGLE_TV)
   void AttachExternalVideoSurface(int player_id, jobject surface);
@@ -109,6 +122,18 @@ class MediaPlayerManagerImpl
       int player_id,
       const media::MediaPlayerHostMsg_ReadFromDemuxerAck_Params& params);
   void OnMediaSeekRequestAck(int player_id);
+  void OnGenerateKeyRequest(int player_id,
+                            const std::string& key_system,
+                            const std::string& type,
+                            const std::vector<uint8>& init_data);
+  void OnAddKey(int player_id,
+                const std::string& key_system,
+                const std::vector<uint8>& key,
+                const std::vector<uint8>& init_data,
+                const std::string& session_id);
+  void OnCancelKeyRequest(int player_id,
+                          const std::string& key_system,
+                          const std::string& session_id);
 
 #if defined(GOOGLE_TV)
   virtual void OnNotifyExternalSurface(

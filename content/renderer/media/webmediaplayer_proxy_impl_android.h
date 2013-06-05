@@ -8,6 +8,7 @@
 #include <map>
 
 #include "content/public/renderer/render_view_observer.h"
+#include "media/base/media_keys.h"
 #include "webkit/renderer/media/android/webmediaplayer_proxy_android.h"
 
 namespace webkit_media {
@@ -53,6 +54,19 @@ class WebMediaPlayerProxyImplAndroid
   virtual void ReadFromDemuxerAck(
       int player_id,
       const media::MediaPlayerHostMsg_ReadFromDemuxerAck_Params&) OVERRIDE;
+  virtual void GenerateKeyRequest(int player_id,
+                                  const std::string& key_system,
+                                  const std::string& type,
+                                  const std::vector<uint8>& init_data) OVERRIDE;
+  virtual void AddKey(int player_id,
+                      const std::string& key_system,
+                      const std::vector<uint8>& key,
+                      const std::vector<uint8>& init_data,
+                      const std::string& session_id) OVERRIDE;
+  virtual void CancelKeyRequest(int player_id,
+                                const std::string& key_system,
+                                const std::string& session_id) OVERRIDE;
+
 #if defined(GOOGLE_TV)
   virtual void RequestExternalSurface(
       int player_id, const gfx::RectF& geometry) OVERRIDE;
@@ -82,6 +96,19 @@ class WebMediaPlayerProxyImplAndroid
       int player_id, media::DemuxerStream::Type type, bool seek_done);
   void OnMediaSeekRequest(int player_id, base::TimeDelta time_to_seek,
                           bool request_texture_peer);
+  void OnKeyAdded(int player_id,
+                  const std::string& key_system,
+                  const std::string& session_id);
+  void OnKeyError(int player_id,
+                  const std::string& key_system,
+                  const std::string& session_id,
+                  media::MediaKeys::KeyError error_code,
+                  int system_code);
+  void OnKeyMessage(int player_id,
+                    const std::string& key_system,
+                    const std::string& session_id,
+                    const std::string& message,
+                    const std::string& destination_url);
 
   webkit_media::WebMediaPlayerManagerAndroid* manager_;
 

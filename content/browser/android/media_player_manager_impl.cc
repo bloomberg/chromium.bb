@@ -70,9 +70,14 @@ bool MediaPlayerManagerImpl::OnMessageReceived(const IPC::Message& msg) {
                         OnReadFromDemuxerAck)
     IPC_MESSAGE_HANDLER(MediaPlayerHostMsg_MediaSeekRequestAck,
                         OnMediaSeekRequestAck)
+    IPC_MESSAGE_HANDLER(MediaPlayerHostMsg_GenerateKeyRequest,
+                        OnGenerateKeyRequest)
+    IPC_MESSAGE_HANDLER(MediaPlayerHostMsg_AddKey, OnAddKey)
+    IPC_MESSAGE_HANDLER(MediaPlayerHostMsg_CancelKeyRequest,
+                        OnCancelKeyRequest)
 #if defined(GOOGLE_TV)
     IPC_MESSAGE_HANDLER(MediaPlayerHostMsg_NotifyExternalSurface,
-                            OnNotifyExternalSurface)
+                        OnNotifyExternalSurface)
 #endif
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
@@ -334,7 +339,7 @@ void MediaPlayerManagerImpl::OnVideoSizeChanged(
 }
 
 void MediaPlayerManagerImpl::OnTimeUpdate(int player_id,
-                                             base::TimeDelta current_time) {
+                                          base::TimeDelta current_time) {
   Send(new MediaPlayerMsg_MediaTimeUpdate(
       routing_id(), player_id, current_time));
 }
@@ -380,6 +385,53 @@ void MediaPlayerManagerImpl::RequestMediaResources(
 void MediaPlayerManagerImpl::ReleaseMediaResources(
     MediaPlayerAndroid* player) {
   // Nothing needs to be done.
+}
+
+void MediaPlayerManagerImpl::OnKeyAdded(int player_id,
+                                        const std::string& key_system,
+                                        const std::string& session_id) {
+  Send(new MediaPlayerMsg_KeyAdded(
+      routing_id(), player_id, key_system, session_id));
+}
+
+void MediaPlayerManagerImpl::OnKeyError(int player_id,
+                                        const std::string& key_system,
+                                        const std::string& session_id,
+                                        media::MediaKeys::KeyError error_code,
+                                        int system_code) {
+  Send(new MediaPlayerMsg_KeyError(routing_id(), player_id,
+      key_system, session_id, error_code, system_code));
+}
+
+void MediaPlayerManagerImpl::OnKeyMessage(int player_id,
+                                          const std::string& key_system,
+                                          const std::string& session_id,
+                                          const std::string& message,
+                                          const std::string& destination_url) {
+  Send(new MediaPlayerMsg_KeyMessage(routing_id(), player_id,
+       key_system, session_id, message, destination_url));
+}
+
+void MediaPlayerManagerImpl::OnGenerateKeyRequest(
+    int player_id,
+    const std::string& key_system,
+    const std::string& type,
+    const std::vector<uint8>& init_data) {
+  NOTIMPLEMENTED();
+}
+
+void MediaPlayerManagerImpl::OnAddKey(int player_id,
+                                      const std::string& key_system,
+                                      const std::vector<uint8>& key,
+                                      const std::vector<uint8>& init_data,
+                                      const std::string& session_id) {
+  NOTIMPLEMENTED();
+}
+
+void MediaPlayerManagerImpl::OnCancelKeyRequest(int player_id,
+                                                const std::string& key_system,
+                                                const std::string& session_id) {
+  NOTIMPLEMENTED();
 }
 
 void MediaPlayerManagerImpl::AddPlayer(MediaPlayerAndroid* player) {

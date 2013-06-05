@@ -194,6 +194,7 @@ class WebMediaPlayerAndroid
   // frame) if changed. Returns true only if the geometry has been changed since
   // the last call.
   bool RetrieveGeometryChange(gfx::RectF* rect);
+#endif
 
   virtual MediaKeyException generateKeyRequest(
       const WebKit::WebString& key_system,
@@ -218,18 +219,19 @@ class WebMediaPlayerAndroid
   void OnKeyMessage(const std::string& key_system,
                     const std::string& session_id,
                     const std::string& message,
-                    const std::string& default_url);
-
-  bool InjectMediaStream(MediaStreamClient* media_stream_client,
-                         media::Demuxer* demuxer,
-                         const base::Closure& destroy_demuxer_cb);
-#endif
+                    const std::string& destination_url);
 
   void OnNeedKey(const std::string& key_system,
                  const std::string& type,
                  const std::string& session_id,
                  scoped_ptr<uint8[]> init_data,
                  int init_data_size);
+
+#if defined(GOOGLE_TV)
+  bool InjectMediaStream(MediaStreamClient* media_stream_client,
+                         media::Demuxer* demuxer,
+                         const base::Closure& destroy_demuxer_cb);
+#endif
 
   // Called when DemuxerStreamPlayer needs to read data from ChunkDemuxer.
   void OnReadFromDemuxer(media::DemuxerStream::Type type, bool seek_done);
@@ -261,7 +263,6 @@ class WebMediaPlayerAndroid
  private:
   void ReallocateVideoFrame();
 
-#if defined(GOOGLE_TV)
   // Actually do the work for generateKeyRequest/addKey so they can easily
   // report results to UMA.
   MediaKeyException GenerateKeyRequestInternal(
@@ -277,7 +278,6 @@ class WebMediaPlayerAndroid
   MediaKeyException CancelKeyRequestInternal(
       const WebKit::WebString& key_system,
       const WebKit::WebString& session_id);
-#endif
 
   WebKit::WebFrame* const frame_;
 

@@ -6,8 +6,9 @@
 #define MEDIA_BASE_ANDROID_MEDIA_PLAYER_MANAGER_H_
 
 #include "base/time.h"
-#include "media/base/media_export.h"
 #include "media/base/android/demuxer_stream_player_params.h"
+#include "media/base/media_export.h"
+#include "media/base/media_keys.h"
 
 namespace content {
 class RenderViewHost;
@@ -102,6 +103,29 @@ class MEDIA_EXPORT MediaPlayerManager {
   virtual void OnMediaSeekRequest(int player_id,
                                   base::TimeDelta time_to_seek,
                                   bool request_surface) = 0;
+
+  // TODO(xhwang): The following three methods needs to be decoupled from
+  // MediaPlayerManager to support the W3C Working Draft version of the EME
+  // spec.
+
+  // Called when the player wants to send a KeyAdded.
+  virtual void OnKeyAdded(int player_id,
+                          const std::string& key_system,
+                          const std::string& session_id) = 0;
+
+  // Called when the player wants to send a KeyError.
+  virtual void OnKeyError(int player_id,
+                          const std::string& key_system,
+                          const std::string& session_id,
+                          media::MediaKeys::KeyError error_code,
+                          int system_code) = 0;
+
+  // Called when the player wants to send a KeyMessage.
+  virtual void OnKeyMessage(int player_id,
+                            const std::string& key_system,
+                            const std::string& session_id,
+                            const std::string& message,
+                            const std::string& destination_url) = 0;
 };
 
 }  // namespace media
