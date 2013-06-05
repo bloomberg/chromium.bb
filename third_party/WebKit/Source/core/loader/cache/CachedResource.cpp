@@ -558,9 +558,6 @@ void CachedResource::setEncodedSize(unsigned size)
     if (size == m_encodedSize)
         return;
 
-    // The size cannot ever shrink (unless it is being nulled out because of an error).  If it ever does, assert.
-    ASSERT(size == 0 || size >= m_encodedSize);
-    
     int delta = size - m_encodedSize;
 
     // The object must now be moved to a different queue, since its size has been changed.
@@ -568,9 +565,9 @@ void CachedResource::setEncodedSize(unsigned size)
     // queue.
     if (inCache())
         memoryCache()->removeFromLRUList(this);
-    
+
     m_encodedSize = size;
-   
+
     if (inCache()) { 
         // Now insert into the new LRU list.
         memoryCache()->insertInLRUList(this);
