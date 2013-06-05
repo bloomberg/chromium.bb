@@ -137,9 +137,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionDisabledGlobalErrorTest, UserDisabled) {
 
 // Test that no error appears if the disable reason is unknown
 // (but probably was by the user).
-// Disabled due to http://crbug.com/246431
 IN_PROC_BROWSER_TEST_F(ExtensionDisabledGlobalErrorTest,
-                       DISABLED_UnknownReasonSamePermissions) {
+                       UnknownReasonSamePermissions) {
   const Extension* extension = InstallIncreasingPermissionExtensionV1();
   DisableExtension(extension->id());
   // Clear disable reason to simulate legacy disables.
@@ -153,8 +152,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionDisabledGlobalErrorTest,
 
 // Test that an error appears if the disable reason is unknown
 // (but probably was for increased permissions).
+// Disabled due to http://crbug.com/246431
 IN_PROC_BROWSER_TEST_F(ExtensionDisabledGlobalErrorTest,
-                       UnknownReasonHigherPermissions) {
+                       DISABLED_UnknownReasonHigherPermissions) {
   const Extension* extension = InstallAndUpdateIncreasingPermissionsExtension();
   // Clear disable reason to simulate legacy disables.
   service_->extension_prefs()->ClearDisableReasons(extension->id());
