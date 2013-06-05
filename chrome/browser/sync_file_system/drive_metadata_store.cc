@@ -106,14 +106,9 @@ class DriveMetadataDB {
 
   SyncStatusCode MigrateDatabaseIfNeeded();
 
-  SyncStatusCode GetSyncRootDirectory(std::string* resource_id);
-
   SyncStatusCode DisableOrigin(const GURL& origin,
                                const std::string& resource_id);
   SyncStatusCode RemoveOrigin(const GURL& origin);
-
-  SyncStatusCode GetOrigins(ResourceIdByOrigin* incremental_sync_origins,
-                            ResourceIdByOrigin* disabled_origins);
 
   SyncStatusCode WriteToDB(leveldb::WriteBatch* batch) {
     return LevelDBStatusToSyncStatusCode(db_->Write(
@@ -711,7 +706,18 @@ SyncStatusCode DriveMetadataDB::ReadContents(
       bool success = base::StringToInt64(itr->value().ToString(),
                                          &contents->largest_changestamp);
       DCHECK(success);
-    } else if (StartsWithASCII(key, kDriveMetadataKeyPrefix, true)) {
+      continue;
+    }
+
+    if (key == kSyncRootDirectoryKey) {
+      std::string resource_id = itr->value().ToString();
+      if (!IsDriveAPIEnabled())
+        resource_id = drive::AddWapiFolderPrefix(resource_id);
+      contents->sync_root_directory_resource_id = resource_id;
+      continue;
+    }
+
+    if (StartsWithASCII(key, kDriveMetadataKeyPrefix, true)) {
       GURL origin;
       base::FilePath path;
       MetadataKeyToOriginAndPath(key, &origin, &path);
@@ -728,19 +734,35 @@ SyncStatusCode DriveMetadataDB::ReadContents(
       success = contents->metadata_map[origin].insert(
           std::make_pair(path, metadata)).second;
       DCHECK(success);
+      continue;
+    }
+
+    if (StartsWithASCII(key, kDriveIncrementalSyncOriginKeyPrefix, true)) {
+      GURL origin(RemovePrefix(key, kDriveIncrementalSyncOriginKeyPrefix));
+      DCHECK(origin.is_valid());
+
+      std::string origin_resource_id = IsDriveAPIEnabled()
+          ? itr->value().ToString()
+          : drive::AddWapiFolderPrefix(itr->value().ToString());
+
+      DCHECK(!ContainsKey(contents->incremental_sync_origins, origin));
+      contents->incremental_sync_origins[origin] = origin_resource_id;
+      continue;
+    }
+
+    if (StartsWithASCII(key, kDriveDisabledOriginKeyPrefix, true)) {
+      GURL origin(RemovePrefix(key, kDriveDisabledOriginKeyPrefix));
+      DCHECK(origin.is_valid());
+
+      std::string origin_resource_id = IsDriveAPIEnabled()
+          ? itr->value().ToString()
+          : drive::AddWapiFolderPrefix(itr->value().ToString());
+
+      DCHECK(!ContainsKey(contents->disabled_origins, origin));
+      contents->disabled_origins[origin] = origin_resource_id;
+      continue;
     }
   }
-
-  SyncStatusCode status = GetOrigins(&contents->incremental_sync_origins,
-                                     &contents->disabled_origins);
-  if (status != SYNC_STATUS_OK &&
-      status != SYNC_DATABASE_ERROR_NOT_FOUND)
-    return status;
-
-  status = GetSyncRootDirectory(&contents->sync_root_directory_resource_id);
-  if (status != SYNC_STATUS_OK &&
-      status != SYNC_DATABASE_ERROR_NOT_FOUND)
-    return status;
 
   return SYNC_STATUS_OK;
 }
@@ -770,19 +792,6 @@ SyncStatusCode DriveMetadataDB::MigrateDatabaseIfNeeded() {
       return SYNC_STATUS_OK;
   }
   return SYNC_DATABASE_ERROR_FAILED;
-}
-
-SyncStatusCode DriveMetadataDB::GetSyncRootDirectory(std::string* resource_id) {
-  DCHECK(CalledOnValidThread());
-  DCHECK(db_.get());
-
-  leveldb::Status status = db_->Get(
-      leveldb::ReadOptions(), kSyncRootDirectoryKey, resource_id);
-
-  if (!IsDriveAPIEnabled() && status.ok())
-    *resource_id = drive::AddWapiFolderPrefix(*resource_id);
-
-  return LevelDBStatusToSyncStatusCode(status);
 }
 
 SyncStatusCode DriveMetadataDB::DisableOrigin(
@@ -837,53 +846,6 @@ SyncStatusCode DriveMetadataDB::RemoveOrigin(const GURL& origin_to_remove) {
   }
 
   return WriteToDB(&batch);
-}
-
-SyncStatusCode DriveMetadataDB::GetOrigins(
-    ResourceIdByOrigin* incremental_sync_origins,
-    ResourceIdByOrigin* disabled_origins) {
-  DCHECK(CalledOnValidThread());
-  DCHECK(db_.get());
-
-  scoped_ptr<leveldb::Iterator> itr(db_->NewIterator(leveldb::ReadOptions()));
-
-  // Get incremental sync origins from the DB.
-  for (itr->Seek(kDriveIncrementalSyncOriginKeyPrefix);
-       itr->Valid(); itr->Next()) {
-    std::string key = itr->key().ToString();
-    if (!StartsWithASCII(key, kDriveIncrementalSyncOriginKeyPrefix, true))
-      break;
-    GURL origin(RemovePrefix(key, kDriveIncrementalSyncOriginKeyPrefix));
-    DCHECK(origin.is_valid());
-
-    std::string origin_resource_id = IsDriveAPIEnabled()
-        ? itr->value().ToString()
-        : drive::AddWapiFolderPrefix(itr->value().ToString());
-
-    bool result = incremental_sync_origins->insert(
-        std::make_pair(origin, origin_resource_id)).second;
-    DCHECK(result);
-  }
-
-  // Get disabled origins from the DB.
-  for (itr->Seek(kDriveDisabledOriginKeyPrefix);
-       itr->Valid(); itr->Next()) {
-    std::string key = itr->key().ToString();
-    if (!StartsWithASCII(key, kDriveDisabledOriginKeyPrefix, true))
-      break;
-    GURL origin(RemovePrefix(key, kDriveDisabledOriginKeyPrefix));
-    DCHECK(origin.is_valid());
-
-    std::string origin_resource_id = IsDriveAPIEnabled()
-        ? itr->value().ToString()
-        : drive::AddWapiFolderPrefix(itr->value().ToString());
-
-    bool result = disabled_origins->insert(
-        std::make_pair(origin, origin_resource_id)).second;
-    DCHECK(result);
-  }
-
-  return SYNC_STATUS_OK;
 }
 
 }  // namespace sync_file_system
