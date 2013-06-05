@@ -1,0 +1,49 @@
+# Add icons to the system icons
+XDG_ICON_RESOURCE="`which xdg-icon-resource 2> /dev/null`"
+if [ ! -x "$XDG_ICON_RESOURCE" ]; then
+  echo "Error: Could not find xdg-icon-resource" >&2
+  exit 1
+fi
+for icon in "@@INSTALLDIR@@/product_logo_"*.png; do
+  size="${icon##*/product_logo_}"
+  "$XDG_ICON_RESOURCE" install --size "${size%.png}" "$icon" "@@PACKAGE@@"
+done
+
+# Add an entry to the system menu
+XDG_DESKTOP_MENU="`which xdg-desktop-menu 2> /dev/null`"
+UPDATE_MENUS="`which update-menus 2> /dev/null`"
+if [ ! -x "$XDG_DESKTOP_MENU" ]; then
+  echo "Error: Could not find xdg-desktop-menu" >&2
+  exit 1
+fi
+"$XDG_DESKTOP_MENU" install @@INSTALLDIR@@/@@PACKAGE@@.desktop
+
+if [ -x "$UPDATE_MENUS" ]; then
+  update-menus
+fi
+
+# This function uses sed to insert the contents of one file into another file,
+# after the first line matching a given regular expression. If there is no
+# matching line, then the file is unchanged.
+insert_after_first_match() {
+  # $1: file to update
+  # $2: regular expression
+  # $3: file to insert
+  sed -i -e "1,/$2/ {
+    /$2/ r $3
+    }" "$1"
+}
+
+# If /usr/share/gnome-control-center/gnome-default-applications.xml exists, it
+# may need to be updated to add ourselves to the default applications list. If
+# we find the file and it does not seem to contain our patch already (the patch
+# is safe to leave even after uninstall), update it.
+GNOME_DFL_APPS=/usr/share/gnome-control-center/gnome-default-applications.xml
+if [ -f "$GNOME_DFL_APPS" ]; then
+# Conditionally insert the contents of the file "default-app-block" after the
+# first "<web-browsers>" line we find in gnome-default-applications.xml
+  fgrep -q "@@MENUNAME@@" "$GNOME_DFL_APPS" || insert_after_first_match \
+    "$GNOME_DFL_APPS" \
+    "^[ 	]*<web-browsers>[ 	]*$" \
+    "@@INSTALLDIR@@/default-app-block"
+fi

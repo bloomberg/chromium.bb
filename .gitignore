@@ -78,7 +78,7 @@ v8.log
 /chrome/chrome_version_resources.xml
 /chrome/common/extensions/api/api.xml
 /chrome/Hammer
-/chrome/installer/linux
+/chrome/installer/linux/internal
 /chrome/installer/mac/internal
 /chrome/installer/mac/third_party/xz/xz
 /chrome/installer/mini_installer.xml

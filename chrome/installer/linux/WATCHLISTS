@@ -1,0 +1,12 @@
+{
+  'WATCHLIST_DEFINITIONS': {
+    'linux_installer_tools': {
+      'filepath': '(common|debian|rpm)/',
+    },
+  },
+  'WATCHLISTS': {
+    'linux_installer_tools': [
+      'mmoss@chromium.org',
+    ],
+  },
+}
