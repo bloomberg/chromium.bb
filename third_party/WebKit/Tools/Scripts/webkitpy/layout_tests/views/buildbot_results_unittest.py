@@ -99,4 +99,4 @@ class BuildBotPrinterTests(unittest.TestCase):
         failing_summary = test_run_results_unittest.summarized_results(port, expected=False, passing=True, flaky=False, only_include_failing=True)
         details = test_run_results.RunDetails(failing_summary['num_regressions'], full_summary, failing_summary, initial_results, None)
         printer.print_results(details)
-        self.assertNotEmpty(out)
+        self.assertTrue(out.getvalue().find('but passed') != -1)
