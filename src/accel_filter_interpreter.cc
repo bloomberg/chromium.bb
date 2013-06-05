@@ -27,7 +27,10 @@ AccelFilterInterpreter::AccelFilterInterpreter(PropRegistry* prop_reg,
       point_y_out_scale_(prop_reg, "Point Y Out Scale", 1.0),
       scroll_x_out_scale_(prop_reg, "Scroll X Out Scale", 3.0),
       scroll_y_out_scale_(prop_reg, "Scroll Y Out Scale", 3.0),
-      use_mouse_point_curves_(prop_reg, "Mouse Accel Curves", 0) {
+      use_mouse_point_curves_(prop_reg, "Mouse Accel Curves", 0),
+      min_reasonable_dt_(prop_reg, "Accel Min dt", 0.003),
+      max_reasonable_dt_(prop_reg, "Accel Max dt", 0.050),
+      last_reasonable_dt_(0.05) {
   InitName();
   // Set up default curves.
 
@@ -145,7 +148,14 @@ void AccelFilterInterpreter::ConsumeGesture(const Gesture& gs) {
   CurveSegment* segs = NULL;
   float* dx = NULL;
   float* dy = NULL;
+
+  // Calculate dt and see if it's reasonable
   float dt = copy.end_time - copy.start_time;
+  if (dt < min_reasonable_dt_.val_ || dt > max_reasonable_dt_.val_)
+    dt = last_reasonable_dt_;
+  else
+    last_reasonable_dt_ = dt;
+
   size_t max_segs = kMaxCurveSegs;
   float x_scale = 1.0;
   float y_scale = 1.0;

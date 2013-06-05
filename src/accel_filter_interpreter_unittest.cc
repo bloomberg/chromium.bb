@@ -180,6 +180,8 @@ TEST(AccelFilterInterpreterTest, TimingTest) {
   TestInterpreterWrapper interpreter(&accel_interpreter);
   accel_interpreter.scroll_x_out_scale_.val_ =
       accel_interpreter.scroll_y_out_scale_.val_ = 1.0;
+  accel_interpreter.min_reasonable_dt_.val_ = 0.0;
+  accel_interpreter.max_reasonable_dt_.val_ = INFINITY;
 
   accel_interpreter.pointer_sensitivity_.val_ = 3;  // standard sensitivity
   accel_interpreter.scroll_sensitivity_.val_ = 3;  // standard sensitivity
@@ -244,6 +246,8 @@ TEST(AccelFilterInterpreterTest, CustomAccelTest) {
   TestInterpreterWrapper interpreter(&accel_interpreter);
   accel_interpreter.scroll_x_out_scale_.val_ =
       accel_interpreter.scroll_y_out_scale_.val_ = 1.0;
+  accel_interpreter.min_reasonable_dt_.val_ = 0.0;
+  accel_interpreter.max_reasonable_dt_.val_ = INFINITY;
 
   accel_interpreter.pointer_sensitivity_.val_ = 0;  // custom sensitivity
   accel_interpreter.scroll_sensitivity_.val_ = 0;  // custom sensitivity
