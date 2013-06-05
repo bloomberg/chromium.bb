@@ -58,8 +58,8 @@ public:
     virtual NodeType nodeType() const OVERRIDE;
 
 protected:
-    Text(TreeScope* tree_scope, const String& data, ConstructionType type)
-        : CharacterData(tree_scope, data, type)
+    Text(TreeScope* treeScope, const String& data, ConstructionType type)
+        : CharacterData(treeScope, data, type)
     {
         ScriptWrappable::init(this);
     }
