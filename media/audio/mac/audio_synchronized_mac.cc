@@ -755,7 +755,8 @@ OSStatus AudioSynchronizedStream::HandleInputCallback(
       number_of_frames,
       input_buffer_list_);
 
-  OSSTATUS_DCHECK(result == noErr, result);
+  // TODO(xians): Add back the DCHECK after synchronize IO supports all
+  // combination of input and output params. See http://issue/246521.
   if (result != noErr)
     return result;
 

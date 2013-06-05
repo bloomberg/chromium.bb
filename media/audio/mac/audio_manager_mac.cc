@@ -417,11 +417,30 @@ AudioParameters AudioManagerMac::GetInputStreamParameters(
   const int buffer_size = ChooseBufferSize(
       AUAudioOutputStream::HardwareSampleRate());
 
+  AudioDeviceID device = GetAudioDeviceIdByUId(true, device_id);
+  if (device == kAudioObjectUnknown) {
+    DLOG(ERROR) << "Invalid device " << device_id;
+    return AudioParameters();
+  }
+
+  int channels = 0;
+  ChannelLayout channel_layout = CHANNEL_LAYOUT_STEREO;
+  if (GetDeviceChannels(device, kAudioDevicePropertyScopeInput, &channels) &&
+      channels <= 2) {
+    channel_layout = GuessChannelLayout(channels);
+  } else {
+    DLOG(ERROR) << "Failed to get the device channels, use stereo as default "
+                << "for device " << device_id;
+  }
+
+  int sample_rate = HardwareSampleRateForDevice(device);
+  if (!sample_rate)
+    sample_rate = kFallbackSampleRate;
+
   // TODO(xians): query the native channel layout for the specific device.
   return AudioParameters(
-      AudioParameters::AUDIO_PCM_LOW_LATENCY, CHANNEL_LAYOUT_STEREO,
-      AUAudioInputStream::HardwareSampleRate(), 16,
-      buffer_size);
+      AudioParameters::AUDIO_PCM_LOW_LATENCY, channel_layout,
+      sample_rate, 16, buffer_size);
 }
 
 AudioOutputStream* AudioManagerMac::MakeLinearOutputStream(
