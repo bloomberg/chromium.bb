@@ -31,6 +31,7 @@
 #include "core/dom/SimulatedClickOptions.h"
 #include "core/dom/TreeScope.h"
 #include "core/editing/EditingBoundary.h"
+#include "core/inspector/InspectorCounters.h"
 #include "core/page/FocusDirection.h"
 #include "core/platform/KURLHash.h"
 #include "core/platform/TreeShared.h"
@@ -749,7 +750,24 @@ protected:
         CreateInsertionPoint = CreateHTMLElement | NeedsShadowTreeWalkerFlag,
         CreateEditingText = CreateText | HasNameOrIsEditingTextFlag,
     };
-    Node(Document*, ConstructionType);
+
+    Node(TreeScope* treeScope, ConstructionType type)
+        : m_nodeFlags(type)
+        , m_parentOrShadowHostNode(0)
+        , m_treeScope(treeScope)
+        , m_previous(0)
+        , m_next(0)
+    {
+        ScriptWrappable::init(this);
+        if (!m_treeScope)
+            m_treeScope = TreeScope::noDocumentInstance();
+        m_treeScope->guardRef();
+
+#if !defined(NDEBUG) || (defined(DUMP_NODE_STATISTICS) && DUMP_NODE_STATISTICS)
+        trackForDebugging();
+#endif
+        InspectorCounters::incrementCounter(InspectorCounters::NodeCounter);
+    }
 
     virtual void didMoveToNewDocument(Document* oldDocument);
     

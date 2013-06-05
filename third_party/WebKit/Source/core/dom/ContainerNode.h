@@ -138,7 +138,7 @@ public:
     virtual void reportMemoryUsage(MemoryObjectInfo*) const OVERRIDE;
 
 protected:
-    ContainerNode(Document*, ConstructionType = CreateContainer);
+    ContainerNode(TreeScope*, ConstructionType = CreateContainer);
 
     static void queuePostAttachCallback(NodeCallback, Node*);
     static bool postAttachCallbacksAreSuspended();
@@ -184,8 +184,8 @@ inline const ContainerNode* toContainerNode(const Node* node)
 // This will catch anyone doing an unnecessary cast.
 void toContainerNode(const ContainerNode*);
 
-inline ContainerNode::ContainerNode(Document* document, ConstructionType type)
-    : Node(document, type)
+inline ContainerNode::ContainerNode(TreeScope* treeScope, ConstructionType type)
+    : Node(treeScope, type)
     , m_firstChild(0)
     , m_lastChild(0)
 {

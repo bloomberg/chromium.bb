@@ -50,8 +50,8 @@ public:
     virtual void reportMemoryUsage(MemoryObjectInfo*) const;
 
 protected:
-    CharacterData(Document* document, const String& text, ConstructionType type)
-        : Node(document, type)
+    CharacterData(TreeScope* treeScope, const String& text, ConstructionType type)
+        : Node(treeScope, type)
         , m_data(!text.isNull() ? text : emptyString())
     {
         ASSERT(type == CreateOther || type == CreateText || type == CreateEditingText);
