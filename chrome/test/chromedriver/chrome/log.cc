@@ -6,6 +6,7 @@
 
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
+#include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "base/values.h"
 #include "chrome/test/chromedriver/logging.h"
@@ -55,8 +56,7 @@ void TruncateContainedStrings(base::Value* value) {
   }
 }
 
-// Pretty prints encapsulated JSON and truncates long strings for display.
-std::string ConvertForDisplay(const std::string& input) {
+std::string ConvertForDisplayInternal(const std::string& input) {
   size_t left = input.find("{");
   size_t right = input.rfind("}");
   if (left == std::string::npos || right == std::string::npos)
@@ -73,6 +73,14 @@ std::string ConvertForDisplay(const std::string& input) {
   std::string display = input.substr(0, left) + json;
   if (input.length() > right)
     display += input.substr(right + 1);
+  return display;
+}
+
+// Pretty prints encapsulated JSON and truncates long strings for display.
+std::string ConvertForDisplay(const std::string& input) {
+  std::string display = ConvertForDisplayInternal(input);
+  char remove_chars[] = {'\r'};
+  RemoveChars(display, remove_chars, &display);
   return display;
 }
 
