@@ -292,15 +292,12 @@ void ScriptProfiler::visitNodeWrappers(WrappedNodeVisitor* visitor)
         {
             if (classId != v8DOMNodeClassId)
                 return;
-            UNUSED_PARAM(m_isolate);
-            ASSERT(V8Node::HasInstance(*value, m_isolate, worldType(m_isolate)));
-            ASSERT((*value)->IsObject());
-#ifdef V8_USE_UNSAFE_HANDLES
-            v8::Persistent<v8::Object> wrapper = v8::Persistent<v8::Object>::Cast(*value);
-#else
-            v8::Persistent<v8::Object>& wrapper = v8::Persistent<v8::Object>::Cast(*value);
-#endif
-            m_visitor->visitNode(V8Node::toNative(wrapper));
+            // Casting to Handle is safe here, since the Persistent cannot get
+            // GCd during visiting.
+            v8::Handle<v8::Object>* wrapper = reinterpret_cast<v8::Handle<v8::Object>*>(value);
+            ASSERT(V8Node::HasInstance(*wrapper, m_isolate, worldType(m_isolate)));
+            ASSERT((*wrapper)->IsObject());
+            m_visitor->visitNode(V8Node::toNative(*wrapper));
         }
 
     private:
@@ -339,14 +336,12 @@ void ScriptProfiler::visitExternalArrays(ExternalArrayVisitor* visitor)
             if (classId != v8DOMObjectClassId)
                 return;
             ASSERT((*value)->IsObject());
-#ifdef V8_USE_UNSAFE_HANDLES
-            v8::Persistent<v8::Object> wrapper = v8::Persistent<v8::Object>::Cast(*value);
-#else
-            v8::Persistent<v8::Object>& wrapper = v8::Persistent<v8::Object>::Cast(*value);
-#endif
-            if (!toWrapperTypeInfo(wrapper)->isSubclass(&V8ArrayBufferView::info))
+            // Casting to Handle is safe here, since the Persistent cannot get
+            // GCd during visiting.
+            v8::Handle<v8::Object>* wrapper = reinterpret_cast<v8::Handle<v8::Object>*>(value);
+            if (!toWrapperTypeInfo(*wrapper)->isSubclass(&V8ArrayBufferView::info))
                 return;
-            m_visitor->visitJSExternalArray(V8ArrayBufferView::toNative(wrapper));
+            m_visitor->visitJSExternalArray(V8ArrayBufferView::toNative(*wrapper));
         }
 
     private:

@@ -93,7 +93,7 @@ v8::Local<v8::Object> V8PerContextData::createWrapperFromCacheSlowCase(WrapperTy
 {
     ASSERT(!m_errorPrototype.isEmpty());
 
-    v8::Context::Scope scope(m_context);
+    v8::Context::Scope scope(v8::Local<v8::Context>::New(m_isolate, m_context));
     v8::Local<v8::Function> function = constructorForType(type);
     v8::Local<v8::Object> instance = V8ObjectConstructor::newInstance(function);
     if (!instance.IsEmpty()) {
@@ -107,7 +107,7 @@ v8::Local<v8::Function> V8PerContextData::constructorForTypeSlowCase(WrapperType
 {
     ASSERT(!m_errorPrototype.isEmpty());
 
-    v8::Context::Scope scope(m_context);
+    v8::Context::Scope scope(v8::Local<v8::Context>::New(m_isolate, m_context));
     v8::Handle<v8::FunctionTemplate> functionTemplate = type->getTemplate(m_context->GetIsolate(), worldType(m_context->GetIsolate()));
     // Getting the function might fail if we're running out of stack or memory.
     v8::TryCatch tryCatch;

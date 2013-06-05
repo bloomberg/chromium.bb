@@ -107,7 +107,9 @@ public:
 
 private:
     explicit V8PerContextData(v8::Handle<v8::Context> context)
-        : m_activityLogger(0), m_context(v8::Isolate::GetCurrent(), context)
+        : m_activityLogger(0)
+        , m_isolate(v8::Isolate::GetCurrent())
+        , m_context(m_isolate, context)
     {
     }
 
@@ -129,6 +131,7 @@ private:
     // corresponding to this context. The ownership of the pointer is retained
     // by the DOMActivityLoggerMap in DOMWrapperWorld.
     V8DOMActivityLogger* m_activityLogger;
+    v8::Isolate* m_isolate;
     v8::Persistent<v8::Context> m_context;
     ScopedPersistent<v8::Value> m_errorPrototype;
 };
