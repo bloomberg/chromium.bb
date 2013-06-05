@@ -346,10 +346,11 @@ class PopupCollectionObserver : public message_center::MessageCenterObserver {
     const std::string& notificationID = (*iter)->id();
 
     // Does the notification need to be updated?
-    if (pendingUpdateNotificationIDs_.find(notificationID) ==
-            pendingUpdateNotificationIDs_.end()) {
+    std::set<std::string>::iterator pendingUpdateIter =
+        pendingUpdateNotificationIDs_.find(notificationID);
+    if (pendingUpdateIter == pendingUpdateNotificationIDs_.end())
       continue;
-    }
+    pendingUpdateNotificationIDs_.erase(pendingUpdateIter);
 
     // Is the notification still on screen?
     NSUInteger index = [self indexOfPopupWithNotificationID:notificationID];
@@ -371,6 +372,14 @@ class PopupCollectionObserver : public message_center::MessageCenterObserver {
       popupFrame.size.height += newHeight - oldHeight;
       [popup setBounds:popupFrame];
     }
+  }
+
+  // Notification update could be received when a notification is excluded from
+  // the popup notification list but still remains in the full notification
+  // list, as in clicking the popup. In that case, the popup should be closed.
+  for (auto iter = pendingUpdateNotificationIDs_.begin();
+       iter != pendingUpdateNotificationIDs_.end(); ++iter) {
+    pendingRemoveNotificationIDs_.insert(*iter);
   }
 
   pendingUpdateNotificationIDs_.clear();

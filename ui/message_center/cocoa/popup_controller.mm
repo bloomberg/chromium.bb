@@ -23,6 +23,7 @@ enum {
 ////////////////////////////////////////////////////////////////////////////////
 
 @interface MCPopupController (Private)
+- (void)notificationClicked;
 - (void)notificationSwipeStarted;
 - (void)notificationSwipeMoved:(CGFloat)amount;
 - (void)notificationSwipeEnded:(BOOL)ended complete:(BOOL)isComplete;
@@ -37,6 +38,16 @@ enum {
 @end
 
 @implementation MCPopupWindow
+
+- (void)mouseDown:(NSEvent*)event {
+  if ([event type] != NSLeftMouseDown) {
+    [super mouseDown:event];
+    return;
+  }
+  MCPopupController* controller =
+      base::mac::ObjCCastStrict<MCPopupController>([self windowController]);
+  [controller notificationClicked];
+}
 
 - (void)scrollWheel:(NSEvent*)event {
   // Gesture swiping only exists on 10.7+.
@@ -148,6 +159,10 @@ enum {
 }
 
 // Private /////////////////////////////////////////////////////////////////////
+
+- (void)notificationClicked {
+  messageCenter_->ClickOnNotification([self notificationID]);
+}
 
 - (void)notificationSwipeStarted {
   originalFrame_ = [[self window] frame];
