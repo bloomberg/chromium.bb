@@ -29,7 +29,6 @@ class FixedSizedScrollView : public views::ScrollView {
   // Overridden from views::View:
   virtual gfx::Size GetPreferredSize() OVERRIDE;
   virtual void Layout() OVERRIDE;
-  virtual void OnMouseEntered(const ui::MouseEvent& event) OVERRIDE;
 
  protected:
   // Overridden from views::View:

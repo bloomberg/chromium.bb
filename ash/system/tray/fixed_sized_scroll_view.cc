@@ -48,13 +48,6 @@ void FixedSizedScrollView::Layout() {
   }
 }
 
-void FixedSizedScrollView::OnMouseEntered(const ui::MouseEvent& event) {
-  // TODO(sad): This is done to make sure that the scroll view scrolls on
-  // mouse-wheel events. This is ugly, and Ben thinks this is weird. There
-  // should be a better fix for this.
-  RequestFocus();
-}
-
 void FixedSizedScrollView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
   gfx::Rect bounds = gfx::Rect(contents()->GetPreferredSize());
   bounds.set_width(std::max(0, width() - GetScrollBarWidth()));
