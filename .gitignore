@@ -307,8 +307,8 @@ v8.log
 /webkit/data/test_shell/plugins
 /webkit/data/xbm_decoder
 /webkit/Debug
-/webkit/media/crypto/ppapi/cdm
 /webkit/Release
+/webkit/renderer/media/crypto/ppapi/cdm
 /webpagereplay_logs/
 /win8/delegate_execute/delegate_execute_version_resources.xml
 /win8/metro_driver/metro_driver_version_resources.xml
