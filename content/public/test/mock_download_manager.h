@@ -76,7 +76,6 @@ class MockDownloadManager : public DownloadManager {
 
   MOCK_METHOD2(MockStartDownload,
                DownloadItem*(DownloadCreateInfo*, ByteStreamReader*));
-  MOCK_METHOD1(CancelDownload, void(int32 download_id));
   MOCK_METHOD2(RemoveDownloadsBetween, int(base::Time remove_begin,
                                            base::Time remove_end));
   MOCK_METHOD1(RemoveDownloads, int(base::Time remove_begin));

@@ -480,13 +480,6 @@ void DownloadManagerImpl::OnSavePackageSuccessfullyFinished(
                     OnSavePackageSuccessfullyFinished(this, download_item));
 }
 
-void DownloadManagerImpl::CancelDownload(int32 download_id) {
-  DownloadItem* download = GetDownload(download_id);
-  if (!download || !download->IsInProgress())
-    return;
-  download->Cancel(true);
-}
-
 // Resume a download of a specific URL. We send the request to the
 // ResourceDispatcherHost, and let it send us responses like a regular
 // download.

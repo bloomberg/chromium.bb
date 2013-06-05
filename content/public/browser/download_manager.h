@@ -111,10 +111,6 @@ class CONTENT_EXPORT DownloadManager : public base::SupportsUserData::Data {
       scoped_ptr<DownloadCreateInfo> info,
       scoped_ptr<ByteStreamReader> stream) = 0;
 
-  // Offthread target for cancelling a particular download.  Will be a no-op
-  // if the download has already been cancelled.
-  virtual void CancelDownload(int32 download_id) = 0;
-
   // Remove downloads after remove_begin (inclusive) and before remove_end
   // (exclusive). You may pass in null Time values to do an unbounded delete
   // in either direction.

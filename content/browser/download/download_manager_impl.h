@@ -61,7 +61,6 @@ class CONTENT_EXPORT DownloadManagerImpl : public DownloadManager,
   virtual DownloadItem* StartDownload(
       scoped_ptr<DownloadCreateInfo> info,
       scoped_ptr<ByteStreamReader> stream) OVERRIDE;
-  virtual void CancelDownload(int32 download_id) OVERRIDE;
   virtual int RemoveDownloadsBetween(base::Time remove_begin,
                                      base::Time remove_end) OVERRIDE;
   virtual int RemoveDownloads(base::Time remove_begin) OVERRIDE;
