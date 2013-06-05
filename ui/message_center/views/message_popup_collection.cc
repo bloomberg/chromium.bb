@@ -13,6 +13,7 @@
 #include "base/run_loop.h"
 #include "base/time.h"
 #include "base/timer.h"
+#include "ui/base/accessibility/accessibility_types.h"
 #include "ui/base/animation/animation_delegate.h"
 #include "ui/base/animation/slide_animation.h"
 #include "ui/gfx/screen.h"
@@ -25,6 +26,7 @@
 #include "ui/views/background.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/view.h"
+#include "ui/views/views_delegate.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 
@@ -116,6 +118,10 @@ void MessagePopupCollection::UpdateWidgets() {
     bottom -= view_height + kToastMargin;
 
     message_center_->DisplayedNotification((*iter)->id());
+    if (views::ViewsDelegate::views_delegate) {
+      views::ViewsDelegate::views_delegate->NotifyAccessibilityEvent(
+          toast, ui::AccessibilityTypes::EVENT_ALERT);
+    }
   }
 }
 

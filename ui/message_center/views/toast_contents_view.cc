@@ -10,6 +10,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/time.h"
 #include "base/timer.h"
+#include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/base/animation/animation_delegate.h"
 #include "ui/base/animation/slide_animation.h"
 #include "ui/message_center/message_center.h"
@@ -296,6 +297,12 @@ void ToastContentsView::Layout() {
 
 gfx::Size ToastContentsView::GetPreferredSize() {
   return child_count() ? GetToastSizeForView(child_at(0)) : gfx::Size();
+}
+
+void ToastContentsView::GetAccessibleState(ui::AccessibleViewState* state) {
+  if (child_count() > 0)
+    child_at(0)->GetAccessibleState(state);
+  state->role = ui::AccessibilityTypes::ROLE_WINDOW;
 }
 
 gfx::Rect ToastContentsView::GetClosedToastBounds(gfx::Rect bounds) {
