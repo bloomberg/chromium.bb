@@ -85,40 +85,34 @@ WebMediaPlayerClientImpl::~WebMediaPlayerClientImpl()
 
 void WebMediaPlayerClientImpl::networkStateChanged()
 {
-    ASSERT(m_mediaPlayer);
-    m_mediaPlayer->mediaPlayerClient()->mediaPlayerNetworkStateChanged();
+    m_client->mediaPlayerNetworkStateChanged();
 }
 
 void WebMediaPlayerClientImpl::readyStateChanged()
 {
-    ASSERT(m_mediaPlayer);
-    m_mediaPlayer->mediaPlayerClient()->mediaPlayerReadyStateChanged();
+    m_client->mediaPlayerReadyStateChanged();
 }
 
 void WebMediaPlayerClientImpl::timeChanged()
 {
-    ASSERT(m_mediaPlayer);
-    m_mediaPlayer->mediaPlayerClient()->mediaPlayerTimeChanged();
+    m_client->mediaPlayerTimeChanged();
 }
 
 void WebMediaPlayerClientImpl::repaint()
 {
-    ASSERT(m_mediaPlayer);
     if (m_videoLayer)
         m_videoLayer->invalidate();
-    m_mediaPlayer->mediaPlayerClient()->mediaPlayerRepaint();
+    m_client->mediaPlayerRepaint();
 }
 
 void WebMediaPlayerClientImpl::durationChanged()
 {
-    ASSERT(m_mediaPlayer);
-    m_mediaPlayer->mediaPlayerClient()->mediaPlayerDurationChanged();
+    m_client->mediaPlayerDurationChanged();
 }
 
 void WebMediaPlayerClientImpl::sizeChanged()
 {
-    ASSERT(m_mediaPlayer);
-    m_mediaPlayer->mediaPlayerClient()->mediaPlayerSizeChanged();
+    m_client->mediaPlayerSizeChanged();
 }
 
 void WebMediaPlayerClientImpl::setOpaque(bool opaque)
@@ -135,39 +129,32 @@ double WebMediaPlayerClientImpl::volume() const
 
 void WebMediaPlayerClientImpl::playbackStateChanged()
 {
-    ASSERT(m_mediaPlayer);
-    m_mediaPlayer->mediaPlayerClient()->mediaPlayerPlaybackStateChanged();
+    m_client->mediaPlayerPlaybackStateChanged();
 }
 
 WebMediaPlayer::Preload WebMediaPlayerClientImpl::preload() const
 {
-    if (m_mediaPlayer)
-        return static_cast<WebMediaPlayer::Preload>(m_mediaPlayer->preload());
     return static_cast<WebMediaPlayer::Preload>(m_preload);
 }
 
 void WebMediaPlayerClientImpl::keyAdded(const WebString& keySystem, const WebString& sessionId)
 {
-    ASSERT(m_mediaPlayer);
-    m_mediaPlayer->mediaPlayerClient()->mediaPlayerKeyAdded(keySystem, sessionId);
+    m_client->mediaPlayerKeyAdded(keySystem, sessionId);
 }
 
 void WebMediaPlayerClientImpl::keyError(const WebString& keySystem, const WebString& sessionId, MediaKeyErrorCode errorCode, unsigned short systemCode)
 {
-    ASSERT(m_mediaPlayer);
-    m_mediaPlayer->mediaPlayerClient()->mediaPlayerKeyError(keySystem, sessionId, static_cast<MediaPlayerClient::MediaKeyErrorCode>(errorCode), systemCode);
+    m_client->mediaPlayerKeyError(keySystem, sessionId, static_cast<MediaPlayerClient::MediaKeyErrorCode>(errorCode), systemCode);
 }
 
 void WebMediaPlayerClientImpl::keyMessage(const WebString& keySystem, const WebString& sessionId, const unsigned char* message, unsigned messageLength, const WebURL& defaultURL)
 {
-    ASSERT(m_mediaPlayer);
-    m_mediaPlayer->mediaPlayerClient()->mediaPlayerKeyMessage(keySystem, sessionId, message, messageLength, defaultURL);
+    m_client->mediaPlayerKeyMessage(keySystem, sessionId, message, messageLength, defaultURL);
 }
 
 void WebMediaPlayerClientImpl::keyNeeded(const WebString& keySystem, const WebString& sessionId, const unsigned char* initData, unsigned initDataLength)
 {
-    ASSERT(m_mediaPlayer);
-    m_mediaPlayer->mediaPlayerClient()->mediaPlayerKeyNeeded(keySystem, sessionId, initData, initDataLength);
+    m_client->mediaPlayerKeyNeeded(keySystem, sessionId, initData, initDataLength);
 }
 
 WebPlugin* WebMediaPlayerClientImpl::createHelperPlugin(const WebString& pluginType, WebFrame* frame)
@@ -204,7 +191,7 @@ void WebMediaPlayerClientImpl::setWebLayer(WebLayer* layer)
 
     // If either of the layers is null we need to enable or disable compositing. This is done by triggering a style recalc.
     if (!m_videoLayer || !layer)
-        m_mediaPlayer->setNeedsStyleRecalc();
+        m_client->mediaPlayerNeedsStyleRecalc();
 
     if (m_videoLayer)
         GraphicsLayer::unregisterContentsLayer(m_videoLayer);
@@ -217,7 +204,7 @@ void WebMediaPlayerClientImpl::setWebLayer(WebLayer* layer)
 
 void WebMediaPlayerClientImpl::addTextTrack(WebInbandTextTrack* textTrack)
 {
-    m_mediaPlayer->mediaPlayerClient()->mediaPlayerDidAddTrack(adoptRef(new InbandTextTrackPrivateImpl(textTrack)));
+    m_client->mediaPlayerDidAddTrack(adoptRef(new InbandTextTrackPrivateImpl(textTrack)));
 }
 
 void WebMediaPlayerClientImpl::removeTextTrack(WebInbandTextTrack* textTrack)
@@ -225,10 +212,10 @@ void WebMediaPlayerClientImpl::removeTextTrack(WebInbandTextTrack* textTrack)
     // The following static_cast is safe, because we created the object with the textTrack
     // that was passed to addTextTrack.  (The object from which we are downcasting includes
     // WebInbandTextTrack as one of the intefaces from which inherits.)
-    m_mediaPlayer->mediaPlayerClient()->mediaPlayerDidRemoveTrack(static_cast<InbandTextTrackPrivateImpl*>(textTrack->client()));
+    m_client->mediaPlayerDidRemoveTrack(static_cast<InbandTextTrackPrivateImpl*>(textTrack->client()));
 }
 
-// MediaPlayerPrivateInterface -------------------------------------------------
+// MediaPlayer -------------------------------------------------
 
 void WebMediaPlayerClientImpl::load(const String& url)
 {
@@ -264,7 +251,8 @@ void WebMediaPlayerClientImpl::loadInternal()
     m_audioSourceProvider.wrap(0); // Clear weak reference to m_webMediaPlayer's WebAudioSourceProvider.
 #endif
 
-    Frame* frame = static_cast<HTMLMediaElement*>(m_mediaPlayer->mediaPlayerClient())->document()->frame();
+    // FIXME: Remove this cast
+    Frame* frame = static_cast<HTMLMediaElement*>(m_client)->document()->frame();
 
     // This does not actually check whether the hardware can support accelerated
     // compositing, but only if the flag is set. However, this is checked lazily
@@ -279,7 +267,7 @@ void WebMediaPlayerClientImpl::loadInternal()
         m_audioSourceProvider.wrap(m_webMediaPlayer->audioSourceProvider());
 #endif
 
-        WebMediaPlayer::CORSMode corsMode = static_cast<WebMediaPlayer::CORSMode>(m_mediaPlayer->mediaPlayerClient()->mediaPlayerCORSMode());
+        WebMediaPlayer::CORSMode corsMode = static_cast<WebMediaPlayer::CORSMode>(m_client->mediaPlayerCORSMode());
         if (m_mediaSource) {
             m_webMediaPlayer->load(m_url, new WebMediaSourceImpl(m_mediaSource), corsMode);
             return;
@@ -656,11 +644,9 @@ bool WebMediaPlayerClientImpl::acceleratedRenderingInUse()
     return m_videoLayer && !m_videoLayer->isOrphan();
 }
 
-PassOwnPtr<MediaPlayerPrivateInterface> WebMediaPlayerClientImpl::create(MediaPlayer* player)
+PassOwnPtr<MediaPlayer> WebMediaPlayerClientImpl::create(MediaPlayerClient* client)
 {
-    OwnPtr<WebMediaPlayerClientImpl> client = adoptPtr(new WebMediaPlayerClientImpl());
-    client->m_mediaPlayer = player;
-    return client.release();
+    return adoptPtr(new WebMediaPlayerClientImpl(client));
 }
 
 #if defined(OS_ANDROID)
@@ -726,11 +712,11 @@ void WebMediaPlayerClientImpl::startDelayedLoad()
     loadInternal();
 }
 
-WebMediaPlayerClientImpl::WebMediaPlayerClientImpl()
-    : m_mediaPlayer(0)
+WebMediaPlayerClientImpl::WebMediaPlayerClientImpl(MediaPlayerClient* client)
+    : m_client(client)
     , m_isMediaStream(false)
     , m_delayingLoad(false)
-    , m_preload(MediaPlayer::MetaData)
+    , m_preload(MediaPlayer::Auto)
     , m_videoLayer(0)
     , m_opaque(false)
     , m_needsWebLayerForVideo(false)
@@ -738,6 +724,7 @@ WebMediaPlayerClientImpl::WebMediaPlayerClientImpl()
     , m_muted(false)
     , m_rate(1.0)
 {
+    ASSERT(m_client);
 }
 
 #if ENABLE(WEB_AUDIO)

@@ -26,30 +26,21 @@
 #ifndef MediaPlayer_h
 #define MediaPlayer_h
 
-#include "core/platform/KURL.h"
 #include "core/platform/graphics/GraphicsTypes3D.h"
-#include "core/platform/graphics/InbandTextTrackPrivate.h"
-#include "core/platform/graphics/IntRect.h"
-#include "core/platform/graphics/LayoutRect.h"
 #include "core/platform/graphics/PlatformLayer.h"
-#include <wtf/Forward.h>
-#include <wtf/Noncopyable.h>
-#include <wtf/OwnPtr.h>
-#include <wtf/PassOwnPtr.h>
-#include <wtf/text/StringHash.h>
+#include "wtf/Forward.h"
+#include "wtf/Noncopyable.h"
 
 namespace WebCore {
 
 class AudioSourceProvider;
-class ContentType;
-class Document;
 class GraphicsContext;
 class GraphicsContext3D;
-class HostWindow;
+class InbandTextTrackPrivate;
 class IntRect;
 class IntSize;
+class KURL;
 class MediaPlayer;
-class MediaPlayerPrivateInterface;
 class TimeRanges;
 class WebKitMediaSource;
 
@@ -101,143 +92,109 @@ public:
     virtual void mediaPlayerDidRemoveTrack(PassRefPtr<InbandTextTrackPrivate>) = 0;
 };
 
-typedef PassOwnPtr<MediaPlayerPrivateInterface> (*CreateMediaEnginePlayer)(MediaPlayer*);
+typedef PassOwnPtr<MediaPlayer> (*CreateMediaEnginePlayer)(MediaPlayerClient*);
 
 class MediaPlayer {
-    WTF_MAKE_NONCOPYABLE(MediaPlayer); WTF_MAKE_FAST_ALLOCATED;
+    WTF_MAKE_NONCOPYABLE(MediaPlayer);
 public:
+    static PassOwnPtr<MediaPlayer> create(MediaPlayerClient*);
     static void setMediaEngineCreateFunction(CreateMediaEnginePlayer);
 
-    static PassOwnPtr<MediaPlayer> create(MediaPlayerClient* client)
-    {
-        return adoptPtr(new MediaPlayer(client));
-    }
-    virtual ~MediaPlayer();
+    static double invalidTime() { return -1.0; }
 
-    bool supportsFullscreen() const;
-    bool supportsSave() const;
-    PlatformLayer* platformLayer() const;
+    MediaPlayer() { }
+    virtual ~MediaPlayer() { }
 
-    IntSize naturalSize();
-    bool hasVideo() const;
-    bool hasAudio() const;
+    virtual void load(const String& url) = 0;
+    virtual void load(const String& url, PassRefPtr<WebKitMediaSource>) = 0;
 
-    void setSize(const IntSize& size);
+    virtual void prepareToPlay() = 0;
+    virtual PlatformLayer* platformLayer() const = 0;
 
-    void load(const KURL&);
-    void load(const KURL&, PassRefPtr<WebKitMediaSource>);
+    virtual void play() = 0;
+    virtual void pause() = 0;
 
-    void setVisible(bool);
+    virtual bool supportsFullscreen() const = 0;
+    virtual bool supportsSave() const = 0;
+    virtual IntSize naturalSize() const = 0;
 
-    void prepareToPlay();
-    void play();
-    void pause();
+    virtual bool hasVideo() const = 0;
+    virtual bool hasAudio() const = 0;
 
-    // Represents synchronous exceptions that can be thrown from the Encrypted Media methods.
-    // This is different from the asynchronous MediaKeyError.
-    enum MediaKeyException { NoError, InvalidPlayerState, KeySystemNotSupported };
+    virtual void setVisible(bool) = 0;
 
-    MediaKeyException generateKeyRequest(const String& keySystem, const unsigned char* initData, unsigned initDataLength);
-    MediaKeyException addKey(const String& keySystem, const unsigned char* key, unsigned keyLength, const unsigned char* initData, unsigned initDataLength, const String& sessionId);
-    MediaKeyException cancelKeyRequest(const String& keySystem, const String& sessionId);
+    virtual double duration() const = 0;
 
-    bool paused() const;
-    bool seeking() const;
+    virtual double currentTime() const = 0;
 
-    static double invalidTime() { return -1.0;}
-    double duration() const;
-    double currentTime() const;
-    void seek(double time);
+    virtual void seek(double) = 0;
 
-    double rate() const;
-    void setRate(double);
+    virtual bool seeking() const = 0;
 
-    PassRefPtr<TimeRanges> buffered();
-    double maxTimeSeekable();
+    virtual double rate() const = 0;
+    virtual void setRate(double) = 0;
 
-    bool didLoadingProgress();
+    virtual bool paused() const = 0;
 
-    void setVolume(double);
-    void setMuted(bool);
-
-    void paint(GraphicsContext*, const IntRect&);
-    void paintCurrentFrameInContext(GraphicsContext*, const IntRect&);
-
-    // copyVideoTextureToPlatformTexture() is used to do the GPU-GPU textures copy without a readback to system memory.
-    // The first five parameters denote the corresponding GraphicsContext, destination texture, requested level, requested type and the required internalFormat for destination texture.
-    // The last two parameters premultiplyAlpha and flipY denote whether addtional premultiplyAlpha and flip operation are required during the copy.
-    // It returns true on success and false on failure.
-
-    // In the GPU-GPU textures copy, the source texture(Video texture) should have valid target, internalFormat and size, etc.
-    // The destination texture may need to be resized to to the dimensions of the source texture or re-defined to the required internalFormat.
-    // The current restrictions require that format shoud be RGB or RGBA, type should be UNSIGNED_BYTE and level should be 0. It may be lifted in the future.
-
-    // Each platform port can have its own implementation on this function. The default implementation for it is a single "return false" in MediaPlayerPrivate.h.
-    // In chromium, the implementation is based on GL_CHROMIUM_copy_texture extension which is documented at
-    // http://src.chromium.org/viewvc/chrome/trunk/src/gpu/GLES2/extensions/CHROMIUM/CHROMIUM_copy_texture.txt and implemented at
-    // http://src.chromium.org/viewvc/chrome/trunk/src/gpu/command_buffer/service/gles2_cmd_copy_texture_chromium.cc via shaders.
-    bool copyVideoTextureToPlatformTexture(GraphicsContext3D*, Platform3DObject texture, GC3Dint level, GC3Denum type, GC3Denum internalFormat, bool premultiplyAlpha, bool flipY);
+    virtual void setVolume(double) = 0;
+    virtual void setMuted(bool) = 0;
 
     enum NetworkState { Empty, Idle, Loading, Loaded, FormatError, NetworkError, DecodeError };
-    NetworkState networkState();
+    virtual NetworkState networkState() const = 0;
 
     enum ReadyState  { HaveNothing, HaveMetadata, HaveCurrentData, HaveFutureData, HaveEnoughData };
-    ReadyState readyState() const;
+    virtual ReadyState readyState() const = 0;
 
-    enum MovieLoadType { Unknown, Download, StoredStream, LiveStream };
-    MovieLoadType movieLoadType() const;
+    virtual double maxTimeSeekable() const = 0;
+    virtual PassRefPtr<TimeRanges> buffered() const = 0;
+
+    virtual bool didLoadingProgress() const = 0;
+
+    virtual void setSize(const IntSize&) = 0;
+
+    virtual void paint(GraphicsContext*, const IntRect&) = 0;
+
+    virtual void paintCurrentFrameInContext(GraphicsContext*, const IntRect&) = 0;
+    virtual bool copyVideoTextureToPlatformTexture(GraphicsContext3D*, Platform3DObject, GC3Dint, GC3Denum, GC3Denum, bool, bool) = 0;
 
     enum Preload { None, MetaData, Auto };
-    Preload preload() const;
-    void setPreload(Preload);
-
-    MediaPlayerClient* mediaPlayerClient() const { return m_mediaPlayerClient; }
+    virtual void setPreload(Preload) = 0;
 
 #if USE(NATIVE_FULLSCREEN_VIDEO)
-    void enterFullscreen();
-    void exitFullscreen();
-#endif
-
-#if USE(NATIVE_FULLSCREEN_VIDEO)
-    bool canEnterFullscreen() const;
+    virtual void enterFullscreen() = 0;
+    virtual void exitFullscreen() = 0;
+    virtual bool canEnterFullscreen() const = 0;
 #endif
 
     // whether accelerated rendering is supported by the media engine for the current media.
-    bool supportsAcceleratedRendering() const;
+    virtual bool supportsAcceleratedRendering() const = 0;
 
-    bool hasSingleSecurityOrigin() const;
+    virtual bool hasSingleSecurityOrigin() const = 0;
 
-    bool didPassCORSAccessCheck() const;
+    virtual bool didPassCORSAccessCheck() const = 0;
 
-    double mediaTimeForTimeValue(double) const;
+    enum MovieLoadType { Unknown, Download, StoredStream, LiveStream };
+    virtual MovieLoadType movieLoadType() const = 0;
 
-    unsigned decodedFrameCount() const;
-    unsigned droppedFrameCount() const;
-    unsigned audioDecodedByteCount() const;
-    unsigned videoDecodedByteCount() const;
+    // Time value in the movie's time scale. It is only necessary to override this if the media
+    // engine uses rational numbers to represent media time.
+    virtual double mediaTimeForTimeValue(double timeValue) const = 0;
 
-    void setNeedsStyleRecalc();
+    virtual unsigned decodedFrameCount() const = 0;
+    virtual unsigned droppedFrameCount() const = 0;
+    virtual unsigned audioDecodedByteCount() const = 0;
+    virtual unsigned videoDecodedByteCount() const = 0;
 
 #if ENABLE(WEB_AUDIO)
-    AudioSourceProvider* audioSourceProvider();
+    virtual AudioSourceProvider* audioSourceProvider() = 0;
 #endif
 
-#if ENABLE(ENCRYPTED_MEDIA_V2)
-    bool keyNeeded(Uint8Array* initData);
-#endif
-
-private:
-    explicit MediaPlayer(MediaPlayerClient*);
-    void initializeMediaPlayerPrivate();
-
-    static CreateMediaEnginePlayer s_createMediaEngineFunction;
-
-    MediaPlayerClient* m_mediaPlayerClient;
-    OwnPtr<MediaPlayerPrivateInterface> m_private;
-    Preload m_preload;
-    bool m_inDestructor;
+    enum MediaKeyException { NoError, InvalidPlayerState, KeySystemNotSupported };
+    virtual MediaKeyException addKey(const String&, const unsigned char*, unsigned, const unsigned char*, unsigned, const String&) = 0;
+    virtual MediaKeyException generateKeyRequest(const String&, const unsigned char*, unsigned) = 0;
+    virtual MediaKeyException cancelKeyRequest(const String&, const String&) = 0;
 };
 
 }
 
-#endif
+#endif // MediaPlayer_h

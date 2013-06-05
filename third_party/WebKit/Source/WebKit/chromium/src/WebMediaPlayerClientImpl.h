@@ -31,8 +31,10 @@
 #ifndef WebMediaPlayerClientImpl_h
 #define WebMediaPlayerClientImpl_h
 
+#include "core/platform/KURL.h"
 #include "core/platform/audio/AudioSourceProvider.h"
-#include "core/platform/graphics/MediaPlayerPrivate.h"
+#include "core/platform/graphics/InbandTextTrackPrivate.h"
+#include "core/platform/graphics/MediaPlayer.h"
 #if defined(OS_ANDROID)
 #include "GrTexture.h"
 #include "SkBitmap.h"
@@ -54,10 +56,10 @@ class WebMediaPlayer;
 
 // This class serves as a bridge between WebCore::MediaPlayer and
 // WebKit::WebMediaPlayer.
-class WebMediaPlayerClientImpl : public WebCore::MediaPlayerPrivateInterface, public WebMediaPlayerClient {
+class WebMediaPlayerClientImpl : public WebCore::MediaPlayer, public WebMediaPlayerClient {
 
 public:
-    static PassOwnPtr<WebCore::MediaPlayerPrivateInterface> create(WebCore::MediaPlayer*);
+    static PassOwnPtr<WebCore::MediaPlayer> create(WebCore::MediaPlayerClient*);
 
     // Returns the encapsulated WebKit::WebMediaPlayer.
     WebMediaPlayer* mediaPlayer() const;
@@ -85,7 +87,7 @@ public:
     virtual void addTextTrack(WebInbandTextTrack*);
     virtual void removeTextTrack(WebInbandTextTrack*);
 
-    // MediaPlayerPrivateInterface methods:
+    // MediaPlayer methods:
     virtual void load(const WTF::String& url);
     virtual void load(const WTF::String& url, PassRefPtr<WebCore::WebKitMediaSource>);
 
@@ -146,7 +148,7 @@ public:
     virtual WebCore::MediaPlayer::MediaKeyException cancelKeyRequest(const String& keySystem, const String& sessionId) OVERRIDE;
 
 private:
-    WebMediaPlayerClientImpl();
+    explicit WebMediaPlayerClientImpl(WebCore::MediaPlayerClient*);
 
     void startDelayedLoad();
     void loadRequested();
@@ -163,7 +165,7 @@ private:
     SkBitmap m_bitmap;
 #endif
 
-    WebCore::MediaPlayer* m_mediaPlayer;
+    WebCore::MediaPlayerClient* m_client;
     OwnPtr<WebMediaPlayer> m_webMediaPlayer;
     WebCore::KURL m_url;
     bool m_isMediaStream;

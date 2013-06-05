@@ -2718,7 +2718,7 @@
             'platform/graphics/InbandTextTrackPrivateClient.h',
             'platform/graphics/Latin1TextIterator.h',
             'platform/graphics/MediaPlayer.cpp',
-            'platform/graphics/MediaPlayerPrivate.h',
+            'platform/graphics/MediaPlayer.h',
             'platform/graphics/NativeImagePtr.h' ,
             'platform/graphics/Path.cpp',
             'platform/graphics/PathTraversalState.cpp',

@@ -42,6 +42,7 @@ namespace WebCore {
 class AudioSourceProvider;
 class MediaElementAudioSourceNode;
 #endif
+class ContentType;
 class Event;
 class HTMLSourceElement;
 class HTMLTrackElement;
