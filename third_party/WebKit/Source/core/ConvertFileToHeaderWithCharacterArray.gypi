@@ -32,7 +32,7 @@
 #   'target_name': 'GenerateInjectedScriptSource',
 #   'type': 'none',
 #   'variables': {
-#     'input_file_path': '../inspector/InjectedScriptSource.js'',
+#     'input_file_path': 'inspector/InjectedScriptSource.js'',
 #     'output_file_path': '<(SHARED_INTERMEDIATE_DIR)/WebCore/InjectedScriptSource.h',
 #     'character_array_name': 'InjectedScriptSource_js',
 #   },
@@ -43,13 +43,13 @@
     {
       'action_name': 'ConvertFileToHeaderWithCharacterArray',
       'inputs': [
-        '../inspector/xxd.pl',
+        'inspector/xxd.pl',
         '<(input_file_path)',
       ],
       'outputs': [ '<@(output_file_path)', ],
       'action': [
         '<(perl_exe)',
-        '../inspector/xxd.pl',
+        'inspector/xxd.pl',
         '<(character_array_name)',
         '<(input_file_path)',
         '<@(_outputs)'

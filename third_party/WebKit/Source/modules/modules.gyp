@@ -38,7 +38,7 @@
     'dependencies': [
       '<(DEPTH)/third_party/zlib/zlib.gyp:zlib',
       '../config.gyp:config',
-      '../core/core.gyp/core.gyp:webcore',
+      '../core/core_tmp.gyp:webcore',
     ],
     'defines': [
       'WEBKIT_IMPLEMENTATION=1',

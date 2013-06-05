@@ -30,9 +30,9 @@
 
 {
   'includes': [
-    '../core.gypi',
-    '../../bindings/bindings.gypi',
-    '../features.gypi',
+    'core.gypi',
+    '../bindings/bindings.gypi',
+    'features.gypi',
   ],
 
   'targets': [
@@ -43,8 +43,8 @@
         {
           'action_name': 'Settings',
           'inputs': [
-            '../page/make_settings.pl',
-            '../page/Settings.in',
+            'page/make_settings.pl',
+            'page/Settings.in',
           ],
           'outputs': [
             '<(SHARED_INTERMEDIATE_DIR)/webkit/SettingsMacros.h',
@@ -65,10 +65,10 @@
           'action_name': 'InternalRuntimeFlags',
           'inputs': [
             '<@(scripts_for_in_files)',
-            '../scripts/make_internal_runtime_flags.py',
-            '../page/RuntimeEnabledFeatures.in',
-            '../scripts/templates/InternalRuntimeFlags.h.tmpl',
-            '../scripts/templates/InternalRuntimeFlags.idl.tmpl',
+            'scripts/make_internal_runtime_flags.py',
+            'page/RuntimeEnabledFeatures.in',
+            'scripts/templates/InternalRuntimeFlags.h.tmpl',
+            'scripts/templates/InternalRuntimeFlags.idl.tmpl',
           ],
           'outputs': [
             '<(SHARED_INTERMEDIATE_DIR)/webkit/InternalRuntimeFlags.idl',
@@ -76,8 +76,8 @@
           ],
           'action': [
             'python',
-            '../scripts/make_internal_runtime_flags.py',
-            '../page/RuntimeEnabledFeatures.in',
+            'scripts/make_internal_runtime_flags.py',
+            'page/RuntimeEnabledFeatures.in',
             '--output_dir',
             '<(SHARED_INTERMEDIATE_DIR)/webkit/',
           ],
@@ -94,10 +94,10 @@
       'sources': [
         # bison rule
         '<(SHARED_INTERMEDIATE_DIR)/webkit/CSSGrammar.y',
-        '../xml/XPathGrammar.y',
+        'xml/XPathGrammar.y',
 
         # gperf rule
-        '../platform/ColorData.gperf',
+        'platform/ColorData.gperf',
       ],
       'actions': [
         {
@@ -111,7 +111,7 @@
           'msvs_cygwin_shell': 0,
           'action': [
             '<(perl_exe)',
-            '../inspector/xxd.pl',
+            'inspector/xxd.pl',
             'V8ArrayBufferViewCustomScript_js',
             '<@(_inputs)',
             '<@(_outputs)'
@@ -121,7 +121,7 @@
         {
           'action_name': 'generateXMLViewerCSS',
           'inputs': [
-            '../xml/XMLViewer.css',
+            'xml/XMLViewer.css',
           ],
           'outputs': [
             '<(SHARED_INTERMEDIATE_DIR)/webkit/XMLViewerCSS.h',
@@ -129,7 +129,7 @@
           'msvs_cygwin_shell': 0,
           'action': [
             '<(perl_exe)',
-            '../inspector/xxd.pl',
+            'inspector/xxd.pl',
             'XMLViewer_css',
             '<@(_inputs)',
             '<@(_outputs)'
@@ -138,7 +138,7 @@
         {
           'action_name': 'generateXMLViewerJS',
           'inputs': [
-            '../xml/XMLViewer.js',
+            'xml/XMLViewer.js',
           ],
           'outputs': [
             '<(SHARED_INTERMEDIATE_DIR)/webkit/XMLViewerJS.h',
@@ -146,7 +146,7 @@
           'msvs_cygwin_shell': 0,
           'action': [
             '<(perl_exe)',
-            '../inspector/xxd.pl',
+            'inspector/xxd.pl',
             'XMLViewer_js',
             '<@(_inputs)',
             '<@(_outputs)'
@@ -155,15 +155,15 @@
         {
           'action_name': 'HTMLEntityTable',
           'inputs': [
-            '../html/parser/create-html-entity-table',
-            '../html/parser/HTMLEntityNames.in',
+            'html/parser/create-html-entity-table',
+            'html/parser/HTMLEntityNames.in',
           ],
           'outputs': [
             '<(SHARED_INTERMEDIATE_DIR)/webkit/HTMLEntityTable.cpp'
           ],
           'action': [
             'python',
-            '../html/parser/create-html-entity-table',
+            'html/parser/create-html-entity-table',
             '-o',
             '<@(_outputs)',
             '<@(_inputs)'
@@ -173,10 +173,10 @@
           'action_name': 'RuntimeEnabledFeatures',
           'inputs': [
             '<@(scripts_for_in_files)',
-            '../scripts/make_runtime_features.py',
-            '../page/RuntimeEnabledFeatures.in',
-            '../scripts/templates/RuntimeEnabledFeatures.cpp.tmpl',
-            '../scripts/templates/RuntimeEnabledFeatures.h.tmpl',
+            'scripts/make_runtime_features.py',
+            'page/RuntimeEnabledFeatures.in',
+            'scripts/templates/RuntimeEnabledFeatures.cpp.tmpl',
+            'scripts/templates/RuntimeEnabledFeatures.h.tmpl',
           ],
           'outputs': [
             '<(SHARED_INTERMEDIATE_DIR)/webkit/RuntimeEnabledFeatures.cpp',
@@ -184,8 +184,8 @@
           ],
           'action': [
             'python',
-            '../scripts/make_runtime_features.py',
-            '../page/RuntimeEnabledFeatures.in',
+            'scripts/make_runtime_features.py',
+            'page/RuntimeEnabledFeatures.in',
             '--output_dir',
             '<(SHARED_INTERMEDIATE_DIR)/webkit/',
           ],
@@ -194,13 +194,13 @@
           'action_name': 'CSSPropertyNames',
           'variables': {
             'in_files': [
-              '../css/CSSPropertyNames.in',
-              '../css/SVGCSSPropertyNames.in',
+              'css/CSSPropertyNames.in',
+              'css/SVGCSSPropertyNames.in',
             ],
           },
           'inputs': [
             '<@(scripts_for_in_files)',
-            '../scripts/make_css_property_names.py',
+            'scripts/make_css_property_names.py',
             '<@(in_files)'
           ],
           'outputs': [
@@ -209,7 +209,7 @@
           ],
           'action': [
             'python',
-            '../scripts/make_css_property_names.py',
+            'scripts/make_css_property_names.py',
             '<@(in_files)',
             '--output_dir',
             '<(SHARED_INTERMEDIATE_DIR)/webkit/',
@@ -221,11 +221,11 @@
           'action_name': 'StyleBuilder',
           'inputs': [
             '<@(scripts_for_in_files)',
-            '../scripts/make_style_builder.py',
-            '../css/CSSProperties.in',
-            '../scripts/templates/StyleBuilder.cpp.tmpl',
-            '../scripts/templates/StyleBuilderFunctions.h.tmpl',
-            '../scripts/templates/StyleBuilderFunctions.cpp.tmpl',
+            'scripts/make_style_builder.py',
+            'css/CSSProperties.in',
+            'scripts/templates/StyleBuilder.cpp.tmpl',
+            'scripts/templates/StyleBuilderFunctions.h.tmpl',
+            'scripts/templates/StyleBuilderFunctions.cpp.tmpl',
           ],
           'outputs': [
             '<(SHARED_INTERMEDIATE_DIR)/webkit/StyleBuilder.cpp',
@@ -234,8 +234,8 @@
           ],
           'action': [
             'python',
-            '../scripts/make_style_builder.py',
-            '../css/CSSProperties.in',
+            'scripts/make_style_builder.py',
+            'css/CSSProperties.in',
             '--output_dir',
             '<(SHARED_INTERMEDIATE_DIR)/webkit/',
           ],
@@ -244,13 +244,13 @@
           'action_name': 'CSSValueKeywords',
           'variables': {
             'in_files': [
-              '../css/CSSValueKeywords.in',
-              '../css/SVGCSSValueKeywords.in',
+              'css/CSSValueKeywords.in',
+              'css/SVGCSSValueKeywords.in',
             ],
           },
           'inputs': [
             '<@(scripts_for_in_files)',
-            '../scripts/make_css_value_keywords.py',
+            'scripts/make_css_value_keywords.py',
             '<@(in_files)'
           ],
           'outputs': [
@@ -258,7 +258,7 @@
             '<(SHARED_INTERMEDIATE_DIR)/webkit/CSSValueKeywords.h',
           ],
           'action': [
-             '../scripts/make_css_value_keywords.py',
+             'scripts/make_css_value_keywords.py',
              '<@(in_files)',
              '--output_dir',
              '<(SHARED_INTERMEDIATE_DIR)/webkit/',
@@ -269,11 +269,11 @@
         {
           'action_name': 'HTMLNames',
           'inputs': [
-            '../scripts/Hasher.pm',
-            '../scripts/StaticString.pm',
-            '../scripts/make_names.pl',
-            '../html/HTMLTagNames.in',
-            '../html/HTMLAttributeNames.in',
+            'scripts/Hasher.pm',
+            'scripts/StaticString.pm',
+            'scripts/make_names.pl',
+            'html/HTMLTagNames.in',
+            'html/HTMLAttributeNames.in',
           ],
           'outputs': [
             '<(SHARED_INTERMEDIATE_DIR)/webkit/HTMLNames.cpp',
@@ -297,10 +297,10 @@
         {
           'action_name': 'FontFamilyNames',
           'inputs': [
-            '../scripts/Hasher.pm',
-            '../scripts/StaticString.pm',
-            '../scripts/make_names.pl',
-            '../css/FontFamilyNames.in',
+            'scripts/Hasher.pm',
+            'scripts/StaticString.pm',
+            'scripts/make_names.pl',
+            'css/FontFamilyNames.in',
           ],
           'outputs': [
             '<(SHARED_INTERMEDIATE_DIR)/webkit/FontFamilyNames.cpp',
@@ -320,11 +320,11 @@
         {
           'action_name': 'SVGNames',
           'inputs': [
-            '../scripts/Hasher.pm',
-            '../scripts/StaticString.pm',
-            '../scripts/make_names.pl',
-            '../svg/svgtags.in',
-            '../svg/svgattrs.in',
+            'scripts/Hasher.pm',
+            'scripts/StaticString.pm',
+            'scripts/make_names.pl',
+            'svg/svgtags.in',
+            'svg/svgattrs.in',
           ],
           'outputs': [
             '<(SHARED_INTERMEDIATE_DIR)/webkit/SVGNames.cpp',
@@ -350,8 +350,8 @@
           'action_name': 'EventFactory',
           'inputs': [
             '<@(scripts_for_in_files)',
-            '../scripts/make_event_factory.py',
-            '../dom/EventNames.in',
+            'scripts/make_event_factory.py',
+            'dom/EventNames.in',
           ],
           'outputs': [
             '<(SHARED_INTERMEDIATE_DIR)/webkit/Event.cpp',
@@ -360,8 +360,8 @@
           ],
           'action': [
             'python',
-            '../scripts/make_event_factory.py',
-            '../dom/EventNames.in',
+            'scripts/make_event_factory.py',
+            'dom/EventNames.in',
             '--output_dir',
             '<(SHARED_INTERMEDIATE_DIR)/webkit/',
           ],
@@ -370,8 +370,8 @@
           'action_name': 'EventTargetFactory',
           'inputs': [
             '<@(scripts_for_in_files)',
-            '../scripts/make_event_factory.py',
-            '../dom/EventTargetFactory.in',
+            'scripts/make_event_factory.py',
+            'dom/EventTargetFactory.in',
           ],
           'outputs': [
             '<(SHARED_INTERMEDIATE_DIR)/webkit/EventTargetHeaders.h',
@@ -379,8 +379,8 @@
           ],
           'action': [
             'python',
-            '../scripts/make_event_factory.py',
-            '../dom/EventTargetFactory.in',
+            'scripts/make_event_factory.py',
+            'dom/EventTargetFactory.in',
             '--output_dir',
             '<(SHARED_INTERMEDIATE_DIR)/webkit/',
           ],
@@ -389,8 +389,8 @@
           'action_name': 'ExceptionCodeDescription',
           'inputs': [
             '<@(scripts_for_in_files)',
-            '../scripts/make_dom_exceptions.py',
-            '../dom/DOMExceptions.in',
+            'scripts/make_dom_exceptions.py',
+            'dom/DOMExceptions.in',
           ],
           'outputs': [
             '<(SHARED_INTERMEDIATE_DIR)/webkit/DOMException.cpp',
@@ -400,8 +400,8 @@
           ],
           'action': [
             'python',
-            '../scripts/make_dom_exceptions.py',
-            '../dom/DOMExceptions.in',
+            'scripts/make_dom_exceptions.py',
+            'dom/DOMExceptions.in',
             '--output_dir',
             '<(SHARED_INTERMEDIATE_DIR)/webkit/',
           ],
@@ -409,11 +409,11 @@
         {
           'action_name': 'MathMLNames',
           'inputs': [
-            '../scripts/Hasher.pm',
-            '../scripts/StaticString.pm',
-            '../scripts/make_names.pl',
-            '../mathml/mathtags.in',
-            '../mathml/mathattrs.in',
+            'scripts/Hasher.pm',
+            'scripts/StaticString.pm',
+            'scripts/make_names.pl',
+            'mathml/mathtags.in',
+            'mathml/mathattrs.in',
           ],
           'outputs': [
             '<(SHARED_INTERMEDIATE_DIR)/webkit/MathMLNames.cpp',
@@ -437,25 +437,25 @@
           'action_name': 'UserAgentStyleSheets',
           'variables': {
             'scripts': [
-              '../css/make-css-file-arrays.pl',
-              '../scripts/preprocessor.pm',
+              'css/make-css-file-arrays.pl',
+              'scripts/preprocessor.pm',
             ],
             'stylesheets': [
-              '../css/html.css',
-              '../css/quirks.css',
-              '../css/view-source.css',
-              '../css/themeChromium.css',
-              '../css/themeChromiumAndroid.css',
-              '../css/themeChromiumLinux.css',
-              '../css/themeChromiumSkia.css',
-              '../css/themeWin.css',
-              '../css/themeWinQuirks.css',
-              '../css/svg.css',
-              '../css/mathml.css',
-              '../css/mediaControls.css',
-              '../css/mediaControlsChromium.css',
-              '../css/mediaControlsChromiumAndroid.css',
-              '../css/fullscreen.css',
+              'css/html.css',
+              'css/quirks.css',
+              'css/view-source.css',
+              'css/themeChromium.css',
+              'css/themeChromiumAndroid.css',
+              'css/themeChromiumLinux.css',
+              'css/themeChromiumSkia.css',
+              'css/themeWin.css',
+              'css/themeWinQuirks.css',
+              'css/svg.css',
+              'css/mathml.css',
+              'css/mediaControls.css',
+              'css/mediaControlsChromium.css',
+              'css/mediaControlsChromiumAndroid.css',
+              'css/fullscreen.css',
             ],
           },
           'inputs': [
@@ -481,8 +481,8 @@
         {
           'action_name': 'PickerCommon',
           'inputs': [
-            '../Resources/pagepopups/pickerCommon.css',
-            '../Resources/pagepopups/pickerCommon.js',
+            'Resources/pagepopups/pickerCommon.css',
+            'Resources/pagepopups/pickerCommon.js',
           ],
           'outputs': [
             '<(SHARED_INTERMEDIATE_DIR)/webkit/PickerCommon.h',
@@ -490,7 +490,7 @@
           ],
           'action': [
             'python',
-            '../scripts/make-file-arrays.py',
+            'scripts/make-file-arrays.py',
             '--out-h=<(SHARED_INTERMEDIATE_DIR)/webkit/PickerCommon.h',
             '--out-cpp=<(SHARED_INTERMEDIATE_DIR)/webkit/PickerCommon.cpp',
             '<@(_inputs)',
@@ -499,12 +499,12 @@
         {
           'action_name': 'CalendarPicker',
           'inputs': [
-            '../Resources/pagepopups/calendarPicker.css',
-            '../Resources/pagepopups/calendarPicker.js',
-            '../Resources/pagepopups/chromium/calendarPickerChromium.css',
-            '../Resources/pagepopups/chromium/pickerCommonChromium.css',
-            '../Resources/pagepopups/suggestionPicker.css',
-            '../Resources/pagepopups/suggestionPicker.js',
+            'Resources/pagepopups/calendarPicker.css',
+            'Resources/pagepopups/calendarPicker.js',
+            'Resources/pagepopups/chromium/calendarPickerChromium.css',
+            'Resources/pagepopups/chromium/pickerCommonChromium.css',
+            'Resources/pagepopups/suggestionPicker.css',
+            'Resources/pagepopups/suggestionPicker.js',
           ],
           'outputs': [
             '<(SHARED_INTERMEDIATE_DIR)/webkit/CalendarPicker.h',
@@ -512,7 +512,7 @@
           ],
           'action': [
             'python',
-            '../scripts/make-file-arrays.py',
+            'scripts/make-file-arrays.py',
             '--condition=ENABLE(CALENDAR_PICKER)',
             '--out-h=<(SHARED_INTERMEDIATE_DIR)/webkit/CalendarPicker.h',
             '--out-cpp=<(SHARED_INTERMEDIATE_DIR)/webkit/CalendarPicker.cpp',
@@ -522,8 +522,8 @@
         {
           'action_name': 'ColorSuggestionPicker',
           'inputs': [
-            '../Resources/pagepopups/colorSuggestionPicker.css',
-            '../Resources/pagepopups/colorSuggestionPicker.js',
+            'Resources/pagepopups/colorSuggestionPicker.css',
+            'Resources/pagepopups/colorSuggestionPicker.js',
           ],
           'outputs': [
             '<(SHARED_INTERMEDIATE_DIR)/webkit/ColorSuggestionPicker.h',
@@ -531,7 +531,7 @@
           ],
           'action': [
             'python',
-            '../scripts/make-file-arrays.py',
+            'scripts/make-file-arrays.py',
             '--out-h=<(SHARED_INTERMEDIATE_DIR)/webkit/ColorSuggestionPicker.h',
             '--out-cpp=<(SHARED_INTERMEDIATE_DIR)/webkit/ColorSuggestionPicker.cpp',
             '<@(_inputs)',
@@ -540,10 +540,10 @@
         {
           'action_name': 'XLinkNames',
           'inputs': [
-            '../scripts/Hasher.pm',
-            '../scripts/StaticString.pm',
-            '../scripts/make_names.pl',
-            '../svg/xlinkattrs.in',
+            'scripts/Hasher.pm',
+            'scripts/StaticString.pm',
+            'scripts/make_names.pl',
+            'svg/xlinkattrs.in',
           ],
           'outputs': [
             '<(SHARED_INTERMEDIATE_DIR)/webkit/XLinkNames.cpp',
@@ -563,10 +563,10 @@
         {
           'action_name': 'XMLNSNames',
           'inputs': [
-            '../scripts/Hasher.pm',
-            '../scripts/StaticString.pm',
-            '../scripts/make_names.pl',
-            '../xml/xmlnsattrs.in',
+            'scripts/Hasher.pm',
+            'scripts/StaticString.pm',
+            'scripts/make_names.pl',
+            'xml/xmlnsattrs.in',
           ],
           'outputs': [
             '<(SHARED_INTERMEDIATE_DIR)/webkit/XMLNSNames.cpp',
@@ -586,10 +586,10 @@
         {
           'action_name': 'XMLNames',
           'inputs': [
-            '../scripts/Hasher.pm',
-            '../scripts/StaticString.pm',
-            '../scripts/make_names.pl',
-            '../xml/xmlattrs.in',
+            'scripts/Hasher.pm',
+            'scripts/StaticString.pm',
+            'scripts/make_names.pl',
+            'xml/xmlattrs.in',
           ],
           'outputs': [
             '<(SHARED_INTERMEDIATE_DIR)/webkit/XMLNames.cpp',
@@ -609,16 +609,16 @@
         {
           'action_name': 'preprocess_grammar',
           'inputs': [
-            '../css/CSSGrammar.y.in',
-            '../css/CSSGrammar.y.includes',
+            'css/CSSGrammar.y.in',
+            'css/CSSGrammar.y.includes',
           ],
           'outputs': [
             '<(SHARED_INTERMEDIATE_DIR)/webkit/CSSGrammar.y',
           ],
           'action': [
             '<(perl_exe)',
-            '-I../scripts',
-            '../css/makegrammar.pl',
+            '-Iscripts',
+            'css/makegrammar.pl',
             '--outputDir',
             '<(SHARED_INTERMEDIATE_DIR)/webkit/',
             '--extraDefines',
@@ -653,12 +653,12 @@
             '<(SHARED_INTERMEDIATE_DIR)/webkit/<(RULE_INPUT_ROOT).cpp',
           ],
           'inputs': [
-            '../scripts/make-hash-tools.pl',
+            'scripts/make-hash-tools.pl',
           ],
           'msvs_cygwin_shell': 0,
           'action': [
             '<(perl_exe)',
-            '../scripts/make-hash-tools.pl',
+            'scripts/make-hash-tools.pl',
             '<(SHARED_INTERMEDIATE_DIR)/webkit',
             '<(RULE_INPUT_PATH)',
             '<(gperf_exe)',

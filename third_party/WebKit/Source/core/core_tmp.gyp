@@ -30,19 +30,19 @@
 
 {
   'includes': [
-    '../../WebKit/chromium/WinPrecompile.gypi',
-    '../features.gypi',
-    '../../modules/modules.gypi',
-    '../../bindings/bindings.gypi',
-    '../core.gypi',
+    '../WebKit/chromium/WinPrecompile.gypi',
+    'features.gypi',
+    '../modules/modules.gypi',
+    '../bindings/bindings.gypi',
+    'core.gypi',
   ],
 
   'variables': {
     'enable_wexit_time_destructors': 1,
 
     'webcore_include_dirs': [
-      '../../..',
       '../..',
+      '..',
       '<(SHARED_INTERMEDIATE_DIR)/webkit',
       '<(SHARED_INTERMEDIATE_DIR)/webkit/bindings',
     ],
@@ -74,11 +74,11 @@
           'action_name': 'generateInspectorProtocolBackendSources',
           'inputs': [
             # The python script in action below.
-            '../inspector/CodeGeneratorInspector.py',
+            'inspector/CodeGeneratorInspector.py',
             # The helper script imported by CodeGeneratorInspector.py.
-            '../inspector/CodeGeneratorInspectorStrings.py',
+            'inspector/CodeGeneratorInspectorStrings.py',
             # Input file for the script.
-            '../../devtools/protocol.json',
+            '../devtools/protocol.json',
           ],
           'outputs': [
             '<(SHARED_INTERMEDIATE_DIR)/webcore/InspectorBackendDispatcher.cpp',
@@ -94,8 +94,8 @@
           },
           'action': [
             'python',
-            '../inspector/CodeGeneratorInspector.py',
-            '../../devtools/protocol.json',
+            'inspector/CodeGeneratorInspector.py',
+            '../devtools/protocol.json',
             '--output_h_dir', '<(SHARED_INTERMEDIATE_DIR)/webkit',
             '--output_cpp_dir', '<(SHARED_INTERMEDIATE_DIR)/webcore',
           ],
@@ -113,9 +113,9 @@
           'action_name': 'generateInspectorInstrumentation',
           'inputs': [
             # The python script in action below.
-            '../inspector/CodeGeneratorInstrumentation.py',
+            'inspector/CodeGeneratorInstrumentation.py',
             # Input file for the script.
-            '../inspector/InspectorInstrumentation.idl',
+            'inspector/InspectorInstrumentation.idl',
           ],
           'outputs': [
             '<(SHARED_INTERMEDIATE_DIR)/webkit/InspectorInstrumentationInl.h',
@@ -123,8 +123,8 @@
           ],
           'action': [
             'python',
-            '../inspector/CodeGeneratorInstrumentation.py',
-            '../inspector/InspectorInstrumentation.idl',
+            'inspector/CodeGeneratorInstrumentation.py',
+            'inspector/InspectorInstrumentation.idl',
             '--output_h_dir', '<(SHARED_INTERMEDIATE_DIR)/webkit',
             '--output_cpp_dir', '<(SHARED_INTERMEDIATE_DIR)/webcore',
           ],
@@ -140,8 +140,8 @@
          {
           'action_name': 'generateInspectorProtocolVersion',
           'inputs': [
-            '../inspector/generate-inspector-protocol-version',
-            '../../devtools/protocol.json',
+            'inspector/generate-inspector-protocol-version',
+            '../devtools/protocol.json',
           ],
           'outputs': [
             '<(SHARED_INTERMEDIATE_DIR)/webkit/InspectorProtocolVersion.h',
@@ -152,7 +152,7 @@
           },
           'action': [
             'python',
-            '../inspector/generate-inspector-protocol-version',
+            'inspector/generate-inspector-protocol-version',
             '-o',
             '<@(_outputs)',
             '<@(_inputs)'
@@ -165,7 +165,7 @@
       'target_name': 'inspector_overlay_page',
       'type': 'none',
       'variables': {
-        'input_file_path': '../inspector/InspectorOverlayPage.html',
+        'input_file_path': 'inspector/InspectorOverlayPage.html',
         'output_file_path': '<(SHARED_INTERMEDIATE_DIR)/webkit/InspectorOverlayPage.h',
         'character_array_name': 'InspectorOverlayPage_html',
       },
@@ -175,7 +175,7 @@
       'target_name': 'injected_canvas_script_source',
       'type': 'none',
       'variables': {
-        'input_file_path': '../inspector/InjectedScriptCanvasModuleSource.js',
+        'input_file_path': 'inspector/InjectedScriptCanvasModuleSource.js',
         'output_file_path': '<(SHARED_INTERMEDIATE_DIR)/webkit/InjectedScriptCanvasModuleSource.h',
         'character_array_name': 'InjectedScriptCanvasModuleSource_js',
       },
@@ -185,7 +185,7 @@
       'target_name': 'injected_script_source',
       'type': 'none',
       'variables': {
-        'input_file_path': '../inspector/InjectedScriptSource.js',
+        'input_file_path': 'inspector/InjectedScriptSource.js',
         'output_file_path': '<(SHARED_INTERMEDIATE_DIR)/webkit/InjectedScriptSource.h',
         'character_array_name': 'InjectedScriptSource_js',
       },
@@ -214,7 +214,7 @@
         'injected_canvas_script_source',
         'injected_script_source',
         'debugger_script_source',
-        '../../wtf/wtf.gyp:wtf',
+        '../wtf/wtf.gyp:wtf',
         '<(DEPTH)/build/temp_gyp/googleurl.gyp:googleurl',
         '<(DEPTH)/skia/skia.gyp:skia',
         '<(DEPTH)/third_party/iccjpeg/iccjpeg.gyp:iccjpeg',
@@ -241,14 +241,14 @@
         # FIXME: Remove these once the bindings script generates qualified
         # includes for these correctly. (Sequences don't work yet.)
         '<(bindings_dir)/v8/custom',
-        '../../modules/mediastream',
-        '../../modules/speech',
-        '../dom',
-        '../html',
-        '../html/shadow',
-        '../inspector',
-        '../page',
-        '../svg',
+        '../modules/mediastream',
+        '../modules/speech',
+        'dom',
+        'html',
+        'html/shadow',
+        'inspector',
+        'page',
+        'svg',
       ],
       'sources': [
         # These files include all the .cpp files generated from the .idl files
@@ -346,10 +346,10 @@
         'inspector_protocol_sources',
         'inspector_instrumentation_sources',
         'core_derived_sources.gyp:make_derived_sources',
-        '../../bindings/derived_sources.gyp:bindings_derived_sources',
-        '../../wtf/wtf.gyp:wtf',
-        '../../config.gyp:config',
-        '../../weborigin/weborigin.gyp:weborigin',
+        '../bindings/derived_sources.gyp:bindings_derived_sources',
+        '../wtf/wtf.gyp:wtf',
+        '../config.gyp:config',
+        '../weborigin/weborigin.gyp:weborigin',
         '<(DEPTH)/build/temp_gyp/googleurl.gyp:googleurl',
         '<(DEPTH)/gpu/gpu.gyp:gles2_c_lib',
         '<(DEPTH)/skia/skia.gyp:skia',
@@ -369,8 +369,8 @@
         '<(libjpeg_gyp_path):libjpeg',
       ],
       'export_dependent_settings': [
-        '../../wtf/wtf.gyp:wtf',
-        '../../config.gyp:config',
+        '../wtf/wtf.gyp:wtf',
+        '../config.gyp:config',
         '<(DEPTH)/build/temp_gyp/googleurl.gyp:googleurl',
         '<(DEPTH)/gpu/gpu.gyp:gles2_c_lib',
         '<(DEPTH)/skia/skia.gyp:skia',
@@ -407,7 +407,7 @@
           # Some Mac-specific parts of WebKit won't compile without having this
           # prefix header injected.
           # FIXME: make this a first-class setting.
-          'GCC_PREFIX_HEADER': '../WebCorePrefixMac.h',
+          'GCC_PREFIX_HEADER': 'WebCorePrefixMac.h',
         },
       },
       'conditions': [
@@ -494,7 +494,7 @@
                       'TCMInterposing|ScrollAnimatorChromiumMacExt|WebCoreTheme',
                 },
                 'action': [
-                  'mac/check_objc_rename.sh',
+                  'scripts/check_objc_rename.sh',
                   '<(class_whitelist_regex)',
                   '<(category_whitelist_regex)',
                 ],
@@ -557,8 +557,8 @@
         '<@(webcore_dom_files)',
       ],
       'sources!': [
-        '../dom/default/PlatformMessagePortChannel.cpp',
-        '../dom/default/PlatformMessagePortChannel.h',
+        'dom/default/PlatformMessagePortChannel.cpp',
+        'dom/default/PlatformMessagePortChannel.h',
       ],
       'sources/': [
         # FIXME: Figure out how to store these patterns in a variable.
@@ -682,7 +682,7 @@
             '<(DEPTH)/third_party/harfbuzz-ng/harfbuzz.gyp:harfbuzz-ng',
           ],
           'sources': [
-            '../editing/SmartReplaceCF.cpp',
+            'editing/SmartReplaceCF.cpp',
           ],
           'sources/': [
             # Additional files from the WebCore Mac build that are presently
@@ -1017,7 +1017,7 @@
         'webcore_svg',
         # Exported.
         'webcore_derived',
-        '../../wtf/wtf.gyp:wtf',
+        '../wtf/wtf.gyp:wtf',
         '<(DEPTH)/build/temp_gyp/googleurl.gyp:googleurl',
         '<(DEPTH)/skia/skia.gyp:skia',
         '<(DEPTH)/third_party/npapi/npapi.gyp:npapi',
@@ -1025,7 +1025,7 @@
         '<(DEPTH)/v8/tools/gyp/v8.gyp:v8',
       ],
       'export_dependent_settings': [
-        '../../wtf/wtf.gyp:wtf',
+        '../wtf/wtf.gyp:wtf',
         'webcore_derived',
         '<(DEPTH)/build/temp_gyp/googleurl.gyp:googleurl',
         '<(DEPTH)/skia/skia.gyp:skia',
@@ -1047,7 +1047,7 @@
         ['OS=="mac"', {
           'direct_dependent_settings': {
             'include_dirs': [
-              '../../WebKit/mac/WebCoreSupport',
+              '../WebKit/mac/WebCoreSupport',
             ],
           },
         }],
@@ -1076,7 +1076,7 @@
       'target_name': 'webcore_test_support',
       'type': 'static_library',
       'dependencies': [
-        '../../config.gyp:config',
+        '../config.gyp:config',
         'webcore',
       ],
       'defines': [
@@ -1084,8 +1084,8 @@
       ],
       'include_dirs': [
         '<(bindings_dir)/v8',  # FIXME: Remove once http://crbug.com/236119 is fixed.
-        '../testing',
-        '../testing/v8',
+        'testing',
+        'testing/v8',
       ],
       'sources': [
         '<@(webcore_test_support_files)',

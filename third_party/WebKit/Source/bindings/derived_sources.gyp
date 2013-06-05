@@ -136,7 +136,7 @@
       'hard_dependency': 1,
       'dependencies': [
         'supplemental_dependencies',
-        '../core/core.gyp/core_derived_sources.gyp:generate_test_support_idls',
+        '../core/core_derived_sources.gyp:generate_test_support_idls',
       ],
       'sources': [
         '<@(idl_files)',
@@ -145,7 +145,7 @@
       'actions': [{
         'action_name': 'derived_sources_all_in_one',
         'inputs': [
-          '../core/core.gyp/scripts/action_derivedsourcesallinone.py',
+          '../core/scripts/action_derivedsourcesallinone.py',
           '<(SHARED_INTERMEDIATE_DIR)/supplemental_dependency.tmp',
         ],
         'outputs': [
@@ -153,7 +153,7 @@
         ],
         'action': [
           'python',
-          '../core/core.gyp/scripts/action_derivedsourcesallinone.py',
+          '../core/scripts/action_derivedsourcesallinone.py',
           '<(SHARED_INTERMEDIATE_DIR)/supplemental_dependency.tmp',
           '--',
           '<@(derived_sources_aggregate_files)',

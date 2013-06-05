@@ -69,7 +69,7 @@
                     ],
                 }, {
                     'dependencies': [
-                        '../../core/core.gyp/core.gyp:webcore',
+                        '../../core/core_tmp.gyp:webcore',
                     ],
                     'defines': [
                         'WEBKIT_IMPLEMENTATION=1',

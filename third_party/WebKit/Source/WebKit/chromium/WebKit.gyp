@@ -42,7 +42,7 @@
             'type': '<(component)',
             'variables': { 'enable_wexit_time_destructors': 1, },
             'dependencies': [
-                '../../core/core.gyp/core.gyp:webcore',
+                '../../core/core_tmp.gyp:webcore',
                 '../../modules/modules.gyp:modules',
                 '<(DEPTH)/skia/skia.gyp:skia',
                 '<(DEPTH)/third_party/angle/src/build_angle.gyp:translator_glsl',
@@ -564,8 +564,8 @@
                         'WEBKIT_IMPLEMENTATION=1',
                     ],
                     'dependencies': [
-                        '../../core/core.gyp/core.gyp:webcore_derived',
-                        '../../core/core.gyp/core.gyp:webcore_test_support',
+                        '../../core/core_tmp.gyp:webcore_derived',
+                        '../../core/core_tmp.gyp:webcore_test_support',
                         '<(DEPTH)/base/base.gyp:test_support_base',
                         '<(DEPTH)/build/temp_gyp/googleurl.gyp:googleurl',
                         '<(DEPTH)/testing/gtest.gyp:gtest',
@@ -744,7 +744,7 @@
                     'type': 'static_library',
                     'dependencies': [
                         '../../wtf/wtf.gyp:wtf',
-                        '../../core/core.gyp/core.gyp:webcore_test_support',
+                        '../../core/core_tmp.gyp:webcore_test_support',
                     ],
                     'include_dirs': [
                         'public',
