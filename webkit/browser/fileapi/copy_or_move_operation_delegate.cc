@@ -8,9 +8,9 @@
 #include "base/files/file_path.h"
 #include "webkit/browser/fileapi/copy_or_move_file_validator.h"
 #include "webkit/browser/fileapi/file_system_context.h"
-#include "webkit/browser/fileapi/file_system_operation_context.h"
+#include "webkit/browser/fileapi/file_system_operation_runner.h"
 #include "webkit/browser/fileapi/file_system_url.h"
-#include "webkit/browser/fileapi/local_file_system_operation.h"
+#include "webkit/browser/fileapi/recursive_operation_delegate.h"
 #include "webkit/common/blob/shareable_file_reference.h"
 #include "webkit/common/fileapi/file_system_util.h"
 
@@ -18,18 +18,15 @@ namespace fileapi {
 
 CopyOrMoveOperationDelegate::CopyOrMoveOperationDelegate(
     FileSystemContext* file_system_context,
-    scoped_ptr<LocalFileSystemOperation> src_root_operation,
-    LocalFileSystemOperation* dest_root_operation,
     const FileSystemURL& src_root,
     const FileSystemURL& dest_root,
     OperationType operation_type,
     const StatusCallback& callback)
-    : RecursiveOperationDelegate(file_system_context, dest_root_operation),
+    : RecursiveOperationDelegate(file_system_context),
       src_root_(src_root),
       dest_root_(dest_root),
       operation_type_(operation_type),
-      callback_(callback),
-      src_root_operation_(src_root_operation.Pass()) {
+      callback_(callback) {
   same_file_system_ = src_root_.IsInSameFileSystem(dest_root_);
 }
 
@@ -75,7 +72,7 @@ void CopyOrMoveOperationDelegate::ProcessDirectory(const FileSystemURL& src_url,
   // restore directory timestamps in the end, though it may have
   // negative performance impact.
   // See http://crbug.com/171284 for more details.
-  NewOperation(dest_url)->CreateDirectory(
+  operation_runner()->CreateDirectory(
       dest_url, false /* exclusive */, false /* recursive */, callback);
 }
 
@@ -90,7 +87,7 @@ void CopyOrMoveOperationDelegate::DidTryCopyOrMoveFile(
   // The src_root_ looks to be a directory.
   // Try removing the dest_root_ to see if it exists and/or it is an
   // empty directory.
-  NewOperation(dest_root_)->RemoveDirectory(
+  operation_runner()->RemoveDirectory(
       dest_root_,
       base::Bind(&CopyOrMoveOperationDelegate::DidTryRemoveDestRoot,
                  AsWeakPtr()));
@@ -122,11 +119,9 @@ void CopyOrMoveOperationDelegate::CopyOrMoveFile(const URLPair& url_pair,
   // Same filesystem case.
   if (same_file_system_) {
     if (operation_type_ == OPERATION_MOVE) {
-      NewOperation(url_pair.src)->MoveFileLocal(
-          url_pair.src, url_pair.dest, callback);
+      operation_runner()->MoveFileLocal(url_pair.src, url_pair.dest, callback);
     } else {
-      NewOperation(url_pair.src)->CopyFileLocal(
-          url_pair.src, url_pair.dest, callback);
+      operation_runner()->CopyFileLocal(url_pair.src, url_pair.dest, callback);
     }
     return;
   }
@@ -137,7 +132,7 @@ void CopyOrMoveOperationDelegate::CopyOrMoveFile(const URLPair& url_pair,
   StatusCallback copy_callback =
       base::Bind(&CopyOrMoveOperationDelegate::DidFinishCopy, AsWeakPtr(),
                  url_pair.src, callback);
-  NewOperation(url_pair.src)->CreateSnapshotFile(
+  operation_runner()->CreateSnapshotFile(
       url_pair.src,
       base::Bind(&CopyOrMoveOperationDelegate::DidCreateSnapshot, AsWeakPtr(),
                  url_pair, copy_callback));
@@ -190,7 +185,7 @@ void CopyOrMoveOperationDelegate::DidValidateFile(
     return;
   }
 
-  NewOperation(dest)->CopyInForeignFile(platform_path, dest, callback);
+  operation_runner()->CopyInForeignFile(platform_path, dest, callback);
 }
 
 void CopyOrMoveOperationDelegate::DidFinishCopy(
@@ -206,7 +201,7 @@ void CopyOrMoveOperationDelegate::DidFinishCopy(
   DCHECK_EQ(OPERATION_MOVE, operation_type_);
 
   // Remove the source for finalizing move operation.
-  NewOperation(src)->Remove(
+  operation_runner()->Remove(
       src, true /* recursive */,
       base::Bind(&CopyOrMoveOperationDelegate::DidRemoveSourceForMove,
                  AsWeakPtr(), callback));

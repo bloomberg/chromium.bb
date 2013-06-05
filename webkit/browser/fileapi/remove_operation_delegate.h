@@ -16,7 +16,6 @@ class RemoveOperationDelegate
       public base::SupportsWeakPtr<RemoveOperationDelegate> {
  public:
   RemoveOperationDelegate(FileSystemContext* file_system_context,
-                          LocalFileSystemOperation* operation,
                           const FileSystemURL& url,
                           const StatusCallback& callback);
   virtual ~RemoveOperationDelegate();

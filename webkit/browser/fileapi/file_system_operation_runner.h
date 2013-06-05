@@ -24,6 +24,12 @@ class FileSystemContext;
 // operation fails, in addition to dispatching the callback with an error
 // code (therefore in most cases the caller does not need to check the
 // returned operation ID).
+//
+// Some operations (CopyInForeignFile, RemoveFile, RemoveDirectory,
+// CopyFileLocal and MoveFileLocal) are only supported by filesystems
+// which implement LocalFileSystemOperation.  If they are called on
+// other filesystems base::PLATFORM_FILE_ERROR_INVALID_OPERATION is
+// returned via callback.
 class WEBKIT_STORAGE_EXPORT FileSystemOperationRunner
     : public base::SupportsWeakPtr<FileSystemOperationRunner> {
  public:
@@ -138,6 +144,73 @@ class WEBKIT_STORAGE_EXPORT FileSystemOperationRunner
   OperationID CreateSnapshotFile(const FileSystemURL& url,
                                  const SnapshotFileCallback& callback);
 
+  // Copies in a single file from a different filesystem.
+  //
+  // This returns:
+  // - PLATFORM_FILE_ERROR_NOT_FOUND if |src_file_path|
+  //   or the parent directory of |dest_url| does not exist.
+  // - PLATFORM_FILE_ERROR_INVALID_OPERATION if |dest_url| exists and
+  //   is not a file.
+  // - PLATFORM_FILE_ERROR_FAILED if |dest_url| does not exist and
+  //   its parent path is a file.
+  //
+  OperationID CopyInForeignFile(const base::FilePath& src_local_disk_path,
+                                const FileSystemURL& dest_url,
+                                const StatusCallback& callback);
+
+  // Removes a single file.
+  //
+  // This returns:
+  // - PLATFORM_FILE_ERROR_NOT_FOUND if |url| does not exist.
+  // - PLATFORM_FILE_ERROR_NOT_A_FILE if |url| is not a file.
+  //
+  OperationID RemoveFile(const FileSystemURL& url,
+                         const StatusCallback& callback);
+
+  // Removes a single empty directory.
+  //
+  // This returns:
+  // - PLATFORM_FILE_ERROR_NOT_FOUND if |url| does not exist.
+  // - PLATFORM_FILE_ERROR_NOT_A_DIRECTORY if |url| is not a directory.
+  // - PLATFORM_FILE_ERROR_NOT_EMPTY if |url| is not empty.
+  //
+  OperationID RemoveDirectory(const FileSystemURL& url,
+                              const StatusCallback& callback);
+
+  // Copies a file from |src_url| to |dest_url|.
+  // This must be called for files that belong to the same filesystem
+  // (i.e. type() and origin() of the |src_url| and |dest_url| must match).
+  //
+  // This returns:
+  // - PLATFORM_FILE_ERROR_NOT_FOUND if |src_url|
+  //   or the parent directory of |dest_url| does not exist.
+  // - PLATFORM_FILE_ERROR_NOT_A_FILE if |src_url| exists but is not a file.
+  // - PLATFORM_FILE_ERROR_INVALID_OPERATION if |dest_url| exists and
+  //   is not a file.
+  // - PLATFORM_FILE_ERROR_FAILED if |dest_url| does not exist and
+  //   its parent path is a file.
+  //
+  OperationID CopyFileLocal(const FileSystemURL& src_url,
+                            const FileSystemURL& dest_url,
+                            const StatusCallback& callback);
+
+  // Moves a local file from |src_url| to |dest_url|.
+  // This must be called for files that belong to the same filesystem
+  // (i.e. type() and origin() of the |src_url| and |dest_url| must match).
+  //
+  // This returns:
+  // - PLATFORM_FILE_ERROR_NOT_FOUND if |src_url|
+  //   or the parent directory of |dest_url| does not exist.
+  // - PLATFORM_FILE_ERROR_NOT_A_FILE if |src_url| exists but is not a file.
+  // - PLATFORM_FILE_ERROR_INVALID_OPERATION if |dest_url| exists and
+  //   is not a file.
+  // - PLATFORM_FILE_ERROR_FAILED if |dest_url| does not exist and
+  //   its parent path is a file.
+  //
+  OperationID MoveFileLocal(const FileSystemURL& src_url,
+                            const FileSystemURL& dest_url,
+                            const StatusCallback& callback);
+
  private:
   friend class FileSystemContext;
   explicit FileSystemOperationRunner(FileSystemContext* file_system_context);
@@ -174,6 +247,15 @@ class WEBKIT_STORAGE_EXPORT FileSystemOperationRunner
       const base::PlatformFileInfo& file_info,
       const base::FilePath& platform_path,
       const scoped_refptr<webkit_blob::ShareableFileReference>& file_ref);
+
+  // A helper method for creating LocalFileSystemOperation for operations
+  // that are supported only in LocalFileSystemOperation.
+  // Note that this returns FileSystemOperation, so the caller needs to
+  // call AsLocalFileSystemOperation() (which is guaranteed to be non-null
+  // if this method returns without error).
+  FileSystemOperation* CreateLocalFileSystemOperation(
+      const FileSystemURL& url,
+      base::PlatformFileError* error);
 
   // Not owned; file_system_context owns this.
   FileSystemContext* file_system_context_;

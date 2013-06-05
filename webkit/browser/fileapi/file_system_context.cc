@@ -202,6 +202,14 @@ const UpdateObserverList* FileSystemContext::GetUpdateObservers(
       mount_point_provider)->GetUpdateObservers(type);
 }
 
+const AccessObserverList* FileSystemContext::GetAccessObservers(
+    FileSystemType type) const {
+  // Currently access observer is only available in SandboxMountPointProvider.
+  if (SandboxMountPointProvider::IsSandboxType(type))
+    return sandbox_provider()->GetAccessObservers(type);
+  return NULL;
+}
+
 SandboxMountPointProvider*
 FileSystemContext::sandbox_provider() const {
   return sandbox_provider_.get();

@@ -16,6 +16,7 @@
 namespace fileapi {
 
 class FileSystemContext;
+class FileSystemOperationRunner;
 
 // A base class for recursive operation delegates.
 // This also provides some convenient default implementations for subclasses
@@ -34,8 +35,7 @@ class RecursiveOperationDelegate
   typedef FileSystemOperation::StatusCallback StatusCallback;
   typedef FileSystemOperation::FileEntryList FileEntryList;
 
-  RecursiveOperationDelegate(FileSystemContext* file_system_context,
-                             LocalFileSystemOperation* operation);
+  RecursiveOperationDelegate(FileSystemContext* file_system_context);
   virtual ~RecursiveOperationDelegate();
 
   // This is called when the consumer of this instance starts a non-recursive
@@ -66,13 +66,12 @@ class RecursiveOperationDelegate
   void StartRecursiveOperation(const FileSystemURL& root,
                                const StatusCallback& callback);
 
-  // Returns new operation.
-  LocalFileSystemOperation* NewOperation(const FileSystemURL& url);
-
   FileSystemContext* file_system_context() { return file_system_context_; }
   const FileSystemContext* file_system_context() const {
     return file_system_context_;
   }
+
+  FileSystemOperationRunner* operation_runner();
 
  private:
   void ProcessNextDirectory();
@@ -89,7 +88,6 @@ class RecursiveOperationDelegate
                          base::PlatformFileError error);
 
   FileSystemContext* file_system_context_;
-  LocalFileSystemOperation* operation_;
   StatusCallback callback_;
   std::queue<FileSystemURL> pending_directories_;
   std::queue<FileSystemURL> pending_files_;

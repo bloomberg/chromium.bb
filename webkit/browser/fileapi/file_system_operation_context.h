@@ -54,7 +54,6 @@ class WEBKIT_STORAGE_EXPORT_PRIVATE FileSystemOperationContext
   const base::FilePath& root_path() const { return root_path_; }
 
   ChangeObserverList* change_observers() { return &change_observers_; }
-  AccessObserverList* access_observers() { return &access_observers_; }
   UpdateObserverList* update_observers() { return &update_observers_; }
 
   // Following setters should be called only on the same thread as the
@@ -63,10 +62,6 @@ class WEBKIT_STORAGE_EXPORT_PRIVATE FileSystemOperationContext
   void set_change_observers(const ChangeObserverList& list) {
     DCHECK(setter_thread_checker_.CalledOnValidThread());
     change_observers_ = list;
-  }
-  void set_access_observers(const AccessObserverList& list) {
-    DCHECK(setter_thread_checker_.CalledOnValidThread());
-    access_observers_ = list;
   }
   void set_update_observers(const UpdateObserverList& list) {
     DCHECK(setter_thread_checker_.CalledOnValidThread());
@@ -115,7 +110,6 @@ class WEBKIT_STORAGE_EXPORT_PRIVATE FileSystemOperationContext
   quota::QuotaLimitType quota_limit_type_;
 
   // Observers attached to this context.
-  AccessObserverList access_observers_;
   ChangeObserverList change_observers_;
   UpdateObserverList update_observers_;
 

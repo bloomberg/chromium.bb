@@ -159,8 +159,9 @@ class WEBKIT_STORAGE_EXPORT SandboxMountPointProvider
 
   void CollectOpenFileSystemMetrics(base::PlatformFileError error_code);
 
-  // Returns update observers for the given type.
+  // Returns observers for the given type.
   const UpdateObserverList* GetUpdateObservers(FileSystemType type) const;
+  const AccessObserverList* GetAccessObservers(FileSystemType type) const;
 
   void AddFileUpdateObserver(FileSystemType type,
                              FileUpdateObserver* observer,

@@ -6,8 +6,7 @@
 
 #include "base/bind.h"
 #include "webkit/browser/fileapi/file_system_context.h"
-#include "webkit/browser/fileapi/file_system_operation_context.h"
-#include "webkit/browser/fileapi/local_file_system_operation.h"
+#include "webkit/browser/fileapi/file_system_operation_runner.h"
 
 namespace fileapi {
 
@@ -17,10 +16,8 @@ const int kMaxInflightOperations = 5;
 }
 
 RecursiveOperationDelegate::RecursiveOperationDelegate(
-    FileSystemContext* file_system_context,
-    LocalFileSystemOperation* operation)
+    FileSystemContext* file_system_context)
     : file_system_context_(file_system_context),
-      operation_(operation),
       inflight_operations_(0) {
 }
 
@@ -35,10 +32,8 @@ void RecursiveOperationDelegate::StartRecursiveOperation(
   ProcessNextDirectory();
 }
 
-LocalFileSystemOperation* RecursiveOperationDelegate::NewOperation(
-    const FileSystemURL& url) {
-  return file_system_context_->CreateFileSystemOperation(
-      url, NULL)->AsLocalFileSystemOperation();
+FileSystemOperationRunner* RecursiveOperationDelegate::operation_runner() {
+  return file_system_context_->operation_runner();
 }
 
 void RecursiveOperationDelegate::ProcessNextDirectory() {
@@ -93,7 +88,7 @@ void RecursiveOperationDelegate::DidProcessDirectory(
     callback_.Run(error);
     return;
   }
-  NewOperation(url)->ReadDirectory(
+  operation_runner()->ReadDirectory(
       url, base::Bind(&RecursiveOperationDelegate::DidReadDirectory,
                       AsWeakPtr(), url));
 }

@@ -129,8 +129,9 @@ class WEBKIT_STORAGE_EXPORT FileSystemContext
   FileSystemMountPointProvider* GetMountPointProvider(
       FileSystemType type) const;
 
-  // Returns update observers for the given filesystem type.
+  // Returns observers for the given filesystem type.
   const UpdateObserverList* GetUpdateObservers(FileSystemType type) const;
+  const AccessObserverList* GetAccessObservers(FileSystemType type) const;
 
   // Returns a FileSystemMountPointProvider instance for sandboxed filesystem
   // types (e.g. TEMPORARY or PERSISTENT).  This is equivalent to calling

@@ -320,7 +320,6 @@ FileSystemOperation* SandboxMountPointProvider::CreateFileSystemOperation(
   if (url.type() == kFileSystemTypeSyncable) {
     operation_context->set_update_observers(syncable_update_observers_);
     operation_context->set_change_observers(syncable_change_observers_);
-    operation_context->set_access_observers(access_observers_);
     return new sync_file_system::SyncableFileSystemOperation(
         context, operation_context.Pass());
   }
@@ -328,7 +327,6 @@ FileSystemOperation* SandboxMountPointProvider::CreateFileSystemOperation(
   // For regular sandboxed types.
   operation_context->set_update_observers(update_observers_);
   operation_context->set_change_observers(change_observers_);
-  operation_context->set_access_observers(access_observers_);
 
   if (special_storage_policy_.get() &&
       special_storage_policy_->IsStorageUnlimited(url.origin())) {
@@ -570,6 +568,12 @@ const UpdateObserverList* SandboxMountPointProvider::GetUpdateObservers(
   if (type == kFileSystemTypeSyncable)
     return &syncable_update_observers_;
   return &update_observers_;
+}
+
+const AccessObserverList* SandboxMountPointProvider::GetAccessObservers(
+    FileSystemType type) const {
+  DCHECK(CanHandleType(type));
+  return &access_observers_;
 }
 
 void SandboxMountPointProvider::AddFileUpdateObserver(

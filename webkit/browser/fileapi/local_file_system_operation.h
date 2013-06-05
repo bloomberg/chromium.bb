@@ -318,7 +318,7 @@ class WEBKIT_STORAGE_EXPORT LocalFileSystemOperation
 
   // We keep track of the file to be modified by this operation so that
   // we can notify observers when we're done.
-  FileSystemURL write_target_url_;
+  FileSystemURLSet write_target_url_;
 
   // LocalFileSystemOperation instance is usually deleted upon completion but
   // could be deleted while it has inflight callbacks when Cancel is called.

@@ -6,17 +6,15 @@
 
 #include "base/bind.h"
 #include "webkit/browser/fileapi/file_system_context.h"
-#include "webkit/browser/fileapi/file_system_operation_context.h"
-#include "webkit/browser/fileapi/local_file_system_operation.h"
+#include "webkit/browser/fileapi/file_system_operation_runner.h"
 
 namespace fileapi {
 
 RemoveOperationDelegate::RemoveOperationDelegate(
     FileSystemContext* file_system_context,
-    LocalFileSystemOperation* operation,
     const FileSystemURL& url,
     const StatusCallback& callback)
-    : RecursiveOperationDelegate(file_system_context, operation),
+    : RecursiveOperationDelegate(file_system_context),
       url_(url),
       callback_(callback) {
 }
@@ -24,7 +22,7 @@ RemoveOperationDelegate::RemoveOperationDelegate(
 RemoveOperationDelegate::~RemoveOperationDelegate() {}
 
 void RemoveOperationDelegate::Run() {
-  NewOperation(url_)->RemoveFile(url_, base::Bind(
+  operation_runner()->RemoveFile(url_, base::Bind(
       &RemoveOperationDelegate::DidTryRemoveFile, AsWeakPtr()));
 }
 
@@ -41,7 +39,7 @@ void RemoveOperationDelegate::ProcessFile(const FileSystemURL& url,
     // We seem to have been re-directed from ProcessDirectory.
     to_remove_directories_.pop();
   }
-  NewOperation(url)->RemoveFile(url, base::Bind(
+  operation_runner()->RemoveFile(url, base::Bind(
       &RemoveOperationDelegate::DidRemoveFile, AsWeakPtr(), callback));
 }
 
@@ -58,7 +56,7 @@ void RemoveOperationDelegate::DidTryRemoveFile(
     callback_.Run(error);
     return;
   }
-  NewOperation(url_)->RemoveDirectory(url_, callback_);
+  operation_runner()->RemoveDirectory(url_, callback_);
 }
 
 void RemoveOperationDelegate::DidRemoveFile(const StatusCallback& callback,
@@ -79,7 +77,7 @@ void RemoveOperationDelegate::RemoveNextDirectory(
   }
   FileSystemURL url = to_remove_directories_.top();
   to_remove_directories_.pop();
-  NewOperation(url)->RemoveDirectory(url, base::Bind(
+  operation_runner()->RemoveDirectory(url, base::Bind(
       &RemoveOperationDelegate::RemoveNextDirectory,
       AsWeakPtr()));
 }

@@ -31,8 +31,6 @@ class CopyOrMoveOperationDelegate
 
   CopyOrMoveOperationDelegate(
       FileSystemContext* file_system_context,
-      scoped_ptr<LocalFileSystemOperation> src_root_operation,
-      LocalFileSystemOperation* dest_root_operation,
       const FileSystemURL& src_root,
       const FileSystemURL& dest_root,
       OperationType operation_type,
@@ -92,8 +90,6 @@ class CopyOrMoveOperationDelegate
   bool same_file_system_;
   OperationType operation_type_;
   StatusCallback callback_;
-
-  scoped_ptr<LocalFileSystemOperation> src_root_operation_;
 
   scoped_refptr<webkit_blob::ShareableFileReference> current_file_ref_;
 

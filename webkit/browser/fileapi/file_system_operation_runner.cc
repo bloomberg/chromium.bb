@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "webkit/browser/fileapi/file_system_context.h"
+#include "webkit/browser/fileapi/local_file_system_operation.h"
 #include "webkit/common/blob/shareable_file_reference.h"
 
 namespace fileapi {
@@ -294,6 +295,97 @@ OperationID FileSystemOperationRunner::CreateSnapshotFile(
   return id;
 }
 
+OperationID FileSystemOperationRunner::CopyInForeignFile(
+    const base::FilePath& src_local_disk_path,
+    const FileSystemURL& dest_url,
+    const StatusCallback& callback) {
+  base::PlatformFileError error = base::PLATFORM_FILE_OK;
+  FileSystemOperation* operation = CreateLocalFileSystemOperation(
+      dest_url, &error);
+  if (!operation) {
+    callback.Run(error);
+    return kErrorOperationID;
+  }
+  OperationID id = operations_.Add(operation);
+  operation->AsLocalFileSystemOperation()->CopyInForeignFile(
+      src_local_disk_path, dest_url,
+      base::Bind(&FileSystemOperationRunner::DidFinish, AsWeakPtr(),
+                 id, callback));
+  return id;
+}
+
+OperationID FileSystemOperationRunner::RemoveFile(
+    const FileSystemURL& url,
+    const StatusCallback& callback) {
+  base::PlatformFileError error = base::PLATFORM_FILE_OK;
+  FileSystemOperation* operation = CreateLocalFileSystemOperation(url, &error);
+  if (!operation) {
+    callback.Run(error);
+    return kErrorOperationID;
+  }
+  OperationID id = operations_.Add(operation);
+  operation->AsLocalFileSystemOperation()->RemoveFile(
+      url,
+      base::Bind(&FileSystemOperationRunner::DidFinish, AsWeakPtr(),
+                 id, callback));
+  return id;
+}
+
+OperationID FileSystemOperationRunner::RemoveDirectory(
+    const FileSystemURL& url,
+    const StatusCallback& callback) {
+  base::PlatformFileError error = base::PLATFORM_FILE_OK;
+  FileSystemOperation* operation = CreateLocalFileSystemOperation(url, &error);
+  if (!operation) {
+    callback.Run(error);
+    return kErrorOperationID;
+  }
+  OperationID id = operations_.Add(operation);
+  operation->AsLocalFileSystemOperation()->RemoveDirectory(
+      url,
+      base::Bind(&FileSystemOperationRunner::DidFinish, AsWeakPtr(),
+                 id, callback));
+  return id;
+}
+
+OperationID FileSystemOperationRunner::CopyFileLocal(
+    const FileSystemURL& src_url,
+    const FileSystemURL& dest_url,
+    const StatusCallback& callback) {
+  base::PlatformFileError error = base::PLATFORM_FILE_OK;
+  FileSystemOperation* operation = CreateLocalFileSystemOperation(
+      src_url, &error);
+  if (!operation) {
+    callback.Run(error);
+    return kErrorOperationID;
+  }
+  OperationID id = operations_.Add(operation);
+  operation->AsLocalFileSystemOperation()->CopyFileLocal(
+      src_url, dest_url,
+      base::Bind(&FileSystemOperationRunner::DidFinish, AsWeakPtr(),
+                 id, callback));
+  return id;
+}
+
+OperationID FileSystemOperationRunner::MoveFileLocal(
+    const FileSystemURL& src_url,
+    const FileSystemURL& dest_url,
+    const StatusCallback& callback) {
+  base::PlatformFileError error = base::PLATFORM_FILE_OK;
+  FileSystemOperation* operation = CreateLocalFileSystemOperation(
+      src_url, &error);
+  if (!operation) {
+    callback.Run(error);
+    return kErrorOperationID;
+  }
+  OperationID id = operations_.Add(operation);
+  operation->AsLocalFileSystemOperation()->MoveFileLocal(
+      src_url, dest_url,
+      base::Bind(&FileSystemOperationRunner::DidFinish, AsWeakPtr(),
+                 id, callback));
+  return id;
+}
+
 FileSystemOperationRunner::FileSystemOperationRunner(
     FileSystemContext* file_system_context)
     : file_system_context_(file_system_context) {}
@@ -366,6 +458,21 @@ void FileSystemOperationRunner::DidCreateSnapshot(
   callback.Run(rv, file_info, platform_path, file_ref);
   DCHECK(operations_.Lookup(id));
   operations_.Remove(id);
+}
+
+FileSystemOperation*
+FileSystemOperationRunner::CreateLocalFileSystemOperation(
+    const FileSystemURL& url, base::PlatformFileError* error) {
+  FileSystemOperation* operation =
+      file_system_context_->CreateFileSystemOperation(url, error);
+  if (!operation)
+    return NULL;
+  if (!operation->AsLocalFileSystemOperation()) {
+    *error = base::PLATFORM_FILE_ERROR_INVALID_OPERATION;
+    delete operation;
+    return NULL;
+  }
+  return operation;
 }
 
 }  // namespace fileapi
