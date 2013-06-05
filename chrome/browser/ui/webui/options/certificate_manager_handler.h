@@ -137,7 +137,14 @@ class CertificateManagerHandler
   void Populate(const base::ListValue* args);
 
   // Populate the given tab's tree.
-  void PopulateTree(const std::string& tab_name, net::CertType type);
+  void PopulateTree(const std::string& tab_name,
+                    net::CertType type,
+                    const net::CertificateList& web_trust_certs);
+
+  // Populate the tree after retrieving the list of policy-installed
+  // web-trusted certificates.
+  void OnPolicyWebTrustCertsRetrieved(
+      const net::CertificateList& web_trust_certs);
 
   // Display a WebUI error message box.
   void ShowError(const std::string& title, const std::string& error) const;

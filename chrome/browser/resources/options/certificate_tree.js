@@ -64,6 +64,15 @@ cr.define('options', function() {
           badge, treeItem.labelElement.firstChild);
     }
 
+    if (data.policy) {
+      var policyIndicator = new options.ControlledSettingIndicator();
+      policyIndicator.controlledBy = 'policy';
+      policyIndicator.setAttribute(
+          'textpolicy', loadTimeData.getString('certPolicyInstalled'));
+      policyIndicator.classList.add('cert-policy');
+      treeItem.labelElement.appendChild(policyIndicator);
+    }
+
     return treeItem;
   }
 

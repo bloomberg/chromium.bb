@@ -19,6 +19,7 @@
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/certificate_viewer.h"
+#include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/ui/certificate_dialogs.h"
 #include "chrome/browser/ui/chrome_select_file_policy.h"
 #include "chrome/browser/ui/crypto_module_password_dialog.h"
@@ -28,6 +29,7 @@
 #include "grit/generated_resources.h"
 #include "net/base/crypto_module.h"
 #include "net/base/net_errors.h"
+#include "net/cert/cert_trust_anchor_provider.h"
 #include "net/cert/x509_certificate.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -48,6 +50,7 @@ static const char kUntrustedId[] = "untrusted";
 static const char kExtractableId[] = "extractable";
 static const char kSecurityDeviceId[] = "device";
 static const char kErrorId[] = "error";
+static const char kPolicyTrustedId[] = "policy";
 
 // Enumeration of different callers of SelectFile.  (Start counting at 1 so
 // if SelectFile is accidentally called with params=NULL it won't match any.)
@@ -106,6 +109,43 @@ std::string NetErrorToString(int net_error) {
     default:
       return l10n_util::GetStringUTF8(IDS_CERT_MANAGER_UNKNOWN_ERROR);
   }
+}
+
+// Struct to bind the Equals member function to an object for use in find_if.
+struct CertEquals {
+  explicit CertEquals(const net::X509Certificate* cert) : cert_(cert) {}
+  bool operator()(const net::X509Certificate* cert) const {
+    return cert_->Equals(cert);
+  }
+  const net::X509Certificate* cert_;
+};
+
+#if defined(OS_CHROMEOS)
+net::CertificateList CopyPolicyWebTrustCerts(
+    net::CertTrustAnchorProvider* provider) {
+  // Return a copy.
+  return provider->GetAdditionalTrustAnchors();
+}
+
+void RetrievePolicyWebTrustCerts(
+    base::Callback<void(const net::CertificateList&)> on_completion) {
+  net::CertTrustAnchorProvider* provider =
+      g_browser_process->browser_policy_connector()->
+          GetCertTrustAnchorProvider();
+  // Retrieve the anchors on the IO thread.
+  BrowserThread::PostTaskAndReplyWithResult(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&CopyPolicyWebTrustCerts, base::Unretained(provider)),
+      on_completion);
+}
+#endif
+
+// Determine whether a certificate was stored with web trust by a policy.
+bool IsPolicyInstalledWithWebTrust(
+    const net::CertificateList& web_trust_certs,
+    net::X509Certificate* cert) {
+  return std::find_if(web_trust_certs.begin(), web_trust_certs.end(),
+                      CertEquals(cert)) != web_trust_certs.end();
 }
 
 }  // namespace
@@ -366,6 +406,8 @@ void CertificateManagerHandler::GetLocalizedValues(
   // Badges next to certificates
   localized_strings->SetString("badgeCertUntrusted",
       l10n_util::GetStringUTF16(IDS_CERT_MANAGER_UNTRUSTED));
+  localized_strings->SetString("certPolicyInstalled",
+      l10n_util::GetStringUTF16(IDS_CERT_MANAGER_POLICY_INSTALLED));
 
 #if defined(OS_CHROMEOS)
   localized_strings->SetString("importAndBindCertificate",
@@ -461,11 +503,13 @@ void CertificateManagerHandler::RegisterMessages() {
 }
 
 void CertificateManagerHandler::CertificatesRefreshed() {
-  PopulateTree("personalCertsTab", net::USER_CERT);
-  PopulateTree("serverCertsTab", net::SERVER_CERT);
-  PopulateTree("caCertsTab", net::CA_CERT);
-  PopulateTree("otherCertsTab", net::UNKNOWN_CERT);
-  VLOG(1) << "populating finished";
+#if defined(OS_CHROMEOS)
+  RetrievePolicyWebTrustCerts(
+      base::Bind(&CertificateManagerHandler::OnPolicyWebTrustCertsRetrieved,
+                 weak_ptr_factory_.GetWeakPtr()));
+#else
+  OnPolicyWebTrustCertsRetrieved(net::CertificateList());
+#endif
 }
 
 void CertificateManagerHandler::FileSelected(const base::FilePath& path,
@@ -960,8 +1004,10 @@ void CertificateManagerHandler::Populate(const ListValue* args) {
   certificate_manager_model_->Refresh();
 }
 
-void CertificateManagerHandler::PopulateTree(const std::string& tab_name,
-                                             net::CertType type) {
+void CertificateManagerHandler::PopulateTree(
+    const std::string& tab_name,
+    net::CertType type,
+    const net::CertificateList& web_trust_certs) {
   const std::string tree_name = tab_name + "-tree";
 
   scoped_ptr<icu::Collator> collator;
@@ -998,9 +1044,14 @@ void CertificateManagerHandler::PopulateTree(const std::string& tab_name,
         cert_dict->SetBoolean(
             kReadOnlyId,
             certificate_manager_model_->cert_db()->IsReadOnly(cert));
+        // Policy-installed certificates with web trust are trusted.
+        bool policy_trusted =
+            IsPolicyInstalledWithWebTrust(web_trust_certs, cert);
         cert_dict->SetBoolean(
             kUntrustedId,
-            certificate_manager_model_->cert_db()->IsUntrusted(cert));
+            !policy_trusted &&
+                certificate_manager_model_->cert_db()->IsUntrusted(cert));
+        cert_dict->SetBoolean(kPolicyTrustedId, policy_trusted);
         // TODO(hshi): This should be determined by testing for PKCS #11
         // CKA_EXTRACTABLE attribute. We may need to use the NSS function
         // PK11_ReadRawAttribute to do that.
@@ -1022,6 +1073,15 @@ void CertificateManagerHandler::PopulateTree(const std::string& tab_name,
     args.Append(nodes);
     web_ui()->CallJavascriptFunction("CertificateManager.onPopulateTree", args);
   }
+}
+
+void CertificateManagerHandler::OnPolicyWebTrustCertsRetrieved(
+    const net::CertificateList& web_trust_certs) {
+  PopulateTree("personalCertsTab", net::USER_CERT, web_trust_certs);
+  PopulateTree("serverCertsTab", net::SERVER_CERT, web_trust_certs);
+  PopulateTree("caCertsTab", net::CA_CERT, web_trust_certs);
+  PopulateTree("otherCertsTab", net::UNKNOWN_CERT, web_trust_certs);
+  VLOG(1) << "populating finished";
 }
 
 void CertificateManagerHandler::ShowError(const std::string& title,

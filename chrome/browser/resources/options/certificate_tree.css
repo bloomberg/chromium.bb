@@ -10,3 +10,8 @@ span.cert-untrusted {
   padding-left: 1px;
   padding-right: 1px;
 }
+
+span.cert-policy {
+  margin-left: 3px;
+  vertical-align: middle;
+}
