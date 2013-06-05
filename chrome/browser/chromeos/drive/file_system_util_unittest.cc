@@ -164,11 +164,13 @@ TEST(FileSystemUtilTest, EscapeUnescapeCacheFileName) {
   EXPECT_EQ(kUnescapedFileName, UnescapeCacheFileName(kEscapedFileName));
 }
 
-TEST(FileSystemUtilTest, EscapeUtf8FileName) {
-  EXPECT_EQ("", EscapeUtf8FileName(""));
-  EXPECT_EQ("foo", EscapeUtf8FileName("foo"));
-  EXPECT_EQ("foo\xE2\x88\x95zzz", EscapeUtf8FileName("foo/zzz"));
-  EXPECT_EQ("\xE2\x88\x95\xE2\x88\x95\xE2\x88\x95", EscapeUtf8FileName("///"));
+TEST(FileSystemUtilTest, NormalizeFileName) {
+  EXPECT_EQ("", NormalizeFileName(""));
+  EXPECT_EQ("foo", NormalizeFileName("foo"));
+  EXPECT_EQ("foo\xE2\x88\x95zzz", NormalizeFileName("foo/zzz"));
+  EXPECT_EQ("\xE2\x88\x95\xE2\x88\x95\xE2\x88\x95", NormalizeFileName("///"));
+  // Japanese hiragana "hi" + semi-voiced-mark is normalized to "pi".
+  EXPECT_EQ("\xE3\x81\xB4", NormalizeFileName("\xE3\x81\xB2\xE3\x82\x9A"));
 }
 
 TEST(FileSystemUtilTest, GetCacheRootPath) {

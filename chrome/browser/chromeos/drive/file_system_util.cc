@@ -11,6 +11,7 @@
 #include "base/bind_helpers.h"
 #include "base/file_util.h"
 #include "base/files/file_path.h"
+#include "base/i18n/icu_string_conversions.h"
 #include "base/json/json_file_value_serializer.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop_proxy.h"
@@ -288,12 +289,14 @@ std::string UnescapeCacheFileName(const std::string& filename) {
   return unescaped;
 }
 
-std::string EscapeUtf8FileName(const std::string& input) {
-  std::string output;
-  if (ReplaceChars(input, kSlash, std::string(kEscapedSlash), &output))
-    return output;
+std::string NormalizeFileName(const std::string& input) {
+  DCHECK(IsStringUTF8(input));
 
-  return input;
+  std::string output;
+  if (!base::ConvertToUtf8AndNormalize(input, base::kCodepageUTF8, &output))
+    output = input;
+  ReplaceChars(output, kSlash, std::string(kEscapedSlash), &output);
+  return output;
 }
 
 void ParseCacheFilePath(const base::FilePath& path,

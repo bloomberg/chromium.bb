@@ -24,7 +24,7 @@ void SetBaseNameFromTitle(ResourceEntry* entry) {
       entry->file_specific_info().is_hosted_document()) {
     base_name += entry->file_specific_info().document_extension();
   }
-  entry->set_base_name(util::EscapeUtf8FileName(base_name));
+  entry->set_base_name(util::NormalizeFileName(base_name));
 }
 
 // Creates an entry by copying |source|, and setting the base name properly.

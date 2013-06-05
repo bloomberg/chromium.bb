@@ -137,9 +137,11 @@ std::string EscapeCacheFileName(const std::string& filename);
 // This is the inverse of EscapeCacheFileName.
 std::string UnescapeCacheFileName(const std::string& filename);
 
-// Escapes forward slashes from file names with magic unicode character
-// \u2215 pretty much looks the same in UI.
-std::string EscapeUtf8FileName(const std::string& input);
+// Converts the given string to a form suitable as a file name. Specifically,
+// - Normalizes in Unicode Normalization Form C.
+// - Replaces slashes '/' with \u2215 that pretty much looks the same in UI.
+// |input| must be a valid UTF-8 encoded string.
+std::string NormalizeFileName(const std::string& input);
 
 // Gets the cache root path (i.e. <user_profile_dir>/GCache/v1) from the
 // profile.

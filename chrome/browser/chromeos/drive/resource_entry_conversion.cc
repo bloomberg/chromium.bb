@@ -43,7 +43,7 @@ ResourceEntry ConvertToResourceEntry(
   // interface and other client to use the 'title' attribute, instead of
   // 'filename', as the file name in the local snapshot.
   output.set_title(input.title());
-  output.set_base_name(util::EscapeUtf8FileName(output.title()));
+  output.set_base_name(util::NormalizeFileName(output.title()));
   output.set_resource_id(input.resource_id());
 
   // Sets parent Resource ID. On drive.google.com, a file can have multiple
@@ -89,7 +89,7 @@ ResourceEntry ConvertToResourceEntry(
       const std::string document_extension = input.GetHostedDocumentExtension();
       file_specific_info->set_document_extension(document_extension);
       output.set_base_name(
-          util::EscapeUtf8FileName(output.title() + document_extension));
+          util::NormalizeFileName(output.title() + document_extension));
 
       // We don't know the size of hosted docs and it does not matter since
       // is has no effect on the quota.
