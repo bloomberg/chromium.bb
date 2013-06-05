@@ -537,13 +537,11 @@ class SyncDataModel(object):
     self._entries = {}
 
     self.ResetStoreBirthday()
-
     self.migration_history = MigrationHistory()
-
     self.induced_error = sync_pb2.ClientToServerResponse.Error()
     self.induced_error_frequency = 0
     self.sync_count_before_errors = 0
-
+    self.acknowledge_managed_users = False
     self._keys = [MakeNewKeystoreKey()]
 
   def _SaveEntry(self, entry):
@@ -731,6 +729,8 @@ class SyncDataModel(object):
     if (sieve.GetCreateMobileBookmarks() and
         first_time_types.count(BOOKMARK) > 0):
       self.TriggerCreateSyncedBookmarks()
+
+    self.TriggerAcknowledgeManagedUsers()
 
     change_log = sorted(self._entries.values(),
                         key=operator.attrgetter('version'))
@@ -1086,6 +1086,21 @@ class SyncDataModel(object):
     nigori_tag = "google_chrome_nigori"
     self._SaveEntry(self._entries.get(self._ServerTagToId(nigori_tag)))
 
+  def TriggerAcknowledgeManagedUsers(self):
+    """Set the "acknowledged" flag for any managed user entities that don't have
+       it set already.
+    """
+
+    if not self.acknowledge_managed_users:
+      return
+
+    managed_users = [copy.deepcopy(entry) for entry in self._entries.values()
+                     if entry.specifics.HasField('managed_user')
+                     and not entry.specifics.managed_user.acknowledged]
+    for user in managed_users:
+      user.specifics.managed_user.acknowledged = True
+      self._SaveEntry(user)
+
   def SetInducedError(self, error, error_frequency,
                       sync_count_before_errors):
     self.induced_error = error
@@ -1257,6 +1272,14 @@ class TestServer(object):
         200,
         '<html><title>Rotate Keystore Keys</title>'
             '<H1>Rotate Keystore Keys</H1></html>')
+
+  def HandleEnableManagedUserAcknowledgement(self):
+    """Enable acknowledging newly created managed users."""
+    self.account.acknowledge_managed_users = True
+    return (
+        200,
+        '<html><title>Enable Managed User Acknowledgement</title>'
+            '<h1>Enable Managed User Acknowledgement</h1></html>')
 
   def HandleCommand(self, query, raw_request):
     """Decode and handle a sync command from a raw input of bytes.

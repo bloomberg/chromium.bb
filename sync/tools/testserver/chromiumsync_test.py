@@ -11,6 +11,7 @@ import unittest
 import autofill_specifics_pb2
 import bookmark_specifics_pb2
 import chromiumsync
+import managed_user_specifics_pb2
 import sync_pb2
 import theme_specifics_pb2
 
@@ -597,6 +598,30 @@ class SyncDataModelTest(unittest.TestCase):
         self.ExpectedPermanentItemCount(chromiumsync.BOOKMARK),
         len(changes))
     self.assertEqual(version2, version)
+
+  def testAcknowledgeManagedUser(self):
+    # Create permanent items.
+    self.GetChangesFromTimestamp([chromiumsync.MANAGED_USER], 0)
+    proto = sync_pb2.SyncEntity()
+    proto.id_string = 'abcd'
+    proto.version = 0
+
+    # Make sure the managed_user field exists.
+    proto.specifics.managed_user.acknowledged = False
+    self.assertTrue(proto.specifics.HasField('managed_user'))
+    self.AddToModel(proto)
+    version1, changes1, remaining1 = (
+        self.GetChangesFromTimestamp([chromiumsync.MANAGED_USER], 0))
+    for change in changes1:
+      self.assertTrue(not change.specifics.managed_user.acknowledged)
+
+    # Turn on managed user acknowledgement
+    self.model.acknowledge_managed_users = True
+
+    version2, changes2, remaining2 = (
+        self.GetChangesFromTimestamp([chromiumsync.MANAGED_USER], 0))
+    for change in changes2:
+      self.assertTrue(change.specifics.managed_user.acknowledged)
 
   def testGetKey(self):
     [key1] = self.model.GetKeystoreKeys()
