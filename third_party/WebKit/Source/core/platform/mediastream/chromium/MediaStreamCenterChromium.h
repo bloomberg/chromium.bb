@@ -34,14 +34,15 @@
 #include "core/platform/mediastream/MediaStreamCenter.h"
 
 #include "public/platform/WebMediaStreamCenterClient.h"
-#include <wtf/OwnPtr.h>
-#include <wtf/PassRefPtr.h>
-#include <wtf/text/WTFString.h>
+#include "wtf/OwnPtr.h"
+#include "wtf/PassRefPtr.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebKit {
 class WebMediaStream;
 class WebMediaStreamCenter;
 class WebMediaStreamTrack;
+class WebSourceInfo;
 }
 
 namespace WebCore {
@@ -57,6 +58,7 @@ public:
 
     // MediaStreamCenter
     virtual void queryMediaStreamSources(PassRefPtr<MediaStreamSourcesQueryClient>) OVERRIDE;
+    virtual bool getSourceInfos(const String& url, WebKit::WebVector<WebKit::WebSourceInfo>&) OVERRIDE;
     virtual void didSetMediaStreamTrackEnabled(MediaStreamDescriptor*, MediaStreamComponent*) OVERRIDE;
     virtual bool didAddMediaStreamTrack(MediaStreamDescriptor*, MediaStreamComponent*) OVERRIDE;
     virtual bool didRemoveMediaStreamTrack(MediaStreamDescriptor*, MediaStreamComponent*) OVERRIDE;

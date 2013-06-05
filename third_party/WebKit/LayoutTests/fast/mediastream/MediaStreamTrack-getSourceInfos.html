@@ -1,0 +1,49 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<html>
+<head>
+<link rel="stylesheet" href="../js/resources/js-test-style.css">
+<script src="../js/resources/js-test-pre.js"></script>
+</head>
+<body>
+<p id="description"></p>
+<div id="console"></div>
+<script>
+description("Tests MediaStreamTrack::getSourceInfos.");
+
+var sources = null;
+var previousId;
+
+function error() {
+    testFailed('Stream generation failed.');
+    finishJSTest();
+}
+
+function getUserMedia(constraints, callback) {
+    try {
+        navigator.webkitGetUserMedia(constraints, callback, error);
+    } catch (e) {
+        testFailed('webkitGetUserMedia threw exception :' + e);
+        finishJSTest();
+    }
+}
+
+function gotStream(s) {
+    shouldNotThrow('sources = MediaStreamTrack.getSourceInfos();');
+    shouldBeTrue('sources.length > 0');
+    shouldBeTrue('sources[0].id === previousId');
+    shouldBeTrue('sources[0].label.length > 0');
+    finishJSTest();
+}
+
+shouldNotThrow('sources = MediaStreamTrack.getSourceInfos();');
+shouldBeTrue('sources.length > 0');
+previousId = sources[0].id;
+
+getUserMedia({audio:true, video:true}, gotStream);
+
+window.jsTestIsAsync = true;
+window.successfullyParsed = true;
+</script>
+<script src="../js/resources/js-test-post.js"></script>
+</body>
+</html>

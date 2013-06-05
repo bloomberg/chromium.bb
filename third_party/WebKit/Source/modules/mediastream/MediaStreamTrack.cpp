@@ -27,8 +27,11 @@
 #include "modules/mediastream/MediaStreamTrack.h"
 
 #include "core/dom/Event.h"
+#include "core/dom/ScriptExecutionContext.h"
 #include "core/platform/mediastream/MediaStreamCenter.h"
 #include "core/platform/mediastream/MediaStreamComponent.h"
+#include "public/platform/WebSourceInfo.h"
+#include "weborigin/SecurityOrigin.h"
 
 namespace WebCore {
 
@@ -113,6 +116,22 @@ String MediaStreamTrack::readyState() const
 
     ASSERT_NOT_REACHED();
     return String();
+}
+
+SourceInfoVector MediaStreamTrack::getSourceInfos(ScriptExecutionContext* context, ExceptionCode& ec)
+{
+    WebKit::WebVector<WebKit::WebSourceInfo> webSourceInfos;
+    bool ok = MediaStreamCenter::instance().getSourceInfos(context->securityOrigin()->toString(), webSourceInfos);
+    if (!ok) {
+        ec = NOT_SUPPORTED_ERR;
+        return SourceInfoVector();
+    }
+
+    SourceInfoVector sourceInfos;
+    for (size_t i = 0; i < webSourceInfos.size(); ++i)
+        sourceInfos.append(SourceInfo::create(webSourceInfos[i]));
+
+    return sourceInfos;
 }
 
 bool MediaStreamTrack::ended() const

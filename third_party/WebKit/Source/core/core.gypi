@@ -3645,6 +3645,7 @@
             'platform/chromium/support/WebScrollbarThemeGeometryNative.cpp',
             'platform/chromium/support/WebScrollbarThemeGeometryNative.h',
             'platform/chromium/support/WebSocketStreamError.cpp',
+            'platform/chromium/support/WebSourceInfo.cpp',
             'platform/chromium/support/WebSpeechSynthesisUtterance.cpp',
             'platform/chromium/support/WebSpeechSynthesisVoice.cpp',
             'platform/chromium/support/WebSpeechSynthesizerClientImpl.cpp',

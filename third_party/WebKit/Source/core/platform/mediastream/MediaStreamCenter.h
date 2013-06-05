@@ -32,8 +32,14 @@
 #ifndef MediaStreamCenter_h
 #define MediaStreamCenter_h
 
-#include <wtf/PassRefPtr.h>
-#include <wtf/text/WTFString.h>
+#include "modules/mediastream/SourceInfo.h"
+#include "public/platform/WebVector.h"
+#include "wtf/PassRefPtr.h"
+#include "wtf/text/WTFString.h"
+
+namespace WebKit {
+class WebSourceInfo;
+}
 
 namespace WebCore {
 
@@ -48,6 +54,7 @@ public:
     static MediaStreamCenter& instance();
 
     virtual void queryMediaStreamSources(PassRefPtr<MediaStreamSourcesQueryClient>) = 0;
+    virtual bool getSourceInfos(const String& url, WebKit::WebVector<WebKit::WebSourceInfo>&) = 0;
 
     // Calls from the DOM objects to notify the platform
     virtual void didSetMediaStreamTrackEnabled(MediaStreamDescriptor*, MediaStreamComponent*) = 0;

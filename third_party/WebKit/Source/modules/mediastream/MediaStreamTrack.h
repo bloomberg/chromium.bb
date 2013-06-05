@@ -29,8 +29,10 @@
 #include "bindings/v8/ScriptWrappable.h"
 #include "core/dom/ActiveDOMObject.h"
 #include "core/dom/EventTarget.h"
+#include "core/dom/ExceptionBase.h"
 #include "core/platform/mediastream/MediaStreamDescriptor.h"
 #include "core/platform/mediastream/MediaStreamSource.h"
+#include "modules/mediastream/SourceInfo.h"
 #include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
 #include "wtf/Vector.h"
@@ -55,6 +57,8 @@ public:
     void didEndTrack();
 
     String readyState() const;
+
+    static SourceInfoVector getSourceInfos(ScriptExecutionContext*, ExceptionCode&);
 
     DEFINE_ATTRIBUTE_EVENT_LISTENER(mute);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(unmute);

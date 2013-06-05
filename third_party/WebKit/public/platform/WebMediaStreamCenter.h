@@ -31,18 +31,21 @@
 #ifndef WebMediaStreamCenter_h
 #define WebMediaStreamCenter_h
 
-#include "WebString.h"
+#include "WebVector.h"
 
 namespace WebKit {
 class WebMediaStream;
 class WebMediaStreamSourcesRequest;
 class WebMediaStreamTrack;
+class WebSourceInfo;
+class WebString;
 
 class WebMediaStreamCenter {
 public:
     virtual ~WebMediaStreamCenter() { }
 
     virtual void queryMediaStreamSources(const WebMediaStreamSourcesRequest&) = 0;
+    virtual bool getSourceInfos(const WebString& url, WebVector<WebSourceInfo>&) { return false; }
     virtual void didEnableMediaStreamTrack(const WebMediaStream&, const WebMediaStreamTrack&) = 0;
     virtual void didDisableMediaStreamTrack(const WebMediaStream&, const WebMediaStreamTrack&) = 0;
     virtual bool didAddMediaStreamTrack(const WebMediaStream&, const WebMediaStreamTrack&) { return false; };

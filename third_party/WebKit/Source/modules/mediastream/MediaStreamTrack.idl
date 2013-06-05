@@ -23,7 +23,6 @@
  */
 
 [
-    NoInterfaceObject,
     EventTarget,
     ActiveDOMObject
 ] interface MediaStreamTrack {
@@ -37,6 +36,8 @@
     attribute EventListener onmute;
     attribute EventListener onunmute;
     attribute EventListener onended;
+
+    [CallWith=ScriptExecutionContext, RaisesException] static sequence<SourceInfo> getSourceInfos();
 
     // EventTarget interface
     void addEventListener(DOMString type,
