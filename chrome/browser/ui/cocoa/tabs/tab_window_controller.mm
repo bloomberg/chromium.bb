@@ -101,27 +101,6 @@
   [self setUseOverlay:YES];
 }
 
-// if |useOverlay| is true, we're moving views into the overlay's content
-// area. If false, we're moving out of the overlay back into the window's
-// content.
-- (void)moveViewsBetweenWindowAndOverlay:(BOOL)useOverlay {
-  if (useOverlay) {
-    [[[overlayWindow_ contentView] superview] addSubview:[self tabStripView]];
-    // Add the original window's content view as a subview of the overlay
-    // window's content view.  We cannot simply use setContentView: here because
-    // the overlay window has a different content size (due to it being
-    // borderless).
-    [[overlayWindow_ contentView] addSubview:cachedContentView_];
-  } else {
-    [[self window] setContentView:cachedContentView_];
-    // The TabStripView always needs to be in front of the window's content
-    // view and therefore it should always be added after the content view is
-    // set.
-    [[[[self window] contentView] superview] addSubview:[self tabStripView]];
-    [[[[self window] contentView] superview] updateTrackingAreas];
-  }
-}
-
 // If |useOverlay| is YES, creates a new overlay window and puts the tab strip
 // and the content area inside of it. This allows it to have a different opacity
 // from the title bar. If NO, returns everything to the previous state and
@@ -133,7 +112,8 @@
                                              object:nil];
   NSWindow* window = [self window];
   if (useOverlay && !overlayWindow_) {
-    DCHECK(!cachedContentView_);
+    DCHECK(!originalContentView_);
+
     overlayWindow_ = [[TabWindowOverlayWindow alloc]
                          initWithContentRect:[window frame]
                                    styleMask:NSBorderlessWindowMask
@@ -143,29 +123,47 @@
     [overlayWindow_ setBackgroundColor:[NSColor clearColor]];
     [overlayWindow_ setOpaque:NO];
     [overlayWindow_ setDelegate:self];
-    cachedContentView_ = [window contentView];
+
+    originalContentView_ = [window contentView];
     [window addChildWindow:overlayWindow_ ordered:NSWindowAbove];
-    // Sets explictly nil to the responder and then restores it.
-    // Leaving the first responder non-null here
-    // causes [RenderWidgethostViewCocoa resignFirstResponder] and
-    // following RenderWidgetHost::Blur(), which results unexpected
-    // focus lost.
+
+    // Explicitly set the responder to be nil here (for restoring later).
+    // If the first responder were to be left non-nil here then
+    // [RenderWidgethostViewCocoa resignFirstResponder] would be called,
+    // followed by RenderWidgetHost::Blur(), which would result in an unexpected
+    // loss of focus.
     focusBeforeOverlay_.reset([[FocusTracker alloc] initWithWindow:window]);
     [window makeFirstResponder:nil];
-    [self moveViewsBetweenWindowAndOverlay:useOverlay];
+
+    // Move the original window's tab strip view and content view to the overlay
+    // window. The content view is added as a subview of the overlay window's
+    // content view (rather than using setContentView:) because the overlay
+    // window has a different content size (due to it being borderless).
+    [[[overlayWindow_ contentView] superview] addSubview:[self tabStripView]];
+    [[overlayWindow_ contentView] addSubview:originalContentView_];
+
     [overlayWindow_ orderFront:nil];
   } else if (!useOverlay && overlayWindow_) {
-    DCHECK(cachedContentView_);
-    [window setContentView:cachedContentView_];
-    [self moveViewsBetweenWindowAndOverlay:useOverlay];
+    DCHECK(originalContentView_);
+
+    // Return the original window's tab strip view and content view to their
+    // places. The TabStripView always needs to be in front of the window's
+    // content view and therefore it should always be added after the content
+    // view is set.
+    [window setContentView:originalContentView_];
+    [[[window contentView] superview] addSubview:[self tabStripView]];
+    [[[window contentView] superview] updateTrackingAreas];
+
     [focusBeforeOverlay_ restoreFocusInWindow:window];
-    focusBeforeOverlay_.reset(nil);
+    focusBeforeOverlay_.reset();
+
     [window display];
     [window removeChildWindow:overlayWindow_];
+
     [overlayWindow_ orderOut:nil];
     [overlayWindow_ release];
     overlayWindow_ = nil;
-    cachedContentView_ = nil;
+    originalContentView_ = nil;
   } else {
     NOTREACHED();
   }

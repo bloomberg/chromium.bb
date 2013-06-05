@@ -25,10 +25,14 @@
  @private
   scoped_nsobject<FastResizeView> tabContentArea_;
   scoped_nsobject<TabStripView> tabStripView_;
-  NSWindow* overlayWindow_;  // Used during dragging for window opacity tricks
-  NSView* cachedContentView_;  // Used during dragging for identifying which
-                               // view is the proper content area in the overlay
-                               // (weak)
+
+  // The child window used during dragging to achieve the opacity tricks.
+  NSWindow* overlayWindow_;
+
+  // The contentView of the original window that is moved (for the duration
+  // of the drag) to the |overlayWindow_|.
+  NSView* originalContentView_;  // weak
+
   scoped_nsobject<FocusTracker> focusBeforeOverlay_;
   BOOL closeDeferred_;  // If YES, call performClose: in removeOverlay:.
 }
