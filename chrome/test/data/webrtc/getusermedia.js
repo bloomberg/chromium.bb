@@ -172,16 +172,23 @@ function updateVideoTagSize_(videoTagId, width, height) {
 
 /**
  * @private
- * @param {string} videoTag The ID of the video tag + stream to
- *     write the size to a HTML tag based on id.
+ * @param {string} videoTag The ID of the video tag + stream used to
+ *     write the size to a HTML tag based on id if the div's exists.
  */
 function displayVideoSize_(videoTag) {
-  if (videoTag.videoWidth > 0 || videoTag.videoHeight > 0) {
-    $(videoTag.id + '-stream-size').innerHTML = '(stream size: ' +
-                                                videoTag.videoWidth + 'x' +
-                                                videoTag.videoHeight + ')';
+  if ($(videoTag.id + '-stream-size') && $(videoTag.id + '-size')) {
+    if (videoTag.videoWidth > 0 || videoTag.videoHeight > 0) {
+      $(videoTag.id + '-stream-size').innerHTML = '(stream size: ' +
+                                                  videoTag.videoWidth + 'x' +
+                                                  videoTag.videoHeight + ')';
+      $(videoTag.id + '-size').innerHTML = videoTag.width + 'x' +
+                                           videoTag.height;
+    }
   }
-  $(videoTag.id + '-size').innerHTML = videoTag.width + 'x' + videoTag.height;
+  else {
+    debug('Skipping updating -stream-size and -size tags due to div\'s are ' +
+          'missing');
+  }
 }
 
 /**
