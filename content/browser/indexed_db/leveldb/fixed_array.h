@@ -41,21 +41,21 @@ class FixedArray {
 #if defined(ADDRESS_SANITIZER)
     CHECK(i < Size);
 #endif
-    return m_data[i];
+    return data_[i];
   }
 
   const T& operator[](size_t i) const {
 #if defined(ADDRESS_SANITIZER)
     CHECK(i < Size);
 #endif
-    return m_data[i];
+    return data_[i];
   }
 
-  T* data() { return m_data; }
+  T* data() { return data_; }
   size_t size() const { return Size; }
 
  private:
-  T m_data[Size];
+  T data_[Size];
 };
 
 }  // namespace content

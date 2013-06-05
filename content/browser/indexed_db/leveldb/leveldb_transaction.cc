@@ -27,7 +27,7 @@ LevelDBTransaction::AVLTreeNode::~AVLTreeNode() {}
 
 void LevelDBTransaction::ClearTree() {
   TreeType::Iterator iterator;
-  iterator.start_iter_least(tree_);
+  iterator.StartIterLeast(&tree_);
 
   std::vector<AVLTreeNode*> nodes;
 
@@ -35,7 +35,7 @@ void LevelDBTransaction::ClearTree() {
     nodes.push_back(*iterator);
     ++iterator;
   }
-  tree_.purge();
+  tree_.Purge();
 
   for (size_t i = 0; i < nodes.size(); ++i)
     delete nodes[i];
@@ -53,12 +53,12 @@ void LevelDBTransaction::Set(const LevelDBSlice& key,
                              bool deleted) {
   DCHECK(!finished_);
   bool new_node = false;
-  AVLTreeNode* node = tree_.search(key);
+  AVLTreeNode* node = tree_.Search(key);
 
   if (!node) {
     node = new AVLTreeNode;
     InitVector(key, &node->key);
-    tree_.insert(node);
+    tree_.Insert(node);
     new_node = true;
   }
   node->value = value;
@@ -82,7 +82,7 @@ bool LevelDBTransaction::Get(const LevelDBSlice& key,
                              bool& found) {
   found = false;
   DCHECK(!finished_);
-  AVLTreeNode* node = tree_.search(key);
+  AVLTreeNode* node = tree_.Search(key);
 
   if (node) {
     if (node->deleted)
@@ -104,7 +104,7 @@ bool LevelDBTransaction::Get(const LevelDBSlice& key,
 bool LevelDBTransaction::Commit() {
   DCHECK(!finished_);
 
-  if (tree_.is_empty()) {
+  if (tree_.IsEmpty()) {
     finished_ = true;
     return true;
   }
@@ -112,7 +112,7 @@ bool LevelDBTransaction::Commit() {
   scoped_ptr<LevelDBWriteBatch> write_batch = LevelDBWriteBatch::Create();
 
   TreeType::Iterator iterator;
-  iterator.start_iter_least(tree_);
+  iterator.StartIterLeast(&tree_);
 
   while (*iterator) {
     AVLTreeNode* node = *iterator;
@@ -149,15 +149,15 @@ LevelDBTransaction::TreeIterator::Create(LevelDBTransaction* transaction) {
 bool LevelDBTransaction::TreeIterator::IsValid() const { return !!*iterator_; }
 
 void LevelDBTransaction::TreeIterator::SeekToLast() {
-  iterator_.start_iter_greatest(*tree_);
+  iterator_.StartIterGreatest(tree_);
   if (IsValid())
     key_ = (*iterator_)->key;
 }
 
 void LevelDBTransaction::TreeIterator::Seek(const LevelDBSlice& target) {
-  iterator_.start_iter(*tree_, target, TreeType::EQUAL);
+  iterator_.StartIter(tree_, target, TreeType::EQUAL);
   if (!IsValid())
-    iterator_.start_iter(*tree_, target, TreeType::GREATER);
+    iterator_.StartIter(tree_, target, TreeType::GREATER);
 
   if (IsValid())
     key_ = (*iterator_)->key;
@@ -203,7 +203,7 @@ bool LevelDBTransaction::TreeIterator::IsDeleted() const {
 
 void LevelDBTransaction::TreeIterator::Reset() {
   DCHECK(IsValid());
-  iterator_.start_iter(*tree_, LevelDBSlice(key_), TreeType::EQUAL);
+  iterator_.StartIter(tree_, LevelDBSlice(key_), TreeType::EQUAL);
   DCHECK(IsValid());
 }
 

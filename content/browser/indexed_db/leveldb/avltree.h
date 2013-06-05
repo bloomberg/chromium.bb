@@ -61,10 +61,10 @@ namespace content {
 //     ANY_bitref operator [] (unsigned index);
 //
 //     // Set all bits to 1.
-//     void set();
+//     void Set();
 //
 //     // Set all bits to 0.
-//     void reset();
+//     void Reset();
 //   };
 
 template <unsigned maxDepth>
@@ -74,19 +74,19 @@ class AVLTreeDefaultBSet {
 #if defined(ADDRESS_SANITIZER)
     CHECK(i < maxDepth);
 #endif
-    return m_data[i];
+    return data_[i];
   }
-  void set() {
+  void Set() {
     for (unsigned i = 0; i < maxDepth; ++i)
-      m_data[i] = true;
+      data_[i] = true;
   }
-  void reset() {
+  void Reset() {
     for (unsigned i = 0; i < maxDepth; ++i)
-      m_data[i] = false;
+      data_[i] = false;
   }
 
  private:
-  FixedArray<bool, maxDepth> m_data;
+  FixedArray<bool, maxDepth> data_;
 };
 
 // How to determine maxDepth:
@@ -158,45 +158,45 @@ class AVLTree {
     GREATER_EQUAL = EQUAL | GREATER
   };
 
-  Abstractor& abstractor() { return abs; }
+  Abstractor& abstractor() { return abs_; }
 
-  inline handle insert(handle h);
+  inline handle Insert(handle h);
 
-  inline handle search(key k, SearchType st = EQUAL);
-  inline handle search_least();
-  inline handle search_greatest();
+  inline handle Search(key k, SearchType st = EQUAL);
+  inline handle SearchLeast();
+  inline handle SearchGreatest();
 
-  inline handle remove(key k);
+  inline handle Remove(key k);
 
-  inline handle subst(handle new_node);
+  inline handle Subst(handle new_node);
 
-  void purge() { abs.root = null(); }
+  void Purge() { abs_.root = Null(); }
 
-  bool is_empty() { return abs.root == null(); }
+  bool IsEmpty() { return abs_.root == Null(); }
 
-  AVLTree() { abs.root = null(); }
+  AVLTree() { abs_.root = Null(); }
 
   class Iterator {
    public:
     // Initialize depth to invalid value, to indicate iterator is
     // invalid.   (Depth is zero-base.)
-    Iterator() { depth = ~0U; }
+    Iterator() { depth_ = ~0U; }
 
-    void start_iter(AVLTree& tree, key k, SearchType st = EQUAL) {
+    void StartIter(AVLTree* tree, key k, SearchType st = EQUAL) {
       // Mask of high bit in an int.
-      const int kMaskHighBit = (int) ~((~(unsigned) 0) >> 1);
+      const int kMaskHighBit = static_cast<int>(~((~(unsigned)0) >> 1));
 
       // Save the tree that we're going to iterate through in a
       // member variable.
-      tree_ = &tree;
+      tree_ = tree;
 
       int cmp, target_cmp;
-      handle h = tree_->abs.root;
+      handle h = tree_->abs_.root;
       unsigned d = 0;
 
-      depth = ~0U;
+      depth_ = ~0U;
 
-      if (h == null()) {
+      if (h == Null()) {
         // Tree is empty.
         return;
       }
@@ -213,152 +213,152 @@ class AVLTree {
       }
 
       for (;;) {
-        cmp = cmp_k_n(k, h);
+        cmp = CmpKN(k, h);
         if (cmp == 0) {
           if (st & EQUAL) {
             // Equal node was sought and found as starting node.
-            depth = d;
+            depth_ = d;
             break;
           }
           cmp = -target_cmp;
         } else if (target_cmp != 0) {
           if (!((cmp ^ target_cmp) & kMaskHighBit)) {
             // cmp and target_cmp are both negative or both positive.
-            depth = d;
+            depth_ = d;
           }
         }
-        h = cmp < 0 ? get_lt(h) : get_gt(h);
-        if (h == null())
+        h = cmp < 0 ? GetLT(h) : GetGT(h);
+        if (h == Null())
           break;
-        branch[d] = cmp > 0;
-        path_h[d++] = h;
+        branch_[d] = cmp > 0;
+        path_h_[d++] = h;
       }
     }
 
-    void start_iter_least(AVLTree& tree) {
-      tree_ = &tree;
+    void StartIterLeast(AVLTree* tree) {
+      tree_ = tree;
 
-      handle h = tree_->abs.root;
+      handle h = tree_->abs_.root;
 
-      depth = ~0U;
+      depth_ = ~0U;
 
-      branch.reset();
+      branch_.Reset();
 
-      while (h != null()) {
-        if (depth != ~0U)
-          path_h[depth] = h;
-        depth++;
-        h = get_lt(h);
+      while (h != Null()) {
+        if (depth_ != ~0U)
+          path_h_[depth_] = h;
+        depth_++;
+        h = GetLT(h);
       }
     }
 
-    void start_iter_greatest(AVLTree& tree) {
-      tree_ = &tree;
+    void StartIterGreatest(AVLTree* tree) {
+      tree_ = tree;
 
-      handle h = tree_->abs.root;
+      handle h = tree_->abs_.root;
 
-      depth = ~0U;
+      depth_ = ~0U;
 
-      branch.set();
+      branch_.Set();
 
-      while (h != null()) {
-        if (depth != ~0U)
-          path_h[depth] = h;
-        depth++;
-        h = get_gt(h);
+      while (h != Null()) {
+        if (depth_ != ~0U)
+          path_h_[depth_] = h;
+        depth_++;
+        h = GetGT(h);
       }
     }
 
     handle operator*() {
-      if (depth == ~0U)
-        return null();
+      if (depth_ == ~0U)
+        return Null();
 
-      return depth == 0 ? tree_->abs.root : path_h[depth - 1];
+      return depth_ == 0 ? tree_->abs_.root : path_h_[depth_ - 1];
     }
 
     void operator++() {
-      if (depth != ~0U) {
-        handle h = get_gt(**this);
-        if (h == null()) {
+      if (depth_ != ~0U) {
+        handle h = GetGT(**this);
+        if (h == Null()) {
           do {
-            if (depth == 0) {
-              depth = ~0U;
+            if (depth_ == 0) {
+              depth_ = ~0U;
               break;
             }
-            depth--;
-          } while (branch[depth]);
+            depth_--;
+          } while (branch_[depth_]);
         } else {
-          branch[depth] = true;
-          path_h[depth++] = h;
+          branch_[depth_] = true;
+          path_h_[depth_++] = h;
           for (;;) {
-            h = get_lt(h);
-            if (h == null())
+            h = GetLT(h);
+            if (h == Null())
               break;
-            branch[depth] = false;
-            path_h[depth++] = h;
+            branch_[depth_] = false;
+            path_h_[depth_++] = h;
           }
         }
       }
     }
 
     void operator--() {
-      if (depth != ~0U) {
-        handle h = get_lt(**this);
-        if (h == null()) {
+      if (depth_ != ~0U) {
+        handle h = GetLT(**this);
+        if (h == Null()) {
           do {
-            if (depth == 0) {
-              depth = ~0U;
+            if (depth_ == 0) {
+              depth_ = ~0U;
               break;
             }
-            depth--;
-          } while (!branch[depth]);
+            depth_--;
+          } while (!branch_[depth_]);
         } else {
-          branch[depth] = false;
-          path_h[depth++] = h;
+          branch_[depth_] = false;
+          path_h_[depth_++] = h;
           for (;;) {
-            h = get_gt(h);
-            if (h == null())
+            h = GetGT(h);
+            if (h == Null())
               break;
-            branch[depth] = true;
-            path_h[depth++] = h;
+            branch_[depth_] = true;
+            path_h_[depth_++] = h;
           }
         }
       }
     }
 
-    void operator++(int) { ++(*this); }
-    void operator--(int) { --(*this); }
+    void operator++(int /*ignored*/) { ++(*this); }
+    void operator--(int /*ignored*/) { --(*this); }
 
    protected:
-
     // Tree being iterated over.
     AVLTree* tree_;
 
-    // Records a path into the tree.  If branch[n] is true, indicates
+    // Records a path into the tree.  If branch_[n] is true, indicates
     // take greater branch from the nth node in the path, otherwise
-    // take the less branch.  branch[0] gives branch from root, and
+    // take the less branch.  branch_[0] gives branch from root, and
     // so on.
-    BSet branch;
+    BSet branch_;
 
     // Zero-based depth of path into tree.
-    unsigned depth;
+    unsigned depth_;
 
     // Handles of nodes in path from root to current node (returned by *).
-    handle path_h[maxDepth - 1];
+    const static size_t kPathSize = maxDepth - 1;
+    handle path_h_[kPathSize];
 
-    int cmp_k_n(key k, handle h) { return tree_->abs.compare_key_node(k, h); }
-    int cmp_n_n(handle h1, handle h2) {
-      return tree_->abs.compare_node_node(h1, h2);
+    int CmpKN(key k, handle h) { return tree_->abs_.CompareKeyNode(k, h); }
+    int CmpNN(handle h1, handle h2) {
+      return tree_->abs_.CompareNodeNode(h1, h2);
     }
-    handle get_lt(handle h) { return tree_->abs.get_less(h); }
-    handle get_gt(handle h) { return tree_->abs.get_greater(h); }
-    handle null() { return tree_->abs.null(); }
+    handle GetLT(handle h) { return tree_->abs_.GetLess(h); }
+    handle GetGT(handle h) { return tree_->abs_.GetGreater(h); }
+    handle Null() { return tree_->abs_.Null(); }
   };
 
   template <typename fwd_iter>
-  bool build(fwd_iter p, size num_nodes) {
+  bool Build(fwd_iter p, size num_nodes) {
     if (num_nodes == 0) {
-      abs.root = null();
+      abs_.root = Null();
       return true;
     }
 
@@ -382,7 +382,7 @@ class AVLTree {
     // together by having the "greater" handle of a node set to the
     // next node in the list.  "less_parent" is the handle of the first
     // node in the list.
-    handle less_parent = null();
+    handle less_parent = Null();
 
     // h is root of current subtree, child is one of its children.
     handle h, child;
@@ -406,20 +406,20 @@ class AVLTree {
         p++;
         child = *p;
         p++;
-        set_lt(child, null());
-        set_gt(child, null());
-        set_bf(child, 0);
-        set_gt(h, child);
-        set_lt(h, null());
-        set_bf(h, 1);
+        SetLT(child, Null());
+        SetGT(child, Null());
+        SetBF(child, 0);
+        SetGT(h, child);
+        SetLT(h, Null());
+        SetBF(h, 1);
       } else {  // num_sub == 1
                 // Build a subtree with one node.
 
         h = *p;
         p++;
-        set_lt(h, null());
-        set_gt(h, null());
-        set_bf(h, 0);
+        SetLT(h, Null());
+        SetGT(h, Null());
+        SetBF(h, 0);
       }
 
       while (depth) {
@@ -434,17 +434,17 @@ class AVLTree {
         // off the stack of less parents.
         child = h;
         h = less_parent;
-        less_parent = get_gt(h);
-        set_gt(h, child);
+        less_parent = GetGT(h);
+        SetGT(h, child);
         // num_sub = 2 * (num_sub - rem[depth]) + rem[depth] + 1
         num_sub <<= 1;
         num_sub += 1 - rem[depth];
         if (num_sub & (num_sub - 1)) {
           // num_sub is not a power of 2
-          set_bf(h, 0);
+          SetBF(h, 0);
         } else {
           // num_sub is a power of 2
-          set_bf(h, 1);
+          SetBF(h, 1);
         }
       }
 
@@ -459,25 +459,23 @@ class AVLTree {
       child = h;
       h = *p;
       p++;
-      set_lt(h, child);
+      SetLT(h, child);
 
       // Put h into stack of less parents.
-      set_gt(h, less_parent);
+      SetGT(h, less_parent);
       less_parent = h;
 
       // Proceed to creating greater than subtree of h.
       branch[depth] = true;
       num_sub += rem[depth++];
-
     }  // end for (;;)
 
-    abs.root = h;
+    abs_.root = h;
 
     return true;
   }
 
  protected:
-
   friend class Iterator;
 
   // Create a class whose sole purpose is to take advantage of
@@ -487,109 +485,108 @@ class AVLTree {
     handle root;
   };
 
-  abs_plus_root abs;
+  abs_plus_root abs_;
 
-  handle get_lt(handle h) { return abs.get_less(h); }
-  void set_lt(handle h, handle lh) { abs.set_less(h, lh); }
+  handle GetLT(handle h) { return abs_.GetLess(h); }
+  void SetLT(handle h, handle lh) { abs_.SetLess(h, lh); }
 
-  handle get_gt(handle h) { return abs.get_greater(h); }
-  void set_gt(handle h, handle gh) { abs.set_greater(h, gh); }
+  handle GetGT(handle h) { return abs_.GetGreater(h); }
+  void SetGT(handle h, handle gh) { abs_.SetGreater(h, gh); }
 
-  int get_bf(handle h) { return abs.get_balance_factor(h); }
-  void set_bf(handle h, int bf) { abs.set_balance_factor(h, bf); }
+  int GetBF(handle h) { return abs_.GetBalanceFactor(h); }
+  void SetBF(handle h, int bf) { abs_.SetBalanceFactor(h, bf); }
 
-  int cmp_k_n(key k, handle h) { return abs.compare_key_node(k, h); }
-  int cmp_n_n(handle h1, handle h2) { return abs.compare_node_node(h1, h2); }
+  int CmpKN(key k, handle h) { return abs_.CompareKeyNode(k, h); }
+  int CmpNN(handle h1, handle h2) { return abs_.CompareNodeNode(h1, h2); }
 
-  handle null() { return abs.null(); }
+  handle Null() { return abs_.Null(); }
 
  private:
-
   // Balances subtree, returns handle of root node of subtree
   // after balancing.
-  handle balance(handle bal_h) {
+  handle Balance(handle bal_h) {
     handle deep_h;
 
     // Either the "greater than" or the "less than" subtree of
     // this node has to be 2 levels deeper (or else it wouldn't
     // need balancing).
 
-    if (get_bf(bal_h) > 0) {
+    if (GetBF(bal_h) > 0) {
       // "Greater than" subtree is deeper.
 
-      deep_h = get_gt(bal_h);
+      deep_h = GetGT(bal_h);
 
-      if (get_bf(deep_h) < 0) {
+      if (GetBF(deep_h) < 0) {
         handle old_h = bal_h;
-        bal_h = get_lt(deep_h);
+        bal_h = GetLT(deep_h);
 
-        set_gt(old_h, get_lt(bal_h));
-        set_lt(deep_h, get_gt(bal_h));
-        set_lt(bal_h, old_h);
-        set_gt(bal_h, deep_h);
+        SetGT(old_h, GetLT(bal_h));
+        SetLT(deep_h, GetGT(bal_h));
+        SetLT(bal_h, old_h);
+        SetGT(bal_h, deep_h);
 
-        int bf = get_bf(bal_h);
+        int bf = GetBF(bal_h);
         if (bf != 0) {
           if (bf > 0) {
-            set_bf(old_h, -1);
-            set_bf(deep_h, 0);
+            SetBF(old_h, -1);
+            SetBF(deep_h, 0);
           } else {
-            set_bf(deep_h, 1);
-            set_bf(old_h, 0);
+            SetBF(deep_h, 1);
+            SetBF(old_h, 0);
           }
-          set_bf(bal_h, 0);
+          SetBF(bal_h, 0);
         } else {
-          set_bf(old_h, 0);
-          set_bf(deep_h, 0);
+          SetBF(old_h, 0);
+          SetBF(deep_h, 0);
         }
       } else {
-        set_gt(bal_h, get_lt(deep_h));
-        set_lt(deep_h, bal_h);
-        if (get_bf(deep_h) == 0) {
-          set_bf(deep_h, -1);
-          set_bf(bal_h, 1);
+        SetGT(bal_h, GetLT(deep_h));
+        SetLT(deep_h, bal_h);
+        if (GetBF(deep_h) == 0) {
+          SetBF(deep_h, -1);
+          SetBF(bal_h, 1);
         } else {
-          set_bf(deep_h, 0);
-          set_bf(bal_h, 0);
+          SetBF(deep_h, 0);
+          SetBF(bal_h, 0);
         }
         bal_h = deep_h;
       }
     } else {
       // "Less than" subtree is deeper.
 
-      deep_h = get_lt(bal_h);
+      deep_h = GetLT(bal_h);
 
-      if (get_bf(deep_h) > 0) {
+      if (GetBF(deep_h) > 0) {
         handle old_h = bal_h;
-        bal_h = get_gt(deep_h);
-        set_lt(old_h, get_gt(bal_h));
-        set_gt(deep_h, get_lt(bal_h));
-        set_gt(bal_h, old_h);
-        set_lt(bal_h, deep_h);
+        bal_h = GetGT(deep_h);
+        SetLT(old_h, GetGT(bal_h));
+        SetGT(deep_h, GetLT(bal_h));
+        SetGT(bal_h, old_h);
+        SetLT(bal_h, deep_h);
 
-        int bf = get_bf(bal_h);
+        int bf = GetBF(bal_h);
         if (bf != 0) {
           if (bf < 0) {
-            set_bf(old_h, 1);
-            set_bf(deep_h, 0);
+            SetBF(old_h, 1);
+            SetBF(deep_h, 0);
           } else {
-            set_bf(deep_h, -1);
-            set_bf(old_h, 0);
+            SetBF(deep_h, -1);
+            SetBF(old_h, 0);
           }
-          set_bf(bal_h, 0);
+          SetBF(bal_h, 0);
         } else {
-          set_bf(old_h, 0);
-          set_bf(deep_h, 0);
+          SetBF(old_h, 0);
+          SetBF(deep_h, 0);
         }
       } else {
-        set_lt(bal_h, get_gt(deep_h));
-        set_gt(deep_h, bal_h);
-        if (get_bf(deep_h) == 0) {
-          set_bf(deep_h, 1);
-          set_bf(bal_h, -1);
+        SetLT(bal_h, GetGT(deep_h));
+        SetGT(deep_h, bal_h);
+        if (GetBF(deep_h) == 0) {
+          SetBF(deep_h, 1);
+          SetBF(bal_h, -1);
         } else {
-          set_bf(deep_h, 0);
-          set_bf(bal_h, 0);
+          SetBF(deep_h, 0);
+          SetBF(bal_h, 0);
         }
         bal_h = deep_h;
       }
@@ -597,23 +594,22 @@ class AVLTree {
 
     return bal_h;
   }
-
 };
 
 template <class Abstractor, unsigned maxDepth, class BSet>
 inline typename AVLTree<Abstractor, maxDepth, BSet>::handle
-AVLTree<Abstractor, maxDepth, BSet>::insert(handle h) {
-  set_lt(h, null());
-  set_gt(h, null());
-  set_bf(h, 0);
+AVLTree<Abstractor, maxDepth, BSet>::Insert(handle h) {
+  SetLT(h, Null());
+  SetGT(h, Null());
+  SetBF(h, 0);
 
-  if (abs.root == null()) {
-    abs.root = h;
+  if (abs_.root == Null()) {
+    abs_.root = h;
   } else {
     // Last unbalanced node encountered in search for insertion point.
-    handle unbal = null();
+    handle unbal = Null();
     // Parent of last unbalanced node.
-    handle parent_unbal = null();
+    handle parent_unbal = Null();
     // Balance factor of last unbalanced node.
     int unbal_bf;
 
@@ -626,75 +622,75 @@ AVLTree<Abstractor, maxDepth, BSet>::insert(handle h) {
     // so on.
     BSet branch;
 
-    handle hh = abs.root;
-    handle parent = null();
+    handle hh = abs_.root;
+    handle parent = Null();
     int cmp;
 
     do {
-      if (get_bf(hh) != 0) {
+      if (GetBF(hh) != 0) {
         unbal = hh;
         parent_unbal = parent;
         unbal_depth = depth;
       }
-      cmp = cmp_n_n(h, hh);
+      cmp = CmpNN(h, hh);
       if (cmp == 0) {
         // Duplicate key.
         return hh;
       }
       parent = hh;
-      hh = cmp < 0 ? get_lt(hh) : get_gt(hh);
+      hh = cmp < 0 ? GetLT(hh) : GetGT(hh);
       branch[depth++] = cmp > 0;
-    } while (hh != null());
+    } while (hh != Null());
 
     //  Add node to insert as leaf of tree.
     if (cmp < 0)
-      set_lt(parent, h);
+      SetLT(parent, h);
     else
-      set_gt(parent, h);
+      SetGT(parent, h);
 
     depth = unbal_depth;
 
-    if (unbal == null()) {
-      hh = abs.root;
+    if (unbal == Null()) {
+      hh = abs_.root;
     } else {
       cmp = branch[depth++] ? 1 : -1;
-      unbal_bf = get_bf(unbal);
+      unbal_bf = GetBF(unbal);
       if (cmp < 0)
         unbal_bf--;
       else  // cmp > 0
         unbal_bf++;
-      hh = cmp < 0 ? get_lt(unbal) : get_gt(unbal);
+      hh = cmp < 0 ? GetLT(unbal) : GetGT(unbal);
       if ((unbal_bf != -2) && (unbal_bf != 2)) {
         // No rebalancing of tree is necessary.
-        set_bf(unbal, unbal_bf);
-        unbal = null();
+        SetBF(unbal, unbal_bf);
+        unbal = Null();
       }
     }
 
-    if (hh != null()) {
+    if (hh != Null()) {
       while (h != hh) {
         cmp = branch[depth++] ? 1 : -1;
         if (cmp < 0) {
-          set_bf(hh, -1);
-          hh = get_lt(hh);
+          SetBF(hh, -1);
+          hh = GetLT(hh);
         } else {  // cmp > 0
-          set_bf(hh, 1);
-          hh = get_gt(hh);
+          SetBF(hh, 1);
+          hh = GetGT(hh);
         }
       }
     }
 
-    if (unbal != null()) {
-      unbal = balance(unbal);
-      if (parent_unbal == null()) {
-        abs.root = unbal;
+    if (unbal != Null()) {
+      unbal = Balance(unbal);
+      if (parent_unbal == Null()) {
+        abs_.root = unbal;
       } else {
         depth = unbal_depth - 1;
         cmp = branch[depth] ? 1 : -1;
         if (cmp < 0)
-          set_lt(parent_unbal, unbal);
+          SetLT(parent_unbal, unbal);
         else  // cmp > 0
-          set_gt(parent_unbal, unbal);
+          SetGT(parent_unbal, unbal);
       }
     }
   }
@@ -704,14 +700,14 @@ AVLTree<Abstractor, maxDepth, BSet>::insert(handle h) {
 
 template <class Abstractor, unsigned maxDepth, class BSet>
 inline typename AVLTree<Abstractor, maxDepth, BSet>::handle
-AVLTree<Abstractor, maxDepth, BSet>::search(
+AVLTree<Abstractor, maxDepth, BSet>::Search(
     key k,
     typename AVLTree<Abstractor, maxDepth, BSet>::SearchType st) {
-  const int kMaskHighBit = (int) ~((~(unsigned) 0) >> 1);
+  const int kMaskHighBit = static_cast<int>(~((~(unsigned)0) >> 1));
 
   int cmp, target_cmp;
-  handle match_h = null();
-  handle h = abs.root;
+  handle match_h = Null();
+  handle h = abs_.root;
 
   if (st & LESS)
     target_cmp = 1;
@@ -720,8 +716,8 @@ AVLTree<Abstractor, maxDepth, BSet>::search(
   else
     target_cmp = 0;
 
-  while (h != null()) {
-    cmp = cmp_k_n(k, h);
+  while (h != Null()) {
+    cmp = CmpKN(k, h);
     if (cmp == 0) {
       if (st & EQUAL) {
         match_h = h;
@@ -734,7 +730,7 @@ AVLTree<Abstractor, maxDepth, BSet>::search(
         match_h = h;
       }
     }
-    h = cmp < 0 ? get_lt(h) : get_gt(h);
+    h = cmp < 0 ? GetLT(h) : GetGT(h);
   }
 
   return match_h;
@@ -742,12 +738,12 @@ AVLTree<Abstractor, maxDepth, BSet>::search(
 
 template <class Abstractor, unsigned maxDepth, class BSet>
 inline typename AVLTree<Abstractor, maxDepth, BSet>::handle
-AVLTree<Abstractor, maxDepth, BSet>::search_least() {
-  handle h = abs.root, parent = null();
+AVLTree<Abstractor, maxDepth, BSet>::SearchLeast() {
+  handle h = abs_.root, parent = Null();
 
-  while (h != null()) {
+  while (h != Null()) {
     parent = h;
-    h = get_lt(h);
+    h = GetLT(h);
   }
 
   return parent;
@@ -755,12 +751,12 @@ AVLTree<Abstractor, maxDepth, BSet>::search_least() {
 
 template <class Abstractor, unsigned maxDepth, class BSet>
 inline typename AVLTree<Abstractor, maxDepth, BSet>::handle
-AVLTree<Abstractor, maxDepth, BSet>::search_greatest() {
-  handle h = abs.root, parent = null();
+AVLTree<Abstractor, maxDepth, BSet>::SearchGreatest() {
+  handle h = abs_.root, parent = Null();
 
-  while (h != null()) {
+  while (h != Null()) {
     parent = h;
-    h = get_gt(h);
+    h = GetGT(h);
   }
 
   return parent;
@@ -768,7 +764,7 @@ AVLTree<Abstractor, maxDepth, BSet>::search_greatest() {
 
 template <class Abstractor, unsigned maxDepth, class BSet>
 inline typename AVLTree<Abstractor, maxDepth, BSet>::handle
-AVLTree<Abstractor, maxDepth, BSet>::remove(key k) {
+AVLTree<Abstractor, maxDepth, BSet>::Remove(key k) {
   // Zero-based depth in tree.
   unsigned depth = 0, rm_depth;
 
@@ -778,22 +774,22 @@ AVLTree<Abstractor, maxDepth, BSet>::remove(key k) {
   // so on.
   BSet branch;
 
-  handle h = abs.root;
-  handle parent = null(), child;
+  handle h = abs_.root;
+  handle parent = Null(), child;
   int cmp, cmp_shortened_sub_with_path = 0;
 
   for (;;) {
-    if (h == null()) {
+    if (h == Null()) {
       // No node in tree with given key.
-      return null();
+      return Null();
     }
-    cmp = cmp_k_n(k, h);
+    cmp = CmpKN(k, h);
     if (cmp == 0) {
       // Found node to remove.
       break;
     }
     parent = h;
-    h = cmp < 0 ? get_lt(h) : get_gt(h);
+    h = cmp < 0 ? GetLT(h) : GetGT(h);
     branch[depth++] = cmp > 0;
     cmp_shortened_sub_with_path = cmp;
   }
@@ -808,31 +804,31 @@ AVLTree<Abstractor, maxDepth, BSet>::remove(key k) {
   // node in the greater subtree.  We take the leaf node from the
   // deeper subtree, if there is one.
 
-  if (get_bf(h) < 0) {
-    child = get_lt(h);
+  if (GetBF(h) < 0) {
+    child = GetLT(h);
     branch[depth] = false;
     cmp = -1;
   } else {
-    child = get_gt(h);
+    child = GetGT(h);
     branch[depth] = true;
     cmp = 1;
   }
   depth++;
 
-  if (child != null()) {
+  if (child != Null()) {
     cmp = -cmp;
     do {
       parent = h;
       h = child;
       if (cmp < 0) {
-        child = get_lt(h);
+        child = GetLT(h);
         branch[depth] = false;
       } else {
-        child = get_gt(h);
+        child = GetGT(h);
         branch[depth] = true;
       }
       depth++;
-    } while (child != null());
+    } while (child != Null());
 
     if (parent == rm) {
       // Only went through do loop once.  Deleted node will be replaced
@@ -843,16 +839,16 @@ AVLTree<Abstractor, maxDepth, BSet>::remove(key k) {
     }
 
     // Get the handle of the opposite child, which may not be null.
-    child = cmp > 0 ? get_lt(h) : get_gt(h);
+    child = cmp > 0 ? GetLT(h) : GetGT(h);
   }
 
-  if (parent == null()) {
+  if (parent == Null()) {
     // There were only 1 or 2 nodes in this tree.
-    abs.root = child;
+    abs_.root = child;
   } else if (cmp_shortened_sub_with_path < 0) {
-    set_lt(parent, child);
+    SetLT(parent, child);
   } else {
-    set_gt(parent, child);
+    SetGT(parent, child);
   }
 
   // "path" is the parent of the subtree being eliminated or reduced
@@ -863,33 +859,33 @@ AVLTree<Abstractor, maxDepth, BSet>::remove(key k) {
 
   if (h != rm) {
     // Poke in the replacement for the node to be removed.
-    set_lt(h, get_lt(rm));
-    set_gt(h, get_gt(rm));
-    set_bf(h, get_bf(rm));
-    if (parent_rm == null()) {
-      abs.root = h;
+    SetLT(h, GetLT(rm));
+    SetGT(h, GetGT(rm));
+    SetBF(h, GetBF(rm));
+    if (parent_rm == Null()) {
+      abs_.root = h;
     } else {
       depth = rm_depth - 1;
       if (branch[depth])
-        set_gt(parent_rm, h);
+        SetGT(parent_rm, h);
       else
-        set_lt(parent_rm, h);
+        SetLT(parent_rm, h);
     }
   }
 
-  if (path != null()) {
+  if (path != Null()) {
     // Create a temporary linked list from the parent of the path node
     // to the root node.
-    h = abs.root;
-    parent = null();
+    h = abs_.root;
+    parent = Null();
     depth = 0;
     while (h != path) {
       if (branch[depth++]) {
-        child = get_gt(h);
-        set_gt(h, parent);
+        child = GetGT(h);
+        SetGT(h, parent);
       } else {
-        child = get_lt(h);
-        set_lt(h, parent);
+        child = GetLT(h);
+        SetLT(h, parent);
       }
       parent = h;
       h = child;
@@ -902,33 +898,33 @@ AVLTree<Abstractor, maxDepth, BSet>::remove(key k) {
     cmp = cmp_shortened_sub_with_path;
     for (;;) {
       if (reduced_depth) {
-        bf = get_bf(h);
+        bf = GetBF(h);
         if (cmp < 0)
           bf++;
         else  // cmp > 0
           bf--;
         if ((bf == -2) || (bf == 2)) {
-          h = balance(h);
-          bf = get_bf(h);
+          h = Balance(h);
+          bf = GetBF(h);
         } else {
-          set_bf(h, bf);
+          SetBF(h, bf);
         }
         reduced_depth = (bf == 0);
       }
-      if (parent == null())
+      if (parent == Null())
         break;
       child = h;
       h = parent;
       cmp = branch[--depth] ? 1 : -1;
       if (cmp < 0) {
-        parent = get_lt(h);
-        set_lt(h, child);
+        parent = GetLT(h);
+        SetLT(h, child);
       } else {
-        parent = get_gt(h);
-        set_gt(h, child);
+        parent = GetGT(h);
+        SetGT(h, child);
       }
     }
-    abs.root = h;
+    abs_.root = h;
   }
 
   return rm;
@@ -936,41 +932,41 @@ AVLTree<Abstractor, maxDepth, BSet>::remove(key k) {
 
 template <class Abstractor, unsigned maxDepth, class BSet>
 inline typename AVLTree<Abstractor, maxDepth, BSet>::handle
-AVLTree<Abstractor, maxDepth, BSet>::subst(handle new_node) {
-  handle h = abs.root;
-  handle parent = null();
+AVLTree<Abstractor, maxDepth, BSet>::Subst(handle new_node) {
+  handle h = abs_.root;
+  handle parent = Null();
   int cmp, last_cmp;
 
   // Search for node already in tree with same key.
   for (;;) {
-    if (h == null()) {
+    if (h == Null()) {
       // No node in tree with same key as new node.
-      return null();
+      return Null();
     }
-    cmp = cmp_n_n(new_node, h);
+    cmp = CmpNN(new_node, h);
     if (cmp == 0) {
       // Found the node to substitute new one for.
       break;
     }
     last_cmp = cmp;
     parent = h;
-    h = cmp < 0 ? get_lt(h) : get_gt(h);
+    h = cmp < 0 ? GetLT(h) : GetGT(h);
   }
 
   // Copy tree housekeeping fields from node in tree to new node.
-  set_lt(new_node, get_lt(h));
-  set_gt(new_node, get_gt(h));
-  set_bf(new_node, get_bf(h));
+  SetLT(new_node, GetLT(h));
+  SetGT(new_node, GetGT(h));
+  SetBF(new_node, GetBF(h));
 
-  if (parent == null()) {
+  if (parent == Null()) {
     // New node is also new root.
-    abs.root = new_node;
+    abs_.root = new_node;
   } else {
     // Make parent point to new node.
     if (last_cmp < 0)
-      set_lt(parent, new_node);
+      SetLT(parent, new_node);
     else
-      set_gt(parent, new_node);
+      SetGT(parent, new_node);
   }
 
   return h;

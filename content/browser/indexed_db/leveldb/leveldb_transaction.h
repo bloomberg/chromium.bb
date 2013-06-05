@@ -56,25 +56,25 @@ class CONTENT_EXPORT LevelDBTransaction
     typedef size_t size;
     typedef LevelDBSlice key;
 
-    handle get_less(handle h) { return h->less; }
-    void set_less(handle h, handle less) { h->less = less; }
-    handle get_greater(handle h) { return h->greater; }
-    void set_greater(handle h, handle greater) { h->greater = greater; }
+    handle GetLess(handle h) { return h->less; }
+    void SetLess(handle h, handle less) { h->less = less; }
+    handle GetGreater(handle h) { return h->greater; }
+    void SetGreater(handle h, handle greater) { h->greater = greater; }
 
-    int get_balance_factor(handle h) { return h->balance_factor; }
-    void set_balance_factor(handle h, int bf) { h->balance_factor = bf; }
+    int GetBalanceFactor(handle h) { return h->balance_factor; }
+    void SetBalanceFactor(handle h, int bf) { h->balance_factor = bf; }
 
-    int compare_key_key(const key& ka, const key& kb) {
+    int CompareKeyKey(const key& ka, const key& kb) {
       return comparator_->Compare(ka, kb);
     }
-    int compare_key_node(const key& k, handle h) {
-      return compare_key_key(k, key(h->key));
+    int CompareKeyNode(const key& k, handle h) {
+      return CompareKeyKey(k, key(h->key));
     }
-    int compare_node_node(handle ha, handle hb) {
-      return compare_key_key(key(ha->key), key(hb->key));
+    int CompareNodeNode(handle ha, handle hb) {
+      return CompareKeyKey(key(ha->key), key(hb->key));
     }
 
-    static handle null() { return 0; }
+    static handle Null() { return 0; }
 
     const LevelDBComparator* comparator_;
   };
