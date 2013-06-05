@@ -183,6 +183,14 @@ bool ParseCommandLine(const COPYDATASTRUCT* cds,
 // Move this function to a common place as the Windows 8 delegate_execute
 // handler can possibly use this.
 bool ShouldLaunchInWindows8ImmersiveMode(const base::FilePath& user_data_dir) {
+#if defined(USE_AURA)
+  // Returning false from this function doesn't mean we don't launch immersive
+  // mode in Aura. This function is specifically called in case when we need
+  // to relaunch desktop launched chrome into immersive mode through 'relaunch'
+  // menu. In case of Aura, we will use delegate_execute to do the relaunch.
+  return false;
+#endif
+
   if (base::win::GetVersion() < base::win::VERSION_WIN8)
     return false;
 
@@ -191,14 +199,6 @@ bool ShouldLaunchInWindows8ImmersiveMode(const base::FilePath& user_data_dir) {
 
   if (ShellIntegration::GetDefaultBrowser() != ShellIntegration::IS_DEFAULT)
     return false;
-
-#if defined(USE_AURA)
-  // If we have viewer connection command line then we need to avoid
-  // launching in metro mode as it may create loop.
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kViewerConnection))
-    return false;
-#endif
 
   base::IntegrityLevel integrity_level = base::INTEGRITY_UNKNOWN;
   base::GetProcessIntegrityLevel(base::GetCurrentProcessHandle(),
