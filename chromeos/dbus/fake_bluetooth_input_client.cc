@@ -22,7 +22,7 @@ FakeBluetoothInputClient::Properties::Properties(
     const PropertyChangedCallback& callback)
     : ExperimentalBluetoothInputClient::Properties(
           NULL,
-          bluetooth_input::kExperimentalBluetoothInputInterface,
+          bluetooth_input::kBluetoothInputInterface,
           callback) {
 }
 

@@ -55,15 +55,16 @@ class ExperimentalBluetoothAdapterClientImpl
       : bus_(bus),
         weak_ptr_factory_(this) {
     object_manager_ = bus_->GetObjectManager(
-        bluetooth_manager::kBluetoothManagerServiceName,
-        dbus::ObjectPath(bluetooth_manager::kBluetoothManagerServicePath));
+        bluetooth_object_manager::kBluetoothObjectManagerServiceName,
+        dbus::ObjectPath(
+            bluetooth_object_manager::kBluetoothObjectManagerServicePath));
     object_manager_->RegisterInterface(
-        bluetooth_adapter::kExperimentalBluetoothAdapterInterface, this);
+        bluetooth_adapter::kBluetoothAdapterInterface, this);
   }
 
   virtual ~ExperimentalBluetoothAdapterClientImpl() {
     object_manager_->UnregisterInterface(
-        bluetooth_adapter::kExperimentalBluetoothAdapterInterface);
+        bluetooth_adapter::kBluetoothAdapterInterface);
   }
 
   // ExperimentalBluetoothAdapterClient override.
@@ -83,7 +84,7 @@ class ExperimentalBluetoothAdapterClientImpl
   // Returns the list of adapter object paths known to the system.
   virtual std::vector<dbus::ObjectPath> GetAdapters() OVERRIDE {
     return object_manager_->GetObjectsWithInterface(
-        bluetooth_adapter::kExperimentalBluetoothAdapterInterface);
+        bluetooth_adapter::kBluetoothAdapterInterface);
   }
 
   // dbus::ObjectManager::Interface override.
@@ -106,7 +107,7 @@ class ExperimentalBluetoothAdapterClientImpl
     return static_cast<Properties*>(
         object_manager_->GetProperties(
             object_path,
-            bluetooth_adapter::kExperimentalBluetoothAdapterInterface));
+            bluetooth_adapter::kBluetoothAdapterInterface));
   }
 
   // ExperimentalBluetoothAdapterClient override.
@@ -114,7 +115,7 @@ class ExperimentalBluetoothAdapterClientImpl
                               const base::Closure& callback,
                               const ErrorCallback& error_callback) OVERRIDE {
     dbus::MethodCall method_call(
-        bluetooth_adapter::kExperimentalBluetoothAdapterInterface,
+        bluetooth_adapter::kBluetoothAdapterInterface,
         bluetooth_adapter::kStartDiscovery);
 
     dbus::ObjectProxy* object_proxy =
@@ -138,7 +139,7 @@ class ExperimentalBluetoothAdapterClientImpl
                              const base::Closure& callback,
                              const ErrorCallback& error_callback) OVERRIDE {
     dbus::MethodCall method_call(
-        bluetooth_adapter::kExperimentalBluetoothAdapterInterface,
+        bluetooth_adapter::kBluetoothAdapterInterface,
         bluetooth_adapter::kStopDiscovery);
 
     dbus::ObjectProxy* object_proxy =
@@ -163,7 +164,7 @@ class ExperimentalBluetoothAdapterClientImpl
                             const base::Closure& callback,
                             const ErrorCallback& error_callback) OVERRIDE {
     dbus::MethodCall method_call(
-        bluetooth_adapter::kExperimentalBluetoothAdapterInterface,
+        bluetooth_adapter::kBluetoothAdapterInterface,
         bluetooth_adapter::kRemoveDevice);
 
     dbus::MessageWriter writer(&method_call);

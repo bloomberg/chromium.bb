@@ -39,7 +39,7 @@ class ExperimentalBluetoothProfileServiceProviderImpl
     exported_object_ = bus_->GetExportedObject(object_path_);
 
     exported_object_->ExportMethod(
-        bluetooth_profile::kExperimentalBluetoothProfileInterface,
+        bluetooth_profile::kBluetoothProfileInterface,
         bluetooth_profile::kRelease,
         base::Bind(
             &ExperimentalBluetoothProfileServiceProviderImpl::Release,
@@ -49,7 +49,7 @@ class ExperimentalBluetoothProfileServiceProviderImpl
             weak_ptr_factory_.GetWeakPtr()));
 
     exported_object_->ExportMethod(
-        bluetooth_profile::kExperimentalBluetoothProfileInterface,
+        bluetooth_profile::kBluetoothProfileInterface,
         bluetooth_profile::kNewConnection,
         base::Bind(
             &ExperimentalBluetoothProfileServiceProviderImpl::NewConnection,
@@ -59,7 +59,7 @@ class ExperimentalBluetoothProfileServiceProviderImpl
             weak_ptr_factory_.GetWeakPtr()));
 
     exported_object_->ExportMethod(
-        bluetooth_profile::kExperimentalBluetoothProfileInterface,
+        bluetooth_profile::kBluetoothProfileInterface,
         bluetooth_profile::kRequestDisconnection,
         base::Bind(
          &ExperimentalBluetoothProfileServiceProviderImpl::RequestDisconnection,
@@ -69,7 +69,7 @@ class ExperimentalBluetoothProfileServiceProviderImpl
             weak_ptr_factory_.GetWeakPtr()));
 
     exported_object_->ExportMethod(
-        bluetooth_profile::kExperimentalBluetoothProfileInterface,
+        bluetooth_profile::kBluetoothProfileInterface,
         bluetooth_profile::kCancel,
         base::Bind(
             &ExperimentalBluetoothProfileServiceProviderImpl::Cancel,

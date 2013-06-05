@@ -39,15 +39,16 @@ class ExperimentalBluetoothInputClientImpl
       : bus_(bus),
         weak_ptr_factory_(this) {
     object_manager_ = bus_->GetObjectManager(
-        bluetooth_manager::kBluetoothManagerServiceName,
-        dbus::ObjectPath(bluetooth_manager::kBluetoothManagerServicePath));
+        bluetooth_object_manager::kBluetoothObjectManagerServiceName,
+        dbus::ObjectPath(
+            bluetooth_object_manager::kBluetoothObjectManagerServicePath));
     object_manager_->RegisterInterface(
-        bluetooth_input::kExperimentalBluetoothInputInterface, this);
+        bluetooth_input::kBluetoothInputInterface, this);
   }
 
   virtual ~ExperimentalBluetoothInputClientImpl() {
     object_manager_->UnregisterInterface(
-        bluetooth_input::kExperimentalBluetoothInputInterface);
+        bluetooth_input::kBluetoothInputInterface);
   }
 
   // ExperimentalBluetoothInputClient override.
@@ -84,7 +85,7 @@ class ExperimentalBluetoothInputClientImpl
     return static_cast<Properties*>(
         object_manager_->GetProperties(
             object_path,
-            bluetooth_input::kExperimentalBluetoothInputInterface));
+            bluetooth_input::kBluetoothInputInterface));
   }
 
  private:

@@ -54,7 +54,7 @@ class ExperimentalBluetoothProfileManagerClientImpl
                                const base::Closure& callback,
                                const ErrorCallback& error_callback) OVERRIDE {
     dbus::MethodCall method_call(
-    bluetooth_profile_manager::kExperimentalBluetoothProfileManagerInterface,
+    bluetooth_profile_manager::kBluetoothProfileManagerInterface,
     bluetooth_profile_manager::kRegisterProfile);
 
     dbus::MessageWriter writer(&method_call);
@@ -177,8 +177,8 @@ class ExperimentalBluetoothProfileManagerClientImpl
                                  const base::Closure& callback,
                                  const ErrorCallback& error_callback) OVERRIDE {
     dbus::MethodCall method_call(
-       bluetooth_profile_manager::kExperimentalBluetoothProfileManagerInterface,
-        bluetooth_profile_manager::kUnregisterProfile);
+      bluetooth_profile_manager::kBluetoothProfileManagerInterface,
+      bluetooth_profile_manager::kUnregisterProfile);
 
     dbus::MessageWriter writer(&method_call);
     writer.AppendObjectPath(profile_path);

@@ -158,7 +158,7 @@ FakeBluetoothDeviceClient::Properties::Properties(
     const PropertyChangedCallback& callback)
     : ExperimentalBluetoothDeviceClient::Properties(
           NULL,
-          bluetooth_device::kExperimentalBluetoothDeviceInterface,
+          bluetooth_device::kBluetoothDeviceInterface,
           callback) {
 }
 
@@ -263,12 +263,12 @@ void FakeBluetoothDeviceClient::Connect(
   if (properties->paired.value() != true &&
       object_path != dbus::ObjectPath(kMicrosoftMousePath)) {
     // Must be paired.
-    error_callback.Run(bluetooth_adapter::kErrorFailed, "Not paired");
+    error_callback.Run(bluetooth_device::kErrorFailed, "Not paired");
     return;
   } else if (properties->paired.value() == true &&
              object_path == dbus::ObjectPath(kUnconnectableDevicePath)) {
     // Must not be paired
-    error_callback.Run(bluetooth_adapter::kErrorFailed,
+    error_callback.Run(bluetooth_device::kErrorFailed,
                        "Connection fails while paired");
     return;
   }
@@ -824,7 +824,7 @@ void FakeBluetoothDeviceClient::CompleteSimulatedPairing(
   if (pairing_cancelled_) {
     pairing_cancelled_ = false;
 
-    error_callback.Run(bluetooth_adapter::kErrorAuthenticationCanceled,
+    error_callback.Run(bluetooth_device::kErrorAuthenticationCanceled,
                        "Cancaled");
   } else {
     Properties* properties = GetProperties(object_path);
@@ -841,7 +841,7 @@ void FakeBluetoothDeviceClient::TimeoutSimulatedPairing(
     const ErrorCallback& error_callback) {
   VLOG(1) << "TimeoutSimulatedPairing: " << object_path.value();
 
-  error_callback.Run(bluetooth_adapter::kErrorAuthenticationTimeout,
+  error_callback.Run(bluetooth_device::kErrorAuthenticationTimeout,
                      "Timed out");
 }
 
@@ -850,7 +850,7 @@ void FakeBluetoothDeviceClient::CancelSimulatedPairing(
     const ErrorCallback& error_callback) {
   VLOG(1) << "CancelSimulatedPairing: " << object_path.value();
 
-  error_callback.Run(bluetooth_adapter::kErrorAuthenticationCanceled,
+  error_callback.Run(bluetooth_device::kErrorAuthenticationCanceled,
                      "Canceled");
 }
 
@@ -859,7 +859,7 @@ void FakeBluetoothDeviceClient::RejectSimulatedPairing(
     const ErrorCallback& error_callback) {
   VLOG(1) << "RejectSimulatedPairing: " << object_path.value();
 
-  error_callback.Run(bluetooth_adapter::kErrorAuthenticationRejected,
+  error_callback.Run(bluetooth_device::kErrorAuthenticationRejected,
                      "Rejected");
 }
 
@@ -868,7 +868,7 @@ void FakeBluetoothDeviceClient::FailSimulatedPairing(
     const ErrorCallback& error_callback) {
   VLOG(1) << "FailSimulatedPairing: " << object_path.value();
 
-  error_callback.Run(bluetooth_adapter::kErrorFailed, "Failed");
+  error_callback.Run(bluetooth_device::kErrorFailed, "Failed");
 }
 
 void FakeBluetoothDeviceClient::AddInputDeviceIfNeeded(
@@ -1041,11 +1041,11 @@ void FakeBluetoothDeviceClient::ConnectionCallback(
   } else if (status ==
              ExperimentalBluetoothProfileServiceProvider::Delegate::CANCELLED) {
     // TODO(keybuk): tear down this side of the connection
-    error_callback.Run(bluetooth_adapter::kErrorFailed, "Canceled");
+    error_callback.Run(bluetooth_device::kErrorFailed, "Canceled");
   } else if (status ==
              ExperimentalBluetoothProfileServiceProvider::Delegate::REJECTED) {
     // TODO(keybuk): tear down this side of the connection
-    error_callback.Run(bluetooth_adapter::kErrorFailed, "Rejected");
+    error_callback.Run(bluetooth_device::kErrorFailed, "Rejected");
   }
 }
 
@@ -1062,10 +1062,10 @@ void FakeBluetoothDeviceClient::DisconnectionCallback(
     callback.Run();
   } else if (status ==
              ExperimentalBluetoothProfileServiceProvider::Delegate::CANCELLED) {
-    error_callback.Run(bluetooth_adapter::kErrorFailed, "Canceled");
+    error_callback.Run(bluetooth_device::kErrorFailed, "Canceled");
   } else if (status ==
              ExperimentalBluetoothProfileServiceProvider::Delegate::REJECTED) {
-    error_callback.Run(bluetooth_adapter::kErrorFailed, "Rejected");
+    error_callback.Run(bluetooth_device::kErrorFailed, "Rejected");
   }
 }
 

@@ -41,12 +41,12 @@ void FakeBluetoothProfileManagerClient::RegisterProfile(
 
   ServiceProviderMap::iterator iter = service_provider_map_.find(profile_path);
   if (iter == service_provider_map_.end()) {
-    error_callback.Run(bluetooth_adapter::kErrorFailed,
+    error_callback.Run(bluetooth_profile_manager::kErrorInvalidArguments,
                        "No profile created");
   } else {
     ProfileMap::iterator piter = profile_map_.find(uuid);
     if (piter != profile_map_.end()) {
-      error_callback.Run(bluetooth_adapter::kErrorAlreadyExists,
+      error_callback.Run(bluetooth_profile_manager::kErrorAlreadyExists,
                          "Profile already registered");
     } else {
       profile_map_[uuid] = profile_path;
@@ -63,7 +63,7 @@ void FakeBluetoothProfileManagerClient::UnregisterProfile(
 
   ServiceProviderMap::iterator iter = service_provider_map_.find(profile_path);
   if (iter != service_provider_map_.end()) {
-    error_callback.Run(bluetooth_adapter::kErrorFailed,
+    error_callback.Run(bluetooth_profile_manager::kErrorInvalidArguments,
                        "Profile still registered");
   } else {
     for (ProfileMap::iterator piter = profile_map_.begin();

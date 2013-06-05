@@ -39,7 +39,7 @@ class ExperimentalBluetoothAgentServiceProviderImpl
     exported_object_ = bus_->GetExportedObject(object_path_);
 
     exported_object_->ExportMethod(
-        bluetooth_agent::kExperimentalBluetoothAgentInterface,
+        bluetooth_agent::kBluetoothAgentInterface,
         bluetooth_agent::kRelease,
         base::Bind(
             &ExperimentalBluetoothAgentServiceProviderImpl::Release,
@@ -49,7 +49,7 @@ class ExperimentalBluetoothAgentServiceProviderImpl
             weak_ptr_factory_.GetWeakPtr()));
 
     exported_object_->ExportMethod(
-        bluetooth_agent::kExperimentalBluetoothAgentInterface,
+        bluetooth_agent::kBluetoothAgentInterface,
         bluetooth_agent::kRequestPinCode,
         base::Bind(
             &ExperimentalBluetoothAgentServiceProviderImpl::RequestPinCode,
@@ -59,7 +59,7 @@ class ExperimentalBluetoothAgentServiceProviderImpl
             weak_ptr_factory_.GetWeakPtr()));
 
     exported_object_->ExportMethod(
-        bluetooth_agent::kExperimentalBluetoothAgentInterface,
+        bluetooth_agent::kBluetoothAgentInterface,
         bluetooth_agent::kDisplayPinCode,
         base::Bind(
             &ExperimentalBluetoothAgentServiceProviderImpl::DisplayPinCode,
@@ -69,7 +69,7 @@ class ExperimentalBluetoothAgentServiceProviderImpl
             weak_ptr_factory_.GetWeakPtr()));
 
     exported_object_->ExportMethod(
-        bluetooth_agent::kExperimentalBluetoothAgentInterface,
+        bluetooth_agent::kBluetoothAgentInterface,
         bluetooth_agent::kRequestPasskey,
         base::Bind(
             &ExperimentalBluetoothAgentServiceProviderImpl::RequestPasskey,
@@ -79,7 +79,7 @@ class ExperimentalBluetoothAgentServiceProviderImpl
             weak_ptr_factory_.GetWeakPtr()));
 
     exported_object_->ExportMethod(
-        bluetooth_agent::kExperimentalBluetoothAgentInterface,
+        bluetooth_agent::kBluetoothAgentInterface,
         bluetooth_agent::kDisplayPasskey,
         base::Bind(
             &ExperimentalBluetoothAgentServiceProviderImpl::DisplayPasskey,
@@ -89,7 +89,7 @@ class ExperimentalBluetoothAgentServiceProviderImpl
             weak_ptr_factory_.GetWeakPtr()));
 
     exported_object_->ExportMethod(
-        bluetooth_agent::kExperimentalBluetoothAgentInterface,
+        bluetooth_agent::kBluetoothAgentInterface,
         bluetooth_agent::kRequestConfirmation,
         base::Bind(
             &ExperimentalBluetoothAgentServiceProviderImpl::RequestConfirmation,
@@ -99,7 +99,7 @@ class ExperimentalBluetoothAgentServiceProviderImpl
             weak_ptr_factory_.GetWeakPtr()));
 
     exported_object_->ExportMethod(
-        bluetooth_agent::kExperimentalBluetoothAgentInterface,
+        bluetooth_agent::kBluetoothAgentInterface,
         bluetooth_agent::kRequestAuthorization,
         base::Bind(
            &ExperimentalBluetoothAgentServiceProviderImpl::RequestAuthorization,
@@ -109,7 +109,7 @@ class ExperimentalBluetoothAgentServiceProviderImpl
             weak_ptr_factory_.GetWeakPtr()));
 
     exported_object_->ExportMethod(
-        bluetooth_agent::kExperimentalBluetoothAgentInterface,
+        bluetooth_agent::kBluetoothAgentInterface,
         bluetooth_agent::kAuthorizeService,
         base::Bind(
             &ExperimentalBluetoothAgentServiceProviderImpl::AuthorizeService,
@@ -119,7 +119,7 @@ class ExperimentalBluetoothAgentServiceProviderImpl
             weak_ptr_factory_.GetWeakPtr()));
 
     exported_object_->ExportMethod(
-        bluetooth_agent::kExperimentalBluetoothAgentInterface,
+        bluetooth_agent::kBluetoothAgentInterface,
         bluetooth_agent::kCancel,
         base::Bind(
             &ExperimentalBluetoothAgentServiceProviderImpl::Cancel,

@@ -40,7 +40,7 @@ FakeBluetoothAdapterClient::Properties::Properties(
     const PropertyChangedCallback& callback)
     : ExperimentalBluetoothAdapterClient::Properties(
         NULL,
-        bluetooth_adapter::kExperimentalBluetoothAdapterInterface,
+        bluetooth_adapter::kBluetoothAdapterInterface,
         callback) {
 }
 

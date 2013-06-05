@@ -612,11 +612,11 @@ void BluetoothDeviceExperimentalChromeOS::OnConnectError(
 
   // Determine the error code from error_name.
   ConnectErrorCode error_code = ERROR_UNKNOWN;
-  if (error_name == bluetooth_adapter::kErrorFailed) {
+  if (error_name == bluetooth_device::kErrorFailed) {
     error_code = ERROR_FAILED;
-  } else if (error_name == bluetooth_adapter::kErrorInProgress) {
+  } else if (error_name == bluetooth_device::kErrorInProgress) {
     error_code = ERROR_INPROGRESS;
-  } else if (error_name == bluetooth_adapter::kErrorNotSupported) {
+  } else if (error_name == bluetooth_device::kErrorNotSupported) {
     error_code = ERROR_UNSUPPORTED_DEVICE;
   }
 
@@ -659,7 +659,7 @@ void BluetoothDeviceExperimentalChromeOS::OnRegisterAgentError(
 
   // Determine the error code from error_name.
   ConnectErrorCode error_code = ERROR_UNKNOWN;
-  if (error_name == bluetooth_adapter::kErrorAlreadyExists)
+  if (error_name == bluetooth_agent_manager::kErrorAlreadyExists)
     error_code = ERROR_INPROGRESS;
 
   RecordPairingResult(error_code);
@@ -697,17 +697,17 @@ void BluetoothDeviceExperimentalChromeOS::OnPairError(
 
   // Determine the error code from error_name.
   ConnectErrorCode error_code = ERROR_UNKNOWN;
-  if (error_name == bluetooth_adapter::kErrorConnectionAttemptFailed) {
+  if (error_name == bluetooth_device::kErrorConnectionAttemptFailed) {
     error_code = ERROR_FAILED;
-  } else if (error_name == bluetooth_adapter::kErrorFailed) {
+  } else if (error_name == bluetooth_device::kErrorFailed) {
     error_code = ERROR_FAILED;
-  } else if (error_name == bluetooth_adapter::kErrorAuthenticationFailed) {
+  } else if (error_name == bluetooth_device::kErrorAuthenticationFailed) {
     error_code = ERROR_AUTH_FAILED;
-  } else if (error_name == bluetooth_adapter::kErrorAuthenticationCanceled) {
+  } else if (error_name == bluetooth_device::kErrorAuthenticationCanceled) {
     error_code = ERROR_AUTH_CANCELED;
-  } else if (error_name == bluetooth_adapter::kErrorAuthenticationRejected) {
+  } else if (error_name == bluetooth_device::kErrorAuthenticationRejected) {
     error_code = ERROR_AUTH_REJECTED;
-  } else if (error_name == bluetooth_adapter::kErrorAuthenticationTimeout) {
+  } else if (error_name == bluetooth_device::kErrorAuthenticationTimeout) {
     error_code = ERROR_AUTH_TIMEOUT;
   }
 

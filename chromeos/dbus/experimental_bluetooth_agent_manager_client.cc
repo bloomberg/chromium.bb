@@ -42,7 +42,7 @@ class ExperimentalBluetoothAgentManagerClientImpl
                              const base::Closure& callback,
                              const ErrorCallback& error_callback) OVERRIDE {
     dbus::MethodCall method_call(
-    bluetooth_agent_manager::kExperimentalBluetoothAgentManagerInterface,
+    bluetooth_agent_manager::kBluetoothAgentManagerInterface,
     bluetooth_agent_manager::kRegisterAgent);
 
     dbus::MessageWriter writer(&method_call);
@@ -63,7 +63,7 @@ class ExperimentalBluetoothAgentManagerClientImpl
                                const base::Closure& callback,
                                const ErrorCallback& error_callback) OVERRIDE {
     dbus::MethodCall method_call(
-        bluetooth_agent_manager::kExperimentalBluetoothAgentManagerInterface,
+        bluetooth_agent_manager::kBluetoothAgentManagerInterface,
         bluetooth_agent_manager::kUnregisterAgent);
 
     dbus::MessageWriter writer(&method_call);
@@ -85,7 +85,7 @@ class ExperimentalBluetoothAgentManagerClientImpl
                                    const ErrorCallback& error_callback)
       OVERRIDE {
     dbus::MethodCall method_call(
-        bluetooth_agent_manager::kExperimentalBluetoothAgentManagerInterface,
+        bluetooth_agent_manager::kBluetoothAgentManagerInterface,
         bluetooth_agent_manager::kRequestDefaultAgent);
 
     dbus::MessageWriter writer(&method_call);
