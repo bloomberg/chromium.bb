@@ -28,24 +28,24 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef V8WindowErrorHandler_h
-#define V8WindowErrorHandler_h
+#ifndef V8ErrorHandler_h
+#define V8ErrorHandler_h
 
 #include "bindings/v8/V8EventListener.h"
-#include <v8.h>
 #include "wtf/PassRefPtr.h"
+#include <v8.h>
 
 namespace WebCore {
 
-class V8WindowErrorHandler : public V8EventListener {
+class V8ErrorHandler : public V8EventListener {
 public:
-    static PassRefPtr<V8WindowErrorHandler> create(v8::Local<v8::Object> listener, bool isInline)
+    static PassRefPtr<V8ErrorHandler> create(v8::Local<v8::Object> listener, bool isInline)
     {
-        return adoptRef(new V8WindowErrorHandler(listener, isInline));
+        return adoptRef(new V8ErrorHandler(listener, isInline));
     }
 
 private:
-    V8WindowErrorHandler(v8::Local<v8::Object> listener, bool isInline);
+    V8ErrorHandler(v8::Local<v8::Object> listener, bool isInline);
 
     virtual v8::Local<v8::Value> callListenerFunction(ScriptExecutionContext*, v8::Handle<v8::Value> jsEvent, Event*);
     virtual bool shouldPreventDefault(v8::Local<v8::Value> returnValue);
@@ -53,4 +53,4 @@ private:
 
 } // namespace WebCore
 
-#endif // V8WindowErrorHandler_h
+#endif // V8ErrorHandler_h

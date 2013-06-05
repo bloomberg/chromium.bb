@@ -29,22 +29,23 @@
  */
 
 #include "config.h"
-
-#include "bindings/v8/V8WindowErrorHandler.h"
+#include "bindings/v8/V8ErrorHandler.h"
 
 #include "bindings/v8/ScriptController.h"
 #include "bindings/v8/V8Binding.h"
+#include "bindings/v8/V8RecursionScope.h"
+#include "bindings/v8/V8ScriptRunner.h"
 #include "core/dom/ErrorEvent.h"
 #include "core/dom/EventNames.h"
 
 namespace WebCore {
 
-V8WindowErrorHandler::V8WindowErrorHandler(v8::Local<v8::Object> listener, bool isInline)
+V8ErrorHandler::V8ErrorHandler(v8::Local<v8::Object> listener, bool isInline)
     : V8EventListener(listener, isInline)
 {
 }
 
-v8::Local<v8::Value> V8WindowErrorHandler::callListenerFunction(ScriptExecutionContext* context, v8::Handle<v8::Value> jsEvent, Event* event)
+v8::Local<v8::Value> V8ErrorHandler::callListenerFunction(ScriptExecutionContext* context, v8::Handle<v8::Value> jsEvent, Event* event)
 {
     if (!event->hasInterface(eventNames().interfaceForErrorEvent))
         return V8EventListener::callListenerFunction(context, jsEvent, event);
@@ -59,12 +60,15 @@ v8::Local<v8::Value> V8WindowErrorHandler::callListenerFunction(ScriptExecutionC
         v8::Handle<v8::Value> parameters[3] = { v8String(errorEvent->message(), isolate), v8String(errorEvent->filename(), isolate), v8Integer(errorEvent->lineno(), isolate) };
         v8::TryCatch tryCatch;
         tryCatch.SetVerbose(true);
-        returnValue = ScriptController::callFunctionWithInstrumentation(0, callFunction, thisValue, 3, parameters);
+        if (worldType(isolate) == WorkerWorld)
+            returnValue = V8ScriptRunner::callFunction(callFunction, context, thisValue, WTF_ARRAY_LENGTH(parameters), parameters);
+        else
+            returnValue = ScriptController::callFunctionWithInstrumentation(0, callFunction, thisValue, 3, parameters);
     }
     return returnValue;
 }
 
-bool V8WindowErrorHandler::shouldPreventDefault(v8::Local<v8::Value> returnValue)
+bool V8ErrorHandler::shouldPreventDefault(v8::Local<v8::Value> returnValue)
 {
     return returnValue->IsBoolean() && returnValue->BooleanValue();
 }

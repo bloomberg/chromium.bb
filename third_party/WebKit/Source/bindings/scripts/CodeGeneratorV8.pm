@@ -1884,12 +1884,9 @@ END
                 $code .= "    transferHiddenDependency(info.Holder(), imp->${attrImplName}(), value, ${v8ClassName}::eventListenerCacheIndex, info.GetIsolate());\n";
             }
             AddToImplIncludes("bindings/v8/V8EventListenerList.h");
-            if ($interfaceName eq "WorkerContext" and $attribute->signature->name eq "onerror") {
-                AddToImplIncludes("bindings/v8/V8WorkerContextErrorHandler.h");
-                $code .= "    imp->set$implSetterFunctionName(V8EventListenerList::findOrCreateWrapper<V8WorkerContextErrorHandler>(value, true)";
-            } elsif ($interfaceName eq "DOMWindow" and $attribute->signature->name eq "onerror") {
-                AddToImplIncludes("bindings/v8/V8WindowErrorHandler.h");
-                $code .= "    imp->set$implSetterFunctionName(V8EventListenerList::findOrCreateWrapper<V8WindowErrorHandler>(value, true)";
+            if (($interfaceName eq "DOMWindow" or $interfaceName eq "WorkerContext") and $attribute->signature->name eq "onerror") {
+                AddToImplIncludes("bindings/v8/V8ErrorHandler.h");
+                $code .= "    imp->set$implSetterFunctionName(V8EventListenerList::findOrCreateWrapper<V8ErrorHandler>(value, true)";
             } else {
                 $code .= "    imp->set$implSetterFunctionName(V8EventListenerList::getEventListener(value, true, ListenerFindOrCreate)";
             }
