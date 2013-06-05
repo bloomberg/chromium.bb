@@ -408,6 +408,7 @@ void LinkStyle::setCSSStyleSheet(const String& href, const KURL& baseURL, const 
         ASSERT(!restoredSheet->isLoading());
 
         m_sheet = CSSStyleSheet::create(restoredSheet, m_owner);
+        m_sheet->setMediaQueries(MediaQuerySet::create(m_owner->media()));
         m_sheet->setTitle(m_owner->title());
 
         m_loading = false;
