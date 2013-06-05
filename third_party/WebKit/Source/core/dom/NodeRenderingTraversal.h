@@ -64,6 +64,7 @@ private:
     bool m_outOfComposition;
 };
 
+ContainerNode* parent(const Node*);
 ContainerNode* parent(const Node*, ParentDetails*);
 ContainerNode* parentSlow(const Node*, ParentDetails*);
 Node* nextSibling(const Node*);
@@ -75,6 +76,12 @@ Node* nextInScope(const Node*);
 Node* previousInScope(const Node*);
 Node* parentInScope(const Node*);
 Node* lastChildInScope(const Node*);
+
+inline ContainerNode* parent(const Node* node)
+{
+    ParentDetails unusedDetails;
+    return parent(node, &unusedDetails);
+}
 
 inline ContainerNode* parent(const Node* node, ParentDetails* details)
 {
