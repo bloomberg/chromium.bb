@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/i18n/rtl.h"
+#include "ui/base/win/dpi.h"
 
 namespace {
 
@@ -16,8 +17,12 @@ int GetMinimizeButtonOffsetForWindow(HWND hwnd) {
   SendMessage(hwnd, WM_GETTITLEBARINFOEX, 0,
               reinterpret_cast<WPARAM>(&titlebar_info));
 
-  POINT minimize_button_corner = { titlebar_info.rgrect[2].left,
-                                   titlebar_info.rgrect[2].top };
+  // NOTE: TITLEBARINFOEX coordinates are not scaled (they are physical). As
+  // Chrome is not DPIAware we need to properly scale the coordinates as
+  // MapWindowPoints() expects scaled coordinates.
+  POINT minimize_button_corner = { titlebar_info.rgrect[2].left /
+                                   ui::win::GetUndocumentedDPIScale(),
+                                   0 };
   MapWindowPoints(HWND_DESKTOP, hwnd, &minimize_button_corner, 1);
   return minimize_button_corner.x;
 }
