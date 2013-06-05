@@ -2075,6 +2075,8 @@
         'browser/ui/webui/help/version_updater_win.cc',
         'browser/ui/webui/history_ui.cc',
         'browser/ui/webui/history_ui.h',
+        'browser/ui/webui/identity_internals_ui.cc',
+        'browser/ui/webui/identity_internals_ui.h',
         'browser/ui/webui/inline_login_ui.cc',
         'browser/ui/webui/inline_login_ui.h',
         'browser/ui/webui/inspect_ui.cc',

@@ -15374,6 +15374,32 @@ To configure restrictions for this limited user, please sign into your account a
       Reset
     </message>
 
+    <!-- Identity internals strings -->
+    <message name="IDS_IDENTITY_INTERNALS_TOKEN_CACHE_TEXT" desc="The title of the token cache of the Identity API.">
+      Identity API Token Cache
+    </message>
+    <message name="IDS_IDENTITY_INTERNALS_TOKEN_ID" desc="Label of the row containing the token id.">
+      Token Id
+    </message>
+    <message name="IDS_IDENTITY_INTERNALS_EXTENSION_NAME" desc="Label of the row containing a name of an extension related to the identity token.">
+      Extension Name
+    </message>
+    <message name="IDS_IDENTITY_INTERNALS_EXTENSION_ID" desc="Label of the row containing an id of an extension related to the identity token.">
+      Extension Id
+    </message>
+    <message name="IDS_IDENTITY_INTERNALS_TOKEN_STATUS" desc="Label of the row containing a status of identity token.">
+      Token Status
+    </message>
+    <message name="IDS_IDENTITY_INTERNALS_EXPIRATION_TIME" desc="Label of the row containing expiration time of identity token.">
+      Expiration Time
+    </message>
+    <message name="IDS_IDENTITY_INTERNALS_SCOPES" desc="Label of the row listing scopes of identity token.">
+      Scopes
+    </message>
+    <message name="IDS_IDENTITY_INTERNALS_REVOKE" desc="Label on a revoke token button.">
+      Revoke
+    </message>
+
     </messages>
 
     <structures fallback_to_english="true">

@@ -29,6 +29,7 @@
 #include "chrome/browser/ui/webui/flash_ui.h"
 #include "chrome/browser/ui/webui/help/help_ui.h"
 #include "chrome/browser/ui/webui/history_ui.h"
+#include "chrome/browser/ui/webui/identity_internals_ui.h"
 #include "chrome/browser/ui/webui/inline_login_ui.h"
 #include "chrome/browser/ui/webui/inspect_ui.h"
 #include "chrome/browser/ui/webui/instant_ui.h"
@@ -211,6 +212,8 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     return &NewWebUI<FlagsUI>;
   if (url.host() == chrome::kChromeUIHistoryFrameHost)
     return &NewWebUI<HistoryUI>;
+  if (url.host() == chrome::kChromeUIIdentityInternalsHost)
+    return &NewWebUI<IdentityInternalsUI>;
   if (url.host() == chrome::kChromeUIInlineLoginHost)
     return &NewWebUI<InlineLoginUI>;
   if (url.host() == chrome::kChromeUIInstantHost)
