@@ -327,10 +327,9 @@ DirectoryItem.prototype.decorate = function(
   this.dirEntry_ = dirEntry;
   this.fileFilter_ = this.directoryModel_.getFileFilter();
 
-  // Sets hasChildren=true tentatively. This will be overridden after
+  // Sets hasChildren=false tentatively. This will be overridden after
   // scanning sub-directories in DirectoryTreeUtil.updateSubElementsFromList.
-  // Special search does not have children.
-  this.hasChildren = !PathUtil.isSpecialSearchRoot(path);
+  this.hasChildren = false;
 
   this.addEventListener('expand', this.onExpand_.bind(this), false);
   var volumeManager = VolumeManager.getInstance();

@@ -405,9 +405,14 @@ body[new-ui] #directory-tree .tree-children .tree-row {
   height: 37px;
   left: 3px;
   margin: -13px;
+  opacity: 1;
   top: 0;
   vertical-align: middle;
   width: 37px;
+}
+
+body[new-ui] #directory-tree:focus .tree-row[selected] > .expand-icon {
+  background-image: -webkit-canvas(tree-triangle-inverted);
 }
 
 #directory-tree .tree-row > .volume-icon {
