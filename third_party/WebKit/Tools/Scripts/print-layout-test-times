@@ -8,15 +8,51 @@ from webkitpy.common.host import Host
 
 def main(argv):
     parser = optparse.OptionParser(usage='%prog [times_ms.json]')
+    parser.add_option('-f', '--forward', action='store', type='int',
+                      help='group times by first N directories of test')
+    parser.add_option('-b', '--backward', action='store', type='int',
+                     help='group times by last N directories of test')
+
+    epilog = """
+       You can print out aggregate times per directory using the -f and -b
+       flags. The value passed to each flag indicates the "depth" of the flag,
+       similar to positive and negative arguments to python arrays.
+
+       For example, given fast/forms/week/week-input-type.html, -f 1
+       truncates to 'fast', -f 2 and -b 2 truncates to 'fast/forms', and -b 1
+       truncates to fast/forms/week . -f 0 truncates to '', which can be used
+       to produce a single total time for the run."""
+    parser.epilog = '\n'.join(s.lstrip() for s in epilog.splitlines())
+
     options, args = parser.parse_args(argv)
     host = Host()
-    times_ms_path = args[0] if args and args[0] else host.filesystem.join(host.port_factory.get().results_directory(), 'times_ms.json')
+    if args and args[0]:
+        times_ms_path = args[0]
+    else:
+        times_ms_path = host.filesystem.join(host.port_factory.get().results_directory(), 'times_ms.json')
+
     with open(times_ms_path, 'r') as fp:
          times_trie = json.load(fp)
 
     times = convert_trie_to_flat_paths(times_trie)
-    for test_name in sorted(times):
-        print "%s %d" % (test_name, times[test_name])
+
+    def key_for(path):
+        if options.forward is not None:
+            return os.sep.join(path.split(os.sep)[:-1][:options.forward])
+        if options.backward is not None:
+            return os.sep.join(path.split(os.sep)[:-options.backward])
+        return path
+
+    times_by_key = {}
+    for test_name in times:
+        key = key_for(test_name)
+        if key in times_by_key:
+            times_by_key[key] += times[test_name]
+        else:
+            times_by_key[key] = times[test_name]
+
+    for key in sorted(times_by_key):
+        print "%s %d" % (key, times_by_key[key])
 
 def convert_trie_to_flat_paths(trie, prefix=None):
     # Cloned from webkitpy.layout_tests.layout_package.json_results_generator
