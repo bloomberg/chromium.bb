@@ -127,13 +127,6 @@ class NetWatcher :
 
 }  // namespace
 
-// From glib version 2.36 onwards, g_type_init is implicitly called and it is
-// deprecated.
-#if (defined(OS_LINUX) || defined(OS_OPENBSD)) && !defined(OS_CHROMEOS)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-#endif
-
 int main(int argc, char* argv[]) {
 #if defined(OS_MACOSX)
   base::mac::ScopedNSAutoreleasePool pool;
@@ -202,7 +195,3 @@ int main(int argc, char* argv[]) {
 
   return 0;
 }
-
-#if (defined(OS_LINUX) || defined(OS_OPENBSD)) && !defined(OS_CHROMEOS)
-#pragma GCC diagnostic pop
-#endif
