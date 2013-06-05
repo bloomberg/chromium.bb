@@ -516,71 +516,61 @@ bool LogoutUserFunction::RunImpl() {
   return true;
 }
 
-void RequestLocalFileSystemFunction::RequestOnFileThread(
-    scoped_refptr<fileapi::FileSystemContext> file_system_context,
-    const GURL& source_url,
-    int child_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-
-  GURL origin_url = source_url.GetOrigin();
-  file_system_context->OpenFileSystem(
-      origin_url,
-      fileapi::kFileSystemTypeExternal,
-      fileapi::OPEN_FILE_SYSTEM_FAIL_IF_NONEXISTENT,
-      base::Bind(&RequestLocalFileSystemFunction::DidOpenFileSystem,
-                 this,
-                 file_system_context,
-                 child_id,
-                 GetExtension()));
-}
-
 void RequestLocalFileSystemFunction::DidOpenFileSystem(
     scoped_refptr<fileapi::FileSystemContext> file_system_context,
-    int child_id,
-    scoped_refptr<const extensions::Extension> extension,
     base::PlatformFileError result,
     const std::string& name,
     const GURL& root_path) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (result != base::PLATFORM_FILE_OK) {
     DidFail(result);
     return;
   }
+
+  // RenderViewHost may have gone while the task is posted asynchronously.
+  if (!render_view_host()) {
+    DidFail(base::PLATFORM_FILE_ERROR_FAILED);
+    return;
+  }
+
   // Set up file permission access.
+  const int child_id = render_view_host()->GetProcess()->GetID();
   if (!SetupFileSystemAccessPermissions(file_system_context,
                                         child_id,
-                                        extension)) {
+                                        GetExtension())) {
     DidFail(base::PLATFORM_FILE_ERROR_SECURITY);
     return;
   }
 
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(
-          &RequestLocalFileSystemFunction::RespondSuccessOnUIThread,
-          this,
-          name,
-          root_path));
+  // Add drive mount point immediately when we kick of first instance of file
+  // manager. The actual mount event will be sent to UI only when we perform
+  // proper authentication.
+  drive::DriveIntegrationService* integration_service =
+      drive::DriveIntegrationServiceFactory::GetForProfile(profile_);
+  if (integration_service)
+    SetDriveMountPointPermissions(profile_, extension_id(), render_view_host());
+  DictionaryValue* dict = new DictionaryValue();
+  SetResult(dict);
+  dict->SetString("name", name);
+  dict->SetString("path", root_path.spec());
+  dict->SetInteger("error", drive::FILE_ERROR_OK);
+  SendResponse(true);
 }
 
 void RequestLocalFileSystemFunction::DidFail(
     base::PlatformFileError error_code) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(
-          &RequestLocalFileSystemFunction::RespondFailedOnUIThread,
-          this,
-          error_code));
+  error_ = base::StringPrintf(kFileError, static_cast<int>(error_code));
+  SendResponse(false);
 }
 
 bool RequestLocalFileSystemFunction::SetupFileSystemAccessPermissions(
     scoped_refptr<fileapi::FileSystemContext> file_system_context,
     int child_id,
     scoped_refptr<const extensions::Extension> extension) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (!extension.get())
     return false;
@@ -613,6 +603,8 @@ bool RequestLocalFileSystemFunction::SetupFileSystemAccessPermissions(
 }
 
 bool RequestLocalFileSystemFunction::RunImpl() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
   if (!dispatcher() || !render_view_host() || !render_view_host()->GetProcess())
     return false;
 
@@ -622,41 +614,16 @@ bool RequestLocalFileSystemFunction::RunImpl() {
   scoped_refptr<fileapi::FileSystemContext> file_system_context =
       BrowserContext::GetStoragePartition(profile_, site_instance)->
           GetFileSystemContext();
-  BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE,
-      base::Bind(
-          &RequestLocalFileSystemFunction::RequestOnFileThread,
-          this,
-          file_system_context,
-          source_url_,
-          render_view_host()->GetProcess()->GetID()));
-  // Will finish asynchronously.
+
+  const GURL origin_url = source_url_.GetOrigin();
+  file_system_context->OpenFileSystem(
+      origin_url,
+      fileapi::kFileSystemTypeExternal,
+      fileapi::OPEN_FILE_SYSTEM_FAIL_IF_NONEXISTENT,
+      base::Bind(&RequestLocalFileSystemFunction::DidOpenFileSystem,
+                 this,
+                 file_system_context));
   return true;
-}
-
-void RequestLocalFileSystemFunction::RespondSuccessOnUIThread(
-    const std::string& name, const GURL& root_path) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  // Add drive mount point immediately when we kick of first instance of file
-  // manager. The actual mount event will be sent to UI only when we perform
-  // proper authentication.
-  drive::DriveIntegrationService* integration_service =
-      drive::DriveIntegrationServiceFactory::GetForProfile(profile_);
-  if (integration_service)
-    SetDriveMountPointPermissions(profile_, extension_id(), render_view_host());
-  DictionaryValue* dict = new DictionaryValue();
-  SetResult(dict);
-  dict->SetString("name", name);
-  dict->SetString("path", root_path.spec());
-  dict->SetInteger("error", drive::FILE_ERROR_OK);
-  SendResponse(true);
-}
-
-void RequestLocalFileSystemFunction::RespondFailedOnUIThread(
-    base::PlatformFileError error_code) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  error_ = base::StringPrintf(kFileError, static_cast<int>(error_code));
-  SendResponse(false);
 }
 
 void FileWatchBrowserFunctionBase::Respond(bool success) {

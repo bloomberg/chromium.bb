@@ -149,27 +149,15 @@ class RequestLocalFileSystemFunction : public FileBrowserFunction {
                                 const GURL& root_path);
   void RespondFailedOnUIThread(base::PlatformFileError error_code);
 
-  // Requests to open the file system using |file_system_context| and
-  // |source_url| on the FILE thread. |child_id|, the process ID of the
-  // extension, is used for granting file system access permissions to the
-  // extension.
-  void RequestOnFileThread(
-      scoped_refptr<fileapi::FileSystemContext> file_system_context,
-      const GURL& source_url,
-      int child_id);
-
-  // Part of RequestOnFileThread(). Called when
-  // FileSystemContext::OpenFileSystem() is done successfully.
+  // Called when FileSystemContext::OpenFileSystem() is done.
   void DidOpenFileSystem(
       scoped_refptr<fileapi::FileSystemContext> file_system_context,
-      int child_id,
-      scoped_refptr<const extensions::Extension> extension,
       base::PlatformFileError result,
       const std::string& name,
       const GURL& root_path);
 
-  // Part of RequestOnFileThread(). Called when
-  // FileSystemContext::OpenFileSystem() is done unsuccessfully.
+  // Called when something goes wrong. Records the error to |error_| per the
+  // error code and reports that the private API function failed.
   void DidFail(base::PlatformFileError error_code);
 
   // Sets up file system access permissions to the extension identified by
