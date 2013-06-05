@@ -41,7 +41,6 @@ class ShellViewsDelegateAura : public views::DesktopTestViewsDelegate {
   }
 
   virtual ~ShellViewsDelegateAura() {
-    ViewsDelegate::views_delegate = NULL;
   }
 
   void SetUseTransparentWindows(bool transparent) {
