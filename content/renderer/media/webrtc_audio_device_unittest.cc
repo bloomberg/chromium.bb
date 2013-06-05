@@ -227,6 +227,10 @@ class MockWebRtcAudioRendererSource : public WebRtcAudioRendererSource {
                           int number_of_frames,
                           int audio_delay_milliseconds) OVERRIDE {
     // Signal that a callback has been received.
+    // Initialize the memory to zero to avoid uninitialized warning from
+    // Valgrind.
+    memset(audio_data, 0,
+           sizeof(int16) * number_of_channels * number_of_frames);
     event_->Signal();
   }
 
