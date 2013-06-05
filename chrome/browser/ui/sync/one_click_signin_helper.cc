@@ -1056,6 +1056,9 @@ void OneClickSigninHelper::DidStopLoading(
       url.ReplaceComponents(replacements) ==
         continue_url_.ReplaceComponents(replacements));
 
+  if (continue_url_match)
+    RemoveCurrentHistoryItem(contents);
+
   // If there is no valid email yet, there is nothing to do.  As of M26, the
   // password is allowed to be empty, since its no longer required to setup
   // sync.
@@ -1066,7 +1069,6 @@ void OneClickSigninHelper::DidStopLoading(
     std::string unused_value;
     if (net::GetValueForKeyInQuery(url, "ntp", &unused_value)) {
       SyncPromoUI::SetUserSkippedSyncPromo(profile);
-      RemoveCurrentHistoryItem(contents);
       RedirectToNtpOrAppsPage();
     }
 
@@ -1226,7 +1228,6 @@ void OneClickSigninHelper::DidStopLoading(
       // it will redirect back to webstore.
       if (source_ != SyncPromoUI::SOURCE_SETTINGS &&
           source_ != SyncPromoUI::SOURCE_WEBSTORE_INSTALL) {
-        RemoveCurrentHistoryItem(contents);
         RedirectToNtpOrAppsPage();
       }
       break;
