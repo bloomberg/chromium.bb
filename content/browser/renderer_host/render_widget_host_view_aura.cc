@@ -1466,14 +1466,17 @@ void RenderWidgetHostViewAura::AcceleratedSurfaceBuffersSwapped(
       params_in_pixel.route_id,
       gpu_host_id,
       params_in_pixel.mailbox_name);
-  BuffersSwapped(
-      params_in_pixel.size, params_in_pixel.scale_factor,
-      params_in_pixel.mailbox_name, ack_callback);
+  BuffersSwapped(params_in_pixel.size,
+                 params_in_pixel.scale_factor,
+                 params_in_pixel.mailbox_name,
+                 params_in_pixel.latency_info,
+                 ack_callback);
 }
 
 void RenderWidgetHostViewAura::SwapDelegatedFrame(
     scoped_ptr<cc::DelegatedFrameData> frame_data,
-    float frame_device_scale_factor) {
+    float frame_device_scale_factor,
+    const ui::LatencyInfo& latency_info) {
   gfx::Size frame_size_in_dip;
   if (!frame_data->render_pass_list.empty()) {
     frame_size_in_dip = gfx::ToFlooredSize(gfx::ScaleSize(
@@ -1499,6 +1502,7 @@ void RenderWidgetHostViewAura::SwapDelegatedFrame(
   if (!compositor) {
     SendDelegatedFrameAck();
   } else {
+    compositor->SetLatencyInfo(latency_info);
     AddOnCommitCallbackAndDisableLocks(
         base::Bind(&RenderWidgetHostViewAura::SendDelegatedFrameAck,
                    AsWeakPtr()));
@@ -1514,7 +1518,8 @@ void RenderWidgetHostViewAura::SendDelegatedFrameAck() {
 
 void RenderWidgetHostViewAura::SwapSoftwareFrame(
     scoped_ptr<cc::SoftwareFrameData> frame_data,
-    float frame_device_scale_factor) {
+    float frame_device_scale_factor,
+    const ui::LatencyInfo& latency_info) {
   const gfx::Size& frame_size = frame_data->size;
   const gfx::Rect& damage_rect = frame_data->damage_rect;
   const TransportDIB::Id& dib_id = frame_data->dib_id;
@@ -1561,6 +1566,7 @@ void RenderWidgetHostViewAura::SwapSoftwareFrame(
   window_->SetExternalTexture(NULL);
   window_->SchedulePaintInRect(
       ConvertRectToDIP(frame_device_scale_factor, damage_rect));
+  compositor->SetLatencyInfo(latency_info);
 
   if (paint_observer_)
     paint_observer_->OnUpdateCompositorContent();
@@ -1578,13 +1584,15 @@ void RenderWidgetHostViewAura::OnSwapCompositorFrame(
     scoped_ptr<cc::CompositorFrame> frame) {
   if (frame->delegated_frame_data) {
     SwapDelegatedFrame(frame->delegated_frame_data.Pass(),
-                       frame->metadata.device_scale_factor);
+                       frame->metadata.device_scale_factor,
+                       frame->metadata.latency_info);
     return;
   }
 
   if (frame->software_frame_data) {
     SwapSoftwareFrame(frame->software_frame_data.Pass(),
-                      frame->metadata.device_scale_factor);
+                      frame->metadata.device_scale_factor,
+                      frame->metadata.latency_info);
     return;
   }
 
@@ -1608,9 +1616,11 @@ void RenderWidgetHostViewAura::OnSwapCompositorFrame(
   std::string mailbox_name(
       reinterpret_cast<const char*>(frame->gl_frame_data->mailbox.name),
       sizeof(frame->gl_frame_data->mailbox.name));
-  BuffersSwapped(
-      frame->gl_frame_data->size, frame->metadata.device_scale_factor,
-      mailbox_name, ack_callback);
+  BuffersSwapped(frame->gl_frame_data->size,
+                 frame->metadata.device_scale_factor,
+                 mailbox_name,
+                 frame->metadata.latency_info,
+                 ack_callback);
 }
 
 #if defined(OS_WIN)
@@ -1627,6 +1637,7 @@ void RenderWidgetHostViewAura::BuffersSwapped(
     const gfx::Size& size,
     float surface_scale_factor,
     const std::string& mailbox_name,
+    const ui::LatencyInfo& latency_info,
     const BufferPresentedCallback& ack_callback) {
   scoped_refptr<ui::Texture> texture_to_return(current_surface_);
   const gfx::Rect surface_rect = gfx::Rect(size);
@@ -1642,6 +1653,7 @@ void RenderWidgetHostViewAura::BuffersSwapped(
   if (compositor) {
     gfx::Size surface_size = ConvertSizeToDIP(surface_scale_factor, size);
     window_->SchedulePaintInRect(gfx::Rect(surface_size));
+    compositor->SetLatencyInfo(latency_info);
   }
 
   if (paint_observer_)
@@ -1716,6 +1728,7 @@ void RenderWidgetHostViewAura::AcceleratedSurfacePostSubBuffer(
     if (paint_observer_)
       paint_observer_->OnUpdateCompositorContent();
     window_->SchedulePaintInRect(rect_to_paint);
+    compositor->SetLatencyInfo(params_in_pixel.latency_info);
   }
 
   SwapBuffersCompleted(ack_callback, previous_texture);

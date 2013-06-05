@@ -55,6 +55,7 @@ class CompositorObserver;
 class ContextProviderFromContextFactory;
 class Layer;
 class PostedSwapQueue;
+struct LatencyInfo;
 
 // This class abstracts the creation of the 3D context for the compositor. It is
 // a global object.
@@ -296,6 +297,8 @@ class COMPOSITOR_EXPORT Compositor
   // Schedule redraw and append damage_rect to the damage region calculated
   // from changes to layer properties.
   void ScheduleRedrawRect(const gfx::Rect& damage_rect);
+
+  void SetLatencyInfo(const ui::LatencyInfo& latency_info);
 
   // Reads the region |bounds_in_pixel| of the contents of the last rendered
   // frame into the given bitmap.

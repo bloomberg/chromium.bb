@@ -353,6 +353,29 @@ class BrowserCompositorOutputSurface
                    compositor_, timebase, interval));
   }
 
+  virtual void SwapBuffers(const ui::LatencyInfo& latency_info) OVERRIDE {
+    WebGraphicsContext3DCommandBufferImpl* command_buffer =
+        static_cast<WebGraphicsContext3DCommandBufferImpl*>(context3d());
+    CommandBufferProxyImpl* command_buffer_proxy =
+        command_buffer->GetCommandBufferProxy();
+    DCHECK(command_buffer_proxy);
+    context3d()->shallowFlushCHROMIUM();
+    command_buffer_proxy->SetLatencyInfo(latency_info);
+    OutputSurface::SwapBuffers(latency_info);
+  }
+
+  virtual void PostSubBuffer(gfx::Rect rect,
+                             const ui::LatencyInfo& latency_info) OVERRIDE {
+    WebGraphicsContext3DCommandBufferImpl* command_buffer =
+        static_cast<WebGraphicsContext3DCommandBufferImpl*>(context3d());
+    CommandBufferProxyImpl* command_buffer_proxy =
+        command_buffer->GetCommandBufferProxy();
+    DCHECK(command_buffer_proxy);
+    context3d()->shallowFlushCHROMIUM();
+    command_buffer_proxy->SetLatencyInfo(latency_info);
+    OutputSurface::PostSubBuffer(rect, latency_info);
+  }
+
  private:
   int surface_id_;
   scoped_refptr<BrowserCompositorOutputSurfaceProxy> output_surface_proxy_;

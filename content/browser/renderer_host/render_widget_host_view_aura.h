@@ -461,6 +461,7 @@ class RenderWidgetHostViewAura
   void BuffersSwapped(const gfx::Size& size,
                       float surface_scale_factor,
                       const std::string& mailbox_name,
+                      const ui::LatencyInfo& latency_info,
                       const BufferPresentedCallback& ack_callback);
 
   bool SwapBuffersPrepare(const gfx::Rect& surface_rect,
@@ -475,12 +476,14 @@ class RenderWidgetHostViewAura
 
   void SwapDelegatedFrame(
       scoped_ptr<cc::DelegatedFrameData> frame_data,
-      float frame_device_scale_factor);
+      float frame_device_scale_factor,
+      const ui::LatencyInfo& latency_info);
   void SendDelegatedFrameAck();
 
   void SwapSoftwareFrame(
       scoped_ptr<cc::SoftwareFrameData> frame_data,
-      float frame_device_scale_factor);
+      float frame_device_scale_factor,
+      const ui::LatencyInfo& latency_info);
   void SendSoftwareFrameAck(const TransportDIB::Id& id);
 
   BrowserAccessibilityManager* GetOrCreateBrowserAccessibilityManager();

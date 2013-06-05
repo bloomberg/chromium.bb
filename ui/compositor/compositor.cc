@@ -623,6 +623,10 @@ void Compositor::ScheduleRedrawRect(const gfx::Rect& damage_rect) {
   host_->SetNeedsRedrawRect(damage_rect);
 }
 
+void Compositor::SetLatencyInfo(const ui::LatencyInfo& latency_info) {
+  host_->SetLatencyInfo(latency_info);
+}
+
 bool Compositor::ReadPixels(SkBitmap* bitmap,
                             const gfx::Rect& bounds_in_pixel) {
   if (bounds_in_pixel.right() > size().width() ||

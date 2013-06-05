@@ -344,6 +344,7 @@ void GpuProcessHostUIShim::OnAcceleratedSurfaceBuffersSwapped(
 }
 
 void GpuProcessHostUIShim::OnFrameDrawn(const ui::LatencyInfo& latency_info) {
+  RenderWidgetHostImpl::CompositorFrameDrawn(latency_info);
 }
 
 void GpuProcessHostUIShim::OnAcceleratedSurfacePostSubBuffer(

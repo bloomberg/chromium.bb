@@ -2523,4 +2523,26 @@ void RenderWidgetHostImpl::FrameSwapped(const ui::LatencyInfo& latency_info) {
     Send(new ViewMsg_SetBrowserRenderingStats(routing_id_, rendering_stats_));
 }
 
+// static
+void RenderWidgetHostImpl::CompositorFrameDrawn(
+    const ui::LatencyInfo& latency_info) {
+  for (ui::LatencyInfo::LatencyMap::const_iterator b =
+           latency_info.latency_components.begin();
+       b != latency_info.latency_components.end();
+       ++b) {
+    if (b->first.first != ui::INPUT_EVENT_LATENCY_COMPONENT)
+      continue;
+    // Matches with GetLatencyComponentId
+    int routing_id = b->first.second & 0xffffffff;
+    int process_id = (b->first.second >> 32) & 0xffffffff;
+    RenderProcessHost* host = RenderProcessHost::FromID(process_id);
+    if (!host)
+      continue;
+    RenderWidgetHost* rwh = host->GetRenderWidgetHostByID(routing_id);
+    if (!rwh)
+      continue;
+    RenderWidgetHostImpl::From(rwh)->FrameSwapped(latency_info);
+  }
+}
+
 }  // namespace content
