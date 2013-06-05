@@ -1654,6 +1654,14 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Extensions.BackgroundPageType"
+    units="ExtensionBackgroundPageType">
+  <summary>
+    The type (if any) of background page the extension has. Recorded for
+    installed extensions on startup.
+  </summary>
+</histogram>
+
 <histogram name="Extensions.DisabledUIUserResponse"
     enum="ExtensionDisabledUIUserResponse">
   <summary>
@@ -11623,6 +11631,12 @@ other types of suffix sets.
   <int value="11002" label="WSATRY_AGAIN"/>
   <int value="11003" label="WSA_ANO_RECOVERY"/>
   <int value="11004" label="WSANO_DATA"/>
+</enum>
+
+<enum name="ExtensionBackgroundPageType" type="int">
+  <int value="0" label="None"/>
+  <int value="1" label="Persistent"/>
+  <int value="2" label="Event Page"/>
 </enum>
 
 <enum name="ExtensionDisabledUIUserResponse" type="int">
