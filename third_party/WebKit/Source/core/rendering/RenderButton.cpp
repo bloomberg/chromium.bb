@@ -109,7 +109,7 @@ void RenderButton::updateFromElement()
 {
     // If we're an input element, we may need to change our button text.
     if (node()->hasTagName(inputTag)) {
-        HTMLInputElement* input = static_cast<HTMLInputElement*>(node());
+        HTMLInputElement* input = toHTMLInputElement(node());
         String value = input->valueWithDefault();
         setText(value);
     }

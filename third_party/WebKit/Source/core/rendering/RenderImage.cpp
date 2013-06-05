@@ -526,7 +526,7 @@ void RenderImage::updateAltText()
         return;
 
     if (node()->hasTagName(inputTag))
-        m_altText = static_cast<HTMLInputElement*>(node())->altText();
+        m_altText = toHTMLInputElement(node())->altText();
     else if (node()->hasTagName(imgTag))
         m_altText = static_cast<HTMLImageElement*>(node())->altText();
 }

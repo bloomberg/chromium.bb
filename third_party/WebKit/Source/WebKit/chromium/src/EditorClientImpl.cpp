@@ -620,8 +620,7 @@ void EditorClientImpl::textFieldDidEndEditing(Element* element)
 
 void EditorClientImpl::textDidChangeInTextField(Element* element)
 {
-    ASSERT(element->hasLocalName(HTMLNames::inputTag));
-    HTMLInputElement* inputElement = static_cast<HTMLInputElement*>(element);
+    HTMLInputElement* inputElement = toHTMLInputElement(element);
     if (m_webView->autofillClient())
         m_webView->autofillClient()->textFieldDidChange(WebInputElement(inputElement));
 }

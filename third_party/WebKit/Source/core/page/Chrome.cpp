@@ -360,7 +360,7 @@ void Chrome::setToolTip(const HitTestResult& result)
     if (toolTip.isEmpty()) {
         if (Node* node = result.innerNonSharedNode()) {
             if (node->hasTagName(inputTag)) {
-                HTMLInputElement* input = static_cast<HTMLInputElement*>(node);
+                HTMLInputElement* input = toHTMLInputElement(node);
                 toolTip = input->defaultToolTip();
 
                 // FIXME: We should obtain text direction of tooltip from

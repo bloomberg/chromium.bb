@@ -277,7 +277,7 @@ WebInputElement& WebInputElement::operator=(const PassRefPtr<HTMLInputElement>& 
 
 WebInputElement::operator PassRefPtr<HTMLInputElement>() const
 {
-    return static_cast<HTMLInputElement*>(m_private.get());
+    return toHTMLInputElement(m_private.get());
 }
 
 WebInputElement* toWebInputElement(WebElement* webElement)

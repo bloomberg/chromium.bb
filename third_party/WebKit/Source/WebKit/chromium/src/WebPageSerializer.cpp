@@ -67,8 +67,7 @@ KURL getSubResourceURLFromElement(Element* element)
     if (element->hasTagName(HTMLNames::imgTag) || element->hasTagName(HTMLNames::scriptTag))
         attributeName = &HTMLNames::srcAttr;
     else if (element->hasTagName(HTMLNames::inputTag)) {
-        HTMLInputElement* input = static_cast<HTMLInputElement*>(element);
-        if (input->isImageButton())
+        if (toHTMLInputElement(element)->isImageButton())
             attributeName = &HTMLNames::srcAttr;
     } else if (element->hasTagName(HTMLNames::bodyTag)
                || element->hasTagName(HTMLNames::tableTag)

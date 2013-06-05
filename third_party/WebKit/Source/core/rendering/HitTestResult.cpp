@@ -245,7 +245,7 @@ String HitTestResult::altDisplayString() const
     }
     
     if (m_innerNonSharedNode->hasTagName(inputTag)) {
-        HTMLInputElement* input = static_cast<HTMLInputElement*>(m_innerNonSharedNode.get());
+        HTMLInputElement* input = toHTMLInputElement(m_innerNonSharedNode.get());
         return displayString(input->alt(), m_innerNonSharedNode.get());
     }
 
@@ -375,7 +375,7 @@ bool HitTestResult::isContentEditable() const
         return true;
 
     if (m_innerNonSharedNode->hasTagName(inputTag))
-        return static_cast<HTMLInputElement*>(m_innerNonSharedNode.get())->isTextField();
+        return toHTMLInputElement(m_innerNonSharedNode.get())->isTextField();
 
     return m_innerNonSharedNode->rendererIsEditable();
 }

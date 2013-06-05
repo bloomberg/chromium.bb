@@ -66,7 +66,7 @@ bool RenderFileUploadControl::canBeReplacedWithInlineRunIn() const
 
 void RenderFileUploadControl::updateFromElement()
 {
-    HTMLInputElement* input = static_cast<HTMLInputElement*>(node());
+    HTMLInputElement* input = toHTMLInputElement(node());
     ASSERT(input->isFileUpload());
 
     if (HTMLInputElement* button = uploadButton()) {
@@ -92,7 +92,7 @@ static int nodeWidth(Node* node)
 
 int RenderFileUploadControl::maxFilenameWidth() const
 {
-    HTMLInputElement* input = static_cast<HTMLInputElement*>(node());
+    HTMLInputElement* input = toHTMLInputElement(node());
     return max(0, contentBoxRect().pixelSnappedWidth() - nodeWidth(uploadButton()) - afterButtonSpacing
         - (input->icon() ? iconWidth + iconFilenameSpacing : 0));
 }
@@ -125,7 +125,7 @@ void RenderFileUploadControl::paintObject(PaintInfo& paintInfo, const LayoutPoin
         if (!button)
             return;
 
-        HTMLInputElement* input = static_cast<HTMLInputElement*>(node());
+        HTMLInputElement* input = toHTMLInputElement(node());
         LayoutUnit buttonWidth = nodeWidth(button);
         LayoutUnit buttonAndIconWidth = buttonWidth + afterButtonSpacing
             + (input->icon() ? iconWidth + iconFilenameSpacing : 0);
@@ -230,12 +230,12 @@ VisiblePosition RenderFileUploadControl::positionForPoint(const LayoutPoint&)
 
 HTMLInputElement* RenderFileUploadControl::uploadButton() const
 {
-    HTMLInputElement* input = static_cast<HTMLInputElement*>(node());
+    HTMLInputElement* input = toHTMLInputElement(node());
 
     ASSERT(input->shadow());
 
     Node* buttonNode = input->shadow()->oldestShadowRoot()->firstChild();
-    return buttonNode && buttonNode->isHTMLElement() && buttonNode->hasTagName(inputTag) ? static_cast<HTMLInputElement*>(buttonNode) : 0;
+    return buttonNode && buttonNode->isHTMLElement() && buttonNode->hasTagName(inputTag) ? toHTMLInputElement(buttonNode) : 0;
 }
 
 String RenderFileUploadControl::buttonValue()
@@ -248,7 +248,7 @@ String RenderFileUploadControl::buttonValue()
 
 String RenderFileUploadControl::fileTextValue() const
 {
-    HTMLInputElement* input = static_cast<HTMLInputElement*>(node());
+    HTMLInputElement* input = toHTMLInputElement(node());
     ASSERT(input->files());
     return theme()->fileListNameForWidth(input->files(), style()->font(), maxFilenameWidth(), input->multiple());
 }

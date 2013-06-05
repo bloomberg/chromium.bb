@@ -186,8 +186,8 @@ PassRefPtr<FormSubmission> FormSubmission::create(HTMLFormElement* form, const A
         HTMLElement* element = toHTMLElement(control);
         if (!element->isDisabledFormControl())
             control->appendFormData(*domFormData, isMultiPartForm);
-        if (element->hasLocalName(inputTag)) {
-            HTMLInputElement* input = static_cast<HTMLInputElement*>(control);
+        if (element->hasTagName(inputTag)) {
+            HTMLInputElement* input = toHTMLInputElement(element);
             if (input->isTextField())
                 formValues.append(pair<String, String>(input->name().string(), input->value()));
             if (input->isPasswordField() && !input->value().isEmpty())

@@ -138,7 +138,7 @@ bool IsSelectInDefaultState(HTMLSelectElement* select)
 bool IsInDefaultState(HTMLFormControlElement* formElement)
 {
     if (formElement->hasTagName(HTMLNames::inputTag)) {
-        const HTMLInputElement* inputElement = static_cast<HTMLInputElement*>(formElement);
+        const HTMLInputElement* inputElement = toHTMLInputElement(formElement);
         if (inputElement->isCheckbox() || inputElement->isRadioButton())
             return inputElement->checked() == inputElement->hasAttribute(checkedAttr);
     } else if (formElement->hasTagName(HTMLNames::selectTag))
@@ -181,7 +181,7 @@ HTMLInputElement* findSuitableSearchInputElement(const HTMLFormElement* form)
                     // This form has multiple fields; don't treat it as searchable.
                     return 0;
                 }
-                textElement = static_cast<HTMLInputElement*>(formElement);
+                textElement = toHTMLInputElement(formElement);
             }
         }
     }

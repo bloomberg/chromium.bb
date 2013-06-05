@@ -294,17 +294,15 @@ void ContextMenuClientImpl::showContextMenu(const WebCore::ContextMenu* defaultM
     }
 
     if (r.isSelected()) {
-        if (!r.innerNonSharedNode()->hasTagName(HTMLNames::inputTag) || !static_cast<HTMLInputElement*>(r.innerNonSharedNode())->isPasswordField())
+        if (!r.innerNonSharedNode()->hasTagName(HTMLNames::inputTag) || !toHTMLInputElement(r.innerNonSharedNode())->isPasswordField())
             data.selectedText = selectedFrame->editor()->selectedText().stripWhiteSpace();
     }
 
     if (r.isContentEditable()) {
         data.isEditable = true;
 #if ENABLE(INPUT_SPEECH)
-        if (r.innerNonSharedNode()->hasTagName(HTMLNames::inputTag)) {
-            data.isSpeechInputEnabled = 
-                static_cast<HTMLInputElement*>(r.innerNonSharedNode())->isSpeechEnabled();
-        }  
+        if (r.innerNonSharedNode()->hasTagName(HTMLNames::inputTag))
+            data.isSpeechInputEnabled = toHTMLInputElement(r.innerNonSharedNode())->isSpeechEnabled();
 #endif
         // When Chrome enables asynchronous spellchecking, its spellchecker adds spelling markers to misspelled
         // words and attaches suggestions to these markers in the background. Therefore, when a user right-clicks
@@ -339,7 +337,7 @@ void ContextMenuClientImpl::showContextMenu(const WebCore::ContextMenu* defaultM
         }
         HTMLFormElement* form = selectedFrame->selection()->currentForm();
         if (form && r.innerNonSharedNode()->hasTagName(HTMLNames::inputTag)) {
-            HTMLInputElement* selectedElement = static_cast<HTMLInputElement*>(r.innerNonSharedNode());
+            HTMLInputElement* selectedElement = toHTMLInputElement(r.innerNonSharedNode());
             if (selectedElement) {
                 WebSearchableFormData ws = WebSearchableFormData(WebFormElement(form), WebInputElement(selectedElement));
                 if (ws.url().isValid())

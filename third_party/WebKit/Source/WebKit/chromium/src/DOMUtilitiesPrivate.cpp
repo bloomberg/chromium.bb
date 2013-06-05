@@ -43,7 +43,7 @@ namespace WebKit {
 bool elementHasLegalLinkAttribute(const Element* element, const QualifiedName& attrName)
 {
     if (attrName == srcAttr)
-        return element->hasTagName(imgTag) || element->hasTagName(scriptTag) || element->hasTagName(iframeTag) || element->hasTagName(frameTag) || (element->hasTagName(inputTag) && static_cast<const HTMLInputElement*>(element)->isImageButton());
+        return element->hasTagName(imgTag) || element->hasTagName(scriptTag) || element->hasTagName(iframeTag) || element->hasTagName(frameTag) || (element->hasTagName(inputTag) && toHTMLInputElement(element)->isImageButton());
     if (attrName == hrefAttr)
         return element->hasTagName(linkTag) || element->hasTagName(aTag) || element->hasTagName(areaTag);
     if (attrName == actionAttr)

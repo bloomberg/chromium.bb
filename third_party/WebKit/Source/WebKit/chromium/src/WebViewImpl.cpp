@@ -2217,7 +2217,7 @@ WebTextInputType WebViewImpl::textInputType()
         return WebTextInputTypeNone;
 
     if (node->hasTagName(HTMLNames::inputTag)) {
-        HTMLInputElement* input = static_cast<HTMLInputElement*>(node);
+        HTMLInputElement* input = toHTMLInputElement(node);
 
         if (input->isDisabledOrReadOnly())
             return WebTextInputTypeNone;

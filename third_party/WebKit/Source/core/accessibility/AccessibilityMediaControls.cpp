@@ -271,8 +271,7 @@ String AccessibilityMediaTimeline::valueDescription() const
     if (!node->hasTagName(inputTag))
         return String();
 
-    float time = static_cast<HTMLInputElement*>(node)->value().toFloat();
-    return localizedMediaTimeDescription(time);
+    return localizedMediaTimeDescription(toHTMLInputElement(node)->value().toFloat());
 }
 
 String AccessibilityMediaTimeline::helpText() const

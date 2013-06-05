@@ -124,8 +124,7 @@ inline HTMLInputElement* TextFieldDecorationElement::hostInput()
 {
     // TextFieldDecorationElement is created only by C++ code, and it is always
     // in <input> shadow.
-    ASSERT_WITH_SECURITY_IMPLICATION(!shadowHost() || shadowHost()->hasTagName(inputTag));
-    return static_cast<HTMLInputElement*>(shadowHost());
+    return toHTMLInputElement(shadowHost());
 }
 
 bool TextFieldDecorationElement::isTextFieldDecoration() const
