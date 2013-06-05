@@ -6,11 +6,15 @@
 
 #include <string>
 
+#include "base/string16.h"
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/webui/welcome_handler_android.h"
 #include "chrome/common/url_constants.h"
+#include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "grit/browser_resources.h"
 #include "grit/chromium_strings.h"
@@ -46,13 +50,18 @@ WelcomeUI::WelcomeUI(content::WebUI* web_ui)
       kProductTourBaseURL, locale.c_str());
   html_source->AddString("productTourUrl", product_tour_url);
 
-  std::string privacy_notice_url = base::StringPrintf(
-      kPrivacyNoticeBaseURL, locale.c_str());
-  html_source->AddString("tosHtml",
-      l10n_util::GetStringFUTF16(
-          IDS_FIRSTRUN_TOS_EXPLANATION,
-          ASCIIToUTF16("#terms"),
-          UTF8ToUTF16(privacy_notice_url)));
+  TabAndroid* tab = TabAndroid::FromWebContents(web_ui->GetWebContents());
+  bool tos_visible = tab && tab->ShouldWelcomePageLinkToTermsOfService();
+  html_source->AddBoolean("tosVisible", tos_visible);
+
+  string16 tos_html;
+  if (tos_visible) {
+    std::string privacy_notice_url =
+        base::StringPrintf(kPrivacyNoticeBaseURL, locale.c_str());
+    tos_html = l10n_util::GetStringFUTF16(IDS_FIRSTRUN_TOS_EXPLANATION,
+                                          UTF8ToUTF16(privacy_notice_url));
+  }
+  html_source->AddString("tosHtml", tos_html);
 
   // Add required resources.
   html_source->SetJsonPath("strings.js");
@@ -64,6 +73,9 @@ WelcomeUI::WelcomeUI(content::WebUI* web_ui)
 
   Profile* profile = Profile::FromWebUI(web_ui);
   content::WebUIDataSource::Add(profile, html_source);
+
+  // Add message handlers.
+  web_ui->AddMessageHandler(new WelcomeHandler());
 }
 
 WelcomeUI::~WelcomeUI() {

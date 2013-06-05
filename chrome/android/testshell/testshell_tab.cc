@@ -76,6 +76,19 @@ void TestShellTab::EditBookmark(int64 node_id, bool is_folder) {
   NOTIMPLEMENTED();
 }
 
+void TestShellTab::ShowSyncSettings() {
+  NOTIMPLEMENTED();
+}
+
+void TestShellTab::ShowTermsOfService() {
+  NOTIMPLEMENTED();
+}
+
+bool TestShellTab::ShouldWelcomePageLinkToTermsOfService() {
+  NOTIMPLEMENTED();
+  return false;
+}
+
 void TestShellTab::RunExternalProtocolDialog(const GURL& url) {
   NOTIMPLEMENTED();
 }

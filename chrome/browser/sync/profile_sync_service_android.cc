@@ -234,7 +234,13 @@ void ProfileSyncServiceAndroid::EnableSync(JNIEnv* env, jobject) {
 
 void ProfileSyncServiceAndroid::DisableSync(JNIEnv* env, jobject) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  sync_service_->StopAndSuppress();
+  // Don't need to do anything if we're already disabled.
+  if (!sync_prefs_->IsStartSuppressed()) {
+    sync_service_->StopAndSuppress();
+  } else {
+    DVLOG(2)
+        << "Ignoring call to DisableSync() because sync is already disabled";
+  }
 }
 
 void ProfileSyncServiceAndroid::SignInSync(

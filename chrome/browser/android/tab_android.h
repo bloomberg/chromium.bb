@@ -65,6 +65,16 @@ class TabAndroid {
   // Called when a bookmark node should be edited.
   virtual void EditBookmark(int64 node_id, bool is_folder) = 0;
 
+  // Called to show the sync settings menu.
+  virtual void ShowSyncSettings() = 0;
+
+  // Called to show a dialog with the terms of service.
+  virtual void ShowTermsOfService() = 0;
+
+  // Called to determine if chrome://welcome should contain links to the terms
+  // of service and the privacy notice.
+  virtual bool ShouldWelcomePageLinkToTermsOfService() = 0;
+
   // Called when the common ExternalProtocolHandler wants to
   // run the external protocol dialog.
   // TODO(jknotten): Remove this method. Making it non-abstract, so that

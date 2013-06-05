@@ -751,6 +751,8 @@ void ProfileSyncService::ShutdownImpl(bool sync_disabled) {
     RemoveObserver(sync_global_error_.get());
     sync_global_error_.reset(NULL);
   }
+
+  NotifyObservers();
 }
 
 void ProfileSyncService::DisableForUser() {
@@ -760,7 +762,6 @@ void ProfileSyncService::DisableForUser() {
   invalidator_storage_.Clear();
   ClearUnrecoverableError();
   ShutdownImpl(true);
-  NotifyObservers();
 }
 
 bool ProfileSyncService::HasSyncSetupCompleted() const {

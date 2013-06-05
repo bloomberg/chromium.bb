@@ -2333,6 +2333,8 @@
         'browser/ui/webui/version_handler_chromeos.h',
         'browser/ui/webui/version_ui.cc',
         'browser/ui/webui/version_ui.h',
+        'browser/ui/webui/welcome_handler_android.cc',
+        'browser/ui/webui/welcome_handler_android.h',
         'browser/ui/webui/welcome_ui_android.cc',
         'browser/ui/webui/welcome_ui_android.h',
         'browser/ui/window_sizer/window_sizer.cc',

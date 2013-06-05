@@ -17,15 +17,16 @@
         i18n-content="takeATour">
     </a>
     <div class="spacing"></div>
-    <div id="sync-footer" class="footer">
+    <div id="sync-footer" class="footer" hidden>
       <span i18n-content="firstRunSignedInTitle"></span>
       <span i18n-content="firstRunSignedInDescription"></span>
-      <a id="settings" href="#settings" i18n-content="settings"></a>
+      <a id="settings" href="#" i18n-content="settings"></a>
     </div>
-    <div id="tos-footer" class="footer">
+    <div id="tos-footer" class="footer" hidden>
       <span i18n-values=".innerHTML:tosHtml"></span>
     </div>
     <script src="chrome://welcome/strings.js"></script>
     <script src="chrome://resources/js/i18n_template2.js"></script>
+    <script src="chrome://resources/js/util.js"></script>
   </body>
 </html>
