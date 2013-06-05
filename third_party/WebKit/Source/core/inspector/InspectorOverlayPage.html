@@ -61,64 +61,16 @@ body.platform-linux {
     background-color: rgba(0, 0, 0, 0.31);
 }
 
-#canvas {
-    pointer-events: none;
-}
-
-.controls-line {
-    display: -webkit-flex;
-    -webkit-justify-content: center;
+.message-line {
     margin: 10px 0;
+    text-align: center;
 }
 
 .message-box {
-    padding: 2px 4px;
-    display: -webkit-flex;
-    -webkit-align-items: center;
-    cursor: default;
-}
-
-.controls-line > * {
     background-color: rgb(255, 255, 194);
-    border: 1px solid rgb(202, 202, 202);
-    height: 22px;
-    box-sizing: border-box;
-}
-
-.controls-line button {
-    width: 26px;
-    margin-left: -1px;
-    margin-right: 0;
-    padding: 0;
-}
-
-.controls-line button:hover {
-    cursor: pointer;
-}
-
-.controls-line button .glyph {
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.75);
-    opacity: 0.8;
-    -webkit-mask-repeat: no-repeat;
-    -webkit-mask-position: center;
-}
-
-.controls-line button:active {
-    border: 1px solid rgb(120, 120, 120);
-    z-index: 1;
-}
-
-#resume-button .glyph {
-    -webkit-mask-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAA0AAAAKCAYAAABv7tTEAAAAAXNSR0IArs4c6QAAAFJJREFUKM+10bEJgGAMBeEPbR3BLRzEVdzEVRzELRzBVohVwEJ+iODBlQfhBeJhsmHU4C0KnFjQV6J0x1SNAhdWDJUoPTB3PvLLeaUhypM3n3sD/qc7lDrdpIEAAAAASUVORK5CYII=);
-    -webkit-mask-size: 13px 10px;
-    background-color: rgb(66, 129, 235);
-}
-
-#step-over-button .glyph {
-    -webkit-mask-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABIAAAAKCAYAAAC5Sw6hAAAAAXNSR0IArs4c6QAAAOFJREFUKM+N0j8rhXEUB/DPcxW35CqhvIBrtqibkklhV8qkTHe4ZbdblcXgPVhuMdqUTUl5A2KRRCF5LGc4PT1P7qnfcr5/zu/8KdTHLFaxjHnc4RZXKI0QYxjgLQTVd42l/0wmg5iFX3iq5H6w22RS4DyRH7CB8cAXcBTGJT6xUmd0mEwuMdFQcA3fwXvGTAan8BrgPabTL9fRRyfx91PRMwyjGwcJ2EyCfsrfpPw2Pipz24NT/MZciiQYVshzOKnZ5Hturxt3k2MnCpS4SPkeHpPR8Sh3tYgttBoW9II2/AHiaEqvD2Fc0wAAAABJRU5ErkJggg==);
-    -webkit-mask-size: 18px 10px;
+    border: 1px solid rgb(128, 128, 128);
+    display: inline-block;
+    padding: 2px 4px;
 }
 
 .px {
@@ -172,8 +124,9 @@ const gridBackgroundColor = "rgba(255, 255, 255, 0.8)";
 
 function drawPausedInDebuggerMessage(message)
 {
-    document.querySelector(".controls-line").style.visibility = "visible";
-    document.getElementById("paused-in-debugger").textContent = message;
+    var pausedInDebugger = document.getElementById("paused-in-debugger");
+    pausedInDebugger.textContent = message;
+    pausedInDebugger.style.visibility = "visible";
     document.body.classList.add("dimmed");
 }
 
@@ -433,7 +386,7 @@ function reset(resetData)
     window.canvasWidth = viewportSize.width;
     window.canvasHeight = viewportSize.height;
 
-    document.querySelector(".controls-line").style.visibility = "hidden";
+    document.getElementById("paused-in-debugger").style.visibility = "hidden";
     document.getElementById("element-title").style.visibility = "hidden";
     document.body.classList.remove("dimmed");
     window._gridPainted = false;
@@ -679,32 +632,10 @@ function log(text)
     document.getElementById("log").appendChild(logEntry);
 }
 
-function onResumeClick()
-{
-    InspectorOverlayHost.resume();
-}
-
-function onStepOverClick()
-{
-    InspectorOverlayHost.stepOver();
-}
-
-function onLoaded()
-{
-    document.getElementById("resume-button").addEventListener("click", onResumeClick);
-    document.getElementById("step-over-button").addEventListener("click", onStepOverClick);
-}
-
-window.addEventListener("DOMContentLoaded", onLoaded);
-
 </script>
 </head>
 <body class="fill">
-<div class="controls-line">
-    <div class="message-box"><div id="paused-in-debugger"></div></div>
-    <button id="resume-button" title="Resume script execution"><div class="glyph"></div></button>
-    <button id="step-over-button" title="Step over next function call"><div class="glyph"></div></button>
-</div>
+<div class="message-line"><span class="message-box" id="paused-in-debugger"></span></div>
 </body>
 <canvas id="canvas" class="fill"></canvas>
 <div id="element-title">
