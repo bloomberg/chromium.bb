@@ -4,6 +4,7 @@
 
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/run_loop.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_prefs.h"
@@ -78,6 +79,7 @@ class ExtensionDisabledGlobalErrorTest : public ExtensionBrowserTest {
     size_t size_before = service_->extensions()->size();
     if (UpdateExtension(extension->id(), crx_path, expected_change))
       return NULL;
+    base::RunLoop().RunUntilIdle();
     EXPECT_EQ(size_before + expected_change, service_->extensions()->size());
     if (service_->disabled_extensions()->size() != 1u)
       return NULL;
@@ -208,6 +210,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionDisabledGlobalErrorTest,
   EXPECT_FALSE(service_->ProcessExtensionSyncData(sync_data));
 
   WaitForExtensionInstall();
+  base::RunLoop().RunUntilIdle();
 
   extension = service_->GetExtensionById(extension_id, true);
   ASSERT_TRUE(extension);
