@@ -282,3 +282,47 @@ TEST_F(PopupCollectionTest, UpdateIconAndBody) {
   EXPECT_EQ("2", [[popups objectAtIndex:1] notificationID]);
   EXPECT_EQ("3", [[popups objectAtIndex:2] notificationID]);
 }
+
+TEST_F(PopupCollectionTest, CloseCollectionBeforeNewPopupAnimationEnds) {
+  // Add a notification and don't wait for the animation to finish.
+  center_->AddNotification(message_center::NOTIFICATION_TYPE_SIMPLE,
+                           "1",
+                           ASCIIToUTF16("One"),
+                           ASCIIToUTF16("This is the first notification to"
+                                        " be displayed"),
+                           string16(),
+                           std::string(),
+                           NULL,
+                           NULL);
+
+  // Release the popup collection before the animation ends. No crash should
+  // be expected.
+  collection_.reset();
+}
+
+TEST_F(PopupCollectionTest, CloseCollectionBeforeClosePopupAnimationEnds) {
+  AddThreeNotifications();
+
+  // Remove a notification and don't wait for the animation to finish.
+  center_->RemoveNotification("1", true);
+
+  // Release the popup collection before the animation ends. No crash should
+  // be expected.
+  collection_.reset();
+}
+
+TEST_F(PopupCollectionTest, CloseCollectionBeforeUpdatePopupAnimationEnds) {
+  AddThreeNotifications();
+
+  // Update a notification and don't wait for the animation to finish.
+  center_->UpdateNotification("1",
+                              "1",
+                              ASCIIToUTF16("One"),
+                              ASCIIToUTF16("New message."),
+                              NULL,
+                              NULL);
+
+  // Release the popup collection before the animation ends. No crash should
+  // be expected.
+  collection_.reset();
+}

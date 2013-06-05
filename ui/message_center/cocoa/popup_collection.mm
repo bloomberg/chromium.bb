@@ -93,12 +93,15 @@ class PopupCollectionObserver : public message_center::MessageCenterObserver {
     messageCenter_ = messageCenter;
     observer_.reset(new PopupCollectionObserver(messageCenter_, self));
     popups_.reset([[NSMutableArray alloc] init]);
+    popupsBeingRemoved_.reset([[NSMutableArray alloc] init]);
     popupAnimationDuration_ = kAnimationDuration;
   }
   return self;
 }
 
 - (void)dealloc {
+  [popupsBeingRemoved_ makeObjectsPerformSelector:
+      @selector(markPopupCollectionGone)];
   [self removeAllNotifications];
   [super dealloc];
 }
@@ -112,6 +115,13 @@ class PopupCollectionObserver : public message_center::MessageCenterObserver {
 }
 
 - (void)onPopupAnimationEnded:(const std::string&)notificationID {
+  NSUInteger index = [popupsBeingRemoved_ indexOfObjectPassingTest:
+      ^BOOL(id popup, NSUInteger index, BOOL* stop) {
+          return [popup notificationID] == notificationID;
+      }];
+  if (index != NSNotFound)
+    [popupsBeingRemoved_ removeObjectAtIndex:index];
+
   animatingNotificationIDs_.erase(notificationID);
   if (![self isAnimating])
     [self layoutNotifications];
@@ -310,6 +320,11 @@ class PopupCollectionObserver : public message_center::MessageCenterObserver {
     if (index != NSNotFound) {
       [[popups_ objectAtIndex:index] closeWithAnimation];
       animatingNotificationIDs_.insert(notificationID);
+
+      // Still need to track popup object and only remove it after the animation
+      // ends. We need to notify these objects that the collection is gone
+      // in the collection destructor.
+      [popupsBeingRemoved_ addObject:[popups_ objectAtIndex:index]];
       [popups_ removeObjectAtIndex:index];
     }
   }

@@ -39,6 +39,10 @@ MESSAGE_CENTER_EXPORT
   // Array of all on-screen popup notifications.
   scoped_nsobject<NSMutableArray> popups_;
 
+  // Array of all on-screen popup notifications that are being faded out
+  // for removal.
+  scoped_nsobject<NSMutableArray> popupsBeingRemoved_;
+
   // For testing only. If not a zero rect, this is the screen size to use
   // for laying out popups.
   NSRect testingScreenFrame_;
