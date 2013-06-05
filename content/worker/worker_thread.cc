@@ -34,8 +34,6 @@ WorkerThread::WorkerThread() {
   webkit_platform_support_.reset(
       new WorkerWebKitPlatformSupportImpl(thread_safe_sender()));
   WebKit::initialize(webkit_platform_support_.get());
-  WebKit::setIDBFactory(
-      webkit_platform_support_.get()->idbFactory());
 
   appcache_dispatcher_.reset(new AppCacheDispatcher(this));
 

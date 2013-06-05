@@ -741,8 +741,6 @@ void RenderThreadImpl::EnsureWebKitInitialized() {
   WebKit::initialize(webkit_platform_support_.get());
   WebKit::setSharedWorkerRepository(
       webkit_platform_support_.get()->sharedWorkerRepository());
-  WebKit::setIDBFactory(
-      webkit_platform_support_.get()->idbFactory());
 
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
 

@@ -76,7 +76,6 @@
 #include "webkit/support/simple_dom_storage_system.h"
 #include "webkit/support/simple_file_system.h"
 #include "webkit/support/simple_resource_loader_bridge.h"
-#include "webkit/support/test_webidbfactory.h"
 #include "webkit/support/test_webkit_platform_support.h"
 #include "webkit/support/test_webplugin_page_delegate.h"
 #include "webkit/support/web_layer_tree_view_impl_for_testing.h"
@@ -172,9 +171,6 @@ class TestEnvironment {
     webkit_platform_support_.reset(
         new TestWebKitPlatformSupport(unit_test_mode,
                                       shadow_platform_delegate));
-
-    idb_factory_.reset(new TestWebIDBFactory());
-    WebKit::setIDBFactory(idb_factory_.get());
   }
 
   ~TestEnvironment() {
@@ -216,7 +212,6 @@ class TestEnvironment {
   scoped_ptr<base::AtExitManager> at_exit_manager_;
   scoped_ptr<MessageLoopType> main_message_loop_;
   scoped_ptr<TestWebKitPlatformSupport> webkit_platform_support_;
-  scoped_ptr<TestWebIDBFactory> idb_factory_;
 
 #if defined(OS_ANDROID)
   base::FilePath mock_current_directory_;

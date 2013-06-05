@@ -199,6 +199,12 @@ WebKit::WebHyphenator* TestWebKitPlatformSupport::hyphenator() {
   return &hyphenator_;
 }
 
+WebKit::WebIDBFactory* TestWebKitPlatformSupport::idbFactory() {
+  NOTREACHED() <<
+      "IndexedDB cannot be tested with in-process harnesses.";
+  return NULL;
+}
+
 bool TestWebKitPlatformSupport::sandboxEnabled() {
   return true;
 }

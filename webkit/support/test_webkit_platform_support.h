@@ -51,6 +51,7 @@ class TestWebKitPlatformSupport :
   virtual WebKit::WebBlobRegistry* blobRegistry();
   virtual WebKit::WebFileSystem* fileSystem();
   virtual WebKit::WebHyphenator* hyphenator();
+  virtual WebKit::WebIDBFactory* idbFactory();
 
   virtual bool sandboxEnabled();
   virtual WebKit::Platform::FileHandle databaseOpenFile(
