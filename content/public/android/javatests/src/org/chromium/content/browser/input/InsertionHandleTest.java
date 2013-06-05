@@ -96,9 +96,12 @@ public class InsertionHandleTest extends ContentShellTestBase {
         assertTrue(waitForHandleShowingEquals(false));
     }
 
-
-    @MediumTest
-    @Feature({"TextSelection", "TextInput", "Main"})
+    /**
+     * @MediumTest
+     * @Feature({"TextSelection", "TextInput", "Main"})
+     * http://crbug.com/169648
+     */
+    @DisabledTest
     public void testDragInsertionHandle() throws Throwable {
         launchWithUrl(TEXTAREA_DATA_URL);
 
