@@ -836,6 +836,11 @@ bool RenderListBox::scrollbarsCanBeActive() const
     return view->frameView()->scrollbarsCanBeActive();
 }
 
+IntPoint RenderListBox::maximumScrollPosition() const
+{
+    return IntPoint(0, numItems() - numVisibleItems());
+}
+
 ScrollableArea* RenderListBox::enclosingScrollableArea() const
 {
     // FIXME: Return a RenderLayer that's scrollable.
