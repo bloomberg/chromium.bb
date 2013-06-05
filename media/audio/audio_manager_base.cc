@@ -6,14 +6,17 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/command_line.h"
 #include "base/message_loop_proxy.h"
 #include "base/threading/thread.h"
+#include "build/build_config.h"
 #include "media/audio/audio_output_dispatcher_impl.h"
 #include "media/audio/audio_output_proxy.h"
 #include "media/audio/audio_output_resampler.h"
 #include "media/audio/audio_util.h"
 #include "media/audio/fake_audio_input_stream.h"
 #include "media/audio/fake_audio_output_stream.h"
+#include "media/base/media_switches.h"
 
 namespace media {
 
@@ -76,20 +79,28 @@ AudioManagerBase::AudioManagerBase()
       max_num_input_streams_(kDefaultMaxInputStreams),
       num_output_streams_(0),
       num_input_streams_(0),
+      // TODO(dalecurtis): Switch this to an ObserverListThreadSafe, so we don't
+      // block the UI thread when swapping devices.
       output_listeners_(
           ObserverList<AudioDeviceListener>::NOTIFY_EXISTING_ONLY),
       audio_thread_(new base::Thread("AudioThread")) {
 #if defined(OS_WIN)
   audio_thread_->init_com_with_mta(true);
+#elif defined(OS_MACOSX)
+  // CoreAudio calls must occur on the main thread of the process, which in our
+  // case is sadly the browser UI thread.  Failure to execute calls on the right
+  // thread leads to crashes and odd behavior.  See http://crbug.com/158170.
+  // TODO(dalecurtis): We should require the message loop to be passed in.
+  const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
+  if (!cmd_line->HasSwitch(switches::kDisableMainThreadAudio) &&
+      base::MessageLoopProxy::current() &&
+      base::MessageLoop::current()->IsType(base::MessageLoop::TYPE_UI)) {
+    message_loop_ = base::MessageLoopProxy::current();
+    return;
+  }
 #endif
-#if defined(OS_MACOSX)
-  // On Mac, use a UI loop to get native message pump so that CoreAudio property
-  // listener callbacks fire.
-  CHECK(audio_thread_->StartWithOptions(
-      base::Thread::Options(base::MessageLoop::TYPE_UI, 0)));
-#else
+
   CHECK(audio_thread_->Start());
-#endif
   message_loop_ = audio_thread_->message_loop_proxy();
 }
 
@@ -112,6 +123,14 @@ string16 AudioManagerBase::GetAudioInputDeviceModel() {
 
 scoped_refptr<base::MessageLoopProxy> AudioManagerBase::GetMessageLoop() {
   return message_loop_;
+}
+
+scoped_refptr<base::MessageLoopProxy> AudioManagerBase::GetWorkerLoop() {
+  // Lazily start the worker thread.
+  if (!audio_thread_->IsRunning())
+    CHECK(audio_thread_->Start());
+
+  return audio_thread_->message_loop_proxy();
 }
 
 AudioOutputStream* AudioManagerBase::MakeAudioOutputStream(
@@ -317,13 +336,14 @@ void AudioManagerBase::Shutdown() {
   if (!audio_thread)
     return;
 
-  CHECK_NE(base::MessageLoop::current(), audio_thread->message_loop());
-
-  // We must use base::Unretained since Shutdown might have been called from
-  // the destructor and we can't alter the refcount of the object at that point.
-  audio_thread->message_loop()->PostTask(FROM_HERE, base::Bind(
-      &AudioManagerBase::ShutdownOnAudioThread,
-      base::Unretained(this)));
+  // Only true when we're sharing the UI message loop with the browser.  The UI
+  // loop is no longer running at this time and browser destruction is imminent.
+  if (message_loop_->BelongsToCurrentThread()) {
+    ShutdownOnAudioThread();
+  } else {
+    message_loop_->PostTask(FROM_HERE, base::Bind(
+        &AudioManagerBase::ShutdownOnAudioThread, base::Unretained(this)));
+  }
 
   // Stop() will wait for any posted messages to be processed first.
   audio_thread->Stop();

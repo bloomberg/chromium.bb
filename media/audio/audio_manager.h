@@ -112,6 +112,11 @@ class MEDIA_EXPORT AudioManager {
   // Returns message loop used for audio IO.
   virtual scoped_refptr<base::MessageLoopProxy> GetMessageLoop() = 0;
 
+  // Heavyweight tasks should use GetWorkerLoop() instead of GetMessageLoop().
+  // On most platforms they are the same, but some share the UI loop with the
+  // audio IO loop.
+  virtual scoped_refptr<base::MessageLoopProxy> GetWorkerLoop() = 0;
+
   // Allows clients to listen for device state changes; e.g. preferred sample
   // rate or channel layout changes.  The typical response to receiving this
   // callback is to recreate the stream.

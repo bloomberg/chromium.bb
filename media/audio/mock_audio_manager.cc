@@ -65,6 +65,10 @@ scoped_refptr<base::MessageLoopProxy> MockAudioManager::GetMessageLoop() {
   return message_loop_proxy_;
 }
 
+scoped_refptr<base::MessageLoopProxy> MockAudioManager::GetWorkerLoop() {
+  return message_loop_proxy_;
+}
+
 void MockAudioManager::AddOutputDeviceChangeListener(
     AudioDeviceListener* listener) {
 }

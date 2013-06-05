@@ -268,10 +268,10 @@ void AudioInputRendererHost::OnCreateStream(
   entry->writer.reset(writer.release());
   if (WebContentsCaptureUtil::IsWebContentsDeviceId(device_id)) {
     entry->controller = media::AudioInputController::CreateForStream(
-        audio_manager_,
+        audio_manager_->GetWorkerLoop(),
         this,
         WebContentsAudioInputStream::Create(
-            device_id, audio_params, audio_manager_->GetMessageLoop()),
+            device_id, audio_params, audio_manager_->GetWorkerLoop()),
         entry->writer.get());
   } else {
     // TODO(henrika): replace CreateLowLatency() with Create() as soon

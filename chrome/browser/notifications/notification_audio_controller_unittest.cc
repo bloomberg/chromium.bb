@@ -40,6 +40,7 @@ class NotificationAudioControllerTest : public testing::Test {
 
   virtual ~NotificationAudioControllerTest() {
     notification_audio_controller_->RequestShutdown();
+    base::RunLoop().RunUntilIdle();
     audio_manager_.reset();
   }
 

@@ -12,38 +12,39 @@
 
 namespace switches {
 
-#if defined(OS_LINUX) || defined(OS_FREEBSD) || defined(OS_SOLARIS)
-extern const char kAlsaOutputDevice[];
-extern const char kAlsaInputDevice[];
-#endif
-
 MEDIA_EXPORT extern const char kAudioBufferSize[];
 
-#if defined(USE_CRAS)
-MEDIA_EXPORT extern const char kUseCras[];
+MEDIA_EXPORT extern const char kEnableEac3Playback[];
+
+MEDIA_EXPORT extern const char kEnableOpusPlayback[];
+
+MEDIA_EXPORT extern const char kEnableVp8AlphaPlayback[];
+
+MEDIA_EXPORT extern const char kEnableVp9Playback[];
+
+MEDIA_EXPORT extern const char kVideoThreads[];
+
+#if defined(GOOGLE_TV)
+MEDIA_EXPORT extern const char kUseExternalVideoSurfaceThresholdInPixels[];
+#endif
+
+#if defined(OS_LINUX) || defined(OS_FREEBSD) || defined(OS_SOLARIS)
+MEDIA_EXPORT extern const char kAlsaInputDevice[];
+MEDIA_EXPORT extern const char kAlsaOutputDevice[];
+#endif
+
+#if defined(OS_MACOSX)
+MEDIA_EXPORT extern const char kDisableMainThreadAudio[];
 #endif
 
 #if defined(OS_WIN)
 MEDIA_EXPORT extern const char kEnableExclusiveAudio[];
 MEDIA_EXPORT extern const char kForceWaveAudio[];
-#endif
-
-MEDIA_EXPORT extern const char kVideoThreads[];
-
-MEDIA_EXPORT extern const char kEnableOpusPlayback[];
-
-MEDIA_EXPORT extern const char kEnableVp9Playback[];
-
-MEDIA_EXPORT extern const char kEnableVp8AlphaPlayback[];
-
-MEDIA_EXPORT extern const char kEnableEac3Playback[];
-
-#if defined(OS_WIN)
 MEDIA_EXPORT extern const char kWaveOutBuffers[];
 #endif
 
-#if defined(GOOGLE_TV)
-MEDIA_EXPORT extern const char kUseExternalVideoSurfaceThresholdInPixels[];
+#if defined(USE_CRAS)
+MEDIA_EXPORT extern const char kUseCras[];
 #endif
 
 }  // namespace switches

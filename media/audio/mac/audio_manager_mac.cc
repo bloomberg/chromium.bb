@@ -236,16 +236,21 @@ AudioManagerMac::AudioManagerMac()
   SetMaxOutputStreamsAllowed(kMaxOutputStreams);
 
   // Task must be posted last to avoid races from handing out "this" to the
-  // audio thread.
+  // audio thread.  Always PostTask even if we're on the right thread since
+  // AudioManager creation is on the startup path and this may be slow.
   GetMessageLoop()->PostTask(FROM_HERE, base::Bind(
       &AudioManagerMac::CreateDeviceListener, base::Unretained(this)));
 }
 
 AudioManagerMac::~AudioManagerMac() {
-  // It's safe to post a task here since Shutdown() will wait for all tasks to
-  // complete before returning.
-  GetMessageLoop()->PostTask(FROM_HERE, base::Bind(
-      &AudioManagerMac::DestroyDeviceListener, base::Unretained(this)));
+  if (GetMessageLoop()->BelongsToCurrentThread()) {
+    DestroyDeviceListener();
+  } else {
+    // It's safe to post a task here since Shutdown() will wait for all tasks to
+    // complete before returning.
+    GetMessageLoop()->PostTask(FROM_HERE, base::Bind(
+        &AudioManagerMac::DestroyDeviceListener, base::Unretained(this)));
+  }
 
   Shutdown();
 }
@@ -550,10 +555,8 @@ void AudioManagerMac::CreateDeviceListener() {
   if (!GetDefaultOutputDevice(&current_output_device_))
     current_output_device_ = kAudioDeviceUnknown;
 
-  output_device_listener_.reset(new AudioDeviceListenerMac(BindToLoop(
-      GetMessageLoop(), base::Bind(
-          &AudioManagerMac::HandleDeviceChanges,
-          base::Unretained(this)))));
+  output_device_listener_.reset(new AudioDeviceListenerMac(base::Bind(
+      &AudioManagerMac::HandleDeviceChanges, base::Unretained(this))));
 }
 
 void AudioManagerMac::DestroyDeviceListener() {

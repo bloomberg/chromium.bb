@@ -41,6 +41,7 @@ class MEDIA_EXPORT AudioManagerBase : public AudioManager {
   virtual ~AudioManagerBase();
 
   virtual scoped_refptr<base::MessageLoopProxy> GetMessageLoop() OVERRIDE;
+  virtual scoped_refptr<base::MessageLoopProxy> GetWorkerLoop() OVERRIDE;
 
   virtual string16 GetAudioInputDeviceModel() OVERRIDE;
 

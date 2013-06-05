@@ -180,7 +180,6 @@ void WebRTCAudioDeviceTest::TearDown() {
   mock_process_.reset();
   media_stream_manager_.reset();
   mirroring_manager_.reset();
-  audio_manager_.reset();
   RendererWebKitPlatformSupportImpl::SetSandboxEnabledForTesting(
       sandbox_was_enabled_);
 }
@@ -232,6 +231,8 @@ void WebRTCAudioDeviceTest::UninitializeIOThread() {
 #if defined(OS_WIN)
   initialize_com_.reset();
 #endif
+
+  audio_manager_.reset();
 }
 
 void WebRTCAudioDeviceTest::CreateChannel(const char* name) {

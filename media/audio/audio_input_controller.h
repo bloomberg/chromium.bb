@@ -151,7 +151,7 @@ class MEDIA_EXPORT AudioInputController
   // thread, and when that is done, the event handler will receive an
   // OnCreated() call from that same thread.
   static scoped_refptr<AudioInputController> CreateForStream(
-      AudioManager* audio_manager,
+      const scoped_refptr<base::MessageLoopProxy>& message_loop,
       EventHandler* event_handler,
       AudioInputStream* stream,
       // External synchronous writer for audio controller.

@@ -49,6 +49,7 @@ class MockAudioManager : public media::AudioManager {
   virtual bool IsRecordingInProcess() OVERRIDE;
 
   virtual scoped_refptr<base::MessageLoopProxy> GetMessageLoop() OVERRIDE;
+  virtual scoped_refptr<base::MessageLoopProxy> GetWorkerLoop() OVERRIDE;
 
   virtual void AddOutputDeviceChangeListener(
       AudioDeviceListener* listener) OVERRIDE;
