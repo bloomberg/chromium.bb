@@ -82,11 +82,7 @@ public:
 
     virtual bool canPlay() const = 0;
 
-    virtual bool isLiveStream() const = 0;
-
     virtual bool hasCurrentSrc() const = 0;
-
-    virtual void returnToRealtime() = 0;
 };
 
 }

@@ -121,8 +121,6 @@ public:
     virtual bool hasVideo() const = 0;
     virtual bool hasAudio() const = 0;
 
-    virtual void setVisible(bool) = 0;
-
     virtual double duration() const = 0;
 
     virtual double currentTime() const = 0;
@@ -150,8 +148,6 @@ public:
 
     virtual bool didLoadingProgress() const = 0;
 
-    virtual void setSize(const IntSize&) = 0;
-
     virtual void paint(GraphicsContext*, const IntRect&) = 0;
 
     virtual void paintCurrentFrameInContext(GraphicsContext*, const IntRect&) = 0;
@@ -172,9 +168,6 @@ public:
     virtual bool hasSingleSecurityOrigin() const = 0;
 
     virtual bool didPassCORSAccessCheck() const = 0;
-
-    enum MovieLoadType { Unknown, Download, StoredStream, LiveStream };
-    virtual MovieLoadType movieLoadType() const = 0;
 
     // Time value in the movie's time scale. It is only necessary to override this if the media
     // engine uses rational numbers to represent media time.

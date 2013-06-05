@@ -78,9 +78,6 @@ public:
     virtual bool hasVideo() const { return false; }
     virtual bool hasAudio() const;
 
-    void rewind(double timeDelta);
-    void returnToRealtime();
-
     // Eventually overloaded in HTMLVideoElement
     virtual bool supportsFullscreen() const { return false; };
 
@@ -94,8 +91,6 @@ public:
         TextTrackChangesNotification = 1 << 2
     };
     void scheduleDelayedAction(DelayedActionType);
-    
-    MediaPlayer::MovieLoadType movieLoadType() const;
     
     bool inActiveDocument() const { return m_inActiveDocument; }
     
@@ -463,7 +458,6 @@ private:
     bool isBlocked() const;
     bool isBlockedOnMediaController() const;
     bool hasCurrentSrc() const { return !m_currentSrc.isEmpty(); }
-    bool isLiveStream() const { return movieLoadType() == MediaPlayer::LiveStream; }
     bool isAutoplaying() const { return m_autoplaying; }
 
     Timer<HTMLMediaElement> m_loadTimer;

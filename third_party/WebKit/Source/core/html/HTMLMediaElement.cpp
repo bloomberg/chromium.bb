@@ -1803,18 +1803,6 @@ void HTMLMediaElement::progressEventTimerFired(Timer<HTMLMediaElement>*)
     }
 }
 
-void HTMLMediaElement::rewind(double timeDelta)
-{
-    LOG(Media, "HTMLMediaElement::rewind(%f)", timeDelta);
-    setCurrentTime(max(currentTime() - timeDelta, minTimeSeekable()), IGNORE_EXCEPTION);
-}
-
-void HTMLMediaElement::returnToRealtime()
-{
-    LOG(Media, "HTMLMediaElement::returnToRealtime");
-    setCurrentTime(maxTimeSeekable(), IGNORE_EXCEPTION);
-}
-
 void HTMLMediaElement::addPlayedRange(double start, double end)
 {
     LOG(Media, "HTMLMediaElement::addPlayedRange(%f, %f)", start, end);
@@ -1947,11 +1935,6 @@ void HTMLMediaElement::finishSeek()
 HTMLMediaElement::ReadyState HTMLMediaElement::readyState() const
 {
     return m_readyState;
-}
-
-MediaPlayer::MovieLoadType HTMLMediaElement::movieLoadType() const
-{
-    return m_player ? m_player->movieLoadType() : MediaPlayer::Unknown;
 }
 
 bool HTMLMediaElement::hasAudio() const

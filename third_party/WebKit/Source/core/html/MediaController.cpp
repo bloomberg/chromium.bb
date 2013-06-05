@@ -617,15 +617,6 @@ bool MediaController::canPlay() const
     return true;
 }
 
-bool MediaController::isLiveStream() const
-{
-    for (size_t index = 0; index < m_mediaElements.size(); ++index) {
-        if (!m_mediaElements[index]->isLiveStream())
-            return false;
-    }
-    return true;
-}
-
 bool MediaController::hasCurrentSrc() const
 {
     for (size_t index = 0; index < m_mediaElements.size(); ++index) {
@@ -633,12 +624,6 @@ bool MediaController::hasCurrentSrc() const
             return false;
     }
     return true;
-}
-
-void MediaController::returnToRealtime()
-{
-    for (size_t index = 0; index < m_mediaElements.size(); ++index)
-        m_mediaElements[index]->returnToRealtime();
 }
 
 const AtomicString& MediaController::interfaceName() const

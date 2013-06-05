@@ -88,60 +88,54 @@ public:
     virtual void removeTextTrack(WebInbandTextTrack*);
 
     // MediaPlayer methods:
-    virtual void load(const WTF::String& url);
-    virtual void load(const WTF::String& url, PassRefPtr<WebCore::WebKitMediaSource>);
+    virtual void load(const WTF::String& url) OVERRIDE;
+    virtual void load(const WTF::String& url, PassRefPtr<WebCore::WebKitMediaSource>) OVERRIDE;
 
-    virtual WebKit::WebLayer* platformLayer() const;
-    virtual void play();
-    virtual void pause();
-    virtual void prepareToPlay();
-    virtual bool supportsFullscreen() const;
-    virtual bool supportsSave() const;
-    virtual WebCore::IntSize naturalSize() const;
-    virtual bool hasVideo() const;
-    virtual bool hasAudio() const;
-    virtual void setVisible(bool);
-    virtual double duration() const;
-    virtual double currentTime() const;
-    virtual void seek(double time);
-    virtual bool seeking() const;
-    virtual double rate() const;
-    virtual void setRate(double);
-    virtual bool paused() const;
-    virtual void setVolume(double);
-    virtual void setMuted(bool);
-    virtual WebCore::MediaPlayer::NetworkState networkState() const;
-    virtual WebCore::MediaPlayer::ReadyState readyState() const;
-    virtual double maxTimeSeekable() const;
-    virtual WTF::PassRefPtr<WebCore::TimeRanges> buffered() const;
-    virtual int dataRate() const;
-    virtual bool totalBytesKnown() const;
-    virtual unsigned totalBytes() const;
-    virtual bool didLoadingProgress() const;
-    virtual void setSize(const WebCore::IntSize&);
-    virtual void paint(WebCore::GraphicsContext*, const WebCore::IntRect&);
-    virtual void paintCurrentFrameInContext(WebCore::GraphicsContext*, const WebCore::IntRect&);
-    virtual bool copyVideoTextureToPlatformTexture(WebCore::GraphicsContext3D*, Platform3DObject texture, GC3Dint level, GC3Denum type, GC3Denum internalFormat, bool premultiplyAlpha, bool flipY);
-    virtual void setPreload(WebCore::MediaPlayer::Preload);
-    virtual bool hasSingleSecurityOrigin() const;
-    virtual bool didPassCORSAccessCheck() const;
-    virtual WebCore::MediaPlayer::MovieLoadType movieLoadType() const;
-    virtual double mediaTimeForTimeValue(double timeValue) const;
-    virtual unsigned decodedFrameCount() const;
-    virtual unsigned droppedFrameCount() const;
-    virtual unsigned audioDecodedByteCount() const;
-    virtual unsigned videoDecodedByteCount() const;
+    virtual WebKit::WebLayer* platformLayer() const OVERRIDE;
+    virtual void play() OVERRIDE;
+    virtual void pause() OVERRIDE;
+    virtual void prepareToPlay() OVERRIDE;
+    virtual bool supportsFullscreen() const OVERRIDE;
+    virtual bool supportsSave() const OVERRIDE;
+    virtual WebCore::IntSize naturalSize() const OVERRIDE;
+    virtual bool hasVideo() const OVERRIDE;
+    virtual bool hasAudio() const OVERRIDE;
+    virtual double duration() const OVERRIDE;
+    virtual double currentTime() const OVERRIDE;
+    virtual void seek(double time) OVERRIDE;
+    virtual bool seeking() const OVERRIDE;
+    virtual double rate() const OVERRIDE;
+    virtual void setRate(double) OVERRIDE;
+    virtual bool paused() const OVERRIDE;
+    virtual void setVolume(double) OVERRIDE;
+    virtual void setMuted(bool) OVERRIDE;
+    virtual WebCore::MediaPlayer::NetworkState networkState() const OVERRIDE;
+    virtual WebCore::MediaPlayer::ReadyState readyState() const OVERRIDE;
+    virtual double maxTimeSeekable() const OVERRIDE;
+    virtual WTF::PassRefPtr<WebCore::TimeRanges> buffered() const OVERRIDE;
+    virtual bool didLoadingProgress() const OVERRIDE;
+    virtual void paint(WebCore::GraphicsContext*, const WebCore::IntRect&) OVERRIDE;
+    virtual void paintCurrentFrameInContext(WebCore::GraphicsContext*, const WebCore::IntRect&) OVERRIDE;
+    virtual bool copyVideoTextureToPlatformTexture(WebCore::GraphicsContext3D*, Platform3DObject texture, GC3Dint level, GC3Denum type, GC3Denum internalFormat, bool premultiplyAlpha, bool flipY) OVERRIDE;
+    virtual void setPreload(WebCore::MediaPlayer::Preload) OVERRIDE;
+    virtual bool hasSingleSecurityOrigin() const OVERRIDE;
+    virtual bool didPassCORSAccessCheck() const OVERRIDE;
+    virtual double mediaTimeForTimeValue(double timeValue) const OVERRIDE;
+    virtual unsigned decodedFrameCount() const OVERRIDE;
+    virtual unsigned droppedFrameCount() const OVERRIDE;
+    virtual unsigned audioDecodedByteCount() const OVERRIDE;
+    virtual unsigned videoDecodedByteCount() const OVERRIDE;
 #if USE(NATIVE_FULLSCREEN_VIDEO)
-    virtual void enterFullscreen();
-    virtual void exitFullscreen();
-    virtual bool canEnterFullscreen() const;
+    virtual void enterFullscreen() OVERRIDE;
+    virtual void exitFullscreen() OVERRIDE;
+    virtual bool canEnterFullscreen() const OVERRIDE;
 #endif
 
 #if ENABLE(WEB_AUDIO)
-    virtual WebCore::AudioSourceProvider* audioSourceProvider();
+    virtual WebCore::AudioSourceProvider* audioSourceProvider() OVERRIDE;
 #endif
 
-    virtual bool supportsAcceleratedRendering() const;
+    virtual bool supportsAcceleratedRendering() const OVERRIDE;
 
     virtual WebCore::MediaPlayer::MediaKeyException generateKeyRequest(const String& keySystem, const unsigned char* initData, unsigned initDataLength) OVERRIDE;
     virtual WebCore::MediaPlayer::MediaKeyException addKey(const String& keySystem, const unsigned char* key, unsigned keyLength, const unsigned char* initData, unsigned initDataLength, const String& sessionId) OVERRIDE;

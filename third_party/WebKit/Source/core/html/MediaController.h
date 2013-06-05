@@ -100,11 +100,7 @@ public:
 
     virtual bool canPlay() const;
 
-    virtual bool isLiveStream() const;
-
     virtual bool hasCurrentSrc() const;
-
-    virtual void returnToRealtime();
 
     bool isBlocked() const;
 

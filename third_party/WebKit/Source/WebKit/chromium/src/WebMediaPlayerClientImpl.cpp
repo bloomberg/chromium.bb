@@ -34,7 +34,6 @@
 #include "public/platform/WebCompositorSupport.h"
 #include "public/platform/WebCString.h"
 #include "public/platform/WebRect.h"
-#include "public/platform/WebSize.h"
 #include "public/platform/WebString.h"
 #include "public/platform/WebURL.h"
 
@@ -366,12 +365,6 @@ bool WebMediaPlayerClientImpl::hasAudio() const
     return false;
 }
 
-void WebMediaPlayerClientImpl::setVisible(bool visible)
-{
-    if (m_webMediaPlayer)
-        m_webMediaPlayer->setVisible(visible);
-}
-
 double WebMediaPlayerClientImpl::duration() const
 {
     if (m_webMediaPlayer)
@@ -481,36 +474,9 @@ PassRefPtr<TimeRanges> WebMediaPlayerClientImpl::buffered() const
     return TimeRanges::create();
 }
 
-int WebMediaPlayerClientImpl::dataRate() const
-{
-    if (m_webMediaPlayer)
-        return m_webMediaPlayer->dataRate();
-    return 0;
-}
-
-bool WebMediaPlayerClientImpl::totalBytesKnown() const
-{
-    if (m_webMediaPlayer)
-        return m_webMediaPlayer->totalBytesKnown();
-    return false;
-}
-
-unsigned WebMediaPlayerClientImpl::totalBytes() const
-{
-    if (m_webMediaPlayer)
-        return static_cast<unsigned>(m_webMediaPlayer->totalBytes());
-    return 0;
-}
-
 bool WebMediaPlayerClientImpl::didLoadingProgress() const
 {
     return m_webMediaPlayer && m_webMediaPlayer->didLoadingProgress();
-}
-
-void WebMediaPlayerClientImpl::setSize(const IntSize& size)
-{
-    if (m_webMediaPlayer)
-        m_webMediaPlayer->setSize(WebSize(size.width(), size.height()));
 }
 
 void WebMediaPlayerClientImpl::paint(GraphicsContext* context, const IntRect& rect)
@@ -577,14 +543,6 @@ bool WebMediaPlayerClientImpl::didPassCORSAccessCheck() const
     if (m_webMediaPlayer)
         return m_webMediaPlayer->didPassCORSAccessCheck();
     return false;
-}
-
-MediaPlayer::MovieLoadType WebMediaPlayerClientImpl::movieLoadType() const
-{
-    if (m_webMediaPlayer)
-        return static_cast<MediaPlayer::MovieLoadType>(
-            m_webMediaPlayer->movieLoadType());
-    return MediaPlayer::Unknown;
 }
 
 double WebMediaPlayerClientImpl::mediaTimeForTimeValue(double timeValue) const

@@ -67,13 +67,6 @@ public:
         ReadyStateHaveEnoughData,
     };
 
-    enum MovieLoadType {
-        MovieLoadTypeUnknown,
-        MovieLoadTypeDownload,
-        MovieLoadTypeStoredStream,
-        MovieLoadTypeLiveStream,
-    };
-
     enum Preload {
         PreloadNone,
         PreloadMetaData,
@@ -98,7 +91,6 @@ public:
 
     virtual void load(const WebURL&, CORSMode) = 0;
     virtual void load(const WebURL&, WebMediaSource*, CORSMode) = 0;
-    virtual void cancelLoad() { } // FIXME: Remove once Chromium no longer overrides
 
     // Playback controls.
     virtual void play() = 0;
@@ -108,13 +100,9 @@ public:
     virtual void seek(double seconds) = 0;
     virtual void setRate(double rate)  = 0;
     virtual void setVolume(double volume) = 0;
-    virtual void setVisible(bool) = 0;
     virtual void setPreload(Preload) { };
-    virtual bool totalBytesKnown() = 0;
     virtual const WebTimeRanges& buffered() = 0;
     virtual double maxTimeSeekable() const = 0;
-
-    virtual void setSize(const WebSize&) = 0;
 
     virtual void paint(WebCanvas*, const WebRect&, unsigned char alpha) = 0;
 
@@ -131,19 +119,14 @@ public:
     virtual double duration() const = 0;
     virtual double currentTime() const = 0;
 
-    // Get rate of loading the resource.
-    virtual int dataRate() const = 0;
-
     // Internal states of loading and network.
     virtual NetworkState networkState() const = 0;
     virtual ReadyState readyState() const = 0;
 
     virtual bool didLoadingProgress() const = 0;
-    virtual unsigned long long totalBytes() const = 0;
 
     virtual bool hasSingleSecurityOrigin() const = 0;
     virtual bool didPassCORSAccessCheck() const = 0;
-    virtual MovieLoadType movieLoadType() const = 0;
 
     virtual double mediaTimeForTimeValue(double timeValue) const = 0;
 
@@ -168,6 +151,22 @@ public:
     virtual void exitFullscreen() { }
     // Returns true if the player can enter fullscreen.
     virtual bool canEnterFullscreen() const { return false; }
+
+    // Deprecated methods to-be-deleted
+    // FIXME: Remove once Chromium no longer overrides
+    virtual void cancelLoad() { }
+    virtual int dataRate() const { return 0; }
+    virtual void setVisible(bool) { }
+    virtual void setSize(const WebSize&) { }
+    virtual unsigned long long totalBytes() const { return 0; }
+    virtual bool totalBytesKnown() { return false; }
+    enum MovieLoadType {
+        MovieLoadTypeUnknown,
+        MovieLoadTypeDownload,
+        MovieLoadTypeStoredStream,
+        MovieLoadTypeLiveStream,
+    };
+    virtual MovieLoadType movieLoadType() const { return MovieLoadTypeUnknown; }
 };
 
 } // namespace WebKit
