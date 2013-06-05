@@ -23,8 +23,7 @@ QuicTime QuicClock::Now() const {
 }
 
 QuicWallTime QuicClock::WallNow() const {
-  return QuicWallTime::FromUNIXSeconds(
-      base::Time::Now().ToInternalValue() / 1000000);
+  return QuicWallTime::FromUNIXSeconds(base::Time::Now().ToTimeT());
 }
 
 }  // namespace net

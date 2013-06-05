@@ -29,10 +29,8 @@ TEST(QuicClockTest, WallNow) {
 
   // If end > start, then we can check now is between start and end.
   if (end > start) {
-    EXPECT_LE(static_cast<uint64>(start.ToInternalValue() / 1000000),
-              now.ToUNIXSeconds());
-    EXPECT_LE(now.ToUNIXSeconds(),
-              static_cast<uint64>(end.ToInternalValue() / 1000000));
+    EXPECT_LE(static_cast<uint64>(start.ToTimeT()), now.ToUNIXSeconds());
+    EXPECT_LE(now.ToUNIXSeconds(), static_cast<uint64>(end.ToTimeT()));
   }
 }
 
