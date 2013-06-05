@@ -855,6 +855,11 @@ RenderStyle* StyleResolver::locateSharedStyle()
         return 0;
     if (state.element()->hasActiveAnimations())
         return 0;
+    // When a dialog is first shown, its style is mutated to center it in the
+    // viewport. So the styles can't be shared since the viewport position and
+    // size may be different each time a dialog is opened.
+    if (state.element()->hasTagName(dialogTag))
+        return 0;
 
     // Cache whether state.element is affected by any known class selectors.
     // FIXME: This shouldn't be a member variable. The style sharing code could be factored out of StyleResolver.
