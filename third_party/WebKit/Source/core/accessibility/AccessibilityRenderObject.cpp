@@ -411,11 +411,6 @@ AccessibilityRole AccessibilityRenderObject::determineAccessibilityRole()
     if (m_renderer->isSVGRoot())
         return SVGRootRole;
 
-    // It's not clear which role a platform should choose for a math element.
-    // Declaring a math element role should give flexibility to platforms to choose.
-    if (isMathElement())
-        return MathElementRole;
-
     if (node && node->hasTagName(ddTag))
         return DescriptionListDetailRole;
 
