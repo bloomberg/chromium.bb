@@ -1449,13 +1449,6 @@ bool BrowserWindowGtk::CanClose() const {
     // down. When the tab strip is empty we'll be called back again.
     gtk_widget_hide(GTK_WIDGET(window_));
     browser_->OnWindowClosing();
-    browser_->tab_strip_model()->CloseAllTabs();
-    return false;
-  } else if (!browser_->HasCompletedUnloadProcessing()) {
-    // The browser needs to finish running unload handlers.
-    // Hide the window (so it appears to have closed immediately), and
-    // the browser will call us back again when it is ready to close.
-    gtk_widget_hide(GTK_WIDGET(window_));
     return false;
   }
 
