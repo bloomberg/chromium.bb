@@ -122,9 +122,6 @@ public:
     bool useSVGZoomRules() const { return m_element && m_element->isSVGElement(); }
 
 private:
-    // FIXME(bug 108563): to make it easier to review, these member
-    // variables are public. However we should add methods to access
-    // these variables.
     Element* m_element;
     RefPtr<RenderStyle> m_style;
     StyledElement* m_styledElement;
