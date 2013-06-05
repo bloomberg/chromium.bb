@@ -419,7 +419,6 @@ class CC_EXPORT LayerTreeHostImpl
   // if this helper function is called.
   bool CalculateRenderPasses(FrameData* frame);
 
-  void SendDidLoseOutputSurfaceRecursive(LayerImpl* current);
   void ClearRenderSurfaces();
   bool EnsureRenderSurfaceLayerList();
   void ClearCurrentlyScrollingLayer();

@@ -64,7 +64,7 @@ class CC_EXPORT LayerTreeHostCommon {
                                                int target_surface_layer_id);
 
   template <class Function, typename LayerType>
-  static void CallFunctionForSubtree(LayerType* root_layer);
+  static void CallFunctionForSubtree(Function function, LayerType* root_layer);
 
   // Returns a layer with the given id if one exists in the subtree starting
   // from the given root layer (including mask and replica layers).
@@ -133,21 +133,22 @@ LayerType* LayerTreeHostCommon::FindLayerInSubtree(LayerType* root_layer,
   return NULL;
 }
 
-template <class Function, typename LayerType>
-void LayerTreeHostCommon::CallFunctionForSubtree(LayerType* root_layer) {
-  Function()(root_layer);
+template <typename Function, typename LayerType>
+void LayerTreeHostCommon::CallFunctionForSubtree(Function function,
+                                                 LayerType* root_layer) {
+  function(root_layer);
 
   if (LayerType* mask_layer = root_layer->mask_layer())
-    Function()(mask_layer);
+    function(mask_layer);
   if (LayerType* replica_layer = root_layer->replica_layer()) {
-    Function()(replica_layer);
+    function(replica_layer);
     if (LayerType* mask_layer = replica_layer->mask_layer())
-      Function()(mask_layer);
+      function(mask_layer);
   }
 
   for (size_t i = 0; i < root_layer->children().size(); ++i) {
-    CallFunctionForSubtree<Function>(
-        get_child_as_raw_ptr(root_layer->children(), i));
+    CallFunctionForSubtree(function,
+                           get_child_as_raw_ptr(root_layer->children(), i));
   }
 }
 

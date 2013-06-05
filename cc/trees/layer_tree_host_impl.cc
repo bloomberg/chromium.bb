@@ -1107,12 +1107,9 @@ bool LayerTreeHostImpl::AllowPartialSwap() const {
   return !debug_state_.ShowHudRects();
 }
 
-class DidBeginTracingFunctor {
- public:
-  void operator()(LayerImpl* layer) {
-    layer->DidBeginTracing();
-  }
-};
+void DidBeginTracing(LayerImpl* layer) {
+  layer->DidBeginTracing();
+}
 
 void LayerTreeHostImpl::DrawLayers(FrameData* frame,
                                    base::TimeTicks frame_begin_time) {
@@ -1154,13 +1151,12 @@ void LayerTreeHostImpl::DrawLayers(FrameData* frame,
   bool is_new_trace;
   TRACE_EVENT_IS_NEW_TRACE(&is_new_trace);
   if (is_new_trace) {
-    if (pending_tree_)
-      LayerTreeHostCommon::CallFunctionForSubtree<
-          DidBeginTracingFunctor, LayerImpl>(
-              pending_tree_->root_layer());
-    LayerTreeHostCommon::CallFunctionForSubtree<
-        DidBeginTracingFunctor, LayerImpl>(
-            active_tree_->root_layer());
+    if (pending_tree_) {
+      LayerTreeHostCommon::CallFunctionForSubtree(DidBeginTracing,
+                                                  pending_tree_->root_layer());
+    }
+    LayerTreeHostCommon::CallFunctionForSubtree(DidBeginTracing,
+                                                active_tree_->root_layer());
   }
 
   TRACE_EVENT_OBJECT_SNAPSHOT_WITH_ID(
@@ -1431,6 +1427,10 @@ ManagedMemoryPolicy LayerTreeHostImpl::ActualManagedMemoryPolicy() const {
   return actual;
 }
 
+static void LostOutputSurface(LayerImpl* layer) {
+  layer->DidLoseOutputSurface();
+}
+
 bool LayerTreeHostImpl::InitializeRenderer(
     scoped_ptr<OutputSurface> output_surface) {
   // Since we will create a new resource provider, we cannot continue to use
@@ -1438,12 +1438,18 @@ bool LayerTreeHostImpl::InitializeRenderer(
   // before we destroy the old resource provider.
   if (active_tree_->root_layer())
     ClearRenderSurfaces();
-  if (active_tree_->root_layer())
-    SendDidLoseOutputSurfaceRecursive(active_tree_->root_layer());
-  if (pending_tree_ && pending_tree_->root_layer())
-    SendDidLoseOutputSurfaceRecursive(pending_tree_->root_layer());
-  if (recycle_tree_ && recycle_tree_->root_layer())
-    SendDidLoseOutputSurfaceRecursive(recycle_tree_->root_layer());
+  if (active_tree_->root_layer()) {
+    LayerTreeHostCommon::CallFunctionForSubtree(LostOutputSurface,
+                                                active_tree_->root_layer());
+  }
+  if (pending_tree_ && pending_tree_->root_layer()) {
+    LayerTreeHostCommon::CallFunctionForSubtree(LostOutputSurface,
+                                                pending_tree_->root_layer());
+  }
+  if (recycle_tree_ && recycle_tree_->root_layer()) {
+    LayerTreeHostCommon::CallFunctionForSubtree(LostOutputSurface,
+                                                recycle_tree_->root_layer());
+  }
   if (resource_provider_)
     resource_provider_->DidLoseOutputSurface();
 
@@ -2060,17 +2066,6 @@ void LayerTreeHostImpl::UpdateAnimationState(bool start_ready_animations) {
 
 base::TimeDelta LayerTreeHostImpl::LowFrequencyAnimationInterval() const {
   return base::TimeDelta::FromSeconds(1);
-}
-
-void LayerTreeHostImpl::SendDidLoseOutputSurfaceRecursive(LayerImpl* current) {
-  DCHECK(current);
-  current->DidLoseOutputSurface();
-  if (current->mask_layer())
-    SendDidLoseOutputSurfaceRecursive(current->mask_layer());
-  if (current->replica_layer())
-    SendDidLoseOutputSurfaceRecursive(current->replica_layer());
-  for (size_t i = 0; i < current->children().size(); ++i)
-    SendDidLoseOutputSurfaceRecursive(current->children()[i]);
 }
 
 void LayerTreeHostImpl::ClearRenderSurfaces() {

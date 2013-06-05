@@ -350,15 +350,13 @@ void LayerTreeImpl::PushPersistedState(LayerTreeImpl* pending_tree) {
   pending_tree->SetCurrentlyScrollingLayer(pending_scrolling_layer_twin);
 }
 
-static void DidBecomeActiveRecursive(LayerImpl* layer) {
+static void MarkActive(LayerImpl* layer) {
   layer->DidBecomeActive();
-  for (size_t i = 0; i < layer->children().size(); ++i)
-    DidBecomeActiveRecursive(layer->children()[i]);
 }
 
 void LayerTreeImpl::DidBecomeActive() {
   if (root_layer())
-    DidBecomeActiveRecursive(root_layer());
+    LayerTreeHostCommon::CallFunctionForSubtree(MarkActive, root_layer());
   FindRootScrollLayer();
   UpdateMaxScrollOffset();
 }
