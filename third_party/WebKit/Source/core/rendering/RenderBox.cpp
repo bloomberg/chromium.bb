@@ -715,6 +715,11 @@ void RenderBox::autoscroll(const IntPoint& position)
         layer()->autoscroll(position);
 }
 
+bool RenderBox::autoscrollInProgress() const
+{
+    return frame() && frame()->page() && frame()->page()->autoscrollInProgress(this);
+}
+
 // There are two kinds of renderer that can autoscroll.
 bool RenderBox::canAutoscroll() const
 {

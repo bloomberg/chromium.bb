@@ -2087,8 +2087,8 @@ void RenderLayer::scrollByRecursively(const IntSize& delta, ScrollOffsetClamping
                 scrollableLayer->scrollByRecursively(remainingScrollOffset, clamp);
 
             Frame* frame = renderer()->frame();
-            if (frame)
-                frame->eventHandler()->updateAutoscrollRenderer();
+            if (frame && frame->page())
+                frame->page()->updateAutoscrollRenderer();
         }
     } else if (renderer()->view()->frameView()) {
         // If we are here, we were called on a renderer that can be programmatically scrolled, but doesn't
@@ -2207,7 +2207,10 @@ static inline bool frameElementAndViewPermitScroll(HTMLFrameElement* frameElemen
 
     // Forbid autoscrolls when scrollbars are off, but permits other programmatic scrolls,
     // like navigation to an anchor.
-    return !frameView->frame()->eventHandler()->autoscrollInProgress();
+    Page* page = frameView->frame()->page();
+    if (!page)
+        return false;
+    return !page->autoscrollInProgress();
 }
 
 void RenderLayer::scrollRectToVisible(const LayoutRect& rect, const ScrollAlignment& alignX, const ScrollAlignment& alignY)

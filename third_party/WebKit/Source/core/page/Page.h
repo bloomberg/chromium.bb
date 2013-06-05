@@ -42,6 +42,7 @@
 
 namespace WebCore {
 
+class AutoscrollController;
 class BackForwardClient;
 class BackForwardController;
 class Chrome;
@@ -64,10 +65,12 @@ class InspectorController;
 class Node;
 class PageConsole;
 class PageGroup;
+class PlatformMouseEvent;
 class PluginData;
 class PointerLockController;
 class ProgressTracker;
 class Range;
+class RenderBox;
 class RenderObject;
 class RenderTheme;
 class VisibleSelection;
@@ -166,6 +169,19 @@ public:
     PointerLockController* pointerLockController() const { return m_pointerLockController.get(); }
     ValidationMessageClient* validationMessageClient() const { return m_validationMessageClient; }
     void setValidationMessageClient(ValidationMessageClient* client) { m_validationMessageClient = client; }
+
+    bool autoscrollInProgress() const;
+    bool autoscrollInProgress(const RenderBox*) const;
+    bool panScrollInProgress() const;
+    void startAutoscrollForSelection(RenderObject*);
+    void stopAutoscrollIfNeeded(RenderObject*);
+    void stopAutoscrollTimer();
+    void updateAutoscrollRenderer();
+    void updateDragAndDrop(Node* targetNode, const IntPoint& eventPosition, double eventTime);
+#if ENABLE(PAN_SCROLLING)
+    void handleMouseReleaseForPanScrolling(Frame*, const PlatformMouseEvent&);
+    void startPanScrolling(RenderBox*, const IntPoint&);
+#endif
 
     ScrollingCoordinator* scrollingCoordinator();
 
@@ -266,6 +282,7 @@ private:
 
     void setTimerAlignmentInterval(double);
 
+    OwnPtr<AutoscrollController> m_autoscrollController;
     OwnPtr<Chrome> m_chrome;
     OwnPtr<DragCaretController> m_dragCaretController;
 

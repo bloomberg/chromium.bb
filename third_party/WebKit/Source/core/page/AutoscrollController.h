@@ -28,6 +28,7 @@
 
 #include "core/platform/Timer.h"
 #include "core/platform/graphics/IntPoint.h"
+#include "wtf/PassOwnPtr.h"
 
 namespace WebCore {
 
@@ -52,22 +53,22 @@ enum AutoscrollType {
 // AutscrollController handels autoscroll and pan scroll for EventHandler.
 class AutoscrollController {
 public:
-    explicit AutoscrollController(Frame*);
-    RenderBox* autoscrollRenderer() const;
     bool autoscrollInProgress() const;
+    bool autoscrollInProgress(const RenderBox*) const;
+    static PassOwnPtr<AutoscrollController> create();
     bool panScrollInProgress() const;
     void startAutoscrollForSelection(RenderObject*);
-    void stopAutoscrollTimer(bool rendererIsBeingDestroyed = false);
+    void stopAutoscrollTimer();
+    void stopAutoscrollIfNeeded(RenderObject*);
     void updateAutoscrollRenderer();
     void updateDragAndDrop(Node* targetNode, const IntPoint& eventPosition, double eventTime);
 #if ENABLE(PAN_SCROLLING)
-    void didPanScrollStart();
-    void didPanScrollStop();
-    void handleMouseReleaseEvent(const PlatformMouseEvent&);
+    void handleMouseReleaseForPanScrolling(Frame*, const PlatformMouseEvent&);
     void startPanScrolling(RenderBox*, const IntPoint&);
 #endif
 
 private:
+    AutoscrollController();
     void autoscrollTimerFired(Timer<AutoscrollController>*);
     void startAutoscrollTimer();
 #if ENABLE(PAN_SCROLLING)
@@ -79,10 +80,8 @@ private:
     AutoscrollType m_autoscrollType;
     IntPoint m_dragAndDropAutoscrollReferencePosition;
     double m_dragAndDropAutoscrollStartTime;
-    Frame* m_frame;
 #if ENABLE(PAN_SCROLLING)
     IntPoint m_panScrollStartPos;
-    bool m_panScrollInProgress;
 #endif
 };
 
