@@ -10,18 +10,22 @@
 #include "base/memory/scoped_ptr.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "content/public/browser/web_contents.h"
 
 namespace content {
+
+struct LoadCommittedDetails;
 
 // For browser_tests, which run on the UI thread, run a second
 // MessageLoop and quit when the navigation completes loading.
 class TestNavigationObserver : public NotificationObserver {
  public:
-  // Create and register a new TestNavigationObserver against the |source|.
-  TestNavigationObserver(const NotificationSource& source,
+  // Create and register a new TestNavigationObserver against the
+  // |web_contents|.
+  TestNavigationObserver(WebContents* web_contents,
                          int number_of_navigations);
   // Like above but waits for one navigation.
-  explicit TestNavigationObserver(const NotificationSource& source);
+  explicit TestNavigationObserver(WebContents* web_contents);
 
   virtual ~TestNavigationObserver();
 
@@ -31,17 +35,30 @@ class TestNavigationObserver : public NotificationObserver {
   // Convenient version of the above that runs a nested message loop and waits.
   void Wait();
 
- protected:
-  explicit TestNavigationObserver(int number_of_navigations);
+  // Start/stop watching newly created WebContents.
+  void StartWatchingNewWebContents();
+  void StopWatchingNewWebContents();
 
-  // Register this TestNavigationObserver as an observer of the |source|.
-  void RegisterAsObserver(const NotificationSource& source);
+ protected:
+  // Register this TestNavigationObserver as an observer of the |web_contents|.
+  void RegisterAsObserver(WebContents* web_contents);
 
   // NotificationObserver:
   virtual void Observe(int type, const NotificationSource& source,
                        const NotificationDetails& details) OVERRIDE;
 
  private:
+  class TestWebContentsObserver;
+
+  // Callbacks for WebContents-related events.
+  void OnWebContentsCreated(WebContents* web_contents);
+  void OnWebContentsDestroyed(TestWebContentsObserver* observer,
+                              WebContents* web_contents);
+  void OnNavigationEntryCommitted(
+      TestWebContentsObserver* observer,
+      WebContents* web_contents,
+      const LoadCommittedDetails& load_details);
+
   NotificationRegistrar registrar_;
 
   // If true the navigation has started.
@@ -56,12 +73,18 @@ class TestNavigationObserver : public NotificationObserver {
   // |done_| will get set when this object observes a TabStripModel event.
   bool done_;
 
+  // |running_| will be true during WaitForObservation until |done_| is true.
+  bool running_;
+
   // |done_callback_| will be set while |running_| is true and will be called
   // when navigation completes.
   base::Closure done_callback_;
 
-  // |running_| will be true during WaitForObservation until |done_| is true.
-  bool running_;
+  // Callback invoked on WebContents creation.
+  WebContents::CreatedCallback web_contents_created_callback_;
+
+  // Living TestWebContentsObservers created by this observer.
+  std::set<TestWebContentsObserver*> web_contents_observers_;
 
   DISALLOW_COPY_AND_ASSIGN(TestNavigationObserver);
 };

@@ -86,19 +86,15 @@ void FullscreenControllerTest::DenyCurrentFullscreenOrMouseLockRequest() {
 
 void FullscreenControllerTest::GoBack() {
   content::TestNavigationObserver observer(
-      content::NotificationService::AllSources(), 1);
-
+      browser()->tab_strip_model()->GetActiveWebContents(), 1);
   chrome::GoBack(browser(), CURRENT_TAB);
-
   observer.Wait();
 }
 
 void FullscreenControllerTest::Reload() {
   content::TestNavigationObserver observer(
-      content::NotificationService::AllSources(), 1);
-
+      browser()->tab_strip_model()->GetActiveWebContents(), 1);
   chrome::Reload(browser(), CURRENT_TAB);
-
   observer.Wait();
 }
 

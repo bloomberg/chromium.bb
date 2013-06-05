@@ -93,6 +93,8 @@ class CONTENT_EXPORT InterstitialPageImpl
 
   // WebContentsObserver implementation:
   virtual void WebContentsDestroyed(WebContents* web_contents) OVERRIDE;
+  virtual void NavigationEntryCommitted(
+      const LoadCommittedDetails& load_details) OVERRIDE;
 
   // RenderViewHostDelegate implementation:
   virtual RenderViewHostDelegateView* GetDelegateView() OVERRIDE;

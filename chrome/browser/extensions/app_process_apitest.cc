@@ -676,8 +676,9 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, ServerRedirectToAppFromExtension) {
   // 2. The app's URL (which includes a server redirect).
   // Note that the server redirect does not generate a navigation event.
   content::TestNavigationObserver test_navigation_observer(
-      content::NotificationService::AllSources(),
+      browser()->tab_strip_model()->GetActiveWebContents(),
       2);
+  test_navigation_observer.StartWatchingNewWebContents();
 
   // Load the launcher extension, which should launch the app.
   ui_test_utils::NavigateToURLWithDisposition(
@@ -717,8 +718,9 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, ClientRedirectToAppFromExtension) {
   // 2. The URL that the extension launches, which client redirects.
   // 3. The app's URL.
   content::TestNavigationObserver test_navigation_observer(
-      content::NotificationService::AllSources(),
+      browser()->tab_strip_model()->GetActiveWebContents(),
       3);
+  test_navigation_observer.StartWatchingNewWebContents();
 
   // Load the launcher extension, which should launch the app.
   ui_test_utils::NavigateToURLWithDisposition(

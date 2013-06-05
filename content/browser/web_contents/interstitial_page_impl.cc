@@ -225,8 +225,6 @@ void InterstitialPageImpl::Show() {
                          net::EscapePath(delegate_->GetHTMLContents());
   render_view_host_->NavigateToURL(GURL(data_url));
 
-  notification_registrar_.Add(this, NOTIFICATION_NAV_ENTRY_COMMITTED,
-      Source<NavigationController>(&web_contents_->GetController()));
   notification_registrar_.Add(this, NOTIFICATION_NAV_ENTRY_PENDING,
       Source<NavigationController>(&web_contents_->GetController()));
   notification_registrar_.Add(
@@ -322,9 +320,6 @@ void InterstitialPageImpl::Observe(
         TakeActionOnResourceDispatcher(CANCEL);
       }
       break;
-    case NOTIFICATION_NAV_ENTRY_COMMITTED:
-      OnNavigatingAwayOrTabClosing();
-      break;
     case NOTIFICATION_DOM_OPERATION_RESPONSE:
       if (enabled()) {
         Details<DomOperationNotificationDetails> dom_op_details(
@@ -335,6 +330,11 @@ void InterstitialPageImpl::Observe(
     default:
       NOTREACHED();
   }
+}
+
+void InterstitialPageImpl::NavigationEntryCommitted(
+    const LoadCommittedDetails& load_details) {
+  OnNavigatingAwayOrTabClosing();
 }
 
 void InterstitialPageImpl::WebContentsDestroyed(WebContents* web_contents) {

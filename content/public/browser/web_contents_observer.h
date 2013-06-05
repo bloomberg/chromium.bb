@@ -166,6 +166,13 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener,
                            const string16& error_description,
                            RenderViewHost* render_view_host) {}
 
+  // This method is invoked when a new non-pending navigation entry is created.
+  // This corresponds to one NavigationController entry being created
+  // (in the case of new navigations) or renavigated to (for back/forward
+  // navigations).
+  virtual void NavigationEntryCommitted(
+      const LoadCommittedDetails& load_details) {}
+
   // This method is invoked when a new WebContents was created in response to
   // an action in the observed WebContents, e.g. a link with target=_blank was
   // clicked. The |source_frame_id| indicates in which frame the action took

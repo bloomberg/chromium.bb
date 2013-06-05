@@ -23,6 +23,7 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
 #include "content/shell/shell.h"
 #include "content/test/content_browser_test.h"
@@ -388,10 +389,7 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
   EXPECT_NE(orig_site_instance, new_site_instance);
 
   // Clicking the original link in the first tab should cause us to swap back.
-  WindowedNotificationObserver navigation_observer(
-      NOTIFICATION_NAV_ENTRY_COMMITTED,
-      Source<NavigationController>(
-          &new_shell->web_contents()->GetController()));
+  TestNavigationObserver navigation_observer(new_shell->web_contents());
   EXPECT_TRUE(ExecuteScriptAndExtractBool(
       shell()->web_contents(),
       "window.domAutomationController.send(clickSameSiteTargetedLink());",
@@ -476,10 +474,7 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest, DisownOpener) {
 
   // Go back and ensure the opener is still null.
   {
-    WindowedNotificationObserver back_nav_load_observer(
-        NOTIFICATION_NAV_ENTRY_COMMITTED,
-        Source<NavigationController>(
-            &new_shell->web_contents()->GetController()));
+    TestNavigationObserver back_nav_load_observer(new_shell->web_contents());
     new_shell->web_contents()->GetController().GoBack();
     back_nav_load_observer.Wait();
   }
@@ -716,10 +711,7 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
   EXPECT_NE(orig_site_instance, new_site_instance);
 
   // The opened tab should be able to navigate the opener back to its process.
-  WindowedNotificationObserver navigation_observer(
-      NOTIFICATION_NAV_ENTRY_COMMITTED,
-      Source<NavigationController>(
-          &orig_contents->GetController()));
+  TestNavigationObserver navigation_observer(orig_contents);
   EXPECT_TRUE(ExecuteScriptAndExtractBool(
       new_shell->web_contents(),
       "window.domAutomationController.send(navigateOpener());",
@@ -1000,66 +992,48 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest, BackForwardNotStale) {
 
   // Go back three times to first site.
   {
-    WindowedNotificationObserver back_nav_load_observer(
-        NOTIFICATION_NAV_ENTRY_COMMITTED,
-        Source<NavigationController>(
-            &contents->GetController()));
+    TestNavigationObserver back_nav_load_observer(shell()->web_contents());
     shell()->web_contents()->GetController().GoBack();
     back_nav_load_observer.Wait();
   }
   {
-    WindowedNotificationObserver back_nav_load_observer(
-        NOTIFICATION_NAV_ENTRY_COMMITTED,
-        Source<NavigationController>(
-            &contents->GetController()));
+    TestNavigationObserver back_nav_load_observer(shell()->web_contents());
     shell()->web_contents()->GetController().GoBack();
     back_nav_load_observer.Wait();
   }
   {
-    WindowedNotificationObserver back_nav_load_observer(
-        NOTIFICATION_NAV_ENTRY_COMMITTED,
-        Source<NavigationController>(&contents->GetController()));
+    TestNavigationObserver back_nav_load_observer(shell()->web_contents());
     shell()->web_contents()->GetController().GoBack();
     back_nav_load_observer.Wait();
   }
 
   // Now go forward twice to B2.  Shouldn't be left spinning.
   {
-    WindowedNotificationObserver forward_nav_load_observer(
-        NOTIFICATION_NAV_ENTRY_COMMITTED,
-        Source<NavigationController>(&contents->GetController()));
+    TestNavigationObserver forward_nav_load_observer(shell()->web_contents());
     shell()->web_contents()->GetController().GoForward();
     forward_nav_load_observer.Wait();
   }
   {
-    WindowedNotificationObserver forward_nav_load_observer(
-        NOTIFICATION_NAV_ENTRY_COMMITTED,
-        Source<NavigationController>(&contents->GetController()));
+    TestNavigationObserver forward_nav_load_observer(shell()->web_contents());
     shell()->web_contents()->GetController().GoForward();
     forward_nav_load_observer.Wait();
   }
 
   // Go back twice to first site.
   {
-    WindowedNotificationObserver back_nav_load_observer(
-        NOTIFICATION_NAV_ENTRY_COMMITTED,
-        Source<NavigationController>(&contents->GetController()));
+    TestNavigationObserver back_nav_load_observer(shell()->web_contents());
     shell()->web_contents()->GetController().GoBack();
     back_nav_load_observer.Wait();
   }
   {
-    WindowedNotificationObserver back_nav_load_observer(
-        NOTIFICATION_NAV_ENTRY_COMMITTED,
-        Source<NavigationController>(&contents->GetController()));
+    TestNavigationObserver back_nav_load_observer(shell()->web_contents());
     shell()->web_contents()->GetController().GoBack();
     back_nav_load_observer.Wait();
   }
 
   // Now go forward directly to B3.  Shouldn't be left spinning.
   {
-    WindowedNotificationObserver forward_nav_load_observer(
-        NOTIFICATION_NAV_ENTRY_COMMITTED,
-        Source<NavigationController>(&contents->GetController()));
+    TestNavigationObserver forward_nav_load_observer(shell()->web_contents());
     shell()->web_contents()->GetController().GoToIndex(4);
     forward_nav_load_observer.Wait();
   }
@@ -1123,10 +1097,7 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
   // Going back should make the previously swapped-out view to become visible
   // again.
   {
-    WindowedNotificationObserver back_nav_load_observer(
-        NOTIFICATION_NAV_ENTRY_COMMITTED,
-        Source<NavigationController>(
-            &new_shell->web_contents()->GetController()));
+    TestNavigationObserver back_nav_load_observer(new_shell->web_contents());
     new_shell->web_contents()->GetController().GoBack();
     back_nav_load_observer.Wait();
   }

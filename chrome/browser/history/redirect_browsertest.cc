@@ -162,9 +162,7 @@ IN_PROC_BROWSER_TEST_F(RedirectTest, ClientCancelled) {
 
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
-  content::TestNavigationObserver navigation_observer(
-      content::Source<content::NavigationController>(
-          &web_contents->GetController()));
+  content::TestNavigationObserver navigation_observer(web_contents);
 
   // Simulate a click to force to make a user-initiated location change;
   // otherwise, a non user-initiated in-page location change will be treated
@@ -279,10 +277,7 @@ IN_PROC_BROWSER_TEST_F(RedirectTest,
 
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
-  content::TestNavigationObserver observer(
-      content::Source<content::NavigationController>(
-          &web_contents->GetController()),
-      2);
+  content::TestNavigationObserver observer(web_contents, 2);
 
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), first_url, CURRENT_TAB, ui_test_utils::BROWSER_TEST_NONE);

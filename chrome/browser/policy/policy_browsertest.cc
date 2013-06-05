@@ -807,7 +807,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ForceSafeSearch) {
 
   // First check that nothing happens.
   content::TestNavigationObserver no_safesearch_observer(
-      content::NotificationService::AllSources());
+      browser()->tab_strip_model()->GetActiveWebContents());
   chrome::FocusLocationBar(browser());
   LocationBar* location_bar = browser()->window()->GetLocationBar();
   ui_test_utils::SendToOmniboxAndSubmit(location_bar, "http://google.com/");
@@ -833,7 +833,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ForceSafeSearch) {
   EXPECT_TRUE(prefs->GetBoolean(prefs::kForceSafeSearch));
 
   content::TestNavigationObserver safesearch_observer(
-      content::NotificationService::AllSources());
+      browser()->tab_strip_model()->GetActiveWebContents());
 
   // Verify that searching from google.com works.
   chrome::FocusLocationBar(browser());

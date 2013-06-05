@@ -32,6 +32,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_view_host_observer.h"
 #include "content/public/browser/web_contents_delegate.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/page_state.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_notification_tracker.h"
@@ -185,19 +186,36 @@ TEST(TimeSmoother, ClockBackwardsJump) {
 
 // NavigationControllerTest ----------------------------------------------------
 
-class NavigationControllerTest : public RenderViewHostImplTestHarness {
+class NavigationControllerTest
+    : public RenderViewHostImplTestHarness,
+      public WebContentsObserver {
  public:
-  NavigationControllerTest() {}
+  NavigationControllerTest() : navigation_entry_committed_counter_(0) {
+  }
+
+  virtual void SetUp() OVERRIDE {
+    RenderViewHostImplTestHarness::SetUp();
+    WebContents* web_contents = RenderViewHostImplTestHarness::web_contents();
+    ASSERT_TRUE(web_contents);  // The WebContents should be created by now.
+    WebContentsObserver::Observe(web_contents);
+  }
+
+  // WebContentsObserver:
+  virtual void NavigationEntryCommitted(
+      const LoadCommittedDetails& load_details) OVERRIDE {
+    navigation_entry_committed_counter_++;
+  }
 
   NavigationControllerImpl& controller_impl() {
     return static_cast<NavigationControllerImpl&>(controller());
   }
+
+ protected:
+  size_t navigation_entry_committed_counter_;
 };
 
 void RegisterForAllNavNotifications(TestNotificationTracker* tracker,
                                     NavigationController* controller) {
-  tracker->ListenFor(NOTIFICATION_NAV_ENTRY_COMMITTED,
-                     Source<NavigationController>(controller));
   tracker->ListenFor(NOTIFICATION_NAV_LIST_PRUNED,
                      Source<NavigationController>(controller));
   tracker->ListenFor(NOTIFICATION_NAV_ENTRY_CHANGED,
@@ -256,7 +274,8 @@ TEST_F(NavigationControllerTest, GoToOffset) {
   }
 
   test_rvh()->SendNavigate(0, urls[0]);
-  EXPECT_TRUE(notifications.Check1AndReset(NOTIFICATION_NAV_ENTRY_COMMITTED));
+  EXPECT_EQ(1U, navigation_entry_committed_counter_);
+  navigation_entry_committed_counter_ = 0;
   EXPECT_EQ(urls[0], controller.GetActiveEntry()->GetVirtualURL());
   EXPECT_FALSE(controller.CanGoBack());
   EXPECT_FALSE(controller.CanGoForward());
@@ -264,7 +283,8 @@ TEST_F(NavigationControllerTest, GoToOffset) {
 
   for (int i = 1; i <= 4; ++i) {
     test_rvh()->SendNavigate(i, urls[i]);
-    EXPECT_TRUE(notifications.Check1AndReset(NOTIFICATION_NAV_ENTRY_COMMITTED));
+    EXPECT_EQ(1U, navigation_entry_committed_counter_);
+    navigation_entry_committed_counter_ = 0;
     EXPECT_EQ(urls[i], controller.GetActiveEntry()->GetVirtualURL());
     EXPECT_TRUE(controller.CanGoToOffset(-i));
     EXPECT_FALSE(controller.CanGoToOffset(-(i + 1)));
@@ -298,7 +318,8 @@ TEST_F(NavigationControllerTest, GoToOffset) {
     // Check that the GoToOffset will land on the expected page.
     EXPECT_EQ(urls[url_index], controller.GetPendingEntry()->GetVirtualURL());
     test_rvh()->SendNavigate(url_index, urls[url_index]);
-    EXPECT_TRUE(notifications.Check1AndReset(NOTIFICATION_NAV_ENTRY_COMMITTED));
+    EXPECT_EQ(1U, navigation_entry_committed_counter_);
+    navigation_entry_committed_counter_ = 0;
     // Check that we can go to any valid offset into the history.
     for (size_t j = 0; j < urls.size(); ++j)
       EXPECT_TRUE(controller.CanGoToOffset(j - url_index));
@@ -340,7 +361,8 @@ TEST_F(NavigationControllerTest, LoadURL) {
   EXPECT_EQ(0U, notifications.size());
 
   test_rvh()->SendNavigate(0, url1);
-  EXPECT_TRUE(notifications.Check1AndReset(NOTIFICATION_NAV_ENTRY_COMMITTED));
+  EXPECT_EQ(1U, navigation_entry_committed_counter_);
+  navigation_entry_committed_counter_ = 0;
 
   // The load should now be committed.
   EXPECT_EQ(controller.GetEntryCount(), 1);
@@ -382,7 +404,8 @@ TEST_F(NavigationControllerTest, LoadURL) {
   test_rvh()->SendShouldCloseACK(true);
   static_cast<TestRenderViewHost*>(
       contents()->GetPendingRenderViewHost())->SendNavigate(1, url2);
-  EXPECT_TRUE(notifications.Check1AndReset(NOTIFICATION_NAV_ENTRY_COMMITTED));
+  EXPECT_EQ(1U, navigation_entry_committed_counter_);
+  navigation_entry_committed_counter_ = 0;
 
   // The load should now be committed.
   EXPECT_EQ(controller.GetEntryCount(), 2);
@@ -422,7 +445,8 @@ TEST_F(NavigationControllerTest, LoadURLSameTime) {
   controller.LoadURL(url1, Referrer(), PAGE_TRANSITION_TYPED, std::string());
 
   test_rvh()->SendNavigate(0, url1);
-  EXPECT_TRUE(notifications.Check1AndReset(NOTIFICATION_NAV_ENTRY_COMMITTED));
+  EXPECT_EQ(1U, navigation_entry_committed_counter_);
+  navigation_entry_committed_counter_ = 0;
 
   // Load another...
   controller.LoadURL(url2, Referrer(), PAGE_TRANSITION_TYPED, std::string());
@@ -431,7 +455,8 @@ TEST_F(NavigationControllerTest, LoadURLSameTime) {
   // commit.
   test_rvh()->SendShouldCloseACK(true);
   test_rvh()->SendNavigate(1, url2);
-  EXPECT_TRUE(notifications.Check1AndReset(NOTIFICATION_NAV_ENTRY_COMMITTED));
+  EXPECT_EQ(1U, navigation_entry_committed_counter_);
+  navigation_entry_committed_counter_ = 0;
 
   // The two loads should now be committed.
   ASSERT_EQ(controller.GetEntryCount(), 2);
@@ -553,7 +578,8 @@ TEST_F(NavigationControllerTest, LoadURL_SamePage) {
   controller.LoadURL(url1, Referrer(), PAGE_TRANSITION_TYPED, std::string());
   EXPECT_EQ(0U, notifications.size());
   test_rvh()->SendNavigate(0, url1);
-  EXPECT_TRUE(notifications.Check1AndReset(NOTIFICATION_NAV_ENTRY_COMMITTED));
+  EXPECT_EQ(1U, navigation_entry_committed_counter_);
+  navigation_entry_committed_counter_ = 0;
 
   ASSERT_TRUE(controller.GetActiveEntry());
   const base::Time timestamp = controller.GetActiveEntry()->GetTimestamp();
@@ -562,7 +588,8 @@ TEST_F(NavigationControllerTest, LoadURL_SamePage) {
   controller.LoadURL(url1, Referrer(), PAGE_TRANSITION_TYPED, std::string());
   EXPECT_EQ(0U, notifications.size());
   test_rvh()->SendNavigate(0, url1);
-  EXPECT_TRUE(notifications.Check1AndReset(NOTIFICATION_NAV_ENTRY_COMMITTED));
+  EXPECT_EQ(1U, navigation_entry_committed_counter_);
+  navigation_entry_committed_counter_ = 0;
 
   // We should not have produced a new session history entry.
   EXPECT_EQ(controller.GetEntryCount(), 1);
@@ -593,7 +620,8 @@ TEST_F(NavigationControllerTest, LoadURL_Discarded) {
   controller.LoadURL(url1, Referrer(), PAGE_TRANSITION_TYPED, std::string());
   EXPECT_EQ(0U, notifications.size());
   test_rvh()->SendNavigate(0, url1);
-  EXPECT_TRUE(notifications.Check1AndReset(NOTIFICATION_NAV_ENTRY_COMMITTED));
+  EXPECT_EQ(1U, navigation_entry_committed_counter_);
+  navigation_entry_committed_counter_ = 0;
 
   ASSERT_TRUE(controller.GetActiveEntry());
   const base::Time timestamp = controller.GetActiveEntry()->GetTimestamp();
@@ -629,7 +657,8 @@ TEST_F(NavigationControllerTest, LoadURL_NoPending) {
   controller.LoadURL(
       kExistingURL1, Referrer(), PAGE_TRANSITION_TYPED, std::string());
   test_rvh()->SendNavigate(0, kExistingURL1);
-  EXPECT_TRUE(notifications.Check1AndReset(NOTIFICATION_NAV_ENTRY_COMMITTED));
+  EXPECT_EQ(1U, navigation_entry_committed_counter_);
+  navigation_entry_committed_counter_ = 0;
 
   // Do a new navigation without making a pending one.
   const GURL kNewURL("http://see");
@@ -637,7 +666,8 @@ TEST_F(NavigationControllerTest, LoadURL_NoPending) {
 
   // There should no longer be any pending entry, and the third navigation we
   // just made should be committed.
-  EXPECT_TRUE(notifications.Check1AndReset(NOTIFICATION_NAV_ENTRY_COMMITTED));
+  EXPECT_EQ(1U, navigation_entry_committed_counter_);
+  navigation_entry_committed_counter_ = 0;
   EXPECT_EQ(-1, controller.GetPendingEntryIndex());
   EXPECT_EQ(1, controller.GetLastCommittedEntryIndex());
   EXPECT_EQ(kNewURL, controller.GetActiveEntry()->GetURL());
@@ -657,7 +687,8 @@ TEST_F(NavigationControllerTest, LoadURL_NewPending) {
   controller.LoadURL(
       kExistingURL1, Referrer(), PAGE_TRANSITION_TYPED, std::string());
   test_rvh()->SendNavigate(0, kExistingURL1);
-  EXPECT_TRUE(notifications.Check1AndReset(NOTIFICATION_NAV_ENTRY_COMMITTED));
+  EXPECT_EQ(1U, navigation_entry_committed_counter_);
+  navigation_entry_committed_counter_ = 0;
 
   // Make a pending entry to somewhere new.
   const GURL kExistingURL2("http://bee");
@@ -673,7 +704,8 @@ TEST_F(NavigationControllerTest, LoadURL_NewPending) {
 
   // There should no longer be any pending entry, and the third navigation we
   // just made should be committed.
-  EXPECT_TRUE(notifications.Check1AndReset(NOTIFICATION_NAV_ENTRY_COMMITTED));
+  EXPECT_EQ(1U, navigation_entry_committed_counter_);
+  navigation_entry_committed_counter_ = 0;
   EXPECT_EQ(-1, controller.GetPendingEntryIndex());
   EXPECT_EQ(1, controller.GetLastCommittedEntryIndex());
   EXPECT_EQ(kNewURL, controller.GetActiveEntry()->GetURL());
@@ -692,13 +724,15 @@ TEST_F(NavigationControllerTest, LoadURL_ExistingPending) {
   controller.LoadURL(
       kExistingURL1, Referrer(), PAGE_TRANSITION_TYPED, std::string());
   test_rvh()->SendNavigate(0, kExistingURL1);
-  EXPECT_TRUE(notifications.Check1AndReset(NOTIFICATION_NAV_ENTRY_COMMITTED));
+  EXPECT_EQ(1U, navigation_entry_committed_counter_);
+  navigation_entry_committed_counter_ = 0;
 
   const GURL kExistingURL2("http://foo/bee");
   controller.LoadURL(
       kExistingURL2, Referrer(), PAGE_TRANSITION_TYPED, std::string());
   test_rvh()->SendNavigate(1, kExistingURL2);
-  EXPECT_TRUE(notifications.Check1AndReset(NOTIFICATION_NAV_ENTRY_COMMITTED));
+  EXPECT_EQ(1U, navigation_entry_committed_counter_);
+  navigation_entry_committed_counter_ = 0;
 
   // Now make a pending back/forward navigation. The zeroth entry should be
   // pending.
@@ -714,7 +748,8 @@ TEST_F(NavigationControllerTest, LoadURL_ExistingPending) {
 
   // There should no longer be any pending entry, and the third navigation we
   // just made should be committed.
-  EXPECT_TRUE(notifications.Check1AndReset(NOTIFICATION_NAV_ENTRY_COMMITTED));
+  EXPECT_EQ(1U, navigation_entry_committed_counter_);
+  navigation_entry_committed_counter_ = 0;
   EXPECT_EQ(-1, controller.GetPendingEntryIndex());
   EXPECT_EQ(2, controller.GetLastCommittedEntryIndex());
   EXPECT_EQ(kNewURL, controller.GetActiveEntry()->GetURL());
@@ -735,7 +770,8 @@ TEST_F(NavigationControllerTest, LoadURL_PrivilegedPending) {
   // Pretend it has bindings so we can tell if we incorrectly copy it.
   test_rvh()->AllowBindings(2);
   test_rvh()->SendNavigate(0, kExistingURL1);
-  EXPECT_TRUE(notifications.Check1AndReset(NOTIFICATION_NAV_ENTRY_COMMITTED));
+  EXPECT_EQ(1U, navigation_entry_committed_counter_);
+  navigation_entry_committed_counter_ = 0;
 
   // Navigate cross-process to a second URL.
   const GURL kExistingURL2("http://foo/eh");
@@ -745,7 +781,8 @@ TEST_F(NavigationControllerTest, LoadURL_PrivilegedPending) {
   TestRenderViewHost* foo_rvh = static_cast<TestRenderViewHost*>(
       contents()->GetPendingRenderViewHost());
   foo_rvh->SendNavigate(1, kExistingURL2);
-  EXPECT_TRUE(notifications.Check1AndReset(NOTIFICATION_NAV_ENTRY_COMMITTED));
+  EXPECT_EQ(1U, navigation_entry_committed_counter_);
+  navigation_entry_committed_counter_ = 0;
 
   // Now make a pending back/forward navigation to a privileged entry.
   // The zeroth entry should be pending.
@@ -764,7 +801,8 @@ TEST_F(NavigationControllerTest, LoadURL_PrivilegedPending) {
 
   // There should no longer be any pending entry, and the third navigation we
   // just made should be committed.
-  EXPECT_TRUE(notifications.Check1AndReset(NOTIFICATION_NAV_ENTRY_COMMITTED));
+  EXPECT_EQ(1U, navigation_entry_committed_counter_);
+  navigation_entry_committed_counter_ = 0;
   EXPECT_EQ(-1, controller.GetPendingEntryIndex());
   EXPECT_EQ(2, controller.GetLastCommittedEntryIndex());
   EXPECT_EQ(kNewURL, controller.GetActiveEntry()->GetURL());
@@ -785,13 +823,15 @@ TEST_F(NavigationControllerTest, LoadURL_BackPreemptsPending) {
   controller.LoadURL(
       kExistingURL1, Referrer(), PAGE_TRANSITION_TYPED, std::string());
   test_rvh()->SendNavigate(0, kExistingURL1);
-  EXPECT_TRUE(notifications.Check1AndReset(NOTIFICATION_NAV_ENTRY_COMMITTED));
+  EXPECT_EQ(1U, navigation_entry_committed_counter_);
+  navigation_entry_committed_counter_ = 0;
 
   const GURL kExistingURL2("http://foo/bee");
   controller.LoadURL(
       kExistingURL2, Referrer(), PAGE_TRANSITION_TYPED, std::string());
   test_rvh()->SendNavigate(1, kExistingURL2);
-  EXPECT_TRUE(notifications.Check1AndReset(NOTIFICATION_NAV_ENTRY_COMMITTED));
+  EXPECT_EQ(1U, navigation_entry_committed_counter_);
+  navigation_entry_committed_counter_ = 0;
 
   // Now make a pending new navigation.
   const GURL kNewURL("http://foo/see");
@@ -806,7 +846,8 @@ TEST_F(NavigationControllerTest, LoadURL_BackPreemptsPending) {
 
   // There should no longer be any pending entry, and the back navigation we
   // just made should be committed.
-  EXPECT_TRUE(notifications.Check1AndReset(NOTIFICATION_NAV_ENTRY_COMMITTED));
+  EXPECT_EQ(1U, navigation_entry_committed_counter_);
+  navigation_entry_committed_counter_ = 0;
   EXPECT_EQ(-1, controller.GetPendingEntryIndex());
   EXPECT_EQ(0, controller.GetLastCommittedEntryIndex());
   EXPECT_EQ(kExistingURL1, controller.GetActiveEntry()->GetURL());
@@ -918,8 +959,8 @@ TEST_F(NavigationControllerTest, LoadURL_RedirectAbortDoesntShowPendingURL) {
   controller.LoadURL(kExistingURL, content::Referrer(),
                      content::PAGE_TRANSITION_TYPED, std::string());
   test_rvh()->SendNavigate(0, kExistingURL);
-  EXPECT_TRUE(notifications.Check1AndReset(
-      content::NOTIFICATION_NAV_ENTRY_COMMITTED));
+  EXPECT_EQ(1U, navigation_entry_committed_counter_);
+  navigation_entry_committed_counter_ = 0;
 
   // Set a WebContentsDelegate to listen for state changes.
   scoped_ptr<TestWebContentsDelegate> delegate(new TestWebContentsDelegate());
@@ -1038,7 +1079,8 @@ TEST_F(NavigationControllerTest, Reload) {
   controller.LoadURL(url1, Referrer(), PAGE_TRANSITION_TYPED, std::string());
   EXPECT_EQ(0U, notifications.size());
   test_rvh()->SendNavigate(0, url1);
-  EXPECT_TRUE(notifications.Check1AndReset(NOTIFICATION_NAV_ENTRY_COMMITTED));
+  EXPECT_EQ(1U, navigation_entry_committed_counter_);
+  navigation_entry_committed_counter_ = 0;
   ASSERT_TRUE(controller.GetActiveEntry());
   controller.GetActiveEntry()->SetTitle(ASCIIToUTF16("Title"));
   controller.Reload(true);
@@ -1061,7 +1103,8 @@ TEST_F(NavigationControllerTest, Reload) {
   EXPECT_TRUE(controller.GetActiveEntry()->GetTitle().empty());
 
   test_rvh()->SendNavigate(0, url1);
-  EXPECT_TRUE(notifications.Check1AndReset(NOTIFICATION_NAV_ENTRY_COMMITTED));
+  EXPECT_EQ(1U, navigation_entry_committed_counter_);
+  navigation_entry_committed_counter_ = 0;
 
   // Now the reload is committed.
   EXPECT_EQ(controller.GetEntryCount(), 1);
@@ -1088,13 +1131,15 @@ TEST_F(NavigationControllerTest, Reload_GeneratesNewPage) {
 
   controller.LoadURL(url1, Referrer(), PAGE_TRANSITION_TYPED, std::string());
   test_rvh()->SendNavigate(0, url1);
-  EXPECT_TRUE(notifications.Check1AndReset(NOTIFICATION_NAV_ENTRY_COMMITTED));
+  EXPECT_EQ(1U, navigation_entry_committed_counter_);
+  navigation_entry_committed_counter_ = 0;
 
   controller.Reload(true);
   EXPECT_EQ(0U, notifications.size());
 
   test_rvh()->SendNavigate(1, url2);
-  EXPECT_TRUE(notifications.Check1AndReset(NOTIFICATION_NAV_ENTRY_COMMITTED));
+  EXPECT_EQ(1U, navigation_entry_committed_counter_);
+  navigation_entry_committed_counter_ = 0;
 
   // Now the reload is committed.
   EXPECT_EQ(controller.GetEntryCount(), 2);
@@ -1140,7 +1185,8 @@ TEST_F(NavigationControllerTest, ReloadOriginalRequestURL) {
       original_url, Referrer(), PAGE_TRANSITION_TYPED, std::string());
   EXPECT_EQ(0U, notifications.size());
   test_rvh()->SendNavigateWithOriginalRequestURL(0, final_url, original_url);
-  EXPECT_TRUE(notifications.Check1AndReset(NOTIFICATION_NAV_ENTRY_COMMITTED));
+  EXPECT_EQ(1U, navigation_entry_committed_counter_);
+  navigation_entry_committed_counter_ = 0;
 
   // The NavigationEntry should save both the original URL and the final
   // redirected URL.
@@ -1169,7 +1215,8 @@ TEST_F(NavigationControllerTest, ReloadOriginalRequestURL) {
 
   // Send that the navigation has proceeded; say it got redirected again.
   test_rvh()->SendNavigate(0, final_url);
-  EXPECT_TRUE(notifications.Check1AndReset(NOTIFICATION_NAV_ENTRY_COMMITTED));
+  EXPECT_EQ(1U, navigation_entry_committed_counter_);
+  navigation_entry_committed_counter_ = 0;
 
   // Now the reload is committed.
   EXPECT_EQ(controller.GetEntryCount(), 1);
@@ -1191,11 +1238,13 @@ TEST_F(NavigationControllerTest, Back) {
 
   const GURL url1("http://foo1");
   test_rvh()->SendNavigate(0, url1);
-  EXPECT_TRUE(notifications.Check1AndReset(NOTIFICATION_NAV_ENTRY_COMMITTED));
+  EXPECT_EQ(1U, navigation_entry_committed_counter_);
+  navigation_entry_committed_counter_ = 0;
 
   const GURL url2("http://foo2");
   test_rvh()->SendNavigate(1, url2);
-  EXPECT_TRUE(notifications.Check1AndReset(NOTIFICATION_NAV_ENTRY_COMMITTED));
+  EXPECT_EQ(1U, navigation_entry_committed_counter_);
+  navigation_entry_committed_counter_ = 0;
 
   controller.GoBack();
   EXPECT_EQ(0U, notifications.size());
@@ -1218,7 +1267,8 @@ TEST_F(NavigationControllerTest, Back) {
             controller.GetEntryAtIndex(0)->GetTimestamp());
 
   test_rvh()->SendNavigate(0, url2);
-  EXPECT_TRUE(notifications.Check1AndReset(NOTIFICATION_NAV_ENTRY_COMMITTED));
+  EXPECT_EQ(1U, navigation_entry_committed_counter_);
+  navigation_entry_committed_counter_ = 0;
 
   // The back navigation completed successfully.
   EXPECT_EQ(controller.GetEntryCount(), 2);
@@ -1251,12 +1301,13 @@ TEST_F(NavigationControllerTest, Back_GeneratesNewPage) {
   controller.LoadURL(
       url1, Referrer(), PAGE_TRANSITION_TYPED, std::string());
   test_rvh()->SendNavigate(0, url1);
-  EXPECT_TRUE(notifications.Check1AndReset(NOTIFICATION_NAV_ENTRY_COMMITTED));
+  EXPECT_EQ(1U, navigation_entry_committed_counter_);
+  navigation_entry_committed_counter_ = 0;
 
   controller.LoadURL(url2, Referrer(), PAGE_TRANSITION_TYPED, std::string());
   test_rvh()->SendNavigate(1, url2);
-  EXPECT_TRUE(notifications.Check1AndReset(
-      NOTIFICATION_NAV_ENTRY_COMMITTED));
+  EXPECT_EQ(1U, navigation_entry_committed_counter_);
+  navigation_entry_committed_counter_ = 0;
 
   controller.GoBack();
   EXPECT_EQ(0U, notifications.size());
@@ -1271,7 +1322,8 @@ TEST_F(NavigationControllerTest, Back_GeneratesNewPage) {
   EXPECT_TRUE(controller.CanGoForward());
 
   test_rvh()->SendNavigate(2, url3);
-  EXPECT_TRUE(notifications.Check1AndReset(NOTIFICATION_NAV_ENTRY_COMMITTED));
+  EXPECT_EQ(1U, navigation_entry_committed_counter_);
+  navigation_entry_committed_counter_ = 0;
 
   // The back navigation resulted in a completely new navigation.
   // TODO(darin): perhaps this behavior will be confusing to users?
@@ -1296,11 +1348,13 @@ TEST_F(NavigationControllerTest, Back_NewPending) {
 
   // First navigate two places so we have some back history.
   test_rvh()->SendNavigate(0, kUrl1);
-  EXPECT_TRUE(notifications.Check1AndReset(NOTIFICATION_NAV_ENTRY_COMMITTED));
+  EXPECT_EQ(1U, navigation_entry_committed_counter_);
+  navigation_entry_committed_counter_ = 0;
 
   // controller.LoadURL(kUrl2, PAGE_TRANSITION_TYPED);
   test_rvh()->SendNavigate(1, kUrl2);
-  EXPECT_TRUE(notifications.Check1AndReset(NOTIFICATION_NAV_ENTRY_COMMITTED));
+  EXPECT_EQ(1U, navigation_entry_committed_counter_);
+  navigation_entry_committed_counter_ = 0;
 
   // Now start a new pending navigation and go back before it commits.
   controller.LoadURL(kUrl3, Referrer(), PAGE_TRANSITION_TYPED, std::string());
@@ -1373,14 +1427,17 @@ TEST_F(NavigationControllerTest, Forward) {
   const GURL url2("http://foo2");
 
   test_rvh()->SendNavigate(0, url1);
-  EXPECT_TRUE(notifications.Check1AndReset(NOTIFICATION_NAV_ENTRY_COMMITTED));
+  EXPECT_EQ(1U, navigation_entry_committed_counter_);
+  navigation_entry_committed_counter_ = 0;
 
   test_rvh()->SendNavigate(1, url2);
-  EXPECT_TRUE(notifications.Check1AndReset(NOTIFICATION_NAV_ENTRY_COMMITTED));
+  EXPECT_EQ(1U, navigation_entry_committed_counter_);
+  navigation_entry_committed_counter_ = 0;
 
   controller.GoBack();
   test_rvh()->SendNavigate(0, url1);
-  EXPECT_TRUE(notifications.Check1AndReset(NOTIFICATION_NAV_ENTRY_COMMITTED));
+  EXPECT_EQ(1U, navigation_entry_committed_counter_);
+  navigation_entry_committed_counter_ = 0;
 
   controller.GoForward();
 
@@ -1403,7 +1460,8 @@ TEST_F(NavigationControllerTest, Forward) {
             controller.GetEntryAtIndex(1)->GetTimestamp());
 
   test_rvh()->SendNavigate(1, url2);
-  EXPECT_TRUE(notifications.Check1AndReset(NOTIFICATION_NAV_ENTRY_COMMITTED));
+  EXPECT_EQ(1U, navigation_entry_committed_counter_);
+  navigation_entry_committed_counter_ = 0;
 
   // The forward navigation completed successfully.
   EXPECT_EQ(controller.GetEntryCount(), 2);
@@ -1434,13 +1492,16 @@ TEST_F(NavigationControllerTest, Forward_GeneratesNewPage) {
   const GURL url3("http://foo3");
 
   test_rvh()->SendNavigate(0, url1);
-  EXPECT_TRUE(notifications.Check1AndReset(NOTIFICATION_NAV_ENTRY_COMMITTED));
+  EXPECT_EQ(1U, navigation_entry_committed_counter_);
+  navigation_entry_committed_counter_ = 0;
   test_rvh()->SendNavigate(1, url2);
-  EXPECT_TRUE(notifications.Check1AndReset(NOTIFICATION_NAV_ENTRY_COMMITTED));
+  EXPECT_EQ(1U, navigation_entry_committed_counter_);
+  navigation_entry_committed_counter_ = 0;
 
   controller.GoBack();
   test_rvh()->SendNavigate(0, url1);
-  EXPECT_TRUE(notifications.Check1AndReset(NOTIFICATION_NAV_ENTRY_COMMITTED));
+  EXPECT_EQ(1U, navigation_entry_committed_counter_);
+  navigation_entry_committed_counter_ = 0;
 
   controller.GoForward();
   EXPECT_EQ(0U, notifications.size());
@@ -1455,9 +1516,9 @@ TEST_F(NavigationControllerTest, Forward_GeneratesNewPage) {
   EXPECT_FALSE(controller.CanGoForward());
 
   test_rvh()->SendNavigate(2, url3);
-  EXPECT_TRUE(notifications.Check2AndReset(
-      NOTIFICATION_NAV_LIST_PRUNED,
-      NOTIFICATION_NAV_ENTRY_COMMITTED));
+  EXPECT_EQ(1U, navigation_entry_committed_counter_);
+  navigation_entry_committed_counter_ = 0;
+  EXPECT_TRUE(notifications.Check1AndReset(NOTIFICATION_NAV_LIST_PRUNED));
 
   EXPECT_EQ(controller.GetEntryCount(), 2);
   EXPECT_EQ(controller.GetLastCommittedEntryIndex(), 1);
@@ -1483,7 +1544,8 @@ TEST_F(NavigationControllerTest, Redirect) {
 
   EXPECT_EQ(0U, notifications.size());
   test_rvh()->SendNavigate(0, url2);
-  EXPECT_TRUE(notifications.Check1AndReset(NOTIFICATION_NAV_ENTRY_COMMITTED));
+  EXPECT_EQ(1U, navigation_entry_committed_counter_);
+  navigation_entry_committed_counter_ = 0;
 
   // Second request
   controller.LoadURL(url1, Referrer(), PAGE_TRANSITION_TYPED, std::string());
@@ -1507,7 +1569,8 @@ TEST_F(NavigationControllerTest, Redirect) {
 
   EXPECT_EQ(0U, notifications.size());
   EXPECT_TRUE(controller.RendererDidNavigate(params, &details));
-  EXPECT_TRUE(notifications.Check1AndReset(NOTIFICATION_NAV_ENTRY_COMMITTED));
+  EXPECT_EQ(1U, navigation_entry_committed_counter_);
+  navigation_entry_committed_counter_ = 0;
 
   EXPECT_TRUE(details.type == NAVIGATION_TYPE_SAME_PAGE);
   EXPECT_EQ(controller.GetEntryCount(), 1);
@@ -1538,7 +1601,8 @@ TEST_F(NavigationControllerTest, PostThenRedirect) {
 
   EXPECT_EQ(0U, notifications.size());
   test_rvh()->SendNavigate(0, url2);
-  EXPECT_TRUE(notifications.Check1AndReset(NOTIFICATION_NAV_ENTRY_COMMITTED));
+  EXPECT_EQ(1U, navigation_entry_committed_counter_);
+  navigation_entry_committed_counter_ = 0;
 
   // Second request
   controller.LoadURL(url1, Referrer(), PAGE_TRANSITION_TYPED, std::string());
@@ -1562,7 +1626,8 @@ TEST_F(NavigationControllerTest, PostThenRedirect) {
 
   EXPECT_EQ(0U, notifications.size());
   EXPECT_TRUE(controller.RendererDidNavigate(params, &details));
-  EXPECT_TRUE(notifications.Check1AndReset(NOTIFICATION_NAV_ENTRY_COMMITTED));
+  EXPECT_EQ(1U, navigation_entry_committed_counter_);
+  navigation_entry_committed_counter_ = 0;
 
   EXPECT_TRUE(details.type == NAVIGATION_TYPE_SAME_PAGE);
   EXPECT_EQ(controller.GetEntryCount(), 1);
@@ -1608,7 +1673,8 @@ TEST_F(NavigationControllerTest, ImmediateRedirect) {
 
   EXPECT_EQ(0U, notifications.size());
   EXPECT_TRUE(controller.RendererDidNavigate(params, &details));
-  EXPECT_TRUE(notifications.Check1AndReset(NOTIFICATION_NAV_ENTRY_COMMITTED));
+  EXPECT_EQ(1U, navigation_entry_committed_counter_);
+  navigation_entry_committed_counter_ = 0;
 
   EXPECT_TRUE(details.type == NAVIGATION_TYPE_NEW_PAGE);
   EXPECT_EQ(controller.GetEntryCount(), 1);
@@ -1631,7 +1697,8 @@ TEST_F(NavigationControllerTest, NewSubframe) {
 
   const GURL url1("http://foo1");
   test_rvh()->SendNavigate(0, url1);
-  EXPECT_TRUE(notifications.Check1AndReset(NOTIFICATION_NAV_ENTRY_COMMITTED));
+  EXPECT_EQ(1U, navigation_entry_committed_counter_);
+  navigation_entry_committed_counter_ = 0;
 
   const GURL url2("http://foo2");
   ViewHostMsg_FrameNavigate_Params params;
@@ -1645,7 +1712,8 @@ TEST_F(NavigationControllerTest, NewSubframe) {
 
   LoadCommittedDetails details;
   EXPECT_TRUE(controller.RendererDidNavigate(params, &details));
-  EXPECT_TRUE(notifications.Check1AndReset(NOTIFICATION_NAV_ENTRY_COMMITTED));
+  EXPECT_EQ(1U, navigation_entry_committed_counter_);
+  navigation_entry_committed_counter_ = 0;
   EXPECT_EQ(url1, details.previous_url);
   EXPECT_FALSE(details.is_in_page);
   EXPECT_FALSE(details.is_main_frame);
@@ -1692,7 +1760,8 @@ TEST_F(NavigationControllerTest, AutoSubframe) {
 
   const GURL url1("http://foo1");
   test_rvh()->SendNavigate(0, url1);
-  EXPECT_TRUE(notifications.Check1AndReset(NOTIFICATION_NAV_ENTRY_COMMITTED));
+  EXPECT_EQ(1U, navigation_entry_committed_counter_);
+  navigation_entry_committed_counter_ = 0;
 
   const GURL url2("http://foo2");
   ViewHostMsg_FrameNavigate_Params params;
@@ -1722,7 +1791,8 @@ TEST_F(NavigationControllerTest, BackSubframe) {
   // Main page.
   const GURL url1("http://foo1");
   test_rvh()->SendNavigate(0, url1);
-  EXPECT_TRUE(notifications.Check1AndReset(NOTIFICATION_NAV_ENTRY_COMMITTED));
+  EXPECT_EQ(1U, navigation_entry_committed_counter_);
+  navigation_entry_committed_counter_ = 0;
 
   // First manual subframe navigation.
   const GURL url2("http://foo2");
@@ -1738,7 +1808,8 @@ TEST_F(NavigationControllerTest, BackSubframe) {
   // This should generate a new entry.
   LoadCommittedDetails details;
   EXPECT_TRUE(controller.RendererDidNavigate(params, &details));
-  EXPECT_TRUE(notifications.Check1AndReset(NOTIFICATION_NAV_ENTRY_COMMITTED));
+  EXPECT_EQ(1U, navigation_entry_committed_counter_);
+  navigation_entry_committed_counter_ = 0;
   EXPECT_EQ(2, controller.GetEntryCount());
 
   // Second manual subframe navigation should also make a new entry.
@@ -1746,7 +1817,8 @@ TEST_F(NavigationControllerTest, BackSubframe) {
   params.page_id = 2;
   params.url = url3;
   EXPECT_TRUE(controller.RendererDidNavigate(params, &details));
-  EXPECT_TRUE(notifications.Check1AndReset(NOTIFICATION_NAV_ENTRY_COMMITTED));
+  EXPECT_EQ(1U, navigation_entry_committed_counter_);
+  navigation_entry_committed_counter_ = 0;
   EXPECT_EQ(3, controller.GetEntryCount());
   EXPECT_EQ(2, controller.GetCurrentEntryIndex());
 
@@ -1755,7 +1827,8 @@ TEST_F(NavigationControllerTest, BackSubframe) {
   params.url = url2;
   params.page_id = 1;
   EXPECT_TRUE(controller.RendererDidNavigate(params, &details));
-  EXPECT_TRUE(notifications.Check1AndReset(NOTIFICATION_NAV_ENTRY_COMMITTED));
+  EXPECT_EQ(1U, navigation_entry_committed_counter_);
+  navigation_entry_committed_counter_ = 0;
   EXPECT_EQ(3, controller.GetEntryCount());
   EXPECT_EQ(1, controller.GetCurrentEntryIndex());
   EXPECT_EQ(-1, controller.GetPendingEntryIndex());
@@ -1766,7 +1839,8 @@ TEST_F(NavigationControllerTest, BackSubframe) {
   params.url = url1;
   params.page_id = 0;
   EXPECT_TRUE(controller.RendererDidNavigate(params, &details));
-  EXPECT_TRUE(notifications.Check1AndReset(NOTIFICATION_NAV_ENTRY_COMMITTED));
+  EXPECT_EQ(1U, navigation_entry_committed_counter_);
+  navigation_entry_committed_counter_ = 0;
   EXPECT_EQ(3, controller.GetEntryCount());
   EXPECT_EQ(0, controller.GetCurrentEntryIndex());
   EXPECT_EQ(-1, controller.GetPendingEntryIndex());
@@ -1782,10 +1856,12 @@ TEST_F(NavigationControllerTest, LinkClick) {
   const GURL url2("http://foo2");
 
   test_rvh()->SendNavigate(0, url1);
-  EXPECT_TRUE(notifications.Check1AndReset(NOTIFICATION_NAV_ENTRY_COMMITTED));
+  EXPECT_EQ(1U, navigation_entry_committed_counter_);
+  navigation_entry_committed_counter_ = 0;
 
   test_rvh()->SendNavigate(1, url2);
-  EXPECT_TRUE(notifications.Check1AndReset(NOTIFICATION_NAV_ENTRY_COMMITTED));
+  EXPECT_EQ(1U, navigation_entry_committed_counter_);
+  navigation_entry_committed_counter_ = 0;
 
   // Should not have produced a new session history entry.
   EXPECT_EQ(controller.GetEntryCount(), 2);
@@ -1805,7 +1881,8 @@ TEST_F(NavigationControllerTest, InPage) {
   // Main page.
   const GURL url1("http://foo");
   test_rvh()->SendNavigate(0, url1);
-  EXPECT_TRUE(notifications.Check1AndReset(NOTIFICATION_NAV_ENTRY_COMMITTED));
+  EXPECT_EQ(1U, navigation_entry_committed_counter_);
+  navigation_entry_committed_counter_ = 0;
 
   // Ensure main page navigation to same url respects the was_within_same_page
   // hint provided in the params.
@@ -1821,7 +1898,8 @@ TEST_F(NavigationControllerTest, InPage) {
 
   LoadCommittedDetails details;
   EXPECT_TRUE(controller.RendererDidNavigate(self_params, &details));
-  EXPECT_TRUE(notifications.Check1AndReset(NOTIFICATION_NAV_ENTRY_COMMITTED));
+  EXPECT_EQ(1U, navigation_entry_committed_counter_);
+  navigation_entry_committed_counter_ = 0;
   EXPECT_TRUE(details.is_in_page);
   EXPECT_TRUE(details.did_replace_entry);
   EXPECT_EQ(1, controller.GetEntryCount());
@@ -1839,7 +1917,8 @@ TEST_F(NavigationControllerTest, InPage) {
 
   // This should generate a new entry.
   EXPECT_TRUE(controller.RendererDidNavigate(params, &details));
-  EXPECT_TRUE(notifications.Check1AndReset(NOTIFICATION_NAV_ENTRY_COMMITTED));
+  EXPECT_EQ(1U, navigation_entry_committed_counter_);
+  navigation_entry_committed_counter_ = 0;
   EXPECT_TRUE(details.is_in_page);
   EXPECT_FALSE(details.did_replace_entry);
   EXPECT_EQ(2, controller.GetEntryCount());
@@ -1850,7 +1929,8 @@ TEST_F(NavigationControllerTest, InPage) {
   back_params.url = url1;
   back_params.page_id = 0;
   EXPECT_TRUE(controller.RendererDidNavigate(back_params, &details));
-  EXPECT_TRUE(notifications.Check1AndReset(NOTIFICATION_NAV_ENTRY_COMMITTED));
+  EXPECT_EQ(1U, navigation_entry_committed_counter_);
+  navigation_entry_committed_counter_ = 0;
   // is_in_page is false in that case but should be true.
   // See comment in AreURLsInPageNavigation() in navigation_controller.cc
   // EXPECT_TRUE(details.is_in_page);
@@ -1864,7 +1944,8 @@ TEST_F(NavigationControllerTest, InPage) {
   forward_params.url = url2;
   forward_params.page_id = 1;
   EXPECT_TRUE(controller.RendererDidNavigate(forward_params, &details));
-  EXPECT_TRUE(notifications.Check1AndReset(NOTIFICATION_NAV_ENTRY_COMMITTED));
+  EXPECT_EQ(1U, navigation_entry_committed_counter_);
+  navigation_entry_committed_counter_ = 0;
   EXPECT_TRUE(details.is_in_page);
   EXPECT_EQ(2, controller.GetEntryCount());
   EXPECT_EQ(1, controller.GetCurrentEntryIndex());
@@ -1886,9 +1967,10 @@ TEST_F(NavigationControllerTest, InPage) {
   const GURL url3("http://bar");
   params.page_id = 2;
   params.url = url3;
-  notifications.Reset();
+  navigation_entry_committed_counter_ = 0;
   EXPECT_TRUE(controller.RendererDidNavigate(params, &details));
-  EXPECT_TRUE(notifications.Check1AndReset(NOTIFICATION_NAV_ENTRY_COMMITTED));
+  EXPECT_EQ(1U, navigation_entry_committed_counter_);
+  navigation_entry_committed_counter_ = 0;
   EXPECT_FALSE(details.is_in_page);
   EXPECT_EQ(3, controller.GetEntryCount());
   EXPECT_EQ(2, controller.GetCurrentEntryIndex());
@@ -1902,7 +1984,8 @@ TEST_F(NavigationControllerTest, InPage_Replace) {
   // Main page.
   const GURL url1("http://foo");
   test_rvh()->SendNavigate(0, url1);
-  EXPECT_TRUE(notifications.Check1AndReset(NOTIFICATION_NAV_ENTRY_COMMITTED));
+  EXPECT_EQ(1U, navigation_entry_committed_counter_);
+  navigation_entry_committed_counter_ = 0;
 
   // First navigation.
   const GURL url2("http://foo#a");
@@ -1918,7 +2001,8 @@ TEST_F(NavigationControllerTest, InPage_Replace) {
   // This should NOT generate a new entry, nor prune the list.
   LoadCommittedDetails details;
   EXPECT_TRUE(controller.RendererDidNavigate(params, &details));
-  EXPECT_TRUE(notifications.Check1AndReset(NOTIFICATION_NAV_ENTRY_COMMITTED));
+  EXPECT_EQ(1U, navigation_entry_committed_counter_);
+  navigation_entry_committed_counter_ = 0;
   EXPECT_TRUE(details.is_in_page);
   EXPECT_TRUE(details.did_replace_entry);
   EXPECT_EQ(1, controller.GetEntryCount());
@@ -1939,14 +2023,16 @@ TEST_F(NavigationControllerTest, ClientRedirectAfterInPageNavigation) {
   {
     const GURL url("http://foo/");
     test_rvh()->SendNavigate(0, url);
-    EXPECT_TRUE(notifications.Check1AndReset(NOTIFICATION_NAV_ENTRY_COMMITTED));
+    EXPECT_EQ(1U, navigation_entry_committed_counter_);
+    navigation_entry_committed_counter_ = 0;
   }
 
   // Navigate to a new page.
   {
     const GURL url("http://foo2/");
     test_rvh()->SendNavigate(1, url);
-    EXPECT_TRUE(notifications.Check1AndReset(NOTIFICATION_NAV_ENTRY_COMMITTED));
+    EXPECT_EQ(1U, navigation_entry_committed_counter_);
+    navigation_entry_committed_counter_ = 0;
   }
 
   // Navigate within the page.
@@ -1965,7 +2051,8 @@ TEST_F(NavigationControllerTest, ClientRedirectAfterInPageNavigation) {
     // This should NOT generate a new entry, nor prune the list.
     LoadCommittedDetails details;
     EXPECT_TRUE(controller.RendererDidNavigate(params, &details));
-    EXPECT_TRUE(notifications.Check1AndReset(NOTIFICATION_NAV_ENTRY_COMMITTED));
+    EXPECT_EQ(1U, navigation_entry_committed_counter_);
+    navigation_entry_committed_counter_ = 0;
     EXPECT_TRUE(details.is_in_page);
     EXPECT_TRUE(details.did_replace_entry);
     EXPECT_EQ(2, controller.GetEntryCount());
@@ -1988,7 +2075,8 @@ TEST_F(NavigationControllerTest, ClientRedirectAfterInPageNavigation) {
     // This SHOULD generate a new entry.
     LoadCommittedDetails details;
     EXPECT_TRUE(controller.RendererDidNavigate(params, &details));
-    EXPECT_TRUE(notifications.Check1AndReset(NOTIFICATION_NAV_ENTRY_COMMITTED));
+    EXPECT_EQ(1U, navigation_entry_committed_counter_);
+    navigation_entry_committed_counter_ = 0;
     EXPECT_FALSE(details.is_in_page);
     EXPECT_EQ(3, controller.GetEntryCount());
   }
@@ -1998,8 +2086,8 @@ TEST_F(NavigationControllerTest, ClientRedirectAfterInPageNavigation) {
     const GURL url("http://foo2/");
     controller.GoBack();
     test_rvh()->SendNavigate(1, url);
-    EXPECT_TRUE(notifications.Check1AndReset(
-        NOTIFICATION_NAV_ENTRY_COMMITTED));
+    EXPECT_EQ(1U, navigation_entry_committed_counter_);
+    navigation_entry_committed_counter_ = 0;
     EXPECT_EQ(url, controller.GetActiveEntry()->GetURL());
   }
 }
@@ -3386,7 +3474,8 @@ TEST_F(NavigationControllerTest, IsInitialNavigation) {
   // After commit, it stays false.
   const GURL url1("http://foo1");
   test_rvh()->SendNavigate(0, url1);
-  EXPECT_TRUE(notifications.Check1AndReset(NOTIFICATION_NAV_ENTRY_COMMITTED));
+  EXPECT_EQ(1U, navigation_entry_committed_counter_);
+  navigation_entry_committed_counter_ = 0;
   EXPECT_FALSE(controller.IsInitialNavigation());
 
   // After starting a new navigation, it stays false.
@@ -3408,8 +3497,8 @@ TEST_F(NavigationControllerTest, ClearFaviconOnRedirect) {
   RegisterForAllNavNotifications(&notifications, &controller);
 
   test_rvh()->SendNavigate(0, kPageWithFavicon);
-  EXPECT_TRUE(notifications.Check1AndReset(
-      NOTIFICATION_NAV_ENTRY_COMMITTED));
+  EXPECT_EQ(1U, navigation_entry_committed_counter_);
+  navigation_entry_committed_counter_ = 0;
 
   NavigationEntry* entry = controller.GetLastCommittedEntry();
   EXPECT_TRUE(entry);
@@ -3426,8 +3515,8 @@ TEST_F(NavigationControllerTest, ClearFaviconOnRedirect) {
       0, // same page ID.
       kPageWithoutFavicon,
       PAGE_TRANSITION_CLIENT_REDIRECT);
-  EXPECT_TRUE(notifications.Check1AndReset(
-      NOTIFICATION_NAV_ENTRY_COMMITTED));
+  EXPECT_EQ(1U, navigation_entry_committed_counter_);
+  navigation_entry_committed_counter_ = 0;
 
   entry = controller.GetLastCommittedEntry();
   EXPECT_TRUE(entry);
@@ -3448,7 +3537,8 @@ TEST_F(NavigationControllerTest, BackNavigationDoesNotClearFavicon) {
   RegisterForAllNavNotifications(&notifications, &controller);
 
   test_rvh()->SendNavigate(0, kUrl1);
-  EXPECT_TRUE(notifications.Check1AndReset(NOTIFICATION_NAV_ENTRY_COMMITTED));
+  EXPECT_EQ(1U, navigation_entry_committed_counter_);
+  navigation_entry_committed_counter_ = 0;
 
   // Simulate Chromium having set the favicon for |kUrl1|.
   gfx::Image favicon_image = CreateImage(SK_ColorWHITE);
@@ -3461,12 +3551,14 @@ TEST_F(NavigationControllerTest, BackNavigationDoesNotClearFavicon) {
 
   // Navigate to another page and go back to the original page.
   test_rvh()->SendNavigate(1, kUrl2);
-  EXPECT_TRUE(notifications.Check1AndReset(NOTIFICATION_NAV_ENTRY_COMMITTED));
+  EXPECT_EQ(1U, navigation_entry_committed_counter_);
+  navigation_entry_committed_counter_ = 0;
   test_rvh()->SendNavigateWithTransition(
       0,
       kUrl1,
       PAGE_TRANSITION_FORWARD_BACK);
-  EXPECT_TRUE(notifications.Check1AndReset(NOTIFICATION_NAV_ENTRY_COMMITTED));
+  EXPECT_EQ(1U, navigation_entry_committed_counter_);
+  navigation_entry_committed_counter_ = 0;
 
   // Verify that the favicon for the page at |kUrl1| was not cleared.
   entry = controller.GetEntryAtIndex(0);

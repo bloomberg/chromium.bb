@@ -10,6 +10,7 @@
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/content_paths.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
@@ -58,25 +59,22 @@ class LoadStopNotificationObserver : public WindowedNotificationObserver {
 // Starts a new navigation as soon as the current one commits, but does not
 // wait for it to complete.  This allows us to observe DidStopLoading while
 // a pending entry is present.
-class NavigateOnCommitObserver : public WindowedNotificationObserver {
+class NavigateOnCommitObserver : public WebContentsObserver {
  public:
   NavigateOnCommitObserver(Shell* shell, GURL url)
-      : WindowedNotificationObserver(
-            NOTIFICATION_NAV_ENTRY_COMMITTED,
-            Source<NavigationController>(
-                &shell->web_contents()->GetController())),
+      : WebContentsObserver(shell->web_contents()),
         shell_(shell),
         url_(url),
         done_(false) {
   }
-  virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE {
-    if (type == NOTIFICATION_NAV_ENTRY_COMMITTED && !done_) {
+
+  // WebContentsObserver:
+  virtual void NavigationEntryCommitted(
+      const LoadCommittedDetails& load_details) OVERRIDE {
+    if (!done_) {
       done_ = true;
       shell_->LoadURL(url_);
     }
-    WindowedNotificationObserver::Observe(type, source, details);
   }
 
   Shell* shell_;
@@ -114,7 +112,6 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
   NavigateOnCommitObserver commit_observer(
       shell(), embedded_test_server()->GetURL("/title2.html"));
   NavigateToURL(shell(), embedded_test_server()->GetURL("/title1.html"));
-  commit_observer.Wait();
   load_observer.Wait();
 
   EXPECT_EQ("/title1.html", load_observer.url_.path());

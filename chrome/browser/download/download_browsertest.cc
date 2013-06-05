@@ -1177,10 +1177,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadResourceThrottleCancels) {
 
   // Try to start the download via Javascript and wait for the corresponding
   // load stop event.
-  content::TestNavigationObserver observer(
-      content::Source<content::NavigationController>(
-          &web_contents->GetController()),
-      1);
+  content::TestNavigationObserver observer(web_contents);
   bool download_assempted;
   ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
       browser()->tab_strip_model()->GetActiveWebContents(),

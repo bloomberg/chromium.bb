@@ -62,8 +62,7 @@ IN_PROC_BROWSER_TEST_F(ManagedModeResourceThrottleTest,
   scoped_ptr<WebContents> web_contents(
       WebContents::Create(WebContents::CreateParams(profile)));
   NavigationController& controller = web_contents->GetController();
-  content::TestNavigationObserver observer(
-      content::Source<NavigationController>(&controller), 1);
+  content::TestNavigationObserver observer(web_contents.get());
   controller.LoadURL(GURL("http://www.example.com"), content::Referrer(),
                      content::PAGE_TRANSITION_TYPED, std::string());
   observer.Wait();

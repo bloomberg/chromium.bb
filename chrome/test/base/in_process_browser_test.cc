@@ -220,15 +220,12 @@ void InProcessBrowserTest::AddTabAtIndexToBrowser(
     int index,
     const GURL& url,
     content::PageTransition transition) {
-  content::TestNavigationObserver observer(
-      content::NotificationService::AllSources(), 1);
-
   chrome::NavigateParams params(browser, url, transition);
   params.tabstrip_index = index;
   params.disposition = NEW_FOREGROUND_TAB;
   chrome::Navigate(&params);
 
-  observer.Wait();
+  content::WaitForLoadStop(params.target_contents);
 }
 
 void InProcessBrowserTest::AddTabAtIndex(

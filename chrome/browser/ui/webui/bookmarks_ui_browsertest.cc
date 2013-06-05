@@ -22,7 +22,8 @@ class BookmarksTest : public InProcessBrowserTest {
 
   void OpenBookmarksManager() {
     content::TestNavigationObserver navigation_observer(
-        content::NotificationService::AllSources(), 2);
+        browser()->tab_strip_model()->GetActiveWebContents(), 2);
+    navigation_observer.StartWatchingNewWebContents();
 
     // Bring up the bookmarks manager tab.
     chrome::ShowBookmarkManager(browser());
@@ -92,7 +93,7 @@ IN_PROC_BROWSER_TEST_F(BookmarksTest,
 
 IN_PROC_BROWSER_TEST_F(BookmarksTest, TwoCommandsOneTab) {
   content::TestNavigationObserver navigation_observer(
-      content::NotificationService::AllSources());
+      browser()->tab_strip_model()->GetActiveWebContents());
   chrome::ShowBookmarkManager(browser());
   chrome::ShowBookmarkManager(browser());
   navigation_observer.Wait();

@@ -371,12 +371,12 @@ class PerformanceMonitorSessionRestoreBrowserTest
     observer.Wait();
 
     // Create a new window, which should trigger session restore.
+    content::TestNavigationObserver restore_observer(NULL, expected_tab_count);
+    restore_observer.StartWatchingNewWebContents();
     ui_test_utils::BrowserAddedObserver window_observer;
-    content::TestNavigationObserver navigation_observer(
-        content::NotificationService::AllSources(), expected_tab_count);
     chrome::NewEmptyWindow(profile, chrome::HOST_DESKTOP_TYPE_NATIVE);
     Browser* new_browser = window_observer.WaitForSingleNewBrowser();
-    navigation_observer.Wait();
+    restore_observer.Wait();
     g_browser_process->ReleaseModule();
 
     return new_browser;

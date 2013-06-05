@@ -267,10 +267,7 @@ void WebUIBrowserTest::PreLoadJavascriptLibraries(
 void WebUIBrowserTest::BrowsePreload(const GURL& browse_to) {
   WebUIJsInjectionReadyObserver injection_observer(this);
   content::TestNavigationObserver navigation_observer(
-      content::Source<NavigationController>(
-          &browser()->tab_strip_model()->
-              GetActiveWebContents()->GetController()),
-      1);
+      browser()->tab_strip_model()->GetActiveWebContents());
   chrome::NavigateParams params(browser(), GURL(browse_to),
                                 content::PAGE_TRANSITION_TYPED);
   params.disposition = CURRENT_TAB;

@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/command_line.h"
+#include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/stats_counters.h"
@@ -153,6 +154,9 @@ const int kSyncWaitDelay = 40;
 
 const char kDotGoogleDotCom[] = ".google.com";
 
+base::LazyInstance<std::vector<WebContents::CreatedCallback> >
+g_created_callbacks = LAZY_INSTANCE_INITIALIZER;
+
 static int StartDownload(content::RenderViewHost* rvh,
                          const GURL& url,
                          bool is_favicon,
@@ -281,6 +285,19 @@ WebContents* WebContents::CreateWithSessionStorage(
   return new_contents;
 }
 
+void WebContents::AddCreatedCallback(const CreatedCallback& callback) {
+  g_created_callbacks.Get().push_back(callback);
+}
+
+void WebContents::RemoveCreatedCallback(const CreatedCallback& callback) {
+  for (size_t i = 0; i < g_created_callbacks.Get().size(); ++i) {
+    if (g_created_callbacks.Get().at(i).Equals(callback)) {
+      g_created_callbacks.Get().erase(g_created_callbacks.Get().begin() + i);
+      return;
+    }
+  }
+}
+
 WebContents* WebContents::FromRenderViewHost(const RenderViewHost* rvh) {
   return rvh->GetDelegate()->GetAsWebContents();
 }
@@ -340,6 +357,8 @@ WebContentsImpl::WebContentsImpl(
       color_chooser_identifier_(0),
       message_source_(NULL),
       fullscreen_widget_routing_id_(MSG_ROUTING_NONE) {
+  for (size_t i = 0; i < g_created_callbacks.Get().size(); i++)
+    g_created_callbacks.Get().at(i).Run(this);
 }
 
 WebContentsImpl::~WebContentsImpl() {
@@ -2751,6 +2770,12 @@ void WebContentsImpl::NotifyDisconnected() {
       NOTIFICATION_WEB_CONTENTS_DISCONNECTED,
       Source<WebContents>(this),
       NotificationService::NoDetails());
+}
+
+void WebContentsImpl::NotifyNavigationEntryCommitted(
+    const LoadCommittedDetails& load_details) {
+  FOR_EACH_OBSERVER(
+      WebContentsObserver, observers_, NavigationEntryCommitted(load_details));
 }
 
 RenderViewHostDelegateView* WebContentsImpl::GetDelegateView() {

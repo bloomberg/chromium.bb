@@ -56,7 +56,7 @@ IN_PROC_BROWSER_TEST_F(PrintPreviewTest, PrintCommands) {
   ASSERT_TRUE(chrome::IsCommandEnabled(browser(), IDC_ADVANCED_PRINT));
 
   content::TestNavigationObserver reload_observer(
-      content::NotificationService::AllSources());
+      browser()->tab_strip_model()->GetActiveWebContents());
   chrome::Reload(browser(), CURRENT_TAB);
   reload_observer.Wait();
 

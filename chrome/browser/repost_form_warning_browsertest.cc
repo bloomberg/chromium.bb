@@ -85,8 +85,7 @@ IN_PROC_BROWSER_TEST_F(RepostFormWarningTest, TestLoginAfterRepost) {
   // Navigate away from the page. We can't use ui_test_utils:NavigateToURL
   // because that waits for the current page to stop loading first, which won't
   // happen while the auth dialog is up.
-  content::Source<content::NavigationController> source(&controller);
-  content::TestNavigationObserver navigation_observer(source);
+  content::TestNavigationObserver navigation_observer(web_contents);
   browser()->OpenURL(content::OpenURLParams(
         test_server()->GetURL("bar"), content::Referrer(), CURRENT_TAB,
         content::PAGE_TRANSITION_TYPED, false));

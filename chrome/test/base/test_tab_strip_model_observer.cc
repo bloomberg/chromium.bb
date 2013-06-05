@@ -38,7 +38,7 @@ class TestTabStripModelObserver::RenderViewHostInitializedObserver
 TestTabStripModelObserver::TestTabStripModelObserver(
     TabStripModel* tab_strip_model,
     content::JsInjectionReadyObserver* js_injection_ready_observer)
-    : TestNavigationObserver(1),
+    : TestNavigationObserver(NULL, 1),
       tab_strip_model_(tab_strip_model),
       rvh_created_callback_(
           base::Bind(&TestTabStripModelObserver::RenderViewHostCreated,
@@ -79,6 +79,5 @@ void TestTabStripModelObserver::ObservePrintPreviewDialog(
       dialog_controller->GetPrintPreviewForContents(contents);
   if (!preview_dialog)
     return;
-  RegisterAsObserver(content::Source<content::NavigationController>(
-      &preview_dialog->GetController()));
+  RegisterAsObserver(preview_dialog);
 }

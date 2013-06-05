@@ -1195,7 +1195,8 @@ class PrerenderBrowserTest : virtual public InProcessBrowserTest {
       // We don't expect to pick up a running prerender, so instead
       // observe one navigation.
       content::TestNavigationObserver observer(
-          content::NotificationService::AllSources(), 1);
+          current_browser()->tab_strip_model()->GetActiveWebContents());
+      observer.StartWatchingNewWebContents();
       base::RunLoop run_loop;
       observer.WaitForObservation(
           base::Bind(&content::RunThisRunLoop,

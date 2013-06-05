@@ -96,9 +96,7 @@ class ErrorPageTest : public InProcessBrowserTest {
         ASCIIToUTF16(expected_title));
 
     content::TestNavigationObserver test_navigation_observer(
-        content::Source<NavigationController>(
-              &browser()->tab_strip_model()->GetActiveWebContents()->
-                  GetController()),
+        browser()->tab_strip_model()->GetActiveWebContents(),
         num_navigations);
     if (direction == HISTORY_NAVIGATE_BACK) {
       chrome::GoBack(browser(), CURRENT_TAB);

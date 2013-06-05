@@ -2023,11 +2023,7 @@ class ClickModifierTest : public InProcessBrowserTest {
     if (disposition == CURRENT_TAB) {
       content::WebContents* web_contents =
           browser->tab_strip_model()->GetActiveWebContents();
-      NavigationController* controller =
-          web_contents ? &web_contents->GetController() : NULL;
-      content::TestNavigationObserver same_tab_observer(
-          content::Source<NavigationController>(controller),
-          1);
+      content::TestNavigationObserver same_tab_observer(web_contents);
       SimulateMouseClick(web_contents, modifiers, button);
       base::RunLoop run_loop;
       same_tab_observer.WaitForObservation(

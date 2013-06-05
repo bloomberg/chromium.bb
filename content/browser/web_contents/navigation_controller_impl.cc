@@ -1581,6 +1581,8 @@ void NavigationControllerImpl::NotifyNavigationEntryCommitted(
   // notification below instead.
   web_contents_->NotifyNavigationStateChanged(kInvalidateAll);
 
+  web_contents_->NotifyNavigationEntryCommitted(*details);
+
   NotificationService::current()->Notify(
       NOTIFICATION_NAV_ENTRY_COMMITTED,
       Source<NavigationController>(this),
