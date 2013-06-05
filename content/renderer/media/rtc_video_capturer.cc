@@ -37,6 +37,8 @@ cricket::CaptureState RtcVideoCapturer::Start(
   cap.frame_rate = capture_format.framerate();
   cap.color = media::VideoCaptureCapability::kI420;
 
+  SetCaptureFormat(&capture_format);
+
   state_ = VIDEO_CAPTURE_STATE_STARTED;
   start_time_ = base::Time::Now();
   delegate_->StartCapture(cap,
@@ -55,6 +57,8 @@ void RtcVideoCapturer::Stop() {
     DVLOG(1) << "Got a StopCapture while not started.";
     return;
   }
+
+  SetCaptureFormat(NULL);
   state_ = VIDEO_CAPTURE_STATE_STOPPED;
   delegate_->StopCapture();
   SignalStateChange(this, cricket::CS_STOPPED);
