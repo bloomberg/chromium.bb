@@ -435,7 +435,6 @@ void ScrollView::updateScrollbars(const IntSize& desiredOffset)
                 newHasHorizontalScrollbar = false;
         }
 
-        bool scrollbarIsOverlay = ScrollbarTheme::theme()->usesOverlayScrollbars();
         if (hasHorizontalScrollbar != newHasHorizontalScrollbar) {
             scrollbarExistenceChanged = true;
             if (scrollOrigin().y() && !newHasHorizontalScrollbar && !scrollbarsAreOverlay)

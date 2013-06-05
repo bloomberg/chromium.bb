@@ -6121,7 +6121,6 @@ void RenderLayer::updateScrollableAreaSet(bool hasOverflow)
     if (HTMLFrameOwnerElement* owner = frame->ownerElement())
         isVisibleToHitTest &= owner->renderer() && owner->renderer()->visibleToHitTesting();
 
-    bool updatedScrollableAreaSet = false;
     if (hasOverflow && isVisibleToHitTest) {
         if (frameView->addScrollableArea(this))
             compositor()->setNeedsUpdateCompositingRequirementsState();
