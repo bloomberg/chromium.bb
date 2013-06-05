@@ -46,6 +46,7 @@
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/cros_settings_names.h"
 #include "chrome/browser/chromeos/system/statistics_provider.h"
+#include "chrome/browser/chromeos/ui/focus_ring_controller.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/options/options_util.h"
@@ -192,6 +193,14 @@ void WizardController::Init(
   bool oobe_complete = StartupUtils::IsOobeCompleted();
   if (!oobe_complete || first_screen_name == kOutOfBoxScreenName) {
     is_out_of_box_ = true;
+
+    bool keyboard_driven_oobe = false;
+    system::StatisticsProvider::GetInstance()->GetMachineFlag(
+        chromeos::kOemKeyboardDrivenOobeKey, &keyboard_driven_oobe);
+    if (keyboard_driven_oobe) {
+      focus_ring_controller_.reset(new FocusRingController);
+      focus_ring_controller_->SetVisible(true);
+    }
   }
 
   AdvanceToScreen(first_screen_name);

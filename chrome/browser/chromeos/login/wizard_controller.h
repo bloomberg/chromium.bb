@@ -29,6 +29,7 @@ namespace chromeos {
 class EnrollmentScreen;
 class ErrorScreen;
 class EulaScreen;
+class FocusRingController;
 class LoginDisplayHost;
 class NetworkScreen;
 class OobeDisplay;
@@ -291,6 +292,10 @@ class WizardController : public ScreenObserver {
 
   // True if OOBE should prevent exiting enterprise enrollment.
   bool can_exit_enrollment_;
+
+  // A focus ring controller to draw focus ring around view for keyboard
+  // driven oobe.
+  scoped_ptr<FocusRingController> focus_ring_controller_;
 
   FRIEND_TEST_ALL_PREFIXES(EnrollmentScreenTest, TestCancel);
   FRIEND_TEST_ALL_PREFIXES(WizardControllerFlowTest, Accelerators);
