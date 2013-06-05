@@ -22,8 +22,7 @@ static bool WindowSupportsRerouteMouseWheel(HWND window) {
     if (!IsWindow(window))
       break;
 
-    if (reinterpret_cast<bool>(
-            ViewProp::GetValue(window, kHWNDSupportMouseWheelRerouting))) {
+    if (ViewProp::GetValue(window, kHWNDSupportMouseWheelRerouting) != NULL) {
       return true;
     }
     window = GetParent(window);
