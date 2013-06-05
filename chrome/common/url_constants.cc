@@ -364,6 +364,9 @@ const char kChromeSyncLearnMoreURL[] =
     "http://support.google.com/chrome/bin/answer.py?answer=165139";
 #endif
 
+const char kChromeEnterpriseSignInLearnMoreURL[] =
+  "http://support.google.com/chromeos/bin/answer.py?hl=en&answer=1331549";
+
 const char kSettingsSearchHelpURL[] =
 #if defined(OS_CHROMEOS)
     "https://support.google.com/chromeos/?p=settings_search_help";

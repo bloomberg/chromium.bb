@@ -26,6 +26,7 @@ class Extension;
 }
 
 namespace ui {
+class ProfileSigninConfirmationDelegate;
 class WebDialogDelegate;
 }
 
@@ -86,9 +87,7 @@ void ShowProfileSigninConfirmationDialog(
     content::WebContents* web_contents,
     Profile* profile,
     const std::string& username,
-    const base::Closure& cancel_signin,
-    const base::Closure& signin_with_new_profile,
-    const base::Closure& continue_signin);
+    ui::ProfileSigninConfirmationDelegate* delegate);
 
 }  // namespace chrome
 

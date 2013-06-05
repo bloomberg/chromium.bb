@@ -29,6 +29,14 @@ void CheckShouldPromptForNewProfile(
     Profile* profile,
     const base::Callback<void(bool)>& cb);
 
+// Handles user input from confirmation dialog.
+class ProfileSigninConfirmationDelegate {
+ public:
+  virtual void OnCancelSignin() = 0;
+  virtual void OnContinueSignin() = 0;
+  virtual void OnSigninWithNewProfile() = 0;
+};
+
 }  // namespace ui
 
 #endif  // CHROME_BROWSER_UI_SYNC_PROFILE_SIGNIN_CONFIRMATION_HELPER_H_

@@ -17,11 +17,13 @@
 //  5. In the Size panel, set the Height to 16.
 @interface HyperlinkButtonCell : NSButtonCell {
   scoped_nsobject<NSColor> textColor_;
+  BOOL shouldUnderline_;
   BOOL underlineOnHover_;
   BOOL mouseIsInside_;
 }
 @property(nonatomic, retain) NSColor* textColor;
 @property(nonatomic, assign) BOOL underlineOnHover;
+@property(nonatomic, assign) BOOL shouldUnderline;
 
 + (NSColor*)defaultTextColor;
 

@@ -12,6 +12,7 @@
 #include "chrome/browser/signin/signin_tracker.h"
 #include "chrome/browser/ui/browser_list_observer.h"
 #include "chrome/browser/ui/host_desktop.h"
+#include "chrome/browser/ui/sync/profile_signin_confirmation_helper.h"
 
 class Browser;
 class ProfileSyncService;
@@ -81,8 +82,22 @@ class OneClickSigninSyncStarter : public SigninTracker::Observer,
   virtual void SigninFailed(const GoogleServiceAuthError& error) OVERRIDE;
   virtual void SigninSuccess() OVERRIDE;
 
-
 #if defined(ENABLE_CONFIGURATION_POLICY)
+  // User input handler for the signin confirmation dialog.
+  class SigninDialogDelegate
+    : public ui::ProfileSigninConfirmationDelegate {
+   public:
+    SigninDialogDelegate(
+        base::WeakPtr<OneClickSigninSyncStarter> sync_starter);
+    virtual ~SigninDialogDelegate();
+    virtual void OnCancelSignin() OVERRIDE;
+    virtual void OnContinueSignin() OVERRIDE;
+    virtual void OnSigninWithNewProfile() OVERRIDE;
+   private:
+    base::WeakPtr<OneClickSigninSyncStarter> sync_starter_;
+  };
+  friend class SigninDialogDelegate;
+
   // Callback invoked once policy registration is complete. If registration
   // fails, |client| will be null.
   void OnRegisteredForPolicy(scoped_ptr<policy::CloudPolicyClient> client);

@@ -5,7 +5,6 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_SYNC_PROFILE_SIGNIN_CONFIRMATION_DIALOG_VIEWS_H_
 #define CHROME_BROWSER_UI_VIEWS_SYNC_PROFILE_SIGNIN_CONFIRMATION_DIALOG_VIEWS_H_
 
-#include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "chrome/browser/ui/sync/profile_signin_confirmation_helper.h"
 #include "ui/views/controls/link_listener.h"
@@ -33,18 +32,14 @@ class ProfileSigninConfirmationDialogViews : public views::DialogDelegateView,
   static void ShowDialog(Browser* browser,
                          Profile* profile,
                          const std::string& username,
-                         const base::Closure& cancel_signin,
-                         const base::Closure& signin_with_new_profile,
-                         const base::Closure& continue_signin);
+                         ui::ProfileSigninConfirmationDelegate* delegate);
 
  private:
   ProfileSigninConfirmationDialogViews(
       Browser* browser,
       Profile* profile,
       const std::string& username,
-      const base::Closure& cancel_signin,
-      const base::Closure& signin_with_new_profile,
-      const base::Closure& continue_signin);
+      ui::ProfileSigninConfirmationDelegate* delegate);
   virtual ~ProfileSigninConfirmationDialogViews();
 
   // views::DialogDelegateView:
@@ -71,9 +66,6 @@ class ProfileSigninConfirmationDialogViews : public views::DialogDelegateView,
   // is true, the dialog will offer to create a new profile before signin.
   void Show(bool prompt_for_new_profile);
 
-  // Resets all the user response handling callbacks.
-  void ResetCallbacks();
-
   // Weak ptr to label for dialog explanation text.
   views::StyledLabel* explanation_label_;
 
@@ -86,10 +78,8 @@ class ProfileSigninConfirmationDialogViews : public views::DialogDelegateView,
   // The GAIA username being signed in.
   std::string username_;
 
-  // Dialog button callbacks.
-  base::Closure cancel_signin_;
-  base::Closure signin_with_new_profile_;
-  base::Closure continue_signin_;
+  // Dialog button handler.
+  ui::ProfileSigninConfirmationDelegate* delegate_;
 
   // Whether the user should be prompted to create a new profile.
   bool prompt_for_new_profile_;

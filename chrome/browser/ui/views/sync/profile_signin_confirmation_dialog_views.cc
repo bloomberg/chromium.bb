@@ -56,15 +56,11 @@ void ShowProfileSigninConfirmationDialog(
     content::WebContents* web_contents,
     Profile* profile,
     const std::string& username,
-    const base::Closure& cancel_signin,
-    const base::Closure& signin_with_new_profile,
-    const base::Closure& continue_signin) {
+    ui::ProfileSigninConfirmationDelegate* delegate) {
   ProfileSigninConfirmationDialogViews::ShowDialog(browser,
                                                    profile,
                                                    username,
-                                                   cancel_signin,
-                                                   signin_with_new_profile,
-                                                   continue_signin);
+                                                   delegate);
 }
 }  // namespace chrome
 
@@ -72,15 +68,11 @@ ProfileSigninConfirmationDialogViews::ProfileSigninConfirmationDialogViews(
     Browser* browser,
     Profile* profile,
     const std::string& username,
-    const base::Closure& cancel_signin,
-    const base::Closure& signin_with_new_profile,
-    const base::Closure& continue_signin)
+    ui::ProfileSigninConfirmationDelegate* delegate)
   : browser_(browser),
     profile_(profile),
     username_(username),
-    cancel_signin_(cancel_signin),
-    signin_with_new_profile_(signin_with_new_profile),
-    continue_signin_(continue_signin),
+    delegate_(delegate),
     prompt_for_new_profile_(true),
     link_(NULL) {
 }
@@ -92,17 +84,10 @@ void ProfileSigninConfirmationDialogViews::ShowDialog(
     Browser* browser,
     Profile* profile,
     const std::string& username,
-    const base::Closure& cancel_signin,
-    const base::Closure& signin_with_new_profile,
-    const base::Closure& continue_signin) {
+    ui::ProfileSigninConfirmationDelegate* delegate) {
   ProfileSigninConfirmationDialogViews* dialog =
       new ProfileSigninConfirmationDialogViews(
-          browser,
-          profile,
-          username,
-          cancel_signin,
-          signin_with_new_profile,
-          continue_signin);
+          browser, profile, username, delegate);
   ui::CheckShouldPromptForNewProfile(
       profile,
       // This callback is guaranteed to be invoked, and once it is, the dialog
@@ -146,17 +131,17 @@ views::View* ProfileSigninConfirmationDialogViews::CreateExtraView() {
 }
 
 bool ProfileSigninConfirmationDialogViews::Accept() {
-  if (!continue_signin_.is_null()) {
-    continue_signin_.Run();
-    ResetCallbacks();
+  if (delegate_) {
+    delegate_->OnContinueSignin();
+    delegate_ = NULL;
   }
   return true;
 }
 
 bool ProfileSigninConfirmationDialogViews::Cancel() {
-  if (!cancel_signin_.is_null()) {
-    cancel_signin_.Run();
-    ResetCallbacks();
+  if (delegate_) {
+    delegate_->OnCancelSignin();
+    delegate_ = NULL;
   }
   return true;
 }
@@ -228,9 +213,9 @@ void ProfileSigninConfirmationDialogViews::ViewHierarchyChanged(
 
 void ProfileSigninConfirmationDialogViews::LinkClicked(views::Link* source,
                                                        int event_flags) {
-  if (!signin_with_new_profile_.is_null()) {
-    signin_with_new_profile_.Run();
-    ResetCallbacks();
+  if (delegate_) {
+    delegate_->OnSigninWithNewProfile();
+    delegate_ = NULL;
   }
   GetWidget()->Close();
 }
@@ -245,10 +230,4 @@ void ProfileSigninConfirmationDialogViews::StyledLabelLinkClicked(
   params.disposition = NEW_POPUP;
   params.window_action = chrome::NavigateParams::SHOW_WINDOW;
   chrome::Navigate(&params);
-}
-
-void ProfileSigninConfirmationDialogViews::ResetCallbacks() {
-  cancel_signin_.Reset();
-  continue_signin_.Reset();
-  signin_with_new_profile_.Reset();
 }

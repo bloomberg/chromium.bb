@@ -1,0 +1,95 @@
+// Copyright 2013 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#import "chrome/browser/ui/cocoa/profile_signin_confirmation_dialog_cocoa.h"
+
+#include "base/message_loop.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_dialogs.h"
+#include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_window.h"
+#import "chrome/browser/ui/cocoa/constrained_window/constrained_window_custom_sheet.h"
+#import "chrome/browser/ui/cocoa/constrained_window/constrained_window_custom_window.h"
+#include "chrome/browser/ui/sync/profile_signin_confirmation_helper.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
+
+namespace {
+
+// static
+void ShowDialog(
+    Browser* browser,
+    content::WebContents* web_contents,
+    Profile* profile,
+    const std::string& username,
+    ui::ProfileSigninConfirmationDelegate* delegate,
+    bool offer_profile_creation) {
+  // The dialog owns itself.
+  new ProfileSigninConfirmationDialogCocoa(browser,
+                                           web_contents,
+                                           profile,
+                                           username,
+                                           delegate,
+                                           offer_profile_creation);
+}
+
+}  // namespace
+
+namespace chrome {
+
+// Declared in browser_dialogs.h
+void ShowProfileSigninConfirmationDialog(
+    Browser* browser,
+    content::WebContents* web_contents,
+    Profile* profile,
+    const std::string& username,
+    ui::ProfileSigninConfirmationDelegate* delegate) {
+  ui::CheckShouldPromptForNewProfile(
+      profile,
+      base::Bind(ShowDialog,
+                 browser, web_contents, profile, username, delegate));
+}
+
+}  // namespace chrome
+
+ProfileSigninConfirmationDialogCocoa::ProfileSigninConfirmationDialogCocoa(
+    Browser* browser,
+    content::WebContents* web_contents,
+    Profile* profile,
+    const std::string& username,
+    ui::ProfileSigninConfirmationDelegate* delegate,
+    bool offer_profile_creation) {
+  // Setup the dialog view controller.
+  const base::Closure& closeDialogCallback =
+      base::Bind(&ProfileSigninConfirmationDialogCocoa::Close,
+                 base::Unretained(this));
+  controller_.reset(
+      [[ProfileSigninConfirmationViewController alloc]
+          initWithBrowser:browser
+                 username:username
+                 delegate:delegate
+      closeDialogCallback:closeDialogCallback
+     offerProfileCreation:offer_profile_creation]);
+
+  // Setup the constrained window that will show the view.
+  scoped_nsobject<NSWindow> window(
+      [[ConstrainedWindowCustomWindow alloc]
+          initWithContentRect:[[controller_ view] bounds]]);
+  [[window contentView] addSubview:[controller_ view]];
+  scoped_nsobject<CustomConstrainedWindowSheet> sheet(
+      [[CustomConstrainedWindowSheet alloc]
+          initWithCustomWindow:window]);
+  window_.reset(new ConstrainedWindowMac(this, web_contents, sheet));
+}
+
+ProfileSigninConfirmationDialogCocoa::~ProfileSigninConfirmationDialogCocoa() {
+}
+
+void ProfileSigninConfirmationDialogCocoa::Close() {
+  window_->CloseWebContentsModalDialog();
+}
+
+void ProfileSigninConfirmationDialogCocoa::OnConstrainedWindowClosed(
+    ConstrainedWindowMac* window) {
+  base::MessageLoop::current()->DeleteSoon(FROM_HERE, this);
+}

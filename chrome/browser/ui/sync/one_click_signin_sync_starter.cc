@@ -140,6 +140,26 @@ void OneClickSigninSyncStarter::ConfirmSignin(const std::string& oauth_token) {
 }
 
 #if defined(ENABLE_CONFIGURATION_POLICY)
+OneClickSigninSyncStarter::SigninDialogDelegate::SigninDialogDelegate(
+    base::WeakPtr<OneClickSigninSyncStarter> sync_starter)
+  : sync_starter_(sync_starter) {
+}
+
+OneClickSigninSyncStarter::SigninDialogDelegate::~SigninDialogDelegate() {
+}
+
+void OneClickSigninSyncStarter::SigninDialogDelegate::OnCancelSignin() {
+  sync_starter_->CancelSigninAndDelete();
+}
+
+void OneClickSigninSyncStarter::SigninDialogDelegate::OnContinueSignin() {
+  sync_starter_->LoadPolicyWithCachedClient();
+}
+
+void OneClickSigninSyncStarter::SigninDialogDelegate::OnSigninWithNewProfile() {
+  sync_starter_->CreateNewSignedInProfile();
+}
+
 void OneClickSigninSyncStarter::OnRegisteredForPolicy(
     scoped_ptr<policy::CloudPolicyClient> client) {
   SigninManager* signin = SigninManagerFactory::GetForProfile(profile_);
@@ -176,12 +196,7 @@ void OneClickSigninSyncStarter::OnRegisteredForPolicy(
       web_contents,
       profile_,
       signin->GetUsernameForAuthInProgress(),
-      base::Bind(&OneClickSigninSyncStarter::CancelSigninAndDelete,
-                 weak_pointer_factory_.GetWeakPtr()),
-      base::Bind(&OneClickSigninSyncStarter::CreateNewSignedInProfile,
-                 weak_pointer_factory_.GetWeakPtr()),
-      base::Bind(&OneClickSigninSyncStarter::LoadPolicyWithCachedClient,
-                 weak_pointer_factory_.GetWeakPtr()));
+      new SigninDialogDelegate(weak_pointer_factory_.GetWeakPtr()));
 }
 
 void OneClickSigninSyncStarter::CancelSigninAndDelete() {

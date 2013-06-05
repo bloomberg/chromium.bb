@@ -33,9 +33,7 @@ class ProfileSigninConfirmationDialog : public ui::WebDialogDelegate {
       content::WebContents* web_contents,
       Profile* profile,
       const std::string& username,
-      const base::Closure& cancel_signin,
-      const base::Closure& signin_with_new_profile,
-      const base::Closure& continue_signin);
+      ui::ProfileSigninConfirmationDelegate* delegate);
 
   // Closes the dialog, which will delete itself.
   void Close() const;
@@ -45,9 +43,7 @@ class ProfileSigninConfirmationDialog : public ui::WebDialogDelegate {
       content::WebContents* web_contents,
       Profile* profile,
       const std::string& username,
-      const base::Closure& cancel_signin,
-      const base::Closure& signin_with_new_profile,
-      const base::Closure& continue_signin);
+      ui::ProfileSigninConfirmationDelegate* delegate);
   virtual ~ProfileSigninConfirmationDialog();
 
   // Shows the dialog and releases ownership of this object. It will
@@ -77,13 +73,11 @@ class ProfileSigninConfirmationDialog : public ui::WebDialogDelegate {
   // The GAIA username being signed in.
   std::string username_;
 
-  // Dialog button callbacks.
-  base::Closure cancel_signin_;
-  base::Closure signin_with_new_profile_;
-  base::Closure continue_signin_;
+  // Weak pointer to the signin delegate.
+  ui::ProfileSigninConfirmationDelegate* signin_delegate_;
 
-  // Weak pointer to the delegate.
-  ConstrainedWebDialogDelegate* delegate_;
+  // Weak pointer to the dialog delegate.
+  ConstrainedWebDialogDelegate* dialog_delegate_;
 
   // Whether to show the "Create a new profile" button.
   bool prompt_for_new_profile_;
