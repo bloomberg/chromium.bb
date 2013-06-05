@@ -6,7 +6,7 @@
 jsTestIsAsync = true;
 
 var numErrors = 0;
-var numErrorsExpected = 4;
+var numErrorsExpected = 3;
 
 function runTests()
 {
@@ -17,15 +17,15 @@ function runTests()
     }
 
     checkDynamicAttributes();
-    checkParsedAttributes();
     checkNonUserGesture();
+    checkParsedAttributes();
 }
 
 function checkForEnumerableProperties(form)
 {
     var enumerated = false;
     for (var field in form) {
-        if (/onautocomplete/.test(field))
+        if (/^onautocomplete/i.test(field))
             testFailed('enumerable form attribute found on HTMLFormElement: ' + field);
         enumerated = true;
     }
@@ -35,25 +35,13 @@ function checkForEnumerableProperties(form)
         testFailed('failed to enumerate HTMLFormElement properties');
 }
 
-function checkParsedAttributes()
-{
-    var form = document.forms[0];
-    checkForEnumerableProperties(form);
-
-    // Inline [onautocompleteerror] and addEventListener() should both work.
-    form.addEventListener('autocompleteerror', errorWithReason('disabled'));
-
-    // Note that in the HTML, autocomplete="off" which should always dispatch an error.
-    form.requestAutocomplete();
-}
-
 function checkDynamicAttributes()
 {
     var form = document.createElement('form');
     checkForEnumerableProperties(form);
 
     form.autocomplete = 'off';
-    form.onautocompleteerror = errorWithReason('disabled');
+    form.addEventListener('autocompleteerror', errorWithReason('disabled'));
     form.requestAutocomplete();
 }
 
@@ -67,6 +55,16 @@ function checkNonUserGesture()
     {
         form.requestAutocomplete();
     }, 0);
+}
+
+function checkParsedAttributes()
+{
+    var form = document.forms[0];
+    if (!form || !form.onautocompleteerror || form.autocomplete != 'off')
+        testFailed('failed to pick up parsed DOM attributes correctly');
+    checkForEnumerableProperties(form);
+
+    form.requestAutocomplete();
 }
 
 function errorWithReason(reason)
@@ -101,7 +99,7 @@ window.addEventListener('load', runTests, true);
 </script>
 </head>
 <body>
-<p> <a href="http://bugs.webkit.org/show_bug.cgi?id=100557">HTMLFormElement#requestAutocomplete and associated events</a> </p>
+<p> <a href="https://code.google.com/p/chromium/issues/detail?id=159537">HTMLFormElement#requestAutocomplete and associated events</a> </p>
 <p> For this test to pass, you should see all PASSED below. </p>
 <form autocomplete="off" onautocompleteerror="onError();"></form>
 <p id="console"></p>
