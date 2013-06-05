@@ -118,28 +118,6 @@ class SQLitePersistentCookieStore::Backend
  private:
   friend class base::RefCountedThreadSafe<SQLitePersistentCookieStore::Backend>;
 
-  class KillDatabaseErrorDelegate : public sql::ErrorDelegate {
-   public:
-    explicit KillDatabaseErrorDelegate(Backend* backend);
-
-    virtual ~KillDatabaseErrorDelegate() {}
-
-    // ErrorDelegate implementation.
-    virtual int OnError(int error,
-                        sql::Connection* connection,
-                        sql::Statement* stmt) OVERRIDE;
-
-   private:
-    // Do not increment the count on Backend, as that would create a circular
-    // reference (Backend -> Connection -> ErrorDelegate -> Backend).
-    Backend* backend_;
-
-    // True if the delegate has previously attempted to kill the database.
-    bool attempted_to_kill_database_;
-
-    DISALLOW_COPY_AND_ASSIGN(KillDatabaseErrorDelegate);
-  };
-
   // You should call Close() before destructing this object.
   ~Backend() {
     DCHECK(!db_.get()) << "Close should have already been called.";
@@ -225,8 +203,8 @@ class SQLitePersistentCookieStore::Backend
 
   void DeleteSessionCookiesOnShutdown();
 
+  void DatabaseErrorCallback(int error, sql::Statement* stmt);
   void KillDatabase();
-  void ScheduleKillDatabase();
 
   void PostBackgroundTask(const tracked_objects::Location& origin,
                           const base::Closure& task);
@@ -296,25 +274,6 @@ class SQLitePersistentCookieStore::Backend
 
   DISALLOW_COPY_AND_ASSIGN(Backend);
 };
-
-SQLitePersistentCookieStore::Backend::KillDatabaseErrorDelegate::
-KillDatabaseErrorDelegate(Backend* backend)
-    : backend_(backend),
-      attempted_to_kill_database_(false) {
-}
-
-int SQLitePersistentCookieStore::Backend::KillDatabaseErrorDelegate::OnError(
-    int error, sql::Connection* connection, sql::Statement* stmt) {
-  // Do not attempt to kill database more than once. If the first time failed,
-  // it is unlikely that a second time will be successful.
-  if (!attempted_to_kill_database_ && sql::IsErrorCatastrophic(error)) {
-    attempted_to_kill_database_ = true;
-
-    backend_->ScheduleKillDatabase();
-  }
-
-  return error;
-}
 
 namespace {
 
@@ -598,7 +557,11 @@ bool SQLitePersistentCookieStore::Backend::InitializeDatabase() {
 
   db_.reset(new sql::Connection);
   db_->set_histogram_tag("Cookie");
-  db_->set_error_delegate(new KillDatabaseErrorDelegate(this));
+
+  // Unretained to avoid a ref loop with |db_|.
+  db_->set_error_callback(
+      base::Bind(&SQLitePersistentCookieStore::Backend::DatabaseErrorCallback,
+                 base::Unretained(this)));
 
   if (!db_->Open(path_)) {
     NOTREACHED() << "Unable to open cookie DB.";
@@ -1107,13 +1070,26 @@ void SQLitePersistentCookieStore::Backend::DeleteSessionCookiesOnShutdown() {
     LOG(WARNING) << "Unable to delete cookies on shutdown.";
 }
 
-void SQLitePersistentCookieStore::Backend::ScheduleKillDatabase() {
+void SQLitePersistentCookieStore::Backend::DatabaseErrorCallback(
+    int error,
+    sql::Statement* stmt) {
   DCHECK(background_task_runner_->RunsTasksOnCurrentThread());
+
+  if (!sql::IsErrorCatastrophic(error))
+    return;
+
+  // TODO(shess): Running KillDatabase() multiple times should be
+  // safe.
+  if (corruption_detected_)
+    return;
 
   corruption_detected_ = true;
 
   // Don't just do the close/delete here, as we are being called by |db| and
   // that seems dangerous.
+  // TODO(shess): Consider just calling RazeAndClose() immediately.
+  // db_ may not be safe to reset at this point, but RazeAndClose()
+  // would cause the stack to unwind safely with errors.
   PostBackgroundTask(FROM_HERE, base::Bind(&Backend::KillDatabase, this));
 }
 
