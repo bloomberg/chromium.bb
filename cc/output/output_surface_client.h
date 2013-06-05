@@ -19,7 +19,8 @@ class CC_EXPORT OutputSurfaceClient {
   virtual void OnVSyncParametersChanged(base::TimeTicks timebase,
                                         base::TimeDelta interval) = 0;
   virtual void BeginFrame(base::TimeTicks frame_time) = 0;
-  virtual void OnSendFrameToParentCompositorAck(const CompositorFrameAck&) = 0;
+  virtual void OnSendFrameToParentCompositorAck(
+      const CompositorFrameAck& ack) = 0;
   virtual void OnSwapBuffersComplete() = 0;
   virtual void DidLoseOutputSurface() = 0;
 

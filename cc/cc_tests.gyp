@@ -41,6 +41,7 @@
       'layers/tiled_layer_unittest.cc',
       'output/delegating_renderer_unittest.cc',
       'output/gl_renderer_unittest.cc',
+      'output/output_surface_unittest.cc',
       'output/renderer_pixeltest.cc',
       'output/render_surface_filters_unittest.cc',
       'output/shader_unittest.cc',
