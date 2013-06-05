@@ -399,39 +399,33 @@ class PowerManagerClientImpl : public PowerManagerClient {
       return;
     }
 
-    // TODO(derat): Remove PowerSupplyStatus and just pass protocol buffers
-    // directly to Ash: http://crbug.com/234782
+    // TODO(derat): Update PowerSupplyStatus to keep the ExternalPower and
+    // BatteryState information from PowerSupplyProperties intact.
     PowerSupplyStatus status;
-    status.line_power_on = !protobuf.battery_is_present() ||
-        protobuf.battery_state() ==
-        power_manager::PowerSupplyProperties_BatteryState_CHARGING;
+    status.line_power_on = protobuf.external_power() !=
+        power_manager::PowerSupplyProperties_ExternalPower_DISCONNECTED;
+    status.battery_is_present = protobuf.battery_state() !=
+        power_manager::PowerSupplyProperties_BatteryState_NOT_PRESENT;
+    status.battery_is_full = protobuf.battery_state() ==
+        power_manager::PowerSupplyProperties_BatteryState_FULL;
     status.battery_seconds_to_empty = protobuf.battery_time_to_empty_sec();
     status.battery_seconds_to_full = protobuf.battery_time_to_full_sec();
     status.battery_percentage = protobuf.battery_percent();
-    status.battery_is_present = protobuf.battery_is_present();
-    status.battery_is_full = protobuf.battery_is_present() &&
-        protobuf.battery_state() ==
-        power_manager::PowerSupplyProperties_BatteryState_CHARGING &&
-        protobuf.battery_percent() >= 99.9999;
     status.is_calculating_battery_time = protobuf.is_calculating_battery_time();
-    switch (protobuf.battery_state()) {
-      case power_manager::PowerSupplyProperties_BatteryState_CHARGING:
+
+    switch (protobuf.external_power()) {
+      case power_manager::PowerSupplyProperties_ExternalPower_AC:
         status.battery_state = PowerSupplyStatus::CHARGING;
         break;
-      case power_manager::PowerSupplyProperties_BatteryState_DISCHARGING:
+      case power_manager::PowerSupplyProperties_ExternalPower_DISCONNECTED:
         status.battery_state = PowerSupplyStatus::DISCHARGING;
         break;
-      case power_manager::
-          PowerSupplyProperties_BatteryState_NEITHER_CHARGING_NOR_DISCHARGING:
-        status.battery_state =
-            PowerSupplyStatus::NEITHER_CHARGING_NOR_DISCHARGING;
-        break;
-      case power_manager::PowerSupplyProperties_BatteryState_CONNECTED_TO_USB:
+      case power_manager::PowerSupplyProperties_ExternalPower_USB:
         status.battery_state = PowerSupplyStatus::CONNECTED_TO_USB;
         break;
       default:
-        NOTREACHED();
-        break;
+        NOTREACHED() << "Unhandled external power state "
+                     << protobuf.external_power();
     }
 
     // Check power status values are consistent
