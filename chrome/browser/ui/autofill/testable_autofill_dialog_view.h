@@ -28,6 +28,9 @@ class TestableAutofillDialogView {
 
   // Simulates a user activatino of the input which is modelled by |input|.
   virtual void ActivateInput(const DetailInput& input) = 0;
+
+  // Get the size of the entire view.
+  virtual gfx::Size GetSize() const = 0;
 };
 
 }  // namespace autofill

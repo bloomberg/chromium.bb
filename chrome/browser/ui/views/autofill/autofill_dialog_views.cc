@@ -541,6 +541,13 @@ void AutofillDialogViews::NotificationArea::SetNotifications(
   PreferredSizeChanged();
 }
 
+gfx::Size AutofillDialogViews::NotificationArea::GetPreferredSize() {
+  gfx::Size size = views::View::GetPreferredSize();
+  // Ensure that long notifications wrap and don't enlarge the dialog.
+  size.set_width(1);
+  return size;
+}
+
 const char* AutofillDialogViews::NotificationArea::GetClassName() const {
   return kNotificationAreaClassName;
 }
@@ -1011,6 +1018,11 @@ TestableAutofillDialogView* AutofillDialogViews::GetTestableView() {
   return this;
 }
 
+void AutofillDialogViews::OnSignInResize(const gfx::Size& pref_size) {
+  sign_in_webview_->SetPreferredSize(pref_size);
+  ContentsPreferredSizeChanged();
+}
+
 void AutofillDialogViews::SubmitForTesting() {
   Accept();
 }
@@ -1061,9 +1073,8 @@ void AutofillDialogViews::ActivateInput(const DetailInput& input) {
   TextfieldEditedOrActivated(TextfieldForInput(input), false);
 }
 
-void AutofillDialogViews::OnSignInResize(const gfx::Size& pref_size) {
-  sign_in_webview_->SetPreferredSize(pref_size);
-  ContentsPreferredSizeChanged();
+gfx::Size AutofillDialogViews::GetSize() const {
+  return GetWidget() ? GetWidget()->GetRootView()->size() : gfx::Size();
 }
 
 bool AutofillDialogViews::AcceleratorPressed(

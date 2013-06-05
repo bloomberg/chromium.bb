@@ -94,6 +94,7 @@ class AutofillDialogViews : public AutofillDialogView,
   virtual void UpdateProgressBar(double value) OVERRIDE;
   virtual void ModelChanged() OVERRIDE;
   virtual TestableAutofillDialogView* GetTestableView() OVERRIDE;
+  virtual void OnSignInResize(const gfx::Size& pref_size) OVERRIDE;
 
   // TestableAutofillDialogView implementation:
   virtual void SubmitForTesting() OVERRIDE;
@@ -102,7 +103,7 @@ class AutofillDialogViews : public AutofillDialogView,
   virtual void SetTextContentsOfInput(const DetailInput& input,
                                       const string16& contents) OVERRIDE;
   virtual void ActivateInput(const DetailInput& input) OVERRIDE;
-  virtual void OnSignInResize(const gfx::Size& pref_size) OVERRIDE;
+  virtual gfx::Size GetSize() const OVERRIDE;
 
   // ui::AcceleratorTarget implementation:
   virtual bool AcceleratorPressed(const ui::Accelerator& accelerator) OVERRIDE;
@@ -291,6 +292,7 @@ class AutofillDialogViews : public AutofillDialogView,
     void SetNotifications(const std::vector<DialogNotification>& notifications);
 
     // views::View implementation.
+    virtual gfx::Size GetPreferredSize() OVERRIDE;
     virtual const char* GetClassName() const OVERRIDE;
     virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
 
@@ -302,8 +304,6 @@ class AutofillDialogViews : public AutofillDialogView,
         const base::WeakPtr<views::View>& arrow_centering_anchor) {
       arrow_centering_anchor_ = arrow_centering_anchor;
     }
-
-    // TODO(estade): Wrap notifications text.
 
    private:
     // Utility function for determining whether an arrow should be drawn
