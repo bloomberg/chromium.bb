@@ -85,7 +85,7 @@ void DOMURL::revokeObjectURL(ScriptExecutionContext* scriptExecutionContext, con
         return;
 
     KURL url(KURL(), urlString);
-    MemoryCache::removeUrlFromCache(scriptExecutionContext, urlString);
+    MemoryCache::removeURLFromCache(scriptExecutionContext, url);
     scriptExecutionContext->publicURLManager().revoke(url);
 }
 

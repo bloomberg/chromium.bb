@@ -142,9 +142,8 @@ public:
     void addToLiveResourcesSize(CachedResource*);
     void removeFromLiveResourcesSize(CachedResource*);
 
-    static void removeUrlFromCache(ScriptExecutionContext*, const String& urlString);
+    static void removeURLFromCache(ScriptExecutionContext*, const KURL&);
 
-    // Function to collect cache statistics for the caches window in the Safari Debug menu.
     Statistics getStatistics();
 
     unsigned minDeadCapacity() const { return m_minDeadCapacity; }
@@ -180,7 +179,7 @@ private:
 
     void evict(CachedResource*);
 
-    static void removeUrlFromCacheImpl(ScriptExecutionContext*, const String& urlString);
+    static void removeURLFromCacheInternal(ScriptExecutionContext*, const KURL&);
 
     bool m_inPruneResources;
 

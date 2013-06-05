@@ -503,22 +503,18 @@ void MemoryCache::adjustSize(bool live, int delta)
     }
 }
 
-
-void MemoryCache::removeUrlFromCache(ScriptExecutionContext* context, const String& urlString)
+void MemoryCache::removeURLFromCache(ScriptExecutionContext* context, const KURL& url)
 {
     if (context->isWorkerContext()) {
-      WorkerContext* workerContext = static_cast<WorkerContext*>(context);
-      workerContext->thread()->workerLoaderProxy().postTaskToLoader(
-          createCallbackTask(&removeUrlFromCacheImpl, urlString));
-      return;
+        WorkerContext* workerContext = static_cast<WorkerContext*>(context);
+        workerContext->thread()->workerLoaderProxy().postTaskToLoader(createCallbackTask(&removeURLFromCacheInternal, url));
+        return;
     }
-    removeUrlFromCacheImpl(context, urlString);
+    removeURLFromCacheInternal(context, url);
 }
 
-void MemoryCache::removeUrlFromCacheImpl(ScriptExecutionContext*, const String& urlString)
+void MemoryCache::removeURLFromCacheInternal(ScriptExecutionContext*, const KURL& url)
 {
-    KURL url(KURL(), urlString);
-
     if (CachedResource* resource = memoryCache()->resourceForURL(url))
         memoryCache()->remove(resource);
 }
