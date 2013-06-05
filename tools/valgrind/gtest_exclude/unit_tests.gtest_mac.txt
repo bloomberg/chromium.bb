@@ -37,3 +37,6 @@ GeolocationWifiDataProviderCommonTest.*
 FileSystemDirURLRequestJobTest.*
 FileSystemURLRequestJobTest.*
 FileSystemOperationWriteTest.*
+
+# http://crbug.com/247163
+VideoCaptureManagerTest.CreateAndClose
