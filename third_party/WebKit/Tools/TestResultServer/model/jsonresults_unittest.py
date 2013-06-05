@@ -33,12 +33,7 @@ except ImportError:
     print "ERROR: Add the TestResultServer, google_appengine and yaml/lib directories to your PYTHONPATH"
     raise
 
-# FIXME: Once we're on python 2.7, just use json directly.
-try:
-    from django.utils import simplejson
-except:
-    import json as simplejson
-
+import json
 import unittest
 
 FULL_RESULT_EXAMPLE = """ADD_RESULTS({
@@ -143,7 +138,7 @@ JSON_RESULTS_OLD_TEMPLATE = (
     '"tests":{[TESTDATA_TESTS]}'
     '},'
     '"version":[VERSION]'
-    '}') % simplejson.dumps(CHAR_TO_FAILURE)
+    '}') % json.dumps(CHAR_TO_FAILURE)
 
 JSON_RESULTS_COUNTS = '{"' + '":[[TESTDATA_COUNT]],"'.join([char for char in CHAR_TO_FAILURE.values()]) + '":[[TESTDATA_COUNT]]}'
 
@@ -161,7 +156,7 @@ JSON_RESULTS_TEMPLATE = (
     '"tests":{[TESTDATA_TESTS]}'
     '},'
     '"version":[VERSION]'
-    '}') % (simplejson.dumps(CHAR_TO_FAILURE), JSON_RESULTS_COUNTS)
+    '}') % (json.dumps(CHAR_TO_FAILURE), JSON_RESULTS_COUNTS)
 
 JSON_RESULTS_COUNTS_TEMPLATE = '{"' + '":[TESTDATA],"'.join([char for char in CHAR_TO_FAILURE]) + '":[TESTDATA]}'
 
@@ -188,8 +183,8 @@ class JsonResultsTest(unittest.TestCase):
     # Use this to get better error messages than just string compare gives.
     def assert_json_equal(self, a, b):
         self.maxDiff = None
-        a = simplejson.loads(a) if isinstance(a, str) else a
-        b = simplejson.loads(b) if isinstance(b, str) else b
+        a = json.loads(a) if isinstance(a, str) else a
+        b = json.loads(b) if isinstance(b, str) else b
         self.assertEqual(a, b)
 
     def test_strip_prefix_suffix(self):
@@ -228,7 +223,7 @@ class JsonResultsTest(unittest.TestCase):
 
         version = str(test_data["version"]) if "version" in test_data else "4"
         json_string = json_string.replace("[VERSION]", version)
-        json_string = json_string.replace("{[TESTDATA_TESTS]}", simplejson.dumps(tests, separators=(',', ':'), sort_keys=True))
+        json_string = json_string.replace("{[TESTDATA_TESTS]}", json.dumps(tests, separators=(',', ':'), sort_keys=True))
         return json_string
 
     def _test_merge(self, aggregated_data, incremental_data, expected_data, max_builds=jsonresults.JSON_RESULTS_MAX_BUILDS):
@@ -245,7 +240,7 @@ class JsonResultsTest(unittest.TestCase):
 
     def _test_get_test_list(self, input_data, expected_data):
         input_results = self._make_test_json(input_data)
-        expected_results = JSON_RESULTS_TEST_LIST_TEMPLATE.replace("{[TESTDATA_TESTS]}", simplejson.dumps(expected_data, separators=(',', ':')))
+        expected_results = JSON_RESULTS_TEST_LIST_TEMPLATE.replace("{[TESTDATA_TESTS]}", json.dumps(expected_data, separators=(',', ':')))
         actual_results = JsonResults.get_test_list(self._builder, input_results)
         self.assert_json_equal(actual_results, expected_results)
 

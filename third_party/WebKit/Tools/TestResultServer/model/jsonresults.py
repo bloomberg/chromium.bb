@@ -26,17 +26,11 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-from datetime import datetime
+import json
 import logging
 import re
 import sys
 import traceback
-
-# FIXME: Once we're on python 2.7, just use json directly.
-try:
-    from django.utils import simplejson
-except:
-    import json as simplejson
 
 from model.testfile import TestFile
 
@@ -119,8 +113,8 @@ class JsonResults(object):
         return data
 
     @classmethod
-    def _generate_file_data(cls, json, sort_keys=False):
-        return simplejson.dumps(json, separators=(',', ':'), sort_keys=sort_keys)
+    def _generate_file_data(cls, jsonObject, sort_keys=False):
+        return json.dumps(jsonObject, separators=(',', ':'), sort_keys=sort_keys)
 
     @classmethod
     def _load_json(cls, file_data):
@@ -130,7 +124,7 @@ class JsonResults(object):
             return None
 
         try:
-            return simplejson.loads(json_results_str)
+            return json.loads(json_results_str)
         except:
             logging.debug(json_results_str)
             logging.error("Failed to load json results: %s", traceback.print_exception(*sys.exc_info()))
