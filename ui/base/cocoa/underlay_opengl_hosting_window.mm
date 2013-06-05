@@ -56,7 +56,8 @@ NSComparisonResult OpaqueViewsOnTop(id view1, id view2, void* context) {
   // (This is an undocumented side-effect.) At that time, verify that any
   // OpaqueViews are z-ordered in the front, and enforce it if need be.
 
-  NSView* rootView = [[[self window] contentView] superview];
+  NSView* rootView = [self superview];
+  DCHECK_EQ((NSView*)nil, [rootView superview]);
   NSArray* subviews = [rootView subviews];
 
   // If a window has any opaques, it will have exactly two.
