@@ -2529,6 +2529,11 @@ void WebContentsImpl::OnUpdateFaviconURL(
 }
 
 FrameTreeNode* WebContentsImpl::FindFrameTreeNodeByID(int64 frame_id) {
+  // TODO(nasko): Remove this check once we move to creating the root node
+  // through RenderFrameHost creation.
+  if (!frame_tree_root_.get())
+    return NULL;
+
   FrameTreeNode* node = NULL;
   std::queue<FrameTreeNode*> queue;
   queue.push(frame_tree_root_.get());
