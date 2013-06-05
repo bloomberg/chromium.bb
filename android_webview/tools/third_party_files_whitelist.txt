@@ -181,11 +181,11 @@ url/url_parse.cc
 # Copyright The Chromium Authors and Apple Inc; BSD license. This third-party
 # code is taken from WebKit, the license for which we already pick up from
 # webkit/.
-webkit/appcache/manifest_parser.cc
+webkit/browser/appcache/manifest_parser.cc
 # Copyright The Chromium Authors and Apple Inc; BSD license. This third-party
 # code is taken from WebKit, the license for which we already pick up from
 # webkit/.
-webkit/appcache/manifest_parser.h
+webkit/browser/appcache/manifest_parser.h
 # Copyright Tim Copperfield and Christian Dywan; LGPL license. Not used on
 # Android.
 webkit/common/cursors/webcursor_gtk_data.h
