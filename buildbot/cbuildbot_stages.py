@@ -1134,11 +1134,30 @@ class PreCQLauncherStage(SyncStage):
   STATUS_INFLIGHT = validation_pool.ValidationPool.STATUS_INFLIGHT
   STATUS_PASSED = validation_pool.ValidationPool.STATUS_PASSED
   STATUS_FAILED = validation_pool.ValidationPool.STATUS_FAILED
+  STATUS_LAUNCHING = validation_pool.ValidationPool.STATUS_LAUNCHING
   STATUS_WAITING = validation_pool.ValidationPool.STATUS_WAITING
+
+  # The number of minutes we allow before considering a launch attempt failed.
+  # If this window isn't hit in a given launcher run, the window will start
+  # again from scratch in the next run.
+  LAUNCH_DELAY = 10
 
   def __init__(self, options, build_config):
     super(PreCQLauncherStage, self).__init__(options, build_config)
     self.skip_sync = True
+    self.launching = {}
+    self.retried = set()
+
+  def _HasLaunchTimedOut(self, change):
+    """Check whether a given |change| has timed out on its trybot launch.
+
+    Assumes that the change is in the middle of being launched.
+
+    Returns:
+      True if the change has timed out. False otherwise.
+    """
+    diff = datetime.timedelta(minutes=self.LAUNCH_DELAY)
+    return datetime.datetime.now() - self.launching[change] > diff
 
   def GetPreCQStatus(self, pool, changes):
     """Get the Pre-CQ status of a list of changes.
@@ -1155,7 +1174,31 @@ class PreCQLauncherStage(SyncStage):
 
     for change in changes:
       status = pool.GetPreCQStatus(change)
-      if status == self.STATUS_INFLIGHT:
+
+      if status != self.STATUS_LAUNCHING:
+        # The trybot has finished launching, so we should remove it from our
+        # data structures.
+        self.launching.pop(change, None)
+
+      if status == self.STATUS_LAUNCHING:
+        # The trybot is in the process of launching.
+        busy.add(change)
+        if change not in self.launching:
+          self.launching[change] = datetime.datetime.now()
+        elif self._HasLaunchTimedOut(change):
+          if change in self.retried:
+            msg = 'Failed twice to launch a Pre-CQ trybot for this change.'
+            pool.SendNotification(change, '%(details)s', details=msg)
+            pool.RemoveCommitReady(change)
+            pool.UpdatePreCQStatus(change, self.STATUS_FAILED)
+            self.retried.discard(change)
+          else:
+            # Try the change again.
+            self.retried.add(change)
+            pool.UpdatePreCQStatus(change, self.STATUS_WAITING)
+      elif status == self.STATUS_INFLIGHT:
+        # Once a Pre-CQ run actually starts, it'll set the status to
+        # STATUS_INFLIGHT.
         busy.add(change)
       elif status == self.STATUS_FAILED:
         # The Pre-CQ run failed for this change. It's possible that we got
@@ -1186,7 +1229,7 @@ class PreCQLauncherStage(SyncStage):
     cros_build_lib.RunCommand(cmd, cwd=self._build_root)
     for patch in plan:
       if pool.GetPreCQStatus(patch) != self.STATUS_PASSED:
-        pool.UpdatePreCQStatus(patch, self.STATUS_INFLIGHT)
+        pool.UpdatePreCQStatus(patch, self.STATUS_LAUNCHING)
 
   def GetDisjointTransactionsToTest(self, pool, changes):
     """Get the list of disjoint transactions to test.

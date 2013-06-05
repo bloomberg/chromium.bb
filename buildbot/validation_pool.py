@@ -840,28 +840,20 @@ class _ManifestShim(object):
 class ValidationFailedMessage(object):
   """Message indicating that changes failed to be validated."""
 
-  def __init__(self, builder_name, build_log, tracebacks, internal):
+  def __init__(self, message, tracebacks, internal):
     """Create a ValidationFailedMessage object.
 
     Args:
-      builder_name: The URL-quoted name of the builder.
-      build_log: The URL users should visit to see the build log.
-      tracebacks: A list of results_lib.RecordedTraceback objects.
+      message: The message to print.
+      tracebacks: Exceptions received by individual builders, if any.
       internal: Whether this failure occurred on an internal builder.
     """
-    self.builder_name = builder_name
-    self.build_log = build_log
-    self.tracebacks = tuple(tracebacks)
+    self.message = message
+    self.tracebacks = tracebacks
     self.internal = internal
 
   def __str__(self):
-    details = []
-    for x in self.tracebacks:
-      details.append('The %s stage failed: %s' % (x.failed_stage, x.exception))
-    if not details:
-      details = ['cbuildbot failed']
-    details.append('in %s' % (self.build_log,))
-    return '%s: %s' % (urllib.unquote(self.builder_name), ' '.join(details))
+    return self.message
 
 
 class ValidationPool(object):
@@ -881,6 +873,7 @@ class ValidationPool(object):
   STATUS_FAILED = manifest_version.BuilderStatus.STATUS_FAILED
   STATUS_INFLIGHT = manifest_version.BuilderStatus.STATUS_INFLIGHT
   STATUS_PASSED = manifest_version.BuilderStatus.STATUS_PASSED
+  STATUS_LAUNCHING = 'launching'
   STATUS_WAITING = 'waiting'
 
   # The grace period (in seconds) before we reject a patch due to dependency
@@ -1386,6 +1379,11 @@ class ValidationPool(object):
 
     _RunCommand(cmd, self.dryrun)
 
+  def RemoveCommitReady(self, change):
+    """Remove the commit ready bit for the specified |change|."""
+    self._helper_pool.ForChange(change).RemoveCommitReady(change,
+        dryrun=self.dryrun)
+
   def SubmitNonManifestChanges(self, check_tree_open=True):
     """Commits changes to Gerrit from Pool that aren't part of the checkout.
 
@@ -1443,25 +1441,23 @@ class ValidationPool(object):
     """
     msg = '%(queue)s failed to apply your change in %(build_log)s .'
     msg += '  %(failure)s'
-    self._SendNotification(failure.patch, msg, failure=failure)
-    self._helper_pool.ForChange(failure.patch).RemoveCommitReady(
-        failure.patch, dryrun=self.dryrun)
+    self.SendNotification(failure.patch, msg, failure=failure)
+    self.RemoveCommitReady(failure.patch)
 
   def HandleValidationTimeout(self):
     """Handles changes that timed out."""
     logging.info('Validation timed out for all changes.')
     for change in self.changes:
       logging.info('Validation timed out for change %s.', change)
-      self._SendNotification(change,
+      self.SendNotification(change,
           '%(queue)s timed out while verifying your change in '
           '%(build_log)s . This means that a supporting builder did not '
           'finish building your change within the specified timeout. If you '
           'believe this happened in error, just re-mark your commit as ready. '
           'Your change will then get automatically retried.')
-      self._helper_pool.ForChange(change).RemoveCommitReady(
-          change, dryrun=self.dryrun)
+      self.RemoveCommitReady(change)
 
-  def _SendNotification(self, change, msg, **kwargs):
+  def SendNotification(self, change, msg, **kwargs):
     d = dict(build_log=self.build_log, queue=self.queue, **kwargs)
     try:
       msg %= d
@@ -1480,7 +1476,7 @@ class ValidationPool(object):
     msg = '%(queue)s successfully verified your change in %(build_log)s .'
     for change in self.changes:
       if self.GetPreCQStatus(change) != self.STATUS_PASSED:
-        self._SendNotification(change, msg)
+        self.SendNotification(change, msg)
         self.UpdatePreCQStatus(change, self.STATUS_PASSED)
 
   def _HandleCouldNotSubmit(self, change):
@@ -1493,12 +1489,11 @@ class ValidationPool(object):
     Args:
       change: GerritPatch instance to operate upon.
     """
-    self._SendNotification(change,
+    self.SendNotification(change,
         '%(queue)s failed to submit your change in %(build_log)s . '
         'This can happen if you submitted your change or someone else '
         'submitted a conflicting change while your change was being tested.')
-    self._helper_pool.ForChange(change).RemoveCommitReady(
-        change, dryrun=self.dryrun)
+    self.RemoveCommitReady(change)
 
   @staticmethod
   def _FindSuspects(changes, messages):
@@ -1645,10 +1640,9 @@ class ValidationPool(object):
     for change in changes:
       msg = self._CreateValidationFailureMessage(self.pre_cq, change, suspects,
                                                  messages)
-      self._SendNotification(change, '%(details)s', details=msg)
+      self.SendNotification(change, '%(details)s', details=msg)
       if change in suspects:
-        self._helper_pool.ForChange(change).RemoveCommitReady(
-            change, dryrun=self.dryrun)
+        self.RemoveCommitReady(change)
       if self.pre_cq:
         # Mark the change as failed. If the Ready bit is still set, the change
         # will be retried automatically.
@@ -1659,9 +1653,15 @@ class ValidationPool(object):
     logging.info('Validation failed for all changes.')
     internal = self._overlays in [constants.PRIVATE_OVERLAYS,
                                   constants.BOTH_OVERLAYS]
-    return ValidationFailedMessage(self._builder_name, self.build_log,
-                                   results_lib.Results.GetTracebacks(),
-                                   internal)
+    details = []
+    tracebacks = results_lib.Results.GetTracebacks()
+    for x in tracebacks:
+      details.append('The %s stage failed: %s' % (x.failed_stage, x.exception))
+    if not details:
+      details = ['cbuildbot failed']
+    details.append('in %s' % (self.build_log,))
+    msg = '%s: %s' % (urllib.unquote(self._builder_name), ' '.join(details))
+    return ValidationFailedMessage(msg, tracebacks, internal)
 
   def HandleCouldNotApply(self, change):
     """Handler for when Paladin fails to apply a change.
@@ -1686,9 +1686,8 @@ class ValidationPool(object):
           'failing.')
 
     msg += extra_msg
-    self._SendNotification(change, msg)
-    self._helper_pool.ForChange(change).RemoveCommitReady(
-        change, dryrun=self.dryrun)
+    self.SendNotification(change, msg)
+    self.RemoveCommitReady(change)
 
   def _HandleApplySuccess(self, change):
     """Handler for when Paladin successfully applies a change.
@@ -1699,11 +1698,15 @@ class ValidationPool(object):
     Args:
       change: GerritPatch instance to operate upon.
     """
-    if self.pre_cq and self.GetPreCQStatus(change) == self.STATUS_PASSED:
-      return
+    if self.pre_cq:
+      status = self.GetPreCQStatus(change)
+      if status == self.STATUS_PASSED:
+        return
     msg = ('%(queue)s has picked up your change. '
            'You can follow along at %(build_log)s .')
-    self._SendNotification(change, msg)
+    self.SendNotification(change, msg)
+    if self.pre_cq and status == status.STATUS_LAUNCHING:
+      self.UpdatePreCQStatus(change, self.STATUS_INFLIGHT)
 
   def _GetPreCQStatusURL(self, change):
     internal = 'int' if change.internal else 'ext'

@@ -536,7 +536,7 @@ class TestCoreLogic(MoxBase):
     handlers = kwds.pop('handlers', False)
     kwds['build_root'] = self.build_root
     pool = MakePool(*args, **kwds)
-    self.mox.StubOutWithMock(pool, '_SendNotification')
+    self.mox.StubOutWithMock(pool, 'SendNotification')
     if handlers:
       self.mox.StubOutWithMock(pool, '_HandleApplySuccess')
       self.mox.StubOutWithMock(pool, '_HandleApplyFailure')
@@ -609,7 +609,7 @@ class TestCoreLogic(MoxBase):
     """Validate steps taken for successfull application."""
     patch = self.GetPatches(1)
     pool = self.MakePool()
-    pool._SendNotification(patch, mox.StrContains('has picked up your change'))
+    pool.SendNotification(patch, mox.StrContains('has picked up your change'))
     self.mox.ReplayAll()
     pool._HandleApplySuccess(patch)
     self.mox.VerifyAll()
@@ -625,7 +625,7 @@ class TestCoreLogic(MoxBase):
     self.mox.StubOutWithMock(gerrit.GerritHelper, 'RemoveCommitReady')
 
     for failure in notified_patches:
-      master_pool._SendNotification(
+      master_pool.SendNotification(
           failure.patch,
           mox.StrContains('failed to apply your change'),
           failure=mox.IgnoreArg())
@@ -963,7 +963,7 @@ class TestFindSuspects(MoxBase):
     for ex in all_exceptions:
       tracebacks.append(results_lib.RecordedTraceback('Build', ex, str(ex)))
     message = validation_pool.ValidationFailedMessage(
-        'foo', 'bar', tracebacks, internal)
+        'foo bar %r' % tracebacks, tracebacks, internal)
     results = validation_pool.ValidationPool._FindSuspects(patches, [message])
     self.assertEquals(set(suspects), results)
 
@@ -1121,7 +1121,7 @@ class TestCreateDisjointTransactions(MockCreateDisjointTransactions):
   def runUnresolvedPlan(self, **kwargs):
     """Helper for testing unresolved plans."""
     notify = self.PatchObject(validation_pool.ValidationPool,
-                              '_SendNotification')
+                              'SendNotification')
     remove = self.PatchObject(gerrit.GerritHelper, 'RemoveCommitReady')
     changes = self.GetPatches(5, **kwargs)[1:]
     pool = MakePool(changes=changes)

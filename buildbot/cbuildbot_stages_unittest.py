@@ -9,6 +9,7 @@
 import contextlib
 import copy
 import cPickle
+import itertools
 import json
 import mox
 import os
@@ -1569,7 +1570,7 @@ class BaseCQTest(StageTest):
     self.manifest_path = os.path.join(self.build_root, '.repo', 'manifest.xml')
     osutils.WriteFile(self.manifest_path, self.MANIFEST_CONTENTS)
 
-  def PerformSync(self, remote='cros', committed=True, tree_open=True,
+  def PerformSync(self, remote='cros', committed=False, tree_open=True,
                   tracking_branch='master', num_patches=1):
     """Helper to perform a basic sync for master commit queue."""
     p = MockPatch(remote=remote, tracking_branch=tracking_branch)
@@ -1622,11 +1623,18 @@ class MasterCQSyncTest(BaseCQTest):
   def testCommitNonManifestChange(self, **kwargs):
     """Test the commit of a non-manifest change."""
     # Setting tracking_branch=foo makes this a non-manifest change.
+    kwargs.setdefault('committed', True)
     self.PerformSync(tracking_branch='foo', **kwargs)
 
   def testFailedCommitOfNonManifestChange(self):
     """Test that the commit of a non-manifest change fails."""
     self.testCommitNonManifestChange(committed=False)
+
+  def testCommitManifestChange(self, **kwargs):
+    """Test committing a change to a project that's part of the manifest."""
+    self.PatchObject(validation_pool.ValidationPool, '_FilterNonCrosProjects',
+                     side_effect=lambda x, _: (x, []))
+    self.PerformSync(**kwargs)
 
   def testDefaultSync(self):
     """Test basic ability to sync with standard options."""
@@ -1657,19 +1665,69 @@ class ExtendedMasterCQSyncTest(MasterCQSyncTest):
     self.assertRaises(SystemExit, self.testCommitNonManifestChange,
                       tree_open=False)
 
+class PreCQStatusMock(partial_mock.PartialMock):
+  """Partial mock for PreCQStatus methods in ValidationPool."""
+
+  TARGET = 'chromite.buildbot.validation_pool.ValidationPool'
+  ATTRS = ('GetPreCQStatus', 'UpdatePreCQStatus',)
+
+  def __init__(self):
+    partial_mock.PartialMock.__init__(self)
+    self.calls = {}
+    self.status = {}
+
+  def GetPreCQStatus(self, _, change):
+    return self.status.get(change)
+
+  def UpdatePreCQStatus(self, _, change, status):
+    self.calls[status] = self.calls.get(status, 0) + 1
+    self.status[change] = status
+
 
 class PreCQLauncherStageTest(MasterCQSyncTest):
   """Tests for the PreCQLauncherStage."""
   PALADIN_BOT_ID = 'pre-cq-launcher'
+  STATUS_LAUNCHING = validation_pool.ValidationPool.STATUS_LAUNCHING
+  STATUS_WAITING = validation_pool.ValidationPool.STATUS_WAITING
+  STATUS_FAILED = validation_pool.ValidationPool.STATUS_FAILED
 
   def setUp(self):
     old_sleep = time.sleep
-    self.PatchObject(time, 'sleep', side_effect=lambda x: old_sleep(0.1))
+    self.PatchObject(time, 'sleep', side_effect=lambda x: old_sleep(0.01))
+    self.pre_cq = PreCQStatusMock()
+    self.StartPatcher(self.pre_cq)
     self.sync_stage = stages.PreCQLauncherStage(self.options, self.build_config)
 
   def testTreeClosureIsOK(self):
     """Test that tree closures block commits."""
     self.testCommitNonManifestChange(tree_open=False)
+
+  def testLaunchTrybot(self):
+    """Test launching a trybot."""
+    self.testCommitManifestChange()
+    self.assertEqual(self.pre_cq.status.values(), [self.STATUS_LAUNCHING])
+    self.assertEqual(self.pre_cq.calls.keys(), [self.STATUS_LAUNCHING])
+
+  def testLaunchTrybotTimesOutOnce(self):
+    """Test what happens when a trybot launch times out."""
+    it = itertools.chain([True], itertools.repeat(False))
+    self.PatchObject(stages.PreCQLauncherStage, '_HasLaunchTimedOut',
+                     side_effect=it)
+    self.PatchObject(validation_pool.ValidationPool, 'MAX_TIMEOUT', 2)
+    self.testCommitManifestChange()
+    self.assertTrue(self.pre_cq.calls.get(self.STATUS_WAITING, 0) > 0)
+    self.assertTrue(self.pre_cq.calls.get(self.STATUS_LAUNCHING, 0) > 0)
+    self.assertEqual(self.pre_cq.calls.get(self.STATUS_FAILED, 0), 0)
+
+  def testLaunchTrybotTimesOutTwice(self):
+    """Test what happens when a trybot launch times out."""
+    self.PatchObject(stages.PreCQLauncherStage, '_HasLaunchTimedOut',
+                     return_value=True)
+    self.PatchObject(validation_pool.ValidationPool, 'MAX_TIMEOUT', 2)
+    self.testCommitManifestChange()
+    self.assertTrue(self.pre_cq.calls.get(self.STATUS_WAITING, 0) > 0)
+    self.assertTrue(self.pre_cq.calls.get(self.STATUS_LAUNCHING, 0) > 0)
+    self.assertTrue(self.pre_cq.calls.get(self.STATUS_FAILED, 0) > 0)
 
 
 if __name__ == '__main__':
