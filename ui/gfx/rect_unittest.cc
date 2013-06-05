@@ -53,6 +53,8 @@ TEST(RectTest, Intersects) {
     bool intersects;
   } tests[] = {
     { 0, 0, 0, 0, 0, 0, 0, 0, false },
+    { 0, 0, 0, 0, -10, -10, 20, 20, false },
+    { -10, 0, 0, 20, 0, -10, 20, 0, false },
     { 0, 0, 10, 10, 0, 0, 10, 10, true },
     { 0, 0, 10, 10, 10, 10, 10, 10, false },
     { 10, 10, 10, 10, 0, 0, 10, 10, false },
@@ -65,6 +67,7 @@ TEST(RectTest, Intersects) {
     Rect r1(tests[i].x1, tests[i].y1, tests[i].w1, tests[i].h1);
     Rect r2(tests[i].x2, tests[i].y2, tests[i].w2, tests[i].h2);
     EXPECT_EQ(tests[i].intersects, r1.Intersects(r2));
+    EXPECT_EQ(tests[i].intersects, r2.Intersects(r1));
   }
 }
 

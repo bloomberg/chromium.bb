@@ -149,7 +149,8 @@ template<typename Class,
          typename Type>
 bool RectBase<Class, PointClass, SizeClass, InsetsClass, VectorClass, Type>::
     Intersects(const Class& rect) const {
-  return !(rect.x() >= right() || rect.right() <= x() ||
+  return !(IsEmpty() || rect.IsEmpty() ||
+           rect.x() >= right() || rect.right() <= x() ||
            rect.y() >= bottom() || rect.bottom() <= y());
 }
 

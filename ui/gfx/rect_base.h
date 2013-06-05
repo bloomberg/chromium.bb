@@ -108,6 +108,7 @@ class UI_EXPORT RectBase {
   bool Contains(const Class& rect) const;
 
   // Returns true if this rectangle intersects the specified rectangle.
+  // An empty rectangle doesn't intersect any rectangle.
   bool Intersects(const Class& rect) const;
 
   // Computes the intersection of this rectangle with the given rectangle.
