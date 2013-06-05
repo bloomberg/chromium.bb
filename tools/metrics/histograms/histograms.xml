@@ -10145,6 +10145,21 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="WebHistory.OAuthTokenCompletion" enum="BooleanSuccess">
+  <summary>
+    Whether getting the OAuth token was successful for a web history query. On
+    visits to the chrome://history page this token is obtained and then used to
+    get the user's synced web history.
+  </summary>
+</histogram>
+
+<histogram name="WebHistory.OAuthTokenResponseCode" units="code">
+  <summary>
+    HTTP Response code returned by the server when trying to fetch the OAuth
+    token for a web history query.
+  </summary>
+</histogram>
+
 <histogram name="WebHistory.QueryCompletion" enum="WebHistoryStatus">
   <summary>
     Whether the web history API call was successful. Every time a signed-in user
