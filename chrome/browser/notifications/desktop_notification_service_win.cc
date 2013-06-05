@@ -46,7 +46,7 @@ void DesktopNotificationService::ShowNotification(
       display_metro_notification(notification.origin_url().spec().c_str(),
                                  notification.content_url().spec().c_str(),
                                  notification.title().c_str(),
-                                 notification.body().c_str(),
+                                 notification.message().c_str(),
                                  notification.display_source().c_str(),
                                  notification.notification_id().c_str());
       return;

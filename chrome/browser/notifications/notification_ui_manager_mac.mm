@@ -145,7 +145,7 @@ void NotificationUIManagerMac::Add(const Notification& notification,
     ns_notification.subtitle =
         base::SysUTF16ToNSString(notification.display_source());
     ns_notification.informativeText =
-        base::SysUTF16ToNSString(notification.body());
+        base::SysUTF16ToNSString(notification.message());
     ns_notification.userInfo =
         [NSDictionary dictionaryWithObject:base::SysUTF8ToNSString(
             notification.notification_id())

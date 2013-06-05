@@ -55,23 +55,12 @@ NotificationList::PopupNotifications
   return NotificationList::PopupNotifications();
 }
 
-void FakeMessageCenter::AddNotification(
-    NotificationType type,
-    const std::string& id,
-    const string16& title,
-    const string16& message,
-    const string16& display_source,
-    const std::string& extension_id,
-    const base::DictionaryValue* optional_fields,
-    NotificationDelegate* delegate) {}
+void FakeMessageCenter::AddNotification(scoped_ptr<Notification> notification) {
+}
 
 void FakeMessageCenter::UpdateNotification(
     const std::string& old_id,
-    const std::string& new_id,
-    const string16& title,
-    const string16& message,
-    const base::DictionaryValue* optional_fields,
-    NotificationDelegate* delegate) {}
+    scoped_ptr<Notification> new_notification) {}
 
 void FakeMessageCenter::RemoveNotification(const std::string& id,
                                            bool by_user) {

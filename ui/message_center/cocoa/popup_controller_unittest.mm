@@ -21,6 +21,7 @@ TEST_F(PopupControllerTest, Creation) {
           "",
           ASCIIToUTF16("Added to circles"),
           ASCIIToUTF16("Jonathan and 5 others"),
+          gfx::Image(),
           string16(),
           std::string(),
           NULL,

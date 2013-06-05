@@ -512,7 +512,7 @@ bool DesktopNotificationService::ShowDesktopNotification(
         params.body, params.direction, display_source, params.replace_id,
         proxy);
     // The webkit notification doesn't timeout.
-    notification.DisableTimeout();
+    notification.set_never_timeout(true);
     ShowNotification(notification);
   }
   return true;
