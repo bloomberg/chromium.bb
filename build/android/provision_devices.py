@@ -31,7 +31,7 @@ def LaunchHostHeartbeat():
     subprocess.call(['kill', str(pid)])
   # Launch a new host_heartbeat
   print 'Spawning host heartbeat...'
-  subprocess.Popen([os.path.join(constants.CHROME_DIR,
+  subprocess.Popen([os.path.join(constants.DIR_SOURCE_ROOT,
                                  'build/android/host_heartbeat.py')])
 
 
@@ -51,7 +51,7 @@ def PushAndLaunchAdbReboot(devices, target):
     android_cmd.KillAllBlocking('adb_reboot', 2)
     # Push adb_reboot
     print '  Pushing adb_reboot ...'
-    adb_reboot = os.path.join(constants.CHROME_DIR,
+    adb_reboot = os.path.join(constants.DIR_SOURCE_ROOT,
                               'out/%s/adb_reboot' % target)
     android_cmd.PushIfNeeded(adb_reboot, '/data/local/')
     # Launch adb_reboot

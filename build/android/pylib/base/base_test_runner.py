@@ -98,12 +98,12 @@ class BaseTestRunner(object):
     Args:
       test_data_paths: A list of files or directories relative to |dest_dir|
           which should be copied to the device. The paths must exist in
-          |CHROME_DIR|.
+          |DIR_SOURCE_ROOT|.
       dest_dir: Absolute path to copy to on the device.
     """
     for p in test_data_paths:
       self.adb.PushIfNeeded(
-          os.path.join(constants.CHROME_DIR, p),
+          os.path.join(constants.DIR_SOURCE_ROOT, p),
           os.path.join(dest_dir, p))
 
   def LaunchTestHttpServer(self, document_root, port=None,

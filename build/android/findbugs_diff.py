@@ -38,8 +38,8 @@ def main(argv):
   options, _ = parser.parse_args()
 
   if not options.base_dir:
-    options.base_dir = os.path.join(constants.CHROME_DIR, 'build', 'android',
-                                    'findbugs_filter')
+    options.base_dir = os.path.join(constants.DIR_SOURCE_ROOT, 'build',
+                                    'android', 'findbugs_filter')
   if not options.only_analyze:
     options.only_analyze = 'org.chromium.-'
 

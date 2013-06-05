@@ -11,7 +11,7 @@ import optparse
 import os
 import sys
 
-_SDK_OUT_DIR = os.path.join(constants.CHROME_DIR, 'out')
+_SDK_OUT_DIR = os.path.join(constants.DIR_SOURCE_ROOT, 'out')
 
 
 def AddBuildTypeOption(option_parser):
@@ -49,7 +49,7 @@ def ValidateInstallAPKOption(option_parser, options):
   if not options.apk:
     option_parser.error('--apk is mandatory.')
   if not os.path.exists(options.apk):
-    options.apk = os.path.join(constants.CHROME_DIR,
+    options.apk = os.path.join(constants.DIR_SOURCE_ROOT,
                                'out', options.build_type,
                                'apks', options.apk)
 

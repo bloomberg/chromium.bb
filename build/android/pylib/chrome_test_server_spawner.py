@@ -26,11 +26,12 @@ import ports
 
 # Path that are needed to import necessary modules when launching a testserver.
 os.environ['PYTHONPATH'] = os.environ.get('PYTHONPATH', '') + (':%s:%s:%s:%s:%s'
-    % (os.path.join(constants.CHROME_DIR, 'third_party'),
-       os.path.join(constants.CHROME_DIR, 'third_party', 'tlslite'),
-       os.path.join(constants.CHROME_DIR, 'third_party', 'pyftpdlib', 'src'),
-       os.path.join(constants.CHROME_DIR, 'net', 'tools', 'testserver'),
-       os.path.join(constants.CHROME_DIR, 'sync', 'tools', 'testserver')))
+    % (os.path.join(constants.DIR_SOURCE_ROOT, 'third_party'),
+       os.path.join(constants.DIR_SOURCE_ROOT, 'third_party', 'tlslite'),
+       os.path.join(constants.DIR_SOURCE_ROOT, 'third_party', 'pyftpdlib',
+                    'src'),
+       os.path.join(constants.DIR_SOURCE_ROOT, 'net', 'tools', 'testserver'),
+       os.path.join(constants.DIR_SOURCE_ROOT, 'sync', 'tools', 'testserver')))
 
 
 SERVER_TYPES = {
@@ -191,7 +192,7 @@ class TestServerThread(threading.Thread):
     self.command_line.append('--host=%s' % self.arguments['host'])
     data_dir = self.arguments['data-dir'] or 'chrome/test/data'
     if not os.path.isabs(data_dir):
-      data_dir = os.path.join(constants.CHROME_DIR, data_dir)
+      data_dir = os.path.join(constants.DIR_SOURCE_ROOT, data_dir)
     self.command_line.append('--data-dir=%s' % data_dir)
     # The following arguments are optional depending on the individual test.
     if self.arguments.has_key('log-to-console'):
@@ -202,7 +203,7 @@ class TestServerThread(threading.Thread):
       self.command_line.append('--https')
       if self.arguments.has_key('cert-and-key-file'):
         self.command_line.append('--cert-and-key-file=%s' % os.path.join(
-            constants.CHROME_DIR, self.arguments['cert-and-key-file']))
+            constants.DIR_SOURCE_ROOT, self.arguments['cert-and-key-file']))
       if self.arguments.has_key('ocsp'):
         self.command_line.append('--ocsp=%s' % self.arguments['ocsp'])
       if self.arguments.has_key('https-record-resume'):
@@ -215,7 +216,7 @@ class TestServerThread(threading.Thread):
       if self.arguments.has_key('ssl-client-ca'):
         for ca in self.arguments['ssl-client-ca']:
           self.command_line.append('--ssl-client-ca=%s' %
-                                   os.path.join(constants.CHROME_DIR, ca))
+                                   os.path.join(constants.DIR_SOURCE_ROOT, ca))
       if self.arguments.has_key('ssl-bulk-cipher'):
         for bulk_cipher in self.arguments['ssl-bulk-cipher']:
           self.command_line.append('--ssl-bulk-cipher=%s' % bulk_cipher)
@@ -224,7 +225,7 @@ class TestServerThread(threading.Thread):
     logging.info('Start running the thread!')
     self.wait_event.clear()
     self._GenerateCommandLineArguments()
-    command = constants.CHROME_DIR
+    command = constants.DIR_SOURCE_ROOT
     if self.arguments['server-type'] == 'sync':
       command = [os.path.join(command, 'sync', 'tools', 'testserver',
                               'sync_testserver.py')] + self.command_line

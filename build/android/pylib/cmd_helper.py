@@ -100,7 +100,7 @@ def GetCmdStatusAndOutput(args, cwd=None, shell=False):
 
 
 class OutDirectory(object):
-  _out_directory = os.path.join(constants.CHROME_DIR, 'out')
+  _out_directory = os.path.join(constants.DIR_SOURCE_ROOT, 'out')
   @staticmethod
   def set(out_directory):
     OutDirectory._out_directory = out_directory

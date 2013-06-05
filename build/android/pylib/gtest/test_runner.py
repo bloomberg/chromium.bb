@@ -73,7 +73,7 @@ def _GetDataFilesForTestSuite(test_suite_basename):
     # The following are spell check data. Now only list the data under
     # third_party/hunspell_dictionaries which are used by unit tests.
     old_cwd = os.getcwd()
-    os.chdir(constants.CHROME_DIR)
+    os.chdir(constants.DIR_SOURCE_ROOT)
     test_files += glob.glob('third_party/hunspell_dictionaries/*.bdic')
     os.chdir(old_cwd)
     return test_files
@@ -276,7 +276,7 @@ class TestRunner(base_test_runner.BaseTestRunner):
     else:
       # Put a copy into the android out/target directory, to allow stack trace
       # generation.
-      symbols_dir = os.path.join(constants.CHROME_DIR, 'out', build_type,
+      symbols_dir = os.path.join(constants.DIR_SOURCE_ROOT, 'out', build_type,
                                  'lib.target')
       self.test_package = test_package_executable.TestPackageExecutable(
           self.adb,
@@ -314,9 +314,10 @@ class TestRunner(base_test_runner.BaseTestRunner):
     The path of this directory is different when the suite is being run as
     part of a WebKit check-out.
     """
-    webkit_src = os.path.join(constants.CHROME_DIR, 'third_party', 'WebKit')
+    webkit_src = os.path.join(constants.DIR_SOURCE_ROOT, 'third_party',
+                              'WebKit')
     if self.in_webkit_checkout:
-      webkit_src = os.path.join(constants.CHROME_DIR, '..', '..', '..')
+      webkit_src = os.path.join(constants.DIR_SOURCE_ROOT, '..', '..', '..')
 
     self.adb.PushIfNeeded(
         os.path.join(webkit_src, 'Source/WebKit/chromium/tests/data'),

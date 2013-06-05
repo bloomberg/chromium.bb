@@ -61,7 +61,7 @@ from pylib import constants
 from pylib import ports
 
 
-_OUTPUT_DIR = os.path.join(constants.CHROME_DIR, 'out', 'step_results')
+_OUTPUT_DIR = os.path.join(constants.DIR_SOURCE_ROOT, 'out', 'step_results')
 
 
 def _SaveResult(result):
@@ -76,7 +76,7 @@ def _RunStepsPerDevice(steps):
     print 'Starting %s: %s %s at %s' % (step['name'], step['cmd'],
                                         start_time, step['device'])
     output, exit_code  = pexpect.run(
-        step['cmd'], cwd=os.path.abspath(constants.CHROME_DIR),
+        step['cmd'], cwd=os.path.abspath(constants.DIR_SOURCE_ROOT),
         withexitstatus=True, logfile=sys.stdout, timeout=1800,
         env=os.environ)
     exit_code = exit_code or 0

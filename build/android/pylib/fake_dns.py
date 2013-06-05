@@ -32,7 +32,8 @@ class FakeDns(object):
       subprocess instance connected to the fake_dns process on the device.
     """
     self._adb.PushIfNeeded(
-        os.path.join(constants.CHROME_DIR, 'out', self._build_type, 'fake_dns'),
+        os.path.join(constants.DIR_SOURCE_ROOT, 'out', self._build_type,
+                     'fake_dns'),
         FakeDns._FAKE_DNS_PATH)
     return subprocess.Popen(
         ['adb', '-s', self._adb._adb.GetSerialNumber(),

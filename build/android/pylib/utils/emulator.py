@@ -214,7 +214,7 @@ class Emulator(object):
     avd_process.expect('Created AVD \'%s\'' % self.avd_name)
 
     # Setup test device as default Galaxy Nexus AVD
-    avd_config_dir = os.path.join(constants.CHROME_DIR, 'build', 'android',
+    avd_config_dir = os.path.join(constants.DIR_SOURCE_ROOT, 'build', 'android',
                                   'avd_configs')
     avd_config_ini = os.path.join(avd_config_dir,
                                   'AVD_for_Galaxy_Nexus_by_Google_%s.avd' %

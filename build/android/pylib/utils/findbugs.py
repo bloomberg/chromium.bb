@@ -72,7 +72,7 @@ def _GetChromeClasses(release_version):
   version = 'Debug'
   if release_version:
     version = 'Release'
-  path = os.path.join(constants.CHROME_DIR, 'out', version)
+  path = os.path.join(constants.DIR_SOURCE_ROOT, 'out', version)
   cmd = 'find %s -name "*.class"' % path
   out = cmd_helper.GetCmdOutput(shlex.split(cmd))
   if not out:
@@ -98,7 +98,7 @@ def _Run(exclude, known_bugs, classes_to_analyze, auxiliary_classes,
     findbug_args: addtional command line options needs pass to Findbugs.
   """
 
-  chrome_src = constants.CHROME_DIR
+  chrome_src = constants.DIR_SOURCE_ROOT
   sdk_root = constants.ANDROID_SDK_ROOT
   sdk_version = constants.ANDROID_SDK_VERSION
 

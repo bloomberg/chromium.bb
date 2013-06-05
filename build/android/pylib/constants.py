@@ -9,9 +9,11 @@ import subprocess
 import sys
 
 
-CHROME_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__),
-                                          os.pardir, os.pardir, os.pardir))
-EMULATOR_SDK_ROOT = os.path.abspath(os.path.join(CHROME_DIR, os.pardir,
+DIR_SOURCE_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__),
+                                               os.pardir, os.pardir, os.pardir))
+# TODO(bulach): remove this.
+CHROME_DIR = DIR_SOURCE_ROOT
+EMULATOR_SDK_ROOT = os.path.abspath(os.path.join(DIR_SOURCE_ROOT, os.pardir,
                                                  os.pardir))
 
 CHROME_PACKAGE = 'com.google.android.apps.chrome'
@@ -33,7 +35,7 @@ CHROMIUM_TEST_SHELL_ACTIVITY = (
     'org.chromium.chrome.testshell.ChromiumTestShellActivity')
 CHROMIUM_TEST_SHELL_DEVTOOLS_SOCKET = 'chromium_testshell_devtools_remote'
 CHROMIUM_TEST_SHELL_HOST_DRIVEN_DIR = os.path.join(
-    CHROME_DIR, 'chrome', 'android')
+    DIR_SOURCE_ROOT, 'chrome', 'android')
 
 GTEST_TEST_PACKAGE_NAME = 'org.chromium.native_test'
 GTEST_TEST_ACTIVITY_NAME = 'org.chromium.native_test.ChromeNativeTestActivity'
@@ -72,11 +74,13 @@ SDK_BUILD_APKS_DIR = 'apks'
 # The directory on the device where perf test output gets saved to.
 DEVICE_PERF_OUTPUT_DIR = '/data/data/' + CHROME_PACKAGE + '/files'
 
-SCREENSHOTS_DIR = os.path.join(CHROME_DIR, 'out_screenshots')
+SCREENSHOTS_DIR = os.path.join(DIR_SOURCE_ROOT, 'out_screenshots')
 
 ANDROID_SDK_VERSION = 17
-ANDROID_SDK_ROOT = os.path.join(CHROME_DIR, 'third_party/android_tools/sdk')
-ANDROID_NDK_ROOT = os.path.join(CHROME_DIR, 'third_party/android_tools/ndk')
+ANDROID_SDK_ROOT = os.path.join(DIR_SOURCE_ROOT,
+                                'third_party/android_tools/sdk')
+ANDROID_NDK_ROOT = os.path.join(DIR_SOURCE_ROOT,
+                                'third_party/android_tools/ndk')
 
 UPSTREAM_FLAKINESS_SERVER = 'test-results.appspot.com'
 

@@ -27,7 +27,7 @@ except:
   pexpect = None
 
 sys.path.append(os.path.join(
-    constants.CHROME_DIR, 'third_party', 'android_testrunner'))
+    constants.DIR_SOURCE_ROOT, 'third_party', 'android_testrunner'))
 import adb_interface
 import am_instrument_parser
 import errors

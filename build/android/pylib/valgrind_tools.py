@@ -25,7 +25,7 @@ import os.path
 import sys
 from glob import glob
 
-from constants import CHROME_DIR
+from constants import DIR_SOURCE_ROOT
 
 
 def SetChromeTimeoutScale(adb, scale):
@@ -106,7 +106,7 @@ class AddressSanitizerTool(BaseTool):
               glob('third_party/llvm-build/Release+Asserts/lib/clang/*/lib/'
                    'linux/libclang_rt.asan-arm-android.so'))
     for f in files:
-      self._adb.PushIfNeeded(os.path.join(CHROME_DIR, f),
+      self._adb.PushIfNeeded(os.path.join(DIR_SOURCE_ROOT, f),
                              os.path.join(AddressSanitizerTool.TMP_DIR,
                                           os.path.basename(f)))
 
@@ -160,7 +160,7 @@ class ValgrindTool(BaseTool):
                                ValgrindTool.VGLOGS_DIR))
     files = self.GetFilesForTool()
     for f in files:
-      self._adb.PushIfNeeded(os.path.join(CHROME_DIR, f),
+      self._adb.PushIfNeeded(os.path.join(DIR_SOURCE_ROOT, f),
                              os.path.join(ValgrindTool.VG_DIR,
                                           os.path.basename(f)))
 

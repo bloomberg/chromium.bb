@@ -21,13 +21,13 @@ from pylib import constants
 from pylib.gtest import gtest_config
 
 sys.path.append(os.path.join(
-    constants.CHROME_DIR, 'third_party', 'android_testrunner'))
+    constants.DIR_SOURCE_ROOT, 'third_party', 'android_testrunner'))
 import errors
 
 
 TESTING = 'BUILDBOT_TESTING' in os.environ
 
-CHROME_SRC = constants.CHROME_DIR
+CHROME_SRC = constants.DIR_SOURCE_ROOT
 
 # Describes an instrumation test suite:
 #   test: Name of test we're running.
