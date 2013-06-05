@@ -135,7 +135,7 @@ class KioskAppData::IconLoader : public ImageDecoder::Delegate {
   }
 
   void NotifyClient() {
-    if (!client_)
+    if (!client_.get())
       return;
 
     if (load_result_ == SUCCESS)
@@ -205,7 +205,7 @@ class KioskAppData::WebstoreDataParser
   virtual ~WebstoreDataParser() {}
 
   void ReportFailure() {
-    if (client_)
+    if (client_.get())
       client_->OnWebstoreParseFailure();
 
     delete this;
@@ -226,7 +226,7 @@ class KioskAppData::WebstoreDataParser
       return;
     }
 
-    if (client_)
+    if (client_.get())
       client_->OnWebstoreParseSuccess(icon);
     delete this;
   }

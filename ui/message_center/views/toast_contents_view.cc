@@ -48,7 +48,7 @@ ToastContentsView::ToastContentsView(
       is_animating_bounds_(false),
       is_closing_(false),
       closing_animation_(NULL) {
-  DCHECK(collection_);
+  DCHECK(collection_.get());
 
   set_notify_enter_exit_on_child(true);
   // Sets the transparent background. Then, when the message view is slid out,
@@ -147,7 +147,7 @@ void ToastContentsView::CloseWithAnimation(bool mark_as_shown) {
     return;
   is_closing_ = true;
   timer_.reset();
-  if (collection_)
+  if (collection_.get())
     collection_->RemoveToast(this);
   if (mark_as_shown)
     message_center_->MarkSinglePopupAsShown(id(), false);
@@ -179,7 +179,7 @@ void ToastContentsView::SetBoundsWithAnimation(gfx::Rect new_bounds) {
   animated_bounds_start_ = GetWidget()->GetWindowBoundsInScreen();
   animated_bounds_end_ = new_bounds;
 
-  if (collection_)
+  if (collection_.get())
     collection_->IncrementDeferCounter();
 
   if (bounds_animation_.get())
@@ -191,7 +191,7 @@ void ToastContentsView::SetBoundsWithAnimation(gfx::Rect new_bounds) {
 
 void ToastContentsView::StartFadeIn() {
   // The decrement is done in OnBoundsAnimationEndedOrCancelled callback.
-  if (collection_)
+  if (collection_.get())
     collection_->IncrementDeferCounter();
   fade_animation_->Stop();
 
@@ -203,7 +203,7 @@ void ToastContentsView::StartFadeIn() {
 
 void ToastContentsView::StartFadeOut() {
   // The decrement is done in OnBoundsAnimationEndedOrCancelled callback.
-  if (collection_)
+  if (collection_.get())
     collection_->IncrementDeferCounter();
   fade_animation_->Stop();
 
@@ -231,7 +231,7 @@ void ToastContentsView::OnBoundsAnimationEndedOrCancelled(
   // will invoke update, which may invoke another close animation with
   // incrementing defer counter. Close() after such process will cause a
   // mismatch between increment/decrement. See crbug.com/238477
-  if (collection_)
+  if (collection_.get())
     collection_->DecrementDeferCounter();
 }
 
@@ -264,7 +264,7 @@ views::View* ToastContentsView::GetContentsView() {
 
 void ToastContentsView::WindowClosing() {
   SuspendTimer();
-  if (!is_closing_ && collection_)
+  if (!is_closing_ && collection_.get())
     collection_->RemoveToast(this);
 }
 
@@ -278,12 +278,12 @@ bool ToastContentsView::CanActivate() const {
 
 // views::View
 void ToastContentsView::OnMouseEntered(const ui::MouseEvent& event) {
-  if (collection_)
+  if (collection_.get())
     collection_->OnMouseEntered(this);
 }
 
 void ToastContentsView::OnMouseExited(const ui::MouseEvent& event) {
-  if (collection_)
+  if (collection_.get())
     collection_->OnMouseExited(this);
 }
 

@@ -68,7 +68,7 @@ class TestConstrainedDialog : public views::DialogDelegate {
   virtual ~TestConstrainedDialog() {}
 
   virtual views::View* GetInitiallyFocusedView() OVERRIDE {
-    return contents_ ? contents_->GetInitiallyFocusedView() : NULL;
+    return contents_.get() ? contents_->GetInitiallyFocusedView() : NULL;
   }
 
   virtual views::View* GetContentsView() OVERRIDE {
@@ -76,11 +76,11 @@ class TestConstrainedDialog : public views::DialogDelegate {
   }
 
   virtual views::Widget* GetWidget() OVERRIDE {
-    return contents_ ? contents_->GetWidget() : NULL;
+    return contents_.get() ? contents_->GetWidget() : NULL;
   }
 
   virtual const views::Widget* GetWidget() const OVERRIDE {
-    return contents_ ? contents_->GetWidget() : NULL;
+    return contents_.get() ? contents_->GetWidget() : NULL;
   }
 
   virtual void DeleteDelegate() OVERRIDE {

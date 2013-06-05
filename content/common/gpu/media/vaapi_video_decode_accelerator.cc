@@ -55,7 +55,7 @@ void VaapiVideoDecodeAccelerator::NotifyError(Error error) {
       &VaapiVideoDecodeAccelerator::Cleanup, weak_this_));
 
   DVLOG(1) << "Notifying of error " << error;
-  if (client_) {
+  if (client_.get()) {
     client_->NotifyError(error);
     client_ptr_factory_.InvalidateWeakPtrs();
   }
@@ -383,7 +383,7 @@ void VaapiVideoDecodeAccelerator::TryOutputSurface() {
   DCHECK_EQ(message_loop_, base::MessageLoop::current());
 
   // Handle Destroy() arriving while pictures are queued for output.
-  if (!client_)
+  if (!client_.get())
     return;
 
   if (pending_output_cbs_.empty() || output_buffers_.empty())

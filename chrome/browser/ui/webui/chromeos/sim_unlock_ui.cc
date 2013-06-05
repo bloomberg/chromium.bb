@@ -155,22 +155,22 @@ class SimUnlockHandler : public WebUIMessageHandler,
     }
 
     void HandleCancel() {
-      if (handler_)
+      if (handler_.get())
         handler_->CancelDialog();
     }
 
     void HandleEnterCode() {
-      if (handler_)
+      if (handler_.get())
         handler_->EnterCode(code_, code_type_);
     }
 
     void HandleInitialize() {
-      if (handler_)
+      if (handler_.get())
         handler_->InitializeSimStatus();
     }
 
     void HandleProceedToPukInput() {
-      if (handler_)
+      if (handler_.get())
         handler_->ProceedToPukInput();
     }
 

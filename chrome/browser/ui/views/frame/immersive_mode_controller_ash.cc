@@ -92,12 +92,12 @@ class RevealedLockAsh : public ImmersiveRevealedLock {
   RevealedLockAsh(const base::WeakPtr<ImmersiveModeControllerAsh>& controller,
                   ImmersiveModeController::AnimateReveal animate_reveal)
       : controller_(controller) {
-    DCHECK(controller_);
+    DCHECK(controller_.get());
     controller_->LockRevealedState(animate_reveal);
   }
 
   virtual ~RevealedLockAsh() {
-    if (controller_)
+    if (controller_.get())
       controller_->UnlockRevealedState();
   }
 

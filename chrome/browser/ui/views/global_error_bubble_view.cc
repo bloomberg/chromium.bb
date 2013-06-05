@@ -163,7 +163,7 @@ GlobalErrorBubbleView::~GlobalErrorBubbleView() {
 
 void GlobalErrorBubbleView::ButtonPressed(views::Button* sender,
                                           const ui::Event& event) {
-  if (error_) {
+  if (error_.get()) {
     if (sender->tag() == TAG_ACCEPT_BUTTON)
       error_->BubbleViewAcceptButtonPressed(browser_);
     else if (sender->tag() == TAG_CANCEL_BUTTON)
@@ -175,7 +175,7 @@ void GlobalErrorBubbleView::ButtonPressed(views::Button* sender,
 }
 
 void GlobalErrorBubbleView::WindowClosing() {
-  if (error_)
+  if (error_.get())
     error_->BubbleViewDidClose(browser_);
 }
 

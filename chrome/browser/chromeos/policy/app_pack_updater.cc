@@ -350,7 +350,7 @@ void AppPackUpdater::OnCacheUpdated(CacheEntryMap* cache_entries) {
 
 void AppPackUpdater::UpdateExtensionLoader() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (!extension_loader_) {
+  if (!extension_loader_.get()) {
     VLOG(1) << "No AppPack loader created yet, not pushing extensions.";
     return;
   }
