@@ -2378,3 +2378,15 @@
    fun:_ZN5media8AudioBus15FromInterleavedEPKvii
    fun:_ZN7content19WebRtcAudioRenderer14SourceCallbackEiPN5media8AudioBusE
 }
+{
+   bug_246567
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN2v88internal24PerThreadAssertScopeBase10AssertDataEv
+   fun:_ZN2v88internal20PerThreadAssertScopeILNS0_19PerThreadAssertTypeE1ELb1EE9IsAllowedEv
+   ...
+   fun:_ZN3net15ProxyResolverV87Context6InitV8ERK13scoped_refptrINS_23ProxyResolverScriptDataEE
+   fun:_ZN3net15ProxyResolverV812SetPacScriptERK13scoped_refptrINS_23ProxyResolverScriptDataEERKN4base8CallbackIFviEEE
+   fun:_ZN3net22ProxyResolverV8Tracing3Job20ExecuteProxyResolverEv
+   fun:_ZN3net22ProxyResolverV8Tracing3Job15ExecuteBlockingEv
+}
