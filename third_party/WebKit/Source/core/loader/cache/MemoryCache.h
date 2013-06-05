@@ -78,12 +78,26 @@ public:
         int size;
         int liveSize;
         int decodedSize;
+        int encodedSize;
+        int encodedSizeDuplicatedInDataURLs;
         int purgeableSize;
         int purgedSize;
-        TypeStatistic() : count(0), size(0), liveSize(0), decodedSize(0), purgeableSize(0), purgedSize(0) { }
+
+        TypeStatistic()
+            : count(0)
+            , size(0)
+            , liveSize(0)
+            , decodedSize(0)
+            , encodedSize(0)
+            , encodedSizeDuplicatedInDataURLs(0)
+            , purgeableSize(0)
+            , purgedSize(0)
+        {
+        }
+
         void addResource(CachedResource*);
     };
-    
+
     struct Statistics {
         TypeStatistic images;
         TypeStatistic cssStyleSheets;
@@ -91,7 +105,7 @@ public:
         TypeStatistic xslStyleSheets;
         TypeStatistic fonts;
     };
-    
+
     CachedResource* resourceForURL(const KURL&);
     
     void add(CachedResource*);

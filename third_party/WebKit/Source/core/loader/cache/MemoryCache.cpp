@@ -529,9 +529,11 @@ void MemoryCache::TypeStatistic::addResource(CachedResource* o)
     bool purgeable = o->isPurgeable() && !purged; 
     int pageSize = (o->encodedSize() + o->overheadSize() + 4095) & ~4095;
     count++;
-    size += purged ? 0 : o->size(); 
+    size += purged ? 0 : o->size();
     liveSize += o->hasClients() ? o->size() : 0;
     decodedSize += o->decodedSize();
+    encodedSize += o->encodedSize();
+    encodedSizeDuplicatedInDataURLs += o->url().protocolIsData() ? o->encodedSize() : 0;
     purgeableSize += purgeable ? pageSize : 0;
     purgedSize += purged ? pageSize : 0;
 }
@@ -615,6 +617,13 @@ void MemoryCache::dumpStats(Timer<MemoryCache>*)
     printf("%-13s %13d %13d %13d %13d %13d %13d\n", "JavaScript", s.scripts.count, s.scripts.size, s.scripts.liveSize, s.scripts.decodedSize, s.scripts.purgeableSize, s.scripts.purgedSize);
     printf("%-13s %13d %13d %13d %13d %13d %13d\n", "Fonts", s.fonts.count, s.fonts.size, s.fonts.liveSize, s.fonts.decodedSize, s.fonts.purgeableSize, s.fonts.purgedSize);
     printf("%-13s %-13s %-13s %-13s %-13s %-13s %-13s\n\n", "-------------", "-------------", "-------------", "-------------", "-------------", "-------------", "-------------");
+
+    printf("Duplication of encoded data from data URLs\n");
+    printf("%-13s %13d of %13d\n", "Images",     s.images.encodedSizeDuplicatedInDataURLs,         s.images.encodedSize);
+    printf("%-13s %13d of %13d\n", "CSS",        s.cssStyleSheets.encodedSizeDuplicatedInDataURLs, s.cssStyleSheets.encodedSize);
+    printf("%-13s %13d of %13d\n", "XSL",        s.xslStyleSheets.encodedSizeDuplicatedInDataURLs, s.xslStyleSheets.encodedSize);
+    printf("%-13s %13d of %13d\n", "JavaScript", s.scripts.encodedSizeDuplicatedInDataURLs,        s.scripts.encodedSize);
+    printf("%-13s %13d of %13d\n", "Fonts",      s.fonts.encodedSizeDuplicatedInDataURLs,          s.fonts.encodedSize);
 }
 
 void MemoryCache::dumpLRULists(bool includeLive) const
