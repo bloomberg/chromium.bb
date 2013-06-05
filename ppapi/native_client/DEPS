@@ -1,5 +1,6 @@
 include_rules = [
   "+native_client/src/include",
+  "+native_client/src/public",
   "+native_client/src/shared/platform",
 
   # TODO(bradnelson): Eliminate these as they are actually incorrectly rooted

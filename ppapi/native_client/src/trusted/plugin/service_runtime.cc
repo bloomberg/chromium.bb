@@ -40,6 +40,7 @@
 #ifdef PostMessage
 #undef PostMessage
 #endif
+#include "native_client/src/public/imc_types.h"
 #include "native_client/src/trusted/plugin/plugin.h"
 #include "native_client/src/trusted/plugin/plugin_error.h"
 #include "native_client/src/trusted/plugin/pnacl_coordinator.h"
@@ -47,7 +48,6 @@
 #include "native_client/src/trusted/plugin/sel_ldr_launcher_chrome.h"
 #include "native_client/src/trusted/plugin/srpc_client.h"
 #include "native_client/src/trusted/service_runtime/nacl_error_code.h"
-#include "native_client/src/trusted/service_runtime/include/sys/nacl_imc_api.h"
 #include "native_client/src/trusted/validator/nacl_file_info.h"
 #include "native_client/src/trusted/weak_ref/call_on_main_thread.h"
 
