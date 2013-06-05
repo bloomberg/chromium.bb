@@ -143,9 +143,6 @@ class TestSafeBrowsingDatabase :  public SafeBrowsingDatabase {
       const std::vector<SBFullHashResult>& full_hits) OVERRIDE {
     // Do nothing for the cache.
   }
-  virtual bool MalwareIPMatchKillSwitchOn() OVERRIDE {
-    return false;
-  }
 
   // Fill up the database with test URL.
   void AddUrl(const GURL& url,

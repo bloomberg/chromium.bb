@@ -177,8 +177,6 @@ class ClientSideDetectionHost::ShouldClassifyUrlRequest
       return;
     }
 
-    host_->malware_killswitch_on_ = database_manager_->MalwareKillSwitchOn();
-
     BrowserThread::PostTask(
         BrowserThread::UI,
         FROM_HERE,
@@ -253,7 +251,6 @@ ClientSideDetectionHost::ClientSideDetectionHost(WebContents* tab)
       csd_service_(NULL),
       weak_factory_(this),
       unsafe_unique_page_id_(-1),
-      malware_killswitch_on_(false),
       malware_report_enabled_(false) {
   DCHECK(tab);
   // Note: csd_service_ and sb_service will be NULL here in testing.
@@ -389,16 +386,15 @@ void ClientSideDetectionHost::OnPhishingDetectionDone(
       browse_info_.get() &&
       verdict->ParseFromString(verdict_str) &&
       verdict->IsInitialized()) {
-    // We do the malware IP matching and request sending if the feature
-    // is enabled
-    if (malware_report_enabled_ && !malware_killswitch_on_) {
+    if (malware_report_enabled_) {
       scoped_ptr<ClientMalwareRequest> malware_verdict(
           new ClientMalwareRequest);
       // Start browser-side malware feature extraction.  Once we're done it will
       // send the malware client verdict request.
       malware_verdict->set_url(verdict->url());
       feature_extractor_->ExtractMalwareFeatures(
-          browse_info_.get(), malware_verdict.get());
+          browse_info_.get(),
+          malware_verdict.get());
       MalwareFeatureExtractionDone(malware_verdict.Pass());
     }
 
