@@ -1,6 +1,14 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+//
+// Generating a fingerprint consists of two major steps:
+//   (1) Gather all the necessary data.
+//   (2) Write it into a protocol buffer.
+//
+// Step (2) is as simple as it sounds -- it's really just a matter of copying
+// data.  Step (1) requires waiting on several asynchronous callbacks, which are
+// managed by the FingerprintDataLoader class.
 
 #include "components/autofill/browser/risk/fingerprint.h"
 
@@ -44,7 +52,7 @@ const int32 kFingerprinterVersion = 1;
 
 // Returns the delta between the local timezone and UTC.
 base::TimeDelta GetTimezoneOffset() {
-  base::Time utc = base::Time::Now();
+  const base::Time utc = base::Time::Now();
 
   base::Time::Exploded local;
   utc.LocalExplode(&local);
@@ -59,27 +67,28 @@ std::string GetOperatingSystemVersion() {
       base::SysInfo::OperatingSystemVersion();
 }
 
-Fingerprint_MachineCharacteristics_BrowserFeature
+Fingerprint::MachineCharacteristics::BrowserFeature
     DialogTypeToBrowserFeature(DialogType dialog_type) {
   switch (dialog_type) {
     case DIALOG_TYPE_AUTOCHECKOUT:
-      return Fingerprint_MachineCharacteristics_BrowserFeature_FEATURE_AUTOCHECKOUT;
+      return Fingerprint::MachineCharacteristics::FEATURE_AUTOCHECKOUT;
+
     case DIALOG_TYPE_REQUEST_AUTOCOMPLETE:
-      return Fingerprint_MachineCharacteristics_BrowserFeature_FEATURE_REQUEST_AUTOCOMPLETE;
+      return Fingerprint::MachineCharacteristics::FEATURE_REQUEST_AUTOCOMPLETE;
   }
 
   NOTREACHED();
-  return Fingerprint_MachineCharacteristics_BrowserFeature_FEATURE_UNKNOWN;
+  return Fingerprint::MachineCharacteristics::FEATURE_UNKNOWN;
 }
 
 // Adds the list of |fonts| to the |machine|.
 void AddFontsToFingerprint(const base::ListValue& fonts,
-                           Fingerprint_MachineCharacteristics* machine) {
+                           Fingerprint::MachineCharacteristics* machine) {
   for (base::ListValue::const_iterator it = fonts.begin();
        it != fonts.end(); ++it) {
     // Each item in the list is a two-element list such that the first element
     // is the font family and the second is the font name.
-    const base::ListValue* font_description;
+    const base::ListValue* font_description = NULL;
     bool success = (*it)->GetAsList(&font_description);
     DCHECK(success);
 
@@ -93,10 +102,10 @@ void AddFontsToFingerprint(const base::ListValue& fonts,
 
 // Adds the list of |plugins| to the |machine|.
 void AddPluginsToFingerprint(const std::vector<webkit::WebPluginInfo>& plugins,
-                             Fingerprint_MachineCharacteristics* machine) {
+                             Fingerprint::MachineCharacteristics* machine) {
   for (std::vector<webkit::WebPluginInfo>::const_iterator it = plugins.begin();
        it != plugins.end(); ++it) {
-    Fingerprint_MachineCharacteristics_Plugin* plugin =
+    Fingerprint::MachineCharacteristics::Plugin* plugin =
         machine->add_plugin();
     plugin->set_name(UTF16ToUTF8(it->name));
     plugin->set_description(UTF16ToUTF8(it->desc));
@@ -112,7 +121,7 @@ void AddPluginsToFingerprint(const std::vector<webkit::WebPluginInfo>& plugins,
 // Adds the list of HTTP accept languages to the |machine|.
 void AddAcceptLanguagesToFingerprint(
     const std::string& accept_languages_str,
-    Fingerprint_MachineCharacteristics* machine) {
+    Fingerprint::MachineCharacteristics* machine) {
   std::vector<std::string> accept_languages;
   base::SplitString(accept_languages_str, ',', &accept_languages);
   for (std::vector<std::string>::const_iterator it = accept_languages.begin();
@@ -121,7 +130,7 @@ void AddAcceptLanguagesToFingerprint(
   }
 }
 
-// Writes
+// This function writes
 //   (a) the number of screens,
 //   (b) the primary display's screen size,
 //   (c) the screen's color depth, and
@@ -129,21 +138,22 @@ void AddAcceptLanguagesToFingerprint(
 //       i.e. the Taskbar size on Windows
 // into the |machine|.
 void AddScreenInfoToFingerprint(const WebScreenInfo& screen_info,
-                                Fingerprint_MachineCharacteristics* machine) {
+                                Fingerprint::MachineCharacteristics* machine) {
   // TODO(scottmg): NativeScreen maybe wrong. http://crbug.com/133312
   machine->set_screen_count(
       gfx::Screen::GetNativeScreen()->GetNumDisplays());
 
-  gfx::Size screen_size =
+  const gfx::Size screen_size =
       gfx::Screen::GetNativeScreen()->GetPrimaryDisplay().GetSizeInPixel();
   machine->mutable_screen_size()->set_width(screen_size.width());
   machine->mutable_screen_size()->set_height(screen_size.height());
 
   machine->set_screen_color_depth(screen_info.depth);
 
-  gfx::Rect screen_rect(screen_info.rect);
-  gfx::Rect available_rect(screen_info.availableRect);
-  gfx::Rect unavailable_rect = gfx::SubtractRects(screen_rect, available_rect);
+  const gfx::Rect screen_rect(screen_info.rect);
+  const gfx::Rect available_rect(screen_info.availableRect);
+  const gfx::Rect unavailable_rect =
+      gfx::SubtractRects(screen_rect, available_rect);
   machine->mutable_unavailable_screen_size()->set_width(
       unavailable_rect.width());
   machine->mutable_unavailable_screen_size()->set_height(
@@ -151,33 +161,33 @@ void AddScreenInfoToFingerprint(const WebScreenInfo& screen_info,
 }
 
 // Writes info about the machine's CPU into the |machine|.
-void AddCpuInfoToFingerprint(Fingerprint_MachineCharacteristics* machine) {
+void AddCpuInfoToFingerprint(Fingerprint::MachineCharacteristics* machine) {
   base::CPU cpu;
   machine->mutable_cpu()->set_vendor_name(cpu.vendor_name());
   machine->mutable_cpu()->set_brand(cpu.cpu_brand());
 }
 
 // Writes info about the machine's GPU into the |machine|.
-void AddGpuInfoToFingerprint(Fingerprint_MachineCharacteristics* machine) {
+void AddGpuInfoToFingerprint(Fingerprint::MachineCharacteristics* machine) {
   const gpu::GPUInfo& gpu_info =
       content::GpuDataManager::GetInstance()->GetGPUInfo();
   DCHECK(gpu_info.finalized);
 
-  Fingerprint_MachineCharacteristics_Graphics* graphics =
+  Fingerprint::MachineCharacteristics::Graphics* graphics =
       machine->mutable_graphics_card();
   graphics->set_vendor_id(gpu_info.gpu.vendor_id);
   graphics->set_device_id(gpu_info.gpu.device_id);
   graphics->set_driver_version(gpu_info.driver_version);
   graphics->set_driver_date(gpu_info.driver_date);
 
-  Fingerprint_MachineCharacteristics_Graphics_PerformanceStatistics*
+  Fingerprint::MachineCharacteristics::Graphics::PerformanceStatistics*
       gpu_performance = graphics->mutable_performance_statistics();
   gpu_performance->set_graphics_score(gpu_info.performance_stats.graphics);
   gpu_performance->set_gaming_score(gpu_info.performance_stats.gaming);
   gpu_performance->set_overall_score(gpu_info.performance_stats.overall);
 }
 
-// Waits for all asynchronous data required for the fingerprint to be loaded;
+// Waits for all asynchronous data required for the fingerprint to be loaded,
 // then fills out the fingerprint.
 class FingerprintDataLoader : public content::GpuDataManagerObserver {
  public:
@@ -195,7 +205,7 @@ class FingerprintDataLoader : public content::GpuDataManagerObserver {
       const base::Callback<void(scoped_ptr<Fingerprint>)>& callback);
 
  private:
-  virtual ~FingerprintDataLoader();
+  virtual ~FingerprintDataLoader() {}
 
   // content::GpuDataManagerObserver:
   virtual void OnGpuInfoUpdate() OVERRIDE;
@@ -218,13 +228,15 @@ class FingerprintDataLoader : public content::GpuDataManagerObserver {
   void FillFingerprint();
 
   // The GPU data provider.
+  // Weak reference because the GpuDataManager class is a singleton.
   content::GpuDataManager* const gpu_data_manager_;
 
   // The callback used as an "observer" of the GeolocationProvider.  Accessed
   // only on the IO thread.
   content::GeolocationProvider::LocationUpdateCallback geolocation_callback_;
 
-  // Data that will be passed on to the next loading phase.
+  // Data that will be passed on to the next loading phase.  See the comment for
+  // GetFingerprint() for a description of these variables.
   const uint64 obfuscated_gaia_id_;
   const gfx::Rect window_bounds_;
   const gfx::Rect content_bounds_;
@@ -301,9 +313,6 @@ FingerprintDataLoader::FingerprintDataLoader(
                  base::Unretained(this)));
 }
 
-FingerprintDataLoader::~FingerprintDataLoader() {
-}
-
 void FingerprintDataLoader::OnGpuInfoUpdate() {
   if (!gpu_data_manager_->IsCompleteGpuInfoAvailable())
     return;
@@ -376,7 +385,7 @@ void FingerprintDataLoader::MaybeFillFingerprint() {
 
 void FingerprintDataLoader::FillFingerprint() {
   scoped_ptr<Fingerprint> fingerprint(new Fingerprint);
-  Fingerprint_MachineCharacteristics* machine =
+  Fingerprint::MachineCharacteristics* machine =
       fingerprint->mutable_machine_characteristics();
 
   machine->set_operating_system_build(GetOperatingSystemVersion());
@@ -400,13 +409,13 @@ void FingerprintDataLoader::FillFingerprint() {
   // TODO(isherman): Record the user_and_device_name_hash.
   // TODO(isherman): Record the partition size of the hard drives?
 
-  Fingerprint_TransientState* transient_state =
+  Fingerprint::TransientState* transient_state =
       fingerprint->mutable_transient_state();
-  Fingerprint_Dimension* inner_window_size =
+  Fingerprint::Dimension* inner_window_size =
       transient_state->mutable_inner_window_size();
   inner_window_size->set_width(content_bounds_.width());
   inner_window_size->set_height(content_bounds_.height());
-  Fingerprint_Dimension* outer_window_size =
+  Fingerprint::Dimension* outer_window_size =
       transient_state->mutable_outer_window_size();
   outer_window_size->set_width(window_bounds_.width());
   outer_window_size->set_height(window_bounds_.height());
@@ -416,7 +425,7 @@ void FingerprintDataLoader::FillFingerprint() {
 
   // TODO(isherman): Record more user behavior data.
   if (geoposition_.error_code == content::Geoposition::ERROR_CODE_NONE) {
-    Fingerprint_UserCharacteristics_Location* location =
+    Fingerprint::UserCharacteristics::Location* location =
         fingerprint->mutable_user_characteristics()->mutable_location();
     location->set_altitude(geoposition_.altitude);
     location->set_latitude(geoposition_.latitude);
@@ -426,7 +435,7 @@ void FingerprintDataLoader::FillFingerprint() {
         (geoposition_.timestamp - base::Time::UnixEpoch()).InMilliseconds());
   }
 
-  Fingerprint_Metadata* metadata = fingerprint->mutable_metadata();
+  Fingerprint::Metadata* metadata = fingerprint->mutable_metadata();
   metadata->set_timestamp_ms(
       (base::Time::Now() - base::Time::UnixEpoch()).InMilliseconds());
   metadata->set_obfuscated_gaia_id(obfuscated_gaia_id_);
@@ -436,6 +445,29 @@ void FingerprintDataLoader::FillFingerprint() {
 }
 
 }  // namespace
+
+namespace internal {
+
+void GetFingerprintInternal(
+    uint64 obfuscated_gaia_id,
+    const gfx::Rect& window_bounds,
+    const gfx::Rect& content_bounds,
+    const WebKit::WebScreenInfo& screen_info,
+    const std::string& version,
+    const std::string& charset,
+    const std::string& accept_languages,
+    const base::Time& install_time,
+    DialogType dialog_type,
+    const std::string& app_locale,
+    const base::Callback<void(scoped_ptr<Fingerprint>)>& callback) {
+  // Begin loading all of the data that we need to load asynchronously.
+  // This class is responsible for freeing its own memory.
+  new FingerprintDataLoader(obfuscated_gaia_id, window_bounds, content_bounds,
+                            screen_info, version, charset, accept_languages,
+                            install_time, dialog_type, app_locale, callback);
+}
+
+}  // namespace internal
 
 void GetFingerprint(
     uint64 obfuscated_gaia_id,
@@ -462,29 +494,6 @@ void GetFingerprint(
       charset, accept_languages, install_time, dialog_type, app_locale,
       callback);
 }
-
-namespace internal {
-
-void GetFingerprintInternal(
-    uint64 obfuscated_gaia_id,
-    const gfx::Rect& window_bounds,
-    const gfx::Rect& content_bounds,
-    const WebKit::WebScreenInfo& screen_info,
-    const std::string& version,
-    const std::string& charset,
-    const std::string& accept_languages,
-    const base::Time& install_time,
-    DialogType dialog_type,
-    const std::string& app_locale,
-    const base::Callback<void(scoped_ptr<Fingerprint>)>& callback) {
-  // Begin loading all of the data that we need to load asynchronously.
-  // This class is responsible for freeing its own memory.
-  new FingerprintDataLoader(obfuscated_gaia_id, window_bounds, content_bounds,
-                            screen_info, version, charset, accept_languages,
-                            install_time, dialog_type, app_locale, callback);
-}
-
-}  // namespace internal
 
 }  // namespace risk
 }  // namespace autofill

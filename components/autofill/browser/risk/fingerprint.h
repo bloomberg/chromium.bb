@@ -1,6 +1,13 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+//
+// Generates fingerprints appropriate for sending to the Google Wallet Risk
+// engine, which is the fraud-detection engine used for purchases powered by
+// Google Wallet.  A fingerprint encapsulates machine and user characteristics.
+// Because much of the data is privacy-sensitive, fingerprints should only be
+// generated with explicit user consent, including consent to gather geolocation
+// data.
 
 #ifndef COMPONENTS_AUTOFILL_BROWSER_RISK_FINGERPRINT_H_
 #define COMPONENTS_AUTOFILL_BROWSER_RISK_FINGERPRINT_H_
@@ -54,24 +61,6 @@ void GetFingerprint(
     DialogType dialog_type,
     const std::string& app_locale,
     const base::Callback<void(scoped_ptr<Fingerprint>)>& callback);
-
-// Exposed for testing:
-namespace internal {
-
-void GetFingerprintInternal(
-    uint64 obfuscated_gaia_id,
-    const gfx::Rect& window_bounds,
-    const gfx::Rect& content_bounds,
-    const WebKit::WebScreenInfo& screen_info,
-    const std::string& version,
-    const std::string& charset,
-    const std::string& accept_languages,
-    const base::Time& install_time,
-    DialogType dialog_type,
-    const std::string& app_locale,
-    const base::Callback<void(scoped_ptr<Fingerprint>)>& callback);
-
-}  // namespace internal
 
 }  // namespace risk
 }  // namespace autofill
