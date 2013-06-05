@@ -619,6 +619,26 @@ void ContentViewCoreImpl::NotifyExternalSurface(
       static_cast<jfloat>(rect.height()));
 }
 
+ScopedJavaLocalRef<jobject> ContentViewCoreImpl::GetContentVideoViewClient() {
+  JNIEnv* env = AttachCurrentThread();
+
+  ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
+  if (obj.is_null())
+    return ScopedJavaLocalRef<jobject>();
+
+  return Java_ContentViewCore_getContentVideoViewClient(env, obj.obj());
+}
+
+ScopedJavaLocalRef<jobject> ContentViewCoreImpl::GetContext() {
+  JNIEnv* env = AttachCurrentThread();
+
+  ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
+  if (obj.is_null())
+    return ScopedJavaLocalRef<jobject>();
+
+  return Java_ContentViewCore_getContext(env, obj.obj());
+}
+
 gfx::Size ContentViewCoreImpl::GetPhysicalBackingSize() const {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> j_obj = java_ref_.get(env);

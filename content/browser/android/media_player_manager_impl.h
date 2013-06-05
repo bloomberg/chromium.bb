@@ -150,8 +150,9 @@ class MediaPlayerManagerImpl
   // An array of managed players.
   ScopedVector<media::MediaPlayerAndroid> players_;
 
-  // The fullscreen video view object.
-  ContentVideoView video_view_;
+  // The fullscreen video view object or NULL if video is not played in
+  // fullscreen.
+  scoped_ptr<ContentVideoView> video_view_;
 
   // Player ID of the fullscreen media player.
   int fullscreen_player_id_;

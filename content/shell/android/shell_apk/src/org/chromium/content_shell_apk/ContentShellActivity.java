@@ -15,10 +15,12 @@ import android.view.KeyEvent;
 
 import org.chromium.base.ChromiumActivity;
 import org.chromium.content.app.LibraryLoader;
-import org.chromium.content.browser.ActivityContentVideoViewDelegate;
+import org.chromium.content.browser.ActivityContentVideoViewClient;
 import org.chromium.content.browser.AndroidBrowserProcess;
 import org.chromium.content.browser.ContentVideoView;
+import org.chromium.content.browser.ContentVideoViewClient;
 import org.chromium.content.browser.ContentView;
+import org.chromium.content.browser.ContentViewClient;
 import org.chromium.content.browser.DeviceUtils;
 import org.chromium.content.browser.TracingIntentHandler;
 import org.chromium.content.common.CommandLine;
@@ -69,8 +71,6 @@ public class ContentShellActivity extends ChromiumActivity {
             mWindowAndroid = new WindowAndroid(this);
             mWindowAndroid.restoreInstanceState(savedInstanceState);
             mShellManager.setWindow(mWindowAndroid);
-            ContentVideoView.registerContentVideoViewContextDelegate(
-                    new ActivityContentVideoViewDelegate(this));
 
             String startupUrl = getUrlFromIntent(getIntent());
             if (!TextUtils.isEmpty(startupUrl)) {
@@ -84,6 +84,12 @@ public class ContentShellActivity extends ChromiumActivity {
                 }
                 mShellManager.launchShell(shellUrl);
             }
+            getActiveContentView().setContentViewClient(new ContentViewClient() {
+                @Override
+                public ContentVideoViewClient getContentVideoViewClient() {
+                    return new ActivityContentVideoViewClient(ContentShellActivity.this);
+                }
+            });
         } catch (ProcessInitException e) {
             Log.e(TAG, "ContentView initialization failed.", e);
             finish();

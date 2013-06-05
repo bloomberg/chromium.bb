@@ -388,9 +388,6 @@ public class AwContents {
         mDefaultVideoPosterRequestHandler = new DefaultVideoPosterRequestHandler(mContentsClient);
         mSettings.setDefaultVideoPosterURL(
                 mDefaultVideoPosterRequestHandler.getDefaultVideoPosterURL());
-
-        ContentVideoView.registerContentVideoViewContextDelegate(
-                new AwContentVideoViewDelegate(contentsClient, containerView.getContext()));
         mGlobalVisibleBounds = new Rect();
     }
 

@@ -1,26 +1,26 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 package org.chromium.content.browser;
 
 import android.app.Activity;
-import android.content.Context;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
 
-import org.chromium.content.browser.ContentVideoViewContextDelegate;
+import org.chromium.content.browser.ContentVideoViewClient;
 
 /**
- * Uses an exisiting Activity to handle displaying video in full screen.
+ * Uses an existing Activity to handle displaying video in full screen.
  */
-public class ActivityContentVideoViewDelegate implements ContentVideoViewContextDelegate {
+public class ActivityContentVideoViewClient implements ContentVideoViewClient {
     private Activity mActivity;
+    private View mView;
 
-    public ActivityContentVideoViewDelegate(Activity activity)  {
+    public ActivityContentVideoViewClient(Activity activity)  {
         this.mActivity = activity;
     }
 
@@ -35,11 +35,15 @@ public class ActivityContentVideoViewDelegate implements ContentVideoViewContext
                         ViewGroup.LayoutParams.MATCH_PARENT,
                         ViewGroup.LayoutParams.MATCH_PARENT,
                         Gravity.CENTER));
+        mView = view;
     }
 
     @Override
     public void onDestroyContentVideoView() {
         mActivity.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        FrameLayout decor = (FrameLayout) mActivity.getWindow().getDecorView();
+        decor.removeView(mView);
+        mView = null;
     }
 
     @Override
@@ -49,11 +53,6 @@ public class ActivityContentVideoViewDelegate implements ContentVideoViewContext
         } else {
             mActivity.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         }
-    }
-
-    @Override
-    public Context getContext() {
-        return mActivity;
     }
 
     @Override

@@ -7,6 +7,7 @@
 
 #include <jni.h>
 
+#include "base/android/jni_helper.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
@@ -25,11 +26,21 @@ class ContentVideoView {
  public:
   // Construct a ContentVideoView object. The |manager| will handle all the
   // playback controls from the Java class.
-  explicit ContentVideoView(MediaPlayerManagerImpl* manager);
+  ContentVideoView(
+      const base::android::ScopedJavaLocalRef<jobject>& context,
+      const base::android::ScopedJavaLocalRef<jobject>& client,
+      MediaPlayerManagerImpl* manager);
+
   ~ContentVideoView();
+
+  // To open another video on existing ContentVideoView.
+  void OpenVideo();
 
   static bool RegisterContentVideoView(JNIEnv* env);
   static void KeepScreenOn(bool screen_on);
+
+  // Return true if there is existing ContentVideoView object.
+  static bool HasContentVideoView();
 
   // Getter method called by the Java class to get the media information.
   int GetVideoWidth(JNIEnv*, jobject obj) const;
@@ -38,10 +49,6 @@ class ContentVideoView {
   int GetCurrentPosition(JNIEnv*, jobject obj) const;
   bool IsPlaying(JNIEnv*, jobject obj);
   void UpdateMediaMetadata(JNIEnv*, jobject obj);
-
-  // Method to create and destroy the Java view.
-  void DestroyContentVideoView();
-  void CreateContentVideoView();
 
   // Called when the Java fullscreen view is destroyed. If
   // |release_media_player| is true, |manager_| needs to release the player
@@ -63,14 +70,18 @@ class ContentVideoView {
   void OnVideoSizeChanged(int width, int height);
   void OnBufferingUpdate(int percent);
   void OnPlaybackComplete();
+  void OnExitFullscreen();
+
+  // Return the corresponing ContentVideoView Java object if any.
+  base::android::ScopedJavaLocalRef<jobject> GetJavaObject(JNIEnv* env);
 
  private:
   // Object that manages the fullscreen media player. It is responsible for
   // handling all the playback controls.
   MediaPlayerManagerImpl* manager_;
 
-  // Reference to the Java object.
-  base::android::ScopedJavaGlobalRef<jobject> j_content_video_view_;
+  // Weak reference of corresponding Java object.
+  JavaObjectWeakGlobalRef j_content_video_view_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentVideoView);
 };

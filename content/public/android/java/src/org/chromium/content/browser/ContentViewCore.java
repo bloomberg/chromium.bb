@@ -398,6 +398,7 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
     /**
      * @return The context used for creating this ContentViewCore.
      */
+    @CalledByNative
     public Context getContext() {
         return mContext;
     }
@@ -2807,6 +2808,11 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
 
     private native int nativeInit(boolean hardwareAccelerated, int webContentsPtr,
             int viewAndroidPtr, int windowAndroidPtr);
+
+    @CalledByNative
+    private ContentVideoViewClient getContentVideoViewClient() {
+        return mContentViewClient.getContentVideoViewClient();
+    }
 
     private native void nativeOnJavaContentViewCoreDestroyed(int nativeContentViewCoreImpl);
 

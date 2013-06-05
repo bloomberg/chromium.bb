@@ -4,7 +4,6 @@
 
 #include "content/browser/android/content_video_view.h"
 
-#include "base/android/jni_android.h"
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "content/browser/android/media_player_manager_impl.h"
@@ -18,35 +17,52 @@ using base::android::ScopedJavaGlobalRef;
 
 namespace content {
 
+namespace {
+// There can only be one content video view at a time, this holds onto that
+// singleton instance.
+ContentVideoView* g_content_video_view = NULL;
+
+}  // namespace
+
+static jobject GetSingletonJavaContentVideoView(JNIEnv*env, jclass) {
+  if (g_content_video_view)
+    return g_content_video_view->GetJavaObject(env).Release();
+  else
+    return NULL;
+}
+
 bool ContentVideoView::RegisterContentVideoView(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }
 
-ContentVideoView::ContentVideoView(MediaPlayerManagerImpl* manager)
+bool ContentVideoView::HasContentVideoView() {
+  return g_content_video_view;
+}
+
+ContentVideoView::ContentVideoView(
+    const ScopedJavaLocalRef<jobject>& context,
+    const ScopedJavaLocalRef<jobject>& client,
+    MediaPlayerManagerImpl* manager)
     : manager_(manager) {
+  DCHECK(!g_content_video_view);
+  JNIEnv *env = AttachCurrentThread();
+  j_content_video_view_ = JavaObjectWeakGlobalRef(env,
+      Java_ContentVideoView_createContentVideoView(env, context.obj(),
+          reinterpret_cast<int>(this), client.obj()).obj());
+  g_content_video_view = this;
 }
 
 ContentVideoView::~ContentVideoView() {
-  DestroyContentVideoView();
+  DCHECK(g_content_video_view);
+  DCHECK(!GetJavaObject(AttachCurrentThread()).obj());
+  g_content_video_view = NULL;
 }
 
-void ContentVideoView::CreateContentVideoView() {
-  if (j_content_video_view_.is_null()) {
-    JNIEnv* env = AttachCurrentThread();
-    j_content_video_view_.Reset(Java_ContentVideoView_createContentVideoView(
-        env, reinterpret_cast<jint>(this)));
-  } else {
-    // Just ask video view to reopen the video.
-    Java_ContentVideoView_openVideo(AttachCurrentThread(),
-                                    j_content_video_view_.obj());
-  }
-}
-
-void ContentVideoView::DestroyContentVideoView() {
-  if (!j_content_video_view_.is_null()) {
-    Java_ContentVideoView_destroyContentVideoView(AttachCurrentThread());
-    j_content_video_view_.Reset();
-  }
+void ContentVideoView::OpenVideo() {
+  JNIEnv *env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> content_video_view = GetJavaObject(env);
+  if (!content_video_view.is_null())
+    Java_ContentVideoView_openVideo(env, content_video_view.obj());
 }
 
 // static
@@ -56,40 +72,54 @@ void ContentVideoView::KeepScreenOn(bool screen_on) {
 }
 
 void ContentVideoView::OnMediaPlayerError(int error_type) {
-  if (!j_content_video_view_.is_null()) {
-    Java_ContentVideoView_onMediaPlayerError(AttachCurrentThread(),
-                                             j_content_video_view_.obj(),
-                                             error_type);
+  JNIEnv *env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> content_video_view = GetJavaObject(env);
+  if (!content_video_view.is_null()) {
+    Java_ContentVideoView_onMediaPlayerError(env, content_video_view.obj(),
+        error_type);
   }
 }
 
 void ContentVideoView::OnVideoSizeChanged(int width, int height) {
-  if (!j_content_video_view_.is_null()) {
-    Java_ContentVideoView_onVideoSizeChanged(AttachCurrentThread(),
-                                             j_content_video_view_.obj(),
-                                             width,
-                                             height);
+  JNIEnv *env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> content_video_view = GetJavaObject(env);
+  if (!content_video_view.is_null()) {
+    Java_ContentVideoView_onVideoSizeChanged(env, content_video_view.obj(),
+        width, height);
   }
 }
 
 void ContentVideoView::OnBufferingUpdate(int percent) {
-  if (!j_content_video_view_.is_null()) {
-    Java_ContentVideoView_onBufferingUpdate(AttachCurrentThread(),
-                                            j_content_video_view_.obj(),
-                                            percent);
+  JNIEnv *env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> content_video_view = GetJavaObject(env);
+  if (!content_video_view.is_null()) {
+    Java_ContentVideoView_onBufferingUpdate(env, content_video_view.obj(),
+        percent);
   }
 }
 
 void ContentVideoView::OnPlaybackComplete() {
-  if (!j_content_video_view_.is_null()) {
-    Java_ContentVideoView_onPlaybackComplete(AttachCurrentThread(),
-                                             j_content_video_view_.obj());
+  JNIEnv *env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> content_video_view = GetJavaObject(env);
+  if (!content_video_view.is_null())
+    Java_ContentVideoView_onPlaybackComplete(env, content_video_view.obj());
+}
+
+void ContentVideoView::OnExitFullscreen() {
+  JNIEnv *env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> content_video_view = GetJavaObject(env);
+  if (!content_video_view.is_null()) {
+    Java_ContentVideoView_destroyContentVideoView(env,
+        content_video_view.obj());
+    j_content_video_view_.reset();
   }
 }
 
 void ContentVideoView::UpdateMediaMetadata() {
-  if (!j_content_video_view_.is_null())
-    UpdateMediaMetadata(AttachCurrentThread(), j_content_video_view_.obj());
+  JNIEnv *env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> content_video_view = GetJavaObject(env);
+  if (!content_video_view.is_null())
+    UpdateMediaMetadata(env, content_video_view.obj());
 }
 
 int ContentVideoView::GetVideoWidth(JNIEnv*, jobject obj) const {
@@ -131,8 +161,8 @@ void ContentVideoView::Pause(JNIEnv*, jobject obj) {
 
 void ContentVideoView::ExitFullscreen(
     JNIEnv*, jobject, jboolean release_media_player) {
+  j_content_video_view_.reset();
   manager_->ExitFullscreen(release_media_player);
-  j_content_video_view_.Reset();
 }
 
 void ContentVideoView::SetSurface(JNIEnv* env, jobject obj,
@@ -144,10 +174,14 @@ void ContentVideoView::SetSurface(JNIEnv* env, jobject obj,
 void ContentVideoView::UpdateMediaMetadata(JNIEnv* env, jobject obj) {
   media::MediaPlayerAndroid* player = manager_->GetFullscreenPlayer();
   if (player && player->IsPlayerReady())
-    Java_ContentVideoView_updateMediaMetadata(
+    Java_ContentVideoView_onUpdateMediaMetadata(
         env, obj, player->GetVideoWidth(), player->GetVideoHeight(),
         player->GetDuration().InMilliseconds(), player->CanPause(),
         player->CanSeekForward(), player->CanSeekBackward());
+}
+
+ScopedJavaLocalRef<jobject> ContentVideoView::GetJavaObject(JNIEnv* env) {
+  return j_content_video_view_.get(env);
 }
 
 }  // namespace content

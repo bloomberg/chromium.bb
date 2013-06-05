@@ -13,10 +13,12 @@ import android.view.KeyEvent;
 
 import org.chromium.base.ChromiumActivity;
 import org.chromium.chrome.browser.DevToolsServer;
-import org.chromium.content.browser.ActivityContentVideoViewDelegate;
+import org.chromium.content.browser.ActivityContentVideoViewClient;
 import org.chromium.content.browser.AndroidBrowserProcess;
 import org.chromium.content.browser.ContentVideoView;
+import org.chromium.content.browser.ContentVideoViewClient;
 import org.chromium.content.browser.ContentView;
+import org.chromium.content.browser.ContentViewClient;
 import org.chromium.content.browser.DeviceUtils;
 import org.chromium.content.common.CommandLine;
 import org.chromium.content.common.ProcessInitException;
@@ -58,9 +60,6 @@ public class ChromiumTestShellActivity extends ChromiumActivity {
         mWindow = new WindowAndroid(this);
         mWindow.restoreInstanceState(savedInstanceState);
         mTabManager.setWindow(mWindow);
-
-        ContentVideoView.registerContentVideoViewContextDelegate(
-                new ActivityContentVideoViewDelegate(this));
 
         mDevToolsServer = new DevToolsServer(true, "chromium_testshell_devtools_remote");
         mDevToolsServer.setRemoteDebuggingEnabled(true);
@@ -144,6 +143,12 @@ public class ChromiumTestShellActivity extends ChromiumActivity {
      */
     public void createTab(String url) {
         mTabManager.createTab(url);
+        getActiveContentView().setContentViewClient(new ContentViewClient() {
+            @Override
+            public ContentVideoViewClient getContentVideoViewClient() {
+                return new ActivityContentVideoViewClient(ChromiumTestShellActivity.this);
+            }
+        });
     }
 
     private void waitForDebuggerIfNeeded() {

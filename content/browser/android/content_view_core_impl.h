@@ -281,6 +281,12 @@ class ContentViewCoreImpl : public ContentViewCore,
   void NotifyExternalSurface(
       int player_id, bool is_request, const gfx::RectF& rect);
 
+  base::android::ScopedJavaLocalRef<jobject> GetContentVideoViewClient();
+
+  // Returns the context that the ContentViewCore was created with, it would
+  // typically be an Activity context for an on screen view.
+  base::android::ScopedJavaLocalRef<jobject> GetContext();
+
   // --------------------------------------------------------------------------
   // Methods called from native code
   // --------------------------------------------------------------------------

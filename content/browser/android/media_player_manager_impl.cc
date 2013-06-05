@@ -4,6 +4,7 @@
 
 #include "content/browser/android/media_player_manager_impl.h"
 
+#include "content/browser/android/content_view_core_impl.h"
 #include "content/browser/android/media_resource_getter_impl.h"
 #include "content/browser/web_contents/web_contents_view_android.h"
 #include "content/common/media/media_player_messages_android.h"
@@ -11,6 +12,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/storage_partition.h"
+#include "content/public/browser/web_contents.h"
 
 using media::MediaPlayerAndroid;
 
@@ -43,7 +45,6 @@ namespace content {
 MediaPlayerManagerImpl::MediaPlayerManagerImpl(
     RenderViewHost* render_view_host)
     : RenderViewHostObserver(render_view_host),
-      video_view_(this),
       fullscreen_player_id_(-1),
       web_contents_(WebContents::FromRenderViewHost(render_view_host)) {
 }
@@ -119,6 +120,7 @@ void MediaPlayerManagerImpl::ExitFullscreen(bool release_media_player) {
     player->Release();
   else
     player->SetVideoSurface(gfx::ScopedJavaSurface());
+  video_view_.reset();
 }
 
 void MediaPlayerManagerImpl::SetVideoSurface(gfx::ScopedJavaSurface surface) {
@@ -177,8 +179,20 @@ void MediaPlayerManagerImpl::OnPause(int player_id) {
 void MediaPlayerManagerImpl::OnEnterFullscreen(int player_id) {
   DCHECK_EQ(fullscreen_player_id_, -1);
 
-  fullscreen_player_id_ = player_id;
-  video_view_.CreateContentVideoView();
+  if (video_view_.get()) {
+    fullscreen_player_id_ = player_id;
+    video_view_->OpenVideo();
+  } else if (!ContentVideoView::HasContentVideoView()) {
+    // In Android WebView, two ContentViewCores could both try to enter
+    // fullscreen video, we just ignore the second one.
+    fullscreen_player_id_ = player_id;
+    WebContents* web_contents =
+        WebContents::FromRenderViewHost(render_view_host());
+    ContentViewCoreImpl* content_view_core_impl =
+        ContentViewCoreImpl::FromWebContents(web_contents);
+    video_view_.reset(new ContentVideoView(content_view_core_impl->GetContext(),
+        content_view_core_impl->GetContentVideoViewClient(), this));
+  }
 }
 
 void MediaPlayerManagerImpl::OnExitFullscreen(int player_id) {
@@ -186,8 +200,9 @@ void MediaPlayerManagerImpl::OnExitFullscreen(int player_id) {
     MediaPlayerAndroid* player = GetPlayer(player_id);
     if (player)
       player->SetVideoSurface(gfx::ScopedJavaSurface());
-    video_view_.DestroyContentVideoView();
     fullscreen_player_id_ = -1;
+    video_view_->OnExitFullscreen();
+    video_view_.reset();
   }
 }
 
@@ -209,7 +224,7 @@ void MediaPlayerManagerImpl::OnDestroyPlayer(int player_id) {
 void MediaPlayerManagerImpl::DestroyAllMediaPlayers() {
   players_.clear();
   if (fullscreen_player_id_ != -1) {
-    video_view_.DestroyContentVideoView();
+    video_view_.reset();
     fullscreen_player_id_ = -1;
   }
 }
@@ -284,13 +299,13 @@ void MediaPlayerManagerImpl::OnMediaMetadataChanged(
   Send(new MediaPlayerMsg_MediaMetadataChanged(
       routing_id(), player_id, duration, width, height, success));
   if (fullscreen_player_id_ != -1)
-    video_view_.UpdateMediaMetadata();
+    video_view_->UpdateMediaMetadata();
 }
 
 void MediaPlayerManagerImpl::OnPlaybackComplete(int player_id) {
   Send(new MediaPlayerMsg_MediaPlaybackCompleted(routing_id(), player_id));
   if (fullscreen_player_id_ != -1)
-    video_view_.OnPlaybackComplete();
+    video_view_->OnPlaybackComplete();
 }
 
 void MediaPlayerManagerImpl::OnMediaInterrupted(int player_id) {
@@ -304,7 +319,7 @@ void MediaPlayerManagerImpl::OnBufferingUpdate(
   Send(new MediaPlayerMsg_MediaBufferingUpdate(
       routing_id(), player_id, percentage));
   if (fullscreen_player_id_ != -1)
-    video_view_.OnBufferingUpdate(percentage);
+    video_view_->OnBufferingUpdate(percentage);
 }
 
 void MediaPlayerManagerImpl::OnSeekComplete(int player_id,
@@ -316,8 +331,9 @@ void MediaPlayerManagerImpl::OnSeekComplete(int player_id,
 void MediaPlayerManagerImpl::OnMediaSeekRequest(
     int player_id, base::TimeDelta time_to_seek, bool request_surface) {
   bool request_texture_peer = request_surface;
-  if (request_surface && player_id == fullscreen_player_id_) {
-    video_view_.CreateContentVideoView();
+  if (request_surface && player_id == fullscreen_player_id_ &&
+      video_view_.get()) {
+    video_view_->OpenVideo();
     request_texture_peer = false;
   }
   Send(new MediaPlayerMsg_MediaSeekRequest(
@@ -327,7 +343,7 @@ void MediaPlayerManagerImpl::OnMediaSeekRequest(
 void MediaPlayerManagerImpl::OnError(int player_id, int error) {
   Send(new MediaPlayerMsg_MediaError(routing_id(), player_id, error));
   if (fullscreen_player_id_ != -1)
-    video_view_.OnMediaPlayerError(error);
+    video_view_->OnMediaPlayerError(error);
 }
 
 void MediaPlayerManagerImpl::OnVideoSizeChanged(
@@ -335,7 +351,7 @@ void MediaPlayerManagerImpl::OnVideoSizeChanged(
   Send(new MediaPlayerMsg_MediaVideoSizeChanged(routing_id(), player_id,
       width, height));
   if (fullscreen_player_id_ != -1)
-    video_view_.OnVideoSizeChanged(width, height);
+    video_view_->OnVideoSizeChanged(width, height);
 }
 
 void MediaPlayerManagerImpl::OnTimeUpdate(int player_id,
