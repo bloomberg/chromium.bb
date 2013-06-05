@@ -191,7 +191,6 @@ void AudioOutputDevice::OnStateChanged(AudioOutputIPCDelegate::State state) {
   switch (state) {
     case AudioOutputIPCDelegate::kPlaying:
     case AudioOutputIPCDelegate::kPaused:
-      NOTIMPLEMENTED();
       break;
     case AudioOutputIPCDelegate::kError:
       DLOG(WARNING) << "AudioOutputDevice::OnStateChanged(kError)";
