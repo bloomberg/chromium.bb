@@ -9748,6 +9748,17 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Translate.SimilarLanguageMatch" enum="BooleanMatched">
+  <summary>
+    This metrics is logged whenever a page is loaded. The logged value is
+    &quot;Mathced&quot; when the CLD-detected language differs from the page
+    language code , and the two languages are such similar languages. In that
+    case, Chrome ignore the CLD-determined language and instead uses the page
+    language code. The page language code is decided by Content-Language and
+    HTML lang attribute.
+  </summary>
+</histogram>
+
 <histogram name="Translate.TimeToBeReady" units="milliseconds">
   <summary>
     The time from injecting scripts for Chrome Translate to being ready to
@@ -10731,6 +10742,11 @@ other types of suffix sets.
 <enum name="BooleanHttps" type="int">
   <int value="0" label="HTTP"/>
   <int value="1" label="HTTPS"/>
+</enum>
+
+<enum name="BooleanMatched" type="int">
+  <int value="0" label="Not matched"/>
+  <int value="1" label="Matched"/>
 </enum>
 
 <enum name="BooleanOrphan" type="int">

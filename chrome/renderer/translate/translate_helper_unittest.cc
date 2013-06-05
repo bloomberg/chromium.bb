@@ -79,6 +79,14 @@ TEST_F(TranslateHelperTest, ResetInvalidLanguageCode) {
   EXPECT_TRUE(language.empty());
 }
 
+// Tests that similar language table works.
+TEST_F(TranslateHelperTest, SimilarLanguageCode) {
+  EXPECT_TRUE(TranslateHelper::IsSameOrSimilarLanguages("en", "en"));
+  EXPECT_FALSE(TranslateHelper::IsSameOrSimilarLanguages("en", "ja"));
+  EXPECT_TRUE(TranslateHelper::IsSameOrSimilarLanguages("bs", "hr"));
+  EXPECT_TRUE(TranslateHelper::IsSameOrSimilarLanguages("sr-ME", "sr"));
+}
+
 // Tests that the language meta tag providing wrong information is ignored by
 // TranslateHelper due to disagreement between meta tag and CLD.
 TEST_F(TranslateHelperTest, CLDDisagreeWithWrongLanguageCode) {

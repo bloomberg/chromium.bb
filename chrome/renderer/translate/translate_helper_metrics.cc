@@ -20,6 +20,7 @@ const char kTranslateTimeToLoad[] = "Translate.TimeToLoad";
 const char kTranslateTimeToTranslate[] = "Translate.TimeToTranslate";
 const char kTranslateUserActionDuration[] = "Translate.UserActionDuration";
 const char kTranslatePageScheme[] = "Translate.PageScheme";
+const char kTranslateSimilarLanguageMatch[] = "Translate.SimilarLanguageMatch";
 
 const char kSchemeHttp[] = "http";
 const char kSchemeHttps[] = "https";
@@ -49,6 +50,8 @@ const MetricsEntry kMetricsEntries[] = {
     kTranslateUserActionDuration },
   { TranslateHelperMetrics::UMA_PAGE_SCHEME,
     kTranslatePageScheme },
+  { TranslateHelperMetrics::UMA_SIMILAR_LANGUAGE_MATCH,
+    kTranslateSimilarLanguageMatch },
 };
 
 COMPILE_ASSERT(arraysize(kMetricsEntries) == TranslateHelperMetrics::UMA_MAX,
@@ -126,6 +129,10 @@ void ReportLanguageDetectionTime(base::TimeTicks begin, base::TimeTicks end) {
 }
 
 #endif  // defined(ENABLE_LANGUAGE_DETECTION)
+
+void ReportSimilarLanguageMatch(bool match) {
+  UMA_HISTOGRAM_BOOLEAN(kTranslateSimilarLanguageMatch, match);
+}
 
 const char* GetMetricsName(MetricsNameIndex index) {
   for (size_t i = 0; i < arraysize(kMetricsEntries); ++i) {

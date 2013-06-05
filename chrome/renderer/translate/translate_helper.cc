@@ -67,6 +67,28 @@ const LanguageCodeSynonym kLanguageCodeSynonyms[] = {
   {"tl", "fil"},
 };
 
+// Similar language code list. Some languages are very similar and difficult
+// for CLD to distinguish.
+struct SimilarLanguageCode {
+  const char* const code;
+  int group;
+};
+
+const SimilarLanguageCode kSimilarLanguageCodes[] = {
+  {"bs", 1},
+  {"hr", 1},
+};
+
+// Checks |kSimilarLanguageCodes| and returns group code.
+int GetSimilarLanguageGroupCode(const std::string& language) {
+  for (size_t i = 0; i < arraysize(kSimilarLanguageCodes); ++i) {
+    if (language.find(kSimilarLanguageCodes[i].code) != 0)
+      continue;
+    return kSimilarLanguageCodes[i].group;
+  }
+  return 0;
+}
+
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -345,6 +367,29 @@ void TranslateHelper::ApplyLanguageCodeCorrection(std::string* code) {
 }
 
 // static
+bool TranslateHelper::IsSameOrSimilarLanguages(
+    const std::string& page_language, const std::string& cld_language) {
+  // Language code part of |page_language| is matched to one of |cld_language|.
+  // Country code is ignored here.
+  if (page_language.size() >= 2 &&
+      cld_language.find(page_language.c_str(), 0, 2) == 0) {
+    // Languages are matched strictly. Reports false to metrics, but returns
+    // true.
+    TranslateHelperMetrics::ReportSimilarLanguageMatch(false);
+    return true;
+  }
+
+  // Check if |page_language| and |cld_language| are in the similar language
+  // list and belong to the same language group.
+  int page_code = GetSimilarLanguageGroupCode(page_language);
+  bool match = page_code != 0 &&
+               page_code == GetSimilarLanguageGroupCode(cld_language);
+
+  TranslateHelperMetrics::ReportSimilarLanguageMatch(match);
+  return match;
+}
+
+// static
 std::string TranslateHelper::DeterminePageLanguage(const std::string& code,
                                                    const std::string& html_lang,
                                                    const string16& contents,
@@ -398,8 +443,7 @@ std::string TranslateHelper::DeterminePageLanguage(const std::string& code,
   if (cld_language == chrome::kUnknownLanguageCode) {
     TranslateHelperMetrics::ReportLanguageVerification(
         TranslateHelperMetrics::LANGUAGE_VERIFICATION_UNKNOWN);
-  } else if (language.size() >= 2 &&
-             cld_language.find(language.c_str(), 0, 2) != 0) {
+  } else if (!IsSameOrSimilarLanguages(language, cld_language)) {
     TranslateHelperMetrics::ReportLanguageVerification(
         TranslateHelperMetrics::LANGUAGE_VERIFICATION_CLD_DISAGREE);
     // Content-Language value might be wrong because CLD says that this page

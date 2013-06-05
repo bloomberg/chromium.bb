@@ -20,6 +20,9 @@ using base::TimeTicks;
 
 namespace {
 
+const int kTrue = 1;
+const int kFalse = 0;
+
 class MetricsRecorder {
  public:
   explicit MetricsRecorder(const char* key)
@@ -42,11 +45,14 @@ class MetricsRecorder {
     Snapshot();
 
     EXPECT_EQ(expected_not_provided,
-              GetCount(TranslateHelperMetrics::LANGUAGE_NOT_PROVIDED));
+              GetCountWithoutSnapshot(
+                  TranslateHelperMetrics::LANGUAGE_NOT_PROVIDED));
     EXPECT_EQ(expected_valid,
-              GetCount(TranslateHelperMetrics::LANGUAGE_VALID));
+              GetCountWithoutSnapshot(
+                  TranslateHelperMetrics::LANGUAGE_VALID));
     EXPECT_EQ(expected_invalid,
-              GetCount(TranslateHelperMetrics::LANGUAGE_INVALID));
+              GetCountWithoutSnapshot(
+                  TranslateHelperMetrics::LANGUAGE_INVALID));
   }
 
   void CheckLanguageVerification(int expected_cld_disabled,
@@ -61,19 +67,24 @@ class MetricsRecorder {
 
     EXPECT_EQ(
         expected_cld_disabled,
-        GetCount(TranslateHelperMetrics::LANGUAGE_VERIFICATION_CLD_DISABLED));
+        GetCountWithoutSnapshot(
+            TranslateHelperMetrics::LANGUAGE_VERIFICATION_CLD_DISABLED));
     EXPECT_EQ(
         expected_cld_only,
-        GetCount(TranslateHelperMetrics::LANGUAGE_VERIFICATION_CLD_ONLY));
+        GetCountWithoutSnapshot(
+            TranslateHelperMetrics::LANGUAGE_VERIFICATION_CLD_ONLY));
     EXPECT_EQ(
         expected_unknown,
-        GetCount(TranslateHelperMetrics::LANGUAGE_VERIFICATION_UNKNOWN));
+        GetCountWithoutSnapshot(
+            TranslateHelperMetrics::LANGUAGE_VERIFICATION_UNKNOWN));
     EXPECT_EQ(
         expected_cld_agree,
-        GetCount(TranslateHelperMetrics::LANGUAGE_VERIFICATION_CLD_AGREE));
+        GetCountWithoutSnapshot(
+            TranslateHelperMetrics::LANGUAGE_VERIFICATION_CLD_AGREE));
     EXPECT_EQ(
         expected_cld_disagree,
-        GetCount(TranslateHelperMetrics::LANGUAGE_VERIFICATION_CLD_DISAGREE));
+        GetCountWithoutSnapshot(
+            TranslateHelperMetrics::LANGUAGE_VERIFICATION_CLD_DISAGREE));
   }
 
   void CheckScheme(int expected_http, int expected_https, int expected_others) {
@@ -82,9 +93,12 @@ class MetricsRecorder {
 
     Snapshot();
 
-    EXPECT_EQ(expected_http, GetCount(TranslateHelperMetrics::SCHEME_HTTP));
-    EXPECT_EQ(expected_https, GetCount(TranslateHelperMetrics::SCHEME_HTTPS));
-    EXPECT_EQ(expected_others, GetCount(TranslateHelperMetrics::SCHEME_OTHERS));
+    EXPECT_EQ(expected_http,
+              GetCountWithoutSnapshot(TranslateHelperMetrics::SCHEME_HTTP));
+    EXPECT_EQ(expected_https,
+              GetCountWithoutSnapshot(TranslateHelperMetrics::SCHEME_HTTPS));
+    EXPECT_EQ(expected_others,
+              GetCountWithoutSnapshot(TranslateHelperMetrics::SCHEME_OTHERS));
   }
 
   void CheckTotalCount(int count) {
@@ -108,6 +122,11 @@ class MetricsRecorder {
     EXPECT_FALSE(true);
   }
 
+  HistogramBase::Count GetCount(HistogramBase::Sample value) {
+    Snapshot();
+    return GetCountWithoutSnapshot(value);
+  }
+
  private:
   void Snapshot() {
     HistogramBase* histogram = StatisticsRecorder::FindHistogram(key_);
@@ -116,7 +135,7 @@ class MetricsRecorder {
     samples_ = histogram->SnapshotSamples();
   }
 
-  HistogramBase::Count GetCount(HistogramBase::Sample value) {
+  HistogramBase::Count GetCountWithoutSnapshot(HistogramBase::Sample value) {
     if (!samples_.get())
       return 0;
     HistogramBase::Count count = samples_->GetCount(value);
@@ -239,6 +258,20 @@ TEST(TranslateHelperMetricsTest, ReportPageScheme) {
   recorder.CheckScheme(1, 1, 0);
   TranslateHelperMetrics::ReportPageScheme("ftp");
   recorder.CheckScheme(1, 1, 1);
+}
+
+TEST(TranslateHelperMetricsTest, ReportSimilarLanguageMatch) {
+  MetricsRecorder recorder(TranslateHelperMetrics::GetMetricsName(
+      TranslateHelperMetrics::UMA_SIMILAR_LANGUAGE_MATCH));
+  recorder.CheckTotalCount(0);
+  EXPECT_EQ(0, recorder.GetCount(kTrue));
+  EXPECT_EQ(0, recorder.GetCount(kFalse));
+  TranslateHelperMetrics::ReportSimilarLanguageMatch(true);
+  EXPECT_EQ(1, recorder.GetCount(kTrue));
+  EXPECT_EQ(0, recorder.GetCount(kFalse));
+  TranslateHelperMetrics::ReportSimilarLanguageMatch(false);
+  EXPECT_EQ(1, recorder.GetCount(kTrue));
+  EXPECT_EQ(1, recorder.GetCount(kFalse));
 }
 
 #if defined(ENABLE_LANGUAGE_DETECTION)

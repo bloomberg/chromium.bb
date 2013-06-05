@@ -23,6 +23,7 @@ enum MetricsNameIndex {
   UMA_TIME_TO_TRANSLATE,
   UMA_USER_ACTION_DURATION,
   UMA_PAGE_SCHEME,
+  UMA_SIMILAR_LANGUAGE_MATCH,
   UMA_MAX,
 };
 
@@ -92,6 +93,10 @@ void ReportPageScheme(const std::string& scheme);
 void ReportLanguageDetectionTime(base::TimeTicks begin, base::TimeTicks end);
 
 #endif  // defined(ENABLE_LANGUAGE_DETECTION)
+
+// Called when CLD agreed on a language which is different, but in the similar
+// language list.
+void ReportSimilarLanguageMatch(bool match);
 
 // Gets UMA name for an entry specified by |index|.
 const char* GetMetricsName(MetricsNameIndex index);

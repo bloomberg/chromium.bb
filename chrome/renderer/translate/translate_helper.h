@@ -87,16 +87,17 @@ class TranslateHelper : public content::RenderViewObserver {
   virtual double ExecuteScriptAndGetDoubleResult(const std::string& script);
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(TranslateHelperTest, LanguageCodeTypoCorrection);
-  FRIEND_TEST_ALL_PREFIXES(TranslateHelperTest, LanguageCodeSynonyms);
-  FRIEND_TEST_ALL_PREFIXES(TranslateHelperTest, ResetInvalidLanguageCode);
-  FRIEND_TEST_ALL_PREFIXES(TranslateHelperTest,
-                           CLDDisagreeWithWrongLanguageCode);
+  FRIEND_TEST_ALL_PREFIXES(TranslateHelperTest, AdoptHtmlLang);
   FRIEND_TEST_ALL_PREFIXES(TranslateHelperTest,
                            CLDAgreeWithLanguageCodeHavingCountryCode);
   FRIEND_TEST_ALL_PREFIXES(TranslateHelperTest,
+                           CLDDisagreeWithWrongLanguageCode);
+  FRIEND_TEST_ALL_PREFIXES(TranslateHelperTest,
                            InvalidLanguageMetaTagProviding);
-  FRIEND_TEST_ALL_PREFIXES(TranslateHelperTest, AdoptHtmlLang);
+  FRIEND_TEST_ALL_PREFIXES(TranslateHelperTest, LanguageCodeTypoCorrection);
+  FRIEND_TEST_ALL_PREFIXES(TranslateHelperTest, LanguageCodeSynonyms);
+  FRIEND_TEST_ALL_PREFIXES(TranslateHelperTest, ResetInvalidLanguageCode);
+  FRIEND_TEST_ALL_PREFIXES(TranslateHelperTest, SimilarLanguageCode);
 
   // Corrects language code if it contains well-known mistakes.
   static void CorrectLanguageCodeTypo(std::string* code);
@@ -109,6 +110,12 @@ class TranslateHelper : public content::RenderViewObserver {
 
   // Applies a series of language code modification in proper order.
   static void ApplyLanguageCodeCorrection(std::string* code);
+
+  // Checks if languages are matched, or similar. This function returns true
+  // against a language pair containing a language which is difficult for CLD
+  // to distinguish.
+  static bool IsSameOrSimilarLanguages(const std::string& page_language,
+                                       const std::string& cld_language);
 
   // Determines content page language from Content-Language code and contents.
   static std::string DeterminePageLanguage(const std::string& code,
