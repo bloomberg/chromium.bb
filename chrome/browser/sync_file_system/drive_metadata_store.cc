@@ -146,21 +146,23 @@ struct DriveMetadataDBContents {
 namespace {
 
 SyncStatusCode InitializeDBOnFileThread(DriveMetadataDB* db,
-                                        DriveMetadataDBContents* contents) {
+                                        DriveMetadataDBContents* contents,
+                                        bool* created) {
   DCHECK(db);
   DCHECK(contents);
+  DCHECK(created);
 
   contents->largest_changestamp = 0;
   contents->metadata_map.clear();
   contents->incremental_sync_origins.clear();
   contents->disabled_origins.clear();
 
-  bool created = false;
-  SyncStatusCode status = db->Initialize(&created);
+  *created = false;
+  SyncStatusCode status = db->Initialize(created);
   if (status != SYNC_STATUS_OK)
     return status;
 
-  if (!created) {
+  if (!*created) {
     status = db->MigrateDatabaseIfNeeded();
     if (status != SYNC_STATUS_OK) {
       util::Log(logging::LOG_WARNING,
@@ -237,18 +239,21 @@ void DriveMetadataStore::Initialize(const InitializationCallback& callback) {
   DCHECK(CalledOnValidThread());
   DriveMetadataDBContents* contents = new DriveMetadataDBContents;
 
+  bool* created = new bool(false);
   base::PostTaskAndReplyWithResult(
       file_task_runner_.get(),
       FROM_HERE,
-      base::Bind(InitializeDBOnFileThread, db_.get(), contents),
+      base::Bind(InitializeDBOnFileThread, db_.get(), contents, created),
       base::Bind(&DriveMetadataStore::DidInitialize,
                  AsWeakPtr(),
                  callback,
-                 base::Owned(contents)));
+                 base::Owned(contents),
+                 base::Owned(created)));
 }
 
 void DriveMetadataStore::DidInitialize(const InitializationCallback& callback,
                                        DriveMetadataDBContents* contents,
+                                       bool* created,
                                        SyncStatusCode status) {
   DCHECK(CalledOnValidThread());
   DCHECK(contents);
@@ -270,84 +275,7 @@ void DriveMetadataStore::DidInitialize(const InitializationCallback& callback,
   InsertReverseMap(incremental_sync_origins_, &origin_by_resource_id_);
   InsertReverseMap(disabled_origins_, &origin_by_resource_id_);
 
-  callback.Run(status, largest_changestamp_ <= 0);
-}
-
-void DriveMetadataStore::RestoreSyncRootDirectory(
-    const SyncStatusCallback& callback) {
-  DCHECK(CalledOnValidThread());
-  std::string* sync_root_directory_resource_id = new std::string;
-  base::PostTaskAndReplyWithResult(
-      file_task_runner_.get(),
-      FROM_HERE,
-      base::Bind(&DriveMetadataDB::GetSyncRootDirectory,
-                 base::Unretained(db_.get()),
-                 sync_root_directory_resource_id),
-      base::Bind(&DriveMetadataStore::DidRestoreSyncRootDirectory,
-                 AsWeakPtr(),
-                 callback,
-                 base::Owned(sync_root_directory_resource_id)));
-}
-
-void DriveMetadataStore::DidRestoreSyncRootDirectory(
-    const SyncStatusCallback& callback,
-    std::string* sync_root_directory_resource_id,
-    SyncStatusCode status) {
-  DCHECK(CalledOnValidThread());
-  DCHECK(sync_root_directory_resource_id);
-
-  db_status_ = status;
-  if (status != SYNC_STATUS_OK) {
-    callback.Run(status);
-    return;
-  }
-
-  sync_root_directory_resource_id_.swap(*sync_root_directory_resource_id);
-  callback.Run(status);
-}
-
-void DriveMetadataStore::RestoreOrigins(
-    const SyncStatusCallback& callback) {
-  DCHECK(CalledOnValidThread());
-  ResourceIdByOrigin* incremental_sync_origins = new ResourceIdByOrigin;
-  ResourceIdByOrigin* disabled_origins = new ResourceIdByOrigin;
-  base::PostTaskAndReplyWithResult(
-      file_task_runner_.get(),
-      FROM_HERE,
-      base::Bind(&DriveMetadataDB::GetOrigins,
-                 base::Unretained(db_.get()),
-                 incremental_sync_origins,
-                 disabled_origins),
-      base::Bind(&DriveMetadataStore::DidRestoreOrigins,
-                 AsWeakPtr(),
-                 callback,
-                 base::Owned(incremental_sync_origins),
-                 base::Owned(disabled_origins)));
-}
-
-void DriveMetadataStore::DidRestoreOrigins(
-    const SyncStatusCallback& callback,
-    ResourceIdByOrigin* incremental_sync_origins,
-    ResourceIdByOrigin* disabled_origins,
-    SyncStatusCode status) {
-  DCHECK(CalledOnValidThread());
-  DCHECK(incremental_sync_origins);
-  DCHECK(disabled_origins);
-
-  db_status_ = status;
-  if (status != SYNC_STATUS_OK) {
-    callback.Run(status);
-    return;
-  }
-
-  incremental_sync_origins_.swap(*incremental_sync_origins);
-  disabled_origins_.swap(*disabled_origins);
-
-  origin_by_resource_id_.clear();
-  InsertReverseMap(incremental_sync_origins_, &origin_by_resource_id_);
-  InsertReverseMap(disabled_origins_, &origin_by_resource_id_);
-
-  callback.Run(status);
+  callback.Run(status, *created);
 }
 
 leveldb::DB* DriveMetadataStore::GetDBInstanceForTesting() {

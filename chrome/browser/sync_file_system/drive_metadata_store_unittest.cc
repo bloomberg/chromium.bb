@@ -123,35 +123,6 @@ class DriveMetadataStoreTest : public testing::Test {
     drive_metadata_store_.reset();
   }
 
-  void DropSyncRootDirectoryInStore() {
-    EXPECT_TRUE(ui_task_runner_->RunsTasksOnCurrentThread());
-    drive_metadata_store_->sync_root_directory_resource_id_.clear();
-  }
-
-  void RestoreSyncRootDirectoryFromDB() {
-    EXPECT_TRUE(ui_task_runner_->RunsTasksOnCurrentThread());
-    drive_metadata_store_->RestoreSyncRootDirectory(
-        base::Bind(&DriveMetadataStoreTest::DidRestoreSyncRootDirectory,
-                   base::Unretained(this)));
-    message_loop_.Run();
-  }
-
-  void DropSyncOriginsInStore() {
-    EXPECT_TRUE(ui_task_runner_->RunsTasksOnCurrentThread());
-    drive_metadata_store_->incremental_sync_origins_.clear();
-    drive_metadata_store_->disabled_origins_.clear();
-    EXPECT_TRUE(drive_metadata_store_->incremental_sync_origins().empty());
-    EXPECT_TRUE(drive_metadata_store_->disabled_origins().empty());
-  }
-
-  void RestoreOriginsFromDB() {
-    EXPECT_TRUE(ui_task_runner_->RunsTasksOnCurrentThread());
-    drive_metadata_store_->RestoreOrigins(
-        base::Bind(&DriveMetadataStoreTest::DidRestoreOrigins,
-                   base::Unretained(this)));
-    message_loop_.Run();
-  }
-
   SyncStatusCode EnableOrigin(const GURL& origin) {
     SyncStatusCode status = SYNC_STATUS_UNKNOWN;
     drive_metadata_store_->EnableOrigin(
@@ -287,16 +258,6 @@ class DriveMetadataStoreTest : public testing::Test {
     message_loop_.Quit();
   }
 
-  void DidRestoreSyncRootDirectory(SyncStatusCode status) {
-    EXPECT_EQ(SYNC_STATUS_OK, status);
-    message_loop_.Quit();
-  }
-
-  void DidRestoreOrigins(SyncStatusCode status) {
-    EXPECT_EQ(SYNC_STATUS_OK, status);
-    message_loop_.Quit();
-  }
-
   bool VerifyReverseMapInclusion(const ResourceIdByOrigin& left,
                                  const OriginByResourceId& right) {
     for (ResourceIdByOrigin::const_iterator itr = left.begin();
@@ -421,19 +382,14 @@ TEST_F(DriveMetadataStoreTest, StoreSyncRootDirectory) {
   const std::string kResourceId("folder:hoge");
 
   InitializeDatabase();
-
   EXPECT_TRUE(metadata_store()->sync_root_directory().empty());
 
   metadata_store()->SetSyncRootDirectory(kResourceId);
   EXPECT_EQ(kResourceId, metadata_store()->sync_root_directory());
 
-  DropSyncRootDirectoryInStore();
-  EXPECT_TRUE(metadata_store()->sync_root_directory().empty());
-
-  RestoreSyncRootDirectoryFromDB();
+  DropDatabase();
+  InitializeDatabase();
   EXPECT_EQ(kResourceId, metadata_store()->sync_root_directory());
-
-  VerifyReverseMap();
 }
 
 TEST_F(DriveMetadataStoreTest, StoreSyncOrigin) {
@@ -459,13 +415,8 @@ TEST_F(DriveMetadataStoreTest, StoreSyncOrigin) {
   VerifyIncrementalSyncOrigin(kOrigin1, kResourceId1);
   VerifyDisabledOrigin(kOrigin2, kResourceId2);
 
-  DropSyncOriginsInStore();
-
-  // Make sure origins have been dropped.
-  VerifyUntrackedOrigin(kOrigin1);
-  VerifyUntrackedOrigin(kOrigin2);
-
-  RestoreOriginsFromDB();
+  DropDatabase();
+  InitializeDatabase();
 
   // Make sure origins have been restored.
   VerifyIncrementalSyncOrigin(kOrigin1, kResourceId1);

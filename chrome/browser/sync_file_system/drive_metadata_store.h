@@ -158,20 +158,11 @@ class DriveMetadataStore
                                        SyncStatusCode status);
   void DidInitialize(const InitializationCallback& callback,
                      DriveMetadataDBContents* contents,
+                     bool* created,
                      SyncStatusCode error);
   void DidUpdateOrigin(const SyncStatusCallback& callback,
                        SyncStatusCode status);
 
-  // These are only for testing.
-  void RestoreSyncRootDirectory(const SyncStatusCallback& callback);
-  void DidRestoreSyncRootDirectory(const SyncStatusCallback& callback,
-                                   std::string* sync_root_directory_resource_id,
-                                   SyncStatusCode status);
-  void RestoreOrigins(const SyncStatusCallback& callback);
-  void DidRestoreOrigins(const SyncStatusCallback& callback,
-                         ResourceIdByOrigin* incremental_sync_origins,
-                         ResourceIdByOrigin* disabled_origins,
-                         SyncStatusCode status);
   leveldb::DB* GetDBInstanceForTesting();
 
   scoped_refptr<base::SequencedTaskRunner> file_task_runner_;
