@@ -3017,11 +3017,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
           return;
         }
 
-        if (this.butterBar_ && this.butterBar_.hideError()) {
-          event.preventDefault();
-          return;
-        }
-
         if (this.dialogType != DialogType.FULL_PAGE) {
           // If there is nothing else for ESC to do, then cancel the dialog.
           event.preventDefault();

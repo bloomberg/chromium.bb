@@ -30,6 +30,7 @@ function ButterBar(dialogDom, copyManager, metadataCache) {
   this.currentMode_ = null;
   this.totalDeleted_ = 0;
   this.lastProgressValue_ = 0;
+  this.alert_ = new ErrorDialog(this.dialogDom_);
 
   this.copyManager_.addEventListener('copy-progress',
                                      this.onCopyProgress_.bind(this));
@@ -50,8 +51,7 @@ ButterBar.ACTION_X = '--action--x--';
  */
 ButterBar.Mode = {
   COPY: 1,
-  DELETE: 2,
-  ERROR: 3
+  DELETE: 2
 };
 
 /**
@@ -60,14 +60,6 @@ ButterBar.Mode = {
  */
 ButterBar.prototype.isVisible_ = function() {
   return this.butter_.classList.contains('visible');
-};
-
-/**
- * @return {boolean} True if displaying an error.
- * @private
- */
-ButterBar.prototype.isError_ = function() {
-  return this.butter_.classList.contains('error');
 };
 
 /**
@@ -112,14 +104,17 @@ ButterBar.prototype.show = function(mode, message, opt_options) {
 };
 
 /**
- * Show error message in butter bar.
+ * Show an error message in a popup dialog.
  * @param {string} message Message.
- * @param {Object=} opt_options Same as in show().
  * @private
  */
-ButterBar.prototype.showError_ = function(message, opt_options) {
-  this.show(ButterBar.Mode.ERROR, message, opt_options);
-  this.butter_.classList.add('error');
+ButterBar.prototype.showError_ = function(message) {
+  // Wait in case there are previous dialogs being closed.
+  setTimeout(function() {
+    this.hide_();
+    this.alert_.showHtml('',  // Title.
+                         message);
+  }.bind(this), cr.ui.dialogs.BaseDialog.ANIMATE_STABLE_DURATION);
 };
 
 /**
@@ -187,19 +182,6 @@ ButterBar.prototype.hide_ = function(opt_force) {
       this.hideTimeout_ = null;
       this.hide_(true);
     }.bind(this), delay);
-  }
-};
-
-/**
- * If butter bar shows an error message, close it.
- * @return {boolean} True if butter bar was closed.
- */
-ButterBar.prototype.hideError = function() {
-  if (this.isVisible_() && this.isError_()) {
-    this.hide_(true /* force */);
-    return true;
-  } else {
-    return false;
   }
 };
 

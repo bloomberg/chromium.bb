@@ -79,6 +79,7 @@
 //<include src="directory_model.js"/>
 //<include src="drag_selector.js"/>
 //<include src="drive_banners.js" />
+//<include src="error_dialog.js"/>
 //<include src="file_copy_manager_wrapper.js"/>
 //<include src="file_grid.js"/>
 //<include src="file_manager.js"/>

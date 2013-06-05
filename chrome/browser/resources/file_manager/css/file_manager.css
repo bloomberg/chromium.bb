@@ -182,10 +182,6 @@ body[new-ui] #butter-bar .actions a.x {
   margin-bottom: -14px;
 }
 
-#butter-bar.error {
-  background-color: rgba(221, 75, 57, 0.2);
-}
-
 #butter-bar .butter-message.single-line {
   overflow: hidden;
   text-overflow: ellipsis;
@@ -2496,4 +2492,30 @@ body[new-ui] #iframe-drag-area {
   top: 0;
   width: auto;
   z-index: 101;
+}
+
+body[new-ui] .cr-dialog-frame.error-dialog-frame {
+  width: 300px;
+}
+
+body[new-ui] .error-dialog-frame .error-dialog-img {
+  background-image: -webkit-image-set(
+    url('chrome://theme/IDR_ERROR_NETWORK_GENERIC') 1x,
+    url('chrome://theme/IDR_ERROR_NETWORK_GENERIC@2x') 2x);
+  background-repeat: no-repeat;
+  background-position: center;
+  height: 40px;
+}
+
+.error-dialog-frame .cr-dialog-cancel {
+  display: none;
+}
+
+body[new-ui] .error-dialog-frame .cr-dialog-close,
+body[new-ui] .error-dialog-frame .cr-dialog-title {
+  display: none;
+}
+
+body[new-ui] .error-dialog-frame .cr-dialog-text {
+  text-align: center;
 }
