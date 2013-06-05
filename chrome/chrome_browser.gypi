@@ -2078,6 +2078,7 @@
         'browser/sync/glue/synced_session.h',
         'browser/sync/glue/synced_session_tracker.cc',
         'browser/sync/glue/synced_session_tracker.h',
+        'browser/sync/glue/synced_tab_delegate.cc',
         'browser/sync/glue/synced_tab_delegate_android.cc',
         'browser/sync/glue/synced_tab_delegate_android.h',
         'browser/sync/glue/synced_window_delegate.h',
@@ -2899,6 +2900,8 @@
             # Android uses a different invalidation service
             'browser/invalidation/ticl_invalidation_service.cc',
             'browser/invalidation/ticl_invalidation_service.h',
+
+            'browser/sync/glue/synced_tab_delegate.cc',
           ],
           'sources/': [
             ['exclude', '^browser/captive_portal/'],

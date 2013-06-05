@@ -12,8 +12,8 @@
 #include "chrome/browser/favicon/favicon_changed_details.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/glue/session_model_associator.h"
+#include "chrome/browser/sync/glue/synced_tab_delegate.h"
 #include "chrome/browser/sync/profile_sync_service.h"
-#include "chrome/browser/ui/sync/tab_contents_synced_tab_delegate.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
@@ -44,7 +44,7 @@ static const char kNTPOpenTabSyncURL[] = "chrome://newtab/#open_tabs";
 // from a NavigationController, if it exists. Returns |NULL| otherwise.
 SyncedTabDelegate* ExtractSyncedTabDelegate(
     const content::NotificationSource& source) {
-  return TabContentsSyncedTabDelegate::FromWebContents(
+  return SyncedTabDelegate::ImplFromWebContents(
       content::Source<NavigationController>(source).ptr()->GetWebContents());
 }
 
@@ -109,7 +109,7 @@ void SessionChangeProcessor::Observe(
     case chrome::NOTIFICATION_TAB_PARENTED: {
       WebContents* web_contents = content::Source<WebContents>(source).ptr();
       SyncedTabDelegate* tab =
-          TabContentsSyncedTabDelegate::FromWebContents(web_contents);
+          SyncedTabDelegate::ImplFromWebContents(web_contents);
       if (!tab || tab->profile() != profile_) {
         return;
       }
@@ -121,7 +121,7 @@ void SessionChangeProcessor::Observe(
     case content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME: {
       WebContents* web_contents = content::Source<WebContents>(source).ptr();
       SyncedTabDelegate* tab =
-          TabContentsSyncedTabDelegate::FromWebContents(web_contents);
+          SyncedTabDelegate::ImplFromWebContents(web_contents);
       if (!tab || tab->profile() != profile_) {
         return;
       }
@@ -133,7 +133,7 @@ void SessionChangeProcessor::Observe(
     case content::NOTIFICATION_WEB_CONTENTS_DESTROYED: {
       WebContents* web_contents = content::Source<WebContents>(source).ptr();
       SyncedTabDelegate* tab =
-          TabContentsSyncedTabDelegate::FromWebContents(web_contents);
+          SyncedTabDelegate::ImplFromWebContents(web_contents);
       if (!tab || tab->profile() != profile_)
         return;
       modified_tabs.push_back(tab);
@@ -180,7 +180,7 @@ void SessionChangeProcessor::Observe(
         return;
       }
       if (extension_tab_helper->extension_app()) {
-        SyncedTabDelegate* tab = TabContentsSyncedTabDelegate::FromWebContents(
+        SyncedTabDelegate* tab = SyncedTabDelegate::ImplFromWebContents(
             extension_tab_helper->web_contents());
         modified_tabs.push_back(tab);
       }

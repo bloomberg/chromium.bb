@@ -14,6 +14,7 @@ class Profile;
 
 namespace content {
 class NavigationEntry;
+class WebContents;
 }
 
 namespace browser_sync {
@@ -52,6 +53,10 @@ class SyncedTabDelegate {
 
   virtual bool IsPinned() const = 0;
   virtual bool HasWebContents() const = 0;
+
+  // Returns the SyncedTabDelegate associated with WebContents.
+  static SyncedTabDelegate* ImplFromWebContents(
+      content::WebContents* web_contents);
 };
 
 }  // namespace browser_sync

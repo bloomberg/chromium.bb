@@ -18,6 +18,7 @@
 
 using content::NavigationEntry;
 
+namespace browser_sync {
 SyncedTabDelegateAndroid::SyncedTabDelegateAndroid(TabAndroid* tab_android)
     : web_contents_(NULL), tab_android_(tab_android) {}
 
@@ -104,3 +105,11 @@ SyncedTabDelegateAndroid::GetBlockedNavigations() const {
   return TabContentsSyncedTabDelegate::FromWebContents(web_contents_)
       ->GetBlockedNavigations();
 }
+
+// static
+SyncedTabDelegate* SyncedTabDelegate::ImplFromWebContents(
+    content::WebContents* web_contents) {
+  TabAndroid* tab = TabAndroid::FromWebContents(web_contents);
+  return tab ? tab->GetSyncedTabDelegate() : NULL;
+}
+}  // namespace browser_sync
