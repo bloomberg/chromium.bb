@@ -68,7 +68,8 @@ class LocalChangeProcessorDelegate {
   void DidDeleteFileToResolveToLocal(
       const SyncStatusCallback& callback,
       google_apis::GDataErrorCode error);
-  void ResolveToRemote(const SyncStatusCallback& callback);
+  void ResolveToRemote(const SyncStatusCallback& callback,
+                       SyncFileType remote_file_type);
   void DidResolveToRemote(const SyncStatusCallback& callback,
                           SyncStatusCode status);
   void DidApplyLocalChange(
@@ -100,7 +101,8 @@ class LocalChangeProcessorDelegate {
 
   void HandleManualResolutionCase(const SyncStatusCallback& callback);
   void HandleLocalWinCase(const SyncStatusCallback& callback);
-  void HandleRemoteWinCase(const SyncStatusCallback& callback);
+  void HandleRemoteWinCase(const SyncStatusCallback& callback,
+                           SyncFileType remote_file_type);
   void StartOver(const SyncStatusCallback& callback, SyncStatusCode status);
 
   SyncStatusCode GDataErrorCodeToSyncStatusCodeWrapper(

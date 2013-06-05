@@ -5,6 +5,7 @@
 #include "chrome/browser/sync_file_system/local_sync_operation_resolver.h"
 
 #include "base/logging.h"
+#include "chrome/browser/sync_file_system/drive_file_sync_service.h"
 #include "chrome/browser/sync_file_system/sync_file_system.pb.h"
 
 namespace sync_file_system {
@@ -21,11 +22,9 @@ LocalSyncOperationType LocalSyncOperationResolver::Resolve(
   SyncFileType remote_file_type_in_metadata = SYNC_FILE_TYPE_UNKNOWN;
   if (drive_metadata) {
     is_conflicting = drive_metadata->conflicted();
-    if (drive_metadata->type() ==
-        DriveMetadata_ResourceType_RESOURCE_TYPE_FILE)
-      remote_file_type_in_metadata = SYNC_FILE_TYPE_FILE;
-    else
-      remote_file_type_in_metadata = SYNC_FILE_TYPE_DIRECTORY;
+    remote_file_type_in_metadata =
+        DriveFileSyncService::DriveMetadataResourceTypeToSyncFileType(
+            drive_metadata->type());
   }
 
   switch (local_file_change.change()) {

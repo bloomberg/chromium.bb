@@ -70,6 +70,13 @@ void LocalChangeProcessorDelegate::DidGetOriginRoot(
   if (has_remote_change_ && drive_metadata_.resource_id().empty())
     drive_metadata_.set_resource_id(remote_change_.resource_id);
 
+  SyncFileType remote_file_type =
+      has_remote_change_ ? remote_change_.change.file_type() :
+      has_drive_metadata_ ?
+          DriveFileSyncService::DriveMetadataResourceTypeToSyncFileType(
+              drive_metadata_.type())
+      : SYNC_FILE_TYPE_UNKNOWN;
+
   LocalSyncOperationType operation = LocalSyncOperationResolver::Resolve(
       local_change_,
       has_remote_change_ ? &remote_change_.change : NULL,
@@ -105,7 +112,7 @@ void LocalChangeProcessorDelegate::DidGetOriginRoot(
       ResolveToLocal(callback);
       return;
     case LOCAL_SYNC_OPERATION_RESOLVE_TO_REMOTE:
-      ResolveToRemote(callback);
+      ResolveToRemote(callback, remote_file_type);
       return;
     case LOCAL_SYNC_OPERATION_DELETE_METADATA:
       DeleteMetadata(base::Bind(
@@ -374,16 +381,17 @@ void LocalChangeProcessorDelegate::DidDeleteFileToResolveToLocal(
 }
 
 void LocalChangeProcessorDelegate::ResolveToRemote(
-    const SyncStatusCallback& callback) {
+    const SyncStatusCallback& callback,
+    SyncFileType remote_file_type) {
   if (!sync_service_.get())
     return;
 
   // Mark the file as to-be-fetched.
   DCHECK(!drive_metadata_.resource_id().empty());
 
-  SyncFileType type = remote_change_.change.file_type();
   SetMetadataToBeFetched(
-      DriveFileSyncService::SyncFileTypeToDriveMetadataResourceType(type),
+      DriveFileSyncService::SyncFileTypeToDriveMetadataResourceType(
+          remote_file_type),
       base::Bind(&LocalChangeProcessorDelegate::DidResolveToRemote,
                  weak_factory_.GetWeakPtr(), callback));
   // The synced notification will be dispatched when the remote file is
@@ -520,22 +528,28 @@ void LocalChangeProcessorDelegate::DidGetEntryForConflictResolution(
   if (!sync_service_.get())
     return;
 
-  SyncFileType local_file_type = local_metadata_.file_type;
-  base::Time local_modification_time = local_metadata_.last_modified;
+  SyncFileType remote_file_type = SYNC_FILE_TYPE_UNKNOWN;
+  DriveFileSyncService::ConflictResolutionResult resolution;
 
-  SyncFileType remote_file_type;
-  base::Time remote_modification_time = entry->updated_time();
-  if (entry->is_file())
-    remote_file_type = SYNC_FILE_TYPE_FILE;
-  else if (entry->is_folder())
-    remote_file_type = SYNC_FILE_TYPE_DIRECTORY;
-  else
-    remote_file_type = SYNC_FILE_TYPE_UNKNOWN;
+  if (error != google_apis::HTTP_SUCCESS) {
+    resolution = DriveFileSyncService::CONFLICT_RESOLUTION_LOCAL_WIN;
+  } else {
+    SyncFileType local_file_type = local_metadata_.file_type;
+    base::Time local_modification_time = local_metadata_.last_modified;
 
-  DriveFileSyncService::ConflictResolutionResult resolution =
-      sync_service_->ResolveConflictForLocalSync(
-          local_file_type, local_modification_time,
-          remote_file_type, remote_modification_time);
+    base::Time remote_modification_time = entry->updated_time();
+    if (entry->is_file())
+      remote_file_type = SYNC_FILE_TYPE_FILE;
+    else if (entry->is_folder())
+      remote_file_type = SYNC_FILE_TYPE_DIRECTORY;
+    else
+      remote_file_type = SYNC_FILE_TYPE_UNKNOWN;
+
+    resolution = sync_service_->ResolveConflictForLocalSync(
+        local_file_type, local_modification_time,
+        remote_file_type, remote_modification_time);
+  }
+
   switch (resolution) {
     case DriveFileSyncService::CONFLICT_RESOLUTION_MARK_CONFLICT:
       HandleManualResolutionCase(callback);
@@ -544,7 +558,7 @@ void LocalChangeProcessorDelegate::DidGetEntryForConflictResolution(
       HandleLocalWinCase(callback);
       return;
     case DriveFileSyncService::CONFLICT_RESOLUTION_REMOTE_WIN:
-      HandleRemoteWinCase(callback);
+      HandleRemoteWinCase(callback, remote_file_type);
       return;
   }
   NOTREACHED();
@@ -580,10 +594,11 @@ void LocalChangeProcessorDelegate::HandleLocalWinCase(
 }
 
 void LocalChangeProcessorDelegate::HandleRemoteWinCase(
-    const SyncStatusCallback& callback) {
+    const SyncStatusCallback& callback,
+    SyncFileType remote_file_type) {
   DVLOG(1) << "Resolving conflict for local sync:"
            << url_.DebugString() << ": REMOTE WIN";
-  ResolveToRemote(callback);
+  ResolveToRemote(callback, remote_file_type);
 }
 
 void LocalChangeProcessorDelegate::StartOver(const SyncStatusCallback& callback,

@@ -141,6 +141,8 @@ class DriveFileSyncService : public RemoteFileSyncService,
   static base::FilePath TitleToPath(const std::string& title);
   static DriveMetadata::ResourceType SyncFileTypeToDriveMetadataResourceType(
       SyncFileType file_type);
+  static SyncFileType DriveMetadataResourceTypeToSyncFileType(
+      DriveMetadata::ResourceType resource_type);
 
  private:
   friend class DriveFileSyncTaskManager;

@@ -1523,6 +1523,19 @@ DriveFileSyncService::SyncFileTypeToDriveMetadataResourceType(
   return DriveMetadata_ResourceType_RESOURCE_TYPE_FILE;
 }
 
+// static
+SyncFileType DriveFileSyncService::DriveMetadataResourceTypeToSyncFileType(
+    DriveMetadata::ResourceType resource_type) {
+  switch (resource_type) {
+    case DriveMetadata_ResourceType_RESOURCE_TYPE_FILE:
+      return SYNC_FILE_TYPE_FILE;
+    case DriveMetadata_ResourceType_RESOURCE_TYPE_FOLDER:
+      return SYNC_FILE_TYPE_DIRECTORY;
+  }
+  NOTREACHED();
+  return SYNC_FILE_TYPE_UNKNOWN;
+}
+
 void DriveFileSyncService::FetchChangesForIncrementalSync(
     const SyncStatusCallback& callback) {
   DCHECK(may_have_unfetched_changes_);
