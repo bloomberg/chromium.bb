@@ -344,10 +344,11 @@ ButterBar.prototype.onDelete_ = function(event) {
     case 'BEGIN':
       if (this.currentMode_ != ButterBar.Mode.DELETE)
         this.totalDeleted_ = 0;
+
     case 'PROGRESS':
       var props = [];
       for (var i = 0; i < urls.length; i++) {
-        props[i] = { deleted: true };
+        props[i] = {deleted: true};
       }
       this.metadataCache_.set(urls, 'internal', props);
 
@@ -362,17 +363,20 @@ ButterBar.prototype.onDelete_ = function(event) {
       if (this.currentMode_ == ButterBar.Mode.DELETE)
         this.update_(title);
       else
-        this.show(ButterBar.Mode.DELETE, title, { timeout: 0 });
+        this.show(ButterBar.Mode.DELETE, title, {timeout: 0});
       break;
 
     case 'SUCCESS':
+      break;
+
+    case 'ERROR':
       var props = [];
       for (var i = 0; i < urls.length; i++) {
-        props[i] = { deleted: false };
+        props[i] = {deleted: false};
       }
       this.metadataCache_.set(urls, 'internal', props);
 
-      this.hide_();
+      this.showError_(str('DELETE_ERROR'));
       break;
 
     default:

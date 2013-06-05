@@ -1206,13 +1206,19 @@ FileCopyManager.prototype.serviceAllDeleteTasks_ = function() {
     // big task logically, so there is only one BEGIN/SUCCESS event pair for
     // these continuous tasks.
     self.sendDeleteEvent_(self.deleteTasks_[0], 'PROGRESS');
-    self.serviceDeleteTask_(self.deleteTasks_[0], onTaskSuccess);
+    self.serviceDeleteTask_(self.deleteTasks_[0], onTaskSuccess, onTaskFailure);
+  };
+
+  var onTaskFailure = function(task) {
+    self.deleteTasks_ = [];
+    self.sendDeleteEvent_(task, 'ERROR');
+    self.maybeScheduleCloseBackgroundPage_();
   };
 
   // If the queue size is 1 after pushing our task, it was empty before,
   // so we need to kick off queue processing and dispatch BEGIN event.
   this.sendDeleteEvent_(this.deleteTasks_[0], 'BEGIN');
-  this.serviceDeleteTask_(this.deleteTasks_[0], onTaskSuccess);
+  this.serviceDeleteTask_(this.deleteTasks_[0], onTaskSuccess, onTaskFailure);
 };
 
 /**
@@ -1221,15 +1227,22 @@ FileCopyManager.prototype.serviceAllDeleteTasks_ = function() {
  * @param {Object} task The delete task (see deleteEntries function).
  * @param {function(Object)} onComplete Completion callback with the task
  *     as an argument.
+ * @param {function(Object)} onFailure Failure callback with the task as an
+ *     argument.
  * @private
  */
 FileCopyManager.prototype.serviceDeleteTask_ = function(
-    task, onComplete) {
+    task, onComplete, onFailure) {
   var downcount = task.entries.length;
 
   var onEntryComplete = function() {
     if (--downcount == 0)
       onComplete(task);
+  }.bind(this);
+
+  var onEntryFailure = function() {
+    if (--downcount == 0)
+      onFailure(task);
   }.bind(this);
 
   if (downcount == 0)
@@ -1240,7 +1253,7 @@ FileCopyManager.prototype.serviceDeleteTask_ = function(
     util.removeFileOrDirectory(
         entry,
         onEntryComplete,
-        onEntryComplete); // We ignore error, because we can't do anything here.
+        onEntryFailure);
   }
 };
 

@@ -246,6 +246,8 @@ DialogType.isModal = function(type) {
       this.metadataCache_.removeObserver(this.thumbnailObserverId_);
     if (this.driveObserverId_)
       this.metadataCache_.removeObserver(this.driveObserverId_);
+    if (this.internalObserverId_)
+      this.metadataCache_.removeObserver(this.internalObserverId_);
     this.filesystemObserverId_ = null;
     this.driveObserverId_ = null;
     this.internalObserverId_ = null;

@@ -12752,6 +12752,9 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_FILE_BROWSER_DELETED_MESSAGE" desc="Message informing about deleting single item.">
         Deleted "<ph name="FILENAME">$1<ex>photo.jpg</ex></ph>"
       </message>
+      <message name="IDS_FILE_BROWSER_DELETE_ERROR" desc="Message informing about error while deleting an item or items.">
+        An error occured. Some items may not have been deleted.
+      </message>
       <message name="IDS_FILE_BROWSER_UNDO_DELETE" desc="Text on the button to undo the delete operation.">
         Undo
       </message>
