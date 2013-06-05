@@ -24,8 +24,9 @@
 #include "base/win/wrapped_window_proc.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
+#include "chrome/browser/chrome_process_finder_win.h"
+#include "chrome/browser/metro_utils/metro_chrome_win.h"
 #include "chrome/browser/shell_integration.h"
-#include "chrome/browser/ui/metro_chrome_win.h"
 #include "chrome/browser/ui/simple_message_box.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
@@ -42,9 +43,6 @@
 namespace {
 
 const char kLockfile[] = "lockfile";
-
-const char kSearchUrl[] =
-  "http://www.google.com/search?q=%s&sourceid=chrome&ie=UTF-8";
 
 const int kMetroChromeActivationTimeoutMs = 3000;
 
@@ -247,8 +245,7 @@ bool ProcessSingleton::EscapeVirtualization(
     HWND hwnd = 0;
     ::Sleep(90);
     for (int tries = 200; tries; --tries) {
-      hwnd = ::FindWindowEx(HWND_MESSAGE, NULL, chrome::kMessageWindowClass,
-                            user_data_dir.value().c_str());
+      hwnd = chrome::FindRunningChromeWindow(user_data_dir);
       if (hwnd) {
         ::SetForegroundWindow(hwnd);
         break;
@@ -291,90 +288,20 @@ ProcessSingleton::NotifyResult ProcessSingleton::NotifyOtherProcess() {
     return PROCESS_NONE;
   }
 
-  DWORD process_id = 0;
-  DWORD thread_id = ::GetWindowThreadProcessId(remote_window_, &process_id);
-  // It is possible that the process owning this window may have died by now.
-  if (!thread_id || !process_id) {
-    remote_window_ = NULL;
-    return PROCESS_NONE;
-  }
-
-  if (base::win::IsMetroProcess()) {
-    // Interesting corner case. We are launched as a metro process but we
-    // found another chrome running. Since metro enforces single instance then
-    // the other chrome must be desktop chrome and this must be a search charm
-    // activation. This scenario is unique; other cases should be properly
-    // handled by the delegate_execute which will not activate a second chrome.
-    string16 terms;
-    base::win::MetroLaunchType launch = base::win::GetMetroLaunchParams(&terms);
-    if (launch != base::win::METRO_SEARCH) {
-      LOG(WARNING) << "In metro mode, but and launch is " << launch;
-    } else {
-      std::string query = net::EscapeQueryParamValue(UTF16ToUTF8(terms), true);
-      std::string url = base::StringPrintf(kSearchUrl, query.c_str());
-      SHELLEXECUTEINFOA sei = { sizeof(sei) };
-      sei.fMask = SEE_MASK_FLAG_LOG_USAGE;
-      sei.nShow = SW_SHOWNORMAL;
-      sei.lpFile = url.c_str();
-      ::OutputDebugStringA(sei.lpFile);
-      sei.lpDirectory = "";
-      ::ShellExecuteExA(&sei);
-    }
-    return PROCESS_NOTIFIED;
-  }
-
-  CommandLine command_line(*CommandLine::ForCurrentProcess());
-  command_line.AppendSwitchASCII(
-      switches::kOriginalProcessStartTime,
-      base::Int64ToString(
-          base::CurrentProcessInfo::CreationTime()->ToInternalValue()));
-
-  // Non-metro mode, send our command line to the other chrome message window.
-  // format is "START\0<<<current directory>>>\0<<<commandline>>>".
-  std::wstring to_send(L"START\0", 6);  // want the NULL in the string.
-  base::FilePath cur_dir;
-  if (!PathService::Get(base::DIR_CURRENT, &cur_dir))
-    return PROCESS_NONE;
-  to_send.append(cur_dir.value());
-  to_send.append(L"\0", 1);  // Null separator.
-  to_send.append(command_line.GetCommandLineString());
-  to_send.append(L"\0", 1);  // Null separator.
-
-  base::win::ScopedHandle process_handle;
-  if (base::win::GetVersion() >= base::win::VERSION_WIN8 &&
-      base::OpenProcessHandleWithAccess(
-          process_id, PROCESS_QUERY_INFORMATION,
-          process_handle.Receive()) &&
-      base::win::IsProcessImmersive(process_handle.Get())) {
-    chrome::ActivateMetroChrome();
-  }
-
-  // Allow the current running browser window making itself the foreground
-  // window (otherwise it will just flash in the taskbar).
-  ::AllowSetForegroundWindow(process_id);
-
-  COPYDATASTRUCT cds;
-  cds.dwData = 0;
-  cds.cbData = static_cast<DWORD>((to_send.length() + 1) * sizeof(wchar_t));
-  cds.lpData = const_cast<wchar_t*>(to_send.c_str());
-  DWORD_PTR result = 0;
-  if (::SendMessageTimeout(remote_window_,
-                           WM_COPYDATA,
-                           NULL,
-                           reinterpret_cast<LPARAM>(&cds),
-                           SMTO_ABORTIFHUNG,
-                           kTimeoutInSeconds * 1000,
-                           &result)) {
-    // It is possible that the process owning this window may have died by now.
-    if (!result) {
+  switch (chrome::AttemptToNotifyRunningChrome(remote_window_)) {
+    case chrome::NOTIFY_SUCCESS:
+      return PROCESS_NOTIFIED;
+    case chrome::NOTIFY_FAILED:
       remote_window_ = NULL;
       return PROCESS_NONE;
-    }
-    return PROCESS_NOTIFIED;
+    case chrome::NOTIFY_WINDOW_HUNG:
+      remote_window_ = NULL;
+      break;
   }
 
-  // It is possible that the process owning this window may have died by now.
-  if (!::IsWindow(remote_window_)) {
+  DWORD process_id = 0;
+  DWORD thread_id = ::GetWindowThreadProcessId(remote_window_, &process_id);
+  if (!thread_id || !process_id) {
     remote_window_ = NULL;
     return PROCESS_NONE;
   }
@@ -386,10 +313,12 @@ ProcessSingleton::NotifyResult ProcessSingleton::NotifyOtherProcess() {
                       reinterpret_cast<LPARAM>(&visible_window));
 
   // If there is a visible browser window, ask the user before killing it.
-  if (visible_window && chrome::ShowMessageBox(NULL,
-      l10n_util::GetStringUTF16(IDS_PRODUCT_NAME),
-      l10n_util::GetStringUTF16(IDS_BROWSER_HUNGBROWSER_MESSAGE),
-      chrome::MESSAGE_BOX_TYPE_QUESTION) == chrome::MESSAGE_BOX_RESULT_NO) {
+  if (visible_window &&
+      chrome::ShowMessageBox(
+          NULL,
+          l10n_util::GetStringUTF16(IDS_PRODUCT_NAME),
+          l10n_util::GetStringUTF16(IDS_BROWSER_HUNGBROWSER_MESSAGE),
+          chrome::MESSAGE_BOX_TYPE_QUESTION) == chrome::MESSAGE_BOX_RESULT_NO) {
     // The user denied. Quit silently.
     return PROCESS_NOTIFIED;
   }
@@ -400,7 +329,8 @@ ProcessSingleton::NotifyResult ProcessSingleton::NotifyOtherProcess() {
   return PROCESS_NONE;
 }
 
-ProcessSingleton::NotifyResult ProcessSingleton::NotifyOtherProcessOrCreate() {
+ProcessSingleton::NotifyResult
+ProcessSingleton::NotifyOtherProcessOrCreate() {
   ProcessSingleton::NotifyResult result = PROCESS_NONE;
   if (!Create()) {
     result = NotifyOtherProcess();
@@ -421,9 +351,7 @@ bool ProcessSingleton::Create() {
   static const wchar_t kMetroActivationEventName[] =
       L"Local\\ChromeProcessSingletonStartupMetroActivation!";
 
-  remote_window_ = ::FindWindowEx(HWND_MESSAGE, NULL,
-                                  chrome::kMessageWindowClass,
-                                  user_data_dir_.value().c_str());
+  remote_window_ = chrome::FindRunningChromeWindow(user_data_dir_);
   if (!remote_window_ && !EscapeVirtualization(user_data_dir_)) {
     // Make sure we will be the one and only process creating the window.
     // We use a named Mutex since we are protecting against multi-process
@@ -439,9 +367,7 @@ bool ProcessSingleton::Create() {
     // window at this time, but we must still check if someone created it
     // between the time where we looked for it above and the time the mutex
     // was given to us.
-    remote_window_ = ::FindWindowEx(HWND_MESSAGE, NULL,
-                                    chrome::kMessageWindowClass,
-                                    user_data_dir_.value().c_str());
+    remote_window_ = chrome::FindRunningChromeWindow(user_data_dir_);
 
 
     // In Win8+, a new Chrome process launched in Desktop mode may need to be
@@ -490,9 +416,7 @@ bool ProcessSingleton::Create() {
         // Check if this singleton was successfully grabbed by another process
         // (hopefully Metro Chrome). Failing to do so, this process will grab
         // the singleton and launch in Desktop mode.
-        remote_window_ = ::FindWindowEx(HWND_MESSAGE, NULL,
-                                        chrome::kMessageWindowClass,
-                                        user_data_dir_.value().c_str());
+        remote_window_ = chrome::FindRunningChromeWindow(user_data_dir_);
       }
     }
 

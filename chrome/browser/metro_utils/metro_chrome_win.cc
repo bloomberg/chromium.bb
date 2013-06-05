@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/metro_chrome_win.h"
+#include "chrome/browser/metro_utils/metro_chrome_win.h"
 
 #include <windows.h>
 #include <shobjidl.h>

@@ -1264,8 +1264,6 @@
         'browser/ui/login/login_model.h',
         'browser/ui/login/login_prompt.cc',
         'browser/ui/login/login_prompt.h',
-        'browser/ui/metro_chrome_win.cc',
-        'browser/ui/metro_chrome_win.h',
         'browser/ui/metro_pin_tab_helper_win.cc',
         'browser/ui/metro_pin_tab_helper_win.h',
         'browser/ui/native_focus_tracker.h',
@@ -2847,6 +2845,7 @@
           'dependencies': [
             'installer_util_strings',
             'launcher_support',
+            'metro_utils',
             '../google_update/google_update.gyp:google_update',
             '../third_party/iaccessible2/iaccessible2.gyp:iaccessible2',
             '../third_party/isimpledom/isimpledom.gyp:isimpledom',
