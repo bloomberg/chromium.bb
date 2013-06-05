@@ -115,6 +115,7 @@ bool ShellMainDelegate::BasicStartupComplete(int* exit_code) {
     EnableBrowserLayoutTestMode();
 
     command_line.AppendSwitch(switches::kProcessPerTab);
+    command_line.AppendSwitch(switches::kEnableLogging);
     command_line.AppendSwitch(switches::kAllowFileAccessFromFiles);
     command_line.AppendSwitchASCII(
         switches::kUseGL, gfx::kGLImplementationOSMesaName);
