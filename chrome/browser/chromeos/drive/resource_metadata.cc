@@ -34,14 +34,6 @@ ResourceEntry CreateEntryWithProperBaseName(const ResourceEntry& source) {
   return entry;
 }
 
-// Runs |callback| with |result|. Used to implement GetChildDirectories().
-void RunGetChildDirectoriesCallbackWithResult(
-    const GetChildDirectoriesCallback& callback,
-    scoped_ptr<std::set<base::FilePath> > result) {
-  DCHECK(!callback.is_null());
-  callback.Run(*result);
-}
-
 // Returns true if enough disk space is avilable for DB operation.
 // TODO(hashimoto): Merge this with FileCache's FreeDiskSpaceGetterInterface.
 bool EnoughDiskSpaceIsAvailableForDBOperation(const base::FilePath& path) {
@@ -517,32 +509,20 @@ void ResourceMetadata::RefreshDirectoryOnUIThread(
                    callback);
 }
 
-void ResourceMetadata::GetChildDirectoriesOnUIThread(
+void ResourceMetadata::GetChildDirectories(
     const std::string& resource_id,
-    const GetChildDirectoriesCallback& changed_dirs_callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!changed_dirs_callback.is_null());
-  base::PostTaskAndReplyWithResult(
-      blocking_task_runner_,
-      FROM_HERE,
-      base::Bind(&ResourceMetadata::GetChildDirectories,
-                 base::Unretained(this),
-                 resource_id),
-      base::Bind(&RunGetChildDirectoriesCallbackWithResult,
-                 changed_dirs_callback));
-}
-
-scoped_ptr<std::set<base::FilePath> > ResourceMetadata::GetChildDirectories(
-    const std::string& resource_id) {
+    std::set<base::FilePath>* child_directories) {
   DCHECK(blocking_task_runner_->RunsTasksOnCurrentThread());
 
-  scoped_ptr<std::set<base::FilePath> > changed_directories(
-      new std::set<base::FilePath>);
-  scoped_ptr<ResourceEntry> entry = storage_->GetEntry(resource_id);
-  if (entry && entry->file_info().is_directory())
-    GetDescendantDirectoryPaths(resource_id, changed_directories.get());
-
-  return changed_directories.Pass();
+  std::vector<std::string> children;
+  storage_->GetChildren(resource_id, &children);
+  for (size_t i = 0; i < children.size(); ++i) {
+    scoped_ptr<ResourceEntry> entry = storage_->GetEntry(children[i]);
+    if (entry && entry->file_info().is_directory()) {
+      child_directories->insert(GetFilePath(entry->resource_id()));
+      GetChildDirectories(entry->resource_id(), child_directories);
+    }
+  }
 }
 
 std::string ResourceMetadata::GetChildResourceId(
@@ -752,23 +732,6 @@ scoped_ptr<ResourceEntry> ResourceMetadata::GetDirectory(
   scoped_ptr<ResourceEntry> entry = storage_->GetEntry(resource_id);
   return entry && entry->file_info().is_directory() ?
       entry.Pass() : scoped_ptr<ResourceEntry>();
-}
-
-void ResourceMetadata::GetDescendantDirectoryPaths(
-    const std::string& directory_resource_id,
-    std::set<base::FilePath>* child_directories) {
-  DCHECK(blocking_task_runner_->RunsTasksOnCurrentThread());
-
-  std::vector<std::string> children;
-  storage_->GetChildren(directory_resource_id, &children);
-  for (size_t i = 0; i < children.size(); ++i) {
-    scoped_ptr<ResourceEntry> entry = storage_->GetEntry(children[i]);
-    DCHECK(entry);
-    if (entry->file_info().is_directory()) {
-      child_directories->insert(GetFilePath(entry->resource_id()));
-      GetDescendantDirectoryPaths(entry->resource_id(), child_directories);
-    }
-  }
 }
 
 void ResourceMetadata::GetResourceEntryPairByPathsOnUIThreadAfterGetFirst(

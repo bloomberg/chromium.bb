@@ -76,10 +76,6 @@ typedef base::Callback<void(FileError error,
                             scoped_ptr<ResourceEntryVector> entries)>
     ReadDirectoryCallback;
 
-// Used to get a set of child directories.
-typedef base::Callback<void(const std::set<base::FilePath>&)>
-    GetChildDirectoriesCallback;
-
 typedef base::Callback<void(int64)> GetChangestampCallback;
 
 // This is a part of EntryInfoPairResult.
@@ -237,14 +233,8 @@ class ResourceMetadata {
       const FileMoveCallback& callback);
 
   // Recursively get child directories of entry pointed to by |resource_id|.
-  // Must be called on the UI thread.
-  void GetChildDirectoriesOnUIThread(
-      const std::string& resource_id,
-      const GetChildDirectoriesCallback& changed_dirs_callback);
-
-  // Synchronous version of GetChildDirectoriesOnUIThread().
-  scoped_ptr<std::set<base::FilePath> > GetChildDirectories(
-      const std::string& resource_id);
+  void GetChildDirectories(const std::string& resource_id,
+                           std::set<base::FilePath>* child_directories);
 
   // Returns the resource id of the resource named |base_name| directly under
   // the directory with |parent_resource_id|.
@@ -313,10 +303,6 @@ class ResourceMetadata {
   // not be empty. Returns NULL if it finds no corresponding entry, or the
   // corresponding entry is not a directory.
   scoped_ptr<ResourceEntry> GetDirectory(const std::string& resource_id);
-
-  // Recursively extracts the paths set of all sub-directories.
-  void GetDescendantDirectoryPaths(const std::string& resource_id,
-                                   std::set<base::FilePath>* child_directories);
 
   // Puts an entry under its parent directory. Removes the child from the old
   // parent if there is. This method will also do name de-duplication to ensure

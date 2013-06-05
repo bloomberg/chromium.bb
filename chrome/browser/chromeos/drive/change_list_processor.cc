@@ -197,10 +197,10 @@ void ChangeListProcessor::AddEntry(const ResourceEntry& entry) {
 }
 
 void ChangeListProcessor::RemoveEntry(const ResourceEntry& entry) {
-  scoped_ptr<std::set<base::FilePath> > child_directories;
+  std::set<base::FilePath> child_directories;
   if (entry.file_info().is_directory()) {
-    child_directories =
-        resource_metadata_->GetChildDirectories(entry.resource_id());
+    resource_metadata_->GetChildDirectories(entry.resource_id(),
+                                            &child_directories);
   }
 
   base::FilePath file_path =
@@ -213,10 +213,7 @@ void ChangeListProcessor::RemoveEntry(const ResourceEntry& entry) {
     changed_dirs_.insert(file_path.DirName());
 
     // Notify children, if any.
-    if (child_directories) {
-      changed_dirs_.insert(child_directories->begin(),
-                           child_directories->end());
-    }
+    changed_dirs_.insert(child_directories.begin(), child_directories.end());
 
     // If entry is a directory, notify self.
     if (entry.file_info().is_directory())
