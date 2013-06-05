@@ -333,7 +333,7 @@ demarshal(struct marshal_data *data, const char *format,
 	assert(write(data->s[1], msg, size) == size);
 	assert(wl_connection_read(data->read_connection) == size);
 
-	wl_map_init(&objects);
+	wl_map_init(&objects, WL_MAP_SERVER_SIDE);
 	object.id = msg[0];
 	closure = wl_connection_demarshal(data->read_connection,
 					  size, &objects, &message);
@@ -414,7 +414,7 @@ marshal_demarshal(struct marshal_data *data,
 
 	assert(wl_connection_read(data->read_connection) == size);
 
-	wl_map_init(&objects);
+	wl_map_init(&objects, WL_MAP_SERVER_SIDE);
 	object.id = msg[0];
 	closure = wl_connection_demarshal(data->read_connection,
 					  size, &objects, &message);

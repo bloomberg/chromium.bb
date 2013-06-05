@@ -31,10 +31,10 @@ TEST(map_insert_new)
 	struct wl_map map;
 	uint32_t i, j, k, a, b, c;
 
-	wl_map_init(&map);
-	i = wl_map_insert_new(&map, WL_MAP_SERVER_SIDE, &a);
-	j = wl_map_insert_new(&map, WL_MAP_SERVER_SIDE, &b);
-	k = wl_map_insert_new(&map, WL_MAP_SERVER_SIDE, &c);
+	wl_map_init(&map, WL_MAP_SERVER_SIDE);
+	i = wl_map_insert_new(&map, 0, &a);
+	j = wl_map_insert_new(&map, 0, &b);
+	k = wl_map_insert_new(&map, 0, &c);
 	assert(i == WL_SERVER_ID_START);
 	assert(j == WL_SERVER_ID_START + 1);
 	assert(k == WL_SERVER_ID_START + 2);
@@ -42,8 +42,10 @@ TEST(map_insert_new)
 	assert(wl_map_lookup(&map, i) == &a);
 	assert(wl_map_lookup(&map, j) == &b);
 	assert(wl_map_lookup(&map, k) == &c);
+    wl_map_release(&map);
 
-	i = wl_map_insert_new(&map, WL_MAP_CLIENT_SIDE, &a);
+	wl_map_init(&map, WL_MAP_CLIENT_SIDE);
+	i = wl_map_insert_new(&map, 0, &a);
 	assert(i == 0);
 	assert(wl_map_lookup(&map, i) == &a);
 
@@ -55,13 +57,13 @@ TEST(map_insert_at)
 	struct wl_map map;
 	uint32_t a, b, c;
 
-	wl_map_init(&map);
-	assert(wl_map_insert_at(&map, WL_MAP_SERVER_SIDE, &a) == 0);
-	assert(wl_map_insert_at(&map, WL_MAP_SERVER_SIDE + 3, &b) == -1);
-	assert(wl_map_insert_at(&map, WL_MAP_SERVER_SIDE + 1, &c) == 0);
+	wl_map_init(&map, WL_MAP_CLIENT_SIDE);
+	assert(wl_map_insert_at(&map, 0, WL_SERVER_ID_START, &a) == 0);
+	assert(wl_map_insert_at(&map, 0, WL_SERVER_ID_START + 3, &b) == -1);
+	assert(wl_map_insert_at(&map, 0, WL_SERVER_ID_START + 1, &c) == 0);
 
-	assert(wl_map_lookup(&map, WL_MAP_SERVER_SIDE) == &a);
-	assert(wl_map_lookup(&map, WL_MAP_SERVER_SIDE + 1) == &c);
+	assert(wl_map_lookup(&map, WL_SERVER_ID_START) == &a);
+	assert(wl_map_lookup(&map, WL_SERVER_ID_START + 1) == &c);
 
 	wl_map_release(&map);
 }
@@ -71,10 +73,10 @@ TEST(map_remove)
 	struct wl_map map;
 	uint32_t i, j, k, l, a, b, c, d;
 
-	wl_map_init(&map);
-	i = wl_map_insert_new(&map, WL_MAP_SERVER_SIDE, &a);
-	j = wl_map_insert_new(&map, WL_MAP_SERVER_SIDE, &b);
-	k = wl_map_insert_new(&map, WL_MAP_SERVER_SIDE, &c);
+	wl_map_init(&map, WL_MAP_SERVER_SIDE);
+	i = wl_map_insert_new(&map, 0, &a);
+	j = wl_map_insert_new(&map, 0, &b);
+	k = wl_map_insert_new(&map, 0, &c);
 	assert(i == WL_SERVER_ID_START);
 	assert(j == WL_SERVER_ID_START + 1);
 	assert(k == WL_SERVER_ID_START + 2);
@@ -87,9 +89,29 @@ TEST(map_remove)
 	assert(wl_map_lookup(&map, j) == NULL);
 
 	/* Verify that we insert d at the hole left by removing b */
-	l = wl_map_insert_new(&map, WL_MAP_SERVER_SIDE, &d);
+	l = wl_map_insert_new(&map, 0, &d);
 	assert(l == WL_SERVER_ID_START + 1);
 	assert(wl_map_lookup(&map, l) == &d);
+
+	wl_map_release(&map);
+}
+
+TEST(map_flags)
+{
+	struct wl_map map;
+	uint32_t i, j, a, b;
+
+	wl_map_init(&map, WL_MAP_SERVER_SIDE);
+	i = wl_map_insert_new(&map, 0, &a);
+	j = wl_map_insert_new(&map, 1, &b);
+	assert(i == WL_SERVER_ID_START);
+	assert(j == WL_SERVER_ID_START + 1);
+
+	assert(wl_map_lookup(&map, i) == &a);
+	assert(wl_map_lookup(&map, j) == &b);
+
+    assert(wl_map_lookup_flags(&map, i) == 0);
+    assert(wl_map_lookup_flags(&map, j) == 1);
 
 	wl_map_release(&map);
 }
