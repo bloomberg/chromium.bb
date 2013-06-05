@@ -605,10 +605,10 @@ bool DownloadTargetDeterminer::IsDangerousFile(PriorVisitsToReferrer visits) {
     return false;
 
   switch (download_util::GetFileDangerLevel(virtual_path_.BaseName())) {
-    case download_util::NotDangerous:
+    case download_util::NOT_DANGEROUS:
       return false;
 
-    case download_util::AllowOnUserGesture:
+    case download_util::ALLOW_ON_USER_GESTURE:
       // "Allow on user gesture" is OK when we have a user gesture and the
       // hosting page has been visited before today.
       if (download_->GetTransitionType() &
@@ -617,7 +617,7 @@ bool DownloadTargetDeterminer::IsDangerousFile(PriorVisitsToReferrer visits) {
       }
       return !download_->HasUserGesture() || visits == NO_VISITS_TO_REFERRER;
 
-    case download_util::Dangerous:
+    case download_util::DANGEROUS:
       return true;
   }
   NOTREACHED();

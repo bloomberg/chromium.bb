@@ -73,7 +73,7 @@ DownloadPrefs::DownloadPrefs(Profile* profile) : profile_(profile) {
     base::FilePath path(UTF8ToWide(extensions[i]));
 #endif
     if (!extensions[i].empty() &&
-        download_util::GetFileDangerLevel(path) == download_util::NotDangerous)
+        download_util::GetFileDangerLevel(path) == download_util::NOT_DANGEROUS)
       auto_open_.insert(path.value());
   }
 }

@@ -540,8 +540,8 @@ TEST_F(DownloadTargetDeterminerTest, TargetDeterminer_Basic) {
   };
 
   // The test assumes that .html files have a danger level of
-  // AllowOnUserGesture.
-  ASSERT_EQ(download_util::AllowOnUserGesture,
+  // ALLOW_ON_USER_GESTURE.
+  ASSERT_EQ(download_util::ALLOW_ON_USER_GESTURE,
             download_util::GetFileDangerLevel(
                 base::FilePath(FILE_PATH_LITERAL("foo.html"))));
   RunTestCasesWithActiveItem(kBasicTestCases, arraysize(kBasicTestCases));
@@ -1027,8 +1027,8 @@ TEST_F(DownloadTargetDeterminerTest, TargetDeterminer_LocalPathFailed) {
                              arraysize(kLocalPathFailedCases));
 }
 
-// Downloads that have a danger level of AllowOnUserGesture should be marked as
-// safe depending on whether there was a user gesture associated with the
+// Downloads that have a danger level of ALLOW_ON_USER_GESTURE should be marked
+// as safe depending on whether there was a user gesture associated with the
 // download and whether the referrer was visited prior to today.
 TEST_F(DownloadTargetDeterminerTest, TargetDeterminer_VisitedReferrer) {
   const DownloadTestCase kVisitedReferrerCases[] = {
@@ -1092,8 +1092,8 @@ TEST_F(DownloadTargetDeterminerTest, TargetDeterminer_VisitedReferrer) {
   };
 
   // This test assumes that the danger level of .html files is
-  // AllowOnUserGesture.
-  ASSERT_EQ(download_util::AllowOnUserGesture,
+  // ALLOW_ON_USER_GESTURE.
+  ASSERT_EQ(download_util::ALLOW_ON_USER_GESTURE,
             download_util::GetFileDangerLevel(
                 base::FilePath(FILE_PATH_LITERAL("foo.html"))));
 
@@ -1570,8 +1570,8 @@ TEST_F(DownloadTargetDeterminerTest, TargetDeterminer_ResumedNoPrompt) {
   };
 
   // The test assumes that .html files have a danger level of
-  // AllowOnUserGesture.
-  ASSERT_EQ(download_util::AllowOnUserGesture,
+  // ALLOW_ON_USER_GESTURE.
+  ASSERT_EQ(download_util::ALLOW_ON_USER_GESTURE,
             download_util::GetFileDangerLevel(
                 base::FilePath(FILE_PATH_LITERAL("foo.html"))));
   for (size_t i = 0; i < arraysize(kResumedTestCases); ++i) {
@@ -1691,8 +1691,8 @@ TEST_F(DownloadTargetDeterminerTest, TargetDeterminer_ResumedWithPrompt) {
   };
 
   // The test assumes that .html files have a danger level of
-  // AllowOnUserGesture.
-  ASSERT_EQ(download_util::AllowOnUserGesture,
+  // ALLOW_ON_USER_GESTURE.
+  ASSERT_EQ(download_util::ALLOW_ON_USER_GESTURE,
             download_util::GetFileDangerLevel(
                 base::FilePath(FILE_PATH_LITERAL("foo.html"))));
   for (size_t i = 0; i < arraysize(kResumedTestCases); ++i) {
@@ -1847,8 +1847,8 @@ TEST_F(DownloadTargetDeterminerTest,
   };
 
   // The test assumes that .html files have a danger level of
-  // AllowOnUserGesture.
-  ASSERT_EQ(download_util::AllowOnUserGesture,
+  // ALLOW_ON_USER_GESTURE.
+  ASSERT_EQ(download_util::ALLOW_ON_USER_GESTURE,
             download_util::GetFileDangerLevel(
                 base::FilePath(FILE_PATH_LITERAL("foo.html"))));
 

@@ -12,9 +12,9 @@
 namespace download_util {
 
 enum DownloadDangerLevel {
-  NotDangerous,
-  AllowOnUserGesture,
-  Dangerous
+  NOT_DANGEROUS,
+  ALLOW_ON_USER_GESTURE,
+  DANGEROUS
 };
 
 // Determine the download danger level of a file.
