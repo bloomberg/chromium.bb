@@ -31,15 +31,15 @@ per-file spellcheck_result.h=rlp@chromium.org
 per-file spellcheck_result.h=rouslan@chromium.org
 
 # Instant/Search files.
-per-file instant_restricted_id_cache*=sreeram@chromium.org
-per-file instant_types.*=dhollowa@chromium.org
+per-file instant_restricted_id_cache*=brettw@chromium.org
+per-file instant_restricted_id_cache*=jered@chromium.org
+per-file instant_restricted_id_cache*=samarth@chromium.org
+per-file instant_types.*=brettw@chromium.org
 per-file instant_types.*=jered@chromium.org
 per-file instant_types.*=samarth@chromium.org
-per-file instant_types.*=sreeram@chromium.org
-per-file search_types.*=dhollowa@chromium.org
+per-file search_types.*=brettw@chromium.org
 per-file search_types.*=jered@chromium.org
 per-file search_types.*=samarth@chromium.org
-per-file search_types.*=sreeram@chromium.org
 
 # Debugging crash keys.
 per-file crash_keys.*=rsesek@chromium.org
