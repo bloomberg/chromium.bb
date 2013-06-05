@@ -44,6 +44,7 @@ right apply_type=length, initial=initialOffset, use_auto
 speak
 table-layout
 tab-size type_name=unsigned
+text-decoration-style type_name=TextDecorationStyle
 text-overflow type_name=TextOverflow
 text-transform
 top apply_type=length, initial=initialOffset, use_auto
@@ -119,7 +120,6 @@ zoom custom_all
 -webkit-shape-padding apply_type=length
 -webkit-text-align-last type_name=TextAlignLast, condition=CSS3_TEXT
 -webkit-text-combine type_name=TextCombine
--webkit-text-decoration-style type_name=TextDecorationStyle, condition=CSS3_TEXT
 -webkit-text-emphasis-position type_name=TextEmphasisPosition
 -webkit-text-security
 -webkit-transform-origin-x apply_type=length

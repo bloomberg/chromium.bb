@@ -21,6 +21,7 @@ CSSExclusions status=experimental
 CSSRegions status=experimental
 CSSTouchAction status=test
 CSSVariables status=experimental
+CSS3TextDecorations status=experimental
 CustomDOMElements status=experimental
 Database status=stable
 DataListElement status=stable

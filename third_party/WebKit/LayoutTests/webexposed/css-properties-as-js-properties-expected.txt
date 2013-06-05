@@ -163,6 +163,9 @@ tableLayout
 textAlign
 textAnchor
 textDecoration
+textDecorationColor
+textDecorationLine
+textDecorationStyle
 textIndent
 textLineThroughColor
 textLineThroughMode

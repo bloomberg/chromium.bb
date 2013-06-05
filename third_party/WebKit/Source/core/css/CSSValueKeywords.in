@@ -452,7 +452,7 @@ static
 thick
 thin
 underline
-wavy condition=CSS3_TEXT
+wavy
 -webkit-nowrap
 
 // CSS3 Values

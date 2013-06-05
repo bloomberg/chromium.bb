@@ -344,12 +344,10 @@ inline TextDecoration& operator|= (TextDecoration& a, TextDecoration b) { return
 
 enum TextDecorationStyle {
     TextDecorationStyleSolid,
-#if ENABLE(CSS3_TEXT)
     TextDecorationStyleDouble,
     TextDecorationStyleDotted,
     TextDecorationStyleDashed,
     TextDecorationStyleWavy
-#endif // CSS3_TEXT
 };
 
 #if ENABLE(CSS3_TEXT)

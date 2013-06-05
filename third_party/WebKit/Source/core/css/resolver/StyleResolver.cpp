@@ -3178,6 +3178,9 @@ void StyleResolver::applyProperty(CSSPropertyID id, CSSValue* value)
     case CSSPropertyTableLayout:
     case CSSPropertyTextAlign:
     case CSSPropertyTextDecoration:
+    case CSSPropertyTextDecorationLine:
+    case CSSPropertyTextDecorationStyle:
+    case CSSPropertyTextDecorationColor:
     case CSSPropertyTextIndent:
     case CSSPropertyTextOverflow:
     case CSSPropertyTextRendering:
@@ -3287,9 +3290,6 @@ void StyleResolver::applyProperty(CSSPropertyID id, CSSValue* value)
     case CSSPropertyWebkitRubyPosition:
     case CSSPropertyWebkitTextCombine:
 #if ENABLE(CSS3_TEXT)
-    case CSSPropertyWebkitTextDecorationLine:
-    case CSSPropertyWebkitTextDecorationStyle:
-    case CSSPropertyWebkitTextDecorationColor:
     case CSSPropertyWebkitTextAlignLast:
     case CSSPropertyWebkitTextUnderlinePosition:
 #endif // CSS3_TEXT

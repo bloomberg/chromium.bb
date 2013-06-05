@@ -462,10 +462,10 @@ static int mapCSSPropertyIdToCSSSampleId(int id)
     case CSSPropertyWebkitBlendMode: return 399;
     case CSSPropertyWebkitBackgroundBlendMode: return 400;
 #endif
+    case CSSPropertyTextDecorationLine: return 401;
+    case CSSPropertyTextDecorationStyle: return 402;
+    case CSSPropertyTextDecorationColor: return 403;
 #if defined(ENABLE_CSS3_TEXT) && ENABLE_CSS3_TEXT
-    case CSSPropertyWebkitTextDecorationLine: return 401;
-    case CSSPropertyWebkitTextDecorationStyle: return 402;
-    case CSSPropertyWebkitTextDecorationColor: return 403;
     case CSSPropertyWebkitTextAlignLast: return 404;
     case CSSPropertyWebkitTextUnderlinePosition: return 405;
 #endif

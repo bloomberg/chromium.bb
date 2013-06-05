@@ -500,10 +500,8 @@ float GraphicsContext::setupPaintForStroking(SkPaint* paint, SkRect* rect, int l
         switch (m_state->m_strokeStyle) {
         case NoStroke:
         case SolidStroke:
-#if ENABLE(CSS3_TEXT)
         case DoubleStroke:
-        case WavyStroke: // FIXME: https://bugs.webkit.org/show_bug.cgi?id=93509 - Needs platform support.
-#endif // CSS3_TEXT
+        case WavyStroke: // FIXME: https://code.google.com/p/chromium/issues/detail?id=229574
             break;
         case DashedStroke:
             width = dashRatio * width;
@@ -817,10 +815,8 @@ void GraphicsContext::drawLineForText(const FloatPoint& pt, float width, bool pr
     switch (strokeStyle()) {
     case NoStroke:
     case SolidStroke:
-#if ENABLE(CSS3_TEXT)
     case DoubleStroke:
     case WavyStroke:
-#endif // CSS3_TEXT
         setupPaintForFilling(&paint);
         break;
     case DottedStroke:

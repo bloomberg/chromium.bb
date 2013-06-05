@@ -303,6 +303,7 @@ bool CSSProperty::isInheritedProperty(CSSPropertyID propertyID)
     case CSSPropertyTextAlign:
     case CSSPropertyTextAnchor:
     case CSSPropertyTextDecoration:
+    case CSSPropertyTextDecorationLine:
     case CSSPropertyTextIndent:
     case CSSPropertyTextRendering:
     case CSSPropertyTextShadow:
@@ -339,7 +340,6 @@ bool CSSProperty::isInheritedProperty(CSSPropertyID propertyID)
     case CSSPropertyWebkitTapHighlightColor:
     case CSSPropertyWebkitTextCombine:
 #if ENABLE(CSS3_TEXT)
-    case CSSPropertyWebkitTextDecorationLine:
     case CSSPropertyWebkitTextAlignLast:
     case CSSPropertyWebkitTextUnderlinePosition:
 #endif // CSS3_TEXT
@@ -471,6 +471,8 @@ bool CSSProperty::isInheritedProperty(CSSPropertyID propertyID)
     case CSSPropertyStopColor:
     case CSSPropertyStopOpacity:
     case CSSPropertyTableLayout:
+    case CSSPropertyTextDecorationStyle:
+    case CSSPropertyTextDecorationColor:
     case CSSPropertyTextLineThroughColor:
     case CSSPropertyTextLineThroughMode:
     case CSSPropertyTextLineThroughStyle:
@@ -628,10 +630,6 @@ bool CSSProperty::isInheritedProperty(CSSPropertyID propertyID)
     case CSSPropertyWebkitPerspectiveOrigin:
     case CSSPropertyWebkitPerspectiveOriginX:
     case CSSPropertyWebkitPerspectiveOriginY:
-#if ENABLE(CSS3_TEXT)
-    case CSSPropertyWebkitTextDecorationStyle:
-    case CSSPropertyWebkitTextDecorationColor:
-#endif // CSS3_TEXT
     case CSSPropertyWebkitTransform:
     case CSSPropertyWebkitTransformOrigin:
     case CSSPropertyWebkitTransformOriginX:
