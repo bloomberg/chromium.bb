@@ -24,11 +24,16 @@ h2 {
   font-size: 110%;
   font-weight: normal;
   letter-spacing: -1px;
-  margin: 0;
-  margin-left: -38px;
+  margin: 20px 0 0 -38px;
   padding: 0.5em 1em 0.5em 38px;
 }
 
 a {
   color: black;
+}
+
+#json {
+  display: none;
+  height: 100px;
+  width: 100%;
 }

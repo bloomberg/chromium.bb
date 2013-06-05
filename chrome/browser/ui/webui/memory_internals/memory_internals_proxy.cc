@@ -14,9 +14,16 @@
 #include "base/sys_info.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/defaults.h"
+#include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/memory_details.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/webui/memory_internals/memory_internals_handler.h"
+#include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/extension_set.h"
 #include "content/public/browser/url_data_source.h"
 #include "content/public/browser/web_ui.h"
 #include "grit/chromium_strings.h"
@@ -35,6 +42,7 @@ class BrowserProcessDetails : public MemoryDetails {
       : callback_(callback) {}
   virtual void OnDetailsAvailable() OVERRIDE {
     const std::vector<ProcessData>& browser_processes = processes();
+    // [0] means Chrome.
     callback_.Run(browser_processes[0]);
   }
 
@@ -87,12 +95,13 @@ void MemoryInternalsProxy::OnDetailsAvailable(const ProcessData& browser) {
   details.SetString("os_version", base::SysInfo::OperatingSystemVersion());
 
   base::ListValue* processes = new ListValue();
+  base::ListValue* extensions = new ListValue();
   details.Set("processes", processes);
+  details.Set("extensions", extensions);
   for (ProcessMemoryInformationList::const_iterator
            iter = browser.processes.begin();
        iter != browser.processes.end(); ++iter) {
     base::DictionaryValue* info = new DictionaryValue();
-    processes->Append(info);
 
     // Information from MemoryDetails.
     info->SetInteger("pid", iter->pid);
@@ -105,6 +114,12 @@ void MemoryInternalsProxy::OnDetailsAvailable(const ProcessData& browser) {
     info->Set("titles", titles);
     for (size_t i = 0; i < iter->titles.size(); ++i)
       titles->AppendString(iter->titles[i]);
+
+    if (iter->process_type == content::PROCESS_TYPE_RENDERER &&
+        iter->renderer_type == ProcessMemoryInformation::RENDERER_EXTENSION)
+      extensions->Append(info);
+    else
+      processes->Append(info);
   }
 
   CallJavaScriptFunctionOnUIThread("g_main_view.onSetSnapshot", &details);

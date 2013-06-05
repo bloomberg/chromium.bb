@@ -12,12 +12,12 @@
 #include "chrome/browser/memory_details.h"
 #include "content/public/browser/browser_thread.h"
 
+class MemoryInternalsHandler;
+
 namespace base {
 class ListValue;
 class Value;
 }
-
-class MemoryInternalsHandler;
 
 class MemoryInternalsProxy
     : public base::RefCountedThreadSafe<

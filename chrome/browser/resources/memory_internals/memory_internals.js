@@ -26,6 +26,7 @@ var MainView = (function() {
      */
     onSetSnapshot: function(browser) {
       this.updateSnapshot(browser['processes']);
+      this.updateExtensions(browser['extensions']);
 
       $('os-value').textContent = browser['os'] + ' (' +
           browser['os_version'] + ')';
@@ -57,21 +58,60 @@ var MainView = (function() {
         for (var i = 1; i < template.length; ++i) {
           var value = '---';
           switch (template[i].className) {
-            case 'process-id':
-              value = process['pid'];
-              break;
-            case 'process-info':
-              value = process['type'] + '<br>' + process['titles'].join('<br>');
-              break;
-            case 'process-memory':
-              value = process['memory_private'];
-              break;
+          case 'process-id':
+            value = process['pid'];
+            break;
+          case 'process-info':
+            value = process['type'] + '<br>' + process['titles'].join('<br>');
+            break;
+          case 'process-memory':
+            value = process['memory_private'];
+            break;
           }
           var col = row.insertCell(-1);
           col.innerHTML = value;
           col.className = template[i].className;
         }
         row.setAttribute('class', 'process');
+      }
+    },
+
+    /**
+     * Update extension information table.
+     * @param {Object} extensions information about memory.
+     */
+    updateExtensions: function(extensions) {
+      // Remove existing information.
+      var size = $('extension-view').getElementsByClassName('extension').length;
+      for (var i = 0; i < size; ++i) {
+        $('extension-view').deleteRow(-1);
+      }
+
+      var template = $('extension-template').childNodes;
+      // Add information of each extension.
+      for (var id in extensions) {
+        var extension = extensions[id];
+
+        var row = $('extension-view').insertRow(-1);
+        // We skip |template[0]|, because it is a (invalid) Text object.
+        for (var i = 1; i < template.length; ++i) {
+          var value = '---';
+          switch (template[i].className) {
+          case 'extension-id':
+            value = extension['pid'];
+            break;
+          case 'extension-info':
+            value = extension['titles'].join('<br>');
+            break;
+          case 'extension-memory':
+            value = extension['memory_private'];
+            break;
+          }
+          var col = row.insertCell(-1);
+          col.innerHTML = value;
+          col.className = template[i].className;
+        }
+        row.setAttribute('class', 'extension');
       }
     }
   };

@@ -2,22 +2,22 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
-#snapshot-view {
+#extension-view {
   width: 100%;
 }
 
-#snapshot-view tr:nth-child(odd) {
+#extension-view tr:nth-child(odd) {
   background: rgb(239, 243, 255);
 }
 
-#snapshot-view td {
+#extension-view td {
   vertical-align: top;
 }
 
-#snapshot-view .process-memory {
+#extension-view .extension-memory {
   text-align: right;
 }
 
-#snapshot-view #process-template {
+#extension-view #extension-template {
   display: none;
 }
