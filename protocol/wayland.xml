@@ -1199,15 +1199,6 @@
       <arg name="capabilities" type="uint"/>
     </event>
 
-    <event name="name">
-      <description summary="unique identifier for this seat">
-	In a multiseat configuration this can be used by the client to help
-	identify which physical devices the seat represents. Based on
-	the seat configuration used by the compositor.
-      </description>
-      <arg name="name" type="string"/>
-    </event>
-
     <request name="get_pointer">
       <description summary="return pointer object">
         The ID provided will be initialized to the wl_pointer interface
@@ -1240,6 +1231,18 @@
       </description>
       <arg name="id" type="new_id" interface="wl_touch"/>
     </request>
+
+    <!-- Version 2 of additions -->
+
+    <event name="name">
+      <description summary="unique identifier for this seat">
+	In a multiseat configuration this can be used by the client to help
+	identify which physical devices the seat represents. Based on
+	the seat configuration used by the compositor.
+      </description>
+      <arg name="name" type="string"/>
+    </event>
+
   </interface>
 
   <interface name="wl_pointer" version="1">
