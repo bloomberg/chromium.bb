@@ -28,6 +28,7 @@ class ProfileKeyedAPI : public BrowserContextKeyedService {
   static const bool kServiceRedirectedInIncognito = false;
   static const bool kServiceIsNULLWhileTesting = false;
   static const bool kServiceHasOwnInstanceInIncognito = false;
+  static const bool kServiceIsCreatedWithBrowserContext = true;
 
   // Users of this factory template must define a GetFactoryInstance()
   // and manage their own instances (typically using LazyInstance or
@@ -109,7 +110,7 @@ class ProfileKeyedAPIFactory : public BrowserContextKeyedServiceFactory {
   }
 
   virtual bool ServiceIsCreatedWithBrowserContext() const OVERRIDE {
-    return true;
+    return T::kServiceIsCreatedWithBrowserContext;
   }
 
   virtual bool ServiceIsNULLWhileTesting() const OVERRIDE {

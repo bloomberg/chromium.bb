@@ -217,6 +217,8 @@ class MessageService : public ProfileKeyedAPI,
     return "MessageService";
   }
   static const bool kServiceRedirectedInIncognito = true;
+  static const bool kServiceIsCreatedWithBrowserContext = false;
+  static const bool kServiceIsNULLWhileTesting = true;
 
   content::NotificationRegistrar registrar_;
   MessageChannelMap channels_;
