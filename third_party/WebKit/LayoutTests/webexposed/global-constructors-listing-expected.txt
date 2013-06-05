@@ -413,6 +413,7 @@ TouchEvent
 TouchList
 TrackEvent
 TransitionEvent
+TreeWalker
 TypeError
 UIEvent
 URIError
