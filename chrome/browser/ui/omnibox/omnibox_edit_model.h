@@ -532,6 +532,18 @@ class OmniboxEditModel {
   // This is needed as prior to accepting the current text the model is
   // reverted, which triggers resetting Instant. We don't want to update Instant
   // in this case, so we use the flag to determine if this is happening.
+  //
+  // For example: The permanent text is "foo". The user has typed "bar" and
+  // Instant is showing a search results preview for "bar". The user hits Enter.
+  // in_revert_ is used to tell Instant, "The omnibox text is about to change to
+  // 'foo', thus TextChanged() will be called, leading to DoInstant(), but
+  // please don't change what you are showing. I'll commit the real match
+  // ("bar") immediately after the revert."
+  //
+  // Without in_revert_, Instant would erroneously change its search results to
+  // "foo". Because of the way the code is structured (specifically, DoInstant()
+  // is NOT called for "bar" again), this leaves Instant showing results for
+  // "foo", which is wrong.
   bool in_revert_;
 
   // InstantController needs this in extended mode to distinguish the case in

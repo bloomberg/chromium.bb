@@ -704,7 +704,8 @@ void OmniboxEditModel::OpenMatch(const AutocompleteMatch& match,
       // Don't increment usage count for extension keywords.
       if (delegate_->ProcessExtensionKeyword(template_url, match,
                                              disposition)) {
-        view_->RevertAll();
+        if (disposition != NEW_BACKGROUND_TAB)
+          view_->RevertAll();
         return;
       }
 
