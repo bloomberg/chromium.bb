@@ -354,14 +354,6 @@ bool CreateApplicationShortcutView::IsDialogButtonEnabled(
   return true;
 }
 
-bool CreateApplicationShortcutView::CanResize() const {
-  return false;
-}
-
-bool CreateApplicationShortcutView::CanMaximize() const {
-  return false;
-}
-
 ui::ModalType CreateApplicationShortcutView::GetModalType() const {
   return ui::MODAL_TYPE_WINDOW;
 }

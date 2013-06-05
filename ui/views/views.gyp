@@ -728,6 +728,7 @@
         'view_model_utils_unittest.cc',
         'view_unittest.cc',
         'window/dialog_client_view_unittest.cc',
+        'window/dialog_delegate_unittest.cc',
         'widget/desktop_aura/desktop_capture_client_unittest.cc',
         'widget/native_widget_aura_unittest.cc',
         'widget/native_widget_unittest.cc',

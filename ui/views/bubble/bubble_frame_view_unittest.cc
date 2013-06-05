@@ -17,58 +17,41 @@ typedef ViewsTestBase BubbleFrameViewTest;
 namespace {
 
 const BubbleBorder::Arrow kArrow = BubbleBorder::TOP_LEFT;
-const int kBubbleWidth = 200;
-const int kBubbleHeight = 200;
 const SkColor kColor = SK_ColorRED;
 const int kMargin = 6;
 
-class SizedBubbleDelegateView : public BubbleDelegateView {
+class TestBubbleDelegateView : public BubbleDelegateView {
  public:
-  SizedBubbleDelegateView(View* anchor_view);
-  virtual ~SizedBubbleDelegateView();
+  explicit TestBubbleDelegateView(View* anchor_view)
+      : BubbleDelegateView(anchor_view, kArrow) {}
+  virtual ~TestBubbleDelegateView() {}
 
-  // View overrides:
-  virtual gfx::Size GetPreferredSize() OVERRIDE;
+  // BubbleDelegateView overrides:
+  virtual gfx::Size GetPreferredSize() OVERRIDE { return gfx::Size(200, 200); }
 
- private:
-  DISALLOW_COPY_AND_ASSIGN(SizedBubbleDelegateView);
+private:
+  DISALLOW_COPY_AND_ASSIGN(TestBubbleDelegateView);
 };
-
-SizedBubbleDelegateView::SizedBubbleDelegateView(View* anchor_view)
-    : BubbleDelegateView(anchor_view, BubbleBorder::TOP_LEFT) {
-}
-
-SizedBubbleDelegateView::~SizedBubbleDelegateView() {}
-
-gfx::Size SizedBubbleDelegateView::GetPreferredSize() {
-  return gfx::Size(kBubbleWidth, kBubbleHeight);
-}
 
 class TestBubbleFrameView : public BubbleFrameView {
  public:
-  TestBubbleFrameView();
-  virtual ~TestBubbleFrameView();
+  TestBubbleFrameView()
+      : BubbleFrameView(gfx::Insets(kMargin, kMargin, kMargin, kMargin)),
+        monitor_bounds_(gfx::Rect(0, 0, 1000, 1000)) {
+    SetBubbleBorder(new BubbleBorder(kArrow, BubbleBorder::NO_SHADOW, kColor));
+  }
+  virtual ~TestBubbleFrameView() {}
 
- protected:
-  virtual gfx::Rect GetMonitorBounds(const gfx::Rect& rect) OVERRIDE;
+  // BubbleDelegateView overrides:
+  virtual gfx::Rect GetMonitorBounds(const gfx::Rect& rect) OVERRIDE {
+    return monitor_bounds_;
+  }
 
  private:
   gfx::Rect monitor_bounds_;
 
   DISALLOW_COPY_AND_ASSIGN(TestBubbleFrameView);
 };
-
-TestBubbleFrameView::TestBubbleFrameView()
-    : BubbleFrameView(gfx::Insets(kMargin, kMargin, kMargin, kMargin)),
-      monitor_bounds_(gfx::Rect(0, 0, 1000, 1000)) {
-  SetBubbleBorder(new BubbleBorder(kArrow, BubbleBorder::NO_SHADOW, kColor));
-}
-
-TestBubbleFrameView::~TestBubbleFrameView() {}
-
-gfx::Rect TestBubbleFrameView::GetMonitorBounds(const gfx::Rect& rect) {
-  return monitor_bounds_;
-}
 
 }  // namespace
 
@@ -85,24 +68,35 @@ TEST_F(BubbleFrameViewTest, GetBoundsForClientView) {
 }
 
 TEST_F(BubbleFrameViewTest, NonClientHitTest) {
-  // Create the anchor and parent widgets.
+  // Create the anchor view, its parent widget is needed on Aura.
   Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_WINDOW);
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   scoped_ptr<Widget> anchor_widget(new Widget);
   anchor_widget->Init(params);
   anchor_widget->Show();
 
-  BubbleDelegateView* delegate =
-      new SizedBubbleDelegateView(anchor_widget->GetContentsView());
-  Widget* widget(BubbleDelegateView::CreateBubble(delegate));
-  widget->Show();
-  gfx::Point kPtInBound(100, 100);
-  gfx::Point kPtOutsideBound(1000, 1000);
-  BubbleFrameView* bubble_frame_view = delegate->GetBubbleFrameView();
-  EXPECT_EQ(HTCLIENT, bubble_frame_view->NonClientHitTest(kPtInBound));
-  EXPECT_EQ(HTNOWHERE, bubble_frame_view->NonClientHitTest(kPtOutsideBound));
-  widget->CloseNow();
-  RunPendingMessages();
+  TestBubbleDelegateView* bubble =
+      new TestBubbleDelegateView(anchor_widget->GetContentsView());
+  BubbleDelegateView::CreateBubble(bubble);
+  BubbleFrameView* frame = bubble->GetBubbleFrameView();
+  const int border = frame->bubble_border()->GetBorderThickness();
+
+  struct {
+    const int point;
+    const int hit;
+  } cases[] = {
+    { border,      HTNOWHERE },
+    { border + 5,  HTNOWHERE },
+    { border + 6,  HTCLIENT  },
+    { border + 50, HTCLIENT  },
+    { 1000,        HTNOWHERE },
+  };
+
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {
+    gfx::Point point(cases[i].point, cases[i].point);
+    EXPECT_EQ(cases[i].hit, frame->NonClientHitTest(point))
+        << " with border: " << border << ", at point " << cases[i].point;
+  }
 }
 
 // Tests that the arrow is mirrored as needed to better fit the screen.

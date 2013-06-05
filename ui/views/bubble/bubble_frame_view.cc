@@ -94,14 +94,18 @@ int BubbleFrameView::NonClientHitTest(const gfx::Point& point) {
     return HTNOWHERE;
   if (close_->visible() && close_->GetMirroredBounds().Contains(point))
     return HTCLOSE;
-  if (!GetWidget()->widget_delegate()->CanResize())
-    return GetWidget()->client_view()->NonClientHitTest(point);
 
-  const int size = bubble_border_->GetBorderThickness() + 4;
-  const int hit = GetHTComponentForFrame(point, size, size, size, size, true);
-  if (hit == HTNOWHERE && point.y() < title_->bounds().bottom())
-    return HTCAPTION;
-  return hit;
+  // Allow dialogs to show the system menu and be dragged.
+  if (GetWidget()->widget_delegate()->AsDialogDelegate()) {
+    gfx::Rect sys_rect(0, 0, title_->x(), title_->y());
+    sys_rect.set_origin(gfx::Point(GetMirroredXForRect(sys_rect), 0));
+    if (sys_rect.Contains(point))
+      return HTSYSMENU;
+    if (point.y() < title_->bounds().bottom())
+      return HTCAPTION;
+  }
+
+  return GetWidget()->client_view()->NonClientHitTest(point);
 }
 
 void BubbleFrameView::GetWindowMask(const gfx::Size& size,
