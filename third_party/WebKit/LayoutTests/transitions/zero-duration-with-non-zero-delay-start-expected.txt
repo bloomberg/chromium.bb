@@ -1,3 +1,2 @@
-Warning this test is running in real-time and may be flaky.
-PASS - "left" property for "target" element at 1s saw something close to: 200
+PASS - "left" property for "target" element at 0s saw something close to: 200
 
