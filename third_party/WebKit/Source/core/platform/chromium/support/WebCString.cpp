@@ -37,9 +37,6 @@
 
 namespace WebKit {
 
-class WebCStringPrivate : public WTF::CStringBuffer {
-};
-
 int WebCString::compare(const WebCString& other) const
 {
     // A null string is always less than a non null one.
@@ -54,15 +51,12 @@ int WebCString::compare(const WebCString& other) const
 
 void WebCString::reset()
 {
-    if (m_private) {
-        m_private->deref();
-        m_private = 0;
-    }
+    m_private.reset();
 }
 
 void WebCString::assign(const WebCString& other)
 {
-    assign(const_cast<WebCStringPrivate*>(other.m_private));
+    assign(other.m_private.get());
 }
 
 void WebCString::assign(const char* data, size_t length)
@@ -71,21 +65,17 @@ void WebCString::assign(const char* data, size_t length)
     RefPtr<WTF::CStringBuffer> buffer =
         WTF::CString::newUninitialized(length, newData).buffer();
     memcpy(newData, data, length);
-    assign(static_cast<WebCStringPrivate*>(buffer.get()));
+    assign(buffer.get());
 }
 
 size_t WebCString::length() const
 {
-    if (!m_private)
-        return 0;
-    return const_cast<WebCStringPrivate*>(m_private)->length();
+    return m_private.isNull() ? 0 : m_private->length();
 }
 
 const char* WebCString::data() const
 {
-    if (!m_private)
-        return 0;
-    return const_cast<WebCStringPrivate*>(m_private)->data();
+    return m_private.isNull() ? 0 : m_private->data();
 }
 
 WebString WebCString::utf16() const
@@ -94,30 +84,23 @@ WebString WebCString::utf16() const
 }
 
 WebCString::WebCString(const WTF::CString& s)
-    : m_private(static_cast<WebCStringPrivate*>(s.buffer()))
 {
-    if (m_private)
-        m_private->ref();
+    assign(s.buffer());
 }
 
 WebCString& WebCString::operator=(const WTF::CString& s)
 {
-    assign(static_cast<WebCStringPrivate*>(s.buffer()));
+    assign(s.buffer());
     return *this;
 }
 
 WebCString::operator WTF::CString() const
 {
-    return m_private;
+    return m_private.get();
 }
 
-void WebCString::assign(WebCStringPrivate* p)
+void WebCString::assign(WTF::CStringBuffer* p)
 {
-    // Take care to handle the case where m_private == p
-    if (p)
-        p->ref();
-    if (m_private)
-        m_private->deref();
     m_private = p;
 }
 

@@ -32,6 +32,7 @@
 #define WebCString_h
 
 #include "WebCommon.h"
+#include "WebPrivatePtr.h"
 
 #if WEBKIT_IMPLEMENTATION
 #include <wtf/Forward.h>
@@ -41,11 +42,11 @@
 
 namespace WTF {
 class CString;
+class CStringBuffer;
 }
 
 namespace WebKit {
 
-class WebCStringPrivate;
 class WebString;
 
 // A single-byte string container with unspecified encoding.  It is
@@ -57,14 +58,14 @@ class WebCString {
 public:
     ~WebCString() { reset(); }
 
-    WebCString() : m_private(0) { }
+    WebCString() { }
 
-    WebCString(const char* data, size_t len) : m_private(0)
+    WebCString(const char* data, size_t len)
     {
         assign(data, len);
     }
 
-    WebCString(const WebCString& s) : m_private(0) { assign(s); }
+    WebCString(const WebCString& s) { assign(s); }
 
     WebCString& operator=(const WebCString& s)
     {
@@ -85,7 +86,7 @@ public:
     WEBKIT_EXPORT const char* data() const;
 
     bool isEmpty() const { return !length(); }
-    bool isNull() const { return !m_private; }
+    bool isNull() const { return m_private.isNull(); }
 
     WEBKIT_EXPORT WebString utf16() const;
 
@@ -94,7 +95,7 @@ public:
     WebCString& operator=(const WTF::CString&);
     operator WTF::CString() const;
 #else
-    WebCString(const std::string& s) : m_private(0)
+    WebCString(const std::string& s)
     {
         assign(s.data(), s.length());
     }
@@ -119,8 +120,8 @@ public:
 #endif
 
 private:
-    void assign(WebCStringPrivate*);
-    WebCStringPrivate* m_private;
+    void assign(WTF::CStringBuffer*);
+    WebPrivatePtr<WTF::CStringBuffer> m_private;
 };
 
 inline bool operator<(const WebCString& a, const WebCString& b)
