@@ -149,8 +149,12 @@ Profile* GetProfileOnUI(ProfileManager* profile_manager, Profile* profile) {
 
 #if defined(DEBUG_DEVTOOLS)
 bool IsSupportedDevToolsURL(const GURL& url, base::FilePath* path) {
+  std::string bundled_path_prefix(chrome::kChromeUIDevToolsBundledPath);
+  bundled_path_prefix = "/" + bundled_path_prefix + "/";
+
   if (!url.SchemeIs(chrome::kChromeDevToolsScheme) ||
-      url.host() != chrome::kChromeUIDevToolsBundledHost) {
+      url.host() != chrome::kChromeUIDevToolsHost ||
+      !StartsWithASCII(url.path(), bundled_path_prefix, false)) {
     return false;
   }
 
@@ -170,10 +174,9 @@ bool IsSupportedDevToolsURL(const GURL& url, base::FilePath* path) {
   const std::string& spec = stripped_url.possibly_invalid_spec();
   const url_parse::Parsed& parsed =
       stripped_url.parsed_for_possibly_invalid_spec();
-  // + 1 to skip the slash at the beginning of the path.
-  int offset = parsed.CountCharactersBefore(url_parse::Parsed::PATH, false) + 1;
+  int offset = parsed.CountCharactersBefore(url_parse::Parsed::PATH, false);
   if (offset < static_cast<int>(spec.size()))
-    relative_path.assign(spec.substr(offset));
+    relative_path.assign(spec.substr(offset + bundled_path_prefix.length()));
 
   // Check that |relative_path| is not an absolute path (otherwise
   // AppendASCII() will DCHECK).  The awkward use of StringType is because on

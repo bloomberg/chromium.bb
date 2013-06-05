@@ -327,14 +327,6 @@ DevToolsWindow::DevToolsWindow(Profile* profile,
   web_contents_->GetController().LoadURL(url, content::Referrer(),
       content::PAGE_TRANSITION_AUTO_TOPLEVEL, std::string());
 
-  RenderViewHost* render_view_host = web_contents_->GetRenderViewHost();
-  if (url.host() == chrome::kChromeUIDevToolsBundledHost) {
-    // Only allow file scheme in embedded front-end by default.
-    int process_id = render_view_host->GetProcess()->GetID();
-    content::ChildProcessSecurityPolicy::GetInstance()->GrantScheme(
-        process_id, chrome::kFileScheme);
-  }
-
   frontend_host_.reset(
       DevToolsClientHost::CreateDevToolsFrontendHost(web_contents_, this));
   file_helper_.reset(new DevToolsFileHelper(web_contents_, profile));

@@ -38,6 +38,15 @@ const char kRemoteFrontendBase[] =
     "https://chrome-devtools-frontend.appspot.com/";
 const char kHttpNotFound[] = "HTTP/1.1 404 Not Found\n\n";
 
+#if defined(DEBUG_DEVTOOLS)
+// Local frontend url provided by InspectUI.
+const char kLocalFrontendURLPrefix[] = "https://localhost:9222/";
+// URL local frontend should be served from.
+const char kLocalFrontendBase[] = "http://localhost:9222/";
+// Local frontend path in DevToolsDataSource.
+const char kLocalFrontendDataSourcePath[] = "localhost";
+#endif  // defined(DEBUG_DEVTOOLS)
+
 class FetchRequest : public net::URLFetcherDelegate {
  public:
   FetchRequest(net::URLRequestContextGetter* request_context,
@@ -91,14 +100,21 @@ std::string GetMimeTypeForPath(const std::string& path) {
   return "text/plain";
 }
 
-class BundledDataSource : public content::URLDataSource {
+// An URLDataSource implementation that handles chrome-devtools://devtools/
+// requests. Three types of requests could be handled based on the URL path:
+// 1. /bundled/: bundled DevTools frontend is served.
+// 2. /remote/: Remote DevTools frontend is served from App Engine.
+// 3. /localhost/: Remote frontend is served from localhost:9222. This is a
+// debug only feature hidden beihnd a compile time flag DEBUG_DEVTOOLS.
+class DevToolsDataSource : public content::URLDataSource {
  public:
-  explicit BundledDataSource() {
+  explicit DevToolsDataSource(net::URLRequestContextGetter*
+    request_context) : request_context_(request_context) {
   }
 
   // content::URLDataSource implementation.
   virtual std::string GetSource() const OVERRIDE {
-    return chrome::kChromeUIDevToolsBundledHost;
+    return chrome::kChromeUIDevToolsHost;
   }
 
   virtual void StartDataRequest(
@@ -106,6 +122,43 @@ class BundledDataSource : public content::URLDataSource {
       int render_process_id,
       int render_view_id,
       const content::URLDataSource::GotDataCallback& callback) OVERRIDE {
+    std::string bundled_path_prefix(chrome::kChromeUIDevToolsBundledPath);
+    bundled_path_prefix += "/";
+    if (StartsWithASCII(path, bundled_path_prefix, false)) {
+      StartBundledDataRequest(path.substr(bundled_path_prefix.length()),
+                              render_process_id,
+                              render_view_id,
+                              callback);
+      return;
+    }
+    std::string remote_path_prefix(chrome::kChromeUIDevToolsRemotePath);
+    remote_path_prefix += "/";
+    if (StartsWithASCII(path, remote_path_prefix, false)) {
+      StartRemoteDataRequest(path.substr(remote_path_prefix.length()),
+                              render_process_id,
+                              render_view_id,
+                              callback);
+      return;
+    }
+#if defined(DEBUG_DEVTOOLS)
+    std::string local_path_prefix(kLocalFrontendDataSourcePath);
+    local_path_prefix += "/";
+    if (StartsWithASCII(path, local_path_prefix, false)) {
+      StartLocalDataRequest(path.substr(local_path_prefix.length()),
+                              render_process_id,
+                              render_view_id,
+                              callback);
+      return;
+    }
+#endif  // defined(DEBUG_DEVTOOLS)
+  }
+
+  // Serves bundled DevTools frontend from ResourceBundle.
+  void StartBundledDataRequest(
+      const std::string& path,
+      int render_process_id,
+      int render_view_id,
+      const content::URLDataSource::GotDataCallback& callback) {
     std::string filename = PathWithoutParams(path);
 
     int resource_id =
@@ -120,76 +173,28 @@ class BundledDataSource : public content::URLDataSource {
     callback.Run(bytes.get());
   }
 
-  virtual std::string GetMimeType(const std::string& path) const OVERRIDE {
-    return GetMimeTypeForPath(path);
-  }
-
-  virtual bool ShouldAddContentSecurityPolicy() const OVERRIDE {
-    return false;
-  }
-
- private:
-  virtual ~BundledDataSource() {}
-  DISALLOW_COPY_AND_ASSIGN(BundledDataSource);
-};
-
-class RemoteDataSource : public content::URLDataSource {
- public:
-  explicit RemoteDataSource(net::URLRequestContextGetter*
-      request_context) : request_context_(request_context) {
-  }
-
-  // content::URLDataSource implementation.
-  virtual std::string GetSource() const OVERRIDE {
-    return chrome::kChromeUIDevToolsRemoteHost;
-  }
-
-  virtual void StartDataRequest(
+  // Serves remote DevTools frontend from hard-coded App Engine domain.
+  void StartRemoteDataRequest(
       const std::string& path,
       int render_process_id,
       int render_view_id,
-      const content::URLDataSource::GotDataCallback& callback) OVERRIDE {
-
+      const content::URLDataSource::GotDataCallback& callback) {
     GURL url = GURL(kRemoteFrontendBase + path);
     CHECK_EQ(url.host(), kRemoteFrontendDomain);
     new FetchRequest(request_context_.get(), url, callback);
   }
 
-  virtual std::string GetMimeType(const std::string& path) const OVERRIDE {
-    return GetMimeTypeForPath(path);
-  }
-
-  virtual bool ShouldAddContentSecurityPolicy() const OVERRIDE {
-    return false;
-  }
-
- private:
-  virtual ~RemoteDataSource() {}
-  scoped_refptr<net::URLRequestContextGetter> request_context_;
-
-  DISALLOW_COPY_AND_ASSIGN(RemoteDataSource);
-};
-
+  // Serves debug DevTools frontend from localhost:9222.
 #if defined(DEBUG_DEVTOOLS)
-class LocalhostDataSource : public content::URLDataSource {
- public:
-  explicit LocalhostDataSource(net::URLRequestContextGetter*
-      request_context) : request_context_(request_context) {
-  }
-
-  // content::URLDataSource implementation.
-  virtual std::string GetSource() const OVERRIDE {
-    return "localhost";
-  }
-
-  virtual void StartDataRequest(
+  void StartLocalDataRequest(
       const std::string& path,
       int render_process_id,
       int render_view_id,
-      const content::URLDataSource::GotDataCallback& callback) OVERRIDE {
-    GURL url = GURL("http://localhost:9222/" + path);
-    new FetchRequest(request_context_, url, callback);
+      const content::URLDataSource::GotDataCallback& callback) {
+    GURL url = GURL(kLocalFrontendBase + path);
+    new FetchRequest(request_context_.get(), url, callback);
   }
+#endif  // defined(DEBUG_DEVTOOLS)
 
   virtual std::string GetMimeType(const std::string& path) const OVERRIDE {
     return GetMimeTypeForPath(path);
@@ -200,12 +205,11 @@ class LocalhostDataSource : public content::URLDataSource {
   }
 
  private:
-  virtual ~LocalhostDataSource() {}
+  virtual ~DevToolsDataSource() {}
   scoped_refptr<net::URLRequestContextGetter> request_context_;
 
-  DISALLOW_COPY_AND_ASSIGN(LocalhostDataSource);
+  DISALLOW_COPY_AND_ASSIGN(DevToolsDataSource);
 };
-#endif  // defined(DEBUG_DEVTOOLS)
 
 }  // namespace
 
@@ -213,18 +217,22 @@ class LocalhostDataSource : public content::URLDataSource {
 GURL DevToolsUI::GetProxyURL(const std::string& frontend_url) {
   GURL url(frontend_url);
 #if defined(DEBUG_DEVTOOLS)
-  if (frontend_url.find("https://localhost:9222/") == 0) {
+  if (frontend_url.find(kLocalFrontendURLPrefix) == 0) {
     std::string path = url.path();
-    CHECK(path.find(chrome::kChromeUIDevToolsBundledHost) == 1);
-    return GURL(base::StringPrintf("%s://localhost/%s",
+    CHECK(path.find(chrome::kChromeUIDevToolsHost) == 1);
+    return GURL(base::StringPrintf("%s://%s/%s/%s",
                                    chrome::kChromeDevToolsScheme,
+                                   chrome::kChromeUIDevToolsHost,
+                                   kLocalFrontendDataSourcePath,
                                    path.substr(1).c_str()));
   }
 #endif  // defined(DEBUG_DEVTOOLS)
   CHECK(url.is_valid());
   CHECK_EQ(url.host(), kRemoteFrontendDomain);
-  return GURL(base::StringPrintf("%s://%s/%s", chrome::kChromeDevToolsScheme,
-              chrome::kChromeUIDevToolsRemoteHost,
+  return GURL(base::StringPrintf("%s://%s/%s/%s",
+              chrome::kChromeDevToolsScheme,
+              chrome::kChromeUIDevToolsHost,
+              chrome::kChromeUIDevToolsRemotePath,
               url.path().substr(1).c_str()));
 }
 
@@ -233,13 +241,5 @@ DevToolsUI::DevToolsUI(content::WebUI* web_ui) : WebUIController(web_ui) {
   Profile* profile = Profile::FromWebUI(web_ui);
   content::URLDataSource::Add(
       profile,
-      new BundledDataSource());
-  content::URLDataSource::Add(
-      profile,
-      new RemoteDataSource(profile->GetRequestContext()));
-#if defined(DEBUG_DEVTOOLS)
-  content::URLDataSource::Add(
-      profile,
-      new LocalhostDataSource(profile->GetRequestContext()));
-#endif  // defined(DEBUG_DEVTOOLS)
+      new DevToolsDataSource(profile->GetRequestContext()));
 }
