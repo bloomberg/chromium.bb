@@ -25,6 +25,7 @@
 #include "webkit/browser/fileapi/mock_file_system_context.h"
 #include "webkit/browser/fileapi/obfuscated_file_util.h"
 #include "webkit/browser/fileapi/sandbox_file_system_test_helper.h"
+#include "webkit/browser/fileapi/sandbox_origin_database.h"
 #include "webkit/browser/fileapi/test_file_set.h"
 #include "webkit/browser/quota/mock_special_storage_policy.h"
 #include "webkit/browser/quota/quota_manager.h"
@@ -2249,6 +2250,41 @@ TEST_F(ObfuscatedFileUtilTest, TestQuotaOnOpen) {
                 &file_handle, &created));
   ASSERT_EQ(0, ComputeTotalFileSize());
   EXPECT_TRUE(base::ClosePlatformFile(file_handle));
+}
+
+TEST_F(ObfuscatedFileUtilTest, MaybeDropDatabasesAliveCase) {
+  base::ScopedTempDir data_dir;
+  ASSERT_TRUE(data_dir.CreateUniqueTempDir());
+  ObfuscatedFileUtil file_util(NULL,
+                               data_dir.path(),
+                               base::MessageLoopProxy::current());
+  file_util.InitOriginDatabase(true /*create*/);
+  ASSERT_TRUE(file_util.origin_database_ != NULL);
+
+  // Callback to Drop DB is called while ObfuscatedFileUtilTest is still alive.
+  file_util.db_flush_delay_seconds_ = 0;
+  file_util.MarkUsed();
+  base::MessageLoop::current()->RunUntilIdle();
+
+  ASSERT_TRUE(file_util.origin_database_ == NULL);
+}
+
+TEST_F(ObfuscatedFileUtilTest, MaybeDropDatabasesAlreadyDeletedCase) {
+  // Run message loop after OFU is already deleted to make sure callback doesn't
+  // cause a crash for use after free.
+  {
+    base::ScopedTempDir data_dir;
+    ASSERT_TRUE(data_dir.CreateUniqueTempDir());
+    ObfuscatedFileUtil file_util(NULL,
+                                 data_dir.path(),
+                                 base::MessageLoopProxy::current());
+    file_util.InitOriginDatabase(true /*create*/);
+    file_util.db_flush_delay_seconds_ = 0;
+    file_util.MarkUsed();
+  }
+
+  // At this point the callback is still in the message queue but OFU is gone.
+  base::MessageLoop::current()->RunUntilIdle();
 }
 
 }  // namespace fileapi

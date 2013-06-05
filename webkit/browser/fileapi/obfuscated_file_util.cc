@@ -16,6 +16,7 @@
 #include "base/stringprintf.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/sys_string_conversions.h"
+#include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "googleurl/src/gurl.h"
 #include "webkit/base/origin_url_conversions.h"
@@ -46,8 +47,6 @@ namespace {
 
 typedef SandboxDirectoryDatabase::FileId FileId;
 typedef SandboxDirectoryDatabase::FileInfo FileInfo;
-
-const int64 kFlushDelaySeconds = 10 * 60;  // 10 minutes
 
 void InitFileInfo(
     SandboxDirectoryDatabase::FileInfo* file_info,
@@ -94,6 +93,49 @@ void TouchDirectory(SandboxDirectoryDatabase* db, FileId dir_id) {
   DCHECK(db);
   if (!db->UpdateModificationTime(dir_id, base::Time::Now()))
     NOTREACHED();
+}
+
+class Deleter {
+ public:
+  explicit Deleter(ObfuscatedFileUtil* util) : util_(util) {}
+
+  void operator()(bool* ptr) const {
+    if (*ptr)
+      util_->ResetObjectLifetimeTracker();
+    delete ptr;
+  }
+
+ private:
+  ObfuscatedFileUtil* util_;
+};
+
+void MaybeDropDatabases(
+    ObfuscatedFileUtil* util,
+    scoped_refptr<base::SequencedTaskRunner> file_task_runner,
+    scoped_ptr<bool, Deleter> object_still_alive,
+    int64 db_flush_delay_seconds) {
+  // If object isn't alive, DB has already been dropped by dtor.
+  if (!*object_still_alive)
+    return;
+
+  // Check to see if DB was recently used. If yes, restart timer so it triggers
+  // again in kFlushDelaySeconds from the last time it was used.
+  base::TimeDelta last_used_delta =
+      base::TimeTicks::Now() - util->db_last_use_time();
+  int64 next_timer_delta = db_flush_delay_seconds - last_used_delta.InSeconds();
+  if (next_timer_delta > 0) {
+    file_task_runner->PostDelayedTask(
+        FROM_HERE,
+        base::Bind(&MaybeDropDatabases,
+                   base::Unretained(util),
+                   file_task_runner,
+                   base::Passed(&object_still_alive),
+                   db_flush_delay_seconds),
+        base::TimeDelta::FromSeconds(next_timer_delta));
+    return;
+  }
+
+  util->DropDatabases();
 }
 
 const base::FilePath::CharType kTemporaryDirectoryName[] = FILE_PATH_LITERAL("t");
@@ -255,12 +297,20 @@ class ObfuscatedOriginEnumerator
 
 ObfuscatedFileUtil::ObfuscatedFileUtil(
     quota::SpecialStoragePolicy* special_storage_policy,
-    const base::FilePath& file_system_directory)
+    const base::FilePath& file_system_directory,
+    base::SequencedTaskRunner* file_task_runner)
     : special_storage_policy_(special_storage_policy),
-      file_system_directory_(file_system_directory) {
+      file_system_directory_(file_system_directory),
+      file_task_runner_(file_task_runner),
+      db_flush_delay_seconds_(10 * 60), // 10 mins.
+      object_lifetime_tracker_(NULL) {
 }
 
 ObfuscatedFileUtil::~ObfuscatedFileUtil() {
+  // Mark as deleted so that the callback doesn't run on invalid object.
+  if (object_lifetime_tracker_)
+    *object_lifetime_tracker_ = false;
+
   DropDatabases();
 }
 
@@ -989,6 +1039,17 @@ bool ObfuscatedFileUtil::DestroyDirectoryDatabase(
   return SandboxDirectoryDatabase::DestroyDatabase(path);
 }
 
+void ObfuscatedFileUtil::ResetObjectLifetimeTracker() {
+  object_lifetime_tracker_ = NULL;
+}
+
+void ObfuscatedFileUtil::DropDatabases() {
+  origin_database_.reset();
+  STLDeleteContainerPairSecondPointers(
+      directories_.begin(), directories_.end());
+  directories_.clear();
+}
+
 // static
 int64 ObfuscatedFileUtil::ComputeFilePathCost(const base::FilePath& path) {
   return UsageForPath(VirtualPath::BaseName(path).value().size());
@@ -1279,18 +1340,24 @@ void ObfuscatedFileUtil::InvalidateUsageCache(
 }
 
 void ObfuscatedFileUtil::MarkUsed() {
-  if (timer_.IsRunning())
-    timer_.Reset();
-  else
-    timer_.Start(FROM_HERE, base::TimeDelta::FromSeconds(kFlushDelaySeconds),
-                 this, &ObfuscatedFileUtil::DropDatabases);
-}
+  db_last_use_time_ = base::TimeTicks::Now();
 
-void ObfuscatedFileUtil::DropDatabases() {
-  origin_database_.reset();
-  STLDeleteContainerPairSecondPointers(
-      directories_.begin(), directories_.end());
-  directories_.clear();
+  // If object_lifetime_tracker_ is valid, then callback timer already running.
+  if (object_lifetime_tracker_)
+    return;
+
+  // Initialize object lifetime tracker for the first time.
+  object_lifetime_tracker_ = new bool(true);
+
+  scoped_ptr<bool, Deleter> scoper(object_lifetime_tracker_, Deleter(this));
+  file_task_runner_->PostDelayedTask(
+      FROM_HERE,
+      base::Bind(&MaybeDropDatabases,
+                 base::Unretained(this),
+                 file_task_runner_,
+                 base::Passed(&scoper),
+                 db_flush_delay_seconds_),
+      base::TimeDelta::FromSeconds(db_flush_delay_seconds_));
 }
 
 bool ObfuscatedFileUtil::InitOriginDatabase(bool create) {
