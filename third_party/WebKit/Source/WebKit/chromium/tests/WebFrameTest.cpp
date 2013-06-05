@@ -1763,7 +1763,8 @@ TEST_F(WebFrameTest, ContextNotificationsReload)
 
 TEST_F(WebFrameTest, ContextNotificationsIsolatedWorlds)
 {
-    v8::HandleScope handleScope;
+    v8::Isolate* isolate = v8::Isolate::GetCurrent();
+    v8::HandleScope handleScope(isolate);
 
     registerMockedHttpURLLoad("context_notifications_test.html");
     registerMockedHttpURLLoad("context_notifications_test_frame.html");
@@ -1787,7 +1788,7 @@ TEST_F(WebFrameTest, ContextNotificationsIsolatedWorlds)
     ASSERT_EQ(m_webView->mainFrame(), notification->frame);
 
     // We don't have an API to enumarate isolated worlds for a frame, but we can at least assert that the context we got is *not* the main world's context.
-    ASSERT_NE(m_webView->mainFrame()->mainWorldScriptContext(), notification->context);
+    ASSERT_NE(m_webView->mainFrame()->mainWorldScriptContext(), v8::Local<v8::Context>::New(isolate, notification->context));
 
     m_webView->close();
     m_webView = 0;
