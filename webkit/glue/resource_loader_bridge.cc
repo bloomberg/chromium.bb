@@ -4,8 +4,8 @@
 
 #include "webkit/glue/resource_loader_bridge.h"
 
-#include "webkit/appcache/appcache_interfaces.h"
 #include "net/http/http_response_headers.h"
+#include "webkit/common/appcache/appcache_interfaces.h"
 
 namespace webkit_glue {
 

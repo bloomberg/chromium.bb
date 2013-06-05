@@ -10,7 +10,7 @@
 #include "content/public/browser/resource_context.h"
 #include "net/base/net_errors.h"
 #include "net/url_request/url_request_context_getter.h"
-#include "webkit/appcache/appcache_storage_impl.h"
+#include "webkit/browser/appcache/appcache_storage_impl.h"
 #include "webkit/browser/quota/quota_manager.h"
 
 namespace content {

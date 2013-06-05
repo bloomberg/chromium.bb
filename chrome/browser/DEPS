@@ -51,7 +51,6 @@ include_rules = [
   # TODO(stuartmorgan): Remove these by refactoring necessary code out of
   # webkit/. See crbug.com/146251
   # DO NOT ADD ANY MORE ITEMS TO THE LIST BELOW!
-  "+webkit/appcache",
   "+webkit/base/origin_url_conversions.h",
   "+webkit/common/cursors/webcursor.h",
   "+webkit/dom_storage/dom_storage_types.h",

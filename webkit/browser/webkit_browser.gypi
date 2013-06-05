@@ -4,6 +4,7 @@
 
 {
   'includes': [
+    '../browser/appcache/webkit_browser_appcache.gypi',
     '../browser/blob/webkit_browser_blob.gypi',
     '../browser/database/webkit_browser_database.gypi',
     '../browser/dom_storage/webkit_browser_dom_storage.gypi',
@@ -14,6 +15,7 @@
   # webkit_storage.gypi.
   'variables': {
     'webkit_browser_storage_sources': [
+      '<@(webkit_browser_appcache_sources)',
       '<@(webkit_browser_blob_sources)',
       '<@(webkit_browser_database_sources)',
       '<@(webkit_browser_dom_storage_sources)',

@@ -26,7 +26,7 @@
 #include "net/http/http_response_headers.h"
 #include "net/ssl/client_cert_store.h"
 #include "net/ssl/client_cert_store_impl.h"
-#include "webkit/appcache/appcache_interceptor.h"
+#include "webkit/browser/appcache/appcache_interceptor.h"
 
 using base::TimeDelta;
 using base::TimeTicks;

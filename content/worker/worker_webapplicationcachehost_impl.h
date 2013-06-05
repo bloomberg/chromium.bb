@@ -5,7 +5,7 @@
 #ifndef CHROME_WORKER_WORKER_WEBAPPLICATIONCACHEHOST_IMPL_H_
 #define CHROME_WORKER_WORKER_WEBAPPLICATIONCACHEHOST_IMPL_H_
 
-#include "webkit/appcache/web_application_cache_host_impl.h"
+#include "webkit/renderer/appcache/web_application_cache_host_impl.h"
 
 namespace content {
 

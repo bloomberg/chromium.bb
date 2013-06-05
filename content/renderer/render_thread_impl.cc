@@ -97,6 +97,7 @@
 #include "ui/base/ui_base_switches.h"
 #include "v8/include/v8.h"
 #include "webkit/glue/webkit_glue.h"
+#include "webkit/renderer/appcache/appcache_frontend_impl.h"
 
 #if defined(OS_WIN)
 #include <windows.h>
@@ -357,7 +358,8 @@ void RenderThreadImpl::Init() {
   idle_notifications_to_skip_ = 0;
   layout_test_mode_ = false;
 
-  appcache_dispatcher_.reset(new AppCacheDispatcher(Get()));
+  appcache_dispatcher_.reset(
+      new AppCacheDispatcher(Get(), new appcache::AppCacheFrontendImpl()));
   dom_storage_dispatcher_.reset(new DomStorageDispatcher());
   main_thread_indexed_db_dispatcher_.reset(new IndexedDBDispatcher());
 

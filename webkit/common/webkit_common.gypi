@@ -19,6 +19,8 @@
       '<@(webkit_common_dom_storage_sources)',
       '<@(webkit_common_fileapi_sources)',
       '<@(webkit_common_quota_sources)',
+      '../common/appcache/appcache_interfaces.cc',
+      '../common/appcache/appcache_interfaces.h',
     ],
   },
 

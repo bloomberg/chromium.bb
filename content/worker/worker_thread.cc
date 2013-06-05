@@ -21,6 +21,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebRuntimeFeatures.h"
 #include "third_party/WebKit/public/platform/WebBlobRegistry.h"
 #include "webkit/glue/webkit_glue.h"
+#include "webkit/renderer/appcache/appcache_frontend_impl.h"
 
 using WebKit::WebRuntimeFeatures;
 
@@ -35,7 +36,8 @@ WorkerThread::WorkerThread() {
       new WorkerWebKitPlatformSupportImpl(thread_safe_sender()));
   WebKit::initialize(webkit_platform_support_.get());
 
-  appcache_dispatcher_.reset(new AppCacheDispatcher(this));
+  appcache_dispatcher_.reset(
+      new AppCacheDispatcher(this, new appcache::AppCacheFrontendImpl()));
 
   web_database_observer_impl_.reset(
       new WebDatabaseObserverImpl(sync_message_filter()));

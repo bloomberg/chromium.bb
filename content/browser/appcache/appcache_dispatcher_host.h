@@ -12,7 +12,7 @@
 #include "base/process.h"
 #include "content/browser/appcache/appcache_frontend_proxy.h"
 #include "content/public/browser/browser_message_filter.h"
-#include "webkit/appcache/appcache_backend_impl.h"
+#include "webkit/browser/appcache/appcache_backend_impl.h"
 
 namespace content {
 class ChromeAppCacheService;

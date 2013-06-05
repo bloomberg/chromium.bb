@@ -12,8 +12,8 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
-#include "webkit/appcache/appcache_database.h"
-#include "webkit/appcache/appcache_storage.h"
+#include "webkit/browser/appcache/appcache_database.h"
+#include "webkit/browser/appcache/appcache_storage.h"
 
 using content::BrowserThread;
 using content::BrowserContext;

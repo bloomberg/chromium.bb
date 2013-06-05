@@ -5,7 +5,7 @@
 // Multiply-included message file, hence no include guard.
 
 #include "ipc/ipc_message_macros.h"
-#include "webkit/appcache/appcache_interfaces.h"
+#include "webkit/common/appcache/appcache_interfaces.h"
 
 #define IPC_MESSAGE_START AppCacheMsgStart
 

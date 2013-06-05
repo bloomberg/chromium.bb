@@ -39,7 +39,7 @@
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_job.h"
 #include "net/url_request/url_request_job_factory.h"
-#include "webkit/appcache/view_appcache_internals_job.h"
+#include "webkit/browser/appcache/view_appcache_internals_job.h"
 
 using appcache::AppCacheService;
 

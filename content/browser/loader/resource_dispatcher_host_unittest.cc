@@ -38,7 +38,7 @@
 #include "net/url_request/url_request_simple_job.h"
 #include "net/url_request/url_request_test_job.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "webkit/appcache/appcache_interfaces.h"
+#include "webkit/common/appcache/appcache_interfaces.h"
 
 // TODO(eroman): Write unit tests for SafeBrowsing that exercise
 //               SafeBrowsingResourceHandler.

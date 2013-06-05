@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "ipc/ipc_sender.h"
-#include "webkit/appcache/appcache_interfaces.h"
+#include "webkit/common/appcache/appcache_interfaces.h"
 
 namespace content {
 

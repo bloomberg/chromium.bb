@@ -10,7 +10,6 @@
     ['OS != "ios"', {
       'includes': [
         '../../build/win_precompile.gypi',
-        '../appcache/webkit_appcache.gypi',
         '../base/webkit_base.gypi',
         '../glue/webkit_glue.gypi',
         '../plugins/webkit_plugins.gypi',

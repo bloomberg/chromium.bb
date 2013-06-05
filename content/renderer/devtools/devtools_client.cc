@@ -12,11 +12,11 @@
 #include "content/public/common/url_constants.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/render_view_impl.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebDevToolsFrontend.h"
 #include "third_party/WebKit/public/platform/WebFloatPoint.h"
 #include "third_party/WebKit/public/platform/WebString.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebDevToolsFrontend.h"
 #include "ui/base/ui_base_switches.h"
-#include "webkit/appcache/appcache_interfaces.h"
+#include "webkit/common/appcache/appcache_interfaces.h"
 
 using WebKit::WebDevToolsFrontend;
 using WebKit::WebString;

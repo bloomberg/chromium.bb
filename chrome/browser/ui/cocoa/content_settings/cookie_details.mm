@@ -11,7 +11,7 @@
 #include "net/cookies/canonical_cookie.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/base/text/bytes_formatting.h"
-#include "webkit/appcache/appcache_service.h"
+#include "webkit/browser/appcache/appcache_service.h"
 
 #pragma mark Cocoa Cookie Details
 

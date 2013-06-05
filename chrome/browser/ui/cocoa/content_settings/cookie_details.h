@@ -8,7 +8,7 @@
 #include "chrome/browser/browsing_data/browsing_data_database_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_indexed_db_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_local_storage_helper.h"
-#include "webkit/appcache/appcache_service.h"
+#include "webkit/browser/appcache/appcache_service.h"
 
 class CookieTreeNode;
 

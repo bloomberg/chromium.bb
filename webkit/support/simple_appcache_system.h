@@ -8,10 +8,10 @@
 #include "base/files/file_path.h"
 #include "base/message_loop.h"
 #include "base/threading/thread.h"
-#include "webkit/appcache/appcache_backend_impl.h"
-#include "webkit/appcache/appcache_frontend_impl.h"
-#include "webkit/appcache/appcache_service.h"
+#include "webkit/browser/appcache/appcache_backend_impl.h"
+#include "webkit/browser/appcache/appcache_service.h"
 #include "webkit/glue/resource_type.h"
+#include "webkit/renderer/appcache/appcache_frontend_impl.h"
 
 namespace WebKit {
 class WebApplicationCacheHost;

@@ -11,8 +11,8 @@
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/synchronization/waitable_event.h"
-#include "webkit/appcache/appcache_interceptor.h"
-#include "webkit/appcache/web_application_cache_host_impl.h"
+#include "webkit/browser/appcache/appcache_interceptor.h"
+#include "webkit/renderer/appcache/web_application_cache_host_impl.h"
 #include "webkit/support/simple_resource_loader_bridge.h"
 
 using WebKit::WebApplicationCacheHost;

@@ -23,7 +23,7 @@
 #include "net/base/network_change_notifier.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
-#include "webkit/appcache/appcache_service.h"
+#include "webkit/browser/appcache/appcache_service.h"
 
 using content::BrowserThread;
 using content::RenderViewHost;

@@ -8,9 +8,10 @@
 #include <string>
 #include <vector>
 
+#include "base/memory/scoped_ptr.h"
 #include "content/common/appcache/appcache_backend_proxy.h"
 #include "ipc/ipc_listener.h"
-#include "webkit/appcache/appcache_frontend_impl.h"
+#include "webkit/common/appcache/appcache_interfaces.h"
 
 namespace content {
 
@@ -20,7 +21,9 @@ namespace content {
 // creates an instance and delegates calls to it.
 class AppCacheDispatcher : public IPC::Listener {
  public:
-  explicit AppCacheDispatcher(IPC::Sender* sender) : backend_proxy_(sender) {}
+  AppCacheDispatcher(IPC::Sender* sender,
+                     appcache::AppCacheFrontend* frontend);
+  virtual ~AppCacheDispatcher();
 
   AppCacheBackendProxy* backend_proxy() { return &backend_proxy_; }
 
@@ -43,7 +46,7 @@ class AppCacheDispatcher : public IPC::Listener {
                         const GURL& manifest_url);
 
   AppCacheBackendProxy backend_proxy_;
-  appcache::AppCacheFrontendImpl frontend_impl_;
+  scoped_ptr<appcache::AppCacheFrontend> frontend_;
 };
 
 }  // namespace content

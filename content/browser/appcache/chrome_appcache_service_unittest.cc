@@ -13,9 +13,9 @@
 #include "content/public/test/test_browser_context.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "webkit/appcache/appcache_database.h"
-#include "webkit/appcache/appcache_storage_impl.h"
-#include "webkit/appcache/appcache_test_helper.h"
+#include "webkit/browser/appcache/appcache_database.h"
+#include "webkit/browser/appcache/appcache_storage_impl.h"
+#include "webkit/browser/appcache/appcache_test_helper.h"
 #include "webkit/browser/quota/mock_special_storage_policy.h"
 
 #include <set>
