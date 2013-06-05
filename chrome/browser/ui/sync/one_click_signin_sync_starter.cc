@@ -278,6 +278,7 @@ void OneClickSigninSyncStarter::CompleteInitForNewProfile(
         chrome::startup::IS_FIRST_RUN,
         desktop_type,
         false);
+      break;
     }
     case Profile::CREATE_STATUS_REMOTE_FAIL:
     case Profile::MAX_CREATE_STATUS: {
