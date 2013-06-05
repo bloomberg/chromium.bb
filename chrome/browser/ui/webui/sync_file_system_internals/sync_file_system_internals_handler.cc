@@ -27,7 +27,8 @@ using sync_file_system::SyncServiceState;
 namespace syncfs_internals {
 
 SyncFileSystemInternalsHandler::SyncFileSystemInternalsHandler(Profile* profile)
-    : profile_(profile) {}
+    : profile_(profile),
+      last_log_id_sent_(-1) {}
 
 SyncFileSystemInternalsHandler::~SyncFileSystemInternalsHandler() {}
 
