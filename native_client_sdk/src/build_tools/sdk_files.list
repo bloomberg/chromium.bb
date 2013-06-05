@@ -967,6 +967,8 @@ tools/compiler-wrapper.py
 tools/create_nmf.py
 tools/decode_dump.py
 [linux,mac]tools/dump_syms
+[linux,mac]tools/minidump_stackwalk
+[linux,mac]tools/minidump_dump
 tools/genhttpfs.py
 tools/getos.py
 tools/host_gcc.mk

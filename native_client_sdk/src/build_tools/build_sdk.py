@@ -444,6 +444,13 @@ def GypNinjaInstall(pepperdir, platform, toolchains):
     ['irt_core_newlib_x32.nexe', 'irt_core_x86_32.nexe'],
     ['irt_core_newlib_x64.nexe', 'irt_core_x86_64.nexe'],
   ]
+  if sys.platform not in ['cygwin', 'win32']:
+    minidump_files = [
+      ['dump_syms', 'dump_syms'],
+      ['minidump_dump', 'minidump_dump'],
+      ['minidump_stackwalk', 'minidump_stackwalk']
+    ]
+    tools_files.extend(minidump_files)
 
   # TODO(binji): dump_syms doesn't currently build on Windows. See
   # http://crbug.com/245456
@@ -536,7 +543,8 @@ def GypNinjaBuild_Breakpad(platform, rel_out_dir):
   gyp_py = os.path.join(SRC_DIR, 'build', 'gyp_chromium')
   out_dir = MakeNinjaRelPath(rel_out_dir)
   gyp_file = os.path.join(SRC_DIR, 'breakpad', 'breakpad.gyp')
-  GypNinjaBuild('ia32', gyp_py, gyp_file, 'dump_syms', out_dir)
+  build_list = ['dump_syms', 'minidump_dump', 'minidump_stackwalk']
+  GypNinjaBuild('ia32', gyp_py, gyp_file, build_list, out_dir)
 
 
 def GypNinjaBuild_PPAPI(arch, rel_out_dir):
@@ -557,6 +565,16 @@ def GypNinjaBuild_Pnacl(rel_out_dir, target_arch):
   gyp_file = os.path.join(SRC_DIR, 'ppapi', 'native_client', 'src',
                           'untrusted', 'pnacl_irt_shim', 'pnacl_irt_shim.gyp')
   targets = ['pnacl_irt_shim']
+  GypNinjaBuild(target_arch, gyp_py, gyp_file, targets, out_dir, False)
+
+  gyp_py = os.path.join(NACL_DIR, 'build', 'gyp_nacl')
+  gyp_file = os.path.join(NACL_DIR, 'src', 'untrusted', 'minidump_generator',
+                          'minidump_generator.gyp')
+  targets = ['minidump_generator_lib']
+  GypNinjaBuild(target_arch, gyp_py, gyp_file, targets, out_dir, False)
+
+  gyp_file = os.path.join(NACL_DIR, 'src', 'untrusted', 'nacl', 'nacl.gyp')
+  targets = ['nacl_exception_lib']
   GypNinjaBuild(target_arch, gyp_py, gyp_file, targets, out_dir, False)
 
 
@@ -646,6 +664,16 @@ def BuildStepBuildToolchains(pepperdir, platform, toolchains):
 
       buildbot_common.CopyFile(
           os.path.join(release_build_dir, 'libpnacl_irt_shim.a'),
+          GetPNaClNativeLib(pnacldir, pnacl_libdir_map[arch]))
+
+      release_build_dir = os.path.join(OUT_DIR, build_dir, 'Release',
+                                       'gen', 'tc_pnacl_newlib', 'lib')
+      buildbot_common.CopyFile(
+          os.path.join(release_build_dir, 'libminidump_generator.a'),
+          GetPNaClNativeLib(pnacldir, pnacl_libdir_map[arch]))
+
+      buildbot_common.CopyFile(
+          os.path.join(release_build_dir, 'libnacl_exception.a'),
           GetPNaClNativeLib(pnacldir, pnacl_libdir_map[arch]))
 
     InstallNaClHeaders(GetToolchainNaClInclude('pnacl', pnacldir, 'x86'),
