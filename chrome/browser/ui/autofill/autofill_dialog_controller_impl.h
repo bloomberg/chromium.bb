@@ -152,7 +152,7 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
       const content::NativeWebKeyboardEvent& event) OVERRIDE;
   virtual void FocusMoved() OVERRIDE;
   virtual void ViewClosed() OVERRIDE;
-  virtual std::vector<DialogNotification> CurrentNotifications() const OVERRIDE;
+  virtual std::vector<DialogNotification> CurrentNotifications() OVERRIDE;
   virtual void SignInLinkClicked() OVERRIDE;
   virtual void NotificationCheckboxStateChanged(DialogNotification::Type type,
                                                 bool checked) OVERRIDE;
@@ -262,9 +262,6 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
 
   // Returns whether Wallet is the current data source. Exposed for testing.
   virtual bool IsPayingWithWallet() const;
-
-  // Exposed and virtual for testing.
-  virtual bool IsFirstRun() const;
 
   // Asks risk module to asynchronously load fingerprint data. Data will be
   // returned via |OnDidLoadRiskFingerprintData()|. Exposed for testing.
@@ -631,8 +628,10 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
 
   base::WeakPtrFactory<AutofillDialogControllerImpl> weak_ptr_factory_;
 
-  // Whether this is the first time this profile has seen the Autofill dialog.
-  bool is_first_run_;
+  // Whether the wallet promos should be shown in the notification area. Based
+  // on whether the user has paid with Wallet or has signed into this dialog.
+  bool should_show_wallet_promo_;
+  bool has_shown_wallet_usage_confirmation_;
 
   // Whether a user accepted legal documents while this dialog is running.
   bool has_accepted_legal_documents_;

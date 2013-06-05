@@ -153,8 +153,8 @@ void MockAutofillDialogController::FocusMoved() {
 void MockAutofillDialogController::ViewClosed() {
 }
 
-std::vector<DialogNotification>
-    MockAutofillDialogController::CurrentNotifications() const {
+std::vector<DialogNotification> MockAutofillDialogController::
+    CurrentNotifications() {
   return std::vector<DialogNotification>();
 }
 

@@ -122,8 +122,7 @@ class TestAutofillDialogController : public AutofillDialogControllerImpl {
   using AutofillDialogControllerImpl::view;
   using AutofillDialogControllerImpl::input_showing_popup;
 
-  virtual std::vector<DialogNotification> CurrentNotifications() const
-      OVERRIDE {
+  virtual std::vector<DialogNotification> CurrentNotifications() OVERRIDE {
     return notifications_;
   }
 

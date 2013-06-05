@@ -1105,6 +1105,9 @@ const char kPerHostZoomLevels[] = "profile.per_host_zoom_levels";
 
 const char kAutofillDialogAutofillDefault[] = "autofill.data_model_default";
 
+// Whether a user has ever paid with Wallet via the autofill dialog.
+const char kAutofillDialogHasPaidWithWallet[] = "autofill.has_paid_with_wallet";
+
 // Whether a user opted out of making purchases with Google Wallet; changed via
 // the autofill dialog's account chooser and set explicitly on dialog submission
 // (but not cancel). If this isn't set, the dialog assumes it's the first run.

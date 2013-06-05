@@ -163,7 +163,7 @@ class AutofillDialogController {
 
   // Returns dialog notifications that the view should currently be showing in
   // order from top to bottom.
-  virtual std::vector<DialogNotification> CurrentNotifications() const = 0;
+  virtual std::vector<DialogNotification> CurrentNotifications() = 0;
 
   // Begins or aborts the flow to sign into Wallet.
   virtual void SignInLinkClicked() = 0;
