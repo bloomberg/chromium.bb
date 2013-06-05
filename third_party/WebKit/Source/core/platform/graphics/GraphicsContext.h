@@ -33,6 +33,7 @@
 #include "core/platform/graphics/DrawLooper.h"
 #include "core/platform/graphics/FloatRect.h"
 #include "core/platform/graphics/Font.h"
+#include "core/platform/graphics/GraphicsContextAnnotation.h"
 #include "core/platform/graphics/GraphicsContextState.h"
 #include "core/platform/graphics/ImageBuffer.h"
 #include "core/platform/graphics/ImageOrientation.h"
@@ -204,6 +205,9 @@ public:
 
     bool updatingControlTints() const { return m_updatingControlTints; }
     void setUpdatingControlTints(bool updatingTints) { m_updatingControlTints = updatingTints; }
+
+    AnnotationModeFlags annotationMode() const { return m_annotationMode; }
+    void setAnnotationMode(const AnnotationModeFlags mode) { m_annotationMode = mode; }
     // ---------- End state management methods -----------------
 
     // Get the contents of the image buffer
@@ -360,6 +364,9 @@ public:
 
     static void adjustLineToPixelBoundaries(FloatPoint& p1, FloatPoint& p2, float strokeWidth, StrokeStyle);
 
+    void beginAnnotation(const GraphicsContextAnnotation&);
+    void endAnnotation();
+
 private:
     static void addCornerArc(SkPath*, const SkRect&, const IntSize&, int);
     static void setPathFromConvexPoints(SkPath*, size_t, const FloatPoint*);
@@ -447,7 +454,10 @@ private:
     unsigned m_deferredSaveFlags;
     Vector<DeferredSaveState> m_saveStateStack;
 
+    AnnotationModeFlags m_annotationMode;
+
 #if !ASSERT_DISABLED
+    unsigned m_annotationCount;
     unsigned m_transparencyCount;
 #endif
     // Tracks the region painted opaque via the GraphicsContext.

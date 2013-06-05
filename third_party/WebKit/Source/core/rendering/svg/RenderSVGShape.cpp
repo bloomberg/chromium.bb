@@ -265,6 +265,8 @@ void RenderSVGShape::fillAndStrokeShape(GraphicsContext* context)
 
 void RenderSVGShape::paint(PaintInfo& paintInfo, const LayoutPoint&)
 {
+    ANNOTATE_GRAPHICS_CONTEXT(paintInfo, this);
+
     if (paintInfo.context->paintingDisabled() || style()->visibility() == HIDDEN || isEmpty())
         return;
     FloatRect boundingBox = repaintRectInLocalCoordinates();

@@ -381,6 +381,8 @@ void RenderView::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
     // RenderViews should never be called to paint with an offset not on device pixels.
     ASSERT(LayoutPoint(IntPoint(paintOffset.x(), paintOffset.y())) == paintOffset);
 
+    ANNOTATE_GRAPHICS_CONTEXT(paintInfo, this);
+
     // This avoids painting garbage between columns if there is a column gap.
     if (m_frameView && m_frameView->pagination().mode != Pagination::Unpaginated)
         paintInfo.context->fillRect(paintInfo.rect, m_frameView->baseBackgroundColor(), ColorSpaceDeviceRGB);

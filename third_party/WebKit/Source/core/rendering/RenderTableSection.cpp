@@ -905,6 +905,8 @@ int RenderTableSection::firstLineBoxBaseline() const
 
 void RenderTableSection::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
+    ANNOTATE_GRAPHICS_CONTEXT(paintInfo, this);
+
     // put this back in when all layout tests can handle it
     // ASSERT(!needsLayout());
     // avoid crashing on bugs that cause us to paint with dirty layout

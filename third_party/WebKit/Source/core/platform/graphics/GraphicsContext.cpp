@@ -66,7 +66,9 @@ struct GraphicsContext::DeferredSaveState {
 GraphicsContext::GraphicsContext(SkCanvas* canvas)
     : m_canvas(canvas)
     , m_deferredSaveFlags(0)
+    , m_annotationMode(0)
 #if !ASSERT_DISABLED
+    , m_annotationCount(0)
     , m_transparencyCount(0)
 #endif
     , m_trackOpaqueRegion(false)
@@ -84,6 +86,7 @@ GraphicsContext::GraphicsContext(SkCanvas* canvas)
 GraphicsContext::~GraphicsContext()
 {
     ASSERT(m_stateStack.size() == 1);
+    ASSERT(!m_annotationCount);
     ASSERT(!m_transparencyCount);
 }
 
@@ -153,6 +156,38 @@ void GraphicsContext::restoreLayer()
     m_canvas->restore();
     if (m_trackOpaqueRegion)
         m_opaqueRegion.popCanvasLayer(this);
+}
+
+void GraphicsContext::beginAnnotation(const GraphicsContextAnnotation& annotation)
+{
+    if (paintingDisabled())
+        return;
+
+    canvas()->beginCommentGroup("GraphicsContextAnnotation");
+
+    AnnotationList annotations;
+    annotation.asAnnotationList(annotations);
+
+    AnnotationList::const_iterator end = annotations.end();
+    for (AnnotationList::const_iterator it = annotations.begin(); it != end; ++it)
+        canvas()->addComment(it->first, it->second.ascii().data());
+
+#if !ASSERT_DISABLED
+    ++m_annotationCount;
+#endif
+}
+
+void GraphicsContext::endAnnotation()
+{
+    if (paintingDisabled())
+        return;
+
+    canvas()->endCommentGroup();
+
+    ASSERT(m_annotationCount > 0);
+#if !ASSERT_DISABLED
+    --m_annotationCount;
+#endif
 }
 
 void GraphicsContext::setStrokeColor(const Color& color, ColorSpace colorSpace)

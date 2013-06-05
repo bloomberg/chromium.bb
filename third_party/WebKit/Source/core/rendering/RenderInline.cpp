@@ -526,6 +526,7 @@ void RenderInline::addChildToContinuation(RenderObject* newChild, RenderObject* 
 
 void RenderInline::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
+    ANNOTATE_GRAPHICS_CONTEXT(paintInfo, this);
     m_lineBoxes.paint(this, paintInfo, paintOffset);
 }
 
