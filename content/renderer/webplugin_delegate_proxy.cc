@@ -237,7 +237,7 @@ void WebPluginDelegateProxy::PluginDestroyed() {
 #endif
 
 #if defined(OS_WIN)
-  if (dummy_activation_window_ && render_view_) {
+  if (dummy_activation_window_ && render_view_.get()) {
     render_view_->Send(new ViewHostMsg_WindowlessPluginDummyWindowDestroyed(
         render_view_->routing_id(), dummy_activation_window_));
   }
@@ -764,7 +764,7 @@ void WebPluginDelegateProxy::DidFinishLoadWithReason(
 void WebPluginDelegateProxy::SetFocus(bool focused) {
   Send(new PluginMsg_SetFocus(instance_id_, focused));
 #if defined(OS_WIN)
-  if (render_view_)
+  if (render_view_.get())
     render_view_->PluginFocusChanged(focused, instance_id_);
 #endif
 }
@@ -917,7 +917,7 @@ void WebPluginDelegateProxy::OnSetWindowlessData(
 
 void WebPluginDelegateProxy::OnNotifyIMEStatus(int input_type,
                                                const gfx::Rect& caret_rect) {
-  if (!render_view_)
+  if (!render_view_.get())
     return;
 
   ViewHostMsg_TextInputState_Params params;

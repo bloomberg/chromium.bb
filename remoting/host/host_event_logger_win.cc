@@ -72,7 +72,7 @@ HostEventLoggerWin::HostEventLoggerWin(base::WeakPtr<HostStatusMonitor> monitor,
 
 HostEventLoggerWin::~HostEventLoggerWin() {
   if (event_log_ != NULL) {
-    if (monitor_)
+    if (monitor_.get())
       monitor_->RemoveStatusObserver(this);
     DeregisterEventSource(event_log_);
   }

@@ -299,7 +299,7 @@ RdpSession::EventHandler::EventHandler(
 RdpSession::EventHandler::~EventHandler() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  if (desktop_session_)
+  if (desktop_session_.get())
     desktop_session_->OnRdpClosed();
 }
 
@@ -339,7 +339,7 @@ STDMETHODIMP RdpSession::EventHandler::OnRdpConnected(
     long length) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  if (!desktop_session_)
+  if (!desktop_session_.get())
     return S_OK;
 
   net::IPEndPoint endpoint;
@@ -357,7 +357,7 @@ STDMETHODIMP RdpSession::EventHandler::OnRdpConnected(
 STDMETHODIMP RdpSession::EventHandler::OnRdpClosed() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  if (!desktop_session_)
+  if (!desktop_session_.get())
     return S_OK;
 
   base::WeakPtr<RdpSession> desktop_session = desktop_session_;

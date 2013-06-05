@@ -192,7 +192,7 @@ void SetAsDefaultBrowserHandler::ConcludeInteraction(
     MakeChromeDefaultResult interaction_result) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (response_delegate_)
+  if (response_delegate_.get())
     response_delegate_->SetDialogInteractionResult(interaction_result);
 
   WebContents* contents = web_ui()->GetWebContents();
