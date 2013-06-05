@@ -98,6 +98,7 @@ _OS_NEGATIVE_FILTER['win'] = [
     'PageLoadingTest.testShouldNotHangIfDocumentOpenCallIsNeverFollowedByDocumentCloseCall',
     # Flaky: https://code.google.com/p/chromedriver/issues/detail?id=373
     'RenderedWebElementTest.testHoverPersists',
+    'RenderedWebElementTest.canClickOnASuckerFishStyleMenu',
 ]
 _OS_NEGATIVE_FILTER['linux'] = []
 _OS_NEGATIVE_FILTER['mac'] = [
