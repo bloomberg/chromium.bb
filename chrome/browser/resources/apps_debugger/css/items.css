@@ -10,6 +10,10 @@ html {
   overflow: visible;
 }
 
+body {
+  overflow-y: scroll;
+}
+
 hr {
   color: rgb(115, 111, 110);
   margin: 15px 0;
