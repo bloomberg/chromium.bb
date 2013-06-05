@@ -7,6 +7,7 @@ import sys
 
 import android_commands
 import json
+import logging
 import math
 
 # Valid values of result type.
@@ -152,9 +153,10 @@ class PerfControl(object):
   def __init__(self, adb):
     self._adb = adb
     kernel_max = self._adb.GetFileContents('/sys/devices/system/cpu/kernel_max',
-                                         log_result=False)
+                                           log_result=False)
     assert kernel_max, 'Unable to find /sys/devices/system/cpu/kernel_max'
     self._kernel_max = int(kernel_max[0])
+    logging.info('Maximum CPU index: %d' % self._kernel_max)
     self._original_scaling_governor = self._adb.GetFileContents(
       PerfControl._SCALING_GOVERNOR_FMT % 0,
       log_result=False)[0]
@@ -183,4 +185,6 @@ class PerfControl(object):
     for cpu in range(self._kernel_max + 1):
       scaling_governor_file = PerfControl._SCALING_GOVERNOR_FMT % cpu
       if self._adb.FileExistsOnDevice(scaling_governor_file):
+        logging.info('Writing scaling governor mode \'%s\' -> %s' %
+                     (value, scaling_governor_file))
         self._adb.SetProtectedFileContents(scaling_governor_file, value)
