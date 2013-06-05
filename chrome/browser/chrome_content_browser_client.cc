@@ -678,8 +678,10 @@ static bool IsExtensionActivityLogEnabledForProfile(Profile* profile) {
   return activity_log->IsLogEnabled();
 }
 
-void ChromeContentBrowserClient::GuestWebContentsCreated(
-    WebContents* guest_web_contents, WebContents* embedder_web_contents) {
+void ChromeContentBrowserClient::GuestWebContentsAttached(
+    WebContents* guest_web_contents,
+    WebContents* embedder_web_contents,
+    int browser_plugin_instance_id) {
   Profile* profile = Profile::FromBrowserContext(
       embedder_web_contents->GetBrowserContext());
   ExtensionService* service =
@@ -697,7 +699,10 @@ void ChromeContentBrowserClient::GuestWebContentsCreated(
   // TODO(fsamuel): This should be replaced with WebViewGuest or AdViewGuest
   // once they are ready.
   extensions::TabHelper::CreateForWebContents(guest_web_contents);
-  new WebViewGuest(guest_web_contents, embedder_web_contents, extension->id());
+  new WebViewGuest(guest_web_contents,
+                   embedder_web_contents,
+                   extension->id(),
+                   browser_plugin_instance_id);
 }
 
 void ChromeContentBrowserClient::RenderProcessHostCreated(

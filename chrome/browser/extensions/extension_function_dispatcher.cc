@@ -279,7 +279,7 @@ void ExtensionFunctionDispatcher::DispatchOnIOThread(
     NOTREACHED();
     return;
   }
-  function_io->set_ipc_sender(ipc_sender);
+  function_io->set_ipc_sender(ipc_sender, routing_id);
   function_io->set_extension_info_map(extension_info_map);
   function->set_include_incognito(
       extension_info_map->IsIncognitoEnabled(extension->id()));

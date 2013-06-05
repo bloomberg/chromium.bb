@@ -435,9 +435,6 @@ void BrowserPluginGuest::Initialize(
     OnNavigateGuest(instance_id_, params.src);
 
   has_render_view_ = true;
-
-  GetContentClient()->browser()->GuestWebContentsCreated(
-      GetWebContents(), embedder_web_contents_);
 }
 
 BrowserPluginGuest::~BrowserPluginGuest() {

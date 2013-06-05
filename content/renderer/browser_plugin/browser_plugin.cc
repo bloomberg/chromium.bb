@@ -419,6 +419,7 @@ void BrowserPlugin::Attach(int guest_instance_id) {
   browser_plugin_manager()->AddBrowserPlugin(guest_instance_id, this);
 
   BrowserPluginHostMsg_Attach_Params create_guest_params;
+  create_guest_params.browser_plugin_instance_id = instance_id_;
   create_guest_params.focused = ShouldGuestBeFocused();
   create_guest_params.visible = visible_;
   create_guest_params.name = GetNameAttribute();

@@ -230,6 +230,42 @@ embedder.tests.testNewWindowExecuteScript =
   embedder.setUpNewWindowRequest_(webview, 'about:blank', '', testName);
 };
 
+embedder.tests.testNewWindowWebRequest =
+    function testNewWindowWebRequest() {
+  var testName = 'testNewWindowExecuteScript';
+  var webview = embedder.setUpGuest_('foobar');
+
+  var onNewWindow = function(e) {
+    chrome.test.log('Embedder notified on newwindow');
+    embedder.assertCorrectEvent_(e, '');
+
+    var newwebview = document.createElement('webview');
+    document.querySelector('#webview-tag-container').appendChild(newwebview);
+    var calledWebRequestEvent = false;
+    e.preventDefault();
+    // The WebRequest API is not exposed until the <webview> MutationObserver
+    // picks up the <webview> in the DOM. Thus, we cannot immediately access
+    // WebRequest API.
+    window.setTimeout(function() {
+      newwebview.onBeforeRequest.addListener(function(e) {
+          if (!calledWebRequestEvent) {
+            calledWebRequestEvent = true;
+            chrome.test.succeed();
+          }
+        }, { urls: ['<all_urls>'] }, ['blocking']);
+      try {
+        e.window.attach(newwebview);
+      } catch (e) {
+        chrome.test.fail();
+      }
+    }, 0);
+  };
+  webview.addEventListener('newwindow', onNewWindow);
+
+  // Load a new window with the given name.
+  embedder.setUpNewWindowRequest_(webview, 'guest.html', '', testName);
+};
+
 onload = function() {
   chrome.test.getConfig(function(config) {
     embedder.setUp(config);
@@ -239,7 +275,8 @@ onload = function() {
       embedder.tests.testNoName,
       embedder.tests.testNewWindowRedirect,
       embedder.tests.testNewWindowClose,
-      embedder.tests.testNewWindowExecuteScript
+      embedder.tests.testNewWindowExecuteScript,
+      embedder.tests.testNewWindowWebRequest
     ]);
   });
 };

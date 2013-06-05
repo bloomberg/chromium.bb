@@ -8,6 +8,7 @@
 #include "base/bind_helpers.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/tab_contents/retargeting_details.h"
+#include "chrome/browser/webview/webview_guest.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_details.h"
@@ -37,22 +38,12 @@ class ExtensionRendererState::RenderViewHostObserver
   }
 
   virtual void RenderViewHostDestroyed(content::RenderViewHost* host) OVERRIDE {
-    if (host->GetProcess()->IsGuest()) {
-      BrowserThread::PostTask(
-          BrowserThread::IO, FROM_HERE,
-          base::Bind(
-              &ExtensionRendererState::RemoveWebView,
-              base::Unretained(ExtensionRendererState::GetInstance()),
-              host->GetProcess()->GetID(),
-              host->GetRoutingID()));
-    } else {
-      BrowserThread::PostTask(
-          BrowserThread::IO, FROM_HERE,
-          base::Bind(
-              &ExtensionRendererState::ClearTabAndWindowId,
-              base::Unretained(ExtensionRendererState::GetInstance()),
-              host->GetProcess()->GetID(), host->GetRoutingID()));
-    }
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        base::Bind(
+            &ExtensionRendererState::ClearTabAndWindowId,
+            base::Unretained(ExtensionRendererState::GetInstance()),
+            host->GetProcess()->GetID(), host->GetRoutingID()));
 
     delete this;
   }
@@ -87,9 +78,6 @@ ExtensionRendererState::TabObserver::TabObserver() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   registrar_.Add(this,
                  content::NOTIFICATION_WEB_CONTENTS_RENDER_VIEW_HOST_CREATED,
-                 content::NotificationService::AllBrowserContextsAndSources());
-  registrar_.Add(this,
-                 content::NOTIFICATION_WEB_CONTENTS_CONNECTED,
                  content::NotificationService::AllBrowserContextsAndSources());
   registrar_.Add(this, chrome::NOTIFICATION_TAB_PARENTED,
                  content::NotificationService::AllBrowserContextsAndSources());
@@ -126,33 +114,6 @@ void ExtensionRendererState::TabObserver::Observe(
       // The observer deletes itself.
       new ExtensionRendererState::RenderViewHostObserver(host);
 
-      break;
-    }
-    case content::NOTIFICATION_WEB_CONTENTS_CONNECTED: {
-      WebContents* web_contents = content::Source<WebContents>(source).ptr();
-      if (!web_contents->GetRenderProcessHost()->IsGuest())
-        return;
-
-      WebContents* embedder_web_contents =
-          web_contents->GetEmbedderWebContents();
-      if (!embedder_web_contents)
-        return;
-      WebViewInfo web_view_info;
-      web_view_info.embedder_process_id =
-          embedder_web_contents->GetRenderProcessHost()->GetID();
-      web_view_info.embedder_routing_id =
-          embedder_web_contents->GetRoutingID();
-      web_view_info.web_view_instance_id =
-          web_contents->GetEmbeddedInstanceID();
-
-      BrowserThread::PostTask(
-          BrowserThread::IO, FROM_HERE,
-          base::Bind(
-              &ExtensionRendererState::AddWebView,
-              base::Unretained(ExtensionRendererState::GetInstance()),
-              web_contents->GetRenderProcessHost()->GetID(),
-              web_contents->GetRoutingID(),
-              web_view_info));
       break;
     }
     case chrome::NOTIFICATION_TAB_PARENTED: {
@@ -249,27 +210,27 @@ bool ExtensionRendererState::GetTabAndWindowId(
 
 void ExtensionRendererState::AddWebView(int guest_process_id,
                                         int guest_routing_id,
-                                        const WebViewInfo& web_view_info) {
+                                        const WebViewInfo& webview_info) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   RenderId render_id(guest_process_id, guest_routing_id);
-  web_view_info_map_[render_id] = web_view_info;
+  webview_info_map_[render_id] = webview_info;
 }
 
 void ExtensionRendererState::RemoveWebView(int guest_process_id,
                                            int guest_routing_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   RenderId render_id(guest_process_id, guest_routing_id);
-  web_view_info_map_.erase(render_id);
+  webview_info_map_.erase(render_id);
 }
 
 bool ExtensionRendererState::GetWebViewInfo(int guest_process_id,
                                             int guest_routing_id,
-                                            WebViewInfo* web_view_info) {
+                                            WebViewInfo* webview_info) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   RenderId render_id(guest_process_id, guest_routing_id);
-  WebViewInfoMap::iterator iter = web_view_info_map_.find(render_id);
-  if (iter != web_view_info_map_.end()) {
-    *web_view_info = iter->second;
+  WebViewInfoMap::iterator iter = webview_info_map_.find(render_id);
+  if (iter != webview_info_map_.end()) {
+    *webview_info = iter->second;
     return true;
   }
   return false;

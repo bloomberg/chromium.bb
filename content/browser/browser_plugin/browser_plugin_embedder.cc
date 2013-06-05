@@ -13,6 +13,7 @@
 #include "content/common/drag_messages.h"
 #include "content/common/gpu/gpu_messages.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/result_codes.h"
@@ -166,15 +167,33 @@ void BrowserPluginEmbedder::OnAttach(
       GetBrowserPluginGuestManager()->GetGuestByInstanceID(
           instance_id, web_contents()->GetRenderProcessHost()->GetID());
 
+
   if (guest) {
+    // On attachment, GuestWebContentsAttached needs to be called first to make
+    // the BrowserPlugin to guest association prior to resource loads to allow
+    // APIs to intercept and associate resource loads with a particular
+    // BrowserPlugin.
+    GetContentClient()->browser()->GuestWebContentsAttached(
+        guest->GetWebContents(),
+        web_contents(),
+        params.browser_plugin_instance_id);
+
     guest->Attach(static_cast<WebContentsImpl*>(web_contents()), params);
     return;
   }
 
   guest = GetBrowserPluginGuestManager()->CreateGuest(
       web_contents()->GetSiteInstance(), instance_id, params);
-  if (guest)
+  if (guest) {
     guest->Initialize(static_cast<WebContentsImpl*>(web_contents()), params);
+    // On creation, GuestWebContentsAttached cannot be called until after
+    // initialization because there is no process to send a message to until
+    // the guest is initialized.
+    GetContentClient()->browser()->GuestWebContentsAttached(
+        guest->GetWebContents(),
+        web_contents(),
+        params.browser_plugin_instance_id);
+  }
 }
 
 void BrowserPluginEmbedder::OnPluginAtPositionResponse(

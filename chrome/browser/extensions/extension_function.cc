@@ -264,7 +264,8 @@ void UIThreadExtensionFunction::WriteToConsole(
       render_view_host_->GetRoutingID(), level, message));
 }
 
-IOThreadExtensionFunction::IOThreadExtensionFunction() {
+IOThreadExtensionFunction::IOThreadExtensionFunction()
+    : routing_id_(MSG_ROUTING_NONE) {
 }
 
 IOThreadExtensionFunction::~IOThreadExtensionFunction() {

@@ -394,7 +394,8 @@ struct ExtensionWebRequestEventRouter::EventListener {
   RequestFilter filter;
   int extra_info_spec;
   int embedder_process_id;
-  int web_view_instance_id;
+  int embedder_routing_id;
+  int webview_instance_id;
   base::WeakPtr<IPC::Sender> ipc_sender;
   mutable std::set<uint64> blocked_requests;
 
@@ -1155,7 +1156,8 @@ bool ExtensionWebRequestEventRouter::AddEventListener(
     const RequestFilter& filter,
     int extra_info_spec,
     int embedder_process_id,
-    int web_view_instance_id,
+    int embedder_routing_id,
+    int webview_instance_id,
     base::WeakPtr<IPC::Sender> ipc_sender) {
 
   if (!IsWebRequestEvent(event_name))
@@ -1169,7 +1171,8 @@ bool ExtensionWebRequestEventRouter::AddEventListener(
   listener.extra_info_spec = extra_info_spec;
   listener.ipc_sender = ipc_sender;
   listener.embedder_process_id = embedder_process_id;
-  listener.web_view_instance_id = web_view_instance_id;
+  listener.embedder_routing_id = embedder_routing_id;
+  listener.webview_instance_id = webview_instance_id;
 
   if (listeners_[profile][event_name].count(listener) != 0u) {
     // This is likely an abuse of the API by a malicious extension.
@@ -1219,7 +1222,7 @@ void ExtensionWebRequestEventRouter::RemoveWebViewEventListeners(
     void* profile,
     const std::string& extension_id,
     int embedder_process_id,
-    int web_view_instance_id) {
+    int webview_instance_id) {
   // Iterate over all listeners of all WebRequest events to delete
   // any listeners that belong to the provided <webview>.
   ListenerMapForProfile& map_for_profile = listeners_[profile];
@@ -1231,7 +1234,7 @@ void ExtensionWebRequestEventRouter::RemoveWebViewEventListeners(
          listener_iter != listeners.end(); ++listener_iter) {
       const EventListener& listener = *listener_iter;
       if (listener.embedder_process_id == embedder_process_id &&
-          listener.web_view_instance_id == web_view_instance_id)
+          listener.webview_instance_id == webview_instance_id)
         listeners_to_delete.push_back(listener);
     }
     for (size_t i = 0; i < listeners_to_delete.size(); ++i) {
@@ -1326,9 +1329,9 @@ void ExtensionWebRequestEventRouter::GetMatchingListenersImpl(
     std::vector<const ExtensionWebRequestEventRouter::EventListener*>*
         matching_listeners) {
   std::string web_request_event_name(event_name);
-  ExtensionRendererState::WebViewInfo web_view_info;
+  ExtensionRendererState::WebViewInfo webview_info;
   bool is_guest = ExtensionRendererState::GetInstance()->
-      GetWebViewInfo(render_process_host_id, routing_id, &web_view_info);
+      GetWebViewInfo(render_process_host_id, routing_id, &webview_info);
   if (is_guest)
     web_request_event_name.replace(0, sizeof(kWebRequest) - 1, kWebView);
 
@@ -1343,8 +1346,9 @@ void ExtensionWebRequestEventRouter::GetMatchingListenersImpl(
     }
 
     if (is_guest &&
-        (it->embedder_process_id != web_view_info.embedder_process_id ||
-         it->web_view_instance_id != web_view_info.web_view_instance_id))
+        (it->embedder_process_id != webview_info.embedder_process_id ||
+         it->embedder_routing_id != webview_info.embedder_routing_id ||
+         it->webview_instance_id != webview_info.instance_id))
       continue;
 
     if (!it->filter.urls.is_empty() && !it->filter.urls.MatchesURL(url))
@@ -2037,19 +2041,20 @@ bool WebRequestAddEventListener::RunImpl() {
   std::string sub_event_name;
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(4, &sub_event_name));
 
-  int web_view_instance_id = 0;
-  EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(5, &web_view_instance_id));
+  int webview_instance_id = 0;
+  EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(5, &webview_instance_id));
 
   base::WeakPtr<ChromeRenderMessageFilter> ipc_sender = ipc_sender_weak();
 
   int embedder_process_id =
       ipc_sender.get() ? ipc_sender->render_process_id() : -1;
+  int embedder_routing_id = routing_id();
 
   const Extension* extension =
       extension_info_map()->extensions().GetByID(extension_id());
   std::string extension_name = extension ? extension->name() : extension_id();
 
-  bool is_guest = web_view_instance_id != 0;
+  bool is_guest = webview_instance_id != 0;
   // We check automatically whether the extension has the 'webRequest'
   // permission. For blocking calls we require the additional permission
   // 'webRequestBlocking'.
@@ -2078,7 +2083,8 @@ bool WebRequestAddEventListener::RunImpl() {
       ExtensionWebRequestEventRouter::GetInstance()->AddEventListener(
           profile_id(), extension_id(), extension_name,
           event_name, sub_event_name, filter, extra_info_spec,
-          embedder_process_id, web_view_instance_id, ipc_sender_weak());
+          embedder_process_id, embedder_routing_id, webview_instance_id,
+          ipc_sender_weak());
   EXTENSION_FUNCTION_VALIDATE(success);
 
   helpers::ClearCacheOnNavigation();

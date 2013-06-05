@@ -128,9 +128,13 @@ class CONTENT_EXPORT ContentBrowserClient {
   virtual WebContentsViewDelegate* GetWebContentsViewDelegate(
       WebContents* web_contents);
 
-  // Notifies that a <webview> guest WebContents has been created.
-  virtual void GuestWebContentsCreated(WebContents* guest_web_contents,
-                                       WebContents* embedder_web_contents) {}
+  // Notifies that a guest WebContents has been attached to a BrowserPlugin.
+  // A guest is attached to a BrowserPlugin when the guest has acquired an
+  // embedder WebContents. This happens on initial navigation or when a new
+  // window is attached to a BrowserPlugin.
+  virtual void GuestWebContentsAttached(WebContents* guest_web_contents,
+                                        WebContents* embedder_web_contents,
+                                        int browser_plugin_instance_id) {}
 
   // Notifies that a RenderProcessHost has been created. This is called before
   // the content layer adds its own BrowserMessageFilters, so that the

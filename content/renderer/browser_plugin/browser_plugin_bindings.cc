@@ -327,8 +327,8 @@ class BrowserPluginBindingGetInstanceID : public BrowserPluginMethodBinding {
   virtual bool Invoke(BrowserPluginBindings* bindings,
                       const NPVariant* args,
                       NPVariant* result) OVERRIDE {
-    int guest_instance_id = bindings->instance()->guest_instance_id();
-    INT32_TO_NPVARIANT(guest_instance_id, *result);
+    int instance_id = bindings->instance()->instance_id();
+    INT32_TO_NPVARIANT(instance_id, *result);
     return true;
   }
 

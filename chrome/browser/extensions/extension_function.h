@@ -405,13 +405,17 @@ class IOThreadExtensionFunction : public ExtensionFunction {
 
   virtual IOThreadExtensionFunction* AsIOThreadExtensionFunction() OVERRIDE;
 
-  void set_ipc_sender(base::WeakPtr<ChromeRenderMessageFilter> ipc_sender) {
+  void set_ipc_sender(base::WeakPtr<ChromeRenderMessageFilter> ipc_sender,
+                      int routing_id) {
     ipc_sender_ = ipc_sender;
+    routing_id_ = routing_id;
   }
 
   base::WeakPtr<ChromeRenderMessageFilter> ipc_sender_weak() const {
     return ipc_sender_;
   }
+
+  int routing_id() const { return routing_id_; }
 
   void set_extension_info_map(const ExtensionInfoMap* extension_info_map) {
     extension_info_map_ = extension_info_map;
@@ -433,6 +437,7 @@ class IOThreadExtensionFunction : public ExtensionFunction {
 
  private:
   base::WeakPtr<ChromeRenderMessageFilter> ipc_sender_;
+  int routing_id_;
 
   scoped_refptr<const ExtensionInfoMap> extension_info_map_;
 };
