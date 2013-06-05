@@ -262,7 +262,7 @@ void RenderView::layout()
     if (relayoutChildren) {
         setChildNeedsLayout(true, MarkOnlyThis);
         for (RenderObject* child = firstChild(); child; child = child->nextSibling()) {
-            if ((child->isBox() && (toRenderBox(child)->hasRelativeLogicalHeight() || toRenderBox(child)->hasViewportPercentageLogicalHeight()))
+            if ((child->isBox() && toRenderBox(child)->hasRelativeLogicalHeight())
                     || child->style()->logicalHeight().isPercent()
                     || child->style()->logicalMinHeight().isPercent()
                     || child->style()->logicalMaxHeight().isPercent()

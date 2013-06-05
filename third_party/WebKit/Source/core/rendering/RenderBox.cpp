@@ -4520,21 +4520,18 @@ LayoutSize RenderBox::topLeftLocationOffset() const
 
 bool RenderBox::hasRelativeDimensions() const
 {
+    // FIXME: This should probably include viewport percentage heights as well.
     return style()->height().isPercent() || style()->width().isPercent()
-            || style()->maxHeight().isPercent() || style()->maxWidth().isPercent()
-            || style()->minHeight().isPercent() || style()->minWidth().isPercent();
+        || style()->maxHeight().isPercent() || style()->maxWidth().isPercent()
+        || style()->minHeight().isPercent() || style()->minWidth().isPercent();
 }
 
 bool RenderBox::hasRelativeLogicalHeight() const
 {
     return style()->logicalHeight().isPercent()
-            || style()->logicalMinHeight().isPercent()
-            || style()->logicalMaxHeight().isPercent();
-}
-
-bool RenderBox::hasViewportPercentageLogicalHeight() const
-{
-    return style()->logicalHeight().isViewportPercentage()
+        || style()->logicalMinHeight().isPercent()
+        || style()->logicalMaxHeight().isPercent()
+        || style()->logicalHeight().isViewportPercentage()
         || style()->logicalMinHeight().isViewportPercentage()
         || style()->logicalMaxHeight().isViewportPercentage();
 }
