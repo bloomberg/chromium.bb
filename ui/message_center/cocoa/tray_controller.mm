@@ -27,7 +27,8 @@
 - (id)initWithMessageCenterTray:(message_center::MessageCenterTray*)tray {
   scoped_nsobject<MCTrayWindow> window(
       [[MCTrayWindow alloc] initWithContentRect:ui::kWindowSizeDeterminedLater
-                                      styleMask:NSBorderlessWindowMask
+                                      styleMask:NSBorderlessWindowMask |
+                                                NSNonactivatingPanelMask
                                         backing:NSBackingStoreBuffered
                                           defer:NO]);
   if ((self = [super initWithWindow:window])) {
@@ -43,23 +44,11 @@
     NSView* contentView = [viewController_ view];
     [window setFrame:[contentView frame] display:NO];
     [window setContentView:contentView];
-
-    // The global event monitor will close the tray in response to events
-    // delivered to other applications, and -windowDidResignKey: will catch
-    // events within the application.
-    clickEventMonitor_ =
-        [NSEvent addGlobalMonitorForEventsMatchingMask:NSLeftMouseDownMask |
-                                                       NSRightMouseDownMask |
-                                                       NSOtherMouseDownMask
-            handler:^(NSEvent* event) {
-                tray_->HideMessageCenterBubble();
-            }];
   }
   return self;
 }
 
 - (void)dealloc {
-  [NSEvent removeMonitor:clickEventMonitor_];
   [super dealloc];
 }
 

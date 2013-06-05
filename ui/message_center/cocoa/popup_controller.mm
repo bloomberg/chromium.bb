@@ -30,7 +30,7 @@ enum {
 
 // Window Subclass /////////////////////////////////////////////////////////////
 
-@interface MCPopupWindow : NSWindow {
+@interface MCPopupWindow : NSPanel {
   // The cumulative X and Y scrollingDeltas since the -scrollWheel: event began.
   NSPoint totalScrollDelta_;
 }
@@ -99,7 +99,8 @@ enum {
            popupCollection:(MCPopupCollection*)popupCollection {
   scoped_nsobject<MCPopupWindow> window(
       [[MCPopupWindow alloc] initWithContentRect:ui::kWindowSizeDeterminedLater
-                                  styleMask:NSBorderlessWindowMask
+                                  styleMask:NSBorderlessWindowMask |
+                                            NSNonactivatingPanelMask
                                     backing:NSBackingStoreBuffered
                                       defer:YES]);
   if ((self = [super initWithWindow:window])) {
