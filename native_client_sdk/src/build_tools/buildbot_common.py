@@ -159,12 +159,17 @@ def RemoveFile(dst):
 
 
 BOT_GSUTIL = '/b/build/scripts/slave/gsutil'
+# On Windows, the current working directory may be on a different drive than
+# gsutil.
+WIN_BOT_GSUTIL = 'E:' + BOT_GSUTIL
 LOCAL_GSUTIL = 'gsutil'
 
 
 def GetGsutil():
   if os.environ.get('BUILDBOT_BUILDERNAME') \
      and not os.environ.get('BUILDBOT_FAKE'):
+    if sys.platform in ('cygwin', 'win32'):
+      return WIN_BOT_GSUTIL
     return BOT_GSUTIL
   else:
     return LOCAL_GSUTIL
