@@ -32,7 +32,7 @@ class JavaBridgeThread : public base::Thread {
 
 void CleanUpStubs(const std::vector<base::WeakPtr<NPObjectStub> > & stubs) {
   for (size_t i = 0; i < stubs.size(); ++i) {
-    if (stubs[i]) {
+    if (stubs[i].get()) {
       stubs[i]->DeleteSoon();
     }
   }
