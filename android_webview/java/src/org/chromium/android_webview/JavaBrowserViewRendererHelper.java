@@ -51,8 +51,8 @@ public class JavaBrowserViewRendererHelper {
      * Used for convenience from the native side and other static helper methods.
      */
     @CalledByNative
-    private static void drawBitmapIntoCanvas(Bitmap bitmap, Canvas canvas) {
-        canvas.drawBitmap(bitmap, 0, 0, null);
+    private static void drawBitmapIntoCanvas(Bitmap bitmap, Canvas canvas, int x, int y) {
+        canvas.drawBitmap(bitmap, x, y, null);
     }
 
     /**
@@ -64,7 +64,7 @@ public class JavaBrowserViewRendererHelper {
         Picture picture = new Picture();
         if (bitmap != null) {
             Canvas recordingCanvas = picture.beginRecording(bitmap.getWidth(), bitmap.getHeight());
-            drawBitmapIntoCanvas(bitmap, recordingCanvas);
+            drawBitmapIntoCanvas(bitmap, recordingCanvas, 0, 0);
             picture.endRecording();
         }
         return picture;

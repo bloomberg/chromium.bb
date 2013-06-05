@@ -353,7 +353,8 @@ bool BrowserViewRendererImpl::DrawSW(jobject java_canvas,
     }
 
     ScopedJavaLocalRef<jobject> jcanvas(env, java_canvas);
-    java_helper_->DrawBitmapIntoCanvas(env, jbitmap, jcanvas);
+    java_helper_->DrawBitmapIntoCanvas(env, jbitmap, jcanvas,
+                                       clip.x(), clip.y());
     return true;
   }
 

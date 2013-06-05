@@ -60,7 +60,9 @@ class BrowserViewRenderer {
     virtual void DrawBitmapIntoCanvas(
         JNIEnv* env,
         const base::android::JavaRef<jobject>& jbitmap,
-        const base::android::JavaRef<jobject>& jcanvas) = 0;
+        const base::android::JavaRef<jobject>& jcanvas,
+        int x,
+        int y) = 0;
 
     // Creates a Java Picture object that records drawing the provided Bitmap.
     virtual base::android::ScopedJavaLocalRef<jobject> RecordBitmapIntoPicture(

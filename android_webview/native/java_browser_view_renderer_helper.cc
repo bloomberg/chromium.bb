@@ -33,10 +33,12 @@ ScopedJavaLocalRef<jobject> JavaBrowserViewRendererHelper::CreateBitmap(
 void JavaBrowserViewRendererHelper::DrawBitmapIntoCanvas(
     JNIEnv* env,
     const JavaRef<jobject>& jbitmap,
-    const JavaRef<jobject>& jcanvas) {
+    const JavaRef<jobject>& jcanvas,
+    int x,
+    int y) {
   TRACE_EVENT0("android_webview", "RendererHelper::DrawBitmapIntoCanvas");
   Java_JavaBrowserViewRendererHelper_drawBitmapIntoCanvas(
-      env, jbitmap.obj(), jcanvas.obj());
+      env, jbitmap.obj(), jcanvas.obj(), x, y);
 }
 
 ScopedJavaLocalRef<jobject>
