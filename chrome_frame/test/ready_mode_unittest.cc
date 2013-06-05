@@ -138,7 +138,7 @@ class ReadyPromptWindowTest : public ReadyPromptTest {
     ready_prompt_window_ = ReadyPromptWindow::CreateInstance(
         &frame_, state_, url_launcher_);
 
-    ASSERT_TRUE(ready_prompt_window_ != NULL);
+    ASSERT_TRUE(ready_prompt_window_.get() != NULL);
     RECT position = {0, 0, 800, 39};
     ASSERT_TRUE(ready_prompt_window_->SetWindowPos(HWND_TOP, &position,
                                                    SWP_SHOWWINDOW));
@@ -153,9 +153,9 @@ class ReadyPromptWindowTest : public ReadyPromptTest {
 class ReadyPromptWindowButtonTest : public ReadyPromptWindowTest {
  public:
   void TearDown() {
-    ASSERT_TRUE(ready_prompt_window_ != NULL);
+    ASSERT_TRUE(ready_prompt_window_.get() != NULL);
     ASSERT_TRUE(ready_prompt_window_->DestroyWindow());
-    ASSERT_TRUE(ready_prompt_window_ == NULL);
+    ASSERT_TRUE(ready_prompt_window_.get() == NULL);
     ASSERT_FALSE(message_loop_.WasTimedOut());
 
     ReadyPromptWindowTest::TearDown();

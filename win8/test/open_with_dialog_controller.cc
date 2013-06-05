@@ -238,7 +238,7 @@ OpenWithDialogController::OpenWithDialogController() {}
 OpenWithDialogController::~OpenWithDialogController() {
   // Orphan the context if this instance is being destroyed before the context
   // finishes its work.
-  if (context_)
+  if (context_.get())
     context_->Orphan();
 }
 
@@ -247,7 +247,7 @@ void OpenWithDialogController::Begin(
     const string16& url_protocol,
     const string16& program,
     const SetDefaultCallback& callback) {
-  DCHECK_EQ(context_, static_cast<Context*>(NULL));
+  DCHECK_EQ(context_.get(), static_cast<Context*>(NULL));
   if (base::win::GetVersion() < base::win::VERSION_WIN8) {
     NOTREACHED() << "Windows 8 is required.";
     // The callback may not properly handle being run from Begin, so post a task

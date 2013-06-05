@@ -606,7 +606,7 @@ void UIAutomationClient::Begin(const wchar_t* class_name,
                                const InitializedCallback& init_callback,
                                const ResultCallback& result_callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK_EQ(context_, static_cast<Context*>(NULL));
+  DCHECK_EQ(context_.get(), static_cast<Context*>(NULL));
 
   // Start the automation thread and initialize our automation client on it.
   context_ = Context::Create();

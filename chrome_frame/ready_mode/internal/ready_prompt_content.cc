@@ -16,7 +16,7 @@ ReadyPromptContent::ReadyPromptContent(ReadyModeState* ready_mode_state,
 }
 
 ReadyPromptContent::~ReadyPromptContent() {
-  if (window_ != NULL && window_->IsWindow()) {
+  if (window_.get() != NULL && window_->IsWindow()) {
     // The window must discard its ContentFrame pointer at this time.
     window_->DestroyWindow();
     window_.reset();
@@ -24,7 +24,7 @@ ReadyPromptContent::~ReadyPromptContent() {
 }
 
 bool ReadyPromptContent::InstallInFrame(Frame* frame) {
-  DCHECK(window_ == NULL);
+  DCHECK(window_.get() == NULL);
   DCHECK(ready_mode_state_ != NULL);
   DCHECK(url_launcher_ != NULL);
 
@@ -32,11 +32,11 @@ bool ReadyPromptContent::InstallInFrame(Frame* frame) {
   window_ = ReadyPromptWindow::CreateInstance(
       frame, ready_mode_state_.release(), url_launcher_.release());
 
-  return window_ != NULL;
+  return window_.get() != NULL;
 }
 
 void ReadyPromptContent::SetDimensions(const RECT& dimensions) {
-  if (window_ != NULL && window_->IsWindow()) {
+  if (window_.get() != NULL && window_->IsWindow()) {
     window_->SetWindowPos(HWND_TOP, &dimensions,
                           ::IsRectEmpty(&dimensions) ? SWP_HIDEWINDOW :
                                                        SWP_SHOWWINDOW);
@@ -89,9 +89,9 @@ bool GetDialogTemplateDimensions(ReadyPromptWindow* window, RECT* dimensions) {
 }
 
 size_t ReadyPromptContent::GetDesiredSize(size_t width, size_t height) {
-  DCHECK(window_ != NULL && window_->IsWindow());
+  DCHECK(window_.get() != NULL && window_->IsWindow());
 
-  if (window_ == NULL || !window_->IsWindow()) {
+  if (window_.get() == NULL || !window_->IsWindow()) {
     return 0;
   }
   RECT dialog_dimensions = {0, 0, 0, 0};
