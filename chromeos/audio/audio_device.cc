@@ -59,6 +59,8 @@ std::string GetTypeString(chromeos::AudioDeviceType type) {
 chromeos::AudioDeviceType GetAudioType(const std::string& node_type) {
   if (node_type.find("HEADPHONE") != std::string::npos)
     return chromeos::AUDIO_TYPE_HEADPHONE;
+  else if (node_type.find("INTERNAL_MIC") != std::string::npos)
+    return chromeos::AUDIO_TYPE_INTERNAL_MIC;
   else if (node_type.find("MIC") != std::string::npos)
     return chromeos::AUDIO_TYPE_MIC;
   else if (node_type.find("USB") != std::string::npos)
@@ -69,8 +71,6 @@ chromeos::AudioDeviceType GetAudioType(const std::string& node_type) {
     return chromeos::AUDIO_TYPE_HDMI;
   else if (node_type.find("INTERNAL_SPEAKER") != std::string::npos)
     return chromeos::AUDIO_TYPE_INTERNAL_SPEAKER;
-  else if (node_type.find("INTERNAL_MIC") != std::string::npos)
-    return chromeos::AUDIO_TYPE_INTERNAL_MIC;
   else
     return chromeos::AUDIO_TYPE_OTHER;
 }
