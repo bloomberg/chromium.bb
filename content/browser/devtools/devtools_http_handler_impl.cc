@@ -110,8 +110,12 @@ class DevToolsClientHostImpl : public DevToolsClientHost {
       return;
     is_closed_ = true;
 
+    DictionaryValue notification;
+    notification.SetString(
+        devtools::Inspector::detached::kParamReason, detach_reason_);
     std::string response = DevToolsProtocol::CreateNotification(
-        devtools::Inspector::detached::kName, NULL)->Serialize();
+        devtools::Inspector::detached::kName,
+        notification.DeepCopy())->Serialize();
     message_loop_->PostTask(
         FROM_HERE,
         base::Bind(&net::HttpServer::SendOverWebSocket,

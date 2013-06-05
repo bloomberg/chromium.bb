@@ -17,6 +17,7 @@ namespace devtools {
 namespace Inspector {
 namespace detached {
   extern const char kName[];
+  extern const char kParamReason[];
 }  // detached
 namespace targetCrashed {
   extern const char kName[];

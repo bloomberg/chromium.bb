@@ -10,6 +10,7 @@ namespace devtools {
 namespace Inspector {
 namespace detached {
   const char kName[] = "Inspector.detached";
+  const char kParamReason[] = "reason";
 }  // detached
 namespace targetCrashed {
   const char kName[] = "Inspector.targetCrashed";
