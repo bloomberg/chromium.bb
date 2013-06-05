@@ -80,31 +80,46 @@ NotificationList::PopupNotifications
 
 //------------------------------------------------------------------------------
 // Client code interface.
-void MessageCenterImpl::AddNotification(scoped_ptr<Notification> notification) {
-  DCHECK(notification.get());
 
+void MessageCenterImpl::AddNotification(
+    NotificationType type,
+    const std::string& id,
+    const string16& title,
+    const string16& message,
+    const string16& display_source,
+    const std::string& extension_id,
+    const base::DictionaryValue* optional_fields,
+    NotificationDelegate* delegate) {
   // Sometimes the notification can be added with the same id and the
   // |notification_list| will replace the notification instead of adding new.
   // This is essentially an update rather than addition.
-  const std::string& id = notification->id();
   bool already_exists = notification_list_->HasNotification(id);
-  notification_list_->AddNotification(notification.Pass());
-
+  notification_list_->AddNotification(type,
+                                      id,
+                                      title,
+                                      message,
+                                      display_source,
+                                      extension_id,
+                                      optional_fields,
+                                      delegate);
   if (already_exists) {
-    FOR_EACH_OBSERVER(
-        MessageCenterObserver, observer_list_, OnNotificationUpdated(id));
+    FOR_EACH_OBSERVER(MessageCenterObserver, observer_list_,
+                      OnNotificationUpdated(id));
   } else {
-    FOR_EACH_OBSERVER(
-        MessageCenterObserver, observer_list_, OnNotificationAdded(id));
+    FOR_EACH_OBSERVER(MessageCenterObserver, observer_list_,
+                      OnNotificationAdded(id));
   }
 }
 
 void MessageCenterImpl::UpdateNotification(
     const std::string& old_id,
-    scoped_ptr<Notification> new_notification) {
-  std::string new_id = new_notification->id();
-  notification_list_->UpdateNotificationMessage(old_id,
-                                                new_notification.Pass());
+    const std::string& new_id,
+    const string16& title,
+    const string16& message,
+    const base::DictionaryValue* optional_fields,
+    NotificationDelegate* delegate) {
+  notification_list_->UpdateNotificationMessage(
+      old_id, new_id, title, message, optional_fields, delegate);
   if (old_id == new_id) {
     FOR_EACH_OBSERVER(MessageCenterObserver, observer_list_,
                       OnNotificationUpdated(new_id));

@@ -15,14 +15,13 @@
 #include "googleurl/src/gurl.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebTextDirection.h"
 #include "ui/gfx/image/image.h"
-#include "ui/message_center/notification.h"
 #include "ui/message_center/notification_types.h"
 
 // Representation of a notification to be shown to the user.
 // On non-Ash platforms these are rendered as HTML, sometimes described by a
 // data url converted from text + icon data. On Ash they are rendered as
 // formated text and icon data.
-class Notification : public message_center::Notification {
+class Notification {
  public:
   // Initializes a notification with HTML content.
   Notification(const GURL& origin_url,
@@ -66,27 +65,23 @@ class Notification : public message_center::Notification {
                const string16& replace_id,
                NotificationDelegate* delegate);
 
-  Notification(
-      message_center::NotificationType type,
-      const GURL& origin_url,
-      const string16& title,
-      const string16& body,
-      const gfx::Image& icon,
-      WebKit::WebTextDirection dir,
-      const string16& display_source,
-      const string16& replace_id,
-      const message_center::RichNotificationData& rich_notification_data,
-      NotificationDelegate* delegate);
-
   Notification(const Notification& notification);
-  virtual ~Notification();
+  ~Notification();
   Notification& operator=(const Notification& notification);
 
   // If this is a HTML notification.
   bool is_html() const { return is_html_; }
 
+  message_center::NotificationType type() const {
+    return type_;
+  }
+
   // The URL (may be data:) containing the contents for the notification.
   const GURL& content_url() const { return content_url_; }
+
+  // Title and message text of the notification.
+  const string16& title() const { return title_; }
+  const string16& body() const { return body_; }
 
   // The origin URL of the script which requested the notification.
   const GURL& origin_url() const { return origin_url_; }
@@ -94,54 +89,75 @@ class Notification : public message_center::Notification {
   // A url for the icon to be shown (optional).
   const GURL& icon_url() const { return icon_url_; }
 
+  // An image for the icon to be shown (optional).
+  const gfx::Image& icon() const { return icon_; }
+
+  // A display string for the source of the notification.
+  const string16& display_source() const { return display_source_; }
+
   // A unique identifier used to update (replace) or remove a notification.
   const string16& replace_id() const { return replace_id_; }
 
-  // A url for the button icons to be shown (optional).
-  const GURL& button_one_icon_url() const { return button_one_icon_url_; }
-  const GURL& button_two_icon_url() const { return button_two_icon_url_; }
+  const DictionaryValue* optional_fields() const {
+    return optional_fields_.get();
+  }
 
-  // A url for the image to be shown (optional).
-  const GURL& image_url() const { return image_url_; }
+  // Marks this explicitly to prevent the timeout dismiss of notification.
+  // This is used by webkit notifications to keep the existing behavior.
+  void DisableTimeout();
+
+  void Display() const { delegate()->Display(); }
+  void Error() const { delegate()->Error(); }
+  bool HasClickedListener() const { return delegate()->HasClickedListener(); }
+  void Click() const { delegate()->Click(); }
+  void ButtonClick(int index) const { delegate()->ButtonClick(index); }
+  void Close(bool by_user) const { delegate()->Close(by_user); }
+  void DoneRendering() { delegate()->ReleaseRenderViewHost(); }
 
   std::string notification_id() const { return delegate()->id(); }
+
   int process_id() const { return delegate()->process_id(); }
 
   content::RenderViewHost* GetRenderViewHost() const {
     return delegate()->GetRenderViewHost();
   }
-  void DoneRendering() { delegate()->ReleaseRenderViewHost(); }
 
   NotificationDelegate* delegate() const { return delegate_.get(); }
 
  private:
-  // Extracts optional URLs from a dictionary value.
-  void ApplyOptionalFields(const DictionaryValue* optional_fields);
+  // The type of notification we'd like displayed.
+  message_center::NotificationType type_;
 
   // The Origin of the page/worker which created this notification.
   GURL origin_url_;
+
+  // Image data for the associated icon, used by Ash when available.
+  gfx::Image icon_;
 
   // URL for the icon associated with the notification. Requires delegate_
   // to have a non NULL RenderViewHost.
   GURL icon_url_;
 
   // If this is a HTML notification, the content is in |content_url_|. If
-  // false, the data is in |title_| and |message_|.
+  // false, the data is in |title_| and |body_|.
   bool is_html_;
 
   // The URL of the HTML content of the toast (may be a data: URL for simple
   // string-based notifications).
   GURL content_url_;
 
-  // The URLs of the button images for a rich notification.
-  GURL button_one_icon_url_;
-  GURL button_two_icon_url_;
+  // The content for a text notification.
+  string16 title_;
+  string16 body_;
 
-  // The URL of a large image to be displayed for a a rich notification.
-  GURL image_url_;
+  // The display string for the source of the notification.  Could be
+  // the same as origin_url_, or the name of an extension.
+  string16 display_source_;
 
-  // The user-supplied replace ID for the notification.
+  // The replace ID for the notification.
   string16 replace_id_;
+
+  scoped_ptr<DictionaryValue> optional_fields_;
 
   // A proxy object that allows access back to the JavaScript object that
   // represents the notification, for firing events.

@@ -56,34 +56,26 @@ class WebNotificationTrayTest : public test::AshTestBase {
 
  protected:
   void AddNotification(const std::string& id) {
-    scoped_ptr<message_center::Notification> notification;
-    notification.reset(new message_center::Notification(
+    GetMessageCenter()->AddNotification(
         message_center::NOTIFICATION_TYPE_SIMPLE,
         id,
         ASCIIToUTF16("Test Web Notification"),
         ASCIIToUTF16("Notification message body."),
-        gfx::Image(),
         ASCIIToUTF16("www.test.org"),
         "" /* extension id */,
         NULL /* optional_fields */,
-        NULL /* delegate */));
-    GetMessageCenter()->AddNotification(notification.Pass());
+        NULL /* delegate */);
   }
 
   void UpdateNotification(const std::string& old_id,
                           const std::string& new_id) {
-    scoped_ptr<message_center::Notification> notification;
-    notification.reset(new message_center::Notification(
-        message_center::NOTIFICATION_TYPE_SIMPLE,
+    GetMessageCenter()->UpdateNotification(
+        old_id,
         new_id,
         ASCIIToUTF16("Updated Web Notification"),
         ASCIIToUTF16("Updated message body."),
-        gfx::Image(),
-        ASCIIToUTF16("www.test.org"),
-        "" /* extension id */,
-        NULL /* optional_fields */,
-        NULL /* delegate */));
-    GetMessageCenter()->UpdateNotification(old_id, notification.Pass());
+        NULL,
+        NULL);
   }
 
   void RemoveNotification(const std::string& id) {

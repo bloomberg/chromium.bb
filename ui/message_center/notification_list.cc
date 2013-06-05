@@ -71,33 +71,63 @@ void NotificationList::SetMessageCenterVisible(
   }
 }
 
-void NotificationList::AddNotification(scoped_ptr<Notification> notification) {
+void NotificationList::AddNotification(NotificationType type,
+                                       const std::string& id,
+                                       const string16& title,
+                                       const string16& message,
+                                       const string16& display_source,
+                                       const std::string& extension_id,
+                                       const DictionaryValue* optional_fields,
+                                       NotificationDelegate* delegate) {
+  scoped_ptr<Notification> notification(new Notification(type,
+                                                         id,
+                                                         title,
+                                                         message,
+                                                         display_source,
+                                                         extension_id,
+                                                         optional_fields,
+                                                         delegate));
   PushNotification(notification.Pass());
 }
 
 void NotificationList::UpdateNotificationMessage(
     const std::string& old_id,
-    scoped_ptr<Notification> new_notification) {
+    const std::string& new_id,
+    const string16& title,
+    const string16& message,
+    const base::DictionaryValue* optional_fields,
+    NotificationDelegate* delegate) {
   Notifications::iterator iter = GetNotification(old_id);
   if (iter == notifications_.end())
     return;
 
-  new_notification->CopyState(*iter);
+  // Copy and update a notification. It has an effect of setting a new timestamp
+  // if not overridden by optional_fields
+  scoped_ptr<Notification> notification(
+      new Notification((*iter)->type(),
+                       new_id,
+                       title,
+                       message,
+                       (*iter)->display_source(),
+                       (*iter)->extension_id(),
+                       optional_fields,
+                       delegate));
+  notification->CopyState(*iter);
 
   // Handles priority promotion. If the notification is already dismissed but
   // the updated notification has higher priority, it should re-appear as a
   // toast.
-  if ((*iter)->priority() < new_notification->priority()) {
-    new_notification->set_is_read(false);
-    new_notification->set_shown_as_popup(false);
+  if ((*iter)->priority() < notification->priority()) {
+    notification->set_is_read(false);
+    notification->set_shown_as_popup(false);
   }
 
   // Do not use EraseNotification and PushNotification, since we don't want to
   // change unread counts nor to update is_read/shown_as_popup states.
-  Notification* old = *iter;
+  Notification *old = *iter;
   notifications_.erase(iter);
   delete old;
-  notifications_.insert(new_notification.release());
+  notifications_.insert(notification.release());
 }
 
 void NotificationList::RemoveNotification(const std::string& id) {
@@ -169,8 +199,7 @@ bool NotificationList::SetNotificationButtonIcon(
   Notifications::iterator iter = GetNotification(notification_id);
   if (iter == notifications_.end())
     return false;
-  (*iter)->SetButtonIcon(button_index, image);
-  return true;
+  return (*iter)->SetButtonIcon(button_index, image);
 }
 
 bool NotificationList::HasNotification(const std::string& id) {

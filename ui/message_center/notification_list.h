@@ -58,10 +58,21 @@ class MESSAGE_CENTER_EXPORT NotificationList {
   void SetMessageCenterVisible(bool visible,
                                std::set<std::string>* updated_ids);
 
-  void AddNotification(scoped_ptr<Notification> notification);
+  void AddNotification(NotificationType type,
+                       const std::string& id,
+                       const string16& title,
+                       const string16& message,
+                       const string16& display_source,
+                       const std::string& extension_id,
+                       const base::DictionaryValue* optional_fields,
+                       NotificationDelegate* delegate);
 
   void UpdateNotificationMessage(const std::string& old_id,
-                                 scoped_ptr<Notification> new_notification);
+                                 const std::string& new_id,
+                                 const string16& title,
+                                 const string16& message,
+                                 const base::DictionaryValue* optional_fields,
+                                 NotificationDelegate* delegate);
 
   void RemoveNotification(const std::string& id);
 

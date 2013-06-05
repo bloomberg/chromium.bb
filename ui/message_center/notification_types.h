@@ -15,6 +15,7 @@ namespace message_center {
 // Keys for optional fields in Notification.
 MESSAGE_CENTER_EXPORT extern const char kPriorityKey[];
 MESSAGE_CENTER_EXPORT extern const char kTimestampKey[];
+MESSAGE_CENTER_EXPORT extern const char kUnreadCountKey[];
 MESSAGE_CENTER_EXPORT extern const char kButtonOneTitleKey[];
 MESSAGE_CENTER_EXPORT extern const char kButtonOneIconUrlKey[];
 MESSAGE_CENTER_EXPORT extern const char kButtonTwoTitleKey[];

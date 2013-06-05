@@ -79,35 +79,13 @@ class MessageCenterNotificationsTest : public InProcessBrowserTest {
       new_delegate->AddRef();
     }
 
-    return Notification(GURL("chrome-test://testing/"),
+    return Notification(GURL(),
                         GURL(),
                         ASCIIToUTF16("title"),
                         ASCIIToUTF16("message"),
                         WebKit::WebTextDirectionDefault,
-                        UTF8ToUTF16("chrome-test://testing/"),
-                        UTF8ToUTF16("REPLACE-ME"),
-                        new_delegate);
-  }
-
-  Notification CreateRichTestNotification(const std::string& id,
-                                          TestDelegate** delegate = NULL) {
-    TestDelegate* new_delegate = new TestDelegate(id);
-    if (delegate) {
-      *delegate = new_delegate;
-      new_delegate->AddRef();
-    }
-
-    message_center::RichNotificationData data;
-
-    return Notification(message_center::NOTIFICATION_TYPE_BASE_FORMAT,
-                        GURL("chrome-test://testing/"),
-                        ASCIIToUTF16("title"),
-                        ASCIIToUTF16("message"),
-                        gfx::Image(),
-                        WebKit::WebTextDirectionDefault,
-                        UTF8ToUTF16("chrome-test://testing/"),
-                        UTF8ToUTF16("REPLACE-ME"),
-                        data,
+                        EmptyString16(),
+                        EmptyString16(),
                         new_delegate);
   }
 };
@@ -174,29 +152,6 @@ IN_PROC_BROWSER_TEST_F(MessageCenterNotificationsTest,
   // Verify that delegate accumulated correct log of events.
   EXPECT_EQ("Display_ButtonClick_1_", delegate->log());
   delegate->Release();
-}
-
-// MessaceCenter-specific test.
-#if defined(RUN_MESSAGE_CENTER_TESTS)
-#define MAYBE_UpdateExistingNotification UpdateExistingNotification
-#else
-#define MAYBE_UpdateExistingNotification DISABLED_UpdateExistingNotification
-#endif
-
-IN_PROC_BROWSER_TEST_F(MessageCenterNotificationsTest,
-                       MAYBE_UpdateExistingNotification) {
-  EXPECT_TRUE(NotificationUIManager::DelegatesToMessageCenter());
-  TestDelegate* delegate;
-  manager()->Add(CreateTestNotification("n", &delegate), profile());
-  TestDelegate* delegate2;
-  manager()->Add(CreateRichTestNotification("n", &delegate2), profile());
-
-  manager()->CancelById("n");
-  EXPECT_EQ("Display_Close_programmatically_", delegate->log());
-  EXPECT_EQ("Close_programmatically_", delegate2->log());
-
-  delegate->Release();
-  delegate2->Release();
 }
 
 #endif  // !defined(OS_MACOSX)

@@ -5,7 +5,6 @@
 #include "chrome/browser/notifications/sync_notifier/synced_notification.h"
 
 #include "base/basictypes.h"
-#include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
@@ -14,7 +13,6 @@
 #include "chrome/browser/notifications/sync_notifier/chrome_notifier_delegate.h"
 #include "sync/protocol/sync.pb.h"
 #include "sync/protocol/synced_notification_specifics.pb.h"
-#include "ui/gfx/image/image.h"
 #include "ui/message_center/message_center_util.h"
 #include "ui/message_center/notification_types.h"
 
@@ -86,14 +84,15 @@ void SyncedNotification::Show(NotificationUIManager* notification_manager,
 
   // Some inputs and fields are only used if there is a notification center.
   if (UseRichNotifications()) {
-    base::Time creation_time =
-        base::Time::FromDoubleT(static_cast<double>(GetCreationTime()));
+    double creation_time = static_cast<double>(GetCreationTime());
     int priority = GetPriority();
     int notification_count = GetNotificationCount();
     int button_count = GetButtonCount();
     // TODO(petewil): Refactor this for an arbitrary number of buttons.
     std::string button_one_title = GetButtonOneTitle();
+    std::string button_one_icon_url = GetButtonOneIconUrl();
     std::string button_two_title = GetButtonTwoTitle();
+    std::string button_two_icon_url = GetButtonTwoIconUrl();
 
     // Deduce which notification template to use from the data.
     message_center::NotificationType notification_type =
@@ -108,44 +107,52 @@ void SyncedNotification::Show(NotificationUIManager* notification_manager,
 
     // Fill the optional fields with the information we need to make a
     // notification.
-    message_center::RichNotificationData rich_notification_data;
-    rich_notification_data.timestamp = creation_time;
+    DictionaryValue optional_fields;
+    optional_fields.SetDouble(message_center::kTimestampKey, creation_time);
     if (priority != SyncedNotification::kUndefinedPriority)
-      rich_notification_data.priority = priority;
-    if (!button_one_title.empty()) {
-      message_center::ButtonInfo button_info(UTF8ToUTF16(button_one_title));
-      rich_notification_data.buttons.push_back(button_info);
-      // TODO(petewil): Add a button icon here.
-    }
-    if (!button_two_title.empty()) {
-      message_center::ButtonInfo button_info(UTF8ToUTF16(button_two_title));
-      rich_notification_data.buttons.push_back(button_info);
-      // TODO(petewil): Add a button icon here.
-    }
+      optional_fields.SetInteger(message_center::kPriorityKey, priority);
+    if (!button_one_title.empty())
+      optional_fields.SetString(message_center::kButtonOneTitleKey,
+                                button_one_title);
+    if (!button_one_icon_url.empty())
+      optional_fields.SetString(message_center::kButtonOneIconUrlKey,
+                                button_one_icon_url);
+    if (!button_two_title.empty())
+      optional_fields.SetString(message_center::kButtonTwoTitleKey,
+                                button_two_title);
+    if (!button_two_icon_url.empty())
+      optional_fields.SetString(message_center::kButtonTwoIconUrlKey,
+                                button_two_icon_url);
 
     // Fill the individual notification fields for a multiple notification.
     if (notification_count > 1) {
+      base::ListValue* items = new base::ListValue();
+
       for (int ii = 0; ii < notification_count; ++ii) {
-        message_center::NotificationItem item(
-            UTF8ToUTF16(GetContainedNotificationTitle(ii)),
-            UTF8ToUTF16(GetContainedNotificationMessage(ii)));
-        rich_notification_data.items.push_back(item);
+        DictionaryValue* item = new DictionaryValue();
+        item->SetString(message_center::kItemTitleKey,
+                        UTF8ToUTF16(GetContainedNotificationTitle(
+                            ii)));
+        item->SetString(message_center::kItemMessageKey,
+                        UTF8ToUTF16(GetContainedNotificationMessage(
+                            ii)));
+        items->Append(item);
       }
+
+      optional_fields.Set(message_center::kItemsKey, items);
     }
 
-    // TODO(petewil): Add code here that sets the various notification images
-    // that have been decoded.  Also, don't use the notification tray icon once
-    // this is enabled, that could cause user confusion.
     Notification ui_notification(notification_type,
                                  GetOriginUrl(),
+                                 GetAppIconUrl(),
                                  heading,
                                  text,
-                                 gfx::Image(),
                                  WebKit::WebTextDirectionDefault,
                                  display_source,
                                  replace_key,
-                                 rich_notification_data,
+                                 &optional_fields,
                                  delegate.get());
+
     notification_manager->Add(ui_notification, profile);
   } else {
 

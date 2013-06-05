@@ -8,7 +8,6 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/notifications/notification.h"
-#include "chrome/browser/notifications/notification_test_util.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/browser/notifications/sync_notifier/chrome_notifier_service.h"
 #include "chrome/browser/notifications/sync_notifier/synced_notification.h"
@@ -115,12 +114,8 @@ std::string GetNotificationId(const SyncData& sync_data) {
 // Stub out the NotificationUIManager for unit testing.
 class StubNotificationUIManager : public NotificationUIManager {
  public:
-  StubNotificationUIManager()
-      : notification_(GURL(),
-                      GURL(),
-                      string16(),
-                      string16(),
-                      new MockNotificationDelegate("stub")) {}
+  StubNotificationUIManager() : notification_(GURL(), GURL(), string16(),
+                                              string16(), NULL) {}
   virtual ~StubNotificationUIManager() {}
 
   // Adds a notification to be displayed. Virtual for unit test override.

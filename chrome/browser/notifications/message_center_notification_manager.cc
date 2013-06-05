@@ -27,8 +27,8 @@
 
 MessageCenterNotificationManager::MessageCenterNotificationManager(
     message_center::MessageCenter* message_center)
-    : message_center_(message_center),
-      settings_controller_(new MessageCenterSettingsController) {
+  : message_center_(message_center),
+    settings_controller_(new MessageCenterSettingsController) {
   message_center_->SetDelegate(this);
   message_center_->AddObserver(this);
 
@@ -166,15 +166,12 @@ bool MessageCenterNotificationManager::UpdateNotification(
       ProfileNotification* new_notification =
           new ProfileNotification(profile, notification, message_center_);
       profile_notifications_[notification.notification_id()] = new_notification;
-
-      // Now pass a copy to message center.
-      scoped_ptr<message_center::Notification> message_center_notification(
-          make_scoped_ptr(new message_center::Notification(notification)));
-      message_center_notification->set_extension_id(
-          new_notification->GetExtensionId());
       message_center_->UpdateNotification(old_id,
-                                          message_center_notification.Pass());
-
+                                          notification.notification_id(),
+                                          notification.title(),
+                                          notification.body(),
+                                          notification.optional_fields(),
+                                          notification.delegate());
       new_notification->StartDownloads();
       return true;
     }
@@ -294,34 +291,28 @@ void MessageCenterNotificationManager::ImageDownloads::StartDownloads(
                  notification.notification_id()));
 
   // Notification image.
-  StartDownloadWithImage(
+  StartDownloadByKey(
       notification,
-      NULL,
-      notification.image_url(),
+      message_center::kImageUrlKey,
       message_center::kNotificationPreferredImageSize,
       base::Bind(&message_center::MessageCenter::SetNotificationImage,
                  base::Unretained(message_center_),
                  notification.notification_id()));
 
   // Notification button icons.
-  StartDownloadWithImage(
+  StartDownloadByKey(
       notification,
-      NULL,
-      notification.button_one_icon_url(),
+      message_center::kButtonOneIconUrlKey,
       message_center::kNotificationButtonIconSize,
       base::Bind(&message_center::MessageCenter::SetNotificationButtonIcon,
                  base::Unretained(message_center_),
-                 notification.notification_id(),
-                 0));
-  StartDownloadWithImage(
-      notification,
-      NULL,
-      notification.button_two_icon_url(),
+                 notification.notification_id(), 0));
+  StartDownloadByKey(
+      notification, message_center::kButtonTwoIconUrlKey,
       message_center::kNotificationButtonIconSize,
       base::Bind(&message_center::MessageCenter::SetNotificationButtonIcon,
                  base::Unretained(message_center_),
-                 notification.notification_id(),
-                 1));
+                 notification.notification_id(), 1));
 
   // This should tell the observer we're done if everything was synchronous.
   PendingDownloadCompleted();
@@ -366,6 +357,19 @@ void MessageCenterNotificationManager::ImageDownloads::StartDownloadWithImage(
           &MessageCenterNotificationManager::ImageDownloads::DownloadComplete,
           AsWeakPtr(),
           callback));
+}
+
+void MessageCenterNotificationManager::ImageDownloads::StartDownloadByKey(
+    const Notification& notification,
+    const char* key,
+    int size,
+    const SetImageCallback& callback) {
+  const base::DictionaryValue* optional_fields = notification.optional_fields();
+  if (optional_fields && optional_fields->HasKey(key)) {
+    string16 url;
+    optional_fields->GetString(key, &url);
+    StartDownloadWithImage(notification, NULL, GURL(url), size, callback);
+  }
 }
 
 void MessageCenterNotificationManager::ImageDownloads::DownloadComplete(
@@ -451,13 +455,14 @@ void MessageCenterNotificationManager::AddProfileNotification(
   DCHECK(profile_notifications_.find(id) == profile_notifications_.end());
   profile_notifications_[id] = profile_notification;
 
-  // Create the copy for message center, and ensure the extension ID is correct.
-  scoped_ptr<message_center::Notification> message_center_notification(
-      new message_center::Notification(notification));
-  message_center_notification->set_extension_id(
-      profile_notification->GetExtensionId());
-  message_center_->AddNotification(message_center_notification.Pass());
-
+  message_center_->AddNotification(notification.type(),
+                                   notification.notification_id(),
+                                   notification.title(),
+                                   notification.body(),
+                                   notification.display_source(),
+                                   profile_notification->GetExtensionId(),
+                                   notification.optional_fields(),
+                                   notification.delegate());
   profile_notification->StartDownloads();
 }
 
