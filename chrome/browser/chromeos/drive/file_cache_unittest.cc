@@ -530,9 +530,6 @@ TEST_F(FileCacheTest, GetCacheFilePath) {
 }
 
 TEST_F(FileCacheTest, StoreToCacheSimple) {
-  fake_free_disk_space_getter_->set_fake_free_disk_space(
-      test_util::kLotsOfSpace);
-
   std::string resource_id("pdf:1a2b");
   std::string md5("abcdef0123456789");
 
@@ -564,9 +561,6 @@ TEST_F(FileCacheTest, StoreToCacheSimple) {
 }
 
 TEST_F(FileCacheTest, LocallyModifiedSimple) {
-  fake_free_disk_space_getter_->set_fake_free_disk_space(
-      test_util::kLotsOfSpace);
-
   std::string resource_id("pdf:1a2b");
   std::string md5("abcdef0123456789");
 
@@ -583,9 +577,6 @@ TEST_F(FileCacheTest, LocallyModifiedSimple) {
 }
 
 TEST_F(FileCacheTest, GetFromCacheSimple) {
-  fake_free_disk_space_getter_->set_fake_free_disk_space(
-      test_util::kLotsOfSpace);
-
   std::string resource_id("pdf:1a2b");
   std::string md5("abcdef0123456789");
   // First store a file to cache.
@@ -612,9 +603,6 @@ TEST_F(FileCacheTest, GetFromCacheSimple) {
 }
 
 TEST_F(FileCacheTest, RemoveFromCacheSimple) {
-  fake_free_disk_space_getter_->set_fake_free_disk_space(
-      test_util::kLotsOfSpace);
-
   // Use alphanumeric characters for resource id.
   std::string resource_id("pdf:1a2b");
   std::string md5("abcdef0123456789");
@@ -641,9 +629,6 @@ TEST_F(FileCacheTest, RemoveFromCacheSimple) {
 }
 
 TEST_F(FileCacheTest, PinAndUnpin) {
-  fake_free_disk_space_getter_->set_fake_free_disk_space(
-      test_util::kLotsOfSpace);
-
   std::string resource_id("pdf:1a2b");
   std::string md5("abcdef0123456789");
   EXPECT_CALL(*mock_cache_observer_, OnCachePinned(resource_id, md5)).Times(2);
@@ -704,9 +689,6 @@ TEST_F(FileCacheTest, PinAndUnpin) {
 }
 
 TEST_F(FileCacheTest, StoreToCachePinned) {
-  fake_free_disk_space_getter_->set_fake_free_disk_space(
-      test_util::kLotsOfSpace);
-
   std::string resource_id("pdf:1a2b");
   std::string md5("abcdef0123456789");
   EXPECT_CALL(*mock_cache_observer_, OnCachePinned(resource_id, md5)).Times(1);
@@ -736,9 +718,6 @@ TEST_F(FileCacheTest, StoreToCachePinned) {
 }
 
 TEST_F(FileCacheTest, GetFromCachePinned) {
-  fake_free_disk_space_getter_->set_fake_free_disk_space(
-      test_util::kLotsOfSpace);
-
   std::string resource_id("pdf:1a2b");
   std::string md5("abcdef0123456789");
   EXPECT_CALL(*mock_cache_observer_, OnCachePinned(resource_id, md5)).Times(1);
@@ -768,9 +747,6 @@ TEST_F(FileCacheTest, GetFromCachePinned) {
 }
 
 TEST_F(FileCacheTest, RemoveFromCachePinned) {
-  fake_free_disk_space_getter_->set_fake_free_disk_space(
-      test_util::kLotsOfSpace);
-
   // Use alphanumeric characters for resource_id.
   std::string resource_id("pdf:1a2b");
   std::string md5("abcdef0123456789");
@@ -811,9 +787,6 @@ TEST_F(FileCacheTest, RemoveFromCachePinned) {
 }
 
 TEST_F(FileCacheTest, DirtyCacheSimple) {
-  fake_free_disk_space_getter_->set_fake_free_disk_space(
-      test_util::kLotsOfSpace);
-
   std::string resource_id("pdf:1a2b");
   std::string md5("abcdef0123456789");
   EXPECT_CALL(*mock_cache_observer_, OnCacheCommitted(resource_id)).Times(1);
@@ -846,9 +819,6 @@ TEST_F(FileCacheTest, DirtyCacheSimple) {
 }
 
 TEST_F(FileCacheTest, DirtyCachePinned) {
-  fake_free_disk_space_getter_->set_fake_free_disk_space(
-      test_util::kLotsOfSpace);
-
   std::string resource_id("pdf:1a2b");
   std::string md5("abcdef0123456789");
   EXPECT_CALL(*mock_cache_observer_, OnCachePinned(resource_id, md5)).Times(1);
@@ -892,9 +862,6 @@ TEST_F(FileCacheTest, DirtyCachePinned) {
 
 // Test is disabled because it is flaky (http://crbug.com/134146)
 TEST_F(FileCacheTest, PinAndUnpinDirtyCache) {
-  fake_free_disk_space_getter_->set_fake_free_disk_space(
-      test_util::kLotsOfSpace);
-
   std::string resource_id("pdf:1a2b");
   std::string md5("abcdef0123456789");
   EXPECT_CALL(*mock_cache_observer_, OnCachePinned(resource_id, md5)).Times(1);
@@ -946,9 +913,6 @@ TEST_F(FileCacheTest, PinAndUnpinDirtyCache) {
 }
 
 TEST_F(FileCacheTest, DirtyCacheRepetitive) {
-  fake_free_disk_space_getter_->set_fake_free_disk_space(
-      test_util::kLotsOfSpace);
-
   std::string resource_id("pdf:1a2b");
   std::string md5("abcdef0123456789");
   EXPECT_CALL(*mock_cache_observer_, OnCacheCommitted(resource_id)).Times(3);
@@ -1014,9 +978,6 @@ TEST_F(FileCacheTest, DirtyCacheRepetitive) {
 }
 
 TEST_F(FileCacheTest, DirtyCacheInvalid) {
-  fake_free_disk_space_getter_->set_fake_free_disk_space(
-      test_util::kLotsOfSpace);
-
   std::string resource_id("pdf:1a2b");
   std::string md5("abcdef0123456789");
 
@@ -1062,9 +1023,6 @@ TEST_F(FileCacheTest, DirtyCacheInvalid) {
 }
 
 TEST_F(FileCacheTest, RemoveFromDirtyCache) {
-  fake_free_disk_space_getter_->set_fake_free_disk_space(
-      test_util::kLotsOfSpace);
-
   std::string resource_id("pdf:1a2b");
   std::string md5("abcdef0123456789");
   EXPECT_CALL(*mock_cache_observer_, OnCachePinned(resource_id, md5)).Times(1);
@@ -1099,9 +1057,6 @@ TEST_F(FileCacheTest, RemoveFromDirtyCache) {
 }
 
 TEST_F(FileCacheTest, MountUnmount) {
-  fake_free_disk_space_getter_->set_fake_free_disk_space(
-      test_util::kLotsOfSpace);
-
   std::string resource_id("pdf:1a2b");
   std::string md5("abcdef0123456789");
 
@@ -1142,8 +1097,6 @@ TEST_F(FileCacheTest, MountUnmount) {
 }
 
 TEST_F(FileCacheTest, Iterate) {
-  fake_free_disk_space_getter_->set_fake_free_disk_space(
-      test_util::kLotsOfSpace);
   const std::vector<test_util::TestCacheResource> cache_resources(
       test_util::GetDefaultTestCacheResources());
   // Set mock expectations.
@@ -1186,9 +1139,6 @@ TEST_F(FileCacheTest, Iterate) {
 
 
 TEST_F(FileCacheTest, ClearAll) {
-  fake_free_disk_space_getter_->set_fake_free_disk_space(
-      test_util::kLotsOfSpace);
-
   std::string resource_id("pdf:1a2b");
   std::string md5("abcdef0123456789");
 
@@ -1216,7 +1166,7 @@ TEST_F(FileCacheTest, ClearAll) {
 }
 
 TEST_F(FileCacheTest, StoreToCacheNoSpace) {
-  fake_free_disk_space_getter_->set_fake_free_disk_space(0);
+  fake_free_disk_space_getter_->set_default_value(0);
 
   std::string resource_id("pdf:1a2b");
   std::string md5("abcdef0123456789");
@@ -1256,9 +1206,6 @@ TEST(FileCacheExtraTest, InitializationFailure) {
 }
 
 TEST_F(FileCacheTest, UpdatePinnedCache) {
-  fake_free_disk_space_getter_->set_fake_free_disk_space(
-      test_util::kLotsOfSpace);
-
   std::string resource_id("pdf:1a2b");
   std::string md5("abcdef0123456789");
   std::string md5_modified("aaaaaa0000000000");

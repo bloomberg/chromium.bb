@@ -4,27 +4,27 @@
 
 #include "chrome/browser/chromeos/drive/fake_free_disk_space_getter.h"
 
+#include "chrome/browser/chromeos/drive/test_util.h"
+
 namespace drive {
 
-FakeFreeDiskSpaceGetter::FakeFreeDiskSpaceGetter() {
+FakeFreeDiskSpaceGetter::FakeFreeDiskSpaceGetter()
+    : default_value_(test_util::kLotsOfSpace) {
 }
 
 FakeFreeDiskSpaceGetter::~FakeFreeDiskSpaceGetter() {
 }
 
-void FakeFreeDiskSpaceGetter::Reset() {
-  fake_values_.clear();
+void FakeFreeDiskSpaceGetter::PushFakeValue(int64 value) {
+  fake_values_.push_back(value);
 }
 
 int64 FakeFreeDiskSpaceGetter::AmountOfFreeDiskSpace() {
   if (fake_values_.empty())
-    return 0;
+    return default_value_;
 
-  const int64 value = fake_values_[0];
-  // We'll keep the last value.
-  if (fake_values_.size() > 1)
-    fake_values_.erase(fake_values_.begin());
-
+  const int64 value = fake_values_.front();
+  fake_values_.pop_front();
   return value;
 }
 

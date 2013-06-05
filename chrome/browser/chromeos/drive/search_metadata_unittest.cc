@@ -485,8 +485,6 @@ TEST_F(SearchMetadataTest, SearchMetadata_ExcludeSpecialDirectories) {
 }
 
 TEST_F(SearchMetadataTest, SearchMetadata_Offline) {
-  fake_free_disk_space_getter_->set_fake_free_disk_space(
-      test_util::kLotsOfSpace);
   const std::vector<test_util::TestCacheResource> cache_resources =
       test_util::GetDefaultTestCacheResources();
   ASSERT_TRUE(test_util::PrepareTestCacheResources(cache_.get(),

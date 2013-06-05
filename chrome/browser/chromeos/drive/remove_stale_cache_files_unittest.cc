@@ -73,8 +73,6 @@ TEST_F(RemoveStaleCacheFilesTest, RemoveStaleCacheFiles) {
   std::string resource_id("pdf:1a2b3c");
   std::string md5("abcdef0123456789");
 
-  fake_free_disk_space_getter_->set_fake_free_disk_space(kLotsOfSpace);
-
   // Create a stale cache file.
   EXPECT_EQ(FILE_ERROR_OK,
             cache_->Store(resource_id, md5, dummy_file,

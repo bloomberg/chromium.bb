@@ -729,18 +729,12 @@ TEST_F(FileSystemTest, OpenAndCloseFile) {
 
   const base::FilePath kFileInRoot(FILE_PATH_LITERAL("drive/root/File 1.txt"));
   scoped_ptr<ResourceEntry> entry(GetResourceEntryByPathSync(kFileInRoot));
-  const int64 file_size = entry->file_info().size();
-  const std::string& file_resource_id =
-      entry->resource_id();
+  const std::string& file_resource_id = entry->resource_id();
   const std::string& file_md5 = entry->file_specific_info().file_md5();
 
   // A dirty file is created on close.
   EXPECT_CALL(*mock_cache_observer_, OnCacheCommitted(file_resource_id))
       .Times(1);
-
-  // Pretend we have enough space.
-  fake_free_disk_space_getter_->set_fake_free_disk_space(
-      file_size + internal::kMinFreeSpace);
 
   // Open kFileInRoot ("drive/root/File 1.txt").
   FileError error = FILE_ERROR_FAILED;
@@ -811,7 +805,6 @@ TEST_F(FileSystemTest, OpenAndCloseFile) {
 }
 
 TEST_F(FileSystemTest, MarkCacheFileAsMountedAndUnmounted) {
-  fake_free_disk_space_getter_->set_fake_free_disk_space(kLotsOfSpace);
   ASSERT_TRUE(LoadFullResourceList());
 
   base::FilePath file_in_root(FILE_PATH_LITERAL("drive/root/File 1.txt"));
