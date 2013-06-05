@@ -239,6 +239,20 @@ status_map = {
         'win32':  win32_untrusted_crash_exit,
         'win64':  win64_exit_via_ntdll_patch,
         },
+    'untrusted_sigill' : {
+        'linux2': [-4], # SIGILL
+        'mac32': [-4], # SIGILL
+        'mac64': [-4], # SIGILL
+        'win32':  win32_untrusted_crash_exit,
+        'win64':  win64_exit_via_ntdll_patch,
+        },
+    'untrusted_sigfpe' : {
+        'linux2': [-8], # SIGFPE
+        'mac32': [-8], # SIGFPE
+        'mac64': [-8], # SIGFPE
+        'win32':  win32_untrusted_crash_exit,
+        'win64':  win64_exit_via_ntdll_patch,
+        },
     'untrusted_segfault': {
         'linux2': [-11], # SIGSEGV
         'mac32': [-10], # SIGBUS

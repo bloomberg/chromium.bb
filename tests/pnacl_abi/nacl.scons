@@ -9,6 +9,24 @@ Import('env')
 if not env.Bit('bitcode'):
   Return()
 
+# Divide ABI check.
+div_nexe = env.ComponentProgram('divide_by_zero',
+                                'divide_by_zero.c',
+                                EXTRA_LIBS=['${NONIRT_LIBS}'])
+
+# On ARM we insert a trap instruction, whereas x86 faults in hardware.
+if env.Bit('target_arm'):
+  div_expected_exit_status = 'untrusted_sigill'
+else:
+  div_expected_exit_status = 'untrusted_sigfpe'
+div_node = env.CommandSelLdrTestNacl('divide_by_zero.out',
+                                     div_nexe,
+                                     exit_status=div_expected_exit_status)
+
+env.AddNodeToTestSuite(div_node,
+                       ['pnacl_abi_tests', 'small_tests'],
+                       'run_divide_by_zero_test')
+
 # we do not have llvm's ${DISASS} when we run on ARM boxes
 if env.Bit('target_arm'):
   Return()
