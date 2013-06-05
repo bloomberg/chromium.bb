@@ -919,7 +919,7 @@ public:
 
     AnimationController* animation() const;
 
-    bool isInert() const { return node() && node()->isElementNode() && toElement(node())->isInert(); }
+    bool isInert() const;
     bool visibleToHitTestRequest(const HitTestRequest& request) const { return style()->visibility() == VISIBLE && (request.ignorePointerEventsNone() || style()->pointerEvents() != PE_NONE) && !isInert(); }
     bool visibleToHitTesting() const { return style()->visibility() == VISIBLE && style()->pointerEvents() != PE_NONE && !isInert(); }
 

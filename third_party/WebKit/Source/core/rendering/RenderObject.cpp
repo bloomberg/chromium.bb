@@ -2956,6 +2956,17 @@ AnimationController* RenderObject::animation() const
     return frame()->animation();
 }
 
+bool RenderObject::isInert() const
+{
+    const RenderObject* renderer = this;
+    while (!renderer->node())
+        renderer = renderer->parent();
+    const Node* parentNode = renderer->node();
+    while (parentNode && !parentNode->isElementNode())
+        parentNode = parentNode->parentNode();
+    return parentNode && toElement(parentNode)->isInert();
+}
+
 void RenderObject::imageChanged(CachedImage* image, const IntRect* rect)
 {
     imageChanged(static_cast<WrappedImagePtr>(image), rect);
