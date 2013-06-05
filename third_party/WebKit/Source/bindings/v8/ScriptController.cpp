@@ -641,6 +641,8 @@ bool ScriptController::executeScriptIfJavaScriptURL(const KURL& url)
 
     const int javascriptSchemeLength = sizeof("javascript:") - 1;
 
+    bool locationChangeBefore = m_frame->navigationScheduler()->locationChangePending();
+
     String decodedURL = decodeURLEscapeSequences(url.string());
     ScriptValue result = executeScript(decodedURL.substring(javascriptSchemeLength));
 
@@ -655,6 +657,9 @@ bool ScriptController::executeScriptIfJavaScriptURL(const KURL& url)
 
     // We're still in a frame, so there should be a DocumentLoader.
     ASSERT(m_frame->document()->loader());
+
+    if (!locationChangeBefore && m_frame->navigationScheduler()->locationChangePending())
+        return true;
         
     // DocumentWriter::replaceDocument can cause the DocumentLoader to get deref'ed and possible destroyed,
     // so protect it with a RefPtr.
