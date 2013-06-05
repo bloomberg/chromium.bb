@@ -14,6 +14,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using content::BrowserThread;
+using base::FilePath;
 
 namespace pnacl_cache {
 
@@ -34,54 +35,126 @@ class PNaClTranslationCacheTest : public testing::Test {
     delete cache_;
   }
 
+  void InitBackend(bool in_mem);
+  void StoreNexe(const std::string& key, const std::string& nexe);
+  std::string GetNexe(const std::string& key);
+
  protected:
   PNaClTranslationCache* cache_;
   base::MessageLoopForIO message_loop_;
   content::TestBrowserThread cache_thread_;
   content::TestBrowserThread io_thread_;
+  base::ScopedTempDir temp_dir_;
 };
 
-TEST_F(PNaClTranslationCacheTest, StoreOneInMem) {
+void PNaClTranslationCacheTest::InitBackend(bool in_mem) {
   net::TestCompletionCallback init_cb;
-  int rv = cache_->InitCache(base::FilePath(), true, init_cb.callback());
-  EXPECT_EQ(net::OK, rv);
+  if (!in_mem) {
+    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
+  }
+  int rv = cache_->InitCache(temp_dir_.path(), in_mem, init_cb.callback());
+  if (in_mem)
+    ASSERT_EQ(net::OK, rv);
   ASSERT_EQ(net::OK, init_cb.GetResult(rv));
+  ASSERT_EQ(0, cache_->Size());
+}
+
+void PNaClTranslationCacheTest::StoreNexe(const std::string& key,
+                                          const std::string& nexe) {
   net::TestCompletionCallback store_cb;
-  EXPECT_EQ(0, cache_->Size());
-  cache_->StoreNexe("1", "a", store_cb.callback());
+  cache_->StoreNexe(key, nexe, store_cb.callback());
   // Using ERR_IO_PENDING here causes the callback to wait for the result
   // which should be harmless even if it returns OK immediately. This is because
   // we don't plumb the intermediate writing stages all the way out.
   EXPECT_EQ(net::OK, store_cb.GetResult(net::ERR_IO_PENDING));
+}
+
+std::string PNaClTranslationCacheTest::GetNexe(const std::string& key) {
+  net::TestCompletionCallback load_cb;
+  std::string nexe;
+  cache_->GetNexe(key, &nexe, load_cb.callback());
+  EXPECT_EQ(net::OK, load_cb.GetResult(net::ERR_IO_PENDING));
+  return nexe;
+}
+
+static const std::string test_key("1");
+static const std::string test_store_val("testnexe");
+
+TEST_F(PNaClTranslationCacheTest, StoreSmallInMem) {
+  // Test that a single store puts something in the mem backend
+  InitBackend(true);
+  StoreNexe(test_key, test_store_val);
   EXPECT_EQ(1, cache_->Size());
 }
 
-TEST_F(PNaClTranslationCacheTest, StoreOneOnDisk) {
-  base::ScopedTempDir temp_dir;
-  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-  net::TestCompletionCallback init_cb;
-  int rv = cache_->InitCache(temp_dir.path(), false, init_cb.callback());
-  EXPECT_TRUE(rv);
-  ASSERT_EQ(net::OK, init_cb.GetResult(rv));
-  EXPECT_EQ(0, cache_->Size());
-  net::TestCompletionCallback store_cb;
-  cache_->StoreNexe("1", "a", store_cb.callback());
-  EXPECT_EQ(net::OK, store_cb.GetResult(net::ERR_IO_PENDING));
+TEST_F(PNaClTranslationCacheTest, StoreSmallOnDisk) {
+  // Test that a single store puts something in the disk backend
+  InitBackend(false);
+  StoreNexe(test_key, test_store_val);
+  EXPECT_EQ(1, cache_->Size());
+}
+
+TEST_F(PNaClTranslationCacheTest, StoreLargeOnDisk) {
+  // Test a value too large(?) for a single I/O operation
+  // TODO(dschuff): we only seem to ever have one operation go through into the
+  // backend. Find out what the 'offset' field means, and if it can ever require
+  // multiple writes.
+  InitBackend(false);
+  const std::string large_buffer(kMaxMemCacheSize + 1, 'a');
+  StoreNexe(test_key, large_buffer);
   EXPECT_EQ(1, cache_->Size());
 }
 
 TEST_F(PNaClTranslationCacheTest, InMemSizeLimit) {
-  net::TestCompletionCallback init_cb;
-  int rv = cache_->InitCache(base::FilePath(), true, init_cb.callback());
-  EXPECT_EQ(rv, net::OK);
-  ASSERT_EQ(init_cb.GetResult(rv), net::OK);
-  EXPECT_EQ(cache_->Size(), 0);
-  std::string large_buffer(kMaxMemCacheSize + 1, 'a');
+  InitBackend(true);
+  const std::string large_buffer(kMaxMemCacheSize + 1, 'a');
   net::TestCompletionCallback store_cb;
-  cache_->StoreNexe("1", large_buffer, store_cb.callback());
+  cache_->StoreNexe(test_key, large_buffer, store_cb.callback());
   EXPECT_EQ(net::ERR_FAILED, store_cb.GetResult(net::ERR_IO_PENDING));
-  base::RunLoop().RunUntilIdle(); // Ensure the entry is closed.
+  base::RunLoop().RunUntilIdle();  // Ensure the entry is closed.
   EXPECT_EQ(0, cache_->Size());
+}
+
+TEST_F(PNaClTranslationCacheTest, GetOneInMem) {
+  InitBackend(true);
+  StoreNexe(test_key, test_store_val);
+  EXPECT_EQ(1, cache_->Size());
+  EXPECT_EQ(0, GetNexe(test_key).compare(test_store_val));
+}
+
+TEST_F(PNaClTranslationCacheTest, GetLargeOnDisk) {
+  InitBackend(false);
+  const std::string large_buffer(kMaxMemCacheSize + 1, 'a');
+  StoreNexe(test_key, large_buffer);
+  EXPECT_EQ(1, cache_->Size());
+  EXPECT_EQ(0, GetNexe(test_key).compare(large_buffer));
+}
+
+TEST_F(PNaClTranslationCacheTest, StoreTwice) {
+  // Test that storing twice with the same key overwrites
+  InitBackend(true);
+  StoreNexe(test_key, test_store_val);
+  StoreNexe(test_key, test_store_val + "aaa");
+  EXPECT_EQ(1, cache_->Size());
+  EXPECT_EQ(0, GetNexe(test_key).compare(test_store_val + "aaa"));
+}
+
+TEST_F(PNaClTranslationCacheTest, StoreTwo) {
+  InitBackend(true);
+  StoreNexe(test_key, test_store_val);
+  StoreNexe(test_key + "a", test_store_val + "aaa");
+  EXPECT_EQ(2, cache_->Size());
+  EXPECT_EQ(0, GetNexe(test_key).compare(test_store_val));
+  EXPECT_EQ(0, GetNexe(test_key + "a").compare(test_store_val + "aaa"));
+}
+
+TEST_F(PNaClTranslationCacheTest, GetMiss) {
+  InitBackend(true);
+  StoreNexe(test_key, test_store_val);
+  net::TestCompletionCallback load_cb;
+  std::string nexe;
+  cache_->GetNexe(test_key + "a", &nexe, load_cb.callback());
+  EXPECT_EQ(net::ERR_FAILED, load_cb.GetResult(net::ERR_IO_PENDING));
 }
 
 }  // namespace nacl_cache
