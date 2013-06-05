@@ -194,7 +194,6 @@ crbug.com/233066 http/tests/inspector/network/network-shared-worker.html [ Skip 
 crbug.com/233066 http/tests/security/contentSecurityPolicy/shared-worker-connect-src-allowed.html [ Skip ]
 crbug.com/233066 http/tests/security/contentSecurityPolicy/shared-worker-connect-src-blocked.html [ Skip ]
 crbug.com/233066 http/tests/security/cross-origin-shared-worker-allowed.html [ Skip ]
-crbug.com/233066 storage/indexeddb/basics-shared-workers.html [ Skip ]
 
 # test_shell does not support message ports
 webkit.org/b/74459 fast/workers/termination-with-port-messages.html [ Skip ]
@@ -985,12 +984,6 @@ webkit.org/b/81931 virtual/deferred/fast/images/destroyed-image-load-event.html 
 webkit.org/b/82297 [ Mac ] fast/events/platform-wheelevent-paging-x-in-scrolling-page.html [ Failure Pass ]
 webkit.org/b/82297 [ Mac ] fast/events/platform-wheelevent-paging-xy-in-scrolling-page.html [ Failure Pass ]
 webkit.org/b/82297 [ Mac ] fast/events/platform-wheelevent-paging-y-in-scrolling-page.html [ Failure Pass ]
-
-# These tests depends on Worker behavior that is broken in DRT
-webkit.org/b/82776 storage/indexeddb/dont-commit-on-blocked.html [ Skip ]
-webkit.org/b/82776 storage/indexeddb/pending-version-change-stuck.html [ Skip ]
-webkit.org/b/82776 storage/indexeddb/pending-version-change-stuck-works-with-terminate.html [ Skip ]
-webkit.org/b/82776 storage/indexeddb/pending-version-change-on-exit.html [ Skip ]
 
 webkit.org/b/ [ Win7 ] http/tests/xmlhttprequest/redirect-cross-origin-post.html [ Failure Pass ]
 
@@ -1861,6 +1854,8 @@ crbug.com/229120 virtual/deferred/fast/images/webp-color-profile-lossy.html [ Im
 crbug.com/229120 virtual/deferred/fast/images/ycbcr-with-cmyk-color-profile.html [ ImageOnlyFailure ]
 
 crbug.com/246749 [ Debug ] inspector/extensions/extensions-panel.html [ Timeout Failure ]
+
+crbug.com/226256 storage/indexeddb/pending-version-change-stuck.html [ Timeout ]
 
 # DCHECK in SkFixed.h
 crbug.com/243309 [ Mac Debug ] accessibility/content-changed-notification-causes-crash.html [ Crash Pass ]
