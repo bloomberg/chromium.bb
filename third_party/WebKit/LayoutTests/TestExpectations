@@ -1889,7 +1889,8 @@ crbug.com/246532 [ Debug ] fast/frames/iframe-double-attach.html [ Crash ]
 crbug.com/246532 [ Debug ] fast/frames/iframe-set-inner-html.html [ Crash ]
 crbug.com/246549 http/tests/security/svg-image-leak.html [ Failure Pass ]
 
-crbug.com/246855 http/tests/inspector/compiler-source-mapping-debug.html [ Crash ]
+crbug.com/246855 [ Debug ] http/tests/inspector/compiler-source-mapping-debug.html [ Pass Crash Slow ]
+crbug.com/246855 [ Release ] http/tests/inspector/compiler-source-mapping-debug.html [ Pass Crash ]
 
 # Needs new pixel baselines on other platforms
 Bug(jamesr) compositing/video/video-controls-layer-creation.html [ ImageOnlyFailure Pass ]
