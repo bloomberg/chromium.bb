@@ -30,7 +30,6 @@
 #define ShadowBlur_h
 
 #include "core/platform/graphics/Color.h"
-#include "core/platform/graphics/ColorSpace.h"
 #include "core/platform/graphics/FloatSize.h"
 
 #include <wtf/Noncopyable.h>
@@ -46,17 +45,16 @@ public:
         BlurShadow
     };
 
-    ShadowBlur(const FloatSize& radius, const FloatSize& offset, const Color&, ColorSpace);
+    ShadowBlur(const FloatSize& radius, const FloatSize& offset, const Color&);
 
     void blurLayerImage(unsigned char*, const IntSize&, int stride);
 
 private:
     void updateShadowBlurValues();
-    
+
     ShadowType m_type;
 
     Color m_color;
-    ColorSpace m_colorSpace;
     FloatSize m_blurRadius;
     FloatSize m_offset;
 

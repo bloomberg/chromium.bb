@@ -1619,7 +1619,7 @@ void RenderLayer::beginTransparencyLayers(GraphicsContext* context, const Render
         context->clip(clipRect);
         context->beginTransparencyLayer(renderer()->opacity());
 #ifdef REVEAL_TRANSPARENCY_LAYERS
-        context->setFillColor(Color(0.0f, 0.0f, 0.5f, 0.2f), ColorSpaceDeviceRGB);
+        context->setFillColor(Color(0.0f, 0.0f, 0.5f, 0.2f));
         context->fillRect(clipRect);
 #endif
     }
@@ -3274,7 +3274,7 @@ void RenderLayer::paintScrollCorner(GraphicsContext* context, const IntPoint& pa
     // We don't want to paint white if we have overlay scrollbars, since we need
     // to see what is behind it.
     if (!hasOverlayScrollbars())
-        context->fillRect(absRect, Color::white, box->style()->colorSpace());
+        context->fillRect(absRect, Color::white);
 }
 
 void RenderLayer::drawPlatformResizerImage(GraphicsContext* context, IntRect resizerCornerRect)
@@ -3298,12 +3298,12 @@ void RenderLayer::drawPlatformResizerImage(GraphicsContext* context, IntRect res
         context->save();
         context->translate(resizerCornerRect.x() + cornerResizerSize.width(), resizerCornerRect.y() + resizerCornerRect.height() - cornerResizerSize.height());
         context->scale(FloatSize(-1.0, 1.0));
-        context->drawImage(resizeCornerImage.get(), renderer()->style()->colorSpace(), IntRect(IntPoint(), cornerResizerSize));
+        context->drawImage(resizeCornerImage.get(), IntRect(IntPoint(), cornerResizerSize));
         context->restore();
         return;
     }
     IntRect imageRect(resizerCornerRect.maxXMaxYCorner() - cornerResizerSize, cornerResizerSize);
-    context->drawImage(resizeCornerImage.get(), renderer()->style()->colorSpace(), imageRect);
+    context->drawImage(resizeCornerImage.get(), imageRect);
 }
 
 void RenderLayer::paintResizer(GraphicsContext* context, const IntPoint& paintOffset, const IntRect& damageRect)
@@ -3323,7 +3323,7 @@ void RenderLayer::paintResizer(GraphicsContext* context, const IntPoint& paintOf
         updateResizerStyle();
         return;
     }
-    
+
     if (m_resizer) {
         m_resizer->paintIntoRect(context, paintOffset, absRect);
         return;
@@ -3338,9 +3338,9 @@ void RenderLayer::paintResizer(GraphicsContext* context, const IntPoint& paintOf
         context->clip(absRect);
         IntRect largerCorner = absRect;
         largerCorner.setSize(IntSize(largerCorner.width() + 1, largerCorner.height() + 1));
-        context->setStrokeColor(Color(makeRGB(217, 217, 217)), ColorSpaceDeviceRGB);
+        context->setStrokeColor(Color(217, 217, 217));
         context->setStrokeThickness(1.0f);
-        context->setFillColor(Color::transparent, ColorSpaceDeviceRGB);
+        context->setFillColor(Color::transparent);
         context->drawRect(largerCorner);
     }
 }

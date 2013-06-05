@@ -169,7 +169,7 @@ void RenderSVGImage::paintForeground(PaintInfo& paintInfo)
     if (style()->svgStyle()->bufferedRendering() != BR_STATIC)
         useLowQualityScaling = ImageQualityController::imageQualityController()->shouldPaintAtLowQuality(paintInfo.context, this, image.get(), image.get(), LayoutSize(destRect.size()));
 
-    paintInfo.context->drawImage(image.get(), style()->colorSpace(), destRect, srcRect, CompositeSourceOver, DoNotRespectImageOrientation, useLowQualityScaling);
+    paintInfo.context->drawImage(image.get(), destRect, srcRect, CompositeSourceOver, DoNotRespectImageOrientation, useLowQualityScaling);
 }
 
 void RenderSVGImage::invalidateBufferedForeground()

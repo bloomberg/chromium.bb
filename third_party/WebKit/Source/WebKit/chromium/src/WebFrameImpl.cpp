@@ -386,7 +386,7 @@ public:
         int totalHeight = numPages * (pageSizeInPixels.height() + 1) - 1;
 
         // Fill the whole background by white.
-        graphicsContext.setFillColor(Color(255, 255, 255), ColorSpaceDeviceRGB);
+        graphicsContext.setFillColor(Color::white);
         graphicsContext.fillRect(FloatRect(0, 0, pageWidth, totalHeight));
 
         graphicsContext.save();
@@ -396,8 +396,8 @@ public:
             // Draw a line for a page boundary if this isn't the first page.
             if (pageIndex > 0) {
                 graphicsContext.save();
-                graphicsContext.setStrokeColor(Color(0, 0, 255), ColorSpaceDeviceRGB);
-                graphicsContext.setFillColor(Color(0, 0, 255), ColorSpaceDeviceRGB);
+                graphicsContext.setStrokeColor(Color(0, 0, 255));
+                graphicsContext.setFillColor(Color(0, 0, 255));
                 graphicsContext.drawLine(IntPoint(0, currentHeight), IntPoint(pageWidth, currentHeight));
                 graphicsContext.restore();
             }

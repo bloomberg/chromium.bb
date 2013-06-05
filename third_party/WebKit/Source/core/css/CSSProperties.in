@@ -74,7 +74,6 @@ zoom custom_all
 -webkit-box-ordinal-group type_name=unsigned int
 -webkit-box-orient
 -webkit-box-pack
--webkit-color-correction type_name=ColorSpace, name_for_methods=ColorSpace
 -webkit-column-axis type_name=ColumnAxis
 -webkit-column-break-after type_name=EPageBreak, initial=initialPageBreak
 -webkit-column-break-before type_name=EPageBreak, initial=initialPageBreak

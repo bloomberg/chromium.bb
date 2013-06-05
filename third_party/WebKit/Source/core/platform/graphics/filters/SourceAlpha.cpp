@@ -62,8 +62,8 @@ void SourceAlpha::applySoftware()
 
     FloatRect imageRect(FloatPoint(), absolutePaintRect().size());
     GraphicsContext* filterContext = resultImage->context();
-    filterContext->fillRect(imageRect, Color::black, ColorSpaceDeviceRGB);
-    filterContext->drawImageBuffer(filter->sourceImage(), ColorSpaceDeviceRGB, IntPoint(), CompositeDestinationIn);
+    filterContext->fillRect(imageRect, Color::black);
+    filterContext->drawImageBuffer(filter->sourceImage(), IntPoint(), CompositeDestinationIn);
 }
 
 TextStream& SourceAlpha::externalRepresentation(TextStream& ts, int indent) const

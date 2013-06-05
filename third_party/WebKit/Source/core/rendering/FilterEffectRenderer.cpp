@@ -380,7 +380,7 @@ void FilterEffectRenderer::allocateBackingStoreIfNeeded()
     if (!m_graphicsBufferAttached) {
         IntSize logicalSize(m_sourceDrawingRegion.width(), m_sourceDrawingRegion.height());
         if (!sourceImage() || sourceImage()->logicalSize() != logicalSize)
-            setSourceImage(ImageBuffer::create(logicalSize, 1, ColorSpaceDeviceRGB, renderingMode()));
+            setSourceImage(ImageBuffer::create(logicalSize, 1, renderingMode()));
         m_graphicsBufferAttached = true;
     }
 }
@@ -486,12 +486,12 @@ GraphicsContext* FilterEffectRendererHelper::applyFilterEffect()
     filter->inputContext()->restore();
 
     filter->apply();
-    
+
     // Get the filtered output and draw it in place.
-    m_savedGraphicsContext->drawImageBuffer(filter->output(), m_renderLayer->renderer()->style()->colorSpace(), filter->outputRect(), CompositeSourceOver);
-    
+    m_savedGraphicsContext->drawImageBuffer(filter->output(), filter->outputRect(), CompositeSourceOver);
+
     filter->clearIntermediateResults();
-    
+
     return m_savedGraphicsContext;
 }
 

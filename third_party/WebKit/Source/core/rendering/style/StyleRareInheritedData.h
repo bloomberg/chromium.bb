@@ -65,14 +65,14 @@ public:
     float textStrokeWidth;
     Color textFillColor;
     Color textEmphasisColor;
-    
+
     Color visitedLinkTextStrokeColor;
     Color visitedLinkTextFillColor;
-    Color visitedLinkTextEmphasisColor;    
+    Color visitedLinkTextEmphasisColor;
 
     OwnPtr<ShadowData> textShadow; // Our text shadow information for shadowed text drawing.
     AtomicString highlight; // Apple-specific extension for custom highlight rendering.
-    
+
     RefPtr<CursorList> cursorData;
     Length indent;
     float m_effectiveZoom;
@@ -82,7 +82,7 @@ public:
     short orphans;
     unsigned m_hasAutoWidows : 1;
     unsigned m_hasAutoOrphans : 1;
-    
+
     unsigned textSecurity : 2; // ETextSecurity
     unsigned userModify : 2; // EUserModify (editing)
     unsigned wordBreak : 2; // EWordBreak
@@ -90,7 +90,6 @@ public:
     unsigned lineBreak : 3; // LineBreak
     unsigned resize : 2; // EResize
     unsigned userSelect : 2; // EUserSelect
-    unsigned colorSpace : 1; // ColorSpace
     unsigned speak : 3; // ESpeak
     unsigned hyphens : 2; // Hyphens
     unsigned textEmphasisFill : 1; // TextEmphasisFill

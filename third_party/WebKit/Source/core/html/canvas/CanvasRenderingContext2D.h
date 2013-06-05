@@ -30,7 +30,6 @@
 #include "core/html/canvas/CanvasPathMethods.h"
 #include "core/html/canvas/CanvasRenderingContext.h"
 #include "core/platform/graphics/Color.h"
-#include "core/platform/graphics/ColorSpace.h"
 #include "core/platform/graphics/DashArray.h"
 #include "core/platform/graphics/FloatSize.h"
 #include "core/platform/graphics/Font.h"
@@ -311,7 +310,7 @@ private:
     void inflateStrokeRect(FloatRect&) const;
 
     template<class T> void fullCanvasCompositedFill(const T&);
-    template<class T> void fullCanvasCompositedDrawImage(T*, ColorSpace, const FloatRect&, const FloatRect&, CompositeOperator);
+    template<class T> void fullCanvasCompositedDrawImage(T*, const FloatRect&, const FloatRect&, CompositeOperator);
 
     PassRefPtr<ImageData> getImageData(ImageBuffer::CoordinateSystem, float sx, float sy, float sw, float sh, ExceptionCode&) const;
     void putImageData(ImageData*, ImageBuffer::CoordinateSystem, float dx, float dy, float dirtyX, float dirtyY, float dirtyWidth, float dirtyHeight, ExceptionCode&);

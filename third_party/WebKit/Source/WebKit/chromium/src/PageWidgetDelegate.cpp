@@ -97,8 +97,9 @@ void PageWidgetDelegate::paint(Page* page, PageOverlayList* overlays, WebCanvas*
         view->paint(&gc, dirtyRect);
         if (overlays)
             overlays->paintWebFrame(gc);
-    } else
-        gc.fillRect(dirtyRect, Color::white, ColorSpaceDeviceRGB);
+    } else {
+        gc.fillRect(dirtyRect, Color::white);
+    }
     gc.restore();
 }
 

@@ -115,7 +115,7 @@ IntSize SVGImage::containerSize() const
 }
 
 void SVGImage::drawForContainer(GraphicsContext* context, const FloatSize containerSize, float zoom, const FloatRect& dstRect,
-    const FloatRect& srcRect, ColorSpace colorSpace, CompositeOperator compositeOp, BlendMode blendMode)
+    const FloatRect& srcRect, CompositeOperator compositeOp, BlendMode blendMode)
 {
     if (!m_page)
         return;
@@ -137,7 +137,7 @@ void SVGImage::drawForContainer(GraphicsContext* context, const FloatSize contai
     adjustedSrcSize.scale(roundedContainerSize.width() / containerSize.width(), roundedContainerSize.height() / containerSize.height());
     scaledSrc.setSize(adjustedSrcSize);
 
-    draw(context, dstRect, scaledSrc, colorSpace, compositeOp, blendMode);
+    draw(context, dstRect, scaledSrc, compositeOp, blendMode);
 
     setImageObserver(observer);
 }
@@ -153,14 +153,14 @@ PassNativeImagePtr SVGImage::nativeImageForCurrentFrame()
     if (!buffer) // failed to allocate image
         return 0;
 
-    draw(buffer->context(), rect(), rect(), ColorSpaceDeviceRGB, CompositeSourceOver, BlendModeNormal);
+    draw(buffer->context(), rect(), rect(), CompositeSourceOver, BlendModeNormal);
 
     // FIXME: WK(Bug 113657): We should use DontCopyBackingStore here.
     return buffer->copyImage(CopyBackingStore)->nativeImageForCurrentFrame();
 }
 
 void SVGImage::drawPatternForContainer(GraphicsContext* context, const FloatSize containerSize, float zoom, const FloatRect& srcRect,
-    const AffineTransform& patternTransform, const FloatPoint& phase, ColorSpace colorSpace, CompositeOperator compositeOp, const FloatRect& dstRect)
+    const AffineTransform& patternTransform, const FloatPoint& phase, CompositeOperator compositeOp, const FloatRect& dstRect)
 {
     FloatRect zoomedContainerRect = FloatRect(FloatPoint(), containerSize);
     zoomedContainerRect.scale(zoom);
@@ -175,7 +175,7 @@ void SVGImage::drawPatternForContainer(GraphicsContext* context, const FloatSize
     imageBufferSize.scale(imageBufferScale.width(), imageBufferScale.height());
 
     OwnPtr<ImageBuffer> buffer = ImageBuffer::create(expandedIntSize(imageBufferSize.size()), 1);
-    drawForContainer(buffer->context(), containerSize, zoom, imageBufferSize, zoomedContainerRect, ColorSpaceDeviceRGB, CompositeSourceOver, BlendModeNormal);
+    drawForContainer(buffer->context(), containerSize, zoom, imageBufferSize, zoomedContainerRect, CompositeSourceOver, BlendModeNormal);
     RefPtr<Image> image = buffer->copyImage(DontCopyBackingStore, Unscaled);
 
     // Adjust the source rect and transform due to the image buffer's scaling.
@@ -184,10 +184,10 @@ void SVGImage::drawPatternForContainer(GraphicsContext* context, const FloatSize
     AffineTransform unscaledPatternTransform(patternTransform);
     unscaledPatternTransform.scale(1 / imageBufferScale.width(), 1 / imageBufferScale.height());
 
-    image->drawPattern(context, scaledSrcRect, unscaledPatternTransform, phase, colorSpace, compositeOp, dstRect);
+    image->drawPattern(context, scaledSrcRect, unscaledPatternTransform, phase, compositeOp, dstRect);
 }
 
-void SVGImage::draw(GraphicsContext* context, const FloatRect& dstRect, const FloatRect& srcRect, ColorSpace, CompositeOperator compositeOp, BlendMode)
+void SVGImage::draw(GraphicsContext* context, const FloatRect& dstRect, const FloatRect& srcRect, CompositeOperator compositeOp, BlendMode)
 {
     if (!m_page)
         return;
@@ -201,7 +201,7 @@ void SVGImage::draw(GraphicsContext* context, const FloatRect& dstRect, const Fl
         context->beginTransparencyLayer(1);
 
     FloatSize scale(dstRect.width() / srcRect.width(), dstRect.height() / srcRect.height());
-    
+
     // We can only draw the entire frame, clipped to the rect we want. So compute where the top left
     // of the image would be if we were drawing without clipping, and translate accordingly.
     FloatSize topLeftOffset(srcRect.location().x() * scale.width(), srcRect.location().y() * scale.height());

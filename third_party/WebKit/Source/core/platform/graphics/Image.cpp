@@ -21,7 +21,7 @@
  * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
  * OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 #include "config.h"
@@ -36,9 +36,9 @@
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/graphics/IntRect.h"
 #include "core/platform/graphics/transforms/AffineTransform.h"
-#include <wtf/MainThread.h>
-#include <wtf/MemoryObjectInfo.h>
-#include <wtf/StdLibExtras.h>
+#include "wtf/MainThread.h"
+#include "wtf/MemoryObjectInfo.h"
+#include "wtf/StdLibExtras.h"
 
 namespace WebCore {
 
@@ -60,8 +60,8 @@ Image* Image::nullImage()
 
 bool Image::supportsType(const String& type)
 {
-    return MIMETypeRegistry::isSupportedImageResourceMIMEType(type); 
-} 
+    return MIMETypeRegistry::isSupportedImageResourceMIMEType(type);
+}
 
 bool Image::setData(PassRefPtr<SharedBuffer> data, bool allDataReceived)
 {
@@ -72,18 +72,18 @@ bool Image::setData(PassRefPtr<SharedBuffer> data, bool allDataReceived)
     int length = m_encodedImageData->size();
     if (!length)
         return true;
-    
+
     return dataChanged(allDataReceived);
 }
 
-void Image::fillWithSolidColor(GraphicsContext* ctxt, const FloatRect& dstRect, const Color& color, ColorSpace styleColorSpace, CompositeOperator op)
+void Image::fillWithSolidColor(GraphicsContext* ctxt, const FloatRect& dstRect, const Color& color, CompositeOperator op)
 {
     if (!color.alpha())
         return;
-    
+
     CompositeOperator previousOperator = ctxt->compositeOperation();
     ctxt->setCompositeOperation(!color.hasAlpha() && op == CompositeSourceOver ? CompositeCopy : op);
-    ctxt->fillRect(dstRect, color, styleColorSpace);
+    ctxt->fillRect(dstRect, color);
     ctxt->setCompositeOperation(previousOperator);
 }
 
@@ -101,15 +101,15 @@ FloatRect Image::adjustForNegativeSize(const FloatRect& rect)
     return norm;
 }
 
-void Image::draw(GraphicsContext* ctx, const FloatRect& dstRect, const FloatRect& srcRect, ColorSpace styleColorSpace, CompositeOperator op, BlendMode blendMode, RespectImageOrientationEnum)
+void Image::draw(GraphicsContext* ctx, const FloatRect& dstRect, const FloatRect& srcRect, CompositeOperator op, BlendMode blendMode, RespectImageOrientationEnum)
 {
-    draw(ctx, dstRect, srcRect, styleColorSpace, op, blendMode);
+    draw(ctx, dstRect, srcRect, op, blendMode);
 }
 
-void Image::drawTiled(GraphicsContext* ctxt, const FloatRect& destRect, const FloatPoint& srcPoint, const FloatSize& scaledTileSize, ColorSpace styleColorSpace, CompositeOperator op, BlendMode blendMode)
-{    
+void Image::drawTiled(GraphicsContext* ctxt, const FloatRect& destRect, const FloatPoint& srcPoint, const FloatSize& scaledTileSize, CompositeOperator op, BlendMode blendMode)
+{
     if (mayFillWithSolidColor()) {
-        fillWithSolidColor(ctxt, destRect, solidColor(), styleColorSpace, op);
+        fillWithSolidColor(ctxt, destRect, solidColor(), op);
         return;
     }
 
@@ -129,34 +129,34 @@ void Image::drawTiled(GraphicsContext* ctxt, const FloatRect& destRect, const Fl
     oneTileRect.setX(destRect.x() + fmodf(fmodf(-srcPoint.x(), scaledTileSize.width()) - scaledTileSize.width(), scaledTileSize.width()));
     oneTileRect.setY(destRect.y() + fmodf(fmodf(-srcPoint.y(), scaledTileSize.height()) - scaledTileSize.height(), scaledTileSize.height()));
     oneTileRect.setSize(scaledTileSize);
-    
-    // Check and see if a single draw of the image can cover the entire area we are supposed to tile.    
+
+    // Check and see if a single draw of the image can cover the entire area we are supposed to tile.
     if (oneTileRect.contains(destRect)) {
         FloatRect visibleSrcRect;
         visibleSrcRect.setX((destRect.x() - oneTileRect.x()) / scale.width());
         visibleSrcRect.setY((destRect.y() - oneTileRect.y()) / scale.height());
         visibleSrcRect.setWidth(destRect.width() / scale.width());
         visibleSrcRect.setHeight(destRect.height() / scale.height());
-        draw(ctxt, destRect, visibleSrcRect, styleColorSpace, op, blendMode);
+        draw(ctxt, destRect, visibleSrcRect, op, blendMode);
         return;
     }
 
     AffineTransform patternTransform = AffineTransform().scaleNonUniform(scale.width(), scale.height());
-    FloatRect tileRect(FloatPoint(), intrinsicTileSize);    
-    drawPattern(ctxt, tileRect, patternTransform, oneTileRect.location(), styleColorSpace, op, destRect, blendMode);
-    
+    FloatRect tileRect(FloatPoint(), intrinsicTileSize);
+    drawPattern(ctxt, tileRect, patternTransform, oneTileRect.location(), op, destRect, blendMode);
+
     startAnimation();
 }
 
 // FIXME: Merge with the other drawTiled eventually, since we need a combination of both for some things.
 void Image::drawTiled(GraphicsContext* ctxt, const FloatRect& dstRect, const FloatRect& srcRect,
-    const FloatSize& tileScaleFactor, TileRule hRule, TileRule vRule, ColorSpace styleColorSpace, CompositeOperator op)
-{    
+    const FloatSize& tileScaleFactor, TileRule hRule, TileRule vRule, CompositeOperator op)
+{
     if (mayFillWithSolidColor()) {
-        fillWithSolidColor(ctxt, dstRect, solidColor(), styleColorSpace, op);
+        fillWithSolidColor(ctxt, dstRect, solidColor(), op);
         return;
     }
-    
+
     // FIXME: We do not support 'round' or 'space' yet. For now just map them to 'repeat'.
     if (hRule == RoundTile || hRule == SpaceTile)
         hRule = RepeatTile;
@@ -174,10 +174,10 @@ void Image::drawTiled(GraphicsContext* ctxt, const FloatRect& dstRect, const Flo
     if (hRule == Image::RepeatTile)
         hPhase -= (dstRect.width() - scaledTileWidth) / 2;
     if (vRule == Image::RepeatTile)
-        vPhase -= (dstRect.height() - scaledTileHeight) / 2; 
+        vPhase -= (dstRect.height() - scaledTileHeight) / 2;
     FloatPoint patternPhase(dstRect.x() - hPhase, dstRect.y() - vPhase);
-    
-    drawPattern(ctxt, srcRect, patternTransform, patternPhase, styleColorSpace, op, dstRect);
+
+    drawPattern(ctxt, srcRect, patternTransform, patternPhase, op, dstRect);
 
     startAnimation();
 }

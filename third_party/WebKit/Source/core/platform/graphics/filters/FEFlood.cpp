@@ -119,7 +119,7 @@ void FEFlood::applySoftware()
         return;
 
     Color color = colorWithOverrideAlpha(floodColor().rgb(), floodOpacity());
-    resultImage->context()->fillRect(FloatRect(FloatPoint(), absolutePaintRect().size()), color, ColorSpaceDeviceRGB);
+    resultImage->context()->fillRect(FloatRect(FloatPoint(), absolutePaintRect().size()), color);
 }
 
 SkImageFilter* FEFlood::createImageFilter(SkiaImageFilterBuilder* builder)

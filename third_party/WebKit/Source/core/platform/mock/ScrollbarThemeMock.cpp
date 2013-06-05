@@ -49,13 +49,13 @@ bool ScrollbarThemeMock::usesOverlayScrollbars() const
 
 void ScrollbarThemeMock::paintTrackBackground(GraphicsContext* context, ScrollbarThemeClient* scrollbar, const IntRect& trackRect)
 {
-    context->fillRect(trackRect, scrollbar->enabled() ? Color::lightGray : Color(0xFFE0E0E0), ColorSpaceDeviceRGB);
+    context->fillRect(trackRect, scrollbar->enabled() ? Color::lightGray : Color(0xFFE0E0E0));
 }
 
 void ScrollbarThemeMock::paintThumb(GraphicsContext* context, ScrollbarThemeClient* scrollbar, const IntRect& thumbRect)
 {
     if (scrollbar->enabled())
-        context->fillRect(thumbRect, Color::darkGray, ColorSpaceDeviceRGB);
+        context->fillRect(thumbRect, Color::darkGray);
 }
 
 }

@@ -248,7 +248,6 @@ webkitBoxPack
 webkitBoxReflect
 webkitBoxShadow
 webkitClipPath
-webkitColorCorrection
 webkitColumnAxis
 webkitColumnBreakAfter
 webkitColumnBreakBefore

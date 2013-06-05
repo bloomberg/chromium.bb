@@ -149,11 +149,11 @@ void RenderFileUploadControl::paintObject(PaintInfo& paintInfo, const LayoutPoin
                                             textWidth,
                                             style()->fontMetrics().height());
 
-        paintInfo.context->setFillColor(style()->visitedDependentColor(CSSPropertyColor), style()->colorSpace());
-        
+        paintInfo.context->setFillColor(style()->visitedDependentColor(CSSPropertyColor));
+
         // Draw the filename
         paintInfo.context->drawBidiText(font, textRunPaintInfo, IntPoint(roundToInt(textX), roundToInt(textY)));
-        
+
         if (input->icon()) {
             // Determine where the icon should be placed
             LayoutUnit iconY = paintOffset.y() + borderTop() + paddingTop() + (contentHeight() - iconHeight) / 2;

@@ -139,7 +139,7 @@ void FEImage::applySoftware()
         return;
     }
 
-    resultImage->context()->drawImage(m_image.get(), ColorSpaceDeviceRGB, destRect, srcRect);
+    resultImage->context()->drawImage(m_image.get(), destRect, srcRect);
 }
 
 TextStream& FEImage::externalRepresentation(TextStream& ts, int indent) const

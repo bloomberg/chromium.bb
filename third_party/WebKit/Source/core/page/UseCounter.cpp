@@ -262,7 +262,6 @@ static int mapCSSPropertyIdToCSSSampleId(int id)
     case CSSPropertyWebkitBoxPack: return 210;
     case CSSPropertyWebkitBoxReflect: return 211;
     case CSSPropertyWebkitBoxShadow: return 212;
-    case CSSPropertyWebkitColorCorrection: return 213;
     case CSSPropertyWebkitColumnAxis: return 214;
     case CSSPropertyWebkitColumnBreakAfter: return 215;
     case CSSPropertyWebkitColumnBreakBefore: return 216;

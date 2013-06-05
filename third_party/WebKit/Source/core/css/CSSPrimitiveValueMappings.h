@@ -34,7 +34,6 @@
 #include "core/css/CSSCalculationValue.h"
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/css/CSSReflectionDirection.h"
-#include "core/platform/graphics/ColorSpace.h"
 #include "core/platform/graphics/FontDescription.h"
 #include "core/platform/graphics/FontSmoothingMode.h"
 #include "core/platform/graphics/GraphicsTypes.h"
@@ -3369,38 +3368,6 @@ template<> inline CSSPrimitiveValue::operator TextRenderingMode() const
 
     ASSERT_NOT_REACHED();
     return AutoTextRendering;
-}
-
-template<> inline CSSPrimitiveValue::CSSPrimitiveValue(ColorSpace space)
-    : CSSValue(PrimitiveClass)
-{
-    m_primitiveUnitType = CSS_IDENT;
-    switch (space) {
-    case ColorSpaceDeviceRGB:
-        m_value.ident = CSSValueDefault;
-        break;
-    case ColorSpaceSRGB:
-        m_value.ident = CSSValueSrgb;
-        break;
-    case ColorSpaceLinearRGB:
-        // CSS color correction does not support linearRGB yet.
-        ASSERT_NOT_REACHED();
-        m_value.ident = CSSValueDefault;
-        break;
-    }
-}
-
-template<> inline CSSPrimitiveValue::operator ColorSpace() const
-{
-    switch (m_value.ident) {
-    case CSSValueDefault:
-        return ColorSpaceDeviceRGB;
-    case CSSValueSrgb:
-        return ColorSpaceSRGB;
-    }
-
-    ASSERT_NOT_REACHED();
-    return ColorSpaceDeviceRGB;
 }
 
 template<> inline CSSPrimitiveValue::CSSPrimitiveValue(Hyphens hyphens)

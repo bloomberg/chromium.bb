@@ -39,7 +39,7 @@ void EllipsisBox::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset, La
     RenderStyle* style = m_renderer->style(isFirstLineStyle());
     Color styleTextColor = style->visitedDependentColor(CSSPropertyWebkitTextFillColor);
     if (styleTextColor != context->fillColor())
-        context->setFillColor(styleTextColor, style->colorSpace());
+        context->setFillColor(styleTextColor);
 
     Color textColor = styleTextColor;
     const Font& font = style->font();
@@ -49,7 +49,7 @@ void EllipsisBox::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset, La
         // Select the correct color for painting the text.
         Color foreground = paintInfo.forceBlackText() ? Color::black : renderer()->selectionForegroundColor();
         if (foreground.isValid() && foreground != styleTextColor)
-            context->setFillColor(foreground, style->colorSpace());
+            context->setFillColor(foreground);
     }
 
     const ShadowData* shadow = style->textShadow();
@@ -79,7 +79,7 @@ void EllipsisBox::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset, La
 
     // Restore the regular fill color.
     if (styleTextColor != context->fillColor())
-        context->setFillColor(styleTextColor, style->colorSpace());
+        context->setFillColor(styleTextColor);
 
     if (hasShadow)
         context->clearDrawLooper();
@@ -145,7 +145,7 @@ void EllipsisBox::paintSelection(GraphicsContext* context, const LayoutPoint& pa
     alignSelectionRectToDevicePixels(clipRect);
     context->clip(clipRect);
     // FIXME: Why is this always LTR? Fix by passing correct text run flags below.
-    context->drawHighlightForText(font, RenderBlock::constructTextRun(renderer(), font, m_str, style, TextRun::AllowTrailingExpansion), roundedIntPoint(LayoutPoint(x() + paintOffset.x(), y() + paintOffset.y() + top)), h, c, style->colorSpace());
+    context->drawHighlightForText(font, RenderBlock::constructTextRun(renderer(), font, m_str, style, TextRun::AllowTrailingExpansion), roundedIntPoint(LayoutPoint(x() + paintOffset.x(), y() + paintOffset.y() + top)), h, c);
 }
 
 bool EllipsisBox::nodeAtPoint(const HitTestRequest& request, HitTestResult& result, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, LayoutUnit lineTop, LayoutUnit lineBottom)

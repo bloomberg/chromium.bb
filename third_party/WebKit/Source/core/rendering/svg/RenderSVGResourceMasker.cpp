@@ -99,7 +99,7 @@ bool RenderSVGResourceMasker::applyResource(RenderObject* object, RenderStyle*, 
         const SVGRenderStyle* svgStyle = style()->svgStyle();
         ASSERT(svgStyle);
         ColorSpace colorSpace = svgStyle->colorInterpolation() == CI_LINEARRGB ? ColorSpaceLinearRGB : ColorSpaceDeviceRGB;
-        if (!SVGRenderingContext::createImageBuffer(repaintRect, absoluteTransform, maskerData->maskImage, colorSpace, Unaccelerated))
+        if (!SVGRenderingContext::createImageBuffer(repaintRect, absoluteTransform, maskerData->maskImage, Unaccelerated))
             return false;
 
         if (!drawContentIntoMaskImage(maskerData, colorSpace, maskElement, object)) {

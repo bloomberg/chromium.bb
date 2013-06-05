@@ -62,7 +62,7 @@ namespace WebCore {
         UnacceleratedNonPlatformBuffer, // Use plain memory allocation rather than platform API to allocate backing store.
         Accelerated
     };
-    
+
     enum BackingStoreCopy {
         CopyBackingStore, // Guarantee subsequent draws don't affect the copy.
         DontCopyBackingStore // Subsequent draws may affect the copy.
@@ -82,16 +82,16 @@ namespace WebCore {
         WTF_MAKE_NONCOPYABLE(ImageBuffer); WTF_MAKE_FAST_ALLOCATED;
     public:
         // Will return a null pointer on allocation failure.
-        static PassOwnPtr<ImageBuffer> create(const IntSize& size, float resolutionScale = 1, ColorSpace colorSpace = ColorSpaceDeviceRGB, RenderingMode renderingMode = Unaccelerated, OpacityMode opacityMode = NonOpaque)
+        static PassOwnPtr<ImageBuffer> create(const IntSize& size, float resolutionScale = 1, RenderingMode renderingMode = Unaccelerated, OpacityMode opacityMode = NonOpaque)
         {
             bool success = false;
-            OwnPtr<ImageBuffer> buf = adoptPtr(new ImageBuffer(size, resolutionScale, colorSpace, renderingMode, opacityMode, success));
+            OwnPtr<ImageBuffer> buf = adoptPtr(new ImageBuffer(size, resolutionScale, renderingMode, opacityMode, success));
             if (!success)
                 return nullptr;
             return buf.release();
         }
 
-        static PassOwnPtr<ImageBuffer> createCompatibleBuffer(const IntSize&, float resolutionScale, ColorSpace, const GraphicsContext*, bool hasAlpha);
+        static PassOwnPtr<ImageBuffer> createCompatibleBuffer(const IntSize&, float resolutionScale, const GraphicsContext*, bool hasAlpha);
 
         ~ImageBuffer();
 
@@ -131,8 +131,8 @@ namespace WebCore {
     private:
         void clip(GraphicsContext*, const FloatRect&) const;
 
-        void draw(GraphicsContext*, ColorSpace, const FloatRect& destRect, const FloatRect& srcRect = FloatRect(0, 0, -1, -1), CompositeOperator = CompositeSourceOver, BlendMode = BlendModeNormal, bool useLowQualityScale = false);
-        void drawPattern(GraphicsContext*, const FloatRect& srcRect, const AffineTransform& patternTransform, const FloatPoint& phase, ColorSpace styleColorSpace, CompositeOperator, const FloatRect& destRect);
+        void draw(GraphicsContext*, const FloatRect& destRect, const FloatRect& srcRect = FloatRect(0, 0, -1, -1), CompositeOperator = CompositeSourceOver, BlendMode = BlendModeNormal, bool useLowQualityScale = false);
+        void drawPattern(GraphicsContext*, const FloatRect& srcRect, const AffineTransform& patternTransform, const FloatPoint& phase, CompositeOperator, const FloatRect& destRect);
 
         inline void genericConvertToLuminanceMask();
 
@@ -150,8 +150,8 @@ namespace WebCore {
 
         // This constructor will place its success into the given out-variable
         // so that create() knows when it should return failure.
-        ImageBuffer(const IntSize&, float resolutionScale, ColorSpace, RenderingMode, OpacityMode, bool& success);
-        ImageBuffer(const IntSize&, float resolutionScale, ColorSpace, const GraphicsContext*, bool hasAlpha, bool& success);
+        ImageBuffer(const IntSize&, float resolutionScale, RenderingMode, OpacityMode, bool& success);
+        ImageBuffer(const IntSize&, float resolutionScale, const GraphicsContext*, bool hasAlpha, bool& success);
     };
 
     String ImageDataToDataURL(const ImageData&, const String& mimeType, const double* quality);

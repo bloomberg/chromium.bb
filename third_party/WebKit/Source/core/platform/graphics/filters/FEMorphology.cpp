@@ -262,7 +262,7 @@ bool FEMorphology::applySkia()
         paint.setImageFilter(new SkErodeImageFilter(radiusX, radiusY))->unref();
 
     dstContext->saveLayer(0, &paint);
-    dstContext->drawImage(image.get(), ColorSpaceDeviceRGB, drawingRegion.location(), CompositeCopy);
+    dstContext->drawImage(image.get(), drawingRegion.location(), CompositeCopy);
     dstContext->restoreLayer();
     return true;
 }

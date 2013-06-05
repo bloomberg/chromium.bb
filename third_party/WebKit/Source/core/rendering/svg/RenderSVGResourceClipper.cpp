@@ -155,7 +155,7 @@ bool RenderSVGResourceClipper::applyClippingToContext(RenderObject* object, cons
     SVGRenderingContext::calculateTransformationToOutermostCoordinateSystem(object, absoluteTransform);
 
     if (shouldCreateClipData && !repaintRect.isEmpty()) {
-        if (!SVGRenderingContext::createImageBuffer(repaintRect, absoluteTransform, clipperData->clipMaskImage, ColorSpaceDeviceRGB, Unaccelerated))
+        if (!SVGRenderingContext::createImageBuffer(repaintRect, absoluteTransform, clipperData->clipMaskImage, Unaccelerated))
             return false;
 
         GraphicsContext* maskContext = clipperData->clipMaskImage->context();

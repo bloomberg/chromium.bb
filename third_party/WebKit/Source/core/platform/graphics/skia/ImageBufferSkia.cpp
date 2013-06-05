@@ -101,16 +101,16 @@ static SkCanvas* createNonPlatformCanvas(const IntSize& size)
     return pixelRef ? new SkCanvas(device) : 0;
 }
 
-PassOwnPtr<ImageBuffer> ImageBuffer::createCompatibleBuffer(const IntSize& size, float resolutionScale, ColorSpace colorSpace, const GraphicsContext* context, bool hasAlpha)
+PassOwnPtr<ImageBuffer> ImageBuffer::createCompatibleBuffer(const IntSize& size, float resolutionScale, const GraphicsContext* context, bool hasAlpha)
 {
     bool success = false;
-    OwnPtr<ImageBuffer> buf = adoptPtr(new ImageBuffer(size, resolutionScale, colorSpace, context, hasAlpha, success));
+    OwnPtr<ImageBuffer> buf = adoptPtr(new ImageBuffer(size, resolutionScale, context, hasAlpha, success));
     if (!success)
         return nullptr;
     return buf.release();
 }
 
-ImageBuffer::ImageBuffer(const IntSize& size, float resolutionScale, ColorSpace, const GraphicsContext* compatibleContext, bool hasAlpha, bool& success)
+ImageBuffer::ImageBuffer(const IntSize& size, float resolutionScale, const GraphicsContext* compatibleContext, bool hasAlpha, bool& success)
     : m_data(size)
     , m_size(size)
     , m_logicalSize(size)
@@ -141,7 +141,7 @@ ImageBuffer::ImageBuffer(const IntSize& size, float resolutionScale, ColorSpace,
     success = true;
 }
 
-ImageBuffer::ImageBuffer(const IntSize& size, float resolutionScale, ColorSpace, RenderingMode renderingMode, OpacityMode opacityMode, bool& success)
+ImageBuffer::ImageBuffer(const IntSize& size, float resolutionScale, RenderingMode renderingMode, OpacityMode opacityMode, bool& success)
     : m_data(size)
     , m_size(size)
     , m_logicalSize(size)
@@ -258,20 +258,20 @@ static bool drawNeedsCopy(GraphicsContext* src, GraphicsContext* dst)
     return (src == dst);
 }
 
-void ImageBuffer::draw(GraphicsContext* context, ColorSpace styleColorSpace, const FloatRect& destRect, const FloatRect& srcRect,
+void ImageBuffer::draw(GraphicsContext* context, const FloatRect& destRect, const FloatRect& srcRect,
     CompositeOperator op, BlendMode blendMode, bool useLowQualityScale)
 {
     const SkBitmap& bitmap = *m_context->bitmap();
     RefPtr<Image> image = BitmapImage::create(NativeImageSkia::create(drawNeedsCopy(m_context.get(), context) ? deepSkBitmapCopy(bitmap) : bitmap));
-    context->drawImage(image.get(), styleColorSpace, destRect, srcRect, op, blendMode, DoNotRespectImageOrientation, useLowQualityScale);
+    context->drawImage(image.get(), destRect, srcRect, op, blendMode, DoNotRespectImageOrientation, useLowQualityScale);
 }
 
 void ImageBuffer::drawPattern(GraphicsContext* context, const FloatRect& srcRect, const AffineTransform& patternTransform,
-                              const FloatPoint& phase, ColorSpace styleColorSpace, CompositeOperator op, const FloatRect& destRect)
+    const FloatPoint& phase, CompositeOperator op, const FloatRect& destRect)
 {
     const SkBitmap& bitmap = *m_context->bitmap();
     RefPtr<Image> image = BitmapImage::create(NativeImageSkia::create(drawNeedsCopy(m_context.get(), context) ? deepSkBitmapCopy(bitmap) : bitmap));
-    image->drawPattern(context, srcRect, patternTransform, phase, styleColorSpace, op, destRect);
+    image->drawPattern(context, srcRect, patternTransform, phase, op, destRect);
 }
 
 void ImageBuffer::platformTransformColorSpace(const Vector<int>& lookUpTable)

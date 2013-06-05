@@ -333,7 +333,7 @@ bool FEGaussianBlur::applySkia()
 
     dstContext->saveLayer(0, &paint);
     paint.setColor(0xFFFFFFFF);
-    dstContext->drawImage(image.get(), ColorSpaceDeviceRGB, drawingRegion.location(), CompositeCopy);
+    dstContext->drawImage(image.get(), drawingRegion.location(), CompositeCopy);
     dstContext->restoreLayer();
     return true;
 }

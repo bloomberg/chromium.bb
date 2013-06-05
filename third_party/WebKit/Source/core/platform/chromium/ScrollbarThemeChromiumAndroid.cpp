@@ -111,7 +111,7 @@ void ScrollbarThemeChromiumAndroid::paintThumb(GraphicsContext* context, Scrollb
         thumbRect.setHeight(thumbRect.height() - scrollbarMargin);
     else
         thumbRect.setWidth(thumbRect.width() - scrollbarMargin);
-    context->fillRect(thumbRect, Color(128, 128, 128, 128), ColorSpaceDeviceRGB);
+    context->fillRect(thumbRect, Color(128, 128, 128, 128));
 }
 
 } // namespace WebCore

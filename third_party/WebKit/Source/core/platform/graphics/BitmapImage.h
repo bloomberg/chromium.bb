@@ -22,7 +22,7 @@
  * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
  * OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 #ifndef BitmapImage_h
@@ -61,13 +61,13 @@ public:
         , m_duration(0)
         , m_haveMetadata(false)
         , m_isComplete(false)
-        , m_hasAlpha(true) 
+        , m_hasAlpha(true)
         , m_frameBytes(0)
     {
     }
 
     ~FrameData()
-    { 
+    {
         clear(true);
     }
 
@@ -105,7 +105,7 @@ public:
         return adoptRef(new BitmapImage(observer));
     }
     virtual ~BitmapImage();
-    
+
     virtual bool isBitmapImage() const OVERRIDE;
 
     virtual bool hasSingleSecurityOrigin() const OVERRIDE;
@@ -150,8 +150,8 @@ protected:
     BitmapImage(PassNativeImagePtr, ImageObserver* = 0);
     BitmapImage(ImageObserver* = 0);
 
-    virtual void draw(GraphicsContext*, const FloatRect& dstRect, const FloatRect& srcRect, ColorSpace styleColorSpace, CompositeOperator, BlendMode) OVERRIDE;
-    virtual void draw(GraphicsContext*, const FloatRect& dstRect, const FloatRect& srcRect, ColorSpace styleColorSpace, CompositeOperator, BlendMode, RespectImageOrientationEnum) OVERRIDE;
+    virtual void draw(GraphicsContext*, const FloatRect& dstRect, const FloatRect& srcRect, CompositeOperator, BlendMode) OVERRIDE;
+    virtual void draw(GraphicsContext*, const FloatRect& dstRect, const FloatRect& srcRect, CompositeOperator, BlendMode, RespectImageOrientationEnum) OVERRIDE;
 
     size_t currentFrame() const { return m_currentFrame; }
     size_t frameCount();
@@ -179,7 +179,7 @@ protected:
     // decreased by |frameBytesCleared|.
     void destroyMetadataAndNotify(size_t frameBytesCleared);
 
-    // Whether or not size is available yet.    
+    // Whether or not size is available yet.
     bool isSizeAvailable();
 
     // Called after asking the source for any information that may require
@@ -205,14 +205,14 @@ protected:
     // This check should happen regardless whether m_checkedForSolidColor is already set, as the frame may have
     // changed.
     void checkForSolidColor();
-    
+
     virtual bool mayFillWithSolidColor();
     virtual Color solidColor() const;
-    
+
     ImageSource m_source;
     mutable IntSize m_size; // The size to use for the overall image (will just be the size of the first image).
     mutable IntSize m_sizeRespectingOrientation;
-    
+
     size_t m_currentFrame; // The index of the current frame of animation.
     Vector<FrameData, 1> m_frames; // An array of the cached frames of the animation. We have to ref frames to pin them in the cache.
 

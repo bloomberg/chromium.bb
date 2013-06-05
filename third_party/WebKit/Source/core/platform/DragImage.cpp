@@ -148,7 +148,7 @@ DragImageRef createDragImageForLink(const KURL& url, const String& inLabel, Font
     // fill the background
     IntSize scaledImageSize = imageSize;
     scaledImageSize.scale(deviceScaleFactor);
-    OwnPtr<ImageBuffer> buffer(ImageBuffer::create(scaledImageSize, deviceScaleFactor, ColorSpaceDeviceRGB));
+    OwnPtr<ImageBuffer> buffer(ImageBuffer::create(scaledImageSize, deviceScaleFactor));
     if (!buffer)
         return 0;
 
@@ -156,7 +156,7 @@ DragImageRef createDragImageForLink(const KURL& url, const String& inLabel, Font
     const IntSize radii(DragLabelRadius, DragLabelRadius);
     IntRect rect(IntPoint(), imageSize);
     const Color backgroundColor(140, 140, 140);
-    buffer->context()->fillRoundedRect(rect, radii, radii, radii, radii, backgroundColor, ColorSpaceDeviceRGB);
+    buffer->context()->fillRoundedRect(rect, radii, radii, radii, radii, backgroundColor);
 
     // Draw the text
     if (drawURLString) {

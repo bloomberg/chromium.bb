@@ -350,7 +350,7 @@ void PopupContainer::paintBorder(GraphicsContext* gc, const IntRect& rect)
     Color borderColor(127, 157, 185);
 
     gc->setStrokeStyle(NoStroke);
-    gc->setFillColor(borderColor, ColorSpaceDeviceRGB);
+    gc->setFillColor(borderColor);
 
     int tx = x();
     int ty = y();

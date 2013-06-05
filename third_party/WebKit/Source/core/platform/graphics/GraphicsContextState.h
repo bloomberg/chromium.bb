@@ -29,7 +29,6 @@
 #ifndef GraphicsContextState_h
 #define GraphicsContextState_h
 
-#include "core/platform/graphics/ColorSpace.h"
 #include "core/platform/graphics/Gradient.h"
 #include "core/platform/graphics/GraphicsTypes.h"
 #include "core/platform/graphics/Path.h"
@@ -60,13 +59,11 @@ private:
         : m_strokeStyle(SolidStroke)
         , m_strokeThickness(0)
         , m_strokeColor(Color::black)
-        , m_strokeColorSpace(ColorSpaceDeviceRGB)
         , m_miterLimit(4)
         , m_lineCap(SkPaint::kDefault_Cap)
         , m_lineJoin(SkPaint::kDefault_Join)
         , m_dash(0)
         , m_fillColor(Color::black)
-        , m_fillColorSpace(ColorSpaceDeviceRGB)
         , m_fillRule(RULE_NONZERO)
         , m_looper(0)
         , m_textDrawingMode(TextModeFill)
@@ -90,7 +87,6 @@ private:
         : m_strokeStyle(other.m_strokeStyle)
         , m_strokeThickness(other.m_strokeThickness)
         , m_strokeColor(other.m_strokeColor)
-        , m_strokeColorSpace(other.m_strokeColorSpace)
         , m_strokeGradient(other.m_strokeGradient)
         , m_strokePattern(other.m_strokePattern)
         , m_miterLimit(other.m_miterLimit)
@@ -98,7 +94,6 @@ private:
         , m_lineJoin(other.m_lineJoin)
         , m_dash(other.m_dash)
         , m_fillColor(other.m_fillColor)
-        , m_fillColorSpace(other.m_fillColorSpace)
         , m_fillRule(other.m_fillRule)
         , m_fillGradient(other.m_fillGradient)
         , m_fillPattern(other.m_fillPattern)
@@ -148,7 +143,6 @@ private:
     StrokeStyle m_strokeStyle;
     float m_strokeThickness;
     Color m_strokeColor;
-    ColorSpace m_strokeColorSpace;
     RefPtr<Gradient> m_strokeGradient;
     RefPtr<Pattern> m_strokePattern;
     float m_miterLimit;
@@ -158,7 +152,6 @@ private:
 
     // Fill.
     Color m_fillColor;
-    ColorSpace m_fillColorSpace;
     WindRule m_fillRule;
     RefPtr<Gradient> m_fillGradient;
     RefPtr<Pattern> m_fillPattern;

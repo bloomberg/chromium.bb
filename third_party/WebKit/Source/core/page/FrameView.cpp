@@ -2746,7 +2746,7 @@ void FrameView::paintScrollCorner(GraphicsContext* context, const IntRect& corne
     if (m_scrollCorner) {
         bool needsBackgorund = m_frame->page() && m_frame->page()->mainFrame() == m_frame;
         if (needsBackgorund)
-            context->fillRect(cornerRect, baseBackgroundColor(), ColorSpaceDeviceRGB);
+            context->fillRect(cornerRect, baseBackgroundColor());
         m_scrollCorner->paintIntoRect(context, cornerRect.location(), cornerRect);
         return;
     }
@@ -2760,7 +2760,7 @@ void FrameView::paintScrollbar(GraphicsContext* context, Scrollbar* bar, const I
     if (needsBackgorund) {
         IntRect toFill = bar->frameRect();
         toFill.intersect(rect);
-        context->fillRect(toFill, baseBackgroundColor(), ColorSpaceDeviceRGB);
+        context->fillRect(toFill, baseBackgroundColor());
     }
 
     ScrollView::paintScrollbar(context, bar, rect);
@@ -2896,9 +2896,9 @@ void FrameView::paintContents(GraphicsContext* p, const IntRect& rect)
         fillWithRed = false; // Element images are transparent, don't fill with red.
     else
         fillWithRed = true;
-    
+
     if (fillWithRed)
-        p->fillRect(rect, Color(0xFF, 0, 0), ColorSpaceDeviceRGB);
+        p->fillRect(rect, Color(0xFF, 0, 0));
 #endif
 
     RenderView* renderView = this->renderView();

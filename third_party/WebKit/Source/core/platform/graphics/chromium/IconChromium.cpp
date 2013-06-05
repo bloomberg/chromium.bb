@@ -47,12 +47,7 @@ Icon::~Icon()
 
 void Icon::paint(GraphicsContext* context, const IntRect& rect)
 {
-    if (context->paintingDisabled())
-        return;
-
-    // An Icon doesn't know the color space of the file upload control.
-    // So use ColorSpaceDeviceRGB.
-    context->drawImage(m_icon.get(), ColorSpaceDeviceRGB, rect);
+    context->drawImage(m_icon.get(), rect);
 }
 
 } // namespace WebCore

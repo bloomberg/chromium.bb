@@ -163,7 +163,7 @@ void RenderEmbeddedObject::paintReplaced(PaintInfo& paintInfo, const LayoutPoint
     GraphicsContextStateSaver stateSaver(*context);
     context->clip(contentRect);
     context->setAlpha(replacementTextRoundedRectOpacity);
-    context->setFillColor(Color::white, style()->colorSpace());
+    context->setFillColor(Color::white);
     context->fillPath(path);
 
     const FontMetrics& fontMetrics = font.fontMetrics();
@@ -172,7 +172,7 @@ void RenderEmbeddedObject::paintReplaced(PaintInfo& paintInfo, const LayoutPoint
     TextRunPaintInfo runInfo(run);
     runInfo.bounds = replacementTextRect;
     context->setAlpha(replacementTextTextOpacity);
-    context->setFillColor(Color::black, style()->colorSpace());
+    context->setFillColor(Color::black);
     context->drawBidiText(font, runInfo, FloatPoint(labelX, labelY));
 }
 

@@ -40,9 +40,8 @@ enum {
     rightLobe = 1
 };
 
-ShadowBlur::ShadowBlur(const FloatSize& radius, const FloatSize& offset, const Color& color, ColorSpace colorSpace)
+ShadowBlur::ShadowBlur(const FloatSize& radius, const FloatSize& offset, const Color& color)
     : m_color(color)
-    , m_colorSpace(colorSpace)
     , m_blurRadius(radius)
     , m_offset(offset)
     , m_shadowsIgnoreTransforms(false)

@@ -78,14 +78,14 @@ void drawOutlinedQuad(GraphicsContext* context, const FloatQuad& quad, const Col
         context->clipOut(quadPath);
 
         context->setStrokeThickness(outlineThickness);
-        context->setStrokeColor(outlineColor, ColorSpaceDeviceRGB);
+        context->setStrokeColor(outlineColor);
         context->strokePath(quadPath);
 
         context->restore();
     }
 
     // Now do the fill
-    context->setFillColor(fillColor, ColorSpaceDeviceRGB);
+    context->setFillColor(fillColor);
     context->fillPath(quadPath);
 }
 

@@ -32,7 +32,7 @@
 
 namespace WebCore {
 
-void GeneratorGeneratedImage::draw(GraphicsContext* destContext, const FloatRect& destRect, const FloatRect& srcRect, ColorSpace, CompositeOperator compositeOp, BlendMode)
+void GeneratorGeneratedImage::draw(GraphicsContext* destContext, const FloatRect& destRect, const FloatRect& srcRect, CompositeOperator compositeOp, BlendMode)
 {
     GraphicsContextStateSaver stateSaver(*destContext);
     destContext->setCompositeOperation(compositeOp);
@@ -45,7 +45,7 @@ void GeneratorGeneratedImage::draw(GraphicsContext* destContext, const FloatRect
 }
 
 void GeneratorGeneratedImage::drawPattern(GraphicsContext* destContext, const FloatRect& srcRect, const AffineTransform& patternTransform,
-    const FloatPoint& phase, ColorSpace styleColorSpace, CompositeOperator compositeOp, const FloatRect& destRect, BlendMode)
+    const FloatPoint& phase, CompositeOperator compositeOp, const FloatRect& destRect, BlendMode)
 {
     // Allow the generator to provide visually-equivalent tiling parameters for better performance.
     IntSize adjustedSize = m_size;
@@ -75,7 +75,7 @@ void GeneratorGeneratedImage::drawPattern(GraphicsContext* destContext, const Fl
     }
 
     // Tile the image buffer into the context.
-    m_cachedImageBuffer->drawPattern(destContext, adjustedSrcRect, adjustedPatternCTM, phase, styleColorSpace, compositeOp, destRect);
+    m_cachedImageBuffer->drawPattern(destContext, adjustedSrcRect, adjustedPatternCTM, phase, compositeOp, destRect);
     m_cacheTimer.restart();
 }
 

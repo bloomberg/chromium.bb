@@ -347,7 +347,6 @@ void Image::drawPattern(GraphicsContext* context,
                         const FloatRect& floatSrcRect,
                         const AffineTransform& patternTransform,
                         const FloatPoint& phase,
-                        ColorSpace styleColorSpace,
                         CompositeOperator compositeOp,
                         const FloatRect& destRect,
                         BlendMode blendMode)

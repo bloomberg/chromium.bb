@@ -256,7 +256,7 @@ bool ScrollbarThemeChromiumMac::paint(ScrollbarThemeClient* scrollbar, GraphicsC
     }
 
     if (!canDrawDirectly)
-        context->drawImageBuffer(imageBuffer.get(), ColorSpaceDeviceRGB, scrollbar->frameRect().location());
+        context->drawImageBuffer(imageBuffer.get(), scrollbar->frameRect().location());
 
     return true;
 }
@@ -274,8 +274,8 @@ void ScrollbarThemeChromiumMac::paintGivenTickmarks(GraphicsContext* context, Sc
 
     GraphicsContextStateSaver stateSaver(*context);
     context->setShouldAntialias(false);
-    context->setStrokeColor(Color(0xCC, 0xAA, 0x00, 0xFF), ColorSpaceDeviceRGB);
-    context->setFillColor(Color(0xFF, 0xDD, 0x00, 0xFF), ColorSpaceDeviceRGB);
+    context->setStrokeColor(Color(0xCC, 0xAA, 0x00, 0xFF));
+    context->setFillColor(Color(0xFF, 0xDD, 0x00, 0xFF));
 
     for (Vector<IntRect>::const_iterator i = tickmarks.begin(); i != tickmarks.end(); ++i) {
         // Calculate how far down (in %) the tick-mark should appear.

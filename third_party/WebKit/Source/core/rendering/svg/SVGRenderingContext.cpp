@@ -212,7 +212,7 @@ void SVGRenderingContext::calculateTransformationToOutermostCoordinateSystem(con
     }
 }
 
-bool SVGRenderingContext::createImageBuffer(const FloatRect& targetRect, const AffineTransform& absoluteTransform, OwnPtr<ImageBuffer>& imageBuffer, ColorSpace colorSpace, RenderingMode renderingMode)
+bool SVGRenderingContext::createImageBuffer(const FloatRect& targetRect, const AffineTransform& absoluteTransform, OwnPtr<ImageBuffer>& imageBuffer, RenderingMode renderingMode)
 {
     IntRect paintRect = calculateImageBufferRect(targetRect, absoluteTransform);
     // Don't create empty ImageBuffers.
@@ -220,7 +220,7 @@ bool SVGRenderingContext::createImageBuffer(const FloatRect& targetRect, const A
         return false;
 
     IntSize clampedSize = clampedAbsoluteSize(paintRect.size());
-    OwnPtr<ImageBuffer> image = ImageBuffer::create(clampedSize, 1, colorSpace, renderingMode);
+    OwnPtr<ImageBuffer> image = ImageBuffer::create(clampedSize, 1, renderingMode);
     if (!image)
         return false;
 
@@ -236,7 +236,7 @@ bool SVGRenderingContext::createImageBuffer(const FloatRect& targetRect, const A
     return true;
 }
 
-bool SVGRenderingContext::createImageBufferForPattern(const FloatRect& absoluteTargetRect, const FloatRect& clampedAbsoluteTargetRect, OwnPtr<ImageBuffer>& imageBuffer, ColorSpace colorSpace, RenderingMode renderingMode)
+bool SVGRenderingContext::createImageBufferForPattern(const FloatRect& absoluteTargetRect, const FloatRect& clampedAbsoluteTargetRect, OwnPtr<ImageBuffer>& imageBuffer, RenderingMode renderingMode)
 {
     IntSize imageSize(roundedIntSize(clampedAbsoluteTargetRect.size()));
     IntSize unclampedImageSize(roundedIntSize(absoluteTargetRect.size()));
@@ -245,7 +245,7 @@ bool SVGRenderingContext::createImageBufferForPattern(const FloatRect& absoluteT
     if (imageSize.isEmpty())
         return false;
 
-    OwnPtr<ImageBuffer> image = ImageBuffer::create(imageSize, 1, colorSpace, renderingMode);
+    OwnPtr<ImageBuffer> image = ImageBuffer::create(imageSize, 1, renderingMode);
     if (!image)
         return false;
 
@@ -343,7 +343,7 @@ bool SVGRenderingContext::bufferForeground(OwnPtr<ImageBuffer>& imageBuffer)
             return false;
     }
 
-    m_paintInfo->context->drawImageBuffer(imageBuffer.get(), ColorSpaceDeviceRGB, boundingBox);
+    m_paintInfo->context->drawImageBuffer(imageBuffer.get(), boundingBox);
     return true;
 }
 

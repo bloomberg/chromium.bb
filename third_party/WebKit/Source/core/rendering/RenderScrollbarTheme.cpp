@@ -84,11 +84,11 @@ IntRect RenderScrollbarTheme::trackRect(ScrollbarThemeClient* scrollbar, bool)
 {
     if (!hasButtons(scrollbar))
         return scrollbar->frameRect();
-    
+
     int startLength;
     int endLength;
     buttonSizesAlongTrackAxis(scrollbar, startLength, endLength);
-    
+
     return toRenderScrollbar(scrollbar)->trackRect(startLength, endLength);
 }
 
@@ -110,7 +110,7 @@ IntRect RenderScrollbarTheme::constrainTrackRectToTrackPieces(ScrollbarThemeClie
 void RenderScrollbarTheme::paintScrollCorner(ScrollView*, GraphicsContext* context, const IntRect& cornerRect)
 {
     // FIXME: Implement.
-    context->fillRect(cornerRect, Color::white, ColorSpaceDeviceRGB);
+    context->fillRect(cornerRect, Color::white);
 }
 
 void RenderScrollbarTheme::paintScrollbarBackground(GraphicsContext* context, ScrollbarThemeClient* scrollbar)

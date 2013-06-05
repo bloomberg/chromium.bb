@@ -915,7 +915,7 @@ void RenderObject::drawLineForBoxSide(GraphicsContext* graphicsContext, int x1, 
                 bool wasAntialiased = graphicsContext->shouldAntialias();
                 StrokeStyle oldStrokeStyle = graphicsContext->strokeStyle();
                 graphicsContext->setShouldAntialias(antialias);
-                graphicsContext->setStrokeColor(color, m_style->colorSpace());
+                graphicsContext->setStrokeColor(color);
                 graphicsContext->setStrokeThickness(thickness);
                 graphicsContext->setStrokeStyle(style == DASHED ? DashedStroke : DottedStroke);
 
@@ -941,8 +941,8 @@ void RenderObject::drawLineForBoxSide(GraphicsContext* graphicsContext, int x1, 
             if (adjacentWidth1 == 0 && adjacentWidth2 == 0) {
                 StrokeStyle oldStrokeStyle = graphicsContext->strokeStyle();
                 graphicsContext->setStrokeStyle(NoStroke);
-                graphicsContext->setFillColor(color, m_style->colorSpace());
-                
+                graphicsContext->setFillColor(color);
+
                 bool wasAntialiased = graphicsContext->shouldAntialias();
                 graphicsContext->setShouldAntialias(antialias);
 
@@ -1063,7 +1063,7 @@ void RenderObject::drawLineForBoxSide(GraphicsContext* graphicsContext, int x1, 
         case SOLID: {
             StrokeStyle oldStrokeStyle = graphicsContext->strokeStyle();
             graphicsContext->setStrokeStyle(NoStroke);
-            graphicsContext->setFillColor(color, m_style->colorSpace());
+            graphicsContext->setFillColor(color);
             ASSERT(x2 >= x1);
             ASSERT(y2 >= y1);
             if (!adjacentWidth1 && !adjacentWidth2) {
@@ -1184,7 +1184,7 @@ void RenderObject::paintOutline(PaintInfo& paintInfo, const LayoutRect& paintRec
             path.addRect(outer);
             path.addRect(inner);
             graphicsContext->setFillRule(RULE_EVENODD);
-            graphicsContext->setFillColor(outlineColor, styleToUse->colorSpace());
+            graphicsContext->setFillColor(outlineColor);
             graphicsContext->fillPath(path);
             return;
         }

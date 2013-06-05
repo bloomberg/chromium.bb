@@ -57,7 +57,7 @@ void SourceGraphic::applySoftware()
     if (!resultImage || !filter->sourceImage())
         return;
 
-    resultImage->context()->drawImageBuffer(filter->sourceImage(), ColorSpaceDeviceRGB, IntPoint());
+    resultImage->context()->drawImageBuffer(filter->sourceImage(), IntPoint());
 }
 
 TextStream& SourceGraphic::externalRepresentation(TextStream& ts, int indent) const

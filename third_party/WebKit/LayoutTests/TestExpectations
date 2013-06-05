@@ -224,6 +224,9 @@ crbug.com/238633 editing/style/unbold-in-bold.html [ ImageOnlyFailure ]
 
 webkit.org/b/112923 fast/forms/calendar-picker/calendar-picker-appearance-month-popup.html [ ImageOnlyFailure Pass ]
 
+# Skipped until/unless color-correction is reimplemented.
+crbug.com/28005 fast/css/parsing-color-correction.html [ Skip ]
+
 # -----------------------------------------------------------------
 # TESTS TO FIX
 # -----------------------------------------------------------------

@@ -223,12 +223,12 @@ void CanvasStyle::applyStrokeColor(GraphicsContext* context)
         return;
     switch (m_type) {
     case RGBA:
-        context->setStrokeColor(m_rgba, ColorSpaceDeviceRGB);
+        context->setStrokeColor(m_rgba);
         break;
     case CMYKA: {
         // FIXME: Do this through platform-independent GraphicsContext API.
         // We'll need a fancier Color abstraction to support CMYKA correctly
-        context->setStrokeColor(m_rgba, ColorSpaceDeviceRGB);
+        context->setStrokeColor(m_rgba);
         break;
     }
     case Gradient:
@@ -250,12 +250,12 @@ void CanvasStyle::applyFillColor(GraphicsContext* context)
         return;
     switch (m_type) {
     case RGBA:
-        context->setFillColor(m_rgba, ColorSpaceDeviceRGB);
+        context->setFillColor(m_rgba);
         break;
     case CMYKA: {
         // FIXME: Do this through platform-independent GraphicsContext API.
         // We'll need a fancier Color abstraction to support CMYKA correctly
-        context->setFillColor(m_rgba, ColorSpaceDeviceRGB);
+        context->setFillColor(m_rgba);
         break;
     }
     case Gradient:

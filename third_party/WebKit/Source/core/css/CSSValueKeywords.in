@@ -825,10 +825,6 @@ geometricPrecision
 economy
 exact
 
-// -webkit-color-correction
-//default
-sRGB
-
 // (-webkit-view-mode:) media feature:
 floating
 fullscreen

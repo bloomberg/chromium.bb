@@ -1458,14 +1458,11 @@ void CaretBase::paintCaret(Node* node, GraphicsContext* context, const LayoutPoi
         return;
 
     Color caretColor = Color::black;
-    ColorSpace colorSpace = ColorSpaceDeviceRGB;
     Element* element = node->rootEditableElement();
-    if (element && element->renderer()) {
+    if (element && element->renderer())
         caretColor = element->renderer()->style()->visitedDependentColor(CSSPropertyColor);
-        colorSpace = element->renderer()->style()->colorSpace();
-    }
 
-    context->fillRect(caret, caretColor, colorSpace);
+    context->fillRect(caret, caretColor);
 }
 
 void FrameSelection::debugRenderer(RenderObject *r, bool selected) const

@@ -87,7 +87,7 @@ public:
         return false;
     }
 
-    virtual void draw(GraphicsContext*, const FloatRect&, const FloatRect&, ColorSpace, CompositeOperator, BlendMode) OVERRIDE
+    virtual void draw(GraphicsContext*, const FloatRect&, const FloatRect&, CompositeOperator, BlendMode) OVERRIDE
     {
     }
 

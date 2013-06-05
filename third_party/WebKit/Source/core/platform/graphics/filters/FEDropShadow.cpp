@@ -22,7 +22,6 @@
 
 #include "core/platform/graphics/filters/FEDropShadow.h"
 
-#include "core/platform/graphics/ColorSpace.h"
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/graphics/ShadowBlur.h"
 #include "core/platform/graphics/filters/FEGaussianBlur.h"
@@ -111,10 +110,10 @@ void FEDropShadow::applySoftware()
     GraphicsContext* resultContext = resultImage->context();
     ASSERT(resultContext);
     resultContext->setAlpha(m_shadowOpacity);
-    resultContext->drawImageBuffer(sourceImage, ColorSpaceDeviceRGB, drawingRegionWithOffset);
+    resultContext->drawImageBuffer(sourceImage, drawingRegionWithOffset);
     resultContext->setAlpha(1);
 
-    ShadowBlur contextShadow(blurRadius, offset, m_shadowColor, ColorSpaceDeviceRGB);
+    ShadowBlur contextShadow(blurRadius, offset, m_shadowColor);
 
     // TODO: Direct pixel access to ImageBuffer would avoid copying the ImageData.
     IntRect shadowArea(IntPoint(), resultImage->internalSize());
@@ -125,10 +124,10 @@ void FEDropShadow::applySoftware()
     resultImage->putByteArray(Premultiplied, srcPixelArray.get(), shadowArea.size(), shadowArea, IntPoint());
 
     resultContext->setCompositeOperation(CompositeSourceIn);
-    resultContext->fillRect(FloatRect(FloatPoint(), absolutePaintRect().size()), m_shadowColor, ColorSpaceDeviceRGB);
+    resultContext->fillRect(FloatRect(FloatPoint(), absolutePaintRect().size()), m_shadowColor);
     resultContext->setCompositeOperation(CompositeDestinationOver);
 
-    resultImage->context()->drawImageBuffer(sourceImage, ColorSpaceDeviceRGB, drawingRegion);
+    resultImage->context()->drawImageBuffer(sourceImage, drawingRegion);
 }
 
 TextStream& FEDropShadow::externalRepresentation(TextStream& ts, int indent) const

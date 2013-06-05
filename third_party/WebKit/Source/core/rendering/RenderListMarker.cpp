@@ -1128,7 +1128,7 @@ void RenderListMarker::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffse
 
     if (paintInfo.phase != PaintPhaseForeground)
         return;
-    
+
     if (style()->visibility() != VISIBLE)
         return;
 
@@ -1141,18 +1141,18 @@ void RenderListMarker::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffse
         return;
 
     LayoutRect box(boxOrigin, size());
-    
+
     IntRect marker = getRelativeMarkerRect();
     marker.moveBy(roundedIntPoint(boxOrigin));
 
     GraphicsContext* context = paintInfo.context;
 
     if (isImage()) {
-        context->drawImage(m_image->image(this, marker.size()).get(), style()->colorSpace(), marker);
+        context->drawImage(m_image->image(this, marker.size()).get(), marker);
         if (selectionState() != SelectionNone) {
             LayoutRect selRect = localSelectionRect();
             selRect.moveBy(boxOrigin);
-            context->fillRect(pixelSnappedIntRect(selRect), selectionBackgroundColor(), style()->colorSpace());
+            context->fillRect(pixelSnappedIntRect(selRect), selectionBackgroundColor());
         }
         return;
     }
@@ -1160,14 +1160,14 @@ void RenderListMarker::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffse
     if (selectionState() != SelectionNone) {
         LayoutRect selRect = localSelectionRect();
         selRect.moveBy(boxOrigin);
-        context->fillRect(pixelSnappedIntRect(selRect), selectionBackgroundColor(), style()->colorSpace());
+        context->fillRect(pixelSnappedIntRect(selRect), selectionBackgroundColor());
     }
 
     const Color color(style()->visitedDependentColor(CSSPropertyColor));
-    context->setStrokeColor(color, style()->colorSpace());
+    context->setStrokeColor(color);
     context->setStrokeStyle(SolidStroke);
     context->setStrokeThickness(1.0f);
-    context->setFillColor(color, style()->colorSpace());
+    context->setFillColor(color);
 
     EListStyleType type = style()->listStyleType();
     switch (type) {
