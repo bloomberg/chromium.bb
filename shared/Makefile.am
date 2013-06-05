@@ -36,6 +36,7 @@ TESTS = config-parser-test
 check_PROGRAMS = $(TESTS)
 
 config_parser_test_LDADD = $(COMPOSITOR_LIBS)
+config_parser_test_CFLAGS = $(COMPOSITOR_CFLAGS)
 config_parser_test_SOURCES =			\
 	config-parser.c				\
 	config-parser.h				\
