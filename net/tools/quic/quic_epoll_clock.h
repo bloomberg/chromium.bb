@@ -29,10 +29,6 @@ class QuicEpollClock : public QuicClock {
   // Note: this use significant resources please use only if needed.
   virtual QuicTime Now() const OVERRIDE;
 
-  // WallNow returns the current wall-time - a time is consistent across
-  // different clocks.
-  virtual QuicWallTime WallNow() const OVERRIDE;
-
  protected:
   EpollServer* epoll_server_;
 };
