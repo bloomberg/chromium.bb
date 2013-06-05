@@ -408,6 +408,7 @@ function WallpaperManager(dialogDom) {
   WallpaperManager.prototype.initThumbnailsGrid_ = function() {
     this.wallpaperGrid_ = $('wallpaper-grid');
     wallpapers.WallpaperThumbnailsGrid.decorate(this.wallpaperGrid_);
+    this.wallpaperGrid_.autoExpands = true;
 
     this.wallpaperGrid_.addEventListener('change', this.onChange_.bind(this));
     this.wallpaperGrid_.addEventListener('dblclick', this.onClose_.bind(this));
