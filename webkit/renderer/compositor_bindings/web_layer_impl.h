@@ -92,7 +92,6 @@ class WebLayerImpl : public WebKit::WebLayer {
   virtual void suspendAnimations(double monotonic_time);
   virtual void resumeAnimations(double monotonic_time);
   virtual bool hasActiveAnimation();
-  virtual void transferAnimationsTo(WebKit::WebLayer* layer);
   virtual void setForceRenderSurface(bool force);
   virtual void setScrollPosition(WebKit::WebPoint position);
   virtual WebKit::WebPoint scrollPosition() const;

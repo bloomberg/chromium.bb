@@ -248,45 +248,6 @@ TEST(LayerAnimationControllerTest, AnimationsAreDeleted) {
   EXPECT_FALSE(controller_impl->has_any_animation());
 }
 
-TEST(LayerAnimationControllerTest, TransferAnimationsTo) {
-  FakeLayerAnimationValueObserver dummy;
-  scoped_refptr<LayerAnimationController> controller(
-      LayerAnimationController::Create(0));
-  scoped_refptr<LayerAnimationController> other_controller(
-      LayerAnimationController::Create(1));
-  controller->AddValueObserver(&dummy);
-
-  int opacity_animation_id = AddOpacityTransitionToController(
-      controller.get(), 1.0, 0.0f, 1.0f, false);
-
-  int transform_animation_id =
-      AddAnimatedTransformToController(controller.get(), 1.0, 10, 10);
-
-  controller->Animate(1.0);
-
-  // Both animations should now be Starting.
-  EXPECT_EQ(Animation::Starting,
-            controller->GetAnimation(Animation::Opacity)->run_state());
-  EXPECT_EQ(Animation::Starting,
-            controller->GetAnimation(Animation::Transform)->run_state());
-
-  controller->TransferAnimationsTo(other_controller.get());
-
-  // Ensure both animations have been transfered.
-  EXPECT_FALSE(controller->has_any_animation());
-  EXPECT_EQ(other_controller->GetAnimation(Animation::Opacity)->id(),
-            opacity_animation_id);
-  EXPECT_EQ(other_controller->GetAnimation(Animation::Transform)->id(),
-            transform_animation_id);
-
-  // Ensure that the run state of the transferred animations has been
-  // preserved.
-  EXPECT_EQ(Animation::Starting,
-            other_controller->GetAnimation(Animation::Opacity)->run_state());
-  EXPECT_EQ(Animation::Starting,
-            other_controller->GetAnimation(Animation::Transform)->run_state());
-}
-
 // Tests that transitioning opacity from 0 to 1 works as expected.
 
 static const AnimationEvent* GetMostRecentPropertyUpdateEvent(

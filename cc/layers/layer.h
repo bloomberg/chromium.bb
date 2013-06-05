@@ -321,8 +321,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
   void PauseAnimation(int animation_id, double time_offset);
   void RemoveAnimation(int animation_id);
 
-  void TransferAnimationsTo(Layer* layer);
-
   void SuspendAnimations(double monotonic_time);
   void ResumeAnimations(double monotonic_time);
 

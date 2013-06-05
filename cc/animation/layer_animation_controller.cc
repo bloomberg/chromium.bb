@@ -130,17 +130,6 @@ void LayerAnimationController::PushAnimationUpdatesTo(
   UpdateActivation(NormalActivation);
 }
 
-void LayerAnimationController::TransferAnimationsTo(
-    LayerAnimationController* other_controller) {
-  other_controller->active_animations_.clear();
-  active_animations_.swap(other_controller->active_animations_);
-  UpdateActivation(NormalActivation);
-  set_force_sync();
-  other_controller->UpdateActivation(NormalActivation);
-  other_controller->set_force_sync();
-  other_controller->SetAnimationRegistrar(registrar_);
-}
-
 void LayerAnimationController::Animate(double monotonic_time) {
   if (!HasValueObserver())
     return;

@@ -825,11 +825,6 @@ void Layer::RemoveAnimation(int animation_id) {
   SetNeedsCommit();
 }
 
-void Layer::TransferAnimationsTo(Layer* layer) {
-  layer_animation_controller_->TransferAnimationsTo(
-      layer->layer_animation_controller());
-}
-
 void Layer::SuspendAnimations(double monotonic_time) {
   layer_animation_controller_->SuspendAnimations(monotonic_time);
   SetNeedsCommit();

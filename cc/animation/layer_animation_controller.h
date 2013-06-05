@@ -52,14 +52,6 @@ class CC_EXPORT LayerAnimationController
   virtual void PushAnimationUpdatesTo(
       LayerAnimationController* controller_impl);
 
-  // Transfers ownership of all animations to other_controller, replacing
-  // any animations currently owned by other_controller. This is intended
-  // to be used for transferring animations between main thread controllers,
-  // so the run state of each transferred animation is preserved (note that
-  // this differs from ReplaceImplThreadAnimations, which is used for copying
-  // animations from a main thread controller to an impl thread controller).
-  void TransferAnimationsTo(LayerAnimationController* other_controller);
-
   void Animate(double monotonic_time);
   void AccumulatePropertyUpdates(double monotonic_time,
                                  AnimationEventsVector* events);

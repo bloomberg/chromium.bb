@@ -211,11 +211,6 @@ void WebLayerImpl::resumeAnimations(double monotonic_time) {
 
 bool WebLayerImpl::hasActiveAnimation() { return layer_->HasActiveAnimation(); }
 
-void WebLayerImpl::transferAnimationsTo(WebLayer* other) {
-  DCHECK(other);
-  layer_->TransferAnimationsTo(static_cast<WebLayerImpl*>(other)->layer_.get());
-}
-
 void WebLayerImpl::setForceRenderSurface(bool force_render_surface) {
   layer_->SetForceRenderSurface(force_render_surface);
 }
