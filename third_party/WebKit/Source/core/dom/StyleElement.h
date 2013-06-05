@@ -44,7 +44,7 @@ protected:
     bool sheetLoaded(Document*);
     void startLoadingDynamicSheet(Document*);
 
-    void insertedIntoDocument(Document*, Element*);
+    void processStyleSheet(Document*, Element*);
     void removedFromDocument(Document*, Element*);
     void clearDocumentData(Document*, Element*);
     void childrenChanged(Element*);

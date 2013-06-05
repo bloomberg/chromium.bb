@@ -61,7 +61,7 @@ StyleElement::~StyleElement()
         clearSheet();
 }
 
-void StyleElement::insertedIntoDocument(Document* document, Element* element)
+void StyleElement::processStyleSheet(Document* document, Element* element)
 {
     ASSERT(document);
     ASSERT(element);

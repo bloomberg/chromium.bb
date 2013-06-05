@@ -136,8 +136,13 @@ Node::InsertionNotificationRequest SVGStyleElement::insertedInto(ContainerNode* 
 {
     SVGElement::insertedInto(rootParent);
     if (rootParent->inDocument())
-        StyleElement::insertedIntoDocument(document(), this);
+        return InsertionShouldCallDidNotifySubtreeInsertions;
     return InsertionDone;
+}
+
+void SVGStyleElement::didNotifySubtreeInsertions(ContainerNode* insertionPoint)
+{
+    StyleElement::processStyleSheet(document(), this);
 }
 
 void SVGStyleElement::removedFrom(ContainerNode* rootParent)
