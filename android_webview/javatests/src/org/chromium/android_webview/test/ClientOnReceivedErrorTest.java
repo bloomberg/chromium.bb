@@ -134,6 +134,6 @@ public class ClientOnReceivedErrorTest extends AwTestBase {
         assertEquals(ErrorCodeConversionHelper.ERROR_UNKNOWN,
                      onReceivedErrorHelper.getErrorCode());
         assertEquals(url, onReceivedErrorHelper.getFailingUrl());
-        assertNotNull(onReceivedErrorHelper.getDescription());
+        assertFalse(onReceivedErrorHelper.getDescription().isEmpty());
     }
 }

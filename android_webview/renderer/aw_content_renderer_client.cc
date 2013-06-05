@@ -69,18 +69,20 @@ void AwContentRendererClient::GetNavigationErrorStrings(
     std::string contents;
     if (err.empty()) {
       contents = AwResource::GetNoDomainPageContent();
-      if (error_description)
-        *error_description = ASCIIToUTF16(net::ErrorToString(error.reason));
     } else {
       contents = AwResource::GetLoadErrorPageContent();
       ReplaceSubstringsAfterOffset(&contents, 0, "%e", err);
-      if (error_description)
-        *error_description = error.localizedDescription;
     }
 
     ReplaceSubstringsAfterOffset(&contents, 0, "%s",
                                  error_url.possibly_invalid_spec());
     *error_html = contents;
+  }
+  if (error_description) {
+    if (error.localizedDescription.isEmpty())
+      *error_description = ASCIIToUTF16(net::ErrorToString(error.reason));
+    else
+      *error_description = error.localizedDescription;
   }
 }
 
