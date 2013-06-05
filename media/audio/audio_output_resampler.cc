@@ -36,7 +36,6 @@ class OnMoreDataConverter
                            AudioBus* dest,
                            AudioBuffersState buffers_state) OVERRIDE;
   virtual void OnError(AudioOutputStream* stream) OVERRIDE;
-  virtual void WaitTillDataReady() OVERRIDE;
 
   // Sets |source_callback_|.  If this is not a new object, then Stop() must be
   // called before Start().
@@ -391,12 +390,6 @@ void OnMoreDataConverter::OnError(AudioOutputStream* stream) {
   base::AutoLock auto_lock(source_lock_);
   if (source_callback_)
     source_callback_->OnError(stream);
-}
-
-void OnMoreDataConverter::WaitTillDataReady() {
-  base::AutoLock auto_lock(source_lock_);
-  if (source_callback_)
-    source_callback_->WaitTillDataReady();
 }
 
 }  // namespace media

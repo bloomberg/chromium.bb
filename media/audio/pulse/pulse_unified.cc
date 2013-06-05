@@ -157,7 +157,6 @@ void PulseAudioUnifiedStream::WriteData(size_t requested_bytes) {
     uint32 hardware_delay = pulse::GetHardwareLatencyInBytes(
         output_stream_, params_.sample_rate(),
         params_.GetBytesPerFrame());
-    source_callback_->WaitTillDataReady();
     fifo_->Read(input_data_buffer_.get(), requested_bytes);
     input_bus_->FromInterleaved(
         input_data_buffer_.get(), params_.frames_per_buffer(), 2);

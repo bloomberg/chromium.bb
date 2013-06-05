@@ -744,10 +744,8 @@ int AlsaPcmOutputStream::RunDataCallback(AudioBus* audio_bus,
                                          AudioBuffersState buffers_state) {
   TRACE_EVENT0("audio", "AlsaPcmOutputStream::RunDataCallback");
 
-  if (source_callback_) {
-    source_callback_->WaitTillDataReady();
+  if (source_callback_)
     return source_callback_->OnMoreData(audio_bus, buffers_state);
-  }
 
   return 0;
 }

@@ -33,9 +33,10 @@ class AudioSyncReader : public media::AudioOutputController::SyncReader {
 
   // media::AudioOutputController::SyncReader implementations.
   virtual void UpdatePendingBytes(uint32 bytes) OVERRIDE;
-  virtual int Read(media::AudioBus* source, media::AudioBus* dest) OVERRIDE;
+  virtual int Read(bool block,
+                   const media::AudioBus* source,
+                   media::AudioBus* dest) OVERRIDE;
   virtual void Close() OVERRIDE;
-  virtual bool DataReady() OVERRIDE;
 
   bool Init();
   bool PrepareForeignSocketHandle(base::ProcessHandle process_handle,
@@ -46,6 +47,12 @@ class AudioSyncReader : public media::AudioOutputController::SyncReader {
 #endif
 
  private:
+  // Indicates whether the renderer has data available for reading.
+  bool DataReady();
+
+  // Blocks until DataReady() is true or a timeout expires.
+  void WaitTillDataReady();
+
   base::SharedMemory* shared_memory_;
 
   // Number of input channels for synchronized I/O.

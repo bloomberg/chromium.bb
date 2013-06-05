@@ -52,8 +52,7 @@ AudioOutputController::AudioOutputController(AudioManager* audio_manager,
       num_allowed_io_(0),
       sync_reader_(sync_reader),
       message_loop_(audio_manager->GetMessageLoop()),
-      number_polling_attempts_left_(0),
-      weak_this_(this) {
+      number_polling_attempts_left_(0) {
   DCHECK(audio_manager);
   DCHECK(handler_);
   DCHECK(sync_reader_);
@@ -149,52 +148,16 @@ void AudioOutputController::DoCreate(bool is_for_device_change) {
 
 void AudioOutputController::DoPlay() {
   DCHECK(message_loop_->BelongsToCurrentThread());
+  SCOPED_UMA_HISTOGRAM_TIMER("Media.AudioOutputController.PlayTime");
 
   // We can start from created or paused state.
   if (state_ != kCreated && state_ != kPaused)
     return;
 
-  state_ = kStarting;
-
   // Ask for first packet.
   sync_reader_->UpdatePendingBytes(0);
 
-  // Cannot start stream immediately, should give renderer some time
-  // to deliver data.
-  // TODO(vrk): The polling here and in WaitTillDataReady() is pretty clunky.
-  // Refine the API such that polling is no longer needed. (crbug.com/112196)
-  number_polling_attempts_left_ = kPollNumAttempts;
-  DCHECK(!weak_this_.HasWeakPtrs());
-  message_loop_->PostDelayedTask(
-      FROM_HERE,
-      base::Bind(&AudioOutputController::PollAndStartIfDataReady,
-      weak_this_.GetWeakPtr()),
-      TimeDelta::FromMilliseconds(kPollPauseInMilliseconds));
-}
-
-void AudioOutputController::PollAndStartIfDataReady() {
-  DCHECK(message_loop_->BelongsToCurrentThread());
-  SCOPED_UMA_HISTOGRAM_TIMER("Media.AudioOutputController.PlayTime");
-
-  DCHECK_EQ(kStarting, state_);
-
-  // If we are ready to start the stream, start it.
-  if (--number_polling_attempts_left_ == 0 ||
-      sync_reader_->DataReady()) {
-    StartStream();
-  } else {
-    message_loop_->PostDelayedTask(
-        FROM_HERE,
-        base::Bind(&AudioOutputController::PollAndStartIfDataReady,
-        weak_this_.GetWeakPtr()),
-        TimeDelta::FromMilliseconds(kPollPauseInMilliseconds));
-  }
-}
-
-void AudioOutputController::StartStream() {
-  DCHECK(message_loop_->BelongsToCurrentThread());
   state_ = kPlaying;
-
   silence_detector_.reset(new AudioSilenceDetector(
       params_.sample_rate(),
       TimeDelta::FromMilliseconds(kQuestionableSilencePeriodMillis),
@@ -214,11 +177,7 @@ void AudioOutputController::StartStream() {
 void AudioOutputController::StopStream() {
   DCHECK(message_loop_->BelongsToCurrentThread());
 
-  if (state_ == kStarting) {
-    // Cancel in-progress polling start.
-    weak_this_.InvalidateWeakPtrs();
-    state_ = kPaused;
-  } else if (state_ == kPlaying) {
+  if (state_ == kPlaying) {
     stream_->Stop();
     DisallowEntryToOnMoreIOData();
     silence_detector_->Stop(true);
@@ -262,7 +221,6 @@ void AudioOutputController::DoSetVolume(double volume) {
 
   switch (state_) {
     case kCreated:
-    case kStarting:
     case kPlaying:
     case kPaused:
       stream_->SetVolume(volume_);
@@ -291,15 +249,23 @@ int AudioOutputController::OnMoreIOData(AudioBus* source,
 
   // The OS level audio APIs on Linux and Windows all have problems requesting
   // data on a fixed interval.  Sometimes they will issue calls back to back
-  // which can cause glitching, so wait until the renderer is ready for Read().
+  // which can cause glitching, so wait until the renderer is ready.
+  //
+  // We also need to wait when diverting since the virtual stream will call this
+  // multiple times without waiting.
+  //
+  // NEVER wait on OSX unless a virtual stream is connected, otherwise we can
+  // end up hanging the entire OS.
   //
   // See many bugs for context behind this decision: http://crbug.com/170498,
   // http://crbug.com/171651, http://crbug.com/174985, and more.
 #if defined(OS_WIN) || defined(OS_LINUX)
-  WaitTillDataReady();
+    const bool kShouldBlock = true;
+#else
+    const bool kShouldBlock = diverting_to_stream_ != NULL;
 #endif
 
-  const int frames = sync_reader_->Read(source, dest);
+  const int frames = sync_reader_->Read(kShouldBlock, source, dest);
   DCHECK_LE(0, frames);
   sync_reader_->UpdatePendingBytes(
       buffers_state.total_bytes() + frames * params_.GetBytesPerFrame());
@@ -308,34 +274,6 @@ int AudioOutputController::OnMoreIOData(AudioBus* source,
 
   AllowEntryToOnMoreIOData();
   return frames;
-}
-
-void AudioOutputController::WaitTillDataReady() {
-  // Most of the time the data is ready already.
-  if (sync_reader_->DataReady())
-    return;
-
-  base::TimeTicks start = base::TimeTicks::Now();
-  const base::TimeDelta kMaxWait = base::TimeDelta::FromMilliseconds(20);
-#if defined(OS_WIN)
-  // Sleep(0) on windows lets the other threads run.
-  const base::TimeDelta kSleep = base::TimeDelta::FromMilliseconds(0);
-#else
-  // We want to sleep for a bit here, as otherwise a backgrounded renderer won't
-  // get enough cpu to send the data and the high priority thread in the browser
-  // will use up a core causing even more skips.
-  const base::TimeDelta kSleep = base::TimeDelta::FromMilliseconds(2);
-#endif
-  base::TimeDelta time_since_start;
-  do {
-    base::PlatformThread::Sleep(kSleep);
-    time_since_start = base::TimeTicks::Now() - start;
-  } while (!sync_reader_->DataReady() && (time_since_start < kMaxWait));
-  UMA_HISTOGRAM_CUSTOM_TIMES("Media.AudioOutputControllerDataNotReady",
-                             time_since_start,
-                             base::TimeDelta::FromMilliseconds(1),
-                             base::TimeDelta::FromMilliseconds(1000),
-                             50);
 }
 
 void AudioOutputController::OnError(AudioOutputStream* stream) {
@@ -381,7 +319,6 @@ void AudioOutputController::OnDeviceChange() {
 
   // Get us back to the original state or an equivalent state.
   switch (original_state) {
-    case kStarting:
     case kPlaying:
       DoPlay();
       return;

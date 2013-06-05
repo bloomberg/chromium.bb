@@ -68,10 +68,14 @@ void AudioSyncReader::UpdatePendingBytes(uint32 bytes) {
   }
 }
 
-int AudioSyncReader::Read(AudioBus* source, AudioBus* dest) {
+int AudioSyncReader::Read(bool block, const AudioBus* source, AudioBus* dest) {
   ++renderer_callback_count_;
-  if (!DataReady())
+  if (!DataReady()) {
     ++renderer_missed_callback_count_;
+
+    if (block)
+      WaitTillDataReady();
+  }
 
   // Copy optional synchronized live audio input for consumption by renderer
   // process.
@@ -161,5 +165,29 @@ bool AudioSyncReader::PrepareForeignSocketHandle(
   return false;
 }
 #endif
+
+void AudioSyncReader::WaitTillDataReady() {
+  base::TimeTicks start = base::TimeTicks::Now();
+  const base::TimeDelta kMaxWait = base::TimeDelta::FromMilliseconds(20);
+#if defined(OS_WIN)
+  // Sleep(0) on Windows lets the other threads run.
+  const base::TimeDelta kSleep = base::TimeDelta::FromMilliseconds(0);
+#else
+  // We want to sleep for a bit here, as otherwise a backgrounded renderer won't
+  // get enough cpu to send the data and the high priority thread in the browser
+  // will use up a core causing even more skips.
+  const base::TimeDelta kSleep = base::TimeDelta::FromMilliseconds(2);
+#endif
+  base::TimeDelta time_since_start;
+  do {
+    base::PlatformThread::Sleep(kSleep);
+    time_since_start = base::TimeTicks::Now() - start;
+  } while (!DataReady() && time_since_start < kMaxWait);
+  UMA_HISTOGRAM_CUSTOM_TIMES("Media.AudioOutputControllerDataNotReady",
+                             time_since_start,
+                             base::TimeDelta::FromMilliseconds(1),
+                             base::TimeDelta::FromMilliseconds(1000),
+                             50);
+}
 
 }  // namespace content

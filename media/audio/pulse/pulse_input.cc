@@ -278,8 +278,7 @@ void PulseAudioInputStream::ReadData() {
     if (buffer_->forward_bytes() < packet_size)
       break;
 
-    // TODO(xians): improve the code by implementing a WaitTillDataReady on the
-    // input side.
+    // TODO(xians): Remove once PPAPI is using circular buffers.
     DVLOG(1) << "OnData is being called consecutively, sleep 5ms to "
              << "wait until render consumes the data";
     base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(5));

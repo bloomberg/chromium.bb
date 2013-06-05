@@ -73,10 +73,6 @@ class MEDIA_EXPORT AudioOutputStream {
     // playback will not continue.
     virtual void OnError(AudioOutputStream* stream) = 0;
 
-    // Will block until the client has written its audio data or 1.5 seconds
-    // have elapsed.
-    virtual void WaitTillDataReady() {}
-
    protected:
     virtual ~AudioSourceCallback() {}
   };

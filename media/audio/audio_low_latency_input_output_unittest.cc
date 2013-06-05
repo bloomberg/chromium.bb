@@ -258,7 +258,6 @@ class FullDuplexAudioSinkSource
   }
 
   virtual void OnError(AudioOutputStream* stream) OVERRIDE {}
-  virtual void WaitTillDataReady() OVERRIDE {}
 
  protected:
   // Converts from bytes to milliseconds taking the sample rate and size

@@ -129,7 +129,6 @@ void PulseAudioOutputStream::FulfillWriteRequest(size_t requested_bytes) {
       uint32 hardware_delay = pulse::GetHardwareLatencyInBytes(
           pa_stream_, params_.sample_rate(),
           params_.GetBytesPerFrame());
-      source_callback_->WaitTillDataReady();
       frames_filled = source_callback_->OnMoreData(
           audio_bus_.get(), AudioBuffersState(0, hardware_delay));
     }
