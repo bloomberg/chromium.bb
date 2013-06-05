@@ -232,6 +232,7 @@ public:
     virtual void restoreScrollAndScaleState();
     virtual void resetScrollAndScaleState();
     virtual void setIgnoreViewportTagScaleLimits(bool);
+    virtual WebSize contentsPreferredMinimumSize();
 
     virtual float deviceScaleFactor() const;
     virtual void setDeviceScaleFactor(float);

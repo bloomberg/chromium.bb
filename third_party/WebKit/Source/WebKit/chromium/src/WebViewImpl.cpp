@@ -3030,6 +3030,18 @@ IntSize WebViewImpl::contentsSize() const
     return root->documentRect().size();
 }
 
+WebSize WebViewImpl::contentsPreferredMinimumSize()
+{
+    Document* document = m_page->mainFrame()->document();
+    if (!document || !document->renderView() || !document->documentElement())
+        return WebSize();
+
+    layout();
+    IntSize preferredMinimumSize(document->renderView()->minPreferredLogicalWidth(), document->documentElement()->scrollHeight());
+    preferredMinimumSize.scale(zoomLevelToZoomFactor(zoomLevel()));
+    return preferredMinimumSize;
+}
+
 float WebViewImpl::minimumPageScaleFactor() const
 {
     return m_pageScaleConstraintsSet.finalConstraints().minimumScale;

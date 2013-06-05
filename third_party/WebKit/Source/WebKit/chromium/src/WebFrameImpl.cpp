@@ -629,6 +629,7 @@ WebSize WebFrameImpl::contentsSize() const
 
 int WebFrameImpl::contentsPreferredWidth() const
 {
+    viewImpl()->layout();
     if (frame()->document() && frame()->document()->renderView()) {
         FontCachePurgePreventer fontCachePurgePreventer;
         return frame()->document()->renderView()->minPreferredLogicalWidth();
@@ -638,6 +639,7 @@ int WebFrameImpl::contentsPreferredWidth() const
 
 int WebFrameImpl::documentElementScrollHeight() const
 {
+    viewImpl()->layout();
     if (frame()->document() && frame()->document()->documentElement())
         return frame()->document()->documentElement()->scrollHeight();
     return 0;

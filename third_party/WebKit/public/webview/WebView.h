@@ -266,6 +266,11 @@ public:
     // pages even if the web page tries to block scaling.
     virtual void setIgnoreViewportTagScaleLimits(bool) = 0;
 
+    // Returns the "preferred" contents size, defined as the preferred minimum width of the main document's contents
+    // and the minimum height required to display the main document without scrollbars.
+    // The returned size has the page zoom factor applied.
+    virtual WebSize contentsPreferredMinimumSize() = 0;
+
     // FIXME(aelias): Delete this after Chromium switches to the other name.
     void setIgnoreViewportTagMaximumScale(bool ignore) { setIgnoreViewportTagScaleLimits(ignore); }
 
