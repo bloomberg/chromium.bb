@@ -764,6 +764,7 @@ void WebViewHost::shutdown()
 void WebViewHost::setWebWidget(WebKit::WebWidget* widget)
 {
     m_webWidget = widget;
+    m_proxy->setWidget(widget);
     webView()->setSpellCheckClient(proxy()->spellCheckClient());
     webView()->setPrerendererClient(this);
 }

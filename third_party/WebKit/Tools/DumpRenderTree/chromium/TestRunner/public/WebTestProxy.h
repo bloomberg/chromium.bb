@@ -78,6 +78,7 @@ class WebURL;
 class WebURLResponse;
 class WebUserMediaClient;
 class WebView;
+class WebWidget;
 struct WebConsoleMessage;
 struct WebContextMenuData;
 struct WebPluginParams;
@@ -104,6 +105,7 @@ class WEBTESTRUNNER_EXPORT WebTestProxyBase {
 public:
     void setInterfaces(WebTestInterfaces*);
     void setDelegate(WebTestDelegate*);
+    void setWidget(WebKit::WebWidget*);
 
     void reset();
 
@@ -219,6 +221,7 @@ private:
 
     TestInterfaces* m_testInterfaces;
     WebTestDelegate* m_delegate;
+    WebKit::WebWidget* m_webWidget;
 
     std::auto_ptr<SpellCheckClient> m_spellcheck;
     std::auto_ptr<WebUserMediaClientMock> m_userMediaClient;

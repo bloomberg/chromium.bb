@@ -439,6 +439,7 @@ string dumpAllBackForwardLists(TestInterfaces* interfaces, WebTestDelegate* dele
 WebTestProxyBase::WebTestProxyBase()
     : m_testInterfaces(0)
     , m_delegate(0)
+    , m_webWidget(0)
     , m_spellcheck(new SpellCheckClient)
     , m_chooserCount(0)
 {
@@ -466,6 +467,11 @@ void WebTestProxyBase::setDelegate(WebTestDelegate* delegate)
 #endif
     if (m_speechRecognizer.get())
         m_speechRecognizer->setDelegate(delegate);
+}
+
+void WebTestProxyBase::setWidget(WebWidget* widget)
+{
+    m_webWidget = widget;
 }
 
 void WebTestProxyBase::reset()
