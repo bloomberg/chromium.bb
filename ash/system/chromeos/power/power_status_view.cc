@@ -32,13 +32,6 @@ const int kLabelMinWidth = 120;
 const int kPaddingBetweenBatteryStatusAndIcon = 3;
 // Minimum battery percentage rendered in UI.
 const int kMinBatteryPercent = 1;
-
-base::string16 GetChargingUnreliableString() {
-  // String is intentionally hard-coded in English for backport to M28 only.
-  // See crbug.com/246336 for details.
-  return UTF8ToUTF16("Low-power charger");
-}
-
 }  // namespace
 
 PowerStatusView::PowerStatusView(ViewType view_type,
@@ -130,8 +123,9 @@ void PowerStatusView::UpdateTextForDefaultView() {
     battery_time_status =
         rb.GetLocalizedString(IDS_ASH_STATUS_TRAY_BATTERY_FULL);
   } else if (supply_status_.battery_percentage < 0.0f) {
-    battery_time_status = is_charging_unreliable ?
-        GetChargingUnreliableString() :
+    battery_time_status =
+        is_charging_unreliable ?
+        rb.GetLocalizedString(IDS_ASH_STATUS_TRAY_BATTERY_CHARGING_UNRELIABLE) :
         rb.GetLocalizedString(IDS_ASH_STATUS_TRAY_BATTERY_CALCULATING);
   } else {
     battery_percentage = l10n_util::GetStringFUTF16(
@@ -139,7 +133,8 @@ void PowerStatusView::UpdateTextForDefaultView() {
         base::IntToString16(TrayPower::GetRoundedBatteryPercentage(
             supply_status_.battery_percentage)));
     if (is_charging_unreliable) {
-      battery_time_status = GetChargingUnreliableString();
+      battery_time_status = rb.GetLocalizedString(
+          IDS_ASH_STATUS_TRAY_BATTERY_CHARGING_UNRELIABLE);
     } else {
       if (supply_status_.is_calculating_battery_time) {
         battery_time_status =
@@ -212,7 +207,9 @@ void PowerStatusView::UpdateTextForNotificationView() {
   }
 
   if (is_charging_unreliable) {
-    time_label_->SetText(GetChargingUnreliableString());
+    time_label_->SetText(
+        ui::ResourceBundle::GetSharedInstance().GetLocalizedString(
+            IDS_ASH_STATUS_TRAY_BATTERY_CHARGING_UNRELIABLE));
   } else if (supply_status_.is_calculating_battery_time) {
     time_label_->SetText(
         ui::ResourceBundle::GetSharedInstance().GetLocalizedString(
