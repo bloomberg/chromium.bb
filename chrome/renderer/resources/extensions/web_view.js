@@ -37,7 +37,9 @@ var WEB_VIEW_EVENTS = {
   'loadredirect' : ['oldUrl', 'newUrl', 'isTopLevel'],
   'loadstart' : ['url', 'isTopLevel'],
   'loadstop' : [],
+  'responsive' : ['processId'],
   'sizechanged': ['oldHeight', 'oldWidth', 'newHeight', 'newWidth'],
+  'unresponsive' : ['processId']
 };
 
 window.addEventListener('DOMContentLoaded', function() {
