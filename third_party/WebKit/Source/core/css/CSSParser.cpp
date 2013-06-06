@@ -10309,23 +10309,13 @@ restartAfterComment:
             }
 
             m_token = FUNCTION;
-            bool shouldSkipParenthesis = true;
-            if (!hasEscape) {
-                bool detected = detectFunctionTypeToken<SrcCharacterType>(result - tokenStart<SrcCharacterType>());
-                if (!detected && m_parsingMode == MediaQueryMode) {
-                    // ... and(max-width: 480px) ... looks like a function, but in fact it is not,
-                    // so run more detection code in the MediaQueryMode.
-                    detectMediaQueryToken<SrcCharacterType>(result - tokenStart<SrcCharacterType>());
-                    if (m_token == MEDIA_AND)
-                        shouldSkipParenthesis = false;
-                }
-            }
+            if (!hasEscape)
+                detectFunctionTypeToken<SrcCharacterType>(result - tokenStart<SrcCharacterType>());
 
-            if (LIKELY(shouldSkipParenthesis)) {
-                ++currentCharacter<SrcCharacterType>();
-                ++result;
-                ++yylval->string.m_length;
-            }
+            // Skip parenthesis
+            ++currentCharacter<SrcCharacterType>();
+            ++result;
+            ++yylval->string.m_length;
 
             if (token() == URI) {
                 m_token = FUNCTION;

@@ -15,7 +15,7 @@
             [ "@media not and (color), #screen, screen {}", "not all, not all, screen", "Media query error #3" ],
             [ "@media all; @media tv {}", "tv", "Media query error #4" ],
             [ "@media ({ block, }), tv {}", "not all, tv", "Media query error #5" ],
-            [ "@media screen and(color), tv {}", "screen and (color), tv", "Media query error #6" ],
+            [ "@media screen and(color), tv {}", "not all, tv", "Media query error #6" ],
             [ "@media all and (color) and (f() {}), tv {}", "not all, tv", "Media query error #7" ]
         ];
         var cdataNode = document.getElementById("sheet").firstChild;
