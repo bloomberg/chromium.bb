@@ -1685,6 +1685,7 @@ void RenderWidgetHostImpl::OnCompositorSurfaceBuffersSwapped(
   gpu_params.route_id = params.route_id;
   gpu_params.size = params.size;
   gpu_params.scale_factor = params.scale_factor;
+  gpu_params.latency_info = params.latency_info;
   view_->AcceleratedSurfaceBuffersSwapped(gpu_params,
                                           params.gpu_process_host_id);
 }

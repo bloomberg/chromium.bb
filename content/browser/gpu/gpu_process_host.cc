@@ -940,6 +940,7 @@ void GpuProcessHost::OnAcceleratedSurfaceBuffersSwapped(
   view_params.size = params.size;
   view_params.scale_factor = params.scale_factor;
   view_params.gpu_process_host_id = host_id_;
+  view_params.latency_info = params.latency_info;
   helper->DidReceiveBackingStoreMsg(ViewHostMsg_CompositorSurfaceBuffersSwapped(
       render_widget_id,
       view_params));

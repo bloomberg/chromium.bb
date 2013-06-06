@@ -1043,9 +1043,11 @@ void RenderWidgetHostViewMac::PluginImeCompositionCompleted(
   }
 }
 
-bool RenderWidgetHostViewMac::CompositorSwapBuffers(uint64 surface_handle,
-                                                    const gfx::Size& size,
-                                                    float scale_factor) {
+bool RenderWidgetHostViewMac::CompositorSwapBuffers(
+    uint64 surface_handle,
+    const gfx::Size& size,
+    float scale_factor,
+    const ui::LatencyInfo& latency_info) {
   if (is_hidden_)
     return true;
 
@@ -1060,7 +1062,7 @@ bool RenderWidgetHostViewMac::CompositorSwapBuffers(uint64 surface_handle,
       if (frame_subscriber_->ShouldCaptureFrame(present_time,
                                                 &frame, &callback)) {
         compositing_iosurface_->SetIOSurface(
-            surface_handle, size, scale_factor);
+            surface_handle, size, scale_factor, latency_info);
         compositing_iosurface_->CopyToVideoFrame(
             gfx::Rect(size), frame,
             base::Bind(callback, present_time));
@@ -1102,7 +1104,8 @@ bool RenderWidgetHostViewMac::CompositorSwapBuffers(uint64 surface_handle,
   if (!compositing_iosurface_)
     return true;
 
-  compositing_iosurface_->SetIOSurface(surface_handle, size, scale_factor);
+  compositing_iosurface_->SetIOSurface(
+      surface_handle, size, scale_factor, latency_info);
 
   GotAcceleratedFrame();
 
@@ -1314,7 +1317,8 @@ void RenderWidgetHostViewMac::AcceleratedSurfaceBuffersSwapped(
 
   if (CompositorSwapBuffers(params.surface_handle,
                             params.size,
-                            params.scale_factor))
+                            params.scale_factor,
+                            params.latency_info))
     AckPendingSwapBuffers();
 }
 
@@ -1330,7 +1334,8 @@ void RenderWidgetHostViewMac::AcceleratedSurfacePostSubBuffer(
 
   if (CompositorSwapBuffers(params.surface_handle,
                             params.surface_size,
-                            params.surface_scale_factor))
+                            params.surface_scale_factor,
+                            params.latency_info))
     AckPendingSwapBuffers();
 }
 

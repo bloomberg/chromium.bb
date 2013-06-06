@@ -18,6 +18,7 @@
 #include "content/browser/renderer_host/compositing_iosurface_context_mac.h"
 #include "content/browser/renderer_host/compositing_iosurface_shader_programs_mac.h"
 #include "content/browser/renderer_host/compositing_iosurface_transformer_mac.h"
+#include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/common/content_constants_internal.h"
 #include "content/port/browser/render_widget_host_view_frame_subscriber.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
@@ -358,15 +359,18 @@ CompositingIOSurfaceMac::~CompositingIOSurfaceMac() {
   context_ = nil;
 }
 
-void CompositingIOSurfaceMac::SetIOSurface(uint64 io_surface_handle,
-                                           const gfx::Size& size,
-                                           float scale_factor) {
+void CompositingIOSurfaceMac::SetIOSurface(
+    uint64 io_surface_handle,
+    const gfx::Size& size,
+    float scale_factor,
+    const ui::LatencyInfo& latency_info) {
   pixel_io_surface_size_ = size;
   dip_io_surface_size_ = gfx::ToFlooredSize(
       gfx::ScaleSize(pixel_io_surface_size_, 1.0 / scale_factor));
   CGLSetCurrentContext(context_->cgl_context());
   MapIOSurfaceToTexture(io_surface_handle);
   CGLSetCurrentContext(0);
+  latency_info_.MergeWith(latency_info);
 }
 
 int CompositingIOSurfaceMac::GetRendererID() {
@@ -501,6 +505,10 @@ void CompositingIOSurfaceMac::DrawIOSurface(
   }
 
   CGLFlushDrawable(context_->cgl_context());
+
+  latency_info_.swap_timestamp = base::TimeTicks::HighResNow();
+  RenderWidgetHostImpl::CompositorFrameDrawn(latency_info_);
+  latency_info_.Clear();
 
   // For latency_tests.cc:
   UNSHIPPED_TRACE_EVENT_INSTANT0("test_gpu", "CompositorSwapBuffersComplete",

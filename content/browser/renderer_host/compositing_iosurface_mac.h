@@ -19,6 +19,7 @@
 #include "base/time.h"
 #include "base/timer.h"
 #include "media/base/video_frame.h"
+#include "ui/base/latency_info.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/rect_conversions.h"
@@ -60,7 +61,8 @@ class CompositingIOSurfaceMac {
   // Set IOSurface that will be drawn on the next NSView drawRect.
   void SetIOSurface(uint64 io_surface_handle,
                     const gfx::Size& size,
-                    float scale_factor);
+                    float scale_factor,
+                    const ui::LatencyInfo& latency_info);
 
   // Get the CGL renderer ID currently associated with this context.
   int GetRendererID();
@@ -354,6 +356,8 @@ class CompositingIOSurfaceMac {
   bool initialized_is_intel_;
   bool is_intel_;
   GLint screen_;
+
+  ui::LatencyInfo latency_info_;
 };
 
 }  // namespace content
