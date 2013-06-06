@@ -579,7 +579,8 @@ class VisitedLinkRenderProcessHostFactory
   VisitedLinkRenderProcessHostFactory()
       : content::RenderProcessHostFactory() {}
   virtual content::RenderProcessHost* CreateRenderProcessHost(
-      content::BrowserContext* browser_context) const OVERRIDE {
+      content::BrowserContext* browser_context,
+      content::SiteInstance* site_instance) const OVERRIDE {
     return new VisitRelayingRenderProcessHost(browser_context);
   }
 

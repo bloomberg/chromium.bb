@@ -40,7 +40,8 @@ class TextInputClientMacTest : public testing::Test {
         process_factory_(),
         delegate_(),
         widget_(&delegate_,
-                process_factory_.CreateRenderProcessHost(&browser_context_),
+                process_factory_.CreateRenderProcessHost(
+                    &browser_context_, NULL),
                 MSG_ROUTING_NONE),
         thread_("TextInputClientMacTestThread") {}
 

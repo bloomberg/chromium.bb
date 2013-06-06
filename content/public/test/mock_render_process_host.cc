@@ -253,7 +253,8 @@ MockRenderProcessHostFactory::~MockRenderProcessHostFactory() {
 }
 
 RenderProcessHost* MockRenderProcessHostFactory::CreateRenderProcessHost(
-    BrowserContext* browser_context) const {
+    BrowserContext* browser_context,
+    SiteInstance* site_instance) const {
   MockRenderProcessHost* host = new MockRenderProcessHost(browser_context);
   if (host) {
     processes_.push_back(host);

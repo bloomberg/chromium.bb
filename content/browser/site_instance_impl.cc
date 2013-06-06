@@ -114,7 +114,7 @@ RenderProcessHost* SiteInstanceImpl::GetProcess() {
     if (!process_) {
       if (g_render_process_host_factory_) {
         process_ = g_render_process_host_factory_->CreateRenderProcessHost(
-            browser_context);
+            browser_context, this);
       } else {
         StoragePartitionImpl* partition =
             static_cast<StoragePartitionImpl*>(

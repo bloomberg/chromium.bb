@@ -10,7 +10,9 @@
 
 namespace content {
 class BrowserContext;
+class ContentBrowserClient;
 class RenderProcessHost;
+class SiteInstance;
 
 // Factory object for RenderProcessHosts. Using this factory allows tests to
 // swap out a different one to use a TestRenderProcessHost.
@@ -18,10 +20,10 @@ class RenderProcessHostFactory {
  public:
   virtual ~RenderProcessHostFactory() {}
   virtual RenderProcessHost* CreateRenderProcessHost(
-      BrowserContext* browser_context) const = 0;
+      BrowserContext* browser_context,
+      SiteInstance* site_instance) const = 0;
 };
 
 }  // namespace content
 
 #endif  // CONTENT_PUBLIC_BROWSER_RENDER_PROCESS_HOST_FACTORY_H_
-

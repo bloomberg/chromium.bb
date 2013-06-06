@@ -111,7 +111,8 @@ class MockRenderProcessHostFactory : public RenderProcessHostFactory {
   virtual ~MockRenderProcessHostFactory();
 
   virtual RenderProcessHost* CreateRenderProcessHost(
-      BrowserContext* browser_context) const OVERRIDE;
+      BrowserContext* browser_context,
+      SiteInstance* site_instance) const OVERRIDE;
 
   // Removes the given MockRenderProcessHost from the MockRenderProcessHost list
   // without deleting it. When a test deletes a MockRenderProcessHost, we need
