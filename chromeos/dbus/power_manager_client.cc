@@ -216,7 +216,7 @@ class PowerManagerClientImpl : public PowerManagerClient {
                    weak_ptr_factory_.GetWeakPtr(), callback));
   }
 
-  virtual void RequestStatusUpdate(UpdateRequestType update_type) OVERRIDE {
+  virtual void RequestStatusUpdate() OVERRIDE {
     dbus::MethodCall method_call(
         power_manager::kPowerManagerInterface,
         power_manager::kGetPowerSupplyPropertiesMethod);
@@ -378,9 +378,16 @@ class PowerManagerClientImpl : public PowerManagerClient {
                       PeripheralBatteryStatusReceived(path, name, level));
   }
 
-  void PowerSupplyPollReceived(dbus::Signal* unused_signal) {
+  void PowerSupplyPollReceived(dbus::Signal* signal) {
     VLOG(1) << "Received power supply poll signal.";
-    RequestStatusUpdate(UPDATE_POLL);
+    dbus::MessageReader reader(signal);
+    power_manager::PowerSupplyProperties protobuf;
+    if (reader.PopArrayOfBytesAsProto(&protobuf)) {
+      HandlePowerSupplyProperties(protobuf);
+    } else {
+      LOG(ERROR) << "Unable to decode "
+                 << power_manager::kPowerSupplyPollSignal << "signal";
+    }
   }
 
   void OnGetPowerSupplyPropertiesMethod(dbus::Response* response) {
@@ -392,56 +399,13 @@ class PowerManagerClientImpl : public PowerManagerClient {
 
     dbus::MessageReader reader(response);
     power_manager::PowerSupplyProperties protobuf;
-    if (!reader.PopArrayOfBytesAsProto(&protobuf)) {
-      LOG(ERROR) << "Error calling "
+    if (reader.PopArrayOfBytesAsProto(&protobuf)) {
+      HandlePowerSupplyProperties(protobuf);
+    } else {
+      LOG(ERROR) << "Unable to decode "
                  << power_manager::kGetPowerSupplyPropertiesMethod
-                 << response->ToString();
-      return;
+                 << " response";
     }
-
-    // TODO(derat): Update PowerSupplyStatus to keep the ExternalPower and
-    // BatteryState information from PowerSupplyProperties intact.
-    PowerSupplyStatus status;
-    status.line_power_on = protobuf.external_power() !=
-        power_manager::PowerSupplyProperties_ExternalPower_DISCONNECTED;
-    status.battery_is_present = protobuf.battery_state() !=
-        power_manager::PowerSupplyProperties_BatteryState_NOT_PRESENT;
-    status.battery_is_full = protobuf.battery_state() ==
-        power_manager::PowerSupplyProperties_BatteryState_FULL;
-    status.battery_seconds_to_empty = protobuf.battery_time_to_empty_sec();
-    status.battery_seconds_to_full = protobuf.battery_time_to_full_sec();
-    status.battery_percentage = protobuf.battery_percent();
-    status.is_calculating_battery_time = protobuf.is_calculating_battery_time();
-
-    switch (protobuf.external_power()) {
-      case power_manager::PowerSupplyProperties_ExternalPower_AC:
-        status.battery_state = PowerSupplyStatus::CHARGING;
-        break;
-      case power_manager::PowerSupplyProperties_ExternalPower_DISCONNECTED:
-        status.battery_state = PowerSupplyStatus::DISCHARGING;
-        break;
-      case power_manager::PowerSupplyProperties_ExternalPower_USB:
-        status.battery_state = PowerSupplyStatus::CONNECTED_TO_USB;
-        break;
-      default:
-        NOTREACHED() << "Unhandled external power state "
-                     << protobuf.external_power();
-    }
-
-    // Check power status values are consistent
-    if (!status.is_calculating_battery_time) {
-      int64 battery_seconds_to_goal = status.line_power_on ?
-          status.battery_seconds_to_full : status.battery_seconds_to_empty;
-      if (battery_seconds_to_goal < 0) {
-        LOG(ERROR) << "Received power supply status with negative seconds to "
-            << (status.line_power_on ? "full" : "empty")
-            << ". Assume time is still being calculated.";
-        status.is_calculating_battery_time = true;
-      }
-    }
-
-    VLOG(1) << "Power status: " << status.ToString();
-    FOR_EACH_OBSERVER(Observer, observers_, PowerChanged(status));
   }
 
   void OnGetScreenBrightnessPercent(
@@ -663,6 +627,54 @@ class PowerManagerClientImpl : public PowerManagerClient {
         dbus::ObjectProxy::EmptyResponseCallback());
   }
 
+  // Handles a PowerSupplyProperties protocol buffer from the power manager.
+  void HandlePowerSupplyProperties(
+      const power_manager::PowerSupplyProperties& protobuf) {
+    // TODO(derat): Kill PowerSupplyStatus and just use the
+    // PowerSupplyProperties protobuf within Ash.
+    PowerSupplyStatus status;
+    status.line_power_on = protobuf.external_power() !=
+        power_manager::PowerSupplyProperties_ExternalPower_DISCONNECTED;
+    status.battery_is_present = protobuf.battery_state() !=
+        power_manager::PowerSupplyProperties_BatteryState_NOT_PRESENT;
+    status.battery_is_full = protobuf.battery_state() ==
+        power_manager::PowerSupplyProperties_BatteryState_FULL;
+    status.battery_seconds_to_empty = protobuf.battery_time_to_empty_sec();
+    status.battery_seconds_to_full = protobuf.battery_time_to_full_sec();
+    status.battery_percentage = protobuf.battery_percent();
+    status.is_calculating_battery_time = protobuf.is_calculating_battery_time();
+
+    switch (protobuf.external_power()) {
+      case power_manager::PowerSupplyProperties_ExternalPower_AC:
+        status.battery_state = PowerSupplyStatus::CHARGING;
+        break;
+      case power_manager::PowerSupplyProperties_ExternalPower_DISCONNECTED:
+        status.battery_state = PowerSupplyStatus::DISCHARGING;
+        break;
+      case power_manager::PowerSupplyProperties_ExternalPower_USB:
+        status.battery_state = PowerSupplyStatus::CONNECTED_TO_USB;
+        break;
+      default:
+        NOTREACHED() << "Unhandled external power state "
+                     << protobuf.external_power();
+    }
+
+    // Check power status values are consistent
+    if (!status.is_calculating_battery_time) {
+      int64 battery_seconds_to_goal = status.line_power_on ?
+          status.battery_seconds_to_full : status.battery_seconds_to_empty;
+      if (battery_seconds_to_goal < 0) {
+        LOG(ERROR) << "Received power supply status with negative seconds to "
+            << (status.line_power_on ? "full" : "empty")
+            << ". Assume time is still being calculated.";
+        status.is_calculating_battery_time = true;
+      }
+    }
+
+    VLOG(1) << "Power status: " << status.ToString();
+    FOR_EACH_OBSERVER(Observer, observers_, PowerChanged(status));
+  }
+
   // Origin thread (i.e. the UI thread in production).
   base::PlatformThreadId origin_thread_id_;
 
@@ -707,6 +719,10 @@ class PowerManagerClientStubImpl : public PowerManagerClient {
         brightness_(50.0),
         pause_count_(2),
         cycle_count_(0) {
+    const int kStatusUpdateMs = 1000;
+    update_timer_.Start(FROM_HERE,
+        base::TimeDelta::FromMilliseconds(kStatusUpdateMs), this,
+        &PowerManagerClientStubImpl::UpdateStatus);
   }
 
   virtual ~PowerManagerClientStubImpl() {}
@@ -755,21 +771,10 @@ class PowerManagerClientStubImpl : public PowerManagerClient {
     VLOG(1) << "Requested to increase keyboard brightness";
   }
 
-  virtual void RequestStatusUpdate(UpdateRequestType update_type) OVERRIDE {
-    if (update_type == UPDATE_INITIAL) {
-      Update();
-      return;
-    }
-    if (!timer_.IsRunning() && update_type == UPDATE_USER) {
-      Update();
-      timer_.Start(
-          FROM_HERE,
-          base::TimeDelta::FromMilliseconds(1000),
-          this,
-          &PowerManagerClientStubImpl::Update);
-    } else {
-      timer_.Stop();
-    }
+  virtual void RequestStatusUpdate() OVERRIDE {
+    base::MessageLoop::current()->PostTask(FROM_HERE,
+        base::Bind(&PowerManagerClientStubImpl::UpdateStatus,
+                   base::Unretained(this)));
   }
 
   virtual void RequestRestart() OVERRIDE {}
@@ -796,7 +801,7 @@ class PowerManagerClientStubImpl : public PowerManagerClient {
   }
 
  private:
-  void Update() {
+  void UpdateStatus() {
     if (pause_count_ > 0) {
       pause_count_--;
     } else {
@@ -821,9 +826,7 @@ class PowerManagerClientStubImpl : public PowerManagerClient {
       status_.battery_state = discharging_ ?
           PowerSupplyStatus::DISCHARGING : PowerSupplyStatus::CHARGING;
     } else {
-      // Simulating a non-standard weak power supply.
-      status_.battery_state =
-          PowerSupplyStatus::NEITHER_CHARGING_NOR_DISCHARGING;
+      status_.battery_state = PowerSupplyStatus::CONNECTED_TO_USB;
     }
 
     int64 remaining_battery_time =
@@ -855,7 +858,7 @@ class PowerManagerClientStubImpl : public PowerManagerClient {
   int pause_count_;
   int cycle_count_;
   ObserverList<Observer> observers_;
-  base::RepeatingTimer<PowerManagerClientStubImpl> timer_;
+  base::RepeatingTimer<PowerManagerClientStubImpl> update_timer_;
   PowerSupplyStatus status_;
 };
 
