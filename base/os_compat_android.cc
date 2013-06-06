@@ -4,22 +4,37 @@
 
 #include "base/os_compat_android.h"
 
+#include <asm/unistd.h>
 #include <errno.h>
 #include <math.h>
 #include <sys/stat.h>
+#include <sys/syscall.h>
 #include <time64.h>
 
 #include "base/rand_util.h"
 #include "base/stringprintf.h"
 #include "base/strings/string_piece.h"
 
+extern "C" {
 // There is no futimes() avaiable in Bionic, so we provide our own
 // implementation until it is there.
-extern "C" {
-
 int futimes(int fd, const struct timeval tv[2]) {
-  const std::string fd_path = base::StringPrintf("/proc/self/fd/%d", fd);
-  return utimes(fd_path.c_str(), tv);
+  if (tv == NULL)
+    return syscall(__NR_utimensat, fd, NULL, NULL, 0);
+
+  if (tv[0].tv_usec < 0 || tv[0].tv_usec >= 1000000 ||
+      tv[1].tv_usec < 0 || tv[1].tv_usec >= 1000000) {
+    errno = EINVAL;
+    return -1;
+  }
+
+  // Convert timeval to timespec.
+  struct timespec ts[2];
+  ts[0].tv_sec = tv[0].tv_sec;
+  ts[0].tv_nsec = tv[0].tv_usec * 1000;
+  ts[1].tv_sec = tv[1].tv_sec;
+  ts[1].tv_nsec = tv[1].tv_usec * 1000;
+  return syscall(__NR_utimensat, fd, NULL, ts, 0);
 }
 
 // Android has only timegm64() and no timegm().
