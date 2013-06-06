@@ -900,6 +900,7 @@
         'browser/importer/firefox_profile_lock_unittest.cc',
         'browser/importer/firefox_proxy_settings_unittest.cc',
         'browser/importer/ie_importer_unittest_win.cc',
+        'browser/importer/profile_writer_unittest.cc',
         'browser/importer/safari_importer_unittest.mm',
         'browser/importer/toolbar_importer_unittest.cc',
         'browser/internal_auth_unittest.cc',
