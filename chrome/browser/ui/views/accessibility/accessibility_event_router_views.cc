@@ -63,6 +63,9 @@ void AccessibilityEventRouterViews::HandleAccessibilityEvent(
       break;
     case ui::AccessibilityTypes::EVENT_TEXT_CHANGED:
     case ui::AccessibilityTypes::EVENT_SELECTION_CHANGED:
+      if (!view->GetFocusManager() ||
+          view->GetFocusManager()->GetFocusedView() != view)
+        return;
       notification_type = chrome::NOTIFICATION_ACCESSIBILITY_TEXT_CHANGED;
       break;
     case ui::AccessibilityTypes::EVENT_VALUE_CHANGED:
