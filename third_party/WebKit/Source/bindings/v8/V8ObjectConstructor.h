@@ -72,7 +72,7 @@ public:
     static v8::Local<v8::Object> newInstance(v8::Handle<v8::Function>, int, v8::Handle<v8::Value> argv[]);
     static v8::Local<v8::Object> newInstanceInDocument(v8::Handle<v8::Function>, int, v8::Handle<v8::Value> argv[], Document*);
 
-    static v8::Handle<v8::Value> isValidConstructorMode(const v8::Arguments&);
+    static void isValidConstructorMode(const v8::FunctionCallbackInfo<v8::Value>&);
 };
 
 } // namespace WebCore

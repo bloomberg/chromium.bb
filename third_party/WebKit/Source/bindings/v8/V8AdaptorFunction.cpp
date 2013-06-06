@@ -58,7 +58,7 @@ v8::Handle<v8::FunctionTemplate> V8AdaptorFunction::configureTemplate(v8::Handle
     return functionTemplate;
 }
 
-v8::Handle<v8::Value> V8AdaptorFunction::invocationCallback(const v8::Arguments& args)
+void V8AdaptorFunction::invocationCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     v8::Handle<v8::Object> wrapped = v8::Handle<v8::Object>::Cast(args.Callee()->GetHiddenValue(V8HiddenPropertyName::adaptorFunctionPeer()));
     // FIXME: This can be faster if we can access underlying native callback directly.
@@ -66,9 +66,11 @@ v8::Handle<v8::Value> V8AdaptorFunction::invocationCallback(const v8::Arguments&
     Vector<v8::Handle<v8::Value> > argArray(args.Length());
     for (int i = 0; i < args.Length(); ++i)
         argArray.append(args[i]);
-    if (args.IsConstructCall())
-        return V8ScriptRunner::callAsConstructor(wrapped, argArray.size(), argArray.data());
-    return V8ScriptRunner::callAsFunction(wrapped, args.This(), argArray.size(), argArray.data());
+    if (args.IsConstructCall()) {
+        v8SetReturnValue(args, V8ScriptRunner::callAsConstructor(wrapped, argArray.size(), argArray.data()));
+        return;
+    }
+    v8SetReturnValue(args, V8ScriptRunner::callAsFunction(wrapped, args.This(), argArray.size(), argArray.data()));
 }
 
 v8::Handle<v8::Function> V8AdaptorFunction::wrap(v8::Handle<v8::Object> object, const AtomicString& name, v8::Isolate* isolate)

@@ -107,7 +107,7 @@ protected:
     virtual void runMessageLoopOnPause(v8::Handle<v8::Context>) = 0;
     virtual void quitMessageLoopOnPause() = 0;
 
-    static v8::Handle<v8::Value> breakProgramCallback(const v8::Arguments& args);
+    static void breakProgramCallback(const v8::FunctionCallbackInfo<v8::Value>& args);
     void breakProgram(v8::Handle<v8::Object> executionState, v8::Handle<v8::Value> exception, v8::Handle<v8::Array> hitBreakpoints);
     void breakProgram(const v8::Debug::EventDetails&, v8::Handle<v8::Value> exception, v8::Handle<v8::Array> hitBreakpointNumbers);
 

@@ -369,7 +369,7 @@ static ScriptDebugServer* toScriptDebugServer(v8::Handle<v8::Value> data)
     return static_cast<ScriptDebugServer*>(p);
 }
 
-v8::Handle<v8::Value> ScriptDebugServer::breakProgramCallback(const v8::Arguments& args)
+void ScriptDebugServer::breakProgramCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     ASSERT(2 == args.Length());
     
@@ -377,7 +377,6 @@ v8::Handle<v8::Value> ScriptDebugServer::breakProgramCallback(const v8::Argument
     v8::Handle<v8::Value> exception;
     v8::Handle<v8::Array> hitBreakpoints;
     thisPtr->breakProgram(v8::Handle<v8::Object>::Cast(args[0]), exception, hitBreakpoints);
-    return v8::Undefined();
 }
 
 void ScriptDebugServer::breakProgram(v8::Handle<v8::Object> executionState, v8::Handle<v8::Value> exception, v8::Handle<v8::Array> hitBreakpointNumbers)

@@ -5108,8 +5108,8 @@ sub NativeToJSValue
     my $returnHandleType = shift || "";
     my $returnHandleTypeArg = $returnHandleType ? ", $returnHandleType" : "";
     my $forMainWorldSuffix = shift || "";
-    my $isReturnValue = shift || 0;
-    $isReturnValue = $isReturnValue eq "return";
+    my $returnValueArg = shift || 0;
+    my $isReturnValue = $returnValueArg eq "return";
 
     if (IsUnionType($type)) {
         my $types = $type->unionMemberTypes;
@@ -5121,7 +5121,7 @@ sub NativeToJSValue
             my $unionMemberEnabledVariable = $nativeValue . $i . "Enabled";
             my $unionMemberNativeValue = $unionMemberVariable;
             $unionMemberNativeValue .= ".release()" if (IsRefPtrType($unionMemberType));
-            my $returnJSValueCode = NativeToJSValue($unionMemberType, $extendedAttributes, $unionMemberNativeValue, $indent . "    ", $receiver, $getCreationContext, $getIsolate, $getHolderContainer, $getScriptWrappable, $returnHandleType, $forMainWorldSuffix, $isReturnValue);
+            my $returnJSValueCode = NativeToJSValue($unionMemberType, $extendedAttributes, $unionMemberNativeValue, $indent . "    ", $receiver, $getCreationContext, $getIsolate, $getHolderContainer, $getScriptWrappable, $returnHandleType, $forMainWorldSuffix, $returnValueArg);
             my $code = "";
             if ($isReturnValue) {
               $code .= "${indent}if (${unionMemberEnabledVariable}) {\n";

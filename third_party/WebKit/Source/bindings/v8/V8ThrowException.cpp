@@ -31,13 +31,13 @@
 
 namespace WebCore {
 
-static v8::Handle<v8::Value> domExceptionStackGetter(v8::Local<v8::String> name, const v8::AccessorInfo& info)
+static void domExceptionStackGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     ASSERT(info.Data()->IsObject());
-    return info.Data()->ToObject()->Get(v8::String::NewSymbol("stack"));
+    v8SetReturnValue(info, info.Data()->ToObject()->Get(v8::String::NewSymbol("stack")));
 }
 
-static void domExceptionStackSetter(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::AccessorInfo& info)
+static void domExceptionStackSetter(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
 {
     ASSERT(info.Data()->IsObject());
     info.Data()->ToObject()->Set(v8::String::NewSymbol("stack"), value);

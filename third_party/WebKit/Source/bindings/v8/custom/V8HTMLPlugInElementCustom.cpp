@@ -105,17 +105,17 @@ v8::Handle<v8::Value> V8HTMLObjectElement::namedPropertySetter(v8::Local<v8::Str
 
 void V8HTMLAppletElement::legacyCallCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
-    v8SetReturnValue(args, npObjectInvokeDefaultHandler(*reinterpret_cast<const v8::Arguments*>(&args)));
+    npObjectInvokeDefaultHandler(args);
 }
 
 void V8HTMLEmbedElement::legacyCallCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
-    v8SetReturnValue(args, npObjectInvokeDefaultHandler(*reinterpret_cast<const v8::Arguments*>(&args)));
+    npObjectInvokeDefaultHandler(args);
 }
 
 void V8HTMLObjectElement::legacyCallCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
-    v8SetReturnValue(args, npObjectInvokeDefaultHandler(*reinterpret_cast<const v8::Arguments*>(&args)));
+    npObjectInvokeDefaultHandler(args);
 }
 
 template <class C>

@@ -49,7 +49,7 @@ v8::Handle<v8::Value> npObjectIndexedPropertySetter(uint32_t index, const v8::Ac
 v8::Handle<v8::Value> npObjectSetNamedProperty(v8::Local<v8::Object> self, v8::Local<v8::String> name, v8::Local<v8::Value>, const v8::AccessorInfo&);
 v8::Handle<v8::Value> npObjectSetIndexedProperty(v8::Local<v8::Object> self, uint32_t index, v8::Local<v8::Value>, const v8::AccessorInfo&);
 
-v8::Handle<v8::Value> npObjectInvokeDefaultHandler(const v8::Arguments&);
+void npObjectInvokeDefaultHandler(const v8::FunctionCallbackInfo<v8::Value>&);
 
 // Get a wrapper for a NPObject.
 // If the object is already wrapped, the pre-existing wrapper will be returned. If the object is not wrapped, wrap it, and

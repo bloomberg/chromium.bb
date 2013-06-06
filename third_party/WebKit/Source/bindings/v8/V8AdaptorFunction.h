@@ -55,7 +55,7 @@ public:
 
     static v8::Handle<v8::FunctionTemplate> getTemplate(v8::Isolate*, WrapperWorldType);
     static v8::Handle<v8::FunctionTemplate> configureTemplate(v8::Handle<v8::FunctionTemplate>);
-    static v8::Handle<v8::Value> invocationCallback(const v8::Arguments&);
+    static void invocationCallback(const v8::FunctionCallbackInfo<v8::Value>&);
 };
 
 inline v8::Handle<v8::Object> V8AdaptorFunction::unwrap(v8::Handle<v8::Function> function)

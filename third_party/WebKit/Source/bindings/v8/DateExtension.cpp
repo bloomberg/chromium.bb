@@ -104,21 +104,21 @@ v8::Handle<v8::FunctionTemplate> DateExtension::GetNativeFunction(v8::Handle<v8:
     return v8::Handle<v8::FunctionTemplate>();
 }
 
-v8::Handle<v8::Value> DateExtension::Setup(const v8::Arguments& args)
+void DateExtension::Setup(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     if (args.Length() != 2 || !args[0]->IsObject() || !args[1]->IsFunction())
-        return v8::Undefined();
+        return;
 
     v8::Handle<v8::Object> dateObject = v8::Handle<v8::Object>::Cast(args[0]);
     v8::Handle<v8::Function> enableSleepDetectionFunction = v8::Handle<v8::Function>::Cast(args[1]);
 
     dateObject->SetHiddenValue(V8HiddenPropertyName::sleepFunction(), enableSleepDetectionFunction);
-    return v8::Undefined();
+    return;
 }
 
-v8::Handle<v8::Value> DateExtension::OnSleepDetected(const v8::Arguments& args)
+void DateExtension::OnSleepDetected(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
-    return throwError(v8GeneralError, "Too much time spent in unload handler.", args.GetIsolate());
+    throwError(v8GeneralError, "Too much time spent in unload handler.", args.GetIsolate());
 }
 
 }  // namespace WebCore

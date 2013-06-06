@@ -78,11 +78,13 @@ v8::Local<v8::Object> V8ObjectConstructor::newInstanceInDocument(v8::Handle<v8::
     return result;
 }
 
-v8::Handle<v8::Value> V8ObjectConstructor::isValidConstructorMode(const v8::Arguments& args)
+void V8ObjectConstructor::isValidConstructorMode(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
-    if (ConstructorMode::current() == ConstructorMode::CreateNewObject)
-        return throwTypeError("Illegal constructor", args.GetIsolate());
-    return args.This();
+    if (ConstructorMode::current() == ConstructorMode::CreateNewObject) {
+        throwTypeError("Illegal constructor", args.GetIsolate());
+        return;
+    }
+    v8SetReturnValue(args, args.This());
 }
 
 } // namespace WebCore

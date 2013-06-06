@@ -104,9 +104,9 @@ v8::Local<v8::Value> V8LazyEventListener::callListenerFunction(ScriptExecutionCo
     return frame->script()->callFunction(handlerFunction, receiver, 1, parameters);
 }
 
-static v8::Handle<v8::Value> V8LazyEventListenerToString(const v8::Arguments& args)
+static void V8LazyEventListenerToString(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
-    return args.Holder()->GetHiddenValue(V8HiddenPropertyName::toStringString());
+    v8SetReturnValue(args, args.Holder()->GetHiddenValue(V8HiddenPropertyName::toStringString()));
 }
 
 void V8LazyEventListener::prepareListenerObject(ScriptExecutionContext* context)

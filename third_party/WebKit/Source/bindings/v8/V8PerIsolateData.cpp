@@ -198,7 +198,7 @@ void V8PerIsolateData::visitExternalStrings(ExternalStringVisitor* visitor)
     v8::V8::VisitExternalResources(&v8Visitor);
 }
 
-v8::Handle<v8::Value> V8PerIsolateData::constructorOfToString(const v8::Arguments& args)
+void V8PerIsolateData::constructorOfToString(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     // The DOM constructors' toString functions grab the current toString
     // for Functions by taking the toString function of itself and then
@@ -209,9 +209,11 @@ v8::Handle<v8::Value> V8PerIsolateData::constructorOfToString(const v8::Argument
     // toString of the DOM constructor itself to change. This is extremely
     // obscure and unlikely to be a problem.
     v8::Handle<v8::Value> value = args.Callee()->Get(v8::String::NewSymbol("toString"));
-    if (!value->IsFunction())
-        return v8::String::Empty(args.GetIsolate());
-    return V8ScriptRunner::callInternalFunction(v8::Handle<v8::Function>::Cast(value), v8::Context::GetCurrent(), args.This(), 0, 0, v8::Isolate::GetCurrent());
+    if (!value->IsFunction()) {
+        v8SetReturnValue(args, v8::String::Empty(args.GetIsolate()));
+        return;
+    }
+    v8SetReturnValue(args, V8ScriptRunner::callInternalFunction(v8::Handle<v8::Function>::Cast(value), v8::Context::GetCurrent(), args.This(), 0, 0, v8::Isolate::GetCurrent()));
 }
 
 } // namespace WebCore

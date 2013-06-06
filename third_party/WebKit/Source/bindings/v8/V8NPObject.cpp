@@ -66,7 +66,7 @@ struct IdentifierRep {
 
 // FIXME: need comments.
 // Params: holder could be HTMLEmbedElement or NPObject
-static v8::Handle<v8::Value> npObjectInvokeImpl(const v8::Arguments& args, InvokeFunctionType functionId)
+static void npObjectInvokeImpl(const v8::FunctionCallbackInfo<v8::Value>& args, InvokeFunctionType functionId)
 {
     NPObject* npObject;
 
@@ -92,15 +92,19 @@ static v8::Handle<v8::Value> npObjectInvokeImpl(const v8::Arguments& args, Invok
     } else {
         // The holder object is not a subtype of HTMLPlugInElement, it must be an NPObject which has three
         // internal fields.
-        if (args.Holder()->InternalFieldCount() != npObjectInternalFieldCount)
-            return throwError(v8ReferenceError, "NPMethod called on non-NPObject", args.GetIsolate());
+        if (args.Holder()->InternalFieldCount() != npObjectInternalFieldCount) {
+            throwError(v8ReferenceError, "NPMethod called on non-NPObject", args.GetIsolate());
+            return;
+        }
 
         npObject = v8ObjectToNPObject(args.Holder());
     }
 
     // Verify that our wrapper wasn't using a NPObject which has already been deleted.
-    if (!npObject || !_NPN_IsAlive(npObject))
-        return throwError(v8ReferenceError, "NPObject deleted", args.GetIsolate());
+    if (!npObject || !_NPN_IsAlive(npObject)) {
+        throwError(v8ReferenceError, "NPObject deleted", args.GetIsolate());
+        return;
+    }
 
     // Wrap up parameters.
     int numArgs = args.Length();
@@ -145,22 +149,24 @@ static v8::Handle<v8::Value> npObjectInvokeImpl(const v8::Arguments& args, Invok
         returnValue = convertNPVariantToV8Object(&result, npObject, args.GetIsolate());
     _NPN_ReleaseVariantValue(&result);
 
-    return returnValue;
+    v8SetReturnValue(args, returnValue);
 }
 
 
-v8::Handle<v8::Value> npObjectMethodHandler(const v8::Arguments& args)
+void npObjectMethodHandler(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     return npObjectInvokeImpl(args, InvokeMethod);
 }
 
 
-v8::Handle<v8::Value> npObjectInvokeDefaultHandler(const v8::Arguments& args)
+void npObjectInvokeDefaultHandler(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
-    if (args.IsConstructCall())
-        return npObjectInvokeImpl(args, InvokeConstruct);
+    if (args.IsConstructCall()) {
+        npObjectInvokeImpl(args, InvokeConstruct);
+        return;
+    }
 
-    return npObjectInvokeImpl(args, InvokeDefault);
+    npObjectInvokeImpl(args, InvokeDefault);
 }
 
 class V8NPTemplateMap {

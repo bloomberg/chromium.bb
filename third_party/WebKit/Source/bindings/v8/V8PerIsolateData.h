@@ -148,7 +148,7 @@ public:
 private:
     explicit V8PerIsolateData(v8::Isolate*);
     ~V8PerIsolateData();
-    static v8::Handle<v8::Value> constructorOfToString(const v8::Arguments&);
+    static void constructorOfToString(const v8::FunctionCallbackInfo<v8::Value>&);
 
     v8::Isolate* m_isolate;
     TemplateMap m_rawTemplatesForMainWorld;
