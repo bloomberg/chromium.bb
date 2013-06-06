@@ -73,37 +73,53 @@ MediaControlElementType AccessibilityMediaControl::controlType() const
 
 String AccessibilityMediaControl::controlTypeName() const
 {
+    DEFINE_STATIC_LOCAL(const String, mediaEnterFullscreenButtonName, (ASCIILiteral("EnterFullscreenButton")));
+    DEFINE_STATIC_LOCAL(const String, mediaExitFullscreenButtonName, (ASCIILiteral("ExitFullscreenButton")));
+    DEFINE_STATIC_LOCAL(const String, mediaMuteButtonName, (ASCIILiteral("MuteButton")));
+    DEFINE_STATIC_LOCAL(const String, mediaPlayButtonName, (ASCIILiteral("PlayButton")));
+    DEFINE_STATIC_LOCAL(const String, mediaSeekBackButtonName, (ASCIILiteral("SeekBackButton")));
+    DEFINE_STATIC_LOCAL(const String, mediaSeekForwardButtonName, (ASCIILiteral("SeekForwardButton")));
+    DEFINE_STATIC_LOCAL(const String, mediaRewindButtonName, (ASCIILiteral("RewindButton")));
+    DEFINE_STATIC_LOCAL(const String, mediaReturnToRealtimeButtonName, (ASCIILiteral("ReturnToRealtimeButton")));
+    DEFINE_STATIC_LOCAL(const String, mediaUnMuteButtonName, (ASCIILiteral("UnMuteButton")));
+    DEFINE_STATIC_LOCAL(const String, mediaPauseButtonName, (ASCIILiteral("PauseButton")));
+    DEFINE_STATIC_LOCAL(const String, mediaStatusDisplayName, (ASCIILiteral("StatusDisplay")));
+    DEFINE_STATIC_LOCAL(const String, mediaCurrentTimeDisplay, (ASCIILiteral("CurrentTimeDisplay")));
+    DEFINE_STATIC_LOCAL(const String, mediaTimeRemainingDisplay, (ASCIILiteral("TimeRemainingDisplay")));
+    DEFINE_STATIC_LOCAL(const String, mediaShowClosedCaptionsButtonName, (ASCIILiteral("ShowClosedCaptionsButton")));
+    DEFINE_STATIC_LOCAL(const String, mediaHideClosedCaptionsButtonName, (ASCIILiteral("HideClosedCaptionsButton")));
+
     switch (controlType()) {
     case MediaEnterFullscreenButton:
-        return ASCIILiteral("EnterFullscreenButton");
+        return mediaEnterFullscreenButtonName;
     case MediaExitFullscreenButton:
-        return ASCIILiteral("ExitFullscreenButton");
+        return mediaExitFullscreenButtonName;
     case MediaMuteButton:
-        return ASCIILiteral("MuteButton");
+        return mediaMuteButtonName;
     case MediaPlayButton:
-        return ASCIILiteral("PlayButton");
+        return mediaPlayButtonName;
     case MediaSeekBackButton:
-        return ASCIILiteral("SeekBackButton");
+        return mediaSeekBackButtonName;
     case MediaSeekForwardButton:
-        return ASCIILiteral("SeekForwardButton");
+        return mediaSeekForwardButtonName;
     case MediaRewindButton:
-        return ASCIILiteral("RewindButton");
+        return mediaRewindButtonName;
     case MediaReturnToRealtimeButton:
-        return ASCIILiteral("ReturnToRealtimeButton");
+        return mediaReturnToRealtimeButtonName;
     case MediaUnMuteButton:
-        return ASCIILiteral("UnMuteButton");
+        return mediaUnMuteButtonName;
     case MediaPauseButton:
-        return ASCIILiteral("PauseButton");
+        return mediaPauseButtonName;
     case MediaStatusDisplay:
-        return ASCIILiteral("StatusDisplay");
+        return mediaStatusDisplayName;
     case MediaCurrentTimeDisplay:
-        return ASCIILiteral("CurrentTimeDisplay");
+        return mediaCurrentTimeDisplay;
     case MediaTimeRemainingDisplay:
-        return ASCIILiteral("TimeRemainingDisplay");
+        return mediaTimeRemainingDisplay;
     case MediaShowClosedCaptionsButton:
-        return ASCIILiteral("ShowClosedCaptionsButton");
+        return mediaShowClosedCaptionsButtonName;
     case MediaHideClosedCaptionsButton:
-        return ASCIILiteral("HideClosedCaptionsButton");
+        return mediaHideClosedCaptionsButtonName;
 
     default:
         break;
@@ -130,8 +146,10 @@ void AccessibilityMediaControl::accessibilityText(Vector<AccessibilityText>& tex
 
 String AccessibilityMediaControl::title() const
 {
+    DEFINE_STATIC_LOCAL(const String, controlsPanel, (ASCIILiteral("ControlsPanel")));
+
     if (controlType() == MediaControlsPanel)
-        return localizedMediaControlElementString(ASCIILiteral("ControlsPanel"));
+        return localizedMediaControlElementString(controlsPanel);
 
     return AccessibilityRenderObject::title();
 }
@@ -221,9 +239,12 @@ bool AccessibilityMediaControlsContainer::controllingVideoElement() const
 
 const String AccessibilityMediaControlsContainer::elementTypeName() const
 {
+    DEFINE_STATIC_LOCAL(const String, videoElement, (ASCIILiteral("VideoElement")));
+    DEFINE_STATIC_LOCAL(const String, audioElement, (ASCIILiteral("AudioElement")));
+
     if (controllingVideoElement())
-        return ASCIILiteral("VideoElement");
-    return ASCIILiteral("AudioElement");
+        return videoElement;
+    return audioElement;
 }
 
 bool AccessibilityMediaControlsContainer::computeAccessibilityIsIgnored() const
@@ -255,7 +276,8 @@ String AccessibilityMediaTimeline::valueDescription() const
 
 String AccessibilityMediaTimeline::helpText() const
 {
-    return localizedMediaControlElementHelpText(ASCIILiteral("Slider"));
+    DEFINE_STATIC_LOCAL(const String, slider, (ASCIILiteral("Slider")));
+    return localizedMediaControlElementHelpText(slider);
 }
 
 
@@ -285,10 +307,13 @@ bool AccessibilityMediaTimeDisplay::computeAccessibilityIsIgnored() const
 
 String AccessibilityMediaTimeDisplay::accessibilityDescription() const
 {
-    if (controlType() == MediaCurrentTimeDisplay)
-        return localizedMediaControlElementString(ASCIILiteral("CurrentTimeDisplay"));
+    DEFINE_STATIC_LOCAL(const String, currentTimeDisplay, (ASCIILiteral("CurrentTimeDisplay")));
+    DEFINE_STATIC_LOCAL(const String, timeRemainingDisplay, (ASCIILiteral("TimeRemainingDisplay")));
 
-    return localizedMediaControlElementString(ASCIILiteral("TimeRemainingDisplay"));
+    if (controlType() == MediaCurrentTimeDisplay)
+        return localizedMediaControlElementString(currentTimeDisplay);
+
+    return localizedMediaControlElementString(timeRemainingDisplay);
 }
 
 String AccessibilityMediaTimeDisplay::stringValue() const

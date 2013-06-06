@@ -366,30 +366,39 @@ AccessibilityOrientation AccessibilityObject::orientation() const
 }
 
 #if HAVE(ACCESSIBILITY)
-String AccessibilityObject::actionVerb() const
+const String& AccessibilityObject::actionVerb() const
 {
     // FIXME: Need to add verbs for select elements.
+    DEFINE_STATIC_LOCAL(const String, buttonAction, (AXButtonActionVerb()));
+    DEFINE_STATIC_LOCAL(const String, textFieldAction, (AXTextFieldActionVerb()));
+    DEFINE_STATIC_LOCAL(const String, radioButtonAction, (AXRadioButtonActionVerb()));
+    DEFINE_STATIC_LOCAL(const String, checkedCheckBoxAction, (AXCheckedCheckBoxActionVerb()));
+    DEFINE_STATIC_LOCAL(const String, uncheckedCheckBoxAction, (AXUncheckedCheckBoxActionVerb()));
+    DEFINE_STATIC_LOCAL(const String, linkAction, (AXLinkActionVerb()));
+    DEFINE_STATIC_LOCAL(const String, menuListAction, (AXMenuListActionVerb()));
+    DEFINE_STATIC_LOCAL(const String, menuListPopupAction, (AXMenuListPopupActionVerb()));
+    DEFINE_STATIC_LOCAL(const String, noAction, ());
 
     switch (roleValue()) {
     case ButtonRole:
     case ToggleButtonRole:
-        return AXButtonActionVerb();
+        return buttonAction;
     case TextFieldRole:
     case TextAreaRole:
-        return AXTextFieldActionVerb();
+        return textFieldAction;
     case RadioButtonRole:
-        return AXRadioButtonActionVerb();
+        return radioButtonAction;
     case CheckBoxRole:
-        return isChecked() ? AXCheckedCheckBoxActionVerb() : AXUncheckedCheckBoxActionVerb();
+        return isChecked() ? checkedCheckBoxAction : uncheckedCheckBoxAction;
     case LinkRole:
     case WebCoreLinkRole:
-        return AXLinkActionVerb();
+        return linkAction;
     case PopUpButtonRole:
-        return AXMenuListActionVerb();
+        return menuListAction;
     case MenuListPopupRole:
-        return AXMenuListPopupActionVerb();
+        return menuListPopupAction;
     default:
-        return emptyString();
+        return noAction;
     }
 }
 #endif
