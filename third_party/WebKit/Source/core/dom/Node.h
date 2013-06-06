@@ -617,8 +617,6 @@ public:
     unsigned short compareDocumentPositionInternal(const Node*, ShadowTreesTreatment) const;
 
     virtual Node* toNode();
-    // Obsolete. Use toHTMLInputElement.
-    virtual HTMLInputElement* toInputElement();
 
     virtual const AtomicString& interfaceName() const;
     virtual ScriptExecutionContext* scriptExecutionContext() const;

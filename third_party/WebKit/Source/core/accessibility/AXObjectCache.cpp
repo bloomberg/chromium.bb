@@ -879,11 +879,8 @@ void AXObjectCache::textMarkerDataForVisiblePosition(TextMarkerData& textMarkerD
     if (!domNode)
         return;
     
-    if (domNode->isHTMLElement()) {
-        HTMLInputElement* inputElement = domNode->toInputElement();
-        if (inputElement && inputElement->isPasswordField())
-            return;
-    }
+    if (domNode->hasTagName(inputTag) && toHTMLInputElement(domNode)->isPasswordField())
+        return;
     
     // find or create an accessibility object for this node
     AXObjectCache* cache = domNode->document()->axObjectCache();
