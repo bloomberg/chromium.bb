@@ -881,13 +881,31 @@ TEST_F(WebRTCAudioDeviceTest, WebRtcPlayoutSetupTime) {
   renderer->Stop();
 }
 
-TEST_F(WebRTCAudioDeviceTest, WebRtcLoopbackTimeWithoutSignalProcessing) {
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(ARCH_CPU_ARM_FAMILY)
+// Timing out on ARM linux bot: http://crbug.com/238490
+#define MAYBE_WebRtcLoopbackTimeWithoutSignalProcessing \
+        DISABLED_WebRtcLoopbackTimeWithoutSignalProcessing
+#else
+#define MAYBE_WebRtcLoopbackTimeWithoutSignalProcessing \
+        WebRtcLoopbackTimeWithoutSignalProcessing
+#endif
+
+TEST_F(WebRTCAudioDeviceTest, MAYBE_WebRtcLoopbackTimeWithoutSignalProcessing) {
   int latency = RunWebRtcLoopbackTimeTest(audio_manager_.get(), false);
   PrintPerfResultMs("webrtc_loopback_without_sigal_processing (100 packets)",
                     "t", latency);
 }
 
-TEST_F(WebRTCAudioDeviceTest, WebRtcLoopbackTimeWithSignalProcessing) {
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(ARCH_CPU_ARM_FAMILY)
+// Timing out on ARM linux bot: http://crbug.com/238490
+#define MAYBE_WebRtcLoopbackTimeWithSignalProcessing \
+        DISABLED_WebRtcLoopbackTimeWithSignalProcessing
+#else
+#define MAYBE_WebRtcLoopbackTimeWithSignalProcessing \
+        WebRtcLoopbackTimeWithSignalProcessing
+#endif
+
+TEST_F(WebRTCAudioDeviceTest, MAYBE_WebRtcLoopbackTimeWithSignalProcessing) {
   int latency = RunWebRtcLoopbackTimeTest(audio_manager_.get(), true);
   PrintPerfResultMs("webrtc_loopback_with_signal_processing (100 packets)",
                     "t", latency);

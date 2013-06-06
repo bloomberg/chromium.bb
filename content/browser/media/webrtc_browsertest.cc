@@ -178,9 +178,16 @@ IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest, MAYBE_CallWithDataAndMedia) {
   ExpectTitle("OK");
 }
 
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(ARCH_CPU_ARM_FAMILY)
+// Timing out on ARM linux bot: http://crbug.com/238490
+#define MAYBE_CallWithDataAndLaterAddMedia DISABLED_CallWithDataAndLaterAddMedia
+#else
+#define MAYBE_CallWithDataAndLaterAddMedia CallWithDataAndLaterAddMedia
+#endif
+
 // This test will make a PeerConnection-based call and test an unreliable text
 // dataChannel and later add an audio and video track.
-IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest, CallWithDataAndLaterAddMedia) {
+IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest, MAYBE_CallWithDataAndLaterAddMedia) {
   GURL url(embedded_test_server()->GetURL("/media/peerconnection-call.html"));
   NavigateToURL(shell(), url);
 
