@@ -18,7 +18,6 @@
 
 class BrowserView;
 class BookmarkBarView;
-class TopContainerView;
 
 namespace aura {
 class Window;
@@ -30,6 +29,7 @@ class Transform;
 
 namespace ui {
 class Layer;
+class LocatedEvent;
 class SlideAnimation;
 }
 
@@ -58,7 +58,7 @@ class ImmersiveModeControllerAsh : public ImmersiveModeController,
   // ImmersiveModeController overrides:
   virtual void Init(Delegate* delegate,
                     views::Widget* widget,
-                    TopContainerView* top_container) OVERRIDE;
+                    views::View* top_container) OVERRIDE;
   virtual void SetEnabled(bool enabled) OVERRIDE;
   virtual bool IsEnabled() const OVERRIDE;
   virtual bool ShouldHideTabIndicators() const OVERRIDE;
@@ -81,6 +81,7 @@ class ImmersiveModeControllerAsh : public ImmersiveModeController,
 
   // ui::EventHandler overrides:
   virtual void OnMouseEvent(ui::MouseEvent* event) OVERRIDE;
+  virtual void OnTouchEvent(ui::TouchEvent* event) OVERRIDE;
   virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
 
   // views::FocusChangeObserver overrides:
@@ -149,19 +150,22 @@ class ImmersiveModeControllerAsh : public ImmersiveModeController,
   // stopped.
   void UpdateTopEdgeHoverTimer(ui::MouseEvent* event);
 
-  // Updates |mouse_revealed_lock_| based on the current mouse state and the
-  // currently active widget.
-  // |maybe_drag| is true if the user may be in the middle of a drag.
-  // |event_type| is the type of event that triggered the update or
-  // ui::ET_UNKNOWN if the source event isn't known.
-  void UpdateMouseRevealedLock(bool maybe_drag, ui::EventType event_type);
+  // Updates |located_event_revealed_lock_| based on the current mouse state and
+  // the current touch state.
+  // |event| is NULL if the source event is not known.
+  void UpdateLocatedEventRevealedLock(ui::LocatedEvent* event);
 
-  // Acquires the mouse revealed lock if it is not already held.
-  void AcquireMouseRevealedLock();
+  // Acquires |located_event_revealed_lock_| if it is not already held.
+  void AcquireLocatedEventRevealedLock();
 
   // Updates |focus_revealed_lock_| based on the currently active view and the
   // currently active widget.
   void UpdateFocusRevealedLock();
+
+  // Update |located_event_revealed_lock_| and |focus_revealed_lock_| as a
+  // result of a gesture of |swipe_type|. Returns true if any locks were
+  // acquired or released.
+  bool UpdateRevealedLocksForSwipe(SwipeType swipe_type);
 
   // Updates whether fullscreen uses any chrome at all. When using minimal
   // chrome, a 'light bar' is permanently visible for the launcher and possibly
@@ -212,7 +216,7 @@ class ImmersiveModeControllerAsh : public ImmersiveModeController,
   // Injected dependencies. Not owned.
   Delegate* delegate_;
   views::Widget* widget_;
-  TopContainerView* top_container_;
+  views::View* top_container_;
 
   // True if the window observers are enabled.
   bool observers_enabled_;
@@ -237,11 +241,14 @@ class ImmersiveModeControllerAsh : public ImmersiveModeController,
   int mouse_x_when_hit_top_;
 
   // Lock which keeps the top-of-window views revealed based on the current
-  // mouse state.
-  scoped_ptr<ImmersiveRevealedLock> mouse_revealed_lock_;
+  // mouse state and the current touch state. Acquiring the lock is used to
+  // trigger a reveal when the user moves the mouse to the top of the screen
+  // and when the user does a SWIPE_OPEN edge gesture.
+  scoped_ptr<ImmersiveRevealedLock> located_event_revealed_lock_;
 
   // Lock which keeps the top-of-window views revealed based on the focused view
-  // and the active widget.
+  // and the active widget. Acquiring the lock never triggers a reveal because
+  // a view is not focusable till a reveal has made it visible.
   scoped_ptr<ImmersiveRevealedLock> focus_revealed_lock_;
 
   // Native window for the browser.

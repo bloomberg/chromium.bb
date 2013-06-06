@@ -9,13 +9,13 @@
 
 class BookmarkBarView;
 class FullscreenController;
-class TopContainerView;
 
 namespace gfx {
 class Size;
 }
 
 namespace views {
+class View;
 class Widget;
 }
 
@@ -47,9 +47,6 @@ class ImmersiveModeController {
     // Returns the browser's FullscreenController.
     virtual FullscreenController* GetFullscreenController() = 0;
 
-    // Puts focus in the location bar.
-    virtual void FocusLocationBar() = 0;
-
     // Notifies the delegate that fullscreen has been entered or exited.
     virtual void FullscreenStateChanged() = 0;
 
@@ -65,7 +62,7 @@ class ImmersiveModeController {
   // Must initialize after browser view has a Widget and native window.
   virtual void Init(Delegate* delegate,
                     views::Widget* widget,
-                    TopContainerView* top_container) = 0;
+                    views::View* top_container) = 0;
 
   // Enables or disables immersive mode.
   virtual void SetEnabled(bool enabled) = 0;

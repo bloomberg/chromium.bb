@@ -15,7 +15,7 @@ ImmersiveModeControllerStub::~ImmersiveModeControllerStub() {
 void ImmersiveModeControllerStub::Init(
     Delegate* delegate,
     views::Widget* widget,
-    TopContainerView* top_container) {
+    views::View* top_container) {
 }
 
 void ImmersiveModeControllerStub::SetEnabled(bool enabled) {

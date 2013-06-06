@@ -426,7 +426,6 @@ class BrowserView : public BrowserWindow,
   // ImmersiveModeController::Delegate overrides:
   virtual BookmarkBarView* GetBookmarkBar() OVERRIDE;
   virtual FullscreenController* GetFullscreenController() OVERRIDE;
-  virtual void FocusLocationBar() OVERRIDE;
   virtual void FullscreenStateChanged() OVERRIDE;
   virtual void SetImmersiveStyle(bool immersive) OVERRIDE;
 

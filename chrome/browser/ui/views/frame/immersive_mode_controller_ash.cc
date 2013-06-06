@@ -17,11 +17,12 @@
 #include "ui/aura/client/activation_client.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/capture_client.h"
+#include "ui/aura/client/cursor_client.h"
+#include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #include "ui/base/animation/slide_animation.h"
-#include "ui/gfx/screen.h"
 #include "ui/gfx/transform.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
@@ -42,7 +43,7 @@ const int kAnimationOffsetY = 3;
 const int kRevealSlowAnimationDurationMs = 400;
 const int kRevealFastAnimationDurationMs = 200;
 
-// How many pixels a gesture can start away from the TopContainerView when in
+// How many pixels a gesture can start away from |top_container_| when in
 // closed state and still be considered near it. This is needed to overcome
 // issues with poor location values near the edge of the display.
 const int kNearTopContainerDistance = 5;
@@ -321,7 +322,7 @@ void ImmersiveModeControllerAsh::UnlockRevealedState() {
 void ImmersiveModeControllerAsh::Init(
     Delegate* delegate,
     views::Widget* widget,
-    TopContainerView* top_container) {
+    views::View* top_container) {
   delegate_ = delegate;
   widget_ = widget;
   // Browser view is detached from its widget during destruction. Cache the
@@ -361,9 +362,9 @@ void ImmersiveModeControllerAsh::SetEnabled(bool enabled) {
     // out |browser_view_|'s root view.
     MaybeStartReveal(ANIMATE_NO);
 
-    // Reset the mouse and the focus revealed locks so that they do not affect
-    // whether the top-of-window views are hidden.
-    mouse_revealed_lock_.reset();
+    // Reset the located event and the focus revealed locks so that they do not
+    // affect whether the top-of-window views are hidden.
+    located_event_revealed_lock_.reset();
     focus_revealed_lock_.reset();
 
     // Try doing the animation.
@@ -371,7 +372,7 @@ void ImmersiveModeControllerAsh::SetEnabled(bool enabled) {
 
     if (reveal_state_ == REVEALED) {
       // Reveal was unsuccessful. Reacquire the revealed locks if appropriate.
-      UpdateMouseRevealedLock(true, ui::ET_UNKNOWN);
+      UpdateLocatedEventRevealedLock(NULL);
       UpdateFocusRevealedLock();
     }
     anchored_widget_manager_->OnImmersiveModeEnabled();
@@ -478,8 +479,15 @@ void ImmersiveModeControllerAsh::OnMouseEvent(ui::MouseEvent* event) {
   // screen for a while.
   UpdateTopEdgeHoverTimer(event);
 
-  UpdateMouseRevealedLock(false, event->type());
   // Pass along event for further handling.
+  UpdateLocatedEventRevealedLock(event);
+}
+
+void ImmersiveModeControllerAsh::OnTouchEvent(ui::TouchEvent* event) {
+  if (!enabled_ || event->type() != ui::ET_TOUCH_PRESSED)
+    return;
+
+  UpdateLocatedEventRevealedLock(event);
 }
 
 void ImmersiveModeControllerAsh::OnGestureEvent(ui::GestureEvent* event) {
@@ -500,19 +508,8 @@ void ImmersiveModeControllerAsh::OnGestureEvent(ui::GestureEvent* event) {
       break;
     case ui::ET_GESTURE_SCROLL_UPDATE:
       if (gesture_begun_) {
-        SwipeType swipe_type = GetSwipeType(event);
-        if ((reveal_state_ == SLIDING_CLOSED || reveal_state_ == CLOSED) &&
-            swipe_type == SWIPE_OPEN) {
-          delegate_->FocusLocationBar();
+        if (UpdateRevealedLocksForSwipe(GetSwipeType(event)))
           event->SetHandled();
-        } else if ((reveal_state_ == SLIDING_OPEN ||
-                    reveal_state_ == REVEALED) &&
-                   swipe_type == SWIPE_CLOSE) {
-          views::FocusManager* focus_manager = widget_->GetFocusManager();
-          DCHECK(focus_manager);
-          focus_manager->ClearFocus();
-          event->SetHandled();
-        }
         gesture_begun_ = false;
       }
       break;
@@ -531,7 +528,7 @@ void ImmersiveModeControllerAsh::OnWillChangeFocus(views::View* focused_before,
 
 void ImmersiveModeControllerAsh::OnDidChangeFocus(views::View* focused_before,
                                                   views::View* focused_now) {
-  UpdateMouseRevealedLock(true, ui::ET_UNKNOWN);
+  UpdateLocatedEventRevealedLock(NULL);
   UpdateFocusRevealedLock();
 }
 
@@ -551,7 +548,7 @@ void ImmersiveModeControllerAsh::OnWidgetActivationChanged(
   // |native_window_| is inactive.
   top_edge_hover_timer_.Stop();
 
-  UpdateMouseRevealedLock(true, ui::ET_UNKNOWN);
+  UpdateLocatedEventRevealedLock(NULL);
   UpdateFocusRevealedLock();
 }
 
@@ -623,12 +620,12 @@ void ImmersiveModeControllerAsh::SetForceHideTabIndicatorsForTest(bool force) {
 void ImmersiveModeControllerAsh::StartRevealForTest(bool hovered) {
   MaybeStartReveal(ANIMATE_NO);
   MoveMouse(top_container_, hovered);
-  UpdateMouseRevealedLock(false, ui::ET_UNKNOWN);
+  UpdateLocatedEventRevealedLock(NULL);
 }
 
 void ImmersiveModeControllerAsh::SetMouseHoveredForTest(bool hovered) {
   MoveMouse(top_container_, hovered);
-  UpdateMouseRevealedLock(false, ui::ET_UNKNOWN);
+  UpdateLocatedEventRevealedLock(NULL);
 }
 
 void ImmersiveModeControllerAsh::DisableAnimationsForTest() {
@@ -714,57 +711,77 @@ void ImmersiveModeControllerAsh::UpdateTopEdgeHoverTimer(
       FROM_HERE,
       base::TimeDelta::FromMilliseconds(
           ImmersiveFullscreenConfiguration::immersive_mode_reveal_delay_ms()),
-      base::Bind(&ImmersiveModeControllerAsh::AcquireMouseRevealedLock,
+      base::Bind(&ImmersiveModeControllerAsh::AcquireLocatedEventRevealedLock,
                  base::Unretained(this)));
 }
 
-void ImmersiveModeControllerAsh::UpdateMouseRevealedLock(
-    bool maybe_drag,
-    ui::EventType event_type) {
+void ImmersiveModeControllerAsh::UpdateLocatedEventRevealedLock(
+    ui::LocatedEvent* event) {
   if (!enabled_)
     return;
+  DCHECK(!event || event->IsMouseEvent() || event->IsTouchEvent());
 
-  // Hover cannot initiate a reveal when the top-of-window views are sliding
-  // closed or are closed. (With the exception of hovering at y = 0 which is
-  // handled in OnMouseEvent() ).
+  // Neither the mouse nor touch can initiate a reveal when the top-of-window
+  // views are sliding closed or are closed with the following exceptions:
+  // - Hovering at y = 0 which is handled in OnMouseEvent().
+  // - Doing a SWIPE_OPEN edge gesture which is handled in OnGestureEvent().
   if (reveal_state_ == SLIDING_CLOSED || reveal_state_ == CLOSED)
     return;
 
-  // Mouse hover should not keep the top-of-window views revealed if
+  // Neither the mouse nor touch should keep the top-of-window views revealed if
   // |native_window_| is not active.
   if (!views::Widget::GetWidgetForNativeWindow(native_window_)->IsActive()) {
-    mouse_revealed_lock_.reset();
+    located_event_revealed_lock_.reset();
     return;
   }
 
-  // If a window has capture, we may be in the middle of a drag. Delay updating
-  // the revealed lock till we get more specifics via OnMouseEvent().
-  if (maybe_drag && aura::client::GetCaptureWindow(native_window_))
-    return;
+  DCHECK(!event || event->type() != ui::ET_MOUSE_DRAGGED);
+  if (!event) {
+    // If a window has capture, we may be in the middle of a drag. Delay
+    // updating the revealed lock till we get more specifics via OnMouseEvent()
+    // or OnTouchEvent();
+    if (aura::client::GetCaptureWindow(native_window_))
+      return;
+  }
 
-  gfx::Point cursor_pos = gfx::Screen::GetScreenFor(
-      native_window_)->GetCursorScreenPoint();
-  // Transform to the parent of |top_container|. This avoids problems with
-  // coordinate conversion while |top_container|'s layer has an animating
-  // transform and also works properly if |top_container| is not at 0, 0.
-  views::View::ConvertPointFromScreen(top_container_->parent(), &cursor_pos);
+  gfx::Point location_in_screen;
+  if (event) {
+    location_in_screen = event->location();
+    aura::Window* target = static_cast<aura::Window*>(event->target());
+    aura::client::ScreenPositionClient* screen_position_client =
+        aura::client::GetScreenPositionClient(target->GetRootWindow());
+    screen_position_client->ConvertPointToScreen(target, &location_in_screen);
+  } else {
+    aura::client::CursorClient* cursor_client = aura::client::GetCursorClient(
+        native_window_->GetRootWindow());
+    if (!cursor_client->IsMouseEventsEnabled()) {
+      // If mouse events are disabled, the user's last interaction was probably
+      // via touch. Do no do further processing in this case as there is no easy
+      // way of retrieving the position of the user's last touch.
+      return;
+    }
+    location_in_screen = aura::Env::GetInstance()->last_mouse_location();
+  }
+
+  gfx::Rect hit_bounds_in_screen = top_container_->GetBoundsInScreen();
+
   // Allow the cursor to move slightly below the top container's bottom edge
   // before sliding closed. This helps when the user is attempting to click on
   // the bookmark bar and overshoots slightly.
-  gfx::Rect hover_bounds = top_container_->bounds();
-  if (event_type == ui::ET_MOUSE_MOVED) {
+  if (event && event->type() == ui::ET_MOUSE_MOVED) {
     const int kBoundsOffsetY = 8;
-    hover_bounds.Inset(0, -kBoundsOffsetY);
+    hit_bounds_in_screen.Inset(0, 0, 0, -kBoundsOffsetY);
   }
-  if (hover_bounds.Contains(cursor_pos))
-    AcquireMouseRevealedLock();
+
+  if (hit_bounds_in_screen.Contains(location_in_screen))
+    AcquireLocatedEventRevealedLock();
   else
-    mouse_revealed_lock_.reset();
+    located_event_revealed_lock_.reset();
 }
 
-void ImmersiveModeControllerAsh::AcquireMouseRevealedLock() {
-  if (!mouse_revealed_lock_.get())
-    mouse_revealed_lock_.reset(GetRevealedLock(ANIMATE_REVEAL_YES));
+void ImmersiveModeControllerAsh::AcquireLocatedEventRevealedLock() {
+  if (!located_event_revealed_lock_.get())
+    located_event_revealed_lock_.reset(GetRevealedLock(ANIMATE_REVEAL_YES));
 }
 
 void ImmersiveModeControllerAsh::UpdateFocusRevealedLock() {
@@ -797,6 +814,38 @@ void ImmersiveModeControllerAsh::UpdateFocusRevealedLock() {
   } else {
     focus_revealed_lock_.reset();
   }
+}
+
+bool ImmersiveModeControllerAsh::UpdateRevealedLocksForSwipe(
+    SwipeType swipe_type) {
+  if (!enabled_ || swipe_type == SWIPE_NONE)
+    return false;
+
+  // Swipes while |native_window_| is inactive should have been filtered out in
+  // OnGestureEvent().
+  DCHECK(views::Widget::GetWidgetForNativeWindow(native_window_)->IsActive());
+
+  if (reveal_state_ == SLIDING_CLOSED || reveal_state_ == CLOSED) {
+    if (swipe_type == SWIPE_OPEN && !located_event_revealed_lock_.get()) {
+      located_event_revealed_lock_.reset(GetRevealedLock(ANIMATE_REVEAL_YES));
+      return true;
+    }
+  } else {
+    if (swipe_type == SWIPE_CLOSE) {
+      // Attempt to end the reveal. If other code is holding onto a lock, the
+      // attempt will be unsuccessful.
+      located_event_revealed_lock_.reset();
+      focus_revealed_lock_.reset();
+
+      if (reveal_state_ == SLIDING_CLOSED || reveal_state_ == CLOSED)
+        return true;
+
+      // Ending the reveal was unsuccessful. Reaquire the locks if appropriate.
+      UpdateLocatedEventRevealedLock(NULL);
+      UpdateFocusRevealedLock();
+    }
+  }
+  return false;
 }
 
 void ImmersiveModeControllerAsh::UpdateUseMinimalChrome(Layout layout) {
@@ -921,7 +970,7 @@ void ImmersiveModeControllerAsh::OnSlideOpenAnimationCompleted(Layout layout) {
 
   // The user may not have moved the mouse since the reveal was initiated.
   // Update the revealed lock to reflect the mouse's current state.
-  UpdateMouseRevealedLock(true, ui::ET_UNKNOWN);
+  UpdateLocatedEventRevealedLock(NULL);
 }
 
 void ImmersiveModeControllerAsh::MaybeEndReveal(Animate animate) {

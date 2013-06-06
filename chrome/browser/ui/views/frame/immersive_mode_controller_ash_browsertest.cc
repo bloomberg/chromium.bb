@@ -30,7 +30,10 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/javascript_dialog_manager.h"
+#include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/env.h"
+#include "ui/aura/root_window.h"
+#include "ui/base/events/event.h"
 #include "ui/compositor/layer_animator.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/gfx/rect.h"
@@ -58,6 +61,24 @@ class ImmersiveModeControllerAshTest : public InProcessBrowserTest {
 
   BrowserView* browser_view() { return browser_view_; }
   ImmersiveModeControllerAsh* controller() { return controller_; }
+
+  // Sets the target of |event| to the root window and sets |event|'s position
+  // to |position_in_screen|.
+  void SetEventPositionAndTarget(const gfx::Point& position_in_screen,
+                                 ui::LocatedEvent* event) {
+    aura::RootWindow* root_window =
+        browser_view_->GetNativeWindow()->GetRootWindow();
+
+    aura::client::ScreenPositionClient* position_client =
+        aura::client::GetScreenPositionClient(root_window);
+
+    gfx::Point position = position_in_screen;
+    position_client->ConvertPointFromScreen(root_window, &position);
+    event->set_location(position);
+    event->set_root_location(position);
+
+    ui::Event::DispatcherApi(event).set_target(root_window);
+  }
 
   // Access to private data from the controller.
   bool top_edge_hover_timer_running() const {
@@ -350,6 +371,8 @@ IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerAshTest,
   // Move to top edge of screen starts hover timer running.
   ui::MouseEvent move(
       ui::ET_MOUSE_MOVED, gfx::Point(), gfx::Point(100, 0), ui::EF_NONE);
+  ui::Event::DispatcherApi(&move).set_target(
+      browser_view()->GetNativeWindow());
   controller()->OnMouseEvent(&move);
   EXPECT_TRUE(top_edge_hover_timer_running());
   EXPECT_EQ(100, mouse_x_when_hit_top());
@@ -394,11 +417,11 @@ IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerAshTest,
   // reveal.
   EXPECT_FALSE(controller()->IsRevealed());
   controller()->StartRevealForTest(true);
-  gfx::Point just_below(0, browser_view()->top_container()->height() + 1);
+  gfx::Point just_below(0, browser_view()->top_container()->height());
   views::View::ConvertPointToScreen(browser_view()->top_container(),
                                     &just_below);
   aura::Env::GetInstance()->set_last_mouse_location(just_below);
-  move.set_root_location(just_below);
+  SetEventPositionAndTarget(just_below, &move);
   controller()->OnMouseEvent(&move);
   EXPECT_TRUE(controller()->IsRevealed());
 
@@ -407,6 +430,7 @@ IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerAshTest,
   ui::MouseEvent click(
       ui::ET_MOUSE_PRESSED, gfx::Point(), just_below, ui::EF_NONE);
   aura::Env::GetInstance()->set_last_mouse_location(just_below);
+  SetEventPositionAndTarget(just_below, &click);
   controller()->OnMouseEvent(&click);
   EXPECT_FALSE(controller()->IsRevealed());
 
@@ -416,7 +440,7 @@ IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerAshTest,
   views::View::ConvertPointToScreen(browser_view()->top_container(),
                                     &far_below);
   aura::Env::GetInstance()->set_last_mouse_location(far_below);
-  move.set_root_location(far_below);
+  SetEventPositionAndTarget(far_below, &move);
   controller()->OnMouseEvent(&move);
   EXPECT_FALSE(controller()->IsRevealed());
 }

@@ -1938,10 +1938,6 @@ FullscreenController* BrowserView::GetFullscreenController() {
   return browser()->fullscreen_controller();
 }
 
-void BrowserView::FocusLocationBar() {
-  SetFocusToLocationBar(false);
-}
-
 void BrowserView::FullscreenStateChanged() {
   if (IsFullscreen()) {
     ProcessFullscreen(true, FOR_DESKTOP, GURL(),
