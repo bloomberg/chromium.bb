@@ -785,6 +785,10 @@ content::WebContents* InstantController::GetOverlayContents() const {
   return overlay_ ? overlay_->contents() : NULL;
 }
 
+content::WebContents* InstantController::GetNTPContents() const {
+  return ntp_ ? ntp_->contents() : NULL;
+}
+
 bool InstantController::IsOverlayingSearchResults() const {
   return model_.mode().is_search_suggestions() && IsFullHeight(model_) &&
          (last_match_was_search_ ||

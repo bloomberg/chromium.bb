@@ -149,6 +149,9 @@ class InstantController : public InstantPage::Delegate {
   // The overlay WebContents. May be NULL. InstantController retains ownership.
   content::WebContents* GetOverlayContents() const;
 
+  // The ntp WebContents. May be NULL. InstantController retains ownership.
+  content::WebContents* GetNTPContents() const;
+
   // Returns true if Instant is showing a search results overlay. Returns false
   // if the overlay is not showing, or if it's showing only suggestions.
   bool IsOverlayingSearchResults() const;
@@ -206,6 +209,10 @@ class InstantController : public InstantPage::Delegate {
   // Resets list of debug events.
   void ClearDebugEvents();
 
+  // Gets the Most Visited items info from InstantService and forwards them to
+  // the Instant page renderer via the appropriate InstantPage subclass.
+  void UpdateMostVisitedItems();
+
   // Returns the correct Instant URL to use from the following possibilities:
   //   o The default search engine's Instant URL
   //   o The --instant-url command line switch
@@ -227,10 +234,6 @@ class InstantController : public InstantPage::Delegate {
   // Non-const for Add/RemoveObserver only.  Other model changes should only
   // happen through the InstantController interface.
   InstantOverlayModel* model() { return &model_; }
-
-  // Gets the Most Visited items info from InstantService and forwards them to
-  // the Instant page renderer via the appropriate InstantPage subclass.
-  void UpdateMostVisitedItems();
 
  protected:
   // Accessors are made protected for testing purposes.

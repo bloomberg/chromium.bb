@@ -96,7 +96,8 @@ TabContentsResource::TabContentsResource(
                        web_contents->GetRenderViewHost()),
       web_contents_(web_contents),
       profile_(Profile::FromBrowserContext(web_contents->GetBrowserContext())),
-      is_instant_overlay_(chrome::IsInstantOverlay(web_contents)) {
+      is_instant_overlay_(chrome::IsInstantOverlay(web_contents) ||
+                          chrome::IsPreloadedInstantExtendedNTP(web_contents)) {
   if (!prerender_icon_) {
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
     prerender_icon_ = rb.GetImageSkiaNamed(IDR_PRERENDER);
@@ -218,9 +219,11 @@ void TabContentsResourceProvider::StartUpdating() {
 
   // Add all the Instant pages.
   for (chrome::BrowserIterator it; !it.done(); it.Next()) {
-    if (it->instant_controller() &&
-        it->instant_controller()->instant()->GetOverlayContents()) {
-      Add(it->instant_controller()->instant()->GetOverlayContents());
+    if (it->instant_controller()) {
+      if (it->instant_controller()->instant()->GetOverlayContents())
+        Add(it->instant_controller()->instant()->GetOverlayContents());
+      if (it->instant_controller()->instant()->GetNTPContents())
+        Add(it->instant_controller()->instant()->GetNTPContents());
     }
   }
 
@@ -294,6 +297,7 @@ void TabContentsResourceProvider::Add(WebContents* web_contents) {
   if (!chrome::FindBrowserWithWebContents(web_contents) &&
       !IsContentsPrerendering(web_contents) &&
       !chrome::IsInstantOverlay(web_contents) &&
+      !chrome::IsPreloadedInstantExtendedNTP(web_contents) &&
       !IsContentsBackgroundPrinted(web_contents)) {
     return;
   }

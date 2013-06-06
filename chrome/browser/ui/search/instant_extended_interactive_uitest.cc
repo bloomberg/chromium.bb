@@ -36,6 +36,8 @@
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
+#include "chrome/browser/task_manager/task_manager.h"
+#include "chrome/browser/task_manager/task_manager_browsertest_util.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -72,7 +74,9 @@
 #include "content/public/common/renderer_preferences.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
+#include "grit/generated_resources.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace {
 
@@ -2656,4 +2660,24 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, LogDropdownShown) {
   ASSERT_TRUE(SetOmniboxTextAndWaitForOverlayToShow("a"));
   EXPECT_EQ(histogramValue + 1,
             GetHistogramCount("Instant.TimeToFirstShowFromWeb"));
+}
+
+IN_PROC_BROWSER_TEST_F(InstantExtendedTest, TaskManagerPrefix) {
+  TaskManagerModel* task_manager = TaskManager::GetInstance()->model();
+  task_manager->StartUpdating();
+
+  // There should be three renderers, the second being the Instant overlay,
+  // and the third being the preloaded NTP.
+  TaskManagerBrowserTestUtil::WaitForWebResourceChange(3);
+
+  string16 prefix = l10n_util::GetStringFUTF16(
+      IDS_TASK_MANAGER_INSTANT_OVERLAY_PREFIX, string16());
+
+  int instant_overlays = 0;
+  for (int i = 0; i < task_manager->ResourceCount(); ++i) {
+    string16 title = task_manager->GetResourceTitle(i);
+    if (StartsWith(title, prefix, true))
+      ++instant_overlays;
+  }
+  EXPECT_EQ(2, instant_overlays);
 }
