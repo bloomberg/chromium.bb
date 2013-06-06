@@ -106,7 +106,6 @@ private:
     void clearImage();
     // If not null, changeRect is the changed part of the image.
     void notifyObservers(const IntRect* changeRect = 0);
-    virtual PurgePriority purgePriority() const { return PurgeFirst; }
 
     virtual void switchClientsToRevalidatedResource() OVERRIDE;
 

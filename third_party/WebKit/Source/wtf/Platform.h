@@ -133,10 +133,6 @@
 #define WTF_USE_SYSTEM_MALLOC 1
 #endif /* OS(DARWIN) */
 
-#if OS(DARWIN)
-#define ENABLE_PURGEABLE_MEMORY 1
-#endif /* OS(DARWIN) */
-
 #if !defined(HAVE_ACCESSIBILITY)
 #if !OS(ANDROID)
 #define HAVE_ACCESSIBILITY 1

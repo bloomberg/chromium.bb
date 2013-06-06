@@ -835,18 +835,18 @@ bool CachedResource::makePurgeable(bool purgeable)
             return false;
 
         m_purgeableData = m_data->releasePurgeableBuffer();
-        m_purgeableData->setPurgePriority(purgePriority());
-        m_purgeableData->makePurgeable(true);
+        m_purgeableData->unlock();
         m_data.clear();
         return true;
     }
 
     if (!m_purgeableData)
         return true;
+
     ASSERT(!m_data);
     ASSERT(!hasClients());
 
-    if (!m_purgeableData->makePurgeable(false))
+    if (!m_purgeableData->lock())
         return false; 
 
     m_data = SharedBuffer::adoptPurgeableBuffer(m_purgeableData.release());

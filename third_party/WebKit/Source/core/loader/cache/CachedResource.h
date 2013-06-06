@@ -27,7 +27,6 @@
 #include "core/loader/FrameLoaderTypes.h"
 #include "core/loader/ResourceLoaderOptions.h"
 #include "core/loader/cache/CachePolicy.h"
-#include "core/platform/PurgePriority.h"
 #include "core/platform/Timer.h"
 #include "core/platform/network/ResourceError.h"
 #include "core/platform/network/ResourceLoadPriority.h"
@@ -296,8 +295,6 @@ private:
 
     void revalidationSucceeded(const ResourceResponse&);
     void revalidationFailed();
-
-    virtual PurgePriority purgePriority() const { return PurgeDefault; }
 
     double currentAge() const;
     double freshnessLifetime() const;

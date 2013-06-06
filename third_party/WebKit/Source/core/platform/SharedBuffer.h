@@ -28,11 +28,11 @@
 #define SharedBuffer_h
 
 #include "wtf/ArrayBuffer.h"
-#include <wtf/Forward.h>
-#include <wtf/OwnPtr.h>
-#include <wtf/RefCounted.h>
-#include <wtf/Vector.h>
-#include <wtf/text/WTFString.h>
+#include "wtf/Forward.h"
+#include "wtf/OwnPtr.h"
+#include "wtf/RefCounted.h"
+#include "wtf/Vector.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
     

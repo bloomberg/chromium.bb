@@ -713,7 +713,6 @@
             ['include', 'platform/mac/KillRingMac\\.mm$'],
             ['include', 'platform/mac/LocalCurrentGraphicsContext\\.mm$'],
             ['include', 'platform/mac/NSScrollerImpDetails\\.mm$'],
-            ['include', 'platform/mac/PurgeableBufferMac\\.cpp$'],
             ['include', 'platform/mac/ScrollbarThemeMac\\.mm$'],
             ['include', 'platform/mac/ScrollAnimatorMac\\.mm$'],
             ['include', 'platform/mac/ScrollElasticityController\\.mm$'],
