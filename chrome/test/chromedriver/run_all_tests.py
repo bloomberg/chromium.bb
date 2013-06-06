@@ -129,14 +129,14 @@ def main():
   print 'Using build outputs from', build_dir
 
   chromedriver = os.path.join(build_dir, server_name)
-  platform = util.GetPlatformName()
+  platform_name = util.GetPlatformName()
   if util.IsLinux() and platform.architecture()[0] == '64bit':
-    platform += '64'
+    platform_name += '64'
   ref_chromedriver = os.path.join(
       chrome_paths.GetSrc(),
       'chrome', 'test', 'chromedriver', 'third_party', 'java_tests',
       'reference_builds',
-      'chromedriver_%s%s' % (platform, exe_postfix))
+      'chromedriver_%s%s' % (platform_name, exe_postfix))
 
   if util.IsLinux():
     # Set LD_LIBRARY_PATH to enable successful loading of shared object files,
