@@ -46,7 +46,27 @@ const char kFakeEmail[] = "user@example.com";
 const char kFakeFingerprintEncoded[] = "CgVaAwiACA==";
 const char kEditedBillingAddress[] = "123 edited billing address";
 const char* kFieldsFromPage[] =
-    { "email", "cc-number", "billing region", "shipping region" };
+    { "email",
+      "cc-name",
+      "cc-number",
+      "cc-exp-month",
+      "cc-exp-year",
+      "cc-csc",
+      "billing name",
+      "billing address-line1",
+      "billing locality",
+      "billing region",
+      "billing postal-code",
+      "billing country",
+      "billing tel",
+      "shipping name",
+      "shipping address-line1",
+      "shipping locality",
+      "shipping region",
+      "shipping postal-code",
+      "shipping country",
+      "shipping tel",
+    };
 const char kSettingsOrigin[] = "Chrome settings";
 
 using content::BrowserThread;
@@ -777,11 +797,29 @@ TEST_F(AutofillDialogControllerTest, DontUseBillingAsShipping) {
   shipping_model->ActivatedAt(2);
 
   controller()->OnAccept();
-  ASSERT_EQ(4U, form_structure()->field_count());
-  EXPECT_EQ("CA", UTF16ToUTF8(form_structure()->field(2)->value));
-  EXPECT_EQ("MI", UTF16ToUTF8(form_structure()->field(3)->value));
-  EXPECT_EQ(ADDRESS_BILLING_STATE, form_structure()->field(2)->type());
-  EXPECT_EQ(ADDRESS_HOME_STATE, form_structure()->field(3)->type());
+  ASSERT_EQ(20U, form_structure()->field_count());
+  EXPECT_EQ(ADDRESS_BILLING_STATE, form_structure()->field(9)->type());
+  EXPECT_EQ(ADDRESS_HOME_STATE, form_structure()->field(16)->type());
+  string16 billing_state = form_structure()->field(9)->value;
+  string16 shipping_state = form_structure()->field(16)->value;
+  EXPECT_FALSE(billing_state.empty());
+  EXPECT_FALSE(shipping_state.empty());
+  EXPECT_NE(billing_state, shipping_state);
+
+  EXPECT_EQ(CREDIT_CARD_NAME, form_structure()->field(1)->type());
+  string16 cc_name = form_structure()->field(1)->value;
+  EXPECT_EQ(NAME_FULL, form_structure()->field(6)->type());
+  string16 billing_name = form_structure()->field(6)->value;
+  EXPECT_EQ(NAME_FULL, form_structure()->field(13)->type());
+  string16 shipping_name = form_structure()->field(13)->value;
+
+  EXPECT_FALSE(cc_name.empty());
+  EXPECT_FALSE(billing_name.empty());
+  EXPECT_FALSE(shipping_name.empty());
+  // Billing name should always be the same as cardholder name.
+  // TODO(estade): this currently fails. http://crbug.com/246417
+  // EXPECT_EQ(cc_name, billing_name);
+  EXPECT_NE(cc_name, shipping_name);
 }
 
 // Test selecting UseBillingForShipping.
@@ -797,11 +835,27 @@ TEST_F(AutofillDialogControllerTest, UseBillingAsShipping) {
   UseBillingForShipping();
 
   controller()->OnAccept();
-  ASSERT_EQ(4U, form_structure()->field_count());
-  EXPECT_EQ("CA", UTF16ToUTF8(form_structure()->field(2)->value));
-  EXPECT_EQ("CA", UTF16ToUTF8(form_structure()->field(3)->value));
-  EXPECT_EQ(ADDRESS_BILLING_STATE, form_structure()->field(2)->type());
-  EXPECT_EQ(ADDRESS_HOME_STATE, form_structure()->field(3)->type());
+  ASSERT_EQ(20U, form_structure()->field_count());
+  EXPECT_EQ(ADDRESS_BILLING_STATE, form_structure()->field(9)->type());
+  EXPECT_EQ(ADDRESS_HOME_STATE, form_structure()->field(16)->type());
+  string16 billing_state = form_structure()->field(9)->value;
+  string16 shipping_state = form_structure()->field(16)->value;
+  EXPECT_FALSE(billing_state.empty());
+  EXPECT_FALSE(shipping_state.empty());
+  EXPECT_EQ(billing_state, shipping_state);
+
+  EXPECT_EQ(CREDIT_CARD_NAME, form_structure()->field(1)->type());
+  string16 cc_name = form_structure()->field(1)->value;
+  EXPECT_EQ(NAME_FULL, form_structure()->field(6)->type());
+  string16 billing_name = form_structure()->field(6)->value;
+  EXPECT_EQ(NAME_FULL, form_structure()->field(13)->type());
+  string16 shipping_name = form_structure()->field(13)->value;
+
+  EXPECT_FALSE(cc_name.empty());
+  EXPECT_FALSE(billing_name.empty());
+  EXPECT_FALSE(shipping_name.empty());
+  EXPECT_EQ(cc_name, billing_name);
+  EXPECT_EQ(cc_name, shipping_name);
 }
 
 // Tests that shipping and billing telephone fields are supported, and filled
@@ -1723,11 +1777,11 @@ TEST_F(AutofillDialogControllerTest, AutofillTypes) {
   controller()->OnDidGetWalletItems(wallet::GetTestWalletItems());
   controller()->OnAccept();
   controller()->OnDidGetFullWallet(wallet::GetTestFullWallet());
-  ASSERT_EQ(4U, form_structure()->field_count());
+  ASSERT_EQ(20U, form_structure()->field_count());
   EXPECT_EQ(EMAIL_ADDRESS, form_structure()->field(0)->type());
-  EXPECT_EQ(CREDIT_CARD_NUMBER, form_structure()->field(1)->type());
-  EXPECT_EQ(ADDRESS_BILLING_STATE, form_structure()->field(2)->type());
-  EXPECT_EQ(ADDRESS_HOME_STATE, form_structure()->field(3)->type());
+  EXPECT_EQ(CREDIT_CARD_NUMBER, form_structure()->field(2)->type());
+  EXPECT_EQ(ADDRESS_BILLING_STATE, form_structure()->field(9)->type());
+  EXPECT_EQ(ADDRESS_HOME_STATE, form_structure()->field(16)->type());
 }
 
 TEST_F(AutofillDialogControllerTest, SaveDetailsInChrome) {

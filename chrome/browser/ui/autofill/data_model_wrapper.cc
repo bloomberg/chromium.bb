@@ -37,19 +37,22 @@ string16 DataModelWrapper::GetDisplayText() {
   return label;
 }
 
-void DataModelWrapper::FillFormStructure(
+bool DataModelWrapper::FillFormStructure(
     const DetailInputs& inputs,
     const InputFieldComparator& compare,
-    FormStructure* form_structure) {
+    FormStructure* form_structure) const {
+  bool filled_something = false;
   for (size_t i = 0; i < form_structure->field_count(); ++i) {
     AutofillField* field = form_structure->field(i);
     for (size_t j = 0; j < inputs.size(); ++j) {
       if (compare.Run(inputs[j], *field)) {
         FillFormField(field);
+        filled_something = true;
         break;
       }
     }
   }
+  return filled_something;
 }
 
 void DataModelWrapper::FillInputs(DetailInputs* inputs) {
@@ -58,7 +61,7 @@ void DataModelWrapper::FillInputs(DetailInputs* inputs) {
   }
 }
 
-void DataModelWrapper::FillFormField(AutofillField* field) {
+void DataModelWrapper::FillFormField(AutofillField* field) const {
   field->value = GetInfo(field->type());
 }
 
@@ -67,6 +70,17 @@ DataModelWrapper::DataModelWrapper() {}
 gfx::Image DataModelWrapper::GetIcon() {
   return gfx::Image();
 }
+
+// EmptyDataModelWrapper
+
+EmptyDataModelWrapper::EmptyDataModelWrapper() {}
+EmptyDataModelWrapper::~EmptyDataModelWrapper() {}
+
+string16 EmptyDataModelWrapper::GetInfo(AutofillFieldType type) const {
+  return string16();
+}
+
+void EmptyDataModelWrapper::FillFormField(AutofillField* field) const {}
 
 // AutofillDataModelWrapper
 
@@ -78,11 +92,11 @@ AutofillDataModelWrapper::AutofillDataModelWrapper(
 
 AutofillDataModelWrapper::~AutofillDataModelWrapper() {}
 
-string16 AutofillDataModelWrapper::GetInfo(AutofillFieldType type) {
+string16 AutofillDataModelWrapper::GetInfo(AutofillFieldType type) const {
   return data_model_->GetInfo(type, g_browser_process->GetApplicationLocale());
 }
 
-void AutofillDataModelWrapper::FillFormField(AutofillField* field) {
+void AutofillDataModelWrapper::FillFormField(AutofillField* field) const {
   data_model_->FillFormField(
       *field, variant_, g_browser_process->GetApplicationLocale(), field);
 }
@@ -113,7 +127,7 @@ AutofillCreditCardWrapper::AutofillCreditCardWrapper(const CreditCard* card)
 
 AutofillCreditCardWrapper::~AutofillCreditCardWrapper() {}
 
-string16 AutofillCreditCardWrapper::GetInfo(AutofillFieldType type) {
+string16 AutofillCreditCardWrapper::GetInfo(AutofillFieldType type) const {
   if (type == CREDIT_CARD_EXP_MONTH)
     return MonthComboboxModel::FormatMonth(card_->expiration_month());
 
@@ -136,7 +150,7 @@ string16 AutofillCreditCardWrapper::GetDisplayText() {
   return card_->TypeAndLastFourDigits();
 }
 
-void AutofillCreditCardWrapper::FillFormField(AutofillField* field) {
+void AutofillCreditCardWrapper::FillFormField(AutofillField* field) const {
   AutofillFieldType field_type = field->type();
 
   if (field_type == NAME_FULL) {
@@ -158,7 +172,7 @@ WalletAddressWrapper::WalletAddressWrapper(
 
 WalletAddressWrapper::~WalletAddressWrapper() {}
 
-string16 WalletAddressWrapper::GetInfo(AutofillFieldType type) {
+string16 WalletAddressWrapper::GetInfo(AutofillFieldType type) const {
   return address_->GetInfo(type, g_browser_process->GetApplicationLocale());
 }
 
@@ -179,7 +193,7 @@ WalletInstrumentWrapper::WalletInstrumentWrapper(
 
 WalletInstrumentWrapper::~WalletInstrumentWrapper() {}
 
-string16 WalletInstrumentWrapper::GetInfo(AutofillFieldType type) {
+string16 WalletInstrumentWrapper::GetInfo(AutofillFieldType type) const {
   if (type == CREDIT_CARD_EXP_MONTH)
     return MonthComboboxModel::FormatMonth(instrument_->expiration_month());
 
@@ -214,7 +228,7 @@ FullWalletBillingWrapper::FullWalletBillingWrapper(
 
 FullWalletBillingWrapper::~FullWalletBillingWrapper() {}
 
-string16 FullWalletBillingWrapper::GetInfo(AutofillFieldType type) {
+string16 FullWalletBillingWrapper::GetInfo(AutofillFieldType type) const {
   if (AutofillType(type).group() == AutofillType::CREDIT_CARD)
     return full_wallet_->GetInfo(type);
 
@@ -240,7 +254,7 @@ FullWalletShippingWrapper::FullWalletShippingWrapper(
 
 FullWalletShippingWrapper::~FullWalletShippingWrapper() {}
 
-string16 FullWalletShippingWrapper::GetInfo(AutofillFieldType type) {
+string16 FullWalletShippingWrapper::GetInfo(AutofillFieldType type) const {
   return full_wallet_->shipping_address()->GetInfo(
       type, g_browser_process->GetApplicationLocale());
 }

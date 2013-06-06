@@ -472,11 +472,14 @@ void AutofillDialogControllerImpl::Show() {
               arraysize(kShippingInputs),
               &requested_shipping_fields_);
 
-  cares_about_shipping_ =
-      FillFormStructureForSection(NULL,
-                                  0,
-                                  SECTION_SHIPPING,
-                                  base::Bind(DetailInputMatchesField));
+  // Test whether we need to show the shipping section. If filling that section
+  // would be a no-op, don't show it.
+  const DetailInputs& inputs = RequestedFieldsForSection(SECTION_SHIPPING);
+  EmptyDataModelWrapper empty_wrapper;
+  cares_about_shipping_ = empty_wrapper.FillFormStructure(
+      inputs,
+      base::Bind(DetailInputMatchesField),
+      &form_structure_);
 
   SuggestionsUpdated();
 
@@ -2198,12 +2201,15 @@ void AutofillDialogControllerImpl::SuggestionsUpdated() {
 void AutofillDialogControllerImpl::FillOutputForSectionWithComparator(
     DialogSection section,
     const InputFieldComparator& compare) {
+  const DetailInputs& inputs = RequestedFieldsForSection(section);
+
   // Email is hidden while using Wallet, special case it.
   if (section == SECTION_EMAIL && IsPayingWithWallet()) {
     AutofillProfile profile;
     profile.SetRawInfo(EMAIL_ADDRESS,
                        account_chooser_model_.active_wallet_account_name());
-    FillFormStructureForSection(&profile, 0, section, compare);
+    AutofillProfileWrapper profile_wrapper(&profile, 0);
+    profile_wrapper.FillFormStructure(inputs, compare, &form_structure_);
     return;
   }
 
@@ -2235,7 +2241,8 @@ void AutofillDialogControllerImpl::FillOutputForSectionWithComparator(
       if (ShouldSaveDetailsLocally())
         GetManager()->SaveImportedCreditCard(card);
 
-      FillFormStructureForSection(&card, 0, section, compare);
+      AutofillCreditCardWrapper card_wrapper(&card);
+      card_wrapper.FillFormStructure(inputs, compare, &form_structure_);
 
       // Again, CVC needs special-casing. Fill it in directly from |output|.
       SetCvcResult(GetValueForType(output, CREDIT_CARD_VERIFICATION_CODE));
@@ -2255,7 +2262,8 @@ void AutofillDialogControllerImpl::FillOutputForSectionWithComparator(
       if (ShouldSaveDetailsLocally())
         SaveProfileGleanedFromSection(profile, section);
 
-      FillFormStructureForSection(&profile, 0, section, compare);
+      AutofillProfileWrapper profile_wrapper(&profile, 0);
+      profile_wrapper.FillFormStructure(inputs, compare, &form_structure_);
     }
   }
 }
@@ -2263,30 +2271,6 @@ void AutofillDialogControllerImpl::FillOutputForSectionWithComparator(
 void AutofillDialogControllerImpl::FillOutputForSection(DialogSection section) {
   FillOutputForSectionWithComparator(section,
                                      base::Bind(DetailInputMatchesField));
-}
-
-bool AutofillDialogControllerImpl::FillFormStructureForSection(
-    const AutofillDataModel* data_model,
-    size_t variant,
-    DialogSection section,
-    const InputFieldComparator& compare) {
-  bool found_match = false;
-  std::string app_locale = g_browser_process->GetApplicationLocale();
-  for (size_t i = 0; i < form_structure_.field_count(); ++i) {
-    AutofillField* field = form_structure_.field(i);
-    // Only fill in data that is associated with this section.
-    const DetailInputs& inputs = RequestedFieldsForSection(section);
-    for (size_t j = 0; j < inputs.size(); ++j) {
-      if (compare.Run(inputs[j], *field)) {
-        found_match = true;
-        if (data_model)
-          data_model->FillFormField(*field, variant, app_locale, field);
-        break;
-      }
-    }
-  }
-
-  return found_match;
 }
 
 bool AutofillDialogControllerImpl::FormStructureCaresAboutSection(

@@ -341,7 +341,7 @@ void CreditCard::SetRawInfo(AutofillFieldType type,
 }
 
 base::string16 CreditCard::GetInfo(AutofillFieldType type,
-                             const std::string& app_locale) const {
+                                   const std::string& app_locale) const {
   if (type == CREDIT_CARD_NUMBER)
     return StripSeparators(number_);
 

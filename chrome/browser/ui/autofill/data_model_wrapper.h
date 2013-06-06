@@ -35,7 +35,7 @@ class DataModelWrapper {
   virtual ~DataModelWrapper();
 
   // Returns the data for a specific autocomplete type.
-  virtual string16 GetInfo(AutofillFieldType type) = 0;
+  virtual string16 GetInfo(AutofillFieldType type) const = 0;
 
   // Returns the icon, if any, that represents this model.
   virtual gfx::Image GetIcon();
@@ -50,20 +50,36 @@ class DataModelWrapper {
 
   // Fills in |form_structure| with the data that this model contains. |inputs|
   // and |comparator| are used to determine whether each field in the
-  // FormStructure should be filled in or left alone.
-  void FillFormStructure(
+  // FormStructure should be filled in or left alone. Returns whether any fields
+  // in |form_structure| were found to be matching.
+  bool FillFormStructure(
       const DetailInputs& inputs,
       const InputFieldComparator& compare,
-      FormStructure* form_structure);
+      FormStructure* form_structure) const;
 
  protected:
   DataModelWrapper();
 
   // Fills in |field| with data from the model.
-  virtual void FillFormField(AutofillField* field);
+  virtual void FillFormField(AutofillField* field) const;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DataModelWrapper);
+};
+
+// A DataModelWrapper that does not hold data and does nothing when told to
+// fill in a form.
+class EmptyDataModelWrapper : public DataModelWrapper {
+ public:
+  EmptyDataModelWrapper();
+  virtual ~EmptyDataModelWrapper();
+
+  virtual string16 GetInfo(AutofillFieldType type) const OVERRIDE;
+
+ protected:
+  virtual void FillFormField(AutofillField* field) const OVERRIDE;
+
+  DISALLOW_COPY_AND_ASSIGN(EmptyDataModelWrapper);
 };
 
 // A DataModelWrapper for Autofill data.
@@ -72,10 +88,10 @@ class AutofillDataModelWrapper : public DataModelWrapper {
   AutofillDataModelWrapper(const AutofillDataModel* data_model, size_t variant);
   virtual ~AutofillDataModelWrapper();
 
-  virtual string16 GetInfo(AutofillFieldType type) OVERRIDE;
+  virtual string16 GetInfo(AutofillFieldType type) const OVERRIDE;
 
  protected:
-  virtual void FillFormField(AutofillField* field) OVERRIDE;
+  virtual void FillFormField(AutofillField* field) const OVERRIDE;
 
   size_t variant() const { return variant_; }
 
@@ -106,12 +122,12 @@ class AutofillCreditCardWrapper : public AutofillDataModelWrapper {
   explicit AutofillCreditCardWrapper(const CreditCard* card);
   virtual ~AutofillCreditCardWrapper();
 
-  virtual string16 GetInfo(AutofillFieldType type) OVERRIDE;
+  virtual string16 GetInfo(AutofillFieldType type) const OVERRIDE;
   virtual gfx::Image GetIcon() OVERRIDE;
   virtual string16 GetDisplayText() OVERRIDE;
 
  protected:
-  virtual void FillFormField(AutofillField* field) OVERRIDE;
+  virtual void FillFormField(AutofillField* field) const OVERRIDE;
 
  private:
   const CreditCard* card_;
@@ -125,7 +141,7 @@ class WalletAddressWrapper : public DataModelWrapper {
   explicit WalletAddressWrapper(const wallet::Address* address);
   virtual ~WalletAddressWrapper();
 
-  virtual string16 GetInfo(AutofillFieldType type) OVERRIDE;
+  virtual string16 GetInfo(AutofillFieldType type) const OVERRIDE;
   virtual string16 GetDisplayText() OVERRIDE;
 
  private:
@@ -141,7 +157,7 @@ class WalletInstrumentWrapper : public DataModelWrapper {
       const wallet::WalletItems::MaskedInstrument* instrument);
   virtual ~WalletInstrumentWrapper();
 
-  virtual string16 GetInfo(AutofillFieldType type) OVERRIDE;
+  virtual string16 GetInfo(AutofillFieldType type) const OVERRIDE;
   virtual gfx::Image GetIcon() OVERRIDE;
   virtual string16 GetDisplayText() OVERRIDE;
 
@@ -157,7 +173,7 @@ class FullWalletBillingWrapper : public DataModelWrapper {
   explicit FullWalletBillingWrapper(wallet::FullWallet* full_wallet);
   virtual ~FullWalletBillingWrapper();
 
-  virtual string16 GetInfo(AutofillFieldType type) OVERRIDE;
+  virtual string16 GetInfo(AutofillFieldType type) const OVERRIDE;
   virtual string16 GetDisplayText() OVERRIDE;
 
  private:
@@ -172,7 +188,7 @@ class FullWalletShippingWrapper : public DataModelWrapper {
   explicit FullWalletShippingWrapper(wallet::FullWallet* full_wallet);
   virtual ~FullWalletShippingWrapper();
 
-  virtual string16 GetInfo(AutofillFieldType type) OVERRIDE;
+  virtual string16 GetInfo(AutofillFieldType type) const OVERRIDE;
 
  private:
   wallet::FullWallet* full_wallet_;

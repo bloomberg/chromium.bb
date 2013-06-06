@@ -333,15 +333,6 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
   void FillOutputForSectionWithComparator(DialogSection section,
                                           const InputFieldComparator& compare);
 
-  // Fills in |form_structure_| using |data_model|. Returns whether any matches
-  // were found in the form structure for the data in |section|. |data_model|
-  // may be NULL, in which case it's just a dry run (where the return value
-  // is still valid).
-  bool FillFormStructureForSection(const AutofillDataModel* data_model,
-                                   size_t variant,
-                                   DialogSection section,
-                                   const InputFieldComparator& compare);
-
   // Returns whether |form_structure|_| has any fields that match the fieldset
   // represented by |section|.
   bool FormStructureCaresAboutSection(DialogSection section) const;
