@@ -231,7 +231,7 @@ bool FindProcessHoldingSocket(pid_t* pid_out, ino_t socket_inode) {
         continue;
       }
 
-      ino_t fd_inode;
+      ino_t fd_inode = static_cast<ino_t>(-1);
       if (ProcPathGetInode(&fd_inode, buf)) {
         if (fd_inode == socket_inode) {
           if (already_found) {
