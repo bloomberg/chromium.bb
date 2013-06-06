@@ -1,0 +1,216 @@
+// Copyright 2013 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+GEN('#include "chrome/browser/ui/webui/identity_internals_ui_browsertest.h"');
+
+/**
+ * Test C++ fixture for downloads WebUI testing.
+ * @constructor
+ * @extends {testing.Test}
+ */
+function IdentityInternalsUIBrowserTest() {}
+
+/**
+ * Base fixture for Downloads WebUI testing.
+ * @extends {testing.Test}
+ * @constructor
+ */
+function BaseIdentityInternalsWebUITest() {}
+
+BaseIdentityInternalsWebUITest.prototype = {
+  __proto__: testing.Test.prototype,
+
+  /**
+   * Browse to the downloads page & call our preLoad().
+   */
+  browsePreload: 'chrome://identity-internals',
+
+  /** @override */
+  typedefCppFixture: 'IdentityInternalsUIBrowserTest',
+
+  /**
+   * Gets all of the token entries on the page.
+   * return {Element[]} Elements displaying token information.
+   */
+  getTokens: function() {
+    return document.querySelectorAll('#token-list > div');
+  },
+
+  /**
+   * Gets the expiration time displayed on the page for a given entry.
+   * @param {Element} tokenEntry Display element holding token information.
+   * @return {Date} Expiration date of the token.
+   */
+  getExpirationTime: function(tokenEntry) {
+    return Date.parse(tokenEntry.querySelector('.expiration-time')
+        .innerText);
+  },
+
+  /**
+   * Gets the extension id displayed on the page for a given entry.
+   * @param {Element} tokenEntry Display element holding token information.
+   * @return {string} Extension Id of the token.
+   */
+  getExtensionId: function(tokenEntry) {
+    return tokenEntry.querySelector('.extension-id').innerText;
+  },
+
+  /**
+   * Gets the extension name displayed on the page for a given entry.
+   * @param {Element} tokenEntry Display element holding token information.
+   * @return {string} Extension Name of the token.
+   */
+  getExtensionName: function(tokenEntry) {
+    return tokenEntry.querySelector('.extension-name').innerText;
+  },
+
+  /**
+   * Gets the token ID displayed on the page for a given entry.
+   * @param {Element} tokenEntry Display element holding token information.
+   * @return {string} Token ID of the token.
+   */
+  getTokenId: function(tokenEntry) {
+    return tokenEntry.querySelector('.token-id').innerText;
+  },
+
+  /**
+   * Gets the token status displayed on the page for a given entry.
+   * @param {Element} tokenEntry Display element holding token information.
+   * @return {string} Token status of the token.
+   */
+  getTokenStatus: function(tokenEntry) {
+    return tokenEntry.querySelector('.token-status').innerText;
+  },
+
+  /**
+   * Gets the token scopes displayed on the page for a given entry.
+   * @param {Element} tokenEntry Display element holding token information.
+   * @return {string[]} Token scopes of the token.
+   */
+  getScopes: function(tokenEntry) {
+    return tokenEntry.querySelector('.scope-list')
+        .innerHTML.split('<br>');
+  },
+};
+
+// Test verifying chrome://identity-internals Web UI when the token cache is
+// empty.
+TEST_F('BaseIdentityInternalsWebUITest', 'emptyTokenCache', function() {
+  var tokenListEntries = this.getTokens();
+  expectEquals(0, tokenListEntries.length);
+});
+
+/**
+ * Fixture for Identity Internals Web UI testing with a single token in the
+ * Identity API token cache.
+ * @extends {BaseIdentityInternalsWebUITest}
+ * @constructor
+ */
+function IdentityInternalsSingleTokenWebUITest() {}
+
+IdentityInternalsSingleTokenWebUITest.prototype = {
+  __proto__: BaseIdentityInternalsWebUITest.prototype,
+
+  /** @override */
+  testGenPreamble: function() {
+    GEN('  SetupTokenCacheWithStoreApp();');
+  },
+};
+
+// Test for listing a token cache with a single token. It uses a known extension
+// - the Chrome Web Store, in order to check the extension name.
+TEST_F('IdentityInternalsSingleTokenWebUITest', 'getAllTokens', function() {
+  var tokenListEntries = this.getTokens();
+  expectEquals(1, tokenListEntries.length);
+  expectEquals('Store', this.getExtensionName(tokenListEntries[0]));
+  expectEquals('ahfgeienlihckogmohjhadlkjgocpleb',
+               this.getExtensionId(tokenListEntries[0]));
+  expectEquals('store_token', this.getTokenId(tokenListEntries[0]));
+  expectEquals('Token Present', this.getTokenStatus(tokenListEntries[0]));
+  expectLT(this.getExpirationTime(tokenListEntries[0]) - new Date(),
+           3600 * 1000);
+  var scopes = this.getScopes(tokenListEntries[0]);
+  expectEquals(3, scopes.length);
+  expectEquals('store_scope1', scopes[0]);
+  expectEquals('store_scope2', scopes[1]);
+  expectEquals('', scopes[2]);
+});
+
+// Test ensuring the getters on the BaseIdentityInternalsWebUITest work
+// correctly. They are implemented on the child class, because the parent does
+// not have any tokens to display.
+TEST_F('IdentityInternalsSingleTokenWebUITest', 'verifyGetters', function() {
+  var tokenListEntries = document.querySelectorAll('#token-list > div');
+  var actualTokens = this.getTokens();
+  expectEquals(tokenListEntries.length, actualTokens.length);
+  expectEquals(tokenListEntries[0], actualTokens[0]);
+  expectEquals(this.getExtensionName(tokenListEntries[0]),
+      tokenListEntries[0].querySelector('.extension-name').innerText);
+  expectEquals(this.getExtensionId(tokenListEntries[0]),
+      tokenListEntries[0].querySelector('.extension-id').innerText);
+  expectEquals(this.getTokenId(tokenListEntries[0]),
+      tokenListEntries[0].querySelector('.token-id').innerText);
+  expectEquals(this.getTokenStatus(tokenListEntries[0]),
+      tokenListEntries[0].querySelector('.token-status').innerText);
+  expectEquals(this.getExpirationTime(tokenListEntries[0]),
+      Date.parse(tokenListEntries[0].querySelector('.expiration-time')
+          .innerText));
+  var scopes = tokenListEntries[0].querySelector('.scope-list')
+      .innerHTML.split('<br>');
+  var actualScopes = this.getScopes(tokenListEntries[0]);
+  expectEquals(scopes.length, actualScopes.length);
+  for (var i = 0; i < scopes.length; i++) {
+    expectEquals(scopes[i], actualScopes[i]);
+  }
+});
+
+/**
+ * Fixture for Identity Internals Web UI testing with multiple tokens in the
+ * Identity API token cache.
+ * @extends {BaseIdentityInternalsWebUITest}
+ * @constructor
+ */
+function IdentityInternalsMultipleTokensWebUITest() {}
+
+IdentityInternalsMultipleTokensWebUITest.prototype = {
+  __proto__: BaseIdentityInternalsWebUITest.prototype,
+
+  /** @override */
+  testGenPreamble: function() {
+    GEN('  SetupTokenCache(2);');
+  },
+};
+
+// Test for listing a token cache with multiple tokens. Names of the extensions
+// are empty, because extensions are faked, and not present in the extension
+// service.
+TEST_F('IdentityInternalsMultipleTokensWebUITest', 'getAllTokens', function() {
+  var tokenListEntries = this.getTokens();
+  expectEquals(2, tokenListEntries.length);
+  expectEquals('', this.getExtensionName(tokenListEntries[0]));
+  expectEquals('extension0',
+               this.getExtensionId(tokenListEntries[0]));
+  expectEquals('token0', this.getTokenId(tokenListEntries[0]));
+  expectEquals('Token Present', this.getTokenStatus(tokenListEntries[0]));
+  expectLT(this.getExpirationTime(tokenListEntries[0]) - new Date(),
+           3600 * 1000);
+  var scopes = this.getScopes(tokenListEntries[0]);
+  expectEquals(3, scopes.length);
+  expectEquals('scope_1_0', scopes[0]);
+  expectEquals('scope_2_0', scopes[1]);
+  expectEquals('', scopes[2]);
+  expectEquals('', this.getExtensionName(tokenListEntries[1]));
+  expectEquals('extension1',
+               this.getExtensionId(tokenListEntries[1]));
+  expectEquals('token1', this.getTokenId(tokenListEntries[1]));
+  expectEquals('Token Present', this.getTokenStatus(tokenListEntries[1]));
+  expectLT(this.getExpirationTime(tokenListEntries[1]) - new Date(),
+           3600 * 1000);
+  var scopes = this.getScopes(tokenListEntries[1]);
+  expectEquals(3, scopes.length);
+  expectEquals('scope_1_1', scopes[0]);
+  expectEquals('scope_2_1', scopes[1]);
+  expectEquals('', scopes[2]);
+});
+
