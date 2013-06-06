@@ -129,73 +129,66 @@ util.recurseAndResolveEntries = function(entries, recurse, successCallback) {
   var fileEntries = [];
   var fileBytes = 0;
 
-  var pathCompare = function(a, b) {
-    if (a.fullPath > b.fullPath)
-      return 1;
+  var steps = {
+    // Start operations.
+    start: function() {
+      for (var i = 0; i < entries.length; i++) {
+        var parentPath = PathUtil.getParentDirectory(entries[i].fullPath);
+        steps.tallyEntry(entries[i], parentPath);
+      }
+      steps.areWeThereYet();
+    },
 
-    if (a.fullPath < b.fullPath)
-      return -1;
+    // Process one entry.
+    tallyEntry: function(entry, originalSourcePath) {
+      entry.originalSourcePath = originalSourcePath;
+      if (entry.isDirectory) {
+        dirEntries.push(entry);
+        if (!recurse)
+          return;
+        pendingSubdirectories++;
+        util.forEachDirEntry(entry, function(inEntry) {
+          if (inEntry == null) {
+            // Null entry indicates we're done scanning this directory.
+            pendingSubdirectories--;
+            steps.areWeThereYet();
+            return;
+          }
+          steps.tallyEntry(inEntry, originalSourcePath);
+        });
+      } else {
+        fileEntries.push(entry);
+        pendingFiles++;
+        entry.getMetadata(function(metadata) {
+          fileBytes += metadata.size;
+          pendingFiles--;
+          steps.areWeThereYet();
+        });
+      }
+    },
 
-    return 0;
-  };
-
-  var parentPath = function(path) {
-    return path.substring(0, path.lastIndexOf('/'));
-  };
-
-  // We invoke this after each async callback to see if we've received all
-  // the expected callbacks.  If so, we're done.
-  var areWeThereYet = function() {
-    if (pendingSubdirectories == 0 && pendingFiles == 0) {
+    // We invoke this after each async callback to see if we've received all
+    // the expected callbacks.  If so, we're done.
+    areWeThereYet: function() {
+      if (!successCallback || pendingSubdirectories != 0 || pendingFiles != 0)
+        return;
+      var pathCompare = function(a, b) {
+        if (a.fullPath > b.fullPath)
+          return 1;
+        if (a.fullPath < b.fullPath)
+          return -1;
+        return 0;
+      };
       var result = {
         dirEntries: dirEntries.sort(pathCompare),
         fileEntries: fileEntries.sort(pathCompare),
         fileBytes: fileBytes
       };
-
-      if (successCallback) {
-        successCallback(result);
-      }
+      successCallback(result);
     }
   };
 
-  var tallyEntry = function(entry, originalSourcePath) {
-    entry.originalSourcePath = originalSourcePath;
-    if (entry.isDirectory) {
-      dirEntries.push(entry);
-      if (recurse) {
-        recurseDirectory(entry, originalSourcePath);
-      }
-    } else {
-      fileEntries.push(entry);
-      pendingFiles++;
-      entry.getMetadata(function(metadata) {
-        fileBytes += metadata.size;
-        pendingFiles--;
-        areWeThereYet();
-      });
-    }
-  };
-
-  var recurseDirectory = function(dirEntry, originalSourcePath) {
-    pendingSubdirectories++;
-
-    util.forEachDirEntry(dirEntry, function(entry) {
-        if (entry == null) {
-          // Null entry indicates we're done scanning this directory.
-          pendingSubdirectories--;
-          areWeThereYet();
-        } else {
-          tallyEntry(entry, originalSourcePath);
-        }
-    });
-  };
-
-  for (var i = 0; i < entries.length; i++) {
-    tallyEntry(entries[i], parentPath(entries[i].fullPath));
-  }
-
-  areWeThereYet();
+  steps.start();
 };
 
 /**

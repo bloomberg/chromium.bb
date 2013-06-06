@@ -81,6 +81,22 @@ PathUtil.getTopDirectory = function(path) {
 };
 
 /**
+ * Obtains the parent path of the specified path.
+ * @param {string} path Path string.
+ * @return {string} Parent path.
+ */
+PathUtil.getParentDirectory = function(path) {
+  if (path[path.length - 1] == '/')
+    return PathUtil.getParentDirectory(path.substring(0, path.length - 1));
+  var index = path.lastIndexOf('/');
+  if (index == 0)
+    return '/';
+  else if (index == -1)
+    return '.';
+  return path.substring(0, index);
+};
+
+/**
  * @param {string} path Any unix-style path (may start or not start from root).
  * @return {Array.<string>} Path components.
  */

@@ -87,8 +87,11 @@ FileCopyManager.Task = function(targetDirEntry, opt_zipBaseDirEntry) {
  */
 FileCopyManager.Task.prototype.setEntries = function(entries, callback) {
   var self = this;
-
-  var onEntriesRecursed = function(result) {
+  this.originalEntries = entries;
+  // When moving directories, FileEntry.moveTo() is used if both source
+  // and target are on Drive. There is no need to recurse into directories.
+  var recurse = !this.move;
+  util.recurseAndResolveEntries(entries, recurse, function(result) {
     if (self.move) {
       // When moving, deeper directory is moved earier.
       self.pendingDirectories = result.dirEntries.sort(
@@ -101,13 +104,7 @@ FileCopyManager.Task.prototype.setEntries = function(entries, callback) {
     self.pendingFiles = result.fileEntries;
     self.pendingBytes = result.fileBytes;
     callback();
-  };
-
-  this.originalEntries = entries;
-  // When moving directories, FileEntry.moveTo() is used if both source
-  // and target are on Drive. There is no need to recurse into directories.
-  var recurse = !this.move;
-  util.recurseAndResolveEntries(entries, recurse, onEntriesRecursed);
+  });
 };
 
 /**
@@ -473,58 +470,66 @@ FileCopyManager.prototype.paste = function(files, directories, isCut, isOnDrive,
                                            targetPath, targetOnDrive) {
   var self = this;
   var entries = [];
-
-  var onPathError = function(err) {
-    self.sendProgressEvent_('ERROR',
-                            new FileCopyManager.Error('FILESYSTEM_ERROR', err));
-  };
-
-  var onTargetEntryFound = function(targetEntry) {
-    self.queueCopy_(targetEntry,
-                    entries,
-                    isCut,
-                    isOnDrive,
-                    targetOnDrive);
-  };
-
-  var onComplete = function() {
-    self.root_.getDirectory(targetPath, {},
-                            onTargetEntryFound, onPathError);
-  };
-
   var added = 0;
-  var onEntryFound = function(entry) {
-    // When getDirectories/getFiles finish, they call addEntry with null.
-    // We don't want to add null to our entries.
-    if (entry != null) {
+  var total;
+
+  var steps = {
+    start: function() {
+      // Filter entries.
+      var entryFilterFunc = function(entry) {
+        if (entry == '')
+          return false;
+        if (isCut && entry.replace(/\/[^\/]+$/, '') == targetPath)
+          // Moving to the same directory is a redundant operation.
+          return false;
+        return true;
+      };
+      directories = directories ? directories.filter(entryFilterFunc) : [];
+      files = files ? files.filter(entryFilterFunc) : [];
+
+      // Check the number of filtered entries.
+      total = directories.length + files.length;
+      if (total == 0)
+        return;
+
+      // Retrieve entries.
+      util.getDirectories(self.root_, {create: false}, directories,
+                          steps.onEntryFound, steps.onPathError);
+      util.getFiles(self.root_, {create: false}, files,
+                    steps.onEntryFound, steps.onPathError);
+    },
+
+    onEntryFound: function(entry) {
+      // When getDirectories/getFiles finish, they call addEntry with null.
+      // We don't want to add null to our entries.
+      if (entry == null)
+        return;
       entries.push(entry);
       added++;
       if (added == total)
-        onComplete();
+        steps.onSourceEntriesFound();
+    },
+
+    onSourceEntriesFound: function() {
+      self.root_.getDirectory(targetPath, {},
+                              steps.onTargetEntryFound, steps.onPathError);
+    },
+
+    onTargetEntryFound: function(targetEntry) {
+      self.queueCopy_(targetEntry,
+                      entries,
+                      isCut,
+                      isOnDrive,
+                      targetOnDrive);
+    },
+
+    onPathError: function(err) {
+      var myError = new FileCopyManager.Error('FILESYSTEM_ERROR', err);
+      self.sendProgressEvent_('ERROR', myError);
     }
   };
 
-  var entryFilterFunc = function(entry) {
-    if (entry == '') {
-      return false;
-    } else if (isCut && entry.replace(/\/[^\/]+$/, '') == targetPath) {
-      // Moving to the same directory is a redundant operation
-      return false;
-    } else {
-      return true;
-    }
-  };
-  directories = directories ? directories.filter(entryFilterFunc) : [];
-  files = files ? files.filter(entryFilterFunc) : [];
-
-  var total = directories.length + files.length;
-  if (total == 0)
-    return;
-
-  util.getDirectories(self.root_, {create: false}, directories, onEntryFound,
-                      onPathError);
-  util.getFiles(self.root_, {create: false}, files, onEntryFound,
-                onPathError);
+  steps.start();
 };
 
 /**
