@@ -240,8 +240,8 @@ class ChunkDemuxerStream : public DemuxerStream {
   virtual void Read(const ReadCB& read_cb) OVERRIDE;
   virtual Type type() OVERRIDE;
   virtual void EnableBitstreamConverter() OVERRIDE;
-  virtual const AudioDecoderConfig& audio_decoder_config() OVERRIDE;
-  virtual const VideoDecoderConfig& video_decoder_config() OVERRIDE;
+  virtual AudioDecoderConfig audio_decoder_config() OVERRIDE;
+  virtual VideoDecoderConfig video_decoder_config() OVERRIDE;
 
  private:
   enum State {
@@ -480,13 +480,13 @@ DemuxerStream::Type ChunkDemuxerStream::type() { return type_; }
 
 void ChunkDemuxerStream::EnableBitstreamConverter() {}
 
-const AudioDecoderConfig& ChunkDemuxerStream::audio_decoder_config() {
+AudioDecoderConfig ChunkDemuxerStream::audio_decoder_config() {
   CHECK_EQ(type_, AUDIO);
   base::AutoLock auto_lock(lock_);
   return stream_->GetCurrentAudioDecoderConfig();
 }
 
-const VideoDecoderConfig& ChunkDemuxerStream::video_decoder_config() {
+VideoDecoderConfig ChunkDemuxerStream::video_decoder_config() {
   CHECK_EQ(type_, VIDEO);
   base::AutoLock auto_lock(lock_);
   return stream_->GetCurrentVideoDecoderConfig();

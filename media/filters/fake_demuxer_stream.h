@@ -30,8 +30,8 @@ class MEDIA_EXPORT FakeDemuxerStream : public DemuxerStream {
 
   // DemuxerStream implementation.
   virtual void Read(const ReadCB& read_cb) OVERRIDE;
-  virtual const AudioDecoderConfig& audio_decoder_config() OVERRIDE;
-  virtual const VideoDecoderConfig& video_decoder_config() OVERRIDE;
+  virtual AudioDecoderConfig audio_decoder_config() OVERRIDE;
+  virtual VideoDecoderConfig video_decoder_config() OVERRIDE;
   virtual Type type() OVERRIDE;
   virtual void EnableBitstreamConverter() OVERRIDE;
 
@@ -70,8 +70,6 @@ class MEDIA_EXPORT FakeDemuxerStream : public DemuxerStream {
 
   base::TimeDelta current_timestamp_;
   base::TimeDelta duration_;
-
-  AudioDecoderConfig audio_decoder_config_;
 
   gfx::Size next_coded_size_;
   VideoDecoderConfig video_decoder_config_;

@@ -215,13 +215,13 @@ void FFmpegDemuxerStream::EnableBitstreamConverter() {
   bitstream_converter_enabled_ = true;
 }
 
-const AudioDecoderConfig& FFmpegDemuxerStream::audio_decoder_config() {
+AudioDecoderConfig FFmpegDemuxerStream::audio_decoder_config() {
   DCHECK(message_loop_->BelongsToCurrentThread());
   CHECK_EQ(type_, AUDIO);
   return audio_config_;
 }
 
-const VideoDecoderConfig& FFmpegDemuxerStream::video_decoder_config() {
+VideoDecoderConfig FFmpegDemuxerStream::video_decoder_config() {
   DCHECK(message_loop_->BelongsToCurrentThread());
   CHECK_EQ(type_, VIDEO);
   return video_config_;

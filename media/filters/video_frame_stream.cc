@@ -159,13 +159,13 @@ void VideoFrameStream::Read(const DemuxerStream::ReadCB& demuxer_read_cb) {
       &VideoFrameStream::OnBufferReady, weak_this_, demuxer_read_cb));
 }
 
-const AudioDecoderConfig& VideoFrameStream::audio_decoder_config() {
+AudioDecoderConfig VideoFrameStream::audio_decoder_config() {
   DCHECK(message_loop_->BelongsToCurrentThread());
   LOG(FATAL) << "Method audio_decoder_config() called on VideoFrameStream";
   return stream_->audio_decoder_config();
 }
 
-const VideoDecoderConfig& VideoFrameStream::video_decoder_config() {
+VideoDecoderConfig VideoFrameStream::video_decoder_config() {
   DCHECK(message_loop_->BelongsToCurrentThread());
   return stream_->video_decoder_config();
 }

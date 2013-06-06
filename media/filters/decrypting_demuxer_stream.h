@@ -8,9 +8,11 @@
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "media/base/audio_decoder_config.h"
 #include "media/base/decryptor.h"
 #include "media/base/demuxer_stream.h"
 #include "media/base/pipeline_status.h"
+#include "media/base/video_decoder_config.h"
 
 namespace base {
 class MessageLoopProxy;
@@ -43,8 +45,8 @@ class MEDIA_EXPORT DecryptingDemuxerStream : public DemuxerStream {
 
   // DemuxerStream implementation.
   virtual void Read(const ReadCB& read_cb) OVERRIDE;
-  virtual const AudioDecoderConfig& audio_decoder_config() OVERRIDE;
-  virtual const VideoDecoderConfig& video_decoder_config() OVERRIDE;
+  virtual AudioDecoderConfig audio_decoder_config() OVERRIDE;
+  virtual VideoDecoderConfig video_decoder_config() OVERRIDE;
   virtual Type type() OVERRIDE;
   virtual void EnableBitstreamConverter() OVERRIDE;
 
@@ -98,8 +100,8 @@ class MEDIA_EXPORT DecryptingDemuxerStream : public DemuxerStream {
   // Pointer to the input demuxer stream that will feed us encrypted buffers.
   DemuxerStream* demuxer_stream_;
 
-  scoped_ptr<AudioDecoderConfig> audio_config_;
-  scoped_ptr<VideoDecoderConfig> video_config_;
+  AudioDecoderConfig audio_config_;
+  VideoDecoderConfig video_config_;
 
   // Callback to request/cancel decryptor creation notification.
   SetDecryptorReadyCB set_decryptor_ready_cb_;

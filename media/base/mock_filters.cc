@@ -26,12 +26,12 @@ DemuxerStream::Type MockDemuxerStream::type() {
   return type_;
 }
 
-const AudioDecoderConfig& MockDemuxerStream::audio_decoder_config() {
+AudioDecoderConfig MockDemuxerStream::audio_decoder_config() {
   DCHECK_EQ(type_, DemuxerStream::AUDIO);
   return audio_decoder_config_;
 }
 
-const VideoDecoderConfig& MockDemuxerStream::video_decoder_config() {
+VideoDecoderConfig MockDemuxerStream::video_decoder_config() {
   DCHECK_EQ(type_, DemuxerStream::VIDEO);
   return video_decoder_config_;
 }

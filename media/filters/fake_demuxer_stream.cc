@@ -60,13 +60,13 @@ void FakeDemuxerStream::Read(const ReadCB& read_cb) {
   DoRead();
 }
 
-const AudioDecoderConfig& FakeDemuxerStream::audio_decoder_config() {
+AudioDecoderConfig FakeDemuxerStream::audio_decoder_config() {
   DCHECK(message_loop_->BelongsToCurrentThread());
   NOTREACHED();
-  return audio_decoder_config_;
+  return AudioDecoderConfig();
 }
 
-const VideoDecoderConfig& FakeDemuxerStream::video_decoder_config() {
+VideoDecoderConfig FakeDemuxerStream::video_decoder_config() {
   DCHECK(message_loop_->BelongsToCurrentThread());
   return video_decoder_config_;
 }
