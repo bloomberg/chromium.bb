@@ -40,7 +40,7 @@ remoting.ButterBar = function() {
  * the bar is dismissed.
  *
  * @param {string} messageId
- * @param {string} substitutions
+ * @param {string|Array} substitutions
  * @param {string} storageKey
  * @private
  */
