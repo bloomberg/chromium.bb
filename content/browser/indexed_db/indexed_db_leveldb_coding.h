@@ -12,6 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/string16.h"
+#include "base/strings/string_piece.h"
 #include "content/common/indexed_db/indexed_db_key.h"
 #include "content/common/indexed_db/indexed_db_key_path.h"
 
@@ -21,71 +22,56 @@ class LevelDBSlice;
 
 CONTENT_EXPORT extern const unsigned char kMinimumIndexId;
 
-CONTENT_EXPORT void EncodeByte(unsigned char, std::vector<char>*);
-CONTENT_EXPORT const char* DecodeByte(const char* p,
-                                      const char* limit,
-                                      unsigned char& found_char);
 CONTENT_EXPORT std::vector<char> MaxIDBKey();
 CONTENT_EXPORT std::vector<char> MinIDBKey();
-CONTENT_EXPORT void EncodeBool(bool, std::vector<char>*);
-CONTENT_EXPORT bool DecodeBool(const char* begin, const char* end);
-CONTENT_EXPORT void EncodeInt(int64, std::vector<char>*);
-inline void EncodeIntSafely(int64 nParam,
-                            int64 max,
-                            std::vector<char>* into) {
-  DCHECK_LE(nParam, max);
-  return EncodeInt(nParam, into);
-}
 
-template <class T>
-int64 DecodeInt(T begin, T end) {
-  // TODO(alecflett): Make this a DCHECK_LE().
-  DCHECK(begin <= end);
-  int64 ret = 0;
+CONTENT_EXPORT void EncodeByte(unsigned char value, std::vector<char>* into);
+CONTENT_EXPORT void EncodeBool(bool value, std::vector<char>* into);
+CONTENT_EXPORT void EncodeInt(int64 value, std::vector<char>* into);
+CONTENT_EXPORT void EncodeVarInt(int64 value, std::vector<char>* into);
+CONTENT_EXPORT void EncodeString(const string16& value,
+                                 std::vector<char>* into);
+CONTENT_EXPORT void EncodeStringWithLength(const string16& value,
+                                           std::vector<char>* into);
+CONTENT_EXPORT void EncodeDouble(double value, std::vector<char>* into);
+CONTENT_EXPORT void EncodeIDBKey(const IndexedDBKey& value,
+                                 std::vector<char>* into);
+CONTENT_EXPORT void EncodeIDBKeyPath(const IndexedDBKeyPath& value,
+                                     std::vector<char>* into);
 
-  int shift = 0;
-  while (begin < end) {
-    unsigned char c = *begin++;
-    ret |= static_cast<int64>(c) << shift;
-    shift += 8;
-  }
+CONTENT_EXPORT WARN_UNUSED_RESULT bool DecodeByte(base::StringPiece* slice,
+                                                  unsigned char* value);
+CONTENT_EXPORT WARN_UNUSED_RESULT bool DecodeBool(base::StringPiece* slice,
+                                                  bool* value);
+CONTENT_EXPORT WARN_UNUSED_RESULT bool DecodeInt(base::StringPiece* slice,
+                                                 int64* value);
+CONTENT_EXPORT WARN_UNUSED_RESULT bool DecodeVarInt(base::StringPiece* slice,
+                                                    int64* value);
+CONTENT_EXPORT WARN_UNUSED_RESULT bool DecodeString(base::StringPiece* slice,
+                                                    string16* value);
+CONTENT_EXPORT WARN_UNUSED_RESULT bool DecodeStringWithLength(
+    base::StringPiece* slice,
+    string16* value);
+CONTENT_EXPORT WARN_UNUSED_RESULT bool DecodeDouble(base::StringPiece* slice,
+                                                    double* value);
+CONTENT_EXPORT WARN_UNUSED_RESULT bool DecodeIDBKey(
+    base::StringPiece* slice,
+    scoped_ptr<IndexedDBKey>* value);
+CONTENT_EXPORT WARN_UNUSED_RESULT bool DecodeIDBKeyPath(
+    base::StringPiece* slice,
+    IndexedDBKeyPath* value);
 
-  return ret;
-}
-
-CONTENT_EXPORT void EncodeVarInt(int64, std::vector<char>*);
-CONTENT_EXPORT const char* DecodeVarInt(const char* p,
-                                        const char* limit,
-                                        int64& found_int);
-CONTENT_EXPORT void EncodeString(const string16&, std::vector<char>*);
-CONTENT_EXPORT string16 DecodeString(const char* p, const char* end);
-CONTENT_EXPORT void EncodeStringWithLength(const string16&, std::vector<char>*);
-CONTENT_EXPORT const char* DecodeStringWithLength(const char* p,
-                                                  const char* limit,
-                                                  string16& found_string);
-CONTENT_EXPORT int CompareEncodedStringsWithLength(const char*& p,
-                                                   const char* limit_p,
-                                                   const char*& q,
-                                                   const char* limit_q,
+CONTENT_EXPORT int CompareEncodedStringsWithLength(base::StringPiece* slice1,
+                                                   base::StringPiece* slice2,
                                                    bool& ok);
-CONTENT_EXPORT void EncodeDouble(double, std::vector<char>*);
-CONTENT_EXPORT const char* DecodeDouble(const char* p,
-                                        const char* limit,
-                                        double*);
-void EncodeIDBKey(const IndexedDBKey&, std::vector<char>*);
-CONTENT_EXPORT std::vector<char> EncodeIDBKey(const IndexedDBKey&);
-CONTENT_EXPORT const char* DecodeIDBKey(const char* p,
-                                        const char* limit,
-                                        scoped_ptr<IndexedDBKey>* found_key);
-CONTENT_EXPORT const char* ExtractEncodedIDBKey(const char* start,
-                                                const char* limit,
-                                                std::vector<char>* result);
+
+CONTENT_EXPORT WARN_UNUSED_RESULT bool ExtractEncodedIDBKey(
+    base::StringPiece* slice,
+    std::vector<char>* result);
+
 CONTENT_EXPORT int CompareEncodedIDBKeys(const std::vector<char>& a,
                                          const std::vector<char>& b,
                                          bool& ok);
-CONTENT_EXPORT void EncodeIDBKeyPath(const IndexedDBKeyPath&,
-                                     std::vector<char>*);
-CONTENT_EXPORT IndexedDBKeyPath DecodeIDBKeyPath(const char*, const char*);
 
 CONTENT_EXPORT int Compare(const LevelDBSlice& a,
                            const LevelDBSlice& b,

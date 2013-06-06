@@ -9,6 +9,7 @@
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/browser/indexed_db/indexed_db_leveldb_coding.h"
 #include "content/browser/indexed_db/indexed_db_metadata.h"
@@ -23,6 +24,8 @@
 #include "content/common/indexed_db/indexed_db_key_range.h"
 #include "third_party/WebKit/public/platform/WebIDBKey.h"
 #include "third_party/WebKit/public/platform/WebIDBKeyPath.h"
+
+using base::StringPiece;
 
 // TODO(jsbell): Make blink push the version during the open() call.
 static const uint32 kWireVersion = 2;
@@ -97,15 +100,14 @@ static bool GetInt(DBOrTransaction* db,
                    const LevelDBSlice& key,
                    int64& found_int,
                    bool& found) {
-  std::vector<char> result;
-  bool ok = db->Get(key, result, found);
+  std::string result;
+  bool ok = db->Get(key, &result, found);
   if (!ok)
     return false;
   if (!found)
     return true;
-
-  found_int = DecodeInt(result.begin(), result.end());
-  return true;
+  StringPiece slice(result);
+  return DecodeInt(&slice, &found_int) && slice.empty();
 }
 
 static void PutInt(LevelDBTransaction* transaction,
@@ -122,18 +124,14 @@ WARN_UNUSED_RESULT static bool GetVarInt(DBOrTransaction* db,
                                          const LevelDBSlice& key,
                                          int64& found_int,
                                          bool& found) {
-  std::vector<char> result;
-  bool ok = db->Get(key, result, found);
+  std::string result;
+  bool ok = db->Get(key, &result, found);
   if (!ok)
     return false;
   if (!found)
     return true;
-  if (!result.size())
-    return false;
-
-  found = DecodeVarInt(&*result.begin(), &*result.rbegin() + 1, found_int) ==
-          &*result.rbegin() + 1;
-  return true;
+  StringPiece slice(result);
+  return DecodeVarInt(&slice, &found_int) && slice.empty();
 }
 
 static void PutVarInt(LevelDBTransaction* transaction,
@@ -149,20 +147,15 @@ WARN_UNUSED_RESULT static bool GetString(DBOrTransaction* db,
                                          const LevelDBSlice& key,
                                          string16& found_string,
                                          bool& found) {
-  std::vector<char> result;
+  std::string result;
   found = false;
-  bool ok = db->Get(key, result, found);
+  bool ok = db->Get(key, &result, found);
   if (!ok)
     return false;
   if (!found)
     return true;
-  if (!result.size()) {
-    found_string.clear();
-    return true;
-  }
-
-  found_string = DecodeString(&*result.begin(), &*result.rbegin() + 1);
-  return true;
+  StringPiece slice(result);
+  return DecodeString(&slice, &found_string) && slice.empty();
 }
 
 static void PutString(LevelDBTransaction* transaction,
@@ -871,8 +864,12 @@ bool IndexedDBBackingStore::GetObjectStores(
 
     // TODO(jsbell): Do this by direct key lookup rather than iteration, to
     // simplify.
-    string16 object_store_name =
-        DecodeString(it->Value().begin(), it->Value().end());
+    string16 object_store_name;
+    {
+      StringPiece slice(it->Value().AsStringPiece());
+      if (!DecodeString(&slice, &object_store_name) || !slice.empty())
+        INTERNAL_CONSISTENCY_ERROR(GET_OBJECT_STORES);
+    }
 
     it->Next();
     if (!CheckObjectStoreAndMetaDataType(it.get(),
@@ -882,8 +879,12 @@ bool IndexedDBBackingStore::GetObjectStores(
       INTERNAL_CONSISTENCY_ERROR(GET_OBJECT_STORES);
       break;
     }
-    IndexedDBKeyPath key_path =
-        DecodeIDBKeyPath(it->Value().begin(), it->Value().end());
+    IndexedDBKeyPath key_path;
+    {
+      StringPiece slice(it->Value().AsStringPiece());
+      if (!DecodeIDBKeyPath(&slice, &key_path) || !slice.empty())
+        INTERNAL_CONSISTENCY_ERROR(GET_OBJECT_STORES);
+    }
 
     it->Next();
     if (!CheckObjectStoreAndMetaDataType(
@@ -894,7 +895,12 @@ bool IndexedDBBackingStore::GetObjectStores(
       INTERNAL_CONSISTENCY_ERROR(GET_OBJECT_STORES);
       break;
     }
-    bool auto_increment = DecodeBool(it->Value().begin(), it->Value().end());
+    bool auto_increment;
+    {
+      StringPiece slice(it->Value().AsStringPiece());
+      if (!DecodeBool(&slice, &auto_increment) || !slice.empty())
+        INTERNAL_CONSISTENCY_ERROR(GET_OBJECT_STORES);
+    }
 
     it->Next();  // Is evicatble.
     if (!CheckObjectStoreAndMetaDataType(it.get(),
@@ -924,14 +930,24 @@ bool IndexedDBBackingStore::GetObjectStores(
       INTERNAL_CONSISTENCY_ERROR(GET_OBJECT_STORES);
       break;
     }
-    int64 max_index_id = DecodeInt(it->Value().begin(), it->Value().end());
+    int64 max_index_id;
+    {
+      StringPiece slice(it->Value().AsStringPiece());
+      if (!DecodeInt(&slice, &max_index_id) || !slice.empty())
+        INTERNAL_CONSISTENCY_ERROR(GET_OBJECT_STORES);
+    }
 
     it->Next();  // [optional] has key path (is not null)
     if (CheckObjectStoreAndMetaDataType(it.get(),
                                         stop_key,
                                         object_store_id,
                                         ObjectStoreMetaDataKey::HAS_KEY_PATH)) {
-      bool has_key_path = DecodeBool(it->Value().begin(), it->Value().end());
+      bool has_key_path;
+      {
+        StringPiece slice(it->Value().AsStringPiece());
+        if (!DecodeBool(&slice, &has_key_path))
+          INTERNAL_CONSISTENCY_ERROR(GET_OBJECT_STORES);
+      }
       // This check accounts for two layers of legacy coding:
       // (1) Initially, has_key_path was added to distinguish null vs. string.
       // (2) Later, null vs. string vs. array was stored in the key_path itself.
@@ -953,8 +969,10 @@ bool IndexedDBBackingStore::GetObjectStores(
             stop_key,
             object_store_id,
             ObjectStoreMetaDataKey::KEY_GENERATOR_CURRENT_NUMBER)) {
-      key_generator_current_number =
-          DecodeInt(it->Value().begin(), it->Value().end());
+      StringPiece slice(it->Value().AsStringPiece());
+      if (!DecodeInt(&slice, &key_generator_current_number) || !slice.empty())
+        INTERNAL_CONSISTENCY_ERROR(GET_OBJECT_STORES);
+
       // TODO(jsbell): Return key_generator_current_number, cache in
       // object store, and write lazily to backing store.  For now,
       // just assert that if it was written it was valid.
@@ -1107,31 +1125,31 @@ bool IndexedDBBackingStore::GetRecord(
 
   const std::vector<char> leveldb_key =
       ObjectStoreDataKey::Encode(database_id, object_store_id, key);
-  std::vector<char> data;
+  std::string data;
 
   record.clear();
 
   bool found = false;
-  bool ok = leveldb_transaction->Get(LevelDBSlice(leveldb_key), data, found);
+  bool ok = leveldb_transaction->Get(LevelDBSlice(leveldb_key), &data, found);
   if (!ok) {
     INTERNAL_READ_ERROR(GET_RECORD);
     return false;
   }
   if (!found)
     return true;
-  if (!data.size()) {
+  if (data.empty()) {
     INTERNAL_READ_ERROR(GET_RECORD);
     return false;
   }
 
   int64 version;
-  const char* p = DecodeVarInt(&*data.begin(), &*data.rbegin() + 1, version);
-  if (!p) {
+  StringPiece slice(data);
+  if (!DecodeVarInt(&slice, &version)) {
     INTERNAL_READ_ERROR(GET_RECORD);
     return false;
   }
 
-  record.insert(record.end(), p, static_cast<const char*>(&*data.rbegin()) + 1);
+  record.insert(record.end(), slice.begin(), slice.end());
   return true;
 }
 
@@ -1203,7 +1221,9 @@ bool IndexedDBBackingStore::PutRecord(
   EncodeInt(version, &version_encoded);
   leveldb_transaction->Put(LevelDBSlice(exists_entry_key), version_encoded);
 
-  record_identifier->Reset(EncodeIDBKey(key), version);
+  std::vector<char> key_encoded;
+  EncodeIDBKey(key, &key_encoded);
+  record_identifier->Reset(key_encoded, version);
   return true;
 }
 
@@ -1263,52 +1283,56 @@ bool IndexedDBBackingStore::GetKeyGeneratorCurrentNumber(
           ObjectStoreMetaDataKey::KEY_GENERATOR_CURRENT_NUMBER);
 
   key_generator_current_number = -1;
-  std::vector<char> data;
+  std::string data;
 
   bool found = false;
   bool ok = leveldb_transaction->Get(
-      LevelDBSlice(key_generator_current_number_key), data, found);
+      LevelDBSlice(key_generator_current_number_key), &data, found);
   if (!ok) {
     INTERNAL_READ_ERROR(GET_KEY_GENERATOR_CURRENT_NUMBER);
     return false;
   }
-  if (found) {
-    key_generator_current_number = DecodeInt(data.begin(), data.end());
-  } else {
-    // Previously, the key generator state was not stored explicitly
-    // but derived from the maximum numeric key present in existing
-    // data. This violates the spec as the data may be cleared but the
-    // key generator state must be preserved.
-    // TODO(jsbell): Fix this for all stores on database open?
-    const std::vector<char> start_key =
-        ObjectStoreDataKey::Encode(database_id, object_store_id, MinIDBKey());
-    const std::vector<char> stop_key =
-        ObjectStoreDataKey::Encode(database_id, object_store_id, MaxIDBKey());
-
-    scoped_ptr<LevelDBIterator> it = leveldb_transaction->CreateIterator();
-    int64 max_numeric_key = 0;
-
-    for (it->Seek(LevelDBSlice(start_key));
-         it->IsValid() && CompareKeys(it->Key(), LevelDBSlice(stop_key)) < 0;
-         it->Next()) {
-      const char* p = it->Key().begin();
-      const char* limit = it->Key().end();
-
-      ObjectStoreDataKey data_key;
-      p = ObjectStoreDataKey::Decode(p, limit, &data_key);
-      DCHECK(p);
-
-      scoped_ptr<IndexedDBKey> user_key = data_key.user_key();
-      if (user_key->type() == WebKit::WebIDBKey::NumberType) {
-        int64 n = static_cast<int64>(user_key->number());
-        if (n > max_numeric_key)
-          max_numeric_key = n;
-      }
+  if (found && !data.empty()) {
+    StringPiece slice(data);
+    if (!DecodeInt(&slice, &key_generator_current_number) || !slice.empty()) {
+      INTERNAL_READ_ERROR(GET_KEY_GENERATOR_CURRENT_NUMBER);
+      return false;
     }
-
-    key_generator_current_number = max_numeric_key + 1;
+    return true;
   }
 
+  // Previously, the key generator state was not stored explicitly
+  // but derived from the maximum numeric key present in existing
+  // data. This violates the spec as the data may be cleared but the
+  // key generator state must be preserved.
+  // TODO(jsbell): Fix this for all stores on database open?
+  const std::vector<char> start_key =
+      ObjectStoreDataKey::Encode(database_id, object_store_id, MinIDBKey());
+  const std::vector<char> stop_key =
+      ObjectStoreDataKey::Encode(database_id, object_store_id, MaxIDBKey());
+
+  scoped_ptr<LevelDBIterator> it = leveldb_transaction->CreateIterator();
+  int64 max_numeric_key = 0;
+
+  for (it->Seek(LevelDBSlice(start_key));
+       it->IsValid() && CompareKeys(it->Key(), LevelDBSlice(stop_key)) < 0;
+       it->Next()) {
+    const char* p = it->Key().begin();
+    const char* limit = it->Key().end();
+
+    ObjectStoreDataKey data_key;
+    p = ObjectStoreDataKey::Decode(p, limit, &data_key);
+    DCHECK(p);
+
+    scoped_ptr<IndexedDBKey> user_key = data_key.user_key();
+    if (user_key->type() == WebKit::WebIDBKey::NumberType) {
+      int64 n = static_cast<int64>(user_key->number());
+      if (n > max_numeric_key)
+        max_numeric_key = n;
+    }
+  }
+
+  key_generator_current_number = max_numeric_key + 1;
   return true;
 }
 
@@ -1359,9 +1383,9 @@ bool IndexedDBBackingStore::KeyExistsInObjectStore(
       IndexedDBBackingStore::Transaction::LevelDBTransactionFrom(transaction);
   const std::vector<char> leveldb_key =
       ObjectStoreDataKey::Encode(database_id, object_store_id, key);
-  std::vector<char> data;
+  std::string data;
 
-  bool ok = leveldb_transaction->Get(LevelDBSlice(leveldb_key), data, found);
+  bool ok = leveldb_transaction->Get(LevelDBSlice(leveldb_key), &data, found);
   if (!ok) {
     INTERNAL_READ_ERROR(KEY_EXISTS_IN_OBJECT_STORE);
     return false;
@@ -1374,10 +1398,13 @@ bool IndexedDBBackingStore::KeyExistsInObjectStore(
   }
 
   int64 version;
-  if (DecodeVarInt(&*data.begin(), &*data.rbegin() + 1, version) == 0)
+  StringPiece slice(data);
+  if (!DecodeVarInt(&slice, &version))
     return false;
 
-  found_record_identifier->Reset(EncodeIDBKey(key), version);
+  std::vector<char> encoded_key;
+  EncodeIDBKey(key, &encoded_key);
+  found_record_identifier->Reset(encoded_key, version);
   return true;
 }
 
@@ -1400,8 +1427,7 @@ static bool CheckIndexAndMetaDataKey(const LevelDBIterator* it,
 }
 
 // TODO(jsbell): This should do some error handling rather than plowing ahead
-// when bad
-// data is encountered.
+// when bad data is encountered.
 bool IndexedDBBackingStore::GetIndexes(
     int64 database_id,
     int64 object_store_id,
@@ -1437,7 +1463,12 @@ bool IndexedDBBackingStore::GetIndexes(
     // TODO(jsbell): Do this by direct key lookup rather than iteration, to
     // simplify.
     int64 index_id = meta_data_key.IndexId();
-    string16 index_name = DecodeString(it->Value().begin(), it->Value().end());
+    string16 index_name;
+    {
+      StringPiece slice(it->Value().AsStringPiece());
+      if (!DecodeString(&slice, &index_name) || !slice.empty())
+        INTERNAL_CONSISTENCY_ERROR(GET_INDEXES);
+    }
 
     it->Next();  // unique flag
     if (!CheckIndexAndMetaDataKey(
@@ -1445,7 +1476,12 @@ bool IndexedDBBackingStore::GetIndexes(
       INTERNAL_CONSISTENCY_ERROR(GET_INDEXES);
       break;
     }
-    bool index_unique = DecodeBool(it->Value().begin(), it->Value().end());
+    bool index_unique;
+    {
+      StringPiece slice(it->Value().AsStringPiece());
+      if (!DecodeBool(&slice, &index_unique) || !slice.empty())
+        INTERNAL_CONSISTENCY_ERROR(GET_INDEXES);
+    }
 
     it->Next();  // key_path
     if (!CheckIndexAndMetaDataKey(
@@ -1453,14 +1489,21 @@ bool IndexedDBBackingStore::GetIndexes(
       INTERNAL_CONSISTENCY_ERROR(GET_INDEXES);
       break;
     }
-    IndexedDBKeyPath key_path =
-        DecodeIDBKeyPath(it->Value().begin(), it->Value().end());
+    IndexedDBKeyPath key_path;
+    {
+      StringPiece slice(it->Value().AsStringPiece());
+      if (!DecodeIDBKeyPath(&slice, &key_path) || !slice.empty())
+        INTERNAL_CONSISTENCY_ERROR(GET_INDEXES);
+    }
 
     it->Next();  // [optional] multi_entry flag
     bool index_multi_entry = false;
     if (CheckIndexAndMetaDataKey(
             it.get(), stop_key, index_id, IndexMetaDataKey::MULTI_ENTRY)) {
-      index_multi_entry = DecodeBool(it->Value().begin(), it->Value().end());
+      StringPiece slice(it->Value().AsStringPiece());
+      if (!DecodeBool(&slice, &index_multi_entry) || !slice.empty())
+        INTERNAL_CONSISTENCY_ERROR(GET_INDEXES);
+
       it->Next();
     }
 
@@ -1569,11 +1612,15 @@ bool IndexedDBBackingStore::PutIndexDataForRecord(
 
   LevelDBTransaction* leveldb_transaction =
       IndexedDBBackingStore::Transaction::LevelDBTransactionFrom(transaction);
+
+  std::vector<char> encoded_key;
+  EncodeIDBKey(key, &encoded_key);
+
   const std::vector<char> index_data_key =
       IndexDataKey::Encode(database_id,
                            object_store_id,
                            index_id,
-                           EncodeIDBKey(key),
+                           encoded_key,
                            record_identifier.primary_key());
 
   std::vector<char> data;
@@ -1621,9 +1668,9 @@ static bool VersionExists(LevelDBTransaction* transaction,
                           bool& exists) {
   const std::vector<char> key =
       ExistsEntryKey::Encode(database_id, object_store_id, encoded_primary_key);
-  std::vector<char> data;
+  std::string data;
 
-  bool ok = transaction->Get(LevelDBSlice(key), data, exists);
+  bool ok = transaction->Get(LevelDBSlice(key), &data, exists);
   if (!ok) {
     INTERNAL_READ_ERROR(VERSION_EXISTS);
     return false;
@@ -1631,7 +1678,11 @@ static bool VersionExists(LevelDBTransaction* transaction,
   if (!exists)
     return true;
 
-  exists = (DecodeInt(data.begin(), data.end()) == version);
+  StringPiece slice(data);
+  int64 decoded;
+  if (!DecodeInt(&slice, &decoded) || !slice.empty())
+    return false;
+  exists = (decoded == version);
   return true;
 }
 
@@ -1662,15 +1713,15 @@ bool IndexedDBBackingStore::FindKeyInIndex(
     if (CompareIndexKeys(it->Key(), LevelDBSlice(leveldb_key)) > 0)
       return true;
 
+    StringPiece slice(it->Value().AsStringPiece());
+
     int64 version;
-    const char* p =
-        DecodeVarInt(it->Value().begin(), it->Value().end(), version);
-    if (!p) {
+    if (!DecodeVarInt(&slice, &version)) {
       INTERNAL_READ_ERROR(FIND_KEY_IN_INDEX);
       return false;
     }
     found_encoded_primary_key.insert(
-        found_encoded_primary_key.end(), p, it->Value().end());
+        found_encoded_primary_key.end(), slice.begin(), slice.end());
 
     bool exists = false;
     bool ok = VersionExists(leveldb_transaction,
@@ -1723,10 +1774,9 @@ bool IndexedDBBackingStore::GetPrimaryKeyViaIndex(
     return false;
   }
 
-  DecodeIDBKey(&*found_encoded_primary_key.begin(),
-               &*found_encoded_primary_key.rbegin() + 1,
-               primary_key);
-  return true;
+  StringPiece slice(&*found_encoded_primary_key.begin(),
+                    found_encoded_primary_key.size());
+  return DecodeIDBKey(&slice, primary_key) && slice.empty();
 }
 
 bool IndexedDBBackingStore::KeyExistsInIndex(
@@ -1761,10 +1811,9 @@ bool IndexedDBBackingStore::KeyExistsInIndex(
     return false;
   }
 
-  DecodeIDBKey(&*found_encoded_primary_key.begin(),
-               &*found_encoded_primary_key.rbegin() + 1,
-               found_primary_key);
-  return true;
+  StringPiece slice(&*found_encoded_primary_key.begin(),
+                    found_encoded_primary_key.size());
+  return DecodeIDBKey(&slice, found_primary_key) && slice.empty();
 }
 
 IndexedDBBackingStore::Cursor::Cursor(
@@ -1993,15 +2042,16 @@ bool ObjectStoreKeyCursorImpl::LoadCurrentRow() {
   current_key_ = object_store_data_key.user_key();
 
   int64 version;
-  const char* value_position = DecodeVarInt(
-      iterator_->Value().begin(), iterator_->Value().end(), version);
-  if (!value_position) {
+  StringPiece slice(iterator_->Value().AsStringPiece());
+  if (!DecodeVarInt(&slice, &version)) {
     INTERNAL_READ_ERROR(LOAD_CURRENT_ROW);
     return false;
   }
 
   // TODO(jsbell): This re-encodes what was just decoded; try and optimize.
-  record_identifier_.Reset(EncodeIDBKey(*current_key_), version);
+  std::vector<char> encoded_key;
+  EncodeIDBKey(*current_key_, &encoded_key);
+  record_identifier_.Reset(encoded_key, version);
 
   return true;
 }
@@ -2048,18 +2098,19 @@ bool ObjectStoreCursorImpl::LoadCurrentRow() {
   current_key_ = object_store_data_key.user_key();
 
   int64 version;
-  const char* value_position = DecodeVarInt(
-      iterator_->Value().begin(), iterator_->Value().end(), version);
-  if (!value_position) {
+  StringPiece slice(iterator_->Value().AsStringPiece());
+  if (!DecodeVarInt(&slice, &version)) {
     INTERNAL_READ_ERROR(LOAD_CURRENT_ROW);
     return false;
   }
 
   // TODO(jsbell): This re-encodes what was just decoded; try and optimize.
-  record_identifier_.Reset(EncodeIDBKey(*current_key_), version);
+  std::vector<char> encoded_key;
+  EncodeIDBKey(*current_key_, &encoded_key);
+  record_identifier_.Reset(encoded_key, version);
 
   std::vector<char> value;
-  value.insert(value.end(), value_position, iterator_->Value().end());
+  value.insert(value.end(), slice.begin(), slice.end());
   current_value_.swap(value);
   return true;
 }
@@ -2114,17 +2165,14 @@ bool IndexKeyCursorImpl::LoadCurrentRow() {
   current_key_ = index_data_key.user_key();
   DCHECK(current_key_);
 
+  StringPiece slice(iterator_->Value().AsStringPiece());
   int64 index_data_version;
-  const char* value_position = DecodeVarInt(
-      iterator_->Value().begin(), iterator_->Value().end(), index_data_version);
-  if (!value_position) {
+  if (!DecodeVarInt(&slice, &index_data_version)) {
     INTERNAL_READ_ERROR(LOAD_CURRENT_ROW);
     return false;
   }
 
-  value_position =
-      DecodeIDBKey(value_position, iterator_->Value().end(), &primary_key_);
-  if (!value_position) {
+  if (!DecodeIDBKey(&slice, &primary_key_) || !slice.empty()) {
     INTERNAL_READ_ERROR(LOAD_CURRENT_ROW);
     return false;
   }
@@ -2134,9 +2182,10 @@ bool IndexKeyCursorImpl::LoadCurrentRow() {
                                  index_data_key.ObjectStoreId(),
                                  *primary_key_);
 
-  std::vector<char> result;
+  std::string result;
   bool found = false;
-  bool ok = transaction_->Get(LevelDBSlice(primary_leveldb_key), result, found);
+  bool ok =
+      transaction_->Get(LevelDBSlice(primary_leveldb_key), &result, found);
   if (!ok) {
     INTERNAL_READ_ERROR(LOAD_CURRENT_ROW);
     return false;
@@ -2151,9 +2200,8 @@ bool IndexKeyCursorImpl::LoadCurrentRow() {
   }
 
   int64 object_store_data_version;
-  const char* t = DecodeVarInt(
-      &*result.begin(), &*result.rbegin() + 1, object_store_data_version);
-  if (!t) {
+  slice = StringPiece(result);
+  if (!DecodeVarInt(&slice, &object_store_data_version)) {
     INTERNAL_READ_ERROR(LOAD_CURRENT_ROW);
     return false;
   }
@@ -2217,18 +2265,13 @@ bool IndexCursorImpl::LoadCurrentRow() {
   current_key_ = index_data_key.user_key();
   DCHECK(current_key_);
 
-  const char* value_position = iterator_->Value().begin();
-  const char* value_limit = iterator_->Value().end();
-
+  StringPiece slice(iterator_->Value().AsStringPiece());
   int64 index_data_version;
-  value_position =
-      DecodeVarInt(value_position, value_limit, index_data_version);
-  if (!value_position) {
+  if (!DecodeVarInt(&slice, &index_data_version)) {
     INTERNAL_READ_ERROR(LOAD_CURRENT_ROW);
     return false;
   }
-  value_position = DecodeIDBKey(value_position, value_limit, &primary_key_);
-  if (!value_position) {
+  if (!DecodeIDBKey(&slice, &primary_key_)) {
     INTERNAL_READ_ERROR(LOAD_CURRENT_ROW);
     return false;
   }
@@ -2238,10 +2281,10 @@ bool IndexCursorImpl::LoadCurrentRow() {
                                  index_data_key.ObjectStoreId(),
                                  *primary_key_);
 
-  std::vector<char> result;
+  std::string result;
   bool found = false;
   bool ok =
-      transaction_->Get(LevelDBSlice(primary_leveldb_key_), result, found);
+      transaction_->Get(LevelDBSlice(primary_leveldb_key_), &result, found);
   if (!ok) {
     INTERNAL_READ_ERROR(LOAD_CURRENT_ROW);
     return false;
@@ -2256,9 +2299,8 @@ bool IndexCursorImpl::LoadCurrentRow() {
   }
 
   int64 object_store_data_version;
-  value_position = DecodeVarInt(
-      &*result.begin(), &*result.rbegin() + 1, object_store_data_version);
-  if (!value_position) {
+  slice = StringPiece(result);
+  if (!DecodeVarInt(&slice, &object_store_data_version)) {
     INTERNAL_READ_ERROR(LOAD_CURRENT_ROW);
     return false;
   }
@@ -2268,12 +2310,8 @@ bool IndexCursorImpl::LoadCurrentRow() {
     return false;
   }
 
-  // TODO(jsbell): Make value_position an iterator.
-  std::vector<char> value;
-  value.insert(value.end(),
-               value_position,
-               static_cast<const char*>(&*result.rbegin()) + 1);
-  current_value_.swap(value);
+  current_value_.clear();
+  current_value_.insert(current_value_.end(), slice.begin(), slice.end());
   return true;
 }
 
