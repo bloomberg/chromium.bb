@@ -127,8 +127,8 @@ void ReportCorrupt(sql::Connection* db, size_t startup_kb) {
 
   base::StringAppendF(&debug_info, "SQLITE_CORRUPT, integrity_check:\n");
 
-  // Check files up to 4M to keep things from blocking too long.
-  const size_t kMaxIntegrityCheckSize = 4096;
+  // Check files up to 8M to keep things from blocking too long.
+  const size_t kMaxIntegrityCheckSize = 8192;
   if (startup_kb > kMaxIntegrityCheckSize) {
     base::StringAppendF(&debug_info, "too big %" PRIuS "\n", startup_kb);
   } else {
@@ -253,7 +253,7 @@ void DatabaseErrorCallback(sql::Connection* db,
       reported = true;
 
       // Corrupt cases currently dominate, report them very infrequently.
-      static const uint64 kCorruptReportsPerMillion = 1000;
+      static const uint64 kCorruptReportsPerMillion = 10000;
       if (rand < kCorruptReportsPerMillion)
         ReportCorrupt(db, startup_kb);
     } else if (error == SQLITE_READONLY) {

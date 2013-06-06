@@ -777,19 +777,36 @@ int Connection::OnSqliteError(int err, sql::Statement *stmt) {
 // TODO(shess): Allow specifying integrity_check versus quick_check.
 // TODO(shess): Allow specifying maximum results (default 100 lines).
 bool Connection::IntegrityCheck(std::vector<std::string>* messages) {
-  const char kSql[] = "PRAGMA integrity_check";
-  sql::Statement stmt(GetUniqueStatement(kSql));
-
   messages->clear();
 
-  // The pragma appears to return all results (up to 100 by default)
-  // as a single string.  This doesn't appear to be an API contract,
-  // it could return separate lines, so loop _and_ split.
-  while (stmt.Step()) {
-    std::string result(stmt.ColumnString(0));
-    base::SplitString(result, '\n', messages);
+  // This has the side effect of setting SQLITE_RecoveryMode, which
+  // allows SQLite to process through certain cases of corruption.
+  // Failing to set this pragma probably means that the database is
+  // beyond recovery.
+  const char kWritableSchema[] = "PRAGMA writable_schema = ON";
+  if (!Execute(kWritableSchema))
+    return false;
+
+  bool ret = false;
+  {
+    const char kSql[] = "PRAGMA integrity_check";
+    sql::Statement stmt(GetUniqueStatement(kSql));
+
+    // The pragma appears to return all results (up to 100 by default)
+    // as a single string.  This doesn't appear to be an API contract,
+    // it could return separate lines, so loop _and_ split.
+    while (stmt.Step()) {
+      std::string result(stmt.ColumnString(0));
+      base::SplitString(result, '\n', messages);
+    }
+    ret = stmt.Succeeded();
   }
-  return stmt.Succeeded();
+
+  // Best effort to put things back as they were before.
+  const char kNoWritableSchema[] = "PRAGMA writable_schema = OFF";
+  ignore_result(Execute(kNoWritableSchema));
+
+  return ret;
 }
 
 }  // namespace sql
