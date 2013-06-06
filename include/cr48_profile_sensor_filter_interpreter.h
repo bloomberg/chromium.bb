@@ -145,11 +145,6 @@ class Cr48ProfileSensorFilterInterpreter : public FilterInterpreter {
   // bounding box instead of real finger positions.
   void CorrectFingerPosition(HardwareState* hwstate);
 
-  // Set WARP flags for both fingers if their positions are either unreliable
-  // or jumpy. Return true if prev_hwstate should be dropped, or it should be
-  // delivered to other interpreters.
-  bool SuppressFingerJump(HardwareState* hwstate);
-
   // Set WARP flags for both fingers immediately after 1->2 finger transitions
   void SuppressOneToTwoFingerJump(HardwareState* hwstate);
 
