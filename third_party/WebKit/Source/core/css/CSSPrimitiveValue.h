@@ -22,11 +22,12 @@
 #ifndef CSSPrimitiveValue_h
 #define CSSPrimitiveValue_h
 
+#include "CSSValueKeywords.h"
 #include "core/css/CSSValue.h"
 #include "core/platform/graphics/Color.h"
-#include <wtf/Forward.h>
-#include <wtf/MathExtras.h>
-#include <wtf/PassRefPtr.h>
+#include "wtf/Forward.h"
+#include "wtf/MathExtras.h"
+#include "wtf/PassRefPtr.h"
 
 namespace WebCore {
 

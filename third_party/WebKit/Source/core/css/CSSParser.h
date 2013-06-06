@@ -24,6 +24,7 @@
 #define CSSParser_h
 
 #include "CSSPropertyNames.h"
+#include "CSSValueKeywords.h"
 #include "core/css/CSSCalculationValue.h"
 #include "core/css/CSSFilterValue.h"
 #include "core/css/CSSGradientValue.h"
@@ -35,11 +36,11 @@
 #include "core/css/MediaQuery.h"
 #include "core/page/UseCounter.h"
 #include "core/platform/graphics/Color.h"
-#include <wtf/HashMap.h>
-#include <wtf/HashSet.h>
-#include <wtf/OwnArrayPtr.h>
-#include <wtf/text/AtomicString.h>
-#include <wtf/Vector.h>
+#include "wtf/HashMap.h"
+#include "wtf/HashSet.h"
+#include "wtf/OwnArrayPtr.h"
+#include "wtf/Vector.h"
+#include "wtf/text/AtomicString.h"
 
 namespace WebCore {
 
@@ -97,7 +98,7 @@ public:
     static bool parseColor(RGBA32& color, const String&, bool strict = false);
     static bool parseSystemColor(RGBA32& color, const String&, Document*);
     static PassRefPtr<CSSValueList> parseFontFaceValue(const AtomicString&);
-    PassRefPtr<CSSPrimitiveValue> parseValidPrimitive(int ident, CSSParserValue*);
+    PassRefPtr<CSSPrimitiveValue> parseValidPrimitive(CSSValueID ident, CSSParserValue*);
     bool parseDeclaration(MutableStylePropertySet*, const String&, SourceDataHandler*, StyleSheetContents* contextStyleSheet);
     static PassRefPtr<ImmutableStylePropertySet> parseInlineStyleDeclaration(const String&, Element*);
     PassOwnPtr<MediaQuery> parseMediaQuery(const String&);
@@ -664,7 +665,7 @@ private:
 
 CSSPropertyID cssPropertyID(const CSSParserString&);
 CSSPropertyID cssPropertyID(const String&);
-int cssValueKeywordID(const CSSParserString&);
+CSSValueID cssValueKeywordID(const CSSParserString&);
 
 class ShorthandScope {
     WTF_MAKE_FAST_ALLOCATED;

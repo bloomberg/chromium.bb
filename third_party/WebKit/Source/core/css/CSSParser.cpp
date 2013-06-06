@@ -442,7 +442,7 @@ static bool parseColorValue(MutableStylePropertySet* declaration, CSSPropertyID 
         return false;
     CSSParserString cssString;
     cssString.init(string);
-    int valueID = cssValueKeywordID(cssString);
+    CSSValueID valueID = cssValueKeywordID(cssString);
     bool validPrimitive = false;
     if (valueID == CSSValueWebkitText)
         validPrimitive = true;
@@ -1064,7 +1064,7 @@ static bool parseKeywordValue(MutableStylePropertySet* declaration, CSSPropertyI
 
     CSSParserString cssString;
     cssString.init(string);
-    int valueID = cssValueKeywordID(cssString);
+    CSSValueID valueID = cssValueKeywordID(cssString);
 
     if (!valueID)
         return false;
@@ -1610,7 +1610,7 @@ bool CSSParser::validWidthOrHeight(CSSParserValue* value)
     return !id && validUnit(value, FLength | FPercent | FNonNeg);
 }
 
-inline PassRefPtr<CSSPrimitiveValue> CSSParser::parseValidPrimitive(int identifier, CSSParserValue* value)
+inline PassRefPtr<CSSPrimitiveValue> CSSParser::parseValidPrimitive(CSSValueID identifier, CSSParserValue* value)
 {
     if (identifier)
         return cssValuePool().createIdentifierValue(identifier);
@@ -1672,7 +1672,7 @@ bool CSSParser::parseValue(CSSPropertyID propId, bool important)
     // FIXME: This is to avoid having to pass parsedCalc to all validUnit callers.
     ASSERT(!m_parsedCalculation);
 
-    int id = value->id;
+    CSSValueID id = value->id;
 
     int num = inShorthand() ? 1 : m_valueList->size();
 
@@ -3493,6 +3493,8 @@ bool CSSParser::parseContent(CSSPropertyID propId, bool important)
             case CSSValueNone:
             case CSSValueNormal:
                 parsedValue = cssValuePool().createIdentifierValue(val->id);
+            default:
+                break;
             }
         } else if (val->unit == CSSPrimitiveValue::CSS_STRING) {
             parsedValue = createPrimitiveStringValue(val);
@@ -3537,7 +3539,7 @@ PassRefPtr<CSSValue> CSSParser::parseAttr(CSSParserValueList* args)
 
 PassRefPtr<CSSValue> CSSParser::parseBackgroundColor()
 {
-    int id = m_valueList->current()->id;
+    CSSValueID id = m_valueList->current()->id;
     if (id == CSSValueWebkitText || (id >= CSSValueAqua && id <= CSSValueWindowtext) || id == CSSValueMenu || id == CSSValueCurrentcolor ||
         (id >= CSSValueGrey && id < CSSValueWebkitText && inQuirksMode()))
         return cssValuePool().createIdentifierValue(id);
@@ -3601,7 +3603,7 @@ PassRefPtr<CSSValue> CSSParser::parseFillPositionY(CSSParserValueList* valueList
 
 PassRefPtr<CSSPrimitiveValue> CSSParser::parseFillPositionComponent(CSSParserValueList* valueList, unsigned& cumulativeFlags, FillPositionFlag& individualFlag, FillPositionParsingMode parsingMode)
 {
-    int id = valueList->current()->id;
+    CSSValueID id = valueList->current()->id;
     if (id == CSSValueLeft || id == CSSValueTop || id == CSSValueRight || id == CSSValueBottom || id == CSSValueCenter) {
         int percent = 0;
         if (id == CSSValueLeft || id == CSSValueRight) {
@@ -3725,12 +3727,12 @@ void CSSParser::parse3ValuesFillPosition(CSSParserValueList* valueList, RefPtr<C
     valueList->next();
 
     bool swapNeeded = false;
-    int ident1 = parsedValue1->getIdent();
-    int ident2 = parsedValue2->getIdent();
-    int ident3 = value3->getIdent();
+    CSSValueID ident1 = static_cast<CSSValueID>(parsedValue1->getIdent());
+    CSSValueID ident2 = static_cast<CSSValueID>(parsedValue2->getIdent());
+    CSSValueID ident3 = static_cast<CSSValueID>(value3->getIdent());
 
-    int firstPositionKeyword;
-    int secondPositionKeyword;
+    CSSValueID firstPositionKeyword;
+    CSSValueID secondPositionKeyword;
 
     if (ident1 == CSSValueCenter) {
         // <position> requires the first 'center' to be followed by a keyword.
@@ -3796,8 +3798,8 @@ void CSSParser::parse3ValuesFillPosition(CSSParserValueList* valueList, RefPtr<C
 #ifndef NDEBUG
     CSSPrimitiveValue* first = toCSSPrimitiveValue(value1.get());
     CSSPrimitiveValue* second = toCSSPrimitiveValue(value2.get());
-    ident1 = first->getPairValue()->first()->getIdent();
-    ident2 = second->getPairValue()->first()->getIdent();
+    ident1 = static_cast<CSSValueID>(first->getPairValue()->first()->getIdent());
+    ident2 = static_cast<CSSValueID>(second->getPairValue()->first()->getIdent());
     ASSERT(ident1 == CSSValueLeft || ident1 == CSSValueRight);
     ASSERT(ident2 == CSSValueBottom || ident2 == CSSValueTop);
 #endif
@@ -3917,7 +3919,7 @@ void CSSParser::parse2ValuesFillPosition(CSSParserValueList* valueList, RefPtr<C
 
 void CSSParser::parseFillRepeat(RefPtr<CSSValue>& value1, RefPtr<CSSValue>& value2)
 {
-    int id = m_valueList->current()->id;
+    CSSValueID id = m_valueList->current()->id;
     if (id == CSSValueRepeatX) {
         m_implicitShorthand = true;
         value1 = cssValuePool().createIdentifierValue(CSSValueRepeat);
@@ -3953,7 +3955,7 @@ void CSSParser::parseFillRepeat(RefPtr<CSSValue>& value1, RefPtr<CSSValue>& valu
 
     // If only one value was specified, value2 is the same as value1.
     m_implicitShorthand = true;
-    value2 = cssValuePool().createIdentifierValue(toCSSPrimitiveValue(value1.get())->getIdent());
+    value2 = cssValuePool().createIdentifierValue(static_cast<CSSValueID>(toCSSPrimitiveValue(value1.get())->getIdent()));
 }
 
 PassRefPtr<CSSValue> CSSParser::parseFillSize(CSSPropertyID propId, bool& allowComma)
@@ -4245,7 +4247,7 @@ PassRefPtr<CSSValue> CSSParser::parseAnimationProperty(AnimationParseContext& co
     CSSParserValue* value = m_valueList->current();
     if (value->unit != CSSPrimitiveValue::CSS_IDENT)
         return 0;
-    int result = cssPropertyID(value->string);
+    CSSPropertyID result = cssPropertyID(value->string);
     if (result)
         return cssValuePool().createIdentifierValue(result);
     if (equalIgnoringCase(value, "all")) {
@@ -4705,7 +4707,7 @@ PassRefPtr<CSSValue> CSSParser::parseCounterContent(CSSParserValueList* args, bo
         if (i->unit != CSSPrimitiveValue::CSS_IDENT)
             return 0;
 
-        int listStyleID = 0;
+        CSSValueID listStyleID = CSSValueInvalid;
         if (i->id == CSSValueNone || (i->id >= CSSValueDisc && i->id <= CSSValueKatakanaIroha))
             listStyleID = i->id;
         else
@@ -5188,7 +5190,7 @@ PassRefPtr<CSSValueList> CSSParser::parseFontFamily()
 bool CSSParser::parseLineHeight(bool important)
 {
     CSSParserValue* value = m_valueList->current();
-    int id = value->id;
+    CSSValueID id = value->id;
     bool validPrimitive = false;
     // normal | <number> | <length> | <percentage> | inherit
     if (id == CSSValueNormal)
@@ -5203,7 +5205,7 @@ bool CSSParser::parseLineHeight(bool important)
 bool CSSParser::parseFontSize(bool important)
 {
     CSSParserValue* value = m_valueList->current();
-    int id = value->id;
+    CSSValueID id = value->id;
     bool validPrimitive = false;
     // <absolute-size> | <relative-size> | <length> | <percentage> | inherit
     if (id >= CSSValueXxSmall && id <= CSSValueLarger)
@@ -5272,7 +5274,7 @@ bool CSSParser::parseFontWeight(bool important)
     if (validUnit(value, FInteger | FNonNeg, CSSQuirksMode)) {
         int weight = static_cast<int>(value->fValue);
         if (!(weight % 100) && weight >= 100 && weight <= 900) {
-            addProperty(CSSPropertyFontWeight, cssValuePool().createIdentifierValue(CSSValue100 + weight / 100 - 1), important);
+            addProperty(CSSPropertyFontWeight, cssValuePool().createIdentifierValue(static_cast<CSSValueID>(CSSValue100 + weight / 100 - 1)), important);
             return true;
         }
     }
@@ -6863,7 +6865,7 @@ static bool parseDeprecatedGradientColorStop(CSSParser* p, CSSParserValue* a, CS
         else
             stop.m_position = cssValuePool().createValue(1, CSSPrimitiveValue::CSS_NUMBER);
 
-        int id = args->current()->id;
+        CSSValueID id = args->current()->id;
         if (id == CSSValueWebkitText || (id >= CSSValueAqua && id <= CSSValueWindowtext) || id == CSSValueMenu)
             stop.m_color = cssValuePool().createIdentifierValue(id);
         else
@@ -6890,7 +6892,7 @@ static bool parseDeprecatedGradientColorStop(CSSParser* p, CSSParserValue* a, CS
             return false;
 
         stopArg = args->next();
-        int id = stopArg->id;
+        CSSValueID id = stopArg->id;
         if (id == CSSValueWebkitText || (id >= CSSValueAqua && id <= CSSValueWindowtext) || id == CSSValueMenu)
             stop.m_color = cssValuePool().createIdentifierValue(id);
         else
@@ -7057,7 +7059,7 @@ static PassRefPtr<CSSPrimitiveValue> valueFromSideKeyword(CSSParserValue* a, boo
 
 static PassRefPtr<CSSPrimitiveValue> parseGradientColorOrKeyword(CSSParser* p, CSSParserValue* value)
 {
-    int id = value->id;
+    CSSValueID id = value->id;
     if (id == CSSValueWebkitText || (id >= CSSValueAqua && id <= CSSValueWindowtext) || id == CSSValueMenu || id == CSSValueCurrentcolor)
         return cssValuePool().createIdentifierValue(id);
 
@@ -7195,6 +7197,8 @@ bool CSSParser::parseDeprecatedRadialGradient(CSSParserValueList* valueList, Ref
         case CSSValueCover:
             sizeValue = cssValuePool().createIdentifierValue(a->id);
             foundValue = true;
+            break;
+        default:
             break;
         }
 
@@ -11548,14 +11552,14 @@ CSSPropertyID cssPropertyID(const CSSParserString& string)
 }
 
 template <typename CharacterType>
-static int cssValueKeywordID(const CharacterType* valueKeyword, unsigned length)
+static CSSValueID cssValueKeywordID(const CharacterType* valueKeyword, unsigned length)
 {
     char buffer[maxCSSValueKeywordLength + 1 + 1]; // 1 to turn "apple"/"khtml" into "webkit", 1 for null character
 
     for (unsigned i = 0; i != length; ++i) {
         CharacterType c = valueKeyword[i];
         if (c == 0 || c >= 0x7F)
-            return 0; // illegal character
+            return CSSValueInvalid; // illegal character
         buffer[i] = WTF::toASCIILower(c);
     }
     buffer[length] = '\0';
@@ -11571,16 +11575,16 @@ static int cssValueKeywordID(const CharacterType* valueKeyword, unsigned length)
     }
 
     const Value* hashTableEntry = findValue(buffer, length);
-    return hashTableEntry ? hashTableEntry->id : 0;
+    return hashTableEntry ? static_cast<CSSValueID>(hashTableEntry->id) : CSSValueInvalid;
 }
 
-int cssValueKeywordID(const CSSParserString& string)
+CSSValueID cssValueKeywordID(const CSSParserString& string)
 {
     unsigned length = string.length();
     if (!length)
-        return 0;
+        return CSSValueInvalid;
     if (length > maxCSSValueKeywordLength)
-        return 0;
+        return CSSValueInvalid;
 
     return string.is8Bit() ? cssValueKeywordID(string.characters8(), length) : cssValueKeywordID(string.characters16(), length);
 }

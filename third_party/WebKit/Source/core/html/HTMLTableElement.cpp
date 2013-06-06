@@ -414,7 +414,7 @@ void HTMLTableElement::parseAttribute(const QualifiedName& name, const AtomicStr
     }
 }
 
-static StylePropertySet* leakBorderStyle(int value)
+static StylePropertySet* leakBorderStyle(CSSValueID value)
 {
     RefPtr<MutableStylePropertySet> style = MutableStylePropertySet::create();
     style->setProperty(CSSPropertyBorderTopStyle, value);

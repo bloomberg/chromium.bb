@@ -105,7 +105,7 @@ bool HTMLElement::ieForbidsInsertHTML() const
     return false;
 }
 
-static inline int unicodeBidiAttributeForDirAuto(HTMLElement* element)
+static inline CSSValueID unicodeBidiAttributeForDirAuto(HTMLElement* element)
 {
     if (element->hasLocalName(preTag) || element->hasLocalName(textareaTag))
         return CSSValueWebkitPlaintext;
@@ -564,8 +564,8 @@ void HTMLElement::applyAlignmentAttributeToStyle(const AtomicString& alignment, 
 {
     // Vertical alignment with respect to the current baseline of the text
     // right or left means floating images.
-    int floatValue = CSSValueInvalid;
-    int verticalAlignValue = CSSValueInvalid;
+    CSSValueID floatValue = CSSValueInvalid;
+    CSSValueID verticalAlignValue = CSSValueInvalid;
 
     if (equalIgnoringCase(alignment, "absmiddle"))
         verticalAlignValue = CSSValueMiddle;

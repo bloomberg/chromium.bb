@@ -389,7 +389,7 @@ static const Vector<CSSPropertyID>& computableProperties()
     return properties;
 }
 
-static int valueForRepeatRule(int rule)
+static CSSValueID valueForRepeatRule(int rule)
 {
     switch (rule) {
         case RepeatImageRule:
@@ -1222,11 +1222,11 @@ void CSSComputedStyleDeclaration::setCssText(const String&, ExceptionCode& ec)
     ec = NO_MODIFICATION_ALLOWED_ERR;
 }
 
-static int cssIdentifierForFontSizeKeyword(int keywordSize)
+static CSSValueID cssIdentifierForFontSizeKeyword(int keywordSize)
 {
     ASSERT_ARG(keywordSize, keywordSize);
     ASSERT_ARG(keywordSize, keywordSize <= 8);
-    return CSSValueXxSmall + keywordSize - 1;
+    return static_cast<CSSValueID>(CSSValueXxSmall + keywordSize - 1);
 }
 
 PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getFontSizeCSSValuePreferringKeyword() const
@@ -1282,7 +1282,7 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
     return getPropertyCSSValue(propertyID, UpdateLayout);
 }
 
-static int identifierForFamily(const AtomicString& family)
+static CSSValueID identifierForFamily(const AtomicString& family)
 {
     if (family == cursiveFamily)
         return CSSValueCursive;
@@ -1296,12 +1296,12 @@ static int identifierForFamily(const AtomicString& family)
         return CSSValueSansSerif;
     if (family == serifFamily)
         return CSSValueSerif;
-    return 0;
+    return CSSValueInvalid;
 }
 
 static PassRefPtr<CSSPrimitiveValue> valueForFamily(const AtomicString& family)
 {
-    if (int familyIdentifier = identifierForFamily(family))
+    if (CSSValueID familyIdentifier = identifierForFamily(family))
         return cssValuePool().createIdentifierValue(familyIdentifier);
     return cssValuePool().createValue(family.string(), CSSPrimitiveValue::CSS_STRING);
 }

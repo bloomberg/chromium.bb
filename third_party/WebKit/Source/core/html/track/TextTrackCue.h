@@ -158,8 +158,8 @@ public:
     std::pair<double, double> getCSSPosition() const;
 
     int getCSSSize() const;
-    int getCSSWritingDirection() const;
-    int getCSSWritingMode() const;
+    CSSValueID getCSSWritingDirection() const;
+    CSSValueID getCSSWritingMode() const;
 
     enum WritingDirection {
         Horizontal,
@@ -266,10 +266,10 @@ private:
     bool m_displayTreeShouldChange;
     RefPtr<TextTrackCueBox> m_displayTree;
 
-    int m_displayDirection;
+    CSSValueID m_displayDirection;
 
-    int m_displayWritingModeMap[NumberOfWritingDirections];
-    int m_displayWritingMode;
+    CSSValueID m_displayWritingModeMap[NumberOfWritingDirections];
+    CSSValueID m_displayWritingMode;
 
     int m_displaySize;
 

@@ -21,11 +21,12 @@
 #ifndef CSSParserValues_h
 #define CSSParserValues_h
 
+#include "CSSValueKeywords.h"
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/css/CSSSelector.h"
 #include "core/css/CSSValueList.h"
-#include <wtf/text/AtomicString.h>
-#include <wtf/text/WTFString.h>
+#include "wtf/text/AtomicString.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 
@@ -126,7 +127,7 @@ struct CSSParserString {
 struct CSSParserFunction;
 
 struct CSSParserValue {
-    int id;
+    CSSValueID id;
     bool isInt;
     union {
         double fValue;
@@ -239,7 +240,7 @@ inline bool CSSParserSelector::hasShadowPseudo() const
 
 inline void CSSParserValue::setFromNumber(double value, int unit)
 {
-    id = 0;
+    id = CSSValueInvalid;
     isInt = false;
     fValue = value;
     this->unit = unit;
