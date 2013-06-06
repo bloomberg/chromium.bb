@@ -35,3 +35,7 @@ VideoCaptureHostTest.*
 
 # Hangs under Valgrind, see http://crbug.com/244257
 SmoothScrollGestureControllerTest.Tick
+
+# http://crbug.com/247163
+VideoCaptureManagerTest.CreateAndClose
+WebRTCAudioDeviceTest.WebRtcRecordingSetupTime

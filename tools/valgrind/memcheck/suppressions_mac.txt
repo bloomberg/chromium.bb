@@ -2351,7 +2351,7 @@
    fun:fnmatch1
    fun:fnmatch$UNIX2003
    fun:_ZN9file_util14FileEnumerator4NextEv
-   fun:_ZN10disk_cache11SimpleIndex15RestoreFromDiskERKN4base8FilePathE
+   fun:_ZN10disk_cache15SimpleIndexFile15RestoreFromDiskERKN4base8FilePathE
 }
 {
    bug_244102
