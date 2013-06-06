@@ -465,6 +465,7 @@ ShelfWidget::ShelfWidget(
       new internal::StatusAreaLayoutManager(this));
 
   views::Widget::AddObserver(this);
+  GetNativeView()->SetProperty(internal::kStayInSameRootWindowKey, true);
 }
 
 ShelfWidget::~ShelfWidget() {
