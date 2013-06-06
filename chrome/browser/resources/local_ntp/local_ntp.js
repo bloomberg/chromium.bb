@@ -176,6 +176,14 @@ var numColumnsShown = 0;
 
 
 /**
+ * True if the user initiated the current most visited change and false
+ * otherwise.
+ * @type {boolean}
+ */
+var userInitiatedMostVisitedChange = false;
+
+
+/**
  * The browser embeddedSearch.newTabPage object.
  * @type {Object}
  */
@@ -367,6 +375,8 @@ function onMostVisitedChange() {
     for (var i = 0; i < MAX_NUM_TILES_TO_SHOW; ++i) {
       tiles.push(createTile(pages[i], i));
     }
+    if (!userInitiatedMostVisitedChange)
+      tilesContainer.hidden = true;
     renderTiles();
   }
 }
@@ -385,6 +395,26 @@ function renderTiles() {
        i < Math.min(length, numColumnsShown * NUM_ROWS); ++i) {
     rows[Math.floor(i / numColumnsShown)].appendChild(tiles[i].elem);
   }
+}
+
+
+/**
+ * Shows most visited tiles if all child iframes are loaded, and hides them
+ * otherwise.
+ */
+function updateMostVisitedVisibility() {
+  var iframes = tilesContainer.querySelectorAll('iframe');
+  var ready = true;
+  for (var i = 0, numIframes = iframes.length; i < numIframes; i++) {
+    if (iframes[i].hidden) {
+      ready = false;
+      break;
+    }
+  }
+  if (!userInitiatedMostVisitedChange)
+    tilesContainer.hidden = !ready;
+  if (ready)
+    userInitiatedMostVisitedChange = false;
 }
 
 
@@ -465,7 +495,10 @@ function createTile(page, position) {
     // Keep this id here. See comment above.
     titleElement.id = 'title-' + rid;
     titleElement.hidden = true;
-    titleElement.onload = function() { titleElement.hidden = false; };
+    titleElement.onload = function() {
+      titleElement.hidden = false;
+      updateMostVisitedVisibility();
+    };
     titleElement.className = CLASSES.TITLE;
     tileElement.appendChild(titleElement);
 
@@ -481,6 +514,7 @@ function createTile(page, position) {
     thumbnailElement.onload = function() {
       thumbnailElement.hidden = false;
       tileElement.classList.add(CLASSES.PAGE_READY);
+      updateMostVisitedVisibility();
     };
     thumbnailElement.className = CLASSES.THUMBNAIL;
     tileElement.appendChild(thumbnailElement);
@@ -525,6 +559,7 @@ function generateBlacklistFunction(rid) {
     // Prevent navigation when the page is being blacklisted.
     e.stopPropagation();
 
+    userInitiatedMostVisitedChange = true;
     isBlacklisting = true;
     tilesContainer.classList.add(CLASSES.HIDE_BLACKLIST_BUTTON);
     lastBlacklistedTile = getTileByRid(rid);
@@ -574,6 +609,7 @@ function blacklistAnimationDone() {
  * informing Chrome.
  */
 function onUndo() {
+  userInitiatedMostVisitedChange = true;
   hideNotification();
   var lastBlacklistedRID = lastBlacklistedTile.rid;
   if (typeof lastBlacklistedRID != 'undefined')
@@ -586,6 +622,7 @@ function onUndo() {
  * notification and informing Chrome.
  */
 function onRestoreAll() {
+  userInitiatedMostVisitedChange = true;
   hideNotification();
   ntpApiHandle.undoAllMostVisitedDeletions();
 }
@@ -597,7 +634,8 @@ function onRestoreAll() {
  * container.
  */
 function onResize() {
-  var innerWidth = window.innerWidth;
+  // If innerWidth is zero, then use the maximum snap size.
+  var innerWidth = window.innerWidth || 820;
 
   // These values should remain in sync with local_ntp.css.
   // TODO(jeremycho): Delete once the root cause of crbug/240510 is resolved.
@@ -606,7 +644,7 @@ function onResize() {
     if (fakebox)
       fakebox.style.width = (tilesContainerWidth - 2) + 'px';
   };
-  if (innerWidth >= 820 || innerWidth == 0)
+  if (innerWidth >= 820)
     setWidths(620);
   else if (innerWidth >= 660)
     setWidths(460);
@@ -1707,6 +1745,7 @@ function init() {
   var notificationCloseButton = $(IDS.NOTIFICATION_CLOSE_BUTTON);
   notificationCloseButton.addEventListener('click', hideNotification);
 
+  userInitiatedMostVisitedChange = false;
   window.addEventListener('resize', onResize);
   onResize();
 
