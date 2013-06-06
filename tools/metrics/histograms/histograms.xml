@@ -881,6 +881,31 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="DisabledExtension.ExtensionWipedStatus" enum="BooleanWiped">
+  <summary>Whether an extension has been wiped out.</summary>
+</histogram>
+
+<histogram name="DisabledExtension.SideloadWipeoutCount">
+  <summary>
+    How many external extensions get wiped out as a result of the Sideload
+    Wipeout one-time initiative.
+  </summary>
+</histogram>
+
+<histogram name="DisabledExtension.SideloadWipeoutNeeded" enum="BooleanSuccess">
+  <summary>
+    Whether any extension got wiped out as a result of the Sideload Wipeout
+    one-time initiative.
+  </summary>
+</histogram>
+
+<histogram name="DisabledExtension.UserSelection" enum="SideloadWipeoutBubble">
+  <summary>
+    The user selection in the Sideload Wipeout bubble, grouped by the
+    UmaWipeoutHistogramOptions enum.
+  </summary>
+</histogram>
+
 <histogram name="DiskCache.TotalIOTime" units="milliseconds">
   <obsolete>
     Deprecated.
@@ -1641,10 +1666,63 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="ExtensionBlacklist.BlacklistInstalled"
+    enum="ExtensionLocation">
+  <summary>
+    The number of extensions that were blacklisted when already installed,
+    grouped by Extension::Location. Logged when ExtensionService blackists and
+    unloads an installed extension.
+  </summary>
+</histogram>
+
+<histogram name="ExtensionBlacklist.BlockCRX" enum="ExtensionLocation">
+  <summary>
+    The number of extensions that have been blocked from installing grouped by
+    Extension::Location. Logged when CrxInstaller refuses to install a
+    blacklisted extension.
+  </summary>
+</histogram>
+
+<histogram name="ExtensionBlacklist.UnblacklistInstalled"
+    enum="ExtensionLocation">
+  <summary>
+    The number of extensions that were unblacklisted when installed, grouped by
+    Extension::Location. Logged when ExtensionService unblacklists and loads a
+    blacklisted extension.
+  </summary>
+</histogram>
+
+<histogram name="Extensions.APIUse_RelativeURL" enum="UrlResolutionResult">
+  <summary>
+    Captures the results of URL resolution when relative urls are used in the
+    tabs/windows api.
+  </summary>
+</histogram>
+
 <histogram name="Extensions.AppLaunch" enum="AppLaunch">
   <summary>
     The number of times v1 apps are launched grouped by
     extension_misc::AppLaunchBuckets. See also Apps.AppLaunch for v2 apps.
+  </summary>
+</histogram>
+
+<histogram name="Extensions.AppLaunchContainer" enum="AppLaunchContainer">
+  <summary>
+    The number of times apps are launched grouped by
+    extension_misc::LaunchContainer.
+  </summary>
+</histogram>
+
+<histogram name="Extensions.AppLocation" enum="ExtensionLocation">
+  <summary>
+    The number of apps loaded at startup time grouped by Extension::Location.
+  </summary>
+</histogram>
+
+<histogram name="Extensions.AppsPromo" enum="AppPromoAction">
+  <summary>
+    The actions taken in the NTP apps promo grouped by
+    extension_misc::AppsPromoBuckets.
   </summary>
 </histogram>
 
@@ -1654,11 +1732,79 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Extensions.BackgroundPageLoadTime" units="milliseconds">
+  <summary>The time for an extension's background page to load.</summary>
+</histogram>
+
 <histogram name="Extensions.BackgroundPageType"
     units="ExtensionBackgroundPageType">
   <summary>
     The type (if any) of background page the extension has. Recorded for
     installed extensions on startup.
+  </summary>
+</histogram>
+
+<histogram name="Extensions.CrxFetchFailureRetryCountGoogleUrl">
+  <summary>
+    Number of times chrome retried to download an extension with a url on a
+    google.com domain, before eventually giving up.
+  </summary>
+</histogram>
+
+<histogram name="Extensions.CrxFetchFailureRetryCountOtherUrl">
+  <summary>
+    Number of times chrome retried to download an extension with a url on a non
+    google.com domain, before eventually giving up.
+  </summary>
+</histogram>
+
+<histogram name="Extensions.CrxFetchSuccessRetryCountGoogleUrl">
+  <summary>
+    Number of times chrome retried to download an extension with a url on a
+    google.com domain, before eventually succeeding.
+  </summary>
+</histogram>
+
+<histogram name="Extensions.CrxFetchSuccessRetryCountOtherUrl">
+  <summary>
+    Number of times chrome retried to download an extension with a url on a non
+    google.com domain, before eventually succeeding.
+  </summary>
+</histogram>
+
+<histogram name="Extensions.CrxInstallDirPathLength">
+  <summary>
+    Length of the path to the directory under which an extension is installed.
+    This directory is in the user's profile.
+  </summary>
+</histogram>
+
+<histogram name="Extensions.DeclarativeRulesStorageInitialization"
+    units="milliseconds">
+  <summary>Time spent until rules storage delegate gets ready.</summary>
+</histogram>
+
+<histogram name="Extensions.DepricatedExternalJsonCount">
+  <summary>
+    Number of extensions referenced in the depricated external extensions source
+    at path chrome::DIR_DEPRICATED_EXTERNAL_EXTENSIONS.
+  </summary>
+</histogram>
+
+<histogram name="Extensions.DialogLoadTime" units="milliseconds">
+  <summary>The time for a dialog-hosted extension to load.</summary>
+</histogram>
+
+<histogram name="Extensions.Disabled">
+  <summary>
+    The number of extensions that are disabled at browser startup.
+  </summary>
+</histogram>
+
+<histogram name="Extensions.DisabledForPermissions">
+  <summary>
+    The number of extensions that are disabled at browser startup due to
+    permissions increases.
   </summary>
 </histogram>
 
@@ -1670,16 +1816,586 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Extensions.ErrorCodeFromCrxOpen">
+  <summary>
+    If opening the CRX file for unpacking fails, this integer is the error code
+    given by the OS.
+  </summary>
+</histogram>
+
+<histogram name="Extensions.EventPageActiveTime" units="milliseconds">
+  <summary>The time an extension's event page has spent loaded.</summary>
+</histogram>
+
+<histogram name="Extensions.EventPageIdleTime" units="milliseconds">
+  <summary>The time an extension's event page has spent unloaded.</summary>
+</histogram>
+
+<histogram name="Extensions.EventPageLoadTime" units="milliseconds">
+  <summary>The time for an extension's event page to load.</summary>
+</histogram>
+
 <histogram name="Extensions.ExtensionInstalled">
   <summary>An extension has been installed.</summary>
+</histogram>
+
+<histogram name="Extensions.ExtensionLocation" enum="ExtensionLocation">
+  <summary>
+    The number of extensions loaded at startup time grouped by
+    Extension::Location.
+  </summary>
+</histogram>
+
+<histogram name="Extensions.ExtensionRootPathLength">
+  <summary>
+    Length of the Extensions dir path inside the profile directory.
+  </summary>
 </histogram>
 
 <histogram name="Extensions.ExtensionUninstalled">
   <summary>An extension has been uninstalled.</summary>
 </histogram>
 
+<histogram name="Extensions.ExternalExtensionEvent" enum="SideloadUIEvents">
+  <summary>
+    Records what happens to extensions that are sideloaded, grouped by the
+    ExternalExtensionEvent enum.
+  </summary>
+</histogram>
+
+<histogram name="Extensions.ExternalJsonCount">
+  <summary>
+    Number of extensions referenced in the external extensions source at path
+    chrome::DIR_EXTERNAL_EXTENSIONS.
+  </summary>
+</histogram>
+
 <histogram name="Extensions.FunctionCalls" enum="ExtensionFunctions">
   <summary>Number of calls to extension functions.</summary>
+</histogram>
+
+<histogram name="Extensions.GetUserDataTempDir" enum="GetUserDataTempDirResult">
+  <summary>
+    What happens when the extensions system tries to get a temp dir to unpack
+    in?
+  </summary>
+</histogram>
+
+<histogram name="Extensions.InjectCssTime" units="milliseconds">
+  <summary>
+    The amount of time for a CSS file to be injected into a page.
+  </summary>
+</histogram>
+
+<histogram name="Extensions.InjectEnd_ScriptCount">
+  <summary>Number of scripts injected at document end by extensions.</summary>
+</histogram>
+
+<histogram name="Extensions.InjectEnd_Time" units="milliseconds">
+  <summary>
+    Time taken to inject all scripts at document end by extensions.
+  </summary>
+</histogram>
+
+<histogram name="Extensions.InjectIdle_ScriptCount">
+  <summary>Number of scripts injected at document idle by extensions.</summary>
+</histogram>
+
+<histogram name="Extensions.InjectIdle_Time" units="milliseconds">
+  <summary>
+    Time taken to inject all scripts at document idle by extensions.
+  </summary>
+</histogram>
+
+<histogram name="Extensions.InjectScriptTime" units="milliseconds">
+  <summary>Time taken to inject all scripts by extensions.</summary>
+</histogram>
+
+<histogram name="Extensions.InjectStart_CssCount">
+  <summary>Number of css files injected by extensions.</summary>
+</histogram>
+
+<histogram name="Extensions.InjectStart_ScriptCount">
+  <summary>Number of scripts injected at document start by extensions.</summary>
+</histogram>
+
+<histogram name="Extensions.InjectStart_Time" units="milliseconds">
+  <summary>
+    Time taken to inject css/scripts at document start by extensions.
+  </summary>
+</histogram>
+
+<histogram name="Extensions.InstallSource" enum="ExtensionLocation">
+  <summary>Installs grouped by the location property in prefs.</summary>
+</histogram>
+
+<histogram name="Extensions.InstallType" enum="ExtensionType">
+  <summary>Installs grouped by Extension::HistogramType.</summary>
+</histogram>
+
+<histogram name="Extensions.LoadAll">
+  <summary>
+    The number of extensions and themes loaded at browser startup.
+  </summary>
+</histogram>
+
+<histogram name="Extensions.LoadAllTime" units="milliseconds">
+  <summary>Time taken to load all extensions at browser startup.</summary>
+</histogram>
+
+<histogram name="Extensions.LoadApp">
+  <summary>The number of apps loaded by each user at startup time.</summary>
+</histogram>
+
+<histogram name="Extensions.LoadAppExternal">
+  <summary>
+    The number of externally managed apps loaded by each user at startup time.
+  </summary>
+</histogram>
+
+<histogram name="Extensions.LoadAppUser">
+  <summary>
+    The number of user-installed apps loaded by each user at startup time.
+  </summary>
+</histogram>
+
+<histogram name="Extensions.LoadBrowserAction">
+  <summary>
+    The number of browser action extensions loaded at browser startup.
+  </summary>
+</histogram>
+
+<histogram name="Extensions.LoadContentPack">
+  <summary>
+    The number of content-pack extensions loaded at browser startup.
+  </summary>
+</histogram>
+
+<histogram name="Extensions.LoadExtension">
+  <summary>The number of extensions loaded at browser startup.</summary>
+</histogram>
+
+<histogram name="Extensions.LoadExtensionExternal">
+  <summary>
+    The number of externally managed extensions loaded at browser startup.
+  </summary>
+</histogram>
+
+<histogram name="Extensions.LoadExtensionUser">
+  <summary>
+    The number of user-installed extensions loaded at browser startup.
+  </summary>
+</histogram>
+
+<histogram name="Extensions.LoadExternal">
+  <summary>
+    The number of externally managed extensions and apps loaded at browser
+    startup.
+  </summary>
+</histogram>
+
+<histogram name="Extensions.LoadHostedApp">
+  <summary>
+    The number of hosted apps loaded by each user at startup time.
+  </summary>
+</histogram>
+
+<histogram name="Extensions.LoadPackagedApp">
+  <summary>
+    The number of legacy packaged apps loaded by each user at startup time.
+  </summary>
+</histogram>
+
+<histogram name="Extensions.LoadPageAction">
+  <summary>
+    The number of page action extensions loaded at browser startup.
+  </summary>
+</histogram>
+
+<histogram name="Extensions.LoadPlatformApp">
+  <summary>The number of platform apps loaded at browser startup.</summary>
+</histogram>
+
+<histogram name="Extensions.LoadTheme">
+  <summary>The number of themes loaded at browser startup.</summary>
+</histogram>
+
+<histogram name="Extensions.LoadType" enum="ExtensionType">
+  <summary>
+    The number of extensions loaded at startup time grouped by
+    Extension::HistogramType.
+  </summary>
+</histogram>
+
+<histogram name="Extensions.LoadUserScript">
+  <summary>
+    The number of converted user scripts loaded at browser startup.
+  </summary>
+</histogram>
+
+<histogram name="Extensions.ManifestFetchFailureRetryCountGoogleUrl">
+  <summary>
+    Number of times chrome retried to download an extension update manifest with
+    a url on a google.com domain, before eventually giving up.
+  </summary>
+</histogram>
+
+<histogram name="Extensions.ManifestFetchFailureRetryCountOtherUrl">
+  <summary>
+    Number of times chrome retried to download an extension update manifest with
+    a url on a non google.com domain, before eventually giving up.
+  </summary>
+</histogram>
+
+<histogram name="Extensions.ManifestFetchSuccessRetryCountGoogleUrl">
+  <summary>
+    Number of times chrome retried to download an extension update manifest with
+    a url on a google.com domain, before eventually succeeding.
+  </summary>
+</histogram>
+
+<histogram name="Extensions.ManifestFetchSuccessRetryCountOtherUrl">
+  <summary>
+    Number of times chrome retried to download an extension update manifest with
+    a url on a non google.com domain, before eventually succeeding.
+  </summary>
+</histogram>
+
+<histogram name="Extensions.ManifestReloadNeedsRelocalization">
+  <summary>
+    Number of extension loads on startup where it is necessary to reload the
+    mainfest because the locale has changed.
+  </summary>
+</histogram>
+
+<histogram name="Extensions.ManifestReloadNotNeeded">
+  <summary>
+    Number of extension loads on startup where it is not necessary to reload the
+    extension's manifest.
+  </summary>
+</histogram>
+
+<histogram name="Extensions.ManifestReloadUnpackedDir">
+  <summary>
+    Number of extension loads on startup where it is necessary to reload the
+    manifest because the extension is unpacked.
+  </summary>
+</histogram>
+
+<histogram name="Extensions.NetworkDelay" units="milliseconds">
+  <summary>Time that network requests were blocked due to extensions.</summary>
+</histogram>
+
+<histogram name="Extensions.NetworkDelayPercentage" units="%">
+  <summary>
+    Percentage of total lifetime a network request was blocked due to an
+    extension.
+  </summary>
+</histogram>
+
+<histogram name="Extensions.NetworkDelayRegistryLoad" units="milliseconds">
+  <summary>
+    Time that network requests were blocked due to relevant rule registries
+    loading.
+  </summary>
+</histogram>
+
+<histogram name="Extensions.Permissions_AutoDisable" enum="ExtensionPermission">
+  <summary>
+    The permissions present in an extension when it is automatically disabled
+    due to a permission increase (e.g., after an extension upgrade).
+  </summary>
+</histogram>
+
+<histogram name="Extensions.Permissions_Install" enum="ExtensionPermission">
+  <summary>
+    The permissions present in an extension when it was installed.
+  </summary>
+</histogram>
+
+<histogram name="Extensions.Permissions_InstallAbort"
+    enum="ExtensionPermission">
+  <summary>
+    The permissions present in an extension when installation was aborted, not
+    including installation errors and user cancels.
+  </summary>
+</histogram>
+
+<histogram name="Extensions.Permissions_InstallCancel"
+    enum="ExtensionPermission">
+  <summary>
+    The permissions present in an extension when installation was canceled.
+  </summary>
+</histogram>
+
+<histogram name="Extensions.Permissions_Load" enum="ExtensionPermission">
+  <summary>The permissions present in an extension when it was loaded.</summary>
+</histogram>
+
+<histogram name="Extensions.Permissions_ReEnable" enum="ExtensionPermission">
+  <summary>
+    The permissions present in an extension when it was re-enabled from a
+    confirmation prompt.
+  </summary>
+</histogram>
+
+<histogram name="Extensions.Permissions_ReEnableAbort"
+    enum="ExtensionPermission">
+  <summary>
+    The permissions present in an extension when the re-enable prompt was
+    aborted, not including installation errors and manual user cancels.
+  </summary>
+</histogram>
+
+<histogram name="Extensions.Permissions_ReEnableCancel"
+    enum="ExtensionPermission">
+  <summary>
+    The permissions present in an extension when the re-enable was canceled from
+    the confirmation prompt.
+  </summary>
+</histogram>
+
+<histogram name="Extensions.Permissions_Uninstall" enum="ExtensionPermission">
+  <summary>
+    The permissions present in an extension when it was uninstalled.
+  </summary>
+</histogram>
+
+<histogram name="Extensions.Permissions_WebStoreInstall"
+    enum="ExtensionPermission">
+  <summary>
+    The permissions present in an extension when it was installed through the
+    web store.
+  </summary>
+</histogram>
+
+<histogram name="Extensions.Permissions_WebStoreInstallAbort"
+    enum="ExtensionPermission">
+  <summary>
+    The permissions present in an extension when installation from the web store
+    was aborted, not including installation errors and user cancels.
+  </summary>
+</histogram>
+
+<histogram name="Extensions.Permissions_WebStoreInstallCancel"
+    enum="ExtensionPermission">
+  <summary>
+    The permissions present in an extension when installation from the web store
+    was canceled.
+  </summary>
+</histogram>
+
+<histogram name="Extensions.SandboxUnpackFailure">
+  <summary>
+    Count the number of times a sandboxed extension unpack fails.
+  </summary>
+</histogram>
+
+<histogram name="Extensions.SandboxUnpackFailureReason"
+    enum="ExtensionUnpackFailureReason">
+  <summary>What caused a sandboxed extension unpack to fail?</summary>
+</histogram>
+
+<histogram name="Extensions.SandboxUnpackFailureTime">
+  <summary>Time taken to unpack an extension, when the unpack fails.</summary>
+</histogram>
+
+<histogram name="Extensions.SandboxUnpackInitialCrxPathLength">
+  <summary>Length of the initial path to the CRX to be unpacked.</summary>
+</histogram>
+
+<histogram name="Extensions.SandboxUnpackLinkFreeCrxPathLength">
+  <summary>
+    Length of the normalized (link/junction free) path to the temporary copy of
+    a CRX made during unpacking.
+  </summary>
+</histogram>
+
+<histogram name="Extensions.SandboxUnpackRate">
+  <summary>
+    Rate at which a CRX file is unpacked in Kilobytes per second.
+  </summary>
+</histogram>
+
+<histogram name="Extensions.SandboxUnpackRate1To2mB">
+  <summary>
+    Rate at which CRX files 1MB to 2MB are unpacked in Kilobytes per second.
+  </summary>
+</histogram>
+
+<histogram name="Extensions.SandboxUnpackRate2To5mB">
+  <summary>
+    Rate at which CRX files 2MB to 5MB are unpacked in Kilobytes per second.
+  </summary>
+</histogram>
+
+<histogram name="Extensions.SandboxUnpackRate50kBTo1mB">
+  <summary>
+    Rate at which CRX files 50kB to 1MB are unpacked in Kilobytes per second.
+  </summary>
+</histogram>
+
+<histogram name="Extensions.SandboxUnpackRate5To10mB">
+  <summary>
+    Rate at which CRX files 5MB to 10 MB are unpacked in Kilobytes per second.
+  </summary>
+</histogram>
+
+<histogram name="Extensions.SandboxUnpackRateOver10mB">
+  <summary>
+    Rate at which CRX files larger than 10MB are unpacked in Kilobytes per
+    second.
+  </summary>
+</histogram>
+
+<histogram name="Extensions.SandboxUnpackRateUnder50kB">
+  <summary>
+    Rate at which CRX files under 50 KB are unpacked in Kilobytes per second.
+  </summary>
+</histogram>
+
+<histogram name="Extensions.SandboxUnpackSuccess">
+  <summary>Count the number of times a sandboxed CRX unpack succeeds.</summary>
+</histogram>
+
+<histogram name="Extensions.SandboxUnpackSuccessCantGetCrxSize">
+  <summary>
+    Count the number of times a sandboxed CRX unpack succeeds, but we can't get
+    the file size.
+  </summary>
+</histogram>
+
+<histogram name="Extensions.SandboxUnpackSuccessTime">
+  <summary>
+    Time taken to unpack an extension, when the unpack succeeds.
+  </summary>
+</histogram>
+
+<histogram name="Extensions.SandboxUnpackTempCrxPathLength">
+  <summary>
+    Length of the path of the temporary copy of a CRX made during unpacking.
+  </summary>
+</histogram>
+
+<histogram name="Extensions.SandboxUnpackUnpackedCrxPathLength">
+  <summary>Length of the path under which a CRX is unpacked.</summary>
+</histogram>
+
+<histogram name="Extensions.StartupDelay" units="milliseconds">
+  <summary>The time one extension delays network requests at startup.</summary>
+</histogram>
+
+<histogram name="Extensions.StartupDelay_Total" units="milliseconds">
+  <summary>
+    The total time extensions delay network requests at startup.
+  </summary>
+</histogram>
+
+<histogram name="Extensions.ToolstripLoadTime" units="milliseconds">
+  <summary>Time taken to load a toolstrip.</summary>
+</histogram>
+
+<histogram name="Extensions.UninstallType" enum="ExtensionType">
+  <summary>Uninstalls grouped by Extension::HistogramType.</summary>
+</histogram>
+
+<histogram name="Extensions.UnpackFailureInstallCause"
+    enum="ExtensionInstallCause">
+  <summary>
+    Count failing CRX installs, grouped by the way an extension can be
+    installed.
+  </summary>
+</histogram>
+
+<histogram name="Extensions.UnpackFailureInstallSource"
+    enum="ExtensionLocation">
+  <summary>
+    Count successful CRX installs, grouped by the location property in prefs.
+    installed.
+  </summary>
+</histogram>
+
+<histogram name="Extensions.UnpackSuccessInstallCause"
+    enum="ExtensionInstallCause">
+  <summary>
+    Count successful CRX installs, grouped by the cause of the install.
+  </summary>
+</histogram>
+
+<histogram name="Extensions.UnpackSuccessInstallSource"
+    enum="ExtensionLocation">
+  <summary>
+    Count successful CRX installs, grouped by the location property in prefs.
+  </summary>
+</histogram>
+
+<histogram name="Extensions.UpdateCheckApp">
+  <summary>
+    The number of legacy packaged apps and hosted apps that were checked during
+    an update check.
+  </summary>
+</histogram>
+
+<histogram name="Extensions.UpdateCheckExtension">
+  <summary>
+    The number of extensions that were checked during an update check.
+  </summary>
+</histogram>
+
+<histogram name="Extensions.UpdateCheckGap" units="minutes">
+  <summary>Time in minutes between update checks.</summary>
+</histogram>
+
+<histogram name="Extensions.UpdateCheckGoogleUrl">
+  <summary>
+    The number of crx's with a Google-hosted update URL that were checked during
+    an update check.
+  </summary>
+</histogram>
+
+<histogram name="Extensions.UpdateCheckNoUrl">
+  <summary>
+    The number of crx's with no update URL checked during an update check.
+  </summary>
+</histogram>
+
+<histogram name="Extensions.UpdateCheckOtherUrl">
+  <summary>
+    The number of crx's with a non-Google update URL that were checked during an
+    update check.
+  </summary>
+</histogram>
+
+<histogram name="Extensions.UpdateCheckPackagedApp">
+  <summary>
+    The number of packaged apps that were checked during an update check.
+  </summary>
+</histogram>
+
+<histogram name="Extensions.UpdateCheckTheme">
+  <summary>
+    The number of themes that were checked during an update check.
+  </summary>
+</histogram>
+
+<histogram name="Extensions.UpdateOnLoad">
+  <summary>
+    The number of extensions that were updated at browser startup.
+  </summary>
+</histogram>
+
+<histogram name="Extensions.UpdaterWriteCrx" enum="ExtensionFileWriteResult">
+  <summary>
+    What happened when the extension updater tried to write a file?
+  </summary>
+</histogram>
+
+<histogram name="Extensions.UpdateSource" enum="ExtensionLocation">
+  <summary>Updates grouped by the location property in prefs.</summary>
+</histogram>
+
+<histogram name="Extensions.UpdateType" enum="ExtensionType">
+  <summary>Updates grouped by Extension::HistogramType.</summary>
 </histogram>
 
 <histogram name="FileBrowser.Create" enum="FileDialogType">
@@ -10425,6 +11141,21 @@ other types of suffix sets.
   <int value="21" label="APP_LIST_SEARCH"/>
 </enum>
 
+<enum name="AppLaunchContainer" type="int">
+  <int value="0" label="LAUNCH_WINDOW"/>
+  <int value="1" label="LAUNCH_PANEL"/>
+  <int value="2" label="LAUNCH_TAB"/>
+  <int value="3" label="LAUNCH_NONE (v2 packaged apps)"/>
+</enum>
+
+<enum name="AppPromoAction" type="int">
+  <int value="0" label="PROMO_LAUNCH_APP"/>
+  <int value="1" label="PROMO_LAUNCH_WEB_STORE"/>
+  <int value="2" label="PROMO_CLOSE"/>
+  <int value="3" label="PROMO_EXPIRE"/>
+  <int value="4" label="PROMO_SEEN"/>
+</enum>
+
 <enum name="AppsPageDragSource" type="int">
   <int value="0" label="Same apps pane"/>
   <int value="1" label="Different apps pane"/>
@@ -11737,6 +12468,13 @@ other types of suffix sets.
   <int value="2" label="UNINSTALL"/>
 </enum>
 
+<enum name="ExtensionFileWriteResult" type="int">
+  <int value="0" label="SUCCESS"/>
+  <int value="1" label="CANT_CREATE_TEMP_CRX"/>
+  <int value="2" label="CANT_WRITE_CRX_DATA"/>
+  <int value="3" label="CANT_READ_CRX_FILE"/>
+</enum>
+
 <enum name="ExtensionFunctions" type="int">
 <!-- Generated from ../../../chrome/browser/extensions/extension_function_histogram_value.h -->
 
@@ -12205,10 +12943,111 @@ other types of suffix sets.
   <int value="462" label="SYSTEMINFO_MEMORY_GET"/>
 </enum>
 
+<enum name="ExtensionInstallCause" type="int">
+  <int value="0" label="INSTALL_CAUSE_UNSET"/>
+  <int value="1" label="INSTALL_CAUSE_USER_DOWNLOAD"/>
+  <int value="2" label="INSTALL_CAUSE_UPDATE"/>
+  <int value="3" label="INSTALL_CAUSE_EXTERNAL_FILE"/>
+  <int value="4" label="INSTALL_CAUSE_AUTOMATION"/>
+</enum>
+
 <enum name="ExtensionLaunchType" type="int">
   <int value="0" label="PINNED"/>
   <int value="1" label="REGULAR"/>
   <int value="2" label="FULLSCREEN"/>
+</enum>
+
+<enum name="ExtensionLocation" type="int">
+  <int value="0" label="INVALID"/>
+  <int value="1" label="INTERNAL"/>
+  <int value="2" label="EXTERNAL_PREF"/>
+  <int value="3" label="EXTERNAL_REGISTRY"/>
+  <int value="4" label="LOAD"/>
+  <int value="5" label="COMPONENT"/>
+  <int value="6" label="EXTERNAL_PREF_DOWNLOAD"/>
+  <int value="7" label="EXTERNAL_POLICY_DOWNLOAD"/>
+</enum>
+
+<enum name="ExtensionPermission" type="int">
+  <int value="0" label="UNKNOWN"/>
+  <int value="1" label="NONE"/>
+  <int value="2" label="BOOKMARKS"/>
+  <int value="3" label="GEOLOCATION"/>
+  <int value="4" label="BROWSING_HISTORY"/>
+  <int value="5" label="TABS"/>
+  <int value="6" label="MANAGEMENT"/>
+  <int value="7" label="DEBUGGER"/>
+  <int value="8" label="1_HOST"/>
+  <int value="9" label="2_HOSTS"/>
+  <int value="10" label="3_HOSTS"/>
+  <int value="11" label="4_OR_MORE_HOSTS"/>
+  <int value="12" label="ALL_HOSTS"/>
+  <int value="13" label="FULL_ACCESS"/>
+  <int value="14" label="CLIPBOARD"/>
+  <int value="15" label="TTS_ENGINE"/>
+  <int value="16" label="CONTENT_SETTINGS"/>
+  <int value="17" label="PRIVACY"/>
+  <int value="18" label="MANAGED_MODE"/>
+  <int value="19" label="INPUT"/>
+  <int value="20" label="AUDIO_CAPTURE"/>
+  <int value="21" label="VIDEO_CAPTURE"/>
+  <int value="22" label="DOWNLOADS"/>
+  <int value="23" label="FILE_SYSTEM_WRITE"/>
+  <int value="24" label="ALL_MEDIA_GALLERIES"/>
+  <int value="25" label="SERIAL"/>
+  <int value="26" label="SOCKET_ANY_HOST"/>
+  <int value="27" label="SOCKET_DOMAIN_HOSTS"/>
+  <int value="28" label="SOCKET_SPECIFIC_HOSTS"/>
+</enum>
+
+<enum name="ExtensionType" type="int">
+  <int value="0" label="UNKNOWN"/>
+  <int value="1" label="EXTENSION"/>
+  <int value="2" label="THEME"/>
+  <int value="3" label="USER_SCRIPT"/>
+  <int value="4" label="HOSTED_APP"/>
+  <int value="5" label="LEGACY_PACKAGED_APP"/>
+  <int value="6" label="PLATFORM_APP"/>
+</enum>
+
+<enum name="ExtensionUnpackFailureReason" type="int">
+  <summary>
+    Reasons the sandboxed extension unpacker can fail.  See enum FailureReason
+    in src/chrome/browser/extensions/sandboxed_extension_unpacker.h .
+  </summary>
+  <int value="0" label="COULD_NOT_GET_TEMP_DIRECTORY"/>
+  <int value="1" label="COULD_NOT_CREATE_TEMP_DIRECTORY"/>
+  <int value="2" label="FAILED_TO_COPY_EXTENSION_FILE_TO_TEMP_DIRECTORY"/>
+  <int value="3" label="COULD_NOT_GET_SANDBOX_FRIENDLY_PATH"/>
+  <int value="4" label="COULD_NOT_LOCALIZE_EXTENSION"/>
+  <int value="5" label="INVALID_MANIFEST"/>
+  <int value="6" label="UNPACKER_CLIENT_FAILED"/>
+  <int value="7" label="UTILITY_PROCESS_CRASHED_WHILE_TRYING_TO_INSTALL"/>
+  <int value="8" label="CRX_FILE_NOT_READABLE"/>
+  <int value="9" label="CRX_HEADER_INVALID"/>
+  <int value="10" label="CRX_MAGIC_NUMBER_INVALID"/>
+  <int value="11" label="CRX_VERSION_NUMBER_INVALID"/>
+  <int value="12" label="CRX_EXCESSIVELY_LARGE_KEY_OR_SIGNATURE"/>
+  <int value="13" label="CRX_ZERO_KEY_LENGTH"/>
+  <int value="14" label="CRX_ZERO_SIGNATURE_LENGTH"/>
+  <int value="15" label="CRX_PUBLIC_KEY_INVALID"/>
+  <int value="16" label="CRX_SIGNATURE_INVALID"/>
+  <int value="17" label="CRX_SIGNATURE_VERIFICATION_INITIALIZATION_FAILED"/>
+  <int value="18" label="CRX_SIGNATURE_VERIFICATION_FAILED"/>
+  <int value="19" label="ERROR_SERIALIZING_MANIFEST_JSON"/>
+  <int value="20" label="ERROR_SAVING_MANIFEST_JSON"/>
+  <int value="21" label="COULD_NOT_READ_IMAGE_DATA_FROM_DISK"/>
+  <int value="22" label="DECODED_IMAGES_DO_NOT_MATCH_THE_MANIFEST"/>
+  <int value="23" label="INVALID_PATH_FOR_BROWSER_IMAGE"/>
+  <int value="24" label="ERROR_REMOVING_OLD_IMAGE_FILE"/>
+  <int value="25" label="INVALID_PATH_FOR_BITMAP_IMAGE"/>
+  <int value="26" label="ERROR_RE_ENCODING_THEME_IMAGE"/>
+  <int value="27" label="ERROR_SAVING_THEME_IMAGE"/>
+  <int value="28" label="COULD_NOT_READ_CATALOG_DATA_FROM_DISK"/>
+  <int value="29" label="INVALID_CATALOG_DATA"/>
+  <int value="30" label="INVALID_PATH_FOR_CATALOG"/>
+  <int value="31" label="ERROR_SERIALIZING_CATALOG"/>
+  <int value="32" label="ERROR_SAVING_CATALOG"/>
 </enum>
 
 <enum name="ExternalDeviceAction" type="int">
@@ -12806,6 +13645,16 @@ other types of suffix sets.
     Perf data was collected and sent to Chrome as a serialized protobuf but it
     could be deserialized by Chrome.
   </int>
+</enum>
+
+<enum name="GetUserDataTempDirResult" type="int">
+  <int value="0" label="SUCCESS"/>
+  <int value="1" label="CANT_GET_PARENT_PATH"/>
+  <int value="2" label="CANT_GET_UDT_PATH"/>
+  <int value="3" label="NOT_A_DIRECTORY"/>
+  <int value="4" label="CANT_CREATE_DIR"/>
+  <int value="5" label="CANT_WRITE_TO_PATH"/>
+  <int value="6" label="UNSET"/>
 </enum>
 
 <enum name="GoogleNowEvent" type="int">
@@ -14967,6 +15816,19 @@ other types of suffix sets.
   <int value="1" label="Failure"/>
 </enum>
 
+<enum name="SideloadUIEvents" type="int">
+  <int value="0" label="Extension installed"/>
+  <int value="1" label="Extension ignored"/>
+  <int value="2" label="Extension re-enabled"/>
+  <int value="3" label="Extension uninstalled"/>
+</enum>
+
+<enum name="SideloadWipeoutBubble" type="int">
+  <int value="0" label="Learn more"/>
+  <int value="1" label="Settings page"/>
+  <int value="2" label="Dismiss"/>
+</enum>
+
 <enum name="SimpleCacheIndexInitializeMethod" type="int">
   <int value="0" label="Directory Scan"/>
   <int value="1" label="Index File"/>
@@ -15472,6 +16334,12 @@ other types of suffix sets.
   <int value="40" label="kErrorCodeOmahaUpdateDeferredForBackoff"/>
   <int value="41" label="kErrorCodePostinstallPowerwashError"/>
   <int value="42" label="kErrorCodeUpdateCanceledByChannelChange"/>
+</enum>
+
+<enum name="UrlResolutionResult" type="int">
+  <int value="0" label="Absolute URL"/>
+  <int value="1" label="Resolutions Differ"/>
+  <int value="2" label="Resolutions Agree"/>
 </enum>
 
 <enum name="URLSchemeForHistogram" type="int">
@@ -17091,6 +17959,18 @@ other types of suffix sets.
   <affected-histogram name="SB2.MalwareInterstitialTimePrivacyPolicy"/>
   <affected-histogram name="SB2.MalwareInterstitialTimeProceed"/>
   <affected-histogram name="SB2.MalwareInterstitialTimeTakeMeBack"/>
+</fieldtrial>
+
+<fieldtrial name="SideloadWipeout">
+  <group name="Enabled" label="Sideload Wipeout Active."/>
+  <group name="Disabled" label="Control group."/>
+  <affected-histogram name="DisabledExtension.ExtensionWipedStatus"/>
+  <affected-histogram name="DisabledExtension.SideloadWipeoutCount"/>
+  <affected-histogram name="DisabledExtension.SideloadWipeoutNeeded"/>
+  <affected-histogram name="DisabledExtension.UserSelection"/>
+  <affected-histogram name="Extensions.ExternalExtensionEvent"/>
+  <affected-histogram name="Extensions.InstallSource"/>
+  <affected-histogram name="Extensions.UpdateSource"/>
 </fieldtrial>
 
 <fieldtrial name="SocketType">
