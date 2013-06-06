@@ -73,8 +73,6 @@ v8::Local<v8::Value> V8EventListener::callListenerFunction(ScriptExecutionContex
     if (handlerFunction.IsEmpty() || receiver.IsEmpty())
         return v8::Local<v8::Value>();
 
-    v8::Handle<v8::Value> parameters[1] = { jsEvent };
-
     // FIXME: Can |context| be 0 here?
     if (!context)
         return v8::Local<v8::Value>();
@@ -89,7 +87,8 @@ v8::Local<v8::Value> V8EventListener::callListenerFunction(ScriptExecutionContex
     if (!frame->script()->canExecuteScripts(AboutToExecuteScript))
         return v8::Local<v8::Value>();
 
-    return frame->script()->callFunction(handlerFunction, receiver, 1, parameters);
+    v8::Handle<v8::Value> parameters[1] = { jsEvent };
+    return frame->script()->callFunction(handlerFunction, receiver, WTF_ARRAY_LENGTH(parameters), parameters);
 }
 
 } // namespace WebCore

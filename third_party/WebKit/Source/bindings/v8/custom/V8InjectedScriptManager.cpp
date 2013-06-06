@@ -38,7 +38,6 @@
 #include "bindings/v8/ScriptObject.h"
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8ObjectConstructor.h"
-#include "bindings/v8/V8RecursionScope.h"
 #include "bindings/v8/V8ScriptRunner.h"
 #include "core/inspector/InjectedScriptHost.h"
 #include "core/page/DOMWindow.h"

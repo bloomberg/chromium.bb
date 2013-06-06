@@ -47,7 +47,6 @@
 #include "bindings/v8/V8HiddenPropertyName.h"
 #include "bindings/v8/V8NPObject.h"
 #include "bindings/v8/V8PerContextData.h"
-#include "bindings/v8/V8RecursionScope.h"
 #include "bindings/v8/V8ScriptRunner.h"
 #include "bindings/v8/npruntime_impl.h"
 #include "bindings/v8/npruntime_priv.h"

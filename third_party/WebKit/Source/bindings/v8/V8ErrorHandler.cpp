@@ -33,7 +33,6 @@
 
 #include "bindings/v8/ScriptController.h"
 #include "bindings/v8/V8Binding.h"
-#include "bindings/v8/V8RecursionScope.h"
 #include "bindings/v8/V8ScriptRunner.h"
 #include "core/dom/ErrorEvent.h"
 #include "core/dom/EventNames.h"

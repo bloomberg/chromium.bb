@@ -38,7 +38,6 @@
 #include "bindings/v8/RetainedDOMInfo.h"
 #include "bindings/v8/V8AbstractEventListener.h"
 #include "bindings/v8/V8Binding.h"
-#include "bindings/v8/V8RecursionScope.h"
 #include "bindings/v8/WrapperTypeInfo.h"
 #include "core/dom/Attr.h"
 #include "core/dom/NodeTraversal.h"
