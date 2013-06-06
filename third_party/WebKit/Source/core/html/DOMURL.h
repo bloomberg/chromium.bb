@@ -46,8 +46,6 @@ class DOMURL : public RefCounted<DOMURL> {
 public:
     static PassRefPtr<DOMURL> create() { return adoptRef(new DOMURL); }
 
-    static void contextDestroyed(ScriptExecutionContext*);
-
     static String createObjectURL(ScriptExecutionContext*, Blob*);
     static void revokeObjectURL(ScriptExecutionContext*, const String&);
     static String createObjectURL(ScriptExecutionContext*, WebKitMediaSource*);

@@ -112,8 +112,6 @@ ScriptExecutionContext::~ScriptExecutionContext()
         ASSERT((*iter)->scriptExecutionContext() == this);
         (*iter)->contextDestroyed();
     }
-    if (m_publicURLManager)
-        m_publicURLManager->contextDestroyed();
 }
 
 void ScriptExecutionContext::processMessagePortMessagesSoon()
@@ -335,7 +333,7 @@ int ScriptExecutionContext::circularSequentialID()
 PublicURLManager& ScriptExecutionContext::publicURLManager()
 {
     if (!m_publicURLManager)
-        m_publicURLManager = PublicURLManager::create();
+        m_publicURLManager = PublicURLManager::create(this);
     return *m_publicURLManager;
 }
 
