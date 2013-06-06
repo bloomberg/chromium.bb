@@ -15396,6 +15396,12 @@ To configure restrictions for this limited user, please sign into your account a
     <message name="IDS_IDENTITY_INTERNALS_TOKEN_STATUS" desc="Label of the row containing a status of identity token.">
       Token Status
     </message>
+    <message name="IDS_IDENTITY_INTERNALS_TOKEN_NOT_FOUND" desc="Label of the token status when token is not found.">
+      Not Found
+    </message>
+    <message name="IDS_IDENTITY_INTERNALS_TOKEN_PRESENT" desc="Label of the token status when token is present and valid for use.">
+      Token Present
+    </message>
     <message name="IDS_IDENTITY_INTERNALS_EXPIRATION_TIME" desc="Label of the row containing expiration time of identity token.">
       Expiration Time
     </message>

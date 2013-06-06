@@ -212,8 +212,6 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     return &NewWebUI<FlagsUI>;
   if (url.host() == chrome::kChromeUIHistoryFrameHost)
     return &NewWebUI<HistoryUI>;
-  if (url.host() == chrome::kChromeUIIdentityInternalsHost)
-    return &NewWebUI<IdentityInternalsUI>;
   if (url.host() == chrome::kChromeUIInlineLoginHost)
     return &NewWebUI<InlineLoginUI>;
   if (url.host() == chrome::kChromeUIInstantHost)
@@ -285,6 +283,9 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
   // Help is implemented with native UI elements on Android.
   if (url.host() == chrome::kChromeUIHelpFrameHost)
     return &NewWebUI<HelpUI>;
+  // Identity API is not available on Android.
+  if (url.host() == chrome::kChromeUIIdentityInternalsHost)
+    return &NewWebUI<IdentityInternalsUI>;
   // chrome://inspect isn't supported on Android. Page debugging is handled by a
   // remote devtools on the host machine, and other elements (Shared Workers,
   // extensions, etc) aren't supported.
