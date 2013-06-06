@@ -439,6 +439,7 @@
 
     // Force HTTPS for sites that have requested it.
     { "name": "www.paypal.com", "mode": "force-https" },
+    { "name": "paypal.com", "mode": "force-https" },
     { "name": "www.elanex.biz", "mode": "force-https" },
     { "name": "jottit.com", "include_subdomains": true, "mode": "force-https" },
     { "name": "sunshinepress.org", "include_subdomains": true, "mode": "force-https" },
