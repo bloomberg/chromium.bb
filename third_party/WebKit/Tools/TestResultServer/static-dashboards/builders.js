@@ -81,7 +81,9 @@ builders.loadBuildersList = function(groupName, testType)
 
         if (hasTest && isInGroup) {
             var builderList = master.tests[testType].builders;
-            builderList = builderList.filter(selectBuilderFilter(groupName, testType));
+            var builderFilter = selectBuilderFilter(groupName, testType);
+            if (builderFilter)
+                builderList = builderList.filter(builderFilter);
             builderGroup.append(builderList);
         }
     }
@@ -203,9 +205,6 @@ function selectBuilderFilter(groupName, testType)
             builderFilter = isChromiumWebkitDepsTestRunner;
             break;
         }
-        break;
-    default:
-        builderFilter = function() { return true; };
         break;
     }
 

@@ -55,8 +55,6 @@ var TEST_TYPES = [
     'content_unittests',
     'courgette_unittests',
     'crypto_unittests',
-    'googleurl_unittests',
-    'gfx_unittests',
     'gl_tests',
     'gpu_tests',
     'gpu_unittests',
@@ -70,11 +68,9 @@ var TEST_TYPES = [
     'net_unittests',
     'printing_unittests',
     'remoting_unittests',
-    'safe_browsing_tests',
     'sql_unittests',
     'sync_unit_tests',
     'sync_integration_tests',
-    'test_shell_tests',
     'ui_unittests',
     'unit_tests',
     'views_unittests',
@@ -162,4 +158,29 @@ function getTotalTestCounts(failuresByType)
         }
     }
     return countData;
+}
+
+// FIXME: This should move into a results json parsing file/class.
+function determineFlakiness(failureMap, results, resultsForTest)
+{
+    // FIXME: Ideally this heuristic would be a bit smarter and not consider
+    // all passes, followed by a few consecutive failures, followed by all passes
+    // to be flakiness since that's more likely the test actually failing for a
+    // few runs due to a commit.
+    var FAILURE_TYPES_TO_IGNORE = ['NOTRUN', 'NO DATA', 'SKIP'];
+    var flipCount = 0;
+    var mostRecentNonIgnorableFailureType;
+
+    for (var i = 0; i < results.length; i++) {
+        var result = results[i][RLE.VALUE];
+        var failureType = failureMap[result];
+        if (failureType != mostRecentNonIgnorableFailureType && FAILURE_TYPES_TO_IGNORE.indexOf(failureType) == -1) {
+            if (mostRecentNonIgnorableFailureType)
+                flipCount++;
+            mostRecentNonIgnorableFailureType = failureType;
+        }
+    }
+
+    resultsForTest.flipCount = flipCount;
+    resultsForTest.isFlaky = flipCount > 1;
 }

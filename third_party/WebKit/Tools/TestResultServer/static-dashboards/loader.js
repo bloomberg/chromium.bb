@@ -116,8 +116,12 @@ loader.Loader.prototype = {
     },
     _loadResultsFiles: function()
     {
-        for (var builderName in currentBuilders())
-            this._loadResultsFileForBuilder(builderName);
+        var builderNames = Object.keys(currentBuilders());
+        if (builderNames.length)
+            builderNames.forEach(this._loadResultsFileForBuilder.bind(this));
+        else
+            this._loadNext();
+
     },
     _loadResultsFileForBuilder: function(builderName)
     {

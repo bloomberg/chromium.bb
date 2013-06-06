@@ -28,6 +28,23 @@
 
 module('ui');
 
+test('ui.html.range', 1, function() {
+    equal(ui.html.range('mockParameter', 'mockLabel', 1, 4, 2),
+        '<label>mockLabel' +
+            '<input type=range onchange="g_history.setQueryParameter(\'mockParameter\', this.value)" min=1 max=4 value=2>' +
+        '</label>');
+})
+
+test('ui.html.navbar', 3, function() {
+    var container = document.createElement('div');
+    container.innerHTML = ui.html.navbar();
+    equal(container.querySelectorAll('span').length, 5);
+    equal(container.querySelectorAll('input').length, 1);
+
+    container.innerHTML = ui.html.navbar('<div id="test-div"></div>');
+    ok(container.querySelector('#test-div'));
+})
+
 test('chromiumRevisionLinkOneRevision', 1, function() {
     var results = {};
     results[CHROME_REVISIONS_KEY] = [3, 2, 1];

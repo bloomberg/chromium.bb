@@ -82,7 +82,15 @@ ui.html.checkbox = function(queryParameter, label, isChecked, opt_extraJavaScrip
     return '<label style="padding-left: 2em">' +
         '<input type="checkbox" onchange="g_history.toggleQueryParameter(\'' + queryParameter + '\');' + js + '" ' +
             (isChecked ? 'checked' : '') + '>' + label +
-        '</label> ';
+        '</label>';
+}
+
+ui.html.range = function(queryParameter, label, min, max, initialValue)
+{
+    return '<label>' +
+        label +
+        '<input type=range onchange="g_history.setQueryParameter(\'' + queryParameter + '\', this.value)" min=' + min + ' max=' + max + ' value=' + initialValue + '>' +
+    '</label>';
 }
 
 ui.html.select = function(label, queryParameter, options)
@@ -100,18 +108,28 @@ ui.html.select = function(label, queryParameter, options)
     return html;
 }
 
-// Returns the HTML for the select element to switch to different testTypes.
-ui.html.testTypeSwitcher = function(opt_noBuilderMenu, opt_extraHtml, opt_includeNoneBuilder)
+ui.html.navbar = function(opt_extraHtml)
 {
     var html = '<div style="border-bottom:1px dashed">';
-    html += '' +
+    html = ui.html._dashboardLink('Overview', 'overview.html') +
         ui.html._dashboardLink('Stats', 'aggregate_results.html') +
         ui.html._dashboardLink('Timeline', 'timeline_explorer.html') +
         ui.html._dashboardLink('Results', 'flakiness_dashboard.html') +
         ui.html._dashboardLink('Treemap', 'treemap.html');
 
-    html += ui.html.select('Test type', 'testType', TEST_TYPES);
+    if (opt_extraHtml)
+        html += opt_extraHtml;
 
+    if (!history.isTreeMap())
+        html += ui.html.checkbox('showAllRuns', 'Use all recorded runs', g_history.crossDashboardState.showAllRuns);
+
+    return html + '</div>';
+}
+
+// Returns the HTML for the select element to switch to different testTypes.
+ui.html.testTypeSwitcher = function(opt_noBuilderMenu, opt_extraHtml, opt_includeNoneBuilder)
+{
+    var html = ui.html.select('Test type', 'testType', TEST_TYPES);
     if (!opt_noBuilderMenu) {
         var buildersForMenu = Object.keys(currentBuilders());
         if (opt_includeNoneBuilder)
@@ -121,12 +139,9 @@ ui.html.testTypeSwitcher = function(opt_noBuilderMenu, opt_extraHtml, opt_includ
 
     html += ui.html.select('Group', 'group', groupNamesForTestType(g_history.crossDashboardState.testType));
 
-    if (!history.isTreeMap())
-        html += ui.html.checkbox('showAllRuns', 'Show all runs', g_history.crossDashboardState.showAllRuns);
-
     if (opt_extraHtml)
         html += opt_extraHtml;
-    return html + '</div>';
+    return ui.html.navbar(html);
 }
 
 ui.html._loadDashboard = function(fileName)

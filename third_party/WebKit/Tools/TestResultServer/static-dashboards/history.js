@@ -40,10 +40,13 @@ history.DEFAULT_CROSS_DASHBOARD_STATE_VALUES = {
 
 history.validateParameter = function(state, key, value, validateFn)
 {
-    if (validateFn())
+    if (validateFn()) {
         state[key] = value;
-    else
+        return true;
+    } else {
         console.log(key + ' value is not valid: ' + value);
+        return false;
+    }
 }
 
 history.isTreeMap = function()
@@ -120,7 +123,7 @@ history.History = function(configuration)
     }
 }
 
-var RELOAD_REQUIRING_PARAMETERS = ['showAllRuns', 'group', 'testType'];
+history.reloadRequiringParameters = ['showAllRuns', 'group', 'testType'];
 
 var CROSS_DB_INVALIDATING_PARAMETERS = {
     'testType': 'group'
@@ -167,7 +170,7 @@ history.History.prototype = {
         // Some parameters require loading different JSON files when the value changes. Do a reload.
         if (Object.keys(oldCrossDashboardState).length) {
             for (var key in this.crossDashboardState) {
-                if (oldCrossDashboardState[key] != this.crossDashboardState[key] && RELOAD_REQUIRING_PARAMETERS.indexOf(key) != -1) {
+                if (oldCrossDashboardState[key] != this.crossDashboardState[key] && history.reloadRequiringParameters.indexOf(key) != -1) {
                     window.location.reload();
                     return false;
                 }
