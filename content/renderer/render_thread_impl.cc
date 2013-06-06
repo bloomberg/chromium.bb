@@ -118,6 +118,7 @@
 #endif
 
 #if defined(OS_ANDROID)
+#include <cpu-features.h>
 #include "content/renderer/android/synchronous_compositor_factory.h"
 #endif
 
@@ -691,8 +692,14 @@ static void AdjustRuntimeFeaturesFromArgs(const CommandLine& command_line) {
   if (!command_line.HasSwitch(switches::kEnableSpeechRecognition))
     WebRuntimeFeatures::enableScriptedSpeech(false);
 
-  if (command_line.HasSwitch(switches::kEnableWebAudio))
-    WebRuntimeFeatures::enableWebAudio(true);
+  if (command_line.HasSwitch(switches::kEnableWebAudio)) {
+    bool enable_webaudio = true;
+#if defined(ARCH_CPU_ARMEL)
+    enable_webaudio =
+        ((android_getCpuFeatures() & ANDROID_CPU_ARM_FEATURE_NEON) != 0);
+#endif
+    WebRuntimeFeatures::enableWebAudio(enable_webaudio);
+  }
 #else
   if (command_line.HasSwitch(switches::kDisableWebAudio))
     WebRuntimeFeatures::enableWebAudio(false);

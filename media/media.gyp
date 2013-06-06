@@ -589,25 +589,12 @@
           'sources': [
             'base/media.cc',
             'base/media.h',
+            'base/media_stub.cc',
           ],
           'conditions': [
             ['android_webview_build==0', {
               'dependencies': [
                 'media_java',
-              ],
-            }],
-            ['use_openmax_dl_fft==1', {
-              # FFT library requires Neon support, so we enable
-              # WebAudio only if Neon is detected at runtime.
-              'sources': [
-                'base/media_android.cc',
-              ],
-              'includes': [
-                '../build/android/cpufeatures.gypi',
-              ],
-            }, {
-              'sources': [
-                'base/media_stub.cc',
               ],
             }],
           ],
