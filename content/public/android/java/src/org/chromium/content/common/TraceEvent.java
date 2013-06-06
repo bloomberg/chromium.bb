@@ -105,9 +105,6 @@ public class TraceEvent {
 
         private final void begin(final String line) {
             if (mNumTasksSinceLastIdle == 0) {
-                final long elapsed = SystemClock.elapsedRealtime()
-                        - mLastIdleStartedAt;
-                Log.v(TAG, "idled for " + elapsed + "ms");
                 TraceEvent.end(IDLE_EVENT_NAME);
             }
             mLastWorkStartedAt = SystemClock.elapsedRealtime();
