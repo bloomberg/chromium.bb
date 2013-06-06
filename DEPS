@@ -483,7 +483,7 @@ deps_os = {
       "/trunk/deps/reference_builds/chrome_linux@197743",
 
     "src/third_party/xdg-utils":
-      "/trunk/deps/third_party/xdg-utils@149334",
+      "/trunk/deps/third_party/xdg-utils@203785",
 
     "src/third_party/swig/linux":
       "/trunk/deps/third_party/swig/linux@" + Var("swig_revision"),
@@ -496,7 +496,7 @@ deps_os = {
       "/trunk/deps/third_party/openssl@" + Var("openssl_revision"),
 
     "src/third_party/gold":
-      "/trunk/deps/third_party/gold@168091",
+      "/trunk/deps/third_party/gold@203758",
 
     "src/third_party/libmtp":
       "/trunk/deps/third_party/libmtp@178673",
