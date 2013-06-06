@@ -99,6 +99,7 @@ class AutofillDialogCocoa : public AutofillDialogView,
 
 // Forwarding AutofillDialogView calls.
 - (void)updateAccountChooser;
+- (void)updateSection:(autofill::DialogSection)section;
 - (void)getInputs:(autofill::DetailOutputMap*)outputs
        forSection:(autofill::DialogSection)section;
 - (content::NavigationController*)showSignIn;

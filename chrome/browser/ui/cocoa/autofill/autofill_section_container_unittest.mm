@@ -53,8 +53,9 @@ TEST_F(AutofillSectionContainerTest, HasSubviews) {
   bool hasLayoutView = false;
   bool hasTextField = false;
   bool hasSuggestButton = false;
+  bool hasSuggestionView = false;
 
-  ASSERT_EQ(3U, [[[container_ view] subviews] count]);
+  ASSERT_EQ(4U, [[[container_ view] subviews] count]);
   for (NSView* view in [[container_ view] subviews]) {
     if ([view isKindOfClass:[NSTextField class]]) {
       hasTextField = true;
@@ -62,12 +63,15 @@ TEST_F(AutofillSectionContainerTest, HasSubviews) {
       hasLayoutView = true;
     } else if ([view isKindOfClass:[MenuButton class]]) {
       hasSuggestButton = true;
+    } else if ([view isKindOfClass:[NSView class]]) {
+      hasSuggestionView = true;
     }
   }
 
   EXPECT_TRUE(hasSuggestButton);
   EXPECT_TRUE(hasLayoutView);
   EXPECT_TRUE(hasTextField);
+  EXPECT_TRUE(hasSuggestionView);
 }
 
 TEST_F(AutofillSectionContainerTest, ModelsPopulateComboboxes) {

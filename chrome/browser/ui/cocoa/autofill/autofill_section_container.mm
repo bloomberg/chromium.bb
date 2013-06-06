@@ -5,7 +5,10 @@
 #import "chrome/browser/ui/cocoa/autofill/autofill_section_container.h"
 
 #include "base/strings/sys_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_controller.h"
+#import "chrome/browser/ui/cocoa/autofill/autofill_section_view.h"
+#import "chrome/browser/ui/cocoa/autofill/autofill_suggestion_container.h"
 #import "chrome/browser/ui/cocoa/autofill/autofill_textfield.h"
 #import "chrome/browser/ui/cocoa/autofill/layout_view.h"
 #include "chrome/browser/ui/cocoa/autofill/simple_grid_layout.h"
@@ -42,6 +45,22 @@ const int kDetailsWidth = 300;
 
 // Top/bottom inset for contents of a detail section.
 const size_t kDetailSectionInset = 10;
+
+// Break suggestion text into two lines. TODO(groby): Should be on controller.
+void BreakSuggestionText(const string16& text,
+                         string16* line1,
+                         string16* line2) {
+  // TODO(estade): does this localize well?
+  string16 line_return(base::ASCIIToUTF16("\n"));
+  size_t position = text.find(line_return);
+  if (position == string16::npos) {
+    *line1 = text;
+    line2->clear();
+  } else {
+    *line1 = text.substr(0, position);
+    *line2 = text.substr(position + line_return.length());
+  }
+}
 
 }
 
@@ -93,6 +112,15 @@ const size_t kDetailSectionInset = 10;
   [suggestButton_ setHidden:!hasSuggestions];
 
   [suggestButton_ setAttachedMenu:menu];
+
+  [self updateSuggestionState];
+
+  // TODO(groby): "Save in Chrome" handling.
+
+  // Always request re-layout on state change.
+  id controller = [[view_ window] windowController];
+  if ([controller respondsToSelector:@selector(requestRelayout)])
+    [controller performSelector:@selector(requestRelayout)];
 }
 
 - (void)loadView {
@@ -103,18 +131,22 @@ const size_t kDetailSectionInset = 10;
                    base::SysUTF16ToNSString(labelText)] retain]);
 
   suggestButton_.reset([[self makeSuggestionButton] retain]);
+  suggestContainer_.reset(
+      [[AutofillSuggestionContainer alloc] initWithDelegate:self]);
 
   [self modelChanged];
-
-  view_.reset([[NSView alloc] initWithFrame:NSZeroRect]);
-  [self performLayout];
+  view_.reset([[AutofillSectionView alloc] initWithFrame:NSZeroRect]);
   [self setView:view_];
-  [[self view] setSubviews:@[label_, inputs_, suggestButton_]];
+  [[self view] setSubviews:
+      @[label_, inputs_, [suggestContainer_ view], suggestButton_]];
 }
 
 - (NSSize)preferredSize {
   NSSize labelSize = [label_ frame].size;  // Assumes sizeToFit was called.
-  CGFloat contentHeight = [inputs_ preferredHeightForWidth:kDetailsWidth];
+  CGFloat controlHeight = [inputs_ preferredHeightForWidth:kDetailsWidth];
+  if ([inputs_ isHidden])
+    controlHeight = [suggestContainer_ preferredSize].height;
+  CGFloat contentHeight = std::max(controlHeight, labelSize.height);
   contentHeight = std::max(contentHeight, labelSize.height);
   contentHeight = std::max(contentHeight, NSHeight([suggestButton_ frame]));
 
@@ -126,6 +158,8 @@ const size_t kDetailSectionInset = 10;
   NSSize buttonSize = [suggestButton_ frame].size;  // Assume sizeToFit.
   NSSize labelSize = [label_ frame].size;  // Assumes sizeToFit was called.
   CGFloat controlHeight = [inputs_ preferredHeightForWidth:kDetailsWidth];
+  if ([inputs_ isHidden])
+    controlHeight = [suggestContainer_ preferredSize].height;
 
   NSRect viewFrame = NSZeroRect;
   viewFrame.size = [self preferredSize];
@@ -156,10 +190,12 @@ const size_t kDetailSectionInset = 10;
   NSRect buttonFrame = column[2];
   NSDivideRect(column[2], &buttonFrame, &dummy, buttonSize.height, NSMaxYEdge);
 
+  [[suggestContainer_ view] setFrame:controlFrame];
+  [suggestContainer_ performLayout];
   [inputs_ setFrame:controlFrame];
   [label_ setFrame:labelFrame];
   [suggestButton_ setFrame:buttonFrame];
-  [view_ setFrame:viewFrame];
+  [view_ setFrameSize:viewFrame.size];
 }
 
 - (NSTextField*)makeDetailSectionLabel:(NSString*)labelText {
@@ -265,6 +301,47 @@ const size_t kDetailSectionInset = 10;
   }
 
   return view.autorelease();
+}
+
+- (void)updateSuggestionState {
+  const autofill::SuggestionState& suggestionState =
+      controller_->SuggestionStateForSection(section_);
+  bool showSuggestions = !suggestionState.text.empty();
+
+  [[suggestContainer_ view] setHidden:!showSuggestions];
+  [inputs_ setHidden:showSuggestions];
+
+  string16 line1, line2;
+  BreakSuggestionText(suggestionState.text, &line1, &line2);
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  gfx::Font font = rb.GetFont(ui::ResourceBundle::BaseFont).DeriveFont(
+      0, suggestionState.text_style);
+  [suggestContainer_ setSuggestionText:base::SysUTF16ToNSString(line1)
+                                 line2:base::SysUTF16ToNSString(line2)
+                              withFont:font.GetNativeFont()];
+  [suggestContainer_ setIcon:suggestionState.icon.AsNSImage()];
+  if (!suggestionState.extra_text.empty()) {
+    NSString* extraText =
+        base::SysUTF16ToNSString(suggestionState.extra_text);
+    NSImage* extraIcon = suggestionState.extra_icon.AsNSImage();
+    [suggestContainer_ showTextfield:extraText withIcon:extraIcon];
+  }
+  [suggestContainer_ setEditable:suggestionState.editable];
+  [view_ setShouldHighlightOnHover:showSuggestions];
+}
+
+- (void)update {
+  // TODO(groby): Will need to update input fields/support clobbering.
+  // cf. AutofillDialogViews::UpdateSectionImpl.
+  [self modelChanged];
+}
+
+- (void)editLinkClicked {
+  controller_->EditClickedForSection(section_);
+}
+
+- (NSString*)editLinkTitle {
+  return base::SysUTF16ToNSString(controller_->EditSuggestionText());
 }
 
 @end

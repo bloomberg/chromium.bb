@@ -18,6 +18,7 @@
 #import "chrome/browser/ui/cocoa/autofill/autofill_sign_in_container.h"
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_custom_sheet.h"
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_custom_window.h"
+#import "chrome/browser/ui/cocoa/flipped_view.h"
 #include "ui/base/cocoa/window_size_constants.h"
 
 namespace {
@@ -74,6 +75,7 @@ void AutofillDialogCocoa::UpdateNotificationArea() {
 }
 
 void AutofillDialogCocoa::UpdateSection(DialogSection section) {
+  [sheet_controller_ updateSection:section];
 }
 
 void AutofillDialogCocoa::FillSection(DialogSection section,
@@ -157,8 +159,17 @@ void AutofillDialogCocoa::OnConstrainedWindowClosed(
     accountChooser_.reset([[AutofillAccountChooser alloc]
                               initWithFrame:headerRect
                                  controller:autofillDialog->controller()]);
-    [[[self window] contentView] setSubviews:
+
+    // This needs a flipped content view because otherwise the size
+    // animation looks odd. However, replacing the contentView for constrained
+    // windows does not work - it does custom rendering.
+    scoped_nsobject<NSView> flippedContentView(
+        [[FlippedView alloc] initWithFrame:NSZeroRect]);
+    [flippedContentView setSubviews:
         @[accountChooser_, [mainContainer_ view], [signInContainer_ view]]];
+    [flippedContentView setAutoresizingMask:
+        (NSViewWidthSizable | NSViewHeightSizable)];
+    [[[self window] contentView] addSubview:flippedContentView];
 
     NSRect contentRect = clientRect;
     contentRect.origin = NSMakePoint(0, 0);
@@ -200,13 +211,13 @@ void AutofillDialogCocoa::OnConstrainedWindowClosed(
   contentRect.size = [self preferredSize];
   NSRect clientRect = NSInsetRect(
       contentRect, chrome_style::kHorizontalPadding, 0);
-  clientRect.origin.y += chrome_style::kClientBottomPadding;
+  clientRect.origin.y = chrome_style::kClientBottomPadding;
   clientRect.size.height -= chrome_style::kTitleTopPadding +
                             chrome_style::kClientBottomPadding;
 
   NSRect headerRect, mainRect;
   NSDivideRect(clientRect, &headerRect, &mainRect,
-               kAccountChooserHeight, NSMaxYEdge);
+               kAccountChooserHeight, NSMinYEdge);
 
   [accountChooser_ setFrame:headerRect];
   if ([[signInContainer_ view] isHidden]) {
@@ -233,6 +244,10 @@ void AutofillDialogCocoa::OnConstrainedWindowClosed(
 
 - (void)updateAccountChooser {
   [accountChooser_ update];
+}
+
+- (void)updateSection:(autofill::DialogSection)section {
+  [[mainContainer_ sectionForId:section] update];
 }
 
 - (content::NavigationController*)showSignIn {
