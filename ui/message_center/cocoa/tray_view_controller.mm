@@ -21,9 +21,30 @@
 @interface MCTrayViewController (Private)
 // Creates all the views for the control area of the tray.
 - (void)layoutControlArea;
+
+// Update the tray view by resizing it to fit its content.
+- (void)updateTrayView;
+
+// Remove notifications dismissed by the user. It is done in the following
+// 3 steps.
+- (void)closeNotificationsByUser;
+
+// Step 1: hide all notifications pending removal with fade-out animation.
+- (void)hideNotificationsPendingRemoval;
+
+// Step 2: move up all remaining notfications to take over the available space
+// due to hiding notifications. The scroll view and the window remain unchanged.
+- (void)moveUpRemainingNotifications;
+
+// Step 3: finalize the tray view and window to get rid of the empty space.
+- (void)finalizeTrayViewAndWindow;
+
 @end
 
 namespace {
+
+// The duration of fade-out and bounds animation.
+const NSTimeInterval kAnimationDuration = 0.2;
 
 // The height of the bar at the top of the tray that contains buttons.
 const CGFloat kControlAreaHeight = 50;
@@ -44,6 +65,7 @@ const CGFloat kTrayBottomMargin = 75;
   if ((self = [super initWithNibName:nil bundle:nil])) {
     messageCenter_ = messageCenter;
     notifications_.reset([[NSMutableArray alloc] init]);
+    notificationsPendingRemoval_.reset([[NSMutableArray alloc] init]);
   }
   return self;
 }
@@ -83,6 +105,13 @@ const CGFloat kTrayBottomMargin = 75;
 }
 
 - (void)onMessageCenterTrayChanged {
+  // When the window is visible, the only update is to remove notifications
+  // dismissed by the user.
+  if ([[[self view] window] isVisible]) {
+    [self closeNotificationsByUser];
+    return;
+  }
+
   std::map<std::string, MCNotificationController*> newMap;
 
   scoped_nsobject<NSShadow> shadow([[NSShadow alloc] init]);
@@ -140,43 +169,10 @@ const CGFloat kTrayBottomMargin = 75;
     [notifications_ removeObject:pair.second];
   }
 
-  // Don't add extra padding if the center is empty.
-  if (minY == message_center::kMarginBetweenItems)
-    minY = 0;
-
-  // Resize the scroll view's content.
-  NSRect scrollViewFrame = [scrollView_ frame];
-  NSRect documentFrame = [[scrollView_ documentView] frame];
-  documentFrame.size.width = NSWidth(scrollViewFrame);
-  documentFrame.size.height = minY;
-  [[scrollView_ documentView] setFrame:documentFrame];
-
   // Copy the new map of notifications to replace the old.
   notificationsMap_ = newMap;
 
-  // Resize the container view.
-  NSRect screenFrame = [[[NSScreen screens] objectAtIndex:0] visibleFrame];
-  NSRect frame = [[self view] frame];
-  frame.size.height = std::min(NSHeight(screenFrame) - kTrayBottomMargin,
-                               minY + kControlAreaHeight);
-  [[self view] setFrame:frame];
-
-  // Resize the scroll view.
-  scrollViewFrame.size.height = NSHeight(frame) - kControlAreaHeight;
-  [scrollView_ setFrame:scrollViewFrame];
-
-  // Hide the clear-all button if there are no notifications. Simply swap the
-  // X position of it and the pause button in that case.
-  BOOL hidden = modelNotifications.size() == 0;
-  if ([clearAllButton_ isHidden] != hidden) {
-    [clearAllButton_ setHidden:hidden];
-
-    NSRect pauseButtonFrame = [pauseButton_ frame];
-    NSRect clearAllButtonFrame = [clearAllButton_ frame];
-    std::swap(clearAllButtonFrame.origin.x, pauseButtonFrame.origin.x);
-    [pauseButton_ setFrame:pauseButtonFrame];
-    [clearAllButton_ setFrame:clearAllButtonFrame];
-  }
+  [self updateTrayView];
 }
 
 - (void)toggleQuietMode:(id)sender {
@@ -333,6 +329,160 @@ const CGFloat kTrayBottomMargin = 75;
   [pauseButton_ setAction:@selector(toggleQuietMode:)];
   configureButton(pauseButton_);
   [view addSubview:pauseButton_];
+}
+
+- (void)updateTrayView {
+  CGFloat scrollContentHeight = 0;
+  if ([notifications_ count]) {
+    scrollContentHeight = NSMaxY([[[notifications_ lastObject] view] frame]) +
+        message_center::kMarginBetweenItems;;
+  }
+
+  // Resize the scroll view's content.
+  NSRect scrollViewFrame = [scrollView_ frame];
+  NSRect documentFrame = [[scrollView_ documentView] frame];
+  documentFrame.size.width = NSWidth(scrollViewFrame);
+  documentFrame.size.height = scrollContentHeight;
+  [[scrollView_ documentView] setFrame:documentFrame];
+
+  // Resize the container view.
+  NSRect screenFrame = [[[NSScreen screens] objectAtIndex:0] visibleFrame];
+  NSRect frame = [[self view] frame];
+  frame.size.height = std::min(NSHeight(screenFrame) - kTrayBottomMargin,
+                               scrollContentHeight + kControlAreaHeight);
+  [[self view] setFrame:frame];
+
+  // Resize the scroll view.
+  scrollViewFrame.size.height = NSHeight(frame) - kControlAreaHeight;
+  [scrollView_ setFrame:scrollViewFrame];
+
+  // Hide the clear-all button if there are no notifications. Simply swap the
+  // X position of it and the pause button in that case.
+  BOOL hidden = ![notifications_ count];
+  if ([clearAllButton_ isHidden] != hidden) {
+    [clearAllButton_ setHidden:hidden];
+
+    NSRect pauseButtonFrame = [pauseButton_ frame];
+    NSRect clearAllButtonFrame = [clearAllButton_ frame];
+    std::swap(clearAllButtonFrame.origin.x, pauseButtonFrame.origin.x);
+    [pauseButton_ setFrame:pauseButtonFrame];
+    [clearAllButton_ setFrame:clearAllButtonFrame];
+  }
+}
+
+- (void)animationDidEnd:(NSAnimation*)animation {
+  if ([notificationsPendingRemoval_ count])
+    [self moveUpRemainingNotifications];
+  else
+    [self finalizeTrayViewAndWindow];
+}
+
+- (void)closeNotificationsByUser {
+  if ([animation_ isAnimating])
+    return;
+  [self hideNotificationsPendingRemoval];
+}
+
+- (void)hideNotificationsPendingRemoval {
+  scoped_nsobject<NSMutableArray> animationDataArray(
+      [[NSMutableArray alloc] init]);
+
+  // Fade-out those notifications pending removal.
+  for (MCNotificationController* notification in notifications_.get()) {
+    if (messageCenter_->HasNotification([notification notificationID]))
+      continue;
+    [notificationsPendingRemoval_ addObject:notification];
+    [animationDataArray addObject:@{
+        NSViewAnimationTargetKey : [notification view],
+        NSViewAnimationEffectKey : NSViewAnimationFadeOutEffect
+    }];
+  }
+
+  if ([notificationsPendingRemoval_ count] == 0)
+    return;
+
+  for (MCNotificationController* notification in
+           notificationsPendingRemoval_.get()) {
+    [notifications_ removeObject:notification];
+  }
+
+  // Start the animation.
+  animation_.reset([[NSViewAnimation alloc]
+      initWithViewAnimations:animationDataArray]);
+  [animation_ setDuration:kAnimationDuration];
+  [animation_ setDelegate:self];
+  [animation_ startAnimation];
+}
+
+- (void)moveUpRemainingNotifications {
+  scoped_nsobject<NSMutableArray> animationDataArray(
+      [[NSMutableArray alloc] init]);
+
+  // Compute the position where the remaining notifications should start.
+  CGFloat minY = message_center::kMarginBetweenItems;
+  for (MCNotificationController* notification in
+           notificationsPendingRemoval_.get()) {
+    NSView* view = [notification view];
+    minY += NSHeight([view frame]) + message_center::kMarginBetweenItems;
+  }
+
+  // Reposition the remaining notifications starting at the computed position.
+  for (MCNotificationController* notification in notifications_.get()) {
+    NSView* view = [notification view];
+    NSRect frame = [view frame];
+    NSRect oldFrame = frame;
+    frame.origin.y = minY;
+    if (!NSEqualRects(oldFrame, frame)) {
+      [animationDataArray addObject:@{
+          NSViewAnimationTargetKey : view,
+          NSViewAnimationEndFrameKey : [NSValue valueWithRect:frame]
+      }];
+    }
+    minY = NSMaxY(frame) + message_center::kMarginBetweenItems;
+  }
+
+  // Now remove notifications pending removal.
+  for (MCNotificationController* notification in
+           notificationsPendingRemoval_.get()) {
+    [[notification view] removeFromSuperview];
+    notificationsMap_.erase([notification notificationID]);
+  }
+  [notificationsPendingRemoval_ removeAllObjects];
+
+  // Start the animation.
+  animation_.reset([[NSViewAnimation alloc]
+      initWithViewAnimations:animationDataArray]);
+  [animation_ setDuration:kAnimationDuration];
+  [animation_ setDelegate:self];
+  [animation_ startAnimation];
+}
+
+- (void)finalizeTrayViewAndWindow {
+  // Reposition the remaining notifications starting at the bottom.
+  CGFloat minY = message_center::kMarginBetweenItems;
+  for (MCNotificationController* notification in notifications_.get()) {
+    NSView* view = [notification view];
+    NSRect frame = [view frame];
+    NSRect oldFrame = frame;
+    frame.origin.y = minY;
+    if (!NSEqualRects(oldFrame, frame))
+      [view setFrame:frame];
+    minY = NSMaxY(frame) + message_center::kMarginBetweenItems;
+  }
+
+  CGFloat oldHeight = NSHeight([[self view] frame]);
+  [self updateTrayView];
+  CGFloat newHeight = NSHeight([[self view] frame]);
+
+  // Resize the window.
+  NSRect windowFrame = [[[self view] window] frame];
+  CGFloat delta = newHeight - oldHeight;
+  windowFrame.origin.y -= delta;
+  windowFrame.size.height += delta;
+  [[[self view] window] setFrame:windowFrame display:YES];
+
+  // Check if there're more notifications pending removal.
+  [self closeNotificationsByUser];
 }
 
 @end

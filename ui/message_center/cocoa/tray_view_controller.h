@@ -24,7 +24,7 @@ class MessageCenter;
 // UI. This hosts a scroll view of all the notifications, as well as buttons
 // to enter quiet mode and the settings panel.
 MESSAGE_CENTER_EXPORT
-@interface MCTrayViewController : NSViewController {
+@interface MCTrayViewController : NSViewController<NSAnimationDelegate> {
  @private
   // Controller of the notifications, where action messages are forwarded. Weak.
   message_center::MessageCenter* messageCenter_;
@@ -44,6 +44,14 @@ MESSAGE_CENTER_EXPORT
 
   // The clear all notifications button. Hidden when there are no notifications.
   scoped_nsobject<HoverImageButton> clearAllButton_;
+
+  // Array of MCNotificationController objects pending removal by the user.
+  // The object is owned by the array.
+  scoped_nsobject<NSMutableArray> notificationsPendingRemoval_;
+
+  // Used to animate multiple notifications simultaneously when they're being
+  // removed or repositioned.
+  scoped_nsobject<NSViewAnimation> animation_;
 }
 
 // Designated initializer.
