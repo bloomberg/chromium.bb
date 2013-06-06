@@ -41,10 +41,10 @@ namespace WebCore {
 class CSSBasicShape : public RefCounted<CSSBasicShape> {
 public:
     enum Type {
-        CSS_BASIC_SHAPE_RECTANGLE = 1,
-        CSS_BASIC_SHAPE_CIRCLE = 2,
-        CSS_BASIC_SHAPE_ELLIPSE = 3,
-        CSS_BASIC_SHAPE_POLYGON = 4
+        CSSBasicShapeRectangleType = 1,
+        CSSBasicShapeCircleType = 2,
+        CSSBasicShapeEllipseType = 3,
+        CSSBasicShapePolygonType = 4
     };
 
     virtual Type type() const = 0;
@@ -79,7 +79,7 @@ public:
     void setRadiusX(PassRefPtr<CSSPrimitiveValue> radiusX) { m_radiusX = radiusX; }
     void setRadiusY(PassRefPtr<CSSPrimitiveValue> radiusY) { m_radiusY = radiusY; }
 
-    virtual Type type() const { return CSS_BASIC_SHAPE_RECTANGLE; }
+    virtual Type type() const { return CSSBasicShapeRectangleType; }
     virtual String cssText() const;
     virtual bool equals(const CSSBasicShape&) const;
 
@@ -109,7 +109,7 @@ public:
     void setCenterY(PassRefPtr<CSSPrimitiveValue> centerY) { m_centerY = centerY; }
     void setRadius(PassRefPtr<CSSPrimitiveValue> radius) { m_radius = radius; }
 
-    virtual Type type() const { return CSS_BASIC_SHAPE_CIRCLE; }
+    virtual Type type() const { return CSSBasicShapeCircleType; }
     virtual String cssText() const;
     virtual bool equals(const CSSBasicShape&) const;
 
@@ -138,7 +138,7 @@ public:
     void setRadiusX(PassRefPtr<CSSPrimitiveValue> radiusX) { m_radiusX = radiusX; }
     void setRadiusY(PassRefPtr<CSSPrimitiveValue> radiusY) { m_radiusY = radiusY; }
 
-    virtual Type type() const { return CSS_BASIC_SHAPE_ELLIPSE; }
+    virtual Type type() const { return CSSBasicShapeEllipseType; }
     virtual String cssText() const;
     virtual bool equals(const CSSBasicShape&) const;
 
@@ -171,7 +171,7 @@ public:
     void setWindRule(WindRule w) { m_windRule = w; }
     WindRule windRule() const { return m_windRule; }
 
-    virtual Type type() const { return CSS_BASIC_SHAPE_POLYGON; }
+    virtual Type type() const { return CSSBasicShapePolygonType; }
     virtual String cssText() const;
     virtual bool equals(const CSSBasicShape&) const;
     virtual String serializeResolvingVariables(const HashMap<AtomicString, String>&) const;
