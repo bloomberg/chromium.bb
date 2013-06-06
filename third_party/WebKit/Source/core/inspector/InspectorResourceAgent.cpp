@@ -54,6 +54,7 @@
 #include "core/loader/UniqueIdentifier.h"
 #include "core/loader/cache/CachedRawResource.h"
 #include "core/loader/cache/CachedResource.h"
+#include "core/loader/cache/CachedResourceInitiatorInfo.h"
 #include "core/loader/cache/MemoryCache.h"
 #include "core/page/Frame.h"
 #include "core/page/Page.h"
@@ -254,7 +255,7 @@ InspectorResourceAgent::~InspectorResourceAgent()
     ASSERT(!m_instrumentingAgents->inspectorResourceAgent());
 }
 
-void InspectorResourceAgent::willSendRequest(unsigned long identifier, DocumentLoader* loader, ResourceRequest& request, const ResourceResponse& redirectResponse)
+void InspectorResourceAgent::willSendRequest(unsigned long identifier, DocumentLoader* loader, ResourceRequest& request, const ResourceResponse& redirectResponse, const CachedResourceInitiatorInfo& initiatorInfo)
 {
     String requestId = IdentifiersFactory::requestId(identifier);
     m_resourcesData->resourceCreated(requestId, m_pageAgent->loaderId(loader));
@@ -279,7 +280,7 @@ void InspectorResourceAgent::willSendRequest(unsigned long identifier, DocumentL
         request.setHTTPHeaderField("Cache-Control", "no-cache");
     }
 
-    RefPtr<TypeBuilder::Network::Initiator> initiatorObject = buildInitiatorObject(loader->frame() ? loader->frame()->document() : 0);
+    RefPtr<TypeBuilder::Network::Initiator> initiatorObject = buildInitiatorObject(loader->frame() ? loader->frame()->document() : 0, initiatorInfo);
     m_frontend->requestWillBeSent(requestId, m_pageAgent->frameId(loader->frame()), m_pageAgent->loaderId(loader), loader->url().string(), buildObjectForResourceRequest(request), currentTime(), initiatorObject, buildObjectForResourceResponse(redirectResponse, loader));
 }
 
@@ -481,10 +482,10 @@ void InspectorResourceAgent::didRecalculateStyle()
 void InspectorResourceAgent::didScheduleStyleRecalculation(Document* document)
 {
     if (!m_styleRecalculationInitiator)
-        m_styleRecalculationInitiator = buildInitiatorObject(document);
+        m_styleRecalculationInitiator = buildInitiatorObject(document, CachedResourceInitiatorInfo());
 }
 
-PassRefPtr<TypeBuilder::Network::Initiator> InspectorResourceAgent::buildInitiatorObject(Document* document)
+PassRefPtr<TypeBuilder::Network::Initiator> InspectorResourceAgent::buildInitiatorObject(Document* document, const CachedResourceInitiatorInfo& initiatorInfo)
 {
     RefPtr<ScriptCallStack> stackTrace = createScriptCallStack(ScriptCallStack::maxCallStackSizeToCapture, true);
     if (stackTrace && stackTrace->size() > 0) {
@@ -498,7 +499,10 @@ PassRefPtr<TypeBuilder::Network::Initiator> InspectorResourceAgent::buildInitiat
         RefPtr<TypeBuilder::Network::Initiator> initiatorObject = TypeBuilder::Network::Initiator::create()
             .setType(TypeBuilder::Network::Initiator::Type::Parser);
         initiatorObject->setUrl(document->url().string());
-        initiatorObject->setLineNumber(document->scriptableDocumentParser()->lineNumber().oneBasedInt());
+        if (TextPosition::belowRangePosition() != initiatorInfo.position)
+            initiatorObject->setLineNumber(initiatorInfo.position.m_line.oneBasedInt());
+        else
+            initiatorObject->setLineNumber(document->scriptableDocumentParser()->lineNumber().oneBasedInt());
         return initiatorObject;
     }
 

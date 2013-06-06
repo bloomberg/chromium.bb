@@ -41,6 +41,7 @@
 #include "core/inspector/InspectorTimelineAgent.h"
 #include "core/inspector/InspectorWorkerAgent.h"
 #include "core/inspector/InstrumentingAgents.h"
+#include "core/loader/cache/CachedResourceInitiatorInfo.h"
 #include "core/workers/WorkerContext.h"
 
 namespace WebCore {
@@ -122,7 +123,7 @@ bool shouldApplyScreenHeightOverrideImpl(InstrumentingAgents* instrumentingAgent
 
 void continueAfterPingLoaderImpl(InstrumentingAgents* instrumentingAgents, unsigned long identifier, DocumentLoader* loader, ResourceRequest& request, const ResourceResponse& response)
 {
-    willSendRequestImpl(instrumentingAgents, identifier, loader, request, response);
+    willSendRequestImpl(instrumentingAgents, identifier, loader, request, response, CachedResourceInitiatorInfo());
 }
 
 void didReceiveResourceResponseButCanceledImpl(Frame* frame, DocumentLoader* loader, unsigned long identifier, const ResourceResponse& r)

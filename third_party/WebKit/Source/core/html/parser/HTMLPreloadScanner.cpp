@@ -122,12 +122,13 @@ public:
             processAttribute(iter->name, iter->value);
     }
 
-    PassOwnPtr<PreloadRequest> createPreloadRequest(const KURL& predictedBaseURL)
+    PassOwnPtr<PreloadRequest> createPreloadRequest(const KURL& predictedBaseURL, const SegmentedString& source)
     {
         if (!shouldPreload())
             return nullptr;
 
-        OwnPtr<PreloadRequest> request = PreloadRequest::create(initiatorFor(m_tagImpl), m_urlToLoad, predictedBaseURL, resourceType(), m_mediaAttribute);
+        TextPosition position = TextPosition(source.currentLine(), source.currentColumn());
+        OwnPtr<PreloadRequest> request = PreloadRequest::create(initiatorFor(m_tagImpl), position, m_urlToLoad, predictedBaseURL, resourceType(), m_mediaAttribute);
         request->setCrossOriginModeAllowsCookies(crossOriginModeAllowsCookies());
         request->setCharset(charset());
         return request.release();
@@ -249,24 +250,24 @@ void TokenPreloadScanner::rewindTo(TokenPreloadScannerCheckpoint checkpointIndex
     m_checkpoints.clear();
 }
 
-void TokenPreloadScanner::scan(const HTMLToken& token, PreloadRequestStream& requests)
+void TokenPreloadScanner::scan(const HTMLToken& token, const SegmentedString& source, PreloadRequestStream& requests)
 {
-    scanCommon(token, requests);
+    scanCommon(token, source, requests);
 }
 
-void TokenPreloadScanner::scan(const CompactHTMLToken& token, PreloadRequestStream& requests)
+void TokenPreloadScanner::scan(const CompactHTMLToken& token, const SegmentedString& source, PreloadRequestStream& requests)
 {
-    scanCommon(token, requests);
+    scanCommon(token, source, requests);
 }
 
 template<typename Token>
-void TokenPreloadScanner::scanCommon(const Token& token, PreloadRequestStream& requests)
+void TokenPreloadScanner::scanCommon(const Token& token, const SegmentedString& source, PreloadRequestStream& requests)
 {
     switch (token.type()) {
     case HTMLToken::Character: {
         if (!m_inStyle)
             return;
-        m_cssScanner.scan(token.data(), requests);
+        m_cssScanner.scan(token.data(), source, requests);
         return;
     }
     case HTMLToken::EndTag: {
@@ -305,7 +306,7 @@ void TokenPreloadScanner::scanCommon(const Token& token, PreloadRequestStream& r
 
         StartTagScanner scanner(tagImpl);
         scanner.processAttributes(token.attributes());
-        OwnPtr<PreloadRequest> request = scanner.createPreloadRequest(m_predictedBaseElementURL);
+        OwnPtr<PreloadRequest> request = scanner.createPreloadRequest(m_predictedBaseElementURL, source);
         if (request)
             requests.append(request.release());
         return;
@@ -352,7 +353,7 @@ void HTMLPreloadScanner::scan(HTMLResourcePreloader* preloader, const KURL& star
     while (m_tokenizer->nextToken(m_source, m_token)) {
         if (m_token.type() == HTMLToken::StartTag)
             m_tokenizer->updateStateFor(AtomicString(m_token.name()));
-        m_scanner.scan(m_token, requests);
+        m_scanner.scan(m_token, m_source, requests);
         m_token.clear();
     }
 

@@ -284,9 +284,9 @@ void ResourceLoader::willSendRequest(ResourceHandle*, ResourceRequest& request, 
         return;
 
     if (m_options.sendLoadCallbacks == SendCallbacks)
-        frameLoader()->notifier()->dispatchWillSendRequest(m_documentLoader.get(), m_resource->identifier(), request, redirectResponse);
+        frameLoader()->notifier()->dispatchWillSendRequest(m_documentLoader.get(), m_resource->identifier(), request, redirectResponse, m_options.initiatorInfo);
     else
-        InspectorInstrumentation::willSendRequest(m_frame.get(), m_resource->identifier(), m_documentLoader.get(), request, redirectResponse);
+        InspectorInstrumentation::willSendRequest(m_frame.get(), m_resource->identifier(), m_documentLoader.get(), request, redirectResponse, m_options.initiatorInfo);
 
     m_request = request;
 

@@ -34,6 +34,7 @@
 namespace WebCore {
 
 class HTMLIdentifier;
+class SegmentedString;
 
 class CSSPreloadScanner {
     WTF_MAKE_NONCOPYABLE(CSSPreloadScanner);
@@ -43,8 +44,8 @@ public:
 
     void reset();
 
-    void scan(const HTMLToken::DataVector&, PreloadRequestStream&);
-    void scan(const HTMLIdentifier&, PreloadRequestStream&);
+    void scan(const HTMLToken::DataVector&, const SegmentedString&, PreloadRequestStream&);
+    void scan(const HTMLIdentifier&, const SegmentedString&, PreloadRequestStream&);
 
 private:
     enum State {
@@ -61,10 +62,10 @@ private:
     };
 
     template<typename Char>
-    void scanCommon(const Char* begin, const Char* end, PreloadRequestStream&);
+    void scanCommon(const Char* begin, const Char* end, const SegmentedString&, PreloadRequestStream&);
 
-    inline void tokenize(UChar);
-    void emitRule();
+    inline void tokenize(UChar, const SegmentedString&);
+    void emitRule(const SegmentedString&);
 
     State m_state;
     StringBuilder m_rule;

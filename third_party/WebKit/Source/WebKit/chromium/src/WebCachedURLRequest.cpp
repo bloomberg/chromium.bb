@@ -66,7 +66,7 @@ bool WebCachedURLRequest::forPreload() const
 
 WebString WebCachedURLRequest::initiatorName() const
 {
-    return WebString(m_private->initiatorInfo().name);
+    return WebString(m_private->options().initiatorInfo.name);
 }
 
 WebCachedURLRequest::WebCachedURLRequest(CachedResourceRequest* request)

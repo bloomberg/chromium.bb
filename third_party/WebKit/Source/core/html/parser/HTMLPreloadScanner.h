@@ -47,8 +47,8 @@ public:
     explicit TokenPreloadScanner(const KURL& documentURL);
     ~TokenPreloadScanner();
 
-    void scan(const HTMLToken&, PreloadRequestStream& requests);
-    void scan(const CompactHTMLToken&, PreloadRequestStream& requests);
+    void scan(const HTMLToken&, const SegmentedString&, PreloadRequestStream& requests);
+    void scan(const CompactHTMLToken&, const SegmentedString&, PreloadRequestStream& requests);
 
     void setPredictedBaseElementURL(const KURL& url) { m_predictedBaseElementURL = url; }
 
@@ -67,7 +67,7 @@ private:
     class StartTagScanner;
 
     template<typename Token>
-    inline void scanCommon(const Token&, PreloadRequestStream& requests);
+    inline void scanCommon(const Token&, const SegmentedString&, PreloadRequestStream& requests);
 
     template<typename Token>
     void updatePredictedBaseURL(const Token&);

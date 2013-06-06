@@ -162,7 +162,7 @@ void BackgroundHTMLParser::pumpTokenizer()
 
             CompactHTMLToken token(m_token.get(), TextPosition(m_input.current().currentLine(), m_input.current().currentColumn()));
 
-            m_preloadScanner->scan(token, m_pendingPreloads);
+            m_preloadScanner->scan(token, m_input.current(), m_pendingPreloads);
 
             m_pendingTokens->append(token);
         }

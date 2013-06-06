@@ -241,7 +241,7 @@ interface InspectorInstrumentation {
     void applyEmulatedMedia(Frame*, String* media);
 
     [Timeline, Resource]
-    void willSendRequest(Frame*, unsigned long identifier, DocumentLoader*, ResourceRequest&, const ResourceResponse& redirectResponse);
+    void willSendRequest(Frame*, unsigned long identifier, DocumentLoader*, ResourceRequest&, const ResourceResponse& redirectResponse, const CachedResourceInitiatorInfo&);
 
     void continueAfterPingLoader(Frame*, unsigned long identifier, DocumentLoader*, ResourceRequest&, const ResourceResponse&);
 

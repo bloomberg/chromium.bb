@@ -31,10 +31,11 @@
 #ifndef ResourceLoaderOptions_h
 #define ResourceLoaderOptions_h
 
+#include "core/loader/cache/CachedResourceInitiatorInfo.h"
 #include "core/platform/network/ResourceHandleTypes.h"
 
 namespace WebCore {
-    
+
 enum SendCallbackPolicy {
     SendCallbacks,
     DoNotSendCallbacks
@@ -103,8 +104,9 @@ struct ResourceLoaderOptions {
     ClientCrossOriginCredentialPolicy crossOriginCredentialPolicy; // Whether we will ask the client for credentials (if we allow credentials at all).
     SecurityCheckPolicy securityCheck;
     ContentSecurityPolicyCheck contentSecurityPolicyOption;
+    CachedResourceInitiatorInfo initiatorInfo;
 };
 
-} // namespace WebCore    
+} // namespace WebCore
 
 #endif // ResourceLoaderOptions_h

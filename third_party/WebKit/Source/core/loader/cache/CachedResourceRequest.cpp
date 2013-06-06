@@ -27,6 +27,7 @@
 #include "core/loader/cache/CachedResourceRequest.h"
 
 #include "core/dom/Element.h"
+#include "core/loader/cache/CachedResourceInitiatorInfo.h"
 #include "core/loader/cache/CachedResourceLoader.h"
 
 namespace WebCore {
@@ -39,7 +40,7 @@ CachedResourceRequest::CachedResourceRequest(const ResourceRequest& resourceRequ
     , m_forPreload(false)
     , m_defer(NoDefer)
 {
-    m_initiatorInfo.name = initiator;
+    m_options.initiatorInfo.name = initiator;
 }
 
 CachedResourceRequest::CachedResourceRequest(const ResourceRequest& resourceRequest, const AtomicString& initiator, const ResourceLoaderOptions& options)
@@ -49,7 +50,17 @@ CachedResourceRequest::CachedResourceRequest(const ResourceRequest& resourceRequ
     , m_forPreload(false)
     , m_defer(NoDefer)
 {
-    m_initiatorInfo.name = initiator;
+    m_options.initiatorInfo.name = initiator;
+}
+
+CachedResourceRequest::CachedResourceRequest(const ResourceRequest& resourceRequest, const CachedResourceInitiatorInfo& initiator)
+    : m_resourceRequest(resourceRequest)
+    , m_options(CachedResourceLoader::defaultCachedResourceOptions())
+    , m_priority(ResourceLoadPriorityUnresolved)
+    , m_forPreload(false)
+    , m_defer(NoDefer)
+{
+    m_options.initiatorInfo = initiator;
 }
 
 CachedResourceRequest::~CachedResourceRequest()

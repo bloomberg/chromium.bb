@@ -30,6 +30,8 @@
 
 #include "core/html/parser/HTMLIdentifier.h"
 #include "core/html/parser/HTMLParserIdioms.h"
+#include "core/loader/cache/CachedResourceRequestInitiators.h"
+#include "core/platform/text/SegmentedString.h"
 
 namespace WebCore {
 
@@ -51,32 +53,32 @@ void CSSPreloadScanner::reset()
 }
 
 template<typename Char>
-void CSSPreloadScanner::scanCommon(const Char* begin, const Char* end, PreloadRequestStream& requests)
+void CSSPreloadScanner::scanCommon(const Char* begin, const Char* end, const SegmentedString& source, PreloadRequestStream& requests)
 {
     m_requests = &requests;
     for (const Char* it = begin; it != end && m_state != DoneParsingImportRules; ++it)
-        tokenize(*it);
+        tokenize(*it, source);
     m_requests = 0;
 }
 
-void CSSPreloadScanner::scan(const HTMLToken::DataVector& data, PreloadRequestStream& requests)
+void CSSPreloadScanner::scan(const HTMLToken::DataVector& data, const SegmentedString& source, PreloadRequestStream& requests)
 {
-    scanCommon(data.data(), data.data() + data.size(), requests);
+    scanCommon(data.data(), data.data() + data.size(), source, requests);
 }
 
-void CSSPreloadScanner::scan(const HTMLIdentifier& identifier, PreloadRequestStream& requests)
+void CSSPreloadScanner::scan(const HTMLIdentifier& identifier,  const SegmentedString& source, PreloadRequestStream& requests)
 {
     const StringImpl* data = identifier.asStringImpl();
     if (data->is8Bit()) {
         const LChar* begin = data->characters8();
-        scanCommon(begin, begin + data->length(), requests);
+        scanCommon(begin, begin + data->length(), source, requests);
         return;
     }
     const UChar* begin = data->characters16();
-    scanCommon(begin, begin + data->length(), requests);
+    scanCommon(begin, begin + data->length(), source, requests);
 }
 
-inline void CSSPreloadScanner::tokenize(UChar c)
+inline void CSSPreloadScanner::tokenize(UChar c, const SegmentedString& source)
 {
     // We are just interested in @import rules, no need for real tokenization here
     // Searching for other types of resources is probably low payoff.
@@ -142,7 +144,7 @@ inline void CSSPreloadScanner::tokenize(UChar c)
         if (isHTMLSpace(c))
             m_state = AfterRuleValue;
         else if (c == ';')
-            emitRule();
+            emitRule(source);
         else
             m_ruleValue.append(c);
         break;
@@ -150,7 +152,7 @@ inline void CSSPreloadScanner::tokenize(UChar c)
         if (isHTMLSpace(c))
             break;
         if (c == ';')
-            emitRule();
+            emitRule(source);
         else if (c == '{')
             m_state = DoneParsingImportRules;
         else {
@@ -208,13 +210,14 @@ static String parseCSSStringOrURL(const UChar* characters, size_t length)
     return String(characters + offset, reducedLength);
 }
 
-void CSSPreloadScanner::emitRule()
+void CSSPreloadScanner::emitRule(const SegmentedString& source)
 {
     if (equalIgnoringCase("import", m_rule.characters(), m_rule.length())) {
         String url = parseCSSStringOrURL(m_ruleValue.characters(), m_ruleValue.length());
         if (!url.isEmpty()) {
             KURL baseElementURL; // FIXME: This should be passed in from the HTMLPreloadScaner via scan()!
-            OwnPtr<PreloadRequest> request = PreloadRequest::create("css", url, baseElementURL, CachedResource::CSSStyleSheet);
+            TextPosition position = TextPosition(source.currentLine(), source.currentColumn());
+            OwnPtr<PreloadRequest> request = PreloadRequest::create("css", position, url, baseElementURL, CachedResource::CSSStyleSheet);
             // FIXME: Should this be including the charset in the preload request?
             m_requests->append(request.release());
         }

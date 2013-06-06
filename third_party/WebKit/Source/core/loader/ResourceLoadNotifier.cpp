@@ -47,11 +47,11 @@ ResourceLoadNotifier::ResourceLoadNotifier(Frame* frame)
 {
 }
 
-void ResourceLoadNotifier::dispatchWillSendRequest(DocumentLoader* loader, unsigned long identifier, ResourceRequest& request, const ResourceResponse& redirectResponse)
+void ResourceLoadNotifier::dispatchWillSendRequest(DocumentLoader* loader, unsigned long identifier, ResourceRequest& request, const ResourceResponse& redirectResponse, const CachedResourceInitiatorInfo& initiatorInfo)
 {
     m_frame->loader()->applyUserAgent(request);
     m_frame->loader()->client()->dispatchWillSendRequest(loader, identifier, request, redirectResponse);
-    InspectorInstrumentation::willSendRequest(m_frame, identifier, loader, request, redirectResponse);
+    InspectorInstrumentation::willSendRequest(m_frame, identifier, loader, request, redirectResponse, initiatorInfo);
     request.setReportLoadTiming(true);
 }
 

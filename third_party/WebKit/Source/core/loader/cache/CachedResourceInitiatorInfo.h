@@ -27,17 +27,20 @@
 #define CachedResourceInitiatorInfo_h
 
 #include "wtf/text/AtomicString.h"
+#include "wtf/text/TextPosition.h"
 
 namespace WebCore {
 
 struct CachedResourceInitiatorInfo {
     CachedResourceInitiatorInfo()
         : name()
+        , position(TextPosition::belowRangePosition())
         , startTime(0.0)
     {
     }
 
     AtomicString name;
+    TextPosition position;
     double startTime;
 };
 

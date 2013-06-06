@@ -634,7 +634,7 @@ CachedResourceHandle<CachedResource> CachedResourceLoader::loadResource(CachedRe
 
 void CachedResourceLoader::storeResourceTimingInitiatorInformation(const CachedResourceHandle<CachedResource>& resource, const CachedResourceRequest& request)
 {
-    CachedResourceInitiatorInfo info = request.initiatorInfo();
+    CachedResourceInitiatorInfo info = request.options().initiatorInfo;
     info.startTime = monotonicallyIncreasingTime();
 
     if (resource->type() == CachedResource::MainResource) {
@@ -1064,7 +1064,7 @@ void CachedResourceLoader::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo)
 
 const ResourceLoaderOptions& CachedResourceLoader::defaultCachedResourceOptions()
 {
-    static ResourceLoaderOptions options(SendCallbacks, SniffContent, BufferData, AllowStoredCredentials, ClientRequestedCredentials, AskClientForCrossOriginCredentials, DoSecurityCheck, CheckContentSecurityPolicy);
+    DEFINE_STATIC_LOCAL(ResourceLoaderOptions, options, (SendCallbacks, SniffContent, BufferData, AllowStoredCredentials, ClientRequestedCredentials, AskClientForCrossOriginCredentials, DoSecurityCheck, CheckContentSecurityPolicy));
     return options;
 }
 

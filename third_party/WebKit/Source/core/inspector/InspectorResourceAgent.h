@@ -33,11 +33,11 @@
 
 #include "InspectorFrontend.h"
 #include "core/inspector/InspectorBaseAgent.h"
-
-#include <wtf/PassOwnPtr.h>
-#include <wtf/RefCounted.h>
-#include <wtf/text/WTFString.h>
-#include <wtf/Vector.h>
+#include "wtf/PassOwnPtr.h"
+#include "wtf/RefCounted.h"
+#include "wtf/Vector.h"
+#include "wtf/text/TextPosition.h"
+#include "wtf/text/WTFString.h"
 
 
 namespace WTF {
@@ -47,6 +47,7 @@ class String;
 namespace WebCore {
 
 class CachedResource;
+struct CachedResourceInitiatorInfo;
 class Document;
 class DocumentLoader;
 class FormData;
@@ -92,7 +93,7 @@ public:
 
     ~InspectorResourceAgent();
 
-    void willSendRequest(unsigned long identifier, DocumentLoader*, ResourceRequest&, const ResourceResponse& redirectResponse);
+    void willSendRequest(unsigned long identifier, DocumentLoader*, ResourceRequest&, const ResourceResponse& redirectResponse, const CachedResourceInitiatorInfo&);
     void markResourceAsCached(unsigned long identifier);
     void didReceiveResourceResponse(unsigned long identifier, DocumentLoader*, const ResourceResponse&, ResourceLoader*);
     void didReceiveData(unsigned long identifier, const char* data, int dataLength, int encodedDataLength);
@@ -119,7 +120,7 @@ public:
     void didRecalculateStyle();
     void didScheduleStyleRecalculation(Document*);
 
-    PassRefPtr<TypeBuilder::Network::Initiator> buildInitiatorObject(Document*);
+    PassRefPtr<TypeBuilder::Network::Initiator> buildInitiatorObject(Document*, const CachedResourceInitiatorInfo&);
 
     void didCreateWebSocket(Document*, unsigned long identifier, const KURL& requestURL, const String&);
     void willSendWebSocketHandshakeRequest(Document*, unsigned long identifier, const WebSocketHandshakeRequest&);

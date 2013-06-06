@@ -28,19 +28,20 @@
 
 #include "core/loader/cache/CachedResource.h"
 #include "core/loader/cache/CachedResourceRequest.h"
+#include "wtf/text/TextPosition.h"
 
 namespace WebCore {
 
 class PreloadRequest {
 public:
-    static PassOwnPtr<PreloadRequest> create(const String& initiator, const String& resourceURL, const KURL& baseURL, CachedResource::Type resourceType, const String& mediaAttribute)
+    static PassOwnPtr<PreloadRequest> create(const String& initiatorName, const TextPosition& initiatorPosition, const String& resourceURL, const KURL& baseURL, CachedResource::Type resourceType, const String& mediaAttribute)
     {
-        return adoptPtr(new PreloadRequest(initiator, resourceURL, baseURL, resourceType, mediaAttribute));
+        return adoptPtr(new PreloadRequest(initiatorName, initiatorPosition, resourceURL, baseURL, resourceType, mediaAttribute));
     }
 
-    static PassOwnPtr<PreloadRequest> create(const String& initiator, const String& resourceURL, const KURL& baseURL, CachedResource::Type resourceType)
+    static PassOwnPtr<PreloadRequest> create(const String& initiatorName, const TextPosition& initiatorPosition, const String& resourceURL, const KURL& baseURL, CachedResource::Type resourceType)
     {
-        return adoptPtr(new PreloadRequest(initiator, resourceURL, baseURL, resourceType, ""));
+        return adoptPtr(new PreloadRequest(initiatorName, initiatorPosition, resourceURL, baseURL, resourceType, ""));
     }
 
     bool isSafeToSendToAnotherThread() const;
@@ -54,8 +55,9 @@ public:
     CachedResource::Type resourceType() const { return m_resourceType; }
 
 private:
-    PreloadRequest(const String& initiator, const String& resourceURL, const KURL& baseURL, CachedResource::Type resourceType, const String& mediaAttribute)
-        : m_initiator(initiator)
+    PreloadRequest(const String& initiatorName, const TextPosition& initiatorPosition, const String& resourceURL, const KURL& baseURL, CachedResource::Type resourceType, const String& mediaAttribute)
+        : m_initiatorName(initiatorName.isolatedCopy())
+        , m_initiatorPosition(initiatorPosition)
         , m_resourceURL(resourceURL.isolatedCopy())
         , m_baseURL(baseURL.copy())
         , m_resourceType(resourceType)
@@ -66,7 +68,8 @@ private:
 
     KURL completeURL(Document*);
 
-    String m_initiator;
+    String m_initiatorName;
+    TextPosition m_initiatorPosition;
     String m_resourceURL;
     KURL m_baseURL;
     String m_charset;
