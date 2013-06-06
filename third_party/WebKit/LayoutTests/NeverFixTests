@@ -27,10 +27,6 @@ fast/harness/sample-fail-mismatch-reftest.html [ WontFix ImageOnlyFailure ]
 # this test will always fail.
 [ Linux Win ] fast/events/option-tab.html [ WontFix ]
 
-# These tests expect a tiff decoder, which we don't have.
-[ Linux Win ] fast/images/embed-image.html [ WontFix ]
-[ Linux Win ] fast/images/object-image.html [ WontFix ]
-
 # <progress> on Mac is always animated. So it's hard to get a reliable pixel result.
 [ Mac ] fast/dom/HTMLProgressElement/progress-element.html [ WontFix ]
 

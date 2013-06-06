@@ -1,4 +1,10 @@
+
 # See http://trac.webkit.org/wiki/TestExpectations for more information on this file.
+
+crbug.com/246940 fast/images/embed-image.html [ ImageOnlyFailure ]
+crbug.com/246940 fast/images/object-image.html [ ImageOnlyFailure ]
+crbug.com/246940 virtual/deferred/fast/images/embed-image.html [ ImageOnlyFailure ]
+crbug.com/246940 virtual/deferred/fast/images/object-image.html [ ImageOnlyFailure ]
 
 crbug.com/237000 [ Win Linux ] virtual/gpu/fast/canvas/getPutImageDataPairTest.html [ Slow ]
 crbug.com/241869 [ Debug ] css3/flexbox/multiline-justify-content.html [ Pass Timeout ]
@@ -1363,7 +1369,7 @@ webkit.org/b/113487 [ Debug ] plugins/npruntime/npruntime-calls-with-null-npp.ht
 webkit.org/b/113555 fast/forms/state-restore-per-form.html [ Pass Timeout ]
 
 # These tests are flaky on mac
-crbug.com/245278 [ Mac ] virtual/deferred/fast/images/object-image.html [ Pass ImageOnlyFailure ]
+# crbug.com/245278 [ Mac ] virtual/deferred/fast/images/object-image.html [ Pass ImageOnlyFailure ]
 
 # These mixedContent tests are flakey. Some are more flakey than others.
 crbug.com/239811 crbug.com/229113 [ Win Mac ] http/tests/history/redirect-js-location-assign-0-seconds.html [ Failure Pass ]

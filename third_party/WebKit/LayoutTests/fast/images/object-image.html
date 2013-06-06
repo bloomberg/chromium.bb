@@ -1,1 +1,26 @@
-<object data="../borders/resources/Balloon_8107502.tiff" width="38" height="24" type="image/tiff"></object>
+<!DOCTYPE html>
+<html>
+<head>
+<script>
+if (window.testRunner) {
+    testRunner.waitUntilDone();
+    testRunner.dumpAsText(true);
+    testRunner.setPluginsEnabled(false);
+}
+
+function done()
+{
+    if (window.testRunner)
+        testRunner.notifyDone();
+}
+
+window.onload = function() {
+    var elem = document.createElement("object");
+    elem.onload = done;
+    elem.type = "image/png";
+    elem.data = "resources/oval.png";
+    document.body.appendChild(elem);
+};
+</script>
+</head>
+</html>
