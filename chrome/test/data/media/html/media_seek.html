@@ -17,8 +17,8 @@
     var ITERATIONS = 3;
 
     var SeekTestCase = {
-      SHORT_SEEK: 0,
-      LONG_SEEK: 1
+      SHORT: 0,
+      LONG: 1
     }
 
     var CachedState = {
@@ -65,7 +65,7 @@
       if (iteration < ITERATIONS) {
         iteration++;
         log("Test iteration " + iteration);
-        seekState = SeekTestCase.SHORT_SEEK;
+        seekState = SeekTestCase.SHORT;
         video.src = getVideoSrc();
         video.play();
       } else if (cacheState == CachedState.UNCACHED) {
@@ -87,7 +87,7 @@
     }
 
     function playing() {
-      if (seekState == SeekTestCase.SHORT_SEEK) {
+      if (seekState == SeekTestCase.SHORT) {
         timer.start();
         video.currentTime = 1;
       }
@@ -96,16 +96,16 @@
     function seeked() {
       delta = timer.stop();
       switch (seekState) {
-        case SeekTestCase.SHORT_SEEK:
-          seekRecords[cacheState][SeekTestCase.SHORT_SEEK].push(delta);
+        case SeekTestCase.SHORT:
+          seekRecords[cacheState][SeekTestCase.SHORT].push(delta);
           log ("short seek in " + delta + "ms.")
-          seekState = SeekTestCase.LONG_SEEK;
+          seekState = SeekTestCase.LONG;
           timer.start();
           video.currentTime = video.duration - 1;
           break;
         // Seek to almost end of file (unbuffered area).
-        case SeekTestCase.LONG_SEEK:
-          seekRecords[cacheState][SeekTestCase.LONG_SEEK].push(delta);
+        case SeekTestCase.LONG:
+          seekRecords[cacheState][SeekTestCase.LONG].push(delta);
           log("long seek in " + delta + "ms.")
           IterationTest();
           break;

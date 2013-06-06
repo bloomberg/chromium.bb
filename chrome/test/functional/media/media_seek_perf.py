@@ -86,8 +86,8 @@ class SeekWorkerThread(worker_thread.WorkerThread):
           results = [float(value) for value in values.split(',')]
         else:
           results = []
-        pyauto_utils.PrintPerfResult('seek', '%s_%s_%s' %
-                                     (state, seek_case, graph_name),
+        pyauto_utils.PrintPerfResult('seek_%s_%s' % (state.lower(),
+                                     seek_case.lower()), graph_name,
                                      results, 'ms')
 
     if error_msg:
