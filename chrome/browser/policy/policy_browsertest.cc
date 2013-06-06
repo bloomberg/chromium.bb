@@ -246,7 +246,8 @@ void CheckCanOpenURL(Browser* browser, const char* spec) {
   content::WebContents* contents =
       browser->tab_strip_model()->GetActiveWebContents();
   EXPECT_EQ(url, contents->GetURL());
-  EXPECT_EQ(net::FormatUrl(url, std::string()), contents->GetTitle());
+  string16 title = UTF8ToUTF16(url.spec() + " was blocked");
+  EXPECT_NE(title, contents->GetTitle());
 }
 
 // Verifies that access to the given url |spec| is blocked.
@@ -1694,6 +1695,70 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, URLBlacklist) {
         loop.QuitClosure());
     loop.Run();
   }
+}
+
+IN_PROC_BROWSER_TEST_F(PolicyTest, FileURLBlacklist) {
+  // Check that FileURLs can be blacklisted and DisabledSchemes works together
+  // with URLblacklisting and URLwhitelisting.
+
+  base::FilePath test_path;
+  PathService::Get(chrome::DIR_TEST_DATA, &test_path);
+  const std::string base_path = "file://" + test_path.AsUTF8Unsafe() +"/";
+  const std::string folder_path = base_path + "apptest/";
+  const std::string file_path1 = base_path + "title1.html";
+  const std::string file_path2 = folder_path + "basic.html";
+
+  CheckCanOpenURL(browser(), file_path1.c_str());
+  CheckCanOpenURL(browser(), file_path2.c_str());
+
+  // Set a blacklist for all the files.
+  base::ListValue blacklist;
+  blacklist.Append(base::Value::CreateStringValue("file://*"));
+  PolicyMap policies;
+  policies.Set(key::kURLBlacklist, POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER, blacklist.DeepCopy());
+  UpdateProviderPolicy(policies);
+  FlushBlacklistPolicy();
+
+  CheckURLIsBlocked(browser(), file_path1.c_str());
+  CheckURLIsBlocked(browser(), file_path2.c_str());
+
+  // Replace the URLblacklist with disabling the file scheme.
+  blacklist.Remove(base::StringValue("file://*"), NULL);
+  policies.Set(key::kURLBlacklist, POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER, blacklist.DeepCopy());
+  UpdateProviderPolicy(policies);
+  FlushBlacklistPolicy();
+
+  PrefService* prefs = browser()->profile()->GetPrefs();
+  const base::ListValue* list_url = prefs->GetList(prefs::kUrlBlacklist);
+  EXPECT_EQ(list_url->Find(base::StringValue("file://*")),
+            list_url->end());
+
+  base::ListValue disabledscheme;
+  disabledscheme.Append(base::Value::CreateStringValue("file"));
+  policies.Set(key::kDisabledSchemes, POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER, disabledscheme.DeepCopy());
+  UpdateProviderPolicy(policies);
+  FlushBlacklistPolicy();
+
+  list_url = prefs->GetList(prefs::kUrlBlacklist);
+  EXPECT_NE(list_url->Find(base::StringValue("file://*")),
+            list_url->end());
+
+  // Whitelist one folder and blacklist an another just inside.
+  base::ListValue whitelist;
+  whitelist.Append(base::Value::CreateStringValue(base_path));
+  policies.Set(key::kURLWhitelist, POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER, whitelist.DeepCopy());
+  blacklist.Append(base::Value::CreateStringValue(folder_path));
+  policies.Set(key::kURLBlacklist, POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER, blacklist.DeepCopy());
+  UpdateProviderPolicy(policies);
+  FlushBlacklistPolicy();
+
+  CheckCanOpenURL(browser(), file_path1.c_str());
+  CheckURLIsBlocked(browser(), file_path2.c_str());
 }
 
 // Flaky on Linux. http://crbug.com/155459

@@ -345,18 +345,6 @@ bool ChildProcessSecurityPolicyImpl::IsPseudoScheme(
   return (pseudo_schemes_.find(scheme) != pseudo_schemes_.end());
 }
 
-void ChildProcessSecurityPolicyImpl::RegisterDisabledSchemes(
-    const std::set<std::string>& schemes) {
-  base::AutoLock lock(lock_);
-  disabled_schemes_ = schemes;
-}
-
-bool ChildProcessSecurityPolicyImpl::IsDisabledScheme(
-    const std::string& scheme) {
-  base::AutoLock lock(lock_);
-  return disabled_schemes_.find(scheme) != disabled_schemes_.end();
-}
-
 void ChildProcessSecurityPolicyImpl::GrantRequestURL(
     int child_id, const GURL& url) {
 
@@ -526,9 +514,6 @@ bool ChildProcessSecurityPolicyImpl::CanRequestURL(
     int child_id, const GURL& url) {
   if (!url.is_valid())
     return false;  // Can't request invalid URLs.
-
-  if (IsDisabledScheme(url.scheme()))
-    return false;  // The scheme is disabled by policy.
 
   if (IsWebSafeScheme(url.scheme()))
     return true;  // The scheme has been white-listed for every child process.

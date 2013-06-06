@@ -60,9 +60,6 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kDisableSpdy,
     prefs::kDisableSpdy,
     Value::TYPE_BOOLEAN },
-  { key::kDisabledSchemes,
-    prefs::kDisabledSchemes,
-    Value::TYPE_LIST },
   { key::kSafeBrowsingEnabled,
     prefs::kSafeBrowsingEnabled,
     Value::TYPE_BOOLEAN },
@@ -285,9 +282,6 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kMaxConnectionsPerProxy,
     prefs::kMaxConnectionsPerProxy,
     Value::TYPE_INTEGER },
-  { key::kURLBlacklist,
-    prefs::kUrlBlacklist,
-    Value::TYPE_LIST },
   { key::kURLWhitelist,
     prefs::kUrlWhitelist,
     Value::TYPE_LIST },
@@ -424,6 +418,7 @@ ConfigurationPolicyHandlerList::ConfigurationPolicyHandlerList() {
   handlers_.push_back(new ProxyPolicyHandler());
   handlers_.push_back(new RestoreOnStartupPolicyHandler());
   handlers_.push_back(new SyncPolicyHandler());
+  handlers_.push_back(new URLBlacklistPolicyHandler());
 
   handlers_.push_back(
       new ExtensionListPolicyHandler(key::kExtensionInstallWhitelist,

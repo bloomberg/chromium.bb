@@ -5,6 +5,7 @@
 #include "chrome/browser/policy/url_blacklist_manager.h"
 
 #include "base/bind.h"
+#include "base/files/file_path.h"
 #include "base/message_loop.h"
 #include "base/prefs/pref_service.h"
 #include "base/stl_util.h"
@@ -17,9 +18,11 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
+#include "content/public/common/url_constants.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/load_flags.h"
+#include "net/base/net_util.h"
 #include "net/url_request/url_request.h"
 
 #if !defined(OS_CHROMEOS)
@@ -41,25 +44,7 @@ namespace {
 // Maximum filters per policy. Filters over this index are ignored.
 const size_t kMaxFiltersPerPolicy = 1000;
 
-const char* kStandardSchemes[] = {
-  "http",
-  "https",
-  "file",
-  "ftp",
-  "gopher",
-  "ws",
-  "wss"
-};
-
 const char kServiceLoginAuth[] = "/ServiceLoginAuth";
-
-bool IsStandardScheme(const std::string& scheme) {
-  for (size_t i = 0; i < arraysize(kStandardSchemes); ++i) {
-    if (scheme == kStandardSchemes[i])
-      return true;
-  }
-  return false;
-}
 
 #if !defined(OS_CHROMEOS)
 
@@ -143,9 +128,6 @@ void URLBlacklist::Allow(const base::ListValue* filters) {
 }
 
 bool URLBlacklist::IsURLBlocked(const GURL& url) const {
-  if (!HasStandardScheme(url))
-    return false;
-
   std::set<URLMatcherConditionSet::ID> matching_ids =
       url_matcher_->MatchURL(url);
 
@@ -171,11 +153,6 @@ size_t URLBlacklist::Size() const {
 }
 
 // static
-bool URLBlacklist::HasStandardScheme(const GURL& url) {
-  return IsStandardScheme(url.scheme());
-}
-
-// static
 bool URLBlacklist::FilterToComponents(const std::string& filter,
                                       std::string* scheme,
                                       std::string* host,
@@ -183,7 +160,25 @@ bool URLBlacklist::FilterToComponents(const std::string& filter,
                                       uint16* port,
                                       std::string* path) {
   url_parse::Parsed parsed;
-  URLFixerUpper::SegmentURL(filter, &parsed);
+
+  if (URLFixerUpper::SegmentURL(filter, &parsed) == chrome::kFileScheme) {
+    base::FilePath file_path;
+    if (!net::FileURLToFilePath(GURL(filter), &file_path))
+      return false;
+
+    *scheme = chrome::kFileScheme;
+    host->clear();
+    *match_subdomains = true;
+    *port = 0;
+    // Special path when the |filter| is 'file://*'.
+    *path = (filter == "file://*") ? "" : file_path.AsUTF8Unsafe();
+#if defined(FILE_PATH_USES_WIN_SEPARATORS)
+    // Separators have to be canonicalized on Windows.
+    std::replace(path->begin(), path->end(), '\\', '/');
+    *path = "/" + *path;
+#endif
+    return true;
+  }
 
   if (!parsed.host.is_nonempty())
     return false;
@@ -236,9 +231,6 @@ bool URLBlacklist::FilterToComponents(const std::string& filter,
     path->assign(filter, parsed.path.begin, parsed.path.len);
   else
     path->clear();
-
-  if (!scheme->empty() && !IsStandardScheme(*scheme))
-    return false;
 
   return true;
 }

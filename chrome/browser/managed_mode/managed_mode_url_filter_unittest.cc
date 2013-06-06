@@ -187,4 +187,21 @@ TEST_F(ManagedModeURLFilterTest, Canonicalization) {
   EXPECT_TRUE(IsURLWhitelisted("http://www.example.com/foo/?bar=baz#ref"));
 }
 
+TEST_F(ManagedModeURLFilterTest, HasStandardScheme) {
+  EXPECT_TRUE(
+      ManagedModeURLFilter::HasStandardScheme(GURL("http://example.com")));
+  EXPECT_TRUE(
+      ManagedModeURLFilter::HasStandardScheme(GURL("https://example.com")));
+  EXPECT_TRUE(
+      ManagedModeURLFilter::HasStandardScheme(GURL("ftp://example.com")));
+  EXPECT_TRUE(
+      ManagedModeURLFilter::HasStandardScheme(GURL("gopher://example.com")));
+  EXPECT_TRUE(
+      ManagedModeURLFilter::HasStandardScheme(GURL("ws://example.com")));
+  EXPECT_TRUE(
+      ManagedModeURLFilter::HasStandardScheme(GURL("wss://example.com")));
+  EXPECT_FALSE(
+      ManagedModeURLFilter::HasStandardScheme(GURL("wtf://example.com")));
+}
+
 #endif  // ENABLE_CONFIGURATION_POLICY

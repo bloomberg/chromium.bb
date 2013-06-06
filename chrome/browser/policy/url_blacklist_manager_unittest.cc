@@ -225,16 +225,6 @@ TEST_F(URLBlacklistManagerTest, ShutdownWithPendingTask2) {
   loop_.RunUntilIdle();
 }
 
-TEST_F(URLBlacklistManagerTest, HasStandardScheme) {
-  EXPECT_TRUE(URLBlacklist::HasStandardScheme(GURL("http://example.com")));
-  EXPECT_TRUE(URLBlacklist::HasStandardScheme(GURL("https://example.com")));
-  EXPECT_TRUE(URLBlacklist::HasStandardScheme(GURL("ftp://example.com")));
-  EXPECT_TRUE(URLBlacklist::HasStandardScheme(GURL("gopher://example.com")));
-  EXPECT_TRUE(URLBlacklist::HasStandardScheme(GURL("ws://example.com")));
-  EXPECT_TRUE(URLBlacklist::HasStandardScheme(GURL("wss://example.com")));
-  EXPECT_FALSE(URLBlacklist::HasStandardScheme(GURL("wtf://example.com")));
-}
-
 INSTANTIATE_TEST_CASE_P(
     URLBlacklistFilterToComponentsTestInstance,
     URLBlacklistFilterToComponentsTest,

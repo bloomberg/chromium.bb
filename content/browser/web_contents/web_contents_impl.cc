@@ -2369,8 +2369,9 @@ void WebContentsImpl::OnRegisterProtocolHandler(const std::string& protocol,
 
   ChildProcessSecurityPolicyImpl* policy =
       ChildProcessSecurityPolicyImpl::GetInstance();
-  if (policy->IsPseudoScheme(protocol) || policy->IsDisabledScheme(protocol))
+  if (policy->IsPseudoScheme(protocol))
     return;
+
   delegate_->RegisterProtocolHandler(this, protocol, url, title, user_gesture);
 }
 

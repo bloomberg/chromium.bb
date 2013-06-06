@@ -37,8 +37,6 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
   // ChildProcessSecurityPolicy implementation.
   virtual void RegisterWebSafeScheme(const std::string& scheme) OVERRIDE;
   virtual bool IsWebSafeScheme(const std::string& scheme) OVERRIDE;
-  virtual void RegisterDisabledSchemes(const std::set<std::string>& schemes)
-      OVERRIDE;
   virtual void GrantPermissionsForFile(int child_id,
                                        const base::FilePath& file,
                                        int permissions) OVERRIDE;
@@ -67,9 +65,6 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
 
   // Returns true iff |scheme| has been registered as pseudo scheme.
   bool IsPseudoScheme(const std::string& scheme);
-
-  // Returns true iff |scheme| is listed as a disabled scheme.
-  bool IsDisabledScheme(const std::string& scheme);
 
   // Upon creation, child processes should register themselves by calling this
   // this method exactly once.
@@ -212,11 +207,6 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
   // the the URLs in the "about" scheme are aliases to other URLs.  This set is
   // protected by |lock_|.
   SchemeSet pseudo_schemes_;
-
-  // These schemes are disabled by policy, and child processes are always
-  // denied permission to request them. This overrides |web_safe_schemes_|.
-  // This set is protected by |lock_|.
-  SchemeSet disabled_schemes_;
 
   // This map holds a SecurityState for each child process.  The key for the
   // map is the ID of the ChildProcessHost.  The SecurityState objects are

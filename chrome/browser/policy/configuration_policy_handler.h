@@ -500,6 +500,22 @@ class JavascriptPolicyHandler : public ConfigurationPolicyHandler {
   DISALLOW_COPY_AND_ASSIGN(JavascriptPolicyHandler);
 };
 
+// Handles URLBlacklist policies.
+class URLBlacklistPolicyHandler : public ConfigurationPolicyHandler {
+ public:
+  URLBlacklistPolicyHandler();
+  virtual ~URLBlacklistPolicyHandler();
+
+  // ConfigurationPolicyHandler methods:
+  virtual bool CheckPolicySettings(const PolicyMap& policies,
+                                   PolicyErrorMap* errors) OVERRIDE;
+  virtual void ApplyPolicySettings(const PolicyMap& policies,
+                                   PrefValueMap* prefs) OVERRIDE;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(URLBlacklistPolicyHandler);
+};
+
 // Handles RestoreOnStartup policy.
 class RestoreOnStartupPolicyHandler : public TypeCheckingPolicyHandler {
  public:

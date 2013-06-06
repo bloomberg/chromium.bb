@@ -59,10 +59,6 @@ class URLBlacklist {
   // Returns the number of items in the list.
   size_t Size() const;
 
-  // Returns true if the URL has a standard scheme. Only URLs with standard
-  // schemes are filtered.
-  static bool HasStandardScheme(const GURL& url);
-
   // Splits a URL filter into its components. A GURL isn't used because these
   // can be invalid URLs e.g. "google.com".
   // Returns false if the URL couldn't be parsed.

@@ -128,9 +128,7 @@
     "os": ["win", "linux", "mac", "chromeos"],
     "test_policy": { "DisabledSchemes": ["file"] },
     "pref_mappings": [
-      { "pref": "protocol.disabled_schemes",
-        "local_state": true
-      }
+      { "pref": "policy.url_blacklist" }
     ]
   },
 

@@ -5,7 +5,6 @@
 #ifndef CONTENT_PUBLIC_BROWSER_CHILD_PROCESS_SECURITY_POLICY_H_
 #define CONTENT_PUBLIC_BROWSER_CHILD_PROCESS_SECURITY_POLICY_H_
 
-#include <set>
 #include <string>
 
 #include "base/basictypes.h"
@@ -40,13 +39,6 @@ class ChildProcessSecurityPolicy {
 
   // Returns true iff |scheme| has been registered as a web-safe scheme.
   virtual bool IsWebSafeScheme(const std::string& scheme) = 0;
-
-  // Sets the list of disabled schemes.
-  // URLs using these schemes won't be loaded at all. The previous list of
-  // schemes is overwritten. An empty |schemes| disables this feature.
-  // Schemes listed as disabled take precedence over Web-safe schemes.
-  virtual void RegisterDisabledSchemes(
-      const std::set<std::string>& schemes) = 0;
 
   // Grants certain permissions to a file. |permissions| must be a bit-set of
   // base::PlatformFileFlags.

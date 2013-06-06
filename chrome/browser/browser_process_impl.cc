@@ -6,7 +6,6 @@
 
 #include <algorithm>
 #include <map>
-#include <set>
 #include <vector>
 
 #include "base/bind.h"
@@ -652,10 +651,6 @@ void BrowserProcessImpl::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterIntegerPref(prefs::kMaxConnectionsPerProxy,
                                 net::kDefaultMaxSocketsPerProxyServer);
 
-  // This is observed by ChildProcessSecurityPolicy, which lives in content/
-  // though, so it can't register itself.
-  registry->RegisterListPref(prefs::kDisabledSchemes);
-
   registry->RegisterBooleanPref(prefs::kAllowCrossOriginAuthPrompt, false);
 
 #if defined(OS_CHROMEOS) || defined(OS_ANDROID) || defined(OS_IOS)
@@ -849,12 +844,6 @@ void BrowserProcessImpl::CreateLocalState() {
       std::max(std::min(max_per_proxy, 99),
                net::ClientSocketPoolManager::max_sockets_per_group(
                    net::HttpNetworkSession::NORMAL_SOCKET_POOL)));
-
-  pref_change_registrar_.Add(
-      prefs::kDisabledSchemes,
-      base::Bind(&BrowserProcessImpl::ApplyDisabledSchemesPolicy,
-                 base::Unretained(this)));
-  ApplyDisabledSchemesPolicy();
 }
 
 void BrowserProcessImpl::PreCreateThreads() {
@@ -980,19 +969,6 @@ void BrowserProcessImpl::CreateSafeBrowsingService() {
   safe_browsing_service_ = SafeBrowsingService::CreateSafeBrowsingService();
   safe_browsing_service_->Initialize();
 #endif
-}
-
-void BrowserProcessImpl::ApplyDisabledSchemesPolicy() {
-  std::set<std::string> schemes;
-  const ListValue* scheme_list =
-      local_state()->GetList(prefs::kDisabledSchemes);
-  for (ListValue::const_iterator iter = scheme_list->begin();
-       iter != scheme_list->end(); ++iter) {
-    std::string scheme;
-    if ((*iter)->GetAsString(&scheme))
-      schemes.insert(scheme);
-  }
-  ChildProcessSecurityPolicy::GetInstance()->RegisterDisabledSchemes(schemes);
 }
 
 void BrowserProcessImpl::ApplyDefaultBrowserPolicy() {

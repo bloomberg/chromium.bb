@@ -107,8 +107,6 @@ INSTANTIATE_TEST_CASE_P(
                       prefs::kPluginsDisabledPluginsExceptions),
         PolicyAndPref(key::kEnabledPlugins,
                       prefs::kPluginsEnabledPlugins),
-        PolicyAndPref(key::kDisabledSchemes,
-                      prefs::kDisabledSchemes),
         PolicyAndPref(key::kAutoSelectCertificateForUrls,
                       prefs::kManagedAutoSelectCertificateForUrls),
         PolicyAndPref(key::kURLBlacklist,

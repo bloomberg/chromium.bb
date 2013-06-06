@@ -325,10 +325,13 @@
         'dynamic_refresh': True,
         'per_profile': False,
       },
-      'example_value': ['file', 'mailto'],
+      'deprecated': True,
+      'example_value': ['file', 'https'],
       'id': 85,
       'caption': '''Disable URL protocol schemes''',
-      'desc': '''Disables the listed protocol schemes in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
+      'desc': '''This policy is deprecated, please use URLBlacklist instead.
+
+      Disables the listed protocol schemes in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
 
       URLs using a scheme from this list will not load and can not be navigated to.
 

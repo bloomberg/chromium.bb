@@ -13,7 +13,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/task_runner_util.h"
 #include "base/threading/sequenced_worker_pool.h"
-#include "chrome/browser/policy/url_blacklist_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/common/matcher/url_matcher.h"
 #include "googleurl/src/gurl.h"
@@ -30,6 +29,17 @@ struct ManagedModeURLFilter::Contents {
 };
 
 namespace {
+
+const char* kStandardSchemes[] = {
+  "http",
+  "https",
+  "file",
+  "ftp",
+  "gopher",
+  "ws",
+  "wss"
+};
+
 
 // This class encapsulates all the state that is required during construction of
 // a new ManagedModeURLFilter::Contents.
@@ -189,15 +199,22 @@ GURL ManagedModeURLFilter::Normalize(const GURL& url) {
   return url.ReplaceComponents(replacements);
 }
 
+// static
+bool ManagedModeURLFilter::HasStandardScheme(const GURL& url) {
+  for (size_t i = 0; i < arraysize(kStandardSchemes); ++i) {
+      if (url.scheme() == kStandardSchemes[i])
+        return true;
+    }
+  return false;
+}
+
 ManagedModeURLFilter::FilteringBehavior
 ManagedModeURLFilter::GetFilteringBehaviorForURL(const GURL& url) const {
   DCHECK(CalledOnValidThread());
 
-#if defined(ENABLE_CONFIGURATION_POLICY)
   // URLs with a non-standard scheme (e.g. chrome://) are always allowed.
-  if (!policy::URLBlacklist::HasStandardScheme(url))
+  if (!HasStandardScheme(url))
     return ALLOW;
-#endif
 
   // Check manual overrides for the exact URL.
   std::map<GURL, bool>::const_iterator url_it = url_map_.find(Normalize(url));
