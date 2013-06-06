@@ -844,7 +844,7 @@ TEST_F(AutofillDialogControllerTest, UseBillingAsShipping) {
 
 // Tests that shipping and billing telephone fields are supported, and filled
 // in by their respective profiles. http://crbug.com/244515
-TEST_F(AutofillDialogControllerTest, DISABLED_BillingVsShippingPhoneNumber) {
+TEST_F(AutofillDialogControllerTest, BillingVsShippingPhoneNumber) {
   FormFieldData shipping_tel;
   shipping_tel.autocomplete_attribute = "shipping tel";
   FormFieldData billing_tel;
@@ -870,10 +870,10 @@ TEST_F(AutofillDialogControllerTest, DISABLED_BillingVsShippingPhoneNumber) {
   controller()->OnAccept();
   ASSERT_EQ(2U, form_structure()->field_count());
   EXPECT_EQ(PHONE_HOME_WHOLE_NUMBER, form_structure()->field(0)->type());
-  EXPECT_EQ(PHONE_HOME_WHOLE_NUMBER, form_structure()->field(1)->type());
+  EXPECT_EQ(PHONE_BILLING_WHOLE_NUMBER, form_structure()->field(1)->type());
   EXPECT_EQ(shipping_profile.GetRawInfo(PHONE_HOME_WHOLE_NUMBER),
             form_structure()->field(0)->value);
-  EXPECT_EQ(billing_profile.GetRawInfo(PHONE_HOME_WHOLE_NUMBER),
+  EXPECT_EQ(billing_profile.GetRawInfo(PHONE_BILLING_WHOLE_NUMBER),
             form_structure()->field(1)->value);
   EXPECT_NE(form_structure()->field(1)->value,
             form_structure()->field(0)->value);
