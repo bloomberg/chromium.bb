@@ -5,16 +5,19 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_SYNC_PROMO_SYNC_PROMO_UI_H_
 #define CHROME_BROWSER_UI_WEBUI_SYNC_PROMO_SYNC_PROMO_UI_H_
 
-#include "content/public/browser/web_ui_controller.h"
+#include <string>
 
+#include "base/basictypes.h"
+
+class GURL;
 class Profile;
 
 namespace user_prefs {
 class PrefRegistrySyncable;
 }
 
-// The Web UI handler for chrome://signin.
-class SyncPromoUI : public content::WebUIController {
+// Static helper functions useful for chrome sign in.
+class SyncPromoUI {
  public:
   // Please keep this in sync with enums in sync_promo_trial.cc.
   enum Source {
@@ -28,9 +31,6 @@ class SyncPromoUI : public content::WebUIController {
     SOURCE_APPS_PAGE_LINK,
     SOURCE_UNKNOWN, // This must be last.
   };
-
-  // Constructs a SyncPromoUI.
-  explicit SyncPromoUI(content::WebUI* web_ui);
 
   // Returns true if the sync promo should be visible.
   // |profile| is the profile of the tab the promo would be shown on.
@@ -74,9 +74,6 @@ class SyncPromoUI : public content::WebUIController {
   // Gets the source from the query portion of the sync promo URL.
   // The source identifies from where the sync promo was opened.
   static Source GetSourceForSyncPromoURL(const GURL& url);
-
-  // Returns whether the given sync URL contains auto_close parameter.
-  static bool GetAutoCloseForSyncPromoURL(const GURL& url);
 
   // Returns true if chrome should use the web-based sign in flow, false if
   // chrome should use the ClientLogin flow.  This function will return true

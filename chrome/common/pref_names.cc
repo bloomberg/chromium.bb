@@ -1862,10 +1862,6 @@ const char kGoogleServicesUsernamePattern[] =
 // Tracks the number of times that we have shown the sync promo at startup.
 const char kSyncPromoStartupCount[] = "sync_promo.startup_count";
 
-// A counter to remember the number of times we've been to the sync promo page
-// (not at startup).
-const char kSyncPromoViewCount[] = "sync_promo.view_count";
-
 // Boolean tracking whether the user chose to skip the sync promo.
 const char kSyncPromoUserSkipped[] = "sync_promo.user_skipped";
 

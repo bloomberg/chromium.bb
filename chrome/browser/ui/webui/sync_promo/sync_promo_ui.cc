@@ -21,7 +21,6 @@
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/webui/options/core_options_handler.h"
-#include "chrome/browser/ui/webui/sync_promo/sync_promo_handler.h"
 #include "chrome/browser/ui/webui/sync_promo/sync_promo_trial.h"
 #include "chrome/browser/ui/webui/theme_source.h"
 #include "chrome/common/chrome_switches.h"
@@ -80,37 +79,7 @@ bool AllowPromoAtStartupForCurrentBrand() {
   return true;
 }
 
-content::WebUIDataSource* CreateSyncUIHTMLSource(content::WebUI* web_ui) {
-  content::WebUIDataSource* html_source =
-      content::WebUIDataSource::Create(chrome::kChromeUISyncPromoHost);
-  DictionaryValue localized_strings;
-  options::CoreOptionsHandler::GetStaticLocalizedValues(&localized_strings);
-  SyncSetupHandler::GetStaticLocalizedValues(&localized_strings, web_ui);
-  html_source->AddLocalizedStrings(localized_strings);
-  html_source->SetJsonPath(kStringsJsFile);
-  html_source->AddResourcePath(kSyncPromoJsFile, IDR_SYNC_PROMO_JS);
-  html_source->SetDefaultResource(IDR_SYNC_PROMO_HTML);
-  html_source->SetUseJsonJSFormatV2();
-  return html_source;
-}
-
 }  // namespace
-
-SyncPromoUI::SyncPromoUI(content::WebUI* web_ui) : WebUIController(web_ui) {
-  SyncPromoHandler* handler = new SyncPromoHandler(
-      g_browser_process->profile_manager());
-  web_ui->AddMessageHandler(handler);
-
-  // Set up the chrome://theme/ source.
-  Profile* profile = Profile::FromWebUI(web_ui);
-  ThemeSource* theme = new ThemeSource(profile);
-  content::URLDataSource::Add(profile, theme);
-
-  // Set up the sync promo source.
-  content::WebUIDataSource::Add(profile, CreateSyncUIHTMLSource(web_ui));
-
-  sync_promo_trial::RecordUserShownPromo(web_ui);
-}
 
 // static
 bool SyncPromoUI::HasShownPromoAtStartup(Profile* profile) {
@@ -160,8 +129,14 @@ void SyncPromoUI::RegisterUserPrefs(
       prefs::kSyncPromoShowOnFirstRunAllowed,
       true,
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-
-  SyncPromoHandler::RegisterUserPrefs(registry);
+  registry->RegisterBooleanPref(
+      prefs::kSyncPromoShowNTPBubble,
+      false,
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterStringPref(
+      prefs::kSyncPromoErrorMessage,
+      std::string(),
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
 // static
@@ -303,17 +278,6 @@ SyncPromoUI::Source SyncPromoUI::GetSourceForSyncPromoURL(const GURL& url) {
     }
   }
   return SOURCE_UNKNOWN;
-}
-
-// static
-bool SyncPromoUI::GetAutoCloseForSyncPromoURL(const GURL& url) {
-  std::string value;
-  if (net::GetValueForKeyInQuery(url, kSyncPromoQueryKeyAutoClose, &value)) {
-    int source = 0;
-    base::StringToInt(value, &source);
-    return (source == 1);
-  }
-  return false;
 }
 
 // static

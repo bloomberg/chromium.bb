@@ -376,19 +376,6 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     return &NewWebUI<keyboard::KeyboardUIController>;
 #endif
 
-#if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
-  if (url.host() == chrome::kChromeUISyncPromoHost) {
-    // If the sync promo page is enabled then use the sync promo WebUI otherwise
-    // use the NTP WebUI. We don't want to return NULL if the sync promo page
-    // is disabled because the page can be disabled mid-flight (for example,
-    // if sync login finishes).
-    if (SyncPromoUI::ShouldShowSyncPromo(profile))
-      return &NewWebUI<SyncPromoUI>;
-    else
-      return &NewWebUI<NewTabUI>;
-  }
-#endif
-
   if (url.host() == chrome::kChromeUIChromeURLsHost ||
       url.host() == chrome::kChromeUICreditsHost ||
       url.host() == chrome::kChromeUIDNSHost ||
