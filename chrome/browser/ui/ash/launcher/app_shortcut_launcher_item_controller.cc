@@ -5,6 +5,8 @@
 #include "chrome/browser/ui/ash/launcher/app_shortcut_launcher_item_controller.h"
 
 #include "ash/wm/window_util.h"
+#include "chrome/browser/extensions/extension_process_manager.h"
+#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_app_menu_item.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_app_menu_item_tab.h"
@@ -86,7 +88,12 @@ void AppShortcutLauncherItemController::Launch(int event_flags) {
 void AppShortcutLauncherItemController::Activate() {
   content::WebContents* content = GetLRUApplication();
   if (!content) {
-    Launch(ui::EF_NONE);
+    // The initial launch of a V2 app will be done by this controller. Starting
+    // a hosted application takes time and if the user clicks fast, he can come
+    // here multiple times before the ShellLauncherItemController takes control.
+    // To avoid that situation we check for running applications.
+    if (!IsV2AppAndRunning())
+      Launch(ui::EF_NONE);
     return;
   }
   ActivateContent(content);
@@ -273,4 +280,14 @@ bool AppShortcutLauncherItemController::AdvanceToNextApp() {
     }
   }
   return false;
+}
+
+bool AppShortcutLauncherItemController::IsV2AppAndRunning() {
+  const Extension* extension =
+      app_controller_->GetExtensionForAppID(app_id());
+  extensions::ExtensionSystem* extension_system =
+      extensions::ExtensionSystem::Get(app_controller_->profile());
+  return extension && extension->is_platform_app() && extension_system &&
+         extension_system->process_manager()->GetBackgroundHostForExtension(
+             app_id());
 }

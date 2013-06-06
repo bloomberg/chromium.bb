@@ -71,6 +71,9 @@ class AppShortcutLauncherItemController : public LauncherItemController {
   // will return true if it has sucessfully advanced.
   bool AdvanceToNextApp();
 
+  // Returns true if the application is a V2 app and it is running.
+  bool IsV2AppAndRunning();
+
   GURL refocus_url_;
   ChromeLauncherControllerPerApp* app_controller_;
 
