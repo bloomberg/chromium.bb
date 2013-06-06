@@ -137,14 +137,14 @@ private:
     IntPoint m_scrollPosition;
 };
 
-// http://crbug.com/247279
-TEST_F(GraphicsLayerTest, DISABLED_applyScrollToScrollableArea)
+TEST_F(GraphicsLayerTest, applyScrollToScrollableArea)
 {
     FakeScrollableArea scrollableArea;
     m_graphicsLayer->setScrollableArea(&scrollableArea);
 
     WebPoint scrollPosition(7, 9);
     m_platformLayer->setScrollPosition(scrollPosition);
+    m_graphicsLayer->didScroll();
 
     EXPECT_EQ(scrollPosition, WebPoint(scrollableArea.scrollPosition()));
 }
