@@ -515,19 +515,9 @@ void Layer::SetScrollOffset(gfx::Vector2d scroll_offset) {
   if (scroll_offset_ == scroll_offset)
     return;
   scroll_offset_ = scroll_offset;
-  SetNeedsCommit();
-}
-
-void Layer::SetScrollOffsetFromImplSide(gfx::Vector2d scroll_offset) {
-  DCHECK(IsPropertyChangeAllowed());
-  DCHECK(layer_tree_host_ && layer_tree_host_->CommitRequested());
-  if (scroll_offset_ == scroll_offset)
-    return;
-  scroll_offset_ = scroll_offset;
   if (layer_scroll_client_)
     layer_scroll_client_->didScroll();
-  // Note: didScroll() could potentially change the layer structure.
-  //       "this" may have been destroyed during the process.
+  SetNeedsCommit();
 }
 
 void Layer::SetMaxScrollOffset(gfx::Vector2d max_scroll_offset) {
