@@ -1090,16 +1090,19 @@ class Remote(object):
           # Ensure that all the data was properly decompressed.
           uncompressed_data = decompressor.flush()
           assert not uncompressed_data
-        except IOError:
-          logging.error('Encountered an exception with (%s, %s)' % (item, dest))
+        except IOError as e:
+          logging.error(
+              'Failed to download %s at %s.\n%s', item, dest, e)
           raise
         except httplib.HTTPException as e:
-          raise IOError('Encountered an HTTPException.\n%s' % e)
+          msg = 'HTTPException while retrieving %s at %s.\n%s' % (
+              item, dest, e)
+          logging.error(msg)
+          raise IOError(msg)
         except zlib.error as e:
-          # Log the first bytes to see if it's uncompressed data.
           remaining_size = len(connection.read())
-          msg = ('Problem unzipping data for item %s. Processed %d of %d bytes.'
-                 '\n%s' % (item, size, size + remaining_size, e))
+          msg = 'Corrupted zlib for item %s. Processed %d of %d bytes.\n%s' % (
+              item, size, size + remaining_size, e)
           logging.error(msg)
 
           # Testing seems to show that if a few machines are trying to download

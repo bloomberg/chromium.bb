@@ -157,6 +157,7 @@ def run_swarm_tests_on_swarm(oses, tests, logs, isolate_server, swarm_server):
     shutil.rmtree(tempdir)
 
   if logs:
+    os.makedirs(logs)
     for test, platform, stdout in failed_tests:
       name = '%s_%s' % (platform, os.path.basename(test))
       with open(os.path.join(logs, name + '.log'), 'wb') as f:
