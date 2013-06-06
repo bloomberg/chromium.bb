@@ -1052,6 +1052,9 @@ void WebMediaPlayerImpl::StartPipeline(WebKit::WebMediaSource* media_source) {
   const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
   bool increase_preroll_on_underflow = true;
 
+  // Keep track if this is a MSE or non-MSE playback.
+  UMA_HISTOGRAM_BOOLEAN("Media.MSE.Playback", (media_source != NULL));
+
   // Figure out which demuxer to use.
   if (!media_source) {
     DCHECK(!chunk_demuxer_);
