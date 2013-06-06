@@ -191,7 +191,6 @@ IPC_STRUCT_TRAITS_BEGIN(cc::YUVVideoDrawQuad)
   IPC_STRUCT_TRAITS_MEMBER(y_plane_resource_id)
   IPC_STRUCT_TRAITS_MEMBER(u_plane_resource_id)
   IPC_STRUCT_TRAITS_MEMBER(v_plane_resource_id)
-  IPC_STRUCT_TRAITS_MEMBER(a_plane_resource_id)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(cc::SharedQuadState)

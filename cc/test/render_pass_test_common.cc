@@ -207,8 +207,8 @@ void TestRenderPass::AppendOneOfEveryQuadType(
                     false);
   AppendQuad(tile_quad.PassAs<DrawQuad>());
 
-  ResourceProvider::ResourceId plane_resources[4];
-  for (int i = 0; i < 4; ++i) {
+  ResourceProvider::ResourceId plane_resources[3];
+  for (int i = 0; i < 3; ++i) {
     plane_resources[i] =
         resource_provider->CreateResource(
             gfx::Size(20, 12),
@@ -224,8 +224,7 @@ void TestRenderPass::AppendOneOfEveryQuadType(
                    gfx::Size(100, 100),
                    plane_resources[0],
                    plane_resources[1],
-                   plane_resources[2],
-                   plane_resources[3]);
+                   plane_resources[2]);
   AppendQuad(yuv_quad.PassAs<DrawQuad>());
 
   AppendSharedQuadState(transformed_state.Pass());

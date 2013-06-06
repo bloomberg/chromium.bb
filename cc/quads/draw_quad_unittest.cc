@@ -623,36 +623,31 @@ TEST(DrawQuadTest, CopyYUVVideoDrawQuad) {
   ResourceProvider::ResourceId y_plane_resource_id = 45;
   ResourceProvider::ResourceId u_plane_resource_id = 532;
   ResourceProvider::ResourceId v_plane_resource_id = 4;
-  ResourceProvider::ResourceId a_plane_resource_id = 63;
   CREATE_SHARED_STATE();
 
-  CREATE_QUAD_6_NEW(YUVVideoDrawQuad,
+  CREATE_QUAD_5_NEW(YUVVideoDrawQuad,
                     opaque_rect,
                     tex_scale,
                     y_plane_resource_id,
                     u_plane_resource_id,
-                    v_plane_resource_id,
-                    a_plane_resource_id);
+                    v_plane_resource_id);
   EXPECT_EQ(DrawQuad::YUV_VIDEO_CONTENT, copy_quad->material);
   EXPECT_RECT_EQ(opaque_rect, copy_quad->opaque_rect);
   EXPECT_EQ(tex_scale, copy_quad->tex_scale);
   EXPECT_EQ(y_plane_resource_id, copy_quad->y_plane_resource_id);
   EXPECT_EQ(u_plane_resource_id, copy_quad->u_plane_resource_id);
   EXPECT_EQ(v_plane_resource_id, copy_quad->v_plane_resource_id);
-  EXPECT_EQ(a_plane_resource_id, copy_quad->a_plane_resource_id);
 
-  CREATE_QUAD_5_ALL(YUVVideoDrawQuad,
+  CREATE_QUAD_4_ALL(YUVVideoDrawQuad,
                     tex_scale,
                     y_plane_resource_id,
                     u_plane_resource_id,
-                    v_plane_resource_id,
-                    a_plane_resource_id);
+                    v_plane_resource_id);
   EXPECT_EQ(DrawQuad::YUV_VIDEO_CONTENT, copy_quad->material);
   EXPECT_EQ(tex_scale, copy_quad->tex_scale);
   EXPECT_EQ(y_plane_resource_id, copy_quad->y_plane_resource_id);
   EXPECT_EQ(u_plane_resource_id, copy_quad->u_plane_resource_id);
   EXPECT_EQ(v_plane_resource_id, copy_quad->v_plane_resource_id);
-  EXPECT_EQ(a_plane_resource_id, copy_quad->a_plane_resource_id);
 }
 
 TEST(DrawQuadTest, CopyPictureDrawQuad) {
@@ -859,26 +854,22 @@ TEST_F(DrawQuadIteratorTest, YUVVideoDrawQuad) {
   ResourceProvider::ResourceId y_plane_resource_id = 45;
   ResourceProvider::ResourceId u_plane_resource_id = 532;
   ResourceProvider::ResourceId v_plane_resource_id = 4;
-  ResourceProvider::ResourceId a_plane_resource_id = 63;
 
   CREATE_SHARED_STATE();
-  CREATE_QUAD_6_NEW(YUVVideoDrawQuad,
+  CREATE_QUAD_5_NEW(YUVVideoDrawQuad,
                     opaque_rect,
                     tex_scale,
                     y_plane_resource_id,
                     u_plane_resource_id,
-                    v_plane_resource_id,
-                    a_plane_resource_id);
+                    v_plane_resource_id);
   EXPECT_EQ(DrawQuad::YUV_VIDEO_CONTENT, copy_quad->material);
   EXPECT_EQ(y_plane_resource_id, quad_new->y_plane_resource_id);
   EXPECT_EQ(u_plane_resource_id, quad_new->u_plane_resource_id);
   EXPECT_EQ(v_plane_resource_id, quad_new->v_plane_resource_id);
-  EXPECT_EQ(a_plane_resource_id, quad_new->a_plane_resource_id);
-  EXPECT_EQ(4, IterateAndCount(quad_new.get()));
+  EXPECT_EQ(3, IterateAndCount(quad_new.get()));
   EXPECT_EQ(y_plane_resource_id + 1, quad_new->y_plane_resource_id);
   EXPECT_EQ(u_plane_resource_id + 1, quad_new->u_plane_resource_id);
   EXPECT_EQ(v_plane_resource_id + 1, quad_new->v_plane_resource_id);
-  EXPECT_EQ(a_plane_resource_id + 1, quad_new->a_plane_resource_id);
 }
 
 // Disabled until picture draw quad is supported for ubercomp: crbug.com/231715

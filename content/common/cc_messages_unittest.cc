@@ -172,7 +172,6 @@ class CCMessagesTest : public testing::Test {
     EXPECT_EQ(a->y_plane_resource_id, b->y_plane_resource_id);
     EXPECT_EQ(a->u_plane_resource_id, b->u_plane_resource_id);
     EXPECT_EQ(a->v_plane_resource_id, b->v_plane_resource_id);
-    EXPECT_EQ(a->a_plane_resource_id, b->a_plane_resource_id);
   }
 
   void Compare(const TransferableResource& a, const TransferableResource& b) {
@@ -218,7 +217,6 @@ TEST_F(CCMessagesTest, AllQuads) {
   ResourceProvider::ResourceId arbitrary_resourceid1 = 55;
   ResourceProvider::ResourceId arbitrary_resourceid2 = 47;
   ResourceProvider::ResourceId arbitrary_resourceid3 = 23;
-  ResourceProvider::ResourceId arbitrary_resourceid4 = 16;
 
   WebFilterOperations arbitrary_filters1;
   arbitrary_filters1.append(WebFilterOperation::createGrayscaleFilter(
@@ -374,8 +372,7 @@ TEST_F(CCMessagesTest, AllQuads) {
                       arbitrary_sizef1,
                       arbitrary_resourceid1,
                       arbitrary_resourceid2,
-                      arbitrary_resourceid3,
-                      arbitrary_resourceid4);
+                      arbitrary_resourceid3);
   scoped_ptr<DrawQuad> yuvvideo_cmp = yuvvideo_in->Copy(
       yuvvideo_in->shared_quad_state);
 
