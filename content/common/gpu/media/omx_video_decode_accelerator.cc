@@ -510,7 +510,7 @@ void OmxVideoDecodeAccelerator::OnReachedEOSInFlushing() {
   DCHECK_EQ(message_loop_, base::MessageLoop::current());
   DCHECK_EQ(client_state_, OMX_StateExecuting);
   current_state_change_ = NO_TRANSITION;
-  if (client_)
+  if (client_.get())
     client_->NotifyFlushDone();
 }
 
@@ -646,7 +646,7 @@ void OmxVideoDecodeAccelerator::OnReachedExecutingInInitializing() {
     ++output_buffers_at_component_;
   }
 
-  if (client_)
+  if (client_.get())
     client_->NotifyInitializeDone();
 }
 
@@ -671,7 +671,7 @@ void OmxVideoDecodeAccelerator::OnReachedExecutingInResetting() {
   DCHECK_EQ(client_state_, OMX_StatePause);
   client_state_ = OMX_StateExecuting;
   current_state_change_ = NO_TRANSITION;
-  if (!client_)
+  if (!client_.get())
     return;
 
   // Drain queues of input & output buffers held during the reset.
@@ -746,7 +746,7 @@ void OmxVideoDecodeAccelerator::StopOnError(
   if (current_state_change_ == ERRORING)
     return;
 
-  if (client_ && init_begun_)
+  if (client_.get() && init_begun_)
     client_->NotifyError(error);
   client_ptr_factory_.InvalidateWeakPtrs();
 
@@ -845,7 +845,7 @@ void OmxVideoDecodeAccelerator::FreeOMXBuffers() {
     }
     texture_to_egl_image_translator_->DestroyEglImage(egl_display_,
                                                       it->second.egl_image);
-    if (client_)
+    if (client_.get())
       client_->DismissPictureBuffer(it->first);
   }
   pictures_.clear();
@@ -865,7 +865,7 @@ void OmxVideoDecodeAccelerator::FreeOMXBuffers() {
   fake_output_buffers_.clear();
 
   // Dequeue pending queued_picture_buffer_ids_
-  if (client_) {
+  if (client_.get()) {
     for (size_t i = 0; i < queued_picture_buffer_ids_.size(); ++i)
       client_->DismissPictureBuffer(queued_picture_buffer_ids_[i]);
   }
@@ -894,7 +894,7 @@ void OmxVideoDecodeAccelerator::OnOutputPortDisabled() {
   const OMX_VIDEO_PORTDEFINITIONTYPE& vformat = port_format.format.video;
   last_requested_picture_buffer_dimensions_.SetSize(vformat.nFrameWidth,
                                                     vformat.nFrameHeight);
-  if (client_) {
+  if (client_.get()) {
     client_->ProvidePictureBuffers(
         kNumPictureBuffers,
         gfx::Size(vformat.nFrameWidth, vformat.nFrameHeight),
@@ -983,7 +983,7 @@ void OmxVideoDecodeAccelerator::FillBufferDoneTask(
   DCHECK(picture);
   // See Decode() for an explanation of this abuse of nTimeStamp.
   picture->set_bitstream_buffer_id(buffer->nTimeStamp);
-  if (client_)
+  if (client_.get())
     client_->PictureReady(*picture);
 }
 
@@ -1004,7 +1004,7 @@ void OmxVideoDecodeAccelerator::EmptyBufferDoneTask(
       reinterpret_cast<SharedMemoryAndId*>(buffer->pAppPrivate);
   DCHECK(input_buffer_details);
   buffer->pAppPrivate = NULL;
-  if (client_)
+  if (client_.get())
     client_->NotifyEndOfBitstreamBuffer(input_buffer_details->second);
   delete input_buffer_details;
 

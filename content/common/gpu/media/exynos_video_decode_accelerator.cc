@@ -1891,7 +1891,7 @@ void ExynosVideoDecodeAccelerator::NotifyError(Error error) {
     return;
   }
 
-  if (client_) {
+  if (client_.get()) {
     client_->NotifyError(error);
     client_ptr_factory_.InvalidateWeakPtrs();
   }
@@ -2222,7 +2222,7 @@ void ExynosVideoDecodeAccelerator::DestroyGscOutputBuffers() {
         eglDestroyImageKHR(egl_display_, output_record.egl_image);
       if (output_record.egl_sync != EGL_NO_SYNC_KHR)
         eglDestroySyncKHR(egl_display_, output_record.egl_sync);
-      if (client_)
+      if (client_.get())
         client_->DismissPictureBuffer(output_record.picture_id);
       ++i;
     } while (i < gsc_output_buffer_map_.size());
