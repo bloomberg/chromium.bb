@@ -3090,40 +3090,20 @@ bool AccessibilityRenderObject::inheritsPresentationalRole() const
     // ARIA spec says that when a parent object is presentational, and it has required child elements,
     // those child elements are also presentational. For example, <li> becomes presentational from <ul>.
     // http://www.w3.org/WAI/PF/aria/complete#presentation
-    DEFINE_STATIC_LOCAL(HashSet<QualifiedName>, listItemParents, ());
-
-    HashSet<QualifiedName>* possibleParentTagNames = 0;
-    switch (roleValue()) {
-    case ListItemRole:
-    case ListMarkerRole:
-        if (listItemParents.isEmpty()) {
-            listItemParents.add(ulTag);
-            listItemParents.add(olTag);
-            listItemParents.add(dlTag);
-        }
-        possibleParentTagNames = &listItemParents;
-        break;
-    default:
-        break;
-    }
-
-    // Not all elements need to check for this, only ones that are required children.
-    if (!possibleParentTagNames)
+    if (roleValue() != ListItemRole && roleValue() != ListMarkerRole)
         return false;
 
-    for (AccessibilityObject* parent = parentObject(); parent; parent = parent->parentObject()) {
-        if (!parent->isAccessibilityRenderObject())
-            continue;
+    AccessibilityObject* parent = parentObject();
+    if (!parent->isAccessibilityRenderObject())
+        return false;
 
-        Node* elementNode = static_cast<AccessibilityRenderObject*>(parent)->node();
-        if (!elementNode || !elementNode->isElementNode())
-            continue;
+    Node* elementNode = static_cast<AccessibilityRenderObject*>(parent)->node();
+    if (!elementNode || !elementNode->isElementNode())
+        return false;
 
-        // If native tag of the parent element matches an acceptable name, then return
-        // based on its presentational status.
-        if (possibleParentTagNames->contains(toElement(elementNode)->tagQName()))
-            return parent->roleValue() == PresentationalRole;
-    }
+    QualifiedName tagName = toElement(elementNode)->tagQName();
+    if (tagName == ulTag || tagName == olTag || tagName == dlTag)
+        return parent->roleValue() == PresentationalRole;
 
     return false;
 }
