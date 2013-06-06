@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_LANGUAGE_DETECTION_DETAILS_H_
-#define CHROME_COMMON_LANGUAGE_DETECTION_DETAILS_H_
+#ifndef CHROME_COMMON_TRANSLATE_LANGUAGE_DETECTION_DETAILS_H_
+#define CHROME_COMMON_TRANSLATE_LANGUAGE_DETECTION_DETAILS_H_
 
 #include <string>
 
@@ -41,4 +41,4 @@ struct LanguageDetectionDetails {
   string16 contents;
 };
 
-#endif  // CHROME_COMMON_LANGUAGE_DETECTION_DETAILS_H_
+#endif  // CHROME_COMMON_TRANSLATE_LANGUAGE_DETECTION_DETAILS_H_

@@ -75,8 +75,8 @@
      * @return {string} The formatted string.
      */
     function formatTranslateErrorsType(error) {
-      // This list is from chrome/common/translate_errors.h.  If this header
-      // file is updated, the below list also should be updated.
+      // This list is from chrome/common/translate/translate_errors.h.
+      // If this header file is updated, the below list also should be updated.
       var errorStrs = {
         0: 'None',
         1: 'Network',

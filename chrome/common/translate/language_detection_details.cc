@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/language_detection_details.h"
+#include "chrome/common/translate/language_detection_details.h"
 
 LanguageDetectionDetails::LanguageDetectionDetails() {}
 

@@ -14,8 +14,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/translate/translate_error_details.h"
 #include "chrome/browser/translate/translate_prefs.h"
-#include "chrome/common/language_detection_details.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/translate/language_detection_details.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 

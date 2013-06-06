@@ -10,7 +10,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time.h"
-#include "chrome/common/translate_errors.h"
+#include "chrome/common/translate/translate_errors.h"
 #include "content/public/renderer/render_view_observer.h"
 
 namespace WebKit {

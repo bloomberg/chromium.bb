@@ -6,8 +6,8 @@
 
 #include "chrome/browser/translate/page_translated_details.h"
 #include "chrome/common/chrome_notification_types.h"
-#include "chrome/common/language_detection_details.h"
 #include "chrome/common/render_messages.h"
+#include "chrome/common/translate/language_detection_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
 

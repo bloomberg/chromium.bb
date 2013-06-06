@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "chrome/common/translate_errors.h"
+#include "chrome/common/translate/translate_errors.h"
 
 // Used when sending a notification about a page that has been translated.
 struct PageTranslatedDetails {
