@@ -7396,3 +7396,18 @@ fun:_ZN7content21RenderViewHostManager8NavigateERKNS_19NavigationEntryImplE
    fun:_ZN4base22BaseTimerMethodPointerIN10extensions16ActivityDatabaseELb1EE5StartERKN15tracked_objects8LocationENS_9TimeDelta*
    fun:_ZN10extensions16ActivityDatabase4InitERKN4base8FilePathE
 }
+{
+   bug_247474a
+   Memcheck:Uninitialized
+   fun:_ZN7content12DecodeIDBKeyEPN4base16BasicStringPieceISsEEP10scoped_ptrINS_12IndexedDBKeyENS0_14DefaultDeleterIS5_EEE
+   ...
+   fun:_ZN7content12_GLOBAL__N_150IndexedDBLevelDBCodingTest_EncodeDecodeIDBKey_Test8TestBodyEv
+}
+{
+   bug_247474b
+   Memcheck:Uninitialized
+   fun:_ZN7content20ExtractEncodedIDBKeyEPN4base16BasicStringPieceISsEE
+   ...
+   fun:_ZN7content20ExtractEncodedIDBKeyEPN4base16BasicStringPieceISsEEPSt6vectorIcSaIcEE
+   fun:_ZN7content12_GLOBAL__N_156IndexedDBLevelDBCodingTest_ExtractAndCompareIDBKeys_Test8TestBodyEv
+}
