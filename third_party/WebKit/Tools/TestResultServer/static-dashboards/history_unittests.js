@@ -30,7 +30,7 @@ module('history');
 
 test('queryHashAsMap', 2, function() {
     equal(window.location.hash, '#useTestData=true');
-    deepEqual(history.queryHashAsMap(), {useTestData: 'true'});
+    deepEqual(history.queryHashAsMap(), {useTestData: 'true', "group": "@ToT - chromium.org"});
 });
 
 test('diffStates', 5, function() {
@@ -61,6 +61,7 @@ test('parseCrossDashboardParameters', 2, function() {
     var expectedParameters = {};
     for (var key in history.DEFAULT_CROSS_DASHBOARD_STATE_VALUES)
         expectedParameters[key] = history.DEFAULT_CROSS_DASHBOARD_STATE_VALUES[key];
+    expectedParameters.group = "@ToT - chromium.org";
     expectedParameters.useTestData = true;
 
     deepEqual(historyInstance.crossDashboardState, expectedParameters);
