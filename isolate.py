@@ -245,9 +245,24 @@ def expand_directory_and_symlink(indir, relfile, blacklist, follow_symlinks):
   if filepath != native_filepath:
     # Special case './'.
     if filepath != native_filepath + '.' + os.path.sep:
-      raise run_isolated.MappingError(
-          'File path doesn\'t equal native file path\n%s != %s' %
-          (filepath, native_filepath))
+      # Give up enforcing strict path case on OSX. Really, it's that sad. The
+      # case where it happens is very specific and hard to reproduce:
+      # get_native_path_case(
+      #    u'Foo.framework/Versions/A/Resources/Something.nib') will return
+      # u'Foo.framework/Versions/A/resources/Something.nib', e.g. lowercase 'r'.
+      #
+      # Note that this is really something deep in OSX because running
+      # ls Foo.framework/Versions/A
+      # will print out 'Resources', while trace_inputs.get_native_path_case()
+      # returns a lower case 'r'.
+      #
+      # So *something* is happening under the hood resulting in the command 'ls'
+      # and Carbon.File.FSPathMakeRef('path').FSRefMakePath() to disagree.  We
+      # have no idea why.
+      if sys.platform != 'darwin':
+        raise run_isolated.MappingError(
+            'File path doesn\'t equal native file path\n%s != %s' %
+            (filepath, native_filepath))
 
   symlinks = []
   if follow_symlinks:
