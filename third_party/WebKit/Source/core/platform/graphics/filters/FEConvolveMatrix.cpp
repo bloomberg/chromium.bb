@@ -518,7 +518,7 @@ namespace WebCore {
 
 SkImageFilter* FEConvolveMatrix::createImageFilter(SkiaImageFilterBuilder* builder)
 {
-    SkAutoTUnref<SkImageFilter> input(builder->build(inputEffect(0)));
+    SkAutoTUnref<SkImageFilter> input(builder->build(inputEffect(0), operatingColorSpace()));
 
     SkISize kernelSize(SkISize::Make(m_kernelSize.width(), m_kernelSize.height()));
     int numElements = kernelSize.width() * kernelSize.height();

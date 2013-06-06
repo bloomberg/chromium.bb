@@ -274,7 +274,7 @@ void ImageBuffer::drawPattern(GraphicsContext* context, const FloatRect& srcRect
     image->drawPattern(context, srcRect, patternTransform, phase, op, destRect);
 }
 
-void ImageBuffer::platformTransformColorSpace(const Vector<int>& lookUpTable)
+void ImageBuffer::platformTransformColorSpace(const Vector<uint8_t>& lookUpTable)
 {
     // FIXME: Disable color space conversions on accelerated canvases (for now).
     if (context()->isAccelerated())

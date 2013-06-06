@@ -53,6 +53,7 @@
             'tests/IDBRequestTest.cpp',
             'tests/IDBTransactionTest.cpp',
             'tests/ImageDecodingStoreTest.cpp',
+            'tests/ImageFilterBuilderTest.cpp',
             'tests/ImageFrameGeneratorTest.cpp',
             'tests/ImageLayerChromiumTest.cpp',
             'tests/MockDiscardablePixelRef.h',

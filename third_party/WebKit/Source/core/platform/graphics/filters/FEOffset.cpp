@@ -108,7 +108,7 @@ void FEOffset::applySoftware()
 
 SkImageFilter* FEOffset::createImageFilter(SkiaImageFilterBuilder* builder)
 {
-    SkAutoTUnref<SkImageFilter> input(builder->build(inputEffect(0)));
+    SkAutoTUnref<SkImageFilter> input(builder->build(inputEffect(0), operatingColorSpace()));
     return new SkOffsetImageFilter(SkFloatToScalar(m_dx), SkFloatToScalar(m_dy), input);
 }
 

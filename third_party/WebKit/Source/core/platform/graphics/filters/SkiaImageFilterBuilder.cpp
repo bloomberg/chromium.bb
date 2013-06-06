@@ -29,6 +29,8 @@
 #include "SkBlurImageFilter.h"
 #include "SkColorFilterImageFilter.h"
 #include "SkColorMatrixFilter.h"
+#include "SkTableColorFilter.h"
+#include "core/platform/graphics/ImageBuffer.h"
 #include "core/platform/graphics/filters/DropShadowImageFilter.h"
 #include "core/platform/graphics/filters/FilterEffect.h"
 #include "core/platform/graphics/filters/FilterOperations.h"
@@ -170,33 +172,57 @@ SkiaImageFilterBuilder::~SkiaImageFilterBuilder()
         SkSafeUnref(it->value);
 }
 
-SkImageFilter* SkiaImageFilterBuilder::build(FilterEffect* effect)
+SkImageFilter* SkiaImageFilterBuilder::build(FilterEffect* effect, ColorSpace colorSpace)
 {
     if (!effect)
         return 0;
 
     SkImageFilter* filter = 0;
-    FilterBuilderHashMap::iterator it = m_map.find(effect);
-    if (it != m_map.end())
+    FilterColorSpacePair key(effect, colorSpace);
+    FilterBuilderHashMap::iterator it = m_map.find(key);
+    if (it != m_map.end()) {
         filter = it->value;
-    else if ((filter = effect->createImageFilter(this)))
-        m_map.set(effect, filter);
+    } else {
+        // Note that we may still need the color transform even if the filter is null
+        filter = transformColorSpace(effect->createImageFilter(this), effect->operatingColorSpace(), colorSpace);
+        m_map.set(key, filter);
+    }
     // The hash map has a ref, so we return a new ref for the caller.
     SkSafeRef(filter);
     return filter;
+}
+
+SkImageFilter* SkiaImageFilterBuilder::transformColorSpace(
+    SkImageFilter* input, ColorSpace srcColorSpace, ColorSpace dstColorSpace) {
+    if ((srcColorSpace == dstColorSpace)
+        || (srcColorSpace != ColorSpaceLinearRGB && srcColorSpace != ColorSpaceDeviceRGB)
+        || (dstColorSpace != ColorSpaceLinearRGB && dstColorSpace != ColorSpaceDeviceRGB))
+        return input;
+
+    const uint8_t* lut = 0;
+    if (dstColorSpace == ColorSpaceLinearRGB)
+        lut = &ImageBuffer::getLinearRgbLUT()[0];
+    else if (dstColorSpace == ColorSpaceDeviceRGB)
+        lut = &ImageBuffer::getDeviceRgbLUT()[0];
+
+    return lut ? SkColorFilterImageFilter::Create(
+        SkTableColorFilter::CreateARGB(0, lut, lut, lut), input) : input;
 }
 
 SkImageFilter* SkiaImageFilterBuilder::build(const FilterOperations& operations)
 {
     SkAutoTUnref<SkImageFilter> filter;
     SkScalar matrix[20];
+    ColorSpace currentColorSpace = ColorSpaceDeviceRGB;
     for (size_t i = 0; i < operations.size(); ++i) {
         const FilterOperation& op = *operations.at(i);
         switch (op.getOperationType()) {
         case FilterOperation::REFERENCE: {
             FilterEffect* filterEffect = static_cast<const ReferenceFilterOperation*>(&op)->filterEffect();
             // FIXME: hook up parent filter to image source
-            filter.reset(SkiaImageFilterBuilder::build(filterEffect));
+            if (filterEffect)
+                currentColorSpace = filterEffect->operatingColorSpace();
+            filter.reset(SkiaImageFilterBuilder::build(filterEffect, currentColorSpace));
             break;
         }
         case FilterOperation::GRAYSCALE: {
@@ -264,6 +290,10 @@ SkImageFilter* SkiaImageFilterBuilder::build(const FilterOperations& operations)
         case FilterOperation::NONE:
             break;
         }
+    }
+    if (currentColorSpace != ColorSpaceDeviceRGB) {
+        // Transform to device color space at the end of processing, if required
+        filter.reset(transformColorSpace(filter.get(), currentColorSpace, ColorSpaceDeviceRGB));
     }
     return filter.detach();
 }

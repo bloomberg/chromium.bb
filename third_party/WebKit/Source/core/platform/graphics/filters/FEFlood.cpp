@@ -79,6 +79,8 @@ FEFlood::FEFlood(Filter* filter, const Color& floodColor, float floodOpacity)
     , m_floodColor(floodColor)
     , m_floodOpacity(floodOpacity)
 {
+    FilterEffect::setOperatingColorSpace(ColorSpaceDeviceRGB);
+    FilterEffect::setResultColorSpace(ColorSpaceDeviceRGB);
 }
 
 PassRefPtr<FEFlood> FEFlood::create(Filter* filter, const Color& floodColor, float floodOpacity)

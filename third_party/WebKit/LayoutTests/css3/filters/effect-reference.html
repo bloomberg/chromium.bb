@@ -1,12 +1,12 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="0" height="0" version="1.1">
   <defs>
-    <filter id="colormatrix">
+    <filter id="colormatrix" color-interpolation-filters="sRGB">
       <feColorMatrix type="hueRotate" values="180"/>
     </filter>
-    <filter id="morphology">
+    <filter id="morphology" color-interpolation-filters="sRGB">
       <feMorphology radius="10" operator="dilate"/>
     </filter>
-    <filter id="componenttransfer">
+    <filter id="componenttransfer" color-interpolation-filters="sRGB">
       <feComponentTransfer>
         <feFuncR type="linear" slope="0.5">
         <feFuncG type="linear" slope="0.5">
@@ -14,14 +14,14 @@
         <feFuncA type="identity">
       </feComponentTransfer>
     </filter>
-    <filter id="blurY">
+    <filter id="blurY" color-interpolation-filters="sRGB">
       <feGaussianBlur stdDeviation="0 5"/>
     </filter>
-    <filter id="blend">
+    <filter id="blend" color-interpolation-filters="sRGB">
       <feGaussianBlur stdDeviation="5 5"/>
       <feBlend in2="SourceGraphic" mode="screen">
     </filter>
-    <filter id="lighting">
+    <filter id="lighting" color-interpolation-filters="sRGB">
       <feSpecularLighting>
         <feSpotLight pointsAtX="160" pointsAtY="130" pointsAtZ="0" specularExponent="1" limitingConeAngle="20" x="0" y="0" z="10"/>
       </feSpecularLighting>
@@ -31,13 +31,13 @@
     <filter id="offset" x="0%">
       <feOffset dx="10" dy="10"/>
     </filter>
-    <filter id="convolvematrix">
+    <filter id="convolvematrix" color-interpolation-filters="sRGB">
       <feConvolveMatrix order="3 3" kernelMatrix="1 1 1   1 -7 1   1 1 1" bias ="0.3"/>
     </filter>
-    <filter id="displacement">
+    <filter id="displacement" color-interpolation-filters="sRGB">
       <feDisplacementMap scale="10" xChannelSelector="R" yChannelSelector="G"/>
     </filter>
-    <filter id="merge">
+    <filter id="merge" color-interpolation-filters="sRGB">
       <feColorMatrix type="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 0.3 0"  result="trans"/>
       <feOffset dx="5"  dy="5"  in="trans" result="offset1"/>
       <feOffset dx="10" dy="10" in="trans" result="offset2"/>
@@ -49,7 +49,7 @@
         <feMergeNode in="offset3"/>
       </feMerge>
     </filter>
-    <filter id="flood">
+    <filter id="flood" color-interpolation-filters="sRGB">
       <feFlood flood-color="green"/>
     </filter>
   </defs>

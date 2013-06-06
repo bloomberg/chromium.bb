@@ -1114,6 +1114,14 @@ crbug.com/240374 compositing/overlap-blending/children-opacity-huge.html [ Image
 crbug.com/240374 compositing/overlap-blending/children-opacity-no-overlap.html [ ImageOnlyFailure ]
 crbug.com/240374 virtual/softwarecompositing/overlap-blending/preserves3d-opacity.html [ ImageOnlyFailure ]
 
+# The following tests will need rebaselining.
+crbug.com/237518 css3/filters/effect-reference.html [ ImageOnlyFailure Failure ]
+crbug.com/229689 css3/filters/effect-reference-colorspace.html [ ImageOnlyFailure Missing ]
+crbug.com/229689 css3/filters/effect-reference-colorspace-hw.html [ ImageOnlyFailure Missing ]
+crbug.com/237518 css3/filters/effect-reference-composite.html [ ImageOnlyFailure Failure ]
+
+# The following tests will fail until hueRotate.svg is modified
+crbug.com/229689 css3/filters/effect-reference-external.html [ ImageOnlyFailure ]
 
 webkit.org/b/95588 [ Mac ] fast/dom/shadow/shadowdom-for-textarea-complex-shadow.html [ ImageOnlyFailure ]
 

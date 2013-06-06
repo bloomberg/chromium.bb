@@ -416,7 +416,7 @@ void FELighting::applySoftware()
 
 SkImageFilter* FELighting::createImageFilter(SkiaImageFilterBuilder* builder)
 {
-    SkAutoTUnref<SkImageFilter> input(builder ? builder->build(inputEffect(0)) : 0);
+    SkAutoTUnref<SkImageFilter> input(builder ? builder->build(inputEffect(0), operatingColorSpace()) : 0);
     switch (m_lightSource->type()) {
     case LS_DISTANT: {
         DistantLightSource* distantLightSource = static_cast<DistantLightSource*>(m_lightSource.get());

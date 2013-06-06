@@ -26,6 +26,7 @@
 #ifndef SkiaImageFilterBuilder_h
 #define SkiaImageFilterBuilder_h
 
+#include "core/platform/graphics/ColorSpace.h"
 #include <wtf/HashMap.h>
 
 class SkImageFilter;
@@ -39,13 +40,28 @@ public:
     SkiaImageFilterBuilder();
     ~SkiaImageFilterBuilder();
 
-    SkImageFilter* build(FilterEffect*);
+    SkImageFilter* build(FilterEffect*, ColorSpace);
     SkImageFilter* build(const FilterOperations&);
+
+    SkImageFilter* transformColorSpace(
+        SkImageFilter* input, ColorSpace srcColorSpace, ColorSpace dstColorSpace);
 private:
-    typedef HashMap<FilterEffect*, SkImageFilter*> FilterBuilderHashMap;
+    typedef std::pair<FilterEffect*, ColorSpace> FilterColorSpacePair;
+    typedef HashMap<FilterColorSpacePair, SkImageFilter*> FilterBuilderHashMap;
     FilterBuilderHashMap m_map;
 };
 
+} // namespace WebCore
+
+namespace WTF {
+
+template<> struct DefaultHash<WebCore::FilterEffect*> {
+    typedef PtrHash<WebCore::FilterEffect*> Hash;
 };
+template<> struct DefaultHash<WebCore::ColorSpace> {
+    typedef IntHash<unsigned> Hash;
+};
+
+} // namespace WTF
 
 #endif

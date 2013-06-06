@@ -118,7 +118,9 @@ namespace WebCore {
         String toDataURL(const String& mimeType, const double* quality = 0, CoordinateSystem = LogicalCoordinateSystem) const;
         AffineTransform baseTransform() const { return AffineTransform(); }
         void transformColorSpace(ColorSpace srcColorSpace, ColorSpace dstColorSpace);
-        void platformTransformColorSpace(const Vector<int>&);
+        void platformTransformColorSpace(const Vector<uint8_t>&);
+        static const Vector<uint8_t>& getLinearRgbLUT();
+        static const Vector<uint8_t>& getDeviceRgbLUT();
         PlatformLayer* platformLayer() const;
 
         // FIXME: current implementations of this method have the restriction that they only work

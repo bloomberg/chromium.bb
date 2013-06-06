@@ -215,8 +215,8 @@ bool FEDisplacementMap::applySkia()
 
 SkImageFilter* FEDisplacementMap::createImageFilter(SkiaImageFilterBuilder* builder)
 {
-    SkImageFilter* color = builder->build(inputEffect(0));
-    SkImageFilter* displ = builder->build(inputEffect(1));
+    SkImageFilter* color = builder->build(inputEffect(0), operatingColorSpace());
+    SkImageFilter* displ = builder->build(inputEffect(1), operatingColorSpace());
     SkDisplacementMapEffect::ChannelSelectorType typeX = toSkiaMode(m_xChannelSelector);
     SkDisplacementMapEffect::ChannelSelectorType typeY = toSkiaMode(m_yChannelSelector);
     return new SkDisplacementMapEffect(typeX, typeY, SkFloatToScalar(m_scale), displ, color);

@@ -340,7 +340,7 @@ bool FEGaussianBlur::applySkia()
 
 SkImageFilter* FEGaussianBlur::createImageFilter(SkiaImageFilterBuilder* builder)
 {
-    SkAutoTUnref<SkImageFilter> input(builder->build(inputEffect(0)));
+    SkAutoTUnref<SkImageFilter> input(builder->build(inputEffect(0), operatingColorSpace()));
     return new SkBlurImageFilter(SkFloatToScalar(m_stdX), SkFloatToScalar(m_stdY), input);
 }
 

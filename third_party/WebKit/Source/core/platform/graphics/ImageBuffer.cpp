@@ -33,11 +33,38 @@
 
 namespace WebCore {
 
+const Vector<uint8_t>& ImageBuffer::getLinearRgbLUT()
+{
+    DEFINE_STATIC_LOCAL(Vector<uint8_t>, linearRgbLUT, ());
+    if (linearRgbLUT.isEmpty()) {
+        for (unsigned i = 0; i < 256; i++) {
+            float color = i  / 255.0f;
+            color = (color <= 0.04045f ? color / 12.92f : pow((color + 0.055f) / 1.055f, 2.4f));
+            color = std::max(0.0f, color);
+            color = std::min(1.0f, color);
+            linearRgbLUT.append(static_cast<uint8_t>(round(color * 255)));
+        }
+    }
+    return linearRgbLUT;
+}
+
+const Vector<uint8_t>& ImageBuffer::getDeviceRgbLUT()
+{
+    DEFINE_STATIC_LOCAL(Vector<uint8_t>, deviceRgbLUT, ());
+    if (deviceRgbLUT.isEmpty()) {
+        for (unsigned i = 0; i < 256; i++) {
+            float color = i / 255.0f;
+            color = (powf(color, 1.0f / 2.4f) * 1.055f) - 0.055f;
+            color = std::max(0.0f, color);
+            color = std::min(1.0f, color);
+            deviceRgbLUT.append(static_cast<uint8_t>(round(color * 255)));
+        }
+    }
+    return deviceRgbLUT;
+}
+
 void ImageBuffer::transformColorSpace(ColorSpace srcColorSpace, ColorSpace dstColorSpace)
 {
-    DEFINE_STATIC_LOCAL(Vector<int>, deviceRgbLUT, ());
-    DEFINE_STATIC_LOCAL(Vector<int>, linearRgbLUT, ());
-
     if (srcColorSpace == dstColorSpace)
         return;
 
@@ -47,27 +74,9 @@ void ImageBuffer::transformColorSpace(ColorSpace srcColorSpace, ColorSpace dstCo
         return;
 
     if (dstColorSpace == ColorSpaceLinearRGB) {
-        if (linearRgbLUT.isEmpty()) {
-            for (unsigned i = 0; i < 256; i++) {
-                float color = i  / 255.0f;
-                color = (color <= 0.04045f ? color / 12.92f : pow((color + 0.055f) / 1.055f, 2.4f));
-                color = std::max(0.0f, color);
-                color = std::min(1.0f, color);
-                linearRgbLUT.append(static_cast<int>(round(color * 255)));
-            }
-        }
-        platformTransformColorSpace(linearRgbLUT);
+        platformTransformColorSpace(getLinearRgbLUT());
     } else if (dstColorSpace == ColorSpaceDeviceRGB) {
-        if (deviceRgbLUT.isEmpty()) {
-            for (unsigned i = 0; i < 256; i++) {
-                float color = i / 255.0f;
-                color = (powf(color, 1.0f / 2.4f) * 1.055f) - 0.055f;
-                color = std::max(0.0f, color);
-                color = std::min(1.0f, color);
-                deviceRgbLUT.append(static_cast<int>(round(color * 255)));
-            }
-        }
-        platformTransformColorSpace(deviceRgbLUT);
+        platformTransformColorSpace(getDeviceRgbLUT());
     }
 }
 

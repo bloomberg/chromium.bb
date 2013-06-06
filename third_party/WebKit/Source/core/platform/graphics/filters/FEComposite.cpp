@@ -391,8 +391,8 @@ SkXfermode::Mode toXfermode(WebCore::CompositeOperationType mode)
 
 SkImageFilter* FEComposite::createImageFilter(SkiaImageFilterBuilder* builder)
 {
-    SkAutoTUnref<SkImageFilter> foreground(builder->build(inputEffect(0)));
-    SkAutoTUnref<SkImageFilter> background(builder->build(inputEffect(1)));
+    SkAutoTUnref<SkImageFilter> foreground(builder->build(inputEffect(0), operatingColorSpace()));
+    SkAutoTUnref<SkImageFilter> background(builder->build(inputEffect(1), operatingColorSpace()));
     if (m_type == FECOMPOSITE_OPERATOR_ARITHMETIC)
         return 0; // FIXME: Implement arithmetic op
     return new CompositeImageFilter(toXfermode(m_type), background, foreground);

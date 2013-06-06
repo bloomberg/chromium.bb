@@ -29,6 +29,7 @@
 #include "core/rendering/FilterEffectRenderer.h"
 
 #include "SVGNames.h"
+#include "core/css/CSSPrimitiveValueMappings.h"
 #include "core/dom/Document.h"
 #include "core/loader/cache/CachedDocument.h"
 #include "core/loader/cache/CachedSVGDocumentReference.h"
@@ -87,6 +88,46 @@ static PassRefPtr<FECustomFilter> createCustomFilterEffect(Filter* filter, Docum
 
     return FECustomFilter::create(filter, globalContext->context(), operation->validatedProgram(), operation->parameters(),
         operation->meshRows(), operation->meshColumns(),  operation->meshType());
+}
+
+// Returns whether or not the SVGStyledElement object contains a valid color-interpolation-filters attribute
+static bool getSVGStyledElementColorSpace(SVGStyledElement* svgStyledElement, ColorSpace& cs)
+{
+    if (!svgStyledElement)
+        return false;
+
+    const RenderObject* renderer = svgStyledElement->renderer();
+    const RenderStyle* style = renderer ? renderer->style() : 0;
+    const SVGRenderStyle* svgStyle = style ? style->svgStyle() : 0;
+    EColorInterpolation eColorInterpolation = CI_AUTO;
+    if (svgStyle) {
+        // If a layout has been performed, then we can use the fast path to get this attribute
+        eColorInterpolation = svgStyle->colorInterpolationFilters();
+    } else {
+        // Otherwise, use the slow path by using string comparison (used by external svg files)
+        RefPtr<CSSValue> cssValue = svgStyledElement->getPresentationAttribute(
+            SVGNames::color_interpolation_filtersAttr.toString());
+        if (cssValue.get() && cssValue->isPrimitiveValue()) {
+            const CSSPrimitiveValue& primitiveValue = *((CSSPrimitiveValue*)cssValue.get());
+            eColorInterpolation = (EColorInterpolation)primitiveValue;
+        } else {
+            return false;
+        }
+    }
+
+    switch (eColorInterpolation) {
+    case CI_AUTO:
+    case CI_SRGB:
+        cs = ColorSpaceDeviceRGB;
+        break;
+    case CI_LINEARRGB:
+        cs = ColorSpaceLinearRGB;
+        break;
+    default:
+        return false;
+    }
+
+    return true;
 }
 
 FilterEffectRenderer::FilterEffectRenderer()
@@ -149,6 +190,9 @@ PassRefPtr<FilterEffect> FilterEffectRenderer::buildReferenceFilter(RenderObject
     // This may need a spec clarification.
     RefPtr<SVGFilterBuilder> builder = SVGFilterBuilder::create(previousEffect, SourceAlpha::create(this));
 
+    ColorSpace filterColorSpace = ColorSpaceDeviceRGB;
+    const bool useFilterColorSpace = getSVGStyledElementColorSpace(filterElement, filterColorSpace);
+
     for (Node* node = filterElement->firstChild(); node; node = node->nextSibling()) {
         if (!node->isSVGElement())
             continue;
@@ -165,6 +209,10 @@ PassRefPtr<FilterEffect> FilterEffectRenderer::buildReferenceFilter(RenderObject
 
         effectElement->setStandardAttributes(effect.get());
         effect->setEffectBoundaries(SVGLengthContext::resolveRectangle<SVGFilterPrimitiveStandardAttributes>(effectElement, filterElement->primitiveUnits(), sourceImageRect()));
+
+        ColorSpace colorSpace = filterColorSpace;
+        if (useFilterColorSpace || getSVGStyledElementColorSpace(effectElement, colorSpace))
+            effect->setOperatingColorSpace(colorSpace);
         builder->add(effectElement->result(), effect);
         m_effects.append(effect);
     }
@@ -341,11 +389,10 @@ bool FilterEffectRenderer::build(RenderObject* renderer, const FilterOperations&
         }
 
         if (effect) {
-            effect->setOperatingColorSpace(ColorSpaceDeviceRGB);
-            
             if (filterOperation->getOperationType() != FilterOperation::REFERENCE) {
                 // Unlike SVG, filters applied here should not clip to their primitive subregions.
                 effect->setClipsToBounds(false);
+                effect->setOperatingColorSpace(ColorSpaceDeviceRGB);
                 effect->inputEffects().append(previousEffect);
                 m_effects.append(effect);
             }

@@ -283,7 +283,7 @@ bool FEColorMatrix::applySkia()
 
 SkImageFilter* FEColorMatrix::createImageFilter(SkiaImageFilterBuilder* builder)
 {
-    SkAutoTUnref<SkImageFilter> input(builder->build(inputEffect(0)));
+    SkAutoTUnref<SkImageFilter> input(builder->build(inputEffect(0), operatingColorSpace()));
     SkAutoTUnref<SkColorFilter> filter(createColorFilter(m_type, m_values.data()));
     return SkColorFilterImageFilter::Create(filter, input);
 }
