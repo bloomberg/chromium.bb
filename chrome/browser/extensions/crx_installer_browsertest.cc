@@ -283,4 +283,23 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest, DISABLED_AllowOffStore) {
   }
 }
 
+IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest, HiDpiThemeTest) {
+  base::FilePath crx_path = test_data_dir_.AppendASCII("theme_hidpi_crx");
+  crx_path = crx_path.AppendASCII("theme_hidpi.crx");
+
+  ASSERT_TRUE(InstallExtension(crx_path,1));
+
+  const std::string extension_id("gllekhaobjnhgeagipipnkpmmmpchacm");
+  ExtensionService* service = extensions::ExtensionSystem::Get(
+      browser()->profile())->extension_service();
+  ASSERT_TRUE(service);
+  const extensions::Extension* extension =
+     service->GetExtensionById(extension_id, false);
+  ASSERT_TRUE(extension);
+  EXPECT_EQ(extension_id, extension->id());
+
+  UninstallExtension(extension_id);
+  EXPECT_FALSE(service->GetExtensionById(extension_id, false));
+}
+
 }  // namespace extensions
