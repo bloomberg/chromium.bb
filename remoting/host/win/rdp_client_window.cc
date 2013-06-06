@@ -39,6 +39,18 @@ const int kKeyboardStateLength = 256;
 // The RDP control creates 'IHWindowClass' window to handle keyboard input.
 const wchar_t kRdpInputWindowClass[] = L"IHWindowClass";
 
+enum RdpAudioMode {
+  // Redirect sounds to the client. This is the default value.
+  kRdpAudioModeRedirect = 0,
+
+  // Play sounds at the remote computer. Equivalent to |kRdpAudioModeNone| if
+  // the remote computer is running a server SKU.
+  kRdpAudioModePlayOnServer = 1,
+
+  // Disable sound redirection; do not play sounds at the remote computer.
+  kRdpAudioModeNone = 2
+};
+
 // Points to a per-thread instance of the window activation hook handle.
 base::LazyInstance<base::ThreadLocalPointer<RdpClientWindow::WindowHook> >
     g_window_hook = LAZY_INSTANCE_INITIALIZER;
@@ -224,6 +236,7 @@ LRESULT RdpClientWindow::OnCreate(CREATESTRUCT* create_struct) {
   CAxWindow2 activex_window;
   base::win::ScopedComPtr<IUnknown> control;
   HRESULT result = E_FAIL;
+  base::win::ScopedComPtr<mstsc::IMsRdpClientSecuredSettings> secured_settings;
   base::win::ScopedBstr server_name(
       UTF8ToUTF16(server_endpoint_.ToStringWithoutPort()).c_str());
 
@@ -322,6 +335,16 @@ LRESULT RdpClientWindow::OnCreate(CREATESTRUCT* create_struct) {
   result = client_settings_->put_RDPPort(server_endpoint_.port());
   if (FAILED(result))
     goto done;
+
+  // Disable audio in the session.
+  // TODO(alexeypa): re-enable audio redirection when http://crbug.com/242312 is
+  // fixed.
+  result = client_->get_SecuredSettings2(secured_settings.Receive());
+  if (SUCCEEDED(result)) {
+    result = secured_settings->put_AudioRedirectionMode(kRdpAudioModeNone);
+    if (FAILED(result))
+      goto done;
+  }
 
   result = client_->Connect();
   if (FAILED(result))
