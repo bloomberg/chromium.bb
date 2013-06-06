@@ -208,12 +208,17 @@ class FileCache {
                                       FileOperationType file_operation_type,
                                       const FileOperationCallback& callback);
 
-  // Pins the specified entry.
+  // Runs Pin() on |blocking_task_runner_|, and calls |callback| with the result
+  // asynchronously.
   // |callback| must not be null.
   // Must be called on the UI thread.
   void PinOnUIThread(const std::string& resource_id,
                      const std::string& md5,
                      const FileOperationCallback& callback);
+
+  // Pins the specified entry.
+  FileError Pin(const std::string& resource_id,
+                const std::string& md5);
 
   // Runs Unpin() on |blocking_task_runner_|, and calls |callback| with the
   // result asynchronously.
@@ -303,6 +308,7 @@ class FileCache {
 
  private:
   friend class FileCacheTest;
+  friend class FileCacheTestOnUIThread;
 
   // Enum defining origin of a cached file.
   enum CachedFileOrigin {
@@ -340,10 +346,6 @@ class FileCache {
                           const base::FilePath& source_path,
                           FileOperationType file_operation_type,
                           CachedFileOrigin origin);
-
-  // Used to implement PinOnUIThread.
-  FileError Pin(const std::string& resource_id,
-                const std::string& md5);
 
   // Used to implement MarkAsMountedOnUIThread.
   FileError MarkAsMounted(const std::string& resource_id,

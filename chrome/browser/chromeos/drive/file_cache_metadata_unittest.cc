@@ -232,46 +232,6 @@ TEST_F(FileCacheMetadataTest, CorruptDB) {
   EXPECT_FALSE(metadata_->GetCacheEntry("id_quux", "md5qux", &cache_entry));
 }
 
-// Test FileCacheMetadata::RemoveTemporaryFiles.
-TEST_F(FileCacheMetadataTest, RemoveTemporaryFiles) {
-  SetUpCacheMetadata();
-
-  {
-    FileCacheEntry cache_entry;
-    cache_entry.set_md5("<md5>");
-    cache_entry.set_is_present(true);
-    metadata_->AddOrUpdateCacheEntry("<resource_id_1>", cache_entry);
-  }
-  {
-    FileCacheEntry cache_entry;
-    cache_entry.set_md5("<md5>");
-    cache_entry.set_is_present(true);
-    cache_entry.set_is_persistent(true);
-    metadata_->AddOrUpdateCacheEntry("<resource_id_2>", cache_entry);
-  }
-  {
-    FileCacheEntry cache_entry;
-    cache_entry.set_md5("<md5>");
-    cache_entry.set_is_present(true);
-    cache_entry.set_is_persistent(true);
-    metadata_->AddOrUpdateCacheEntry("<resource_id_3>", cache_entry);
-  }
-  {
-    FileCacheEntry cache_entry;
-    cache_entry.set_md5("<md5>");
-    cache_entry.set_is_present(true);
-    metadata_->AddOrUpdateCacheEntry("<resource_id_4>", cache_entry);
-  }
-
-  metadata_->RemoveTemporaryFiles();
-  // resource 1 and 4 should be gone, as these are temporary.
-  FileCacheEntry cache_entry;
-  EXPECT_FALSE(metadata_->GetCacheEntry("<resource_id_1>", "", &cache_entry));
-  EXPECT_TRUE(metadata_->GetCacheEntry("<resource_id_2>", "", &cache_entry));
-  EXPECT_TRUE(metadata_->GetCacheEntry("<resource_id_3>", "", &cache_entry));
-  EXPECT_FALSE(metadata_->GetCacheEntry("<resource_id_4>", "", &cache_entry));
-}
-
 // Don't use TEST_F, as we don't want SetUp() and TearDown() for this test.
 TEST(FileCacheMetadataExtraTest, CannotOpenDB) {
   // Create nonexistent cache paths, so the initialization fails due to the

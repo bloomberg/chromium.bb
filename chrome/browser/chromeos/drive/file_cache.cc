@@ -298,8 +298,15 @@ bool FileCache::FreeDiskSpaceIfNeededFor(int64 num_bytes) {
 
   // Otherwise, try to free up the disk space.
   DVLOG(1) << "Freeing up disk space for " << num_bytes;
+
   // First remove temporary files from the metadata.
-  metadata_->RemoveTemporaryFiles();
+  scoped_ptr<FileCacheMetadata::Iterator> it = metadata_->GetIterator();
+  for (; !it->IsAtEnd(); it->Advance()) {
+    if (!it->GetValue().is_persistent())
+      metadata_->RemoveCacheEntry(it->GetKey());
+  }
+  DCHECK(!it->HasError());
+
   // Then remove all files under "tmp" directory.
   RemoveAllFiles(GetCacheDirectoryPath(CACHE_TYPE_TMP));
 
@@ -409,6 +416,50 @@ void FileCache::PinOnUIThread(const std::string& resource_id,
                  base::Unretained(this), resource_id, md5),
       base::Bind(&FileCache::OnPinned,
                  weak_ptr_factory_.GetWeakPtr(), resource_id, md5, callback));
+}
+
+FileError FileCache::Pin(const std::string& resource_id,
+                         const std::string& md5) {
+  AssertOnSequencedWorkerPool();
+
+  bool is_persistent = true;
+  FileCacheEntry cache_entry;
+  if (!GetCacheEntry(resource_id, md5, &cache_entry)) {
+    // The file will be first downloaded in 'tmp', then moved to 'persistent'.
+    is_persistent = false;
+  } else {  // File exists in cache, determines destination path.
+    // Determine source and destination paths.
+
+    // If file is dirty or mounted, don't move it.
+    if (!cache_entry.is_dirty() && !cache_entry.is_mounted()) {
+      // If file was pinned before but actual file blob doesn't exist in cache:
+      // - don't need to move the file.
+      if (!cache_entry.is_present()) {
+        DCHECK(cache_entry.is_pinned());
+        return FILE_ERROR_OK;
+      }
+      // File exists, move it to persistent dir.
+      // Gets the current path of the file in cache.
+      base::FilePath source_path = GetCacheFilePath(
+          resource_id,
+          md5,
+          GetSubDirectoryType(cache_entry),
+          CACHED_FILE_FROM_SERVER);
+      base::FilePath dest_path = GetCacheFilePath(resource_id,
+                                                  md5,
+                                                  CACHE_TYPE_PERSISTENT,
+                                                  CACHED_FILE_FROM_SERVER);
+      if (!MoveFile(source_path, dest_path))
+        return FILE_ERROR_FAILED;
+    }
+  }
+
+  // Now that file operations have completed, update metadata.
+  cache_entry.set_md5(md5);
+  cache_entry.set_is_pinned(true);
+  cache_entry.set_is_persistent(is_persistent);
+  metadata_->AddOrUpdateCacheEntry(resource_id, cache_entry);
+  return FILE_ERROR_OK;
 }
 
 void FileCache::UnpinOnUIThread(const std::string& resource_id,
@@ -797,51 +848,6 @@ FileError FileCache::StoreInternal(const std::string& resource_id,
 
   return success ? FILE_ERROR_OK : FILE_ERROR_FAILED;
 }
-
-FileError FileCache::Pin(const std::string& resource_id,
-                         const std::string& md5) {
-  AssertOnSequencedWorkerPool();
-
-  bool is_persistent = true;
-  FileCacheEntry cache_entry;
-  if (!GetCacheEntry(resource_id, md5, &cache_entry)) {
-    // The file will be first downloaded in 'tmp', then moved to 'persistent'.
-    is_persistent = false;
-  } else {  // File exists in cache, determines destination path.
-    // Determine source and destination paths.
-
-    // If file is dirty or mounted, don't move it.
-    if (!cache_entry.is_dirty() && !cache_entry.is_mounted()) {
-      // If file was pinned before but actual file blob doesn't exist in cache:
-      // - don't need to move the file.
-      if (!cache_entry.is_present()) {
-        DCHECK(cache_entry.is_pinned());
-        return FILE_ERROR_OK;
-      }
-      // File exists, move it to persistent dir.
-      // Gets the current path of the file in cache.
-      base::FilePath source_path = GetCacheFilePath(
-          resource_id,
-          md5,
-          GetSubDirectoryType(cache_entry),
-          CACHED_FILE_FROM_SERVER);
-      base::FilePath dest_path = GetCacheFilePath(resource_id,
-                                                  md5,
-                                                  CACHE_TYPE_PERSISTENT,
-                                                  CACHED_FILE_FROM_SERVER);
-      if (!MoveFile(source_path, dest_path))
-        return FILE_ERROR_FAILED;
-    }
-  }
-
-  // Now that file operations have completed, update metadata.
-  cache_entry.set_md5(md5);
-  cache_entry.set_is_pinned(true);
-  cache_entry.set_is_persistent(is_persistent);
-  metadata_->AddOrUpdateCacheEntry(resource_id, cache_entry);
-  return FILE_ERROR_OK;
-}
-
 
 FileError FileCache::MarkAsMounted(const std::string& resource_id,
                                    const std::string& md5,

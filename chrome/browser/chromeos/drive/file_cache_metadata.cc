@@ -334,20 +334,6 @@ bool FileCacheMetadata::GetCacheEntry(const std::string& resource_id,
   return true;
 }
 
-void FileCacheMetadata::RemoveTemporaryFiles() {
-  AssertOnSequencedWorkerPool();
-
-  scoped_ptr<leveldb::Iterator> iter(level_db_->NewIterator(
-      leveldb::ReadOptions()));
-  for (iter->SeekToFirst(); iter->Valid(); iter->Next()) {
-    FileCacheEntry cache_entry;
-    const bool ok = cache_entry.ParseFromArray(iter->value().data(),
-                                               iter->value().size());
-    if (ok && !cache_entry.is_persistent())
-      level_db_->Delete(leveldb::WriteOptions(), iter->key());
-  }
-}
-
 scoped_ptr<FileCacheMetadata::Iterator> FileCacheMetadata::GetIterator() {
   AssertOnSequencedWorkerPool();
 

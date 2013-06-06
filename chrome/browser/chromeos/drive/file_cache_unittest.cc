@@ -43,9 +43,10 @@ void OnIterateCompleted(bool* out_is_called) {
 
 }  // namespace
 
-class FileCacheTest : public testing::Test {
+// Tests FileCache methods from UI thread.
+class FileCacheTestOnUIThread : public testing::Test {
  protected:
-  FileCacheTest()
+  FileCacheTestOnUIThread()
       : ui_thread_(content::BrowserThread::UI, &message_loop_),
         expected_error_(FILE_ERROR_OK),
         expected_cache_state_(0),
@@ -511,7 +512,7 @@ class FileCacheTest : public testing::Test {
   std::string expected_file_extension_;
 };
 
-TEST_F(FileCacheTest, GetCacheFilePath) {
+TEST_F(FileCacheTestOnUIThread, GetCacheFilePath) {
   // Use alphanumeric characters for resource id.
   std::string resource_id("pdf:1a2b");
   std::string md5("abcdef0123456789");
@@ -529,7 +530,7 @@ TEST_F(FileCacheTest, GetCacheFilePath) {
       base::FilePath::kExtensionSeparator + escaped_md5);
 }
 
-TEST_F(FileCacheTest, StoreToCacheSimple) {
+TEST_F(FileCacheTestOnUIThread, StoreToCacheSimple) {
   std::string resource_id("pdf:1a2b");
   std::string md5("abcdef0123456789");
 
@@ -560,7 +561,7 @@ TEST_F(FileCacheTest, StoreToCacheSimple) {
   EXPECT_EQ(1U, CountCacheFiles(resource_id, md5));
 }
 
-TEST_F(FileCacheTest, LocallyModifiedSimple) {
+TEST_F(FileCacheTestOnUIThread, LocallyModifiedSimple) {
   std::string resource_id("pdf:1a2b");
   std::string md5("abcdef0123456789");
 
@@ -576,7 +577,7 @@ TEST_F(FileCacheTest, LocallyModifiedSimple) {
       FILE_ERROR_OK, kDirtyCacheState, FileCache::CACHE_TYPE_PERSISTENT);
 }
 
-TEST_F(FileCacheTest, GetFromCacheSimple) {
+TEST_F(FileCacheTestOnUIThread, GetFromCacheSimple) {
   std::string resource_id("pdf:1a2b");
   std::string md5("abcdef0123456789");
   // First store a file to cache.
@@ -602,7 +603,7 @@ TEST_F(FileCacheTest, GetFromCacheSimple) {
       resource_id, md5, FILE_ERROR_NOT_FOUND, md5);
 }
 
-TEST_F(FileCacheTest, RemoveFromCacheSimple) {
+TEST_F(FileCacheTestOnUIThread, RemoveFromCacheSimple) {
   // Use alphanumeric characters for resource id.
   std::string resource_id("pdf:1a2b");
   std::string md5("abcdef0123456789");
@@ -628,7 +629,7 @@ TEST_F(FileCacheTest, RemoveFromCacheSimple) {
   TestRemoveFromCache(resource_id, FILE_ERROR_OK);
 }
 
-TEST_F(FileCacheTest, PinAndUnpin) {
+TEST_F(FileCacheTestOnUIThread, PinAndUnpin) {
   std::string resource_id("pdf:1a2b");
   std::string md5("abcdef0123456789");
   EXPECT_CALL(*mock_cache_observer_, OnCachePinned(resource_id, md5)).Times(2);
@@ -688,7 +689,7 @@ TEST_F(FileCacheTest, PinAndUnpin) {
             FileCache::CACHE_TYPE_TMP /* non-applicable */);
 }
 
-TEST_F(FileCacheTest, StoreToCachePinned) {
+TEST_F(FileCacheTestOnUIThread, StoreToCachePinned) {
   std::string resource_id("pdf:1a2b");
   std::string md5("abcdef0123456789");
   EXPECT_CALL(*mock_cache_observer_, OnCachePinned(resource_id, md5)).Times(1);
@@ -717,7 +718,7 @@ TEST_F(FileCacheTest, StoreToCachePinned) {
                    FileCache::CACHE_TYPE_PERSISTENT);
 }
 
-TEST_F(FileCacheTest, GetFromCachePinned) {
+TEST_F(FileCacheTestOnUIThread, GetFromCachePinned) {
   std::string resource_id("pdf:1a2b");
   std::string md5("abcdef0123456789");
   EXPECT_CALL(*mock_cache_observer_, OnCachePinned(resource_id, md5)).Times(1);
@@ -746,7 +747,7 @@ TEST_F(FileCacheTest, GetFromCachePinned) {
       resource_id, md5, FILE_ERROR_OK, md5);
 }
 
-TEST_F(FileCacheTest, RemoveFromCachePinned) {
+TEST_F(FileCacheTestOnUIThread, RemoveFromCachePinned) {
   // Use alphanumeric characters for resource_id.
   std::string resource_id("pdf:1a2b");
   std::string md5("abcdef0123456789");
@@ -786,7 +787,7 @@ TEST_F(FileCacheTest, RemoveFromCachePinned) {
   TestRemoveFromCache(resource_id, FILE_ERROR_OK);
 }
 
-TEST_F(FileCacheTest, DirtyCacheSimple) {
+TEST_F(FileCacheTestOnUIThread, DirtyCacheSimple) {
   std::string resource_id("pdf:1a2b");
   std::string md5("abcdef0123456789");
   EXPECT_CALL(*mock_cache_observer_, OnCacheCommitted(resource_id)).Times(1);
@@ -818,7 +819,7 @@ TEST_F(FileCacheTest, DirtyCacheSimple) {
                  FileCache::CACHE_TYPE_TMP);
 }
 
-TEST_F(FileCacheTest, DirtyCachePinned) {
+TEST_F(FileCacheTestOnUIThread, DirtyCachePinned) {
   std::string resource_id("pdf:1a2b");
   std::string md5("abcdef0123456789");
   EXPECT_CALL(*mock_cache_observer_, OnCachePinned(resource_id, md5)).Times(1);
@@ -861,7 +862,7 @@ TEST_F(FileCacheTest, DirtyCachePinned) {
 }
 
 // Test is disabled because it is flaky (http://crbug.com/134146)
-TEST_F(FileCacheTest, PinAndUnpinDirtyCache) {
+TEST_F(FileCacheTestOnUIThread, PinAndUnpinDirtyCache) {
   std::string resource_id("pdf:1a2b");
   std::string md5("abcdef0123456789");
   EXPECT_CALL(*mock_cache_observer_, OnCachePinned(resource_id, md5)).Times(1);
@@ -912,7 +913,7 @@ TEST_F(FileCacheTest, PinAndUnpinDirtyCache) {
   EXPECT_TRUE(file_util::PathExists(dirty_path));
 }
 
-TEST_F(FileCacheTest, DirtyCacheRepetitive) {
+TEST_F(FileCacheTestOnUIThread, DirtyCacheRepetitive) {
   std::string resource_id("pdf:1a2b");
   std::string md5("abcdef0123456789");
   EXPECT_CALL(*mock_cache_observer_, OnCacheCommitted(resource_id)).Times(3);
@@ -977,7 +978,7 @@ TEST_F(FileCacheTest, DirtyCacheRepetitive) {
                  FileCache::CACHE_TYPE_TMP);
 }
 
-TEST_F(FileCacheTest, DirtyCacheInvalid) {
+TEST_F(FileCacheTestOnUIThread, DirtyCacheInvalid) {
   std::string resource_id("pdf:1a2b");
   std::string md5("abcdef0123456789");
 
@@ -1022,7 +1023,7 @@ TEST_F(FileCacheTest, DirtyCacheInvalid) {
       FileCache::CACHE_TYPE_PERSISTENT);
 }
 
-TEST_F(FileCacheTest, RemoveFromDirtyCache) {
+TEST_F(FileCacheTestOnUIThread, RemoveFromDirtyCache) {
   std::string resource_id("pdf:1a2b");
   std::string md5("abcdef0123456789");
   EXPECT_CALL(*mock_cache_observer_, OnCachePinned(resource_id, md5)).Times(1);
@@ -1056,7 +1057,7 @@ TEST_F(FileCacheTest, RemoveFromDirtyCache) {
   TestRemoveFromCache(resource_id, FILE_ERROR_OK);
 }
 
-TEST_F(FileCacheTest, MountUnmount) {
+TEST_F(FileCacheTestOnUIThread, MountUnmount) {
   std::string resource_id("pdf:1a2b");
   std::string md5("abcdef0123456789");
 
@@ -1096,7 +1097,7 @@ TEST_F(FileCacheTest, MountUnmount) {
   TestRemoveFromCache(resource_id, FILE_ERROR_OK);
 }
 
-TEST_F(FileCacheTest, Iterate) {
+TEST_F(FileCacheTestOnUIThread, Iterate) {
   const std::vector<test_util::TestCacheResource> cache_resources(
       test_util::GetDefaultTestCacheResources());
   // Set mock expectations.
@@ -1137,8 +1138,7 @@ TEST_F(FileCacheTest, Iterate) {
   ASSERT_EQ(6U, cache_entries.size());
 }
 
-
-TEST_F(FileCacheTest, ClearAll) {
+TEST_F(FileCacheTestOnUIThread, ClearAll) {
   std::string resource_id("pdf:1a2b");
   std::string md5("abcdef0123456789");
 
@@ -1165,7 +1165,7 @@ TEST_F(FileCacheTest, ClearAll) {
   EXPECT_EQ(0U, CountCacheFiles(resource_id, md5));
 }
 
-TEST_F(FileCacheTest, StoreToCacheNoSpace) {
+TEST_F(FileCacheTestOnUIThread, StoreToCacheNoSpace) {
   fake_free_disk_space_getter_->set_default_value(0);
 
   std::string resource_id("pdf:1a2b");
@@ -1205,7 +1205,7 @@ TEST(FileCacheExtraTest, InitializationFailure) {
   EXPECT_FALSE(success);
 }
 
-TEST_F(FileCacheTest, UpdatePinnedCache) {
+TEST_F(FileCacheTestOnUIThread, UpdatePinnedCache) {
   std::string resource_id("pdf:1a2b");
   std::string md5("abcdef0123456789");
   std::string md5_modified("aaaaaa0000000000");
@@ -1237,6 +1237,80 @@ TEST_F(FileCacheTest, UpdatePinnedCache) {
       test_util::TEST_CACHE_STATE_PINNED |
       test_util::TEST_CACHE_STATE_PERSISTENT,
       FileCache::CACHE_TYPE_PERSISTENT);
+}
+
+// Tests FileCache methods working with the blocking task runner.
+class FileCacheTest : public testing::Test {
+ protected:
+  FileCacheTest() : ui_thread_(content::BrowserThread::UI, &message_loop_) {}
+
+  virtual void SetUp() OVERRIDE {
+    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
+    fake_free_disk_space_getter_.reset(new FakeFreeDiskSpaceGetter);
+
+    cache_.reset(new FileCache(temp_dir_.path(),
+                               message_loop_.message_loop_proxy(),
+                               fake_free_disk_space_getter_.get()));
+
+    bool success = false;
+    cache_->RequestInitialize(
+        google_apis::test_util::CreateCopyResultCallback(&success));
+    message_loop_.RunUntilIdle();
+    ASSERT_TRUE(success);
+  }
+
+  virtual void TearDown() OVERRIDE {
+    cache_.reset();
+  }
+
+  base::MessageLoopForUI message_loop_;
+  content::TestBrowserThread ui_thread_;
+  base::ScopedTempDir temp_dir_;
+
+  scoped_ptr<FileCache, test_util::DestroyHelperForTests> cache_;
+  scoped_ptr<FakeFreeDiskSpaceGetter> fake_free_disk_space_getter_;
+};
+
+TEST_F(FileCacheTest, FreeDiskSpaceIfNeededFor) {
+  base::FilePath src_file;
+  ASSERT_TRUE(file_util::CreateTemporaryFileInDir(temp_dir_.path(), &src_file));
+
+  // Store a file as a 'temporary' file and remember the path.
+  const std::string resource_id_tmp = "id_tmp", md5_tmp = "md5_tmp";
+  ASSERT_EQ(FILE_ERROR_OK,
+            cache_->Store(resource_id_tmp, md5_tmp, src_file,
+                          FileCache::FILE_OPERATION_COPY));
+  base::FilePath tmp_path;
+  ASSERT_EQ(FILE_ERROR_OK,
+            cache_->GetFile(resource_id_tmp, md5_tmp, &tmp_path));
+
+  // Store a file as a pinned file and remember the path.
+  const std::string resource_id_pinned = "id_pinned", md5_pinned = "md5_pinned";
+  ASSERT_EQ(FILE_ERROR_OK,
+            cache_->Store(resource_id_pinned, md5_pinned, src_file,
+                          FileCache::FILE_OPERATION_COPY));
+  ASSERT_EQ(FILE_ERROR_OK, cache_->Pin(resource_id_pinned, md5_pinned));
+  base::FilePath pinned_path;
+  ASSERT_EQ(FILE_ERROR_OK,
+            cache_->GetFile(resource_id_pinned, md5_pinned, &pinned_path));
+
+  // Call FreeDiskSpaceIfNeededFor().
+  fake_free_disk_space_getter_->set_default_value(test_util::kLotsOfSpace);
+  fake_free_disk_space_getter_->PushFakeValue(0);
+  const int64 kNeededBytes = 1;
+  EXPECT_TRUE(cache_->FreeDiskSpaceIfNeededFor(kNeededBytes));
+
+  // Only 'temporary' file gets removed.
+  FileCacheEntry entry;
+  EXPECT_FALSE(cache_->GetCacheEntry(resource_id_tmp, md5_tmp, &entry));
+  EXPECT_FALSE(file_util::PathExists(tmp_path));
+
+  EXPECT_TRUE(cache_->GetCacheEntry(resource_id_pinned, md5_pinned, &entry));
+  EXPECT_TRUE(file_util::PathExists(pinned_path));
+
+  // Returns false when disk space cannot be freed.
+  fake_free_disk_space_getter_->set_default_value(0);
+  EXPECT_FALSE(cache_->FreeDiskSpaceIfNeededFor(kNeededBytes));
 }
 
 }  // namespace internal

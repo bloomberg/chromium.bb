@@ -88,9 +88,6 @@ class FileCacheMetadata {
                      const std::string& md5,
                      FileCacheEntry* entry);
 
-  // Removes temporary files (files in CACHE_TYPE_TMP) from the cache map.
-  void RemoveTemporaryFiles();
-
   // Returns an object to iterate over entries.
   scoped_ptr<Iterator> GetIterator();
 
