@@ -82,6 +82,9 @@ void AshNativeCursorManager::SetScale(
     views::corewm::NativeCursorManagerDelegate* delegate) {
   image_cursors_->SetScale(scale);
   delegate->CommitScale(scale);
+
+  // Sets the cursor to refrect the scale change imidiately.
+  SetCursor(delegate->GetCurrentCursor(), delegate);
 }
 
 void AshNativeCursorManager::SetVisibility(
