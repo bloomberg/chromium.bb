@@ -37,9 +37,7 @@ class LoggerTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(LoggerTest);
 };
 
-TEST_F(LoggerTest, TestLogSeverityLevels) {
-  // Check that all messages are logged when log LogSeverity is set to INFO.
-  logging::SetMinLogLevel(logging::LOG_INFO);
+TEST_F(LoggerTest, GetLogHistory) {
   LogSampleEvents();
 
   const std::vector<EventLogger::Event> log = util::GetLogHistory();
@@ -49,17 +47,7 @@ TEST_F(LoggerTest, TestLogSeverityLevels) {
   EXPECT_TRUE(ContainsString("Error test message", log[2]));
 }
 
-TEST_F(LoggerTest, TestMinSeverityLevel) {
-  // Check that all messages are logged when log LogSeverity is set to ERROR.
-  logging::SetMinLogLevel(logging::LOG_ERROR);
-  LogSampleEvents();
-
-  const std::vector<EventLogger::Event> log = util::GetLogHistory();
-  ASSERT_EQ(1u, log.size());
-  EXPECT_TRUE(ContainsString("Error test message", log[0]));
-}
-
-TEST_F(LoggerTest, TestClearLog) {
+TEST_F(LoggerTest, ClearLog) {
   LogSampleEvents();
   EXPECT_EQ(3u, util::GetLogHistory().size());
 
