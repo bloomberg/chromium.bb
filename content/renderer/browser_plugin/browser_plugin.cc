@@ -770,21 +770,25 @@ void BrowserPlugin::OnUpdateRect(
             params.scale_factor));
   }
 
-  // Update the backing store.
-  if (!params.scroll_rect.IsEmpty()) {
-    backing_store_->ScrollBackingStore(params.scroll_delta,
-                                       params.scroll_rect,
-                                       params.view_size);
+  // If we just transitioned from the compositing path to the software path
+  // then we might not yet have a damage buffer.
+  if (current_damage_buffer_) {
+    // Update the backing store.
+    if (!params.scroll_rect.IsEmpty()) {
+      backing_store_->ScrollBackingStore(params.scroll_delta,
+                                         params.scroll_rect,
+                                         params.view_size);
+    }
+    backing_store_->PaintToBackingStore(params.bitmap_rect,
+                                        params.copy_rects,
+                                        current_damage_buffer_->memory());
+    // Invalidate the container.
+    // If the BrowserPlugin is scheduled to be deleted, then container_ will be
+    // NULL so we shouldn't attempt to access it.
+    if (container_)
+      container_->invalidate();
   }
-  backing_store_->PaintToBackingStore(params.bitmap_rect,
-                                      params.copy_rects,
-                                      current_damage_buffer_->memory());
 
-  // Invalidate the container.
-  // If the BrowserPlugin is scheduled to be deleted, then container_ will be
-  // NULL so we shouldn't attempt to access it.
-  if (container_)
-    container_->invalidate();
   if (auto_size)
     PopulateAutoSizeParameters(&auto_size_params, auto_size);
   browser_plugin_manager()->Send(new BrowserPluginHostMsg_UpdateRect_ACK(
