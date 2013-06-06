@@ -346,15 +346,6 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         tests_run = get_tests_run(['--order=none'] + tests_to_run)
         self.assertEqual(tests_run, ['http/tests/ssl/text.html', 'perf/foo/test.html', 'http/tests/passes/image.html', 'http/tests/passes/text.html'])
 
-    def test_gc_between_tests(self):
-        self.assertTrue(passing_run(['--gc-between-tests']))
-
-    def test_complex_text(self):
-        self.assertTrue(passing_run(['--complex-text']))
-
-    def test_threaded(self):
-        self.assertTrue(passing_run(['--threaded']))
-
     def test_repeat_each(self):
         tests_to_run = ['passes/image.html', 'passes/text.html']
         tests_run = get_tests_run(['--repeat-each', '2'] + tests_to_run)
