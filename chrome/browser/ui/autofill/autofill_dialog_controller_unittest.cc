@@ -389,6 +389,8 @@ class AutofillDialogControllerTest : public testing::Test {
   void FinishedCallback(const FormStructure* form_structure,
                         const std::string& google_transaction_id) {
     form_structure_ = form_structure;
+    if (controller()->GetDialogType() == DIALOG_TYPE_AUTOCHECKOUT)
+      EXPECT_TRUE(controller()->AutocheckoutIsRunning());
   }
 
 #if defined(OS_WIN)

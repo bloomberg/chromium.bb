@@ -2766,12 +2766,6 @@ void AutofillDialogControllerImpl::FinishSubmit() {
     }
   }
 
-  callback_.Run(&form_structure_, !wallet_items_ ? std::string() :
-      wallet_items_->google_transaction_id());
-  callback_ = base::Callback<void(const FormStructure*, const std::string&)>();
-
-  LogOnFinishSubmitMetrics();
-
   // On a successful submit, if the user manually selected "pay without wallet",
   // stop trying to pay with Wallet on future runs of the dialog. On the other
   // hand, if there was an error that prevented the user from having the choice
@@ -2783,24 +2777,28 @@ void AutofillDialogControllerImpl::FinishSubmit() {
         !account_chooser_model_.WalletIsSelected());
   }
 
-  switch (GetDialogType()) {
-    case DIALOG_TYPE_AUTOCHECKOUT:
-      // Stop observing PersonalDataManager to avoid the dialog redrawing while
-      // in an Autocheckout flow.
-      GetManager()->RemoveObserver(this);
-      autocheckout_started_timestamp_ = base::Time::Now();
-      DCHECK_EQ(AUTOCHECKOUT_NOT_STARTED, autocheckout_state_);
-      autocheckout_state_ = AUTOCHECKOUT_IN_PROGRESS;
-      view_->UpdateButtonStrip();
-      view_->UpdateDetailArea();
-      view_->UpdateNotificationArea();
-      break;
-
-    case DIALOG_TYPE_REQUEST_AUTOCOMPLETE:
-      // This may delete us.
-      Hide();
-      break;
+  if (GetDialogType() == DIALOG_TYPE_AUTOCHECKOUT) {
+    // Stop observing PersonalDataManager to avoid the dialog redrawing while
+    // in an Autocheckout flow.
+    GetManager()->RemoveObserver(this);
+    autocheckout_started_timestamp_ = base::Time::Now();
+    DCHECK_EQ(AUTOCHECKOUT_NOT_STARTED, autocheckout_state_);
+    autocheckout_state_ = AUTOCHECKOUT_IN_PROGRESS;
+    view_->UpdateButtonStrip();
+    view_->UpdateDetailArea();
+    view_->UpdateNotificationArea();
   }
+
+  LogOnFinishSubmitMetrics();
+
+  // Callback should be called as late as possible.
+  callback_.Run(&form_structure_, !wallet_items_ ? std::string() :
+      wallet_items_->google_transaction_id());
+  callback_ = base::Callback<void(const FormStructure*, const std::string&)>();
+
+  // This might delete us.
+  if (GetDialogType() == DIALOG_TYPE_REQUEST_AUTOCOMPLETE)
+    Hide();
 }
 
 void AutofillDialogControllerImpl::PersistAutofillChoice(
