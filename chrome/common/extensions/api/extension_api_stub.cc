@@ -7,6 +7,8 @@
 
 #include "chrome/common/extensions/api/extension_api.h"
 
+#include "chrome/common/extensions/features/feature.h"
+
 namespace extensions {
 
 // static
@@ -17,6 +19,24 @@ ExtensionAPI* ExtensionAPI::GetSharedInstance() {
 // static
 ExtensionAPI* ExtensionAPI::CreateWithDefaultConfiguration() {
   return NULL;
+}
+
+Feature::Availability ExtensionAPI::IsAvailable(
+    const std::string& api_full_name,
+    const Extension* extension,
+    Feature::Context context,
+    const GURL& url) {
+  return Feature::CreateAvailability(Feature::NOT_PRESENT, "");
+}
+
+bool ExtensionAPI::IsAnyFeatureAvailableToContext(const std::string& api_name,
+                                                  Feature::Context context,
+                                                  const GURL& url) {
+  return false;
+}
+
+std::set<std::string> ExtensionAPI::GetAllAPINames() {
+  return std::set<std::string>();
 }
 
 bool ExtensionAPI::IsPrivileged(const std::string& full_name) {

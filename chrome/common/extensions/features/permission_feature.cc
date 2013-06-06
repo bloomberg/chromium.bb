@@ -27,13 +27,8 @@ Feature::Availability PermissionFeature::IsAvailableToContext(
   if (!availability.is_available())
     return availability;
 
-  // Optional permissions need to be checked so an API will not be set to
-  // undefined forever, when it could just need optional permissions.
-  if (extension && !extension->HasAPIPermission(name()) &&
-      !PermissionsData::GetOptionalPermissions(extension)->
-          HasAnyAccessToAPI(name())) {
+  if (extension && !extension->HasAPIPermission(name()))
     return CreateAvailability(NOT_PRESENT, extension->GetType());
-  }
 
   return CreateAvailability(IS_AVAILABLE);
 }

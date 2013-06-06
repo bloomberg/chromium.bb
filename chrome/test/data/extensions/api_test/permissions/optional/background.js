@@ -12,9 +12,6 @@ var listenOnce = chrome.test.listenOnce;
 var NOT_OPTIONAL_ERROR =
     "Optional permissions must be listed in extension manifest.";
 
-var NO_BOOKMARKS_PERMISSION =
-    "You do not have permission to use 'bookmarks.getTree'.";
-
 var REQUIRED_ERROR =
     "You cannot remove required permissions.";
 
@@ -127,16 +124,7 @@ chrome.test.getConfig(function(config) {
     // We should be able to request the bookmarks API since it's in the granted
     // permissions list (see permissions_apitest.cc).
     function requestBookmarks() {
-      // chrome.bookmarks is a optional permission, so the API definition should
-      // exist but its use disallowed.
-      assertTrue(!!chrome.bookmarks);
-      try {
-        chrome.bookmarks.getTree(function() {
-          chrome.test.fail("Should not have bookmarks API permission.");
-        });
-      } catch (e) {
-        assertTrue(e.message.indexOf(NO_BOOKMARKS_PERMISSION) == 0);
-      }
+      assertEq(undefined, chrome.bookmarks);
       listenOnce(chrome.permissions.onAdded,
                  function(permissions) {
         assertTrue(permissions.permissions.length == 1);
@@ -205,13 +193,7 @@ chrome.test.getConfig(function(config) {
             chrome.permissions.getAll(pass(function(permissions) {
               assertTrue(checkPermSetsEq(initialPermissions, permissions));
             }));
-            try {
-              chrome.bookmarks.getTree(function() {
-                chrome.test.fail("Should not have bookmarks API permission.");
-              });
-            } catch (e) {
-              assertTrue(e.message.indexOf(NO_BOOKMARKS_PERMISSION) == 0);
-            }
+            assertEq(undefined, chrome.bookmarks);
       }));
     },
 
@@ -305,13 +287,7 @@ chrome.test.getConfig(function(config) {
       });
       listenOnce(chrome.permissions.onRemoved,
                  function(permissions) {
-        try {
-          chrome.bookmarks.getTree(function() {
-            chrome.test.fail("Should not have bookmakrs API permission.");
-          });
-        } catch (e) {
-          assertTrue(e.message.indexOf(NO_BOOKMARKS_PERMISSION) == 0);
-        }
+        assertEq(undefined, chrome.bookmarks);
       });
 
       chrome.permissions.request(

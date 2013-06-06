@@ -596,7 +596,6 @@ bool Dispatcher::AllowScriptExtension(WebFrame* frame,
 v8::Handle<v8::Object> Dispatcher::GetOrCreateObject(
     v8::Handle<v8::Object> object,
     const std::string& field) {
-  v8::HandleScope handle_scope;
   v8::Handle<v8::String> key = v8::String::New(field.c_str());
   // If the object has a callback property, it is assumed it is an unavailable
   // API, so it is safe to delete. This is checked before GetOrCreateObject is
@@ -606,80 +605,116 @@ v8::Handle<v8::Object> Dispatcher::GetOrCreateObject(
   } else if (object->HasRealNamedProperty(key)) {
     v8::Handle<v8::Value> value = object->Get(key);
     CHECK(value->IsObject());
-    return handle_scope.Close(v8::Handle<v8::Object>::Cast(value));
+    return v8::Handle<v8::Object>::Cast(value);
   }
 
   v8::Handle<v8::Object> new_object = v8::Object::New();
   object->Set(key, new_object);
-  return handle_scope.Close(new_object);
+  return new_object;
 }
 
-void Dispatcher::RegisterSchemaGeneratedBindings(
-    ModuleSystem* module_system,
-    ChromeV8Context* context) {
+void Dispatcher::AddOrRemoveBindings(ChromeV8Context* context) {
+  v8::HandleScope handle_scope;
+  v8::Context::Scope context_scope(context->v8_context());
+
   std::set<std::string> apis =
       ExtensionAPI::GetSharedInstance()->GetAllAPINames();
   for (std::set<std::string>::iterator it = apis.begin();
        it != apis.end(); ++it) {
     const std::string& api_name = *it;
-    if (!context->IsAnyFeatureAvailableToContext(api_name))
+    if (!context->IsAnyFeatureAvailableToContext(api_name)) {
+      DeregisterBinding(api_name, context);
       continue;
+    }
 
     Feature* feature =
         BaseFeatureProvider::GetByName("api")->GetFeature(api_name);
     if (feature && feature->IsInternal())
       continue;
 
-    std::vector<std::string> split;
-    base::SplitString(api_name, '.', &split);
+    RegisterBinding(api_name, context);
+  }
+}
 
-    v8::Handle<v8::Object> bind_object =
-        GetOrCreateChrome(context->v8_context());
+void Dispatcher::DeregisterBinding(const std::string& api_name,
+                                   ChromeV8Context* context) {
+  std::string bind_name;
+  v8::Handle<v8::Object> bind_object =
+      GetOrCreateBindObjectIfAvailable(api_name, &bind_name, context);
+  v8::Handle<v8::String> v8_bind_name = v8::String::New(bind_name.c_str());
+  if (!bind_object.IsEmpty() && bind_object->HasRealNamedProperty(v8_bind_name))
+    bind_object->Delete(v8_bind_name);
+}
 
-    // Check if this API has an ancestor. If the API's ancestor is available and
-    // the API is not available, don't install the bindings for this API. If
-    // the API is available and its ancestor is not, delete the ancestor and
-    // install the bindings for the API. This is to prevent loading the ancestor
-    // API schema if it will not be needed.
-    //
-    // For example:
-    //  If app is available and app.window is not, just install app.
-    //  If app.window is available and app is not, delete app and install
-    //  app.window on a new object so app does not have to be loaded.
-    std::string ancestor_name;
-    bool only_ancestor_available = false;
-    for (size_t i = 0; i < split.size() - 1; ++i) {
-      ancestor_name += (i ? ".": "") + split[i];
-      if (!ancestor_name.empty() &&
-          context->GetAvailability(ancestor_name).is_available() &&
-          !context->GetAvailability(api_name).is_available()) {
-        only_ancestor_available = true;
-        break;
-      }
-      bind_object = GetOrCreateObject(bind_object, split[i]);
+v8::Handle<v8::Object> Dispatcher::GetOrCreateBindObjectIfAvailable(
+    const std::string& api_name,
+    std::string* bind_name,
+    ChromeV8Context* context) {
+  std::vector<std::string> split;
+  base::SplitString(api_name, '.', &split);
+
+  v8::Handle<v8::Object> bind_object;
+
+  // Check if this API has an ancestor. If the API's ancestor is available and
+  // the API is not available, don't install the bindings for this API. If
+  // the API is available and its ancestor is not, delete the ancestor and
+  // install the bindings for the API. This is to prevent loading the ancestor
+  // API schema if it will not be needed.
+  //
+  // For example:
+  //  If app is available and app.window is not, just install app.
+  //  If app.window is available and app is not, delete app and install
+  //  app.window on a new object so app does not have to be loaded.
+  std::string ancestor_name;
+  bool only_ancestor_available = false;
+  for (size_t i = 0; i < split.size() - 1; ++i) {
+    ancestor_name += (i ? ".": "") + split[i];
+    if (!ancestor_name.empty() &&
+        context->GetAvailability(ancestor_name).is_available() &&
+        !context->GetAvailability(api_name).is_available()) {
+      only_ancestor_available = true;
+      break;
     }
-    if (only_ancestor_available)
-      continue;
+    if (bind_object.IsEmpty())
+      bind_object = GetOrCreateChrome(context->v8_context());
+    bind_object = GetOrCreateObject(bind_object, split[i]);
+  }
+  if (only_ancestor_available)
+    return v8::Handle<v8::Object>();
+  if (bind_name)
+    *bind_name = split.back();
 
-    if (lazy_bindings_map_.find(api_name) != lazy_bindings_map_.end()) {
-      InstallBindings(module_system, context->v8_context(), api_name);
-    } else if (!source_map_.Contains(api_name)) {
-      module_system->RegisterNativeHandler(
-          api_name,
-          scoped_ptr<NativeHandler>(new BindingGeneratingNativeHandler(
-              module_system,
-              api_name,
-              "binding")));
-      module_system->SetNativeLazyField(bind_object,
-                                        split.back(),
-                                        api_name,
-                                        "binding");
-    } else {
-      module_system->SetLazyField(bind_object,
-                                  split.back(),
-                                  api_name,
-                                  "binding");
-    }
+  return bind_object.IsEmpty() ?
+      GetOrCreateChrome(context->v8_context()) : bind_object;
+}
+
+void Dispatcher::RegisterBinding(const std::string& api_name,
+                                 ChromeV8Context* context) {
+  std::string bind_name;
+  v8::Handle<v8::Object> bind_object =
+      GetOrCreateBindObjectIfAvailable(api_name, &bind_name, context);
+  if (bind_object.IsEmpty())
+    return;
+
+  ModuleSystem* module_system = context->module_system();
+  if (lazy_bindings_map_.find(api_name) != lazy_bindings_map_.end()) {
+    InstallBindings(module_system, context->v8_context(), api_name);
+  } else if (!source_map_.Contains(api_name)) {
+    module_system->RegisterNativeHandler(
+        api_name,
+        scoped_ptr<NativeHandler>(new BindingGeneratingNativeHandler(
+            module_system,
+            api_name,
+            "binding")));
+    module_system->SetNativeLazyField(bind_object,
+                                      bind_name,
+                                      api_name,
+                                      "binding");
+  } else {
+    module_system->SetLazyField(bind_object,
+                                bind_name,
+                                api_name,
+                                "binding");
   }
 }
 
@@ -876,8 +911,7 @@ void Dispatcher::InstallBindings(ModuleSystem* module_system,
 void Dispatcher::DidCreateScriptContext(
     WebFrame* frame, v8::Handle<v8::Context> v8_context, int extension_group,
     int world_id) {
-// Extensions are not supported on Android, so don't register any bindings.
-#if defined(OS_ANDROID)
+#if !defined(ENABLE_EXTENSIONS)
   return;
 #endif
 
@@ -911,12 +945,18 @@ void Dispatcher::DidCreateScriptContext(
       new ChromeV8Context(v8_context, frame, extension, context_type);
   v8_context_set_.Add(context);
 
-  scoped_ptr<ModuleSystem> module_system(new ModuleSystem(context,
-                                                          &source_map_));
-  // Enable natives in startup.
-  ModuleSystem::NativesEnabledScope natives_enabled_scope(module_system.get());
+  {
+    scoped_ptr<ModuleSystem> module_system(new ModuleSystem(context,
+                                                            &source_map_));
+    context->set_module_system(module_system.Pass());
+  }
+  ModuleSystem* module_system = context->module_system();
 
-  RegisterNativeHandlers(module_system.get(), context);
+  // Enable natives in startup.
+  ModuleSystem::NativesEnabledScope natives_enabled_scope(
+      module_system);
+
+  RegisterNativeHandlers(module_system, context);
 
   module_system->RegisterNativeHandler("chrome",
       scoped_ptr<NativeHandler>(new ChromeNativeHandler(context)));
@@ -957,8 +997,8 @@ void Dispatcher::DidCreateScriptContext(
     case Feature::UNSPECIFIED_CONTEXT:
     case Feature::WEB_PAGE_CONTEXT:
       // TODO(kalman): see comment below about ExtensionAPI.
-      InstallBindings(module_system.get(), v8_context, "app");
-      InstallBindings(module_system.get(), v8_context, "webstore");
+      InstallBindings(module_system, v8_context, "app");
+      InstallBindings(module_system, v8_context, "webstore");
       break;
     case Feature::BLESSED_EXTENSION_CONTEXT:
     case Feature::UNBLESSED_EXTENSION_CONTEXT:
@@ -969,7 +1009,7 @@ void Dispatcher::DidCreateScriptContext(
       // regardless of |context_type|. ExtensionAPI knows how to return the
       // correct APIs, however, until it doesn't have a 2MB overhead we can't
       // load it in every process.
-      RegisterSchemaGeneratedBindings(module_system.get(), context);
+      AddOrRemoveBindings(context);
       break;
   }
 
@@ -1009,8 +1049,6 @@ void Dispatcher::DidCreateScriptContext(
       }
     }
   }
-
-  context->set_module_system(module_system.Pass());
 
   VLOG(1) << "Num tracked contexts: " << v8_context_set_.size();
 }
@@ -1174,6 +1212,10 @@ void Dispatcher::OnUpdatePermissions(int reason_id,
 
   PermissionsData::SetActivePermissions(extension, new_active);
   AddOrRemoveOriginPermissions(reason, extension, explicit_hosts);
+  v8_context_set().ForEach(
+      extension_id,
+      NULL,
+      base::Bind(&Dispatcher::AddOrRemoveBindings, base::Unretained(this)));
 }
 
 void Dispatcher::OnUpdateTabSpecificPermissions(

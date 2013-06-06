@@ -4,6 +4,7 @@
 
 var assertFalse = chrome.test.assertFalse;
 var assertTrue = chrome.test.assertTrue;
+var assertEq = chrome.test.assertEq;
 var pass = chrome.test.callbackPass;
 
 var NO_BOOKMARKS_PERMISSION =
@@ -48,14 +49,7 @@ chrome.test.getConfig(function(config) {
                 {permissions: ['bookmarks'], origins:['http://*.c.com/*']},
                 pass(function(result) { assertFalse(result); }));
 
-            try {
-              chrome.bookmarks.getTree(function() {
-                chrome.test.fail("Should not have bookmarks API permission.");
-              });
-            } catch (e) {
-              assertTrue(e.message.indexOf(NO_BOOKMARKS_PERMISSION) == 0);
-            }
-
+            assertEq(undefined, chrome.bookmarks);
             doReq('http://b.c.com/', pass(function(result) {
               assertFalse(result);
             }));
