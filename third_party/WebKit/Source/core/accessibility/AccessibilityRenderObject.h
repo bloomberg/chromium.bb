@@ -140,7 +140,7 @@ protected:
     virtual void visibleChildren(AccessibilityChildrenVector&);
 
     // Properties of interactive elements.
-    virtual const String& actionVerb() const;
+    virtual String actionVerb() const;
     virtual void selectedChildren(AccessibilityChildrenVector&);
     virtual String stringValue() const;
 

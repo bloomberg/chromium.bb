@@ -435,7 +435,7 @@ public:
     virtual void visibleChildren(AccessibilityChildrenVector&) { }
 
     // Properties of interactive elements.
-    virtual const String& actionVerb() const;
+    virtual String actionVerb() const;
     virtual AccessibilityButtonState checkboxOrRadioValue() const;
     virtual void colorValue(int& r, int& g, int& b) const { r = 0; g = 0; b = 0; }
     virtual String valueDescription() const { return String(); }
