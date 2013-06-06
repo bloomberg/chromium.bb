@@ -85,6 +85,8 @@ using WebKit::WebTextDirection;
 namespace content {
 namespace {
 
+bool g_check_for_pending_resize_ack = true;
+
 // How long to (synchronously) wait for the renderer to respond with a
 // PaintRect message, when our backing-store is invalid, before giving up and
 // returning a null or incorrectly sized backing-store from GetBackingStore.
@@ -547,7 +549,7 @@ void RenderWidgetHostImpl::WasResized() {
   // We don't expect to receive an ACK when the requested size or the physical
   // backing size is empty, or when the main viewport size didn't change.
   if (!new_size.IsEmpty() && !physical_backing_size_.IsEmpty() && size_changed)
-    resize_ack_pending_ = true;
+    resize_ack_pending_ = g_check_for_pending_resize_ack;
 
   ViewMsg_Resize_Params params;
   params.screen_info = *screen_info_;
@@ -1215,6 +1217,11 @@ int64 RenderWidgetHostImpl::GetLatencyComponentId() {
   return GetRoutingID() | (static_cast<int64>(GetProcess()->GetID()) << 32);
 }
 
+// static
+void RenderWidgetHostImpl::DisableResizeAckCheckForTesting() {
+  g_check_for_pending_resize_ack = false;
+}
+
 ui::LatencyInfo RenderWidgetHostImpl::NewInputLatencyInfo() {
   ui::LatencyInfo info;
   info.AddLatencyNumber(ui::INPUT_EVENT_LATENCY_COMPONENT,
@@ -1738,7 +1745,7 @@ void RenderWidgetHostImpl::OnUpdateRect(
   // resize_ack_pending_ needs to be cleared before we call DidPaintRect, since
   // that will end up reaching GetBackingStore.
   if (is_resize_ack) {
-    DCHECK(resize_ack_pending_);
+    DCHECK(!g_check_for_pending_resize_ack || resize_ack_pending_);
     resize_ack_pending_ = false;
     in_flight_size_.SetSize(0, 0);
   }

@@ -488,6 +488,9 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
 
   static void CompositorFrameDrawn(const ui::LatencyInfo& latency_info);
 
+  // Don't check whether we expected a resize ack during layout tests.
+  static void DisableResizeAckCheckForTesting();
+
  protected:
   virtual RenderWidgetHostImpl* AsRenderWidgetHostImpl() OVERRIDE;
 
