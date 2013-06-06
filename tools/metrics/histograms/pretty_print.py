@@ -270,22 +270,26 @@ def TransformByAlphabetizing(node):
 
   # Element node with a tag name that we alphabetize the children of?
   if node.tagName in ALPHABETIZATION_RULES:
+    # Put subnodes in a list of node,key pairs to allow for custom sorting.
     subtag, key_function = ALPHABETIZATION_RULES[node.tagName]
-    # Remove the subnodes to be alphabetized.
-    clone = node.cloneNode(False)
     subnodes = []
+    last_key = -1
     for c in node.childNodes:
       if (c.nodeType == xml.dom.minidom.Node.ELEMENT_NODE and
           c.tagName == subtag):
-        subnodes.append(c)
-        continue
-      unsafeAppendChild(clone, c)
-    # Sort the subnodes.
-    subnodes.sort(key=key_function)
-    # Readd the subnodes, transforming each recursively.
-    for c in subnodes:
-      unsafeAppendChild(clone, TransformByAlphabetizing(c))
-    node = clone
+        last_key = key_function(c)
+      # Subnodes that we don't want to rearrange use the last node's key,
+      # so they stay in the same relative position.
+      subnodes.append( (c, last_key) )
+
+    # Sort the subnode list.
+    subnodes.sort(key=lambda pair: pair[1])
+
+    # Re-add the subnodes, transforming each recursively.
+    while node.firstChild:
+      node.removeChild(node.firstChild)
+    for (c, _) in subnodes:
+      unsafeAppendChild(node, TransformByAlphabetizing(c))
     return node
 
   # Recursively handle other element nodes and other node types.
