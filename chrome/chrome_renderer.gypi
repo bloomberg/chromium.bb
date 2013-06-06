@@ -13,7 +13,7 @@
         'common_net',
         'chrome_resources.gyp:chrome_resources',
         'chrome_resources.gyp:chrome_strings',
-        '../components/components.gyp:autofill_renderer',
+        '../components/components.gyp:autofill_content_renderer',
         '../components/components.gyp:visitedlink_renderer',
         '../content/content.gyp:content_renderer',
         '../net/net.gyp:net',

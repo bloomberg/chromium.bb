@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/autofill/renderer/password_autofill_agent.h"
+#include "components/autofill/content/renderer/password_autofill_agent.h"
 
 #include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
@@ -11,11 +11,10 @@
 #include "components/autofill/common/autofill_messages.h"
 #include "components/autofill/common/form_field_data.h"
 #include "components/autofill/common/password_form_fill_data.h"
-#include "components/autofill/renderer/form_autofill_util.h"
+#include "components/autofill/content/renderer/form_autofill_util.h"
 #include "content/public/common/password_form.h"
 #include "content/public/renderer/password_form_conversion_utils.h"
 #include "content/public/renderer/render_view.h"
-#include "third_party/WebKit/public/platform/WebVector.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebAutofillClient.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebElement.h"
@@ -24,6 +23,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityOrigin.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
+#include "third_party/WebKit/public/platform/WebVector.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 
 namespace autofill {

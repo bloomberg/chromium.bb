@@ -1,9 +1,9 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_AUTOFILL_RENDERER_PAGE_CLICK_TRACKER_H_
-#define COMPONENTS_AUTOFILL_RENDERER_PAGE_CLICK_TRACKER_H_
+#ifndef COMPONENTS_AUTOFILL_CONTENT_RENDERER_PAGE_CLICK_TRACKER_H_
+#define COMPONENTS_AUTOFILL_CONTENT_RENDERER_PAGE_CLICK_TRACKER_H_
 
 #include <vector>
 
@@ -68,4 +68,4 @@ class PageClickTracker : public content::RenderViewObserver,
 
 }  // namespace autofill
 
-#endif  // COMPONENTS_AUTOFILL_RENDERER_PAGE_CLICK_TRACKER_H_
+#endif  // COMPONENTS_AUTOFILL_CONTENT_RENDERER_PAGE_CLICK_TRACKER_H_

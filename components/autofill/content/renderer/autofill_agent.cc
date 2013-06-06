@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/autofill/renderer/autofill_agent.h"
+#include "components/autofill/content/renderer/autofill_agent.h"
 
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -19,15 +19,13 @@
 #include "components/autofill/common/form_data_predictions.h"
 #include "components/autofill/common/form_field_data.h"
 #include "components/autofill/common/web_element_descriptor.h"
-#include "components/autofill/renderer/form_autofill_util.h"
-#include "components/autofill/renderer/page_click_tracker.h"
-#include "components/autofill/renderer/password_autofill_agent.h"
+#include "components/autofill/content/renderer/form_autofill_util.h"
+#include "components/autofill/content/renderer/page_click_tracker.h"
+#include "components/autofill/content/renderer/password_autofill_agent.h"
 #include "content/public/common/password_form.h"
 #include "content/public/common/ssl_status.h"
 #include "content/public/renderer/render_view.h"
 #include "grit/component_resources.h"
-#include "third_party/WebKit/public/platform/WebRect.h"
-#include "third_party/WebKit/public/platform/WebURLRequest.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDataSource.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFormControlElement.h"
@@ -38,6 +36,8 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebNodeCollection.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebOptionElement.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
+#include "third_party/WebKit/public/platform/WebRect.h"
+#include "third_party/WebKit/public/platform/WebURLRequest.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/base/l10n/l10n_util.h"
 

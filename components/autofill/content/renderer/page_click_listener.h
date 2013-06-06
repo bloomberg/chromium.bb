@@ -1,9 +1,9 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_AUTOFILL_RENDERER_PAGE_CLICK_LISTENER_H_
-#define COMPONENTS_AUTOFILL_RENDERER_PAGE_CLICK_LISTENER_H_
+#ifndef COMPONENTS_AUTOFILL_CONTENT_RENDERER_PAGE_CLICK_LISTENER_H_
+#define COMPONENTS_AUTOFILL_CONTENT_RENDERER_PAGE_CLICK_LISTENER_H_
 
 namespace WebKit {
 class WebInputElement;
@@ -33,4 +33,4 @@ class PageClickListener {
 
 }  // namespace autofill
 
-#endif  // COMPONENTS_AUTOFILL_RENDERER_PAGE_CLICK_LISTENER_H_
+#endif  // COMPONENTS_AUTOFILL_CONTENT_RENDERER_PAGE_CLICK_LISTENER_H_

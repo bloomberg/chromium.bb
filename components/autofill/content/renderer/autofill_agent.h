@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_AUTOFILL_RENDERER_AUTOFILL_AGENT_H_
-#define COMPONENTS_AUTOFILL_RENDERER_AUTOFILL_AGENT_H_
+#ifndef COMPONENTS_AUTOFILL_CONTENT_RENDERER_AUTOFILL_AGENT_H_
+#define COMPONENTS_AUTOFILL_CONTENT_RENDERER_AUTOFILL_AGENT_H_
 
 #include <vector>
 
@@ -14,8 +14,8 @@
 #include "base/time.h"
 #include "base/timer.h"
 #include "components/autofill/common/forms_seen_state.h"
-#include "components/autofill/renderer/form_cache.h"
-#include "components/autofill/renderer/page_click_listener.h"
+#include "components/autofill/content/renderer/form_cache.h"
+#include "components/autofill/content/renderer/page_click_listener.h"
 #include "content/public/renderer/render_view_observer.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebAutofillClient.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFormElement.h"
@@ -292,4 +292,4 @@ class AutofillAgent : public content::RenderViewObserver,
 
 }  // namespace autofill
 
-#endif  // COMPONENTS_AUTOFILL_RENDERER_AUTOFILL_AGENT_H_
+#endif  // COMPONENTS_AUTOFILL_CONTENT_RENDERER_AUTOFILL_AGENT_H_

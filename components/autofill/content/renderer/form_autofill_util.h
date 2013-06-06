@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_AUTOFILL_RENDERER_FORM_AUTOFILL_UTIL_H_
-#define COMPONENTS_AUTOFILL_RENDERER_FORM_AUTOFILL_UTIL_H_
+#ifndef COMPONENTS_AUTOFILL_CONTENT_RENDERER_FORM_AUTOFILL_UTIL_H_
+#define COMPONENTS_AUTOFILL_CONTENT_RENDERER_FORM_AUTOFILL_UTIL_H_
 
 #include <vector>
 
@@ -136,4 +136,4 @@ bool FormWithElementIsAutofilled(const WebKit::WebInputElement& element);
 
 }  // namespace autofill
 
-#endif  // COMPONENTS_AUTOFILL_RENDERER_FORM_AUTOFILL_UTIL_H_
+#endif  // COMPONENTS_AUTOFILL_CONTENT_RENDERER_FORM_AUTOFILL_UTIL_H_

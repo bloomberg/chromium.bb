@@ -1,9 +1,9 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_AUTOFILL_RENDERER_FORM_CACHE_H_
-#define COMPONENTS_AUTOFILL_RENDERER_FORM_CACHE_H_
+#ifndef COMPONENTS_AUTOFILL_CONTENT_RENDERER_FORM_CACHE_H_
+#define COMPONENTS_AUTOFILL_CONTENT_RENDERER_FORM_CACHE_H_
 
 #include <map>
 #include <set>
@@ -74,4 +74,4 @@ class FormCache {
 
 }  // namespace autofill
 
-#endif  // COMPONENTS_AUTOFILL_RENDERER_FORM_CACHE_H_
+#endif  // COMPONENTS_AUTOFILL_CONTENT_RENDERER_FORM_CACHE_H_

@@ -3,15 +3,15 @@
 // found in the LICENSE file.
 
 #include "base/basictypes.h"
-#include "components/autofill/renderer/page_click_listener.h"
-#include "components/autofill/renderer/page_click_tracker.h"
+#include "components/autofill/content/renderer/page_click_listener.h"
+#include "components/autofill/content/renderer/page_click_tracker.h"
 #include "content/public/renderer/render_view.h"
 #include "content/public/test/render_view_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/WebKit/public/platform/WebSize.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputElement.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
+#include "third_party/WebKit/public/platform/WebSize.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 
 namespace autofill {

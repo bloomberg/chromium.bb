@@ -9,11 +9,11 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/test/base/chrome_render_view_test.h"
 #include "components/autofill/common/autofill_messages.h"
-#include "components/autofill/renderer/password_generation_manager.h"
+#include "components/autofill/content/renderer/password_generation_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebWidget.h"
+#include "third_party/WebKit/public/platform/WebString.h"
 
 using WebKit::WebDocument;
 using WebKit::WebElement;
