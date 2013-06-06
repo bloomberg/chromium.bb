@@ -32,28 +32,19 @@
 function LOAD_BUILDBOT_DATA(builderData)
 {
     builders.masters = {};
+    var groups = {};
     builderData['masters'].forEach(function(master) {
         builders.masters[master.name] = new builders.BuilderMaster(master.name, master.url, master.tests, master.groups);
+        master.groups.forEach(function(group) { groups[group] = true; });
     });
-    builders.groups = builderData['groups'];
+    builders.groups = Object.keys(groups);
 }
 
 var builders = builders || {};
 
 (function() {
 
-// FIXME: Move some of this loading logic into loader.js.
-
 builders._currentBuilderGroup = {};
-
-// FIXME: this list should be built on demand.
-builders._GROUP_NAMES = [
-    '@DEPS - chromium.org',
-    '@DEPS CrOS - chromium.org',
-    '@DEPS FYI - chromium.org',
-    '@ToT - chromium.org',
-    'Content Shell @ToT - chromium.org',
-]
 
 builders.getBuilderGroup = function(groupName, testType)
 {
@@ -96,7 +87,7 @@ builders.loadBuildersList = function(groupName, testType)
 
 builders.getAllGroupNames = function()
 {
-    return builders._GROUP_NAMES;
+    return builders.groups;
 }
 
 builders.BuilderMaster = function(name, basePath, tests, groups)
