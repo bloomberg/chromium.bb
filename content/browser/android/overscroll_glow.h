@@ -28,6 +28,9 @@ class OverscrollGlow {
  public:
   static scoped_ptr<OverscrollGlow> Create();
 
+  // Force loading of any necessary resources.  This function is thread-safe.
+  static void EnsureResources();
+
   ~OverscrollGlow();
 
   void OnOverscrolled(base::TimeTicks current_time,

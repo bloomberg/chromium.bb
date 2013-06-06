@@ -221,6 +221,7 @@ class RenderWidgetHostViewAndroid
   void AttachLayers();
   void RemoveLayers();
 
+  void CreateOverscrollEffectIfNecessary();
   void UpdateAnimationSize(const cc::CompositorFrame* frame);
   void ScheduleAnimationIfNecessary();
 
@@ -271,6 +272,7 @@ class RenderWidgetHostViewAndroid
   std::queue<base::Closure> ack_callbacks_;
 
   // Used to render overscroll overlays.
+  bool overscroll_effect_enabled_;
   scoped_ptr<OverscrollGlow> overscroll_effect_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewAndroid);

@@ -11,6 +11,7 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
+#include "base/threading/worker_pool.h"
 #include "base/utf_string_conversions.h"
 #include "cc/layers/delegated_renderer_layer.h"
 #include "cc/layers/layer.h"
@@ -81,7 +82,8 @@ RenderWidgetHostViewAndroid::RenderWidgetHostViewAndroid(
       ime_adapter_android_(this),
       cached_background_color_(SK_ColorWHITE),
       texture_id_in_layer_(0),
-      weak_ptr_factory_(this) {
+      weak_ptr_factory_(this),
+      overscroll_effect_enabled_(true) {
   if (CompositorImpl::UsesDirectGL()) {
     surface_texture_transport_.reset(new SurfaceTextureTransportClient());
     layer_ = surface_texture_transport_->Initialize();
@@ -99,9 +101,14 @@ RenderWidgetHostViewAndroid::RenderWidgetHostViewAndroid(
 
   layer_->SetContentsOpaque(true);
 
-  if (!CommandLine::ForCurrentProcess()->
-          HasSwitch(switches::kDisableOverscrollEdgeEffect)) {
-    overscroll_effect_ = OverscrollGlow::Create();
+  overscroll_effect_enabled_ = !CommandLine::ForCurrentProcess()->
+      HasSwitch(switches::kDisableOverscrollEdgeEffect);
+  // Don't block the main thread with effect resource loading.
+  // Actual effect creation is deferred until an overscroll event is received.
+  if (overscroll_effect_enabled_) {
+    base::WorkerPool::PostTask(FROM_HERE,
+                               base::Bind(&OverscrollGlow::EnsureResources),
+                               true);
   }
 
   host_->SetView(this);
@@ -716,6 +723,20 @@ bool RenderWidgetHostViewAndroid::Animate(base::TimeTicks frame_time) {
   return overscroll_effect_->Animate(frame_time);
 }
 
+void RenderWidgetHostViewAndroid::CreateOverscrollEffectIfNecessary() {
+  if (!overscroll_effect_enabled_ || overscroll_effect_)
+    return;
+
+  overscroll_effect_ = OverscrollGlow::Create();
+
+  // Prevent future creation attempts on failure.
+  if (!overscroll_effect_)
+    overscroll_effect_enabled_ = false;
+
+  if (overscroll_effect_ && content_view_core_ && are_layers_attached_)
+    content_view_core_->AttachLayer(overscroll_effect_->root_layer());
+}
+
 void RenderWidgetHostViewAndroid::UpdateAnimationSize(
     const cc::CompositorFrame* frame) {
   if (!overscroll_effect_)
@@ -922,8 +943,10 @@ SkColor RenderWidgetHostViewAndroid::GetCachedBackgroundColor() const {
 void RenderWidgetHostViewAndroid::OnOverscrolled(
     gfx::Vector2dF accumulated_overscroll,
     gfx::Vector2dF current_fling_velocity) {
+  CreateOverscrollEffectIfNecessary();
   if (!overscroll_effect_ || !HasFocus())
     return;
+
   overscroll_effect_->OnOverscrolled(base::TimeTicks::Now(),
                                      accumulated_overscroll,
                                      current_fling_velocity);

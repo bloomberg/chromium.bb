@@ -47,7 +47,8 @@ class OverscrollResources {
   DISALLOW_COPY_AND_ASSIGN(OverscrollResources);
 };
 
-base::LazyInstance<OverscrollResources> g_overscroll_resources =
+// Leaky to allow access from a worker thread.
+base::LazyInstance<OverscrollResources>::Leaky g_overscroll_resources =
     LAZY_INSTANCE_INITIALIZER;
 
 scoped_refptr<cc::Layer> CreateImageLayer(const SkBitmap& bitmap) {
@@ -81,6 +82,10 @@ scoped_ptr<OverscrollGlow> OverscrollGlow::Create() {
     return scoped_ptr<OverscrollGlow>();
 
   return make_scoped_ptr(new OverscrollGlow(edge, glow));
+}
+
+void OverscrollGlow::EnsureResources() {
+  g_overscroll_resources.Get();
 }
 
 OverscrollGlow::OverscrollGlow(const SkBitmap& edge, const SkBitmap& glow)
