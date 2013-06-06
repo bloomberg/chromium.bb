@@ -160,13 +160,12 @@ EXTRA_ENV = {
   'TRANSLATE_FLAGS' : '-O${#OPT_LEVEL ? ${OPT_LEVEL} : 0}',
 
   'STDLIBS'   : '${DEFAULTLIBS ? '
-                '${LIBSTDCPP} ${LIBPTHREAD} ${LIBNACL} ${LIBC} ${PNACL_ABI}}',
+                '${LIBSTDCPP} ${LIBPTHREAD} ${LIBNACL} ${LIBC}}',
   'LIBSTDCPP' : '${IS_CXX ? -lstdc++ -lm }',
   'LIBC'      : '-lc',
   'LIBNACL'   : '${LIBMODE_NEWLIB ? -lnacl}',
   # Enabled/disabled by -pthreads
   'LIBPTHREAD': '${PTHREAD ? -lpthread}',
-  'PNACL_ABI' : '-l:pnacl_abi.bc',
 
   # IS_CXX is set by pnacl-clang and pnacl-clang++ programmatically
   'CC' : '${IS_CXX ? ${CLANGXX} : ${CLANG}}',

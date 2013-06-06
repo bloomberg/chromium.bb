@@ -2840,17 +2840,11 @@ libs-support-bitcode() {
   StepBanner "LIBS-SUPPORT" "Install unwind_stubs.bc"
   ${cc_cmd} -c unwind_stubs.c -o "${build_dir}"/unwind_stubs.bc
 
-  # Install pnacl_abi.bc
-  # (NOTE: This does a trivial bitcode link to set the right metadata)
-  StepBanner "LIBS-SUPPORT" "Install pnacl_abi.bc (stub pso)"
-  ${cc_cmd} -Wno-builtin-requires-header -nostdlib -shared \
-            -Wl,-soname="" pnacl_abi.c -o "${build_dir}"/pnacl_abi.bc
-
   spopd
 
   # Install to actual lib directories.
   spushd "${build_dir}"
-  local files="crti.bc crtbegin.bc crtbeginS.bc pnacl_abi.bc unwind_stubs.bc"
+  local files="crti.bc crtbegin.bc crtbeginS.bc unwind_stubs.bc"
   if [ ${libmode} == "newlib" ]; then
     mkdir -p "${INSTALL_LIB_NEWLIB}"
     cp -f ${files} "${INSTALL_LIB_NEWLIB}"

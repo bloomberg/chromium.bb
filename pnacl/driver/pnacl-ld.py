@@ -103,6 +103,8 @@ EXTRA_ENV = {
 
   'BCLD'                   : '${LD_GOLD}',
   'BCLD_ALLOW_UNRESOLVED'  :
+    '--allow-unresolved=setjmp '
+    '--allow-unresolved=longjmp '
     '${ALLOW_CXX_EXCEPTIONS ? '
       '--allow-unresolved=_Unwind_Backtrace '
       '--allow-unresolved=_Unwind_DeleteException '
