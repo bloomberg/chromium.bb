@@ -236,7 +236,7 @@ static bool orientationMediaFeatureEval(CSSValue* value, RenderStyle*, Frame* fr
     int width = viewportSize(view).width();
     int height = viewportSize(view).height();
     if (value && value->isPrimitiveValue()) {
-        const int id = toCSSPrimitiveValue(value)->getIdent();
+        const CSSValueID id = toCSSPrimitiveValue(value)->getValueID();
         if (width > height) // Square viewport is portrait.
             return CSSValueLandscape == id;
         return CSSValuePortrait == id;
@@ -585,7 +585,7 @@ static bool viewModeMediaFeatureEval(CSSValue* value, RenderStyle*, Frame* frame
     if (!value)
         return true;
 
-    return toCSSPrimitiveValue(value)->getIdent() == CSSValueWindowed;
+    return toCSSPrimitiveValue(value)->getValueID() == CSSValueWindowed;
 }
 
 enum PointerDeviceType { TouchPointer, MousePointer, NoPointer, UnknownPointer };
@@ -642,7 +642,7 @@ static bool pointerMediaFeatureEval(CSSValue* value, RenderStyle*, Frame* frame,
     if (!value->isPrimitiveValue())
         return false;
 
-    const int id = toCSSPrimitiveValue(value)->getIdent();
+    const CSSValueID id = toCSSPrimitiveValue(value)->getValueID();
     return (pointer == NoPointer && id == CSSValueNone)
         || (pointer == TouchPointer && id == CSSValueCoarse)
         || (pointer == MousePointer && id == CSSValueFine);
@@ -663,8 +663,7 @@ static bool scanMediaFeatureEval(CSSValue* value, RenderStyle*, Frame* frame, Me
     // If a platform interface supplies progressive/interlace info for TVs in the
     // future, it needs to be handled here. For now, assume a modern TV with
     // progressive display.
-    const int id = toCSSPrimitiveValue(value)->getIdent();
-    return id == CSSValueProgressive;
+    return toCSSPrimitiveValue(value)->getValueID() == CSSValueProgressive;
 }
 
 static void createFunctionMap()

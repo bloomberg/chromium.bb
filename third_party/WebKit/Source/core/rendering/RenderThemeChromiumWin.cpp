@@ -254,7 +254,7 @@ static int cssValueIdToSysColorIndex(int cssValueId)
     }
 }
 
-Color RenderThemeChromiumWin::systemColor(int cssValueId) const
+Color RenderThemeChromiumWin::systemColor(CSSValueID cssValueId) const
 {
     int sysColorIndex = cssValueIdToSysColorIndex(cssValueId);
     if (isRunningLayoutTest() || (sysColorIndex == -1))

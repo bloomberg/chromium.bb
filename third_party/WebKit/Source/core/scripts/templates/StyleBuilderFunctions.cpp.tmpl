@@ -54,7 +54,7 @@ namespace WebCore {
         return;
 
     CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
-    if (primitiveValue->getIdent() == {{id_for_minus_one}})
+    if (primitiveValue->getValueID() == {{id_for_minus_one}})
         {{ set_value(property) }}(-1);
     else
         {{ set_value(property) }}(primitiveValue->getValue<{{property.type_name}}>(CSSPrimitiveValue::CSS_NUMBER));
@@ -72,8 +72,8 @@ namespace WebCore {
         return;
 
     CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
-    if (primitiveValue->getIdent()) {
-        switch (primitiveValue->getIdent()) {
+    if (primitiveValue->getValueID()) {
+        switch (primitiveValue->getValueID()) {
         case CSSValueSmall:
             styleResolver->style()->setMarqueeIncrement(Length(1, Fixed)); // 1px.
             break;
@@ -82,6 +82,8 @@ namespace WebCore {
             break;
         case CSSValueLarge:
             styleResolver->style()->setMarqueeIncrement(Length(36, Fixed)); // 36px.
+            break;
+        default:
             break;
         }
     } else {

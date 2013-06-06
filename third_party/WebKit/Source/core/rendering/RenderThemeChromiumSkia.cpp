@@ -137,9 +137,9 @@ double RenderThemeChromiumSkia::caretBlinkInterval() const
     return caretBlinkIntervalInternal();
 }
 
-void RenderThemeChromiumSkia::systemFont(int propId, FontDescription& fontDescription) const
+void RenderThemeChromiumSkia::systemFont(CSSValueID valueID, FontDescription& fontDescription) const
 {
-    RenderThemeChromiumFontProvider::systemFont(propId, fontDescription);
+    RenderThemeChromiumFontProvider::systemFont(valueID, fontDescription);
 }
 
 int RenderThemeChromiumSkia::minimumMenuListSize(RenderStyle* style) const

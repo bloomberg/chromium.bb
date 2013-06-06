@@ -59,7 +59,7 @@ public:
     virtual void platformColorsDidChange();
 
     // System fonts.
-    virtual void systemFont(int cssValueId, FontDescription&) const;
+    virtual void systemFont(CSSValueID, FontDescription&) const;
 
     virtual int minimumMenuListSize(RenderStyle*) const;
 
@@ -86,7 +86,7 @@ public:
     // Returns the duration of the animation for the progress bar.
     virtual double animationDurationForProgressBar(RenderProgress*) const;
 
-    virtual Color systemColor(int cssValueId) const;
+    virtual Color systemColor(CSSValueID) const;
 
 protected:
     RenderThemeChromiumMac();

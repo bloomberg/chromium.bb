@@ -23,27 +23,27 @@ namespace WebCore {
 
     CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
 {% if property.use_none %}
-    if (primitiveValue->getIdent() == CSSValueNone)
+    if (primitiveValue->getValueID() == CSSValueNone)
         {{ set_value(property) }}(Length(Undefined));
 {% endif %}
 
 {%- if property.use_intrinsic %}
-    if (primitiveValue->getIdent() == CSSValueIntrinsic)
+    if (primitiveValue->getValueID() == CSSValueIntrinsic)
         {{ set_value(property) }}(Length(Intrinsic));
-    else if (primitiveValue->getIdent() == CSSValueMinIntrinsic)
+    else if (primitiveValue->getValueID() == CSSValueMinIntrinsic)
         {{ set_value(property) }}(Length(MinIntrinsic));
-    else if (primitiveValue->getIdent() == CSSValueWebkitMinContent)
+    else if (primitiveValue->getValueID() == CSSValueWebkitMinContent)
         {{ set_value(property) }}(Length(MinContent));
-    else if (primitiveValue->getIdent() == CSSValueWebkitMaxContent)
+    else if (primitiveValue->getValueID() == CSSValueWebkitMaxContent)
         {{ set_value(property) }}(Length(MaxContent));
-    else if (primitiveValue->getIdent() == CSSValueWebkitFillAvailable)
+    else if (primitiveValue->getValueID() == CSSValueWebkitFillAvailable)
         {{ set_value(property) }}(Length(FillAvailable));
-    else if (primitiveValue->getIdent() == CSSValueWebkitFitContent)
+    else if (primitiveValue->getValueID() == CSSValueWebkitFitContent)
         {{ set_value(property) }}(Length(FitContent));
 {% endif %}
 
 {%- if property.use_auto %}
-    if (primitiveValue->getIdent() == CSSValueAuto)
+    if (primitiveValue->getValueID() == CSSValueAuto)
         {{ set_value(property) }}(Length());
 {%- endif %}
 

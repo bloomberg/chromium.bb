@@ -119,13 +119,13 @@ static float systemFontSize(const LOGFONT& font)
 }
 
 // static
-void RenderThemeChromiumFontProvider::systemFont(int propId, FontDescription& fontDescription)
+void RenderThemeChromiumFontProvider::systemFont(CSSValueID valueID, FontDescription& fontDescription)
 {
     // This logic owes much to RenderThemeSafari.cpp.
     FontDescription* cachedDesc = 0;
     AtomicString faceName;
     float fontSize = 0;
-    switch (propId) {
+    switch (valueID) {
     case CSSValueSmallCaption:
         cachedDesc = &smallSystemFont();
         if (!smallSystemFont().isAbsoluteSize()) {

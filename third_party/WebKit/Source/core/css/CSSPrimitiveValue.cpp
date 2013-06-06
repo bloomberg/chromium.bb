@@ -93,6 +93,8 @@ static inline bool isValidCSSUnitTypeForDoubleConversion(CSSPrimitiveValue::Unit
     case CSSPrimitiveValue::CSS_COUNTER:
     case CSSPrimitiveValue::CSS_COUNTER_NAME:
     case CSSPrimitiveValue::CSS_IDENT:
+    case CSSPrimitiveValue::CSS_PROPERTY_ID:
+    case CSSPrimitiveValue::CSS_VALUE_ID:
     case CSSPrimitiveValue::CSS_PAIR:
     case CSSPrimitiveValue::CSS_PARSER_HEXCOLOR:
     case CSSPrimitiveValue::CSS_PARSER_IDENTIFIER:
@@ -164,6 +166,9 @@ static CSSTextCache& cssTextCache()
 
 unsigned short CSSPrimitiveValue::primitiveType() const 
 {
+    if (m_primitiveUnitType == CSS_PROPERTY_ID || m_primitiveUnitType == CSS_VALUE_ID)
+        return CSS_IDENT;
+
     if (m_primitiveUnitType != CSSPrimitiveValue::CSS_CALC)
         return m_primitiveUnitType; 
     
@@ -186,30 +191,51 @@ unsigned short CSSPrimitiveValue::primitiveType() const
     return CSSPrimitiveValue::CSS_UNKNOWN;
 }
 
-static const AtomicString& valueOrPropertyName(int valueOrPropertyID)
+static const AtomicString& propertyName(CSSPropertyID propertyID)
 {
-    ASSERT_ARG(valueOrPropertyID, valueOrPropertyID >= 0);
-    ASSERT_ARG(valueOrPropertyID, valueOrPropertyID < numCSSValueKeywords || (valueOrPropertyID >= firstCSSProperty && valueOrPropertyID < firstCSSProperty + numCSSProperties));
+    ASSERT_ARG(propertyID, propertyID >= 0);
+    ASSERT_ARG(propertyID, (propertyID >= firstCSSProperty && propertyID < firstCSSProperty + numCSSProperties));
 
-    if (valueOrPropertyID < 0)
+    if (propertyID < 0)
         return nullAtom;
 
-    if (valueOrPropertyID < numCSSValueKeywords) {
-        static AtomicString* keywordStrings = new AtomicString[numCSSValueKeywords]; // Leaked intentionally.
-        AtomicString& keywordString = keywordStrings[valueOrPropertyID];
-        if (keywordString.isNull())
-            keywordString = getValueName(valueOrPropertyID);
-        return keywordString;
-    }
-
-    return getPropertyNameAtomicString(static_cast<CSSPropertyID>(valueOrPropertyID));
+    return getPropertyNameAtomicString(propertyID);
 }
 
-CSSPrimitiveValue::CSSPrimitiveValue(int ident)
+static const AtomicString& valueName(CSSValueID valueID)
+{
+    ASSERT_ARG(valueID, valueID >= 0);
+    ASSERT_ARG(valueID, valueID < numCSSValueKeywords);
+
+    if (valueID < 0)
+        return nullAtom;
+
+    static AtomicString* keywordStrings = new AtomicString[numCSSValueKeywords]; // Leaked intentionally.
+    AtomicString& keywordString = keywordStrings[valueID];
+    if (keywordString.isNull())
+        keywordString = getValueName(valueID);
+    return keywordString;
+}
+
+CSSPrimitiveValue::CSSPrimitiveValue(CSSValueID valueID)
     : CSSValue(PrimitiveClass)
 {
-    m_primitiveUnitType = CSS_IDENT;
-    m_value.ident = ident;
+    m_primitiveUnitType = CSS_VALUE_ID;
+    m_value.valueID = valueID;
+}
+
+CSSPrimitiveValue::CSSPrimitiveValue(CSSPropertyID propertyID)
+    : CSSValue(PrimitiveClass)
+{
+    m_primitiveUnitType = CSS_PROPERTY_ID;
+    m_value.propertyID = propertyID;
+}
+
+CSSPrimitiveValue::CSSPrimitiveValue(int parserOperator)
+    : CSSValue(PrimitiveClass)
+{
+    m_primitiveUnitType = CSS_PARSER_OPERATOR;
+    m_value.parserOperator = parserOperator;
 }
 
 CSSPrimitiveValue::CSSPrimitiveValue(double num, UnitTypes type)
@@ -241,36 +267,36 @@ CSSPrimitiveValue::CSSPrimitiveValue(const Length& length)
 {
     switch (length.type()) {
         case Auto:
-            m_primitiveUnitType = CSS_IDENT;
-            m_value.ident = CSSValueAuto;
+            m_primitiveUnitType = CSS_VALUE_ID;
+            m_value.valueID = CSSValueAuto;
             break;
         case WebCore::Fixed:
             m_primitiveUnitType = CSS_PX;
             m_value.num = length.value();
             break;
         case Intrinsic:
-            m_primitiveUnitType = CSS_IDENT;
-            m_value.ident = CSSValueIntrinsic;
+            m_primitiveUnitType = CSS_VALUE_ID;
+            m_value.valueID = CSSValueIntrinsic;
             break;
         case MinIntrinsic:
-            m_primitiveUnitType = CSS_IDENT;
-            m_value.ident = CSSValueMinIntrinsic;
+            m_primitiveUnitType = CSS_VALUE_ID;
+            m_value.valueID = CSSValueMinIntrinsic;
             break;
         case MinContent:
-            m_primitiveUnitType = CSS_IDENT;
-            m_value.ident = CSSValueWebkitMinContent;
+            m_primitiveUnitType = CSS_VALUE_ID;
+            m_value.valueID = CSSValueWebkitMinContent;
             break;
         case MaxContent:
-            m_primitiveUnitType = CSS_IDENT;
-            m_value.ident = CSSValueWebkitMaxContent;
+            m_primitiveUnitType = CSS_VALUE_ID;
+            m_value.valueID = CSSValueWebkitMaxContent;
             break;
         case FillAvailable:
-            m_primitiveUnitType = CSS_IDENT;
-            m_value.ident = CSSValueWebkitFillAvailable;
+            m_primitiveUnitType = CSS_VALUE_ID;
+            m_value.valueID = CSSValueWebkitFillAvailable;
             break;
         case FitContent:
-            m_primitiveUnitType = CSS_IDENT;
-            m_value.ident = CSSValueWebkitFitContent;
+            m_primitiveUnitType = CSS_VALUE_ID;
+            m_value.valueID = CSSValueWebkitFitContent;
             break;
         case Percent:
             m_primitiveUnitType = CSS_PERCENTAGE;
@@ -418,6 +444,8 @@ void CSSPrimitiveValue::cleanup()
     case CSS_UNICODE_RANGE:
     case CSS_PARSER_OPERATOR:
     case CSS_PARSER_IDENTIFIER:
+    case CSS_PROPERTY_ID:
+    case CSS_VALUE_ID:
         break;
     }
     m_primitiveUnitType = 0;
@@ -725,8 +753,10 @@ String CSSPrimitiveValue::getStringValue(ExceptionCode& ec) const
         case CSS_URI:
         case CSS_VARIABLE_NAME:
             return m_value.string;
-        case CSS_IDENT:
-            return valueOrPropertyName(m_value.ident);
+        case CSS_VALUE_ID:
+            return valueName(m_value.valueID);
+        case CSS_PROPERTY_ID:
+            return propertyName(m_value.propertyID);
         default:
             ec = INVALID_ACCESS_ERR;
             break;
@@ -743,8 +773,10 @@ String CSSPrimitiveValue::getStringValue() const
         case CSS_URI:
         case CSS_VARIABLE_NAME:
             return m_value.string;
-        case CSS_IDENT:
-            return valueOrPropertyName(m_value.ident);
+        case CSS_VALUE_ID:
+            return valueName(m_value.valueID);
+        case CSS_PROPERTY_ID:
+            return propertyName(m_value.propertyID);
         default:
             break;
     }
@@ -922,8 +954,11 @@ String CSSPrimitiveValue::customCssText() const
         case CSS_URI:
             text = "url(" + quoteCSSURLIfNeeded(m_value.string) + ")";
             break;
-        case CSS_IDENT:
-            text = valueOrPropertyName(m_value.ident);
+        case CSS_VALUE_ID:
+            text = valueName(m_value.valueID);
+            break;
+        case CSS_PROPERTY_ID:
+            text = propertyName(m_value.propertyID);
             break;
         case CSS_ATTR: {
             StringBuilder result;
@@ -1005,7 +1040,7 @@ String CSSPrimitiveValue::customCssText() const
             text = getPairValue()->cssText();
             break;
         case CSS_PARSER_OPERATOR: {
-            char c = static_cast<char>(m_value.ident);
+            char c = static_cast<char>(m_value.parserOperator);
             text = String(&c, 1U);
             break;
         }
@@ -1164,8 +1199,11 @@ PassRefPtr<CSSPrimitiveValue> CSSPrimitiveValue::cloneForCSSOM() const
     case CSS_DPCM:
         result = CSSPrimitiveValue::create(m_value.num, static_cast<UnitTypes>(m_primitiveUnitType));
         break;
-    case CSS_IDENT:
-        result = CSSPrimitiveValue::createIdentifier(m_value.ident);
+    case CSS_PROPERTY_ID:
+        result = CSSPrimitiveValue::createIdentifier(m_value.propertyID);
+        break;
+    case CSS_VALUE_ID:
+        result = CSSPrimitiveValue::createIdentifier(m_value.valueID);
         break;
     case CSS_RGBCOLOR:
         result = CSSPrimitiveValue::createColor(m_value.rgbcolor);
@@ -1221,8 +1259,10 @@ bool CSSPrimitiveValue::equals(const CSSPrimitiveValue& other) const
     case CSS_VMAX:
     case CSS_DIMENSION:
         return m_value.num == other.m_value.num;
-    case CSS_IDENT:
-        return valueOrPropertyName(m_value.ident) == valueOrPropertyName(other.m_value.ident);
+    case CSS_PROPERTY_ID:
+        return propertyName(m_value.propertyID) == propertyName(other.m_value.propertyID);
+    case CSS_VALUE_ID:
+        return valueName(m_value.valueID) == valueName(other.m_value.valueID);
     case CSS_STRING:
     case CSS_URI:
     case CSS_ATTR:
@@ -1242,7 +1282,7 @@ bool CSSPrimitiveValue::equals(const CSSPrimitiveValue& other) const
     case CSS_PAIR:
         return m_value.pair && other.m_value.pair && m_value.pair->equals(*other.m_value.pair);
     case CSS_PARSER_OPERATOR:
-        return m_value.ident == other.m_value.ident;
+        return m_value.valueID == other.m_value.valueID;
     case CSS_CALC:
         return m_value.calc && other.m_value.calc && m_value.calc->equals(*other.m_value.calc);
     case CSS_SHAPE:

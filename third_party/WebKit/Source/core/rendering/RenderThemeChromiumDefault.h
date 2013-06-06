@@ -38,7 +38,7 @@ public:
     static PassRefPtr<RenderTheme> create();
     virtual String extraDefaultStyleSheet();
 
-    virtual Color systemColor(int cssValidId) const;
+    virtual Color systemColor(CSSValueID) const;
 
     // A method asking if the control changes its tint when the window has focus or not.
     virtual bool controlSupportsTints(const RenderObject*) const;

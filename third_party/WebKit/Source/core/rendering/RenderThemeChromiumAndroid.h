@@ -35,7 +35,7 @@ public:
     static PassRefPtr<RenderTheme> create();
     virtual String extraDefaultStyleSheet() OVERRIDE;
 
-    virtual Color systemColor(int cssValidId) const OVERRIDE;
+    virtual Color systemColor(CSSValueID) const OVERRIDE;
 
     virtual void adjustInnerSpinButtonStyle(StyleResolver*, RenderStyle*, Element*) const OVERRIDE;
 

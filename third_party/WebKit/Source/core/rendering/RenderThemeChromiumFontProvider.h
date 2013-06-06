@@ -26,6 +26,8 @@
 #ifndef RenderThemeChromiumFontProvider_h
 #define RenderThemeChromiumFontProvider_h
 
+#include "CSSValueKeywords.h"
+
 namespace WTF {
 class String;
 }
@@ -36,7 +38,7 @@ class FontDescription;
 
 class RenderThemeChromiumFontProvider {
 public:
-    static void systemFont(int propId, FontDescription&);
+    static void systemFont(CSSValueID, FontDescription&);
     static void setDefaultFontSize(int);
 
 protected:

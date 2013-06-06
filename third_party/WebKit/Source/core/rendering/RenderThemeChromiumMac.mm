@@ -253,7 +253,7 @@ static FontWeight toFontWeight(NSInteger appKitFontWeight)
     return fontWeights[appKitFontWeight - 1];
 }
 
-void RenderThemeChromiumMac::systemFont(int cssValueId, FontDescription& fontDescription) const
+void RenderThemeChromiumMac::systemFont(CSSValueID cssValueId, FontDescription& fontDescription) const
 {
     DEFINE_STATIC_LOCAL(FontDescription, systemFont, ());
     DEFINE_STATIC_LOCAL(FontDescription, smallSystemFont, ());
@@ -388,7 +388,7 @@ void RenderThemeChromiumMac::platformColorsDidChange()
     RenderTheme::platformColorsDidChange();
 }
 
-Color RenderThemeChromiumMac::systemColor(int cssValueId) const
+Color RenderThemeChromiumMac::systemColor(CSSValueID cssValueId) const
 {
     {
         HashMap<int, RGBA32>::iterator it = m_systemColorCache.find(cssValueId);
@@ -492,6 +492,8 @@ Color RenderThemeChromiumMac::systemColor(int cssValueId) const
             break;
         case CSSValueWindowtext:
             color = convertNSColorToColor([NSColor windowFrameTextColor]);
+            break;
+        default:
             break;
     }
 

@@ -57,7 +57,7 @@ public:
     virtual Color platformActiveTextSearchHighlightColor() const OVERRIDE;
     virtual Color platformInactiveTextSearchHighlightColor() const OVERRIDE;
 
-    virtual Color systemColor(int cssValueId) const OVERRIDE;
+    virtual Color systemColor(CSSValueID) const OVERRIDE;
 
     virtual IntSize sliderTickSize() const OVERRIDE;
     virtual int sliderTickOffsetFromTrackCenter() const OVERRIDE;

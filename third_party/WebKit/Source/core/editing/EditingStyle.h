@@ -33,13 +33,14 @@
 #define EditingStyle_h
 
 #include "CSSPropertyNames.h"
+#include "CSSValueKeywords.h"
 #include "core/editing/WritingDirection.h"
-#include <wtf/Forward.h>
-#include <wtf/RefCounted.h>
-#include <wtf/RefPtr.h>
-#include <wtf/text/WTFString.h>
-#include <wtf/TriState.h>
-#include <wtf/Vector.h>
+#include "wtf/Forward.h"
+#include "wtf/RefCounted.h"
+#include "wtf/RefPtr.h"
+#include "wtf/TriState.h"
+#include "wtf/Vector.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 
@@ -233,8 +234,8 @@ private:
 };
 
 // FIXME: Remove these functions or make them non-global to discourage using CSSStyleDeclaration directly.
-int getIdentifierValue(CSSStyleDeclaration*, CSSPropertyID);
-int getIdentifierValue(StylePropertySet*, CSSPropertyID);
+CSSValueID getIdentifierValue(CSSStyleDeclaration*, CSSPropertyID);
+CSSValueID getIdentifierValue(StylePropertySet*, CSSPropertyID);
 
 } // namespace WebCore
 

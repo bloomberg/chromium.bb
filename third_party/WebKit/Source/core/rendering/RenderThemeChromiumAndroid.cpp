@@ -57,7 +57,7 @@ RenderThemeChromiumAndroid::~RenderThemeChromiumAndroid()
 {
 }
 
-Color RenderThemeChromiumAndroid::systemColor(int cssValueId) const
+Color RenderThemeChromiumAndroid::systemColor(CSSValueID cssValueId) const
 {
     if (isRunningLayoutTest() && cssValueId == CSSValueButtonface) {
         // Match Chromium Linux' button color in layout tests.

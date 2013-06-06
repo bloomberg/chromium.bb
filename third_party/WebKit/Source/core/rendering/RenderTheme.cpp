@@ -1100,7 +1100,7 @@ void RenderTheme::platformColorsDidChange()
     Page::scheduleForcedStyleRecalcForAllPages();
 }
 
-Color RenderTheme::systemColor(int cssValueId) const
+Color RenderTheme::systemColor(CSSValueID cssValueId) const
 {
     switch (cssValueId) {
     case CSSValueActiveborder:
@@ -1172,6 +1172,8 @@ Color RenderTheme::systemColor(int cssValueId) const
         break;
     case CSSValueInternalInactiveListBoxSelectionText:
         return inactiveListBoxSelectionForegroundColor();
+        break;
+    default:
         break;
     }
     return Color();

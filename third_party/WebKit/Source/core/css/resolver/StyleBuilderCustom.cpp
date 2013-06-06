@@ -59,13 +59,13 @@ void StyleBuilderFunctions::applyValueCSSPropertyZoom(StyleResolver* styleResolv
     ASSERT_WITH_SECURITY_IMPLICATION(value->isPrimitiveValue());
     CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
 
-    if (primitiveValue->getIdent() == CSSValueNormal) {
+    if (primitiveValue->getValueID() == CSSValueNormal) {
         resetEffectiveZoom(styleResolver);
         styleResolver->setZoom(RenderStyle::initialZoom());
-    } else if (primitiveValue->getIdent() == CSSValueReset) {
+    } else if (primitiveValue->getValueID() == CSSValueReset) {
         styleResolver->setEffectiveZoom(RenderStyle::initialZoom());
         styleResolver->setZoom(RenderStyle::initialZoom());
-    } else if (primitiveValue->getIdent() == CSSValueDocument) {
+    } else if (primitiveValue->getValueID() == CSSValueDocument) {
         float docZoom = styleResolver->rootElementStyle() ? styleResolver->rootElementStyle()->zoom() : RenderStyle::initialZoom();
         styleResolver->setEffectiveZoom(docZoom);
         styleResolver->setZoom(docZoom);

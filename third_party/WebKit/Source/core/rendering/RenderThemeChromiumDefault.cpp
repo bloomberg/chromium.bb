@@ -87,7 +87,7 @@ RenderThemeChromiumDefault::~RenderThemeChromiumDefault()
 {
 }
 
-Color RenderThemeChromiumDefault::systemColor(int cssValueId) const
+Color RenderThemeChromiumDefault::systemColor(CSSValueID cssValueId) const
 {
     static const Color defaultButtonGrayColor(0xffdddddd);
     static const Color defaultMenuColor(0xfff7f7f7);

@@ -41,11 +41,11 @@ void RenderThemeChromiumFontProvider::setDefaultFontSize(int fontSize)
 }
 
 // static
-void RenderThemeChromiumFontProvider::systemFont(int propId, FontDescription& fontDescription)
+void RenderThemeChromiumFontProvider::systemFont(CSSValueID valueID, FontDescription& fontDescription)
 {
     float fontSize = s_defaultFontSize;
 
-    switch (propId) {
+    switch (valueID) {
     case CSSValueWebkitMiniControl:
     case CSSValueWebkitSmallControl:
     case CSSValueWebkitControl:
@@ -55,6 +55,8 @@ void RenderThemeChromiumFontProvider::systemFont(int propId, FontDescription& fo
         static const float pointsPerInch = 72.0f;
         static const float pixelsPerInch = 96.0f;
         fontSize -= (2.0f / pointsPerInch) * pixelsPerInch;
+        break;
+    default:
         break;
     }
 

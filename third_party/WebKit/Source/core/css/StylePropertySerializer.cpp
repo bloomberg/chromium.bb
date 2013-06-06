@@ -596,8 +596,8 @@ String StylePropertySerializer::getLayeredShorthandValue(const StylePropertyShor
                     if (value->isImplicitInitialValue() || yValue->isImplicitInitialValue())
                         continue;
 
-                    int xId = toCSSPrimitiveValue(value.get())->getIdent();
-                    int yId = toCSSPrimitiveValue(yValue.get())->getIdent();
+                    CSSValueID xId = toCSSPrimitiveValue(value.get())->getValueID();
+                    CSSValueID yId = toCSSPrimitiveValue(yValue.get())->getValueID();
                     if (xId != yId) {
                         if (xId == CSSValueRepeat && yId == CSSValueNoRepeat) {
                             useRepeatXShorthand = true;
