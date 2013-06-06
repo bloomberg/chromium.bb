@@ -39,7 +39,7 @@ def IsSDKTrybot():
 
 def ErrorExit(msg):
   """Write and error to stderr, then exit with 1 signaling failure."""
-  sys.stderr.write(msg + '\n')
+  sys.stderr.write(str(msg) + '\n')
   sys.exit(1)
 
 
@@ -110,7 +110,13 @@ def Run(args, cwd=None, env=None, shell=False):
   print 'Running: ' + ' '.join(args)
   sys.stdout.flush()
   sys.stderr.flush()
-  subprocess.check_call(args, cwd=cwd, env=env, shell=shell)
+  try:
+    subprocess.check_call(args, cwd=cwd, env=env, shell=shell)
+  except subprocess.CalledProcessError as e:
+    sys.stdout.flush()
+    sys.stderr.flush()
+    ErrorExit('buildbot_common: %s' % e)
+
   sys.stdout.flush()
   sys.stderr.flush()
 
@@ -179,10 +185,8 @@ def Archive(filename, bucket_path, cwd=None, step_link=True):
   """Upload the given filename to Google Store."""
   full_dst = 'gs://%s/%s' % (bucket_path, filename)
 
-  subprocess.check_call(
-      '%s cp -a public-read %s %s' % (GetGsutil(), filename, full_dst),
-      shell=True,
-      cwd=cwd)
+  cmd = [GetGsutil(), 'cp', '-a', 'public-read', filename, full_dst]
+  Run(cmd, shell=True, cwd=cwd)
   url = 'https://commondatastorage.googleapis.com/'\
         '%s/%s' % (bucket_path, filename)
   if step_link:
