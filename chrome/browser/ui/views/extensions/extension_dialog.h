@@ -79,6 +79,7 @@ class ExtensionDialog : public views::DialogDelegate,
   virtual views::Widget* GetWidget() OVERRIDE;
   virtual const views::Widget* GetWidget() const OVERRIDE;
   virtual views::View* GetContentsView() OVERRIDE;
+  virtual bool UseNewStyleForThisDialog() const OVERRIDE;
 
   // content::NotificationObserver overrides.
   virtual void Observe(int type,

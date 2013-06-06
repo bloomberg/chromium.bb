@@ -200,6 +200,10 @@ views::View* ExtensionDialog::GetContentsView() {
   return extension_host_->view();
 }
 
+bool ExtensionDialog::UseNewStyleForThisDialog() const {
+  return false;
+}
+
 /////////////////////////////////////////////////////////////////////////////
 // content::NotificationObserver overrides.
 
