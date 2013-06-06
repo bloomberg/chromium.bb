@@ -11,17 +11,19 @@
 #include "base/observer_list.h"
 #include "skia/ext/image_operations.h"
 #include "ui/gfx/image/image_skia.h"
+#include "ui/gfx/size.h"
 
 namespace ash {
 
 class WallpaperResizerObserver;
 
-// Stores the current wallpaper data and resize it to fit all screens if needed.
+// Stores the current wallpaper data and resize it to |target_size| if needed.
 class ASH_EXPORT WallpaperResizer {
  public:
-  explicit WallpaperResizer(const WallpaperInfo& info);
+  WallpaperResizer(const WallpaperInfo& info, const gfx::Size& target_size);
 
-  WallpaperResizer(const WallpaperInfo& info, const gfx::ImageSkia& image);
+  WallpaperResizer(const WallpaperInfo& info, const gfx::Size& target_size,
+                   const gfx::ImageSkia& image);
 
   virtual ~WallpaperResizer();
 
@@ -43,6 +45,8 @@ class ASH_EXPORT WallpaperResizer {
   ObserverList<WallpaperResizerObserver> observers_;
 
   const WallpaperInfo wallpaper_info_;
+
+  gfx::Size target_size_;
 
   gfx::ImageSkia wallpaper_image_;
 

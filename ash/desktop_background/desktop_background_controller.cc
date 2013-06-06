@@ -42,6 +42,23 @@ internal::RootWindowLayoutManager* GetRootWindowLayoutManager(
   return static_cast<internal::RootWindowLayoutManager*>(
       root_window->layout_manager());
 }
+
+// Returns the maximum width and height of all root windows.
+gfx::Size GetRootWindowsSize() {
+  int width = 0;
+  int height = 0;
+  Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
+  for (Shell::RootWindowList::iterator iter = root_windows.begin();
+       iter != root_windows.end(); ++iter) {
+    gfx::Size root_window_size = (*iter)->GetHostSize();
+    if (root_window_size.width() > width)
+      width = root_window_size.width();
+    if (root_window_size.height() > height)
+      height = root_window_size.height();
+  }
+  return gfx::Size(width, height);
+}
+
 }  // namespace
 
 #if defined(GOOGLE_CHROME_BUILD)
@@ -103,7 +120,7 @@ class DesktopBackgroundController::WallpaperLoader
   void LoadingWallpaper() {
     if (cancel_flag_.IsSet())
       return;
-    wallpaper_resizer_.reset(new WallpaperResizer(info_));
+    wallpaper_resizer_.reset(new WallpaperResizer(info_, GetRootWindowsSize()));
   }
 
   ~WallpaperLoader() {}
@@ -215,7 +232,8 @@ void DesktopBackgroundController::SetCustomWallpaper(
   }
 
   WallpaperInfo info = { -1, layout };
-  current_wallpaper_.reset(new WallpaperResizer(info, wallpaper));
+  current_wallpaper_.reset(new WallpaperResizer(info, GetRootWindowsSize(),
+                                                wallpaper));
   current_wallpaper_->StartResize();
   FOR_EACH_OBSERVER(DesktopBackgroundControllerObserver, observers_,
                     OnWallpaperDataChanged());

@@ -5,14 +5,11 @@
 #include "ash/desktop_background/wallpaper_resizer.h"
 
 #include "ash/desktop_background/wallpaper_resizer_observer.h"
-#include "ash/root_window_controller.h"
-#include "ash/shell.h"
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/worker_pool.h"
 #include "content/public/browser/browser_thread.h"
-#include "ui/aura/root_window.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/skia_util.h"
 
@@ -29,14 +26,15 @@ int RoundPositive(double x) {
   return static_cast<int>(floor(x + 0.5));
 }
 
-// Resizes |wallpaper| to fit all screens and calls the callback.
-void ResizeToFitScreens(const SkBitmap& wallpaper,
-                        WallpaperLayout layout,
-                        int width,
-                        int height,
-                        base::MessageLoop* origin_loop,
-                        const ResizedCallback& callback) {
+// Resizes |wallpaper| to |target_size| and calls the callback.
+void Resize(const SkBitmap& wallpaper,
+            WallpaperLayout layout,
+            const gfx::Size& target_size,
+            base::MessageLoop* origin_loop,
+            const ResizedCallback& callback) {
   SkBitmap resized_wallpaper = wallpaper;
+  int width = target_size.width();
+  int height = target_size.height();
   if (wallpaper.width() > width || wallpaper.height() > height) {
     gfx::Rect wallpaper_rect(0, 0, wallpaper.width(), wallpaper.height());
     gfx::Size cropped_size = gfx::Size(std::min(width, wallpaper.width()),
@@ -74,8 +72,7 @@ void ResizeToFitScreens(const SkBitmap& wallpaper,
             cropped_size = gfx::Size(wallpaper.width(),
                 RoundPositive(static_cast<double>(height) / horizontal_ratio));
           }
-          gfx::Rect wallpaper_cropped_rect = wallpaper_rect;
-          wallpaper_cropped_rect.ClampToCenteredSize(cropped_size);
+          wallpaper_rect.ClampToCenteredSize(cropped_size);
           SkBitmap sub_image;
           wallpaper.extractSubset(&sub_image,
                                   gfx::RectToSkIRect(wallpaper_rect));
@@ -91,16 +88,20 @@ void ResizeToFitScreens(const SkBitmap& wallpaper,
 
 }  // namespace
 
-WallpaperResizer::WallpaperResizer(const WallpaperInfo& info)
+WallpaperResizer::WallpaperResizer(const WallpaperInfo& info,
+                                   const gfx::Size& target_size)
     : wallpaper_info_(info),
+      target_size_(target_size),
       wallpaper_image_(*(ui::ResourceBundle::GetSharedInstance().
           GetImageNamed(info.idr).ToImageSkia())),
       weak_ptr_factory_(this) {
 }
 
 WallpaperResizer::WallpaperResizer(const WallpaperInfo& info,
+                                   const gfx::Size& target_size,
                                    const gfx::ImageSkia& image)
     : wallpaper_info_(info),
+      target_size_(target_size),
       wallpaper_image_(image),
       weak_ptr_factory_(this) {
 }
@@ -109,25 +110,12 @@ WallpaperResizer::~WallpaperResizer() {
 }
 
 void WallpaperResizer::StartResize() {
-  int width = 0;
-  int height = 0;
-  Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
-  for (Shell::RootWindowList::iterator iter = root_windows.begin();
-       iter != root_windows.end(); ++iter) {
-    gfx::Size root_window_size = (*iter)->GetHostSize();
-    if (root_window_size.width() > width)
-      width = root_window_size.width();
-    if (root_window_size.height() > height)
-      height = root_window_size.height();
-  }
-
   if (!BrowserThread::GetBlockingPool()->PostWorkerTaskWithShutdownBehavior(
           FROM_HERE,
-          base::Bind(&ResizeToFitScreens,
+          base::Bind(&Resize,
                      *wallpaper_image_.bitmap(),
                      wallpaper_info_.layout,
-                     width,
-                     height,
+                     target_size_,
                      base::MessageLoop::current(),
                      base::Bind(&WallpaperResizer::OnResizeFinished,
                                 weak_ptr_factory_.GetWeakPtr())),

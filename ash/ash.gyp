@@ -634,6 +634,7 @@
         'accelerators/accelerator_table_unittest.cc',
         'accelerators/nested_dispatcher_controller_unittest.cc',
         'desktop_background/desktop_background_controller_unittest.cc',
+        'desktop_background/wallpaper_resizer_unittest.cc',
         'dip_unittest.cc',
         'display/display_controller_unittest.cc',
         'display/display_error_dialog_unittest.cc',
