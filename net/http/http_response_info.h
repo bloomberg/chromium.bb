@@ -26,12 +26,12 @@ class NET_EXPORT HttpResponseInfo {
  public:
   // Describes the kind of connection used to fetch this response.
   enum ConnectionInfo {
-    CONNECTION_INFO_UNKNOWN,
-    CONNECTION_INFO_HTTP1,
-    CONNECTION_INFO_SPDY2,
-    CONNECTION_INFO_SPDY3,
-    CONNECTION_INFO_SPDY4,
-    CONNECTION_INFO_QUIC1_SPDY3,
+    CONNECTION_INFO_UNKNOWN = 0,
+    CONNECTION_INFO_HTTP1 = 1,
+    CONNECTION_INFO_SPDY2 = 2,
+    CONNECTION_INFO_SPDY3 = 3,
+    CONNECTION_INFO_SPDY4 = 4,
+    CONNECTION_INFO_QUIC1_SPDY3 = 5,
     NUM_OF_CONNECTION_INFOS,
   };
 
@@ -126,6 +126,8 @@ class NET_EXPORT HttpResponseInfo {
 
   // Any metadata asociated with this resource's cached data.
   scoped_refptr<IOBufferWithSize> metadata;
+
+  static std::string ConnectionInfoToString(ConnectionInfo connection_info);
 };
 
 }  // namespace net

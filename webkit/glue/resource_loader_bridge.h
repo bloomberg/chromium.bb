@@ -32,6 +32,7 @@
 #include "net/base/host_port_pair.h"
 #include "net/base/load_timing_info.h"
 #include "net/base/request_priority.h"
+#include "net/http/http_response_info.h"
 #include "net/url_request/url_request_status.h"
 #include "third_party/WebKit/public/platform/WebReferrerPolicy.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
@@ -126,6 +127,9 @@ struct ResourceResponseInfo {
   // True if response could use alternate protocol. However, browser will
   // ignore the alternate protocol when spdy is not enabled on browser side.
   bool was_alternate_protocol_available;
+
+  // Information about the type of connection used to fetch this response.
+  net::HttpResponseInfo::ConnectionInfo connection_info;
 
   // True if the response was fetched via an explicit proxy (as opposed to a
   // transparent proxy). The proxy could be any type of proxy, HTTP or SOCKS.

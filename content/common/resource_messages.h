@@ -14,6 +14,7 @@
 #include "content/public/common/resource_response.h"
 #include "ipc/ipc_message_macros.h"
 #include "net/base/request_priority.h"
+#include "net/http/http_response_info.h"
 #include "webkit/glue/resource_request_body.h"
 
 #ifndef CONTENT_COMMON_RESOURCE_MESSAGES_H_
@@ -78,6 +79,10 @@ struct ParamTraits<scoped_refptr<webkit_glue::ResourceRequestBody> > {
 #undef IPC_MESSAGE_EXPORT
 #define IPC_MESSAGE_EXPORT CONTENT_EXPORT
 
+IPC_ENUM_TRAITS_MAX_VALUE( \
+    net::HttpResponseInfo::ConnectionInfo, \
+    net::HttpResponseInfo::NUM_OF_CONNECTION_INFOS - 1)
+
 IPC_STRUCT_TRAITS_BEGIN(content::ResourceResponseHead)
   IPC_STRUCT_TRAITS_PARENT(webkit_glue::ResourceResponseInfo)
   IPC_STRUCT_TRAITS_MEMBER(error_code)
@@ -108,6 +113,7 @@ IPC_STRUCT_TRAITS_BEGIN(webkit_glue::ResourceResponseInfo)
   IPC_STRUCT_TRAITS_MEMBER(was_fetched_via_spdy)
   IPC_STRUCT_TRAITS_MEMBER(was_npn_negotiated)
   IPC_STRUCT_TRAITS_MEMBER(was_alternate_protocol_available)
+  IPC_STRUCT_TRAITS_MEMBER(connection_info)
   IPC_STRUCT_TRAITS_MEMBER(was_fetched_via_proxy)
   IPC_STRUCT_TRAITS_MEMBER(npn_negotiated_protocol)
   IPC_STRUCT_TRAITS_MEMBER(socket_address)

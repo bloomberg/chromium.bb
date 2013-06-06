@@ -136,6 +136,7 @@ HttpResponseInfo& HttpResponseInfo::operator=(const HttpResponseInfo& rhs) {
   did_use_http_auth = rhs.did_use_http_auth;
   socket_address = rhs.socket_address;
   npn_negotiated_protocol = rhs.npn_negotiated_protocol;
+  connection_info = rhs.connection_info;
   request_time = rhs.request_time;
   response_time = rhs.response_time;
   auth_challenge = rhs.auth_challenge;
@@ -325,6 +326,29 @@ void HttpResponseInfo::Persist(Pickle* pickle,
 
   if (connection_info != CONNECTION_INFO_UNKNOWN)
     pickle->WriteInt(static_cast<int>(connection_info));
+}
+
+// static
+std::string HttpResponseInfo::ConnectionInfoToString(
+    ConnectionInfo connection_info) {
+  switch (connection_info) {
+    case CONNECTION_INFO_UNKNOWN:
+      return "unknown";
+    case CONNECTION_INFO_HTTP1:
+      return "http/1";
+    case CONNECTION_INFO_SPDY2:
+      return "spdy/2";
+    case CONNECTION_INFO_SPDY3:
+      return "spdy/3";
+    case CONNECTION_INFO_SPDY4:
+      return "spdy/4";
+    case CONNECTION_INFO_QUIC1_SPDY3:
+      return "quic/1+spdy/3";
+    case NUM_OF_CONNECTION_INFOS:
+      break;
+  }
+  NOTREACHED();
+  return "";
 }
 
 }  // namespace net

@@ -15,6 +15,7 @@ DocumentState::DocumentState()
       was_fetched_via_spdy_(false),
       was_npn_negotiated_(false),
       was_alternate_protocol_available_(false),
+      connection_info_(net::HttpResponseInfo::CONNECTION_INFO_UNKNOWN),
       was_fetched_via_proxy_(false),
       was_prefetcher_(false),
       was_referred_by_prefetcher_(false),

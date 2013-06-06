@@ -9,6 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "net/http/http_response_info.h"
 #include "third_party/WebKit/public/platform/WebURLResponse.h"
 #include "webkit/glue/webkit_glue_export.h"
 
@@ -44,6 +45,15 @@ class WEBKIT_GLUE_EXPORT WebURLResponseExtraDataImpl :
     was_fetched_via_spdy_ = was_fetched_via_spdy;
   }
 
+  // Information about the type of connection used to fetch this response.
+  net::HttpResponseInfo::ConnectionInfo connection_info() const {
+    return connection_info_;
+  }
+  void set_connection_info(
+      net::HttpResponseInfo::ConnectionInfo connection_info) {
+    connection_info_ = connection_info;
+  }
+
   // Flag whether this request was loaded after the
   // TLS/Next-Protocol-Negotiation was used.
   // This is related to SPDY.
@@ -75,6 +85,7 @@ class WEBKIT_GLUE_EXPORT WebURLResponseExtraDataImpl :
   bool was_fetched_via_proxy_;
   bool was_fetched_via_spdy_;
   bool was_npn_negotiated_;
+  net::HttpResponseInfo::ConnectionInfo connection_info_;
   bool was_alternate_protocol_available_;
 
   DISALLOW_COPY_AND_ASSIGN(WebURLResponseExtraDataImpl);

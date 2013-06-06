@@ -22,6 +22,7 @@ ResourceResponseInfo::ResourceResponseInfo()
       was_fetched_via_spdy(false),
       was_npn_negotiated(false),
       was_alternate_protocol_available(false),
+      connection_info(net::HttpResponseInfo::CONNECTION_INFO_UNKNOWN),
       was_fetched_via_proxy(false) {
 }
 

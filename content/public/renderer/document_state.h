@@ -12,6 +12,7 @@
 #include "base/supports_user_data.h"
 #include "base/time.h"
 #include "content/common/content_export.h"
+#include "net/http/http_response_info.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDataSource.h"
 
 namespace content {
@@ -148,6 +149,14 @@ class CONTENT_EXPORT DocumentState
     was_alternate_protocol_available_ = value;
   }
 
+  net::HttpResponseInfo::ConnectionInfo connection_info() const {
+    return connection_info_;
+  }
+  void set_connection_info(
+      net::HttpResponseInfo::ConnectionInfo connection_info) {
+    connection_info_ = connection_info;
+  }
+
   bool was_fetched_via_proxy() const { return was_fetched_via_proxy_; }
   void set_was_fetched_via_proxy(bool value) {
     was_fetched_via_proxy_ = value;
@@ -203,6 +212,7 @@ class CONTENT_EXPORT DocumentState
   bool was_npn_negotiated_;
   std::string npn_negotiated_protocol_;
   bool was_alternate_protocol_available_;
+  net::HttpResponseInfo::ConnectionInfo connection_info_;
   bool was_fetched_via_proxy_;
 
   scoped_ptr<PasswordForm> password_form_data_;

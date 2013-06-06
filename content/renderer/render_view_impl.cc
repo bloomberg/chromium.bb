@@ -4078,6 +4078,8 @@ void RenderViewImpl::didReceiveResponse(
         extra_data->npn_negotiated_protocol());
     document_state->set_was_alternate_protocol_available(
         extra_data->was_alternate_protocol_available());
+    document_state->set_connection_info(
+        extra_data->connection_info());
     document_state->set_was_fetched_via_proxy(
         extra_data->was_fetched_via_proxy());
   }

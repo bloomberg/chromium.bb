@@ -8,6 +8,7 @@
 
 #include "base/time.h"
 #include "content/public/renderer/document_state.h"
+#include "net/http/http_response_info.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "v8/include/v8.h"
 
@@ -135,13 +136,18 @@ class LoadTimesExtensionWrapper : public v8::Extension {
         load_times->Set(
             v8::String::New("wasNpnNegotiated"),
             v8::Boolean::New(document_state->was_npn_negotiated()));
-         load_times->Set(
+        load_times->Set(
             v8::String::New("npnNegotiatedProtocol"),
             v8::String::New(document_state->npn_negotiated_protocol().c_str()));
         load_times->Set(
             v8::String::New("wasAlternateProtocolAvailable"),
             v8::Boolean::New(
                 document_state->was_alternate_protocol_available()));
+        load_times->Set(
+            v8::String::New("connectionInfo"),
+            v8::String::New(
+                net::HttpResponseInfo::ConnectionInfoToString(
+                    document_state->connection_info()).c_str()));
         return load_times;
       }
     }

@@ -211,6 +211,7 @@ void PopulateURLResponse(
   extra_data->set_was_npn_negotiated(info.was_npn_negotiated);
   extra_data->set_was_alternate_protocol_available(
       info.was_alternate_protocol_available);
+  extra_data->set_connection_info(info.connection_info);
   extra_data->set_was_fetched_via_proxy(info.was_fetched_via_proxy);
 
   // If there's no received headers end time, don't set load timing.  This is

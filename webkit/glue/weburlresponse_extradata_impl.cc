@@ -9,7 +9,8 @@ namespace webkit_glue {
 WebURLResponseExtraDataImpl::WebURLResponseExtraDataImpl(
     const std::string& npn_negotiated_protocol)
     : npn_negotiated_protocol_(npn_negotiated_protocol),
-      is_ftp_directory_listing_(false) {
+      is_ftp_directory_listing_(false),
+      connection_info_(net::HttpResponseInfo::CONNECTION_INFO_UNKNOWN) {
 }
 
 WebURLResponseExtraDataImpl::~WebURLResponseExtraDataImpl() {
