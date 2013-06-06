@@ -103,7 +103,7 @@ bool IndexedDBObjectStoreImpl::IndexWriter::AddingKeyAllowed(
                                             index_id,
                                             index_key,
                                             &found_primary_key,
-                                            found);
+                                            &found);
   if (!ok)
     return false;
   if (!found ||

@@ -487,7 +487,7 @@ void IndexedDBDatabaseImpl::RemoveIndex(int64 object_store_id, int64 index_id) {
 bool IndexedDBDatabaseImpl::OpenInternal() {
   bool success = false;
   bool ok = backing_store_->GetIDBDatabaseMetaData(
-      metadata_.name, &metadata_, success);
+      metadata_.name, &metadata_, &success);
   DCHECK(success == (metadata_.id != kInvalidId)) << "success = " << success
                                                   << " id_ = " << metadata_.id;
   if (!ok)
@@ -497,7 +497,7 @@ bool IndexedDBDatabaseImpl::OpenInternal() {
                                            &metadata_.object_stores);
 
   return backing_store_->CreateIDBDatabaseMetaData(
-      metadata_.name, metadata_.version, metadata_.int_version, metadata_.id);
+      metadata_.name, metadata_.version, metadata_.int_version, &metadata_.id);
 }
 
 IndexedDBDatabaseImpl::~IndexedDBDatabaseImpl() {
@@ -783,7 +783,7 @@ void GetOperation::Perform(IndexedDBTransaction* transaction) {
                                    database_id_,
                                    object_store_id_,
                                    *key,
-                                   value);
+                                   &value);
     if (!ok) {
       callbacks_->OnError(IndexedDBDatabaseError(
           WebKit::WebIDBDatabaseExceptionUnknownError,
@@ -835,7 +835,7 @@ void GetOperation::Perform(IndexedDBTransaction* transaction) {
                                  database_id_,
                                  object_store_id_,
                                  *primary_key,
-                                 value);
+                                 &value);
   if (!ok) {
     callbacks_->OnError(
         IndexedDBDatabaseError(WebKit::WebIDBDatabaseExceptionUnknownError,
@@ -866,7 +866,7 @@ static scoped_ptr<IndexedDBKey> GenerateKey(
       transaction->BackingStoreTransaction(),
       database_id,
       object_store_id,
-      current_number);
+      &current_number);
   if (!ok) {
     LOG(ERROR) << "Failed to get_key_generator_current_number";
     return make_scoped_ptr(new IndexedDBKey());
@@ -962,7 +962,7 @@ void PutOperation::Perform(IndexedDBTransaction* transaction) {
         object_store_.id,
         *key.get(),
         &record_identifier,
-        found);
+        &found);
     if (!ok) {
       callbacks_->OnError(IndexedDBDatabaseError(
           WebKit::WebIDBDatabaseExceptionUnknownError,
@@ -1074,7 +1074,7 @@ void IndexedDBDatabaseImpl::SetIndexKeys(
                                     object_store_id,
                                     *primary_key,
                                     &record_identifier,
-                                    found);
+                                    &found);
   if (!ok) {
     transaction->Abort(IndexedDBDatabaseError(
         WebKit::WebIDBDatabaseExceptionUnknownError,

@@ -113,7 +113,7 @@ TEST(IndexedDBLevelDBCodingTest, EncodeBool) {
 
 static int CompareKeys(const std::vector<char>& a, const std::vector<char>& b) {
   bool ok;
-  int result = CompareEncodedIDBKeys(a, b, ok);
+  int result = CompareEncodedIDBKeys(a, b, &ok);
   EXPECT_TRUE(ok);
   return result;
 }
@@ -405,7 +405,7 @@ static int CompareStrings(const std::vector<char>& p,
   DCHECK(!q.empty());
   StringPiece slice_p(&*p.begin(), p.size());
   StringPiece slice_q(&*q.begin(), q.size());
-  int result = CompareEncodedStringsWithLength(&slice_p, &slice_q, ok);
+  int result = CompareEncodedStringsWithLength(&slice_p, &slice_q, &ok);
   EXPECT_TRUE(ok);
   EXPECT_TRUE(slice_p.empty());
   EXPECT_TRUE(slice_q.empty());

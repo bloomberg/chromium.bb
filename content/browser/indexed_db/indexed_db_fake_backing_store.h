@@ -20,11 +20,11 @@ class IndexedDBFakeBackingStore : public IndexedDBBackingStore {
   virtual std::vector<string16> GetDatabaseNames() OVERRIDE;
   virtual bool GetIDBDatabaseMetaData(const string16& name,
                                       IndexedDBDatabaseMetadata*,
-                                      bool& found) OVERRIDE;
+                                      bool* found) OVERRIDE;
   virtual bool CreateIDBDatabaseMetaData(const string16& name,
                                          const string16& version,
                                          int64 int_version,
-                                         int64& row_id) OVERRIDE;
+                                         int64* row_id) OVERRIDE;
   virtual bool UpdateIDBDatabaseMetaData(Transaction*,
                                          int64 row_id,
                                          const string16& version) OVERRIDE;
@@ -50,7 +50,7 @@ class IndexedDBFakeBackingStore : public IndexedDBBackingStore {
   virtual bool GetKeyGeneratorCurrentNumber(Transaction*,
                                             int64 database_id,
                                             int64 object_store_id,
-                                            int64& current_number) OVERRIDE;
+                                            int64* current_number) OVERRIDE;
   virtual bool MaybeUpdateKeyGeneratorCurrentNumber(Transaction*,
                                                     int64 database_id,
                                                     int64 object_store_id,
@@ -62,7 +62,7 @@ class IndexedDBFakeBackingStore : public IndexedDBBackingStore {
                                       int64 object_store_id,
                                       const IndexedDBKey&,
                                       RecordIdentifier* found_record_identifier,
-                                      bool& found) OVERRIDE;
+                                      bool* found) OVERRIDE;
 
   virtual bool CreateIndex(Transaction*,
                            int64 database_id,

@@ -63,7 +63,7 @@ CONTENT_EXPORT WARN_UNUSED_RESULT bool DecodeIDBKeyPath(
 
 CONTENT_EXPORT int CompareEncodedStringsWithLength(base::StringPiece* slice1,
                                                    base::StringPiece* slice2,
-                                                   bool& ok);
+                                                   bool* ok);
 
 CONTENT_EXPORT WARN_UNUSED_RESULT bool ExtractEncodedIDBKey(
     base::StringPiece* slice,
@@ -71,7 +71,7 @@ CONTENT_EXPORT WARN_UNUSED_RESULT bool ExtractEncodedIDBKey(
 
 CONTENT_EXPORT int CompareEncodedIDBKeys(const std::vector<char>& a,
                                          const std::vector<char>& b,
-                                         bool& ok);
+                                         bool* ok);
 
 CONTENT_EXPORT int Compare(const LevelDBSlice& a,
                            const LevelDBSlice& b,
@@ -373,7 +373,7 @@ class ObjectStoreDataKey {
   static std::vector<char> Encode(int64 database_id,
                                   int64 object_store_id,
                                   const IndexedDBKey& user_key);
-  int Compare(const ObjectStoreDataKey& other, bool& ok);
+  int Compare(const ObjectStoreDataKey& other, bool* ok);
   scoped_ptr<IndexedDBKey> user_key() const;
   static const int64 kSpecialIndexNumber;
   ObjectStoreDataKey();
@@ -398,7 +398,7 @@ class ExistsEntryKey {
   static std::vector<char> Encode(int64 database_id,
                                   int64 object_store_id,
                                   const IndexedDBKey& user_key);
-  int Compare(const ExistsEntryKey& other, bool& ok);
+  int Compare(const ExistsEntryKey& other, bool* ok);
   scoped_ptr<IndexedDBKey> user_key() const;
 
   static const int64 kSpecialIndexNumber;
@@ -432,7 +432,7 @@ class IndexDataKey {
   CONTENT_EXPORT static std::vector<char> EncodeMaxKey(int64 database_id,
                                                        int64 object_store_id,
                                                        int64 index_id);
-  int Compare(const IndexDataKey& other, bool ignore_duplicates, bool& ok);
+  int Compare(const IndexDataKey& other, bool ignore_duplicates, bool* ok);
   int64 DatabaseId() const;
   int64 ObjectStoreId() const;
   int64 IndexId() const;

@@ -52,9 +52,9 @@ class CONTENT_EXPORT LevelDBDatabase {
   bool Remove(const LevelDBSlice& key);
   virtual bool Get(const LevelDBSlice& key,
                    std::string* value,
-                   bool& found,
+                   bool* found,
                    const LevelDBSnapshot* = 0);
-  bool Write(LevelDBWriteBatch& batch);
+  bool Write(const LevelDBWriteBatch& write_batch);
   scoped_ptr<LevelDBIterator> CreateIterator(const LevelDBSnapshot* = 0);
   const LevelDBComparator* Comparator() const;
 

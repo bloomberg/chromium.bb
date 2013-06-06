@@ -79,8 +79,8 @@ void LevelDBTransaction::Remove(const LevelDBSlice& key) {
 
 bool LevelDBTransaction::Get(const LevelDBSlice& key,
                              std::string* value,
-                             bool& found) {
-  found = false;
+                             bool* found) {
+  *found = false;
   DCHECK(!finished_);
   AVLTreeNode* node = tree_.Search(key);
 
@@ -89,13 +89,13 @@ bool LevelDBTransaction::Get(const LevelDBSlice& key,
       return true;
 
     value->assign(node->value.begin(), node->value.end());
-    found = true;
+    *found = true;
     return true;
   }
 
   bool ok = db_->Get(key, value, found, &snapshot_);
   if (!ok) {
-    DCHECK(!found);
+    DCHECK(!*found);
     return false;
   }
   return true;

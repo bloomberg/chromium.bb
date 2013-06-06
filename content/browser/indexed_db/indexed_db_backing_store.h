@@ -61,11 +61,11 @@ class CONTENT_EXPORT IndexedDBBackingStore
   virtual std::vector<string16> GetDatabaseNames();
   virtual bool GetIDBDatabaseMetaData(const string16& name,
                                       IndexedDBDatabaseMetadata* metadata,
-                                      bool& success) WARN_UNUSED_RESULT;
+                                      bool* success) WARN_UNUSED_RESULT;
   virtual bool CreateIDBDatabaseMetaData(const string16& name,
                                          const string16& version,
                                          int64 int_version,
-                                         int64& row_id);
+                                         int64* row_id);
   virtual bool UpdateIDBDatabaseMetaData(
       IndexedDBBackingStore::Transaction* transaction,
       int64 row_id,
@@ -116,7 +116,7 @@ class CONTENT_EXPORT IndexedDBBackingStore
                          int64 database_id,
                          int64 object_store_id,
                          const IndexedDBKey& key,
-                         std::vector<char>& record) WARN_UNUSED_RESULT;
+                         std::vector<char>* record) WARN_UNUSED_RESULT;
   virtual bool PutRecord(IndexedDBBackingStore::Transaction* transaction,
                          int64 database_id,
                          int64 object_store_id,
@@ -134,7 +134,7 @@ class CONTENT_EXPORT IndexedDBBackingStore
       IndexedDBBackingStore::Transaction* transaction,
       int64 database_id,
       int64 object_store_id,
-      int64& current_number) WARN_UNUSED_RESULT;
+      int64* current_number) WARN_UNUSED_RESULT;
   virtual bool MaybeUpdateKeyGeneratorCurrentNumber(
       IndexedDBBackingStore::Transaction* transaction,
       int64 database_id,
@@ -147,7 +147,7 @@ class CONTENT_EXPORT IndexedDBBackingStore
       int64 object_store_id,
       const IndexedDBKey& key,
       RecordIdentifier* found_record_identifier,
-      bool& found) WARN_UNUSED_RESULT;
+      bool* found) WARN_UNUSED_RESULT;
 
   virtual bool CreateIndex(IndexedDBBackingStore::Transaction* transaction,
                            int64 database_id,
@@ -181,7 +181,7 @@ class CONTENT_EXPORT IndexedDBBackingStore
                                 int64 index_id,
                                 const IndexedDBKey& key,
                                 scoped_ptr<IndexedDBKey>* found_primary_key,
-                                bool& exists) WARN_UNUSED_RESULT;
+                                bool* exists) WARN_UNUSED_RESULT;
 
   class Cursor {
    public:
@@ -301,8 +301,8 @@ class CONTENT_EXPORT IndexedDBBackingStore
                       int64 object_store_id,
                       int64 index_id,
                       const IndexedDBKey& key,
-                      std::vector<char>& found_encoded_primary_key,
-                      bool& found);
+                      std::vector<char>* found_encoded_primary_key,
+                      bool* found);
   bool GetIndexes(int64 database_id,
                   int64 object_store_id,
                   IndexedDBObjectStoreMetadata::IndexMap* map)

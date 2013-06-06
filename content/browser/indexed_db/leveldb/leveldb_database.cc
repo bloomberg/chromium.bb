@@ -243,9 +243,9 @@ bool LevelDBDatabase::Remove(const LevelDBSlice& key) {
 
 bool LevelDBDatabase::Get(const LevelDBSlice& key,
                           std::string* value,
-                          bool& found,
+                          bool* found,
                           const LevelDBSnapshot* snapshot) {
-  found = false;
+  *found = false;
   leveldb::ReadOptions read_options;
   read_options.verify_checksums = true;  // TODO(jsbell): Disable this if the
                                          // performance impact is too great.
@@ -253,7 +253,7 @@ bool LevelDBDatabase::Get(const LevelDBSlice& key,
 
   const leveldb::Status s = db_->Get(read_options, MakeSlice(key), value);
   if (s.ok()) {
-    found = true;
+    *found = true;
     return true;
   }
   if (s.IsNotFound())
@@ -262,7 +262,7 @@ bool LevelDBDatabase::Get(const LevelDBSlice& key,
   return false;
 }
 
-bool LevelDBDatabase::Write(LevelDBWriteBatch& write_batch) {
+bool LevelDBDatabase::Write(const LevelDBWriteBatch& write_batch) {
   leveldb::WriteOptions write_options;
   write_options.sync = true;
 

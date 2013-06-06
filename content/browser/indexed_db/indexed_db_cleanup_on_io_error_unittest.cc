@@ -30,7 +30,7 @@ class BustedLevelDBDatabase : public LevelDBDatabase {
   }
   virtual bool Get(const LevelDBSlice& key,
                    std::string* value,
-                   bool& found,
+                   bool* found,
                    const LevelDBSnapshot* = 0) OVERRIDE {
     // false means IO error.
     return false;

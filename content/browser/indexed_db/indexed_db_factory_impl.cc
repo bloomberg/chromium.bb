@@ -15,14 +15,14 @@
 namespace content {
 
 template <typename K, typename M>
-static void CleanWeakMap(std::map<K, base::WeakPtr<M> >& map) {
+static void CleanWeakMap(std::map<K, base::WeakPtr<M> >* map) {
   std::map<K, base::WeakPtr<M> > other;
-  other.swap(map);
+  other.swap(*map);
 
   typename std::map<K, base::WeakPtr<M> >::const_iterator iter = other.begin();
   while (iter != other.end()) {
     if (iter->second.get())
-      map[iter->first] = iter->second;
+      (*map)[iter->first] = iter->second;
     ++iter;
   }
 }
@@ -133,7 +133,7 @@ scoped_refptr<IndexedDBBackingStore> IndexedDBFactoryImpl::OpenBackingStore(
   }
 
   if (backing_store) {
-    CleanWeakMap(backing_store_map_);
+    CleanWeakMap(&backing_store_map_);
     backing_store_map_[file_identifier] = backing_store->GetWeakPtr();
     // If an in-memory database, bind lifetime to this factory instance.
     if (open_in_memory)

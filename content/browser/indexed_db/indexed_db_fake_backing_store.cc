@@ -18,7 +18,7 @@ std::vector<string16> IndexedDBFakeBackingStore::GetDatabaseNames() {
 bool IndexedDBFakeBackingStore::GetIDBDatabaseMetaData(
     const string16& name,
     IndexedDBDatabaseMetadata*,
-    bool& found) {
+    bool* found) {
   return true;
 }
 
@@ -26,7 +26,7 @@ bool IndexedDBFakeBackingStore::CreateIDBDatabaseMetaData(
     const string16& name,
     const string16& version,
     int64 int_version,
-    int64& row_id) {
+    int64* row_id) {
   return true;
 }
 bool IndexedDBFakeBackingStore::UpdateIDBDatabaseMetaData(
@@ -68,7 +68,7 @@ bool IndexedDBFakeBackingStore::GetKeyGeneratorCurrentNumber(
     Transaction*,
     int64 database_id,
     int64 object_store_id,
-    int64& current_number) {
+    int64* current_number) {
   return true;
 }
 bool IndexedDBFakeBackingStore::MaybeUpdateKeyGeneratorCurrentNumber(
@@ -85,7 +85,7 @@ bool IndexedDBFakeBackingStore::KeyExistsInObjectStore(
     int64 object_store_id,
     const IndexedDBKey&,
     RecordIdentifier* found_record_identifier,
-    bool& found) {
+    bool* found) {
   return true;
 }
 

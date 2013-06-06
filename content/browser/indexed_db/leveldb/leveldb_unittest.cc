@@ -58,7 +58,7 @@ TEST(LevelDBDatabaseTest, CorruptionTest) {
   leveldb = LevelDBDatabase::Open(temp_directory.path(), &comparator);
   EXPECT_TRUE(leveldb);
   bool found = false;
-  success = leveldb->Get(LevelDBSlice(key), &got_value, found);
+  success = leveldb->Get(LevelDBSlice(key), &got_value, &found);
   EXPECT_TRUE(success);
   EXPECT_TRUE(found);
   EXPECT_EQ(put_value, std::vector<char>(got_value.begin(), got_value.end()));
@@ -82,7 +82,7 @@ TEST(LevelDBDatabaseTest, CorruptionTest) {
 
   leveldb = LevelDBDatabase::Open(temp_directory.path(), &comparator);
   EXPECT_TRUE(leveldb);
-  success = leveldb->Get(LevelDBSlice(key), &got_value, found);
+  success = leveldb->Get(LevelDBSlice(key), &got_value, &found);
   EXPECT_TRUE(success);
   EXPECT_FALSE(found);
 }
@@ -111,14 +111,14 @@ TEST(LevelDBDatabaseTest, Transaction) {
   EXPECT_TRUE(success);
 
   bool found = false;
-  success = transaction->Get(LevelDBSlice(key), &got_value, found);
+  success = transaction->Get(LevelDBSlice(key), &got_value, &found);
   EXPECT_TRUE(success);
   EXPECT_TRUE(found);
   EXPECT_EQ(
       comparator.Compare(LevelDBSlice(got_value), LevelDBSlice(old_value)), 0);
 
   found = false;
-  success = leveldb->Get(LevelDBSlice(key), &got_value, found);
+  success = leveldb->Get(LevelDBSlice(key), &got_value, &found);
   EXPECT_TRUE(success);
   EXPECT_TRUE(found);
   EXPECT_EQ(
@@ -129,14 +129,14 @@ TEST(LevelDBDatabaseTest, Transaction) {
   success = leveldb->Put(LevelDBSlice(added_key), added_value);
   EXPECT_TRUE(success);
 
-  success = leveldb->Get(LevelDBSlice(added_key), &got_value, found);
+  success = leveldb->Get(LevelDBSlice(added_key), &got_value, &found);
   EXPECT_TRUE(success);
   EXPECT_TRUE(found);
   EXPECT_EQ(
       comparator.Compare(LevelDBSlice(got_value), LevelDBSlice(added_value)),
       0);
 
-  success = transaction->Get(LevelDBSlice(added_key), &got_value, found);
+  success = transaction->Get(LevelDBSlice(added_key), &got_value, &found);
   EXPECT_TRUE(success);
   EXPECT_FALSE(found);
 
@@ -144,7 +144,7 @@ TEST(LevelDBDatabaseTest, Transaction) {
   const std::vector<char> another_value = EncodeString("another value");
   transaction->Put(LevelDBSlice(another_key), another_value);
 
-  success = transaction->Get(LevelDBSlice(another_key), &got_value, found);
+  success = transaction->Get(LevelDBSlice(another_key), &got_value, &found);
   EXPECT_TRUE(success);
   EXPECT_TRUE(found);
   EXPECT_EQ(

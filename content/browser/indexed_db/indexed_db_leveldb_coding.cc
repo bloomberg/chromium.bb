@@ -624,23 +624,23 @@ static WebIDBKey::Type KeyTypeByteToKeyType(unsigned char type) {
 
 int CompareEncodedStringsWithLength(StringPiece* slice1,
                                     StringPiece* slice2,
-                                    bool& ok) {
+                                    bool* ok) {
   int64 len1, len2;
   if (!DecodeVarInt(slice1, &len1) || !DecodeVarInt(slice2, &len2)) {
-    ok = false;
+    *ok = false;
     return 0;
   }
   DCHECK_GE(len1, 0);
   DCHECK_GE(len2, 0);
   if (len1 < 0 || len2 < 0) {
-    ok = false;
+    *ok = false;
     return 0;
   }
   DCHECK_GE(slice1->size(), len1 * sizeof(char16));
   DCHECK_GE(slice2->size(), len2 * sizeof(char16));
   if (slice1->size() < len1 * sizeof(char16) ||
       slice2->size() < len2 * sizeof(char16)) {
-    ok = false;
+    *ok = false;
     return 0;
   }
 
@@ -649,7 +649,7 @@ int CompareEncodedStringsWithLength(StringPiece* slice1,
   slice1->remove_prefix(len1 * sizeof(char16));
   slice2->remove_prefix(len2 * sizeof(char16));
 
-  ok = true;
+  *ok = true;
   // Strings are UTF-16BE encoded, so a simple memcmp is sufficient.
   return string1.compare(string2);
 }
@@ -672,8 +672,8 @@ static int CompareTypes(WebIDBKey::Type a, WebIDBKey::Type b) { return b - a; }
 
 int CompareEncodedIDBKeys(StringPiece* slice_a,
                           StringPiece* slice_b,
-                          bool& ok) {
-  ok = true;
+                          bool* ok) {
+  *ok = true;
   unsigned char type_a = (*slice_a)[0];
   unsigned char type_b = (*slice_b)[0];
   slice_a->remove_prefix(1);
@@ -692,12 +692,12 @@ int CompareEncodedIDBKeys(StringPiece* slice_a,
       int64 length_a, length_b;
       if (!DecodeVarInt(slice_a, &length_a) ||
           !DecodeVarInt(slice_b, &length_b)) {
-        ok = false;
+        *ok = false;
         return 0;
       }
       for (int64 i = 0; i < length_a && i < length_b; ++i) {
         int result = CompareEncodedIDBKeys(slice_a, slice_b, ok);
-        if (!ok || result)
+        if (!*ok || result)
           return result;
       }
       return length_a - length_b;
@@ -708,7 +708,7 @@ int CompareEncodedIDBKeys(StringPiece* slice_a,
     case kIndexedDBKeyNumberTypeByte: {
       double d, e;
       if (!DecodeDouble(slice_a, &d) || !DecodeDouble(slice_b, &e)) {
-        ok = false;
+        *ok = false;
         return 0;
       }
       if (d < e)
@@ -725,7 +725,7 @@ int CompareEncodedIDBKeys(StringPiece* slice_a,
 
 int CompareEncodedIDBKeys(const std::vector<char>& key_a,
                           const std::vector<char>& key_b,
-                          bool& ok) {
+                          bool* ok) {
   DCHECK(!key_a.empty());
   DCHECK(!key_b.empty());
 
@@ -737,24 +737,24 @@ int CompareEncodedIDBKeys(const std::vector<char>& key_a,
 namespace {
 
 template <typename KeyType>
-int Compare(const LevelDBSlice& a, const LevelDBSlice& b, bool, bool& ok) {
+int Compare(const LevelDBSlice& a, const LevelDBSlice& b, bool, bool* ok) {
   KeyType key_a;
   KeyType key_b;
 
   const char* ptr_a = KeyType::Decode(a.begin(), a.end(), &key_a);
   DCHECK(ptr_a);
   if (!ptr_a) {
-    ok = false;
+    *ok = false;
     return 0;
   }
   const char* ptr_b = KeyType::Decode(b.begin(), b.end(), &key_b);
   DCHECK(ptr_b);
   if (!ptr_b) {
-    ok = false;
+    *ok = false;
     return 0;
   }
 
-  ok = true;
+  *ok = true;
   return key_a.Compare(key_b);
 }
 
@@ -762,7 +762,7 @@ template <>
 int Compare<ExistsEntryKey>(const LevelDBSlice& a,
                             const LevelDBSlice& b,
                             bool,
-                            bool& ok) {
+                            bool* ok) {
   KeyPrefix prefix_a;
   KeyPrefix prefix_b;
   const char* ptr_a = KeyPrefix::Decode(a.begin(), a.end(), &prefix_a);
@@ -789,7 +789,7 @@ template <>
 int Compare<ObjectStoreDataKey>(const LevelDBSlice& a,
                                 const LevelDBSlice& b,
                                 bool,
-                                bool& ok) {
+                                bool* ok) {
   KeyPrefix prefix_a;
   KeyPrefix prefix_b;
   const char* ptr_a = KeyPrefix::Decode(a.begin(), a.end(), &prefix_a);
@@ -816,7 +816,7 @@ template <>
 int Compare<IndexDataKey>(const LevelDBSlice& a,
                           const LevelDBSlice& b,
                           bool ignore_duplicates,
-                          bool& ok) {
+                          bool* ok) {
   KeyPrefix prefix_a;
   KeyPrefix prefix_b;
   const char* ptr_a = KeyPrefix::Decode(a.begin(), a.end(), &prefix_a);
@@ -839,7 +839,7 @@ int Compare<IndexDataKey>(const LevelDBSlice& a,
   StringPiece slice_a(ptr_a, a.end() - ptr_a);
   StringPiece slice_b(ptr_b, b.end() - ptr_b);
   int result = CompareEncodedIDBKeys(&slice_a, &slice_b, ok);
-  if (!ok || result)
+  if (!*ok || result)
     return result;
   if (ignore_duplicates)
     return 0;
@@ -865,7 +865,7 @@ int Compare<IndexDataKey>(const LevelDBSlice& a,
     return 1;
 
   result = CompareEncodedIDBKeys(&slice_a, &slice_b, ok);
-  if (!ok || result)
+  if (!*ok || result)
     return result;
 
   return CompareInts(sequence_number_a, sequence_number_b);
@@ -874,7 +874,7 @@ int Compare<IndexDataKey>(const LevelDBSlice& a,
 int Compare(const LevelDBSlice& a,
             const LevelDBSlice& b,
             bool index_keys,
-            bool& ok) {
+            bool* ok) {
   const char* ptr_a = a.begin();
   const char* ptr_b = b.begin();
   const char* end_a = a.end();
@@ -888,11 +888,11 @@ int Compare(const LevelDBSlice& a,
   DCHECK(ptr_a);
   DCHECK(ptr_b);
   if (!ptr_a || !ptr_b) {
-    ok = false;
+    *ok = false;
     return 0;
   }
 
-  ok = true;
+  *ok = true;
   if (int x = prefix_a.Compare(prefix_b))
     return x;
 
@@ -982,7 +982,7 @@ int Compare(const LevelDBSlice& a,
   }
 
   NOTREACHED();
-  ok = false;
+  *ok = false;
   return 0;
 }
 
@@ -990,7 +990,7 @@ int Compare(const LevelDBSlice& a,
 
 int Compare(const LevelDBSlice& a, const LevelDBSlice& b, bool index_keys) {
   bool ok;
-  int result = Compare(a, b, index_keys, ok);
+  int result = Compare(a, b, index_keys, &ok);
   DCHECK(ok);
   if (!ok)
     return 0;
@@ -1680,7 +1680,7 @@ std::vector<char> ObjectStoreDataKey::Encode(int64 database_id,
   return Encode(database_id, object_store_id, encoded_key);
 }
 
-int ObjectStoreDataKey::Compare(const ObjectStoreDataKey& other, bool& ok) {
+int ObjectStoreDataKey::Compare(const ObjectStoreDataKey& other, bool* ok) {
   return CompareEncodedIDBKeys(encoded_user_key_, other.encoded_user_key_, ok);
 }
 
@@ -1734,7 +1734,7 @@ std::vector<char> ExistsEntryKey::Encode(int64 database_id,
   return Encode(database_id, object_store_id, encoded_key);
 }
 
-int ExistsEntryKey::Compare(const ExistsEntryKey& other, bool& ok) {
+int ExistsEntryKey::Compare(const ExistsEntryKey& other, bool* ok) {
   return CompareEncodedIDBKeys(encoded_user_key_, other.encoded_user_key_, ok);
 }
 
@@ -1837,19 +1837,19 @@ std::vector<char> IndexDataKey::EncodeMaxKey(int64 database_id,
 
 int IndexDataKey::Compare(const IndexDataKey& other,
                           bool ignore_duplicates,
-                          bool& ok) {
+                          bool* ok) {
   DCHECK_GE(database_id_, 0);
   DCHECK_GE(object_store_id_, 0);
   DCHECK_GE(index_id_, 0);
   int result =
       CompareEncodedIDBKeys(encoded_user_key_, other.encoded_user_key_, ok);
-  if (!ok || result)
+  if (!*ok || result)
     return result;
   if (ignore_duplicates)
     return 0;
   result = CompareEncodedIDBKeys(
       encoded_primary_key_, other.encoded_primary_key_, ok);
-  if (!ok || result)
+  if (!*ok || result)
     return result;
   return CompareInts(sequence_number_, other.sequence_number_);
 }

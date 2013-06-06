@@ -72,7 +72,7 @@ TEST_F(IndexedDBBackingStoreTest, PutGetConsistency) {
     transaction2.begin();
     std::vector<char> result_value;
     bool ok =
-        backing_store_->GetRecord(&transaction2, 1, 1, m_key1, result_value);
+        backing_store_->GetRecord(&transaction2, 1, 1, m_key1, &result_value);
     transaction2.Commit();
     EXPECT_TRUE(ok);
     EXPECT_EQ(m_value1, result_value);
@@ -132,7 +132,7 @@ TEST_F(IndexedDBBackingStoreTest, HighIds) {
                                         high_database_id,
                                         high_object_store_id,
                                         m_key1,
-                                        result_value);
+                                        &result_value);
     EXPECT_TRUE(ok);
     EXPECT_EQ(m_value1, result_value);
 
@@ -195,19 +195,19 @@ TEST_F(IndexedDBBackingStoreTest, InvalidIds) {
   EXPECT_FALSE(ok);
 
   ok = backing_store_->GetRecord(
-      &transaction1, database_id, KeyPrefix::kInvalidId, m_key1, result_value);
+      &transaction1, database_id, KeyPrefix::kInvalidId, m_key1, &result_value);
   EXPECT_FALSE(ok);
   ok = backing_store_->GetRecord(
-      &transaction1, database_id, 0, m_key1, result_value);
+      &transaction1, database_id, 0, m_key1, &result_value);
   EXPECT_FALSE(ok);
   ok = backing_store_->GetRecord(&transaction1,
                                  KeyPrefix::kInvalidId,
                                  object_store_id,
                                  m_key1,
-                                 result_value);
+                                 &result_value);
   EXPECT_FALSE(ok);
   ok = backing_store_->GetRecord(
-      &transaction1, 0, object_store_id, m_key1, result_value);
+      &transaction1, 0, object_store_id, m_key1, &result_value);
   EXPECT_FALSE(ok);
 
   scoped_ptr<IndexedDBKey> new_primary_key;
@@ -265,7 +265,7 @@ TEST_F(IndexedDBBackingStoreTest, CreateDatabase) {
 
   {
     bool ok = backing_store_->CreateIDBDatabaseMetaData(
-        database_name, version, int_version, database_id);
+        database_name, version, int_version, &database_id);
     EXPECT_TRUE(ok);
     EXPECT_GT(database_id, 0);
 
@@ -297,8 +297,8 @@ TEST_F(IndexedDBBackingStoreTest, CreateDatabase) {
   {
     IndexedDBDatabaseMetadata database;
     bool found;
-    bool ok =
-        backing_store_->GetIDBDatabaseMetaData(database_name, &database, found);
+    bool ok = backing_store_->GetIDBDatabaseMetaData(
+        database_name, &database, &found);
     EXPECT_TRUE(ok);
     EXPECT_TRUE(found);
 
