@@ -236,11 +236,14 @@ void InstantPage::DidFailProvisionalLoad(
 void InstantPage::OnSetSuggestions(
     int page_id,
     const std::vector<InstantSuggestion>& suggestions) {
-  if (contents()->IsActiveEntry(page_id)) {
-    OnInstantSupportDetermined(page_id, true);
-    if (ShouldProcessSetSuggestions())
-      delegate_->SetSuggestions(contents(), suggestions);
-  }
+  if (!contents()->IsActiveEntry(page_id))
+    return;
+
+  OnInstantSupportDetermined(page_id, true);
+  if (!ShouldProcessSetSuggestions())
+    return;
+
+  delegate_->SetSuggestions(contents(), suggestions);
 }
 
 void InstantPage::OnInstantSupportDetermined(int page_id,
@@ -262,20 +265,26 @@ void InstantPage::OnInstantSupportDetermined(int page_id,
 void InstantPage::OnShowInstantOverlay(int page_id,
                                        int height,
                                        InstantSizeUnits units) {
-  if (contents()->IsActiveEntry(page_id)) {
-    OnInstantSupportDetermined(page_id, true);
-    delegate_->LogDropdownShown();
-    if (ShouldProcessShowInstantOverlay())
-      delegate_->ShowInstantOverlay(contents(), height, units);
-  }
+  if (!contents()->IsActiveEntry(page_id))
+    return;
+
+  OnInstantSupportDetermined(page_id, true);
+  delegate_->LogDropdownShown();
+  if (!ShouldProcessShowInstantOverlay())
+    return;
+
+  delegate_->ShowInstantOverlay(contents(), height, units);
 }
 
 void InstantPage::OnFocusOmnibox(int page_id, OmniboxFocusState state) {
-  if (contents()->IsActiveEntry(page_id)) {
-    OnInstantSupportDetermined(page_id, true);
-    if (ShouldProcessFocusOmnibox())
-      delegate_->FocusOmnibox(contents(), state);
-  }
+  if (!contents()->IsActiveEntry(page_id))
+    return;
+
+  OnInstantSupportDetermined(page_id, true);
+  if (!ShouldProcessFocusOmnibox())
+    return;
+
+  delegate_->FocusOmnibox(contents(), state);
 }
 
 void InstantPage::OnSearchBoxNavigate(int page_id,
@@ -283,12 +292,15 @@ void InstantPage::OnSearchBoxNavigate(int page_id,
                                       content::PageTransition transition,
                                       WindowOpenDisposition disposition,
                                       bool is_search_type) {
-  if (contents()->IsActiveEntry(page_id)) {
-    OnInstantSupportDetermined(page_id, true);
-    if (ShouldProcessNavigateToURL())
-      delegate_->NavigateToURL(
-          contents(), url, transition, disposition, is_search_type);
-  }
+  if (!contents()->IsActiveEntry(page_id))
+    return;
+
+  OnInstantSupportDetermined(page_id, true);
+  if (!ShouldProcessNavigateToURL())
+    return;
+
+  delegate_->NavigateToURL(
+      contents(), url, transition, disposition, is_search_type);
 }
 
 void InstantPage::OnDeleteMostVisitedItem(const GURL& url) {
