@@ -9,6 +9,9 @@
  *
  * These constants are used in C code as well as assembly, hence the use of
  * the preprocessor.
+ *
+ * nacl_qualify_sandbox_instrs.c validates that these instructions trap
+ * as expected.
  */
 
 #ifndef NATIVE_CLIENT_SRC_INCLUDE_ARM_SANDBOX_H_

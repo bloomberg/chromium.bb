@@ -16,6 +16,11 @@ EXTERN_C_BEGIN
  */
 int NaClQualifyFpu(void);
 
+/*
+ * Returns 1 if special sandbox instructions trap as expected.
+ */
+int NaClQualifySandboxInstrs(void);
+
 EXTERN_C_END
 
 #endif
