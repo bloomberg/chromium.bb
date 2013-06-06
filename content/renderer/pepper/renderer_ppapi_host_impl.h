@@ -87,8 +87,6 @@ class RendererPpapiHostImpl
   virtual bool IsValidInstance(PP_Instance instance) const OVERRIDE;
   virtual webkit::ppapi::PluginInstance* GetPluginInstance(
       PP_Instance instance) const OVERRIDE;
-  virtual webkit::ppapi::PluginDelegate::PlatformGraphics2D*
-      GetPlatformGraphics2D(PP_Resource resource) OVERRIDE;
   virtual RenderView* GetRenderViewForInstance(
       PP_Instance instance) const OVERRIDE;
   virtual WebKit::WebPluginContainer* GetContainerForInstance(

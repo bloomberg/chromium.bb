@@ -14,6 +14,11 @@
 #include "ppapi/host/resource_message_handler.h"
 #include "ppapi/shared_impl/host_resource.h"
 
+namespace content {
+class PepperFileSystemHost;
+class PepperGraphics2DHost;
+}
+
 namespace IPC {
 class Message;
 }
@@ -47,14 +52,16 @@ class PPAPI_HOST_EXPORT ResourceHost : public ResourceMessageHandler {
   // host. This will notify subclasses by calling
   // DidConnectPendingHostToResource.
   //
-  // The current PP_Resource for all pending hosts should be 0.  See
+  // The current PP_Resource for all pending hosts should be 0. See
   // PpapiHostMsg_AttachToPendingHost.
   void SetPPResourceForPendingHost(PP_Resource pp_resource);
 
   virtual void SendReply(const ReplyMessageContext& context,
                          const IPC::Message& msg) OVERRIDE;
 
-  virtual bool IsGraphics2DHost() const { return false; }
+  // Simple RTTI. Overidden by subclasses that implement the interface.
+  virtual content::PepperFileSystemHost* AsPepperFileSystemHost();
+  virtual content::PepperGraphics2DHost* AsPepperGraphics2DHost();
 
  protected:
   // Adds a ResourceMessageFilter to handle resource messages. Incoming

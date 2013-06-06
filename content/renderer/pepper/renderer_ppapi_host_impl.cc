@@ -171,18 +171,6 @@ RenderView* RendererPpapiHostImpl::GetRenderViewForInstance(
       instance_object->delegate())->render_view();
 }
 
-webkit::ppapi::PluginDelegate::PlatformGraphics2D*
-RendererPpapiHostImpl::GetPlatformGraphics2D(
-    PP_Resource resource) {
-  ppapi::host::ResourceHost* resource_host =
-      GetPpapiHost()->GetResourceHost(resource);
-  if (!resource_host || !resource_host->IsGraphics2DHost()) {
-    DLOG(ERROR) << "Resource is not Graphics2D";
-    return NULL;
-  }
-  return static_cast<PepperGraphics2DHost*>(resource_host);
-}
-
 bool RendererPpapiHostImpl::IsValidInstance(
     PP_Instance instance) const {
   return !!GetAndValidateInstance(instance);

@@ -98,11 +98,6 @@ class RendererPpapiHost {
   // in-process, this returns base::kNullProcessId.
   virtual base::ProcessId GetPluginPID() const = 0;
 
-  // Returns the PlatformGraphics2D for the given plugin resource, or NULL if
-  // the resource is invalid.
-  virtual webkit::ppapi::PluginDelegate::PlatformGraphics2D*
-      GetPlatformGraphics2D(PP_Resource resource) = 0;
-
   // Returns true if the given instance is considered to be currently
   // processing a user gesture or the plugin module has the "override user
   // gesture" flag set (in which case it can always do things normally

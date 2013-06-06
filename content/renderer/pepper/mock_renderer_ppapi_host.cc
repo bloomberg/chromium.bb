@@ -47,12 +47,6 @@ WebKit::WebPluginContainer* MockRendererPpapiHost::GetContainerForInstance(
   return NULL;
 }
 
-webkit::ppapi::PluginDelegate::PlatformGraphics2D*
-MockRendererPpapiHost::GetPlatformGraphics2D(PP_Resource resource) {
-  NOTIMPLEMENTED();
-  return NULL;
-}
-
 base::ProcessId MockRendererPpapiHost::GetPluginPID() const {
   NOTIMPLEMENTED();
   return base::kNullProcessId;

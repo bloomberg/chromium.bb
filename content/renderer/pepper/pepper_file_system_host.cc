@@ -71,6 +71,10 @@ int32_t PepperFileSystemHost::OnResourceMessageReceived(
   return PP_ERROR_FAILED;
 }
 
+PepperFileSystemHost* PepperFileSystemHost::AsPepperFileSystemHost() {
+  return this;
+}
+
 void PepperFileSystemHost::DidOpenFileSystem(
     const std::string& /* name_unused */,
     const GURL& root) {

@@ -44,6 +44,7 @@
 #include "content/renderer/pepper/pepper_broker_impl.h"
 #include "content/renderer/pepper/pepper_device_enumeration_event_handler.h"
 #include "content/renderer/pepper/pepper_file_system_host.h"
+#include "content/renderer/pepper/pepper_graphics_2d_host.h"
 #include "content/renderer/pepper/pepper_hung_plugin_filter.h"
 #include "content/renderer/pepper/pepper_in_process_resource_creation.h"
 #include "content/renderer/pepper/pepper_in_process_router.h"
@@ -313,14 +314,13 @@ void CreateHostForInProcessModule(RenderViewImpl* render_view,
   render_view->PpapiPluginCreated(host_impl);
 }
 
-template <typename HostType>
-const HostType* GetRendererResourceHost(
+ppapi::host::ResourceHost* GetRendererResourceHost(
     PP_Instance instance, PP_Resource resource) {
   const ppapi::host::PpapiHost* ppapi_host =
       RendererPpapiHost::GetForPPInstance(instance)->GetPpapiHost();
   if (!resource || !ppapi_host)
     return NULL;
-  return static_cast<HostType*>(ppapi_host->GetResourceHost(resource));
+  return ppapi_host->GetResourceHost(resource);
 }
 
 }  // namespace
@@ -802,9 +802,13 @@ webkit::ppapi::PluginDelegate::PlatformGraphics2D*
 PepperPluginDelegateImpl::GetGraphics2D(
     webkit::ppapi::PluginInstance* instance,
     PP_Resource resource) {
-  RendererPpapiHostImpl* host_impl = static_cast<RendererPpapiHostImpl*>(
-      instance->module()->GetEmbedderState());
-  return host_impl->GetPlatformGraphics2D(resource);
+  ppapi::host::ResourceHost* host =
+      GetRendererResourceHost(instance->pp_instance(), resource);
+  if (!host)
+    return NULL;
+  PepperGraphics2DHost* result = host->AsPepperGraphics2DHost();
+  DLOG_IF(ERROR, !result) << "Resource is not PepperGraphics2DHost.";
+  return result;
 }
 
 webkit::ppapi::PluginDelegate::PlatformContext3D*
@@ -1001,23 +1005,29 @@ void PepperPluginDelegateImpl::WillHandleMouseEvent() {
 
 bool PepperPluginDelegateImpl::IsFileSystemOpened(PP_Instance instance,
                                                   PP_Resource resource) const {
-  const PepperFileSystemHost* host =
-      GetRendererResourceHost<PepperFileSystemHost>(instance, resource);
-  return host && host->IsOpened();
+  ppapi::host::ResourceHost* host = GetRendererResourceHost(instance, resource);
+  if (!host)
+    return false;
+  PepperFileSystemHost* fs_host = host->AsPepperFileSystemHost();
+  return fs_host && fs_host->IsOpened();
 }
 
 PP_FileSystemType PepperPluginDelegateImpl::GetFileSystemType(
     PP_Instance instance, PP_Resource resource) const {
-  const PepperFileSystemHost* host =
-      GetRendererResourceHost<PepperFileSystemHost>(instance, resource);
-  return host ? host->GetType() : PP_FILESYSTEMTYPE_INVALID;
+  ppapi::host::ResourceHost* host = GetRendererResourceHost(instance, resource);
+  if (!host)
+    return PP_FILESYSTEMTYPE_INVALID;
+  PepperFileSystemHost* fs_host = host->AsPepperFileSystemHost();
+  return fs_host ? fs_host->GetType() : PP_FILESYSTEMTYPE_INVALID;
 }
 
 GURL PepperPluginDelegateImpl::GetFileSystemRootUrl(
     PP_Instance instance, PP_Resource resource) const {
-  const PepperFileSystemHost* host =
-      GetRendererResourceHost<PepperFileSystemHost>(instance, resource);
-  return host ? host->GetRootUrl() : GURL();
+  ppapi::host::ResourceHost* host = GetRendererResourceHost(instance, resource);
+  if (!host)
+    return GURL();
+  PepperFileSystemHost* fs_host = host->AsPepperFileSystemHost();
+  return fs_host ? fs_host->GetRootUrl() : GURL();
 }
 
 bool PepperPluginDelegateImpl::MakeDirectory(

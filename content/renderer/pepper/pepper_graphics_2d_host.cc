@@ -240,6 +240,10 @@ int32_t PepperGraphics2DHost::OnResourceMessageReceived(
   return PP_ERROR_FAILED;
 }
 
+PepperGraphics2DHost* PepperGraphics2DHost::AsPepperGraphics2DHost() {
+  return this;
+}
+
 bool PepperGraphics2DHost::ReadImageData(PP_Resource image,
                                          const PP_Point* top_left) {
   // Get and validate the image object to paint into.
@@ -411,10 +415,6 @@ bool PepperGraphics2DHost::IsAlwaysOpaque() const {
 
 webkit::ppapi::PPB_ImageData_Impl* PepperGraphics2DHost::ImageData() {
   return image_data_.get();
-}
-
-bool PepperGraphics2DHost::IsGraphics2DHost() const {
-  return true;
 }
 
 int32_t PepperGraphics2DHost::OnHostMsgPaintImageData(
