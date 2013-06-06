@@ -104,7 +104,7 @@ void UpSampler::process(const float* sourceP, float* destP, size_t sourceFramesT
 
     // Copy even sample-frames 0,2,4,6... (delayed by the linear phase delay) directly into destP.
     for (unsigned i = 0; i < sourceFramesToProcess; ++i)
-        destP[i * 2] = inputP[i - halfSize];
+        destP[i * 2] = *((inputP - halfSize) + i);
 
     // Compute odd sample-frames 1,3,5,7...
     float* oddSamplesP = m_tempBuffer.data();

@@ -116,7 +116,7 @@ void DownSampler::process(const float* sourceP, float* destP, size_t sourceFrame
     // to match shifting forward in time in m_reducedKernel.
     float* oddSamplesP = m_tempBuffer.data();
     for (unsigned i = 0; i < destFramesToProcess; ++i)
-        oddSamplesP[i] = inputP[i * 2 - 1];
+        oddSamplesP[i] = *((inputP - 1) + i * 2);
 
     // Actually process oddSamplesP with m_reducedKernel for efficiency.
     // The theoretical kernel is double this size with 0 values for even terms (except center).
@@ -128,7 +128,7 @@ void DownSampler::process(const float* sourceP, float* destP, size_t sourceFrame
 
     // Sum into the destination.
     for (unsigned i = 0; i < destFramesToProcess; ++i)
-        destP[i] += 0.5 * inputP[i * 2 - halfSize];
+        destP[i] += 0.5 * *((inputP - halfSize) + i * 2);
 
     // Copy 2nd half of input buffer to 1st half.
     memcpy(m_inputBuffer.data(), inputP, sizeof(float) * sourceFramesToProcess);
