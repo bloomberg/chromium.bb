@@ -138,6 +138,11 @@ class RemoteFileSyncService {
   // returned by the last OnRemoteServiceStateUpdated notification.
   virtual RemoteServiceState GetCurrentState() const = 0;
 
+  // Returns all origins along with an arbitrary string description of their
+  // corresponding sync statuses.
+  typedef std::map<GURL, std::string> OriginStatusMap;
+  virtual void GetOriginStatusMap(OriginStatusMap* status_map) = 0;
+
   // Enables or disables the background sync.
   // Setting this to false should disable the synchronization (and make
   // the service state to REMOTE_SERVICE_DISABLED), while setting this to

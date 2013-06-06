@@ -92,6 +92,27 @@ class DriveFileSyncServiceTest : public testing::Test {
     return &(sync_service()->pending_batch_sync_origins_);
   }
 
+  // Helper function to add an origin to the given origin sync status. To make
+  // naming easier, each origin, resourceID, etc. will all share the same
+  // prefixes and only be distinguished by the given suffix ID which could be a
+  // number (1, 2, 3, etc.) or a letter (A, B, C, etc.).
+  // e.g. originA, originB, folder:resource_idA, folder:resource_idB, etc.
+  void AddOrigin(std::string status, const char* suffix) {
+    const GURL origin(std::string("chrome-extension://app_") + suffix);
+    const std::string resource_id(std::string("folder:resource_id") + suffix);
+
+    if (status == "Pending") {
+      pending_batch_sync_origins()->insert(std::make_pair(origin, resource_id));
+    } else if (status == "Enabled") {
+      metadata_store()->AddIncrementalSyncOrigin(origin, resource_id);
+    } else if (status == "Disabled") {
+      metadata_store()->AddIncrementalSyncOrigin(origin, resource_id);
+      metadata_store()->DisableOrigin(origin, base::Bind(&ExpectOkStatus));
+    } else {
+      NOTREACHED();
+    }
+  }
+
   bool VerifyOriginStatusCount(size_t expected_pending,
                                size_t expected_enabled,
                                size_t expected_disabled) {
@@ -204,6 +225,29 @@ TEST_F(DriveFileSyncServiceTest, EnableOriginForTrackingChanges) {
                                                  base::Bind(&ExpectOkStatus));
   message_loop()->RunUntilIdle();
   ASSERT_TRUE(VerifyOriginStatusCount(0u, 1u, 0u));
+}
+
+TEST_F(DriveFileSyncServiceTest, GetOriginStatusMap) {
+  RemoteFileSyncService::OriginStatusMap origin_status_map;
+  sync_service()->GetOriginStatusMap(&origin_status_map);
+  ASSERT_EQ(0u, origin_status_map.size());
+
+  // Add 3 pending, 2 enabled and 1 disabled sync origin.
+  AddOrigin("Pending", "p0");
+  AddOrigin("Pending", "p1");
+  AddOrigin("Pending", "p2");
+  AddOrigin("Enabled", "e0");
+  AddOrigin("Enabled", "e1");
+  AddOrigin("Disabled", "d0");
+
+  sync_service()->GetOriginStatusMap(&origin_status_map);
+  ASSERT_EQ(6u, origin_status_map.size());
+  EXPECT_EQ("Pending", origin_status_map[GURL("chrome-extension://app_p0")]);
+  EXPECT_EQ("Pending", origin_status_map[GURL("chrome-extension://app_p1")]);
+  EXPECT_EQ("Pending", origin_status_map[GURL("chrome-extension://app_p2")]);
+  EXPECT_EQ("Enabled", origin_status_map[GURL("chrome-extension://app_e0")]);
+  EXPECT_EQ("Enabled", origin_status_map[GURL("chrome-extension://app_e1")]);
+  EXPECT_EQ("Disabled", origin_status_map[GURL("chrome-extension://app_d0")]);
 }
 
 }  // namespace sync_file_system

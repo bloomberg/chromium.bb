@@ -49,6 +49,8 @@ class MockRemoteFileSyncService : public RemoteFileSyncService {
   MOCK_METHOD1(IsConflicting, bool(const fileapi::FileSystemURL& url));
   MOCK_CONST_METHOD0(GetCurrentState,
                      RemoteServiceState());
+  MOCK_METHOD1(GetOriginStatusMap,
+               void(RemoteFileSyncService::OriginStatusMap* status_map));
   MOCK_METHOD1(SetSyncEnabled, void(bool));
   MOCK_METHOD1(SetConflictResolutionPolicy,
                SyncStatusCode(ConflictResolutionPolicy));

@@ -48,6 +48,7 @@ using fileapi::FileSystemURL;
 namespace sync_file_system {
 
 typedef DriveFileSyncService::ConflictResolutionResult ConflictResolutionResult;
+typedef RemoteFileSyncService::OriginStatusMap OriginStatusMap;
 
 namespace {
 
@@ -246,6 +247,28 @@ RemoteServiceState DriveFileSyncService::GetCurrentState() const {
   if (!sync_enabled_)
     return REMOTE_SERVICE_DISABLED;
   return state_;
+}
+
+void DriveFileSyncService::GetOriginStatusMap(OriginStatusMap* status_map) {
+  DCHECK(status_map);
+
+  // Add batch sync origins held by DriveFileSyncService.
+  typedef std::map<GURL, std::string>::const_iterator iterator;
+  for (iterator itr = pending_batch_sync_origins_.begin();
+       itr != pending_batch_sync_origins_.end();
+       ++itr)
+    (*status_map)[itr->first] = "Pending";
+
+  // Add incremental and disabled origins held by DriveMetadataStore.
+  for (iterator itr = metadata_store_->incremental_sync_origins().begin();
+       itr != metadata_store_->incremental_sync_origins().end();
+       ++itr)
+    (*status_map)[itr->first] = "Enabled";
+
+  for (iterator itr = metadata_store_->disabled_origins().begin();
+       itr != metadata_store_->disabled_origins().end();
+       ++itr)
+    (*status_map)[itr->first] = "Disabled";
 }
 
 void DriveFileSyncService::SetSyncEnabled(bool enabled) {
