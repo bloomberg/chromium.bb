@@ -163,7 +163,7 @@ class WalletClient
   // GetWalletItems retrieves the user's online wallet. The WalletItems
   // returned may require additional action such as presenting legal documents
   // to the user to be accepted.
-  void GetWalletItems(const GURL& source_url);
+  virtual void GetWalletItems(const GURL& source_url);
 
   // The GetWalletItems call to the Online Wallet backend may require the user
   // to accept various legal documents before a FullWallet can be generated.

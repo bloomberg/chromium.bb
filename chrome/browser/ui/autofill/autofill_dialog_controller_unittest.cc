@@ -63,10 +63,10 @@ void SetOutputValue(const DetailInputs& inputs,
   }
 }
 
-scoped_ptr<wallet::FullWallet> CreateFullWalletWithVerifyCvv() {
+scoped_ptr<wallet::FullWallet> CreateFullWallet(const char* required_action) {
   base::DictionaryValue dict;
   scoped_ptr<base::ListValue> list(new base::ListValue());
-  list->AppendString("verify_cvv");
+  list->AppendString(required_action);
   dict.Set("required_action", list.release());
   return wallet::FullWallet::CreateFullWallet(dict);
 }
@@ -139,6 +139,8 @@ class TestWalletClient : public wallet::WalletClient {
 
   MOCK_METHOD1(GetFullWallet,
       void(const wallet::WalletClient::FullWalletRequest& request));
+
+  MOCK_METHOD1(GetWalletItems, void(const GURL& source_url));
 
   MOCK_METHOD2(SaveAddress,
       void(const wallet::Address& address, const GURL& source_url));
@@ -1353,7 +1355,7 @@ TEST_F(AutofillDialogControllerTest, VerifyCvv) {
       controller()->SuggestionStateForSection(SECTION_CC_BILLING);
   EXPECT_TRUE(suggestion_state.extra_text.empty());
 
-  controller()->OnDidGetFullWallet(CreateFullWalletWithVerifyCvv());
+  controller()->OnDidGetFullWallet(CreateFullWallet("verify_cvv"));
 
   EXPECT_FALSE(
       NotificationsOfType(DialogNotification::REQUIRED_ACTION).empty());
@@ -1423,7 +1425,7 @@ TEST_F(AutofillDialogControllerTest, ErrorDuringVerifyCvv) {
   controller()->OnDidGetWalletItems(wallet_items.Pass());
   controller()->OnAccept();
   controller()->OnDidLoadRiskFingerprintData(GetFakeFingerprint().Pass());
-  controller()->OnDidGetFullWallet(CreateFullWalletWithVerifyCvv());
+  controller()->OnDidGetFullWallet(CreateFullWallet("verify_cvv"));
 
   ASSERT_TRUE(controller()->IsDialogButtonEnabled(ui::DIALOG_BUTTON_OK));
   ASSERT_TRUE(controller()->IsDialogButtonEnabled(ui::DIALOG_BUTTON_CANCEL));
@@ -1445,7 +1447,7 @@ TEST_F(AutofillDialogControllerTest, ChangeAccountDuringVerifyCvv) {
   controller()->OnDidGetWalletItems(wallet_items.Pass());
   controller()->OnAccept();
   controller()->OnDidLoadRiskFingerprintData(GetFakeFingerprint().Pass());
-  controller()->OnDidGetFullWallet(CreateFullWalletWithVerifyCvv());
+  controller()->OnDidGetFullWallet(CreateFullWallet("verify_cvv"));
 
   ASSERT_TRUE(controller()->IsDialogButtonEnabled(ui::DIALOG_BUTTON_OK));
   ASSERT_TRUE(controller()->IsDialogButtonEnabled(ui::DIALOG_BUTTON_CANCEL));
@@ -1908,6 +1910,29 @@ TEST_F(AutofillDialogControllerTest, WalletExpiredCard) {
   validity_data = controller()->InputsAreValid(outputs, VALIDATE_EDIT);
   EXPECT_EQ(0U, validity_data.count(CREDIT_CARD_EXP_MONTH));
   EXPECT_EQ(0U, validity_data.count(CREDIT_CARD_EXP_4_DIGIT_YEAR));
+}
+
+TEST_F(AutofillDialogControllerTest, ChooseAnotherInstrumentOrAddress) {
+  scoped_ptr<wallet::WalletItems> wallet_items = wallet::GetTestWalletItems();
+  wallet_items->AddInstrument(wallet::GetTestMaskedInstrument());
+  wallet_items->AddAddress(wallet::GetTestShippingAddress());
+  controller()->OnDidGetWalletItems(wallet_items.Pass());
+  controller()->OnAccept();
+  controller()->OnDidLoadRiskFingerprintData(GetFakeFingerprint().Pass());
+
+  EXPECT_EQ(0U, NotificationsOfType(
+      DialogNotification::REQUIRED_ACTION).size());
+
+  EXPECT_CALL(*controller()->GetTestingWalletClient(),
+              GetWalletItems(_)).Times(1);
+  controller()->OnDidGetFullWallet(
+      CreateFullWallet("choose_another_instrument_or_address"));
+  EXPECT_EQ(1U, NotificationsOfType(
+      DialogNotification::REQUIRED_ACTION).size());
+
+  controller()->OnAccept();
+  EXPECT_EQ(0U, NotificationsOfType(
+      DialogNotification::REQUIRED_ACTION).size());
 }
 
 }  // namespace autofill

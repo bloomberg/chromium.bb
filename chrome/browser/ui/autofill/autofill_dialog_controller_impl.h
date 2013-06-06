@@ -644,6 +644,12 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
   // Wallet data.
   bool wallet_server_validation_error_;
 
+  // True if the last call to |GetFullWallet()| returned a
+  // CHOOSE_ANOTHER_INSTRUMENT_OR_ADDRESS required action, indicating that the
+  // selected instrument or address had become invalid since it was originally
+  // returned in |GetWalletItems()|.
+  bool choose_another_instrument_or_address_;
+
   // The current state of the Autocheckout flow.
   AutocheckoutState autocheckout_state_;
 

@@ -487,9 +487,8 @@ void AutofillDialogControllerImpl::Show() {
   view_->Show();
   GetManager()->AddObserver(this);
 
-  // Try to see if the user is already signed-in.
-  // If signed-in, fetch the user's Wallet data.
-  // Otherwise, see if the user could be signed in passively.
+  // Try to see if the user is already signed-in. If signed-in, fetch the user's
+  // Wallet data. Otherwise, see if the user could be signed in passively.
   // TODO(aruslan): UMA metrics for sign-in.
   GetWalletItems();
 
@@ -1437,8 +1436,8 @@ std::vector<DialogNotification> AutofillDialogControllerImpl::
 
   if (IsSubmitPausedOn(wallet::VERIFY_CVV)) {
     notifications.push_back(DialogNotification(
-            DialogNotification::REQUIRED_ACTION,
-            l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_VERIFY_CVV)));
+        DialogNotification::REQUIRED_ACTION,
+        l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_VERIFY_CVV)));
   }
 
   if (autocheckout_state_ == AUTOCHECKOUT_ERROR) {
@@ -1464,6 +1463,12 @@ std::vector<DialogNotification> AutofillDialogControllerImpl::
     notifications.push_back(DialogNotification(
         DialogNotification::DEVELOPER_WARNING,
         l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_NOT_PROD_WARNING)));
+  }
+
+  if (choose_another_instrument_or_address_) {
+    notifications.push_back(DialogNotification(
+        DialogNotification::REQUIRED_ACTION,
+        ASCIIToUTF16("We need more information to complete your purchase.")));
   }
 
   return notifications;
@@ -1525,6 +1530,7 @@ void AutofillDialogControllerImpl::OnCancel() {
 }
 
 void AutofillDialogControllerImpl::OnAccept() {
+  choose_another_instrument_or_address_ = false;
   HidePopup();
   SetIsSubmitting(true);
   if (IsSubmitPausedOn(wallet::VERIFY_CVV)) {
@@ -1686,9 +1692,25 @@ void AutofillDialogControllerImpl::OnDidGetFullWallet(
     return;
   }
 
-  SuggestionsUpdated();
-  view_->UpdateNotificationArea();
-  view_->UpdateButtonStrip();
+  switch (full_wallet_->required_actions()[0]) {
+    case wallet::CHOOSE_ANOTHER_INSTRUMENT_OR_ADDRESS:
+      choose_another_instrument_or_address_ = true;
+      SetIsSubmitting(false);
+      view_->UpdateNotificationArea();
+      view_->UpdateButtonStrip();
+      GetWalletItems();
+      break;
+
+    case wallet::VERIFY_CVV:
+      SuggestionsUpdated();
+      view_->UpdateNotificationArea();
+      view_->UpdateButtonStrip();
+      break;
+
+    default:
+      DisableWallet();
+      break;
+  }
 }
 
 void AutofillDialogControllerImpl::OnPassiveSigninSuccess(
@@ -1895,6 +1917,7 @@ AutofillDialogControllerImpl::AutofillDialogControllerImpl(
       has_accepted_legal_documents_(false),
       is_submitting_(false),
       wallet_server_validation_error_(false),
+      choose_another_instrument_or_address_(false),
       autocheckout_state_(AUTOCHECKOUT_NOT_STARTED),
       was_ui_latency_logged_(false) {
   // TODO(estade): remove duplicates from |form_structure|?
