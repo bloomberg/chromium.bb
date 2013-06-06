@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import glob
+import optparse
 import re
 
 
@@ -143,3 +145,72 @@ def ParseHex(hex_content):
       bytes = []
 
   assert bytes == [], r'r"\\" should not appear on the last line'
+
+
+def AssertEquals(actual, expected):
+  if actual != expected:
+    raise AssertionError('\nEXPECTED:\n"""\n%s"""\n\nACTUAL:\n"""\n%s"""'
+                         % (expected, actual))
+
+
+class TestRunner(object):
+
+  SECTION_NAME = None
+
+  def CommandLineOptions(self, parser):
+    pass
+
+  def GetSectionContent(self, options, hex_content):
+    raise NotImplementedError()
+
+  def Test(self, options, items_list):
+    info = dict(items_list)
+
+    if self.SECTION_NAME in info:
+      content = self.GetSectionContent(options, info['hex'])
+
+      print '  Checking %s field...' % self.SECTION_NAME
+      if options.update:
+        if content != info[self.SECTION_NAME]:
+          print '  Updating %s field...' % self.SECTION_NAME
+          info[self.SECTION_NAME] = content
+      else:
+        AssertEquals(content, info[self.SECTION_NAME])
+
+    # Update field values, but preserve their order.
+    items_list = [(field, info[field]) for field, _ in items_list]
+
+    return items_list
+
+  def Run(self, argv):
+    parser = optparse.OptionParser()
+    parser.add_option('--bits',
+                      type=int,
+                      help='The subarchitecture to run tests against: 32 or 64')
+    parser.add_option('--update',
+                      default=False,
+                      action='store_true',
+                      help='Regenerate golden fields instead of testing')
+    self.CommandLineOptions(parser)
+
+    options, args = parser.parse_args(argv)
+
+    if options.bits not in [32, 64]:
+      parser.error('specify --bits 32 or --bits 64')
+
+    if len(args) == 0:
+      parser.error('No test files specified')
+    processed = 0
+    for glob_expr in args:
+      test_files = sorted(glob.glob(glob_expr))
+      if len(test_files) == 0:
+        raise AssertionError(
+            '%r matched no files, which was probably not intended' % glob_expr)
+      for test_file in test_files:
+        print 'Testing %s...' % test_file
+        tests = LoadTestFile(test_file)
+        tests = [self.Test(options, test) for test in tests]
+        if options.update:
+          SaveTestFile(tests, test_file)
+        processed += 1
+    print '%s test files were processed.' % processed

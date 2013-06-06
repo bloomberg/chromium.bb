@@ -3,8 +3,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import glob
-import optparse
 import os
 import re
 import struct
@@ -16,12 +14,6 @@ import test_format
 
 
 BUNDLE_SIZE = 32
-
-
-def AssertEquals(actual, expected):
-  if actual != expected:
-    raise AssertionError('\nEXPECTED:\n"""\n%s"""\n\nACTUAL:\n"""\n%s"""'
-                         % (expected, actual))
 
 
 def CreateElfContent(bits, text_segment):
@@ -273,68 +265,30 @@ def CheckValidJumpTargets(options, data_chunks):
           'Offset 0x%x was reported invalid jump target' % i)
 
 
-def Test(options, items_list):
-  info = dict(items_list)
+class RdfaTestRunner(test_format.TestRunner):
 
-  if 'rdfa_output' in info:
-    data_chunks = list(test_format.ParseHex(info['hex']))
-    stdout = RunRdfaWithNopPatching(options, data_chunks)
-    print '  Checking rdfa_output field...'
-    if options.update:
-      if stdout != info['rdfa_output']:
-        print '  Updating rdfa_output field...'
-        info['rdfa_output'] = stdout
-    else:
-      AssertEquals(stdout, info['rdfa_output'])
+  SECTION_NAME = 'rdfa_output'
 
-    last_line = re.search('return code: (-?\d+)\n$', info['rdfa_output'])
-    expected_return_code = int(last_line.group(1))
+  def CommandLineOptions(self, parser):
+    parser.add_option('--rdfaval', default='validator_test',
+                      help='Path to the ncval validator executable')
 
-    # This test only works for valid snippets, see CheckValidJumpTargets
-    # for details.
-    if expected_return_code == 0:
+  def GetSectionContent(self, options, hex_content):
+    data_chunks = list(test_format.ParseHex(hex_content))
+    result = RunRdfaWithNopPatching(options, data_chunks)
+
+    last_line = re.search('return code: ((-)?\d+)\n$', result)
+    return_code = int(last_line.group(1))
+
+    if return_code == 0:
       print '  Checking jump targets...'
       CheckValidJumpTargets(options, data_chunks)
 
-  # Update field values, but preserve their order.
-  items_list = [(field, info[field]) for field, _ in items_list]
-
-  return items_list
+    return result
 
 
-def main(args):
-  parser = optparse.OptionParser()
-  parser.add_option('--rdfaval', default='validator_test',
-                    help='Path to the ncval validator executable')
-  parser.add_option('--bits',
-                    type=int,
-                    help='The subarchitecture to run tests against: 32 or 64')
-  parser.add_option('--update',
-                    default=False,
-                    action='store_true',
-                    help='Regenerate golden fields instead of testing')
-
-  options, args = parser.parse_args(args)
-
-  if options.bits not in [32, 64]:
-    parser.error('specify --bits 32 or --bits 64')
-
-  if len(args) == 0:
-    parser.error('No test files specified')
-  processed = 0
-  for glob_expr in args:
-    test_files = sorted(glob.glob(glob_expr))
-    if len(test_files) == 0:
-      raise AssertionError(
-          '%r matched no files, which was probably not intended' % glob_expr)
-    for test_file in test_files:
-      print 'Testing %s...' % test_file
-      tests = test_format.LoadTestFile(test_file)
-      tests = [Test(options, test) for test in tests]
-      if options.update:
-        test_format.SaveTestFile(tests, test_file)
-      processed += 1
-  print '%s test files were processed.' % processed
+def main(argv):
+  RdfaTestRunner().Run(argv)
 
 
 if __name__ == '__main__':
