@@ -71,28 +71,6 @@ class SQLiteServerBoundCertStore::Backend
 
   friend class base::RefCountedThreadSafe<SQLiteServerBoundCertStore::Backend>;
 
-  class KillDatabaseErrorDelegate : public sql::ErrorDelegate {
-   public:
-    explicit KillDatabaseErrorDelegate(Backend* backend);
-
-    virtual ~KillDatabaseErrorDelegate() {}
-
-    // ErrorDelegate implementation.
-    virtual int OnError(int error,
-                        sql::Connection* connection,
-                        sql::Statement* stmt) OVERRIDE;
-
-   private:
-    // Do not increment the count on Backend, as that would create a circular
-    // reference (Backend -> Connection -> ErrorDelegate -> Backend).
-    Backend* backend_;
-
-    // True if the delegate has previously attempted to kill the database.
-    bool attempted_to_kill_database_;
-
-    DISALLOW_COPY_AND_ASSIGN(KillDatabaseErrorDelegate);
-  };
-
   // You should call Close() before destructing this object.
   ~Backend() {
     DCHECK(!db_.get()) << "Close should have already been called.";
@@ -136,9 +114,8 @@ class SQLiteServerBoundCertStore::Backend
 
   void DeleteCertificatesOnShutdown();
 
+  void DatabaseErrorCallback(int error, sql::Statement* stmt);
   void KillDatabase();
-
-  void ScheduleKillDatabase();
 
   base::FilePath path_;
   scoped_ptr<sql::Connection> db_;
@@ -162,25 +139,6 @@ class SQLiteServerBoundCertStore::Backend
 
   DISALLOW_COPY_AND_ASSIGN(Backend);
 };
-
-SQLiteServerBoundCertStore::Backend::KillDatabaseErrorDelegate::
-KillDatabaseErrorDelegate(Backend* backend)
-    : backend_(backend),
-      attempted_to_kill_database_(false) {
-}
-
-int SQLiteServerBoundCertStore::Backend::KillDatabaseErrorDelegate::OnError(
-    int error, sql::Connection* connection, sql::Statement* stmt) {
-  // Do not attempt to kill database more than once. If the first time failed,
-  // it is unlikely that a second time will be successful.
-  if (!attempted_to_kill_database_ && sql::IsErrorCatastrophic(error)) {
-    attempted_to_kill_database_ = true;
-
-    backend_->ScheduleKillDatabase();
-  }
-
-  return error;
-}
 
 // Version number of the database.
 static const int kCurrentVersionNumber = 4;
@@ -254,7 +212,11 @@ void SQLiteServerBoundCertStore::Backend::LoadOnDBThread(
 
   db_.reset(new sql::Connection);
   db_->set_histogram_tag("DomainBoundCerts");
-  db_->set_error_delegate(new KillDatabaseErrorDelegate(this));
+
+  // Unretained to avoid a ref loop with db_.
+  db_->set_error_callback(
+      base::Bind(&SQLiteServerBoundCertStore::Backend::DatabaseErrorCallback,
+                 base::Unretained(this)));
 
   if (!db_->Open(path_)) {
     NOTREACHED() << "Unable to open cert DB.";
@@ -440,11 +402,24 @@ bool SQLiteServerBoundCertStore::Backend::EnsureDatabaseVersion() {
   return true;
 }
 
-void SQLiteServerBoundCertStore::Backend::ScheduleKillDatabase() {
+void SQLiteServerBoundCertStore::Backend::DatabaseErrorCallback(
+    int error,
+    sql::Statement* stmt) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
+
+  if (!sql::IsErrorCatastrophic(error))
+    return;
+
+  // TODO(shess): Running KillDatabase() multiple times should be
+  // safe.
+  if (corruption_detected_)
+    return;
 
   corruption_detected_ = true;
 
+  // TODO(shess): Consider just calling RazeAndClose() immediately.
+  // db_ may not be safe to reset at this point, but RazeAndClose()
+  // would cause the stack to unwind safely with errors.
   BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
                           base::Bind(&Backend::KillDatabase, this));
 }
