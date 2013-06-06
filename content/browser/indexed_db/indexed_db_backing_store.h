@@ -42,11 +42,11 @@ class CONTENT_EXPORT IndexedDBBackingStore
 
   static scoped_refptr<IndexedDBBackingStore> Open(
       const string16& database_identifier,
-      const string16& path_base,
+      const base::FilePath& path_base,
       const string16& file_identifier);
   static scoped_refptr<IndexedDBBackingStore> Open(
       const string16& database_identifier,
-      const string16& path_base,
+      const base::FilePath& path_base,
       const string16& file_identifier,
       LevelDBFactory* factory);
   static scoped_refptr<IndexedDBBackingStore> OpenInMemory(

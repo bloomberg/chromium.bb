@@ -10,6 +10,7 @@
 #include "content/browser/indexed_db/indexed_db_factory_impl.h"
 #include "third_party/WebKit/public/platform/WebIDBDatabaseCallbacks.h"
 #include "third_party/WebKit/public/platform/WebIDBDatabaseError.h"
+#include "webkit/base/file_path_string_conversions.h"
 
 using WebKit::WebIDBCallbacks;
 using WebKit::WebIDBDatabaseCallbacks;
@@ -29,7 +30,7 @@ void WebIDBFactoryImpl::getDatabaseNames(WebIDBCallbacks* callbacks,
   idb_factory_backend_->GetDatabaseNames(
       IndexedDBCallbacksWrapper::Create(callbacks),
       database_identifier,
-      data_dir);
+      webkit_base::WebStringToFilePath(data_dir));
 }
 
 void WebIDBFactoryImpl::open(const WebString& name,
@@ -51,7 +52,7 @@ void WebIDBFactoryImpl::open(const WebString& name,
                              callbacks_proxy.get(),
                              database_callbacks_proxy.get(),
                              database_identifier,
-                             data_dir);
+                             webkit_base::WebStringToFilePath(data_dir));
 }
 
 void WebIDBFactoryImpl::deleteDatabase(const WebString& name,
@@ -62,7 +63,7 @@ void WebIDBFactoryImpl::deleteDatabase(const WebString& name,
       name,
       IndexedDBCallbacksWrapper::Create(callbacks),
       database_identifier,
-      data_dir);
+      webkit_base::WebStringToFilePath(data_dir));
 }
 
 }  // namespace WebKit

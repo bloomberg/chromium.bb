@@ -418,26 +418,25 @@ enum IndexedDBLevelDBBackingStoreOpenResult {
 
 scoped_refptr<IndexedDBBackingStore> IndexedDBBackingStore::Open(
     const string16& database_identifier,
-    const string16& path_base_arg,
+    const base::FilePath& path_base,
     const string16& file_identifier) {
   DefaultLevelDBFactory leveldb_factory;
   return IndexedDBBackingStore::Open(
-      database_identifier, path_base_arg, file_identifier, &leveldb_factory);
+      database_identifier, path_base, file_identifier, &leveldb_factory);
 }
 
 scoped_refptr<IndexedDBBackingStore> IndexedDBBackingStore::Open(
     const string16& database_identifier,
-    const string16& path_base_arg,
+    const base::FilePath& path_base,
     const string16& file_identifier,
     LevelDBFactory* leveldb_factory) {
   IDB_TRACE("IndexedDBBackingStore::open");
-  DCHECK(!path_base_arg.empty());
-  string16 path_base = path_base_arg;
+  DCHECK(!path_base.empty());
 
   scoped_ptr<LevelDBComparator> comparator(new Comparator());
   scoped_ptr<LevelDBDatabase> db;
 
-  if (!IsStringASCII(path_base)) {
+  if (!IsStringASCII(path_base.AsUTF8Unsafe())) {
     base::Histogram::FactoryGet("WebCore.IndexedDB.BackingStore.OpenStatus",
                                 1,
                                 INDEXED_DB_LEVEL_DB_BACKING_STORE_OPEN_MAX,
@@ -445,10 +444,9 @@ scoped_refptr<IndexedDBBackingStore> IndexedDBBackingStore::Open(
                                 base::HistogramBase::kUmaTargetedHistogramFlag)
         ->Add(INDEXED_DB_LEVEL_DB_BACKING_STORE_OPEN_ATTEMPT_NON_ASCII);
   }
-  base::FilePath file_path_base =
-      base::FilePath::FromUTF8Unsafe(UTF16ToUTF8(path_base));
-  if (!file_util::CreateDirectory(file_path_base)) {
-    LOG(ERROR) << "Unable to create IndexedDB database path " << path_base;
+  if (!file_util::CreateDirectory(path_base)) {
+    LOG(ERROR) << "Unable to create IndexedDB database path "
+               << path_base.AsUTF8Unsafe();
     base::Histogram::FactoryGet("WebCore.IndexedDB.BackingStore.OpenStatus",
                                 1,
                                 INDEXED_DB_LEVEL_DB_BACKING_STORE_OPEN_MAX,
@@ -461,7 +459,7 @@ scoped_refptr<IndexedDBBackingStore> IndexedDBBackingStore::Open(
   // TODO(jsbell): Rework to use FilePath throughout.
   base::FilePath identifier_path = base::FilePath::FromUTF8Unsafe(
       UTF16ToUTF8(database_identifier) + ".indexeddb.leveldb");
-  base::FilePath file_path = file_path_base.Append(identifier_path);
+  base::FilePath file_path = path_base.Append(identifier_path);
 
   db = leveldb_factory->OpenLevelDB(file_path, comparator.get());
 

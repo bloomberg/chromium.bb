@@ -66,7 +66,7 @@ TEST(IndexedDBIOErrorTest, CleanUpTest) {
   MockLevelDBFactory mock_leveldb_factory;
   scoped_refptr<IndexedDBBackingStore> backing_store =
       IndexedDBBackingStore::Open(origin.databaseIdentifier(),
-                                  UTF8ToUTF16(path.AsUTF8Unsafe()),
+                                  path,
                                   dummy_file_identifier,
                                   &mock_leveldb_factory);
 }

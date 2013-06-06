@@ -9,6 +9,7 @@
 #include <set>
 
 #include "base/basictypes.h"
+#include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "content/browser/indexed_db/indexed_db_callbacks_wrapper.h"
@@ -34,7 +35,7 @@ class CONTENT_EXPORT IndexedDBFactoryImpl
   virtual void GetDatabaseNames(
       scoped_refptr<IndexedDBCallbacksWrapper> callbacks,
       const string16& database_identifier,
-      const string16& data_dir) OVERRIDE;
+      const base::FilePath& data_directory) OVERRIDE;
   virtual void Open(
       const string16& name,
       int64 version,
@@ -42,20 +43,20 @@ class CONTENT_EXPORT IndexedDBFactoryImpl
       scoped_refptr<IndexedDBCallbacksWrapper> callbacks,
       scoped_refptr<IndexedDBDatabaseCallbacksWrapper> database_callbacks,
       const string16& database_identifier,
-      const string16& data_dir) OVERRIDE;
+      const base::FilePath& data_directory) OVERRIDE;
 
   virtual void DeleteDatabase(
       const string16& name,
       scoped_refptr<IndexedDBCallbacksWrapper> callbacks,
       const string16& database_identifier,
-      const string16& data_dir) OVERRIDE;
+      const base::FilePath& data_directory) OVERRIDE;
 
  protected:
   IndexedDBFactoryImpl();
   virtual ~IndexedDBFactoryImpl();
   virtual scoped_refptr<IndexedDBBackingStore> OpenBackingStore(
       const string16& database_identifier,
-      const string16& data_dir);
+      const base::FilePath& data_directory);
 
  private:
   typedef std::map<string16, scoped_refptr<IndexedDBDatabaseImpl> >

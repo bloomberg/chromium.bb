@@ -53,7 +53,7 @@ void IndexedDBFactoryImpl::RemoveIDBDatabaseBackend(
 void IndexedDBFactoryImpl::GetDatabaseNames(
     scoped_refptr<IndexedDBCallbacksWrapper> callbacks,
     const string16& database_identifier,
-    const string16& data_directory) {
+    const base::FilePath& data_directory) {
   IDB_TRACE("IndexedDBFactoryImpl::get_database_names");
   scoped_refptr<IndexedDBBackingStore> backing_store =
       OpenBackingStore(database_identifier, data_directory);
@@ -72,7 +72,7 @@ void IndexedDBFactoryImpl::DeleteDatabase(
     const string16& name,
     scoped_refptr<IndexedDBCallbacksWrapper> callbacks,
     const string16& database_identifier,
-    const string16& data_directory) {
+    const base::FilePath& data_directory) {
   IDB_TRACE("IndexedDBFactoryImpl::delete_database");
   const string16 unique_identifier =
       ComputeUniqueIdentifier(name, database_identifier);
@@ -115,7 +115,7 @@ void IndexedDBFactoryImpl::DeleteDatabase(
 
 scoped_refptr<IndexedDBBackingStore> IndexedDBFactoryImpl::OpenBackingStore(
     const string16& database_identifier,
-    const string16& data_directory) {
+    const base::FilePath& data_directory) {
   const string16 file_identifier = ComputeFileIdentifier(database_identifier);
   const bool open_in_memory = data_directory.empty();
 
@@ -156,7 +156,7 @@ void IndexedDBFactoryImpl::Open(
     scoped_refptr<IndexedDBCallbacksWrapper> callbacks,
     scoped_refptr<IndexedDBDatabaseCallbacksWrapper> database_callbacks,
     const string16& database_identifier,
-    const string16& data_directory) {
+    const base::FilePath& data_directory) {
   IDB_TRACE("IndexedDBFactoryImpl::open");
   const string16 unique_identifier =
       ComputeUniqueIdentifier(name, database_identifier);

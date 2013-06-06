@@ -335,8 +335,7 @@ class MockIDBFactory : public IndexedDBFactoryImpl {
   scoped_refptr<IndexedDBBackingStore> TestOpenBackingStore(
       const WebSecurityOrigin& origin,
       const base::FilePath& data_directory) {
-    string16 path = UTF8ToUTF16(data_directory.AsUTF8Unsafe());
-    return OpenBackingStore(origin.databaseIdentifier(), path);
+    return OpenBackingStore(origin.databaseIdentifier(), data_directory);
   }
 
  private:
