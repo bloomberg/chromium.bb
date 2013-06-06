@@ -542,7 +542,7 @@ IN_PROC_BROWSER_TEST_F(NotificationsTest, TestCreateSimpleNotification) {
     const Notification& notification = balloon->notification();
     EXPECT_EQ(EXPECTED_ICON_URL, notification.icon_url());
     EXPECT_EQ(ASCIIToUTF16("My Title"), notification.title());
-    EXPECT_EQ(ASCIIToUTF16("My Body"), notification.body());
+    EXPECT_EQ(ASCIIToUTF16("My Body"), notification.message());
   }
 }
 
@@ -961,6 +961,6 @@ IN_PROC_BROWSER_TEST_F(NotificationsTest, TestNotificationReplacement) {
     GURL EXPECTED_ICON_URL = test_server()->GetURL(kExpectedIconUrl);
     EXPECT_EQ(EXPECTED_ICON_URL, notification.icon_url());
     EXPECT_EQ(ASCIIToUTF16("Title2"), notification.title());
-    EXPECT_EQ(ASCIIToUTF16("Body2"), notification.body());
+    EXPECT_EQ(ASCIIToUTF16("Body2"), notification.message());
   }
 }

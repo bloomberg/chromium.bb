@@ -131,6 +131,7 @@ void MessageCenterViewTest::SetUp() {
                             std::string("notification id"),
                             UTF8ToUTF16("title"),
                             UTF8ToUTF16("message"),
+                            gfx::Image(),
                             UTF8ToUTF16("display source"),
                             std::string("extension id"),
                             NULL,

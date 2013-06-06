@@ -7,6 +7,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/notifications/notification.h"
+#include "chrome/browser/notifications/notification_test_util.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/browser/notifications/sync_notifier/synced_notification.h"
 #include "chrome/browser/profiles/profile.h"
@@ -80,7 +81,11 @@ const sync_pb::CoalescedSyncedNotification_ReadState kDismissed =
 class StubNotificationUIManager : public NotificationUIManager {
  public:
   StubNotificationUIManager()
-      : notification_(GURL(), GURL(), string16(), string16(), NULL) {}
+      : notification_(GURL(),
+                      GURL(),
+                      string16(),
+                      string16(),
+                      new MockNotificationDelegate("stub")) {}
   virtual ~StubNotificationUIManager() {}
 
   // Adds a notification to be displayed. Virtual for unit test override.
@@ -472,7 +477,7 @@ TEST_F(SyncedNotificationTest, GetImageURLTest) {
   EXPECT_EQ(expected_image_url, found_image_url);
 }
 
-// TODO(petewil): test with a multi-line body
+// TODO(petewil): test with a multi-line message
 TEST_F(SyncedNotificationTest, GetTextTest) {
   std::string found_text = notification1_->GetText();
   std::string expected_text(kText1);
@@ -580,62 +585,28 @@ TEST_F(SyncedNotificationTest, ShowTest) {
   // Call the method under test using the pre-populated data.
   notification1_->Show(&notification_manager, NULL, NULL);
 
+  const Notification notification = notification_manager.notification();
+
   // Check the base fields of the notification.
-  EXPECT_EQ(message_center::NOTIFICATION_TYPE_IMAGE,
-            notification_manager.notification().type());
-  EXPECT_EQ(kTitle1,
-            UTF16ToUTF8(notification_manager.notification().title()));
-  EXPECT_EQ(kText1,
-            UTF16ToUTF8(notification_manager.notification().body()));
-  EXPECT_EQ(kExpectedOriginUrl,
-            notification_manager.notification().origin_url().spec());
-  EXPECT_EQ(kIconUrl1, notification_manager.notification().icon_url().spec());
-  EXPECT_EQ(kKey1,
-            UTF16ToUTF8(notification_manager.notification().replace_id()));
-  const DictionaryValue* actual_fields =
-      notification_manager.notification().optional_fields();
+  EXPECT_EQ(message_center::NOTIFICATION_TYPE_IMAGE, notification.type());
+  EXPECT_EQ(kTitle1, UTF16ToUTF8(notification.title()));
+  EXPECT_EQ(kText1, UTF16ToUTF8(notification.message()));
+  EXPECT_EQ(kExpectedOriginUrl, notification.origin_url().spec());
+  EXPECT_EQ(kKey1, UTF16ToUTF8(notification.replace_id()));
 
-  // Check the optional fields of the notification.
-  // Make an optional fields struct like we expect, compare it with actual.
-  DictionaryValue expected_fields;
-  expected_fields.SetDouble(message_center::kTimestampKey, kFakeCreationTime);
-  expected_fields.SetInteger(message_center::kPriorityKey,
-                             kNotificationPriority);
-  expected_fields.SetString(message_center::kButtonOneTitleKey,
-                            kButtonOneTitle);
-  expected_fields.SetString(message_center::kButtonOneIconUrlKey,
-                            kButtonOneIconUrl);
-  expected_fields.SetString(message_center::kButtonTwoTitleKey,
-                            kButtonTwoTitle);
-  expected_fields.SetString(message_center::kButtonTwoIconUrlKey,
-                            kButtonTwoIconUrl);
+  EXPECT_EQ(kFakeCreationTime, notification.timestamp().ToDoubleT());
+  EXPECT_EQ(kNotificationPriority, notification.priority());
 
-  // Fill the individual notification fields for a mutiple notification.
-  base::ListValue* items = new base::ListValue();
-  DictionaryValue* item1 = new DictionaryValue();
-  DictionaryValue* item2 = new DictionaryValue();
-  DictionaryValue* item3 = new DictionaryValue();
-  item1->SetString(message_center::kItemTitleKey,
-                   UTF8ToUTF16(kContainedTitle1));
-  item1->SetString(message_center::kItemMessageKey,
-                   UTF8ToUTF16(kContainedMessage1));
-  item2->SetString(message_center::kItemTitleKey,
-                   UTF8ToUTF16(kContainedTitle2));
-  item2->SetString(message_center::kItemMessageKey,
-                   UTF8ToUTF16(kContainedMessage2));
-  item3->SetString(message_center::kItemTitleKey,
-                   UTF8ToUTF16(kContainedTitle3));
-  item3->SetString(message_center::kItemMessageKey,
-                   UTF8ToUTF16(kContainedMessage3));
-  items->Append(item1);
-  items->Append(item2);
-  items->Append(item3);
-  expected_fields.Set(message_center::kItemsKey, items);
+  EXPECT_EQ(UTF8ToUTF16(kButtonOneTitle), notification.buttons()[0].title);
+  EXPECT_EQ(UTF8ToUTF16(kButtonTwoTitle), notification.buttons()[1].title);
 
-  EXPECT_TRUE(expected_fields.Equals(actual_fields))
-      << "Expected: " << expected_fields
-      << ", but actual: " << *actual_fields;
+  EXPECT_EQ(UTF8ToUTF16(kContainedTitle1), notification.items()[0].title);
+  EXPECT_EQ(UTF8ToUTF16(kContainedTitle2), notification.items()[1].title);
+  EXPECT_EQ(UTF8ToUTF16(kContainedTitle3), notification.items()[2].title);
 
+  EXPECT_EQ(UTF8ToUTF16(kContainedMessage1), notification.items()[0].message);
+  EXPECT_EQ(UTF8ToUTF16(kContainedMessage2), notification.items()[1].message);
+  EXPECT_EQ(UTF8ToUTF16(kContainedMessage3), notification.items()[2].message);
 }
 
 // TODO(petewil): Add a test for a notification being read and or deleted.
