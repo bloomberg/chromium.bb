@@ -435,6 +435,13 @@ void BrowserPluginGuest::Initialize(
     OnNavigateGuest(instance_id_, params.src);
 
   has_render_view_ = true;
+
+  if (!embedder_web_contents_->
+          GetWebkitPrefs().accelerated_compositing_enabled) {
+    WebPreferences prefs = GetWebContents()->GetWebkitPrefs();
+    prefs.accelerated_compositing_enabled = false;
+    GetWebContents()->GetRenderViewHost()->UpdateWebkitPreferences(prefs);
+  }
 }
 
 BrowserPluginGuest::~BrowserPluginGuest() {
