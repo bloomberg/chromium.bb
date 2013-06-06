@@ -203,6 +203,13 @@ void IdentityGetAuthTokenFunction::StartMintToken(
   if (type == IdentityMintRequestQueue::MINT_TYPE_NONINTERACTIVE) {
     switch (cache_status) {
       case IdentityTokenCacheValue::CACHE_STATUS_NOTFOUND:
+#if defined(OS_CHROMEOS)
+        // Always force minting token for ChromeOS kiosk app.
+        if (chrome::IsRunningInForcedAppMode()) {
+          StartGaiaRequest(OAuth2MintTokenFlow::MODE_MINT_TOKEN_FORCE);
+          return;
+        }
+#endif
         StartGaiaRequest(OAuth2MintTokenFlow::MODE_MINT_TOKEN_NO_FORCE);
         break;
 

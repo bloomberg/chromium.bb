@@ -139,7 +139,14 @@ void ExperimentalIdentityGetAuthTokenFunction::StartMintTokenFlow(
     StartGaiaRequest(OAuth2MintTokenFlow::MODE_MINT_TOKEN_NO_FORCE);
   } else {
     DCHECK(type == IdentityMintRequestQueue::MINT_TYPE_INTERACTIVE);
-    install_ui_.reset(new ExtensionInstallPrompt(GetAssociatedWebContents()));
+
+    // GetAssociatedWebContents() could be NULL and this would trigger a CHECK
+    // in the ExtensionInstallPrompt UI. Passing a valid Profile so that the
+    // icon is loaded and avoid the CHECK failure.
+    install_ui_.reset(
+        GetAssociatedWebContents()
+            ? new ExtensionInstallPrompt(GetAssociatedWebContents())
+            : new ExtensionInstallPrompt(profile(), NULL, NULL));
     ShowOAuthApprovalDialog(issue_advice_);
   }
 }
@@ -221,6 +228,12 @@ void ExperimentalIdentityGetAuthTokenFunction::ShowOAuthApprovalDialog(
 OAuth2MintTokenFlow*
 ExperimentalIdentityGetAuthTokenFunction::CreateMintTokenFlow(
     OAuth2MintTokenFlow::Mode mode) {
+#if defined(OS_CHROMEOS)
+  // Always force minting token for ChromeOS kiosk app.
+  if (chrome::IsRunningInForcedAppMode())
+    mode = OAuth2MintTokenFlow::MODE_MINT_TOKEN_FORCE;
+#endif
+
   const OAuth2Info& oauth2_info = OAuth2Info::GetOAuth2Info(GetExtension());
   OAuth2MintTokenFlow* mint_token_flow =
       new OAuth2MintTokenFlow(
