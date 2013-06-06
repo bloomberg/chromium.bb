@@ -1645,14 +1645,11 @@ void AccessibilityNodeObject::ariaLabeledByText(Vector<AccessibilityText>& textO
         Vector<Element*> elements;
         ariaLabeledByElements(elements);
 
-        Vector<RefPtr<AccessibilityObject> > axElements;
         unsigned length = elements.size();
         for (unsigned k = 0; k < length; k++) {
             RefPtr<AccessibilityObject> axElement = axObjectCache()->getOrCreate(elements[k]);
-            axElements.append(axElement);
+            textOrder.append(AccessibilityText(ariaLabeledBy, AlternativeText, axElement));
         }
-
-        textOrder.append(AccessibilityText(ariaLabeledBy, AlternativeText, axElements));
     }
 }
 

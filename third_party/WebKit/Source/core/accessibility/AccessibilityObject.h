@@ -188,25 +188,18 @@ enum AccessibilityTextSource {
 struct AccessibilityText {
     String text;
     AccessibilityTextSource textSource;
-    Vector<RefPtr<AccessibilityObject> > textElements;
+    RefPtr<AccessibilityObject> textElement;
 
     AccessibilityText(const String& t, const AccessibilityTextSource& s)
     : text(t)
     , textSource(s)
     { }
 
-    AccessibilityText(const String& t, const AccessibilityTextSource& s, const Vector<RefPtr<AccessibilityObject> > elements)
-    : text(t)
-    , textSource(s)
-    , textElements(elements)
-    { }
-
     AccessibilityText(const String& t, const AccessibilityTextSource& s, const RefPtr<AccessibilityObject> element)
     : text(t)
     , textSource(s)
-    {
-        textElements.append(element);
-    }
+    , textElement(element)
+    { }
 };
 
 enum AccessibilityOrientation {
