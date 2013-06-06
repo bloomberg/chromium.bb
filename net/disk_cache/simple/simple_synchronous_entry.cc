@@ -431,12 +431,17 @@ bool SimpleSynchronousEntry::OpenOrCreateFiles(bool create) {
     for (int i = 0; i < kSimpleEntryFileCount; ++i) {
       PlatformFileInfo file_info;
       bool success = GetPlatformFileInfo(files_[i], &file_info);
+      base::Time file_last_modified;
       if (!success) {
         DLOG(WARNING) << "Could not get platform file info.";
         continue;
       }
       last_used_ = std::max(last_used_, file_info.last_accessed);
-      last_modified_ = std::max(last_modified_, file_info.last_modified);
+      if (simple_util::GetMTime(path_, &file_last_modified))
+        last_modified_ = std::max(last_modified_, file_last_modified);
+      else
+        last_modified_ = std::max(last_modified_, file_info.last_modified);
+
       data_size_[i] = GetDataSizeFromKeyAndFileSize(key_, file_info.size);
       if (data_size_[i] < 0) {
         // This entry can't possibly be valid, as it does not enough space to

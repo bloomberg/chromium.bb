@@ -29,45 +29,6 @@ uint32 CalculatePickleCRC(const Pickle& pickle) {
                pickle.payload_size());
 }
 
-bool GetNanoSecsFromStat(const struct stat& st, long* out_sec, long* out_nsec) {
-#if defined(OS_ANDROID)
-  *out_sec = st.st_mtime;
-  *out_nsec = st.st_mtime_nsec;
-#elif defined(OS_LINUX)
-  *out_sec = st.st_mtim.tv_sec;
-  *out_nsec = st.st_mtim.tv_nsec;
-#elif defined(OS_MACOSX) || defined(OS_IOS) || defined(OS_BSD)
-  *out_sec = st.st_mtimespec.tv_sec;
-  *out_nsec = st.st_mtimespec.tv_nsec;
-#else
-  return false;
-#endif
-  return true;
-}
-
-bool GetMTime(const base::FilePath& path, base::Time* out_mtime) {
-  DCHECK(out_mtime);
-#if defined(OS_POSIX)
-  base::ThreadRestrictions::AssertIOAllowed();
-  struct stat file_stat;
-  if (stat(path.value().c_str(), &file_stat) != 0)
-    return false;
-  long sec;
-  long nsec;
-  if (GetNanoSecsFromStat(file_stat, &sec, &nsec)) {
-    int64 usec = (nsec / base::Time::kNanosecondsPerMicrosecond);
-    *out_mtime = base::Time::FromTimeT(implicit_cast<time_t>(sec))
-        + base::TimeDelta::FromMicroseconds(usec);
-    return true;
-  }
-#endif
-  base::PlatformFileInfo file_info;
-  if (!file_util::GetFileInfo(path, &file_info))
-    return false;
-  *out_mtime = file_info.last_modified;
-  return true;
-}
-
 void DoomEntrySetReply(scoped_ptr<int> result,
                        const base::Callback<void(int)>& reply_callback) {
   reply_callback.Run(*result.get());
@@ -194,9 +155,9 @@ void SimpleIndexFile::DoomEntrySet(
 bool SimpleIndexFile::IsIndexFileStale(const base::FilePath& index_filename) {
   base::Time index_mtime;
   base::Time dir_mtime;
-  if (!GetMTime(index_filename.DirName(), &dir_mtime))
+  if (!simple_util::GetMTime(index_filename.DirName(), &dir_mtime))
     return true;
-  if (!GetMTime(index_filename, &index_mtime))
+  if (!simple_util::GetMTime(index_filename, &index_mtime))
     return true;
   // Index file last_modified must be equal to the directory last_modified since
   // the last operation we do is ReplaceFile in the
