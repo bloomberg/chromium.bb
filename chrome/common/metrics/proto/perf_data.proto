@@ -212,7 +212,19 @@ message PerfDataProto {
     optional SampleInfo sample_info = 8;
   }
 
-  // Next tag: 11
+  // Next tag: 4
+  message BranchStackEntry {
+    // Branch source address.
+    optional uint64 from_ip = 1;
+
+    // Branch destination address.
+    optional uint64 to_ip = 2;
+
+    // Indicates a mispredicted branch.
+    optional bool mispredicted = 3;
+  }
+
+  // Next tag: 13
   message SampleEvent {
     // Instruction pointer.
     optional uint64 ip = 1;
@@ -243,6 +255,12 @@ message PerfDataProto {
 
     // The raw size of the event in bytes.
     optional uint32 raw_size = 10;
+
+    // Sample callchain info.
+    repeated uint64 callchain = 11;
+
+    // Branch stack info.
+    repeated BranchStackEntry branch_stack = 12;
   }
 
   // ForkEvent is used for both FORK and EXIT events, which have the same data
