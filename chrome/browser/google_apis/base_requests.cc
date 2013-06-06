@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/google_apis/base_operations.h"
+#include "chrome/browser/google_apis/base_requests.h"
 
 #include "base/json/json_reader.h"
 #include "base/stringprintf.h"
@@ -30,8 +30,8 @@ const char kAuthorizationHeaderFormat[] = "Authorization: Bearer %s";
 // Template for GData API version HTTP header.
 const char kGDataVersionHeader[] = "GData-Version: 3.0";
 
-// Maximum number of attempts for re-authentication per operation.
-const int kMaxReAuthenticateAttemptsPerOperation = 1;
+// Maximum number of attempts for re-authentication per request.
+const int kMaxReAuthenticateAttemptsPerRequest = 1;
 
 // Template for initiate upload of both GData WAPI and Drive API v2.
 const char kUploadContentType[] = "X-Upload-Content-Type: ";
@@ -90,9 +90,9 @@ void ParseJson(const std::string& json, const ParseJsonCallback& callback) {
       callback);
 }
 
-//============================ UrlFetchOperationBase ===========================
+//============================ UrlFetchRequestBase ===========================
 
-UrlFetchOperationBase::UrlFetchOperationBase(
+UrlFetchRequestBase::UrlFetchRequestBase(
     OperationRunner* runner,
     net::URLRequestContextGetter* url_request_context_getter)
     : OperationRegistry::Operation(runner->operation_registry()),
@@ -104,7 +104,7 @@ UrlFetchOperationBase::UrlFetchOperationBase(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
-UrlFetchOperationBase::UrlFetchOperationBase(
+UrlFetchRequestBase::UrlFetchRequestBase(
     OperationRunner* runner,
     net::URLRequestContextGetter* url_request_context_getter,
     const base::FilePath& path)
@@ -117,11 +117,11 @@ UrlFetchOperationBase::UrlFetchOperationBase(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
-UrlFetchOperationBase::~UrlFetchOperationBase() {}
+UrlFetchRequestBase::~UrlFetchRequestBase() {}
 
-void UrlFetchOperationBase::Start(const std::string& access_token,
-                                  const std::string& custom_user_agent,
-                                  const ReAuthenticateCallback& callback) {
+void UrlFetchRequestBase::Start(const std::string& access_token,
+                                const std::string& custom_user_agent,
+                                const ReAuthenticateCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(url_request_context_getter_);
   DCHECK(!access_token.empty());
@@ -152,7 +152,8 @@ void UrlFetchOperationBase::Start(const std::string& access_token,
     url_fetcher_->SaveResponseToTemporaryFile(
         BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE));
   } else if (!output_file_path_.empty()) {
-    url_fetcher_->SaveResponseToFileAtPath(output_file_path_,
+    url_fetcher_->SaveResponseToFileAtPath(
+        output_file_path_,
         BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE));
   }
 
@@ -164,7 +165,7 @@ void UrlFetchOperationBase::Start(const std::string& access_token,
     url_fetcher_->AddExtraRequestHeader("User-Agent: " + custom_user_agent);
   url_fetcher_->AddExtraRequestHeader(kGDataVersionHeader);
   url_fetcher_->AddExtraRequestHeader(
-        base::StringPrintf(kAuthorizationHeaderFormat, access_token.data()));
+      base::StringPrintf(kAuthorizationHeaderFormat, access_token.data()));
   std::vector<std::string> headers = GetExtraRequestHeaders();
   for (size_t i = 0; i < headers.size(); ++i) {
     url_fetcher_->AddExtraRequestHeader(headers[i]);
@@ -210,33 +211,33 @@ void UrlFetchOperationBase::Start(const std::string& access_token,
   started_ = true;
 }
 
-URLFetcher::RequestType UrlFetchOperationBase::GetRequestType() const {
+URLFetcher::RequestType UrlFetchRequestBase::GetRequestType() const {
   return URLFetcher::GET;
 }
 
-std::vector<std::string> UrlFetchOperationBase::GetExtraRequestHeaders() const {
+std::vector<std::string> UrlFetchRequestBase::GetExtraRequestHeaders() const {
   return std::vector<std::string>();
 }
 
-bool UrlFetchOperationBase::GetContentData(std::string* upload_content_type,
-                                           std::string* upload_content) {
+bool UrlFetchRequestBase::GetContentData(std::string* upload_content_type,
+                                         std::string* upload_content) {
   return false;
 }
 
-bool UrlFetchOperationBase::GetContentFile(base::FilePath* local_file_path,
-                                           int64* range_offset,
-                                           int64* range_length,
-                                           std::string* upload_content_type) {
+bool UrlFetchRequestBase::GetContentFile(base::FilePath* local_file_path,
+                                         int64* range_offset,
+                                         int64* range_length,
+                                         std::string* upload_content_type) {
   return false;
 }
 
-void UrlFetchOperationBase::DoCancel() {
+void UrlFetchRequestBase::DoCancel() {
   url_fetcher_.reset(NULL);
   RunCallbackOnPrematureFailure(GDATA_CANCELLED);
 }
 
 // static
-GDataErrorCode UrlFetchOperationBase::GetErrorCode(const URLFetcher* source) {
+GDataErrorCode UrlFetchRequestBase::GetErrorCode(const URLFetcher* source) {
   GDataErrorCode code = static_cast<GDataErrorCode>(source->GetResponseCode());
   if (!source->GetStatus().is_success()) {
     switch (source->GetStatus().error()) {
@@ -250,19 +251,19 @@ GDataErrorCode UrlFetchOperationBase::GetErrorCode(const URLFetcher* source) {
   return code;
 }
 
-void UrlFetchOperationBase::OnProcessURLFetchResultsComplete(bool result) {
+void UrlFetchRequestBase::OnProcessURLFetchResultsComplete(bool result) {
   if (result)
     NotifySuccessToOperationRegistry();
   else
     NotifyFinish(OPERATION_FAILED);
 }
 
-void UrlFetchOperationBase::OnURLFetchComplete(const URLFetcher* source) {
+void UrlFetchRequestBase::OnURLFetchComplete(const URLFetcher* source) {
   GDataErrorCode code = GetErrorCode(source);
   DVLOG(1) << "Response headers:\n" << GetResponseHeadersAsString(source);
 
   if (code == HTTP_UNAUTHORIZED) {
-    if (++re_authenticate_count_ <= kMaxReAuthenticateAttemptsPerOperation) {
+    if (++re_authenticate_count_ <= kMaxReAuthenticateAttemptsPerRequest) {
       // Reset re_authenticate_callback_ so Start() can be called again.
       ReAuthenticateCallback callback = re_authenticate_callback_;
       re_authenticate_callback_.Reset();
@@ -278,15 +279,15 @@ void UrlFetchOperationBase::OnURLFetchComplete(const URLFetcher* source) {
   ProcessURLFetchResults(source);
 }
 
-void UrlFetchOperationBase::NotifySuccessToOperationRegistry() {
+void UrlFetchRequestBase::NotifySuccessToOperationRegistry() {
   NotifyFinish(OPERATION_COMPLETED);
 }
 
-void UrlFetchOperationBase::NotifyStartToOperationRegistry() {
+void UrlFetchRequestBase::NotifyStartToOperationRegistry() {
   NotifyStart();
 }
 
-void UrlFetchOperationBase::OnAuthFailed(GDataErrorCode code) {
+void UrlFetchRequestBase::OnAuthFailed(GDataErrorCode code) {
   RunCallbackOnPrematureFailure(code);
 
   // Check if this failed before we even started fetching. If so, register
@@ -296,67 +297,66 @@ void UrlFetchOperationBase::OnAuthFailed(GDataErrorCode code) {
 
   // Note: NotifyFinish() must be invoked at the end, after all other callbacks
   // and notifications. Once NotifyFinish() is called, the current instance of
-  // gdata operation will be deleted from the OperationRegistry and become
-  // invalid.
+  // request will be deleted from the OperationRegistry and become invalid.
   NotifyFinish(OPERATION_FAILED);
 }
 
-base::WeakPtr<AuthenticatedOperationInterface>
-UrlFetchOperationBase::GetWeakPtr() {
+base::WeakPtr<AuthenticatedRequestInterface>
+UrlFetchRequestBase::GetWeakPtr() {
   return weak_ptr_factory_.GetWeakPtr();
 }
 
-//============================ EntryActionOperation ============================
+//============================ EntryActionRequest ============================
 
-EntryActionOperation::EntryActionOperation(
+EntryActionRequest::EntryActionRequest(
     OperationRunner* runner,
     net::URLRequestContextGetter* url_request_context_getter,
     const EntryActionCallback& callback)
-    : UrlFetchOperationBase(runner, url_request_context_getter),
+    : UrlFetchRequestBase(runner, url_request_context_getter),
       callback_(callback) {
   DCHECK(!callback_.is_null());
 }
 
-EntryActionOperation::~EntryActionOperation() {}
+EntryActionRequest::~EntryActionRequest() {}
 
-void EntryActionOperation::ProcessURLFetchResults(const URLFetcher* source) {
+void EntryActionRequest::ProcessURLFetchResults(const URLFetcher* source) {
   GDataErrorCode code = GetErrorCode(source);
   callback_.Run(code);
   const bool success = true;
   OnProcessURLFetchResultsComplete(success);
 }
 
-void EntryActionOperation::RunCallbackOnPrematureFailure(GDataErrorCode code) {
+void EntryActionRequest::RunCallbackOnPrematureFailure(GDataErrorCode code) {
   callback_.Run(code);
 }
 
-//============================== GetDataOperation ==============================
+//============================== GetDataRequest ==============================
 
-GetDataOperation::GetDataOperation(
+GetDataRequest::GetDataRequest(
     OperationRunner* runner,
     net::URLRequestContextGetter* url_request_context_getter,
     const GetDataCallback& callback)
-    : UrlFetchOperationBase(runner, url_request_context_getter),
+    : UrlFetchRequestBase(runner, url_request_context_getter),
       callback_(callback),
       weak_ptr_factory_(this) {
   DCHECK(!callback_.is_null());
 }
 
-GetDataOperation::~GetDataOperation() {}
+GetDataRequest::~GetDataRequest() {}
 
-void GetDataOperation::ParseResponse(GDataErrorCode fetch_error_code,
-                                     const std::string& data) {
+void GetDataRequest::ParseResponse(GDataErrorCode fetch_error_code,
+                                   const std::string& data) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   VLOG(1) << "JSON received from " << GetURL().spec() << ": "
           << data.size() << " bytes";
   ParseJson(data,
-            base::Bind(&GetDataOperation::OnDataParsed,
+            base::Bind(&GetDataRequest::OnDataParsed,
                        weak_ptr_factory_.GetWeakPtr(),
                        fetch_error_code));
 }
 
-void GetDataOperation::ProcessURLFetchResults(const URLFetcher* source) {
+void GetDataRequest::ProcessURLFetchResults(const URLFetcher* source) {
   std::string data;
   source->GetResponseAsString(&data);
   scoped_ptr<base::Value> root_value;
@@ -375,12 +375,12 @@ void GetDataOperation::ProcessURLFetchResults(const URLFetcher* source) {
   }
 }
 
-void GetDataOperation::RunCallbackOnPrematureFailure(
+void GetDataRequest::RunCallbackOnPrematureFailure(
     GDataErrorCode fetch_error_code) {
   callback_.Run(fetch_error_code, scoped_ptr<base::Value>());
 }
 
-void GetDataOperation::OnDataParsed(
+void GetDataRequest::OnDataParsed(
     GDataErrorCode fetch_error_code,
     scoped_ptr<base::Value> value) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -397,24 +397,24 @@ void GetDataOperation::OnDataParsed(
   OnProcessURLFetchResultsComplete(success);
 }
 
-void GetDataOperation::RunCallbackOnSuccess(GDataErrorCode fetch_error_code,
-                                            scoped_ptr<base::Value> value) {
+void GetDataRequest::RunCallbackOnSuccess(GDataErrorCode fetch_error_code,
+                                          scoped_ptr<base::Value> value) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   callback_.Run(fetch_error_code, value.Pass());
 }
 
-//========================= InitiateUploadOperationBase ========================
+//========================= InitiateUploadRequestBase ========================
 
-InitiateUploadOperationBase::InitiateUploadOperationBase(
+InitiateUploadRequestBase::InitiateUploadRequestBase(
     OperationRunner* runner,
     net::URLRequestContextGetter* url_request_context_getter,
     const InitiateUploadCallback& callback,
     const base::FilePath& drive_file_path,
     const std::string& content_type,
     int64 content_length)
-    : UrlFetchOperationBase(runner,
-                            url_request_context_getter,
-                            drive_file_path),
+    : UrlFetchRequestBase(runner,
+                          url_request_context_getter,
+                          drive_file_path),
       callback_(callback),
       drive_file_path_(drive_file_path),
       content_type_(content_type),
@@ -424,9 +424,9 @@ InitiateUploadOperationBase::InitiateUploadOperationBase(
   DCHECK_GE(content_length_, 0);
 }
 
-InitiateUploadOperationBase::~InitiateUploadOperationBase() {}
+InitiateUploadRequestBase::~InitiateUploadRequestBase() {}
 
-void InitiateUploadOperationBase::ProcessURLFetchResults(
+void InitiateUploadRequestBase::ProcessURLFetchResults(
     const URLFetcher* source) {
   GDataErrorCode code = GetErrorCode(source);
 
@@ -445,17 +445,17 @@ void InitiateUploadOperationBase::ProcessURLFetchResults(
   OnProcessURLFetchResultsComplete(code == HTTP_SUCCESS);
 }
 
-void InitiateUploadOperationBase::NotifySuccessToOperationRegistry() {
+void InitiateUploadRequestBase::NotifySuccessToOperationRegistry() {
   NotifySuspend();
 }
 
-void InitiateUploadOperationBase::RunCallbackOnPrematureFailure(
+void InitiateUploadRequestBase::RunCallbackOnPrematureFailure(
     GDataErrorCode code) {
   callback_.Run(code, GURL());
 }
 
 std::vector<std::string>
-InitiateUploadOperationBase::GetExtraRequestHeaders() const {
+InitiateUploadRequestBase::GetExtraRequestHeaders() const {
   std::vector<std::string> headers;
   headers.push_back(kUploadContentType + content_type_);
   headers.push_back(
@@ -482,35 +482,35 @@ UploadRangeResponse::UploadRangeResponse(GDataErrorCode code,
 UploadRangeResponse::~UploadRangeResponse() {
 }
 
-//========================== UploadRangeOperationBase ==========================
+//========================== UploadRangeRequestBase ==========================
 
-UploadRangeOperationBase::UploadRangeOperationBase(
+UploadRangeRequestBase::UploadRangeRequestBase(
     OperationRunner* runner,
     net::URLRequestContextGetter* url_request_context_getter,
     const base::FilePath& drive_file_path,
     const GURL& upload_url)
-    : UrlFetchOperationBase(runner,
-                            url_request_context_getter,
-                            drive_file_path),
+    : UrlFetchRequestBase(runner,
+                          url_request_context_getter,
+                          drive_file_path),
       drive_file_path_(drive_file_path),
       upload_url_(upload_url),
       last_chunk_completed_(false),
       weak_ptr_factory_(this) {
 }
 
-UploadRangeOperationBase::~UploadRangeOperationBase() {}
+UploadRangeRequestBase::~UploadRangeRequestBase() {}
 
-GURL UploadRangeOperationBase::GetURL() const {
-  // This is very tricky to get json from this operation. To do that, &alt=json
-  // has to be appended not here but in InitiateUploadOperation::GetURL().
+GURL UploadRangeRequestBase::GetURL() const {
+  // This is very tricky to get json from this request. To do that, &alt=json
+  // has to be appended not here but in InitiateUploadRequestBase::GetURL().
   return upload_url_;
 }
 
-URLFetcher::RequestType UploadRangeOperationBase::GetRequestType() const {
+URLFetcher::RequestType UploadRangeRequestBase::GetRequestType() const {
   return URLFetcher::PUT;
 }
 
-void UploadRangeOperationBase::ProcessURLFetchResults(
+void UploadRangeRequestBase::ProcessURLFetchResults(
     const URLFetcher* source) {
   GDataErrorCode code = GetErrorCode(source);
   net::HttpResponseHeaders* hdrs = source->GetResponseHeaders();
@@ -546,10 +546,10 @@ void UploadRangeOperationBase::ProcessURLFetchResults(
              << "], range_parsed=" << start_position_received
              << "," << end_position_received;
 
-    OnRangeOperationComplete(UploadRangeResponse(code,
-                                                 start_position_received,
-                                                 end_position_received),
-                             scoped_ptr<base::Value>());
+    OnRangeRequestComplete(UploadRangeResponse(code,
+                                               start_position_received,
+                                               end_position_received),
+                           scoped_ptr<base::Value>());
 
     OnProcessURLFetchResultsComplete(true);
   } else {
@@ -561,14 +561,14 @@ void UploadRangeOperationBase::ProcessURLFetchResults(
              << ", content=[\n" << response_content << "\n]";
 
     ParseJson(response_content,
-              base::Bind(&UploadRangeOperationBase::OnDataParsed,
+              base::Bind(&UploadRangeRequestBase::OnDataParsed,
                          weak_ptr_factory_.GetWeakPtr(),
                          code));
   }
 }
 
-void UploadRangeOperationBase::OnDataParsed(GDataErrorCode code,
-                                            scoped_ptr<base::Value> value) {
+void UploadRangeRequestBase::OnDataParsed(GDataErrorCode code,
+                                          scoped_ptr<base::Value> value) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // For a new file, HTTP_CREATED is returned.
@@ -576,26 +576,26 @@ void UploadRangeOperationBase::OnDataParsed(GDataErrorCode code,
   if (code == HTTP_CREATED || code == HTTP_SUCCESS)
     last_chunk_completed_ = true;
 
-  OnRangeOperationComplete(UploadRangeResponse(code, -1, -1), value.Pass());
+  OnRangeRequestComplete(UploadRangeResponse(code, -1, -1), value.Pass());
   OnProcessURLFetchResultsComplete(last_chunk_completed_);
 }
 
-void UploadRangeOperationBase::NotifySuccessToOperationRegistry() {
+void UploadRangeRequestBase::NotifySuccessToOperationRegistry() {
   if (last_chunk_completed_)
     NotifyFinish(OPERATION_COMPLETED);
   else
     NotifySuspend();
 }
 
-void UploadRangeOperationBase::RunCallbackOnPrematureFailure(
+void UploadRangeRequestBase::RunCallbackOnPrematureFailure(
     GDataErrorCode code) {
-  OnRangeOperationComplete(
+  OnRangeRequestComplete(
       UploadRangeResponse(code, 0, 0), scoped_ptr<base::Value>());
 }
 
-//========================== ResumeUploadOperationBase =========================
+//========================== ResumeUploadRequestBase =========================
 
-ResumeUploadOperationBase::ResumeUploadOperationBase(
+ResumeUploadRequestBase::ResumeUploadRequestBase(
     OperationRunner* runner,
     net::URLRequestContextGetter* url_request_context_getter,
     const base::FilePath& drive_file_path,
@@ -605,10 +605,10 @@ ResumeUploadOperationBase::ResumeUploadOperationBase(
     int64 content_length,
     const std::string& content_type,
     const base::FilePath& local_file_path)
-    : UploadRangeOperationBase(runner,
-                               url_request_context_getter,
-                               drive_file_path,
-                               upload_location),
+    : UploadRangeRequestBase(runner,
+                             url_request_context_getter,
+                             drive_file_path,
+                             upload_location),
       start_position_(start_position),
       end_position_(end_position),
       content_length_(content_length),
@@ -617,10 +617,10 @@ ResumeUploadOperationBase::ResumeUploadOperationBase(
   DCHECK_LE(start_position_, end_position_);
 }
 
-ResumeUploadOperationBase::~ResumeUploadOperationBase() {}
+ResumeUploadRequestBase::~ResumeUploadRequestBase() {}
 
 std::vector<std::string>
-ResumeUploadOperationBase::GetExtraRequestHeaders() const {
+ResumeUploadRequestBase::GetExtraRequestHeaders() const {
   if (content_length_ == 0) {
     // For uploading an empty document, just PUT an empty content.
     DCHECK_EQ(start_position_, 0);
@@ -646,7 +646,7 @@ ResumeUploadOperationBase::GetExtraRequestHeaders() const {
   return headers;
 }
 
-bool ResumeUploadOperationBase::GetContentFile(
+bool ResumeUploadRequestBase::GetContentFile(
     base::FilePath* local_file_path,
     int64* range_offset,
     int64* range_length,
@@ -663,28 +663,28 @@ bool ResumeUploadOperationBase::GetContentFile(
   return true;
 }
 
-void ResumeUploadOperationBase::NotifyStartToOperationRegistry() {
+void ResumeUploadRequestBase::NotifyStartToOperationRegistry() {
   NotifyResume();
 }
 
-//======================== GetUploadStatusOperationBase ========================
+//======================== GetUploadStatusRequestBase ========================
 
-GetUploadStatusOperationBase::GetUploadStatusOperationBase(
+GetUploadStatusRequestBase::GetUploadStatusRequestBase(
     OperationRunner* runner,
     net::URLRequestContextGetter* url_request_context_getter,
     const base::FilePath& drive_file_path,
     const GURL& upload_url,
     int64 content_length)
-  : UploadRangeOperationBase(runner,
+    : UploadRangeRequestBase(runner,
                              url_request_context_getter,
                              drive_file_path,
                              upload_url),
-    content_length_(content_length) {}
+      content_length_(content_length) {}
 
-GetUploadStatusOperationBase::~GetUploadStatusOperationBase() {}
+GetUploadStatusRequestBase::~GetUploadStatusRequestBase() {}
 
 std::vector<std::string>
-GetUploadStatusOperationBase::GetExtraRequestHeaders() const {
+GetUploadStatusRequestBase::GetExtraRequestHeaders() const {
   // The header looks like
   // Content-Range: bytes */<content_length>
   // for example:
@@ -698,9 +698,9 @@ GetUploadStatusOperationBase::GetExtraRequestHeaders() const {
   return headers;
 }
 
-//============================ DownloadFileOperation ===========================
+//============================ DownloadFileRequest ===========================
 
-DownloadFileOperation::DownloadFileOperation(
+DownloadFileRequest::DownloadFileRequest(
     OperationRunner* runner,
     net::URLRequestContextGetter* url_request_context_getter,
     const DownloadActionCallback& download_action_callback,
@@ -709,9 +709,9 @@ DownloadFileOperation::DownloadFileOperation(
     const GURL& download_url,
     const base::FilePath& drive_file_path,
     const base::FilePath& output_file_path)
-    : UrlFetchOperationBase(runner,
-                            url_request_context_getter,
-                            drive_file_path),
+    : UrlFetchRequestBase(runner,
+                          url_request_context_getter,
+                          drive_file_path),
       download_action_callback_(download_action_callback),
       get_content_callback_(get_content_callback),
       progress_callback_(progress_callback),
@@ -726,32 +726,32 @@ DownloadFileOperation::DownloadFileOperation(
     set_output_file_path(output_file_path);
 }
 
-DownloadFileOperation::~DownloadFileOperation() {}
+DownloadFileRequest::~DownloadFileRequest() {}
 
-// Overridden from UrlFetchOperationBase.
-GURL DownloadFileOperation::GetURL() const {
+// Overridden from UrlFetchRequestBase.
+GURL DownloadFileRequest::GetURL() const {
   return download_url_;
 }
 
-void DownloadFileOperation::OnURLFetchDownloadProgress(const URLFetcher* source,
-                                                       int64 current,
-                                                       int64 total) {
+void DownloadFileRequest::OnURLFetchDownloadProgress(const URLFetcher* source,
+                                                     int64 current,
+                                                     int64 total) {
   if (!progress_callback_.is_null())
     progress_callback_.Run(current, total);
 }
 
-bool DownloadFileOperation::ShouldSendDownloadData() {
+bool DownloadFileRequest::ShouldSendDownloadData() {
   return !get_content_callback_.is_null();
 }
 
-void DownloadFileOperation::OnURLFetchDownloadData(
+void DownloadFileRequest::OnURLFetchDownloadData(
     const URLFetcher* source,
     scoped_ptr<std::string> download_data) {
   if (!get_content_callback_.is_null())
     get_content_callback_.Run(HTTP_SUCCESS, download_data.Pass());
 }
 
-void DownloadFileOperation::ProcessURLFetchResults(const URLFetcher* source) {
+void DownloadFileRequest::ProcessURLFetchResults(const URLFetcher* source) {
   GDataErrorCode code = GetErrorCode(source);
 
   // Take over the ownership of the the downloaded temp file.
@@ -766,7 +766,7 @@ void DownloadFileOperation::ProcessURLFetchResults(const URLFetcher* source) {
   OnProcessURLFetchResultsComplete(code == HTTP_SUCCESS);
 }
 
-void DownloadFileOperation::RunCallbackOnPrematureFailure(GDataErrorCode code) {
+void DownloadFileRequest::RunCallbackOnPrematureFailure(GDataErrorCode code) {
   download_action_callback_.Run(code, base::FilePath());
 }
 

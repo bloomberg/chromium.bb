@@ -14,7 +14,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/template_util.h"
-#include "chrome/browser/google_apis/base_operations.h"
+#include "chrome/browser/google_apis/base_requests.h"
 #include "chrome/browser/google_apis/gdata_errorcode.h"
 
 class GURL;
@@ -37,7 +37,7 @@ namespace google_apis {
 class AboutResource;
 class AccountMetadata;
 class AppList;
-class AuthenticatedOperationInterface;
+class AuthenticatedRequestInterface;
 class ResourceEntry;
 class ResourceList;
 struct UploadRangeResponse;
@@ -97,7 +97,7 @@ scoped_ptr<net::test_server::BasicHttpResponse> CreateHttpResponseFromFile(
 // directory and returns the content. Also, copies the |request| to the memory
 // pointed by |out_request|.
 // |base_url| must be set to the server's base url.
-scoped_ptr<net::test_server::HttpResponse> HandleDownloadRequest(
+scoped_ptr<net::test_server::HttpResponse> HandleDownloadFileRequest(
     const GURL& base_url,
     net::test_server::HttpRequest* out_request,
     const net::test_server::HttpRequest& request);

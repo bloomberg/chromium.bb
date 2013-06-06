@@ -169,8 +169,8 @@ GetResourceListOperation::GetResourceListOperation(
     const std::string& search_string,
     const std::string& directory_resource_id,
     const GetResourceListCallback& callback)
-    : GetDataOperation(runner, url_request_context_getter,
-                       base::Bind(&ParseResourceListAndRun, callback)),
+    : GetDataRequest(runner, url_request_context_getter,
+                     base::Bind(&ParseResourceListAndRun, callback)),
       url_generator_(url_generator),
       override_url_(override_url),
       start_changestamp_(start_changestamp),
@@ -197,8 +197,8 @@ SearchByTitleOperation::SearchByTitleOperation(
     const std::string& title,
     const std::string& directory_resource_id,
     const GetResourceListCallback& callback)
-    : GetDataOperation(runner, url_request_context_getter,
-                       base::Bind(&ParseResourceListAndRun, callback)),
+    : GetDataRequest(runner, url_request_context_getter,
+                     base::Bind(&ParseResourceListAndRun, callback)),
       url_generator_(url_generator),
       title_(title),
       directory_resource_id_(directory_resource_id) {
@@ -220,7 +220,7 @@ GetResourceEntryOperation::GetResourceEntryOperation(
     const GDataWapiUrlGenerator& url_generator,
     const std::string& resource_id,
     const GetDataCallback& callback)
-    : GetDataOperation(runner, url_request_context_getter, callback),
+    : GetDataRequest(runner, url_request_context_getter, callback),
       url_generator_(url_generator),
       resource_id_(resource_id) {
   DCHECK(!callback.is_null());
@@ -240,8 +240,8 @@ GetAccountMetadataOperation::GetAccountMetadataOperation(
     const GDataWapiUrlGenerator& url_generator,
     const GetAccountMetadataCallback& callback,
     bool include_installed_apps)
-    : GetDataOperation(runner, url_request_context_getter,
-                       base::Bind(&ParseAccounetMetadataAndRun, callback)),
+    : GetDataRequest(runner, url_request_context_getter,
+                     base::Bind(&ParseAccounetMetadataAndRun, callback)),
       url_generator_(url_generator),
       include_installed_apps_(include_installed_apps) {
   DCHECK(!callback.is_null());
@@ -262,7 +262,7 @@ DeleteResourceOperation::DeleteResourceOperation(
     const EntryActionCallback& callback,
     const std::string& resource_id,
     const std::string& etag)
-    : EntryActionOperation(runner, url_request_context_getter, callback),
+    : EntryActionRequest(runner, url_request_context_getter, callback),
       url_generator_(url_generator),
       resource_id_(resource_id),
       etag_(etag) {
@@ -295,7 +295,7 @@ CreateDirectoryOperation::CreateDirectoryOperation(
     const GetDataCallback& callback,
     const std::string& parent_resource_id,
     const std::string& directory_name)
-    : GetDataOperation(runner, url_request_context_getter, callback),
+    : GetDataRequest(runner, url_request_context_getter, callback),
       url_generator_(url_generator),
       parent_resource_id_(parent_resource_id),
       directory_name_(directory_name) {
@@ -347,7 +347,7 @@ CopyHostedDocumentOperation::CopyHostedDocumentOperation(
     const GetDataCallback& callback,
     const std::string& resource_id,
     const std::string& new_name)
-    : GetDataOperation(runner, url_request_context_getter, callback),
+    : GetDataRequest(runner, url_request_context_getter, callback),
       url_generator_(url_generator),
       resource_id_(resource_id),
       new_name_(new_name) {
@@ -393,7 +393,7 @@ RenameResourceOperation::RenameResourceOperation(
     const EntryActionCallback& callback,
     const std::string& resource_id,
     const std::string& new_name)
-    : EntryActionOperation(runner, url_request_context_getter, callback),
+    : EntryActionRequest(runner, url_request_context_getter, callback),
       url_generator_(url_generator),
       resource_id_(resource_id),
       new_name_(new_name) {
@@ -444,8 +444,8 @@ AuthorizeAppOperation::AuthorizeAppOperation(
     const AuthorizeAppCallback& callback,
     const std::string& resource_id,
     const std::string& app_id)
-    : GetDataOperation(runner, url_request_context_getter,
-                       base::Bind(&ParseOpenLinkAndRun, app_id, callback)),
+    : GetDataRequest(runner, url_request_context_getter,
+                     base::Bind(&ParseOpenLinkAndRun, app_id, callback)),
       url_generator_(url_generator),
       resource_id_(resource_id),
       app_id_(app_id) {
@@ -496,7 +496,7 @@ AddResourceToDirectoryOperation::AddResourceToDirectoryOperation(
     const EntryActionCallback& callback,
     const std::string& parent_resource_id,
     const std::string& resource_id)
-    : EntryActionOperation(runner, url_request_context_getter, callback),
+    : EntryActionRequest(runner, url_request_context_getter, callback),
       url_generator_(url_generator),
       parent_resource_id_(parent_resource_id),
       resource_id_(resource_id) {
@@ -542,7 +542,7 @@ RemoveResourceFromDirectoryOperation::RemoveResourceFromDirectoryOperation(
     const EntryActionCallback& callback,
     const std::string& parent_resource_id,
     const std::string& document_resource_id)
-    : EntryActionOperation(runner, url_request_context_getter, callback),
+    : EntryActionRequest(runner, url_request_context_getter, callback),
       url_generator_(url_generator),
       resource_id_(document_resource_id),
       parent_resource_id_(parent_resource_id) {
@@ -581,12 +581,12 @@ InitiateUploadNewFileOperation::InitiateUploadNewFileOperation(
     int64 content_length,
     const std::string& parent_resource_id,
     const std::string& title)
-    : InitiateUploadOperationBase(runner,
-                                  url_request_context_getter,
-                                  callback,
-                                  drive_file_path,
-                                  content_type,
-                                  content_length),
+    : InitiateUploadRequestBase(runner,
+                                url_request_context_getter,
+                                callback,
+                                drive_file_path,
+                                content_type,
+                                content_length),
       url_generator_(url_generator),
       parent_resource_id_(parent_resource_id),
       title_(title) {
@@ -634,12 +634,12 @@ InitiateUploadExistingFileOperation::InitiateUploadExistingFileOperation(
     int64 content_length,
     const std::string& resource_id,
     const std::string& etag)
-    : InitiateUploadOperationBase(runner,
-                                  url_request_context_getter,
-                                  callback,
-                                  drive_file_path,
-                                  content_type,
-                                  content_length),
+    : InitiateUploadRequestBase(runner,
+                                url_request_context_getter,
+                                callback,
+                                drive_file_path,
+                                content_type,
+                                content_length),
       url_generator_(url_generator),
       resource_id_(resource_id),
       etag_(etag) {
@@ -671,7 +671,7 @@ bool InitiateUploadExistingFileOperation::GetContentData(
 std::vector<std::string>
 InitiateUploadExistingFileOperation::GetExtraRequestHeaders() const {
   std::vector<std::string> headers(
-      InitiateUploadOperationBase::GetExtraRequestHeaders());
+      InitiateUploadRequestBase::GetExtraRequestHeaders());
   headers.push_back(util::GenerateIfMatchHeader(etag_));
   return headers;
 }
@@ -690,15 +690,15 @@ ResumeUploadOperation::ResumeUploadOperation(
     int64 content_length,
     const std::string& content_type,
     const base::FilePath& local_file_path)
-    : ResumeUploadOperationBase(runner,
-                                url_request_context_getter,
-                                drive_file_path,
-                                upload_location,
-                                start_position,
-                                end_position,
-                                content_length,
-                                content_type,
-                                local_file_path),
+    : ResumeUploadRequestBase(runner,
+                              url_request_context_getter,
+                              drive_file_path,
+                              upload_location,
+                              start_position,
+                              end_position,
+                              content_length,
+                              content_type,
+                              local_file_path),
       callback_(callback),
       progress_callback_(progress_callback) {
   DCHECK(!callback_.is_null());
@@ -706,7 +706,7 @@ ResumeUploadOperation::ResumeUploadOperation(
 
 ResumeUploadOperation::~ResumeUploadOperation() {}
 
-void ResumeUploadOperation::OnRangeOperationComplete(
+void ResumeUploadOperation::OnRangeRequestComplete(
     const UploadRangeResponse& response, scoped_ptr<base::Value> value) {
   callback_.Run(response, ParseResourceEntry(value.Pass()));
 }
@@ -726,18 +726,18 @@ GetUploadStatusOperation::GetUploadStatusOperation(
     const base::FilePath& drive_file_path,
     const GURL& upload_url,
     int64 content_length)
-  : GetUploadStatusOperationBase(runner,
+    : GetUploadStatusRequestBase(runner,
                                  url_request_context_getter,
                                  drive_file_path,
                                  upload_url,
                                  content_length),
-    callback_(callback) {
+      callback_(callback) {
   DCHECK(!callback.is_null());
 }
 
 GetUploadStatusOperation::~GetUploadStatusOperation() {}
 
-void GetUploadStatusOperation::OnRangeOperationComplete(
+void GetUploadStatusOperation::OnRangeRequestComplete(
     const UploadRangeResponse& response, scoped_ptr<base::Value> value) {
   callback_.Run(response, ParseResourceEntry(value.Pass()));
 }

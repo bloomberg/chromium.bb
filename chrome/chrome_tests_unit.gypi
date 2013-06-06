@@ -837,8 +837,8 @@
         'browser/google/google_update_settings_unittest.cc',
         'browser/google/google_url_tracker_unittest.cc',
         'browser/google/google_util_unittest.cc',
-        'browser/google_apis/base_operations_unittest.cc',
-        'browser/google_apis/base_operations_server_unittest.cc',
+        'browser/google_apis/base_requests_unittest.cc',
+        'browser/google_apis/base_requests_server_unittest.cc',
         'browser/google_apis/drive_api_operations_unittest.cc',
         'browser/google_apis/drive_api_parser_unittest.cc',
         'browser/google_apis/drive_api_url_generator_unittest.cc',
@@ -2336,7 +2336,7 @@
             'browser/sessions/session_backend_unittest.cc',
 
             # Test files cannot be opened on Android.
-            'browser/google_apis/base_operations_server_unittest.cc',
+            'browser/google_apis/base_requests_server_unittest.cc',
             'browser/google_apis/drive_api_operations_unittest.cc',
             'browser/google_apis/fake_drive_service_unittest.cc',
             'browser/google_apis/gdata_wapi_operations_unittest.cc',

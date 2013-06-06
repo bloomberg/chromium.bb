@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "chrome/browser/google_apis/base_operations.h"
+#include "chrome/browser/google_apis/base_requests.h"
 
 namespace net {
 class URLRequestContextGetter;
@@ -18,7 +18,7 @@ namespace google_apis {
 //========================== GetContactGroupsOperation =========================
 
 // This class fetches a JSON feed containing a user's contact groups.
-class GetContactGroupsOperation : public GetDataOperation {
+class GetContactGroupsOperation : public GetDataRequest {
  public:
   GetContactGroupsOperation(
       OperationRunner* runner,
@@ -31,7 +31,7 @@ class GetContactGroupsOperation : public GetDataOperation {
   }
 
  protected:
-  // Overridden from GetDataOperation.
+  // Overridden from GetDataRequest.
   virtual GURL GetURL() const OVERRIDE;
 
  private:
@@ -44,7 +44,7 @@ class GetContactGroupsOperation : public GetDataOperation {
 //============================ GetContactsOperation ============================
 
 // This class fetches a JSON feed containing a user's contacts.
-class GetContactsOperation : public GetDataOperation {
+class GetContactsOperation : public GetDataRequest {
  public:
   GetContactsOperation(
       OperationRunner* runner,
@@ -59,7 +59,7 @@ class GetContactsOperation : public GetDataOperation {
   }
 
  protected:
-  // Overridden from GetDataOperation.
+  // Overridden from GetDataRequest.
   virtual GURL GetURL() const OVERRIDE;
 
  private:
@@ -81,7 +81,7 @@ class GetContactsOperation : public GetDataOperation {
 //========================== GetContactPhotoOperation ==========================
 
 // This class fetches a contact's photo.
-class GetContactPhotoOperation : public UrlFetchOperationBase {
+class GetContactPhotoOperation : public UrlFetchRequestBase {
  public:
   GetContactPhotoOperation(
       OperationRunner* runner,
@@ -91,7 +91,7 @@ class GetContactPhotoOperation : public UrlFetchOperationBase {
   virtual ~GetContactPhotoOperation();
 
  protected:
-  // Overridden from UrlFetchOperationBase.
+  // Overridden from UrlFetchRequestBase.
   virtual GURL GetURL() const OVERRIDE;
   virtual void ProcessURLFetchResults(const net::URLFetcher* source) OVERRIDE;
   virtual void RunCallbackOnPrematureFailure(GDataErrorCode code) OVERRIDE;

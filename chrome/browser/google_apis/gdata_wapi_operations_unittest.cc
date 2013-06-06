@@ -68,7 +68,7 @@ class GDataWapiOperationsTest : public testing::Test {
 
     ASSERT_TRUE(test_server_.InitializeAndWaitUntilReady());
     test_server_.RegisterRequestHandler(
-        base::Bind(&test_util::HandleDownloadRequest,
+        base::Bind(&test_util::HandleDownloadFileRequest,
                    test_server_.base_url(),
                    base::Unretained(&http_request_)));
     test_server_.RegisterRequestHandler(
@@ -1057,7 +1057,7 @@ TEST_F(GDataWapiOperationsTest, UploadNewLargeFile) {
 #if !defined(NO_GET_UPLOAD_STATUS_TEST)
   // 2) Before sending any data, check the current status.
   // This is an edge case test for GetUploadStatusOperation
-  // (UploadRangeOperationBase).
+  // (UploadRangeRequestBase).
   {
     UploadRangeResponse response;
     scoped_ptr<ResourceEntry> new_entry;

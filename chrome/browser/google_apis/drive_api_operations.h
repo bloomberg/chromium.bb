@@ -8,7 +8,7 @@
 #include <string>
 
 #include "base/callback_forward.h"
-#include "chrome/browser/google_apis/base_operations.h"
+#include "chrome/browser/google_apis/base_requests.h"
 #include "chrome/browser/google_apis/drive_api_url_generator.h"
 #include "chrome/browser/google_apis/drive_service_interface.h"
 
@@ -30,7 +30,7 @@ typedef base::Callback<void(GDataErrorCode error,
 //============================== GetAboutOperation =============================
 
 // This class performs the operation for fetching About data.
-class GetAboutOperation : public GetDataOperation {
+class GetAboutOperation : public GetDataRequest {
  public:
   GetAboutOperation(OperationRunner* runner,
                     net::URLRequestContextGetter* url_request_context_getter,
@@ -39,7 +39,7 @@ class GetAboutOperation : public GetDataOperation {
   virtual ~GetAboutOperation();
 
  protected:
-  // Overridden from GetDataOperation.
+  // Overridden from GetDataRequest.
   virtual GURL GetURL() const OVERRIDE;
 
  private:
@@ -51,7 +51,7 @@ class GetAboutOperation : public GetDataOperation {
 //============================= GetApplistOperation ============================
 
 // This class performs the operation for fetching Applist.
-class GetApplistOperation : public GetDataOperation {
+class GetApplistOperation : public GetDataRequest {
  public:
   GetApplistOperation(OperationRunner* runner,
                       net::URLRequestContextGetter* url_request_context_getter,
@@ -60,7 +60,7 @@ class GetApplistOperation : public GetDataOperation {
   virtual ~GetApplistOperation();
 
  protected:
-  // Overridden from GetDataOperation.
+  // Overridden from GetDataRequest.
   virtual GURL GetURL() const OVERRIDE;
 
  private:
@@ -74,7 +74,7 @@ class GetApplistOperation : public GetDataOperation {
 // This class performs the operation for fetching changelist.
 // The result may contain only first part of the result. The remaining result
 // should be able to be fetched by ContinueGetFileListOperation defined below.
-class GetChangelistOperation : public GetDataOperation {
+class GetChangelistOperation : public GetDataRequest {
  public:
   // |include_deleted| specifies if the response should contain the changes
   // for deleted entries or not.
@@ -93,7 +93,7 @@ class GetChangelistOperation : public GetDataOperation {
   virtual ~GetChangelistOperation();
 
  protected:
-  // Overridden from GetDataOperation.
+  // Overridden from GetDataRequest.
   virtual GURL GetURL() const OVERRIDE;
 
  private:
@@ -110,7 +110,7 @@ class GetChangelistOperation : public GetDataOperation {
 // This class performs the operation for fetching Filelist.
 // The result may contain only first part of the result. The remaining result
 // should be able to be fetched by ContinueGetFileListOperation defined below.
-class GetFilelistOperation : public GetDataOperation {
+class GetFilelistOperation : public GetDataRequest {
  public:
   GetFilelistOperation(
       OperationRunner* runner,
@@ -122,7 +122,7 @@ class GetFilelistOperation : public GetDataOperation {
   virtual ~GetFilelistOperation();
 
  protected:
-  // Overridden from GetDataOperation.
+  // Overridden from GetDataRequest.
   virtual GURL GetURL() const OVERRIDE;
 
  private:
@@ -136,7 +136,7 @@ class GetFilelistOperation : public GetDataOperation {
 //=============================== GetFileOperation =============================
 
 // This class performs the operation for fetching a file.
-class GetFileOperation : public GetDataOperation {
+class GetFileOperation : public GetDataRequest {
  public:
   GetFileOperation(OperationRunner* runner,
                    net::URLRequestContextGetter* url_request_context_getter,
@@ -146,7 +146,7 @@ class GetFileOperation : public GetDataOperation {
   virtual ~GetFileOperation();
 
  protected:
-  // Overridden from GetDataOperation.
+  // Overridden from GetDataRequest.
   virtual GURL GetURL() const OVERRIDE;
 
  private:
@@ -167,7 +167,7 @@ namespace drive {
 //======================= ContinueGetFileListOperation =========================
 
 // This class performs the operation to fetch remaining Filelist result.
-class ContinueGetFileListOperation : public GetDataOperation {
+class ContinueGetFileListOperation : public GetDataRequest {
  public:
   ContinueGetFileListOperation(
       OperationRunner* runner,
@@ -188,7 +188,7 @@ class ContinueGetFileListOperation : public GetDataOperation {
 //========================== CreateDirectoryOperation ==========================
 
 // This class performs the operation for creating a directory.
-class CreateDirectoryOperation : public GetDataOperation {
+class CreateDirectoryOperation : public GetDataRequest {
  public:
   CreateDirectoryOperation(
       OperationRunner* runner,
@@ -200,7 +200,7 @@ class CreateDirectoryOperation : public GetDataOperation {
   virtual ~CreateDirectoryOperation();
 
  protected:
-  // Overridden from GetDataOperation.
+  // Overridden from GetDataRequest.
   virtual GURL GetURL() const OVERRIDE;
   virtual net::URLFetcher::RequestType GetRequestType() const OVERRIDE;
   virtual bool GetContentData(std::string* upload_content_type,
@@ -217,7 +217,7 @@ class CreateDirectoryOperation : public GetDataOperation {
 //=========================== RenameResourceOperation ==========================
 
 // This class performs the operation for renaming a document/file/directory.
-class RenameResourceOperation : public EntryActionOperation {
+class RenameResourceOperation : public EntryActionRequest {
  public:
   // |callback| must not be null.
   RenameResourceOperation(
@@ -230,7 +230,7 @@ class RenameResourceOperation : public EntryActionOperation {
   virtual ~RenameResourceOperation();
 
  protected:
-  // UrlFetchOperationBase overrides.
+  // UrlFetchRequestBase overrides.
   virtual net::URLFetcher::RequestType GetRequestType() const OVERRIDE;
   virtual std::vector<std::string> GetExtraRequestHeaders() const OVERRIDE;
   virtual GURL GetURL() const OVERRIDE;
@@ -252,7 +252,7 @@ class RenameResourceOperation : public EntryActionOperation {
 // This uses "files.patch" of Drive API v2 rather than "files.touch". See also:
 // https://developers.google.com/drive/v2/reference/files/patch, and
 // https://developers.google.com/drive/v2/reference/files/touch
-class TouchResourceOperation : public GetDataOperation {
+class TouchResourceOperation : public GetDataRequest {
  public:
   // |callback| must not be null.
   TouchResourceOperation(
@@ -266,7 +266,7 @@ class TouchResourceOperation : public GetDataOperation {
   virtual ~TouchResourceOperation();
 
  protected:
-  // UrlFetchOperationBase overrides.
+  // UrlFetchRequestBase overrides.
   virtual net::URLFetcher::RequestType GetRequestType() const OVERRIDE;
   virtual std::vector<std::string> GetExtraRequestHeaders() const OVERRIDE;
   virtual GURL GetURL() const OVERRIDE;
@@ -295,7 +295,7 @@ class TouchResourceOperation : public GetDataOperation {
 //
 // This operation corresponds to "Files: copy" operation on Drive API v2. See
 // also: https://developers.google.com/drive/v2/reference/files/copy
-class CopyResourceOperation : public GetDataOperation {
+class CopyResourceOperation : public GetDataRequest {
  public:
   // Upon completion, |callback| will be called. |callback| must not be null.
   CopyResourceOperation(
@@ -334,8 +334,8 @@ class CopyResourceOperation : public GetDataOperation {
 // Note for the naming: the name "trash" comes from the server's operation
 // name. In order to be consistent with the server, we chose "trash" here,
 // although we are preferring the term "remove" in drive/google_api code.
-// TODO(hidehiko): Replace the base class to GetDataOperation.
-class TrashResourceOperation : public EntryActionOperation {
+// TODO(hidehiko): Replace the base class to GetDataRequest.
+class TrashResourceOperation : public EntryActionRequest {
  public:
   // |callback| must not be null.
   TrashResourceOperation(
@@ -347,7 +347,7 @@ class TrashResourceOperation : public EntryActionOperation {
   virtual ~TrashResourceOperation();
 
  protected:
-  // UrlFetchOperationBase overrides.
+  // UrlFetchRequestBase overrides.
   virtual GURL GetURL() const OVERRIDE;
   virtual net::URLFetcher::RequestType GetRequestType() const OVERRIDE;
 
@@ -363,7 +363,7 @@ class TrashResourceOperation : public EntryActionOperation {
 // This class performs the operation for inserting a resource to a directory.
 // Note that this is the operation of "Children: insert" of the Drive API v2.
 // https://developers.google.com/drive/v2/reference/children/insert.
-class InsertResourceOperation : public EntryActionOperation {
+class InsertResourceOperation : public EntryActionRequest {
  public:
   // |callback| must not be null.
   InsertResourceOperation(
@@ -376,7 +376,7 @@ class InsertResourceOperation : public EntryActionOperation {
   virtual ~InsertResourceOperation();
 
  protected:
-  // UrlFetchOperationBase overrides.
+  // UrlFetchRequestBase overrides.
   virtual GURL GetURL() const OVERRIDE;
   virtual net::URLFetcher::RequestType GetRequestType() const OVERRIDE;
   virtual bool GetContentData(std::string* upload_content_type,
@@ -398,7 +398,7 @@ class InsertResourceOperation : public EntryActionOperation {
 // sense in "drive/google_api"
 // Also note that this is the operation of "Children: delete" of the Drive API
 // v2. https://developers.google.com/drive/v2/reference/children/delete
-class DeleteResourceOperation : public EntryActionOperation {
+class DeleteResourceOperation : public EntryActionRequest {
  public:
   // |callback| must not be null.
   DeleteResourceOperation(
@@ -411,7 +411,7 @@ class DeleteResourceOperation : public EntryActionOperation {
   virtual ~DeleteResourceOperation();
 
  protected:
-  // UrlFetchOperationBase overrides.
+  // UrlFetchRequestBase overrides.
   virtual GURL GetURL() const OVERRIDE;
   virtual net::URLFetcher::RequestType GetRequestType() const OVERRIDE;
 
@@ -426,11 +426,11 @@ class DeleteResourceOperation : public EntryActionOperation {
 //======================= InitiateUploadNewFileOperation =======================
 
 // This class performs the operation for initiating the upload of a new file.
-class InitiateUploadNewFileOperation : public InitiateUploadOperationBase {
+class InitiateUploadNewFileOperation : public InitiateUploadRequestBase {
  public:
   // |parent_resource_id| should be the resource id of the parent directory.
   // |title| should be set.
-  // See also the comments of InitiateUploadOperationBase for more details
+  // See also the comments of InitiateUploadRequestBase for more details
   // about the other parameters.
   InitiateUploadNewFileOperation(
       OperationRunner* runner,
@@ -445,7 +445,7 @@ class InitiateUploadNewFileOperation : public InitiateUploadOperationBase {
   virtual ~InitiateUploadNewFileOperation();
 
  protected:
-  // UrlFetchOperationBase overrides.
+  // UrlFetchRequestBase overrides.
   virtual GURL GetURL() const OVERRIDE;
   virtual net::URLFetcher::RequestType GetRequestType() const OVERRIDE;
   virtual bool GetContentData(std::string* upload_content_type,
@@ -464,12 +464,12 @@ class InitiateUploadNewFileOperation : public InitiateUploadOperationBase {
 // This class performs the operation for initiating the upload of an existing
 // file.
 class InitiateUploadExistingFileOperation
-    : public InitiateUploadOperationBase {
+    : public InitiateUploadRequestBase {
  public:
   // |upload_url| should be the upload_url() of the file
   //    (resumable-create-media URL)
   // |etag| should be set if it is available to detect the upload confliction.
-  // See also the comments of InitiateUploadOperationBase for more details
+  // See also the comments of InitiateUploadRequestBase for more details
   // about the other parameters.
   InitiateUploadExistingFileOperation(
       OperationRunner* runner,
@@ -484,7 +484,7 @@ class InitiateUploadExistingFileOperation
   virtual ~InitiateUploadExistingFileOperation();
 
  protected:
-  // UrlFetchOperationBase overrides.
+  // UrlFetchRequestBase overrides.
   virtual GURL GetURL() const OVERRIDE;
   virtual net::URLFetcher::RequestType GetRequestType() const OVERRIDE;
   virtual std::vector<std::string> GetExtraRequestHeaders() const OVERRIDE;
@@ -505,9 +505,9 @@ typedef base::Callback<void(
 //============================ ResumeUploadOperation ===========================
 
 // Performs the operation for resuming the upload of a file.
-class ResumeUploadOperation : public ResumeUploadOperationBase {
+class ResumeUploadOperation : public ResumeUploadRequestBase {
  public:
-  // See also ResumeUploadOperationBase's comment for parameters meaning.
+  // See also ResumeUploadRequestBase's comment for parameters meaning.
   // |callback| must not be null. |progress_callback| may be null.
   ResumeUploadOperation(
       OperationRunner* runner,
@@ -524,8 +524,8 @@ class ResumeUploadOperation : public ResumeUploadOperationBase {
   virtual ~ResumeUploadOperation();
 
  protected:
-  // UploadRangeOperationBase overrides.
-  virtual void OnRangeOperationComplete(
+  // UploadRangeRequestBase overrides.
+  virtual void OnRangeRequestComplete(
       const UploadRangeResponse& response,
       scoped_ptr<base::Value> value) OVERRIDE;
   // content::UrlFetcherDelegate overrides.
@@ -542,9 +542,9 @@ class ResumeUploadOperation : public ResumeUploadOperationBase {
 //========================== GetUploadStatusOperation ==========================
 
 // Performs the operation to request the current upload status of a file.
-class GetUploadStatusOperation : public GetUploadStatusOperationBase {
+class GetUploadStatusOperation : public GetUploadStatusRequestBase {
  public:
-  // See also GetUploadStatusOperationBase's comment for parameters meaning.
+  // See also GetUploadStatusRequestBase's comment for parameters meaning.
   // |callback| must not be null.
   GetUploadStatusOperation(
       OperationRunner* runner,
@@ -556,8 +556,8 @@ class GetUploadStatusOperation : public GetUploadStatusOperationBase {
   virtual ~GetUploadStatusOperation();
 
  protected:
-  // UploadRangeOperationBase overrides.
-  virtual void OnRangeOperationComplete(
+  // UploadRangeRequestBase overrides.
+  virtual void OnRangeRequestComplete(
       const UploadRangeResponse& response,
       scoped_ptr<base::Value> value) OVERRIDE;
 

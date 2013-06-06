@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/google_apis/base_operations.h"
+#include "chrome/browser/google_apis/base_requests.h"
 
 #include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
@@ -21,14 +21,14 @@ namespace {
 const char kValidJsonString[] = "{ \"test\": 123 }";
 const char kInvalidJsonString[] = "$$$";
 
-class FakeGetDataOperation : public GetDataOperation {
+class FakeGetDataRequest : public GetDataRequest {
  public:
-  explicit FakeGetDataOperation(OperationRunner* runner,
-                                const GetDataCallback& callback)
-      : GetDataOperation(runner, NULL, callback) {
+  explicit FakeGetDataRequest(OperationRunner* runner,
+                              const GetDataCallback& callback)
+      : GetDataRequest(runner, NULL, callback) {
   }
 
-  virtual ~FakeGetDataOperation() {
+  virtual ~FakeGetDataRequest() {
   }
 
   void NotifyStart() {
@@ -118,9 +118,9 @@ TEST_F(BaseOperationsTest, ParseInvalidJson) {
   ASSERT_FALSE(parse_json_result_.get());
 }
 
-TEST_F(BaseOperationsTest, GetDataOperationParseValidResponse) {
-  FakeGetDataOperation* get_data_operation =
-      new FakeGetDataOperation(
+TEST_F(BaseOperationsTest, GetDataRequestParseValidResponse) {
+  FakeGetDataRequest* get_data_operation =
+      new FakeGetDataRequest(
           runner_.get(),
           base::Bind(&BaseOperationsTest::GetDataCallback,
                      base::Unretained(this)));
@@ -136,9 +136,9 @@ TEST_F(BaseOperationsTest, GetDataOperationParseValidResponse) {
   ASSERT_TRUE(get_data_result_value_.get());
 }
 
-TEST_F(BaseOperationsTest, GetDataOperationParseInvalidResponse) {
-  FakeGetDataOperation* get_data_operation =
-      new FakeGetDataOperation(
+TEST_F(BaseOperationsTest, GetDataRequestParseInvalidResponse) {
+  FakeGetDataRequest* get_data_operation =
+      new FakeGetDataRequest(
           runner_.get(),
           base::Bind(&BaseOperationsTest::GetDataCallback,
                      base::Unretained(this)));

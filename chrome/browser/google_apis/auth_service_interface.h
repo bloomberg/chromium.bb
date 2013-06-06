@@ -22,7 +22,7 @@ typedef base::Callback<void(GDataErrorCode error,
     AuthStatusCallback;
 
 // This defines an interface for the authentication service which is required
-// by authenticated operations (AuthenticatedOperationInterface).
+// by authenticated operations (AuthenticatedRequestInterface).
 // All functions must be called on UI thread.
 class AuthServiceInterface {
  public:

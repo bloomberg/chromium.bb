@@ -457,14 +457,14 @@ void DriveAPIService::DownloadFile(
   // get_content_callback may be null.
 
   runner_->StartOperationWithRetry(
-      new DownloadFileOperation(runner_.get(),
-                                url_request_context_getter_,
-                                download_action_callback,
-                                get_content_callback,
-                                progress_callback,
-                                download_url,
-                                virtual_path,
-                                local_cache_path));
+      new DownloadFileRequest(runner_.get(),
+                              url_request_context_getter_,
+                              download_action_callback,
+                              get_content_callback,
+                              progress_callback,
+                              download_url,
+                              virtual_path,
+                              local_cache_path));
 }
 
 void DriveAPIService::DeleteResource(

@@ -2,10 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// This file provides base classes used to implement operations for Google APIs.
+// This file provides base classes used to issue HTTP requests for Google
+// APIs.
 
-#ifndef CHROME_BROWSER_GOOGLE_APIS_BASE_OPERATIONS_H_
-#define CHROME_BROWSER_GOOGLE_APIS_BASE_OPERATIONS_H_
+#ifndef CHROME_BROWSER_GOOGLE_APIS_BASE_REQUESTS_H_
+#define CHROME_BROWSER_GOOGLE_APIS_BASE_REQUESTS_H_
 
 #include <string>
 #include <vector>
@@ -34,7 +35,7 @@ class OperationRunner;
 // then the passed argument is null.
 typedef base::Callback<void(scoped_ptr<base::Value> value)> ParseJsonCallback;
 
-// Callback used for DownloadOperation and ResumeUploadOperation.
+// Callback used for DownloadFileRequest and ResumeUploadRequestBase.
 typedef base::Callback<void(int64 progress, int64 total)> ProgressCallback;
 
 // Parses JSON passed in |json| on blocking pool. Runs |callback| on the calling
@@ -42,23 +43,23 @@ typedef base::Callback<void(int64 progress, int64 total)> ProgressCallback;
 // The callback must not be null.
 void ParseJson(const std::string& json, const ParseJsonCallback& callback);
 
-//======================= AuthenticatedOperationInterface ======================
+//======================= AuthenticatedRequestInterface ======================
 
-// An interface class for implementing an operation which requires OAuth2
+// An interface class for implementing a request which requires OAuth2
 // authentication.
-class AuthenticatedOperationInterface {
+class AuthenticatedRequestInterface {
  public:
   // Called when re-authentication is required. See Start() for details.
-  typedef base::Callback<void(AuthenticatedOperationInterface* operation)>
+  typedef base::Callback<void(AuthenticatedRequestInterface* request)>
       ReAuthenticateCallback;
 
-  virtual ~AuthenticatedOperationInterface() {}
+  virtual ~AuthenticatedRequestInterface() {}
 
-  // Starts the operation with |access_token|. User-Agent header will be set
+  // Starts the request with |access_token|. User-Agent header will be set
   // to |custom_user_agent| if the value is not empty.
   //
   // |callback| is called when re-authentication is needed for a certain
-  // number of times (see kMaxReAuthenticateAttemptsPerOperation in .cc).
+  // number of times (see kMaxReAuthenticateAttemptsPerRequest in .cc).
   // The callback should retry by calling Start() again with a new access
   // token, or just call OnAuthFailed() if a retry is not attempted.
   // |callback| must not be null.
@@ -69,40 +70,40 @@ class AuthenticatedOperationInterface {
   // Invoked when the authentication failed with an error code |code|.
   virtual void OnAuthFailed(GDataErrorCode code) = 0;
 
-  // Gets a weak pointer to this operation object. Since operations may be
+  // Gets a weak pointer to this request object. Since requests may be
   // deleted when it is canceled by user action, for posting asynchronous tasks
-  // on the authentication operation object, weak pointers have to be used.
+  // on the authentication request object, weak pointers have to be used.
   // TODO(kinaba): crbug.com/134814 use more clean life time management than
   // using weak pointers, while deprecating OperationRegistry.
-  virtual base::WeakPtr<AuthenticatedOperationInterface> GetWeakPtr() = 0;
+  virtual base::WeakPtr<AuthenticatedRequestInterface> GetWeakPtr() = 0;
 };
 
-//============================ UrlFetchOperationBase ===========================
+//============================ UrlFetchRequestBase ===========================
 
-// Base class for operations that are fetching URLs.
-class UrlFetchOperationBase : public AuthenticatedOperationInterface,
-                              public OperationRegistry::Operation,
-                              public net::URLFetcherDelegate {
+// Base class for requests that are fetching URLs.
+class UrlFetchRequestBase : public AuthenticatedRequestInterface,
+                            public OperationRegistry::Operation,
+                            public net::URLFetcherDelegate {
  public:
-  // AuthenticatedOperationInterface overrides.
+  // AuthenticatedRequestInterface overrides.
   virtual void Start(const std::string& access_token,
                      const std::string& custom_user_agent,
                      const ReAuthenticateCallback& callback) OVERRIDE;
-  virtual base::WeakPtr<AuthenticatedOperationInterface> GetWeakPtr() OVERRIDE;
+  virtual base::WeakPtr<AuthenticatedRequestInterface> GetWeakPtr() OVERRIDE;
 
  protected:
-  UrlFetchOperationBase(
+  UrlFetchRequestBase(
       OperationRunner* runner,
       net::URLRequestContextGetter* url_request_context_getter);
-  // Use this constructor when you need to implement operations that take a
+  // Use this constructor when you need to implement requests that take a
   // drive file path (ex. for downloading and uploading).
   // |url_request_context_getter| is used to initialize URLFetcher.
   // TODO(satorux): Remove the drive file path hack. crbug.com/163296
-  UrlFetchOperationBase(
+  UrlFetchRequestBase(
       OperationRunner* runner,
       net::URLRequestContextGetter* url_request_context_getter,
       const base::FilePath& drive_file_path);
-  virtual ~UrlFetchOperationBase();
+  virtual ~UrlFetchRequestBase();
 
   // Gets URL for the request.
   virtual GURL GetURL() const = 0;
@@ -132,18 +133,18 @@ class UrlFetchOperationBase : public AuthenticatedOperationInterface,
                               int64* range_length,
                               std::string* upload_content_type);
 
-  // Invoked by OnURLFetchComplete when the operation completes without an
+  // Invoked by OnURLFetchComplete when the request completes without an
   // authentication error. Must be implemented by a derived class.
   virtual void ProcessURLFetchResults(const net::URLFetcher* source) = 0;
 
-  // Invoked when it needs to notify the status. Chunked operations that
-  // constructs a logically single operation from multiple physical operations
+  // Invoked when it needs to notify the status. Chunked requests that
+  // constructs a logically single request from multiple physical requests
   // should notify resume/suspend instead of start/finish.
   virtual void NotifyStartToOperationRegistry();
   virtual void NotifySuccessToOperationRegistry();
 
   // Invoked by this base class upon an authentication error or cancel by
-  // an user operation. Must be implemented by a derived class.
+  // a user request. Must be implemented by a derived class.
   virtual void RunCallbackOnPrematureFailure(GDataErrorCode code) = 0;
 
   // Invoked when ProcessURLFetchResults() is completed.
@@ -174,7 +175,7 @@ class UrlFetchOperationBase : public AuthenticatedOperationInterface,
   // URLFetcherDelegate overrides.
   virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
 
-  // AuthenticatedOperationInterface overrides.
+  // AuthenticatedRequestInterface overrides.
   virtual void OnAuthFailed(GDataErrorCode code) OVERRIDE;
 
   net::URLRequestContextGetter* url_request_context_getter_;
@@ -189,38 +190,38 @@ class UrlFetchOperationBase : public AuthenticatedOperationInterface,
   // WeakPtrFactory bound to the UI thread.
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.
-  base::WeakPtrFactory<UrlFetchOperationBase> weak_ptr_factory_;
+  base::WeakPtrFactory<UrlFetchRequestBase> weak_ptr_factory_;
 };
 
-//============================ EntryActionOperation ============================
+//============================ EntryActionRequest ============================
 
 // Callback type for Delete/Move DocumentServiceInterface calls.
 typedef base::Callback<void(GDataErrorCode error)> EntryActionCallback;
 
 // This class performs a simple action over a given entry (document/file).
-// It is meant to be used for operations that return no JSON blobs.
-class EntryActionOperation : public UrlFetchOperationBase {
+// It is meant to be used for requests that return no JSON blobs.
+class EntryActionRequest : public UrlFetchRequestBase {
  public:
   // |url_request_context_getter| is used to initialize URLFetcher.
   // |callback| must not be null.
-  EntryActionOperation(
+  EntryActionRequest(
       OperationRunner* runner,
       net::URLRequestContextGetter* url_request_context_getter,
       const EntryActionCallback& callback);
-  virtual ~EntryActionOperation();
+  virtual ~EntryActionRequest();
 
  protected:
-  // Overridden from UrlFetchOperationBase.
+  // Overridden from UrlFetchRequestBase.
   virtual void ProcessURLFetchResults(const net::URLFetcher* source) OVERRIDE;
   virtual void RunCallbackOnPrematureFailure(GDataErrorCode code) OVERRIDE;
 
  private:
   const EntryActionCallback callback_;
 
-  DISALLOW_COPY_AND_ASSIGN(EntryActionOperation);
+  DISALLOW_COPY_AND_ASSIGN(EntryActionRequest);
 };
 
-//============================== GetDataOperation ==============================
+//============================== GetDataRequest ==============================
 
 // Callback type for DocumentServiceInterface::GetResourceList.
 // Note: json_data argument should be passed using base::Passed(&json_data), not
@@ -228,21 +229,21 @@ class EntryActionOperation : public UrlFetchOperationBase {
 typedef base::Callback<void(GDataErrorCode error,
                             scoped_ptr<base::Value> json_data)> GetDataCallback;
 
-// This class performs the operation for fetching and converting the fetched
+// This class performs the request for fetching and converting the fetched
 // content into a base::Value.
-class GetDataOperation : public UrlFetchOperationBase {
+class GetDataRequest : public UrlFetchRequestBase {
  public:
   // |callback| must not be null.
-  GetDataOperation(OperationRunner* runner,
-                   net::URLRequestContextGetter* url_request_context_getter,
-                   const GetDataCallback& callback);
-  virtual ~GetDataOperation();
+  GetDataRequest(OperationRunner* runner,
+                 net::URLRequestContextGetter* url_request_context_getter,
+                 const GetDataCallback& callback);
+  virtual ~GetDataRequest();
 
   // Parses JSON response.
   void ParseResponse(GDataErrorCode fetch_error_code, const std::string& data);
 
  protected:
-  // UrlFetchOperationBase overrides.
+  // UrlFetchRequestBase overrides.
   virtual void ProcessURLFetchResults(const net::URLFetcher* source) OVERRIDE;
   virtual void RunCallbackOnPrematureFailure(
       GDataErrorCode fetch_error_code) OVERRIDE;
@@ -261,45 +262,45 @@ class GetDataOperation : public UrlFetchOperationBase {
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.
-  base::WeakPtrFactory<GetDataOperation> weak_ptr_factory_;
-  DISALLOW_COPY_AND_ASSIGN(GetDataOperation);
+  base::WeakPtrFactory<GetDataRequest> weak_ptr_factory_;
+  DISALLOW_COPY_AND_ASSIGN(GetDataRequest);
 };
 
 
-//=========================== InitiateUploadOperation ==========================
+//=========================== InitiateUploadRequestBase=======================
 
 // Callback type for DocumentServiceInterface::InitiateUpload.
 typedef base::Callback<void(GDataErrorCode error,
                             const GURL& upload_url)> InitiateUploadCallback;
 
-// This class provides base implementation for performing the operation for
+// This class provides base implementation for performing the request for
 // initiating the upload of a file.
 // |callback| will be called with the obtained upload URL. The URL will be
-// used with operations for resuming the file uploading.
+// used with requests for resuming the file uploading.
 //
 // Here's the flow of uploading:
-// 1) Get the upload URL with a class inheriting InitiateUploadOperationBase.
+// 1) Get the upload URL with a class inheriting InitiateUploadRequestBase.
 // 2) Upload the first 512KB (see kUploadChunkSize in drive_uploader.cc)
 //    of the target file to the upload URL
 // 3) If there is more data to upload, go to 2).
 //
-class InitiateUploadOperationBase : public UrlFetchOperationBase {
+class InitiateUploadRequestBase : public UrlFetchRequestBase {
  protected:
   // |callback| will be called with the upload URL, where upload data is
-  // uploaded to with ResumeUploadOperation.
+  // uploaded to with ResumeUploadRequestBase.
   // |callback| must not be null.
   // |content_type| and |content_length| should be the attributes of the
   // uploading file.
-  InitiateUploadOperationBase(
+  InitiateUploadRequestBase(
       OperationRunner* runner,
       net::URLRequestContextGetter* url_request_context_getter,
       const InitiateUploadCallback& callback,
       const base::FilePath& drive_file_path,
       const std::string& content_type,
       int64 content_length);
-  virtual ~InitiateUploadOperationBase();
+  virtual ~InitiateUploadRequestBase();
 
-  // UrlFetchOperationBase overrides.
+  // UrlFetchRequestBase overrides.
   virtual void ProcessURLFetchResults(const net::URLFetcher* source) OVERRIDE;
   virtual void NotifySuccessToOperationRegistry() OVERRIDE;
   virtual void RunCallbackOnPrematureFailure(GDataErrorCode code) OVERRIDE;
@@ -311,10 +312,10 @@ class InitiateUploadOperationBase : public UrlFetchOperationBase {
   const std::string content_type_;
   const int64 content_length_;
 
-  DISALLOW_COPY_AND_ASSIGN(InitiateUploadOperationBase);
+  DISALLOW_COPY_AND_ASSIGN(InitiateUploadRequestBase);
 };
 
-//========================== UploadRangeOperationBase ==========================
+//========================== UploadRangeRequestBase ==========================
 
 // Struct for response to ResumeUpload and GetUploadStatus.
 struct UploadRangeResponse {
@@ -337,28 +338,28 @@ struct UploadRangeResponse {
 
 // Base class for a URL fetch request expecting the response containing the
 // current uploading range. This class processes the response containing
-// "Range" header and invoke OnRangeOperationComplete.
-class UploadRangeOperationBase : public UrlFetchOperationBase {
+// "Range" header and invoke OnRangeRequestComplete.
+class UploadRangeRequestBase : public UrlFetchRequestBase {
  protected:
   // |upload_location| is the URL of where to upload the file to.
   // |drive_file_path| is the path to the file seen in the UI. Not necessary
   // for resuming an upload, but used for adding an entry to OperationRegistry.
   // TODO(satorux): Remove the drive file path hack. crbug.com/163296
-  UploadRangeOperationBase(
+  UploadRangeRequestBase(
       OperationRunner* runner,
       net::URLRequestContextGetter* url_request_context_getter,
       const base::FilePath& drive_file_path,
       const GURL& upload_url);
-  virtual ~UploadRangeOperationBase();
+  virtual ~UploadRangeRequestBase();
 
-  // UrlFetchOperationBase overrides.
+  // UrlFetchRequestBase overrides.
   virtual GURL GetURL() const OVERRIDE;
   virtual net::URLFetcher::RequestType GetRequestType() const OVERRIDE;
   virtual void ProcessURLFetchResults(const net::URLFetcher* source) OVERRIDE;
   virtual void NotifySuccessToOperationRegistry() OVERRIDE;
   virtual void RunCallbackOnPrematureFailure(GDataErrorCode code) OVERRIDE;
 
-  // This method will be called when the operation is done, regardless of
+  // This method will be called when the request is done, regardless of
   // whether it is succeeded or failed.
   //
   // 1) If there is more data to upload, |code| of |response| is set to
@@ -374,7 +375,7 @@ class UploadRangeOperationBase : public UrlFetchOperationBase {
   // Note: Subclasses should have responsibility to run some callback
   // in this method to notify the finish status to its clients (or ignore it
   // under its responsibility).
-  virtual void OnRangeOperationComplete(
+  virtual void OnRangeRequestComplete(
       const UploadRangeResponse& response, scoped_ptr<base::Value> value) = 0;
 
  private:
@@ -388,20 +389,20 @@ class UploadRangeOperationBase : public UrlFetchOperationBase {
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.
-  base::WeakPtrFactory<UploadRangeOperationBase> weak_ptr_factory_;
-  DISALLOW_COPY_AND_ASSIGN(UploadRangeOperationBase);
+  base::WeakPtrFactory<UploadRangeRequestBase> weak_ptr_factory_;
+  DISALLOW_COPY_AND_ASSIGN(UploadRangeRequestBase);
 };
 
-//========================== ResumeUploadOperationBase =========================
+//========================== ResumeUploadRequestBase =========================
 
-// This class performs the operation for resuming the upload of a file.
-// More specifically, this operation uploads a chunk of data carried in |buf|
+// This class performs the request for resuming the upload of a file.
+// More specifically, this request uploads a chunk of data carried in |buf|
 // of ResumeUploadResponseBase. This class is designed to share the
 // implementation of upload resuming between GData WAPI and Drive API v2.
-// The subclasses should implement OnRangeOperationComplete inherited by
-// UploadRangeOperationBase, because the type of the response should be
+// The subclasses should implement OnRangeRequestComplete inherited by
+// UploadRangeRequestBase, because the type of the response should be
 // different (although the format in the server response is JSON).
-class ResumeUploadOperationBase : public UploadRangeOperationBase {
+class ResumeUploadRequestBase : public UploadRangeRequestBase {
  protected:
   // |start_position| is the start of range of contents currently stored in
   // |buf|. |end_position| is the end of range of contents currently stared in
@@ -410,9 +411,9 @@ class ResumeUploadOperationBase : public UploadRangeOperationBase {
   // |content_length| and |content_type| are the length and type of the
   // file content to be uploaded respectively.
   // |buf| holds current content to be uploaded.
-  // See also UploadRangeOperationBase's comment for remaining parameters
+  // See also UploadRangeRequestBase's comment for remaining parameters
   // meaining.
-  ResumeUploadOperationBase(
+  ResumeUploadRequestBase(
       OperationRunner* runner,
       net::URLRequestContextGetter* url_request_context_getter,
       const base::FilePath& drive_file_path,
@@ -422,9 +423,9 @@ class ResumeUploadOperationBase : public UploadRangeOperationBase {
       int64 content_length,
       const std::string& content_type,
       const base::FilePath& local_file_path);
-  virtual ~ResumeUploadOperationBase();
+  virtual ~ResumeUploadRequestBase();
 
-  // UrlFetchOperationBase overrides.
+  // UrlFetchRequestBase overrides.
   virtual std::vector<std::string> GetExtraRequestHeaders() const OVERRIDE;
   virtual bool GetContentFile(base::FilePath* local_file_path,
                               int64* range_offset,
@@ -440,56 +441,56 @@ class ResumeUploadOperationBase : public UploadRangeOperationBase {
   const std::string content_type_;
   const base::FilePath local_file_path_;
 
-  DISALLOW_COPY_AND_ASSIGN(ResumeUploadOperationBase);
+  DISALLOW_COPY_AND_ASSIGN(ResumeUploadRequestBase);
 };
 
-//======================== GetUploadStatusOperationBase ========================
+//======================== GetUploadStatusRequestBase ========================
 
-// This class performs the operation for getting the current upload status
+// This class performs the request for getting the current upload status
 // of a file.
-// This operation calls OnRagneOperationComplete() with:
+// This request calls OnRagneOperationComplete() with:
 // - HTTP_RESUME_INCOMPLETE and the range of previously uploaded data,
 //   if a file has been partially uploaded. |value| is not used.
 // - HTTP_SUCCESS or HTTP_CREATED (up to the upload mode) and |value|
 //   for the uploaded data, if a file has been completely uploaded.
-// See also UploadRangeOperationBase.
-class GetUploadStatusOperationBase : public UploadRangeOperationBase {
+// See also UploadRangeRequestBase.
+class GetUploadStatusRequestBase : public UploadRangeRequestBase {
  public:
   // |content_length| is the whole data size to be uploaded.
-  // See also UploadRangeOperationBase's constructor comment for other
+  // See also UploadRangeRequestBase's constructor comment for other
   // parameters.
-  GetUploadStatusOperationBase(
+  GetUploadStatusRequestBase(
       OperationRunner* runner,
       net::URLRequestContextGetter* url_request_context_getter,
       const base::FilePath& drive_file_path,
       const GURL& upload_url,
       int64 content_length);
-  virtual ~GetUploadStatusOperationBase();
+  virtual ~GetUploadStatusRequestBase();
 
  protected:
-  // UrlFetchOperationBase overrides.
+  // UrlFetchRequestBase overrides.
   virtual std::vector<std::string> GetExtraRequestHeaders() const OVERRIDE;
 
  private:
   const int64 content_length_;
 
-  DISALLOW_COPY_AND_ASSIGN(GetUploadStatusOperationBase);
+  DISALLOW_COPY_AND_ASSIGN(GetUploadStatusRequestBase);
 };
 
-//============================ DownloadFileOperation ===========================
+//============================ DownloadFileRequest ===========================
 
-// Callback type for getting the content from DownloadFileOperation.
+// Callback type for getting the content from DownloadFileRequest.
 typedef base::Callback<void(
     GDataErrorCode error,
     scoped_ptr<std::string> content)> GetContentCallback;
 
-// Callback type for receiving the completion of DownloadFileOperation.
+// Callback type for receiving the completion of DownloadFileRequest.
 typedef base::Callback<void(GDataErrorCode error,
                             const base::FilePath& temp_file)>
     DownloadActionCallback;
 
-// This class performs the operation for downloading of a given document/file.
-class DownloadFileOperation : public UrlFetchOperationBase {
+// This class performs the request for downloading of a given document/file.
+class DownloadFileRequest : public UrlFetchRequestBase {
  public:
   // download_action_callback:
   //   This callback is called when the download is complete. Must not be null.
@@ -512,7 +513,7 @@ class DownloadFileOperation : public UrlFetchOperationBase {
   // output_file_path:
   //   Specifies the file path to save the downloaded file.
   //
-  DownloadFileOperation(
+  DownloadFileRequest(
       OperationRunner* runner,
       net::URLRequestContextGetter* url_request_context_getter,
       const DownloadActionCallback& download_action_callback,
@@ -521,10 +522,10 @@ class DownloadFileOperation : public UrlFetchOperationBase {
       const GURL& download_url,
       const base::FilePath& drive_file_path,
       const base::FilePath& output_file_path);
-  virtual ~DownloadFileOperation();
+  virtual ~DownloadFileRequest();
 
  protected:
-  // UrlFetchOperationBase overrides.
+  // UrlFetchRequestBase overrides.
   virtual GURL GetURL() const OVERRIDE;
   virtual void ProcessURLFetchResults(const net::URLFetcher* source) OVERRIDE;
   virtual void RunCallbackOnPrematureFailure(GDataErrorCode code) OVERRIDE;
@@ -543,9 +544,9 @@ class DownloadFileOperation : public UrlFetchOperationBase {
   const ProgressCallback progress_callback_;
   const GURL download_url_;
 
-  DISALLOW_COPY_AND_ASSIGN(DownloadFileOperation);
+  DISALLOW_COPY_AND_ASSIGN(DownloadFileRequest);
 };
 
 }  // namespace google_apis
 
-#endif  // CHROME_BROWSER_GOOGLE_APIS_BASE_OPERATIONS_H_
+#endif  // CHROME_BROWSER_GOOGLE_APIS_BASE_REQUESTS_H_

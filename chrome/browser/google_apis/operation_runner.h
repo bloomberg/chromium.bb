@@ -21,11 +21,11 @@ class URLRequestContextGetter;
 
 namespace google_apis {
 
-class AuthenticatedOperationInterface;
+class AuthenticatedRequestInterface;
 class AuthService;
 class OperationRegistry;
 
-// Helper class that runs AuthenticatedOperationInterface objects, handling
+// Helper class that runs AuthenticatedRequestInterface objects, handling
 // retries and authentication.
 class OperationRunner {
  public:
@@ -53,21 +53,21 @@ class OperationRunner {
   // Cancels all in-flight operations.
   void CancelAll();
 
-  // Starts an operation implementing the AuthenticatedOperationInterface
+  // Starts an operation implementing the AuthenticatedRequestInterface
   // interface, and makes the operation retry upon authentication failures by
   // calling back to RetryOperation.
-  void StartOperationWithRetry(AuthenticatedOperationInterface* operation);
+  void StartOperationWithRetry(AuthenticatedRequestInterface* operation);
 
  private:
   // Called when the access token is fetched.
   void OnAccessTokenFetched(
-      const base::WeakPtr<AuthenticatedOperationInterface>& operation,
+      const base::WeakPtr<AuthenticatedRequestInterface>& operation,
       GDataErrorCode error,
       const std::string& access_token);
 
   // Clears any authentication token and retries the operation, which forces
   // an authentication token refresh.
-  void RetryOperation(AuthenticatedOperationInterface* operation);
+  void RetryOperation(AuthenticatedRequestInterface* operation);
 
   Profile* profile_;  // Not owned.
 

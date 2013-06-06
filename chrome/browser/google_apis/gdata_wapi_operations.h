@@ -8,7 +8,7 @@
 #include <string>
 #include <vector>
 
-#include "chrome/browser/google_apis/base_operations.h"
+#include "chrome/browser/google_apis/base_requests.h"
 #include "chrome/browser/google_apis/drive_service_interface.h"
 #include "chrome/browser/google_apis/gdata_wapi_url_generator.h"
 
@@ -25,7 +25,7 @@ class ResourceEntry;
 //============================ GetResourceListOperation ========================
 
 // This class performs the operation for fetching a resource list.
-class GetResourceListOperation : public GetDataOperation {
+class GetResourceListOperation : public GetDataRequest {
  public:
   // override_url:
   //   If empty, a hard-coded base URL of the WAPI server is used to fetch
@@ -57,7 +57,7 @@ class GetResourceListOperation : public GetDataOperation {
   virtual ~GetResourceListOperation();
 
  protected:
-  // UrlFetchOperationBase overrides.
+  // UrlFetchRequestBase overrides.
   virtual GURL GetURL() const OVERRIDE;
 
  private:
@@ -73,7 +73,7 @@ class GetResourceListOperation : public GetDataOperation {
 //============================ SearchByTitleOperation ==========================
 
 // This class performs the operation for searching resources by title.
-class SearchByTitleOperation : public GetDataOperation {
+class SearchByTitleOperation : public GetDataRequest {
  public:
   // title: the search query.
   //
@@ -93,7 +93,7 @@ class SearchByTitleOperation : public GetDataOperation {
   virtual ~SearchByTitleOperation();
 
  protected:
-  // UrlFetchOperationBase overrides.
+  // UrlFetchRequestBase overrides.
   virtual GURL GetURL() const OVERRIDE;
 
  private:
@@ -107,7 +107,7 @@ class SearchByTitleOperation : public GetDataOperation {
 //========================= GetResourceEntryOperation ==========================
 
 // This class performs the operation for fetching a single resource entry.
-class GetResourceEntryOperation : public GetDataOperation {
+class GetResourceEntryOperation : public GetDataRequest {
  public:
   // |callback| must not be null.
   GetResourceEntryOperation(
@@ -119,7 +119,7 @@ class GetResourceEntryOperation : public GetDataOperation {
   virtual ~GetResourceEntryOperation();
 
  protected:
-  // UrlFetchOperationBase overrides.
+  // UrlFetchRequestBase overrides.
   virtual GURL GetURL() const OVERRIDE;
 
  private:
@@ -138,7 +138,7 @@ typedef base::Callback<void(GDataErrorCode error,
     GetAccountMetadataCallback;
 
 // This class performs the operation for fetching account metadata.
-class GetAccountMetadataOperation : public GetDataOperation {
+class GetAccountMetadataOperation : public GetDataRequest {
  public:
   // If |include_installed_apps| is set to true, the result should include
   // the list of installed third party applications.
@@ -152,7 +152,7 @@ class GetAccountMetadataOperation : public GetDataOperation {
   virtual ~GetAccountMetadataOperation();
 
  protected:
-  // UrlFetchOperationBase overrides.
+  // UrlFetchRequestBase overrides.
   virtual GURL GetURL() const OVERRIDE;
 
  private:
@@ -170,7 +170,7 @@ class GetAccountMetadataOperation : public GetDataOperation {
 // "docs:removed" means its permanently gone. Since what the class does is to
 // put the resource into trash, we have chosen "Delete" in the name, even though
 // we are preferring the term "Remove" in drive/google_api code.
-class DeleteResourceOperation : public EntryActionOperation {
+class DeleteResourceOperation : public EntryActionRequest {
  public:
   // |callback| must not be null.
   DeleteResourceOperation(
@@ -183,7 +183,7 @@ class DeleteResourceOperation : public EntryActionOperation {
   virtual ~DeleteResourceOperation();
 
  protected:
-  // UrlFetchOperationBase overrides.
+  // UrlFetchRequestBase overrides.
   virtual GURL GetURL() const OVERRIDE;
   virtual net::URLFetcher::RequestType GetRequestType() const OVERRIDE;
   virtual std::vector<std::string> GetExtraRequestHeaders() const OVERRIDE;
@@ -199,7 +199,7 @@ class DeleteResourceOperation : public EntryActionOperation {
 //========================== CreateDirectoryOperation ==========================
 
 // This class performs the operation for creating a directory.
-class CreateDirectoryOperation : public GetDataOperation {
+class CreateDirectoryOperation : public GetDataRequest {
  public:
   // A new directory will be created under a directory specified by
   // |parent_resource_id|. If this parameter is empty, a new directory will
@@ -215,7 +215,7 @@ class CreateDirectoryOperation : public GetDataOperation {
   virtual ~CreateDirectoryOperation();
 
  protected:
-  // UrlFetchOperationBase overrides.
+  // UrlFetchRequestBase overrides.
   virtual GURL GetURL() const OVERRIDE;
   virtual net::URLFetcher::RequestType GetRequestType() const OVERRIDE;
   virtual bool GetContentData(std::string* upload_content_type,
@@ -234,7 +234,7 @@ class CreateDirectoryOperation : public GetDataOperation {
 // This class performs the operation for making a copy of a hosted document.
 // Note that this function cannot be used to copy regular files, as it's not
 // supported by WAPI.
-class CopyHostedDocumentOperation : public GetDataOperation {
+class CopyHostedDocumentOperation : public GetDataRequest {
  public:
   // |callback| must not be null.
   CopyHostedDocumentOperation(
@@ -247,7 +247,7 @@ class CopyHostedDocumentOperation : public GetDataOperation {
   virtual ~CopyHostedDocumentOperation();
 
  protected:
-  // UrlFetchOperationBase overrides.
+  // UrlFetchRequestBase overrides.
   virtual net::URLFetcher::RequestType GetRequestType() const OVERRIDE;
   virtual GURL GetURL() const OVERRIDE;
   virtual bool GetContentData(std::string* upload_content_type,
@@ -264,7 +264,7 @@ class CopyHostedDocumentOperation : public GetDataOperation {
 //=========================== RenameResourceOperation ==========================
 
 // This class performs the operation for renaming a document/file/directory.
-class RenameResourceOperation : public EntryActionOperation {
+class RenameResourceOperation : public EntryActionRequest {
  public:
   // |callback| must not be null.
   RenameResourceOperation(
@@ -277,7 +277,7 @@ class RenameResourceOperation : public EntryActionOperation {
   virtual ~RenameResourceOperation();
 
  protected:
-  // UrlFetchOperationBase overrides.
+  // UrlFetchRequestBase overrides.
   virtual net::URLFetcher::RequestType GetRequestType() const OVERRIDE;
   virtual std::vector<std::string> GetExtraRequestHeaders() const OVERRIDE;
   virtual GURL GetURL() const OVERRIDE;
@@ -296,7 +296,7 @@ class RenameResourceOperation : public EntryActionOperation {
 
 // This class performs the operation for authorizing an application specified
 // by |app_id| to access a document specified by |resource_id|.
-class AuthorizeAppOperation : public GetDataOperation {
+class AuthorizeAppOperation : public GetDataRequest {
  public:
   // |callback| must not be null.
   AuthorizeAppOperation(
@@ -309,7 +309,7 @@ class AuthorizeAppOperation : public GetDataOperation {
   virtual ~AuthorizeAppOperation();
 
  protected:
-  // UrlFetchOperationBase overrides.
+  // UrlFetchRequestBase overrides.
   virtual net::URLFetcher::RequestType GetRequestType() const OVERRIDE;
   virtual bool GetContentData(std::string* upload_content_type,
                               std::string* upload_content) OVERRIDE;
@@ -328,7 +328,7 @@ class AuthorizeAppOperation : public GetDataOperation {
 
 // This class performs the operation for adding a document/file/directory
 // to a directory.
-class AddResourceToDirectoryOperation : public EntryActionOperation {
+class AddResourceToDirectoryOperation : public EntryActionRequest {
  public:
   // |callback| must not be null.
   AddResourceToDirectoryOperation(
@@ -341,7 +341,7 @@ class AddResourceToDirectoryOperation : public EntryActionOperation {
   virtual ~AddResourceToDirectoryOperation();
 
  protected:
-  // UrlFetchOperationBase overrides.
+  // UrlFetchRequestBase overrides.
   virtual GURL GetURL() const OVERRIDE;
   virtual net::URLFetcher::RequestType GetRequestType() const OVERRIDE;
   virtual bool GetContentData(std::string* upload_content_type,
@@ -359,7 +359,7 @@ class AddResourceToDirectoryOperation : public EntryActionOperation {
 
 // This class performs the operation for removing a document/file/directory
 // from a directory.
-class RemoveResourceFromDirectoryOperation : public EntryActionOperation {
+class RemoveResourceFromDirectoryOperation : public EntryActionRequest {
  public:
   // |callback| must not be null.
   RemoveResourceFromDirectoryOperation(
@@ -372,7 +372,7 @@ class RemoveResourceFromDirectoryOperation : public EntryActionOperation {
   virtual ~RemoveResourceFromDirectoryOperation();
 
  protected:
-  // UrlFetchOperationBase overrides.
+  // UrlFetchRequestBase overrides.
   virtual GURL GetURL() const OVERRIDE;
   virtual net::URLFetcher::RequestType GetRequestType() const OVERRIDE;
   virtual std::vector<std::string> GetExtraRequestHeaders() const OVERRIDE;
@@ -388,12 +388,12 @@ class RemoveResourceFromDirectoryOperation : public EntryActionOperation {
 //======================= InitiateUploadNewFileOperation =======================
 
 // This class performs the operation for initiating the upload of a new file.
-class InitiateUploadNewFileOperation : public InitiateUploadOperationBase {
+class InitiateUploadNewFileOperation : public InitiateUploadRequestBase {
  public:
   // |title| should be set.
   // |parent_upload_url| should be the upload_url() of the parent directory.
   //   (resumable-create-media URL)
-  // See also the comments of InitiateUploadOperationBase for more details
+  // See also the comments of InitiateUploadRequestBase for more details
   // about the other parameters.
   InitiateUploadNewFileOperation(
       OperationRunner* runner,
@@ -408,7 +408,7 @@ class InitiateUploadNewFileOperation : public InitiateUploadOperationBase {
   virtual ~InitiateUploadNewFileOperation();
 
  protected:
-  // UrlFetchOperationBase overrides.
+  // UrlFetchRequestBase overrides.
   virtual GURL GetURL() const OVERRIDE;
   virtual net::URLFetcher::RequestType GetRequestType() const OVERRIDE;
   virtual bool GetContentData(std::string* upload_content_type,
@@ -427,12 +427,12 @@ class InitiateUploadNewFileOperation : public InitiateUploadOperationBase {
 // This class performs the operation for initiating the upload of an existing
 // file.
 class InitiateUploadExistingFileOperation
-    : public InitiateUploadOperationBase {
+    : public InitiateUploadRequestBase {
  public:
   // |upload_url| should be the upload_url() of the file
   //    (resumable-create-media URL)
   // |etag| should be set if it is available to detect the upload confliction.
-  // See also the comments of InitiateUploadOperationBase for more details
+  // See also the comments of InitiateUploadRequestBase for more details
   // about the other parameters.
   InitiateUploadExistingFileOperation(
       OperationRunner* runner,
@@ -447,7 +447,7 @@ class InitiateUploadExistingFileOperation
   virtual ~InitiateUploadExistingFileOperation();
 
  protected:
-  // UrlFetchOperationBase overrides.
+  // UrlFetchRequestBase overrides.
   virtual GURL GetURL() const OVERRIDE;
   virtual net::URLFetcher::RequestType GetRequestType() const OVERRIDE;
   virtual std::vector<std::string> GetExtraRequestHeaders() const OVERRIDE;
@@ -465,9 +465,9 @@ class InitiateUploadExistingFileOperation
 //============================ ResumeUploadOperation ===========================
 
 // Performs the operation for resuming the upload of a file.
-class ResumeUploadOperation : public ResumeUploadOperationBase {
+class ResumeUploadOperation : public ResumeUploadRequestBase {
  public:
-  // See also ResumeUploadOperationBase's comment for parameters meaining.
+  // See also ResumeUploadRequestBase's comment for parameters meaining.
   // |callback| must not be null.
   ResumeUploadOperation(
       OperationRunner* runner,
@@ -484,8 +484,8 @@ class ResumeUploadOperation : public ResumeUploadOperationBase {
   virtual ~ResumeUploadOperation();
 
  protected:
-  // UploadRangeOperationBase overrides.
-  virtual void OnRangeOperationComplete(
+  // UploadRangeRequestBase overrides.
+  virtual void OnRangeRequestComplete(
       const UploadRangeResponse& response,
       scoped_ptr<base::Value> value) OVERRIDE;
   // content::UrlFetcherDelegate overrides.
@@ -502,9 +502,9 @@ class ResumeUploadOperation : public ResumeUploadOperationBase {
 //========================== GetUploadStatusOperation ==========================
 
 // Performs the operation to request the current upload status of a file.
-class GetUploadStatusOperation : public GetUploadStatusOperationBase {
+class GetUploadStatusOperation : public GetUploadStatusRequestBase {
  public:
-  // See also GetUploadStatusOperationBase's comment for parameters meaning.
+  // See also GetUploadStatusRequestBase's comment for parameters meaning.
   // |callback| must not be null.
   GetUploadStatusOperation(
       OperationRunner* runner,
@@ -516,8 +516,8 @@ class GetUploadStatusOperation : public GetUploadStatusOperationBase {
   virtual ~GetUploadStatusOperation();
 
  protected:
-  // UploadRangeOperationBase overrides.
-  virtual void OnRangeOperationComplete(
+  // UploadRangeRequestBase overrides.
+  virtual void OnRangeRequestComplete(
       const UploadRangeResponse& response,
       scoped_ptr<base::Value> value) OVERRIDE;
 

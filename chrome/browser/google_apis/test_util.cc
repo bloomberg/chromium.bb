@@ -147,7 +147,7 @@ scoped_ptr<net::test_server::BasicHttpResponse> CreateHttpResponseFromFile(
   return http_response.Pass();
 }
 
-scoped_ptr<net::test_server::HttpResponse> HandleDownloadRequest(
+scoped_ptr<net::test_server::HttpResponse> HandleDownloadFileRequest(
     const GURL& base_url,
     net::test_server::HttpRequest* out_request,
     const net::test_server::HttpRequest& request) {

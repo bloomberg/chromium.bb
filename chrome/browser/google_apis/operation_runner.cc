@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "chrome/browser/google_apis/auth_service.h"
-#include "chrome/browser/google_apis/base_operations.h"
+#include "chrome/browser/google_apis/base_requests.h"
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;
@@ -41,7 +41,7 @@ void OperationRunner::CancelAll() {
 }
 
 void OperationRunner::StartOperationWithRetry(
-    AuthenticatedOperationInterface* operation) {
+    AuthenticatedRequestInterface* operation) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (!auth_service_->HasAccessToken()) {
@@ -60,7 +60,7 @@ void OperationRunner::StartOperationWithRetry(
 }
 
 void OperationRunner::OnAccessTokenFetched(
-    const base::WeakPtr<AuthenticatedOperationInterface>& operation,
+    const base::WeakPtr<AuthenticatedRequestInterface>& operation,
     GDataErrorCode code,
     const std::string& /* access_token */) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -78,7 +78,7 @@ void OperationRunner::OnAccessTokenFetched(
 }
 
 void OperationRunner::RetryOperation(
-    AuthenticatedOperationInterface* operation) {
+    AuthenticatedRequestInterface* operation) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   auth_service_->ClearAccessToken();

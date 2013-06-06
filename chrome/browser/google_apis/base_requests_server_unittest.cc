@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/google_apis/base_operations.h"
+#include "chrome/browser/google_apis/base_requests.h"
 
 #include "base/bind.h"
 #include "base/file_util.h"
@@ -58,7 +58,7 @@ class BaseOperationsServerTest : public testing::Test {
 
     ASSERT_TRUE(test_server_.InitializeAndWaitUntilReady());
     test_server_.RegisterRequestHandler(
-        base::Bind(&test_util::HandleDownloadRequest,
+        base::Bind(&test_util::HandleDownloadFileRequest,
                    test_server_.base_url(),
                    base::Unretained(&http_request_)));
   }
@@ -88,10 +88,10 @@ class BaseOperationsServerTest : public testing::Test {
   net::test_server::HttpRequest http_request_;
 };
 
-TEST_F(BaseOperationsServerTest, DownloadFileOperation_ValidFile) {
+TEST_F(BaseOperationsServerTest, DownloadFileRequest_ValidFile) {
   GDataErrorCode result_code = GDATA_OTHER_ERROR;
   base::FilePath temp_file;
-  DownloadFileOperation* operation = new DownloadFileOperation(
+  DownloadFileRequest* operation = new DownloadFileRequest(
       operation_runner_.get(),
       request_context_getter_.get(),
       CreateComposedCallback(
@@ -123,10 +123,10 @@ TEST_F(BaseOperationsServerTest, DownloadFileOperation_ValidFile) {
 
 // http://crbug.com/169588
 TEST_F(BaseOperationsServerTest,
-       DISABLED_DownloadFileOperation_NonExistentFile) {
+       DISABLED_DownloadFileRequest_NonExistentFile) {
   GDataErrorCode result_code = GDATA_OTHER_ERROR;
   base::FilePath temp_file;
-  DownloadFileOperation* operation = new DownloadFileOperation(
+  DownloadFileRequest* operation = new DownloadFileRequest(
       operation_runner_.get(),
       request_context_getter_.get(),
       CreateComposedCallback(

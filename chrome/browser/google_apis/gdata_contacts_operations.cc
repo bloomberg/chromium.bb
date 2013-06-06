@@ -40,7 +40,7 @@ GetContactGroupsOperation::GetContactGroupsOperation(
     OperationRunner* runner,
     net::URLRequestContextGetter* url_request_context_getter,
     const GetDataCallback& callback)
-    : GetDataOperation(runner, url_request_context_getter, callback) {
+    : GetDataRequest(runner, url_request_context_getter, callback) {
 }
 
 GetContactGroupsOperation::~GetContactGroupsOperation() {}
@@ -59,7 +59,7 @@ GetContactsOperation::GetContactsOperation(
     const std::string& group_id,
     const base::Time& min_update_time,
     const GetDataCallback& callback)
-    : GetDataOperation(runner, url_request_context_getter, callback),
+    : GetDataRequest(runner, url_request_context_getter, callback),
       group_id_(group_id),
       min_update_time_(min_update_time) {
 }
@@ -90,7 +90,7 @@ GetContactPhotoOperation::GetContactPhotoOperation(
     net::URLRequestContextGetter* url_request_context_getter,
     const GURL& photo_url,
     const GetContentCallback& callback)
-    : UrlFetchOperationBase(runner, url_request_context_getter),
+    : UrlFetchRequestBase(runner, url_request_context_getter),
       photo_url_(photo_url),
       callback_(callback) {
 }
