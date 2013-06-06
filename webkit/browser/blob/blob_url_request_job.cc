@@ -78,7 +78,6 @@ BlobURLRequestJob::BlobURLRequestJob(
       current_item_index_(0),
       current_item_offset_(0),
       error_(false),
-      headers_set_(false),
       byte_range_set_(false) {
   DCHECK(file_thread_proxy_.get());
 }
@@ -171,6 +170,8 @@ BlobURLRequestJob::~BlobURLRequestJob() {
 }
 
 void BlobURLRequestJob::DidStart() {
+  error_ = false;
+
   // We only support GET request per the spec.
   if (request()->method() != "GET") {
     NotifyFailure(net::ERR_METHOD_NOT_SUPPORTED);
@@ -200,7 +201,6 @@ bool BlobURLRequestJob::AddItemLength(size_t index, int64 item_length) {
 }
 
 void BlobURLRequestJob::CountSize() {
-  error_ = false;
   pending_get_file_info_count_ = 0;
   total_size_ = 0;
   item_length_list_.resize(blob_data_->items().size());
@@ -490,7 +490,7 @@ void BlobURLRequestJob::NotifyFailure(int error_code) {
 
   // If we already return the headers on success, we can't change the headers
   // now. Instead, we just error out.
-  if (headers_set_) {
+  if (response_info_) {
     NotifyDone(net::URLRequestStatus(net::URLRequestStatus::FAILED,
                                      error_code));
     return;
@@ -559,7 +559,6 @@ void BlobURLRequestJob::HeadersCompleted(int status_code,
   response_info_->headers = headers;
 
   set_expected_content_size(remaining_bytes_);
-  headers_set_ = true;
 
   NotifyHeadersComplete();
 }

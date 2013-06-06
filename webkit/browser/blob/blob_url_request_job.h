@@ -82,6 +82,8 @@ class WEBKIT_STORAGE_EXPORT BlobURLRequestJob : public net::URLRequestJob {
   int ComputeBytesToRead() const;
   int BytesReadCompleted();
 
+  // These methods convert the result of blob data reading into response headers
+  // and pass it to URLRequestJob's NotifyDone() or NotifyHeadersComplete().
   void NotifySuccess();
   void NotifyFailure(int);
   void HeadersCompleted(int status_code, const std::string& status_txt);
@@ -94,7 +96,10 @@ class WEBKIT_STORAGE_EXPORT BlobURLRequestJob : public net::URLRequestJob {
   void CreateFileStreamReader(size_t index, int64 additional_offset);
 
   base::WeakPtrFactory<BlobURLRequestJob> weak_factory_;
+
   scoped_refptr<BlobData> blob_data_;
+
+  // Variables for controlling read from |blob_data_|.
   scoped_refptr<fileapi::FileSystemContext> file_system_context_;
   scoped_refptr<base::MessageLoopProxy> file_thread_proxy_;
   std::vector<int64> item_length_list_;
@@ -104,11 +109,16 @@ class WEBKIT_STORAGE_EXPORT BlobURLRequestJob : public net::URLRequestJob {
   IndexToReaderMap index_to_reader_;
   size_t current_item_index_;
   int64 current_item_offset_;
+
+  // Holds the buffer for read data with the IOBuffer interface.
   scoped_refptr<net::DrainableIOBuffer> read_buf_;
+
+  // Is set when NotifyFailure() is called and reset when DidStart is called.
   bool error_;
-  bool headers_set_;
+
   bool byte_range_set_;
   net::HttpByteRange byte_range_;
+
   scoped_ptr<net::HttpResponseInfo> response_info_;
 
   DISALLOW_COPY_AND_ASSIGN(BlobURLRequestJob);
