@@ -227,7 +227,7 @@ history.History.prototype = {
         switch(key) {
         case 'testType':
             history.validateParameter(this.crossDashboardState, key, value,
-                function() { return TEST_TYPES.indexOf(value) != -1; });
+                function() { return builders.testTypes.indexOf(value) != -1; });
             return true;
 
         case 'group':

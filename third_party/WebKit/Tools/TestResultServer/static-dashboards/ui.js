@@ -129,7 +129,7 @@ ui.html.navbar = function(opt_extraHtml)
 // Returns the HTML for the select element to switch to different testTypes.
 ui.html.testTypeSwitcher = function(opt_noBuilderMenu, opt_extraHtml, opt_includeNoneBuilder)
 {
-    var html = ui.html.select('Test type', 'testType', TEST_TYPES);
+    var html = ui.html.select('Test type', 'testType', builders.testTypes);
     if (!opt_noBuilderMenu) {
         var buildersForMenu = Object.keys(currentBuilders());
         if (opt_includeNoneBuilder)

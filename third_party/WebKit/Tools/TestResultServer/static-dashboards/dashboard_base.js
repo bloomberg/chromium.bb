@@ -44,43 +44,6 @@ var NOTRUN = 'NOTRUN';
 var ONE_DAY_SECONDS = 60 * 60 * 24;
 var ONE_WEEK_SECONDS = ONE_DAY_SECONDS * 7;
 
-// These should match the testtype uploaded to test-results.appspot.com.
-// See http://test-results.appspot.com/testfile.
-var TEST_TYPES = [
-    'base_unittests',
-    'browser_tests',
-    'cacheinvalidation_unittests',
-    'compositor_unittests',
-    'content_browsertests',
-    'content_unittests',
-    'courgette_unittests',
-    'crypto_unittests',
-    'gl_tests',
-    'gpu_tests',
-    'gpu_unittests',
-    'installer_util_unittests',
-    'interactive_ui_tests',
-    'ipc_tests',
-    'jingle_unittests',
-    'layout-tests',
-    'media_unittests',
-    'mini_installer_test',
-    'net_unittests',
-    'printing_unittests',
-    'remoting_unittests',
-    'sql_unittests',
-    'sync_unit_tests',
-    'sync_integration_tests',
-    'ui_unittests',
-    'unit_tests',
-    'views_unittests',
-    'webkit_unit_tests',
-    'androidwebview_instrumentation_tests',
-    'chromiumtestshell_instrumentation_tests',
-    'contentshell_instrumentation_tests',
-    'cc_unittests'
-];
-
 // Enum for indexing into the run-length encoded results in the JSON files.
 // 0 is where the count is length is stored. 1 is the value.
 var RLE = {

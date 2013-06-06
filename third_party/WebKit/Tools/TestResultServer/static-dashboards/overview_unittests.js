@@ -63,6 +63,10 @@ test('getFlakyData', 2, function() {
     var flipCountThreshold = 1;
     deepEqual(overview._getFlakyData(testTypes, resultsByTestType, flipCountThreshold), {
         'MockTestType': {
+            "flakyBelowThreshold": {
+                "TestSuite.Flaky": true,
+                "TestSuite.VeryFlaky": true
+            },
             'flaky': {
                 'TestSuite.Flaky': true,
                 'TestSuite.VeryFlaky': true
@@ -75,7 +79,11 @@ test('getFlakyData', 2, function() {
     flipCountThreshold = 5;
     deepEqual(overview._getFlakyData(testTypes, resultsByTestType, flipCountThreshold), {
         'MockTestType': {
+            "flakyBelowThreshold": {
+                "TestSuite.VeryFlaky": true
+            },
             'flaky': {
+                "TestSuite.Flaky": true,
                 'TestSuite.VeryFlaky': true
             },
             'testCount': 11
@@ -87,10 +95,15 @@ test('htmlForFlakyTests', 6, function() {
     var flakyData = {
         'browser_tests': {
             'testCount': 0,
+            "flakyBelowThreshold": {},
             'flaky': {}
         },
         'layout-tests': {
             'testCount': 4,
+            "flakyBelowThreshold": {
+                'css3/foo.html': true,
+                'css3/bar.html': true
+            },
             'flaky': {
                 'css3/foo.html': true,
                 'css3/bar.html': true

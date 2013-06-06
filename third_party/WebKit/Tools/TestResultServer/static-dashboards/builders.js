@@ -33,16 +33,35 @@ function LOAD_BUILDBOT_DATA(builderData)
 {
     builders.masters = {};
     var groups = {};
+    var testTypes = {};
     builderData['masters'].forEach(function(master) {
         builders.masters[master.name] = new builders.BuilderMaster(master.name, master.url, master.tests, master.groups);
+
         master.groups.forEach(function(group) { groups[group] = true; });
+
+        Object.keys(master.tests).forEach(function(testType) {
+            if (builders.testTypeUploadsToFlakinessDashboardServer(testType))
+                testTypes[testType] = true;
+        });
     });
     builders.groups = Object.keys(groups);
+    builders.groups.sort();
+    builders.testTypes = Object.keys(testTypes);
+    builders.testTypes.sort();
 }
 
 var builders = builders || {};
 
 (function() {
+
+builders.testTypeUploadsToFlakinessDashboardServer = function(testType)
+{
+    // FIXME: Encode whether the test uploads to the server in the buildbot json so
+    // we can include that data in buildbot.jsonp and not need to do ugly heuristics
+    // based off the name of the test suite. This code both has some false positives
+    // and some false negatives.
+    return !testType.match(/_only|_ignore|_perf$/) && !testType.match(/^memory test:|install_/) && testType != 'Run tests';
+}
 
 builders._currentBuilderGroup = {};
 
