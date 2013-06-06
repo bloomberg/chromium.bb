@@ -47,11 +47,11 @@
 using namespace WebCore;
 using namespace WebKit;
 
-namespace {
-
 #if !OS(ANDROID)
 
-static PassRefPtr<SharedBuffer> readFile(const char* fileName)
+namespace {
+
+PassRefPtr<SharedBuffer> readFile(const char* fileName)
 {
     String filePath = Platform::current()->unitTestSupport()->webKitRootDir();
     filePath.append(fileName);
@@ -68,17 +68,17 @@ static PassRefPtr<SharedBuffer> readFile(const char* fileName)
     return SharedBuffer::adoptVector(buffer);
 }
 
-static PassOwnPtr<GIFImageDecoder> createDecoder()
+PassOwnPtr<GIFImageDecoder> createDecoder()
 {
     return adoptPtr(new GIFImageDecoder(ImageSource::AlphaNotPremultiplied, ImageSource::GammaAndColorProfileApplied));
 }
 
-static unsigned hashSkBitmap(const SkBitmap& bitmap)
+unsigned hashSkBitmap(const SkBitmap& bitmap)
 {
     return StringHasher::hashMemory(bitmap.getPixels(), bitmap.getSize());
 }
 
-static void createDecodingBaseline(SharedBuffer* data, Vector<unsigned>* baselineHashes)
+void createDecodingBaseline(SharedBuffer* data, Vector<unsigned>* baselineHashes)
 {
     OwnPtr<GIFImageDecoder> decoder = createDecoder();
     decoder->setData(data, true);
@@ -88,6 +88,65 @@ static void createDecodingBaseline(SharedBuffer* data, Vector<unsigned>* baselin
         baselineHashes->append(hashSkBitmap(frame->getSkBitmap()));
     }
 }
+
+void testRandomFrameDecode(const char* gifFile)
+{
+    SCOPED_TRACE(gifFile);
+
+    RefPtr<SharedBuffer> fullData = readFile(gifFile);
+    ASSERT_TRUE(fullData.get());
+    Vector<unsigned> baselineHashes;
+    createDecodingBaseline(fullData.get(), &baselineHashes);
+    size_t frameCount = baselineHashes.size();
+
+    // Random decoding should get the same results as sequential decoding.
+    OwnPtr<GIFImageDecoder> decoder = createDecoder();
+    decoder->setData(fullData.get(), true);
+    const size_t skippingStep = 5;
+    for (size_t i = 0; i < skippingStep; ++i) {
+        for (size_t j = i; j < frameCount; j += skippingStep) {
+            SCOPED_TRACE(testing::Message() << "Random i:" << i << " j:" << j);
+            ImageFrame* frame = decoder->frameBufferAtIndex(j);
+            EXPECT_EQ(baselineHashes[j], hashSkBitmap(frame->getSkBitmap()));
+        }
+    }
+
+    // Decoding in reverse order.
+    decoder = createDecoder();
+    decoder->setData(fullData.get(), true);
+    for (size_t i = frameCount; i; --i) {
+        SCOPED_TRACE(testing::Message() << "Reverse i:" << i);
+        ImageFrame* frame = decoder->frameBufferAtIndex(i - 1);
+        EXPECT_EQ(baselineHashes[i - 1], hashSkBitmap(frame->getSkBitmap()));
+    }
+}
+
+void testRandomDecodeAfterClearFrameBufferCache(const char* gifFile)
+{
+    SCOPED_TRACE(gifFile);
+
+    RefPtr<SharedBuffer> data = readFile(gifFile);
+    ASSERT_TRUE(data.get());
+    Vector<unsigned> baselineHashes;
+    createDecodingBaseline(data.get(), &baselineHashes);
+    size_t frameCount = baselineHashes.size();
+
+    OwnPtr<GIFImageDecoder> decoder = createDecoder();
+    decoder->setData(data.get(), true);
+    for (size_t clearExceptFrame = 0; clearExceptFrame < frameCount; ++clearExceptFrame) {
+        decoder->clearCacheExceptFrame(clearExceptFrame);
+        const size_t skippingStep = 5;
+        for (size_t i = 0; i < skippingStep; ++i) {
+            for (size_t j = 0; j < frameCount; j += skippingStep) {
+                SCOPED_TRACE(testing::Message() << "Random i:" << i << " j:" << j);
+                ImageFrame* frame = decoder->frameBufferAtIndex(j);
+                EXPECT_EQ(baselineHashes[j], hashSkBitmap(frame->getSkBitmap()));
+            }
+        }
+    }
+}
+
+} // namespace
 
 TEST(GIFImageDecoderTest, decodeTwoFrames)
 {
@@ -356,78 +415,22 @@ TEST(GIFImageDecoderTest, updateRequiredPreviousFrameAfterFirstDecode)
         EXPECT_EQ(notFound, decoder->frameBufferAtIndex(i)->requiredPreviousFrameIndex());
 }
 
-void testRandomFrameDecode(const char* gifFile)
-{
-    SCOPED_TRACE(gifFile);
-
-    RefPtr<SharedBuffer> fullData = readFile(gifFile);
-    ASSERT_TRUE(fullData.get());
-    Vector<unsigned> baselineHashes;
-    createDecodingBaseline(fullData.get(), &baselineHashes);
-    size_t frameCount = baselineHashes.size();
-
-    // Random decoding should get the same results as sequential decoding.
-    OwnPtr<GIFImageDecoder> decoder = createDecoder();
-    decoder->setData(fullData.get(), true);
-    const size_t skippingStep = 5;
-    for (size_t i = 0; i < skippingStep; ++i) {
-        for (size_t j = i; j < frameCount; j += skippingStep) {
-            SCOPED_TRACE(testing::Message() << "Random i:" << i << " j:" << j);
-            ImageFrame* frame = decoder->frameBufferAtIndex(j);
-            EXPECT_EQ(baselineHashes[j], hashSkBitmap(frame->getSkBitmap()));
-        }
-    }
-
-    // Decoding in reverse order.
-    decoder = createDecoder();
-    decoder->setData(fullData.get(), true);
-    for (size_t i = frameCount; i; --i) {
-        SCOPED_TRACE(testing::Message() << "Reverse i:" << i);
-        ImageFrame* frame = decoder->frameBufferAtIndex(i - 1);
-        EXPECT_EQ(baselineHashes[i - 1], hashSkBitmap(frame->getSkBitmap()));
-    }
-}
-
 TEST(GIFImageDecoderTest, randomFrameDecode)
 {
     // Single frame image.
     testRandomFrameDecode("/Source/WebKit/chromium/tests/data/radient.gif");
-    // Multiple frame image.
+    // Multiple frame images.
     testRandomFrameDecode("/LayoutTests/fast/images/resources/animated-gif-with-offsets.gif");
     testRandomFrameDecode("/LayoutTests/fast/images/resources/animated-10color.gif");
-}
-
-void testRandomDecodeAfterClearFrameBufferCache(const char* gifFile)
-{
-    SCOPED_TRACE(gifFile);
-
-    RefPtr<SharedBuffer> data = readFile(gifFile);
-    ASSERT_TRUE(data.get());
-    Vector<unsigned> baselineHashes;
-    createDecodingBaseline(data.get(), &baselineHashes);
-    size_t frameCount = baselineHashes.size();
-
-    OwnPtr<GIFImageDecoder> decoder = createDecoder();
-    for (size_t clearExceptFrame = 0; clearExceptFrame < frameCount; ++clearExceptFrame) {
-        decoder->clearCacheExceptFrame(clearExceptFrame);
-        const size_t skippingStep = 5;
-        for (size_t i = 0; i < skippingStep; ++i) {
-            for (size_t j = 0; j < frameCount; j += skippingStep) {
-                SCOPED_TRACE(testing::Message() << "Random i:" << i << " j:" << j);
-                ImageFrame* frame = decoder->frameBufferAtIndex(j);
-                EXPECT_EQ(baselineHashes[j], hashSkBitmap(frame->getSkBitmap()));
-            }
-        }
-    }
 }
 
 TEST(GIFImageDecoderTest, randomDecodeAfterClearFrameBufferCache)
 {
     // Single frame image.
-    testRandomFrameDecode("/Source/WebKit/chromium/tests/data/radient.gif");
-    // Multiple frame image.
-    testRandomFrameDecode("/LayoutTests/fast/images/resources/animated-gif-with-offsets.gif");
-    testRandomFrameDecode("/LayoutTests/fast/images/resources/animated-10color.gif");
+    testRandomDecodeAfterClearFrameBufferCache("/Source/WebKit/chromium/tests/data/radient.gif");
+    // Multiple frame images.
+    testRandomDecodeAfterClearFrameBufferCache("/LayoutTests/fast/images/resources/animated-gif-with-offsets.gif");
+    testRandomDecodeAfterClearFrameBufferCache("/LayoutTests/fast/images/resources/animated-10color.gif");
 }
 
 TEST(GIFImageDecoderTest, resumePartialDecodeAfterClearFrameBufferCache)
@@ -462,5 +465,3 @@ TEST(GIFImageDecoderTest, resumePartialDecodeAfterClearFrameBufferCache)
 }
 
 #endif
-
-} // namespace
