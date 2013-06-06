@@ -94,6 +94,22 @@ void FillIconMapping(const sql::Statement& statement,
   icon_mapping->page_url = page_url;
 }
 
+enum InvalidStructureType {
+  // NOTE(shess): Intentionally skip bucket 0 to account for
+  // conversion from a boolean histogram.
+  STRUCTURE_EVENT_FAVICON = 1,
+  STRUCTURE_EVENT_VERSION4,
+  STRUCTURE_EVENT_VERSION5,
+
+  // Always keep this at the end.
+  STRUCTURE_EVENT_MAX,
+};
+
+void RecordInvalidStructure(InvalidStructureType invalid_type) {
+  UMA_HISTOGRAM_ENUMERATION("History.InvalidFaviconsDBStructure",
+                            invalid_type, STRUCTURE_EVENT_MAX);
+}
+
 // Attempt to pass 2000 bytes of |debug_info| into a crash dump.
 void DumpWithoutCrashing2000(const std::string& debug_info) {
   char debug_buf[2000];
@@ -361,10 +377,26 @@ sql::InitStatus ThumbnailDatabase::Init(
       return CantUpgradeToVersion(cur_version);
   }
 
+  if (!db_.DoesColumnExist("favicons", "icon_type")) {
+    LOG(ERROR) << "Raze because of missing favicon.icon_type";
+    RecordInvalidStructure(STRUCTURE_EVENT_VERSION4);
+
+    db_.RazeAndClose();
+    return sql::INIT_FAILURE;
+  }
+
   if (cur_version == 4) {
     ++cur_version;
     if (!UpgradeToVersion5())
       return CantUpgradeToVersion(cur_version);
+  }
+
+  if (!db_.DoesColumnExist("favicons", "sizes")) {
+    LOG(ERROR) << "Raze because of missing favicon.sizes";
+    RecordInvalidStructure(STRUCTURE_EVENT_VERSION5);
+
+    db_.RazeAndClose();
+    return sql::INIT_FAILURE;
   }
 
   if (cur_version == 5) {
@@ -389,9 +421,8 @@ sql::InitStatus ThumbnailDatabase::Init(
   // TODO(pkotwicz): Revisit this in M27 and see if the razing can be removed.
   // (crbug.com/166453)
   if (IsFaviconDBStructureIncorrect()) {
-    LOG(ERROR) << "Raze thumbnail database because of invalid favicon db"
-               << "structure.";
-    UMA_HISTOGRAM_BOOLEAN("History.InvalidFaviconsDBStructure", true);
+    LOG(ERROR) << "Raze because of invalid favicon db structure.";
+    RecordInvalidStructure(STRUCTURE_EVENT_FAVICON);
 
     db_.RazeAndClose();
     return sql::INIT_FAILURE;
