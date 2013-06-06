@@ -68,6 +68,12 @@ crbug.com/239874 http/tests/xmlhttprequest/send-data-view.html [ Failure Pass ]
 webkit.org/b/90488 [ Debug ] inspector [ Slow ]
 webkit.org/b/90488 [ Debug ] http/tests/inspector [ Slow ]
 webkit.org/b/90488 [ Debug ] http/tests/inspector-enabled [ Slow ]
+webkit.org/b/90488 [ Debug ] inspector-protocol [ Slow ]
+
+crbug.com/247466 [ Win Debug ] inspector/debugger/live-edit-breakpoints.html [ Skip ]
+crbug.com/247466 [ Win Debug ] inspector/debugger/dom-breakpoints.html [ Skip ]
+crbug.com/247466 [ Win Debug ] inspector/debugger/script-formatter-breakpoints.html [ Skip ]
+crbug.com/247466 [ Win Debug ] inspector/profiler/heap-snapshot-comparison-expansion-preserved-when-sorting.html [ Skip ]
 
 # Inspector IndexedDB tests are slow in Release as well.
 crbug.com/246190 [ Release ] http/tests/inspector/indexeddb [ Slow ]
@@ -1793,7 +1799,7 @@ crbug.com/245670 fast/forms/access-key-for-all-elements.html [ Crash Pass ]
 crbug.com/169734 [ Win ] inspector-protocol/console-timestamp.html [ Failure Pass ]
 crbug.com/246072 fast/forms/post-popup-no-multiple-windows.html [ Pass Timeout ]
 
-crbug.com/24182 [ Debug ] inspector/timeline/timeline-decode-resize.html [ Slow ]
+crbug.com/24182 inspector/timeline/timeline-decode-resize.html [ Pass Failure Timeout ]
 
 crbug.com/246549 http/tests/security/svg-image-leak.html [ Failure Pass ]
 
