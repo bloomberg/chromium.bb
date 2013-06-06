@@ -107,7 +107,7 @@ v8::Handle<v8::Value> V8ThrowException::throwNotEnoughArgumentsError(v8::Isolate
     return V8ThrowException::throwError(v8TypeError, "Not enough arguments", isolate);
 }
 
-v8::Handle<v8::Value> V8ThrowException::throwError(v8::Local<v8::Value> exception, v8::Isolate* isolate)
+v8::Handle<v8::Value> V8ThrowException::throwError(v8::Handle<v8::Value> exception, v8::Isolate* isolate)
 {
     if (!v8::V8::IsExecutionTerminating())
         v8::ThrowException(exception);

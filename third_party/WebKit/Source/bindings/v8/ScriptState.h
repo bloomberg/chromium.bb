@@ -70,7 +70,7 @@ public:
     bool evalEnabled() const;
     void setEvalEnabled(bool);
 
-    static ScriptState* forContext(v8::Local<v8::Context>);
+    static ScriptState* forContext(v8::Handle<v8::Context>);
     static ScriptState* current();
 
 protected:

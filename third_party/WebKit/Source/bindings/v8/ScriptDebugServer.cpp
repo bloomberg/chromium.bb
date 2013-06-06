@@ -243,7 +243,7 @@ void ScriptDebugServer::breakProgram()
     if (context.IsEmpty())
         return;
 
-    m_pausedContext = *context;
+    m_pausedContext = context;
     v8::Handle<v8::Function> breakProgramFunction = m_breakProgramCallbackTemplate.get()->GetFunction();
     v8::Debug::Call(breakProgramFunction);
     m_pausedContext.Clear();
@@ -407,7 +407,7 @@ void ScriptDebugServer::breakProgram(v8::Handle<v8::Object> executionState, v8::
 
 void ScriptDebugServer::breakProgram(const v8::Debug::EventDetails& eventDetails, v8::Handle<v8::Value> exception, v8::Handle<v8::Array> hitBreakpointNumbers)
 {
-    m_pausedContext = *eventDetails.GetEventContext();
+    m_pausedContext = eventDetails.GetEventContext();
     breakProgram(eventDetails.GetExecutionState(), exception, hitBreakpointNumbers);
     m_pausedContext.Clear();
 }
@@ -529,17 +529,17 @@ v8::Local<v8::Value> ScriptDebugServer::functionScopes(v8::Handle<v8::Function> 
 v8::Local<v8::Value> ScriptDebugServer::getInternalProperties(v8::Handle<v8::Object>& object)
 {
     if (m_debuggerScript.get().IsEmpty())
-        return *v8::Undefined();
+        return v8::Local<v8::Value>::New(m_isolate, v8::Undefined());
 
     v8::Handle<v8::Value> argv[] = { object };
     return callDebuggerMethod("getInternalProperties", 1, argv);
 }
 
-v8::Local<v8::Value> ScriptDebugServer::setFunctionVariableValue(v8::Handle<v8::Value> functionValue, int scopeNumber, const String& variableName, v8::Handle<v8::Value> newValue)
+v8::Handle<v8::Value> ScriptDebugServer::setFunctionVariableValue(v8::Handle<v8::Value> functionValue, int scopeNumber, const String& variableName, v8::Handle<v8::Value> newValue)
 {
     v8::Local<v8::Context> debuggerContext = v8::Debug::GetDebugContext();
     if (m_debuggerScript.get().IsEmpty())
-        return *(v8::ThrowException(v8::String::New("Debugging is not enabled.")));
+        return v8::ThrowException(v8::String::New("Debugging is not enabled."));
 
     v8::Handle<v8::Value> argv[] = {
         functionValue,

@@ -118,7 +118,7 @@ ScriptValue ScriptFunctionCall::call(bool& hadException, bool reportExceptions)
 {
     ScriptScope scope(m_scriptState, reportExceptions);
 
-    v8::Local<v8::Object> thisObject = m_thisObject.v8Object();
+    v8::Handle<v8::Object> thisObject = m_thisObject.v8Object();
     v8::Local<v8::Value> value = thisObject->Get(v8String(m_name, m_scriptState->isolate()));
     if (!scope.success()) {
         hadException = true;
@@ -127,7 +127,7 @@ ScriptValue ScriptFunctionCall::call(bool& hadException, bool reportExceptions)
 
     ASSERT(value->IsFunction());
 
-    v8::Local<v8::Function> function(v8::Function::Cast(*value));
+    v8::Local<v8::Function> function = v8::Local<v8::Function>::Cast(value);
     OwnArrayPtr<v8::Handle<v8::Value> > args = adoptArrayPtr(new v8::Handle<v8::Value>[m_arguments.size()]);
     for (size_t i = 0; i < m_arguments.size(); ++i)
         args[i] = m_arguments[i].v8Value();
@@ -151,7 +151,7 @@ ScriptObject ScriptFunctionCall::construct(bool& hadException, bool reportExcept
 {
     ScriptScope scope(m_scriptState, reportExceptions);
 
-    v8::Local<v8::Object> thisObject = m_thisObject.v8Object();
+    v8::Handle<v8::Object> thisObject = m_thisObject.v8Object();
     v8::Local<v8::Value> value = thisObject->Get(v8String(m_name, m_scriptState->isolate()));
     if (!scope.success()) {
         hadException = true;
@@ -160,7 +160,7 @@ ScriptObject ScriptFunctionCall::construct(bool& hadException, bool reportExcept
 
     ASSERT(value->IsFunction());
 
-    v8::Local<v8::Function> constructor(v8::Function::Cast(*value));
+    v8::Local<v8::Function> constructor = v8::Local<v8::Function>::Cast(value);
     OwnArrayPtr<v8::Handle<v8::Value> > args = adoptArrayPtr(new v8::Handle<v8::Value>[m_arguments.size()]);
     for (size_t i = 0; i < m_arguments.size(); ++i)
         args[i] = m_arguments[i].v8Value();

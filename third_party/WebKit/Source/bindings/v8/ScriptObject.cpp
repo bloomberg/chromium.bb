@@ -56,10 +56,10 @@ ScriptObject::ScriptObject(ScriptState* scriptState, const ScriptValue& scriptVa
 {
 }
 
-v8::Local<v8::Object> ScriptObject::v8Object() const
+v8::Handle<v8::Object> ScriptObject::v8Object() const
 {
     ASSERT(v8Value()->IsObject());
-    return v8::Local<v8::Object>(v8::Object::Cast(*v8Value()));
+    return v8::Handle<v8::Object>::Cast(v8Value());
 }
 
 bool ScriptGlobalObject::set(ScriptState* scriptState, const char* name, InspectorFrontendHost* value)
@@ -79,7 +79,7 @@ bool ScriptGlobalObject::get(ScriptState* scriptState, const char* name, ScriptO
     if (!v8Value->IsObject())
         return false;
 
-    value = ScriptObject(scriptState, v8::Handle<v8::Object>(v8::Object::Cast(*v8Value)));
+    value = ScriptObject(scriptState, v8::Handle<v8::Object>::Cast(v8Value));
     return true;
 }
 

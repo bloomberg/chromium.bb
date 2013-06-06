@@ -127,7 +127,7 @@ ScriptState* eventListenerHandlerScriptState(Frame* frame, EventListener* listen
     V8AbstractEventListener* v8Listener = static_cast<V8AbstractEventListener*>(listener);
     v8::HandleScope scope;
     v8::Handle<v8::Context> v8Context = frame->script()->windowShell(v8Listener->world())->context();
-    return ScriptState::forContext(*v8Context);
+    return ScriptState::forContext(v8Context);
 }
 
 bool eventListenerHandlerLocation(Document* document, EventListener* listener, String& sourceName, String& scriptId, int& lineNumber)

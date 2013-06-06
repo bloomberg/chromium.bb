@@ -340,9 +340,10 @@ private:
     v8::UniqueId liveRootId()
     {
         const v8::Persistent<v8::Value>& liveRoot = V8PerIsolateData::from(m_isolate)->ensureLiveRoot();
-        v8::UniqueId id(reinterpret_cast<intptr_t>(*liveRoot));
+        const intptr_t* idPointer = reinterpret_cast<const intptr_t*>(&liveRoot);
+        v8::UniqueId id(*idPointer);
         if (!m_liveRootGroupIdSet) {
-            m_isolate->SetObjectGroupId(*liveRoot, id);
+            m_isolate->SetObjectGroupId(liveRoot, id);
             m_liveRootGroupIdSet = true;
         }
         return id;

@@ -120,7 +120,7 @@ static void npObjectInvokeImpl(const v8::FunctionCallbackInfo<v8::Value>& args, 
     switch (functionId) {
     case InvokeMethod:
         if (npObject->_class->invoke) {
-            v8::Handle<v8::String> functionName(v8::String::Cast(*args.Data()));
+            v8::Handle<v8::String> functionName = v8::Handle<v8::String>::Cast(args.Data());
             NPIdentifier identifier = getStringIdentifier(functionName);
             retval = npObject->_class->invoke(npObject, identifier, npArgs.get(), numArgs, &result);
         }

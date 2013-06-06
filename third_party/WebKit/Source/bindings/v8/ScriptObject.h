@@ -47,7 +47,7 @@ namespace WebCore {
         ScriptObject() : m_scriptState(0) { };
         virtual ~ScriptObject() { }
 
-        v8::Local<v8::Object> v8Object() const;
+        v8::Handle<v8::Object> v8Object() const;
         ScriptState* scriptState() const { return m_scriptState; }
     protected:
         ScriptState* m_scriptState;

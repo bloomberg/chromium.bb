@@ -66,7 +66,7 @@ ScriptExecutionContext* ScriptState::scriptExecutionContext() const
     return toScriptExecutionContext(m_context.get());
 }
 
-ScriptState* ScriptState::forContext(v8::Local<v8::Context> context)
+ScriptState* ScriptState::forContext(v8::Handle<v8::Context> context)
 {
     v8::Context::Scope contextScope(context);
 

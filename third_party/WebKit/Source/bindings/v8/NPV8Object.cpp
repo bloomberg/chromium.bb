@@ -285,7 +285,7 @@ bool _NPN_InvokeDefault(NPP npp, NPObject* npObject, const NPVariant* arguments,
         return false;
 
     v8::Local<v8::Value> resultObject;
-    v8::Handle<v8::Function> function(v8::Function::Cast(*functionObject));
+    v8::Handle<v8::Function> function = v8::Local<v8::Function>::Cast(functionObject);
     if (!function->IsNull()) {
         Frame* frame = v8NpObject->rootObject->frame();
         ASSERT(frame);
@@ -591,7 +591,7 @@ bool _NPN_Construct(NPP npp, NPObject* npObject, const NPVariant* arguments, uin
 
         // Call the constructor.
         v8::Local<v8::Value> resultObject;
-        v8::Handle<v8::Function> ctor(v8::Function::Cast(*ctorObj));
+        v8::Handle<v8::Function> ctor = v8::Handle<v8::Function>::Cast(ctorObj);
         if (!ctor->IsNull()) {
             Frame* frame = object->rootObject->frame();
             ASSERT(frame);
