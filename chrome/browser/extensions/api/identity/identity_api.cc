@@ -10,10 +10,12 @@
 #include <vector>
 
 #include "base/lazy_instance.h"
+#include "base/prefs/pref_service.h"
 #include "base/stringprintf.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/app_mode/app_mode_utils.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_function_dispatcher.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -25,6 +27,7 @@
 #include "chrome/common/extensions/api/identity/oauth2_manifest_handler.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "googleurl/src/gurl.h"
@@ -359,9 +362,11 @@ void IdentityGetAuthTokenFunction::ShowLoginPopup() {
 void IdentityGetAuthTokenFunction::ShowOAuthApprovalDialog(
     const IssueAdviceInfo& issue_advice) {
   const OAuth2Info& oauth2_info = OAuth2Info::GetOAuth2Info(GetExtension());
+  const std::string locale = g_browser_process->local_state()->GetString(
+      prefs::kApplicationLocale);
 
   gaia_web_auth_flow_.reset(new GaiaWebAuthFlow(
-      this, profile(), GetExtension()->id(), oauth2_info));
+      this, profile(), GetExtension()->id(), oauth2_info, locale));
   gaia_web_auth_flow_->Start();
 }
 

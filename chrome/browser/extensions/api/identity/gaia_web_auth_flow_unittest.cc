@@ -34,7 +34,8 @@ class TestGaiaWebAuthFlow : public GaiaWebAuthFlow {
       : GaiaWebAuthFlow(delegate,
                         NULL,
                         "extension_id",
-                        oauth2_info),
+                        oauth2_info,
+                        "en-us"),
         ubertoken_error_(ubertoken_error_state) {}
 
   virtual void Start() OVERRIDE {
@@ -80,7 +81,6 @@ class IdentityGaiaWebAuthFlowTest : public testing::Test {
     oauth2_info.client_id = "fake.client.id";
     return scoped_ptr<TestGaiaWebAuthFlow>(new TestGaiaWebAuthFlow(
         &delegate_, "extension_id", oauth2_info, ubertoken_error_state_));
-
   }
 
   std::string GetFinalTitle(const std::string& fragment) {

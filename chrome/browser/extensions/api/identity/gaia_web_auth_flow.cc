@@ -16,7 +16,8 @@ namespace extensions {
 GaiaWebAuthFlow::GaiaWebAuthFlow(Delegate* delegate,
                                  Profile* profile,
                                  const std::string& extension_id,
-                                 const OAuth2Info& oauth2_info)
+                                 const OAuth2Info& oauth2_info,
+                                 const std::string& locale)
     : delegate_(delegate),
       profile_(profile) {
   const char kOAuth2RedirectPathFormat[] = "/%s#";
@@ -25,7 +26,8 @@ GaiaWebAuthFlow::GaiaWebAuthFlow(Delegate* delegate,
       "client_id=%s&"
       "scope=%s&"
       "origin=chrome-extension://%s/&"
-      "redirect_uri=%s:/%s";
+      "redirect_uri=%s:/%s&"
+      "hl=%s";
 
   std::vector<std::string> client_id_parts;
   base::SplitString(oauth2_info.client_id, '.', &client_id_parts);
@@ -43,7 +45,8 @@ GaiaWebAuthFlow::GaiaWebAuthFlow(Delegate* delegate,
           .c_str(),
       extension_id.c_str(),
       redirect_scheme_.c_str(),
-      extension_id.c_str()));
+      extension_id.c_str(),
+      locale.c_str()));
 }
 
 GaiaWebAuthFlow::~GaiaWebAuthFlow() {

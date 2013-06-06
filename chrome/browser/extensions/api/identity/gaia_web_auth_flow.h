@@ -61,7 +61,8 @@ class GaiaWebAuthFlow : public UbertokenConsumer, public WebAuthFlow::Delegate {
   GaiaWebAuthFlow(Delegate* delegate,
                   Profile* profile,
                   const std::string& extension_id,
-                  const OAuth2Info& oauth2_info);
+                  const OAuth2Info& oauth2_info,
+                  const std::string& locale);
   virtual ~GaiaWebAuthFlow();
 
   // Starts the flow by fetching an ubertoken. Can override for testing.
