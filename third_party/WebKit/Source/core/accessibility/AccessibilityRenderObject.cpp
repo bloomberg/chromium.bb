@@ -1116,33 +1116,24 @@ void AccessibilityRenderObject::visibleChildren(AccessibilityChildrenVector& res
 // Properties of interactive elements.
 //
 
-const String& AccessibilityRenderObject::actionVerb() const
+String AccessibilityRenderObject::actionVerb() const
 {
-    // FIXME: Need to add verbs for select elements.
-    DEFINE_STATIC_LOCAL(const String, buttonAction, (AXButtonActionVerb()));
-    DEFINE_STATIC_LOCAL(const String, textFieldAction, (AXTextFieldActionVerb()));
-    DEFINE_STATIC_LOCAL(const String, radioButtonAction, (AXRadioButtonActionVerb()));
-    DEFINE_STATIC_LOCAL(const String, checkedCheckBoxAction, (AXCheckedCheckBoxActionVerb()));
-    DEFINE_STATIC_LOCAL(const String, uncheckedCheckBoxAction, (AXUncheckedCheckBoxActionVerb()));
-    DEFINE_STATIC_LOCAL(const String, linkAction, (AXLinkActionVerb()));
-    DEFINE_STATIC_LOCAL(const String, noAction, ());
-
     switch (roleValue()) {
     case ButtonRole:
     case ToggleButtonRole:
-        return buttonAction;
+        return AXButtonActionVerb();
     case TextFieldRole:
     case TextAreaRole:
-        return textFieldAction;
+        return AXTextFieldActionVerb();
     case RadioButtonRole:
-        return radioButtonAction;
+        return AXRadioButtonActionVerb();
     case CheckBoxRole:
-        return isChecked() ? checkedCheckBoxAction : uncheckedCheckBoxAction;
+        return isChecked() ? AXCheckedCheckBoxActionVerb() : AXUncheckedCheckBoxActionVerb();
     case LinkRole:
     case WebCoreLinkRole:
-        return linkAction;
+        return AXLinkActionVerb();
     default:
-        return noAction;
+        return emptyString();
     }
 }
 
