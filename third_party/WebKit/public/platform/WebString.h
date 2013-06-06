@@ -81,8 +81,6 @@ public:
     WEBKIT_EXPORT bool equals(const WebString& s) const;
 
     WEBKIT_EXPORT size_t length() const;
-    // Deprecated: This function will be removed once all its callers are gone.
-    WEBKIT_EXPORT const WebUChar* data() const;
 
     // Caller must check bounds.
     WEBKIT_EXPORT WebUChar at(unsigned) const;

@@ -64,11 +64,6 @@ WebUChar WebString::at(unsigned i) const
     return (*m_private.get())[i];
 }
 
-const WebUChar* WebString::data() const
-{
-    return m_private.isNull() ? 0 : m_private->characters();
-}
-
 bool WebString::is8Bit() const
 {
     return m_private->is8Bit();
