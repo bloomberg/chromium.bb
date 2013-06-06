@@ -1830,14 +1830,8 @@ bool CSSParser::parseValue(CSSPropertyID propId, bool important)
             && !RuntimeEnabledFeatures::css3TextDecorationsEnabled())
             return false;
 
-        if (id == CSSValueWebkitText)
-            validPrimitive = true; // Always allow this, even when strict parsing is on,
-                                    // since we use this in our UA sheets.
-        else if (id == CSSValueCurrentcolor)
-            validPrimitive = true;
-        else if ((id >= CSSValueAqua && id <= CSSValueWindowtext) || id == CSSValueMenu ||
-             (id >= CSSValueWebkitFocusRingColor && id < CSSValueWebkitText && inQuirksMode())) {
-            validPrimitive = true;
+        if ((id >= CSSValueAqua && id <= CSSValueWebkitText) || id == CSSValueMenu) {
+            validPrimitive = isValueAllowedInMode(id, m_context.mode);
         } else {
             parsedValue = parseColor();
             if (parsedValue)

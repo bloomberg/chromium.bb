@@ -2,6 +2,10 @@
 // CSS value names
 //
 
+// The mode argument is used to limit the keyword to be used only for certain
+// CSSParserModes. Values that have the prefix -internal- are automatically
+// only for UASheetMode.
+
 inherit
 initial
 //
@@ -162,12 +166,16 @@ threedshadow
 window
 windowframe
 windowtext
--webkit-focus-ring-color
-currentcolor
+-internal-active-list-box-selection
+-internal-active-list-box-selection-text
+-internal-inactive-list-box-selection
+-internal-inactive-list-box-selection-text
+-webkit-focus-ring-color mode=QuirksOrUASheet
+currentcolor mode=QuirksOrUASheet
+grey
 //
 // colors in non strict mode
-grey
--webkit-text
+-webkit-text mode=QuirksOrUASheet
 //
 // CSS_PROP_BACKGROUND_REPEAT:
 //

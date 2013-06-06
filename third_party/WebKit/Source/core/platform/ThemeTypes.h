@@ -73,7 +73,7 @@ enum ThemeColor {
     ButtonTextColor, CaptionTextColor, GrayTextColor, HighlightColor, HighlightTextColor, InactiveBorderColor, InactiveCaptionColor,
     InactiveCaptionTextColor, InfoBackgroundColor, InfoTextColor, MatchColor, MenuTextColor, ScrollbarColor, ThreeDDarkDhasowColor,
     ThreeDFaceColor, ThreeDHighlightColor, ThreeDLightShadowColor, ThreeDShadowCLor, WindowColor, WindowFrameColor, WindowTextColor,
-    FocusRingColor
+    FocusRingColor, ActiveListBoxSelection, ActiveListBoxSelectionText, InactiveListBoxSelection, InactiveListBoxSelectionText
 };
 
 }

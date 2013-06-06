@@ -16,6 +16,7 @@ HEADER_TEMPLATE = """
 #ifndef %(class_name)s_h
 #define %(class_name)s_h
 
+#include "core/css/CSSParserMode.h"
 #include <string.h>
 
 namespace WebCore {
@@ -29,6 +30,7 @@ const int numCSSValueKeywords = %(value_keywords_count)d;
 const size_t maxCSSValueKeywordLength = %(max_value_keyword_length)d;
 
 const char* getValueName(unsigned short id);
+bool isValueAllowedInMode(unsigned short id, CSSParserMode mode);
 
 } // namespace WebCore
 
@@ -78,6 +80,20 @@ const char* getValueName(unsigned short id)
     return valueList[id];
 }
 
+bool isValueAllowedInMode(unsigned short id, CSSParserMode mode)
+{
+    switch (id) {
+        %(ua_sheet_mode_values_keywords)s
+            return mode == UASheetMode;
+        %(quirks_mode_values_keywords)s
+            return mode == CSSQuirksMode;
+        %(quirks_mode_or_ua_sheet_mode_values_keywords)s
+            return mode == UASheetMode || mode == CSSQuirksMode;
+        default:
+            return true;
+    }
+}
+
 } // namespace WebCore
 """
 
@@ -86,6 +102,7 @@ class CSSValueKeywordsWriter(in_generator.Writer):
     class_name = "CSSValueKeywords"
     defaults = {
         'condition': None,
+        'mode': None,
     }
 
     def __init__(self, file_paths, enabled_conditions):
@@ -101,12 +118,20 @@ class CSSValueKeywordsWriter(in_generator.Writer):
             property['name'] = property['name'].lower()
             property['enum_name'] = self._enum_name_from_value_keyword(property['name'])
             property['enum_value'] = first_property_id + offset
+            if property['name'].startswith('-internal-'):
+                assert property['mode'] is None, 'Can\'t specify mode for value keywords with the prefix "-internal-".'
+                property['mode'] = 'UASheet'
+            else:
+                assert property['mode'] != 'UASheet', 'UASheet mode only value keywords should have the prefix "-internal-".'
 
     def _enum_name_from_value_keyword(self, value_keyword):
         return "CSSValue" + "".join(w.capitalize() for w in value_keyword.split("-"))
 
     def _enum_declaration(self, property):
         return "    %(enum_name)s = %(enum_value)s," % property
+
+    def _case_value_keyword(self, property):
+        return "case %(enum_name)s:" % property
 
     def generate_header(self):
         return HEADER_TEMPLATE % {
@@ -117,12 +142,18 @@ class CSSValueKeywordsWriter(in_generator.Writer):
             'max_value_keyword_length': reduce(max, map(len, map(lambda property: property['name'], self._value_keywords))),
         }
 
+    def _value_keywords_with_mode(self, mode):
+        return filter(lambda property: property['mode'] == mode, self._value_keywords)
+
     def generate_implementation(self):
         gperf_input = GPERF_TEMPLATE % {
             'license': license.license_for_generated_cpp(),
             'class_name': self.class_name,
             'value_keyword_strings': '\n'.join(map(lambda property: '    "%(name)s",' % property, self._value_keywords)),
             'value_keyword_to_enum_map': '\n'.join(map(lambda property: '%(name)s, %(enum_name)s' % property, self._value_keywords)),
+            'ua_sheet_mode_values_keywords': '\n'.join(map(self._case_value_keyword, self._value_keywords_with_mode('UASheet'))),
+            'quirks_mode_values_keywords': '\n'.join(map(self._case_value_keyword, self._value_keywords_with_mode('Quirks'))),
+            'quirks_mode_or_ua_sheet_mode_values_keywords': '\n'.join(map(self._case_value_keyword, self._value_keywords_with_mode('QuirksOrUASheet'))),
         }
         # FIXME: If we could depend on Python 2.7, we would use subprocess.check_output
         gperf_args = ['gperf', '--key-positions=*', '-D', '-n', '-s', '2']
