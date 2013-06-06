@@ -631,6 +631,13 @@ bool Connection::OpenInternal(const std::string& file_name) {
     return false;
   }
 
+  // SQLite uses a lookaside buffer to improve performance of small mallocs.
+  // Chromium already depends on small mallocs being efficient, so we disable
+  // this to avoid the extra memory overhead.
+  // This must be called immediatly after opening the database before any SQL
+  // statements are run.
+  sqlite3_db_config(db_, SQLITE_DBCONFIG_LOOKASIDE, NULL, 0, 0);
+
   // sqlite3_open() does not actually read the database file (unless a
   // hot journal is found).  Successfully executing this pragma on an
   // existing database requires a valid header on page 1.
