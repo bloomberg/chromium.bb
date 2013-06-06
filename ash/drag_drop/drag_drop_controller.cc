@@ -148,7 +148,7 @@ DragDropController::DragDropController()
       drag_drop_window_delegate_(new DragDropTrackerDelegate(this)),
       current_drag_event_source_(ui::DragDropTypes::DRAG_EVENT_SOURCE_MOUSE),
       weak_factory_(this) {
-  Shell::GetInstance()->AddPreTargetHandler(this);
+  Shell::GetInstance()->PrependPreTargetHandler(this);
 }
 
 DragDropController::~DragDropController() {
@@ -225,12 +225,6 @@ int DragDropController::StartDragAndDrop(
   // Ends cancel animation if it's in progress.
   if (cancel_animation_)
     cancel_animation_->End();
-
-  // Become the first event handler since we should get first shot at handling
-  // any events during the drag drop session.
-  Shell::GetInstance()->RemovePreTargetHandler(this);
-  Shell::GetInstance()->PrependPreTargetHandler(this);
-
 
 #if !defined(OS_MACOSX)
   if (should_block_during_drag_drop_) {

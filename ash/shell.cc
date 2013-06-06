@@ -537,14 +537,14 @@ void Shell::Init() {
       lock_state_controller_.get()));
   AddShellObserver(lock_state_controller_.get());
 
+  drag_drop_controller_.reset(new internal::DragDropController);
   mouse_cursor_filter_.reset(new internal::MouseCursorEventFilter());
-  AddPreTargetHandler(mouse_cursor_filter_.get());
+  PrependPreTargetHandler(mouse_cursor_filter_.get());
 
   // Create Controllers that may need root window.
   // TODO(oshima): Move as many controllers before creating
   // RootWindowController as possible.
   visibility_controller_.reset(new AshVisibilityController);
-  drag_drop_controller_.reset(new internal::DragDropController);
   user_action_client_.reset(delegate_->CreateUserActionClient());
   window_modality_controller_.reset(
       new views::corewm::WindowModalityController);

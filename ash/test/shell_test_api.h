@@ -19,6 +19,7 @@ class Shell;
 class LauncherModel;
 
 namespace internal {
+class DragDropController;
 class RootWindowLayoutManager;
 class ScreenPositionController;
 class SystemGestureEventFilter;
@@ -39,6 +40,7 @@ public:
   internal::ScreenPositionController* screen_position_controller();
   AshNativeCursorManager* ash_native_cursor_manager();
   LauncherModel* launcher_model();
+  internal::DragDropController* drag_drop_controller();
 
   void DisableOutputConfiguratorAnimation();
 

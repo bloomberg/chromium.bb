@@ -9,6 +9,8 @@
 
 #include "ash/ash_switches.h"
 #include "ash/desktop_background/desktop_background_widget_controller.h"
+#include "ash/display/mouse_cursor_event_filter.h"
+#include "ash/drag_drop/drag_drop_controller.h"
 #include "ash/launcher/launcher.h"
 #include "ash/root_window_controller.h"
 #include "ash/session_state_delegate.h"
@@ -16,6 +18,7 @@
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell_window_ids.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/test/shell_test_api.h"
 #include "ash/wm/root_window_layout_manager.h"
 #include "ash/wm/window_util.h"
 #include "base/utf_string_conversions.h"
@@ -421,6 +424,16 @@ TEST_F(ShellTest, ToggleAutoHide) {
                                   root_window);
   EXPECT_EQ(ash::SHELF_AUTO_HIDE_BEHAVIOR_NEVER,
             shell->GetShelfAutoHideBehavior(root_window));
+}
+
+TEST_F(ShellTest, TestPreTargetHandlerOrder) {
+  Shell* shell = Shell::GetInstance();
+  Shell::TestApi test_api(shell);
+  test::ShellTestApi shell_test_api(shell);
+
+  const ui::EventHandlerList& handlers = test_api.pre_target_handlers();
+  EXPECT_EQ(handlers[0], shell->mouse_cursor_filter());
+  EXPECT_EQ(handlers[1], shell_test_api.drag_drop_controller());
 }
 
 // This verifies WindowObservers are removed when a window is destroyed after
