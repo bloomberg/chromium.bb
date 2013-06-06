@@ -17,7 +17,8 @@ namespace {
 class UiGfxImageTest : public CocoaTest {
 };
 
-TEST_F(UiGfxImageTest, CheckColor) {
+// http://crbug.com/247379
+TEST_F(UiGfxImageTest, DISABLED_CheckColor) {
   // TODO(kbr): re-enable: http://crbug.com/222296
   if (base::mac::IsOSMountainLionOrLater())
     return;
