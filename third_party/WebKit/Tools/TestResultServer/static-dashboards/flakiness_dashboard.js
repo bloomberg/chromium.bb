@@ -1171,8 +1171,10 @@ function generatePageForIndividualTests(tests)
     performChunkedAction(tests, function(chunk) {
         appendHTML(htmlForIndividualTests(chunk));
     }, appendExpectations, 500);
-    if (g_history.dashboardSpecificState.showChrome)
+    if (g_history.dashboardSpecificState.showChrome) {
         $('tests-input').value = g_history.dashboardSpecificState.tests;
+        $('result-input').value = g_history.dashboardSpecificState.result;
+    }
 }
 
 function performChunkedAction(tests, handleChunk, onComplete, timeout, opt_index) {
