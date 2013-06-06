@@ -603,14 +603,6 @@
                         'public/WebTestingSupport.h',
                         'tests/WebUnitTests.cpp',   # Components test runner support.
                     ],
-                    'sources!': [
-                        # We should not include files depending on webkit_support.
-                        # These tests depend on webkit_support and
-                        # functions defined only in !WEBKIT_IMPLEMENTATION.
-                        'tests/IDBBackingStoreTest.cpp',
-                        'tests/IDBCleanupOnIOErrorTest.cpp',
-                        'tests/LevelDBTest.cpp',
-                    ],
                     'conditions': [
                         ['OS=="win" or OS=="mac"', {
                             'dependencies': [

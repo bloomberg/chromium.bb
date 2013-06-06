@@ -59,7 +59,6 @@
             'tests/MockDiscardablePixelRef.h',
             'tests/MockImageDecoder.h',
             'tests/KeyboardTest.cpp',
-            'tests/LevelDBTest.cpp',
             'tests/LinkHighlightTest.cpp',
             'tests/ListenerLeakTest.cpp',
             'tests/MemoryInfo.cpp',
