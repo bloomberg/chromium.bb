@@ -29,7 +29,7 @@ class BustedLevelDBDatabase : public LevelDBDatabase {
     return scoped_ptr<LevelDBDatabase>(new BustedLevelDBDatabase);
   }
   virtual bool Get(const LevelDBSlice& key,
-                   std::vector<char>& value,
+                   std::string* value,
                    bool& found,
                    const LevelDBSnapshot* = 0) OVERRIDE {
     // false means IO error.

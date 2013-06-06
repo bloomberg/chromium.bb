@@ -242,21 +242,18 @@ bool LevelDBDatabase::Remove(const LevelDBSlice& key) {
 }
 
 bool LevelDBDatabase::Get(const LevelDBSlice& key,
-                          std::vector<char>& value,
+                          std::string* value,
                           bool& found,
                           const LevelDBSnapshot* snapshot) {
   found = false;
-  std::string result;
   leveldb::ReadOptions read_options;
   read_options.verify_checksums = true;  // TODO(jsbell): Disable this if the
                                          // performance impact is too great.
   read_options.snapshot = snapshot ? snapshot->snapshot_ : 0;
 
-  const leveldb::Status s = db_->Get(read_options, MakeSlice(key), &result);
+  const leveldb::Status s = db_->Get(read_options, MakeSlice(key), value);
   if (s.ok()) {
     found = true;
-    value.clear();
-    value.insert(value.end(), result.begin(), result.end());
     return true;
   }
   if (s.IsNotFound())

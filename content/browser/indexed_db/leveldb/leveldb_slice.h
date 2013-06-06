@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/logging.h"
+#include "base/strings/string_piece.h"
 
 namespace content {
 
@@ -22,10 +23,19 @@ class LevelDBSlice {
     DCHECK_GE(end_, begin_);
   }
 
+  explicit LevelDBSlice(const std::string& v)
+      : begin_(v.data()), end_(v.data() + v.size()) {
+    DCHECK_GE(end_, begin_);
+  }
+
   ~LevelDBSlice() {}
 
   const char* begin() const { return begin_; }
   const char* end() const { return end_; }
+
+  base::StringPiece AsStringPiece() const {
+    return base::StringPiece(begin_, end_ - begin_);
+  }
 
  private:
   const char* begin_;

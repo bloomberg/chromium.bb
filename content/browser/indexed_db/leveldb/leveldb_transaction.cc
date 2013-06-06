@@ -78,7 +78,7 @@ void LevelDBTransaction::Remove(const LevelDBSlice& key) {
 }
 
 bool LevelDBTransaction::Get(const LevelDBSlice& key,
-                             std::vector<char>& value,
+                             std::string* value,
                              bool& found) {
   found = false;
   DCHECK(!finished_);
@@ -88,7 +88,7 @@ bool LevelDBTransaction::Get(const LevelDBSlice& key,
     if (node->deleted)
       return true;
 
-    value = node->value;
+    value->assign(node->value.begin(), node->value.end());
     found = true;
     return true;
   }
