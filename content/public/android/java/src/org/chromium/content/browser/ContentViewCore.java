@@ -1177,7 +1177,10 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
         if (lastInputEventForVSync && isVSyncNotificationEnabled()) {
             assert type == ContentViewGestureHandler.GESTURE_SCROLL_BY ||
                     type == ContentViewGestureHandler.GESTURE_PINCH_BY;
-            mDidSignalVSyncUsingInputEvent = true;
+            // TODO(brianderson): Set this back to true once we've figured out
+            // race conditions and what to do with timestamps when sending
+            // BeginFrame early. crbug.com/247043.
+            mDidSignalVSyncUsingInputEvent = false;
         }
         switch (type) {
             case ContentViewGestureHandler.GESTURE_SHOW_PRESSED_STATE:

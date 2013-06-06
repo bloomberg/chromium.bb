@@ -50,9 +50,6 @@ class MockInputHandler : public cc::InputHandler {
   MOCK_METHOD0(ScrollEnd, void());
   MOCK_METHOD0(FlingScrollBegin, cc::InputHandler::ScrollStatus());
 
-  MOCK_METHOD1(DidReceiveLastInputEventForBeginFrame,
-               void(base::TimeTicks time));
-
   virtual void BindToClient(cc::InputHandlerClient* client) OVERRIDE {}
 
   virtual void StartPageScaleAnimation(gfx::Vector2d target_offset,
@@ -950,20 +947,6 @@ TEST_F(InputHandlerProxyTest,
   // |gesture_scroll_on_impl_thread_| should be false once
   // the fling has finished (note no GestureScrollEnd has been sent).
   EXPECT_TRUE(!input_handler_->gesture_scroll_on_impl_thread_for_testing());
-}
-
-TEST_F(InputHandlerProxyTest, LastInputEventForVSync) {
-  expected_disposition_ = InputHandlerProxy::DROP_EVENT;
-  VERIFY_AND_RESET_MOCKS();
-
-  gesture_.type = WebInputEvent::GestureFlingCancel;
-  gesture_.timeStampSeconds = 1234;
-  base::TimeTicks time =
-      base::TimeTicks() +
-      base::TimeDelta::FromSeconds(gesture_.timeStampSeconds);
-  gesture_.modifiers |= WebInputEvent::IsLastInputEventForCurrentVSync;
-  EXPECT_CALL(mock_input_handler_, DidReceiveLastInputEventForBeginFrame(time));
-  EXPECT_EQ(expected_disposition_, input_handler_->HandleInputEvent(gesture_));
 }
 
 TEST_F(InputHandlerProxyTest, GestureFlingStopsAtContentEdge) {

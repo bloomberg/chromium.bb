@@ -378,11 +378,6 @@ bool LayerTreeHostImpl::HaveTouchEventHandlersAt(gfx::Point viewport_point) {
   return false;
 }
 
-void LayerTreeHostImpl::DidReceiveLastInputEventForBeginFrame(
-    base::TimeTicks frame_time) {
-  client_->DidReceiveLastInputEventForBeginFrameOnImplThread(frame_time);
-}
-
 void LayerTreeHostImpl::TrackDamageForAllSurfaces(
     LayerImpl* root_draw_layer,
     const LayerImplList& render_surface_layer_list) {

@@ -71,8 +71,6 @@ class SingleThreadProxy : public Proxy, LayerTreeHostImplClient {
   virtual void RenewTreePriority() OVERRIDE {}
   virtual void RequestScrollbarAnimationOnImplThread(base::TimeDelta delay)
       OVERRIDE {}
-  virtual void DidReceiveLastInputEventForBeginFrameOnImplThread(
-      base::TimeTicks frame_time) OVERRIDE {}
   virtual void DidActivatePendingTree() OVERRIDE {}
 
   // Called by the legacy path where RenderWidget does the scheduling.

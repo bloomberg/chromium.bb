@@ -56,11 +56,6 @@ class CONTENT_EXPORT InputHandlerProxy
   }
 
  private:
-  // This function processes the input event and determines the disposition, but
-  // does not make any calls out to the InputHandlerProxyClient. Some input
-  // types defer to helpers.
-  EventDisposition HandleInputEventInternal(const WebKit::WebInputEvent& event);
-
   EventDisposition HandleGestureFling(const WebKit::WebGestureEvent& event);
 
   // Returns true if we scrolled by the increment.

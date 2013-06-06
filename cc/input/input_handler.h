@@ -118,9 +118,6 @@ class CC_EXPORT InputHandler {
 
   virtual bool HaveTouchEventHandlersAt(gfx::Point viewport_point) = 0;
 
-  virtual void DidReceiveLastInputEventForBeginFrame(
-      base::TimeTicks frame_time) = 0;
-
  protected:
   InputHandler() {}
   virtual ~InputHandler() {}

@@ -38,8 +38,6 @@ class FakeLayerTreeHostImplClient : public LayerTreeHostImplClient {
   virtual void RenewTreePriority() OVERRIDE {}
   virtual void RequestScrollbarAnimationOnImplThread(base::TimeDelta)
       OVERRIDE {}
-  virtual void DidReceiveLastInputEventForBeginFrameOnImplThread(
-      base::TimeTicks frame_time) OVERRIDE {}
   virtual void DidActivatePendingTree() OVERRIDE {}
 };
 

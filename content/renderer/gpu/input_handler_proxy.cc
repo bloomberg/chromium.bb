@@ -53,18 +53,6 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleInputEvent(
   DCHECK(client_);
   DCHECK(input_handler_);
 
-  InputHandlerProxy::EventDisposition disposition =
-      HandleInputEventInternal(event);
-  if (event.modifiers & WebInputEvent::IsLastInputEventForCurrentVSync) {
-    input_handler_->DidReceiveLastInputEventForBeginFrame(
-        base::TimeTicks::FromInternalValue(event.timeStampSeconds *
-                                           base::Time::kMicrosecondsPerSecond));
-  }
-  return disposition;
-}
-
-InputHandlerProxy::EventDisposition
-InputHandlerProxy::HandleInputEventInternal(const WebInputEvent& event) {
   if (event.type == WebInputEvent::MouseWheel) {
     const WebMouseWheelEvent& wheel_event =
         *static_cast<const WebMouseWheelEvent*>(&event);
@@ -342,7 +330,7 @@ bool InputHandlerProxy::TouchpadFlingScroll(
   synthetic_wheel.modifiers = fling_parameters_.modifiers;
 
   InputHandlerProxy::EventDisposition disposition =
-      HandleInputEventInternal(synthetic_wheel);
+      HandleInputEvent(synthetic_wheel);
   switch (disposition) {
     case DID_HANDLE:
       return true;

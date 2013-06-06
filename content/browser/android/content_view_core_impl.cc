@@ -940,16 +940,13 @@ jboolean ContentViewCoreImpl::SendMouseWheelEvent(JNIEnv* env,
 }
 
 WebGestureEvent ContentViewCoreImpl::MakeGestureEvent(
-    WebInputEvent::Type type, long time_ms, float x, float y,
-    InputEventVSyncStatus vsync_status) const {
+    WebInputEvent::Type type, long time_ms, float x, float y) const {
   WebGestureEvent event;
   event.type = type;
   event.x = x / GetDpiScale();
   event.y = y / GetDpiScale();
   event.timeStampSeconds = time_ms / 1000.0;
   event.sourceDevice = WebGestureEvent::Touchscreen;
-  if (vsync_status == LAST_INPUT_EVENT_FOR_VSYNC)
-    event.modifiers |= WebInputEvent::IsLastInputEventForCurrentVSync;
   return event;
 }
 
@@ -963,26 +960,21 @@ void ContentViewCoreImpl::SendGestureEvent(
 void ContentViewCoreImpl::ScrollBegin(JNIEnv* env, jobject obj, jlong time_ms,
                                       jfloat x, jfloat y) {
   WebGestureEvent event = MakeGestureEvent(
-      WebInputEvent::GestureScrollBegin, time_ms, x, y,
-      NOT_LAST_INPUT_EVENT_FOR_VSYNC);
+      WebInputEvent::GestureScrollBegin, time_ms, x, y);
   SendGestureEvent(event);
 }
 
 void ContentViewCoreImpl::ScrollEnd(JNIEnv* env, jobject obj, jlong time_ms) {
   WebGestureEvent event = MakeGestureEvent(
-      WebInputEvent::GestureScrollEnd, time_ms, 0, 0,
-      NOT_LAST_INPUT_EVENT_FOR_VSYNC);
+      WebInputEvent::GestureScrollEnd, time_ms, 0, 0);
   SendGestureEvent(event);
 }
 
 void ContentViewCoreImpl::ScrollBy(JNIEnv* env, jobject obj, jlong time_ms,
                                    jfloat x, jfloat y, jfloat dx, jfloat dy,
                                    jboolean last_input_event_for_vsync) {
-  InputEventVSyncStatus vsync_status =
-      last_input_event_for_vsync ? LAST_INPUT_EVENT_FOR_VSYNC
-                                 : NOT_LAST_INPUT_EVENT_FOR_VSYNC;
   WebGestureEvent event = MakeGestureEvent(
-      WebInputEvent::GestureScrollUpdate, time_ms, x, y, vsync_status);
+      WebInputEvent::GestureScrollUpdate, time_ms, x, y);
   event.data.scrollUpdate.deltaX = -dx / GetDpiScale();
   event.data.scrollUpdate.deltaY = -dy / GetDpiScale();
 
@@ -992,8 +984,7 @@ void ContentViewCoreImpl::ScrollBy(JNIEnv* env, jobject obj, jlong time_ms,
 void ContentViewCoreImpl::FlingStart(JNIEnv* env, jobject obj, jlong time_ms,
                                      jfloat x, jfloat y, jfloat vx, jfloat vy) {
   WebGestureEvent event = MakeGestureEvent(
-      WebInputEvent::GestureFlingStart, time_ms, x, y,
-      NOT_LAST_INPUT_EVENT_FOR_VSYNC);
+      WebInputEvent::GestureFlingStart, time_ms, x, y);
 
   // Velocity should not be scaled by DIP since that interacts poorly with the
   // deceleration constants.  The DIP scaling is done on the renderer.
@@ -1005,8 +996,7 @@ void ContentViewCoreImpl::FlingStart(JNIEnv* env, jobject obj, jlong time_ms,
 
 void ContentViewCoreImpl::FlingCancel(JNIEnv* env, jobject obj, jlong time_ms) {
   WebGestureEvent event = MakeGestureEvent(
-      WebInputEvent::GestureFlingCancel, time_ms, 0, 0,
-      NOT_LAST_INPUT_EVENT_FOR_VSYNC);
+      WebInputEvent::GestureFlingCancel, time_ms, 0, 0);
   SendGestureEvent(event);
 }
 
@@ -1014,8 +1004,7 @@ void ContentViewCoreImpl::SingleTap(JNIEnv* env, jobject obj, jlong time_ms,
                                     jfloat x, jfloat y,
                                     jboolean disambiguation_popup_tap) {
   WebGestureEvent event = MakeGestureEvent(
-      WebInputEvent::GestureTap, time_ms, x, y,
-      NOT_LAST_INPUT_EVENT_FOR_VSYNC);
+      WebInputEvent::GestureTap, time_ms, x, y);
 
   event.data.tap.tapCount = 1;
   if (!disambiguation_popup_tap) {
@@ -1031,8 +1020,7 @@ void ContentViewCoreImpl::SingleTapUnconfirmed(JNIEnv* env, jobject obj,
                                                jlong time_ms,
                                                jfloat x, jfloat y) {
   WebGestureEvent event = MakeGestureEvent(
-      WebInputEvent::GestureTapUnconfirmed, time_ms, x, y,
-      NOT_LAST_INPUT_EVENT_FOR_VSYNC);
+      WebInputEvent::GestureTapUnconfirmed, time_ms, x, y);
 
   event.data.tap.tapCount = 1;
 
@@ -1047,8 +1035,7 @@ void ContentViewCoreImpl::ShowPressState(JNIEnv* env, jobject obj,
                                          jlong time_ms,
                                          jfloat x, jfloat y) {
   WebGestureEvent event = MakeGestureEvent(
-      WebInputEvent::GestureTapDown, time_ms, x, y,
-      NOT_LAST_INPUT_EVENT_FOR_VSYNC);
+      WebInputEvent::GestureTapDown, time_ms, x, y);
   SendGestureEvent(event);
 }
 
@@ -1058,16 +1045,14 @@ void ContentViewCoreImpl::ShowPressCancel(JNIEnv* env,
                                           jfloat x,
                                           jfloat y) {
   WebGestureEvent event = MakeGestureEvent(
-      WebInputEvent::GestureTapCancel, time_ms, x, y,
-      NOT_LAST_INPUT_EVENT_FOR_VSYNC);
+      WebInputEvent::GestureTapCancel, time_ms, x, y);
   SendGestureEvent(event);
 }
 
 void ContentViewCoreImpl::DoubleTap(JNIEnv* env, jobject obj, jlong time_ms,
                                     jfloat x, jfloat y) {
   WebGestureEvent event = MakeGestureEvent(
-      WebInputEvent::GestureDoubleTap, time_ms, x, y,
-      NOT_LAST_INPUT_EVENT_FOR_VSYNC);
+      WebInputEvent::GestureDoubleTap, time_ms, x, y);
   SendGestureEvent(event);
 }
 
@@ -1075,8 +1060,7 @@ void ContentViewCoreImpl::LongPress(JNIEnv* env, jobject obj, jlong time_ms,
                                     jfloat x, jfloat y,
                                     jboolean disambiguation_popup_tap) {
   WebGestureEvent event = MakeGestureEvent(
-      WebInputEvent::GestureLongPress, time_ms, x, y,
-      NOT_LAST_INPUT_EVENT_FOR_VSYNC);
+      WebInputEvent::GestureLongPress, time_ms, x, y);
 
   if (!disambiguation_popup_tap) {
     const float touch_padding_dip = GetTouchPaddingDip();
@@ -1091,8 +1075,7 @@ void ContentViewCoreImpl::LongTap(JNIEnv* env, jobject obj, jlong time_ms,
                                   jfloat x, jfloat y,
                                   jboolean disambiguation_popup_tap) {
   WebGestureEvent event = MakeGestureEvent(
-      WebInputEvent::GestureLongTap, time_ms, x, y,
-      NOT_LAST_INPUT_EVENT_FOR_VSYNC);
+      WebInputEvent::GestureLongTap, time_ms, x, y);
 
   if (!disambiguation_popup_tap) {
     const float touch_padding_dip = GetTouchPaddingDip();
@@ -1106,15 +1089,13 @@ void ContentViewCoreImpl::LongTap(JNIEnv* env, jobject obj, jlong time_ms,
 void ContentViewCoreImpl::PinchBegin(JNIEnv* env, jobject obj, jlong time_ms,
                                      jfloat x, jfloat y) {
   WebGestureEvent event = MakeGestureEvent(
-      WebInputEvent::GesturePinchBegin, time_ms, x, y,
-      NOT_LAST_INPUT_EVENT_FOR_VSYNC);
+      WebInputEvent::GesturePinchBegin, time_ms, x, y);
   SendGestureEvent(event);
 }
 
 void ContentViewCoreImpl::PinchEnd(JNIEnv* env, jobject obj, jlong time_ms) {
   WebGestureEvent event = MakeGestureEvent(
-      WebInputEvent::GesturePinchEnd, time_ms, 0, 0,
-      NOT_LAST_INPUT_EVENT_FOR_VSYNC);
+      WebInputEvent::GesturePinchEnd, time_ms, 0, 0);
   SendGestureEvent(event);
 }
 
@@ -1122,12 +1103,8 @@ void ContentViewCoreImpl::PinchBy(JNIEnv* env, jobject obj, jlong time_ms,
                                   jfloat anchor_x, jfloat anchor_y,
                                   jfloat delta,
                                   jboolean last_input_event_for_vsync) {
-  InputEventVSyncStatus vsync_status =
-      last_input_event_for_vsync ? LAST_INPUT_EVENT_FOR_VSYNC
-                                 : NOT_LAST_INPUT_EVENT_FOR_VSYNC;
   WebGestureEvent event = MakeGestureEvent(
-      WebInputEvent::GesturePinchUpdate, time_ms, anchor_x, anchor_y,
-      vsync_status);
+      WebInputEvent::GesturePinchUpdate, time_ms, anchor_x, anchor_y);
   event.data.pinchUpdate.scale = delta;
 
   SendGestureEvent(event);

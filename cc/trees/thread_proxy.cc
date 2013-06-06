@@ -1369,15 +1369,6 @@ void ThreadProxy::StartScrollbarAnimationOnImplThread() {
       layer_tree_host_impl_->CurrentFrameTimeTicks());
 }
 
-void ThreadProxy::DidReceiveLastInputEventForBeginFrameOnImplThread(
-    base::TimeTicks frame_time) {
-  if (begin_frame_scheduling_enabled_) {
-    TRACE_EVENT0("cc",
-        "ThreadProxy::DidReceiveLastInputEventForBeginFrameOnImplThread");
-    BeginFrameOnImplThread(frame_time);
-  }
-}
-
 void ThreadProxy::DidActivatePendingTree() {
   DCHECK(IsImplThread());
   TRACE_EVENT0("cc", "ThreadProxy::DidActivatePendingTreeOnImplThread");

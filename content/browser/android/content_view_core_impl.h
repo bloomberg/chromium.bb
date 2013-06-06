@@ -304,11 +304,6 @@ class ContentViewCoreImpl : public ContentViewCore,
   void SetNeedsAnimate();
 
  private:
-  enum InputEventVSyncStatus {
-      NOT_LAST_INPUT_EVENT_FOR_VSYNC,
-      LAST_INPUT_EVENT_FOR_VSYNC
-  };
-
   class ContentViewUserData;
 
   friend class ContentViewUserData;
@@ -330,8 +325,7 @@ class ContentViewCoreImpl : public ContentViewCore,
   float GetTouchPaddingDip();
 
   WebKit::WebGestureEvent MakeGestureEvent(
-      WebKit::WebInputEvent::Type type, long time_ms,
-      float x, float y, InputEventVSyncStatus vsync_status) const;
+      WebKit::WebInputEvent::Type type, long time_ms, float x, float y) const;
 
   gfx::Size GetViewportSizePix() const;
   gfx::Size GetViewportSizeOffsetPix() const;
