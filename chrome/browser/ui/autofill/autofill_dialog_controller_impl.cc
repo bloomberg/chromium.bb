@@ -433,8 +433,7 @@ void AutofillDialogControllerImpl::Show() {
       IDS_AUTOFILL_DIALOG_PLACEHOLDER_POSTAL_CODE, 0.5 },
     // TODO(estade): this should have a default based on the locale.
     { 9, ADDRESS_BILLING_COUNTRY, 0 },
-    // TODO(ramankk): Add billing specific phone number.
-    { 10, PHONE_HOME_WHOLE_NUMBER,
+    { 10, PHONE_BILLING_WHOLE_NUMBER,
       IDS_AUTOFILL_DIALOG_PLACEHOLDER_PHONE_NUMBER },
   };
 

@@ -27,7 +27,7 @@ TEST(AutofillTypeTest, AutofillTypes) {
   // Type with group and subgroup.
   AutofillType phone(PHONE_HOME_NUMBER);
   EXPECT_EQ(PHONE_HOME_NUMBER, phone.field_type());
-  EXPECT_EQ(AutofillType::PHONE, phone.group());
+  EXPECT_EQ(AutofillType::PHONE_HOME, phone.group());
 
   // Last value, to check any offset errors.
   AutofillType last(COMPANY_NAME);

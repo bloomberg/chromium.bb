@@ -52,7 +52,14 @@ FieldTypeGroup AutofillType::group() const {
     case PHONE_HOME_COUNTRY_CODE:
     case PHONE_HOME_CITY_AND_NUMBER:
     case PHONE_HOME_WHOLE_NUMBER:
-      return PHONE;
+      return PHONE_HOME;
+
+    case PHONE_BILLING_NUMBER:
+    case PHONE_BILLING_CITY_CODE:
+    case PHONE_BILLING_COUNTRY_CODE:
+    case PHONE_BILLING_CITY_AND_NUMBER:
+    case PHONE_BILLING_WHOLE_NUMBER:
+      return PHONE_BILLING;
 
     case ADDRESS_HOME_LINE1:
     case ADDRESS_HOME_LINE2:
@@ -118,6 +125,21 @@ AutofillFieldType AutofillType::GetEquivalentFieldType(
     case ADDRESS_BILLING_COUNTRY:
       return ADDRESS_HOME_COUNTRY;
 
+    case PHONE_BILLING_WHOLE_NUMBER:
+      return PHONE_HOME_WHOLE_NUMBER;
+
+    case PHONE_BILLING_NUMBER:
+      return PHONE_HOME_NUMBER;
+
+    case PHONE_BILLING_CITY_CODE:
+      return PHONE_HOME_CITY_CODE;
+
+    case PHONE_BILLING_COUNTRY_CODE:
+      return PHONE_HOME_COUNTRY_CODE;
+
+    case PHONE_BILLING_CITY_AND_NUMBER:
+      return PHONE_HOME_CITY_AND_NUMBER;
+
     default:
       return field_type;
   }
@@ -147,6 +169,21 @@ AutofillFieldType AutofillType::GetEquivalentBillingFieldType(
 
     case ADDRESS_HOME_COUNTRY:
       return ADDRESS_BILLING_COUNTRY;
+
+    case PHONE_HOME_WHOLE_NUMBER:
+      return PHONE_BILLING_WHOLE_NUMBER;
+
+    case PHONE_HOME_NUMBER:
+      return PHONE_BILLING_NUMBER;
+
+    case PHONE_HOME_CITY_CODE:
+      return PHONE_BILLING_CITY_CODE;
+
+    case PHONE_HOME_COUNTRY_CODE:
+      return PHONE_BILLING_COUNTRY_CODE;
+
+    case PHONE_HOME_CITY_AND_NUMBER:
+      return PHONE_BILLING_CITY_AND_NUMBER;
 
     default:
       return field_type;

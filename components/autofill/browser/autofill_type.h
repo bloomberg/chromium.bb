@@ -25,7 +25,8 @@ class AutofillType {
     COMPANY,
     ADDRESS_HOME,
     ADDRESS_BILLING,
-    PHONE,
+    PHONE_HOME,
+    PHONE_BILLING,
     CREDIT_CARD,
   };
 

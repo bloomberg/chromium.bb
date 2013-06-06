@@ -74,6 +74,7 @@ void PhoneNumber::GetSupportedTypes(FieldTypeSet* supported_types) const {
 }
 
 base::string16 PhoneNumber::GetRawInfo(AutofillFieldType type) const {
+  type = AutofillType::GetEquivalentFieldType(type);
   if (type == PHONE_HOME_WHOLE_NUMBER)
     return number_;
 
@@ -85,6 +86,7 @@ base::string16 PhoneNumber::GetRawInfo(AutofillFieldType type) const {
 
 void PhoneNumber::SetRawInfo(AutofillFieldType type,
                              const base::string16& value) {
+  type = AutofillType::GetEquivalentFieldType(type);
   if (type != PHONE_HOME_CITY_AND_NUMBER &&
       type != PHONE_HOME_WHOLE_NUMBER) {
     // Only full phone numbers should be set directly.  The remaining field
@@ -103,7 +105,8 @@ void PhoneNumber::SetRawInfo(AutofillFieldType type,
 //   1-800-FLOWERS -> 18003569377
 // If the phone cannot be normalized, returns the stored value verbatim.
 base::string16 PhoneNumber::GetInfo(AutofillFieldType type,
-                              const std::string& app_locale) const {
+                                    const std::string& app_locale) const {
+  type = AutofillType::GetEquivalentFieldType(type);
   UpdateCacheIfNeeded(app_locale);
 
   // Queries for whole numbers will return the non-normalized number if
@@ -138,6 +141,7 @@ base::string16 PhoneNumber::GetInfo(AutofillFieldType type,
 bool PhoneNumber::SetInfo(AutofillFieldType type,
                           const base::string16& value,
                           const std::string& app_locale) {
+  type = AutofillType::GetEquivalentFieldType(type);
   SetRawInfo(type, value);
 
   if (number_.empty())
@@ -190,6 +194,7 @@ PhoneNumber::PhoneCombineHelper::~PhoneCombineHelper() {
 
 bool PhoneNumber::PhoneCombineHelper::SetInfo(AutofillFieldType field_type,
                                               const base::string16& value) {
+  field_type = AutofillType::GetEquivalentFieldType(field_type);
   if (field_type == PHONE_HOME_COUNTRY_CODE) {
     country_ = value;
     return true;

@@ -131,6 +131,11 @@ void GetGoogleCookies(
                                            cookie_callback);
 }
 
+bool IsBillingGroup(FieldTypeGroup group) {
+  return group == AutofillType::ADDRESS_BILLING ||
+         group == AutofillType::PHONE_BILLING;
+}
+
 const char kTransactionIdNotSet[] = "transaction id not set";
 
 }  // namespace
@@ -367,16 +372,17 @@ void AutocheckoutManager::ReturnAutocheckoutData(
       continue;
     }
     FieldTypeGroup group = AutofillType(type).group();
-    if (group == AutofillType::CREDIT_CARD)
+    if (group == AutofillType::CREDIT_CARD) {
       credit_card_->SetRawInfo(type, value);
-    else if (type == ADDRESS_HOME_COUNTRY)
+    } else if (type == ADDRESS_HOME_COUNTRY) {
       profile_->SetInfo(type, value, autofill_manager_->app_locale());
-    else if (type == ADDRESS_BILLING_COUNTRY)
+    } else if (type == ADDRESS_BILLING_COUNTRY) {
       billing_address_->SetInfo(type, value, autofill_manager_->app_locale());
-    else if (group == AutofillType::ADDRESS_BILLING)
+    } else if (IsBillingGroup(group)) {
       billing_address_->SetRawInfo(type, value);
-    else
+    } else {
       profile_->SetRawInfo(type, value);
+    }
   }
 
   // Add 1.0 since page numbers are 0-indexed.
@@ -430,7 +436,7 @@ void AutocheckoutManager::SetValue(const AutofillField& field,
   if (AutofillType(type).group() == AutofillType::CREDIT_CARD) {
     credit_card_->FillFormField(
         field, 0, autofill_manager_->app_locale(), field_to_fill);
-  } else if (AutofillType(type).group() == AutofillType::ADDRESS_BILLING) {
+  } else if (IsBillingGroup(AutofillType(type).group())) {
     billing_address_->FillFormField(
         field, 0, autofill_manager_->app_locale(), field_to_fill);
   } else {

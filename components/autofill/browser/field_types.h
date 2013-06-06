@@ -83,9 +83,15 @@ enum AutofillFieldType {
   // Generic type whose default value is known.
   FIELD_WITH_DEFAULT_VALUE = 61,
 
+  PHONE_BILLING_NUMBER = 62,
+  PHONE_BILLING_CITY_CODE = 63,
+  PHONE_BILLING_COUNTRY_CODE = 64,
+  PHONE_BILLING_CITY_AND_NUMBER = 65,
+  PHONE_BILLING_WHOLE_NUMBER = 66,
+
   // No new types can be added.
 
-  MAX_VALID_FIELD_TYPE = 62,
+  MAX_VALID_FIELD_TYPE = 67,
 };
 
 typedef std::set<AutofillFieldType> FieldTypeSet;

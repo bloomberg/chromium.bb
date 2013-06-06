@@ -200,7 +200,7 @@ class AutofillProfile : public AutofillDataModel {
   std::vector<NameInfo> name_;
   std::vector<EmailInfo> email_;
   CompanyInfo company_;
-  std::vector<PhoneNumber> home_number_;
+  std::vector<PhoneNumber> phone_number_;
   Address address_;
 };
 

@@ -227,14 +227,14 @@ AutofillProfile::AutofillProfile(const std::string& guid,
     : AutofillDataModel(guid, origin),
       name_(1),
       email_(1),
-      home_number_(1, PhoneNumber(this)) {
+      phone_number_(1, PhoneNumber(this)) {
 }
 
 AutofillProfile::AutofillProfile()
     : AutofillDataModel(base::GenerateGUID(), std::string()),
       name_(1),
       email_(1),
-      home_number_(1, PhoneNumber(this)) {
+      phone_number_(1, PhoneNumber(this)) {
 }
 
 AutofillProfile::AutofillProfile(const AutofillProfile& profile)
@@ -256,10 +256,10 @@ AutofillProfile& AutofillProfile::operator=(const AutofillProfile& profile) {
   name_ = profile.name_;
   email_ = profile.email_;
   company_ = profile.company_;
-  home_number_ = profile.home_number_;
+  phone_number_ = profile.phone_number_;
 
-  for (size_t i = 0; i < home_number_.size(); ++i)
-    home_number_[i].set_profile(this);
+  for (size_t i = 0; i < phone_number_.size(); ++i)
+    phone_number_[i].set_profile(this);
 
   address_ = profile.address_;
 
@@ -321,10 +321,11 @@ void AutofillProfile::SetRawMultiInfo(
     case AutofillType::EMAIL:
       CopyValuesToItems(type, values, &email_, EmailInfo());
       break;
-    case AutofillType::PHONE:
+    case AutofillType::PHONE_HOME:
+    case AutofillType::PHONE_BILLING:
       CopyValuesToItems(type,
                         values,
-                        &home_number_,
+                        &phone_number_,
                         PhoneNumber(this));
       break;
     default:
@@ -360,7 +361,7 @@ void AutofillProfile::FillFormField(const AutofillField& field,
   DCHECK_NE(AutofillType::CREDIT_CARD, AutofillType(type).group());
   DCHECK(field_data);
 
-  if (type == PHONE_HOME_NUMBER) {
+  if (type == PHONE_HOME_NUMBER || type == PHONE_BILLING_NUMBER) {
     FillPhoneNumberField(field, variant, app_locale, field_data);
   } else if (field_data->form_control_type == "select-one") {
     FillSelectControl(type, app_locale, field_data);
@@ -482,7 +483,7 @@ bool AutofillProfile::IsSubsetOf(const AutofillProfile& profile,
       // name saved, but |profile| lacks one, |profile| could still be a subset
       // of |this|.
       continue;
-    } else if (AutofillType(*iter).group() == AutofillType::PHONE) {
+    } else if (AutofillType(*iter).group() == AutofillType::PHONE_HOME) {
       // Phone numbers should be canonicalized prior to being compared.
       if (*iter != PHONE_HOME_WHOLE_NUMBER) {
         continue;
@@ -529,7 +530,7 @@ void AutofillProfile::OverwriteWithOrAddTo(const AutofillProfile& profile,
                new_values.begin();
            value_iter != new_values.end(); ++value_iter) {
         // Don't add duplicates.
-        if (group == AutofillType::PHONE) {
+        if (group == AutofillType::PHONE_HOME) {
           AddPhoneIfUnique(*value_iter, app_locale, &existing_values);
         } else {
           std::vector<base::string16>::const_iterator existing_iter =
@@ -556,7 +557,8 @@ bool AutofillProfile::SupportsMultiValue(AutofillFieldType type) {
   AutofillType::FieldTypeGroup group = AutofillType(type).group();
   return group == AutofillType::NAME ||
          group == AutofillType::EMAIL ||
-         group == AutofillType::PHONE;
+         group == AutofillType::PHONE_HOME ||
+         group == AutofillType::PHONE_BILLING;
 }
 
 // static
@@ -661,8 +663,9 @@ void AutofillProfile::GetMultiInfoImpl(
     case AutofillType::EMAIL:
       CopyItemsToValues(type, email_, app_locale, values);
       break;
-    case AutofillType::PHONE:
-      CopyItemsToValues(type, home_number_, app_locale, values);
+    case AutofillType::PHONE_HOME:
+    case AutofillType::PHONE_BILLING:
+      CopyItemsToValues(type, phone_number_, app_locale, values);
       break;
     default:
       values->resize(1);
@@ -792,7 +795,7 @@ AutofillProfile::FormGroupList AutofillProfile::FormGroups() const {
   v[0] = &name_[0];
   v[1] = &email_[0];
   v[2] = &company_;
-  v[3] = &home_number_[0];
+  v[3] = &phone_number_[0];
   v[4] = &address_;
   return v;
 }
@@ -814,8 +817,9 @@ FormGroup* AutofillProfile::MutableFormGroupForType(AutofillFieldType type) {
     case AutofillType::COMPANY:
       form_group = &company_;
       break;
-    case AutofillType::PHONE:
-      form_group = &home_number_[0];
+    case AutofillType::PHONE_HOME:
+    case AutofillType::PHONE_BILLING:
+      form_group = &phone_number_[0];
       break;
     case AutofillType::ADDRESS_HOME:
     case AutofillType::ADDRESS_BILLING:
