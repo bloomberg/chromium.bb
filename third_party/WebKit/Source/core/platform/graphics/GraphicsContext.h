@@ -237,7 +237,6 @@ public:
 
     void fillRect(const FloatRect&);
     void fillRect(const FloatRect&, const Color&);
-    void fillRect(const FloatRect& rect, Gradient& gradient) { gradient.fill(this, rect); }
     void fillRect(const FloatRect&, const Color&, CompositeOperator);
     void fillRoundedRect(const IntRect&, const IntSize& topLeft, const IntSize& topRight, const IntSize& bottomLeft, const IntSize& bottomRight, const Color&);
     void fillRoundedRect(const RoundedRect&, const Color&);

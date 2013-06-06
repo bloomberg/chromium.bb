@@ -41,7 +41,8 @@ void GeneratorGeneratedImage::draw(GraphicsContext* destContext, const FloatRect
     if (destRect.size() != srcRect.size())
         destContext->scale(FloatSize(destRect.width() / srcRect.width(), destRect.height() / srcRect.height()));
     destContext->translate(-srcRect.x(), -srcRect.y());
-    destContext->fillRect(FloatRect(FloatPoint(), m_size), *m_gradient.get());
+    destContext->setFillGradient(m_gradient);
+    destContext->fillRect(FloatRect(FloatPoint(), m_size));
 }
 
 void GeneratorGeneratedImage::drawPattern(GraphicsContext* destContext, const FloatRect& srcRect, const AffineTransform& patternTransform,
@@ -68,7 +69,8 @@ void GeneratorGeneratedImage::drawPattern(GraphicsContext* destContext, const Fl
             return;
 
         // Fill with the generated image.
-        m_cachedImageBuffer->context()->fillRect(FloatRect(FloatPoint(), adjustedSize), *m_gradient);
+        m_cachedImageBuffer->context()->setFillGradient(m_gradient);
+        m_cachedImageBuffer->context()->fillRect(FloatRect(FloatPoint(), adjustedSize));
 
         m_cachedGeneratorHash = generatorHash;
         m_cachedAdjustedSize = adjustedSize;

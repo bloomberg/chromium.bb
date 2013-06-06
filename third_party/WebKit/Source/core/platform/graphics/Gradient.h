@@ -29,7 +29,6 @@
 #ifndef Gradient_h
 #define Gradient_h
 
-#include "SkShader.h"
 #include "core/platform/graphics/FloatPoint.h"
 #include "core/platform/graphics/GraphicsTypes.h"
 #include "core/platform/graphics/transforms/AffineTransform.h"
@@ -38,11 +37,12 @@
 #include "wtf/RefPtr.h"
 #include "wtf/Vector.h"
 
+class SkShader;
+
 namespace WebCore {
 
     class Color;
     class FloatRect;
-    class GraphicsContext;
 
     class Gradient : public RefCounted<Gradient> {
     public:
@@ -72,19 +72,19 @@ namespace WebCore {
         {
             if (m_p0 == p)
                 return;
-            
+
             m_p0 = p;
-            
+
             invalidateHash();
         }
-        
+
         void setP1(const FloatPoint& p)
         {
             if (m_p1 == p)
                 return;
-            
+
             m_p1 = p;
-            
+
             invalidateHash();
         }
 
@@ -127,13 +127,12 @@ namespace WebCore {
         };
 
         void setStopsSorted(bool s) { m_stopsSorted = s; }
-        
+
         void setSpreadMethod(GradientSpreadMethod);
         GradientSpreadMethod spreadMethod() { return m_spreadMethod; }
         void setGradientSpaceTransform(const AffineTransform& gradientSpaceTransformation);
         AffineTransform gradientSpaceTransform() { return m_gradientSpaceTransformation; }
 
-        void fill(GraphicsContext*, const FloatRect&);
         void adjustParametersForTiledDrawing(IntSize&, FloatRect&);
 
         unsigned hash() const;

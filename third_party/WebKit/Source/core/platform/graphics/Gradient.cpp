@@ -28,15 +28,15 @@
 #include "config.h"
 #include "core/platform/graphics/Gradient.h"
 
-#include "SkColorShader.h"
-#include "SkGradientShader.h"
 #include "core/platform/graphics/Color.h"
 #include "core/platform/graphics/FloatRect.h"
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/graphics/skia/SkiaUtils.h"
-#include <wtf/HashFunctions.h>
-#include <wtf/StringHasher.h>
-#include <wtf/UnusedParam.h>
+#include "third_party/skia/include/core/SkColorShader.h"
+#include "third_party/skia/include/core/SkShader.h"
+#include "third_party/skia/include/effects/SkGradientShader.h"
+#include "wtf/HashFunctions.h"
+#include "wtf/StringHasher.h"
 
 using WTF::pairIntHash;
 
@@ -351,12 +351,6 @@ SkShader* Gradient::shader()
     else
         m_gradient->setLocalMatrix(m_gradientSpaceTransformation);
     return m_gradient;
-}
-
-void Gradient::fill(GraphicsContext* context, const FloatRect& rect)
-{
-    context->setFillGradient(this);
-    context->fillRect(rect);
 }
 
 } //namespace
