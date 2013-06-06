@@ -44,14 +44,12 @@ class CONTENT_EXPORT SiteInstanceImpl : public SiteInstance,
   // navigating to the URL.
   bool HasWrongProcessForURL(const GURL& url);
 
-  // Sets the factory used to create new RenderProcessHosts. This will also be
-  // passed on to SiteInstances spawned by this one.
-  // The factory must outlive the SiteInstance; ownership is not transferred. It
-  // may be NULL, in which case the default BrowserRenderProcessHost will be
-  // created (this is the behavior if you don't call this function).
-  void set_render_process_host_factory(RenderProcessHostFactory* rph_factory) {
-    render_process_host_factory_ = rph_factory;
-  }
+  // Sets the global factory used to create new RenderProcessHosts.  It may be
+  // NULL, in which case the default BrowserRenderProcessHost will be created
+  // (this is the behavior if you don't call this function).  The factory must
+  // be set back to NULL before it's destroyed; ownership is not transferred.
+  static void set_render_process_host_factory(
+      const RenderProcessHostFactory* rph_factory);
 
  protected:
   friend class BrowsingInstance;
@@ -77,6 +75,9 @@ class CONTENT_EXPORT SiteInstanceImpl : public SiteInstance,
 
   // Used to restrict a process' origin access rights.
   void LockToOrigin();
+
+  // An object used to construct RenderProcessHosts.
+  static const RenderProcessHostFactory* g_render_process_host_factory_;
 
   // The next available SiteInstance ID.
   static int32 next_site_instance_id_;

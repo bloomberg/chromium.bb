@@ -11,18 +11,19 @@
 namespace content {
 
 TestRenderViewHostFactory::TestRenderViewHostFactory(
-    RenderProcessHostFactory* rph_factory)
-    : render_process_host_factory_(rph_factory) {
+    RenderProcessHostFactory* rph_factory) {
+  SiteInstanceImpl::set_render_process_host_factory(rph_factory);
   RenderViewHostFactory::RegisterFactory(this);
 }
 
 TestRenderViewHostFactory::~TestRenderViewHostFactory() {
   RenderViewHostFactory::UnregisterFactory();
+  SiteInstanceImpl::set_render_process_host_factory(NULL);
 }
 
 void TestRenderViewHostFactory::set_render_process_host_factory(
     RenderProcessHostFactory* rph_factory) {
-  render_process_host_factory_ = rph_factory;
+  SiteInstanceImpl::set_render_process_host_factory(rph_factory);
 }
 
 RenderViewHost* TestRenderViewHostFactory::CreateRenderViewHost(
@@ -33,9 +34,6 @@ RenderViewHost* TestRenderViewHostFactory::CreateRenderViewHost(
     int main_frame_routing_id,
     bool swapped_out,
     SessionStorageNamespace* session_storage) {
-  // See declaration of render_process_host_factory_ below.
-  static_cast<SiteInstanceImpl*>(instance)->
-      set_render_process_host_factory(render_process_host_factory_);
   return new TestRenderViewHost(
       instance, delegate, widget_delegate, routing_id, main_frame_routing_id,
       swapped_out);

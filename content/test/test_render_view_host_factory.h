@@ -37,15 +37,6 @@ class TestRenderViewHostFactory : public RenderViewHostFactory {
       SessionStorageNamespace* session_storage) OVERRIDE;
 
  private:
-  // This is a bit of a hack. With the current design of the site instances /
-  // browsing instances, it's difficult to pass a RenderProcessHostFactory
-  // around properly.
-  //
-  // Instead, we set it right before we create a new RenderViewHost, which
-  // happens before the RenderProcessHost is created. This way, the instance
-  // has the correct factory and creates our special RenderProcessHosts.
-  RenderProcessHostFactory* render_process_host_factory_;
-
   DISALLOW_COPY_AND_ASSIGN(TestRenderViewHostFactory);
 };
 
