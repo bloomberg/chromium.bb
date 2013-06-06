@@ -4,6 +4,7 @@
 
 #include "ash/wm/workspace/workspace_event_handler.h"
 
+#include "ash/screen_ash.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/property_util.h"
@@ -16,6 +17,10 @@
 #include "ui/aura/window.h"
 #include "ui/base/hit_test.h"
 #include "ui/gfx/screen.h"
+
+#if defined(OS_WIN)
+#include "base/win/windows_version.h"
+#endif
 
 namespace ash {
 namespace internal {
@@ -67,15 +72,18 @@ TEST_F(WorkspaceEventHandlerTest, DoubleClickSingleAxisResizeEdge) {
   generator.PressLeftButton();
   generator.MoveMouseTo(generator.current_location(), 1);
   generator.ReleaseLeftButton();
-  EXPECT_EQ(work_area.y(), window->bounds().y());
-  EXPECT_EQ(work_area.height(), window->bounds().height());
+  gfx::Rect bounds_in_screen = window->GetBoundsInScreen();
+  EXPECT_EQ(restored_bounds.x(), bounds_in_screen.x());
+  EXPECT_EQ(restored_bounds.width(), bounds_in_screen.width());
+  EXPECT_EQ(work_area.y(), bounds_in_screen.y());
+  EXPECT_EQ(work_area.height(), bounds_in_screen.height());
   // Single-axis maximization is not considered real maximization.
   EXPECT_FALSE(wm::IsWindowMaximized(window.get()));
 
   // Restore.
   generator.DoubleClickLeftButton();
-  EXPECT_EQ(restored_bounds.y(), window->bounds().y());
-  EXPECT_EQ(restored_bounds.height(), window->bounds().height());
+  bounds_in_screen = window->GetBoundsInScreen();
+  EXPECT_EQ(restored_bounds.ToString(), bounds_in_screen.ToString());
   // Note that it should not even be restored at this point, it should have
   // also cleared the restore rectangle.
   EXPECT_EQ(NULL, GetRestoreBoundsInScreen(window.get()));
@@ -86,17 +94,75 @@ TEST_F(WorkspaceEventHandlerTest, DoubleClickSingleAxisResizeEdge) {
   wd.set_window_component(HTCAPTION);
   generator.DoubleClickLeftButton();
   EXPECT_FALSE(wm::IsWindowMaximized(window.get()));
-
-  EXPECT_EQ(restored_bounds.y(), window->bounds().y());
-  EXPECT_EQ(restored_bounds.height(), window->bounds().height());
+  bounds_in_screen = window->GetBoundsInScreen();
+  EXPECT_EQ(restored_bounds.ToString(), bounds_in_screen.ToString());
 
   // Double clicking the left resize edge should maximize horizontally.
   wd.set_window_component(HTLEFT);
   generator.DoubleClickLeftButton();
-  EXPECT_EQ(work_area.x(), window->bounds().x());
-  EXPECT_EQ(work_area.width(), window->bounds().width());
+  bounds_in_screen = window->GetBoundsInScreen();
+  EXPECT_EQ(restored_bounds.y(), bounds_in_screen.y());
+  EXPECT_EQ(restored_bounds.height(), bounds_in_screen.height());
+  EXPECT_EQ(work_area.x(), bounds_in_screen.x());
+  EXPECT_EQ(work_area.width(), bounds_in_screen.width());
   // Single-axis maximization is not considered real maximization.
   EXPECT_FALSE(wm::IsWindowMaximized(window.get()));
+
+  // Restore.
+  wd.set_window_component(HTCAPTION);
+  generator.DoubleClickLeftButton();
+  EXPECT_EQ(restored_bounds.ToString(), window->GetBoundsInScreen().ToString());
+
+#if defined(OS_WIN)
+  // Multi display test does not run on Win8 bot. crbug.com/247427.
+  if (base::win::GetVersion() >= base::win::VERSION_WIN8)
+    return;
+#endif
+
+  // Verify the double clicking the resize edge works on 2nd display too.
+  UpdateDisplay("200x200,400x300");
+  gfx::Rect work_area2 = ScreenAsh::GetSecondaryDisplay().work_area();
+  restored_bounds.SetRect(220,20, 50, 50);
+  window->SetBoundsInScreen(restored_bounds, ScreenAsh::GetSecondaryDisplay());
+  aura::RootWindow* second_root = Shell::GetAllRootWindows()[1];
+  EXPECT_EQ(second_root, window->GetRootWindow());
+  aura::test::EventGenerator generator2(second_root, window.get());
+
+  // Y-axis maximization.
+  wd.set_window_component(HTTOP);
+  generator2.PressLeftButton();
+  generator2.ReleaseLeftButton();
+  generator2.set_flags(ui::EF_IS_DOUBLE_CLICK);
+  generator2.PressLeftButton();
+  generator2.MoveMouseTo(generator.current_location(), 1);
+  generator2.ReleaseLeftButton();
+  generator.DoubleClickLeftButton();
+  bounds_in_screen = window->GetBoundsInScreen();
+  EXPECT_EQ(restored_bounds.x(), bounds_in_screen.x());
+  EXPECT_EQ(restored_bounds.width(), bounds_in_screen.width());
+  EXPECT_EQ(work_area2.y(), bounds_in_screen.y());
+  EXPECT_EQ(work_area2.height(), bounds_in_screen.height());
+  EXPECT_FALSE(wm::IsWindowMaximized(window.get()));
+
+  // Restore.
+  wd.set_window_component(HTCAPTION);
+  generator2.DoubleClickLeftButton();
+  EXPECT_EQ(restored_bounds.ToString(), window->GetBoundsInScreen().ToString());
+
+  // X-axis maximization.
+  wd.set_window_component(HTLEFT);
+  generator2.DoubleClickLeftButton();
+  bounds_in_screen = window->GetBoundsInScreen();
+  EXPECT_EQ(restored_bounds.y(), bounds_in_screen.y());
+  EXPECT_EQ(restored_bounds.height(), bounds_in_screen.height());
+  EXPECT_EQ(work_area2.x(), bounds_in_screen.x());
+  EXPECT_EQ(work_area2.width(), bounds_in_screen.width());
+  EXPECT_FALSE(wm::IsWindowMaximized(window.get()));
+
+  // Restore.
+  wd.set_window_component(HTCAPTION);
+  generator2.DoubleClickLeftButton();
+  EXPECT_EQ(restored_bounds.ToString(), window->GetBoundsInScreen().ToString());
 }
 
 TEST_F(WorkspaceEventHandlerTest,

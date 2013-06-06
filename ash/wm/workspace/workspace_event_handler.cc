@@ -7,6 +7,7 @@
 #include "ash/screen_ash.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
+#include "ash/wm/coordinate_conversion.h"
 #include "ash/wm/property_util.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/workspace/workspace_window_resizer.h"
@@ -22,12 +23,15 @@
 namespace ash {
 namespace {
 
-void SingleAxisMaximize(aura::Window* window, const gfx::Rect& maximize_rect) {
+void SingleAxisMaximize(aura::Window* window,
+                        const gfx::Rect& maximize_rect_in_screen) {
   gfx::Rect bounds_in_screen =
       ScreenAsh::ConvertRectToScreen(window->parent(), window->bounds());
-
   SetRestoreBoundsInScreen(window, bounds_in_screen);
-  window->SetBounds(maximize_rect);
+  gfx::Rect bounds_in_parent =
+      ScreenAsh::ConvertRectFromScreen(window->parent(),
+                                       maximize_rect_in_screen);
+  window->SetBounds(bounds_in_parent);
 }
 
 void SingleAxisUnmaximize(aura::Window* window,
@@ -148,8 +152,10 @@ void WorkspaceEventHandler::HandleVerticalResizeDoubleClick(
            target->bounds().y() == work_area.y())) {
         SingleAxisUnmaximize(target, *restore_bounds);
       } else {
+        gfx::Point origin = target->bounds().origin();
+        wm::ConvertPointToScreen(target->parent(), &origin);
         SingleAxisMaximize(target,
-                           gfx::Rect(target->bounds().x(),
+                           gfx::Rect(origin.x(),
                                      work_area.y(),
                                      target->bounds().width(),
                                      work_area.height()));
@@ -163,9 +169,11 @@ void WorkspaceEventHandler::HandleVerticalResizeDoubleClick(
            target->bounds().x() == work_area.x())) {
         SingleAxisUnmaximize(target, *restore_bounds);
       } else {
+        gfx::Point origin = target->bounds().origin();
+        wm::ConvertPointToScreen(target->parent(), &origin);
         SingleAxisMaximize(target,
                            gfx::Rect(work_area.x(),
-                                     target->bounds().y(),
+                                     origin.y(),
                                      work_area.width(),
                                      target->bounds().height()));
       }
