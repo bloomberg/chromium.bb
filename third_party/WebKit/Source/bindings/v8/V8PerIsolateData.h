@@ -81,9 +81,9 @@ public:
     }
 
     v8::Handle<v8::FunctionTemplate> toStringTemplate();
-    v8::Persistent<v8::FunctionTemplate>& lazyEventListenerToStringTemplate()
+    v8::Handle<v8::FunctionTemplate> lazyEventListenerToStringTemplate()
     {
-        return m_lazyEventListenerToStringTemplate;
+        return v8::Local<v8::FunctionTemplate>::New(m_isolate, m_lazyEventListenerToStringTemplate);
     }
 
     StringCache* stringCache() { return m_stringCache.get(); }

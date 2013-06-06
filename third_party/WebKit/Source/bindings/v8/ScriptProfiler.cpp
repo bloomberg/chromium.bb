@@ -335,9 +335,9 @@ void ScriptProfiler::visitExternalArrays(ExternalArrayVisitor* visitor)
         {
             if (classId != v8DOMObjectClassId)
                 return;
-            ASSERT((*value)->IsObject());
             // Casting to Handle is safe here, since the Persistent cannot get
             // GCd during visiting.
+            ASSERT((*reinterpret_cast<v8::Handle<v8::Value>*>(value))->IsObject());
             v8::Handle<v8::Object>* wrapper = reinterpret_cast<v8::Handle<v8::Object>*>(value);
             if (!toWrapperTypeInfo(*wrapper)->isSubclass(&V8ArrayBufferView::info))
                 return;

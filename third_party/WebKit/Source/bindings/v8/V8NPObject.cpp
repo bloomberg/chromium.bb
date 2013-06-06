@@ -431,18 +431,19 @@ v8::Local<v8::Object> createV8ObjectForNPObject(NPObject* object, NPObject* root
     // pointer, and field 1 is the type. There should be an api function that returns unused type id. The same Wrapper type
     // can be used by DOM bindings.
     if (npObjectDesc.IsEmpty()) {
-        npObjectDesc.Reset(isolate, v8::FunctionTemplate::New());
-        npObjectDesc->InstanceTemplate()->SetInternalFieldCount(npObjectInternalFieldCount);
-        npObjectDesc->InstanceTemplate()->SetNamedPropertyHandler(npObjectNamedPropertyGetter, npObjectNamedPropertySetter, npObjectQueryProperty, 0, npObjectNamedPropertyEnumerator);
-        npObjectDesc->InstanceTemplate()->SetIndexedPropertyHandler(npObjectIndexedPropertyGetter, npObjectIndexedPropertySetter, 0, 0, npObjectIndexedPropertyEnumerator);
-        npObjectDesc->InstanceTemplate()->SetCallAsFunctionHandler(npObjectInvokeDefaultHandler);
+        v8::Handle<v8::FunctionTemplate> templ = v8::FunctionTemplate::New();
+        templ->InstanceTemplate()->SetInternalFieldCount(npObjectInternalFieldCount);
+        templ->InstanceTemplate()->SetNamedPropertyHandler(npObjectNamedPropertyGetter, npObjectNamedPropertySetter, npObjectQueryProperty, 0, npObjectNamedPropertyEnumerator);
+        templ->InstanceTemplate()->SetIndexedPropertyHandler(npObjectIndexedPropertyGetter, npObjectIndexedPropertySetter, 0, 0, npObjectIndexedPropertyEnumerator);
+        templ->InstanceTemplate()->SetCallAsFunctionHandler(npObjectInvokeDefaultHandler);
+        npObjectDesc.Reset(isolate, templ);
     }
 
     // FIXME: Move staticNPObjectMap() to DOMDataStore.
     // Use V8DOMWrapper::createWrapper() and
     // V8DOMWrapper::associateObjectWithWrapper()
     // to create a wrapper object.
-    v8::Handle<v8::Function> v8Function = npObjectDesc->GetFunction();
+    v8::Handle<v8::Function> v8Function = v8::Local<v8::FunctionTemplate>::New(isolate, npObjectDesc)->GetFunction();
     v8::Local<v8::Object> value = V8ObjectConstructor::newInstance(v8Function);
     if (value.IsEmpty())
         return value;

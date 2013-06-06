@@ -138,7 +138,6 @@ bool V8PerIsolateData::hasPrivateTemplate(WrapperWorldType currentWorldType, voi
 
 v8::Handle<v8::FunctionTemplate> V8PerIsolateData::privateTemplate(WrapperWorldType currentWorldType, void* privatePointer, v8::FunctionCallback callback, v8::Handle<v8::Value> data, v8::Handle<v8::Signature> signature, int length)
 {
-    v8::Persistent<v8::FunctionTemplate> privateTemplate;
     TemplateMap& templates = templateMap(currentWorldType);
     TemplateMap::iterator result = templates.find(privatePointer);
     if (result != templates.end())

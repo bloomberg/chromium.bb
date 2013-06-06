@@ -137,9 +137,9 @@ public:
         if (m_nodesInNewSpace.size() >= wrappersHandledByEachMinorGC)
             return;
 
-        ASSERT((*value)->IsObject());
         // Casting to a Handle is safe here, since the Persistent cannot get GCd
         // during the GC prologue.
+        ASSERT((*reinterpret_cast<v8::Handle<v8::Value>*>(value))->IsObject());
         v8::Handle<v8::Object>* wrapper = reinterpret_cast<v8::Handle<v8::Object>*>(value);
         ASSERT(V8DOMWrapper::maybeDOMWrapper(*wrapper));
         ASSERT(V8Node::HasInstanceInAnyWorld(*wrapper, m_isolate));
@@ -260,13 +260,13 @@ public:
     virtual void VisitPersistentHandle(v8::Persistent<v8::Value>* value, uint16_t classId) OVERRIDE
 #endif
     {
-        ASSERT((*value)->IsObject());
+        // Casting to a Handle is safe here, since the Persistent cannot get GCd
+        // during the GC prologue.
+        ASSERT((*reinterpret_cast<v8::Handle<v8::Value>*>(value))->IsObject());
 
         if (classId != v8DOMNodeClassId && classId != v8DOMObjectClassId)
             return;
 
-        // Casting to a Handle is safe here, since the Persistent cannot get GCd
-        // during the GC prologue.
         v8::Handle<v8::Object>* wrapper = reinterpret_cast<v8::Handle<v8::Object>*>(value);
 
         ASSERT(V8DOMWrapper::maybeDOMWrapper(*wrapper));

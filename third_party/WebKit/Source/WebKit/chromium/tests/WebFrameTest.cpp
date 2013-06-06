@@ -1636,7 +1636,7 @@ public:
 
         ~Notification()
         {
-            context.Dispose(context->GetIsolate());
+            context.Dispose();
         }
 
         bool Equals(Notification* other)
