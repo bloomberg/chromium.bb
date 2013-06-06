@@ -1862,11 +1862,6 @@ crbug.com/246072 fast/forms/post-popup-no-multiple-windows.html [ Pass Timeout ]
 
 crbug.com/24182 [ Debug ] inspector/timeline/timeline-decode-resize.html [ Slow ]
 
-crbug.com/246532 [ Debug ] editing/style/iframe-onload-crash-mac.html [ Crash ]
-crbug.com/246532 [ Debug ] editing/style/iframe-onload-crash-unix.html [ Crash ]
-crbug.com/246532 [ Debug ] editing/style/iframe-onload-crash-win.html [ Crash ]
-crbug.com/246532 [ Debug ] fast/frames/iframe-double-attach.html [ Crash ]
-crbug.com/246532 [ Debug ] fast/frames/iframe-set-inner-html.html [ Crash ]
 crbug.com/246549 http/tests/security/svg-image-leak.html [ Failure Pass ]
 
 crbug.com/246855 [ Debug ] http/tests/inspector/compiler-source-mapping-debug.html [ Pass Crash Slow ]
