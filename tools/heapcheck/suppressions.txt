@@ -1974,12 +1974,3 @@
    ...
    fun:extensions::ActivityDatabase::Init
 }
-{
-   bug_246870
-   Heapcheck:Leak
-   ...
-   fun:webrtc::DesktopRegion::operator=
-   fun:Capture
-   fun:media::ScreenCaptureDevice::Core::DoCapture
-   fun:media::ScreenCaptureDevice::Core::DoAllocate
-}
