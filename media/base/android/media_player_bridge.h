@@ -71,6 +71,7 @@ class MEDIA_EXPORT MediaPlayerBridge : public MediaPlayerAndroid {
  protected:
   void SetMediaPlayer(jobject j_media_player);
   void SetMediaPlayerListener();
+  void SetDuration(base::TimeDelta time);
 
   // MediaPlayerAndroid implementation.
   virtual void OnVideoSizeChanged(int width, int height) OVERRIDE;

@@ -127,6 +127,10 @@ void MediaPlayerBridge::SetMediaPlayerListener() {
   listener_.CreateMediaPlayerListener(j_context, j_media_player_.obj());
 }
 
+void MediaPlayerBridge::SetDuration(base::TimeDelta duration) {
+  duration_ = duration;
+}
+
 void MediaPlayerBridge::SetVideoSurface(gfx::ScopedJavaSurface surface) {
   if (j_media_player_.is_null()) {
     if (surface.IsSurfaceEmpty())
