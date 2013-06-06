@@ -94,9 +94,9 @@ void DownloadDangerPromptImpl::InvokeActionForTesting(Action action) {
 void DownloadDangerPromptImpl::OnDownloadUpdated(
     content::DownloadItem* download) {
   // If the download is nolonger dangerous (accepted externally) or the download
-  // doesn't exist anymore, the download danger prompt is no longer necessary.
-  if ((download->GetState() != content::DownloadItem::IN_PROGRESS)
-      || !download->IsDangerous())
+  // is in a terminal state, then the download danger prompt is no longer
+  // necessary.
+  if (!download->IsDangerous() || download->IsDone())
     Cancel();
 }
 

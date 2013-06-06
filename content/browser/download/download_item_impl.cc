@@ -280,12 +280,12 @@ void DownloadItemImpl::UpdateObservers() {
 
 void DownloadItemImpl::ValidateDangerousDownload() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK_EQ(IN_PROGRESS, GetState());
+  DCHECK(!IsDone());
   DCHECK(IsDangerous());
 
   VLOG(20) << __FUNCTION__ << " download=" << DebugString(true);
 
-  if (GetState() != IN_PROGRESS)
+  if (IsDone() || !IsDangerous())
     return;
 
   RecordDangerousDownloadAccept(GetDangerType());
@@ -423,7 +423,7 @@ void DownloadItemImpl::Remove() {
 void DownloadItemImpl::OpenDownload() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (state_ == IN_PROGRESS_INTERNAL) {
+  if (!IsDone()) {
     // We don't honor the open_when_complete_ flag for temporary
     // downloads. Don't set it because it shows up in the UI.
     if (!IsTemporary())
@@ -493,13 +493,27 @@ bool DownloadItemImpl::CanResume() const {
        resume_mode == RESUME_MODE_USER_CONTINUE);
 }
 
-// TODO(rdsmith): Figure out whether or not we want this probe routine
-// to consider interrupted (resumably) downloads partial downloads.
-// Conceptually the answer is probably yes, but everywhere that currently
-// uses the routine is using it as a synonym for IsInProgress().
-bool DownloadItemImpl::IsPartialDownload() const {
-  DownloadState state = InternalToExternalState(state_);
-  return (state == IN_PROGRESS);
+bool DownloadItemImpl::IsDone() const {
+  switch (state_) {
+    case IN_PROGRESS_INTERNAL:
+    case COMPLETING_INTERNAL:
+      return false;
+
+    case COMPLETE_INTERNAL:
+    case CANCELLED_INTERNAL:
+      return true;
+
+    case INTERRUPTED_INTERNAL:
+      return !CanResume();
+
+    case RESUMING_INTERNAL:
+      return false;
+
+    case MAX_DOWNLOAD_INTERNAL_STATE:
+      break;
+  }
+  NOTREACHED();
+  return true;
 }
 
 bool DownloadItemImpl::IsInProgress() const {
@@ -689,8 +703,8 @@ bool DownloadItemImpl::CanOpenDownload() {
   // We can open the file or mark it for opening on completion if the download
   // is expected to complete successfully. Exclude temporary downloads, since
   // they aren't owned by the download system.
-  return (IsInProgress() || IsComplete()) && !IsTemporary() &&
-      !file_externally_removed_;
+  return (!IsDone() || IsComplete()) && !IsTemporary() &&
+         !file_externally_removed_;
 }
 
 bool DownloadItemImpl::ShouldOpenFileBasedOnExtension() {

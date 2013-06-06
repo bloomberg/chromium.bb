@@ -170,10 +170,12 @@ class CONTENT_EXPORT DownloadItem : public base::SupportsUserData {
   // user-interaction to resume.
   virtual bool CanResume() const = 0;
 
-  //    Convenience routines for accessing GetState() results conceptually -----
+  // Returns true if the download is in a terminal state. This includes
+  // completed downloads, cancelled downloads, and interrupted downloads that
+  // can't be resumed.
+  virtual bool IsDone() const = 0;
 
-  // Returns true if the download needs more data.
-  virtual bool IsPartialDownload() const = 0;
+  //    Convenience routines for accessing GetState() results conceptually -----
 
   // Returns true if the download is still receiving data.
   virtual bool IsInProgress() const = 0;

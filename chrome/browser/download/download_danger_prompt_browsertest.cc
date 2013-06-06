@@ -122,20 +122,28 @@ IN_PROC_BROWSER_TEST_F(DownloadDangerPromptTest, TestAll) {
   SimulatePromptAction(DownloadDangerPrompt::CANCEL);
   VerifyExpectations();
 
-  // If the download is no longer in-progress, the dialog should dismiss itself.
-  SetUpExpectations(DownloadDangerPrompt::CANCEL);
-  EXPECT_CALL(download(), GetState()).WillOnce(
-      Return(content::DownloadItem::CANCELLED));
-  download_observer()->OnDownloadUpdated(&download());
-  VerifyExpectations();
-
   // If the download is no longer dangerous (because it was accepted), the
   // dialog should dismiss itself.
   SetUpExpectations(DownloadDangerPrompt::CANCEL);
-  EXPECT_CALL(download(), GetState()).WillOnce(
-      Return(content::DownloadItem::IN_PROGRESS));
   EXPECT_CALL(download(), IsDangerous()).WillOnce(Return(false));
   download_observer()->OnDownloadUpdated(&download());
+  VerifyExpectations();
+
+  // If the download is in a terminal state then the dialog should dismiss
+  // itself.
+  SetUpExpectations(DownloadDangerPrompt::CANCEL);
+  EXPECT_CALL(download(), IsDangerous()).WillOnce(Return(true));
+  EXPECT_CALL(download(), IsDone()).WillOnce(Return(true));
+  download_observer()->OnDownloadUpdated(&download());
+  VerifyExpectations();
+
+  // If the download is dangerous and is not in a terminal state, don't dismiss
+  // the dialog.
+  SetUpExpectations(DownloadDangerPrompt::ACCEPT);
+  EXPECT_CALL(download(), IsDangerous()).WillOnce(Return(true));
+  EXPECT_CALL(download(), IsDone()).WillOnce(Return(false));
+  download_observer()->OnDownloadUpdated(&download());
+  SimulatePromptAction(DownloadDangerPrompt::ACCEPT);
   VerifyExpectations();
 
   // If the containing tab is closed, the dialog should be canceled.

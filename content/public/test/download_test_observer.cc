@@ -221,7 +221,7 @@ void DownloadTestObserver::AcceptDangerousDownload(int32 download_id) {
   if (!download_manager_)
     return;
   DownloadItem* download = download_manager_->GetDownload(download_id);
-  if (download && (download->GetState() == DownloadItem::IN_PROGRESS))
+  if (download && !download->IsDone())
     download->ValidateDangerousDownload();
 }
 
@@ -231,9 +231,8 @@ void DownloadTestObserver::DenyDangerousDownload(int32 download_id) {
   if (!download_manager_)
     return;
   DownloadItem* download = download_manager_->GetDownload(download_id);
-  if (download && (download->GetState() == DownloadItem::IN_PROGRESS)) {
+  if (download && !download->IsDone())
     download->Remove();
-  }
 }
 
 DownloadTestObserverTerminal::DownloadTestObserverTerminal(

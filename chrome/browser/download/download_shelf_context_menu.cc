@@ -73,7 +73,7 @@ bool DownloadShelfContextMenu::IsCommandIdEnabled(int command_id) const {
       return download_item_->CanOpenDownload() &&
           !download_crx_util::IsExtensionDownload(*download_item_);
     case CANCEL:
-      return download_item_->IsPartialDownload();
+      return !download_item_->IsDone();
     case TOGGLE_PAUSE:
       return download_item_->GetState() == DownloadItem::IN_PROGRESS;
     case DISCARD:
@@ -129,7 +129,7 @@ void DownloadShelfContextMenu::ExecuteCommand(int command_id, int event_flags) {
       // It is possible for the download to complete before the user clicks the
       // menu item, recheck if the download is in progress state before toggling
       // pause.
-      if (download_item_->IsPartialDownload()) {
+      if (download_item_->GetState() == DownloadItem::IN_PROGRESS) {
         if (download_item_->IsPaused())
           download_item_->Resume();
         else
@@ -183,8 +183,7 @@ string16 DownloadShelfContextMenu::GetLabelForCommandId(int command_id) const {
     case SHOW_IN_FOLDER:
       return l10n_util::GetStringUTF16(IDS_DOWNLOAD_MENU_SHOW);
     case OPEN_WHEN_COMPLETE:
-      if (download_item_ &&
-          download_item_->GetState() == DownloadItem::IN_PROGRESS)
+      if (download_item_ && !download_item_->IsDone())
         return l10n_util::GetStringUTF16(IDS_DOWNLOAD_MENU_OPEN_WHEN_COMPLETE);
       return l10n_util::GetStringUTF16(IDS_DOWNLOAD_MENU_OPEN);
     case ALWAYS_OPEN_TYPE:

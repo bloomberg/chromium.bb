@@ -114,7 +114,7 @@ class MockDownloadItemImpl : public DownloadItemImpl {
   MOCK_CONST_METHOD0(PercentComplete, int());
   MOCK_CONST_METHOD0(AllDataSaved, bool());
   MOCK_CONST_METHOD1(MatchesQuery, bool(const string16& query));
-  MOCK_CONST_METHOD0(IsPartialDownload, bool());
+  MOCK_CONST_METHOD0(IsDone, bool());
   MOCK_CONST_METHOD0(IsInProgress, bool());
   MOCK_CONST_METHOD0(IsCancelled, bool());
   MOCK_CONST_METHOD0(IsInterrupted, bool());

@@ -510,7 +510,7 @@ void DownloadsDOMHandler::DangerPromptAccepted(int download_id) {
     item = main_notifier_.GetManager()->GetDownload(download_id);
   if (!item && original_notifier_.get() && original_notifier_->GetManager())
     item = original_notifier_->GetManager()->GetDownload(download_id);
-  if (!item || (item->GetState() != content::DownloadItem::IN_PROGRESS))
+  if (!item || item->IsDone())
     return;
   CountDownloadsDOMEvents(DOWNLOADS_DOM_EVENT_SAVE_DANGEROUS);
   item->ValidateDangerousDownload();
