@@ -36,7 +36,8 @@ struct UserMetricsAction {
 //       content::UserMetricsAction("my extremely long action name"));
 // because otherwise our processing scripts won't pick up on new actions.
 //
-// Once a new recorded action is added, run chrome/tools/extract_actions.py
+// Once a new recorded action is added, run
+// tools/metrics/actions/extract_actions.py --hash
 // to generate a new mapping of [action hashes -> metric names] and send it
 // out for review to be updated.
 //
