@@ -20,6 +20,20 @@ public class ApiCompatibilityUtils {
     }
 
     /**
+     * Returns true if view's layout direction is right-to-left.
+     *
+     * @param view the View whose layout is being considered
+     */
+    public static boolean isLayoutRtl(View view) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+            return view.getLayoutDirection() == View.LAYOUT_DIRECTION_RTL;
+        } else {
+            // All layouts are LTR before JB MR1.
+            return false;
+        }
+    }
+
+    /**
      * @see android.view.View#setLayoutDirection(int)
      */
     public static void setLayoutDirection(View view, int layoutDirection) {
