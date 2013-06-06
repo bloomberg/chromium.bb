@@ -17,7 +17,8 @@ FakePowerManagerClient::~FakePowerManagerClient() {
 void FakePowerManagerClient::AddObserver(Observer* observer) {
 }
 
-void FakePowerManagerClient::RequestStatusUpdate() {
+void FakePowerManagerClient::RequestStatusUpdate(
+    UpdateRequestType update_type) {
 }
 
 void FakePowerManagerClient::SetPolicy(

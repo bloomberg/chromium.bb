@@ -32,7 +32,7 @@ class FakePowerManagerClient : public PowerManagerClient {
       const GetScreenBrightnessPercentCallback& callback) OVERRIDE;
   virtual void DecreaseKeyboardBrightness() OVERRIDE;
   virtual void IncreaseKeyboardBrightness() OVERRIDE;
-  virtual void RequestStatusUpdate() OVERRIDE;
+  virtual void RequestStatusUpdate(UpdateRequestType update_type) OVERRIDE;
   virtual void RequestRestart() OVERRIDE;
   virtual void RequestShutdown() OVERRIDE;
   virtual void RequestIdleNotification(int64 threshold_secs) OVERRIDE;
