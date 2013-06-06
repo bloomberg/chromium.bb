@@ -162,8 +162,9 @@ VaapiVideoDecodeAccelerator::TFPPicture::Create(
 
 bool VaapiVideoDecodeAccelerator::TFPPicture::Initialize(
     const GLXFBConfig& fb_config) {
-  DCHECK_EQ(base::MessageLoop::current(),
-            ChildThread::current()->message_loop());
+  // Check for NULL prevents unittests from crashing on nonexistent ChildThread.
+  DCHECK(ChildThread::current() == NULL ||
+      ChildThread::current()->message_loop() == base::MessageLoop::current());
 
   if (!make_context_current_.Run())
     return false;
@@ -196,8 +197,9 @@ bool VaapiVideoDecodeAccelerator::TFPPicture::Initialize(
 }
 
 VaapiVideoDecodeAccelerator::TFPPicture::~TFPPicture() {
-  DCHECK_EQ(base::MessageLoop::current(),
-            ChildThread::current()->message_loop());
+  // Check for NULL prevents unittests from crashing on nonexistent ChildThread.
+  DCHECK(ChildThread::current() == NULL ||
+      ChildThread::current()->message_loop() == base::MessageLoop::current());
 
   // Unbind surface from texture and deallocate resources.
   if (glx_pixmap_ && make_context_current_.Run()) {
@@ -213,8 +215,9 @@ VaapiVideoDecodeAccelerator::TFPPicture::~TFPPicture() {
 bool VaapiVideoDecodeAccelerator::TFPPicture::Bind() {
   DCHECK(x_pixmap_);
   DCHECK(glx_pixmap_);
-  DCHECK_EQ(base::MessageLoop::current(),
-            ChildThread::current()->message_loop());
+  // Check for NULL prevents unittests from crashing on nonexistent ChildThread.
+  DCHECK(ChildThread::current() == NULL ||
+      ChildThread::current()->message_loop() == base::MessageLoop::current());
 
   if (!make_context_current_.Run())
     return false;
