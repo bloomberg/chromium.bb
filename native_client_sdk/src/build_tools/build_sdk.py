@@ -647,6 +647,8 @@ def BuildStepBuildToolchains(pepperdir, platform, toolchains):
                        'arm')
 
   if 'pnacl' in toolchains:
+    # shell=True is needed on windows to enable searching of the PATH:
+    # http://bugs.python.org/issue8557
     shell = platform == 'win'
     buildbot_common.Run(
         GetSconsArgs(pnacldir, pepperdir, 'x86', '32'),
@@ -1013,7 +1015,7 @@ def main(args):
   # Archive on non-trybots.
   if options.archive:
     BuildStepArchiveBundle('build', pepper_ver, clnumber, tarfile)
-    if platform == 'linux':
+    if options.build_ports and platform == 'linux':
       BuildStepArchiveBundle('naclports', pepper_ver, clnumber, ports_tarfile)
     BuildStepArchiveSDKTools()
 

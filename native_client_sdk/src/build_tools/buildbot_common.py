@@ -14,6 +14,7 @@ from build_paths import SDK_SRC_DIR, NACL_DIR
 
 sys.path.append(os.path.join(SDK_SRC_DIR, 'tools'))
 import oshelpers
+import getos
 
 def IsSDKBuilder():
   """Returns True if this script is running on an SDK builder.
@@ -101,11 +102,8 @@ def Run(args, cwd=None, env=None, shell=False):
   so this should be avoided when not using platform dependent shell scripts."""
 
   # We need to modify the environment to build host on Windows.
-  if not env:
-    if sys.platform.startswith('cygwin') or sys.platform.startswith('win'):
-      env = GetWindowsEnvironment()
-    else:
-      env = os.environ
+  if not env and getos.GetPlatform() == 'win':
+    env = GetWindowsEnvironment()
 
   print 'Running: ' + ' '.join(args)
   sys.stdout.flush()
@@ -174,7 +172,7 @@ LOCAL_GSUTIL = 'gsutil'
 def GetGsutil():
   if os.environ.get('BUILDBOT_BUILDERNAME') \
      and not os.environ.get('BUILDBOT_FAKE'):
-    if sys.platform in ('cygwin', 'win32'):
+    if getos.GetPlatform() == 'win':
       return WIN_BOT_GSUTIL
     return BOT_GSUTIL
   else:
@@ -185,8 +183,14 @@ def Archive(filename, bucket_path, cwd=None, step_link=True):
   """Upload the given filename to Google Store."""
   full_dst = 'gs://%s/%s' % (bucket_path, filename)
 
+  # Since GetGsutil() might just return 'gsutil' and expect it to be looked
+  # up in the PATH, we must pass shell=True on windows.
+  # Without shell=True the windows implementation of subprocess.call will not
+  # search the PATH for the executable: http://bugs.python.org/issue8557
+  shell = getos.GetPlatform() == 'win'
+
   cmd = [GetGsutil(), 'cp', '-a', 'public-read', filename, full_dst]
-  Run(cmd, shell=True, cwd=cwd)
+  Run(cmd, shell=shell, cwd=cwd)
   url = 'https://commondatastorage.googleapis.com/'\
         '%s/%s' % (bucket_path, filename)
   if step_link:
