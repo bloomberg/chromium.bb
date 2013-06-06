@@ -145,8 +145,8 @@ const AtomicString& SearchFieldDecorationElement::shadowPseudoId() const
     Element* host = shadowHost();
     if (!host)
         return resultsDecorationId;
-    if (host->hasTagName(inputTag)) {
-        if (toHTMLInputElement(host)->maxResults() < 0)
+    if (HTMLInputElement* input = host->toInputElement()) {
+        if (input->maxResults() < 0)
             return decorationId;
         return resultsDecorationId;
     }

@@ -37,7 +37,9 @@ using namespace HTMLNames;
 RenderSearchField::RenderSearchField(Element* element)
     : RenderTextControlSingleLine(element)
 {
-    ASSERT(toHTMLInputElement(element)->isSearchField());
+    ASSERT(element->isHTMLElement());
+    ASSERT(element->toInputElement());
+    ASSERT(element->toInputElement()->isSearchField());
 }
 
 RenderSearchField::~RenderSearchField()

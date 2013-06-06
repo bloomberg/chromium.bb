@@ -684,7 +684,10 @@ void Internals::selectColorInColorChooser(Element* element, const String& colorV
 {
     if (!element->hasTagName(inputTag))
         return;
-    toHTMLInputElement(element)->selectColorInColorChooser(Color(colorValue));
+    HTMLInputElement* inputElement = element->toInputElement();
+    if (!inputElement)
+        return;
+    inputElement->selectColorInColorChooser(Color(colorValue));
 }
 
 Vector<String> Internals::formControlStateOfPreviousHistoryItem(ExceptionCode& ec)
@@ -918,8 +921,8 @@ bool Internals::wasLastChangeUserEdit(Element* textField, ExceptionCode& ec)
         return false;
     }
 
-    if (textField->hasTagName(inputTag))
-        return toHTMLInputElement(textField)->lastChangeWasUserEdit();
+    if (HTMLInputElement* inputElement = textField->toInputElement())
+        return inputElement->lastChangeWasUserEdit();
 
     // FIXME: We should be using hasTagName instead but Windows port doesn't link QualifiedNames properly.
     if (textField->tagName() == "TEXTAREA")
@@ -936,8 +939,8 @@ bool Internals::elementShouldAutoComplete(Element* element, ExceptionCode& ec)
         return false;
     }
 
-    if (element->hasTagName(inputTag))
-        return toHTMLInputElement(element)->shouldAutocomplete();
+    if (HTMLInputElement* inputElement = element->toInputElement())
+        return inputElement->shouldAutocomplete();
 
     ec = INVALID_NODE_TYPE_ERR;
     return false;
@@ -950,12 +953,13 @@ String Internals::suggestedValue(Element* element, ExceptionCode& ec)
         return String();
     }
 
-    if (!element->hasTagName(inputTag)) {
+    HTMLInputElement* inputElement = element->toInputElement();
+    if (!inputElement) {
         ec = INVALID_NODE_TYPE_ERR;
         return String();
     }
 
-    return toHTMLInputElement(element)->suggestedValue();
+    return inputElement->suggestedValue();
 }
 
 void Internals::setSuggestedValue(Element* element, const String& value, ExceptionCode& ec)
@@ -965,12 +969,13 @@ void Internals::setSuggestedValue(Element* element, const String& value, Excepti
         return;
     }
 
-    if (!element->hasTagName(inputTag)) {
+    HTMLInputElement* inputElement = element->toInputElement();
+    if (!inputElement) {
         ec = INVALID_NODE_TYPE_ERR;
         return;
     }
 
-    toHTMLInputElement(element)->setSuggestedValue(value);
+    inputElement->setSuggestedValue(value);
 }
 
 void Internals::setEditingValue(Element* element, const String& value, ExceptionCode& ec)
@@ -980,21 +985,23 @@ void Internals::setEditingValue(Element* element, const String& value, Exception
         return;
     }
 
-    if (!element->hasTagName(inputTag)) {
+    HTMLInputElement* inputElement = element->toInputElement();
+    if (!inputElement) {
         ec = INVALID_NODE_TYPE_ERR;
         return;
     }
 
-    toHTMLInputElement(element)->setEditingValue(value);
+    inputElement->setEditingValue(value);
 }
 
 void Internals::setAutofilled(Element* element, bool enabled, ExceptionCode& ec)
 {
-    if (!element->hasTagName(inputTag)) {
+    HTMLInputElement* inputElement = element->toInputElement();
+    if (!inputElement) {
         ec = INVALID_ACCESS_ERR;
         return;
     }
-    toHTMLInputElement(element)->setAutofilled(enabled);
+    inputElement->setAutofilled(enabled);
 }
 
 void Internals::scrollElementToRect(Element* element, long x, long y, long w, long h, ExceptionCode& ec)

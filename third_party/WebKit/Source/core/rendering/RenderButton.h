@@ -21,7 +21,6 @@
 #ifndef RenderButton_h
 #define RenderButton_h
 
-#include "HTMLNames.h"
 #include "core/rendering/RenderFlexibleBox.h"
 
 namespace WebCore {
@@ -62,7 +61,7 @@ private:
     virtual void styleWillChange(StyleDifference, const RenderStyle* newStyle);
     virtual void styleDidChange(StyleDifference, const RenderStyle* oldStyle);
 
-    virtual bool hasLineIfEmpty() const { return node() && node()->hasTagName(HTMLNames::inputTag); }
+    virtual bool hasLineIfEmpty() const { return node() && node()->toInputElement(); }
 
     virtual bool requiresForcedStyleRecalcPropagation() const { return true; }
 

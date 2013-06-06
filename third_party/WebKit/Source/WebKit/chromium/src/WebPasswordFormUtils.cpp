@@ -73,7 +73,7 @@ void findPasswordFormFields(HTMLFormElement* form, PasswordFormFields* fields)
         if (!formElement->hasTagName(HTMLNames::inputTag))
             continue;
 
-        HTMLInputElement* inputElement = toHTMLInputElement(formElement);
+        HTMLInputElement* inputElement = formElement->toInputElement();
         if (inputElement->isDisabledFormControl())
             continue;
 

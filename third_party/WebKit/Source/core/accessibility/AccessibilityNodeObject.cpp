@@ -589,11 +589,14 @@ bool AccessibilityNodeObject::isMultiSelectable() const
 bool AccessibilityNodeObject::isNativeCheckboxOrRadio() const
 {
     Node* node = this->node();
-    if (!node || !node->hasTagName(inputTag))
+    if (!node)
         return false;
 
-    HTMLInputElement* input = toHTMLInputElement(node);
-    return input->isCheckbox() || input->isRadioButton();
+    HTMLInputElement* input = node->toInputElement();
+    if (input)
+        return input->isCheckbox() || input->isRadioButton();
+
+    return false;
 }
 
 bool AccessibilityNodeObject::isNativeImage() const
@@ -634,13 +637,17 @@ bool AccessibilityNodeObject::isNativeTextControl() const
 bool AccessibilityNodeObject::isPasswordField() const
 {
     Node* node = this->node();
-    if (!node || !node->hasTagName(inputTag))
+    if (!node || !node->isHTMLElement())
         return false;
 
     if (ariaRoleAttribute() != UnknownRole)
         return false;
 
-    return toHTMLInputElement(node)->isPasswordField();
+    HTMLInputElement* inputElement = node->toInputElement();
+    if (!inputElement)
+        return false;
+
+    return inputElement->isPasswordField();
 }
 
 bool AccessibilityNodeObject::isProgressIndicator() const
@@ -651,10 +658,13 @@ bool AccessibilityNodeObject::isProgressIndicator() const
 bool AccessibilityNodeObject::isSearchField() const
 {
     Node* node = this->node();
-    if (!node || !node->hasTagName(inputTag))
+    if (!node)
         return false;
 
-    HTMLInputElement* inputElement = toHTMLInputElement(node);
+    HTMLInputElement* inputElement = node->toInputElement();
+    if (!inputElement)
+        return false;
+
     if (inputElement->isSearchField())
         return true;
 
@@ -687,8 +697,9 @@ bool AccessibilityNodeObject::isChecked() const
         return false;
 
     // First test for native checkedness semantics
-    if (node->hasTagName(inputTag))
-        return toHTMLInputElement(node)->shouldAppearChecked();
+    HTMLInputElement* inputElement = node->toInputElement();
+    if (inputElement)
+        return inputElement->shouldAppearChecked();
 
     // Else, if this is an ARIA checkbox or radio, respect the aria-checked attribute
     AccessibilityRole ariaRole = ariaRoleAttribute();
@@ -717,10 +728,14 @@ bool AccessibilityNodeObject::isEnabled() const
 bool AccessibilityNodeObject::isIndeterminate() const
 {
     Node* node = this->node();
-    if (!node || node->hasTagName(inputTag))
+    if (!node)
         return false;
 
-    return toHTMLInputElement(node)->shouldAppearIndeterminate();
+    HTMLInputElement* inputElement = node->toInputElement();
+    if (!inputElement)
+        return false;
+
+    return inputElement->shouldAppearIndeterminate();
 }
 
 bool AccessibilityNodeObject::isPressed() const
@@ -886,7 +901,7 @@ String AccessibilityNodeObject::text() const
         if (node->hasTagName(textareaTag))
             return static_cast<HTMLTextAreaElement*>(node)->value();
         if (node->hasTagName(inputTag))
-            return toHTMLInputElement(node)->value();
+            return node->toInputElement()->value();
     }
 
     if (!node->isElementNode())

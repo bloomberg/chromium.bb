@@ -1272,7 +1272,8 @@ void InspectorDOMAgent::setFileInputFiles(ErrorString* errorString, int nodeId, 
     Node* node = assertNode(errorString, nodeId);
     if (!node)
         return;
-    if (!node->hasTagName(inputTag) || !toHTMLInputElement(node)->isFileUpload()) {
+    HTMLInputElement* element = node->toInputElement();
+    if (!element || !element->isFileUpload()) {
         *errorString = "Node is not a file input element";
         return;
     }
@@ -1286,7 +1287,7 @@ void InspectorDOMAgent::setFileInputFiles(ErrorString* errorString, int nodeId, 
         }
         fileList->append(File::create(path));
     }
-    toHTMLInputElement(node)->setFiles(fileList);
+    element->setFiles(fileList);
 }
 
 void InspectorDOMAgent::resolveNode(ErrorString* errorString, int nodeId, const String* const objectGroup, RefPtr<TypeBuilder::Runtime::RemoteObject>& result)

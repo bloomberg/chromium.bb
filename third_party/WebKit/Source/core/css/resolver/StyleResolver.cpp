@@ -645,12 +645,12 @@ bool StyleResolver::styleSharingCandidateMatchesRuleSet(RuleSet* ruleSet)
 bool StyleResolver::canShareStyleWithControl(StyledElement* element) const
 {
     const StyleResolverState& state = m_state;
+    HTMLInputElement* thisInputElement = element->toInputElement();
+    HTMLInputElement* otherInputElement = state.element()->toInputElement();
 
-    if (!element->hasTagName(inputTag) || !state.element()->hasTagName(inputTag))
+    if (!thisInputElement || !otherInputElement)
         return false;
 
-    HTMLInputElement* thisInputElement = toHTMLInputElement(element);
-    HTMLInputElement* otherInputElement = toHTMLInputElement(state.element());
     if (thisInputElement->elementData() != otherInputElement->elementData()) {
         if (thisInputElement->fastGetAttribute(typeAttr) != otherInputElement->fastGetAttribute(typeAttr))
             return false;

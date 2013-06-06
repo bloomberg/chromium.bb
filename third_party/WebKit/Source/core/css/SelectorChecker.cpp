@@ -564,8 +564,8 @@ bool SelectorChecker::checkOne(const SelectorCheckingContext& context, const Sib
         case CSSSelector::PseudoAutofill:
             if (!element || !element->isFormControlElement())
                 break;
-            if (element->hasTagName(inputTag))
-                return toHTMLInputElement(element)->isAutofilled();
+            if (HTMLInputElement* inputElement = element->toInputElement())
+                return inputElement->isAutofilled();
             break;
         case CSSSelector::PseudoAnyLink:
         case CSSSelector::PseudoLink:
@@ -649,16 +649,13 @@ bool SelectorChecker::checkOne(const SelectorCheckingContext& context, const Sib
             {
                 if (!element)
                     break;
-                if (element->hasTagName(inputTag)) {
-                    HTMLInputElement* inputElement = toHTMLInputElement(element);
-                    // Even though WinIE allows checked and indeterminate to
-                    // co-exist, the CSS selector spec says that you can't be
-                    // both checked and indeterminate. We will behave like WinIE
-                    // behind the scenes and just obey the CSS spec here in the
-                    // test for matching the pseudo.
-                    if (inputElement->shouldAppearChecked() && !inputElement->shouldAppearIndeterminate())
-                        return true;
-                } else if (element->hasTagName(optionTag) && toHTMLOptionElement(element)->selected())
+                // Even though WinIE allows checked and indeterminate to co-exist, the CSS selector spec says that
+                // you can't be both checked and indeterminate. We will behave like WinIE behind the scenes and just
+                // obey the CSS spec here in the test for matching the pseudo.
+                HTMLInputElement* inputElement = element->toInputElement();
+                if (inputElement && inputElement->shouldAppearChecked() && !inputElement->shouldAppearIndeterminate())
+                    return true;
+                if (element->hasTagName(optionTag) && toHTMLOptionElement(element)->selected())
                     return true;
                 break;
             }

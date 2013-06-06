@@ -280,18 +280,13 @@ static HTMLInputElement* asFileInput(Node* node)
 {
     ASSERT(node);
 
-    if (!node->hasTagName(HTMLNames::inputTag))
-        return 0;
-    HTMLInputElement* inputElement = toHTMLInputElement(node);
-    // If this is a button inside of the a file input, move up to the file input.
-    if (inputElement->isTextButton() && inputElement->treeScope()->rootNode()->isShadowRoot()) {
-        Element* host = toShadowRoot(inputElement->treeScope()->rootNode())->host();
-        if (!host->hasTagName(HTMLNames::inputTag))
-            return 0;
-        inputElement = toHTMLInputElement(host);
-    }
+    HTMLInputElement* inputElement = node->toInputElement();
 
-    return inputElement->isFileUpload() ? inputElement : 0;
+    // If this is a button inside of the a file input, move up to the file input.
+    if (inputElement && inputElement->isTextButton() && inputElement->treeScope()->rootNode()->isShadowRoot())
+        inputElement = toShadowRoot(inputElement->treeScope()->rootNode())->host()->toInputElement();
+
+    return inputElement && inputElement->isFileUpload() ? inputElement : 0;
 }
 
 // This can return null if an empty document is loaded.

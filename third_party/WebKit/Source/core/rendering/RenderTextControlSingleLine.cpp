@@ -44,7 +44,8 @@ RenderTextControlSingleLine::RenderTextControlSingleLine(Element* element)
     , m_shouldDrawCapsLockIndicator(false)
     , m_desiredInnerTextLogicalHeight(-1)
 {
-    ASSERT(element->hasTagName(inputTag));
+    ASSERT(element->isHTMLElement());
+    ASSERT(element->toInputElement());
 }
 
 RenderTextControlSingleLine::~RenderTextControlSingleLine()
@@ -466,7 +467,7 @@ bool RenderTextControlSingleLine::logicalScroll(ScrollLogicalDirection direction
 
 HTMLInputElement* RenderTextControlSingleLine::inputElement() const
 {
-    return toHTMLInputElement(node());
+    return node()->toInputElement();
 }
 
 }

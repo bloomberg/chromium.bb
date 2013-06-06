@@ -52,10 +52,8 @@ RadioNodeList::~RadioNodeList()
 static inline HTMLInputElement* toRadioButtonInputElement(Node* node)
 {
     ASSERT(node->isElementNode());
-    if (!node->hasTagName(inputTag))
-        return 0;
-    HTMLInputElement* inputElement = toHTMLInputElement(node);
-    if (!inputElement->isRadioButton() || inputElement->value().isEmpty())
+    HTMLInputElement* inputElement = node->toInputElement();
+    if (!inputElement || !inputElement->isRadioButton() || inputElement->value().isEmpty())
         return 0;
     return inputElement;
 }
@@ -105,8 +103,10 @@ bool RadioNodeList::nodeMatches(Element* testElement) const
     if (!testElement->hasTagName(objectTag) && !testElement->isFormControlElement())
         return false;
 
-    if (testElement->hasTagName(inputTag) && toHTMLInputElement(testElement)->isImageButton())
-        return false;
+    if (HTMLInputElement* inputElement = testElement->toInputElement()) {
+        if (inputElement->isImageButton())
+            return false;
+    }
 
     return checkElementMatchesRadioNodeListFilter(testElement);
 }
