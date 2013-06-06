@@ -144,13 +144,10 @@ JSON_RESULTS_COUNTS = '{"' + '":[[TESTDATA_COUNT]],"'.join([char for char in CHA
 
 JSON_RESULTS_TEMPLATE = (
     '{"[BUILDER_NAME]":{'
-    '"allFixableCount":[[TESTDATA_COUNT]],'
     '"blinkRevision":[[TESTDATA_WEBKITREVISION]],'
     '"buildNumbers":[[TESTDATA_BUILDNUMBERS]],'
     '"chromeRevision":[[TESTDATA_CHROMEREVISION]],'
     '"failure_map": %s,'
-    '"fixableCount":[[TESTDATA_COUNT]],'
-    '"fixableCounts":[[TESTDATA_COUNTS]],'
     '"num_failures_by_type":%s,'
     '"secondsSinceEpoch":[[TESTDATA_TIMES]],'
     '"tests":{[TESTDATA_TESTS]}'
@@ -364,13 +361,10 @@ class JsonResultsTest(unittest.TestCase):
     def test_merge_full_results_format(self):
         expected_incremental_results = {
             "Webkit": {
-                "allFixableCount": [35],
                 "blinkRevision": ["1234"],
                 "buildNumbers": ["3"],
                 "chromeRevision": ["5678"],
                 "failure_map": CHAR_TO_FAILURE,
-                "fixableCount": [25],
-                "fixableCounts": [{AUDIO: 0, CRASH: 3, TEXT: 3, IMAGE: 1, MISSING: 0, PASS: 10, TIMEOUT: 16, SKIP: 2, IMAGE_PLUS_TEXT: 0}],
                 "num_failures_by_type": {"AUDIO": [0], "CRASH": [3], "IMAGE": [1], "IMAGE+TEXT": [0], "MISSING": [0], "PASS": [10], "SKIP": [2], "TEXT": [3], "TIMEOUT": [16]},
                 "secondsSinceEpoch": [1368146629],
                 "tests": {

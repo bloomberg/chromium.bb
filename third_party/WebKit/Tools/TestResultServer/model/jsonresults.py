@@ -47,6 +47,7 @@ JSON_RESULTS_MAX_BUILDS_SMALL = 100
 BUG_KEY = "bugs"
 BUILD_NUMBERS_KEY = "buildNumbers"
 EXPECTED_KEY = "expected"
+ACTUAL_KEY = "actual"
 FAILURE_MAP_KEY = "failure_map"
 FAILURES_BY_TYPE_KEY = "num_failures_by_type"
 FIXABLE_COUNTS_KEY = "fixableCounts"
@@ -288,6 +289,7 @@ class JsonResults(object):
     def _convert_gtest_json_to_aggregate_results_format(cls, json):
         # FIXME: Change gtests over to uploading the full results format like layout-tests
         # so we don't have to do this normalizing.
+        # http://crbug.com/247192.
 
         if FAILURES_BY_TYPE_KEY in json:
             # This is already in the right format.
@@ -316,6 +318,20 @@ class JsonResults(object):
             return "Missing build number in json results."
 
         cls._convert_gtest_json_to_aggregate_results_format(json[builder])
+
+        # FIXME: Remove this once all the bots have cycled with this code.
+        # The failure map was moved from the top-level to being below the builder
+        # like everything else.
+        if FAILURE_MAP_KEY in json:
+            del json[FAILURE_MAP_KEY]
+
+        # FIXME: Remove this code once the gtests switch over to uploading the full_results.json format.
+        # Once the bots have cycled with this code, we can move this loop into _convert_gtest_json_to_aggregate_results_format.
+        KEYS_TO_DELETE = ["fixableCount", "fixableCounts", "allFixableCount"]
+        for key in KEYS_TO_DELETE:
+            if key in json[builder]:
+                del json[builder][key]
+
         return ""
 
     @classmethod
@@ -327,7 +343,7 @@ class JsonResults(object):
             time = int(round(full_results[TIME_KEY])) if TIME_KEY in full_results else 0
             new_results[TIMES_KEY] = [[1, time]]
 
-            actual_failures = full_results['actual']
+            actual_failures = full_results[ACTUAL_KEY]
             # Treat unexpected skips like NOTRUNs to avoid exploding the results JSON files
             # when a bot exits early (e.g. due to too many crashes/timeouts).
             if expected != SKIP_STRING and actual_failures == SKIP_STRING:
@@ -374,12 +390,9 @@ class JsonResults(object):
                 # FIXME: Use dict comprehensions once we update the server to python 2.7.
                 FAILURES_BY_TYPE_KEY: dict((key, [value]) for key, value in failures_by_type.items()),
                 TESTS_KEY: tests,
-                # FIXME: Have the consumers of these use num_failures_by_type directly and stop include these counts.
-                'allFixableCount': [num_total_tests],
-                'fixableCount': [num_failing_tests],
-                FIXABLE_COUNTS_KEY: [fixableCounts],
                 # FIXME: Have all the consumers of this switch over to the full_results_format keys
-                # so we don't have to do this silly conversion.
+                # so we don't have to do this silly conversion. Or switch the full_results_format keys
+                # to be camel-case.
                 BUILD_NUMBERS_KEY: [full_results_format['build_number']],
                 'chromeRevision': [full_results_format['chromium_revision']],
                 'blinkRevision': [full_results_format['blink_revision']],

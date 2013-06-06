@@ -46,7 +46,6 @@ _log = logging.getLogger(__name__)
 # {
 #  'version': 4,
 #  'builder name' : {
-#     'fixableCounts': {},
 #     'blinkRevision': [],
 #     'tests': {
 #       'directory' { # Each path component is a dictionary.
@@ -60,8 +59,6 @@ _log = logging.getLogger(__name__)
 #   }
 #  'buildNumbers': [],
 #  'secondsSinceEpoch': [],
-#  'fixableCount': [],
-#  'allFixableCount': [],
 #  'chromeRevision': [],
 #  'failure_map': { } # Map from letter code to expectation name.
 # },
