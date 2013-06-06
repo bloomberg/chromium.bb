@@ -749,7 +749,7 @@ class ThreadSafeCookieJar(cookielib.MozillaCookieJar):
 
   def load(self, filename=None, ignore_discard=False, ignore_expires=False):
     """Loads cookies from the file if it exists."""
-    filename = filename or self.filename
+    filename = os.path.expanduser(filename or self.filename)
     with self._cookies_lock:
       if os.path.exists(filename):
         try:
