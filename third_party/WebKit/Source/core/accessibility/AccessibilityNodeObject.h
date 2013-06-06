@@ -119,7 +119,7 @@ protected:
     virtual bool isMenuItem() const;
     virtual bool isMenuRelated() const;
     virtual bool isMultiSelectable() const;
-    bool isNativeCheckboxOrRadio() const;
+    virtual bool isNativeCheckboxOrRadio() const;
     virtual bool isNativeImage() const;
     virtual bool isNativeTextControl() const;
     virtual bool isPasswordField() const;
