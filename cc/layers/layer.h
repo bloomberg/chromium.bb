@@ -208,6 +208,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
 
   void SetScrollOffset(gfx::Vector2d scroll_offset);
   gfx::Vector2d scroll_offset() const { return scroll_offset_; }
+  void SetScrollOffsetFromImplSide(gfx::Vector2d scroll_offset);
 
   void SetMaxScrollOffset(gfx::Vector2d max_scroll_offset);
   gfx::Vector2d max_scroll_offset() const { return max_scroll_offset_; }
