@@ -14931,11 +14931,14 @@ You need to be signed in to use this feature.
     <message name="IDS_PROFILES_CREATE_LIMITED_NOT_SIGNED_IN_LINK" desc="Text for the sign-in promo link, shown after the (disabled) 'Limited user' checkbox in the create-profile dialog when the current user is not signed in.">
       Sign in now
     </message>
-    <message name="IDS_PROFILES_CREATE_SHORTCUT" desc="Create Shortcut checkbox/button">
+    <message name="IDS_PROFILES_CREATE_SHORTCUT_CHECKBOX" desc="Create Shortcut checkbox when creating a new profile">
       Create a desktop shortcut for this user
     </message>
-    <message name="IDS_PROFILES_REMOVE_SHORTCUT" desc="Remove Shortcut button">
-      Remove the desktop shortcut for this user
+    <message name="IDS_PROFILES_CREATE_SHORTCUT_BUTTON" desc="Create Shortcut button when editing an existing profile">
+      Add desktop shortcut
+    </message>
+    <message name="IDS_PROFILES_REMOVE_SHORTCUT_BUTTON" desc="Remove Shortcut button when editing an existing profile">
+      Remove desktop shortcut
     </message>
 
     <!-- Limited-user creation wizard dialogs -->
