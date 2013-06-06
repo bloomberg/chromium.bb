@@ -3999,7 +3999,7 @@ END
     # configuration method.
     if ($interfaceName eq "DOMWindow") {
         $implementation{nameSpaceWebCore}->add(<<END);
-static void ConfigureShadowObjectTemplate(v8::Persistent<v8::ObjectTemplate>& templ, v8::Isolate* isolate, WrapperWorldType currentWorldType)
+static void ConfigureShadowObjectTemplate(v8::Handle<v8::ObjectTemplate> templ, v8::Isolate* isolate, WrapperWorldType currentWorldType)
 {
     V8DOMConfiguration::batchConfigureAttributes(templ, v8::Handle<v8::ObjectTemplate>(), shadowAttrs, WTF_ARRAY_LENGTH(shadowAttrs), isolate, currentWorldType);
 
@@ -4298,15 +4298,19 @@ v8::Handle<v8::ObjectTemplate> V8DOMWindow::GetShadowObjectTemplate(v8::Isolate*
     if (currentWorldType == MainWorld) {
         static v8::Persistent<v8::ObjectTemplate> V8DOMWindowShadowObjectCacheForMainWorld;
         if (V8DOMWindowShadowObjectCacheForMainWorld.IsEmpty()) {
-            V8DOMWindowShadowObjectCacheForMainWorld.Reset(isolate, v8::ObjectTemplate::New());
-            ConfigureShadowObjectTemplate(V8DOMWindowShadowObjectCacheForMainWorld, isolate, currentWorldType);
+            v8::Handle<v8::ObjectTemplate> templ = v8::ObjectTemplate::New();
+            ConfigureShadowObjectTemplate(templ, isolate, currentWorldType);
+            V8DOMWindowShadowObjectCacheForMainWorld.Reset(isolate, templ);
+            return templ;
         }
         return v8::Local<v8::ObjectTemplate>::New(isolate, V8DOMWindowShadowObjectCacheForMainWorld);
     } else {
         static v8::Persistent<v8::ObjectTemplate> V8DOMWindowShadowObjectCacheForNonMainWorld;
         if (V8DOMWindowShadowObjectCacheForNonMainWorld.IsEmpty()) {
-            V8DOMWindowShadowObjectCacheForNonMainWorld.Reset(isolate, v8::ObjectTemplate::New());
-            ConfigureShadowObjectTemplate(V8DOMWindowShadowObjectCacheForNonMainWorld, isolate, currentWorldType);
+            v8::Handle<v8::ObjectTemplate> templ = v8::ObjectTemplate::New();
+            ConfigureShadowObjectTemplate(templ, isolate, currentWorldType);
+            V8DOMWindowShadowObjectCacheForNonMainWorld.Reset(isolate, templ);
+            return templ;
         }
         return v8::Local<v8::ObjectTemplate>::New(isolate, V8DOMWindowShadowObjectCacheForNonMainWorld);
     }
