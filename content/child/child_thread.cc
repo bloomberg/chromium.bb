@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/child_thread.h"
+#include "content/child/child_thread.h"
 
 #include "base/allocator/allocator_extension.h"
 #include "base/command_line.h"
@@ -12,15 +12,15 @@
 #include "base/string_util.h"
 #include "base/tracked_objects.h"
 #include "components/tracing/child_trace_message_filter.h"
-#include "content/common/child_histogram_message_filter.h"
-#include "content/common/child_process.h"
+#include "content/child/child_histogram_message_filter.h"
+#include "content/child/child_process.h"
+#include "content/child/child_resource_message_filter.h"
+#include "content/child/fileapi/file_system_dispatcher.h"
+#include "content/child/quota_dispatcher.h"
+#include "content/child/resource_dispatcher.h"
+#include "content/child/socket_stream_dispatcher.h"
+#include "content/child/thread_safe_sender.h"
 #include "content/common/child_process_messages.h"
-#include "content/common/child_resource_message_filter.h"
-#include "content/common/fileapi/file_system_dispatcher.h"
-#include "content/common/quota_dispatcher.h"
-#include "content/common/resource_dispatcher.h"
-#include "content/common/socket_stream_dispatcher.h"
-#include "content/common/thread_safe_sender.h"
 #include "content/public/common/content_switches.h"
 #include "ipc/ipc_logging.h"
 #include "ipc/ipc_switches.h"

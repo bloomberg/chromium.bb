@@ -10,7 +10,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "content/common/child_thread.h"
+#include "content/child/child_thread.h"
 #include "content/common/content_export.h"
 #include "content/public/utility/utility_thread.h"
 

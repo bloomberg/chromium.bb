@@ -8,7 +8,7 @@
 #include "base/logging.h"
 #include "base/message_loop_proxy.h"
 #include "build/build_config.h"
-#include "content/common/child_process.h"
+#include "content/child/child_process.h"
 #include "content/common/media/audio_messages.h"
 #include "content/renderer/media/audio_message_filter.h"
 #include "content/renderer/render_thread_impl.h"

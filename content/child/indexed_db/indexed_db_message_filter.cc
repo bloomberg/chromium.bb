@@ -8,8 +8,8 @@
 #include "base/location.h"
 #include "base/message_loop_proxy.h"
 #include "base/pickle.h"
+#include "content/child/child_thread.h"
 #include "content/child/indexed_db/indexed_db_dispatcher.h"
-#include "content/common/child_thread.h"
 #include "content/common/indexed_db/indexed_db_messages.h"
 #include "webkit/glue/worker_task_runner.h"
 

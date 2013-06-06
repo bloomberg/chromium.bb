@@ -13,15 +13,14 @@
 #include "base/metrics/statistics_recorder.h"
 #include "content/browser/browser_main_loop.h"
 #include "content/browser/notification_service_impl.h"
-#include "content/common/child_process.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/main_function_params.h"
 
 #if defined(OS_WIN)
 #include "base/win/metro.h"
 #include "base/win/windows_version.h"
-#include "ui/base/win/scoped_ole_initializer.h"
 #include "ui/base/ime/win/tsf_bridge.h"
+#include "ui/base/win/scoped_ole_initializer.h"
 #endif
 
 bool g_exited_main_message_loop = false;
@@ -45,14 +44,6 @@ class BrowserMainRunnerImpl : public BrowserMainRunner {
       OVERRIDE {
     TRACE_EVENT0("startup", "BrowserMainRunnerImpl::Initialize")
     is_initialized_ = true;
-
-#if !defined(OS_IOS)
-    // ChildProcess:: is a misnomer unless you consider context.  Use
-    // of --wait-for-debugger only makes sense when Chrome itself is a
-    // child process (e.g. when launched by PyAuto).
-    if (parameters.command_line.HasSwitch(switches::kWaitForDebugger))
-      ChildProcess::WaitForDebugger("Browser");
-#endif  // !defined(OS_IOS)
 
 #if defined(OS_WIN)
     if (parameters.command_line.HasSwitch(

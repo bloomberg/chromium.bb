@@ -4,8 +4,8 @@
 
 #include "content/renderer/java/java_bridge_channel.h"
 
+#include "content/child/child_process.h"
 #include "content/child/plugin_messages.h"
-#include "content/common/child_process.h"
 #include "content/common/java_bridge_messages.h"
 
 namespace content {

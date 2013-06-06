@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/message_loop.h"
-#include "content/common/child_process.h"
+#include "content/child/child_process.h"
 #include "content/common/media/video_capture_messages.h"
 #include "content/renderer/media/video_capture_impl.h"
 #include "testing/gmock/include/gmock/gmock.h"

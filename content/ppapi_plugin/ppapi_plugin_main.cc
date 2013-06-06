@@ -8,7 +8,7 @@
 #include "base/message_loop.h"
 #include "base/threading/platform_thread.h"
 #include "build/build_config.h"
-#include "content/common/child_process.h"
+#include "content/child/child_process.h"
 #include "content/common/sandbox_linux.h"
 #include "content/ppapi_plugin/ppapi_thread.h"
 #include "content/public/common/content_client.h"

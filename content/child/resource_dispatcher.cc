@@ -4,7 +4,7 @@
 
 // See http://dev.chromium.org/developers/design-documents/multi-process-resource-loading
 
-#include "content/common/resource_dispatcher.h"
+#include "content/child/resource_dispatcher.h"
 
 #include "base/basictypes.h"
 #include "base/bind.h"

@@ -6,9 +6,9 @@
 
 #include "base/metrics/histogram.h"
 #include "base/time.h"
+#include "content/child/child_process.h"
 #include "content/child/npobject_base.h"
 #include "content/child/plugin_messages.h"
-#include "content/common/child_process.h"
 
 #if defined(OS_POSIX)
 #include "ipc/ipc_channel_posix.h"

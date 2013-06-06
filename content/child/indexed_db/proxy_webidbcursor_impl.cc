@@ -6,8 +6,8 @@
 
 #include <vector>
 
+#include "content/child/child_thread.h"
 #include "content/child/indexed_db/indexed_db_dispatcher.h"
-#include "content/common/child_thread.h"
 #include "content/common/indexed_db/indexed_db_messages.h"
 
 using WebKit::WebData;

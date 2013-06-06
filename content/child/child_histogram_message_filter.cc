@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/child_histogram_message_filter.h"
+#include "content/child/child_histogram_message_filter.h"
 
 #include <ctype.h>
 
@@ -10,9 +10,9 @@
 #include "base/message_loop.h"
 #include "base/metrics/statistics_recorder.h"
 #include "base/pickle.h"
-#include "content/common/child_process.h"
+#include "content/child/child_process.h"
+#include "content/child/child_thread.h"
 #include "content/common/child_process_messages.h"
-#include "content/common/child_thread.h"
 
 namespace content {
 

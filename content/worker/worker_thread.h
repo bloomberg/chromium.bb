@@ -7,7 +7,7 @@
 
 #include <set>
 
-#include "content/common/child_thread.h"
+#include "content/child/child_thread.h"
 
 struct WorkerProcessMsg_CreateWorker_Params;
 

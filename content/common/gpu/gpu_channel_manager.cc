@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "content/common/child_thread.h"
+#include "content/child/child_thread.h"
 #include "content/common/gpu/gpu_channel.h"
 #include "content/common/gpu/gpu_memory_manager.h"
 #include "content/common/gpu/gpu_messages.h"

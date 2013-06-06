@@ -5,7 +5,7 @@
 #ifndef CONTENT_RENDERER_RENDER_PROCESS_H_
 #define CONTENT_RENDERER_RENDER_PROCESS_H_
 
-#include "content/common/child_process.h"
+#include "content/child/child_process.h"
 #include "skia/ext/platform_canvas.h"
 
 class TransportDIB;

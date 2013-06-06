@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop_proxy.h"
-#include "content/common/child_process.h"
+#include "content/child/child_process.h"
 #include "content/common/p2p_messages.h"
 #include "content/renderer/p2p/host_address_request.h"
 #include "content/renderer/p2p/socket_client.h"

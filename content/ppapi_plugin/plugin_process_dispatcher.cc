@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "content/common/child_process.h"
+#include "content/child/child_process.h"
 
 namespace content {
 namespace {

@@ -13,7 +13,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/time.h"
 #include "build/build_config.h"
-#include "content/common/child_thread.h"
+#include "content/child/child_thread.h"
 #include "content/common/gpu/gpu_channel.h"
 #include "content/common/gpu/gpu_channel_manager.h"
 #include "content/common/gpu/gpu_config.h"

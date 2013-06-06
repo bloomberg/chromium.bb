@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/quota_dispatcher.h"
+#include "content/child/quota_dispatcher.h"
 
 #include "base/basictypes.h"
-#include "content/common/child_thread.h"
+#include "content/child/child_thread.h"
 #include "content/common/quota_messages.h"
 #include "googleurl/src/gurl.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebStorageQuotaCallbacks.h"

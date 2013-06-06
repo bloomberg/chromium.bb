@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/child_process.h"
+#include "content/child/child_process.h"
 
 #if defined(OS_POSIX) && !defined(OS_ANDROID)
 #include <signal.h>  // For SigUSR1Handler below.
@@ -14,7 +14,7 @@
 #include "base/string_number_conversions.h"
 #include "base/threading/thread.h"
 #include "base/utf_string_conversions.h"
-#include "content/common/child_thread.h"
+#include "content/child/child_thread.h"
 
 #if defined(OS_ANDROID)
 #include "base/debug/debugger.h"

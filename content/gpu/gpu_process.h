@@ -5,7 +5,7 @@
 #ifndef CONTENT_GPU_GPU_PROCESS_H_
 #define CONTENT_GPU_GPU_PROCESS_H_
 
-#include "content/common/child_process.h"
+#include "content/child/child_process.h"
 
 namespace content {
 

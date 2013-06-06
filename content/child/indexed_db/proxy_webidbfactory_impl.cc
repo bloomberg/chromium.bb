@@ -4,8 +4,8 @@
 
 #include "content/child/indexed_db/proxy_webidbfactory_impl.h"
 
+#include "content/child/child_thread.h"
 #include "content/child/indexed_db/indexed_db_dispatcher.h"
-#include "content/common/child_thread.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 
 using WebKit::WebIDBCallbacks;

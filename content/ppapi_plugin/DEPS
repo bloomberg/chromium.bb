@@ -1,4 +1,5 @@
 include_rules = [
+  "+content/child",
   "+content/public/plugin",
   "+ppapi/c",
   "+ppapi/proxy",

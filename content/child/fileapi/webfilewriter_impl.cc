@@ -5,8 +5,8 @@
 #include "content/child/fileapi/webfilewriter_impl.h"
 
 #include "base/bind.h"
-#include "content/common/child_thread.h"
-#include "content/common/fileapi/file_system_dispatcher.h"
+#include "content/child/child_thread.h"
+#include "content/child/fileapi/file_system_dispatcher.h"
 
 namespace content {
 

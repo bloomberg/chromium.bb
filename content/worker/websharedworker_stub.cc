@@ -5,16 +5,16 @@
 #include "content/worker/websharedworker_stub.h"
 
 #include "base/compiler_specific.h"
-#include "content/common/child_process.h"
-#include "content/common/child_thread.h"
-#include "content/common/fileapi/file_system_dispatcher.h"
-#include "content/common/webmessageportchannel_impl.h"
+#include "content/child/child_process.h"
+#include "content/child/child_thread.h"
+#include "content/child/fileapi/file_system_dispatcher.h"
+#include "content/child/webmessageportchannel_impl.h"
 #include "content/common/worker_messages.h"
 #include "content/worker/shared_worker_devtools_agent.h"
 #include "content/worker/worker_thread.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebSharedWorker.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebSharedWorker.h"
 
 namespace content {
 

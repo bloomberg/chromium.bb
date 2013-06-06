@@ -8,7 +8,7 @@
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/string_util.h"
-#include "content/common/child_process.h"
+#include "content/child/child_process.h"
 #include "content/renderer/media/audio_device_factory.h"
 #include "content/renderer/media/webrtc_audio_capturer_sink_owner.h"
 #include "content/renderer/media/webrtc_audio_device_impl.h"

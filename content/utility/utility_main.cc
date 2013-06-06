@@ -7,7 +7,7 @@
 #include "base/message_loop.h"
 #include "base/power_monitor/power_monitor.h"
 #include "base/threading/platform_thread.h"
-#include "content/common/child_process.h"
+#include "content/child/child_process.h"
 #include "content/common/sandbox_linux.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/main_function_params.h"

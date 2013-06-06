@@ -14,7 +14,7 @@
 #include "base/process.h"
 #include "base/scoped_native_library.h"
 #include "build/build_config.h"
-#include "content/common/child_thread.h"
+#include "content/child/child_thread.h"
 #include "ipc/ipc_listener.h"
 #include "ppapi/c/pp_module.h"
 #include "ppapi/c/trusted/ppp_broker.h"

@@ -8,7 +8,7 @@
 #include <GLES2/gl2ext.h>
 
 #include "base/bind.h"
-#include "content/common/child_thread.h"
+#include "content/child/child_thread.h"
 #include "content/common/gpu/client/gpu_channel_host.h"
 #include "content/common/gpu/client/webgraphicscontext3d_command_buffer_impl.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"

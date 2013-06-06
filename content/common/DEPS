@@ -1,6 +1,5 @@
 include_rules = [
   "+cc",
-  "+components/tracing",
   "+media/audio",
   "+media/base",
   "-webkit/browser",

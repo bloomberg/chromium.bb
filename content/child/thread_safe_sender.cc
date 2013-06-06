@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/thread_safe_sender.h"
+#include "content/child/thread_safe_sender.h"
 
 #include "base/message_loop_proxy.h"
-#include "content/common/child_thread.h"
+#include "content/child/child_thread.h"
 #include "ipc/ipc_sync_message_filter.h"
 
 namespace content {

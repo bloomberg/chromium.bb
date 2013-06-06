@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/webmessageportchannel_impl.h"
+#include "content/child/webmessageportchannel_impl.h"
 
 #include "base/bind.h"
-#include "content/common/child_process.h"
-#include "content/common/child_thread.h"
+#include "content/child/child_process.h"
+#include "content/child/child_thread.h"
 #include "content/common/worker_messages.h"
 #include "third_party/WebKit/public/platform/WebMessagePortChannelClient.h"
 #include "third_party/WebKit/public/platform/WebString.h"

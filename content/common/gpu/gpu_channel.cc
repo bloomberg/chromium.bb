@@ -19,7 +19,6 @@
 #include "base/rand_util.h"
 #include "base/string_util.h"
 #include "base/timer.h"
-#include "content/common/child_process.h"
 #include "content/common/gpu/gpu_channel_manager.h"
 #include "content/common/gpu/gpu_messages.h"
 #include "content/common/gpu/sync_point_manager.h"

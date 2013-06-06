@@ -5,10 +5,10 @@
 #include "content/child/fileapi/webfilesystem_impl.h"
 
 #include "base/bind.h"
+#include "content/child/child_thread.h"
+#include "content/child/fileapi/file_system_dispatcher.h"
 #include "content/child/fileapi/webfilesystem_callback_adapters.h"
 #include "content/child/fileapi/webfilewriter_impl.h"
-#include "content/common/child_thread.h"
-#include "content/common/fileapi/file_system_dispatcher.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFileSystemCallbacks.h"
 #include "third_party/WebKit/public/platform/WebFileInfo.h"
 #include "third_party/WebKit/public/platform/WebString.h"

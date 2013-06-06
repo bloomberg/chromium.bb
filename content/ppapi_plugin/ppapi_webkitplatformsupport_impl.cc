@@ -6,12 +6,12 @@
 
 #include <map>
 
-#include "base/synchronization/lock.h"
 #include "base/logging.h"
 #include "base/string16.h"
+#include "base/synchronization/lock.h"
 #include "build/build_config.h"
+#include "content/child/child_thread.h"
 #include "content/common/child_process_messages.h"
-#include "content/common/child_thread.h"
 #include "ppapi/proxy/plugin_globals.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 

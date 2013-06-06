@@ -18,7 +18,7 @@
 #include "base/message_loop.h"
 #include "base/sys_info.h"
 #include "base/utf_string_conversions.h"
-#include "content/common/child_thread.h"
+#include "content/child/child_thread.h"
 #include "content/common/view_messages.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/renderer/content_renderer_client.h"

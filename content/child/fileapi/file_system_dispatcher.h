@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_COMMON_FILEAPI_FILE_SYSTEM_DISPATCHER_H_
-#define CONTENT_COMMON_FILEAPI_FILE_SYSTEM_DISPATCHER_H_
+#ifndef CONTENT_CHILD_FILEAPI_FILE_SYSTEM_DISPATCHER_H_
+#define CONTENT_CHILD_FILEAPI_FILE_SYSTEM_DISPATCHER_H_
 
 #include <string>
 #include <vector>
@@ -155,4 +155,4 @@ class FileSystemDispatcher : public IPC::Listener {
 
 }  // namespace content
 
-#endif  // CONTENT_COMMON_FILEAPI_FILE_SYSTEM_DISPATCHER_H_
+#endif  // CONTENT_CHILD_FILEAPI_FILE_SYSTEM_DISPATCHER_H_

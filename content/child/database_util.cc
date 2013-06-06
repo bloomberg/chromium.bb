@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/database_util.h"
+#include "content/child/database_util.h"
 
-#include "content/common/child_thread.h"
+#include "content/child/child_thread.h"
 #include "content/common/database_messages.h"
 #include "ipc/ipc_sync_message_filter.h"
 #include "third_party/WebKit/public/platform/WebString.h"

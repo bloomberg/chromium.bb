@@ -11,7 +11,7 @@
 #include "base/command_line.h"
 #include "base/threading/worker_pool.h"
 #include "build/build_config.h"
-#include "content/common/child_process.h"
+#include "content/child/child_process.h"
 #include "content/common/gpu/gpu_messages.h"
 #include "content/gpu/gpu_watchdog_thread.h"
 #include "content/public/common/content_client.h"

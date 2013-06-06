@@ -5,7 +5,7 @@
 #ifndef CONTENT_BROWSER_IN_PROCESS_WEBKIT_BROWSER_WEBKITPLATFORMSUPPORT_IMPL_H_
 #define CONTENT_BROWSER_IN_PROCESS_WEBKIT_BROWSER_WEBKITPLATFORMSUPPORT_IMPL_H_
 
-#include "content/common/webkitplatformsupport_impl.h"
+#include "content/child/webkitplatformsupport_impl.h"
 #include "webkit/glue/webfileutilities_impl.h"
 
 namespace content {

@@ -3,9 +3,10 @@
 // found in the LICENSE file.
 
 #include "content/renderer/websharedworker_proxy.h"
-#include "content/common/child_thread.h"
+
+#include "content/child/child_thread.h"
+#include "content/child/webmessageportchannel_impl.h"
 #include "content/common/view_messages.h"
-#include "content/common/webmessageportchannel_impl.h"
 #include "content/common/worker_messages.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSharedWorkerClient.h"

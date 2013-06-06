@@ -4,8 +4,8 @@
 
 // See http://dev.chromium.org/developers/design-documents/multi-process-resource-loading
 
-#ifndef CONTENT_COMMON_RESOURCE_DISPATCHER_H_
-#define CONTENT_COMMON_RESOURCE_DISPATCHER_H_
+#ifndef CONTENT_CHILD_RESOURCE_DISPATCHER_H_
+#define CONTENT_CHILD_RESOURCE_DISPATCHER_H_
 
 #include <deque>
 #include <string>
@@ -198,4 +198,4 @@ class CONTENT_EXPORT ResourceDispatcher : public IPC::Listener {
 
 }  // namespace content
 
-#endif  // CONTENT_COMMON_RESOURCE_DISPATCHER_H_
+#endif  // CONTENT_CHILD_RESOURCE_DISPATCHER_H_

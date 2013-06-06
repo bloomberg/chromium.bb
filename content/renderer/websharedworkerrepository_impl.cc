@@ -1,10 +1,10 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.  Use of this
-// source code is governed by a BSD-style license that can be found in the
-// LICENSE file.
+// Copyright 2009 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
 #include "content/renderer/websharedworkerrepository_impl.h"
 
-#include "content/common/child_thread.h"
+#include "content/child/child_thread.h"
 #include "content/common/view_messages.h"
 #include "content/renderer/websharedworker_proxy.h"
 

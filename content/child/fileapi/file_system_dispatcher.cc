@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/fileapi/file_system_dispatcher.h"
+#include "content/child/fileapi/file_system_dispatcher.h"
 
 #include "base/callback.h"
 #include "base/file_util.h"
 #include "base/process.h"
-#include "content/common/child_thread.h"
+#include "content/child/child_thread.h"
 #include "content/common/fileapi/file_system_messages.h"
 
 namespace content {

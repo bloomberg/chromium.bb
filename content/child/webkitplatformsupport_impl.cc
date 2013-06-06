@@ -3,9 +3,9 @@
 // found in the LICENSE file.
 
 #include "base/command_line.h"
-#include "content/common/child_thread.h"
-#include "content/common/socket_stream_dispatcher.h"
-#include "content/common/webkitplatformsupport_impl.h"
+#include "content/child/child_thread.h"
+#include "content/child/socket_stream_dispatcher.h"
+#include "content/child/webkitplatformsupport_impl.h"
 #include "content/public/common/content_client.h"
 #include "googleurl/src/gurl.h"
 

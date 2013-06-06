@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/socket_stream_dispatcher.h"
+#include "content/child/socket_stream_dispatcher.h"
 
 #include <vector>
 
@@ -13,7 +13,7 @@
 #include "base/message_loop.h"
 #include "base/string16.h"
 #include "base/utf_string_conversions.h"
-#include "content/common/child_thread.h"
+#include "content/child/child_thread.h"
 #include "content/common/socket_stream.h"
 #include "content/common/socket_stream_handle_data.h"
 #include "content/common/socket_stream_messages.h"

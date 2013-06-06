@@ -7,7 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
-#include "content/common/webkitplatformsupport_impl.h"
+#include "content/child/webkitplatformsupport_impl.h"
 
 namespace content {
 

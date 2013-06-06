@@ -22,6 +22,7 @@
 #include "base/string_util.h"
 #include "base/threading/platform_thread.h"
 #include "base/time.h"
+#include "content/child/child_process.h"
 #include "content/common/pepper_plugin_registry.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/main_function_params.h"

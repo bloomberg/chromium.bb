@@ -15,6 +15,7 @@
 #include "base/stringprintf.h"
 #include "base/threading/platform_thread.h"
 #include "build/build_config.h"
+#include "content/child/child_process.h"
 #include "content/common/gpu/gpu_config.h"
 #include "content/common/sandbox_linux.h"
 #include "content/gpu/gpu_child_thread.h"

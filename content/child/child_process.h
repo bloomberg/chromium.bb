@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_COMMON_CHILD_PROCESS_H_
-#define CONTENT_COMMON_CHILD_PROCESS_H_
+#ifndef CONTENT_CHILD_CHILD_PROCESS_H_
+#define CONTENT_CHILD_CHILD_PROCESS_H_
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/threading/thread.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/threading/thread.h"
 #include "content/common/content_export.h"
 
 namespace content {
@@ -76,4 +76,4 @@ class CONTENT_EXPORT ChildProcess {
 
 }  // namespace content
 
-#endif  // CONTENT_COMMON_CHILD_PROCESS_H_
+#endif  // CONTENT_CHILD_CHILD_PROCESS_H_

@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/child_resource_message_filter.h"
+#include "content/child/child_resource_message_filter.h"
 
 #include "base/thread_task_runner_handle.h"
-#include "content/common/resource_dispatcher.h"
+#include "content/child/resource_dispatcher.h"
 #include "content/common/resource_messages.h"
 
 namespace content {

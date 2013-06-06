@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "base/stl_util.h"
-#include "content/common/child_process.h"
+#include "content/child/child_process.h"
 #include "content/common/media/video_capture_messages.h"
 #include "media/base/limits.h"
 
