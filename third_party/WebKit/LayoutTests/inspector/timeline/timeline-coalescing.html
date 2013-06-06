@@ -36,16 +36,28 @@ function test()
             ]},
         ]},
 
-        // Assure we only coalesce timestamp records with similar message.
+        // Assure we only coalesce timestamp records with the same message.
         {"startTime":3100.000,"data":{},"endTime":3199.999,"type":"Program","children":[
-            {"startTime":3100.001, "endTime":3199.9,"type":"TimeStamp","frameId":"2","data":{  message: "foo" }}
+            {"startTime":3100.001, "endTime":3199.9,"type":"TimeStamp","frameId":"2","data":{ message: "foo" }}
         ]},
         {"startTime":3200.000,"data":{},"endTime":3299.999,"type":"Program","children":[
             {"startTime":3200.001, "endTime":3299.9,"type":"TimeStamp","frameId":"2","data":{ message: "foo" }}
         ]},
         {"startTime":3300.000,"data":{},"endTime":3399.999,"type":"Program","children":[
-            {"startTime":3300.001, "endTime":3399.9,"type":"TimeStamp","frameId":"2","data":{  message: "bar" }}
+            {"startTime":3300.001, "endTime":3399.9,"type":"TimeStamp","frameId":"2","data":{ message: "bar" }}
+        ]},
+
+        // Assure we only coalesce event records with the same type.
+        {"startTime":4100.000,"data":{},"endTime":4199.999,"type":"Program","children":[
+            {"startTime":4100.001, "endTime":4199.9,"type":"EventDispatch","frameId":"2","data":{ type: "mouseover" }}
+        ]},
+        {"startTime":4200.000,"data":{},"endTime":4299.999,"type":"Program","children":[
+            {"startTime":4200.001, "endTime":4299.9,"type":"EventDispatch","frameId":"2","data":{ type: "mouseover" }}
+        ]},
+        {"startTime":4300.000,"data":{},"endTime":4399.999,"type":"Program","children":[
+            {"startTime":4300.001, "endTime":4399.9,"type":"EventDispatch","frameId":"2","data":{ type: "keydown" }}
         ]}
+
     ];
 
     InspectorTest.loadTimelineRecords(records);
