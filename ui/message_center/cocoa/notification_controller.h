@@ -72,6 +72,9 @@ MESSAGE_CENTER_EXPORT
 // been deleted.
 - (const std::string&)notificationID;
 
+// Called when the user clicks within the notification view.
+- (void)notificationClicked;
+
 @end
 
 #endif  // UI_MESSAGE_CENTER_COCOA_NOTIFICATION_CONTROLLER_H_

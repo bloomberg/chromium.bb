@@ -89,6 +89,32 @@
 }
 @end
 
+@interface MCNotificationView : NSBox {
+ @private
+  MCNotificationController* controller_;
+}
+
+- (id)initWithController:(MCNotificationController*)controller
+                   frame:(NSRect)frame;
+@end
+
+@implementation MCNotificationView
+- (id)initWithController:(MCNotificationController*)controller
+                   frame:(NSRect)frame {
+  if ((self = [super initWithFrame:frame]))
+    controller_ = controller;
+  return self;
+}
+
+- (void)mouseDown:(NSEvent*)event {
+  if ([event type] != NSLeftMouseDown) {
+    [super mouseDown:event];
+    return;
+  }
+  [controller_ notificationClicked];
+}
+@end
+
 @interface MCNotificationController (Private)
 // Returns a string with item's title in title color and item's message in
 // message color.
@@ -146,7 +172,9 @@
   NSRect rootFrame = NSMakeRect(0, 0,
       message_center::kNotificationPreferredImageSize,
       message_center::kNotificationIconSize);
-  scoped_nsobject<NSBox> rootView([[NSBox alloc] initWithFrame:rootFrame]);
+  scoped_nsobject<MCNotificationView> rootView(
+      [[MCNotificationView alloc] initWithController:self
+                                               frame:rootFrame]);
   [self configureCustomBox:rootView];
   [rootView setFillColor:gfx::SkColorToCalibratedNSColor(
       message_center::kNotificationBackgroundColor)];
@@ -354,6 +382,10 @@
 
 - (const std::string&)notificationID {
   return notificationID_;
+}
+
+- (void)notificationClicked {
+  messageCenter_->ClickOnNotification([self notificationID]);
 }
 
 // Private /////////////////////////////////////////////////////////////////////
