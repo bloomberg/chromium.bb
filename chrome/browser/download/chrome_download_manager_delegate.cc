@@ -426,7 +426,7 @@ void ChromeDownloadManagerDelegate::ReserveVirtualPath(
   }
 #endif
   DownloadPathReservationTracker::GetReservedPath(
-      *download, virtual_path, download_prefs_->DownloadPath(),
+      download, virtual_path, download_prefs_->DownloadPath(),
       create_directory, conflict_action, callback);
 }
 

@@ -18,16 +18,15 @@
 #include "chrome/browser/download/download_util.h"
 #include "chrome/common/chrome_paths.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/download_id.h"
 #include "content/public/browser/download_item.h"
 
 using content::BrowserThread;
-using content::DownloadId;
 using content::DownloadItem;
 
 namespace {
 
-typedef std::map<content::DownloadId, base::FilePath> ReservationMap;
+typedef DownloadItem* ReservationKey;
+typedef std::map<ReservationKey, base::FilePath> ReservationMap;
 
 // The lower bound for file name truncation. If the truncation results in a name
 // shorter than this limit, we give up automatic truncation and prompt the user.
@@ -40,12 +39,12 @@ static const size_t kTruncatedNameLengthLowerbound = 5;
 static const size_t kIntermediateNameSuffixLength = sizeof(".crdownload") - 1;
 
 // Map of download path reservations. Each reserved path is associated with a
-// DownloadId. This object is destroyed in |Revoke()| when there are no more
-// reservations.
+// ReservationKey=DownloadItem*. This object is destroyed in |Revoke()| when
+// there are no more reservations.
 //
-// It is not an error, although undesirable, to have multiple DownloadIds that
-// are mapped to the same path. This can happen if a reservation is created that
-// is supposed to overwrite an existing reservation.
+// It is not an error, although undesirable, to have multiple DownloadItem*s
+// that are mapped to the same path. This can happen if a reservation is created
+// that is supposed to overwrite an existing reservation.
 ReservationMap* g_reservation_map = NULL;
 
 // Observes a DownloadItem for changes to its target path and state. Updates or
@@ -53,7 +52,7 @@ ReservationMap* g_reservation_map = NULL;
 // and destroyed on the UI thread.
 class DownloadItemObserver : public DownloadItem::Observer {
  public:
-  explicit DownloadItemObserver(DownloadItem& download_item);
+  explicit DownloadItemObserver(DownloadItem* download_item);
 
  private:
   virtual ~DownloadItemObserver();
@@ -62,7 +61,7 @@ class DownloadItemObserver : public DownloadItem::Observer {
   virtual void OnDownloadUpdated(DownloadItem* download) OVERRIDE;
   virtual void OnDownloadDestroyed(DownloadItem* download) OVERRIDE;
 
-  DownloadItem& download_item_;
+  DownloadItem* download_item_;
 
   // Last known target path for the download.
   base::FilePath last_target_path_;
@@ -152,14 +151,13 @@ bool TruncateFileName(base::FilePath* path, size_t limit) {
 // - Schedules |callback| on the UI thread with the reserved path and a flag
 //   indicating whether the returned path has been successfully verified.
 void CreateReservation(
-    DownloadId download_id,
+    ReservationKey key,
     const base::FilePath& suggested_path,
     const base::FilePath& default_download_path,
     bool create_directory,
     DownloadPathReservationTracker::FilenameConflictAction conflict_action,
     const DownloadPathReservationTracker::ReservedPathCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  DCHECK(download_id.IsValid());
   DCHECK(suggested_path.IsAbsolute());
 
   // Create a reservation map if one doesn't exist. It will be automatically
@@ -168,7 +166,7 @@ void CreateReservation(
     g_reservation_map = new ReservationMap;
 
   ReservationMap& reservations = *g_reservation_map;
-  DCHECK(!ContainsKey(reservations, download_id));
+  DCHECK(!ContainsKey(reservations, key));
 
   base::FilePath target_path(suggested_path.NormalizePathSeparators());
   base::FilePath target_dir = target_path.DirName();
@@ -244,18 +242,18 @@ void CreateReservation(
     }
   }
 
-  reservations[download_id] = target_path;
+  reservations[key] = target_path;
   bool verified = (is_path_writeable && !has_conflicts && !name_too_long);
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
                           base::Bind(callback, target_path, verified));
 }
 
 // Called on the FILE thread to update the path of the reservation associated
-// with |download_id| to |new_path|.
-void UpdateReservation(DownloadId download_id, const base::FilePath& new_path) {
+// with |key| to |new_path|.
+void UpdateReservation(ReservationKey key, const base::FilePath& new_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   DCHECK(g_reservation_map != NULL);
-  ReservationMap::iterator iter = g_reservation_map->find(download_id);
+  ReservationMap::iterator iter = g_reservation_map->find(key);
   if (iter != g_reservation_map->end()) {
     iter->second = new_path;
   } else {
@@ -267,12 +265,12 @@ void UpdateReservation(DownloadId download_id, const base::FilePath& new_path) {
 }
 
 // Called on the FILE thread to remove the path reservation associated with
-// |download_id|.
-void RevokeReservation(DownloadId download_id) {
+// |key|.
+void RevokeReservation(ReservationKey key) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   DCHECK(g_reservation_map != NULL);
-  DCHECK(ContainsKey(*g_reservation_map, download_id));
-  g_reservation_map->erase(download_id);
+  DCHECK(ContainsKey(*g_reservation_map, key));
+  g_reservation_map->erase(key);
   if (g_reservation_map->size() == 0) {
     // No more reservations. Delete map.
     delete g_reservation_map;
@@ -280,15 +278,15 @@ void RevokeReservation(DownloadId download_id) {
   }
 }
 
-DownloadItemObserver::DownloadItemObserver(DownloadItem& download_item)
+DownloadItemObserver::DownloadItemObserver(DownloadItem* download_item)
     : download_item_(download_item),
-      last_target_path_(download_item.GetTargetFilePath()) {
+      last_target_path_(download_item->GetTargetFilePath()) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  download_item_.AddObserver(this);
+  download_item_->AddObserver(this);
 }
 
 DownloadItemObserver::~DownloadItemObserver() {
-  download_item_.RemoveObserver(this);
+  download_item_->RemoveObserver(this);
 }
 
 void DownloadItemObserver::OnDownloadUpdated(DownloadItem* download) {
@@ -297,10 +295,8 @@ void DownloadItemObserver::OnDownloadUpdated(DownloadItem* download) {
       // Update the reservation.
       base::FilePath new_target_path = download->GetTargetFilePath();
       if (new_target_path != last_target_path_) {
-        BrowserThread::PostTask(
-            BrowserThread::FILE, FROM_HERE,
-            base::Bind(&UpdateReservation, download->GetGlobalId(),
-                       new_target_path));
+        BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE, base::Bind(
+            &UpdateReservation, download, new_target_path));
         last_target_path_ = new_target_path;
       }
       break;
@@ -319,9 +315,8 @@ void DownloadItemObserver::OnDownloadUpdated(DownloadItem* download) {
       // restarted. Holding on to the reservation now would prevent the name
       // from being used for a subsequent retry attempt.
 
-      BrowserThread::PostTask(
-          BrowserThread::FILE, FROM_HERE,
-          base::Bind(&RevokeReservation, download->GetGlobalId()));
+      BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE, base::Bind(
+          &RevokeReservation, download));
       delete this;
       break;
 
@@ -332,10 +327,10 @@ void DownloadItemObserver::OnDownloadUpdated(DownloadItem* download) {
 }
 
 void DownloadItemObserver::OnDownloadDestroyed(DownloadItem* download) {
-  // This shouldn't happen. We should catch either COMPLETE, CANCELLED, or
-  // INTERRUPTED first.
-  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-      base::Bind(&RevokeReservation, download->GetGlobalId()));
+  // Items should be COMPLETE/INTERRUPTED/CANCELLED before being destroyed.
+  NOTREACHED();
+  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE, base::Bind(
+      &RevokeReservation, download));
   delete this;
 }
 
@@ -343,7 +338,7 @@ void DownloadItemObserver::OnDownloadDestroyed(DownloadItem* download) {
 
 // static
 void DownloadPathReservationTracker::GetReservedPath(
-    DownloadItem& download_item,
+    DownloadItem* download_item,
     const base::FilePath& target_path,
     const base::FilePath& default_path,
     bool create_directory,
@@ -357,7 +352,7 @@ void DownloadPathReservationTracker::GetReservedPath(
 
   BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE, base::Bind(
       &CreateReservation,
-      download_item.GetGlobalId(),
+      download_item,
       target_path,
       default_path,
       create_directory,

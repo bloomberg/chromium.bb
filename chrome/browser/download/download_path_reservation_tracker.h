@@ -85,7 +85,7 @@ class DownloadPathReservationTracker {
   // considers 'foo/bar/x.pdf' and 'foo/baz/x.pdf' to be two different paths,
   // even though 'bar' might be a symlink to 'baz'.
   static void GetReservedPath(
-      content::DownloadItem& download_item,
+      content::DownloadItem* download_item,
       const base::FilePath& requested_target_path,
       const base::FilePath& default_download_path,
       bool create_directory,
