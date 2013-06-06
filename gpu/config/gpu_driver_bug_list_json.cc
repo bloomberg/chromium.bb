@@ -356,6 +356,25 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
       "features": [
         "disable_oes_standard_derivatives"
       ]
+    },
+    {
+      "id": 24,
+      "cr_bugs": [231082],
+      "description": "Mali-400 drivers throw an error when a buffer object's size is set to 0.",
+      "os": {
+        "type": "android"
+      },
+      "gl_vendor": {
+        "op": "beginwith",
+        "value": "ARM"
+      },
+      "gl_renderer": {
+        "op": "contains",
+        "value": "Mali-400"
+      },
+      "features": [
+        "use_non_zero_size_for_client_side_stream_buffers"
+      ]
     }
   ]
 }

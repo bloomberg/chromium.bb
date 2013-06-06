@@ -240,6 +240,11 @@ bool BufferManager::IsUsageClientSideArray(GLenum usage) {
   return usage == GL_STREAM_DRAW && use_client_side_arrays_for_stream_buffers_;
 }
 
+bool BufferManager::UseNonZeroSizeForClientSideArrayBuffer() {
+  return feature_info_ && feature_info_->workarounds(
+              ).use_non_zero_size_for_client_side_stream_buffers;
+}
+
 void BufferManager::SetInfo(
     Buffer* buffer, GLsizeiptr size, GLenum usage, const GLvoid* data) {
   DCHECK(buffer);
@@ -268,7 +273,8 @@ void BufferManager::DoBufferData(
 
   ERRORSTATE_COPY_REAL_GL_ERRORS_TO_WRAPPER(error_state, "glBufferData");
   if (IsUsageClientSideArray(usage)) {
-    glBufferData(buffer->target(), 0, NULL, usage);
+    GLsizei empty_size = UseNonZeroSizeForClientSideArrayBuffer() ? 1 : 0;
+    glBufferData(buffer->target(), empty_size, NULL, usage);
   } else {
     glBufferData(buffer->target(), size, data, usage);
   }
