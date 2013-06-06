@@ -60,7 +60,7 @@ class DiskCacheEntryTest : public DiskCacheTestWithCache {
   void UpdateSparseEntry();
   void DoomSparseEntry();
   void PartialSparseEntry();
-  void SimpleCacheMakeBadChecksumEntry(const char* key);
+  bool SimpleCacheMakeBadChecksumEntry(const char* key, int* data_size);
 };
 
 // This part of the test runs on the background thread.
@@ -2412,38 +2412,42 @@ TEST_F(DiskCacheEntryTest, SimpleCacheDoomedEntry) {
   DoomedEntry();
 }
 
-void DiskCacheEntryTest::SimpleCacheMakeBadChecksumEntry(const char* key) {
+// Creates an entry with corrupted last byte in stream 0.
+// Requires SimpleCacheMode.
+bool DiskCacheEntryTest::SimpleCacheMakeBadChecksumEntry(const char* key,
+                                                         int* data_size) {
   disk_cache::Entry* entry = NULL;
 
-  ASSERT_EQ(net::OK, CreateEntry(key, &entry));
-  disk_cache::Entry* null = NULL;
-  EXPECT_NE(null, entry);
+  if (CreateEntry(key, &entry) != net::OK || !entry) {
+    LOG(ERROR) << "Could not create entry";
+    return false;
+  }
 
-  const std::string data = "this is very good data";
-  scoped_refptr<net::IOBuffer> buffer(new net::IOBuffer(data.size()));
-  std::copy(data.begin(), data.end(), buffer->data());
+  const char data[] = "this is very good data";
+  const int kDataSize = arraysize(data);
+  scoped_refptr<net::IOBuffer> buffer(new net::IOBuffer(kDataSize));
+  base::strlcpy(buffer->data(), data, kDataSize);
 
-  ASSERT_EQ(implicit_cast<int>(data.size()),
-            WriteData(entry, 0, 0, buffer.get(), data.size(), false));
+  EXPECT_EQ(kDataSize, WriteData(entry, 0, 0, buffer.get(), kDataSize, false));
   entry->Close();
   entry = NULL;
 
-  // Corrupt the data.
+  // Corrupt the last byte of the data.
   base::FilePath entry_file0_path = cache_path_.AppendASCII(
       disk_cache::simple_util::GetFilenameFromKeyAndIndex(key, 0));
   int flags = base::PLATFORM_FILE_WRITE | base::PLATFORM_FILE_OPEN;
   base::PlatformFile entry_file0 =
       base::CreatePlatformFile(entry_file0_path, flags, NULL, NULL);
-  ASSERT_NE(base::kInvalidPlatformFileValue, entry_file0);
-
-  const std::string bad_data = "HAHAHA";
-  EXPECT_LE(bad_data.size(), data.size());
+  if (entry_file0 == base::kInvalidPlatformFileValue)
+    return false;
   int64 file_offset =
-      disk_cache::simple_util::GetFileOffsetFromKeyAndDataOffset(key, 0);
-  ASSERT_EQ(implicit_cast<int>(bad_data.size()),
-            base::WritePlatformFile(entry_file0, file_offset,
-                                    bad_data.data(), bad_data.size()));
-  EXPECT_TRUE(base::ClosePlatformFile(entry_file0));
+      disk_cache::simple_util::GetFileOffsetFromKeyAndDataOffset(
+          key, kDataSize - 2);
+  EXPECT_EQ(1, base::WritePlatformFile(entry_file0, file_offset, "X", 1));
+  if (!base::ClosePlatformFile(entry_file0))
+    return false;
+  *data_size = kDataSize;
+  return true;
 }
 
 // Tests that the simple cache can detect entries that have bad data.
@@ -2452,7 +2456,8 @@ TEST_F(DiskCacheEntryTest, SimpleCacheBadChecksum) {
   InitCache();
 
   const char key[] = "the first key";
-  SimpleCacheMakeBadChecksumEntry(key);
+  int size_unused;
+  ASSERT_TRUE(SimpleCacheMakeBadChecksumEntry(key, &size_unused));
 
   disk_cache::Entry* entry = NULL;
 
@@ -2474,7 +2479,8 @@ TEST_F(DiskCacheEntryTest, SimpleCacheErrorThenDoom) {
   InitCache();
 
   const char key[] = "the first key";
-  SimpleCacheMakeBadChecksumEntry(key);
+  int size_unused;
+  ASSERT_TRUE(SimpleCacheMakeBadChecksumEntry(key, &size_unused));
 
   disk_cache::Entry* entry = NULL;
 
@@ -3124,6 +3130,72 @@ TEST_F(DiskCacheEntryTest, SimpleCacheOpenCreateRaceWithNoIndex) {
   ASSERT_EQ(net::OK, cb2.GetResult(rv2));
   EXPECT_EQ(net::ERR_FAILED, cb1.GetResult(rv1));
   entry2->Close();
+}
+
+// Checks that reading two entries simultaneously does not discard a CRC check.
+// TODO(pasko): make it work with Simple Cache.
+TEST_F(DiskCacheEntryTest, DISABLED_SimpleCacheMultipleReadersCheckCRC) {
+  SetSimpleCacheMode();
+  InitCache();
+
+  const char key[] = "key";
+
+  int size;
+  ASSERT_TRUE(SimpleCacheMakeBadChecksumEntry(key, &size));
+
+  scoped_refptr<net::IOBuffer> read_buffer1(new net::IOBuffer(size));
+  scoped_refptr<net::IOBuffer> read_buffer2(new net::IOBuffer(size));
+
+  // Advance the first reader a little.
+  disk_cache::Entry* entry = NULL;
+  ASSERT_EQ(net::OK, OpenEntry(key, &entry));
+  EXPECT_EQ(1, ReadData(entry, 0, 0, read_buffer1.get(), 1));
+
+  // Make the second reader pass the point where the first one is, and close.
+  disk_cache::Entry* entry2 = NULL;
+  EXPECT_EQ(net::OK, OpenEntry(key, &entry2));
+  EXPECT_EQ(1, ReadData(entry2, 0, 0, read_buffer2.get(), 1));
+  EXPECT_EQ(1, ReadData(entry2, 0, 1, read_buffer2.get(), 1));
+  entry2->Close();
+
+  // Read the data till the end should produce an error.
+  EXPECT_GT(0, ReadData(entry, 0, 1, read_buffer1.get(), size));
+  entry->Close();
+  DisableIntegrityCheck();
+}
+
+// Checking one more scenario of overlapped reading of a bad entry.
+// Differs from the |SimpleCacheMultipleReadersCheckCRC| only by the order of
+// last two reads.
+TEST_F(DiskCacheEntryTest, SimpleCacheMultipleReadersCheckCRC2) {
+  SetSimpleCacheMode();
+  InitCache();
+
+  const char key[] = "key";
+  int size;
+  ASSERT_TRUE(SimpleCacheMakeBadChecksumEntry(key, &size));
+
+  scoped_refptr<net::IOBuffer> read_buffer1(new net::IOBuffer(size));
+  scoped_refptr<net::IOBuffer> read_buffer2(new net::IOBuffer(size));
+
+  // Advance the first reader a little.
+  disk_cache::Entry* entry = NULL;
+  ASSERT_EQ(net::OK, OpenEntry(key, &entry));
+  EXPECT_EQ(1, ReadData(entry, 0, 0, read_buffer1.get(), 1));
+
+  // Advance the 2nd reader by the same amount.
+  disk_cache::Entry* entry2 = NULL;
+  EXPECT_EQ(net::OK, OpenEntry(key, &entry2));
+  EXPECT_EQ(1, ReadData(entry2, 0, 0, read_buffer2.get(), 1));
+
+  // Continue reading 1st.
+  EXPECT_GT(0, ReadData(entry, 0, 1, read_buffer1.get(), size));
+
+  // This read should fail as well because we have previous read failures.
+  EXPECT_GT(0, ReadData(entry2, 0, 1, read_buffer2.get(), 1));
+  entry2->Close();
+  entry->Close();
+  DisableIntegrityCheck();
 }
 
 #endif  // defined(OS_POSIX)
