@@ -2462,7 +2462,7 @@ TEST_F(DiskCacheEntryTest, SimpleCacheBadChecksum) {
   disk_cache::Entry* entry = NULL;
 
   // Open the entry.
-  EXPECT_EQ(net::OK, OpenEntry(key, &entry));
+  ASSERT_EQ(net::OK, OpenEntry(key, &entry));
 
   const int kReadBufferSize = 200;
   EXPECT_GE(kReadBufferSize, entry->GetDataSize(0));
@@ -2485,7 +2485,7 @@ TEST_F(DiskCacheEntryTest, SimpleCacheErrorThenDoom) {
   disk_cache::Entry* entry = NULL;
 
   // Open the entry, forcing an IO error.
-  EXPECT_EQ(net::OK, OpenEntry(key, &entry));
+  ASSERT_EQ(net::OK, OpenEntry(key, &entry));
 
   const int kReadBufferSize = 200;
   EXPECT_GE(kReadBufferSize, entry->GetDataSize(0));
@@ -2651,11 +2651,11 @@ TEST_F(DiskCacheEntryTest, SimpleCacheOptimistic2) {
   EXPECT_NE(null, entry);
 
   disk_cache::Entry* entry2 = NULL;
-  EXPECT_EQ(net::ERR_IO_PENDING,
+  ASSERT_EQ(net::ERR_IO_PENDING,
             cache_->OpenEntry(key, &entry2,
                               base::Bind(&CallbackTest::Run,
                                          base::Unretained(&callback2))));
-  EXPECT_TRUE(helper.WaitUntilCacheIoFinished(1));
+  ASSERT_TRUE(helper.WaitUntilCacheIoFinished(1));
 
   EXPECT_NE(null, entry2);
   EXPECT_EQ(entry, entry2);
@@ -2686,9 +2686,9 @@ TEST_F(DiskCacheEntryTest, SimpleCacheOptimistic3) {
 
   net::TestCompletionCallback cb;
   disk_cache::Entry* entry2 = NULL;
-  EXPECT_EQ(net::ERR_IO_PENDING,
+  ASSERT_EQ(net::ERR_IO_PENDING,
             cache_->OpenEntry(key, &entry2, cb.callback()));
-  EXPECT_EQ(net::OK, cb.GetResult(net::ERR_IO_PENDING));
+  ASSERT_EQ(net::OK, cb.GetResult(net::ERR_IO_PENDING));
 
   EXPECT_NE(null, entry2);
   EXPECT_EQ(entry, entry2);
@@ -2732,15 +2732,15 @@ TEST_F(DiskCacheEntryTest, SimpleCacheOptimistic4) {
   // At this point the |entry| must have been destroyed, and called
   // RemoveSelfFromBackend().
   disk_cache::Entry* entry2 = NULL;
-  EXPECT_EQ(net::ERR_IO_PENDING,
+  ASSERT_EQ(net::ERR_IO_PENDING,
             cache_->OpenEntry(key, &entry2, cb.callback()));
-  EXPECT_EQ(net::OK, cb.GetResult(net::ERR_IO_PENDING));
+  ASSERT_EQ(net::OK, cb.GetResult(net::ERR_IO_PENDING));
   EXPECT_NE(null, entry2);
 
   disk_cache::Entry* entry3 = NULL;
-  EXPECT_EQ(net::ERR_IO_PENDING,
+  ASSERT_EQ(net::ERR_IO_PENDING,
             cache_->OpenEntry(key, &entry3, cb.callback()));
-  EXPECT_EQ(net::OK, cb.GetResult(net::ERR_IO_PENDING));
+  ASSERT_EQ(net::OK, cb.GetResult(net::ERR_IO_PENDING));
   EXPECT_NE(null, entry3);
   EXPECT_EQ(entry2, entry3);
   entry3->Close();
