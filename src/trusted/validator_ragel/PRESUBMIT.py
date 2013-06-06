@@ -36,22 +36,23 @@ def CheckChange(input_api, message_constructor):
 
   root_path = changelist.RepositoryRoot()
 
-  # With SVN you can decide to commit not all modified files but some of them
-  # thus separate GetAllModifiedFiles() and GetModifiedFiles() lists are
-  # provided.  With GIT you must commit all modified files thus only
-  # AffectedFiles() list is provided.
   if input_api.change.scm == 'svn':
+    # With SVN you can decide to commit not all modified files but some of them
+    # thus separate GetAllModifiedFiles() and GetModifiedFiles() lists are
+    # provided.  We need to remove root_path from the name of file.
     assert all(filename.startswith(root_path + os.path.sep)
-             for filename in changelist.GetAllModifiedFiles())
+               for filename in changelist.GetAllModifiedFiles())
     all_filenames = [filename[len(root_path + os.path.sep):]
                      for filename in changelist.GetAllModifiedFiles()]
 
     assert all(filename.startswith(root_path + os.path.sep)
-             for filename in changelist.GetModifiedFiles())
+               for filename in changelist.GetModifiedFiles())
     modified_filenames = [filename[len(root_path + os.path.sep):]
                           for filename in changelist.GetModifiedFiles()]
   else:
-    all_filenames = changelist.AffectedFiles()
+    # With GIT you must commit all modified files thus only AffectedFiles()
+    # list is provided.
+    all_filenames = [file.LocalPath() for file in changelist.AffectedFiles()]
     modified_filenames = all_filenames
 
   json_filename = os.path.join(
