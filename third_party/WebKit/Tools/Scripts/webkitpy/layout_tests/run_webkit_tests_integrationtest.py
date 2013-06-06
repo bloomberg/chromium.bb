@@ -661,6 +661,21 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         self.assertTrue(host.filesystem.exists('/tmp/layout-test-results/failures/flaky/text-actual.txt'))
         self.assertFalse(host.filesystem.exists('retries'))
 
+    def test_retrying_chrashed_tests(self):
+        host = MockHost()
+        details, err, _ = logging_run(['--retry-failures', '--retry-crashes', 'failures/unexpected/crash.html'], tests_included=True, host=host)
+        self.assertEqual(details.exit_code, 1)
+        self.assertTrue('Retrying' in err.getvalue())
+
+        # Now we test that --clobber-old-results does remove the old entries and the old retries,
+        # and that we don't retry again.
+        host = MockHost()
+        details, err, _ = logging_run(['--no-retry-failures', '--clobber-old-results', 'failures/unexpected/crash.html'], tests_included=True, host=host)
+        self.assertEqual(details.exit_code, 1)
+        self.assertTrue('Clobbering old results' in err.getvalue())
+        self.assertTrue('unexpected/crash.html' in err.getvalue())
+        self.assertFalse(host.filesystem.exists('retries'))
+
     def test_retrying_force_pixel_tests(self):
         host = MockHost()
         details, err, _ = logging_run(['--no-pixel-tests', '--retry-failures', 'failures/unexpected/text-image-checksum.html'], tests_included=True, host=host)

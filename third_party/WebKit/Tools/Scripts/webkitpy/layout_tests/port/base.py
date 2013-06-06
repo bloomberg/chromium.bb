@@ -183,7 +183,7 @@ class Port(object):
         return self._pretty_patch_available
 
     def should_retry_crashes(self):
-        return False
+        return self.get_option('retry_crashes', False)
 
     def default_child_processes(self):
         """Return the number of DumpRenderTree instances to use for this port."""
