@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-var chrome = requireNative('chrome').GetChrome();
+var Event = require('event_bindings').Event;
 var sendRequest = require('sendRequest').sendRequest;
 var validate = require('schemaUtils').validate;
 
@@ -35,8 +35,7 @@ function ChromeSetting(prefKey, valueSchema) {
                        [prefKey, details, callback],
                        extendSchema(clearSchema));
   };
-  this.onChange = new chrome.Event('types.ChromeSetting.' + prefKey +
-                                   '.onChange');
+  this.onChange = new Event('types.ChromeSetting.' + prefKey + '.onChange');
 };
 
 exports.ChromeSetting = ChromeSetting;

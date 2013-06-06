@@ -10,10 +10,12 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/memory/scoped_ptr.h"
 #include "chrome/renderer/extensions/scoped_persistent.h"
 #include "v8/include/v8.h"
 
 namespace extensions {
+class NativeHandler;
 
 // A registry for the v8::Value representations of extension API schemas.
 // In a way, the v8 counterpart to ExtensionAPI.
@@ -21,6 +23,9 @@ class V8SchemaRegistry {
  public:
   V8SchemaRegistry();
   ~V8SchemaRegistry();
+
+  // Creates a NativeHandler wrapper |this|. Supports GetSchema.
+  scoped_ptr<NativeHandler> AsNativeHandler();
 
   // Returns a v8::Array with all the schemas for the APIs in |apis|.
   v8::Handle<v8::Array> GetSchemas(const std::set<std::string>& apis);

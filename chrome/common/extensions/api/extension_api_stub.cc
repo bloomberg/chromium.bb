@@ -23,4 +23,9 @@ bool ExtensionAPI::IsPrivileged(const std::string& full_name) {
   return false;
 }
 
+const base::DictionaryValue* ExtensionAPI::GetSchema(
+    const std::string& full_name) {
+  return NULL;
+}
+
 }  // namespace extensions

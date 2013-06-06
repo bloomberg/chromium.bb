@@ -26,10 +26,6 @@ using content::V8ValueConverter;
 
 namespace extensions {
 
-namespace {
-const char kChromeHidden[] = "chromeHidden";
-}  // namespace
-
 ChromeV8Context::ChromeV8Context(v8::Handle<v8::Context> v8_context,
                                  WebKit::WebFrame* web_frame,
                                  const Extension* extension,
@@ -61,27 +57,6 @@ void ChromeV8Context::Invalidate() {
 
 std::string ChromeV8Context::GetExtensionID() {
   return extension_.get() ? extension_->id() : std::string();
-}
-
-// static
-v8::Handle<v8::Value> ChromeV8Context::GetOrCreateChromeHidden(
-    v8::Handle<v8::Context> context) {
-  v8::Local<v8::Object> global = context->Global();
-  v8::Local<v8::Value> hidden = global->GetHiddenValue(
-      v8::String::New(kChromeHidden));
-
-  if (hidden.IsEmpty() || hidden->IsUndefined()) {
-    hidden = v8::Object::New();
-    global->SetHiddenValue(v8::String::New(kChromeHidden), hidden);
-  }
-
-  DCHECK(hidden->IsObject());
-  return v8::Local<v8::Object>::Cast(hidden);
-}
-
-v8::Handle<v8::Value> ChromeV8Context::GetChromeHidden() const {
-  v8::Local<v8::Object> global = v8_context_->Global();
-  return global->GetHiddenValue(v8::String::New(kChromeHidden));
 }
 
 content::RenderView* ChromeV8Context::GetRenderView() const {

@@ -6,16 +6,16 @@
 
 var binding = require('binding').Binding.create('pageActions');
 
+var Event = require('event_bindings').Event;
 var pageActionsNatives = requireNative('page_actions');
-var GetCurrentPageActions = pageActionsNatives.GetCurrentPageActions;
 
 binding.registerCustomHook(function(bindingsAPI, extensionId) {
-  var pageActions = GetCurrentPageActions(extensionId);
+  var pageActions = pageActionsNatives.GetCurrentPageActions(extensionId);
   var pageActionsApi = bindingsAPI.compiledApi;
   var oldStyleEventName = 'pageActions';
   for (var i = 0; i < pageActions.length; ++i) {
     // Setup events for each extension_id/page_action_id string we find.
-    pageActionsApi[pageActions[i]] = new chrome.Event(oldStyleEventName);
+    pageActionsApi[pageActions[i]] = new Event(oldStyleEventName);
   }
 });
 

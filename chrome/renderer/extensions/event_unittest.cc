@@ -12,17 +12,16 @@ namespace {
 class EventUnittest : public ModuleSystemTest {
   virtual void SetUp() OVERRIDE {
     ModuleSystemTest::SetUp();
-    module_system_->RunString("chrome = {};", "setup-chrome");
 
-    RegisterModule("event", IDR_EVENT_BINDINGS_JS);
-    RegisterModule("schemaUtils", IDR_SCHEMA_UTILS_JS);
-    RegisterModule("utils", IDR_UTILS_JS);
+    RegisterModule("event_bindings", IDR_EVENT_BINDINGS_JS);
     RegisterModule("json_schema", IDR_JSON_SCHEMA_JS);
+    RegisterModule("schemaUtils", IDR_SCHEMA_UTILS_JS);
     RegisterModule("unload_event", IDR_UNLOAD_EVENT_JS);
+    RegisterModule("utils", IDR_UTILS_JS);
 
     // Mock out the native handler for event_bindings. These mocks will fail if
     // any invariants maintained by the real event_bindings are broken.
-    OverrideNativeHandler("event_bindings",
+    OverrideNativeHandler("event_natives",
         "var assert = requireNative('assert');"
         "var attachedListeners = exports.attachedListeners = {};"
         "var attachedFilteredListeners = "
@@ -61,12 +60,6 @@ class EventUnittest : public ModuleSystemTest {
         "exports.HasFilteredListener = function(name) {"
         "  return attachedFilteredListeners[name].length;"
         "};");
-    OverrideNativeHandler("chrome_hidden",
-        "var chromeHidden = {};"
-        "exports.GetChromeHidden = function() { return chromeHidden; };");
-    OverrideNativeHandler("chrome",
-        "var chrome = {};"
-        "exports.GetChrome = function() { return chrome; };");
     OverrideNativeHandler("sendRequest",
         "exports.sendRequest = function() {};");
     OverrideNativeHandler("apiDefinitions",
@@ -86,18 +79,17 @@ TEST_F(EventUnittest, AddRemoveTwoListeners) {
   ModuleSystem::NativesEnabledScope natives_enabled_scope(module_system_.get());
   RegisterModule("test",
       "var assert = requireNative('assert');"
-      "require('event');"
-      "var Event = requireNative('chrome').GetChrome().Event;"
-      "var eventBindings = requireNative('event_bindings');"
+      "var Event = require('event_bindings').Event;"
+      "var eventNatives = requireNative('event_natives');"
       "var myEvent = new Event('named-event');"
       "var cb1 = function() {};"
       "var cb2 = function() {};"
       "myEvent.addListener(cb1);"
       "myEvent.addListener(cb2);"
       "myEvent.removeListener(cb1);"
-      "assert.AssertTrue(!!eventBindings.attachedListeners['named-event']);"
+      "assert.AssertTrue(!!eventNatives.attachedListeners['named-event']);"
       "myEvent.removeListener(cb2);"
-      "assert.AssertFalse(!!eventBindings.attachedListeners['named-event']);");
+      "assert.AssertFalse(!!eventNatives.attachedListeners['named-event']);");
   module_system_->Require("test");
 }
 
@@ -105,17 +97,15 @@ TEST_F(EventUnittest, OnUnloadDetachesAllListeners) {
   ModuleSystem::NativesEnabledScope natives_enabled_scope(module_system_.get());
   RegisterModule("test",
       "var assert = requireNative('assert');"
-      "require('event');"
-      "var Event = requireNative('chrome').GetChrome().Event;"
-      "var eventBindings = requireNative('event_bindings');"
-      "var chromeHidden = requireNative('chrome_hidden').GetChromeHidden();"
+      "var Event = require('event_bindings').Event;"
+      "var eventNatives = requireNative('event_natives');"
       "var myEvent = new Event('named-event');"
       "var cb1 = function() {};"
       "var cb2 = function() {};"
       "myEvent.addListener(cb1);"
       "myEvent.addListener(cb2);"
       "require('unload_event').dispatch();"
-      "assert.AssertFalse(!!eventBindings.attachedListeners['named-event']);");
+      "assert.AssertFalse(!!eventNatives.attachedListeners['named-event']);");
   module_system_->Require("test");
 }
 
@@ -123,24 +113,21 @@ TEST_F(EventUnittest, OnUnloadDetachesAllListenersEvenDupes) {
   ModuleSystem::NativesEnabledScope natives_enabled_scope(module_system_.get());
   RegisterModule("test",
       "var assert = requireNative('assert');"
-      "require('event');"
-      "var Event = requireNative('chrome').GetChrome().Event;"
-      "var eventBindings = requireNative('event_bindings');"
-      "var chromeHidden = requireNative('chrome_hidden').GetChromeHidden();"
+      "var Event = require('event_bindings').Event;"
+      "var eventNatives = requireNative('event_natives');"
       "var myEvent = new Event('named-event');"
       "var cb1 = function() {};"
       "myEvent.addListener(cb1);"
       "myEvent.addListener(cb1);"
       "require('unload_event').dispatch();"
-      "assert.AssertFalse(!!eventBindings.attachedListeners['named-event']);");
+      "assert.AssertFalse(!!eventNatives.attachedListeners['named-event']);");
   module_system_->Require("test");
 }
 
 TEST_F(EventUnittest, EventsThatSupportRulesMustHaveAName) {
   ModuleSystem::NativesEnabledScope natives_enabled_scope(module_system_.get());
   RegisterModule("test",
-      "require('event');"
-      "var Event = requireNative('chrome').GetChrome().Event;"
+      "var Event = require('event_bindings').Event;"
       "var eventOpts = {supportsRules: true};"
       "var assert = requireNative('assert');"
       "var caught = false;"
@@ -156,14 +143,13 @@ TEST_F(EventUnittest, EventsThatSupportRulesMustHaveAName) {
 TEST_F(EventUnittest, NamedEventDispatch) {
   ModuleSystem::NativesEnabledScope natives_enabled_scope(module_system_.get());
   RegisterModule("test",
-      "var event = require('event');"
-      "var Event = requireNative('chrome').GetChrome().Event;"
-      "var chromeHidden = requireNative('chrome_hidden').GetChromeHidden();"
+      "var Event = require('event_bindings').Event;"
+      "var dispatchEvent = require('event_bindings').dispatchEvent;"
       "var assert = requireNative('assert');"
       "var e = new Event('myevent');"
       "var called = false;"
       "e.addListener(function() { called = true; });"
-      "event.dispatchEvent('myevent', []);"
+      "dispatchEvent('myevent', []);"
       "assert.AssertTrue(called);");
   module_system_->Require("test");
 }
@@ -171,8 +157,7 @@ TEST_F(EventUnittest, NamedEventDispatch) {
 TEST_F(EventUnittest, AddListenerWithFiltersThrowsErrorByDefault) {
   ModuleSystem::NativesEnabledScope natives_enabled_scope(module_system_.get());
   RegisterModule("test",
-      "require('event');"
-      "var Event = requireNative('chrome').GetChrome().Event;"
+      "var Event = require('event_bindings').Event;"
       "var assert = requireNative('assert');"
       "var e = new Event('myevent');"
       "var filter = [{"
@@ -191,10 +176,9 @@ TEST_F(EventUnittest, AddListenerWithFiltersThrowsErrorByDefault) {
 TEST_F(EventUnittest, FilteredEventsAttachment) {
   ModuleSystem::NativesEnabledScope natives_enabled_scope(module_system_.get());
   RegisterModule("test",
-      "require('event');"
-      "var Event = requireNative('chrome').GetChrome().Event;"
+      "var Event = require('event_bindings').Event;"
       "var assert = requireNative('assert');"
-      "var bindings = requireNative('event_bindings');"
+      "var bindings = requireNative('event_natives');"
       "var eventOpts = {supportsListeners: true, supportsFilters: true};"
       "var e = new Event('myevent', undefined, eventOpts);"
       "var cb = function() {};"
@@ -209,10 +193,9 @@ TEST_F(EventUnittest, FilteredEventsAttachment) {
 TEST_F(EventUnittest, DetachFilteredEvent) {
   ModuleSystem::NativesEnabledScope natives_enabled_scope(module_system_.get());
   RegisterModule("test",
-      "require('event');"
-      "var Event = requireNative('chrome').GetChrome().Event;"
+      "var Event = require('event_bindings').Event;"
       "var assert = requireNative('assert');"
-      "var bindings = requireNative('event_bindings');"
+      "var bindings = requireNative('event_natives');"
       "var eventOpts = {supportsListeners: true, supportsFilters: true};"
       "var e = new Event('myevent', undefined, eventOpts);"
       "var cb1 = function() {};"
@@ -228,10 +211,9 @@ TEST_F(EventUnittest, DetachFilteredEvent) {
 TEST_F(EventUnittest, AttachAndRemoveSameFilteredEventListener) {
   ModuleSystem::NativesEnabledScope natives_enabled_scope(module_system_.get());
   RegisterModule("test",
-      "require('event');"
-      "var Event = requireNative('chrome').GetChrome().Event;"
+      "var Event = require('event_bindings').Event;"
       "var assert = requireNative('assert');"
-      "var bindings = requireNative('event_bindings');"
+      "var bindings = requireNative('event_natives');"
       "var eventOpts = {supportsListeners: true, supportsFilters: true};"
       "var e = new Event('myevent', undefined, eventOpts);"
       "var cb = function() {};"
@@ -249,8 +231,7 @@ TEST_F(EventUnittest, AttachAndRemoveSameFilteredEventListener) {
 TEST_F(EventUnittest, AddingFilterWithUrlFieldNotAListThrowsException) {
   ModuleSystem::NativesEnabledScope natives_enabled_scope(module_system_.get());
   RegisterModule("test",
-      "require('event');"
-      "var Event = requireNative('chrome').GetChrome().Event;"
+      "var Event = require('event_bindings').Event;"
       "var assert = requireNative('assert');"
       "var eventOpts = {supportsListeners: true, supportsFilters: true};"
       "var e = new Event('myevent', undefined, eventOpts);"
@@ -269,8 +250,7 @@ TEST_F(EventUnittest, AddingFilterWithUrlFieldNotAListThrowsException) {
 TEST_F(EventUnittest, MaxListeners) {
   ModuleSystem::NativesEnabledScope natives_enabled_scope(module_system_.get());
   RegisterModule("test",
-      "require('event');"
-      "var Event = requireNative('chrome').GetChrome().Event;"
+      "var Event = require('event_bindings').Event;"
       "var assert = requireNative('assert');"
       "var eventOpts = {supportsListeners: true, maxListeners: 1};"
       "var e = new Event('myevent', undefined, eventOpts);"

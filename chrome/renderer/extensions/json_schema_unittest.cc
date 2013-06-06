@@ -2,56 +2,33 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/file_util.h"
-#include "base/path_service.h"
-#include "base/string_util.h"
-#include "chrome/common/chrome_paths.h"
-#include "chrome/test/base/v8_unit_test.h"
+#include "chrome/renderer/extensions/v8_schema_registry.h"
+#include "chrome/test/base/module_system_test.h"
 #include "grit/renderer_resources.h"
-#include "testing/gtest/include/gtest/gtest.h"
-#include "ui/base/resource/resource_bundle.h"
-
-static const char kJsonSchema[] = "json_schema.js";
-static const char kJsonSchemaTest[] = "json_schema_test.js";
 
 namespace extensions {
 
-class JsonSchemaTest : public V8UnitTest {
+class JsonSchemaTest : public ModuleSystemTest {
  public:
-  JsonSchemaTest() {}
+  virtual void SetUp() OVERRIDE {
+    ModuleSystemTest::SetUp();
 
-  virtual void SetUp() {
-    V8UnitTest::SetUp();
+    RegisterModule("json_schema", IDR_JSON_SCHEMA_JS);
+    RegisterModule("utils", IDR_UTILS_JS);
 
-    // Add the json schema code to the context.
-    std::string code = ResourceBundle::GetSharedInstance().GetRawDataResource(
-        IDR_JSON_SCHEMA_JS).as_string();
+    module_system_->RegisterNativeHandler("schema_registry",
+        schema_registry_.AsNativeHandler());
 
-    // json_schema.js expects to have require() and requireNative() defined.
-    ExecuteScriptInContext(
-        "function requireNative(id) {"
-        "  return {"
-        "    GetChromeHidden: function() { return {}; },"
-        "    CHECK: function(foo, bar) { return undefined; },"
-        "  };"
-        "}"
-        "function require(id) {"
-        "  return {"
-        "    loadTypeSchema: function(foo) { return undefined; },"
-        "  };"
-        "}",
-        "test-code");
-    ExecuteScriptInContext(code, kJsonSchema);
-
-    // Add the test functions to the context.
-    base::FilePath test_js_file_path;
-    ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_js_file_path));
-    test_js_file_path = test_js_file_path.AppendASCII("extensions");
-    test_js_file_path = test_js_file_path.AppendASCII(kJsonSchemaTest);
-    std::string test_js;
-    ASSERT_TRUE(file_util::ReadFileToString(test_js_file_path, &test_js));
-    ExecuteScriptInContext(test_js, kJsonSchemaTest);
+    RegisterTestFile("json_schema_test", "json_schema_test.js");
   }
+
+ protected:
+  void TestFunction(const std::string& test_name) {
+    module_system_->CallModuleMethod("json_schema_test", test_name);
+  }
+
+ private:
+  V8SchemaRegistry schema_registry_;
 };
 
 TEST_F(JsonSchemaTest, TestFormatError) {

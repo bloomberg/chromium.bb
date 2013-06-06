@@ -27,10 +27,6 @@ namespace extensions {
 class Extension;
 
 // Chrome's wrapper for a v8 context.
-//
-// TODO(aa): Consider converting this back to a set of bindings_utils. It would
-// require adding WebFrame::GetIsolatedWorldIdByV8Context() to WebCore, but then
-// we won't need this object and it's a bit less state to keep track of.
 class ChromeV8Context : public RequestSender::Source {
  public:
   ChromeV8Context(v8::Handle<v8::Context> context,
@@ -69,18 +65,6 @@ class ChromeV8Context : public RequestSender::Source {
   // string if there is no such extension.
   std::string GetExtensionID();
 
-  // Returns a special Chrome-specific hidden object that is associated with a
-  // context, but not reachable from the JavaScript in that context. This is
-  // used by our v8::Extension implementations as a way to share code and as a
-  // bridge between C++ and JavaScript.
-  static v8::Handle<v8::Value> GetOrCreateChromeHidden(
-      v8::Handle<v8::Context> context);
-
-  // Return the chromeHidden object associated with this context, or an empty
-  // handle if no chrome hidden has been created (by GetOrCreateChromeHidden)
-  // yet for this context.
-  v8::Handle<v8::Value> GetChromeHidden() const;
-
   // Returns the RenderView associated with this context. Can return NULL if the
   // context is in the process of being destroyed.
   content::RenderView* GetRenderView() const;
@@ -93,7 +77,7 @@ class ChromeV8Context : public RequestSender::Source {
                                     int argc,
                                     v8::Handle<v8::Value> argv[]) const;
 
-  // Fires the onunload event on the chromeHidden object.
+  // Fires the onunload event on the unload_event module.
   void DispatchOnUnloadEvent();
 
   // Returns the availability of the API |api_name|.

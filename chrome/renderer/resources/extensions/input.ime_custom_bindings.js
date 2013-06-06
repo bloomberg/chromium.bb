@@ -7,6 +7,8 @@
 
 var binding = require('binding').Binding.create('input.ime');
 
+var Event = require('event_bindings').Event;
+
 binding.registerCustomHook(function(api) {
   var input_ime = api.compiledApi;
 
@@ -16,7 +18,7 @@ binding.registerCustomHook(function(api) {
 
     var result = false;
     try {
-      result = chrome.Event.prototype.dispatchToListener(callback, args);
+      result = Event.prototype.dispatchToListener(callback, args);
     } catch (e) {
       console.error('Error in event handler for onKeyEvent: ' + e.stack);
     }
@@ -33,7 +35,7 @@ binding.registerCustomHook(function(api) {
         }
       }
     }
-    chrome.Event.prototype.addListener.call(this, cb, null);
+    Event.prototype.addListener.call(this, cb, null);
   };
 });
 

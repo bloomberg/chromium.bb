@@ -8,21 +8,16 @@ var binding = require('binding').Binding.create('tts');
 
 var ttsNatives = requireNative('tts');
 var GetNextTTSEventId = ttsNatives.GetNextTTSEventId;
-
-var chromeHidden = requireNative('chrome_hidden').GetChromeHidden();
 var sendRequest = require('sendRequest').sendRequest;
 var lazyBG = requireNative('lazy_background_page');
 
 binding.registerCustomHook(function(api) {
   var apiFunctions = api.apiFunctions;
   var tts = api.compiledApi;
-
-  chromeHidden.tts = {
-    handlers: {}
-  };
+  var handlers = {};
 
   function ttsEventListener(event) {
-    var eventHandler = chromeHidden.tts.handlers[event.srcId];
+    var eventHandler = handlers[event.srcId];
     if (eventHandler) {
       eventHandler({
                      type: event.type,
@@ -30,7 +25,7 @@ binding.registerCustomHook(function(api) {
                      errorMessage: event.errorMessage
                    });
       if (event.isFinalEvent) {
-        delete chromeHidden.tts.handlers[event.srcId];
+        delete handlers[event.srcId];
         // Balanced in 'speak' handler.
         lazyBG.DecrementKeepaliveCount();
       }
@@ -50,7 +45,7 @@ binding.registerCustomHook(function(api) {
     if (args.length > 1 && args[1] && args[1].onEvent) {
       var id = GetNextTTSEventId();
       args[1].srcId = id;
-      chromeHidden.tts.handlers[id] = args[1].onEvent;
+      handlers[id] = args[1].onEvent;
       // Keep the page alive until the event finishes.
       // Balanced in eventHandler.
       lazyBG.IncrementKeepaliveCount();

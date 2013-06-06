@@ -26,6 +26,8 @@ class StringSourceMap;
 //
 // By default a test will fail if no method in the native module 'assert' is
 // called. This behaviour can be overridden by calling ExpectNoAssertionsMade().
+//
+// TODO(kalman): move this back into chrome/renderer/extensions.
 class ModuleSystemTest : public testing::Test {
  public:
   ModuleSystemTest();
@@ -44,6 +46,11 @@ class ModuleSystemTest : public testing::Test {
   // to use it to handle any requireNative() calls for native modules with that
   // name.
   void OverrideNativeHandler(const std::string& name, const std::string& code);
+
+  // Registers |file_name| from chrome/test/data/extensions as a module name
+  // |module_name|.
+  void RegisterTestFile(const std::string& module_name,
+                        const std::string& file_name);
 
   // Make the test fail if any asserts are called. By default a test will fail
   // if no asserts are called.

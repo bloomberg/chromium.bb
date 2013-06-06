@@ -48,7 +48,7 @@ binding.registerCustomHook(function(bindingsAPI, extensionId) {
         windowId = properties.windowId;
       }
     }
-    return GetExtensionViews(windowId, type) || null;
+    return GetExtensionViews(windowId, type);
   });
 
   apiFunctions.setHandleRequest('getBackgroundPage', function() {

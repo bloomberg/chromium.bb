@@ -2,10 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-require('json_schema');
-require('event_bindings');
-var chrome = requireNative('chrome').GetChrome();
-var chromeHidden = requireNative('chrome_hidden').GetChromeHidden();
+var Event = require('event_bindings').Event;
 var forEach = require('utils').forEach;
 var GetAvailability = requireNative('v8_context').GetAvailability;
 var logging = requireNative('logging');
@@ -91,7 +88,7 @@ CustomBindingsObject.prototype.setSchema = function(schema) {
   // dictionary for easier access.
   var self = this;
   self.functionSchemas = {};
-  schema.functions.forEach(function(f) {
+  forEach(schema.functions, function(i, f) {
     self.functionSchemas[f.name] = {
       name: f.name,
       definition: f
@@ -208,9 +205,9 @@ Binding.prototype = {
       if (shouldCheck)
         return shouldCheck;
 
-      ['functions', 'events'].forEach(function(type) {
+      forEach(['functions', 'events'], function(i, type) {
         if (schema.hasOwnProperty(type)) {
-          schema[type].forEach(function(node) {
+          forEach(schema[type], function(i, node) {
             if ('unprivileged' in node)
               shouldCheck = true;
           });
@@ -293,9 +290,8 @@ Binding.prototype = {
         // TODO(aa): It would be best to run this in a unit test, but in order
         // to do that we would need to better factor this code so that it
         // doesn't depend on so much v8::Extension machinery.
-        if (chromeHidden.validateAPI &&
-            schemaUtils.isFunctionSignatureAmbiguous(
-                apiFunction.definition)) {
+        if (logging.DCHECK_IS_ON() &&
+            schemaUtils.isFunctionSignatureAmbiguous(apiFunction.definition)) {
           throw new Error(
               apiFunction.name + ' has ambiguous optional arguments. ' +
               'To implement custom disambiguation logic, add ' +
@@ -328,11 +324,9 @@ Binding.prototype = {
           }
           sendRequestHandler.clearCalledSendRequest();
 
-          // Validate return value if defined - only in debug.
-          if (chromeHidden.validateCallbacks &&
-              this.definition.returns) {
+          // Validate return value if in sanity check mode.
+          if (logging.DCHECK_IS_ON() && this.definition.returns)
             schemaUtils.validate([retval], [this.definition.returns]);
-          }
           return retval;
         }).bind(apiFunction);
       }, this);
@@ -363,9 +357,9 @@ Binding.prototype = {
               eventName, eventDef.parameters, eventDef.extraParameters,
               options);
         } else if (eventDef.anonymous) {
-          mod[eventDef.name] = new chrome.Event();
+          mod[eventDef.name] = new Event();
         } else {
-          mod[eventDef.name] = new chrome.Event(
+          mod[eventDef.name] = new Event(
               eventName, eventDef.parameters, options);
         }
       }, this);

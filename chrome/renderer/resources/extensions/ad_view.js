@@ -11,7 +11,6 @@
 //                want to refactor to extract common pieces?
 
 var adViewCustom = require('adViewCustom');
-var chrome = requireNative('chrome').GetChrome();
 var forEach = require('utils').forEach;
 var watchForTag = require('tagWatcher').watchForTag;
 

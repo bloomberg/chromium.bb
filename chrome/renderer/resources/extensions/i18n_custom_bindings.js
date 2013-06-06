@@ -9,8 +9,6 @@ var binding = require('binding').Binding.create('i18n');
 var i18nNatives = requireNative('i18n');
 var GetL10nMessage = i18nNatives.GetL10nMessage;
 
-var chromeHidden = requireNative('chrome_hidden').GetChromeHidden();
-
 binding.registerCustomHook(function(bindingsAPI, extensionId) {
   var apiFunctions = bindingsAPI.apiFunctions;
 

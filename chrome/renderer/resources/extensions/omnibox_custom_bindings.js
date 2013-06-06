@@ -7,7 +7,7 @@
 
 var binding = require('binding').Binding.create('omnibox');
 
-var chromeHidden = requireNative('chrome_hidden').GetChromeHidden();
+var eventBindings = require('event_bindings');
 var sendRequest = require('sendRequest').sendRequest;
 
 // Remove invalid characters from |text| so that it is suitable to use
@@ -111,7 +111,7 @@ binding.registerCustomHook(function(bindingsAPI) {
   });
 });
 
-chromeHidden.Event.registerArgumentMassager('omnibox.onInputChanged',
+eventBindings.registerArgumentMassager('omnibox.onInputChanged',
     function(args, dispatch) {
   var text = args[0];
   var requestId = args[1];

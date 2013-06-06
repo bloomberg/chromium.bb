@@ -7,7 +7,6 @@
 // The actual tag is implemented via the browser plugin. The internals of this
 // are hidden via Shadow DOM.
 
-var chrome = requireNative('chrome').GetChrome();
 var forEach = require('utils').forEach;
 var watchForTag = require('tagWatcher').watchForTag;
 

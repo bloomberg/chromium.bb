@@ -6,10 +6,10 @@
 
 var binding = require('binding').Binding.create('bluetooth');
 
-var chromeHidden = requireNative('chrome_hidden').GetChromeHidden();
 var chrome = requireNative('chrome').GetChrome();
-var sendRequest = require('sendRequest').sendRequest;
+var Event = require('event_bindings').Event;
 var lastError = require('lastError');
+var sendRequest = require('sendRequest').sendRequest;
 
 // Use custom binding to create an undocumented event listener that will
 // receive events about device discovery and call the event listener that was
@@ -17,7 +17,7 @@ var lastError = require('lastError');
 binding.registerCustomHook(function(api) {
   var apiFunctions = api.apiFunctions;
 
-  chromeHidden.bluetooth = {};
+  var bluetooth = {};
 
   function callCallbackIfPresent(name, args, error) {
     var callback = args[args.length - 1];
@@ -25,29 +25,27 @@ binding.registerCustomHook(function(api) {
       lastError.run(name, error, callback);
   }
 
-  chromeHidden.bluetooth.deviceDiscoveredHandler = null;
-  chromeHidden.bluetooth.onDeviceDiscovered =
-      new chrome.Event('bluetooth.onDeviceDiscovered');
+  bluetooth.deviceDiscoveredHandler = null;
+  bluetooth.onDeviceDiscovered = new Event('bluetooth.onDeviceDiscovered');
   function clearDeviceDiscoveredHandler() {
-    chromeHidden.bluetooth.onDeviceDiscovered.removeListener(
-        chromeHidden.bluetooth.deviceDiscoveredHandler);
-    chromeHidden.bluetooth.deviceDiscoveredHandler = null;
+    bluetooth.onDeviceDiscovered.removeListener(
+        bluetooth.deviceDiscoveredHandler);
+    bluetooth.deviceDiscoveredHandler = null;
   }
   apiFunctions.setHandleRequest('startDiscovery',
       function() {
         var args = arguments;
         if (args.length > 0 && args[0] && args[0].deviceCallback) {
-          if (chromeHidden.bluetooth.deviceDiscoveredHandler != null) {
+          if (bluetooth.deviceDiscoveredHandler != null) {
             callCallbackIfPresent('bluetooth.startDiscovery',
                                   args,
                                   'Concurrent discovery is not allowed.');
             return;
           }
 
-          chromeHidden.bluetooth.deviceDiscoveredHandler =
-              args[0].deviceCallback;
-          chromeHidden.bluetooth.onDeviceDiscovered.addListener(
-              chromeHidden.bluetooth.deviceDiscoveredHandler);
+          bluetooth.deviceDiscoveredHandler = args[0].deviceCallback;
+          bluetooth.onDeviceDiscovered.addListener(
+              bluetooth.deviceDiscoveredHandler);
           sendRequest(this.name,
                       args,
                       this.definition.parameters,
@@ -74,42 +72,37 @@ binding.registerCustomHook(function(api) {
       });
 
   // An object to hold state during one call to getDevices.
-  chromeHidden.bluetooth.getDevicesState = null;
+  bluetooth.getDevicesState = null;
 
   // Hidden events used to deliver getDevices data to the client callbacks
-  chromeHidden.bluetooth.onDeviceSearchResult =
-      new chrome.Event('bluetooth.onDeviceSearchResult');
-  chromeHidden.bluetooth.onDeviceSearchFinished =
-      new chrome.Event('bluetooth.onDeviceSearchFinished');
+  bluetooth.onDeviceSearchResult = new Event('bluetooth.onDeviceSearchResult');
+  bluetooth.onDeviceSearchFinished =
+      new Event('bluetooth.onDeviceSearchFinished');
 
   function deviceSearchResultHandler(device) {
-    chromeHidden.bluetooth.getDevicesState.actualEvents++;
-    chromeHidden.bluetooth.getDevicesState.deviceCallback(device);
+    bluetooth.getDevicesState.actualEvents++;
+    bluetooth.getDevicesState.deviceCallback(device);
     maybeFinishDeviceSearch();
   }
 
   function deviceSearchFinishedHandler(info) {
-    chromeHidden.bluetooth.getDevicesState.expectedEventCount =
-        info.expectedEventCount;
+    bluetooth.getDevicesState.expectedEventCount = info.expectedEventCount;
     maybeFinishDeviceSearch();
   }
 
   function addDeviceSearchListeners() {
-    chromeHidden.bluetooth.onDeviceSearchResult.addListener(
-        deviceSearchResultHandler);
-    chromeHidden.bluetooth.onDeviceSearchFinished.addListener(
-        deviceSearchFinishedHandler);
+    bluetooth.onDeviceSearchResult.addListener(deviceSearchResultHandler);
+    bluetooth.onDeviceSearchFinished.addListener(deviceSearchFinishedHandler);
   }
 
   function removeDeviceSearchListeners() {
-    chromeHidden.bluetooth.onDeviceSearchResult.removeListener(
-        deviceSearchResultHandler);
-    chromeHidden.bluetooth.onDeviceSearchFinished.removeListener(
+    bluetooth.onDeviceSearchResult.removeListener(deviceSearchResultHandler);
+    bluetooth.onDeviceSearchFinished.removeListener(
         deviceSearchFinishedHandler);
   }
 
   function maybeFinishDeviceSearch() {
-    var state = chromeHidden.bluetooth.getDevicesState;
+    var state = bluetooth.getDevicesState;
     if (typeof(state.expectedEventCount) != 'undefined' &&
         state.actualEvents >= state.expectedEventCount) {
       finishDeviceSearch();
@@ -117,9 +110,9 @@ binding.registerCustomHook(function(api) {
   }
 
   function finishDeviceSearch() {
-    var finalCallback = chromeHidden.bluetooth.getDevicesState.finalCallback;
+    var finalCallback = bluetooth.getDevicesState.finalCallback;
     removeDeviceSearchListeners();
-    chromeHidden.bluetooth.getDevicesState = null;
+    bluetooth.getDevicesState = null;
 
     if (finalCallback) {
       finalCallback();
@@ -130,7 +123,7 @@ binding.registerCustomHook(function(api) {
       function() {
         var args = Array.prototype.slice.call(arguments);
 
-        if (chromeHidden.bluetooth.getDevicesState != null) {
+        if (bluetooth.getDevicesState != null) {
           throw new Error('Concurrent calls to getDevices are not allowed.');
         }
 
@@ -155,7 +148,7 @@ binding.registerCustomHook(function(api) {
               'deviceCallback.');
         }
 
-        chromeHidden.bluetooth.getDevicesState = state;
+        bluetooth.getDevicesState = state;
         addDeviceSearchListeners();
 
         return args;

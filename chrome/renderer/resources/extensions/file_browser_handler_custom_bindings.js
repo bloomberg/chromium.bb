@@ -6,14 +6,13 @@
 
 var binding = require('binding').Binding.create('fileBrowserHandler');
 
+var eventBindings = require('event_bindings');
 var fileBrowserNatives = requireNative('file_browser_handler');
 var GetExternalFileEntry = fileBrowserNatives.GetExternalFileEntry;
-
-var chromeHidden = requireNative('chrome_hidden').GetChromeHidden();
 var fileBrowserHandlerInternal = require('binding').Binding.create(
     'fileBrowserHandlerInternal').generate();
 
-chromeHidden.Event.registerArgumentMassager('fileBrowserHandler.onExecute',
+eventBindings.registerArgumentMassager('fileBrowserHandler.onExecute',
     function(args, dispatch) {
   if (args.length < 2) {
     dispatch(args);

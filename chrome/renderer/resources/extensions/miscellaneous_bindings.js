@@ -7,13 +7,14 @@
 // background pages. See user_script_slave.cc for script that is loaded by
 // content scripts only.
 
+  // TODO(kalman): factor requiring chrome out of here.
   var chrome = requireNative('chrome').GetChrome();
-  require('event_bindings');
+  var Event = require('event_bindings').Event;
   var lastError = require('lastError');
   var logActivity = requireNative('activityLogger');
-  var miscNatives = requireNative('miscellaneous_bindings');
-  var unloadEvent = require('unload_event');
+  var miscNatives = requireNative('miscellaneous_bindings_natives');
   var processNatives = requireNative('process');
+  var unloadEvent = require('unload_event');
 
   // The reserved channel name for the sendRequest/send(Native)Message APIs.
   // Note: sendRequest is deprecated.
@@ -37,8 +38,8 @@
   function Port(portId, opt_name) {
     this.portId_ = portId;
     this.name = opt_name;
-    this.onDisconnect = new chrome.Event();
-    this.onMessage = new chrome.Event();
+    this.onDisconnect = new Event();
+    this.onMessage = new Event();
   }
 
   // Sends a message asynchronously to the context on the other end of this

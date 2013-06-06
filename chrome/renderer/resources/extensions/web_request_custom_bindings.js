@@ -6,13 +6,11 @@
 
 var binding = require('binding').Binding.create('webRequest');
 
-var webRequestNatives = requireNative('web_request');
-var GetUniqueSubEventName = webRequestNatives.GetUniqueSubEventName;
-
-var chromeHidden = requireNative('chrome_hidden').GetChromeHidden();
+var eventBindings = require('event_bindings');
 var sendRequest = require('sendRequest').sendRequest;
 var validate = require('schemaUtils').validate;
 var webRequestInternal = require('webRequestInternal').binding;
+var webRequestNatives = requireNative('web_request');
 
 // WebRequestEvent object. This is used for special webRequest events with
 // extra parameters. Each invocation of addListener creates a new named
@@ -34,10 +32,10 @@ function WebRequestEvent(eventName, opt_argSchemas, opt_extraArgSchemas,
   this.extraArgSchemas_ = opt_extraArgSchemas;
   this.webViewInstanceId_ = opt_webViewInstanceId ? opt_webViewInstanceId : 0;
   this.subEvents_ = [];
-  this.eventOptions_ = chromeHidden.parseEventOptions(opt_eventOptions);
+  this.eventOptions_ = eventBindings.parseEventOptions(opt_eventOptions);
   if (this.eventOptions_.supportsRules) {
     this.eventForRules_ =
-        new chrome.Event(eventName, opt_argSchemas, opt_eventOptions);
+        new eventBindings.Event(eventName, opt_argSchemas, opt_eventOptions);
   }
 }
 
@@ -66,7 +64,7 @@ WebRequestEvent.prototype.addListener =
   // NOTE(benjhayden) New APIs should not use this subEventName trick! It does
   // not play well with event pages. See downloads.onDeterminingFilename and
   // ExtensionDownloadsEventRouter for an alternative approach.
-  var subEventName = GetUniqueSubEventName(this.eventName_);
+  var subEventName = webRequestNatives.GetUniqueSubEventName(this.eventName_);
   // Note: this could fail to validate, in which case we would not add the
   // subEvent listener.
   validate(Array.prototype.slice.call(arguments, 1), this.extraArgSchemas_);
@@ -74,7 +72,7 @@ WebRequestEvent.prototype.addListener =
       cb, opt_filter, opt_extraInfo, this.eventName_, subEventName,
       this.webViewInstanceId_);
 
-  var subEvent = new chrome.Event(subEventName, this.argSchemas_);
+  var subEvent = new eventBindings.Event(subEventName, this.argSchemas_);
   var subEventCallback = cb;
   if (opt_extraInfo && opt_extraInfo.indexOf('blocking') >= 0) {
     var eventName = this.eventName_;

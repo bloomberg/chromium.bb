@@ -46,6 +46,7 @@
 #include "chrome/renderer/extensions/file_browser_private_custom_bindings.h"
 #include "chrome/renderer/extensions/file_system_natives.h"
 #include "chrome/renderer/extensions/i18n_custom_bindings.h"
+#include "chrome/renderer/extensions/logging_native_handler.h"
 #include "chrome/renderer/extensions/media_galleries_custom_bindings.h"
 #include "chrome/renderer/extensions/miscellaneous_bindings.h"
 #include "chrome/renderer/extensions/module_system.h"
@@ -138,25 +139,6 @@ class TestFeaturesNativeHandler : public ObjectBackedNativeHandler {
   }
 };
 
-class SchemaRegistryNativeHandler : public ObjectBackedNativeHandler {
- public:
-  SchemaRegistryNativeHandler(V8SchemaRegistry* registry,
-                              ChromeV8Context* context)
-      : ObjectBackedNativeHandler(context),
-        registry_(registry) {
-    RouteFunction("GetSchema",
-        base::Bind(&SchemaRegistryNativeHandler::GetSchema,
-                   base::Unretained(this)));
-  }
-
- private:
-  v8::Handle<v8::Value> GetSchema(const v8::Arguments& args) {
-    return registry_->GetSchema(*v8::String::AsciiValue(args[0]));
-  }
-
-  V8SchemaRegistry* registry_;
-};
-
 class V8ContextNativeHandler : public ObjectBackedNativeHandler {
  public:
   V8ContextNativeHandler(ChromeV8Context* context, Dispatcher* dispatcher)
@@ -197,20 +179,6 @@ class V8ContextNativeHandler : public ObjectBackedNativeHandler {
 
   ChromeV8Context* context_;
   Dispatcher* dispatcher_;
-};
-
-class ChromeHiddenNativeHandler : public ObjectBackedNativeHandler {
- public:
-  explicit ChromeHiddenNativeHandler(ChromeV8Context* context)
-      : ObjectBackedNativeHandler(context) {
-    RouteFunction("GetChromeHidden",
-        base::Bind(&ChromeHiddenNativeHandler::GetChromeHidden,
-                   base::Unretained(this)));
-  }
-
-  v8::Handle<v8::Value> GetChromeHidden(const v8::Arguments& args) {
-    return ChromeV8Context::GetOrCreateChromeHidden(context()->v8_context());
-  }
 };
 
 class ChromeNativeHandler : public ObjectBackedNativeHandler {
@@ -360,86 +328,14 @@ class ProcessInfoNativeHandler : public ChromeV8Extension {
   bool send_request_disabled_;
 };
 
-class LoggingNativeHandler : public ObjectBackedNativeHandler {
- public:
-  explicit LoggingNativeHandler(ChromeV8Context* context)
-      : ObjectBackedNativeHandler(context) {
-    RouteFunction("DCHECK",
-        base::Bind(&LoggingNativeHandler::Dcheck, base::Unretained(this)));
-    RouteFunction("CHECK",
-        base::Bind(&LoggingNativeHandler::Check, base::Unretained(this)));
-    RouteFunction("DCHECK_IS_ON",
-        base::Bind(&LoggingNativeHandler::DcheckIsOn, base::Unretained(this)));
-  }
-
-  v8::Handle<v8::Value> Check(const v8::Arguments& args) {
-    bool check_value;
-    std::string error_message;
-    ParseArgs(args, &check_value, &error_message);
-    CHECK(check_value) << error_message;
-    return v8::Undefined();
-  }
-
-  v8::Handle<v8::Value> Dcheck(const v8::Arguments& args) {
-    bool check_value;
-    std::string error_message;
-    ParseArgs(args, &check_value, &error_message);
-    DCHECK(check_value) << error_message;
-    return v8::Undefined();
-  }
-
-  v8::Handle<v8::Value> DcheckIsOn(const v8::Arguments& args) {
-    return v8::Boolean::New(DCHECK_IS_ON());
-  }
-
- private:
-  void ParseArgs(const v8::Arguments& args,
-                 bool* check_value,
-                 std::string* error_message) {
-    CHECK_LE(args.Length(), 2);
-    *check_value = args[0]->BooleanValue();
-    if (args.Length() == 2)
-      *error_message = "Error: " + std::string(
-          *v8::String::AsciiValue(args[1]));
-
-    v8::Handle<v8::StackTrace> stack_trace =
-        v8::StackTrace::CurrentStackTrace(10);
-    if (stack_trace.IsEmpty() || stack_trace->GetFrameCount() <= 0) {
-      *error_message += "\n    <no stack trace>";
-    } else {
-      for (size_t i = 0; i < (size_t) stack_trace->GetFrameCount(); ++i) {
-        v8::Handle<v8::StackFrame> frame = stack_trace->GetFrame(i);
-        CHECK(!frame.IsEmpty());
-        *error_message += base::StringPrintf("\n    at %s (%s:%d:%d)",
-            ToStringOrDefault(frame->GetFunctionName(), "<anonymous>").c_str(),
-            ToStringOrDefault(frame->GetScriptName(), "<anonymous>").c_str(),
-            frame->GetLineNumber(),
-            frame->GetColumn());
-      }
-    }
-  }
-
-  std::string ToStringOrDefault(const v8::Handle<v8::String>& v8_string,
-                                  const std::string& dflt) {
-    if (v8_string.IsEmpty())
-      return dflt;
-    std::string ascii_value = *v8::String::AsciiValue(v8_string);
-    return ascii_value.empty() ? dflt : ascii_value;
-  }
-};
-
 void InstallAppBindings(ModuleSystem* module_system,
-                        v8::Handle<v8::Object> chrome,
-                        v8::Handle<v8::Object> chrome_hidden) {
+                        v8::Handle<v8::Object> chrome) {
   module_system->SetLazyField(chrome, "app", "app", "chromeApp");
 }
 
 void InstallWebstoreBindings(ModuleSystem* module_system,
-                             v8::Handle<v8::Object> chrome,
-                             v8::Handle<v8::Object> chrome_hidden) {
+                             v8::Handle<v8::Object> chrome) {
   module_system->SetLazyField(chrome, "webstore", "webstore", "chromeWebstore");
-  module_system->SetLazyField(chrome_hidden, "webstore", "webstore",
-                              "chromeHiddenWebstore");
 }
 
 // Calls a method |method_name| in a module |module_name| belonging to the
@@ -787,11 +683,12 @@ void Dispatcher::RegisterSchemaGeneratedBindings(
   }
 }
 
+// NOTE: please use the naming convention "foo_natives" for these.
 void Dispatcher::RegisterNativeHandlers(ModuleSystem* module_system,
                                         ChromeV8Context* context) {
-  module_system->RegisterNativeHandler("event_bindings",
+  module_system->RegisterNativeHandler("event_natives",
       scoped_ptr<NativeHandler>(EventBindings::Create(this, context)));
-  module_system->RegisterNativeHandler("miscellaneous_bindings",
+  module_system->RegisterNativeHandler("miscellaneous_bindings_natives",
       scoped_ptr<NativeHandler>(MiscellaneousBindings::Get(this, context)));
   module_system->RegisterNativeHandler("apiDefinitions",
       scoped_ptr<NativeHandler>(new ApiDefinitionsNatives(this, context)));
@@ -817,7 +714,7 @@ void Dispatcher::RegisterNativeHandlers(ModuleSystem* module_system,
   module_system->RegisterNativeHandler("app_runtime",
       scoped_ptr<NativeHandler>(
           new AppRuntimeCustomBindings(this, context)));
-  module_system->RegisterNativeHandler("app_window",
+  module_system->RegisterNativeHandler("app_window_natives",
       scoped_ptr<NativeHandler>(
           new AppWindowCustomBindings(this, context)));
   module_system->RegisterNativeHandler("context_menus",
@@ -861,23 +758,22 @@ void Dispatcher::RegisterNativeHandlers(ModuleSystem* module_system,
 }
 
 void Dispatcher::PopulateSourceMap() {
-  source_map_.RegisterSource("event_bindings", IDR_EVENT_BINDINGS_JS);
-  source_map_.RegisterSource("miscellaneous_bindings",
-      IDR_MISCELLANEOUS_BINDINGS_JS);
-  source_map_.RegisterSource("json", IDR_JSON_JS);
-  source_map_.RegisterSource("json_schema", IDR_JSON_SCHEMA_JS);
-  source_map_.RegisterSource("test", IDR_TEST_CUSTOM_BINDINGS_JS);
-
   // Libraries.
   source_map_.RegisterSource("contentWatcher", IDR_CONTENT_WATCHER_JS);
+  source_map_.RegisterSource("entryIdManager", IDR_ENTRY_ID_MANAGER);
+  source_map_.RegisterSource(kEventModule, IDR_EVENT_BINDINGS_JS);
   source_map_.RegisterSource("imageUtil", IDR_IMAGE_UTIL_JS);
+  source_map_.RegisterSource("json", IDR_JSON_JS);
+  source_map_.RegisterSource("json_schema", IDR_JSON_SCHEMA_JS);
   source_map_.RegisterSource("lastError", IDR_LAST_ERROR_JS);
+  source_map_.RegisterSource("miscellaneous_bindings",
+                             IDR_MISCELLANEOUS_BINDINGS_JS);
   source_map_.RegisterSource("schemaUtils", IDR_SCHEMA_UTILS_JS);
   source_map_.RegisterSource("sendRequest", IDR_SEND_REQUEST_JS);
   source_map_.RegisterSource("setIcon", IDR_SET_ICON_JS);
+  source_map_.RegisterSource("test", IDR_TEST_CUSTOM_BINDINGS_JS);
   source_map_.RegisterSource("unload_event", IDR_UNLOAD_EVENT_JS);
   source_map_.RegisterSource("utils", IDR_UTILS_JS);
-  source_map_.RegisterSource("entryIdManager", IDR_ENTRY_ID_MANAGER);
 
   // Custom bindings.
   source_map_.RegisterSource("app", IDR_APP_CUSTOM_BINDINGS_JS);
@@ -971,9 +867,7 @@ void Dispatcher::InstallBindings(ModuleSystem* module_system,
     v8::Handle<v8::Object> global(v8_context->Global());
     v8::Handle<v8::Object> chrome =
         global->Get(v8::String::New("chrome"))->ToObject();
-    v8::Handle<v8::Object> chrome_hidden =
-        ChromeV8Context::GetOrCreateChromeHidden(v8_context)->ToObject();
-    (*lazy_binding->second)(module_system, chrome, chrome_hidden);
+    (*lazy_binding->second)(module_system, chrome);
   } else {
     module_system->Require(api);
   }
@@ -1026,8 +920,6 @@ void Dispatcher::DidCreateScriptContext(
 
   module_system->RegisterNativeHandler("chrome",
       scoped_ptr<NativeHandler>(new ChromeNativeHandler(context)));
-  module_system->RegisterNativeHandler("chrome_hidden",
-      scoped_ptr<NativeHandler>(new ChromeHiddenNativeHandler(context)));
   module_system->RegisterNativeHandler("print",
       scoped_ptr<NativeHandler>(new PrintNativeHandler(context)));
   module_system->RegisterNativeHandler("lazy_background_page",
@@ -1036,8 +928,7 @@ void Dispatcher::DidCreateScriptContext(
   module_system->RegisterNativeHandler("logging",
       scoped_ptr<NativeHandler>(new LoggingNativeHandler(context)));
   module_system->RegisterNativeHandler("schema_registry",
-      scoped_ptr<NativeHandler>(
-          new SchemaRegistryNativeHandler(v8_schema_registry(), context)));
+      v8_schema_registry_.AsNativeHandler());
   module_system->RegisterNativeHandler("v8_context",
       scoped_ptr<NativeHandler>(new V8ContextNativeHandler(context, this)));
   module_system->RegisterNativeHandler("test_features",
@@ -1054,7 +945,11 @@ void Dispatcher::DidCreateScriptContext(
           ChromeRenderProcessObserver::is_incognito_process(),
           manifest_version, send_request_disabled)));
 
-  GetOrCreateChrome(v8_context);
+  v8::Handle<v8::Object> chrome = GetOrCreateChrome(v8_context);
+
+  // chrome.Event is part of the public API (although undocumented). Make it
+  // lazily evalulate to Event from event_bindings.js.
+  module_system->SetLazyField(chrome, "Event", kEventModule, "Event");
 
   // Loading JavaScript is expensive, so only run the full API bindings
   // generation mechanisms in extension pages (NOT all web pages).

@@ -6,6 +6,7 @@
 
 var binding = require('binding').Binding.create('permissions');
 
+var Event = require('event_bindings').Event;
 var sendRequest = require('sendRequest').sendRequest;
 
 // These custom binding are only necessary because it is not currently
@@ -85,7 +86,7 @@ binding.registerCustomHook(function(api) {
     for (var i = 0; i < args[0].permissions.length; i += 1) {
       args[0].permissions[i] = maybeConvertToObject(args[0].permissions[i]);
     }
-    chrome.Event.prototype.dispatchToListener(callback, args);
+    Event.prototype.dispatchToListener(callback, args);
   };
   permissions.onRemoved.dispatchToListener =
       permissions.onAdded.dispatchToListener;

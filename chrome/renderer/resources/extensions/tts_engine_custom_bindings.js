@@ -6,9 +6,9 @@
 
 var binding = require('binding').Binding.create('ttsEngine');
 
-var chromeHidden = requireNative('chrome_hidden').GetChromeHidden();
+var eventBindings = require('event_bindings');
 
-chromeHidden.Event.registerArgumentMassager('ttsEngine.onSpeak',
+eventBindings.registerArgumentMassager('ttsEngine.onSpeak',
     function(args, dispatch) {
   var text = args[0];
   var options = args[1];

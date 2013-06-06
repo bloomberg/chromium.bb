@@ -6,7 +6,7 @@
 
 var binding = require('binding').Binding.create('syncFileSystem');
 
-var chromeHidden = requireNative('chrome_hidden').GetChromeHidden();
+var eventBindings = require('event_bindings');
 var fileSystemNatives = requireNative('file_system_natives');
 var forEach = require('utils').forEach;
 var syncFileSystemNatives = requireNative('sync_file_system');
@@ -86,7 +86,7 @@ binding.registerCustomHook(function(bindingsAPI) {
   });
 });
 
-chromeHidden.Event.registerArgumentMassager(
+eventBindings.registerArgumentMassager(
     'syncFileSystem.onFileStatusChanged', function(args, dispatch) {
   // Make FileEntry object using all the base string fields.
   var fileEntry = fileSystemNatives.GetFileEntry(

@@ -8,7 +8,6 @@
 
 var binding = require('binding').Binding.create('systemIndicator');
 
-var chromeHidden = requireNative('chrome_hidden').GetChromeHidden();
 var setIcon = require('setIcon').setIcon;
 
 binding.registerCustomHook(function(bindingsAPI) {

@@ -3,47 +3,40 @@
 // found in the LICENSE file.
 
 // Routines used to validate and normalize arguments.
-
-var chromeHidden = requireNative('chrome_hidden').GetChromeHidden();
-var chrome = requireNative('chrome').GetChrome();
-
 // TODO(benwells): unit test this file.
-// JSONSchemaValidator is not loaded in unit tests.
-var validate;
-if (chromeHidden.JSONSchemaValidator) {
-  var schemaValidator = new chromeHidden.JSONSchemaValidator();
 
-  // Validate arguments.
-  validate = function(args, parameterSchemas) {
-    if (args.length > parameterSchemas.length)
-      throw new Error("Too many arguments.");
-    for (var i = 0; i < parameterSchemas.length; i++) {
-      if (i in args && args[i] !== null && args[i] !== undefined) {
-        schemaValidator.resetErrors();
-        schemaValidator.validate(args[i], parameterSchemas[i]);
-        if (schemaValidator.errors.length == 0)
-          continue;
-        var message = "Invalid value for argument " + (i + 1) + ". ";
-        for (var i = 0, err;
-            err = schemaValidator.errors[i]; i++) {
-          if (err.path) {
-            message += "Property '" + err.path + "': ";
-          }
-          message += err.message;
-          message = message.substring(0, message.length - 1);
-          message += ", ";
+var JSONSchemaValidator = require('json_schema').JSONSchemaValidator;
+
+var schemaValidator = new JSONSchemaValidator();
+
+// Validate arguments.
+function validate(args, parameterSchemas) {
+  if (args.length > parameterSchemas.length)
+    throw new Error("Too many arguments.");
+  for (var i = 0; i < parameterSchemas.length; i++) {
+    if (i in args && args[i] !== null && args[i] !== undefined) {
+      schemaValidator.resetErrors();
+      schemaValidator.validate(args[i], parameterSchemas[i]);
+      if (schemaValidator.errors.length == 0)
+        continue;
+      var message = "Invalid value for argument " + (i + 1) + ". ";
+      for (var i = 0, err;
+          err = schemaValidator.errors[i]; i++) {
+        if (err.path) {
+          message += "Property '" + err.path + "': ";
         }
-        message = message.substring(0, message.length - 2);
-        message += ".";
-        throw new Error(message);
-      } else if (!parameterSchemas[i].optional) {
-        throw new Error("Parameter " + (i + 1) + " (" +
-            parameterSchemas[i].name + ") is required.");
+        message += err.message;
+        message = message.substring(0, message.length - 1);
+        message += ", ";
       }
+      message = message.substring(0, message.length - 2);
+      message += ".";
+      throw new Error(message);
+    } else if (!parameterSchemas[i].optional) {
+      throw new Error("Parameter " + (i + 1) + " (" +
+          parameterSchemas[i].name + ") is required.");
     }
-  };
-} else {
-  validate = function() {};
+  }
 }
 
 // Generate all possible signatures for a given API function.
@@ -64,7 +57,7 @@ function argumentsMatchSignature(args, candidateSignature) {
   if (args.length != candidateSignature.length)
     return false;
   for (var i = 0; i < candidateSignature.length; i++) {
-    var argType =  chromeHidden.JSONSchemaValidator.getType(args[i]);
+    var argType =  JSONSchemaValidator.getType(args[i]);
     if (!schemaValidator.isValidSchemaType(argType,
         candidateSignature[i]))
       return false;
@@ -101,7 +94,7 @@ function getParameterSignatureString(name, definedSignature) {
 // Example return value for call: chrome.windows.get(1, callback) is:
 // "windows.get(int, function)"
 function getArgumentSignatureString(name, args) {
-  var typeNames = args.map(chromeHidden.JSONSchemaValidator.getType);
+  var typeNames = args.map(JSONSchemaValidator.getType);
   return name + "(" + typeNames.join(", ") + ")";
 };
 

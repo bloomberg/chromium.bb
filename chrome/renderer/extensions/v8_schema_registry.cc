@@ -7,11 +7,38 @@
 #include "base/logging.h"
 #include "base/values.h"
 #include "chrome/common/extensions/api/extension_api.h"
+#include "chrome/renderer/extensions/chrome_v8_context.h"
+#include "chrome/renderer/extensions/object_backed_native_handler.h"
 #include "content/public/renderer/v8_value_converter.h"
 
 using content::V8ValueConverter;
 
 namespace extensions {
+
+namespace {
+
+class SchemaRegistryNativeHandler : public ObjectBackedNativeHandler {
+ public:
+  SchemaRegistryNativeHandler(V8SchemaRegistry* registry,
+                              scoped_ptr<ChromeV8Context> context)
+      : ObjectBackedNativeHandler(context.get()),
+        context_(context.Pass()),
+        registry_(registry) {
+    RouteFunction("GetSchema",
+        base::Bind(&SchemaRegistryNativeHandler::GetSchema,
+                   base::Unretained(this)));
+  }
+
+ private:
+  v8::Handle<v8::Value> GetSchema(const v8::Arguments& args) {
+    return registry_->GetSchema(*v8::String::AsciiValue(args[0]));
+  }
+
+  scoped_ptr<ChromeV8Context> context_;
+  V8SchemaRegistry* registry_;
+};
+
+}  // namespace
 
 V8SchemaRegistry::V8SchemaRegistry() {}
 
@@ -22,6 +49,16 @@ V8SchemaRegistry::~V8SchemaRegistry() {
        i != schema_cache_.end(); ++i) {
     i->second.Dispose(i->second->CreationContext()->GetIsolate());
   }
+}
+
+scoped_ptr<NativeHandler> V8SchemaRegistry::AsNativeHandler() {
+  scoped_ptr<ChromeV8Context> context(new ChromeV8Context(
+      GetOrCreateContext(),
+      NULL,  // no frame
+      NULL,  // no extension
+      Feature::UNSPECIFIED_CONTEXT));
+  return scoped_ptr<NativeHandler>(
+      new SchemaRegistryNativeHandler(this, context.Pass()));
 }
 
 v8::Handle<v8::Array> V8SchemaRegistry::GetSchemas(

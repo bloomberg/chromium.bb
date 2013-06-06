@@ -6,8 +6,8 @@
 
 var binding = require('binding').Binding.create('app.runtime');
 
-var chromeHidden = requireNative('chrome_hidden').GetChromeHidden();
 var chrome = requireNative('chrome').GetChrome();
+var eventBindings = require('event_bindings');
 var fileSystemHelpers = requireNative('file_system_natives');
 var forEach = require('utils').forEach;
 var GetIsolatedFileSystem = fileSystemHelpers.GetIsolatedFileSystem;
@@ -17,7 +17,7 @@ var SerializeToString = appNatives.SerializeToString;
 var CreateBlob = appNatives.CreateBlob;
 var entryIdManager = require('entryIdManager');
 
-chromeHidden.Event.registerArgumentMassager('app.runtime.onLaunched',
+eventBindings.registerArgumentMassager('app.runtime.onLaunched',
     function(args, dispatch) {
   var launchData = args[0];
 

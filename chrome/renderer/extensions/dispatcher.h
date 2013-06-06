@@ -147,8 +147,7 @@ class Dispatcher : public content::RenderProcessObserver {
   FRIEND_TEST_ALL_PREFIXES(RendererPermissionsPolicyDelegateTest,
                            CannotScriptWebstore);
   typedef void (*BindingInstaller)(ModuleSystem* module_system,
-                                  v8::Handle<v8::Object> chrome,
-                                  v8::Handle<v8::Object> chrome_hidden);
+                                  v8::Handle<v8::Object> chrome);
 
   // RenderProcessObserver implementation:
   virtual bool OnControlMessageReceived(const IPC::Message& message) OVERRIDE;

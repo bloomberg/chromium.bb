@@ -5,11 +5,11 @@
 // Custom bindings for the downloads API.
 
 var binding = require('binding').Binding.create('downloads');
-var chromeHidden = requireNative('chrome_hidden').GetChromeHidden();
 var downloadsInternal = require('binding').Binding.create(
     'downloadsInternal').generate();
+var eventBindings = require('event_bindings');
 
-chromeHidden.Event.registerArgumentMassager(
+eventBindings.registerArgumentMassager(
     'downloads.onDeterminingFilename',
     function massage_determining_filename(args, dispatch) {
   var downloadItem = args[0];

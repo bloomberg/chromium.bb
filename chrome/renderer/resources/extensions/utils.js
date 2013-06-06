@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-var chrome = requireNative('chrome').GetChrome();
 var schemaRegistry = requireNative('schema_registry');
 var CHECK = requireNative('logging').CHECK;
+var WARNING = requireNative('logging').WARNING;
 
 function forEach(obj, f, self) {
   // For arrays, make sure the indices are numbers not strings - and in that
@@ -46,8 +46,11 @@ function lookup(array_of_dictionaries, field, value) {
 function loadTypeSchema(typeName, defaultSchema) {
   var parts = typeName.split('.');
   if (parts.length == 1) {
-    CHECK(defaultSchema, 'Trying to reference "' + typeName +
-        '" with neither namespace nor default schema.');
+    if (defaultSchema == null) {
+      WARNING('Trying to reference "' + typeName + '" ' +
+              'with neither namespace nor default schema.');
+      return null;
+    }
     var types = defaultSchema.types;
   } else {
     var schemaName = parts.slice(0, parts.length - 1).join('.')

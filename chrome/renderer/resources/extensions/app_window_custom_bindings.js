@@ -4,14 +4,15 @@
 
 // Custom binding for the app_window API.
 
+var appWindowNatives = requireNative('app_window_natives');
 var Binding = require('binding').Binding;
-var chromeHidden = requireNative('chrome_hidden').GetChromeHidden();
 var chrome = requireNative('chrome').GetChrome();
-var sendRequest = require('sendRequest').sendRequest;
-var appWindowNatives = requireNative('app_window');
+var Event = require('event_bindings').Event;
 var forEach = require('utils').forEach;
-var GetView = appWindowNatives.GetView;
-var OnContextReady = appWindowNatives.OnContextReady;
+var sendRequest = require('sendRequest').sendRequest;
+
+var appWindowData = null;
+var currentAppWindow = null;
 
 var appWindow = Binding.create('app.window');
 appWindow.registerCustomHook(function(bindingsAPI) {
@@ -20,8 +21,10 @@ appWindow.registerCustomHook(function(bindingsAPI) {
   apiFunctions.setCustomCallback('create',
                                  function(name, request, windowParams) {
     var view = null;
-    if (windowParams.viewId)
-      view = GetView(windowParams.viewId, windowParams.injectTitlebar);
+    if (windowParams.viewId) {
+      view = appWindowNatives.GetView(
+          windowParams.viewId, windowParams.injectTitlebar);
+    }
 
     if (!view) {
       // No route to created window. If given a callback, trigger it with an
@@ -54,7 +57,8 @@ appWindow.registerCustomHook(function(bindingsAPI) {
         return;
       }
 
-      var willCallback = OnContextReady(windowParams.viewId, function(success) {
+      var willCallback = appWindowNatives.OnContextReady(windowParams.viewId,
+                                                         function(success) {
         if (success) {
           callback(view.chrome.app.window.current());
         } else {
@@ -68,12 +72,12 @@ appWindow.registerCustomHook(function(bindingsAPI) {
   });
 
   apiFunctions.setHandleRequest('current', function() {
-    if (!chromeHidden.currentAppWindow) {
+    if (!currentAppWindow) {
       console.error('chrome.app.window.current() is null -- window not ' +
                     'created with chrome.app.window.create()');
       return null;
     }
-    return chromeHidden.currentAppWindow;
+    return currentAppWindow;
   });
 
   // This is an internal function, but needs to be bound with setHandleRequest
@@ -89,30 +93,30 @@ appWindow.registerCustomHook(function(bindingsAPI) {
     AppWindow.prototype.moveTo = window.moveTo.bind(window);
     AppWindow.prototype.resizeTo = window.resizeTo.bind(window);
     AppWindow.prototype.contentWindow = window;
-    AppWindow.prototype.onClosed = new chrome.Event;
+    AppWindow.prototype.onClosed = new Event();
     AppWindow.prototype.close = function() {
       this.contentWindow.close();
     };
     AppWindow.prototype.getBounds = function() {
-      var bounds = chromeHidden.appWindowData.bounds;
+      var bounds = appWindowData.bounds;
       return { left: bounds.left, top: bounds.top,
                width: bounds.width, height: bounds.height };
     };
     AppWindow.prototype.isFullscreen = function() {
-      return chromeHidden.appWindowData.fullscreen;
+      return appWindowData.fullscreen;
     };
     AppWindow.prototype.isMinimized = function() {
-      return chromeHidden.appWindowData.minimized;
+      return appWindowData.minimized;
     };
     AppWindow.prototype.isMaximized = function() {
-      return chromeHidden.appWindowData.maximized;
+      return appWindowData.maximized;
     };
 
     Object.defineProperty(AppWindow.prototype, 'id', {get: function() {
-      return chromeHidden.appWindowData.id;
+      return appWindowData.id;
     }});
 
-    chromeHidden.appWindowData = {
+    appWindowData = {
       id: params.id || '',
       bounds: { left: params.bounds.left, top: params.bounds.top,
                 width: params.bounds.width, height: params.bounds.height },
@@ -120,7 +124,7 @@ appWindow.registerCustomHook(function(bindingsAPI) {
       minimized: params.minimized,
       maximized: params.maximized
     };
-    chromeHidden.currentAppWindow = new AppWindow;
+    currentAppWindow = new AppWindow;
   });
 });
 
@@ -132,13 +136,14 @@ function boundsEqual(bounds1, bounds2) {
 }
 
 function updateAppWindowProperties(update) {
-  if (!chromeHidden.appWindowData)
+  if (!appWindowData)
     return;
-  var oldData = chromeHidden.appWindowData;
-  update.id = oldData.id;
-  chromeHidden.appWindowData = update;
 
-  var currentWindow = chromeHidden.currentAppWindow;
+  var oldData = appWindowData;
+  update.id = oldData.id;
+  appWindowData = update;
+
+  var currentWindow = currentAppWindow;
 
   if (!boundsEqual(oldData.bounds, update.bounds))
     currentWindow["onBoundsChanged"].dispatch();
@@ -157,9 +162,9 @@ function updateAppWindowProperties(update) {
 };
 
 function onAppWindowClosed() {
-  if (!chromeHidden.currentAppWindow)
+  if (!currentAppWindow)
     return;
-  chromeHidden.currentAppWindow.onClosed.dispatch();
+  currentAppWindow.onClosed.dispatch();
 }
 
 exports.binding = appWindow.generate();
