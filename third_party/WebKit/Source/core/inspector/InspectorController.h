@@ -91,7 +91,8 @@ public:
     bool hasFrontend() const { return m_inspectorFrontend; }
     void connectFrontend(InspectorFrontendChannel*);
     void disconnectFrontend();
-    void reconnectFrontend(InspectorFrontendChannel*, const String& inspectorStateCookie);
+    void reconnectFrontend();
+    void reuseFrontend(InspectorFrontendChannel*, const String& inspectorStateCookie);
     void setProcessId(long);
     void webViewResized(const IntSize&);
 

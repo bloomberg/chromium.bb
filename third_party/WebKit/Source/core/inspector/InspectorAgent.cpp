@@ -39,6 +39,7 @@
 #include "core/dom/Document.h"
 #include "core/inspector/InjectedScriptHost.h"
 #include "core/inspector/InjectedScriptManager.h"
+#include "core/inspector/InspectorController.h"
 #include "core/inspector/InspectorState.h"
 #include "core/inspector/InspectorValues.h"
 #include "core/inspector/InstrumentingAgents.h"
@@ -128,6 +129,11 @@ void InspectorAgent::enable(ErrorString*)
 void InspectorAgent::disable(ErrorString*)
 {
     m_state->setBoolean(InspectorAgentState::inspectorAgentEnabled, false);
+}
+
+void InspectorAgent::reset(ErrorString*)
+{
+    m_inspectedPage->inspectorController()->reconnectFrontend();
 }
 
 void InspectorAgent::domContentLoadedEventFired(Frame* frame)

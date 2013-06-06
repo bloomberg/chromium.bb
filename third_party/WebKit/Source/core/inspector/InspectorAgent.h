@@ -64,6 +64,7 @@ public:
     // Inspector front-end API.
     void enable(ErrorString*);
     void disable(ErrorString*);
+    void reset(ErrorString*);
 
     KURL inspectedURL() const;
     KURL inspectedURLWithoutFragment() const;

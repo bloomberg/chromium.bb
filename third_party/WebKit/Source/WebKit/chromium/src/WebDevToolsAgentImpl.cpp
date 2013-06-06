@@ -390,7 +390,7 @@ void WebDevToolsAgentImpl::reattach(const WebString& savedState)
         return;
 
     ClientMessageLoopAdapter::ensureClientMessageLoopCreated(m_client);
-    inspectorController()->reconnectFrontend(this, savedState);
+    inspectorController()->reuseFrontend(this, savedState);
     WebKit::Platform::current()->currentThread()->addTaskObserver(this);
     m_attached = true;
 }

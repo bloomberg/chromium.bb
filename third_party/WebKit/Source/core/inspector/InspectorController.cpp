@@ -242,7 +242,16 @@ void InspectorController::disconnectFrontend()
     InspectorInstrumentation::unregisterInstrumentingAgents(m_instrumentingAgents.get());
 }
 
-void InspectorController::reconnectFrontend(InspectorFrontendChannel* frontendChannel, const String& inspectorStateCookie)
+void InspectorController::reconnectFrontend()
+{
+    if (!m_inspectorFrontend)
+        return;
+    InspectorFrontendChannel* frontendChannel = m_inspectorFrontend->inspector()->getInspectorFrontendChannel();
+    disconnectFrontend();
+    connectFrontend(frontendChannel);
+}
+
+void InspectorController::reuseFrontend(InspectorFrontendChannel* frontendChannel, const String& inspectorStateCookie)
 {
     ASSERT(!m_inspectorFrontend);
     connectFrontend(frontendChannel);
