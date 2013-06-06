@@ -1,0 +1,472 @@
+Index: net/third_party/nss/ssl/sslproto.h
+===================================================================
+--- net/third_party/nss/ssl/sslproto.h	(revision 203497)
++++ net/third_party/nss/ssl/sslproto.h	(working copy)
+@@ -134,6 +134,9 @@
+ #define TLS_DHE_DSS_WITH_AES_256_CBC_SHA  	0x0038
+ #define TLS_DHE_RSA_WITH_AES_256_CBC_SHA  	0x0039
+ #define TLS_DH_ANON_WITH_AES_256_CBC_SHA  	0x003A
++#define TLS_RSA_WITH_NULL_SHA256		0x003B
++#define TLS_RSA_WITH_AES_128_CBC_SHA256  	0x003C
++#define TLS_RSA_WITH_AES_256_CBC_SHA256  	0x003D
+ 
+ #define TLS_RSA_WITH_CAMELLIA_128_CBC_SHA      	0x0041
+ #define TLS_DH_DSS_WITH_CAMELLIA_128_CBC_SHA   	0x0042
+@@ -148,6 +151,8 @@
+ #define TLS_DHE_DSS_EXPORT1024_WITH_DES_CBC_SHA 0x0063
+ #define TLS_DHE_DSS_EXPORT1024_WITH_RC4_56_SHA  0x0065
+ #define TLS_DHE_DSS_WITH_RC4_128_SHA            0x0066
++#define TLS_DHE_RSA_WITH_AES_128_CBC_SHA256     0x0067
++#define TLS_DHE_RSA_WITH_AES_256_CBC_SHA256     0x006B
+ 
+ #define TLS_RSA_WITH_CAMELLIA_256_CBC_SHA      	0x0084
+ #define TLS_DH_DSS_WITH_CAMELLIA_256_CBC_SHA   	0x0085
+@@ -197,6 +202,9 @@
+ #define TLS_ECDH_anon_WITH_AES_128_CBC_SHA      0xC018
+ #define TLS_ECDH_anon_WITH_AES_256_CBC_SHA      0xC019
+ 
++#define TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256 0xC023
++#define TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256   0xC027
++
+ /* Netscape "experimental" cipher suites. */
+ #define SSL_RSA_OLDFIPS_WITH_3DES_EDE_CBC_SHA	0xffe0
+ #define SSL_RSA_OLDFIPS_WITH_DES_CBC_SHA	0xffe1
+Index: net/third_party/nss/ssl/sslt.h
+===================================================================
+--- net/third_party/nss/ssl/sslt.h	(revision 203497)
++++ net/third_party/nss/ssl/sslt.h	(working copy)
+@@ -102,7 +102,8 @@
+     ssl_mac_md5       = 1, 
+     ssl_mac_sha       = 2, 
+     ssl_hmac_md5      = 3, 	/* TLS HMAC version of mac_md5 */
+-    ssl_hmac_sha      = 4 	/* TLS HMAC version of mac_sha */
++    ssl_hmac_sha      = 4, 	/* TLS HMAC version of mac_sha */
++    ssl_hmac_sha256   = 5
+ } SSLMACAlgorithm;
+ 
+ typedef enum {
+Index: net/third_party/nss/ssl/sslinfo.c
+===================================================================
+--- net/third_party/nss/ssl/sslinfo.c	(revision 203497)
++++ net/third_party/nss/ssl/sslinfo.c	(working copy)
+@@ -128,6 +128,7 @@
+ #define B_40    128,  40,  40
+ #define B_0  	  0,   0,   0
+ 
++#define M_SHA256 "SHA256", ssl_hmac_sha256, 256
+ #define M_SHA	"SHA1", ssl_mac_sha, 160
+ #define M_MD5	"MD5",  ssl_mac_md5, 128
+ 
+@@ -135,20 +136,24 @@
+ /* <------ Cipher suite --------------------> <auth> <KEA>  <bulk cipher> <MAC> <FIPS> */
+ {0,CS(TLS_DHE_RSA_WITH_CAMELLIA_256_CBC_SHA), S_RSA, K_DHE, C_CAMELLIA, B_256, M_SHA, 0, 0, 0, },
+ {0,CS(TLS_DHE_DSS_WITH_CAMELLIA_256_CBC_SHA), S_DSA, K_DHE, C_CAMELLIA, B_256, M_SHA, 0, 0, 0, },
++{0,CS(TLS_DHE_RSA_WITH_AES_256_CBC_SHA256),   S_RSA, K_DHE, C_AES, B_256, M_SHA256, 1, 0, 0, },
+ {0,CS(TLS_DHE_RSA_WITH_AES_256_CBC_SHA),      S_RSA, K_DHE, C_AES, B_256, M_SHA, 1, 0, 0, },
+ {0,CS(TLS_DHE_DSS_WITH_AES_256_CBC_SHA),      S_DSA, K_DHE, C_AES, B_256, M_SHA, 1, 0, 0, },
+ {0,CS(TLS_RSA_WITH_CAMELLIA_256_CBC_SHA),     S_RSA, K_RSA, C_CAMELLIA, B_256, M_SHA, 0, 0, 0, },
++{0,CS(TLS_RSA_WITH_AES_256_CBC_SHA256),       S_RSA, K_RSA, C_AES, B_256, M_SHA256, 1, 0, 0, },
+ {0,CS(TLS_RSA_WITH_AES_256_CBC_SHA),          S_RSA, K_RSA, C_AES, B_256, M_SHA, 1, 0, 0, },
+ 
+ {0,CS(TLS_DHE_RSA_WITH_CAMELLIA_128_CBC_SHA), S_RSA, K_DHE, C_CAMELLIA, B_128, M_SHA, 0, 0, 0, },
+ {0,CS(TLS_DHE_DSS_WITH_CAMELLIA_128_CBC_SHA), S_DSA, K_DHE, C_CAMELLIA, B_128, M_SHA, 0, 0, 0, },
+ {0,CS(TLS_DHE_DSS_WITH_RC4_128_SHA),          S_DSA, K_DHE, C_RC4, B_128, M_SHA, 0, 0, 0, },
++{0,CS(TLS_DHE_RSA_WITH_AES_128_CBC_SHA256),   S_RSA, K_DHE, C_AES, B_128, M_SHA256, 1, 0, 0, },
+ {0,CS(TLS_DHE_RSA_WITH_AES_128_CBC_SHA),      S_RSA, K_DHE, C_AES, B_128, M_SHA, 1, 0, 0, },
+ {0,CS(TLS_DHE_DSS_WITH_AES_128_CBC_SHA),      S_DSA, K_DHE, C_AES, B_128, M_SHA, 1, 0, 0, },
+ {0,CS(TLS_RSA_WITH_SEED_CBC_SHA),             S_RSA, K_RSA, C_SEED,B_128, M_SHA, 1, 0, 0, },
+ {0,CS(TLS_RSA_WITH_CAMELLIA_128_CBC_SHA),     S_RSA, K_RSA, C_CAMELLIA, B_128, M_SHA, 0, 0, 0, },
+ {0,CS(SSL_RSA_WITH_RC4_128_SHA),              S_RSA, K_RSA, C_RC4, B_128, M_SHA, 0, 0, 0, },
+ {0,CS(SSL_RSA_WITH_RC4_128_MD5),              S_RSA, K_RSA, C_RC4, B_128, M_MD5, 0, 0, 0, },
++{0,CS(TLS_RSA_WITH_AES_128_CBC_SHA256),       S_RSA, K_RSA, C_AES, B_128, M_SHA256, 1, 0, 0, },
+ {0,CS(TLS_RSA_WITH_AES_128_CBC_SHA),          S_RSA, K_RSA, C_AES, B_128, M_SHA, 1, 0, 0, },
+ 
+ {0,CS(SSL_DHE_RSA_WITH_3DES_EDE_CBC_SHA),     S_RSA, K_DHE, C_3DES,B_3DES,M_SHA, 1, 0, 0, },
+@@ -165,6 +170,7 @@
+ {0,CS(TLS_RSA_EXPORT1024_WITH_DES_CBC_SHA),   S_RSA, K_RSA, C_DES, B_DES, M_SHA, 0, 1, 0, },
+ {0,CS(SSL_RSA_EXPORT_WITH_RC4_40_MD5),        S_RSA, K_RSA, C_RC4, B_40,  M_MD5, 0, 1, 0, },
+ {0,CS(SSL_RSA_EXPORT_WITH_RC2_CBC_40_MD5),    S_RSA, K_RSA, C_RC2, B_40,  M_MD5, 0, 1, 0, },
++{0,CS(TLS_RSA_WITH_NULL_SHA256),              S_RSA, K_RSA, C_NULL,B_0,   M_SHA256, 0, 1, 0, },
+ {0,CS(SSL_RSA_WITH_NULL_SHA),                 S_RSA, K_RSA, C_NULL,B_0,   M_SHA, 0, 1, 0, },
+ {0,CS(SSL_RSA_WITH_NULL_MD5),                 S_RSA, K_RSA, C_NULL,B_0,   M_MD5, 0, 1, 0, },
+ 
+@@ -180,6 +186,7 @@
+ {0,CS(TLS_ECDHE_ECDSA_WITH_RC4_128_SHA),      S_ECDSA, K_ECDHE, C_RC4, B_128, M_SHA, 0, 0, 0, },
+ {0,CS(TLS_ECDHE_ECDSA_WITH_3DES_EDE_CBC_SHA), S_ECDSA, K_ECDHE, C_3DES, B_3DES, M_SHA, 1, 0, 0, },
+ {0,CS(TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA),  S_ECDSA, K_ECDHE, C_AES, B_128, M_SHA, 1, 0, 0, },
++{0,CS(TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256), S_ECDSA, K_ECDHE, C_AES, B_128, M_SHA256, 1, 0, 0, },
+ {0,CS(TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA),  S_ECDSA, K_ECDHE, C_AES, B_256, M_SHA, 1, 0, 0, },
+ 
+ {0,CS(TLS_ECDH_RSA_WITH_NULL_SHA),            S_RSA, K_ECDH, C_NULL, B_0, M_SHA, 0, 0, 0, },
+@@ -192,6 +199,7 @@
+ {0,CS(TLS_ECDHE_RSA_WITH_RC4_128_SHA),        S_RSA, K_ECDHE, C_RC4, B_128, M_SHA, 0, 0, 0, },
+ {0,CS(TLS_ECDHE_RSA_WITH_3DES_EDE_CBC_SHA),   S_RSA, K_ECDHE, C_3DES, B_3DES, M_SHA, 1, 0, 0, },
+ {0,CS(TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA),    S_RSA, K_ECDHE, C_AES, B_128, M_SHA, 1, 0, 0, },
++{0,CS(TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256), S_RSA, K_ECDHE, C_AES, B_128, M_SHA256, 1, 0, 0, },
+ {0,CS(TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA),    S_RSA, K_ECDHE, C_AES, B_256, M_SHA, 1, 0, 0, },
+ #endif /* NSS_ENABLE_ECC */
+ 
+Index: net/third_party/nss/ssl/sslimpl.h
+===================================================================
+--- net/third_party/nss/ssl/sslimpl.h	(revision 203497)
++++ net/third_party/nss/ssl/sslimpl.h	(working copy)
+@@ -71,6 +71,7 @@
+ #define mac_sha 	ssl_mac_sha
+ #define hmac_md5	ssl_hmac_md5
+ #define hmac_sha	ssl_hmac_sha
++#define hmac_sha256	ssl_hmac_sha256
+ 
+ #define SET_ERROR_CODE		/* reminder */
+ #define SEND_ALERT		/* reminder */
+@@ -290,9 +291,9 @@
+ } ssl3CipherSuiteCfg;
+ 
+ #ifdef NSS_ENABLE_ECC
+-#define ssl_V3_SUITES_IMPLEMENTED 50
++#define ssl_V3_SUITES_IMPLEMENTED 57
+ #else
+-#define ssl_V3_SUITES_IMPLEMENTED 30
++#define ssl_V3_SUITES_IMPLEMENTED 35
+ #endif /* NSS_ENABLE_ECC */
+ 
+ #define MAX_DTLS_SRTP_CIPHER_SUITES 4
+Index: net/third_party/nss/ssl/ssl3ecc.c
+===================================================================
+--- net/third_party/nss/ssl/ssl3ecc.c	(revision 203497)
++++ net/third_party/nss/ssl/ssl3ecc.c	(working copy)
+@@ -911,6 +911,7 @@
+ static const ssl3CipherSuite ecdhe_ecdsa_suites[] = {
+     TLS_ECDHE_ECDSA_WITH_3DES_EDE_CBC_SHA,
+     TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA,
++    TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256,
+     TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA,
+     TLS_ECDHE_ECDSA_WITH_NULL_SHA,
+     TLS_ECDHE_ECDSA_WITH_RC4_128_SHA,
+@@ -920,6 +921,7 @@
+ static const ssl3CipherSuite ecdhe_rsa_suites[] = {
+     TLS_ECDHE_RSA_WITH_3DES_EDE_CBC_SHA,
+     TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA,
++    TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256,
+     TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA,
+     TLS_ECDHE_RSA_WITH_NULL_SHA,
+     TLS_ECDHE_RSA_WITH_RC4_128_SHA,
+@@ -930,11 +932,13 @@
+ static const ssl3CipherSuite ecSuites[] = {
+     TLS_ECDHE_ECDSA_WITH_3DES_EDE_CBC_SHA,
+     TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA,
++    TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256,
+     TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA,
+     TLS_ECDHE_ECDSA_WITH_NULL_SHA,
+     TLS_ECDHE_ECDSA_WITH_RC4_128_SHA,
+     TLS_ECDHE_RSA_WITH_3DES_EDE_CBC_SHA,
+     TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA,
++    TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256,
+     TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA,
+     TLS_ECDHE_RSA_WITH_NULL_SHA,
+     TLS_ECDHE_RSA_WITH_RC4_128_SHA,
+Index: net/third_party/nss/ssl/sslsock.c
+===================================================================
+--- net/third_party/nss/ssl/sslsock.c	(revision 203497)
++++ net/third_party/nss/ssl/sslsock.c	(working copy)
+@@ -38,8 +38,8 @@
+ typedef struct cipherPolicyStr cipherPolicy;
+ 
+ /* This table contains two preconfigured policies: Export and France.
+-** It is used only by the functions SSL_SetDomesticPolicy, 
+-** SSL_SetExportPolicy, and SSL_SetFrancyPolicy.
++** It is used only by the functions NSS_SetDomesticPolicy, 
++** NSS_SetExportPolicy, and NSS_SetFrancePolicy.
+ ** Order of entries is not important.
+ */
+ static cipherPolicy ssl_ciphers[] = {	   /*   Export           France   */
+@@ -62,14 +62,19 @@
+  {  SSL_DHE_RSA_WITH_3DES_EDE_CBC_SHA,      SSL_NOT_ALLOWED, SSL_NOT_ALLOWED },
+  {  SSL_DHE_DSS_WITH_3DES_EDE_CBC_SHA,      SSL_NOT_ALLOWED, SSL_NOT_ALLOWED },
+  {  TLS_DHE_DSS_WITH_RC4_128_SHA,           SSL_NOT_ALLOWED, SSL_NOT_ALLOWED },
+- {  SSL_RSA_WITH_NULL_SHA,		    SSL_ALLOWED,     SSL_ALLOWED },
+  {  SSL_RSA_WITH_NULL_MD5,		    SSL_ALLOWED,     SSL_ALLOWED },
++ {  SSL_RSA_WITH_NULL_SHA,		    SSL_ALLOWED,     SSL_ALLOWED },
++ {  TLS_RSA_WITH_NULL_SHA256,		    SSL_ALLOWED,     SSL_ALLOWED },
+  {  TLS_DHE_DSS_WITH_AES_128_CBC_SHA, 	    SSL_NOT_ALLOWED, SSL_NOT_ALLOWED },
+  {  TLS_DHE_RSA_WITH_AES_128_CBC_SHA,       SSL_NOT_ALLOWED, SSL_NOT_ALLOWED },
++ {  TLS_DHE_RSA_WITH_AES_128_CBC_SHA256,    SSL_NOT_ALLOWED, SSL_NOT_ALLOWED },
+  {  TLS_RSA_WITH_AES_128_CBC_SHA,     	    SSL_NOT_ALLOWED, SSL_NOT_ALLOWED },
++ {  TLS_RSA_WITH_AES_128_CBC_SHA256,        SSL_NOT_ALLOWED, SSL_NOT_ALLOWED },
+  {  TLS_DHE_DSS_WITH_AES_256_CBC_SHA, 	    SSL_NOT_ALLOWED, SSL_NOT_ALLOWED },
+  {  TLS_DHE_RSA_WITH_AES_256_CBC_SHA,       SSL_NOT_ALLOWED, SSL_NOT_ALLOWED },
++ {  TLS_DHE_RSA_WITH_AES_256_CBC_SHA256,    SSL_NOT_ALLOWED, SSL_NOT_ALLOWED },
+  {  TLS_RSA_WITH_AES_256_CBC_SHA,     	    SSL_NOT_ALLOWED, SSL_NOT_ALLOWED },
++ {  TLS_RSA_WITH_AES_256_CBC_SHA256,        SSL_NOT_ALLOWED, SSL_NOT_ALLOWED },
+  {  TLS_DHE_DSS_WITH_CAMELLIA_128_CBC_SHA,  SSL_NOT_ALLOWED, SSL_NOT_ALLOWED },
+  {  TLS_DHE_RSA_WITH_CAMELLIA_128_CBC_SHA,  SSL_NOT_ALLOWED, SSL_NOT_ALLOWED },
+  {  TLS_RSA_WITH_CAMELLIA_128_CBC_SHA, 	    SSL_NOT_ALLOWED, SSL_NOT_ALLOWED },
+@@ -89,6 +94,7 @@
+  {  TLS_ECDHE_ECDSA_WITH_RC4_128_SHA,       SSL_NOT_ALLOWED, SSL_NOT_ALLOWED },
+  {  TLS_ECDHE_ECDSA_WITH_3DES_EDE_CBC_SHA,  SSL_NOT_ALLOWED, SSL_NOT_ALLOWED },
+  {  TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA,   SSL_NOT_ALLOWED, SSL_NOT_ALLOWED },
++ {  TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256,SSL_NOT_ALLOWED, SSL_NOT_ALLOWED },
+  {  TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA,   SSL_NOT_ALLOWED, SSL_NOT_ALLOWED },
+  {  TLS_ECDH_RSA_WITH_NULL_SHA,             SSL_ALLOWED,     SSL_ALLOWED },
+  {  TLS_ECDH_RSA_WITH_RC4_128_SHA,          SSL_NOT_ALLOWED, SSL_NOT_ALLOWED },
+@@ -99,6 +105,7 @@
+  {  TLS_ECDHE_RSA_WITH_RC4_128_SHA,         SSL_NOT_ALLOWED, SSL_NOT_ALLOWED },
+  {  TLS_ECDHE_RSA_WITH_3DES_EDE_CBC_SHA,    SSL_NOT_ALLOWED, SSL_NOT_ALLOWED },
+  {  TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA,     SSL_NOT_ALLOWED, SSL_NOT_ALLOWED },
++ {  TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256,  SSL_NOT_ALLOWED, SSL_NOT_ALLOWED },
+  {  TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA,     SSL_NOT_ALLOWED, SSL_NOT_ALLOWED },
+ #endif /* NSS_ENABLE_ECC */
+  {  0,					    SSL_NOT_ALLOWED, SSL_NOT_ALLOWED }
+@@ -789,28 +796,20 @@
+ 	    rv = SECFailure;
+ 	} else {
+             if (PR_FALSE != on) {
+-		/* TLS 1.2 isn't supported in bypass mode. */
+-		if (ss->vrange.min >= SSL_LIBRARY_VERSION_TLS_1_2) {
+-		    /* If the user requested a minimum version of TLS 1.2 then
+-		     * we don't silently downgrade. */
+-		    PORT_SetError(SSL_ERROR_INVALID_VERSION_RANGE);
+-		    rv = SECFailure;
+-		    break;
+-		}
+-		if (ss->vrange.max >= SSL_LIBRARY_VERSION_TLS_1_2) {
+-		    ss->vrange.max = SSL_LIBRARY_VERSION_TLS_1_1;
+-		}
+-                if (PR_SUCCESS == SSL_BypassSetup() ) {
++                /* PKCS#11 bypass is not supported with TLS 1.2. */
++                if (ss->vrange.max >= SSL_LIBRARY_VERSION_TLS_1_2) {
++                    ss->opt.bypassPKCS11 = PR_FALSE;
++                } else if (PR_SUCCESS == SSL_BypassSetup() ) {
+ #ifdef NO_PKCS11_BYPASS
+-                    ss->opt.bypassPKCS11   = PR_FALSE;
++                    ss->opt.bypassPKCS11 = PR_FALSE;
+ #else
+-                    ss->opt.bypassPKCS11   = on;
++                    ss->opt.bypassPKCS11 = on;
+ #endif
+                 } else {
+                     rv = SECFailure;
+                 }
+             } else {
+-                ss->opt.bypassPKCS11   = PR_FALSE;
++                ss->opt.bypassPKCS11 = PR_FALSE;
+             }
+ 	}
+ 	break;
+Index: net/third_party/nss/ssl/ssl3con.c
+===================================================================
+--- net/third_party/nss/ssl/ssl3con.c	(revision 203497)
++++ net/third_party/nss/ssl/ssl3con.c	(working copy)
+@@ -97,6 +97,7 @@
+  { TLS_DHE_RSA_WITH_CAMELLIA_256_CBC_SHA,  SSL_NOT_ALLOWED, PR_FALSE,PR_FALSE},
+  { TLS_DHE_DSS_WITH_CAMELLIA_256_CBC_SHA,  SSL_NOT_ALLOWED, PR_FALSE,PR_FALSE},
+  { TLS_DHE_RSA_WITH_AES_256_CBC_SHA, 	   SSL_NOT_ALLOWED, PR_TRUE,PR_FALSE},
++ { TLS_DHE_RSA_WITH_AES_256_CBC_SHA256,    SSL_NOT_ALLOWED, PR_TRUE,PR_FALSE},
+  { TLS_DHE_DSS_WITH_AES_256_CBC_SHA, 	   SSL_NOT_ALLOWED, PR_TRUE,PR_FALSE},
+ #ifdef NSS_ENABLE_ECC
+  { TLS_ECDH_RSA_WITH_AES_256_CBC_SHA,      SSL_NOT_ALLOWED, PR_FALSE,PR_FALSE},
+@@ -104,17 +105,21 @@
+ #endif /* NSS_ENABLE_ECC */
+  { TLS_RSA_WITH_CAMELLIA_256_CBC_SHA,  	   SSL_NOT_ALLOWED, PR_FALSE,PR_FALSE},
+  { TLS_RSA_WITH_AES_256_CBC_SHA,     	   SSL_NOT_ALLOWED, PR_TRUE,PR_FALSE},
++ { TLS_RSA_WITH_AES_256_CBC_SHA256,	   SSL_NOT_ALLOWED, PR_TRUE,PR_FALSE},
+ 
+ #ifdef NSS_ENABLE_ECC
+  { TLS_ECDHE_ECDSA_WITH_RC4_128_SHA,       SSL_NOT_ALLOWED, PR_FALSE,PR_FALSE},
+  { TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA,   SSL_NOT_ALLOWED, PR_FALSE,PR_FALSE},
++ { TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256,SSL_NOT_ALLOWED, PR_FALSE,PR_FALSE},
+  { TLS_ECDHE_RSA_WITH_RC4_128_SHA,         SSL_NOT_ALLOWED, PR_FALSE,PR_FALSE},
+  { TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA,     SSL_NOT_ALLOWED, PR_FALSE,PR_FALSE},
++ { TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256,  SSL_NOT_ALLOWED, PR_FALSE,PR_FALSE},
+ #endif /* NSS_ENABLE_ECC */
+  { TLS_DHE_RSA_WITH_CAMELLIA_128_CBC_SHA,  SSL_NOT_ALLOWED, PR_FALSE,PR_FALSE},
+  { TLS_DHE_DSS_WITH_CAMELLIA_128_CBC_SHA,  SSL_NOT_ALLOWED, PR_FALSE,PR_FALSE},
+  { TLS_DHE_DSS_WITH_RC4_128_SHA,           SSL_NOT_ALLOWED, PR_FALSE,PR_FALSE},
+  { TLS_DHE_RSA_WITH_AES_128_CBC_SHA,       SSL_NOT_ALLOWED, PR_TRUE,PR_FALSE},
++ { TLS_DHE_RSA_WITH_AES_128_CBC_SHA256,    SSL_NOT_ALLOWED, PR_TRUE,PR_FALSE},
+  { TLS_DHE_DSS_WITH_AES_128_CBC_SHA, 	   SSL_NOT_ALLOWED, PR_TRUE,PR_FALSE},
+ #ifdef NSS_ENABLE_ECC
+  { TLS_ECDH_RSA_WITH_RC4_128_SHA,          SSL_NOT_ALLOWED, PR_FALSE,PR_FALSE},
+@@ -127,6 +132,7 @@
+  { SSL_RSA_WITH_RC4_128_SHA,               SSL_NOT_ALLOWED, PR_TRUE,PR_FALSE},
+  { SSL_RSA_WITH_RC4_128_MD5,               SSL_NOT_ALLOWED, PR_TRUE, PR_FALSE},
+  { TLS_RSA_WITH_AES_128_CBC_SHA,     	   SSL_NOT_ALLOWED, PR_TRUE,PR_FALSE},
++ { TLS_RSA_WITH_AES_128_CBC_SHA256,	   SSL_NOT_ALLOWED, PR_TRUE,PR_FALSE},
+ 
+ #ifdef NSS_ENABLE_ECC
+  { TLS_ECDHE_ECDSA_WITH_3DES_EDE_CBC_SHA,  SSL_NOT_ALLOWED, PR_FALSE,PR_FALSE},
+@@ -159,6 +165,7 @@
+  { TLS_ECDH_ECDSA_WITH_NULL_SHA,           SSL_NOT_ALLOWED, PR_FALSE, PR_FALSE},
+ #endif /* NSS_ENABLE_ECC */
+  { SSL_RSA_WITH_NULL_SHA,                  SSL_NOT_ALLOWED, PR_FALSE,PR_FALSE},
++ { TLS_RSA_WITH_NULL_SHA256,               SSL_NOT_ALLOWED, PR_FALSE,PR_FALSE},
+  { SSL_RSA_WITH_NULL_MD5,                  SSL_NOT_ALLOWED, PR_FALSE,PR_FALSE},
+ 
+ };
+@@ -282,6 +289,7 @@
+     {SSL_NULL_WITH_NULL_NULL,       cipher_null,   mac_null, kea_null},
+     {SSL_RSA_WITH_NULL_MD5,         cipher_null,   mac_md5, kea_rsa},
+     {SSL_RSA_WITH_NULL_SHA,         cipher_null,   mac_sha, kea_rsa},
++    {TLS_RSA_WITH_NULL_SHA256,      cipher_null,   hmac_sha256, kea_rsa},
+     {SSL_RSA_EXPORT_WITH_RC4_40_MD5,cipher_rc4_40, mac_md5, kea_rsa_export},
+     {SSL_RSA_WITH_RC4_128_MD5,      cipher_rc4,    mac_md5, kea_rsa},
+     {SSL_RSA_WITH_RC4_128_SHA,      cipher_rc4,    mac_sha, kea_rsa},
+@@ -326,11 +334,15 @@
+ 
+ /* New TLS cipher suites */
+     {TLS_RSA_WITH_AES_128_CBC_SHA,     	cipher_aes_128, mac_sha, kea_rsa},
++    {TLS_RSA_WITH_AES_128_CBC_SHA256,	cipher_aes_128, hmac_sha256, kea_rsa},
+     {TLS_DHE_DSS_WITH_AES_128_CBC_SHA, 	cipher_aes_128, mac_sha, kea_dhe_dss},
+     {TLS_DHE_RSA_WITH_AES_128_CBC_SHA, 	cipher_aes_128, mac_sha, kea_dhe_rsa},
++    {TLS_DHE_RSA_WITH_AES_128_CBC_SHA256, cipher_aes_128, hmac_sha256, kea_dhe_rsa},
+     {TLS_RSA_WITH_AES_256_CBC_SHA,     	cipher_aes_256, mac_sha, kea_rsa},
++    {TLS_RSA_WITH_AES_256_CBC_SHA256,	cipher_aes_256, hmac_sha256, kea_rsa},
+     {TLS_DHE_DSS_WITH_AES_256_CBC_SHA, 	cipher_aes_256, mac_sha, kea_dhe_dss},
+     {TLS_DHE_RSA_WITH_AES_256_CBC_SHA, 	cipher_aes_256, mac_sha, kea_dhe_rsa},
++    {TLS_DHE_RSA_WITH_AES_256_CBC_SHA256, cipher_aes_256, hmac_sha256, kea_dhe_rsa},
+ #if 0
+     {TLS_DH_DSS_WITH_AES_128_CBC_SHA,  	cipher_aes_128, mac_sha, kea_dh_dss},
+     {TLS_DH_RSA_WITH_AES_128_CBC_SHA,  	cipher_aes_128, mac_sha, kea_dh_rsa},
+@@ -372,6 +384,7 @@
+     {TLS_ECDHE_ECDSA_WITH_RC4_128_SHA,      cipher_rc4, mac_sha, kea_ecdhe_ecdsa},
+     {TLS_ECDHE_ECDSA_WITH_3DES_EDE_CBC_SHA, cipher_3des, mac_sha, kea_ecdhe_ecdsa},
+     {TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA, cipher_aes_128, mac_sha, kea_ecdhe_ecdsa},
++    {TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256, cipher_aes_128, hmac_sha256, kea_ecdhe_ecdsa},
+     {TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA, cipher_aes_256, mac_sha, kea_ecdhe_ecdsa},
+ 
+     {TLS_ECDH_RSA_WITH_NULL_SHA,         cipher_null,    mac_sha, kea_ecdh_rsa},
+@@ -384,6 +397,7 @@
+     {TLS_ECDHE_RSA_WITH_RC4_128_SHA,      cipher_rc4,     mac_sha, kea_ecdhe_rsa},
+     {TLS_ECDHE_RSA_WITH_3DES_EDE_CBC_SHA, cipher_3des,    mac_sha, kea_ecdhe_rsa},
+     {TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA,  cipher_aes_128, mac_sha, kea_ecdhe_rsa},
++    {TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256, cipher_aes_128, hmac_sha256, kea_ecdhe_rsa},
+     {TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA,  cipher_aes_256, mac_sha, kea_ecdhe_rsa},
+ 
+ #if 0
+@@ -430,14 +444,17 @@
+ #define mmech_sha      CKM_SSL3_SHA1_MAC
+ #define mmech_md5_hmac CKM_MD5_HMAC
+ #define mmech_sha_hmac CKM_SHA_1_HMAC
++#define mmech_sha256_hmac CKM_SHA256_HMAC
+ 
+ static const ssl3MACDef mac_defs[] = { /* indexed by SSL3MACAlgorithm */
++    /* pad_size is only used for SSL 3.0 MAC. See RFC 6101 Sec. 5.2.3.1. */
+     /* mac      mmech       pad_size  mac_size                       */
+     { mac_null, mmech_null,       0,  0          },
+     { mac_md5,  mmech_md5,       48,  MD5_LENGTH },
+     { mac_sha,  mmech_sha,       40,  SHA1_LENGTH},
+-    {hmac_md5,  mmech_md5_hmac,  48,  MD5_LENGTH },
+-    {hmac_sha,  mmech_sha_hmac,  40,  SHA1_LENGTH},
++    {hmac_md5,  mmech_md5_hmac,   0,  MD5_LENGTH },
++    {hmac_sha,  mmech_sha_hmac,   0,  SHA1_LENGTH},
++    {hmac_sha256, mmech_sha256_hmac, 0, SHA256_LENGTH},
+ };
+ 
+ /* indexed by SSL3BulkCipher */
+@@ -580,6 +597,14 @@
+      *   SSL_DH_ANON_EXPORT_WITH_DES40_CBC_SHA:  never implemented
+      */
+ 	return version <= SSL_LIBRARY_VERSION_TLS_1_0;
++    case TLS_DHE_RSA_WITH_AES_256_CBC_SHA256:
++    case TLS_RSA_WITH_AES_256_CBC_SHA256:
++    case TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256:
++    case TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256:
++    case TLS_DHE_RSA_WITH_AES_128_CBC_SHA256:
++    case TLS_RSA_WITH_AES_128_CBC_SHA256:
++    case TLS_RSA_WITH_NULL_SHA256:
++	return version >= SSL_LIBRARY_VERSION_TLS_1_2;
+     default:
+ 	return PR_TRUE;
+     }
+@@ -1334,7 +1359,7 @@
+     cipher = suite_def->bulk_cipher_alg;
+     kea    = suite_def->key_exchange_alg;
+     mac    = suite_def->mac_alg;
+-    if (isTLS)
++    if (mac <= ssl_mac_sha && isTLS)
+ 	mac += 2;
+ 
+     ss->ssl3.hs.suite_def = suite_def;
+@@ -2060,6 +2085,9 @@
+ 	case ssl_hmac_sha: /* used with TLS */
+ 	    hashObj = HASH_GetRawHashObject(HASH_AlgSHA1);
+ 	    break;
++	case ssl_hmac_sha256: /* used with TLS */
++	    hashObj = HASH_GetRawHashObject(HASH_AlgSHA256);
++	    break;
+ 	default:
+ 	    break;
+ 	}
+@@ -3517,6 +3545,13 @@
+     key_material_params.ulMacSizeInBits = pwSpec->mac_size           * BPB;
+     key_material_params.ulKeySizeInBits = cipher_def->secret_key_size* BPB;
+     key_material_params.ulIVSizeInBits  = cipher_def->iv_size        * BPB;
++    if (cipher_def->type == type_block &&
++	pwSpec->version >= SSL_LIBRARY_VERSION_TLS_1_1) {
++	/* Block ciphers in >= TLS 1.1 use a per-record, explicit IV. */
++	key_material_params.ulIVSizeInBits = 0;
++	memset(pwSpec->client.write_iv, 0, cipher_def->iv_size);
++	memset(pwSpec->server.write_iv, 0, cipher_def->iv_size);
++    }
+ 
+     key_material_params.bIsExport = (CK_BBOOL)(kea_def->is_limited);
+     /* was:	(CK_BBOOL)(cipher_def->keygen_mode != kg_strong); */
+Index: net/third_party/nss/ssl/sslenum.c
+===================================================================
+--- net/third_party/nss/ssl/sslenum.c	(revision 203497)
++++ net/third_party/nss/ssl/sslenum.c	(working copy)
+@@ -26,6 +26,8 @@
+  *
+  * If new ECC cipher suites are added, also update the ssl3CipherSuite arrays
+  * in ssl3ecc.c.
++ *
++ * Finally, update the ssl_V3_SUITES_IMPLEMENTED macro in sslimpl.h.
+  */
+ const PRUint16 SSL_ImplementedCiphers[] = {
+     /* 256-bit */
+@@ -36,6 +38,7 @@
+     TLS_DHE_RSA_WITH_CAMELLIA_256_CBC_SHA,
+     TLS_DHE_DSS_WITH_CAMELLIA_256_CBC_SHA,
+     TLS_DHE_RSA_WITH_AES_256_CBC_SHA,
++    TLS_DHE_RSA_WITH_AES_256_CBC_SHA256,
+     TLS_DHE_DSS_WITH_AES_256_CBC_SHA,
+ #ifdef NSS_ENABLE_ECC
+     TLS_ECDH_RSA_WITH_AES_256_CBC_SHA,
+@@ -43,18 +46,22 @@
+ #endif /* NSS_ENABLE_ECC */
+     TLS_RSA_WITH_CAMELLIA_256_CBC_SHA,
+     TLS_RSA_WITH_AES_256_CBC_SHA,
++    TLS_RSA_WITH_AES_256_CBC_SHA256,
+ 
+     /* 128-bit */
+ #ifdef NSS_ENABLE_ECC
+     TLS_ECDHE_ECDSA_WITH_RC4_128_SHA,
+     TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA,
++    TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256,
+     TLS_ECDHE_RSA_WITH_RC4_128_SHA,
+     TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA,
++    TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256,
+ #endif /* NSS_ENABLE_ECC */
+     TLS_DHE_RSA_WITH_CAMELLIA_128_CBC_SHA,
+     TLS_DHE_DSS_WITH_CAMELLIA_128_CBC_SHA,
+     TLS_DHE_DSS_WITH_RC4_128_SHA,
+     TLS_DHE_RSA_WITH_AES_128_CBC_SHA,
++    TLS_DHE_RSA_WITH_AES_128_CBC_SHA256,
+     TLS_DHE_DSS_WITH_AES_128_CBC_SHA,
+ #ifdef NSS_ENABLE_ECC
+     TLS_ECDH_RSA_WITH_RC4_128_SHA,
+@@ -67,6 +74,7 @@
+     SSL_RSA_WITH_RC4_128_SHA,
+     SSL_RSA_WITH_RC4_128_MD5,
+     TLS_RSA_WITH_AES_128_CBC_SHA,
++    TLS_RSA_WITH_AES_128_CBC_SHA256,
+ 
+     /* 112-bit 3DES */
+ #ifdef NSS_ENABLE_ECC
+@@ -104,6 +112,7 @@
+     TLS_ECDH_ECDSA_WITH_NULL_SHA,
+ #endif /* NSS_ENABLE_ECC */
+     SSL_RSA_WITH_NULL_SHA,
++    TLS_RSA_WITH_NULL_SHA256,
+     SSL_RSA_WITH_NULL_MD5,
+ 
+     /* SSL2 cipher suites. */

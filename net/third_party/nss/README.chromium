@@ -103,6 +103,7 @@ Patches:
   * Implement TLS 1.2.
     patches/tls12.patch
     patches/tls12certrequest.patch
+    patches/tls12hmacsha256.patch
     https://bugzilla.mozilla.org/show_bug.cgi?id=480514
 
   * Update Chromium-specific code for TLS 1.2.
