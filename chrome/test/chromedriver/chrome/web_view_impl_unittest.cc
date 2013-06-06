@@ -54,8 +54,7 @@ class FakeDevToolsClient : public DevToolsClient {
       const base::TimeDelta& timeout) OVERRIDE {
     return Status(kOk);
   }
-  virtual Status HandleEventsUntil(
-      const ConditionalFunc& conditional_func) OVERRIDE {
+  virtual Status HandleReceivedEvents() OVERRIDE {
     return Status(kOk);
   }
 

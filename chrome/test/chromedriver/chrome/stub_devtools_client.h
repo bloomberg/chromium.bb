@@ -36,8 +36,7 @@ class StubDevToolsClient : public DevToolsClient {
   virtual void AddListener(DevToolsEventListener* listener) OVERRIDE;
   virtual Status HandleEventsUntil(const ConditionalFunc& conditional_func,
                                    const base::TimeDelta& timeout) OVERRIDE;
-  virtual Status HandleEventsUntil(
-      const ConditionalFunc& conditional_func) OVERRIDE;
+  virtual Status HandleReceivedEvents() OVERRIDE;
 
  protected:
   const std::string id_;

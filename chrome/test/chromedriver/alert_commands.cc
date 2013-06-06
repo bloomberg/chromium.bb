@@ -26,11 +26,12 @@ Status ExecuteAlertCommand(
   if (status.IsError())
     return status;
 
-  status = web_view->GetDevToolsClient()->HandleReceivedEvents();
+  status = web_view->HandleReceivedEvents();
   if (status.IsError())
     return status;
 
-  status = web_view->WaitForPendingNavigations(session->GetCurrentFrameId());
+  status = web_view->WaitForPendingNavigations(session->GetCurrentFrameId(),
+                                               session->page_load_timeout);
   if (status.IsError() && status.code() != kUnexpectedAlertOpen)
     return status;
 

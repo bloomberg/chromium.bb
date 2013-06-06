@@ -38,7 +38,9 @@ class SyncWebSocketImpl : public SyncWebSocket {
   virtual bool IsConnected() OVERRIDE;
   virtual bool Connect(const GURL& url) OVERRIDE;
   virtual bool Send(const std::string& message) OVERRIDE;
-  virtual bool ReceiveNextMessage(std::string* message) OVERRIDE;
+  virtual StatusCode ReceiveNextMessage(
+      std::string* message,
+      const base::TimeDelta& timeout) OVERRIDE;
   virtual bool HasNextMessage() OVERRIDE;
 
  private:
@@ -49,13 +51,11 @@ class SyncWebSocketImpl : public SyncWebSocket {
     explicit Core(net::URLRequestContextGetter* context_getter);
 
     bool IsConnected();
-
     bool Connect(const GURL& url);
-
     bool Send(const std::string& message);
-
-    bool ReceiveNextMessage(std::string* message);
-
+    SyncWebSocket::StatusCode ReceiveNextMessage(
+        std::string* message,
+        const base::TimeDelta& timeout);
     bool HasNextMessage();
 
     // Overriden from WebSocketListener:

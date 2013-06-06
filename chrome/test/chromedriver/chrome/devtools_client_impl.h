@@ -90,8 +90,7 @@ class DevToolsClientImpl : public DevToolsClient {
   virtual Status HandleEventsUntil(
       const ConditionalFunc& conditional_func,
       const base::TimeDelta& timeout) OVERRIDE;
-  virtual Status HandleEventsUntil(
-      const ConditionalFunc& conditional_func) OVERRIDE;
+  virtual Status HandleReceivedEvents() OVERRIDE;
 
  private:
   enum ResponseState {

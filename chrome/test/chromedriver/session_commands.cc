@@ -256,8 +256,6 @@ Status ExecuteSetTimeout(
     return Status(kUnknownError, "'type' must be a string");
 
   int ms = static_cast<int>(ms_double);
-  if (ms < 0)
-    ms = -1;
   // TODO(frankf): implicit and script timeout should be cleared
   // if negative timeout is specified.
   if (type == "implicit")
@@ -265,7 +263,8 @@ Status ExecuteSetTimeout(
   else if (type == "script")
     session->script_timeout = ms;
   else if (type == "page load")
-    session->page_load_timeout = ms;
+    session->page_load_timeout =
+        ((ms < 0) ? Session::kDefaultPageLoadTimeoutMs : ms);
   else
     return Status(kUnknownError, "unknown type of timeout:" + type);
   return Status(kOk);

@@ -157,6 +157,20 @@ void DevToolsClientImpl::AddListener(DevToolsEventListener* listener) {
   listeners_.push_back(listener);
 }
 
+Status DevToolsClientImpl::HandleReceivedEvents() {
+  if (!socket_->IsConnected())
+    return Status(kDisconnected, "not connected to DevTools");
+
+  while (true) {
+    if (!socket_->HasNextMessage())
+      return Status(kOk);
+
+    Status status = ProcessNextMessage(-1);
+    if (status.IsError())
+      return status;
+  }
+}
+
 Status DevToolsClientImpl::HandleEventsUntil(
     const ConditionalFunc& conditional_func, const base::TimeDelta& timeout) {
   if (!socket_->IsConnected())
@@ -178,17 +192,13 @@ Status DevToolsClientImpl::HandleEventsUntil(
         return Status(kOk);
     }
 
+    // To keep this simple, we don't pass the delta time to
+    // ProcessNextMessage. As a result, we may not immediately
+    // return after |timeout|ms.
     Status status = ProcessNextMessage(-1);
-    if (status.IsError())
+    if (status.IsError() && status.code() != kTimeout)
       return status;
   }
-  return Status(kOk);
-}
-
-Status DevToolsClientImpl::HandleEventsUntil(
-    const ConditionalFunc& conditional_func) {
-  return HandleEventsUntil(
-      conditional_func, base::TimeDelta::FromMilliseconds(50 * 60 * 1000));
 }
 
 DevToolsClientImpl::ResponseInfo::ResponseInfo(const std::string& method)
@@ -256,9 +266,23 @@ Status DevToolsClientImpl::ProcessNextMessage(int expected_id) {
     return Status(kOk);
 
   std::string message;
-  if (!socket_->ReceiveNextMessage(&message))
-    return Status(kDisconnected, "unable to receive message from renderer");
-  log_->AddEntry(Log::kDebug, "received Inspector response " + message);
+  switch (socket_->ReceiveNextMessage(&message,
+                                      base::TimeDelta::FromMinutes(1))) {
+    case SyncWebSocket::kOk:
+      log_->AddEntry(Log::kDebug, "received Inspector response " + message);
+      break;
+    case SyncWebSocket::kDisconnected:
+      message = "unable to receive message from renderer";
+      log_->AddEntry(Log::kDebug, message);
+      return Status(kDisconnected, message);
+    case SyncWebSocket::kTimeout:
+      message = "timed out receiving message from renderer";
+      log_->AddEntry(Log::kDebug, message);
+      return Status(kTimeout, message);
+    default:
+      NOTREACHED();
+      break;
+  }
 
   internal::InspectorMessageType type;
   internal::InspectorEvent event;

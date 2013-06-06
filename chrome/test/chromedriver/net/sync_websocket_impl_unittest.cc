@@ -21,9 +21,10 @@
 namespace {
 
 class SyncWebSocketImplTest : public testing::Test {
- public:
+ protected:
   SyncWebSocketImplTest()
-      : client_thread_("ClientThread") {}
+      : client_thread_("ClientThread"),
+        long_timeout_(base::TimeDelta::FromMinutes(1)) {}
   virtual ~SyncWebSocketImplTest() {}
 
   virtual void SetUp() OVERRIDE {
@@ -38,10 +39,10 @@ class SyncWebSocketImplTest : public testing::Test {
     server_.Stop();
   }
 
- protected:
   base::Thread client_thread_;
   TestHttpServer server_;
   scoped_refptr<URLRequestContextGetter> context_getter_;
+  const base::TimeDelta long_timeout_;
 };
 
 }  // namespace
@@ -65,8 +66,21 @@ TEST_F(SyncWebSocketImplTest, SendReceive) {
   ASSERT_TRUE(sock.Connect(server_.web_socket_url()));
   ASSERT_TRUE(sock.Send("hi"));
   std::string message;
-  ASSERT_TRUE(sock.ReceiveNextMessage(&message));
+  ASSERT_EQ(
+      SyncWebSocket::kOk,
+      sock.ReceiveNextMessage(&message, long_timeout_));
   ASSERT_STREQ("hi", message.c_str());
+}
+
+TEST_F(SyncWebSocketImplTest, SendReceiveTimeout) {
+  SyncWebSocketImpl sock(context_getter_);
+  ASSERT_TRUE(sock.Connect(server_.web_socket_url()));
+  ASSERT_TRUE(sock.Send("hi"));
+  std::string message;
+  ASSERT_EQ(
+      SyncWebSocket::kTimeout,
+      sock.ReceiveNextMessage(
+          &message, base::TimeDelta()));
 }
 
 TEST_F(SyncWebSocketImplTest, SendReceiveLarge) {
@@ -75,7 +89,9 @@ TEST_F(SyncWebSocketImplTest, SendReceiveLarge) {
   std::string wrote_message(10 << 20, 'a');
   ASSERT_TRUE(sock.Send(wrote_message));
   std::string message;
-  ASSERT_TRUE(sock.ReceiveNextMessage(&message));
+  ASSERT_EQ(
+      SyncWebSocket::kOk,
+      sock.ReceiveNextMessage(&message, long_timeout_));
   ASSERT_EQ(wrote_message.length(), message.length());
   ASSERT_EQ(wrote_message, message);
 }
@@ -86,12 +102,18 @@ TEST_F(SyncWebSocketImplTest, SendReceiveMany) {
   ASSERT_TRUE(sock.Send("1"));
   ASSERT_TRUE(sock.Send("2"));
   std::string message;
-  ASSERT_TRUE(sock.ReceiveNextMessage(&message));
+  ASSERT_EQ(
+      SyncWebSocket::kOk,
+      sock.ReceiveNextMessage(&message, long_timeout_));
   ASSERT_STREQ("1", message.c_str());
   ASSERT_TRUE(sock.Send("3"));
-  ASSERT_TRUE(sock.ReceiveNextMessage(&message));
+  ASSERT_EQ(
+      SyncWebSocket::kOk,
+      sock.ReceiveNextMessage(&message, long_timeout_));
   ASSERT_STREQ("2", message.c_str());
-  ASSERT_TRUE(sock.ReceiveNextMessage(&message));
+  ASSERT_EQ(
+      SyncWebSocket::kOk,
+      sock.ReceiveNextMessage(&message, long_timeout_));
   ASSERT_STREQ("3", message.c_str());
 }
 
@@ -101,7 +123,9 @@ TEST_F(SyncWebSocketImplTest, CloseOnReceive) {
   ASSERT_TRUE(sock.Connect(server_.web_socket_url()));
   ASSERT_TRUE(sock.Send("1"));
   std::string message;
-  ASSERT_FALSE(sock.ReceiveNextMessage(&message));
+  ASSERT_EQ(
+      SyncWebSocket::kDisconnected,
+      sock.ReceiveNextMessage(&message, long_timeout_));
   ASSERT_STREQ("", message.c_str());
 }
 
@@ -133,7 +157,9 @@ TEST_F(SyncWebSocketImplTest, Reconnect) {
   ASSERT_FALSE(sock.HasNextMessage());
   ASSERT_TRUE(sock.Send("3"));
   std::string message;
-  ASSERT_TRUE(sock.ReceiveNextMessage(&message));
+  ASSERT_EQ(
+      SyncWebSocket::kOk,
+      sock.ReceiveNextMessage(&message, long_timeout_));
   ASSERT_STREQ("3", message.c_str());
   ASSERT_FALSE(sock.HasNextMessage());
 }

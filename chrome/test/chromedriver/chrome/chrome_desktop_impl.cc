@@ -123,7 +123,8 @@ Status ChromeDesktopImpl::GetAutomationExtension(
       return status;
 
     // Wait for the extension background page to load.
-    status = web_view->WaitForPendingNavigations(std::string());
+    status = web_view->WaitForPendingNavigations(
+        std::string(), 5 * 60 * 1000);
     if (status.IsError())
       return status;
 

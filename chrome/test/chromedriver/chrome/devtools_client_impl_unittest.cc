@@ -63,7 +63,9 @@ class MockSyncWebSocket : public SyncWebSocket {
     return true;
   }
 
-  virtual bool ReceiveNextMessage(std::string* message) OVERRIDE {
+  virtual SyncWebSocket::StatusCode ReceiveNextMessage(
+      std::string* message,
+      const base::TimeDelta& timeout) OVERRIDE {
     base::DictionaryValue response;
     response.SetInteger("id", id_);
     base::DictionaryValue result;
@@ -71,7 +73,7 @@ class MockSyncWebSocket : public SyncWebSocket {
     response.Set("result", result.DeepCopy());
     base::JSONWriter::Write(&response, message);
     --queued_messages_;
-    return true;
+    return SyncWebSocket::kOk;
   }
 
   virtual bool HasNextMessage() OVERRIDE {
@@ -89,9 +91,16 @@ scoped_ptr<SyncWebSocket> CreateMockSyncWebSocket() {
   return scoped_ptr<SyncWebSocket>(new T());
 }
 
+class DevToolsClientImplTest : public testing::Test {
+ protected:
+  DevToolsClientImplTest() : long_timeout_(base::TimeDelta::FromMinutes(5)) {}
+
+  const base::TimeDelta long_timeout_;
+};
+
 }  // namespace
 
-TEST(DevToolsClientImpl, SendCommand) {
+TEST_F(DevToolsClientImplTest, SendCommand) {
   SyncWebSocketFactory factory =
       base::Bind(&CreateMockSyncWebSocket<MockSyncWebSocket>);
   Logger logger;
@@ -103,7 +112,7 @@ TEST(DevToolsClientImpl, SendCommand) {
   ASSERT_EQ(kOk, client.SendCommand("method", params).code());
 }
 
-TEST(DevToolsClientImpl, SendCommandAndGetResult) {
+TEST_F(DevToolsClientImplTest, SendCommandAndGetResult) {
   SyncWebSocketFactory factory =
       base::Bind(&CreateMockSyncWebSocket<MockSyncWebSocket>);
   Logger logger;
@@ -140,9 +149,11 @@ class MockSyncWebSocket2 : public SyncWebSocket {
     return false;
   }
 
-  virtual bool ReceiveNextMessage(std::string* message) OVERRIDE {
+  virtual SyncWebSocket::StatusCode ReceiveNextMessage(
+      std::string* message,
+      const base::TimeDelta& timeout) OVERRIDE {
     EXPECT_TRUE(false);
-    return false;
+    return SyncWebSocket::kDisconnected;
   }
 
   virtual bool HasNextMessage() OVERRIDE {
@@ -152,7 +163,7 @@ class MockSyncWebSocket2 : public SyncWebSocket {
 
 }  // namespace
 
-TEST(DevToolsClientImpl, ConnectIfNecessaryConnectFails) {
+TEST_F(DevToolsClientImplTest, ConnectIfNecessaryConnectFails) {
   SyncWebSocketFactory factory =
       base::Bind(&CreateMockSyncWebSocket<MockSyncWebSocket2>);
   Logger logger;
@@ -181,9 +192,11 @@ class MockSyncWebSocket3 : public SyncWebSocket {
     return false;
   }
 
-  virtual bool ReceiveNextMessage(std::string* message) OVERRIDE {
+  virtual SyncWebSocket::StatusCode ReceiveNextMessage(
+      std::string* message,
+      const base::TimeDelta& timeout) OVERRIDE {
     EXPECT_TRUE(false);
-    return false;
+    return SyncWebSocket::kDisconnected;
   }
 
   virtual bool HasNextMessage() OVERRIDE {
@@ -196,7 +209,7 @@ class MockSyncWebSocket3 : public SyncWebSocket {
 
 }  // namespace
 
-TEST(DevToolsClientImpl, SendCommandSendFails) {
+TEST_F(DevToolsClientImplTest, SendCommandSendFails) {
   SyncWebSocketFactory factory =
       base::Bind(&CreateMockSyncWebSocket<MockSyncWebSocket3>);
   Logger logger;
@@ -227,8 +240,10 @@ class MockSyncWebSocket4 : public SyncWebSocket {
     return true;
   }
 
-  virtual bool ReceiveNextMessage(std::string* message) OVERRIDE {
-    return false;
+  virtual SyncWebSocket::StatusCode ReceiveNextMessage(
+      std::string* message,
+      const base::TimeDelta& timeout) OVERRIDE {
+    return SyncWebSocket::kDisconnected;
   }
 
   virtual bool HasNextMessage() OVERRIDE {
@@ -241,7 +256,7 @@ class MockSyncWebSocket4 : public SyncWebSocket {
 
 }  // namespace
 
-TEST(DevToolsClientImpl, SendCommandReceiveNextMessageFails) {
+TEST_F(DevToolsClientImplTest, SendCommandReceiveNextMessageFails) {
   SyncWebSocketFactory factory =
       base::Bind(&CreateMockSyncWebSocket<MockSyncWebSocket4>);
   Logger logger;
@@ -273,8 +288,10 @@ class FakeSyncWebSocket : public SyncWebSocket {
     return true;
   }
 
-  virtual bool ReceiveNextMessage(std::string* message) OVERRIDE {
-    return true;
+  virtual SyncWebSocket::StatusCode ReceiveNextMessage(
+      std::string* message,
+      const base::TimeDelta& timeout) OVERRIDE {
+    return SyncWebSocket::kOk;
   }
 
   virtual bool HasNextMessage() OVERRIDE {
@@ -447,7 +464,7 @@ Status AlwaysError(bool* is_met) {
 
 }  // namespace
 
-TEST(DevToolsClientImpl, SendCommandOnlyConnectsOnce) {
+TEST_F(DevToolsClientImplTest, SendCommandOnlyConnectsOnce) {
   SyncWebSocketFactory factory =
       base::Bind(&CreateMockSyncWebSocket<FakeSyncWebSocket>);
   Logger logger;
@@ -460,7 +477,7 @@ TEST(DevToolsClientImpl, SendCommandOnlyConnectsOnce) {
   ASSERT_TRUE(client.SendCommand("method", params).IsOk());
 }
 
-TEST(DevToolsClientImpl, SendCommandBadResponse) {
+TEST_F(DevToolsClientImplTest, SendCommandBadResponse) {
   SyncWebSocketFactory factory =
       base::Bind(&CreateMockSyncWebSocket<FakeSyncWebSocket>);
   Logger logger;
@@ -472,7 +489,7 @@ TEST(DevToolsClientImpl, SendCommandBadResponse) {
   ASSERT_TRUE(client.SendCommand("method", params).IsError());
 }
 
-TEST(DevToolsClientImpl, SendCommandBadId) {
+TEST_F(DevToolsClientImplTest, SendCommandBadId) {
   SyncWebSocketFactory factory =
       base::Bind(&CreateMockSyncWebSocket<FakeSyncWebSocket>);
   Logger logger;
@@ -484,7 +501,7 @@ TEST(DevToolsClientImpl, SendCommandBadId) {
   ASSERT_TRUE(client.SendCommand("method", params).IsError());
 }
 
-TEST(DevToolsClientImpl, SendCommandResponseError) {
+TEST_F(DevToolsClientImplTest, SendCommandResponseError) {
   SyncWebSocketFactory factory =
       base::Bind(&CreateMockSyncWebSocket<FakeSyncWebSocket>);
   Logger logger;
@@ -496,7 +513,7 @@ TEST(DevToolsClientImpl, SendCommandResponseError) {
   ASSERT_TRUE(client.SendCommand("method", params).IsError());
 }
 
-TEST(DevToolsClientImpl, SendCommandEventBeforeResponse) {
+TEST_F(DevToolsClientImplTest, SendCommandEventBeforeResponse) {
   SyncWebSocketFactory factory =
       base::Bind(&CreateMockSyncWebSocket<FakeSyncWebSocket>);
   MockListener listener;
@@ -591,7 +608,7 @@ TEST(ParseInspectorMessage, Command) {
   ASSERT_EQ(1, key);
 }
 
-TEST(DevToolsClientImpl, HandleEventsUntil) {
+TEST_F(DevToolsClientImplTest, HandleEventsUntil) {
   MockListener listener;
   SyncWebSocketFactory factory =
       base::Bind(&CreateMockSyncWebSocket<MockSyncWebSocket>);
@@ -601,11 +618,12 @@ TEST(DevToolsClientImpl, HandleEventsUntil) {
                             base::Bind(&ReturnEvent));
   client.AddListener(&listener);
   ASSERT_EQ(kOk, client.ConnectIfNecessary().code());
-  Status status = client.HandleEventsUntil(base::Bind(&AlwaysTrue));
+  Status status = client.HandleEventsUntil(base::Bind(&AlwaysTrue),
+                                           long_timeout_);
   ASSERT_EQ(kOk, status.code());
 }
 
-TEST(DevToolsClientImpl, HandleEventsUntilTimeout) {
+TEST_F(DevToolsClientImplTest, HandleEventsUntilTimeout) {
   SyncWebSocketFactory factory =
       base::Bind(&CreateMockSyncWebSocket<MockSyncWebSocket>);
   Logger logger;
@@ -618,7 +636,7 @@ TEST(DevToolsClientImpl, HandleEventsUntilTimeout) {
   ASSERT_EQ(kTimeout, status.code());
 }
 
-TEST(DevToolsClientImpl, WaitForNextEventCommand) {
+TEST_F(DevToolsClientImplTest, WaitForNextEventCommand) {
   SyncWebSocketFactory factory =
       base::Bind(&CreateMockSyncWebSocket<MockSyncWebSocket>);
   Logger logger;
@@ -626,11 +644,12 @@ TEST(DevToolsClientImpl, WaitForNextEventCommand) {
                             base::Bind(&CloserFunc), &logger,
                             base::Bind(&ReturnCommand));
   ASSERT_EQ(kOk, client.ConnectIfNecessary().code());
-  Status status = client.HandleEventsUntil(base::Bind(&AlwaysTrue));
+  Status status = client.HandleEventsUntil(base::Bind(&AlwaysTrue),
+                                           long_timeout_);
   ASSERT_EQ(kUnknownError, status.code());
 }
 
-TEST(DevToolsClientImpl, WaitForNextEventError) {
+TEST_F(DevToolsClientImplTest, WaitForNextEventError) {
   SyncWebSocketFactory factory =
       base::Bind(&CreateMockSyncWebSocket<MockSyncWebSocket>);
   Logger logger;
@@ -638,11 +657,12 @@ TEST(DevToolsClientImpl, WaitForNextEventError) {
                             base::Bind(&CloserFunc), &logger,
                             base::Bind(&ReturnError));
   ASSERT_EQ(kOk, client.ConnectIfNecessary().code());
-  Status status = client.HandleEventsUntil(base::Bind(&AlwaysTrue));
+  Status status = client.HandleEventsUntil(base::Bind(&AlwaysTrue),
+                                           long_timeout_);
   ASSERT_EQ(kUnknownError, status.code());
 }
 
-TEST(DevToolsClientImpl, WaitForNextEventConditionalFuncReturnsError) {
+TEST_F(DevToolsClientImplTest, WaitForNextEventConditionalFuncReturnsError) {
   SyncWebSocketFactory factory =
       base::Bind(&CreateMockSyncWebSocket<MockSyncWebSocket>);
   Logger logger;
@@ -650,11 +670,12 @@ TEST(DevToolsClientImpl, WaitForNextEventConditionalFuncReturnsError) {
                             base::Bind(&CloserFunc), &logger,
                             base::Bind(&ReturnEvent));
   ASSERT_EQ(kOk, client.ConnectIfNecessary().code());
-  Status status = client.HandleEventsUntil(base::Bind(&AlwaysError));
+  Status status = client.HandleEventsUntil(base::Bind(&AlwaysError),
+                                           long_timeout_);
   ASSERT_EQ(kUnknownError, status.code());
 }
 
-TEST(DevToolsClientImpl, NestedCommandsWithOutOfOrderResults) {
+TEST_F(DevToolsClientImplTest, NestedCommandsWithOutOfOrderResults) {
   SyncWebSocketFactory factory =
       base::Bind(&CreateMockSyncWebSocket<MockSyncWebSocket>);
   int recurse_count = 0;
@@ -763,12 +784,14 @@ class OnConnectedSyncWebSocket : public SyncWebSocket {
     return true;
   }
 
-  virtual bool ReceiveNextMessage(std::string* message) OVERRIDE {
+  virtual SyncWebSocket::StatusCode ReceiveNextMessage(
+      std::string* message,
+      const base::TimeDelta& timeout) OVERRIDE {
     if (queued_response_.empty())
-      return false;
+      return SyncWebSocket::kDisconnected;
     *message = queued_response_.front();
     queued_response_.pop_front();
-    return true;
+    return SyncWebSocket::kOk;
   }
 
   virtual bool HasNextMessage() OVERRIDE {
@@ -782,7 +805,7 @@ class OnConnectedSyncWebSocket : public SyncWebSocket {
 
 }  // namespace
 
-TEST(DevToolsClientImpl, ProcessOnConnectedFirstOnCommand) {
+TEST_F(DevToolsClientImplTest, ProcessOnConnectedFirstOnCommand) {
   SyncWebSocketFactory factory =
       base::Bind(&CreateMockSyncWebSocket<OnConnectedSyncWebSocket>);
   Logger logger;
@@ -799,7 +822,7 @@ TEST(DevToolsClientImpl, ProcessOnConnectedFirstOnCommand) {
   listener3.VerifyCalled();
 }
 
-TEST(DevToolsClientImpl, ProcessOnConnectedFirstOnHandleEventsUntil) {
+TEST_F(DevToolsClientImplTest, ProcessOnConnectedFirstOnHandleEventsUntil) {
   SyncWebSocketFactory factory =
       base::Bind(&CreateMockSyncWebSocket<OnConnectedSyncWebSocket>);
   Logger logger;
@@ -834,7 +857,9 @@ class MockSyncWebSocket5 : public SyncWebSocket {
     return true;
   }
 
-  virtual bool ReceiveNextMessage(std::string* message) OVERRIDE {
+  virtual SyncWebSocket::StatusCode ReceiveNextMessage(
+      std::string* message,
+      const base::TimeDelta& timeout) OVERRIDE {
     if (request_no_ == 0) {
       *message = "{\"method\": \"m\", \"params\": {}}";
     } else {
@@ -842,7 +867,7 @@ class MockSyncWebSocket5 : public SyncWebSocket {
           "{\"result\": {}, \"id\": %d}", request_no_);
     }
     request_no_++;
-    return true;
+    return SyncWebSocket::kOk;
   }
 
   virtual bool HasNextMessage() OVERRIDE {
@@ -900,7 +925,7 @@ class OnEventListener : public DevToolsEventListener {
 
 }  // namespace
 
-TEST(DevToolsClientImpl, ProcessOnEventFirst) {
+TEST_F(DevToolsClientImplTest, ProcessOnEventFirst) {
   SyncWebSocketFactory factory =
       base::Bind(&CreateMockSyncWebSocket<MockSyncWebSocket5>);
   Logger logger;
@@ -948,7 +973,7 @@ Status CheckCloserFuncCalled(bool* is_called) {
 
 }  // namespace
 
-TEST(DevToolsClientImpl, Reconnect) {
+TEST_F(DevToolsClientImplTest, Reconnect) {
   SyncWebSocketFactory factory =
       base::Bind(&CreateMockSyncWebSocket<DisconnectedSyncWebSocket>);
   bool is_called = false;
@@ -989,12 +1014,14 @@ class MockSyncWebSocket6 : public SyncWebSocket {
 
   virtual bool Send(const std::string& message) OVERRIDE { return true; }
 
-  virtual bool ReceiveNextMessage(std::string* message) OVERRIDE {
+  virtual SyncWebSocket::StatusCode ReceiveNextMessage(
+      std::string* message,
+      const base::TimeDelta& timeout) OVERRIDE {
     if (messages_->empty())
-      return false;
+      return SyncWebSocket::kDisconnected;
     *message = messages_->front();
     messages_->pop_front();
-    return true;
+    return SyncWebSocket::kOk;
   }
 
   virtual bool HasNextMessage() OVERRIDE { return messages_->size(); }
@@ -1038,7 +1065,7 @@ scoped_ptr<SyncWebSocket> CreateMockSyncWebSocket6(
 
 }  // namespace
 
-TEST(DevToolsClientImpl, BlockedByAlert) {
+TEST_F(DevToolsClientImplTest, BlockedByAlert) {
   std::list<std::string> msgs;
   SyncWebSocketFactory factory = base::Bind(&CreateMockSyncWebSocket6, &msgs);
   Logger logger;
@@ -1052,7 +1079,7 @@ TEST(DevToolsClientImpl, BlockedByAlert) {
             client.SendCommand("first", params).code());
 }
 
-TEST(DevToolsClientImpl, CorrectlyDeterminesWhichIsBlockedByAlert) {
+TEST_F(DevToolsClientImplTest, CorrectlyDeterminesWhichIsBlockedByAlert) {
   // OUT                 | IN
   //                       FirstEvent
   // hello (id=1)
@@ -1123,7 +1150,7 @@ void HandleReceivedEvents(DevToolsClient* client) {
 
 }  // namespace
 
-TEST(DevToolsClientImpl, ReceivesCommandResponse) {
+TEST_F(DevToolsClientImplTest, ReceivesCommandResponse) {
   std::list<std::string> msgs;
   SyncWebSocketFactory factory = base::Bind(&CreateMockSyncWebSocket6, &msgs);
   Logger logger;

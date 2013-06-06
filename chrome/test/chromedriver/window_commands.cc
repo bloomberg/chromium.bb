@@ -137,7 +137,7 @@ Status ExecuteWindowCommand(
   if (status.IsError())
     return status;
 
-  status = web_view->GetDevToolsClient()->HandleReceivedEvents();
+  status = web_view->HandleReceivedEvents();
   if (status.IsError())
     return status;
 

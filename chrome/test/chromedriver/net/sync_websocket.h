@@ -7,11 +7,19 @@
 
 #include <string>
 
+#include "base/time.h"
+
 class GURL;
 
 // Proxy for using a WebSocket running on a background thread synchronously.
 class SyncWebSocket {
  public:
+  enum StatusCode {
+    kOk = 0,
+    kTimeout,
+    kDisconnected
+  };
+
   virtual ~SyncWebSocket() {}
 
   // Return true if connected, otherwise return false.
@@ -23,9 +31,12 @@ class SyncWebSocket {
   // Sends message. Returns true on success.
   virtual bool Send(const std::string& message) = 0;
 
-  // Receives next message. Blocks until at least one message is received or
-  // the socket is closed. Returns true on success and modifies |message|.
-  virtual bool ReceiveNextMessage(std::string* message) = 0;
+  // Receives next message and modifies the message on success. Returns
+  // StatusCode::kTimedout if no message is received within |timeout|.
+  // Returns StatusCode::kDisconnected if the socket is closed.
+  virtual StatusCode ReceiveNextMessage(
+      std::string* message,
+      const base::TimeDelta& timeout) = 0;
 
   // Returns whether there are any messages that have been received and not yet
   // handled by ReceiveNextMessage.

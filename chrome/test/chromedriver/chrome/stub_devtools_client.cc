@@ -45,7 +45,6 @@ Status StubDevToolsClient::HandleEventsUntil(
   return Status(kOk);
 }
 
-Status StubDevToolsClient::HandleEventsUntil(
-      const ConditionalFunc& conditional_func) {
+Status StubDevToolsClient::HandleReceivedEvents() {
   return Status(kOk);
 }

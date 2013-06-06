@@ -20,6 +20,8 @@ FrameInfo::FrameInfo(const std::string& parent_frame_id,
       frame_id(frame_id),
       chromedriver_frame_id(chromedriver_frame_id) {}
 
+const int Session::kDefaultPageLoadTimeoutMs = 5 * 60 * 1000;
+
 Session::Session(const std::string& id)
     : id(id),
       thread(("SessionThread_" + id).c_str()),
@@ -27,7 +29,7 @@ Session::Session(const std::string& id)
       sticky_modifiers(0),
       mouse_position(0, 0),
       implicit_wait(0),
-      page_load_timeout(-1),
+      page_load_timeout(kDefaultPageLoadTimeoutMs),
       script_timeout(0) {
 }
 
@@ -39,7 +41,7 @@ Session::Session(const std::string& id, scoped_ptr<Chrome> chrome)
       sticky_modifiers(0),
       mouse_position(0, 0),
       implicit_wait(0),
-      page_load_timeout(-1),
+      page_load_timeout(kDefaultPageLoadTimeoutMs),
       script_timeout(0),
       capabilities(CreateCapabilities()) {
 }
