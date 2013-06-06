@@ -374,6 +374,9 @@ IN_PROC_BROWSER_TEST_F(ClickToPlayPluginTest, BlockException) {
 // Crashes on Mac Asan.  http://crbug.com/239169
 #if defined(OS_MACOSX)
 #define MAYBE_LoadAllBlockedPlugins DISABLED_LoadAllBlockedPlugins
+// TODO(jschuh): Flaky plugin tests. crbug.com/244653
+#elif defined(OS_WIN) && defined(ARCH_CPU_X86_64)
+#define MAYBE_LoadAllBlockedPlugins DISABLED_LoadAllBlockedPlugins
 #else
 #define MAYBE_LoadAllBlockedPlugins LoadAllBlockedPlugins
 #endif
