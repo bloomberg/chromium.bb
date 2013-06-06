@@ -29,6 +29,7 @@ class CC_EXPORT LayerTreeHostCommon {
   static void CalculateDrawProperties(
       Layer* root_layer,
       gfx::Size device_viewport_size,
+      const gfx::Transform& device_transform,
       float device_scale_factor,
       float page_scale_factor,
       Layer* page_scale_application_layer,
@@ -39,6 +40,7 @@ class CC_EXPORT LayerTreeHostCommon {
   static void CalculateDrawProperties(
       LayerImpl* root_layer,
       gfx::Size device_viewport_size,
+      const gfx::Transform& device_transform,
       float device_scale_factor,
       float page_scale_factor,
       LayerImpl* page_scale_application_layer,

@@ -36,6 +36,8 @@ class FakeOutputSurfaceClient : public OutputSurfaceClient {
       OVERRIDE {}
   virtual void OnSwapBuffersComplete() OVERRIDE {}
   virtual void DidLoseOutputSurface() OVERRIDE {}
+  virtual void SetExternalDrawConstraints(const gfx::Transform& transform,
+                                          gfx::Rect viewport) OVERRIDE {}
 };
 
 TEST(OutputSurfaceTest, ClientPointerIndicatesBindToClientSuccess) {

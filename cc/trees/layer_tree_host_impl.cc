@@ -165,8 +165,6 @@ LayerTreeHostImpl::LayerTreeHostImpl(
       wheel_scrolling_(false),
       root_layer_scroll_offset_delegate_(NULL),
       settings_(settings),
-      overdraw_bottom_height_(0.f),
-      device_scale_factor_(1.f),
       visible_(true),
       managed_memory_policy_(
           PrioritizedResourceManager::DefaultMemoryAllocationLimit(),
@@ -182,6 +180,8 @@ LayerTreeHostImpl::LayerTreeHostImpl(
       last_sent_memory_visible_bytes_(0),
       last_sent_memory_visible_and_nearby_bytes_(0),
       last_sent_memory_use_bytes_(0),
+      device_scale_factor_(1.f),
+      overdraw_bottom_height_(0.f),
       animation_registrar_(AnimationRegistrar::Create()),
       rendering_stats_instrumentation_(rendering_stats_instrumentation) {
   DCHECK(proxy_->IsImplThread());
@@ -1040,6 +1040,13 @@ void LayerTreeHostImpl::SetManagedMemoryPolicy(
     client_->SetNeedsCommitOnImplThread();
 }
 
+void LayerTreeHostImpl::SetExternalDrawConstraints(
+    const gfx::Transform& transform,
+    gfx::Rect viewport) {
+  external_transform_ = transform;
+  external_viewport_ = viewport;
+}
+
 void LayerTreeHostImpl::SetNeedsRedrawRect(gfx::Rect damage_rect) {
   client_->SetNeedsRedrawRectOnImplThread(damage_rect);
 }
@@ -1221,17 +1228,13 @@ void LayerTreeHostImpl::SetNeedsBeginFrame(bool enable) {
     output_surface_->SetNeedsBeginFrame(enable);
 }
 
-gfx::Size LayerTreeHostImpl::DeviceViewportSize() const {
-  return device_viewport_size();
-}
-
 float LayerTreeHostImpl::DeviceScaleFactor() const {
   return device_scale_factor_;
 }
 
 gfx::SizeF LayerTreeHostImpl::VisibleViewportSize() const {
   gfx::SizeF dip_size =
-      gfx::ScaleSize(DeviceViewportSize(), 1.f / device_scale_factor());
+      gfx::ScaleSize(device_viewport_size(), 1.f / device_scale_factor());
 
   // The clip layer should be used if non-overlay scrollbars may exist since
   // it adjusts for them.
@@ -1551,6 +1554,17 @@ void LayerTreeHostImpl::SetDeviceScaleFactor(float device_scale_factor) {
 
   UpdateMaxScrollOffset();
   SetFullRootLayerDamage();
+}
+
+gfx::Rect LayerTreeHostImpl::DeviceViewport() const {
+  if (external_viewport_.IsEmpty())
+    return gfx::Rect(device_viewport_size_);
+
+  return external_viewport_;
+}
+
+const gfx::Transform& LayerTreeHostImpl::DeviceTransform() const {
+  return external_transform_;
 }
 
 void LayerTreeHostImpl::UpdateMaxScrollOffset() {

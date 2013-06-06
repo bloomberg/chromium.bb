@@ -89,6 +89,7 @@ class CC_EXPORT OutputSurface {
   virtual void DiscardBackbuffer();
 
   virtual void Reshape(gfx::Size size, float scale_factor);
+  virtual gfx::Size SurfaceSize() const;
 
   virtual void BindFramebuffer();
 
@@ -110,6 +111,8 @@ class CC_EXPORT OutputSurface {
   scoped_ptr<WebKit::WebGraphicsContext3D> context3d_;
   scoped_ptr<cc::SoftwareOutputDevice> software_device_;
   bool has_gl_discard_backbuffer_;
+  gfx::Size surface_size_;
+  float device_scale_factor_;
 
   scoped_ptr<OutputSurfaceCallbacks> callbacks_;
 

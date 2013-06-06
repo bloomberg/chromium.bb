@@ -131,6 +131,7 @@ void CompareFixedBoundsLayerAndNormalLayer(
   cc::LayerTreeHostCommon::CalculateDrawProperties(
       root_layer->layer(),
       kDeviceViewportSize,
+      gfx::Transform(),
       kDeviceScaleFactor,
       kPageScaleFactor,
       root_layer->layer(),
@@ -149,6 +150,7 @@ void CompareFixedBoundsLayerAndNormalLayer(
   cc::LayerTreeHostCommon::CalculateDrawProperties(
       root_layer->layer(),
       kDeviceViewportSize,
+      gfx::Transform(),
       kDeviceScaleFactor,
       kPageScaleFactor,
       root_layer->layer(),

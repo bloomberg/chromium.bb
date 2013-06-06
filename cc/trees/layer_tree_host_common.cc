@@ -406,8 +406,7 @@ gfx::Transform ComputeSizeDeltaCompensation(
 
   gfx::Transform target_surface_space_to_container_layer_space;
   // Calculate step 1a
-  LayerImpl* container_target_surface =
-      container ? container->render_target() : 0;
+  LayerImpl* container_target_surface = container->render_target();
   for (LayerImpl* current_target_surface = NextTargetSurface(layer);
       current_target_surface &&
           current_target_surface != container_target_surface;
@@ -418,20 +417,18 @@ gfx::Transform ComputeSizeDeltaCompensation(
         current_target_surface->render_surface()->draw_transform());
   }
   // Calculate step 1b
-  if (container) {
-    gfx::Transform container_layer_space_to_container_target_surface_space =
-        container->draw_transform();
-    container_layer_space_to_container_target_surface_space.Scale(
-        container->contents_scale_x(), container->contents_scale_y());
+  gfx::Transform container_layer_space_to_container_target_surface_space =
+      container->draw_transform();
+  container_layer_space_to_container_target_surface_space.Scale(
+      container->contents_scale_x(), container->contents_scale_y());
 
-    gfx::Transform container_target_surface_space_to_container_layer_space;
-    if (container_layer_space_to_container_target_surface_space.GetInverse(
-        &container_target_surface_space_to_container_layer_space)) {
-      // Note: Again, Concat is used to conver the result coordinate space from
-      //       the container render surface to the container layer.
-      target_surface_space_to_container_layer_space.ConcatTransform(
-          container_target_surface_space_to_container_layer_space);
-    }
+  gfx::Transform container_target_surface_space_to_container_layer_space;
+  if (container_layer_space_to_container_target_surface_space.GetInverse(
+      &container_target_surface_space_to_container_layer_space)) {
+    // Note: Again, Concat is used to conver the result coordinate space from
+    //       the container render surface to the container layer.
+    target_surface_space_to_container_layer_space.ConcatTransform(
+        container_target_surface_space_to_container_layer_space);
   }
 
   // Apply step 3
@@ -482,8 +479,7 @@ void ApplyPositionAdjustment(
       layer->position_constraint().is_fixed_to_right_edge();
   bool fixed_to_bottom_edge =
       layer->position_constraint().is_fixed_to_bottom_edge();
-  gfx::Vector2dF position_offset =
-      container ? container->fixed_container_size_delta() : gfx::Vector2dF();
+  gfx::Vector2dF position_offset = container->fixed_container_size_delta();
   position_offset.set_x(fixed_to_right_edge ? position_offset.x() : 0);
   position_offset.set_y(fixed_to_bottom_edge ? position_offset.y() : 0);
   if (position_offset.IsZero())
@@ -1115,40 +1111,38 @@ static void CalculateDrawPropertiesInternal(
     RenderSurfaceType* render_surface = layer->render_surface();
     render_surface->ClearLayerLists();
 
-    // The owning layer's draw transform has a scale from content to layer
-    // space which we do not want; so here we use the combined_transform
-    // instead of the draw_transform. However, we do need to add a different
-    // scale factor that accounts for the surface's pixel dimensions.
-    combined_transform.Scale(1.0 / render_surface_sublayer_scale.x(),
-                             1.0 / render_surface_sublayer_scale.y());
-    render_surface->SetDrawTransform(combined_transform);
-
-    // If this is the root layer, there should be no scale in the surface's draw
-    // transform.
     if (IsRootLayer(layer)) {
-      DCHECK_EQ(render_surface_sublayer_scale.x(),
-                combined_transform_scales.x());
-      DCHECK_EQ(render_surface_sublayer_scale.y(),
-                combined_transform_scales.y());
+      // The root layer's render surface size is predetermined and so the root
+      // layer can't directly support non-identity transforms.  It should just
+      // forward top-level transforms to the rest of the tree.
+      sublayer_matrix = combined_transform;
+    } else {
+      // The owning layer's draw transform has a scale from content to layer
+      // space which we do not want; so here we use the combined_transform
+      // instead of the draw_transform. However, we do need to add a different
+      // scale factor that accounts for the surface's pixel dimensions.
+      combined_transform.Scale(1.0 / render_surface_sublayer_scale.x(),
+                               1.0 / render_surface_sublayer_scale.y());
+      render_surface->SetDrawTransform(combined_transform);
+
+      // The owning layer's transform was re-parented by the surface, so the
+      // layer's new draw_transform only needs to scale the layer to surface
+      // space.
+      layer_draw_properties.target_space_transform.MakeIdentity();
+      layer_draw_properties.target_space_transform.
+          Scale(render_surface_sublayer_scale.x() / layer->contents_scale_x(),
+                render_surface_sublayer_scale.y() / layer->contents_scale_y());
+
+      // Inside the surface's subtree, we scale everything to the owning layer's
+      // scale.  The sublayer matrix transforms layer rects into target surface
+      // content space.  Conceptually, all layers in the subtree inherit the
+      // scale at the point of the render surface in the transform hierarchy,
+      // but we apply it explicitly to the owning layer and the remainder of the
+      // subtree independently.
+      DCHECK(sublayer_matrix.IsIdentity());
+      sublayer_matrix.Scale(render_surface_sublayer_scale.x(),
+                            render_surface_sublayer_scale.y());
     }
-
-    // The owning layer's transform was re-parented by the surface, so the
-    // layer's new draw_transform only needs to scale the layer to surface
-    // space.
-    layer_draw_properties.target_space_transform.MakeIdentity();
-    layer_draw_properties.target_space_transform.
-        Scale(render_surface_sublayer_scale.x() / layer->contents_scale_x(),
-              render_surface_sublayer_scale.y() / layer->contents_scale_y());
-
-    // Inside the surface's subtree, we scale everything to the owning layer's
-    // scale.  The sublayer matrix transforms layer rects into target surface
-    // content space.  Conceptually, all layers in the subtree inherit the scale
-    // at the point of the render surface in the transform hierarchy, but we
-    // apply it explicitly to the owning layer and the remainder of the subtree
-    // indenpendently.
-    DCHECK(sublayer_matrix.IsIdentity());
-    sublayer_matrix.Scale(render_surface_sublayer_scale.x(),
-                          render_surface_sublayer_scale.y());
 
     // The opacity value is moved from the layer to its surface, so that the
     // entire subtree properly inherits opacity.
@@ -1337,6 +1331,7 @@ static void CalculateDrawPropertiesInternal(
     LayerType* child =
         LayerTreeHostCommon::get_child_as_raw_ptr(layer->children(), i);
     gfx::Rect drawable_content_rect_of_child_subtree;
+    gfx::Transform identity_matrix;
     CalculateDrawPropertiesInternal<LayerType, LayerList, RenderSurfaceType>(
         child,
         sublayer_matrix,
@@ -1526,6 +1521,7 @@ static void CalculateDrawPropertiesInternal(
 void LayerTreeHostCommon::CalculateDrawProperties(
     Layer* root_layer,
     gfx::Size device_viewport_size,
+    const gfx::Transform& device_transform,
     float device_scale_factor,
     float page_scale_factor,
     Layer* page_scale_application_layer,
@@ -1535,8 +1531,8 @@ void LayerTreeHostCommon::CalculateDrawProperties(
     LayerList* render_surface_layer_list) {
   gfx::Rect total_drawable_content_rect;
   gfx::Transform identity_matrix;
-  gfx::Transform device_scale_transform;
-  device_scale_transform.Scale(device_scale_factor, device_scale_factor);
+  gfx::Transform scaled_device_transform = device_transform;
+  scaled_device_transform.Scale(device_scale_factor, device_scale_factor);
   LayerList dummy_layer_list;
 
   // The root layer's render_surface should receive the device viewport as the
@@ -1551,10 +1547,10 @@ void LayerTreeHostCommon::CalculateDrawProperties(
   PreCalculateMetaInformation<Layer>(root_layer);
   CalculateDrawPropertiesInternal<Layer, LayerList, RenderSurface>(
       root_layer,
-      device_scale_transform,
+      scaled_device_transform,
       identity_matrix,
       identity_matrix,
-      NULL,
+      root_layer,
       device_viewport_rect,
       device_viewport_rect,
       subtree_should_be_clipped,
@@ -1581,6 +1577,7 @@ void LayerTreeHostCommon::CalculateDrawProperties(
 void LayerTreeHostCommon::CalculateDrawProperties(
     LayerImpl* root_layer,
     gfx::Size device_viewport_size,
+    const gfx::Transform& device_transform,
     float device_scale_factor,
     float page_scale_factor,
     LayerImpl* page_scale_application_layer,
@@ -1590,8 +1587,8 @@ void LayerTreeHostCommon::CalculateDrawProperties(
     LayerImplList* render_surface_layer_list) {
   gfx::Rect total_drawable_content_rect;
   gfx::Transform identity_matrix;
-  gfx::Transform device_scale_transform;
-  device_scale_transform.Scale(device_scale_factor, device_scale_factor);
+  gfx::Transform scaled_device_transform = device_transform;
+  scaled_device_transform.Scale(device_scale_factor, device_scale_factor);
   LayerImplList dummy_layer_list;
   LayerSorter layer_sorter;
 
@@ -1609,10 +1606,10 @@ void LayerTreeHostCommon::CalculateDrawProperties(
                                   LayerImplList,
                                   RenderSurfaceImpl>(
       root_layer,
-      device_scale_transform,
+      scaled_device_transform,
       identity_matrix,
       identity_matrix,
-      NULL,
+      root_layer,
       device_viewport_rect,
       device_viewport_rect,
       subtree_should_be_clipped,

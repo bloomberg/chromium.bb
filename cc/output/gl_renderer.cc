@@ -125,12 +125,10 @@ GLRenderer::GLRenderer(RendererClient* client,
                        OutputSurface* output_surface,
                        ResourceProvider* resource_provider,
                        int highp_threshold_min)
-    : DirectRenderer(client, resource_provider),
+    : DirectRenderer(client, output_surface, resource_provider),
       offscreen_framebuffer_id_(0),
       shared_geometry_quad_(gfx::RectF(-0.5f, -0.5f, 1.0f, 1.0f)),
-      output_surface_(output_surface),
       context_(output_surface->context3d()),
-      is_viewport_changed_(false),
       is_backbuffer_discarded_(false),
       discard_backbuffer_when_not_visible_(false),
       is_using_bind_uniform_(false),
@@ -275,7 +273,6 @@ void GLRenderer::SendManagedMemoryStats(size_t bytes_visible,
 void GLRenderer::ReleaseRenderPassTextures() { render_pass_textures_.clear(); }
 
 void GLRenderer::ViewportChanged() {
-  is_viewport_changed_ = true;
   ReinitializeGrCanvas();
 }
 
@@ -305,18 +302,10 @@ void GLRenderer::BeginDrawingFrame(DrawingFrame* frame) {
   // FIXME: Remove this once backbuffer is automatically recreated on first use
   EnsureBackbuffer();
 
-  if (ViewportSize().IsEmpty())
+  if (client_->DeviceViewport().IsEmpty())
     return;
 
   TRACE_EVENT0("cc", "GLRenderer::DrawLayers");
-  if (is_viewport_changed_) {
-    // Only reshape when we know we are going to draw. Otherwise, the reshape
-    // can leave the window at the wrong size if we never draw and the proper
-    // viewport size is never set.
-    is_viewport_changed_ = false;
-    output_surface_->Reshape(gfx::Size(ViewportWidth(), ViewportHeight()),
-                             DeviceScaleFactor());
-  }
 
   MakeContextCurrent();
 
@@ -1503,7 +1492,7 @@ void GLRenderer::DrawPictureQuadDirectToBackbuffer(
     sk_canvas_->clipRect(gfx::RectToSkRect(scissor_rect_),
                          SkRegion::kReplace_Op);
   } else {
-    sk_canvas_->clipRect(gfx::RectToSkRect(gfx::Rect(ViewportSize())),
+    sk_canvas_->clipRect(gfx::RectToSkRect(client_->DeviceViewport()),
                          SkRegion::kReplace_Op);
   }
 
@@ -1970,9 +1959,10 @@ void GLRenderer::SwapBuffers(const ui::LatencyInfo& latency_info) {
   if (capabilities_.using_partial_swap && client_->AllowPartialSwap()) {
     // If supported, we can save significant bandwidth by only swapping the
     // damaged/scissored region (clamped to the viewport)
-    swap_buffer_rect_.Intersect(gfx::Rect(ViewportSize()));
+    swap_buffer_rect_.Intersect(client_->DeviceViewport());
     int flipped_y_pos_of_rect_bottom =
-        ViewportHeight() - swap_buffer_rect_.y() - swap_buffer_rect_.height();
+        client_->DeviceViewport().height() - swap_buffer_rect_.y() -
+        swap_buffer_rect_.height();
     output_surface_->PostSubBuffer(gfx::Rect(swap_buffer_rect_.x(),
                                              flipped_y_pos_of_rect_bottom,
                                              swap_buffer_rect_.width(),
@@ -2126,8 +2116,9 @@ void GLRenderer::DoGetFramebufferPixels(
     gfx::Rect rect,
     bool flipped_y,
     const AsyncGetFramebufferPixelsCleanupCallback& cleanup_callback) {
-  DCHECK(rect.right() <= ViewportWidth());
-  DCHECK(rect.bottom() <= ViewportHeight());
+  gfx::Rect window_rect = MoveFromDrawToWindowSpace(rect, flipped_y);
+  DCHECK_LE(window_rect.right(), current_surface_size_.width());
+  DCHECK_LE(window_rect.bottom(), current_surface_size_.height());
 
   bool is_async = !cleanup_callback.is_null();
 
@@ -2167,8 +2158,8 @@ void GLRenderer::DoGetFramebufferPixels(
                                  GL_RGBA,
                                  0,
                                  0,
-                                 current_framebuffer_size_.width(),
-                                 current_framebuffer_size_.height(),
+                                 current_surface_size_.width(),
+                                 current_surface_size_.height(),
                                  0));
     temporary_fbo = context_->createFramebuffer();
     // Attach this texture to an FBO, and perform the readback from that FBO.
@@ -2193,10 +2184,10 @@ void GLRenderer::DoGetFramebufferPixels(
                                      GL_STREAM_READ));
 
   GLC(context_,
-      context_->readPixels(rect.x(),
-                           current_framebuffer_size_.height() - rect.bottom(),
-                           rect.width(),
-                           rect.height(),
+      context_->readPixels(window_rect.x(),
+                           window_rect.y(),
+                           window_rect.width(),
+                           window_rect.height(),
                            GL_RGBA,
                            GL_UNSIGNED_BYTE,
                            NULL));
@@ -2348,7 +2339,7 @@ void GLRenderer::BindFramebufferToOutputSurface(DrawingFrame* frame) {
 
 bool GLRenderer::BindFramebufferToTexture(DrawingFrame* frame,
                                           const ScopedResource* texture,
-                                          gfx::Rect framebuffer_rect) {
+                                          gfx::Rect target_rect) {
   DCHECK(texture->id());
 
   current_framebuffer_lock_.reset();
@@ -2366,9 +2357,11 @@ bool GLRenderer::BindFramebufferToTexture(DrawingFrame* frame,
   DCHECK(context_->checkFramebufferStatus(GL_FRAMEBUFFER) ==
          GL_FRAMEBUFFER_COMPLETE || IsContextLost());
 
-  InitializeMatrices(frame, framebuffer_rect, false);
-  SetDrawViewportSize(framebuffer_rect.size());
-
+  InitializeViewport(frame,
+                     target_rect,
+                     gfx::Rect(target_rect.size()),
+                     target_rect.size(),
+                     false);
   return true;
 }
 
@@ -2389,10 +2382,11 @@ void GLRenderer::SetScissorTestRect(gfx::Rect scissor_rect) {
                         scissor_rect.height()));
 }
 
-void GLRenderer::SetDrawViewportSize(gfx::Size viewport_size) {
-  current_framebuffer_size_ = viewport_size;
-  GLC(context_,
-      context_->viewport(0, 0, viewport_size.width(), viewport_size.height()));
+void GLRenderer::SetDrawViewport(gfx::Rect window_space_viewport) {
+  GLC(context_, context_->viewport(window_space_viewport.x(),
+                                   window_space_viewport.y(),
+                                   window_space_viewport.width(),
+                                   window_space_viewport.height()));
 }
 
 bool GLRenderer::MakeContextCurrent() { return context_->makeContextCurrent(); }
@@ -2866,8 +2860,8 @@ void GLRenderer::ReinitializeGrCanvas() {
     return;
 
   GrBackendRenderTargetDesc desc;
-  desc.fWidth = ViewportWidth();
-  desc.fHeight = ViewportHeight();
+  desc.fWidth = client_->DeviceViewport().width();
+  desc.fHeight = client_->DeviceViewport().height();
   desc.fConfig = kRGBA_8888_GrPixelConfig;
   desc.fOrigin = kTopLeft_GrSurfaceOrigin;
   desc.fSampleCnt = 1;

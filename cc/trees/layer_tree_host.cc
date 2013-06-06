@@ -715,6 +715,7 @@ void LayerTreeHost::UpdateLayers(Layer* root_layer,
     LayerTreeHostCommon::CalculateDrawProperties(
         root_layer,
         device_viewport_size(),
+        gfx::Transform(),
         device_scale_factor_,
         page_scale_factor_,
         root_scroll,

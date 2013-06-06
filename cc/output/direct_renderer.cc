@@ -79,10 +79,15 @@ void DirectRenderer::QuadRectTransform(gfx::Transform* quad_rect_transform,
   quad_rect_transform->Scale(quad_rect.width(), quad_rect.height());
 }
 
-// static
-void DirectRenderer::InitializeMatrices(DrawingFrame* frame,
+void DirectRenderer::InitializeViewport(DrawingFrame* frame,
                                         gfx::Rect draw_rect,
+                                        gfx::Rect viewport_rect,
+                                        gfx::Size surface_size,
                                         bool flip_y) {
+  DCHECK_GE(viewport_rect.x(), 0);
+  DCHECK_GE(viewport_rect.y(), 0);
+  DCHECK_LE(viewport_rect.right(), surface_size.width());
+  DCHECK_LE(viewport_rect.bottom(), surface_size.height());
   if (flip_y) {
     frame->projection_matrix = OrthoProjectionMatrix(draw_rect.x(),
                                                      draw_rect.right(),
@@ -94,35 +99,38 @@ void DirectRenderer::InitializeMatrices(DrawingFrame* frame,
                                                      draw_rect.y(),
                                                      draw_rect.bottom());
   }
-  frame->window_matrix =
-      window_matrix(0, 0, draw_rect.width(), draw_rect.height());
+
+  gfx::Rect window_rect = viewport_rect;
+  if (flip_y)
+    window_rect.set_y(surface_size.height() - viewport_rect.bottom());
+  frame->window_matrix = window_matrix(window_rect.x(),
+                                       window_rect.y(),
+                                       window_rect.width(),
+                                       window_rect.height());
+  SetDrawViewport(window_rect);
+
   frame->flipped_y = flip_y;
+
+  current_draw_rect_ = draw_rect;
+  current_viewport_rect_ = viewport_rect;
+  current_surface_size_ = surface_size;
 }
 
-// static
-gfx::Rect DirectRenderer::MoveScissorToWindowSpace(
-    const DrawingFrame* frame, const gfx::RectF& scissor_rect) {
-  gfx::Rect scissor_rect_in_canvas_space = gfx::ToEnclosingRect(scissor_rect);
-  // The scissor coordinates must be supplied in viewport space so we need to
-  // offset by the relative position of the top left corner of the current
-  // render pass.
-  gfx::Rect framebuffer_output_rect = frame->current_render_pass->output_rect;
-  scissor_rect_in_canvas_space.set_x(
-      scissor_rect_in_canvas_space.x() - framebuffer_output_rect.x());
-  if (frame->flipped_y && !frame->current_texture) {
-    scissor_rect_in_canvas_space.set_y(
-        framebuffer_output_rect.height() -
-        (scissor_rect_in_canvas_space.bottom() - framebuffer_output_rect.y()));
-  } else {
-    scissor_rect_in_canvas_space.set_y(
-        scissor_rect_in_canvas_space.y() - framebuffer_output_rect.y());
-  }
-  return scissor_rect_in_canvas_space;
+gfx::Rect DirectRenderer::MoveFromDrawToWindowSpace(
+    const gfx::RectF& draw_rect, bool flip_y) const {
+  gfx::Rect window_rect = gfx::ToEnclosingRect(draw_rect);
+  window_rect -= current_draw_rect_.OffsetFromOrigin();
+  window_rect += current_viewport_rect_.OffsetFromOrigin();
+  if (flip_y)
+    window_rect.set_y(current_surface_size_.height() - window_rect.bottom());
+  return window_rect;
 }
 
 DirectRenderer::DirectRenderer(RendererClient* client,
+                               OutputSurface* output_surface,
                                ResourceProvider* resource_provider)
     : Renderer(client),
+      output_surface_(output_surface),
       resource_provider_(resource_provider) {}
 
 DirectRenderer::~DirectRenderer() {}
@@ -197,7 +205,13 @@ void DirectRenderer::DrawFrame(RenderPassList* render_passes_in_draw_order) {
   frame.root_damage_rect =
       Capabilities().using_partial_swap && client_->AllowPartialSwap() ?
       root_render_pass->damage_rect : root_render_pass->output_rect;
-  frame.root_damage_rect.Intersect(gfx::Rect(ViewportSize()));
+  frame.root_damage_rect.Intersect(gfx::Rect(client_->DeviceViewport().size()));
+
+  // Only reshape when we know we are going to draw. Otherwise, the reshape
+  // can leave the window at the wrong size if we never draw and the proper
+  // viewport size is never set.
+  output_surface_->Reshape(client_->DeviceViewport().size(),
+                           client_->DeviceScaleFactor());
 
   BeginDrawingFrame(&frame);
   for (size_t i = 0; i < render_passes_in_draw_order->size(); ++i) {
@@ -245,7 +259,8 @@ void DirectRenderer::SetScissorStateForQuad(const DrawingFrame* frame,
                                             const DrawQuad& quad) {
   if (quad.isClipped()) {
     gfx::RectF quad_scissor_rect = quad.clipRect();
-    SetScissorTestRect(MoveScissorToWindowSpace(frame, quad_scissor_rect));
+    SetScissorTestRect(
+        MoveFromDrawToWindowSpace(quad_scissor_rect, frame->flipped_y));
   } else {
     EnsureScissorTestDisabled();
   }
@@ -267,7 +282,8 @@ void DirectRenderer::SetScissorStateForQuadWithRenderPassScissor(
   }
 
   *should_skip_quad = false;
-  SetScissorTestRect(MoveScissorToWindowSpace(frame, quad_scissor_rect));
+  SetScissorTestRect(
+      MoveFromDrawToWindowSpace(quad_scissor_rect, frame->flipped_y));
 }
 
 void DirectRenderer::FinishDrawingQuadList() {}
@@ -284,7 +300,8 @@ void DirectRenderer::DrawRenderPass(DrawingFrame* frame,
 
   if (using_scissor_as_optimization) {
     render_pass_scissor = ComputeScissorRectForRenderPass(frame);
-    SetScissorTestRect(MoveScissorToWindowSpace(frame, render_pass_scissor));
+    SetScissorTestRect(
+        MoveFromDrawToWindowSpace(render_pass_scissor, frame->flipped_y));
   }
 
   if (frame->current_render_pass != frame->root_render_pass ||
@@ -327,8 +344,11 @@ bool DirectRenderer::UseRenderPass(DrawingFrame* frame,
 
   if (render_pass == frame->root_render_pass) {
     BindFramebufferToOutputSurface(frame);
-    InitializeMatrices(frame, render_pass->output_rect, FlippedFramebuffer());
-    SetDrawViewportSize(render_pass->output_rect.size());
+    InitializeViewport(frame,
+                       render_pass->output_rect,
+                       client_->DeviceViewport(),
+                       output_surface_->SurfaceSize(),
+                       FlippedFramebuffer());
     return true;
   }
 

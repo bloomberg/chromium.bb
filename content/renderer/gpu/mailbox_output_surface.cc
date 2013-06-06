@@ -45,7 +45,7 @@ void MailboxOutputSurface::EnsureBackbuffer() {
     // Find a texture of matching size to recycle.
     while (!returned_textures_.empty()) {
       TransferableFrame& texture = returned_textures_.front();
-      if (texture.size == size_) {
+      if (texture.size == surface_size_) {
         current_backing_ = texture;
         if (current_backing_.sync_point)
           context3d_->waitSyncPoint(current_backing_.sync_point);
@@ -59,7 +59,7 @@ void MailboxOutputSurface::EnsureBackbuffer() {
 
     if (!current_backing_.texture_id) {
       current_backing_.texture_id = context3d_->createTexture();
-      current_backing_.size = size_;
+      current_backing_.size = surface_size_;
       context3d_->bindTexture(GL_TEXTURE_2D, current_backing_.texture_id);
       context3d_->texParameteri(
           GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -70,7 +70,8 @@ void MailboxOutputSurface::EnsureBackbuffer() {
       context3d_->texParameteri(
           GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
       context3d_->texImage2D(
-          GL_TEXTURE_2D, 0, GL_RGBA, size_.width(), size_.height(), 0,
+          GL_TEXTURE_2D, 0, GL_RGBA,
+          surface_size_.width(), surface_size_.height(), 0,
           GL_RGBA, GL_UNSIGNED_BYTE, NULL);
       context3d_->genMailboxCHROMIUM(current_backing_.mailbox.name);
       context3d_->produceTextureCHROMIUM(
@@ -101,10 +102,11 @@ void MailboxOutputSurface::DiscardBackbuffer() {
 }
 
 void MailboxOutputSurface::Reshape(gfx::Size size, float scale_factor) {
-  if (size == size_)
+  if (size == surface_size_)
     return;
 
-  size_ = size;
+  surface_size_ = size;
+  device_scale_factor_ = scale_factor;
   DiscardBackbuffer();
   EnsureBackbuffer();
 }
@@ -125,8 +127,8 @@ void MailboxOutputSurface::SendFrameToParentCompositor(
     cc::CompositorFrame* frame) {
   frame->gl_frame_data.reset(new GLFrameData());
 
-  DCHECK(!size_.IsEmpty());
-  DCHECK(size_ == current_backing_.size);
+  DCHECK(!surface_size_.IsEmpty());
+  DCHECK(surface_size_ == current_backing_.size);
   DCHECK(!current_backing_.mailbox.IsZero());
 
   frame->gl_frame_data->mailbox = current_backing_.mailbox;

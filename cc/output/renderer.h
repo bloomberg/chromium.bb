@@ -20,7 +20,11 @@ class ScopedResource;
 
 class CC_EXPORT RendererClient {
  public:
-  virtual gfx::Size DeviceViewportSize() const = 0;
+  // Draw viewport in non-y-flipped window space. Note that while a draw is in
+  // progress, this is guaranteed to be contained within the output surface
+  // size.
+  virtual gfx::Rect DeviceViewport() const = 0;
+
   virtual float DeviceScaleFactor() const = 0;
   virtual const LayerTreeSettings& Settings() const = 0;
   virtual void SetFullRootLayerDamage() = 0;
@@ -43,12 +47,6 @@ class CC_EXPORT Renderer {
   virtual const RendererCapabilities& Capabilities() const = 0;
 
   const LayerTreeSettings& Settings() const { return client_->Settings(); }
-
-  gfx::Size ViewportSize() const { return client_->DeviceViewportSize(); }
-  int ViewportWidth() const { return ViewportSize().width(); }
-  int ViewportHeight() const { return ViewportSize().height(); }
-
-  float DeviceScaleFactor() const { return client_->DeviceScaleFactor(); }
 
   virtual void ViewportChanged() {}
   virtual void ReceiveCompositorFrameAck(const CompositorFrameAck& ack) {}

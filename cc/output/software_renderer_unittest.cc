@@ -18,6 +18,8 @@
 #include "cc/test/render_pass_test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/skia/include/core/SkCanvas.h"
+#include "third_party/skia/include/core/SkDevice.h"
 
 namespace cc {
 namespace {
@@ -26,9 +28,10 @@ class SoftwareRendererTest : public testing::Test, public RendererClient {
  public:
   SoftwareRendererTest() : should_clear_root_render_pass_(true) {}
 
-  void InitializeRenderer() {
+  void InitializeRenderer(
+      scoped_ptr<SoftwareOutputDevice> software_output_device) {
     output_surface_ = FakeOutputSurface::CreateSoftware(
-        make_scoped_ptr(new SoftwareOutputDevice));
+        software_output_device.Pass());
     resource_provider_ = ResourceProvider::Create(output_surface_.get(), 0);
     renderer_ = SoftwareRenderer::Create(
         this, output_surface_.get(), resource_provider());
@@ -40,8 +43,8 @@ class SoftwareRendererTest : public testing::Test, public RendererClient {
 
   SoftwareRenderer* renderer() const { return renderer_.get(); }
 
-  void set_viewport_size(gfx::Size viewport_size) {
-    viewport_size_ = viewport_size;
+  void set_viewport(gfx::Rect viewport) {
+    viewport_ = viewport;
   }
 
   void set_should_clear_root_render_pass(bool clear_root_render_pass) {
@@ -49,8 +52,8 @@ class SoftwareRendererTest : public testing::Test, public RendererClient {
   }
 
   // RendererClient implementation.
-  virtual gfx::Size DeviceViewportSize() const OVERRIDE {
-    return viewport_size_;
+  virtual gfx::Rect DeviceViewport() const OVERRIDE {
+    return viewport_;
   }
   virtual float DeviceScaleFactor() const OVERRIDE {
     return 1.f;
@@ -78,7 +81,7 @@ class SoftwareRendererTest : public testing::Test, public RendererClient {
   scoped_ptr<FakeOutputSurface> output_surface_;
   scoped_ptr<ResourceProvider> resource_provider_;
   scoped_ptr<SoftwareRenderer> renderer_;
-  gfx::Size viewport_size_;
+  gfx::Rect viewport_;
   LayerTreeSettings settings_;
   bool should_clear_root_render_pass_;
 };
@@ -88,9 +91,9 @@ TEST_F(SoftwareRendererTest, SolidColorQuad) {
   gfx::Size inner_size(98, 98);
   gfx::Rect outer_rect(outer_size);
   gfx::Rect inner_rect(gfx::Point(1, 1), inner_size);
-  set_viewport_size(outer_size);
+  set_viewport(gfx::Rect(outer_size));
 
-  InitializeRenderer();
+  InitializeRenderer(make_scoped_ptr(new SoftwareOutputDevice));
 
   scoped_ptr<SharedQuadState> shared_quad_state = SharedQuadState::Create();
   shared_quad_state->SetAll(
@@ -113,8 +116,8 @@ TEST_F(SoftwareRendererTest, SolidColorQuad) {
 
   SkBitmap output;
   output.setConfig(SkBitmap::kARGB_8888_Config,
-                   DeviceViewportSize().width(),
-                   DeviceViewportSize().height());
+                   DeviceViewport().width(),
+                   DeviceViewport().height());
   output.allocPixels();
   renderer()->GetFramebufferPixels(output.getPixels(), outer_rect);
 
@@ -131,8 +134,8 @@ TEST_F(SoftwareRendererTest, TileQuad) {
   gfx::Size inner_size(98, 98);
   gfx::Rect outer_rect(outer_size);
   gfx::Rect inner_rect(gfx::Point(1, 1), inner_size);
-  set_viewport_size(outer_size);
-  InitializeRenderer();
+  set_viewport(gfx::Rect(outer_size));
+  InitializeRenderer(make_scoped_ptr(new SoftwareOutputDevice));
 
   ResourceProvider::ResourceId resource_yellow =
       resource_provider()->CreateResource(
@@ -165,7 +168,7 @@ TEST_F(SoftwareRendererTest, TileQuad) {
                                  gfx::Rect(inner_size),
                                  gfx::Vector2d());
 
-  gfx::Rect root_rect = gfx::Rect(DeviceViewportSize());
+  gfx::Rect root_rect = DeviceViewport();
 
   scoped_ptr<SharedQuadState> shared_quad_state = SharedQuadState::Create();
   shared_quad_state->SetAll(
@@ -199,8 +202,8 @@ TEST_F(SoftwareRendererTest, TileQuad) {
 
   SkBitmap output;
   output.setConfig(SkBitmap::kARGB_8888_Config,
-                   DeviceViewportSize().width(),
-                   DeviceViewportSize().height());
+                   DeviceViewport().width(),
+                   DeviceViewport().height());
   output.allocPixels();
   renderer()->GetFramebufferPixels(output.getPixels(), outer_rect);
 
@@ -214,9 +217,9 @@ TEST_F(SoftwareRendererTest, TileQuad) {
 
 TEST_F(SoftwareRendererTest, ShouldClearRootRenderPass) {
   gfx::Rect viewport_rect(0, 0, 100, 100);
-  set_viewport_size(viewport_rect.size());
+  set_viewport(viewport_rect);
   set_should_clear_root_render_pass(false);
-  InitializeRenderer();
+  InitializeRenderer(make_scoped_ptr(new SoftwareOutputDevice));
 
   RenderPassList list;
 

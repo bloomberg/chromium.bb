@@ -104,8 +104,8 @@ class CC_EXPORT GLRenderer
   virtual void BindFramebufferToOutputSurface(DrawingFrame* frame) OVERRIDE;
   virtual bool BindFramebufferToTexture(DrawingFrame* frame,
                                         const ScopedResource* resource,
-                                        gfx::Rect framebuffer_rect) OVERRIDE;
-  virtual void SetDrawViewportSize(gfx::Size viewport_size) OVERRIDE;
+                                        gfx::Rect target_rect) OVERRIDE;
+  virtual void SetDrawViewport(gfx::Rect window_space_viewport) OVERRIDE;
   virtual void SetScissorTestRect(gfx::Rect scissor_rect) OVERRIDE;
   virtual void ClearFramebuffer(DrawingFrame* frame) OVERRIDE;
   virtual void DoDrawQuad(DrawingFrame* frame, const class DrawQuad*) OVERRIDE;
@@ -399,7 +399,6 @@ class CC_EXPORT GLRenderer
   scoped_ptr<SolidColorProgram> solid_color_program_;
   scoped_ptr<SolidColorProgramAA> solid_color_program_aa_;
 
-  OutputSurface* output_surface_;
   WebKit::WebGraphicsContext3D* context_;
 
   skia::RefPtr<GrContext> gr_context_;
@@ -407,7 +406,6 @@ class CC_EXPORT GLRenderer
 
   gfx::Rect swap_buffer_rect_;
   gfx::Rect scissor_rect_;
-  bool is_viewport_changed_;
   bool is_backbuffer_discarded_;
   bool discard_backbuffer_when_not_visible_;
   bool is_using_bind_uniform_;
@@ -423,7 +421,6 @@ class CC_EXPORT GLRenderer
   ScopedPtrVector<PendingAsyncReadPixels> pending_async_read_pixels_;
 
   scoped_ptr<ResourceProvider::ScopedWriteLockGL> current_framebuffer_lock_;
-  gfx::Size current_framebuffer_size_;
 
   scoped_refptr<ResourceProvider::Fence> last_swap_fence_;
 

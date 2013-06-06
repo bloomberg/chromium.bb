@@ -282,7 +282,8 @@ void LayerTreeImpl::UpdateDrawProperties() {
                  IsActiveTree());
     LayerTreeHostCommon::CalculateDrawProperties(
         root_layer(),
-        device_viewport_size(),
+        layer_tree_host_impl_->DeviceViewport().size(),
+        layer_tree_host_impl_->DeviceTransform(),
         device_scale_factor(),
         total_page_scale_factor(),
         root_scroll_layer_,

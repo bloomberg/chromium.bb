@@ -153,8 +153,7 @@ class FakeRendererClient : public RendererClient {
         memory_allocation_limit_bytes_(
             PrioritizedResourceManager::DefaultMemoryAllocationLimit()),
         viewport_size_(gfx::Size(1, 1)),
-        scale_factor_(1.f),
-        is_viewport_changed_(true) {
+        scale_factor_(1.f) {
     root_layer_->CreateRenderSurface();
     RenderPass::Id render_pass_id =
         root_layer_->render_surface()->RenderPassId();
@@ -165,9 +164,9 @@ class FakeRendererClient : public RendererClient {
   }
 
   // RendererClient methods.
-  virtual gfx::Size DeviceViewportSize() const OVERRIDE {
+  virtual gfx::Rect DeviceViewport() const OVERRIDE {
     static gfx::Size fake_size(1, 1);
-    return fake_size;
+    return gfx::Rect(fake_size);
   }
   virtual float DeviceScaleFactor() const OVERRIDE {
     return scale_factor_;
@@ -209,10 +208,7 @@ class FakeRendererClient : public RendererClient {
       gfx::Size viewport_size, float scale_factor) {
     viewport_size_ = viewport_size;
     scale_factor_ = scale_factor;
-    is_viewport_changed_ = true;
   }
-  bool is_viewport_changed() const { return is_viewport_changed_; }
-  void clear_viewport_changed() { is_viewport_changed_ = false; }
 
   RenderPass* root_render_pass() { return render_passes_in_draw_order_.back(); }
   RenderPassList* render_passes_in_draw_order() {
@@ -233,7 +229,6 @@ class FakeRendererClient : public RendererClient {
   size_t memory_allocation_limit_bytes_;
   gfx::Size viewport_size_;
   float scale_factor_;
-  bool is_viewport_changed_;
 };
 
 class FakeRendererGL : public GLRenderer {
@@ -1004,7 +999,7 @@ TEST(GLRendererTest2, ShouldClearRootRenderPass) {
       &mock_client, output_surface.get(), resource_provider.get());
   EXPECT_TRUE(renderer.Initialize());
 
-  gfx::Rect viewport_rect(mock_client.DeviceViewportSize());
+  gfx::Rect viewport_rect(mock_client.DeviceViewport());
   ScopedPtrVector<RenderPass>& render_passes =
       *mock_client.render_passes_in_draw_order();
   render_passes.clear();
@@ -1075,7 +1070,7 @@ TEST(GLRendererTest2, ScissorTestWhenClearing) {
   EXPECT_TRUE(renderer.Initialize());
   EXPECT_FALSE(renderer.Capabilities().using_partial_swap);
 
-  gfx::Rect viewport_rect(mock_client.DeviceViewportSize());
+  gfx::Rect viewport_rect(mock_client.DeviceViewport());
   ScopedPtrVector<RenderPass>& render_passes =
       *mock_client.render_passes_in_draw_order();
   render_passes.clear();
@@ -1105,12 +1100,89 @@ TEST(GLRendererTest2, ScissorTestWhenClearing) {
   renderer.DrawFrame(mock_client.render_passes_in_draw_order());
 }
 
+class NonReshapableOutputSurface : public FakeOutputSurface {
+ public:
+  explicit NonReshapableOutputSurface(
+      scoped_ptr<WebKit::WebGraphicsContext3D> context3d)
+      : FakeOutputSurface(context3d.Pass(), false) {}
+  virtual gfx::Size SurfaceSize() const OVERRIDE { return gfx::Size(500, 500); }
+};
+
+class OffsetViewportRendererClient : public FakeRendererClient {
+ public:
+  virtual gfx::Rect DeviceViewport() const OVERRIDE {
+    return gfx::Rect(10, 10, 100, 100);
+  }
+};
+
+class FlippedScissorAndViewportContext : public TestWebGraphicsContext3D {
+ public:
+  FlippedScissorAndViewportContext()
+      : did_call_viewport_(false), did_call_scissor_(false) {}
+  virtual ~FlippedScissorAndViewportContext() {
+    EXPECT_TRUE(did_call_viewport_);
+    EXPECT_TRUE(did_call_scissor_);
+  }
+
+  virtual void viewport(GLint x, GLint y, GLsizei width, GLsizei height) {
+    EXPECT_EQ(10, x);
+    EXPECT_EQ(390, y);
+    EXPECT_EQ(100, width);
+    EXPECT_EQ(100, height);
+    did_call_viewport_ = true;
+  }
+
+  virtual void scissor(GLint x, GLint y, GLsizei width, GLsizei height) {
+    EXPECT_EQ(30, x);
+    EXPECT_EQ(450, y);
+    EXPECT_EQ(20, width);
+    EXPECT_EQ(20, height);
+    did_call_scissor_ = true;
+  }
+
+ private:
+  bool did_call_viewport_;
+  bool did_call_scissor_;
+};
+
+TEST(GLRendererTest2, ScissorAndViewportWithinNonreshapableSurface) {
+  // In Android WebView, the OutputSurface is unable to respect reshape() calls
+  // and maintains a fixed size. This test verifies that glViewport and
+  // glScissor's Y coordinate is flipped correctly in this environment, and that
+  // the glViewport can be at a nonzero origin within the surface.
+  OffsetViewportRendererClient mock_client;
+  scoped_ptr<OutputSurface> output_surface(make_scoped_ptr(
+      new NonReshapableOutputSurface(scoped_ptr<WebKit::WebGraphicsContext3D>(
+          new FlippedScissorAndViewportContext))));
+  scoped_ptr<ResourceProvider> resource_provider(
+      ResourceProvider::Create(output_surface.get(), 0));
+  FakeRendererGL renderer(
+      &mock_client, output_surface.get(), resource_provider.get());
+  EXPECT_TRUE(renderer.Initialize());
+  EXPECT_FALSE(renderer.Capabilities().using_partial_swap);
+
+  gfx::Rect viewport_rect(mock_client.DeviceViewport().size());
+  gfx::Rect quad_rect = gfx::Rect(20, 20, 20, 20);
+  ScopedPtrVector<RenderPass>& render_passes =
+      *mock_client.render_passes_in_draw_order();
+  render_passes.clear();
+
+  RenderPass::Id root_pass_id(1, 0);
+  TestRenderPass* root_pass = AddRenderPass(
+      &render_passes, root_pass_id, viewport_rect, gfx::Transform());
+  AddClippedQuad(root_pass, quad_rect, SK_ColorGREEN);
+
+  renderer.DecideRenderPassAllocationsForFrame(
+      *mock_client.render_passes_in_draw_order());
+  renderer.DrawFrame(mock_client.render_passes_in_draw_order());
+}
+
 // This test was never actually working as intended. Before adding
 // ShaderCreatorMockGraphicsContext, all shader programs received the same
 // program identifier from the TestWebGraphicsContext3D, so it always passed
 // when checking which shader was used.
 TEST_F(GLRendererShaderTest, DISABLED_DrawRenderPassQuadShaderPermutations) {
-  gfx::Rect viewport_rect(mock_client_.DeviceViewportSize());
+  gfx::Rect viewport_rect(mock_client_.DeviceViewport());
   ScopedPtrVector<RenderPass>* render_passes =
       mock_client_.render_passes_in_draw_order();
 
@@ -1372,7 +1444,7 @@ TEST_F(GLRendererShaderTest, DrawRenderPassQuadSkipsAAForClippingTransform) {
   RenderPass::Id child_pass_id(2, 0);
   TestRenderPass* child_pass;
 
-  gfx::Rect viewport_rect(mock_client_.DeviceViewportSize());
+  gfx::Rect viewport_rect(mock_client_.DeviceViewport());
   RenderPass::Id root_pass_id(1, 0);
   TestRenderPass* root_pass;
 
@@ -1417,7 +1489,7 @@ TEST_F(GLRendererShaderTest, DrawRenderPassQuadSkipsAAForClippingTransform) {
 }
 
 TEST_F(GLRendererShaderTest, DrawSolidColorShader) {
-  gfx::Rect viewport_rect(mock_client_.DeviceViewportSize());
+  gfx::Rect viewport_rect(mock_client_.DeviceViewport());
   ScopedPtrVector<RenderPass>* render_passes =
       mock_client_.render_passes_in_draw_order();
 
@@ -1474,7 +1546,9 @@ class MockOutputSurface : public OutputSurface {
  public:
   MockOutputSurface()
       : OutputSurface(scoped_ptr<WebKit::WebGraphicsContext3D>(
-            new StrictMock<OutputSurfaceMockContext>)) {}
+            new StrictMock<OutputSurfaceMockContext>)) {
+    surface_size_ = gfx::Size(100, 100);
+  }
   virtual ~MockOutputSurface() {}
 
   MOCK_METHOD1(SendFrameToParentCompositor, void(CompositorFrame* frame));
@@ -1497,7 +1571,7 @@ class MockOutputSurfaceTest : public testing::Test, public FakeRendererClient {
   void SwapBuffers() { renderer_.SwapBuffers(ui::LatencyInfo()); }
 
   void DrawFrame() {
-    gfx::Rect viewport_rect(DeviceViewportSize());
+    gfx::Rect viewport_rect(DeviceViewport());
     ScopedPtrVector<RenderPass>* render_passes = render_passes_in_draw_order();
     render_passes->clear();
 
@@ -1508,11 +1582,8 @@ class MockOutputSurfaceTest : public testing::Test, public FakeRendererClient {
 
     EXPECT_CALL(output_surface_, EnsureBackbuffer()).WillRepeatedly(Return());
 
-    if (is_viewport_changed()) {
-      EXPECT_CALL(output_surface_,
-                  Reshape(DeviceViewportSize(), DeviceScaleFactor())).Times(1);
-      clear_viewport_changed();
-    }
+    EXPECT_CALL(output_surface_,
+                Reshape(DeviceViewport().size(), DeviceScaleFactor())).Times(1);
 
     EXPECT_CALL(output_surface_, BindFramebuffer()).Times(1);
 

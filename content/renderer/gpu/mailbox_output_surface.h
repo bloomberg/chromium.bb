@@ -61,7 +61,6 @@ class MailboxOutputSurface : public CompositorOutputSurface {
   std::deque<TransferableFrame> pending_textures_;
   std::queue<TransferableFrame> returned_textures_;
 
-  gfx::Size size_;
   uint32 fbo_;
   bool is_backbuffer_discarded_;
 };

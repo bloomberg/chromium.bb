@@ -94,7 +94,10 @@ scoped_ptr<DrawQuad> CreateTestRenderPassDrawQuad(
   return quad.PassAs<DrawQuad>();
 }
 
-typedef ::testing::Types<GLRenderer, SoftwareRenderer> RendererTypes;
+typedef ::testing::Types<GLRenderer,
+                         SoftwareRenderer,
+                         GLRendererWithExpandedViewport,
+                         SoftwareRendererWithExpandedViewport> RendererTypes;
 TYPED_TEST_CASE(RendererPixelTest, RendererTypes);
 
 typedef ::testing::Types<GLRenderer,
@@ -130,6 +133,14 @@ class FuzzyForSoftwareOnlyPixelComparator : public PixelComparator {
 
 template<>
 bool FuzzyForSoftwareOnlyPixelComparator<SoftwareRenderer>::Compare(
+    const SkBitmap& actual_bmp,
+    const SkBitmap& expected_bmp) const {
+  return fuzzy_.Compare(actual_bmp, expected_bmp);
+}
+
+template <>
+bool FuzzyForSoftwareOnlyPixelComparator<
+    SoftwareRendererWithExpandedViewport>::Compare(
     const SkBitmap& actual_bmp,
     const SkBitmap& expected_bmp) const {
   return fuzzy_.Compare(actual_bmp, expected_bmp);

@@ -176,8 +176,8 @@ class CC_EXPORT LayerTreeHostImpl
   gfx::SizeF VisibleViewportSize() const;
 
   // RendererClient implementation
+  virtual gfx::Rect DeviceViewport() const OVERRIDE;
  private:
-  virtual gfx::Size DeviceViewportSize() const OVERRIDE;
   virtual float DeviceScaleFactor() const OVERRIDE;
   virtual const LayerTreeSettings& Settings() const OVERRIDE;
  public:
@@ -207,6 +207,8 @@ class CC_EXPORT LayerTreeHostImpl
       OVERRIDE;
   virtual void OnSendFrameToParentCompositorAck(const CompositorFrameAck& ack)
       OVERRIDE;
+  virtual void SetExternalDrawConstraints(const gfx::Transform& transform,
+                                          gfx::Rect viewport) OVERRIDE;
 
   // Called from LayerTreeImpl.
   void OnCanDrawStateChangedForTree();
@@ -266,6 +268,8 @@ class CC_EXPORT LayerTreeHostImpl
 
   void SetDeviceScaleFactor(float device_scale_factor);
   float device_scale_factor() const { return device_scale_factor_; }
+
+  const gfx::Transform& DeviceTransform() const;
 
   scoped_ptr<ScrollAndScaleSet> ProcessScrollDeltas();
 
@@ -457,9 +461,6 @@ class CC_EXPORT LayerTreeHostImpl
   LayerScrollOffsetDelegate* root_layer_scroll_offset_delegate_;
   LayerTreeSettings settings_;
   LayerTreeDebugState debug_state_;
-  gfx::Size device_viewport_size_;
-  float overdraw_bottom_height_;
-  float device_scale_factor_;
   bool visible_;
   ManagedMemoryPolicy managed_memory_policy_;
 
@@ -492,6 +493,26 @@ class CC_EXPORT LayerTreeHostImpl
   size_t last_sent_memory_visible_bytes_;
   size_t last_sent_memory_visible_and_nearby_bytes_;
   size_t last_sent_memory_use_bytes_;
+
+  // Viewport size passed in from the main thread, in physical pixels.
+  gfx::Size device_viewport_size_;
+
+  // Conversion factor from CSS pixels to physical pixels when
+  // pageScaleFactor=1.
+  float device_scale_factor_;
+
+  // Vertical amount of the viewport size that's known to covered by a
+  // browser-side UI element, such as an on-screen-keyboard.  This affects
+  // scrollable size since we want to still be able to scroll to the bottom of
+  // the page when the keyboard is up.
+  float overdraw_bottom_height_;
+
+  // Optional top-level constraints that can be set by the OutputSurface.  The
+  // external_viewport_'s size takes precedence over device_viewport_size_ for
+  // DrawQuad generation and Renderer; however, device_viewport_size_ is still
+  // used for scrollable size.
+  gfx::Transform external_transform_;
+  gfx::Rect external_viewport_;
 
   gfx::Rect viewport_damage_rect_;
 

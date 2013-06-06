@@ -55,7 +55,7 @@ class SynchronousCompositorOutputSurface
   // Partial SynchronousCompositor API implementation.
   bool IsHwReady();
   bool DemandDrawSw(SkCanvas* canvas);
-  bool DemandDrawHw(gfx::Size view_size,
+  bool DemandDrawHw(gfx::Size surface_size,
                     const gfx::Transform& transform,
                     gfx::Rect clip);
 
@@ -63,7 +63,7 @@ class SynchronousCompositorOutputSurface
   class SoftwareDevice;
   friend class SoftwareDevice;
 
-  void InvokeComposite(const gfx::Transform& transform, gfx::Rect damage_area);
+  void InvokeComposite(gfx::Size damage_size);
   void UpdateCompositorClientSettings();
   void NotifyCompositorSettingsChanged();
   bool CalledOnValidThread() const;

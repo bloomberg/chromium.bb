@@ -8,6 +8,7 @@
 #include "cc/output/software_frame_data.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkDevice.h"
+#include "ui/gfx/skia_util.h"
 
 namespace cc {
 
@@ -43,11 +44,8 @@ void SoftwareOutputDevice::EndPaint(SoftwareFrameData* frame_data) {
 void SoftwareOutputDevice::CopyToBitmap(
     gfx::Rect rect, SkBitmap* output) {
   DCHECK(device_);
-  SkIRect invert_rect = SkIRect::MakeXYWH(
-      rect.x(), viewport_size_.height() - rect.bottom(),
-      rect.width(), rect.height());
   const SkBitmap& bitmap = device_->accessBitmap(false);
-  bitmap.extractSubset(output, invert_rect);
+  bitmap.extractSubset(output, gfx::RectToSkIRect(rect));
 }
 
 void SoftwareOutputDevice::Scroll(

@@ -50,6 +50,7 @@ void ExecuteCalculateDrawProperties(LayerImpl* root_layer,
   LayerTreeHostCommon::CalculateDrawProperties(
       root_layer,
       device_viewport_size,
+      gfx::Transform(),
       device_scale_factor,
       page_scale_factor,
       page_scale_application_layer,
@@ -1034,8 +1035,7 @@ TEST_F(LayerPositionConstraintTest,
      ScrollCompensationForFixedPositionLayerThatHasNoContainer) {
   // This test checks scroll compensation when a fixed-position layer does not
   // find any ancestor that is a "containerForFixedPositionLayers". In this
-  // situation, the layer should be fixed to the viewport -- not the root_layer,
-  // which may have transforms of its own.
+  // situation, the layer should be fixed to the root layer.
   LayerImpl* child = root_->children()[0];
   LayerImpl* grand_child = child->children()[0];
 
@@ -1051,46 +1051,43 @@ TEST_F(LayerPositionConstraintTest,
 
   gfx::Transform identity_matrix;
 
-  EXPECT_TRANSFORMATION_MATRIX_EQ(identity_matrix, child->draw_transform());
-  EXPECT_TRANSFORMATION_MATRIX_EQ(identity_matrix,
+  EXPECT_TRANSFORMATION_MATRIX_EQ(rotation_by_z, child->draw_transform());
+  EXPECT_TRANSFORMATION_MATRIX_EQ(rotation_by_z,
                                   grand_child->draw_transform());
 
   // Case 2: root scroll delta of 10, 10
   root_->SetScrollDelta(gfx::Vector2d(10, 20));
   ExecuteCalculateDrawProperties(root_.get());
 
-  // The child is affected by scroll delta, but it is already implcitly
-  // accounted for by the child's target surface (i.e. the root render surface).
-  // The grand_child is not affected by the scroll delta, so its draw transform
-  // needs to explicitly inverse-compensate for the scroll that's embedded in
-  // the target surface.
-  gfx::Transform expected_grand_child_transform;
-  expected_grand_child_transform.PreconcatTransform(Inverse(rotation_by_z));
-  // explicit cancelling out the scroll delta that gets embedded in the fixed
-  // position layer's surface.
-  expected_grand_child_transform.Translate(10.0, 20.0);
-  expected_grand_child_transform.PreconcatTransform(rotation_by_z);
+  gfx::Transform expected_child_transform;
+  expected_child_transform.Translate(-10.0, -20.0);
+  expected_child_transform.PreconcatTransform(rotation_by_z);
 
-  EXPECT_TRANSFORMATION_MATRIX_EQ(identity_matrix, child->draw_transform());
-  EXPECT_TRANSFORMATION_MATRIX_EQ(expected_grand_child_transform,
+  EXPECT_TRANSFORMATION_MATRIX_EQ(expected_child_transform,
+                                  child->draw_transform());
+  EXPECT_TRANSFORMATION_MATRIX_EQ(rotation_by_z,
                                   grand_child->draw_transform());
-
 
   // Case 3: fixed-container size delta of 20, 20
   root_->SetFixedContainerSizeDelta(gfx::Vector2d(20, 20));
   ExecuteCalculateDrawProperties(root_.get());
 
   // Top-left fixed-position layer should not be affected by container size.
-  EXPECT_TRANSFORMATION_MATRIX_EQ(identity_matrix, child->draw_transform());
-  EXPECT_TRANSFORMATION_MATRIX_EQ(expected_grand_child_transform,
+  EXPECT_TRANSFORMATION_MATRIX_EQ(expected_child_transform,
+                                  child->draw_transform());
+  EXPECT_TRANSFORMATION_MATRIX_EQ(rotation_by_z,
                                   grand_child->draw_transform());
 
   // Case 4: Bottom-right fixed-position layer.
   grand_child->SetPositionConstraint(fixed_to_bottom_right_);
   ExecuteCalculateDrawProperties(root_.get());
 
-  // Root layer is not the fixed-container anyway.
-  EXPECT_TRANSFORMATION_MATRIX_EQ(identity_matrix, child->draw_transform());
+  gfx::Transform expected_grand_child_transform;
+  expected_grand_child_transform.Translate(-20.0, 20.0);
+  expected_grand_child_transform.PreconcatTransform(rotation_by_z);
+
+  EXPECT_TRANSFORMATION_MATRIX_EQ(expected_child_transform,
+                                  child->draw_transform());
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected_grand_child_transform,
                                   grand_child->draw_transform());
 }

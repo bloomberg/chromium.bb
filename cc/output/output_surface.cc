@@ -46,14 +46,16 @@ OutputSurface::OutputSurface(
     scoped_ptr<WebKit::WebGraphicsContext3D> context3d)
     : client_(NULL),
       context3d_(context3d.Pass()),
-      has_gl_discard_backbuffer_(false) {
+      has_gl_discard_backbuffer_(false),
+      device_scale_factor_(-1) {
 }
 
 OutputSurface::OutputSurface(
     scoped_ptr<cc::SoftwareOutputDevice> software_device)
     : client_(NULL),
       software_device_(software_device.Pass()),
-      has_gl_discard_backbuffer_(false) {
+      has_gl_discard_backbuffer_(false),
+      device_scale_factor_(-1) {
 }
 
 OutputSurface::OutputSurface(
@@ -62,7 +64,8 @@ OutputSurface::OutputSurface(
     : client_(NULL),
       context3d_(context3d.Pass()),
       software_device_(software_device.Pass()),
-      has_gl_discard_backbuffer_(false) {
+      has_gl_discard_backbuffer_(false),
+      device_scale_factor_(-1) {
 }
 
 OutputSurface::~OutputSurface() {
@@ -112,8 +115,19 @@ void OutputSurface::DiscardBackbuffer() {
 }
 
 void OutputSurface::Reshape(gfx::Size size, float scale_factor) {
-  DCHECK(context3d_);
-  context3d_->reshapeWithScaleFactor(size.width(), size.height(), scale_factor);
+  if (size == surface_size_ && scale_factor == device_scale_factor_)
+    return;
+
+  surface_size_ = size;
+  device_scale_factor_ = scale_factor;
+  if (context3d_) {
+    context3d_->reshapeWithScaleFactor(
+        size.width(), size.height(), scale_factor);
+  }
+}
+
+gfx::Size OutputSurface::SurfaceSize() const {
+  return surface_size_;
 }
 
 void OutputSurface::BindFramebuffer() {

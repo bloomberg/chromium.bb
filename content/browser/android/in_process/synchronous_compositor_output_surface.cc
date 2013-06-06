@@ -154,24 +154,33 @@ bool SynchronousCompositorOutputSurface::IsHwReady() {
   return context3d() != NULL;
 }
 
+namespace {
+void AdjustTransformForClip(gfx::Transform* transform, gfx::Rect clip) {
+  // The system-provided transform translates us from the screen origin to the
+  // origin of the clip rect, but CC's draw origin starts at the clip.
+  transform->matrix().postTranslate(-clip.x(), -clip.y(), 0);
+}
+} // namespace
+
 bool SynchronousCompositorOutputSurface::DemandDrawSw(SkCanvas* canvas) {
   DCHECK(CalledOnValidThread());
   DCHECK(canvas);
   DCHECK(!current_sw_canvas_);
   current_sw_canvas_ = canvas;
 
-  SkRect canvas_clip;
-  gfx::Rect damage_area;
-  if (canvas->getClipBounds(&canvas_clip)) {
-    damage_area = gfx::ToEnclosedRect(gfx::SkRectToRectF(canvas_clip));
-  } else {
-    damage_area = gfx::Rect(kint16max, kint16max);
-  }
+  SkIRect canvas_clip;
+  canvas->getClipDeviceBounds(&canvas_clip);
+  gfx::Rect clip = gfx::SkIRectToRect(canvas_clip);
 
-  gfx::Transform transform;
+  gfx::Transform transform(gfx::Transform::kSkipInitialization);
   transform.matrix() = canvas->getTotalMatrix();  // Converts 3x3 matrix to 4x4.
+  AdjustTransformForClip(&transform, clip);
 
-  InvokeComposite(transform, damage_area);
+  surface_size_ = gfx::Size(canvas->getDeviceSize().width(),
+                            canvas->getDeviceSize().height());
+  client_->SetExternalDrawConstraints(transform, clip);
+
+  InvokeComposite(clip.size());
 
   bool finished_draw = current_sw_canvas_ == NULL;
   current_sw_canvas_ = NULL;
@@ -179,9 +188,9 @@ bool SynchronousCompositorOutputSurface::DemandDrawSw(SkCanvas* canvas) {
 }
 
 bool SynchronousCompositorOutputSurface::DemandDrawHw(
-      gfx::Size view_size,
+      gfx::Size surface_size,
       const gfx::Transform& transform,
-      gfx::Rect damage_area) {
+      gfx::Rect clip) {
   DCHECK(CalledOnValidThread());
   DCHECK(client_);
   DCHECK(context3d());
@@ -196,17 +205,18 @@ bool SynchronousCompositorOutputSurface::DemandDrawHw(
 
   did_swap_buffer_ = false;
 
-  InvokeComposite(transform, damage_area);
+  gfx::Transform adjusted_transform = transform;
+  AdjustTransformForClip(&adjusted_transform, clip);
+  surface_size_ = surface_size;
+  client_->SetExternalDrawConstraints(adjusted_transform, clip);
+  InvokeComposite(clip.size());
 
   return did_swap_buffer_;
 }
 
 void SynchronousCompositorOutputSurface::InvokeComposite(
-    const gfx::Transform& transform,
-    gfx::Rect damage_area) {
-  // TODO(boliu): This assumes |transform| is identity and |damage_area| is the
-  // whole view. Tracking bug to implement this: crbug.com/230463.
-  client_->SetNeedsRedrawRect(damage_area);
+    gfx::Size damage_size) {
+  client_->SetNeedsRedrawRect(gfx::Rect(damage_size));
   if (needs_begin_frame_)
     client_->BeginFrame(base::TimeTicks::Now());
 }

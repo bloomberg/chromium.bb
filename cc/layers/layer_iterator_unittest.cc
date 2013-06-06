@@ -141,6 +141,7 @@ TEST(LayerIteratorTest, SimpleTree) {
   LayerList render_surface_layerList;
   LayerTreeHostCommon::CalculateDrawProperties(root_layer.get(),
                                                root_layer->bounds(),
+                                               gfx::Transform(),
                                                1.f,
                                                1.f,
                                                NULL,
@@ -189,6 +190,7 @@ TEST(LayerIteratorTest, ComplexTree) {
   LayerList render_surface_layerList;
   LayerTreeHostCommon::CalculateDrawProperties(root_layer.get(),
                                                root_layer->bounds(),
+                                               gfx::Transform(),
                                                1.f,
                                                1.f,
                                                NULL,
@@ -252,6 +254,7 @@ TEST(LayerIteratorTest, ComplexTreeMultiSurface) {
   LayerList render_surface_layerList;
   LayerTreeHostCommon::CalculateDrawProperties(root_layer.get(),
                                                root_layer->bounds(),
+                                               gfx::Transform(),
                                                1.f,
                                                1.f,
                                                NULL,

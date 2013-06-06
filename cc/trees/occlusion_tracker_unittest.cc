@@ -316,6 +316,7 @@ template <typename Types> class OcclusionTrackerTest : public testing::Test {
     LayerTreeHostCommon::CalculateDrawProperties(
         root,
         root->bounds(),
+        gfx::Transform(),
         1.f,
         1.f,
         NULL,
@@ -337,6 +338,7 @@ template <typename Types> class OcclusionTrackerTest : public testing::Test {
     LayerTreeHostCommon::CalculateDrawProperties(
         root,
         root->bounds(),
+        gfx::Transform(),
         1.f,
         1.f,
         NULL,

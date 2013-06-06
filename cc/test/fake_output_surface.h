@@ -81,7 +81,7 @@ class FakeOutputSurface : public OutputSurface {
   }
   virtual bool ForcedDrawToSoftwareDevice() const OVERRIDE;
 
- private:
+ protected:
   FakeOutputSurface(
       scoped_ptr<WebKit::WebGraphicsContext3D> context3d,
       bool has_parent);

@@ -36,6 +36,7 @@ void ExecuteCalculateDrawProperties(
 
   LayerTreeHostCommon::CalculateDrawProperties(root,
                                                root->bounds(),
+                                               gfx::Transform(),
                                                1.f,
                                                1.f,
                                                NULL,

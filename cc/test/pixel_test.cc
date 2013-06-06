@@ -23,12 +23,12 @@ namespace cc {
 
 class PixelTest::PixelTestRendererClient : public RendererClient {
  public:
-  explicit PixelTestRendererClient(gfx::Size device_viewport_size)
-      : device_viewport_size_(device_viewport_size) {}
+  explicit PixelTestRendererClient(gfx::Rect device_viewport)
+      : device_viewport_(device_viewport) {}
 
   // RendererClient implementation.
-  virtual gfx::Size DeviceViewportSize() const OVERRIDE {
-    return device_viewport_size_;
+  virtual gfx::Rect DeviceViewport() const OVERRIDE {
+    return device_viewport_ + test_expansion_offset_;
   }
   virtual float DeviceScaleFactor() const OVERRIDE {
     return 1.f;
@@ -51,14 +51,60 @@ class PixelTest::PixelTestRendererClient : public RendererClient {
     return true;
   }
 
+  void SetTestExpansionOffset(gfx::Vector2d test_expansion_offset) {
+    test_expansion_offset_ = test_expansion_offset;
+  }
+
  private:
-  gfx::Size device_viewport_size_;
+  gfx::Rect device_viewport_;
+  gfx::Vector2d test_expansion_offset_;
   LayerTreeSettings settings_;
+};
+
+class PixelTest::PixelTestOutputSurface : public OutputSurface {
+ public:
+  explicit PixelTestOutputSurface(
+      scoped_ptr<WebKit::WebGraphicsContext3D> context3d)
+      : OutputSurface(context3d.Pass()) {}
+  explicit PixelTestOutputSurface(
+      scoped_ptr<cc::SoftwareOutputDevice> software_device)
+      : OutputSurface(software_device.Pass()) {}
+  virtual void Reshape(gfx::Size size, float scale_factor) OVERRIDE {
+    OutputSurface::Reshape(
+        gfx::Size(size.width() + test_expansion_size_.width(),
+                  size.height() + test_expansion_size_.height()),
+        scale_factor);
+  }
+
+  void SetTestExpansionSize(gfx::Size test_expansion_size) {
+    test_expansion_size_ = test_expansion_size;
+  }
+
+ private:
+  gfx::Size test_expansion_size_;
+};
+
+class PixelTestSoftwareOutputDevice : public SoftwareOutputDevice {
+ public:
+  PixelTestSoftwareOutputDevice() {}
+  virtual void Resize(gfx::Size size) OVERRIDE {
+    SoftwareOutputDevice::Resize(
+        gfx::Size(size.width() + test_expansion_size_.width(),
+                  size.height() + test_expansion_size_.height()));
+  }
+
+  void SetTestExpansionSize(gfx::Size test_expansion_size) {
+    test_expansion_size_ = test_expansion_size;
+  }
+
+ private:
+  gfx::Size test_expansion_size_;
 };
 
 PixelTest::PixelTest()
     : device_viewport_size_(gfx::Size(200, 200)),
-      fake_client_(new PixelTestRendererClient(device_viewport_size_)) {}
+      fake_client_(
+          new PixelTestRendererClient(gfx::Rect(device_viewport_size_))) {}
 
 PixelTest::~PixelTest() {}
 
@@ -125,7 +171,7 @@ void PixelTest::SetUpGLRenderer(bool use_skia_gpu_backend) {
   scoped_ptr<WebGraphicsContext3DInProcessCommandBufferImpl> context3d(
       WebGraphicsContext3DInProcessCommandBufferImpl::CreateOffscreenContext(
           WebKit::WebGraphicsContext3D::Attributes()));
-  output_surface_.reset(new OutputSurface(
+  output_surface_.reset(new PixelTestOutputSurface(
       context3d.PassAs<WebKit::WebGraphicsContext3D>()));
   resource_provider_ = ResourceProvider::Create(output_surface_.get(), 0);
   renderer_ = GLRenderer::Create(fake_client_.get(),
@@ -140,11 +186,23 @@ void PixelTest::SetUpGLRenderer(bool use_skia_gpu_backend) {
   resource_provider_->set_offscreen_context_provider(offscreen_contexts);
 }
 
+void PixelTest::ForceExpandedViewport(gfx::Size surface_expansion,
+                                      gfx::Vector2d viewport_offset) {
+  static_cast<PixelTestOutputSurface*>(output_surface_.get())
+      ->SetTestExpansionSize(surface_expansion);
+  fake_client_->SetTestExpansionOffset(viewport_offset);
+  SoftwareOutputDevice* device = output_surface_->software_device();
+  if (device) {
+    static_cast<PixelTestSoftwareOutputDevice*>(device)
+        ->SetTestExpansionSize(surface_expansion);
+  }
+}
+
 void PixelTest::SetUpSoftwareRenderer() {
   CHECK(fake_client_);
 
-  scoped_ptr<SoftwareOutputDevice> device(new SoftwareOutputDevice());
-  output_surface_.reset(new OutputSurface(device.Pass()));
+  scoped_ptr<SoftwareOutputDevice> device(new PixelTestSoftwareOutputDevice());
+  output_surface_.reset(new PixelTestOutputSurface(device.Pass()));
   resource_provider_ = ResourceProvider::Create(output_surface_.get(), 0);
   renderer_ = SoftwareRenderer::Create(
       fake_client_.get(),

@@ -99,6 +99,7 @@ void ExecuteCalculateDrawProperties(Layer* root_layer,
   LayerTreeHostCommon::CalculateDrawProperties(
       root_layer,
       device_viewport_size,
+      gfx::Transform(),
       device_scale_factor,
       page_scale_factor,
       page_scale_application_layer,
@@ -126,6 +127,7 @@ void ExecuteCalculateDrawProperties(LayerImpl* root_layer,
   LayerTreeHostCommon::CalculateDrawProperties(
       root_layer,
       device_viewport_size,
+      gfx::Transform(),
       device_scale_factor,
       page_scale_factor,
       page_scale_application_layer,
@@ -1484,6 +1486,121 @@ TEST(LayerTreeHostCommonTest, TransformsForDegenerateIntermediateLayer) {
                                   grand_child->draw_transform());
 }
 
+TEST(LayerTreeHostCommonTest, TransformAboveRootLayer) {
+  // Transformations applied at the root of the tree should be forwarded
+  // to child layers instead of applied to the root RenderSurface.
+  const gfx::Transform identity_matrix;
+  scoped_refptr<Layer> root = Layer::Create();
+  scoped_refptr<Layer> child = Layer::Create();
+
+  root->AddChild(child);
+
+  SetLayerPropertiesForTesting(root.get(),
+                               identity_matrix,
+                               identity_matrix,
+                               gfx::PointF(),
+                               gfx::PointF(),
+                               gfx::Size(20, 20),
+                               false);
+  SetLayerPropertiesForTesting(child.get(),
+                               identity_matrix,
+                               identity_matrix,
+                               gfx::PointF(),
+                               gfx::PointF(),
+                               gfx::Size(20, 20),
+                               false);
+
+  LayerList render_surface_layer_list;
+  int dummy_max_texture_size = 512;
+
+  gfx::Transform translate;
+  translate.Translate(50, 50);
+  LayerTreeHostCommon::CalculateDrawProperties(root.get(),
+                                               root->bounds(),
+                                               translate,
+                                               1.f,
+                                               1.f,
+                                               NULL,
+                                               dummy_max_texture_size,
+                                               false,
+                                               true,  // can_adjust_raster_scale
+                                               &render_surface_layer_list);
+  EXPECT_EQ(translate, root->draw_properties().target_space_transform);
+  EXPECT_EQ(translate, child->draw_properties().target_space_transform);
+  EXPECT_EQ(identity_matrix, root->render_surface()->draw_transform());
+
+  gfx::Transform scale;
+  scale.Scale(2, 2);
+  LayerTreeHostCommon::CalculateDrawProperties(root.get(),
+                                               root->bounds(),
+                                               scale,
+                                               1.f,
+                                               1.f,
+                                               NULL,
+                                               dummy_max_texture_size,
+                                               false,
+                                               true,  // can_adjust_raster_scale
+                                               &render_surface_layer_list);
+  EXPECT_EQ(scale, root->draw_properties().target_space_transform);
+  EXPECT_EQ(scale, child->draw_properties().target_space_transform);
+  EXPECT_EQ(identity_matrix, root->render_surface()->draw_transform());
+
+  gfx::Transform rotate;
+  rotate.Rotate(2);
+  LayerTreeHostCommon::CalculateDrawProperties(root.get(),
+                                               root->bounds(),
+                                               rotate,
+                                               1.f,
+                                               1.f,
+                                               NULL,
+                                               dummy_max_texture_size,
+                                               false,
+                                               true,  // can_adjust_raster_scale
+                                               &render_surface_layer_list);
+  EXPECT_EQ(rotate, root->draw_properties().target_space_transform);
+  EXPECT_EQ(rotate, child->draw_properties().target_space_transform);
+  EXPECT_EQ(identity_matrix, root->render_surface()->draw_transform());
+
+  gfx::Transform composite;
+  composite.ConcatTransform(translate);
+  composite.ConcatTransform(scale);
+  composite.ConcatTransform(rotate);
+  LayerTreeHostCommon::CalculateDrawProperties(root.get(),
+                                               root->bounds(),
+                                               composite,
+                                               1.f,
+                                               1.f,
+                                               NULL,
+                                               dummy_max_texture_size,
+                                               false,
+                                               true,  // can_adjust_raster_scale
+                                               &render_surface_layer_list);
+  EXPECT_EQ(composite, root->draw_properties().target_space_transform);
+  EXPECT_EQ(composite, child->draw_properties().target_space_transform);
+  EXPECT_EQ(identity_matrix, root->render_surface()->draw_transform());
+
+  // Verify that it composes correctly with transforms directly on root layer.
+  root->SetTransform(composite);
+  root->SetSublayerTransform(composite);
+  LayerTreeHostCommon::CalculateDrawProperties(root.get(),
+                                               root->bounds(),
+                                               composite,
+                                               1.f,
+                                               1.f,
+                                               NULL,
+                                               dummy_max_texture_size,
+                                               false,
+                                               true,  // can_adjust_raster_scale
+                                               &render_surface_layer_list);
+  gfx::Transform compositeSquared = composite;
+  compositeSquared.ConcatTransform(composite);
+  gfx::Transform compositeCubed = compositeSquared;
+  compositeCubed.ConcatTransform(composite);
+  EXPECT_EQ(compositeSquared, root->draw_properties().target_space_transform);
+  EXPECT_EQ(compositeCubed, child->draw_properties().target_space_transform);
+  EXPECT_EQ(identity_matrix, root->render_surface()->draw_transform());
+}
+
 TEST(LayerTreeHostCommonTest,
      RenderSurfaceListForRenderSurfaceWithClippedLayer) {
   scoped_refptr<Layer> parent = Layer::Create();
@@ -1523,6 +1640,7 @@ TEST(LayerTreeHostCommonTest,
   int dummy_max_texture_size = 512;
   LayerTreeHostCommon::CalculateDrawProperties(parent.get(),
                                                parent->bounds(),
+                                               gfx::Transform(),
                                                1.f,
                                                1.f,
                                                NULL,
@@ -1572,6 +1690,7 @@ TEST(LayerTreeHostCommonTest, RenderSurfaceListForTransparentChild) {
   int dummy_max_texture_size = 512;
   LayerTreeHostCommon::CalculateDrawProperties(parent.get(),
                                                parent->bounds(),
+                                               gfx::Transform(),
                                                1.f,
                                                1.f,
                                                NULL,
@@ -1631,6 +1750,7 @@ TEST(LayerTreeHostCommonTest, ForceRenderSurface) {
   int dummy_max_texture_size = 512;
   LayerTreeHostCommon::CalculateDrawProperties(parent.get(),
                                                parent->bounds(),
+                                               gfx::Transform(),
                                                1.f,
                                                1.f,
                                                NULL,
@@ -1648,6 +1768,7 @@ TEST(LayerTreeHostCommonTest, ForceRenderSurface) {
   render_surface1->SetForceRenderSurface(false);
   LayerTreeHostCommon::CalculateDrawProperties(parent.get(),
                                                parent->bounds(),
+                                               gfx::Transform(),
                                                1.f,
                                                1.f,
                                                NULL,
@@ -1749,6 +1870,7 @@ TEST(LayerTreeHostCommonTest, ClipRectCullsRenderSurfaces) {
   int dummy_max_texture_size = 512;
   LayerTreeHostCommon::CalculateDrawProperties(parent.get(),
                                                parent->bounds(),
+                                               gfx::Transform(),
                                                1.f,
                                                1.f,
                                                NULL,
@@ -1830,6 +1952,7 @@ TEST(LayerTreeHostCommonTest, ClipRectCullsSurfaceWithoutVisibleContent) {
   int dummy_max_texture_size = 512;
   LayerTreeHostCommon::CalculateDrawProperties(parent.get(),
                                                parent->bounds(),
+                                               gfx::Transform(),
                                                1.f,
                                                1.f,
                                                NULL,
@@ -1854,6 +1977,7 @@ TEST(LayerTreeHostCommonTest, ClipRectCullsSurfaceWithoutVisibleContent) {
 
   LayerTreeHostCommon::CalculateDrawProperties(parent.get(),
                                                parent->bounds(),
+                                               gfx::Transform(),
                                                1.f,
                                                1.f,
                                                NULL,
@@ -1958,6 +2082,7 @@ TEST(LayerTreeHostCommonTest, IsClippedIsSetCorrectly) {
   int dummy_max_texture_size = 512;
   LayerTreeHostCommon::CalculateDrawProperties(root.get(),
                                                parent->bounds(),
+                                               gfx::Transform(),
                                                1.f,
                                                1.f,
                                                NULL,
@@ -1987,6 +2112,7 @@ TEST(LayerTreeHostCommonTest, IsClippedIsSetCorrectly) {
   parent->SetMasksToBounds(true);
   LayerTreeHostCommon::CalculateDrawProperties(root.get(),
                                                parent->bounds(),
+                                               gfx::Transform(),
                                                1.f,
                                                1.f,
                                                NULL,
@@ -2015,6 +2141,7 @@ TEST(LayerTreeHostCommonTest, IsClippedIsSetCorrectly) {
   child2->SetMasksToBounds(true);
   LayerTreeHostCommon::CalculateDrawProperties(root.get(),
                                                parent->bounds(),
+                                               gfx::Transform(),
                                                1.f,
                                                1.f,
                                                NULL,
@@ -2123,6 +2250,7 @@ TEST(LayerTreeHostCommonTest, drawable_content_rectForLayers) {
   int dummy_max_texture_size = 512;
   LayerTreeHostCommon::CalculateDrawProperties(parent.get(),
                                                parent->bounds(),
+                                               gfx::Transform(),
                                                1.f,
                                                1.f,
                                                NULL,
@@ -2268,6 +2396,7 @@ TEST(LayerTreeHostCommonTest, ClipRectIsPropagatedCorrectlyToSurfaces) {
   int dummy_max_texture_size = 512;
   LayerTreeHostCommon::CalculateDrawProperties(parent.get(),
                                                parent->bounds(),
+                                               gfx::Transform(),
                                                1.f,
                                                1.f,
                                                NULL,
@@ -3598,6 +3727,7 @@ TEST(LayerTreeHostCommonTest, BackFaceCullingWithoutPreserves3d) {
   int dummy_max_texture_size = 512;
   LayerTreeHostCommon::CalculateDrawProperties(parent.get(),
                                                parent->bounds(),
+                                               gfx::Transform(),
                                                1.f,
                                                1.f,
                                                NULL,
@@ -3792,6 +3922,7 @@ TEST(LayerTreeHostCommonTest, BackFaceCullingWithPreserves3d) {
   int dummy_max_texture_size = 512;
   LayerTreeHostCommon::CalculateDrawProperties(parent.get(),
                                                parent->bounds(),
+                                               gfx::Transform(),
                                                1.f,
                                                1.f,
                                                NULL,
@@ -3932,6 +4063,7 @@ TEST(LayerTreeHostCommonTest, BackFaceCullingWithAnimatingTransforms) {
   int dummy_max_texture_size = 512;
   LayerTreeHostCommon::CalculateDrawProperties(parent.get(),
                                                parent->bounds(),
+                                               gfx::Transform(),
                                                1.f,
                                                1.f,
                                                NULL,
@@ -4060,6 +4192,7 @@ TEST(LayerTreeHostCommonTest,
   int dummy_max_texture_size = 512;
   LayerTreeHostCommon::CalculateDrawProperties(parent.get(),
                                                parent->bounds(),
+                                               gfx::Transform(),
                                                1.f,
                                                1.f,
                                                NULL,
@@ -4138,6 +4271,7 @@ TEST(LayerTreeHostCommonTest, HitTestingForSingleLayer) {
   int dummy_max_texture_size = 512;
   LayerTreeHostCommon::CalculateDrawProperties(root.get(),
                                                root->bounds(),
+                                               gfx::Transform(),
                                                1.f,
                                                1.f,
                                                NULL,
@@ -4214,6 +4348,7 @@ TEST(LayerTreeHostCommonTest, HitTestingForSingleLayerAndHud) {
   int dummy_max_texture_size = 512;
   LayerTreeHostCommon::CalculateDrawProperties(root.get(),
                                                hud_bounds,
+                                               gfx::Transform(),
                                                1.f,
                                                1.f,
                                                NULL,
@@ -4282,6 +4417,7 @@ TEST(LayerTreeHostCommonTest, HitTestingForUninvertibleTransform) {
   int dummy_max_texture_size = 512;
   LayerTreeHostCommon::CalculateDrawProperties(root.get(),
                                                root->bounds(),
+                                               gfx::Transform(),
                                                1.f,
                                                1.f,
                                                NULL,
@@ -4359,6 +4495,7 @@ TEST(LayerTreeHostCommonTest, HitTestingForSinglePositionedLayer) {
   int dummy_max_texture_size = 512;
   LayerTreeHostCommon::CalculateDrawProperties(root.get(),
                                                root->bounds(),
+                                               gfx::Transform(),
                                                1.f,
                                                1.f,
                                                NULL,
@@ -4425,6 +4562,7 @@ TEST(LayerTreeHostCommonTest, HitTestingForSingleRotatedLayer) {
   int dummy_max_texture_size = 512;
   LayerTreeHostCommon::CalculateDrawProperties(root.get(),
                                                root->bounds(),
+                                               gfx::Transform(),
                                                1.f,
                                                1.f,
                                                NULL,
@@ -4504,6 +4642,7 @@ TEST(LayerTreeHostCommonTest, HitTestingForSinglePerspectiveLayer) {
   int dummy_max_texture_size = 512;
   LayerTreeHostCommon::CalculateDrawProperties(root.get(),
                                                root->bounds(),
+                                               gfx::Transform(),
                                                1.f,
                                                1.f,
                                                NULL,
@@ -4594,6 +4733,7 @@ TEST(LayerTreeHostCommonTest, HitTestingForSingleLayerWithScaledContents) {
   int dummy_max_texture_size = 512;
   LayerTreeHostCommon::CalculateDrawProperties(root.get(),
                                                root->bounds(),
+                                               gfx::Transform(),
                                                1.f,
                                                1.f,
                                                NULL,
@@ -4695,6 +4835,7 @@ TEST(LayerTreeHostCommonTest, HitTestingForSimpleClippedLayer) {
   int dummy_max_texture_size = 512;
   LayerTreeHostCommon::CalculateDrawProperties(root.get(),
                                                root->bounds(),
+                                               gfx::Transform(),
                                                1.f,
                                                1.f,
                                                NULL,
@@ -4829,6 +4970,7 @@ TEST(LayerTreeHostCommonTest, HitTestingForMultiClippedRotatedLayer) {
   int dummy_max_texture_size = 512;
   LayerTreeHostCommon::CalculateDrawProperties(root.get(),
                                                root->bounds(),
+                                               gfx::Transform(),
                                                1.f,
                                                1.f,
                                                NULL,
@@ -4956,6 +5098,7 @@ TEST(LayerTreeHostCommonTest, HitTestingForNonClippingIntermediateLayer) {
   int dummy_max_texture_size = 512;
   LayerTreeHostCommon::CalculateDrawProperties(root.get(),
                                                root->bounds(),
+                                               gfx::Transform(),
                                                1.f,
                                                1.f,
                                                NULL,
@@ -5074,6 +5217,7 @@ TEST(LayerTreeHostCommonTest, HitTestingForMultipleLayers) {
   int dummy_max_texture_size = 512;
   LayerTreeHostCommon::CalculateDrawProperties(root.get(),
                                                root->bounds(),
+                                               gfx::Transform(),
                                                1.f,
                                                1.f,
                                                NULL,
@@ -5228,6 +5372,7 @@ TEST(LayerTreeHostCommonTest, HitTestingForMultipleLayerLists) {
   int dummy_max_texture_size = 512;
   LayerTreeHostCommon::CalculateDrawProperties(root.get(),
                                                root->bounds(),
+                                               gfx::Transform(),
                                                1.f,
                                                1.f,
                                                NULL,
@@ -5346,6 +5491,7 @@ TEST(LayerTreeHostCommonTest, HitCheckingTouchHandlerRegionsForSingleLayer) {
   int dummy_max_texture_size = 512;
   LayerTreeHostCommon::CalculateDrawProperties(root.get(),
                                                root->bounds(),
+                                               gfx::Transform(),
                                                1.f,
                                                1.f,
                                                NULL,
@@ -5444,6 +5590,7 @@ TEST(LayerTreeHostCommonTest,
   int dummy_max_texture_size = 512;
   LayerTreeHostCommon::CalculateDrawProperties(root.get(),
                                                root->bounds(),
+                                               gfx::Transform(),
                                                1.f,
                                                1.f,
                                                NULL,
@@ -5532,6 +5679,7 @@ TEST(LayerTreeHostCommonTest,
   int dummy_max_texture_size = 512;
   LayerTreeHostCommon::CalculateDrawProperties(root.get(),
                                                root->bounds(),
+                                               gfx::Transform(),
                                                1.f,
                                                1.f,
                                                NULL,
@@ -5638,6 +5786,7 @@ TEST(LayerTreeHostCommonTest,
   int dummy_max_texture_size = 512;
   LayerTreeHostCommon::CalculateDrawProperties(root.get(),
                                                root->bounds(),
+                                               gfx::Transform(),
                                                1.f,
                                                1.f,
                                                NULL,
@@ -5751,6 +5900,7 @@ TEST(LayerTreeHostCommonTest,
       gfx::ScaleSize(root->bounds(), device_scale_factor * page_scale_factor));
   LayerTreeHostCommon::CalculateDrawProperties(root.get(),
                                                scaled_bounds_for_root,
+                                               gfx::Transform(),
                                                device_scale_factor,
                                                page_scale_factor,
                                                root.get(),
@@ -5891,6 +6041,7 @@ TEST(LayerTreeHostCommonTest,
   int dummy_max_texture_size = 512;
   LayerTreeHostCommon::CalculateDrawProperties(root.get(),
                                                root->bounds(),
+                                               gfx::Transform(),
                                                1.f,
                                                1.f,
                                                NULL,
@@ -6036,6 +6187,7 @@ TEST(LayerTreeHostCommonTest, LayerTransformsInHighDPI) {
 
   LayerTreeHostCommon::CalculateDrawProperties(parent.get(),
                                                parent->bounds(),
+                                               gfx::Transform(),
                                                device_scale_factor,
                                                page_scale_factor,
                                                parent.get(),
@@ -6173,6 +6325,7 @@ TEST(LayerTreeHostCommonTest, SurfaceLayerTransformsInHighDPI) {
 
   LayerTreeHostCommon::CalculateDrawProperties(parent.get(),
                                                parent->bounds(),
+                                               gfx::Transform(),
                                                device_scale_factor,
                                                page_scale_factor,
                                                parent.get(),
@@ -6273,6 +6426,7 @@ TEST(LayerTreeHostCommonTest,
 
   LayerTreeHostCommon::CalculateDrawProperties(parent.get(),
                                                parent->bounds(),
+                                               gfx::Transform(),
                                                device_scale_factor,
                                                page_scale_factor,
                                                parent.get(),
@@ -6412,6 +6566,7 @@ TEST(LayerTreeHostCommonTest, ContentsScale) {
 
   LayerTreeHostCommon::CalculateDrawProperties(root.get(),
                                                root->bounds(),
+                                               gfx::Transform(),
                                                device_scale_factor,
                                                page_scale_factor,
                                                parent.get(),
@@ -6454,6 +6609,7 @@ TEST(LayerTreeHostCommonTest, ContentsScale) {
   render_surface_layer_list.clear();
   LayerTreeHostCommon::CalculateDrawProperties(root.get(),
                                                root->bounds(),
+                                               gfx::Transform(),
                                                device_scale_factor,
                                                page_scale_factor,
                                                parent.get(),
@@ -6482,6 +6638,7 @@ TEST(LayerTreeHostCommonTest, ContentsScale) {
   render_surface_layer_list.clear();
   LayerTreeHostCommon::CalculateDrawProperties(root.get(),
                                                root->bounds(),
+                                               gfx::Transform(),
                                                device_scale_factor,
                                                page_scale_factor,
                                                parent.get(),
@@ -6507,6 +6664,7 @@ TEST(LayerTreeHostCommonTest, ContentsScale) {
   render_surface_layer_list.clear();
   LayerTreeHostCommon::CalculateDrawProperties(root.get(),
                                                root->bounds(),
+                                               gfx::Transform(),
                                                device_scale_factor,
                                                page_scale_factor,
                                                parent.get(),
@@ -6595,6 +6753,7 @@ TEST(LayerTreeHostCommonTest,
   LayerTreeHostCommon::CalculateDrawProperties(
       root.get(),
       root->bounds(),
+      gfx::Transform(),
       device_scale_factor,
       page_scale_factor,
       parent.get(),
@@ -6678,6 +6837,7 @@ TEST(LayerTreeHostCommonTest, SmallContentsScale) {
 
   LayerTreeHostCommon::CalculateDrawProperties(root.get(),
                                                root->bounds(),
+                                               gfx::Transform(),
                                                device_scale_factor,
                                                page_scale_factor,
                                                parent.get(),
@@ -6703,6 +6863,7 @@ TEST(LayerTreeHostCommonTest, SmallContentsScale) {
   render_surface_layer_list.clear();
   LayerTreeHostCommon::CalculateDrawProperties(root.get(),
                                                root->bounds(),
+                                               gfx::Transform(),
                                                device_scale_factor,
                                                page_scale_factor,
                                                parent.get(),
@@ -6824,6 +6985,7 @@ TEST(LayerTreeHostCommonTest, ContentsScaleForSurfaces) {
 
   LayerTreeHostCommon::CalculateDrawProperties(root.get(),
                                                root->bounds(),
+                                               gfx::Transform(),
                                                device_scale_factor,
                                                page_scale_factor,
                                                parent.get(),
@@ -7039,6 +7201,7 @@ TEST(LayerTreeHostCommonTest,
   LayerTreeHostCommon::CalculateDrawProperties(
       root.get(),
       root->bounds(),
+      gfx::Transform(),
       device_scale_factor,
       page_scale_factor,
       parent.get(),
@@ -7192,6 +7355,7 @@ TEST(LayerTreeHostCommonTest, ContentsScaleForAnimatingLayer) {
 
   LayerTreeHostCommon::CalculateDrawProperties(root.get(),
                                                root->bounds(),
+                                               gfx::Transform(),
                                                1.f,
                                                1.f,
                                                NULL,
@@ -7210,6 +7374,7 @@ TEST(LayerTreeHostCommonTest, ContentsScaleForAnimatingLayer) {
 
   LayerTreeHostCommon::CalculateDrawProperties(root.get(),
                                                root->bounds(),
+                                               gfx::Transform(),
                                                1.f,
                                                1.f,
                                                NULL,
@@ -7280,6 +7445,7 @@ TEST(LayerTreeHostCommonTest, RenderSurfaceTransformsInHighDPI) {
   float device_scale_factor = 1.5f;
   LayerTreeHostCommon::CalculateDrawProperties(parent.get(),
                                                parent->bounds(),
+                                               gfx::Transform(),
                                                device_scale_factor,
                                                1.f,
                                                NULL,
@@ -7417,6 +7583,7 @@ TEST(LayerTreeHostCommonTest,
   float device_scale_factor = 1.7f;
   LayerTreeHostCommon::CalculateDrawProperties(parent.get(),
                                                parent->bounds(),
+                                               gfx::Transform(),
                                                device_scale_factor,
                                                1.f,
                                                NULL,
@@ -7571,6 +7738,7 @@ TEST(LayerTreeHostCommonTest, OpacityAnimatingOnPendingTree) {
   int dummy_max_texture_size = 512;
   LayerTreeHostCommon::CalculateDrawProperties(root.get(),
                                                root->bounds(),
+                                               gfx::Transform(),
                                                1.f,
                                                1.f,
                                                NULL,

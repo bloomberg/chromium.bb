@@ -135,6 +135,7 @@ class TiledLayerTest : public testing::Test {
     LayerTreeHostCommon::CalculateDrawProperties(
         layer_tree_host_->root_layer(),
         layer_tree_host_->device_viewport_size(),
+        gfx::Transform(),
         layer_tree_host_->device_scale_factor(),
         1.f,    // page_scale_factor
         NULL,

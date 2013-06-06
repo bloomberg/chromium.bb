@@ -50,8 +50,8 @@ class CC_EXPORT SoftwareRenderer : public DirectRenderer {
   virtual bool BindFramebufferToTexture(
       DrawingFrame* frame,
       const ScopedResource* texture,
-      gfx::Rect framebuffer_rect) OVERRIDE;
-  virtual void SetDrawViewportSize(gfx::Size viewport_size) OVERRIDE;
+      gfx::Rect target_rect) OVERRIDE;
+  virtual void SetDrawViewport(gfx::Rect window_space_viewport) OVERRIDE;
   virtual void SetScissorTestRect(gfx::Rect scissor_rect) OVERRIDE;
   virtual void ClearFramebuffer(DrawingFrame* frame) OVERRIDE;
   virtual void DoDrawQuad(DrawingFrame* frame, const DrawQuad* quad) OVERRIDE;
@@ -64,12 +64,12 @@ class CC_EXPORT SoftwareRenderer : public DirectRenderer {
       DrawingFrame* frame,
       scoped_ptr<CopyOutputRequest> request) OVERRIDE;
 
- private:
   SoftwareRenderer(
       RendererClient* client,
       OutputSurface* output_surface,
       ResourceProvider* resource_provider);
 
+ private:
   void ClearCanvas(SkColor color);
   void SetClipRect(gfx::Rect rect);
   bool IsSoftwareResource(ResourceProvider::ResourceId resource_id) const;
@@ -95,7 +95,6 @@ class CC_EXPORT SoftwareRenderer : public DirectRenderer {
   bool is_viewport_changed_;
   gfx::Rect scissor_rect_;
 
-  OutputSurface* output_surface_;
   SoftwareOutputDevice* output_device_;
   SkCanvas* root_canvas_;
   SkCanvas* current_canvas_;

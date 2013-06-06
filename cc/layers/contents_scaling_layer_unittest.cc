@@ -41,6 +41,7 @@ void CalcDrawProps(Layer* root, float device_scale) {
   LayerTreeHostCommon::CalculateDrawProperties(
       root,
       gfx::Size(500, 500),
+      gfx::Transform(),
       device_scale,
       1.f,
       NULL,

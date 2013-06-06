@@ -4602,8 +4602,8 @@ class TestRenderer : public GLRenderer, public RendererClient {
   }
 
   // RendererClient implementation.
-  virtual gfx::Size DeviceViewportSize() const OVERRIDE {
-    return viewport_size_;
+  virtual gfx::Rect DeviceViewport() const OVERRIDE {
+    return gfx::Rect(viewport_size_);
   }
   virtual float DeviceScaleFactor() const OVERRIDE {
     return 1.f;
