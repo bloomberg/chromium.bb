@@ -195,7 +195,6 @@ void MockWebSpeechInputController::SpeechTask::stop()
 {
     m_object->m_speechTask = 0;
     cancel();
-    delete this;
 }
 
 void MockWebSpeechInputController::SpeechTask::runIfValid()
