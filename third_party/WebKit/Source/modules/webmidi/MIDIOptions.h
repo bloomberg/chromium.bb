@@ -28,21 +28,23 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef MIDIErrorCallback_h
-#define MIDIErrorCallback_h
+#ifndef MIDIOptions_h
+#define MIDIOptions_h
 
-#include "wtf/RefCounted.h"
+#include "bindings/v8/Dictionary.h"
 
 namespace WebCore {
 
-class DOMError;
+struct MIDIOptions  {
+    explicit MIDIOptions(const Dictionary& options)
+        : sysexEnabled(false)
+    {
+        options.get("sysexEnabled", sysexEnabled);
+    }
 
-class MIDIErrorCallback : public RefCounted<MIDIErrorCallback> {
-public:
-    virtual ~MIDIErrorCallback() { }
-    virtual bool handleEvent(DOMError*) = 0;
+    bool sysexEnabled;
 };
 
 } // namespace WebCore
 
-#endif // MIDIErrorCallback_h
+#endif // MIDIOptions_h

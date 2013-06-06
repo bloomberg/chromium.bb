@@ -28,21 +28,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef MIDIErrorCallback_h
-#define MIDIErrorCallback_h
-
-#include "wtf/RefCounted.h"
-
-namespace WebCore {
-
-class DOMError;
-
-class MIDIErrorCallback : public RefCounted<MIDIErrorCallback> {
-public:
-    virtual ~MIDIErrorCallback() { }
-    virtual bool handleEvent(DOMError*) = 0;
+callback interface MIDISuccessCallback {
+    // FIXME: The second argument should be Dictionary, but IDL generator
+    // can not handle Dictionary as a handleEvent argument correctly now.
+    // http://crbug.com/246161
+    boolean handleEvent(MIDIAccess access, boolean sysexEnabled);
 };
-
-} // namespace WebCore
-
-#endif // MIDIErrorCallback_h

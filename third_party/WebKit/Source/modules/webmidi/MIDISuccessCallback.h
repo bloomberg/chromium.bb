@@ -28,44 +28,22 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
-#include "modules/webmidi/MIDIErrorCallback.h"
+#ifndef MIDISuccessCallback_h
+#define MIDISuccessCallback_h
 
-#include "core/dom/DOMError.h"
-#include "core/dom/ScriptExecutionContext.h"
+#include "modules/webmidi/MIDIOptions.h"
+#include "wtf/RefCounted.h"
 
 namespace WebCore {
 
-namespace {
+class MIDIAccess;
 
-class DispatchCallbackTask : public ScriptExecutionContext::Task {
+class MIDISuccessCallback : public RefCounted<MIDISuccessCallback> {
 public:
-    static PassOwnPtr<DispatchCallbackTask> create(PassRefPtr<MIDIErrorCallback> callback, PassRefPtr<DOMError> error)
-    {
-        return adoptPtr(new DispatchCallbackTask(callback, error));
-    }
-
-    virtual void performTask(ScriptExecutionContext*)
-    {
-        m_callback->handleEvent(m_error.get());
-    }
-
-private:
-    DispatchCallbackTask(PassRefPtr<MIDIErrorCallback> callback, PassRefPtr<DOMError> error)
-            : m_callback(callback)
-            , m_error(error)
-    {
-    }
-
-    RefPtr<MIDIErrorCallback> m_callback;
-    RefPtr<DOMError> m_error;
+    virtual ~MIDISuccessCallback() { }
+    virtual bool handleEvent(MIDIAccess*, bool) = 0;
 };
 
-} // namespace
-
-void MIDIErrorCallback::scheduleCallback(ScriptExecutionContext* context, PassRefPtr<DOMError> error)
-{
-    context->postTask(DispatchCallbackTask::create(this, error));
-}
-
 } // namespace WebCore
+
+#endif // MIDISuccessCallback_h
