@@ -10024,6 +10024,14 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="WebCore.FeatureObserver" enum="FeatureObserver">
+  <summary>
+    Count of how many instances of WebCore::Page use various features. Each
+    WebCore::Page instance has a WebCore::UseCounter instance. It records and
+    reports feature usage (e.g. via UseCounter::count() method).
+  </summary>
+</histogram>
+
 <histogram name="WebCore.IndexedDB.BackingStore.ConsistencyError"
     enum="IDBLevelDBBackingStoreInternalErrorType">
   <summary>
@@ -12227,6 +12235,91 @@ other types of suffix sets.
   <int value="1" label="FALLBACK_SSL3">Fell back on SSL 3.0.</int>
   <int value="2" label="FALLBACK_TLS1">Fell back on TLS 1.0.</int>
   <int value="3" label="FALLBACK_TLS1_1">Fell back on TLS 1.1.</int>
+</enum>
+
+<enum name="FeatureObserver" type="int">
+<!-- See http://src.chromium.org/viewvc/blink/trunk/Source/core/page/UseCounter.h -->
+
+  <int value="0" label="PageDestruction"/>
+  <int value="1" label="LegacyNotifications"/>
+  <int value="2" label="MultipartMainResource"/>
+  <int value="3" label="PrefixedIndexedDB"/>
+  <int value="4" label="WorkerStart"/>
+  <int value="5" label="SharedWorkerStart"/>
+  <int value="6" label="LegacyWebAudioNoteOn"/>
+  <int value="7" label="WebAudioStart"/>
+  <int value="8" label="PrefixedContentSecurityPolicy"/>
+  <int value="9" label="UnprefixedIndexedDB"/>
+  <int value="10" label="OpenWebDatabase"/>
+  <int value="11" label="LegacyHTMLNotifications"/>
+  <int value="12" label="LegacyTextNotifications"/>
+  <int value="13" label="UnprefixedRequestAnimationFrame"/>
+  <int value="14" label="PrefixedRequestAnimationFrame"/>
+  <int value="15" label="ContentSecurityPolicy"/>
+  <int value="16" label="ContentSecurityPolicyReportOnly"/>
+  <int value="17" label="PrefixedContentSecurityPolicyReportOnly"/>
+  <int value="18" label="PrefixedTransitionEndEvent"/>
+  <int value="19" label="UnprefixedTransitionEndEvent"/>
+  <int value="20" label="PrefixedAndUnprefixedTransitionEndEvent"/>
+  <int value="21" label="AutoFocusAttribute"/>
+  <int value="22" label="DeprecatedAutoSaveAttribute"/>
+  <int value="23" label="DataListElement"/>
+  <int value="24" label="FormAttribute"/>
+  <int value="25" label="IncrementalAttribute"/>
+  <int value="26" label="InputTypeColor"/>
+  <int value="27" label="InputTypeDate"/>
+  <int value="28" label="InputTypeDateTime"/>
+  <int value="29" label="InputTypeDateTimeFallback"/>
+  <int value="30" label="InputTypeDateTimeLocal"/>
+  <int value="31" label="InputTypeEmail"/>
+  <int value="32" label="InputTypeMonth"/>
+  <int value="33" label="InputTypeNumber"/>
+  <int value="34" label="InputTypeRange"/>
+  <int value="35" label="InputTypeSearch"/>
+  <int value="36" label="InputTypeTel"/>
+  <int value="37" label="InputTypeTime"/>
+  <int value="38" label="InputTypeURL"/>
+  <int value="39" label="InputTypeWeek"/>
+  <int value="40" label="InputTypeWeekFallback"/>
+  <int value="41" label="ListAttribute"/>
+  <int value="42" label="MaxAttribute"/>
+  <int value="43" label="MinAttribute"/>
+  <int value="44" label="PatternAttribute"/>
+  <int value="45" label="PlaceholderAttribute"/>
+  <int value="46" label="PrecisionAttribute"/>
+  <int value="47" label="PrefixedDirectoryAttribute"/>
+  <int value="48" label="PrefixedSpeechAttribute"/>
+  <int value="49" label="RequiredAttribute"/>
+  <int value="50" label="ResultsAttribute"/>
+  <int value="51" label="StepAttribute"/>
+  <int value="52" label="PageVisits"/>
+  <int value="53" label="HTMLMarqueeElement"/>
+  <int value="54" label="CSSOverflowMarquee"/>
+  <int value="55" label="Reflection"/>
+  <int value="56" label="CursorVisibility"/>
+  <int value="57" label="StorageInfo"/>
+  <int value="58" label="XFrameOptions"/>
+  <int value="59" label="XFrameOptionsSameOrigin"/>
+  <int value="60" label="XFrameOptionsSameOriginWithBadAncestorChain"/>
+  <int value="61" label="DeprecatedFlexboxWebContent"/>
+  <int value="62" label="DeprecatedFlexboxChrome"/>
+  <int value="63" label="DeprecatedFlexboxChromeExtension"/>
+  <int value="64" label="SVGTRefElement"/>
+  <int value="65" label="UnprefixedPerformanceTimeline"/>
+  <int value="66" label="PrefixedPerformanceTimeline"/>
+  <int value="67" label="UnprefixedUserTiming"/>
+  <int value="68" label="PrefixedUserTiming"/>
+  <int value="69" label="WindowEvent"/>
+  <int value="70" label="ContentSecurityPolicyWithBaseElement"/>
+  <int value="71" label="PrefixedMediaAddKey"/>
+  <int value="72" label="PrefixedMediaGenerateKeyRequest"/>
+  <int value="73" label="WebAudioLooping"/>
+  <int value="74" label="DocumentClear"/>
+  <int value="75" label="PrefixedTransitionMediaFeature"/>
+  <int value="76" label="SVGFontElement"/>
+  <int value="77" label="XMLDocument"/>
+  <int value="78" label="XSLProcessingInstruction"/>
+  <int value="79" label="XSLTProcessor"/>
 </enum>
 
 <enum name="FFmpegCodecs" type="int">
