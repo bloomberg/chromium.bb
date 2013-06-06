@@ -58,7 +58,7 @@
     "metricsPrivate",
     "streamsPrivate",
     "unlimitedStorage"],
-  "version": "2.9.2.6",
+  "version": "2.9.2.14",
   "web_accessible_resources": [
     "views/qowt.html"]
 }
