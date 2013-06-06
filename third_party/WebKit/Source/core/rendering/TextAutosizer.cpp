@@ -351,7 +351,8 @@ bool TextAutosizer::isIndependentDescendant(const RenderBlock* renderer)
         || renderer->hasColumns()
         || renderer->containingBlock()->isHorizontalWritingMode() != renderer->isHorizontalWritingMode()
         || renderer->style()->isDisplayReplacedType()
-        || renderer->isTextArea();
+        || renderer->isTextArea()
+        || renderer->style()->userModify() != READ_ONLY;
     // FIXME: Tables need special handling to multiply all their columns by
     // the same amount even if they're different widths; so do hasColumns()
     // containers, and probably flexboxes...
@@ -476,15 +477,15 @@ bool TextAutosizer::compositeClusterShouldBeAutosized(Vector<TextAutosizingClust
     // in and pan from side to side to read each line, since if there are very
     // few lines of text you'll only need to pan across once or twice.
     //
-    // An exception to the 4 lines of text are the textarea clusters, which are
-    // always autosized by default (i.e. threated as if they contain more than 4
-    // lines of text). This is to ensure that the text does not suddenly get
-    // autosized when the user enters more than 4 lines of text.
+    // An exception to the 4 lines of text are the textarea and contenteditable
+    // clusters, which are always autosized by default (i.e. threated as if they
+    // contain more than 4 lines of text). This is to ensure that the text does
+    // not suddenly get autosized when the user enters more than 4 lines of text.
     float totalTextWidth = 0;
     const float minLinesOfText = 4;
     float minTextWidth = blockWidth * minLinesOfText;
     for (size_t i = 0; i < clusterInfos.size(); ++i) {
-        if (clusterInfos[i].root->isTextArea())
+        if (clusterInfos[i].root->isTextArea() || (clusterInfos[i].root->style() && clusterInfos[i].root->style()->userModify() != READ_ONLY))
             return true;
         measureDescendantTextWidth(clusterInfos[i].blockContainingAllText, clusterInfos[i], minTextWidth, totalTextWidth);
         if (totalTextWidth >= minTextWidth)
