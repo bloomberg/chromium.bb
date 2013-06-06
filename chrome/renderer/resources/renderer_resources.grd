@@ -32,7 +32,6 @@ without changes to the corresponding grd file. fb9 -->
       <include name="IDR_EVENT_BINDINGS_JS" file="extensions\event.js" type="BINDATA" />
       <include name="IDR_GREASEMONKEY_API_JS" file="extensions\greasemonkey_api.js" type="BINDATA" />
       <include name="IDR_IMAGE_UTIL_JS" file="extensions\image_util.js" type="BINDATA" />
-      <include name="IDR_JSON_JS" file="extensions\json.js" type="BINDATA" />
       <include name="IDR_JSON_SCHEMA_JS" file="extensions\json_schema.js" type="BINDATA" />
       <include name="IDR_LAST_ERROR_JS" file="extensions\last_error.js" type="BINDATA" />
       <include name="IDR_MISCELLANEOUS_BINDINGS_JS" file="extensions\miscellaneous_bindings.js" type="BINDATA" />

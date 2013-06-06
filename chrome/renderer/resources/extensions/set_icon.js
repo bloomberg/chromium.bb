@@ -66,7 +66,7 @@ function setIcon(details, callback, name, parameters, actionType) {
 
       if (!isEmpty) {
         sendRequest(name, [details, callback], parameters,
-                    {noStringify: true, nativeFunction: SetIconCommon});
+                    {nativeFunction: SetIconCommon});
       } else {
         // If details.imageData is not dictionary with keys in set {'19', '38'},
         // it must be an ImageData object.
@@ -76,7 +76,7 @@ function setIcon(details, callback, name, parameters, actionType) {
         details.imageData[sizeKey] = imageData;
         verifyImageData(details.imageData[sizeKey], iconSizes[0]);
         sendRequest(name, [details, callback], parameters,
-                    {noStringify: true, nativeFunction: SetIconCommon});
+                    {nativeFunction: SetIconCommon});
      }
     } else {
       throw new Error('imageData property has unexpected type.');
@@ -91,7 +91,7 @@ function setIcon(details, callback, name, parameters, actionType) {
           if (isEmpty)
             throw new Error('The path property must not be empty.');
           sendRequest(name, [details, callback], parameters,
-                      {noStringify: true, nativeFunction: SetIconCommon});
+                      {nativeFunction: SetIconCommon});
           return;
         }
         var sizeKey = iconSizes[index].toString();
@@ -116,7 +116,7 @@ function setIcon(details, callback, name, parameters, actionType) {
             details.imageData[sizeKey] = imageData;
             delete details.path;
             sendRequest(name, [details, callback], parameters,
-                        {noStringify: true, nativeFunction: SetIconCommon});
+                        {nativeFunction: SetIconCommon});
       });
     } else {
       throw new Error('The path property should contain either string or ' +

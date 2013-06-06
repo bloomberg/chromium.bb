@@ -798,7 +798,6 @@ void Dispatcher::PopulateSourceMap() {
   source_map_.RegisterSource("entryIdManager", IDR_ENTRY_ID_MANAGER);
   source_map_.RegisterSource(kEventModule, IDR_EVENT_BINDINGS_JS);
   source_map_.RegisterSource("imageUtil", IDR_IMAGE_UTIL_JS);
-  source_map_.RegisterSource("json", IDR_JSON_JS);
   source_map_.RegisterSource("json_schema", IDR_JSON_SCHEMA_JS);
   source_map_.RegisterSource("lastError", IDR_LAST_ERROR_JS);
   source_map_.RegisterSource("miscellaneous_bindings",
@@ -1003,8 +1002,6 @@ void Dispatcher::DidCreateScriptContext(
     case Feature::BLESSED_EXTENSION_CONTEXT:
     case Feature::UNBLESSED_EXTENSION_CONTEXT:
     case Feature::CONTENT_SCRIPT_CONTEXT:
-      module_system->Require("json");  // see paranoid comment in json.js
-
       // TODO(kalman): move this code back out of the switch and execute it
       // regardless of |context_type|. ExtensionAPI knows how to return the
       // correct APIs, however, until it doesn't have a 2MB overhead we can't

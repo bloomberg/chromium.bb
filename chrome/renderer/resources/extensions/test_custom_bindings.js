@@ -12,7 +12,6 @@ var GetExtensionAPIDefinitions =
     requireNative('apiDefinitions').GetExtensionAPIDefinitions;
 var GetAvailability = requireNative('v8_context').GetAvailability;
 var GetAPIFeatures = requireNative('test_features').GetAPIFeatures;
-var json = require('json');
 
 binding.registerCustomHook(function(api) {
   var chromeTest = api.compiledApi;
@@ -182,9 +181,13 @@ binding.registerCustomHook(function(api) {
       error_msg += ": " + message;
     if (typeof(expected) == 'object') {
       if (!chromeTest.checkDeepEq(expected, actual)) {
-        chromeTest.fail(error_msg +
-                         "\nActual: " + json.stringify(actual) +
-                         "\nExpected: " + json.stringify(expected));
+        // Note: these JSON.stringify calls may fail in tests that explicitly
+        // override JSON.stringfy, so surround in try-catch.
+        try {
+          error_msg += "\nActual: " + JSON.stringify(actual) +
+                       "\nExpected: " + JSON.stringify(expected);
+        } catch (e) {}
+        chromeTest.fail(error_msg);
       }
       return;
     }

@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 var forEach = require('utils').forEach;
-var json = require('json');
 var lastError = require('lastError');
 var logging = requireNative('logging');
 var natives = requireNative('sendRequest');
@@ -119,7 +118,6 @@ function prepareRequest(args, argSchemas) {
 
 // Send an API request and optionally register a callback.
 // |optArgs| is an object with optional parameters as follows:
-// - noStringify: true if we should not stringify the request arguments.
 // - customCallback: a callback that should be called instead of the standard
 //   callback.
 // - nativeFunction: the v8 native function to handle the request, or
@@ -136,16 +134,7 @@ function sendRequest(functionName, args, argSchemas, optArgs) {
   if (optArgs.customCallback) {
     request.customCallback = optArgs.customCallback;
   }
-  // json.stringify doesn't support a root object which is undefined.
-  if (request.args === undefined)
-    request.args = null;
 
-  // TODO(asargent) - convert all optional native functions to accept raw
-  // v8 values instead of expecting JSON strings.
-  var doStringify = false;
-  if (optArgs.nativeFunction && !optArgs.noStringify)
-    doStringify = true;
-  var requestArgs = doStringify ? json.stringify(request.args) : request.args;
   var nativeFunction = optArgs.nativeFunction || natives.StartRequest;
 
   var requestId = natives.GetNextRequestId();
@@ -154,7 +143,7 @@ function sendRequest(functionName, args, argSchemas, optArgs) {
 
   var hasCallback = request.callback || optArgs.customCallback;
   return nativeFunction(functionName,
-                        requestArgs,
+                        request.args,
                         requestId,
                         hasCallback,
                         optArgs.forIOThread,
