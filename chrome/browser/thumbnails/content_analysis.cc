@@ -22,6 +22,7 @@
 namespace {
 
 const float kSigmaThresholdForRecursive = 1.5f;
+const float kAspectRatioToleranceFactor = 1.02f;
 
 template<class InputIterator, class OutputIterator, class Compare>
 void SlidingWindowMinMax(InputIterator first,
@@ -61,6 +62,162 @@ void SlidingWindowMinMax(InputIterator first,
     while (slider.front().second <= i - window_size)
       slider.pop_front();
     *output = slider.front().first;
+  }
+}
+
+size_t FindOtsuThresholdingIndex(const std::vector<int>& histogram) {
+  // Otsu's method seeks to maximize variance between two classes of pixels
+  // correspondng to valleys and peaks of the profile.
+  double w1 = histogram[0];  // Total weight of the first class.
+  double t1 = 0.5 * w1;
+  double w2 = 0.0;
+  double t2 = 0.0;
+  for (size_t i = 1; i < histogram.size(); ++i) {
+    w2 += histogram[i];
+    t2 += (0.5 + i) * histogram[i];
+  }
+
+  size_t max_index = 0;
+  double m1 = t1 / w1;
+  double m2 = t2 / w2;
+  double max_variance_score = w1 * w2 * (m1 - m2) * (m1 - m2);
+  // Iterate through all possible ways of splitting the histogram.
+  for (size_t i = 1; i < histogram.size() - 1; i++) {
+    double bin_volume = (0.5 + i) * histogram[i];
+    w1 += histogram[i];
+    w2 -= histogram[i];
+    t2 -= bin_volume;
+    t1 += bin_volume;
+    m1 = t1 / w1;
+    m2 = t2 / w2;
+    double variance_score = w1 * w2 * (m1 - m2) * (m1 - m2);
+    if (variance_score >= max_variance_score) {
+      max_variance_score = variance_score;
+      max_index = i;
+    }
+  }
+
+  return max_index;
+}
+
+bool ComputeScaledHistogram(const std::vector<float>& source,
+                            std::vector<int>* histogram,
+                            std::pair<float, float>* minmax) {
+  DCHECK(histogram);
+  DCHECK(minmax);
+  histogram->clear();
+  histogram->resize(256);
+  float value_min = std::numeric_limits<float>::max();
+  float value_max = 0.0f;
+
+  std::vector<float>::const_iterator it;
+  for (it = source.begin(); it < source.end(); ++it) {
+    value_min = std::min(value_min, *it);
+    value_max = std::max(value_max, *it);
+  }
+
+  *minmax = std::make_pair(value_min, value_max);
+
+  if (value_max - value_min <= std::numeric_limits<float>::epsilon() * 100.0f) {
+    // Scaling won't work and there is nothing really to segment anyway.
+    return false;
+  }
+
+  float value_span = value_max - value_min;
+  float scale = 255.0f / value_span;
+  for (it = source.begin(); it < source.end(); ++it) {
+    float scaled_value = (*it - value_min) * scale;
+    (*histogram)[static_cast<int>(scaled_value)] += 1;
+  }
+  return true;
+}
+
+void ConstrainedProfileThresholding(const std::vector<float>& profile,
+                                    const std::vector<int>& histogram,
+                                    int current_clip_index,
+                                    float current_threshold,
+                                    const std::pair<float, float>& range,
+                                    int size_for_threshold,
+                                    int target_size,
+                                    std::vector<bool>* result) {
+  DCHECK(!profile.empty());
+  DCHECK_EQ(histogram.size(), 256U);
+  DCHECK(result);
+
+  // A subroutine performing thresholding on the |profile|.
+  if (size_for_threshold != target_size) {
+    // Find a cut-off point (on the histogram) closest to the desired size.
+    int candidate_size = profile.size();
+    int candidate_clip_index = 0;
+    for (std::vector<int>::const_iterator it = histogram.begin();
+         it != histogram.end(); ++it, ++candidate_clip_index) {
+      if (std::abs(candidate_size - target_size) <
+          std::abs(candidate_size - *it - target_size)) {
+        break;
+      }
+      candidate_size -= *it;
+    }
+
+    if (std::abs(candidate_size - target_size) <
+        std::abs(candidate_size -size_for_threshold)) {
+      current_clip_index = candidate_clip_index;
+      current_threshold =  (range.second - range.first) *
+          current_clip_index / 255.0f + range.first;
+      // Recount, rather than assume. One-offs due to rounding can be very
+      // harmful when eroding / dilating the result.
+      size_for_threshold = std::count_if(
+          profile.begin(), profile.end(),
+          std::bind2nd(std::greater<float>(), current_threshold));
+    }
+  }
+
+  result->resize(profile.size());
+  for (size_t i = 0; i < profile.size(); ++i)
+    (*result)[i] = profile[i] > current_threshold;
+
+  while (size_for_threshold > target_size) {
+    // If the current size is larger than target size, erode exactly as needed.
+    std::vector<bool>::iterator mod_it = result->begin();
+    std::vector<bool>::const_iterator lead_it = result->begin();
+    bool prev_value = true;
+    for (++lead_it;
+         lead_it < result->end() && size_for_threshold > target_size;
+         ++lead_it, ++mod_it) {
+      bool value = *mod_it;
+      // If any neighbour is false, switch the element off.
+      if (!prev_value || !*lead_it) {
+        *mod_it = false;
+        --size_for_threshold;
+      }
+      prev_value = value;
+    }
+
+    if (lead_it == result->end() && !prev_value) {
+      *mod_it = false;
+      --size_for_threshold;
+    }
+  }
+
+  while (size_for_threshold < target_size) {
+    std::vector<bool>::iterator mod_it = result->begin();
+    std::vector<bool>::const_iterator lead_it = result->begin();
+    bool prev_value = false;
+    for (++lead_it;
+         lead_it < result->end() && size_for_threshold < target_size;
+         ++lead_it, ++mod_it) {
+      bool value = *mod_it;
+      // If any neighbour is false, switch the element off.
+      if (!prev_value || !*lead_it) {
+        *mod_it = true;
+        ++size_for_threshold;
+      }
+      prev_value = value;
+    }
+
+    if (lead_it == result->end() && !prev_value) {
+      *mod_it = true;
+      ++size_for_threshold;
+    }
   }
 }
 
@@ -306,62 +463,201 @@ void ExtractImageProfileInformation(const SkBitmap& input_bitmap,
 
 float AutoSegmentPeaks(const std::vector<float>& input) {
   // This is a thresholding operation based on Otsu's method.
-  std::vector<int> histogram(256, 0);
-  std::vector<float>::const_iterator it;
-
-  float value_min = std::numeric_limits<float>::max();
-  float value_max = std::numeric_limits<float>::min();
-
-  for (it = input.begin(); it < input.end(); ++it) {
-    value_min = std::min(value_min, *it);
-    value_max = std::max(value_max, *it);
-  }
-
-  if (value_max - value_min <= std::numeric_limits<float>::epsilon() * 100) {
-    // Scaling won't work and there is nothing really to segment anyway.
-    return value_min;
-  }
-
-  float value_span = value_max - value_min;
-  for (it = input.begin(); it < input.end(); ++it) {
-    float scaled_value = (*it - value_min) / value_span * 255;
-    histogram[static_cast<int>(scaled_value)] += 1;
-  }
-
-  // Otsu's method seeks to maximize variance between two classes of pixels
-  // correspondng to valleys and peaks of the profile.
-  double w1 = histogram[0];  // Total weight of the first class.
-  double t1 = 0.5 * w1;
-  double w2 = 0;
-  double t2 = 0;
-  for (size_t i = 1; i < histogram.size(); ++i) {
-    w2 += histogram[i];
-    t2 += (0.5 + i) * histogram[i];
-  }
-
-  size_t max_index = 0;
-  double m1 = t1 / w1;
-  double m2 = t2 / w2;
-  double max_variance_score = w1 * w2 * (m1 - m2) * (m1 - m2);
-  // Iterate through all possible ways of splitting the histogram.
-  for (size_t i = 1; i < histogram.size() - 1; i++) {
-    double bin_volume = (0.5 + i) * histogram[i];
-    w1 += histogram[i];
-    w2 -= histogram[i];
-    t2 -= bin_volume;
-    t1 += bin_volume;
-    m1 = t1 / w1;
-    m2 = t2 / w2;
-    double variance_score = w1 * w2 * (m1 - m2) * (m1 - m2);
-    if (variance_score >= max_variance_score) {
-      max_variance_score = variance_score;
-      max_index = i;
-    }
-  }
+  std::vector<int> histogram;
+  std::pair<float, float> minmax;
+  if (!ComputeScaledHistogram(input, &histogram, &minmax))
+    return minmax.first;
 
   // max_index refers to the bin *after* which we need to split. The sought
   // threshold is the centre of this bin, scaled back to the original range.
-  return value_span * (max_index + 0.5f) / 255.0f + value_min;
+  size_t max_index = FindOtsuThresholdingIndex(histogram);
+  return (minmax.second - minmax.first) * (max_index + 0.5f) / 255.0f +
+      minmax.first;
+}
+
+gfx::Size AdjustClippingSizeToAspectRatio(const gfx::Size& target_size,
+                                          const gfx::Size& image_size,
+                                          const gfx::Size& computed_size) {
+  DCHECK_GT(target_size.width(), 0);
+  DCHECK_GT(target_size.height(), 0);
+  // If the computed thumbnail would be too wide or to tall, we shall attempt
+  // to fix it. Generally the idea is to re-add content to the part which has
+  // been more aggressively shrunk unless there is nothing to add there or if
+  // adding there won't fix anything. Should that be the case,  we will
+  // (reluctantly) take away more from the other dimension.
+  float desired_aspect =
+      static_cast<float>(target_size.width()) / target_size.height();
+  int computed_width = std::max(computed_size.width(), target_size.width());
+  int computed_height = std::max(computed_size.height(), target_size.height());
+  float computed_aspect = static_cast<float>(computed_width) / computed_height;
+  float aspect_change_delta = std::abs(computed_aspect - desired_aspect);
+  float prev_aspect_change_delta = 1000.0f;
+  const float kAspectChangeEps = 0.01f;
+  const float kLargeEffect = 2.0f;
+
+  while ((prev_aspect_change_delta - aspect_change_delta > kAspectChangeEps) &&
+         (computed_aspect / desired_aspect > kAspectRatioToleranceFactor ||
+          desired_aspect / computed_aspect > kAspectRatioToleranceFactor)) {
+    int new_computed_width = computed_width;
+    int new_computed_height = computed_height;
+    float row_dimension_shrink =
+        static_cast<float>(image_size.height()) / computed_height;
+    float column_dimension_shrink =
+        static_cast<float>(image_size.width()) / computed_width;
+
+    if (computed_aspect / desired_aspect > kAspectRatioToleranceFactor) {
+      // Too wide.
+      if (row_dimension_shrink > column_dimension_shrink) {
+        // Bring the computed_height to the least of:
+        // (1) image height (2) the number of lines that would
+        // make up the desired aspect or (3) number of lines we would get
+        // at the same 'aggressivity' level as width or.
+        new_computed_height = std::min(
+            static_cast<int>(image_size.height()),
+            static_cast<int>(computed_width / desired_aspect + 0.5f));
+        new_computed_height = std::min(
+            new_computed_height,
+            static_cast<int>(
+                image_size.height() / column_dimension_shrink + 0.5f));
+      } else if (row_dimension_shrink >= kLargeEffect ||
+                 new_computed_width <= target_size.width()) {
+        // Even though rows were resized less, we will generally rather add than
+        // remove (or there is nothing to remove in x already).
+        new_computed_height = std::min(
+            static_cast<int>(image_size.height()),
+            static_cast<int>(computed_width / desired_aspect + 0.5f));
+      } else {
+        // Rows were already shrunk less aggressively. This means there is
+        // simply no room left too expand. Cut columns to get the desired
+        // aspect ratio.
+        new_computed_width = desired_aspect * computed_height + 0.5f;
+      }
+    } else {
+      // Too tall.
+      if (column_dimension_shrink > row_dimension_shrink) {
+        // Columns were shrunk more aggressively. Try to relax the same way as
+        // above.
+        new_computed_width = std::min(
+            static_cast<int>(image_size.width()),
+            static_cast<int>(desired_aspect * computed_height + 0.5f));
+        new_computed_width = std::min(
+            new_computed_width,
+            static_cast<int>(
+                image_size.width() / row_dimension_shrink  + 0.5f));
+      } else if (column_dimension_shrink  >= kLargeEffect ||
+                 new_computed_height <= target_size.height()) {
+        new_computed_width = std::min(
+            static_cast<int>(image_size.width()),
+            static_cast<int>(desired_aspect * computed_height + 0.5f));
+      } else {
+        new_computed_height = computed_width / desired_aspect + 0.5f;
+      }
+    }
+
+    new_computed_width = std::max(new_computed_width, target_size.width());
+    new_computed_height = std::max(new_computed_height, target_size.height());
+
+    // Update loop control variables.
+    float new_computed_aspect =
+        static_cast<float>(new_computed_width) / new_computed_height;
+
+    if (std::abs(new_computed_aspect - desired_aspect) >
+        std::abs(computed_aspect - desired_aspect)) {
+      // Do not take inferior results.
+      break;
+    }
+
+    computed_width = new_computed_width;
+    computed_height = new_computed_height;
+    computed_aspect = new_computed_aspect;
+    prev_aspect_change_delta = aspect_change_delta;
+    aspect_change_delta = std::abs(new_computed_aspect - desired_aspect);
+  }
+
+  return gfx::Size(computed_width, computed_height);
+}
+
+void ConstrainedProfileSegmentation(const std::vector<float>& row_profile,
+                                    const std::vector<float>& column_profile,
+                                    const gfx::Size& target_size,
+                                    std::vector<bool>* included_rows,
+                                    std::vector<bool>* included_columns) {
+  DCHECK(included_rows);
+  DCHECK(included_columns);
+
+  std::vector<int> histogram_rows;
+  std::pair<float, float> minmax_rows;
+  bool rows_well_behaved = ComputeScaledHistogram(
+      row_profile, &histogram_rows, &minmax_rows);
+
+  float row_threshold = minmax_rows.first;
+  size_t clip_index_rows = 0;
+
+  if (rows_well_behaved) {
+    clip_index_rows = FindOtsuThresholdingIndex(histogram_rows);
+    row_threshold = (minmax_rows.second - minmax_rows.first) *
+        (clip_index_rows + 0.5f) / 255.0f + minmax_rows.first;
+  }
+
+  std::vector<int> histogram_columns;
+  std::pair<float, float> minmax_columns;
+  bool columns_well_behaved = ComputeScaledHistogram(column_profile,
+                                                     &histogram_columns,
+                                                     &minmax_columns);
+  float column_threshold = minmax_columns.first;
+  size_t clip_index_columns = 0;
+
+  if (columns_well_behaved) {
+    clip_index_columns = FindOtsuThresholdingIndex(histogram_columns);
+    column_threshold = (minmax_columns.second - minmax_columns.first) *
+        (clip_index_columns + 0.5f) / 255.0f + minmax_columns.first;
+  }
+
+  int auto_segmented_width = count_if(
+      column_profile.begin(), column_profile.end(),
+      std::bind2nd(std::greater<float>(), column_threshold));
+  int auto_segmented_height = count_if(
+      row_profile.begin(), row_profile.end(),
+      std::bind2nd(std::greater<float>(), row_threshold));
+
+  gfx::Size computed_size = AdjustClippingSizeToAspectRatio(
+      target_size,
+      gfx::Size(column_profile.size(), row_profile.size()),
+      gfx::Size(auto_segmented_width, auto_segmented_height));
+
+  // Apply thresholding.
+  if (rows_well_behaved) {
+    ConstrainedProfileThresholding(row_profile,
+                                   histogram_rows,
+                                   clip_index_rows,
+                                   row_threshold,
+                                   minmax_rows,
+                                   auto_segmented_height,
+                                   computed_size.height(),
+                                   included_rows);
+  } else {
+    // This is essentially an error condition, invoked when no segmentation was
+    // possible. This will result in applying a very low threshold and likely
+    // in producing a thumbnail which should get rejected.
+    included_rows->resize(row_profile.size());
+    for (size_t i = 0; i < row_profile.size(); ++i)
+      (*included_rows)[i] = row_profile[i] > row_threshold;
+  }
+
+  if (columns_well_behaved) {
+    ConstrainedProfileThresholding(column_profile,
+                                   histogram_columns,
+                                   clip_index_columns,
+                                   column_threshold,
+                                   minmax_columns,
+                                   auto_segmented_width,
+                                   computed_size.width(),
+                                   included_columns);
+  } else {
+    included_columns->resize(column_profile.size());
+    for (size_t i = 0; i < column_profile.size(); ++i)
+      (*included_columns)[i] = column_profile[i] > column_threshold;
+  }
 }
 
 SkBitmap ComputeDecimatedImage(const SkBitmap& bitmap,
@@ -461,21 +757,13 @@ SkBitmap CreateRetargetedThumbnailImage(
                                  true,
                                  &row_profile,
                                  &column_profile);
-  float threshold_rows = AutoSegmentPeaks(row_profile);
-  float threshold_columns = AutoSegmentPeaks(column_profile);
 
-  // Apply thresholding.
-  std::vector<bool> included_rows(row_profile.size(), false);
-  std::transform(row_profile.begin(),
-                 row_profile.end(),
-                 included_rows.begin(),
-                 std::bind2nd(std::greater<float>(), threshold_rows));
-
-  std::vector<bool> included_columns(column_profile.size(), false);
-  std::transform(column_profile.begin(),
-                 column_profile.end(),
-                 included_columns.begin(),
-                 std::bind2nd(std::greater<float>(), threshold_columns));
+  std::vector<bool> included_rows, included_columns;
+  ConstrainedProfileSegmentation(row_profile,
+                                 column_profile,
+                                 target_size,
+                                 &included_rows,
+                                 &included_columns);
 
   // Use the original image and computed inclusion vectors to create a resized
   // image.

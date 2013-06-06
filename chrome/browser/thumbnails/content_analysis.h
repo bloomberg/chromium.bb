@@ -44,6 +44,26 @@ void ExtractImageProfileInformation(const SkBitmap& input_bitmap,
 // areas in the |input| profile.
 float AutoSegmentPeaks(const std::vector<float>& input);
 
+// Compute and return a workable (not too distorted, not bigger than the image)
+// target size for retargeting in ConstrainedProfileSegmentation. |target_size|
+// is the desired image size (defines aspect ratio and minimal image size) while
+// |computed_size| is the size of a result of unconstrained segmentation.
+// This routine makes very little sense outside ConstrainedProfileSegmentation
+// and is exposed only for unit tests (it is somehow complicated).
+gfx::Size AdjustClippingSizeToAspectRatio(const gfx::Size& target_size,
+                                          const gfx::Size& image_size,
+                                          const gfx::Size& computed_size);
+
+// Compute thresholding guides |included_rows| and |included_columns| by
+// segmenting 1-d profiles |row_profile| and |column_profile|. The routine will
+// attempt to keep the image which would result from using these guides as close
+// to the desired aspect ratio (given by |target_size|) as reasonable.
+void ConstrainedProfileSegmentation(const std::vector<float>& row_profile,
+                                    const std::vector<float>& column_profile,
+                                    const gfx::Size& target_size,
+                                    std::vector<bool>* included_rows,
+                                    std::vector<bool>* included_columns);
+
 // Shrinks the source |bitmap| by removing rows and columns where |rows| and
 // |columns| are false, respectively. The function returns a new bitmap if the
 // shrinking can be performed and an empty instance otherwise.

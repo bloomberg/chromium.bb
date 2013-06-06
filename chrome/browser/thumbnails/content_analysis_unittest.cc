@@ -65,6 +65,11 @@ bool CompareImageFragments(const SkBitmap& bitmap_left,
   return true;
 }
 
+float AspectDifference(const gfx::Size& reference, const gfx::Size& candidate) {
+  return std::abs(static_cast<float>(candidate.width()) / candidate.height() -
+                  static_cast<float>(reference.width()) / reference.height());
+}
+
 }  // namespace
 
 namespace thumbnailing_utils {
@@ -291,6 +296,158 @@ TEST_F(ThumbnailContentAnalysisTest,
   EXPECT_EQ(column_profile[398], column_profile[402]);
 }
 
+TEST_F(ThumbnailContentAnalysisTest, AdjustClippingSizeToAspectRatio) {
+  // The test will exercise several relations of sizes. Basic invariants
+  // checked in each case: each dimension in adjusted_size ougth not be greater
+  // than the source image and not lesser than requested target. Aspect ratio
+  // of adjusted_size should never be worse than that of computed_size.
+  gfx::Size target_size(212, 100);
+  gfx::Size image_size(1000, 2000);
+  gfx::Size computed_size(420, 200);
+
+  gfx::Size adjusted_size = AdjustClippingSizeToAspectRatio(
+      target_size, image_size, computed_size);
+
+  EXPECT_LE(adjusted_size.width(), image_size.width());
+  EXPECT_LE(adjusted_size.height(), image_size.height());
+  EXPECT_GE(adjusted_size.width(), target_size.width());
+  EXPECT_GE(adjusted_size.height(), target_size.height());
+  EXPECT_LE(AspectDifference(target_size, adjusted_size),
+            AspectDifference(target_size, computed_size));
+  // This case is special (and trivial): no change expected.
+  EXPECT_EQ(computed_size, adjusted_size);
+
+  // Computed size is too tall. Adjusted size has to add rows.
+  computed_size.SetSize(600, 150);
+  adjusted_size = AdjustClippingSizeToAspectRatio(
+      target_size, image_size, computed_size);
+  // Invariant check.
+  EXPECT_LE(adjusted_size.width(), image_size.width());
+  EXPECT_LE(adjusted_size.height(), image_size.height());
+  EXPECT_GE(adjusted_size.width(), target_size.width());
+  EXPECT_GE(adjusted_size.height(), target_size.height());
+  EXPECT_LE(AspectDifference(target_size, adjusted_size),
+            AspectDifference(target_size, computed_size));
+  // Specific to this case.
+  EXPECT_EQ(computed_size.width(), adjusted_size.width());
+  EXPECT_LE(computed_size.height(), adjusted_size.height());
+  EXPECT_NEAR(
+      static_cast<float>(target_size.width()) / target_size.height(),
+      static_cast<float>(adjusted_size.width()) / adjusted_size.height(),
+      0.02f);
+
+  // Computed size is too wide. Adjusted size has to add columns.
+  computed_size.SetSize(200, 400);
+  adjusted_size = AdjustClippingSizeToAspectRatio(
+      target_size, image_size, computed_size);
+  // Invariant check.
+  EXPECT_LE(adjusted_size.width(), image_size.width());
+  EXPECT_LE(adjusted_size.height(), image_size.height());
+  EXPECT_GE(adjusted_size.width(), target_size.width());
+  EXPECT_GE(adjusted_size.height(), target_size.height());
+  EXPECT_LE(AspectDifference(target_size, adjusted_size),
+            AspectDifference(target_size, computed_size));
+  EXPECT_NEAR(
+      static_cast<float>(target_size.width()) / target_size.height(),
+      static_cast<float>(adjusted_size.width()) / adjusted_size.height(),
+      0.02f);
+
+  target_size.SetSize(416, 205);
+  image_size.SetSize(1200, 1200);
+  computed_size.SetSize(900, 300);
+  adjusted_size = AdjustClippingSizeToAspectRatio(
+      target_size, image_size, computed_size);
+  // Invariant check.
+  EXPECT_LE(adjusted_size.width(), image_size.width());
+  EXPECT_LE(adjusted_size.height(), image_size.height());
+  EXPECT_GE(adjusted_size.width(), target_size.width());
+  EXPECT_GE(adjusted_size.height(), target_size.height());
+  EXPECT_LE(AspectDifference(target_size, adjusted_size),
+            AspectDifference(target_size, computed_size));
+  // Specific to this case.
+  EXPECT_EQ(computed_size.width(), adjusted_size.width());
+  EXPECT_LE(computed_size.height(), adjusted_size.height());
+  EXPECT_NEAR(
+      static_cast<float>(target_size.width()) / target_size.height(),
+      static_cast<float>(adjusted_size.width()) / adjusted_size.height(),
+      0.02f);
+
+  target_size.SetSize(416, 205);
+  image_size.SetSize(1200, 1200);
+  computed_size.SetSize(300, 300);
+  adjusted_size = AdjustClippingSizeToAspectRatio(
+      target_size, image_size, computed_size);
+  // Invariant check.
+  EXPECT_LE(adjusted_size.width(), image_size.width());
+  EXPECT_LE(adjusted_size.height(), image_size.height());
+  EXPECT_GE(adjusted_size.width(), target_size.width());
+  EXPECT_GE(adjusted_size.height(), target_size.height());
+  EXPECT_LE(AspectDifference(target_size, adjusted_size),
+            AspectDifference(target_size, computed_size));
+  // Specific to this case.
+  EXPECT_EQ(computed_size.height(), adjusted_size.height());
+  EXPECT_LE(computed_size.width(), adjusted_size.width());
+  EXPECT_NEAR(
+      static_cast<float>(target_size.width()) / target_size.height(),
+      static_cast<float>(adjusted_size.width()) / adjusted_size.height(),
+      0.02f);
+
+  computed_size.SetSize(200, 300);
+  adjusted_size = AdjustClippingSizeToAspectRatio(
+      target_size, image_size, computed_size);
+  // Invariant check.
+  EXPECT_LE(adjusted_size.width(), image_size.width());
+  EXPECT_LE(adjusted_size.height(), image_size.height());
+  EXPECT_GE(adjusted_size.width(), target_size.width());
+  EXPECT_GE(adjusted_size.height(), target_size.height());
+  EXPECT_LE(AspectDifference(target_size, adjusted_size),
+            AspectDifference(target_size, computed_size));
+  // Specific to this case.
+  EXPECT_EQ(computed_size.height(), adjusted_size.height());
+  EXPECT_LE(computed_size.width(), adjusted_size.width());
+  EXPECT_NEAR(
+      static_cast<float>(target_size.width()) / target_size.height(),
+      static_cast<float>(adjusted_size.width()) / adjusted_size.height(),
+      0.02f);
+
+  target_size.SetSize(416, 205);
+  image_size.SetSize(1400, 600);
+  computed_size.SetSize(300, 300);
+  adjusted_size = AdjustClippingSizeToAspectRatio(
+      target_size, image_size, computed_size);
+  // Invariant check.
+  EXPECT_LE(adjusted_size.width(), image_size.width());
+  EXPECT_LE(adjusted_size.height(), image_size.height());
+  EXPECT_GE(adjusted_size.width(), target_size.width());
+  EXPECT_GE(adjusted_size.height(), target_size.height());
+  EXPECT_LE(AspectDifference(target_size, adjusted_size),
+            AspectDifference(target_size, computed_size));
+  // Specific to this case.
+  EXPECT_EQ(computed_size.height(), adjusted_size.height());
+  EXPECT_LE(computed_size.width(), adjusted_size.width());
+  EXPECT_NEAR(
+      static_cast<float>(target_size.width()) / target_size.height(),
+      static_cast<float>(adjusted_size.width()) / adjusted_size.height(),
+      0.02f);
+
+  computed_size.SetSize(900, 300);
+  adjusted_size = AdjustClippingSizeToAspectRatio(
+      target_size, image_size, computed_size);
+  // Invariant check.
+  EXPECT_LE(adjusted_size.width(), image_size.width());
+  EXPECT_LE(adjusted_size.height(), image_size.height());
+  EXPECT_GE(adjusted_size.width(), target_size.width());
+  EXPECT_GE(adjusted_size.height(), target_size.height());
+  EXPECT_LE(AspectDifference(target_size, adjusted_size),
+            AspectDifference(target_size, computed_size));
+  // Specific to this case.
+  EXPECT_LE(computed_size.height(), adjusted_size.height());
+  EXPECT_NEAR(
+      static_cast<float>(target_size.width()) / target_size.height(),
+      static_cast<float>(adjusted_size.width()) / adjusted_size.height(),
+      0.02f);
+}
+
 TEST_F(ThumbnailContentAnalysisTest, AutoSegmentPeaks) {
   std::vector<float> profile_info;
 
@@ -337,6 +494,83 @@ TEST_F(ThumbnailContentAnalysisTest, AutoSegmentPeaks) {
       transitions++;
   }
   EXPECT_EQ(transitions, 4);  // We have two contiguous peaks. Good going!
+}
+
+TEST_F(ThumbnailContentAnalysisTest, ConstrainedProfileSegmentation) {
+  const size_t kRowCount = 800;
+  const size_t kColumnCount = 1400;
+  const gfx::Size target_size(300, 150);
+  std::vector<float> rows_profile(kRowCount);
+  std::vector<float> columns_profile(kColumnCount);
+
+  std::srand(42);
+  std::generate(rows_profile.begin(), rows_profile.end(), std::rand);
+  std::generate(columns_profile.begin(), columns_profile.end(), std::rand);
+
+  // Bring noise level to 0-1.
+  std::transform(rows_profile.begin(),
+                 rows_profile.end(),
+                 rows_profile.begin(),
+                 std::bind2nd(std::divides<float>(), RAND_MAX));
+  std::transform(columns_profile.begin(),
+                 columns_profile.end(),
+                 columns_profile.begin(),
+                 std::bind2nd(std::divides<float>(), RAND_MAX));
+
+  // Set up values to 0-1.
+  std::transform(rows_profile.begin(),
+                 rows_profile.end(),
+                 rows_profile.begin(),
+                 std::bind2nd(std::plus<float>(), 1.0f));
+  std::transform(columns_profile.begin(),
+                 columns_profile.end(),
+                 columns_profile.begin(),
+                 std::bind2nd(std::plus<float>(), 1.0f));
+
+  std::transform(rows_profile.begin() + 300,
+                 rows_profile.begin() + 450,
+                 rows_profile.begin() + 300,
+                 std::bind2nd(std::plus<float>(), 8.0f));
+  std::transform(columns_profile.begin() + 400,
+                 columns_profile.begin() + 1000,
+                 columns_profile.begin() + 400,
+                 std::bind2nd(std::plus<float>(), 10.0f));
+
+  // Make sure that threshold falls somewhere reasonable.
+  float row_threshold = AutoSegmentPeaks(rows_profile);
+  EXPECT_GT(row_threshold, 1.0f);
+  EXPECT_LT(row_threshold, 9.0f);
+
+  int row_above_count = std::count_if(
+      rows_profile.begin(),
+      rows_profile.end(),
+      std::bind2nd(std::greater<float>(), row_threshold));
+  EXPECT_EQ(row_above_count, 150);
+
+  float column_threshold = AutoSegmentPeaks(columns_profile);
+  EXPECT_GT(column_threshold, 1.0f);
+  EXPECT_LT(column_threshold, 11.0f);
+
+  int column_above_count = std::count_if(
+      columns_profile.begin(),
+      columns_profile.end(),
+      std::bind2nd(std::greater<float>(), column_threshold));
+  EXPECT_EQ(column_above_count, 600);
+
+
+  std::vector<bool> rows_guide;
+  std::vector<bool> columns_guide;
+  ConstrainedProfileSegmentation(
+      rows_profile, columns_profile, target_size, &rows_guide, &columns_guide);
+
+  int row_count = std::count(rows_guide.begin(), rows_guide.end(), true);
+  int column_count = std::count(
+      columns_guide.begin(), columns_guide.end(), true);
+  float expected_aspect =
+      static_cast<float>(target_size.width()) / target_size.height();
+  float actual_aspect = static_cast<float>(column_count) / row_count;
+  EXPECT_GE(1.05f, expected_aspect / actual_aspect);
+  EXPECT_GE(1.05f, actual_aspect / expected_aspect);
 }
 
 TEST_F(ThumbnailContentAnalysisTest, ComputeDecimatedImage) {
