@@ -272,7 +272,7 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityAriaInvalid) {
 }
 
 // crbug.com/247325
-#if defined(OS_WIN) || define (OS_MACOSX)
+#if defined(OS_WIN) || defined(OS_MACOSX)
 #define MAYBE_AccessibilityAriaMenu DISABLED_AccessibilityAriaMenu
 #define MAYBE_AccessibilityAriaLevel DISABLED_AccessibilityAriaLevel
 #else
