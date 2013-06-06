@@ -129,12 +129,20 @@ function resetAllFlags() {
  *     unsupportedExperiments: [
  *       // Mirrors the format of |supportedExperiments| above.
  *     ],
- *     needsRestart: false
+ *     needsRestart: false,
+ *     showBetaChannelPromotion: false,
+ *     showDevChannelPromotion: false
  *   }
  */
 function returnFlagsExperiments(experimentsData) {
   var bodyContainer = $('body-container');
   renderTemplate(experimentsData);
+
+  if (experimentsData.showBetaChannelPromotion)
+    $('channel-promo-beta').hidden = false;
+  else if (experimentsData.showDevChannelPromotion)
+    $('channel-promo-dev').hidden = false;
+
   bodyContainer.style.visibility = 'visible';
 }
 
