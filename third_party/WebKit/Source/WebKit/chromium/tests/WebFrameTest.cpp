@@ -547,6 +547,7 @@ TEST_F(WebFrameTest, NoWideViewportIgnoresPageViewportWidth)
     // The page sets viewport width to 3000, but with UseWideViewport == false is must be ignored.
     WebViewImpl* webViewImpl = static_cast<WebViewImpl*>(m_webView);
     EXPECT_EQ(viewportWidth, webViewImpl->mainFrameImpl()->frameView()->contentsSize().width());
+    EXPECT_EQ(viewportHeight, webViewImpl->mainFrameImpl()->frameView()->contentsSize().height());
 }
 
 TEST_F(WebFrameTest, NoWideViewportIgnoresPageViewportWidthButAccountsScale)
@@ -569,6 +570,7 @@ TEST_F(WebFrameTest, NoWideViewportIgnoresPageViewportWidthButAccountsScale)
     // While the initial scale specified by the page must be accounted.
     WebViewImpl* webViewImpl = static_cast<WebViewImpl*>(m_webView);
     EXPECT_EQ(viewportWidth / 2, webViewImpl->mainFrameImpl()->frameView()->contentsSize().width());
+    EXPECT_EQ(viewportHeight / 2, webViewImpl->mainFrameImpl()->frameView()->contentsSize().height());
 }
 
 TEST_F(WebFrameTest, WideViewportSetsTo980WithAutoWidth)
@@ -589,6 +591,7 @@ TEST_F(WebFrameTest, WideViewportSetsTo980WithAutoWidth)
 
     WebViewImpl* webViewImpl = static_cast<WebViewImpl*>(m_webView);
     EXPECT_EQ(980, webViewImpl->mainFrameImpl()->frameView()->contentsSize().width());
+    EXPECT_EQ(980.0 / viewportWidth * viewportHeight, webViewImpl->mainFrameImpl()->frameView()->contentsSize().height());
 }
 
 TEST_F(WebFrameTest, PageViewportInitialScaleOverridesLoadWithOverviewMode)
