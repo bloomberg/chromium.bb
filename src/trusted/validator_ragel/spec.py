@@ -40,6 +40,16 @@ class SandboxingError(Exception):
 BUNDLE_SIZE = 32
 
 
+def ValidateNop(instruction):
+  if instruction.disasm == 'nop':
+    return
+  if re.match(
+      r'(data32 )*nopw (%cs:)?0x0\(%[er]ax,%[er]ax,1\)$',
+      instruction.disasm):
+    return
+  raise DoNotMatchError(instruction)
+
+
 def ValidateDirectJump(instruction):
   # TODO(shcherbina): return offset for potential use in text-based ncval
 

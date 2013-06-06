@@ -57,7 +57,8 @@ class Validator(object):
             except spec.DoNotMatchError:
               continue
           else:
-            self.messages.append((offset, 'unrecognized instruction'))
+            self.messages.append(
+                (offset, 'unrecognized instruction %r' % insns[i].disasm))
             i += 1
       except spec.SandboxingError as e:
         self.messages.append((offset, str(e)))
@@ -81,4 +82,7 @@ class Validator32(Validator):
     # TODO(shcherbina): Collect jump info.
 
   def EnumerateInstructionCheckers(self):
-    return [self.ValidateDirectJump]
+    return [
+        spec.ValidateNop,
+        self.ValidateDirectJump,
+    ]

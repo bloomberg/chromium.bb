@@ -18,31 +18,3 @@
   return code: 1
 @spec:
   0: ('16-bit jumps are disallowed', Instruction(address=0, bytes=[102, 233, 1, 0], disasm='jmpw 0x5'))
-  4: unrecognized instruction
-  5: unrecognized instruction
-  6: unrecognized instruction
-  7: unrecognized instruction
-  8: unrecognized instruction
-  9: unrecognized instruction
-  a: unrecognized instruction
-  b: unrecognized instruction
-  c: unrecognized instruction
-  d: unrecognized instruction
-  e: unrecognized instruction
-  f: unrecognized instruction
-  10: unrecognized instruction
-  11: unrecognized instruction
-  12: unrecognized instruction
-  13: unrecognized instruction
-  14: unrecognized instruction
-  15: unrecognized instruction
-  16: unrecognized instruction
-  17: unrecognized instruction
-  18: unrecognized instruction
-  19: unrecognized instruction
-  1a: unrecognized instruction
-  1b: unrecognized instruction
-  1c: unrecognized instruction
-  1d: unrecognized instruction
-  1e: unrecognized instruction
-  1f: unrecognized instruction
