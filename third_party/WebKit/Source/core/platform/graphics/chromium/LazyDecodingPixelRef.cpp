@@ -111,10 +111,13 @@ bool LazyDecodingPixelRef::onLockPixelsAreWritable() const
     return false;
 }
 
+bool LazyDecodingPixelRef::MaybeDecoded()
+{
+    return ImageDecodingStore::instance()->isCached(m_frameGenerator.get(), m_scaledSize);
+}
+
 bool LazyDecodingPixelRef::PrepareToDecode(const LazyPixelRef::PrepareParams& params)
 {
-    TRACE_EVENT0("webkit", "LazyDecodingPixelRef::PrepareToDecode");
-
     // TODO: check if only a particular rect is available in image cache.
     UNUSED_PARAM(params);
     const ScaledImageFragment* cachedImage = 0;

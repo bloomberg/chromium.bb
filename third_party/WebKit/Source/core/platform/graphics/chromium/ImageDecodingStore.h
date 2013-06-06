@@ -64,6 +64,9 @@ public:
     void unlockCache(const ImageFrameGenerator*, const ScaledImageFragment*);
     const ScaledImageFragment* insertAndLockCache(const ImageFrameGenerator*, PassOwnPtr<ScaledImageFragment>, PassOwnPtr<ImageDecoder> = nullptr);
 
+    // Locks the cache for safety, but does not attempt to lock the object we're checking for.
+    bool isCached(const ImageFrameGenerator*, const SkISize& scaledSize);
+
     // Overwrite an existing cached image. It is unlocked and then replaced with the new image.
     // The existing cached image must be already locked and incomplete.
     const ScaledImageFragment* overwriteAndLockCache(const ImageFrameGenerator*, const ScaledImageFragment*, PassOwnPtr<ScaledImageFragment>);

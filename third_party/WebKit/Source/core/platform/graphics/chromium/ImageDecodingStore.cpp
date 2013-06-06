@@ -154,6 +154,16 @@ const ScaledImageFragment* ImageDecodingStore::insertAndLockCache(const ImageFra
     return cachedImage;
 }
 
+bool ImageDecodingStore::isCached(const ImageFrameGenerator* generator, const SkISize& scaledSize)
+{
+    MutexLocker lock(m_mutex);
+    CacheMap::iterator iter = m_cacheMap.find(std::make_pair(generator, scaledSize));
+    if (iter == m_cacheMap.end())
+        return false;
+    return true;
+}
+
+
 const ScaledImageFragment* ImageDecodingStore::overwriteAndLockCache(const ImageFrameGenerator* generator, const ScaledImageFragment* cachedImage, PassOwnPtr<ScaledImageFragment> newImage)
 {
     OwnPtr<ImageDecoder> trash;

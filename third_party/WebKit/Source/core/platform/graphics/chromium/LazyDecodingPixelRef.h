@@ -56,6 +56,9 @@ public:
     bool isScaled(const SkISize& fullSize) const;
     bool isClipped() const;
 
+    // Returns true if the image might already be decoded in the cache.
+    // Optimistic version of PrepareToDecode; requires less locking.
+    virtual bool MaybeDecoded();
     virtual bool PrepareToDecode(const LazyPixelRef::PrepareParams&);
     virtual void Decode();
 
