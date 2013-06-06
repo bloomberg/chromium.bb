@@ -220,12 +220,30 @@ class WeakPtr : public internal::WeakPtrBase {
     return get();
   }
 
+  // Allow WeakPtr<element_type> to be used in boolean expressions, but not
+  // implicitly convertible to a real bool (which is dangerous).
+  //
+  // Note that this trick is only safe when the == and != operators
+  // are declared explicitly, as otherwise "weak_ptr1 == weak_ptr2"
+  // will compile but do the wrong thing (i.e., convert to Testable
+  // and then do the comparison).
+ private:
+  typedef T* WeakPtr::*Testable;
+
+ public:
+  operator Testable() const { return get() ? &WeakPtr::ptr_ : NULL; }
+
   void reset() {
     ref_ = internal::WeakReference();
     ptr_ = NULL;
   }
 
  private:
+  // Explicitly declare comparison operators as required by the bool
+  // trick, but keep them private.
+  template <class U> bool operator==(WeakPtr<U> const&) const;
+  template <class U> bool operator!=(WeakPtr<U> const&) const;
+
   friend class internal::SupportsWeakPtrBase;
   template <typename U> friend class WeakPtr;
   friend class SupportsWeakPtr<T>;

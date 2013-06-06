@@ -384,6 +384,11 @@ class scoped_ptr {
 
   // Allow scoped_ptr<element_type> to be used in boolean expressions, but not
   // implicitly convertible to a real bool (which is dangerous).
+  //
+  // Note that this trick is only safe when the == and != operators
+  // are declared explicitly, as otherwise "scoped_ptr1 ==
+  // scoped_ptr2" will compile but do the wrong thing (i.e., convert
+  // to Testable and then do the comparison).
  private:
   typedef base::internal::scoped_ptr_impl<element_type, deleter_type>
       scoped_ptr::*Testable;
