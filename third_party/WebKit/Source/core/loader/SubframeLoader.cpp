@@ -350,10 +350,7 @@ bool SubframeLoader::loadPlugin(HTMLPlugInImageElement* pluginElement, const KUR
 
     renderer->setWidget(widget);
     m_containsPlugins = true;
- 
-#if ENABLE(3D_PLUGIN)
     pluginElement->setNeedsStyleRecalc(SyntheticStyleChange);
-#endif
     return true;
 }
 

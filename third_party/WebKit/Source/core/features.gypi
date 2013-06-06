@@ -32,7 +32,6 @@
   # The following defines turn WebKit features on and off.
   'variables': {
     'feature_defines': [
-      'ENABLE_3D_PLUGIN=1',
       'ENABLE_BATTERY_STATUS=0',
       'ENABLE_CANVAS_USES_MAILBOX=0', # Requires crbug.com/230137 to be fixed
       'ENABLE_CSS3_TEXT=0',
