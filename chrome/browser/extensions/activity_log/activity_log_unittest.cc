@@ -42,10 +42,13 @@ class ActivityLogTest : public testing::Test {
         ui_thread_(BrowserThread::UI, &message_loop_),
         db_thread_(BrowserThread::DB, &message_loop_),
         file_thread_(BrowserThread::FILE, &message_loop_),
-        io_thread_(BrowserThread::IO, &message_loop_) {}
+        io_thread_(BrowserThread::IO, &message_loop_),
+        saved_cmdline_(CommandLine::NO_PROGRAM) {
+  }
 
   virtual void SetUp() OVERRIDE {
     CommandLine command_line(CommandLine::NO_PROGRAM);
+    saved_cmdline_ = *CommandLine::ForCurrentProcess();
     profile_.reset(new TestingProfile());
     CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kEnableExtensionActivityLogging);
@@ -65,6 +68,10 @@ class ActivityLogTest : public testing::Test {
         base::MessageLoop::QuitClosure(),
         base::TimeDelta::FromSeconds(4));   // Don't hang on failure.
     base::RunLoop().RunUntilIdle();
+
+    // Restore the original command line and undo the affects of SetUp().
+    *CommandLine::ForCurrentProcess() = saved_cmdline_;
+    ActivityLog::RecomputeLoggingIsEnabled();
   }
 
   static void RetrieveActions_LogAndFetchActions(
@@ -100,6 +107,12 @@ class ActivityLogTest : public testing::Test {
   content::TestBrowserThread db_thread_;
   content::TestBrowserThread file_thread_;
   content::TestBrowserThread io_thread_;
+
+  // Used to preserve a copy of the original command line.
+  // The test framework will do this itself as well. However, by then,
+  // it is too late to call ActivityLog::RecomputeLoggingIsEnabled() in
+  // TearDown().
+  CommandLine saved_cmdline_;
 
 #if defined OS_CHROMEOS
   chromeos::ScopedTestDeviceSettingsService test_device_settings_service_;
