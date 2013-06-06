@@ -29,6 +29,7 @@ namespace message_center {
 
 class MessageCenterObserver;
 class NotificationList;
+class NotifierSettingsDelegate;
 
 class MESSAGE_CENTER_EXPORT MessageCenter {
  public:
@@ -58,7 +59,13 @@ class MESSAGE_CENTER_EXPORT MessageCenter {
 
     // Request to show the notification settings dialog. |context| is necessary
     // to create a new window.
-    virtual void ShowSettingsDialog(gfx::NativeView context) = 0;
+    // Returns the NotifierSettingsDelegate belonging to the settings dialog.
+    // On platforms where the dialog is a standalone window, this is owned by
+    // the window and valid while the window is open. On platforms where the
+    // settings dialog is shown in the tray, this is owned by the tray and valid
+    // while the tray is showing settings.
+    virtual NotifierSettingsDelegate* ShowSettingsDialog(
+        gfx::NativeView context) = 0;
   };
 
   // Called to set the delegate.  Generally called only once, except in tests.
@@ -116,7 +123,8 @@ class MESSAGE_CENTER_EXPORT MessageCenter {
   virtual void DisableNotificationsByExtension(const std::string& id) = 0;
   virtual void DisableNotificationsByUrl(const std::string& id) = 0;
   virtual void ShowNotificationSettings(const std::string& id) = 0;
-  virtual void ShowNotificationSettingsDialog(gfx::NativeView context) = 0;
+  virtual NotifierSettingsDelegate* ShowNotificationSettingsDialog(
+      gfx::NativeView context) = 0;
   virtual void ExpandNotification(const std::string& id) = 0;
   virtual void ClickOnNotification(const std::string& id) = 0;
   virtual void ClickOnNotificationButton(const std::string& id,

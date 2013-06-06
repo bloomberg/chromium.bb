@@ -247,9 +247,9 @@ void MessageCenterNotificationManager::ShowSettings(
     chrome::ShowExtensions(browser, std::string());
 }
 
-void MessageCenterNotificationManager::ShowSettingsDialog(
-    gfx::NativeView context) {
-  settings_controller_->ShowSettingsDialog(context);
+message_center::NotifierSettingsDelegate*
+MessageCenterNotificationManager::ShowSettingsDialog(gfx::NativeView context) {
+  return settings_controller_->ShowSettingsDialog(context);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

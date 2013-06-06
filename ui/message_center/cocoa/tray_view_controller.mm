@@ -14,6 +14,7 @@
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/base/resource/resource_bundle.h"
 #import "ui/message_center/cocoa/notification_controller.h"
+#import "ui/message_center/cocoa/settings_controller.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/message_center_style.h"
 
@@ -198,7 +199,13 @@ const CGFloat kTrayBottomMargin = 75;
 }
 
 - (void)showSettings:(id)sender {
-  // TODO(rsesek): Implement settings.
+  // This ends up calling message_center::ShowSettings() and will set up the
+  // NotifierSettingsProvider along the way.
+  message_center::NotifierSettingsDelegate* delegate =
+      messageCenter_->ShowNotificationSettingsDialog([self view]);
+  // TODO(thakis): retain delegate->cocoa_controller(), install the controller's
+  // view.
+  (void)delegate;
 }
 
 // Testing API /////////////////////////////////////////////////////////////////

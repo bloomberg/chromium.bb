@@ -92,8 +92,9 @@ void FakeMessageCenter::DisableNotificationsByUrl(const std::string& id) {
 void FakeMessageCenter::ShowNotificationSettings(const std::string& id) {
 }
 
-void FakeMessageCenter::ShowNotificationSettingsDialog(
+NotifierSettingsDelegate* FakeMessageCenter::ShowNotificationSettingsDialog(
     gfx::NativeView context) {
+  return NULL;
 }
 
 void FakeMessageCenter::ExpandNotification(const std::string& id) {

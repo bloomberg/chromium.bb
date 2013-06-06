@@ -48,7 +48,8 @@ class FakeMessageCenter : public MessageCenter {
   virtual void DisableNotificationsByExtension(const std::string& id) OVERRIDE;
   virtual void DisableNotificationsByUrl(const std::string& id) OVERRIDE;
   virtual void ShowNotificationSettings(const std::string& id) OVERRIDE;
-  virtual void ShowNotificationSettingsDialog(gfx::NativeView context) OVERRIDE;
+  virtual NotifierSettingsDelegate* ShowNotificationSettingsDialog(
+      gfx::NativeView context) OVERRIDE;
   virtual void ExpandNotification(const std::string& id) OVERRIDE;
   virtual void ClickOnNotification(const std::string& id) OVERRIDE;
   virtual void ClickOnNotificationButton(const std::string& id,

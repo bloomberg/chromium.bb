@@ -57,9 +57,10 @@ MessageCenterSettingsController::MessageCenterSettingsController()
 MessageCenterSettingsController::~MessageCenterSettingsController() {
 }
 
-void MessageCenterSettingsController::ShowSettingsDialog(
-    gfx::NativeView context) {
+message_center::NotifierSettingsDelegate*
+MessageCenterSettingsController::ShowSettingsDialog(gfx::NativeView context) {
   delegate_ = message_center::ShowSettings(this, context);
+  return delegate_;
 }
 
 void MessageCenterSettingsController::GetNotifierList(

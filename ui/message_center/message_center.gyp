@@ -30,6 +30,8 @@
         'cocoa/popup_collection.mm',
         'cocoa/popup_controller.h',
         'cocoa/popup_controller.mm',
+        'cocoa/settings_controller.h',
+        'cocoa/settings_controller.mm',
         'cocoa/status_item_view.h',
         'cocoa/status_item_view.mm',
         'cocoa/tray_controller.h',

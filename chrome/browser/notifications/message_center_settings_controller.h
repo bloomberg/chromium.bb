@@ -32,7 +32,8 @@ class MessageCenterSettingsController
   // Shows a new settings dialog window with specified |context|. If there's
   // already an existing dialog, it raises the dialog instead of creating a new
   // one.
-  void ShowSettingsDialog(gfx::NativeView context);
+  message_center::NotifierSettingsDelegate* ShowSettingsDialog(
+      gfx::NativeView context);
 
   // Overridden from message_center::NotifierSettingsViewDelegate.
   virtual void GetNotifierList(

@@ -209,10 +209,11 @@ void MessageCenterImpl::ShowNotificationSettings(const std::string& id) {
     delegate_->ShowSettings(id);
 }
 
-void MessageCenterImpl::ShowNotificationSettingsDialog(
+NotifierSettingsDelegate* MessageCenterImpl::ShowNotificationSettingsDialog(
     gfx::NativeView context) {
   if (delegate_)
-    delegate_->ShowSettingsDialog(context);
+    return delegate_->ShowSettingsDialog(context);
+  return NULL;
 }
 
 void MessageCenterImpl::ExpandNotification(const std::string& id) {
