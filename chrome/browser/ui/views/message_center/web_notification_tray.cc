@@ -1,8 +1,8 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/message_center/web_notification_tray_win.h"
+#include "chrome/browser/ui/views/message_center/web_notification_tray.h"
 
 #include "base/i18n/number_formatting.h"
 #include "base/string16.h"
@@ -10,8 +10,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/status_icons/status_icon.h"
 #include "chrome/browser/status_icons/status_tray.h"
-#include "chrome/browser/ui/views/message_center/notification_bubble_wrapper_win.h"
-#include "chrome/browser/ui/views/status_icons/status_icon_win.h"
+#include "chrome/browser/ui/views/message_center/notification_bubble_wrapper.h"
 #include "content/public/browser/user_metrics.h"
 #include "grit/chromium_strings.h"
 #include "grit/theme_resources.h"
@@ -19,7 +18,6 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/base/win/hwnd_util.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/rect.h"
@@ -31,6 +29,10 @@
 #include "ui/message_center/views/message_center_bubble.h"
 #include "ui/message_center/views/message_popup_collection.h"
 #include "ui/views/widget/widget.h"
+
+#if defined(OS_WIN)
+#include "ui/base/win/hwnd_util.h"
+#endif
 
 namespace {
 
@@ -87,10 +89,10 @@ gfx::ImageSkia GetIcon(int unread_count) {
     return *rb.GetImageSkiaNamed(IDR_NOTIFICATION_TRAY_EMPTY);
 
   // TODO(dewittj): Use scale factors other than 100P.
-  scoped_ptr<gfx::Canvas> canvas(new gfx::Canvas(
-      gfx::Size(kSystemTrayWidth, kSystemTrayHeight),
-      ui::SCALE_FACTOR_100P,
-      false));
+  scoped_ptr<gfx::Canvas> canvas(
+      new gfx::Canvas(gfx::Size(kSystemTrayWidth, kSystemTrayHeight),
+                      ui::SCALE_FACTOR_100P,
+                      false));
 
   // Draw the attention-grabbing background image.
   canvas->DrawImageInt(
@@ -109,7 +111,6 @@ gfx::ImageSkia GetIcon(int unread_count) {
                        x_offset, 0, kSystemTrayWidth, kSystemTrayHeight,
                        0, 0, kSystemTrayWidth, kSystemTrayHeight,
                        false);
-
   return gfx::ImageSkia(canvas->ExtractImageRep());
 }
 
@@ -120,40 +121,38 @@ using content::UserMetricsAction;
 namespace message_center {
 
 MessageCenterTrayDelegate* CreateMessageCenterTray() {
-  return new WebNotificationTrayWin();
+  return new WebNotificationTray();
 }
 
-WebNotificationTrayWin::WebNotificationTrayWin()
+WebNotificationTray::WebNotificationTray()
     : status_icon_(NULL),
       message_center_visible_(false),
       should_update_tray_content_(true) {
-  message_center_tray_.reset(new MessageCenterTray(
-      this, g_browser_process->message_center()));
+  message_center_tray_.reset(
+      new MessageCenterTray(this, g_browser_process->message_center()));
   UpdateStatusIcon();
 }
 
-WebNotificationTrayWin::~WebNotificationTrayWin() {
+WebNotificationTray::~WebNotificationTray() {
   // Reset this early so that delegated events during destruction don't cause
   // problems.
   message_center_tray_.reset();
   DestroyStatusIcon();
 }
 
-message_center::MessageCenter* WebNotificationTrayWin::message_center() {
+message_center::MessageCenter* WebNotificationTray::message_center() {
   return message_center_tray_->message_center();
 }
 
-bool WebNotificationTrayWin::ShowPopups() {
+bool WebNotificationTray::ShowPopups() {
   popup_collection_.reset(
       new message_center::MessagePopupCollection(NULL, message_center()));
   return true;
 }
 
-void WebNotificationTrayWin::HidePopups() {
-  popup_collection_.reset();
-}
+void WebNotificationTray::HidePopups() { popup_collection_.reset(); }
 
-bool WebNotificationTrayWin::ShowMessageCenter() {
+bool WebNotificationTray::ShowMessageCenter() {
   content::RecordAction(UserMetricsAction("Notifications.ShowMessageCenter"));
 
   // Using MessageBubbleBase instead of MessageCenterBubble to
@@ -173,7 +172,7 @@ bool WebNotificationTrayWin::ShowMessageCenter() {
   // height.
   if (alignment == views::TrayBubbleView::ANCHOR_ALIGNMENT_BOTTOM ||
       alignment == views::TrayBubbleView::ANCHOR_ALIGNMENT_TOP) {
-    max_height -= 2*kScreenEdgePadding;
+    max_height -= 2 * kScreenEdgePadding;
 
     // If the work area contains the click point, then we know that the icon is
     // not in the taskbar.  Then we need to subtract the distance of the click
@@ -185,43 +184,43 @@ bool WebNotificationTrayWin::ShowMessageCenter() {
   }
   bubble->SetMaxHeight(max_height);
 
-  message_center_bubble_.reset(new internal::NotificationBubbleWrapperWin(
+  message_center_bubble_.reset(new internal::NotificationBubbleWrapper(
       this,
       bubble.Pass(),
-      internal::NotificationBubbleWrapperWin::BUBBLE_TYPE_MESSAGE_CENTER));
+      internal::NotificationBubbleWrapper::BUBBLE_TYPE_MESSAGE_CENTER));
   return true;
 }
 
-void WebNotificationTrayWin::HideMessageCenter() {
+void WebNotificationTray::HideMessageCenter() {
   message_center_bubble_.reset();
 }
 
-void WebNotificationTrayWin::UpdatePopups() {
+void WebNotificationTray::UpdatePopups() {
   // |popup_collection_| receives notification add/remove events and updates
   // itself, so this method doesn't need to do anything.
   // TODO(mukai): remove this method (currently this is used by
   // non-rich-notifications in ChromeOS).
 };
 
-void WebNotificationTrayWin::OnMessageCenterTrayChanged() {
+void WebNotificationTray::OnMessageCenterTrayChanged() {
   // See the comments in ash/system/web_notification/web_notification_tray.cc
   // for why PostTask.
   should_update_tray_content_ = true;
   base::MessageLoop::current()->PostTask(
       FROM_HERE,
-      base::Bind(&WebNotificationTrayWin::UpdateStatusIcon, AsWeakPtr()));
+      base::Bind(&WebNotificationTray::UpdateStatusIcon, AsWeakPtr()));
 }
 
-gfx::Rect WebNotificationTrayWin::GetMessageCenterAnchor() {
+gfx::Rect WebNotificationTray::GetMessageCenterAnchor() {
   return GetMouseAnchorRect(mouse_click_point_);
 }
 
-gfx::Rect WebNotificationTrayWin::GetPopupAnchor() {
+gfx::Rect WebNotificationTray::GetPopupAnchor() {
   return GetCornerAnchorRect();
 }
 
 views::TrayBubbleView::AnchorAlignment
-WebNotificationTrayWin::GetAnchorAlignment() {
+WebNotificationTray::GetAnchorAlignment() {
   gfx::Screen* screen = gfx::Screen::GetNativeScreen();
   // TODO(dewittj): It's possible GetPrimaryDisplay is wrong.
   gfx::Rect screen_bounds = screen->GetPrimaryDisplay().bounds();
@@ -240,11 +239,9 @@ WebNotificationTrayWin::GetAnchorAlignment() {
   return views::TrayBubbleView::ANCHOR_ALIGNMENT_BOTTOM;
 }
 
-gfx::NativeView WebNotificationTrayWin::GetBubbleWindowContainer() {
-  return NULL;
-}
+gfx::NativeView WebNotificationTray::GetBubbleWindowContainer() { return NULL; }
 
-void WebNotificationTrayWin::UpdateStatusIcon() {
+void WebNotificationTray::UpdateStatusIcon() {
   if (!should_update_tray_content_)
     return;
   should_update_tray_content_ = false;
@@ -268,19 +265,19 @@ void WebNotificationTrayWin::UpdateStatusIcon() {
     status_icon->SetToolTip(l10n_util::GetStringFUTF16(
         IDS_MESSAGE_CENTER_TOOLTIP_UNREAD, product_name, str_unread_count));
   } else {
-    status_icon->SetToolTip(l10n_util::GetStringFUTF16(
-        IDS_MESSAGE_CENTER_TOOLTIP, product_name));
+    status_icon->SetToolTip(
+        l10n_util::GetStringFUTF16(IDS_MESSAGE_CENTER_TOOLTIP, product_name));
   }
 }
 
-void WebNotificationTrayWin::OnStatusIconClicked() {
+void WebNotificationTray::OnStatusIconClicked() {
   // TODO(dewittj): It's possible GetNativeScreen is wrong for win-aura.
   gfx::Screen* screen = gfx::Screen::GetNativeScreen();
   mouse_click_point_ = screen->GetCursorScreenPoint();
   message_center_tray_->ToggleMessageCenterBubble();
 }
 
-void WebNotificationTrayWin::HideBubbleWithView(
+void WebNotificationTray::HideBubbleWithView(
     const views::TrayBubbleView* bubble_view) {
   if (message_center_bubble_.get() &&
       bubble_view == message_center_bubble_->bubble_view()) {
@@ -288,7 +285,7 @@ void WebNotificationTrayWin::HideBubbleWithView(
   }
 }
 
-StatusIcon* WebNotificationTrayWin::GetStatusIcon() {
+StatusIcon* WebNotificationTray::GetStatusIcon() {
   if (status_icon_)
     return status_icon_;
 
@@ -307,7 +304,7 @@ StatusIcon* WebNotificationTrayWin::GetStatusIcon() {
   return status_icon_;
 }
 
-void WebNotificationTrayWin::DestroyStatusIcon() {
+void WebNotificationTray::DestroyStatusIcon() {
   if (!status_icon_)
     return;
 
@@ -318,13 +315,13 @@ void WebNotificationTrayWin::DestroyStatusIcon() {
   status_icon_ = NULL;
 }
 
-void WebNotificationTrayWin::AddQuietModeMenu(StatusIcon* status_icon) {
+void WebNotificationTray::AddQuietModeMenu(StatusIcon* status_icon) {
   DCHECK(status_icon);
   status_icon->SetContextMenu(message_center_tray_->CreateQuietModeMenu());
 }
 
 message_center::MessageCenterBubble*
-WebNotificationTrayWin::GetMessageCenterBubbleForTest() {
+WebNotificationTray::GetMessageCenterBubbleForTest() {
   if (!message_center_bubble_.get())
     return NULL;
   return static_cast<message_center::MessageCenterBubble*>(

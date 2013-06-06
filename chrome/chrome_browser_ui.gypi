@@ -1800,10 +1800,10 @@
         'browser/ui/views/login_prompt_views.cc',
         'browser/ui/views/login_view.cc',
         'browser/ui/views/login_view.h',
-        'browser/ui/views/message_center/notification_bubble_wrapper_win.h',
-        'browser/ui/views/message_center/notification_bubble_wrapper_win.cc',
-        'browser/ui/views/message_center/web_notification_tray_win.h',
-        'browser/ui/views/message_center/web_notification_tray_win.cc',
+        'browser/ui/views/message_center/notification_bubble_wrapper.h',
+        'browser/ui/views/message_center/notification_bubble_wrapper.cc',
+        'browser/ui/views/message_center/web_notification_tray.h',
+        'browser/ui/views/message_center/web_notification_tray.cc',
         'browser/ui/views/native_focus_tracker_views.cc',
         'browser/ui/views/native_focus_tracker_views.h',
         'browser/ui/views/native_focus_tracker_views_aura.cc',
@@ -2548,6 +2548,14 @@
           'dependencies': [
             '../ash/ash.gyp:ash',
             '../ash/ash_strings.gyp:ash_strings',
+          ],
+        }],
+        ['toolkit_views==0 or chromeos==1', {
+          'sources!': [
+            'browser/ui/views/message_center/notification_bubble_wrapper.h',
+            'browser/ui/views/message_center/notification_bubble_wrapper.cc',
+            'browser/ui/views/message_center/web_notification_tray.h',
+            'browser/ui/views/message_center/web_notification_tray.cc',
           ],
         }],
         ['use_aura==1 and use_ash==0 and use_ozone==0 and OS=="linux"', {

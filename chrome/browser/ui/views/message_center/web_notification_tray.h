@@ -1,9 +1,9 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_VIEWS_MESSAGE_CENTER_WEB_NOTIFICATION_TRAY_WIN_H_
-#define CHROME_BROWSER_UI_VIEWS_MESSAGE_CENTER_WEB_NOTIFICATION_TRAY_WIN_H_
+#ifndef CHROME_BROWSER_UI_VIEWS_MESSAGE_CENTER_WEB_NOTIFICATION_TRAY_H_
+#define CHROME_BROWSER_UI_VIEWS_MESSAGE_CENTER_WEB_NOTIFICATION_TRAY_H_
 
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/status_icons/status_icon_observer.h"
@@ -27,20 +27,19 @@ class Widget;
 namespace message_center {
 
 namespace internal {
-class NotificationBubbleWrapperWin;
+class NotificationBubbleWrapper;
 }
 
 // A MessageCenterTrayDelegate implementation that exposes the MessageCenterTray
 // via a system tray icon.  The notification popups will be displayed in the
 // corner of the screen and the message center will be displayed by the system
 // tray icon on click.
-class WebNotificationTrayWin
-    : public message_center::MessageCenterTrayDelegate,
-      public StatusIconObserver,
-      public base::SupportsWeakPtr<WebNotificationTrayWin> {
+class WebNotificationTray : public message_center::MessageCenterTrayDelegate,
+                            public StatusIconObserver,
+                            public base::SupportsWeakPtr<WebNotificationTray> {
  public:
-  WebNotificationTrayWin();
-  virtual ~WebNotificationTrayWin();
+  WebNotificationTray();
+  virtual ~WebNotificationTray();
 
   message_center::MessageCenter* message_center();
 
@@ -52,8 +51,8 @@ class WebNotificationTrayWin
   virtual void UpdatePopups() OVERRIDE;
   virtual void OnMessageCenterTrayChanged() OVERRIDE;
 
-  // These are forwarded to WebNotificationTrayWin by
-  // NotificationBubbleWrapperWin classes since they don't have enough
+  // These are forwarded to WebNotificationTray by
+  // NotificationBubbleWrapper classes since they don't have enough
   // context to provide the required data for TrayBubbleView::Delegate.
   gfx::Rect GetMessageCenterAnchor();
   gfx::Rect GetPopupAnchor();
@@ -68,19 +67,18 @@ class WebNotificationTrayWin
   void HideBubbleWithView(const views::TrayBubbleView* bubble_view);
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(WebNotificationTrayWinTest, WebNotifications);
-  FRIEND_TEST_ALL_PREFIXES(WebNotificationTrayWinTest,
-                           WebNotificationPopupBubble);
-  FRIEND_TEST_ALL_PREFIXES(WebNotificationTrayWinTest,
+  FRIEND_TEST_ALL_PREFIXES(WebNotificationTrayTest, WebNotifications);
+  FRIEND_TEST_ALL_PREFIXES(WebNotificationTrayTest, WebNotificationPopupBubble);
+  FRIEND_TEST_ALL_PREFIXES(WebNotificationTrayTest,
                            ManyMessageCenterNotifications);
-  FRIEND_TEST_ALL_PREFIXES(WebNotificationTrayWinTest, ManyPopupNotifications);
+  FRIEND_TEST_ALL_PREFIXES(WebNotificationTrayTest, ManyPopupNotifications);
 
   StatusIcon* GetStatusIcon();
   void DestroyStatusIcon();
   void AddQuietModeMenu(StatusIcon* status_icon);
   message_center::MessageCenterBubble* GetMessageCenterBubbleForTest();
 
-  scoped_ptr<internal::NotificationBubbleWrapperWin> message_center_bubble_;
+  scoped_ptr<internal::NotificationBubbleWrapper> message_center_bubble_;
   scoped_ptr<message_center::MessagePopupCollection> popup_collection_;
 
   StatusIcon* status_icon_;
@@ -90,9 +88,9 @@ class WebNotificationTrayWin
 
   bool should_update_tray_content_;
 
-  DISALLOW_COPY_AND_ASSIGN(WebNotificationTrayWin);
+  DISALLOW_COPY_AND_ASSIGN(WebNotificationTray);
 };
 
 }  // namespace message_center
 
-#endif  // CHROME_BROWSER_UI_VIEWS_MESSAGE_CENTER_WEB_NOTIFICATION_TRAY_WIN_H_
+#endif  // CHROME_BROWSER_UI_VIEWS_MESSAGE_CENTER_WEB_NOTIFICATION_TRAY_H_

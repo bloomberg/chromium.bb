@@ -32,9 +32,10 @@ MessageCenterNotificationManager::MessageCenterNotificationManager(
   message_center_->SetDelegate(this);
   message_center_->AddObserver(this);
 
-#if defined(OS_WIN) || defined(OS_MACOSX)
-  // On Windows and Mac, the notification manager owns the tray icon and views.
-  // Other platforms have global ownership and Create will return NULL.
+#if defined(OS_WIN) || defined(OS_MACOSX) \
+  || (defined(USE_AURA) && !defined(USE_ASH))
+  // On Windows, Linux and Mac, the notification manager owns the tray icon and
+  // views.Other platforms have global ownership and Create will return NULL.
   tray_.reset(message_center::CreateMessageCenterTray());
 #endif
 }

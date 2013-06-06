@@ -268,7 +268,7 @@
         'browser/ui/views/location_bar/star_view_browsertest.cc',
         'browser/ui/views/menu_item_view_test.cc',
         'browser/ui/views/menu_model_adapter_test.cc',
-        'browser/ui/views/message_center/web_notification_tray_win_browsertest.cc',
+        'browser/ui/views/message_center/web_notification_tray_browsertest.cc',
         'browser/ui/views/native_widget_win_interactive_uitest.cc',
         'browser/ui/views/omnibox/omnibox_view_views_browsertest.cc',
         'browser/ui/views/panels/panel_view_browsertest.cc',
@@ -420,6 +420,7 @@
             'browser/ui/panels/panel_drag_browsertest.cc',
             'browser/ui/panels/panel_resize_browsertest.cc',
             'browser/ui/panels/stacked_panel_browsertest.cc',
+            'browser/ui/views/message_center/web_notification_tray_browsertest.cc',
             'browser/ui/views/panels/panel_view_browsertest.cc',
             'browser/notifications/desktop_notifications_unittest.cc',
           ],
@@ -491,7 +492,6 @@
         }, { # else: OS != "win"
           'sources!': [
             'browser/ui/views/ssl_client_certificate_selector_browsertest.cc',
-            'browser/ui/views/message_center/web_notification_tray_win_browsertest.cc',
             'browser/ui/views/native_widget_win_interactive_uitest.cc',
           ],
         }],  # OS != "win"

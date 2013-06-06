@@ -13,7 +13,7 @@ namespace message_center {
 // when a time period in Canary indicates the new notifications are acceptable
 // for default behavior.
 bool IsRichNotificationEnabled() {
-#if !defined(OS_WIN) && !defined(OS_MACOSX) && !defined(USE_ASH)
+#if !defined(OS_WIN) && !defined(OS_MACOSX) && !defined(USE_AURA)
   return false;
 #endif
 

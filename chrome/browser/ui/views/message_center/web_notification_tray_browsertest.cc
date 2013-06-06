@@ -1,8 +1,8 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/message_center/web_notification_tray_win.h"
+#include "chrome/browser/ui/views/message_center/web_notification_tray.h"
 
 #include <set>
 
@@ -33,10 +33,10 @@ namespace message_center {
 
 namespace {
 
-class WebNotificationTrayWinTest : public InProcessBrowserTest {
+class WebNotificationTrayTest : public InProcessBrowserTest {
  public:
-  WebNotificationTrayWinTest() {}
-  virtual ~WebNotificationTrayWinTest() {}
+  WebNotificationTrayTest() {}
+  virtual ~WebNotificationTrayTest() {}
 
   virtual void CleanUpOnMainThread() OVERRIDE {
     message_center::MessageCenter::Get()->RemoveAllNotifications(false);
@@ -52,39 +52,38 @@ class WebNotificationTrayWinTest : public InProcessBrowserTest {
     virtual void Click() {}
     virtual std::string id() const { return id_; }
     virtual content::RenderViewHost* GetRenderViewHost() const { return NULL; }
+
    private:
     std::string id_;
   };
 
   void AddNotification(const std::string& id, const std::string& replace_id) {
-    ::Notification notification(
-      GURL("chrome-extension://abbccedd"),
-      GURL(),
-      ASCIIToUTF16("Test Web Notification"),
-      ASCIIToUTF16("Notification message body."),
-      WebKit::WebTextDirectionDefault,
-      string16(),
-      ASCIIToUTF16(replace_id),
-      new TestNotificationDelegate(id));
+    ::Notification notification(GURL("chrome-extension://abbccedd"),
+                                GURL(),
+                                ASCIIToUTF16("Test Web Notification"),
+                                ASCIIToUTF16("Notification message body."),
+                                WebKit::WebTextDirectionDefault,
+                                string16(),
+                                ASCIIToUTF16(replace_id),
+                                new TestNotificationDelegate(id));
 
     g_browser_process->notification_ui_manager()->Add(
-      notification, browser()->profile());
+     notification, browser()->profile());
   }
 
   void UpdateNotification(const std::string& replace_id,
                           const std::string& new_id) {
-    ::Notification notification(
-      GURL("chrome-extension://abbccedd"),
-      GURL(""),
-      ASCIIToUTF16("Updated Web Notification"),
-      ASCIIToUTF16("Updated message body."),
-      WebKit::WebTextDirectionDefault,
-      string16(),
-      ASCIIToUTF16(replace_id),
-      new TestNotificationDelegate(new_id));
+    ::Notification notification(GURL("chrome-extension://abbccedd"),
+                                GURL(""),
+                                ASCIIToUTF16("Updated Web Notification"),
+                                ASCIIToUTF16("Updated message body."),
+                                WebKit::WebTextDirectionDefault,
+                                string16(),
+                                ASCIIToUTF16(replace_id),
+                                new TestNotificationDelegate(new_id));
 
     g_browser_process->notification_ui_manager()->Add(
-      notification, browser()->profile());
+     notification, browser()->profile());
   }
 
   void RemoveNotification(const std::string& id) {
@@ -92,13 +91,13 @@ class WebNotificationTrayWinTest : public InProcessBrowserTest {
   }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(WebNotificationTrayWinTest);
+  DISALLOW_COPY_AND_ASSIGN(WebNotificationTrayTest);
 };
 
 }  // namespace
 
 // TODO(dewittj): More exhaustive testing.
-IN_PROC_BROWSER_TEST_F(WebNotificationTrayWinTest, WebNotifications) {
+IN_PROC_BROWSER_TEST_F(WebNotificationTrayTest, WebNotifications) {
   message_center::MessageCenter* message_center =
       message_center::MessageCenter::Get();
 
@@ -129,9 +128,9 @@ IN_PROC_BROWSER_TEST_F(WebNotificationTrayWinTest, WebNotifications) {
   EXPECT_FALSE(message_center->HasNotification("test_id3"));
 }
 
-IN_PROC_BROWSER_TEST_F(WebNotificationTrayWinTest, WebNotificationPopupBubble) {
-  scoped_ptr<WebNotificationTrayWin> tray(new WebNotificationTrayWin());
-  message_center::MessageCenter* message_center = tray->message_center();
+IN_PROC_BROWSER_TEST_F(WebNotificationTrayTest, WebNotificationPopupBubble) {
+  scoped_ptr<WebNotificationTray> tray(new WebNotificationTray());
+  tray->message_center();
 
   // Adding a notification should show the popup bubble.
   AddNotification("test_id1", "replace_id1");
@@ -154,49 +153,45 @@ IN_PROC_BROWSER_TEST_F(WebNotificationTrayWinTest, WebNotificationPopupBubble) {
 using message_center::NotificationList;
 
 // Flaky, see http://crbug.com/222500 .
-IN_PROC_BROWSER_TEST_F(WebNotificationTrayWinTest,
+IN_PROC_BROWSER_TEST_F(WebNotificationTrayTest,
                        DISABLED_ManyMessageCenterNotifications) {
-  scoped_ptr<WebNotificationTrayWin> tray(new WebNotificationTrayWin());
+  scoped_ptr<WebNotificationTray> tray(new WebNotificationTray());
   message_center::MessageCenter* message_center = tray->message_center();
 
   // Add the max visible notifications +1, ensure the correct visible number.
   size_t notifications_to_add = kMaxVisibleMessageCenterNotifications + 1;
   for (size_t i = 0; i < notifications_to_add; ++i) {
     std::string id = base::StringPrintf("test_id%d", static_cast<int>(i));
-    std::string replace_id = base::StringPrintf(
-        "replace_id%d",
-        static_cast<int>(i));
+    std::string replace_id =
+        base::StringPrintf("replace_id%d", static_cast<int>(i));
     AddNotification(id, replace_id);
   }
   bool shown = tray->message_center_tray_->ShowMessageCenterBubble();
   EXPECT_TRUE(shown);
   content::RunAllPendingInMessageLoop();
   EXPECT_TRUE(tray->message_center_bubble_.get() != NULL);
-  EXPECT_EQ(notifications_to_add,
-            message_center->NotificationCount());
+  EXPECT_EQ(notifications_to_add, message_center->NotificationCount());
   EXPECT_EQ(kMaxVisibleMessageCenterNotifications,
             tray->GetMessageCenterBubbleForTest()->NumMessageViewsForTest());
 }
 
-IN_PROC_BROWSER_TEST_F(WebNotificationTrayWinTest, ManyPopupNotifications) {
-  scoped_ptr<WebNotificationTrayWin> tray(new WebNotificationTrayWin());
+IN_PROC_BROWSER_TEST_F(WebNotificationTrayTest, ManyPopupNotifications) {
+  scoped_ptr<WebNotificationTray> tray(new WebNotificationTray());
   message_center::MessageCenter* message_center = tray->message_center();
 
   // Add the max visible popup notifications +1, ensure the correct num visible.
   size_t notifications_to_add = kMaxVisiblePopupNotifications + 1;
   for (size_t i = 0; i < notifications_to_add; ++i) {
     std::string id = base::StringPrintf("test_id%d", static_cast<int>(i));
-    std::string replace_id = base::StringPrintf(
-        "replace_id%d",
-        static_cast<int>(i));
+    std::string replace_id =
+        base::StringPrintf("replace_id%d", static_cast<int>(i));
     AddNotification(id, replace_id);
   }
   // Hide and reshow the bubble so that it is updated immediately, not delayed.
   tray->message_center_tray_->HidePopupBubble();
   tray->message_center_tray_->ShowPopupBubble();
   EXPECT_TRUE(tray->message_center_tray_->popups_visible());
-  EXPECT_EQ(notifications_to_add,
-            message_center->NotificationCount());
+  EXPECT_EQ(notifications_to_add, message_center->NotificationCount());
   NotificationList::PopupNotifications popups =
       message_center->GetPopupNotifications();
   EXPECT_EQ(kMaxVisiblePopupNotifications, popups.size());
