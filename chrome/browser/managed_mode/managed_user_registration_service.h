@@ -51,7 +51,9 @@ class ManagedUserRegistrationService : public BrowserContextKeyedService,
   static void RegisterUserPrefs(user_prefs::PrefRegistrySyncable* registry);
 
   // Registers a new managed user with the server. |name| is the display name of
-  // the user. |callback| is called with the result of the registration.
+  // the user. |callback| is called with the result of the registration. We use
+  // the name here and not the profile, because on Chrome OS the profile of the
+  // managed user does not yet exist.
   void Register(const string16& name, const RegistrationCallback& callback);
 
   // Cancels any registration currently in progress and calls the callback with

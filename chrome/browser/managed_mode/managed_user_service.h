@@ -121,9 +121,8 @@ class ManagedUserService : public BrowserContextKeyedService,
   // |registration_service| and initializes sync with the returned token.
   // Note that |registration_service| should belong to the custodian's profile,
   // not this one.
-  void RegisterAndInitSync(
-      ManagedUserRegistrationService* registration_service,
-      const ProfileManager::CreateCallback& callback);
+  void RegisterAndInitSync(Profile* custodian_profile,
+                           const ProfileManager::CreateCallback& callback);
 
   // Returns a pseudo-email address for systems that expect well-formed email
   // addresses (like Sync), even though we're not signed in.
@@ -179,6 +178,7 @@ class ManagedUserService : public BrowserContextKeyedService,
   };
 
   void OnManagedUserRegistered(const ProfileManager::CreateCallback& callback,
+                               Profile* custodian_profile,
                                const GoogleServiceAuthError& auth_error,
                                const std::string& token);
 

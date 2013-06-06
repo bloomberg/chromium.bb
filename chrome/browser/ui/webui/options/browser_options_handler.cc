@@ -1157,20 +1157,19 @@ void BrowserOptionsHandler::CreateProfile(const ListValue* args) {
 
 void BrowserOptionsHandler::RegisterNewManagedUser(
     const ProfileManager::CreateCallback& callback,
-    Profile* profile,
+    Profile* new_profile,
     Profile::CreateStatus status) {
-  DCHECK(profile_path_being_created_ == profile->GetPath());
+  DCHECK(profile_path_being_created_ == new_profile->GetPath());
   if (status != Profile::CREATE_STATUS_INITIALIZED)
     return;
 
   ManagedUserService* managed_user_service =
-      ManagedUserServiceFactory::GetForProfile(profile);
+      ManagedUserServiceFactory::GetForProfile(new_profile);
   DCHECK(managed_user_service->ProfileIsManaged());
-  ManagedUserRegistrationService* registration_service =
-      ManagedUserRegistrationServiceFactory::GetForProfile(
-          Profile::FromWebUI(web_ui()));
 
-  managed_user_service->RegisterAndInitSync(registration_service, callback);
+  // Register the managed user using the profile of the custodian.
+  managed_user_service->RegisterAndInitSync(Profile::FromWebUI(web_ui()),
+                                            callback);
 }
 
 void BrowserOptionsHandler::ShowProfileCreationFeedback(
@@ -1365,8 +1364,8 @@ scoped_ptr<DictionaryValue> BrowserOptionsHandler::GetSyncStateDictionary() {
       SigninManagerFactory::GetForProfile(profile)->IsSignoutProhibited();
 #endif
 
-  ProfileSyncService* service(
-      ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile));
+  ProfileSyncService* service =
+      ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile);
   SigninManagerBase* signin = service->signin();
   sync_status->SetBoolean("signoutAllowed", !signout_prohibited);
   sync_status->SetBoolean("signinAllowed", signin->IsSigninAllowed());

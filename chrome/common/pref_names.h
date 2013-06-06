@@ -23,6 +23,7 @@ extern const char kHomePageIsNewTabPage[];
 extern const char kHomePage[];
 extern const char kManagedModeManualHosts[];
 extern const char kManagedModeManualURLs[];
+extern const char kManagedUserCustodian[];
 extern const char kSessionExitedCleanly[];
 extern const char kSessionExitType[];
 extern const char kRestoreOnStartup[];

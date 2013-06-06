@@ -16,7 +16,6 @@
 #include "sync/notifier/invalidation_state_tracker.h"
 
 class PrefService;
-class PrefRegistrySyncable;
 
 namespace base {
 class DictionaryValue;

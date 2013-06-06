@@ -38,6 +38,10 @@ const char kManagedModeManualHosts[] = "profile.managed.manual_hosts";
 // Maps URLs to whether the URL is manually allowed or blocked.
 const char kManagedModeManualURLs[] = "profile.managed.manual_urls";
 
+// Stores the email address associated with the google account of the custodian
+// of the managed user.
+const char kManagedUserCustodian[] = "profile.managed.custodian_email";
+
 // Used to determine if the last session exited cleanly. Set to false when
 // first opened, and to true when closing. On startup if the value is false,
 // it means the profile didn't exit cleanly.

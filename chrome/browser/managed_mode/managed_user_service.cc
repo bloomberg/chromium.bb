@@ -14,11 +14,15 @@
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/managed_mode/managed_mode_site_list.h"
 #include "chrome/browser/managed_mode/managed_user_registration_service.h"
+#include "chrome/browser/managed_mode/managed_user_registration_service_factory.h"
 #include "chrome/browser/policy/managed_mode_policy_provider.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/policy/profile_policy_connector_factory.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/signin/signin_manager.h"
+#include "chrome/browser/signin/signin_manager_base.h"
+#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/signin/token_service.h"
 #include "chrome/browser/signin/token_service_factory.h"
 #include "chrome/browser/sync/glue/session_model_associator.h"
@@ -157,6 +161,9 @@ void ManagedUserService::RegisterUserPrefs(
   registry->RegisterIntegerPref(
       prefs::kDefaultManagedModeFilteringBehavior, ManagedModeURLFilter::ALLOW,
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterStringPref(
+      prefs::kManagedUserCustodian, std::string(),
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
 // static
@@ -197,9 +204,7 @@ void ManagedUserService::GetCategoryNames(CategoryList* list) {
 }
 
 std::string ManagedUserService::GetCustodianEmailAddress() const {
-  DCHECK(ProfileIsManaged());
-  // TODO(akuegel): Replace the dummy value by the real value.
-  return "custodian@gmail.com";
+  return profile_->GetPrefs()->GetString(prefs::kManagedUserCustodian);
 }
 
 std::string ManagedUserService::GetDebugPolicyProviderName() const {
@@ -520,18 +525,21 @@ void ManagedUserService::Init() {
 }
 
 void ManagedUserService::RegisterAndInitSync(
-    ManagedUserRegistrationService* registration_service,
+    Profile* custodian_profile,
     const ProfileManager::CreateCallback& callback) {
+  ManagedUserRegistrationService* registration_service =
+      ManagedUserRegistrationServiceFactory::GetForProfile(custodian_profile);
   string16 name = UTF8ToUTF16(
       profile_->GetPrefs()->GetString(prefs::kProfileName));
   registration_service->Register(
       name,
       base::Bind(&ManagedUserService::OnManagedUserRegistered,
-                 weak_ptr_factory_.GetWeakPtr(), callback));
+                 weak_ptr_factory_.GetWeakPtr(), callback, custodian_profile));
 }
 
 void ManagedUserService::OnManagedUserRegistered(
     const ProfileManager::CreateCallback& callback,
+    Profile* custodian_profile,
     const GoogleServiceAuthError& auth_error,
     const std::string& token) {
   if (auth_error.state() == GoogleServiceAuthError::REQUEST_CANCELED) {
@@ -545,6 +553,10 @@ void ManagedUserService::OnManagedUserRegistered(
   }
 
   InitSync(token);
+  SigninManagerBase* signin =
+      SigninManagerFactory::GetForProfile(custodian_profile);
+  profile_->GetPrefs()->SetString(prefs::kManagedUserCustodian,
+                                  signin->GetAuthenticatedUsername());
   callback.Run(profile_, Profile::CREATE_STATUS_INITIALIZED);
 }
 
