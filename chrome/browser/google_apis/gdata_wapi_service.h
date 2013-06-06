@@ -28,7 +28,7 @@ class URLRequestContextGetter;
 
 namespace google_apis {
 class AuthService;
-class OperationRunner;
+class RequestSender;
 
 // This class provides documents feed service calls for WAPI (codename for
 // DocumentsList API).
@@ -165,7 +165,7 @@ class GDataWapiService : public DriveServiceInterface,
   virtual void OnOAuth2RefreshTokenChanged() OVERRIDE;
 
   net::URLRequestContextGetter* url_request_context_getter_;  // Not owned.
-  scoped_ptr<OperationRunner> runner_;
+  scoped_ptr<RequestSender> sender_;
   ObserverList<DriveServiceObserver> observers_;
   // Operation objects should hold a copy of this, rather than a const
   // reference, as they may outlive this object.

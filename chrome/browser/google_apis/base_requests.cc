@@ -10,7 +10,7 @@
 #include "base/task_runner_util.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/values.h"
-#include "chrome/browser/google_apis/operation_runner.h"
+#include "chrome/browser/google_apis/request_sender.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
@@ -93,7 +93,7 @@ void ParseJson(const std::string& json, const ParseJsonCallback& callback) {
 //============================ UrlFetchRequestBase ===========================
 
 UrlFetchRequestBase::UrlFetchRequestBase(
-    OperationRunner* runner,
+    RequestSender* runner,
     net::URLRequestContextGetter* url_request_context_getter)
     : OperationRegistry::Operation(runner->operation_registry()),
       url_request_context_getter_(url_request_context_getter),
@@ -105,7 +105,7 @@ UrlFetchRequestBase::UrlFetchRequestBase(
 }
 
 UrlFetchRequestBase::UrlFetchRequestBase(
-    OperationRunner* runner,
+    RequestSender* runner,
     net::URLRequestContextGetter* url_request_context_getter,
     const base::FilePath& path)
     : OperationRegistry::Operation(runner->operation_registry(), path),
@@ -309,7 +309,7 @@ UrlFetchRequestBase::GetWeakPtr() {
 //============================ EntryActionRequest ============================
 
 EntryActionRequest::EntryActionRequest(
-    OperationRunner* runner,
+    RequestSender* runner,
     net::URLRequestContextGetter* url_request_context_getter,
     const EntryActionCallback& callback)
     : UrlFetchRequestBase(runner, url_request_context_getter),
@@ -333,7 +333,7 @@ void EntryActionRequest::RunCallbackOnPrematureFailure(GDataErrorCode code) {
 //============================== GetDataRequest ==============================
 
 GetDataRequest::GetDataRequest(
-    OperationRunner* runner,
+    RequestSender* runner,
     net::URLRequestContextGetter* url_request_context_getter,
     const GetDataCallback& callback)
     : UrlFetchRequestBase(runner, url_request_context_getter),
@@ -406,7 +406,7 @@ void GetDataRequest::RunCallbackOnSuccess(GDataErrorCode fetch_error_code,
 //========================= InitiateUploadRequestBase ========================
 
 InitiateUploadRequestBase::InitiateUploadRequestBase(
-    OperationRunner* runner,
+    RequestSender* runner,
     net::URLRequestContextGetter* url_request_context_getter,
     const InitiateUploadCallback& callback,
     const base::FilePath& drive_file_path,
@@ -485,7 +485,7 @@ UploadRangeResponse::~UploadRangeResponse() {
 //========================== UploadRangeRequestBase ==========================
 
 UploadRangeRequestBase::UploadRangeRequestBase(
-    OperationRunner* runner,
+    RequestSender* runner,
     net::URLRequestContextGetter* url_request_context_getter,
     const base::FilePath& drive_file_path,
     const GURL& upload_url)
@@ -596,7 +596,7 @@ void UploadRangeRequestBase::RunCallbackOnPrematureFailure(
 //========================== ResumeUploadRequestBase =========================
 
 ResumeUploadRequestBase::ResumeUploadRequestBase(
-    OperationRunner* runner,
+    RequestSender* runner,
     net::URLRequestContextGetter* url_request_context_getter,
     const base::FilePath& drive_file_path,
     const GURL& upload_location,
@@ -670,7 +670,7 @@ void ResumeUploadRequestBase::NotifyStartToOperationRegistry() {
 //======================== GetUploadStatusRequestBase ========================
 
 GetUploadStatusRequestBase::GetUploadStatusRequestBase(
-    OperationRunner* runner,
+    RequestSender* runner,
     net::URLRequestContextGetter* url_request_context_getter,
     const base::FilePath& drive_file_path,
     const GURL& upload_url,
@@ -701,7 +701,7 @@ GetUploadStatusRequestBase::GetExtraRequestHeaders() const {
 //============================ DownloadFileRequest ===========================
 
 DownloadFileRequest::DownloadFileRequest(
-    OperationRunner* runner,
+    RequestSender* runner,
     net::URLRequestContextGetter* url_request_context_getter,
     const DownloadActionCallback& download_action_callback,
     const GetContentCallback& get_content_callback,

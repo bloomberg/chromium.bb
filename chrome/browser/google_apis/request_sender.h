@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_GOOGLE_APIS_OPERATION_RUNNER_H_
-#define CHROME_BROWSER_GOOGLE_APIS_OPERATION_RUNNER_H_
+#ifndef CHROME_BROWSER_GOOGLE_APIS_REQUEST_SENDER_H_
+#define CHROME_BROWSER_GOOGLE_APIS_REQUEST_SENDER_H_
 
 #include <string>
 #include <vector>
@@ -25,9 +25,9 @@ class AuthenticatedRequestInterface;
 class AuthService;
 class OperationRegistry;
 
-// Helper class that runs AuthenticatedRequestInterface objects, handling
-// retries and authentication.
-class OperationRunner {
+// Helper class that sends requests implementing
+// AuthenticatedRequestInterface and handles retries and authentication.
+class RequestSender {
  public:
   // |url_request_context_getter| is used to perform authentication with
   // AuthService.
@@ -35,12 +35,12 @@ class OperationRunner {
   // |scopes| specifies OAuth2 scopes.
   //
   // |custom_user_agent| will be used for the User-Agent header in HTTP
-  // requests issued through the operation runner if the value is not empty.
-  OperationRunner(Profile* profile,
-                  net::URLRequestContextGetter* url_request_context_getter,
-                  const std::vector<std::string>& scopes,
-                  const std::string& custom_user_agent);
-  virtual ~OperationRunner();
+  // requests issued through the request sender if the value is not empty.
+  RequestSender(Profile* profile,
+                net::URLRequestContextGetter* url_request_context_getter,
+                const std::vector<std::string>& scopes,
+                const std::string& custom_user_agent);
+  virtual ~RequestSender();
 
   AuthService* auth_service() { return auth_service_.get(); }
   OperationRegistry* operation_registry() {
@@ -50,24 +50,24 @@ class OperationRunner {
   // Prepares the object for use.
   virtual void Initialize();
 
-  // Cancels all in-flight operations.
+  // Cancels all in-flight requests.
   void CancelAll();
 
-  // Starts an operation implementing the AuthenticatedRequestInterface
-  // interface, and makes the operation retry upon authentication failures by
-  // calling back to RetryOperation.
-  void StartOperationWithRetry(AuthenticatedRequestInterface* operation);
+  // Starts a request implementing the AuthenticatedRequestInterface
+  // interface, and makes the request retry upon authentication failures by
+  // calling back to RetryRequest.
+  void StartRequestWithRetry(AuthenticatedRequestInterface* request);
 
  private:
   // Called when the access token is fetched.
   void OnAccessTokenFetched(
-      const base::WeakPtr<AuthenticatedRequestInterface>& operation,
+      const base::WeakPtr<AuthenticatedRequestInterface>& request,
       GDataErrorCode error,
       const std::string& access_token);
 
-  // Clears any authentication token and retries the operation, which forces
+  // Clears any authentication token and retries the request, which forces
   // an authentication token refresh.
-  void RetryOperation(AuthenticatedRequestInterface* operation);
+  void RetryRequest(AuthenticatedRequestInterface* request);
 
   Profile* profile_;  // Not owned.
 
@@ -77,11 +77,11 @@ class OperationRunner {
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.
-  base::WeakPtrFactory<OperationRunner> weak_ptr_factory_;
+  base::WeakPtrFactory<RequestSender> weak_ptr_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(OperationRunner);
+  DISALLOW_COPY_AND_ASSIGN(RequestSender);
 };
 
 }  // namespace google_apis
 
-#endif  // CHROME_BROWSER_GOOGLE_APIS_OPERATION_RUNNER_H_
+#endif  // CHROME_BROWSER_GOOGLE_APIS_REQUEST_SENDER_H_

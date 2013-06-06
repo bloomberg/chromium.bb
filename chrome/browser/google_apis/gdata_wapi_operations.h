@@ -46,7 +46,7 @@ class GetResourceListOperation : public GetDataRequest {
   // callback:
   //   Called once the feed is fetched. Must not be null.
   GetResourceListOperation(
-      OperationRunner* runner,
+      RequestSender* runner,
       net::URLRequestContextGetter* url_request_context_getter,
       const GDataWapiUrlGenerator& url_generator,
       const GURL& override_url,
@@ -84,7 +84,7 @@ class SearchByTitleOperation : public GetDataRequest {
   // callback:
   //   Called once the feed is fetched. Must not be null.
   SearchByTitleOperation(
-      OperationRunner* runner,
+      RequestSender* runner,
       net::URLRequestContextGetter* url_request_context_getter,
       const GDataWapiUrlGenerator& url_generator,
       const std::string& title,
@@ -111,7 +111,7 @@ class GetResourceEntryOperation : public GetDataRequest {
  public:
   // |callback| must not be null.
   GetResourceEntryOperation(
-      OperationRunner* runner,
+      RequestSender* runner,
       net::URLRequestContextGetter* url_request_context_getter,
       const GDataWapiUrlGenerator& url_generator,
       const std::string& resource_id,
@@ -144,7 +144,7 @@ class GetAccountMetadataOperation : public GetDataRequest {
   // the list of installed third party applications.
   // |callback| must not be null.
   GetAccountMetadataOperation(
-      OperationRunner* runner,
+      RequestSender* runner,
       net::URLRequestContextGetter* url_request_context_getter,
       const GDataWapiUrlGenerator& url_generator,
       const GetAccountMetadataCallback& callback,
@@ -174,7 +174,7 @@ class DeleteResourceOperation : public EntryActionRequest {
  public:
   // |callback| must not be null.
   DeleteResourceOperation(
-      OperationRunner* runner,
+      RequestSender* runner,
       net::URLRequestContextGetter* url_request_context_getter,
       const GDataWapiUrlGenerator& url_generator,
       const EntryActionCallback& callback,
@@ -206,7 +206,7 @@ class CreateDirectoryOperation : public GetDataRequest {
   // be created in the root directory.
   // |callback| must not be null.
   CreateDirectoryOperation(
-      OperationRunner* runner,
+      RequestSender* runner,
       net::URLRequestContextGetter* url_request_context_getter,
       const GDataWapiUrlGenerator& url_generator,
       const GetDataCallback& callback,
@@ -238,7 +238,7 @@ class CopyHostedDocumentOperation : public GetDataRequest {
  public:
   // |callback| must not be null.
   CopyHostedDocumentOperation(
-      OperationRunner* runner,
+      RequestSender* runner,
       net::URLRequestContextGetter* url_request_context_getter,
       const GDataWapiUrlGenerator& url_generator,
       const GetDataCallback& callback,
@@ -268,7 +268,7 @@ class RenameResourceOperation : public EntryActionRequest {
  public:
   // |callback| must not be null.
   RenameResourceOperation(
-      OperationRunner* runner,
+      RequestSender* runner,
       net::URLRequestContextGetter* url_request_context_getter,
       const GDataWapiUrlGenerator& url_generator,
       const EntryActionCallback& callback,
@@ -300,7 +300,7 @@ class AuthorizeAppOperation : public GetDataRequest {
  public:
   // |callback| must not be null.
   AuthorizeAppOperation(
-      OperationRunner* runner,
+      RequestSender* runner,
       net::URLRequestContextGetter* url_request_context_getter,
       const GDataWapiUrlGenerator& url_generator,
       const AuthorizeAppCallback& callback,
@@ -332,7 +332,7 @@ class AddResourceToDirectoryOperation : public EntryActionRequest {
  public:
   // |callback| must not be null.
   AddResourceToDirectoryOperation(
-      OperationRunner* runner,
+      RequestSender* runner,
       net::URLRequestContextGetter* url_request_context_getter,
       const GDataWapiUrlGenerator& url_generator,
       const EntryActionCallback& callback,
@@ -363,7 +363,7 @@ class RemoveResourceFromDirectoryOperation : public EntryActionRequest {
  public:
   // |callback| must not be null.
   RemoveResourceFromDirectoryOperation(
-      OperationRunner* runner,
+      RequestSender* runner,
       net::URLRequestContextGetter* url_request_context_getter,
       const GDataWapiUrlGenerator& url_generator,
       const EntryActionCallback& callback,
@@ -396,7 +396,7 @@ class InitiateUploadNewFileOperation : public InitiateUploadRequestBase {
   // See also the comments of InitiateUploadRequestBase for more details
   // about the other parameters.
   InitiateUploadNewFileOperation(
-      OperationRunner* runner,
+      RequestSender* runner,
       net::URLRequestContextGetter* url_request_context_getter,
       const GDataWapiUrlGenerator& url_generator,
       const InitiateUploadCallback& callback,
@@ -435,7 +435,7 @@ class InitiateUploadExistingFileOperation
   // See also the comments of InitiateUploadRequestBase for more details
   // about the other parameters.
   InitiateUploadExistingFileOperation(
-      OperationRunner* runner,
+      RequestSender* runner,
       net::URLRequestContextGetter* url_request_context_getter,
       const GDataWapiUrlGenerator& url_generator,
       const InitiateUploadCallback& callback,
@@ -470,7 +470,7 @@ class ResumeUploadOperation : public ResumeUploadRequestBase {
   // See also ResumeUploadRequestBase's comment for parameters meaining.
   // |callback| must not be null.
   ResumeUploadOperation(
-      OperationRunner* runner,
+      RequestSender* runner,
       net::URLRequestContextGetter* url_request_context_getter,
       const UploadRangeCallback& callback,
       const ProgressCallback& progress_callback,
@@ -507,7 +507,7 @@ class GetUploadStatusOperation : public GetUploadStatusRequestBase {
   // See also GetUploadStatusRequestBase's comment for parameters meaning.
   // |callback| must not be null.
   GetUploadStatusOperation(
-      OperationRunner* runner,
+      RequestSender* runner,
       net::URLRequestContextGetter* url_request_context_getter,
       const UploadRangeCallback& callback,
       const base::FilePath& drive_file_path,

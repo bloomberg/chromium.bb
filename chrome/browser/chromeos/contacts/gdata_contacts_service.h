@@ -24,7 +24,7 @@ class Value;
 
 namespace google_apis {
 class AuthService;
-class OperationRunner;
+class RequestSender;
 }  // namespace google_apis
 
 namespace net {
@@ -111,7 +111,7 @@ class GDataContactsService : public GDataContactsServiceInterface {
 
   net::URLRequestContextGetter* url_request_context_getter_;  // not owned
 
-  scoped_ptr<google_apis::OperationRunner> runner_;
+  scoped_ptr<google_apis::RequestSender> sender_;
 
   // Group ID for the "My Contacts" system contacts group.
   // Cached after a DownloadContactsRequest has completed.

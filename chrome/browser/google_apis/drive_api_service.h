@@ -25,7 +25,7 @@ class URLRequestContextGetter;
 }  // namespace net
 
 namespace google_apis {
-class OperationRunner;
+class RequestSender;
 
 // This class provides Drive operation calls using Drive V2 API.
 // Details of API call are abstracted in each operation class and this class
@@ -162,7 +162,7 @@ class DriveAPIService : public DriveServiceInterface,
 
   net::URLRequestContextGetter* url_request_context_getter_;
   Profile* profile_;
-  scoped_ptr<OperationRunner> runner_;
+  scoped_ptr<RequestSender> sender_;
   ObserverList<DriveServiceObserver> observers_;
   DriveApiUrlGenerator url_generator_;
   const std::string custom_user_agent_;

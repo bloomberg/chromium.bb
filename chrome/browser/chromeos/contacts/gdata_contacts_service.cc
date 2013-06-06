@@ -20,9 +20,9 @@
 #include "base/timer.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/contacts/contact.pb.h"
-#include "chrome/browser/google_apis/gdata_errorcode.h"
 #include "chrome/browser/google_apis/gdata_contacts_operations.h"
-#include "chrome/browser/google_apis/operation_runner.h"
+#include "chrome/browser/google_apis/gdata_errorcode.h"
+#include "chrome/browser/google_apis/request_sender.h"
 #include "chrome/browser/google_apis/time_util.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -436,13 +436,13 @@ class GDataContactsService::DownloadContactsRequest {
  public:
   DownloadContactsRequest(
       GDataContactsService* service,
-      google_apis::OperationRunner* runner,
+      google_apis::RequestSender* runner,
       net::URLRequestContextGetter* url_request_context_getter,
       SuccessCallback success_callback,
       FailureCallback failure_callback,
       const base::Time& min_update_time)
       : service_(service),
-        runner_(runner),
+        sender_(runner),
         url_request_context_getter_(url_request_context_getter),
         success_callback_(success_callback),
         failure_callback_(failure_callback),
@@ -456,13 +456,13 @@ class GDataContactsService::DownloadContactsRequest {
         weak_ptr_factory_(this) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     DCHECK(service_);
-    DCHECK(runner_);
+    DCHECK(sender_);
   }
 
   ~DownloadContactsRequest() {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     service_ = NULL;
-    runner_ = NULL;
+    sender_ = NULL;
   }
 
   const std::string my_contacts_group_id() const {
@@ -480,7 +480,7 @@ class GDataContactsService::DownloadContactsRequest {
     } else {
       google_apis::GetContactGroupsOperation* operation =
           new google_apis::GetContactGroupsOperation(
-              runner_,
+              sender_,
               url_request_context_getter_,
               base::Bind(&DownloadContactsRequest::HandleGroupsFeedData,
                          weak_ptr_factory_.GetWeakPtr()));
@@ -488,7 +488,7 @@ class GDataContactsService::DownloadContactsRequest {
         operation->set_feed_url_for_testing(
             service_->groups_feed_url_for_testing_);
       }
-      runner_->StartOperationWithRetry(operation);
+      sender_->StartRequestWithRetry(operation);
     }
   }
 
@@ -588,7 +588,7 @@ class GDataContactsService::DownloadContactsRequest {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     google_apis::GetContactsOperation* operation =
         new google_apis::GetContactsOperation(
-            runner_,
+            sender_,
             url_request_context_getter_,
             my_contacts_group_id_,
             min_update_time_,
@@ -598,7 +598,7 @@ class GDataContactsService::DownloadContactsRequest {
       operation->set_feed_url_for_testing(
           service_->contacts_feed_url_for_testing_);
     }
-    runner_->StartOperationWithRetry(operation);
+    sender_->StartRequestWithRetry(operation);
   }
 
   // Callback for GetContactsOperation calls.
@@ -743,9 +743,9 @@ class GDataContactsService::DownloadContactsRequest {
 
       VLOG(1) << "Starting download of photo " << url << " for "
               << contact->contact_id();
-      runner_->StartOperationWithRetry(
+      sender_->StartRequestWithRetry(
           new google_apis::GetContactPhotoOperation(
-              runner_,
+              sender_,
               url_request_context_getter_,
               GURL(url),
               base::Bind(&DownloadContactsRequest::HandlePhotoData,
@@ -802,7 +802,7 @@ class GDataContactsService::DownloadContactsRequest {
   typedef std::map<contacts::Contact*, std::string> ContactPhotoUrls;
 
   GDataContactsService* service_;  // not owned
-  google_apis::OperationRunner* runner_;  // not owned
+  google_apis::RequestSender* sender_;  // not owned
   net::URLRequestContextGetter* url_request_context_getter_;  // not owned
 
   SuccessCallback success_callback_;
@@ -863,26 +863,26 @@ GDataContactsService::GDataContactsService(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   std::vector<std::string> scopes;
   scopes.push_back(kContactsScope);
-  runner_.reset(new google_apis::OperationRunner(profile,
-                                                 url_request_context_getter_,
-                                                 scopes,
-                                                 "" /* custom_user_agent */));
+  sender_.reset(new google_apis::RequestSender(profile,
+                                               url_request_context_getter_,
+                                               scopes,
+                                               "" /* custom_user_agent */));
 }
 
 GDataContactsService::~GDataContactsService() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  runner_->CancelAll();
+  sender_->CancelAll();
   STLDeleteContainerPointers(requests_.begin(), requests_.end());
   requests_.clear();
 }
 
 google_apis::AuthService* GDataContactsService::auth_service_for_testing() {
-  return runner_->auth_service();
+  return sender_->auth_service();
 }
 
 void GDataContactsService::Initialize() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  runner_->Initialize();
+  sender_->Initialize();
 }
 
 void GDataContactsService::DownloadContacts(SuccessCallback success_callback,
@@ -891,7 +891,7 @@ void GDataContactsService::DownloadContacts(SuccessCallback success_callback,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DownloadContactsRequest* request =
       new DownloadContactsRequest(this,
-                                  runner_.get(),
+                                  sender_.get(),
                                   url_request_context_getter_,
                                   success_callback,
                                   failure_callback,

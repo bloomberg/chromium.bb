@@ -8,7 +8,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/values.h"
-#include "chrome/browser/google_apis/operation_runner.h"
+#include "chrome/browser/google_apis/request_sender.h"
 #include "chrome/browser/google_apis/test_util.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread.h"
@@ -23,7 +23,7 @@ const char kInvalidJsonString[] = "$$$";
 
 class FakeGetDataRequest : public GetDataRequest {
  public:
-  explicit FakeGetDataRequest(OperationRunner* runner,
+  explicit FakeGetDataRequest(RequestSender* runner,
                               const GetDataCallback& callback)
       : GetDataRequest(runner, NULL, callback) {
   }
@@ -65,7 +65,7 @@ class BaseOperationsTest : public testing::Test {
 
   virtual void SetUp() OVERRIDE {
     profile_.reset(new TestingProfile);
-    runner_.reset(new OperationRunner(profile_.get(),
+    runner_.reset(new RequestSender(profile_.get(),
                                       NULL /* url_request_context_getter */,
                                       std::vector<std::string>() /* scopes */,
                                       std::string() /* custom user agent */));
@@ -76,7 +76,7 @@ class BaseOperationsTest : public testing::Test {
   base::MessageLoopForUI message_loop_;
   content::TestBrowserThread ui_thread_;
   scoped_ptr<TestingProfile> profile_;
-  scoped_ptr<OperationRunner> runner_;
+  scoped_ptr<RequestSender> runner_;
 
   // Following members stores data returned with callbacks to be verified
   // by tests.

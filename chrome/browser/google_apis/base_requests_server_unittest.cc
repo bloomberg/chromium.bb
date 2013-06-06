@@ -10,7 +10,7 @@
 #include "base/message_loop.h"
 #include "base/values.h"
 #include "chrome/browser/google_apis/auth_service.h"
-#include "chrome/browser/google_apis/operation_runner.h"
+#include "chrome/browser/google_apis/request_sender.h"
 #include "chrome/browser/google_apis/task_util.h"
 #include "chrome/browser/google_apis/test_util.h"
 #include "chrome/test/base/testing_profile.h"
@@ -37,7 +37,7 @@ class BaseOperationsServerTest : public testing::Test {
         file_thread_(content::BrowserThread::FILE),
         io_thread_(content::BrowserThread::IO),
         test_server_(content::BrowserThread::GetMessageLoopProxyForThread(
-                    content::BrowserThread::IO)) {
+            content::BrowserThread::IO)) {
   }
 
   virtual void SetUp() OVERRIDE {
@@ -49,10 +49,10 @@ class BaseOperationsServerTest : public testing::Test {
         content::BrowserThread::GetMessageLoopProxyForThread(
             content::BrowserThread::IO));
 
-    operation_runner_.reset(new OperationRunner(profile_.get(),
-                                                request_context_getter_.get(),
-                                                std::vector<std::string>(),
-                                                kTestUserAgent));
+    operation_runner_.reset(new RequestSender(profile_.get(),
+                                              request_context_getter_.get(),
+                                              std::vector<std::string>(),
+                                              kTestUserAgent));
     operation_runner_->auth_service()->set_access_token_for_testing(
         kTestAuthToken);
 
@@ -79,7 +79,7 @@ class BaseOperationsServerTest : public testing::Test {
   content::TestBrowserThread io_thread_;
   net::test_server::EmbeddedTestServer test_server_;
   scoped_ptr<TestingProfile> profile_;
-  scoped_ptr<OperationRunner> operation_runner_;
+  scoped_ptr<RequestSender> operation_runner_;
   scoped_refptr<net::TestURLRequestContextGetter> request_context_getter_;
 
   // The incoming HTTP request is saved so tests can verify the request
@@ -103,7 +103,7 @@ TEST_F(BaseOperationsServerTest, DownloadFileRequest_ValidFile) {
       base::FilePath::FromUTF8Unsafe("/dummy/gdata/testfile.txt"),
       GetTestCachedFilePath(
           base::FilePath::FromUTF8Unsafe("cached_testfile.txt")));
-  operation_runner_->StartOperationWithRetry(operation);
+  operation_runner_->StartRequestWithRetry(operation);
   base::MessageLoop::current()->Run();
 
   std::string contents;
@@ -138,7 +138,7 @@ TEST_F(BaseOperationsServerTest,
       base::FilePath::FromUTF8Unsafe("/dummy/gdata/no-such-file.txt"),
       GetTestCachedFilePath(
           base::FilePath::FromUTF8Unsafe("cache_no-such-file.txt")));
-  operation_runner_->StartOperationWithRetry(operation);
+  operation_runner_->StartRequestWithRetry(operation);
   base::MessageLoop::current()->Run();
 
   std::string contents;

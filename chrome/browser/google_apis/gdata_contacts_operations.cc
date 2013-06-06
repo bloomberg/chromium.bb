@@ -37,7 +37,7 @@ const char kGetContactsUpdatedMinParam[] = "updated-min";
 //========================== GetContactGroupsOperation =========================
 
 GetContactGroupsOperation::GetContactGroupsOperation(
-    OperationRunner* runner,
+    RequestSender* runner,
     net::URLRequestContextGetter* url_request_context_getter,
     const GetDataCallback& callback)
     : GetDataRequest(runner, url_request_context_getter, callback) {
@@ -54,7 +54,7 @@ GURL GetContactGroupsOperation::GetURL() const {
 //============================ GetContactsOperation ============================
 
 GetContactsOperation::GetContactsOperation(
-    OperationRunner* runner,
+    RequestSender* runner,
     net::URLRequestContextGetter* url_request_context_getter,
     const std::string& group_id,
     const base::Time& min_update_time,
@@ -86,7 +86,7 @@ GURL GetContactsOperation::GetURL() const {
 //========================== GetContactPhotoOperation ==========================
 
 GetContactPhotoOperation::GetContactPhotoOperation(
-    OperationRunner* runner,
+    RequestSender* runner,
     net::URLRequestContextGetter* url_request_context_getter,
     const GURL& photo_url,
     const GetContentCallback& callback)

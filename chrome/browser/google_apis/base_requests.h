@@ -29,7 +29,7 @@ class URLRequestContextGetter;
 
 namespace google_apis {
 
-class OperationRunner;
+class RequestSender;
 
 // Callback used to pass parsed JSON from ParseJson(). If parsing error occurs,
 // then the passed argument is null.
@@ -93,14 +93,14 @@ class UrlFetchRequestBase : public AuthenticatedRequestInterface,
 
  protected:
   UrlFetchRequestBase(
-      OperationRunner* runner,
+      RequestSender* runner,
       net::URLRequestContextGetter* url_request_context_getter);
   // Use this constructor when you need to implement requests that take a
   // drive file path (ex. for downloading and uploading).
   // |url_request_context_getter| is used to initialize URLFetcher.
   // TODO(satorux): Remove the drive file path hack. crbug.com/163296
   UrlFetchRequestBase(
-      OperationRunner* runner,
+      RequestSender* runner,
       net::URLRequestContextGetter* url_request_context_getter,
       const base::FilePath& drive_file_path);
   virtual ~UrlFetchRequestBase();
@@ -205,7 +205,7 @@ class EntryActionRequest : public UrlFetchRequestBase {
   // |url_request_context_getter| is used to initialize URLFetcher.
   // |callback| must not be null.
   EntryActionRequest(
-      OperationRunner* runner,
+      RequestSender* runner,
       net::URLRequestContextGetter* url_request_context_getter,
       const EntryActionCallback& callback);
   virtual ~EntryActionRequest();
@@ -234,7 +234,7 @@ typedef base::Callback<void(GDataErrorCode error,
 class GetDataRequest : public UrlFetchRequestBase {
  public:
   // |callback| must not be null.
-  GetDataRequest(OperationRunner* runner,
+  GetDataRequest(RequestSender* runner,
                  net::URLRequestContextGetter* url_request_context_getter,
                  const GetDataCallback& callback);
   virtual ~GetDataRequest();
@@ -292,7 +292,7 @@ class InitiateUploadRequestBase : public UrlFetchRequestBase {
   // |content_type| and |content_length| should be the attributes of the
   // uploading file.
   InitiateUploadRequestBase(
-      OperationRunner* runner,
+      RequestSender* runner,
       net::URLRequestContextGetter* url_request_context_getter,
       const InitiateUploadCallback& callback,
       const base::FilePath& drive_file_path,
@@ -346,7 +346,7 @@ class UploadRangeRequestBase : public UrlFetchRequestBase {
   // for resuming an upload, but used for adding an entry to OperationRegistry.
   // TODO(satorux): Remove the drive file path hack. crbug.com/163296
   UploadRangeRequestBase(
-      OperationRunner* runner,
+      RequestSender* runner,
       net::URLRequestContextGetter* url_request_context_getter,
       const base::FilePath& drive_file_path,
       const GURL& upload_url);
@@ -414,7 +414,7 @@ class ResumeUploadRequestBase : public UploadRangeRequestBase {
   // See also UploadRangeRequestBase's comment for remaining parameters
   // meaining.
   ResumeUploadRequestBase(
-      OperationRunner* runner,
+      RequestSender* runner,
       net::URLRequestContextGetter* url_request_context_getter,
       const base::FilePath& drive_file_path,
       const GURL& upload_location,
@@ -460,7 +460,7 @@ class GetUploadStatusRequestBase : public UploadRangeRequestBase {
   // See also UploadRangeRequestBase's constructor comment for other
   // parameters.
   GetUploadStatusRequestBase(
-      OperationRunner* runner,
+      RequestSender* runner,
       net::URLRequestContextGetter* url_request_context_getter,
       const base::FilePath& drive_file_path,
       const GURL& upload_url,
@@ -514,7 +514,7 @@ class DownloadFileRequest : public UrlFetchRequestBase {
   //   Specifies the file path to save the downloaded file.
   //
   DownloadFileRequest(
-      OperationRunner* runner,
+      RequestSender* runner,
       net::URLRequestContextGetter* url_request_context_getter,
       const DownloadActionCallback& download_action_callback,
       const GetContentCallback& get_content_callback,
