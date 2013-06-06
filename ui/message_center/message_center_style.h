@@ -70,6 +70,11 @@ const SkColor kButtonSeparatorColor = SkColorSetRGB(234, 234, 234);
 const SkColor kHoveredButtonBackgroundColor = SkColorSetRGB(243, 243, 243);
 #endif
 
+// Line limits.
+const int kTitleLineLimit = 3;
+const int kMessageCollapsedLineLimit = 3;
+const int kMessageExpandedLineLimit = 7;
+
 // Around notifications ////////////////////////////////////////////////////////
 
 // DIP dimensions (H = horizontal, V = vertical).

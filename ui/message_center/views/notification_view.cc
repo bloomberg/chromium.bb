@@ -42,18 +42,14 @@ const int kItemTitleToMessagePadding = 3;
 const int kButtonVecticalPadding = 0;
 const int kButtonTitleTopPadding = 0;
 
-// Line limits.
-const int kTitleLineLimit = 3;
-const int kMessageCollapsedLineLimit = 3;
-const int kMessageExpandedLineLimit = 7;
-
 // Character limits: Displayed text will be subject to the line limits above,
 // but we also remove trailing characters from text to reduce processing cost.
 // Character limit = pixels per line * line limit / min. pixels per character.
 const size_t kTitleCharacterLimit =
-    message_center::kNotificationWidth * kTitleLineLimit / 4;
+    message_center::kNotificationWidth * message_center::kTitleLineLimit / 4;
 const size_t kMessageCharacterLimit =
-    message_center::kNotificationWidth * kMessageExpandedLineLimit / 3;
+    message_center::kNotificationWidth *
+        message_center::kMessageExpandedLineLimit / 3;
 
 // Notification colors. The text background colors below are used only to keep
 // view::Label from modifying the text color and will not actually be drawn.
@@ -398,7 +394,7 @@ NotificationView::NotificationView(const Notification& notification,
     title_view_ = new BoundedLabel(
         ui::TruncateString(notification.title(), kTitleCharacterLimit), font);
     title_view_->SetLineHeight(kTitleLineHeight);
-    title_view_->SetLineLimit(kTitleLineLimit);
+    title_view_->SetLineLimit(message_center::kTitleLineLimit);
     title_view_->SetColors(message_center::kRegularTextColor,
                            kRegularTextBackgroundColor);
     title_view_->set_border(MakeTextBorder(padding, 3, 0));
@@ -649,7 +645,8 @@ bool NotificationView::IsExpansionNeeded(int width) {
 
 bool NotificationView::IsMessageExpansionNeeded(int width) {
   int current = GetMessageLines(width, GetMessageLineLimit(width));
-  int expanded = GetMessageLines(width, kMessageExpandedLineLimit);
+  int expanded = GetMessageLines(width,
+                                 message_center::kMessageExpandedLineLimit);
   return current < expanded;
 }
 
@@ -657,15 +654,16 @@ int NotificationView::GetMessageLineLimit(int width) {
   // Expanded notifications get a larger limit, except for image notifications,
   // whose images must be kept flush against their icons.
   if (is_expanded() && !image_view_)
-    return kMessageExpandedLineLimit;
+    return message_center::kMessageExpandedLineLimit;
 
   // If there's a title ensure title + message lines <= collapsed line limit.
   if (title_view_) {
     int title_lines = title_view_->GetLinesForWidthAndLimit(width, -1);
-    return std::max(kMessageCollapsedLineLimit - title_lines, 0);
+    return std::max(message_center::kMessageCollapsedLineLimit - title_lines,
+                    0);
   }
 
-  return kMessageCollapsedLineLimit;
+  return message_center::kMessageCollapsedLineLimit;
 }
 
 int NotificationView::GetMessageLines(int width, int limit) {

@@ -5,13 +5,14 @@
 #import "ui/message_center/cocoa/notification_controller.h"
 
 #include "base/mac/foundation_util.h"
+#include "base/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/strings/sys_string_conversions.h"
 #include "grit/ui_resources.h"
 #include "skia/ext/skia_utils_mac.h"
-#import "third_party/GTM/AppKit/GTMUILocalizerAndLayoutTweaker.h"
 #import "ui/base/cocoa/hover_image_button.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/base/text/text_elider.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/message_center_style.h"
 #include "ui/message_center/notification.h"
@@ -119,6 +120,13 @@
 // rectangle is to the right of the icon and left of the control buttons.
 // This depends on the icon_ and closeButton_ being initialized.
 - (NSRect)currentContentRect;
+
+// Returns the wrapped text that could fit within the given text field with not
+// more than the given number of lines. The Ellipsis could be added at the end
+// of the last line if it is too long.
+- (string16)wrapText:(const string16&)text
+            forField:(NSTextField*)field
+    maxNumberOfLines:(size_t)lines;
 @end
 
 @implementation MCNotificationController
@@ -187,14 +195,20 @@
       message_center::kTextTopPadding - titleBottomGap - messageTopGap;
 
   // Set the title and recalculate the frame.
-  [title_ setStringValue:base::SysUTF16ToNSString(notification_->title())];
-  [GTMUILocalizerAndLayoutTweaker sizeToFitFixedWidthTextField:title_];
+  [title_ setStringValue:base::SysUTF16ToNSString(
+      [self wrapText:notification_->title()
+            forField:title_
+       maxNumberOfLines:message_center::kTitleLineLimit])];
+  [title_ sizeToFit];
   NSRect titleFrame = [title_ frame];
   titleFrame.origin.y = NSMaxY(rootFrame) - titlePadding - NSHeight(titleFrame);
 
   // Set the message and recalculate the frame.
-  [message_ setStringValue:base::SysUTF16ToNSString(notification_->message())];
-  [GTMUILocalizerAndLayoutTweaker sizeToFitFixedWidthTextField:message_];
+  [message_ setStringValue:base::SysUTF16ToNSString(
+      [self wrapText:notification_->message()
+            forField:title_
+       maxNumberOfLines:message_center::kMessageExpandedLineLimit])];
+  [message_ sizeToFit];
   NSRect messageFrame = [message_ frame];
   messageFrame.origin.y =
       NSMinY(titleFrame) - messagePadding - NSHeight(messageFrame);
@@ -467,6 +481,30 @@
       NSMinXEdge);
   contentFrame.size.width -= NSWidth([closeButton_ frame]);
   return contentFrame;
+}
+
+- (string16)wrapText:(const string16&)text
+            forField:(NSTextField*)field
+    maxNumberOfLines:(size_t)lines {
+  gfx::Font font([field font]);
+  int width = NSWidth([self currentContentRect]);
+  int height = (lines + 1) * font.GetHeight();
+
+  std::vector<string16> wrapped;
+  ui::ElideRectangleText(text, font, width, height,
+                         ui::WRAP_LONG_WORDS, &wrapped);
+
+  if (wrapped.size() > lines) {
+    // Add an ellipsis to the last line. If this ellipsis makes the last line
+    // too wide, that line will be further elided by the ui::ElideText below.
+    string16 last = wrapped[lines - 1] + UTF8ToUTF16(ui::kEllipsis);
+    if (font.GetStringWidth(last) > width)
+      last = ui::ElideText(last, font, width, ui::ELIDE_AT_END);
+    wrapped.resize(lines - 1);
+    wrapped.push_back(last);
+  }
+
+  return JoinString(wrapped, '\n');
 }
 
 @end
