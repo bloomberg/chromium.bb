@@ -3127,8 +3127,8 @@ TEST_F(DiskCacheEntryTest, SimpleCacheOpenCreateRaceWithNoIndex) {
   int rv1 = cache_->OpenEntry("key", &entry1, cb1.callback());
   int rv2 = cache_->CreateEntry("key", &entry2, cb2.callback());
 
-  ASSERT_EQ(net::OK, cb2.GetResult(rv2));
   EXPECT_EQ(net::ERR_FAILED, cb1.GetResult(rv1));
+  ASSERT_EQ(net::OK, cb2.GetResult(rv2));
   entry2->Close();
 }
 
