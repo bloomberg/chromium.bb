@@ -53,11 +53,6 @@ function buildServerRequest(handlerName) {
  */
 function buildTaskManager(areConflicting) {
   /**
-   * Maximal time we expect the event page to stay loaded after starting a task.
-   */
-  var MAXIMUM_LOADED_TIME_MS = 5 * 60 * 1000;
-
-  /**
    * Queue of scheduled tasks. The first element, if present, corresponds to the
    * currently running task.
    * @type {Array.<Object.<string, function(function())>>}
@@ -72,34 +67,10 @@ function buildTaskManager(areConflicting) {
   var stepName = null;
 
   /**
-   * Id of the timeout for checking that the event page unloads in a reasonable
-   * time.
-   */
-  var eventPageUnloadTimeoutId = null;
-
-  /**
-   * Resets the timer checking that the event page unloads in a reasonable time.
-   */
-  function resetPageUnloadTimer() {
-    if (eventPageUnloadTimeoutId !== null)
-      clearTimeout(eventPageUnloadTimeoutId);
-
-    eventPageUnloadTimeoutId = setTimeout(wrapCallback(function() {
-      // Error if the event page wasn't unloaded after a reasonable timeout
-      // since starting the last task.
-      verify(false, 'Event page didn\'t unload, queue=' +
-          JSON.stringify(queue) + ', step=' + stepName +
-          ' (ignore this assert if devtools is open).');
-    }), MAXIMUM_LOADED_TIME_MS);
-  }
-
-  /**
    * Starts the first queued task.
    */
   function startFirst() {
     verify(queue.length >= 1, 'startFirst: queue is empty');
-
-    resetPageUnloadTimer();
 
     // Start the oldest queued task, but don't remove it from the queue.
     verify(
