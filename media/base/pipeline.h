@@ -114,6 +114,8 @@ class MEDIA_EXPORT Pipeline : public DemuxerHost {
   //
   // Stop() must complete before destroying the pipeline. It it permissible to
   // call Stop() at any point during the lifetime of the pipeline.
+  //
+  // It is safe to delete the pipeline during the execution of |stop_cb|.
   void Stop(const base::Closure& stop_cb);
 
   // Attempt to seek to the position specified by time.  |seek_cb| will be

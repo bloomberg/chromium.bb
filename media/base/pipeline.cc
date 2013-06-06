@@ -634,8 +634,12 @@ void Pipeline::OnStopCompleted(PipelineStatus status) {
     error_cb_.Reset();
   }
   if (!stop_cb_.is_null()) {
-    base::ResetAndReturn(&stop_cb_).Run();
     error_cb_.Reset();
+    base::ResetAndReturn(&stop_cb_).Run();
+
+    // NOTE: pipeline may be deleted at this point in time as a result of
+    // executing |stop_cb_|.
+    return;
   }
   if (!error_cb_.is_null()) {
     DCHECK_NE(status_, PIPELINE_OK);

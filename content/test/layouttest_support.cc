@@ -111,4 +111,8 @@ void DisableAutoResizeMode(RenderView* render_view, const WebSize& new_size) {
       ->DisableAutoResizeForTesting(new_size);
 }
 
+scoped_refptr<base::MessageLoopProxy> GetMediaThreadMessageLoopProxy() {
+  return RenderThreadImpl::current()->GetMediaThreadMessageLoopProxy();
+}
+
 }  // namespace content

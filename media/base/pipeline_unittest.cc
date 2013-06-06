@@ -105,28 +105,16 @@ class PipelineTest : public ::testing::Test {
   }
 
   virtual ~PipelineTest() {
-    // Shutdown sequence.
-    if (pipeline_->IsRunning()) {
-      EXPECT_CALL(*demuxer_, Stop(_))
-          .WillOnce(RunClosure<0>());
+    if (!pipeline_ || !pipeline_->IsRunning())
+      return;
 
-      if (audio_stream_)
-        EXPECT_CALL(*audio_renderer_, Stop(_))
-            .WillOnce(RunClosure<0>());
-
-      if (video_stream_)
-        EXPECT_CALL(*video_renderer_, Stop(_))
-            .WillOnce(RunClosure<0>());
-    }
+    ExpectStop();
 
     // Expect a stop callback if we were started.
     EXPECT_CALL(callbacks_, OnStop());
     pipeline_->Stop(base::Bind(&CallbackHelper::OnStop,
                                base::Unretained(&callbacks_)));
     message_loop_.RunUntilIdle();
-
-    filter_collection_.reset();
-    pipeline_.reset();
   }
 
  protected:
@@ -283,6 +271,17 @@ class PipelineTest : public ::testing::Test {
     EXPECT_NE(seek_time, pipeline_->GetMediaTime());
     message_loop_.RunUntilIdle();
     EXPECT_EQ(seek_time, pipeline_->GetMediaTime());
+  }
+
+  void ExpectStop() {
+    if (demuxer_)
+      EXPECT_CALL(*demuxer_, Stop(_)).WillOnce(RunClosure<0>());
+
+    if (audio_stream_)
+      EXPECT_CALL(*audio_renderer_, Stop(_)).WillOnce(RunClosure<0>());
+
+    if (video_stream_)
+      EXPECT_CALL(*video_renderer_, Stop(_)).WillOnce(RunClosure<0>());
   }
 
   // Fixture members.
@@ -834,6 +833,25 @@ TEST_F(PipelineTest, AudioTimeUpdateDuringSeek) {
   audio_time_cb_.Run(new_time, new_time);
 
   EXPECT_EQ(pipeline_->GetMediaTime(), new_time);
+}
+
+static void DeletePipeline(scoped_ptr<Pipeline> pipeline) {
+  // |pipeline| will go out of scope.
+}
+
+TEST_F(PipelineTest, DeleteAfterStop) {
+  CreateAudioStream();
+  MockDemuxerStreamVector streams;
+  streams.push_back(audio_stream());
+  InitializeDemuxer(&streams);
+  InitializeAudioRenderer(audio_stream(), false);
+  InitializePipeline(PIPELINE_OK);
+
+  ExpectStop();
+
+  Pipeline* pipeline = pipeline_.get();
+  pipeline->Stop(base::Bind(&DeletePipeline, base::Passed(&pipeline_)));
+  message_loop_.RunUntilIdle();
 }
 
 class PipelineTeardownTest : public PipelineTest {
