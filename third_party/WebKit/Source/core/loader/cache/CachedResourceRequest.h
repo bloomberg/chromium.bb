@@ -43,7 +43,6 @@ public:
 
     explicit CachedResourceRequest(const ResourceRequest&, const AtomicString& initiator, const String& charset = String(), ResourceLoadPriority = ResourceLoadPriorityUnresolved);
     CachedResourceRequest(const ResourceRequest&, const AtomicString& initiator, const ResourceLoaderOptions&);
-    CachedResourceRequest(const ResourceRequest&, const AtomicString& initiator, ResourceLoadPriority);
     ~CachedResourceRequest();
 
     ResourceRequest& mutableResourceRequest() { return m_resourceRequest; }
@@ -52,7 +51,6 @@ public:
     void setCharset(const String& charset) { m_charset = charset; }
     const ResourceLoaderOptions& options() const { return m_options; }
     void setOptions(const ResourceLoaderOptions& options) { m_options = options; }
-    void setPriority(ResourceLoadPriority priority) { m_priority = priority; }
     ResourceLoadPriority priority() const { return m_priority; }
     bool forPreload() const { return m_forPreload; }
     void setForPreload(bool forPreload) { m_forPreload = forPreload; }

@@ -105,41 +105,10 @@ static inline bool shouldUpdateHeaderAfterRevalidation(const AtomicString& heade
     return true;
 }
 
-static ResourceLoadPriority defaultPriorityForResourceType(CachedResource::Type type)
-{
-    switch (type) {
-    case CachedResource::MainResource:
-        return ResourceLoadPriorityVeryHigh;
-    case CachedResource::CSSStyleSheet:
-        return ResourceLoadPriorityHigh;
-    case CachedResource::Script:
-    case CachedResource::FontResource:
-    case CachedResource::RawResource:
-        return ResourceLoadPriorityMedium;
-    case CachedResource::ImageResource:
-        return ResourceLoadPriorityLow;
-    case CachedResource::XSLStyleSheet:
-        return ResourceLoadPriorityHigh;
-    case CachedResource::SVGDocumentResource:
-        return ResourceLoadPriorityLow;
-    case CachedResource::LinkPrefetch:
-        return ResourceLoadPriorityVeryLow;
-    case CachedResource::LinkSubresource:
-        return ResourceLoadPriorityVeryLow;
-    case CachedResource::TextTrackResource:
-        return ResourceLoadPriorityLow;
-    case CachedResource::ShaderResource:
-        return ResourceLoadPriorityMedium;
-    }
-    ASSERT_NOT_REACHED();
-    return ResourceLoadPriorityLow;
-}
-
 DEFINE_DEBUG_ONLY_GLOBAL(RefCountedLeakCounter, cachedResourceLeakCounter, ("CachedResource"));
 
 CachedResource::CachedResource(const ResourceRequest& request, Type type)
     : m_resourceRequest(request)
-    , m_loadPriority(defaultPriorityForResourceType(type))
     , m_responseTimestamp(currentTime())
     , m_decodedDataDeletionTimer(this, &CachedResource::decodedDataDeletionTimerFired)
     , m_cancelTimer(this, &CachedResource::cancelTimerFired)
@@ -219,7 +188,6 @@ void CachedResource::load(CachedResourceLoader* cachedResourceLoader, const Reso
 
     if (!accept().isEmpty())
         m_resourceRequest.setHTTPAccept(accept());
-    m_resourceRequest.setPriority(loadPriority());
 
     // FIXME: It's unfortunate that the cache layer and below get to know anything about fragment identifiers.
     // We should look into removing the expectation of that knowledge from the platform network stacks.
@@ -869,17 +837,11 @@ unsigned CachedResource::overheadSize() const
     return sizeof(CachedResource) + m_response.memoryUsage() + kAverageClientsHashMapSize + m_resourceRequest.url().string().length() * 2;
 }
 
-void CachedResource::setLoadPriority(ResourceLoadPriority loadPriority)
+void CachedResource::didChangePriority(ResourceLoadPriority loadPriority)
 {
-    if (loadPriority == ResourceLoadPriorityUnresolved)
-        loadPriority = defaultPriorityForResourceType(type());
-    if (loadPriority == m_loadPriority)
-        return;
-    m_loadPriority = loadPriority;
     if (m_loader)
         m_loader->didChangePriority(loadPriority);
 }
-
 
 CachedResource::CachedResourceCallback::CachedResourceCallback(CachedResource* resource, CachedResourceClient* client)
     : m_resource(resource)

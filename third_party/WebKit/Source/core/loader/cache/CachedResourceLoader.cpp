@@ -99,6 +99,39 @@ static CachedResource* createResource(CachedResource::Type type, ResourceRequest
     return 0;
 }
 
+static ResourceLoadPriority loadPriority(CachedResource::Type type, const CachedResourceRequest& request)
+{
+    if (request.priority() != ResourceLoadPriorityUnresolved)
+        return request.priority();
+
+    switch (type) {
+    case CachedResource::MainResource:
+        return ResourceLoadPriorityVeryHigh;
+    case CachedResource::CSSStyleSheet:
+        return ResourceLoadPriorityHigh;
+    case CachedResource::Script:
+    case CachedResource::FontResource:
+    case CachedResource::RawResource:
+        return ResourceLoadPriorityMedium;
+    case CachedResource::ImageResource:
+        return request.forPreload() ? ResourceLoadPriorityVeryLow : ResourceLoadPriorityLow;
+    case CachedResource::XSLStyleSheet:
+        return ResourceLoadPriorityHigh;
+    case CachedResource::SVGDocumentResource:
+        return ResourceLoadPriorityLow;
+    case CachedResource::LinkPrefetch:
+        return ResourceLoadPriorityVeryLow;
+    case CachedResource::LinkSubresource:
+        return ResourceLoadPriorityLow;
+    case CachedResource::TextTrackResource:
+        return ResourceLoadPriorityLow;
+    case CachedResource::ShaderResource:
+        return ResourceLoadPriorityMedium;
+    }
+    ASSERT_NOT_REACHED();
+    return ResourceLoadPriorityUnresolved;
+}
+
 CachedResourceLoader::CachedResourceLoader(DocumentLoader* documentLoader)
     : m_document(0)
     , m_documentLoader(documentLoader)
@@ -389,11 +422,16 @@ CachedResourceHandle<CachedResource> CachedResourceLoader::requestResource(Cache
     if (!resource)
         return 0;
 
-    if (!request.forPreload() || policy != Use)
-        resource->setLoadPriority(request.priority());
-
     if (policy != Use)
         resource->setIdentifier(createUniqueIdentifier());
+
+    if (!request.forPreload() || policy != Use) {
+        ResourceLoadPriority priority = loadPriority(type, request);
+        if (priority != resource->resourceRequest().priority()) {
+            resource->resourceRequest().setPriority(priority);
+            resource->didChangePriority(priority);
+        }
+    }
 
     if ((policy != Use || resource->stillNeedsLoad()) && CachedResourceRequest::NoDefer == request.defer()) {
         if (!frame())
@@ -867,9 +905,6 @@ void CachedResourceLoader::preload(CachedResource::Type type, CachedResourceRequ
 {
     bool delaySubresourceLoad = true;
     delaySubresourceLoad = false;
-    // FIXME: All ports should take advantage of this, but first must support ResourceHandle::didChangePriority().
-    if (type == CachedResource::ImageResource)
-        request.setPriority(ResourceLoadPriorityVeryLow);
     if (delaySubresourceLoad) {
         bool hasRendering = m_document->body() && m_document->body()->renderer();
         bool canBlockParser = type == CachedResource::Script || type == CachedResource::CSSStyleSheet;

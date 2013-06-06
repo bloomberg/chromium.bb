@@ -104,9 +104,8 @@ public:
     ResourceRequest& resourceRequest() { return m_resourceRequest; }
     const KURL& url() const { return m_resourceRequest.url();}
     Type type() const { return static_cast<Type>(m_type); }
-    
-    ResourceLoadPriority loadPriority() const { return m_loadPriority; }
-    void setLoadPriority(ResourceLoadPriority);
+
+    void didChangePriority(ResourceLoadPriority);
 
     void addClient(CachedResourceClient*);
     void removeClient(CachedResourceClient*);
@@ -278,7 +277,6 @@ protected:
     AtomicString m_accept;
     RefPtr<ResourceLoader> m_loader;
     ResourceLoaderOptions m_options;
-    ResourceLoadPriority m_loadPriority;
 
     ResourceResponse m_response;
     double m_responseTimestamp;

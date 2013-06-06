@@ -117,16 +117,8 @@ bool LinkLoader::loadLink(const LinkRelAttribute& relAttribute, const String& ty
     if ((relAttribute.isLinkPrefetch() || relAttribute.isLinkSubresource()) && href.isValid() && document->frame()) {
         if (!m_client->shouldLoadLink())
             return false;
-        ResourceLoadPriority priority = ResourceLoadPriorityUnresolved;
-        CachedResource::Type type = CachedResource::LinkPrefetch;
-        // We only make one request to the cachedresourcelodaer if multiple rel types are
-        // specified, 
-        if (relAttribute.isLinkSubresource()) {
-            priority = ResourceLoadPriorityLow;
-            type = CachedResource::LinkSubresource;
-        }
-        CachedResourceRequest linkRequest(ResourceRequest(document->completeURL(href)), cachedResourceRequestInitiators().link, priority);
-        
+        CachedResource::Type type = relAttribute.isLinkSubresource() ?  CachedResource::LinkSubresource : CachedResource::LinkPrefetch;
+        CachedResourceRequest linkRequest(ResourceRequest(document->completeURL(href)), cachedResourceRequestInitiators().link);
         if (m_cachedLinkResource) {
             m_cachedLinkResource->removeClient(this);
             m_cachedLinkResource = 0;

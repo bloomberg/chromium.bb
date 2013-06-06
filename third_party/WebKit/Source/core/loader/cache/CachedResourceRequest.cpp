@@ -52,16 +52,6 @@ CachedResourceRequest::CachedResourceRequest(const ResourceRequest& resourceRequ
     m_initiatorInfo.name = initiator;
 }
 
-CachedResourceRequest::CachedResourceRequest(const ResourceRequest& resourceRequest, const AtomicString& initiator, ResourceLoadPriority priority)
-    : m_resourceRequest(resourceRequest)
-    , m_options(CachedResourceLoader::defaultCachedResourceOptions())
-    , m_priority(priority)
-    , m_forPreload(false)
-    , m_defer(NoDefer)
-{
-    m_initiatorInfo.name = initiator;
-}
-
 CachedResourceRequest::~CachedResourceRequest()
 {
 }
