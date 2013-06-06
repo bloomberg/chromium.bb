@@ -449,9 +449,10 @@ INSTANTIATE_TEST_CASE_P(
                       TestParameter(NOT_IN_GUEST_MODE,
                                     "transferFromOfflineToDrive")));
 
+// TODO (hirono): Fix this flakiness. crbug.com/247299
 INSTANTIATE_TEST_CASE_P(
-    HideSearchBox,
-    FileManagerBrowserSimpleTest,
-    ::testing::Values(TestParameter(IN_GUEST_MODE, "hideSearchBox"),
-                      TestParameter(NOT_IN_GUEST_MODE, "hideSearchBox")));
+     DISABLED_HideSearchBox,
+     FileManagerBrowserSimpleTest,
+     ::testing::Values(TestParameter(IN_GUEST_MODE, "hideSearchBox"),
+                       TestParameter(NOT_IN_GUEST_MODE, "hideSearchBox")));
 }  // namespace
