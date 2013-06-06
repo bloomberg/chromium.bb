@@ -85,44 +85,6 @@ SadTabView::SadTabView(WebContents* web_contents, chrome::SadTabKind kind)
   // Set the background color.
   set_background(views::Background::CreateSolidBackground(
       (kind_ == chrome::SAD_TAB_KIND_CRASHED) ? kCrashColor : kKillColor));
-}
-
-SadTabView::~SadTabView() {}
-
-void SadTabView::LinkClicked(views::Link* source, int event_flags) {
-  DCHECK(web_contents_);
-  if (source == help_link_) {
-    GURL help_url((kind_ == chrome::SAD_TAB_KIND_CRASHED) ?
-        chrome::kCrashReasonURL : chrome::kKillReasonURL);
-    OpenURLParams params(
-        help_url, content::Referrer(), CURRENT_TAB,
-        content::PAGE_TRANSITION_LINK, false);
-    web_contents_->OpenURL(params);
-  } else if (source == feedback_link_) {
-    chrome::ShowFeedbackPage(
-        chrome::FindBrowserWithWebContents(web_contents_),
-        l10n_util::GetStringUTF8(IDS_KILLED_TAB_FEEDBACK_MESSAGE),
-        std::string(kCategoryTagCrash));
-  }
-}
-
-void SadTabView::ButtonPressed(views::Button* sender,
-                               const ui::Event& event) {
-  DCHECK(web_contents_);
-  DCHECK_EQ(reload_button_, sender);
-  web_contents_->GetController().Reload(true);
-}
-
-void SadTabView::Layout() {
-  // Specify the maximum message width explicitly.
-  message_->SizeToFit(static_cast<int>(width() * kMessageSize));
-  View::Layout();
-}
-
-void SadTabView::ViewHierarchyChanged(
-    const ViewHierarchyChangedDetails& details) {
-  if (details.child != this || !details.is_add)
-    return;
 
   views::GridLayout* layout = new views::GridLayout(this);
   SetLayoutManager(layout);
@@ -198,6 +160,38 @@ void SadTabView::ViewHierarchyChanged(
     }
   }
   layout->AddPaddingRow(1, kPadding);
+}
+
+SadTabView::~SadTabView() {}
+
+void SadTabView::LinkClicked(views::Link* source, int event_flags) {
+  DCHECK(web_contents_);
+  if (source == help_link_) {
+    GURL help_url((kind_ == chrome::SAD_TAB_KIND_CRASHED) ?
+        chrome::kCrashReasonURL : chrome::kKillReasonURL);
+    OpenURLParams params(
+        help_url, content::Referrer(), CURRENT_TAB,
+        content::PAGE_TRANSITION_LINK, false);
+    web_contents_->OpenURL(params);
+  } else if (source == feedback_link_) {
+    chrome::ShowFeedbackPage(
+        chrome::FindBrowserWithWebContents(web_contents_),
+        l10n_util::GetStringUTF8(IDS_KILLED_TAB_FEEDBACK_MESSAGE),
+        std::string(kCategoryTagCrash));
+  }
+}
+
+void SadTabView::ButtonPressed(views::Button* sender,
+                               const ui::Event& event) {
+  DCHECK(web_contents_);
+  DCHECK_EQ(reload_button_, sender);
+  web_contents_->GetController().Reload(true);
+}
+
+void SadTabView::Layout() {
+  // Specify the maximum message width explicitly.
+  message_->SizeToFit(static_cast<int>(width() * kMessageSize));
+  View::Layout();
 }
 
 void SadTabView::OnPaint(gfx::Canvas* canvas) {
