@@ -67,7 +67,6 @@ class WebMediaPlayerMS
   virtual void load(const WebKit::WebURL& url,
                     WebKit::WebMediaSource* media_source,
                     CORSMode cors_mode) OVERRIDE;
-  virtual void cancelLoad() OVERRIDE;
 
   // Playback controls.
   virtual void play() OVERRIDE;
@@ -77,15 +76,11 @@ class WebMediaPlayerMS
   virtual void seek(double seconds);
   virtual void setRate(double rate);
   virtual void setVolume(double volume);
-  virtual void setVisible(bool visible) OVERRIDE;
   virtual void setPreload(WebKit::WebMediaPlayer::Preload preload) OVERRIDE;
-  virtual bool totalBytesKnown() OVERRIDE;
   virtual const WebKit::WebTimeRanges& buffered() OVERRIDE;
   virtual double maxTimeSeekable() const;
 
   // Methods for painting.
-  virtual void setSize(const WebKit::WebSize& size) OVERRIDE;
-
   virtual void paint(WebKit::WebCanvas* canvas,
                      const WebKit::WebRect& rect,
                      unsigned char alpha) OVERRIDE;
@@ -103,19 +98,14 @@ class WebMediaPlayerMS
   virtual double duration() const;
   virtual double currentTime() const;
 
-  // Get rate of loading the resource.
-  virtual int32 dataRate() const OVERRIDE;
-
   // Internal states of loading and network.
   virtual WebKit::WebMediaPlayer::NetworkState networkState() const OVERRIDE;
   virtual WebKit::WebMediaPlayer::ReadyState readyState() const OVERRIDE;
 
   virtual bool didLoadingProgress() const OVERRIDE;
-  virtual unsigned long long totalBytes() const OVERRIDE;
 
   virtual bool hasSingleSecurityOrigin() const OVERRIDE;
   virtual bool didPassCORSAccessCheck() const OVERRIDE;
-  virtual WebKit::WebMediaPlayer::MovieLoadType movieLoadType() const OVERRIDE;
 
   virtual double mediaTimeForTimeValue(double timeValue) const;
 

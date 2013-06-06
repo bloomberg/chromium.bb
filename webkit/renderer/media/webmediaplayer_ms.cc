@@ -134,10 +134,6 @@ void WebMediaPlayerMS::load(const WebKit::WebURL& url,
   NOTIMPLEMENTED();
 }
 
-void WebMediaPlayerMS::cancelLoad() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-}
-
 void WebMediaPlayerMS::play() {
   DVLOG(1) << "WebMediaPlayerMS::play";
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -204,17 +200,8 @@ void WebMediaPlayerMS::setVolume(double volume) {
   audio_renderer_->SetVolume(volume);
 }
 
-void WebMediaPlayerMS::setVisible(bool visible) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-}
-
 void WebMediaPlayerMS::setPreload(WebMediaPlayer::Preload preload) {
   DCHECK(thread_checker_.CalledOnValidThread());
-}
-
-bool WebMediaPlayerMS::totalBytesKnown() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  return false;
 }
 
 bool WebMediaPlayerMS::hasVideo() const {
@@ -262,11 +249,6 @@ double WebMediaPlayerMS::currentTime() const {
   return 0.0;
 }
 
-int WebMediaPlayerMS::dataRate() const {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  return 0;
-}
-
 WebMediaPlayer::NetworkState WebMediaPlayerMS::networkState() const {
   DCHECK(thread_checker_.CalledOnValidThread());
   DVLOG(1) << "WebMediaPlayerMS::networkState, state:" << network_state_;
@@ -294,16 +276,6 @@ bool WebMediaPlayerMS::didLoadingProgress() const {
   return true;
 }
 
-unsigned long long WebMediaPlayerMS::totalBytes() const {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  return 0;
-}
-
-void WebMediaPlayerMS::setSize(const WebSize& size) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  // Don't need to do anything as we use the dimensions passed in via paint().
-}
-
 void WebMediaPlayerMS::paint(WebCanvas* canvas,
                              const WebRect& rect,
                              unsigned char alpha) {
@@ -328,11 +300,6 @@ bool WebMediaPlayerMS::hasSingleSecurityOrigin() const {
 bool WebMediaPlayerMS::didPassCORSAccessCheck() const {
   DCHECK(thread_checker_.CalledOnValidThread());
   return true;
-}
-
-WebMediaPlayer::MovieLoadType WebMediaPlayerMS::movieLoadType() const {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  return WebMediaPlayer::MovieLoadTypeUnknown;
 }
 
 double WebMediaPlayerMS::mediaTimeForTimeValue(double timeValue) const {

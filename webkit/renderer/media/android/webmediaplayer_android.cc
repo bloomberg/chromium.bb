@@ -205,10 +205,6 @@ void WebMediaPlayerAndroid::InitializeMediaPlayer(
   UpdateReadyState(WebMediaPlayer::ReadyStateHaveNothing);
 }
 
-void WebMediaPlayerAndroid::cancelLoad() {
-  NOTIMPLEMENTED();
-}
-
 void WebMediaPlayerAndroid::play() {
 #if defined(GOOGLE_TV)
   if (hasVideo() && needs_external_surface_) {
@@ -270,16 +266,6 @@ void WebMediaPlayerAndroid::setVolume(double volume) {
   NOTIMPLEMENTED();
 }
 
-void WebMediaPlayerAndroid::setVisible(bool visible) {
-  // Deprecated.
-  // TODO(qinmin): Remove this from WebKit::WebMediaPlayer as it is never used.
-}
-
-bool WebMediaPlayerAndroid::totalBytesKnown() {
-  NOTIMPLEMENTED();
-  return false;
-}
-
 bool WebMediaPlayerAndroid::hasVideo() const {
   // If we have obtained video size information before, use it.
   if (has_size_info_)
@@ -325,12 +311,6 @@ double WebMediaPlayerAndroid::currentTime() const {
   return current_time_;
 }
 
-int WebMediaPlayerAndroid::dataRate() const {
-  // Deprecated.
-  // TODO(qinmin): Remove this from WebKit::WebMediaPlayer as it is never used.
-  return 0;
-}
-
 WebSize WebMediaPlayerAndroid::naturalSize() const {
   return natural_size_;
 }
@@ -358,15 +338,6 @@ bool WebMediaPlayerAndroid::didLoadingProgress() const {
   bool ret = did_loading_progress_;
   did_loading_progress_ = false;
   return ret;
-}
-
-unsigned long long WebMediaPlayerAndroid::totalBytes() const {
-  // Deprecated.
-  // TODO(qinmin): Remove this from WebKit::WebMediaPlayer as it is never used.
-  return 0;
-}
-
-void WebMediaPlayerAndroid::setSize(const WebKit::WebSize& size) {
 }
 
 void WebMediaPlayerAndroid::paint(WebKit::WebCanvas* canvas,
@@ -415,12 +386,6 @@ bool WebMediaPlayerAndroid::hasSingleSecurityOrigin() const {
 
 bool WebMediaPlayerAndroid::didPassCORSAccessCheck() const {
   return false;
-}
-
-WebMediaPlayer::MovieLoadType WebMediaPlayerAndroid::movieLoadType() const {
-  // Deprecated.
-  // TODO(qinmin): Remove this from WebKit::WebMediaPlayer as it is never used.
-  return WebMediaPlayer::MovieLoadTypeUnknown;
 }
 
 double WebMediaPlayerAndroid::mediaTimeForTimeValue(double timeValue) const {

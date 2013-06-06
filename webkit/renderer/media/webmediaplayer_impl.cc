@@ -286,10 +286,6 @@ void WebMediaPlayerImpl::LoadSetup(const WebKit::WebURL& url) {
   media_log_->AddEvent(media_log_->CreateLoadEvent(url.spec()));
 }
 
-void WebMediaPlayerImpl::cancelLoad() {
-  DCHECK(main_loop_->BelongsToCurrentThread());
-}
-
 void WebMediaPlayerImpl::play() {
   DCHECK(main_loop_->BelongsToCurrentThread());
 
@@ -383,13 +379,6 @@ void WebMediaPlayerImpl::setVolume(double volume) {
   pipeline_->SetVolume(volume);
 }
 
-void WebMediaPlayerImpl::setVisible(bool visible) {
-  DCHECK(main_loop_->BelongsToCurrentThread());
-
-  // TODO(hclam): add appropriate method call when pipeline has it implemented.
-  return;
-}
-
 #define COMPILE_ASSERT_MATCHING_ENUM(webkit_name, chromium_name) \
     COMPILE_ASSERT(static_cast<int>(WebMediaPlayer::webkit_name) == \
                    static_cast<int>(webkit_media::chromium_name), \
@@ -404,12 +393,6 @@ void WebMediaPlayerImpl::setPreload(WebMediaPlayer::Preload preload) {
 
   if (data_source_)
     data_source_->SetPreload(static_cast<webkit_media::Preload>(preload));
-}
-
-bool WebMediaPlayerImpl::totalBytesKnown() {
-  DCHECK(main_loop_->BelongsToCurrentThread());
-
-  return pipeline_->GetTotalBytes() != 0;
 }
 
 bool WebMediaPlayerImpl::hasVideo() const {
@@ -464,13 +447,6 @@ double WebMediaPlayerImpl::currentTime() const {
   return (paused_ ? paused_time_ : pipeline_->GetMediaTime()).InSecondsF();
 }
 
-int WebMediaPlayerImpl::dataRate() const {
-  DCHECK(main_loop_->BelongsToCurrentThread());
-
-  // TODO(hclam): Add this method call if pipeline has it in the interface.
-  return 0;
-}
-
 WebMediaPlayer::NetworkState WebMediaPlayerImpl::networkState() const {
   DCHECK(main_loop_->BelongsToCurrentThread());
   return network_state_;
@@ -506,18 +482,6 @@ double WebMediaPlayerImpl::maxTimeSeekable() const {
 bool WebMediaPlayerImpl::didLoadingProgress() const {
   DCHECK(main_loop_->BelongsToCurrentThread());
   return pipeline_->DidLoadingProgress();
-}
-
-unsigned long long WebMediaPlayerImpl::totalBytes() const {
-  DCHECK(main_loop_->BelongsToCurrentThread());
-
-  return pipeline_->GetTotalBytes();
-}
-
-void WebMediaPlayerImpl::setSize(const WebSize& size) {
-  DCHECK(main_loop_->BelongsToCurrentThread());
-
-  // Don't need to do anything as we use the dimensions passed in via paint().
 }
 
 void WebMediaPlayerImpl::paint(WebCanvas* canvas,
@@ -556,15 +520,6 @@ bool WebMediaPlayerImpl::didPassCORSAccessCheck() const {
   if (data_source_)
     return data_source_->DidPassCORSAccessCheck();
   return false;
-}
-
-WebMediaPlayer::MovieLoadType WebMediaPlayerImpl::movieLoadType() const {
-  DCHECK(main_loop_->BelongsToCurrentThread());
-
-  // Disable seeking while streaming.
-  if (data_source_ && data_source_->IsStreaming())
-    return WebMediaPlayer::MovieLoadTypeLiveStream;
-  return WebMediaPlayer::MovieLoadTypeUnknown;
 }
 
 double WebMediaPlayerImpl::mediaTimeForTimeValue(double timeValue) const {

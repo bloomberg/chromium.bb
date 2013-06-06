@@ -82,7 +82,6 @@ class WebMediaPlayerAndroid
   virtual void load(const WebKit::WebURL& url,
                     WebKit::WebMediaSource* media_source,
                     CORSMode cors_mode);
-  virtual void cancelLoad();
 
   // Playback controls.
   virtual void play();
@@ -92,13 +91,10 @@ class WebMediaPlayerAndroid
   virtual bool supportsSave() const;
   virtual void setRate(double rate);
   virtual void setVolume(double volume);
-  virtual void setVisible(bool visible);
-  virtual bool totalBytesKnown();
   virtual const WebKit::WebTimeRanges& buffered();
   virtual double maxTimeSeekable() const;
 
   // Methods for painting.
-  virtual void setSize(const WebKit::WebSize& size);
   virtual void paint(WebKit::WebCanvas* canvas,
                      const WebKit::WebRect& rect,
                      unsigned char alpha);
@@ -125,11 +121,7 @@ class WebMediaPlayerAndroid
   virtual double duration() const;
   virtual double currentTime() const;
 
-  // Get rate of loading the resource.
-  virtual int32 dataRate() const;
-
   virtual bool didLoadingProgress() const;
-  virtual unsigned long long totalBytes() const;
 
   // Internal states of loading and network.
   virtual WebKit::WebMediaPlayer::NetworkState networkState() const;
@@ -137,7 +129,6 @@ class WebMediaPlayerAndroid
 
   virtual bool hasSingleSecurityOrigin() const;
   virtual bool didPassCORSAccessCheck() const;
-  virtual WebKit::WebMediaPlayer::MovieLoadType movieLoadType() const;
 
   virtual double mediaTimeForTimeValue(double timeValue) const;
 

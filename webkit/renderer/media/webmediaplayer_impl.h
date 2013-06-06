@@ -92,7 +92,6 @@ class WebMediaPlayerImpl
   virtual void load(const WebKit::WebURL& url,
                     WebKit::WebMediaSource* media_source,
                     CORSMode cors_mode);
-  virtual void cancelLoad();
 
   // Playback controls.
   virtual void play();
@@ -102,15 +101,11 @@ class WebMediaPlayerImpl
   virtual void seek(double seconds);
   virtual void setRate(double rate);
   virtual void setVolume(double volume);
-  virtual void setVisible(bool visible);
   virtual void setPreload(WebKit::WebMediaPlayer::Preload preload);
-  virtual bool totalBytesKnown();
   virtual const WebKit::WebTimeRanges& buffered();
   virtual double maxTimeSeekable() const;
 
   // Methods for painting.
-  virtual void setSize(const WebKit::WebSize& size);
-
   virtual void paint(WebKit::WebCanvas* canvas,
                      const WebKit::WebRect& rect,
                      unsigned char alpha);
@@ -128,9 +123,6 @@ class WebMediaPlayerImpl
   virtual double duration() const;
   virtual double currentTime() const;
 
-  // Get rate of loading the resource.
-  virtual int32 dataRate() const;
-
   // Internal states of loading and network.
   // TODO(hclam): Ask the pipeline about the state rather than having reading
   // them from members which would cause race conditions.
@@ -138,11 +130,9 @@ class WebMediaPlayerImpl
   virtual WebKit::WebMediaPlayer::ReadyState readyState() const;
 
   virtual bool didLoadingProgress() const;
-  virtual unsigned long long totalBytes() const;
 
   virtual bool hasSingleSecurityOrigin() const;
   virtual bool didPassCORSAccessCheck() const;
-  virtual WebKit::WebMediaPlayer::MovieLoadType movieLoadType() const;
 
   virtual double mediaTimeForTimeValue(double timeValue) const;
 
