@@ -34,7 +34,7 @@ function terminate(data) {
 }
 
 function removeChildren(element_id) {
-  var element = document.getElementById(element_id);
+  var element = $(element_id);
   element.textContent = '';
 }
 
@@ -76,14 +76,14 @@ function populateDeviceLists() {
   var deviceElements = document.querySelectorAll('.device');
   for (var i = 0; i < deviceElements.length; i++)
     deviceElements[i].remove();
-  var containerElement = document.getElementById('devices');
+  var containerElement = $('devices');
 
   // Populate with new entries
   for (var i = 0; pages && i < pages.length; i++) {
     var page = pages[i];
 
     var listId = 'device-' + page.adbSerial;
-    var listElement = document.getElementById(listId);
+    var listElement = $(listId);
     if (!listElement) {
       var sectionElement = document.createElement('div');
       sectionElement.className = 'section device';
@@ -97,7 +97,7 @@ function populateDeviceLists() {
     }
 
     var packageId = 'package-' + page.adbModel + '-' + page.adbPackage;
-    var packageElement = document.getElementById(packageId);
+    var packageElement = $(packageId);
     if (!packageElement) {
       var sectionElement = document.createElement('div');
       sectionElement.className = 'small-section package';
@@ -159,13 +159,13 @@ function formatValue(data, property) {
 }
 
 function addTargetToList(data, listId, properties, canTerminate) {
-  var list = document.getElementById(listId);
+  var list = $(listId);
   var row = document.createElement('div');
   row.className = 'row';
   for (var j = 0; j < properties.length; j++)
     row.appendChild(formatValue(data, properties[j]));
 
-  if (!data['adbSerial'] || data['adbDebugUrl'])
+  if (!data.hasOwnProperty('adbSerial') || data['adbDebugUrl'])
     row.appendChild(createInspectElement(data));
 
   if (canTerminate)
