@@ -164,7 +164,7 @@ void V8LazyEventListener::prepareListenerObject(ScriptExecutionContext* context)
 
     v8::Handle<v8::String> codeExternalString = v8String(code, isolate);
 
-    v8::Local<v8::Value> result = V8ScriptRunner::compileAndRunInternalScript(codeExternalString, isolate, v8Context, m_sourceURL, m_position);
+    v8::Local<v8::Value> result = V8ScriptRunner::compileAndRunInternalScript(codeExternalString, isolate, m_sourceURL, m_position);
     if (result.IsEmpty())
         return;
 
@@ -191,7 +191,7 @@ void V8LazyEventListener::prepareListenerObject(ScriptExecutionContext* context)
         return;
 
     // FIXME: Remove this code when we stop doing the 'with' hack above.
-    v8::Local<v8::Value> innerValue = V8ScriptRunner::callInternalFunction(intermediateFunction, v8Context, thisObject, 0, 0, isolate);
+    v8::Local<v8::Value> innerValue = V8ScriptRunner::callInternalFunction(intermediateFunction, thisObject, 0, 0, isolate);
     if (innerValue.IsEmpty() || !innerValue->IsFunction())
         return;
 

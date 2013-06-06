@@ -90,7 +90,7 @@ void DateExtension::setAllowSleep(bool allow, v8::Isolate* isolate)
 
     v8::Handle<v8::Value> argv[1];
     argv[0] = v8::Boolean::New(!allow);
-    V8ScriptRunner::callInternalFunction(v8::Handle<v8::Function>::Cast(sleepFunctionHandle), v8::Context::GetCurrent(), v8::Object::New(), WTF_ARRAY_LENGTH(argv), argv, isolate);
+    V8ScriptRunner::callInternalFunction(v8::Handle<v8::Function>::Cast(sleepFunctionHandle), v8::Object::New(), WTF_ARRAY_LENGTH(argv), argv, isolate);
 }
 
 v8::Handle<v8::FunctionTemplate> DateExtension::GetNativeFunction(v8::Handle<v8::String> name)

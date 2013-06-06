@@ -49,7 +49,7 @@ bool copyElements(v8::Handle<v8::Object> destArray, v8::Handle<v8::Object> srcAr
         return false;
     v8::Handle<v8::Function> copy_method = value.As<v8::Function>();
     v8::Handle<v8::Value> arguments[3] = { srcArray, v8::Uint32::New(length), v8::Uint32::New(offset) };
-    V8ScriptRunner::callInternalFunction(copy_method, v8::Context::GetCurrent(), destArray, WTF_ARRAY_LENGTH(arguments), arguments, isolate);
+    V8ScriptRunner::callInternalFunction(copy_method, destArray, WTF_ARRAY_LENGTH(arguments), arguments, isolate);
     return true;
 }
 

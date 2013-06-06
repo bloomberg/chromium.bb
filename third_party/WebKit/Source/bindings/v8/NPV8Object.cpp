@@ -541,12 +541,12 @@ bool _NPN_Enumerate(NPP npp, NPObject* npObject, NPIdentifier** identifier, uint
             "  return props;"
             "});";
         v8::Handle<v8::String> source = v8::String::New(enumeratorCode);
-        v8::Handle<v8::Value> result = V8ScriptRunner::compileAndRunInternalScript(source, context->GetIsolate(), context);
+        v8::Handle<v8::Value> result = V8ScriptRunner::compileAndRunInternalScript(source, context->GetIsolate());
         ASSERT(!result.IsEmpty());
         ASSERT(result->IsFunction());
         v8::Handle<v8::Function> enumerator = v8::Handle<v8::Function>::Cast(result);
         v8::Handle<v8::Value> argv[] = { obj };
-        v8::Local<v8::Value> propsObj = V8ScriptRunner::callInternalFunction(enumerator, context, v8::Handle<v8::Object>::Cast(result), WTF_ARRAY_LENGTH(argv), argv, context->GetIsolate());
+        v8::Local<v8::Value> propsObj = V8ScriptRunner::callInternalFunction(enumerator, v8::Handle<v8::Object>::Cast(result), WTF_ARRAY_LENGTH(argv), argv, context->GetIsolate());
         if (propsObj.IsEmpty())
             return false;
 

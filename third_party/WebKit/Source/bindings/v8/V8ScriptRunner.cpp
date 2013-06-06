@@ -76,22 +76,16 @@ v8::Local<v8::Value> V8ScriptRunner::runCompiledScript(v8::Handle<v8::Script> sc
     return result;
 }
 
-v8::Local<v8::Value> V8ScriptRunner::compileAndRunInternalScript(v8::Handle<v8::String> source, v8::Isolate* isolate, v8::Local<v8::Context> context, const String& fileName, const TextPosition& scriptStartPosition)
+v8::Local<v8::Value> V8ScriptRunner::compileAndRunInternalScript(v8::Handle<v8::String> source, v8::Isolate* isolate, const String& fileName, const TextPosition& scriptStartPosition)
 {
     TRACE_EVENT0("v8", "v8.run");
-    v8::Local<v8::Value> result;
-    if (context.IsEmpty())
-        context = v8::Context::New(isolate);
-    if (context.IsEmpty())
-        return result;
-
-    v8::Context::Scope scope(context);
     v8::Handle<v8::Script> script = V8ScriptRunner::compileScript(source, fileName, scriptStartPosition, isolate);
     if (script.IsEmpty())
-        return result;
+        return v8::Local<v8::Value>();
 
     V8RecursionScope::MicrotaskSuppression recursionScope;
-    result = script->Run();
+    v8::Local<v8::Value> result = script->Run();
+    crashIfV8IsDead();
     return result;
 }
 
@@ -122,23 +116,15 @@ v8::Local<v8::Value> V8ScriptRunner::callFunction(v8::Handle<v8::Function> funct
 
     V8RecursionScope recursionScope(context);
     v8::Local<v8::Value> result = function->Call(receiver, argc, args);
-
     crashIfV8IsDead();
     return result;
 }
 
-v8::Local<v8::Value> V8ScriptRunner::callInternalFunction(v8::Handle<v8::Function> function, v8::Local<v8::Context> context, v8::Handle<v8::Object> receiver, int argc, v8::Handle<v8::Value> args[], v8::Isolate* isolate)
+v8::Local<v8::Value> V8ScriptRunner::callInternalFunction(v8::Handle<v8::Function> function, v8::Handle<v8::Object> receiver, int argc, v8::Handle<v8::Value> args[], v8::Isolate* isolate)
 {
     TRACE_EVENT0("v8", "v8.callFunction");
-    v8::Local<v8::Value> result;
-    if (context.IsEmpty())
-        context = v8::Context::New(isolate);
-    if (context.IsEmpty())
-        return result;
-
-    v8::Context::Scope scope(context);
     V8RecursionScope::MicrotaskSuppression recursionScope;
-    result = function->Call(receiver, argc, args);
+    v8::Local<v8::Value> result = function->Call(receiver, argc, args);
     crashIfV8IsDead();
     return result;
 }

@@ -99,7 +99,7 @@ void PageScriptDebugServer::addListener(ScriptDebugListener* listener, Page* pag
     v8::Local<v8::Context> context = shell->context();
     v8::Handle<v8::Function> getScriptsFunction = v8::Local<v8::Function>::Cast(m_debuggerScript.get()->Get(v8::String::NewSymbol("getScripts")));
     v8::Handle<v8::Value> argv[] = { context->GetEmbedderData(0) };
-    v8::Handle<v8::Value> value = V8ScriptRunner::callInternalFunction(getScriptsFunction, context, m_debuggerScript.get(), WTF_ARRAY_LENGTH(argv), argv, m_isolate);
+    v8::Handle<v8::Value> value = V8ScriptRunner::callInternalFunction(getScriptsFunction, m_debuggerScript.get(), WTF_ARRAY_LENGTH(argv), argv, m_isolate);
     if (value.IsEmpty())
         return;
     ASSERT(!value->IsUndefined() && value->IsArray());

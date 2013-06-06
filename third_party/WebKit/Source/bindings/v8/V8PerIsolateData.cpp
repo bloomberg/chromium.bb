@@ -213,7 +213,7 @@ void V8PerIsolateData::constructorOfToString(const v8::FunctionCallbackInfo<v8::
         v8SetReturnValue(args, v8::String::Empty(args.GetIsolate()));
         return;
     }
-    v8SetReturnValue(args, V8ScriptRunner::callInternalFunction(v8::Handle<v8::Function>::Cast(value), v8::Context::GetCurrent(), args.This(), 0, 0, v8::Isolate::GetCurrent()));
+    v8SetReturnValue(args, V8ScriptRunner::callInternalFunction(v8::Handle<v8::Function>::Cast(value), args.This(), 0, 0, v8::Isolate::GetCurrent()));
 }
 
 } // namespace WebCore
