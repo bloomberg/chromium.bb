@@ -29,7 +29,8 @@ _FIELD_FORMAT = {
 def _MergeResults(results, fields):
   merged_results = collections.defaultdict(list)
   for result in results:
-    if fields != ['all'] and not result.name in fields:
+    if ((fields != ['all'] and not result.name in fields) or
+        result.value is None):
       continue
     name = '%s (%s)' % (result.name, result.unit)
     if isinstance(result.value, list):

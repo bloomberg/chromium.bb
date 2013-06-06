@@ -9,6 +9,11 @@ class DidNotScrollException(page_measurement.MeasurementFailure):
   def __init__(self):
     super(DidNotScrollException, self).__init__('Page did not scroll')
 
+class MissingDisplayFrameRate(page_measurement.MeasurementFailure):
+  def __init__(self):
+    super(MissingDisplayFrameRate, self).__init__(
+        'Missing display frame rate metrics')
+
 def DivideIfPossibleOrZero(numerator, denominator):
   if denominator == 0:
     return 0
@@ -216,4 +221,6 @@ class SmoothnessMeasurement(page_measurement.PageMeasurement):
 
     if tab.browser.platform.IsRawDisplayFrameRateSupported():
       for r in tab.browser.platform.GetRawDisplayFrameRateMeasurements():
+        if not r.value:
+          raise MissingDisplayFrameRate()
         results.Add(r.name, r.unit, r.value)

@@ -64,12 +64,21 @@ class SurfaceStatsCollector(object):
 
   def SampleResults(self):
     self._StorePerfResults()
-    results = self._results
+    results = self.GetResults()
     self._results = []
     return results
 
   def GetResults(self):
-    return self._results
+    return self._results or self._GetEmptyResults()
+
+  def _GetEmptyResults(self):
+    return [
+        SurfaceStatsCollector.Result('refresh_period', None, 'seconds'),
+        SurfaceStatsCollector.Result('jank_count', None, 'janks'),
+        SurfaceStatsCollector.Result('max_frame_delay', None, 'vsyncs'),
+        SurfaceStatsCollector.Result('frame_lengths', None, 'vsyncs'),
+        SurfaceStatsCollector.Result('avg_surface_fps', None, 'fps')
+    ]
 
   @staticmethod
   def _GetNormalizedDeltas(data, refresh_period):
