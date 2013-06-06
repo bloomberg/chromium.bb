@@ -343,8 +343,8 @@ void RestartPlatformApp(Profile* profile, const Extension* extension) {
 
   ExtensionPrefs* extension_prefs = ExtensionSystem::Get(profile)->
       extension_service()->extension_prefs();
-  bool had_windows = extension_prefs->HasWindows(extension->id());
-  extension_prefs->SetHasWindows(extension->id(), false);
+  bool had_windows = extension_prefs->IsActive(extension->id());
+  extension_prefs->SetIsActive(extension->id(), false);
   bool listening_to_launch = event_router->
       ExtensionHasEventListener(extension->id(), event_names::kOnLaunched);
 
