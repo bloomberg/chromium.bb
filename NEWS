@@ -60,6 +60,13 @@ liblouis NEWS -- history of user-visible changes.  	-*- org -*-
    - Fix a bug when resizing a table. Previously not all references to
      this table were updated.
 
+** Backwards incompatible changes
+   - The feature that allowed a mapping between language code and
+     Braille table was removed as it contained a out-of-bounds access
+     bug, was never documented and probably never used. Thanks to
+     Peter Nilsson Lundblad and Jeremy Roman for analyzing this
+     problem and providing a patch.
+
 * Noteworthy changes in release 2.5.2 (2012-12-18)
 
 While initially planned as mainly a bug fix release this release

@@ -147,7 +147,6 @@ table_files = \
 	ko-g2.ctb \
 	kok.ctb \
 	kru.ctb \
-	lang2table \
 	latinLetterDef6Dots.uti \
 	latinLetterDef8Dots.uti \
 	litdigits6Dots.uti \
