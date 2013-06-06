@@ -151,8 +151,4 @@ void ChromeV8Context::OnResponseReceived(const std::string& name,
   }
 }
 
-bool ChromeV8Context::is_valid() const {
-  return !v8_context_.get().IsEmpty();
-}
-
 }  // namespace extensions

@@ -87,20 +87,26 @@ void ChromeV8ContextSet::ForEach(
 
   for (ContextSet::iterator it = contexts.begin(); it != contexts.end();
        ++it) {
+    ChromeV8Context* context = *it;
+
+    // For the same reason as above, contexts may become invalid while we run.
+    if (!context->is_valid())
+      continue;
+
     if (!extension_id.empty()) {
-      const Extension* extension = (*it)->extension();
+      const Extension* extension = context->extension();
       if (!extension || (extension_id != extension->id()))
         continue;
     }
 
-    content::RenderView* context_render_view = (*it)->GetRenderView();
+    content::RenderView* context_render_view = context->GetRenderView();
     if (!context_render_view)
       continue;
 
     if (render_view && render_view != context_render_view)
       continue;
 
-    callback.Run(*it);
+    callback.Run(context);
   }
 }
 

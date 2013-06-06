@@ -39,6 +39,12 @@ class ChromeV8Context : public RequestSender::Source {
   // ModuleSystem.
   void Invalidate();
 
+  // Returns true if this context is still valid, false if it isn't.
+  // A context becomes invalid via Invalidate().
+  bool is_valid() const {
+    return !v8_context_.get().IsEmpty();
+  }
+
   v8::Handle<v8::Context> v8_context() const {
     return v8_context_.get();
   }
@@ -100,8 +106,6 @@ class ChromeV8Context : public RequestSender::Source {
                                   const std::string& error) OVERRIDE;
 
  private:
-  bool is_valid() const;
-
   // The v8 context the bindings are accessible to.
   ScopedPersistent<v8::Context> v8_context_;
 
