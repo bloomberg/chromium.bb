@@ -30,6 +30,7 @@ public class ContentViewGestureHandlerTest extends InstrumentationTestCase {
 
     private static final String TAG = ContentViewGestureHandler.class.toString();
     private MockListener mMockListener;
+    private MockMotionEventDelegate mMockMotionEventDelegate;
     private MockGestureDetector mMockGestureDetector;
     private ContentViewGestureHandler mGestureHandler;
     private LongPressDetector mLongPressDetector;
@@ -88,8 +89,12 @@ public class ContentViewGestureHandlerTest extends InstrumentationTestCase {
     }
 
     static class MockMotionEventDelegate implements MotionEventDelegate {
+        public int mLastTouchAction;
+        public int mLastGestureType;
+
         @Override
         public boolean sendTouchEvent(long timeMs, int action, TouchPoint[] pts) {
+            mLastTouchAction = action;
             return true;
         }
 
@@ -97,6 +102,7 @@ public class ContentViewGestureHandlerTest extends InstrumentationTestCase {
         public boolean sendGesture(int type, long timeMs, int x, int y,
                 boolean lastInputEventForVSync, Bundle extraParams) {
             Log.i(TAG,"Gesture event received with type id " + type);
+            mLastGestureType = type;
             return true;
         }
 
@@ -137,14 +143,16 @@ public class ContentViewGestureHandlerTest extends InstrumentationTestCase {
         mMockListener = new MockListener();
         mMockGestureDetector = new MockGestureDetector(
                 getInstrumentation().getTargetContext(), mMockListener);
+        mMockMotionEventDelegate = new MockMotionEventDelegate();
         mGestureHandler = new ContentViewGestureHandler(
-                getInstrumentation().getTargetContext(), new MockMotionEventDelegate(),
+                getInstrumentation().getTargetContext(), mMockMotionEventDelegate,
                 new MockZoomManager(getInstrumentation().getTargetContext(), null),
                 ContentViewCore.INPUT_EVENTS_DELIVERED_AT_VSYNC);
         mLongPressDetector = new LongPressDetector(
                 getInstrumentation().getTargetContext(), mGestureHandler);
         mGestureHandler.setTestDependencies(
                 mLongPressDetector, mMockGestureDetector, mMockListener);
+        TouchPoint.initializeConstantsForTesting();
     }
 
     /**
@@ -230,6 +238,67 @@ public class ContentViewGestureHandlerTest extends InstrumentationTestCase {
         // Synchronous, no need to wait.
         assertTrue("Should not have a fling", mMockListener.mLastFling1 == null);
         assertTrue("Should not have a long press", mMockListener.mLastLongPress == null);
+    }
+
+    /**
+     * Verify the behavior of touch event timeout handler.
+     * @throws Exception
+     */
+    @SmallTest
+    @Feature({"Gestures"})
+    public void testTouchEventTimeoutHandler() throws Exception {
+        final long downTime = SystemClock.uptimeMillis();
+        final long eventTime = SystemClock.uptimeMillis();
+
+        mGestureHandler.hasTouchEventHandlers(true);
+
+        MotionEvent event = motionEvent(MotionEvent.ACTION_DOWN, downTime, downTime);
+        assertTrue(mGestureHandler.onTouchEvent(event));
+        assertEquals(1, mGestureHandler.getNumberOfPendingMotionEventsForTesting());
+
+        // Queue a touch move event.
+        event = MotionEvent.obtain(
+                downTime, eventTime + 50, MotionEvent.ACTION_MOVE,
+                FAKE_COORD_X * 5, FAKE_COORD_Y * 5, 0);
+        assertTrue(mGestureHandler.onTouchEvent(event));
+        assertEquals(2, mGestureHandler.getNumberOfPendingMotionEventsForTesting());
+
+        mGestureHandler.mockTouchEventTimeout();
+        // On timeout, the pending queue should be cleared.
+        assertEquals(0, mGestureHandler.getNumberOfPendingMotionEventsForTesting());
+
+        // No new touch events should be sent to the touch handler before the timed-out event
+        // gets ACK'ed.
+        event = MotionEvent.obtain(
+                downTime, eventTime + 200, MotionEvent.ACTION_MOVE,
+                FAKE_COORD_X * 10, FAKE_COORD_Y * 10, 0);
+        mGestureHandler.onTouchEvent(event);
+        assertEquals(0, mGestureHandler.getNumberOfPendingMotionEventsForTesting());
+
+        // When the timed-out event gets ACK'ed, a cancel event should be sent.
+        mGestureHandler.confirmTouchEvent(ContentViewGestureHandler.INPUT_EVENT_ACK_STATE_CONSUMED);
+        assertEquals(0, mGestureHandler.getNumberOfPendingMotionEventsForTesting());
+        assertEquals(TouchPoint.TOUCH_EVENT_TYPE_CANCEL, mMockMotionEventDelegate.mLastTouchAction);
+
+        // No new touch events should be sent to the touch handler before the cancel event
+        // gets ACK'ed.
+        event = MotionEvent.obtain(
+                downTime, eventTime + 300, MotionEvent.ACTION_UP,
+                FAKE_COORD_X * 20, FAKE_COORD_Y * 20, 0);
+        mGestureHandler.onTouchEvent(event);
+        assertEquals(0, mGestureHandler.getNumberOfPendingMotionEventsForTesting());
+
+        mGestureHandler.confirmTouchEvent(
+                ContentViewGestureHandler.INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+
+        // After cancel event is ACK'ed, the handler should return to normal state.
+        event = MotionEvent.obtain(
+                downTime + 400, eventTime + 400, MotionEvent.ACTION_DOWN,
+                FAKE_COORD_X * 10, FAKE_COORD_Y * 10, 0);
+        assertTrue(mGestureHandler.onTouchEvent(event));
+        assertEquals(1, mGestureHandler.getNumberOfPendingMotionEventsForTesting());
+        mGestureHandler.confirmTouchEvent(ContentViewGestureHandler.INPUT_EVENT_ACK_STATE_CONSUMED);
+        assertEquals(0, mGestureHandler.getNumberOfPendingMotionEventsForTesting());
     }
 
     /**
