@@ -15,65 +15,20 @@
 #include "base/file_util.h"
 #include "base/pickle.h"
 #include "base/posix/unix_domain_socket_linux.h"
+#include "skia/ext/refptr.h"
 #include "skia/ext/skia_utils_base.h"
+#include "third_party/skia/include/core/SkData.h"
 #include "third_party/skia/include/core/SkStream.h"
 
 namespace content {
 
-// Is given a mmap'd address, and will unmap it in its destructor
-class MMapStream : public SkStream {
- public:
-  MMapStream(const void* addr, size_t length)
-    : memory_(reinterpret_cast<const uint8_t*>(addr))
-    , offset_(0)
-    , length_(length)
-  {}
-
-  virtual ~MMapStream() {
-    munmap(const_cast<uint8_t*>(memory_), length_);
-  }
-
-  virtual bool rewind() OVERRIDE {
-    offset_ = 0;
-    return true;
-  }
-
-  virtual size_t read(void* buffer, size_t size) OVERRIDE {
-    if (!buffer && !size) {
-      // This is request for the length of the stream.
-      return length_;
-    }
-
-    size_t remaining = length_ - offset_;
-    if (size > remaining)
-      size = remaining;
-    if (buffer)
-      memcpy(buffer, memory_ + offset_, size);
-
-    offset_ += size;
-    return size;
-  }
-
-  virtual const void* getMemoryBase() OVERRIDE {
-    return memory_;
-  }
-
- private:
-  const uint8_t* memory_;
-  size_t offset_, length_;
-};
-
 // Return a stream from the file descriptor, or NULL on failure.
 SkStream* StreamFromFD(int fd) {
-  struct stat st;
-  if (fstat(fd, &st))
+  skia::RefPtr<SkData> data = skia::AdoptRef(SkData::NewFromFD(fd));
+  if (!data) {
     return NULL;
-
-  void* memory = mmap(NULL, st.st_size, PROT_READ, MAP_SHARED, fd, 0);
-  if (memory == MAP_FAILED)
-    return NULL;
-
-  return new MMapStream(memory, st.st_size);
+  }
+  return new SkMemoryStream(data.get());
 }
 
 void CloseFD(int fd) {
