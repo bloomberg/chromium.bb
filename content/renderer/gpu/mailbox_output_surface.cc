@@ -47,6 +47,8 @@ void MailboxOutputSurface::EnsureBackbuffer() {
       TransferableFrame& texture = returned_textures_.front();
       if (texture.size == size_) {
         current_backing_ = texture;
+        if (current_backing_.sync_point)
+          context3d_->waitSyncPoint(current_backing_.sync_point);
         returned_textures_.pop();
         break;
       }
