@@ -211,7 +211,7 @@ ui.Errors.prototype = {
             this._containerElement = document.createElement('H2');
             this._containerElement.style.color = 'red';
             this._containerElement.id = 'errors';
-            document.documentElement.appendChild(this._containerElement);
+            document.documentElement.insertBefore(this._containerElement, document.body);
         }
 
         this._containerElement.innerHTML = this._messages;
