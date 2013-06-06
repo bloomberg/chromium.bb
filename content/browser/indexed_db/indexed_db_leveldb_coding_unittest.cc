@@ -8,16 +8,13 @@
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/string16.h"
-#include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/browser/indexed_db/leveldb/leveldb_slice.h"
 #include "content/common/indexed_db/indexed_db_key.h"
 #include "content/common/indexed_db/indexed_db_key_path.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using base::StringPiece;
 using WebKit::WebIDBKey;
 using WebKit::WebIDBKeyPath;
 
@@ -79,16 +76,9 @@ TEST(IndexedDBLevelDBCodingTest, DecodeByte) {
     EncodeByte(n, &v);
 
     unsigned char res;
-    StringPiece slice(&*v.begin(), v.size());
-    EXPECT_TRUE(DecodeByte(&slice, &res));
+    const char* p = DecodeByte(&*v.begin(), &*v.rbegin() + 1, res);
     EXPECT_EQ(n, res);
-    EXPECT_TRUE(slice.empty());
-  }
-
-  {
-    StringPiece slice;
-    unsigned char value;
-    EXPECT_FALSE(DecodeByte(&slice, &value));
+    EXPECT_EQ(&*v.rbegin() + 1, p);
   }
 }
 
@@ -122,14 +112,14 @@ TEST(IndexedDBLevelDBCodingTest, MaxIDBKey) {
   std::vector<char> max_key = MaxIDBKey();
 
   std::vector<char> min_key = MinIDBKey();
-  std::vector<char> array_key;
-  EncodeIDBKey(IndexedDBKey(IndexedDBKey::KeyArray()), &array_key);
-  std::vector<char> string_key;
-  EncodeIDBKey(IndexedDBKey(ASCIIToUTF16("Hello world")), &string_key);
-  std::vector<char> number_key;
-  EncodeIDBKey(IndexedDBKey(3.14, WebIDBKey::NumberType), &number_key);
-  std::vector<char> date_key;
-  EncodeIDBKey(IndexedDBKey(1000000, WebIDBKey::DateType), &date_key);
+  std::vector<char> array_key =
+      EncodeIDBKey(IndexedDBKey(IndexedDBKey::KeyArray()));
+  std::vector<char> string_key =
+      EncodeIDBKey(IndexedDBKey(ASCIIToUTF16("Hello world")));
+  std::vector<char> number_key =
+      EncodeIDBKey(IndexedDBKey(3.14, WebIDBKey::NumberType));
+  std::vector<char> date_key =
+      EncodeIDBKey(IndexedDBKey(1000000, WebIDBKey::DateType));
 
   EXPECT_GT(CompareKeys(max_key, min_key), 0);
   EXPECT_GT(CompareKeys(max_key, array_key), 0);
@@ -142,14 +132,14 @@ TEST(IndexedDBLevelDBCodingTest, MinIDBKey) {
   std::vector<char> min_key = MinIDBKey();
 
   std::vector<char> max_key = MaxIDBKey();
-  std::vector<char> array_key;
-  EncodeIDBKey(IndexedDBKey(IndexedDBKey::KeyArray()), &array_key);
-  std::vector<char> string_key;
-  EncodeIDBKey(IndexedDBKey(ASCIIToUTF16("Hello world")), &string_key);
-  std::vector<char> number_key;
-  EncodeIDBKey(IndexedDBKey(3.14, WebIDBKey::NumberType), &number_key);
-  std::vector<char> date_key;
-  EncodeIDBKey(IndexedDBKey(1000000, WebIDBKey::DateType), &date_key);
+  std::vector<char> array_key =
+      EncodeIDBKey(IndexedDBKey(IndexedDBKey::KeyArray()));
+  std::vector<char> string_key =
+      EncodeIDBKey(IndexedDBKey(ASCIIToUTF16("Hello world")));
+  std::vector<char> number_key =
+      EncodeIDBKey(IndexedDBKey(3.14, WebIDBKey::NumberType));
+  std::vector<char> date_key =
+      EncodeIDBKey(IndexedDBKey(1000000, WebIDBKey::DateType));
 
   EXPECT_LT(CompareKeys(min_key, max_key), 0);
   EXPECT_LT(CompareKeys(min_key, array_key), 0);
@@ -179,25 +169,12 @@ TEST(IndexedDBLevelDBCodingTest, DecodeBool) {
   {
     std::vector<char> encoded;
     encoded.push_back(1);
-    StringPiece slice(&*encoded.begin(), encoded.size());
-    bool value;
-    EXPECT_TRUE(DecodeBool(&slice, &value));
-    EXPECT_TRUE(value);
-    EXPECT_TRUE(slice.empty());
+    EXPECT_TRUE(DecodeBool(&*encoded.begin(), &*encoded.rbegin() + 1));
   }
   {
     std::vector<char> encoded;
     encoded.push_back(0);
-    StringPiece slice(&*encoded.begin(), encoded.size());
-    bool value;
-    EXPECT_TRUE(DecodeBool(&slice, &value));
-    EXPECT_FALSE(value);
-    EXPECT_TRUE(slice.empty());
-  }
-  {
-    StringPiece slice;
-    bool value;
-    EXPECT_FALSE(DecodeBool(&slice, &value));
+    EXPECT_FALSE(DecodeBool(&*encoded.begin(), &*encoded.rbegin() + 1));
   }
 }
 
@@ -218,16 +195,7 @@ TEST(IndexedDBLevelDBCodingTest, DecodeInt) {
   for (size_t i = 0; i < test_cases.size(); ++i) {
     int64 n = test_cases[i];
     std::vector<char> v = WrappedEncodeInt(n);
-    int64 value;
-    StringPiece slice(&*v.begin(), v.size());
-    EXPECT_TRUE(DecodeInt(&slice, &value));
-    EXPECT_EQ(n, value);
-    EXPECT_TRUE(slice.empty());
-  }
-  {
-    StringPiece slice;
-    int64 value;
-    EXPECT_FALSE(DecodeInt(&slice, &value));
+    EXPECT_EQ(n, DecodeInt(&*v.begin(), &*v.rbegin() + 1));
   }
 }
 
@@ -269,17 +237,16 @@ TEST(IndexedDBLevelDBCodingTest, DecodeVarInt) {
   for (size_t i = 0; i < test_cases.size(); ++i) {
     int64 n = test_cases[i];
     std::vector<char> v = WrappedEncodeVarInt(n);
-    StringPiece slice(&*v.begin(), v.size());
+
     int64 res;
-    EXPECT_TRUE(DecodeVarInt(&slice, &res));
+    const char* p = DecodeVarInt(&*v.begin(), &*v.rbegin() + 1, res);
     EXPECT_EQ(n, res);
-    EXPECT_TRUE(slice.empty());
+    EXPECT_EQ(&*v.rbegin() + 1, p);
 
-    slice = StringPiece(&*v.begin(), v.size() - 1);
-    EXPECT_FALSE(DecodeVarInt(&slice, &res));
-
-    slice = StringPiece(&*v.begin(), static_cast<size_t>(0));
-    EXPECT_FALSE(DecodeVarInt(&slice, &res));
+    p = DecodeVarInt(&*v.begin(), &*v.rbegin(), res);
+    EXPECT_EQ(0, p);
+    p = DecodeVarInt(&*v.begin(), &*v.begin(), res);
+    EXPECT_EQ(0, p);
   }
 }
 
@@ -308,39 +275,24 @@ TEST(IndexedDBLevelDBCodingTest, EncodeString) {
 TEST(IndexedDBLevelDBCodingTest, DecodeString) {
   const char16 test_string_a[] = {'f', 'o', 'o', '\0'};
   const char16 test_string_b[] = {0xdead, 0xbeef, '\0'};
+  const char empty[] = {0};
   std::vector<char> v;
-  StringPiece slice;
-  string16 result;
 
-  slice = StringPiece();
-  EXPECT_TRUE(DecodeString(&slice, &result));
-  EXPECT_EQ(string16(), result);
-  EXPECT_TRUE(slice.empty());
+  EXPECT_EQ(string16(), DecodeString(empty, empty));
 
   v = WrappedEncodeString(ASCIIToUTF16("a"));
-  slice = StringPiece(&*v.begin(), v.size());
-  EXPECT_TRUE(DecodeString(&slice, &result));
-  EXPECT_EQ(ASCIIToUTF16("a"), result);
-  EXPECT_TRUE(slice.empty());
+  EXPECT_EQ(ASCIIToUTF16("a"), DecodeString(&*v.begin(), &*v.rbegin() + 1));
 
   v = WrappedEncodeString(ASCIIToUTF16("foo"));
-  slice = StringPiece(&*v.begin(), v.size());
-  EXPECT_TRUE(DecodeString(&slice, &result));
-  EXPECT_EQ(ASCIIToUTF16("foo"), result);
+  EXPECT_EQ(ASCIIToUTF16("foo"), DecodeString(&*v.begin(), &*v.rbegin() + 1));
 
-  EXPECT_TRUE(slice.empty());
-  v = WrappedEncodeString(test_string_a);
-  slice = StringPiece(&*v.begin(), v.size());
-  EXPECT_TRUE(DecodeString(&slice, &result));
-  EXPECT_EQ(test_string_a, result);
-  EXPECT_TRUE(slice.empty());
+  v = WrappedEncodeString(string16(test_string_a));
+  EXPECT_EQ(string16(test_string_a),
+            DecodeString(&*v.begin(), &*v.rbegin() + 1));
 
-  EXPECT_TRUE(slice.empty());
-  v = WrappedEncodeString(test_string_b);
-  slice = StringPiece(&*v.begin(), v.size());
-  EXPECT_TRUE(DecodeString(&slice, &result));
-  EXPECT_EQ(test_string_b, result);
-  EXPECT_TRUE(slice.empty());
+  v = WrappedEncodeString(string16(test_string_b));
+  EXPECT_EQ(string16(test_string_b),
+            DecodeString(&*v.begin(), &*v.rbegin() + 1));
 }
 
 static std::vector<char> WrappedEncodeStringWithLength(string16 value) {
@@ -384,31 +336,25 @@ TEST(IndexedDBLevelDBCodingTest, DecodeStringWithLength) {
   for (size_t i = 0; i < test_cases.size(); ++i) {
     string16 s = test_cases[i];
     std::vector<char> v = WrappedEncodeStringWithLength(s);
-    StringPiece slice(&*v.begin(), v.size());
     string16 res;
-    EXPECT_TRUE(DecodeStringWithLength(&slice, &res));
+    const char* p = DecodeStringWithLength(&*v.begin(), &*v.rbegin() + 1, res);
     EXPECT_EQ(s, res);
-    EXPECT_TRUE(slice.empty());
+    EXPECT_EQ(&*v.rbegin() + 1, p);
 
-    slice = StringPiece(&*v.begin(), v.size() - 1);
-    EXPECT_FALSE(DecodeStringWithLength(&slice, &res));
-
-    slice = StringPiece(&*v.begin(), static_cast<size_t>(0));
-    EXPECT_FALSE(DecodeStringWithLength(&slice, &res));
+    EXPECT_EQ(0, DecodeStringWithLength(&*v.begin(), &*v.rbegin(), res));
+    EXPECT_EQ(0, DecodeStringWithLength(&*v.begin(), &*v.begin(), res));
   }
 }
 
-static int CompareStrings(const std::vector<char>& p,
-                          const std::vector<char>& q) {
+static int CompareStrings(const char* p,
+                          const char* limit_p,
+                          const char* q,
+                          const char* limit_q) {
   bool ok;
-  DCHECK(!p.empty());
-  DCHECK(!q.empty());
-  StringPiece slice_p(&*p.begin(), p.size());
-  StringPiece slice_q(&*q.begin(), q.size());
-  int result = CompareEncodedStringsWithLength(&slice_p, &slice_q, ok);
+  int result = CompareEncodedStringsWithLength(p, limit_p, q, limit_q, ok);
   EXPECT_TRUE(ok);
-  EXPECT_TRUE(slice_p.empty());
-  EXPECT_TRUE(slice_q.empty());
+  EXPECT_EQ(p, limit_p);
+  EXPECT_EQ(q, limit_q);
   return result;
 }
 
@@ -448,10 +394,15 @@ TEST(IndexedDBLevelDBCodingTest, CompareEncodedStringsWithLength) {
     std::vector<char> encoded_b = WrappedEncodeStringWithLength(b);
     EXPECT_TRUE(encoded_a.size());
 
-    EXPECT_LT(CompareStrings(encoded_a, encoded_b), 0);
-    EXPECT_GT(CompareStrings(encoded_b, encoded_a), 0);
-    EXPECT_EQ(CompareStrings(encoded_a, encoded_a), 0);
-    EXPECT_EQ(CompareStrings(encoded_b, encoded_b), 0);
+    const char* p = &*encoded_a.begin();
+    const char* limit_p = &*encoded_a.rbegin() + 1;
+    const char* q = &*encoded_b.begin();
+    const char* limit_q = &*encoded_b.rbegin() + 1;
+
+    EXPECT_LT(CompareStrings(p, limit_p, q, limit_q), 0);
+    EXPECT_GT(CompareStrings(q, limit_q, p, limit_p), 0);
+    EXPECT_EQ(CompareStrings(p, limit_p, p, limit_p), 0);
+    EXPECT_EQ(CompareStrings(q, limit_q, q, limit_q), 0);
   }
 }
 
@@ -468,62 +419,68 @@ TEST(IndexedDBLevelDBCodingTest, EncodeDouble) {
 
 TEST(IndexedDBLevelDBCodingTest, DecodeDouble) {
   std::vector<char> v;
-  StringPiece slice;
+  const char* p;
   double d;
 
   v = WrappedEncodeDouble(3.14);
-  slice = StringPiece(&*v.begin(), v.size());
-  EXPECT_TRUE(DecodeDouble(&slice, &d));
+  p = DecodeDouble(&*v.begin(), &*v.rbegin() + 1, &d);
   EXPECT_EQ(3.14, d);
-  EXPECT_TRUE(slice.empty());
+  EXPECT_EQ(&*v.rbegin() + 1, p);
 
   v = WrappedEncodeDouble(-3.14);
-  slice = StringPiece(&*v.begin(), v.size());
-  EXPECT_TRUE(DecodeDouble(&slice, &d));
+  p = DecodeDouble(&*v.begin(), &*v.rbegin() + 1, &d);
   EXPECT_EQ(-3.14, d);
-  EXPECT_TRUE(slice.empty());
+  EXPECT_EQ(&*v.rbegin() + 1, p);
 
   v = WrappedEncodeDouble(3.14);
-  slice = StringPiece(&*v.begin(), v.size() - 1);
-  EXPECT_FALSE(DecodeDouble(&slice, &d));
-  slice = StringPiece(&*v.begin(), static_cast<size_t>(0));
-  EXPECT_FALSE(DecodeDouble(&slice, &d));
+  p = DecodeDouble(&*v.begin(), &*v.rbegin(), &d);
+  EXPECT_EQ(0, p);
 }
 
 TEST(IndexedDBLevelDBCodingTest, EncodeDecodeIDBKey) {
   IndexedDBKey expected_key;
   scoped_ptr<IndexedDBKey> decoded_key;
   std::vector<char> v;
-  StringPiece slice;
+  const char* p;
 
-  std::vector<IndexedDBKey> test_cases;
-  test_cases.push_back(IndexedDBKey(1234, WebIDBKey::NumberType));
-  test_cases.push_back(IndexedDBKey(7890, WebIDBKey::DateType));
-  test_cases.push_back(IndexedDBKey(ASCIIToUTF16("Hello World!")));
-  test_cases.push_back(IndexedDBKey(IndexedDBKey::KeyArray()));
+  expected_key = IndexedDBKey(1234, WebIDBKey::NumberType);
+  v = EncodeIDBKey(expected_key);
+  p = DecodeIDBKey(&*v.begin(), &*v.rbegin() + 1, &decoded_key);
+  EXPECT_TRUE(decoded_key->IsEqual(expected_key));
+  EXPECT_EQ(&*v.rbegin() + 1, p);
+  EXPECT_EQ(0, DecodeIDBKey(&*v.begin(), &*v.rbegin(), &decoded_key));
+
+  expected_key = IndexedDBKey(ASCIIToUTF16("Hello World!"));
+  v = EncodeIDBKey(expected_key);
+  p = DecodeIDBKey(&*v.begin(), &*v.rbegin() + 1, &decoded_key);
+  EXPECT_TRUE(decoded_key->IsEqual(expected_key));
+  EXPECT_EQ(&*v.rbegin() + 1, p);
+  EXPECT_EQ(0, DecodeIDBKey(&*v.begin(), &*v.rbegin(), &decoded_key));
+
+  expected_key = IndexedDBKey(IndexedDBKey::KeyArray());
+  v = EncodeIDBKey(expected_key);
+  p = DecodeIDBKey(&*v.begin(), &*v.rbegin() + 1, &decoded_key);
+  EXPECT_TRUE(decoded_key->IsEqual(expected_key));
+  EXPECT_EQ(&*v.rbegin() + 1, p);
+  EXPECT_EQ(0, DecodeIDBKey(&*v.begin(), &*v.rbegin(), &decoded_key));
+
+  expected_key = IndexedDBKey(7890, WebIDBKey::DateType);
+  v = EncodeIDBKey(expected_key);
+  p = DecodeIDBKey(&*v.begin(), &*v.rbegin() + 1, &decoded_key);
+  EXPECT_TRUE(decoded_key->IsEqual(expected_key));
+  EXPECT_EQ(&*v.rbegin() + 1, p);
+  EXPECT_EQ(0, DecodeIDBKey(&*v.begin(), &*v.rbegin(), &decoded_key));
 
   IndexedDBKey::KeyArray array;
   array.push_back(IndexedDBKey(1234, WebIDBKey::NumberType));
-  array.push_back(IndexedDBKey(7890, WebIDBKey::DateType));
   array.push_back(IndexedDBKey(ASCIIToUTF16("Hello World!")));
-  array.push_back(IndexedDBKey(IndexedDBKey::KeyArray()));
-  test_cases.push_back(IndexedDBKey(array));
-
-  for (size_t i = 0; i < test_cases.size(); ++i) {
-    expected_key = test_cases[i];
-    v.clear();
-    EncodeIDBKey(expected_key, &v);
-    slice = StringPiece(&*v.begin(), v.size());
-    EXPECT_TRUE(DecodeIDBKey(&slice, &decoded_key));
-    EXPECT_TRUE(decoded_key->IsEqual(expected_key));
-    EXPECT_TRUE(slice.empty());
-
-    slice = StringPiece(&*v.begin(), v.size() - 1);
-    EXPECT_FALSE(DecodeIDBKey(&slice, &decoded_key));
-
-    slice = StringPiece(&*v.begin(), static_cast<size_t>(0));
-    EXPECT_FALSE(DecodeIDBKey(&slice, &decoded_key));
-  }
+  array.push_back(IndexedDBKey(7890, WebIDBKey::DateType));
+  expected_key = IndexedDBKey(array);
+  v = EncodeIDBKey(expected_key);
+  p = DecodeIDBKey(&*v.begin(), &*v.rbegin() + 1, &decoded_key);
+  EXPECT_TRUE(decoded_key->IsEqual(expected_key));
+  EXPECT_EQ(&*v.rbegin() + 1, p);
+  EXPECT_EQ(0, DecodeIDBKey(&*v.begin(), &*v.rbegin(), &decoded_key));
 }
 
 static std::vector<char> WrappedEncodeIDBKeyPath(
@@ -533,119 +490,145 @@ static std::vector<char> WrappedEncodeIDBKeyPath(
   return buffer;
 }
 
-TEST(IndexedDBLevelDBCodingTest, EncodeDecodeIDBKeyPath) {
-  std::vector<IndexedDBKeyPath> key_paths;
-  std::vector<std::vector<char> > encoded_paths;
-
+TEST(IndexedDBLevelDBCodingTest, EncodeIDBKeyPath) {
+  const unsigned char kIDBKeyPathTypeCodedByte1 = 0;
+  const unsigned char kIDBKeyPathTypeCodedByte2 = 0;
   {
-    key_paths.push_back(IndexedDBKeyPath());
-    char expected[] = {0, 0,  // Header
-                       0      // Type is null
-    };
-    encoded_paths.push_back(
-        std::vector<char>(expected, expected + arraysize(expected)));
-  }
-
-  {
-    key_paths.push_back(IndexedDBKeyPath(string16()));
-    char expected[] = {0, 0,  // Header
-                       1,     // Type is string
-                       0      // Length is 0
-    };
-    encoded_paths.push_back(
-        std::vector<char>(expected, expected + arraysize(expected)));
-  }
-
-  {
-    key_paths.push_back(IndexedDBKeyPath(ASCIIToUTF16("foo")));
-    char expected[] = {0, 0,                      // Header
-                       1,                         // Type is string
-                       3, 0, 'f', 0, 'o', 0, 'o'  // String length 3, UTF-16BE
-    };
-    encoded_paths.push_back(
-        std::vector<char>(expected, expected + arraysize(expected)));
-  }
-
-  {
-    key_paths.push_back(IndexedDBKeyPath(ASCIIToUTF16("foo.bar")));
-    char expected[] = {0, 0,  // Header
-                       1,     // Type is string
-                       7, 0, 'f', 0, 'o', 0, 'o', 0, '.', 0, 'b', 0, 'a', 0,
-                       'r'  // String length 7, UTF-16BE
-    };
-    encoded_paths.push_back(
-        std::vector<char>(expected, expected + arraysize(expected)));
-  }
-
-  {
-    std::vector<string16> array;
-    array.push_back(string16());
-    array.push_back(ASCIIToUTF16("foo"));
-    array.push_back(ASCIIToUTF16("foo.bar"));
-
-    key_paths.push_back(IndexedDBKeyPath(array));
-    char expected[] = {0, 0,                       // Header
-                       2, 3,                       // Type is array, length is 3
-                       0,                          // Member 1 (String length 0)
-                       3, 0, 'f', 0, 'o', 0, 'o',  // Member 2 (String length 3)
-                       7, 0, 'f', 0, 'o', 0, 'o', 0, '.', 0, 'b', 0, 'a', 0,
-                       'r'  // Member 3 (String length 7)
-    };
-    encoded_paths.push_back(
-        std::vector<char>(expected, expected + arraysize(expected)));
-  }
-
-  ASSERT_EQ(key_paths.size(), encoded_paths.size());
-  for (size_t i = 0; i < key_paths.size(); ++i) {
-
-    IndexedDBKeyPath key_path = key_paths[i];
-    std::vector<char> encoded = encoded_paths[i];
-
+    IndexedDBKeyPath key_path;
+    EXPECT_EQ(key_path.type(), WebIDBKeyPath::NullType);
     std::vector<char> v = WrappedEncodeIDBKeyPath(key_path);
-    EXPECT_EQ(encoded, v);
+    EXPECT_EQ(v.size(), 3U);
+    EXPECT_EQ(v[0], kIDBKeyPathTypeCodedByte1);
+    EXPECT_EQ(v[1], kIDBKeyPathTypeCodedByte2);
+    EXPECT_EQ(v[2], WebIDBKeyPath::NullType);
+  }
 
-    StringPiece slice(&*encoded.begin(), encoded.size());
-    IndexedDBKeyPath decoded;
-    EXPECT_TRUE(DecodeIDBKeyPath(&slice, &decoded));
-    EXPECT_EQ(key_path, decoded);
-    EXPECT_TRUE(slice.empty());
+  {
+    std::vector<string16> test_cases;
+    test_cases.push_back(string16());
+    test_cases.push_back(ASCIIToUTF16("foo"));
+    test_cases.push_back(ASCIIToUTF16("foo.bar"));
+
+    for (size_t i = 0; i < test_cases.size(); ++i) {
+      IndexedDBKeyPath key_path = IndexedDBKeyPath(test_cases[i]);
+      std::vector<char> v = WrappedEncodeIDBKeyPath(key_path);
+      EXPECT_EQ(v.size(),
+                WrappedEncodeStringWithLength(test_cases[i]).size() + 3);
+      const char* p = &*v.begin();
+      const char* limit = &*v.rbegin() + 1;
+      EXPECT_EQ(*p++, kIDBKeyPathTypeCodedByte1);
+      EXPECT_EQ(*p++, kIDBKeyPathTypeCodedByte2);
+      EXPECT_EQ(*p++, WebIDBKeyPath::StringType);
+      string16 string;
+      p = DecodeStringWithLength(p, limit, string);
+      EXPECT_EQ(string, test_cases[i]);
+      EXPECT_EQ(p, limit);
+    }
+  }
+
+  {
+    std::vector<string16> test_case;
+    test_case.push_back(string16());
+    test_case.push_back(ASCIIToUTF16("foo"));
+    test_case.push_back(ASCIIToUTF16("foo.bar"));
+
+    IndexedDBKeyPath key_path(test_case);
+    EXPECT_EQ(key_path.type(), WebIDBKeyPath::ArrayType);
+    std::vector<char> v = WrappedEncodeIDBKeyPath(key_path);
+    const char* p = &*v.begin();
+    const char* limit = &*v.rbegin() + 1;
+    EXPECT_EQ(*p++, kIDBKeyPathTypeCodedByte1);
+    EXPECT_EQ(*p++, kIDBKeyPathTypeCodedByte2);
+    EXPECT_EQ(*p++, WebIDBKeyPath::ArrayType);
+    int64 count;
+    p = DecodeVarInt(p, limit, count);
+    EXPECT_EQ(count, static_cast<int64>(test_case.size()));
+    for (size_t i = 0; i < static_cast<size_t>(count); ++i) {
+      string16 string;
+      p = DecodeStringWithLength(p, limit, string);
+      EXPECT_EQ(string, test_case[i]);
+    }
+    EXPECT_EQ(p, limit);
   }
 }
 
-TEST(IndexedDBLevelDBCodingTest, DecodeLegacyIDBKeyPath) {
-  // Legacy encoding of string key paths.
-  std::vector<IndexedDBKeyPath> key_paths;
-  std::vector<std::vector<char> > encoded_paths;
-
+TEST(IndexedDBLevelDBCodingTest, DecodeIDBKeyPath) {
+  const unsigned char kIDBKeyPathTypeCodedByte1 = 0;
+  const unsigned char kIDBKeyPathTypeCodedByte2 = 0;
+  const char empty[] = {0};
   {
-    key_paths.push_back(IndexedDBKeyPath(string16()));
-    encoded_paths.push_back(std::vector<char>());
-    ;
+    // Legacy encoding of string key paths.
+    std::vector<string16> test_cases;
+    test_cases.push_back(string16());
+    test_cases.push_back(ASCIIToUTF16("foo"));
+    test_cases.push_back(ASCIIToUTF16("foo.bar"));
+
+    for (size_t i = 0; i < test_cases.size(); ++i) {
+      std::vector<char> v = WrappedEncodeString(test_cases[i]);
+      const char* begin;
+      const char* end;
+      if (!v.size()) {
+        begin = empty;
+        end = empty;
+      } else {
+        begin = &*v.begin();
+        end = &*v.rbegin() + 1;
+      }
+      IndexedDBKeyPath key_path = DecodeIDBKeyPath(begin, end);
+      EXPECT_EQ(key_path.type(), WebIDBKeyPath::StringType);
+      EXPECT_EQ(test_cases[i], key_path.string());
+    }
   }
   {
-    key_paths.push_back(IndexedDBKeyPath(ASCIIToUTF16("foo")));
-    char expected[] = {0, 'f', 0, 'o', 0, 'o'};
-    encoded_paths.push_back(
-        std::vector<char>(expected, expected + arraysize(expected)));
+    std::vector<char> v;
+    v.push_back(kIDBKeyPathTypeCodedByte1);
+    v.push_back(kIDBKeyPathTypeCodedByte2);
+    v.push_back(WebIDBKeyPath::NullType);
+    IndexedDBKeyPath key_path = DecodeIDBKeyPath(&*v.begin(), &*v.rbegin() + 1);
+    EXPECT_EQ(key_path.type(), WebIDBKeyPath::NullType);
+    EXPECT_TRUE(key_path.IsNull());
   }
   {
-    key_paths.push_back(IndexedDBKeyPath(ASCIIToUTF16("foo.bar")));
-    char expected[] = {0, 'f', 0, 'o', 0, 'o', 0, '.', 0, 'b', 0, 'a', 0, 'r'};
-    encoded_paths.push_back(
-        std::vector<char>(expected, expected + arraysize(expected)));
+    std::vector<string16> test_cases;
+    test_cases.push_back(string16());
+    test_cases.push_back(ASCIIToUTF16("foo"));
+    test_cases.push_back(ASCIIToUTF16("foo.bar"));
+
+    for (size_t i = 0; i < test_cases.size(); ++i) {
+      std::vector<char> v;
+      v.push_back(kIDBKeyPathTypeCodedByte1);
+      v.push_back(kIDBKeyPathTypeCodedByte2);
+      v.push_back(WebIDBKeyPath::StringType);
+      std::vector<char> test_case =
+          WrappedEncodeStringWithLength(test_cases[i]);
+      v.insert(v.end(), test_case.begin(), test_case.end());
+      IndexedDBKeyPath key_path =
+          DecodeIDBKeyPath(&*v.begin(), &*v.rbegin() + 1);
+      EXPECT_EQ(key_path.type(), WebIDBKeyPath::StringType);
+      EXPECT_EQ(test_cases[i], key_path.string());
+    }
   }
+  {
+    std::vector<string16> test_case;
+    test_case.push_back(string16());
+    test_case.push_back(ASCIIToUTF16("foo"));
+    test_case.push_back(ASCIIToUTF16("foo.bar"));
 
-  ASSERT_EQ(key_paths.size(), encoded_paths.size());
-  for (size_t i = 0; i < key_paths.size(); ++i) {
-
-    IndexedDBKeyPath key_path = key_paths[i];
-    std::vector<char> encoded = encoded_paths[i];
-
-    StringPiece slice(&*encoded.begin(), encoded.size());
-    IndexedDBKeyPath decoded;
-    EXPECT_TRUE(DecodeIDBKeyPath(&slice, &decoded));
-    EXPECT_EQ(key_path, decoded);
-    EXPECT_TRUE(slice.empty());
+    std::vector<char> v;
+    v.push_back(kIDBKeyPathTypeCodedByte1);
+    v.push_back(kIDBKeyPathTypeCodedByte2);
+    v.push_back(WebIDBKeyPath::ArrayType);
+    EncodeVarInt(test_case.size(), &v);
+    for (size_t i = 0; i < test_case.size(); ++i) {
+      std::vector<char> test_case_value =
+          WrappedEncodeStringWithLength(test_case[i]);
+      v.insert(v.end(), test_case_value.begin(), test_case_value.end());
+    }
+    IndexedDBKeyPath key_path = DecodeIDBKeyPath(&*v.begin(), &*v.rbegin() + 1);
+    EXPECT_EQ(key_path.type(), WebIDBKeyPath::ArrayType);
+    EXPECT_EQ(key_path.array().size(), test_case.size());
+    for (size_t i = 0; i < test_case.size(); ++i)
+      EXPECT_EQ(key_path.array()[i], test_case[i]);
   }
 }
 
@@ -689,25 +672,22 @@ TEST(IndexedDBLevelDBCodingTest, ExtractAndCompareIDBKeys) {
 
     EXPECT_TRUE(key_a.IsLessThan(key_b));
 
-    std::vector<char> encoded_a;
-    EncodeIDBKey(key_a, &encoded_a);
+    std::vector<char> encoded_a = EncodeIDBKey(key_a);
     EXPECT_TRUE(encoded_a.size());
-    std::vector<char> encoded_b;
-    EncodeIDBKey(key_b, &encoded_b);
+    std::vector<char> encoded_b = EncodeIDBKey(key_b);
     EXPECT_TRUE(encoded_b.size());
 
     std::vector<char> extracted_a;
     std::vector<char> extracted_b;
-    StringPiece slice;
 
-    slice = StringPiece(&*encoded_a.begin(), encoded_a.size());
-    EXPECT_TRUE(ExtractEncodedIDBKey(&slice, &extracted_a));
-    EXPECT_TRUE(slice.empty());
+    const char* p = ExtractEncodedIDBKey(
+        &*encoded_a.begin(), &*encoded_a.rbegin() + 1, &extracted_a);
+    EXPECT_EQ(&*encoded_a.rbegin() + 1, p);
     EXPECT_EQ(encoded_a, extracted_a);
 
-    slice = StringPiece(&*encoded_b.begin(), encoded_b.size());
-    EXPECT_TRUE(ExtractEncodedIDBKey(&slice, &extracted_b));
-    EXPECT_TRUE(slice.empty());
+    const char* q = ExtractEncodedIDBKey(
+        &*encoded_b.begin(), &*encoded_b.rbegin() + 1, &extracted_b);
+    EXPECT_EQ(&*encoded_b.rbegin() + 1, q);
     EXPECT_EQ(encoded_b, extracted_b);
 
     EXPECT_LT(CompareKeys(extracted_a, extracted_b), 0);
@@ -715,8 +695,9 @@ TEST(IndexedDBLevelDBCodingTest, ExtractAndCompareIDBKeys) {
     EXPECT_EQ(CompareKeys(extracted_a, extracted_a), 0);
     EXPECT_EQ(CompareKeys(extracted_b, extracted_b), 0);
 
-    slice = StringPiece(&*encoded_a.begin(), encoded_a.size() - 1);
-    EXPECT_FALSE(ExtractEncodedIDBKey(&slice, &extracted_a));
+    EXPECT_EQ(0,
+              ExtractEncodedIDBKey(
+                  &*encoded_a.begin(), &*encoded_a.rbegin(), &extracted_a));
   }
 }
 

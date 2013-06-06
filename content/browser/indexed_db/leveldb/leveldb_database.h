@@ -51,7 +51,7 @@ class CONTENT_EXPORT LevelDBDatabase {
   bool Put(const LevelDBSlice& key, const std::vector<char>& value);
   bool Remove(const LevelDBSlice& key);
   virtual bool Get(const LevelDBSlice& key,
-                   std::string* value,
+                   std::vector<char>& value,
                    bool& found,
                    const LevelDBSnapshot* = 0);
   bool Write(LevelDBWriteBatch& batch);

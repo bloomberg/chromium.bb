@@ -90,8 +90,7 @@ TEST_F(IndexedDBBackingStoreTest, HighIds) {
   const int64 invalid_high_index_id = 1ULL << 37;
 
   const IndexedDBKey& index_key = m_key2;
-  std::vector<char> index_key_raw;
-  EncodeIDBKey(index_key, &index_key_raw);
+  std::vector<char> index_key_raw = EncodeIDBKey(index_key);
   {
     IndexedDBBackingStore::Transaction transaction1(backing_store_.get());
     transaction1.begin();

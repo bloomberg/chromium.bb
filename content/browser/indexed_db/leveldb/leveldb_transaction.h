@@ -27,7 +27,7 @@ class CONTENT_EXPORT LevelDBTransaction
 
   void Put(const LevelDBSlice& key, const std::vector<char>& value);
   void Remove(const LevelDBSlice& key);
-  bool Get(const LevelDBSlice& key, std::string* value, bool& found);
+  bool Get(const LevelDBSlice& key, std::vector<char>& value, bool& found);
   bool Commit();
   void Rollback();
 
