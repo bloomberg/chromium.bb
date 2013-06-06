@@ -90,8 +90,10 @@ class AudioHandler : public AudioPrefObserver {
   // change notification is received.
   void ApplyAudioPolicy();
 
-  // Sets volume to specified value and notifies observers.
-  void SetVolumePercentInternal(double volume_percent);
+  // Sets volume/muted to specified value and notifies observers if |notify|
+  // is true.
+  void SetVolumePercentInternal(double volume_percent, bool notify);
+  void SetMutedInternal(bool do_mute, bool notify);
 
   // Overriden from AudioPrefObserver.
   virtual void OnAudioPolicyPrefChanged() OVERRIDE;
@@ -100,8 +102,7 @@ class AudioHandler : public AudioPrefObserver {
 
   ObserverList<VolumeObserver> volume_observers_;
 
-  // Track state for triggering callbacks
-  double volume_percent_;
+  // Track state for triggering callbacks in ApplyAudioPolicy().
   bool muted_;
 
   scoped_refptr<AudioPrefHandler> audio_pref_handler_;
