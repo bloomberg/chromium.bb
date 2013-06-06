@@ -2366,6 +2366,7 @@ void RenderBoxModelObject::paintBoxShadow(const PaintInfo& info, const LayoutRec
     bool isHorizontal = s->isHorizontalWritingMode();
     
     bool hasOpaqueBackground = s->visitedDependentColor(CSSPropertyBackgroundColor).isValid() && s->visitedDependentColor(CSSPropertyBackgroundColor).alpha() == 255;
+    bool contextWasClipped = false;
     for (const ShadowData* shadow = s->boxShadow(); shadow; shadow = shadow->next()) {
         if (shadow->style() != shadowStyle)
             continue;
@@ -2389,8 +2390,6 @@ void RenderBoxModelObject::paintBoxShadow(const PaintInfo& info, const LayoutRec
             shadowRect.inflate(shadowBlur + shadowSpread);
             shadowRect.move(shadowOffset);
 
-            GraphicsContextStateSaver stateSaver(*context);
-
             // Draw only the shadow.
             DrawLooper drawLooper;
             drawLooper.addShadow(shadowOffset, shadowBlur, shadowColor,
@@ -2398,17 +2397,21 @@ void RenderBoxModelObject::paintBoxShadow(const PaintInfo& info, const LayoutRec
             context->setDrawLooper(drawLooper);
 
             if (hasBorderRadius) {
-                RoundedRect rectToClipOut = border;
+                if (!contextWasClipped) {
+                    RoundedRect rectToClipOut = border;
 
-                // If the box is opaque, it is unnecessary to clip it out. However, doing so saves time
-                // when painting the shadow. On the other hand, it introduces subpixel gaps along the
-                // corners. Those are avoided by insetting the clipping path by one pixel.
-                if (hasOpaqueBackground) {
-                    rectToClipOut.inflateWithRadii(-1);
+                    // If the box is opaque, it is unnecessary to clip it out. However, doing so saves time
+                    // when painting the shadow. On the other hand, it introduces subpixel gaps along the
+                    // corners. Those are avoided by insetting the clipping path by one pixel.
+                    if (hasOpaqueBackground)
+                        rectToClipOut.inflateWithRadii(-1);
+
+                    if (!rectToClipOut.isEmpty()) {
+                        context->save();
+                        context->clipOutRoundedRect(rectToClipOut);
+                        contextWasClipped = true;
+                    }
                 }
-
-                if (!rectToClipOut.isEmpty())
-                    context->clipOutRoundedRect(rectToClipOut);
 
                 RoundedRect influenceRect(shadowRect, border.radii());
                 influenceRect.expandRadii(2 * shadowBlur + shadowSpread);
@@ -2421,22 +2424,27 @@ void RenderBoxModelObject::paintBoxShadow(const PaintInfo& info, const LayoutRec
                     context->fillRoundedRect(fillRect, Color::black);
                 }
             } else {
-                IntRect rectToClipOut = border.rect();
+                if (!contextWasClipped) {
+                    IntRect rectToClipOut = border.rect();
 
-                // If the box is opaque, it is unnecessary to clip it out. However, doing so saves time
-                // when painting the shadow. On the other hand, it introduces subpixel gaps along the
-                // edges if they are not pixel-aligned. Those are avoided by insetting the clipping path
-                // by one pixel.
-                if (hasOpaqueBackground) {
-                    // FIXME: The function to decide on the policy based on the transform should be a named function.
-                    // FIXME: It's not clear if this check is right. What about integral scale factors?
-                    AffineTransform transform = context->getCTM();
-                    if (transform.a() != 1 || (transform.d() != 1 && transform.d() != -1) || transform.b() || transform.c())
-                        rectToClipOut.inflate(-1);
+                    // If the box is opaque, it is unnecessary to clip it out. However, doing so saves time
+                    // when painting the shadow. On the other hand, it introduces subpixel gaps along the
+                    // edges if they are not pixel-aligned. Those are avoided by insetting the clipping path
+                    // by one pixel.
+                    if (hasOpaqueBackground) {
+                        // FIXME: The function to decide on the policy based on the transform should be a named function.
+                        // FIXME: It's not clear if this check is right. What about integral scale factors?
+                        AffineTransform transform = context->getCTM();
+                        if (transform.a() != 1 || (transform.d() != 1 && transform.d() != -1) || transform.b() || transform.c())
+                            rectToClipOut.inflate(-1);
+                    }
+
+                    if (!rectToClipOut.isEmpty()) {
+                        context->save();
+                        context->clipOut(rectToClipOut);
+                        contextWasClipped = true;
+                    }
                 }
-
-                if (!rectToClipOut.isEmpty())
-                    context->clipOut(rectToClipOut);
                 context->fillRect(fillRect.rect(), Color::black);
             }
         } else {
@@ -2472,15 +2480,20 @@ void RenderBoxModelObject::paintBoxShadow(const PaintInfo& info, const LayoutRec
 
             IntRect outerRect = areaCastingShadowInHole(border.rect(), shadowBlur, shadowSpread, shadowOffset);
             RoundedRect roundedHole(holeRect, border.radii());
-
-            GraphicsContextStateSaver stateSaver(*context);
-            if (hasBorderRadius) {
-                Path path;
-                path.addRoundedRect(border);
-                context->clipPath(path);
+            if (hasBorderRadius)
                 roundedHole.shrinkRadii(shadowSpread);
-            } else
-                context->clip(border.rect());
+
+            if (!contextWasClipped) {
+                context->save();
+                if (hasBorderRadius) {
+                    Path path;
+                    path.addRoundedRect(border);
+                    context->clipPath(path);
+                } else {
+                    context->clip(border.rect());
+                }
+                contextWasClipped = true;
+            }
 
             DrawLooper drawLooper;
             drawLooper.addShadow(shadowOffset, shadowBlur, shadowColor,
@@ -2489,6 +2502,10 @@ void RenderBoxModelObject::paintBoxShadow(const PaintInfo& info, const LayoutRec
             context->fillRectWithRoundedHole(outerRect, roundedHole, fillColor);
         }
     }
+
+    if (contextWasClipped)
+        context->restore();
+    context->clearDrawLooper();
 }
 
 LayoutUnit RenderBoxModelObject::containingBlockLogicalWidthForContent() const
