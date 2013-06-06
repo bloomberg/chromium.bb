@@ -21,15 +21,12 @@
 namespace content {
 
 PlatformContext3DImpl::PlatformContext3DImpl()
-    : parent_texture_id_(0),
-      has_alpha_(false),
+    : has_alpha_(false),
       command_buffer_(NULL),
       weak_ptr_factory_(this) {
 }
 
 PlatformContext3DImpl::~PlatformContext3DImpl() {
-  DestroyParentContextProviderAndBackingTexture();
-
   if (command_buffer_) {
     DCHECK(channel_.get());
     channel_->DestroyCommandBuffer(command_buffer_);
@@ -112,9 +109,9 @@ bool PlatformContext3DImpl::Init(const int32* attrib_list,
   if (!command_buffer_->GenerateMailboxNames(1, &names))
     return false;
   DCHECK_EQ(names.size(), 1u);
-  mailbox_ = names[0];
-  if (!command_buffer_->ProduceFrontBuffer(mailbox_))
+  if (!command_buffer_->ProduceFrontBuffer(names[0]))
     return false;
+  mailbox_ = names[0];
 
   command_buffer_->SetChannelErrorCallback(
       base::Bind(&PlatformContext3DImpl::OnContextLost,
@@ -123,53 +120,11 @@ bool PlatformContext3DImpl::Init(const int32* attrib_list,
       base::Bind(&PlatformContext3DImpl::OnConsoleMessage,
                  weak_ptr_factory_.GetWeakPtr()));
 
-  return SetParentAndCreateBackingTextureIfNeeded();
-}
-
-bool PlatformContext3DImpl::SetParentAndCreateBackingTextureIfNeeded() {
-  if (parent_context_provider_.get() &&
-      !parent_context_provider_->DestroyedOnMainThread() && parent_texture_id_)
-    return true;
-
-  parent_context_provider_ =
-      RenderThreadImpl::current()->OffscreenContextProviderForMainThread();
-  parent_texture_id_ = 0;
-  if (!parent_context_provider_.get())
-    return false;
-
-  gpu::gles2::GLES2Implementation* parent_gles2 =
-      parent_context_provider_->Context3d()->GetImplementation();
-  parent_gles2->GenTextures(1, &parent_texture_id_);
-  parent_gles2->BindTexture(GL_TEXTURE_2D, parent_texture_id_);
-  parent_gles2->ConsumeTextureCHROMIUM(GL_TEXTURE_2D, mailbox_.name);
-  parent_gles2->ShallowFlushCHROMIUM();
   return true;
 }
 
-void PlatformContext3DImpl::DestroyParentContextProviderAndBackingTexture() {
-  if (!parent_context_provider_.get())
-    return;
-
-  if (parent_texture_id_) {
-    gpu::gles2::GLES2Implementation* parent_gles2 =
-        parent_context_provider_->Context3d()->GetImplementation();
-    parent_gles2->DeleteTextures(1, &parent_texture_id_);
-    parent_gles2->ShallowFlushCHROMIUM();
-    parent_texture_id_ = 0;
-  }
-
-  parent_context_provider_ = NULL;
-}
-
-unsigned PlatformContext3DImpl::GetBackingTextureId() {
-  DCHECK(command_buffer_);
-  return parent_texture_id_;
-}
-
-WebKit::WebGraphicsContext3D* PlatformContext3DImpl::GetParentContext() {
-  if (!parent_context_provider_.get())
-    return NULL;
-  return parent_context_provider_->Context3d();
+void PlatformContext3DImpl::GetBackingMailbox(gpu::Mailbox* mailbox) {
+  *mailbox = mailbox_;
 }
 
 bool PlatformContext3DImpl::IsOpaque() {

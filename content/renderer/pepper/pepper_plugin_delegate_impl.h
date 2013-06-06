@@ -185,7 +185,6 @@ class PepperPluginDelegateImpl
       webkit::ppapi::PluginInstance* instance,
       PP_Resource resource) OVERRIDE;
   virtual PlatformContext3D* CreateContext3D() OVERRIDE;
-  virtual void ReparentContext(PlatformContext3D*) OVERRIDE;
   virtual PlatformVideoCapture* CreateVideoCapture(
       const std::string& device_id,
       PlatformVideoCaptureEventHandler* handler) OVERRIDE;

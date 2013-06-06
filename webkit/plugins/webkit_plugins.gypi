@@ -19,6 +19,7 @@
         '<(DEPTH)/base/base.gyp:base',
         '<(DEPTH)/base/base.gyp:base_i18n',
         '<(DEPTH)/base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
+        '<(DEPTH)/gpu/gpu.gyp:command_buffer_common',
         '<(DEPTH)/gpu/gpu.gyp:gles2_c_lib',
         '<(DEPTH)/gpu/gpu.gyp:gles2_implementation',
         '<(DEPTH)/media/media.gyp:media',

@@ -43,9 +43,6 @@ class PPB_Graphics3D_Impl : public ::ppapi::PPB_Graphics3D_Shared {
   // Returns true if binding/unbinding is successful.
   bool BindToInstance(bool bind);
 
-  // Returns the id of texture that can be used by the compositor.
-  unsigned int GetBackingTextureId();
-
   // Returns true if the backing texture is always opaque.
   bool IsOpaque();
 

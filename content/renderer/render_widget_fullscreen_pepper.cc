@@ -406,26 +406,6 @@ void RenderWidgetFullscreenPepper::DidChangeCursor(
   didChangeCursor(cursor);
 }
 
-webkit::ppapi::PluginDelegate::PlatformContext3D*
-RenderWidgetFullscreenPepper::CreateContext3D() {
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kDisableFlashFullscreen3d))
-    return NULL;
-  return new PlatformContext3DImpl;
-}
-
-void RenderWidgetFullscreenPepper::ReparentContext(
-    webkit::ppapi::PluginDelegate::PlatformContext3D* context) {
-  PlatformContext3DImpl* context_impl =
-      static_cast<PlatformContext3DImpl*>(context);
-
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kDisableFlashFullscreen3d))
-    context_impl->DestroyParentContextProviderAndBackingTexture();
-  else
-    context_impl->SetParentAndCreateBackingTextureIfNeeded();
-}
-
 void RenderWidgetFullscreenPepper::SetLayer(WebKit::WebLayer* layer) {
   layer_ = layer;
   bool compositing = !!layer_;

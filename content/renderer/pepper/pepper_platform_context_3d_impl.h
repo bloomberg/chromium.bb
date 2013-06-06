@@ -10,6 +10,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "content/common/gpu/client/webgraphicscontext3d_command_buffer_impl.h"
+#include "gpu/command_buffer/common/mailbox.h"
 #include "webkit/plugins/ppapi/plugin_delegate.h"
 
 #ifdef ENABLE_GPU
@@ -31,8 +32,7 @@ class PlatformContext3DImpl
 
   virtual bool Init(const int32* attrib_list,
                     PlatformContext3D* share_context) OVERRIDE;
-  virtual unsigned GetBackingTextureId() OVERRIDE;
-  virtual WebKit::WebGraphicsContext3D* GetParentContext() OVERRIDE;
+  virtual void GetBackingMailbox(gpu::Mailbox* mailbox) OVERRIDE;
   virtual bool IsOpaque() OVERRIDE;
   virtual gpu::CommandBuffer* GetCommandBuffer() OVERRIDE;
   virtual int GetCommandBufferRouteId() OVERRIDE;
@@ -41,18 +41,13 @@ class PlatformContext3DImpl
       const ConsoleMessageCallback& callback) OVERRIDE;
   virtual bool Echo(const base::Closure& task) OVERRIDE;
 
-  bool SetParentAndCreateBackingTextureIfNeeded();
-  void DestroyParentContextProviderAndBackingTexture();
-
  private:
   bool InitRaw();
   void OnContextLost();
   void OnConsoleMessage(const std::string& msg, int id);
 
-  scoped_refptr<ContextProviderCommandBuffer> parent_context_provider_;
   scoped_refptr<GpuChannelHost> channel_;
   gpu::Mailbox mailbox_;
-  unsigned int parent_texture_id_;
   bool has_alpha_;
   CommandBufferProxyImpl* command_buffer_;
   base::Closure context_lost_callback_;

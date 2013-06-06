@@ -88,9 +88,6 @@ PluginDelegate::PlatformGraphics2D* MockPluginDelegate::GetGraphics2D(
 MockPluginDelegate::PlatformContext3D* MockPluginDelegate::CreateContext3D() {
   return NULL;
 }
-void MockPluginDelegate::ReparentContext(
-    MockPluginDelegate::PlatformContext3D* context) {
-}
 
 MockPluginDelegate::PlatformVideoDecoder*
 MockPluginDelegate::CreateVideoDecoder(

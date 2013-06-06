@@ -573,13 +573,6 @@ void PluginInstance::ScrollRect(int dx, int dy, const gfx::Rect& rect) {
   }
 }
 
-unsigned PluginInstance::GetBackingTextureId() {
-  if (bound_graphics_3d_.get())
-    return bound_graphics_3d_->GetBackingTextureId();
-
-  return 0;
-}
-
 void PluginInstance::CommitBackingTexture() {
   if (texture_layer_.get())
     texture_layer_->SetNeedsDisplay();
@@ -1583,14 +1576,8 @@ void PluginInstance::UpdateFlashFullscreenState(bool flash_fullscreen) {
   }
 
   PPB_Graphics3D_Impl* graphics_3d  = bound_graphics_3d_.get();
-  if (graphics_3d) {
-    if (flash_fullscreen) {
-      fullscreen_container_->ReparentContext(graphics_3d->platform_context());
-    } else {
-      delegate_->ReparentContext(graphics_3d->platform_context());
-    }
+  if (graphics_3d)
     UpdateLayer();
-  }
 
   bool old_plugin_focus = PluginHasFocus();
   flash_fullscreen_ = flash_fullscreen;
@@ -1679,10 +1666,7 @@ bool PluginInstance::IsViewAccelerated() {
 }
 
 PluginDelegate::PlatformContext3D* PluginInstance::CreateContext3D() {
-  if (fullscreen_container_)
-    return fullscreen_container_->CreateContext3D();
-  else
-    return delegate_->CreateContext3D();
+  return delegate_->CreateContext3D();
 }
 
 bool PluginInstance::PrintPDFOutput(PP_Resource print_output,
@@ -1781,18 +1765,25 @@ PluginDelegate::PlatformGraphics2D* PluginInstance::GetBoundGraphics2D() const {
   return bound_graphics_2d_platform_;
 }
 
+static void IgnoreCallback(unsigned, bool) {}
+
 void PluginInstance::UpdateLayer() {
   if (!container_)
     return;
 
-  bool want_layer = GetBackingTextureId();
+  gpu::Mailbox mailbox;
+  if (bound_graphics_3d_) {
+    PluginDelegate::PlatformContext3D* context =
+        bound_graphics_3d_->platform_context();
+    context->GetBackingMailbox(&mailbox);
+  }
+  bool want_layer = !mailbox.IsZero();
 
   if (want_layer == !!texture_layer_.get() &&
       layer_bound_to_fullscreen_ == !!fullscreen_container_)
     return;
 
   if (texture_layer_.get()) {
-    texture_layer_->ClearClient();
     if (!layer_bound_to_fullscreen_)
       container_->setWebLayer(NULL);
     else if (fullscreen_container_)
@@ -1802,7 +1793,7 @@ void PluginInstance::UpdateLayer() {
   }
   if (want_layer) {
     DCHECK(bound_graphics_3d_.get());
-    texture_layer_ = cc::TextureLayer::Create(this);
+    texture_layer_ = cc::TextureLayer::CreateForMailbox(NULL);
     web_layer_.reset(new webkit::WebLayerImpl(texture_layer_));
     if (fullscreen_container_) {
       fullscreen_container_->SetLayer(web_layer_.get());
@@ -1814,6 +1805,8 @@ void PluginInstance::UpdateLayer() {
       container_->setWebLayer(web_layer_.get());
       texture_layer_->SetContentsOpaque(bound_graphics_3d_->IsOpaque());
     }
+    texture_layer_->SetTextureMailbox(
+        cc::TextureMailbox(mailbox, base::Bind(&IgnoreCallback), 0));
   }
   layer_bound_to_fullscreen_ = !!fullscreen_container_;
 }
@@ -2176,20 +2169,6 @@ void PluginInstance::DeliverSamples(PP_Instance instance,
                                     PP_Resource audio_frames,
                                     const PP_DecryptedBlockInfo* block_info) {
   content_decryptor_delegate_->DeliverSamples(audio_frames, block_info);
-}
-
-unsigned PluginInstance::PrepareTexture(cc::ResourceUpdateQueue* queue) {
-  return GetBackingTextureId();
-}
-
-WebKit::WebGraphicsContext3D* PluginInstance::Context3d() {
-  DCHECK(bound_graphics_3d_.get());
-  DCHECK(bound_graphics_3d_->platform_context());
-  return bound_graphics_3d_->platform_context()->GetParentContext();
-}
-
-bool PluginInstance::PrepareTextureMailbox(cc::TextureMailbox* mailbox) {
-  return false;
 }
 
 void PluginInstance::NumberOfFindResultsChanged(PP_Instance instance,

@@ -63,6 +63,7 @@ class Point;
 
 namespace gpu {
 class CommandBuffer;
+struct Mailbox;
 }
 
 namespace ppapi {
@@ -219,12 +220,8 @@ class PluginDelegate {
     virtual bool Init(const int32* attrib_list,
                       PlatformContext3D* share_context) = 0;
 
-    // If the plugin instance is backed by an OpenGL, return its ID in the
-    // compositors namespace. Otherwise return 0. Returns 0 by default.
-    virtual unsigned GetBackingTextureId() = 0;
-
-    // Returns the parent context that allocated the backing texture ID.
-    virtual WebKit::WebGraphicsContext3D* GetParentContext() = 0;
+    // Retrieves the mailbox name for the front buffer backing the context.
+    virtual void GetBackingMailbox(::gpu::Mailbox* mailbox) = 0;
 
     // Returns true if the backing texture is always opaque.
     virtual bool IsOpaque() = 0;
@@ -411,9 +408,6 @@ class PluginDelegate {
 
   // The caller will own the pointer returned from this.
   virtual PlatformContext3D* CreateContext3D() = 0;
-
-  // Set that the context will now present to the delegate.
-  virtual void ReparentContext(PlatformContext3D*) = 0;
 
   // If |device_id| is empty, the default video capture device will be used. The
   // user can start using the returned object to capture video right away.

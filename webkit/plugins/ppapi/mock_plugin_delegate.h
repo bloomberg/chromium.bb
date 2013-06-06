@@ -41,7 +41,6 @@ class MockPluginDelegate : public PluginDelegate {
   virtual PlatformGraphics2D* GetGraphics2D(PluginInstance* instance,
                                             PP_Resource graphics_2d);
   virtual PlatformContext3D* CreateContext3D();
-  virtual void ReparentContext(PlatformContext3D*);
   virtual PlatformVideoDecoder* CreateVideoDecoder(
       media::VideoDecodeAccelerator::Client* client,
       int32 command_buffer_route_id);

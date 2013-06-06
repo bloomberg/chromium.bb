@@ -639,8 +639,6 @@ void GpuDataManagerImplPrivate::AppendRendererCommandLine(
   if (IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_ACCELERATED_VIDEO_DECODE) &&
       !command_line->HasSwitch(switches::kDisableAcceleratedVideoDecode))
     command_line->AppendSwitch(switches::kDisableAcceleratedVideoDecode);
-  if (ShouldUseSwiftShader())
-    command_line->AppendSwitch(switches::kDisableFlashFullscreen3d);
 }
 
 void GpuDataManagerImplPrivate::AppendGpuCommandLine(

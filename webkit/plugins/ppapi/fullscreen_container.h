@@ -35,10 +35,6 @@ class FullscreenContainer {
   // Notifies the container that the mouse cursor has changed.
   virtual void DidChangeCursor(const WebKit::WebCursorInfo& cursor) = 0;
 
-  virtual PluginDelegate::PlatformContext3D* CreateContext3D() = 0;
-
-  virtual void ReparentContext(PluginDelegate::PlatformContext3D*) = 0;
-
   virtual void SetLayer(WebKit::WebLayer* layer) = 0;
 
  protected:
