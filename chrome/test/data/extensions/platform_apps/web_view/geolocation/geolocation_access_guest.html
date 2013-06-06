@@ -56,6 +56,7 @@
           ++expectedTotalCallbackCount;
         }
 
+        window.console.log('Call getCurrentPosition');
         navigator.geolocation.getCurrentPosition(onGeolocationSuccess,
                                                  onGeolocationFailure);
       };
@@ -92,6 +93,7 @@
       window['onIframeGeolocationFailure'] = onGeolocationFailure;
 
       var onPostMessageReceived = function(e) {
+        window.console.log('guest.onPostMessageReceived');
         var data = JSON.parse(e.data);
         if (data[0] == 'check-geolocation-permission') {
           g_testName = data[1];

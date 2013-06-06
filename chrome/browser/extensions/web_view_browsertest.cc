@@ -362,18 +362,14 @@ class WebViewTest : public extensions::PlatformAppBrowserTest {
         GetFirstShellWindowWebContents();
     ASSERT_TRUE(embedder_web_contents);
 
-    ExtensionTestMessageListener done_listener("DoneGeolocationTest", false);
+    ExtensionTestMessageListener done_listener("DoneGeolocationTest.PASSED",
+                                               false);
+    done_listener.AlsoListenForFailureMessage("DoneGeolocationTest.FAILED");
     EXPECT_TRUE(content::ExecuteScript(
                     embedder_web_contents,
                     base::StringPrintf("runGeolocationTest('%s')",
                                        test_name.c_str())));
     done_listener.WaitUntilSatisfied();
-    bool has_test_passed;
-    EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
-                    embedder_web_contents,
-                    "window.domAutomationController.send(hasTestPassed());",
-                    &has_test_passed));
-    ASSERT_TRUE(has_test_passed);
   }
 
   content::WebContents* LoadGuest(const std::string& guest_path,
@@ -991,24 +987,18 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, GeolocationAPIEmbedderHasNoAccess) {
 // mock out geolocation for multiple navigator.geolocation calls properly and
 // the tests become flaky.
 // GeolocationAPI* test 1 of 3.
-// Flay test, see http://crbug.com/237536.
-IN_PROC_BROWSER_TEST_F(WebViewTest,
-                       DISABLED_GeolocationAPIEmbedderHasAccessAllow) {
+IN_PROC_BROWSER_TEST_F(WebViewTest, GeolocationAPIEmbedderHasAccessAllow) {
   GeolocationTestHelper("testAllow");
 }
 
 // GeolocationAPI* test 2 of 3.
-// Flay test, see http://crbug.com/237536.
-IN_PROC_BROWSER_TEST_F(WebViewTest,
-                       DISABLED_GeolocationAPIEmbedderHasAccessDeny) {
+IN_PROC_BROWSER_TEST_F(WebViewTest, GeolocationAPIEmbedderHasAccessDeny) {
   GeolocationTestHelper("testDeny");
 }
 
 // GeolocationAPI* test 3 of 3.
-// Flay test, see http://crbug.com/237536.
-IN_PROC_BROWSER_TEST_F(
-    WebViewTest,
-    DISABLED_GeolocationAPIEmbedderHasAccessMultipleBridgeIdAllow) {
+IN_PROC_BROWSER_TEST_F(WebViewTest,
+                       GeolocationAPIEmbedderHasAccessMultipleBridgeIdAllow) {
   GeolocationTestHelper("testMultipleBridgeIdAllow");
 }
 

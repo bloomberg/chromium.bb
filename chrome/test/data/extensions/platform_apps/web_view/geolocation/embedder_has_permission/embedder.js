@@ -7,11 +7,6 @@ embedder.test = {};
 embedder.baseGuestURL = '';
 embedder.guestURL = '';
 
-// window.* exported functions begin (called by WebViewTest).
-window.hasTestPassed = function() {
-  return embedder.testStatus == TEST_STATUS.PASSED;
-};
-
 window.runGeolocationTest = function(testName) {
   if (!embedder.test.testList[testName]) {
     console.log('Incorrect testName: ' + testName);
@@ -51,23 +46,12 @@ embedder.setUpGuest_ = function() {
   return webview;
 };
 
-var TEST_STATUS = {
-  WAITING: 0,
-  FAILED: 1,
-  PASSED: 2
-};
-embedder.testStatus = TEST_STATUS.WAITING;
-
 embedder.test = {};
 embedder.test.fail = function() {
-  embedder.testStatus = TEST_STATUS.FAILED;
-  chrome.test.sendMessage('DoneGeolocationTest');
+  chrome.test.sendMessage('DoneGeolocationTest.PASSED');
 };
 embedder.test.succeed = function() {
-  if (embedder.testStatus != TEST_STATUS.FAILED) {
-    embedder.testStatus = TEST_STATUS.PASSED;
-    chrome.test.sendMessage('DoneGeolocationTest');
-  }
+  chrome.test.sendMessage('DoneGeolocationTest.FAILED');
 };
 
 embedder.test.assertEq = function(a, b) {
@@ -90,21 +74,20 @@ embedder.test.assertFalse = function(condition) {
 };
 
 /** @private */
-embedder.setUpLoadCommit_ = function(webview, testName, opt_iframeURL) {
-  var onWebViewLoadCommit = function(e) {
-    if (!e.isTopLevel) {
-      return;
-    }
+embedder.setUpLoadStop_ = function(webview, testName, opt_iframeURL) {
+  window.console.log('embedder.setUpLoadStop_');
+  var onWebViewLoadStop = function(e) {
+    window.console.log('embedder.onWebViewLoadStop');
     // Send post message to <webview> when it's ready to receive them.
     var msgArray = ['check-geolocation-permission', '' + testName];
     if (opt_iframeURL) {
       msgArray.push(opt_iframeURL);
     }
+    window.console.log('embedder.webview.postMessage');
     webview.contentWindow.postMessage(JSON.stringify(msgArray), '*');
   };
-  webview.addEventListener('loadcommit', onWebViewLoadCommit);
+  webview.addEventListener('loadstop', onWebViewLoadStop);
 };
-
 
 /** @private */
 embedder.registerAndWaitForPostMessage_ = function(
@@ -161,7 +144,7 @@ function testAllow() {
   };
   webview.addEventListener('permissionrequest', onPermissionRequest);
 
-  embedder.setUpLoadCommit_(webview, 'test1');
+  embedder.setUpLoadStop_(webview, 'test1');
   // WebViewTest sets (mock) lat, lng to 10, 20.
   embedder.registerAndWaitForPostMessage_(
       webview, ['test1', 'access-granted', 10, 20]);
@@ -179,7 +162,7 @@ function testDeny() {
   };
   webview.addEventListener('permissionrequest', onPermissionRequest);
 
-  embedder.setUpLoadCommit_(webview, 'test2');
+  embedder.setUpLoadStop_(webview, 'test2');
   embedder.registerAndWaitForPostMessage_(
       webview, ['test2', 'access-denied']);
 }
@@ -196,7 +179,7 @@ function testMultipleBridgeIdAllow() {
   };
   webview.addEventListener('permissionrequest', onPermissionRequest);
 
-  embedder.setUpLoadCommit_(webview, 'test3', embedder.iframeURL);
+  embedder.setUpLoadStop_(webview, 'test3', embedder.iframeURL);
   embedder.registerAndWaitForPostMessage_(
       webview, ['test3', 'access-granted', 10, 20]);
 }
