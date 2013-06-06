@@ -300,7 +300,7 @@ void LayerTreeHost::FinishCommitOnImplThread(LayerTreeHostImpl* host_impl) {
   sync_tree->set_needs_full_tree_sync(needs_full_tree_sync_);
   needs_full_tree_sync_ = false;
 
-  if (root_layer_.get() && hud_layer_.get()) {
+  if (hud_layer_.get()) {
     LayerImpl* hud_impl = LayerTreeHostCommon::FindLayerInSubtree(
         sync_tree->root_layer(), hud_layer_->id());
     sync_tree->set_hud_layer(static_cast<HeadsUpDisplayLayerImpl*>(hud_impl));
@@ -963,11 +963,12 @@ void LayerTreeHost::ApplyScrollAndScale(const ScrollAndScaleSet& info) {
                                                 info.scrolls[i].layer_id);
     if (!layer)
       continue;
-    if (layer == root_scroll_layer)
+    if (layer == root_scroll_layer) {
       root_scroll_delta += info.scrolls[i].scroll_delta;
-    else
-      layer->SetScrollOffset(layer->scroll_offset() +
-                             info.scrolls[i].scroll_delta);
+    } else {
+      layer->SetScrollOffsetFromImplSide(layer->scroll_offset() +
+                                         info.scrolls[i].scroll_delta);
+    }
   }
   if (!root_scroll_delta.IsZero() || info.page_scale_delta != 1.f)
     client_->ApplyScrollAndScale(root_scroll_delta, info.page_scale_delta);

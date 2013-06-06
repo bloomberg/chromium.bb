@@ -752,5 +752,98 @@ TEST(LayerTreeHostFlingTest, DidStopFlingingThread) {
   EXPECT_TRUE(received_stop_flinging);
 }
 
+class LayerTreeHostScrollTestLayerStructureChange
+    : public LayerTreeHostScrollTest {
+ public:
+  LayerTreeHostScrollTestLayerStructureChange()
+      : scroll_destroy_whole_tree_(false) {}
+
+  virtual void SetupTree() OVERRIDE {
+    scoped_refptr<Layer> root_layer = Layer::Create();
+    root_layer->SetBounds(gfx::Size(10, 10));
+
+    Layer* root_scroll_layer = CreateScrollLayer(root_layer,
+        &root_scroll_layer_client_);
+    CreateScrollLayer(root_layer, &sibling_scroll_layer_client_);
+    CreateScrollLayer(root_scroll_layer, &child_scroll_layer_client_);
+
+    layer_tree_host()->SetRootLayer(root_layer);
+    LayerTreeHostScrollTest::SetupTree();
+  }
+
+  virtual void BeginTest() OVERRIDE {
+    PostSetNeedsCommitToMainThread();
+  }
+
+  virtual void DrawLayersOnThread(LayerTreeHostImpl* impl) OVERRIDE {
+    LayerImpl* root = impl->active_tree()->root_layer();
+    switch (impl->active_tree()->source_frame_number()) {
+      case 0:
+        root->child_at(0)->SetScrollDelta(gfx::Vector2dF(5, 5));
+        root->child_at(0)->child_at(0)->SetScrollDelta(gfx::Vector2dF(5, 5));
+        root->child_at(1)->SetScrollDelta(gfx::Vector2dF(5, 5));
+        PostSetNeedsCommitToMainThread();
+        break;
+      case 1:
+        EndTest();
+        break;
+    }
+  }
+
+  virtual void AfterTest() OVERRIDE {}
+
+  virtual void DidScroll(Layer* layer) {
+    if (scroll_destroy_whole_tree_) {
+      layer_tree_host()->SetRootLayer(NULL);
+      EndTest();
+      return;
+    }
+    layer->RemoveFromParent();
+  }
+
+ protected:
+  class FakeWebLayerScrollClient : public WebKit::WebLayerScrollClient {
+   public:
+    virtual void didScroll() OVERRIDE {
+      owner_->DidScroll(layer_);
+    }
+    LayerTreeHostScrollTestLayerStructureChange* owner_;
+    Layer* layer_;
+  };
+
+  Layer* CreateScrollLayer(Layer* parent, FakeWebLayerScrollClient* client) {
+    scoped_refptr<Layer> scroll_layer =
+        ContentLayer::Create(&fake_content_layer_client_);
+    scroll_layer->SetBounds(gfx::Size(110, 110));
+    scroll_layer->SetPosition(gfx::Point(0, 0));
+    scroll_layer->SetAnchorPoint(gfx::PointF());
+    scroll_layer->SetIsDrawable(true);
+    scroll_layer->SetScrollable(true);
+    scroll_layer->SetMaxScrollOffset(gfx::Vector2d(100, 100));
+    scroll_layer->set_layer_scroll_client(client);
+    client->owner_ = this;
+    client->layer_ = scroll_layer;
+    parent->AddChild(scroll_layer);
+    return scroll_layer.get();
+  }
+
+  FakeWebLayerScrollClient root_scroll_layer_client_;
+  FakeWebLayerScrollClient sibling_scroll_layer_client_;
+  FakeWebLayerScrollClient child_scroll_layer_client_;
+
+  FakeContentLayerClient fake_content_layer_client_;
+
+  bool scroll_destroy_whole_tree_;
+};
+
+TEST_F(LayerTreeHostScrollTestLayerStructureChange, ScrollDestroyLayer) {
+    RunTest(true, false, false);
+}
+
+TEST_F(LayerTreeHostScrollTestLayerStructureChange, ScrollDestroyWholeTree) {
+    scroll_destroy_whole_tree_ = true;
+    RunTest(true, false, false);
+}
+
 }  // namespace
 }  // namespace cc

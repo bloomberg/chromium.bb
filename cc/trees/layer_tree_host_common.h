@@ -115,6 +115,9 @@ bool LayerTreeHostCommon::RenderSurfaceContributesToTarget(
 template <typename LayerType>
 LayerType* LayerTreeHostCommon::FindLayerInSubtree(LayerType* root_layer,
                                                    int layer_id) {
+  if (!root_layer)
+    return NULL;
+
   if (root_layer->id() == layer_id)
     return root_layer;
 
