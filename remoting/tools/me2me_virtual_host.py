@@ -128,12 +128,14 @@ class Config:
   def clear_auth(self):
     del self.data["xmpp_login"]
     del self.data["oauth_refresh_token"]
+    self.changed = True
 
   def clear_host_info(self):
     del self.data["host_id"]
     del self.data["host_name"]
     del self.data["host_secret_hash"]
     del self.data["private_key"]
+    self.changed = True
 
 
 class Authentication:
