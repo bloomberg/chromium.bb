@@ -10028,6 +10028,17 @@ other types of suffix sets.
   <summary>The number of entries in a newly created index file.</summary>
 </histogram>
 
+<histogram name="SimpleCache.IndexEntriesLoaded">
+  <summary>Number of entries loaded from the index file on start.</summary>
+</histogram>
+
+<histogram name="SimpleCache.IndexEntriesRestored">
+  <summary>
+    Number of entries restored from disk when there was no index or the index
+    was corrupted.
+  </summary>
+</histogram>
+
 <histogram name="SimpleCache.IndexInitializationWaiters">
   <summary>
     At the time of index initialization, the number of enqueued jobs awaiting

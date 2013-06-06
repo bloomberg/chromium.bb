@@ -301,7 +301,9 @@ void SimpleIndexFile::LoadIndexEntriesInternal(
     const base::TimeTicks start = base::TimeTicks::Now();
     index_file_entries = LoadFromDisk(index_file_path);
     UMA_HISTOGRAM_TIMES("SimpleCache.IndexLoadTime",
-                        (base::TimeTicks::Now() - start));
+                        base::TimeTicks::Now() - start);
+    UMA_HISTOGRAM_COUNTS("SimpleCache.IndexEntriesLoaded",
+                         index_file_entries->size());
   }
 
   UMA_HISTOGRAM_BOOLEAN("SimpleCache.IndexStale", index_stale);
@@ -310,8 +312,10 @@ void SimpleIndexFile::LoadIndexEntriesInternal(
   if (!index_file_entries) {
     const base::TimeTicks start = base::TimeTicks::Now();
     index_file_entries = RestoreFromDisk(index_file_path);
-    UMA_HISTOGRAM_TIMES("SimpleCache.IndexRestoreTime",
-                        (base::TimeTicks::Now() - start));
+    UMA_HISTOGRAM_MEDIUM_TIMES("SimpleCache.IndexRestoreTime",
+                        base::TimeTicks::Now() - start);
+    UMA_HISTOGRAM_COUNTS("SimpleCache.IndexEntriesRestored",
+                         index_file_entries->size());
 
     // When we restore from disk we write the merged index file to disk right
     // away, this might save us from having to restore again next time.
