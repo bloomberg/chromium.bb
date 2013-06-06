@@ -18,15 +18,13 @@
                 testRunner.notifyDone();
         }
 
-        function runTest() {
-            if (window.testRunner) {
-                testRunner.dumpAsText();
-                testRunner.waitUntilDone();
-            }
-            // Need to wait for the iframe to do its async work.
-            setTimeout(done, 1000);
+        if (window.testRunner) {
+            testRunner.dumpAsText();
+            testRunner.waitUntilDone();
         }
 
+        // Need to wait for the iframe to do its async work.
+        window.onmessage = done;
     </script>
 </head>
 <body>
@@ -37,6 +35,6 @@
     <div id="result">
         Test not run correctly.
     </div>
-    <iframe src="http://localhost:8000/security/resources/create-filesystem-file.html" onload="runTest()"></iframe>
+    <iframe src="http://localhost:8000/security/resources/create-filesystem-file.html"></iframe>
 </body>
 </html>
