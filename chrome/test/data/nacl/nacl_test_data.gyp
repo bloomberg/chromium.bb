@@ -59,23 +59,6 @@
       },
     },
     {
-      'target_name': 'sysconf_nprocessors_onln_test',
-      'type': 'none',
-      'variables': {
-        'nexe_target': 'sysconf_nprocessors_onln_test',
-        'build_newlib': 1,
-        'build_glibc': 1,
-        'build_pnacl_newlib': 1,
-        'nexe_destination_dir': 'nacl_test_data',
-        'sources': [
-          'sysconf_nprocessors_onln/sysconf_nprocessors_onln_test.cc',
-        ],
-        'test_files': [
-          'sysconf_nprocessors_onln/sysconf_nprocessors_onln_test.html',
-        ],
-      },
-    },
-    {
       'target_name': 'ppapi_test_lib',
       'type': 'none',
       'variables': {
