@@ -6454,6 +6454,30 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="PasswordManager.OtherPossibleUsernamesUsage"
+    enum="OtherPossibleUsernamesUsage">
+  <summary>
+    Breakdown of how other possible usernames are displayed. Recorded every time
+    we autofill a password form.
+  </summary>
+</histogram>
+
+<histogram name="PasswordManager.TimesGeneratedPasswordUsed">
+  <summary>
+    The number of times each generated password has been used to log in.
+    Recorded by iterating over stored passwords once per run. This information
+    is persisted and synced.
+  </summary>
+</histogram>
+
+<histogram name="PasswordManager.TimesPasswordUsed">
+  <summary>
+    The number of times each saved password has been used to log in. Does not
+    include generated passwords. Recorded by iterating over stored passwords
+    once per run. This information is persisted and synced.
+  </summary>
+</histogram>
+
 <histogram name="Platform.AsvGroup">
   <summary>
     Chrome OS (ARM Chromebooks using Exynos 5250 only) Adaptive Support Voltage
@@ -14291,6 +14315,14 @@ other types of suffix sets.
   <int value="32" label="EPIPE">Broken pipe</int>
   <int value="33" label="EDOM">Numerical argument out of domain</int>
   <int value="34" label="ERANGE">Numerical result out of range</int>
+</enum>
+
+<enum name="OtherPossibleUsernamesUsage" type="int">
+  <int value="0" label="Nothing to Autofill"/>
+  <int value="1" label="No other possible usernames"/>
+  <int value="2" label="Other possible usernames present, but none were shown"/>
+  <int value="3" label="Other possible username was shown, but not selected"/>
+  <int value="4" label="Other possible username was selected"/>
 </enum>
 
 <enum name="OverscrollMode" type="int">
