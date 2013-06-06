@@ -152,15 +152,6 @@ public:
     // The size of the contents area.
     virtual WebSize contentsSize() const = 0;
 
-    // Returns the minimum preferred width of the content contained in the
-    // current document.
-    virtual int contentsPreferredWidth() const = 0;
-
-    // Returns the scroll height of the document element. This is
-    // equivalent to the DOM property of the same name, and is the minimum
-    // height required to display the document without scrollbars.
-    virtual int documentElementScrollHeight() const = 0;
-
     // Returns true if the contents (minus scrollbars) has non-zero area.
     virtual bool hasVisibleContent() const = 0;
 

@@ -86,8 +86,6 @@ public:
     virtual WebSize minimumScrollOffset() const;
     virtual WebSize maximumScrollOffset() const;
     virtual WebSize contentsSize() const;
-    virtual int contentsPreferredWidth() const;
-    virtual int documentElementScrollHeight() const;
     virtual bool hasVisibleContent() const;
     virtual WebRect visibleContentRect() const;
     virtual bool hasHorizontalScrollbar() const;

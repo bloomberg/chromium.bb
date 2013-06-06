@@ -219,8 +219,7 @@ void WebViewHost::didUpdateLayout()
     // Query preferred width to emulate the same functionality in Chromium:
     // see RenderView::CheckPreferredSize (src/content/renderer/render_view.cc)
     // and TabContentsViewMac::RenderViewCreated (src/chrome/browser/tab_contents/tab_contents_view_mac.mm)
-    webView()->mainFrame()->contentsPreferredWidth();
-    webView()->mainFrame()->documentElementScrollHeight();
+    webView()->contentsPreferredMinimumSize();
     queryingPreferredSize = false;
 #endif
 }

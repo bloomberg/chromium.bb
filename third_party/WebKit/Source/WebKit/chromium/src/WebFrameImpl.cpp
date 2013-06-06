@@ -627,24 +627,6 @@ WebSize WebFrameImpl::contentsSize() const
     return frame()->view()->contentsSize();
 }
 
-int WebFrameImpl::contentsPreferredWidth() const
-{
-    viewImpl()->layout();
-    if (frame()->document() && frame()->document()->renderView()) {
-        FontCachePurgePreventer fontCachePurgePreventer;
-        return frame()->document()->renderView()->minPreferredLogicalWidth();
-    }
-    return 0;
-}
-
-int WebFrameImpl::documentElementScrollHeight() const
-{
-    viewImpl()->layout();
-    if (frame()->document() && frame()->document()->documentElement())
-        return frame()->document()->documentElement()->scrollHeight();
-    return 0;
-}
-
 bool WebFrameImpl::hasVisibleContent() const
 {
     return frame()->view()->visibleWidth() > 0 && frame()->view()->visibleHeight() > 0;
