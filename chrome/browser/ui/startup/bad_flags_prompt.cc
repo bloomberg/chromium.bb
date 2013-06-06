@@ -28,6 +28,8 @@ void ShowBadFlagsPrompt(Browser* browser) {
     // Origin Policy.
     switches::kEnableBrowserPluginForAllViewTypes,
     switches::kExtensionsOnChromeURLs,
+    // This parameter should be used only for server side developments.
+    switches::kTranslateScriptURL,
     NULL
   };
 
