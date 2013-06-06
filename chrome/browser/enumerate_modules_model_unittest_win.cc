@@ -20,6 +20,9 @@ static const ModuleEnumerator::ModuleStatus kStatus =
 static const ModuleEnumerator::RecommendedAction kAction =
     ModuleEnumerator::NONE;
 
+static const ModuleEnumerator::OperatingSystem kOs =
+    ModuleEnumerator::ALL;
+
 // This is a list of test cases to normalize.
 static const struct NormalizationEntryList {
   ModuleEnumerator::Module test_case;
@@ -109,87 +112,87 @@ const struct MatchingEntryList {
   {  // Matches: Name (location doesn't match) => Not enough for a match.
     ModuleEnumerator::NOT_MATCHED,
     kStandardModule,
-    { kMatchName, kNoMatchLocation, kEmpty, kEmpty, kEmpty,
+    { kMatchName, kNoMatchLocation, kEmpty, kEmpty, kEmpty, kOs,
       ModuleEnumerator::SEE_LINK }
   }, {  // Matches: Name (location not given) => Suspected match.
     ModuleEnumerator::SUSPECTED_BAD,
     kStandardModule,
-    { kMatchName, kEmpty, kEmpty, kEmpty, kEmpty,
+    { kMatchName, kEmpty, kEmpty, kEmpty, kEmpty, kOs,
       ModuleEnumerator::SEE_LINK }
   }, {  // Matches: Name, not version (location not given) => Not a match.
     ModuleEnumerator::NOT_MATCHED,
     kStandardModule,
-    { kMatchName, kEmpty, kEmpty, kVersionHigh, kVersionHigh,
+    { kMatchName, kEmpty, kEmpty, kVersionHigh, kVersionHigh, kOs,
       ModuleEnumerator::SEE_LINK }
   }, {  // Matches: Name, location => Suspected match.
     ModuleEnumerator::SUSPECTED_BAD,
     kStandardModule,
-    { kMatchName, kMatchLocation, kEmpty, kEmpty, kEmpty,
+    { kMatchName, kMatchLocation, kEmpty, kEmpty, kEmpty, kOs,
       ModuleEnumerator::SEE_LINK }
   }, {  // Matches: Name, location, (description not given) => Confirmed match.
     ModuleEnumerator::CONFIRMED_BAD,
     kStandardModuleNoDescription,  // Note: No description.
-    { kMatchName, kMatchLocation, kEmpty, kEmpty, kEmpty,
+    { kMatchName, kMatchLocation, kEmpty, kEmpty, kEmpty, kOs,
       ModuleEnumerator::SEE_LINK }
   }, {  // Matches: Name, location, (signature not given) => Confirmed match.
     ModuleEnumerator::CONFIRMED_BAD,
     kStandardModuleNoSignature,  // Note: No signature.
-    { kMatchName, kMatchLocation, kEmpty, kEmpty, kEmpty,
+    { kMatchName, kMatchLocation, kEmpty, kEmpty, kEmpty, kOs,
       ModuleEnumerator::SEE_LINK }
   }, {  // Matches: Name, location (not version) => Not a match.
     ModuleEnumerator::NOT_MATCHED,
     kStandardModule,
-    { kMatchName, kMatchLocation, kEmpty, kVersionHigh, kVersionLow,
+    { kMatchName, kMatchLocation, kEmpty, kVersionHigh, kVersionLow, kOs,
       ModuleEnumerator::SEE_LINK }
   }, {  // Matches: Name, location, signature => Confirmed match.
     ModuleEnumerator::CONFIRMED_BAD,
     kStandardModule,
-    { kMatchName, kMatchLocation, kMatchSignature, kEmpty, kEmpty,
+    { kMatchName, kMatchLocation, kMatchSignature, kEmpty, kEmpty, kOs,
       ModuleEnumerator::SEE_LINK }
   }, {  // Matches: Name, location, signature (not version) => No match.
     ModuleEnumerator::NOT_MATCHED,
     kStandardModule,
     { kMatchName, kMatchLocation, kMatchSignature,
-      kVersionLow, kVersionLow, ModuleEnumerator::SEE_LINK }
+      kVersionLow, kVersionLow, kOs, ModuleEnumerator::SEE_LINK }
   }, {  // Matches: Name, location, description => Confirmed match.
     ModuleEnumerator::CONFIRMED_BAD,
     kStandardModule,
-    { kMatchName, kMatchLocation, kMatchDesc, kEmpty, kEmpty,
+    { kMatchName, kMatchLocation, kMatchDesc, kEmpty, kEmpty, kOs,
       ModuleEnumerator::SEE_LINK }
   }, {  // Matches: Name, location, description (not version) => No match.
     ModuleEnumerator::NOT_MATCHED,
     kStandardModule,
     { kMatchName, kMatchLocation, kMatchDesc,
-      kVersionHigh, kVersionHigh, ModuleEnumerator::SEE_LINK }
+      kVersionHigh, kVersionHigh, kOs, ModuleEnumerator::SEE_LINK }
   }, {  // Matches: Name, location, signature, version => Confirmed match.
     ModuleEnumerator::CONFIRMED_BAD,
     kStandardModule,
     { kMatchName, kMatchLocation, kMatchSignature,
-      kVersionLow, kVersionHigh, ModuleEnumerator::SEE_LINK }
+      kVersionLow, kVersionHigh, kOs, ModuleEnumerator::SEE_LINK }
   }, {  // Matches: Name, location, signature, version (lower) => Confirmed.
     ModuleEnumerator::CONFIRMED_BAD,
     kStandardModule,
     { kMatchName, kMatchLocation, kMatchSignature,
-      kVersionLow, kEmpty, ModuleEnumerator::SEE_LINK }
+      kVersionLow, kEmpty, kOs, ModuleEnumerator::SEE_LINK }
   }, {  // Matches: Name, location, signature, version (upper) => Confirmed.
     ModuleEnumerator::CONFIRMED_BAD,
     kStandardModule,
     { kMatchName, kMatchLocation, kMatchSignature,
-      kEmpty, kVersionHigh, ModuleEnumerator::SEE_LINK }
+      kEmpty, kVersionHigh, kOs, ModuleEnumerator::SEE_LINK }
   }, {  // Matches: Name, Location, Version lower is inclusive => Confirmed.
     ModuleEnumerator::CONFIRMED_BAD,
     kStandardModule,
     { kMatchName, kMatchLocation, kMatchSignature,
-      "1.0", "2.0", ModuleEnumerator::SEE_LINK }
+      "1.0", "2.0", kOs, ModuleEnumerator::SEE_LINK }
   }, {  // Matches: Name, Location, Version higher is exclusive => No match.
     ModuleEnumerator::NOT_MATCHED,
     kStandardModule,
     { kMatchName, kMatchLocation, kEmpty,
-      "0.0", "1.0", ModuleEnumerator::SEE_LINK }
+      "0.0", "1.0", kOs, ModuleEnumerator::SEE_LINK }
   }, {  // All empty fields doesn't produce a match.
     ModuleEnumerator::NOT_MATCHED,
     { kType, kStatus, L"", L"", L"", L"", L""},
-    { "a.dll", "", "", "", "", ModuleEnumerator::SEE_LINK }
+    { "a.dll", "", "", "", "", kOs, ModuleEnumerator::SEE_LINK }
   },
 };
 

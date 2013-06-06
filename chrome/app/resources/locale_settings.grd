@@ -258,8 +258,8 @@
         300
       </message>
        
-      <!-- The width of the Disabled Extensions bubble in characters (See above). -->
-      <message name="IDS_DISABLED_EXTENSIONS_BUBBLE_WIDTH_CHARS" use_name_for_id="true">
+      <!-- The width of the Conflicting Module bubble in characters (See above). -->
+      <message name="IDS_CONFLICTING_MODULE_BUBBLE_WIDTH_CHARS" use_name_for_id="true">
         46
       </message>
 

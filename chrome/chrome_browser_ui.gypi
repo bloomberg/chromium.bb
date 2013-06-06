@@ -1580,6 +1580,8 @@
         'browser/ui/views/color_chooser_win.cc',
         'browser/ui/views/confirm_bubble_views.cc',
         'browser/ui/views/confirm_bubble_views.h',
+        'browser/ui/views/conflicting_module_view_win.cc',  
+        'browser/ui/views/conflicting_module_view_win.h',  
         'browser/ui/views/constrained_web_dialog_delegate_views.cc',
         'browser/ui/views/constrained_window_views.cc',
         'browser/ui/views/constrained_window_views.h',

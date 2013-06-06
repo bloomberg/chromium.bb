@@ -2475,6 +2475,9 @@ extern const char kLastAppListLaunchPing[] = "app_list.last_launch_ping";
 extern const char kAppListAppLaunchCount[] = "app_list.app_launch_count";
 extern const char kLastAppListAppLaunchPing[] = "app_list.last_app_launch_ping";
 
+// How often the bubble has been shown.
+extern const char kModuleConflictBubbleShown[] = "module_conflict.bubble_shown";
+
 // A string pref for storing the salt used to compute the pepper device ID.
 const char kDRMSalt[] = "settings.privacy.drm_salt";
 // A boolean pref that enables the (private) pepper GetDeviceID() call.

@@ -27,6 +27,10 @@
 #include "googleurl/src/gurl.h"
 #include "net/base/url_util.h"
 
+#if defined(OS_WIN)
+#include "chrome/browser/enumerate_modules_model_win.h"
+#endif
+
 using content::UserMetricsAction;
 
 namespace chrome {
@@ -106,6 +110,19 @@ void ShowExtensions(Browser* browser,
 }
 
 void ShowConflicts(Browser* browser) {
+#if defined(OS_WIN)
+  EnumerateModulesModel* model = EnumerateModulesModel::GetInstance();
+  if (model->modules_to_notify_about() > 0) {
+    GURL help_center_url = model->GetFirstNotableConflict();
+    if (help_center_url.is_valid()) {
+      EnumerateModulesModel::RecordLearnMoreStat(true);
+      ShowSingletonTab(browser, help_center_url);
+      model->AcknowledgeConflictNotification();
+      return;
+    }
+  }
+#endif
+
   content::RecordAction(UserMetricsAction("AboutConflicts"));
   ShowSingletonTab(browser, GURL(kChromeUIConflictsURL));
 }

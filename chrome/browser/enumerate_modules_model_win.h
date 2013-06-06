@@ -62,6 +62,13 @@ class ModuleEnumerator : public base::RefCountedThreadSafe<ModuleEnumerator> {
     DISABLE       = 1 << 2,
     UPDATE        = 1 << 3,
     SEE_LINK      = 1 << 4,
+    NOTIFY_USER   = 1 << 5,
+  };
+
+  // Which Windows OS is affected.
+  enum OperatingSystem {
+    ALL          = -1,
+    XP           = 1 << 0,
   };
 
   // The structure we populate when enumerating modules.
@@ -101,6 +108,7 @@ class ModuleEnumerator : public base::RefCountedThreadSafe<ModuleEnumerator> {
     const char* desc_or_signer;
     const char* version_from;  // Version where conflict started.
     const char* version_to;    // First version that works.
+    OperatingSystem os;  // Bitmask, representing what OS this entry applies to.
     RecommendedAction help_tip;
   };
 
@@ -231,7 +239,18 @@ class ModuleEnumerator : public base::RefCountedThreadSafe<ModuleEnumerator> {
 // notification.
 class EnumerateModulesModel {
  public:
+  // UMA histogram constants.
+  enum UmaModuleConflictHistogramOptions {
+    ACTION_BUBBLE_SHOWN = 0,
+    ACTION_BUBBLE_LEARN_MORE,
+    ACTION_MENU_LEARN_MORE,
+    ACTION_BOUNDARY, // Must be the last value.
+  };
+
   static EnumerateModulesModel* GetInstance();
+
+  // Record via UMA what the user selected.
+  static void RecordLearnMoreStat(bool from_menu);
 
   // Returns true if we should show the conflict notification. The conflict
   // notification is only shown once during the lifetime of the process.
@@ -252,11 +271,19 @@ class EnumerateModulesModel {
     return confirmed_bad_modules_detected_;
   }
 
+  // Returns how many modules to notify the user about.
+  int modules_to_notify_about() const {
+    return modules_to_notify_about_;
+  }
+
   // Set to true when we the scanning process can not rely on certain Chrome
   // services to exists.
   void set_limited_mode(bool limited_mode) {
     limited_mode_ = limited_mode;
   }
+
+  // Checks to see if a scanning task should be started and sets one off, if so.
+  void MaybePostScanningTask();
 
   // Asynchronously start the scan for the loaded module list, except when in
   // limited_mode (in which case it blocks).
@@ -264,6 +291,10 @@ class EnumerateModulesModel {
 
   // Gets the whole module list as a ListValue.
   base::ListValue* GetModuleList() const;
+
+  // Gets the Help Center URL for the first *notable* conflict module that we've
+  // elected to notify the user about.
+  GURL GetFirstNotableConflict();
 
  private:
   friend struct DefaultSingletonTraits<EnumerateModulesModel>;
@@ -307,6 +338,9 @@ class EnumerateModulesModel {
   // The number of confirmed bad modules (not including suspected bad ones)
   // found during last scan.
   int confirmed_bad_modules_detected_;
+
+  // The number of bad modules the user needs to be aggressively notified about.
+  int modules_to_notify_about_;
 
   // The number of suspected bad modules (not including confirmed bad ones)
   // found during last scan.

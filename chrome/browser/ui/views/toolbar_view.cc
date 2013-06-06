@@ -60,7 +60,9 @@
 #include "ui/views/window/non_client_view.h"
 
 #if defined(OS_WIN)
+#include "base/win/windows_version.h"
 #include "chrome/browser/enumerate_modules_model_win.h"
+#include "chrome/browser/ui/views/conflicting_module_view_win.h"
 #include "chrome/browser/ui/views/critical_notification_bubble_view.h"
 #if !defined(USE_AURA)
 #include "chrome/browser/ui/views/app_menu_button_win.h"
@@ -175,6 +177,10 @@ ToolbarView::ToolbarView(Browser* browser)
 #if defined(OS_WIN)
   registrar_.Add(this, chrome::NOTIFICATION_CRITICAL_UPGRADE_INSTALLED,
                  content::NotificationService::AllSources());
+  if (base::win::GetVersion() == base::win::VERSION_XP) {
+    registrar_.Add(this, chrome::NOTIFICATION_MODULE_LIST_ENUMERATED,
+                   content::NotificationService::AllSources());
+  }
 #endif
   registrar_.Add(this,
                  chrome::NOTIFICATION_MODULE_INCOMPATIBILITY_BADGE_CHANGE,
@@ -461,6 +467,7 @@ void ToolbarView::Observe(int type,
     case chrome::NOTIFICATION_UPGRADE_RECOMMENDED:
     case chrome::NOTIFICATION_MODULE_INCOMPATIBILITY_BADGE_CHANGE:
     case chrome::NOTIFICATION_GLOBAL_ERRORS_CHANGED:
+    case chrome::NOTIFICATION_MODULE_LIST_ENUMERATED:
       UpdateAppMenuState();
       break;
     case chrome::NOTIFICATION_OUTDATED_INSTALL:
@@ -703,6 +710,7 @@ bool ToolbarView::ShouldShowUpgradeRecommended() {
 bool ToolbarView::ShouldShowIncompatibilityWarning() {
 #if defined(OS_WIN)
   EnumerateModulesModel* loaded_modules = EnumerateModulesModel::GetInstance();
+  loaded_modules->MaybePostScanningTask();
   return loaded_modules->ShouldShowConflictWarning();
 #else
   return false;
@@ -788,8 +796,12 @@ void ToolbarView::UpdateWrenchButtonSeverity() {
   }
 
   if (ShouldShowIncompatibilityWarning()) {
-    if (!was_showing)
+    if (!was_showing) {
       content::RecordAction(UserMetricsAction("ConflictBadge"));
+#if defined(OS_WIN)
+      ConflictingModuleView::MaybeShow(browser_, app_menu_);
+#endif
+    }
     app_menu_->SetSeverity(WrenchIconPainter::SEVERITY_MEDIUM, true);
     incompatibility_badge_showing = true;
     return;

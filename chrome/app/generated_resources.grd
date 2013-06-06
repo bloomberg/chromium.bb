@@ -1456,7 +1456,7 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
           H&amp;elp
         </message>
         <message name="IDS_VIEW_INCOMPATIBILITIES" desc="The text label of the View incompatibilities menu item">
-          View incompatibilities
+          Software incompatibility: Learn more
         </message>
         <message name="IDS_VIEW_BACKGROUND_PAGES" desc="The text label of the View background pages menu item">
           View background pages (<ph name="NUM_BACKGROUND_APPS">$1<ex>3</ex></ph>)
@@ -1497,7 +1497,7 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
           H&amp;elp
         </message>
         <message name="IDS_VIEW_INCOMPATIBILITIES" desc="The text label of the View incompatibilities menu item">
-          View Incompatibilities
+          Software Incompatibility: Learn More
         </message>
         <message name="IDS_VIEW_BACKGROUND_PAGES" desc="The text label of the View background pages menu item">
           View Background Pages (<ph name="NUM_BACKGROUND_APPS">$1<ex>3</ex></ph>)
@@ -7379,6 +7379,22 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_HELP_CENTER_VIEW_CONFLICTS" desc="The url of the Help center article for the View Conflicts page" translateable="false">
         http://www.google.com/support/chrome/bin/answer.py?answer=1093113&amp;topic=21605&amp;hl=[GRITLANGCODE]&amp;n=<ph name="NAME">$1<ex>Hash</ex></ph>&amp;l=<ph name="LOCATION">$2<ex>Hash</ex></ph>&amp;d=<ph name="DESC">$3<ex>Hash</ex></ph>&amp;s=<ph name="SIGNER">$4<ex>Hash</ex></ph>
       </message>
+      <if expr="pp_ifdef('use_titlecase')">
+      <message name="IDS_CONFLICTS_LEARN_MORE" desc="The Learn More button in the conflicting module bubble">
+          Learn More
+      </message>
+      <message name="IDS_CONFLICTS_NOT_NOW" desc="The Not Now button in the conflicting module bubble">
+          Not Now
+      </message>
+      </if>
+      <if expr="not pp_ifdef('use_titlecase')">
+      <message name="IDS_CONFLICTS_LEARN_MORE" desc="The Learn More button in the conflicting module bubble">
+          Learn more
+      </message>
+      <message name="IDS_CONFLICTS_NOT_NOW" desc="The Not Now button in the conflicting module bubble">
+          Not now
+      </message>
+      </if>
 
       <!-- Plug-in placeholders -->
       <message name="IDS_PLUGIN_LOAD" desc="The link for loading a blocked plug-in, displayed in the click to play UI.">
