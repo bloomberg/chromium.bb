@@ -4205,14 +4205,7 @@ void RenderViewImpl::CheckPreferredSize() {
   if (!send_preferred_size_changes_ || !webview())
     return;
 
-  gfx::Size size(webview()->mainFrame()->contentsPreferredWidth(),
-                 webview()->mainFrame()->documentElementScrollHeight());
-
-  // In the presence of zoom, these sizes are still reported as if unzoomed,
-  // so we need to adjust.
-  double zoom_factor = WebView::zoomLevelToZoomFactor(webview()->zoomLevel());
-  size.set_width(static_cast<int>(size.width() * zoom_factor));
-  size.set_height(static_cast<int>(size.height() * zoom_factor));
+  gfx::Size size = webview()->contentsPreferredMinimumSize();
 
   if (size == preferred_size_)
     return;
