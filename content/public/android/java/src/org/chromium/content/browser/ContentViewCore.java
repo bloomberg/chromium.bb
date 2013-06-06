@@ -323,7 +323,7 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
 
     private Runnable mDeferredHandleFadeInRunnable;
 
-    // Size of the viewport in physical pixels as set from onSizeChanged or setInitialViewportSize.
+    // Size of the viewport in physical pixels as set from onSizeChanged.
     private int mViewportWidthPix;
     private int mViewportHeightPix;
     private int mPhysicalBackingWidthPix;
@@ -408,23 +408,6 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
      */
     public ViewGroup getContainerView() {
         return mContainerView;
-    }
-
-    /**
-     * Set initial viewport size parameters, so that the web page can have a reasonable
-     * size to start before ContentView becomes visible.
-     * This is useful for a background view that loads the web page before it is shown
-     * and gets the first onSizeChanged().
-     */
-    public void setInitialViewportSize(int widthPix, int heightPix,
-            int offsetXPix, int offsetYPix) {
-        assert mViewportWidthPix == 0 && mViewportHeightPix == 0 &&
-                mViewportSizeOffsetWidthPix == 0 && mViewportSizeOffsetHeightPix == 0;
-        mViewportWidthPix = widthPix;
-        mViewportHeightPix = heightPix;
-        mViewportSizeOffsetWidthPix = offsetXPix;
-        mViewportSizeOffsetHeightPix = offsetYPix;
-        if (mNativeContentViewCore != 0) nativeWasResized(mNativeContentViewCore);
     }
 
     /**
@@ -945,15 +928,13 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
     }
 
     /**
-     * @return Viewport width in physical pixels as set from onSizeChanged or
-     * setInitialViewportSize.
+     * @return Viewport width in physical pixels as set from onSizeChanged.
      */
     @CalledByNative
     public int getViewportWidthPix() { return mViewportWidthPix; }
 
     /**
-     * @return Viewport height in physical pixels as set from onSizeChanged or
-     * setInitialViewportSize.
+     * @return Viewport height in physical pixels as set from onSizeChanged.
      */
     @CalledByNative
     public int getViewportHeightPix() { return mViewportHeightPix; }
@@ -2135,8 +2116,8 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
             float controlsOffsetYCss, float contentOffsetYCss,
             float overdrawBottomHeightCss) {
         TraceEvent.instant("ContentViewCore:updateFrameInfo");
-        // Adjust contentWidth/Height to be always at least as big as the actual viewport
-        // (as set by onSizeChanged or setInitialViewportSize).
+        // Adjust contentWidth/Height to be always at least as big as
+        // the actual viewport (as set by onSizeChanged).
         contentWidth = Math.max(contentWidth,
                 mRenderCoordinates.fromPixToLocalCss(mViewportWidthPix));
         contentHeight = Math.max(contentHeight,
