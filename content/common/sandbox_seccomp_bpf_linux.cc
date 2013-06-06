@@ -29,6 +29,7 @@
 #include "base/basictypes.h"
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "build/build_config.h"
 #include "content/common/sandbox_linux.h"
 #include "content/common/sandbox_seccomp_bpf_linux.h"
 #include "content/public/common/content_switches.h"
@@ -1411,8 +1412,7 @@ ErrorCode BaselinePolicy(Sandbox* sandbox, int sysno) {
     return ErrorCode(ErrorCode::ERR_ALLOWED);
 #endif
 
-  // TODO(jln): some system calls in those sets are not supposed to
-  // return ENOENT. Return the appropriate error.
+  // TODO(jln): start returning EPERM for everything.
   if (IsFileSystem(sysno) || IsCurrentDirectory(sysno)) {
     return ErrorCode(ENOENT);
   }
@@ -1681,6 +1681,41 @@ ErrorCode AllowAllPolicy(Sandbox*, int sysno, void*) {
   }
 }
 
+// If a BPF policy is engaged for |process_type|, run a few sanity checks.
+void RunSandboxSanityChecks(const std::string& process_type) {
+  if (process_type == switches::kRendererProcess ||
+      process_type == switches::kWorkerProcess ||
+      process_type == switches::kGpuProcess ||
+      process_type == switches::kPpapiPluginProcess) {
+    int syscall_ret;
+    errno = 0;
+
+    // Without the sandbox, this would EBADF.
+    syscall_ret = fchmod(-1, 07777);
+    CHECK_EQ(-1, syscall_ret);
+    CHECK_EQ(EPERM, errno);
+
+    // Run most of the sanity checks only in DEBUG mode to avoid a perf.
+    // impact.
+#if !defined(NDEBUG)
+    // open() must be restricted.
+    syscall_ret = open("/etc/passwd", O_RDONLY);
+    CHECK_EQ(-1, syscall_ret);
+    // Our policies return ENOENT, but the low-level broker process
+    // uses EPERM.
+    CHECK(errno == ENOENT || errno == EPERM);
+
+    // TODO(jorgelo): re-enable on arm (crbug.com/235609).
+    if (!IsArchitectureArm()) {
+      // We should never allow the creation of netlink sockets.
+      syscall_ret = socket(AF_NETLINK, SOCK_DGRAM, 0);
+      CHECK_EQ(-1, syscall_ret);
+      CHECK_EQ(EPERM, errno);
+    }
+#endif  // !defined(NDEBUG)
+  }
+}
+
 bool EnableGpuBrokerPolicyCallback() {
   StartSandboxWithPolicy(GpuBrokerProcessPolicy, NULL);
   return true;
@@ -1841,6 +1876,8 @@ bool StartBpfSandbox(const CommandLine& command_line,
   WarmupPolicy(syscall_policy, &broker_process);
 
   StartSandboxWithPolicy(syscall_policy, broker_process);
+
+  RunSandboxSanityChecks(process_type);
 
   return true;
 }
