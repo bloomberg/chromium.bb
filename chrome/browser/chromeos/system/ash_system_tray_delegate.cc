@@ -302,6 +302,7 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     OnNetworkManagerChanged(crosnet);
 
     input_method::InputMethodManager::Get()->AddObserver(this);
+    UpdateClockType();
 
     system::TimezoneSettings::GetInstance()->AddObserver(this);
     DBusThreadManager::Get()->GetSystemClockClient()->AddObserver(this);
@@ -954,9 +955,11 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
   }
 
   void UpdateClockType() {
+    if (!user_pref_registrar_)
+      return;
     clock_type_ =
         user_pref_registrar_->prefs()->GetBoolean(prefs::kUse24HourClock) ?
-            base::k24HourClock : base::k12HourClock;
+        base::k24HourClock : base::k12HourClock;
     GetSystemTrayNotifier()->NotifyDateFormatChanged();
   }
 
