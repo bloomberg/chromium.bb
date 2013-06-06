@@ -191,9 +191,9 @@ class MediaGalleriesPreferencesTest : public testing::Test {
   }
 
   MediaGalleryPrefId AddGalleryWithNameV0(const std::string& device_id,
-                                        const string16& display_name,
-                                        const base::FilePath& relative_path,
-                                        bool user_added) {
+                                          const string16& display_name,
+                                          const base::FilePath& relative_path,
+                                          bool user_added) {
     return gallery_prefs()->AddGalleryInternal(
         device_id, display_name, relative_path, user_added,
         string16(), string16(), string16(), 0, base::Time(), false, 0);

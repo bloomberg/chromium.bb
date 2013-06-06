@@ -32,9 +32,20 @@
 #include "chrome/common/pref_names.h"
 #include "components/user_prefs/pref_registry_syncable.h"
 
+using base::DictionaryValue;
+using base::ListValue;
+using extensions::ExtensionPrefs;
+
 namespace chrome {
 
 namespace {
+
+// Pref key for the list of media gallery permissions.
+const char kMediaGalleriesPermissions[] = "media_galleries_permissions";
+// Pref key for Media Gallery ID.
+const char kMediaGalleryIdKey[] = "id";
+// Pref key for Media Gallery Permission Value.
+const char kMediaGalleryHasPermissionKey[] = "has_permission";
 
 const char kMediaGalleriesDeviceIdKey[] = "deviceId";
 const char kMediaGalleriesDisplayNameKey[] = "displayName";
@@ -191,6 +202,22 @@ bool HasAutoDetectedGalleryPermission(const extensions::Extension& extension) {
       &extension, extensions::APIPermission::kMediaGalleries, &param);
 }
 
+// Retrieves the MediaGalleryPermission from the given dictionary; DCHECKs on
+// failure.
+bool GetMediaGalleryPermissionFromDictionary(
+    const DictionaryValue* dict,
+    MediaGalleryPermission* out_permission) {
+  std::string string_id;
+  if (dict->GetString(kMediaGalleryIdKey, &string_id) &&
+      base::StringToUint64(string_id, &out_permission->pref_id) &&
+      dict->GetBoolean(kMediaGalleryHasPermissionKey,
+                       &out_permission->has_permission)) {
+    return true;
+  }
+  NOTREACHED();
+  return false;
+}
+
 }  // namespace
 
 MediaGalleryPrefInfo::MediaGalleryPrefInfo()
@@ -213,7 +240,8 @@ MediaGalleriesPreferences::GalleryChangeObserver::~GalleryChangeObserver() {}
 
 MediaGalleriesPreferences::MediaGalleriesPreferences(Profile* profile)
     : weak_factory_(this),
-      profile_(profile) {
+      profile_(profile),
+      extension_prefs_for_testing_(NULL) {
   AddDefaultGalleriesIfFreshProfile();
 
   // TODO(vandebo) Turn this back on when the iTunes code is ready.
@@ -577,8 +605,7 @@ void MediaGalleriesPreferences::ForgetGalleryById(MediaGalleryPrefId pref_id) {
     MediaGalleryPrefId iter_id;
     if ((*iter)->GetAsDictionary(&dict) && GetPrefId(*dict, &iter_id) &&
         pref_id == iter_id) {
-      extensions::MediaGalleriesPrivateAPI::RemoveMediaGalleryPermissions(
-          GetExtensionPrefs(), pref_id);
+      RemoveGalleryPermissionsFromPrefs(pref_id);
       MediaGalleryPrefInfo::Type type;
       if (GetType(*dict, &type) &&
           type == MediaGalleryPrefInfo::kAutoDetected) {
@@ -608,8 +635,7 @@ MediaGalleryPrefIdSet MediaGalleriesPreferences::GalleriesForExtension(
   }
 
   std::vector<MediaGalleryPermission> stored_permissions =
-      extensions::MediaGalleriesPrivateAPI::GetMediaGalleryPermissions(
-          GetExtensionPrefs(), extension.id());
+      GetGalleryPermissionsFromPrefs(extension.id());
   for (std::vector<MediaGalleryPermission>::const_iterator it =
            stored_permissions.begin(); it != stored_permissions.end(); ++it) {
     if (!it->has_permission) {
@@ -646,8 +672,7 @@ void MediaGalleriesPreferences::SetGalleryPermissionForExtension(
   bool all_permission = HasAutoDetectedGalleryPermission(extension);
   if (has_permission && all_permission) {
     if (gallery_info->second.type == MediaGalleryPrefInfo::kAutoDetected) {
-      extensions::MediaGalleriesPrivateAPI::UnsetMediaGalleryPermission(
-          GetExtensionPrefs(), extension.id(), pref_id);
+      UnsetGalleryPermissionInPrefs(extension.id(), pref_id);
       NotifyChangeObservers(extension.id());
 #if defined(ENABLE_EXTENSIONS)
       if (state_tracker) {
@@ -660,11 +685,9 @@ void MediaGalleriesPreferences::SetGalleryPermissionForExtension(
   }
 
   if (!has_permission && !all_permission) {
-    extensions::MediaGalleriesPrivateAPI::UnsetMediaGalleryPermission(
-        GetExtensionPrefs(), extension.id(), pref_id);
+    UnsetGalleryPermissionInPrefs(extension.id(), pref_id);
   } else {
-    extensions::MediaGalleriesPrivateAPI::SetMediaGalleryPermission(
-        GetExtensionPrefs(), extension.id(), pref_id, has_permission);
+    SetGalleryPermissionInPrefs(extension.id(), pref_id, has_permission);
   }
   NotifyChangeObservers(extension.id());
 #if defined(ENABLE_EXTENSIONS)
@@ -698,11 +721,116 @@ void MediaGalleriesPreferences::RegisterUserPrefs(
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
-extensions::ExtensionPrefs*
-MediaGalleriesPreferences::GetExtensionPrefs() const {
-  ExtensionService* extension_service =
-      extensions::ExtensionSystem::Get(profile_)->extension_service();
-  return extension_service->extension_prefs();
+void MediaGalleriesPreferences::SetGalleryPermissionInPrefs(
+    const std::string& extension_id,
+    MediaGalleryPrefId gallery_id,
+    bool has_access) {
+  ExtensionPrefs::ScopedListUpdate update(GetExtensionPrefs(),
+                                          extension_id,
+                                          kMediaGalleriesPermissions);
+  ListValue* permissions = update.Get();
+  if (!permissions) {
+    permissions = update.Create();
+  } else {
+    // If the gallery is already in the list, update the permission...
+    for (ListValue::iterator iter = permissions->begin();
+         iter != permissions->end(); ++iter) {
+      DictionaryValue* dict = NULL;
+      if (!(*iter)->GetAsDictionary(&dict))
+        continue;
+      MediaGalleryPermission perm;
+      if (!GetMediaGalleryPermissionFromDictionary(dict, &perm))
+        continue;
+      if (perm.pref_id == gallery_id) {
+        dict->SetBoolean(kMediaGalleryHasPermissionKey, has_access);
+        return;
+      }
+    }
+  }
+  // ...Otherwise, add a new entry for the gallery.
+  DictionaryValue* dict = new DictionaryValue;
+  dict->SetString(kMediaGalleryIdKey, base::Uint64ToString(gallery_id));
+  dict->SetBoolean(kMediaGalleryHasPermissionKey, has_access);
+  permissions->Append(dict);
+}
+
+void MediaGalleriesPreferences::UnsetGalleryPermissionInPrefs(
+    const std::string& extension_id,
+    MediaGalleryPrefId gallery_id) {
+  ExtensionPrefs::ScopedListUpdate update(GetExtensionPrefs(),
+                                          extension_id,
+                                          kMediaGalleriesPermissions);
+  ListValue* permissions = update.Get();
+  if (!permissions)
+    return;
+
+  for (ListValue::iterator iter = permissions->begin();
+       iter != permissions->end(); ++iter) {
+    const DictionaryValue* dict = NULL;
+    if (!(*iter)->GetAsDictionary(&dict))
+      continue;
+    MediaGalleryPermission perm;
+    if (!GetMediaGalleryPermissionFromDictionary(dict, &perm))
+      continue;
+    if (perm.pref_id == gallery_id) {
+      permissions->Erase(iter, NULL);
+      return;
+    }
+  }
+}
+
+std::vector<MediaGalleryPermission>
+MediaGalleriesPreferences::GetGalleryPermissionsFromPrefs(
+    const std::string& extension_id) const {
+  std::vector<MediaGalleryPermission> result;
+  const ListValue* permissions;
+  if (!GetExtensionPrefs()->ReadPrefAsList(extension_id,
+                                           kMediaGalleriesPermissions,
+                                           &permissions)) {
+    return result;
+  }
+
+  for (ListValue::const_iterator iter = permissions->begin();
+       iter != permissions->end(); ++iter) {
+    DictionaryValue* dict = NULL;
+    if (!(*iter)->GetAsDictionary(&dict))
+      continue;
+    MediaGalleryPermission perm;
+    if (!GetMediaGalleryPermissionFromDictionary(dict, &perm))
+      continue;
+    result.push_back(perm);
+  }
+
+  return result;
+}
+
+void MediaGalleriesPreferences::RemoveGalleryPermissionsFromPrefs(
+    MediaGalleryPrefId gallery_id) {
+  ExtensionPrefs* prefs = GetExtensionPrefs();
+  const DictionaryValue* extensions =
+      prefs->pref_service()->GetDictionary(ExtensionPrefs::kExtensionsPref);
+  if (!extensions)
+    return;
+
+  for (DictionaryValue::Iterator iter(*extensions); !iter.IsAtEnd();
+       iter.Advance()) {
+    if (!extensions::Extension::IdIsValid(iter.key())) {
+      NOTREACHED();
+      continue;
+    }
+    UnsetGalleryPermissionInPrefs(iter.key(), gallery_id);
+  }
+}
+
+ExtensionPrefs* MediaGalleriesPreferences::GetExtensionPrefs() const {
+  if (extension_prefs_for_testing_)
+    return extension_prefs_for_testing_;
+  return extensions::ExtensionPrefs::Get(profile_);
+}
+
+void MediaGalleriesPreferences::SetExtensionPrefsForTesting(
+    extensions::ExtensionPrefs* extension_prefs) {
+  extension_prefs_for_testing_ = extension_prefs;
 }
 
 }  // namespace chrome

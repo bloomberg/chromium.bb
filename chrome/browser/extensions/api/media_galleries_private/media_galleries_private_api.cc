@@ -45,15 +45,6 @@ namespace {
 
 const char kInvalidGalleryIDError[] = "Invalid gallery ID";
 
-// List of media gallery permissions.
-const char kMediaGalleriesPermissions[] = "media_galleries_permissions";
-
-// Key for Media Gallery ID.
-const char kMediaGalleryIdKey[] = "id";
-
-// Key for Media Gallery Permission Value.
-const char kMediaGalleryHasPermissionKey[] = "has_permission";
-
 // Handles the profile shutdown event on the file thread to clean up
 // GalleryWatchManager.
 void HandleProfileShutdownOnFileThread(void* profile_id) {
@@ -82,20 +73,6 @@ bool GetGalleryFilePathAndId(const std::string& gallery_id,
   *gallery_pref_id = pref_id;
   *gallery_file_path = file_path;
   return true;
-}
-
-bool GetMediaGalleryPermissionFromDictionary(
-    const DictionaryValue* dict,
-    chrome::MediaGalleryPermission* out_permission) {
-  std::string string_id;
-  if (dict->GetString(kMediaGalleryIdKey, &string_id) &&
-      base::StringToUint64(string_id, &out_permission->pref_id) &&
-      dict->GetBoolean(kMediaGalleryHasPermissionKey,
-                       &out_permission->has_permission)) {
-    return true;
-  }
-  NOTREACHED();
-  return false;
 }
 
 }  // namespace
@@ -142,127 +119,6 @@ ProfileKeyedAPIFactory<MediaGalleriesPrivateAPI>*
 MediaGalleriesPrivateAPI* MediaGalleriesPrivateAPI::Get(Profile* profile) {
   return
       ProfileKeyedAPIFactory<MediaGalleriesPrivateAPI>::GetForProfile(profile);
-}
-
-// static
-void MediaGalleriesPrivateAPI::SetMediaGalleryPermission(
-    ExtensionPrefs* prefs,
-    const std::string& extension_id,
-    chrome::MediaGalleryPrefId gallery_id,
-    bool has_access) {
-  if (!prefs)
-    return;
-
-  ExtensionPrefs::ScopedListUpdate update(prefs,
-                                          extension_id,
-                                          kMediaGalleriesPermissions);
-  ListValue* permissions = update.Get();
-  if (!permissions) {
-    permissions = update.Create();
-  } else {
-    // If the gallery is already in the list, update the permission...
-    for (ListValue::iterator iter = permissions->begin();
-         iter != permissions->end(); ++iter) {
-      DictionaryValue* dict = NULL;
-      if (!(*iter)->GetAsDictionary(&dict))
-        continue;
-      chrome::MediaGalleryPermission perm;
-      if (!GetMediaGalleryPermissionFromDictionary(dict, &perm))
-        continue;
-      if (perm.pref_id == gallery_id) {
-        dict->SetBoolean(kMediaGalleryHasPermissionKey, has_access);
-        return;
-      }
-    }
-  }
-  // ...Otherwise, add a new entry for the gallery.
-  DictionaryValue* dict = new DictionaryValue;
-  dict->SetString(kMediaGalleryIdKey, base::Uint64ToString(gallery_id));
-  dict->SetBoolean(kMediaGalleryHasPermissionKey, has_access);
-  permissions->Append(dict);
-}
-
-// static
-void MediaGalleriesPrivateAPI::UnsetMediaGalleryPermission(
-    ExtensionPrefs* prefs,
-    const std::string& extension_id,
-    chrome::MediaGalleryPrefId gallery_id) {
-  if (!prefs)
-    return;
-
-  ExtensionPrefs::ScopedListUpdate update(prefs,
-                                          extension_id,
-                                          kMediaGalleriesPermissions);
-  ListValue* permissions = update.Get();
-  if (!permissions)
-    return;
-
-  for (ListValue::iterator iter = permissions->begin();
-       iter != permissions->end(); ++iter) {
-    const DictionaryValue* dict = NULL;
-    if (!(*iter)->GetAsDictionary(&dict))
-      continue;
-    chrome::MediaGalleryPermission perm;
-    if (!GetMediaGalleryPermissionFromDictionary(dict, &perm))
-      continue;
-    if (perm.pref_id == gallery_id) {
-      permissions->Erase(iter, NULL);
-      return;
-    }
-  }
-}
-
-// static
-std::vector<chrome::MediaGalleryPermission>
-MediaGalleriesPrivateAPI::GetMediaGalleryPermissions(
-    ExtensionPrefs* prefs,
-    const std::string& extension_id) {
-  std::vector<chrome::MediaGalleryPermission> result;
-
-  if (!prefs)
-    return result;
-
-  const ListValue* permissions;
-  if (!prefs->ReadPrefAsList(extension_id,
-                             kMediaGalleriesPermissions,
-                             &permissions)) {
-    return result;
-  }
-
-  for (ListValue::const_iterator iter = permissions->begin();
-       iter != permissions->end(); ++iter) {
-    DictionaryValue* dict = NULL;
-    if (!(*iter)->GetAsDictionary(&dict))
-      continue;
-    chrome::MediaGalleryPermission perm;
-    if (!GetMediaGalleryPermissionFromDictionary(dict, &perm))
-      continue;
-    result.push_back(perm);
-  }
-
-  return result;
-}
-
-// static
-void MediaGalleriesPrivateAPI::RemoveMediaGalleryPermissions(
-    ExtensionPrefs* prefs,
-    chrome::MediaGalleryPrefId gallery_id) {
-  if (!prefs)
-    return;
-
-  const DictionaryValue* extensions =
-      prefs->pref_service()->GetDictionary(ExtensionPrefs::kExtensionsPref);
-  if (!extensions)
-    return;
-
-  for (DictionaryValue::Iterator iter(*extensions); !iter.IsAtEnd();
-       iter.Advance()) {
-    if (!Extension::IdIsValid(iter.key())) {
-      NOTREACHED();
-      continue;
-    }
-    UnsetMediaGalleryPermission(prefs, iter.key(), gallery_id);
-  }
 }
 
 void MediaGalleriesPrivateAPI::OnListenerAdded(

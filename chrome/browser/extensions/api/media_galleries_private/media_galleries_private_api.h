@@ -41,31 +41,6 @@ class MediaGalleriesPrivateAPI : public ProfileKeyedAPI,
   // Convenience method to get the MediaGalleriesPrivateAPI for a profile.
   static MediaGalleriesPrivateAPI* Get(Profile* profile);
 
-  // Sets permission for the media galleries identified by |gallery_id| for the
-  // extension in the given |prefs|.
-  static void SetMediaGalleryPermission(ExtensionPrefs* prefs,
-                                        const std::string& extension_id,
-                                        chrome::MediaGalleryPrefId gallery_id,
-                                        bool has_access);
-
-  // Removes the entry for the media galleries permissions identified by
-  // |gallery_id| for the extension in the given |prefs|.
-  static void UnsetMediaGalleryPermission(
-      ExtensionPrefs* prefs,
-      const std::string& extension_id,
-      chrome::MediaGalleryPrefId gallery_id);
-
-  // Return all media gallery permissions for the extension in the given
-  // |prefs|.
-  static std::vector<chrome::MediaGalleryPermission> GetMediaGalleryPermissions(
-      ExtensionPrefs* prefs,
-      const std::string& extension_id);
-
-  // Remove all the media gallery permissions in |prefs| for the gallery
-  // specified by |gallery_id|.
-  static void RemoveMediaGalleryPermissions(
-      ExtensionPrefs* prefs, chrome::MediaGalleryPrefId gallery_id);
-
   // EventRouter::Observer implementation.
   virtual void OnListenerAdded(const EventListenerInfo& details) OVERRIDE;
 
