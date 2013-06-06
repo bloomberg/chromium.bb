@@ -54,6 +54,16 @@ terminal_destroy(struct terminal *terminal);
 static int
 terminal_run(struct terminal *terminal, const char *path);
 
+#define TERMINAL_DRAW_SINGLE_WIDE_CHARACTERS    \
+    " !\"#$%&'()*+,-./"                         \
+    "0123456789"                                \
+    ":;<=>?@"                                   \
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZ"                \
+    "[\\]^_`"                                   \
+    "abcdefghijklmnopqrstuvwxyz"                \
+    "{|}~"                                      \
+    ""
+
 #define MOD_SHIFT	0x01
 #define MOD_ALT		0x02
 #define MOD_CTRL	0x04
@@ -407,6 +417,7 @@ struct terminal {
 	struct color_scheme *color_scheme;
 	struct terminal_color color_table[256];
 	cairo_font_extents_t extents;
+	double average_width;
 	cairo_scaled_font_t *font_normal, *font_bold;
 	uint32_t hide_cursor_serial;
 
@@ -760,12 +771,12 @@ resize_handler(struct widget *widget,
 	int32_t columns, rows, m;
 
 	m = 2 * terminal->margin;
-	columns = (width - m) / (int32_t) terminal->extents.max_x_advance;
+	columns = (width - m) / (int32_t) terminal->average_width;
 	rows = (height - m) / (int32_t) terminal->extents.height;
 
 	if (!window_is_fullscreen(terminal->window) &&
 	    !window_is_maximized(terminal->window)) {
-		width = columns * terminal->extents.max_x_advance + m;
+		width = columns * terminal->average_width + m;
 		height = rows * terminal->extents.height + m;
 		widget_set_size(terminal->widget, width, height);
 	}
@@ -783,7 +794,7 @@ terminal_resize(struct terminal *terminal, int columns, int rows)
 		return;
 
 	m = 2 * terminal->margin;
-	width = columns * terminal->extents.max_x_advance + m;
+	width = columns * terminal->average_width + m;
 	height = rows * terminal->extents.height + m;
 
 	frame_set_child_size(terminal->widget, width, height);
@@ -930,6 +941,7 @@ redraw_handler(struct widget *widget, void *data)
 	double d;
 	struct glyph_run run;
 	cairo_font_extents_t extents;
+	double average_width;
 
 	surface = window_get_surface(terminal->window);
 	widget_get_allocation(terminal->widget, &allocation);
@@ -946,7 +958,8 @@ redraw_handler(struct widget *widget, void *data)
 	cairo_set_scaled_font(cr, terminal->font_normal);
 
 	extents = terminal->extents;
-	side_margin = (allocation.width - terminal->width * extents.max_x_advance) / 2;
+	average_width = terminal->average_width;
+	side_margin = (allocation.width - terminal->width * average_width) / 2;
 	top_margin = (allocation.height - terminal->height * extents.height) / 2;
 
 	cairo_set_line_width(cr, 1.0);
@@ -962,11 +975,11 @@ redraw_handler(struct widget *widget, void *data)
 				continue;
 
 			terminal_set_color(terminal, cr, attr.attr.bg);
-			cairo_move_to(cr, col * extents.max_x_advance,
+			cairo_move_to(cr, col * average_width,
 				      row * extents.height);
-			cairo_rel_line_to(cr, extents.max_x_advance, 0);
+			cairo_rel_line_to(cr, average_width, 0);
 			cairo_rel_line_to(cr, 0, extents.height);
-			cairo_rel_line_to(cr, -extents.max_x_advance, 0);
+			cairo_rel_line_to(cr, -average_width, 0);
 			cairo_close_path(cr);
 			cairo_fill(cr);
 		}
@@ -984,12 +997,12 @@ redraw_handler(struct widget *widget, void *data)
 
 			glyph_run_flush(&run, attr);
 
-			text_x = col * extents.max_x_advance;
+			text_x = col * average_width;
 			text_y = extents.ascent + row * extents.height;
 			if (attr.attr.a & ATTRMASK_UNDERLINE) {
 				terminal_set_color(terminal, cr, attr.attr.fg);
 				cairo_move_to(cr, text_x, (double)text_y + 1.5);
-				cairo_line_to(cr, text_x + extents.max_x_advance, (double) text_y + 1.5);
+				cairo_line_to(cr, text_x + average_width, (double) text_y + 1.5);
 				cairo_stroke(cr);
 			}
 
@@ -1005,11 +1018,11 @@ redraw_handler(struct widget *widget, void *data)
 		d = 0.5;
 
 		cairo_set_line_width(cr, 1);
-		cairo_move_to(cr, terminal->column * extents.max_x_advance + d,
+		cairo_move_to(cr, terminal->column * average_width + d,
 			      terminal->row * extents.height + d);
-		cairo_rel_line_to(cr, extents.max_x_advance - 2 * d, 0);
+		cairo_rel_line_to(cr, average_width - 2 * d, 0);
 		cairo_rel_line_to(cr, 0, extents.height - 2 * d);
-		cairo_rel_line_to(cr, -extents.max_x_advance + 2 * d, 0);
+		cairo_rel_line_to(cr, -average_width + 2 * d, 0);
 		cairo_close_path(cr);
 
 		cairo_stroke(cr);
@@ -1022,7 +1035,7 @@ redraw_handler(struct widget *widget, void *data)
 
 	if (terminal->send_cursor_position) {
 		cursor_x = side_margin + allocation.x +
-				terminal->column * extents.max_x_advance;
+				terminal->column * average_width;
 		cursor_y = top_margin + allocation.y +
 				terminal->row * extents.height;
 		window_set_text_cursor_position(terminal->window,
@@ -2371,7 +2384,7 @@ recompute_selection(struct terminal *terminal)
 	int cw, ch;
 	union utf8_char *data;
 
-	cw = terminal->extents.max_x_advance;
+	cw = terminal->average_width;
 	ch = terminal->extents.height;
 	widget_get_allocation(terminal->widget, &allocation);
 	width = terminal->width * cw;
@@ -2527,12 +2540,17 @@ output_handler(struct window *window, struct output *output, int enter,
 	window_schedule_redraw(window);
 }
 
+#ifndef howmany
+#define howmany(x, y) (((x) + ((y) - 1)) / (y))
+#endif
+
 static struct terminal *
 terminal_create(struct display *display)
 {
 	struct terminal *terminal;
 	cairo_surface_t *surface;
 	cairo_t *cr;
+	cairo_text_extents_t text_extents;
 
 	terminal = malloc(sizeof *terminal);
 	if (terminal == NULL)
@@ -2584,6 +2602,15 @@ terminal_create(struct display *display)
 	cairo_scaled_font_reference(terminal->font_normal);
 
 	cairo_font_extents(cr, &terminal->extents);
+
+	/* Compute the average ascii glyph width */
+	cairo_text_extents(cr, TERMINAL_DRAW_SINGLE_WIDE_CHARACTERS,
+			   &text_extents);
+	terminal->average_width = howmany
+		(text_extents.width,
+		 strlen(TERMINAL_DRAW_SINGLE_WIDE_CHARACTERS));
+	terminal->average_width = ceil(terminal->average_width);
+
 	cairo_destroy(cr);
 	cairo_surface_destroy(surface);
 
