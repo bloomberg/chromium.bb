@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,23 +7,27 @@
 #include "base/message_loop.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/ui/cocoa/cocoa_test_helper.h"
-#include "chrome/browser/ui/cocoa/menu_controller.h"
-#include "grit/generated_resources.h"
 #include "grit/ui_resources.h"
+#include "grit/ui_strings.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#import "ui/base/cocoa/menu_controller.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/base/resource/resource_bundle.h"
+#import "ui/base/test/ui_cocoa_test_helper.h"
 #include "ui/gfx/image/image.h"
 
+namespace ui {
+
 namespace {
+
+const int kTestLabelResourceId = IDS_APP_SCROLLBAR_CXMENU_SCROLLHERE;
 
 class MenuControllerTest : public CocoaTest {
 };
 
 // A menu delegate that counts the number of times certain things are called
 // to make sure things are hooked up properly.
-class Delegate : public ui::SimpleMenuModel::Delegate {
+class Delegate : public SimpleMenuModel::Delegate {
  public:
   Delegate()
       : execute_count_(0),
@@ -42,12 +46,12 @@ class Delegate : public ui::SimpleMenuModel::Delegate {
   }
   virtual bool GetAcceleratorForCommandId(
       int command_id,
-      ui::Accelerator* accelerator) OVERRIDE { return false; }
+      Accelerator* accelerator) OVERRIDE { return false; }
   virtual void ExecuteCommand(int command_id, int event_flags) OVERRIDE {
     ++execute_count_;
   }
 
-  virtual void MenuWillShow(ui::SimpleMenuModel* /*source*/) OVERRIDE {
+  virtual void MenuWillShow(SimpleMenuModel* /*source*/) OVERRIDE {
     EXPECT_FALSE(did_show_);
     EXPECT_FALSE(did_close_);
     did_show_ = true;
@@ -60,7 +64,7 @@ class Delegate : public ui::SimpleMenuModel::Delegate {
                             inModes:modes];
   }
 
-  virtual void MenuClosed(ui::SimpleMenuModel* /*source*/) OVERRIDE {
+  virtual void MenuClosed(SimpleMenuModel* /*source*/) OVERRIDE {
     EXPECT_TRUE(did_show_);
     EXPECT_FALSE(did_close_);
     did_close_ = true;
@@ -106,7 +110,7 @@ class DynamicDelegate : public Delegate {
 
 TEST_F(MenuControllerTest, EmptyMenu) {
   Delegate delegate;
-  ui::SimpleMenuModel model(&delegate);
+  SimpleMenuModel model(&delegate);
   scoped_nsobject<MenuController> menu(
       [[MenuController alloc] initWithModel:&model useWithPopUpButtonCell:NO]);
   EXPECT_EQ([[menu menu] numberOfItems], 0);
@@ -114,11 +118,11 @@ TEST_F(MenuControllerTest, EmptyMenu) {
 
 TEST_F(MenuControllerTest, BasicCreation) {
   Delegate delegate;
-  ui::SimpleMenuModel model(&delegate);
+  SimpleMenuModel model(&delegate);
   model.AddItem(1, ASCIIToUTF16("one"));
   model.AddItem(2, ASCIIToUTF16("two"));
   model.AddItem(3, ASCIIToUTF16("three"));
-  model.AddSeparator(ui::NORMAL_SEPARATOR);
+  model.AddSeparator(NORMAL_SEPARATOR);
   model.AddItem(4, ASCIIToUTF16("four"));
   model.AddItem(5, ASCIIToUTF16("five"));
 
@@ -139,13 +143,13 @@ TEST_F(MenuControllerTest, BasicCreation) {
 
 TEST_F(MenuControllerTest, Submenus) {
   Delegate delegate;
-  ui::SimpleMenuModel model(&delegate);
+  SimpleMenuModel model(&delegate);
   model.AddItem(1, ASCIIToUTF16("one"));
-  ui::SimpleMenuModel submodel(&delegate);
+  SimpleMenuModel submodel(&delegate);
   submodel.AddItem(2, ASCIIToUTF16("sub-one"));
   submodel.AddItem(3, ASCIIToUTF16("sub-two"));
   submodel.AddItem(4, ASCIIToUTF16("sub-three"));
-  model.AddSubMenuWithStringId(5, IDS_ZOOM_MENU, &submodel);
+  model.AddSubMenuWithStringId(5, kTestLabelResourceId, &submodel);
   model.AddItem(6, ASCIIToUTF16("three"));
 
   scoped_nsobject<MenuController> menu(
@@ -176,10 +180,10 @@ TEST_F(MenuControllerTest, Submenus) {
 
 TEST_F(MenuControllerTest, EmptySubmenu) {
   Delegate delegate;
-  ui::SimpleMenuModel model(&delegate);
+  SimpleMenuModel model(&delegate);
   model.AddItem(1, ASCIIToUTF16("one"));
-  ui::SimpleMenuModel submodel(&delegate);
-  model.AddSubMenuWithStringId(2, IDS_ZOOM_MENU, &submodel);
+  SimpleMenuModel submodel(&delegate);
+  model.AddSubMenuWithStringId(2, kTestLabelResourceId, &submodel);
 
   scoped_nsobject<MenuController> menu(
       [[MenuController alloc] initWithModel:&model useWithPopUpButtonCell:NO]);
@@ -188,7 +192,7 @@ TEST_F(MenuControllerTest, EmptySubmenu) {
 
 TEST_F(MenuControllerTest, PopUpButton) {
   Delegate delegate;
-  ui::SimpleMenuModel model(&delegate);
+  SimpleMenuModel model(&delegate);
   model.AddItem(1, ASCIIToUTF16("one"));
   model.AddItem(2, ASCIIToUTF16("two"));
   model.AddItem(3, ASCIIToUTF16("three"));
@@ -208,7 +212,7 @@ TEST_F(MenuControllerTest, PopUpButton) {
 
 TEST_F(MenuControllerTest, Execute) {
   Delegate delegate;
-  ui::SimpleMenuModel model(&delegate);
+  SimpleMenuModel model(&delegate);
   model.AddItem(1, ASCIIToUTF16("one"));
   scoped_nsobject<MenuController> menu(
       [[MenuController alloc] initWithModel:&model useWithPopUpButtonCell:NO]);
@@ -232,12 +236,12 @@ void Validate(MenuController* controller, NSMenu* menu) {
 
 TEST_F(MenuControllerTest, Validate) {
   Delegate delegate;
-  ui::SimpleMenuModel model(&delegate);
+  SimpleMenuModel model(&delegate);
   model.AddItem(1, ASCIIToUTF16("one"));
   model.AddItem(2, ASCIIToUTF16("two"));
-  ui::SimpleMenuModel submodel(&delegate);
+  SimpleMenuModel submodel(&delegate);
   submodel.AddItem(2, ASCIIToUTF16("sub-one"));
-  model.AddSubMenuWithStringId(3, IDS_ZOOM_MENU, &submodel);
+  model.AddSubMenuWithStringId(3, kTestLabelResourceId, &submodel);
 
   scoped_nsobject<MenuController> menu(
       [[MenuController alloc] initWithModel:&model useWithPopUpButtonCell:NO]);
@@ -248,7 +252,7 @@ TEST_F(MenuControllerTest, Validate) {
 
 TEST_F(MenuControllerTest, DefaultInitializer) {
   Delegate delegate;
-  ui::SimpleMenuModel model(&delegate);
+  SimpleMenuModel model(&delegate);
   model.AddItem(1, ASCIIToUTF16("one"));
   model.AddItem(2, ASCIIToUTF16("two"));
   model.AddItem(3, ASCIIToUTF16("three"));
@@ -274,7 +278,7 @@ TEST_F(MenuControllerTest, Dynamic) {
   // no icon.
   string16 initial = ASCIIToUTF16("initial");
   delegate.SetDynamicLabel(initial);
-  ui::SimpleMenuModel model(&delegate);
+  SimpleMenuModel model(&delegate);
   model.AddItem(1, ASCIIToUTF16("foo"));
   scoped_nsobject<MenuController> menu(
       [[MenuController alloc] initWithModel:&model useWithPopUpButtonCell:NO]);
@@ -306,13 +310,13 @@ TEST_F(MenuControllerTest, Dynamic) {
 }
 
 TEST_F(MenuControllerTest, OpenClose) {
-  // ui::SimpleMenuModel posts a task that calls Delegate::MenuClosed. Create
+  // SimpleMenuModel posts a task that calls Delegate::MenuClosed. Create
   // a MessageLoop for that purpose.
   base::MessageLoop message_loop(base::MessageLoop::TYPE_UI);
 
   // Create the model.
   Delegate delegate;
-  ui::SimpleMenuModel model(&delegate);
+  SimpleMenuModel model(&delegate);
   model.AddItem(1, ASCIIToUTF16("allays"));
   model.AddItem(2, ASCIIToUTF16("i"));
   model.AddItem(3, ASCIIToUTF16("bf"));
@@ -354,3 +358,5 @@ TEST_F(MenuControllerTest, OpenClose) {
 }
 
 }  // namespace
+
+}  // namespace ui

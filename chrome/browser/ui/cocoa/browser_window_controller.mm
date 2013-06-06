@@ -41,7 +41,6 @@
 #import "chrome/browser/ui/cocoa/chrome_to_mobile_bubble_controller.h"
 #import "chrome/browser/ui/cocoa/dev_tools_controller.h"
 #import "chrome/browser/ui/cocoa/download/download_shelf_controller.h"
-#import "chrome/browser/ui/cocoa/event_utils.h"
 #include "chrome/browser/ui/cocoa/extensions/extension_keybinding_registry_cocoa.h"
 #import "chrome/browser/ui/cocoa/fast_resize_view.h"
 #import "chrome/browser/ui/cocoa/find_bar/find_bar_bridge.h"
@@ -76,6 +75,7 @@
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
+#import "ui/base/cocoa/cocoa_event_utils.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/gfx/mac/scoped_ns_disable_screen_updates.h"
@@ -1190,7 +1190,7 @@ enum {
     modifierFlags &= ~NSCommandKeyMask;
   }
   WindowOpenDisposition disposition =
-      event_utils::WindowOpenDispositionFromNSEventWithFlags(
+      ui::WindowOpenDispositionFromNSEventWithFlags(
           [NSApp currentEvent], modifierFlags);
   switch (command) {
     case IDC_BACK:
@@ -1751,7 +1751,7 @@ enum {
     chrome::ExecuteCommandWithDisposition(
         browser_.get(),
         command,
-        event_utils::WindowOpenDispositionFromNSEvent(event));
+        ui::WindowOpenDispositionFromNSEvent(event));
   }
 }
 
@@ -1786,7 +1786,7 @@ enum {
     chrome::ExecuteCommandWithDisposition(
         browser_.get(),
         command,
-        event_utils::WindowOpenDispositionFromNSEvent(event));
+        ui::WindowOpenDispositionFromNSEvent(event));
   }
 }
 

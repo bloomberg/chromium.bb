@@ -13,10 +13,10 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_menu_bridge.h"
-#include "chrome/browser/ui/cocoa/event_utils.h"
-#include "chrome/browser/ui/cocoa/menu_controller.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "content/public/browser/user_metrics.h"
+#import "ui/base/cocoa/cocoa_event_utils.h"
+#import "ui/base/cocoa/menu_controller.h"
 
 using content::OpenURLParams;
 using content::Referrer;
@@ -98,7 +98,7 @@ const NSUInteger kMaximumMenuPixelsWide = 300;
         bridge_->GetProfile(), chrome::HOST_DESKTOP_TYPE_NATIVE));
   }
   WindowOpenDisposition disposition =
-      event_utils::WindowOpenDispositionFromNSEvent([NSApp currentEvent]);
+      ui::WindowOpenDispositionFromNSEvent([NSApp currentEvent]);
   OpenURLParams params(
       node->url(), Referrer(), disposition,
       content::PAGE_TRANSITION_AUTO_BOOKMARK, false);

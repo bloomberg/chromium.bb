@@ -10,7 +10,6 @@
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/search/search.h"
-#include "chrome/browser/ui/cocoa/event_utils.h"
 #include "chrome/browser/ui/cocoa/omnibox/omnibox_view_mac.h"
 #include "chrome/browser/ui/omnibox/omnibox_edit_model.h"
 #include "chrome/browser/ui/omnibox/omnibox_popup_model.h"
@@ -18,6 +17,7 @@
 #include "grit/theme_resources.h"
 #include "skia/ext/skia_utils_mac.h"
 #import "third_party/GTM/AppKit/GTMNSAnimation+Duration.h"
+#import "ui/base/cocoa/cocoa_event_utils.h"
 #include "ui/base/cocoa/window_size_constants.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/text/text_elider.h"
@@ -509,8 +509,7 @@ void OmniboxPopupViewMac::OpenURLForRow(int row, bool force_background) {
 
   WindowOpenDisposition disposition = NEW_BACKGROUND_TAB;
   if (!force_background) {
-    disposition =
-        event_utils::WindowOpenDispositionFromNSEvent([NSApp currentEvent]);
+    disposition = ui::WindowOpenDispositionFromNSEvent([NSApp currentEvent]);
   }
 
   // OpenMatch() may close the popup, which will clear the result set

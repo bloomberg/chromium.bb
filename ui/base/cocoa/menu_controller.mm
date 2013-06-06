@@ -1,14 +1,14 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "chrome/browser/ui/cocoa/menu_controller.h"
+#import "ui/base/cocoa/menu_controller.h"
 
 #include "base/logging.h"
 #include "base/strings/sys_string_conversions.h"
-#import "chrome/browser/ui/cocoa/event_utils.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/accelerators/platform_accelerator_cocoa.h"
+#import "ui/base/cocoa/cocoa_event_utils.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/base/text/text_elider.h"
@@ -193,7 +193,7 @@
           [[sender representedObject] pointerValue]);
   DCHECK(model);
   if (model) {
-    int event_flags = event_utils::EventFlagsFromNSEvent([NSApp currentEvent]);
+    int event_flags = ui::EventFlagsFromNSEvent([NSApp currentEvent]);
     model->ActivatedAt(modelIndex, event_flags);
   }
 }

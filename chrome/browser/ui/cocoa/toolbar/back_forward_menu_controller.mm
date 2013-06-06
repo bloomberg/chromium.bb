@@ -7,9 +7,9 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/sys_string_conversions.h"
-#import "chrome/browser/ui/cocoa/event_utils.h"
 #import "chrome/browser/ui/cocoa/menu_button.h"
 #include "chrome/browser/ui/toolbar/back_forward_menu_model.h"
+#import "ui/base/cocoa/cocoa_event_utils.h"
 #include "ui/gfx/image/image.h"
 
 using base::SysUTF16ToNSString;
@@ -92,7 +92,7 @@ using base::SysUTF16ToNSString;
 - (void)executeMenuItem:(id)sender {
   DCHECK([sender isKindOfClass:[NSMenuItem class]]);
   int menuID = [sender tag];
-  int event_flags = event_utils::EventFlagsFromNSEvent([NSApp currentEvent]);
+  int event_flags = ui::EventFlagsFromNSEvent([NSApp currentEvent]);
   model_->ActivatedAt(menuID, event_flags);
 }
 

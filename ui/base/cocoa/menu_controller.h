@@ -1,14 +1,15 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_COCOA_MENU_CONTROLLER_H_
-#define CHROME_BROWSER_UI_COCOA_MENU_CONTROLLER_H_
+#ifndef UI_BASE_COCOA_MENU_CONTROLLER_H_
+#define UI_BASE_COCOA_MENU_CONTROLLER_H_
 
 #import <Cocoa/Cocoa.h>
 
 #include "base/memory/scoped_nsobject.h"
 #include "base/string16.h"
+#include "ui/base/ui_export.h"
 
 namespace ui {
 class MenuModel;
@@ -20,6 +21,7 @@ class MenuModel;
 // allow for hierarchical menus). The tag is the index into that model for
 // that particular item. It is important that the model outlives this object
 // as it only maintains weak references.
+UI_EXPORT
 @interface MenuController : NSObject<NSMenuDelegate> {
  @protected
   ui::MenuModel* model_;  // weak
@@ -83,4 +85,4 @@ class MenuModel;
                  modelIndex:(int)modelIndex;
 @end
 
-#endif  // CHROME_BROWSER_UI_COCOA_MENU_CONTROLLER_H_
+#endif  // UI_BASE_COCOA_MENU_CONTROLLER_H_

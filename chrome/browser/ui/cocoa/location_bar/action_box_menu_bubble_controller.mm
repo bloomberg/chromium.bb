@@ -10,7 +10,6 @@
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/browser/extensions/extension_icon_image.h"
 #import "chrome/browser/ui/cocoa/browser_window_utils.h"
-#import "chrome/browser/ui/cocoa/event_utils.h"
 #import "chrome/browser/ui/cocoa/info_bubble_view.h"
 #import "chrome/browser/ui/cocoa/info_bubble_window.h"
 #include "chrome/browser/ui/toolbar/action_box_menu_model.h"
@@ -22,6 +21,7 @@
 #include "grit/theme_resources.h"
 #include "skia/ext/skia_utils_mac.h"
 #import "third_party/GTM/AppKit/GTMUILocalizerAndLayoutTweaker.h"
+#import "ui/base/cocoa/cocoa_event_utils.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia_util_mac.h"
@@ -143,7 +143,7 @@ class ExtensionIconLoaderBridge : public extensions::IconImage::Observer {
       activateWindowForController:[[self parentWindow] windowController]];
   size_t modelIndex = [sender modelIndex];
   DCHECK(model_.get());
-  int eventFlags = event_utils::EventFlagsFromNSEvent([NSApp currentEvent]);
+  int eventFlags = ui::EventFlagsFromNSEvent([NSApp currentEvent]);
   model_->ActivatedAt(modelIndex, eventFlags);
 }
 

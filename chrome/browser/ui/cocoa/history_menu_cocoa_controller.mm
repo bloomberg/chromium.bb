@@ -15,8 +15,8 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_tab_restore_service_delegate.h"
-#include "chrome/browser/ui/cocoa/event_utils.h"
 #include "chrome/browser/ui/host_desktop.h"
+#import "ui/base/cocoa/cocoa_event_utils.h"
 #include "ui/base/window_open_disposition.h"
 
 using content::OpenURLParams;
@@ -43,7 +43,7 @@ using content::Referrer;
       chrome::FindOrCreateTabbedBrowser(bridge_->profile(),
                                         chrome::HOST_DESKTOP_TYPE_NATIVE);
   WindowOpenDisposition disposition =
-      event_utils::WindowOpenDispositionFromNSEvent([NSApp currentEvent]);
+      ui::WindowOpenDispositionFromNSEvent([NSApp currentEvent]);
 
   // If this item can be restored using TabRestoreService, do so. Otherwise,
   // just load the URL.

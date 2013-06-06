@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "chrome/browser/ui/cocoa/event_utils.h"
+#import "ui/base/cocoa/cocoa_event_utils.h"
 
 #include "ui/base/events/event_constants.h"
 #include "ui/base/window_open_disposition.h"
@@ -35,7 +35,7 @@ bool isMiddleButtonEvent(NSEvent* event) {
 
 }  // namespace
 
-namespace event_utils {
+namespace ui {
 
 // Retrieves a bitsum of ui::EventFlags from NSEvent.
 int EventFlagsFromNSEvent(NSEvent* event) {
@@ -67,4 +67,4 @@ WindowOpenDisposition WindowOpenDispositionFromNSEventWithFlags(
   return ui::DispositionFromEventFlags(event_flags);
 }
 
-}  // namespace event_utils
+}  // namespace ui

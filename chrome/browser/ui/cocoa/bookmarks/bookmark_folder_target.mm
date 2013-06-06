@@ -9,8 +9,8 @@
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_folder_controller.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_button.h"
-#import "chrome/browser/ui/cocoa/event_utils.h"
 #import "third_party/mozilla/NSPasteboard+Utils.h"
+#import "ui/base/cocoa/cocoa_event_utils.h"
 
 NSString* kBookmarkButtonDragType = @"ChromiumBookmarkButtonDragType";
 
@@ -56,7 +56,7 @@ NSString* kBookmarkButtonDragType = @"ChromiumBookmarkButtonDragType";
   DCHECK([sender bookmarkNode]->is_folder());
   NSEvent* event = [NSApp currentEvent];
   WindowOpenDisposition disposition =
-      event_utils::WindowOpenDispositionFromNSEvent(event);
+      ui::WindowOpenDispositionFromNSEvent(event);
   if (([event type] != NSMouseEntered) &&
       ([event type] != NSMouseMoved) &&
       ([event type] != NSScrollWheel) &&

@@ -6,10 +6,10 @@
 
 #include "base/logging.h"
 #include "base/strings/sys_string_conversions.h"
-#include "chrome/browser/ui/cocoa/event_utils.h"
 #import "chrome/browser/ui/cocoa/hyperlink_text_view.h"
 #include "chrome/browser/ui/cocoa/infobars/infobar.h"
 #include "chrome/browser/ui/omnibox/alternate_nav_infobar_delegate.h"
+#import "ui/base/cocoa/cocoa_event_utils.h"
 #include "ui/base/window_open_disposition.h"
 
 @implementation AlternateNavInfoBarController
@@ -48,7 +48,7 @@
   if (![self isOwned])
     return;
   WindowOpenDisposition disposition =
-      event_utils::WindowOpenDispositionFromNSEvent([NSApp currentEvent]);
+      ui::WindowOpenDispositionFromNSEvent([NSApp currentEvent]);
   AlternateNavInfoBarDelegate* delegate =
       static_cast<AlternateNavInfoBarDelegate*>(delegate_);
   if (delegate->LinkClicked(disposition))

@@ -8,7 +8,7 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/memory/scoped_ptr.h"
-#import "chrome/browser/ui/cocoa/menu_controller.h"
+#import "ui/base/cocoa/menu_controller.h"
 
 class BookmarkMenuBridge;
 class Browser;

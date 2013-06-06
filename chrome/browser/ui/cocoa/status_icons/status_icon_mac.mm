@@ -8,9 +8,9 @@
 
 #include "base/logging.h"
 #include "base/strings/sys_string_conversions.h"
-#import "chrome/browser/ui/cocoa/menu_controller.h"
 #include "skia/ext/skia_utils_mac.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#import "ui/base/cocoa/menu_controller.h"
 #include "ui/gfx/image/image_skia.h"
 
 @interface StatusItemController : NSObject {
