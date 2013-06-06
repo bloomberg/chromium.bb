@@ -2,7 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/command_line.h"
 #include "content/browser/media/media_browsertest.h"
+#include "content/public/common/content_switches.h"
 
 // Common media types.
 static const char kWebMAudioOnly[] = "audio/webm; codecs=\"vorbis\"";
@@ -21,6 +23,15 @@ class MediaSourceTest : public content::MediaBrowserTest {
     RunMediaTestPage("media_source_player.html", &query_params, expectation,
                      true);
   }
+
+#if defined(OS_ANDROID)
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+    // TODO(scherkus): Remove after enabled by default http://crbug.com/233420
+    command_line->AppendSwitch(switches::kEnableWebKitMediaSource);
+    command_line->AppendSwitch(
+        switches::kDisableGestureRequirementForMediaPlayback);
+  }
+#endif
 };
 
 IN_PROC_BROWSER_TEST_F(MediaSourceTest, Playback_VideoAudio_WebM) {
