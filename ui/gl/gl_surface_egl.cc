@@ -16,6 +16,7 @@
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_surface_stub.h"
+#include "ui/gl/scoped_make_current.h"
 
 #if defined(USE_X11)
 extern "C" {
@@ -410,20 +411,23 @@ bool NativeViewGLSurfaceEGL::Resize(const gfx::Size& size) {
   if (size == GetSize())
     return true;
 
+  scoped_ptr<ui::ScopedMakeCurrent> scoped_make_current;
   GLContext* current_context = GLContext::GetCurrent();
-  bool was_current = current_context && current_context->IsCurrent(this);
-  if (was_current)
+  bool was_current =
+      current_context && current_context->IsCurrent(this);
+  if (was_current) {
+    scoped_make_current.reset(
+        new ui::ScopedMakeCurrent(current_context, this));
     current_context->ReleaseCurrent(this);
+  }
 
   Destroy();
 
   if (!Initialize()) {
-    LOG(ERROR) << "Failed to resize pbuffer.";
+    LOG(ERROR) << "Failed to resize window.";
     return false;
   }
 
-  if (was_current)
-    return current_context->MakeCurrent(this);
   return true;
 }
 
@@ -554,8 +558,14 @@ bool PbufferGLSurfaceEGL::Resize(const gfx::Size& size) {
   if (size == size_)
     return true;
 
+  scoped_ptr<ui::ScopedMakeCurrent> scoped_make_current;
   GLContext* current_context = GLContext::GetCurrent();
-  bool was_current = current_context && current_context->IsCurrent(this);
+  bool was_current =
+      current_context && current_context->IsCurrent(this);
+  if (was_current) {
+    scoped_make_current.reset(
+        new ui::ScopedMakeCurrent(current_context, this));
+  }
 
   size_ = size;
 
@@ -563,9 +573,6 @@ bool PbufferGLSurfaceEGL::Resize(const gfx::Size& size) {
     LOG(ERROR) << "Failed to resize pbuffer.";
     return false;
   }
-
-  if (was_current)
-    return current_context->MakeCurrent(this);
 
   return true;
 }

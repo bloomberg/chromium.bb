@@ -254,22 +254,19 @@ bool VirtualGLApi::MakeCurrent(GLContext* virtual_context, GLSurface* surface) {
   bool switched_contexts = g_current_gl_context != this;
   GLSurface* current_surface = GLSurface::GetCurrent();
   if (switched_contexts || surface != current_surface) {
-    if (!switched_contexts && current_surface &&
-        virtual_context->IsCurrent(surface)) {
-      // MakeCurrent 'lite' path that avoids potentially expensive MakeCurrent()
-      // calls if the GLSurface uses the same underlying surface or renders to
-      // an FBO.
-      if (!surface->OnMakeCurrent(real_context_)) {
-        LOG(ERROR) << "Could not make GLSurface current.";
+    // MakeCurrent 'lite' path that avoids potentially expensive MakeCurrent()
+    // calls if the GLSurface uses the same underlying surface or renders to
+    // an FBO.
+    if (switched_contexts || !current_surface ||
+        !virtual_context->IsCurrent(surface)) {
+      if (!real_context_->MakeCurrent(surface)) {
         return false;
       }
-    } else if (!real_context_->MakeCurrent(surface)) {
-      return false;
     }
   }
 
-  DCHECK(GLSurface::GetCurrent());
-  DCHECK(real_context_->IsCurrent(GLSurface::GetCurrent()));
+  DCHECK_EQ(real_context_, GLContext::GetRealCurrent());
+  DCHECK(real_context_->IsCurrent(NULL));
   DCHECK(virtual_context->IsCurrent(surface));
 
   if (switched_contexts || virtual_context != current_context_) {
@@ -290,6 +287,12 @@ bool VirtualGLApi::MakeCurrent(GLContext* virtual_context, GLSurface* surface) {
     SetGLApi(temp);
   }
   SetGLApi(this);
+
+  virtual_context->SetCurrent(surface);
+  if (!surface->OnMakeCurrent(virtual_context)) {
+    LOG(ERROR) << "Could not make GLSurface current.";
+    return false;
+  }
   return true;
 }
 

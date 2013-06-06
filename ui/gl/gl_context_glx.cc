@@ -34,7 +34,7 @@ class ScopedPtrXFree {
 }  // namespace
 
 GLContextGLX::GLContextGLX(GLShareGroup* share_group)
-  : GLContext(share_group),
+  : GLContextReal(share_group),
     context_(NULL),
     display_(NULL) {
 }
@@ -123,7 +123,7 @@ bool GLContextGLX::MakeCurrent(GLSurface* surface) {
     return false;
   }
 
-  SetCurrent(this, surface);
+  SetCurrent(surface);
   if (!InitializeExtensionBindings()) {
     ReleaseCurrent(surface);
     Destroy();
@@ -145,7 +145,7 @@ void GLContextGLX::ReleaseCurrent(GLSurface* surface) {
   if (!IsCurrent(surface))
     return;
 
-  SetCurrent(NULL, NULL);
+  SetCurrent(NULL);
   if (!glXMakeContextCurrent(display_, 0, 0, 0))
     LOG(ERROR) << "glXMakeCurrent failed in ReleaseCurrent";
 }
@@ -157,7 +157,7 @@ bool GLContextGLX::IsCurrent(GLSurface* surface) {
   // If our context is current then our notion of which GLContext is
   // current must be correct. On the other hand, third-party code
   // using OpenGL might change the current context.
-  DCHECK(!native_context_is_current || (GetCurrent() == this));
+  DCHECK(!native_context_is_current || (GetRealCurrent() == this));
 
   if (!native_context_is_current)
     return false;

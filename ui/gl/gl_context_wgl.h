@@ -15,7 +15,7 @@ namespace gfx {
 class GLSurface;
 
 // This class is a wrapper around a GL context.
-class GLContextWGL : public GLContext {
+class GLContextWGL : public GLContextReal {
  public:
   explicit GLContextWGL(GLShareGroup* share_group);
   virtual ~GLContextWGL();

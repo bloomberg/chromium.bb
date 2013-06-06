@@ -17,7 +17,7 @@ class GLShareGroup;
 class GLSurface;
 
 // Encapsulates an OSMesa OpenGL context that uses software rendering.
-class GLContextOSMesa : public GLContext {
+class GLContextOSMesa : public GLContextReal {
  public:
   explicit GLContextOSMesa(GLShareGroup* share_group);
 

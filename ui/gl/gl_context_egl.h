@@ -19,7 +19,7 @@ namespace gfx {
 class GLSurface;
 
 // Encapsulates an EGL OpenGL ES context.
-class GLContextEGL : public GLContext {
+class GLContextEGL : public GLContextReal {
  public:
   explicit GLContextEGL(GLShareGroup* share_group);
 

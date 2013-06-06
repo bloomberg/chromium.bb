@@ -6,7 +6,7 @@
 
 namespace gfx {
 
-GLContextStub::GLContextStub() : GLContext(NULL) {}
+GLContextStub::GLContextStub() : GLContextReal(NULL) {}
 
 bool GLContextStub::Initialize(
     GLSurface* compatible_surface, GpuPreference gpu_preference) {
@@ -16,12 +16,13 @@ bool GLContextStub::Initialize(
 void GLContextStub::Destroy() {}
 
 bool GLContextStub::MakeCurrent(GLSurface* surface) {
-  SetCurrent(this, surface);
+  SetCurrent(surface);
   SetRealGLApi();
   return true;
 }
 
 void GLContextStub::ReleaseCurrent(GLSurface* surface) {
+  SetCurrent(NULL);
 }
 
 bool GLContextStub::IsCurrent(GLSurface* surface) {

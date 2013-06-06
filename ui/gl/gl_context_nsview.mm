@@ -64,7 +64,7 @@ bool GLContextNSView::MakeCurrent(GLSurface* surface) {
     [context_ setView:view];
   [context_ makeCurrentContext];
 
-  SetCurrent(this, surface);
+  SetCurrent(surface);
 
   if (!surface->OnMakeCurrent(this)) {
     LOG(ERROR) << "Unable to make gl context current.";

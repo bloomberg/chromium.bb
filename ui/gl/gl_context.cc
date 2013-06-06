@@ -20,6 +20,9 @@ namespace gfx {
 namespace {
 base::LazyInstance<base::ThreadLocalPointer<GLContext> >::Leaky
     current_context_ = LAZY_INSTANCE_INITIALIZER;
+
+base::LazyInstance<base::ThreadLocalPointer<GLContext> >::Leaky
+    current_real_context_ = LAZY_INSTANCE_INITIALIZER;
 }  // namespace
 
 GLContext::GLContext(GLShareGroup* share_group) : share_group_(share_group) {
@@ -32,7 +35,7 @@ GLContext::GLContext(GLShareGroup* share_group) : share_group_(share_group) {
 GLContext::~GLContext() {
   share_group_->RemoveContext(this);
   if (GetCurrent() == this) {
-    SetCurrent(NULL, NULL);
+    SetCurrent(NULL);
   }
 }
 
@@ -90,8 +93,12 @@ GLContext* GLContext::GetCurrent() {
   return current_context_.Pointer()->Get();
 }
 
-void GLContext::SetCurrent(GLContext* context, GLSurface* surface) {
-  current_context_.Pointer()->Set(context);
+GLContext* GLContext::GetRealCurrent() {
+  return current_real_context_.Pointer()->Get();
+}
+
+void GLContext::SetCurrent(GLSurface* surface) {
+  current_context_.Pointer()->Set(surface ? this : NULL);
   GLSurface::SetCurrent(surface);
 }
 
@@ -138,6 +145,16 @@ void GLContext::OnReleaseVirtuallyCurrent(GLContext* virtual_context) {
 
 void GLContext::SetRealGLApi() {
   SetGLToRealGLApi();
+}
+
+GLContextReal::GLContextReal(GLShareGroup* share_group)
+    : GLContext(share_group) {}
+
+GLContextReal::~GLContextReal() {}
+
+void GLContextReal::SetCurrent(GLSurface* surface) {
+  GLContext::SetCurrent(surface);
+  current_real_context_.Pointer()->Set(surface ? this : NULL);
 }
 
 }  // namespace gfx

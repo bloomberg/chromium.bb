@@ -65,7 +65,7 @@ static CGLPixelFormatObj GetPixelFormat() {
 }
 
 GLContextCGL::GLContextCGL(GLShareGroup* share_group)
-  : GLContext(share_group),
+  : GLContextReal(share_group),
     context_(NULL),
     gpu_preference_(PreferIntegratedGpu),
     discrete_pixelformat_(NULL),
@@ -186,7 +186,7 @@ bool GLContextCGL::MakeCurrent(GLSurface* surface) {
     return false;
   }
 
-  SetCurrent(this, surface);
+  SetCurrent(surface);
   if (!InitializeExtensionBindings()) {
     ReleaseCurrent(surface);
     return false;
@@ -205,7 +205,7 @@ void GLContextCGL::ReleaseCurrent(GLSurface* surface) {
   if (!IsCurrent(surface))
     return;
 
-  SetCurrent(NULL, NULL);
+  SetCurrent(NULL);
   CGLSetCurrentContext(NULL);
 }
 
@@ -215,7 +215,7 @@ bool GLContextCGL::IsCurrent(GLSurface* surface) {
   // If our context is current then our notion of which GLContext is
   // current must be correct. On the other hand, third-party code
   // using OpenGL might change the current context.
-  DCHECK(!native_context_is_current || (GetCurrent() == this));
+  DCHECK(!native_context_is_current || (GetRealCurrent() == this));
 
   if (!native_context_is_current)
     return false;

@@ -19,7 +19,7 @@ namespace {
 
 // Used to render into an already current context+surface,
 // that we do not have ownership of (draw callback).
-class GLNonOwnedContext : public GLContext {
+class GLNonOwnedContext : public GLContextReal {
  public:
   GLNonOwnedContext(GLShareGroup* share_group);
 
@@ -44,10 +44,10 @@ class GLNonOwnedContext : public GLContext {
 };
 
 GLNonOwnedContext::GLNonOwnedContext(GLShareGroup* share_group)
-  : GLContext(share_group) {}
+  : GLContextReal(share_group) {}
 
 bool GLNonOwnedContext::MakeCurrent(GLSurface* surface) {
-  SetCurrent(this, surface);
+  SetCurrent(surface);
   SetRealGLApi();
   return true;
 }

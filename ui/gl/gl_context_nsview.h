@@ -17,7 +17,7 @@ class GLSurface;
 
 // GLContextNSView encapsulates an NSView-based GLContext.  This is paired with
 // the GLSurfaceNSView class.
-class GLContextNSView : public GLContext {
+class GLContextNSView : public GLContextReal {
  public:
   explicit GLContextNSView(GLShareGroup* group);
   virtual ~GLContextNSView();
