@@ -47,6 +47,11 @@ class AccessibilityManager : public content::NotificationObserver {
   // Returns the existing instance. If there is no instance, returns NULL.
   static AccessibilityManager* Get();
 
+  // Enables or disables the large cursor.
+  void EnableLargeCursor(bool enabled);
+  // Returns true if the large cursor is enabled, or false if not.
+  bool IsLargeCursorEnabled();
+
   // Enables or disables spoken feedback. Enabling spoken feedback installs the
   // ChromeVox component extension.  If this is being called in a login/oobe
   // login screen, pass the WebUI object in login_web_ui so that ChromeVox
@@ -82,6 +87,7 @@ class AccessibilityManager : public content::NotificationObserver {
   virtual ~AccessibilityManager();
 
  private:
+  void UpdateLargeCursorStatusFromPref();
   void UpdateSpokenFeedbackStatusFromPref();
   void UpdateHighContrastStatusFromPref();
 
@@ -98,6 +104,7 @@ class AccessibilityManager : public content::NotificationObserver {
   content::NotificationRegistrar notification_registrar_;
   scoped_ptr<PrefChangeRegistrar> pref_change_registrar_;
 
+  bool large_cursor_enabled_;
   bool spoken_feedback_enabled_;
   bool high_contrast_enabled_;
 

@@ -813,6 +813,9 @@ Press any key to continue exploring.
   <message name="IDS_OPTIONS_SETTINGS_ACCESSIBILITY_EXPLANATION" desc="In the settings tab, this text explains the accessibiliy features.">
     Enable accessibility features to make your device easier to use.
   </message>
+  <message name="IDS_OPTIONS_SETTINGS_ACCESSIBILITY_LARGE_CURSOR_DESCRIPTION" desc="In the settings tab, the text next to the checkbox for the large cursor.">
+    Enable Large Cursor
+  </message>
   <message name="IDS_OPTIONS_SETTINGS_ACCESSIBILITY_SPOKEN_FEEDBACK_DESCRIPTION" desc="In the settings tab, the text next to the checkbox for spoken feedback.">
     Enable spoken feedback
   </message>

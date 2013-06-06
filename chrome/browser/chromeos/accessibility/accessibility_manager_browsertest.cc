@@ -85,6 +85,14 @@ class MockAccessibilityObserver : public content::NotificationObserver {
   DISALLOW_COPY_AND_ASSIGN(MockAccessibilityObserver);
 };
 
+void SetLargeCursorEnabled(bool enabled) {
+  return AccessibilityManager::Get()->EnableLargeCursor(enabled);
+}
+
+bool IsLargeCursorEnabled() {
+  return AccessibilityManager::Get()->IsLargeCursorEnabled();
+}
+
 void SetHighContrastEnabled(bool enabled) {
   return AccessibilityManager::Get()->EnableHighContrast(enabled);
 }
@@ -110,6 +118,10 @@ Profile* GetProfile() {
 
 PrefService* GetPrefs() {
   return GetProfile()->GetPrefs();
+}
+
+void SetLargeCursorEnabledToPref(bool enabled) {
+  GetPrefs()->SetBoolean(prefs::kLargeCursorEnabled, enabled);
 }
 
 void SetHighContrastEnabledToPref(bool enabled) {
@@ -142,6 +154,7 @@ class AccessibilityManagerTest : public CrosInProcessBrowserTest {
 
 IN_PROC_BROWSER_TEST_F(AccessibilityManagerTest, Login) {
   // Confirms that a11y features are disabled on the login screen.
+  EXPECT_FALSE(IsLargeCursorEnabled());
   EXPECT_FALSE(IsSpokenFeedbackEnabled());
   EXPECT_FALSE(IsHighContrastEnabled());
 
@@ -149,14 +162,21 @@ IN_PROC_BROWSER_TEST_F(AccessibilityManagerTest, Login) {
   UserManager::Get()->UserLoggedIn(kTestUserName, kTestUserName, true);
 
   // Confirms that the features still disabled just after login.
+  EXPECT_FALSE(IsLargeCursorEnabled());
   EXPECT_FALSE(IsSpokenFeedbackEnabled());
   EXPECT_FALSE(IsHighContrastEnabled());
 
   UserManager::Get()->SessionStarted();
 
   // Confirms that the features are still disabled just after login.
+  EXPECT_FALSE(IsLargeCursorEnabled());
   EXPECT_FALSE(IsSpokenFeedbackEnabled());
   EXPECT_FALSE(IsHighContrastEnabled());
+
+  // Enables large cursor.
+  SetLargeCursorEnabled(true);
+  // Confirms that large cursor is enabled.
+  EXPECT_TRUE(IsLargeCursorEnabled());
 
   // Enables spoken feedback.
   SetSpokenFeedbackEnabled(true);
@@ -175,8 +195,14 @@ IN_PROC_BROWSER_TEST_F(AccessibilityManagerTest, TypePref) {
   UserManager::Get()->SessionStarted();
 
   // Confirms that the features are disabled just after login.
+  EXPECT_FALSE(IsLargeCursorEnabled());
   EXPECT_FALSE(IsSpokenFeedbackEnabled());
   EXPECT_FALSE(IsHighContrastEnabled());
+
+  // Sets the pref as true to enable the large cursor.
+  SetLargeCursorEnabledToPref(true);
+  // Confirms that the large cursor is enabled.
+  EXPECT_TRUE(IsLargeCursorEnabled());
 
   // Sets the pref as true to enable the spoken feedback.
   SetSpokenFeedbackEnabledToPref(true);
@@ -188,6 +214,9 @@ IN_PROC_BROWSER_TEST_F(AccessibilityManagerTest, TypePref) {
   // Confirms that the high contrast mode is enabled.
   EXPECT_TRUE(IsHighContrastEnabled());
 
+  SetLargeCursorEnabledToPref(false);
+  EXPECT_FALSE(IsLargeCursorEnabled());
+
   SetSpokenFeedbackEnabledToPref(false);
   EXPECT_FALSE(IsSpokenFeedbackEnabled());
 
@@ -198,6 +227,10 @@ IN_PROC_BROWSER_TEST_F(AccessibilityManagerTest, TypePref) {
 IN_PROC_BROWSER_TEST_F(AccessibilityManagerTest, ResumeSavedPref) {
   // Loads the profile of the user.
   UserManager::Get()->UserLoggedIn(kTestUserName, kTestUserName, true);
+
+  // Sets the pref to enable large cursor before login.
+  SetLargeCursorEnabledToPref(true);
+  EXPECT_FALSE(IsLargeCursorEnabled());
 
   // Sets the pref to enable spoken feedback before login.
   SetSpokenFeedbackEnabledToPref(true);
@@ -211,6 +244,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityManagerTest, ResumeSavedPref) {
   UserManager::Get()->SessionStarted();
 
   // Confirms that features are enabled by restring from pref just after login.
+  EXPECT_TRUE(IsLargeCursorEnabled());
   EXPECT_TRUE(IsSpokenFeedbackEnabled());
   EXPECT_TRUE(IsHighContrastEnabled());
 }

@@ -155,6 +155,7 @@ AccessibilityManager* AccessibilityManager::Get() {
 }
 
 AccessibilityManager::AccessibilityManager() : profile_(NULL),
+                                               large_cursor_enabled_(false),
                                                spoken_feedback_enabled_(false),
                                                high_contrast_enabled_(false) {
   notification_registrar_.Add(this,
@@ -173,6 +174,28 @@ AccessibilityManager::AccessibilityManager() : profile_(NULL),
 
 AccessibilityManager::~AccessibilityManager() {
   CHECK(this == g_accessibility_manager);
+}
+
+void AccessibilityManager::EnableLargeCursor(bool enabled) {
+  if (large_cursor_enabled_ == enabled)
+    return;
+
+  large_cursor_enabled_ = enabled;
+
+  if (profile_) {
+    PrefService* pref_service = profile_->GetPrefs();
+    pref_service->SetBoolean(prefs::kLargeCursorEnabled, enabled);
+    pref_service->CommitPendingWrite();
+  }
+
+#if defined(USE_ASH)
+  // Large cursor is implemented only in ash.
+  ash::Shell::GetInstance()->cursor_manager()->SetScale(enabled ? 2.0 : 1.0);
+#endif
+}
+
+bool AccessibilityManager::IsLargeCursorEnabled() {
+  return large_cursor_enabled_;
 }
 
 void AccessibilityManager::EnableSpokenFeedback(
@@ -322,6 +345,16 @@ bool AccessibilityManager::IsHighContrastEnabled() {
   return high_contrast_enabled_;
 }
 
+void AccessibilityManager::UpdateLargeCursorStatusFromPref() {
+  if (!profile_)
+    return;
+
+  PrefService* pref_service = profile_->GetPrefs();
+  bool large_cursor_enabled =
+      pref_service->GetBoolean(prefs::kLargeCursorEnabled);
+  EnableLargeCursor(large_cursor_enabled);
+}
+
 void AccessibilityManager::UpdateSpokenFeedbackStatusFromPref() {
   if (!profile_)
     return;
@@ -350,6 +383,10 @@ void AccessibilityManager::SetProfile(Profile* profile) {
     pref_change_registrar_.reset(new PrefChangeRegistrar);
     pref_change_registrar_->Init(profile->GetPrefs());
     pref_change_registrar_->Add(
+        prefs::kLargeCursorEnabled,
+        base::Bind(&AccessibilityManager::UpdateLargeCursorStatusFromPref,
+                   base::Unretained(this)));
+    pref_change_registrar_->Add(
         prefs::kSpokenFeedbackEnabled,
         base::Bind(&AccessibilityManager::UpdateSpokenFeedbackStatusFromPref,
                    base::Unretained(this)));
@@ -365,6 +402,7 @@ void AccessibilityManager::SetProfile(Profile* profile) {
   }
 
   profile_ = profile;
+  UpdateLargeCursorStatusFromPref();
   UpdateSpokenFeedbackStatusFromPref();
   UpdateHighContrastStatusFromPref();
 }
