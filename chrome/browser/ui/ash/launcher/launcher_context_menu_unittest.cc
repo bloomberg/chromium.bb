@@ -39,8 +39,7 @@ class LauncherContextMenuTest : public ash::test::AshTestBase {
   }
 
   LauncherContextMenuTest()
-      : ash::test::AshTestBase(),
-        profile_(new TestingProfile()),
+      : profile_(new TestingProfile()),
         browser_thread_(content::BrowserThread::UI, message_loop()) {}
 
   virtual void SetUp() OVERRIDE {

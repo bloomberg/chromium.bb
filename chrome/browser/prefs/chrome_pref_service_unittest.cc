@@ -23,12 +23,10 @@
 #include "chrome/test/base/testing_pref_service_syncable.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/user_prefs/pref_registry_syncable.h"
-#include "content/public/test/test_browser_thread.h"
 #include "content/public/test/web_contents_tester.h"
 #include "ui/base/test/data/resource.h"
 #include "webkit/common/webpreferences.h"
 
-using content::BrowserThread;
 using content::WebContentsTester;
 
 TEST(ChromePrefServiceTest, UpdateCommandLinePrefStore) {
@@ -144,10 +142,6 @@ TEST_F(ChromePrefServiceUserFilePrefsTest, PreserveEmptyValue) {
 
 class ChromePrefServiceWebKitPrefs : public ChromeRenderViewHostTestHarness {
  protected:
-  ChromePrefServiceWebKitPrefs()
-      : ui_thread_(BrowserThread::UI, &message_loop_) {
-  }
-
   virtual void SetUp() {
     ChromeRenderViewHostTestHarness::SetUp();
 
@@ -172,9 +166,6 @@ class ChromePrefServiceWebKitPrefs : public ChromeRenderViewHostTestHarness {
     pref_services->SetUserPref("webkit.webprefs.foo",
                                Value::CreateStringValue("bar"));
   }
-
- private:
-  content::TestBrowserThread ui_thread_;
 };
 
 // Tests to see that webkit preferences are properly loaded and copied over

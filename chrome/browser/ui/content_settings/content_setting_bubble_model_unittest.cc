@@ -10,6 +10,7 @@
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "chrome/browser/infobars/infobar_delegate.h"
 #include "chrome/browser/infobars/infobar_service.h"
+#include "chrome/browser/media/media_capture_devices_dispatcher.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/content_settings/content_setting_bubble_model.h"
 #include "chrome/common/chrome_switches.h"
@@ -17,18 +18,13 @@
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/test/test_browser_thread.h"
 #include "content/public/test/web_contents_tester.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using content::BrowserThread;
 using content::WebContentsTester;
 
 class ContentSettingBubbleModelTest : public ChromeRenderViewHostTestHarness {
  protected:
-  ContentSettingBubbleModelTest()
-      : ui_thread_(BrowserThread::UI, base::MessageLoop::current()) {}
-
   virtual void SetUp() OVERRIDE {
     ChromeRenderViewHostTestHarness::SetUp();
     TabSpecificContentSettings::CreateForWebContents(web_contents());
@@ -53,8 +49,6 @@ class ContentSettingBubbleModelTest : public ChromeRenderViewHostTestHarness {
     EXPECT_EQ(expect_clear_link, bubble_content.custom_link_enabled);
     EXPECT_FALSE(bubble_content.manage_link.empty());
   }
-
-  content::TestBrowserThread ui_thread_;
 };
 
 TEST_F(ContentSettingBubbleModelTest, ImageRadios) {
@@ -116,6 +110,10 @@ TEST_F(ContentSettingBubbleModelTest, Cookies) {
 }
 
 TEST_F(ContentSettingBubbleModelTest, Mediastream) {
+  // Required to break dependency on BrowserMainLoop.
+  MediaCaptureDevicesDispatcher::GetInstance()->
+      DisableDeviceEnumerationForTesting();
+
   scoped_ptr<ContentSettingBubbleModel> content_setting_bubble_model(
       ContentSettingBubbleModel::CreateContentSettingBubbleModel(
          NULL, web_contents(), profile(),
@@ -132,6 +130,10 @@ TEST_F(ContentSettingBubbleModelTest, Mediastream) {
 }
 
 TEST_F(ContentSettingBubbleModelTest, BlockedMediastream) {
+  // Required to break dependency on BrowserMainLoop.
+  MediaCaptureDevicesDispatcher::GetInstance()->
+      DisableDeviceEnumerationForTesting();
+
   WebContentsTester::For(web_contents())->
       NavigateAndCommit(GURL("https://www.example.com"));
   GURL url = web_contents()->GetURL();

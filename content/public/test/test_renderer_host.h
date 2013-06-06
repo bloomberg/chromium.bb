@@ -9,6 +9,7 @@
 #include "base/message_loop.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/common/page_transition_types.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(USE_AURA)
@@ -155,6 +156,15 @@ class RenderViewHostTestHarness : public testing::Test {
   virtual void SetUp() OVERRIDE;
   virtual void TearDown() OVERRIDE;
 
+  // Configures which TestBrowserThreads inside |thread_bundle| are backed by
+  // real threads. Must be called before SetUp().
+  void SetThreadBundleOptions(int options) {
+    DCHECK(thread_bundle_.get() == NULL);
+    thread_bundle_options_ = options;
+  }
+
+  TestBrowserThreadBundle* thread_bundle() { return thread_bundle_.get(); }
+
 #if defined(USE_AURA)
   aura::RootWindow* root_window() { return aura_test_helper_->root_window(); }
 #endif
@@ -168,8 +178,6 @@ class RenderViewHostTestHarness : public testing::Test {
   // SetUp().
   scoped_ptr<BrowserContext> browser_context_;
 
-  base::MessageLoopForUI message_loop_;
-
  private:
   // It is important not to use this directly in the implementation as
   // web_contents() and SetContents() are virtual and may be
@@ -182,6 +190,9 @@ class RenderViewHostTestHarness : public testing::Test {
   scoped_ptr<aura::test::AuraTestHelper> aura_test_helper_;
 #endif
   RenderViewHostTestEnabler rvh_test_enabler_;
+
+  int thread_bundle_options_;
+  scoped_ptr<TestBrowserThreadBundle> thread_bundle_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderViewHostTestHarness);
 };

@@ -9,6 +9,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/prefs/pref_service.h"
+#include "base/run_loop.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_controller_impl.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_view.h"
@@ -27,7 +28,7 @@
 #include "components/autofill/common/autofill_switches.h"
 #include "components/autofill/common/form_data.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/web_contents_tester.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -68,8 +69,6 @@ const char* kFieldsFromPage[] =
       "shipping tel",
     };
 const char kSettingsOrigin[] = "Chrome settings";
-
-using content::BrowserThread;
 
 void SetOutputValue(const DetailInputs& inputs,
                     DetailOutputMap* outputs,
@@ -301,19 +300,10 @@ class TestAutofillDialogController
 };
 
 class AutofillDialogControllerTest : public testing::Test {
- public:
+ protected:
   AutofillDialogControllerTest()
-    : ui_thread_(BrowserThread::UI, &loop_),
-      file_thread_(BrowserThread::FILE),
-      file_blocking_thread_(BrowserThread::FILE_USER_BLOCKING),
-      io_thread_(BrowserThread::IO),
-      form_structure_(NULL) {
-    file_thread_.Start();
-    file_blocking_thread_.Start();
-    io_thread_.StartIOThread();
+    : form_structure_(NULL) {
   }
-
-  virtual ~AutofillDialogControllerTest() {}
 
   // testing::Test implementation:
   virtual void SetUp() OVERRIDE {
@@ -413,18 +403,14 @@ class AutofillDialogControllerTest : public testing::Test {
       EXPECT_TRUE(controller()->AutocheckoutIsRunning());
   }
 
+  // Must be first member to ensure TestBrowserThreads outlive other objects.
+  content::TestBrowserThreadBundle thread_bundle_;
+
 #if defined(OS_WIN)
    // http://crbug.com/227221
    ui::ScopedOleInitializer ole_initializer_;
 #endif
 
-  // A bunch of threads are necessary for classes like TestWebContents and
-  // URLRequestContextGetter not to fall over.
-  base::MessageLoopForUI loop_;
-  content::TestBrowserThread ui_thread_;
-  content::TestBrowserThread file_thread_;
-  content::TestBrowserThread file_blocking_thread_;
-  content::TestBrowserThread io_thread_;
   TestingProfile profile_;
 
   // The controller owns itself.
@@ -437,8 +423,6 @@ class AutofillDialogControllerTest : public testing::Test {
 
   // Returned when the dialog closes successfully.
   const FormStructure* form_structure_;
-
-  DISALLOW_COPY_AND_ASSIGN(AutofillDialogControllerTest);
 };
 
 }  // namespace

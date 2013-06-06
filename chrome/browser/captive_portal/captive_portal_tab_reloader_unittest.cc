@@ -12,7 +12,6 @@
 #include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/interstitial_page_delegate.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/test/test_browser_thread.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/net_errors.h"
 #include "net/cert/cert_status_flags.h"
@@ -89,16 +88,6 @@ class MockInterstitialPageDelegate : public content::InterstitialPageDelegate {
 
 class CaptivePortalTabReloaderTest : public ChromeRenderViewHostTestHarness {
  public:
-  CaptivePortalTabReloaderTest()
-      : ui_thread_(content::BrowserThread::UI, &message_loop_),
-        file_user_blocking_thread_(content::BrowserThread::FILE_USER_BLOCKING,
-                                   &message_loop_),
-        io_thread_(content::BrowserThread::IO, &message_loop_) {
-  }
-
-  virtual ~CaptivePortalTabReloaderTest() {
-  }
-
   // testing::Test:
   virtual void SetUp() OVERRIDE {
     ChromeRenderViewHostTestHarness::SetUp();
@@ -118,10 +107,6 @@ class CaptivePortalTabReloaderTest : public ChromeRenderViewHostTestHarness {
   TestCaptivePortalTabReloader& tab_reloader() { return *tab_reloader_.get(); }
 
  private:
-  content::TestBrowserThread ui_thread_;
-  content::TestBrowserThread file_user_blocking_thread_;
-  content::TestBrowserThread io_thread_;
-
   scoped_ptr<TestCaptivePortalTabReloader> tab_reloader_;
 };
 

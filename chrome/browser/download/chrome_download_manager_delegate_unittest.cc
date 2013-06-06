@@ -168,18 +168,13 @@ class ChromeDownloadManagerDelegateTest :
 
   TestingPrefServiceSyncable* pref_service_;
   base::ScopedTempDir test_download_dir_;
-  content::TestBrowserThread ui_thread_;
-  content::TestBrowserThread file_thread_;
   scoped_ptr<content::MockDownloadManager> download_manager_;
   scoped_refptr<TestChromeDownloadManagerDelegate> delegate_;
   MockWebContentsDelegate web_contents_delegate_;
 };
 
 ChromeDownloadManagerDelegateTest::ChromeDownloadManagerDelegateTest()
-    : ChromeRenderViewHostTestHarness(),
-      ui_thread_(content::BrowserThread::UI, &message_loop_),
-      file_thread_(content::BrowserThread::FILE, &message_loop_),
-      download_manager_(new ::testing::NiceMock<content::MockDownloadManager>) {
+    : download_manager_(new ::testing::NiceMock<content::MockDownloadManager>) {
 }
 
 void ChromeDownloadManagerDelegateTest::SetUp() {
@@ -196,7 +191,7 @@ void ChromeDownloadManagerDelegateTest::SetUp() {
 }
 
 void ChromeDownloadManagerDelegateTest::TearDown() {
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   delegate_->Shutdown();
   ChromeRenderViewHostTestHarness::TearDown();
 }

@@ -106,10 +106,6 @@ class DevToolsManagerTestBrowserClient : public TestContentBrowserClient {
 }  // namespace
 
 class DevToolsManagerTest : public RenderViewHostImplTestHarness {
- public:
-  DevToolsManagerTest() {
-  }
-
  protected:
   virtual void SetUp() OVERRIDE {
     original_browser_client_ = SetBrowserClientForTesting(&browser_client_);

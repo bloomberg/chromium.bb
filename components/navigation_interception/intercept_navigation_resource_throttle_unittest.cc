@@ -6,9 +6,11 @@
 #include "base/bind_helpers.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
+#include "base/run_loop.h"
 #include "base/synchronization/waitable_event.h"
 #include "components/navigation_interception/intercept_navigation_resource_throttle.h"
 #include "components/navigation_interception/navigation_params.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/resource_context.h"
 #include "content/public/browser/resource_controller.h"
@@ -20,7 +22,6 @@
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/page_transition_types.h"
 #include "content/public/test/mock_resource_context.h"
-#include "content/public/test/test_browser_thread.h"
 #include "content/public/test/test_renderer_host.h"
 #include "net/url_request/url_request.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -38,11 +39,6 @@ namespace {
 
 const char kTestUrl[] = "http://www.test.com/";
 const char kUnsafeTestUrl[] = "about:crash";
-
-void ContinueTestCase() {
-  content::BrowserThread::PostTask(
-      content::BrowserThread::UI, FROM_HERE, base::MessageLoop::QuitClosure());
-}
 
 // The MS C++ compiler complains about not being able to resolve which url()
 // method (const or non-const) to use if we use the Property matcher to check
@@ -91,7 +87,6 @@ class MockResourceController : public content::ResourceController {
   }
   virtual void CancelAndIgnore() OVERRIDE {
     status_ = CANCELLED;
-    ContinueTestCase();
   }
   virtual void CancelWithError(int error_code) OVERRIDE {
     NOTREACHED();
@@ -99,7 +94,6 @@ class MockResourceController : public content::ResourceController {
   virtual void Resume() OVERRIDE {
     DCHECK(status_ == UNKNOWN);
     status_ = RESUMED;
-    ContinueTestCase();
   }
 
  private:
@@ -162,15 +156,11 @@ class InterceptNavigationResourceThrottleTest
  public:
   InterceptNavigationResourceThrottleTest()
       : mock_callback_receiver_(new MockInterceptCallbackReceiver()),
-        ui_thread_(content::BrowserThread::UI, &message_loop_),
-        io_thread_(content::BrowserThread::IO),
         io_thread_state_(NULL) {
   }
 
   virtual void SetUp() OVERRIDE {
     RenderViewHostTestHarness::SetUp();
-
-    io_thread_.StartIOThread();
   }
 
   virtual void TearDown() OVERRIDE {
@@ -202,10 +192,6 @@ class InterceptNavigationResourceThrottleTest
 
     SetIOThreadState(io_thread_state);
     io_thread_state->ThrottleWillStartRequest(defer);
-
-    if (!*defer) {
-      ContinueTestCase();
-    }
   }
 
  protected:
@@ -214,7 +200,7 @@ class InterceptNavigationResourceThrottleTest
     DontIgnoreNavigation
   };
 
-  void SetUpWebContentsDelegateAndRunMessageLoop(
+  void SetUpWebContentsDelegateAndDrainRunLoop(
       ShouldIgnoreNavigationCallbackAction callback_action,
       bool* defer) {
 
@@ -238,7 +224,7 @@ class InterceptNavigationResourceThrottleTest
             base::Unretained(defer)));
 
     // Wait for the request to finish processing.
-    message_loop_.Run();
+    base::RunLoop().RunUntilIdle();
   }
 
   void WaitForPreviouslyScheduledIoThreadWork() {
@@ -253,15 +239,13 @@ class InterceptNavigationResourceThrottleTest
   }
 
   scoped_ptr<MockInterceptCallbackReceiver> mock_callback_receiver_;
-  content::TestBrowserThread ui_thread_;
-  content::TestBrowserThread io_thread_;
   TestIOThreadState* io_thread_state_;
 };
 
 TEST_F(InterceptNavigationResourceThrottleTest,
        RequestDeferredAndResumedIfNavigationNotIgnored) {
   bool defer = false;
-  SetUpWebContentsDelegateAndRunMessageLoop(DontIgnoreNavigation, &defer);
+  SetUpWebContentsDelegateAndDrainRunLoop(DontIgnoreNavigation, &defer);
 
   EXPECT_TRUE(defer);
   EXPECT_TRUE(io_thread_state_);
@@ -271,7 +255,7 @@ TEST_F(InterceptNavigationResourceThrottleTest,
 TEST_F(InterceptNavigationResourceThrottleTest,
        RequestDeferredAndCancelledIfNavigationIgnored) {
   bool defer = false;
-  SetUpWebContentsDelegateAndRunMessageLoop(IgnoreNavigation, &defer);
+  SetUpWebContentsDelegateAndDrainRunLoop(IgnoreNavigation, &defer);
 
   EXPECT_TRUE(defer);
   EXPECT_TRUE(io_thread_state_);
@@ -284,14 +268,8 @@ TEST_F(InterceptNavigationResourceThrottleTest,
 
   // The tested scenario is when the WebContents is deleted after the
   // ResourceThrottle has finished processing on the IO thread but before the
-  // UI thread callback has been processed.
-  content::BrowserThread::PostTask(
-      content::BrowserThread::UI,
-      FROM_HERE,
-      base::Bind(
-          &RenderViewHostTestHarness::DeleteContents,
-          base::Unretained(this)));
-
+  // UI thread callback has been processed.  Since both threads in this test
+  // are serviced by one message loop, the post order is the execution order.
   EXPECT_CALL(*mock_callback_receiver_,
               ShouldIgnoreNavigation(_, _))
       .Times(0);
@@ -309,11 +287,16 @@ TEST_F(InterceptNavigationResourceThrottleTest,
           web_contents()->GetRenderViewHost()->GetRoutingID(),
           base::Unretained(&defer)));
 
-  WaitForPreviouslyScheduledIoThreadWork();
+  content::BrowserThread::PostTask(
+      content::BrowserThread::UI,
+      FROM_HERE,
+      base::Bind(
+          &RenderViewHostTestHarness::DeleteContents,
+          base::Unretained(this)));
 
   // The WebContents will now be deleted and only after that will the UI-thread
   // callback posted by the ResourceThrottle be executed.
-  message_loop_.Run();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_TRUE(defer);
   EXPECT_TRUE(io_thread_state_);
@@ -338,7 +321,7 @@ TEST_F(InterceptNavigationResourceThrottleTest,
           base::Unretained(&defer)));
 
   // Wait for the request to finish processing.
-  message_loop_.Run();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_FALSE(defer);
 }
@@ -368,7 +351,7 @@ TEST_F(InterceptNavigationResourceThrottleTest,
           base::Unretained(&defer)));
 
   // Wait for the request to finish processing.
-  message_loop_.Run();
+  base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(InterceptNavigationResourceThrottleTest,
@@ -395,7 +378,7 @@ TEST_F(InterceptNavigationResourceThrottleTest,
           base::Unretained(&defer)));
 
   // Wait for the request to finish processing.
-  message_loop_.Run();
+  base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(InterceptNavigationResourceThrottleTest,
@@ -422,7 +405,7 @@ TEST_F(InterceptNavigationResourceThrottleTest,
           base::Unretained(&defer)));
 
   // Wait for the request to finish processing.
-  message_loop_.Run();
+  base::RunLoop().RunUntilIdle();
 }
 
 }  // namespace navigation_interception

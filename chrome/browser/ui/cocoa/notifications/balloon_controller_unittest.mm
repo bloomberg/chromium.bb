@@ -14,9 +14,6 @@
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/test_browser_window.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/public/test/test_browser_thread.h"
-
-using content::BrowserThread;
 
 // Subclass balloon controller and mock out the initialization of the RVH.
 @interface TestBalloonController : BalloonController {
@@ -58,15 +55,7 @@ class MockBalloonCollection : public BalloonCollection {
 };
 
 class BalloonControllerTest : public ChromeRenderViewHostTestHarness {
- public:
-  BalloonControllerTest() :
-      ui_thread_(BrowserThread::UI, base::MessageLoop::current()),
-      file_user_blocking_thread_(
-            BrowserThread::FILE_USER_BLOCKING, base::MessageLoop::current()),
-      io_thread_(BrowserThread::IO, base::MessageLoop::current()) {
-  }
-
-  virtual void SetUp() {
+  virtual void SetUp() OVERRIDE {
     ChromeRenderViewHostTestHarness::SetUp();
     CocoaTest::BootstrapCocoa();
     profile()->CreateRequestContext();
@@ -77,17 +66,13 @@ class BalloonControllerTest : public ChromeRenderViewHostTestHarness {
     collection_.reset(new MockBalloonCollection());
   }
 
-  virtual void TearDown() {
+  virtual void TearDown() OVERRIDE {
     collection_.reset();
     browser_.reset();
-    base::MessageLoop::current()->RunUntilIdle();
     ChromeRenderViewHostTestHarness::TearDown();
   }
 
  protected:
-  content::TestBrowserThread ui_thread_;
-  content::TestBrowserThread file_user_blocking_thread_;
-  content::TestBrowserThread io_thread_;
   scoped_ptr<Browser> browser_;
   scoped_ptr<BalloonCollection> collection_;
 };

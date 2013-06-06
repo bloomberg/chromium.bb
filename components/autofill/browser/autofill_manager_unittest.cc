@@ -43,7 +43,6 @@
 #include "components/user_prefs/user_prefs.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/mock_render_process_host.h"
-#include "content/public/test/test_browser_thread.h"
 #include "content/public/test/test_utils.h"
 #include "googleurl/src/gurl.h"
 #include "grit/component_resources.h"
@@ -55,7 +54,6 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/rect.h"
 
-using content::BrowserThread;
 using content::WebContents;
 using testing::_;
 using WebKit::WebFormElement;
@@ -556,7 +554,7 @@ class TestAutofillManager : public AutofillManager {
       const gfx::RectF& bounding_box) OVERRIDE {
     AutofillManager::OnMaybeShowAutocheckoutBubble(form, bounding_box);
     // Needed for AutocheckoutManager to post task on IO thread.
-    content::RunAllPendingInMessageLoop(BrowserThread::IO);
+    content::RunAllPendingInMessageLoop(content::BrowserThread::IO);
   }
 
   // Resets the MessageLoopRunner so that it can wait for an asynchronous form
@@ -650,16 +648,6 @@ class TestAutofillManager : public AutofillManager {
 
 class AutofillManagerTest : public ChromeRenderViewHostTestHarness {
  public:
-  AutofillManagerTest()
-      : ChromeRenderViewHostTestHarness(),
-        ui_thread_(BrowserThread::UI, &message_loop_),
-        file_thread_(BrowserThread::FILE),
-        io_thread_(BrowserThread::IO) {
-  }
-
-  virtual ~AutofillManagerTest() {
-  }
-
   virtual void SetUp() OVERRIDE {
     TestingProfile* profile = CreateProfile();
     profile->CreateRequestContext();
@@ -668,7 +656,6 @@ class AutofillManagerTest : public ChromeRenderViewHostTestHarness {
         profile, TestPersonalDataManager::Build);
 
     ChromeRenderViewHostTestHarness::SetUp();
-    io_thread_.StartIOThread();
 
     autofill::TabAutofillManagerDelegate::CreateForWebContents(web_contents());
 
@@ -677,8 +664,6 @@ class AutofillManagerTest : public ChromeRenderViewHostTestHarness {
         web_contents(),
         autofill::TabAutofillManagerDelegate::FromWebContents(web_contents()),
         &personal_data_));
-
-    file_thread_.Start();
   }
 
   virtual void TearDown() OVERRIDE {
@@ -687,9 +672,7 @@ class AutofillManagerTest : public ChromeRenderViewHostTestHarness {
     // AutofillManager is tied to the lifetime of the WebContents, so it must
     // be destroyed at the destruction of the WebContents.
     autofill_manager_.reset();
-    file_thread_.Stop();
     ChromeRenderViewHostTestHarness::TearDown();
-    io_thread_.Stop();
 
     // Remove the BrowserContext so TestPersonalDataManager does not need to
     // care about removing self as an observer in destruction.
@@ -806,19 +789,12 @@ class AutofillManagerTest : public ChromeRenderViewHostTestHarness {
   }
 
  protected:
-  content::TestBrowserThread ui_thread_;
-  content::TestBrowserThread file_thread_;
-  content::TestBrowserThread io_thread_;
-
   scoped_ptr<TestAutofillManager> autofill_manager_;
   TestPersonalDataManager personal_data_;
 
   // Used when we want an off the record profile. This will store the original
   // profile from which the off the record profile is derived.
   scoped_ptr<Profile> other_browser_context_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(AutofillManagerTest);
 };
 
 class TestFormStructure : public FormStructure {

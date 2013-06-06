@@ -86,6 +86,7 @@ MediaCaptureDevicesDispatcher* MediaCaptureDevicesDispatcher::GetInstance() {
 
 MediaCaptureDevicesDispatcher::MediaCaptureDevicesDispatcher()
     : devices_enumerated_(false),
+      is_device_enumeration_disabled_(false),
       media_stream_capture_indicator_(new MediaStreamCaptureIndicator()),
       audio_stream_indicator_(new AudioStreamIndicator()) {}
 
@@ -117,7 +118,7 @@ void MediaCaptureDevicesDispatcher::RemoveObserver(Observer* observer) {
 const MediaStreamDevices&
 MediaCaptureDevicesDispatcher::GetAudioCaptureDevices() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (!devices_enumerated_) {
+  if (!is_device_enumeration_disabled_ && !devices_enumerated_) {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
         base::Bind(&content::EnsureMonitorCaptureDevices));
@@ -129,7 +130,7 @@ MediaCaptureDevicesDispatcher::GetAudioCaptureDevices() {
 const MediaStreamDevices&
 MediaCaptureDevicesDispatcher::GetVideoCaptureDevices() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (!devices_enumerated_) {
+  if (!is_device_enumeration_disabled_ && !devices_enumerated_) {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
         base::Bind(&content::EnsureMonitorCaptureDevices));
@@ -302,6 +303,10 @@ void MediaCaptureDevicesDispatcher::GetRequestedDevice(
     if (device)
       devices->push_back(*device);
   }
+}
+
+void MediaCaptureDevicesDispatcher::DisableDeviceEnumerationForTesting() {
+  is_device_enumeration_disabled_ = true;
 }
 
 scoped_refptr<MediaStreamCaptureIndicator>

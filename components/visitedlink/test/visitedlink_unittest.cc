@@ -10,6 +10,7 @@
 #include "base/message_loop.h"
 #include "base/path_service.h"
 #include "base/process_util.h"
+#include "base/run_loop.h"
 #include "base/shared_memory.h"
 #include "base/string_util.h"
 #include "base/time.h"
@@ -18,11 +19,12 @@
 #include "components/visitedlink/browser/visitedlink_master.h"
 #include "components/visitedlink/common/visitedlink_messages.h"
 #include "components/visitedlink/renderer/visitedlink_slave.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_browser_context.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_renderer_host.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -135,9 +137,6 @@ class TrackingVisitedLinkEventListener : public VisitedLinkMaster::Listener {
 
 class VisitedLinkTest : public testing::Test {
  protected:
-  VisitedLinkTest()
-      : ui_thread_(BrowserThread::UI, &message_loop_),
-        file_thread_(BrowserThread::FILE, &message_loop_) {}
   // Initializes the visited link objects. Pass in the size that you want a
   // freshly created table to be. 0 means use the default.
   //
@@ -222,16 +221,13 @@ class VisitedLinkTest : public testing::Test {
 
   base::ScopedTempDir temp_dir_;
 
-  base::MessageLoop message_loop_;
-  content::TestBrowserThread ui_thread_;
-  content::TestBrowserThread file_thread_;
-
   // Filenames for the services;
   base::FilePath history_dir_;
   base::FilePath visited_file_;
 
   scoped_ptr<VisitedLinkMaster> master_;
   TestVisitedLinkDelegate delegate_;
+  content::TestBrowserThreadBundle thread_bundle_;
 };
 
 // This test creates and reads some databases to make sure the data is
@@ -438,8 +434,9 @@ TEST_F(VisitedLinkTest, Rebuild) {
   // complete before we set the task because the rebuild completion message
   // is posted to the message loop; until we Run() it, rebuild can not
   // complete.
-  master_->set_rebuild_complete_task(base::MessageLoop::QuitClosure());
-  base::MessageLoop::current()->Run();
+  base::RunLoop run_loop;
+  master_->set_rebuild_complete_task(run_loop.QuitClosure());
+  run_loop.Run();
 
   // Test that all URLs were written to the database properly.
   Reload();
@@ -458,8 +455,9 @@ TEST_F(VisitedLinkTest, BigImport) {
     master_->AddURL(TestURL(i));
 
   // Wait for the rebuild to complete.
-  master_->set_rebuild_complete_task(base::MessageLoop::QuitClosure());
-  base::MessageLoop::current()->Run();
+  base::RunLoop run_loop;
+  master_->set_rebuild_complete_task(run_loop.QuitClosure());
+  run_loop.Run();
 
   // Ensure that the right number of URLs are present
   int used_count = master_->GetUsedCount();
@@ -592,10 +590,6 @@ class VisitedLinkRenderProcessHostFactory
 
 class VisitedLinkEventsTest : public content::RenderViewHostTestHarness {
  public:
-  VisitedLinkEventsTest()
-      : ui_thread_(BrowserThread::UI, &message_loop_),
-        file_thread_(BrowserThread::FILE, &message_loop_) {}
-  virtual ~VisitedLinkEventsTest() {}
   virtual void SetUp() {
     browser_context_.reset(new VisitCountingContext());
     master_.reset(new VisitedLinkMaster(context(), &delegate_, true));
@@ -614,11 +608,14 @@ class VisitedLinkEventsTest : public content::RenderViewHostTestHarness {
 
   void WaitForCoalescense() {
     // Let the timer fire.
+    //
+    // TODO(ajwong): This is horrid! What is the right synchronization method?
+    base::RunLoop run_loop;
     base::MessageLoop::current()->PostDelayedTask(
         FROM_HERE,
-        base::MessageLoop::QuitClosure(),
+        run_loop.QuitClosure(),
         base::TimeDelta::FromMilliseconds(110));
-    base::MessageLoop::current()->Run();
+    run_loop.Run();
   }
 
  protected:
@@ -627,10 +624,6 @@ class VisitedLinkEventsTest : public content::RenderViewHostTestHarness {
  private:
   TestVisitedLinkDelegate delegate_;
   scoped_ptr<VisitedLinkMaster> master_;
-  content::TestBrowserThread ui_thread_;
-  content::TestBrowserThread file_thread_;
-
-  DISALLOW_COPY_AND_ASSIGN(VisitedLinkEventsTest);
 };
 
 TEST_F(VisitedLinkEventsTest, Coalescense) {

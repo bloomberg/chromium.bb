@@ -19,7 +19,6 @@
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/aura/client/activation_change_observer.h"
@@ -133,10 +132,6 @@ class TabHelperTabStripModelDelegate : public TestTabStripModelDelegate {
 class LauncherItemControllerPerAppTest
     : public ChromeRenderViewHostTestHarness {
  public:
-  LauncherItemControllerPerAppTest()
-      : browser_thread_(content::BrowserThread::UI, &message_loop_) {
-  }
-
   virtual void SetUp() OVERRIDE {
     ChromeRenderViewHostTestHarness::SetUp();
 
@@ -241,11 +236,6 @@ class LauncherItemControllerPerAppTest
   AppIconLoaderImpl* app_icon_loader_;
 
   scoped_ptr<aura::test::TestActivationClient> activation_client_;
-
- private:
-  content::TestBrowserThread browser_thread_;
-
-  DISALLOW_COPY_AND_ASSIGN(LauncherItemControllerPerAppTest);
 };
 
 // Verify that the launcher item positions are persisted and restored.
@@ -318,8 +308,6 @@ class BrowserLauncherItemControllerTest
   virtual void TearDown() OVERRIDE {
     LauncherItemControllerPerAppTest::TearDown();
   }
-
-  DISALLOW_COPY_AND_ASSIGN(BrowserLauncherItemControllerTest);
 };
 
 // Verifies a new launcher item is added for TYPE_TABBED.

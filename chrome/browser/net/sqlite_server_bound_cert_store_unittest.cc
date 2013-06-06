@@ -10,10 +10,10 @@
 #include "base/message_loop.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
-#include "base/test/thread_test_helper.h"
 #include "chrome/browser/net/sqlite_server_bound_cert_store.h"
 #include "chrome/common/chrome_constants.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/browser/browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "net/base/test_data_directory.h"
 #include "net/test/cert_test_util.h"
 #include "sql/statement.h"
@@ -25,8 +25,7 @@ using content::BrowserThread;
 class SQLiteServerBoundCertStoreTest : public testing::Test {
  public:
   SQLiteServerBoundCertStoreTest()
-      : db_thread_(BrowserThread::DB),
-        io_thread_(BrowserThread::IO, &message_loop_) {}
+      : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP) {}
 
   void Load(
       ScopedVector<net::DefaultServerBoundCertStore::ServerBoundCert>* certs) {
@@ -80,7 +79,6 @@ class SQLiteServerBoundCertStoreTest : public testing::Test {
   }
 
   virtual void SetUp() {
-    db_thread_.Start();
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     store_ = new SQLiteServerBoundCertStore(
         temp_dir_.path().Append(chrome::kOBCertFilename), NULL);
@@ -97,9 +95,7 @@ class SQLiteServerBoundCertStoreTest : public testing::Test {
             "a", "b"));
   }
 
-  base::MessageLoopForIO message_loop_;
-  content::TestBrowserThread db_thread_;
-  content::TestBrowserThread io_thread_;
+  content::TestBrowserThreadBundle thread_bundle_;
   base::ScopedTempDir temp_dir_;
   scoped_refptr<SQLiteServerBoundCertStore> store_;
   ScopedVector<net::DefaultServerBoundCertStore::ServerBoundCert> certs_;
@@ -120,11 +116,8 @@ TEST_F(SQLiteServerBoundCertStoreTest, TestPersistence) {
   // to write its data to disk. Then we can see if after loading it again it
   // is still there.
   store_ = NULL;
-  scoped_refptr<base::ThreadTestHelper> helper(
-      new base::ThreadTestHelper(
-          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB)));
   // Make sure we wait until the destructor has run.
-  ASSERT_TRUE(helper->Run());
+  base::RunLoop().RunUntilIdle();
   store_ = new SQLiteServerBoundCertStore(
       temp_dir_.path().Append(chrome::kOBCertFilename), NULL);
 
@@ -158,7 +151,7 @@ TEST_F(SQLiteServerBoundCertStoreTest, TestPersistence) {
   store_->DeleteServerBoundCert(*certs[1]);
   store_ = NULL;
   // Make sure we wait until the destructor has run.
-  ASSERT_TRUE(helper->Run());
+  base::RunLoop().RunUntilIdle();
   certs.clear();
   store_ = new SQLiteServerBoundCertStore(
       temp_dir_.path().Append(chrome::kOBCertFilename), NULL);
@@ -233,11 +226,7 @@ TEST_F(SQLiteServerBoundCertStoreTest, TestUpgradeV1) {
     ASSERT_STREQ("\xbb", certs[1]->cert().c_str());
 
     store_ = NULL;
-    // Make sure we wait until the destructor has run.
-    scoped_refptr<base::ThreadTestHelper> helper(
-        new base::ThreadTestHelper(
-            BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB)));
-    ASSERT_TRUE(helper->Run());
+    base::RunLoop().RunUntilIdle();
 
     // Verify the database version is updated.
     {
@@ -322,10 +311,7 @@ TEST_F(SQLiteServerBoundCertStoreTest, TestUpgradeV2) {
 
     store_ = NULL;
     // Make sure we wait until the destructor has run.
-    scoped_refptr<base::ThreadTestHelper> helper(
-        new base::ThreadTestHelper(
-            BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB)));
-    ASSERT_TRUE(helper->Run());
+    base::RunLoop().RunUntilIdle();
 
     // Verify the database version is updated.
     {
@@ -414,10 +400,7 @@ TEST_F(SQLiteServerBoundCertStoreTest, TestUpgradeV3) {
 
     store_ = NULL;
     // Make sure we wait until the destructor has run.
-    scoped_refptr<base::ThreadTestHelper> helper(
-        new base::ThreadTestHelper(
-            BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB)));
-    ASSERT_TRUE(helper->Run());
+    base::RunLoop().RunUntilIdle();
 
     // Verify the database version is updated.
     {

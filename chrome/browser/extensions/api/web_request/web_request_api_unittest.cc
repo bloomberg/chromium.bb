@@ -37,7 +37,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "content/public/common/url_constants.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "net/base/auth.h"
 #include "net/base/capturing_net_log.h"
 #include "net/base/net_util.h"
@@ -173,8 +173,7 @@ class TestIPCSender : public IPC::Sender {
 class ExtensionWebRequestTest : public testing::Test {
  public:
   ExtensionWebRequestTest()
-      : ui_thread_(content::BrowserThread::UI, &message_loop_),
-        io_thread_(content::BrowserThread::IO, &message_loop_),
+      : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
         profile_manager_(TestingBrowserProcess::GetGlobal()),
         event_router_(new EventRouterForwarder) {}
 
@@ -200,9 +199,7 @@ class ExtensionWebRequestTest : public testing::Test {
                               const std::vector<char>& bytes_1,
                               const std::vector<char>& bytes_2);
 
-  base::MessageLoopForIO message_loop_;
-  content::TestBrowserThread ui_thread_;
-  content::TestBrowserThread io_thread_;
+  content::TestBrowserThreadBundle thread_bundle_;
   TestingProfile profile_;
   TestingProfileManager profile_manager_;
   net::TestDelegate delegate_;
@@ -768,8 +765,7 @@ class ExtensionWebRequestHeaderModificationTest
     : public testing::TestWithParam<HeaderModificationTest> {
  public:
   ExtensionWebRequestHeaderModificationTest()
-      : ui_thread_(content::BrowserThread::UI, &message_loop_),
-        io_thread_(content::BrowserThread::IO, &message_loop_),
+      : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
         profile_manager_(TestingBrowserProcess::GetGlobal()),
         event_router_(new EventRouterForwarder) {}
 
@@ -791,9 +787,7 @@ class ExtensionWebRequestHeaderModificationTest
     context_->Init();
   }
 
-  base::MessageLoopForIO message_loop_;
-  content::TestBrowserThread ui_thread_;
-  content::TestBrowserThread io_thread_;
+  content::TestBrowserThreadBundle thread_bundle_;
   TestingProfile profile_;
   TestingProfileManager profile_manager_;
   net::TestDelegate delegate_;

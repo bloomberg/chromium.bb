@@ -180,8 +180,6 @@ class MockDownloadTargetDeterminerDelegate
 
 class DownloadTargetDeterminerTest : public ChromeRenderViewHostTestHarness {
  public:
-  DownloadTargetDeterminerTest();
-
   // ::testing::Test
   virtual void SetUp() OVERRIDE;
   virtual void TearDown() OVERRIDE;
@@ -247,15 +245,7 @@ class DownloadTargetDeterminerTest : public ChromeRenderViewHostTestHarness {
   NullWebContentsDelegate web_contents_delegate_;
   base::ScopedTempDir test_download_dir_;
   base::FilePath test_virtual_dir_;
-  content::TestBrowserThread ui_thread_;
-  content::TestBrowserThread file_thread_;
 };
-
-DownloadTargetDeterminerTest::DownloadTargetDeterminerTest()
-    : ChromeRenderViewHostTestHarness(),
-      ui_thread_(content::BrowserThread::UI, &message_loop_),
-      file_thread_(content::BrowserThread::FILE, &message_loop_) {
-}
 
 void DownloadTargetDeterminerTest::SetUp() {
   ChromeRenderViewHostTestHarness::SetUp();
@@ -270,7 +260,6 @@ void DownloadTargetDeterminerTest::SetUp() {
 
 void DownloadTargetDeterminerTest::TearDown() {
   download_prefs_.reset();
-  message_loop_.RunUntilIdle();
   ChromeRenderViewHostTestHarness::TearDown();
 }
 

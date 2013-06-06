@@ -7,7 +7,7 @@
 #include "base/files/file_path.h"
 #include "base/message_loop.h"
 #include "chrome/browser/safe_browsing/local_two_phase_testserver.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
 #include "net/base/net_errors.h"
 #include "net/url_request/url_fetcher.h"
@@ -59,20 +59,13 @@ base::FilePath GetTestFilePath() {
 class TwoPhaseUploaderTest : public testing::Test {
  public:
   TwoPhaseUploaderTest()
-      : db_thread_(BrowserThread::DB),
-        io_thread_(BrowserThread::IO, &message_loop_),
+      : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
         url_request_context_getter_(new net::TestURLRequestContextGetter(
             BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO))) {
   }
 
-  virtual void SetUp() {
-    db_thread_.Start();
-  }
-
  protected:
-  base::MessageLoopForIO message_loop_;
-  content::TestBrowserThread db_thread_;
-  content::TestBrowserThread io_thread_;
+  content::TestBrowserThreadBundle thread_bundle_;
 
   scoped_refptr<net::TestURLRequestContextGetter> url_request_context_getter_;
 };

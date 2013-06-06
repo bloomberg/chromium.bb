@@ -38,18 +38,10 @@ class MockSiteDataObserver
 
 class TabSpecificContentSettingsTest : public ChromeRenderViewHostTestHarness {
  public:
-  TabSpecificContentSettingsTest()
-      : browser_thread_(BrowserThread::UI, &message_loop_) {}
-
   virtual void SetUp() OVERRIDE {
     ChromeRenderViewHostTestHarness::SetUp();
     TabSpecificContentSettings::CreateForWebContents(web_contents());
   }
-
- private:
-  content::TestBrowserThread browser_thread_;
-
-  DISALLOW_COPY_AND_ASSIGN(TabSpecificContentSettingsTest);
 };
 
 TEST_F(TabSpecificContentSettingsTest, BlockedContent) {

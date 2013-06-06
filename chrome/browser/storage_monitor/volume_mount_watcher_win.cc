@@ -428,10 +428,10 @@ bool VolumeMountWatcherWin::GetDeviceInfo(const base::FilePath& device_path,
   DCHECK(info);
   base::FilePath path(device_path);
   MountPointDeviceMetadataMap::const_iterator iter =
-      device_metadata_.find(path.value());
+      device_metadata_.find(path);
   while (iter == device_metadata_.end() && path.DirName() != path) {
     path = path.DirName();
-    iter = device_metadata_.find(path.value());
+    iter = device_metadata_.find(path);
   }
 
   if (iter == device_metadata_.end())
@@ -486,7 +486,7 @@ void VolumeMountWatcherWin::HandleDeviceAttachEventOnUIThread(
     const StorageInfo& info) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  device_metadata_[device_path.value()] = info;
+  device_metadata_[device_path] = info;
 
   DeviceCheckComplete(device_path);
 
@@ -503,7 +503,7 @@ void VolumeMountWatcherWin::HandleDeviceDetachEventOnUIThread(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   MountPointDeviceMetadataMap::const_iterator device_info =
-      device_metadata_.find(device_location);
+      device_metadata_.find(base::FilePath(device_location));
   // If the device isn't type removable (like a CD), it won't be there.
   if (device_info == device_metadata_.end())
     return;
@@ -522,7 +522,7 @@ void VolumeMountWatcherWin::EjectDevice(
     callback.Run(StorageMonitor::EJECT_FAILURE);
     return;
   }
-  if (device_metadata_.erase(device.value()) == 0) {
+  if (device_metadata_.erase(device) == 0) {
     callback.Run(StorageMonitor::EJECT_FAILURE);
     return;
   }

@@ -24,19 +24,17 @@
 #include "components/autofill/common/form_field_data.h"
 #include "components/autofill/common/forms_seen_state.h"
 #include "components/webdata/common/web_data_results.h"
-#include "content/public/test/test_browser_thread.h"
 #include "content/public/test/test_utils.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/rect.h"
 
-using content::BrowserThread;
-using ::testing::_;
-using ::testing::AnyNumber;
-using ::testing::Mock;
-using base::TimeTicks;
 using base::TimeDelta;
+using base::TimeTicks;
+using testing::_;
+using testing::AnyNumber;
+using testing::Mock;
 
 namespace autofill {
 
@@ -259,7 +257,6 @@ class TestAutofillManager : public AutofillManager {
 
 class AutofillMetricsTest : public ChromeRenderViewHostTestHarness {
  public:
-  AutofillMetricsTest();
   virtual ~AutofillMetricsTest();
 
   virtual void SetUp() OVERRIDE;
@@ -269,23 +266,9 @@ class AutofillMetricsTest : public ChromeRenderViewHostTestHarness {
   scoped_ptr<ConfirmInfoBarDelegate> CreateDelegate(
       MockAutofillMetrics* metric_logger);
 
-  content::TestBrowserThread ui_thread_;
-  content::TestBrowserThread file_thread_;
-  content::TestBrowserThread io_thread_;
-
   scoped_ptr<TestAutofillManager> autofill_manager_;
   scoped_ptr<TestPersonalDataManager> personal_data_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(AutofillMetricsTest);
 };
-
-AutofillMetricsTest::AutofillMetricsTest()
-  : ChromeRenderViewHostTestHarness(),
-    ui_thread_(BrowserThread::UI, &message_loop_),
-    file_thread_(BrowserThread::FILE),
-    io_thread_(BrowserThread::IO) {
-}
 
 AutofillMetricsTest::~AutofillMetricsTest() {
   // Order of destruction is important as AutofillManager relies on
@@ -304,7 +287,6 @@ void AutofillMetricsTest::SetUp() {
   PersonalDataManagerFactory::GetInstance()->SetTestingFactory(profile, NULL);
 
   ChromeRenderViewHostTestHarness::SetUp();
-  io_thread_.StartIOThread();
   TabAutofillManagerDelegate::CreateForWebContents(web_contents());
 
   personal_data_.reset(new TestPersonalDataManager());
@@ -313,8 +295,6 @@ void AutofillMetricsTest::SetUp() {
       web_contents(),
       TabAutofillManagerDelegate::FromWebContents(web_contents()),
       personal_data_.get()));
-
-  file_thread_.Start();
 }
 
 void AutofillMetricsTest::TearDown() {
@@ -325,9 +305,7 @@ void AutofillMetricsTest::TearDown() {
   autofill_manager_.reset();
   personal_data_.reset();
   profile()->ResetRequestContext();
-  file_thread_.Stop();
   ChromeRenderViewHostTestHarness::TearDown();
-  io_thread_.Stop();
 }
 
 scoped_ptr<ConfirmInfoBarDelegate> AutofillMetricsTest::CreateDelegate(

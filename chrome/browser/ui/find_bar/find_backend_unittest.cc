@@ -12,26 +12,17 @@
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/test/test_browser_thread.h"
 #include "content/public/test/web_contents_tester.h"
 
-using content::BrowserThread;
 using content::WebContents;
 using content::WebContentsTester;
 
 class FindBackendTest : public ChromeRenderViewHostTestHarness {
- public:
-  FindBackendTest()
-      : ChromeRenderViewHostTestHarness(),
-        browser_thread_(BrowserThread::UI, &message_loop_) {}
-
- private:
+ protected:
   virtual void SetUp() OVERRIDE {
     ChromeRenderViewHostTestHarness::SetUp();
     FindTabHelper::CreateForWebContents(web_contents());
   }
-
-  content::TestBrowserThread browser_thread_;
 };
 
 namespace {

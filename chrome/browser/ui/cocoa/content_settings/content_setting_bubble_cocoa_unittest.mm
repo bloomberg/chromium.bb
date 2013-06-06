@@ -8,19 +8,17 @@
 
 #include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/memory/scoped_nsobject.h"
+#include "chrome/browser/media/media_capture_devices_dispatcher.h"
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #include "chrome/browser/ui/content_settings/content_setting_bubble_model.h"
 #include "chrome/common/content_settings_types.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/common/media_stream_request.h"
-#include "content/public/test/test_browser_thread.h"
 #include "grit/generated_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
 #include "ui/base/l10n/l10n_util.h"
-
-using content::BrowserThread;
 
 namespace {
 
@@ -45,10 +43,6 @@ class DummyContentSettingBubbleModel : public ContentSettingBubbleModel {
 
 class ContentSettingBubbleControllerTest
     : public ChromeRenderViewHostTestHarness {
- public:
-  ContentSettingBubbleControllerTest();
-  virtual ~ContentSettingBubbleControllerTest();
-
  protected:
   // Helper function to create the bubble controller.
   ContentSettingBubbleController* CreateBubbleController(
@@ -57,18 +51,8 @@ class ContentSettingBubbleControllerTest
   scoped_nsobject<NSWindow> parent_;
 
  private:
-  content::TestBrowserThread browser_thread_;
-
   base::mac::ScopedNSAutoreleasePool pool_;
 };
-
-ContentSettingBubbleControllerTest::ContentSettingBubbleControllerTest()
-    : ChromeRenderViewHostTestHarness(),
-      browser_thread_(BrowserThread::UI, &message_loop_) {
-}
-
-ContentSettingBubbleControllerTest::~ContentSettingBubbleControllerTest() {
-}
 
 ContentSettingBubbleController*
 ContentSettingBubbleControllerTest::CreateBubbleController(
@@ -119,6 +103,8 @@ TEST_F(ContentSettingBubbleControllerTest, Init) {
 
 // Check that the bubble works for CONTENT_SETTINGS_TYPE_MEDIASTREAM.
 TEST_F(ContentSettingBubbleControllerTest, MediaStreamBubble) {
+  MediaCaptureDevicesDispatcher::GetInstance()->
+      DisableDeviceEnumerationForTesting();
   ContentSettingBubbleController* controller =
       CreateBubbleController(CONTENT_SETTINGS_TYPE_MEDIASTREAM);
   content_setting_bubble::MediaMenuPartsMap* mediaMenus =

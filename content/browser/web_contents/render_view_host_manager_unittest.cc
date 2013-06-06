@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "base/utf_string_conversions.h"
-#include "content/browser/browser_thread_impl.h"
 #include "content/browser/renderer_host/test_render_view_host.h"
 #include "content/browser/site_instance_impl.h"
 #include "content/browser/web_contents/navigation_controller_impl.h"
@@ -21,7 +20,6 @@
 #include "content/public/common/url_constants.h"
 #include "content/public/common/url_utils.h"
 #include "content/public/test/mock_render_process_host.h"
-#include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_notification_tracker.h"
 #include "content/test/test_content_browser_client.h"
 #include "content/test/test_content_client.h"
@@ -130,7 +128,6 @@ class RenderViewHostManagerTest
 // a regression test for bug 9364.
 TEST_F(RenderViewHostManagerTest, NewTabPageProcesses) {
   set_should_create_webui(true);
-  BrowserThreadImpl ui_thread(BrowserThread::UI, base::MessageLoop::current());
   const GURL kChromeUrl("chrome://foo");
   const GURL kDestUrl("http://www.google.com/");
 
@@ -195,7 +192,6 @@ TEST_F(RenderViewHostManagerTest, NewTabPageProcesses) {
 // for synchronous messages, which cannot be ignored without leaving the
 // renderer in a stuck state.  See http://crbug.com/93427.
 TEST_F(RenderViewHostManagerTest, FilterMessagesWhileSwappedOut) {
-  BrowserThreadImpl ui_thread(BrowserThread::UI, base::MessageLoop::current());
   const GURL kChromeURL("chrome://foo");
   const GURL kDestUrl("http://www.google.com/");
 
@@ -272,7 +268,6 @@ TEST_F(RenderViewHostManagerTest, FilterMessagesWhileSwappedOut) {
 // EnableViewSourceMode message is sent on every navigation regardless
 // RenderView is being newly created or reused.
 TEST_F(RenderViewHostManagerTest, AlwaysSendEnableViewSourceMode) {
-  BrowserThreadImpl ui_thread(BrowserThread::UI, base::MessageLoop::current());
   const GURL kChromeUrl("chrome://foo");
   const GURL kUrl("view-source:http://foo");
 
@@ -591,7 +586,6 @@ TEST_F(RenderViewHostManagerTest, NavigateWithEarlyReNavigation) {
 // Tests WebUI creation.
 TEST_F(RenderViewHostManagerTest, WebUI) {
   set_should_create_webui(true);
-  BrowserThreadImpl ui_thread(BrowserThread::UI, base::MessageLoop::current());
   SiteInstance* instance = SiteInstance::Create(browser_context());
 
   scoped_ptr<TestWebContents> web_contents(

@@ -15,13 +15,11 @@
 #include "components/autofill/common/form_data.h"
 #include "components/autofill/common/form_field_data.h"
 #include "components/autofill/common/password_form_fill_data.h"
-#include "content/public/test/test_browser_thread.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebAutofillClient.h"
 #include "ui/gfx/rect.h"
 
-using content::BrowserThread;
 using testing::_;
 using WebKit::WebAutofillClient;
 
@@ -92,29 +90,7 @@ class MockAutofillManager : public AutofillManager {
 
 class AutofillExternalDelegateUnitTest
     : public ChromeRenderViewHostTestHarness {
- public:
-  AutofillExternalDelegateUnitTest()
-      : ui_thread_(BrowserThread::UI, &message_loop_) {}
-  virtual ~AutofillExternalDelegateUnitTest() {}
-
  protected:
-  // Issue an OnQuery call with the given |query_id|.
-  void IssueOnQuery(int query_id) {
-    const FormData form;
-    FormFieldData field;
-    field.is_focusable = true;
-    field.should_autocomplete = true;
-    const gfx::RectF element_bounds;
-
-    external_delegate_->OnQuery(query_id, form, field, element_bounds, false);
-  }
-
-  MockAutofillManagerDelegate manager_delegate_;
-  scoped_ptr<MockAutofillManager> autofill_manager_;
-  scoped_ptr<testing::NiceMock<MockAutofillExternalDelegate> >
-      external_delegate_;
-
- private:
   virtual void SetUp() OVERRIDE {
     ChromeRenderViewHostTestHarness::SetUp();
     autofill_manager_.reset(
@@ -135,9 +111,21 @@ class AutofillExternalDelegateUnitTest
     ChromeRenderViewHostTestHarness::TearDown();
   }
 
-  content::TestBrowserThread ui_thread_;
+  // Issue an OnQuery call with the given |query_id|.
+  void IssueOnQuery(int query_id) {
+    const FormData form;
+    FormFieldData field;
+    field.is_focusable = true;
+    field.should_autocomplete = true;
+    const gfx::RectF element_bounds;
 
-  DISALLOW_COPY_AND_ASSIGN(AutofillExternalDelegateUnitTest);
+    external_delegate_->OnQuery(query_id, form, field, element_bounds, false);
+  }
+
+  MockAutofillManagerDelegate manager_delegate_;
+  scoped_ptr<MockAutofillManager> autofill_manager_;
+  scoped_ptr<testing::NiceMock<MockAutofillExternalDelegate> >
+      external_delegate_;
 };
 
 // Test that our external delegate called the virtual methods at the right time.

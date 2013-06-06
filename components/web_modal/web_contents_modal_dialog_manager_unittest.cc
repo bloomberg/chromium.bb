@@ -4,7 +4,7 @@
 
 #include "components/web_modal/native_web_contents_modal_dialog_manager.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_renderer_host.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -15,17 +15,10 @@ namespace web_modal {
 class WebContentsModalDialogManagerTest
     : public content::RenderViewHostTestHarness {
  public:
-  WebContentsModalDialogManagerTest()
-      : ui_thread_(BrowserThread::UI, &message_loop_) {
-  }
-
   virtual void SetUp() {
     content::RenderViewHostTestHarness::SetUp();
     WebContentsModalDialogManager::CreateForWebContents(web_contents());
   }
-
- private:
-  content::TestBrowserThread ui_thread_;
 };
 
 class NativeWebContentsModalDialogManagerCloseTest

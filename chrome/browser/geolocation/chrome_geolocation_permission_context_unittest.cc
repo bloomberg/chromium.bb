@@ -26,7 +26,6 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/mock_render_process_host.h"
-#include "content/public/test/test_browser_thread.h"
 #include "content/public/test/test_renderer_host.h"
 #include "content/public/test/web_contents_tester.h"
 #include "extensions/browser/view_type_utils.h"
@@ -98,11 +97,10 @@ void ClosedDelegateTracker::Clear() {
 // This class sets up GeolocationArbitrator.
 class GeolocationPermissionContextTests
     : public ChromeRenderViewHostTestHarness {
- public:
-  GeolocationPermissionContextTests();
-
  protected:
-  virtual ~GeolocationPermissionContextTests();
+  // ChromeRenderViewHostTestHarness:
+  virtual void SetUp() OVERRIDE;
+  virtual void TearDown() OVERRIDE;
 
   GeolocationPermissionRequestID RequestID(int bridge_id);
   GeolocationPermissionRequestID RequestIDForTab(int tab, int bridge_id);
@@ -134,27 +132,10 @@ class GeolocationPermissionContextTests
   ClosedDelegateTracker closed_delegate_tracker_;
   ScopedVector<content::WebContents> extra_tabs_;
 
- private:
-  // ChromeRenderViewHostTestHarness:
-  virtual void SetUp() OVERRIDE;
-  virtual void TearDown() OVERRIDE;
-
-  content::TestBrowserThread ui_thread_;
-  content::TestBrowserThread db_thread_;
-
   // A map between renderer child id and a pair represending the bridge id and
   // whether the requested permission was allowed.
   base::hash_map<int, std::pair<int, bool> > responses_;
 };
-
-GeolocationPermissionContextTests::GeolocationPermissionContextTests()
-    : ChromeRenderViewHostTestHarness(),
-      ui_thread_(content::BrowserThread::UI, base::MessageLoop::current()),
-      db_thread_(content::BrowserThread::DB) {
-}
-
-GeolocationPermissionContextTests::~GeolocationPermissionContextTests() {
-}
 
 GeolocationPermissionRequestID GeolocationPermissionContextTests::RequestID(
     int bridge_id) {
@@ -253,7 +234,6 @@ void GeolocationPermissionContextTests::CheckTabContentsState(
 }
 
 void GeolocationPermissionContextTests::SetUp() {
-  db_thread_.Start();
   ChromeRenderViewHostTestHarness::SetUp();
 
   // Set up required helpers, and make this be as "tabby" as the code requires.
@@ -270,14 +250,6 @@ void GeolocationPermissionContextTests::SetUp() {
 void GeolocationPermissionContextTests::TearDown() {
   extra_tabs_.clear();
   ChromeRenderViewHostTestHarness::TearDown();
-  // Schedule another task on the DB thread to notify us that it's safe to
-  // carry on with the test.
-  base::WaitableEvent done(false, false);
-  content::BrowserThread::PostTask(
-      content::BrowserThread::DB, FROM_HERE,
-      base::Bind(&base::WaitableEvent::Signal, base::Unretained(&done)));
-  done.Wait();
-  db_thread_.Stop();
 }
 
 // Tests ----------------------------------------------------------------------

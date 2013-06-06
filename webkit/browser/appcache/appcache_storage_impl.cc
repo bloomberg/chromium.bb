@@ -186,7 +186,8 @@ void AppCacheStorageImpl::DatabaseTask::Schedule() {
       base::Bind(&DatabaseTask::CallRun, this, base::TimeTicks::Now()))) {
     storage_->scheduled_database_tasks_.push_back(this);
   } else {
-    NOTREACHED() << "The database thread is not running.";
+    NOTREACHED() << "Thread for database tasks is not running. "
+                 << "This is not always the DB thread.";
   }
 }
 

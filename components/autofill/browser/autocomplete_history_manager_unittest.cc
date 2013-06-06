@@ -6,6 +6,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/prefs/testing_pref_service.h"
+#include "base/run_loop.h"
 #include "base/string16.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/utf_string_conversions.h"
@@ -26,7 +27,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/rect.h"
 
-using content::BrowserThread;
 using content::WebContents;
 using testing::_;
 
@@ -94,13 +94,7 @@ class MockAutofillManagerDelegate
 
 class AutocompleteHistoryManagerTest : public ChromeRenderViewHostTestHarness {
  protected:
-  AutocompleteHistoryManagerTest()
-      : ui_thread_(BrowserThread::UI, &message_loop_),
-        db_thread_(BrowserThread::DB) {
-  }
-
   virtual void SetUp() OVERRIDE {
-    db_thread_.Start();
     ChromeRenderViewHostTestHarness::SetUp();
     web_data_service_ = new MockWebDataService();
     WebDataServiceFactory::GetInstance()->SetTestingFactory(
@@ -112,13 +106,8 @@ class AutocompleteHistoryManagerTest : public ChromeRenderViewHostTestHarness {
     autocomplete_manager_.reset();
     web_data_service_ = NULL;
     ChromeRenderViewHostTestHarness::TearDown();
-    content::RunAllPendingInMessageLoop(BrowserThread::DB);
-    message_loop_.RunUntilIdle();
-
   }
 
-  content::TestBrowserThread ui_thread_;
-  content::TestBrowserThread db_thread_;
   scoped_refptr<MockWebDataService> web_data_service_;
   scoped_ptr<AutocompleteHistoryManager> autocomplete_manager_;
   MockAutofillManagerDelegate manager_delegate;

@@ -14,7 +14,7 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/testing_pref_service_syncable.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "net/base/completion_callback.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_test_util.h"
@@ -91,8 +91,7 @@ TEST_F(ChromeNetworkDelegateTest, NeverThrottleLogic) {
 class ChromeNetworkDelegateSafeSearchTest : public testing::Test {
  public:
   ChromeNetworkDelegateSafeSearchTest()
-      : ui_thread_(content::BrowserThread::UI, &message_loop_),
-        io_thread_(content::BrowserThread::IO, &message_loop_),
+      : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
         forwarder_(new extensions::EventRouterForwarder()) {
   }
 
@@ -137,9 +136,7 @@ class ChromeNetworkDelegateSafeSearchTest : public testing::Test {
   }
 
  private:
-  base::MessageLoopForIO message_loop_;
-  content::TestBrowserThread ui_thread_;
-  content::TestBrowserThread io_thread_;
+  content::TestBrowserThreadBundle thread_bundle_;
   scoped_refptr<extensions::EventRouterForwarder> forwarder_;
   TestingProfile profile_;
   BooleanPrefMember enable_referrers_;
@@ -286,8 +283,7 @@ TEST_F(ChromeNetworkDelegateSafeSearchTest, SafeSearchOff) {
 class ChromeNetworkDelegatePrivacyModeTest : public testing::Test {
  public:
   ChromeNetworkDelegatePrivacyModeTest()
-      : ui_thread_(content::BrowserThread::UI, &message_loop_),
-        io_thread_(content::BrowserThread::IO, &message_loop_),
+      : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
         forwarder_(new extensions::EventRouterForwarder()),
         cookie_settings_(CookieSettings::Factory::GetForProfile(&profile_)),
         kBlockedSite("http://ads.thirdparty.com"),
@@ -316,9 +312,7 @@ class ChromeNetworkDelegatePrivacyModeTest : public testing::Test {
   }
 
  protected:
-  base::MessageLoopForIO message_loop_;
-  content::TestBrowserThread ui_thread_;
-  content::TestBrowserThread io_thread_;
+  content::TestBrowserThreadBundle thread_bundle_;
   scoped_refptr<extensions::EventRouterForwarder> forwarder_;
   TestingProfile profile_;
   CookieSettings* cookie_settings_;

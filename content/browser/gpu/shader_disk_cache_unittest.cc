@@ -6,7 +6,7 @@
 #include "base/threading/thread.h"
 #include "content/browser/browser_thread_impl.h"
 #include "content/browser/gpu/shader_disk_cache.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "net/base/test_completion_callback.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -22,8 +22,7 @@ const char kCacheValue[] = "cached value";
 class ShaderDiskCacheTest : public testing::Test {
  public:
   ShaderDiskCacheTest()
-      : cache_thread_(BrowserThread::CACHE, &message_loop_),
-        io_thread_(BrowserThread::IO, &message_loop_) {
+      : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP) {
   }
 
   virtual ~ShaderDiskCacheTest() {}
@@ -42,9 +41,7 @@ class ShaderDiskCacheTest : public testing::Test {
   }
 
   base::ScopedTempDir temp_dir_;
-  base::MessageLoopForIO message_loop_;
-  TestBrowserThread cache_thread_;
-  TestBrowserThread io_thread_;
+  content::TestBrowserThreadBundle thread_bundle_;
 
   DISALLOW_COPY_AND_ASSIGN(ShaderDiskCacheTest);
 };

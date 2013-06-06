@@ -10,7 +10,7 @@
 #include "content/browser/gpu/shader_disk_cache.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/public/browser/storage_partition.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "net/base/test_completion_callback.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -50,10 +50,8 @@ const char kCacheValue[] = "cached value";
 
 class StoragePartitionShaderClearTest : public testing::Test {
  public:
-  StoragePartitionShaderClearTest() :
-      ui_thread_(BrowserThread::UI, &message_loop_),
-      cache_thread_(BrowserThread::CACHE, &message_loop_),
-      io_thread_(BrowserThread::IO, &message_loop_) {
+  StoragePartitionShaderClearTest()
+      : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP) {
   }
 
   virtual ~StoragePartitionShaderClearTest() {}
@@ -85,8 +83,6 @@ class StoragePartitionShaderClearTest : public testing::Test {
 
   size_t Size() { return cache_->Size(); }
 
-  base::MessageLoop* message_loop() { return &message_loop_; }
-
  private:
   virtual void TearDown() OVERRIDE {
     cache_ = NULL;
@@ -94,10 +90,7 @@ class StoragePartitionShaderClearTest : public testing::Test {
   }
 
   base::ScopedTempDir temp_dir_;
-  base::MessageLoopForIO message_loop_;
-  TestBrowserThread ui_thread_;
-  TestBrowserThread cache_thread_;
-  TestBrowserThread io_thread_;
+  content::TestBrowserThreadBundle thread_bundle_;
 
   scoped_refptr<ShaderDiskCache> cache_;
 };
@@ -115,8 +108,9 @@ TEST_F(StoragePartitionShaderClearTest, ClearShaderCache) {
 
   TestClosureCallback clear_cb;
   StoragePartitionImpl sp(cache_path(), NULL, NULL, NULL, NULL, NULL, NULL);
-  message_loop()->PostTask(FROM_HERE,
-                           base::Bind(&ClearData, &sp, clear_cb.callback()));
+  base::MessageLoop::current()->PostTask(
+      FROM_HERE,
+      base::Bind(&ClearData, &sp, clear_cb.callback()));
   clear_cb.WaitForResult();
   EXPECT_EQ(0u, Size());
 }

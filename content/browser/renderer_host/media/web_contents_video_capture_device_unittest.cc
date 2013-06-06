@@ -22,7 +22,7 @@
 #include "content/public/browser/notification_types.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_browser_context.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
 #include "content/test/test_web_contents.h"
 #include "media/base/video_util.h"
@@ -417,8 +417,8 @@ class StubConsumer : public media::VideoCaptureDevice::EventHandler {
 // Test harness that sets up a minimal environment with necessary stubs.
 class WebContentsVideoCaptureDeviceTest : public testing::Test {
  public:
-  WebContentsVideoCaptureDeviceTest() {}
-
+  // This is public because C++ method pointer scoping rules are silly and make
+  // this hard to use with Bind().
   void ResetWebContents() {
     web_contents_.reset();
   }
@@ -432,10 +432,6 @@ class WebContentsVideoCaptureDeviceTest : public testing::Test {
     // either RenderViewHostTestHarness would have to support installing a
     // custom RenderViewHostFactory, or else we implant some kind of delegated
     // CopyFromBackingStore functionality into TestRenderViewHost itself.
-
-    // The main thread will serve as the UI thread as well as the test thread.
-    // We'll manually pump the run loop at appropriate times in the test.
-    ui_thread_.reset(new TestBrowserThread(BrowserThread::UI, &message_loop_));
 
     render_process_host_factory_.reset(new MockRenderProcessHostFactory());
     // Create our (self-registering) RVH factory, so that when we create a
@@ -463,7 +459,7 @@ class WebContentsVideoCaptureDeviceTest : public testing::Test {
 
     device_.reset(WebContentsVideoCaptureDevice::Create(device_id));
 
-    content::RunAllPendingInMessageLoop();
+    base::RunLoop().RunUntilIdle();
   }
 
   virtual void TearDown() {
@@ -477,13 +473,13 @@ class WebContentsVideoCaptureDeviceTest : public testing::Test {
       device_.reset();
     }
 
-    content::RunAllPendingInMessageLoop();
+    base::RunLoop().RunUntilIdle();
 
     // Destroy the browser objects.
     web_contents_.reset();
     browser_context_.reset();
 
-    content::RunAllPendingInMessageLoop();
+    base::RunLoop().RunUntilIdle();
 
     SiteInstanceImpl::set_render_process_host_factory(NULL);
     render_view_host_factory_.reset();
@@ -519,11 +515,6 @@ class WebContentsVideoCaptureDeviceTest : public testing::Test {
   // The controller controls which pixel patterns to produce.
   CaptureTestSourceController controller_;
 
-  // We run the UI message loop on the main thread. The capture device
-  // will also spin up its own threads.
-  base::MessageLoopForUI message_loop_;
-  scoped_ptr<TestBrowserThread> ui_thread_;
-
   // Self-registering RenderProcessHostFactory.
   scoped_ptr<MockRenderProcessHostFactory> render_process_host_factory_;
 
@@ -538,7 +529,7 @@ class WebContentsVideoCaptureDeviceTest : public testing::Test {
   // Finally, the WebContentsVideoCaptureDevice under test.
   scoped_ptr<media::VideoCaptureDevice> device_;
 
-  DISALLOW_COPY_AND_ASSIGN(WebContentsVideoCaptureDeviceTest);
+  TestBrowserThreadBundle thread_bundle_;
 };
 
 TEST_F(WebContentsVideoCaptureDeviceTest, InvalidInitialWebContentsError) {
@@ -564,7 +555,7 @@ TEST_F(WebContentsVideoCaptureDeviceTest, WebContentsDestroyed) {
   SimulateDrawEvent();
   ASSERT_NO_FATAL_FAILURE(consumer()->WaitForNextColor(SK_ColorRED));
 
-  content::RunAllPendingInMessageLoop();
+  base::RunLoop().RunUntilIdle();
 
   // Post a task to close the tab. We should see an error reported to the
   // consumer.
@@ -588,7 +579,7 @@ TEST_F(WebContentsVideoCaptureDeviceTest,
   // DestroyCaptureMachineOnUIThread() tasks pending on the current (UI) message
   // loop. These should both succeed without crashing, and the machine should
   // wind up in the idle state.
-  content::RunAllPendingInMessageLoop();
+  base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(WebContentsVideoCaptureDeviceTest, StopWithRendererWorkToDo) {
@@ -599,7 +590,8 @@ TEST_F(WebContentsVideoCaptureDeviceTest, StopWithRendererWorkToDo) {
                      consumer());
   device()->Start();
   // Make a point of not running the UI messageloop here.
-  content::RunAllPendingInMessageLoop();
+  // TODO(ajwong): Why do we care?
+  base::RunLoop().RunUntilIdle();
 
   for (int i = 0; i < 10; ++i)
     SimulateDrawEvent();
@@ -611,14 +603,14 @@ TEST_F(WebContentsVideoCaptureDeviceTest, StopWithRendererWorkToDo) {
   // loop. These should both succeed without crashing, and the machine should
   // wind up in the idle state.
   ASSERT_FALSE(consumer()->HasError());
-  content::RunAllPendingInMessageLoop();
+  base::RunLoop().RunUntilIdle();
   ASSERT_FALSE(consumer()->HasError());
 }
 
 TEST_F(WebContentsVideoCaptureDeviceTest, DeviceRestart) {
   device()->Allocate(kTestWidth, kTestHeight, kTestFramesPerSecond, consumer());
   device()->Start();
-  content::RunAllPendingInMessageLoop();
+  base::RunLoop().RunUntilIdle();
   source()->SetSolidColor(SK_ColorRED);
   SimulateDrawEvent();
   SimulateDrawEvent();
@@ -633,7 +625,7 @@ TEST_F(WebContentsVideoCaptureDeviceTest, DeviceRestart) {
   // Device is stopped, but content can still be animating.
   SimulateDrawEvent();
   SimulateDrawEvent();
-  content::RunAllPendingInMessageLoop();
+  base::RunLoop().RunUntilIdle();
 
   device()->Start();
   source()->SetSolidColor(SK_ColorBLUE);

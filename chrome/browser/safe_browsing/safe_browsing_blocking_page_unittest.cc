@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/prefs/pref_service.h"
+#include "base/run_loop.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/malware_details.h"
 #include "chrome/browser/safe_browsing/safe_browsing_blocking_page.h"
@@ -15,10 +16,8 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
-#include "content/public/test/test_browser_thread.h"
 #include "content/public/test/web_contents_tester.h"
 
-using content::BrowserThread;
 using content::InterstitialPage;
 using content::NavigationEntry;
 using content::WebContents;
@@ -119,11 +118,7 @@ class SafeBrowsingBlockingPageTest : public ChromeRenderViewHostTestHarness {
     CANCEL
   };
 
-  SafeBrowsingBlockingPageTest()
-      : ui_thread_(BrowserThread::UI, base::MessageLoop::current()),
-        file_user_blocking_thread_(
-            BrowserThread::FILE_USER_BLOCKING, base::MessageLoop::current()),
-        io_thread_(BrowserThread::IO, base::MessageLoop::current()) {
+  SafeBrowsingBlockingPageTest() {
     ResetUserResponse();
     // The safe browsing UI manager does not need a service for this test.
     ui_manager_ = new TestSafeBrowsingUIManager(NULL);
@@ -196,14 +191,14 @@ class SafeBrowsingBlockingPageTest : public ChromeRenderViewHostTestHarness {
       SafeBrowsingBlockingPage* sb_interstitial) {
     sb_interstitial->interstitial_page_->Proceed();
     // Proceed() posts a task to update the SafeBrowsingService::Client.
-    base::MessageLoop::current()->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
   static void DontProceedThroughInterstitial(
       SafeBrowsingBlockingPage* sb_interstitial) {
     sb_interstitial->interstitial_page_->DontProceed();
     // DontProceed() posts a task to update the SafeBrowsingService::Client.
-    base::MessageLoop::current()->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
   void DontProceedThroughSubresourceInterstitial(
@@ -212,7 +207,7 @@ class SafeBrowsingBlockingPageTest : public ChromeRenderViewHostTestHarness {
     // subresource interstitials.
     GoBack(false);
     // DontProceed() posts a task to update the SafeBrowsingService::Client.
-    base::MessageLoop::current()->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
   scoped_refptr<TestSafeBrowsingUIManager> ui_manager_;
@@ -235,9 +230,6 @@ class SafeBrowsingBlockingPageTest : public ChromeRenderViewHostTestHarness {
 
   UserResponse user_response_;
   TestSafeBrowsingBlockingPageFactory factory_;
-  content::TestBrowserThread ui_thread_;
-  content::TestBrowserThread file_user_blocking_thread_;
-  content::TestBrowserThread io_thread_;
 };
 
 // Tests showing a blocking page for a malware page and not proceeding.
@@ -257,7 +249,7 @@ TEST_F(SafeBrowsingBlockingPageTest, MalwarePageDontProceed) {
   SafeBrowsingBlockingPage* sb_interstitial = GetSafeBrowsingBlockingPage();
   ASSERT_TRUE(sb_interstitial);
 
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   // Simulate the user clicking "don't proceed".
   DontProceedThroughInterstitial(sb_interstitial);
@@ -586,7 +578,7 @@ TEST_F(SafeBrowsingBlockingPageTest, ProceedThenDontProceed) {
   SafeBrowsingBlockingPage* sb_interstitial = GetSafeBrowsingBlockingPage();
   ASSERT_TRUE(sb_interstitial);
 
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   // Simulate the user clicking "proceed" then "don't proceed" (before the
   // interstitial is shown).
@@ -594,7 +586,7 @@ TEST_F(SafeBrowsingBlockingPageTest, ProceedThenDontProceed) {
   sb_interstitial->interstitial_page_->DontProceed();
   // Proceed() and DontProceed() post a task to update the
   // SafeBrowsingService::Client.
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   // The interstitial should be gone.
   EXPECT_EQ(OK, user_response());
@@ -621,7 +613,7 @@ TEST_F(SafeBrowsingBlockingPageTest, MalwareReportsDisabled) {
   SafeBrowsingBlockingPage* sb_interstitial = GetSafeBrowsingBlockingPage();
   ASSERT_TRUE(sb_interstitial);
 
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   // Simulate the user clicking "don't proceed".
   DontProceedThroughInterstitial(sb_interstitial);
@@ -654,7 +646,7 @@ TEST_F(SafeBrowsingBlockingPageTest, MalwareReports) {
   SafeBrowsingBlockingPage* sb_interstitial = GetSafeBrowsingBlockingPage();
   ASSERT_TRUE(sb_interstitial);
 
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_FALSE(profile->GetPrefs()->GetBoolean(
       prefs::kSafeBrowsingReportingEnabled));

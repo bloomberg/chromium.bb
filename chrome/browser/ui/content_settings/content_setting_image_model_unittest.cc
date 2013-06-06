@@ -14,7 +14,6 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
-#include "content/public/test/test_browser_thread.h"
 #include "content/public/test/test_renderer_host.h"
 #include "net/cookies/cookie_options.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -54,14 +53,6 @@ class NotificationForwarder : public content::NotificationObserver {
 };
 
 class ContentSettingImageModelTest : public ChromeRenderViewHostTestHarness {
- public:
-  ContentSettingImageModelTest()
-      : ui_thread_(content::BrowserThread::UI, &message_loop_) {}
-
- private:
-  content::TestBrowserThread ui_thread_;
-
-  DISALLOW_COPY_AND_ASSIGN(ContentSettingImageModelTest);
 };
 
 TEST_F(ContentSettingImageModelTest, UpdateFromWebContents) {

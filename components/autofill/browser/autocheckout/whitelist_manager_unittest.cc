@@ -9,7 +9,7 @@
 #include "components/autofill/browser/autocheckout/whitelist_manager.h"
 #include "components/autofill/browser/autofill_metrics.h"
 #include "components/autofill/common/autofill_switches.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_status_code.h"
@@ -90,16 +90,15 @@ class TestWhitelistManager : public WhitelistManager {
 
 class WhitelistManagerTest : public testing::Test {
  public:
-  WhitelistManagerTest() : io_thread_(content::BrowserThread::IO) {}
+  WhitelistManagerTest()
+      : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP) {}
 
   virtual void SetUp() {
-    io_thread_.StartIOThread();
     profile_.CreateRequestContext();
   }
 
   virtual void TearDown() {
     profile_.ResetRequestContext();
-    io_thread_.Stop();
   }
 
  protected:
@@ -146,9 +145,7 @@ class WhitelistManagerTest : public testing::Test {
   scoped_ptr<TestWhitelistManager> whitelist_manager_;
 
  private:
-  base::MessageLoopForIO message_loop_;
-  // The profile's request context must be released on the IO thread.
-  content::TestBrowserThread io_thread_;
+  content::TestBrowserThreadBundle thread_bundle_;
 };
 
 TEST_F(WhitelistManagerTest, DownloadWhitelist) {

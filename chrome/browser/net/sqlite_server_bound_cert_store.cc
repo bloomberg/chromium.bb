@@ -479,7 +479,6 @@ void SQLiteServerBoundCertStore::Backend::BatchOperation(
   static const int kCommitIntervalMs = 30 * 1000;
   // Commit right away if we have more than 512 outstanding operations.
   static const size_t kCommitAfterBatchSize = 512;
-  DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::DB));
 
   // We do a full copy of the cert here, and hopefully just here.
   scoped_ptr<PendingOperation> po(new PendingOperation(op, cert));
@@ -574,7 +573,6 @@ void SQLiteServerBoundCertStore::Backend::Commit() {
 // pending commit timer that will be holding a reference on us, but if/when
 // this fires we will already have been cleaned up and it will be ignored.
 void SQLiteServerBoundCertStore::Backend::Close() {
-  DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::DB));
   // Must close the backend on the background thread.
   BrowserThread::PostTask(
       BrowserThread::DB, FROM_HERE,

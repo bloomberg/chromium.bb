@@ -18,14 +18,13 @@
 #include "chrome/browser/google_apis/task_util.h"
 #include "chrome/browser/google_apis/test_util.h"
 #include "chrome/common/url_constants.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/browser/browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/test_completion_callback.h"
 #include "net/http/http_byte_range.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-using content::BrowserThread;
 
 namespace drive {
 namespace {
@@ -96,26 +95,28 @@ class TestDelegate : public net::TestDelegate {
 
 class DriveURLRequestJobTest : public testing::Test {
  protected:
-  DriveURLRequestJobTest() : ui_thread_(BrowserThread::UI),
-                             io_thread_(BrowserThread::IO, &message_loop_) {
+  DriveURLRequestJobTest()
+      : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP) {
   }
 
   virtual ~DriveURLRequestJobTest() {
   }
 
   virtual void SetUp() OVERRIDE {
-    ui_thread_.Start();
+    // Initialize FakeDriveService.
+    fake_drive_service_.reset(new google_apis::FakeDriveService);
+    ASSERT_TRUE(fake_drive_service_->LoadResourceListForWapi(
+        "chromeos/gdata/root_feed.json"));
+    ASSERT_TRUE(fake_drive_service_->LoadAccountMetadataForWapi(
+        "chromeos/gdata/account_metadata.json"));
 
-    BrowserThread::PostTaskAndReply(
-        BrowserThread::UI,
-        FROM_HERE,
-        base::Bind(&DriveURLRequestJobTest::SetUpOnUIThread,
-                   base::Unretained(this)),
-        base::MessageLoop::QuitClosure());
-    message_loop_.Run();
+    // Initialize FakeFileSystem.
+    fake_file_system_.reset(
+        new test_util::FakeFileSystem(fake_drive_service_.get()));
+    ASSERT_TRUE(fake_file_system_->InitializeForTesting());
 
     scoped_refptr<base::SequencedWorkerPool> blocking_pool =
-        BrowserThread::GetBlockingPool();
+        content::BrowserThread::GetBlockingPool();
     test_network_delegate_.reset(new net::TestNetworkDelegate);
     test_url_request_job_factory_.reset(new TestURLRequestJobFactory(
         base::Bind(&DriveURLRequestJobTest::GetFileSystem,
@@ -134,30 +135,6 @@ class DriveURLRequestJobTest : public testing::Test {
     test_url_request_job_factory_.reset();
     test_network_delegate_.reset();
 
-    BrowserThread::PostTaskAndReply(
-        BrowserThread::UI,
-        FROM_HERE,
-        base::Bind(&DriveURLRequestJobTest::TearDownOnUIThread,
-                   base::Unretained(this)),
-        base::MessageLoop::QuitClosure());
-    message_loop_.Run();
-  }
-
-  void SetUpOnUIThread() {
-    // Initialize FakeDriveService.
-    fake_drive_service_.reset(new google_apis::FakeDriveService);
-    ASSERT_TRUE(fake_drive_service_->LoadResourceListForWapi(
-        "chromeos/gdata/root_feed.json"));
-    ASSERT_TRUE(fake_drive_service_->LoadAccountMetadataForWapi(
-        "chromeos/gdata/account_metadata.json"));
-
-    // Initialize FakeFileSystem.
-    fake_file_system_.reset(
-        new test_util::FakeFileSystem(fake_drive_service_.get()));
-    ASSERT_TRUE(fake_file_system_->InitializeForTesting());
-  }
-
-  void TearDownOnUIThread() {
     fake_file_system_.reset();
     fake_drive_service_.reset();
   }
@@ -186,7 +163,7 @@ class DriveURLRequestJobTest : public testing::Test {
             base::Bind(&google_apis::test_util::RunAndQuit),
             google_apis::test_util::CreateCopyResultCallback(
                 &error, &entry)));
-    message_loop_.Run();
+    base::MessageLoop::current()->Run();
     if (error != net::OK || !entry)
       return false;
 
@@ -202,9 +179,7 @@ class DriveURLRequestJobTest : public testing::Test {
     return true;
   }
 
-  base::MessageLoopForIO message_loop_;
-  content::TestBrowserThread ui_thread_;
-  content::TestBrowserThread io_thread_;
+  content::TestBrowserThreadBundle thread_bundle_;
 
   scoped_ptr<google_apis::FakeDriveService> fake_drive_service_;
   scoped_ptr<test_util::FakeFileSystem> fake_file_system_;

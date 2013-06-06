@@ -17,7 +17,6 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/test/test_browser_thread.h"
 #include "net/base/net_errors.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -66,8 +65,7 @@ class CaptivePortalTabHelperTest : public ChromeRenderViewHostTestHarness {
  public:
   CaptivePortalTabHelperTest()
       : tab_helper_(NULL),
-        mock_reloader_(new testing::StrictMock<MockCaptivePortalTabReloader>),
-        ui_thread_(content::BrowserThread::UI, &message_loop_) {
+        mock_reloader_(new testing::StrictMock<MockCaptivePortalTabReloader>) {
     tab_helper_.SetTabReloaderForTest(mock_reloader_);
   }
   virtual ~CaptivePortalTabHelperTest() {}
@@ -219,8 +217,6 @@ class CaptivePortalTabHelperTest : public ChromeRenderViewHostTestHarness {
 
   // Owned by |tab_helper_|.
   testing::StrictMock<MockCaptivePortalTabReloader>* mock_reloader_;
-
-  content::TestBrowserThread ui_thread_;
 
   DISALLOW_COPY_AND_ASSIGN(CaptivePortalTabHelperTest);
 };

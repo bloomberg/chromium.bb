@@ -280,9 +280,6 @@ class ProfileState {
 
 class MediaFileSystemRegistryTest : public ChromeRenderViewHostTestHarness {
  public:
-  MediaFileSystemRegistryTest();
-  virtual ~MediaFileSystemRegistryTest() {}
-
   void CreateProfileState(size_t profile_count);
 
   ProfileState* GetProfileState(size_t i);
@@ -370,13 +367,11 @@ class MediaFileSystemRegistryTest : public ChromeRenderViewHostTestHarness {
   TestMediaFileSystemContext* test_file_system_context_;
 
   // Needed for extension service & friends to work.
-  content::TestBrowserThread ui_thread_;
-  content::TestBrowserThread file_thread_;
 
 #if defined OS_CHROMEOS
   chromeos::ScopedTestDeviceSettingsService test_device_settings_service_;
   chromeos::ScopedTestCrosSettings test_cros_settings_;
-  chromeos::ScopedTestUserManager test_user_manager_;
+  scoped_ptr<chromeos::ScopedTestUserManager> test_user_manager_;
 #endif
 
 // TODO(gbillock): Eliminate windows-specific code from this test.
@@ -389,8 +384,6 @@ class MediaFileSystemRegistryTest : public ChromeRenderViewHostTestHarness {
   MockProfileSharedRenderProcessHostFactory rph_factory_;
 
   ScopedVector<ProfileState> profile_states_;
-
-  DISALLOW_COPY_AND_ASSIGN(MediaFileSystemRegistryTest);
 };
 
 namespace {
@@ -578,11 +571,6 @@ int ProfileState::GetAndClearComparisonCount() {
 // MediaFileSystemRegistryTest //
 /////////////////////////////////
 
-MediaFileSystemRegistryTest::MediaFileSystemRegistryTest()
-    : ui_thread_(content::BrowserThread::UI, base::MessageLoop::current()),
-      file_thread_(content::BrowserThread::FILE, base::MessageLoop::current()) {
-}
-
 void MediaFileSystemRegistryTest::CreateProfileState(size_t profile_count) {
   for (size_t i = 0; i < profile_count; ++i) {
     ProfileState* state = new ProfileState(&rph_factory_);
@@ -739,6 +727,7 @@ size_t MediaFileSystemRegistryTest::GetExtensionGalleriesHostCount(
 
 
 void MediaFileSystemRegistryTest::SetUp() {
+  ChromeRenderViewHostTestHarness::SetUp();
 #if defined(OS_WIN)
   test::TestPortableDeviceWatcherWin* portable_device_watcher =
       new test::TestPortableDeviceWatcherWin;
@@ -747,27 +736,23 @@ void MediaFileSystemRegistryTest::SetUp() {
   portable_device_watcher->set_use_dummy_mtp_storage_info(true);
   monitor_.reset(new test::TestStorageMonitorWin(
       mount_watcher, portable_device_watcher));
-  monitor_->Initialize(base::Bind(&base::DoNothing));
-  // TODO(gbillock): Replace this with the correct event notification
-  // on the storage monitor finishing the startup scan when that exists.
-  base::RunLoop().RunUntilIdle();
-  mount_watcher->FlushWorkerPoolForTesting();
-  base::RunLoop().RunUntilIdle();
-  mount_watcher->FlushWorkerPoolForTesting();
-  base::RunLoop().RunUntilIdle();
 #else
   monitor_.reset(new test::TestStorageMonitor());
-  monitor_->Initialize(base::Bind(&base::DoNothing));
   monitor_->MarkInitialized();
-  base::RunLoop().RunUntilIdle();
 #endif
+  base::RunLoop runloop;
+  monitor_->Initialize(runloop.QuitClosure());
+  runloop.Run();
 
-  ChromeRenderViewHostTestHarness::SetUp();
   DeleteContents();
   SetRenderProcessHostFactory(&rph_factory_);
 
   test_file_system_context_ = new TestMediaFileSystemContext(
       g_browser_process->media_file_system_registry());
+
+#if defined(OS_CHROMEOS)
+  test_user_manager_.reset(new chromeos::ScopedTestUserManager());
+#endif
 
   ASSERT_TRUE(galleries_dir_.CreateUniqueTempDir());
   empty_dir_ = galleries_dir_.path().AppendASCII("empty");
@@ -779,12 +764,17 @@ void MediaFileSystemRegistryTest::SetUp() {
 
 void MediaFileSystemRegistryTest::TearDown() {
   profile_states_.clear();
-  ChromeRenderViewHostTestHarness::TearDown();
   MediaFileSystemRegistry* registry =
       g_browser_process->media_file_system_registry();
   EXPECT_EQ(0U, GetExtensionGalleriesHostCount(registry));
-  BrowserThread::GetBlockingPool()->FlushForTesting();
-  base::MessageLoop::current()->RunUntilIdle();
+#if defined(OS_CHROMEOS)
+  test_user_manager_.reset();
+#endif
+
+#if defined(OS_WIN)
+  monitor_.reset();
+#endif
+  ChromeRenderViewHostTestHarness::TearDown();
 }
 
 ///////////

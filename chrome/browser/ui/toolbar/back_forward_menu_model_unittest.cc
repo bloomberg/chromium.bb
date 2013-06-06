@@ -23,13 +23,11 @@
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/test/test_browser_thread.h"
 #include "content/public/test/web_contents_tester.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/codec/png_codec.h"
 
-using content::BrowserThread;
 using content::WebContentsTester;
 
 namespace {
@@ -64,10 +62,6 @@ class FaviconDelegate : public ui::MenuModelDelegate {
 
 class BackFwdMenuModelTest : public ChromeRenderViewHostTestHarness {
  public:
-  BackFwdMenuModelTest()
-      : ui_thread_(BrowserThread::UI, &message_loop_) {
-  }
-
   void ValidateModel(BackForwardMenuModel* model, int history_items,
                      int chapter_stops) {
     int h = std::min(BackForwardMenuModel::kMaxHistoryItems, history_items);
@@ -108,8 +102,6 @@ class BackFwdMenuModelTest : public ChromeRenderViewHostTestHarness {
     controller().GoForward();
     WebContentsTester::For(web_contents())->CommitPendingNavigation();
   }
-
-  content::TestBrowserThread ui_thread_;
 };
 
 TEST_F(BackFwdMenuModelTest, BasicCase) {

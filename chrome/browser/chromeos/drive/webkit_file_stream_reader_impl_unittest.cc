@@ -18,13 +18,11 @@
 #include "chrome/browser/chromeos/drive/test_util.h"
 #include "chrome/browser/google_apis/fake_drive_service.h"
 #include "chrome/browser/google_apis/time_util.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/base/test_completion_callback.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-using content::BrowserThread;
 
 namespace drive {
 namespace internal {
@@ -34,41 +32,13 @@ class WebkitFileStreamReaderImplTest : public ::testing::Test {
   // Because the testee should live on IO thread, the main thread is
   // reused as IO thread, and UI thread will be run on background.
   WebkitFileStreamReaderImplTest()
-      : ui_thread_(BrowserThread::UI),
-        io_thread_(BrowserThread::IO, &message_loop_) {
+      : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP) {
   }
 
   virtual void SetUp() OVERRIDE {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-    ui_thread_.Start();
-
     worker_thread_.reset(new base::Thread("WebkitFileStreamReaderImplTest"));
     ASSERT_TRUE(worker_thread_->Start());
 
-    BrowserThread::PostTaskAndReply(
-        BrowserThread::UI,
-        FROM_HERE,
-        base::Bind(&WebkitFileStreamReaderImplTest::SetUpOnUIThread,
-                   base::Unretained(this)),
-        base::MessageLoop::QuitClosure());
-    message_loop_.Run();
-  }
-
-  virtual void TearDown() OVERRIDE {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-
-    BrowserThread::PostTaskAndReply(
-        BrowserThread::UI,
-        FROM_HERE,
-        base::Bind(&WebkitFileStreamReaderImplTest::TearDownOnUIThread,
-                   base::Unretained(this)),
-        base::MessageLoop::QuitClosure());
-    message_loop_.Run();
-
-    worker_thread_.reset();
-  }
-
-  void SetUpOnUIThread() {
     // Initialize FakeDriveService.
     fake_drive_service_.reset(new google_apis::FakeDriveService);
     fake_drive_service_->LoadResourceListForWapi(
@@ -82,9 +52,11 @@ class WebkitFileStreamReaderImplTest : public ::testing::Test {
     fake_file_system_->Initialize();
   }
 
-  void TearDownOnUIThread() {
+  virtual void TearDown() OVERRIDE {
     fake_file_system_.reset();
     fake_drive_service_.reset();
+
+    worker_thread_.reset();
   }
 
   FileSystemInterface* GetFileSystem() {
@@ -96,9 +68,7 @@ class WebkitFileStreamReaderImplTest : public ::testing::Test {
                       base::Unretained(this));
   }
 
-  base::MessageLoopForIO message_loop_;
-  content::TestBrowserThread ui_thread_;
-  content::TestBrowserThread io_thread_;
+  content::TestBrowserThreadBundle thread_bundle_;
 
   scoped_ptr<base::Thread> worker_thread_;
 

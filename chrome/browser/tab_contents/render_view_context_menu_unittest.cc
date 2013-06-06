@@ -12,9 +12,7 @@
 #include "chrome/browser/tab_contents/render_view_context_menu_test_util.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/test/test_browser_thread.h"
 #include "extensions/common/url_pattern.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -24,9 +22,6 @@ using extensions::MenuItem;
 using extensions::URLPatternSet;
 
 class RenderViewContextMenuTest : public testing::Test {
- public:
-  RenderViewContextMenuTest() { }
-
  protected:
   // Proxy defined here to minimize friend classes in RenderViewContextMenu
   static bool ExtensionContextAndPatternMatch(
@@ -36,9 +31,6 @@ class RenderViewContextMenuTest : public testing::Test {
     return RenderViewContextMenu::ExtensionContextAndPatternMatch(params,
         contexts, patterns);
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(RenderViewContextMenuTest);
 };
 
 // Generates a ContextMenuParams that matches the specified contexts.
@@ -250,9 +242,15 @@ TEST_F(RenderViewContextMenuTest, TargetIgnoredForSelectionOnImage) {
 
 class RenderViewContextMenuPrefsTest : public ChromeRenderViewHostTestHarness {
  public:
-  RenderViewContextMenuPrefsTest()
-      : browser_thread_(content::BrowserThread::UI, &message_loop_),
-        registry_(profile(), NULL) {}
+  virtual void SetUp() OVERRIDE {
+    ChromeRenderViewHostTestHarness::SetUp();
+    registry_.reset(new ProtocolHandlerRegistry(profile(), NULL));
+  }
+
+  virtual void TearDown() OVERRIDE {
+    registry_.reset();
+    ChromeRenderViewHostTestHarness::TearDown();
+  }
 
   TestRenderViewContextMenu* CreateContextMenu() {
     content::ContextMenuParams params = CreateParams(MenuItem::LINK);
@@ -262,16 +260,13 @@ class RenderViewContextMenuPrefsTest : public ChromeRenderViewHostTestHarness {
         wc, params);
     // TestingProfile (returned by profile()) does not provide a protocol
     // registry.
-    menu->protocol_handler_registry_ = &registry_;
+    menu->protocol_handler_registry_ = registry_.get();
     menu->Init();
     return menu;
   }
 
  private:
-  content::TestBrowserThread browser_thread_;
-  ProtocolHandlerRegistry registry_;
-
-  DISALLOW_COPY_AND_ASSIGN(RenderViewContextMenuPrefsTest);
+  scoped_ptr<ProtocolHandlerRegistry> registry_;
 };
 
 // Verifies when Incognito Mode is not available (disabled by policy),

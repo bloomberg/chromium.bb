@@ -62,10 +62,6 @@ class WebstoreInlineInstallerTest : public ChromeRenderViewHostTestHarness {
       const std::vector<std::string>& verified_sites);
 
  protected:
-  WebstoreInlineInstallerTest()
-      : thread_(content::BrowserThread::UI, &message_loop_) {}
-
-  content::TestBrowserThread thread_;
   scoped_ptr<content::WebContents> web_contents_;
 };
 

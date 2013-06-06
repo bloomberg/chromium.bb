@@ -28,19 +28,16 @@
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
 #endif
 
-using content::BrowserThread;
-
 namespace extensions {
 namespace {
 
 class PageActionControllerTest : public ChromeRenderViewHostTestHarness {
- public:
-  PageActionControllerTest()
-      : ui_thread_(BrowserThread::UI, base::MessageLoop::current()),
-        file_thread_(BrowserThread::FILE, base::MessageLoop::current()) {}
-
+ protected:
   virtual void SetUp() OVERRIDE {
     ChromeRenderViewHostTestHarness::SetUp();
+#if defined OS_CHROMEOS
+  test_user_manager_.reset(new chromeos::ScopedTestUserManager());
+#endif
     TabHelper::CreateForWebContents(web_contents());
     // Create an ExtensionService so the PageActionController can find its
     // extensions.
@@ -52,7 +49,13 @@ class PageActionControllerTest : public ChromeRenderViewHostTestHarness {
             &command_line, base::FilePath(), false);
   }
 
- protected:
+  virtual void TearDown() OVERRIDE {
+#if defined OS_CHROMEOS
+    test_user_manager_.reset();
+#endif
+    ChromeRenderViewHostTestHarness::TearDown();
+  }
+
   int tab_id() {
     return SessionID::IdForTab(web_contents());
   }
@@ -60,13 +63,10 @@ class PageActionControllerTest : public ChromeRenderViewHostTestHarness {
   ExtensionService* extension_service_;
 
  private:
-  content::TestBrowserThread ui_thread_;
-  content::TestBrowserThread file_thread_;
-
 #if defined OS_CHROMEOS
   chromeos::ScopedTestDeviceSettingsService test_device_settings_service_;
   chromeos::ScopedTestCrosSettings test_cros_settings_;
-  chromeos::ScopedTestUserManager test_user_manager_;
+  scoped_ptr<chromeos::ScopedTestUserManager> test_user_manager_;
 #endif
 };
 

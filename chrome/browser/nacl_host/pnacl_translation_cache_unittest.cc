@@ -9,7 +9,7 @@
 #include "base/message_loop.h"
 #include "base/run_loop.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "net/base/test_completion_callback.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -20,8 +20,7 @@ namespace pnacl_cache {
 class PNaClTranslationCacheTest : public testing::Test {
  protected:
   PNaClTranslationCacheTest()
-      : cache_thread_(BrowserThread::CACHE, &message_loop_),
-        io_thread_(BrowserThread::IO, &message_loop_) {}
+      : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP) {}
   virtual ~PNaClTranslationCacheTest() {}
   virtual void SetUp() { cache_ = new PNaClTranslationCache(); }
   virtual void TearDown() {
@@ -36,9 +35,7 @@ class PNaClTranslationCacheTest : public testing::Test {
 
  protected:
   PNaClTranslationCache* cache_;
-  base::MessageLoopForIO message_loop_;
-  content::TestBrowserThread cache_thread_;
-  content::TestBrowserThread io_thread_;
+  content::TestBrowserThreadBundle thread_bundle_;
 };
 
 TEST_F(PNaClTranslationCacheTest, StoreOneInMem) {

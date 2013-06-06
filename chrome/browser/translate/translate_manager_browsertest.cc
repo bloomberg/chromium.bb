@@ -45,7 +45,6 @@
 #include "content/public/test/mock_notification_observer.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/render_view_test.h"
-#include "content/public/test/test_browser_thread.h"
 #include "content/public/test/test_renderer_host.h"
 #include "grit/generated_resources.h"
 #include "ipc/ipc_test_sink.h"
@@ -55,7 +54,6 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebKit.h"
 #include "third_party/cld/languages/public/languages.h"
 
-using content::BrowserThread;
 using content::NavigationController;
 using content::RenderViewHostTester;
 using content::WebContents;
@@ -99,8 +97,7 @@ class TranslateManagerBrowserTest : public ChromeRenderViewHostTestHarness,
   TranslateManagerBrowserTest()
       : pref_callback_(
             base::Bind(&TranslateManagerBrowserTest::OnPreferenceChanged,
-                       base::Unretained(this))),
-        ui_thread_(BrowserThread::UI, &message_loop_) {
+                       base::Unretained(this))) {
   }
 
   // Simulates navigating to a page and getting the page contents and language
@@ -314,7 +311,6 @@ class TranslateManagerBrowserTest : public ChromeRenderViewHostTestHarness,
  private:
   content::NotificationRegistrar notification_registrar_;
   net::TestURLFetcherFactory url_fetcher_factory_;
-  content::TestBrowserThread ui_thread_;
   content::RenderViewTest::RendererWebKitPlatformSupportImplNoSandbox
       webkit_platform_support_;
 

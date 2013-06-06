@@ -7,15 +7,11 @@
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/test/test_browser_thread.h"
 #include "content/public/test/web_contents_tester.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using content::BrowserThread;
-using content::TestBrowserThread;
 using content::WebContents;
 using content::WebContentsTester;
 using extensions::ExperimentalWebAuthFlow;
@@ -80,14 +76,6 @@ class MockExperimentalWebAuthFlow : public ExperimentalWebAuthFlow {
 
 class ExperimentalWebAuthFlowTest : public ChromeRenderViewHostTestHarness {
  protected:
-  ExperimentalWebAuthFlowTest()
-      : thread_(BrowserThread::UI, &message_loop_) {
-  }
-
-  virtual void SetUp() {
-    ChromeRenderViewHostTestHarness::SetUp();
-  }
-
   virtual void TearDown() {
     // DetachDelegateAndDelete posts a task to clean up |flow_|, so it
     // has to be called before
@@ -114,7 +102,6 @@ class ExperimentalWebAuthFlowTest : public ChromeRenderViewHostTestHarness {
     flow_base()->AfterUrlLoaded();
   }
 
-  TestBrowserThread thread_;
   MockDelegate delegate_;
   scoped_ptr<MockExperimentalWebAuthFlow> flow_;
 };

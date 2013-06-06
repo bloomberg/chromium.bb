@@ -54,14 +54,12 @@ scoped_refptr<const Extension> CreateTestExtension(
 }
 
 class ActiveTabTest : public ChromeRenderViewHostTestHarness {
- public:
+ protected:
   ActiveTabTest()
       : extension(CreateTestExtension("deadbeef", true)),
         another_extension(CreateTestExtension("feedbeef", true)),
-        extension_without_active_tab(CreateTestExtension("badbeef", false)),
-        ui_thread_(BrowserThread::UI, base::MessageLoop::current()) {}
+        extension_without_active_tab(CreateTestExtension("badbeef", false)) {}
 
- protected:
   virtual void SetUp() OVERRIDE {
     ChromeRenderViewHostTestHarness::SetUp();
     TabHelper::CreateForWebContents(web_contents());
@@ -124,9 +122,6 @@ class ActiveTabTest : public ChromeRenderViewHostTestHarness {
 
   // An extension without the activeTab permission.
   scoped_refptr<const Extension> extension_without_active_tab;
-
- private:
-  content::TestBrowserThread ui_thread_;
 };
 
 TEST_F(ActiveTabTest, GrantToSinglePage) {

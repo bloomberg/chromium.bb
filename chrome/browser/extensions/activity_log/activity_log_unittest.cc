@@ -16,8 +16,7 @@
 #include "chrome/common/extensions/dom_action_types.h"
 #include "chrome/common/extensions/extension_builder.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/public/browser/browser_thread.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "sql/statement.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -36,17 +35,13 @@ const char kExtensionId[] = "abc";
 namespace extensions {
 
 class ActivityLogTest : public testing::Test {
- public:
+ protected:
   ActivityLogTest()
-      : message_loop_(base::MessageLoop::TYPE_IO),
-        ui_thread_(BrowserThread::UI, &message_loop_),
-        db_thread_(BrowserThread::DB, &message_loop_),
-        file_thread_(BrowserThread::FILE, &message_loop_),
-        io_thread_(BrowserThread::IO, &message_loop_),
+      : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
         saved_cmdline_(CommandLine::NO_PROGRAM) {
-  }
-
-  virtual void SetUp() OVERRIDE {
+#if defined OS_CHROMEOS
+  test_user_manager_.reset(new chromeos::ScopedTestUserManager());
+#endif
     CommandLine command_line(CommandLine::NO_PROGRAM);
     saved_cmdline_ = *CommandLine::ForCurrentProcess();
     profile_.reset(new TestingProfile());
@@ -60,15 +55,12 @@ class ActivityLogTest : public testing::Test {
                 &command_line, base::FilePath(), false);
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual ~ActivityLogTest() {
+#if defined OS_CHROMEOS
+    test_user_manager_.reset();
+#endif
     base::RunLoop().RunUntilIdle();
     profile_.reset(NULL);
-    base::MessageLoop::current()->PostDelayedTask(
-        FROM_HERE,
-        base::MessageLoop::QuitClosure(),
-        base::TimeDelta::FromSeconds(4));   // Don't hang on failure.
-    base::RunLoop().RunUntilIdle();
-
     // Restore the original command line and undo the affects of SetUp().
     *CommandLine::ForCurrentProcess() = saved_cmdline_;
     ActivityLog::RecomputeLoggingIsEnabled();
@@ -101,12 +93,7 @@ class ActivityLogTest : public testing::Test {
   scoped_ptr<TestingProfile> profile_;
   ExtensionService* extension_service_;
 
- private:
-  base::MessageLoop message_loop_;
-  content::TestBrowserThread ui_thread_;
-  content::TestBrowserThread db_thread_;
-  content::TestBrowserThread file_thread_;
-  content::TestBrowserThread io_thread_;
+  content::TestBrowserThreadBundle thread_bundle_;
 
   // Used to preserve a copy of the original command line.
   // The test framework will do this itself as well. However, by then,
@@ -117,7 +104,7 @@ class ActivityLogTest : public testing::Test {
 #if defined OS_CHROMEOS
   chromeos::ScopedTestDeviceSettingsService test_device_settings_service_;
   chromeos::ScopedTestCrosSettings test_cros_settings_;
-  chromeos::ScopedTestUserManager test_user_manager_;
+  scoped_ptr<chromeos::ScopedTestUserManager> test_user_manager_;
 #endif
 };
 

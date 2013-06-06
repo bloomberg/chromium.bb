@@ -100,7 +100,7 @@ class VolumeMountWatcherWin {
 
   // Key: Mass storage device mount point.
   // Value: Mass storage device metadata.
-  typedef std::map<base::string16, StorageInfo> MountPointDeviceMetadataMap;
+  typedef std::map<base::FilePath, StorageInfo> MountPointDeviceMetadataMap;
 
   // Maintain a set of device attribute check calls in-flight. Only accessed
   // on the UI thread. This is to try and prevent the same device from

@@ -11,7 +11,7 @@
 #include "chrome/common/extensions/extension_test_util.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/resource_request_info.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -23,7 +23,7 @@ using extension_test_util::LoadManifestUnchecked;
 class ExtensionWebRequestHelpersTestWithThreadsTest : public testing::Test {
  public:
   ExtensionWebRequestHelpersTestWithThreadsTest()
-      : io_thread_(content::BrowserThread::IO, &message_loop_) {}
+      : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP) {}
 
  protected:
   virtual void SetUp() OVERRIDE;
@@ -38,8 +38,7 @@ class ExtensionWebRequestHelpersTestWithThreadsTest : public testing::Test {
   scoped_refptr<ExtensionInfoMap> extension_info_map_;
 
  private:
-  base::MessageLoopForIO message_loop_;
-  content::TestBrowserThread io_thread_;
+  content::TestBrowserThreadBundle thread_bundle_;
 };
 
 void ExtensionWebRequestHelpersTestWithThreadsTest::SetUp() {

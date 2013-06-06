@@ -36,10 +36,8 @@
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using content::BrowserThread;
 using content::SiteInstance;
 using content::WebContents;
 using extensions::Extension;
@@ -117,9 +115,6 @@ class TabStripModelTestIDUserData : public base::SupportsUserData::Data {
 
 class TabStripModelTest : public ChromeRenderViewHostTestHarness {
  public:
-  TabStripModelTest() : browser_thread_(BrowserThread::UI, &message_loop_) {
-  }
-
   WebContents* CreateWebContents() {
     return WebContents::Create(WebContents::CreateParams(profile()));
   }
@@ -206,9 +201,6 @@ class TabStripModelTest : public ChromeRenderViewHostTestHarness {
     selection_model.set_active(selection_model.selected_indices()[0]);
     model->SetSelectionFromModel(selection_model);
   }
-
- private:
-  content::TestBrowserThread browser_thread_;
 };
 
 class MockTabStripModelObserver : public TabStripModelObserver {

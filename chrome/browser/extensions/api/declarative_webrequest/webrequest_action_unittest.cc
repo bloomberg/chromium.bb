@@ -22,7 +22,7 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_test_util.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -71,7 +71,7 @@ namespace keys = declarative_webrequest_constants;
 class WebRequestActionWithThreadsTest : public testing::Test {
  public:
   WebRequestActionWithThreadsTest()
-      : io_thread_(content::BrowserThread::IO, &message_loop_) {}
+      : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP) {}
 
  protected:
   virtual void SetUp() OVERRIDE;
@@ -99,8 +99,7 @@ class WebRequestActionWithThreadsTest : public testing::Test {
   scoped_refptr<ExtensionInfoMap> extension_info_map_;
 
  private:
-  base::MessageLoopForIO message_loop_;
-  content::TestBrowserThread io_thread_;
+  content::TestBrowserThreadBundle thread_bundle_;
 };
 
 void WebRequestActionWithThreadsTest::SetUp() {

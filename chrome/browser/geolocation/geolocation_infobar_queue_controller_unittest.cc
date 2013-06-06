@@ -15,37 +15,19 @@
 
 class GeolocationInfoBarQueueControllerTests
     : public ChromeRenderViewHostTestHarness {
- public:
-  GeolocationInfoBarQueueControllerTests();
-
  protected:
-  GeolocationPermissionRequestID RequestID(int bridge_id);
+  virtual void SetUp() OVERRIDE {
+    ChromeRenderViewHostTestHarness::SetUp();
+    InfoBarService::CreateForWebContents(web_contents());
+  }
 
- private:
-  // ChromeRenderViewHostTestHarness:
-  virtual void SetUp() OVERRIDE;
-
-  content::TestBrowserThread ui_thread_;
-
-  DISALLOW_COPY_AND_ASSIGN(GeolocationInfoBarQueueControllerTests);
+  GeolocationPermissionRequestID RequestID(int bridge_id) {
+    return GeolocationPermissionRequestID(
+        web_contents()->GetRenderProcessHost()->GetID(),
+        web_contents()->GetRenderViewHost()->GetRoutingID(),
+        bridge_id);
+  }
 };
-
-GeolocationInfoBarQueueControllerTests::GeolocationInfoBarQueueControllerTests()
-    : ui_thread_(content::BrowserThread::UI, base::MessageLoop::current()) {
-}
-
-GeolocationPermissionRequestID
-    GeolocationInfoBarQueueControllerTests::RequestID(int bridge_id) {
-  return GeolocationPermissionRequestID(
-      web_contents()->GetRenderProcessHost()->GetID(),
-      web_contents()->GetRenderViewHost()->GetRoutingID(),
-      bridge_id);
-}
-
-void GeolocationInfoBarQueueControllerTests::SetUp() {
-  ChromeRenderViewHostTestHarness::SetUp();
-  InfoBarService::CreateForWebContents(web_contents());
-}
 
 class ObservationCountingQueueController :
     public GeolocationInfoBarQueueController {

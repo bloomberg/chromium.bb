@@ -235,28 +235,18 @@ class TestInterstitialPageStateGuard : public TestInterstitialPage::Delegate {
 
 class WebContentsImplTest : public RenderViewHostImplTestHarness {
  public:
-  WebContentsImplTest()
-      : ui_thread_(BrowserThread::UI, &message_loop_),
-        file_user_blocking_thread_(
-            BrowserThread::FILE_USER_BLOCKING, &message_loop_),
-        io_thread_(BrowserThread::IO, &message_loop_) {
-  }
-
   virtual void SetUp() {
     RenderViewHostImplTestHarness::SetUp();
     WebUIControllerFactory::RegisterFactory(&factory_);
   }
 
   virtual void TearDown() {
-    RenderViewHostImplTestHarness::TearDown();
     WebUIControllerFactory::UnregisterFactoryForTesting(&factory_);
+    RenderViewHostImplTestHarness::TearDown();
   }
 
  private:
   WebContentsImplTestWebUIControllerFactory factory_;
-  TestBrowserThread ui_thread_;
-  TestBrowserThread file_user_blocking_thread_;
-  TestBrowserThread io_thread_;
 };
 
 class TestWebContentsObserver : public WebContentsObserver {

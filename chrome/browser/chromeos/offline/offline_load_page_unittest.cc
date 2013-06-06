@@ -8,10 +8,8 @@
 #include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/test/test_browser_thread.h"
 #include "content/public/test/web_contents_tester.h"
 
-using content::BrowserThread;
 using content::InterstitialPage;
 using content::WebContents;
 using content::WebContentsTester;
@@ -52,13 +50,6 @@ class OfflineLoadPageTest : public ChromeRenderViewHostTestHarness {
     CANCEL
   };
 
-  OfflineLoadPageTest()
-      : ui_thread_(BrowserThread::UI, base::MessageLoop::current()),
-        file_user_blocking_thread_(
-            BrowserThread::FILE_USER_BLOCKING, base::MessageLoop::current()),
-        io_thread_(BrowserThread::IO, base::MessageLoop::current()) {
-  }
-
   virtual void SetUp() {
     ChromeRenderViewHostTestHarness::SetUp();
     user_response_ = PENDING;
@@ -90,15 +81,12 @@ class OfflineLoadPageTest : public ChromeRenderViewHostTestHarness {
   UserResponse user_response() const { return user_response_; }
 
  private:
+  friend class TestOfflineLoadPage;
+
   UserResponse user_response_;
-  content::TestBrowserThread ui_thread_;
-  content::TestBrowserThread file_user_blocking_thread_;
-  content::TestBrowserThread io_thread_;
 
   // Initializes / shuts down a stub CrosLibrary.
   chromeos::ScopedStubCrosEnabler stub_cros_enabler_;
-
-  DISALLOW_COPY_AND_ASSIGN(OfflineLoadPageTest);
 };
 
 void TestOfflineLoadPage::NotifyBlockingPageComplete(bool proceed) {

@@ -21,7 +21,6 @@
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/cert_store.h"
 #include "content/public/common/ssl_status.h"
-#include "content/public/test/test_browser_thread.h"
 #include "net/cert/cert_status_flags.h"
 #include "net/cert/x509_certificate.h"
 #include "net/ssl/ssl_connection_status_flags.h"
@@ -30,7 +29,10 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using content::SSLStatus;
-using namespace testing;
+using testing::_;
+using testing::AnyNumber;
+using testing::Return;
+using testing::SetArgPointee;
 
 namespace {
 
@@ -76,7 +78,6 @@ class WebsiteSettingsTest : public ChromeRenderViewHostTestHarness {
       : website_settings_(NULL),
         mock_ui_(NULL),
         cert_id_(0),
-        browser_thread_(content::BrowserThread::UI, &message_loop_),
         url_("http://www.example.com") {
   }
 
@@ -153,7 +154,6 @@ class WebsiteSettingsTest : public ChromeRenderViewHostTestHarness {
   scoped_ptr<MockWebsiteSettingsUI> mock_ui_;
   int cert_id_;
   scoped_refptr<net::X509Certificate> cert_;
-  content::TestBrowserThread browser_thread_;
   MockCertStore cert_store_;
   GURL url_;
 };

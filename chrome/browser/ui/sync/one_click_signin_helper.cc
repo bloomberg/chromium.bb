@@ -496,7 +496,8 @@ OneClickSigninHelper::OneClickSigninHelper(content::WebContents* web_contents)
       switched_to_advanced_(false),
       original_source_(SyncPromoUI::SOURCE_UNKNOWN),
       untrusted_navigations_since_signin_visit_(0),
-      untrusted_confirmation_required_(false) {
+      untrusted_confirmation_required_(false),
+      do_not_clear_pending_email_(false) {
 }
 
 OneClickSigninHelper::~OneClickSigninHelper() {
@@ -948,12 +949,14 @@ void OneClickSigninHelper::CleanTransientState() {
   error_message_.clear();
 
   // Post to IO thread to clear pending email.
-  Profile* profile =
-      Profile::FromBrowserContext(web_contents()->GetBrowserContext());
-  content::BrowserThread::PostTask(
-      content::BrowserThread::IO, FROM_HERE,
-      base::Bind(&ClearPendingEmailOnIOThread,
-                 base::Unretained(profile->GetResourceContext())));
+  if (!do_not_clear_pending_email_) {
+    Profile* profile =
+        Profile::FromBrowserContext(web_contents()->GetBrowserContext());
+    content::BrowserThread::PostTask(
+        content::BrowserThread::IO, FROM_HERE,
+        base::Bind(&ClearPendingEmailOnIOThread,
+                   base::Unretained(profile->GetResourceContext())));
+  }
 }
 
 bool OneClickSigninHelper::OnMessageReceived(const IPC::Message& message) {
@@ -979,6 +982,10 @@ bool OneClickSigninHelper::OnFormSubmitted(const content::PasswordForm& form) {
   }
 
   return true;
+}
+
+void OneClickSigninHelper::SetDoNotClearPendingEmailForTesting() {
+  do_not_clear_pending_email_ = true;
 }
 
 void OneClickSigninHelper::NavigateToPendingEntry(

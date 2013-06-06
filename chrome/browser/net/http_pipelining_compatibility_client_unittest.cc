@@ -10,13 +10,14 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/histogram_samples.h"
 #include "base/metrics/statistics_recorder.h"
+#include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/stringprintf.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/browser/browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "net/base/net_errors.h"
 #include "net/base/test_completion_callback.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
@@ -81,11 +82,11 @@ using testing::StrEq;
 class HttpPipeliningCompatibilityClientTest : public testing::Test {
  public:
   HttpPipeliningCompatibilityClientTest()
-      : test_server_(net::SpawnedTestServer::TYPE_HTTP,
+      : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
+        test_server_(net::SpawnedTestServer::TYPE_HTTP,
                      net::SpawnedTestServer::kLocalhost,
                      base::FilePath(FILE_PATH_LITERAL(
-                         "chrome/test/data/http_pipelining"))),
-        io_thread_(BrowserThread::IO, &message_loop_) {
+                         "chrome/test/data/http_pipelining"))) {
   }
 
  protected:
@@ -109,7 +110,7 @@ class HttpPipeliningCompatibilityClientTest : public testing::Test {
 
   virtual void TearDown() OVERRIDE {
     BrowserThread::ReleaseSoon(BrowserThread::IO, FROM_HERE, context_);
-    message_loop_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
     STLDeleteValues(&original_samples_);
   }
 
@@ -204,10 +205,9 @@ class HttpPipeliningCompatibilityClientTest : public testing::Test {
     }
   }
 
-  base::MessageLoopForIO message_loop_;
+  content::TestBrowserThreadBundle thread_bundle_;
   net::SpawnedTestServer test_server_;
   net::TestURLRequestContextGetter* context_;
-  content::TestBrowserThread io_thread_;
 
  private:
   scoped_ptr<HistogramSamples> GetHistogram(const char* name) {

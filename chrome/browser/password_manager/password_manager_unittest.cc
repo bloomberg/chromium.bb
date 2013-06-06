@@ -23,13 +23,12 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using content::BrowserThread;
 using content::PasswordForm;
 using testing::_;
 using testing::DoAll;
-using ::testing::Exactly;
-using ::testing::WithArg;
-using ::testing::Return;
+using testing::Exactly;
+using testing::Return;
+using testing::WithArg;
 
 class MockPasswordManagerDelegate : public PasswordManagerDelegate {
  public:
@@ -48,11 +47,6 @@ ACTION_P(SaveToScopedPtr, scoped) {
 }
 
 class PasswordManagerTest : public ChromeRenderViewHostTestHarness {
- public:
-  PasswordManagerTest()
-      : ui_thread_(BrowserThread::UI, base::MessageLoopForUI::current()) {}
-  virtual ~PasswordManagerTest() {}
-
  protected:
   virtual void SetUp() {
     testing_profile_ = new TestingProfile;
@@ -92,9 +86,6 @@ class PasswordManagerTest : public ChromeRenderViewHostTestHarness {
   PasswordManager* manager() {
     return PasswordManager::FromWebContents(web_contents());
   }
-
-  // We create a UI thread to satisfy PasswordStore.
-  content::TestBrowserThread ui_thread_;
 
   scoped_refptr<MockPasswordStore> store_;
   MockPasswordManagerDelegate delegate_;  // Owned by manager_.

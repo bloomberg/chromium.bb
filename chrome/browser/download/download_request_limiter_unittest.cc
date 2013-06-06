@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
+#include "base/run_loop.h"
 #include "chrome/browser/download/download_request_infobar_delegate.h"
 #include "chrome/browser/download/download_request_limiter.h"
 #include "chrome/browser/infobars/infobar_service.h"
@@ -11,10 +12,8 @@
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using content::BrowserThread;
 using content::WebContents;
 
 class DownloadRequestLimiterTest : public ChromeRenderViewHostTestHarness {
@@ -24,13 +23,6 @@ class DownloadRequestLimiterTest : public ChromeRenderViewHostTestHarness {
     CANCEL,
     WAIT
   };
-
-  DownloadRequestLimiterTest()
-      : ui_thread_(BrowserThread::UI, &message_loop_),
-        file_user_blocking_thread_(
-            BrowserThread::FILE_USER_BLOCKING, &message_loop_),
-        io_thread_(BrowserThread::IO, &message_loop_) {
-  }
 
   virtual void SetUp() {
     ChromeRenderViewHostTestHarness::SetUp();
@@ -81,7 +73,7 @@ class DownloadRequestLimiterTest : public ChromeRenderViewHostTestHarness {
         "GET",  // request method
         base::Bind(&DownloadRequestLimiterTest::ContinueDownload,
                    base::Unretained(this)));
-    message_loop_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
   void OnUserGesture() {
@@ -135,10 +127,6 @@ class DownloadRequestLimiterTest : public ChromeRenderViewHostTestHarness {
 
   // Number of times ShouldAllowDownload was invoked.
   int ask_allow_count_;
-
-  content::TestBrowserThread ui_thread_;
-  content::TestBrowserThread file_user_blocking_thread_;
-  content::TestBrowserThread io_thread_;
 
  private:
   DownloadRequestInfoBarDelegate::FakeCreateCallback fake_create_callback_;
@@ -294,7 +282,7 @@ TEST_F(DownloadRequestLimiterTest,
             download_request_limiter_->GetDownloadStatus(web_contents()));
 
   AboutToNavigateRenderView();
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   ExpectAndResetCounts(0, 1, 0, __LINE__);
   ASSERT_EQ(DownloadRequestLimiter::ALLOW_ONE_DOWNLOAD,
             download_request_limiter_->GetDownloadStatus(web_contents()));
@@ -311,7 +299,7 @@ TEST_F(DownloadRequestLimiterTest,
   ExpectAndResetCounts(0, 1, 1, __LINE__);
 
   AboutToNavigateRenderView();
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   ASSERT_EQ(DownloadRequestLimiter::DOWNLOADS_NOT_ALLOWED,
             download_request_limiter_->GetDownloadStatus(web_contents()));
   CanDownload();

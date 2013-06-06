@@ -18,8 +18,9 @@ class CONTENT_EXPORT BrowserThreadImpl : public BrowserThread,
   // to construct a BrowserThreadImpl that already exists.
   explicit BrowserThreadImpl(BrowserThread::ID identifier);
 
-  // Special constructor for the main (UI) thread and unittests. We use a dummy
-  // thread here since the main thread already exists.
+  // Special constructor for the main (UI) thread and unittests. If a
+  // |message_loop| is provied, we use a dummy thread here since the main
+  // thread already exists.
   BrowserThreadImpl(BrowserThread::ID identifier,
                     base::MessageLoop* message_loop);
   virtual ~BrowserThreadImpl();

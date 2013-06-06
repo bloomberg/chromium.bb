@@ -37,8 +37,6 @@
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
 #endif
 
-using content::BrowserThread;
-
 namespace extensions {
 namespace {
 
@@ -46,8 +44,6 @@ class ScriptBadgeControllerTest : public ChromeRenderViewHostTestHarness {
  public:
   ScriptBadgeControllerTest()
       : feature_override_(FeatureSwitch::script_badges(), true),
-        ui_thread_(BrowserThread::UI, base::MessageLoop::current()),
-        file_thread_(BrowserThread::FILE, base::MessageLoop::current()),
         current_channel_(chrome::VersionInfo::CHANNEL_DEV) {}
 
   virtual void SetUp() OVERRIDE {
@@ -55,6 +51,10 @@ class ScriptBadgeControllerTest : public ChromeRenderViewHostTestHarness {
     // extensions::TabHelper's location_bar_controller field.  Do
     // not use that for testing.
     ChromeRenderViewHostTestHarness::SetUp();
+
+#if defined OS_CHROMEOS
+  test_user_manager_.reset(new chromeos::ScopedTestUserManager());
+#endif
 
     Profile* profile =
         Profile::FromBrowserContext(web_contents()->GetBrowserContext());
@@ -70,6 +70,13 @@ class ScriptBadgeControllerTest : public ChromeRenderViewHostTestHarness {
     TabHelper::CreateForWebContents(web_contents());
     script_badge_controller_ = static_cast<ScriptBadgeController*>(
         TabHelper::FromWebContents(web_contents())->location_bar_controller());
+  }
+
+  virtual void TearDown() OVERRIDE {
+#if defined OS_CHROMEOS
+    test_user_manager_.reset();
+#endif
+    ChromeRenderViewHostTestHarness::TearDown();
   }
 
  protected:
@@ -98,14 +105,12 @@ class ScriptBadgeControllerTest : public ChromeRenderViewHostTestHarness {
 
  private:
   FeatureSwitch::ScopedOverride feature_override_;
-  content::TestBrowserThread ui_thread_;
-  content::TestBrowserThread file_thread_;
   Feature::ScopedCurrentChannel current_channel_;
 
 #if defined OS_CHROMEOS
   chromeos::ScopedTestDeviceSettingsService test_device_settings_service_;
   chromeos::ScopedTestCrosSettings test_cros_settings_;
-  chromeos::ScopedTestUserManager test_user_manager_;
+  scoped_ptr<chromeos::ScopedTestUserManager> test_user_manager_;
 #endif
 };
 

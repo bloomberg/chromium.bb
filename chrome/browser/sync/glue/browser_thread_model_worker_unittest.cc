@@ -11,7 +11,7 @@
 #include "base/threading/thread.h"
 #include "base/timer.h"
 #include "chrome/browser/sync/glue/browser_thread_model_worker.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::OneShotTimer;
@@ -27,8 +27,8 @@ class SyncBrowserThreadModelWorkerTest : public testing::Test {
  public:
   SyncBrowserThreadModelWorkerTest() :
       did_do_work_(false),
-      db_thread_(BrowserThread::DB),
-      io_thread_(BrowserThread::IO, &io_loop_),
+      thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP |
+                     content::TestBrowserThreadBundle::REAL_DB_THREAD),
       weak_factory_(this) {}
 
   bool did_do_work() { return did_do_work_; }
@@ -73,13 +73,11 @@ class SyncBrowserThreadModelWorkerTest : public testing::Test {
 
  protected:
   virtual void SetUp() {
-    db_thread_.Start();
     worker_ = new DatabaseModelWorker(NULL);
   }
 
   virtual void Teardown() {
     worker_ = NULL;
-    db_thread_.Stop();
   }
 
  private:
@@ -87,9 +85,7 @@ class SyncBrowserThreadModelWorkerTest : public testing::Test {
   scoped_refptr<BrowserThreadModelWorker> worker_;
   OneShotTimer<SyncBrowserThreadModelWorkerTest> timer_;
 
-  content::TestBrowserThread db_thread_;
-  base::MessageLoopForIO io_loop_;
-  content::TestBrowserThread io_thread_;
+  content::TestBrowserThreadBundle thread_bundle_;
 
   base::WeakPtrFactory<SyncBrowserThreadModelWorkerTest> weak_factory_;
 };

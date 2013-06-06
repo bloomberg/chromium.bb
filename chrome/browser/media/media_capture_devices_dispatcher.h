@@ -91,6 +91,11 @@ class MediaCaptureDevicesDispatcher : public content::MediaObserver {
                           bool video,
                           content::MediaStreamDevices* devices);
 
+  // Unittests that do not require actual device enumeration should call this
+  // API on the singleton. It is safe to call this multiple times on the
+  // signleton.
+  void DisableDeviceEnumerationForTesting();
+
   // Overridden from content::MediaObserver:
   virtual void OnAudioCaptureDevicesChanged(
       const content::MediaStreamDevices& devices) OVERRIDE;
@@ -149,6 +154,9 @@ class MediaCaptureDevicesDispatcher : public content::MediaObserver {
   // Flag to indicate if device enumeration has been done/doing.
   // Only accessed on UI thread.
   bool devices_enumerated_;
+
+  // Flag used by unittests to disable device enumeration.
+  bool is_device_enumeration_disabled_;
 
   scoped_refptr<MediaStreamCaptureIndicator> media_stream_capture_indicator_;
 

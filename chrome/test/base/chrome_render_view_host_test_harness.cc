@@ -21,8 +21,7 @@
 using content::RenderViewHostTester;
 using content::RenderViewHostTestHarness;
 
-ChromeRenderViewHostTestHarness::ChromeRenderViewHostTestHarness()
-    : RenderViewHostTestHarness() {
+ChromeRenderViewHostTestHarness::ChromeRenderViewHostTestHarness() {
 }
 
 ChromeRenderViewHostTestHarness::~ChromeRenderViewHostTestHarness() {

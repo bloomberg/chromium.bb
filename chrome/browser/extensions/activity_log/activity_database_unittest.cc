@@ -38,14 +38,12 @@
 namespace extensions {
 
 class ActivityDatabaseTest : public ChromeRenderViewHostTestHarness {
- public:
-  ActivityDatabaseTest()
-      : ui_thread_(BrowserThread::UI, base::MessageLoop::current()),
-        db_thread_(BrowserThread::DB, base::MessageLoop::current()),
-        file_thread_(BrowserThread::FILE, base::MessageLoop::current()) {}
-
+ protected:
   virtual void SetUp() OVERRIDE {
     ChromeRenderViewHostTestHarness::SetUp();
+#if defined OS_CHROMEOS
+    test_user_manager_.reset(new chromeos::ScopedTestUserManager());
+#endif
     CommandLine command_line(CommandLine::NO_PROGRAM);
     profile_ =
         Profile::FromBrowserContext(web_contents()->GetBrowserContext());
@@ -56,10 +54,11 @@ class ActivityDatabaseTest : public ChromeRenderViewHostTestHarness {
         switches::kEnableExtensionActivityLogTesting);
   }
 
-  virtual ~ActivityDatabaseTest() {
-    base::MessageLoop::current()->PostTask(FROM_HERE,
-                                           base::MessageLoop::QuitClosure());
-    base::MessageLoop::current()->Run();
+  virtual void TearDown() OVERRIDE {
+#if defined OS_CHROMEOS
+    test_user_manager_.reset();
+#endif
+    ChromeRenderViewHostTestHarness::TearDown();
   }
 
  protected:
@@ -67,15 +66,11 @@ class ActivityDatabaseTest : public ChromeRenderViewHostTestHarness {
   Profile* profile_;
 
  private:
-  content::TestBrowserThread ui_thread_;
-  content::TestBrowserThread db_thread_;
-  content::TestBrowserThread file_thread_;
-
 #if defined OS_CHROMEOS
   chromeos::ScopedStubCrosEnabler stub_cros_enabler_;
   chromeos::ScopedTestDeviceSettingsService test_device_settings_service_;
   chromeos::ScopedTestCrosSettings test_cros_settings_;
-  chromeos::ScopedTestUserManager test_user_manager_;
+  scoped_ptr<chromeos::ScopedTestUserManager> test_user_manager_;
 #endif
 
 };

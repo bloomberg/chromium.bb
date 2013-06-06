@@ -9,7 +9,6 @@
 #include "base/path_service.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
-#include "content/browser/browser_thread_impl.h"
 #include "content/browser/download/save_package.h"
 #include "content/browser/renderer_host/test_render_view_host.h"
 #include "content/test/net/url_request_mock_http_job.h"
@@ -68,9 +67,6 @@ bool HasOrdinalNumber(const base::FilePath::StringType& filename) {
 
 class SavePackageTest : public RenderViewHostImplTestHarness {
  public:
-  SavePackageTest() : browser_thread_(BrowserThread::UI, &message_loop_) {
-  }
-
   bool GetGeneratedFilename(bool need_success_generate_filename,
                             const std::string& disposition,
                             const std::string& url,
@@ -123,16 +119,12 @@ class SavePackageTest : public RenderViewHostImplTestHarness {
   }
 
  private:
-  BrowserThreadImpl browser_thread_;
-
   // SavePackage for successfully generating file name.
   scoped_refptr<SavePackage> save_package_success_;
   // SavePackage for failed generating file name.
   scoped_refptr<SavePackage> save_package_fail_;
 
   base::ScopedTempDir temp_dir_;
-
-  DISALLOW_COPY_AND_ASSIGN(SavePackageTest);
 };
 
 static const struct {

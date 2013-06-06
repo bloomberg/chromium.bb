@@ -15,7 +15,6 @@
 #include "content/public/browser/host_zoom_map.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/common/frame_navigate_params.h"
-#include "content/public/test/test_browser_thread.h"
 #include "content/public/test/test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -27,9 +26,6 @@ class TestZoomObserver : public ZoomObserver {
 
 class ZoomControllerTest : public ChromeRenderViewHostTestHarness {
  public:
-  ZoomControllerTest()
-      : ui_thread_(content::BrowserThread::UI, base::MessageLoop::current()) {}
-
   virtual void SetUp() OVERRIDE {
     ChromeRenderViewHostTestHarness::SetUp();
     zoom_controller_.reset(new ZoomController(web_contents()));
@@ -44,10 +40,6 @@ class ZoomControllerTest : public ChromeRenderViewHostTestHarness {
  protected:
   scoped_ptr<ZoomController> zoom_controller_;
   TestZoomObserver zoom_observer_;
-
- private:
-  content::TestBrowserThread ui_thread_;
-  DISALLOW_COPY_AND_ASSIGN(ZoomControllerTest);
 };
 
 TEST_F(ZoomControllerTest, DidNavigateMainFrame) {

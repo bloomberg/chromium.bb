@@ -228,10 +228,6 @@ URLRequest::URLRequest(const GURL& url,
   DCHECK(base::MessageLoop::current())
       << "The current base::MessageLoop must exist";
 
-  DCHECK(base::MessageLoop::current()->IsType(base::MessageLoop::TYPE_IO))
-      << ""
-         "The current base::MessageLoop must be TYPE_IO";
-
   CHECK(context);
   context->url_requests()->insert(this);
 
@@ -267,10 +263,6 @@ URLRequest::URLRequest(const GURL& url,
   // Sanity check out environment.
   DCHECK(base::MessageLoop::current())
       << "The current base::MessageLoop must exist";
-
-  DCHECK(base::MessageLoop::current()->IsType(base::MessageLoop::TYPE_IO))
-      << ""
-         "The current base::MessageLoop must be TYPE_IO";
 
   CHECK(context);
   context->url_requests()->insert(this);

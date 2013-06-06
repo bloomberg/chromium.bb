@@ -196,6 +196,12 @@ class OneClickSigninHelper
   // Clear all data member of the helper, except for the error.
   void CleanTransientState();
 
+  // Unitests that use a TestingProfile should call this.
+  // Otherwise, clearing the pending e-mail crashes because the code expects
+  // a real ResourceContext rather than the MockResourceContext a
+  // TestingProfile provides.
+  void SetDoNotClearPendingEmailForTesting();
+
   // Grab Gaia password if available.
   bool OnFormSubmitted(const content::PasswordForm& form);
 
@@ -241,6 +247,10 @@ class OneClickSigninHelper
   // non-google-controlled domain).
   // This is set to true if at least one such URL is detected.
   bool untrusted_confirmation_required_;
+
+  // Allows unittests to avoid accessing the ResourceContext for clearing a
+  // pending e-mail.
+  bool do_not_clear_pending_email_;
 
   DISALLOW_COPY_AND_ASSIGN(OneClickSigninHelper);
 };
