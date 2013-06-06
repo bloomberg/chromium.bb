@@ -11,6 +11,7 @@
 #include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/file_cache.h"
 #include "chrome/browser/chromeos/drive/file_system_interface.h"
+#include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;
@@ -312,6 +313,13 @@ void SyncClient::OnFetchFileComplete(const std::string& resource_id,
              << local_path.value();
   } else {
     switch (error) {
+      case FILE_ERROR_ABORT:
+        // If user cancels download, unpin the file so that we do not sync the
+        // file again.
+        cache_->UnpinOnUIThread(resource_id,
+                                std::string(),
+                                base::Bind(&util::EmptyFileOperationCallback));
+        break;
       case FILE_ERROR_NO_CONNECTION:
         // Re-queue the task so that we'll retry once the connection is back.
         AddTaskToQueue(FETCH, resource_id);

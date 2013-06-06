@@ -366,8 +366,7 @@ FileError GDataToFileError(google_apis::GDataErrorCode status) {
       return FILE_ERROR_NOT_FOUND;
     case google_apis::HTTP_NOT_IMPLEMENTED:
       return FILE_ERROR_INVALID_OPERATION;
-    case google_apis::GDATA_PARSE_ERROR:
-    case google_apis::GDATA_FILE_ERROR:
+    case google_apis::GDATA_CANCELLED:
       return FILE_ERROR_ABORT;
     case google_apis::GDATA_NO_CONNECTION:
       return FILE_ERROR_NO_CONNECTION;

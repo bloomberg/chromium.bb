@@ -28,6 +28,10 @@ namespace internal {
 
 namespace {
 
+// SyncClientTestFileSystem will return FILE_ERROR_ABORT when requests are made
+// with this resource ID.
+const char kResourceIdToBeCancelled[] = "resource_id_to_be_cancelled";
+
 // Test file system for checking the behavior of SyncClient.
 // It just records the arguments GetFileByResourceId and UpdateFileByResourceId.
 class SyncClientTestFileSystem : public DummyFileSystem {
@@ -38,6 +42,11 @@ class SyncClientTestFileSystem : public DummyFileSystem {
       const ClientContext& context,
       const GetFileCallback& get_file_callback,
       const google_apis::GetContentCallback& get_content_callback) OVERRIDE {
+    if (resource_id == kResourceIdToBeCancelled) {
+      get_file_callback.Run(FILE_ERROR_ABORT, base::FilePath(),
+                            scoped_ptr<ResourceEntry>());
+      return;
+    }
     downloaded_.insert(resource_id);
     get_file_callback.Run(
         FILE_ERROR_OK,
@@ -240,6 +249,26 @@ TEST_F(SyncClientTest, OnCachePinned) {
   EXPECT_EQ(1U, test_file_system_->downloaded().size());
   EXPECT_EQ(1U, test_file_system_->downloaded().count(
       "resource_id_not_fetched_foo"));
+}
+
+TEST_F(SyncClientTest, OnCachePinnedAndCancelled) {
+  // Trigger fetching of a file which results in cancellation.
+  FileError error = FILE_ERROR_FAILED;
+  cache_->PinOnUIThread(
+      kResourceIdToBeCancelled, std::string(),
+      google_apis::test_util::CreateCopyResultCallback(&error));
+  google_apis::test_util::RunBlockingPoolTask();
+  EXPECT_EQ(FILE_ERROR_OK, error);
+
+  // The file should be unpinned if the user wants the download to be cancelled.
+  EXPECT_EQ(0U, test_file_system_->downloaded().size());
+  FileCacheEntry cache_entry;
+  bool found = true;
+  cache_->GetCacheEntryOnUIThread(
+      kResourceIdToBeCancelled, std::string(),
+      google_apis::test_util::CreateCopyResultCallback(&found, &cache_entry));
+  google_apis::test_util::RunBlockingPoolTask();
+  EXPECT_FALSE(found);
 }
 
 TEST_F(SyncClientTest, OnCacheUnpinned) {

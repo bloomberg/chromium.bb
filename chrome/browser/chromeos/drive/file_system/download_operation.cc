@@ -201,18 +201,6 @@ FileError UpdateLocalStateForDownloadFile(
     base::FilePath* cache_file_path) {
   DCHECK(cache);
 
-  // If user cancels download of a pinned-but-not-fetched file, mark file as
-  // unpinned so that we do not sync the file again.
-  if (gdata_error == google_apis::GDATA_CANCELLED) {
-    FileCacheEntry cache_entry;
-    if (cache->GetCacheEntry(resource_id, md5, &cache_entry) &&
-        cache_entry.is_pinned()) {
-      // TODO(hshi): http://crbug.com/127138 notify when file properties change.
-      // This allows file manager to clear the "Available offline" checkbox.
-      cache->Unpin(resource_id, md5);
-    }
-  }
-
   FileError error = util::GDataToFileError(gdata_error);
   if (error != FILE_ERROR_OK) {
     file_util::Delete(downloaded_file_path, false /* recursive */);
