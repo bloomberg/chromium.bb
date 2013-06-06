@@ -1,4 +1,4 @@
-.# TEMPORARY overrides of
+# TEMPORARY overrides of
 # src/third_party/WebKit/LayoutTests/platform/chromium/test_expectations.txt
 # that are associated with changes to the Skia code.
 #
