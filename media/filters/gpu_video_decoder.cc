@@ -171,7 +171,7 @@ GpuVideoDecoder::GpuVideoDecoder(
       decoder_texture_target_(0),
       next_picture_buffer_id_(0),
       next_bitstream_buffer_id_(0),
-      available_pictures_(-1) {
+      available_pictures_(0) {
   DCHECK(factories_.get());
 }
 
@@ -295,12 +295,19 @@ void GpuVideoDecoder::SetVDA(
 }
 
 void GpuVideoDecoder::DestroyTextures() {
-  for (std::map<int32, PictureBuffer>::iterator it =
-          picture_buffers_in_decoder_.begin();
-          it != picture_buffers_in_decoder_.end(); ++it) {
+  std::map<int32, PictureBuffer>::iterator it;
+
+  for (it = assigned_picture_buffers_.begin();
+       it != assigned_picture_buffers_.end(); ++it) {
     factories_->DeleteTexture(it->second.texture_id());
   }
-  picture_buffers_in_decoder_.clear();
+  assigned_picture_buffers_.clear();
+
+  for (it = dismissed_picture_buffers_.begin();
+       it != dismissed_picture_buffers_.end(); ++it) {
+    factories_->DeleteTexture(it->second.texture_id());
+  }
+  dismissed_picture_buffers_.clear();
 }
 
 static void DestroyVDAWithClientProxy(
@@ -494,21 +501,22 @@ void GpuVideoDecoder::ProvidePictureBuffers(uint32 count,
     NotifyError(VideoDecodeAccelerator::PLATFORM_FAILURE);
     return;
   }
+  DCHECK_EQ(count, texture_ids.size());
 
   if (!vda_)
     return;
-
-  CHECK_EQ(available_pictures_, -1);
-  available_pictures_ = count;
 
   std::vector<PictureBuffer> picture_buffers;
   for (size_t i = 0; i < texture_ids.size(); ++i) {
     picture_buffers.push_back(PictureBuffer(
         next_picture_buffer_id_++, size, texture_ids[i]));
-    bool inserted = picture_buffers_in_decoder_.insert(std::make_pair(
+    bool inserted = assigned_picture_buffers_.insert(std::make_pair(
         picture_buffers.back().id(), picture_buffers.back())).second;
     DCHECK(inserted);
   }
+
+  available_pictures_ += count;
+
   vda_loop_proxy_->PostTask(FROM_HERE, base::Bind(
       &VideoDecodeAccelerator::AssignPictureBuffers, weak_vda_,
       picture_buffers));
@@ -518,21 +526,37 @@ void GpuVideoDecoder::DismissPictureBuffer(int32 id) {
   DCHECK(gvd_loop_proxy_->BelongsToCurrentThread());
 
   std::map<int32, PictureBuffer>::iterator it =
-      picture_buffers_in_decoder_.find(id);
-  if (it == picture_buffers_in_decoder_.end()) {
+      assigned_picture_buffers_.find(id);
+  if (it == assigned_picture_buffers_.end()) {
     NOTREACHED() << "Missing picture buffer: " << id;
     return;
   }
-  factories_->DeleteTexture(it->second.texture_id());
-  picture_buffers_in_decoder_.erase(it);
+
+  PictureBuffer buffer_to_dismiss = it->second;
+  assigned_picture_buffers_.erase(it);
+
+  std::set<int32>::iterator at_display_it =
+      picture_buffers_at_display_.find(id);
+
+  if (at_display_it == picture_buffers_at_display_.end()) {
+    // We can delete the texture immediately as it's not being displayed.
+    factories_->DeleteTexture(buffer_to_dismiss.texture_id());
+    CHECK_GT(available_pictures_, 0);
+    --available_pictures_;
+  } else {
+    // Texture in display. Postpone deletion until after it's returned to us.
+    bool inserted = dismissed_picture_buffers_.insert(std::make_pair(
+        id, buffer_to_dismiss)).second;
+    DCHECK(inserted);
+  }
 }
 
 void GpuVideoDecoder::PictureReady(const media::Picture& picture) {
   DCHECK(gvd_loop_proxy_->BelongsToCurrentThread());
 
   std::map<int32, PictureBuffer>::iterator it =
-      picture_buffers_in_decoder_.find(picture.picture_buffer_id());
-  if (it == picture_buffers_in_decoder_.end()) {
+      assigned_picture_buffers_.find(picture.picture_buffer_id());
+  if (it == assigned_picture_buffers_.end()) {
     NOTREACHED() << "Missing picture buffer: " << picture.picture_buffer_id();
     NotifyError(VideoDecodeAccelerator::PLATFORM_FAILURE);
     return;
@@ -557,7 +581,10 @@ void GpuVideoDecoder::PictureReady(const media::Picture& picture) {
               &GpuVideoDecoder::ReusePictureBuffer, weak_this_,
               picture.picture_buffer_id()))));
   CHECK_GT(available_pictures_, 0);
-  available_pictures_--;
+  --available_pictures_;
+  bool inserted =
+      picture_buffers_at_display_.insert(picture.picture_buffer_id()).second;
+  DCHECK(inserted);
 
   EnqueueFrameAndTriggerFrameDelivery(frame);
 }
@@ -585,11 +612,28 @@ void GpuVideoDecoder::EnqueueFrameAndTriggerFrameDelivery(
 
 void GpuVideoDecoder::ReusePictureBuffer(int64 picture_buffer_id) {
   DCHECK(gvd_loop_proxy_->BelongsToCurrentThread());
-  CHECK_GE(available_pictures_, 0);
-  available_pictures_++;
+  CHECK(!picture_buffers_at_display_.empty());
+
+  size_t num_erased = picture_buffers_at_display_.erase(picture_buffer_id);
+  DCHECK(num_erased);
+
+  std::map<int32, PictureBuffer>::iterator it =
+      assigned_picture_buffers_.find(picture_buffer_id);
+
+  if (it == assigned_picture_buffers_.end()) {
+    // This picture was dismissed while in display, so we postponed deletion.
+    it = dismissed_picture_buffers_.find(picture_buffer_id);
+    DCHECK(it != dismissed_picture_buffers_.end());
+    factories_->DeleteTexture(it->second.texture_id());
+    dismissed_picture_buffers_.erase(it);
+    return;
+  }
+
+  ++available_pictures_;
 
   if (!vda_)
     return;
+
   vda_loop_proxy_->PostTask(FROM_HERE, base::Bind(
       &VideoDecodeAccelerator::ReusePictureBuffer, weak_vda_,
       picture_buffer_id));
