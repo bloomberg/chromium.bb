@@ -18,8 +18,6 @@
 #include "ui/gfx/skia_util.h"
 
 namespace {
-// FF0000FF is 100% alpha and max green.(A, R, B, G)
-uint32 kMaxGreen = 0xFF0000FF;
 const bool kAsyncCall = true;
 const bool kSyncCall = false;
 }  // namespace
@@ -36,7 +34,9 @@ class NotificationBitmapFetcherTestDelegate
   virtual ~NotificationBitmapFetcherTestDelegate() {}
 
   // Method inherited from NotificationBitmapFetcherDelegate.
-  virtual void OnFetchComplete(const SkBitmap* bitmap) OVERRIDE {
+  virtual void OnFetchComplete(const GURL url,
+                               const SkBitmap* bitmap) OVERRIDE {
+    url_ = url;
     if (NULL != bitmap) {
       success_ = true;
       bitmap->deepCopyTo(&bitmap_, bitmap->getConfig());
@@ -48,10 +48,12 @@ class NotificationBitmapFetcherTestDelegate
     }
   }
 
+  GURL url() const { return url_; }
   bool success() const { return success_; }
   const SkBitmap& bitmap() const { return bitmap_; }
 
  private:
+  GURL url_;
   bool success_;
   bool async_;
   SkBitmap bitmap_;
@@ -75,8 +77,7 @@ IN_PROC_BROWSER_TEST_F(NotificationBitmapFetcherBrowserTest,
   // Put a real bitmap into "image".  2x2 bitmap of green 32 bit pixels.
   image.setConfig(SkBitmap::kARGB_8888_Config, 2, 2);
   image.allocPixels();
-  SkColor c = kMaxGreen;
-  image.eraseColor(c);
+  image.eraseColor(SK_ColorGREEN);
 
   // Encode the bits as a PNG.
   std::vector<unsigned char> compressed;
@@ -91,12 +92,12 @@ IN_PROC_BROWSER_TEST_F(NotificationBitmapFetcherBrowserTest,
   NotificationBitmapFetcher fetcher(url, &delegate);
 
   scoped_ptr<net::URLFetcher> url_fetcher(new net::FakeURLFetcher(
-      url, &fetcher, image_string, /*success=*/true));
+      url, &fetcher, image_string, true));
   fetcher.SetURLFetcherForTest(url_fetcher.Pass());
 
   // We expect that the image decoder will get called and return
   // an image in a callback to OnImageDecoded().
-  fetcher.Start();
+  fetcher.Start(NULL);
 
   // Blocks until test delegate is notified via a callback.
   content::RunMessageLoop();
@@ -116,8 +117,7 @@ IN_PROC_BROWSER_TEST_F(NotificationBitmapFetcherBrowserTest,
   // Put a real bitmap into "image".  2x2 bitmap of green 16 bit pixels.
   image.setConfig(SkBitmap::kARGB_8888_Config, 2, 2);
   image.allocPixels();
-  SkColor c = kMaxGreen;
-  image.eraseColor(c);
+  image.eraseColor(SK_ColorGREEN);
 
   NotificationBitmapFetcherTestDelegate delegate(kSyncCall);
 
@@ -144,10 +144,10 @@ IN_PROC_BROWSER_TEST_F(NotificationBitmapFetcherBrowserTest,
   NotificationBitmapFetcher fetcher(url, &delegate);
 
   scoped_ptr<net::URLFetcher> url_fetcher(new net::FakeURLFetcher(
-      url, &fetcher, std::string(), /*success=*/ false));
+      url, &fetcher, std::string(), false));
   fetcher.SetURLFetcherForTest(url_fetcher.Pass());
 
-  fetcher.Start();
+  fetcher.Start(NULL);
 
   // Blocks until test delegate is notified via a callback.
   content::RunMessageLoop();
@@ -161,10 +161,10 @@ IN_PROC_BROWSER_TEST_F(NotificationBitmapFetcherBrowserTest,
   NotificationBitmapFetcherTestDelegate delegate(kAsyncCall);
   NotificationBitmapFetcher fetcher(url, &delegate);
   scoped_ptr<net::URLFetcher> url_fetcher(new net::FakeURLFetcher(
-      url, &fetcher, std::string("Not a real bitmap"), /*success=*/ true));
+      url, &fetcher, std::string("Not a real bitmap"), true));
   fetcher.SetURLFetcherForTest(url_fetcher.Pass());
 
-  fetcher.Start();
+  fetcher.Start(NULL);
 
   // Blocks until test delegate is notified via a callback.
   content::RunMessageLoop();

@@ -251,7 +251,9 @@ class ChromeNotifierServiceTest : public testing::Test {
   virtual ~ChromeNotifierServiceTest() {}
 
   // Methods from testing::Test.
-  virtual void SetUp() {}
+  virtual void SetUp() {
+    ChromeNotifierService::set_avoid_bitmap_fetching_for_test(true);
+  }
   virtual void TearDown() {}
 
   TestChangeProcessor* processor() {
@@ -571,6 +573,7 @@ TEST_F(ChromeNotifierServiceTest, ProcessSyncChangesEmptyModel) {
   // We initially have no data.
   StubNotificationUIManager notification_manager;
   ChromeNotifierService notifier(NULL, &notification_manager);
+  notifier.set_avoid_bitmap_fetching_for_test(true);
 
   notifier.MergeDataAndStartSyncing(
       SYNCED_NOTIFICATIONS,
@@ -602,6 +605,7 @@ TEST_F(ChromeNotifierServiceTest, ProcessSyncChangesEmptyModel) {
 TEST_F(ChromeNotifierServiceTest, LocalRemoteBothNonEmptyNoOverlap) {
   StubNotificationUIManager notification_manager;
   ChromeNotifierService notifier(NULL, &notification_manager);
+  notifier.set_avoid_bitmap_fetching_for_test(true);
 
   // Create some local fake data.
   scoped_ptr<SyncedNotification> n1(CreateNotification(
@@ -665,6 +669,7 @@ TEST_F(ChromeNotifierServiceTest, LocalRemoteBothNonEmptyNoOverlap) {
 TEST_F(ChromeNotifierServiceTest, ModelAssocBothNonEmptyReadMismatch1) {
   StubNotificationUIManager notification_manager;
   ChromeNotifierService notifier(NULL, &notification_manager);
+  notifier.set_avoid_bitmap_fetching_for_test(true);
 
   // Create some local fake data.
   scoped_ptr<SyncedNotification> n1(CreateNotification(
@@ -705,6 +710,7 @@ TEST_F(ChromeNotifierServiceTest, ModelAssocBothNonEmptyReadMismatch1) {
 TEST_F(ChromeNotifierServiceTest, ModelAssocBothNonEmptyReadMismatch2) {
   StubNotificationUIManager notification_manager;
   ChromeNotifierService notifier(NULL, &notification_manager);
+  notifier.set_avoid_bitmap_fetching_for_test(true);
 
   // Create some local fake data.
   scoped_ptr<SyncedNotification> n1(CreateNotification(

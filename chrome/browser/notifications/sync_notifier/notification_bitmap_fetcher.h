@@ -15,13 +15,17 @@ namespace net {
 class URLFetcher;
 }  // namespace net
 
+class Profile;
+
 namespace notifier {
 
 // A delegate interface for users of NotificationBitmapFetcher.
 class NotificationBitmapFetcherDelegate {
  public:
-  // This will be called when the bitmap has been fetched, successfully or not.
-  virtual void OnFetchComplete(const SkBitmap* bitmap) = 0;
+  // This will be called when the bitmap has been requested, whether or not the
+  // request succeeds.  |url| is the URL that was originally fetched so we can
+  // match up the bitmap with a specific request.
+  virtual void OnFetchComplete(const GURL url, const SkBitmap* bitmap) = 0;
 
  protected:
   virtual ~NotificationBitmapFetcherDelegate() {}
@@ -36,9 +40,11 @@ class NotificationBitmapFetcher
       NotificationBitmapFetcherDelegate* delegate);
   virtual ~NotificationBitmapFetcher();
 
+  GURL url() const { return url_; }
+
   // Start fetching the URL with the fetcher.  The operation will be continued
   // in the OnURLFetchComplete callback.
-  void Start();
+  void Start(Profile* profile);
 
   // Methods inherited from URLFetcherDelegate
 

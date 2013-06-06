@@ -5,16 +5,20 @@
 #include <string>
 
 #include "base/memory/scoped_ptr.h"
+#include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/notifications/notification_test_util.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/browser/notifications/sync_notifier/synced_notification.h"
 #include "chrome/browser/profiles/profile.h"
+#include "content/public/browser/browser_thread.h"
+#include "content/public/test/test_browser_thread.h"
 #include "sync/api/sync_data.h"
 #include "sync/protocol/sync.pb.h"
 #include "sync/protocol/synced_notification_specifics.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/message_center/message_center_util.h"
 #include "ui/message_center/notification_types.h"
 
@@ -24,7 +28,6 @@ using sync_pb::EntitySpecifics;
 using sync_pb::SyncedNotificationSpecifics;
 
 namespace {
-
 const uint64 kFakeCreationTime = 42;
 const int kProtobufPriority = static_cast<int>(
     sync_pb::CoalescedSyncedNotification_Priority_LOW);
@@ -76,6 +79,8 @@ const sync_pb::CoalescedSyncedNotification_ReadState kUnread =
 const sync_pb::CoalescedSyncedNotification_ReadState kDismissed =
     sync_pb::CoalescedSyncedNotification_ReadState_DISMISSED;
 }  // namespace
+
+namespace notifier {
 
 // Stub out the NotificationUIManager for unit testing.
 class StubNotificationUIManager : public NotificationUIManager {
@@ -144,7 +149,8 @@ class StubNotificationUIManager : public NotificationUIManager {
 
 class SyncedNotificationTest : public testing::Test {
  public:
-  SyncedNotificationTest() {}
+  SyncedNotificationTest()
+      : ui_thread_(content::BrowserThread::UI, &message_loop_)   {}
   virtual ~SyncedNotificationTest() {}
 
   // Methods from testing::Test.
@@ -421,6 +427,9 @@ class SyncedNotificationTest : public testing::Test {
   }
 
  private:
+  base::MessageLoopForIO message_loop_;
+  content::TestBrowserThread ui_thread_;
+
   DISALLOW_COPY_AND_ASSIGN(SyncedNotificationTest);
 };
 
@@ -609,4 +618,80 @@ TEST_F(SyncedNotificationTest, ShowTest) {
   EXPECT_EQ(UTF8ToUTF16(kContainedMessage3), notification.items()[2].message);
 }
 
+TEST_F(SyncedNotificationTest, AddBitmapToFetchQueueTest) {
+  scoped_ptr<SyncedNotification> notification6;
+  notification6.reset(new SyncedNotification(sync_data1_));
+
+  // Add two bitmaps to the queue.
+  notification6->AddBitmapToFetchQueue(GURL(kIconUrl1));
+  notification6->AddBitmapToFetchQueue(GURL(kIconUrl2));
+
+  EXPECT_EQ(2, notification6->active_fetcher_count_);
+  EXPECT_EQ(GURL(kIconUrl1), notification6->fetchers_[0]->url());
+  EXPECT_EQ(GURL(kIconUrl2), notification6->fetchers_[1]->url());
+
+  notification6->AddBitmapToFetchQueue(GURL(kIconUrl2));
+  EXPECT_EQ(2, notification6->active_fetcher_count_);
+}
+
+TEST_F(SyncedNotificationTest, OnFetchCompleteTest) {
+
+  if (!UseRichNotifications())
+    return;
+
+  StubNotificationUIManager notification_manager;
+
+  // Set up the internal state that FetchBitmaps() would have set.
+  notification1_->notification_manager_ = &notification_manager;
+
+  // Add two bitmaps to the queue for us to match up.
+  notification1_->AddBitmapToFetchQueue(GURL(kIconUrl1));
+  notification1_->AddBitmapToFetchQueue(GURL(kIconUrl2));
+  EXPECT_EQ(2, notification1_->active_fetcher_count_);
+
+  // Put some realistic looking bitmap data into the url_fetcher.
+  SkBitmap bitmap;
+
+  // Put a real bitmap into "bitmap".  2x2 bitmap of green 32 bit pixels.
+  bitmap.setConfig(SkBitmap::kARGB_8888_Config, 2, 2);
+  bitmap.allocPixels();
+  SkColor c = SK_ColorGREEN;
+  bitmap.eraseColor(c);
+
+  notification1_->OnFetchComplete(GURL(kIconUrl1), &bitmap);
+  EXPECT_EQ(1, notification1_->active_fetcher_count_);
+
+  // When we call OnFetchComplete on the second bitmap, show should be called.
+  notification1_->OnFetchComplete(GURL(kIconUrl2), &bitmap);
+  EXPECT_EQ(0, notification1_->active_fetcher_count_);
+
+  // Since we check Show() thoroughly in its own test, we only check cursorily.
+  EXPECT_EQ(message_center::NOTIFICATION_TYPE_IMAGE,
+            notification_manager.notification().type());
+  EXPECT_EQ(kTitle1,
+            UTF16ToUTF8(notification_manager.notification().title()));
+  EXPECT_EQ(kText1,
+            UTF16ToUTF8(notification_manager.notification().message()));
+
+  // TODO(petewil): Check that the bitmap in the notification is what we expect.
+  // This fails today, the type info is different.
+  // EXPECT_TRUE(gfx::BitmapsAreEqual(
+  //     image, notification1_->GetAppIconBitmap()));
+}
+
+TEST_F(SyncedNotificationTest, QueueBitmapsTest) {
+
+  if (!UseRichNotifications())
+    return;
+
+  StubNotificationUIManager notification_manager;
+
+  notification1_->QueueBitmapFetchJobs(&notification_manager, NULL, NULL);
+
+  // There should be 4 urls in the queue, icon, image, and two buttons.
+  EXPECT_EQ(4, notification1_->active_fetcher_count_);
+}
+
 // TODO(petewil): Add a test for a notification being read and or deleted.
+
+}  // namespace notifier

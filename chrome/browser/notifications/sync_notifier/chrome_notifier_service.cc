@@ -21,14 +21,15 @@
 
 namespace notifier {
 
+bool ChromeNotifierService::avoid_bitmap_fetching_for_test_ = false;
+
 ChromeNotifierService::ChromeNotifierService(Profile* profile,
                                              NotificationUIManager* manager)
     : profile_(profile), notification_manager_(manager) {}
 ChromeNotifierService::~ChromeNotifierService() {}
 
 // Methods from BrowserContextKeyedService.
-void ChromeNotifierService::Shutdown() {
-}
+void ChromeNotifierService::Shutdown() {}
 
 // syncer::SyncableService implementation.
 
@@ -275,8 +276,19 @@ void ChromeNotifierService::Add(scoped_ptr<SyncedNotification> notification) {
   // Take ownership of the object and put it into our local storage.
   notification_data_.push_back(notification.release());
 
-  // Get the contained bitmaps, and show the notification once we have them.
-  notification_copy->Show(notification_manager_, this, profile_);
+  // Set up to fetch the bitmaps.
+  notification_copy->QueueBitmapFetchJobs(notification_manager_,
+                                          this,
+                                          profile_);
+
+  // Our tests cannot use the network for reliability reasons.
+  if (avoid_bitmap_fetching_for_test_) {
+    return;
+  }
+
+  // Start the bitmap fetching, Show() will be called when the last bitmap
+  // either arrives or times out.
+  notification_copy->StartBitmapFetch();
 }
 
 }  // namespace notifier

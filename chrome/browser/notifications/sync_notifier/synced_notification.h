@@ -11,10 +11,14 @@
 
 #include <string>
 
+#include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/scoped_vector.h"
+#include "chrome/browser/notifications/sync_notifier/notification_bitmap_fetcher.h"
 #include "googleurl/src/gurl.h"
 #include "sync/api/sync_data.h"
 #include "sync/protocol/sync.pb.h"
+#include "ui/gfx/image/image.h"
 
 namespace sync_pb {
 class SyncedNotificationSpecifics;
@@ -27,11 +31,11 @@ namespace notifier {
 
 class ChromeNotifierService;
 
-class SyncedNotification {
+class SyncedNotification : public NotificationBitmapFetcherDelegate {
  public:
   explicit SyncedNotification(const syncer::SyncData& sync_data);
 
-  ~SyncedNotification();
+  virtual ~SyncedNotification();
 
   enum ReadState {
     kUnread = 1,
@@ -76,6 +80,15 @@ class SyncedNotification {
 
   void NotificationHasBeenDismissed();
 
+  // Fill up the queue of bitmaps to fetch.
+  void QueueBitmapFetchJobs(NotificationUIManager* notification_manager,
+                            ChromeNotifierService* notifier_service,
+                            Profile* profile);
+
+  // Start the bitmap fetching.  When it is complete, the callback
+  // will call Show().
+  void StartBitmapFetch();
+
   // Display the notification in the notification center
   void Show(NotificationUIManager* notification_manager,
             ChromeNotifierService* notifier_service,
@@ -89,10 +102,26 @@ class SyncedNotification {
   // Helper function to mark a notification as read or dismissed.
   void SetReadState(const ReadState& read_state);
 
-  // Parsing functions to get this information out of the sync_data and into
-  // our local variables.
+  // Method inherited from NotificationBitmapFetcher delegate.
+  virtual void OnFetchComplete(const GURL url, const SkBitmap* bitmap) OVERRIDE;
+
+  // If this bitmap has a valid GURL, create a fetcher for it.
+  void AddBitmapToFetchQueue(const GURL& gurl);
 
   sync_pb::SyncedNotificationSpecifics specifics_;
+  NotificationUIManager* notification_manager_;
+  ChromeNotifierService* notifier_service_;
+  Profile* profile_;
+  ScopedVector<NotificationBitmapFetcher> fetchers_;
+  int active_fetcher_count_;
+  gfx::Image app_icon_bitmap_;
+  gfx::Image image_bitmap_;
+  gfx::Image button_one_bitmap_;
+  gfx::Image button_two_bitmap_;
+
+  FRIEND_TEST_ALL_PREFIXES(SyncedNotificationTest, AddBitmapToFetchQueueTest);
+  FRIEND_TEST_ALL_PREFIXES(SyncedNotificationTest, OnFetchCompleteTest);
+  FRIEND_TEST_ALL_PREFIXES(SyncedNotificationTest, QueueBitmapsTest);
 
   DISALLOW_COPY_AND_ASSIGN(SyncedNotification);
 };

@@ -12,6 +12,7 @@
 #include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/browser/notifications/sync_notifier/chrome_notifier_delegate.h"
+#include "content/public/browser/browser_thread.h"
 #include "sync/protocol/sync.pb.h"
 #include "sync/protocol/synced_notification_specifics.pb.h"
 #include "ui/gfx/image/image.h"
@@ -42,7 +43,11 @@ COMPILE_ASSERT(static_cast<sync_pb::CoalescedSyncedNotification_ReadState>(
                sync_pb::CoalescedSyncedNotification_ReadState_DISMISSED,
                local_enum_must_match_protobuf_enum);
 
-SyncedNotification::SyncedNotification(const syncer::SyncData& sync_data) {
+SyncedNotification::SyncedNotification(const syncer::SyncData& sync_data)
+    :   notification_manager_(NULL),
+        notifier_service_(NULL),
+        profile_(NULL),
+        active_fetcher_count_(0)  {
   Update(sync_data);
 }
 
@@ -57,6 +62,95 @@ sync_pb::EntitySpecifics SyncedNotification::GetEntitySpecifics() const {
   sync_pb::EntitySpecifics entity_specifics;
   entity_specifics.mutable_synced_notification()->CopyFrom(specifics_);
   return entity_specifics;
+}
+
+void SyncedNotification::OnFetchComplete(const GURL url,
+                                         const SkBitmap* bitmap) {
+  // TODO(petewil): Add timeout mechanism in case bitmaps take too long.  Do we
+  // already have one built into URLFetcher?
+  // Make sure we are on the thread we expect.
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+
+  // Match the incoming bitmaps to URLs.  In case this is a dup, make sure to
+  // try all potentially matching urls.
+  if (GetAppIconUrl() == url && bitmap != NULL) {
+    app_icon_bitmap_ = gfx::Image::CreateFrom1xBitmap(*bitmap);
+  }
+  if (GetImageUrl() == url && bitmap != NULL) {
+    image_bitmap_ = gfx::Image::CreateFrom1xBitmap(*bitmap);
+  }
+  if (GetButtonOneIconUrl() == url.spec() && bitmap != NULL) {
+    button_one_bitmap_ = gfx::Image::CreateFrom1xBitmap(*bitmap);
+  }
+  if (GetButtonTwoIconUrl() == url.spec() && bitmap != NULL) {
+    button_two_bitmap_ = gfx::Image::CreateFrom1xBitmap(*bitmap);
+  }
+
+  // Count off the bitmaps as they arrive.
+  --active_fetcher_count_;
+  DCHECK_GE(active_fetcher_count_, 0);
+  // See if all bitmaps are accounted for, if so call Show.
+  if (active_fetcher_count_ == 0) {
+    Show(notification_manager_, notifier_service_, profile_);
+  }
+}
+
+void SyncedNotification::QueueBitmapFetchJobs(
+    NotificationUIManager* notification_manager,
+    ChromeNotifierService* notifier_service,
+    Profile* profile) {
+
+  // If we are not using the MessageCenter, call show now, and the existing
+  // code will handle the bitmap fetch for us.
+  if (!UseRichNotifications()) {
+    Show(notification_manager, notifier_service, profile);
+    return;
+  }
+
+  // Save off the arguments for the call to Show.
+  notification_manager_ = notification_manager;
+  notifier_service_ = notifier_service;
+  profile_ = profile;
+  DCHECK_EQ(active_fetcher_count_, 0);
+
+  // Get the URLs that we might need to fetch from Synced Notification.
+  // TODO(petewil): clean up the fact that icon and image return a GURL, and
+  // button urls return a string.
+  // TODO(petewil): Eventually refactor this to accept an arbitrary number of
+  // button URLs.
+
+  // If the URL is non-empty, add it to our queue of URLs to fetch.
+  AddBitmapToFetchQueue(GetAppIconUrl());
+  AddBitmapToFetchQueue(GetImageUrl());
+  AddBitmapToFetchQueue(GURL(GetButtonOneIconUrl()));
+  AddBitmapToFetchQueue(GURL(GetButtonTwoIconUrl()));
+
+  // If there are no bitmaps, call show now.
+  if (active_fetcher_count_ == 0) {
+    Show(notification_manager, notifier_service, profile);
+  }
+}
+
+void SyncedNotification::StartBitmapFetch() {
+  // Now that we have queued and counted them all, start the fetching.
+  ScopedVector<NotificationBitmapFetcher>::iterator iter;
+  for (iter = fetchers_.begin(); iter != fetchers_.end(); ++iter) {
+    (*iter)->Start(profile_);
+  }
+}
+
+void SyncedNotification::AddBitmapToFetchQueue(const GURL& url) {
+  // Check for dups, ignore any request for a dup.
+  ScopedVector<NotificationBitmapFetcher>::iterator iter;
+  for (iter = fetchers_.begin(); iter != fetchers_.end(); ++iter) {
+    if ((*iter)->url() == url)
+      return;
+  }
+
+  if (url.is_valid()) {
+    ++active_fetcher_count_;
+    fetchers_.push_back(new NotificationBitmapFetcher(url, this));
+  }
 }
 
 void SyncedNotification::Show(NotificationUIManager* notification_manager,
@@ -159,7 +253,6 @@ void SyncedNotification::Show(NotificationUIManager* notification_manager,
                                  delegate.get());
 
     notification_manager->Add(ui_notification, profile);
-
   }
 
   DVLOG(1) << "Showing Synced Notification! " << heading << " " << text

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/notifications/sync_notifier/notification_bitmap_fetcher.h"
 
+#include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/url_request/url_fetcher.h"
 
@@ -16,10 +17,15 @@ NotificationBitmapFetcher::NotificationBitmapFetcher(
 
 NotificationBitmapFetcher::~NotificationBitmapFetcher() {}
 
-void NotificationBitmapFetcher::Start() {
+void NotificationBitmapFetcher::Start(Profile* profile) {
   if (url_fetcher_ == NULL) {
     url_fetcher_.reset(
         net::URLFetcher::Create(url_, net::URLFetcher::GET, this));
+    // The RequestContext is coming from the current profile.
+    // TODO(petewil): Make sure this is the right profile to use.
+    // It seems to work, but we might prefer to use a blank profile with
+    // no cookies.
+    url_fetcher_->SetRequestContext(profile->GetRequestContext());
   }
   url_fetcher_->Start();
 }
@@ -73,14 +79,14 @@ void NotificationBitmapFetcher::OnImageDecoded(
   decoded_image.deepCopyTo(bitmap_.get(), decoded_image.getConfig());
 
   // Report success.
-  delegate_->OnFetchComplete(bitmap_.get());
+  delegate_->OnFetchComplete(url_, bitmap_.get());
 }
 
 void NotificationBitmapFetcher::OnDecodeImageFailed(
     const ImageDecoder* decoder) {
 
   // Report failure.
-  delegate_->OnFetchComplete(NULL);
+  delegate_->OnFetchComplete(url_, NULL);
 }
 
 }  // namespace notifier
