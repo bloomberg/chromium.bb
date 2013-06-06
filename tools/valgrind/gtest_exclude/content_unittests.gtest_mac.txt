@@ -38,4 +38,5 @@ SmoothScrollGestureControllerTest.Tick
 
 # http://crbug.com/247163
 VideoCaptureManagerTest.CreateAndClose
+VideoCaptureManagerTest.StartUsingId
 WebRTCAudioDeviceTest.WebRtcRecordingSetupTime
