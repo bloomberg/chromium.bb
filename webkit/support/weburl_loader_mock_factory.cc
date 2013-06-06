@@ -43,8 +43,9 @@ void WebURLLoaderMockFactory::RegisterURL(const WebURL& url,
     response_info.file_path =
         base::FilePath(static_cast<std::string>(file_path.utf8()));
 #elif defined(OS_WIN)
-    response_info.file_path =
-        base::FilePath(std::wstring(file_path.data(), file_path.length()));
+    string16 file_path_16 = file_path;
+    response_info.file_path = base::FilePath(std::wstring(
+        file_path_16.data(), file_path_16.length()));
 #endif
     DCHECK(file_util::PathExists(response_info.file_path))
         << response_info.file_path.MaybeAsASCII() << " does not exist.";
