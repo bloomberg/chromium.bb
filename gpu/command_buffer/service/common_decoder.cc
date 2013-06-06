@@ -78,17 +78,6 @@ Buffer CommonDecoder::GetSharedMemoryBuffer(unsigned int shm_id) {
   return engine_->GetSharedMemoryBuffer(shm_id);
 }
 
-bool CommonDecoder::PushAddress(uint32 offset) {
-  if (call_stack_.size() < kMaxStackDepth) {
-    CommandAddress return_address(engine_->GetGetOffset());
-    if (engine_->SetGetOffset(offset)) {
-      call_stack_.push(return_address);
-      return true;
-    }
-  }
-  return false;
-}
-
 const char* CommonDecoder::GetCommonCommandName(
     cmd::CommandId command_id) const {
   return cmd::GetCommandName(command_id);
