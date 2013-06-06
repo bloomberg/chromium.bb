@@ -597,7 +597,7 @@ class BisectPerformanceMetrics(object):
     targets = ['chrome', 'performance_ui_tests']
     threads = 16
     if self.opts.use_goma:
-      threads = 300
+      threads = 64
 
     cwd = os.getcwd()
     os.chdir(self.src_cwd)
