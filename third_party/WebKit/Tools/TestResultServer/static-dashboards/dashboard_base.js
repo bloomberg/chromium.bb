@@ -139,23 +139,26 @@ function partial(fn, var_args)
     };
 };
 
+// FIXME: This should move into a results json parsing file/class.
 function getTotalTestCounts(failuresByType)
 {
-    var countData;
+    var countData = {
+        totalTests: [],
+        totalFailingTests: []
+    };
+
     for (var failureType in failuresByType) {
         var failures = failuresByType[failureType];
-        if (countData) {
-            failures.forEach(function(count, index) {
-                countData.totalTests[index] += count;
-                if (failureType != PASS)
-                    countData.totalFailingTests[index] += count;
-            });
-        } else {
-            countData = {
-                totalTests: failures.slice(),
-                totalFailingTests: failures.slice(),
-            };
-        }
+        failures.forEach(function(count, index) {
+            if (!countData.totalTests[index]) {
+                countData.totalTests[index] = 0;
+                countData.totalFailingTests[index] = 0;
+            }
+
+            countData.totalTests[index] += count;
+            if (failureType != PASS)
+                countData.totalFailingTests[index] += count;
+        });
     }
     return countData;
 }
