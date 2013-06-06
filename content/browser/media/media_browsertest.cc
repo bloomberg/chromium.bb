@@ -1,20 +1,16 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/basictypes.h"
-#include "base/command_line.h"
-#include "base/string16.h"
+#include "content/browser/media/media_browsertest.h"
+
 #include "base/stringprintf.h"
-#include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/shell/shell.h"
-#include "content/test/layout_browsertest.h"
 #include "content/test/content_browser_test_utils.h"
-#include "googleurl/src/gurl.h"
+#include "content/test/layout_browsertest.h"
 
 // TODO(wolenetz): Fix Media.YUV* tests on MSVS 2012 x64. crbug.com/180074
 #if defined(OS_WIN) && defined(ARCH_CPU_X86_64) && _MSC_VER == 1700
@@ -25,12 +21,54 @@
 
 namespace content {
 
+// Common test results.
+const char MediaBrowserTest::kEnded[] = "ENDED";
+const char MediaBrowserTest::kError[] = "ERROR";
+const char MediaBrowserTest::kFailed[] = "FAILED";
+
+void MediaBrowserTest::RunMediaTestPage(
+    const char* html_page, std::vector<StringPair>* query_params,
+    const char* expected, bool http) {
+  GURL gurl;
+  std::string query = "";
+  if (query_params != NULL && !query_params->empty()) {
+    std::vector<StringPair>::const_iterator itr = query_params->begin();
+    query = base::StringPrintf("%s=%s", itr->first, itr->second);
+    ++itr;
+    for (;itr != query_params->end(); ++itr) {
+      query.append(base::StringPrintf("&%s=%s", itr->first, itr->second));
+    }
+  }
+  if (http) {
+    ASSERT_TRUE(test_server()->Start());
+    gurl = test_server()->GetURL(
+        base::StringPrintf("files/media/%s?%s", html_page, query.c_str()));
+  } else {
+    base::FilePath test_file_path = GetTestFilePath("media", html_page);
+    gurl = GetFileUrlWithQuery(test_file_path, query);
+  }
+  RunTest(gurl, expected);
+}
+
+void MediaBrowserTest::RunTest(const GURL& gurl, const char* expected) {
+  const string16 kExpected = ASCIIToUTF16(expected);
+  DVLOG(1) << "Running test URL: " << gurl;
+  TitleWatcher title_watcher(shell()->web_contents(), kExpected);
+  title_watcher.AlsoWaitForTitle(ASCIIToUTF16(kEnded));
+  title_watcher.AlsoWaitForTitle(ASCIIToUTF16(kError));
+  title_watcher.AlsoWaitForTitle(ASCIIToUTF16(kFailed));
+  NavigateToURL(shell(), gurl);
+
+  string16 final_title = title_watcher.WaitAndGetTitle();
+  EXPECT_EQ(kExpected, final_title);
+}
+
 // Tests playback and seeking of an audio or video file over file or http based
 // on a test parameter.  Test starts with playback, then, after X seconds or the
 // ended event fires, seeks near end of file; see player.html for details.  The
 // test completes when either the last 'ended' or an 'error' event fires.
 class MediaTest : public testing::WithParamInterface<bool>,
-                  public ContentBrowserTest {
+                  public MediaBrowserTest {
  public:
   // Play specified audio over http:// or file:// depending on |http| setting.
   void PlayAudio(const char* media_file, bool http) {
@@ -48,43 +86,10 @@ class MediaTest : public testing::WithParamInterface<bool>,
     RunTest(GetFileUrlWithQuery(test_file_path, media_file), expected);
   }
 
- private:
   void PlayMedia(const char* tag, const char* media_file, bool http) {
-    GURL gurl;
-
-    if (http) {
-      if (!test_server()->Start()) {
-        ADD_FAILURE() << "Failed to start test server";
-        return;
-      }
-
-      gurl = test_server()->GetURL(
-          base::StringPrintf("files/media/player.html?%s=%s", tag, media_file));
-    } else {
-      base::FilePath test_file_path = GetTestFilePath("media", "player.html");
-      gurl = GetFileUrlWithQuery(
-          test_file_path, base::StringPrintf("%s=%s", tag, media_file));
-    }
-
-    RunTest(gurl, "ENDED");
-  }
-
-  void RunTest(const GURL& gurl, const char* expected) {
-    const string16 kExpected = ASCIIToUTF16(expected);
-    const string16 kEnded = ASCIIToUTF16("ENDED");
-    const string16 kError = ASCIIToUTF16("ERROR");
-    const string16 kFailed = ASCIIToUTF16("FAILED");
-    DCHECK(kExpected == kEnded || kExpected == kError || kExpected == kFailed)
-        << kExpected;
-
-    TitleWatcher title_watcher(shell()->web_contents(), kEnded);
-    title_watcher.AlsoWaitForTitle(kFailed);
-    title_watcher.AlsoWaitForTitle(kError);
-
-    NavigateToURL(shell(), gurl);
-
-    string16 final_title = title_watcher.WaitAndGetTitle();
-    EXPECT_EQ(kExpected, final_title);
+    std::vector<StringPair> query_params;
+    query_params.push_back(std::make_pair(tag, media_file));
+    RunMediaTestPage("player.html", &query_params, kEnded, http);
   }
 };
 

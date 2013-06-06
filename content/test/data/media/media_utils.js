@@ -18,15 +18,11 @@ var QueryString = function() {
   return params;
 }();
 
-// Stores a failure message that is read by the browser test when it fails.
-var failMessage = '';
-
 function failTest(msg) {
-  console.log("failTest('" + msg + "')");
+  var failMessage = msg;
   if (msg instanceof Event)
     failMessage = msg.target + '.' + msg.type;
-  else
-    failMessage = msg;
+  console.log("FAILED TEST: " + msg);
   setResultInTitle('FAILED');
 }
 

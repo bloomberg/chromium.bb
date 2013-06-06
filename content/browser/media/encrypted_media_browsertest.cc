@@ -2,23 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/basictypes.h"
 #include "base/command_line.h"
-#include "base/file_util.h"
 #include "base/path_service.h"
-#include "base/string16.h"
-#include "base/string_util.h"
-#include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "base/win/windows_version.h"
-#include "content/browser/web_contents/web_contents_impl.h"
+#include "content/browser/media/media_browsertest.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/shell/shell.h"
-#include "content/test/content_browser_test.h"
-#include "content/test/content_browser_test_utils.h"
-#include "googleurl/src/gurl.h"
-#include "media/base/media_switches.h"
 #include "webkit/renderer/media/crypto/key_systems.h"
 
 #include "widevine_cdm_version.h"  // In SHARED_INTERMEDIATE_DIR.
@@ -52,55 +43,33 @@ static const char kMP4AudioOnly[] = "audio/mp4; codecs=\"mp4a.40.2\"";
 static const char kMP4VideoOnly[] = "video/mp4; codecs=\"avc1.4D4041\"";
 
 // Common test expectations.
-const string16 kEnded = ASCIIToUTF16("ENDED");
-const string16 kError = ASCIIToUTF16("ERROR");
-const string16 kFailed = ASCIIToUTF16("FAILED");
-const string16 kKeyError = ASCIIToUTF16("KEYERROR");
+static const char kKeyError[] = "KEYERROR";
 
 namespace content {
 
 class EncryptedMediaTest : public testing::WithParamInterface<const char*>,
-                           public ContentBrowserTest {
+                           public content::MediaBrowserTest {
  public:
   void TestSimplePlayback(const char* encrypted_media, const char* media_type,
-                          const char* key_system, const string16 expectation) {
-    ASSERT_NO_FATAL_FAILURE(
-        PlayEncryptedMedia("encrypted_media_player.html", encrypted_media,
-                           media_type, key_system, expectation));
+                          const char* key_system, const char* expectation) {
+    RunEncryptedMediaTest("encrypted_media_player.html", encrypted_media,
+                          media_type, key_system, expectation);
   }
 
-  void TestFrameSizeChange(const char* key_system, const string16 expectation) {
-    ASSERT_NO_FATAL_FAILURE(
-        PlayEncryptedMedia("encrypted_frame_size_change.html",
-                           "frame_size_change-av-enc-v.webm", kWebMAudioVideo,
-                           key_system, expectation));
+  void TestFrameSizeChange(const char* key_system, const char* expectation) {
+    RunEncryptedMediaTest("encrypted_frame_size_change.html",
+                          "frame_size_change-av-enc-v.webm", kWebMAudioVideo,
+                          key_system, expectation);
   }
 
-  void PlayEncryptedMedia(const char* html_page, const char* media_file,
-                          const char* media_type, const char* key_system,
-                          const string16 expectation) {
-    // TODO(shadi): Add non-HTTP tests once src is supported for EME.
-    ASSERT_TRUE(test_server()->Start());
-    GURL player_gurl = test_server()->GetURL(base::StringPrintf(
-        "files/media/%s?keysystem=%s&mediafile=%s&mediatype=%s", html_page,
-        key_system, media_file, media_type));
-    TitleWatcher title_watcher(shell()->web_contents(), expectation);
-    title_watcher.AlsoWaitForTitle(kError);
-    title_watcher.AlsoWaitForTitle(kFailed);
-
-    NavigateToURL(shell(), player_gurl);
-
-    string16 final_title = title_watcher.WaitAndGetTitle();
-    EXPECT_EQ(expectation, final_title);
-
-    if (final_title == kFailed) {
-      std::string fail_message;
-      EXPECT_TRUE(ExecuteScriptAndExtractString(
-          shell()->web_contents(),
-          "window.domAutomationController.send(failMessage);",
-          &fail_message));
-      LOG(INFO) << "Test failed: " << fail_message;
-    }
+  void RunEncryptedMediaTest(const char* html_page, const char* media_file,
+                             const char* media_type, const char* key_system,
+                             const char* expectation) {
+    std::vector<StringPair> query_params;
+    query_params.push_back(std::make_pair("mediafile", media_file));
+    query_params.push_back(std::make_pair("mediatype", media_type));
+    query_params.push_back(std::make_pair("keysystem", key_system));
+    RunMediaTestPage(html_page, &query_params, expectation, true);
   }
 
  protected:
@@ -180,10 +149,8 @@ INSTANTIATE_TEST_CASE_P(ExternalClearKey, EncryptedMediaTest,
 #endif
 
 IN_PROC_BROWSER_TEST_F(EncryptedMediaTest, InvalidKeySystem) {
-  const string16 kExpected = ASCIIToUTF16(
-      StringToUpperASCII(std::string("GenerateKeyRequestException")));
   TestSimplePlayback("bear-320x240-av-enc_av.webm", kWebMAudioVideo,
-                     "com.example.invalid", kExpected);
+                     "com.example.invalid", "GENERATE_KEY_REQUEST_EXCEPTION");
 }
 
 IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_AudioOnly_WebM) {
