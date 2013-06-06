@@ -125,16 +125,24 @@ void DocumentWriter::begin(const KURL& urlReference, bool dispatch, Document* ow
     // FIXME: Do we need to consult the content security policy here about blocked plug-ins?
 
     bool shouldReuseDefaultView = m_frame->loader()->stateMachine()->isDisplayingInitialEmptyDocument() && m_frame->document()->isSecureTransitionTo(url);
-    if (shouldReuseDefaultView)
-        document->takeDOMWindowFrom(m_frame->document());
-    else
-        document->createDOMWindow();
 
+    RefPtr<DOMWindow> originalDOMWindow;
+    if (shouldReuseDefaultView)
+        originalDOMWindow = m_frame->domWindow();
     m_frame->loader()->clear(!shouldReuseDefaultView, !shouldReuseDefaultView);
     clear();
 
+    if (!shouldReuseDefaultView)
+        m_frame->setDOMWindow(DOMWindow::create(m_frame));
+    else {
+        // Note that the old Document is still attached to the DOMWindow; the
+        // setDocument() call below will detach the old Document.
+        ASSERT(originalDOMWindow);
+        m_frame->setDOMWindow(originalDOMWindow);
+    }
+
     m_frame->loader()->setOutgoingReferrer(url);
-    m_frame->setDocument(document);
+    m_frame->domWindow()->setDocument(document);
 
     if (m_decoder)
         document->setDecoder(m_decoder.get());

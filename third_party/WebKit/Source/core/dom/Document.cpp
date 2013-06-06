@@ -406,6 +406,7 @@ Document::Document(Frame* frame, const KURL& url, DocumentClassFlags documentCla
     , m_hasNodesWithPlaceholderStyle(false)
     , m_pendingSheetLayout(NoLayoutWithPendingSheets)
     , m_frame(frame)
+    , m_domWindow(0)
     , m_activeParserCount(0)
     , m_contextFeatures(ContextFeatures::defaultSwitch())
     , m_wellFormed(false)
@@ -552,9 +553,6 @@ Document::~Document()
 
     if (Document* ownerDocument = this->ownerDocument())
         ownerDocument->didRemoveEventTargetNode(this);
-    // FIXME: Should we reset m_domWindow when we detach from the Frame?
-    if (m_domWindow)
-        m_domWindow->reset();
 
     m_scriptRunner.clear();
 
@@ -2223,8 +2221,9 @@ void Document::implicitClose()
     if (!doload)
         return;
 
-    // Call to dispatchWindowLoadEvent can blow us from underneath.
-    RefPtr<Document> protect(this);
+    // The call to dispatchWindowLoadEvent can detach the DOMWindow and cause it (and its
+    // attached Document) to be destroyed.
+    RefPtr<DOMWindow> protect(this->domWindow());
 
     m_processingLoadEvent = true;
 
@@ -3446,30 +3445,6 @@ void Document::textNodeSplit(Text* oldNode)
     // FIXME: This should update markers for spelling and grammar checking.
 }
 
-void Document::createDOMWindow()
-{
-    ASSERT(m_frame);
-    ASSERT(!m_domWindow);
-
-    m_domWindow = DOMWindow::create(this);
-
-    ASSERT(m_domWindow->document() == this);
-    ASSERT(m_domWindow->frame() == m_frame);
-}
-
-void Document::takeDOMWindowFrom(Document* document)
-{
-    ASSERT(m_frame);
-    ASSERT(!m_domWindow);
-    ASSERT(document->domWindow());
-
-    m_domWindow = document->m_domWindow.release();
-    m_domWindow->didSecureTransitionTo(this);
-
-    ASSERT(m_domWindow->document() == this);
-    ASSERT(m_domWindow->frame() == m_frame);
-}
-
 void Document::setWindowAttributeEventListener(const AtomicString& eventType, PassRefPtr<EventListener> listener)
 {
     DOMWindow* domWindow = this->domWindow();
@@ -3495,16 +3470,6 @@ void Document::dispatchWindowEvent(PassRefPtr<Event> event,  PassRefPtr<EventTar
     domWindow->dispatchEvent(event, target);
 }
 
-void Document::dispatchWindowLoadEvent()
-{
-    ASSERT(!NoEventDispatchAssertion::isEventDispatchForbidden());
-    DOMWindow* domWindow = this->domWindow();
-    if (!domWindow)
-        return;
-    domWindow->dispatchLoadEvent();
-    m_loadEventFinished = true;
-}
-
 void Document::enqueueWindowEvent(PassRefPtr<Event> event)
 {
     event->setTarget(domWindow());
@@ -3525,6 +3490,16 @@ PassRefPtr<Event> Document::createEvent(const String& eventType, ExceptionCode& 
 
     ec = NOT_SUPPORTED_ERR;
     return 0;
+}
+
+void Document::dispatchWindowLoadEvent()
+{
+    ASSERT(!NoEventDispatchAssertion::isEventDispatchForbidden());
+    DOMWindow* domWindow = this->domWindow();
+    if (!domWindow)
+        return;
+    domWindow->dispatchLoadEvent();
+    m_loadEventFinished = true;
 }
 
 void Document::addMutationEventListenerTypeIfEnabled(ListenerType listenerType)
@@ -5516,7 +5491,6 @@ void Document::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
     info.addMember(m_prerenderer, "prerenderer");
     info.addMember(m_listsInvalidatedAtDocument, "listsInvalidatedAtDocument");
     info.addMember(m_styleResolverThrowawayTimer, "styleResolverThrowawayTimer");
-    info.addMember(m_domWindow, "domWindow");
     info.addMember(m_parser, "parser");
     info.addMember(m_contextFeatures, "contextFeatures");
     info.addMember(m_focusedNode, "focusedNode");

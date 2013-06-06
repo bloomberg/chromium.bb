@@ -29,6 +29,7 @@
 #include "core/editing/markup.h"
 #include "core/loader/TextResourceDecoder.h"
 #include "core/page/ContentSecurityPolicy.h"
+#include "core/page/DOMWindow.h"
 #include "core/page/Frame.h"
 #include "core/page/FrameView.h"
 #include "weborigin/SecurityOrigin.h"
@@ -81,14 +82,13 @@ PassRefPtr<Document> XSLTProcessor::createDocumentFromSource(const String& sourc
 
         if (Document* oldDocument = frame->document()) {
             result->setTransformSourceDocument(oldDocument);
-            result->takeDOMWindowFrom(oldDocument);
             result->setSecurityOrigin(oldDocument->securityOrigin());
             result->setCookieURL(oldDocument->cookieURL());
             result->setFirstPartyForCookies(oldDocument->firstPartyForCookies());
             result->contentSecurityPolicy()->copyStateFrom(oldDocument->contentSecurityPolicy());
         }
 
-        frame->setDocument(result);
+        frame->domWindow()->setDocument(result);
     }
 
     RefPtr<TextResourceDecoder> decoder = TextResourceDecoder::create(sourceMIMEType);

@@ -505,8 +505,8 @@ void FrameLoader::clear(bool clearWindowProperties, bool clearScriptObjects, boo
 
     // Do this after detaching the document so that the unload event works.
     if (clearWindowProperties) {
-        InspectorInstrumentation::frameWindowDiscarded(m_frame, m_frame->document()->domWindow());
-        m_frame->document()->domWindow()->reset();
+        InspectorInstrumentation::frameWindowDiscarded(m_frame, m_frame->domWindow());
+        m_frame->domWindow()->reset();
         m_frame->script()->clearWindowShell();
     }
 
@@ -515,9 +515,9 @@ void FrameLoader::clear(bool clearWindowProperties, bool clearScriptObjects, boo
     if (clearFrameView && m_frame->view())
         m_frame->view()->clear();
 
-    // Do not drop the document before the ScriptController and view are cleared
+    // Do not drop the DOMWindow (and Document) before the ScriptController and view are cleared
     // as some destructors might still try to access the document.
-    m_frame->setDocument(0);
+    m_frame->setDOMWindow(0);
 
     m_subframeLoader.clear();
 

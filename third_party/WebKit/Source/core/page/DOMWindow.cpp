@@ -55,6 +55,7 @@
 #include "core/dom/MessageEvent.h"
 #include "core/dom/PageTransitionEvent.h"
 #include "core/dom/RequestAnimationFrameCallback.h"
+#include "core/dom/WebCoreMemoryInstrumentation.h"
 #include "core/editing/Editor.h"
 #include "core/history/BackForwardController.h"
 #include "core/html/HTMLFrameOwnerElement.h"
@@ -88,6 +89,7 @@
 #include "core/page/Settings.h"
 #include "core/page/WindowFeatures.h"
 #include "core/page/WindowFocusAllowedIndicator.h"
+#include "core/page/scrolling/ScrollingCoordinator.h"
 #include "core/platform/KURL.h"
 #include "core/platform/PlatformScreen.h"
 #include "core/platform/SuddenTermination.h"
@@ -383,19 +385,55 @@ bool DOMWindow::canShowModalDialogNow(const Frame* frame)
     return page->chrome().canRunModalNow();
 }
 
-DOMWindow::DOMWindow(Document* document)
-    : ContextDestructionObserver(document)
-    , FrameDestructionObserver(document->frame())
+DOMWindow::DOMWindow(Frame* frame)
+    : FrameDestructionObserver(frame)
     , m_shouldPrintWhenFinishedLoading(false)
 {
-    ASSERT(frame());
-    ASSERT(DOMWindow::document());
+    ASSERT(frame);
     ScriptWrappable::init(this);
 }
 
-void DOMWindow::didSecureTransitionTo(Document* document)
+void DOMWindow::setDocument(PassRefPtr<Document> document)
 {
-    observeContext(document);
+    ASSERT(!document || document->frame() == m_frame);
+    if (m_document) {
+        if (m_document->attached()) {
+            // FIXME: We don't call willRemove here. Why is that OK?
+            m_document->detach();
+        }
+        m_document->setDOMWindow(0);
+    }
+
+    m_document = document;
+
+    if (m_document) {
+        m_document->setDOMWindow(this);
+        if (!m_document->attached())
+            m_document->attach();
+        m_document->updateViewportArguments();
+    }
+
+    if (!m_frame)
+        return;
+
+    if (m_document)
+        m_frame->script()->updateDocument();
+
+    if (m_frame->page() && m_frame->view()) {
+        if (ScrollingCoordinator* scrollingCoordinator = m_frame->page()->scrollingCoordinator()) {
+            scrollingCoordinator->scrollableAreaScrollbarLayerDidChange(m_frame->view(), HorizontalScrollbar);
+            scrollingCoordinator->scrollableAreaScrollbarLayerDidChange(m_frame->view(), VerticalScrollbar);
+            scrollingCoordinator->scrollableAreaScrollLayerDidChange(m_frame->view());
+        }
+    }
+
+    m_frame->selection()->updateSecureKeyboardEntryIfActive();
+
+    if (m_frame->page() && m_frame->page()->mainFrame() == m_frame) {
+        m_frame->page()->mainFrame()->notifyChromeClientWheelEventHandlerCountChanged();
+        if (m_document && m_document->hasTouchEventHandlers())
+            m_frame->page()->chrome().client()->needTouchEvents(true);
+    }
 }
 
 DOMWindow::~DOMWindow()
@@ -418,14 +456,12 @@ DOMWindow::~DOMWindow()
     ASSERT(!m_localStorage);
     ASSERT(!m_applicationCache);
 
-    willDestroyDocumentInFrame();
+    reset();
 
-    // As the ASSERTs above indicate, this reset should only be necessary if this DOMWindow is suspended for the page cache.
-    // But we don't want to risk any of these objects hanging around after we've been destroyed.
-    resetDOMWindowProperties();
+    removeAllEventListeners();
 
-    removeAllUnloadEventListeners(this);
-    removeAllBeforeUnloadEventListeners(this);
+    // Unparent any attached Document so Document won't try to use a destroyed DOMWindow.
+    setDocument(0);
 }
 
 const AtomicString& DOMWindow::interfaceName() const
@@ -435,7 +471,7 @@ const AtomicString& DOMWindow::interfaceName() const
 
 ScriptExecutionContext* DOMWindow::scriptExecutionContext() const
 {
-    return ContextDestructionObserver::scriptExecutionContext();
+    return m_document.get();
 }
 
 DOMWindow* DOMWindow::toDOMWindow()
@@ -455,9 +491,8 @@ Page* DOMWindow::page()
 
 void DOMWindow::frameDestroyed()
 {
-    willDestroyDocumentInFrame();
     FrameDestructionObserver::frameDestroyed();
-    resetDOMWindowProperties();
+    reset();
 }
 
 void DOMWindow::willDetachPage()
@@ -652,6 +687,12 @@ Navigator* DOMWindow::navigator() const
     if (!m_navigator)
         m_navigator = Navigator::create(m_frame);
     return m_navigator.get();
+}
+
+void DOMWindow::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
+{
+    MemoryClassInfo info(memoryObjectInfo, this, WebCoreMemoryTypes::DOM);
+    info.addMember(m_document, "document");
 }
 
 Performance* DOMWindow::performance() const
@@ -1239,8 +1280,7 @@ DOMWindow* DOMWindow::top() const
 
 Document* DOMWindow::document() const
 {
-    ScriptExecutionContext* context = ContextDestructionObserver::scriptExecutionContext();
-    return toDocument(context);
+    return m_document.get();
 }
 
 PassRefPtr<StyleMedia> DOMWindow::styleMedia() const

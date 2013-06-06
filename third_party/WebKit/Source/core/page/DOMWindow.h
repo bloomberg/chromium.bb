@@ -28,11 +28,11 @@
 #define DOMWindow_h
 
 #include "bindings/v8/ScriptWrappable.h"
-#include "core/dom/ContextDestructionObserver.h"
 #include "core/dom/EventTarget.h"
 #include "core/page/FrameDestructionObserver.h"
 #include "core/platform/KURL.h"
 #include "core/platform/Supplementable.h"
+#include "wtf/Forward.h"
 
 namespace WebCore {
     class BarProp;
@@ -81,10 +81,9 @@ namespace WebCore {
 
     enum SetLocationLocking { LockHistoryBasedOnGestureState, LockHistoryAndBackForwardList };
 
-    // FIXME: DOMWindow shouldn't subclass FrameDestructionObserver and instead should get to Frame via its Document.
-    class DOMWindow : public RefCounted<DOMWindow>, public ScriptWrappable, public EventTarget, public ContextDestructionObserver, public FrameDestructionObserver, public Supplementable<DOMWindow> {
+    class DOMWindow : public RefCounted<DOMWindow>, public ScriptWrappable, public EventTarget, public FrameDestructionObserver, public Supplementable<DOMWindow> {
     public:
-        static PassRefPtr<DOMWindow> create(Document* document) { return adoptRef(new DOMWindow(document)); }
+        static PassRefPtr<DOMWindow> create(Frame* frame) { return adoptRef(new DOMWindow(frame)); }
         virtual ~DOMWindow();
 
         // In some rare cases, we'll re-used a DOMWindow for a new Document. For example,
@@ -94,7 +93,7 @@ namespace WebCore {
         // won't be blown away when the network load commits. To make that happen, we
         // "securely transition" the existing DOMWindow to the Document that results from
         // the network load. See also SecurityContext::isSecureTransitionTo.
-        void didSecureTransitionTo(Document*);
+        void setDocument(PassRefPtr<Document>);
 
         virtual const AtomicString& interfaceName() const;
         virtual ScriptExecutionContext* scriptExecutionContext() const;
@@ -369,6 +368,8 @@ namespace WebCore {
         DEFINE_ATTRIBUTE_EVENT_LISTENER(touchend);
         DEFINE_ATTRIBUTE_EVENT_LISTENER(touchcancel);
 
+        void reportMemoryUsage(MemoryObjectInfo*) const;
+
         Performance* performance() const;
 
         // FIXME: When this DOMWindow is no longer the active DOMWindow (i.e.,
@@ -381,7 +382,7 @@ namespace WebCore {
         DOMWindow* anonymousIndexedGetter(uint32_t);
 
     private:
-        explicit DOMWindow(Document*);
+        explicit DOMWindow(Frame*);
 
         Page* page();
 
@@ -400,6 +401,8 @@ namespace WebCore {
 
         void resetDOMWindowProperties();
         void willDestroyDocumentInFrame();
+
+        RefPtr<Document> m_document;
 
         bool m_shouldPrintWhenFinishedLoading;
 

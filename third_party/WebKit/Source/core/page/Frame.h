@@ -41,6 +41,7 @@ namespace WebCore {
 
     class AnimationController;
     class Color;
+    class DOMWindow;
     class Document;
     class Editor;
     class Element;
@@ -92,6 +93,8 @@ namespace WebCore {
         Page* page() const;
         HTMLFrameOwnerElement* ownerElement() const;
 
+        void setDOMWindow(PassRefPtr<DOMWindow>);
+        DOMWindow* domWindow() const;
         Document* document() const;
         FrameView* view() const;
 
@@ -128,8 +131,6 @@ namespace WebCore {
 
         bool inViewSourceMode() const;
         void setInViewSourceMode(bool = true);
-
-        void setDocument(PassRefPtr<Document>);
 
         void setPageZoomFactor(float factor);
         float pageZoomFactor() const { return m_pageZoomFactor; }
@@ -180,7 +181,7 @@ namespace WebCore {
 
         HTMLFrameOwnerElement* m_ownerElement;
         RefPtr<FrameView> m_view;
-        RefPtr<Document> m_doc;
+        RefPtr<DOMWindow> m_domWindow;
 
         OwnPtr<ScriptController> m_script;
         OwnPtr<Editor> m_editor;
@@ -223,9 +224,9 @@ namespace WebCore {
         return m_script.get();
     }
 
-    inline Document* Frame::document() const
+    inline DOMWindow* Frame::domWindow() const
     {
-        return m_doc.get();
+        return m_domWindow.get();
     }
 
     inline FrameSelection* Frame::selection() const

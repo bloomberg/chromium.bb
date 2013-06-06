@@ -32,6 +32,19 @@
 
 namespace WebCore {
 
+// FIXME: Another alternative is to update copyToVector in HashCountedSet to allow the source
+// and destination types to differ it the source type is convertible to the destination type.
+Vector<RefPtr<DOMWindow> > copyKeysToReferencingVector(const HashCountedSet<DOMWindow*>& set)
+{
+    Vector<RefPtr<DOMWindow> > vector;
+    vector.reserveCapacity(set.size());
+
+    HashCountedSet<DOMWindow*>::const_iterator end= set.end();
+    for (HashCountedSet<DOMWindow*>::const_iterator it = set.begin(); it != end; ++it)
+        vector.append((*it).key);
+    return vector;
+}
+
 DeviceController::DeviceController(DeviceClient* client)
     : m_client(client)
     , m_timer(this, &DeviceController::fireDeviceEvent)
@@ -73,8 +86,7 @@ void DeviceController::removeAllDeviceEventListeners(DOMWindow* window)
 void DeviceController::dispatchDeviceEvent(PassRefPtr<Event> prpEvent)
 {
     RefPtr<Event> event = prpEvent;
-    Vector<RefPtr<DOMWindow> > listenerVector;
-    copyToVector(m_listeners, listenerVector);
+    Vector<RefPtr<DOMWindow> > listenerVector = copyKeysToReferencingVector(m_listeners);
     for (size_t i = 0; i < listenerVector.size(); ++i) {
         if (listenerVector[i]->document()
             && !listenerVector[i]->document()->activeDOMObjectsAreSuspended()
@@ -89,8 +101,7 @@ void DeviceController::fireDeviceEvent(Timer<DeviceController>* timer)
     ASSERT(hasLastData());
 
     m_timer.stop();
-    Vector<RefPtr<DOMWindow> > listenerVector;
-    copyToVector(m_lastEventListeners, listenerVector);
+    Vector<RefPtr<DOMWindow> > listenerVector = copyKeysToReferencingVector(m_lastEventListeners);
     m_lastEventListeners.clear();
     for (size_t i = 0; i < listenerVector.size(); ++i) {
         if (listenerVector[i]->document()

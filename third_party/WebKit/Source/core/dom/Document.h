@@ -694,10 +694,8 @@ public:
     void textNodesMerged(Text* oldNode, unsigned offset);
     void textNodeSplit(Text* oldNode);
 
-    void createDOMWindow();
-    void takeDOMWindowFrom(Document*);
-
-    DOMWindow* domWindow() const { return m_domWindow.get(); }
+    void setDOMWindow(DOMWindow* domWindow) { m_domWindow = domWindow; }
+    DOMWindow* domWindow() const { return m_domWindow; }
     // In DOM Level 2, the Document's DOMWindow is called the defaultView.
     DOMWindow* defaultView() const { return domWindow(); } 
 
@@ -705,7 +703,6 @@ public:
     void setWindowAttributeEventListener(const AtomicString& eventType, PassRefPtr<EventListener>);
     EventListener* getWindowAttributeEventListener(const AtomicString& eventType);
     void dispatchWindowEvent(PassRefPtr<Event>, PassRefPtr<EventTarget> = 0);
-    void dispatchWindowLoadEvent();
 
     PassRefPtr<Event> createEvent(const String& eventType, ExceptionCode&);
 
@@ -1177,6 +1174,11 @@ private:
     void pushFullscreenElementStack(Element*);
     void addDocumentToFullScreenChangeEventQueue(Document*);
 
+    // Note that dispatching a window load event may cause the DOMWindow to be detached from
+    // the Frame, so callers should take a reference to the DOMWindow (which owns us) to
+    // prevent the Document from getting blown away from underneath them.
+    void dispatchWindowLoadEvent();
+
     void addListenerType(ListenerType listenerType) { m_listenerTypes |= listenerType; }
     void addMutationEventListenerTypeIfEnabled(ListenerType);
 
@@ -1200,7 +1202,7 @@ private:
     PendingSheetLayout m_pendingSheetLayout;
 
     Frame* m_frame;
-    RefPtr<DOMWindow> m_domWindow;
+    DOMWindow* m_domWindow;
 
     RefPtr<CachedResourceLoader> m_cachedResourceLoader;
     RefPtr<DocumentParser> m_parser;
