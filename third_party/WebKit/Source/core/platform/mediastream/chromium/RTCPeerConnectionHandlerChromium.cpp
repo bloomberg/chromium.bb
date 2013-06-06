@@ -149,9 +149,9 @@ void RTCPeerConnectionHandlerChromium::getStats(PassRefPtr<RTCStatsRequest> requ
     m_webHandler->getStats(request);
 }
 
-PassOwnPtr<RTCDataChannelHandler> RTCPeerConnectionHandlerChromium::createDataChannel(const String& label, bool reliable)
+PassOwnPtr<RTCDataChannelHandler> RTCPeerConnectionHandlerChromium::createDataChannel(const String& label, const WebKit::WebRTCDataChannelInit& init)
 {
-    WebKit::WebRTCDataChannelHandler* webHandler = m_webHandler->createDataChannel(label, reliable);
+    WebKit::WebRTCDataChannelHandler* webHandler = m_webHandler->createDataChannel(label, init);
     if (!webHandler)
         return nullptr;
 

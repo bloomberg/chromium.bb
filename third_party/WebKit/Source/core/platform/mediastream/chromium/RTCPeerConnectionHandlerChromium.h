@@ -68,7 +68,7 @@ public:
     virtual bool addStream(PassRefPtr<MediaStreamDescriptor>, PassRefPtr<MediaConstraints>) OVERRIDE;
     virtual void removeStream(PassRefPtr<MediaStreamDescriptor>) OVERRIDE;
     virtual void getStats(PassRefPtr<RTCStatsRequest>) OVERRIDE;
-    virtual PassOwnPtr<RTCDataChannelHandler> createDataChannel(const String& label, bool reliable) OVERRIDE;
+    virtual PassOwnPtr<RTCDataChannelHandler> createDataChannel(const String& label, const WebKit::WebRTCDataChannelInit&) OVERRIDE;
     virtual PassOwnPtr<RTCDTMFSenderHandler> createDTMFSender(PassRefPtr<MediaStreamComponent>) OVERRIDE;
     virtual void stop() OVERRIDE;
 

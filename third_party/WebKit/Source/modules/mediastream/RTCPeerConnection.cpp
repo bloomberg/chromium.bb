@@ -57,6 +57,7 @@
 #include "modules/mediastream/RTCStatsCallback.h"
 #include "modules/mediastream/RTCStatsRequestImpl.h"
 #include "modules/mediastream/RTCVoidRequestImpl.h"
+#include "public/platform/WebRTCDataChannelInit.h"
 #include "public/platform/WebRTCICECandidate.h"
 #include "public/platform/WebRTCSessionDescription.h"
 
@@ -444,9 +445,23 @@ PassRefPtr<RTCDataChannel> RTCPeerConnection::createDataChannel(String label, co
         return 0;
     }
 
-    bool reliable = true;
-    options.get("reliable", reliable);
-    RefPtr<RTCDataChannel> channel = RTCDataChannel::create(scriptExecutionContext(), m_peerHandler.get(), label, reliable, ec);
+    WebKit::WebRTCDataChannelInit init;
+    options.get("ordered", init.ordered);
+    options.get("negotiated", init.negotiated);
+
+    unsigned short value = 0;
+    if (options.get("id", value))
+        init.id = value;
+    if (options.get("maxRetransmits", value))
+        init.maxRetransmits = value;
+    if (options.get("maxRetransmitTime", value))
+        init.maxRetransmitTime = value;
+
+    String protocolString;
+    options.get("protocol", protocolString);
+    init.protocol = protocolString;
+
+    RefPtr<RTCDataChannel> channel = RTCDataChannel::create(scriptExecutionContext(), m_peerHandler.get(), label, init, ec);
     if (ec)
         return 0;
     m_dataChannels.append(channel);

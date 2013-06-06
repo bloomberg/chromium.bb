@@ -39,6 +39,7 @@
 #include "public/platform/WebMediaConstraints.h"
 #include "public/platform/WebMediaStream.h"
 #include "public/platform/WebMediaStreamTrack.h"
+#include "public/platform/WebRTCDataChannelInit.h"
 #include "public/platform/WebRTCPeerConnectionHandlerClient.h"
 #include "public/platform/WebRTCSessionDescription.h"
 #include "public/platform/WebRTCSessionDescriptionRequest.h"
@@ -162,7 +163,8 @@ public:
 
     virtual void runIfValid() OVERRIDE
     {
-        WebRTCDataChannelHandler* remoteDataChannel = new MockWebRTCDataChannelHandler("MockRemoteDataChannel", true, m_delegate);
+        WebRTCDataChannelInit init;
+        WebRTCDataChannelHandler* remoteDataChannel = new MockWebRTCDataChannelHandler("MockRemoteDataChannel", init, m_delegate);
         m_client->didAddRemoteDataChannel(remoteDataChannel);
     }
 
@@ -284,11 +286,11 @@ void MockWebRTCPeerConnectionHandler::getStats(const WebRTCStatsRequest& request
     m_interfaces->delegate()->postTask(new RTCStatsRequestSucceededTask(this, request, response));
 }
 
-WebRTCDataChannelHandler* MockWebRTCPeerConnectionHandler::createDataChannel(const WebString& label, bool reliable)
+WebRTCDataChannelHandler* MockWebRTCPeerConnectionHandler::createDataChannel(const WebString& label, const WebKit::WebRTCDataChannelInit& init)
 {
     m_interfaces->delegate()->postTask(new RemoteDataChannelTask(this, m_client, m_interfaces->delegate()));
 
-    return new MockWebRTCDataChannelHandler(label, reliable, m_interfaces->delegate());
+    return new MockWebRTCDataChannelHandler(label, init, m_interfaces->delegate());
 }
 
 WebRTCDTMFSenderHandler* MockWebRTCPeerConnectionHandler::createDTMFSender(const WebMediaStreamTrack& track)

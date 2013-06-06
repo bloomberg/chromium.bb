@@ -63,7 +63,7 @@ public:
     virtual bool addStream(const WebKit::WebMediaStream&, const WebKit::WebMediaConstraints&) OVERRIDE;
     virtual void removeStream(const WebKit::WebMediaStream&) OVERRIDE;
     virtual void getStats(const WebKit::WebRTCStatsRequest&) OVERRIDE;
-    virtual WebKit::WebRTCDataChannelHandler* createDataChannel(const WebKit::WebString& label, bool reliable) OVERRIDE;
+    virtual WebKit::WebRTCDataChannelHandler* createDataChannel(const WebKit::WebString& label, const WebKit::WebRTCDataChannelInit&) OVERRIDE;
     virtual WebKit::WebRTCDTMFSenderHandler* createDTMFSender(const WebKit::WebMediaStreamTrack&) OVERRIDE;
     virtual void stop() OVERRIDE;
 

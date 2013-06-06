@@ -29,6 +29,7 @@
 #include "WebTestDelegate.h"
 #include <assert.h>
 #include "public/platform/WebRTCDataChannelHandlerClient.h"
+#include "public/platform/WebRTCDataChannelInit.h"
 
 using namespace WebKit;
 
@@ -55,12 +56,12 @@ private:
 
 /////////////////////
 
-MockWebRTCDataChannelHandler::MockWebRTCDataChannelHandler(WebString label, bool reliable, WebTestDelegate* delegate)
+MockWebRTCDataChannelHandler::MockWebRTCDataChannelHandler(WebString label, const WebRTCDataChannelInit& init, WebTestDelegate* delegate)
     : m_client(0)
     , m_label(label)
-    , m_reliable(reliable)
     , m_delegate(delegate)
 {
+    m_reliable = (init.ordered && init.maxRetransmits == -1 && init.maxRetransmitTime == -1);
 }
 
 void MockWebRTCDataChannelHandler::setClient(WebRTCDataChannelHandlerClient* client)

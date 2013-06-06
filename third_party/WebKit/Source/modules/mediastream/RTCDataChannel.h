@@ -31,6 +31,10 @@
 #include "core/platform/mediastream/RTCDataChannelHandlerClient.h"
 #include "wtf/RefCounted.h"
 
+namespace WebKit {
+struct WebRTCDataChannelInit;
+}
+
 namespace WebCore {
 
 class Blob;
@@ -39,8 +43,8 @@ class RTCPeerConnectionHandler;
 
 class RTCDataChannel : public RefCounted<RTCDataChannel>, public ScriptWrappable, public EventTarget, public RTCDataChannelHandlerClient {
 public:
-    static PassRefPtr<RTCDataChannel> create(ScriptExecutionContext*, RTCPeerConnectionHandler*, const String& label, bool reliable, ExceptionCode&);
     static PassRefPtr<RTCDataChannel> create(ScriptExecutionContext*, PassOwnPtr<RTCDataChannelHandler>);
+    static PassRefPtr<RTCDataChannel> create(ScriptExecutionContext*, RTCPeerConnectionHandler*, const String& label, const WebKit::WebRTCDataChannelInit&, ExceptionCode&);
     ~RTCDataChannel();
 
     String label() const;
