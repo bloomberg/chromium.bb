@@ -75,7 +75,7 @@ def GetPublicKeyPacked(f):
   pub_key = f.read(pub_key_len_bytes)
   return pub_key
 
-def GetPublicKeyFromPath(filepath):
+def GetPublicKeyFromPath(filepath, is_win_path=False):
   # Normalize the path for windows to have capital drive letters.
   # We intentionally don't check if sys.platform == 'win32' and just
   # check if this looks like drive letter so that we can test this
@@ -83,7 +83,15 @@ def GetPublicKeyFromPath(filepath):
   if (len(filepath) >= 2 and
       filepath[0].islower() and
       filepath[1] == ':'):
-      return filepath[0].upper() + filepath[1:]
+      filepath = filepath[0].upper() + filepath[1:]
+
+  # On Windows, filepaths are encoded using UTF-16, little endian byte order,
+  # using "wide characters" that are 16 bits in size. On POSIX systems, the
+  # encoding is generally UTF-8, which has the property of being equivalent to
+  # ASCII when only ASCII characters are in the path.
+  if is_win_path:
+    filepath = filepath.encode('utf-16le')
+
   return filepath
 
 def GetPublicKeyUnpacked(f, filepath):
@@ -102,9 +110,10 @@ def HasPublicKey(filename):
       return 'key' in manifest
   return False
 
-def GetPublicKey(filename, from_file_path):
+def GetPublicKey(filename, from_file_path, is_win_path=False):
   if from_file_path:
-    return GetPublicKeyFromPath(filename)
+    return GetPublicKeyFromPath(
+        filename, is_win_path=is_win_path)
 
   pub_key = ''
   if os.path.isdir(filename):
@@ -119,13 +128,13 @@ def GetPublicKey(filename, from_file_path):
     f.close()
   return pub_key
 
-def GetCRXHash(filename, from_file_path=False):
-  pub_key = GetPublicKey(filename, from_file_path)
+def GetCRXHash(filename, from_file_path=False, is_win_path=False):
+  pub_key = GetPublicKey(filename, from_file_path, is_win_path=is_win_path)
   pub_key_hash = hashlib.sha256(pub_key).digest()
   return HexTo256(pub_key_hash)
 
-def GetCRXAppID(filename, from_file_path=False):
-  pub_key = GetPublicKey(filename, from_file_path)
+def GetCRXAppID(filename, from_file_path=False, is_win_path=False):
+  pub_key = GetPublicKey(filename, from_file_path, is_win_path=is_win_path)
   pub_key_hash = hashlib.sha256(pub_key).digest()
   # AppID is the MPDecimal of only the first 128 bits of the hash.
   return HexToMPDecimal(pub_key_hash[:128/8])

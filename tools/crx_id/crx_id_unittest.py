@@ -63,13 +63,22 @@ class CrxIdUnittest(unittest.TestCase):
     self.assertEqual(crx_id.GetCRXAppID('/tmp/temp_extension',
                                         from_file_path=True),
                      'ajbbicncdkdlchpjplgjaglppbcbmaji')
+
+  def testFromWindowsPath(self):
+    self.assertEqual(crx_id.GetCRXAppID(r'D:\Documents\chrome\test_extension',
+                                        from_file_path=True,
+                                        is_win_path=True),
+                     'fegemedmbnhglnecjgbdhekaghkccplm')
+
     # Test drive letter normalization.
-    kWinPathId = 'popnagglbbhjlobnnbcjnckakjoegnjp'
-    self.assertEqual(crx_id.GetCRXAppID('c:\temp_extension',
-                                        from_file_path=True),
+    kWinPathId = 'aiinlcdagjihibappcdnnhcccdokjlaf'
+    self.assertEqual(crx_id.GetCRXAppID(r'c:\temp_extension',
+                                        from_file_path=True,
+                                        is_win_path=True),
                      kWinPathId)
-    self.assertEqual(crx_id.GetCRXAppID('C:\temp_extension',
-                                        from_file_path=True),
+    self.assertEqual(crx_id.GetCRXAppID(r'C:\temp_extension',
+                                        from_file_path=True,
+                                        is_win_path=True),
                      kWinPathId)
 
 if __name__ == '__main__':
