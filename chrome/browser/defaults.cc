@@ -49,7 +49,7 @@ const bool kAlwaysOpenIncognitoWindow = false;
 const bool kAlwaysCreateTabbedBrowserOnSessionRestore = true;
 #endif
 
-#if defined(USE_AURA)
+#if defined(OS_CHROMEOS)
 const bool kOSSupportsOtherBrowsers = false;
 #else
 const bool kOSSupportsOtherBrowsers = true;
