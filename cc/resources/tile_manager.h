@@ -142,7 +142,9 @@ class CC_EXPORT TileManager {
       scoped_refptr<Tile> tile,
       uint32_t pixel_ref_id);
   RasterTaskMetadata GetRasterTaskMetadata(const Tile& tile) const;
-  RasterWorkerPool::RasterTask CreateRasterTask(Tile* tile);
+  RasterWorkerPool::RasterTask CreateRasterTask(
+      Tile* tile,
+      PixelRefSet* decoded_images);
   void OnRasterTaskCompleted(
       scoped_refptr<Tile> tile,
       scoped_ptr<ResourcePool::Resource> resource,

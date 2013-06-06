@@ -552,6 +552,7 @@ void TileManager::FreeResourcesForTile(Tile* tile) {
 void TileManager::ScheduleTasks() {
   TRACE_EVENT0("cc", "TileManager::ScheduleTasks");
   RasterWorkerPool::RasterTask::Queue tasks;
+  PixelRefSet decoded_images;
 
   // Build a new task queue containing all task currently needed. Tasks
   // are added in order of priority, highest priority task first.
@@ -566,7 +567,7 @@ void TileManager::ScheduleTasks() {
 
     // Create raster task for this tile if necessary.
     if (mts.raster_task.is_null())
-      mts.raster_task = CreateRasterTask(tile);
+      mts.raster_task = CreateRasterTask(tile, &decoded_images);
 
     // Finally append raster task.
     tasks.Append(mts.raster_task);
@@ -614,7 +615,9 @@ TileManager::RasterTaskMetadata TileManager::GetRasterTaskMetadata(
   return metadata;
 }
 
-RasterWorkerPool::RasterTask TileManager::CreateRasterTask(Tile* tile) {
+RasterWorkerPool::RasterTask TileManager::CreateRasterTask(
+    Tile* tile,
+    PixelRefSet* decoded_images) {
   TRACE_EVENT0("cc", "TileManager::CreateRasterTask");
 
   scoped_ptr<ResourcePool::Resource> resource =
@@ -643,8 +646,12 @@ RasterWorkerPool::RasterTask TileManager::CreateRasterTask(Tile* tile) {
       continue;
     }
 
+    if (decoded_images->find(id) != decoded_images->end())
+      continue;
+
     // TODO(qinmin): passing correct image size to PrepareToDecode().
     if (pixel_ref->PrepareToDecode(skia::LazyPixelRef::PrepareParams())) {
+      decoded_images->insert(id);
       rendering_stats_instrumentation_->IncrementDeferredImageCacheHitCount();
       continue;
     }
