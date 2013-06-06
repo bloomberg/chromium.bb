@@ -159,4 +159,31 @@ v8::Local<v8::Value> V8ScriptRunner::callAsConstructor(v8::Handle<v8::Object> ob
     return result;
 }
 
+v8::Local<v8::Object> V8ScriptRunner::instantiateObject(v8::Handle<v8::ObjectTemplate> objectTemplate)
+{
+    TRACE_EVENT0("v8", "v8.newInstance");
+    V8RecursionScope::MicrotaskSuppression scope;
+    v8::Local<v8::Object> result = objectTemplate->NewInstance();
+    crashIfV8IsDead();
+    return result;
+}
+
+v8::Local<v8::Object> V8ScriptRunner::instantiateObject(v8::Handle<v8::Function> function, int argc, v8::Handle<v8::Value> argv[])
+{
+    TRACE_EVENT0("v8", "v8.newInstance");
+    V8RecursionScope::MicrotaskSuppression scope;
+    v8::Local<v8::Object> result = function->NewInstance(argc, argv);
+    crashIfV8IsDead();
+    return result;
+}
+
+v8::Local<v8::Object> V8ScriptRunner::instantiateObjectInDocument(v8::Handle<v8::Function> function, ScriptExecutionContext* context, int argc, v8::Handle<v8::Value> argv[])
+{
+    TRACE_EVENT0("v8", "v8.newInstance");
+    V8RecursionScope scope(context);
+    v8::Local<v8::Object> result = function->NewInstance(argc, argv);
+    crashIfV8IsDead();
+    return result;
+}
+
 } // namespace WebCore

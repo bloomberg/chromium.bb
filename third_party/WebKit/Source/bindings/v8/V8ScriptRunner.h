@@ -45,6 +45,10 @@ public:
     static v8::Local<v8::Value> callFunction(v8::Handle<v8::Function>, ScriptExecutionContext*, v8::Handle<v8::Object> receiver, int argc, v8::Handle<v8::Value> args[]);
     static v8::Local<v8::Value> callAsFunction(v8::Handle<v8::Object>, v8::Handle<v8::Object> receiver, int argc, v8::Handle<v8::Value> args[]);
     static v8::Local<v8::Value> callAsConstructor(v8::Handle<v8::Object>, int argc, v8::Handle<v8::Value> args[]);
+    static v8::Local<v8::Object> instantiateObject(v8::Handle<v8::ObjectTemplate>);
+    static v8::Local<v8::Object> instantiateObject(v8::Handle<v8::Function>, int argc = 0, v8::Handle<v8::Value> argv[] = 0);
+    static v8::Local<v8::Object> instantiateObjectInDocument(v8::Handle<v8::Function>, ScriptExecutionContext*, int argc = 0, v8::Handle<v8::Value> argv[] = 0);
+
 };
 
 } // namespace WebCore
