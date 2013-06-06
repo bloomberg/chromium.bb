@@ -105,11 +105,12 @@ public:
     virtual NPObject* scriptableObjectForElement();
     virtual WebString executeScriptURL(const WebURL&, bool popupsAllowed);
     virtual void loadFrameRequest(const WebURLRequest&, const WebString& target, bool notifyNeeded, void* notifyData);
-    virtual void zoomLevelChanged(double zoomLevel);    
+    virtual void zoomLevelChanged(double zoomLevel);
     virtual bool isRectTopmost(const WebRect&);
     virtual void requestTouchEventType(TouchEventRequestType);
     virtual void setWantsWheelEvents(bool);
     virtual WebPoint windowToLocalPoint(const WebPoint&);
+    virtual WebPoint localToWindowPoint(const WebPoint&);
 
     // This cannot be null.
     WebPlugin* plugin() { return m_webPlugin; }

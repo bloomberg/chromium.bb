@@ -114,6 +114,9 @@ public:
     // Converts view's window coordinates to plugin's local coordinates.
     virtual WebPoint windowToLocalPoint(const WebPoint&) = 0;
 
+    // Converts plugin's local coordinate to view's window coordinates.
+    virtual WebPoint localToWindowPoint(const WebPoint&) = 0;
+
     virtual WebPlugin* plugin() = 0;
     virtual void setPlugin(WebPlugin*) = 0;
 

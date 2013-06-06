@@ -492,7 +492,7 @@ void WebPluginContainerImpl::requestTouchEventType(TouchEventRequestType request
 {
     if (m_touchEventRequestType == requestType)
         return;
-    
+
     if (requestType != TouchEventRequestTypeNone && m_touchEventRequestType == TouchEventRequestTypeNone)
         m_element->document()->didAddTouchEventHandler(m_element);
     else if (requestType == TouchEventRequestTypeNone && m_touchEventRequestType != TouchEventRequestTypeNone)
@@ -520,6 +520,15 @@ WebPoint WebPluginContainerImpl::windowToLocalPoint(const WebPoint& point)
         return point;
     WebPoint windowPoint = view->windowToContents(point);
     return roundedIntPoint(m_element->renderer()->absoluteToLocal(LayoutPoint(windowPoint), UseTransforms));
+}
+
+WebPoint WebPluginContainerImpl::localToWindowPoint(const WebPoint& point)
+{
+    ScrollView* view = parent();
+    if (!view)
+        return point;
+    IntPoint absolutePoint = roundedIntPoint(m_element->renderer()->localToAbsolute(LayoutPoint(point), UseTransforms));
+    return view->contentsToWindow(absolutePoint);
 }
 
 void WebPluginContainerImpl::didReceiveResponse(const ResourceResponse& response)
