@@ -40,19 +40,23 @@ namespace {
 
 const char kDriveMountPointPath[] = "/special/drive";
 
-const char kDriveMyDriveMountPointPath[] = "/special/drive/root";
+const base::FilePath::CharType kDriveMyDriveMountPointPath[] =
+    FILE_PATH_LITERAL("/special/drive/root");
 
-const base::FilePath::CharType* kDriveMountPointPathComponents[] = {
-    FILE_PATH_LITERAL("/"),
-    FILE_PATH_LITERAL("special"),
-    FILE_PATH_LITERAL("drive")
-};
+const base::FilePath::CharType kDriveMyDriveRootPath[] =
+    FILE_PATH_LITERAL("drive/root");
 
 const base::FilePath::CharType kFileCacheVersionDir[] =
     FILE_PATH_LITERAL("v1");
 
 const char kSlash[] = "/";
 const char kEscapedSlash[] = "\xE2\x88\x95";
+
+const base::FilePath& GetDriveMyDriveMountPointPath() {
+  CR_DEFINE_STATIC_LOCAL(base::FilePath, drive_mydrive_mount_path,
+      (kDriveMyDriveMountPointPath));
+  return drive_mydrive_mount_path;
+}
 
 FileSystemInterface* GetFileSystem(Profile* profile) {
   DriveIntegrationService* integration_service =
@@ -99,16 +103,15 @@ std::string ReadStringFromGDocFile(const base::FilePath& file_path,
 
 }  // namespace
 
-
 const base::FilePath& GetDriveGrandRootPath() {
   CR_DEFINE_STATIC_LOCAL(base::FilePath, grand_root_path,
-      (base::FilePath::FromUTF8Unsafe(util::kDriveGrandRootDirName)));
+      (util::kDriveGrandRootDirName));
   return grand_root_path;
 }
 
 const base::FilePath& GetDriveMyDriveRootPath() {
   CR_DEFINE_STATIC_LOCAL(base::FilePath, drive_root_path,
-      (base::FilePath::FromUTF8Unsafe(util::kDriveMyDriveRootPath)));
+      (util::kDriveMyDriveRootPath));
   return drive_root_path;
 }
 
@@ -145,12 +148,6 @@ const std::string& GetDriveMountPointPathAsString() {
   CR_DEFINE_STATIC_LOCAL(std::string, drive_mount_path_string,
       (kDriveMountPointPath));
   return drive_mount_path_string;
-}
-
-const base::FilePath& GetDriveMyDriveMountPointPath() {
-  CR_DEFINE_STATIC_LOCAL(base::FilePath, drive_mydrive_mount_path,
-      (base::FilePath::FromUTF8Unsafe(kDriveMyDriveMountPointPath)));
-  return drive_mydrive_mount_path;
 }
 
 GURL FilePathToDriveURL(const base::FilePath& path) {
@@ -217,16 +214,9 @@ base::FilePath ExtractDrivePath(const base::FilePath& path) {
   if (!IsUnderDriveMountPoint(path))
     return base::FilePath();
 
-  std::vector<base::FilePath::StringType> components;
-  path.GetComponents(&components);
-
-  // -1 to include 'drive'.
-  base::FilePath extracted;
-  for (size_t i = arraysize(kDriveMountPointPathComponents) - 1;
-       i < components.size(); ++i) {
-    extracted = extracted.Append(components[i]);
-  }
-  return extracted;
+  base::FilePath drive_path = GetDriveGrandRootPath();
+  GetDriveMountPointPath().AppendRelativePath(path, &drive_path);
+  return drive_path;
 }
 
 base::FilePath ExtractDrivePathFromFileSystemUrl(

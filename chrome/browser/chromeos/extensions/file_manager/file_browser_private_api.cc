@@ -287,18 +287,6 @@ void GetSizeStatsOnBlockingPool(const std::string& mount_path,
   *remaining_size_kb = static_cast<size_t>(remaining_size_in_bytes / 1024);
 }
 
-// Given a |url|, return the virtual FilePath associated with it. If the file
-// isn't of the type CrosMountPointProvider handles, return an empty FilePath.
-//
-// Virtual paths will look like "Downloads/foo/bar.txt" or "drive/foo/bar.txt".
-base::FilePath GetVirtualPathFromURL(fileapi::FileSystemContext* context,
-                                     const GURL& url) {
-  fileapi::FileSystemURL filesystem_url(context->CrackURL(url));
-  if (!chromeos::CrosMountPointProvider::CanHandleURL(filesystem_url))
-    return base::FilePath();
-  return filesystem_url.virtual_path();
-}
-
 // Make a set of unique filename suffixes out of the list of file URLs.
 std::set<std::string> GetUniqueSuffixes(base::ListValue* file_url_list,
                                         fileapi::FileSystemContext* context) {
@@ -3001,12 +2989,15 @@ bool RequestDirectoryRefreshFunction::RunImpl() {
       BrowserContext::GetStoragePartition(profile(), site_instance)->
           GetFileSystemContext();
 
-  base::FilePath directory_path = GetVirtualPathFromURL(file_system_context,
-                                                  GURL(file_url_as_string));
+  base::FilePath directory_path =
+      drive::util::ExtractDrivePathFromFileSystemUrl(
+          file_system_context->CrackURL(GURL(file_url_as_string)));
+  if (directory_path.empty())
+    return false;
+
   integration_service->file_system()->RefreshDirectory(
       directory_path,
       base::Bind(&drive::util::EmptyFileOperationCallback));
-
   return true;
 }
 

@@ -64,9 +64,6 @@ const base::FilePath::CharType kDriveMyDriveRootDirName[] =
 const base::FilePath::CharType kDriveOtherDirName[] =
     FILE_PATH_LITERAL("other");
 
-const base::FilePath::CharType kDriveMyDriveRootPath[] =
-    FILE_PATH_LITERAL("drive/root");
-
 // Returns the path of the top root of the pseudo tree.
 const base::FilePath& GetDriveGrandRootPath();
 

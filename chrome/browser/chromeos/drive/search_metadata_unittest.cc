@@ -141,7 +141,7 @@ class SearchMetadataTest : public testing::Test {
       FileError error;
       scoped_ptr<ResourceEntry> entry;
       resource_metadata_->GetResourceEntryByPathOnUIThread(
-          base::FilePath("drive/root").Append(path),
+          util::GetDriveMyDriveRootPath().Append(path),
           google_apis::test_util::CreateCopyResultCallback(&error, &entry));
       google_apis::test_util::RunBlockingPoolTask();
       if (error == FILE_ERROR_OK)
