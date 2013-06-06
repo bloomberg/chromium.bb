@@ -101,19 +101,29 @@ function chartHTML(builder)
 {
     var results = g_resultsByBuilder[builder];
     var totalFailingTests = totalFailureCountFor(builder).totalFailingTests;
-    var shouldShowBlinkRevisions = currentBuilderGroup().isToTBlink;
-    var revisionKey = shouldShowBlinkRevisions ? BLINK_REVISIONS_KEY : CHROME_REVISIONS_KEY;
-    var startRevision = results[revisionKey][totalFailingTests.length - 1];
-    var endRevision = results[revisionKey][0];
-    var revisionLabel = shouldShowBlinkRevisions ? "Blink Revision" : "Chromium Revision";
 
-    var html = chart("Total failing", {"": totalFailingTests}, revisionLabel, startRevision, endRevision);
+    // Some bots don't properly record revision numbers. Handle that gracefully.
+    var label, values;
+    if (currentBuilderGroup().isToTBlink && results[BLINK_REVISIONS_KEY]) {
+        label = 'Blink Revision';
+        values = results[BLINK_REVISIONS_KEY]
+    } else if (results[CHROME_REVISIONS_KEY]) {
+        label = 'Chrome Revision';
+        values = results[CHROME_REVISIONS_KEY];
+    } else {
+        label = 'Build Number';
+        values = results[BUILD_NUMBERS_KEY];
+    }
+
+    var start = values[totalFailingTests.length - 1];
+    var end = values[0];
+    var html = chart("Total failing", {"": totalFailingTests}, label, start, end);
 
     var values = results[FAILURES_BY_TYPE_KEY];
     // Don't care about number of passes for the charts.
     delete(values[PASS]);
 
-    return html + chart("Detailed breakdown", values, revisionLabel, startRevision, endRevision);
+    return html + chart("Detailed breakdown", values, label, start, end);
 }
 
 var LABEL_COLORS = ['FF0000', '00FF00', '0000FF', '000000', 'FF6EB4', 'FFA812', '9B30FF', '00FFCC'];
@@ -182,8 +192,12 @@ function chart(title, values, revisionLabel, startRevision, endRevision)
 
 function htmlForRevisionRows(results, numColumns)
 {
-    return htmlForTableRow('Blink Revision', results[BLINK_REVISIONS_KEY].slice(0, numColumns)) +
-        htmlForTableRow('Chrome Revision', results[CHROME_REVISIONS_KEY].slice(0, numColumns));
+    var html = '';
+    if (results[BLINK_REVISIONS_KEY])
+        html += htmlForTableRow('Blink Revision', results[BLINK_REVISIONS_KEY].slice(0, numColumns));
+    if (results[CHROME_REVISIONS_KEY])
+        html += htmlForTableRow('Chrome Revision', results[CHROME_REVISIONS_KEY].slice(0, numColumns));
+    return html;
 }
 
 function htmlForTestType(builder)

@@ -28,7 +28,7 @@
 
 module('aggregate_results');
 
-function setupAggregateResultsData()
+function setupAggregateResultsData(includeRevisonNumbers)
 {
     var historyInstance = new history.History(flakinessConfig);
     // FIXME(jparent): Remove this once global isn't used.
@@ -65,14 +65,20 @@ function setupAggregateResultsData()
             "PASS": [ 28104, 28586 ],
             "AUDIO": [ 0, 0 ]
         },
-        blinkRevision: [1234, 1233],
-        chromeRevision: [4567, 4566]
+        "buildNumbers": [5, 3]
     }
+
+    if (includeRevisonNumbers) {
+        g_resultsByBuilder[builderName][BLINK_REVISIONS_KEY] = [1234, 1233];
+        g_resultsByBuilder[builderName][CHROME_REVISIONS_KEY] = [4567, 4566];
+    }
+
     g_totalFailureCounts = {};
 }
 
 test('htmlForBuilder', 1, function() {
-    setupAggregateResultsData();
+    var includeRevisonNumbers = true;
+    setupAggregateResultsData(includeRevisonNumbers);
     g_history.dashboardSpecificState.rawValues = false;
 
     var expectedHtml = '<div class=container>' +
@@ -85,8 +91,24 @@ test('htmlForBuilder', 1, function() {
     equal(expectedHtml, htmlForBuilder('Blink Linux'));
 });
 
+test('htmlForBuilder', 1, function() {
+    var includeRevisonNumbers = false;
+    setupAggregateResultsData(includeRevisonNumbers);
+    g_history.dashboardSpecificState.rawValues = false;
+
+    var expectedHtml = '<div class=container>' +
+        '<h2>Blink Linux</h2>' +
+        '<a href="timeline_explorer.html#useTestData=true&builder=Blink Linux">' +
+            '<img src="http://chart.apis.google.com/chart?cht=lc&chs=600x400&chd=e:qe..&chg=15,15,1,3&chxt=x,x,y&chxl=1:||Build Number|&chxr=0,3,5|2,0,1445&chtt=Total failing">' +
+            '<img src="http://chart.apis.google.com/chart?cht=lc&chs=600x400&chd=e:AjAt,AcAV,A7A7,DuEc,pB..,DSE4,CoD8,AAAA&chg=15,15,1,3&chxt=x,x,y&chxl=1:||Build Number|&chxr=0,3,5|2,0,1167&chtt=Detailed breakdown&chdl=CRASH|MISSING|IMAGE+TEXT|IMAGE|SKIP|TEXT|TIMEOUT|AUDIO&chco=FF0000,00FF00,0000FF,000000,FF6EB4,FFA812,9B30FF,00FFCC">' +
+        '</a>' +
+    '</div>';
+    equal(expectedHtml, htmlForBuilder('Blink Linux'));
+});
+
 test('htmlForBuilderRawResults', 1, function() {
-    setupAggregateResultsData();
+    var includeRevisonNumbers = true;
+    setupAggregateResultsData(includeRevisonNumbers);
     g_history.dashboardSpecificState.rawValues = true;
 
     var expectedHtml = '<div class=container>' +
@@ -95,6 +117,33 @@ test('htmlForBuilderRawResults', 1, function() {
             '<tbody>' +
                 '<tr><td>Blink Revision</td><td>1234</td><td>1233</td></tr>' +
                 '<tr><td>Chrome Revision</td><td>4567</td><td>4566</td></tr>' +
+                '<tr><td>Percent passed</td><td>95.1%</td><td>96.8%</td></tr>' +
+                '<tr><td>Failures</td><td>1445</td><td>959</td></tr>' +
+                '<tr><td>Total Tests</td><td>29549</td><td>29545</td></tr>' +
+                '<tr><td>CRASH</td><td>13</td><td>10</td></tr>' +
+                '<tr><td>MISSING</td><td>6</td><td>8</td></tr>' +
+                '<tr><td>IMAGE+TEXT</td><td>17</td><td>17</td></tr>' +
+                '<tr><td>IMAGE</td><td>81</td><td>68</td></tr>' +
+                '<tr><td>SKIP</td><td>1167</td><td>748</td></tr>' +
+                '<tr><td>TEXT</td><td>89</td><td>60</td></tr>' +
+                '<tr><td>TIMEOUT</td><td>72</td><td>48</td></tr>' +
+                '<tr><td>PASS</td><td>28104</td><td>28586</td></tr>' +
+                '<tr><td>AUDIO</td><td>0</td><td>0</td></tr>' +
+            '</tbody>' +
+        '</table>' +
+    '</div>';
+    equal(expectedHtml, htmlForBuilder('Blink Linux'));
+});
+
+test('htmlForBuilderRawResults', 1, function() {
+    var includeRevisonNumbers = false;
+    setupAggregateResultsData(includeRevisonNumbers);
+    g_history.dashboardSpecificState.rawValues = true;
+
+    var expectedHtml = '<div class=container>' +
+        '<h2>Blink Linux</h2>' +
+        '<table>' +
+            '<tbody>' +
                 '<tr><td>Percent passed</td><td>95.1%</td><td>96.8%</td></tr>' +
                 '<tr><td>Failures</td><td>1445</td><td>959</td></tr>' +
                 '<tr><td>Total Tests</td><td>29549</td><td>29545</td></tr>' +
