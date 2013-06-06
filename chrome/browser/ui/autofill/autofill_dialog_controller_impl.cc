@@ -1198,13 +1198,17 @@ string16 AutofillDialogControllerImpl::InputValidityMessage(
     const string16& value) const {
   switch (AutofillType::GetEquivalentFieldType(type)) {
     case EMAIL_ADDRESS:
-      if (!value.empty() && !IsValidEmailAddress(value))
-        return ASCIIToUTF16("Are you sure this is right?");
+      if (!value.empty() && !IsValidEmailAddress(value)) {
+        return l10n_util::GetStringUTF16(
+            IDS_AUTOFILL_DIALOG_VALIDATION_INVALID_EMAIL_ADDRESS);
+      }
       break;
 
     case CREDIT_CARD_NUMBER:
-      if (!value.empty() && !autofill::IsValidCreditCardNumber(value))
-        return ASCIIToUTF16("Are you sure this is right?");
+      if (!value.empty() && !autofill::IsValidCreditCardNumber(value)) {
+        return l10n_util::GetStringUTF16(
+            IDS_AUTOFILL_DIALOG_VALIDATION_INVALID_CREDIT_CARD_NUMBER);
+      }
       break;
 
     case CREDIT_CARD_NAME:
@@ -1221,8 +1225,10 @@ string16 AutofillDialogControllerImpl::InputValidityMessage(
       break;
 
     case CREDIT_CARD_VERIFICATION_CODE:
-      if (!value.empty() && !autofill::IsValidCreditCardSecurityCode(value))
-          return ASCIIToUTF16("Are you sure this is right?");
+      if (!value.empty() && !autofill::IsValidCreditCardSecurityCode(value)) {
+        return l10n_util::GetStringUTF16(
+            IDS_AUTOFILL_DIALOG_VALIDATION_INVALID_CREDIT_CARD_SECURITY_CODE);
+      }
       break;
 
     case ADDRESS_HOME_LINE1:
@@ -1248,7 +1254,9 @@ string16 AutofillDialogControllerImpl::InputValidityMessage(
       break;
   }
 
-  return !value.empty() ? base::string16() : ASCIIToUTF16("You forgot one");
+  return value.empty() ?
+      l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_VALIDATION_MISSING_VALUE) :
+      base::string16();
 }
 
 // TODO(estade): Replace all the error messages here with more helpful and
@@ -1277,10 +1285,11 @@ ValidityData AutofillDialogControllerImpl::InputsAreValid(
       field_values.count(CREDIT_CARD_EXP_MONTH) &&
       !IsCreditCardExpirationValid(field_values[CREDIT_CARD_EXP_4_DIGIT_YEAR],
                                    field_values[CREDIT_CARD_EXP_MONTH])) {
-    invalid_messages[CREDIT_CARD_EXP_4_DIGIT_YEAR] =
-        ASCIIToUTF16("more complicated message");
-    invalid_messages[CREDIT_CARD_EXP_MONTH] =
-        ASCIIToUTF16("more complicated message");
+    // The dialog shows the same error message for the month and year fields.
+    invalid_messages[CREDIT_CARD_EXP_4_DIGIT_YEAR] = l10n_util::GetStringUTF16(
+        IDS_AUTOFILL_DIALOG_VALIDATION_INVALID_CREDIT_CARD_EXPIRATION_DATE);
+    invalid_messages[CREDIT_CARD_EXP_MONTH] = l10n_util::GetStringUTF16(
+        IDS_AUTOFILL_DIALOG_VALIDATION_INVALID_CREDIT_CARD_EXPIRATION_DATE);
   }
 
   // If there is a credit card number and a CVC, validate them together.
@@ -1292,7 +1301,8 @@ ValidityData AutofillDialogControllerImpl::InputsAreValid(
           field_values[CREDIT_CARD_VERIFICATION_CODE],
           field_values[CREDIT_CARD_NUMBER])) {
     invalid_messages[CREDIT_CARD_VERIFICATION_CODE] =
-        ASCIIToUTF16("CVC doesn't match card type!");
+        l10n_util::GetStringUTF16(
+            IDS_AUTOFILL_DIALOG_VALIDATION_INVALID_CREDIT_CARD_SECURITY_CODE);
   }
 
   // Validate the phone number against the country code of the address.
@@ -1304,8 +1314,8 @@ ValidityData AutofillDialogControllerImpl::InputsAreValid(
             field_values[ADDRESS_HOME_COUNTRY],
             g_browser_process->GetApplicationLocale()));
     if (!phone_object.IsValidNumber()) {
-      invalid_messages[PHONE_HOME_WHOLE_NUMBER] =
-          ASCIIToUTF16("Invalid phone number");
+      invalid_messages[PHONE_HOME_WHOLE_NUMBER] = l10n_util::GetStringUTF16(
+          IDS_AUTOFILL_DIALOG_VALIDATION_INVALID_PHONE_NUMBER);
     }
   }
 

@@ -10760,6 +10760,24 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
       <message name="IDS_AUTOFILL_DIALOG_VALIDATION_WALLET_REQUIRES_TWO_NAMES" desc="Message displayed to user when card holder name validation for Wallet fails.">
         Google Wallet requires at least a first and last name.
       </message>
+      <message name="IDS_AUTOFILL_DIALOG_VALIDATION_INVALID_EMAIL_ADDRESS" desc="Message displayed to user when email address validation fails.">
+        Not a valid email address
+      </message>
+      <message name="IDS_AUTOFILL_DIALOG_VALIDATION_INVALID_CREDIT_CARD_NUMBER" desc="Message displayed to user when credit card number validation fails.">
+        Not a valid credit card number
+      </message>
+      <message name="IDS_AUTOFILL_DIALOG_VALIDATION_INVALID_CREDIT_CARD_SECURITY_CODE" desc="Message displayed to user when credit card security code validation fails.">
+        Not a valid credit card security code
+      </message>
+      <message name="IDS_AUTOFILL_DIALOG_VALIDATION_INVALID_CREDIT_CARD_EXPIRATION_DATE" desc="Message displayed to user when credit card expiration date validation fails.">
+        Card is expired
+      </message>
+      <message name="IDS_AUTOFILL_DIALOG_VALIDATION_INVALID_PHONE_NUMBER" desc="Message displayed to user when phone number validation fails.">
+        Not a valid phone number
+      </message>
+      <message name="IDS_AUTOFILL_DIALOG_VALIDATION_MISSING_VALUE" desc="Message displayed to user when one of the required fields is left empty.">
+        Field is required
+      </message>
 
       <!-- Autocheckout bubble -->
       <message name="IDS_AUTOCHECKOUT_BUBBLE_PROMPT_SIGNED_IN" desc="Text for prompting a Google user to start an Autocheckout flow.">
