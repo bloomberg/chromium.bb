@@ -242,7 +242,7 @@ CONTENT_EXPORT extern const char kUseMobileUserAgent[];
 
 #if defined(OS_ANDROID)
 extern const char kDisableMediaHistoryLogging[];
-extern const char kDisableGestureRequirementForMediaPlayback[];
+CONTENT_EXPORT extern const char kDisableGestureRequirementForMediaPlayback[];
 extern const char kNetworkCountryIso[];
 CONTENT_EXPORT extern const char kEnableWebViewSynchronousAPIs[];
 CONTENT_EXPORT extern const char kDisableOverscrollEdgeEffect[];
