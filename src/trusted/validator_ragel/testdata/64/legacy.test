@@ -6,9 +6,9 @@
   # aad
   D5 0A
 @dis:
-  0000000000000000: 37                                           invalid
-  0000000000000001: d5                                           invalid
-  0000000000000002: 0a                                           invalid
+     0:	37                   	(bad)  
+     1:	d5                   	(bad)  
+     2:	0a                   	.byte 0xa
 @rdfa_output:
   0: [0] unrecognized instruction
   1: [1] unrecognized instruction
@@ -18,8 +18,8 @@
   # aam
   D4 0A
 @dis:
-  0000000000000000: d4                                           invalid
-  0000000000000001: 0a                                           invalid
+     0:	d4                   	(bad)  
+     1:	0a                   	.byte 0xa
 @rdfa_output:
   0: [0] unrecognized instruction
   return code: 1
@@ -30,9 +30,9 @@
   # bound %eax, (%eax)
   62 00
 @dis:
-  0000000000000000: 3f                                           invalid
-  0000000000000001: 62                                           invalid
-  0000000000000002: 00                                           invalid
+     0:	3f                   	(bad)  
+     1:	62                   	(bad)  
+     2:	00                   	.byte 0x0
 @rdfa_output:
   0: [0] unrecognized instruction
   1: [1] unrecognized instruction
@@ -46,9 +46,9 @@
   # pusha
   60
 @dis:
-  0000000000000000: 27                                           invalid
-  0000000000000001: 2f                                           invalid
-  0000000000000002: 60                                           invalid
+     0:	27                   	(bad)  
+     1:	2f                   	(bad)  
+     2:	60                   	(bad)  
 @rdfa_output:
   0: [0] unrecognized instruction
   1: [1] unrecognized instruction
@@ -62,8 +62,8 @@
   # salc
   D6
 @dis:
-  0000000000000000: f1                                           int1
-  0000000000000001: d6                                           invalid
+     0:	f1                   	icebp  
+     1:	d6                   	(bad)  
 @rdfa_output:
   0: [0] unrecognized instruction
   1: [1] unrecognized instruction
@@ -77,8 +77,8 @@
   # sahf
   9E
 @dis:
-  0000000000000000: 9f                                           lahf
-  0000000000000001: 9e                                           sahf
+     0:	9f                   	lahf   
+     1:	9e                   	sahf   
 @rdfa_output:
   return code: 0
 ----------------------------------------------------------------------
@@ -90,8 +90,8 @@
   # xlat (%rbx,%al)
   48 D7
 @dis:
-  0000000000000000: d7                                           xlat
-  0000000000000001: 48 d7                                        xlat
+     0:	d7                   	xlat   %ds:(%rbx)
+     1:	48 d7                	rex.W xlat   %ds:(%rbx)
 @rdfa_output:
   0: [0] unrecognized instruction
   1: [1] unrecognized instruction

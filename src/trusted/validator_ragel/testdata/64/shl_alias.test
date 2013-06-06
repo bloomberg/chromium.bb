@@ -14,12 +14,15 @@
   d1 f7
   c1 f7 02
 @dis:
-  0000000000000000: d3 e7                                        shl %edi, %cl
-  0000000000000002: d1 e7                                        shl %edi, 0x1
-  0000000000000004: c1 e7 02                                     shl %edi, 0x2
-  0000000000000007: d3 f7                                        shl %edi, %cl
-  0000000000000009: d1 f7                                        shl %edi, 0x1
-  000000000000000b: c1 f7 02                                     shl %edi, 0x2
+     0:	d3 e7                	shl    %cl,%edi
+     2:	d1 e7                	shl    %edi
+     4:	c1 e7 02             	shl    $0x2,%edi
+     7:	d3                   	(bad)  
+     8:	f7 d1                	not    %ecx
+     a:	f7                   	.byte 0xf7
+     b:	c1                   	(bad)  
+     c:	f7                   	.byte 0xf7
+     d:	02                   	.byte 0x2
 @rdfa_output:
   7: [0] unrecognized instruction
   9: [1] unrecognized instruction

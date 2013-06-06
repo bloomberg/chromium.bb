@@ -3,7 +3,7 @@
   9a 01 02 03 04 05 06
   
 @dis:
-  00000000: 9a 01 02 03 04 05 06                         call 0x60504030201
+     0:	9a 01 02 03 04 05 06 	lcall  $0x605,$0x4030201
 @rdfa_output:
   0: [0] unrecognized instruction
   return code: 1

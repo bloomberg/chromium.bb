@@ -5,7 +5,7 @@
   # push [%r15+%rdi*1+0x20]
   41 ff 74 3f 20
 @dis:
-  0000000000000000: 89 ff                                        mov %edi, %edi
-  0000000000000002: 41 ff 74 3f 20                               push [%r15+%rdi*1+0x20]
+     0:	89 ff                	mov    %edi,%edi
+     2:	41 ff 74 3f 20       	pushq  0x20(%r15,%rdi,1)
 @rdfa_output:
   return code: 0

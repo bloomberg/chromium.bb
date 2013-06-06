@@ -2,7 +2,7 @@
   # Show that we report rdmsr as an illegal instruction.
   0f 32
 @dis:
-  0000000000000000: 0f 32                                        rdmsr
+     0:	0f 32                	rdmsr  
 @rdfa_output:
   0: [0] unrecognized instruction
   return code: 1

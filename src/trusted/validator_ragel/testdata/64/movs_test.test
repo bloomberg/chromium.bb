@@ -30,33 +30,33 @@
   49 8d 3c 3f
   a4
 @dis:
-  0000000000000000: 89 f6                                        mov %esi, %esi
-  0000000000000002: 49 8d 34 37                                  lea %rsi, [%r15+%rsi*1]
-  0000000000000006: 89 ff                                        mov %edi, %edi
-  0000000000000008: 49 8d 3c 3f                                  lea %rdi, [%r15+%rdi*1]
-  000000000000000c: a4                                           movsb [%rdi], [%rsi]
-  000000000000000d: 90                                           nop
-  000000000000000e: 90                                           nop
-  000000000000000f: 90                                           nop
-  0000000000000010: 90                                           nop
-  0000000000000011: 90                                           nop
-  0000000000000012: 90                                           nop
-  0000000000000013: 90                                           nop
-  0000000000000014: 90                                           nop
-  0000000000000015: 90                                           nop
-  0000000000000016: 90                                           nop
-  0000000000000017: 90                                           nop
-  0000000000000018: 90                                           nop
-  0000000000000019: 90                                           nop
-  000000000000001a: 90                                           nop
-  000000000000001b: 90                                           nop
-  000000000000001c: 90                                           nop
-  000000000000001d: 90                                           nop
-  000000000000001e: 89 f6                                        mov %esi, %esi
-  0000000000000020: 49 8d 34 37                                  lea %rsi, [%r15+%rsi*1]
-  0000000000000024: 89 ff                                        mov %edi, %edi
-  0000000000000026: 49 8d 3c 3f                                  lea %rdi, [%r15+%rdi*1]
-  000000000000002a: a4                                           movsb [%rdi], [%rsi]
+     0:	89 f6                	mov    %esi,%esi
+     2:	49 8d 34 37          	lea    (%r15,%rsi,1),%rsi
+     6:	89 ff                	mov    %edi,%edi
+     8:	49 8d 3c 3f          	lea    (%r15,%rdi,1),%rdi
+     c:	a4                   	movsb  %ds:(%rsi),%es:(%rdi)
+     d:	90                   	nop
+     e:	90                   	nop
+     f:	90                   	nop
+    10:	90                   	nop
+    11:	90                   	nop
+    12:	90                   	nop
+    13:	90                   	nop
+    14:	90                   	nop
+    15:	90                   	nop
+    16:	90                   	nop
+    17:	90                   	nop
+    18:	90                   	nop
+    19:	90                   	nop
+    1a:	90                   	nop
+    1b:	90                   	nop
+    1c:	90                   	nop
+    1d:	90                   	nop
+    1e:	89 f6                	mov    %esi,%esi
+    20:	49 8d 34 37          	lea    (%r15,%rsi,1),%rsi
+    24:	89 ff                	mov    %edi,%edi
+    26:	49 8d 3c 3f          	lea    (%r15,%rdi,1),%rdi
+    2a:	a4                   	movsb  %ds:(%rsi),%es:(%rdi)
 @rdfa_output:
   2a: [0] unrecognized instruction
   return code: 1

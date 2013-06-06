@@ -16,12 +16,12 @@
   41 FF E1
   
 @dis:
-  0000000000000000: 83 e2 e0                                     and %edx, 0xe0
-  0000000000000003: 4c 01 fa                                     add %rdx, %r15
-  0000000000000006: ff e2                                        jmp %rdx
-  0000000000000008: 83 e2 e0                                     and %edx, 0xe0
-  000000000000000b: 4d 8d 0c 17                                  lea %r9, [%r15+%rdx*1]
-  000000000000000f: 41 ff e1                                     jmp %r9
+     0:	83 e2 e0             	and    $0xffffffffffffffe0,%edx
+     3:	4c 01 fa             	add    %r15,%rdx
+     6:	ff e2                	jmpq   *%rdx
+     8:	83 e2 e0             	and    $0xffffffffffffffe0,%edx
+     b:	4d 8d 0c 17          	lea    (%r15,%rdx,1),%r9
+     f:	41 ff e1             	jmpq   *%r9
 @rdfa_output:
   f: [0] unrecognized instruction
   return code: 1

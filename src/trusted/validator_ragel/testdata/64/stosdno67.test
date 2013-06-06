@@ -2,7 +2,7 @@
   # Example of a 64-bit segment address assignment.
   ab
 @dis:
-  0000000000000000: ab                                           stosd [%rdi]
+     0:	ab                   	stos   %eax,%es:(%rdi)
 @rdfa_output:
   0: [0] unrecognized instruction
   return code: 1

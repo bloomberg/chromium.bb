@@ -3,7 +3,7 @@
   #   sub %rsp, %rax
   48 29 c4
 @dis:
-  0000000000000000: 48 29 c4                                     sub %rsp, %rax
+     0:	48 29 c4             	sub    %rax,%rsp
 @rdfa_output:
   0: [0] error - %spl or %sp is changed
   return code: 1

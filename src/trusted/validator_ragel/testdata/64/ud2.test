@@ -2,6 +2,6 @@
   # ud2
   0F 0B
 @dis:
-  0000000000000000: 0f 0b                                        ud2
+     0:	0f 0b                	ud2a   
 @rdfa_output:
   return code: 0

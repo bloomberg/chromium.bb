@@ -3,7 +3,7 @@
   66 bf 08 00
   f4
 @dis:
-  00000000: 66 bf 08 00                                  mov %di, 0x8
-  00000004: f4                                           hlt
+     0:	66 bf 08 00          	mov    $0x8,%di
+     4:	f4                   	hlt    
 @rdfa_output:
   return code: 0

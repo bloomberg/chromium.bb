@@ -21,17 +21,17 @@
   2e 74 02
   3e 74 02
 @dis:
-  0000000000000000: f0 01 04 24                                  add [%rsp], %eax
-  0000000000000004: 89 ff                                        mov %edi, %edi
-  0000000000000006: 49 8d 3c 3f                                  lea %rdi, [%r15+%rdi*1]
-  000000000000000a: f3 ab                                        stosd [%rdi]
-  000000000000000c: 89 ff                                        mov %edi, %edi
-  000000000000000e: 49 8d 3c 3f                                  lea %rdi, [%r15+%rdi*1]
-  0000000000000012: f2 ae                                        scasb [%rdi]
-  0000000000000014: 66 89 c0                                     mov %ax, %ax
-  0000000000000017: 40 eb fd                                     jmp 0x17
-  000000000000001a: 2e 74 02                                     jz 0x1f
-  000000000000001d: 3e 74 02                                     jz 0x22
+     0:	f0 01 04 24          	lock add %eax,(%rsp)
+     4:	89 ff                	mov    %edi,%edi
+     6:	49 8d 3c 3f          	lea    (%r15,%rdi,1),%rdi
+     a:	f3 ab                	rep stos %eax,%es:(%rdi)
+     c:	89 ff                	mov    %edi,%edi
+     e:	49 8d 3c 3f          	lea    (%r15,%rdi,1),%rdi
+    12:	f2 ae                	repnz scas %es:(%rdi),%al
+    14:	66 89 c0             	mov    %ax,%ax
+    17:	40 eb fd             	rex jmp    0x17
+    1a:	2e 74 02             	je,pn  0x1f
+    1d:	3e 74 02             	je,pt  0x22
 @rdfa_output:
   1a: [0] bad jump target
   1d: [0] direct jump out of range
@@ -48,10 +48,10 @@
   49 8D 3C 3F
   F2 AB
 @dis:
-  0000000000000000: f3 50                                        push %rax
-  0000000000000002: 89 ff                                        mov %edi, %edi
-  0000000000000004: 49 8d 3c 3f                                  lea %rdi, [%r15+%rdi*1]
-  0000000000000008: f2 ab                                        stosd [%rdi]
+     0:	f3 50                	repz push %rax
+     2:	89 ff                	mov    %edi,%edi
+     4:	49 8d 3c 3f          	lea    (%r15,%rdi,1),%rdi
+     8:	f2 ab                	repnz stos %eax,%es:(%rdi)
 @rdfa_output:
   0: [0] unrecognized instruction
   8: [1] unrecognized instruction
@@ -63,8 +63,10 @@
   # gs mov %eax,%eax
   65 89 C0
 @dis:
-  0000000000000000: 64 89 c0                                     mov %eax, %eax
-  0000000000000003: 65 89 c0                                     mov %eax, %eax
+     0:	64                   	fs
+     1:	89 c0                	mov    %eax,%eax
+     3:	65                   	gs
+     4:	89 c0                	mov    %eax,%eax
 @rdfa_output:
   0: [0] unrecognized instruction
   3: [1] unrecognized instruction
@@ -86,13 +88,13 @@
   # mov %eax,(%esp)
   67 89 04 24
 @dis:
-  0000000000000000: 2e 89 04 24                                  mov [%rsp], %eax
-  0000000000000004: 36 89 04 24                                  mov [%rsp], %eax
-  0000000000000008: 3e 89 04 24                                  mov [%rsp], %eax
-  000000000000000c: 26 89 04 24                                  mov [%rsp], %eax
-  0000000000000010: 64 89 04 24                                  mov %fs:[%rsp], %eax
-  0000000000000014: 65 89 04 24                                  mov %gs:[%rsp], %eax
-  0000000000000018: 67 89 04 24                                  mov [%esp], %eax
+     0:	2e 89 04 24          	mov    %eax,%cs:(%rsp)
+     4:	36 89 04 24          	mov    %eax,%ss:(%rsp)
+     8:	3e 89 04 24          	mov    %eax,%ds:(%rsp)
+     c:	26 89 04 24          	mov    %eax,%es:(%rsp)
+    10:	64 89 04 24          	mov    %eax,%fs:(%rsp)
+    14:	65 89 04 24          	mov    %eax,%gs:(%rsp)
+    18:	67 89 04 24          	addr32 mov %eax,(%esp)
 @rdfa_output:
   0: [0] unrecognized instruction
   4: [1] unrecognized instruction
@@ -131,19 +133,30 @@
   # es jz $
   26 74 02
 @dis:
-  0000000000000000: 2e eb fd                                     jmp 0x0
-  0000000000000003: 36 eb fd                                     jmp 0x3
-  0000000000000006: 3e eb fd                                     jmp 0x6
-  0000000000000009: 26 eb fd                                     jmp 0x9
-  000000000000000c: 64 eb fd                                     jmp 0xc
-  000000000000000f: 65 eb fd                                     jmp 0xf
-  0000000000000012: 66 eb fd                                     jmp 0x12
-  0000000000000015: 36 74 02                                     jz 0x1a
-  0000000000000018: 64 74 02                                     jz 0x1d
-  000000000000001b: 65 74 02                                     jz 0x20
-  000000000000001e: 90                                           nop
-  000000000000001f: 90                                           nop
-  0000000000000020: 26 74 02                                     jz 0x25
+     0:	2e                   	cs
+     1:	eb fd                	jmp    0x0
+     3:	36                   	ss
+     4:	eb fd                	jmp    0x3
+     6:	3e                   	ds
+     7:	eb fd                	jmp    0x6
+     9:	26                   	es
+     a:	eb fd                	jmp    0x9
+     c:	64                   	fs
+     d:	eb fd                	jmp    0xc
+     f:	65                   	gs
+    10:	eb fd                	jmp    0xf
+    12:	66                   	data16
+    13:	eb fd                	jmp    0x12
+    15:	36                   	ss
+    16:	74 02                	je     0x1a
+    18:	64                   	fs
+    19:	74 02                	je     0x1d
+    1b:	65                   	gs
+    1c:	74 02                	je     0x20
+    1e:	90                   	nop
+    1f:	90                   	nop
+    20:	26                   	es
+    21:	74 02                	je     0x25
 @rdfa_output:
   0: [0] unrecognized instruction
   3: [1] unrecognized instruction
@@ -167,8 +180,8 @@
   # cmpeqss %xmm0,%xmm1
   f3 0f c2 c8 00
 @dis:
-  0000000000000000: 66 0f 38 01 c8                               phaddw %xmm1, %xmm0
-  0000000000000005: f2 0f 58 c8                                  addsd %xmm1, %xmm0
-  0000000000000009: f3 0f c2 c8 00                               cmpss %xmm1, %xmm0, 0x0
+     0:	66 0f 38 01 c8       	phaddw %xmm0,%xmm1
+     5:	f2 0f 58 c8          	addsd  %xmm0,%xmm1
+     9:	f3 0f c2 c8 00       	cmpeqss %xmm0,%xmm1
 @rdfa_output:
   return code: 0

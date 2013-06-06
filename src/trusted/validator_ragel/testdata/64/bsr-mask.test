@@ -3,8 +3,8 @@
   0f bd c3
   49 89 14 07
 @dis:
-  0000000000000000: 0f bd c3                                     bsr %eax, %ebx
-  0000000000000003: 49 89 14 07                                  mov [%r15+%rax*1], %rdx
+     0:	0f bd c3             	bsr    %ebx,%eax
+     3:	49 89 14 07          	mov    %rdx,(%r15,%rax,1)
 @rdfa_output:
   3: [0] improper memory address - bad index
   return code: 1

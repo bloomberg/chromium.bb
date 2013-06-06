@@ -8,8 +8,8 @@
   90
   90
 @dis:
-  00000000: 0f 84 01 00 00 00                            jz 0x7
-  00000006: 90                                           nop
-  00000007: 90                                           nop
+     0:	0f 84 01 00 00 00    	je     0x7
+     6:	90                   	nop
+     7:	90                   	nop
 @rdfa_output:
   return code: 0

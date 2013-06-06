@@ -2,8 +2,8 @@
   # Example of jumping to the middle of an instruction.
   7f ff f4
 @dis:
-  00000000: 7f ff                                        jnle 0x1
-  00000002: f4                                           hlt
+     0:	7f ff                	jg     0x1
+     2:	f4                   	hlt    
 @rdfa_output:
   0: [0] bad jump target
   return code: 1

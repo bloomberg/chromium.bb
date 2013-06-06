@@ -3,6 +3,6 @@
   # dc c1                                        fadd %st1, %st0
   dc c1
 @dis:
-  00000000: dc c1                                        fadd %st1, %st0
+     0:	dc c1                	fadd   %st,%st(1)
 @rdfa_output:
   return code: 0

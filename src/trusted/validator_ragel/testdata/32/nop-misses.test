@@ -80,36 +80,49 @@
   66 66 66 66 66 2e 0f 1f 84 00 00 00 00 00
   66 66 66 66 66 66 2e 0f 1f 84 00 00 00 00 00
 @dis:
-  00000000: 66 0f 1f 44 00 00                            nop
-  00000006: 66 0f 1f 44 00 01                            nop
-  0000000c: 66 0f 1f 44 00 00                            nop
-  00000012: 66 0f 1f 43 ff                               nop
-  00000017: ff 66 0f                                     jmp %ds:[%esi+0xf]
-  0000001a: 1f                                           pop %ds
-  0000001b: 44                                           inc %esp
-  0000001c: 00 00                                        add %ds:[%eax], %al
-  0000001e: 00 00                                        add %ds:[%eax], %al
-  00000020: 66 66 66 66 66 2e 0f 1f 84 00 00 00 00 00    nop
-  0000002e: 66 66 66 66 66 2e 0f 1f 84 00 00 00 00 01    nop
-  0000003c: 66 bf 88 77                                  mov %di, 0x7788
-  00000040: 66 66 66 66 66 2e 0f 1f 84 00 00 00 00 00    nop
-  0000004e: 66 66 66 66 66 2e 0f 1f 83 ff ff ff ff       nop
-  0000005b: ff 00                                        inc %ds:[%eax]
-  0000005d: 02 04 00                                     add %al, %ds:[%eax+%eax*1]
-  00000060: 66 66 66 66 66 2e 0f 1f 84 00 00 00 00 00    nop
-  0000006e: 66 0f 1f 44 00 00                            nop
-  00000074: 66 0f 1f 84 00 00 00 00 00                   nop
-  0000007d: 02 04 00                                     add %al, %ds:[%eax+%eax*1]
-  00000080: 66 2e 0f 1f 84 00 00 00 00 00                nop
-  0000008a: 66 66 2e 0f 1f 84 00 00 00 00 00             nop
-  00000095: 66 a3 44 33 22 11                            mov [0x11223344], %ax
-  0000009b: a0 44 33 22 11                               mov %al, [0x11223344]
-  000000a0: 66 66 66 2e 0f 1f 84 00 00 00 00 00          nop
-  000000ac: 66 66 66 66 2e 0f 1f 84 00 00 00 00 00       nop
-  000000b9: 66 a3 44 33 22 11                            mov [0x11223344], %ax
-  000000bf: 90                                           nop
-  000000c0: 66 66 66 66 66 2e 0f 1f 84 00 00 00 00 00    nop
-  000000ce: 66 66 66 66 66 66 2e 0f 1f 84 00 00 00 00 00 nop
+     0:	66 0f 1f 44 00 00    	nopw   0x0(%eax,%eax,1)
+     6:	66 0f 1f 44 00 01    	nopw   0x1(%eax,%eax,1)
+     c:	66 0f 1f 44 00 00    	nopw   0x0(%eax,%eax,1)
+    12:	66 0f 1f 43 ff       	nopw   -0x1(%ebx)
+    17:	ff 66 0f             	jmp    *0xf(%esi)
+    1a:	1f                   	pop    %ds
+    1b:	44                   	inc    %esp
+    1c:	00 00                	add    %al,(%eax)
+    1e:	00 00                	add    %al,(%eax)
+    20:	66 66 66 66 66 2e 0f 	nopw   %cs:0x0(%eax,%eax,1)
+    27:	1f 84 00 00 00 00 00 
+    2e:	66 66 66 66 66 2e 0f 	nopw   %cs:0x1000000(%eax,%eax,1)
+    35:	1f 84 00 00 00 00 01 
+    3c:	66 bf 88 77          	mov    $0x7788,%di
+    40:	66 66 66 66 66 2e 0f 	nopw   %cs:0x0(%eax,%eax,1)
+    47:	1f 84 00 00 00 00 00 
+    4e:	66 66 66 66 66 2e 0f 	nopw   %cs:-0x1(%ebx)
+    55:	1f 83 ff ff ff ff 
+    5b:	ff 00                	incl   (%eax)
+    5d:	02 04 00             	add    (%eax,%eax,1),%al
+    60:	66 66 66 66 66 2e 0f 	nopw   %cs:0x0(%eax,%eax,1)
+    67:	1f 84 00 00 00 00 00 
+    6e:	66 0f 1f 44 00 00    	nopw   0x0(%eax,%eax,1)
+    74:	66 0f 1f 84 00 00 00 	nopw   0x0(%eax,%eax,1)
+    7b:	00 00 
+    7d:	02 04 00             	add    (%eax,%eax,1),%al
+    80:	66 2e 0f 1f 84 00 00 	nopw   %cs:0x0(%eax,%eax,1)
+    87:	00 00 00 
+    8a:	66 66 2e 0f 1f 84 00 	nopw   %cs:0x0(%eax,%eax,1)
+    91:	00 00 00 00 
+    95:	66 a3 44 33 22 11    	mov    %ax,0x11223344
+    9b:	a0 44 33 22 11       	mov    0x11223344,%al
+    a0:	66 66 66 2e 0f 1f 84 	nopw   %cs:0x0(%eax,%eax,1)
+    a7:	00 00 00 00 00 
+    ac:	66 66 66 66 2e 0f 1f 	nopw   %cs:0x0(%eax,%eax,1)
+    b3:	84 00 00 00 00 00 
+    b9:	66 a3 44 33 22 11    	mov    %ax,0x11223344
+    bf:	90                   	nop
+    c0:	66 66 66 66 66 2e 0f 	nopw   %cs:0x0(%eax,%eax,1)
+    c7:	1f 84 00 00 00 00 00 
+    ce:	66 66 66 66 66 66 2e 	nopw   %cs:0x0(%eax,%eax,1)
+    d5:	0f 1f 84 00 00 00 00 
+    dc:	00 
 @rdfa_output:
   6: [0] unrecognized instruction
   12: [1] unrecognized instruction

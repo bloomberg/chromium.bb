@@ -3,7 +3,9 @@
   66 f0 83 05 bb 05 5e 00 ff
   f0 66 83 05 bb 05 5e 00 ff
 @dis:
-  0000000000000000: 66 f0 83 05 bb 05 5e 00 ff                   add [%rip+0x5e05bb], 0xff
-  0000000000000009: f0 66 83 05 bb 05 5e 00 ff                   add [%rip+0x5e05bb], 0xff
+     0:	66 f0 83 05 bb 05 5e 	lock addw $0xffffffffffffffff,0x5e05bb(%rip)        # 0x5e05c4
+     7:	00 ff 
+     9:	f0 66 83 05 bb 05 5e 	lock addw $0xffffffffffffffff,0x5e05bb(%rip)        # 0x5e05cd
+    10:	00 ff 
 @rdfa_output:
   return code: 0

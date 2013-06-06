@@ -2,7 +2,7 @@
   # Example of a 32-bit segment address assignment.
   67 ab
 @dis:
-  0000000000000000: 67 ab                                        stosd [%edi]
+     0:	67 ab                	addr32 stos %eax,%es:(%edi)
 @rdfa_output:
   0: [0] unrecognized instruction
   return code: 1

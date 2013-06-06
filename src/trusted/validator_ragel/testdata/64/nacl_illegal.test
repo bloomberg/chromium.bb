@@ -3,7 +3,7 @@
   #    ret
   c3
 @dis:
-  0000000000000000: c3                                           ret
+     0:	c3                   	retq   
 @rdfa_output:
   0: [0] unrecognized instruction
   return code: 1

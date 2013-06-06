@@ -2,7 +2,9 @@
   # Sample of instruction with duplicated prefix.
   64 64 00 c0
 @dis:
-  0000000000000000: 64 64 00 c0                                  add %al, %al
+     0:	64                   	fs
+     1:	64                   	fs
+     2:	00 c0                	add    %al,%al
 @rdfa_output:
   0: [0] unrecognized instruction
   return code: 1

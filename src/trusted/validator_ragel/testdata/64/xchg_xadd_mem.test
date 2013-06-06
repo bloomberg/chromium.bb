@@ -12,10 +12,10 @@
   # and %bh, (%rbp,%rdx)
   20 7c 15 00
 @dis:
-  0000000000000000: 87 75 00                                     xchg [%rbp], %esi
-  0000000000000003: 2a 5c 35 00                                  sub %bl, [%rbp+%rsi*1]
-  0000000000000007: 0f c1 14 24                                  xadd [%rsp], %edx
-  000000000000000b: 20 7c 15 00                                  and [%rbp+%rdx*1], %bh
+     0:	87 75 00             	xchg   %esi,0x0(%rbp)
+     3:	2a 5c 35 00          	sub    0x0(%rbp,%rsi,1),%bl
+     7:	0f c1 14 24          	xadd   %edx,(%rsp)
+     b:	20 7c 15 00          	and    %bh,0x0(%rbp,%rdx,1)
 @rdfa_output:
   3: [0] improper memory address - bad index
   b: [0] improper memory address - bad index

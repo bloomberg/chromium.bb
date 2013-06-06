@@ -4,7 +4,7 @@
   
   
 @dis:
-  0000000000000000: 48 89 43 36                                  mov [%rbx+0x36], %rax
+     0:	48 89 43 36          	mov    %rax,0x36(%rbx)
 @rdfa_output:
   0: [0] improper memory address - bad base
   return code: 1

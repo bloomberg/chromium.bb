@@ -5,7 +5,7 @@
   83 e1 e0 \\
   49 89 44 CF 36
 @dis:
-  0000000000000000: 83 e1 e0                                     and %ecx, 0xe0
-  0000000000000003: 49 89 44 cf 36                               mov [%r15+%rcx*8+0x36], %rax
+     0:	83 e1 e0             	and    $0xffffffffffffffe0,%ecx
+     3:	49 89 44 cf 36       	mov    %rax,0x36(%r15,%rcx,8)
 @rdfa_output:
   return code: 0

@@ -3,7 +3,7 @@
   3c 25
   f4
 @dis:
-  00000000: 3c 25                                        cmp %al, 0x25
-  00000002: f4                                           hlt
+     0:	3c 25                	cmp    $0x25,%al
+     2:	f4                   	hlt    
 @rdfa_output:
   return code: 0

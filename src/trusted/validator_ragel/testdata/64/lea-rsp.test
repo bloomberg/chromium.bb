@@ -2,7 +2,7 @@
   # Sample invalid sequence for updating rsp (nativeclient issue 259) using lea.
   48 8d 65 e0
 @dis:
-  0000000000000000: 48 8d 65 e0                                  lea %rsp, [%rbp-0x20]
+     0:	48 8d 65 e0          	lea    -0x20(%rbp),%rsp
 @rdfa_output:
   0: [0] error - %spl or %sp is changed
   return code: 1

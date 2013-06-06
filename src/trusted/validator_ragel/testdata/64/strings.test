@@ -84,43 +84,43 @@
   49 8d 3c 3f
   a7
 @dis:
-  0000000000000000: 89 ff                                        mov %edi, %edi
-  0000000000000002: 49 8d 3c 3f                                  lea %rdi, [%r15+%rdi*1]
-  0000000000000006: ae                                           scasb [%rdi]
-  0000000000000007: 01 ff                                        add %edi, %edi
-  0000000000000009: 49 8d 3c 3f                                  lea %rdi, [%r15+%rdi*1]
-  000000000000000d: ae                                           scasb [%rdi]
-  000000000000000e: 89 ff                                        mov %edi, %edi
-  0000000000000010: 4c 01 ff                                     add %rdi, %r15
-  0000000000000013: ae                                           scasb [%rdi]
-  0000000000000014: 89 ff                                        mov %edi, %edi
-  0000000000000016: 4a 8d 3c 3f                                  lea %rdi, [%rdi+%r15*1]
-  000000000000001a: ae                                           scasb [%rdi]
-  000000000000001b: 89 f6                                        mov %esi, %esi
-  000000000000001d: 4c 01 fe                                     add %rsi, %r15
-  0000000000000020: 89 ff                                        mov %edi, %edi
-  0000000000000022: 4c 01 ff                                     add %rdi, %r15
-  0000000000000025: a5                                           movsd [%rdi], [%rsi]
-  0000000000000026: 89 f6                                        mov %esi, %esi
-  0000000000000028: 4c 01 fe                                     add %rsi, %r15
-  000000000000002b: 89 ff                                        mov %edi, %edi
-  000000000000002d: 4c 01 ff                                     add %rdi, %r15
-  0000000000000030: a7                                           cmpsd [%rdi], [%rsi]
-  0000000000000031: 89 f6                                        mov %esi, %esi
-  0000000000000033: 49 8d 34 37                                  lea %rsi, [%r15+%rsi*1]
-  0000000000000037: 89 ff                                        mov %edi, %edi
-  0000000000000039: 49 8d 3c 3f                                  lea %rdi, [%r15+%rdi*1]
-  000000000000003d: a7                                           cmpsd [%rdi], [%rsi]
-  000000000000003e: 89 ff                                        mov %edi, %edi
-  0000000000000040: 49 8d 3c 3f                                  lea %rdi, [%r15+%rdi*1]
-  0000000000000044: 89 f6                                        mov %esi, %esi
-  0000000000000046: 49 8d 34 37                                  lea %rsi, [%r15+%rsi*1]
-  000000000000004a: a7                                           cmpsd [%rdi], [%rsi]
-  000000000000004b: 01 f6                                        add %esi, %esi
-  000000000000004d: 49 8d 34 37                                  lea %rsi, [%r15+%rsi*1]
-  0000000000000051: 01 ff                                        add %edi, %edi
-  0000000000000053: 49 8d 3c 3f                                  lea %rdi, [%r15+%rdi*1]
-  0000000000000057: a7                                           cmpsd [%rdi], [%rsi]
+     0:	89 ff                	mov    %edi,%edi
+     2:	49 8d 3c 3f          	lea    (%r15,%rdi,1),%rdi
+     6:	ae                   	scas   %es:(%rdi),%al
+     7:	01 ff                	add    %edi,%edi
+     9:	49 8d 3c 3f          	lea    (%r15,%rdi,1),%rdi
+     d:	ae                   	scas   %es:(%rdi),%al
+     e:	89 ff                	mov    %edi,%edi
+    10:	4c 01 ff             	add    %r15,%rdi
+    13:	ae                   	scas   %es:(%rdi),%al
+    14:	89 ff                	mov    %edi,%edi
+    16:	4a 8d 3c 3f          	lea    (%rdi,%r15,1),%rdi
+    1a:	ae                   	scas   %es:(%rdi),%al
+    1b:	89 f6                	mov    %esi,%esi
+    1d:	4c 01 fe             	add    %r15,%rsi
+    20:	89 ff                	mov    %edi,%edi
+    22:	4c 01 ff             	add    %r15,%rdi
+    25:	a5                   	movsl  %ds:(%rsi),%es:(%rdi)
+    26:	89 f6                	mov    %esi,%esi
+    28:	4c 01 fe             	add    %r15,%rsi
+    2b:	89 ff                	mov    %edi,%edi
+    2d:	4c 01 ff             	add    %r15,%rdi
+    30:	a7                   	cmpsl  %es:(%rdi),%ds:(%rsi)
+    31:	89 f6                	mov    %esi,%esi
+    33:	49 8d 34 37          	lea    (%r15,%rsi,1),%rsi
+    37:	89 ff                	mov    %edi,%edi
+    39:	49 8d 3c 3f          	lea    (%r15,%rdi,1),%rdi
+    3d:	a7                   	cmpsl  %es:(%rdi),%ds:(%rsi)
+    3e:	89 ff                	mov    %edi,%edi
+    40:	49 8d 3c 3f          	lea    (%r15,%rdi,1),%rdi
+    44:	89 f6                	mov    %esi,%esi
+    46:	49 8d 34 37          	lea    (%r15,%rsi,1),%rsi
+    4a:	a7                   	cmpsl  %es:(%rdi),%ds:(%rsi)
+    4b:	01 f6                	add    %esi,%esi
+    4d:	49 8d 34 37          	lea    (%r15,%rsi,1),%rsi
+    51:	01 ff                	add    %edi,%edi
+    53:	49 8d 3c 3f          	lea    (%r15,%rdi,1),%rdi
+    57:	a7                   	cmpsl  %es:(%rdi),%ds:(%rsi)
 @rdfa_output:
   d: [0] unrecognized instruction
   13: [1] unrecognized instruction

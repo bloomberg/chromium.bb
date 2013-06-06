@@ -372,7 +372,7 @@ if ragel_involved:
 
     env.Alias('dfacheckvalidator', calculate_hash_sums)
 
-# Targeted tests: RDFA validator test and spec_val test.
+# Targeted tests: RDFA validator test, dis section checker and spec_val test.
 # spec_val is implemented not as test, but as alias, because for now it's not
 # ready to run on bots.
 
@@ -408,6 +408,24 @@ for bits in ['32', '64']:
       # Don't want these tests run in parallel because they write
       # to .test files.
       SideEffect(tests_mask, rdfa_targeted_test)
+
+    dis_section_test = env.AutoDepsCommand(
+        'run_dis_section_test_%s.out' % bits,
+        ['${PYTHON}',
+         env.File('check_dis_section.py'),
+         '--objdump', env.MakeUntrustedNativeEnv()['OBJDUMP'],
+         '--bits', bits,
+         tests_mask] + update_option)
+
+    env.AddNodeToTestSuite(
+        dis_section_test,
+        ['small_tests', 'validator_tests'],
+        node_name='run_dis_section_test_%s' % bits)
+
+    if env.Bit('regenerate_golden'):
+      # Don't want these tests run in parallel because they write
+      # to .test files.
+      SideEffect(tests_mask, dis_section_test)
 
   spec_test = env.AutoDepsCommand(
       'run_spec_val_test_%s.out' % bits,

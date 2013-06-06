@@ -6,8 +6,9 @@
   # Now show that we don't accept when REX is not last.
   48 f0 0f c7 08
 @dis:
-  0000000000000000: f0 48 0f c7 08                               cmpxchg16b [%rax]
-  0000000000000005: 48 f0 0f c7 08                               cmpxchg16b [%rax]
+     0:	f0 48 0f c7 08       	lock cmpxchg16b (%rax)
+     5:	48                   	rex.W
+     6:	f0 0f c7 08          	lock cmpxchg8b (%rax)
 @rdfa_output:
   0: [0] improper memory address - bad base
   5: [0] unrecognized instruction

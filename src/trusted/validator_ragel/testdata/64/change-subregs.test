@@ -7,9 +7,9 @@
   66 29 c5
   47 29 c7
 @dis:
-  0000000000000000: 66 29 c4                                     sub %sp, %ax
-  0000000000000003: 66 29 c5                                     sub %bp, %ax
-  0000000000000006: 47 29 c7                                     sub %r15d, %r8d
+     0:	66 29 c4             	sub    %ax,%sp
+     3:	66 29 c5             	sub    %ax,%bp
+     6:	47 29 c7             	rex.RXB sub    %r8d,%r15d
 @rdfa_output:
   0: [0] error - %spl or %sp is changed
   3: [0] error - %bpl or %bp is changed

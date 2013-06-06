@@ -7,7 +7,7 @@
   44 89 ec \\
   4c 01 fc
 @dis:
-  0000000000000000: 44 89 ec                                     mov %esp, %r13d
-  0000000000000003: 4c 01 fc                                     add %rsp, %r15
+     0:	44 89 ec             	mov    %r13d,%esp
+     3:	4c 01 fc             	add    %r15,%rsp
 @rdfa_output:
   return code: 0

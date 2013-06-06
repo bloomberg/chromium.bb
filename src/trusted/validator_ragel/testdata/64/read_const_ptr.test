@@ -2,7 +2,7 @@
   # Example of referencing memory with a constant value.
   23 0C 25 FF FF FF FF
 @dis:
-  0000000000000000: 23 0c 25 ff ff ff ff                         and %ecx, [-0x1]
+     0:	23 0c 25 ff ff ff ff 	and    0xffffffffffffffff,%ecx
 @rdfa_output:
   0: [0] improper memory address - bad base
   return code: 1

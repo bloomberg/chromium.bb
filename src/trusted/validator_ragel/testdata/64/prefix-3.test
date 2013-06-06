@@ -23,20 +23,24 @@
   # white-listed nop
   66 66 66 2E 0F 1F 84 00 00 00 00 00
 @dis:
-  0000000000000000: 66 f0 44 01 3c 24                            add [%rsp], %r15w
-  0000000000000006: f0 66 44 01 3c 24                            add [%rsp], %r15w
-  000000000000000c: 64 66 41 89 c0                               mov %r8w, %ax
-  0000000000000011: 66 64 41 89 c0                               mov %r8w, %ax
-  0000000000000016: 89 ff                                        mov %edi, %edi
-  0000000000000018: 49 8d 3c 3f                                  lea %rdi, [%r15+%rdi*1]
-  000000000000001c: 66 f3 48 ab                                  invalid
-  0000000000000020: 89 ff                                        mov %edi, %edi
-  0000000000000022: 49 8d 3c 3f                                  lea %rdi, [%r15+%rdi*1]
-  0000000000000026: f3 66 48 ab                                  invalid
-  000000000000002a: 66 90                                        nop
-  000000000000002c: 66 66 90                                     xchg %ax, %ax
-  000000000000002f: 66 66 66 90                                  xchg %ax, %ax
-  0000000000000033: 66 66 66 2e 0f 1f 84 00 00 00 00 00          nop
+     0:	66 f0 44 01 3c 24    	lock add %r15w,(%rsp)
+     6:	f0 66 44 01 3c 24    	lock add %r15w,(%rsp)
+     c:	64                   	fs
+     d:	66 41 89 c0          	mov    %ax,%r8w
+    11:	66                   	data16
+    12:	64                   	fs
+    13:	41 89 c0             	mov    %eax,%r8d
+    16:	89 ff                	mov    %edi,%edi
+    18:	49 8d 3c 3f          	lea    (%r15,%rdi,1),%rdi
+    1c:	66 f3 48 ab          	rep stos %rax,%es:(%rdi)
+    20:	89 ff                	mov    %edi,%edi
+    22:	49 8d 3c 3f          	lea    (%r15,%rdi,1),%rdi
+    26:	f3 66 48 ab          	rep stos %rax,%es:(%rdi)
+    2a:	66 90                	xchg   %ax,%ax
+    2c:	66 66 90             	xchg   %ax,%ax
+    2f:	66 66 66 90          	xchg   %ax,%ax
+    33:	66 66 66 2e 0f 1f 84 	nopw   %cs:0x0(%rax,%rax,1)
+    3a:	00 00 00 00 00 
 @rdfa_output:
   c: [0] unrecognized instruction
   11: [1] unrecognized instruction

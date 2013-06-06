@@ -13,15 +13,15 @@
   40 89 C0
   4F 89 C0
 @dis:
-  0000000000000000: 48 89 c0                                     mov %rax, %rax
-  0000000000000003: 47 89 c0                                     mov %r8d, %r8d
-  0000000000000006: 46 89 c0                                     mov %eax, %r8d
-  0000000000000009: 45 89 c0                                     mov %r8d, %r8d
-  000000000000000c: 44 89 c0                                     mov %eax, %r8d
-  000000000000000f: 43 89 c0                                     mov %r8d, %eax
-  0000000000000012: 42 89 c0                                     mov %eax, %eax
-  0000000000000015: 41 89 c0                                     mov %r8d, %eax
-  0000000000000018: 40 89 c0                                     mov %eax, %eax
-  000000000000001b: 4f 89 c0                                     mov %r8, %r8
+     0:	48 89 c0             	mov    %rax,%rax
+     3:	47 89 c0             	rex.RXB mov    %r8d,%r8d
+     6:	46 89 c0             	rex.RX mov    %r8d,%eax
+     9:	45 89 c0             	mov    %r8d,%r8d
+     c:	44 89 c0             	mov    %r8d,%eax
+     f:	43 89 c0             	rex.XB mov    %eax,%r8d
+    12:	42 89 c0             	rex.X mov    %eax,%eax
+    15:	41 89 c0             	mov    %eax,%r8d
+    18:	40 89 c0             	rex mov    %eax,%eax
+    1b:	4f 89 c0             	rex.WRXB mov    %r8,%r8
 @rdfa_output:
   return code: 0

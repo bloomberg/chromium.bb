@@ -5,9 +5,9 @@
   41 FF E1
   
 @dis:
-  0000000000000000: 83 e2 f0                                     and %edx, 0xf0
-  0000000000000003: 4d 8d 0c 17                                  lea %r9, [%r15+%rdx*1]
-  0000000000000007: 41 ff e1                                     jmp %r9
+     0:	83 e2 f0             	and    $0xfffffffffffffff0,%edx
+     3:	4d 8d 0c 17          	lea    (%r15,%rdx,1),%r9
+     7:	41 ff e1             	jmpq   *%r9
 @rdfa_output:
   7: [0] unrecognized instruction
   return code: 1

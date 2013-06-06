@@ -5,7 +5,7 @@
   # add %rsp, %r15
   4c 01 fc
 @dis:
-  0000000000000000: 8d 65 e0                                     lea %esp, [%rbp-0x20]
-  0000000000000003: 4c 01 fc                                     add %rsp, %r15
+     0:	8d 65 e0             	lea    -0x20(%rbp),%esp
+     3:	4c 01 fc             	add    %r15,%rsp
 @rdfa_output:
   return code: 0

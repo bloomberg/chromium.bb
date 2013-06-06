@@ -42,17 +42,17 @@
   # The same instruction with a REPNE prefix
   f2 a6
 @dis:
-  0000000000000000: 00 c0                                        add %al, %al
-  0000000000000002: f3 00 c0                                     add %al, %al
-  0000000000000005: f2 00 c0                                     add %al, %al
-  0000000000000008: f3 0f 10 02                                  movss %xmm0, [%rdx]
-  000000000000000c: f2 0f 11 54 24 10                            movsd [%rsp+0x10], %xmm2
-  0000000000000012: 6c                                           insb
-  0000000000000013: f3 6c                                        insb
-  0000000000000015: f2 6c                                        insb
-  0000000000000017: a6                                           cmpsb [%rdi], [%rsi]
-  0000000000000018: f3 a6                                        cmpsb [%rdi], [%rsi]
-  000000000000001a: f2 a6                                        cmpsb [%rdi], [%rsi]
+     0:	00 c0                	add    %al,%al
+     2:	f3 00 c0             	repz add %al,%al
+     5:	f2 00 c0             	repnz add %al,%al
+     8:	f3 0f 10 02          	movss  (%rdx),%xmm0
+     c:	f2 0f 11 54 24 10    	movsd  %xmm2,0x10(%rsp)
+    12:	6c                   	insb   (%dx),%es:(%rdi)
+    13:	f3 6c                	rep insb (%dx),%es:(%rdi)
+    15:	f2 6c                	repnz insb (%dx),%es:(%rdi)
+    17:	a6                   	cmpsb  %es:(%rdi),%ds:(%rsi)
+    18:	f3 a6                	repz cmpsb %es:(%rdi),%ds:(%rsi)
+    1a:	f2 a6                	repnz cmpsb %es:(%rdi),%ds:(%rsi)
 @rdfa_output:
   2: [0] unrecognized instruction
   5: [1] unrecognized instruction

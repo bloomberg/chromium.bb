@@ -9,8 +9,10 @@
   # the wrong byte length for the jump constant.
   90 90 90
 @dis:
-  00000000: 66 0f 84                                     invalid
-  00000003: 05 00 90 90 90                               add %eax, 0x90909000
+     0:	66 0f 84 05 00       	data16 je 0xa
+     5:	90                   	nop
+     6:	90                   	nop
+     7:	90                   	nop
 @rdfa_output:
   0: [0] unrecognized instruction
   return code: 1

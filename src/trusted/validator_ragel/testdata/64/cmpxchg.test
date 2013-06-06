@@ -9,11 +9,11 @@
   # cmpxchg16b %nacl:(%r15, %rbx)
   89 DB 49 0F C7 0C 1F
 @dis:
-  0000000000000000: 89 db                                        mov %ebx, %ebx
-  0000000000000002: 41 0f b1 04 1f                               cmpxchg [%r15+%rbx*1], %eax
-  0000000000000007: 89 db                                        mov %ebx, %ebx
-  0000000000000009: 41 0f c7 0c 1f                               cmpxchg8b [%r15+%rbx*1]
-  000000000000000e: 89 db                                        mov %ebx, %ebx
-  0000000000000010: 49 0f c7 0c 1f                               cmpxchg16b [%r15+%rbx*1]
+     0:	89 db                	mov    %ebx,%ebx
+     2:	41 0f b1 04 1f       	cmpxchg %eax,(%r15,%rbx,1)
+     7:	89 db                	mov    %ebx,%ebx
+     9:	41 0f c7 0c 1f       	cmpxchg8b (%r15,%rbx,1)
+     e:	89 db                	mov    %ebx,%ebx
+    10:	49 0f c7 0c 1f       	cmpxchg16b (%r15,%rbx,1)
 @rdfa_output:
   return code: 0
