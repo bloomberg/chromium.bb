@@ -395,4 +395,55 @@ TEST(MimeSnifferTest, LooksBinary) {
   EXPECT_EQ("application/octet-stream", mime_type);
 }
 
+TEST(MimeSnifferTest, OfficeTest) {
+  SnifferTest tests[] = {
+    // Check for URLs incorrectly reported as Microsoft Office files.
+    { "Hi there",
+      sizeof("Hi there")-1,
+      "http://www.example.com/foo.doc",
+      "application/msword", "application/octet-stream" },
+    { "Hi there",
+      sizeof("Hi there")-1,
+      "http://www.example.com/foo.xls",
+      "application/vnd.ms-excel", "application/octet-stream" },
+    { "Hi there",
+      sizeof("Hi there")-1,
+      "http://www.example.com/foo.ppt",
+      "application/vnd.ms-powerpoint", "application/octet-stream" },
+    // Check for Microsoft Office files incorrectly reported as text.
+    { "\xD0\xCF\x11\xE0\xA1\xB1\x1A\xE1" "Hi there",
+      sizeof("\xD0\xCF\x11\xE0\xA1\xB1\x1A\xE1" "Hi there")-1,
+      "http://www.example.com/foo.doc",
+      "text/plain", "application/msword" },
+    { "PK\x03\x04" "Hi there",
+      sizeof("PK\x03\x04" "Hi there")-1,
+      "http://www.example.com/foo.doc",
+      "text/plain",
+      "application/vnd.openxmlformats-officedocument."
+      "wordprocessingml.document" },
+    { "\xD0\xCF\x11\xE0\xA1\xB1\x1A\xE1" "Hi there",
+      sizeof("\xD0\xCF\x11\xE0\xA1\xB1\x1A\xE1" "Hi there")-1,
+      "http://www.example.com/foo.xls",
+      "text/plain", "application/vnd.ms-excel" },
+    { "PK\x03\x04" "Hi there",
+      sizeof("PK\x03\x04" "Hi there")-1,
+      "http://www.example.com/foo.xls",
+      "text/plain",
+      "application/vnd.openxmlformats-officedocument."
+      "spreadsheetml.sheet" },
+    { "\xD0\xCF\x11\xE0\xA1\xB1\x1A\xE1" "Hi there",
+      sizeof("\xD0\xCF\x11\xE0\xA1\xB1\x1A\xE1" "Hi there")-1,
+      "http://www.example.com/foo.ppt",
+      "text/plain", "application/vnd.ms-powerpoint" },
+    { "PK\x03\x04" "Hi there",
+      sizeof("PK\x03\x04" "Hi there")-1,
+      "http://www.example.com/foo.ppt",
+      "text/plain",
+      "application/vnd.openxmlformats-officedocument."
+      "presentationml.presentation" },
+  };
+
+  TestArray(tests, arraysize(tests));
+}
+
 }  // namespace net

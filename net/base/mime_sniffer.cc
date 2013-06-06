@@ -542,7 +542,7 @@ static bool IsOfficeType(const std::string& type_hint) {
 // set, but are not actually Office files.
 //
 // If this is not actually an Office file, |*result| is set to
-// "unknown/unknown", otherwise it is not modified.
+// "application/octet-stream", otherwise it is not modified.
 //
 // Returns false if additional data is required to determine the file type, or
 // true if there is enough data to make a decision.
@@ -559,7 +559,7 @@ static bool SniffForInvalidOfficeDocs(const char* content,
   if (!CheckForMagicNumbers(content, size,
                             kOfficeMagicNumbers, arraysize(kOfficeMagicNumbers),
                             NULL, &office_version)) {
-    *result = "unknown/unknown";
+    *result = "application/octet-stream";
   }
 
   // We have enough information to determine if this was a Microsoft Office
