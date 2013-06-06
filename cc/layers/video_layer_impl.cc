@@ -173,7 +173,7 @@ void VideoLayerImpl::AppendQuads(QuadSink* quad_sink,
       break;
     }
     case VideoFrameExternalResources::YUV_RESOURCE: {
-      DCHECK_EQ(frame_resources_.size(), 3u);
+      DCHECK_GE(frame_resources_.size(), 3u);
       if (frame_resources_.size() < 3u)
         break;
       gfx::SizeF tex_scale(tex_width_scale, tex_height_scale);
@@ -184,7 +184,9 @@ void VideoLayerImpl::AppendQuads(QuadSink* quad_sink,
                              tex_scale,
                              frame_resources_[0],
                              frame_resources_[1],
-                             frame_resources_[2]);
+                             frame_resources_[2],
+                             frame_resources_.size() > 3 ?
+                                 frame_resources_[3] : 0);
       quad_sink->Append(yuv_video_quad.PassAs<DrawQuad>(), append_quads_data);
       break;
     }

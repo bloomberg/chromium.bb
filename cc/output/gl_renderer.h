@@ -289,6 +289,8 @@ class CC_EXPORT GLRenderer
       VideoStreamTextureProgram;
   typedef ProgramBinding<VertexShaderPosTexYUVStretch, FragmentShaderYUVVideo>
       VideoYUVProgram;
+  typedef ProgramBinding<VertexShaderPosTexYUVStretch, FragmentShaderYUVAVideo>
+      VideoYUVAProgram;
 
   // Special purpose / effects shaders.
   typedef ProgramBinding<VertexShaderPos, FragmentShaderColor>
@@ -333,6 +335,8 @@ class CC_EXPORT GLRenderer
       TexCoordPrecision precision);
 
   const VideoYUVProgram* GetVideoYUVProgram(
+      TexCoordPrecision precision);
+  const VideoYUVAProgram* GetVideoYUVAProgram(
       TexCoordPrecision precision);
   const VideoStreamTextureProgram* GetVideoStreamTextureProgram(
       TexCoordPrecision precision);
@@ -390,9 +394,11 @@ class CC_EXPORT GLRenderer
       render_pass_mask_color_matrix_program_aa_highp_;
 
   scoped_ptr<VideoYUVProgram> video_yuv_program_;
+  scoped_ptr<VideoYUVAProgram> video_yuva_program_;
   scoped_ptr<VideoStreamTextureProgram> video_stream_texture_program_;
 
   scoped_ptr<VideoYUVProgram> video_yuv_program_highp_;
+  scoped_ptr<VideoYUVAProgram> video_yuva_program_highp_;
   scoped_ptr<VideoStreamTextureProgram> video_stream_texture_program_highp_;
 
   scoped_ptr<DebugBorderProgram> debug_border_program_;

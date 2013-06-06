@@ -11,7 +11,8 @@ namespace cc {
 YUVVideoDrawQuad::YUVVideoDrawQuad()
     : y_plane_resource_id(0),
       u_plane_resource_id(0),
-      v_plane_resource_id(0) {}
+      v_plane_resource_id(0),
+      a_plane_resource_id(0) {}
 YUVVideoDrawQuad::~YUVVideoDrawQuad() {}
 
 scoped_ptr<YUVVideoDrawQuad> YUVVideoDrawQuad::Create() {
@@ -24,7 +25,8 @@ void YUVVideoDrawQuad::SetNew(const SharedQuadState* shared_quad_state,
                               gfx::SizeF tex_scale,
                               unsigned y_plane_resource_id,
                               unsigned u_plane_resource_id,
-                              unsigned v_plane_resource_id) {
+                              unsigned v_plane_resource_id,
+                              unsigned a_plane_resource_id) {
   gfx::Rect visible_rect = rect;
   bool needs_blending = false;
   DrawQuad::SetAll(shared_quad_state, DrawQuad::YUV_VIDEO_CONTENT, rect,
@@ -33,6 +35,7 @@ void YUVVideoDrawQuad::SetNew(const SharedQuadState* shared_quad_state,
   this->y_plane_resource_id = y_plane_resource_id;
   this->u_plane_resource_id = u_plane_resource_id;
   this->v_plane_resource_id = v_plane_resource_id;
+  this->a_plane_resource_id = a_plane_resource_id;
 }
 
 void YUVVideoDrawQuad::SetAll(const SharedQuadState* shared_quad_state,
@@ -43,13 +46,15 @@ void YUVVideoDrawQuad::SetAll(const SharedQuadState* shared_quad_state,
                               gfx::SizeF tex_scale,
                               unsigned y_plane_resource_id,
                               unsigned u_plane_resource_id,
-                              unsigned v_plane_resource_id) {
+                              unsigned v_plane_resource_id,
+                              unsigned a_plane_resource_id) {
   DrawQuad::SetAll(shared_quad_state, DrawQuad::YUV_VIDEO_CONTENT, rect,
                    opaque_rect, visible_rect, needs_blending);
   this->tex_scale = tex_scale;
   this->y_plane_resource_id = y_plane_resource_id;
   this->u_plane_resource_id = u_plane_resource_id;
   this->v_plane_resource_id = v_plane_resource_id;
+  this->a_plane_resource_id = a_plane_resource_id;
 }
 
 void YUVVideoDrawQuad::IterateResources(
@@ -57,6 +62,8 @@ void YUVVideoDrawQuad::IterateResources(
   y_plane_resource_id = callback.Run(y_plane_resource_id);
   u_plane_resource_id = callback.Run(u_plane_resource_id);
   v_plane_resource_id = callback.Run(v_plane_resource_id);
+  if (a_plane_resource_id)
+    a_plane_resource_id = callback.Run(a_plane_resource_id);
 }
 
 const YUVVideoDrawQuad* YUVVideoDrawQuad::MaterialCast(

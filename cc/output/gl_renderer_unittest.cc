@@ -96,6 +96,7 @@ class GLRendererShaderPixelTest : public GLRendererPixelTest {
     EXPECT_PROGRAM_VALID(renderer()->GetTextureProgramFlip(precision));
     EXPECT_PROGRAM_VALID(renderer()->GetTextureIOSurfaceProgram(precision));
     EXPECT_PROGRAM_VALID(renderer()->GetVideoYUVProgram(precision));
+    EXPECT_PROGRAM_VALID(renderer()->GetVideoYUVAProgram(precision));
     // This is unlikely to be ever true in tests due to usage of osmesa.
     if (renderer()->Capabilities().using_egl_image)
       EXPECT_PROGRAM_VALID(renderer()->GetVideoStreamTextureProgram(precision));

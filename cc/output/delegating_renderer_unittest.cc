@@ -132,7 +132,7 @@ class DelegatingRendererTestResources : public DelegatingRendererTest {
     // change if AppendOneOfEveryQuadType() is updated, and the value here
     // should be updated accordingly.
     EXPECT_EQ(
-        19u, last_frame.delegated_frame_data->resource_list.size());
+        21u, last_frame.delegated_frame_data->resource_list.size());
 
     EndTest();
   }

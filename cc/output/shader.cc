@@ -1355,6 +1355,79 @@ std::string FragmentShaderYUVVideo::GetShaderString(
   );  // NOLINT(whitespace/parens)
 }
 
+FragmentShaderYUVAVideo::FragmentShaderYUVAVideo()
+    : y_texture_location_(-1),
+      u_texture_location_(-1),
+      v_texture_location_(-1),
+      a_texture_location_(-1),
+      alpha_location_(-1),
+      yuv_matrix_location_(-1),
+      yuv_adj_location_(-1) {
+}
+
+void FragmentShaderYUVAVideo::Init(WebGraphicsContext3D* context,
+                                   unsigned program,
+                                   bool using_bind_uniform,
+                                   int* base_uniform_index) {
+  static const char* shader_uniforms[] = {
+      "y_texture",
+      "u_texture",
+      "v_texture",
+      "a_texture",
+      "alpha",
+      "cc_matrix",
+      "yuv_adj",
+  };
+  int locations[7];
+
+  GetProgramUniformLocations(context,
+                             program,
+                             shader_uniforms,
+                             arraysize(shader_uniforms),
+                             arraysize(locations),
+                             locations,
+                             using_bind_uniform,
+                             base_uniform_index);
+
+  y_texture_location_ = locations[0];
+  u_texture_location_ = locations[1];
+  v_texture_location_ = locations[2];
+  a_texture_location_ = locations[3];
+  alpha_location_ = locations[4];
+  yuv_matrix_location_ = locations[5];
+  yuv_adj_location_ = locations[6];
+
+  DCHECK(y_texture_location_ != -1 && u_texture_location_ != -1 &&
+         v_texture_location_ != -1 && a_texture_location_ != -1 &&
+         alpha_location_ != -1 && yuv_matrix_location_ != -1 &&
+         yuv_adj_location_ != -1);
+}
+
+std::string FragmentShaderYUVAVideo::GetShaderString(
+    TexCoordPrecision precision) const {
+  return FRAGMENT_SHADER(
+    precision mediump float;
+    precision mediump int;
+    varying TexCoordPrecision vec2 v_texCoord;
+    uniform sampler2D y_texture;
+    uniform sampler2D u_texture;
+    uniform sampler2D v_texture;
+    uniform sampler2D a_texture;
+    uniform float alpha;
+    uniform vec3 yuv_adj;
+    uniform mat3 yuv_matrix;
+    void main() {
+      float y_raw = texture2D(y_texture, v_texCoord).x;
+      float u_unsigned = texture2D(u_texture, v_texCoord).x;
+      float v_unsigned = texture2D(v_texture, v_texCoord).x;
+      float a_raw = texture2D(a_texture, v_texCoord).x;
+      vec3 yuv = vec3(y_raw, u_unsigned, v_unsigned) + yuv_adj;
+      vec3 rgb = yuv_matrix * yuv;
+      gl_FragColor = vec4(rgb, a_raw) * alpha;
+    }
+  );  // NOLINT(whitespace/parens)
+}
+
 FragmentShaderColor::FragmentShaderColor()
     : color_location_(-1) {}
 

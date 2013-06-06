@@ -1386,8 +1386,7 @@ void GLRenderer::DrawYUVVideoQuad(const DrawingFrame* frame,
       context_, &highp_threshold_cache_, highp_threshold_min_,
       quad->shared_quad_state->visible_content_rect.bottom_right());
 
-  const VideoYUVProgram* program = GetVideoYUVProgram(tex_coord_precision);
-  DCHECK(program && (program->initialized() || IsContextLost()));
+  bool use_alpha_plane = quad->a_plane_resource_id != 0;
 
   GLC(Context(), Context()->activeTexture(GL_TEXTURE1));
   ResourceProvider::ScopedSamplerGL y_plane_lock(
@@ -1398,19 +1397,61 @@ void GLRenderer::DrawYUVVideoQuad(const DrawingFrame* frame,
   GLC(Context(), Context()->activeTexture(GL_TEXTURE3));
   ResourceProvider::ScopedSamplerGL v_plane_lock(
       resource_provider_, quad->v_plane_resource_id, GL_TEXTURE_2D, GL_LINEAR);
+  scoped_ptr<ResourceProvider::ScopedSamplerGL> a_plane_lock;
+  if (use_alpha_plane) {
+    GLC(Context(), Context()->activeTexture(GL_TEXTURE4));
+    a_plane_lock.reset(new ResourceProvider::ScopedSamplerGL(
+        resource_provider_,
+        quad->a_plane_resource_id,
+        GL_TEXTURE_2D,
+        GL_LINEAR));
+  }
 
-  SetUseProgram(program->program());
+  int tex_scale_location = -1;
+  int matrix_location = -1;
+  int y_texture_location = -1;
+  int u_texture_location = -1;
+  int v_texture_location = -1;
+  int a_texture_location = -1;
+  int yuv_matrix_location = -1;
+  int yuv_adj_location = -1;
+  int alpha_location = -1;
+  if (use_alpha_plane) {
+    const VideoYUVAProgram* program = GetVideoYUVAProgram(tex_coord_precision);
+    DCHECK(program && (program->initialized() || IsContextLost()));
+    SetUseProgram(program->program());
+    tex_scale_location = program->vertex_shader().tex_scale_location();
+    matrix_location = program->vertex_shader().matrix_location();
+    y_texture_location = program->fragment_shader().y_texture_location();
+    u_texture_location = program->fragment_shader().u_texture_location();
+    v_texture_location = program->fragment_shader().v_texture_location();
+    a_texture_location = program->fragment_shader().a_texture_location();
+    yuv_matrix_location = program->fragment_shader().yuv_matrix_location();
+    yuv_adj_location = program->fragment_shader().yuv_adj_location();
+    alpha_location = program->fragment_shader().alpha_location();
+  } else {
+    const VideoYUVProgram* program = GetVideoYUVProgram(tex_coord_precision);
+    DCHECK(program && (program->initialized() || IsContextLost()));
+    SetUseProgram(program->program());
+    tex_scale_location = program->vertex_shader().tex_scale_location();
+    matrix_location = program->vertex_shader().matrix_location();
+    y_texture_location = program->fragment_shader().y_texture_location();
+    u_texture_location = program->fragment_shader().u_texture_location();
+    v_texture_location = program->fragment_shader().v_texture_location();
+    yuv_matrix_location = program->fragment_shader().yuv_matrix_location();
+    yuv_adj_location = program->fragment_shader().yuv_adj_location();
+    alpha_location = program->fragment_shader().alpha_location();
+  }
 
   GLC(Context(),
-      Context()->uniform2f(program->vertex_shader().tex_scale_location(),
+      Context()->uniform2f(tex_scale_location,
                            quad->tex_scale.width(),
                            quad->tex_scale.height()));
-  GLC(Context(),
-      Context()->uniform1i(program->fragment_shader().y_texture_location(), 1));
-  GLC(Context(),
-      Context()->uniform1i(program->fragment_shader().u_texture_location(), 2));
-  GLC(Context(),
-      Context()->uniform1i(program->fragment_shader().v_texture_location(), 3));
+  GLC(Context(), Context()->uniform1i(y_texture_location, 1));
+  GLC(Context(), Context()->uniform1i(u_texture_location, 2));
+  GLC(Context(), Context()->uniform1i(v_texture_location, 3));
+  if (use_alpha_plane)
+    GLC(Context(), Context()->uniform1i(a_texture_location, 4));
 
   // These values are magic numbers that are used in the transformation from YUV
   // to RGB color values.  They are taken from the following webpage:
@@ -1421,8 +1462,7 @@ void GLRenderer::DrawYUVVideoQuad(const DrawingFrame* frame,
       1.596f, -.813f, 0.0f,
   };
   GLC(Context(),
-      Context()->uniformMatrix3fv(
-          program->fragment_shader().yuv_matrix_location(), 1, 0, yuv_to_rgb));
+      Context()->uniformMatrix3fv(yuv_matrix_location, 1, 0, yuv_to_rgb));
 
   // These values map to 16, 128, and 128 respectively, and are computed
   // as a fraction over 256 (e.g. 16 / 256 = 0.0625).
@@ -1431,16 +1471,11 @@ void GLRenderer::DrawYUVVideoQuad(const DrawingFrame* frame,
   //   U - 128  : Turns unsigned U into signed U [-128,127]
   //   V - 128  : Turns unsigned V into signed V [-128,127]
   float yuv_adjust[3] = { -0.0625f, -0.5f, -0.5f, };
-  GLC(Context(),
-      Context()->uniform3fv(
-          program->fragment_shader().yuv_adj_location(), 1, yuv_adjust));
+  GLC(Context(), Context()->uniform3fv(yuv_adj_location, 1, yuv_adjust));
 
-  SetShaderOpacity(quad->opacity(),
-                   program->fragment_shader().alpha_location());
-  DrawQuadGeometry(frame,
-                   quad->quadTransform(),
-                   quad->rect,
-                   program->vertex_shader().matrix_location());
+
+  SetShaderOpacity(quad->opacity(), alpha_location);
+  DrawQuadGeometry(frame, quad->quadTransform(), quad->rect, matrix_location);
 
   // Reset active texture back to texture 0.
   GLC(Context(), Context()->activeTexture(GL_TEXTURE0));
@@ -2737,6 +2772,20 @@ const GLRenderer::VideoYUVProgram* GLRenderer::GetVideoYUVProgram(
   return program.get();
 }
 
+const GLRenderer::VideoYUVAProgram* GLRenderer::GetVideoYUVAProgram(
+    TexCoordPrecision precision) {
+  scoped_ptr<VideoYUVAProgram>& program =
+      (precision == TexCoordPrecisionHigh) ? video_yuva_program_highp_
+                                           : video_yuva_program_;
+  if (!program)
+    program = make_scoped_ptr(new VideoYUVAProgram(context_, precision));
+  if (!program->initialized()) {
+    TRACE_EVENT0("cc", "GLRenderer::videoYUVAProgram::initialize");
+    program->Initialize(context_, is_using_bind_uniform_);
+  }
+  return program.get();
+}
+
 const GLRenderer::VideoStreamTextureProgram*
 GLRenderer::GetVideoStreamTextureProgram(TexCoordPrecision precision) {
   if (!Capabilities().using_egl_image)
@@ -2837,11 +2886,15 @@ void GLRenderer::CleanupSharedObjects() {
 
   if (video_yuv_program_)
     video_yuv_program_->Cleanup(context_);
+  if (video_yuva_program_)
+    video_yuva_program_->Cleanup(context_);
   if (video_stream_texture_program_)
     video_stream_texture_program_->Cleanup(context_);
 
   if (video_yuv_program_highp_)
     video_yuv_program_highp_->Cleanup(context_);
+  if (video_yuva_program_highp_)
+    video_yuva_program_highp_->Cleanup(context_);
   if (video_stream_texture_program_highp_)
     video_stream_texture_program_highp_->Cleanup(context_);
 
