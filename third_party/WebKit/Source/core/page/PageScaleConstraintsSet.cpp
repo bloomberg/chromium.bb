@@ -133,18 +133,14 @@ void PageScaleConstraintsSet::adjustPageDefinedConstraintsForAndroidWebView(cons
     m_pageDefinedConstraints.minimumScale *= targetDensityDPIFactor;
     m_pageDefinedConstraints.maximumScale *= targetDensityDPIFactor;
 
-    float adjustedLayoutSizeWidth = m_pageDefinedConstraints.layoutSize.width();
     if (useWideViewport && arguments.width == -1 && arguments.zoom != 1.0f)
-        adjustedLayoutSizeWidth = layoutFallbackWidth;
+        m_pageDefinedConstraints.layoutSize.setWidth(layoutFallbackWidth);
     else {
         if (!useWideViewport)
-            adjustedLayoutSizeWidth = getLayoutWidthForNonWideViewport(viewSize, initialScale);
+            m_pageDefinedConstraints.layoutSize.setWidth(getLayoutWidthForNonWideViewport(viewSize, initialScale));
         if (!useWideViewport || arguments.width == -1 || arguments.width == ViewportArguments::ValueDeviceWidth)
-            adjustedLayoutSizeWidth /= targetDensityDPIFactor;
+            m_pageDefinedConstraints.layoutSize.scale(1.0f / targetDensityDPIFactor);
     }
-
-    ASSERT(m_pageDefinedConstraints.layoutSize.width() > 0);
-    m_pageDefinedConstraints.layoutSize.scale(adjustedLayoutSizeWidth / m_pageDefinedConstraints.layoutSize.width());
 }
 
 } // namespace WebCore
