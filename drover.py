@@ -488,6 +488,7 @@ def drover(options, args):
   BRANCH_URL = BASE_URL + "/branches/$branch/src"
   SKIP_CHECK_WORKING = True
   PROMPT_FOR_AUTHOR = False
+  NO_ALT_URLS = options.no_alt_urls
 
   # Translate a given milestone to the appropriate branch number.
   if options.milestone:
@@ -514,6 +515,7 @@ def drover(options, args):
     f.close()
     if FILE_PATTERN:
       file_pattern_ = FILE_PATTERN
+    NO_ALT_URLS = TRUE
 
   if options.revert and options.branch:
     print 'Note: --branch is usually not needed for reverts.'
@@ -537,7 +539,7 @@ def drover(options, args):
         prompt("Working copy contains uncommitted files. Continue?")):
       return 1
 
-  if options.revert and not options.no_alt_urls and not options.url:
+  if options.revert and not NO_ALT_URLS and not options.url:
     for cur_url in [url] + REVERT_ALT_URLS:
       try:
         commit_date_str = getSVNInfo(
