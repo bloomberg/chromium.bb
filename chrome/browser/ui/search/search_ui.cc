@@ -17,7 +17,7 @@ SkColor GetDetachedBookmarkBarBackgroundColor(ThemeService* theme_service) {
 }
 
 SkColor GetDetachedBookmarkBarSeparatorColor(ThemeService* theme_service) {
-  if (!theme_service->UsingDefaultTheme()) {
+  if (theme_service->UsingDefaultTheme()) {
     return ThemeProperties::GetDefaultColor(
         ThemeProperties::COLOR_TOOLBAR_SEPARATOR);
   }
