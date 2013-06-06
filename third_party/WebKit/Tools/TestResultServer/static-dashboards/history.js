@@ -74,12 +74,26 @@ history.queryHashAsMap = function()
     // FIXME: remove support for mapping from the master parameter to the group
     // one once the waterfall starts to pass in the builder name instead.
     if (paramsMap.master) {
-        paramsMap.group = builders.masters[paramsMap.master].groups[0];
-        if (!paramsMap.group)
-            console.log('ERROR: Unknown master name: ' + paramsMap.master);
-        window.location.hash = window.location.hash.replace('master=' + paramsMap.master, 'group=' + encodeURIComponent(paramsMap.group));
-        delete paramsMap.master;
+        var errors = new ui.Errors();
+        if (paramsMap.master == 'TryServer')
+            errors.addError('ERROR: You got here from the trybot waterfall. The try bots do not record data in the flakiness dashboard. Showing results for the regular waterfall.');
+        else if (!builders.masters[paramsMap.master])
+            errors.addError('ERROR: Unknown master name: ' + paramsMap.master);
+
+        if (errors.hasErrors()) {
+            errors.show();
+            window.location.hash = window.location.hash.replace('master=' + paramsMap.master, '');
+        } else {
+            paramsMap.group = builders.masters[paramsMap.master].groups[0];
+            window.location.hash = window.location.hash.replace('master=' + paramsMap.master, 'group=' + encodeURIComponent(paramsMap.group));
+            delete paramsMap.master;
+        }
     }
+
+    // FIXME: Find a better way to do this. For layout-tests, we want the default group to be
+    // the ToT blink group. For other test types, we want it to be the Deps group.
+    if (!paramsMap.group && (!paramsMap.testType || paramsMap.testType == 'layout-tests'))
+        paramsMap.group = groupNamesForTestType('layout-tests')[1];
 
     return paramsMap;
 }

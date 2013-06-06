@@ -211,7 +211,7 @@ ui.Errors.prototype = {
             this._containerElement = document.createElement('H2');
             this._containerElement.style.color = 'red';
             this._containerElement.id = 'errors';
-            document.body.appendChild(this._containerElement);
+            document.documentElement.appendChild(this._containerElement);
         }
 
         this._containerElement.innerHTML = this._messages;
@@ -220,6 +220,10 @@ ui.Errors.prototype = {
     addError: function(message)
     {
         this._messages += message + '<br>';
+    },
+    hasErrors: function()
+    {
+        return !!this._messages;
     }
 }
 
