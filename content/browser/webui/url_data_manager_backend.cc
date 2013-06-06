@@ -562,6 +562,7 @@ void URLDataManagerBackend::CallStartRequest(
     int render_view_id,
     int request_id) {
   if (BrowserThread::CurrentlyOn(BrowserThread::UI) &&
+      render_process_id != -1 &&
       !RenderProcessHost::FromID(render_process_id)) {
     // Make the request fail if its initiating renderer is no longer valid.
     // This can happen when the IO thread posts this task just before the
