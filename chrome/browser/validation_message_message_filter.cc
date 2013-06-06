@@ -4,6 +4,7 @@
 
 #include "chrome/browser/validation_message_message_filter.h"
 
+#include "base/bind.h"
 #include "chrome/browser/ui/validation_message_bubble.h"
 #include "chrome/common/validation_message_messages.h"
 #include "content/public/browser/render_process_host.h"
@@ -13,11 +14,26 @@ using content::BrowserThread;
 using content::RenderProcessHost;
 using content::RenderWidgetHost;
 
+namespace {
+
+void DeleteBubbleOnUIThread(chrome::ValidationMessageBubble* bubble) {
+  delete bubble;
+}
+
+}
+
 ValidationMessageMessageFilter::ValidationMessageMessageFilter(int renderer_id)
   : renderer_id_(renderer_id) {
 }
 
-ValidationMessageMessageFilter::~ValidationMessageMessageFilter() {}
+ValidationMessageMessageFilter::~ValidationMessageMessageFilter() {
+  if (!validation_message_bubble_)
+    return;
+  // ValidationMessageBubble desructor might call UI-related API.
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+      base::Bind(&DeleteBubbleOnUIThread,
+          validation_message_bubble_.release()));
+}
 
 bool ValidationMessageMessageFilter::OnMessageReceived(
     const IPC::Message& message, bool* message_was_ok) {

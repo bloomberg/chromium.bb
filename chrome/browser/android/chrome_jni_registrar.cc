@@ -27,6 +27,7 @@
 #include "chrome/browser/ui/android/navigation_popup.h"
 #include "chrome/browser/ui/android/ssl_client_certificate_request.h"
 #include "chrome/browser/ui/android/status_tray_android.h"
+#include "chrome/browser/ui/android/validation_message_bubble_android.h"
 #include "chrome/browser/ui/android/website_settings_popup_android.h"
 #include "components/autofill/browser/android/component_jni_registrar.h"
 #include "components/navigation_interception/component_jni_registrar.h"
@@ -73,6 +74,8 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
   { "TabAndroid", TabAndroid::RegisterTabAndroid },
   { "TemplateUrlServiceAndroid", TemplateUrlServiceAndroid::Register },
   { "TtsPlatformImpl", TtsPlatformImplAndroid::Register },
+  { "ValidationMessageBubbleAndroid",
+      ValidationMessageBubbleAndroid::Register },
   { "WebsiteSettingsPopupAndroid",
     WebsiteSettingsPopupAndroid::RegisterWebsiteSettingsPopupAndroid },
 };

@@ -3224,6 +3224,7 @@
             'android/java/src/org/chromium/chrome/browser/sync/ProfileSyncService.java',
             'android/java/src/org/chromium/chrome/browser/TabBase.java',
             'android/java/src/org/chromium/chrome/browser/TtsPlatformImpl.java',
+            'android/java/src/org/chromium/chrome/browser/ValidationMessageBubble.java',
             'android/java/src/org/chromium/chrome/browser/WebsiteSettingsPopup.java',
           ],
           'variables': {
