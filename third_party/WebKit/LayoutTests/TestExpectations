@@ -830,8 +830,6 @@ webkit.org/b/98906 fast/forms/suggestion-picker/date-suggestion-picker-mouse-ope
 # CSS Regions tests for region styling and scoped styles
 webkit.org/b/49142 fast/regions/style-scoped-in-flow-override-region-styling-multiple-regions.html [ ImageOnlyFailure ]
 
-webkit.org/b/92131 inspector/styles/region-style-crash.html [ Failure Pass Timeout ]
-
 # CSS Regions tests for <dialog>
 crbug.com/244792 fast/regions/dialog-fragmentation.html [ ImageOnlyFailure ]
 
