@@ -32,6 +32,14 @@ solutions = [
 GCLIENT_SPEC = ''.join([l for l in GCLIENT_SPEC.splitlines()])
 FILE_DEPS_GIT = '.DEPS.git'
 
+REPO_PARAMS = [
+  'https://chrome-internal.googlesource.com/chromeos/manifest-internal/',
+  '--repo-url',
+  'https://git.chromium.org/external/repo.git'
+]
+
+REPO_SYNC_COMMAND = 'git checkout -f $(git rev-list --max-count=1 '\
+                    '--before=%d remotes/m/master)'
 
 def OutputAnnotationStepStart(name):
   """Outputs appropriate annotation to signal the start of a step to
@@ -74,8 +82,8 @@ def CreateAndChangeToSourceDirectory(working_directory):
   return True
 
 
-def RunGClient(params):
-  """Runs gclient with the specified parameters.
+def SubprocessCall(cmd):
+  """Runs a subprocess with specified parameters.
 
   Args:
     params: A list of parameters to pass to gclient.
@@ -88,10 +96,50 @@ def RunGClient(params):
     # for git to find the user's .netrc file.
     if not os.getenv('HOME'):
       os.environ['HOME'] = os.environ['USERPROFILE']
-
   shell = os.name == 'nt'
-  cmd = ['gclient'] + params
   return subprocess.call(cmd, shell=shell)
+
+
+def RunGClient(params):
+  """Runs gclient with the specified parameters.
+
+  Args:
+    params: A list of parameters to pass to gclient.
+
+  Returns:
+    The return code of the call.
+  """
+  cmd = ['gclient'] + params
+
+  return SubprocessCall(cmd)
+
+
+def RunRepo(params):
+  """Runs cros repo command with specified parameters.
+
+  Args:
+    params: A list of parameters to pass to gclient.
+
+  Returns:
+    The return code of the call.
+  """
+  cmd = ['repo'] + params
+
+  return SubprocessCall(cmd)
+
+
+def RunRepoSyncAtTimestamp(timestamp):
+  """Syncs all git depots to the timestamp specified using repo forall.
+
+  Args:
+    params: Unix timestamp to sync to.
+
+  Returns:
+    The return code of the call.
+  """
+  repo_sync = REPO_SYNC_COMMAND % timestamp
+  cmd = ['forall', '-c', REPO_SYNC_COMMAND % timestamp]
+  return RunRepo(cmd)
 
 
 def RunGClientAndCreateConfig():
@@ -183,6 +231,32 @@ def SetupGitDepot(output_buildbot_annotations, reset):
   if output_buildbot_annotations:
     print
     OutputAnnotationStepClosed()
+
+  return passed
+
+
+def SetupCrosRepo():
+  """Sets up cros repo for bisecting chromeos.
+
+  Returns:
+    Returns 0 on success.
+  """
+  cwd = os.getcwd()
+  try:
+    os.mkdir('cros')
+  except OSError, e:
+    if e.errno != errno.EEXIST:
+      return False
+  os.chdir('cros')
+
+  cmd = ['init', '-u'] + REPO_PARAMS
+
+  passed = False
+
+  if not RunRepo(cmd):
+    if not RunRepo(['sync']):
+      passed = True
+  os.chdir(cwd)
 
   return passed
 

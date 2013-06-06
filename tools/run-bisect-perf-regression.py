@@ -19,6 +19,8 @@ import subprocess
 import sys
 import traceback
 
+CROS_BOARD_ENV = 'BISECT_CROS_BOARD'
+CROS_IP_ENV = 'BISECT_CROS_IP'
 
 def LoadConfigFile(path_to_file):
   """Attempts to load the file 'run-bisect-perf-regression.cfg' as a module
@@ -83,6 +85,18 @@ def RunBisectionScript(config, working_directory, path_to_file, path_to_goma):
     cmd.extend(['--build_preference', 'ninja'])
   else:
     cmd.extend(['--build_preference', 'make'])
+
+  if '--browser=cros' in config['command']:
+    cmd.extend(['--target_platform', 'cros'])
+
+    if os.environ[CROS_BOARD_ENV] and os.environ[CROS_IP_ENV]:
+      cmd.extend(['--cros_board', os.environ[CROS_BOARD_ENV]])
+      cmd.extend(['--cros_remote_ip', os.environ[CROS_IP_ENV]])
+    else:
+      print 'Error: Cros build selected, but BISECT_CROS_IP or'\
+            'BISECT_CROS_BOARD undefined.'
+      print
+      return 1
 
   goma_file = ''
   if path_to_goma:
