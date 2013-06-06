@@ -15,13 +15,12 @@
 #include "base/prefs/pref_service.h"
 #include "base/time.h"
 #include "chrome/browser/chromeos/drive/file_errors.h"
-#include "chrome/browser/chromeos/drive/search_metadata.h"
-#include "chrome/browser/chromeos/extensions/file_manager/file_manager_event_router.h"
+#include "chrome/browser/chromeos/drive/file_system_interface.h"
 #include "chrome/browser/chromeos/extensions/file_manager/zip_file_creator.h"
 #include "chrome/browser/extensions/extension_function.h"
 #include "components/browser_context_keyed_service/browser_context_keyed_service.h"
-#include "googleurl/src/url_util.h"
 
+class FileManagerEventRouter;
 class GURL;
 class Profile;
 

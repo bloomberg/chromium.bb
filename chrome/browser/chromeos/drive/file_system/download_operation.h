@@ -10,7 +10,6 @@
 #include "chrome/browser/chromeos/drive/file_errors.h"
 #include "chrome/browser/chromeos/drive/file_system_interface.h"
 #include "chrome/browser/chromeos/drive/job_list.h"
-#include "chrome/browser/google_apis/drive_service_interface.h"
 #include "chrome/browser/google_apis/gdata_errorcode.h"
 
 namespace base {
@@ -29,7 +28,7 @@ class ResourceEntry;
 
 namespace internal {
 class FileCache;
-class ResourceMetadtata;
+class ResourceMetadata;
 }  // namespace internal
 
 namespace file_system {
@@ -47,8 +46,8 @@ class DownloadOperation {
 
   // Ensures that the file content specified by |resource_id| is locally
   // downloaded.
-  // For hosted documents, this method may create a JSON file representing th
-  // e file.
+  // For hosted documents, this method may create a JSON file representing the
+  // file.
   // For regular files, if the locally cached file is found, returns it.
   // If not found, start to download the file from the server.
   // When a JSON file is created, the cache file is found or downloading is
@@ -57,8 +56,7 @@ class DownloadOperation {
   // downloading.
   // During the downloading |get_content_callback| will be called periodically
   // with the downloaded content.
-  // Upon completion or an error is found, |completion_callback| will be
-  // called.
+  // Upon completion or an error is found, |completion_callback| will be called.
   // |initialized_callback| and |get_content_callback| can be null if not
   // needed.
   // |completion_callback| must not be null.

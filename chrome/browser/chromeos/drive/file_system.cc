@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/file_util.h"
 #include "base/message_loop/message_loop_proxy.h"
-#include "base/metrics/histogram.h"
 #include "base/platform_file.h"
 #include "base/prefs/pref_change_registrar.h"
 #include "base/prefs/pref_service.h"
@@ -30,16 +29,13 @@
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/drive/job_scheduler.h"
 #include "chrome/browser/chromeos/drive/remove_stale_cache_files.h"
-#include "chrome/browser/chromeos/drive/resource_entry_conversion.h"
 #include "chrome/browser/chromeos/drive/search_metadata.h"
 #include "chrome/browser/google_apis/drive_api_parser.h"
 #include "chrome/browser/google_apis/drive_api_util.h"
 #include "chrome/browser/google_apis/drive_service_interface.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/notification_details.h"
 
 using content::BrowserThread;
 

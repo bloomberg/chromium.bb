@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/drive/file_system/update_operation.h"
 
 #include "chrome/browser/chromeos/drive/file_system/operation_test_base.h"
+#include "chrome/browser/chromeos/drive/file_system_interface.h"
 #include "chrome/browser/google_apis/fake_drive_service.h"
 #include "chrome/browser/google_apis/gdata_wapi_parser.h"
 #include "chrome/browser/google_apis/test_util.h"

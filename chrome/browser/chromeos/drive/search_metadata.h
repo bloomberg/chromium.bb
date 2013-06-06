@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_CHROMEOS_DRIVE_SEARCH_METADATA_H_
 
 #include <string>
-#include <vector>
 
 #include "chrome/browser/chromeos/drive/file_system_interface.h"
 

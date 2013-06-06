@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/drive/drive_protocol_handler.h"
 
 #include "base/logging.h"
+#include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
 #include "chrome/browser/chromeos/drive/drive_url_request_job.h"

@@ -11,33 +11,28 @@
 
 #include <map>
 
-#include "base/base64.h"
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/format_macros.h"
-#include "base/i18n/case_conversion.h"
-#include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/memory/scoped_vector.h"
-#include "base/memory/singleton.h"
 #include "base/posix/eintr_wrapper.h"
-#include "base/stl_util.h"
 #include "base/stringprintf.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/strings/string_split.h"
+#include "base/threading/sequenced_worker_pool.h"
 #include "base/time.h"
-#include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/drive_app_registry.h"
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
 #include "chrome/browser/chromeos/drive/file_system_interface.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
+#include "chrome/browser/chromeos/drive/job_list.h"
 #include "chrome/browser/chromeos/drive/logging.h"
-#include "chrome/browser/chromeos/drive/search_metadata.h"
 #include "chrome/browser/chromeos/extensions/file_manager/file_browser_handler.h"
 #include "chrome/browser/chromeos/extensions/file_manager/file_browser_private_api_factory.h"
 #include "chrome/browser/chromeos/extensions/file_manager/file_handler_util.h"
+#include "chrome/browser/chromeos/extensions/file_manager/file_manager_event_router.h"
 #include "chrome/browser/chromeos/extensions/file_manager/file_manager_util.h"
 #include "chrome/browser/chromeos/extensions/file_manager/zip_file_creator.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
@@ -45,19 +40,13 @@
 #include "chrome/browser/extensions/api/file_handlers/app_file_handler_util.h"
 #include "chrome/browser/extensions/extension_function_dispatcher.h"
 #include "chrome/browser/extensions/extension_function_registry.h"
-#include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
-#include "chrome/browser/extensions/process_map.h"
-#include "chrome/browser/google_apis/drive_service_interface.h"
 #include "chrome/browser/google_apis/gdata_wapi_parser.h"
-#include "chrome/browser/google_apis/time_util.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
-#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/views/select_file_dialog_extension.h"
 #include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
 #include "chrome/common/extensions/extension.h"
@@ -73,7 +62,6 @@
 #include "googleurl/src/gurl.h"
 #include "grit/app_locale_settings.h"
 #include "grit/generated_resources.h"
-#include "grit/platform_locale_settings.h"
 #include "net/base/escape.h"
 #include "net/base/mime_util.h"
 #include "net/base/network_change_notifier.h"
@@ -94,7 +82,6 @@ using chromeos::disks::DiskMountManager;
 using content::BrowserContext;
 using content::BrowserThread;
 using content::ChildProcessSecurityPolicy;
-using content::SiteInstance;
 using content::WebContents;
 using extensions::Extension;
 using extensions::ZipFileCreator;
@@ -1021,16 +1008,6 @@ bool GetFileTasksFileBrowserFunction::RunImpl() {
     }
 
     result_list->Append(task);
-  }
-
-  if (VLOG_IS_ON(1)) {
-    std::string result_json;
-    base::JSONWriter::WriteWithOptions(
-        result_list,
-        base::JSONWriter::OPTIONS_DO_NOT_ESCAPE |
-          base::JSONWriter::OPTIONS_PRETTY_PRINT,
-        &result_json);
-    VLOG(1) << "GetFileTasks result:\n" << result_json;
   }
 
   SendResponse(true);

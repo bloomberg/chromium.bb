@@ -10,7 +10,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/drive/file_errors.h"
-#include "chrome/browser/chromeos/drive/file_system_interface.h"
 #include "chrome/browser/google_apis/gdata_errorcode.h"
 
 namespace base {
@@ -18,10 +17,15 @@ class FilePath;
 class SequencedTaskRunner;
 }  // namespace base
 
+namespace google_apis {
+class ResourceEntry;
+}  // namespace google_apis
+
 namespace drive {
 
 class JobScheduler;
 class ResourceEntry;
+struct ClientContext;
 
 namespace internal {
 class FileCache;

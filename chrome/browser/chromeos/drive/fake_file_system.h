@@ -20,6 +20,7 @@ namespace google_apis {
 class AboutResource;
 class DriveServiceInterface;
 class ResourceEntry;
+class ResourceList;
 
 }  // namespace google_apis
 

@@ -5,14 +5,11 @@
 #ifndef CHROME_BROWSER_CHROMEOS_DRIVE_DRIVE_INTEGRATION_SERVICE_H_
 #define CHROME_BROWSER_CHROMEOS_DRIVE_DRIVE_INTEGRATION_SERVICE_H_
 
-#include <string>
-
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
-#include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/chromeos/drive/file_errors.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/drive/job_scheduler.h"
@@ -22,6 +19,7 @@
 
 namespace base {
 class FilePath;
+class SequencedTaskRunner;
 }
 
 namespace google_apis {

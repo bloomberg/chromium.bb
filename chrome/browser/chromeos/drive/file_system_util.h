@@ -8,8 +8,6 @@
 #include <string>
 
 #include "base/callback_forward.h"
-#include "base/platform_file.h"
-#include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/file_errors.h"
 #include "chrome/browser/google_apis/gdata_errorcode.h"
 #include "googleurl/src/gurl.h"
@@ -18,6 +16,7 @@ class Profile;
 
 namespace base {
 class FilePath;
+struct PlatformFileInfo;
 }
 
 namespace fileapi {
@@ -27,6 +26,7 @@ class FileSystemURL;
 namespace drive {
 
 class PlatformFileInfoProto;
+class ResourceEntry;
 
 namespace util {
 
@@ -40,8 +40,7 @@ const base::FilePath::CharType kLocallyModifiedFileExtension[] =
 // "<resource-id>.<md5>.mounted".
 const base::FilePath::CharType kMountedArchiveFileExtension[] =
     FILE_PATH_LITERAL("mounted");
-const base::FilePath::CharType kWildCard[] =
-    FILE_PATH_LITERAL("*");
+const base::FilePath::CharType kWildCard[] = FILE_PATH_LITERAL("*");
 
 // Special resource IDs introduced to manage pseudo directory tree locally.
 // These strings are supposed to be different from any resource ID used on the

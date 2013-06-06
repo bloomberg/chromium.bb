@@ -11,6 +11,7 @@
 #include "base/metrics/histogram.h"
 #include "base/path_service.h"
 #include "base/string_util.h"
+#include "base/threading/sequenced_worker_pool.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"

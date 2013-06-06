@@ -10,7 +10,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/drive/file_errors.h"
-#include "chrome/browser/chromeos/drive/file_system_interface.h"
 #include "chrome/browser/google_apis/gdata_errorcode.h"
 
 namespace base {

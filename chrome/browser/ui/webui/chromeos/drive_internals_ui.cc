@@ -19,6 +19,7 @@
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
 #include "chrome/browser/chromeos/drive/file_system_interface.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
+#include "chrome/browser/chromeos/drive/job_list.h"
 #include "chrome/browser/chromeos/drive/logging.h"
 #include "chrome/browser/google_apis/auth_service.h"
 #include "chrome/browser/google_apis/drive_api_parser.h"

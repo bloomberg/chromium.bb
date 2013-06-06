@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/prefs/pref_service.h"
+#include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/drive/debug_info_collector.h"
 #include "chrome/browser/chromeos/drive/download_handler.h"
@@ -15,6 +16,7 @@
 #include "chrome/browser/chromeos/drive/file_system_proxy.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/drive/file_write_helper.h"
+#include "chrome/browser/chromeos/drive/job_scheduler.h"
 #include "chrome/browser/chromeos/drive/logging.h"
 #include "chrome/browser/chromeos/drive/sync_client.h"
 #include "chrome/browser/download/download_service.h"

@@ -10,6 +10,7 @@
 #include "base/prefs/pref_change_registrar.h"
 #include "base/prefs/pref_service.h"
 #include "base/stl_util.h"
+#include "base/threading/sequenced_worker_pool.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
 #include "chrome/browser/chromeos/drive/file_system_interface.h"

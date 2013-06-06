@@ -53,6 +53,7 @@
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
+#include "chrome/browser/chromeos/drive/job_list.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chrome/browser/chromeos/kiosk_mode/kiosk_mode_settings.h"
 #include "chrome/browser/chromeos/login/help_app_launcher.h"

@@ -14,8 +14,6 @@
 #include "chrome/browser/chromeos/drive/change_list_loader_observer.h"
 #include "chrome/browser/chromeos/drive/file_system/operation_observer.h"
 #include "chrome/browser/chromeos/drive/file_system_interface.h"
-#include "chrome/browser/chromeos/drive/file_system_util.h"
-#include "chrome/browser/chromeos/drive/job_list.h"
 #include "chrome/browser/google_apis/gdata_errorcode.h"
 
 class PrefChangeRegistrar;

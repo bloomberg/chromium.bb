@@ -9,12 +9,12 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/sequenced_task_runner.h"
-#include "chrome/browser/chromeos/drive/file_system_interface.h"
+#include "chrome/browser/chromeos/drive/resource_metadata.h"
 #include "chrome/browser/google_apis/gdata_errorcode.h"
 
 namespace base {
 class FilePath;
+class SequencedTaskRunner;
 }  // namespace base
 
 namespace google_apis {
@@ -29,7 +29,6 @@ class ResourceEntry;
 
 namespace internal {
 class FileCache;
-class ResourceMetadata;
 }  // namespace internal
 
 namespace file_system {
@@ -175,7 +174,6 @@ class CopyOperation {
   JobScheduler* scheduler_;
   internal::ResourceMetadata* metadata_;
   internal::FileCache* cache_;
-  FileSystemInterface* file_system_;
   google_apis::DriveServiceInterface* drive_service_;
 
   // Uploading a new file is internally implemented by creating a dirty file.

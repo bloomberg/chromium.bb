@@ -9,15 +9,19 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/sequenced_task_runner.h"
 #include "chrome/browser/chromeos/drive/file_errors.h"
 #include "chrome/browser/chromeos/drive/file_system_interface.h"
 #include "chrome/browser/google_apis/gdata_errorcode.h"
 
 class GURL;
 
+namespace base {
+class SequencedTaskRunner;
+}  // namespace base
+
 namespace google_apis {
 class ResourceEntry;
+class ResourceList;
 }  // namespace google_apis
 
 namespace drive {
