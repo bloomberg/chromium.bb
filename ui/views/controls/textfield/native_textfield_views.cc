@@ -1483,7 +1483,7 @@ void NativeTextfieldViews::CreateTouchSelectionControllerAndNotifyIt() {
 void NativeTextfieldViews::PlatformGestureEventHandling(
     const ui::GestureEvent* event) {
 #if defined(OS_WIN) && defined(USE_AURA)
-  if (event->type() == ui::ET_GESTURE_TAP_DOWN && !textfield_->read_only())
+  if (event->type() == ui::ET_GESTURE_TAP && !textfield_->read_only())
     base::win::DisplayVirtualKeyboard();
 #endif
 }
