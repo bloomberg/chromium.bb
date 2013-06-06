@@ -68,7 +68,8 @@ void Log(logging::LogSeverity severity,
   ptr->Log("%s", log_output.c_str());
 
   // Log to console.
-  logging::RawLog(severity, log_output.c_str());
+  logging::LogMessage(location.file_name(), location.line_number(), severity)
+      .stream() << what;
 }
 
 std::vector<google_apis::EventLogger::Event> GetLogHistory() {
