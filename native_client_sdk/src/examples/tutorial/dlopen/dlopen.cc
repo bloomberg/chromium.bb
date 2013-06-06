@@ -23,9 +23,15 @@
 #define CONFIG_NAME "Release"
 #endif
 
-#define XSTRINGIFY(x) STRINGIFY(x)
-#define STRINGIFY(x) #x
-#define NACL_ARCH_STRING XSTRINGIFY(NACL_ARCH)
+#if defined __arm__
+#define NACL_ARCH "arm"
+#elif defined __i686__
+#define NACL_ARCH "x86_32"
+#elif defined __x86_64__
+#define NACL_ARCH "x86_64"
+#else
+#error "Unknown arch"
+#endif
 
 class DlOpenInstance : public pp::Instance {
  public:
@@ -66,7 +72,7 @@ class DlOpenInstance : public pp::Instance {
   // dlclose, which would close the shared object and unload it from memory.
   void LoadLibrary() {
     const char reverse_so_path[] =
-        "/http/glibc/" CONFIG_NAME "/libreverse_" NACL_ARCH_STRING ".so";
+        "/http/glibc/" CONFIG_NAME "/libreverse_" NACL_ARCH ".so";
     const int32_t IMMEDIATELY = 0;
     eightball_so_ = dlopen("libeightball.so", RTLD_LAZY);
     reverse_so_ = dlopen(reverse_so_path, RTLD_LAZY);

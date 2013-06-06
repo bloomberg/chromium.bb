@@ -27,13 +27,13 @@ $(error Unable to find cl.exe in PATH while building Windows host build)
 endif
 
 
-ifeq ('Debug','$(CONFIG)')
-WIN_OPT_FLAGS ?= /Od /MTd /Z7 -D NACL_SDK_DEBUG
-else
+ifeq ($(CONFIG),Release)
 WIN_OPT_FLAGS ?= /O2 /MT /Z7
+else
+WIN_OPT_FLAGS ?= /Od /MTd /Z7 -DNACL_SDK_DEBUG
 endif
 
-WIN_FLAGS ?= -D WIN32 -D _WIN32 -D PTW32_STATIC_LIB
+WIN_FLAGS ?= -DWIN32 -D_WIN32 -DPTW32_STATIC_LIB
 
 
 #
