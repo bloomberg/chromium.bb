@@ -88,7 +88,7 @@ PassRefPtr<SVGFilterBuilder> RenderSVGResourceFilter::buildPrimitives(SVGFilter*
             continue;
 
         SVGElement* element = toSVGElement(node);
-        if (!element->isFilterEffect())
+        if (!element->isFilterEffect() || !element->renderer())
             continue;
 
         SVGFilterPrimitiveStandardAttributes* effectElement = static_cast<SVGFilterPrimitiveStandardAttributes*>(element);
