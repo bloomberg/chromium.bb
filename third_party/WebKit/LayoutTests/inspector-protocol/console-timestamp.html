@@ -20,7 +20,7 @@ function test()
         var payload = data.params.message;
 
         if (messages.length > 0)
-            InspectorTest.assert(payload.timestamp > messages[messages.length - 1].timestamp, "Timestamp should increase over time.");
+            InspectorTest.assert(payload.timestamp >= messages[messages.length - 1].timestamp, "Timestamp shouldn't decrease over time.");
 
         messages.push(payload);
         InspectorTest.assert(payload.timestamp, "No timestamp found in message.");
@@ -34,7 +34,7 @@ function test()
 
         var updatedTimestamp = data.params.timestamp;
 
-        InspectorTest.assert(updatedTimestamp > messages[messages.length - 1].timestamp, "Timestamp should increase over time.");
+        InspectorTest.assert(updatedTimestamp >= messages[messages.length - 1].timestamp, "Timestamp shouldn't decrease over time.");
 
         InspectorTest.completeTest();
     }
