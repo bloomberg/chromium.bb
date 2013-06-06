@@ -76,6 +76,21 @@ class MinidumpGenerator {
                      std::wstring* dump_path,
                      std::wstring* full_dump_path);
 
+  // Writes the minidump with the given parameters. Writes the minidump and
+  // full dump to the file handles supplied. This allows the caller to handle
+  // the creation of the files for the dump. The file handles are not closed
+  // by this function.
+  bool WriteMinidump(HANDLE process_handle,
+                     DWORD process_id,
+                     DWORD thread_id,
+                     DWORD requesting_thread_id,
+                     EXCEPTION_POINTERS* exception_pointers,
+                     MDRawAssertionInfo* assert_info,
+                     MINIDUMP_TYPE dump_type,
+                     bool is_client_pointers,
+                     HANDLE dump_file,
+                     HANDLE full_dump_file);
+
  private:
   // Function pointer type for MiniDumpWriteDump, which is looked up
   // dynamically.
