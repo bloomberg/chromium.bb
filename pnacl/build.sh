@@ -1859,7 +1859,7 @@ binutils-configure() {
   local objdir="${TC_BUILD_BINUTILS}"
 
   # enable multiple targets so that we can use the same ar with all .o files
-  local targ="arm-pc-nacl,i686-pc-nacl,x86_64-pc-nacl"
+  local targ="arm-pc-nacl,i686-pc-nacl,x86_64-pc-nacl,mipsel-pc-nacl"
   mkdir -p "${objdir}"
   spushd "${objdir}"
 
@@ -1887,11 +1887,11 @@ binutils-configure() {
       local zlib=''
   fi
   # The --enable-gold and --enable-plugins options are on so that we
-  # can use gold's support for plugin to link PNaCl modules.
+  # can use gold's support for plugin to link PNaCl modules, and use
+  # gold as the final linker. We do not use bfd ld, and it is disabled
+  # in part because we do not have its MIPS support downstream.
 
   # We llvm's mc for assembly so we no longer build gas
-  # TODO(robertm): We no longer use ld and should really use
-  #                --enable-ld=no but the binutils build setup is buggy
   RunWithLog binutils.configure \
       env -i \
       PATH="${PATH}" \
@@ -1903,8 +1903,8 @@ binutils-configure() {
           --target=${BINUTILS_TARGET} \
           --enable-targets=${targ} \
           --enable-shared=${shared} \
-          --enable-gold=yes \
-          --enable-ld=yes \
+          --enable-gold=default \
+          --enable-ld=no \
           --disable-nls \
           --enable-plugins \
           --disable-werror \
