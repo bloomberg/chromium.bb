@@ -12,7 +12,9 @@
 
 namespace extensions {
 
-using api::experimental_system_info_memory::MemoryInfo;
+using api::system_info_memory::MemoryInfo;
+
+const char kExtensionId[] = "lfmcnjhchhgejbpbonjobnlbcgcnmjif";
 
 class MockMemoryInfoProviderImpl : public MemoryInfoProvider {
  public:
@@ -34,7 +36,8 @@ class SystemInfoMemoryApiTest: public ExtensionApiTest {
 
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     ExtensionApiTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitch(switches::kEnableExperimentalExtensionApis);
+    command_line->AppendSwitchASCII(switches::kWhitelistedExtensionID,
+                                    kExtensionId);
   }
 
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {

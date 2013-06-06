@@ -5,8 +5,6 @@
 // systeminfo.memory api test
 // browser_tests --gtest_filter=SystemInfoMemoryApiTest.*
 
-chrome.systemInfo = chrome.experimental.systemInfo;
-
 chrome.test.runTests([
   function testGet() {
     for(var i = 0; i < 10; ++i) {

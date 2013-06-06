@@ -6,23 +6,23 @@
 #define CHROME_BROWSER_EXTENSIONS_API_SYSTEM_INFO_MEMORY_MEMORY_INFO_PROVIDER_H_
 
 #include "chrome/browser/extensions/api/system_info/system_info_provider.h"
-#include "chrome/common/extensions/api/experimental_system_info_memory.h"
+#include "chrome/common/extensions/api/system_info_memory.h"
 
 namespace extensions {
 
 class MemoryInfoProvider
     : public SystemInfoProvider<
-          api::experimental_system_info_memory::MemoryInfo> {
+          api::system_info_memory::MemoryInfo> {
  public:
   static MemoryInfoProvider* Get();
 
   // Overriden from SystemInfoProvider<MemoryInfo>.
   virtual bool QueryInfo(
-      api::experimental_system_info_memory::MemoryInfo* info) OVERRIDE;
+      api::system_info_memory::MemoryInfo* info) OVERRIDE;
 
  private:
   friend class SystemInfoProvider<
-      api::experimental_system_info_memory::MemoryInfo>;
+      api::system_info_memory::MemoryInfo>;
   friend class MockMemoryInfoProviderImpl;
   friend class TestMemoryInfoProvider;
 

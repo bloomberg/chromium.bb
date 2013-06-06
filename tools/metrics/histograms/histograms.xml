@@ -12202,6 +12202,7 @@ other types of suffix sets.
   <int value="459" label="AUDIO_SETPROPERTIES"/>
   <int value="460" label="USB_RESETDEVICE"/>
   <int value="461" label="SYSTEMINFO_CPU_GET"/>
+  <int value="462" label="SYSTEMINFO_MEMORY_GET"/>
 </enum>
 
 <enum name="ExtensionLaunchType" type="int">

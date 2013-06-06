@@ -8,7 +8,7 @@
 
 namespace extensions {
 
-using api::experimental_system_info_memory::MemoryInfo;
+using api::system_info_memory::MemoryInfo;
 
 MemoryInfoProvider::MemoryInfoProvider() {}
 
