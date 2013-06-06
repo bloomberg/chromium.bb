@@ -33,10 +33,8 @@ class RenderWidgetHostViewGuestTest : public testing::Test {
         new MockRenderProcessHost(browser_context_.get());
     widget_host_ = new RenderWidgetHostImpl(
         &delegate_, process_host, MSG_ROUTING_NONE);
-    test_platform_view_.reset(new TestRenderWidgetHostView(widget_host_));
-    view_ = static_cast<RenderWidgetHostViewGuest*>(
-        new RenderWidgetHostViewGuest(
-            widget_host_, NULL, test_platform_view_.get()));
+    view_ = new RenderWidgetHostViewGuest(
+        widget_host_, NULL, new TestRenderWidgetHostView(widget_host_));
   }
 
   virtual void TearDown() {
@@ -59,8 +57,6 @@ class RenderWidgetHostViewGuestTest : public testing::Test {
   // destruction.
   RenderWidgetHostImpl* widget_host_;
   RenderWidgetHostViewGuest* view_;
-
-  scoped_ptr<TestRenderWidgetHostView> test_platform_view_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewGuestTest);
