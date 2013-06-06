@@ -4,24 +4,27 @@
 
 #include "apps/app_restore_service.h"
 
-#include "apps/app_lifetime_monitor_factory.h"
 #include "apps/saved_files_service.h"
 #include "chrome/browser/extensions/api/app_runtime/app_runtime_api.h"
+#include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/platform_app_launcher.h"
+#include "chrome/browser/ui/extensions/shell_window.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_set.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/notification_types.h"
 
 #if defined(OS_WIN)
 #include "win8/util/win8_util.h"
 #endif
 
+using extensions::AppEventRouter;
 using extensions::Extension;
 using extensions::ExtensionHost;
 using extensions::ExtensionPrefs;
@@ -45,10 +48,16 @@ bool AppRestoreService::ShouldRestoreApps(bool is_browser_restart) {
 
 AppRestoreService::AppRestoreService(Profile* profile)
     : profile_(profile) {
-  StartObservingAppLifetime();
+  registrar_.Add(
+      this, chrome::NOTIFICATION_EXTENSION_HOST_DID_STOP_LOADING,
+      content::NotificationService::AllSources());
+  registrar_.Add(
+      this, chrome::NOTIFICATION_EXTENSION_HOST_DESTROYED,
+      content::NotificationService::AllSources());
   registrar_.Add(
       this, chrome::NOTIFICATION_APP_TERMINATING,
       content::NotificationService::AllSources());
+  StartObservingShellWindows();
 }
 
 void AppRestoreService::HandleStartup(bool should_restore_apps) {
@@ -79,39 +88,47 @@ void AppRestoreService::Observe(int type,
                                 const content::NotificationSource& source,
                                 const content::NotificationDetails& details) {
   switch (type) {
+    case chrome::NOTIFICATION_EXTENSION_HOST_DID_STOP_LOADING: {
+      ExtensionHost* host = content::Details<ExtensionHost>(details).ptr();
+      const Extension* extension = host->extension();
+      if (extension && extension->is_platform_app())
+        RecordAppStart(extension->id());
+      break;
+    }
+
+    case chrome::NOTIFICATION_EXTENSION_HOST_DESTROYED: {
+      ExtensionHost* host = content::Details<ExtensionHost>(details).ptr();
+      const Extension* extension = host->extension();
+      if (extension && extension->is_platform_app())
+        RecordAppStop(extension->id());
+      break;
+    }
+
     case chrome::NOTIFICATION_APP_TERMINATING: {
       // Stop listening to NOTIFICATION_EXTENSION_HOST_DESTROYED in particular
       // as all extension hosts will be destroyed as a result of shutdown.
       registrar_.RemoveAll();
-      // We want to preserve the state when the app begins terminating, so stop
-      // listening to app lifetime events.
-      StopObservingAppLifetime();
+      // Stop listening to the ShellWindowRegistry for window closes, because
+      // all windows will be closed as a result of shutdown.
+      StopObservingShellWindows();
       break;
     }
   }
 }
 
-void AppRestoreService::OnAppStart(Profile* profile,
-                                   const std::string& app_id) {
-  RecordAppStart(app_id);
+void AppRestoreService::OnShellWindowAdded(ShellWindow* shell_window) {
+  RecordIfAppHasWindows(shell_window->extension_id());
 }
 
-void AppRestoreService::OnAppActivated(Profile* profile,
-                                       const std::string& app_id) {
-  RecordAppActiveState(app_id, true);
+void AppRestoreService::OnShellWindowIconChanged(ShellWindow* shell_window) {
 }
 
-void AppRestoreService::OnAppDeactivated(Profile* profile,
-                                         const std::string& app_id) {
-  RecordAppActiveState(app_id, false);
-}
-
-void AppRestoreService::OnAppStop(Profile* profile, const std::string& app_id) {
-  RecordAppStop(app_id);
+void AppRestoreService::OnShellWindowRemoved(ShellWindow* shell_window) {
+  RecordIfAppHasWindows(shell_window->extension_id());
 }
 
 void AppRestoreService::Shutdown() {
-  StopObservingAppLifetime();
+  StopObservingShellWindows();
 }
 
 void AppRestoreService::RecordAppStart(const std::string& extension_id) {
@@ -126,30 +143,44 @@ void AppRestoreService::RecordAppStop(const std::string& extension_id) {
   extension_prefs->SetExtensionRunning(extension_id, false);
 }
 
-void AppRestoreService::RecordAppActiveState(const std::string& id,
-                                             bool is_active) {
+void AppRestoreService::RecordIfAppHasWindows(
+    const std::string& id) {
   ExtensionService* extension_service =
       ExtensionSystem::Get(profile_)->extension_service();
   ExtensionPrefs* extension_prefs = extension_service->extension_prefs();
 
   // If the extension isn't running then we will already have recorded whether
-  // it is active or not.
+  // it had windows or not.
   if (!extension_prefs->IsExtensionRunning(id))
     return;
 
-  extension_prefs->SetIsActive(id, is_active);
+  extensions::ShellWindowRegistry* shell_window_registry =
+      extensions::ShellWindowRegistry::Factory::GetForProfile(
+          profile_, false /* create */);
+  if (!shell_window_registry)
+    return;
+  bool has_windows = !shell_window_registry->GetShellWindowsForApp(id).empty();
+  extension_prefs->SetHasWindows(id, has_windows);
 }
 
 void AppRestoreService::RestoreApp(const Extension* extension) {
   extensions::RestartPlatformApp(profile_, extension);
 }
 
-void AppRestoreService::StartObservingAppLifetime() {
-  AppLifetimeMonitorFactory::GetForProfile(profile_)->AddObserver(this);
+void AppRestoreService::StartObservingShellWindows() {
+  extensions::ShellWindowRegistry* shell_window_registry =
+      extensions::ShellWindowRegistry::Factory::GetForProfile(
+          profile_, false /* create */);
+  if (shell_window_registry)
+    shell_window_registry->AddObserver(this);
 }
 
-void AppRestoreService::StopObservingAppLifetime() {
-  AppLifetimeMonitorFactory::GetForProfile(profile_)->RemoveObserver(this);
+void AppRestoreService::StopObservingShellWindows() {
+  extensions::ShellWindowRegistry* shell_window_registry =
+      extensions::ShellWindowRegistry::Factory::GetForProfile(
+          profile_, false /* create */);
+  if (shell_window_registry)
+    shell_window_registry->RemoveObserver(this);
 }
 
 }  // namespace apps
