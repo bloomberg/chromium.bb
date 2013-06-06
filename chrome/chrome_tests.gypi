@@ -3318,7 +3318,7 @@
           'dependencies': [
             'browser_tests',
             'chrome',
-            '../webkit/webkit.gyp:pull_in_DumpRenderTree',
+            '../third_party/WebKit/Tools/DumpRenderTree/DumpRenderTree.gyp/DumpRenderTree.gyp:copy_TestNetscapePlugIn',
           ],
           'includes': [
             '../build/isolate.gypi',

@@ -66,7 +66,6 @@
             '../v8/tools/gyp/v8.gyp:*',
             '../webkit/renderer/compositor_bindings/compositor_bindings_tests.gyp:*',
             '../webkit/support/webkit_support.gyp:*',
-            '../webkit/webkit.gyp:*',
             '<(libjpeg_gyp_path):*',
           ],
         }, { #  'OS=="ios"'
@@ -256,7 +255,7 @@
             '../sandbox/sandbox.gyp:sbox_integration_tests',
             '../sandbox/sandbox.gyp:sbox_unittests',
             '../sandbox/sandbox.gyp:sbox_validation_tests',
-            '../webkit/webkit.gyp:pull_in_copy_TestNetscapePlugIn',
+            '../third_party/WebKit/Tools/DumpRenderTree/DumpRenderTree.gyp/DumpRenderTree.gyp:copy_TestNetscapePlugIn',
             '../ui/app_list/app_list.gyp:app_list_unittests',
             '../ui/views/views.gyp:views_unittests',
           ],
@@ -632,7 +631,7 @@
             '../ui/views/views.gyp:views_unittests',
             '../url/url.gyp:googleurl_unittests',
             '../webkit/renderer/compositor_bindings/compositor_bindings_tests.gyp:webkit_compositor_bindings_unittests',
-            '../webkit/webkit.gyp:pull_in_copy_TestNetscapePlugIn',
+            '../third_party/WebKit/Tools/DumpRenderTree/DumpRenderTree.gyp/DumpRenderTree.gyp:copy_TestNetscapePlugIn',
           ],
           'conditions': [
              ['target_arch!="x64"', {

@@ -932,8 +932,8 @@
               # npapi test plugin doesn't build on android or ios
               'dependencies': [
                 # Runtime dependencies
+                '../third_party/WebKit/Tools/DumpRenderTree/DumpRenderTree.gyp/DumpRenderTree.gyp:copy_TestNetscapePlugIn',
                 '../webkit/plugins/webkit_plugins.gyp:copy_npapi_test_plugin',
-                '../webkit/webkit.gyp:pull_in_copy_TestNetscapePlugIn',
               ],
             }],
             ['enable_webrtc==1', {
