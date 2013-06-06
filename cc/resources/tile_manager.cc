@@ -543,6 +543,8 @@ void TileManager::AssignGpuMemoryToTiles() {
 }
 
 void TileManager::FreeResourcesForTile(Tile* tile) {
+  tile->tile_version().resource_id_ = 0;
+  tile->tile_version().forced_upload_ = false;
   if (tile->tile_version().resource_) {
     resource_pool_->ReleaseResource(
         tile->tile_version().resource_.Pass());
@@ -626,6 +628,8 @@ RasterWorkerPool::RasterTask TileManager::CreateRasterTask(
           tile->tile_version().resource_format_);
   const Resource* const_resource = resource.get();
 
+  DCHECK(!tile->tile_version().resource_id_);
+  DCHECK(!tile->tile_version().forced_upload_);
   tile->tile_version().resource_id_ = resource->id();
 
   PicturePileImpl::Analysis* analysis = new PicturePileImpl::Analysis;
@@ -713,6 +717,7 @@ void TileManager::OnRasterTaskCompleted(
     resource_pool_->ReleaseResource(resource.Pass());
   } else {
     tile->tile_version().resource_ = resource.Pass();
+    tile->tile_version().forced_upload_ = false;
   }
 
   DidFinishTileInitialization(tile.get());
