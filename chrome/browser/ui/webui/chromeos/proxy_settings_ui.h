@@ -27,6 +27,8 @@ class ProxySettingsUI : public content::WebUIController,
   // Overridden from OptionsPageUIHandlerHost:
   virtual void InitializeHandlers() OVERRIDE;
 
+  bool initialized_handlers_;
+
   options::ProxyHandler* proxy_handler_;  // Weak ptr.
   options::CoreChromeOSOptionsHandler* core_handler_; // WeakPtr.
 
