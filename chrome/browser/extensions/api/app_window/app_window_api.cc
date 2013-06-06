@@ -8,6 +8,7 @@
 #include "base/time.h"
 #include "base/values.h"
 #include "chrome/browser/app_mode/app_mode_utils.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/extensions/shell_window_registry.h"
 #include "chrome/browser/extensions/window_controller.h"
@@ -104,6 +105,10 @@ void AppWindowCreateFunction::SendDelayedResponse() {
 }
 
 bool AppWindowCreateFunction::RunImpl() {
+  // Don't create app window if the system is shutting down.
+  if (g_browser_process->IsShuttingDown())
+    return false;
+
   scoped_ptr<Create::Params> params(Create::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
