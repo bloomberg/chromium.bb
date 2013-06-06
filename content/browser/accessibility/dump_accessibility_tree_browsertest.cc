@@ -271,12 +271,21 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityAriaInvalid) {
   RunTest(FILE_PATH_LITERAL("aria-invalid.html"));
 }
 
+// crbug.com/247325
+#if defined(OS_WIN) || define (OS_MACOSX)
+#define MAYBE_AccessibilityAriaMenu DISABLED_AccessibilityAriaMenu
+#define MAYBE_AccessibilityAriaLevel DISABLED_AccessibilityAriaLevel
+#else
+#define MAYBE_AccessibilityAriaMenu AccessibilityAriaMenu
+#define MAYBE_AccessibilityAriaLevel MAYBE(AccessibilityAriaLevel)
+#endif
+
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
-                       MAYBE(AccessibilityAriaLevel)) {
+                       MAYBE_AccessibilityAriaLevel) {
   RunTest(FILE_PATH_LITERAL("aria-level.html"));
 }
 
-IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityAriaMenu) {
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, MAYBE_AccessibilityAriaMenu) {
   RunTest(FILE_PATH_LITERAL("aria-menu.html"));
 }
 
