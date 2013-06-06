@@ -16,6 +16,13 @@
 #include "native_client/src/shared/utils/types.h"
 #include "native_client/src/trusted/validator_ragel/decoder.h"
 
+
+/* TODO(shcherbina): Code that handles line breaks when printing an instruction
+ * is now dead and should be eliminated eventually.
+ */
+const int INSN_WIDTH = 15; /* Counterpart of '--insn-width' objdump option. */
+
+
 /* This is a copy of NaClLog from shared/platform/nacl_log.c to avoid
  * linking in code in NaCl shared code in the unreviewed/Makefile and be able to
  *  use CHECK().
@@ -278,7 +285,7 @@ void ProcessInstruction(const uint8_t *begin, const uint8_t *end,
   }
   printf("%*lx:\t", ((struct DecodeState *)userdata)->width,
                     (long)(begin - (((struct DecodeState *)userdata)->offset)));
-  for (p = begin; p < begin + 7; ++p) {
+  for (p = begin; p < begin + INSN_WIDTH; ++p) {
     if (p >= end)
       printf("   ");
     else
@@ -681,11 +688,11 @@ void ProcessInstruction(const uint8_t *begin, const uint8_t *end,
                (((struct DecodeState *)userdata)->offset)));
   }
   printf("\n");
-  begin += 7;
+  begin += INSN_WIDTH;
   while (begin < end) {
     printf("%*"NACL_PRIx64":\t", ((struct DecodeState *)userdata)->width,
            (uint64_t) (begin - (((struct DecodeState *)userdata)->offset)));
-    for (p = begin; p < begin + 7; ++p) {
+    for (p = begin; p < begin + INSN_WIDTH; ++p) {
       if (p >= end) {
         printf("\n");
         return;
@@ -696,7 +703,7 @@ void ProcessInstruction(const uint8_t *begin, const uint8_t *end,
     printf("\n");
     if (p >= end)
       return;
-    begin += 7;
+    begin += INSN_WIDTH;
   }
 }
 

@@ -85,7 +85,7 @@ class WorkerState(object):
           '-o', object_file.name])
 
       objdump_proc = subprocess.Popen(
-          [options.objdump, '-d', object_file.name],
+          [options.objdump, '-d', '--insn-width=15', object_file.name],
           stdout=subprocess.PIPE)
 
       decoder_proc = subprocess.Popen(
