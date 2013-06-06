@@ -80,7 +80,8 @@ SyncedTabDelegate* SyncedWindowDelegateAndroid::GetTabAt(int index) const {
 }
 
 SessionID::id_type SyncedWindowDelegateAndroid::GetTabIdAt(int index) const {
-  return GetTabAt(index)->GetSessionId();
+  SyncedTabDelegate* tab = GetTabAt(index);
+  return tab ? tab->GetSessionId() : -1;
 }
 
 bool SyncedWindowDelegateAndroid::IsSessionRestoreInProgress() const {

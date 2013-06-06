@@ -216,7 +216,7 @@ bool SessionModelAssociator::AssociateWindows(bool reload_tabs,
           // It's possible for GetTabAt to return a tab which has no web
           // contents. We can assume this means the tab already existed but
           // hasn't changed, so no need to reassociate.
-          if (tab->HasWebContents() && !AssociateTab(*tab, error)) {
+          if (tab && tab->HasWebContents() && !AssociateTab(*tab, error)) {
             // Association failed. Either we need to re-associate, or this is an
             // unrecoverable error.
             return false;
