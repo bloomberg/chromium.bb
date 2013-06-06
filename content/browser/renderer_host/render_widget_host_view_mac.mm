@@ -394,7 +394,11 @@ void RenderWidgetHostViewMac::SetDelegate(
 }
 
 void RenderWidgetHostViewMac::SetAllowOverlappingViews(bool overlapping) {
+  if (allow_overlapping_views_ == overlapping)
+    return;
   allow_overlapping_views_ = overlapping;
+  [cocoa_view_ setNeedsDisplay:YES];
+  [[cocoa_view_ window] disableScreenUpdatesUntilFlush];
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1093,11 +1097,8 @@ bool RenderWidgetHostViewMac::CompositorSwapBuffers(
 
   bool should_post_notification = false;
   if (!compositing_iosurface_) {
-    CompositingIOSurfaceMac::SurfaceOrder order = allow_overlapping_views_ ?
-        CompositingIOSurfaceMac::SURFACE_ORDER_BELOW_WINDOW :
-        CompositingIOSurfaceMac::SURFACE_ORDER_ABOVE_WINDOW;
     compositing_iosurface_.reset(
-        CompositingIOSurfaceMac::Create(window_number(), order));
+        CompositingIOSurfaceMac::Create(window_number()));
     should_post_notification = true;
   }
 

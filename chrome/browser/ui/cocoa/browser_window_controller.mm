@@ -72,6 +72,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_view.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
@@ -1590,6 +1591,8 @@ enum {
   [infoBarContainerController_ changeWebContents:contents];
 
   [overlayableContentsController_ onActivateTabWithContents:contents];
+
+  [self updateAllowOverlappingViews:[self inPresentationMode]];
 }
 
 - (void)onTabChanged:(TabStripModelObserver::TabChangeType)change
@@ -1969,6 +1972,10 @@ willAnimateFromState:(BookmarkBar::State)oldState
   [infoBarContainerController_
       setShouldSuppressTopInfoBarTip:[self currentInstantUIState] !=
       browser_window_controller::kInstantUINone];
+}
+
+- (void)onFindBarVisibilityChanged {
+  [self updateAllowOverlappingViews:[self inPresentationMode]];
 }
 
 @end  // @implementation BrowserWindowController

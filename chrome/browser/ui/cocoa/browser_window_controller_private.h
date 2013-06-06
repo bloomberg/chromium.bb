@@ -168,6 +168,8 @@ enum InstantUIState {
 // Ensures the z-order of subviews is correct.
 - (void)updateSubviewZOrder:(BOOL)inPresentationMode;
 
+- (void)updateAllowOverlappingViews:(BOOL)inPresentationMode;
+
 @end  // @interface BrowserWindowController(Private)
 
 #endif  // CHROME_BROWSER_UI_COCOA_BROWSER_WINDOW_CONTROLLER_PRIVATE_H_

@@ -15,7 +15,6 @@
 
 using content::WebContents;
 
-
 @implementation TabContentsController
 @synthesize webContents = contents_;
 
@@ -64,9 +63,6 @@ using content::WebContents;
   }
   [contentsNativeView setAutoresizingMask:NSViewWidthSizable|
                                           NSViewHeightSizable];
-  // The find bar will overlap the content's view when it comes out; inform
-  // the view.
-  contents_->GetView()->SetAllowOverlappingViews(true);
 }
 
 - (void)changeWebContents:(WebContents*)newContents {

@@ -343,6 +343,8 @@ class WebContents;
 
 - (void)updateBookmarkBarStateForInstantOverlay;
 
+- (void)onFindBarVisibilityChanged;
+
 @end  // @interface BrowserWindowController
 
 

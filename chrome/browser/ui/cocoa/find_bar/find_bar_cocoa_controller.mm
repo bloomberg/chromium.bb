@@ -68,9 +68,13 @@ const float kRightEdgeOffset = 25;
 // bar. If |suppressPboardUpdateActions_| is true then the current tab is not
 // cleared.
 - (void)clearFindResultsForCurrentBrowser;
+
+- (BrowserWindowController*)browserWindowController;
 @end
 
 @implementation FindBarCocoaController
+
+@synthesize findBarView = findBarView_;
 
 - (id)initWithBrowser:(Browser*)browser {
   if ((self = [super initWithNibName:@"FindBar"
@@ -276,13 +280,7 @@ const float kRightEdgeOffset = 25;
 
   // The browser window might have changed while the FindBar was hidden.
   // Update its position now.
-  if (browser_) {
-    BrowserWindowController* browserWindowController =
-        [BrowserWindowController browserWindowControllerForWindow:
-            browser_->window()->GetNativeWindow()];
-    if (browserWindowController)
-      [browserWindowController layoutSubviews];
-  }
+  [[self browserWindowController] layoutSubviews];
 
   // Move to the correct horizontal position first, to prevent the FindBar
   // from jumping around when switching tabs.
@@ -438,6 +436,7 @@ const float kRightEdgeOffset = 25;
   // If the find bar is not visible, make it actually hidden, so it'll no longer
   // respond to key events.
   [findBarView_ setHidden:![self isFindBarVisible]];
+  [[self browserWindowController] onFindBarVisibilityChanged];
 }
 
 - (gfx::Point)findBarWindowPosition {
@@ -493,6 +492,7 @@ const float kRightEdgeOffset = 25;
   if (!animate) {
     [findBarView_ setFrame:endFrame];
     [findBarView_ setHidden:![self isFindBarVisible]];
+    [[self browserWindowController] onFindBarVisibilityChanged];
     showHideAnimation_.reset(nil);
     return;
   }
@@ -500,9 +500,12 @@ const float kRightEdgeOffset = 25;
   // If animating, ensure that the find bar is not hidden. Hidden status will be
   // updated at the end of the animation.
   [findBarView_ setHidden:NO];
+  //[[self browserWindowController] onFindBarVisibilityChanged];
 
   // Reset the frame to what was saved above.
   [findBarView_ setFrame:startFrame];
+
+  [[self browserWindowController] onFindBarVisibilityChanged];
 
   showHideAnimation_.reset([self createAnimationForView:findBarView_
                                                 toFrame:endFrame
@@ -600,6 +603,13 @@ const float kRightEdgeOffset = 25;
     findTabHelper->StopFinding(FindBarController::kClearSelectionOnPage);
     findBarBridge_->ClearResults(findTabHelper->find_result());
   }
+}
+
+- (BrowserWindowController*)browserWindowController {
+  if (!browser_)
+    return nil;
+  return [BrowserWindowController
+      browserWindowControllerForWindow:browser_->window()->GetNativeWindow()];
 }
 
 @end

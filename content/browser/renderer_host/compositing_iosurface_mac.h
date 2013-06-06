@@ -54,8 +54,7 @@ class CompositingIOSurfaceMac {
   // Returns NULL if IOSurface support is missing or GL APIs fail. Specify in
   // |order| the desired ordering relationship of the surface to the containing
   // window.
-  static CompositingIOSurfaceMac* Create(int window_number,
-                                         SurfaceOrder order);
+  static CompositingIOSurfaceMac* Create(int window_number);
   ~CompositingIOSurfaceMac();
 
   // Set IOSurface that will be drawn on the next NSView drawRect.
@@ -232,8 +231,7 @@ class CompositingIOSurfaceMac {
   // GL context (if multiple visible windows are using the same GL context
   // then call to setView call can stall and prevent reaching 60fps).
   void SwitchToContextOnNewWindow(NSView* view,
-                                  int window_number,
-                                  SurfaceOrder surface_order);
+                                  int window_number);
 
   bool IsVendorIntel();
 

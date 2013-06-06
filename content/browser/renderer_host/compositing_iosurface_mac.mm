@@ -149,6 +149,20 @@ bool MapBufferToVideoFrame(
   return buf != NULL;
 }
 
+void SetSurfaceOrder(NSOpenGLContext* context,
+                     CompositingIOSurfaceMac::SurfaceOrder surface_order) {
+  GLint old_gl_surface_order = 0;
+  GLint new_gl_surface_order =
+      surface_order == CompositingIOSurfaceMac::SURFACE_ORDER_ABOVE_WINDOW ? 1
+                                                                           : -1;
+  [context getValues:&old_gl_surface_order forParameter:NSOpenGLCPSurfaceOrder];
+
+  if (old_gl_surface_order != new_gl_surface_order) {
+    [context setValues:&new_gl_surface_order
+          forParameter:NSOpenGLCPSurfaceOrder];
+  }
+}
+
 }  // namespace
 
 CVReturn DisplayLinkCallback(CVDisplayLinkRef display_link,
@@ -223,9 +237,7 @@ void CompositingIOSurfaceMac::CopyContext::PrepareForAsynchronousReadback() {
 
 
 // static
-CompositingIOSurfaceMac* CompositingIOSurfaceMac::Create(
-    int window_number,
-    SurfaceOrder surface_order) {
+CompositingIOSurfaceMac* CompositingIOSurfaceMac::Create(int window_number) {
   TRACE_EVENT0("browser", "CompositingIOSurfaceMac::Create");
   IOSurfaceSupport* io_surface_support = IOSurfaceSupport::Initialize();
   if (!io_surface_support) {
@@ -234,7 +246,7 @@ CompositingIOSurfaceMac* CompositingIOSurfaceMac::Create(
   }
 
   scoped_refptr<CompositingIOSurfaceContext> context =
-      CompositingIOSurfaceContext::Get(window_number, surface_order);
+      CompositingIOSurfaceContext::Get(window_number);
 
   return new CompositingIOSurfaceMac(io_surface_support,
                                      context);
@@ -301,12 +313,9 @@ void CompositingIOSurfaceMac::SetupCVDisplayLink() {
   StopDisplayLink();
 }
 
-void CompositingIOSurfaceMac::SwitchToContextOnNewWindow(
-    NSView* view,
-    int window_number,
-    SurfaceOrder surface_order) {
-  if (window_number == context_->window_number() &&
-      surface_order == context_->surface_order())
+void CompositingIOSurfaceMac::SwitchToContextOnNewWindow(NSView* view,
+                                                         int window_number) {
+  if (window_number == context_->window_number())
     return;
 
   // Asynchronous copies must complete in the same context they started in,
@@ -321,8 +330,7 @@ void CompositingIOSurfaceMac::SwitchToContextOnNewWindow(
   }
 
   scoped_refptr<CompositingIOSurfaceContext> new_context =
-      CompositingIOSurfaceContext::Get(window_number,
-                                       surface_order);
+      CompositingIOSurfaceContext::Get(window_number);
   if (!new_context)
     return;
 
@@ -392,7 +400,8 @@ void CompositingIOSurfaceMac::DrawIOSurface(
   if (display_link_ == NULL)
     SetupCVDisplayLink();
 
-  SwitchToContextOnNewWindow(view, window_number, surface_order);
+  SwitchToContextOnNewWindow(view, window_number);
+  SetSurfaceOrder(context_->nsgl_context(), surface_order);
 
   CGLSetCurrentContext(context_->cgl_context());
 

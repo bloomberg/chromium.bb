@@ -57,6 +57,8 @@ class FindNotificationDetails;
   CGFloat defaultWidth_;
 };
 
+@property (readonly, nonatomic) NSView* findBarView;
+
 // Initializes a new FindBarCocoaController.
 - (id)initWithBrowser:(Browser*)browser;
 

@@ -13,6 +13,7 @@
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_info_util.h"
+#include "chrome/browser/search/search.h"
 #include "chrome/browser/ui/bookmarks/bookmark_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window_state.h"
@@ -738,6 +739,7 @@ willPositionSheet:(NSWindow*)sheet
   // Force the bookmark bar z-order to update.
   [[bookmarkBarController_ view] removeFromSuperview];
   [self updateSubviewZOrder:fullscreen];
+  [self updateAllowOverlappingViews:fullscreen];
 }
 
 - (void)showFullscreenExitBubbleIfNecessary {
@@ -1011,6 +1013,28 @@ willPositionSheet:(NSWindow*)sheet
                          relativeTo:[bookmarkBarController_ view]];
     }
   }
+}
+
+- (BOOL)shouldAllowOverlappingViews:(BOOL)inPresentationMode {
+  if (chrome::IsInstantExtendedAPIEnabled())
+    return YES;
+
+  if (inPresentationMode)
+    return YES;
+
+  if (findBarCocoaController_ &&
+      ![[findBarCocoaController_ findBarView] isHidden])
+    return YES;
+
+  return NO;
+}
+
+- (void)updateAllowOverlappingViews:(BOOL)inPresentationMode {
+  WebContents* contents = browser_->tab_strip_model()->GetActiveWebContents();
+  if (!contents)
+    return;
+  contents->GetView()->SetAllowOverlappingViews(
+      [self shouldAllowOverlappingViews:inPresentationMode]);
 }
 
 @end  // @implementation BrowserWindowController(Private)
