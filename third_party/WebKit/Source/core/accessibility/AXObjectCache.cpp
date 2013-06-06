@@ -100,7 +100,6 @@ void AXComputedObjectAttributeCache::setIgnored(AXID id, AccessibilityObjectIncl
 }
     
 bool AXObjectCache::gAccessibilityEnabled = false;
-bool AXObjectCache::gAccessibilityEnhancedUserInterfaceEnabled = false;
 
 AXObjectCache::AXObjectCache(const Document* doc)
     : m_notificationPostTimer(this, &AXObjectCache::notificationPostTimerFired)

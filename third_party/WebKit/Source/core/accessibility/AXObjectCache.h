@@ -130,16 +130,10 @@ public:
 
 #if HAVE(ACCESSIBILITY)
     static void enableAccessibility() { gAccessibilityEnabled = true; }
-    // Enhanced user interface accessibility can be toggled by the assistive technology.
-    static void setEnhancedUserInterfaceAccessibility(bool flag) { gAccessibilityEnhancedUserInterfaceEnabled = flag; }
-    
     static bool accessibilityEnabled() { return gAccessibilityEnabled; }
-    static bool accessibilityEnhancedUserInterfaceEnabled() { return gAccessibilityEnhancedUserInterfaceEnabled; }
 #else
     static void enableAccessibility() { }
-    static void setEnhancedUserInterfaceAccessibility(bool) { }
     static bool accessibilityEnabled() { return false; }
-    static bool accessibilityEnhancedUserInterfaceEnabled() { return false; }
 #endif
 
     void removeAXID(AccessibilityObject*);
@@ -227,7 +221,6 @@ private:
     HashSet<Node*> m_textMarkerNodes;
     OwnPtr<AXComputedObjectAttributeCache> m_computedObjectAttributeCache;
     static bool gAccessibilityEnabled;
-    static bool gAccessibilityEnhancedUserInterfaceEnabled;
     
     HashSet<AXID> m_idsInUse;
     

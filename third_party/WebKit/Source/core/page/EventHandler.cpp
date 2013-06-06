@@ -30,7 +30,6 @@
 
 #include "HTMLNames.h"
 #include "SVGNames.h"
-#include "core/accessibility/AXObjectCache.h"
 #include "core/dom/Document.h"
 #include "core/dom/DocumentEventQueue.h"
 #include "core/dom/EventNames.h"
@@ -3033,47 +3032,6 @@ static FocusDirection focusDirectionForKey(const AtomicString& keyIdentifier)
     return retVal;
 }
 
-static void handleKeyboardSelectionMovement(FrameSelection* selection, KeyboardEvent* event)
-{
-    if (!event)
-        return;
-
-    bool isOptioned = event->getModifierState("Alt");
-    bool isCommanded = event->getModifierState("Meta");
-
-    SelectionDirection direction = DirectionForward;
-    TextGranularity granularity = CharacterGranularity;
-
-    switch (focusDirectionForKey(event->keyIdentifier())) {
-    case FocusDirectionNone:
-        return;
-    case FocusDirectionForward:
-    case FocusDirectionBackward:
-        ASSERT_NOT_REACHED();
-        return;
-    case FocusDirectionUp:
-        direction = DirectionBackward;
-        granularity = isCommanded ? DocumentBoundary : LineGranularity;
-        break;
-    case FocusDirectionDown:
-        direction = DirectionForward;
-        granularity = isCommanded ? DocumentBoundary : LineGranularity;
-        break;
-    case FocusDirectionLeft:
-        direction = DirectionLeft;
-        granularity = (isCommanded) ? LineBoundary : (isOptioned) ? WordGranularity : CharacterGranularity;
-        break;
-    case FocusDirectionRight:
-        direction = DirectionRight;
-        granularity = (isCommanded) ? LineBoundary : (isOptioned) ? WordGranularity : CharacterGranularity;
-        break;
-    }
-
-    FrameSelection::EAlteration alternation = event->getModifierState("Shift") ? FrameSelection::AlterationExtend : FrameSelection::AlterationMove;
-    selection->modify(alternation, direction, granularity, UserTriggered);
-    event->setDefaultHandled();
-}
-    
 void EventHandler::defaultKeyboardEventHandler(KeyboardEvent* event)
 {
     if (event->type() == eventNames().keydownEvent) {
@@ -3089,10 +3047,6 @@ void EventHandler::defaultKeyboardEventHandler(KeyboardEvent* event)
             if (direction != FocusDirectionNone)
                 defaultArrowEventHandler(direction, event);
         }
-
-        // provides KB navigation and selection for enhanced accessibility users
-        if (AXObjectCache::accessibilityEnhancedUserInterfaceEnabled())
-            handleKeyboardSelectionMovement(m_frame->selection(), event);
     }
     if (event->type() == eventNames().keypressEvent) {
         m_frame->editor()->handleKeyboardEvent(event);
