@@ -97,6 +97,13 @@ namespace app.window {
     boolean? singleton;
   };
 
+  // Called in the creating window (parent) before the load event is called in
+  // the created window (child). The parent can set fields or functions on the
+  // child usable from onload. E.g. background.js:<br>
+  // <code>function(created_window) { created_window.contentWindow.foo =
+  // function () { }; };</code>
+  // <br>window.js:<br>
+  // <code>window.onload = function () { foo(); }</code>
   callback CreateWindowCallback =
       void ([instanceOf=AppWindow] object created_window);
 
