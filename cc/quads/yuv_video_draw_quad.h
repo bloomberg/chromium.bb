@@ -25,7 +25,8 @@ class CC_EXPORT YUVVideoDrawQuad : public DrawQuad {
               gfx::SizeF tex_scale,
               unsigned y_plane_resource_id,
               unsigned u_plane_resource_id,
-              unsigned v_plane_resource_id);
+              unsigned v_plane_resource_id,
+              unsigned a_plane_resource_id);
 
   void SetAll(const SharedQuadState* shared_quad_state,
               gfx::Rect rect,
@@ -35,12 +36,14 @@ class CC_EXPORT YUVVideoDrawQuad : public DrawQuad {
               gfx::SizeF tex_scale,
               unsigned y_plane_resource_id,
               unsigned u_plane_resource_id,
-              unsigned v_plane_resource_id);
+              unsigned v_plane_resource_id,
+              unsigned a_plane_resource_id);
 
   gfx::SizeF tex_scale;
   unsigned y_plane_resource_id;
   unsigned u_plane_resource_id;
   unsigned v_plane_resource_id;
+  unsigned a_plane_resource_id;
 
   virtual void IterateResources(const ResourceIteratorCallback& callback)
       OVERRIDE;

@@ -575,6 +575,37 @@ class FragmentShaderYUVVideo {
   DISALLOW_COPY_AND_ASSIGN(FragmentShaderYUVVideo);
 };
 
+
+class FragmentShaderYUVAVideo {
+ public:
+  FragmentShaderYUVAVideo();
+  std::string GetShaderString(TexCoordPrecision precision) const;
+
+  void Init(WebKit::WebGraphicsContext3D* context,
+            unsigned program,
+            bool using_bind_uniform,
+            int* base_uniform_index);
+
+  int y_texture_location() const { return y_texture_location_; }
+  int u_texture_location() const { return u_texture_location_; }
+  int v_texture_location() const { return v_texture_location_; }
+  int a_texture_location() const { return a_texture_location_; }
+  int alpha_location() const { return alpha_location_; }
+  int yuv_matrix_location() const { return yuv_matrix_location_; }
+  int yuv_adj_location() const { return yuv_adj_location_; }
+
+ private:
+  int y_texture_location_;
+  int u_texture_location_;
+  int v_texture_location_;
+  int a_texture_location_;
+  int alpha_location_;
+  int yuv_matrix_location_;
+  int yuv_adj_location_;
+
+  DISALLOW_COPY_AND_ASSIGN(FragmentShaderYUVAVideo);
+};
+
 class FragmentShaderColor {
  public:
   FragmentShaderColor();
