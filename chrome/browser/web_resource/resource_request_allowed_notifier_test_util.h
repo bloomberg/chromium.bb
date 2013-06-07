@@ -1,11 +1,11 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_METRICS_VARIATIONS_RESOURCE_REQUEST_ALLOWED_NOTIFIER_TEST_UTIL_H_
-#define CHROME_BROWSER_METRICS_VARIATIONS_RESOURCE_REQUEST_ALLOWED_NOTIFIER_TEST_UTIL_H_
+#ifndef CHROME_BROWSER_WEB_RESOURCE_RESOURCE_REQUEST_ALLOWED_NOTIFIER_TEST_UTIL_H_
+#define CHROME_BROWSER_WEB_RESOURCE_RESOURCE_REQUEST_ALLOWED_NOTIFIER_TEST_UTIL_H_
 
-#include "chrome/browser/metrics/variations/resource_request_allowed_notifier.h"
+#include "chrome/browser/web_resource/resource_request_allowed_notifier.h"
 
 // A subclass of ResourceRequestAllowedNotifier used to expose some
 // functionality for testing.
@@ -45,4 +45,4 @@ class TestRequestAllowedNotifier : public ResourceRequestAllowedNotifier {
   DISALLOW_COPY_AND_ASSIGN(TestRequestAllowedNotifier);
 };
 
-#endif  // CHROME_BROWSER_METRICS_VARIATIONS_RESOURCE_REQUEST_ALLOWED_NOTIFIER_TEST_UTIL_H_
+#endif  // CHROME_BROWSER_WEB_RESOURCE_RESOURCE_REQUEST_ALLOWED_NOTIFIER_TEST_UTIL_H_

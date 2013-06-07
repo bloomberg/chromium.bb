@@ -1,11 +1,11 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_METRICS_VARIATIONS_RESOURCE_REQUEST_ALLOWED_NOTIFIER_H_
-#define CHROME_BROWSER_METRICS_VARIATIONS_RESOURCE_REQUEST_ALLOWED_NOTIFIER_H_
+#ifndef CHROME_BROWSER_WEB_RESOURCE_RESOURCE_REQUEST_ALLOWED_NOTIFIER_H_
+#define CHROME_BROWSER_WEB_RESOURCE_RESOURCE_REQUEST_ALLOWED_NOTIFIER_H_
 
-#include "chrome/browser/metrics/variations/eula_accepted_notifier.h"
+#include "chrome/browser/web_resource/eula_accepted_notifier.h"
 #include "net/base/network_change_notifier.h"
 
 // This class informs an interested observer when resource requests over the
@@ -93,4 +93,4 @@ class ResourceRequestAllowedNotifier
   DISALLOW_COPY_AND_ASSIGN(ResourceRequestAllowedNotifier);
 };
 
-#endif  // CHROME_BROWSER_METRICS_VARIATIONS_RESOURCE_REQUEST_ALLOWED_NOTIFIER_H_
+#endif  // CHROME_BROWSER_WEB_RESOURCE_RESOURCE_REQUEST_ALLOWED_NOTIFIER_H_

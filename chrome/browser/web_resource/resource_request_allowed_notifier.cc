@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/metrics/variations/resource_request_allowed_notifier.h"
+#include "chrome/browser/web_resource/resource_request_allowed_notifier.h"
 
 #include "base/command_line.h"
 #include "chrome/common/chrome_switches.h"

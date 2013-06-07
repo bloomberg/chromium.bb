@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/metrics/variations/eula_accepted_notifier.h"
+#include "chrome/browser/web_resource/eula_accepted_notifier.h"
 
 #include "base/prefs/pref_registry_simple.h"
 #include "chrome/common/pref_names.h"

@@ -1,10 +1,10 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "base/prefs/testing_pref_service.h"
-#include "chrome/browser/metrics/variations/eula_accepted_notifier.h"
-#include "chrome/browser/metrics/variations/resource_request_allowed_notifier_test_util.h"
+#include "chrome/browser/web_resource/eula_accepted_notifier.h"
+#include "chrome/browser/web_resource/resource_request_allowed_notifier_test_util.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "content/public/browser/notification_service.h"
