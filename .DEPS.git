@@ -120,7 +120,7 @@ deps = {
     'src/third_party/v8-i18n':
         Var('git_url') + '/external/v8-i18n.git@b35ee1890b832b08629abdba1521b3fa0f4e5c80',
     'src/third_party/webdriver/pylib':
-        Var('git_url') + '/external/selenium/py.git@304801aede8d4b52a30657201aefed7479c0c9dd',
+        Var('git_url') + '/external/selenium/py.git@8212c8017c92a1ba740caf01c1acefb3674a6a44',
     'src/third_party/webgl_conformance':
         Var('git_url') + '/chromium/deps/webgl/sdk/tests.git@abbaf122a43703040783838a026ab5d470e9dd7e',
     'src/third_party/webpagereplay':
