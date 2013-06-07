@@ -6,8 +6,10 @@
 #define CC_OUTPUT_OUTPUT_SURFACE_H_
 
 #include "base/basictypes.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "cc/base/cc_export.h"
+#include "cc/output/context_provider.h"
 #include "cc/output/software_output_device.h"
 #include "third_party/WebKit/public/platform/WebGraphicsContext3D.h"
 
@@ -106,17 +108,25 @@ class CC_EXPORT OutputSurface {
   virtual void SetNeedsBeginFrame(bool enable) {}
 
  protected:
+  // Synchronously initialize context3d and enter hardware mode.
+  // This can only supported in threaded compositing mode.
+  // |offscreen_context_provider| should match what is returned by
+  // LayerTreeClient::OffscreenContextProviderForCompositorThread.
+  bool InitializeAndSetContext3D(
+      scoped_ptr<WebKit::WebGraphicsContext3D> context3d,
+      scoped_refptr<ContextProvider> offscreen_context_provider);
+
   OutputSurfaceClient* client_;
   struct cc::OutputSurface::Capabilities capabilities_;
+  scoped_ptr<OutputSurfaceCallbacks> callbacks_;
   scoped_ptr<WebKit::WebGraphicsContext3D> context3d_;
   scoped_ptr<cc::SoftwareOutputDevice> software_device_;
   bool has_gl_discard_backbuffer_;
   gfx::Size surface_size_;
   float device_scale_factor_;
 
-  scoped_ptr<OutputSurfaceCallbacks> callbacks_;
-
  private:
+  void SetContext3D(scoped_ptr<WebKit::WebGraphicsContext3D> context3d);
   DISALLOW_COPY_AND_ASSIGN(OutputSurface);
 };
 
