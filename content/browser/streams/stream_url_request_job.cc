@@ -16,22 +16,6 @@
 
 namespace content {
 
-namespace {
-
-const int kHTTPOk = 200;
-const int kHTTPNotAllowed = 403;
-const int kHTTPNotFound = 404;
-const int kHTTPMethodNotAllow = 405;
-const int kHTTPInternalError = 500;
-
-const char kHTTPOKText[] = "OK";
-const char kHTTPNotAllowedText[] = "Not Allowed";
-const char kHTTPNotFoundText[] = "Not Found";
-const char kHTTPMethodNotAllowText[] = "Method Not Allowed";
-const char kHTTPInternalErrorText[] = "Internal Server Error";
-
-}  // namespace
-
 StreamURLRequestJob::StreamURLRequestJob(
     net::URLRequest* request,
     net::NetworkDelegate* network_delegate,
@@ -167,7 +151,7 @@ void StreamURLRequestJob::DidStart() {
     return;
   }
 
-  HeadersCompleted(kHTTPOk, kHTTPOKText);
+  HeadersCompleted(net::HTTP_OK);
 }
 
 void StreamURLRequestJob::NotifyFailure(int error_code) {
@@ -182,44 +166,36 @@ void StreamURLRequestJob::NotifyFailure(int error_code) {
   }
 
   // TODO(zork): Share these with BlobURLRequestJob.
-  int status_code = 0;
+  net::HttpStatusCode status_code = net::HTTP_INTERNAL_SERVER_ERROR;
   std::string status_txt;
   switch (error_code) {
     case net::ERR_ACCESS_DENIED:
-      status_code = kHTTPNotAllowed;
-      status_txt = kHTTPNotAllowedText;
+      status_code = net::HTTP_FORBIDDEN;
       break;
     case net::ERR_FILE_NOT_FOUND:
-      status_code = kHTTPNotFound;
-      status_txt = kHTTPNotFoundText;
+      status_code = net::HTTP_NOT_FOUND;
       break;
     case net::ERR_METHOD_NOT_SUPPORTED:
-      status_code = kHTTPMethodNotAllow;
-      status_txt = kHTTPMethodNotAllowText;
+      status_code = net::HTTP_METHOD_NOT_ALLOWED;
       break;
     case net::ERR_FAILED:
-      status_code = kHTTPInternalError;
-      status_txt = kHTTPInternalErrorText;
       break;
     default:
       DCHECK(false);
-      status_code = kHTTPInternalError;
-      status_txt = kHTTPInternalErrorText;
       break;
   }
-  HeadersCompleted(status_code, status_txt);
+  HeadersCompleted(status_code);
 }
 
-void StreamURLRequestJob::HeadersCompleted(int status_code,
-                                           const std::string& status_text) {
+void StreamURLRequestJob::HeadersCompleted(net::HttpStatusCode status_code) {
   std::string status("HTTP/1.1 ");
   status.append(base::IntToString(status_code));
   status.append(" ");
-  status.append(status_text);
+  status.append(net::GetHttpReasonPhrase(status_code));
   status.append("\0\0", 2);
   net::HttpResponseHeaders* headers = new net::HttpResponseHeaders(status);
 
-  if (status_code == kHTTPOk) {
+  if (status_code == net::HTTP_OK) {
     std::string content_type_header(net::HttpRequestHeaders::kContentType);
     content_type_header.append(": ");
     content_type_header.append("plain/text");

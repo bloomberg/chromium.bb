@@ -11,6 +11,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/platform_file.h"
 #include "net/http/http_byte_range.h"
+#include "net/http/http_status_code.h"
 #include "net/url_request/url_request_job.h"
 #include "webkit/common/blob/blob_data.h"
 #include "webkit/storage/webkit_storage_export.h"
@@ -86,7 +87,7 @@ class WEBKIT_STORAGE_EXPORT BlobURLRequestJob : public net::URLRequestJob {
   // and pass it to URLRequestJob's NotifyDone() or NotifyHeadersComplete().
   void NotifySuccess();
   void NotifyFailure(int);
-  void HeadersCompleted(int status_code, const std::string& status_txt);
+  void HeadersCompleted(net::HttpStatusCode status_code);
 
   // Returns a FileStreamReader for a blob item at |index|.
   // If the item at |index| is not of file this returns NULL.

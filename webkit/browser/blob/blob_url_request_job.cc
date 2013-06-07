@@ -32,23 +32,6 @@ namespace webkit_blob {
 
 namespace {
 
-const int kHTTPOk = 200;
-const int kHTTPPartialContent = 206;
-const int kHTTPNotAllowed = 403;
-const int kHTTPNotFound = 404;
-const int kHTTPMethodNotAllow = 405;
-const int kHTTPRequestedRangeNotSatisfiable = 416;
-const int kHTTPInternalError = 500;
-
-const char kHTTPOKText[] = "OK";
-const char kHTTPPartialContentText[] = "Partial Content";
-const char kHTTPNotAllowedText[] = "Not Allowed";
-const char kHTTPNotFoundText[] = "Not Found";
-const char kHTTPMethodNotAllowText[] = "Method Not Allowed";
-const char kHTTPRequestedRangeNotSatisfiableText[] =
-    "Requested Range Not Satisfiable";
-const char kHTTPInternalErrorText[] = "Internal Server Error";
-
 bool IsFileType(BlobData::Item::Type type) {
   switch (type) {
     case BlobData::Item::TYPE_FILE:
@@ -473,16 +456,10 @@ bool BlobURLRequestJob::ReadLoop(int* bytes_read) {
 }
 
 void BlobURLRequestJob::NotifySuccess() {
-  int status_code = 0;
-  std::string status_text;
-  if (byte_range_set_ && byte_range_.IsValid()) {
-    status_code = kHTTPPartialContent;
-    status_text += kHTTPPartialContentText;
-  } else {
-    status_code = kHTTPOk;
-    status_text = kHTTPOKText;
-  }
-  HeadersCompleted(status_code, status_text);
+  net::HttpStatusCode status_code = net::HTTP_OK;
+  if (byte_range_set_ && byte_range_.IsValid())
+    status_code = net::HTTP_PARTIAL_CONTENT;
+  HeadersCompleted(status_code);
 }
 
 void BlobURLRequestJob::NotifyFailure(int error_code) {
@@ -496,48 +473,38 @@ void BlobURLRequestJob::NotifyFailure(int error_code) {
     return;
   }
 
-  int status_code = 0;
-  std::string status_txt;
+  net::HttpStatusCode status_code = net::HTTP_INTERNAL_SERVER_ERROR;
   switch (error_code) {
     case net::ERR_ACCESS_DENIED:
-      status_code = kHTTPNotAllowed;
-      status_txt = kHTTPNotAllowedText;
+      status_code = net::HTTP_FORBIDDEN;
       break;
     case net::ERR_FILE_NOT_FOUND:
-      status_code = kHTTPNotFound;
-      status_txt = kHTTPNotFoundText;
+      status_code = net::HTTP_NOT_FOUND;
       break;
     case net::ERR_METHOD_NOT_SUPPORTED:
-      status_code = kHTTPMethodNotAllow;
-      status_txt = kHTTPMethodNotAllowText;
+      status_code = net::HTTP_METHOD_NOT_ALLOWED;
       break;
     case net::ERR_REQUEST_RANGE_NOT_SATISFIABLE:
-      status_code = kHTTPRequestedRangeNotSatisfiable;
-      status_txt = kHTTPRequestedRangeNotSatisfiableText;
+      status_code = net::HTTP_REQUESTED_RANGE_NOT_SATISFIABLE;
       break;
     case net::ERR_FAILED:
-      status_code = kHTTPInternalError;
-      status_txt = kHTTPInternalErrorText;
       break;
     default:
       DCHECK(false);
-      status_code = kHTTPInternalError;
-      status_txt = kHTTPInternalErrorText;
       break;
   }
-  HeadersCompleted(status_code, status_txt);
+  HeadersCompleted(status_code);
 }
 
-void BlobURLRequestJob::HeadersCompleted(int status_code,
-                                         const std::string& status_text) {
+void BlobURLRequestJob::HeadersCompleted(net::HttpStatusCode status_code) {
   std::string status("HTTP/1.1 ");
   status.append(base::IntToString(status_code));
   status.append(" ");
-  status.append(status_text);
+  status.append(net::GetHttpReasonPhrase(status_code));
   status.append("\0\0", 2);
   net::HttpResponseHeaders* headers = new net::HttpResponseHeaders(status);
 
-  if (status_code == kHTTPOk || status_code == kHTTPPartialContent) {
+  if (status_code == net::HTTP_OK || status_code == net::HTTP_PARTIAL_CONTENT) {
     std::string content_length_header(net::HttpRequestHeaders::kContentLength);
     content_length_header.append(": ");
     content_length_header.append(base::Int64ToString(remaining_bytes_));

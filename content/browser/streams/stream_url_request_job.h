@@ -5,6 +5,7 @@
 #ifndef CONTENT_BROWSER_STREAMS_STREAM_URL_REQUEST_JOB_H_
 #define CONTENT_BROWSER_STREAMS_STREAM_URL_REQUEST_JOB_H_
 
+#include "net/http/http_status_code.h"
 #include "net/url_request/url_request_job.h"
 #include "content/browser/streams/stream_read_observer.h"
 #include "content/common/content_export.h"
@@ -43,7 +44,7 @@ class CONTENT_EXPORT StreamURLRequestJob
  private:
   void DidStart();
   void NotifyFailure(int);
-  void HeadersCompleted(int status_code, const std::string& status_txt);
+  void HeadersCompleted(net::HttpStatusCode status_code);
   void ClearStream();
 
   base::WeakPtrFactory<StreamURLRequestJob> weak_factory_;

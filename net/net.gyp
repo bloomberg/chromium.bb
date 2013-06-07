@@ -570,6 +570,7 @@
         'http/http_server_properties.h',
         'http/http_server_properties_impl.cc',
         'http/http_server_properties_impl.h',
+        'http/http_status_code.cc',
         'http/http_status_code.h',
         'http/http_stream.h',
         'http/http_stream_base.h',

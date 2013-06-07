@@ -5,6 +5,8 @@
 #ifndef NET_HTTP_HTTP_STATUS_CODE_H_
 #define NET_HTTP_HTTP_STATUS_CODE_H_
 
+#include "net/base/net_export.h"
+
 namespace net {
 
 // HTTP status codes.
@@ -61,6 +63,16 @@ enum HttpStatusCode {
   HTTP_GATEWAY_TIMEOUT = 504,
   HTTP_VERSION_NOT_SUPPORTED = 505,
 };
+
+// Returns the corresponding HTTP status description to use in the Reason-Phrase
+// field in an HTTP response for given |code|. It's based on the IANA HTTP
+// Status Code Registry.
+// http://www.iana.org/assignments/http-status-codes/http-status-codes.xml
+//
+// This function doesn't cover all codes defined above. It returns an empty
+// string (or crash in debug build) for status codes which are not yet covered
+// or just invalid. Please extend it when needed.
+NET_EXPORT const char* GetHttpReasonPhrase(HttpStatusCode code);
 
 }  // namespace net
 
