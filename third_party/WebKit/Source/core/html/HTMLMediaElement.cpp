@@ -2019,10 +2019,13 @@ double HTMLMediaElement::initialTime() const
 
 double HTMLMediaElement::duration() const
 {
-    if (m_player && m_readyState >= HAVE_METADATA)
-        return m_player->duration();
+    if (!m_player || m_readyState < HAVE_METADATA)
+        return numeric_limits<double>::quiet_NaN();
 
-    return numeric_limits<double>::quiet_NaN();
+    if (m_mediaSource)
+        return m_mediaSource->duration();
+
+    return m_player->duration();
 }
 
 bool HTMLMediaElement::paused() const
