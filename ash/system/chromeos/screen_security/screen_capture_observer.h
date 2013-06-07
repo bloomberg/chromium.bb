@@ -1,4 +1,4 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,6 +16,7 @@ class ScreenCaptureObserver {
   virtual void OnScreenCaptureStart(
       const base::Closure& stop_callback,
       const base::string16& screen_capture_status) = 0;
+
   // Called when screen capture is stopped.
   virtual void OnScreenCaptureStop() = 0;
 

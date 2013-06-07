@@ -30,7 +30,8 @@
 #include "ash/system/chromeos/audio/audio_observer.h"
 #include "ash/system/chromeos/network/network_observer.h"
 #include "ash/system/chromeos/network/sms_observer.h"
-#include "ash/system/chromeos/screen_capture/screen_capture_observer.h"
+#include "ash/system/chromeos/screen_security/screen_capture_observer.h"
+#include "ash/system/chromeos/screen_security/screen_share_observer.h"
 #endif
 
 namespace ash {
@@ -95,6 +96,9 @@ public:
 
   void AddScreenCaptureObserver(ScreenCaptureObserver* observer);
   void RemoveScreenCaptureObserver(ScreenCaptureObserver* observer);
+
+  void AddScreenShareObserver(ScreenShareObserver* observer);
+  void RemoveScreenShareObserver(ScreenShareObserver* observer);
 #endif
 
   void NotifyAccessibilityModeChanged(
@@ -133,6 +137,9 @@ public:
   void NotifyScreenCaptureStart(const base::Closure& stop_callback,
                                 const base::string16& sharing_app_name);
   void NotifyScreenCaptureStop();
+  void NotifyScreenShareStart(const base::Closure& stop_callback,
+                              const base::string16& helper_name);
+  void NotifyScreenShareStop();
 
   NetworkStateNotifier* network_state_notifier() {
     return network_state_notifier_.get();
@@ -158,6 +165,7 @@ public:
   ObserverList<SmsObserver> sms_observers_;
   ObserverList<EnterpriseDomainObserver> enterprise_domain_observers_;
   ObserverList<ScreenCaptureObserver> screen_capture_observers_;
+  ObserverList<ScreenShareObserver> screen_share_observers_;
   scoped_ptr<NetworkStateNotifier> network_state_notifier_;
 #endif
 
