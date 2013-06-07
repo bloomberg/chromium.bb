@@ -13,7 +13,7 @@ deps = {
   'src/third_party/simplejson': '/trunk/src/third_party/simplejson',
   'src/third_party/tlslite': '/trunk/src/third_party/tlslite',
   'src/third_party/webdriver/pylib/selenium':
-      'http://selenium.googlecode.com/svn/trunk/py/selenium@16922',
+      'http://selenium.googlecode.com/svn/trunk/py/selenium@18337',
   'src/third_party/webpagereplay':
       'http://web-page-replay.googlecode.com/svn/trunk@492',
 }

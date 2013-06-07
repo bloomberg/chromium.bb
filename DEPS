@@ -227,7 +227,7 @@ deps = {
 
   # Make sure you update the two functional.DEPS and webdriver.DEPS too.
   "src/third_party/webdriver/pylib":
-    (Var("googlecode_url") % "selenium") + "/trunk/py@16922",
+    (Var("googlecode_url") % "selenium") + "/trunk/py@18337",
 
   "src/third_party/libvpx":
     "/trunk/deps/third_party/libvpx@" +
