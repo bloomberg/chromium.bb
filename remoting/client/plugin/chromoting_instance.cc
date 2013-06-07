@@ -65,6 +65,10 @@ const int kPerfStatsIntervalMs = 1000;
 // URL scheme used by Chrome apps and extensions.
 const char kChromeExtensionUrlScheme[] = "chrome-extension";
 
+// Maximum width and height of a mouse cursor supported by PPAPI.
+const int kMaxCursorWidth = 32;
+const int kMaxCursorHeight = 32;
+
 std::string ConnectionStateToString(protocol::ConnectionToHost::State state) {
   // Values returned by this function must match the
   // remoting.ClientSession.State enum in JS code.
@@ -574,13 +578,12 @@ void ChromotingInstance::SetCursorShape(
   int width = cursor_shape.width();
   int height = cursor_shape.height();
 
-  if (width < 0 || height < 0) {
-    return;
-  }
-
-  if (width > 32 || height > 32) {
-    VLOG(2) << "Cursor too large for SetCursor: "
-            << width << "x" << height << " > 32x32";
+  // Verify that |width| and |height| are within sane limits. Otherwise integer
+  // overflow can occur while calculating |cursor_total_bytes| below.
+  if (width <= 0 || width > (SHRT_MAX / 2) ||
+      height <= 0 || height > (SHRT_MAX / 2)) {
+    VLOG(2) << "Cursor dimensions are out of bounds for SetCursor: "
+            << width << "x" << height;
     return;
   }
 
@@ -601,16 +604,40 @@ void ChromotingInstance::SetCursorShape(
   int hotspot_x = cursor_shape.hotspot_x();
   int hotspot_y = cursor_shape.hotspot_y();
 
-  pp::ImageData cursor_image(this, PP_IMAGEDATAFORMAT_BGRA_PREMUL,
-                             pp::Size(width, height), false);
-
   int bytes_per_row = width * kBytesPerPixel;
   const uint8* src_row_data = reinterpret_cast<const uint8*>(
       cursor_shape.data().data());
+  int stride = bytes_per_row;
+
+  // If the cursor exceeds the size permitted by PPAPI then crop it, keeping
+  // the hotspot as close to the center of the new cursor shape as possible.
+  if (height > kMaxCursorHeight) {
+    int y = hotspot_y - (kMaxCursorHeight / 2);
+    y = std::max(y, 0);
+    y = std::min(y, height - kMaxCursorHeight);
+
+    src_row_data += stride * y;
+    height = kMaxCursorHeight;
+    hotspot_y -= y;
+  }
+  if (width > kMaxCursorWidth) {
+    int x = hotspot_x - (kMaxCursorWidth / 2);
+    x = std::max(x, 0);
+    x = std::min(x, height - kMaxCursorWidth);
+
+    src_row_data += x * kBytesPerPixel;
+    width = kMaxCursorWidth;
+    bytes_per_row = width * kBytesPerPixel;
+    hotspot_x -= x;
+  }
+
+  pp::ImageData cursor_image(this, PP_IMAGEDATAFORMAT_BGRA_PREMUL,
+                             pp::Size(width, height), false);
+
   uint8* dst_row_data = reinterpret_cast<uint8*>(cursor_image.data());
   for (int row = 0; row < height; row++) {
     memcpy(dst_row_data, src_row_data, bytes_per_row);
-    src_row_data += bytes_per_row;
+    src_row_data += stride;
     dst_row_data += cursor_image.stride();
   }
 
