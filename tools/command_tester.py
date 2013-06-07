@@ -178,6 +178,8 @@ def IndirectSignal(signum):
 # Windows exit codes that indicate unhandled exceptions.
 STATUS_ACCESS_VIOLATION = 0xc0000005
 STATUS_PRIVILEGED_INSTRUCTION = 0xc0000096
+STATUS_FLOAT_DIVIDE_BY_ZERO = 0xc000008e
+STATUS_INTEGER_DIVIDE_BY_ZERO = 0xc0000094
 
 # Python's wrapper for GetExitCodeProcess() treats the STATUS_* values
 # as negative, although the unsigned values are used in headers and
@@ -193,6 +195,11 @@ def MungeWindowsErrorExit(num):
 win32_untrusted_crash_exit = [
     MungeWindowsErrorExit(STATUS_ACCESS_VIOLATION),
     MungeWindowsErrorExit(STATUS_PRIVILEGED_INSTRUCTION)]
+
+win32_sigfpe = [
+    MungeWindowsErrorExit(STATUS_FLOAT_DIVIDE_BY_ZERO),
+    MungeWindowsErrorExit(STATUS_INTEGER_DIVIDE_BY_ZERO),
+    ]
 
 # We patch Windows' KiUserExceptionDispatcher on x86-64 to terminate
 # the process safely when untrusted code crashes.  We get the exit
@@ -250,7 +257,7 @@ status_map = {
         'linux2': [-8], # SIGFPE
         'mac32': [-8], # SIGFPE
         'mac64': [-8], # SIGFPE
-        'win32':  win32_untrusted_crash_exit,
+        'win32':  win32_sigfpe,
         'win64':  win64_exit_via_ntdll_patch,
         },
     'untrusted_segfault': {

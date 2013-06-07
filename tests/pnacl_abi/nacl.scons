@@ -5,10 +5,6 @@
 
 Import('env')
 
-# These tests only make sense for the PNaCl toolchain
-if not env.Bit('bitcode'):
-  Return()
-
 # Divide ABI check.
 div_nexe = env.ComponentProgram('divide_by_zero',
                                 'divide_by_zero.c',
@@ -26,6 +22,10 @@ div_node = env.CommandSelLdrTestNacl('divide_by_zero.out',
 env.AddNodeToTestSuite(div_node,
                        ['pnacl_abi_tests', 'small_tests'],
                        'run_divide_by_zero_test')
+
+# These tests only make sense for the PNaCl toolchain
+if not env.Bit('bitcode'):
+  Return()
 
 # we do not have llvm's ${DISASS} when we run on ARM boxes
 if env.Bit('target_arm'):
