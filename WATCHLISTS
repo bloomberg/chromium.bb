@@ -124,7 +124,7 @@
       'filepath': 'chrome/browser/ui/views',
     },
     'chromedriver': {
-      'filepath': 'chrome/test/webdriver|third_party/webdriver'
+      'filepath': 'chrome/test/chromedriver'
     },
     'chromeos': {
       'filepath': 'chromeos/',
@@ -550,8 +550,7 @@
                  'estade+watch@chromium.org', 'ahutter@chromium.org',
                  'dgwallinga@chromium.org', 'ramankk@chromium.org',
                  'benquan@chromium.org', 'rouslan+autofillwatch@chromium.org'],
-    'automation': ['kkania@chromium.org',
-                   'robertshield@chromium.org'],
+    'automation': ['robertshield@chromium.org'],
     'base': ['erikwright+watch@chromium.org'],
     'base_allocator': ['dmikurube+memory@chromium.org'],
     'base_memory': ['gavinp+memory@chromium.org'],
