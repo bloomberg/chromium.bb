@@ -36,6 +36,7 @@
 #ifdef STRING_STATS
 #include "wtf/DataLog.h"
 #include "wtf/MainThread.h"
+#include "wtf/RefCounted.h"
 #include <unistd.h>
 #endif
 
@@ -76,12 +77,22 @@ void removeStringForStats(StringImpl* string)
 
 static void fillWithSnippet(const StringImpl* string, Vector<char>& snippet)
 {
+    const unsigned kMaxSnippetLength = 64;
     snippet.clear();
+
+    size_t expectedLength = std::min(string->length(), kMaxSnippetLength);
+    if (expectedLength == kMaxSnippetLength)
+        expectedLength += 3; // For the "...".
+    ++expectedLength; // For the terminating '\0'.
+    snippet.reserveCapacity(expectedLength);
+
     size_t i;
-    for (i = 0; i < string->length() && i < 64; ++i) {
+    for (i = 0; i < string->length() && i < kMaxSnippetLength; ++i) {
         UChar c = (*string)[i];
         if (isASCIIPrintable(c))
             snippet.append(c);
+        else
+            snippet.append('?');
     }
     if (i < string->length()) {
         snippet.append('.');
@@ -91,12 +102,21 @@ static void fillWithSnippet(const StringImpl* string, Vector<char>& snippet)
     snippet.append('\0');
 }
 
-struct PerStringStats {
-    PerStringStats()
-        : m_numberOfCopies(0)
-        , m_length(0)
-        , m_numberOfAtomicCopies(0)
+static bool isUnnecessarilyWide(const StringImpl* string)
+{
+    if (string->is8Bit())
+        return false;
+    UChar c = 0;
+    for (unsigned i = 0; i < string->length(); ++i)
+        c |= (*string)[i] >> 8;
+    return !c;
+}
+
+class PerStringStats : public RefCounted<PerStringStats> {
+public:
+    static PassRefPtr<PerStringStats> create()
     {
+        return adoptRef(new PerStringStats);
     }
 
     void add(const StringImpl* string)
@@ -108,33 +128,58 @@ struct PerStringStats {
         }
         if (string->isAtomic())
             ++m_numberOfAtomicCopies;
+        if (string->has16BitShadow())
+            m_upconverted = true;
+        if (isUnnecessarilyWide(string))
+            m_unnecessarilyWide = true;
     }
 
-    size_t potentialSavings() const
+    size_t totalCharacters() const
     {
-        return (m_numberOfCopies - 1) * m_length;
+        return m_numberOfCopies * m_length;
     }
 
     void print()
     {
-        dataLogF("%8u copies (%1u atomic) of length %8u (potential savings: %8u) %s\n", m_numberOfCopies, m_numberOfAtomicCopies, m_length, potentialSavings(), m_snippet.data());
+        const char* status = "ok";
+        if (m_upconverted)
+            status = "up";
+        else if (m_unnecessarilyWide)
+            status = "16";
+        dataLogF("%8u copies (%s) of length %8u %s\n", m_numberOfCopies, status, m_length, m_snippet.data());
     }
 
+    bool m_upconverted;
+    bool m_unnecessarilyWide;
     unsigned m_numberOfCopies;
     unsigned m_length;
     unsigned m_numberOfAtomicCopies;
     Vector<char> m_snippet;
+
+private:
+    PerStringStats()
+        : m_upconverted(false)
+        , m_unnecessarilyWide(false)
+        , m_numberOfCopies(0)
+        , m_length(0)
+        , m_numberOfAtomicCopies(0)
+    {
+    }
 };
 
-bool operator<(const PerStringStats& a, const PerStringStats& b)
+bool operator<(const RefPtr<PerStringStats>& a, const RefPtr<PerStringStats>& b)
 {
-    if (a.potentialSavings() != b.potentialSavings())
-        return a.potentialSavings() < b.potentialSavings();
-    if (a.m_numberOfCopies != b.m_numberOfCopies)
-        return a.m_numberOfCopies < b.m_numberOfCopies;
-    if (a.m_length != b.m_length)
-        return a.m_length < b.m_length;
-    return a.m_numberOfAtomicCopies < b.m_numberOfAtomicCopies;
+    if (a->m_upconverted != b->m_upconverted)
+        return !a->m_upconverted && b->m_upconverted;
+    if (a->m_unnecessarilyWide != b->m_unnecessarilyWide)
+        return !a->m_unnecessarilyWide && b->m_unnecessarilyWide;
+    if (a->totalCharacters() != b->totalCharacters())
+        return a->totalCharacters() < b->totalCharacters();
+    if (a->m_numberOfCopies != b->m_numberOfCopies)
+        return a->m_numberOfCopies < b->m_numberOfCopies;
+    if (a->m_length != b->m_length)
+        return a->m_length < b->m_length;
+    return a->m_numberOfAtomicCopies < b->m_numberOfAtomicCopies;
 }
 
 static void printLiveStringStats(void*)
@@ -142,26 +187,23 @@ static void printLiveStringStats(void*)
     MutexLocker locker(statsMutex());
     HashSet<void*>& strings = liveStrings();
 
-    HashMap<StringImpl*, PerStringStats> stats;
+    HashMap<StringImpl*, RefPtr<PerStringStats> > stats;
     for (HashSet<void*>::iterator iter = strings.begin(); iter != strings.end(); ++iter) {
         StringImpl* string = static_cast<StringImpl*>(*iter);
-        HashMap<StringImpl*, PerStringStats>::iterator entry = stats.find(string);
-        PerStringStats value = entry == stats.end() ? PerStringStats() : entry->value;
-        value.add(string);
-        stats.set(string, value);
+        HashMap<StringImpl*, RefPtr<PerStringStats> >::iterator entry = stats.find(string);
+        RefPtr<PerStringStats> value = entry == stats.end() ? RefPtr<PerStringStats>(PerStringStats::create()) : entry->value;
+        value->add(string);
+        stats.set(string, value.release());
     }
 
-    Vector<PerStringStats> all;
-    size_t totalPotentialSavings = 0;
-    for (HashMap<StringImpl*, PerStringStats>::iterator iter = stats.begin(); iter != stats.end(); ++iter) {
+    Vector<RefPtr<PerStringStats> > all;
+    for (HashMap<StringImpl*, RefPtr<PerStringStats> >::iterator iter = stats.begin(); iter != stats.end(); ++iter)
         all.append(iter->value);
-        totalPotentialSavings += iter->value.potentialSavings();
-    }
+
     std::sort(all.begin(), all.end());
     std::reverse(all.begin(), all.end());
     for (size_t i = 0; i < 20 && i < all.size(); ++i)
-        all[i].print();
-    dataLogF("         Total potential savings: %u characters\n", totalPotentialSavings);
+        all[i]->print();
 }
 
 StringStats StringImpl::m_stringStats;
