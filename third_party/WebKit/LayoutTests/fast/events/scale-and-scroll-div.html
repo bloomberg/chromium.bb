@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        ::-webkit-scrollbar {
+            width: 0px;
+            height: 0px;
+        }
+        #bluebox {
+          width: 100px;
+          height: 100px;
+          background: blue;
+          padding: 0px;
+          margin: 0px;
+        }
+        #redbox {
+          width: 100px;
+          height: 100px;
+          background: red;
+          padding: 0px;
+          margin: 0px;
+        }
+    </style>
+    <script>
+
+      var scrollDistance = 10;
+      var expectedScrollDistance;
+      var scrollBox;
+
+      function scroll(scaleFactor) {
+          expectedScrollDistance = Math.floor(scrollDistance/scaleFactor);
+
+          scrollBox.scrollTop = 0;
+
+          eventSender.gestureScrollBegin(10, 100);
+          for(var i = 0; i < scrollDistance; ++i) {
+              eventSender.gestureScrollUpdate(0, -1);
+          }
+          eventSender.gestureScrollEnd(0, 0);
+
+          shouldBe('scrollBox.scrollTop', 'expectedScrollDistance');
+
+          scrollBox.scrollTop = 20;
+
+          eventSender.gestureScrollBegin(10, 300);
+          for(var i = 0; i < scrollDistance; ++i) {
+              eventSender.gestureScrollUpdate(0, 1);
+          }
+          eventSender.gestureScrollEnd(0, 0);
+
+          expectedScrollDistance = Math.floor(20 - scrollDistance/scaleFactor);
+          
+          shouldBe('scrollBox.scrollTop', 'expectedScrollDistance');
+      }
+
+      function scaleWithEventSender(scaleFactor) {
+          var scaleOffset = 0;
+          if (window.internals) {
+             window.internals.setPageScaleFactor(scaleFactor, scaleOffset, scaleOffset);
+          }
+      }
+
+      function test() {
+          if (window.eventSender) {
+              description('This tests that a div scrolled by gesture touch while the page is scaled still scrolls at' +
+                          ' the rate of the touch');
+                  
+              scrollBox = document.getElementById("scrollbox");
+
+              testRunner.waitUntilDone();
+              debug('Scrolling unscaled div');
+              scaleWithEventSender(1.0);
+              scroll(1.0);
+              debug('Scrolling 1.5 scaled div');
+              scaleWithEventSender(1.5);
+              scroll(1.5);
+              debug('Scrolling 1.63 scaled div');
+              scaleWithEventSender(1.63);
+              scroll(1.63);
+              debug('Scrolling 2.0 scaled div');
+              scaleWithEventSender(2.0);
+              scroll(2.0);
+
+              testRunner.notifyDone();
+          
+          } else {
+            debug('eventSender not detected. Not running test.');
+          }
+
+      }
+    </script>
+    <script src="../js/resources/js-test-pre.js"></script>
+</head>
+<body onload="test();">
+    <div id="scrollbox" style="left:0; top:0; width:500px; height:500px; position:absolute; overflow-y: scroll; overflow-x: scroll;">
+      <div id="bluebox"></div>
+      <div id="redbox"></div>
+      <div id="bluebox"></div>
+      <div id="redbox"></div>
+      <div id="bluebox"></div>
+      <div id="redbox"></div>
+      <div id="bluebox"></div>
+      <div id="redbox"></div>
+      <div id="bluebox"></div>
+      <div id="redbox"></div>
+      <div id="bluebox"></div>
+      <div id="redbox"></div>
+    </div>
+
+    <div id="console"></div>
+</body>
+</html>

@@ -108,6 +108,9 @@ protected:
     ScrollableArea* m_scrollableArea;
     float m_currentPosX; // We avoid using a FloatPoint in order to reduce
     float m_currentPosY; // subclass code complexity.
+
+private:
+    float clampScrollPosition(ScrollbarOrientation, float);
 };
 
 } // namespace WebCore

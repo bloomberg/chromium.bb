@@ -55,7 +55,7 @@ ScrollAnimator::~ScrollAnimator()
 bool ScrollAnimator::scroll(ScrollbarOrientation orientation, ScrollGranularity, float step, float multiplier)
 {
     float* currentPos = (orientation == HorizontalScrollbar) ? &m_currentPosX : &m_currentPosY;
-    float newPos = m_scrollableArea->clampScrollPosition(orientation, *currentPos + step * multiplier);
+    float newPos = clampScrollPosition(orientation, *currentPos + step * multiplier);
     float delta = *currentPos - newPos;
     if (*currentPos == newPos)
         return false;
@@ -138,6 +138,13 @@ void ScrollAnimator::notifyPositionChanged(const FloatSize& delta)
 {
     UNUSED_PARAM(delta);
     m_scrollableArea->setScrollOffsetFromAnimation(IntPoint(m_currentPosX, m_currentPosY));
+}
+
+float ScrollAnimator::clampScrollPosition(ScrollbarOrientation orientation, float pos)
+{
+    float maxScrollPos = m_scrollableArea->maximumScrollPosition(orientation);
+    float minScrollPos = m_scrollableArea->minimumScrollPosition(orientation);
+    return std::max(std::min(pos, maxScrollPos), minScrollPos);
 }
 
 } // namespace WebCore
