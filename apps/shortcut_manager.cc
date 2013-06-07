@@ -5,6 +5,7 @@
 #include "apps/shortcut_manager.h"
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/string16.h"
 #include "base/utf_string_conversions.h"
@@ -12,6 +13,7 @@
 #include "chrome/browser/ui/web_applications/web_app_ui.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "chrome/common/chrome_switches.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 
@@ -50,7 +52,12 @@ void ShortcutManager::Observe(int type,
                                  const content::NotificationDetails& details) {
   switch (type) {
     case chrome::NOTIFICATION_EXTENSION_INSTALLED: {
-#if !defined(OS_MACOSX)
+#if defined(OS_MACOSX)
+      if (!CommandLine::ForCurrentProcess()->
+          HasSwitch(switches::kEnableAppShims))
+        break;
+#endif  // defined(OS_MACOSX)
+
       const extensions::InstalledExtensionInfo* installed_info =
           content::Details<const extensions::InstalledExtensionInfo>(details)
               .ptr();
@@ -74,7 +81,6 @@ void ShortcutManager::Observe(int type,
         web_app::UpdateShortcutInfoAndIconForApp(*extension, profile_,
                                                  create_or_update);
       }
-#endif  // !defined(OS_MACOSX)
       break;
     }
     case chrome::NOTIFICATION_EXTENSION_UNINSTALLED: {
