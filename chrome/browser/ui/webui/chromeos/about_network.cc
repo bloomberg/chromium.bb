@@ -8,7 +8,7 @@
 #include "base/command_line.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_tokenizer.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/webui/about_ui.h"
 #include "chromeos/network/network_event_log.h"
 #include "chromeos/network/network_state.h"

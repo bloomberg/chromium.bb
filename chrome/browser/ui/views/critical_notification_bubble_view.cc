@@ -6,7 +6,7 @@
 
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/upgrade_detector.h"

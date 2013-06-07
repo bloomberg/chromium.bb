@@ -9,7 +9,7 @@
 #include <set>
 
 #include "base/command_line.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/win/metro.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/lifetime/application_lifetime.h"

@@ -5,7 +5,7 @@
 #include "chrome/browser/ui/views/tab_contents/render_view_context_menu_views.h"
 
 #include "base/logging.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"

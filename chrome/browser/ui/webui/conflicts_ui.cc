@@ -12,7 +12,7 @@
 #include "base/bind_helpers.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/enumerate_modules_model_win.h"
 #include "chrome/browser/profiles/profile.h"

@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/language_preferences.h"
 #include "ui/base/l10n/l10n_util.h"

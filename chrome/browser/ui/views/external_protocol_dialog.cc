@@ -6,9 +6,9 @@
 
 #include "base/metrics/histogram.h"
 #include "base/string_util.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
-#include "base/utf_string_conversions.h"
 #include "base/win/registry.h"
 #include "chrome/browser/external_protocol/external_protocol_handler.h"
 #include "chrome/browser/tab_contents/tab_util.h"

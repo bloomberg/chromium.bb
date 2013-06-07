@@ -5,7 +5,7 @@
 #include "chrome/browser/ui/webui/uber/uber_ui.h"
 
 #include "base/stl_util.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_controller_factory.h"

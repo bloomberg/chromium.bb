@@ -11,7 +11,7 @@
 #include "base/memory/ref_counted_memory.h"
 #include "base/message_loop.h"
 #include "base/strings/string_split.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/common/time_format.h"
 #include "googleurl/src/gurl.h"

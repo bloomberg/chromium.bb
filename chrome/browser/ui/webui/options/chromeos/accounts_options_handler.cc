@@ -11,7 +11,7 @@
 #include "base/json/json_reader.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/prefs/pref_service.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/user_manager.h"

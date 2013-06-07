@@ -11,7 +11,7 @@
 #include <algorithm>
 
 #include "base/memory/scoped_ptr.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/infobars/infobar_delegate.h"
 #include "chrome/browser/ui/views/infobars/infobar_background.h"
 #include "chrome/browser/ui/views/infobars/infobar_button_border.h"

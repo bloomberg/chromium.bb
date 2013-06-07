@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/views/tab_modal_confirm_dialog_views.h"
 
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"

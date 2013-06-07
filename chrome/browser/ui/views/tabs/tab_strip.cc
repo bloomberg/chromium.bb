@@ -16,7 +16,7 @@
 #include "base/compiler_specific.h"
 #include "base/metrics/histogram.h"
 #include "base/stl_util.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/view_ids.h"

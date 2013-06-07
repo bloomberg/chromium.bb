@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/views/sync/profile_signin_confirmation_dialog_views.h"
 
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_navigator.h"

@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/views/location_bar/icon_label_bubble_view.h"
 
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "grit/theme_resources.h"
 #include "ui/base/resource/resource_bundle.h"

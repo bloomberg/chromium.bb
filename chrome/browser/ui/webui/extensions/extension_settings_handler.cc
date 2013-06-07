@@ -13,7 +13,7 @@
 #include "base/prefs/pref_service.h"
 #include "base/string_util.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "base/version.h"
 #include "chrome/browser/browser_process.h"

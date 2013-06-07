@@ -8,7 +8,7 @@
 #include "base/compiler_specific.h"
 #include "base/metrics/stats_table.h"
 #include "base/prefs/pref_service.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/memory_purger.h"

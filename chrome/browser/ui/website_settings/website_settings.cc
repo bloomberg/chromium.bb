@@ -12,7 +12,7 @@
 #include "base/i18n/time_formatting.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browsing_data/browsing_data_cookie_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_database_helper.h"

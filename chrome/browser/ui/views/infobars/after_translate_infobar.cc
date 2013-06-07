@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/views/infobars/after_translate_infobar.h"
 
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/translate/translate_infobar_delegate.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"

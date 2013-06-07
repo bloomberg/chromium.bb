@@ -11,7 +11,7 @@
 #include "base/command_line.h"
 #include "base/memory/weak_ptr.h"
 #include "base/prefs/pref_service.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"

@@ -27,7 +27,7 @@
 #include "ui/views/window/non_client_view.h"
 
 #if defined(OS_WIN)
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/web_applications/web_app_ui.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "ui/base/win/shell.h"

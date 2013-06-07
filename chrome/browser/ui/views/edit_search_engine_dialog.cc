@@ -6,7 +6,7 @@
 
 #include "base/i18n/rtl.h"
 #include "base/string_util.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/ui/search_engines/edit_search_engine_controller.h"
 #include "googleurl/src/gurl.h"

@@ -11,7 +11,7 @@
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/prefs/pref_service.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/content_settings_details.h"

@@ -6,7 +6,7 @@
 
 #include <algorithm>
 
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/bookmarks/bookmark_bar_instructions_delegate.h"

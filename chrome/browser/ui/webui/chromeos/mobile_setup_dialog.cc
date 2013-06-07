@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "base/memory/singleton.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/chromeos/login/login_display_host_impl.h"
 #include "chrome/browser/chromeos/login/webui_login_view.h"

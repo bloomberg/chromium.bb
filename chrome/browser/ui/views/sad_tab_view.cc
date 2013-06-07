@@ -8,7 +8,7 @@
 
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/feedback/feedback_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"

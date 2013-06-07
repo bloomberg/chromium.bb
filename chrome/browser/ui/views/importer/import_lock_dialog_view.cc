@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "base/message_loop.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/importer/importer_lock_dialog.h"
 #include "content/public/browser/user_metrics.h"
 #include "grit/chromium_strings.h"

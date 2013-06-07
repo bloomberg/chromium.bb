@@ -8,7 +8,7 @@
 #include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/metrics/metric_event_duration_details.h"
 #include "chrome/common/chrome_notification_types.h"

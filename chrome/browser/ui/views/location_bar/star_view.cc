@@ -5,7 +5,7 @@
 #include "chrome/browser/ui/views/location_bar/star_view.h"
 
 #include "base/metrics/histogram.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/command_updater.h"

@@ -11,7 +11,7 @@
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/strings/string_piece.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/tab_modal_confirm_dialog_delegate.h"

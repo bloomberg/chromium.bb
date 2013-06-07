@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/webui/options/chromeos/language_hangul_handler.h"
 
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/language_preferences.h"
 #include "grit/generated_resources.h"

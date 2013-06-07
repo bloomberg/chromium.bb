@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/webui/constrained_web_dialog_delegate_base.h"
 
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/views/constrained_window_views.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "components/web_modal/web_contents_modal_dialog_manager_delegate.h"

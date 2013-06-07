@@ -8,7 +8,7 @@
 #include <string>
 
 #include "base/message_loop.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/sync/profile_sync_service_mock.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"

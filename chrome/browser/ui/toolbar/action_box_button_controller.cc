@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/chrome_to_mobile_service.h"
 #include "chrome/browser/extensions/api/page_launcher/page_launcher_api.h"

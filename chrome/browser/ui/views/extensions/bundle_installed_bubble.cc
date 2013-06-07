@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/i18n/rtl.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/bundle_installer.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"

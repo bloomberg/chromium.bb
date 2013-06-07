@@ -9,7 +9,7 @@
 
 #include "base/bind.h"
 #include "base/message_loop.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/notifications/balloon_collection.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/notifications/notification.h"

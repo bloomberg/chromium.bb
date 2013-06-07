@@ -11,7 +11,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
 #include "base/prefs/pref_service.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/metrics_handler.h"
 #include "chrome/browser/ui/webui/ntp/favicon_webui_handler.h"

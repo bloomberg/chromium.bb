@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/views/browser_action_view.h"
 
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/api/commands/command_service.h"
 #include "chrome/browser/extensions/extension_action.h"
 #include "chrome/browser/extensions/extension_action_manager.h"

@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/views/message_center/notification_bubble_wrapper.h"
 
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/views/message_center/web_notification_tray.h"
 #include "grit/ui_strings.h"
 #include "ui/base/l10n/l10n_util.h"

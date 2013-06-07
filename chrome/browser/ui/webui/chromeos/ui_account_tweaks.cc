@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/webui/chromeos/ui_account_tweaks.h"
 
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"

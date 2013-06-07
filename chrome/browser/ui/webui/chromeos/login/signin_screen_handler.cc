@@ -13,7 +13,7 @@
 #include "base/string16.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part_chromeos.h"
 #include "chrome/browser/browser_shutdown.h"

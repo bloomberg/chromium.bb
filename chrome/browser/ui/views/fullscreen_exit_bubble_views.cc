@@ -5,7 +5,7 @@
 #include "chrome/browser/ui/views/fullscreen_exit_bubble_views.h"
 
 #include "base/message_loop.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/ui/fullscreen/fullscreen_controller.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"

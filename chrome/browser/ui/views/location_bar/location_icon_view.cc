@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/views/location_bar/location_icon_view.h"
 
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 

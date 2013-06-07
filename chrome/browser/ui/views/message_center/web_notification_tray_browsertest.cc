@@ -10,7 +10,7 @@
 #include "ash/system/status_area_widget.h"
 #include "ash/system/tray/system_tray_item.h"
 #include "base/stringprintf.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/notifications/notification_delegate.h"

@@ -5,7 +5,7 @@
 #include "chrome/browser/ui/views/frame/app_panel_browser_frame_view.h"
 
 #include "base/compiler_specific.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/views/frame/browser_frame.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/tab_icon_view.h"

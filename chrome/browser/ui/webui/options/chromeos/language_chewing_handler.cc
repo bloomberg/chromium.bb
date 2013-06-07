@@ -8,7 +8,7 @@
 
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/language_preferences.h"
 #include "chrome/browser/ui/webui/options/chromeos/language_options_util.h"

@@ -9,8 +9,8 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
+#include "base/strings/utf_string_conversions.h"  // ASCIIToUTF16
 #include "base/threading/platform_thread.h"
-#include "base/utf_string_conversions.h"  // ASCIIToUTF16
 #include "build/build_config.h"
 #include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/extensions/extension_browsertest.h"

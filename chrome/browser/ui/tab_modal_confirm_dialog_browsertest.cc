@@ -5,7 +5,7 @@
 #include "chrome/browser/ui/tab_modal_confirm_dialog_browsertest.h"
 
 #include "base/bind.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_dialogs.h"

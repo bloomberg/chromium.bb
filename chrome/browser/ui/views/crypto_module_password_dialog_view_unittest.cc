@@ -7,7 +7,7 @@
 #include <string>
 
 #include "base/bind.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/crypto_module_password_dialog.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/views/controls/textfield/textfield.h"

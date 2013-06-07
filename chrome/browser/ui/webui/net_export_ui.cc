@@ -9,7 +9,7 @@
 #include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/string_util.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/net/chrome_net_log.h"

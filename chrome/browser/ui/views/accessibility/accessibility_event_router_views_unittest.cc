@@ -6,7 +6,7 @@
 
 #include "base/message_loop.h"
 #include "base/string_util.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/accessibility/accessibility_extension_api.h"
 #include "chrome/browser/ui/views/accessibility/accessibility_event_router_views.h"
 #include "chrome/common/chrome_notification_types.h"

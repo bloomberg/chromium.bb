@@ -9,7 +9,7 @@
 #include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/google/google_util.h"

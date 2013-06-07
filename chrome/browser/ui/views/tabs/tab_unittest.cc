@@ -5,7 +5,7 @@
 #include "chrome/browser/ui/views/tabs/tab.h"
 #include "chrome/browser/ui/views/tabs/tab_controller.h"
 
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/models/list_selection_model.h"
 #include "ui/views/controls/button/image_button.h"

@@ -5,7 +5,7 @@
 #include "chrome/browser/ui/toolbar/action_box_menu_model.h"
 
 #include "base/logging.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/extension_toolbar_model.h"

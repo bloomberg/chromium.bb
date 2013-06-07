@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "base/logging.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/download/download_item_model.h"
 #include "chrome/browser/download/download_util.h"
 #include "chrome/browser/themes/theme_properties.h"

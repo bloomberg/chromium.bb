@@ -5,7 +5,7 @@
 #include "chrome/browser/ui/views/extensions/browser_action_overflow_menu_controller.h"
 
 #include "base/message_loop.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_action.h"
 #include "chrome/browser/extensions/extension_action_manager.h"
 #include "chrome/browser/extensions/extension_context_menu_model.h"

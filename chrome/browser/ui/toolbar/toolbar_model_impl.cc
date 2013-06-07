@@ -6,7 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/prefs/pref_service.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete_classifier.h"
 #include "chrome/browser/autocomplete/autocomplete_classifier_factory.h"
 #include "chrome/browser/autocomplete/autocomplete_input.h"

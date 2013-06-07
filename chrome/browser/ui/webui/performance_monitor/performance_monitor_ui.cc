@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/webui/performance_monitor/performance_monitor_ui.h"
 
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/performance_monitor/performance_monitor.h"
 #include "chrome/browser/profiles/profile.h"

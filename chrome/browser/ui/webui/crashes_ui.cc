@@ -11,7 +11,7 @@
 #include "base/i18n/time_formatting.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/prefs/pref_service.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/crash_upload_list.h"

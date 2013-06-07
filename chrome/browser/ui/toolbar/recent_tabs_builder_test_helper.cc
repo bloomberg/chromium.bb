@@ -7,7 +7,7 @@
 #include "base/rand_util.h"
 #include "base/stringprintf.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/sync/glue/session_model_associator.h"
 #include "sync/protocol/session_specifics.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"

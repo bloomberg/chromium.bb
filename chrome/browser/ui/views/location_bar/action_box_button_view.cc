@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/views/location_bar/action_box_button_view.h"
 
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/toolbar/action_box_menu_model.h"
 #include "chrome/browser/ui/view_ids.h"

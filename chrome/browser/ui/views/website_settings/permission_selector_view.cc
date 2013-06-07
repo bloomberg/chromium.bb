@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/views/website_settings/permission_selector_view.h"
 
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/website_settings/website_settings_ui.h"
 #include "grit/generated_resources.h"
 #include "ui/base/accessibility/accessible_view_state.h"

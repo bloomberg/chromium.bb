@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/views/password_generation_bubble_view.h"
 
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/password_manager/password_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"

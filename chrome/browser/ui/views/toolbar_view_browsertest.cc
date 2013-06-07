@@ -4,14 +4,14 @@
 
 #include "chrome/browser/ui/views/toolbar_view.h"
 
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/browser_command_controller.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/test/base/in_process_browser_test.h"

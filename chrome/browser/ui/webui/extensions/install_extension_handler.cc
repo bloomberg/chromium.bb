@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "base/string_util.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_install_prompt.h"
 #include "chrome/browser/extensions/extension_service.h"

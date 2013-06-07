@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/views/global_error_bubble_view.h"
 
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/global_error/global_error.h"
 #include "chrome/browser/ui/global_error/global_error_service.h"
 #include "chrome/browser/ui/global_error/global_error_service_factory.h"

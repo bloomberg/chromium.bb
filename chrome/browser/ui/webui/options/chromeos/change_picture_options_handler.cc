@@ -10,7 +10,7 @@
 #include "base/metrics/histogram.h"
 #include "base/path_service.h"
 #include "base/string_util.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/camera_detector.h"
 #include "chrome/browser/chromeos/login/default_user_images.h"
