@@ -24,7 +24,7 @@ void ReturnRenameResultToListener(
     base::PlatformFileError* result) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   scoped_ptr<base::PlatformFileError> result_deleter(result);
-  if (listener.get())
+  if (listener)
     listener->DownloadedFile(name, *result);
 }
 
@@ -68,7 +68,7 @@ base::FilePath PathForCameraItem(ICCameraItem* item) {
   // Make sure the session was closed and listener set to null
   // before destruction.
   DCHECK(![camera_ delegate]);
-  DCHECK(!listener_.get());
+  DCHECK(!listener_);
   [super dealloc];
 }
 
@@ -79,7 +79,7 @@ base::FilePath PathForCameraItem(ICCameraItem* item) {
 
 - (void)open {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  DCHECK(listener_.get());
+  DCHECK(listener_);
   [camera_ requestOpenSession];
 }
 
@@ -125,7 +125,7 @@ base::FilePath PathForCameraItem(ICCameraItem* item) {
     }
   }
 
-  if (listener_.get())
+  if (listener_)
     listener_->DownloadedFile(name, base::PLATFORM_FILE_ERROR_NOT_FOUND);
 }
 
@@ -142,7 +142,7 @@ base::FilePath PathForCameraItem(ICCameraItem* item) {
   info.creation_time = NSDateToBaseTime([item creationDate]);
   info.last_accessed = info.last_modified;
 
-  if (listener_.get())
+  if (listener_)
     listener_->ItemAdded(path.value(), info);
 }
 
@@ -153,7 +153,7 @@ base::FilePath PathForCameraItem(ICCameraItem* item) {
 
 - (void)didRemoveDevice:(ICDevice*)device {
   device.delegate = NULL;
-  if (listener_.get())
+  if (listener_)
     listener_->DeviceRemoved();
 }
 
@@ -165,13 +165,13 @@ base::FilePath PathForCameraItem(ICCameraItem* item) {
 }
 
 - (void)device:(ICDevice*)device didEncounterError:(NSError*)error {
-  if (error && listener_.get())
+  if (error && listener_)
     listener_->DeviceRemoved();
 }
 
 // When this message is received, all media metadata is now loaded.
 - (void)deviceDidBecomeReadyWithCompleteContentCatalog:(ICDevice*)device {
-  if (listener_.get())
+  if (listener_)
     listener_->NoMoreItems();
 }
 
@@ -187,7 +187,7 @@ base::FilePath PathForCameraItem(ICCameraItem* item) {
   if (error) {
     DLOG(INFO) << "error..."
                << base::SysNSStringToUTF8([error localizedDescription]);
-    if (listener_.get())
+    if (listener_)
       listener_->DownloadedFile(name, base::PLATFORM_FILE_ERROR_FAILED);
     return;
   }
@@ -197,7 +197,7 @@ base::FilePath PathForCameraItem(ICCameraItem* item) {
   std::string saveAsFilename =
       base::SysNSStringToUTF8([options objectForKey:ICSaveAsFilename]);
   if (savedFilename == saveAsFilename) {
-    if (listener_.get())
+    if (listener_)
       listener_->DownloadedFile(name, base::PLATFORM_FILE_OK);
     return;
   }
