@@ -39,6 +39,7 @@
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoader.h"
 #include "core/page/Frame.h"
+#include "core/platform/chromium/KeyboardCodes.h"
 
 namespace WebCore {
 
@@ -154,7 +155,8 @@ void MediaDocument::defaultEventHandler(Event* event)
             return;
 
         KeyboardEvent* keyboardEvent = static_cast<KeyboardEvent*>(event);
-        if (keyboardEvent->keyIdentifier() == "U+0020") { // space
+        if (keyboardEvent->keyIdentifier() == "U+0020" || keyboardEvent->keyCode() == VKEY_MEDIA_PLAY_PAUSE) {
+            // space or media key (play/pause)
             if (video->paused()) {
                 if (video->canPlay())
                     video->play();
