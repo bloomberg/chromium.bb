@@ -295,13 +295,6 @@
    fun:content::BrowserThreadTest_NotReleasedIfTargetThreadNonExistent_Test::TestBody
 }
 {
-   Intentional LeakyLazyInstanceTraits leaks
-   Heapcheck:Leak
-   ...
-   fun:base::internal::LeakyLazyInstanceTraits::New
-   fun:base::LazyInstance::Pointer
-}
-{
    Intentional leak in object tracking statics to avoid shutdown race
    Heapcheck:Leak
    ...
@@ -317,15 +310,6 @@
    Heapcheck:Leak
    ...
    fun:tracked_objects::ThreadData::TallyA*
-}
-{
-   NSS is initialized (LeakyLazyInstance) but intentionally never shut down
-   Heapcheck:Leak
-   ...
-   fun:InitSessionCacheLocks
-   fun:initSessionCacheLocksLazily
-   ...
-   fun:ssl_InitSessionCacheLocks
 }
 {
    FileStream::Context can leak through WorkerPool by design (Linux)
