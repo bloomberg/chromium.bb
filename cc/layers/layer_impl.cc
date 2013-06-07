@@ -502,6 +502,9 @@ base::DictionaryValue* LayerImpl::LayerTreeAsJson() const {
   result->SetBoolean("DrawsContent", draws_content_);
   result->SetDouble("Opacity", opacity());
 
+  if (scrollable_)
+    result->SetBoolean("Scrollable", scrollable_);
+
   list = new base::ListValue;
   for (size_t i = 0; i < children_.size(); ++i)
     list->Append(children_[i]->LayerTreeAsJson());

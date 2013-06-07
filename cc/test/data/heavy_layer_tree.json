@@ -4,6 +4,7 @@
       "Bounds": [ 384, 519 ],
       "Children": [ {
          "Bounds": [ 1251, 31876 ],
+         "Scrollable": true,
          "Children": [ {
             "Bounds": [ 1251, 31876 ],
             "Children": [  ],

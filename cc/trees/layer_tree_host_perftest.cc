@@ -15,6 +15,7 @@
 #include "cc/test/layer_tree_json_parser.h"
 #include "cc/test/layer_tree_test.h"
 #include "cc/test/paths.h"
+#include "cc/trees/layer_tree_impl.h"
 
 namespace cc {
 namespace {
@@ -27,6 +28,7 @@ class LayerTreeHostPerfTest : public LayerTreeTest {
  public:
   LayerTreeHostPerfTest()
       : num_draws_(0),
+        num_commits_(0),
         full_damage_each_frame_(false),
         animation_driven_drawing_(false),
         measure_commit_cost_(false) {
@@ -49,8 +51,10 @@ class LayerTreeHostPerfTest : public LayerTreeTest {
   }
 
   virtual void CommitCompleteOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
-    if (measure_commit_cost_ && num_draws_ >= kWarmupRuns)
+    if (measure_commit_cost_ && num_draws_ >= kWarmupRuns) {
       total_commit_time_ += base::TimeTicks::HighResNow() - commit_start_time_;
+      ++num_commits_;
+    }
   }
 
   virtual void DrawLayersOnThread(LayerTreeHostImpl* impl) OVERRIDE {
@@ -75,20 +79,25 @@ class LayerTreeHostPerfTest : public LayerTreeTest {
   virtual void BuildTree() {}
 
   virtual void AfterTest() OVERRIDE {
+    num_draws_ -= kWarmupRuns;
+
     // Format matches chrome/test/perf/perf_test.h:PrintResult
-    printf("*RESULT %s: frames= %.2f runs/s\n",
+    printf("*RESULT %s: frames: %d, %.2f ms/frame\n",
            test_name_.c_str(),
-           num_draws_ / elapsed_.InSecondsF());
+           num_draws_,
+           elapsed_.InMillisecondsF() / num_draws_);
     if (measure_commit_cost_) {
-      printf("*RESULT %s: commit_cost= %.2f ms/commit\n",
+      printf("*RESULT %s: commits: %d, %.2f ms/commit\n",
              test_name_.c_str(),
-             total_commit_time_.InMillisecondsF() / num_draws_);
+             num_commits_,
+             total_commit_time_.InMillisecondsF() / num_commits_);
     }
   }
 
  protected:
   base::TimeTicks start_time_;
   int num_draws_;
+  int num_commits_;
   std::string test_name_;
   base::TimeDelta elapsed_;
   FakeContentLayerClient fake_content_layer_client_;
@@ -178,6 +187,69 @@ class ImplSidePaintingPerfTest : public LayerTreeHostPerfTestJsonReader {
 // Simulates a page with several large, transformed and animated layers.
 TEST_F(ImplSidePaintingPerfTest, HeavyPage) {
   animation_driven_drawing_ = true;
+  measure_commit_cost_ = true;
+  ReadTestFile("heavy_layer_tree");
+  RunTestWithImplSidePainting();
+}
+
+class PageScaleImplSidePaintingPerfTest : public ImplSidePaintingPerfTest {
+ public:
+  PageScaleImplSidePaintingPerfTest()
+      : max_scale_(16.f), min_scale_(1.f / max_scale_) {}
+
+  virtual void SetupTree() OVERRIDE {
+    layer_tree_host()->SetPageScaleFactorAndLimits(1.f, min_scale_, max_scale_);
+  }
+
+  virtual void ApplyScrollAndScale(gfx::Vector2d scroll_delta,
+                                   float scale_delta) OVERRIDE {
+    float page_scale_factor = layer_tree_host()->page_scale_factor();
+    page_scale_factor *= scale_delta;
+    layer_tree_host()->SetPageScaleFactorAndLimits(
+        page_scale_factor, min_scale_, max_scale_);
+  }
+
+  virtual void AnimateLayers(LayerTreeHostImpl* host_impl,
+                             base::TimeTicks monotonic_time) OVERRIDE {
+    if (!host_impl->pinch_gesture_active()) {
+      host_impl->PinchGestureBegin();
+      start_time_ = monotonic_time;
+    }
+    gfx::Point anchor(200, 200);
+
+    float seconds = (monotonic_time - start_time_).InSecondsF();
+
+    // Every half second, zoom from min scale to max scale.
+    float interval = 0.5f;
+
+    // Start time in the middle of the interval when zoom = 1.
+    seconds += interval / 2.f;
+
+    // Stack two ranges together to go up from min to max and down from
+    // max to min in the next so as not to have a zoom discrepancy.
+    float time_in_two_intervals = fmod(seconds, 2.f * interval) / interval;
+
+    // Map everything to go from min to max between 0 and 1.
+    float time_in_one_interval =
+        time_in_two_intervals > 1.f ? 2.f - time_in_two_intervals
+                                    : time_in_two_intervals;
+    // Normalize time to -1..1.
+    float normalized = 2.f * time_in_one_interval - 1.f;
+    float scale_factor = std::fabs(normalized) * (max_scale_ - 1.f) + 1.f;
+    float total_scale = normalized < 0.f ? 1.f / scale_factor : scale_factor;
+
+    float desired_delta =
+        total_scale / host_impl->active_tree()->total_page_scale_factor();
+    host_impl->PinchGestureUpdate(desired_delta, anchor);
+  }
+
+ private:
+  float max_scale_;
+  float min_scale_;
+  base::TimeTicks start_time_;
+};
+
+TEST_F(PageScaleImplSidePaintingPerfTest, HeavyPage) {
   measure_commit_cost_ = true;
   ReadTestFile("heavy_layer_tree");
   RunTestWithImplSidePainting();

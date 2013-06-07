@@ -194,6 +194,7 @@ class CC_EXPORT LayerTreeHost : NON_EXPORTED_BASE(public RateLimiterClient) {
   void SetPageScaleFactorAndLimits(float page_scale_factor,
                                    float min_page_scale_factor,
                                    float max_page_scale_factor);
+  float page_scale_factor() const { return page_scale_factor_; }
 
   SkColor background_color() const { return background_color_; }
   void set_background_color(SkColor color) { background_color_ = color; }
