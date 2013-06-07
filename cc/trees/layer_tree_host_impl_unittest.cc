@@ -120,7 +120,6 @@ class LayerTreeHostImplTest : public testing::Test,
   virtual void SetNeedsCommitOnImplThread() OVERRIDE {
     did_request_commit_ = true;
   }
-  virtual void SetNeedsManageTilesOnImplThread() OVERRIDE {}
   virtual void PostAnimationEventsToMainThreadOnImplThread(
       scoped_ptr<AnimationEventsVector> events,
       base::Time wall_clock_time) OVERRIDE {}

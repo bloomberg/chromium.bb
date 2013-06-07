@@ -163,6 +163,7 @@ LayerTreeHostImpl::LayerTreeHostImpl(
       did_lock_scrolling_layer_(false),
       should_bubble_scrolls_(false),
       wheel_scrolling_(false),
+      manage_tiles_needed_(false),
       root_layer_scroll_offset_delegate_(NULL),
       settings_(settings),
       visible_(true),
@@ -238,6 +239,8 @@ void LayerTreeHostImpl::CommitComplete() {
   if (settings_.impl_side_painting) {
     pending_tree_->set_needs_update_draw_properties();
     pending_tree_->UpdateDrawProperties();
+    // Start working on newly created tiles immediately if needed.
+    ManageTiles();
   } else {
     active_tree_->set_needs_update_draw_properties();
   }
@@ -292,7 +295,11 @@ void LayerTreeHostImpl::Animate(base::TimeTicks monotonic_time,
 }
 
 void LayerTreeHostImpl::ManageTiles() {
-  DCHECK(tile_manager_);
+  if (!tile_manager_)
+    return;
+  if (!manage_tiles_needed_)
+    return;
+  manage_tiles_needed_ = false;
   tile_manager_->ManageTiles();
 
   size_t memory_required_bytes;
@@ -970,15 +977,11 @@ void LayerTreeHostImpl::UpdateTileManagerMemoryPolicy(
           policy.priority_cutoff_when_visible :
           policy.priority_cutoff_when_not_visible);
   tile_manager_->SetGlobalState(new_state);
+  manage_tiles_needed_ = true;
 }
 
 bool LayerTreeHostImpl::HasImplThread() const {
   return proxy_->HasImplThread();
-}
-
-void LayerTreeHostImpl::ScheduleManageTiles() {
-  if (client_)
-    client_->SetNeedsManageTilesOnImplThread();
 }
 
 void LayerTreeHostImpl::DidInitializeVisibleTile() {
@@ -1338,6 +1341,9 @@ bool LayerTreeHostImpl::ActivatePendingTreeIfNeeded() {
 
   // TODO(enne): This needs to be moved somewhere else (post-animate?)
   pending_tree_->UpdateDrawProperties();
+  // Note: This will likely cause ManageTiles to be needed.  However,
+  // it is only out of date as far as the last commit or the last draw.
+  // For performance reasons, don't call ManageTiles again here.
 
   TRACE_EVENT_ASYNC_STEP1(
     "cc",
@@ -2231,6 +2237,7 @@ void LayerTreeHostImpl::SetTreePriority(TreePriority priority) {
 
   new_state.tree_priority = priority;
   tile_manager_->SetGlobalState(new_state);
+  manage_tiles_needed_ = true;
 }
 
 void LayerTreeHostImpl::ResetCurrentFrameTimeForNextFrame() {

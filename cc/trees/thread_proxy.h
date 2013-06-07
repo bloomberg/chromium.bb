@@ -76,7 +76,6 @@ class ThreadProxy : public Proxy,
   virtual void SetNeedsRedrawRectOnImplThread(gfx::Rect dirty_rect) OVERRIDE;
   virtual void DidInitializeVisibleTileOnImplThread() OVERRIDE;
   virtual void SetNeedsCommitOnImplThread() OVERRIDE;
-  virtual void SetNeedsManageTilesOnImplThread() OVERRIDE;
   virtual void PostAnimationEventsToMainThreadOnImplThread(
       scoped_ptr<AnimationEventsVector> queue,
       base::Time wall_clock_time) OVERRIDE;
@@ -176,7 +175,6 @@ class ThreadProxy : public Proxy,
       RendererCapabilities* capabilities);
   void FinishGLOnImplThread(CompletionEvent* completion);
   void LayerTreeHostClosedOnImplThread(CompletionEvent* completion);
-  void ManageTilesOnImplThread();
   void AcquireLayerTexturesForMainThreadOnImplThread(
       CompletionEvent* completion);
   ScheduledActionDrawAndSwapResult ScheduledActionDrawAndSwapInternal(

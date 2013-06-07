@@ -126,7 +126,6 @@ TileManager::TileManager(
     : client_(client),
       resource_pool_(ResourcePool::Create(resource_provider)),
       raster_worker_pool_(raster_worker_pool.Pass()),
-      manage_tiles_pending_(false),
       ever_exceeded_memory_budget_(false),
       rendering_stats_instrumentation_(rendering_stats_instrumentation),
       use_color_estimator_(use_color_estimator),
@@ -151,14 +150,12 @@ void TileManager::SetGlobalState(
   resource_pool_->SetMaxMemoryUsageBytes(
       global_state_.memory_limit_in_bytes,
       global_state_.unused_memory_limit_in_bytes);
-  ScheduleManageTiles();
 }
 
 void TileManager::RegisterTile(Tile* tile) {
   DCHECK(std::find(tiles_.begin(), tiles_.end(), tile) == tiles_.end());
   DCHECK(!tile->required_for_activation());
   tiles_.push_back(tile);
-  ScheduleManageTiles();
 }
 
 void TileManager::UnregisterTile(Tile* tile) {
@@ -292,9 +289,6 @@ void TileManager::SortTiles() {
 
 void TileManager::ManageTiles() {
   TRACE_EVENT0("cc", "TileManager::ManageTiles");
-
-  manage_tiles_pending_ = false;
-
   AssignBinsToTiles();
   SortTiles();
   AssignGpuMemoryToTiles();

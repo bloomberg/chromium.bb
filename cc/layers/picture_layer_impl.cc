@@ -362,6 +362,7 @@ void PictureLayerImpl::UpdateTilePriorities() {
 void PictureLayerImpl::DidBecomeActive() {
   LayerImpl::DidBecomeActive();
   tilings_->DidBecomeActive();
+  layer_tree_impl()->WillModifyTilePriorities();
 }
 
 void PictureLayerImpl::DidBeginTracing() {

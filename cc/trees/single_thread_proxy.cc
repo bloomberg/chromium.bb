@@ -282,10 +282,6 @@ void SingleThreadProxy::SetNeedsCommitOnImplThread() {
   layer_tree_host_->ScheduleComposite();
 }
 
-void SingleThreadProxy::SetNeedsManageTilesOnImplThread() {
-  layer_tree_host_->ScheduleComposite();
-}
-
 void SingleThreadProxy::PostAnimationEventsToMainThreadOnImplThread(
     scoped_ptr<AnimationEventsVector> events,
     base::Time wall_clock_time) {

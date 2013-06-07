@@ -14,7 +14,6 @@ class FakeTileManagerClient : public TileManagerClient {
   virtual ~FakeTileManagerClient() {}
 
   // TileManagerClient implementation.
-  virtual void ScheduleManageTiles() OVERRIDE {}
   virtual void DidInitializeVisibleTile() OVERRIDE {}
   virtual bool ShouldForceTileUploadsRequiredForActivationToComplete() const
       OVERRIDE;

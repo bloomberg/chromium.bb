@@ -37,7 +37,6 @@ enum TileRasterMode {
 
 class CC_EXPORT TileManagerClient {
  public:
-  virtual void ScheduleManageTiles() = 0;
   virtual void DidInitializeVisibleTile() = 0;
   virtual bool
       ShouldForceTileUploadsRequiredForActivationToComplete() const = 0;
@@ -102,10 +101,6 @@ class CC_EXPORT TileManager {
     return memory_stats_from_last_assign_;
   }
 
-  void WillModifyTilePriorities() {
-    ScheduleManageTiles();
-  }
-
   bool AreTilesRequiredForActivationReady() const {
     return tiles_that_need_to_be_initialized_for_activation_.empty();
   }
@@ -145,12 +140,6 @@ class CC_EXPORT TileManager {
   void FreeResourceForTile(Tile* tile, TileRasterMode mode);
   void FreeResourcesForTile(Tile* tile);
   void FreeUnusedResourcesForTile(Tile* tile);
-  void ScheduleManageTiles() {
-    if (manage_tiles_pending_)
-      return;
-    client_->ScheduleManageTiles();
-    manage_tiles_pending_ = true;
-  }
   RasterWorkerPool::Task CreateImageDecodeTask(
       Tile* tile, skia::LazyPixelRef* pixel_ref);
   void OnImageDecodeTaskCompleted(
@@ -202,8 +191,6 @@ class CC_EXPORT TileManager {
   TileManagerClient* client_;
   scoped_ptr<ResourcePool> resource_pool_;
   scoped_ptr<RasterWorkerPool> raster_worker_pool_;
-  bool manage_tiles_pending_;
-
   GlobalStateThatImpactsTilePriority global_state_;
 
   typedef std::vector<Tile*> TileVector;

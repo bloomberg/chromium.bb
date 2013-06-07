@@ -564,7 +564,7 @@ void LayerTreeImpl::ClearLatencyInfo() {
 }
 
 void LayerTreeImpl::WillModifyTilePriorities() {
-  layer_tree_host_impl_->tile_manager()->WillModifyTilePriorities();
+  layer_tree_host_impl_->SetNeedsManageTiles();
 }
 
 }  // namespace cc

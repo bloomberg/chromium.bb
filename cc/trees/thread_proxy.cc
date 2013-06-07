@@ -384,21 +384,6 @@ void ThreadProxy::SetNeedsCommitOnImplThread() {
   scheduler_on_impl_thread_->SetNeedsCommit();
 }
 
-void ThreadProxy::SetNeedsManageTilesOnImplThread() {
-  if (manage_tiles_pending_)
-    return;
-  Proxy::ImplThread()->PostTask(
-      base::Bind(&ThreadProxy::ManageTilesOnImplThread, impl_thread_weak_ptr_));
-  manage_tiles_pending_ = true;
-}
-
-void ThreadProxy::ManageTilesOnImplThread() {
-  // TODO(nduca): If needed, move this into CCSchedulerStateMachine.
-  manage_tiles_pending_ = false;
-  if (layer_tree_host_impl_)
-    layer_tree_host_impl_->ManageTiles();
-}
-
 void ThreadProxy::PostAnimationEventsToMainThreadOnImplThread(
     scoped_ptr<AnimationEventsVector> events,
     base::Time wall_clock_time) {
@@ -985,6 +970,12 @@ ThreadProxy::ScheduledActionDrawAndSwapInternal(bool forced_draw) {
 
   if (draw_frame)
     CheckOutputSurfaceStatusOnImplThread();
+
+  // Update the tile state after drawing.  This prevents manage tiles from
+  // being in the critical path for getting things on screen, but still
+  // makes sure that tile state is updated on a semi-regular basis.
+  if (layer_tree_host_impl_->settings().impl_side_painting)
+    layer_tree_host_impl_->ManageTiles();
 
   return result;
 }

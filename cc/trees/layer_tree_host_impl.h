@@ -64,7 +64,6 @@ class LayerTreeHostImplClient {
   virtual void SetNeedsRedrawRectOnImplThread(gfx::Rect damage_rect) = 0;
   virtual void DidInitializeVisibleTileOnImplThread() = 0;
   virtual void SetNeedsCommitOnImplThread() = 0;
-  virtual void SetNeedsManageTilesOnImplThread() = 0;
   virtual void PostAnimationEventsToMainThreadOnImplThread(
       scoped_ptr<AnimationEventsVector> events,
       base::Time wall_clock_time) = 0;
@@ -197,7 +196,6 @@ class CC_EXPORT LayerTreeHostImpl
   virtual bool AllowPartialSwap() const OVERRIDE;
 
   // TileManagerClient implementation.
-  virtual void ScheduleManageTiles() OVERRIDE;
   virtual void DidInitializeVisibleTile() OVERRIDE;
   virtual bool ShouldForceTileUploadsRequiredForActivationToComplete() const
       OVERRIDE;
@@ -236,6 +234,7 @@ class CC_EXPORT LayerTreeHostImpl
 
   virtual bool SwapBuffers(const FrameData& frame);
   void SetNeedsBeginFrame(bool enable);
+  void SetNeedsManageTiles() { manage_tiles_needed_ = true; }
 
   void Readback(void* pixels, gfx::Rect rect_in_device_viewport);
 
@@ -466,6 +465,9 @@ class CC_EXPORT LayerTreeHostImpl
   bool did_lock_scrolling_layer_;
   bool should_bubble_scrolls_;
   bool wheel_scrolling_;
+
+  bool manage_tiles_needed_;
+
   // The optional delegate for the root layer scroll offset.
   LayerScrollOffsetDelegate* root_layer_scroll_offset_delegate_;
   LayerTreeSettings settings_;
