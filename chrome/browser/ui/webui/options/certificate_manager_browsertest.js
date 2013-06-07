@@ -219,15 +219,23 @@ TEST_F('CertificateManagerWebUITest',
   caCertsTab.querySelector('div.tree-item').click();
   var certs = caCertsTab.querySelectorAll('div.tree-item div.tree-item');
 
-  // First cert shouldn't show the controlled setting badge.
+  // First cert shouldn't show the controlled setting badge, and the
+  // edit and delete buttons should be enabled.
   var cert0 = certs[0];
   expectEquals('ca_cert0', cert0.data.name);
   expectEquals(null, cert0.querySelector('.cert-policy'));
+  cert0.click();
+  expectFalse($('caCertsTab-edit').disabled);
+  expectFalse($('caCertsTab-delete').disabled);
 
-  // But the second should.
+  // But the second should show the controlled setting badge, and the
+  // edit and delete buttons should be disabled.
   var cert1 = certs[1];
   expectEquals('ca_cert1', cert1.data.name);
   expectNotEquals(null, cert1.querySelector('.cert-policy'));
+  cert1.click();
+  expectTrue($('caCertsTab-edit').disabled);
+  expectTrue($('caCertsTab-delete').disabled);
 });
 
 GEN('#endif  // defined(USE_NSS)');

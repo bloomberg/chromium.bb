@@ -118,16 +118,17 @@ cr.define('options', function() {
       var readOnly = !!data && data.readonly;
       var extractable = !!data && data.extractable;
       var hasChildren = this.tree.items.length > 0;
+      var isPolicy = !!data && data.policy;
       this.viewButton.disabled = !isCert;
       if (this.editButton !== null)
-        this.editButton.disabled = !isCert;
+        this.editButton.disabled = !isCert || isPolicy;
       if (this.backupButton !== null)
         this.backupButton.disabled = !isCert || !extractable;
       if (this.backupAllButton !== null)
         this.backupAllButton.disabled = !hasChildren;
       if (this.exportButton !== null)
         this.exportButton.disabled = !isCert;
-      this.deleteButton.disabled = !isCert || readOnly;
+      this.deleteButton.disabled = !isCert || readOnly || isPolicy;
     },
 
     /**
