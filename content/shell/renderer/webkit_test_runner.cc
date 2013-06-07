@@ -597,6 +597,7 @@ void WebKitTestRunner::DidFailProvisionalLoad(WebFrame* frame,
 
 void WebKitTestRunner::Reset() {
   // The proxy_ is always non-NULL, it is set right after construction.
+  proxy_->setWidget(render_view()->GetWebView());
   proxy_->reset();
   prefs_.reset();
   routing_ids_.clear();
