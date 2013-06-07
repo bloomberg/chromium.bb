@@ -110,15 +110,6 @@ webkit.org/b/100071 fast/canvas/canvas-blend-solid.html [ Failure Pass ]
 webkit.org/b/100071 virtual/gpu/fast/canvas/canvas-blend-image.html [ Pass Timeout ]
 webkit.org/b/100071 virtual/gpu/fast/canvas/canvas-blend-solid.html [ Pass Timeout ]
 
-# Quota API is not supported in DRT yet.
-crbug.com/84572 storage/storageinfo-missing-arguments.html [ Skip ]
-crbug.com/84572 storage/storageinfo-no-callbacks.html [ Skip ]
-crbug.com/84572 storage/storageinfo-query-usage.html [ Skip ]
-crbug.com/84572 storage/storageinfo-request-quota.html [ Skip ]
-crbug.com/84572 storage/storagequota-query-usage.html [ Skip ]
-crbug.com/84572 storage/storagequota-request-quota.html [ Skip ]
-crbug.com/84572 fast/workers/worker-storagequota-query-usage.html [ Skip ]
-crbug.com/84572 fast/workers/shared-worker-storagequota-query-usage.html [ Skip ]
 
 # Unskip after implementing DRT support for setDefersLoading and goBack.
 webkit.org/b/60877 loader/navigation-while-deferring-loads.html [ Skip ]
@@ -159,65 +150,6 @@ webkit.org/b/60830 editing/pasteboard/smart-paste-in-text-control.html [ Crash F
 # We expect V8 to crash in an orderly fashion instead of throwing a JavaScript out-of-memory error.
 webkit.org/b/103348 fast/js/string-replacement-outofmemory.html [ Crash ]
 
-# test_shell does not support shared workers
-crbug.com/233066 fast/filesystem/workers/file-writer-events-shared-worker.html [ Skip ]
-crbug.com/233066 fast/workers/shared-worker-context-gc.html [ Skip ]
-crbug.com/233066 fast/workers/shared-worker-event-listener.html [ Skip ]
-crbug.com/233066 fast/workers/shared-worker-exception.html [ Skip ]
-crbug.com/233066 fast/workers/shared-worker-frame-lifecycle.html [ Skip ]
-crbug.com/233066 fast/workers/shared-worker-gc.html [ Skip ]
-crbug.com/233066 fast/workers/shared-worker-in-iframe.html [ Skip ]
-crbug.com/233066 fast/workers/shared-worker-lifecycle.html [ Skip ]
-crbug.com/233066 fast/workers/shared-worker-load-error.html [ Skip ]
-crbug.com/233066 fast/workers/shared-worker-location.html [ Skip ]
-crbug.com/233066 fast/workers/shared-worker-navigator.html [ Skip ]
-crbug.com/233066 fast/workers/shared-worker-replace-global-constructor.html [ Skip ]
-crbug.com/233066 fast/workers/shared-worker-replace-self.html [ Skip ]
-crbug.com/233066 fast/workers/shared-worker-shared.html [ Skip ]
-crbug.com/233066 fast/workers/shared-worker-constructor.html [ Skip ]
-crbug.com/233066 fast/workers/shared-worker-name.html [ Skip ]
-crbug.com/233066 fast/workers/shared-worker-script-error.html [ Skip ]
-crbug.com/233066 fast/workers/shared-worker-simple.html [ Skip ]
-crbug.com/233066 fast/workers/worker-crash-with-invalid-location.html [ Skip ]
-crbug.com/233066 http/tests/workers/shared-worker-invalid-url.html [ Skip ]
-crbug.com/233066 http/tests/workers/shared-worker-redirect.html [ Skip ]
-crbug.com/233066 http/tests/workers/shared-worker-importScripts.html [ Skip ]
-crbug.com/233066 http/tests/xmlhttprequest/workers/shared-worker-access-control-basic-get-fail-non-simple.html [ Skip ]
-crbug.com/233066 http/tests/xmlhttprequest/workers/shared-worker-close.html [ Skip ]
-crbug.com/233066 http/tests/xmlhttprequest/workers/shared-worker-methods-async.html [ Skip ]
-crbug.com/233066 http/tests/xmlhttprequest/workers/shared-worker-methods.html [ Skip ]
-crbug.com/233066 http/tests/xmlhttprequest/workers/shared-worker-referer.html [ Skip ]
-crbug.com/233066 http/tests/xmlhttprequest/workers/shared-worker-xhr-file-not-found.html [ Skip ]
-crbug.com/233066 http/tests/websocket/tests/hybi/workers/close-in-shared-worker.html [ Skip ]
-crbug.com/233066 http/tests/websocket/tests/hybi/workers/shared-worker-simple.html [ Skip ]
-crbug.com/233066 http/tests/inspector/network/network-shared-worker.html [ Skip ]
-crbug.com/233066 http/tests/security/contentSecurityPolicy/shared-worker-connect-src-allowed.html [ Skip ]
-crbug.com/233066 http/tests/security/contentSecurityPolicy/shared-worker-connect-src-blocked.html [ Skip ]
-crbug.com/233066 http/tests/security/cross-origin-shared-worker-allowed.html [ Skip ]
-
-# test_shell does not support message ports
-webkit.org/b/74459 fast/workers/termination-with-port-messages.html [ Skip ]
-webkit.org/b/74459 fast/workers/worker-cloneport.html [ Skip ]
-webkit.org/b/74459 fast/workers/worker-context-multi-port.html [ Skip ]
-webkit.org/b/74459 fast/workers/worker-messageport-gc.html [ Skip ]
-webkit.org/b/74459 fast/workers/worker-messageport.html [ Skip ]
-webkit.org/b/74459 fast/workers/worker-multi-port.html [ Skip ]
-
-# Tests that rely on cross-process MessagePorts.  No point in running them in
-# test_shell, since we'd have to use a completely different implementation from
-# what is used in the browser.
-crbug.com/233066 fast/events/message-channel-gc-2.html [ Skip ]
-crbug.com/233066 fast/events/message-channel-gc-3.html [ Skip ]
-crbug.com/233066 fast/events/message-channel-gc-4.html [ Skip ]
-crbug.com/233066 fast/events/message-channel-gc.html [ Skip ]
-crbug.com/233066 fast/events/message-channel-listener-circular-ownership.html [ Skip ]
-crbug.com/233066 fast/events/message-port-clone.html [ Skip ]
-crbug.com/233066 fast/events/message-port-deleted-document.html [ Skip ]
-crbug.com/233066 fast/events/message-port-deleted-frame.html [ Skip ]
-crbug.com/233066 fast/events/message-port-inactive-document.html [ Skip ]
-crbug.com/233066 fast/events/message-port-no-wrapper.html [ Skip ]
-crbug.com/233066 fast/events/message-port.html [ Skip ]
-crbug.com/233066 http/tests/security/MessagePort/event-listener-context.html [ Skip ]
 
 # This test's image expectations might need updating.
 crbug.com/238633 editing/style/unbold-in-bold.html [ ImageOnlyFailure ]
@@ -908,6 +840,8 @@ webkit.org/b/72761 accessibility/anonymous-render-block-in-continuation-causes-c
 webkit.org/b/73766 css3/unicode-bidi-isolate-aharon-failing.html [ ImageOnlyFailure ]
 
 webkit.org/b/74746 [ Win ] http/tests/xmlhttprequest/workers/methods.html [ Failure Timeout ]
+webkit.org/b/74746 [ Win ] http/tests/xmlhttprequest/workers/shared-worker-methods.html [ Failure ]
+webkit.org/b/74746 [ Win ] http/tests/xmlhttprequest/workers/shared-worker-methods-async.html [ Failure ]
 
 webkit.org/b/75111 fast/workers/storage/use-same-database-in-page-and-workers.html [ Pass Timeout ]
 
@@ -1806,6 +1740,9 @@ crbug.com/246549 http/tests/security/svg-image-leak.html [ Failure Pass ]
 crbug.com/247553 http/tests/inspector/compiler-source-mapping-debug.html [ Crash Timeout Pass ]
 
 crbug.com/247614 [ Debug ] printing/print-close-crash.html [ Crash ]
+
+crbug.com/247604 fast/workers/shared-worker-lifecycle.html [ Failure ]
+crbug.com/247604 fast/workers/shared-worker-frame-lifecycle.html [ Skip ]
 
 # Needs new pixel baselines on other platforms
 Bug(jamesr) compositing/video/video-controls-layer-creation.html [ ImageOnlyFailure Pass ]
