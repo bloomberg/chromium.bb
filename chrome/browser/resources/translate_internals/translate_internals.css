@@ -115,3 +115,18 @@ td.detection-logs-content div {
 .error-logs-error {
   width: 40%;
 }
+
+.event-logs-time {
+  width: 15%;
+}
+
+.event-logs-place {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  width: 35%;
+}
+
+.event-logs-message {
+  width: 50%;
+}

@@ -20,4 +20,4 @@ struct TranslateErrorDetails {
   TranslateErrors::Type error;
 };
 
-#endif
+#endif  // CHROME_BROWSER_TRANSLATE_TRANSLATE_ERROR_DETAILS_H_

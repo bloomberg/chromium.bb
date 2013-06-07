@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_WEBUI_TRANSLATE_INTERNALS_HANDLER_H_
-#define CHROME_BROWSER_UI_WEBUI_TRANSLATE_INTERNALS_HANDLER_H_
+#ifndef CHROME_BROWSER_UI_WEBUI_TRANSLATE_INTERNALS_TRANSLATE_INTERNALS_HANDLER_H_
+#define CHROME_BROWSER_UI_WEBUI_TRANSLATE_INTERNALS_TRANSLATE_INTERNALS_HANDLER_H_
 
 #include <string>
 
@@ -13,6 +13,7 @@
 
 struct LanguageDetectionDetails;
 struct TranslateErrorDetails;
+struct TranslateEventDetails;
 
 namespace base {
 class DictionaryValue;
@@ -35,6 +36,8 @@ class TranslateInternalsHandler : public content::WebUIMessageHandler,
       const LanguageDetectionDetails& details) OVERRIDE;
   virtual void OnTranslateError(
       const TranslateErrorDetails& details) OVERRIDE;
+  virtual void OnTranslateEvent(
+      const TranslateEventDetails& details) OVERRIDE;
 
  private:
   // Handles the Javascript message 'removePrefItem'. This message is sent
@@ -56,4 +59,4 @@ class TranslateInternalsHandler : public content::WebUIMessageHandler,
   DISALLOW_COPY_AND_ASSIGN(TranslateInternalsHandler);
 };
 
-#endif  // CHROME_BROWSER_UI_WEBUI_TRANSLATE_INTERNALS_HANDLER_H_
+#endif  // CHROME_BROWSER_UI_WEBUI_TRANSLATE_INTERNALS_TRANSLATE_INTERNALS_HANDLER_H_

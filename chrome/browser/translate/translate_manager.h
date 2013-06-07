@@ -27,6 +27,7 @@ class PrefService;
 struct ShortcutConfiguration;
 class TranslateAcceptLanguages;
 struct TranslateErrorDetails;
+struct TranslateEventDetails;
 class TranslateInfoBarDelegate;
 class TranslateLanguageList;
 
@@ -50,6 +51,24 @@ class TranslateManager : public content::NotificationObserver,
   static TranslateManager* GetInstance();
 
   virtual ~TranslateManager();
+
+  // Returns true if the URL can be translated.
+  static bool IsTranslatableURL(const GURL& url);
+
+  // Fills |languages| with the list of languages that the translate server can
+  // translate to and from.
+  static void GetSupportedLanguages(std::vector<std::string>* languages);
+
+  // Returns the language code that can be used with the Translate method for a
+  // specified |chrome_locale|.
+  static std::string GetLanguageCode(const std::string& chrome_locale);
+
+  // Returns true if |language| is supported by the translation server.
+  static bool IsSupportedLanguage(const std::string& language);
+
+  // Returns true if |language| is supported by the translation server as a
+  // alpha language.
+  static bool IsAlphaLanguage(const std::string& language);
 
   // Let the caller decide if and when we should fetch the language list from
   // the translate server. This is a NOOP if switches::kDisableTranslate is set
@@ -100,24 +119,6 @@ class TranslateManager : public content::NotificationObserver,
     max_reload_check_attempts_ = attempts;
   }
 
-  // Returns true if the URL can be translated.
-  static bool IsTranslatableURL(const GURL& url);
-
-  // Fills |languages| with the list of languages that the translate server can
-  // translate to and from.
-  static void GetSupportedLanguages(std::vector<std::string>* languages);
-
-  // Returns the language code that can be used with the Translate method for a
-  // specified |chrome_locale|.
-  static std::string GetLanguageCode(const std::string& chrome_locale);
-
-  // Returns true if |language| is supported by the translation server.
-  static bool IsSupportedLanguage(const std::string& language);
-
-  // Returns true if |language| is supported by the translation server as a
-  // alpha language.
-  static bool IsAlphaLanguage(const std::string& language);
-
   // The observer class for TranslateManager.
   class Observer {
    public:
@@ -125,11 +126,16 @@ class TranslateManager : public content::NotificationObserver,
         const LanguageDetectionDetails& details) = 0;
     virtual void OnTranslateError(
         const TranslateErrorDetails& details) = 0;
+    virtual void OnTranslateEvent(
+        const TranslateEventDetails& details) = 0;
   };
 
   // Adds/removes observer.
   void AddObserver(Observer* obs);
   void RemoveObserver(Observer* obs);
+
+  // Notifies to the observers when translate event happens.
+  void NotifyTranslateEvent(const TranslateEventDetails& details);
 
  protected:
   TranslateManager();

@@ -24,6 +24,7 @@
 #include "chrome/browser/translate/page_translated_details.h"
 #include "chrome/browser/translate/translate_accept_languages.h"
 #include "chrome/browser/translate/translate_error_details.h"
+#include "chrome/browser/translate/translate_event_details.h"
 #include "chrome/browser/translate/translate_infobar_delegate.h"
 #include "chrome/browser/translate/translate_language_list.h"
 #include "chrome/browser/translate/translate_manager_metrics.h"
@@ -352,6 +353,11 @@ void TranslateManager::AddObserver(Observer* obs) {
 
 void TranslateManager::RemoveObserver(Observer* obs) {
   observer_list_.RemoveObserver(obs);
+}
+
+void TranslateManager::NotifyTranslateEvent(
+    const TranslateEventDetails& details) {
+  FOR_EACH_OBSERVER(Observer, observer_list_, OnTranslateEvent(details));
 }
 
 void TranslateManager::NotifyLanguageDetection(
