@@ -36,14 +36,17 @@ var DB_SPECIFIC_INVALIDATING_PARAMETERS = {
     'group': 'builder'
 };
 
+var g_haveEverGeneratedPage = false;
+
 function generatePage(historyInstance)
 {
+    g_haveEverGeneratedPage = true;
     $('header-container').innerHTML = ui.html.testTypeSwitcher();
 
     g_isGeneratingPage = true;
 
     var rawTree = g_resultsByBuilder[historyInstance.dashboardSpecificState.builder || currentBuilderGroup().defaultBuilder()];
-    g_webTree = convertToWebTreemapFormat('LayoutTests', rawTree);
+    g_webTree = convertToWebTreemapFormat('AllTests', rawTree);
     appendTreemap($('map'), g_webTree);
 
     if (historyInstance.dashboardSpecificState.treemapfocus)
@@ -63,9 +66,7 @@ function handleValidHashParameter(historyInstance, key, value)
     case 'treemapfocus':
         history.validateParameter(historyInstance.dashboardSpecificState, key, value,
             function() {
-                // FIXME: There's probably a simpler regexp here. Just trying to match ascii + forward-slash.
-                // e.g. LayoutTests/foo/bar.html
-                return (value.match(/^(\w+\/\w*)*$/));
+                return value.match(/^[\w./]+$/);
             });
         return true;
 
@@ -77,7 +78,11 @@ function handleValidHashParameter(historyInstance, key, value)
 function handleQueryParameterChange(historyInstance, params)
 {
     for (var param in params) {
-        if (param != 'treemapfocus') {
+        // When we're first loading the page, if there is a treemapfocus parameter,
+        // it will show up here. After we've generated the page, treemapfocus parameter
+        // changes should just be handled by the treemap code instead of calling through
+        // to generatePage.
+        if (!g_haveEverGeneratedPage || param != 'treemapfocus') {
             $('map').innerHTML = 'Loading...';
             return true;
         }
