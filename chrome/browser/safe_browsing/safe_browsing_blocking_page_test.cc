@@ -792,7 +792,14 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageTest, PhishingDontProceed) {
       browser()->tab_strip_model()->GetActiveWebContents()->GetURL());
 }
 
-IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageTest, PhishingProceed) {
+// http://crbug.com/247763
+#if defined(OS_WIN)
+#define MAYBE_PhishingProceed DISABLED_PhishingProceed
+#else
+#define MAYBE_PhishingProceed PhishingProceed
+#endif
+
+IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageTest, MAYBE_PhishingProceed) {
   GURL url = SetupWarningAndNavigate(SB_THREAT_TYPE_URL_PHISHING);
 
   EXPECT_TRUE(ClickAndWaitForDetach("proceed"));
