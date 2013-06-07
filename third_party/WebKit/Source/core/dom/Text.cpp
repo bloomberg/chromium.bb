@@ -70,7 +70,7 @@ PassRefPtr<Text> Text::splitText(unsigned offset, ExceptionCode& ec)
     RefPtr<Text> newText = cloneWithData(oldStr.substring(offset));
     setDataWithoutUpdate(oldStr.substring(0, offset));
 
-    dispatchModifiedEvent(oldStr);
+    didModifyData(oldStr);
 
     if (parentNode())
         parentNode()->insertBefore(newText.get(), nextSibling(), ec);

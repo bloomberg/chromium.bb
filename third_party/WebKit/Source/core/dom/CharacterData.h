@@ -64,7 +64,7 @@ protected:
         ASSERT(!data.isNull());
         m_data = data;
     }
-    void dispatchModifiedEvent(const String& oldValue);
+    void didModifyData(const String& oldValue);
 
 private:
     virtual String nodeValue() const OVERRIDE FINAL;
@@ -74,6 +74,7 @@ private:
     virtual bool offsetInCharacters() const OVERRIDE FINAL;
     void setDataAndUpdate(const String&, unsigned offsetOfReplacedData, unsigned oldLength, unsigned newLength);
     void checkCharDataOperation(unsigned offset, ExceptionCode&);
+    void dispatchModifiedEvent(const String& oldValue);
 
     String m_data;
 };
