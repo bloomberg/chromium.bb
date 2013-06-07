@@ -39,6 +39,7 @@
 #include "XMLNSNames.h"
 #include "XMLNames.h"
 #include "core/css/MediaFeatureNames.h"
+#include "core/dom/Node.h"
 #include "wtf/text/StringStatics.h"
 
 namespace WebCore {
@@ -61,6 +62,13 @@ void init()
     MediaFeatureNames::init();
     WTF::StringStatics::init();
     QualifiedName::init();
+    Node::init();
+}
+
+void shutdown()
+{
+    // We cannot call Node::shutdown() yet because some tests have an
+    // incorrect destruction ordering, e.g. PasswordAutofillAgentTest.*
 }
 
 } // namespace WebCore

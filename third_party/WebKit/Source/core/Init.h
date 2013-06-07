@@ -36,6 +36,8 @@ namespace WebCore {
 // Should be called by clients before trying to create Frames.
 void init();
 
+void shutdown();
+
 } // namespace WebCore
 
 #endif // Init_h

@@ -99,6 +99,8 @@
             'ParallelJobsGeneric.cpp',
             'ParallelJobsGeneric.h',
             'ParallelJobsLibdispatch.h',
+            'PartitionAlloc.cpp',
+            'PartitionAlloc.h',
             'PassOwnArrayPtr.h',
             'PassOwnPtr.h',
             'PassRefPtr.h',
@@ -224,6 +226,7 @@
             'unicode/icu/UnicodeIcu.h',
         ],
         'wtf_unittest_files': [
+            'PartitionAllocTest.cpp',
             'tests/AtomicString.cpp',
             'tests/CString.cpp',
             'tests/CheckedArithmeticOperations.cpp',

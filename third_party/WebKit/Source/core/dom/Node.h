@@ -156,6 +156,15 @@ public:
         DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC = 0x20,
     };
 
+    static void init();
+    static void shutdown();
+#if ENABLE(PARTITION_ALLOC)
+    // All Nodes are placed in their own heap partition for security.
+    // See http://crbug.com/246860 for detail.
+    void* operator new(size_t);
+    void operator delete(void*);
+#endif
+
     static bool isSupported(const String& feature, const String& version);
 
     static void startIgnoringLeaks();

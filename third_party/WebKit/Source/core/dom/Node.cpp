@@ -112,13 +112,14 @@
 #include "core/rendering/RenderTextControl.h"
 #include "core/rendering/RenderView.h"
 #include "core/storage/StorageEvent.h"
-#include <wtf/HashSet.h>
-#include <wtf/PassOwnPtr.h>
-#include <wtf/RefCountedLeakCounter.h>
-#include <wtf/text/CString.h>
-#include <wtf/text/StringBuilder.h>
-#include <wtf/UnusedParam.h>
-#include <wtf/Vector.h>
+#include "wtf/HashSet.h"
+#include "wtf/PartitionAlloc.h"
+#include "wtf/PassOwnPtr.h"
+#include "wtf/RefCountedLeakCounter.h"
+#include "wtf/UnusedParam.h"
+#include "wtf/Vector.h"
+#include "wtf/text/CString.h"
+#include "wtf/text/StringBuilder.h"
 
 #ifndef NDEBUG
 #include "core/rendering/RenderLayer.h"
@@ -129,6 +130,34 @@ using namespace std;
 namespace WebCore {
 
 using namespace HTMLNames;
+
+#if ENABLE(PARTITION_ALLOC)
+static PartitionRoot root;
+
+void* Node::operator new(size_t size)
+{
+    return partitionAlloc(&root, size);
+}
+
+void Node::operator delete(void* ptr)
+{
+    partitionFree(ptr);
+}
+#endif // ENABLE(PARTITION_ALLOC)
+
+void Node::init()
+{
+#if ENABLE(PARTITION_ALLOC)
+    partitionAllocInit(&root);
+#endif
+}
+
+void Node::shutdown()
+{
+#if ENABLE(PARTITION_ALLOC)
+    partitionAllocShutdown(&root);
+#endif
+}
 
 bool Node::isSupported(const String& feature, const String& version)
 {

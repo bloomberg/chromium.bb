@@ -186,6 +186,7 @@ void shutdown()
         s_endOfTaskRunner = 0;
     }
     WebCore::ImageDecodingStore::shutdown();
+    WebCore::shutdown();
     Platform::shutdown();
     WebPrerenderingSupport::shutdown();
 }
