@@ -3,9 +3,51 @@
 // found in the LICENSE file.
 
 var embedder = {};
-embedder.tests = {};
+embedder.test = {};
 embedder.baseGuestURL = '';
 embedder.guestURL = '';
+
+window.runGeolocationTest = function(testName) {
+  if (!embedder.test.testList[testName]) {
+    console.log('Incorrect testName: ' + testName);
+    embedder.test.fail();
+    return;
+  }
+
+  // Run the test.
+  embedder.test.testList[testName]();
+};
+// window.* exported functions end.
+
+
+embedder.test.succeed = function() {
+  chrome.test.sendMessage('DoneGeolocationTest.PASSED');
+};
+
+embedder.test.fail = function() {
+  chrome.test.sendMessage('DoneGeolocationTest.FAILED');
+};
+
+embedder.test.assertEq = function(a, b) {
+  if (a != b) {
+    console.log('assertion failed: ' + a + ' != ' + b);
+    embedder.test.fail();
+  }
+};
+
+embedder.test.assertTrue = function(condition) {
+  if (!condition) {
+    console.log('assertion failed: true != ' + condition);
+    embedder.test.fail();
+  }
+};
+
+embedder.test.assertFalse = function(condition) {
+  if (condition) {
+    console.log('assertion failed: false != ' + condition);
+    embedder.test.fail();
+  }
+};
 
 embedder.setUp = function(config) {
   embedder.baseGuestURL = 'http://localhost:' + config.testServer.port;
@@ -23,7 +65,8 @@ embedder.setUpGuest_ = function() {
       '></webview>';
   var webview = document.querySelector('webview');
   if (!webview) {
-    chrome.test.fail('No <webview> element created');
+    console.log('No <webview> element created');
+    embedder.test.fail();
   }
   return webview;
 };
@@ -39,14 +82,13 @@ embedder.setUpLoadStop_ = function(webview, testName) {
 };
 
 /** @private */
-embedder.registerAndWaitForPostMessage_ = function(
-    webview, expectedData) {
+embedder.registerAndWaitForPostMessage_ = function(webview, expectedData) {
   var testName = expectedData[0];
   var onPostMessageReceived = function(e) {
     var data = JSON.parse(e.data);
     if (data[0] == '' + testName) {
-      chrome.test.assertEq(expectedData, data);
-      chrome.test.succeed();
+      embedder.test.assertEq(expectedData[1], data[1]);
+      embedder.test.succeed();
     }
   };
   window.addEventListener('message', onPostMessageReceived);
@@ -54,13 +96,13 @@ embedder.registerAndWaitForPostMessage_ = function(
 
 /** @private */
 embedder.assertCorrectEvent_ = function(e) {
-  chrome.test.assertEq('geolocation', e.permission);
-  chrome.test.assertTrue(!!e.url);
-  chrome.test.assertTrue(e.url.indexOf(embedder.baseGuestURL) == 0);
+  embedder.test.assertEq('geolocation', e.permission);
+  embedder.test.assertTrue(!!e.url);
+  embedder.test.assertTrue(e.url.indexOf(embedder.baseGuestURL) == 0);
 
   // Check that unexpected properties (from other permissionrequest) do not show
   // up in the event object.
-  chrome.test.assertFalse('userGesture' in e);
+  embedder.test.assertFalse('userGesture' in e);
 };
 
 // Tests begin.
@@ -69,7 +111,7 @@ embedder.assertCorrectEvent_ = function(e) {
 // always denied for these tests.
 
 // Calling deny() results in deny.
-embedder.tests.testDenyDenies = function testDenyDenies() {
+function testDenyDenies() {
   var webview = embedder.setUpGuest_();
 
   var onPermissionRequest = function(e) {
@@ -80,12 +122,11 @@ embedder.tests.testDenyDenies = function testDenyDenies() {
   webview.addEventListener('permissionrequest', onPermissionRequest);
 
   embedder.setUpLoadStop_(webview, 'test1');
-  embedder.registerAndWaitForPostMessage_(
-      webview, ['test1', 'access-denied']);
-};
+  embedder.registerAndWaitForPostMessage_(webview, ['test1', 'access-denied']);
+}
 
 // Calling allow() results in deny too.
-embedder.tests.testAllowDenies = function testAllowDenies() {
+function testAllowDenies() {
   var webview = embedder.setUpGuest_();
 
   var onPermissionRequest = function(e) {
@@ -96,16 +137,17 @@ embedder.tests.testAllowDenies = function testAllowDenies() {
   webview.addEventListener('permissionrequest', onPermissionRequest);
 
   embedder.setUpLoadStop_(webview, 'test2');
-  embedder.registerAndWaitForPostMessage_(
-      webview, ['test2', 'access-denied']);
+  embedder.registerAndWaitForPostMessage_(webview, ['test2', 'access-denied']);
+}
+
+embedder.test.testList = {
+  'testDenyDenies': testDenyDenies,
+  'testAllowDenies': testAllowDenies
 };
 
 onload = function() {
   chrome.test.getConfig(function(config) {
     embedder.setUp(config);
-    chrome.test.runTests([
-      embedder.tests.testDenyDenies,
-      embedder.tests.testAllowDenies
-    ]);
+    chrome.test.sendMessage('Launched');
   });
 };

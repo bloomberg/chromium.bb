@@ -47,10 +47,11 @@ embedder.setUpGuest_ = function() {
 };
 
 embedder.test = {};
-embedder.test.fail = function() {
+embedder.test.succeed = function() {
   chrome.test.sendMessage('DoneGeolocationTest.PASSED');
 };
-embedder.test.succeed = function() {
+
+embedder.test.fail = function() {
   chrome.test.sendMessage('DoneGeolocationTest.FAILED');
 };
 

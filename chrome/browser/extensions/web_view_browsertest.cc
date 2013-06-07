@@ -352,10 +352,11 @@ class WebViewTest : public extensions::PlatformAppBrowserTest {
     EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
   }
 
-  void GeolocationTestHelper(const std::string& test_name) {
+  void GeolocationTestHelper(const std::string& test_name,
+                             const std::string& app_location) {
     ASSERT_TRUE(StartTestServer());  // For serving guest pages.
     ExtensionTestMessageListener launched_listener("Launched", false);
-    LoadAndLaunchPlatformApp("web_view/geolocation/embedder_has_permission");
+    LoadAndLaunchPlatformApp(app_location.c_str());
     ASSERT_TRUE(launched_listener.WaitUntilSatisfied());
 
     content::WebContents* embedder_web_contents =
@@ -369,7 +370,7 @@ class WebViewTest : public extensions::PlatformAppBrowserTest {
                     embedder_web_contents,
                     base::StringPrintf("runGeolocationTest('%s')",
                                        test_name.c_str())));
-    done_listener.WaitUntilSatisfied();
+    ASSERT_TRUE(done_listener.WaitUntilSatisfied());
   }
 
   content::WebContents* LoadGuest(const std::string& guest_path,
@@ -967,14 +968,18 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, TearDownTest) {
   ASSERT_TRUE(second_loaded_listener.WaitUntilSatisfied());
 }
 
-// Embedder does not have geolocation permission for this test.
+// In following GeolocationAPIEmbedderHasNoAccess* tests, embedder (i.e. the
+// platform app) does not have geolocation permission for this test.
 // No matter what the API does, geolocation permission would be denied.
 // Note that the test name prefix must be "GeolocationAPI".
-IN_PROC_BROWSER_TEST_F(WebViewTest, GeolocationAPIEmbedderHasNoAccess) {
-  ASSERT_TRUE(StartTestServer());  // For serving guest pages.
-  ASSERT_TRUE(RunPlatformAppTest(
-      "platform_apps/web_view/geolocation/embedder_has_no_permission"))
-          << message_;
+IN_PROC_BROWSER_TEST_F(WebViewTest, GeolocationAPIEmbedderHasNoAccessAllow) {
+  GeolocationTestHelper("testDenyDenies",
+                        "web_view/geolocation/embedder_has_no_permission");
+}
+
+IN_PROC_BROWSER_TEST_F(WebViewTest, GeolocationAPIEmbedderHasNoAccessDeny) {
+  GeolocationTestHelper("testDenyDenies",
+                        "web_view/geolocation/embedder_has_no_permission");
 }
 
 // In following GeolocationAPIEmbedderHasAccess* tests, embedder (i.e. the
@@ -988,18 +993,21 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, GeolocationAPIEmbedderHasNoAccess) {
 // the tests become flaky.
 // GeolocationAPI* test 1 of 3.
 IN_PROC_BROWSER_TEST_F(WebViewTest, GeolocationAPIEmbedderHasAccessAllow) {
-  GeolocationTestHelper("testAllow");
+  GeolocationTestHelper("testAllow",
+                        "web_view/geolocation/embedder_has_permission");
 }
 
 // GeolocationAPI* test 2 of 3.
 IN_PROC_BROWSER_TEST_F(WebViewTest, GeolocationAPIEmbedderHasAccessDeny) {
-  GeolocationTestHelper("testDeny");
+  GeolocationTestHelper("testDeny",
+                        "web_view/geolocation/embedder_has_permission");
 }
 
 // GeolocationAPI* test 3 of 3.
 IN_PROC_BROWSER_TEST_F(WebViewTest,
                        GeolocationAPIEmbedderHasAccessMultipleBridgeIdAllow) {
-  GeolocationTestHelper("testMultipleBridgeIdAllow");
+  GeolocationTestHelper("testMultipleBridgeIdAllow",
+                        "web_view/geolocation/embedder_has_permission");
 }
 
 // Tests that
