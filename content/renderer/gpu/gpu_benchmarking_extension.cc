@@ -392,7 +392,7 @@ class GpuBenchmarkingWrapper : public v8::Extension {
 
     bool scroll_down = args[0]->BooleanValue();
     v8::Local<v8::Function> callback_local =
-        v8::Local<v8::Function>(v8::Function::Cast(*args[1]));
+        v8::Local<v8::Function>::Cast(args[1]);
 
     scoped_refptr<CallbackAndContext> callback_and_context =
         new CallbackAndContext(args.GetIsolate(),
@@ -546,7 +546,7 @@ class GpuBenchmarkingWrapper : public v8::Extension {
       return v8::Undefined();
 
     v8::Local<v8::Function> callback_local =
-        v8::Local<v8::Function>(v8::Function::Cast(*args[0]));
+        v8::Local<v8::Function>::Cast(args[0]);
 
     scoped_refptr<CallbackAndContext> callback_and_context =
         new CallbackAndContext(args.GetIsolate(),
