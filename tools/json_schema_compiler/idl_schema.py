@@ -297,7 +297,7 @@ class Enum(object):
               'description': self.description,
               'type': 'string',
               'enum': enum}
-    for property_name in ('inline_doc', 'nodoc'):
+    for property_name in ('inline_doc', 'noinline_doc', 'nodoc'):
       if self.node.GetProperty(property_name):
         result[property_name] = True
     return result
