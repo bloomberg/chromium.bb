@@ -6,8 +6,8 @@
 #define CHROME_BROWSER_UI_WEBUI_OPTIONS_CHROMEOS_CORE_CHROMEOS_OPTIONS_HANDLER_H_
 
 #include "base/compiler_specific.h"
-#include "base/memory/weak_ptr.h"
 #include "base/prefs/pref_change_registrar.h"
+#include "chrome/browser/chromeos/ui_proxy_config_service.h"
 #include "chrome/browser/ui/webui/options/core_options_handler.h"
 
 namespace chromeos {
@@ -20,6 +20,7 @@ class CoreChromeOSOptionsHandler : public ::options::CoreOptionsHandler {
   virtual ~CoreChromeOSOptionsHandler();
 
   // ::CoreOptionsHandler overrides
+  virtual void RegisterMessages() OVERRIDE;
   virtual base::Value* FetchPref(const std::string& pref_name) OVERRIDE;
   virtual void InitializeHandler() OVERRIDE;
   virtual void ObservePref(const std::string& pref_name) OVERRIDE;
@@ -37,16 +38,24 @@ class CoreChromeOSOptionsHandler : public ::options::CoreOptionsHandler {
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
+  // Select the network to show proxy settings for. Triggers pref notifications
+  // about the updated proxy settings.
+  void SelectNetwork(const std::string& service_path);
+
  private:
   virtual void OnPreferenceChanged(PrefService* service,
                                    const std::string& pref_name) OVERRIDE;
+
+  // Called from Javascript to select the network to show proxy settings
+  // for. Triggers pref notifications about the updated proxy settings.
+  void SelectNetworkCallback(const base::ListValue* args);
 
   // Notifies registered JS callbacks on ChromeOS setting change.
   void NotifySettingsChanged(const std::string* setting_name);
   void NotifyProxyPrefsChanged();
 
+  UIProxyConfigService proxy_config_service_;
   PrefChangeRegistrar proxy_prefs_;
-  base::WeakPtrFactory<CoreChromeOSOptionsHandler> pointer_factory_;
 };
 
 }  // namespace options

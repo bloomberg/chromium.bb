@@ -13,7 +13,6 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_util.h"
-#include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/login/login_display_host_impl.h"
 #include "chrome/browser/chromeos/login/proxy_settings_dialog.h"
 #include "chrome/browser/chromeos/login/webui_login_display.h"
@@ -27,6 +26,8 @@
 #include "chrome/common/render_messages.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager_client.h"
+#include "chromeos/network/network_state.h"
+#include "chromeos/network/network_state_handler.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_view_host.h"
@@ -295,8 +296,14 @@ content::WebContents* WebUILoginView::GetWebContents() {
 }
 
 void WebUILoginView::OpenProxySettings() {
+  const NetworkState* network =
+      NetworkHandler::Get()->network_state_handler()->DefaultNetwork();
+  if (!network) {
+    LOG(ERROR) << "No default network found!";
+    return;
+  }
   ProxySettingsDialog* dialog =
-      new ProxySettingsDialog(NULL, GetNativeWindow());
+      new ProxySettingsDialog(*network, NULL, GetNativeWindow());
   dialog->Show();
 }
 

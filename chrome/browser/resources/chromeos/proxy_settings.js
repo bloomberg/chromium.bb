@@ -21,6 +21,7 @@ function load() {
   cr.ui.decorate('select[pref]', options.PrefSelect);
   cr.ui.decorate('input[pref][type=text]', options.PrefTextField);
   cr.ui.decorate('input[pref][type=url]', options.PrefTextField);
+
   DetailsInternetPage.initializeProxySettings();
 
   // TODO(ivankr): remove when http://crosbug.com/20660 is resolved.
@@ -33,6 +34,14 @@ function load() {
 
   Preferences.getInstance().initialize();
   chrome.send('coreOptionsInitialize');
+
+  var params = parseQueryParams(window.location);
+  var network = params.network;
+  if (!network) {
+    console.error('Error: No network argument provided!');
+    network = '';
+  }
+  chrome.send('selectNetwork', [network]);
 
   DetailsInternetPage.showProxySettings();
 }

@@ -718,10 +718,14 @@ class ProxyPreferencesBrowserTest : public PreferencesBrowserTest {
     std::string proxy_config;
     base::JSONWriter::Write(proxy_config_dict.get(), &proxy_config);
 
-    GetActiveNetwork()->SetProxyConfig(proxy_config);
+    chromeos::Network* network = GetActiveNetwork();
+    network->SetProxyConfig(proxy_config);
 
-    ui_test_utils::NavigateToURL(browser(),
-                                 GURL(chrome::kChromeUIProxySettingsURL));
+    std::string url = chrome::kChromeUIProxySettingsURL;
+    url += "?network=";
+    url += network->service_path();
+
+    ui_test_utils::NavigateToURL(browser(), GURL(url));
     SetUpPrefs();
   }
 

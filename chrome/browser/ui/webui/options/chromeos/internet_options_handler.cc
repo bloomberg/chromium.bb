@@ -34,19 +34,17 @@
 #include "chrome/browser/chromeos/mobile_config.h"
 #include "chrome/browser/chromeos/options/network_config_view.h"
 #include "chrome/browser/chromeos/options/network_connect.h"
-#include "chrome/browser/chromeos/proxy_config_service_impl.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/sim_dialog_delegate.h"
 #include "chrome/browser/chromeos/status/network_menu_icon.h"
 #include "chrome/browser/chromeos/ui_proxy_config_service.h"
-#include "chrome/browser/net/pref_proxy_config_tracker.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/singleton_tabs.h"
+#include "chrome/browser/ui/webui/options/chromeos/core_chromeos_options_handler.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/time_format.h"
 #include "chromeos/chromeos_switches.h"
@@ -582,7 +580,7 @@ chromeos::ConnectionType ParseNetworkTypeString(const std::string& type) {
 namespace options {
 
 InternetOptionsHandler::InternetOptionsHandler()
-  : weak_factory_(this) {
+    : weak_factory_(this) {
   registrar_.Add(this, chrome::NOTIFICATION_REQUIRE_PIN_SETTING_CHANGE_ENDED,
       content::NotificationService::AllSources());
   registrar_.Add(this, chrome::NOTIFICATION_ENTER_PIN_ENDED,
@@ -1022,8 +1020,7 @@ void InternetOptionsHandler::UpdateConnectionData(
     const chromeos::Network* network) {
   DictionaryValue dictionary;
   PopulateConnectionDetails(network, &dictionary);
-  web_ui()->CallJavascriptFunction(
-      kUpdateConnectionDataFunction, dictionary);
+  web_ui()->CallJavascriptFunction(kUpdateConnectionDataFunction, dictionary);
 }
 
 void InternetOptionsHandler::UpdateCarrier() {
@@ -1240,9 +1237,6 @@ void InternetOptionsHandler::PopulateIPConfigsCallback(
   chromeos::Network* network = cros_->FindNetworkByPath(service_path);
   if (!network)
     return;
-
-  Profile::FromWebUI(web_ui())->
-      GetProxyConfigTracker()->GetUIService().SetCurrentNetwork(service_path);
 
   const chromeos::NetworkUIData& ui_data = network->ui_data();
   const chromeos::NetworkPropertyUIData property_ui_data(ui_data.onc_source());

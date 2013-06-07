@@ -10,13 +10,16 @@
 
 namespace chromeos {
 
+class NetworkState;
+
 // Should be used on the UI thread only, because of static |instance_count_|.
 class ProxySettingsDialog : public LoginWebDialog {
  public:
   // Returns whether the dialog is being shown.
   static bool IsShown();
 
-  ProxySettingsDialog(LoginWebDialog::Delegate* delegate,
+  ProxySettingsDialog(const NetworkState& network,
+                      LoginWebDialog::Delegate* delegate,
                       gfx::NativeWindow window);
   virtual ~ProxySettingsDialog();
 

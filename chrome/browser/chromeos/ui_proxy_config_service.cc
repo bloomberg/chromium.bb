@@ -13,22 +13,10 @@
 #include "chromeos/network/onc/onc_utils.h"
 #include "grit/generated_resources.h"
 #include "net/proxy/proxy_config.h"
-#include "ui/base/l10n/l10n_util.h"
 
 namespace chromeos {
 
 namespace {
-
-class ClosureEquals {
- public:
-  explicit ClosureEquals(const base::Closure& closure)
-      : closure_(closure) { }
-  bool operator() (const base::Closure& other) {
-    return closure_.Equals(other);
-  }
- private:
-  const base::Closure& closure_;
-};
 
 const char* ModeToString(UIProxyConfig::Mode mode) {
   switch (mode) {
@@ -74,11 +62,14 @@ bool IsNetworkProxySettingsEditable(const Network& network) {
 
 }  // namespace
 
-UIProxyConfigService::UIProxyConfigService(PrefService* pref_service)
-    : pref_service_(pref_service) {
+UIProxyConfigService::UIProxyConfigService() {
 }
 
 UIProxyConfigService::~UIProxyConfigService() {
+}
+
+void UIProxyConfigService::SetPrefs(PrefService* pref_service) {
+  pref_service_ = pref_service;
 }
 
 void UIProxyConfigService::SetCurrentNetwork(
@@ -103,43 +94,9 @@ void UIProxyConfigService::SetCurrentNetwork(
           << ", " << ModeToString(current_ui_config_.mode) << ", "
           << ProxyPrefs::ConfigStateToDebugString(current_ui_config_.state)
           << ", modifiable:" << current_ui_config_.user_modifiable;
-  // Notify observers.
-  std::vector<base::Closure>::iterator iter = callbacks_.begin();
-  while (iter != callbacks_.end()) {
-    if (iter->is_null()) {
-      iter = callbacks_.erase(iter);
-    } else {
-      iter->Run();
-      ++iter;
-    }
-  }
 }
 
-void UIProxyConfigService::MakeActiveNetworkCurrent() {
-  const Network* network =
-      CrosLibrary::Get()->GetNetworkLibrary()->active_network();
-  SetCurrentNetwork(network ? network->service_path() : std::string());
-}
-
-void UIProxyConfigService::GetCurrentNetworkName(std::string* network_name) {
-  if (!network_name)
-    return;
-  network_name->clear();
-  Network* network = CrosLibrary::Get()->GetNetworkLibrary()->FindNetworkByPath(
-      current_ui_network_);
-  if (!network) {
-    LOG(ERROR) << "Can't find requested network " << current_ui_network_;
-    return;
-  }
-  if (network->name().empty() && network->type() == chromeos::TYPE_ETHERNET) {
-    *network_name =
-        l10n_util::GetStringUTF8(IDS_STATUSBAR_NETWORK_DEVICE_ETHERNET);
-  } else {
-    *network_name = network->name();
-  }
-}
-
-void UIProxyConfigService::GetProxyConfig(UIProxyConfig* config) {
+void UIProxyConfigService::GetProxyConfig(UIProxyConfig* config) const {
   *config = current_ui_config_;
 }
 
@@ -153,38 +110,21 @@ void UIProxyConfigService::SetProxyConfig(const UIProxyConfig& config) {
   if (!current_ui_config_.SerializeForNetwork(&value))
     return;
 
-  VLOG(1) << "Set proxy (mode=" << current_ui_config_.mode
-          << ") for " << current_ui_network_;
+  VLOG(1) << "Set proxy for " << current_ui_network_ << " to " << value;
   current_ui_config_.state = ProxyPrefs::CONFIG_SYSTEM;
 
-  // Set ProxyConfig of the current network.
   Network* network = CrosLibrary::Get()->GetNetworkLibrary()->FindNetworkByPath(
       current_ui_network_);
   if (!network) {
-    NOTREACHED() << "Can't find requested network " << current_ui_network_;
+    LOG(ERROR) << "Can't find requested network " << current_ui_network_;
     return;
   }
   network->SetProxyConfig(value);
-  VLOG(1) << "Set proxy for "
-          << (network->name().empty() ? current_ui_network_ : network->name())
-          << ", value=" << value;
-}
-
-void UIProxyConfigService::AddNotificationCallback(base::Closure callback) {
-  std::vector<base::Closure>::iterator iter = std::find_if(
-      callbacks_.begin(), callbacks_.end(), ClosureEquals(callback));
-  if (iter == callbacks_.end())
-    callbacks_.push_back(callback);
-}
-
-void UIProxyConfigService::RemoveNotificationCallback(base::Closure callback) {
-  std::vector<base::Closure>::iterator iter = std::find_if(
-      callbacks_.begin(), callbacks_.end(), ClosureEquals(callback));
-  if (iter != callbacks_.end())
-    callbacks_.erase(iter);
 }
 
 void UIProxyConfigService::DetermineEffectiveConfig(const Network& network) {
+  DCHECK(pref_service_);
+
   // Get prefs proxy config if available.
   net::ProxyConfig pref_config;
   ProxyPrefs::ConfigState pref_state = ProxyConfigServiceImpl::ReadPrefConfig(

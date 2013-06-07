@@ -10,8 +10,6 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/prefs/pref_member.h"
-#include "chrome/browser/chromeos/ui_proxy_config.h"
-#include "chrome/browser/chromeos/ui_proxy_config_service.h"
 #include "chrome/browser/net/pref_proxy_config_tracker_impl.h"
 #include "chromeos/network/network_state_handler_observer.h"
 #include "chromeos/network/onc/onc_constants.h"
@@ -49,10 +47,6 @@ class ProxyConfigServiceImpl : public PrefProxyConfigTrackerImpl,
   // network stack.
   explicit ProxyConfigServiceImpl(PrefService* pref_service);
   virtual ~ProxyConfigServiceImpl();
-
-  // Provide a service to the UI for proxy configuration.
-  // TODO(pneubeck): Ownership by this class is legacy and should be removed.
-  UIProxyConfigService& GetUIService();
 
   // PrefProxyConfigTrackerImpl implementation.
   virtual void OnProxyConfigChanged(ProxyPrefs::ConfigState config_state,
@@ -98,8 +92,6 @@ class ProxyConfigServiceImpl : public PrefProxyConfigTrackerImpl,
 
   // Track changes in UseSharedProxies user preference.
   BooleanPrefMember use_shared_proxies_;
-
-  UIProxyConfigService ui_proxy_config_service_;
 
   base::WeakPtrFactory<ProxyConfigServiceImpl> pointer_factory_;
 

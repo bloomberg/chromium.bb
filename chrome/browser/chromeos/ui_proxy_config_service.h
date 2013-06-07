@@ -6,10 +6,8 @@
 #define CHROME_BROWSER_CHROMEOS_UI_PROXY_CONFIG_SERVICE_H_
 
 #include <string>
-#include <vector>
 
 #include "base/basictypes.h"
-#include "base/callback.h"
 #include "chrome/browser/chromeos/ui_proxy_config.h"
 
 class PrefService;
@@ -17,7 +15,6 @@ class PrefService;
 namespace chromeos {
 
 class Network;
-class ProxyConfigServiceImpl;
 
 // This class is only accessed from the UI via Profile::GetProxyConfigTracker to
 // allow the user to read and modify the proxy configuration via
@@ -28,31 +25,20 @@ class ProxyConfigServiceImpl;
 // MakeActiveNetworkCurrent.
 class UIProxyConfigService {
  public:
-  explicit UIProxyConfigService(PrefService* pref_service);
+  UIProxyConfigService();
   ~UIProxyConfigService();
 
-  // Add/Remove callback functions for notification when network to be viewed is
-  // changed by the UI.
-  // Currently, these are only called by CoreChromeOSOptionsHandler.
-  void AddNotificationCallback(base::Closure callback);
-  void RemoveNotificationCallback(base::Closure callback);
+  void SetPrefs(PrefService* prefs);
 
   // Called by UI to set the network with service path |current_network| to be
   // displayed or edited.  Subsequent Set*/Get* methods will use this
   // network, until this method is called again.
   void SetCurrentNetwork(const std::string& current_network);
 
-  // Called from UI to make the current active network the one to be displayed
-  // or edited.  See SetCurrentNetwork.
-  void MakeActiveNetworkCurrent();
-
-  // Called from UI to get name of the current network.
-  void GetCurrentNetworkName(std::string* network_name);
-
   // Called from UI to retrieve the stored proxy configuration, which is either
   // the last proxy config of the current network or the one last set by
   // SetProxyConfig.
-  void GetProxyConfig(UIProxyConfig* config);
+  void GetProxyConfig(UIProxyConfig* config) const;
 
   // Called from UI to update proxy configuration for different modes. Stores
   // and persists |config| to shill for the current network.
@@ -71,10 +57,6 @@ class UIProxyConfigService {
 
   // Proxy configuration of |current_ui_network_|.
   UIProxyConfig current_ui_config_;
-
-  // Callbacks for notification when network to be viewed has been changed from
-  // the UI.
-  std::vector<base::Closure> callbacks_;
 
   PrefService* pref_service_;
 

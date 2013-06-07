@@ -44,7 +44,6 @@ bool ParseProxyConfig(const base::DictionaryValue& pref_proxy_config,
 ProxyConfigServiceImpl::ProxyConfigServiceImpl(PrefService* pref_service)
     : PrefProxyConfigTrackerImpl(pref_service),
       active_config_state_(ProxyPrefs::CONFIG_UNSET),
-      ui_proxy_config_service_(pref_service),
       pointer_factory_(this) {
 
   // Register for notifications of UseSharedProxies user preference.
@@ -65,10 +64,6 @@ ProxyConfigServiceImpl::ProxyConfigServiceImpl(PrefService* pref_service)
 ProxyConfigServiceImpl::~ProxyConfigServiceImpl() {
   if (NetworkHandler::IsInitialized())
     NetworkHandler::Get()->network_state_handler()->RemoveObserver(this);
-}
-
-UIProxyConfigService& ProxyConfigServiceImpl::GetUIService() {
-  return ui_proxy_config_service_;
 }
 
 void ProxyConfigServiceImpl::OnProxyConfigChanged(

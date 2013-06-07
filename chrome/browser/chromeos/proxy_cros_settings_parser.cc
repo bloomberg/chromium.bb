@@ -6,10 +6,8 @@
 
 #include "base/string_util.h"
 #include "base/values.h"
-#include "chrome/browser/chromeos/proxy_config_service_impl.h"
 #include "chrome/browser/chromeos/ui_proxy_config.h"
 #include "chrome/browser/chromeos/ui_proxy_config_service.h"
-#include "chrome/browser/profiles/profile.h"
 
 namespace chromeos {
 
@@ -117,16 +115,14 @@ bool IsProxyPref(const std::string& path) {
   return StartsWithASCII(path, kProxyPrefsPrefix, true);
 }
 
-void SetProxyPrefValue(Profile* profile,
-                       const std::string& path,
-                       const base::Value* in_value) {
+void SetProxyPrefValue(const std::string& path,
+                       const base::Value* in_value,
+                       UIProxyConfigService* config_service) {
   if (!in_value) {
     NOTREACHED();
     return;
   }
 
-  UIProxyConfigService* config_service =
-      &profile->GetProxyConfigTracker()->GetUIService();
   // Retrieve proxy config.
   UIProxyConfig config;
   config_service->GetProxyConfig(&config);
@@ -288,13 +284,11 @@ void SetProxyPrefValue(Profile* profile,
   config_service->SetProxyConfig(config);
 }
 
-bool GetProxyPrefValue(Profile* profile,
+bool GetProxyPrefValue(const UIProxyConfigService& config_service,
                        const std::string& path,
                        base::Value** out_value) {
   std::string controlled_by;
   base::Value* data = NULL;
-  UIProxyConfigService& config_service =
-      profile->GetProxyConfigTracker()->GetUIService();
   UIProxyConfig config;
   config_service.GetProxyConfig(&config);
 
