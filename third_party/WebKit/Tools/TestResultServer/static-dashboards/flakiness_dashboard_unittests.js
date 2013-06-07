@@ -56,8 +56,6 @@ function resetGlobals()
         }],
     });
 
-    g_currentBuilderGroup = {};
-
    return historyInstance;
 }
 
@@ -227,7 +225,6 @@ test('linkifyBugs', 4, function() {
 test('htmlForSingleTestRow', 1, function() {
     var historyInstance = resetGlobals();
     var builder = 'dummyBuilder';
-    // BUILDER_TO_MASTER[builder] = CHROMIUM_WEBKIT_BUILDER_MASTER;
     var test = createResultsObjectForTest('foo/exists.html', builder);
     historyInstance.dashboardSpecificState.showNonFlaky = true;
     g_resultsByBuilder[builder] = {buildNumbers: [2, 1], blinkRevision: [1234, 1233], failure_map: FAILURE_MAP};
@@ -251,34 +248,6 @@ test('lookupVirtualTestSuite', 2, function() {
 test('baseTest', 2, function() {
     equal(baseTest('fast/canvas/foo.html', ''), 'fast/canvas/foo.html');
     equal(baseTest('virtual/gpu/fast/canvas/foo.html', 'virtual/gpu/fast/canvas'), 'fast/canvas/foo.html');
-});
-
-// FIXME: Create builders_tests.js and move this there.
-
-test('isChromiumWebkitTipOfTreeTestRunner', 1, function() {
-    var builderList = ["WebKit Linux", "WebKit Linux (dbg)", "WebKit Linux 32", "WebKit Mac10.6", "WebKit Mac10.6 (dbg)",
-        "WebKit Mac10.6 (deps)", "WebKit Mac10.7", "WebKit Win", "WebKit Win (dbg)(1)", "WebKit Win (dbg)(2)", "WebKit Win (deps)",
-        "WebKit Win7", "Linux (Content Shell)"];
-    var expectedBuilders = ["WebKit Linux", "WebKit Linux (dbg)", "WebKit Linux 32", "WebKit Mac10.6",
-        "WebKit Mac10.6 (dbg)", "WebKit Mac10.7", "WebKit Win", "WebKit Win (dbg)(1)", "WebKit Win (dbg)(2)", "WebKit Win7", "Linux (Content Shell)"];
-    deepEqual(builderList.filter(isChromiumWebkitTipOfTreeTestRunner), expectedBuilders);
-});
-
-test('isChromiumWebkitDepsTestRunner', 1, function() {
-    var builderList = ["Chrome Frame Tests", "GPU Linux (NVIDIA)", "GPU Linux (dbg) (NVIDIA)", "GPU Mac", "GPU Mac (dbg)", "GPU Win7 (NVIDIA)", "GPU Win7 (dbg) (NVIDIA)", "Linux Perf", "Linux Tests",
-        "Linux Valgrind", "Mac Builder (dbg)", "Mac10.6 Perf", "Mac10.6 Tests", "Vista Perf", "Vista Tests", "WebKit Linux", "WebKit Linux ASAN",  "WebKit Linux (dbg)", "WebKit Linux (deps)", "WebKit Linux 32",
-        "WebKit Mac10.6", "WebKit Mac10.6 (dbg)", "WebKit Mac10.6 (deps)", "WebKit Mac10.7", "WebKit Win", "WebKit Win (dbg)(1)", "WebKit Win (dbg)(2)", "WebKit Win (deps)",
-        "WebKit Win7", "Win (dbg)", "Win Builder"];
-    var expectedBuilders = ["WebKit Linux (deps)", "WebKit Mac10.6 (deps)", "WebKit Win (deps)"];
-    deepEqual(builderList.filter(isChromiumWebkitDepsTestRunner), expectedBuilders);
-});
-
-test('builderGroupIsToTWebKitAttribute', 2, function() {
-    resetGlobals();
-    builders.loadBuildersList('@ToT Blink', 'layout-tests');
-    equal(builders.getBuilderGroup().isToTBlink, true);
-    builders.loadBuildersList('@ToT Chromium', 'layout-tests');
-    equal(builders.getBuilderGroup().isToTBlink, false);
 });
 
 test('sortTests', 4, function() {
@@ -432,80 +401,4 @@ test('shouldShowTest', 9, function() {
     test = createResultsObjectForTest('foo/test.html', 'dummyBuilder');
     historyInstance.crossDashboardState.testType = 'not layout tests';
     equal(shouldShowTest(test), true, 'show all non layout tests');
-});
-
-test('testLoadBuildersList', 4, function() {
-    resetGlobals();
-
-    builders.loadBuildersList('@ToT Blink', 'layout-tests');
-    var expectedBuilder = 'WebKit Win';
-    equal(expectedBuilder in builders.getBuilderGroup().builders, true, expectedBuilder + ' should be among current builders');
-
-    builders.loadBuildersList('@ToT Chromium', 'layout-tests');
-    expectedBuilder = 'WebKit Linux (deps)'
-    equal(expectedBuilder in builders.getBuilderGroup().builders, true, expectedBuilder + ' should be among current builders');
-    expectedBuilder = 'XP Tests (1)'
-    equal(expectedBuilder in builders.getBuilderGroup().builders, false, expectedBuilder + ' should not be among current builders');
-
-    builders.loadBuildersList('@ToT Chromium', 'interactive_ui_tests');
-    equal(expectedBuilder in builders.getBuilderGroup().builders, true, expectedBuilder + ' should be among current builders');
-});
-
-test('builders._builderFilter', 5, function() {
-    var filter = builders._builderFilter('@ToT Blink', 'layout-tests');
-    equal(filter('WebKit (Content Shell) Linux'), true, 'show content shell builder');
-    equal(filter('WebKit Linux'), true, 'show generic webkit builder');
-    equal(filter('Android Tests (dbg) '), false, 'don\'t show android tests');
-
-    var filter = builders._builderFilter('@ToT Chromium', 'webkit_unit_tests');
-    equal(filter('WebKit Win7 (deps)'), true, 'show DEPS builder');
-    equal(filter('WebKit Win7'), false, 'don\'t show non-deps builder');
-});
-
-test('testGroupNamesForTestType', 4, function() {
-    var names = groupNamesForTestType('layout-tests');
-    equal(names.indexOf('@ToT Blink') != -1, true, 'include layout-tests in ToT');
-    equal(names.indexOf('@ToT Chromium') != -1, true, 'include layout-tests in DEPS');
-
-    names = groupNamesForTestType('interactive_ui_tests');
-    equal(names.indexOf('@ToT Blink') != -1, false, 'don\'t include interactive_ui_tests in ToT');
-    equal(names.indexOf('@ToT Chromium') != -1, true, 'include interactive_ui_tests in DEPS');
-});
-
-test('determineFlakiness', 10, function() {
-    var failureMap = {
-        'C': 'CRASH',
-        'P': 'PASS',
-        'I': 'IMAGE',
-        'T': 'TIMEOUT',
-        'N':'NO DATA',
-        'Y':'NOTRUN',
-        'X':'SKIP'
-    };
-    var out = {};
-
-    var inputResults = [[1, 'P']];
-    determineFlakiness(failureMap, inputResults, out);
-    equal(out.isFlaky, false);
-    equal(out.flipCount, 0);
-
-    inputResults = [[1, 'P'], [1, 'C']];
-    determineFlakiness(failureMap, inputResults, out);
-    equal(out.isFlaky, false);
-    equal(out.flipCount, 1);
-
-    inputResults = [[1, 'P'], [1, 'C'], [1, 'P']];
-    determineFlakiness(failureMap, inputResults, out);
-    equal(out.isFlaky, true);
-    equal(out.flipCount, 2);
-
-    inputResults = [[1, 'P'], [1, 'C'], [1, 'P'], [1, 'C']];
-    determineFlakiness(failureMap, inputResults, out);
-    equal(out.isFlaky, true);
-    equal(out.flipCount, 3);
-
-    inputResults = [[1, 'P'], [1, 'Y'], [1, 'N'], [1, 'X'], [1, 'P'], [1, 'Y'], [1, 'N'], [1, 'X'], [1, 'C']];
-    determineFlakiness(failureMap, inputResults, out);
-    equal(out.isFlaky, false);
-    equal(out.flipCount, 1);
 });

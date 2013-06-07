@@ -1,4 +1,4 @@
-// Copyright (C) 2012 Google Inc. All rights reserved.
+// Copyright (C) 2013 Google Inc. All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are
@@ -26,27 +26,22 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-// FIXME: Find somewhere better for these functions to live or restructure such that we don't need them.
+// FIXME: add array handling methods here under the array namespace (e.g. array.contains).
 
-function currentBuilderGroupName()
+function $(id)
 {
-    return g_history.crossDashboardState.group ||
-        builders.groupNamesForTestType(g_history.crossDashboardState.testType)[0];
+    return document.getElementById(id);
 }
 
-function currentBuilderGroup()
+// Create a new function with some of its arguments  pre-filled.
+// Taken from goog.partial in the Closure library.
+function partial(fn, var_args)
 {
-    return builders.getBuilderGroup(currentBuilderGroupName(), g_history.crossDashboardState.testType);
-}
-
-function currentBuilders()
-{
-    return currentBuilderGroup().builders;
-}
-
-// FIXME: Index by group name, then test type, then builder so we can get rid of the hacks
-// in overview.js.
-// FIXME: Have results.js fire off the loader and then the calling code passing in a callback
-// for once everything is loaded and doesn't know about Loader at all. The calling code just
-// calls fetchResults(groupName, testType, builder, callback) or whatever.
-var g_resultsByBuilder = {};
+    var args = Array.prototype.slice.call(arguments, 1);
+    return function() {
+        // Prepend the bound arguments to the current arguments.
+        var newArgs = Array.prototype.slice.call(arguments);
+        newArgs.unshift.apply(newArgs, args);
+        return fn.apply(this, newArgs);
+    };
+};

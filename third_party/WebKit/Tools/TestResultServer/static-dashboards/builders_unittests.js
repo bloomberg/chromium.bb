@@ -40,4 +40,49 @@ test('loading steps', 4, function() {
     equal(master.builderJsonPath(), baseUrl + '/json/builders');
     equal(master.tests, tests);
     equal(master.name, name);
-})
+});
+
+test('builders._builderFilter', 5, function() {
+    var filter = builders._builderFilter('@ToT Blink', 'layout-tests');
+    equal(filter('WebKit (Content Shell) Linux'), true, 'show content shell builder');
+    equal(filter('WebKit Linux'), true, 'show generic webkit builder');
+    equal(filter('Android Tests (dbg) '), false, 'don\'t show android tests');
+
+    var filter = builders._builderFilter('@ToT Chromium', 'webkit_unit_tests');
+    equal(filter('WebKit Win7 (deps)'), true, 'show DEPS builder');
+    equal(filter('WebKit Win7'), false, 'don\'t show non-deps builder');
+});
+
+test('builders.groupNamesForTestType', 4, function() {
+    var names = builders.groupNamesForTestType('layout-tests');
+    equal(names.indexOf('@ToT Blink') != -1, true, 'include layout-tests in ToT');
+    equal(names.indexOf('@ToT Chromium') != -1, true, 'include layout-tests in DEPS');
+
+    names = builders.groupNamesForTestType('ash_unittests');
+    equal(names.indexOf('@ToT Blink') != -1, false, 'don\'t include interactive_ui_tests in ToT');
+    equal(names.indexOf('@ToT Chromium') != -1, true, 'include interactive_ui_tests in DEPS');
+});
+
+test('BuilderGroup.isToTBlink', 2, function() {
+    var builderGroup = builders.loadBuildersList('@ToT Blink', 'layout-tests');
+    equal(builderGroup.isToTBlink, true);
+    builderGroup = builders.loadBuildersList('@ToT Chromium', 'layout-tests');
+    equal(builderGroup.isToTBlink, false);
+});
+
+test('builders.loadBuildersList', 4, function() {
+    resetGlobals();
+
+    builders.loadBuildersList('@ToT Blink', 'layout-tests');
+    var expectedBuilder = 'WebKit Win';
+    equal(expectedBuilder in builders.getBuilderGroup().builders, true, expectedBuilder + ' should be among current builders');
+
+    builders.loadBuildersList('@ToT Chromium', 'layout-tests');
+    expectedBuilder = 'WebKit Linux (deps)'
+    equal(expectedBuilder in builders.getBuilderGroup().builders, true, expectedBuilder + ' should be among current builders');
+    expectedBuilder = 'XP Tests (1)'
+    equal(expectedBuilder in builders.getBuilderGroup().builders, false, expectedBuilder + ' should not be among current builders');
+
+    builders.loadBuildersList('@ToT Chromium', 'interactive_ui_tests');
+    equal(expectedBuilder in builders.getBuilderGroup().builders, true, expectedBuilder + ' should be among current builders');
+});

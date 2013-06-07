@@ -426,7 +426,7 @@ function processTestRunsForBuilder(builderName)
         if (rawTest.bugs)
             resultsForTest.bugs = rawTest.bugs;
 
-        var failureMap = g_resultsByBuilder[builderName][FAILURE_MAP_KEY];
+        var failureMap = g_resultsByBuilder[builderName][results.FAILURE_MAP];
         // FIXME: Switch to resultsByBuild
         var times = resultsForTest.rawTimes;
         var numTimesSeen = 0;
@@ -435,24 +435,24 @@ function processTestRunsForBuilder(builderName)
         var resultsMap = {}
 
         for (var i = 0; i < times.length; i++) {
-            numTimesSeen += times[i][RLE.LENGTH];
+            numTimesSeen += times[i][results.RLE.LENGTH];
 
-            while (rawResults[resultsIndex] && numTimesSeen > (numResultsSeen + rawResults[resultsIndex][RLE.LENGTH])) {
-                numResultsSeen += rawResults[resultsIndex][RLE.LENGTH];
+            while (rawResults[resultsIndex] && numTimesSeen > (numResultsSeen + rawResults[resultsIndex][results.RLE.LENGTH])) {
+                numResultsSeen += rawResults[resultsIndex][results.RLE.LENGTH];
                 resultsIndex++;
             }
 
             if (rawResults && rawResults[resultsIndex]) {
-                var result = rawResults[resultsIndex][RLE.VALUE];
+                var result = rawResults[resultsIndex][results.RLE.VALUE];
                 resultsMap[failureMap[result]] = true;
             }
 
-            resultsForTest.slowestTime = Math.max(resultsForTest.slowestTime, times[i][RLE.VALUE]);
+            resultsForTest.slowestTime = Math.max(resultsForTest.slowestTime, times[i][results.RLE.VALUE]);
         }
 
         resultsForTest.actualResults = Object.keys(resultsMap);
 
-        determineFlakiness(failureMap, rawResults, resultsForTest);
+        results.determineFlakiness(failureMap, rawResults, resultsForTest);
         failures.push(resultsForTest);
 
         if (!g_testToResultsMap[test])
@@ -474,11 +474,11 @@ function isFailure(builder, testName, index)
 {
     var currentIndex = 0;
     var rawResults = g_resultsByBuilder[builder].tests[testName].results;
-    var failureMap = g_resultsByBuilder[builder][FAILURE_MAP_KEY];
+    var failureMap = g_resultsByBuilder[builder][results.FAILURE_MAP];
     for (var i = 0; i < rawResults.length; i++) {
-        currentIndex += rawResults[i][RLE.LENGTH];
+        currentIndex += rawResults[i][results.RLE.LENGTH];
         if (currentIndex > index)
-            return isFailingResult(failureMap, rawResults[i][RLE.VALUE]);
+            return results.isFailingResult(failureMap, rawResults[i][results.RLE.VALUE]);
     }
     console.error('Index exceeds number of results: ' + index);
 }
@@ -488,12 +488,12 @@ function indexesForFailures(builder, testName)
 {
     var rawResults = g_resultsByBuilder[builder].tests[testName].results;
     var buildNumbers = g_resultsByBuilder[builder].buildNumbers;
-    var failureMap = g_resultsByBuilder[builder][FAILURE_MAP_KEY];
+    var failureMap = g_resultsByBuilder[builder][results.FAILURE_MAP];
     var index = 0;
     var failures = [];
     for (var i = 0; i < rawResults.length; i++) {
-        var numResults = rawResults[i][RLE.LENGTH];
-        if (isFailingResult(failureMap, rawResults[i][RLE.VALUE])) {
+        var numResults = rawResults[i][results.RLE.LENGTH];
+        if (results.isFailingResult(failureMap, rawResults[i][results.RLE.VALUE])) {
             for (var j = 0; j < numResults; j++)
                 failures.push(index + j);
         }
@@ -519,12 +519,12 @@ function showPopupForBuild(e, builder, index, opt_testName)
     }
 
     var buildNumber = g_resultsByBuilder[builder].buildNumbers[index];
-    var master = builderMaster(builder);
+    var master = builders.master(builder);
     var buildBasePath = master.logPath(builder, buildNumber);
 
     html += '<ul><li>' + linkHTMLToOpenWindow(buildBasePath, 'Build log');
 
-    if (g_resultsByBuilder[builder][BLINK_REVISIONS_KEY])
+    if (g_resultsByBuilder[builder][results.BLINK_REVISIONS])
         html += '</li><li>Blink: ' + ui.html.blinkRevisionLink(g_resultsByBuilder[builder], index) + '</li>';
 
     html += '</li><li>Chromium: ' + ui.html.chromiumRevisionLink(g_resultsByBuilder[builder], index) + '</li>';
@@ -550,10 +550,10 @@ function classNameForFailureString(failure)
 function htmlForTestResults(test)
 {
     var html = '';
-    var results = test.rawResults.concat();
+    var testResults = test.rawResults.concat();
     var times = test.rawTimes.concat();
     var builder = test.builder;
-    var master = builderMaster(builder);
+    var master = builders.master(builder);
     var buildNumbers = g_resultsByBuilder[builder].buildNumbers;
 
     var indexToReplaceCurrentResult = -1;
@@ -562,12 +562,12 @@ function htmlForTestResults(test)
         var currentResultArray, currentTimeArray, innerHTML, resultString;
 
         if (i > indexToReplaceCurrentResult) {
-            currentResultArray = results.shift();
+            currentResultArray = testResults.shift();
             if (currentResultArray) {
-                resultString = g_resultsByBuilder[builder][FAILURE_MAP_KEY][currentResultArray[RLE.VALUE]];
-                indexToReplaceCurrentResult += currentResultArray[RLE.LENGTH];
+                resultString = g_resultsByBuilder[builder][results.FAILURE_MAP][currentResultArray[results.RLE.VALUE]];
+                indexToReplaceCurrentResult += currentResultArray[results.RLE.LENGTH];
             } else {
-                resultString = NO_DATA;
+                resultString = results.NO_DATA;
                 indexToReplaceCurrentResult += buildNumbers.length;
             }
         }
@@ -576,8 +576,8 @@ function htmlForTestResults(test)
             currentTimeArray = times.shift();
             var currentTime = 0;
             if (currentResultArray) {
-              currentTime = currentTimeArray[RLE.VALUE];
-              indexToReplaceCurrentTime += currentTimeArray[RLE.LENGTH];
+              currentTime = currentTimeArray[results.RLE.VALUE];
+              indexToReplaceCurrentTime += currentTimeArray[results.RLE.LENGTH];
             } else
               indexToReplaceCurrentTime += buildNumbers.length;
 
@@ -598,7 +598,7 @@ function shouldShowTest(testResult)
     if (testResult.expectations == 'WONTFIX')
         return g_history.dashboardSpecificState.showWontFix;
 
-    if (testResult.expectations == 'SKIP')
+    if (testResult.expectations == results.SKIP)
         return g_history.dashboardSpecificState.showSkip;
 
     if (testResult.isFlaky)
@@ -1009,12 +1009,12 @@ function loadExpectations(expectationsContainer)
     if (g_history.isLayoutTestResults())
         loadExpectationsLayoutTests(test, expectationsContainer);
     else {
-        var results = g_testToResultsMap[test];
-        for (var i = 0; i < results.length; i++)
+        var testResults = g_testToResultsMap[test];
+        for (var i = 0; i < testResults.length; i++)
             if (g_history.isGPUTestResults())
-                loadGPUResultsForBuilder(results[i].builder, test, expectationsContainer);
+                loadGPUResultsForBuilder(testResults[i].builder, test, expectationsContainer);
             else
-                loadNonWebKitResultsForBuilder(results[i].builder, test, expectationsContainer);
+                loadNonWebKitResultsForBuilder(testResults[i].builder, test, expectationsContainer);
     }
 }
 
@@ -1033,7 +1033,7 @@ function loadGPUResultsForBuilder(builder, test, expectationsContainer)
     var failureIndex = indexesForFailures(builder, test)[0];
 
     var buildNumber = g_resultsByBuilder[builder].buildNumbers[failureIndex];
-    var pathToLog = builderMaster(builder).logPath(builder, buildNumber) + pathToFailureLog(test);
+    var pathToLog = builders.master(builder).logPath(builder, buildNumber) + pathToFailureLog(test);
 
     var chromeRevision = g_resultsByBuilder[builder].chromeRevision[failureIndex];
     var resultsUrl = GPU_RESULTS_BASE_PATH + gpuResultsPath(chromeRevision, builder);
@@ -1055,7 +1055,7 @@ function loadNonWebKitResultsForBuilder(builder, test, expectationsContainer)
         // FIXME: This doesn't seem to work anymore. Did the paths change?
         // Once that's resolved, see if we need to try each GTEST_MODIFIERS prefix as well.
         var buildNumber = g_resultsByBuilder[builder].buildNumbers[failureIndexes[i]];
-        var pathToLog = builderMaster(builder).logPath(builder, buildNumber) + pathToFailureLog(test);
+        var pathToLog = builders.master(builder).logPath(builder, buildNumber) + pathToFailureLog(test);
         appendNonWebKitResults(container, pathToLog, 'non-webkit-results');
     }
 }
@@ -1255,14 +1255,14 @@ function generatePageForBuilder(builderName)
 {
     processTestRunsForBuilder(builderName);
 
-    var results = g_perBuilderFailures[builderName].filter(shouldShowTest);
-    sortTests(results, g_history.dashboardSpecificState.sortColumn, g_history.dashboardSpecificState.sortOrder);
+    var filteredResults = g_perBuilderFailures[builderName].filter(shouldShowTest);
+    sortTests(filteredResults, g_history.dashboardSpecificState.sortColumn, g_history.dashboardSpecificState.sortOrder);
 
     var testsHTML = '';
-    if (results.length) {
+    if (filteredResults.length) {
         var tableRowsHTML = '';
-        for (var i = 0; i < results.length; i++)
-            tableRowsHTML += htmlForSingleTestRow(results[i])
+        for (var i = 0; i < filteredResults.length; i++)
+            tableRowsHTML += htmlForSingleTestRow(filteredResults[i])
         testsHTML = htmlForTestTable(tableRowsHTML);
     } else {
         if (g_history.isLayoutTestResults())
@@ -1324,7 +1324,7 @@ function showLegend()
 
     // Just grab the first failureMap. Technically, different builders can have different maps if they
     // haven't all cycled after the map was changed, but meh.
-    var failureMap = g_resultsByBuilder[Object.keys(g_resultsByBuilder)[0]][FAILURE_MAP_KEY];
+    var failureMap = g_resultsByBuilder[Object.keys(g_resultsByBuilder)[0]][results.FAILURE_MAP];
     for (var expectation in failureMap) {
         var failureString = failureMap[expectation];
         html += '<div class=' + classNameForFailureString(failureString) + '>' + failureString + '</div>';

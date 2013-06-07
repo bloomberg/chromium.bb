@@ -45,13 +45,13 @@ var DB_SPECIFIC_INVALIDATING_PARAMETERS = {
 
 function generatePage(historyInstance)
 {
-    var results = g_resultsByBuilder[historyInstance.dashboardSpecificState.builder || currentBuilderGroup().defaultBuilder()];
+    var resultsForBuilder = g_resultsByBuilder[historyInstance.dashboardSpecificState.builder || currentBuilderGroup().defaultBuilder()];
 
-    g_totalFailureCount = getTotalTestCounts(results[FAILURES_BY_TYPE_KEY]).totalFailingTests;
+    g_totalFailureCount = results.testCounts(resultsForBuilder[results.NUM_FAILURES_BY_TYPE]).totalFailingTests;
 
     g_buildIndicesByTimestamp = {};
     for (var i = 0; i < g_totalFailureCount.length; i++) {
-        var buildDate = new Date(results[TIMESTAMPS_KEY][i] * 1000);
+        var buildDate = new Date(resultsForBuilder[results.TIMESTAMPS][i] * 1000);
         g_buildIndicesByTimestamp[buildDate.getTime()] = i;
     }
 
@@ -119,14 +119,14 @@ function shouldShowBlinkRevisionsOnly()
 function updateTimelineForBuilder()
 {
     var builder = g_history.dashboardSpecificState.builder || currentBuilderGroup().defaultBuilder();
-    var results = g_resultsByBuilder[builder];
+    var resultsForBuilder = g_resultsByBuilder[builder];
     var graphData = [];
 
     var annotations = [];
 
     // Dygraph prefers to be handed data in chronological order.
     for (var i = g_totalFailureCount.length - 1; i >= 0; i--) {
-        var buildDate = new Date(results[TIMESTAMPS_KEY][i] * 1000);
+        var buildDate = new Date(resultsForBuilder[results.TIMESTAMPS][i] * 1000);
         // FIXME: Find a better way to exclude outliers. This is just so we
         // exclude runs where every test failed.
         var failureCount = Math.min(g_totalFailureCount[i], 10000);
@@ -136,12 +136,12 @@ function updateTimelineForBuilder()
 
         graphData.push([buildDate, failureCount]);
 
-        if (!shouldShowBlinkRevisionsOnly() && (results[BLINK_REVISIONS_KEY][i] != results[BLINK_REVISIONS_KEY][i + 1])) {
+        if (!shouldShowBlinkRevisionsOnly() && (resultsForBuilder[results.BLINK_REVISIONS][i] != resultsForBuilder[results.BLINK_REVISIONS][i + 1])) {
             annotations.push({
                 series: FAILING_TESTS_DATASET_NAME,
                 x: buildDate,
                 shortText: 'R',
-                text: 'Blink roll: r' + results[BLINK_REVISIONS_KEY][i + 1] + ' to ' + results[BLINK_REVISIONS_KEY][i]
+                text: 'Blink roll: r' + resultsForBuilder[results.BLINK_REVISIONS][i + 1] + ' to ' + resultsForBuilder[results.BLINK_REVISIONS][i]
             });
         }
     }
@@ -165,12 +165,12 @@ function updateTimelineForBuilder()
             width: graphWidth,
             height: graphHeight,
             clickCallback: function(event, date) {
-                selectBuild(results, builder, g_dygraph, g_buildIndicesByTimestamp[date]);
+                selectBuild(resultsForBuilder, builder, g_dygraph, g_buildIndicesByTimestamp[date]);
             },
             drawCallback: function(dygraph, isInitial) {
                 if (isInitial)
                     return;
-                updateBuildIndicator(results, dygraph);
+                updateBuildIndicator(resultsForBuilder, dygraph);
             },
             // xValueParser is necessary for annotations to work, even though we
             // already have Date instances
@@ -185,15 +185,15 @@ function updateTimelineForBuilder()
         selectBuild(results, builder, g_dygraph, g_currentBuildIndex);
 }
 
-function selectBuild(results, builder, dygraph, index)
+function selectBuild(resultsForBuilder, builder, dygraph, index)
 {
     g_currentBuildIndex = index;
     updateBuildIndicator(results, dygraph);
     updateBuildInspector(results, builder, dygraph, index);
-    g_history.setQueryParameter('buildTimestamp', results[TIMESTAMPS_KEY][index] * 1000);
+    g_history.setQueryParameter('buildTimestamp', resultsForBuilder[results.TIMESTAMPS][index] * 1000);
 }
 
-function updateBuildIndicator(results, dygraph)
+function updateBuildIndicator(resultsForBuilder, dygraph)
 {
     var indicatorNode = $('indicator');
 
@@ -209,13 +209,13 @@ function updateBuildIndicator(results, dygraph)
         indicatorNode.style.display = 'none';
     else {
         indicatorNode.style.display = 'block';
-        var buildDate = new Date(results[TIMESTAMPS_KEY][g_currentBuildIndex] * 1000);
+        var buildDate = new Date(resultsForBuilder[results.TIMESTAMPS][g_currentBuildIndex] * 1000);
         var domCoords = dygraph.toDomCoords(buildDate, 0);
         indicatorNode.style.left = domCoords[0] + 'px';
     }
 }
 
-function updateBuildInspector(results, builder, dygraph, index)
+function updateBuildInspector(resultsForBuilder, builder, dygraph, index)
 {
     var html = '<table id="inspector-table"><caption>Details</caption>';
 
@@ -225,19 +225,19 @@ function updateBuildInspector(results, builder, dygraph, index)
     }
 
     // Builder and results links
-    var buildNumber = results[BUILD_NUMBERS_KEY][index];
+    var buildNumber = resultsForBuilder[results.BUILD_NUMBERS][index];
     addRow('', '');
-    var master = builderMaster(builder);
-    var buildUrl = master.logPath(builder, results[BUILD_NUMBERS_KEY][index]);
+    var master = builders.master(builder);
+    var buildUrl = master.logPath(builder, resultsForBuilder[results.BUILD_NUMBERS][index]);
     var resultsUrl = 'http://build.chromium.org/f/chromium/layout_test_results/' +
-        currentBuilders()[builder] + '/' + results[CHROME_REVISIONS_KEY][index];
+        currentBuilders()[builder] + '/' + resultsForBuilder[results.CHROME_REVISIONS][index];
 
     addRow('Build:', '<a href="' + buildUrl + '" target="_blank">' + buildNumber + '</a> (<a href="' + resultsUrl + '" target="_blank">results</a>)');
 
     // Revision link(s)
     if (!shouldShowBlinkRevisionsOnly())
-        addRow('Chromium change:', ui.html.chromiumRevisionLink(results, index));
-    addRow('Blink change:', ui.html.blinkRevisionLink(results, index));
+        addRow('Chromium change:', ui.html.chromiumRevisionLink(resultsForBuilder, index));
+    addRow('Blink change:', ui.html.blinkRevisionLink(resultsForBuilder, index));
 
     // Test status/counts
     addRow('', '');
@@ -255,7 +255,7 @@ function updateBuildInspector(results, builder, dygraph, index)
     }
 
     var flakyDeltasByBuild = g_currentBuilderTestResults.flakyDeltasByBuild;
-    var failures_by_type = results[FAILURES_BY_TYPE_KEY];
+    var failures_by_type = resultsForBuilder[results.NUM_FAILURES_BY_TYPE];
     for (var failureType in failures_by_type) {
         var failureCount = failures_by_type[failureType];
         var currentCount = failureCount[index];
@@ -294,10 +294,10 @@ function updateBuildInspector(results, builder, dygraph, index)
         showResultsDelta(index, buildNumber, buildUrl, resultsUrl);
     };
     inspectorNode.getElementsByTagName('button')[1].onclick = function() {
-        selectBuild(results, builder, dygraph, index + 1);
+        selectBuild(resultsForBuilder, builder, dygraph, index + 1);
     };
     inspectorNode.getElementsByTagName('button')[2].onclick = function() {
-        selectBuild(results, builder, dygraph, index - 1);
+        selectBuild(resultsForBuilder, builder, dygraph, index - 1);
     };
 }
 
@@ -375,7 +375,7 @@ function showResultsDelta(index, buildNumber, buildUrl, resultsUrl)
 //     - flakyDeltasByBuild: array of builds, for each build a count of flaky test results by expectation, as well as a total.
 function _decompressResults(builderResults)
 {
-    var builderTestResults = builderResults[TESTS_KEY];
+    var builderTestResults = builderResults[results.TESTS];
     var buildCount = g_totalFailureCount.length;
     var resultsByBuild = new Array(buildCount);
     var flakyDeltasByBuild = new Array(buildCount);
@@ -396,7 +396,7 @@ function _decompressResults(builderResults)
     var testNames = new Array(testCount);
     var flakyTests = new Array(testCount);
 
-    var failureMap = builderResults[FAILURE_MAP_KEY];
+    var failureMap = builderResults[results.FAILURE_MAP];
 
     // Decompress and "invert" test results (by build instead of by test) and
     // determine which are flaky.
@@ -406,10 +406,10 @@ function _decompressResults(builderResults)
         testNames[testIndex] = testName;
         var testResults = builderTestResults[testName].results;
         for (var i = 0, rleResult, currentBuildIndex = 0; (rleResult = testResults[i]) && currentBuildIndex < buildCount; i++) {
-            var count = rleResult[RLE.LENGTH];
-            var value = rleResult[RLE.VALUE];
+            var count = rleResult[results.RLE.LENGTH];
+            var value = rleResult[results.RLE.VALUE];
 
-            if (count == 1 && isFailingResult(failureMap, value))
+            if (count == 1 && results.isFailingResult(failureMap, value))
                 oneBuildFailureCount++;
 
             for (var j = 0; j < count; j++) {
@@ -434,8 +434,8 @@ function _decompressResults(builderResults)
 
         var testResults = builderTestResults[testName].results;
         for (var i = 0, rleResult, currentBuildIndex = 0; (rleResult = testResults[i]) && currentBuildIndex < buildCount; i++) {
-            var count = rleResult[RLE.LENGTH];
-            var value = rleResult[RLE.VALUE];
+            var count = rleResult[results.RLE.LENGTH];
+            var value = rleResult[results.RLE.VALUE];
 
             for (var j = 0; j < count; j++) {
                 var buildTestResults = flakyDeltasByBuild[currentBuildIndex++];
@@ -446,7 +446,7 @@ function _decompressResults(builderResults)
                     buildTestResults[key]++;
                 }
                 addFlakyDelta(value);
-                if (isFailingResult(failureMap, value))
+                if (results.isFailingResult(failureMap, value))
                     addFlakyDelta('total');
                 if (currentBuildIndex == buildCount)
                     break;

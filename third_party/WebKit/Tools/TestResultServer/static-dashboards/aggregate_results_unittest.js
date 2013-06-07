@@ -69,8 +69,8 @@ function setupAggregateResultsData(includeRevisonNumbers)
     }
 
     if (includeRevisonNumbers) {
-        g_resultsByBuilder[builderName][BLINK_REVISIONS_KEY] = [1234, 1233];
-        g_resultsByBuilder[builderName][CHROME_REVISIONS_KEY] = [4567, 4566];
+        g_resultsByBuilder[builderName][results.BLINK_REVISIONS] = [1234, 1233];
+        g_resultsByBuilder[builderName][results.CHROME_REVISIONS] = [4567, 4566];
     }
 
     g_totalFailureCounts = {};
@@ -161,27 +161,3 @@ test('htmlForBuilderRawResults', 1, function() {
     '</div>';
     equal(expectedHtml, htmlForBuilder('Blink Linux'));
 });
-
-// FIXME: getTotalTestCounts is in dashboard_base.py and should be moved into
-// a results json handling file and this should move to its unittests file.
-test('getTotalTestCounts', 2, function() {
-    var failuresByType = {
-        'PASS': [2, 3],
-        'TIMEOUT': [4, 2],
-        'CRASH': [1, 0]
-    }
-
-    deepEqual(getTotalTestCounts(failuresByType), {
-        totalTests: [7, 5],
-        totalFailingTests: [5, 2]
-    });
-
-    failuresByType = {
-        'PASS': [2, 3]
-    }
-    deepEqual(getTotalTestCounts(failuresByType), {
-        totalTests: [2, 3],
-        totalFailingTests: [0, 0]
-    });
-
-})

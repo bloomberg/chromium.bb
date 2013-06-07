@@ -137,7 +137,7 @@ ui.html.testTypeSwitcher = function(opt_noBuilderMenu, opt_extraHtml, opt_includ
         html += ui.html.select('Builder', 'builder', buildersForMenu);
     }
 
-    html += ui.html.select('Group', 'group', groupNamesForTestType(g_history.crossDashboardState.testType));
+    html += ui.html.select('Group', 'group', builders.groupNamesForTestType(g_history.crossDashboardState.testType));
 
     if (opt_extraHtml)
         html += opt_extraHtml;
@@ -167,12 +167,12 @@ ui.html._dashboardLink = function(html, fileName)
     return ui.html._topLink(html, onClick, isSelected);
 }
 
-ui.html._revisionLink = function(resultsKey, results, index)
+ui.html._revisionLink = function(resultsKey, testResults, index)
 {
-    var currentRevision = parseInt(results[resultsKey][index], 10);
-    var previousRevision = parseInt(results[resultsKey][index + 1], 10);
+    var currentRevision = parseInt(testResults[resultsKey][index], 10);
+    var previousRevision = parseInt(testResults[resultsKey][index + 1], 10);
 
-    var isChrome = resultsKey == CHROME_REVISIONS_KEY;
+    var isChrome = resultsKey == results.CHROME_REVISIONS;
     var singleUrl = 'http://src.chromium.org/viewvc/' + (isChrome ? 'chrome' : 'blink') + '?view=rev&revision=' + currentRevision;
 
     if (currentRevision == previousRevision)
@@ -187,14 +187,14 @@ ui.html._revisionLink = function(resultsKey, results, index)
     return '<a href="' + rangeUrl + '">r' + (previousRevision + 1) + ' to r' + currentRevision + '</a>';
 }
 
-ui.html.chromiumRevisionLink = function(results, index)
+ui.html.chromiumRevisionLink = function(testResults, index)
 {
-    return ui.html._revisionLink(CHROME_REVISIONS_KEY, results, index);
+    return ui.html._revisionLink(results.CHROME_REVISIONS, testResults, index);
 }
 
-ui.html.blinkRevisionLink = function(results, index)
+ui.html.blinkRevisionLink = function(testResults, index)
 {
-    return ui.html._revisionLink(BLINK_REVISIONS_KEY, results, index);
+    return ui.html._revisionLink(results.BLINK_REVISIONS, testResults, index);
 }
 
 

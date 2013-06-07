@@ -93,7 +93,7 @@ history.queryHashAsMap = function()
     // FIXME: Find a better way to do this. For layout-tests, we want the default group to be
     // the ToT blink group. For other test types, we want it to be the Deps group.
     if (!paramsMap.group && (!paramsMap.testType || paramsMap.testType == 'layout-tests'))
-        paramsMap.group = groupNamesForTestType('layout-tests')[1];
+        paramsMap.group = builders.groupNamesForTestType('layout-tests')[1];
 
     return paramsMap;
 }

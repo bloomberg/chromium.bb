@@ -66,15 +66,15 @@ overview._getFlakyData = function(allTestTypes, resultsByTestType, flipCountThre
 
         var resultsByBuilder = resultsByTestType[testType];
         for (var builder in resultsByBuilder) {
-            var totalTestCount = getTotalTestCounts(resultsByBuilder[builder][FAILURES_BY_TYPE_KEY]).totalTests[0];
+            var totalTestCount = results.testCounts(resultsByBuilder[builder][results.NUM_FAILURES_BY_TYPE]).totalTests[0];
             flakyData[testType].testCount = Math.max(totalTestCount, flakyData[testType].testCount);
 
             var allTestsForThisBuilder = resultsByBuilder[builder].tests;
             for (var test in allTestsForThisBuilder) {
                 var resultsForTest = {};
                 var testData = resultsByBuilder[builder].tests[test].results;
-                var failureMap = resultsByBuilder[builder][FAILURE_MAP_KEY];
-                determineFlakiness(failureMap, testData, resultsForTest);
+                var failureMap = resultsByBuilder[builder][results.FAILURE_MAP];
+                results.determineFlakiness(failureMap, testData, resultsForTest);
 
                 if (resultsForTest.isFlaky)
                     flakyData[testType].flaky[test] = true;

@@ -26,9 +26,6 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-// @fileoverview File that lists builders, their masters, and logical groupings
-// of them.
-
 function LOAD_BUILDBOT_DATA(builderData)
 {
     builders.masters = {};
@@ -63,20 +60,33 @@ builders.testTypeUploadsToFlakinessDashboardServer = function(testType)
     return !testType.match(/_only|_ignore|_perf$/) && !testType.match(/^memory test:|install_/) && testType != 'Run tests';
 }
 
-builders._currentBuilderGroup = {};
-builders._testTypesThatRunToTBlinkBots = ['layout-tests', 'test_shell_tests', 'webkit_unit_tests'];
+var currentBuilderGroup = {};
+var testTypesThatRunToTBlinkBots = ['layout-tests', 'test_shell_tests', 'webkit_unit_tests'];
 
 builders.getBuilderGroup = function(groupName, testType)
 {
-    if (!builders in builders._currentBuilderGroup) {
-        builders._currentBuilderGroup = builders.loadBuildersList(groupName, testType);
+    if (!builders in currentBuilderGroup) {
+        currentBuilderGroup = builders.loadBuildersList(groupName, testType);
     }
-    return builders._currentBuilderGroup;
+    return currentBuilderGroup;
+}
+
+function isChromiumWebkitTipOfTreeTestRunner(builder)
+{
+    // FIXME: Remove the Android check once the android tests bot is actually uploading results.
+    return builder.indexOf('ASAN') == -1 &&
+        builder.indexOf('Android') == -1 &&
+        !isChromiumWebkitDepsTestRunner(builder);
+}
+
+function isChromiumWebkitDepsTestRunner(builder)
+{
+    return builder.indexOf('(deps)') != -1;
 }
 
 builders._builderFilter = function(groupName, testType)
 {
-    if (builders._testTypesThatRunToTBlinkBots.indexOf(testType) == -1)
+    if (testTypesThatRunToTBlinkBots.indexOf(testType) == -1)
         return null;
 
     if (groupName == '@ToT Blink')
@@ -88,13 +98,36 @@ builders._builderFilter = function(groupName, testType)
     return null;
 }
 
+var builderToMaster = {};
+
+builders.master = function(builderName)
+{
+    return builderToMaster[builderName];
+}
+
+function populateBuilderToMaster()
+{
+    var allMasterNames = Object.keys(builders.masters);
+
+    allMasterNames.forEach(function(masterName) {
+        var master = builders.masters[masterName];
+        var testTypes = Object.keys(master.tests);
+        testTypes.forEach(function (testType) {
+            var builderList = master.tests[testType].builders;
+            builderList.forEach(function (builderName) {
+                builderToMaster[builderName] = master;
+            });
+        });
+    });
+}
+
 builders.loadBuildersList = function(groupName, testType)
 {
     if (!groupName || !testType) {
         console.warn("Group name and/or test type were empty.");
-        return new BuilderGroup(false);
+        return new builders.BuilderGroup(false);
     }
-    var builderGroup = new BuilderGroup(groupName == '@ToT Blink');
+    var builderGroup = new builders.BuilderGroup(groupName == '@ToT Blink');
 
     for (masterName in builders.masters) {
         if (!builders.masters[masterName])
@@ -115,8 +148,8 @@ builders.loadBuildersList = function(groupName, testType)
 
     populateBuilderToMaster();
 
-    builders._currentBuilderGroup = builderGroup;
-    return builders._currentBuilderGroup;
+    currentBuilderGroup = builderGroup;
+    return currentBuilderGroup;
 }
 
 builders.getAllGroupNames = function()
@@ -143,10 +176,7 @@ builders.BuilderMaster.prototype = {
     },
 }
 
-})();
-
-// FIXME: Move everything below into the anonymous namespace above.
-function BuilderGroup(isToTBlink)
+builders.BuilderGroup = function(isToTBlink)
 {
     this.isToTBlink = isToTBlink;
     // Map of builderName (the name shown in the waterfall) to builderPath (the
@@ -154,64 +184,25 @@ function BuilderGroup(isToTBlink)
     this.builders = {};
 }
 
-BuilderGroup.prototype.append = function(builders) {
-    builders.forEach(function(builderName) {
-        this.builders[builderName] = builderName.replace(/[ .()]/g, '_');
-    }, this);
-};
-
-BuilderGroup.prototype.defaultBuilder = function()
-{
-    for (var builder in this.builders)
-        return builder;
-    console.error('There are no builders in this builder group.');
+builders.BuilderGroup.prototype = {
+    append: function(builders) {
+        builders.forEach(function(builderName) {
+            this.builders[builderName] = builderName.replace(/[ .()]/g, '_');
+        }, this);
+    },
+    defaultBuilder: function()
+    {
+        for (var builder in this.builders)
+            return builder;
+        console.error('There are no builders in this builder group.');
+    },
+    master: function()
+    {
+        return builders.master(this.defaultBuilder());
+    },
 }
 
-BuilderGroup.prototype.master = function()
-{
-    return builderMaster(this.defaultBuilder());
-}
-
-BuilderGroup.TOT_WEBKIT = true;
-BuilderGroup.DEPS_WEBKIT = false;
-
-var BUILDER_TO_MASTER = {};
-
-function builderMaster(builderName)
-{
-    return BUILDER_TO_MASTER[builderName];
-}
-
-function isChromiumWebkitTipOfTreeTestRunner(builder)
-{
-    // FIXME: Remove the Android check once the android tests bot is actually uploading results.
-    return builder.indexOf('ASAN') == -1 &&
-        builder.indexOf('Android') == -1 &&
-        !isChromiumWebkitDepsTestRunner(builder);
-}
-
-function isChromiumWebkitDepsTestRunner(builder)
-{
-    return builder.indexOf('(deps)') != -1;
-}
-
-function populateBuilderToMaster()
-{
-    var allMasterNames = Object.keys(builders.masters);
-
-    allMasterNames.forEach(function(masterName) {
-        var master = builders.masters[masterName];
-        var testTypes = Object.keys(master.tests);
-        testTypes.forEach(function (testType) {
-            var builderList = master.tests[testType].builders;
-            builderList.forEach(function (builderName) {
-                BUILDER_TO_MASTER[builderName] = builders.masters[masterName];
-            });
-        });
-    });
-}
-
-function groupNamesForTestType(testType)
+builders.groupNamesForTestType = function(testType)
 {
     var groupNames = [];
     for (masterName in builders.masters) {
@@ -236,3 +227,4 @@ function groupNamesForTestType(testType)
     return groupNames;
 }
 
+})();

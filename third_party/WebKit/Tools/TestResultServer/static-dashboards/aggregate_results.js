@@ -79,7 +79,7 @@ g_totalFailureCounts = {};
 function totalFailureCountFor(builder)
 {
     if (!g_totalFailureCounts[builder])
-        g_totalFailureCounts[builder] = getTotalTestCounts(g_resultsByBuilder[builder][FAILURES_BY_TYPE_KEY]);
+        g_totalFailureCounts[builder] = results.testCounts(g_resultsByBuilder[builder][results.NUM_FAILURES_BY_TYPE]);
     return g_totalFailureCounts[builder];
 }
 
@@ -99,29 +99,29 @@ function htmlForBuilder(builder)
 
 function chartHTML(builder)
 {
-    var results = g_resultsByBuilder[builder];
+    var resultsForBuilder = g_resultsByBuilder[builder];
     var totalFailingTests = totalFailureCountFor(builder).totalFailingTests;
 
     // Some bots don't properly record revision numbers. Handle that gracefully.
     var label, values;
-    if (currentBuilderGroup().isToTBlink && results[BLINK_REVISIONS_KEY]) {
+    if (currentBuilderGroup().isToTBlink && resultsForBuilder[results.BLINK_REVISIONS]) {
         label = 'Blink Revision';
-        values = results[BLINK_REVISIONS_KEY]
-    } else if (results[CHROME_REVISIONS_KEY]) {
+        values = resultsForBuilder[results.BLINK_REVISIONS]
+    } else if (resultsForBuilder[results.CHROME_REVISIONS]) {
         label = 'Chrome Revision';
-        values = results[CHROME_REVISIONS_KEY];
+        values = resultsForBuilder[results.CHROME_REVISIONS];
     } else {
         label = 'Build Number';
-        values = results[BUILD_NUMBERS_KEY];
+        values = resultsForBuilder[results.BUILD_NUMBERS];
     }
 
     var start = values[totalFailingTests.length - 1];
     var end = values[0];
     var html = chart("Total failing", {"": totalFailingTests}, label, start, end);
 
-    var values = results[FAILURES_BY_TYPE_KEY];
+    var values = resultsForBuilder[results.NUM_FAILURES_BY_TYPE];
     // Don't care about number of passes for the charts.
-    delete(values[PASS]);
+    delete(values[results.PASS]);
 
     return html + chart("Detailed breakdown", values, label, start, end);
 }
@@ -190,13 +190,13 @@ function chart(title, values, revisionLabel, startRevision, endRevision)
     return '<img src="' + url + '">';
 }
 
-function htmlForRevisionRows(results, numColumns)
+function htmlForRevisionRows(resultsForBuilder, numColumns)
 {
     var html = '';
-    if (results[BLINK_REVISIONS_KEY])
-        html += htmlForTableRow('Blink Revision', results[BLINK_REVISIONS_KEY].slice(0, numColumns));
-    if (results[CHROME_REVISIONS_KEY])
-        html += htmlForTableRow('Chrome Revision', results[CHROME_REVISIONS_KEY].slice(0, numColumns));
+    if (resultsForBuilder[results.BLINK_REVISIONS])
+        html += htmlForTableRow('Blink Revision', resultsForBuilder[results.BLINK_REVISIONS].slice(0, numColumns));
+    if (resultsForBuilder[results.CHROME_REVISIONS])
+        html += htmlForTableRow('Chrome Revision', resultsForBuilder[results.CHROME_REVISIONS].slice(0, numColumns));
     return html;
 }
 
@@ -213,14 +213,14 @@ function htmlForTestType(builder)
         percent.push(Math.round(percentage * 10) / 10 + '%');
     }
 
-    var results = g_resultsByBuilder[builder];
+    var resultsForBuilder = g_resultsByBuilder[builder];
     html = '<table><tbody>' +
-        htmlForRevisionRows(results, totalTests.length) +
+        htmlForRevisionRows(resultsForBuilder, totalTests.length) +
         htmlForTableRow('Percent passed', percent) +
         htmlForTableRow('Failures', totalFailing) +
         htmlForTableRow('Total Tests', totalTests);
 
-    var values = results[FAILURES_BY_TYPE_KEY];
+    var values = resultsForBuilder[results.NUM_FAILURES_BY_TYPE];
     for (var expectation in values)
         html += htmlForTableRow(expectation, values[expectation]);
 
