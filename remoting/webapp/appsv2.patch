@@ -46,7 +46,7 @@ diff --git a/remoting/webapp/manifest.json b/remoting/webapp/manifest.json
 index d1f8d1f..67bf660 100644
 --- a/manifest.json
 +++ b/manifest.json
-@@ -5,30 +5,16 @@
+@@ -5,30 +5,15 @@
    "manifest_version": 2,
    "default_locale": "en",
    "app": {
@@ -58,7 +58,6 @@ index d1f8d1f..67bf660 100644
 +      "scripts": ["background.js"]
 +     }
 +   },
-+  "key": "chromotingappsv2",
    "icons": {
      "128": "chromoting128.webp",
      "48": "chromoting48.webp",
@@ -96,7 +95,7 @@ index d1f8d1f..67bf660 100644
 -    { "path": "remoting_host_plugin.plugin", "public": false }
 -  ],
 +  "oauth2": {
-+    "client_id": "45833509441.apps.googleusercontent.com",
++    "client_id": "45833509441-oqgdhgddn085c7cq9djknefjo0tedtua.apps.googleusercontent.com",
 +    "scopes": [
 +      "https://www.googleapis.com/auth/chromoting https://www.googleapis.com/auth/googletalk https://www.googleapis.com/auth/userinfo#email"
 +    ]

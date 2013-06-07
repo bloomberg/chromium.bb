@@ -56,7 +56,7 @@ def createZip(zip_path, directory):
 
 
 def replaceUrl(destination, url_name, url_value):
-  """Updates a URL in both plugin_settings.json and manifest.js."""
+  """Updates a URL in both plugin_settings.js and manifest.json."""
   findAndReplace(os.path.join(destination, 'plugin_settings.js'),
                  "'" + url_name + "'", "'" + url_value + "'")
   findAndReplace(os.path.join(destination, 'manifest.json'),
@@ -284,6 +284,14 @@ def buildWebApp(buildtype, version, mimetype, destination, zip_path, plugin,
   findAndReplace(os.path.join(destination, 'plugin_settings.js'),
                  "'API_CLIENT_SECRET'",
                  "'" + apiClientSecret + "'")
+
+  # Use a consistent extension id for unofficial builds.
+  if buildtype != 'Official':
+    manifestKey = '"key": "remotingdevbuild",'
+  else:
+    manifestKey = ''
+  findAndReplace(os.path.join(destination, 'manifest.json'),
+                 'MANIFEST_KEY_FOR_UNOFFICIAL_BUILD', manifestKey)
 
   # Make the zipfile.
   createZip(zip_path, destination)
