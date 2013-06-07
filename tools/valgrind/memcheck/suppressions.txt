@@ -1151,13 +1151,6 @@
    fun:_ZN12_GLOBAL__N_111DnsReloader11MaybeReloadEv
 }
 {
-   # Intentional - atomic strings and hash map in WebCore::nameToPseudoTypeMap() (CSSSelector.cpp) are to be leaked
-   bug_108516
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN7WebCoreL19nameToPseudoTypeMapEv
-}
-{
    bug_79322 (Intentional)
    Memcheck:Leak
    fun:_Znw*
@@ -2632,17 +2625,6 @@
    fun:pango_layout_get_pixel_extents
    fun:pango_layout_get_pixel_size
    fun:_ZN3gfx10Canvas13SizeStringIntERKSbItN4base20string16_char_traitsESaItEERKNS_4FontEPiSA_i
-}
-{
-   bug_70599
-   Memcheck:Uninitialized
-   fun:bcmp
-   fun:_ZN3WTF14VectorComparerILb1EN7WebCore11CSSPropertyE*
-   fun:_ZN3WTF20VectorTypeOperationsIN7WebCore11CSSPropertyE*
-   fun:_ZN3WTFeqIN7WebCore11CSSPropertyE*
-   fun:_ZNK7WebCore26CSSMutableStyleDeclaration15propertiesEqualEPKS0_
-   fun:_ZNK7WebCore12NamedNodeMap20mappedMapsEquivalentEPKS0_
-   fun:_ZNK7WebCore16CSSStyleSelector24canShareStyleWithElementE*
 }
 {
    bug_71152
@@ -4130,16 +4112,6 @@
    fun:_ZN6WebKit11WebViewImpl9mouseMoveERKNS_13WebMouseEventE
    fun:_ZN6WebKit11WebViewImpl16handleInputEventERKNS_13WebInputEventE
    fun:_ZN12RenderWidget18OnHandleInputEventERKN3IPC7MessageE
-}
-{
-   bug_107698
-   Memcheck:Leak
-   fun:malloc
-   ...
-   fun:_ZN7WebCore9CSSParser10parseSheetEPNS_13CSSStyleSheetERKN3WTF6StringEiPNS3_7HashMapIPNS_12CSSStyleRuleENS3_6RefPtrINS_17CSSRuleSourceDataEEENS3_7PtrHashIS9_EENS3_10HashTraitsIS9_EENSF_ISC_EEEE
-   fun:_ZN7WebCore13CSSStyleSheet17parseStringAtLineERKN3WTF6StringEbi
-   fun:_ZN7WebCore13CSSStyleSheet11parseStringERKN3WTF6StringEb
-   fun:_ZN7WebCoreL12parseUASheetERKN3WTF6StringE
 }
 {
    bug_107698a
