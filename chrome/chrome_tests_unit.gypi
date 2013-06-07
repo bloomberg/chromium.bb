@@ -940,7 +940,6 @@
         'browser/nacl_host/nacl_validation_cache_unittest.cc',
         'browser/nacl_host/pnacl_translation_cache_unittest.cc',
         'browser/net/chrome_fraudulent_certificate_reporter_unittest.cc',
-        'browser/net/chrome_net_log_unittest.cc',
         'browser/net/chrome_network_delegate_unittest.cc',
         'browser/net/connection_tester_unittest.cc',
         'browser/net/dns_probe_job_unittest.cc',

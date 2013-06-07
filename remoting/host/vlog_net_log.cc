@@ -13,13 +13,25 @@
 
 namespace remoting {
 
-VlogNetLog::VlogNetLog() : id_(0) {
+class VlogNetLog::Observer : public net::NetLog::ThreadSafeObserver {
+ public:
+  Observer();
+  virtual ~Observer();
+
+  // NetLog::ThreadSafeObserver overrides:
+  virtual void OnAddEntry(const net::NetLog::Entry& entry) OVERRIDE;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(Observer);
+};
+
+VlogNetLog::Observer::Observer() {
 }
 
-VlogNetLog::~VlogNetLog() {
+VlogNetLog::Observer::~Observer() {
 }
 
-void VlogNetLog::OnAddEntry(const NetLog::Entry& entry) {
+void VlogNetLog::Observer::OnAddEntry(const net::NetLog::Entry& entry) {
   if (VLOG_IS_ON(4)) {
     scoped_ptr<Value> value(entry.ToValue());
     std::string json;
@@ -28,27 +40,13 @@ void VlogNetLog::OnAddEntry(const NetLog::Entry& entry) {
   }
 }
 
-uint32 VlogNetLog::NextID() {
-  // TODO(mmenke):  Make this threadsafe and start with 1 instead of 0.
-  return id_++;
+VlogNetLog::VlogNetLog()
+    : observer_(new Observer()) {
+  AddThreadSafeObserver(observer_.get(), LOG_ALL_BUT_BYTES);
 }
 
-net::NetLog::LogLevel VlogNetLog::GetLogLevel() const {
-  return LOG_ALL_BUT_BYTES;
-}
-
-void VlogNetLog::AddThreadSafeObserver(ThreadSafeObserver* observer,
-                                      net::NetLog::LogLevel log_level) {
-  NOTIMPLEMENTED();
-}
-
-void VlogNetLog::SetObserverLogLevel(ThreadSafeObserver* observer,
-                                    net::NetLog::LogLevel log_level) {
-  NOTIMPLEMENTED();
-}
-
-void VlogNetLog::RemoveThreadSafeObserver(ThreadSafeObserver* observer) {
-  NOTIMPLEMENTED();
+VlogNetLog::~VlogNetLog() {
+  RemoveThreadSafeObserver(observer_.get());
 }
 
 }  // namespace remoting
