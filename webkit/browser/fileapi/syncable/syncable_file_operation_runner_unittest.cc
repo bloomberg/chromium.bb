@@ -368,4 +368,23 @@ TEST_F(SyncableFileOperationRunnerTest, CopyInForeignFile) {
   EXPECT_EQ(1, callback_count_);
 }
 
+TEST_F(SyncableFileOperationRunnerTest, Cancel) {
+  // Prepare a file.
+  file_system_.NewOperation()->CreateFile(
+      URL(kFile), false /* exclusive */,
+      ExpectStatus(FROM_HERE, base::PLATFORM_FILE_OK));
+  base::MessageLoop::current()->RunUntilIdle();
+  EXPECT_EQ(1, callback_count_);
+
+  // Run Truncate and immediately cancel. This shouldn't crash.
+  ResetCallbackStatus();
+  FileSystemOperation* operation = file_system_.NewOperation();
+  operation->Truncate(
+      URL(kFile), 10,
+      ExpectStatus(FROM_HERE, base::PLATFORM_FILE_ERROR_ABORT));
+  operation->Cancel(ExpectStatus(FROM_HERE, base::PLATFORM_FILE_OK));
+  base::MessageLoop::current()->RunUntilIdle();
+  EXPECT_EQ(2, callback_count_);
+}
+
 }  // namespace sync_file_system

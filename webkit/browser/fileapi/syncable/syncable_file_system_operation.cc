@@ -304,8 +304,7 @@ void SyncableFileSystemOperation::Cancel(
     const StatusCallback& cancel_callback) {
   DCHECK(CalledOnValidThread());
   DCHECK(inflight_operation_);
-  completion_callback_ = cancel_callback;
-  NewOperation()->Cancel(base::Bind(&self::DidFinish, base::Owned(this)));
+  inflight_operation_->Cancel(cancel_callback);
 }
 
 void SyncableFileSystemOperation::CreateSnapshotFile(
