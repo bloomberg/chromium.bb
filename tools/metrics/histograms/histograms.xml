@@ -3275,6 +3275,34 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Media.MSE.AudioCodec" enum="MSECodec">
+  <summary>
+    Audio codec used in Media Source Extensions playback. Set when AddId() is
+    called during playback.
+  </summary>
+</histogram>
+
+<histogram name="Media.MSE.NumberOfTracks">
+  <summary>
+    Number of tracks specified to AddId() for Media Source Extensions playback.
+    May be called multiple times per element if playback is dynamically altered.
+  </summary>
+</histogram>
+
+<histogram name="Media.MSE.Playback" enum="BooleanSuccess">
+  <summary>
+    Whether Media Source Extensions is specified for playback of Media elements.
+    Sampled when media pipeline starts.
+  </summary>
+</histogram>
+
+<histogram name="Media.MSE.VideoCodec" enum="MSECodec">
+  <summary>
+    Video codec used in Media Source Extensions playback. Set when AddId() is
+    called during playback.
+  </summary>
+</histogram>
+
 <histogram name="Media.Netflix.AudioBitrate" units="kbps">
   <summary>
     The audio bit rate as reported by the Netflix application.  May be reported
@@ -14637,6 +14665,17 @@ other types of suffix sets.
   <int value="1" label="Caught event before click"/>
 </enum>
 
+<enum name="MSECodec" type="int">
+  <int value="0" label="(Unknown)"/>
+  <int value="1" label="VP8"/>
+  <int value="2" label="VP9"/>
+  <int value="3" label="Vorbis"/>
+  <int value="4" label="H.264"/>
+  <int value="5" label="MPEG2 AAC"/>
+  <int value="6" label="MPEG4 AAC"/>
+  <int value="7" label="EAC3"/>
+</enum>
+
 <enum name="NavigationScheme" type="int">
   <int value="0" label="(Unknown)"/>
   <int value="1" label="http"/>
@@ -16433,6 +16472,7 @@ other types of suffix sets.
   <int value="7" label="kFileURLScheme"/>
   <int value="8" label="kBlobURLScheme"/>
   <int value="9" label="kDataURLScheme"/>
+  <int value="10" label="kFileSystemScheme"/>
 </enum>
 
 <enum name="VariationsResourceRequestsAllowedState" type="int">
