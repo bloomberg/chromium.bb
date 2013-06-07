@@ -162,7 +162,7 @@ EXTRA_ENV = {
   'LLC_MCPU_MIPS32' : 'mips32r2',
 
   # Note: this is only used in the unsandboxed case
-  'RUN_LLC'       : '${LLVM_LLC} ${LLC_FLAGS} ${LLC_MCPU} '
+  'RUN_LLC'       : '${LLVM_PNACL_LLC} ${LLC_FLAGS} ${LLC_MCPU} '
                     '${input} -o ${output} ',
   # Rate in bits/sec to stream the bitcode from sel_universal over SRPC
   # for testing. Defaults to 1Gbps (effectively unlimited).
@@ -532,7 +532,7 @@ def MakeSelUniversalScriptForLLC(infile, outfile):
   # specify filename, chunk size and rate in bits/s
   script.append('stream_file %s %s %s' % (infile, 64 * 1024, stream_rate))
   script.append('rpc StreamEnd * i() s() s() s()')
-  script.append('echo "llc complete"')
+  script.append('echo "pnacl-llc complete"')
   script.append('')
   return '\n'.join(script)
 

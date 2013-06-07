@@ -672,8 +672,8 @@ translator-archive-pexes() {
     local pexe_dir="$(GetTranslatorInstallDir ${arch})/bin"
     echo "pexe_dir is ${pexe_dir}"
     # Label the pexes by architecture.
-    local pexe_llc="${pexe_dir}/llc.${arch}.pexe"
-    cp "${pexe_dir}/llc.pexe" ${pexe_llc}
+    local pexe_llc="${pexe_dir}/pnacl-llc.${arch}.pexe"
+    cp "${pexe_dir}/pnacl-llc.pexe" ${pexe_llc}
     ${PNACL_STRIP} --strip-all ${pexe_llc} -o ${pexe_llc}.strip-all
     local all="${pexe_llc} ${pexe_llc}.strip-all"
     file ${all}
@@ -2127,7 +2127,7 @@ llvm-sb() {
   local arch=$1
   check-arch ${arch}
   llvm-sb-setup ${arch}
-  StepBanner "LLVM-SB" "Sandboxed llc [${arch}]"
+  StepBanner "LLVM-SB" "Sandboxed pnacl-llc [${arch}]"
   local srcdir="${TC_SRC_LLVM}"
   assert-dir "${srcdir}" "You need to checkout llvm."
 
@@ -2204,7 +2204,7 @@ llvm-sb-make() {
   spushd "${objdir}"
   ts-touch-open "${objdir}"
 
-  local tools_to_build="llc"
+  local tools_to_build="pnacl-llc"
   local export_dyn_env="llvm_cv_link_use_export_dynamic=no"
   local isjit=0
   RunWithLog ${LLVM_SB_LOG_PREFIX}.make \
@@ -2226,7 +2226,7 @@ llvm-sb-install() {
   local arch=$1
   StepBanner "LLVM-SB" "Install ${arch}"
 
-  local toolname="llc"
+  local toolname="pnacl-llc"
   local installdir="$(GetTranslatorInstallDir ${arch})"/bin
   mkdir -p "${installdir}"
   spushd "${installdir}"
@@ -2282,7 +2282,7 @@ translate-sb-tool() {
   QueueWait
 
   # Test that certain symbols have been pruned before stripping.
-  if [ "${toolname}" == "llc" ]; then
+  if [ "${toolname}" == "pnacl-llc" ]; then
     for tarch in ${arches}; do
       local nexe="${toolname}.${tarch}.nexe"
       local llvm_host_lib=$(ls "${LLVM_INSTALL_DIR}"/lib/libLLVM-*svn.so)
@@ -3529,17 +3529,17 @@ verify-native() {
 
 #+ verify-triple-build <arch>
 #+     Verify that the sandboxed translator produces an identical
-#+     translation of itself (llc.pexe) as the unsandboxed translator.
+#+     translation of itself (pnacl-llc.pexe) as the unsandboxed translator.
 #+     (NOTE: This function is experimental/untested)
 verify-triple-build() {
   local arch=$1
   StepBanner "VERIFY" "Verifying triple build for ${arch}"
 
   local bindir="$(GetTranslatorInstallDir ${arch})/bin"
-  local llc_nexe="${bindir}/llc.nexe"
-  local llc_pexe="${bindir}/llc.pexe"
+  local llc_nexe="${bindir}/pnacl-llc.nexe"
+  local llc_pexe="${bindir}/pnacl-llc.pexe"
   assert-file "${llc_nexe}" "sandboxed llc for ${arch} does not exist"
-  assert-file "${llc_pexe}" "llc.pexe does not exist"
+  assert-file "${llc_pexe}" "pnacl-llc.pexe does not exist"
 
   local flags="--pnacl-sb --pnacl-driver-verbose"
 
@@ -3553,7 +3553,7 @@ verify-triple-build() {
 
   local triple_install_dir="$(GetTranslatorInstallDir ${arch})/triple-build"
   mkdir -p ${triple_install_dir}
-  local new_llc_nexe="${triple_install_dir}/llc.rebuild.nexe"
+  local new_llc_nexe="${triple_install_dir}/pnacl-llc.rebuild.nexe"
   mkdir -p "${triple_install_dir}"
   StepBanner "VERIFY" "Translating ${llc_pexe} using sandboxed tools (${arch})"
   local sb_translator="${INSTALL_TRANSLATOR}/bin/pnacl-translate"

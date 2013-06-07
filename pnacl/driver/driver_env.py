@@ -150,7 +150,7 @@ INITIAL_ENV = {
   'BOOTSTRAP_LDR' : '${SCONS_STAGING}/nacl_helper_bootstrap${EXEC_EXT}',
 
   # sandboxed llvm backend
-  'LLC_SB'      : '${TRANSLATOR_BIN}/llc.nexe',
+  'LLC_SB'      : '${TRANSLATOR_BIN}/pnacl-llc.nexe',
   # sandboxed linker (gold based)
   'LD_SB'       : '${TRANSLATOR_BIN}/ld.nexe',
 
@@ -167,7 +167,7 @@ INITIAL_ENV = {
   'PNACL_ABICHECK': '${BASE_LLVM_BIN}/pnacl-abicheck${EXEC_EXT}',
 
   # Native LLVM tools
-  'LLVM_LLC'      : '${BASE_LLVM_BIN}/llc${EXEC_EXT}',
+  'LLVM_PNACL_LLC': '${BASE_LLVM_BIN}/pnacl-llc${EXEC_EXT}',
   # llvm-mc is llvm's native assembler
   'LLVM_MC'       : '${BASE_LLVM_BIN}/llvm-mc${EXEC_EXT}',
 

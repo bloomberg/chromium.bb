@@ -6,6 +6,6 @@
 
   "abi-version": "%(abi-version)s",
   "pnacl-arch": "%(arch)s",
-  "pnacl-llc-name": "llc.nexe",
+  "pnacl-llc-name": "pnacl-llc.nexe",
   "pnacl-ld-name": "ld.nexe"
 }
