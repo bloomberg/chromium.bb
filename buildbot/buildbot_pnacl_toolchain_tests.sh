@@ -22,7 +22,7 @@ set -o errexit
 
 # This hopefully needs to be updated rarely, it contains pexe from
 # the sandboxed llc/gold builds
-ARCHIVED_PEXE_TRANSLATOR_REV=11284
+ARCHIVED_PEXE_TRANSLATOR_REV=11507
 
 # The frontend from this rev will generate pexes for the archived frontend
 # test. The toolchain downloader expects this information in a specially
@@ -319,10 +319,10 @@ archived-pexe-translator-test() {
   # so it is not a full override and will not work if the interface
   # has changed.
   local override_flags="\
-    --pnacl-driver-set-LLC_SB=${dir}/llc-${arch}.nexe \
+    --pnacl-driver-set-LLC_SB=${dir}/pnacl-llc-${arch}.nexe \
     --pnacl-driver-set-LD_SB=${dir}/ld-${arch}.nexe"
   local fast_override_flags="\
-    --pnacl-driver-set-LLC_SB=${dir}/llc-${arch}.fast_trans.nexe \
+    --pnacl-driver-set-LLC_SB=${dir}/pnacl-llc-${arch}.fast_trans.nexe \
     --pnacl-driver-set-LD_SB=${dir}/ld-${arch}.fast_trans.nexe"
 
   echo "=== Translating the archived translator."
@@ -334,12 +334,12 @@ archived-pexe-translator-test() {
       -o ${dir}/ld-${arch}.fast_trans.nexe
 
   # Yikes: This takes about 17min on arm with qemu
-  echo "=== Compiling Old LLC (normal mode) ==="
-  ${sb_translator} ${flags} ${dir}/llc${llc_ext} \
-      -o ${dir}/llc-${arch}.nexe
-  echo "=== Compiling Old LLC (fast mode) ==="
-  ${sb_translator} ${fast_trans_flags} ${dir}/llc${llc_ext} \
-      -o ${dir}/llc-${arch}.fast_trans.nexe
+  echo "=== Compiling Old pnacl-llc (normal mode) ==="
+  ${sb_translator} ${flags} ${dir}/pnacl-llc${llc_ext} \
+      -o ${dir}/pnacl-llc-${arch}.nexe
+  echo "=== Compiling Old pnacl-llc (fast mode) ==="
+  ${sb_translator} ${fast_trans_flags} ${dir}/pnacl-llc${llc_ext} \
+      -o ${dir}/pnacl-llc-${arch}.fast_trans.nexe
 
   ls -l ${dir}
   file ${dir}/*
