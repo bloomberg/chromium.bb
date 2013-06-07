@@ -326,7 +326,7 @@ bool VaapiVideoDecodeAccelerator::Initialize(
 
   CHECK(decoder_thread_.Start());
 
-  state_ = kInitialized;
+  state_ = kIdle;
 
   message_loop_->PostTask(FROM_HERE, base::Bind(
       &Client::NotifyInitializeDone, client_));
@@ -338,7 +338,7 @@ void VaapiVideoDecodeAccelerator::SurfaceReady(
     const scoped_refptr<VASurface>& va_surface) {
   DCHECK_EQ(message_loop_, base::MessageLoop::current());
 
-  // Drop any requests to output if we are resetting.
+  // Drop any requests to output if we are resetting or being destroyed.
   if (state_ == kResetting || state_ == kDestroying)
     return;
 
@@ -432,67 +432,6 @@ void VaapiVideoDecodeAccelerator::MapAndQueueNewInputBuffer(
   input_ready_.Signal();
 }
 
-void VaapiVideoDecodeAccelerator::InitialDecodeTask() {
-  DCHECK_EQ(decoder_thread_.message_loop(), base::MessageLoop::current());
-  base::AutoLock auto_lock(lock_);
-
-  // Try to initialize or resume playback after reset.
-  while (GetInputBuffer_Locked()) {
-    DCHECK(curr_input_buffer_.get());
-
-    // Since multiple Decode()'s can be in flight at once, it's possible that a
-    // Decode() that seemed like an initial one is actually later in the stream
-    // and we're already kDecoding.  Let the normal DecodeTask take over in that
-    // case.
-    if (state_ != kInitialized && state_ != kIdle)
-      return;
-
-    VaapiH264Decoder::DecResult res =
-        decoder_->DecodeInitial(curr_input_buffer_->id);
-    switch (res) {
-      case VaapiH264Decoder::kReadyToDecode:
-        if (state_ == kInitialized) {
-          state_ = kPicturesRequested;
-          num_pics_ = decoder_->GetRequiredNumOfPictures();
-          pic_size_ = decoder_->GetPicSize();
-          DVLOG(1) << "Requesting " << num_pics_ << " pictures of size: "
-                   << pic_size_.width() << "x" << pic_size_.height();
-          message_loop_->PostTask(FROM_HERE, base::Bind(
-              &Client::ProvidePictureBuffers, client_,
-              num_pics_, pic_size_, GL_TEXTURE_2D));
-        } else {
-          DCHECK_EQ(state_, kIdle);
-          state_ = kDecoding;
-          decoder_thread_.message_loop()->PostTask(FROM_HERE, base::Bind(
-              &VaapiVideoDecodeAccelerator::DecodeTask,
-              base::Unretained(this)));
-        }
-        return;
-
-      case VaapiH264Decoder::kNeedMoreStreamData:
-        ReturnCurrInputBuffer_Locked();
-        break;
-
-      case VaapiH264Decoder::kNoOutputAvailable:
-        if (state_ == kIdle)  {
-          // No more output buffers in the decoder, try getting more or go to
-          // sleep waiting for them.
-          FeedDecoderWithOutputSurfaces_Locked();
-          return;
-        }
-        // else fallthrough
-      case VaapiH264Decoder::kDecodeError:
-        RETURN_AND_NOTIFY_ON_FAILURE(false, "Error in decoding",
-                                     PLATFORM_FAILURE, );
-
-      default:
-        RETURN_AND_NOTIFY_ON_FAILURE(false,
-                                     "Unexpected result from decoder: " << res,
-                                     PLATFORM_FAILURE, );
-    }
-  }
-}
-
 bool VaapiVideoDecodeAccelerator::GetInputBuffer_Locked() {
   DCHECK_EQ(decoder_thread_.message_loop(), base::MessageLoop::current());
   lock_.AssertAcquired();
@@ -502,8 +441,7 @@ bool VaapiVideoDecodeAccelerator::GetInputBuffer_Locked() {
 
   // Will only wait if it is expected that in current state new buffers will
   // be queued from the client via Decode(). The state can change during wait.
-  while (input_buffers_.empty() &&
-         (state_ == kDecoding || state_ == kInitialized || state_ == kIdle)) {
+  while (input_buffers_.empty() && (state_ == kDecoding || state_ == kIdle)) {
     input_ready_.Wait();
   }
 
@@ -517,7 +455,6 @@ bool VaapiVideoDecodeAccelerator::GetInputBuffer_Locked() {
         return false;
       // else fallthrough
     case kDecoding:
-    case kInitialized:
     case kIdle:
       DCHECK(!input_buffers_.empty());
 
@@ -530,7 +467,7 @@ bool VaapiVideoDecodeAccelerator::GetInputBuffer_Locked() {
 
       decoder_->SetStream(
           static_cast<uint8*>(curr_input_buffer_->shm->memory()),
-          curr_input_buffer_->size);
+          curr_input_buffer_->size, curr_input_buffer_->id);
       return true;
 
     default:
@@ -603,30 +540,37 @@ void VaapiVideoDecodeAccelerator::DecodeTask() {
       // the lock for its duration would be fine, it would defeat the purpose
       // of having a separate decoder thread.
       base::AutoUnlock auto_unlock(lock_);
-      res = decoder_->DecodeOneFrame(curr_input_buffer_->id);
+      res = decoder_->Decode();
     }
 
     switch (res) {
-      case VaapiH264Decoder::kNeedMoreStreamData:
+      case VaapiH264Decoder::kAllocateNewSurfaces:
+        state_ = kPicturesRequested;
+        num_pics_ = decoder_->GetRequiredNumOfPictures();
+        pic_size_ = decoder_->GetPicSize();
+        DVLOG(1) << "Requesting " << num_pics_ << " pictures of size: "
+                 << pic_size_.width() << "x" << pic_size_.height();
+        message_loop_->PostTask(FROM_HERE, base::Bind(
+            &Client::ProvidePictureBuffers, client_,
+            num_pics_, pic_size_, GL_TEXTURE_2D));
+        // We'll get rescheduled once ProvidePictureBuffers() finishes.
+        return;
+
+      case VaapiH264Decoder::kRanOutOfStreamData:
         ReturnCurrInputBuffer_Locked();
         break;
 
-      case VaapiH264Decoder::kNoOutputAvailable:
+      case VaapiH264Decoder::kRanOutOfSurfaces:
         // No more output buffers in the decoder, try getting more or go to
         // sleep waiting for them.
         if (!FeedDecoderWithOutputSurfaces_Locked())
           return;
+
         break;
 
       case VaapiH264Decoder::kDecodeError:
         RETURN_AND_NOTIFY_ON_FAILURE(false, "Error decoding stream",
                                      PLATFORM_FAILURE, );
-        return;
-
-      default:
-        RETURN_AND_NOTIFY_ON_FAILURE(
-            false, "Unexpected result from the decoder: " << res,
-            PLATFORM_FAILURE, );
         return;
     }
   }
@@ -644,28 +588,21 @@ void VaapiVideoDecodeAccelerator::Decode(
 
   base::AutoLock auto_lock(lock_);
   switch (state_) {
-    case kInitialized:
-      // Initial decode to get the required size of output buffers.
+    case kIdle:
+      state_ = kDecoding;
       decoder_thread_.message_loop()->PostTask(FROM_HERE, base::Bind(
-          &VaapiVideoDecodeAccelerator::InitialDecodeTask,
+          &VaapiVideoDecodeAccelerator::DecodeTask,
           base::Unretained(this)));
       break;
 
     case kPicturesRequested:
-      // Waiting for pictures, return.
-      break;
-
+      // Waiting for pictures, fallthrough.
     case kDecoding:
-    // Allow accumulating bitstream buffers so that the client can queue
-    // after-seek-buffers while we are finishing with the before-seek one.
+      // Decoder already running, fallthrough.
     case kResetting:
-      break;
-
-    case kIdle:
-      // Need to get decoder into suitable stream location to resume.
-      decoder_thread_.message_loop()->PostTask(FROM_HERE, base::Bind(
-          &VaapiVideoDecodeAccelerator::InitialDecodeTask,
-          base::Unretained(this)));
+      // When resetting, allow accumulating bitstream buffers, so that
+      // the client can queue after-seek-buffers while we are finishing with
+      // the before-seek one.
       break;
 
     default:
@@ -857,13 +794,16 @@ void VaapiVideoDecodeAccelerator::FinishReset() {
 
   // The client might have given us new buffers via Decode() while we were
   // resetting and might be waiting for our move, and not call Decode() anymore
-  // until we return something. Post an InitialDecodeTask() so that we won't
+  // until we return something. Post a DecodeTask() so that we won't
   // sleep forever waiting for Decode() in that case. Having two of them
   // in the pipe is harmless, the additional one will return as soon as it sees
   // that we are back in kDecoding state.
-  decoder_thread_.message_loop()->PostTask(FROM_HERE, base::Bind(
-    &VaapiVideoDecodeAccelerator::InitialDecodeTask,
-    base::Unretained(this)));
+  if (!input_buffers_.empty()) {
+    state_ = kDecoding;
+    decoder_thread_.message_loop()->PostTask(FROM_HERE, base::Bind(
+      &VaapiVideoDecodeAccelerator::DecodeTask,
+      base::Unretained(this)));
+  }
 
   DVLOG(1) << "Reset finished";
 }

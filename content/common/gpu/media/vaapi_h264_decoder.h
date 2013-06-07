@@ -63,9 +63,9 @@ class VaapiH264Decoder {
     // in decoding; in future it could perhaps be possible to fall back
     // to software decoding instead.
     // kStreamError,  // Error in stream.
-    kReadyToDecode,  // Successfully initialized.
-    kNeedMoreStreamData,  // Need more stream data to decode the next frame.
-    kNoOutputAvailable,  // Waiting for the client to free up output surfaces.
+    kAllocateNewSurfaces,  // Need a new set of surfaces to be allocated.
+    kRanOutOfStreamData,  // Need more stream data to proceed.
+    kRanOutOfSurfaces,  // Waiting for the client to free up output surfaces.
   };
 
   // |vaapi_wrapper| should be initialized.
@@ -88,23 +88,19 @@ class VaapiH264Decoder {
   // possibly from a different location.
   void Reset();
 
-  // Set current stream data pointer to |ptr| and |size|.
-  void SetStream(uint8* ptr, size_t size);
+  // Set current stream data pointer to |ptr| and |size|. Output surfaces
+  // that are decoded from data in this stream chunk are to be returned along
+  // with the given |input_id|.
+  void SetStream(uint8* ptr, size_t size, int32 input_id);
 
-  // To be called at the start of decode or after reset.
-  // When this call returns kReadyToDecode, the decoder is in a suitable
-  // location in the stream to begin/resume decoding from and subsequent
-  // decode requests should go via DecodeOneFrame.
-  DecResult DecodeInitial(int32 input_id) WARN_UNUSED_RESULT;
-
-  // Runs until a frame is decoded or end of provided stream data buffer
-  // is reached. Decoded surfaces will be returned asynchronously via
-  // OutputPicCB. Should be called after DecodeInitial returns kReadyToDecode.
-  DecResult DecodeOneFrame(int32 input_id) WARN_UNUSED_RESULT;
+  // Try to decode more of the stream, returning decoded frames asynchronously
+  // via output_pic_cb_. Return when more stream is needed, when we run out
+  // of free surfaces, when we need a new set of them, or when an error occurs.
+  DecResult Decode() WARN_UNUSED_RESULT;
 
   // Return dimensions/required number of output surfaces that client should
   // be ready to provide for the decoder to function properly.
-  // Valid only after a successful DecodeInitial().
+  // To be used after Decode() returns kNeedNewSurfaces.
   gfx::Size GetPicSize() { return pic_size_; }
   size_t GetRequiredNumOfPictures();
 
@@ -125,13 +121,14 @@ class VaapiH264Decoder {
 
   // Internal state of the decoder.
   enum State {
-    kIdle,  // After initialization or after Reset(), need a resume point.
-    kDecoding,  // DecodeInitial() successful, ready to decode.
+    kNeedStreamMetadata,  // After initialization, need an SPS.
+    kDecoding,  // Ready to decode from any point.
+    kAfterReset, // After Reset(), need a resume point.
     kError,  // Error in decode, can't continue.
   };
 
   // Process H264 stream structures.
-  bool ProcessSPS(int sps_id);
+  bool ProcessSPS(int sps_id, bool* need_new_buffers);
   bool ProcessPPS(int pps_id);
   bool ProcessSlice(H264SliceHeader* slice_hdr);
 

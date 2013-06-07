@@ -87,13 +87,9 @@ private:
   // reset/flush/destroy).
   bool FeedDecoderWithOutputSurfaces_Locked();
 
-  // Get the decoder to the point in the stream from which it can start/continue
-  // decoding. Called either when starting to decode a new stream or when
-  // playback is to be resumed following a seek.
-  void InitialDecodeTask();
-
   // Continue decoding given input buffers and sleep waiting for input/output
-  // as needed. Will exit if a reset/flush/destroy is requested.
+  // as needed. Will exit if a new set of surfaces or reset/flush/destroy
+  // is requested.
   void DecodeTask();
 
   // Scheduled after receiving a flush request and executed after the current
@@ -158,17 +154,15 @@ private:
   enum State {
     // Initialize() not called yet or failed.
     kUninitialized,
-    // Initialize() succeeded, no initial decode and no pictures requested.
-    kInitialized,
-    // Initial decode finished, requested pictures and waiting for them.
+    // Requested a new set of pictures and waiting for them.
     kPicturesRequested,
-    // Everything initialized, pictures received and assigned, in decoding.
+    // DecodeTask running.
     kDecoding,
     // Resetting, waiting for decoder to finish current task and cleanup.
     kResetting,
     // Flushing, waiting for decoder to finish current task and cleanup.
     kFlushing,
-    // Idle, decoder in state ready to resume decoding.
+    // Idle, decoder in state ready to start/resume decoding.
     kIdle,
     // Destroying, waiting for the decoder to finish current task.
     kDestroying,
@@ -205,7 +199,6 @@ private:
   // All allocated TFPPictures, regardless of their current state. TFPPictures
   // are allocated once and destroyed at the end of decode.
   TFPPictures tfp_pictures_;
-  std::list<TFPPicture*> available_tfp_pictures_;
 
   // Return a TFPPicture associated with given client-provided id.
   TFPPicture* TFPPictureById(int32 picture_buffer_id);

@@ -68,6 +68,7 @@ VaapiH264Decoder::VaapiH264Decoder(
       output_pic_cb_(output_pic_cb),
       report_error_to_uma_cb_(report_error_to_uma_cb) {
   Reset();
+  state_ = kNeedStreamMetadata;
 }
 
 VaapiH264Decoder::~VaapiH264Decoder() {
@@ -106,7 +107,7 @@ void VaapiH264Decoder::Reset() {
   parser_.Reset();
   last_output_poc_ = 0;
 
-  state_ = kIdle;
+  state_ = kAfterReset;
 }
 
 void VaapiH264Decoder::ReuseSurface(
@@ -1383,9 +1384,11 @@ static int LevelToMaxDpbMbs(int level) {
   }
 }
 
-bool VaapiH264Decoder::ProcessSPS(int sps_id) {
+bool VaapiH264Decoder::ProcessSPS(int sps_id, bool* need_new_buffers) {
   const H264SPS* sps = parser_.GetSPS(sps_id);
   DCHECK(sps);
+
+  *need_new_buffers = false;
 
   if (sps->frame_mbs_only_flag == 0) {
     DVLOG(1) << "frame_mbs_only_flag != 1 not supported";
@@ -1410,20 +1413,23 @@ bool VaapiH264Decoder::ProcessSPS(int sps_id) {
   int width = 16 * width_mb;
   int height = 16 * height_mb;
 
-  DVLOG(1) << "New picture size: " << width << "x" << height;
   if (width == 0 || height == 0) {
     DVLOG(1) << "Invalid picture size!";
     return false;
   }
 
-  if (!pic_size_.IsEmpty() &&
-      (width != pic_size_.width() || height != pic_size_.height())) {
-    DVLOG(1) << "Picture size changed mid-stream";
-    report_error_to_uma_cb_.Run(MID_STREAM_RESOLUTION_CHANGE);
-    return false;
+  if (!pic_size_.IsEmpty()) {
+    if (width == pic_size_.width() && height == pic_size_.height()) {
+      return true;
+    } else {
+      DVLOG(1) << "Picture size changed mid-stream";
+      report_error_to_uma_cb_.Run(MID_STREAM_RESOLUTION_CHANGE);
+      return false;
+    }
   }
 
   pic_size_.SetSize(width, height);
+  DVLOG(1) << "New picture size: " << width << "x" << height;
 
   max_pic_order_cnt_lsb_ = 1 << (sps->log2_max_pic_order_cnt_lsb_minus4 + 4);
   max_frame_num_ = 1 << (sps->log2_max_frame_num_minus4 + 4);
@@ -1439,6 +1445,7 @@ bool VaapiH264Decoder::ProcessSPS(int sps_id) {
 
   dpb_.set_max_num_pics(max_dpb_size);
 
+  *need_new_buffers = true;
   return true;
 }
 
@@ -1500,119 +1507,37 @@ bool VaapiH264Decoder::ProcessSlice(H264SliceHeader* slice_hdr) {
     return VaapiH264Decoder::kDecodeError; \
   } while (0)
 
-VaapiH264Decoder::DecResult VaapiH264Decoder::DecodeInitial(int32 input_id) {
-  // Decode enough to get required picture size (i.e. until we find an SPS),
-  // if we get any slice data, we are missing the beginning of the stream.
-  H264NALU nalu;
-  H264Parser::Result res;
-
-  if (state_ == kDecoding)
-    return kReadyToDecode;
-
-  curr_input_id_ = input_id;
-
-  while (1) {
-    // If we've already decoded some of the stream (after reset), we may be able
-    // to go into decoding state not only starting at/resuming from an SPS, but
-    // also from other resume points, such as IDRs. In such a case we need an
-    // output surface in case we end up decoding a frame. Otherwise we just look
-    // for an SPS and don't need any outputs.
-    if (curr_sps_id_ != -1 && available_va_surfaces_.empty()) {
-      DVLOG(4) << "No output surfaces available";
-      return kNoOutputAvailable;
-    }
-
-    // Get next NALU looking for SPS or IDR if after reset.
-    res = parser_.AdvanceToNextNALU(&nalu);
-    if (res == H264Parser::kEOStream) {
-      DVLOG(1) << "Could not find SPS before EOS";
-      return kNeedMoreStreamData;
-    } else if (res != H264Parser::kOk) {
-      SET_ERROR_AND_RETURN();
-    }
-
-    DVLOG(4) << " NALU found: " << static_cast<int>(nalu.nal_unit_type);
-
-    switch (nalu.nal_unit_type) {
-      case H264NALU::kSPS:
-        res = parser_.ParseSPS(&curr_sps_id_);
-        if (res != H264Parser::kOk)
-          SET_ERROR_AND_RETURN();
-
-        if (!ProcessSPS(curr_sps_id_))
-          SET_ERROR_AND_RETURN();
-
-        state_ = kDecoding;
-        return kReadyToDecode;
-
-      case H264NALU::kIDRSlice:
-        // If after reset, should be able to recover from an IDR.
-        // TODO(posciak): the IDR may require an SPS that we don't have
-        // available. For now we'd fail if that happens, but ideally we'd like
-        // to keep going until the next SPS in the stream.
-        if (curr_sps_id_ != -1) {
-          H264SliceHeader slice_hdr;
-
-          res = parser_.ParseSliceHeader(nalu, &slice_hdr);
-          if (res != H264Parser::kOk)
-            SET_ERROR_AND_RETURN();
-
-          if (!ProcessSlice(&slice_hdr))
-            SET_ERROR_AND_RETURN();
-
-          state_ = kDecoding;
-          return kReadyToDecode;
-        }  // else fallthrough
-      case H264NALU::kNonIDRSlice:
-      case H264NALU::kPPS:
-        // Non-IDR slices cannot be used as resume points, as we may not
-        // have all reference pictures that they may require.
-        // fallthrough
-      default:
-        // Skip everything unless it's SPS or an IDR slice (if after reset).
-        DVLOG(4) << "Skipping NALU";
-        break;
-    }
-  }
-}
-
-void VaapiH264Decoder::SetStream(uint8* ptr, size_t size) {
+void VaapiH264Decoder::SetStream(uint8* ptr, size_t size, int32 input_id) {
   DCHECK(ptr);
   DCHECK(size);
 
   // Got new input stream data from the client.
-  DVLOG(4) << "New input stream chunk at " << (void*) ptr
+  DVLOG(4) << "New input stream id: " << input_id << " at: " << (void*) ptr
            << " size:  " << size;
   parser_.SetStream(ptr, size);
+  curr_input_id_ = input_id;
 }
 
-VaapiH264Decoder::DecResult VaapiH264Decoder::DecodeOneFrame(int32 input_id) {
-  // Decode until one full frame is decoded or return it or until end
-  // of stream (end of input data is reached).
+VaapiH264Decoder::DecResult VaapiH264Decoder::Decode() {
   H264Parser::Result par_res;
   H264NALU nalu;
+  DCHECK_NE(state_, kError);
 
-  curr_input_id_ = input_id;
-
-  if (state_ != kDecoding) {
-    DVLOG(1) << "Decoder not ready: error in stream or not initialized";
-    return kDecodeError;
-  }
-
-  // All of the actions below might result in decoding a picture from
-  // previously parsed data, but we still have to handle/parse current input
-  // first.
-  // Note: this may drop some already decoded frames if there are errors
-  // further in the stream, but we are OK with that.
   while (1) {
-    if (available_va_surfaces_.empty()) {
+    // If we've already decoded some of the stream (after reset, i.e. we are
+    // not in kNeedStreamMetadata state), we may be able to go back into
+    // decoding state not only starting at/resuming from an SPS, but also from
+    // other resume points, such as IDRs. In the latter case we need an output
+    // surface, because we will end up decoding that IDR in the process.
+    // Otherwise we just look for an SPS and don't produce any output frames.
+    if (state_ != kNeedStreamMetadata && available_va_surfaces_.empty()) {
       DVLOG(4) << "No output surfaces available";
-      return kNoOutputAvailable;
+      return kRanOutOfSurfaces;
     }
 
     par_res = parser_.AdvanceToNextNALU(&nalu);
     if (par_res == H264Parser::kEOStream)
-      return kNeedMoreStreamData;
+      return kRanOutOfStreamData;
     else if (par_res != H264Parser::kOk)
       SET_ERROR_AND_RETURN();
 
@@ -1620,7 +1545,20 @@ VaapiH264Decoder::DecResult VaapiH264Decoder::DecodeOneFrame(int32 input_id) {
 
     switch (nalu.nal_unit_type) {
       case H264NALU::kNonIDRSlice:
+        // We can't resume from a non-IDR slice.
+        if (state_ != kDecoding)
+          break;
+        // else fallthrough
       case H264NALU::kIDRSlice: {
+        // TODO(posciak): the IDR may require an SPS that we don't have
+        // available. For now we'd fail if that happens, but ideally we'd like
+        // to keep going until the next SPS in the stream.
+        if (state_ == kNeedStreamMetadata) {
+          // We need an SPS, skip this IDR and keep looking.
+          break;
+        }
+
+        // If after reset, we should be able to recover from an IDR.
         H264SliceHeader slice_hdr;
 
         par_res = parser_.ParseSliceHeader(nalu, &slice_hdr);
@@ -1629,10 +1567,12 @@ VaapiH264Decoder::DecResult VaapiH264Decoder::DecodeOneFrame(int32 input_id) {
 
         if (!ProcessSlice(&slice_hdr))
           SET_ERROR_AND_RETURN();
+
+        state_ = kDecoding;
         break;
       }
 
-      case H264NALU::kSPS:
+      case H264NALU::kSPS: {
         int sps_id;
 
         if (!FinishPrevFrameIfPresent())
@@ -1642,11 +1582,22 @@ VaapiH264Decoder::DecResult VaapiH264Decoder::DecodeOneFrame(int32 input_id) {
         if (par_res != H264Parser::kOk)
           SET_ERROR_AND_RETURN();
 
-        if (!ProcessSPS(sps_id))
+        bool need_new_buffers = false;
+        if (!ProcessSPS(sps_id, &need_new_buffers))
           SET_ERROR_AND_RETURN();
-        break;
 
-      case H264NALU::kPPS:
+        state_ = kDecoding;
+
+        if (need_new_buffers)
+          return kAllocateNewSurfaces;
+
+        break;
+      }
+
+      case H264NALU::kPPS: {
+        if (state_ != kDecoding)
+          break;
+
         int pps_id;
 
         if (!FinishPrevFrameIfPresent())
@@ -1659,9 +1610,10 @@ VaapiH264Decoder::DecResult VaapiH264Decoder::DecodeOneFrame(int32 input_id) {
         if (!ProcessPPS(pps_id))
           SET_ERROR_AND_RETURN();
         break;
+      }
 
       default:
-        // skip NALU
+        DVLOG(4) << "Skipping NALU type: " << nalu.nal_unit_type;;
         break;
     }
   }
