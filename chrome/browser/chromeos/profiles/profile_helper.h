@@ -30,6 +30,7 @@ namespace chromeos {
 //    GetActiveUserProfileDir()
 // 3. Get mapping from user_id_hash to Profile instance/profile path etc.
 class ProfileHelper : public BrowsingDataRemover::Observer,
+                      public UserManager::Observer,
                       public UserManager::UserSessionStateObserver {
  public:
   ProfileHelper();
@@ -75,11 +76,15 @@ class ProfileHelper : public BrowsingDataRemover::Observer,
  private:
   friend class ProfileHelperTest;
 
-  // UserManager::UserSessionStateObserver implementation:
-  virtual void ActiveUserHashChanged(const std::string& hash) OVERRIDE;
-
   // BrowsingDataRemover::Observer implementation:
   virtual void OnBrowsingDataRemoverDone() OVERRIDE;
+
+  // UserManager::Observer overrides.
+  virtual void MergeSessionStateChanged(
+      UserManager::MergeSessionState state) OVERRIDE;
+
+  // UserManager::UserSessionStateObserver implementation:
+  virtual void ActiveUserHashChanged(const std::string& hash) OVERRIDE;
 
   // Identifies path to active user profile on Chrome OS.
   std::string active_user_id_hash_;

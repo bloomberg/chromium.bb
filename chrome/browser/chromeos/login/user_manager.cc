@@ -28,6 +28,12 @@ static UserManager* g_user_manager = NULL;
 UserManager::Observer::~Observer() {
 }
 
+void UserManager::Observer::LocalStateChanged(UserManager* user_manager) {
+}
+
+void UserManager::Observer::MergeSessionStateChanged(MergeSessionState state) {
+}
+
 void UserManager::UserSessionStateObserver::ActiveUserChanged(
     const User* active_user) {
 }

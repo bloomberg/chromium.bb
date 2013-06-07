@@ -37,10 +37,10 @@ class UserManager {
   class Observer {
    public:
     // Called when the local state preferences is changed.
-    virtual void LocalStateChanged(UserManager* user_manager) = 0;
+    virtual void LocalStateChanged(UserManager* user_manager);
 
     // Called when merge session state is changed.
-    virtual void MergeSessionStateChanged(MergeSessionState state) {}
+    virtual void MergeSessionStateChanged(MergeSessionState state);
 
    protected:
     virtual ~Observer();

@@ -65,7 +65,6 @@ class MergeSessionLoadPage
   // UserManager::Observer overrides.
   virtual void MergeSessionStateChanged(
       UserManager::MergeSessionState state) OVERRIDE;
-  virtual void LocalStateChanged(UserManager* user_manager) OVERRIDE {}
 
   void NotifyBlockingPageComplete();
 
