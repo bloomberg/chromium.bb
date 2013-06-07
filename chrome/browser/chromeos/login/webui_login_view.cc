@@ -434,12 +434,13 @@ void WebUILoginView::RequestMediaAccessPermission(
 void WebUILoginView::OnLoginPromptVisible() {
   // If we're hidden than will generate this signal once we're shown.
   if (is_hidden_ || login_prompt_visible_handled_) {
-    LOG(INFO) << "Login WebUI >> not emitting signal, hidden: " << is_hidden_;
+    LOG(WARNING) << "Login WebUI >> not emitting signal, hidden: "
+                 << is_hidden_;
     return;
   }
   TRACE_EVENT0("chromeos", "WebUILoginView::OnLoginPromoptVisible");
   if (should_emit_login_prompt_visible_) {
-    LOG(INFO) << "Login WebUI >> login-prompt-visible";
+    LOG(WARNING) << "Login WebUI >> login-prompt-visible";
     chromeos::DBusThreadManager::Get()->GetSessionManagerClient()->
         EmitLoginPromptVisible();
   }

@@ -255,11 +255,11 @@ LoginDisplayHostImpl::LoginDisplayHostImpl(const gfx::Rect& background_bounds)
     registrar_.Add(this, chrome::NOTIFICATION_LOGIN_NETWORK_ERROR_SHOWN,
                    content::NotificationService::AllSources());
   }
-  LOG(INFO) << "Login WebUI >> "
-            << "zero_delay: " << zero_delay_enabled
-            << " wait_for_wp_load_: " << waiting_for_wallpaper_load_
-            << " wait_for_pods_: " << waiting_for_user_pods_
-            << " init_webui_hidden_: " << initialize_webui_hidden_;
+  LOG(WARNING) << "Login WebUI >> "
+               << "zero_delay: " << zero_delay_enabled
+               << " wait_for_wp_load_: " << waiting_for_wallpaper_load_
+               << " wait_for_pods_: " << waiting_for_user_pods_
+               << " init_webui_hidden_: " << initialize_webui_hidden_;
 
   bool keyboard_driven_oobe = false;
   system::StatisticsProvider::GetInstance()->GetMachineFlag(
@@ -376,10 +376,10 @@ void LoginDisplayHostImpl::StartWizard(
   is_showing_login_ = false;
 
   if (waiting_for_wallpaper_load_ && !initialize_webui_hidden_) {
-    LOG(INFO) << "Login WebUI >> wizard postponed";
+    LOG(WARNING) << "Login WebUI >> wizard postponed";
     return;
   }
-  LOG(INFO) << "Login WebUI >> wizard";
+  LOG(WARNING) << "Login WebUI >> wizard";
 
   if (!login_window_)
     LoadURL(GURL(kOobeURL));
@@ -405,7 +405,7 @@ void LoginDisplayHostImpl::StartUserAdding(
     const base::Closure& completion_callback) {
   restore_path_ = RESTORE_ADD_USER_INTO_SESSION;
   completion_callback_ = completion_callback;
-  LOG(INFO) << "Login WebUI >> user adding";
+  LOG(WARNING) << "Login WebUI >> user adding";
   if (!login_window_)
     LoadURL(GURL(kUserAddingURL));
   // We should emit this signal only at login screen (after reboot or sign out).
@@ -436,10 +436,10 @@ void LoginDisplayHostImpl::StartSignInScreen() {
   is_showing_login_ = true;
 
   if (waiting_for_wallpaper_load_ && !initialize_webui_hidden_) {
-    LOG(INFO) << "Login WebUI >> sign in postponed";
+    LOG(WARNING) << "Login WebUI >> sign in postponed";
     return;
   }
-  LOG(INFO) << "Login WebUI >> sign in";
+  LOG(WARNING) << "Login WebUI >> sign in";
 
   if (!login_window_)
     LoadURL(GURL(kLoginURL));
@@ -531,7 +531,7 @@ void LoginDisplayHostImpl::Observe(
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   if (chrome::NOTIFICATION_WALLPAPER_ANIMATION_FINISHED == type) {
-    LOG(INFO) << "Login WebUI >> wp animation done";
+    LOG(WARNING) << "Login WebUI >> wp animation done";
     is_wallpaper_loaded_ = true;
     ash::Shell::GetInstance()->user_wallpaper_delegate()
         ->OnWallpaperBootAnimationFinished();
@@ -550,7 +550,7 @@ void LoginDisplayHostImpl::Observe(
                       content::NotificationService::AllSources());
   } else if (chrome::NOTIFICATION_LOGIN_WEBUI_VISIBLE == type ||
              chrome::NOTIFICATION_LOGIN_NETWORK_ERROR_SHOWN == type) {
-    LOG(INFO) << "Login WebUI >> WEBUI_VISIBLE";
+    LOG(WARNING) << "Login WebUI >> WEBUI_VISIBLE";
     if (waiting_for_user_pods_ && initialize_webui_hidden_) {
       waiting_for_user_pods_ = false;
       ShowWebUI();
@@ -699,7 +699,7 @@ void LoginDisplayHostImpl::ShowWebUI() {
     NOTREACHED();
     return;
   }
-  LOG(INFO) << "Login WebUI >> Show already initialized UI";
+  LOG(WARNING) << "Login WebUI >> Show already initialized UI";
   login_window_->Show();
   login_view_->GetWebContents()->GetView()->Focus();
   login_view_->SetStatusAreaVisible(status_area_saved_visibility_);
@@ -713,7 +713,7 @@ void LoginDisplayHostImpl::StartPostponedWebUI() {
     NOTREACHED();
     return;
   }
-  LOG(INFO) << "Login WebUI >> Init postponed WebUI";
+  LOG(WARNING) << "Login WebUI >> Init postponed WebUI";
 
   // Wallpaper has finished loading before StartWizard/StartSignInScreen has
   // been called. In general this should not happen.
@@ -784,10 +784,10 @@ void LoginDisplayHostImpl::InitLoginWindowAndView() {
   // always show it.
   if (!initialize_webui_hidden_ ||
       (!waiting_for_wallpaper_load_ && !waiting_for_user_pods_)) {
-    LOG(INFO) << "Login WebUI >> show login wnd on create";
+    LOG(WARNING) << "Login WebUI >> show login wnd on create";
     login_window_->Show();
   } else {
-    LOG(INFO) << "Login WebUI >> login wnd is hidden on create";
+    LOG(WARNING) << "Login WebUI >> login wnd is hidden on create";
     login_view_->set_is_hidden(true);
   }
   login_window_->GetNativeView()->SetName("WebUILoginView");
