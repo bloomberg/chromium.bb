@@ -44,7 +44,8 @@ public:
         CSSBasicShapeRectangleType = 1,
         CSSBasicShapeCircleType = 2,
         CSSBasicShapeEllipseType = 3,
-        CSSBasicShapePolygonType = 4
+        CSSBasicShapePolygonType = 4,
+        CSSBasicShapeInsetRectangleType = 5
     };
 
     virtual Type type() const = 0;
@@ -93,6 +94,42 @@ private:
     RefPtr<CSSPrimitiveValue> m_x;
     RefPtr<CSSPrimitiveValue> m_width;
     RefPtr<CSSPrimitiveValue> m_height;
+    RefPtr<CSSPrimitiveValue> m_radiusX;
+    RefPtr<CSSPrimitiveValue> m_radiusY;
+};
+
+class CSSBasicShapeInsetRectangle : public CSSBasicShape {
+public:
+    static PassRefPtr<CSSBasicShapeInsetRectangle> create() { return adoptRef(new CSSBasicShapeInsetRectangle); }
+
+    CSSPrimitiveValue* top() const { return m_top.get(); }
+    CSSPrimitiveValue* right() const { return m_right.get(); }
+    CSSPrimitiveValue* bottom() const { return m_bottom.get(); }
+    CSSPrimitiveValue* left() const { return m_left.get(); }
+    CSSPrimitiveValue* radiusX() const { return m_radiusX.get(); }
+    CSSPrimitiveValue* radiusY() const { return m_radiusY.get(); }
+
+    void setTop(PassRefPtr<CSSPrimitiveValue> top) { m_top = top; }
+    void setRight(PassRefPtr<CSSPrimitiveValue> right) { m_right = right; }
+    void setBottom(PassRefPtr<CSSPrimitiveValue> bottom) { m_bottom = bottom; }
+    void setLeft(PassRefPtr<CSSPrimitiveValue> left) { m_left = left; }
+    void setRadiusX(PassRefPtr<CSSPrimitiveValue> radiusX) { m_radiusX = radiusX; }
+    void setRadiusY(PassRefPtr<CSSPrimitiveValue> radiusY) { m_radiusY = radiusY; }
+
+    virtual Type type() const { return CSSBasicShapeInsetRectangleType; }
+    virtual String cssText() const;
+    virtual bool equals(const CSSBasicShape&) const;
+
+    virtual String serializeResolvingVariables(const HashMap<AtomicString, String>&) const;
+    virtual bool hasVariableReference() const;
+
+private:
+    CSSBasicShapeInsetRectangle() { }
+
+    RefPtr<CSSPrimitiveValue> m_right;
+    RefPtr<CSSPrimitiveValue> m_top;
+    RefPtr<CSSPrimitiveValue> m_bottom;
+    RefPtr<CSSPrimitiveValue> m_left;
     RefPtr<CSSPrimitiveValue> m_radiusX;
     RefPtr<CSSPrimitiveValue> m_radiusY;
 };
