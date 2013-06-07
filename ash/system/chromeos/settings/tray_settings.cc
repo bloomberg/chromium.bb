@@ -11,7 +11,7 @@
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/system/tray/tray_constants.h"
 #include "base/logging.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chromeos/dbus/power_manager_client.h"
 #include "grit/ash_resources.h"
 #include "grit/ash_strings.h"

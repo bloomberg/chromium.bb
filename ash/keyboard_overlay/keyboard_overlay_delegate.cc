@@ -9,7 +9,7 @@
 #include "ash/shell.h"
 #include "base/bind.h"
 #include "base/memory/weak_ptr.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_message_handler.h"

@@ -12,7 +12,7 @@
 #include "ash/system/status_area_widget.h"
 #include "ash/system/tray/system_tray_item.h"
 #include "ash/test/ash_test_base.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/view.h"

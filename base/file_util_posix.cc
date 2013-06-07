@@ -42,9 +42,9 @@
 #include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/time.h"
-#include "base/utf_string_conversions.h"
 
 #if defined(OS_ANDROID)
 #include "base/os_compat_android.h"

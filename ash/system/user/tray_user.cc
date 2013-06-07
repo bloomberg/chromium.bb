@@ -25,7 +25,7 @@
 #include "base/memory/scoped_vector.h"
 #include "base/string16.h"
 #include "base/string_util.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "grit/ash_resources.h"
 #include "grit/ash_strings.h"
 #include "skia/ext/image_operations.h"

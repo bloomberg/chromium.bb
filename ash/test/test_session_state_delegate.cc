@@ -5,7 +5,7 @@
 #include "ash/test/test_session_state_delegate.h"
 
 #include "base/string16.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 
 namespace ash {
 namespace test {

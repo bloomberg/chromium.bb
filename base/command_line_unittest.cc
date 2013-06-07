@@ -8,7 +8,7 @@
 #include "base/basictypes.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::FilePath;

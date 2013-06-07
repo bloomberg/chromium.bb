@@ -7,7 +7,7 @@
 #include "ash/shell.h"
 #include "ash/system/chromeos/network/network_icon_animation.h"
 #include "ash/system/chromeos/network/network_icon_animation_observer.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chromeos/network/device_state.h"
 #include "chromeos/network/network_connection_handler.h"
 #include "chromeos/network/network_state.h"

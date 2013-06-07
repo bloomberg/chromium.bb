@@ -16,7 +16,7 @@
 #include "base/string_util.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/sys_string_conversions.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 
 #if defined(OS_MACOSX)
 #include "base/mac/scoped_cftyperef.h"

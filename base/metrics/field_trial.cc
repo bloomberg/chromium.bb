@@ -8,10 +8,10 @@
 #include "base/logging.h"
 #include "base/rand_util.h"
 #include "base/sha1.h"
-#include "base/stringprintf.h"
 #include "base/string_util.h"
+#include "base/stringprintf.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/sys_byteorder.h"
-#include "base/utf_string_conversions.h"
 
 namespace base {
 

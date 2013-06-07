@@ -13,7 +13,7 @@
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_notification_view.h"
 #include "base/chromeos/chromeos_version.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "grit/ash_resources.h"
 #include "grit/ash_strings.h"
 #include "ui/base/l10n/l10n_util.h"

@@ -6,7 +6,7 @@
 
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "ui/aura/window.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/screen.h"

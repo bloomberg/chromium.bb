@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/json/string_escape.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {

@@ -9,7 +9,7 @@
 #include "base/files/file_path.h"
 #include "base/string_util.h"
 #include "base/strings/sys_string_conversions.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 #include "third_party/icu/public/i18n/unicode/usearch.h"

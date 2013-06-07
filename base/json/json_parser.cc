@@ -12,8 +12,8 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversion_utils.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/third_party/icu/icu_utf.h"
-#include "base/utf_string_conversions.h"
 #include "base/values.h"
 
 namespace base {

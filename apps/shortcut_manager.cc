@@ -8,7 +8,7 @@
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/string16.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/shell_integration.h"
 #include "chrome/browser/ui/web_applications/web_app_ui.h"
 #include "chrome/browser/web_applications/web_app.h"

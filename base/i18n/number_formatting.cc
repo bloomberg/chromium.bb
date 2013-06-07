@@ -5,12 +5,12 @@
 #include "base/i18n/number_formatting.h"
 
 #include "base/format_macros.h"
-#include "base/logging.h"
 #include "base/lazy_instance.h"
+#include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/stringprintf.h"
 #include "base/string_util.h"
-#include "base/utf_string_conversions.h"
+#include "base/stringprintf.h"
+#include "base/strings/utf_string_conversions.h"
 #include "third_party/icu/public/common/unicode/ustring.h"
 #include "third_party/icu/public/i18n/unicode/numfmt.h"
 

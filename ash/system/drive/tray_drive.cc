@@ -19,7 +19,7 @@
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "grit/ash_resources.h"
 #include "grit/ash_strings.h"
 #include "ui/base/l10n/l10n_util.h"

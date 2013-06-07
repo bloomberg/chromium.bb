@@ -17,7 +17,7 @@
 #include "ash/system/tray/system_tray_notifier.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/volume_control_delegate.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chromeos/audio/cras_audio_handler.h"
 #include "grit/ash_resources.h"
 #include "grit/ash_strings.h"

@@ -12,7 +12,7 @@
 #include "base/i18n/case_conversion.h"
 #include "base/i18n/string_search.h"
 #include "base/string_util.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "ui/app_list/app_list_item_model.h"
 #include "ui/app_list/app_list_model.h"
 #include "ui/app_list/app_list_view_delegate.h"

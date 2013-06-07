@@ -9,7 +9,7 @@
 #include "ash/system/tray/system_tray_notifier.h"
 #include "base/string16.h"
 #include "base/string_util.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chromeos/network/network_connection_handler.h"
 #include "chromeos/network/network_event_log.h"
 #include "chromeos/network/network_state.h"

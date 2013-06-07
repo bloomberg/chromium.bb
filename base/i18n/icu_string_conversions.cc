@@ -10,7 +10,7 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/string_util.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "third_party/icu/public/common/unicode/ucnv.h"
 #include "third_party/icu/public/common/unicode/ucnv_cb.h"
 #include "third_party/icu/public/common/unicode/ucnv_err.h"

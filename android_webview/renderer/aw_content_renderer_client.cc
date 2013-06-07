@@ -9,7 +9,7 @@
 #include "android_webview/renderer/aw_render_view_ext.h"
 #include "android_webview/renderer/view_renderer.h"
 #include "base/message_loop.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "components/visitedlink/renderer/visitedlink_slave.h"
 #include "content/public/renderer/render_thread.h"
 #include "googleurl/src/gurl.h"

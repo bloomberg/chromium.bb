@@ -21,9 +21,9 @@
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/path_service.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/test/test_file_util.h"
 #include "base/threading/platform_thread.h"
-#include "base/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 

@@ -51,9 +51,9 @@ typedef pthread_mutex_t* MutexHandle;
 #include "base/debug/stack_trace.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/strings/string_piece.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/lock_impl.h"
 #include "base/threading/platform_thread.h"
-#include "base/utf_string_conversions.h"
 #include "base/vlog.h"
 #if defined(OS_POSIX)
 #include "base/safe_strerror_posix.h"

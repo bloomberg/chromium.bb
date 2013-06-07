@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "ash/shell.h"
-#include "base/utf_string_conversions.h"  // ASCIIToUTF16
+#include "base/strings/utf_string_conversions.h"  // ASCIIToUTF16
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #include "ui/gfx/canvas.h"

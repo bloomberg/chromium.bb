@@ -10,7 +10,7 @@
 
 #include "base/files/file_path.h"
 #include "base/string16.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/win/scoped_comptr.h"
 #include "base/win/scoped_propvariant.h"
 #include "base/win/windows_version.h"

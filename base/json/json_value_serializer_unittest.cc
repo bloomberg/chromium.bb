@@ -13,7 +13,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
 #include "base/string_util.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

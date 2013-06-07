@@ -12,7 +12,7 @@
 #include "base/json/json_string_value_serializer.h"
 #include "base/stringprintf.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "third_party/skia/include/core/SkXfermode.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"

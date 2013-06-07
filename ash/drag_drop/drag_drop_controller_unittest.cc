@@ -10,7 +10,7 @@
 #include "ash/test/ash_test_base.h"
 #include "base/command_line.h"
 #include "base/location.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "ui/aura/client/capture_client.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/test/event_generator.h"

@@ -18,6 +18,7 @@
 #include "base/stringprintf.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_tokenizer.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/cancellation_flag.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/sys_info.h"
@@ -26,7 +27,6 @@
 #include "base/threading/thread_id_name_manager.h"
 #include "base/threading/thread_local.h"
 #include "base/time.h"
-#include "base/utf_string_conversions.h"
 
 #if defined(OS_WIN)
 #include "base/debug/trace_event_win.h"

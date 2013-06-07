@@ -14,7 +14,7 @@
 #include "ash/system/tray/tray_constants.h"
 #include "base/bind.h"
 #include "base/message_loop.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "grit/ash_resources.h"
 #include "grit/ash_strings.h"
 #include "ui/base/resource/resource_bundle.h"
