@@ -32,7 +32,7 @@ class FakeGetDataRequest : public GetDataRequest {
   }
 
   void NotifyStart() {
-    NotifyStartToOperationRegistry();
+    NotifyStartToRequestRegistry();
   }
 
  protected:

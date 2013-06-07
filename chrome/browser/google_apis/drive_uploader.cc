@@ -280,7 +280,7 @@ void DriveUploader::OnUploadLocationReceived(
   // Start the upload from the beginning of the file.
   // PostTask is necessary because we have to finish
   // InitiateUpload's callback before calling ResumeUpload, due to the
-  // implementation of OperationRegistry. (http://crbug.com/134814)
+  // implementation of RequestRegistry. (http://crbug.com/134814)
   base::MessageLoop::current()->PostTask(
       FROM_HERE,
       base::Bind(&DriveUploader::UploadNextChunk,
@@ -385,7 +385,7 @@ void DriveUploader::OnUploadRangeResponseReceived(
   // remaining data is |response.end_position_received|.
   // PostTask is necessary because we have to finish previous ResumeUpload's
   // callback before calling ResumeUpload again, due to the implementation of
-  // OperationRegistry. (http://crbug.com/134814)
+  // RequestRegistry. (http://crbug.com/134814)
   base::MessageLoop::current()->PostTask(
       FROM_HERE,
       base::Bind(&DriveUploader::UploadNextChunk,

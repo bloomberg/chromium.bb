@@ -20,7 +20,7 @@ RequestSender::RequestSender(
     const std::string& custom_user_agent)
     : profile_(profile),
       auth_service_(new AuthService(url_request_context_getter, scopes)),
-      operation_registry_(new OperationRegistry()),
+      operation_registry_(new RequestRegistry()),
       custom_user_agent_(custom_user_agent),
       weak_ptr_factory_(this) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));

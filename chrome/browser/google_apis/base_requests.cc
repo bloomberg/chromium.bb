@@ -95,7 +95,7 @@ void ParseJson(const std::string& json, const ParseJsonCallback& callback) {
 UrlFetchRequestBase::UrlFetchRequestBase(
     RequestSender* runner,
     net::URLRequestContextGetter* url_request_context_getter)
-    : OperationRegistry::Operation(runner->operation_registry()),
+    : RequestRegistry::Request(runner->operation_registry()),
       url_request_context_getter_(url_request_context_getter),
       re_authenticate_count_(0),
       started_(false),
@@ -108,7 +108,7 @@ UrlFetchRequestBase::UrlFetchRequestBase(
     RequestSender* runner,
     net::URLRequestContextGetter* url_request_context_getter,
     const base::FilePath& path)
-    : OperationRegistry::Operation(runner->operation_registry(), path),
+    : RequestRegistry::Request(runner->operation_registry(), path),
       url_request_context_getter_(url_request_context_getter),
       re_authenticate_count_(0),
       started_(false),
@@ -205,7 +205,7 @@ void UrlFetchRequestBase::Start(const std::string& access_token,
   }
 
   // Register to operation registry.
-  NotifyStartToOperationRegistry();
+  NotifyStartToRequestRegistry();
 
   url_fetcher_->Start();
   started_ = true;
@@ -253,9 +253,9 @@ GDataErrorCode UrlFetchRequestBase::GetErrorCode(const URLFetcher* source) {
 
 void UrlFetchRequestBase::OnProcessURLFetchResultsComplete(bool result) {
   if (result)
-    NotifySuccessToOperationRegistry();
+    NotifySuccessToRequestRegistry();
   else
-    NotifyFinish(OPERATION_FAILED);
+    NotifyFinish(REQUEST_FAILED);
 }
 
 void UrlFetchRequestBase::OnURLFetchComplete(const URLFetcher* source) {
@@ -279,11 +279,11 @@ void UrlFetchRequestBase::OnURLFetchComplete(const URLFetcher* source) {
   ProcessURLFetchResults(source);
 }
 
-void UrlFetchRequestBase::NotifySuccessToOperationRegistry() {
-  NotifyFinish(OPERATION_COMPLETED);
+void UrlFetchRequestBase::NotifySuccessToRequestRegistry() {
+  NotifyFinish(REQUEST_COMPLETED);
 }
 
-void UrlFetchRequestBase::NotifyStartToOperationRegistry() {
+void UrlFetchRequestBase::NotifyStartToRequestRegistry() {
   NotifyStart();
 }
 
@@ -297,8 +297,8 @@ void UrlFetchRequestBase::OnAuthFailed(GDataErrorCode code) {
 
   // Note: NotifyFinish() must be invoked at the end, after all other callbacks
   // and notifications. Once NotifyFinish() is called, the current instance of
-  // request will be deleted from the OperationRegistry and become invalid.
-  NotifyFinish(OPERATION_FAILED);
+  // request will be deleted from the RequestRegistry and become invalid.
+  NotifyFinish(REQUEST_FAILED);
 }
 
 base::WeakPtr<AuthenticatedRequestInterface>
@@ -445,7 +445,7 @@ void InitiateUploadRequestBase::ProcessURLFetchResults(
   OnProcessURLFetchResultsComplete(code == HTTP_SUCCESS);
 }
 
-void InitiateUploadRequestBase::NotifySuccessToOperationRegistry() {
+void InitiateUploadRequestBase::NotifySuccessToRequestRegistry() {
   NotifySuspend();
 }
 
@@ -580,9 +580,9 @@ void UploadRangeRequestBase::OnDataParsed(GDataErrorCode code,
   OnProcessURLFetchResultsComplete(last_chunk_completed_);
 }
 
-void UploadRangeRequestBase::NotifySuccessToOperationRegistry() {
+void UploadRangeRequestBase::NotifySuccessToRequestRegistry() {
   if (last_chunk_completed_)
-    NotifyFinish(OPERATION_COMPLETED);
+    NotifyFinish(REQUEST_COMPLETED);
   else
     NotifySuspend();
 }
@@ -663,7 +663,7 @@ bool ResumeUploadRequestBase::GetContentFile(
   return true;
 }
 
-void ResumeUploadRequestBase::NotifyStartToOperationRegistry() {
+void ResumeUploadRequestBase::NotifyStartToRequestRegistry() {
   NotifyResume();
 }
 

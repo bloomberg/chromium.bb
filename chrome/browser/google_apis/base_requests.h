@@ -14,7 +14,7 @@
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/google_apis/gdata_errorcode.h"
-#include "chrome/browser/google_apis/operation_registry.h"
+#include "chrome/browser/google_apis/request_registry.h"
 #include "googleurl/src/gurl.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_fetcher_delegate.h"
@@ -74,7 +74,7 @@ class AuthenticatedRequestInterface {
   // deleted when it is canceled by user action, for posting asynchronous tasks
   // on the authentication request object, weak pointers have to be used.
   // TODO(kinaba): crbug.com/134814 use more clean life time management than
-  // using weak pointers, while deprecating OperationRegistry.
+  // using weak pointers, while deprecating RequestRegistry.
   virtual base::WeakPtr<AuthenticatedRequestInterface> GetWeakPtr() = 0;
 };
 
@@ -82,7 +82,7 @@ class AuthenticatedRequestInterface {
 
 // Base class for requests that are fetching URLs.
 class UrlFetchRequestBase : public AuthenticatedRequestInterface,
-                            public OperationRegistry::Operation,
+                            public RequestRegistry::Request,
                             public net::URLFetcherDelegate {
  public:
   // AuthenticatedRequestInterface overrides.
@@ -140,8 +140,8 @@ class UrlFetchRequestBase : public AuthenticatedRequestInterface,
   // Invoked when it needs to notify the status. Chunked requests that
   // constructs a logically single request from multiple physical requests
   // should notify resume/suspend instead of start/finish.
-  virtual void NotifyStartToOperationRegistry();
-  virtual void NotifySuccessToOperationRegistry();
+  virtual void NotifyStartToRequestRegistry();
+  virtual void NotifySuccessToRequestRegistry();
 
   // Invoked by this base class upon an authentication error or cancel by
   // a user request. Must be implemented by a derived class.
@@ -169,7 +169,7 @@ class UrlFetchRequestBase : public AuthenticatedRequestInterface,
   }
 
  private:
-  // OperationRegistry::Operation overrides.
+  // RequestRegistry::Request overrides.
   virtual void DoCancel() OVERRIDE;
 
   // URLFetcherDelegate overrides.
@@ -302,7 +302,7 @@ class InitiateUploadRequestBase : public UrlFetchRequestBase {
 
   // UrlFetchRequestBase overrides.
   virtual void ProcessURLFetchResults(const net::URLFetcher* source) OVERRIDE;
-  virtual void NotifySuccessToOperationRegistry() OVERRIDE;
+  virtual void NotifySuccessToRequestRegistry() OVERRIDE;
   virtual void RunCallbackOnPrematureFailure(GDataErrorCode code) OVERRIDE;
   virtual std::vector<std::string> GetExtraRequestHeaders() const OVERRIDE;
 
@@ -343,7 +343,7 @@ class UploadRangeRequestBase : public UrlFetchRequestBase {
  protected:
   // |upload_location| is the URL of where to upload the file to.
   // |drive_file_path| is the path to the file seen in the UI. Not necessary
-  // for resuming an upload, but used for adding an entry to OperationRegistry.
+  // for resuming an upload, but used for adding an entry to RequestRegistry.
   // TODO(satorux): Remove the drive file path hack. crbug.com/163296
   UploadRangeRequestBase(
       RequestSender* runner,
@@ -356,7 +356,7 @@ class UploadRangeRequestBase : public UrlFetchRequestBase {
   virtual GURL GetURL() const OVERRIDE;
   virtual net::URLFetcher::RequestType GetRequestType() const OVERRIDE;
   virtual void ProcessURLFetchResults(const net::URLFetcher* source) OVERRIDE;
-  virtual void NotifySuccessToOperationRegistry() OVERRIDE;
+  virtual void NotifySuccessToRequestRegistry() OVERRIDE;
   virtual void RunCallbackOnPrematureFailure(GDataErrorCode code) OVERRIDE;
 
   // This method will be called when the request is done, regardless of
@@ -431,7 +431,7 @@ class ResumeUploadRequestBase : public UploadRangeRequestBase {
                               int64* range_offset,
                               int64* range_length,
                               std::string* upload_content_type) OVERRIDE;
-  virtual void NotifyStartToOperationRegistry() OVERRIDE;
+  virtual void NotifyStartToRequestRegistry() OVERRIDE;
 
  private:
   // The parameters for the request. See ResumeUploadParams for the details.

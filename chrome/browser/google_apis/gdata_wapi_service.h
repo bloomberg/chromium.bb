@@ -167,7 +167,7 @@ class GDataWapiService : public DriveServiceInterface,
   net::URLRequestContextGetter* url_request_context_getter_;  // Not owned.
   scoped_ptr<RequestSender> sender_;
   ObserverList<DriveServiceObserver> observers_;
-  // Operation objects should hold a copy of this, rather than a const
+  // Request objects should hold a copy of this, rather than a const
   // reference, as they may outlive this object.
   const GDataWapiUrlGenerator url_generator_;
   const std::string custom_user_agent_;

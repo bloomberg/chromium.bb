@@ -23,7 +23,7 @@ namespace google_apis {
 
 class AuthenticatedRequestInterface;
 class AuthService;
-class OperationRegistry;
+class RequestRegistry;
 
 // Helper class that sends requests implementing
 // AuthenticatedRequestInterface and handles retries and authentication.
@@ -43,7 +43,7 @@ class RequestSender {
   virtual ~RequestSender();
 
   AuthService* auth_service() { return auth_service_.get(); }
-  OperationRegistry* operation_registry() {
+  RequestRegistry* operation_registry() {
     return operation_registry_.get();
   }
 
@@ -72,7 +72,7 @@ class RequestSender {
   Profile* profile_;  // Not owned.
 
   scoped_ptr<AuthService> auth_service_;
-  scoped_ptr<OperationRegistry> operation_registry_;
+  scoped_ptr<RequestRegistry> operation_registry_;
   const std::string custom_user_agent_;
 
   // Note: This should remain the last member so it'll be destroyed and
