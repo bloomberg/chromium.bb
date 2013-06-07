@@ -7,34 +7,65 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/logging.h"
+#include "base/memory/ref_counted.h"
 #include "base/message_loop.h"
 #include "base/message_loop/message_loop_proxy.h"
+#include "base/stringprintf.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_tokenizer.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/time.h"
 #include "chrome/test/chromedriver/chrome/log.h"
 #include "chrome/test/chromedriver/chrome/status.h"
 #include "chrome/test/chromedriver/net/adb_client_socket.h"
 
 namespace {
 
-const int kAdbPort = 5037;
+// This class is bound in the callback to AdbQuery and isn't freed until the
+// callback is run, even if the function that creates the buffer times out.
+class ResponseBuffer : public base::RefCountedThreadSafe<ResponseBuffer> {
+ public:
+  ResponseBuffer() : ready_(true, false) {}
 
-void ReceiveAdbResponse(std::string* response_out, bool* success,
-                        base::WaitableEvent* event, int result,
-                        const std::string& response) {
-  *response_out = response;
-  *success = (result >= 0) ? true : false;
-  event->Signal();
-}
+  void OnResponse(int result, const std::string& response) {
+    response_ = response;
+    result_ = result;
+    ready_.Signal();
+  }
+
+  Status GetResponse(
+      std::string* response, const base::TimeDelta& timeout) {
+    base::TimeTicks deadline = base::TimeTicks::Now() + timeout;
+    while (!ready_.IsSignaled()) {
+      base::TimeDelta delta = deadline - base::TimeTicks::Now();
+      if (delta <= base::TimeDelta())
+        return Status(kTimeout, base::StringPrintf(
+            "Adb command timed out after %d seconds",
+            static_cast<int>(timeout.InSeconds())));
+      ready_.TimedWait(timeout);
+    }
+    if (result_ < 0)
+      return Status(kUnknownError,
+          "Failed to run adb command, is the adb server running?");
+    *response = response_;
+    return Status(kOk);
+  }
+
+ private:
+  friend class base::RefCountedThreadSafe<ResponseBuffer>;
+  ~ResponseBuffer() {}
+
+  std::string response_;
+  int result_;
+  base::WaitableEvent ready_;
+};
 
 void ExecuteCommandOnIOThread(
-    const std::string& command, std::string* response, bool* success,
-    base::WaitableEvent* event) {
+    const std::string& command, scoped_refptr<ResponseBuffer> response_buffer) {
   CHECK(base::MessageLoop::current()->IsType(base::MessageLoop::TYPE_IO));
-  AdbClientSocket::AdbQuery(kAdbPort, command,
-      base::Bind(&ReceiveAdbResponse, response, success, event));
+  AdbClientSocket::AdbQuery(5037, command,
+      base::Bind(&ResponseBuffer::OnResponse, response_buffer));
 }
 
 }  // namespace
@@ -150,19 +181,16 @@ Status AdbImpl::ForceStop(
 
 Status AdbImpl::ExecuteCommand(
     const std::string& command, std::string* response) {
-  bool success;
-  base::WaitableEvent event(false, false);
-  log_->AddEntry(Log::kDebug, "Adb command: " + command);
+  scoped_refptr<ResponseBuffer> response_buffer = new ResponseBuffer;
+  log_->AddEntry(Log::kDebug, "Sending adb command: " + command);
   io_message_loop_proxy_->PostTask(
       FROM_HERE,
-      base::Bind(&ExecuteCommandOnIOThread, command, response, &success,
-                 &event));
-  event.Wait();
-  log_->AddEntry(Log::kDebug, "Adb response: " + *response);
-  if (success)
-    return Status(kOk);
-  return Status(kUnknownError,
-      "Adb command \"" + command + "\" failed, is the Adb server running?");
+      base::Bind(&ExecuteCommandOnIOThread, command, response_buffer));
+  Status status = response_buffer->GetResponse(
+      response, base::TimeDelta::FromSeconds(30));
+  if (status.IsOk())
+    log_->AddEntry(Log::kDebug, "Received adb response: " + *response);
+  return status;
 }
 
 Status AdbImpl::ExecuteHostCommand(
