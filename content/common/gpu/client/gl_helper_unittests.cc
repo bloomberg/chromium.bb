@@ -162,12 +162,6 @@ class GLHelperTest : public testing::Test {
         case GLHelperScaling::SHADER_PLANAR:
           ret.append("planar");
           break;
-        case GLHelperScaling::SHADER_YUV_MRT_PASS1:
-          ret.append("rgb2yuv pass 1");
-          break;
-        case GLHelperScaling::SHADER_YUV_MRT_PASS2:
-          ret.append("rgb2yuv pass 2");
-          break;
       }
 
       if (xy_matters) {
@@ -246,8 +240,6 @@ class GLHelperTest : public testing::Test {
       // Codify valid scale operations.
       switch (scaler_stages[i].shader) {
         case GLHelperScaling::SHADER_PLANAR:
-        case GLHelperScaling::SHADER_YUV_MRT_PASS1:
-        case GLHelperScaling::SHADER_YUV_MRT_PASS2:
           EXPECT_TRUE(false) << "Invalid shader.";
           break;
 
@@ -773,8 +765,7 @@ class GLHelperTest : public testing::Test {
                        int output_ysize,
                        int xmargin,
                        int ymargin,
-                       int test_pattern,
-                       bool use_mrt) {
+                       int test_pattern) {
     WebGLId src_texture = context_->createTexture();
     SkBitmap input_pixels;
     input_pixels.setConfig(SkBitmap::kARGB_8888_Config, xsize, ysize);
@@ -832,8 +823,7 @@ class GLHelperTest : public testing::Test {
             gfx::Rect(0, 0, xsize, ysize),
             gfx::Size(output_xsize, output_ysize),
             gfx::Rect(xmargin, ymargin, xsize, ysize),
-            false,
-            use_mrt));
+            false));
 
     scoped_refptr<media::VideoFrame> output_frame =
         media::VideoFrame::CreateFrame(
@@ -1109,32 +1099,29 @@ class GLHelperTest : public testing::Test {
 
 TEST_F(GLHelperTest, YUVReadbackTest) {
   int sizes[] = { 2, 4, 14 };
-  for (int use_mrt = 0; use_mrt <= 1 ; use_mrt++) {
-    for (unsigned int x = 0; x < arraysize(sizes); x++) {
-      for (unsigned int y = 0; y < arraysize(sizes); y++) {
-        for (unsigned int ox = x; ox < arraysize(sizes); ox++) {
-          for (unsigned int oy = y; oy < arraysize(sizes); oy++) {
-            // If output is a subsection of the destination frame, (letterbox)
-            // then try different variations of where the subsection goes.
-            for (Margin xm = x < ox ? MarginLeft : MarginRight;
-                 xm <= MarginRight;
-                 xm = NextMargin(xm)) {
-              for (Margin ym = y < oy ? MarginLeft : MarginRight;
-                   ym <= MarginRight;
-                   ym = NextMargin(ym)) {
-                for (int pattern = 0; pattern < 3; pattern++) {
-                  TestYUVReadback(
-                      sizes[x],
-                      sizes[y],
-                      sizes[ox],
-                      sizes[oy],
-                      compute_margin(sizes[x], sizes[ox], xm),
-                      compute_margin(sizes[y], sizes[oy], ym),
-                      pattern,
-                      use_mrt == 1);
-                  if (HasFailure()) {
-                    return;
-                  }
+  for (unsigned int x = 0; x < arraysize(sizes); x++) {
+    for (unsigned int y = 0; y < arraysize(sizes); y++) {
+      for (unsigned int ox = x; ox < arraysize(sizes); ox++) {
+        for (unsigned int oy = y; oy < arraysize(sizes); oy++) {
+          // If output is a subsection of the destination frame, (letterbox)
+          // then try different variations of where the subsection goes.
+          for (Margin xm = x < ox ? MarginLeft : MarginRight;
+               xm <= MarginRight;
+               xm = NextMargin(xm)) {
+            for (Margin ym = y < oy ? MarginLeft : MarginRight;
+                 ym <= MarginRight;
+                 ym = NextMargin(ym)) {
+              for (int pattern = 0; pattern < 3; pattern++) {
+                TestYUVReadback(
+                    sizes[x],
+                    sizes[y],
+                    sizes[ox],
+                    sizes[oy],
+                    compute_margin(sizes[x], sizes[ox], xm),
+                    compute_margin(sizes[y], sizes[oy], ym),
+                    pattern);
+                if (HasFailure()) {
+                  return;
                 }
               }
             }
