@@ -88,7 +88,7 @@
             "$t": "https://document%3Aadded_in_root_id"
          },
          "link": [ {
-            "href": "https://dir_1_self_link/folder:1_folder_resource_id",
+            "href": "https://dir_1_self_link/folder%3A1_folder_resource_id",
             "rel": "http://schemas.google.com/docs/2007#parent",
             "title": "Directory 1",
             "type": "application/atom+xml"

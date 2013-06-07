@@ -37,7 +37,7 @@
             "term": "http://schemas.google.com/docs/2007#folder"
          } ],
          "content": {
-            "src": "https://xxx/content/folder:1_folder_resource_id",
+            "src": "https://xxx/content/folder%3A1_folder_resource_id",
             "type": "application/atom+xml;type=feed"
          },
          "docs$writersCanInvite": {
@@ -73,15 +73,15 @@
             "rel": "alternate",
             "type": "text/html"
          }, {
-            "href": "https://fake_server/folder:1_folder_resource_id",
+            "href": "https://fake_server/folder%3A1_folder_resource_id",
             "rel": "self",
             "type": "application/atom+xml"
          }, {
-            "href": "https://xxx/upload/folder:2_folder_resource_id",
+            "href": "https://xxx/upload/folder%3A2_folder_resource_id",
             "rel": "http://schemas.google.com/g/2005#resumable-create-media",
             "type": "application/atom+xml"
          }, {
-            "href": "https://xxx/edit/folder:1_folder_resource_id",
+            "href": "https://xxx/edit/folder%3A1_folder_resource_id",
             "rel": "edit",
             "type": "application/atom+xml"
          }, {
@@ -121,7 +121,7 @@
             "term": "http://schemas.google.com/docs/2007#folder"
          } ],
          "content": {
-            "src": "https://xxx/content/folder:2_folder_resource_id",
+            "src": "https://xxx/content/folder%3A2_folder_resource_id",
             "type": "application/atom+xml;type=feed"
          },
          "docs$writersCanInvite": {
@@ -157,11 +157,11 @@
             "rel": "alternate",
             "type": "text/html"
          }, {
-            "href": "https://fake_server/folder:2_folder_resource_id",
+            "href": "https://fake_server/folder%3A2_folder_resource_id",
             "rel": "self",
             "type": "application/atom+xml"
          }, {
-            "href": "https://xxx/edit/folder:2_folder_resource_id",
+            "href": "https://xxx/edit/folder%3A2_folder_resource_id",
             "rel": "edit",
             "type": "application/atom+xml"
          }, {
@@ -169,7 +169,7 @@
             "rel": "http://schemas.google.com/g/2005#resumable-create-media",
             "type": "application/atom+xml"
          }, {
-            "href": "https://fake_server/folder:1_folder_resource_id",
+            "href": "https://fake_server/folder%3A1_folder_resource_id",
             "rel": "http://schemas.google.com/docs/2007#parent",
             "type": "application/atom+xml"
          }, {
@@ -245,15 +245,15 @@
             "rel": "alternate",
             "type": "text/html"
          }, {
-            "href": "https://fake_server/folder:3_folder_resource_id",
+            "href": "https://fake_server/folder%3A3_folder_resource_id",
             "rel": "self",
             "type": "application/atom+xml"
          }, {
-            "href": "https:/xxx/edit/folder:3_folder_resource_id",
+            "href": "https:/xxx/edit/folder%3A3_folder_resource_id",
             "rel": "edit",
             "type": "application/atom+xml"
          }, {
-            "href": "https://fake_server/folder:1_folder_resource_id",
+            "href": "https://fake_server/folder%3A1_folder_resource_id",
             "rel": "http://schemas.google.com/docs/2007#parent",
             "type": "application/atom+xml"
          }, {
@@ -289,7 +289,7 @@
             "term": "http://schemas.google.com/docs/2007#file"
          } ],
          "content": {
-            "src": "https://xxx/content/file:1_file_resource_id",
+            "src": "https://xxx/content/file%3A1_file_resource_id",
             "type": "application/vnd.mozilla.xul+xml"
          },
          "docs$filename": {
@@ -338,19 +338,19 @@
             "rel": "alternate",
             "type": "text/html"
          }, {
-            "href": "https://xxx/upload/file:1_file_resource_id",
+            "href": "https://xxx/upload/file%3A1_file_resource_id",
             "rel": "http://schemas.google.com/g/2005#resumable-edit-media",
             "type": "application/atom+xml"
          }, {
-            "href": "https://fake_server/file:1_file_resource_id",
+            "href": "https://fake_server/file%3A1_file_resource_id",
             "rel": "self",
             "type": "application/atom+xml"
          }, {
-            "href": "https://fake_server/folder:1_folder_resource_id",
+            "href": "https://fake_server/folder%3A1_folder_resource_id",
             "rel": "http://schemas.google.com/docs/2007#parent",
             "type": "application/atom+xml"
          }, {
-            "href": "https://xxx/edit/file:1_file_resource_id",
+            "href": "https://xxx/edit/file%3A1_file_resource_id",
             "rel": "edit",
             "type": "application/atom+xml"
          }, {
@@ -386,7 +386,7 @@
             "term": "http://schemas.google.com/docs/2007#file"
          } ],
          "content": {
-            "src": "https://xxx/content/file:2_file_resource_id/",
+            "src": "https://xxx/content/file%3A2_file_resource_id/",
             "type": "image/tiff"
          },
          "docs$filename": {
@@ -435,19 +435,19 @@
             "rel": "alternate",
             "type": "text/html"
          }, {
-            "href": "https://xxx/upload/file:2_file_resource_id",
+            "href": "https://xxx/upload/file%3A2_file_resource_id",
             "rel": "http://schemas.google.com/g/2005#resumable-edit-media",
             "type": "application/atom+xml"
          }, {
-            "href": "https://fake_server/file:2_file_resource_id",
+            "href": "https://fake_server/file%3A2_file_resource_id",
             "rel": "self",
             "type": "application/atom+xml"
          }, {
-            "href": "https://fake_server/folder:1_folder_resource_id",
+            "href": "https://fake_server/folder%3A1_folder_resource_id",
             "rel": "http://schemas.google.com/docs/2007#parent",
             "type": "application/atom+xml"
          }, {
-            "href": "https://xxx/edit/file:2_file_resource_id",
+            "href": "https://xxx/edit/file%3A2_file_resource_id",
             "rel": "edit",
             "type": "application/atom+xml"
          }, {
@@ -483,7 +483,7 @@
             "term": "http://schemas.google.com/docs/2007#file"
          } ],
          "content": {
-            "src": "https://xxx/content/file:3_file_resource_id/",
+            "src": "https://xxx/content/file%3A3_file_resource_id/",
             "type": "test/ro"
          },
          "docs$filename": {
@@ -532,19 +532,19 @@
             "rel": "alternate",
             "type": "text/html"
          }, {
-            "href": "https://xxx/upload/file:3_file_resource_id",
+            "href": "https://xxx/upload/file%3A3_file_resource_id",
             "rel": "http://schemas.google.com/g/2005#resumable-edit-media",
             "type": "application/atom+xml"
          }, {
-            "href": "https://fake_server/file:3_file_resource_id",
+            "href": "https://fake_server/file%3A3_file_resource_id",
             "rel": "self",
             "type": "application/atom+xml"
          }, {
-            "href": "https://fake_server/folder:1_folder_resource_id",
+            "href": "https://fake_server/folder%3A1_folder_resource_id",
             "rel": "http://schemas.google.com/docs/2007#parent",
             "type": "application/atom+xml"
          }, {
-            "href": "https://xxx/edit/file:3_file_resource_id",
+            "href": "https://xxx/edit/file%3A3_file_resource_id",
             "rel": "edit",
             "type": "application/atom+xml"
          }, {
@@ -580,7 +580,7 @@
             "term": "http://schemas.google.com/docs/2007#file"
          } ],
          "content": {
-            "src": "https://xxx/content/file:4_file_resource_id",
+            "src": "https://xxx/content/file%3A4_file_resource_id",
             "type": "test/rw"
          },
          "docs$filename": {
@@ -629,19 +629,19 @@
             "rel": "alternate",
             "type": "text/html"
          }, {
-            "href": "https://xxx/upload/file:4_file_resource_id",
+            "href": "https://xxx/upload/file%3A4_file_resource_id",
             "rel": "http://schemas.google.com/g/2005#resumable-edit-media",
             "type": "application/atom+xml"
          }, {
-            "href": "https://fake_server/file:4_file_resource_id",
+            "href": "https://fake_server/file%3A4_file_resource_id",
             "rel": "self",
             "type": "application/atom+xml"
          }, {
-            "href": "https://fake_server/folder:1_folder_resource_id",
+            "href": "https://fake_server/folder%3A1_folder_resource_id",
             "rel": "http://schemas.google.com/docs/2007#parent",
             "type": "application/atom+xml"
          }, {
-            "href": "https://xxx/edit/file:4_file_resource_id",
+            "href": "https://xxx/edit/file%3A4_file_resource_id",
             "rel": "edit",
             "type": "application/atom+xml"
          }, {
@@ -677,7 +677,7 @@
             "term": "http://schemas.google.com/docs/2007#file"
          } ],
          "content": {
-            "src": "https://xxx/content/file:5_file_resource_id",
+            "src": "https://xxx/content/file%3A5_file_resource_id",
             "type": "test/rw"
          },
          "docs$filename": {
@@ -722,19 +722,19 @@
             "rel": "alternate",
             "type": "text/html"
          }, {
-            "href": "https://xxx/upload/file:5_file_resource_id",
+            "href": "https://xxx/upload/file%3A5_file_resource_id",
             "rel": "http://schemas.google.com/g/2005#resumable-edit-media",
             "type": "application/atom+xml"
          }, {
-            "href": "https://fake_server/file:5_file_resource_id",
+            "href": "https://fake_server/file%3A5_file_resource_id",
             "rel": "self",
             "type": "application/atom+xml"
          }, {
-            "href": "https://fake_server/folder:1_folder_resource_id",
+            "href": "https://fake_server/folder%3A1_folder_resource_id",
             "rel": "http://schemas.google.com/docs/2007#parent",
             "type": "application/atom+xml"
          }, {
-            "href": "https://xxx/edit/file:5_file_resource_id",
+            "href": "https://xxx/edit/file%3A5_file_resource_id",
             "rel": "edit",
             "type": "application/atom+xml"
          }, {

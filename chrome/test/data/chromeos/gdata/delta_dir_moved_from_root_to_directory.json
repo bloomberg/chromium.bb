@@ -75,7 +75,7 @@
             "$t": "https://1_folder_id"
          },
          "link": [ {
-            "href": "https://sub_dir_folder_2_self_link/folder:sub_dir_folder_2_self_link",
+            "href": "https://sub_dir_folder_2_self_link/folder%3Asub_dir_folder_2_self_link",
             "rel": "http://schemas.google.com/docs/2007#parent",
             "title": "Directory 2",
             "type": "application/atom+xml"
@@ -88,11 +88,11 @@
             "rel": "http://schemas.google.com/g/2005#resumable-create-media",
             "type": "application/atom+xml"
          }, {
-            "href": "https://dir_1_self_link/folder:1_folder_resource_id",
+            "href": "https://dir_1_self_link/folder%3A1_folder_resource_id",
             "rel": "self",
             "type": "application/atom+xml"
          }, {
-            "href": "https://dir_1_self_link/folder:1_folder_resource_id",
+            "href": "https://dir_1_self_link/folder%3A1_folder_resource_id",
             "rel": "edit",
             "type": "application/atom+xml"
          } ],
@@ -168,11 +168,11 @@
             "rel": "http://schemas.google.com/g/2005#resumable-create-media",
             "type": "application/atom+xml"
          }, {
-            "href": "https://sub_dir_folder_2_self_link/folder:sub_dir_folder_2_self_link",
+            "href": "https://sub_dir_folder_2_self_link/folder%3Asub_dir_folder_2_self_link",
             "rel": "self",
             "type": "application/atom+xml"
          }, {
-            "href": "https://sub_dir_folder_2_self_link/folder:sub_dir_folder_2_self_link",
+            "href": "https://sub_dir_folder_2_self_link/folder%3Asub_dir_folder_2_self_link",
             "rel": "edit",
             "type": "application/atom+xml"
          }, {

@@ -184,7 +184,7 @@ bool FakeDriveService::LoadAppListForDriveApi(
 }
 
 GURL FakeDriveService::GetFakeLinkUrl(const std::string& resource_id) {
-  return GURL("https://fake_server/" + resource_id);
+  return GURL("https://fake_server/" + net::EscapePath(resource_id));
 }
 
 void FakeDriveService::Initialize(Profile* profile) {
@@ -1283,9 +1283,11 @@ const base::DictionaryValue* FakeDriveService::AddNewEntry(
     categories->Append(shared_with_me_label);
   }
 
+  std::string escaped_resource_id = net::EscapePath(resource_id);
+
   // Add "content" which sets the content URL.
   base::DictionaryValue* content = new base::DictionaryValue;
-  content->SetString("src", "https://xxx/content/" + resource_id);
+  content->SetString("src", "https://xxx/content/" + escaped_resource_id);
   content->SetString("type", content_type);
   new_entry->Set("content", content);
 
@@ -1299,7 +1301,7 @@ const base::DictionaryValue* FakeDriveService::AddNewEntry(
   links->Append(parent_link);
 
   base::DictionaryValue* edit_link = new base::DictionaryValue;
-  edit_link->SetString("href", "https://xxx/edit/" + resource_id);
+  edit_link->SetString("href", "https://xxx/edit/" + escaped_resource_id);
   edit_link->SetString("rel", "edit");
   links->Append(edit_link);
 

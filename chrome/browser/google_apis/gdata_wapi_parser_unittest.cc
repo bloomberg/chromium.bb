@@ -209,7 +209,7 @@ TEST(GDataWAPIParserTest, ResourceEntryJsonParser) {
 
   const Link* entry1_self_link = entry->GetLinkByType(Link::LINK_SELF);
   ASSERT_TRUE(entry1_self_link);
-  EXPECT_EQ("https://file1_link_self/file:2_file_resource_id",
+  EXPECT_EQ("https://file1_link_self/file%3A2_file_resource_id",
             entry1_self_link->href().spec());
   EXPECT_EQ("application/atom+xml", entry1_self_link->mime_type());
   EXPECT_EQ("", entry1_self_link->app_id());
