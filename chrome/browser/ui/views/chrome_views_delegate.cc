@@ -8,6 +8,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/prefs/pref_service.h"
 #include "base/string_util.h"
+#include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
@@ -259,3 +260,10 @@ void ChromeViewsDelegate::OnBeforeWidgetInit(
   }
 #endif
 }
+
+#if !defined(OS_CHROMEOS)
+base::TimeDelta
+ChromeViewsDelegate::GetDefaultTextfieldObscuredRevealDuration() {
+  return base::TimeDelta();
+}
+#endif

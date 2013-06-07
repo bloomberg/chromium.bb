@@ -7,6 +7,7 @@
 
 #include "base/memory/weak_ptr.h"
 #include "base/string16.h"
+#include "base/timer.h"
 #include "ui/base/events/event_constants.h"
 #include "ui/base/ime/text_input_client.h"
 #include "ui/base/models/simple_menu_model.h"
@@ -287,6 +288,10 @@ class VIEWS_EXPORT NativeTextfieldViews : public View,
   // Platform specific gesture event handling.
   void PlatformGestureEventHandling(const ui::GestureEvent* event);
 
+  // Reveals the obscured char at |index| for the given |duration|. If |index|
+  // is -1, existing revealed index will be cleared.
+  void RevealObscuredChar(int index, const base::TimeDelta& duration);
+
   // The parent textfield, the owner of this object.
   Textfield* textfield_;
 
@@ -327,6 +332,11 @@ class VIEWS_EXPORT NativeTextfieldViews : public View,
   scoped_ptr<views::MenuRunner> context_menu_runner_;
 
   scoped_ptr<ui::TouchSelectionController> touch_selection_controller_;
+
+  // A timer to control the duration of showing the last typed char in
+  // obscured text. When the timer is running, the last typed char is shown
+  // and when the time expires, the last typed char is obscured.
+  base::OneShotTimer<NativeTextfieldViews> obscured_reveal_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeTextfieldViews);
 };

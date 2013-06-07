@@ -10,6 +10,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/string16.h"
+#include "base/time.h"
 #include "build/build_config.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/ime/text_input_type.h"
@@ -42,7 +43,7 @@ class TextfieldController;
 // This class implements a View that wraps a native text (edit) field.
 class VIEWS_EXPORT Textfield : public View {
  public:
-  // The button's class name.
+  // The textfield's class name.
   static const char kViewClassName[];
 
   enum StyleFlags {
@@ -70,6 +71,17 @@ class VIEWS_EXPORT Textfield : public View {
   // Textfield are displayed as asterisks/bullets.
   bool IsObscured() const;
   void SetObscured(bool obscured);
+
+  // Gets/sets the duration to reveal the last typed char when the obscured bit
+  // is set. A duration of zero effectively disables the feature. Other values
+  // cause the last typed char to be shown for the defined duration. Note this
+  // only works with NativeTextfieldViews.
+  const base::TimeDelta& obscured_reveal_duration() const {
+    return obscured_reveal_duration_;
+  }
+  void set_obscured_reveal_duration(const base::TimeDelta& duration) {
+    obscured_reveal_duration_ = duration;
+  }
 
   // Gets/Sets the input type of this textfield.
   ui::TextInputType GetTextInputType() const;
@@ -350,6 +362,9 @@ class VIEWS_EXPORT Textfield : public View {
 
   // The input type of this text field.
   ui::TextInputType text_input_type_;
+
+  // The duration to reveal the last typed char for obscured textfields.
+  base::TimeDelta obscured_reveal_duration_;
 
   DISALLOW_COPY_AND_ASSIGN(Textfield);
 };

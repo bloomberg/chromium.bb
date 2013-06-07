@@ -301,6 +301,78 @@ TEST_F(RenderTextTest, ObscuredText) {
   }
 }
 
+TEST_F(RenderTextTest, RevealObscuredText) {
+  const string16 seuss = ASCIIToUTF16("hop on pop");
+  const string16 no_seuss = ASCIIToUTF16("**********");
+  scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
+
+  render_text->SetText(seuss);
+  render_text->SetObscured(true);
+  EXPECT_EQ(seuss, render_text->text());
+  EXPECT_EQ(no_seuss, render_text->GetLayoutText());
+
+  // Valid reveal index and new revealed index clears previous one.
+  render_text->RenderText::SetObscuredRevealIndex(0);
+  EXPECT_EQ(ASCIIToUTF16("h*********"), render_text->GetLayoutText());
+  render_text->RenderText::SetObscuredRevealIndex(1);
+  EXPECT_EQ(ASCIIToUTF16("*o********"), render_text->GetLayoutText());
+  render_text->RenderText::SetObscuredRevealIndex(2);
+  EXPECT_EQ(ASCIIToUTF16("**p*******"), render_text->GetLayoutText());
+
+  // Invalid reveal index.
+  render_text->RenderText::SetObscuredRevealIndex(-1);
+  EXPECT_EQ(no_seuss, render_text->GetLayoutText());
+  render_text->RenderText::SetObscuredRevealIndex(seuss.length() + 1);
+  EXPECT_EQ(no_seuss, render_text->GetLayoutText());
+
+  // SetObscured clears the revealed index.
+  render_text->RenderText::SetObscuredRevealIndex(0);
+  EXPECT_EQ(ASCIIToUTF16("h*********"), render_text->GetLayoutText());
+  render_text->SetObscured(false);
+  EXPECT_EQ(seuss, render_text->GetLayoutText());
+  render_text->SetObscured(true);
+  EXPECT_EQ(no_seuss, render_text->GetLayoutText());
+
+  // SetText clears the revealed index.
+  render_text->SetText(ASCIIToUTF16("new"));
+  EXPECT_EQ(ASCIIToUTF16("***"), render_text->GetLayoutText());
+  render_text->RenderText::SetObscuredRevealIndex(2);
+  EXPECT_EQ(ASCIIToUTF16("**w"), render_text->GetLayoutText());
+  render_text->SetText(ASCIIToUTF16("new longer"));
+  EXPECT_EQ(ASCIIToUTF16("**********"), render_text->GetLayoutText());
+
+  // Text with invalid surrogates.
+  const char16 invalid_surrogates[] = {0xDC00, 0xD800, 'h', 'o', 'p', 0};
+  render_text->SetText(invalid_surrogates);
+  EXPECT_EQ(ASCIIToUTF16("*****"), render_text->GetLayoutText());
+  render_text->RenderText::SetObscuredRevealIndex(0);
+  const char16 invalid_expect_0[] = {0xDC00, '*', '*', '*', '*', 0};
+  EXPECT_EQ(invalid_expect_0, render_text->GetLayoutText());
+  render_text->RenderText::SetObscuredRevealIndex(1);
+  const char16 invalid_expect_1[] = {'*', 0xD800, '*', '*', '*', 0};
+  EXPECT_EQ(invalid_expect_1, render_text->GetLayoutText());
+  render_text->RenderText::SetObscuredRevealIndex(2);
+  EXPECT_EQ(ASCIIToUTF16("**h**"), render_text->GetLayoutText());
+
+  // Text with valid surrogates before and after the reveal index.
+  const char16 valid_surrogates[] =
+      {0xD800, 0xDC00, 'h', 'o', 'p', 0xD800, 0xDC00, 0};
+  render_text->SetText(valid_surrogates);
+  EXPECT_EQ(ASCIIToUTF16("*****"), render_text->GetLayoutText());
+  render_text->RenderText::SetObscuredRevealIndex(0);
+  const char16 valid_expect_0_and_1[] = {0xD800, 0xDC00, '*', '*', '*', '*', 0};
+  EXPECT_EQ(valid_expect_0_and_1, render_text->GetLayoutText());
+  render_text->RenderText::SetObscuredRevealIndex(1);
+  EXPECT_EQ(valid_expect_0_and_1, render_text->GetLayoutText());
+  render_text->RenderText::SetObscuredRevealIndex(2);
+  EXPECT_EQ(ASCIIToUTF16("*h***"), render_text->GetLayoutText());
+  render_text->RenderText::SetObscuredRevealIndex(5);
+  const char16 valid_expect_5_and_6[] = {'*', '*', '*', '*', 0xD800, 0xDC00, 0};
+  EXPECT_EQ(valid_expect_5_and_6, render_text->GetLayoutText());
+  render_text->RenderText::SetObscuredRevealIndex(6);
+  EXPECT_EQ(valid_expect_5_and_6, render_text->GetLayoutText());
+}
+
 TEST_F(RenderTextTest, GetTextDirection) {
   struct {
     const wchar_t* text;

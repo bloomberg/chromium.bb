@@ -952,6 +952,16 @@ void NativeTextfieldViews::InsertChar(char16 ch, int flags) {
 
   UpdateAfterChange(true, true);
   OnAfterUserAction();
+
+  if (textfield_->IsObscured()) {
+    const base::TimeDelta& reveal_duration =
+        textfield_->obscured_reveal_duration();
+    if (reveal_duration != base::TimeDelta()) {
+      const size_t change_offset = model_->GetCursorPosition();
+      DCHECK_GT(change_offset, 0u);
+      RevealObscuredChar(change_offset - 1, reveal_duration);
+    }
+  }
 }
 
 gfx::NativeWindow NativeTextfieldViews::GetAttachedWindow() const {
@@ -1486,6 +1496,20 @@ void NativeTextfieldViews::PlatformGestureEventHandling(
   if (event->type() == ui::ET_GESTURE_TAP && !textfield_->read_only())
     base::win::DisplayVirtualKeyboard();
 #endif
+}
+
+void NativeTextfieldViews::RevealObscuredChar(int index,
+                                              const base::TimeDelta& duration) {
+  GetRenderText()->SetObscuredRevealIndex(index);
+  SchedulePaint();
+
+  if (index != -1) {
+    obscured_reveal_timer_.Start(
+        FROM_HERE,
+        duration,
+        base::Bind(&NativeTextfieldViews::RevealObscuredChar,
+                   base::Unretained(this), -1, base::TimeDelta()));
+  }
 }
 
 }  // namespace views

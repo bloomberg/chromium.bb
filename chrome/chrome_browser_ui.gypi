@@ -1570,6 +1570,7 @@
         'browser/ui/views/chrome_to_mobile_bubble_view.h',
         'browser/ui/views/chrome_views_delegate.cc',
         'browser/ui/views/chrome_views_delegate.h',
+        'browser/ui/views/chrome_views_delegate_chromeos.cc',
         'browser/ui/views/chrome_web_dialog_view.cc',
         'browser/ui/views/collected_cookies_views.cc',
         'browser/ui/views/collected_cookies_views.h',

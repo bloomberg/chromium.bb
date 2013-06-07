@@ -186,6 +186,13 @@ class UI_EXPORT RenderText {
   bool obscured() const { return obscured_; }
   void SetObscured(bool obscured);
 
+  // Makes a char in obscured text at |index| to be revealed. |index| should be
+  // a UTF16 text index. If there is a previous revealed index, the previous one
+  // is cleared and only the last set index will be revealed. If |index| is -1
+  // or out of range, no char will be revealed. The revealed index is also
+  // cleared when SetText or SetObscured is called.
+  void SetObscuredRevealIndex(int index);
+
   const Rect& display_rect() const { return display_rect_; }
   void SetDisplayRect(const Rect& r);
 
@@ -439,6 +446,7 @@ class UI_EXPORT RenderText {
   FRIEND_TEST_ALL_PREFIXES(RenderTextTest, SetColorAndStyle);
   FRIEND_TEST_ALL_PREFIXES(RenderTextTest, ApplyColorAndStyle);
   FRIEND_TEST_ALL_PREFIXES(RenderTextTest, ObscuredText);
+  FRIEND_TEST_ALL_PREFIXES(RenderTextTest, RevealObscuredText);
   FRIEND_TEST_ALL_PREFIXES(RenderTextTest, GraphemePositions);
   FRIEND_TEST_ALL_PREFIXES(RenderTextTest, EdgeSelectionModels);
   FRIEND_TEST_ALL_PREFIXES(RenderTextTest, GetTextOffset);
@@ -529,6 +537,9 @@ class UI_EXPORT RenderText {
   // Asterisks are used instead of the actual text glyphs when true.
   bool obscured_;
   string16 obscured_text_;
+
+  // The index at which the char should be revealed in the obscured text.
+  int obscured_reveal_index_;
 
   // Fade text head and/or tail, if text doesn't fit into |display_rect_|.
   bool fade_head_;

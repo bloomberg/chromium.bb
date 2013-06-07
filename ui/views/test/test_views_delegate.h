@@ -61,6 +61,7 @@ class TestViewsDelegate : public ViewsDelegate {
   virtual void OnBeforeWidgetInit(
       Widget::InitParams* params,
       internal::NativeWidgetDelegate* delegate) OVERRIDE;
+  virtual base::TimeDelta GetDefaultTextfieldObscuredRevealDuration() OVERRIDE;
 
  private:
   bool use_transparent_windows_;

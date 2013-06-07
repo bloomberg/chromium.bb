@@ -62,4 +62,8 @@ void TestViewsDelegate::OnBeforeWidgetInit(
     internal::NativeWidgetDelegate* delegate) {
 }
 
+base::TimeDelta TestViewsDelegate::GetDefaultTextfieldObscuredRevealDuration() {
+  return base::TimeDelta();
+}
+
 }  // namespace views

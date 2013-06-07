@@ -9,6 +9,7 @@
 #include "base/i18n/break_iterator.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
+#include "third_party/icu/public/common/unicode/utf16.h"
 #include "third_party/skia/include/core/SkTypeface.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
 #include "ui/base/text/utf16_indexing.h"
@@ -322,6 +323,7 @@ void RenderText::SetText(const string16& text) {
   if (directionality_mode_ == DIRECTIONALITY_FROM_TEXT)
     text_direction_ = base::i18n::UNKNOWN_DIRECTION;
 
+  obscured_reveal_index_ = -1;
   UpdateObscuredText();
   ResetLayout();
 }
@@ -375,10 +377,21 @@ void RenderText::ToggleInsertMode() {
 void RenderText::SetObscured(bool obscured) {
   if (obscured != obscured_) {
     obscured_ = obscured;
+    obscured_reveal_index_ = -1;
     cached_bounds_and_offset_valid_ = false;
     UpdateObscuredText();
     ResetLayout();
   }
+}
+
+void RenderText::SetObscuredRevealIndex(int index) {
+  if (obscured_reveal_index_ == index)
+    return;
+
+  obscured_reveal_index_ = index;
+  cached_bounds_and_offset_valid_ = false;
+  UpdateObscuredText();
+  ResetLayout();
 }
 
 void RenderText::SetDisplayRect(const Rect& r) {
@@ -744,6 +757,7 @@ RenderText::RenderText()
       styles_(NUM_TEXT_STYLES),
       composition_and_selection_styles_applied_(false),
       obscured_(false),
+      obscured_reveal_index_(-1),
       fade_head_(false),
       fade_tail_(false),
       background_is_transparent_(false),
@@ -920,8 +934,22 @@ void RenderText::UpdateObscuredText() {
 
   const size_t obscured_text_length =
       static_cast<size_t>(ui::UTF16IndexToOffset(text_, 0, text_.length()));
-  if (obscured_text_.length() != obscured_text_length)
-    obscured_text_.resize(obscured_text_length, kPasswordReplacementChar);
+  obscured_text_.assign(obscured_text_length, kPasswordReplacementChar);
+
+  if (obscured_reveal_index_ >= 0 &&
+      obscured_reveal_index_ < static_cast<int>(text_.length())) {
+    // Gets the index range in |text_| to be revealed.
+    size_t start = obscured_reveal_index_;
+    U16_SET_CP_START(text_.data(), 0, start);
+    size_t end = start;
+    UChar32 unused_char;
+    U16_NEXT(text_.data(), end, text_.length(), unused_char);
+
+    // Gets the index in |obscured_text_| to be replaced.
+    const size_t cp_start =
+        static_cast<size_t>(ui::UTF16IndexToOffset(text_, 0, start));
+    obscured_text_.replace(cp_start, 1, text_.substr(start, end - start));
+  }
 }
 
 void RenderText::UpdateCachedBoundsAndOffset() {

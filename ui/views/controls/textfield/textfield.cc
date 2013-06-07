@@ -25,6 +25,7 @@
 #include "ui/views/controls/textfield/native_textfield_views.h"
 #include "ui/views/controls/textfield/native_textfield_wrapper.h"
 #include "ui/views/controls/textfield/textfield_controller.h"
+#include "ui/views/views_delegate.h"
 #include "ui/views/widget/widget.h"
 
 #if defined(OS_WIN)
@@ -89,6 +90,11 @@ Textfield::Textfield()
       icon_view_(NULL),
       text_input_type_(ui::TEXT_INPUT_TYPE_TEXT) {
   set_focusable(true);
+
+  if (ViewsDelegate::views_delegate) {
+    obscured_reveal_duration_ = ViewsDelegate::views_delegate->
+        GetDefaultTextfieldObscuredRevealDuration();
+  }
 }
 
 Textfield::Textfield(StyleFlags style)
@@ -114,6 +120,11 @@ Textfield::Textfield(StyleFlags style)
   set_focusable(true);
   if (IsObscured())
     SetTextInputType(ui::TEXT_INPUT_TYPE_PASSWORD);
+
+  if (ViewsDelegate::views_delegate) {
+    obscured_reveal_duration_ = ViewsDelegate::views_delegate->
+        GetDefaultTextfieldObscuredRevealDuration();
+  }
 }
 
 Textfield::~Textfield() {
@@ -152,7 +163,6 @@ void Textfield::SetObscured(bool obscured) {
   if (native_wrapper_)
     native_wrapper_->UpdateIsObscured();
 }
-
 
 ui::TextInputType Textfield::GetTextInputType() const {
   if (read_only() || !enabled())

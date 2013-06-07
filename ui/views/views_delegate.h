@@ -18,6 +18,10 @@
 #include "ui/views/views_export.h"
 #include "ui/views/widget/widget.h"
 
+namespace base {
+class TimeDelta;
+}
+
 namespace content {
 class WebContents;
 class BrowserContext;
@@ -108,7 +112,10 @@ class VIEWS_EXPORT ViewsDelegate {
 
   // Gives the platform a chance to modify the properties of a Widget.
   virtual void OnBeforeWidgetInit(Widget::InitParams* params,
-                            internal::NativeWidgetDelegate* delegate) = 0;
+                                  internal::NativeWidgetDelegate* delegate) = 0;
+
+  // Returns the default obscured text reveal duration.
+  virtual base::TimeDelta GetDefaultTextfieldObscuredRevealDuration() = 0;
 
  private:
   scoped_ptr<ViewsTouchSelectionControllerFactory> views_tsc_factory_;
