@@ -278,9 +278,9 @@ class CONTENT_EXPORT RenderThreadImpl : public RenderThread,
   // Handle loss of the shared GpuVDAContext3D context above.
   static void OnGpuVDAContextLoss();
 
-  scoped_refptr<ContextProviderCommandBuffer>
+  scoped_refptr<cc::ContextProvider>
       OffscreenContextProviderForMainThread();
-  scoped_refptr<ContextProviderCommandBuffer>
+  scoped_refptr<cc::ContextProvider>
       OffscreenContextProviderForCompositorThread();
 
   // AudioRendererMixerManager instance which manages renderer side mixer

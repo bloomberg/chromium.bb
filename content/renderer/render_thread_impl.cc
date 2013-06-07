@@ -1026,9 +1026,16 @@ RenderThreadImpl::CreateOffscreenContext3d() {
           GURL("chrome://gpu/RenderThreadImpl::CreateOffscreenContext3d")));
 }
 
-scoped_refptr<ContextProviderCommandBuffer>
+scoped_refptr<cc::ContextProvider>
 RenderThreadImpl::OffscreenContextProviderForMainThread() {
   DCHECK(IsMainThread());
+
+#if defined(OS_ANDROID)
+  if (SynchronousCompositorFactory* factory =
+      SynchronousCompositorFactory::GetInstance()) {
+    return factory->GetOffscreenContextProviderForMainThread();
+  }
+#endif
 
   if (!shared_contexts_main_thread_.get() ||
       shared_contexts_main_thread_->DestroyedOnMainThread()) {
@@ -1041,9 +1048,16 @@ RenderThreadImpl::OffscreenContextProviderForMainThread() {
   return shared_contexts_main_thread_;
 }
 
-scoped_refptr<ContextProviderCommandBuffer>
+scoped_refptr<cc::ContextProvider>
 RenderThreadImpl::OffscreenContextProviderForCompositorThread() {
   DCHECK(IsMainThread());
+
+#if defined(OS_ANDROID)
+  if (SynchronousCompositorFactory* factory =
+      SynchronousCompositorFactory::GetInstance()) {
+    return factory->GetOffscreenContextProviderForCompositorThread();
+  }
+#endif
 
   if (!shared_contexts_compositor_thread_.get() ||
       shared_contexts_compositor_thread_->DestroyedOnMainThread()) {

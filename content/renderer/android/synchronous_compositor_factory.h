@@ -13,6 +13,7 @@ class MessageLoopProxy;
 }
 
 namespace cc {
+class ContextProvider;
 class OutputSurface;
 }
 
@@ -38,6 +39,11 @@ class SynchronousCompositorFactory {
 
   // The factory maintains ownership of the returned interface.
   virtual InputHandlerManagerClient* GetInputHandlerManagerClient() = 0;
+
+  virtual scoped_refptr<cc::ContextProvider>
+      GetOffscreenContextProviderForMainThread() = 0;
+  virtual scoped_refptr<cc::ContextProvider>
+      GetOffscreenContextProviderForCompositorThread() = 0;
 
  protected:
   SynchronousCompositorFactory() {}

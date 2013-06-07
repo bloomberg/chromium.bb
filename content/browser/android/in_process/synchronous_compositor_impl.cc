@@ -12,6 +12,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/renderer/android/synchronous_compositor_factory.h"
+#include "webkit/common/gpu/context_provider_in_process.h"
 
 namespace content {
 
@@ -59,8 +60,26 @@ class SynchronousCompositorFactoryImpl : public SynchronousCompositorFactory {
     return &synchronous_input_event_filter_;
   }
 
+  virtual scoped_refptr<cc::ContextProvider>
+      GetOffscreenContextProviderForMainThread() OVERRIDE {
+    NOTIMPLEMENTED()
+        << "Synchronous compositor does not support main thread context yet.";
+    return scoped_refptr<cc::ContextProvider>();
+  }
+
+  virtual scoped_refptr<cc::ContextProvider>
+      GetOffscreenContextProviderForCompositorThread() OVERRIDE {
+    if (!offscreen_context_for_compositor_thread_ ||
+        offscreen_context_for_compositor_thread_->DestroyedOnMainThread()) {
+      offscreen_context_for_compositor_thread_ =
+          webkit::gpu::ContextProviderInProcess::Create();
+    }
+    return offscreen_context_for_compositor_thread_;
+  }
+
  private:
   SynchronousInputEventFilter synchronous_input_event_filter_;
+  scoped_refptr<cc::ContextProvider> offscreen_context_for_compositor_thread_;
 };
 
 base::LazyInstance<SynchronousCompositorFactoryImpl>::Leaky g_factory =
