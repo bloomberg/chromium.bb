@@ -23,7 +23,6 @@ class TerminalPrivateFunction : public AsyncExtensionFunction {
 
   // Override with actual extension function implementation.
   virtual bool RunTerminalFunction() = 0;
-
 };
 
 // Opens new terminal process. Returns the new process id.

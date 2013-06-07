@@ -8,14 +8,21 @@
 #include "base/chromeos/chromeos_version.h"
 #include "base/json/json_writer.h"
 #include "base/values.h"
-#include "chromeos/process_proxy/process_proxy_registry.h"
 #include "chrome/browser/extensions/api/terminal/terminal_extension_helper.h"
 #include "chrome/browser/extensions/event_names.h"
 #include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/extensions/api/terminal_private.h"
+#include "chromeos/process_proxy/process_proxy_registry.h"
 #include "content/public/browser/browser_thread.h"
+
+namespace OnTerminalResize =
+    extensions::api::terminal_private::OnTerminalResize;
+namespace OpenTerminalProcess =
+    extensions::api::terminal_private::OpenTerminalProcess;
+namespace SendInput = extensions::api::terminal_private::SendInput;
 
 namespace {
 
@@ -32,11 +39,10 @@ const char* GetCroshPath() {
 }
 
 const char* GetProcessCommandForName(const std::string& name) {
-  if (name == kCroshName) {
+  if (name == kCroshName)
     return GetCroshPath();
-  } else {
+  else
     return NULL;
-  }
 }
 
 void NotifyProcessOutput(Profile* profile,
@@ -82,14 +88,11 @@ TerminalPrivateOpenTerminalProcessFunction::
     ~TerminalPrivateOpenTerminalProcessFunction() {}
 
 bool TerminalPrivateOpenTerminalProcessFunction::RunTerminalFunction() {
-  if (args_->GetSize() != 1)
-    return false;
+  scoped_ptr<OpenTerminalProcess::Params> params(
+      OpenTerminalProcess::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
 
-  std::string name;
-  if (!args_->GetString(0, &name))
-    return false;
-
-  command_ = GetProcessCommandForName(name);
+  command_ = GetProcessCommandForName(params->process_name);
   if (!command_) {
     error_ = "Invalid process name.";
     return false;
@@ -128,18 +131,13 @@ void TerminalPrivateOpenTerminalProcessFunction::RespondOnUIThread(pid_t pid) {
 }
 
 bool TerminalPrivateSendInputFunction::RunTerminalFunction() {
-  if (args_->GetSize() != 2)
-    return false;
-
-  pid_t pid;
-  std::string text;
-  if (!args_->GetInteger(0, &pid) || !args_->GetString(1, &text))
-    return false;
+  scoped_ptr<SendInput::Params> params(SendInput::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
 
   // Registry lives on the FILE thread.
   content::BrowserThread::PostTask(content::BrowserThread::FILE, FROM_HERE,
       base::Bind(&TerminalPrivateSendInputFunction::SendInputOnFileThread,
-                 this, pid, text));
+                 this, params->pid, params->input));
   return true;
 }
 
@@ -193,25 +191,14 @@ TerminalPrivateOnTerminalResizeFunction::
     ~TerminalPrivateOnTerminalResizeFunction() {}
 
 bool TerminalPrivateOnTerminalResizeFunction::RunTerminalFunction() {
-  if (args_->GetSize() != 3)
-    return false;
-
-  pid_t pid;
-  if (!args_->GetInteger(0, &pid))
-    return false;
-
-  int width;
-  if (!args_->GetInteger(1, &width))
-    return false;
-
-  int height;
-  if (!args_->GetInteger(2, &height))
-    return false;
+  scoped_ptr<OnTerminalResize::Params> params(
+      OnTerminalResize::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
 
   // Registry lives on the FILE thread.
   content::BrowserThread::PostTask(content::BrowserThread::FILE, FROM_HERE,
       base::Bind(&TerminalPrivateOnTerminalResizeFunction::OnResizeOnFileThread,
-                 this, pid, width, height));
+                 this, params->pid, params->width, params->height));
 
   return true;
 }
