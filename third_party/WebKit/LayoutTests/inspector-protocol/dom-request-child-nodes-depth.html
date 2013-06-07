@@ -81,7 +81,7 @@ function test()
 
     function gotAllChildren(messageObject)
     {
-        var depth = 1;
+        var depth = 0;
         var firstChild = messageObject.params.nodes[0];
         var node = firstChild;
         while (node && node.children) {
