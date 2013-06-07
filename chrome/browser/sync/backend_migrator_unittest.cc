@@ -82,6 +82,7 @@ class SyncBackendMigratorTest : public testing::Test {
           status,
           requested_types,
           errors,
+          syncer::ModelTypeSet(),
           syncer::ModelTypeSet());
       migrator_->OnConfigureDone(result);
     }

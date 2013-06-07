@@ -362,10 +362,7 @@ jboolean ProfileSyncServiceAndroid::IsPassphraseRequiredForDecryption(
     // DataTypeManager, after configuration password datatype shall be disabled.
     const syncer::ModelTypeSet encrypted_types =
         sync_service_->GetEncryptedDataTypes();
-    const bool are_passwords_the_only_encrypted_type =
-        encrypted_types.Has(syncer::PASSWORDS) && encrypted_types.Size() == 1 &&
-        !sync_service_->ShouldEnablePasswordSyncForAndroid();
-    return !are_passwords_the_only_encrypted_type;
+    return !encrypted_types.Equals(syncer::ModelTypeSet(syncer::PASSWORDS));
   }
   return false;
 }

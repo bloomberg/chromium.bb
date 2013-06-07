@@ -13,7 +13,6 @@ namespace browser_sync {
 // DataTypeManager through this interface.
 class DataTypeManagerObserver {
  public:
-  virtual void OnConfigureBlocked() = 0;
   virtual void OnConfigureDone(
       const browser_sync::DataTypeManager::ConfigureResult& result) = 0;
   virtual void OnConfigureRetry() = 0;

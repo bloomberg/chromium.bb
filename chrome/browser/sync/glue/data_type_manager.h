@@ -27,8 +27,7 @@ class DataTypeManager {
                        // types.
 
     CONFIGURING,       // Data types are being started.
-    BLOCKED,           // We can't move forward with configuration because some
-                       // external action must take place (i.e. passphrase).
+    RETRYING,          // Retrying a pending reconfiguration.
 
     CONFIGURED,        // All enabled data types are running.
     STOPPING           // Data types are being stopped.
@@ -42,8 +41,6 @@ class DataTypeManager {
     PARTIAL_SUCCESS,     // Some data types had an error while starting up.
     ABORTED,             // Start was aborted by calling Stop() before
                          // all types were started.
-    CONFIGURE_BLOCKED,   // Configuration was blocked due to missing
-                         // passphrase.
     UNRECOVERABLE_ERROR  // We got an unrecoverable error during startup.
   };
 
@@ -56,7 +53,8 @@ class DataTypeManager {
                     syncer::ModelTypeSet requested_types,
                     std::map<syncer::ModelType, syncer::SyncError>
                         failed_data_types,
-                    syncer::ModelTypeSet waiting_to_start);
+                    syncer::ModelTypeSet waiting_to_start,
+                    syncer::ModelTypeSet needs_crypto);
     ~ConfigureResult();
     ConfigureStatus status;
     syncer::ModelTypeSet requested_types;
@@ -70,6 +68,10 @@ class DataTypeManager {
     // background. When these types are loaded DataTypeManager will
     // be informed and another configured cycle will be started.
     syncer::ModelTypeSet waiting_to_start;
+
+    // Those types that are unable to start due to the cryptographer not being
+    // ready.
+    syncer::ModelTypeSet needs_crypto;
   };
 
   virtual ~DataTypeManager() {}

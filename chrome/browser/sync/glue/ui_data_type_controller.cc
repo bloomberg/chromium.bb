@@ -133,7 +133,7 @@ void UIDataTypeController::Associate() {
   if (!local_service_.get()) {
     syncer::SyncError error(FROM_HERE, "Failed to connect to syncer.", type());
     local_merge_result.set_error(error);
-    StartDone(UNRECOVERABLE_ERROR,
+    StartDone(ASSOCIATION_FAILED,
               local_merge_result,
               syncer_merge_result);
     return;

@@ -28,6 +28,10 @@ enum ConfigureReason {
 
   // A new datatype is enabled for syncing due to a client upgrade.
   CONFIGURE_REASON_NEWLY_ENABLED_DATA_TYPE,
+
+  // A configuration due to enabling or disabling encrypted types due to
+  // cryptographer errors/resolutions.
+  CONFIGURE_REASON_CRYPTO,
 };
 
 }  // namespace syncer

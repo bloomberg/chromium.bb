@@ -1856,8 +1856,6 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
   ASSERT_TRUE(IsEncrypted(0, syncer::BOOKMARKS));
   ASSERT_TRUE(IsEncrypted(1, syncer::BOOKMARKS));
   ASSERT_TRUE(GetClient(1)->service()->IsPassphraseRequired());
-  ASSERT_GT(GetClient(1)->GetLastSessionSnapshot().num_encryption_conflicts(),
-            3);  // The encrypted nodes.
 
   // Client 1 adds bookmarks between the first two and between the second two.
   ASSERT_TRUE(AddURL(0, 1, IndexedURLTitle(3), GURL(IndexedURL(3))) != NULL);

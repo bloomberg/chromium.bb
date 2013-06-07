@@ -143,6 +143,7 @@ void ModelAssociationManager::Initialize(syncer::ModelTypeSet desired_types) {
   needs_stop_.clear();
   failed_data_types_info_.clear();
   associating_types_.Clear();
+  needs_crypto_types_.Clear();
   state_ = INITIALIZED_TO_CONFIGURE;
 
   DVLOG(1) << "ModelAssociationManager: Initializing";
@@ -206,7 +207,9 @@ void ModelAssociationManager::ResetForReconfiguration() {
   DVLOG(1) << "ModelAssociationManager: Reseting for reconfiguration";
   needs_start_.clear();
   needs_stop_.clear();
+  associating_types_.Clear();
   failed_data_types_info_.clear();
+  needs_crypto_types_.Clear();
 }
 
 void ModelAssociationManager::StopDisabledTypes() {
@@ -262,16 +265,17 @@ void ModelAssociationManager::Stop() {
     }
   }
 
+  DataTypeManager::ConfigureResult result(DataTypeManager::ABORTED,
+                                          associating_types_,
+                                          failed_data_types_info_,
+                                          syncer::ModelTypeSet(),
+                                          needs_crypto_types_);
+  failed_data_types_info_.clear();
+  needs_crypto_types_.Clear();
   if (need_to_call_model_association_done) {
     DVLOG(1) << "ModelAssociationManager: Calling OnModelAssociationDone";
-    DataTypeManager::ConfigureResult result(DataTypeManager::ABORTED,
-                                            associating_types_,
-                                            failed_data_types_info_,
-                                            syncer::ModelTypeSet());
     result_processor_->OnModelAssociationDone(result);
   }
-
-  failed_data_types_info_.clear();
 }
 
 bool ModelAssociationManager::GetControllersNeedingStart(
@@ -338,6 +342,9 @@ void ModelAssociationManager::TypeStartCallback(
     DVLOG(1) << "ModelAssociationManager: Encountered a failed type";
     AppendToFailedDatatypesAndLogError(start_result,
                                        local_merge_result.error());
+  } else if (start_result == DataTypeController::NEEDS_CRYPTO) {
+    DVLOG(1) << "ModelAssociationManager: Encountered an undecryptable type";
+    needs_crypto_types_.Put(started_dtc->type());
   }
 
   // Track the merge results if we succeeded or an association failure
@@ -399,7 +406,8 @@ void ModelAssociationManager::TypeStartCallback(
   DataTypeManager::ConfigureResult configure_result(configure_status,
                                                     associating_types_,
                                                     errors,
-                                                    syncer::ModelTypeSet());
+                                                    syncer::ModelTypeSet(),
+                                                    needs_crypto_types_);
   result_processor_->OnModelAssociationDone(configure_result);
 }
 
@@ -516,27 +524,12 @@ void ModelAssociationManager::StartAssociatingNextType() {
 
   // We are done with this cycle of association.
   state_ = IDLE;
-  // Do a fresh calculation to see if controllers need starting to account for
-  // things like encryption, which may still need to be sorted out before we
-  // can announce we're "Done" configuration entirely.
-  if (GetControllersNeedingStart(NULL)) {
-    DVLOG(1) << "ModelAssociationManager: GetControllersNeedingStart"
-             << " returned true. Blocking DataTypeManager";
-
-    DataTypeManager::ConfigureResult configure_result(
-        DataTypeManager::CONFIGURE_BLOCKED,
-        associating_types_,
-        failed_data_types_info_,
-        syncer::ModelTypeSet());
-    state_ = IDLE;
-    result_processor_->OnModelAssociationDone(configure_result);
-    return;
-  }
 
   DataTypeManager::ConfigureStatus configure_status = DataTypeManager::OK;
 
   if (!failed_data_types_info_.empty() ||
-      !GetTypesWaitingToLoad().Empty()) {
+      !GetTypesWaitingToLoad().Empty() ||
+      !needs_crypto_types_.Empty()) {
     // We have not configured all types that we have been asked to configure.
     // Either we have failed types or types that have not completed loading
     // yet.
@@ -547,7 +540,8 @@ void ModelAssociationManager::StartAssociatingNextType() {
   DataTypeManager::ConfigureResult result(configure_status,
                                           associating_types_,
                                           failed_data_types_info_,
-                                          GetTypesWaitingToLoad());
+                                          GetTypesWaitingToLoad(),
+                                          needs_crypto_types_);
   result_processor_->OnModelAssociationDone(result);
   return;
 }

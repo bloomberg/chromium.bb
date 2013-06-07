@@ -104,8 +104,10 @@ class SYNC_EXPORT_PRIVATE SyncManagerImpl :
       const ModelSafeRoutingInfo& routing_info) OVERRIDE;
   virtual void ConfigureSyncer(
       ConfigureReason reason,
-      ModelTypeSet types_to_config,
-      ModelTypeSet failed_types,
+      ModelTypeSet to_download,
+      ModelTypeSet to_journal,
+      ModelTypeSet to_unapply,
+      ModelTypeSet to_ignore,
       const ModelSafeRoutingInfo& new_routing_info,
       const base::Closure& ready_task,
       const base::Closure& retry_task) OVERRIDE;
@@ -199,6 +201,7 @@ class SYNC_EXPORT_PRIVATE SyncManagerImpl :
   FRIEND_TEST_ALL_PREFIXES(SyncManagerTest, OnNotificationStateChange);
   FRIEND_TEST_ALL_PREFIXES(SyncManagerTest, OnIncomingNotification);
   FRIEND_TEST_ALL_PREFIXES(SyncManagerTest, PurgeDisabledTypes);
+  FRIEND_TEST_ALL_PREFIXES(SyncManagerTest, PurgeUnappliedTypes);
 
   struct NotificationInfo {
     NotificationInfo();
@@ -238,10 +241,14 @@ class SYNC_EXPORT_PRIVATE SyncManagerImpl :
   bool OpenDirectory(const std::string& username);
 
   // Purge those types from |previously_enabled_types| that are no longer
-  // enabled in |currently_enabled_types|.
+  // enabled in |currently_enabled_types|. |to_journal| and |to_unapply|
+  // specify types that require special handling. |to_journal| types are saved
+  // into the delete journal, while |to_unapply| have only their local data
+  // deleted, while their server data is preserved.
   bool PurgeDisabledTypes(ModelTypeSet previously_enabled_types,
                           ModelTypeSet currently_enabled_types,
-                          ModelTypeSet failed_types);
+                          ModelTypeSet to_journal,
+                          ModelTypeSet to_unapply);
 
   void RequestNudgeForDataTypes(
       const tracked_objects::Location& nudge_location,

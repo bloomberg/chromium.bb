@@ -375,16 +375,20 @@ class SYNC_EXPORT SyncManager {
   // syncer will remain in CONFIGURATION_MODE until StartSyncingNormally is
   // called.
   // Data whose types are not in |new_routing_info| are purged from sync
-  // directory. The purged data is backed up in delete journal for recovery in
-  // next session if its type is in |failed_types|.
+  // directory, unless they're part of |to_ignore|, in which case they're left
+  // untouched. The purged data is backed up in delete journal for recovery in
+  // next session if its type is in |to_journal|. If in |to_unapply|
+  // only the local data is removed; the server data is preserved.
   // |ready_task| is invoked when the configuration completes.
   // |retry_task| is invoked if the configuration job could not immediately
   //              execute. |ready_task| will still be called when it eventually
   //              does finish.
   virtual void ConfigureSyncer(
       ConfigureReason reason,
-      ModelTypeSet types_to_config,
-      ModelTypeSet failed_types,
+      ModelTypeSet to_download,
+      ModelTypeSet to_journal,
+      ModelTypeSet to_unapply,
+      ModelTypeSet to_ignore,
       const ModelSafeRoutingInfo& new_routing_info,
       const base::Closure& ready_task,
       const base::Closure& retry_task) = 0;

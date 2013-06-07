@@ -135,6 +135,10 @@ class ModelAssociationManager {
   // been given a chance to start.
   std::map<syncer::ModelType, syncer::SyncError> failed_data_types_info_;
 
+  // The set of types that can't configure due to cryptographer errors.
+  syncer::ModelTypeSet needs_crypto_types_;
+
+  // The order in which association of the datatypes should be performed.
   std::map<syncer::ModelType, int> start_order_;
 
   // This illustration explains the movement of one DTC through various lists.

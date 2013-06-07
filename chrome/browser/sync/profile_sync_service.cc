@@ -201,20 +201,6 @@ bool ProfileSyncService::IsSyncTokenAvailable() {
     return false;
   return token_service->HasTokenForService(GaiaConstants::kSyncService);
 }
-#if defined(OS_ANDROID)
-bool ProfileSyncService::ShouldEnablePasswordSyncForAndroid() const {
-  if (!GetPreferredDataTypes().Has(syncer::PASSWORDS))
-    return false;
-  // If backend has not completed initializing we cannot check if the
-  // cryptographer is ready.
-  if (!sync_initialized())
-    return false;
-  // On Android we do not want to prompt user to enter a passphrase. If
-  // passwords cannot be decrypted we just disable them.
-  syncer::ReadTransaction trans(FROM_HERE, GetUserShare());
-  return IsCryptographerReady(&trans);
-}
-#endif
 
 void ProfileSyncService::Initialize() {
   DCHECK(!invalidator_registrar_.get());
@@ -485,15 +471,6 @@ bool ProfileSyncService::IsEncryptedDatatypeEnabled() const {
   const syncer::ModelTypeSet encrypted_types = GetEncryptedDataTypes();
   DCHECK(encrypted_types.Has(syncer::PASSWORDS));
   return !Intersection(preferred_types, encrypted_types).Empty();
-}
-
-void ProfileSyncService::OnSyncConfigureDone(
-    DataTypeManager::ConfigureResult result) {
-  if (failed_data_types_handler_.UpdateFailedDataTypes(
-          result.failed_data_types,
-          FailedDataTypesHandler::STARTUP)) {
-    ReconfigureDatatypeManager();
-  }
 }
 
 void ProfileSyncService::OnSyncConfigureRetry() {
@@ -847,6 +824,7 @@ void ProfileSyncService::OnUnrecoverableErrorImpl(
                  delete_sync_database));
 }
 
+// TODO(zea): Move this logic into the DataTypeController/DataTypeManager.
 void ProfileSyncService::DisableBrokenDatatype(
     syncer::ModelType type,
     const tracked_objects::Location& from_here,
@@ -1117,6 +1095,14 @@ void ProfileSyncService::OnPassphraseRequired(
            << syncer::PassphraseRequiredReasonToString(reason);
   passphrase_required_reason_ = reason;
 
+  const syncer::ModelTypeSet types = GetPreferredDataTypes();
+  if (data_type_manager_) {
+    // Reconfigure without the encrypted types (excluded implicitly via the
+    // failed datatypes handler).
+    data_type_manager_->Configure(types,
+                                  syncer::CONFIGURE_REASON_CRYPTO);
+  }
+
   // Notify observers that the passphrase status may have changed.
   NotifyObservers();
 }
@@ -1135,22 +1121,13 @@ void ProfileSyncService::OnPassphraseAccepted() {
   // types are enabled, and we don't want to clobber the true passphrase error.
   passphrase_required_reason_ = syncer::REASON_PASSPHRASE_NOT_REQUIRED;
 
-#if defined(OS_ANDROID)
-  // Re-enable passwords if we have disabled them.
-  if (failed_data_types_handler_.GetFailedTypes().Has(syncer::PASSWORDS) &&
-      ShouldEnablePasswordSyncForAndroid()) {
-    // Clear the data type errors.
-    failed_data_types_handler_.Reset();
-  }
-#endif
-
   // Make sure the data types that depend on the passphrase are started at
   // this time.
-  const syncer::ModelTypeSet types = GetActiveDataTypes();
+  const syncer::ModelTypeSet types = GetPreferredDataTypes();
   if (data_type_manager_) {
-    // Unblock the data type manager if necessary.
+    // Re-enable any encrypted types if necessary.
     data_type_manager_->Configure(types,
-                                  syncer::CONFIGURE_REASON_RECONFIGURATION);
+                                  syncer::CONFIGURE_REASON_CRYPTO);
   }
 
   NotifyObservers();
@@ -1236,10 +1213,6 @@ void ProfileSyncService::OnActionableError(const SyncProtocolError& error) {
   NotifyObservers();
 }
 
-void ProfileSyncService::OnConfigureBlocked() {
-  NotifyObservers();
-}
-
 void ProfileSyncService::OnConfigureDone(
     const browser_sync::DataTypeManager::ConfigureResult& result) {
   // We should have cleared our cached passphrase before we get here (in
@@ -1306,12 +1279,6 @@ void ProfileSyncService::OnConfigureDone(
                                  ERROR_REASON_CONFIGURATION_FAILURE);
     return;
   }
-
-  // Now handle partial success and full success.
-  base::MessageLoop::current()->PostTask(
-      FROM_HERE,
-      base::Bind(&ProfileSyncService::OnSyncConfigureDone,
-                 weak_factory_.GetWeakPtr(), result));
 
   // We should never get in a state where we have no encrypted datatypes
   // enabled, and yet we still think we require a passphrase for decryption.
@@ -1532,6 +1499,12 @@ void ProfileSyncService::OnUserChoseDatatypes(
   sync_prefs_.SetKeepEverythingSynced(sync_everything);
 
   failed_data_types_handler_.Reset();
+  if (GetActiveDataTypes().Has(syncer::HISTORY_DELETE_DIRECTIVES) &&
+      encrypted_types_.Has(syncer::SESSIONS)) {
+    DisableBrokenDatatype(syncer::HISTORY_DELETE_DIRECTIVES,
+                          FROM_HERE,
+                          "Delete directives not supported with encryption.");
+  }
   ChangePreferredDataTypes(chosen_types);
   AcknowledgeSyncedTypes();
   NotifyObservers();
@@ -1642,26 +1615,7 @@ void ProfileSyncService::ConfigureDataTypeManager() {
                        base::Unretained(this))));
   }
 
-  // This is probably where we want to trigger configuration of priority
-  // datatypes, but we need to resolve crbug.com/226195 first.
-
-#if defined(OS_ANDROID)
-  if (GetActiveDataTypes().Has(syncer::PASSWORDS) &&
-      !ShouldEnablePasswordSyncForAndroid()) {
-    DisableBrokenDatatype(syncer::PASSWORDS, FROM_HERE, "Not supported.");
-  }
-#endif
-
-  if (IsPassphraseRequiredForDecryption()) {
-    // We need a passphrase still. We don't bother to attempt to configure
-    // until we receive an OnPassphraseAccepted (which triggers a configure).
-    DVLOG(1) << "ProfileSyncService::ConfigureDataTypeManager bailing out "
-             << "because a passphrase required";
-    NotifyObservers();
-    return;
-  }
-
-  const syncer::ModelTypeSet types = GetActiveDataTypes();
+  const syncer::ModelTypeSet types = GetPreferredDataTypes();
   syncer::ConfigureReason reason = syncer::CONFIGURE_REASON_UNKNOWN;
   if (!HasSyncSetupCompleted()) {
     reason = syncer::CONFIGURE_REASON_NEW_CLIENT;

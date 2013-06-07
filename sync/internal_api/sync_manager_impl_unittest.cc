@@ -2909,6 +2909,8 @@ TEST_F(SyncManagerTestWithMockScheduler, BasicConfiguration) {
       reason,
       types_to_download,
       ModelTypeSet(),
+      ModelTypeSet(),
+      ModelTypeSet(),
       new_routing_info,
       base::Bind(&CallbackCounter::Callback,
                  base::Unretained(&ready_task_counter)),
@@ -2967,6 +2969,8 @@ TEST_F(SyncManagerTestWithMockScheduler, ReConfiguration) {
       reason,
       types_to_download,
       ModelTypeSet(),
+      ModelTypeSet(),
+      ModelTypeSet(),
       new_routing_info,
       base::Bind(&CallbackCounter::Callback,
                  base::Unretained(&ready_task_counter)),
@@ -3000,6 +3004,8 @@ TEST_F(SyncManagerTestWithMockScheduler, ConfigurationRetry) {
   sync_manager_.ConfigureSyncer(
       reason,
       types_to_download,
+      ModelTypeSet(),
+      ModelTypeSet(),
       ModelTypeSet(),
       new_routing_info,
       base::Bind(&CallbackCounter::Callback,
@@ -3107,7 +3113,9 @@ TEST_F(SyncManagerTest, PurgeDisabledTypes) {
 
   // Verify all the enabled types remain after cleanup, and all the disabled
   // types were purged.
-  sync_manager_.PurgeDisabledTypes(ModelTypeSet::All(), enabled_types,
+  sync_manager_.PurgeDisabledTypes(ModelTypeSet::All(),
+                                   enabled_types,
+                                   ModelTypeSet(),
                                    ModelTypeSet());
   EXPECT_TRUE(enabled_types.Equals(sync_manager_.InitialSyncEndedTypes()));
   EXPECT_TRUE(disabled_types.Equals(
@@ -3120,11 +3128,159 @@ TEST_F(SyncManagerTest, PurgeDisabledTypes) {
       Difference(ModelTypeSet::All(), disabled_types);
 
   // Verify only the non-disabled types remain after cleanup.
-  sync_manager_.PurgeDisabledTypes(enabled_types, new_enabled_types,
+  sync_manager_.PurgeDisabledTypes(enabled_types,
+                                   new_enabled_types,
+                                   ModelTypeSet(),
                                    ModelTypeSet());
   EXPECT_TRUE(new_enabled_types.Equals(sync_manager_.InitialSyncEndedTypes()));
   EXPECT_TRUE(disabled_types.Equals(
       sync_manager_.GetTypesWithEmptyProgressMarkerToken(ModelTypeSet::All())));
+}
+
+// Test PurgeDisabledTypes properly unapplies types by deleting their local data
+// and preserving their server data and progress marker.
+TEST_F(SyncManagerTest, PurgeUnappliedTypes) {
+  ModelSafeRoutingInfo routing_info;
+  GetModelSafeRoutingInfo(&routing_info);
+  ModelTypeSet unapplied_types = ModelTypeSet(BOOKMARKS, PREFERENCES);
+  ModelTypeSet enabled_types = GetRoutingInfoTypes(routing_info);
+  ModelTypeSet disabled_types = Difference(ModelTypeSet::All(), enabled_types);
+
+  // The harness should have initialized the enabled_types for us.
+  EXPECT_TRUE(enabled_types.Equals(sync_manager_.InitialSyncEndedTypes()));
+
+  // Set progress markers for all types.
+  ModelTypeSet protocol_types = ProtocolTypes();
+  for (ModelTypeSet::Iterator iter = protocol_types.First(); iter.Good();
+       iter.Inc()) {
+    SetProgressMarkerForType(iter.Get(), true);
+  }
+
+  // Add the following kinds of items:
+  // 1. Fully synced preference.
+  // 2. Locally created preference, server unknown, unsynced
+  // 3. Locally deleted preference, server known, unsynced
+  // 4. Server deleted preference, locally known.
+  // 5. Server created preference, locally unknown, unapplied.
+  // 6. A fully synced bookmark (no unique_client_tag).
+  UserShare* share = sync_manager_.GetUserShare();
+  sync_pb::EntitySpecifics pref_specifics;
+  AddDefaultFieldValue(PREFERENCES, &pref_specifics);
+  sync_pb::EntitySpecifics bm_specifics;
+  AddDefaultFieldValue(BOOKMARKS, &bm_specifics);
+  int pref1_meta = MakeServerNode(
+      share, PREFERENCES, "pref1", "hash1", pref_specifics);
+  int64 pref2_meta = MakeNode(share, PREFERENCES, "pref2");
+  int pref3_meta = MakeServerNode(
+      share, PREFERENCES, "pref3", "hash3", pref_specifics);
+  int pref4_meta = MakeServerNode(
+      share, PREFERENCES, "pref4", "hash4", pref_specifics);
+  int pref5_meta = MakeServerNode(
+      share, PREFERENCES, "pref5", "hash5", pref_specifics);
+  int bookmark_meta = MakeServerNode(
+      share, BOOKMARKS, "bookmark", "", bm_specifics);
+
+  {
+    syncable::WriteTransaction trans(FROM_HERE,
+                                     syncable::SYNCER,
+                                     share->directory.get());
+    // Pref's 1 and 2 are already set up properly.
+    // Locally delete pref 3.
+    syncable::MutableEntry pref3(&trans, GET_BY_HANDLE, pref3_meta);
+    pref3.Put(IS_DEL, true);
+    pref3.Put(IS_UNSYNCED, true);
+    // Delete pref 4 at the server.
+    syncable::MutableEntry pref4(&trans, GET_BY_HANDLE, pref4_meta);
+    pref4.Put(syncable::SERVER_IS_DEL, true);
+    pref4.Put(syncable::IS_UNAPPLIED_UPDATE, true);
+    pref4.Put(syncable::SERVER_VERSION, 2);
+    // Pref 5 is an new unapplied update.
+    syncable::MutableEntry pref5(&trans, GET_BY_HANDLE, pref5_meta);
+    pref5.Put(syncable::IS_UNAPPLIED_UPDATE, true);
+    pref5.Put(syncable::IS_DEL, true);
+    pref5.Put(syncable::BASE_VERSION, -1);
+    // Bookmark is already set up properly
+  }
+
+  // Take a snapshot to clear all the dirty bits.
+  share->directory.get()->SaveChanges();
+
+   // Now request a purge for the unapplied types.
+  disabled_types.PutAll(unapplied_types);
+  ModelTypeSet new_enabled_types =
+      Difference(ModelTypeSet::All(), disabled_types);
+  sync_manager_.PurgeDisabledTypes(enabled_types,
+                                   new_enabled_types,
+                                   ModelTypeSet(),
+                                   unapplied_types);
+
+  // Verify the unapplied types still have progress markers and initial sync
+  // ended after cleanup.
+  EXPECT_TRUE(sync_manager_.InitialSyncEndedTypes().HasAll(unapplied_types));
+  EXPECT_TRUE(
+      sync_manager_.GetTypesWithEmptyProgressMarkerToken(unapplied_types).
+          Empty());
+
+  // Ensure the items were unapplied as necessary.
+  {
+    syncable::ReadTransaction trans(FROM_HERE, share->directory.get());
+    syncable::Entry pref_node(&trans, GET_BY_HANDLE, pref1_meta);
+    ASSERT_TRUE(pref_node.good());
+    EXPECT_TRUE(pref_node.GetKernelCopy().is_dirty());
+    EXPECT_FALSE(pref_node.Get(syncable::IS_UNSYNCED));
+    EXPECT_TRUE(pref_node.Get(syncable::IS_UNAPPLIED_UPDATE));
+    EXPECT_TRUE(pref_node.Get(IS_DEL));
+    EXPECT_GT(pref_node.Get(syncable::SERVER_VERSION), 0);
+    EXPECT_EQ(pref_node.Get(syncable::BASE_VERSION), -1);
+
+    // Pref 2 should just be locally deleted.
+    syncable::Entry pref2_node(&trans, GET_BY_HANDLE, pref2_meta);
+    ASSERT_TRUE(pref2_node.good());
+    EXPECT_TRUE(pref2_node.GetKernelCopy().is_dirty());
+    EXPECT_FALSE(pref2_node.Get(syncable::IS_UNSYNCED));
+    EXPECT_TRUE(pref2_node.Get(syncable::IS_DEL));
+    EXPECT_FALSE(pref2_node.Get(syncable::IS_UNAPPLIED_UPDATE));
+    EXPECT_TRUE(pref2_node.Get(IS_DEL));
+    EXPECT_EQ(pref2_node.Get(syncable::SERVER_VERSION), 0);
+    EXPECT_EQ(pref2_node.Get(syncable::BASE_VERSION), -1);
+
+    syncable::Entry pref3_node(&trans, GET_BY_HANDLE, pref3_meta);
+    ASSERT_TRUE(pref3_node.good());
+    EXPECT_TRUE(pref3_node.GetKernelCopy().is_dirty());
+    EXPECT_FALSE(pref3_node.Get(syncable::IS_UNSYNCED));
+    EXPECT_TRUE(pref3_node.Get(syncable::IS_UNAPPLIED_UPDATE));
+    EXPECT_TRUE(pref3_node.Get(IS_DEL));
+    EXPECT_GT(pref3_node.Get(syncable::SERVER_VERSION), 0);
+    EXPECT_EQ(pref3_node.Get(syncable::BASE_VERSION), -1);
+
+    syncable::Entry pref4_node(&trans, GET_BY_HANDLE, pref4_meta);
+    ASSERT_TRUE(pref4_node.good());
+    EXPECT_TRUE(pref4_node.GetKernelCopy().is_dirty());
+    EXPECT_FALSE(pref4_node.Get(syncable::IS_UNSYNCED));
+    EXPECT_TRUE(pref4_node.Get(syncable::IS_UNAPPLIED_UPDATE));
+    EXPECT_TRUE(pref4_node.Get(IS_DEL));
+    EXPECT_GT(pref4_node.Get(syncable::SERVER_VERSION), 0);
+    EXPECT_EQ(pref4_node.Get(syncable::BASE_VERSION), -1);
+
+    // Pref 5 should remain untouched.
+    syncable::Entry pref5_node(&trans, GET_BY_HANDLE, pref5_meta);
+    ASSERT_TRUE(pref5_node.good());
+    EXPECT_FALSE(pref5_node.GetKernelCopy().is_dirty());
+    EXPECT_FALSE(pref5_node.Get(syncable::IS_UNSYNCED));
+    EXPECT_TRUE(pref5_node.Get(syncable::IS_UNAPPLIED_UPDATE));
+    EXPECT_TRUE(pref5_node.Get(IS_DEL));
+    EXPECT_GT(pref5_node.Get(syncable::SERVER_VERSION), 0);
+    EXPECT_EQ(pref5_node.Get(syncable::BASE_VERSION), -1);
+
+    syncable::Entry bookmark_node(&trans, GET_BY_HANDLE, bookmark_meta);
+    ASSERT_TRUE(bookmark_node.good());
+    EXPECT_TRUE(bookmark_node.GetKernelCopy().is_dirty());
+    EXPECT_FALSE(bookmark_node.Get(syncable::IS_UNSYNCED));
+    EXPECT_TRUE(bookmark_node.Get(syncable::IS_UNAPPLIED_UPDATE));
+    EXPECT_TRUE(bookmark_node.Get(IS_DEL));
+    EXPECT_GT(bookmark_node.Get(syncable::SERVER_VERSION), 0);
+    EXPECT_EQ(bookmark_node.Get(syncable::BASE_VERSION), -1);
+  }
 }
 
 // A test harness to exercise the code that processes and passes changes from

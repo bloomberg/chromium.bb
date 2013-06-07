@@ -313,6 +313,7 @@ class SyncBackendHost
   typedef base::Callback<scoped_ptr<syncer::HttpPostProviderFactory>(void)>
       MakeHttpBridgeFactoryFn;
 
+  // Utility struct for holding initialization options.
   struct DoInitializeOptions {
     DoInitializeOptions(
         base::MessageLoop* sync_loop,
@@ -366,8 +367,10 @@ class SyncBackendHost
   // Virtual for testing.
   virtual void RequestConfigureSyncer(
       syncer::ConfigureReason reason,
-      syncer::ModelTypeSet types_to_config,
-      syncer::ModelTypeSet failed_types,
+      syncer::ModelTypeSet to_download,
+      syncer::ModelTypeSet to_journal,
+      syncer::ModelTypeSet to_unapply,
+      syncer::ModelTypeSet to_ignore,
       const syncer::ModelSafeRoutingInfo& routing_info,
       const base::Callback<void(syncer::ModelTypeSet,
                                 syncer::ModelTypeSet)>& ready_task,

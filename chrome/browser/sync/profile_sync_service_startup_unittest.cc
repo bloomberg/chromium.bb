@@ -500,6 +500,7 @@ TEST_F(ProfileSyncServiceStartupTest, StartFailure) {
       status,
       syncer::ModelTypeSet(),
       errors,
+      syncer::ModelTypeSet(),
       syncer::ModelTypeSet());
   EXPECT_CALL(*data_type_manager, Configure(_, _)).
       WillRepeatedly(

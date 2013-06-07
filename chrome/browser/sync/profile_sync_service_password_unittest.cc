@@ -77,10 +77,6 @@ ACTION_P(AcquireSyncTransaction, password_test_service) {
   DVLOG(1) << "Sync transaction acquired.";
 }
 
-static void QuitMessageLoop() {
-  base::MessageLoop::current()->Quit();
-}
-
 class NullPasswordStore : public MockPasswordStore {
  public:
   NullPasswordStore() {}
@@ -108,25 +104,11 @@ class PasswordTestProfileSyncService : public TestProfileSyncService {
 
   virtual ~PasswordTestProfileSyncService() {}
 
-  virtual void OnPassphraseRequired(
-      syncer::PassphraseRequiredReason reason,
-      const sync_pb::EncryptedData& pending_keys) OVERRIDE {
-    // We purposely don't let passphrase_required_reason_ get set here, in order
-    // to let the datatype manager get blocked later (at which point we then
-    // set the encryption passphrase).
-    // On a normal client, we would have initialized the cryptographer with the
-    // login credentials.
-  }
-
   virtual void OnPassphraseAccepted() OVERRIDE {
     if (!callback_.is_null())
       callback_.Run();
 
     TestProfileSyncService::OnPassphraseAccepted();
-  }
-
-  virtual void OnConfigureBlocked() OVERRIDE {
-    QuitMessageLoop();
   }
 
   static BrowserContextKeyedService* Build(content::BrowserContext* context) {

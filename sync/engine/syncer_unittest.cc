@@ -1092,6 +1092,7 @@ TEST_F(SyncerTest, TestPurgeWhileUnsynced) {
   }
 
   directory()->PurgeEntriesWithTypeIn(ModelTypeSet(PREFERENCES),
+                                      ModelTypeSet(),
                                       ModelTypeSet());
 
   SyncShareNudge();
@@ -1126,8 +1127,9 @@ TEST_F(SyncerTest, TestPurgeWhileUnapplied) {
     parent.Put(syncable::ID, parent_id_);
   }
 
-  directory()->PurgeEntriesWithTypeIn(
-      ModelTypeSet(BOOKMARKS), ModelTypeSet());
+  directory()->PurgeEntriesWithTypeIn(ModelTypeSet(BOOKMARKS),
+                                      ModelTypeSet(),
+                                      ModelTypeSet());
 
   SyncShareNudge();
   directory()->SaveChanges();
@@ -1165,7 +1167,8 @@ TEST_F(SyncerTest, TestPurgeWithJournal) {
   }
 
   directory()->PurgeEntriesWithTypeIn(ModelTypeSet(PREFERENCES, BOOKMARKS),
-                                      ModelTypeSet(BOOKMARKS));
+                                      ModelTypeSet(BOOKMARKS),
+                                      ModelTypeSet());
   {
     // Verify bookmark nodes are saved in delete journal but not preference
     // node.

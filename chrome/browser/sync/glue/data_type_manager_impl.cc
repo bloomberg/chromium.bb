@@ -28,6 +28,22 @@ using content::BrowserThread;
 
 namespace browser_sync {
 
+namespace {
+
+FailedDataTypesHandler::TypeErrorMap
+GenerateCryptoErrorsForTypes(syncer::ModelTypeSet encrypted_types) {
+  FailedDataTypesHandler::TypeErrorMap crypto_errors;
+  for (syncer::ModelTypeSet::Iterator iter = encrypted_types.First();
+         iter.Good(); iter.Inc()) {
+    crypto_errors[iter.Get()] = syncer::SyncError(FROM_HERE,
+                                                  "Cryptographer not ready.",
+                                                  iter.Get());
+  }
+  return crypto_errors;
+}
+
+}  // namespace
+
 DataTypeManagerImpl::AssociationTypesInfo::AssociationTypesInfo() {}
 DataTypeManagerImpl::AssociationTypesInfo::~AssociationTypesInfo() {}
 
@@ -48,7 +64,9 @@ DataTypeManagerImpl::DataTypeManagerImpl(
       debug_info_listener_(debug_info_listener),
       model_association_manager_(controllers, this),
       observer_(observer),
-      failed_data_types_handler_(failed_data_types_handler) {
+      failed_data_types_handler_(failed_data_types_handler),
+      encryption_handler_(encryption_handler) {
+  DCHECK(failed_data_types_handler_);
   DCHECK(configurer_);
   DCHECK(observer_);
 }
@@ -74,6 +92,8 @@ void DataTypeManagerImpl::ConfigureImpl(
     syncer::ConfigureReason reason) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK_NE(reason, syncer::CONFIGURE_REASON_UNKNOWN);
+  DVLOG(1) << "Configuring for " << syncer::ModelTypeSetToString(desired_types)
+           << " with reason " << reason;
   if (state_ == STOPPING) {
     // You can not set a configuration while stopping.
     LOG(ERROR) << "Configuration set while stopping.";
@@ -82,9 +102,12 @@ void DataTypeManagerImpl::ConfigureImpl(
 
   if (state_ == CONFIGURED &&
       last_requested_types_.Equals(desired_types) &&
-      reason == syncer::CONFIGURE_REASON_RECONFIGURATION) {
-    // If we're already configured and the types haven't changed, we can exit
-    // out early.
+      reason == syncer::CONFIGURE_REASON_RECONFIGURATION &&
+      syncer::Intersection(failed_data_types_handler_->GetFailedTypes(),
+                           last_requested_types_).Empty()) {
+    // If the set of enabled types hasn't changed and there are no failing
+    // types, we can exit out early.
+    DVLOG(1) << "Reconfigure with same types, bypassing confguration.";
     NotifyStart();
     ConfigureResult result(OK, last_requested_types_);
     NotifyDone(result);
@@ -93,8 +116,8 @@ void DataTypeManagerImpl::ConfigureImpl(
 
   last_requested_types_ = desired_types;
   last_configure_reason_ = reason;
-  // Only proceed if we're in a steady state or blocked.
-  if (state_ != STOPPED && state_ != CONFIGURED && state_ != BLOCKED) {
+  // Only proceed if we're in a steady state or retrying.
+  if (state_ != STOPPED && state_ != CONFIGURED && state_ != RETRYING) {
     DVLOG(1) << "Received configure request while configuration in flight. "
              << "Postponing until current configuration complete.";
     needs_reconfigure_ = true;
@@ -107,43 +130,76 @@ void DataTypeManagerImpl::ConfigureImpl(
 BackendDataTypeConfigurer::DataTypeConfigStateMap
 DataTypeManagerImpl::BuildDataTypeConfigStateMap(
     const syncer::ModelTypeSet& types_being_configured) const {
-  // In four steps:
-  // 1. Add last_requested_types_ as CONFIGURE_INACTIVE.
-  // 2. Flip |types_being_configured| to CONFIGURE_ACTIVE.
-  // 3. Set other types as DISABLED.
-  // 4. Overwrite state of failed types according to failed_data_types_handler_.
+  // 1. Get the failed types (both due to fatal and crypto errors).
+  // 2. Add the difference between last_requested_types_ and the failed types
+  //    as CONFIGURE_INACTIVE.
+  // 3. Flip |types_being_configured| to CONFIGURE_ACTIVE.
+  // 4. Set non-enabled user types as DISABLED.
+  // 5. Set the fatal and crypto types to their respective states.
+  syncer::ModelTypeSet fatal_types;
+  syncer::ModelTypeSet crypto_types;
+  fatal_types = failed_data_types_handler_->GetFatalErrorTypes();
+  crypto_types = failed_data_types_handler_->GetCryptoErrorTypes();
+  syncer::ModelTypeSet enabled_types = last_requested_types_;
+  enabled_types.RemoveAll(fatal_types);
+  enabled_types.RemoveAll(crypto_types);
+  syncer::ModelTypeSet disabled_types =
+      syncer::Difference(
+          syncer::Union(syncer::UserTypes(), syncer::ControlTypes()),
+          enabled_types);
+  syncer::ModelTypeSet to_configure = syncer::Intersection(
+      enabled_types, types_being_configured);
+  DVLOG(1) << "Enabling: " << syncer::ModelTypeSetToString(enabled_types);
+  DVLOG(1) << "Configuring: " << syncer::ModelTypeSetToString(to_configure);
+  DVLOG(1) << "Disabling: " << syncer::ModelTypeSetToString(disabled_types);
+
   BackendDataTypeConfigurer::DataTypeConfigStateMap config_state_map;
   BackendDataTypeConfigurer::SetDataTypesState(
-      BackendDataTypeConfigurer::CONFIGURE_INACTIVE, last_requested_types_,
+      BackendDataTypeConfigurer::CONFIGURE_INACTIVE, enabled_types,
       &config_state_map);
   BackendDataTypeConfigurer::SetDataTypesState(
-      BackendDataTypeConfigurer::CONFIGURE_ACTIVE,
-      types_being_configured, &config_state_map);
-  BackendDataTypeConfigurer::SetDataTypesState(
-      BackendDataTypeConfigurer::DISABLED,
-      syncer::Difference(syncer::UserTypes(), last_requested_types_),
+      BackendDataTypeConfigurer::CONFIGURE_ACTIVE, to_configure,
       &config_state_map);
   BackendDataTypeConfigurer::SetDataTypesState(
-      BackendDataTypeConfigurer::DISABLED,
-      syncer::Difference(syncer::ControlTypes(), last_requested_types_),
+      BackendDataTypeConfigurer::DISABLED, disabled_types,
       &config_state_map);
-  if (failed_data_types_handler_) {
-    BackendDataTypeConfigurer::SetDataTypesState(
-        BackendDataTypeConfigurer::FAILED,
-        failed_data_types_handler_->GetFailedTypes(),
+  BackendDataTypeConfigurer::SetDataTypesState(
+      BackendDataTypeConfigurer::FATAL, fatal_types,
+      &config_state_map);
+  BackendDataTypeConfigurer::SetDataTypesState(
+      BackendDataTypeConfigurer::CRYPTO, crypto_types,
         &config_state_map);
-  }
   return config_state_map;
 }
 
 void DataTypeManagerImpl::Restart(syncer::ConfigureReason reason) {
   DVLOG(1) << "Restarting...";
-  model_association_manager_.Initialize(last_requested_types_);
-  last_restart_time_ = base::Time::Now();
-  configure_result_ = ConfigureResult();
-  configure_result_.status = OK;
 
-  DCHECK(state_ == STOPPED || state_ == CONFIGURED || state_ == BLOCKED);
+  // Check for new or resolved data type crypto errors.
+  if (encryption_handler_->IsPassphraseRequired()) {
+    syncer::ModelTypeSet encrypted_types =
+        encryption_handler_->GetEncryptedDataTypes();
+    encrypted_types.RetainAll(last_requested_types_);
+    encrypted_types.RemoveAll(
+        failed_data_types_handler_->GetCryptoErrorTypes());
+    FailedDataTypesHandler::TypeErrorMap crypto_errors =
+        GenerateCryptoErrorsForTypes(encrypted_types);
+    failed_data_types_handler_->UpdateFailedDataTypes(
+        crypto_errors,
+        FailedDataTypesHandler::CRYPTO);
+  } else {
+    failed_data_types_handler_->ResetCryptoErrors();
+  }
+
+  syncer::ModelTypeSet failed_types =
+      failed_data_types_handler_->GetFailedTypes();
+  syncer::ModelTypeSet enabled_types =
+      syncer::Difference(last_requested_types_, failed_types);
+
+  model_association_manager_.Initialize(enabled_types);
+  last_restart_time_ = base::Time::Now();
+
+  DCHECK(state_ == STOPPED || state_ == CONFIGURED || state_ == RETRYING);
 
   // Starting from a "steady state" (stopped or configured) state
   // should send a start notification.
@@ -152,7 +208,7 @@ void DataTypeManagerImpl::Restart(syncer::ConfigureReason reason) {
 
   model_association_manager_.StopDisabledTypes();
 
-  download_types_queue_ = PrioritizeTypes(last_requested_types_);
+  download_types_queue_ = PrioritizeTypes(enabled_types);
   association_types_queue_ = std::queue<AssociationTypesInfo>();
 
   // Tell the backend about the new set of data types we wish to sync.
@@ -201,20 +257,17 @@ void DataTypeManagerImpl::ProcessReconfigure() {
   // the most recent set of desired types, so we just call configure.
   // Note: we do this whether or not GetControllersNeedingStart is true,
   // because we may need to stop datatypes.
-  SetBlockedAndNotify();
   DVLOG(1) << "Reconfiguring due to previous configure attempt occuring while"
            << " busy.";
 
-  // Unwind the stack before executing configure. The method configure and its
-  // callees are not re-entrant.
-  base::MessageLoop::current()->PostTask(
-      FROM_HERE,
-      base::Bind(&DataTypeManagerImpl::ConfigureImpl,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 last_requested_types_,
-                 last_configure_reason_));
-
+  // Note: ConfigureImpl is called directly, rather than posted, in order to
+  // ensure that any purging/unapplying/journaling happens while the set of
+  // failed types is still up to date. If stack unwinding were to be done
+  // via PostTask, the failed data types may be reset before the purging was
+  // performed.
+  state_ = RETRYING;
   needs_reconfigure_ = false;
+  ConfigureImpl(last_requested_types_, last_configure_reason_);
 }
 
 void DataTypeManagerImpl::OnDownloadRetry() {
@@ -328,6 +381,29 @@ void DataTypeManagerImpl::OnModelAssociationDone(
   if (state_ == STOPPING)
     return;
 
+  // Don't reconfigure due to failed data types if we have an unrecoverable
+  // error or have already aborted.
+  if (result.status  == PARTIAL_SUCCESS) {
+    if (!result.needs_crypto.Empty()) {
+      needs_reconfigure_ = true;
+      syncer::ModelTypeSet encrypted_types = result.needs_crypto;
+      encrypted_types.RemoveAll(
+          failed_data_types_handler_->GetCryptoErrorTypes());
+      FailedDataTypesHandler::TypeErrorMap crypto_errors =
+          GenerateCryptoErrorsForTypes(encrypted_types);
+      failed_data_types_handler_->UpdateFailedDataTypes(
+          crypto_errors,
+          FailedDataTypesHandler::CRYPTO);
+    }
+    if (!result.failed_data_types.empty()) {
+      needs_reconfigure_ = true;
+      failed_data_types_handler_->UpdateFailedDataTypes(
+          result.failed_data_types,
+          FailedDataTypesHandler::STARTUP);
+    }
+  }
+
+  // Ignore abort/unrecoverable error if we need to reconfigure anyways.
   if (needs_reconfigure_) {
     association_types_queue_ = std::queue<AssociationTypesInfo>();
     ProcessReconfigure();
@@ -341,27 +417,33 @@ void DataTypeManagerImpl::OnModelAssociationDone(
     return;
   }
 
-  if (result.status == CONFIGURE_BLOCKED) {
-    SetBlockedAndNotify();
-    return;
-  }
-
   DCHECK(result.status == PARTIAL_SUCCESS || result.status == OK);
+  DCHECK(!result.status == OK ||
+         (result.needs_crypto.Empty() &&
+          result.failed_data_types.empty()));
 
-  if (result.status == PARTIAL_SUCCESS)
-    configure_result_.status = PARTIAL_SUCCESS;
-  configure_result_.requested_types.PutAll(result.requested_types);
-  configure_result_.failed_data_types.insert(
-      result.failed_data_types.begin(),
-      result.failed_data_types.end());
-  configure_result_.waiting_to_start.PutAll(result.waiting_to_start);
+  // It's possible this is a retry to disable failed types, in which case
+  // the association would be SUCCESS, but the overall configuration should
+  // still be PARTIAL_SUCCESS.
+  syncer::ModelTypeSet failed_data_types =
+      failed_data_types_handler_->GetFailedTypes();
+  ConfigureStatus status = result.status;
+  if (!syncer::Intersection(last_requested_types_,
+                            failed_data_types).Empty() && result.status == OK) {
+    status = PARTIAL_SUCCESS;
+  }
 
   association_types_queue_.pop();
   if (!association_types_queue_.empty()) {
     StartNextAssociation();
   } else if (download_types_queue_.empty()) {
     state_ = CONFIGURED;
-    NotifyDone(configure_result_);
+    ConfigureResult configure_result(status,
+                                     result.requested_types,
+                                     failed_data_types_handler_->GetAllErrors(),
+                                     result.waiting_to_start,
+                                     result.needs_crypto);
+    NotifyDone(configure_result);
   }
 }
 
@@ -381,13 +463,15 @@ void DataTypeManagerImpl::Stop() {
   if (state_ == STOPPED)
     return;
 
-  bool need_to_notify = state_ == DOWNLOAD_PENDING || state_ == CONFIGURING;
+  bool need_to_notify =
+      state_ == DOWNLOAD_PENDING || state_ == CONFIGURING;
   StopImpl();
 
   if (need_to_notify) {
     ConfigureResult result(ABORTED,
                            last_requested_types_,
                            std::map<syncer::ModelType, syncer::SyncError>(),
+                           syncer::ModelTypeSet(),
                            syncer::ModelTypeSet());
     NotifyDone(result);
   }
@@ -406,6 +490,7 @@ void DataTypeManagerImpl::Abort(ConfigureStatus status,
   ConfigureResult result(status,
                          last_requested_types_,
                          errors,
+                         syncer::ModelTypeSet(),
                          syncer::ModelTypeSet());
   NotifyDone(result);
 }
@@ -462,17 +547,6 @@ void DataTypeManagerImpl::NotifyDone(const ConfigureResult& result) {
 
 DataTypeManager::State DataTypeManagerImpl::state() const {
   return state_;
-}
-
-void DataTypeManagerImpl::SetBlockedAndNotify() {
-  // Drop download callbacks.
-  weak_ptr_factory_.InvalidateWeakPtrs();
-
-  state_ = BLOCKED;
-  AddToConfigureTime();
-  DVLOG(1) << "Accumulated spent configuring: "
-           << configure_time_delta_.InSecondsF() << "s";
-  observer_->OnConfigureBlocked();
 }
 
 void DataTypeManagerImpl::AddToConfigureTime() {

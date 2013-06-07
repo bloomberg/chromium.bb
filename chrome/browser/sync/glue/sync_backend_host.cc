@@ -77,6 +77,21 @@ using syncer::InternalComponentsFactoryImpl;
 using syncer::sessions::SyncSessionSnapshot;
 using syncer::SyncCredentials;
 
+namespace {
+
+// Helper struct to handle currying params to
+// SyncBackendHost::Core::DoConfigureSyncer.
+struct DoConfigureSyncerTypes {
+  DoConfigureSyncerTypes() {}
+  ~DoConfigureSyncerTypes() {}
+  syncer::ModelTypeSet to_download;
+  syncer::ModelTypeSet to_journal;
+  syncer::ModelTypeSet to_unapply;
+  syncer::ModelTypeSet to_ignore;
+};
+
+}  // namespace
+
 // Helper macros to log with the syncer thread name; useful when there
 // are multiple syncers involved.
 
@@ -213,8 +228,7 @@ class SyncBackendHost::Core
   // Configuration methods that must execute on sync loop.
   void DoConfigureSyncer(
       syncer::ConfigureReason reason,
-      syncer::ModelTypeSet types_to_config,
-      syncer::ModelTypeSet failed_types,
+      const DoConfigureSyncerTypes& config_types,
       const syncer::ModelSafeRoutingInfo routing_info,
       const base::Callback<void(syncer::ModelTypeSet,
                                 syncer::ModelTypeSet)>& ready_task,
@@ -703,10 +717,19 @@ void SyncBackendHost::ConfigureDataTypes(
   // backend because configuration requests are never aborted; they are retried
   // until they succeed or the backend is shut down.
 
+  syncer::ModelTypeSet disabled_types =
+      GetDataTypesInState(DISABLED, config_state_map);
+  syncer::ModelTypeSet fatal_types =
+      GetDataTypesInState(FATAL, config_state_map);
+  syncer::ModelTypeSet crypto_types =
+      GetDataTypesInState(CRYPTO, config_state_map);
+  disabled_types.PutAll(fatal_types);
+  disabled_types.PutAll(crypto_types);
   syncer::ModelTypeSet types_to_download = registrar_->ConfigureDataTypes(
       GetDataTypesInState(CONFIGURE_ACTIVE, config_state_map),
-      syncer::Union(GetDataTypesInState(DISABLED, config_state_map),
-                    GetDataTypesInState(FAILED, config_state_map)));
+      disabled_types);
+  syncer::ModelTypeSet inactive_types =
+      GetDataTypesInState(CONFIGURE_INACTIVE, config_state_map);
   types_to_download.RemoveAll(syncer::ProxyTypes());
   if (!types_to_download.Empty())
     types_to_download.Put(syncer::NIGORI);
@@ -739,12 +762,23 @@ void SyncBackendHost::ConfigureDataTypes(
   SDVLOG(1) << "Types "
             << syncer::ModelTypeSetToString(types_to_download)
             << " added; calling DoConfigureSyncer";
-  // TODO(zea): figure out how to bypass this call if no types are being
-  // configured and GetKey is not needed. For now we rely on determining the
-  // need for GetKey as part of the SyncManager::ConfigureSyncer logic.
+  // Divide up the types into their corresponding actions (each is mutually
+  // exclusive):
+  // - Types which have just been added to the routing info (types_to_download):
+  //   are downloaded.
+  // - Types which have encountered a fatal error (fatal_types) are deleted
+  //   from the directory and journaled in the delete journal.
+  // - Types which have encountered a cryptographer error (crypto_types) are
+  //   unapplied (local state is purged but sync state is not).
+  // - All other types not in the routing info (types just disabled) are deleted
+  //   from the directory.
+  // - Everything else (enabled types and already disabled types) is not
+  //   touched.
   RequestConfigureSyncer(reason,
                          types_to_download,
-                         GetDataTypesInState(FAILED, config_state_map),
+                         fatal_types,
+                         crypto_types,
+                         inactive_types,
                          routing_info,
                          ready_task,
                          retry_callback);
@@ -824,18 +858,24 @@ void SyncBackendHost::InitCore(const DoInitializeOptions& options) {
 
 void SyncBackendHost::RequestConfigureSyncer(
     syncer::ConfigureReason reason,
-    syncer::ModelTypeSet types_to_config,
-    syncer::ModelTypeSet failed_types,
+    syncer::ModelTypeSet to_download,
+    syncer::ModelTypeSet to_journal,
+    syncer::ModelTypeSet to_unapply,
+    syncer::ModelTypeSet to_ignore,
     const syncer::ModelSafeRoutingInfo& routing_info,
     const base::Callback<void(syncer::ModelTypeSet,
                               syncer::ModelTypeSet)>& ready_task,
     const base::Closure& retry_callback) {
+  DoConfigureSyncerTypes config_types;
+  config_types.to_download = to_download;
+  config_types.to_journal = to_journal;
+  config_types.to_unapply = to_unapply;
+  config_types.to_ignore = to_ignore;
   sync_thread_.message_loop()->PostTask(FROM_HERE,
        base::Bind(&SyncBackendHost::Core::DoConfigureSyncer,
                   core_.get(),
                   reason,
-                  types_to_config,
-                  failed_types,
+                  config_types,
                   routing_info,
                   ready_task,
                   retry_callback));
@@ -986,11 +1026,13 @@ void SyncBackendHost::Core::DoDownloadControlTypes(
   registrar_->GetModelSafeRoutingInfo(&routing_info);
   SDVLOG(1) << "Control Types "
             << syncer::ModelTypeSetToString(new_control_types)
-            << " added; calling DoConfigureSyncer";
+            << " added; calling ConfigureSyncer";
 
   sync_manager_->ConfigureSyncer(
       reason,
       new_control_types,
+      syncer::ModelTypeSet(),
+      syncer::ModelTypeSet(),
       syncer::ModelTypeSet(),
       routing_info,
       base::Bind(&SyncBackendHost::Core::DoInitialProcessControlTypes,
@@ -1400,8 +1442,7 @@ void SyncBackendHost::Core::DoDestroySyncManager() {
 
 void SyncBackendHost::Core::DoConfigureSyncer(
     syncer::ConfigureReason reason,
-    syncer::ModelTypeSet types_to_config,
-    syncer::ModelTypeSet failed_types,
+    const DoConfigureSyncerTypes& config_types,
     const syncer::ModelSafeRoutingInfo routing_info,
     const base::Callback<void(syncer::ModelTypeSet,
                               syncer::ModelTypeSet)>& ready_task,
@@ -1409,12 +1450,14 @@ void SyncBackendHost::Core::DoConfigureSyncer(
   DCHECK_EQ(base::MessageLoop::current(), sync_loop_);
   sync_manager_->ConfigureSyncer(
       reason,
-      types_to_config,
-      failed_types,
+      config_types.to_download,
+      config_types.to_journal,
+      config_types.to_unapply,
+      config_types.to_ignore,
       routing_info,
       base::Bind(&SyncBackendHost::Core::DoFinishConfigureDataTypes,
                  this,
-                 types_to_config,
+                 config_types.to_download,
                  ready_task),
       base::Bind(&SyncBackendHost::Core::DoRetryConfiguration,
                  this,

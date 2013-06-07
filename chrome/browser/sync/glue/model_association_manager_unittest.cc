@@ -82,6 +82,7 @@ TEST_F(SyncModelAssociationManagerTest, SimpleModelStart) {
       DataTypeManager::OK,
       types,
       std::map<syncer::ModelType, syncer::SyncError>(),
+      syncer::ModelTypeSet(),
       syncer::ModelTypeSet());
   EXPECT_CALL(result_processor_, OnModelAssociationDone(_)).
               WillOnce(VerifyResult(expected_result));
@@ -111,6 +112,7 @@ TEST_F(SyncModelAssociationManagerTest, StopModelBeforeFinish) {
       DataTypeManager::ABORTED,
       types,
       std::map<syncer::ModelType, syncer::SyncError>(),
+      syncer::ModelTypeSet(),
       syncer::ModelTypeSet());
 
   EXPECT_CALL(result_processor_, OnModelAssociationDone(_)).
@@ -140,6 +142,7 @@ TEST_F(SyncModelAssociationManagerTest, StopAfterFinish) {
       DataTypeManager::OK,
       types,
       std::map<syncer::ModelType, syncer::SyncError>(),
+      syncer::ModelTypeSet(),
       syncer::ModelTypeSet());
   EXPECT_CALL(result_processor_, OnModelAssociationDone(_)).
               WillOnce(VerifyResult(expected_result));
@@ -174,6 +177,7 @@ TEST_F(SyncModelAssociationManagerTest, TypeFailModelAssociation) {
       DataTypeManager::PARTIAL_SUCCESS,
       types,
       errors,
+      syncer::ModelTypeSet(),
       syncer::ModelTypeSet());
   EXPECT_CALL(result_processor_, OnModelAssociationDone(_)).
               WillOnce(VerifyResult(expected_result));
@@ -204,6 +208,7 @@ TEST_F(SyncModelAssociationManagerTest, TypeReturnUnrecoverableError) {
       DataTypeManager::UNRECOVERABLE_ERROR,
       types,
       errors,
+      syncer::ModelTypeSet(),
       syncer::ModelTypeSet());
   EXPECT_CALL(result_processor_, OnModelAssociationDone(_)).
               WillOnce(VerifyResult(expected_result));
@@ -235,7 +240,8 @@ TEST_F(SyncModelAssociationManagerTest, InitializeAbortsLoad) {
       DataTypeManager::PARTIAL_SUCCESS,
       types,
       std::map<syncer::ModelType, syncer::SyncError>(),
-      expected_types_waiting_to_load);
+      expected_types_waiting_to_load,
+      syncer::ModelTypeSet());
 
   model_association_manager.Initialize(types);
   model_association_manager.StopDisabledTypes();
@@ -275,6 +281,7 @@ TEST_F(SyncModelAssociationManagerTest, InitializeAbortsLoad) {
       DataTypeManager::OK,
       types,
       std::map<syncer::ModelType, syncer::SyncError>(),
+      syncer::ModelTypeSet(),
       syncer::ModelTypeSet());
   EXPECT_CALL(result_processor_, OnModelAssociationDone(_)).
               WillOnce(VerifyResult(expected_result_done));
@@ -308,12 +315,14 @@ TEST_F(SyncModelAssociationManagerTest, ModelStartWithSlowLoadingType) {
       DataTypeManager::PARTIAL_SUCCESS,
       types,
       std::map<syncer::ModelType, syncer::SyncError>(),
-      expected_types_waiting_to_load);
+      expected_types_waiting_to_load,
+      syncer::ModelTypeSet());
 
   DataTypeManager::ConfigureResult expected_result_done(
       DataTypeManager::OK,
       types,
       std::map<syncer::ModelType, syncer::SyncError>(),
+      syncer::ModelTypeSet(),
       syncer::ModelTypeSet());
 
   EXPECT_CALL(result_processor_, OnModelAssociationDone(_)).
@@ -371,11 +380,13 @@ TEST_F(SyncModelAssociationManagerTest, StartMultipleTimes) {
       DataTypeManager::OK,
       syncer::ModelTypeSet(syncer::BOOKMARKS),
       std::map<syncer::ModelType, syncer::SyncError>(),
+      syncer::ModelTypeSet(),
       syncer::ModelTypeSet());
   DataTypeManager::ConfigureResult result_2nd(
       DataTypeManager::OK,
       syncer::ModelTypeSet(syncer::APPS),
       std::map<syncer::ModelType, syncer::SyncError>(),
+      syncer::ModelTypeSet(),
       syncer::ModelTypeSet());
   EXPECT_CALL(result_processor_, OnModelAssociationDone(_)).
       Times(2).

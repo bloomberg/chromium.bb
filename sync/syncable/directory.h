@@ -367,19 +367,27 @@ class SYNC_EXPORT Directory {
   // should not be invoked outside of tests.
   bool FullyCheckTreeInvariants(BaseTransaction *trans);
 
-  // Purges all data associated with any entries whose ModelType or
-  // ServerModelType is found in |types|, from sync directory _both_ in memory
-  // and on disk. |types_to_journal| should be subset of |types| and data
-  // of |types_to_journal| are saved in delete journal to help prevent
-  // back-from-dead problem due to offline delete in next sync session. Only
-  // valid, "real" model types are allowed in |types| (see model_type.h for
-  // definitions).  "Purge" is just meant to distinguish from "deleting"
-  // entries, which means something different in the syncable namespace.
+  // Purges data associated with any entries whose ModelType or ServerModelType
+  // is found in |disabled_types|, from sync directory _both_ in memory and on
+  // disk. Only valid, "real" model types are allowed in |disabled_types| (see
+  // model_type.h for definitions).
+  // 1. Data associated with |types_to_journal| is saved in the delete journal
+  // to help prevent back-from-dead problem due to offline delete in the next
+  // sync session. |types_to_journal| must be a subset of |disabled_types|.
+  // 2. Data associated with |types_to_unapply| is reset to an "unapplied"
+  // state, wherein all local data is deleted and IS_UNAPPLIED is set to true.
+  // This is useful when there's no benefit in discarding the currently
+  // downloaded state, such as when there are cryptographer errors.
+  // |types_to_unapply| must be a subset of |disabled_types|.
+  // 3. All other data is purged entirely.
+  // Note: "Purge" is just meant to distinguish from "deleting" entries, which
+  // means something different in the syncable namespace.
   // WARNING! This can be real slow, as it iterates over all entries.
   // WARNING! Performs synchronous I/O.
   // Returns: true on success, false if an error was encountered.
-  virtual bool PurgeEntriesWithTypeIn(ModelTypeSet types,
-                                      ModelTypeSet types_to_journal);
+  virtual bool PurgeEntriesWithTypeIn(ModelTypeSet disabled_types,
+                                      ModelTypeSet types_to_journal,
+                                      ModelTypeSet types_to_unapply);
 
  private:
   // A helper that implements the logic of checking tree invariants.
@@ -525,6 +533,12 @@ class SYNC_EXPORT Directory {
   void AppendChildHandles(
       const ScopedKernelLock& lock,
       const Id& parent_id, Directory::ChildHandles* result);
+
+  // Helper methods used by PurgeDisabledTypes.
+  void UnapplyEntry(EntryKernel* entry);
+  void DeleteEntry(bool save_to_journal,
+                   EntryKernel* entry,
+                   EntryKernelSet* entries_to_journal);
 
   Kernel* kernel_;
 

@@ -318,7 +318,6 @@ class ProfileSyncService : public ProfileSyncServiceBase,
       const syncer::SyncProtocolError& error) OVERRIDE;
 
   // DataTypeManagerObserver implementation.
-  virtual void OnConfigureBlocked() OVERRIDE;
   virtual void OnConfigureDone(
       const browser_sync::DataTypeManager::ConfigureResult& result) OVERRIDE;
   virtual void OnConfigureRetry() OVERRIDE;
@@ -561,13 +560,6 @@ class ProfileSyncService : public ProfileSyncServiceBase,
   // encryption_pending() must be checked.
   virtual bool EncryptEverythingEnabled() const;
 
-#if defined(OS_ANDROID)
-  // Android does not display password prompts, passwords are only allowed to be
-  // synced if Cryptographer has already been initialized and does not have
-  // pending keys.
-  bool ShouldEnablePasswordSyncForAndroid() const;
-#endif
-
   // Returns true if the syncer is waiting for new datatypes to be encrypted.
   virtual bool encryption_pending() const;
 
@@ -762,11 +754,6 @@ class ProfileSyncService : public ProfileSyncServiceBase,
 
   // Create and register a new datatype controller.
   void RegisterNewDataType(syncer::ModelType data_type);
-
-  // Helper method to process SyncConfigureDone after unwinding the stack that
-  // originally posted this SyncConfigureDone.
-  void OnSyncConfigureDone(
-      browser_sync::DataTypeManager::ConfigureResult result);
 
   // Reconfigures the data type manager with the latest enabled types.
   // Note: Does not initialize the backend if it is not already initialized.

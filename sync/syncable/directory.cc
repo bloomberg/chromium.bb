@@ -570,11 +570,101 @@ bool Directory::VacuumAfterSaveChanges(const SaveChangesSnapshot& snapshot) {
   return true;
 }
 
-bool Directory::PurgeEntriesWithTypeIn(ModelTypeSet types,
-                                       ModelTypeSet types_to_journal) {
-  types.RemoveAll(ProxyTypes());
+void Directory::UnapplyEntry(EntryKernel* entry) {
+  int64 handle = entry->ref(META_HANDLE);
+  ModelType server_type = GetModelTypeFromSpecifics(
+      entry->ref(SERVER_SPECIFICS));
 
-  if (types.Empty())
+  // Clear enough so that on the next sync cycle all local data will
+  // be overwritten.
+  // Note: do not modify the root node in order to preserve the
+  // initial sync ended bit for this type (else on the next restart
+  // this type will be treated as disabled and therefore fully purged).
+  if (IsRealDataType(server_type) &&
+      ModelTypeToRootTag(server_type) == entry->ref(UNIQUE_SERVER_TAG)) {
+    return;
+  }
+
+  // Set the unapplied bit if this item has server data.
+  if (IsRealDataType(server_type) && !entry->ref(IS_UNAPPLIED_UPDATE)) {
+    entry->put(IS_UNAPPLIED_UPDATE, true);
+    kernel_->unapplied_update_metahandles[server_type].insert(handle);
+    entry->mark_dirty(&kernel_->dirty_metahandles);
+  }
+
+  // Unset the unsynced bit.
+  if (entry->ref(IS_UNSYNCED)) {
+    kernel_->unsynced_metahandles.erase(handle);
+    entry->put(IS_UNSYNCED, false);
+    entry->mark_dirty(&kernel_->dirty_metahandles);
+  }
+
+  // Mark the item as locally deleted. No deleted items are allowed in the
+  // parent child index.
+  if (!entry->ref(IS_DEL)) {
+    kernel_->parent_child_index.Remove(entry);
+    entry->put(IS_DEL, true);
+    entry->mark_dirty(&kernel_->dirty_metahandles);
+  }
+
+  // Set the version to the "newly created" version.
+  if (entry->ref(BASE_VERSION) != CHANGES_VERSION) {
+    entry->put(BASE_VERSION, CHANGES_VERSION);
+    entry->mark_dirty(&kernel_->dirty_metahandles);
+  }
+
+  // At this point locally created items that aren't synced will become locally
+  // deleted items, and purged on the next snapshot. All other items will match
+  // the state they would have had if they were just created via a server
+  // update. See MutableEntry::MutableEntry(.., CreateNewUpdateItem, ..).
+}
+
+void Directory::DeleteEntry(bool save_to_journal,
+                            EntryKernel* entry,
+                            EntryKernelSet* entries_to_journal) {
+  int64 handle = entry->ref(META_HANDLE);
+  ModelType server_type = GetModelTypeFromSpecifics(
+      entry->ref(SERVER_SPECIFICS));
+
+  kernel_->metahandles_to_purge.insert(handle);
+
+  size_t num_erased = 0;
+  num_erased = kernel_->metahandles_map.erase(entry->ref(META_HANDLE));
+  DCHECK_EQ(1u, num_erased);
+  num_erased = kernel_->ids_map.erase(entry->ref(ID).value());
+  DCHECK_EQ(1u, num_erased);
+  num_erased = kernel_->unsynced_metahandles.erase(handle);
+  DCHECK_EQ(entry->ref(IS_UNSYNCED), num_erased > 0);
+  num_erased =
+      kernel_->unapplied_update_metahandles[server_type].erase(handle);
+  DCHECK_EQ(entry->ref(IS_UNAPPLIED_UPDATE), num_erased > 0);
+  if (kernel_->parent_child_index.Contains(entry))
+    kernel_->parent_child_index.Remove(entry);
+
+  if (!entry->ref(UNIQUE_CLIENT_TAG).empty()) {
+    num_erased =
+        kernel_->client_tags_map.erase(entry->ref(UNIQUE_CLIENT_TAG));
+    DCHECK_EQ(1u, num_erased);
+  }
+  if (!entry->ref(UNIQUE_SERVER_TAG).empty()) {
+    num_erased =
+        kernel_->server_tags_map.erase(entry->ref(UNIQUE_SERVER_TAG));
+    DCHECK_EQ(1u, num_erased);
+  }
+
+  if (save_to_journal) {
+    entries_to_journal->insert(entry);
+  } else {
+    delete entry;
+  }
+}
+
+bool Directory::PurgeEntriesWithTypeIn(ModelTypeSet disabled_types,
+                                       ModelTypeSet types_to_journal,
+                                       ModelTypeSet types_to_unapply) {
+  disabled_types.RemoveAll(ProxyTypes());
+
+  if (disabled_types.Empty())
     return true;
 
   {
@@ -602,9 +692,8 @@ bool Directory::PurgeEntriesWithTypeIn(ModelTypeSet types,
         ModelType local_type = GetModelTypeFromSpecifics(local_specifics);
         ModelType server_type = GetModelTypeFromSpecifics(server_specifics);
 
-        // Note the dance around incrementing |it|, since we sometimes erase().
-        if ((IsRealDataType(local_type) && types.Has(local_type)) ||
-            (IsRealDataType(server_type) && types.Has(server_type))) {
+        if ((IsRealDataType(local_type) && disabled_types.Has(local_type)) ||
+            (IsRealDataType(server_type) && disabled_types.Has(server_type))) {
           to_purge.insert(it->second);
         }
       }
@@ -612,57 +701,37 @@ bool Directory::PurgeEntriesWithTypeIn(ModelTypeSet types,
       for (std::set<EntryKernel*>::iterator it = to_purge.begin();
            it != to_purge.end(); ++it) {
         EntryKernel* entry = *it;
-        int64 handle = entry->ref(META_HANDLE);
 
-        const sync_pb::EntitySpecifics& local_specifics = entry->ref(SPECIFICS);
+        const sync_pb::EntitySpecifics& local_specifics =
+            (*it)->ref(SPECIFICS);
         const sync_pb::EntitySpecifics& server_specifics =
-            entry->ref(SERVER_SPECIFICS);
+            (*it)->ref(SERVER_SPECIFICS);
         ModelType local_type = GetModelTypeFromSpecifics(local_specifics);
         ModelType server_type = GetModelTypeFromSpecifics(server_specifics);
 
-        kernel_->metahandles_to_purge.insert(handle);
-
-        size_t num_erased = 0;
-        num_erased = kernel_->metahandles_map.erase(entry->ref(META_HANDLE));
-        DCHECK_EQ(1u, num_erased);
-        num_erased = kernel_->ids_map.erase(entry->ref(ID).value());
-        DCHECK_EQ(1u, num_erased);
-        num_erased = kernel_->unsynced_metahandles.erase(handle);
-        DCHECK_EQ(entry->ref(IS_UNSYNCED), num_erased > 0);
-        num_erased =
-            kernel_->unapplied_update_metahandles[server_type].erase(handle);
-        DCHECK_EQ(entry->ref(IS_UNAPPLIED_UPDATE), num_erased > 0);
-        if (kernel_->parent_child_index.Contains(entry))
-          kernel_->parent_child_index.Remove(entry);
-
-        if (!entry->ref(UNIQUE_CLIENT_TAG).empty()) {
-          num_erased =
-              kernel_->client_tags_map.erase(entry->ref(UNIQUE_CLIENT_TAG));
-          DCHECK_EQ(1u, num_erased);
-        }
-        if (!entry->ref(UNIQUE_SERVER_TAG).empty()) {
-          num_erased =
-              kernel_->server_tags_map.erase(entry->ref(UNIQUE_SERVER_TAG));
-          DCHECK_EQ(1u, num_erased);
-        }
-
-        if ((types_to_journal.Has(local_type) ||
-            types_to_journal.Has(server_type)) &&
-            (delete_journal_->IsDeleteJournalEnabled(local_type) ||
-                delete_journal_->IsDeleteJournalEnabled(server_type))) {
-          entries_to_journal.insert(entry);
+        if (types_to_unapply.Has(local_type) ||
+            types_to_unapply.Has(server_type)) {
+          UnapplyEntry(entry);
         } else {
-          delete entry;
+          bool save_to_journal =
+              (types_to_journal.Has(local_type) ||
+               types_to_journal.Has(server_type)) &&
+              (delete_journal_->IsDeleteJournalEnabled(local_type) ||
+               delete_journal_->IsDeleteJournalEnabled(server_type));
+          DeleteEntry(save_to_journal, entry, &entries_to_journal);
         }
       }
 
       delete_journal_->AddJournalBatch(&trans, entries_to_journal);
 
-      // Ensure meta tracking for these data types reflects the deleted state.
-      for (ModelTypeSet::Iterator it = types.First();
+      // Ensure meta tracking for these data types reflects the purged state.
+      for (ModelTypeSet::Iterator it = disabled_types.First();
            it.Good(); it.Inc()) {
-        kernel_->persisted_info.reset_download_progress(it.Get());
         kernel_->persisted_info.transaction_version[it.Get()] = 0;
+
+        // Don't discard progress markers for unapplied types.
+        if (!types_to_unapply.Has(it.Get()))
+          kernel_->persisted_info.reset_download_progress(it.Get());
       }
     }
   }

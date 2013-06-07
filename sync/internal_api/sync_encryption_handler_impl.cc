@@ -810,10 +810,8 @@ void SyncEncryptionHandlerImpl::ReEncryptEverything(
         continue;
 
       WriteNode child(trans);
-      if (child.InitByIdLookup(child_id) != BaseNode::INIT_OK) {
-        NOTREACHED();
-        continue;
-      }
+      if (child.InitByIdLookup(child_id) != BaseNode::INIT_OK)
+        continue;  // Possible for locally deleted items.
       if (child.GetIsFolder()) {
         to_visit.push(child.GetFirstChildId());
       }

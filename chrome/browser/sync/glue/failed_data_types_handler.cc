@@ -30,12 +30,6 @@ FailedDataTypesHandler::FailedDataTypesHandler() {
 FailedDataTypesHandler::~FailedDataTypesHandler() {
 }
 
-syncer::ModelTypeSet FailedDataTypesHandler::GetFailedTypes() const {
-  syncer::ModelTypeSet result = GetTypesFromErrorMap(startup_errors_);
-  result.PutAll(GetTypesFromErrorMap(runtime_errors_));
-  return result;
-}
-
 bool FailedDataTypesHandler::UpdateFailedDataTypes(
     const TypeErrorMap& errors,
     FailureType failure_type) {
@@ -43,6 +37,8 @@ bool FailedDataTypesHandler::UpdateFailedDataTypes(
     runtime_errors_.insert(errors.begin(), errors.end());
   } else if (failure_type == STARTUP) {
     startup_errors_.insert(errors.begin(), errors.end());
+  } else if (failure_type == CRYPTO) {
+    crypto_errors_.insert(errors.begin(), errors.end());
   } else {
     NOTREACHED();
   }
@@ -53,21 +49,45 @@ bool FailedDataTypesHandler::UpdateFailedDataTypes(
 void FailedDataTypesHandler::Reset() {
   startup_errors_.clear();
   runtime_errors_.clear();
+  crypto_errors_.clear();
+}
+
+void FailedDataTypesHandler::ResetCryptoErrors() {
+  crypto_errors_.clear();
 }
 
 FailedDataTypesHandler::TypeErrorMap FailedDataTypesHandler::GetAllErrors()
     const {
   TypeErrorMap result;
 
-  if (AnyFailedDatatype()) {
+  if (AnyFailedDataType()) {
     result = startup_errors_;
     result.insert(runtime_errors_.begin(), runtime_errors_.end());
+    result.insert(crypto_errors_.begin(), crypto_errors_.end());
   }
   return result;
 }
 
-bool FailedDataTypesHandler::AnyFailedDatatype() const {
-  return (!startup_errors_.empty() || !runtime_errors_.empty());
+syncer::ModelTypeSet FailedDataTypesHandler::GetFailedTypes() const {
+  syncer::ModelTypeSet result = GetFatalErrorTypes();
+  result.PutAll(GetCryptoErrorTypes());
+  return result;
+}
+
+syncer::ModelTypeSet FailedDataTypesHandler::GetFatalErrorTypes() const {
+  syncer::ModelTypeSet result = GetTypesFromErrorMap(startup_errors_);
+  result.PutAll(GetTypesFromErrorMap(runtime_errors_));
+  return result;
+}
+
+syncer::ModelTypeSet FailedDataTypesHandler::GetCryptoErrorTypes() const {
+  syncer::ModelTypeSet result = GetTypesFromErrorMap(crypto_errors_);
+  return result;
+}
+
+bool FailedDataTypesHandler::AnyFailedDataType() const {
+  return (!startup_errors_.empty() || !runtime_errors_.empty() ||
+          !crypto_errors_.empty());
 }
 
 }  // namespace browser_sync

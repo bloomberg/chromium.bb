@@ -192,8 +192,10 @@ void FakeSyncManager::StartSyncingNormally(
 
 void FakeSyncManager::ConfigureSyncer(
     ConfigureReason reason,
-    ModelTypeSet types_to_config,
-    ModelTypeSet failed_types,
+    ModelTypeSet to_download,
+    ModelTypeSet to_journal,
+    ModelTypeSet to_unapply,
+    ModelTypeSet to_ignore,
     const ModelSafeRoutingInfo& new_routing_info,
     const base::Closure& ready_task,
     const base::Closure& retry_task) {
@@ -201,7 +203,8 @@ void FakeSyncManager::ConfigureSyncer(
   ModelTypeSet enabled_types = GetRoutingInfoTypes(new_routing_info);
   ModelTypeSet disabled_types = Difference(
       ModelTypeSet::All(), enabled_types);
-  ModelTypeSet success_types = types_to_config;
+  disabled_types.RemoveAll(to_ignore);
+  ModelTypeSet success_types = to_download;
   success_types.RemoveAll(configure_fail_types_);
 
   DVLOG(1) << "Faking configuration. Downloading: "
@@ -210,7 +213,9 @@ void FakeSyncManager::ConfigureSyncer(
 
   // Update our fake directory by clearing and fake-downloading as necessary.
   UserShare* share = GetUserShare();
-  share->directory->PurgeEntriesWithTypeIn(disabled_types, ModelTypeSet());
+  share->directory->PurgeEntriesWithTypeIn(disabled_types,
+                                           to_journal,
+                                           to_unapply);
   for (ModelTypeSet::Iterator it = success_types.First(); it.Good(); it.Inc()) {
     // We must be careful to not create the same root node twice.
     if (!initial_sync_ended_types_.Has(it.Get())) {

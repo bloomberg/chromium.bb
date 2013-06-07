@@ -103,18 +103,20 @@ void SyncBackendHostForProfileSyncTest::UpdateCredentials(
 
 void SyncBackendHostForProfileSyncTest::RequestConfigureSyncer(
     syncer::ConfigureReason reason,
-    syncer::ModelTypeSet types_to_config,
-    syncer::ModelTypeSet failed_types,
+    syncer::ModelTypeSet to_download,
+    syncer::ModelTypeSet to_journal,
+    syncer::ModelTypeSet to_unapply,
+    syncer::ModelTypeSet to_ignore,
     const syncer::ModelSafeRoutingInfo& routing_info,
     const base::Callback<void(syncer::ModelTypeSet,
                               syncer::ModelTypeSet)>& ready_task,
     const base::Closure& retry_callback) {
   syncer::ModelTypeSet failed_configuration_types;
   if (fail_initial_download_)
-    failed_configuration_types = types_to_config;
+    failed_configuration_types = to_download;
 
   FinishConfigureDataTypesOnFrontendLoop(
-      syncer::Difference(types_to_config, failed_configuration_types),
+      syncer::Difference(to_download, failed_configuration_types),
       failed_configuration_types,
       ready_task);
 }

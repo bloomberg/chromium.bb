@@ -54,7 +54,7 @@ ModelSafeGroup GetGroupForModelType(const ModelType type,
   ModelSafeRoutingInfo::const_iterator it = routes.find(type);
   if (it == routes.end()) {
     if (type != UNSPECIFIED && type != TOP_LEVEL_FOLDER)
-      LOG(WARNING) << "Entry does not belong to active ModelSafeGroup!";
+      DVLOG(1) << "Entry does not belong to active ModelSafeGroup!";
     return GROUP_PASSIVE;
   }
   return it->second;

@@ -98,7 +98,6 @@ class DataTypeManagerImpl : public DataTypeManager,
   void OnDownloadRetry();
   void NotifyStart();
   void NotifyDone(const ConfigureResult& result);
-  void SetBlockedAndNotify();
 
   // Add to |configure_time_delta_| the time since we last called
   // Restart().
@@ -139,7 +138,7 @@ class DataTypeManagerImpl : public DataTypeManager,
   base::Time last_restart_time_;
 
   // The accumulated time spent between calls to Restart() and going
-  // to the DONE/BLOCKED state.
+  // to the DONE state.
   base::TimeDelta configure_time_delta_;
 
   // Sync's datatype debug info listener, which we pass model association
@@ -175,9 +174,9 @@ class DataTypeManagerImpl : public DataTypeManager,
   };
   std::queue<AssociationTypesInfo> association_types_queue_;
 
-  // Configuration result. This would eventually be sent to the listeners after
-  // all the types have been given a chance to start.
-  ConfigureResult configure_result_;
+  // The encryption handler lets the DataTypeManager know the state of sync
+  // datatype encryption.
+  const browser_sync::DataTypeEncryptionHandler* encryption_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(DataTypeManagerImpl);
 };
