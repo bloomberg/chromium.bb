@@ -136,7 +136,7 @@ string16 AutofillCreditCardWrapper::GetInfo(AutofillFieldType type) const {
 
 gfx::Image AutofillCreditCardWrapper::GetIcon() {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  return rb.GetImageNamed(CreditCard::IconResourceId(card_->type()));
+  return rb.GetImageNamed(card_->IconResourceId());
 }
 
 string16 AutofillCreditCardWrapper::GetDisplayText() {
