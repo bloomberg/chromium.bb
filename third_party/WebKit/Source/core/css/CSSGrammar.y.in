@@ -87,7 +87,7 @@ static inline bool isCSSTokenAString(int yytype)
 
 %}
 
-%expect 3
+%expect 2
 
 %nonassoc LOWEST_PREC
 
@@ -324,7 +324,7 @@ static inline bool isCSSTokenAString(int yytype)
 %%
 
 stylesheet:
-    maybe_space maybe_charset maybe_sgml rule_list
+    maybe_charset maybe_sgml rule_list
   | internal_decls maybe_space
   | internal_rule maybe_space
   | internal_selector maybe_space
